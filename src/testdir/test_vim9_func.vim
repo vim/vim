@@ -1005,6 +1005,20 @@ def Test_pass_legacy_lambda_to_def_func()
       Foo()
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def g:TestFunc(f: func())
+      enddef
+      legacy call g:TestFunc({-> 0})
+      delfunc g:TestFunc
+
+      def g:TestFunc(f: func(number))
+      enddef
+      legacy call g:TestFunc({nr -> 0})
+      delfunc g:TestFunc
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 " Default arg and varargs

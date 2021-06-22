@@ -171,7 +171,7 @@ alloc_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
     if (type == NULL)
 	return &t_any;
     type->tt_type = VAR_FUNC;
-    type->tt_member = ret_type;
+    type->tt_member = ret_type == NULL ? &t_unknown : ret_type;
     type->tt_argcount = argcount;
     type->tt_args = NULL;
     return type;
@@ -188,7 +188,7 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
     // recognize commonly used types
     if (argcount <= 0)
     {
-	if (ret_type == &t_unknown)
+	if (ret_type == &t_unknown || ret_type == NULL)
 	{
 	    // (argcount == 0) is not possible
 	    return &t_func_unknown;
