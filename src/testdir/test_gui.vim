@@ -1158,4 +1158,93 @@ func Test_gui_tablabel_tooltip()
   let &lines = save_lines
 endfunc
 
+" Test for dropping files into a window in GUI
+func DropFilesInCmdLine()
+  call feedkeys(":\"", 'L')
+  call test_gui_drop_files(['a.c', 'b.c'], &lines, 1, 0)
+  call feedkeys("\<CR>", 'L')
+endfunc
+
+func Test_gui_drop_files()
+  call assert_fails('call test_gui_drop_files(1, 1, 1, 0)', 'E474:')
+  call assert_fails('call test_gui_drop_files(["x"], "", 1, 0)', 'E474:')
+  call assert_fails('call test_gui_drop_files(["x"], 1, "", 0)', 'E474:')
+  call assert_fails('call test_gui_drop_files(["x"], 1, 1, "")', 'E474:')
+
+  %bw!
+  %argdelete
+  call test_gui_drop_files([], 1, 1, 0)
+  call assert_equal([], argv())
+  call test_gui_drop_files([1, 2], 1, 1, 0)
+  call assert_equal([], argv())
+
+  call test_gui_drop_files(['a.c', 'b.c'], 1, 1, 0)
+  call assert_equal(['a.c', 'b.c'], argv())
+  %bw!
+  %argdelete
+  call test_gui_drop_files([], 1, 1, 0)
+  call assert_equal([], argv())
+  %bw!
+  " if the buffer in the window is modified, then the file should be opened in
+  " a new window
+  set modified
+  call test_gui_drop_files(['x.c', 'y.c'], 1, 1, 0)
+  call assert_equal(['x.c', 'y.c'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal('x.c', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " if Ctrl is pressed, then the file should be opened in a new window
+  call test_gui_drop_files(['s.py', 't.py'], 1, 1, 0x10)
+  call assert_equal(['s.py', 't.py'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal('s.py', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " drop the files in a non-current window
+  belowright new
+  call test_gui_drop_files(['a.py', 'b.py'], 1, 1, 0)
+  call assert_equal(['a.py', 'b.py'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal(1, winnr())
+  call assert_equal('a.py', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " pressing shift when dropping files should change directory
+  let save_cwd = getcwd()
+  call mkdir('Xdir1')
+  call writefile([], 'Xdir1/Xfile1')
+  call writefile([], 'Xdir1/Xfile2')
+  call test_gui_drop_files(['Xdir1/Xfile1', 'Xdir1/Xfile2'], 1, 1, 0x4)
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xfile1', @%)
+  call chdir(save_cwd)
+  " pressing shift when dropping directory and files should change directory
+  call test_gui_drop_files(['Xdir1', 'Xdir1/Xfile2'], 1, 1, 0x4)
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir1', fnamemodify(@%, ':t'))
+  call chdir(save_cwd)
+  %bw!
+  %argdelete
+  " dropping a directory should edit it
+  call test_gui_drop_files(['Xdir1'], 1, 1, 0)
+  call assert_equal('Xdir1', @%)
+  %bw!
+  %argdelete
+  " dropping only a directory name with Shift should ignore it
+  call test_gui_drop_files(['Xdir1'], 1, 1, 0x4)
+  call assert_equal('', @%)
+  %bw!
+  %argdelete
+  call delete('Xdir1', 'rf')
+  " drop files in the command line. The GUI drop files adds the file names to
+  " the low level input buffer. So need to use a cmdline map and feedkeys()
+  " with 'Lx!' to process it in this function itself.
+  cnoremap <expr> <buffer> <F4> DropFilesInCmdLine()
+  call feedkeys(":\"\<F4>\<CR>", 'xt')
+  call feedkeys('k', 'Lx!')
+  call assert_equal('"a.c b.c', @:)
+  cunmap <buffer> <F4>
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
