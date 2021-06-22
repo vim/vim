@@ -374,6 +374,8 @@ func Test_mouse_position()
   call test_setmouse(5, 1)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_fails('call test_setmouse("", 2)', 'E474:')
+  call assert_fails('call test_setmouse(1, "")', 'E474:')
   bwipe!
   let &mouse = save_mouse
 endfunc
