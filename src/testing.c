@@ -1211,6 +1211,12 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (argvars[0].v_type != VAR_NUMBER || (argvars[1].v_type) != VAR_NUMBER)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
     mouse_row = (time_t)tv_get_number(&argvars[0]) - 1;
     mouse_col = (time_t)tv_get_number(&argvars[1]) - 1;
 }
@@ -1219,11 +1225,27 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
 f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_GUI
-    int		button = tv_get_number(&argvars[0]);
-    int		row = tv_get_number(&argvars[1]);
-    int		col = tv_get_number(&argvars[2]);
-    int		repeated_click = tv_get_number(&argvars[3]);
-    int_u	mods = tv_get_number(&argvars[4]);
+    int		button;
+    int		row;
+    int		col;
+    int		repeated_click;
+    int_u	mods;
+
+    if (argvars[0].v_type != VAR_NUMBER
+	    || (argvars[1].v_type) != VAR_NUMBER
+	    || (argvars[2].v_type) != VAR_NUMBER
+	    || (argvars[3].v_type) != VAR_NUMBER
+	    || (argvars[4].v_type) != VAR_NUMBER)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    button = tv_get_number(&argvars[0]);
+    row = tv_get_number(&argvars[1]);
+    col = tv_get_number(&argvars[2]);
+    repeated_click = tv_get_number(&argvars[3]);
+    mods = tv_get_number(&argvars[4]);
 
     gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1), repeated_click, mods);
 #endif
