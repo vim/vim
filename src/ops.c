@@ -1561,8 +1561,7 @@ op_insert(oparg_T *oap, long count1)
 	// The user may have moved the cursor before inserting something, try
 	// to adjust the block for that.  But only do it, if the difference
 	// does not come from indent kicking in.
-	if (oap->start.lnum == curbuf->b_op_start_orig.lnum
-						  && !bd.is_MAX && !did_indent)
+	if (oap->start.lnum == curbuf->b_op_start_orig.lnum && !did_indent)
 	{
 	    if (oap->op_type == OP_INSERT
 		    && oap->start.col + oap->start.coladd

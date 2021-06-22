@@ -28,4 +28,12 @@ func Test_blockinsert_delete()
   bwipe!
 endfunc
 
+func Test_blockappend_eol_cursor()
+  new
+  call setline(1, ['aaa', 'bbb', 'ccc'])
+  exe "norm! gg$\<c-v>2jA\<left>x\<esc>"
+  call assert_equal(['aaxa', 'bbxb', 'ccxc'], getline(1, '$'))
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
