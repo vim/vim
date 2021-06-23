@@ -3792,7 +3792,7 @@ if test "$enable_libsodium" = "yes"; then
     libsodium_lib=-lsodium
     libsodium_cflags=
   fi
-  AC_MSG_CHECKING(for libcanberra)
+  AC_MSG_CHECKING(for libsodium)
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
   CFLAGS="$CFLAGS $libsodium_cflags"
