@@ -107,7 +107,7 @@ def CheckDefAndScriptFailure(lines: list<string>, error: string, lnum = -3)
   CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)
 enddef
 
-" As CheckDefAndScriptFailure() but with two different exepcted errors.
+" As CheckDefAndScriptFailure() but with two different exepected errors.
 def CheckDefAndScriptFailure2(
   	lines: list<string>,
 	errorDef: string,
