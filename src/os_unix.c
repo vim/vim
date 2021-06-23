@@ -2486,8 +2486,17 @@ mch_get_pid(void)
     int
 mch_process_running(long pid)
 {
-    // EMX kill() not working correctly, it seems
-    return kill(pid, 0) == 0;
+    // If there is no error the process must be running.
+    if (kill(pid, 0) == 0)
+	return TRUE;
+#ifdef ESRCH
+    // If the error is ESRCH then the process is not running.
+    if (errno == ESRCH)
+	return FALSE;
+#endif
+    // If the process is running and owned by another user we get EPERM.  With
+    // other errors the process might be running, assuming it is then.
+    return TRUE;
 }
 
 #if !defined(HAVE_STRERROR) && defined(USE_GETCWD)
