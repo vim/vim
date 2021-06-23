@@ -1005,7 +1005,61 @@ mch_settmode(tmode_T tmode)
 #endif
 
 /*
- * try to get the real window size
+ * Get console size in a system friendly way on AROS and MorphOS.
+ * Return FAIL for failure, OK otherwise
+ */
+#if defined(__AROS__) || defined(__MORPHOS__)
+    int
+mch_get_shellsize(void)
+{
+    if(!term_console)
+    {
+        return FAIL;
+    }
+
+    if(raw_in && raw_out)
+    {
+        // Save current console mode.
+        int old_tmode = cur_tmode;
+
+        // Set RAW mode.
+        mch_settmode(TMODE_RAW);
+
+        char ctrl[] = "\x9b""0 q";
+
+        // Write control sequence to console.
+        if(Write(raw_out, ctrl, sizeof(ctrl)) == sizeof(ctrl))
+        {
+            char scan[] = "\x9b""1;1;%d;%d r",
+                 answ[sizeof(scan) + 8] = { '\0' };
+
+            // Read return sequence from input.
+            if(Read(raw_in, answ, sizeof(answ) - 1) > 0)
+            {
+                // Parse result and set Vim globals.
+                if(sscanf(answ, scan, &Rows, &Columns) == 2)
+                {
+                    // Restore console mode.
+                    mch_settmode(old_tmode);
+                    return OK;
+                }
+            }
+        }
+
+        // Restore console mode.
+        mch_settmode(old_tmode);
+    }
+
+    // I/O error. Default size fallback.
+    term_console = FALSE;
+    Columns = 80;
+    Rows = 24;
+
+    return FAIL;
+}
+#else
+/*
+ * Try to get the real window size,
  * return FAIL for failure, OK otherwise
  */
     int
@@ -1037,13 +1091,8 @@ mch_get_shellsize(void)
 	OUT_STR("\233t\233u");	// CSI t CSI u
     out_flush();
 
-#ifdef __AROS__
-    if (!Info(raw_out, id)
-		 || (wb_window = (struct Window *) id->id_VolumeNode) == NULL)
-#else
     if (dos_packet(MP(raw_out), (long)ACTION_DISK_INFO, ((ULONG) id) >> 2) == 0
 	    || (wb_window = (struct Window *)id->id_VolumeNode) == NULL)
-#endif
     {
 	// it's not an amiga window, maybe aux device
 	// terminal type should be set
@@ -1078,6 +1127,7 @@ out:
 
     return FAIL;
 }
+#endif
 
 /*
  * Try to set the real window size to Rows and Columns.
