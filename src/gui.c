@@ -5567,6 +5567,7 @@ gui_handle_drop(
 	{
 	    vim_free(fnames[0]);
 	    vim_free(fnames);
+	    vim_free(p);
 	}
 	else
 	    handle_drop(count, fnames, (modifiers & MOUSE_CTRL) != 0,

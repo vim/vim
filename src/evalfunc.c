@@ -1700,6 +1700,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_garbagecollect_soon},
     {"test_getvalue",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_test_getvalue},
+    {"test_gui_drop_files",	4, 4, 0,	    NULL,
+			ret_void,	    f_test_gui_drop_files},
     {"test_gui_mouse_event",	5, 5, 0,	    NULL,
 			ret_void,	    f_test_gui_mouse_event},
     {"test_ignore_error", 1, 1, FEARG_1,    NULL,

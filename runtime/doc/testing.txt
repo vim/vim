@@ -79,10 +79,23 @@ test_getvalue({name})					*test_getvalue()*
 		Can also be used as a |method|: >
 			GetName()->test_getvalue()
 <
+						*test_gui_drop_files()*
+test_gui_drop_files({list}, {row}, {col}, {mods})
+		Drop one or more files in {list} in the window at {row}, {col}.
+		This function only works when the GUI is running.
+		
+		The supported values for {mods} are:
+			0x4	Shift
+			0x8	Alt
+			0x10	Ctrl
+		The files are added to the argument list and the first file in
+		{list} is edited in the window.  See |drag-n-drop| for more
+		information.
+
 						*test_gui_mouse_event()*
 test_gui_mouse_event({button}, {row}, {col}, {multiclick}, {modifiers})
-		Inject a mouse button click event.  This function works only
-		when GUI is running.
+		Inject a mouse button click event.  This function only works
+		when the GUI is running.
 		The supported values for {button} are:
 			0	right mouse button
 			1	middle mouse button
@@ -92,7 +105,9 @@ test_gui_mouse_event({button}, {row}, {col}, {multiclick}, {modifiers})
 			5	scroll wheel up
 			6	scroll wheel left
 			7	scroll wheel right
-		{row} and {col} specify the location of the mouse click.
+		{row} and {col} specify the location of the mouse click. The
+		first row of the Vim window is 1 and the last row is 'lines'.
+		The maximum value of {col} is 'columns'.
 		To inject a multiclick event, set {multiclick} to 1.
 		The supported values for {modifiers} are:
 			4	shift is pressed
