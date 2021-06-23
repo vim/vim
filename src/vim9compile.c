@@ -174,6 +174,9 @@ struct cctx_S {
     char_u	*ctx_line_start;    // start of current line or NULL
     garray_T	ctx_instr;	    // generated instructions
 
+    int		ctx_prev_lnum;	    // line number below previous command, for
+				    // debugging
+
     compiletype_T ctx_compile_type;
 
     garray_T	ctx_locals;	    // currently visible local variables
@@ -585,7 +588,8 @@ generate_instr_debug(cctx_T *cctx)
 
     if ((isn = generate_instr(cctx, ISN_DEBUG)) == NULL)
 	return NULL;
-    isn->isn_arg.number = dfunc->df_var_names.ga_len;
+    isn->isn_arg.debug.dbg_var_names_len = dfunc->df_var_names.ga_len;
+    isn->isn_arg.debug.dbg_break_lnum = cctx->ctx_prev_lnum;
     return isn;
 }
 
@@ -9270,6 +9274,7 @@ compile_def_function(
 	    debug_lnum = cctx.ctx_lnum;
 	    generate_instr_debug(&cctx);
 	}
+	cctx.ctx_prev_lnum = cctx.ctx_lnum + 1;
 
 	// Some things can be recognized by the first character.
 	switch (*ea.cmd)

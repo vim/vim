@@ -1473,14 +1473,14 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
 
 	// check for the next breakpoint if needed
 	breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name,
-							   iptr->isn_lnum - 1);
+					   iptr->isn_arg.debug.dbg_break_lnum);
 	if (breakpoint <= 0 || breakpoint > iptr->isn_lnum)
 	    return;
     }
 
     SOURCING_LNUM = iptr->isn_lnum;
     debug_context = ectx;
-    debug_var_count = iptr->isn_arg.number;
+    debug_var_count = iptr->isn_arg.debug.dbg_var_names_len;
 
     for (ni = iptr + 1; ni->isn_type != ISN_FINISH; ++ni)
 	if (ni->isn_type == ISN_DEBUG
@@ -5476,8 +5476,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 
 	    case ISN_DEBUG:
-		smsg("%s%4d DEBUG line %d varcount %lld", pfx, current,
-					 iptr->isn_lnum, iptr->isn_arg.number);
+		smsg("%s%4d DEBUG line %d-%d varcount %lld", pfx, current,
+			iptr->isn_arg.debug.dbg_break_lnum + 1,
+			iptr->isn_lnum,
+			iptr->isn_arg.debug.dbg_var_names_len);
 		break;
 
 	    case ISN_UNPACK: smsg("%s%4d UNPACK %d%s", pfx, current,
