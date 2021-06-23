@@ -116,6 +116,9 @@ static char version[] __attribute__((used)) =
 # ifdef PATCHLEVEL
     "." PATCHLEVEL
 # endif
+# ifdef BUILDDATE
+    " (" BUILDDATE ")"
+# endif
     ;
 #endif
 
