@@ -13040,8 +13040,8 @@ if test "$enable_libsodium" = "yes"; then
     libsodium_lib=-lsodium
     libsodium_cflags=
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libcanberra" >&5
-$as_echo_n "checking for libcanberra... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libsodium" >&5
+$as_echo_n "checking for libsodium... " >&6; }
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
   CFLAGS="$CFLAGS $libsodium_cflags"
