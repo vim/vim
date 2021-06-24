@@ -982,7 +982,7 @@ mch_exit(int r)
     void
 mch_settmode(tmode_T tmode)
 {
-#if defined(__AROS__) || defined(__amigaos4__)
+#if defined(__AROS__) || defined(__amigaos4__) || defined(__MORPHOS__)
     if (!SetMode(raw_in, tmode == TMODE_RAW ? 1 : 0))
 #else
     if (dos_packet(MP(raw_in), (long)ACTION_SCREEN_MODE,
