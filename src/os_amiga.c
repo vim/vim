@@ -446,7 +446,7 @@ mch_check_win(int argc, char **argv)
      * we use a pointer to the current task instead. This should be a
      * shared structure and thus globally unique.
      */
-#ifdef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__) && !defined(__MORPHOS__)
     sprintf((char *)buf1, "t:nc%p", FindTask(0));
 #else
     sprintf((char *)buf1, "t:nc%ld", (long)buf1);
@@ -706,7 +706,7 @@ mch_get_host_name(char_u *s, int len)
     long
 mch_get_pid(void)
 {
-#ifdef __amigaos4__
+#if defined(__amigaos4__) || defined(__AROS__) || defined(__MORPHOS__)
     // This is as close to a pid as we can come. We could use CLI numbers also,
     // but then we would have two different types of process identifiers.
     return((long)FindTask(0));
