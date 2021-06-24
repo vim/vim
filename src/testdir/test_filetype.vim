@@ -161,6 +161,8 @@ let s:filename_checks = {
     \ 'ecd': ['file.ecd'],
     \ 'edif': ['file.edf', 'file.edif', 'file.edo'],
     \ 'elinks': ['elinks.conf'],
+    \ 'elixir': ['file.exs', 'mix.lock'],
+    \ 'eelixir': ['file.eex', 'file.leex'],
     \ 'elm': ['file.elm'],
     \ 'elmfilt': ['filter-rules'],
     \ 'epuppet': ['file.epp'],
