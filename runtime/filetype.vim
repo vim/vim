@@ -412,8 +412,8 @@ au BufNewFile,BufRead *Eterm/*.cfg		setf eterm
 au BufNewFile,BufRead *.ex call dist#ft#ExCheck()
 
 " Elixir
-autocmd BufRead,BufNewFile mix.lock,*.exs setf=elixir
-autocmd BufRead,BufNewFile *.eex,*.leex setf=eelixir
+au BufRead,BufNewFile mix.lock,*.exs setf elixir
+au BufRead,BufNewFile *.eex,*.leex setf eelixir
 
 " Euphoria 3 or 4
 au BufNewFile,BufRead *.eu,*.ew,*.exu,*.exw  call dist#ft#EuphoriaCheck()
