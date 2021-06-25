@@ -792,5 +792,31 @@ func Test_pp_file()
   filetype off
 endfunc
 
+func Test_ex_file()
+  filetype on
+
+  call writefile(['-- filetype euphoria comment'], 'Xfile.ex')
+  split Xfile.ex
+  call assert_equal('euphoria3', &filetype)
+  bwipe!
+
+  call writefile(['--filetype euphoria comment'], 'Xfile.ex')
+  split Xfile.ex
+  call assert_equal('euphoria3', &filetype)
+  bwipe!
+
+  call writefile(['ifdef '], 'Xfile.ex')
+  split Xfile.ex
+  call assert_equal('euphoria3', &filetype)
+  bwipe!
+
+  call writefile(['include '], 'Xfile.ex')
+  split Xfile.ex
+  call assert_equal('euphoria3', &filetype)
+  bwipe!
+
+  call delete('Xfile.ex')
+  filetype off
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
