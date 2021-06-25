@@ -1889,6 +1889,10 @@ def Test_inc_dec()
       assert_equal(8, nr)
       --nr
       assert_equal(7, nr)
+      ++nr | ++nr
+      assert_equal(9, nr)
+      ++nr # comment
+      assert_equal(10, nr)
 
       var ll = [1, 2]
       --ll[0]

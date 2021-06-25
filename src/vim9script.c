@@ -166,19 +166,23 @@ vim9_comment_start(char_u *p)
 ex_incdec(exarg_T *eap)
 {
     char_u	*cmd = eap->cmd;
-    size_t	len = STRLEN(eap->cmd) + 6;
+    char_u	*nextcmd = eap->nextcmd;
+    size_t	len = STRLEN(eap->cmd) + 8;
 
     // This works like "nr += 1" or "nr -= 1".
+    // Add a '|' to avoid looking in the next line.
     eap->cmd = alloc(len);
     if (eap->cmd == NULL)
 	return;
-    vim_snprintf((char *)eap->cmd, len, "%s %c= 1", cmd + 2,
+    vim_snprintf((char *)eap->cmd, len, "%s %c= 1 |", cmd + 2,
 				     eap->cmdidx == CMD_increment ? '+' : '-');
     eap->arg = eap->cmd;
     eap->cmdidx = CMD_var;
+    eap->nextcmd = NULL;
     ex_let(eap);
     vim_free(eap->cmd);
     eap->cmd = cmd;
+    eap->nextcmd = nextcmd;
 }
 
 /*
