@@ -1906,6 +1906,12 @@ def Test_inc_dec()
       unlet g:count
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var nr = 7
+      ++ nr
+  END
+  CheckDefAndScriptFailure(lines, "E1202: No white space allowed after '++': ++ nr")
 enddef
 
 

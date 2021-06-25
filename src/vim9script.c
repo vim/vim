@@ -169,6 +169,13 @@ ex_incdec(exarg_T *eap)
     char_u	*nextcmd = eap->nextcmd;
     size_t	len = STRLEN(eap->cmd) + 8;
 
+    if (VIM_ISWHITE(cmd[2]))
+    {
+	semsg(_(e_no_white_space_allowed_after_str_str),
+			 eap->cmdidx == CMD_increment ? "++" : "--", eap->cmd);
+	return;
+    }
+
     // This works like "nr += 1" or "nr -= 1".
     // Add a '|' to avoid looking in the next line.
     eap->cmd = alloc(len);

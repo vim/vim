@@ -446,3 +446,5 @@ EXTERN char e_libsodium_decryption_failed[]
 	INIT(= N_("E1200: Decryption failed!"));
 EXTERN char e_libsodium_decryption_failed_premature[]
 	INIT(= N_("E1201: Decryption failed: pre-mature end of file!"));
+EXTERN char e_no_white_space_allowed_after_str_str[]
+	INIT(= N_("E1202: No white space allowed after '%s': %s"));
