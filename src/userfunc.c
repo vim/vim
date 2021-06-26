@@ -275,9 +275,10 @@ get_function_args(
 		break;
 
 	    // Recognize " = expr" but not " == expr".  A lambda can have
-	    // "(a = expr" but "(a == expr" is not a lambda.
+	    // "(a = expr" but "(a == expr" and "(a =~ expr" are not a lambda.
 	    np = skipwhite(p);
-	    if (*np == '=' && np[1] != '=' && default_args != NULL)
+	    if (*np == '=' && np[1] != '=' && np[1] != '~'
+						       && default_args != NULL)
 	    {
 		typval_T	rettv;
 
