@@ -5854,7 +5854,8 @@ get_var_dest(
     }
     else if (*name == '@')
     {
-	if (!valid_yank_reg(name[1], FALSE) || name[1] == '.')
+	if (name[1] != '@'
+			&& (!valid_yank_reg(name[1], FALSE) || name[1] == '.'))
 	{
 	    emsg_invreg(name[1]);
 	    return FAIL;

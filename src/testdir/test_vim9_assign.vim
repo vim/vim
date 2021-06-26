@@ -228,16 +228,6 @@ def Test_assignment()
   CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1051:')
   CheckDefFailure(['$SOME_ENV_VAR += 123'], 'E1012:')
 
-  lines =<< trim END
-    @c = 'areg'
-    @c ..= 'add'
-    assert_equal('aregadd', @c)
-  END
-  CheckDefAndScriptSuccess(lines)
-
-  CheckDefFailure(['@a += "more"'], 'E1051:')
-  CheckDefFailure(['@a += 123'], 'E1012:')
-
   v:errmsg = 'none'
   v:errmsg ..= 'again'
   assert_equal('noneagain', v:errmsg)
@@ -247,6 +237,21 @@ def Test_assignment()
   var text =<< trim END
     some text
   END
+enddef
+
+def Test_assign_register()
+  var lines =<< trim END
+    @c = 'areg'
+    @c ..= 'add'
+    assert_equal('aregadd', @c)
+
+    @@ = 'some text'
+    assert_equal('some text', getreg('"'))
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  CheckDefFailure(['@a += "more"'], 'E1051:')
+  CheckDefFailure(['@a += 123'], 'E1012:')
 enddef
 
 def Test_reserved_name()
