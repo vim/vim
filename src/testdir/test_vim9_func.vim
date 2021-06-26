@@ -2316,6 +2316,23 @@ def Test_legacy_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_legacy()
+  var lines =<< trim END
+      vim9script
+      func g:LegacyFunction()
+        let g:legacyvar = 1
+      endfunc
+      def Testit()
+        legacy call g:LegacyFunction()
+      enddef
+      Testit()
+      assert_equal(1, g:legacyvar)
+      unlet g:legacyvar
+      delfunc g:LegacyFunction
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_legacy_errors()
   for cmd in ['if', 'elseif', 'else', 'endif',
               'for', 'endfor', 'continue', 'break',

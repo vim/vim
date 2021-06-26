@@ -9346,27 +9346,30 @@ compile_def_function(
 		break;
 	}
 
-	// Skip ":call" to get to the function name.
+	// Skip ":call" to get to the function name, unless using :legacy
 	p = ea.cmd;
-	if (checkforcmd(&ea.cmd, "call", 3))
+	if (!(local_cmdmod.cmod_flags & CMOD_LEGACY))
 	{
-	    if (*ea.cmd == '(')
-		// not for "call()"
-		ea.cmd = p;
-	    else
-		ea.cmd = skipwhite(ea.cmd);
-	}
+	    if (checkforcmd(&ea.cmd, "call", 3))
+	    {
+		if (*ea.cmd == '(')
+		    // not for "call()"
+		    ea.cmd = p;
+		else
+		    ea.cmd = skipwhite(ea.cmd);
+	    }
 
-	if (!starts_with_colon)
-	{
-	    int	    assign;
+	    if (!starts_with_colon)
+	    {
+		int	    assign;
 
-	    // Check for assignment after command modifiers.
-	    assign = may_compile_assignment(&ea, &line, &cctx);
-	    if (assign == OK)
-		goto nextline;
-	    if (assign == FAIL)
-		goto erret;
+		// Check for assignment after command modifiers.
+		assign = may_compile_assignment(&ea, &line, &cctx);
+		if (assign == OK)
+		    goto nextline;
+		if (assign == FAIL)
+		    goto erret;
+	    }
 	}
 
 	/*
@@ -9375,8 +9378,9 @@ compile_def_function(
 	 * "++nr" and "--nr" are eval commands
 	 */
 	cmd = ea.cmd;
-	if (starts_with_colon || !(*cmd == '\''
-			|| (cmd[0] == cmd[1] && (*cmd == '+' || *cmd == '-'))))
+	if (!(local_cmdmod.cmod_flags & CMOD_LEGACY)
+		&& (starts_with_colon || !(*cmd == '\''
+		       || (cmd[0] == cmd[1] && (*cmd == '+' || *cmd == '-')))))
 	{
 	    ea.cmd = skip_range(ea.cmd, TRUE, NULL);
 	    if (ea.cmd > cmd)
