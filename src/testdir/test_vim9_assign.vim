@@ -289,6 +289,16 @@ def Test_assign_unpack()
     assert_equal(1, v1)
     assert_equal(2, v2)
 
+    var reslist = []
+    for text in ['aaa {bbb} ccc', 'ddd {eee} fff']
+      var before: string
+      var middle: string
+      var after: string
+      [_, before, middle, after; _] = text->matchlist('\(.\{-\}\){\(.\{-\}\)}\(.*\)')
+      reslist->add(before)->add(middle)->add(after)
+    endfor
+    assert_equal(['aaa ', 'bbb', ' ccc', 'ddd ', 'eee', ' fff'], reslist)
+
     var a = 1
     var b = 3
     [a, b] += [2, 4]

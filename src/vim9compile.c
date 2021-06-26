@@ -6598,6 +6598,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     int		var_count = 0;
     int		var_idx;
     int		semicolon = 0;
+    int		did_generate_slice = FALSE;
     garray_T	*instr = &cctx->ctx_instr;
     garray_T    *stack = &cctx->ctx_type_stack;
     char_u	*op;
@@ -6801,6 +6802,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		else if (semicolon && var_idx == var_count - 1)
 		{
 		    // For "[var; var] = expr" get the rest of the list
+		    did_generate_slice = TRUE;
 		    if (generate_SLICE(cctx, var_count - 1) == FAIL)
 			goto theend;
 		}
@@ -7010,8 +7012,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    var_start = skipwhite(lhs.lhs_dest_end + 1);
     }
 
-    // for "[var, var] = expr" drop the "expr" value
-    if (var_count > 0 && !semicolon)
+    // For "[var, var] = expr" drop the "expr" value.
+    // Also for "[var, var; _] = expr".
+    if (var_count > 0 && (!semicolon || !did_generate_slice))
     {
 	if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
 	    goto theend;
