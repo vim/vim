@@ -518,7 +518,7 @@ extern garray_T def_functions;
 		: (dfunc)->df_instr))
 #else
 # define INSTRUCTIONS(dfunc) \
-	(debug_break_level > 0 \
+	(debug_break_level > 0 || dfunc->df_ufunc->uf_has_breakpoint \
 		? (dfunc)->df_instr_debug \
 		: (dfunc)->df_instr)
 #endif
