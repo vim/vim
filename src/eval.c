@@ -924,8 +924,14 @@ get_lval(
     lp->ll_tv = &v->di_tv;
     var1.v_type = VAR_UNKNOWN;
     var2.v_type = VAR_UNKNOWN;
-    while (*p == '[' || (*p == '.' && lp->ll_tv->v_type == VAR_DICT))
+    while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
+	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT)
+	{
+	    if (!quiet)
+		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
+	    return NULL;
+	}
 	if (!(lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list != NULL)
 		&& !(lp->ll_tv->v_type == VAR_DICT)
 		&& !(lp->ll_tv->v_type == VAR_BLOB

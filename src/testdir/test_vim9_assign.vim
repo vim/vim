@@ -787,6 +787,12 @@ def Test_assignment_dict()
     d.dd[0] = 0
   END
   CheckDefExecFailure(lines, 'E1148:', 2)
+
+  lines =<< trim END
+    var n: any
+    n.key = 5
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1148:', 'E1203: Dot can only be used on a dictionary: n.key = 5', 2)
 enddef
 
 def Test_assignment_local()
