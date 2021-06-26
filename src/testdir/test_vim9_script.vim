@@ -2385,6 +2385,13 @@ def Test_for_loop()
       endfor
       assert_equal('1a2b', res)
 
+      # unpack with one var
+      var reslist = []
+      for [x] in [['aaa'], ['bbb']]
+        reslist->add(x)
+      endfor
+      assert_equal(['aaa', 'bbb'], reslist)
+
       # loop over string
       res = ''
       for c in 'aéc̀d'

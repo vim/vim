@@ -7731,6 +7731,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     char_u	*p;
     char_u	*wp;
     int		var_count = 0;
+    int		var_list = FALSE;
     int		semicolon = FALSE;
     size_t	varlen;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -7747,6 +7748,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	return NULL;
     if (var_count == 0)
 	var_count = 1;
+    else
+	var_list = TRUE;  // can also be a list of one variable
 
     // consume "in"
     wp = p;
@@ -7811,7 +7814,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     else if (vartype->tt_type == VAR_LIST
 				     && vartype->tt_member->tt_type != VAR_ANY)
     {
-	if (var_count == 1)
+	if (!var_list)
 	    item_type = vartype->tt_member;
 	else if (vartype->tt_member->tt_type == VAR_LIST
 		      && vartype->tt_member->tt_member->tt_type != VAR_ANY)
@@ -7828,7 +7831,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     generate_FOR(cctx, loop_lvar->lv_idx);
 
     arg = arg_start;
-    if (var_count > 1)
+    if (var_list)
     {
 	generate_UNPACK(cctx, var_count, semicolon);
 	arg = skipwhite(arg + 1);	// skip white after '['
@@ -7899,12 +7902,12 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    }
 
 	    // Reserve a variable to store "var".
-	    where.wt_index = var_count > 1 ? idx + 1 : 0;
+	    where.wt_index = var_list ? idx + 1 : 0;
 	    where.wt_variable = TRUE;
 	    if (lhs_type == &t_any)
 		lhs_type = item_type;
 	    else if (item_type != &t_unknown
-		       && !(var_count > 1 && item_type == &t_any)
+		       && !(var_list && item_type == &t_any)
 		       && check_type(lhs_type, item_type, TRUE, where) == FAIL)
 		goto failed;
 	    var_lvar = reserve_local(cctx, arg, varlen, TRUE, lhs_type);
