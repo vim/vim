@@ -198,7 +198,7 @@ get_function_args(
 	ga_init2(newargs, (int)sizeof(char_u *), 3);
     if (argtypes != NULL)
 	ga_init2(argtypes, (int)sizeof(char_u *), 3);
-    if (default_args != NULL)
+    if (!skip && default_args != NULL)
 	ga_init2(default_args, (int)sizeof(char_u *), 3);
 
     if (varargs != NULL)
@@ -289,24 +289,27 @@ get_function_args(
 		expr = p;
 		if (eval1(&p, &rettv, NULL) != FAIL)
 		{
-		    if (ga_grow(default_args, 1) == FAIL)
-			goto err_ret;
-
-		    // trim trailing whitespace
-		    while (p > expr && VIM_ISWHITE(p[-1]))
-			p--;
-		    c = *p;
-		    *p = NUL;
-		    expr = vim_strsave(expr);
-		    if (expr == NULL)
+		    if (!skip)
 		    {
-			*p = c;
-			goto err_ret;
-		    }
-		    ((char_u **)(default_args->ga_data))
+			if (ga_grow(default_args, 1) == FAIL)
+			    goto err_ret;
+
+			// trim trailing whitespace
+			while (p > expr && VIM_ISWHITE(p[-1]))
+			    p--;
+			c = *p;
+			*p = NUL;
+			expr = vim_strsave(expr);
+			if (expr == NULL)
+			{
+			    *p = c;
+			    goto err_ret;
+			}
+			((char_u **)(default_args->ga_data))
 						 [default_args->ga_len] = expr;
-		    default_args->ga_len++;
-		    *p = c;
+			default_args->ga_len++;
+			*p = c;
+		    }
 		}
 		else
 		    mustend = TRUE;
@@ -357,7 +360,7 @@ get_function_args(
 err_ret:
     if (newargs != NULL)
 	ga_clear_strings(newargs);
-    if (default_args != NULL)
+    if (!skip && default_args != NULL)
 	ga_clear_strings(default_args);
     return FAIL;
 }
