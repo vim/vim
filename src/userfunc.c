@@ -266,13 +266,18 @@ get_function_args(
 	}
 	else
 	{
+	    char_u *np;
+
 	    arg = p;
 	    p = one_function_arg(p, newargs, argtypes, types_optional,
 							 evalarg, FALSE, skip);
 	    if (p == arg)
 		break;
 
-	    if (*skipwhite(p) == '=' && default_args != NULL)
+	    // Recognize " = expr" but not " == expr".  A lambda can have
+	    // "(a = expr" but "(a == expr" is not a lambda.
+	    np = skipwhite(p);
+	    if (*np == '=' && np[1] != '=' && default_args != NULL)
 	    {
 		typval_T	rettv;
 
