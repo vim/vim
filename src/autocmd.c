@@ -2766,6 +2766,7 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
     char_u	*end;
     int		once;
     int		nested;
+    int		replace;		// replace the cmd for a group/event
     int		retval = VVAL_TRUE;
     int		save_augroup = current_augroup;
 
@@ -2877,6 +2878,9 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 
 	once = dict_get_bool(event_dict, (char_u *)"once", FALSE);
 	nested = dict_get_bool(event_dict, (char_u *)"nested", FALSE);
+	// if 'replace' is true, then remove all the commands associated with
+	// this autocmd event/group and add the new command.
+	replace = dict_get_bool(event_dict, (char_u *)"replace", FALSE);
 
 	cmd = dict_get_string(event_dict, (char_u *)"cmd", TRUE);
 	if (cmd == NULL)
@@ -2903,8 +2907,8 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	}
 	else
 	{
-	    if (do_autocmd_event(event, pat, once, nested, cmd, delete, group,
-								    0) == FAIL)
+	    if (do_autocmd_event(event, pat, once, nested, cmd,
+					delete | replace, group, 0) == FAIL)
 	    {
 		retval = VVAL_FALSE;
 		break;

@@ -3413,6 +3413,18 @@ func Test_autocmd_add()
         \   nested: v:false,  once: v:false, event: 'BufHidden'}],
         \   autocmd_get(#{group: 'TestAcSet'}))
 
+  " Test for replacing a cmd for an event in a group
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  call autocmd_add([#{replace: v:true, group: 'TestAcSet', event: 'BufEnter',
+        \ pattern: '*.py', cmd: 'echo "bufenter"'}])
+  call autocmd_add([#{replace: v:true, group: 'TestAcSet', event: 'BufEnter',
+        \ pattern: '*.py', cmd: 'echo "bufenter"'}])
+  call assert_equal([
+        \ #{cmd: 'echo "bufenter"', group: 'TestAcSet', pattern: '*.py',
+        \   nested: v:false,  once: v:false, event: 'BufEnter'}],
+        \   autocmd_get(#{group: 'TestAcSet'}))
+
+  " Test for adding a command for an unsupported autocmd event
   let l = [#{group: 'TestAcSet', event: 'abc', pattern: '*.sh',
         \ cmd: 'echo "bufadd"'}]
   call assert_fails('call autocmd_add(l)', 'E216:')
