@@ -1222,7 +1222,7 @@ get_lambda_tv(
     s = *arg + 1;
     ret = get_function_args(&s, equal_arrow ? ')' : '-', NULL,
 	    types_optional ? &argtypes : NULL, types_optional, evalarg,
-						 NULL, NULL, TRUE, NULL, NULL);
+					NULL, &default_args, TRUE, NULL, NULL);
     if (ret == FAIL || skip_arrow(s, equal_arrow, &ret_type, NULL) == NULL)
     {
 	if (types_optional)

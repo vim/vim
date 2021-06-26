@@ -918,6 +918,12 @@ def Test_call_lambda_args()
   CheckScriptFailure(['vim9script'] + lines, 'E1168:')
 
   lines =<< trim END
+    var Ref: func(any, ?any): bool
+    Ref = (_, y = 1) => false
+  END
+  CheckDefAndScriptFailure(lines, 'E1172:')
+
+  lines =<< trim END
       def ShadowLocal()
         var one = 1
         var l = [1, 2, 3]
