@@ -100,6 +100,7 @@ static void f_libcall(typval_T *argvars, typval_T *rettv);
 static void f_libcallnr(typval_T *argvars, typval_T *rettv);
 static void f_line(typval_T *argvars, typval_T *rettv);
 static void f_line2byte(typval_T *argvars, typval_T *rettv);
+static void f_lshift(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_LUA
 static void f_luaeval(typval_T *argvars, typval_T *rettv);
 #endif
@@ -141,6 +142,7 @@ static void f_reg_executing(typval_T *argvars, typval_T *rettv);
 static void f_reg_recording(typval_T *argvars, typval_T *rettv);
 static void f_rename(typval_T *argvars, typval_T *rettv);
 static void f_repeat(typval_T *argvars, typval_T *rettv);
+static void f_rshift(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_RUBY
 static void f_rubyeval(typval_T *argvars, typval_T *rettv);
 #endif
@@ -1172,6 +1174,8 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_log)},
     {"log10",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_log10)},
+    {"lshift",		2, 2, FEARG_1,	    NULL,
+			ret_number,	    f_lshift},
     {"luaeval",		1, 2, FEARG_1,	    NULL,
 			ret_any,
 #ifdef FEAT_LUA
@@ -1404,6 +1408,8 @@ static funcentry_T global_functions[] =
 			ret_first_arg,	    f_reverse},
     {"round",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_round)},
+    {"rshift",		2, 2, FEARG_1,	    NULL,
+			ret_number,	    f_rshift},
     {"rubyeval",	1, 1, FEARG_1,	    NULL,
 			ret_any,
 #ifdef FEAT_RUBY
@@ -6189,6 +6195,21 @@ f_line2byte(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 }
 
+/*
+ * "lshift()" function
+ */
+    static void
+f_lshift(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_NUMBER || argvars[1].v_type != VAR_NUMBER)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+    rettv->vval.v_number = tv_get_number(&argvars[0])
+				<< tv_get_number(&argvars[1]);
+}
+
 #ifdef FEAT_LUA
 /*
  * "luaeval()" function
@@ -7252,6 +7273,21 @@ f_repeat(typval_T *argvars, typval_T *rettv)
 
 	rettv->vval.v_string = r;
     }
+}
+
+/*
+ * "rshift()" function
+ */
+    static void
+f_rshift(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_NUMBER || argvars[1].v_type != VAR_NUMBER)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+    rettv->vval.v_number = tv_get_number(&argvars[0])
+				>> tv_get_number(&argvars[1]);
 }
 
 #define SP_NOMOVE	0x01	    // don't move cursor

@@ -728,6 +728,8 @@ Other computation:					*bitwise-function*
 	invert()		bitwise invert
 	or()			bitwise OR
 	xor()			bitwise XOR
+	lshift()		bitwise left shift
+	rshift()		bitwise right shift
 	sha256()		SHA-256 hash
 	rand()			get a pseudo-random number
 	srand()			initialize seed used by rand()

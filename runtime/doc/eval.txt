@@ -1118,7 +1118,7 @@ expr7 / expr7  Number division					*expr-/*
 expr7 % expr7  Number modulo					*expr-%*
 
 For all, except "." and "..", Strings are converted to Numbers.
-For bitwise operators see |and()|, |or()| and |xor()|.
+For bitwise operators see |and()|, |or()|, |xor()|, |lshift()| and |rshift()|.
 
 Note the difference between "+" and ".":
 	"123" + "456" = 579
@@ -2713,6 +2713,7 @@ listener_remove({id})		none	remove a listener callback
 localtime()			Number	current time
 log({expr})			Float	natural logarithm (base e) of {expr}
 log10({expr})			Float	logarithm of Float {expr} to base 10
+lshift({expr1}, {expr2})	Number	bitwise left shift {expr1} by {expr2}
 luaeval({expr} [, {expr}])	any	evaluate |Lua| expression
 map({expr1}, {expr2})		List/Dict  change each item in {expr1} to {expr}
 maparg({name} [, {mode} [, {abbr} [, {dict}]]])
@@ -2843,6 +2844,7 @@ repeat({expr}, {count})		String	repeat {expr} {count} times
 resolve({filename})		String	get filename a shortcut points to
 reverse({list})			List	reverse {list} in-place
 round({expr})			Float	round off {expr}
+rshift({expr1}, {expr2})	Number	bitwise right shift {expr1} by {expr2}
 rubyeval({expr})		any	evaluate |Ruby| expression
 screenattr({row}, {col})	Number	attribute at screen position
 screenchar({row}, {col})	Number	character at screen position
@@ -7175,6 +7177,15 @@ log10({expr})						*log10()*
 <
 		{only available when compiled with the |+float| feature}
 
+lshift({expr1}, {expr2})					*lshift()*
+		Bitwise left shift {expr1} by {expr2}. The arguments must be
+		Numbers.  Other types of arguments cause an error.
+		Example: >
+			:let b = lshift(val, 4)
+<		Can also be used as a |method|: >
+			:let b = val->lshift(4)
+
+
 luaeval({expr} [, {expr}])					*luaeval()*
 		Evaluate Lua expression {expr} and return its result converted
 		to Vim data structures. Second {expr} may hold additional
@@ -8827,6 +8838,14 @@ round({expr})							*round()*
 			Compute()->round()
 <
 		{only available when compiled with the |+float| feature}
+
+rshift({expr1}, {expr2})					*rshift()*
+		Bitwise right shift {expr1} by {expr2}. The arguments must be
+		Numbers.  Other types of arguments cause an error.
+		Example: >
+			:let b = rshift(val, 4)
+<		Can also be used as a |method|: >
+			:let b = val->rshift(4)
 
 rubyeval({expr})					*rubyeval()*
 		Evaluate Ruby expression {expr} and return its result
