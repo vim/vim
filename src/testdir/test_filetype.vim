@@ -161,7 +161,7 @@ let s:filename_checks = {
     \ 'ecd': ['file.ecd'],
     \ 'edif': ['file.edf', 'file.edif', 'file.edo'],
     \ 'elinks': ['elinks.conf'],
-    \ 'elixir': ['file.exs', 'mix.lock'],
+    \ 'elixir': ['file.ex', 'file.exs', 'mix.lock'],
     \ 'eelixir': ['file.eex', 'file.leex'],
     \ 'elm': ['file.elm'],
     \ 'elmfilt': ['filter-rules'],
@@ -794,6 +794,16 @@ endfunc
 
 func Test_ex_file()
   filetype on
+
+  call writefile(['arbitrary content'], 'Xfile.ex')
+  split Xfile.ex
+  call assert_equal('elixir', &filetype)
+  bwipe!
+  let g:filetype_euphoria = 'euphoria4'
+  split Xfile.ex
+  call assert_equal('euphoria4', &filetype)
+  bwipe!
+  unlet g:filetype_euphoria
 
   call writefile(['-- filetype euphoria comment'], 'Xfile.ex')
   split Xfile.ex

@@ -176,7 +176,7 @@ func dist#ft#ExCheck()
   let lines = getline(1, min([line("$"), 100]))
   if exists('g:filetype_euphoria')
     exe 'setf ' . g:filetype_euphoria
-  elseif match(lines, '^--\>\|^--\s*\>\|^ifdef\>\|^include\>\|') > -1
+  elseif match(lines, '^--\|^ifdef\>\|^include\>') > -1
     setf euphoria3
   else
     setf elixir
