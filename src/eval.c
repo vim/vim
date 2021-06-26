@@ -49,10 +49,11 @@ static int eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
-static int eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
-static int eval7t(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
+static int eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval7(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
-static int eval7_leader(typval_T *rettv, int numeric_only, char_u *start_leader, char_u **end_leaderp);
+static int eval8t(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
+static int eval8(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
+static int eval8_leader(typval_T *rettv, int numeric_only, char_u *start_leader, char_u **end_leaderp);
 
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
@@ -638,7 +639,7 @@ deref_function_name(
     char_u	*name = *arg;
 
     ref.v_type = VAR_UNKNOWN;
-    if (eval7(arg, &ref, evalarg, FALSE) == FAIL)
+    if (eval8(arg, &ref, evalarg, FALSE) == FAIL)
     {
 	dictitem_T	*v;
 
@@ -2840,6 +2841,8 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
  *	var1 <= var2
  *	var1 is var2
  *	var1 isnot var2
+ *	var1 << var2
+ *	var1 >> var2
  *
  * "arg" must point to the first non-white of the expression.
  * "arg" is advanced to just after the recognized expression.
@@ -2862,6 +2865,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	return FAIL;
 
     p = eval_next_non_blank(*arg, evalarg, &getnext);
+
     type = get_compare_type(p, &len, &type_is);
 
     /*
@@ -2991,6 +2995,122 @@ eval_addlist(typval_T *tv1, typval_T *tv2)
 }
 
 /*
+ * Handle the bitwise left/right shift operator expression:
+ *	var1 << var2
+ *	var1 >> var2
+ *
+ * "arg" must point to the first non-white of the expression.
+ * "arg" is advanced to just after the recognized expression.
+ *
+ * Return OK or FAIL.
+ */
+    static int
+eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
+{
+    char_u	*p;
+    int		getnext;
+    exprtype_T	type = EXPR_UNKNOWN;
+    int		len = 2;
+    typval_T	var2;
+    int		vim9script = in_vim9script();
+    int		evaluate = evalarg == NULL
+				? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
+
+    /*
+     * Get the first variable.
+     */
+    if (eval6(arg, rettv, evalarg) == FAIL)
+	return FAIL;
+
+    /*
+     * Repeat computing, until no '<<' or '>>' is following.
+     */
+    for (;;)
+    {
+	type = EXPR_UNKNOWN;
+
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	if (p[0] == '<' && p[1] == '<')
+	    type = EXPR_LSHIFT;
+	else if (p[0] == '>' && p[1] == '>')
+	    type = EXPR_RSHIFT;
+
+	if (type == EXPR_UNKNOWN)
+	    return OK;
+
+	// Handle a bitwise left or right shift operator
+	if (rettv->v_type != VAR_NUMBER)
+	{
+	    // left operand should be a number
+	    emsg(_(e_bitshift_ops_must_be_number));
+	    clear_tv(rettv);
+	    return FAIL;
+	}
+
+	if (getnext)
+	{
+	    *arg = eval_next_line(*arg, evalarg);
+	    p = *arg;
+	}
+	else if (evaluate && vim9script && !VIM_ISWHITE(**arg))
+	{
+	    error_white_both(*arg, len);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
+
+	/*
+	 * Get the second variable.
+	 */
+	if (evaluate && vim9script && !IS_WHITE_OR_NUL(p[len]))
+	{
+	    error_white_both(p, len);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
+	*arg = skipwhite_and_linebreak(p + len, evalarg);
+	if (eval6(arg, &var2, evalarg) == FAIL)
+	{
+	    clear_tv(rettv);
+	    return FAIL;
+	}
+
+	if (var2.v_type != VAR_NUMBER || var2.vval.v_number < 0
+		|| var2.vval.v_number > MAX_LSHIFT_BITS)
+	{
+	    // right operand should be a positive number
+	    if (var2.v_type != VAR_NUMBER)
+		emsg(_(e_bitshift_ops_must_be_number));
+	    else if (var2.vval.v_number < 0)
+		emsg(_(e_bitshift_ops_must_be_postive));
+	    else
+		emsg(_(e_bitshift_amount_too_large));
+	    clear_tv(rettv);
+	    clear_tv(&var2);
+	    return FAIL;
+	}
+
+	if (evaluate)
+	{
+	    if (type == EXPR_LSHIFT)
+		rettv->vval.v_number =
+		    (uvarnumber_T)rettv->vval.v_number << var2.vval.v_number;
+	    else
+	    {
+		rettv->vval.v_number =
+		    (uvarnumber_T)rettv->vval.v_number >> var2.vval.v_number;
+		// clear the topmost sign bit
+		rettv->vval.v_number &= ~((uvarnumber_T)1 << MAX_LSHIFT_BITS);
+	    }
+	}
+
+	clear_tv(&var2);
+    }
+
+    return OK;
+}
+
+/*
  * Handle fourth level expression:
  *	+	number addition, concatenation of list or blob
  *	-	number subtraction
@@ -3003,12 +3123,12 @@ eval_addlist(typval_T *tv1, typval_T *tv2)
  * Return OK or FAIL.
  */
     static int
-eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
+eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
     /*
      * Get the first variable.
      */
-    if (eval6(arg, rettv, evalarg, FALSE) == FAIL)
+    if (eval7(arg, rettv, evalarg, FALSE) == FAIL)
 	return FAIL;
 
     /*
@@ -3086,7 +3206,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    return FAIL;
 	}
 	*arg = skipwhite_and_linebreak(*arg + oplen, evalarg);
-	if (eval6(arg, &var2, evalarg, !vim9script && op == '.') == FAIL)
+	if (eval7(arg, &var2, evalarg, !vim9script && op == '.') == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
@@ -3232,7 +3352,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
  * Return OK or FAIL.
  */
     static int
-eval6(
+eval7(
     char_u	**arg,
     typval_T	*rettv,
     evalarg_T	*evalarg,
@@ -3245,7 +3365,7 @@ eval6(
     /*
      * Get the first variable.
      */
-    if (eval7t(arg, rettv, evalarg, want_string) == FAIL)
+    if (eval8t(arg, rettv, evalarg, want_string) == FAIL)
 	return FAIL;
 
     /*
@@ -3318,7 +3438,7 @@ eval6(
 	    return FAIL;
 	}
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
-	if (eval7t(arg, &var2, evalarg, FALSE) == FAIL)
+	if (eval8t(arg, &var2, evalarg, FALSE) == FAIL)
 	    return FAIL;
 
 	if (evaluate)
@@ -3415,7 +3535,7 @@ eval6(
  * Return OK or FAIL.
  */
     static int
-eval7t(
+eval8t(
     char_u	**arg,
     typval_T	*rettv,
     evalarg_T	*evalarg,
@@ -3453,7 +3573,7 @@ eval7t(
 	*arg = skipwhite_and_linebreak(*arg, evalarg);
     }
 
-    res = eval7(arg, rettv, evalarg, want_string);
+    res = eval8(arg, rettv, evalarg, want_string);
 
     if (want_type != NULL && evaluate)
     {
@@ -3642,7 +3762,7 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
  * Return OK or FAIL.
  */
     static int
-eval7(
+eval8(
     char_u	**arg,
     typval_T	*rettv,
     evalarg_T	*evalarg,
@@ -3720,7 +3840,7 @@ eval7(
 		// "->" follows.
 		if (ret == OK && evaluate && end_leader > start_leader
 						  && rettv->v_type != VAR_BLOB)
-		    ret = eval7_leader(rettv, TRUE, start_leader, &end_leader);
+		    ret = eval8_leader(rettv, TRUE, start_leader, &end_leader);
 		break;
 
     /*
@@ -3920,19 +4040,19 @@ eval7(
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
      */
     if (ret == OK && evaluate && end_leader > start_leader)
-	ret = eval7_leader(rettv, FALSE, start_leader, &end_leader);
+	ret = eval8_leader(rettv, FALSE, start_leader, &end_leader);
 
     --recurse;
     return ret;
 }
 
 /*
- * Apply the leading "!" and "-" before an eval7 expression to "rettv".
+ * Apply the leading "!" and "-" before an eval8 expression to "rettv".
  * When "numeric_only" is TRUE only handle "+" and "-".
  * Adjusts "end_leaderp" until it is at "start_leader".
  */
     static int
-eval7_leader(
+eval8_leader(
 	typval_T    *rettv,
 	int	    numeric_only,
 	char_u	    *start_leader,

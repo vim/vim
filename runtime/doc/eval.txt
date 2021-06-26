@@ -868,33 +868,36 @@ Expression syntax summary, from least to most significant:
 	expr5 isnot expr5	different |List|, |Dictionary| or |Blob|
 				instance
 
-|expr5|	expr6
-	expr6 +	 expr6 ...	number addition, list or blob concatenation
-	expr6 -	 expr6 ...	number subtraction
-	expr6 .	 expr6 ...	string concatenation
-	expr6 .. expr6 ...	string concatenation
+|expr5|	expr6 << expr6		bitwise left shift
+	expr6 >> expr6		bitwise right shift
 
 |expr6|	expr7
-	expr7 *	 expr7 ...	number multiplication
-	expr7 /	 expr7 ...	number division
-	expr7 %	 expr7 ...	number modulo
+	expr7 +	 expr7 ...	number addition, list or blob concatenation
+	expr7 -	 expr7 ...	number subtraction
+	expr7 .	 expr7 ...	string concatenation
+	expr7 .. expr7 ...	string concatenation
 
 |expr7|	expr8
-	<type>expr8		type check and conversion (|Vim9| only)
+	expr8 *	 expr8 ...	number multiplication
+	expr8 /	 expr8 ...	number division
+	expr8 %	 expr8 ...	number modulo
 
 |expr8|	expr9
-	! expr8			logical NOT
-	- expr8			unary minus
-	+ expr8			unary plus
+	<type>expr9		type check and conversion (|Vim9| only)
 
 |expr9|	expr10
-	expr9[expr1]		byte of a String or item of a |List|
-	expr9[expr1 : expr1]	substring of a String or sublist of a |List|
-	expr9.name		entry in a |Dictionary|
-	expr9(expr1, ...)	function call with |Funcref| variable
-	expr9->name(expr1, ...)	|method| call
+	! expr9			logical NOT
+	- expr9			unary minus
+	+ expr9			unary plus
 
-|expr10|  number		number constant
+|expr10|	expr11
+	expr10[expr1]		byte of a String or item of a |List|
+	expr10[expr1 : expr1]	substring of a String or sublist of a |List|
+	expr10.name		entry in a |Dictionary|
+	expr10(expr1, ...)	function call with |Funcref| variable
+	expr10->name(expr1, ...)	|method| call
+
+|expr11|  number		number constant
 	"string"		string constant, backslash is special
 	'string'		string constant, ' is doubled
 	[expr1, ...]		|List|
@@ -1023,6 +1026,8 @@ expr4							*expr4* *E1153*
 -----
 
 expr5 {cmp} expr5
+expr5 << expr5
+expr5 >> expr5
 
 Compare two expr5 expressions.  In legacy script the result is a 0 if it
 evaluates to false, or 1 if it evaluates to true.  In |Vim9| script the result
@@ -1127,15 +1132,25 @@ can be matched like an ordinary character.  Examples:
 	"foo\nbar" =~ "\n"	evaluates to 1
 	"foo\nbar" =~ "\\n"	evaluates to 0
 
+expr5						*expr5* *bitwise-shift*
+-----
+expr6 << expr6	bitwise left shift				*expr-<<*
+expr6 >> expr6	bitwise right shift				*expr->>*
 
-expr5 and expr6				*expr5* *expr6* *E1036* *E1051*
+The "<<" and ">>" operators can be used to perform bitwise left or right shift
+of the left operand by the number of bits specified by the right operand.  The
+operands must be positive numbers. The right operand (shift amount) must be
+less than the maximum number of bits in a number (|v:numbersize|).  The
+topmost bit (sign bit) is always cleared for ">>".
+
+expr6 and expr7				*expr6* *expr7* *E1036* *E1051*
 ---------------
-expr6 + expr6   Number addition, |List| or |Blob| concatenation	*expr-+*
-expr6 - expr6   Number subtraction				*expr--*
-expr6 . expr6   String concatenation				*expr-.*
-expr6 .. expr6  String concatenation				*expr-..*
+expr7 + expr7   Number addition, |List| or |Blob| concatenation	*expr-+*
+expr7 - expr7   Number subtraction				*expr--*
+expr7 . expr7   String concatenation				*expr-.*
+expr7 .. expr7  String concatenation				*expr-..*
 
-For |Lists| only "+" is possible and then both expr6 must be a list.  The
+For |Lists| only "+" is possible and then both expr7 must be a list.  The
 result is a new list with the two lists Concatenated.
 
 For String concatenation ".." is preferred, since "." is ambiguous, it is also
@@ -1147,9 +1162,9 @@ In |Vim9| script the arguments of ".." are converted to String for simple
 types: Number, Float, Special and Bool.  For other types |string()| should be
 used.
 
-expr7 * expr7  Number multiplication				*expr-star*
-expr7 / expr7  Number division					*expr-/*
-expr7 % expr7  Number modulo					*expr-%*
+expr8 * expr8  Number multiplication				*expr-star*
+expr8 / expr8  Number division					*expr-/*
+expr8 % expr8  Number modulo					*expr-%*
 
 In legacy script, for all operators except "." and "..", Strings are converted
 to Numbers.
@@ -1191,18 +1206,18 @@ None of these work for |Funcref|s.
 ".", ".." and "%" do not work for Float. *E804* *E1035*
 
 
-expr7							*expr7*
+expr8							*expr8*
 -----
-<type>expr8
+<type>expr9
 
 This is only available in |Vim9| script, see |type-casting|.
 
 
-expr8							*expr8*
+expr9							*expr9*
 -----
-! expr8			logical NOT		*expr-!*
-- expr8			unary minus		*expr-unary--*
-+ expr8			unary plus		*expr-unary-+*
+! expr9			logical NOT		*expr-!*
+- expr9			unary minus		*expr-unary--*
++ expr9			unary plus		*expr-unary-+*
 
 For '!' |TRUE| becomes |FALSE|, |FALSE| becomes |TRUE| (one).
 For '-' the sign of the number is changed.
@@ -1224,21 +1239,21 @@ These three can be repeated and mixed.  Examples:
 	--9	    == 9
 
 
-expr9							*expr9*
------
-This expression is either |expr10| or a sequence of the alternatives below,
+expr10							*expr10*
+------
+This expression is either |expr11| or a sequence of the alternatives below,
 in any order.  E.g., these are all possible:
-	expr9[expr1].name
-	expr9.name[expr1]
-	expr9(expr1, ...)[expr1].name
-	expr9->(expr1, ...)[expr1]
+	expr10[expr1].name
+	expr10.name[expr1]
+	expr10(expr1, ...)[expr1].name
+	expr10->(expr1, ...)[expr1]
 Evaluation is always from left to right.
 
-expr9[expr1]		item of String or |List|	*expr-[]* *E111*
+expr10[expr1]		item of String or |List|	*expr-[]* *E111*
 						*E909* *subscript* *E1062*
 In legacy Vim script:
-If expr9 is a Number or String this results in a String that contains the
-expr1'th single byte from expr9.  expr9 is used as a String (a number is
+If expr10 is a Number or String this results in a String that contains the
+expr1'th single byte from expr10.  expr10 is used as a String (a number is
 automatically converted to a String), expr1 as a Number.  This doesn't
 recognize multibyte encodings, see `byteidx()` for an alternative, or use
 `split()` to turn the string into a list of characters.  Example, to get the
@@ -1246,8 +1261,8 @@ byte under the cursor: >
 	:let c = getline(".")[col(".") - 1]
 
 In |Vim9| script:					*E1147* *E1148*
-If expr9 is a String this results in a String that contains the expr1'th
-single character (including any composing characters) from expr9.  To use byte
+If expr10 is a String this results in a String that contains the expr1'th
+single character (including any composing characters) from expr10.  To use byte
 indexes use |strpart()|.
 
 Index zero gives the first byte or character.  Careful: text column numbers
@@ -1258,7 +1273,7 @@ String.  A negative index always results in an empty string (reason: backward
 compatibility).  Use [-1:] to get the last byte or character.
 In Vim9 script a negative index is used like with a list: count from the end.
 
-If expr9 is a |List| then it results the item at index expr1.  See |list-index|
+If expr10 is a |List| then it results the item at index expr1.  See |list-index|
 for possible index values.  If the index is out of range this results in an
 error.  Example: >
 	:let item = mylist[-1]		" get last item
@@ -1268,14 +1283,14 @@ Generally, if a |List| index is equal to or higher than the length of the
 error.
 
 
-expr9[expr1a : expr1b]	substring or sublist		*expr-[:]*
+expr10[expr1a : expr1b]	substring or sublist		*expr-[:]*
 
-If expr9 is a String this results in the substring with the bytes or
-characters from expr1a to and including expr1b.  expr9 is used as a String,
+If expr10 is a String this results in the substring with the bytes or
+characters from expr1a to and including expr1b.  expr10 is used as a String,
 expr1a and expr1b are used as a Number.
 
 In legacy Vim script the indexes are byte indexes.  This doesn't recognize
-multibyte encodings, see |byteidx()| for computing the indexes.  If expr9 is
+multibyte encodings, see |byteidx()| for computing the indexes.  If expr10 is
 a Number it is first converted to a String.
 
 In Vim9 script the indexes are character indexes and include composing
@@ -1302,20 +1317,20 @@ Examples: >
 	:let s = s[:-3]			" remove last two bytes
 <
 							*slice*
-If expr9 is a |List| this results in a new |List| with the items indicated by
+If expr10 is a |List| this results in a new |List| with the items indicated by
 the indexes expr1a and expr1b.  This works like with a String, as explained
 just above. Also see |sublist| below.  Examples: >
 	:let l = mylist[:3]		" first four items
 	:let l = mylist[4:4]		" List with one item
 	:let l = mylist[:]		" shallow copy of a List
 
-If expr9 is a |Blob| this results in a new |Blob| with the bytes in the
+If expr10 is a |Blob| this results in a new |Blob| with the bytes in the
 indexes expr1a and expr1b, inclusive.  Examples: >
 	:let b = 0zDEADBEEF
 	:let bs = b[1:2]		" 0zADBE
 	:let bs = b[:]			" copy of 0zDEADBEEF
 
-Using expr9[expr1] or expr9[expr1a : expr1b] on a |Funcref| results in an
+Using expr10[expr1] or expr10[expr1a : expr1b] on a |Funcref| results in an
 error.
 
 Watch out for confusion between a namespace and a variable followed by a colon
@@ -1324,11 +1339,11 @@ for a sublist: >
 	mylist[s:]     " uses namespace s:, error!
 
 
-expr9.name		entry in a |Dictionary|		*expr-entry*
+expr10.name		entry in a |Dictionary|		*expr-entry*
 							*E1203* *E1229*
-If expr9 is a |Dictionary| and it is followed by a dot, then the following
+If expr10 is a |Dictionary| and it is followed by a dot, then the following
 name will be used as a key in the |Dictionary|.  This is just like:
-expr9[name].
+expr10[name].
 
 The name must consist of alphanumeric characters, just like a variable name,
 but it may start with a number.  Curly braces cannot be used.
@@ -1345,17 +1360,17 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr9(expr1, ...)	|Funcref| function call  	*E1085*
+expr10(expr1, ...)	|Funcref| function call  	*E1085*
 
-When expr9 is a |Funcref| type variable, invoke the function it refers to.
+When expr10 is a |Funcref| type variable, invoke the function it refers to.
 
 
-expr9->name([args])	method call			*method* *->*
-expr9->{lambda}([args])
+expr10->name([args])	method call			*method* *->*
+expr10->{lambda}([args])
 							*E260* *E276* *E1265*
 For methods that are also available as global functions this is the same as: >
-	name(expr9 [, args])
-There can also be methods specifically for the type of "expr9".
+	name(expr10 [, args])
+There can also be methods specifically for the type of "expr10".
 
 This allows for chaining, passing the value that one method returns to the
 next method: >
@@ -1364,7 +1379,7 @@ next method: >
 Example of using a lambda: >
 	GetPercentage()->{x -> x * 100}()->printf('%d%%')
 <
-When using -> the |expr8| operators will be applied first, thus: >
+When using -> the |expr9| operators will be applied first, thus: >
 	-1.234->string()
 Is equivalent to: >
 	(-1.234)->string()
@@ -1393,7 +1408,7 @@ When using the lambda form there must be no white space between the } and the
 (.
 
 
-							*expr10*
+							*expr11*
 number
 ------
 number			number constant			*expr-number*

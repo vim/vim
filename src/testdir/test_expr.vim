@@ -946,4 +946,68 @@ func Test_string_interp()
   call v9.CheckDefAndScriptSuccess(lines)
 endfunc
 
+" Test for bitwise left and right shift (<< and >>)
+func Test_bitwise_shift()
+  let lines =<< trim END
+    call assert_equal(16, 1 << 4)
+    call assert_equal(2, 16 >> 3)
+    call assert_equal(0, 0 << 2)
+    call assert_equal(0, 0 >> 4)
+    call assert_equal(3, 3 << 0)
+    call assert_equal(3, 3 >> 0)
+    call assert_equal(0, 0 >> 4)
+    VAR a = 8
+    VAR b = 2
+    call assert_equal(2, a >> b)
+    call assert_equal(32, a << b)
+    #" operator precedence
+    call assert_equal(48, 1 + 2 << 5 - 1)
+    call assert_equal(3, 8 + 4 >> 4 - 2)
+    call assert_true(1 << 2 < 1 << 3)
+    call assert_true(1 << 4 > 1 << 3)
+    VAR val = 0
+    for i in range(0, v:numbersize - 2)
+        LET val = or(val, 1 << i)
+    endfor
+    call assert_equal(v:numbermax, val)
+    LET val = v:numbermax
+    for i in range(0, v:numbersize - 2)
+        LET val = and(val, invert(1 << i))
+    endfor
+    call assert_equal(0, val)
+    #" multiple operators
+    call assert_equal(16, 1 << 2 << 2)
+    call assert_equal(4, 64 >> 2 >> 2)
+    call assert_true(1 << 2 << 2 == 256 >> 2 >> 2)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  call v9.CheckLegacyAndVim9Failure(['VAR v = 2 << -1'], ['E1283:', 'E1283:', 'E1283:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR a = 2', 'VAR b = -1', 'VAR v = a << b'], ['E1283:', 'E1283:', 'E1283:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR v = "8" >> 2'], ['E1282:', 'E1282:', 'E1282:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR v = 1 << "2"'], ['E1282:', 'E1282:', 'E1282:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR a = "8"', 'VAR b = 2', 'VAR v = a << b'], ['E1282:', 'E1012:', 'E1282:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR a = 8', 'VAR b = "2"', 'VAR v = a >> b'], ['E1282:', 'E1012:', 'E1282:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR a = 1 << 100'], ['E1284:', 'E1284:', 'E1284:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR a = 1', 'VAR b = 100', 'VAR v = a << b'], ['E1284:', 'E1284:', 'E1284:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR a = 1 >> 100'], ['E1284:', 'E1284:', 'E1284:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR a = 1', 'VAR b = 100', 'VAR v = a >> b'], ['E1284:', 'E1284:', 'E1284:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR v = ![] << 1'], ['E745:', 'E1012:', 'E1282:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR v = 1 << ![]'], ['E745:', 'E1012:', 'E1282:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR v = ![] >> 1'], ['E745:', 'E1012:', 'E1282:'])
+  call v9.CheckLegacyAndVim9Failure(['VAR v = 1 >> ![]'], ['E745:', 'E1012:', 'E1282:'])
+  call v9.CheckDefAndScriptFailure(['echo 1<< 2'], ['E1004:', 'E1004:'])
+  call v9.CheckDefAndScriptFailure(['echo 1 <<2'], ['E1004:', 'E1004:'])
+  call v9.CheckDefAndScriptFailure(['echo 1>> 2'], ['E1004:', 'E1004:'])
+  call v9.CheckDefAndScriptFailure(['echo 1 >>2'], ['E1004:', 'E1004:'])
+
+  let lines =<< trim END
+     var a = 1
+             <<
+             4
+     assert_equal(16, a)
+  END
+  call v9.CheckDefAndScriptSuccess(lines)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
