@@ -1455,6 +1455,8 @@ yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
 {
     char_u	*pnew;
 
+    if (exclude_trailing_space)
+	bd->endspaces = 0;
     if ((pnew = alloc(bd->startspaces + bd->endspaces + bd->textlen + 1))
 								      == NULL)
 	return FAIL;
