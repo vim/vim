@@ -1102,21 +1102,30 @@ def Test_assignment_failure()
 enddef
 
 def Test_assign_list()
-  var l: list<string> = []
-  l[0] = 'value'
-  assert_equal('value', l[0])
+  var lines =<< trim END
+      var l: list<string> = []
+      l[0] = 'value'
+      assert_equal('value', l[0])
 
-  l[1] = 'asdf'
-  assert_equal('value', l[0])
-  assert_equal('asdf', l[1])
-  assert_equal('asdf', l[-1])
-  assert_equal('value', l[-2])
+      l[1] = 'asdf'
+      assert_equal('value', l[0])
+      assert_equal('asdf', l[1])
+      assert_equal('asdf', l[-1])
+      assert_equal('value', l[-2])
 
-  var nrl: list<number> = []
-  for i in range(5)
-    nrl[i] = i
-  endfor
-  assert_equal([0, 1, 2, 3, 4], nrl)
+      var nrl: list<number> = []
+      for i in range(5)
+        nrl[i] = i
+      endfor
+      assert_equal([0, 1, 2, 3, 4], nrl)
+
+      var ul: list<any>
+      ul[0] = 1
+      ul[1] = 2
+      ul[2] = 3
+      assert_equal([1, 2, 3], ul)
+  END
+  CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(["var l: list<number> = ['', true]"], 'E1012: Type mismatch; expected list<number> but got list<any>', 1)
   CheckDefFailure(["var l: list<list<number>> = [['', true]]"], 'E1012: Type mismatch; expected list<list<number>> but got list<list<any>>', 1)

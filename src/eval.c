@@ -932,15 +932,22 @@ get_lval(
 		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
 	    return NULL;
 	}
-	if (!(lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list != NULL)
-		&& !(lp->ll_tv->v_type == VAR_DICT)
-		&& !(lp->ll_tv->v_type == VAR_BLOB
-					   && lp->ll_tv->vval.v_blob != NULL))
+	if (lp->ll_tv->v_type != VAR_LIST
+		&& lp->ll_tv->v_type != VAR_DICT
+		&& lp->ll_tv->v_type != VAR_BLOB)
 	{
 	    if (!quiet)
 		emsg(_("E689: Can only index a List, Dictionary or Blob"));
 	    return NULL;
 	}
+
+	// a NULL list/blob works like an empty list/blob, allocate one now.
+	if (lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
+	    rettv_list_alloc(lp->ll_tv);
+	else if (lp->ll_tv->v_type == VAR_BLOB
+					     && lp->ll_tv->vval.v_blob == NULL)
+	    rettv_blob_alloc(lp->ll_tv);
+
 	if (lp->ll_range)
 	{
 	    if (!quiet)
@@ -1201,10 +1208,20 @@ get_lval(
 	    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
 	    if (lp->ll_li == NULL)
 	    {
-		clear_tv(&var2);
-		if (!quiet)
-		    semsg(_(e_listidx), lp->ll_n1);
-		return NULL;
+		// Vim9: Allow for adding an item at the end.
+		if (in_vim9script() && lp->ll_n1 == lp->ll_list->lv_len
+						  && lp->ll_list->lv_lock == 0)
+		{
+		    list_append_number(lp->ll_list, 0);
+		    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
+		}
+		if (lp->ll_li == NULL)
+		{
+		    clear_tv(&var2);
+		    if (!quiet)
+			semsg(_(e_listidx), lp->ll_n1);
+		    return NULL;
+		}
 	    }
 
 	    if (lp->ll_valtype != NULL)
