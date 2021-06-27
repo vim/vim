@@ -832,7 +832,7 @@ ex_argdelete(exarg_T *eap)
 	{
 	    // Don't give an error for ":%argdel" if the list is empty.
 	    if (eap->line1 != 1 || eap->line2 != 0)
-		emsg(_(e_invrange));
+		emsg(_(e_invalid_range));
 	}
 	else
 	{
@@ -920,7 +920,7 @@ do_arg_all(
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
-	emsg(_(e_cmdwin));
+	emsg(_(e_invalid_in_cmdline_window));
 	return;
     }
 #endif

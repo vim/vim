@@ -363,7 +363,7 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 
 	if (invalid_arg)
 	{
-	    semsg(_(e_invexpr2), arg);
+	    semsg(_(e_invalid_expression_str), arg);
 	    nr = 0;
 	}
     }
@@ -636,7 +636,7 @@ f_tabpagenr(typval_T *argvars UNUSED, typval_T *rettv)
 		nr = valid_tabpage(lastused_tabpage) ?
 					tabpage_index(lastused_tabpage) : 0;
 	    else
-		semsg(_(e_invexpr2), arg);
+		semsg(_(e_invalid_expression_str), arg);
 	}
     }
     else
@@ -726,7 +726,7 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
-	emsg(_(e_cmdwin));
+	emsg(_(e_invalid_in_cmdline_window));
 	return;
     }
 #endif

@@ -588,12 +588,12 @@ check_mark(pos_T *pos)
 	// lnum is negative if mark is in another file can can't get that
 	// file, error message already give then.
 	if (pos->lnum == 0)
-	    emsg(_(e_marknotset));
+	    emsg(_(e_mark_not_set));
 	return FAIL;
     }
     if (pos->lnum > curbuf->b_ml.ml_line_count)
     {
-	emsg(_(e_markinval));
+	emsg(_(e_mark_has_invalid_line_number));
 	return FAIL;
     }
     return OK;

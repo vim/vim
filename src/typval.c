@@ -1328,7 +1328,7 @@ eval_number(
 		      : STR2NR_ALL, &n, NULL, 0, TRUE);
 	if (len == 0)
 	{
-	    semsg(_(e_invexpr2), *arg);
+	    semsg(_(e_invalid_expression_str), *arg);
 	    return FAIL;
 	}
 	*arg += len;

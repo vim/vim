@@ -4864,7 +4864,7 @@ ex_call(exarg_T *eap)
 	    {
 		// If the function deleted lines or switched to another buffer
 		// the line number may become invalid.
-		emsg(_(e_invrange));
+		emsg(_(e_invalid_range));
 		break;
 	    }
 	    curwin->w_cursor.lnum = lnum;

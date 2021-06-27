@@ -3830,7 +3830,7 @@ qf_history(exarg_T *eap)
 	    qf_update_buffer(qi, NULL);
 	}
 	else
-	    emsg(_(e_invrange));
+	    emsg(_(e_invalid_range));
 
 	return;
     }
@@ -5655,7 +5655,7 @@ ex_cbelow(exarg_T *eap)
 
     if (eap->addr_count > 0 && eap->line2 <= 0)
     {
-	emsg(_(e_invrange));
+	emsg(_(e_invalid_range));
 	return;
     }
 
@@ -7817,7 +7817,7 @@ cbuffer_process_args(
     if (eap->line1 < 1 || eap->line1 > buf->b_ml.ml_line_count
 	    || eap->line2 < 1 || eap->line2 > buf->b_ml.ml_line_count)
     {
-	emsg(_(e_invrange));
+	emsg(_(e_invalid_range));
 	return FAIL;
     }
 

@@ -5972,12 +5972,12 @@ mkspell(
 	// time.
 	if (!over_write && mch_stat((char *)wfname, &st) >= 0)
 	{
-	    emsg(_(e_exists));
+	    emsg(_(e_file_exists));
 	    goto theend;
 	}
 	if (mch_isdir(wfname))
 	{
-	    semsg(_(e_isadir2), wfname);
+	    semsg(_(e_src_is_directory), wfname);
 	    goto theend;
 	}
 

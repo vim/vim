@@ -2622,7 +2622,7 @@ get_text_locked_msg(void)
 {
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
-	return e_cmdwin;
+	return e_invalid_in_cmdline_window;
 #endif
     if (textwinlock != 0)
 	return e_textwinlock;

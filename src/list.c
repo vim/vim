@@ -1556,7 +1556,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 			break;
 		}
 		if (li == NULL)  // didn't find "item2" after "item"
-		    emsg(_(e_invrange));
+		    emsg(_(e_invalid_range));
 		else
 		{
 		    vimlist_remove(l, item, item2);

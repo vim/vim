@@ -130,7 +130,7 @@ do_window(
     do { \
 	if (cmdwin_type != 0) \
 	{ \
-	    emsg(_(e_cmdwin)); \
+	    emsg(_(e_invalid_in_cmdline_window)); \
 	    return; \
 	} \
     } while (0)
@@ -187,7 +187,7 @@ do_window(
 					? curwin->w_alt_fnum : Prenum) == NULL)
 		{
 		    if (Prenum == 0)
-			emsg(_(e_noalt));
+			emsg(_(e_no_alternate_file));
 		    else
 			semsg(_("E92: Buffer %ld not found"), Prenum);
 		    break;

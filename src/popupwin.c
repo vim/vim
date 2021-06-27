@@ -61,7 +61,7 @@ popup_options_one(dict_T *dict, char_u *key)
 	    n = strtol((char *)s, (char **)&endp, 10);
 	if (endp != NULL && *skipwhite(endp) != NUL)
 	{
-	    semsg(_(e_invexpr2), val);
+	    semsg(_(e_invalid_expression_str), val);
 	    return 0;
 	}
     }

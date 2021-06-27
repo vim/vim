@@ -1762,7 +1762,7 @@ foldCreateMarkers(linenr_T start, linenr_T end)
 {
     if (!curbuf->b_p_ma)
     {
-	emsg(_(e_modifiable));
+	emsg(_(e_cannot_make_changes_modifiable_is_off));
 	return;
     }
     parseMarker(curwin);

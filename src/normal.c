@@ -5210,7 +5210,7 @@ nv_Replace(cmdarg_T *cap)
     else if (!checkclearopq(cap->oap))
     {
 	if (!curbuf->b_p_ma)
-	    emsg(_(e_modifiable));
+	    emsg(_(e_cannot_make_changes_modifiable_is_off));
 	else
 	{
 	    if (virtual_active())
@@ -5235,7 +5235,7 @@ nv_vreplace(cmdarg_T *cap)
     else if (!checkclearopq(cap->oap))
     {
 	if (!curbuf->b_p_ma)
-	    emsg(_(e_modifiable));
+	    emsg(_(e_cannot_make_changes_modifiable_is_off));
 	else
 	{
 	    if (cap->extra_char == Ctrl_V)	// get another character
@@ -7075,7 +7075,7 @@ nv_edit(cmdarg_T *cap)
     else if (!curbuf->b_p_ma && !p_im)
     {
 	// Only give this error when 'insertmode' is off.
-	emsg(_(e_modifiable));
+	emsg(_(e_cannot_make_changes_modifiable_is_off));
 	clearop(cap->oap);
 	if (cap->cmdchar == K_PS)
 	    // drop the pasted text

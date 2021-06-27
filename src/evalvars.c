@@ -1334,7 +1334,7 @@ ex_let_one(
 		semsg(_(e_letwrong), op);
 	    else if (endchars != NULL
 			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
-		emsg(_(e_letunexp));
+		emsg(_(e_unexpected_characters_in_let));
 	    else if (!check_secure())
 	    {
 		c1 = name[len];
@@ -1379,7 +1379,7 @@ ex_let_one(
 	p = find_option_end(&arg, &opt_flags);
 	if (p == NULL || (endchars != NULL
 			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
-	    emsg(_(e_letunexp));
+	    emsg(_(e_unexpected_characters_in_let));
 	else
 	{
 	    long	n = 0;
@@ -1481,7 +1481,7 @@ ex_let_one(
 	    semsg(_(e_letwrong), op);
 	else if (endchars != NULL
 			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
-	    emsg(_(e_letunexp));
+	    emsg(_(e_unexpected_characters_in_let));
 	else
 	{
 	    char_u	*ptofree = NULL;
@@ -1520,7 +1520,7 @@ ex_let_one(
 	{
 	    if (endchars != NULL && vim_strchr(endchars,
 					   *skipwhite(lv.ll_name_end)) == NULL)
-		emsg(_(e_letunexp));
+		emsg(_(e_unexpected_characters_in_let));
 	    else
 	    {
 		set_var_lval(&lv, p, tv, copy, flags, op, var_idx);

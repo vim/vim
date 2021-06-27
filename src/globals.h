@@ -1581,11 +1581,6 @@ EXTERN int netbeansSuppressNoLines INIT(= 0); // skip "No lines in buffer"
  */
 EXTERN char e_abort[]		INIT(= N_("E470: Command aborted"));
 EXTERN char e_argreq[]		INIT(= N_("E471: Argument required"));
-EXTERN char e_backslash[]	INIT(= N_("E10: \\ should be followed by /, ? or &"));
-#ifdef FEAT_CMDWIN
-EXTERN char e_cmdwin[]	INIT(= N_("E11: Invalid in command-line window; <CR> executes, CTRL-C quits"));
-#endif
-EXTERN char e_curdir[]	INIT(= N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
 #ifdef FEAT_EVAL
 EXTERN char e_endif[]		INIT(= N_("E171: Missing :endif"));
 EXTERN char e_catch[]		INIT(= N_("E603: :catch without :try"));
@@ -1598,7 +1593,6 @@ EXTERN char e_endfor[]		INIT(= N_("E170: Missing :endfor"));
 EXTERN char e_while[]		INIT(= N_("E588: :endwhile without :while"));
 EXTERN char e_for[]		INIT(= N_("E588: :endfor without :for"));
 #endif
-EXTERN char e_exists[]	INIT(= N_("E13: File exists (add ! to override)"));
 EXTERN char e_failed[]	INIT(= N_("E472: Command failed"));
 #if defined(FEAT_GUI) && defined(FEAT_XFONTSET)
 EXTERN char e_fontset[]	INIT(= N_("E234: Unknown fontset: %s"));
@@ -1618,13 +1612,6 @@ EXTERN char e_invarg2[]		INIT(= N_("E475: Invalid argument: %s"));
 EXTERN char e_duparg2[]		INIT(= N_("E983: Duplicate argument: %s"));
 EXTERN char e_invargval[]	INIT(= N_("E475: Invalid value for argument %s"));
 EXTERN char e_invargNval[]	INIT(= N_("E475: Invalid value for argument %s: %s"));
-#ifdef FEAT_EVAL
-EXTERN char e_invexpr2[]	INIT(= N_("E15: Invalid expression: \"%s\""));
-#endif
-EXTERN char e_invrange[]	INIT(= N_("E16: Invalid range"));
-#if defined(UNIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
-EXTERN char e_isadir2[]		INIT(= N_("E17: \"%s\" is a directory"));
-#endif
 #ifdef FEAT_SPELL
 EXTERN char e_no_spell[]	INIT(= N_("E756: Spell checking is not possible"));
 #endif
@@ -1646,12 +1633,6 @@ EXTERN char e_fsync[]		INIT(= N_("E667: Fsync failed"));
 EXTERN char e_loadlib[]	INIT(= N_("E370: Could not load library %s"));
 EXTERN char e_loadfunc[]	INIT(= N_("E448: Could not load library function %s"));
 #endif
-EXTERN char e_markinval[]	INIT(= N_("E19: Mark has invalid line number"));
-EXTERN char e_marknotset[]	INIT(= N_("E20: Mark not set"));
-EXTERN char e_modifiable[]	INIT(= N_("E21: Cannot make changes, 'modifiable' is off"));
-EXTERN char e_nesting[]	INIT(= N_("E22: Scripts nested too deep"));
-EXTERN char e_noalt[]		INIT(= N_("E23: No alternate file"));
-EXTERN char e_noabbr[]	INIT(= N_("E24: No such abbreviation"));
 EXTERN char e_nobang[]	INIT(= N_("E477: No ! allowed"));
 #if !defined(FEAT_GUI) || defined(VIMDLL)
 EXTERN char e_nogvim[]	INIT(= N_("E25: GUI cannot be used: Not enabled at compile time"));
@@ -1733,7 +1714,6 @@ EXTERN char e_listdictblobarg[]	INIT(= N_("E896: Argument of %s must be a List, 
 EXTERN char e_modulus[]		INIT(= N_("E804: Cannot use '%' with Float"));
 EXTERN char e_const_option[]	INIT(= N_("E996: Cannot lock an option"));
 EXTERN char e_unknown_option[]	INIT(= N_("E113: Unknown option: %s"));
-EXTERN char e_letunexp[]	INIT(= N_("E18: Unexpected characters in :let"));
 EXTERN char e_reduceempty[]	INIT(= N_("E998: Reduce of an empty %s with no initial value"));
 EXTERN char e_no_dict_key[]	INIT(= N_("E857: Dictionary key \"%s\" required"));
 #endif
