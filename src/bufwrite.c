@@ -494,14 +494,16 @@ buf_write_bytes(struct bw_info *ip)
 	if (crypt_works_inplace(ip->bw_buffer->b_cryptstate))
 	{
 # endif
-	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len, ip->bw_finish);
+	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len,
+								ip->bw_finish);
 # ifdef CRYPT_NOT_INPLACE
 	}
 	else
 	{
 	    char_u *outbuf;
 
-	    len = crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf, ip->bw_finish);
+	    len = crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf,
+								ip->bw_finish);
 	    if (len == 0)
 		return OK;  // Crypt layer is buffering, will flush later.
 	    wlen = write_eintr(ip->bw_fd, outbuf, len);
@@ -1980,10 +1982,18 @@ restore_backup:
 	write_info.bw_start_lnum = start;
 
 #ifdef FEAT_PERSISTENT_UNDO
+	// TODO: if the selected crypt method prevents the undo file from being
+	// written, and existing undo file should be deleted.
 	write_undo_file = (buf->b_p_udf
 			    && overwriting
 			    && !append
 			    && !filtering
+# ifdef CRYPT_NOT_INPLACE
+			    // writing undo file requires
+			    // crypt_encode_inplace()
+			    && (curbuf->b_cryptstate == NULL
+				|| crypt_works_inplace(curbuf->b_cryptstate))
+# endif
 			    && reset_changed
 			    && !checking_conversion);
 	if (write_undo_file)
