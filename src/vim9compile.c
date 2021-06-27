@@ -498,8 +498,9 @@ check_defined(char_u *p, size_t len, cctx_T *cctx, int is_arg)
 	    || (ufunc = find_func_even_dead(p, FALSE, cctx)) != NULL)
     {
 	// A local or script-local function can shadow a global function.
-	if (ufunc == NULL || !func_is_global(ufunc)
-		|| (p[0] == 'g' && p[1] == ':'))
+	if (ufunc == NULL || ((ufunc->uf_flags & FC_DEAD) == 0
+		    && (!func_is_global(ufunc)
+					     || (p[0] == 'g' && p[1] == ':'))))
 	{
 	    if (is_arg)
 		semsg(_(e_argument_name_shadows_existing_variable_str), p);

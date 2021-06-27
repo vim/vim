@@ -1519,6 +1519,27 @@ def Test_vim9script_reload_noclear()
   delete('XExportReload')
   delfunc g:Values
   unlet g:loadCount
+
+  lines =<< trim END
+      vim9script
+      def Inner()
+      enddef
+  END
+  lines->writefile('XreloadScript.vim')
+  source XreloadScript.vim
+
+  lines =<< trim END
+      vim9script
+      def Outer()
+        def Inner()
+        enddef
+      enddef
+      defcompile
+  END
+  lines->writefile('XreloadScript.vim')
+  source XreloadScript.vim
+
+  delete('XreloadScript.vim')
 enddef
 
 def Test_vim9script_reload_import()
