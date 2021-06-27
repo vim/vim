@@ -1488,5 +1488,27 @@ def Test_prop_splits_data_block()
   prop_type_delete('someprop')
 enddef
 
+" This was calling ml_delete_int() and try to change text properties.
+def Test_prop_add_delete_line()
+  new
+  var a = 10
+  var b = 20
+  repeat([''], a)->append('$')
+  prop_type_add('Test', {highlight: 'ErrorMsg'})
+  for lnum in range(1, a)
+    for col in range(1, b)
+      prop_add(1, 1, {end_lnum: lnum, end_col: col, type: 'Test'})
+    endfor
+  endfor
+
+  # check deleting lines is OK
+  :5del
+  :1del
+  :$del
+
+  prop_type_delete('Test')
+  bwipe!
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab
