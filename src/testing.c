@@ -1260,7 +1260,7 @@ f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-# ifdef FEAT_GUI
+#if defined(HAVE_DROP_FILE)
     int		row;
     int		col;
     int_u	mods;

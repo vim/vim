@@ -1160,12 +1160,16 @@ endfunc
 
 " Test for dropping files into a window in GUI
 func DropFilesInCmdLine()
+  CheckFeature drop_file
+
   call feedkeys(":\"", 'L')
   call test_gui_drop_files(['a.c', 'b.c'], &lines, 1, 0)
   call feedkeys("\<CR>", 'L')
 endfunc
 
 func Test_gui_drop_files()
+  CheckFeature drop_file
+
   call assert_fails('call test_gui_drop_files(1, 1, 1, 0)', 'E474:')
   call assert_fails('call test_gui_drop_files(["x"], "", 1, 0)', 'E474:')
   call assert_fails('call test_gui_drop_files(["x"], 1, "", 0)', 'E474:')

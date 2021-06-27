@@ -4578,6 +4578,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"drop_file",
+#ifdef HAVE_DROP_FILE
+		1
+#else
+		0
+#endif
+		},
 	{"emacs_tags",
 #ifdef FEAT_EMACS_TAGS
 		1
