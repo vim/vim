@@ -74,7 +74,7 @@ Unpack the images:
 	cd nsis
 	unzip icons.zip
 
-To build then, enter:
+Then build gvim.exe:
 
 	cd nsis
 	makensis gvim.nsi

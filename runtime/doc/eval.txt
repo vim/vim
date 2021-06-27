@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Jun 07
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4862,6 +4862,8 @@ foldclosed({lnum})					*foldclosed()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the first line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
+		{lnum} is used like with |getline()|.  Thus "." is the current
+		line, "'m" mark m, etc.
 
 		Can also be used as a |method|: >
 			GetLnum()->foldclosed()
@@ -4870,6 +4872,8 @@ foldclosedend({lnum})					*foldclosedend()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the last line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
+		{lnum} is used like with |getline()|.  Thus "." is the current
+		line, "'m" mark m, etc.
 
 		Can also be used as a |method|: >
 			GetLnum()->foldclosedend()
@@ -4883,6 +4887,8 @@ foldlevel({lnum})					*foldlevel()*
 		returned for lines where folds are still to be updated and the
 		foldlevel is unknown.  As a special case the level of the
 		previous line is usually available.
+		{lnum} is used like with |getline()|.  Thus "." is the current
+		line, "'m" mark m, etc.
 
 		Can also be used as a |method|: >
 			GetLnum()->foldlevel()
@@ -5758,6 +5764,8 @@ getmatches([{win}])					*getmatches()*
 		|getmatches()| is useful in combination with |setmatches()|,
 		as |setmatches()| can restore a list of matches saved by
 		|getmatches()|.
+		If {win} is specified, use the window with this number or
+		window ID instead of the current window.
 		Example: >
 			:echo getmatches()
 <			[{'group': 'MyGroup1', 'pattern': 'TODO',
@@ -5858,8 +5866,10 @@ getqflist([{what}])					*getqflist()*
 			valid	|TRUE|: recognized error message
 
 		When there is no error list or it's empty, an empty list is
-		returned. Quickfix list entries with non-existing buffer
-		number are returned with "bufnr" set to zero.
+		returned. Quickfix list entries with a non-existing buffer
+		number are returned with "bufnr" set to zero (Note: some
+		functions accept buffer number zero for the alternate buffer,
+		you may need to explicitly check for zero).
 
 		Useful application: Find pattern matches in multiple files and
 		do something with them: >
@@ -6003,12 +6013,12 @@ getregtype([{regname}])					*getregtype()*
 		Can also be used as a |method|: >
 			GetRegname()->getregtype()
 
-gettabinfo([{arg}])					*gettabinfo()*
-		If {arg} is not specified, then information about all the tab
-		pages is returned as a |List|. Each List item is a |Dictionary|.
-		Otherwise, {arg} specifies the tab page number and information
-		about that one is returned.  If the tab page does not exist an
-		empty List is returned.
+gettabinfo([{tabnr}])					*gettabinfo()*
+		If {tabnr} is not specified, then information about all the
+		tab pages is returned as a |List|. Each List item is a
+		|Dictionary|.  Otherwise, {tabnr} specifies the tab page
+		number and information about that one is returned.  If the tab
+		page does not exist an empty List is returned.
 
 		Each List item is a |Dictionary| with the following entries:
 			tabnr		tab page number.
@@ -6061,11 +6071,11 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 <		Can also be used as a |method|: >
 			GetTabnr()->gettabwinvar(winnr, varname)
 
-gettagstack([{nr}])					*gettagstack()*
-		The result is a Dict, which is the tag stack of window {nr}.
-		{nr} can be the window number or the |window-ID|.
-		When {nr} is not specified, the current window is used.
-		When window {nr} doesn't exist, an empty Dict is returned.
+gettagstack([{winnr}])					*gettagstack()*
+		The result is a Dict, which is the tag stack of window {winnr}.
+		{winnr} can be the window number or the |window-ID|.
+		When {winnr} is not specified, the current window is used.
+		When window {winnr} doesn't exist, an empty Dict is returned.
 
 		The returned dictionary contains the following entries:
 			curidx		Current index in the stack. When at

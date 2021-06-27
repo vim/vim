@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jun 12
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -457,7 +457,7 @@ which is similar to JavaScript: >
 	var Lambda = (arg) => expression
 
 No line break is allowed in the arguments of a lambda up to and including the
-"=>" (so that Vim can tell the difference between an expression in parenthesis
+"=>" (so that Vim can tell the difference between an expression in parentheses
 and lambda arguments).  This is OK: >
 	filter(list, (k, v) =>
 			v > 0)
@@ -936,6 +936,16 @@ The 'gdefault' option value is not used.
 
 You may also find this wiki useful.  It was written by an early adopter of
 Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
+
+							*:++* *:--*
+The ++ and -- commands have been added.  They are very similar to adding or
+subtracting one: >
+		++var
+		var += 1
+		--var
+		var -= 1
+
+Using ++var or --var in an expression is not supported yet.
 
 ==============================================================================
 

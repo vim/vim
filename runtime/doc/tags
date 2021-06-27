@@ -1384,6 +1384,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +scrollbind	various.txt	/*+scrollbind*
 +signs	various.txt	/*+signs*
 +smartindent	various.txt	/*+smartindent*
++sodium	various.txt	/*+sodium*
 +sound	various.txt	/*+sound*
 +spell	various.txt	/*+spell*
 +startuptime	various.txt	/*+startuptime*
@@ -1959,7 +1960,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :&	change.txt	/*:&*
 :&&	change.txt	/*:&&*
 :'	cmdline.txt	/*:'*
+:++	vim9.txt	/*:++*
 :,	cmdline.txt	/*:,*
+:--	vim9.txt	/*:--*
 :.	cmdline.txt	/*:.*
 :/	cmdline.txt	/*:\/*
 :0file	editing.txt	/*:0file*
@@ -3964,8 +3967,17 @@ E118	eval.txt	/*E118*
 E1187	starting.txt	/*E1187*
 E1188	cmdline.txt	/*E1188*
 E119	eval.txt	/*E119*
+E1193	options.txt	/*E1193*
+E1194	options.txt	/*E1194*
+E1195	options.txt	/*E1195*
+E1196	options.txt	/*E1196*
+E1197	options.txt	/*E1197*
+E1198	options.txt	/*E1198*
+E1199	options.txt	/*E1199*
 E12	message.txt	/*E12*
 E120	eval.txt	/*E120*
+E1200	options.txt	/*E1200*
+E1201	options.txt	/*E1201*
 E121	eval.txt	/*E121*
 E122	eval.txt	/*E122*
 E123	eval.txt	/*E123*
@@ -6674,6 +6686,8 @@ ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
 ft-zimbu-plugin	filetype.txt	/*ft-zimbu-plugin*
 ft-zsh-syntax	syntax.txt	/*ft-zsh-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
+ft_ps1.txt	ft_ps1.txt	/*ft_ps1.txt*
+ft_raku.txt	ft_raku.txt	/*ft_raku.txt*
 ft_rust.txt	ft_rust.txt	/*ft_rust.txt*
 ft_sql.txt	ft_sql.txt	/*ft_sql.txt*
 ftdetect	filetype.txt	/*ftdetect*
@@ -8602,7 +8616,6 @@ ps1-compiler	ft_ps1.txt	/*ps1-compiler*
 ps1-folding	ft_ps1.txt	/*ps1-folding*
 ps1-keyword	ft_ps1.txt	/*ps1-keyword*
 ps1-syntax	ft_ps1.txt	/*ps1-syntax*
-ps1.txt	ft_ps1.txt	/*ps1.txt*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
@@ -9677,6 +9690,8 @@ test_feedinput()	testing.txt	/*test_feedinput()*
 test_garbagecollect_now()	testing.txt	/*test_garbagecollect_now()*
 test_garbagecollect_soon()	testing.txt	/*test_garbagecollect_soon()*
 test_getvalue()	testing.txt	/*test_getvalue()*
+test_gui_drop_files()	testing.txt	/*test_gui_drop_files()*
+test_gui_mouse_event()	testing.txt	/*test_gui_mouse_event()*
 test_ignore_error()	testing.txt	/*test_ignore_error()*
 test_null_blob()	testing.txt	/*test_null_blob()*
 test_null_channel()	testing.txt	/*test_null_channel()*
@@ -10146,7 +10161,6 @@ vim-mac	intro.txt	/*vim-mac*
 vim-modes	intro.txt	/*vim-modes*
 vim-modes-intro	intro.txt	/*vim-modes-intro*
 vim-raku	ft_raku.txt	/*vim-raku*
-vim-raku.txt	ft_raku.txt	/*vim-raku.txt*
 vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-use	intro.txt	/*vim-use*
 vim-variable	eval.txt	/*vim-variable*
@@ -10157,6 +10171,7 @@ vim9	vim9.txt	/*vim9*
 vim9-classes	vim9.txt	/*vim9-classes*
 vim9-const	vim9.txt	/*vim9-const*
 vim9-curly	vim9.txt	/*vim9-curly*
+vim9-debug	repeat.txt	/*vim9-debug*
 vim9-declaration	vim9.txt	/*vim9-declaration*
 vim9-declarations	usr_46.txt	/*vim9-declarations*
 vim9-differences	vim9.txt	/*vim9-differences*

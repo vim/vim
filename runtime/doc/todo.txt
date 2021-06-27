@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Jun 13
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,10 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Memory eaten up by function returning a closure.  #8439
+Circular reference.  Should garbage collector find unused local variables?
+
 Vim9 - Make everything work:
-- Make debugging work - at least per function.  
-  - How to evaluate the stack and variables on the stack?
-  - FIXME in test_debugger.vim
+- possible leak in test_vim9_builtin ?
+- use CheckLegacyAndVim9Success(lines) in many more places
+- compile get_lambda_tv() in popup_add_timeout()
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
@@ -49,13 +52,13 @@ Vim9 - Make everything work:
     map() could check that the return type of the function argument matches
     the type of the list or dict member. (#8092)
     Same for other functions, such as searchpair().
-- use CheckLegacyAndVim9Success(lines) in many more places
 - Test try/catch and throw better, also nested.
   Test that return inside try/finally jumps to finally and then returns.
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
   defined.
-- compile get_lambda_tv() in popup_add_timeout()
+- Unexpected error message when using "var x: any | x.key = 9", because "x" is
+  given the type number.  Can we use VAR_ANY?
 
 Once Vim9 is stable:
 - Add the "vim9script" feature, can use has('vim9script')
@@ -287,6 +290,9 @@ Missing filetype test for bashrc, PKGBUILD, etc.
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
 changes.
 
+MS-Windows: instead of "edit with multiple Vims" use "Edit with Vim in
+multiple tabs". #8404
+
 When using ":bwipe!" also get rid of references to be buffer, e.g. in the
 jumplist and alternate file.
 
@@ -322,6 +328,9 @@ Should also work without any group:
 Should add a match/str/list/pos method that also returns the test and position
 of submatches.  #8355
 
+Syntax highlight for a region does not work with a "nextgroup" if the start
+match is empty. #8449
+
 Check out PR #543 (Roland Puntaier).
 Patch for multibyte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12, update July 25)
@@ -346,6 +355,7 @@ The buffer list and windows are locked, no changes possible
 
 Add a ModeChanged autocommand that has an argument indicating the old and new
 mode, as what's returned from mode().  Also used for switching Terminal mode.
+#8360, #7863, #7363
 
 Matchparen doesn't remove highlight after undo. (#7054)
 Is OK when syntax HL is active.
