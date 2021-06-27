@@ -195,6 +195,13 @@ func! BuildWidthTable(pattern, tableName)
   let end = -1
   let ranges = []
   let dataidx = 0
+  " Account for indentation differences between ambiguous and doublewidth
+  " table in mbyte.c
+  if a:pattern == 'A'
+    let spc = '    '
+  else
+    let spc = "\t"
+  endif
   for p in s:widthprops
     if p[1][0] =~ a:pattern
       if p[0] =~ '\.\.'
@@ -229,7 +236,7 @@ func! BuildWidthTable(pattern, tableName)
         else
           if start >= 0
             " produce previous range
-            call add(ranges, printf("\t{0x%04x, 0x%04x},", start, end))
+            call add(ranges, printf("%s{0x%04x, 0x%04x},", spc, start, end))
 	    if a:pattern == 'A'
 	      call add(s:ambitable, [start, end])
 	    else
@@ -243,7 +250,7 @@ func! BuildWidthTable(pattern, tableName)
     endif
   endfor
   if start >= 0
-    call add(ranges, printf("\t{0x%04x, 0x%04x},", start, end))
+    call add(ranges, printf("%s{0x%04x, 0x%04x},", spc, start, end))
     if a:pattern == 'A'
       call add(s:ambitable, [start, end])
     else
@@ -254,11 +261,20 @@ func! BuildWidthTable(pattern, tableName)
   " New buffer to put the result in.
   new
   exe "file " . a:tableName
-  call setline(1, "    static struct interval " . a:tableName . "[] =")
-  call setline(2, "    {")
+  if a:pattern == 'A'
+    call setline(1, "static struct interval " . a:tableName . "[] =")
+    call setline(2, "{")
+  else
+    call setline(1, "    static struct interval " . a:tableName . "[] =")
+    call setline(2, "    {")
+  endif
   call append('$', ranges)
   call setline('$', getline('$')[:-2])  " remove last comma
-  call setline(line('$') + 1, "    };")
+  if a:pattern == 'A'
+    call setline(line('$') + 1, "};")
+  else
+    call setline(line('$') + 1, "    };")
+  endif
   wincmd p
 endfunc
 
