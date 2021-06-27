@@ -3622,7 +3622,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     // compile_return().
     if (ufunc->uf_ret_type->tt_type == VAR_VOID)
 	ufunc->uf_ret_type = &t_unknown;
-    compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), cctx);
+    compile_def_function(ufunc, FALSE, cctx->ctx_compile_type, cctx);
 
     // evalarg.eval_tofree_cmdline may have a copy of the last line and "*arg"
     // points into it.  Point to the original line to avoid a dangling pointer.
