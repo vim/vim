@@ -2099,29 +2099,6 @@ match_user(char_u *name)
     return result;
 }
 
-/*
- * Concatenate two strings and return the result in allocated memory.
- * Returns NULL when out of memory.
- */
-    char_u  *
-concat_str(char_u *str1, char_u *str2)
-{
-    char_u  *dest;
-    size_t  l = str1 == NULL ? 0 : STRLEN(str1);
-
-    dest = alloc(l + (str2 == NULL ? 0 : STRLEN(str2)) + 1L);
-    if (dest != NULL)
-    {
-	if (str1 == NULL)
-	    *dest = NUL;
-	else
-	    STRCPY(dest, str1);
-	if (str2 != NULL)
-	    STRCPY(dest + l, str2);
-    }
-    return dest;
-}
-
     static void
 prepare_to_exit(void)
 {

@@ -211,6 +211,7 @@ void mbyte_im_set_active(int active_arg);
 # include "spell.pro"
 # include "spellfile.pro"
 # include "spellsuggest.pro"
+# include "strings.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"

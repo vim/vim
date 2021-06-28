@@ -134,6 +134,7 @@ SRC_ALL =	\
 		src/spell.h \
 		src/spellfile.c \
 		src/spellsuggest.c \
+		src/strings.c \
 		src/structs.h \
 		src/syntax.c \
 		src/tag.c \
@@ -296,6 +297,7 @@ SRC_ALL =	\
 		src/proto/spell.pro \
 		src/proto/spellfile.pro \
 		src/proto/spellsuggest.pro \
+		src/proto/strings.pro \
 		src/proto/syntax.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \

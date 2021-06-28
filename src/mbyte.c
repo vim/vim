@@ -4961,6 +4961,37 @@ f_getimstatus(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = im_get_status();
 # endif
 }
+
+/*
+ * iconv() function
+ */
+    void
+f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    char_u	buf1[NUMBUFLEN];
+    char_u	buf2[NUMBUFLEN];
+    char_u	*from, *to, *str;
+    vimconv_T	vimconv;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    str = tv_get_string(&argvars[0]);
+    from = enc_canonize(enc_skip(tv_get_string_buf(&argvars[1], buf1)));
+    to = enc_canonize(enc_skip(tv_get_string_buf(&argvars[2], buf2)));
+    vimconv.vc_type = CONV_NONE;
+    convert_setup(&vimconv, from, to);
+
+    // If the encodings are equal, no conversion needed.
+    if (vimconv.vc_type == CONV_NONE)
+	rettv->vval.v_string = vim_strsave(str);
+    else
+	rettv->vval.v_string = string_convert(&vimconv, str, NULL);
+
+    convert_setup(&vimconv, NULL, NULL);
+    vim_free(from);
+    vim_free(to);
+}
 #endif
 
 /*

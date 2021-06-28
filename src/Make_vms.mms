@@ -393,6 +393,7 @@ SRC = \
 	spell.c \
 	spellfile.c \
 	spellsuggest.c \
+	strings.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -512,6 +513,7 @@ OBJ = \
 	spell.obj \
 	spellfile.obj \
 	spellsuggest.obj \
+	strings.obj \
 	syntax.obj \
 	tag.obj \
 	term.obj \
@@ -1045,6 +1047,10 @@ spellfile.obj : spellfile.c vim.h [.auto]config.h feature.h os_unix.h \
  regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
  proto.h errors.h globals.h
 spellsuggest.obj : spellsuggest.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h \
+ regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
+ proto.h errors.h globals.h
+strings.obj : strings.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
  proto.h errors.h globals.h
