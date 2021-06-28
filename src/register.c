@@ -1455,6 +1455,8 @@ yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
 {
     char_u	*pnew;
 
+    if (exclude_trailing_space)
+	bd->endspaces = 0;
     if ((pnew = alloc(bd->startspaces + bd->endspaces + bd->textlen + 1))
 								      == NULL)
 	return FAIL;
@@ -2747,7 +2749,7 @@ write_reg_contents_lst(
 		&yank_type) == FAIL)
 	return;
 
-    str_to_reg(y_current, yank_type, (char_u *) strings, -1, block_len, TRUE);
+    str_to_reg(y_current, yank_type, (char_u *)strings, -1, block_len, TRUE);
 
     finish_write_reg(name, old_y_previous, old_y_current);
 }
