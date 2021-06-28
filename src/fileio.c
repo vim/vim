@@ -5245,9 +5245,10 @@ vim_tempname(
 
     // Backslashes in a temp file name cause problems when filtering with
     // "sh".  NOTE: This also checks 'shellcmdflag' to help those people who
-    // didn't set 'shellslash'.
+    // didn't set 'shellslash' but only if not using PowerShell.
     retval = utf16_to_enc(itmp, NULL);
-    if (*p_shcf == '-' || p_ssl)
+    if ((strstr((char *)gettail(p_sh), "powershell") == NULL
+						&& *p_shcf == '-') || p_ssl)
 	for (p = retval; *p; ++p)
 	    if (*p == '\\')
 		*p = '/';
