@@ -83,11 +83,11 @@ if !exists("g:netrw_nogx")
   endif
   nno <silent> <Plug>NetrwBrowseX :call netrw#BrowseX(netrw#GX(),netrw#CheckIfRemote(netrw#GX()))<cr>
  endif
- if maparg('gx','v') == ""
+ if maparg('gx','x') == ""
   if !hasmapto('<Plug>NetrwBrowseXVis')
-   vmap <unique> gx <Plug>NetrwBrowseXVis
+   xmap <unique> gx <Plug>NetrwBrowseXVis
   endif
-  vno <silent> <Plug>NetrwBrowseXVis :<c-u>call netrw#BrowseXVis()<cr>
+  xno <silent> <Plug>NetrwBrowseXVis :<c-u>call netrw#BrowseXVis()<cr>
  endif
 endif
 if exists("g:netrw_usetab") && g:netrw_usetab
