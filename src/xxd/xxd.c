@@ -55,16 +55,12 @@
  * 11.01.2019  Add full 64/32 bit range to -o and output by Christer Jensen.
  * 04.02.2020  Add -d for decimal offsets by Aapo Rantalainen
  *
- * (c) 1990-1998 by Juergen Weigert (jnweiger@informatik.uni-erlangen.de)
+ * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
  * I hereby grant permission to distribute and use xxd
  * under X11-MIT or GPL-2.0 (at the user's choice).
  *
- * Small changes made afterwards by Bram Moolenaar et al.
- *
- * Distribute freely and credit me,
- * make money and share with me,
- * lose money and don't ask me.
+ * Contributions by Bram Moolenaar et al.
  */
 
 /* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
@@ -135,7 +131,7 @@ extern void perror __P((char *));
 extern long int strtol();
 extern long int ftell();
 
-char version[] = "xxd V1.10 27oct98 by Juergen Weigert";
+char version[] = "xxd 2020-02-04 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
