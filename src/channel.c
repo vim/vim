@@ -2545,7 +2545,8 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	    char_u	*json = NULL;
 
 	    // Don't pollute the display with errors.
-	    ++emsg_skip;
+	    // Do generate errors so that try/catch works.
+	    ++emsg_silent;
 	    if (!is_call)
 	    {
 		ch_log(channel, "Evaluating expression '%s'", (char *)arg);
@@ -2581,7 +2582,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 		    vim_free(json);
 		}
 	    }
-	    --emsg_skip;
+	    --emsg_silent;
 	    if (tv == &res_tv)
 		clear_tv(tv);
 	    else
