@@ -545,6 +545,8 @@ block_insert(
 	    spaces -= off;
 	    count -= off;
 	}
+	if (spaces < 0)  // can happen when the cursor was moved
+	    spaces = 0;
 
 	newp = alloc(STRLEN(oldp) + s_len + count + 1);
 	if (newp == NULL)
@@ -1455,6 +1457,9 @@ op_insert(oparg_T *oap, long count1)
     struct block_def	bd;
     int			i;
     pos_T		t1;
+    pos_T		start_insert;
+			// offset when cursor was moved in insert mode
+    int			offset = 0;
 
     // edit() changes this - record it for OP_APPEND
     bd.is_MAX = (curwin->w_curswant == MAXCOL);
@@ -1526,6 +1531,7 @@ op_insert(oparg_T *oap, long count1)
     }
 
     t1 = oap->start;
+    start_insert = curwin->w_cursor;
     (void)edit(NUL, FALSE, (linenr_T)count1);
 
     // When a tab was inserted, and the characters in front of the tab
@@ -1564,30 +1570,38 @@ op_insert(oparg_T *oap, long count1)
 	if (oap->start.lnum == curbuf->b_op_start_orig.lnum
 						  && !bd.is_MAX && !did_indent)
 	{
-	    if (oap->op_type == OP_INSERT
-		    && oap->start.col + oap->start.coladd
-			!= curbuf->b_op_start_orig.col
-					      + curbuf->b_op_start_orig.coladd)
+	    int t = getviscol2(curbuf->b_op_start_orig.col,
+					       curbuf->b_op_start_orig.coladd);
+
+	    if (!bd.is_MAX)
 	    {
-		int t = getviscol2(curbuf->b_op_start_orig.col,
-					      curbuf->b_op_start_orig.coladd);
-		oap->start.col = curbuf->b_op_start_orig.col;
-		pre_textlen -= t - oap->start_vcol;
-		oap->start_vcol = t;
+		if (oap->op_type == OP_INSERT
+			&& oap->start.col + oap->start.coladd
+				!= curbuf->b_op_start_orig.col
+					      + curbuf->b_op_start_orig.coladd)
+		{
+		    oap->start.col = curbuf->b_op_start_orig.col;
+		    pre_textlen -= t - oap->start_vcol;
+		    oap->start_vcol = t;
+		}
+		else if (oap->op_type == OP_APPEND
+			&& oap->end.col + oap->end.coladd
+				>= curbuf->b_op_start_orig.col
+					      + curbuf->b_op_start_orig.coladd)
+		{
+		    oap->start.col = curbuf->b_op_start_orig.col;
+		    // reset pre_textlen to the value of OP_INSERT
+		    pre_textlen += bd.textlen;
+		    pre_textlen -= t - oap->start_vcol;
+		    oap->start_vcol = t;
+		    oap->op_type = OP_INSERT;
+		}
 	    }
-	    else if (oap->op_type == OP_APPEND
-		      && oap->end.col + oap->end.coladd
-			>= curbuf->b_op_start_orig.col
-					      + curbuf->b_op_start_orig.coladd)
+	    else if (bd.is_MAX && oap->op_type == OP_APPEND)
 	    {
-		int t = getviscol2(curbuf->b_op_start_orig.col,
-					      curbuf->b_op_start_orig.coladd);
-		oap->start.col = curbuf->b_op_start_orig.col;
 		// reset pre_textlen to the value of OP_INSERT
 		pre_textlen += bd.textlen;
 		pre_textlen -= t - oap->start_vcol;
-		oap->start_vcol = t;
-		oap->op_type = OP_INSERT;
 	    }
 	}
 
@@ -1617,13 +1631,28 @@ op_insert(oparg_T *oap, long count1)
 	len = STRLEN(firstline);
 	add = bd.textcol;
 	if (oap->op_type == OP_APPEND)
+	{
 	    add += bd.textlen;
+	    // account for pressing cursor in insert mode when '$' was used
+	    if (bd.is_MAX
+		&& (start_insert.lnum == Insstart.lnum
+					   && start_insert.col > Insstart.col))
+	    {
+		offset = (start_insert.col - Insstart.col);
+		add -= offset;
+		if (oap->end_vcol > offset)
+		    oap->end_vcol -= (offset + 1);
+		else
+		    // moved outside of the visual block, what to do?
+		    return;
+	    }
+	}
 	if ((size_t)add > len)
 	    firstline += len;  // short line, point to the NUL
 	else
 	    firstline += add;
-	if (pre_textlen >= 0
-		     && (ins_len = (long)STRLEN(firstline) - pre_textlen) > 0)
+	if (pre_textlen >= 0 && (ins_len =
+			   (long)STRLEN(firstline) - pre_textlen - offset) > 0)
 	{
 	    ins_text = vim_strnsave(firstline, ins_len);
 	    if (ins_text != NULL)
