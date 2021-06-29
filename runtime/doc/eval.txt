@@ -9878,11 +9878,13 @@ sha256({string})						*sha256()*
 
 shellescape({string} [, {special}])			*shellescape()*
 		Escape {string} for use as a shell command argument.
-		On MS-Windows, when the 'shell' contains powershell then it
-		will enclose {string} in single quotes and will double up all
-		internal single quotes.  With other values for 'shell' when
-		'shellslash' is not set, it will enclose {string} in double
-		quotes and double all double quotes within {string}.
+		When the 'shell' contains powershell (MS-Windows) or pwsh
+		(MS-Windows, Linux, and MacOS) then it will enclose {string}
+		in single quotes and will double up all internal single
+		quotes.
+		On MS-Windows, when 'shellslash' is not set, it will enclose
+		{string} in double quotes and double all double quotes within
+		{string}.
 		Otherwise it will enclose {string} in single quotes and
 		replace all "'" with "'\''".
 
@@ -11042,8 +11044,8 @@ tempname()					*tempname()* *temp-file-name*
 			:exe "redir > " . tmpfile
 <		For Unix, the file will be in a private directory |tempfile|.
 		For MS-Windows forward slashes are used when the 'shellslash'
-		option is set or when 'shellcmdflag' starts with '-' except
-		when when 'shell' contains powershell.
+		option is set, or when 'shellcmdflag' starts with '-' and
+		'shell' does not contain powershell or pwsh.
 
 
 term_ functions are documented here: |terminal-function-details|

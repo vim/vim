@@ -6633,6 +6633,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"bash", "fish", "ash" or "dash" the default becomes "2>&1| tee".  This
 	means that stderr is also included.  Before using the 'shell' option a
 	path is removed, thus "/bin/sh" uses "sh".
+	For Unix and MS-Windows, when the 'shell' option is "pwsh" the default
+	becomes ">%s 2>&1" and the output is not echoed to the screen.
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellpipe' option changes automatically, unless it was
@@ -6648,9 +6650,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'shellquote'* *'shq'*
-'shellquote' 'shq'	string	(default: ""; Win32, when 'shell' does not
-				 contain powershell but contains "sh"
-				 somewhere: "\"")
+'shellquote' 'shq'	string	(default: "")
 			global
 	Quoting character(s), put around the command passed to the shell, for
 	the "!" and ":!" commands.  The redirection is kept outside of the
@@ -6658,9 +6658,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	probably not useful to set both options.
 	This is an empty string by default.  Only known to be useful for
 	third-party shells on MS-Windows-like systems, such as the MKS Korn
-	Shell or bash, where it should be "\"".  The default is adjusted
-	according the value of 'shell', to reduce the need to set this option
-	by the user.  See |dos-shell|.
+	Shell or bash, where it should be "\"".  See |dos-shell|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6677,12 +6675,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The default is ">".  For Unix, if the 'shell' option is "csh" or
 	"tcsh" during initializations, the default becomes ">&".  If the
 	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh", "zsh-beta",
-	"bash" or "fish", the default becomes ">%s 2>&1".  This means that
-	stderr is also included.  For Win32, the Unix checks are done and
+	"bash", "fish", or "pwsh", the default becomes ">%s 2>&1".  This means
+	that stderr is also included.  For Win32, the Unix checks are done and
 	additionally "cmd" is checked for, which makes the default ">%s 2>&1",
 	and "powershell" is checked for which makes the default
-	"2>&1 | Out-File -Encoding default".  Also, the same names with ".exe"
-	appended are checked for.
+	"2>&1 | Out-File -Encoding default" (see |dos-powershell|).  Also, the
+	same names with ".exe" appended are checked for.
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellredir' option changes automatically unless it was
@@ -6697,7 +6695,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{only for MS-Windows}
 	When set, a forward slash is used when expanding file names.  This is
-	useful when a Unix-like shell is used instead of cmd.exe or
+	useful when a Unix-like shell is used instead of cmd.exe, pwsh.exe, or
 	powershell.exe.  Backward slashes can still be typed, but they are
 	changed to forward slashes by Vim.
 	Note that setting or resetting this option has no effect for some
@@ -6767,10 +6765,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	then ')"' is appended.
 	When the value is '(' then also see 'shellxescape'.
 	This is an empty string by default on most systems, but is known to be
-	useful for on Win32 version, either for cmd.exe and powershell.exe
-	which automatically strips off the first and last quote on a command,
-	or 3rd-party shells such as the MKS Korn Shell or bash, where it
-	should be "\"".  The default is adjusted according the value of
+	useful for on Win32 version, either for cmd.exe, powershell.exe, or
+	pwsh.exe which automatically strips off the first and last quote on a
+	command, or 3rd-party shells such as the MKS Korn Shell or bash, where
+	it should be "\"".  The default is adjusted according the value of
 	'shell', to reduce the need to set this option by the user.  See
 	|dos-shell|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
