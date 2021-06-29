@@ -1462,6 +1462,13 @@ func Test_popup_atcursor_pos()
 	      \ moved: range(3),
 	      \ mousemoved: range(3),
 	      \ })
+
+	normal 9G27|Rconcealed  X
+	syn match Hidden /concealed/ conceal
+	set conceallevel=2 concealcursor=n
+	redraw
+	normal 0fX
+	call popup_atcursor('mark', {})
   END
   call writefile(lines, 'XtestPopupAtcursorPos')
   let buf = RunVimInTerminal('-S XtestPopupAtcursorPos', #{rows: 12})

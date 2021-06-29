@@ -147,6 +147,9 @@ edit(
 #ifdef FEAT_JOB_CHANNEL
     int		cmdchar_todo = cmdchar;
 #endif
+#ifdef FEAT_CONCEAL
+    int		cursor_line_was_concealed;
+#endif
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -222,9 +225,9 @@ edit(
     }
 
 #ifdef FEAT_CONCEAL
-    // Check if the cursor line needs redrawing before changing State.  If
-    // 'concealcursor' is "n" it needs to be redrawn without concealing.
-    conceal_check_cursor_line();
+    // Check if the cursor line was concealed before changing State.
+    cursor_line_was_concealed = curwin->w_p_cole > 0
+						&& conceal_cursor_line(curwin);
 #endif
 
     /*
@@ -282,6 +285,12 @@ edit(
 	State = INSERT;
 
     stop_insert_mode = FALSE;
+
+#ifdef FEAT_CONCEAL
+    // Check if the cursor line needs redrawing after changing State.  If
+    // 'concealcursor' is "n" it needs to be redrawn without concealing.
+    conceal_check_cursor_line(cursor_line_was_concealed);
+#endif
 
     /*
      * Need to recompute the cursor position, it might move when the cursor is

@@ -5747,8 +5747,8 @@ may_start_select(int c)
 n_start_visual_mode(int c)
 {
 #ifdef FEAT_CONCEAL
-    // Check for redraw before changing the state.
-    conceal_check_cursor_line();
+    int cursor_line_was_concealed = curwin->w_p_cole > 0
+						&& conceal_cursor_line(curwin);
 #endif
 
     VIsual_mode = c;
@@ -5770,8 +5770,8 @@ n_start_visual_mode(int c)
 
     setmouse();
 #ifdef FEAT_CONCEAL
-    // Check for redraw after changing the state.
-    conceal_check_cursor_line();
+    // Check if redraw is needed after changing the state.
+    conceal_check_cursor_line(cursor_line_was_concealed);
 #endif
 
     if (p_smd && msg_silent == 0)
