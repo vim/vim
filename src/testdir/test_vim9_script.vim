@@ -803,6 +803,25 @@ def Test_try_catch_nested()
     endtry
   endtry
   assert_equal(['1', '2', '3', '4', '5', '6'], l)
+
+  l = []
+  try
+    try
+      l->add('1')
+      throw 'foo'
+      l->add('x')
+    catch
+      l->add('2')
+      throw 'bar'
+      l->add('x')
+    finally
+      l->add('3')
+    endtry
+    l->add('x')
+  catch /bar/
+    l->add('4')
+  endtry
+  assert_equal(['1', '2', '3', '4'], l)
 enddef
 
 def TryOne(): number

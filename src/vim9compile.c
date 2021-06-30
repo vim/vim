@@ -8397,10 +8397,17 @@ compile_finally(char_u *arg, cctx_T *cctx)
     this_instr = instr->ga_len;
 #ifdef FEAT_PROFILE
     if (cctx->ctx_compile_type == CT_PROFILE
-	    && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+	    && ((isn_T *)instr->ga_data)[this_instr - 1]
 						   .isn_type == ISN_PROF_START)
+    {
 	// jump to the profile start of the "finally"
 	--this_instr;
+
+	// jump to the profile end above it
+	if (this_instr > 0 && ((isn_T *)instr->ga_data)[this_instr - 1]
+						     .isn_type == ISN_PROF_END)
+	    --this_instr;
+    }
 #endif
 
     // Fill in the "end" label in jumps at the end of the blocks.

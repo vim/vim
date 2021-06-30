@@ -1577,7 +1577,7 @@ exec_instructions(ectx_T *ectx)
 	    while (index > 0)
 	    {
 		trycmd = ((trycmd_T *)trystack->ga_data) + index - 1;
-		if (!trycmd->tcd_in_catch)
+		if (!trycmd->tcd_in_catch || trycmd->tcd_finally_idx != 0)
 		    break;
 		// In the catch and finally block of this try we have to go up
 		// one level.
@@ -1586,9 +1586,16 @@ exec_instructions(ectx_T *ectx)
 	    }
 	    if (trycmd != NULL && trycmd->tcd_frame_idx == ectx->ec_frame_idx)
 	    {
-		// jump to ":catch" or ":finally"
+		if (trycmd->tcd_in_catch)
+		{
+		    // exception inside ":catch", jump to ":finally" once
+		    ectx->ec_iidx = trycmd->tcd_finally_idx;
+		    trycmd->tcd_finally_idx = 0;
+		}
+		else
+		    // jump to first ":catch"
+		    ectx->ec_iidx = trycmd->tcd_catch_idx;
 		trycmd->tcd_in_catch = TRUE;
-		ectx->ec_iidx = trycmd->tcd_catch_idx;
 		did_throw = FALSE;  // don't come back here until :endtry
 		trycmd->tcd_did_throw = TRUE;
 	    }
