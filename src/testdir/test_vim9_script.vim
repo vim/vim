@@ -605,6 +605,32 @@ def Test_try_catch_throw()
   unlet g:caught
 enddef
 
+def Test_try_in_catch()
+  var lines =<< trim END
+      vim9script
+      var seq = []
+      def DoIt()
+        try
+          seq->add('throw 1')
+          eval [][0]
+          seq->add('notreached')
+        catch
+          seq->add('catch')
+          try
+            seq->add('throw 2')
+            eval [][0]
+            seq->add('notreached')
+          catch /nothing/
+            seq->add('notreached')
+          endtry
+          seq->add('done')
+        endtry
+      enddef
+      DoIt()
+      assert_equal(['throw 1', 'catch', 'throw 2', 'done'], seq)
+  END
+enddef
+
 " :while at the very start of a function that :continue jumps to
 def TryContinueFunc()
  while g:Count < 2

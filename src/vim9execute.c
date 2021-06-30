@@ -26,6 +26,7 @@
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
     int	    tcd_stack_len;	// size of ectx.ec_stack at ISN_TRY
+    int	    tcd_save_in_catch;	// saved ec_in_catch
     int	    tcd_catch_idx;	// instruction of the first :catch or :finally
     int	    tcd_finally_idx;	// instruction of the :finally block or zero
     int	    tcd_endtry_idx;	// instruction of the :endtry
@@ -3166,6 +3167,8 @@ exec_instructions(ectx_T *ectx)
 		    CLEAR_POINTER(trycmd);
 		    trycmd->tcd_frame_idx = ectx->ec_frame_idx;
 		    trycmd->tcd_stack_len = ectx->ec_stack.ga_len;
+		    trycmd->tcd_save_in_catch = ectx->ec_in_catch;
+		    ectx->ec_in_catch = FALSE;
 		    trycmd->tcd_catch_idx =
 					  iptr->isn_arg.try.try_ref->try_catch;
 		    trycmd->tcd_finally_idx =
@@ -3263,9 +3266,9 @@ exec_instructions(ectx_T *ectx)
 
 			--trystack->ga_len;
 			--trylevel;
-			ectx->ec_in_catch = FALSE;
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							    + trystack->ga_len;
+			ectx->ec_in_catch = trycmd->tcd_save_in_catch;
 			if (trycmd->tcd_caught && current_exception != NULL)
 			{
 			    // discard the exception
