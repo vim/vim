@@ -1414,8 +1414,9 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     char_u	*escaped_string;
     int		l;
     int		csh_like;
-# ifdef MSWIN
+    char_u	*shname;
     int		powershell;
+# ifdef MSWIN
     int		double_quotes;
 # endif
 
@@ -1425,9 +1426,12 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // Csh also needs to have "\n" escaped twice when do_special is set.
     csh_like = csh_like_shell();
 
+    // PowerShell uses it's own version for quoting single quotes
+    shname = gettail(p_sh);
+    powershell = strstr((char *)shname, "pwsh") != NULL;
 # ifdef MSWIN
-    // PowerShell only accepts single quotes so override p_ssl.
-    powershell = strstr((char *)gettail(p_sh), "powershell") != NULL;
+    powershell = powershell || strstr((char *)shname, "powershell") != NULL;
+    // PowerShell only accepts single quotes so override shellslash.
     double_quotes = !powershell && !p_ssl;
 # endif
 
@@ -1445,11 +1449,9 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 # endif
 	if (*p == '\'')
 	{
-# ifdef MSWIN
 	    if (powershell)
 		length +=2;		// ' => ''
 	    else
-# endif
 		length += 3;		// ' => '\''
 	}
 	if ((*p == '\n' && (csh_like || do_newline))
@@ -1497,14 +1499,12 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 # endif
 	    if (*p == '\'')
 	    {
-# ifdef MSWIN
 		if (powershell)
 		{
 		    *d++ = '\'';
 		    *d++ = '\'';
 		}
 		else
-# endif
 		{
 		    *d++ = '\'';
 		    *d++ = '\\';

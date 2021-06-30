@@ -933,8 +933,8 @@ set_init_3(void)
 	    }
 	}
 # ifdef MSWIN
-	// PowerShell 5.1/.NET outputs UTF-16 with BOM so re-encode to the
-	// current codepage
+	// Windows PowerShell output is UTF-16 with BOM so re-encode to the
+	// current codepage.
 	else if (   fnamecmp(p, "powershell") == 0
 		    || fnamecmp(p, "powershell.exe") == 0
 		)
@@ -965,6 +965,7 @@ set_init_3(void)
 		    || fnamecmp(p, "fish") == 0
 		    || fnamecmp(p, "ash") == 0
 		    || fnamecmp(p, "dash") == 0
+		    || fnamecmp(p, "pwsh") == 0
 # ifdef MSWIN
 		    || fnamecmp(p, "cmd") == 0
 		    || fnamecmp(p, "sh.exe") == 0
@@ -976,6 +977,7 @@ set_init_3(void)
 		    || fnamecmp(p, "bash.exe") == 0
 		    || fnamecmp(p, "cmd.exe") == 0
 		    || fnamecmp(p, "dash.exe") == 0
+		    || fnamecmp(p, "pwsh.exe") == 0
 # endif
 		    )
 	    {
@@ -985,7 +987,10 @@ set_init_3(void)
 #  ifdef MSWIN
 		    p_sp = (char_u *)">%s 2>&1";
 #  else
-		    p_sp = (char_u *)"2>&1| tee";
+		    if (fnamecmp(p, "pwsh") == 0)
+			p_sp = (char_u *)">%s 2>&1";
+		    else
+			p_sp = (char_u *)"2>&1| tee";
 #  endif
 		    options[idx_sp].def_val[VI_DEFAULT] = p_sp;
 		}
@@ -1011,6 +1016,7 @@ set_init_3(void)
      *			    p_shcf	p_sxq
      * cmd.exe          -   "/c"	"("
      * powershell.exe   -   "-Command"	"\""
+     * pwsh.exe		-   "-c"	"\""
      * "sh" like shells -   "-c"	"\""
      *
      * For Win32 p_sxq is set instead of p_shq to include shell redirection.

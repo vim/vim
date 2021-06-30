@@ -19,7 +19,8 @@ func Test_shell_options()
           \ ['ash', '-c', '2>&1| tee', '', '>%s 2>&1', '', ''],
           \ ['dash', '-c', '2>&1| tee', '', '>%s 2>&1', '', ''],
           \ ['csh', '-c', '|& tee', '', '>&', '', ''],
-          \ ['tcsh', '-c', '|& tee', '', '>&', '', '']]
+          \ ['tcsh', '-c', '|& tee', '', '>&', '', ''],
+          \ ['pwsh', '-c', '>%s 2>&1', '', '>%s 2>&1', '', '']]
   endif
   if has('win32')
     let shells += [['cmd', '/c', '>%s 2>&1', '', '>%s 2>&1', '"&|<>()@^', ''],
@@ -28,6 +29,8 @@ func Test_shell_options()
           \           '', '2>&1 | Out-File -Encoding default', '"&|<>()@^', '"'],
           \ ['powershell', '-Command', '2>&1 | Out-File -Encoding default', '',
           \               '2>&1 | Out-File -Encoding default', '"&|<>()@^', '"'],
+          \ ['pwsh.exe', '-c', '>%s 2>&1', '', '>%s 2>&1', '"&|<>()@^', '"'],
+          \ ['pwsh', '-c', '>%s 2>&1', '', '>%s 2>&1', '"&|<>()@^', '"'],
           \ ['sh.exe', '-c', '>%s 2>&1', '', '>%s 2>&1', '"&|<>()@^', '"'],
           \ ['ksh.exe', '-c', '>%s 2>&1', '', '>%s 2>&1', '"&|<>()@^', '"'],
           \ ['mksh.exe', '-c', '>%s 2>&1', '', '>%s 2>&1', '"&|<>()@^', '"'],
@@ -61,6 +64,7 @@ func Test_shell_options()
       let str1 = "'cmd \"arg1\" '\\''arg2'\\'' \\!%#'"
       let str2 = "'cmd \"arg1\" '\\''arg2'\\'' \\\\!\\%\\#'"
     elseif e[0] =~# '.*powershell$' || e[0] =~# '.*powershell.exe$'
+          \ || e[0] =~# '.*pwsh$' || e[0] =~# '.*pwsh.exe$'
       let str1 = "'cmd \"arg1\" ''arg2'' !%#'"
       let str2 = "'cmd \"arg1\" ''arg2'' \\!\\%\\#'"
     else
@@ -76,9 +80,14 @@ func Test_shell_options()
       let [&shellcmdflag, &shellpipe, &shellquote, &shellredir,
             \ &shellxescape, &shellxquote] = e[1:6]
       new
-      r !echo hello
-      call assert_equal('hello', substitute(getline(2), '\W', '', 'g'), e[0])
-      bwipe!
+      try
+        r !echo hello
+        call assert_equal('hello', substitute(getline(2), '\W', '', 'g'), e[0])
+      catch
+        call assert_report('Failed to run shell command, shell: ' .. e[0])
+      finally
+        bwipe!
+      endtry
     endif
   endfor
   set shell& shellcmdflag& shellpipe& shellquote&
@@ -149,6 +158,8 @@ func Test_shellslash()
   " ".*\\\\[^\\\\]*$"
   let shells = [['cmd', '/c', '\\', '/'],
         \ ['powershell', '-Command', '\\', '/'],
+        \ ['pwsh', '-Command', '\\', '/'],
+        \ ['pwsh', '-c', '\\', '/'],
         \ ['sh', '-c', '/', '/']]
   for e in shells
     exe 'set shell=' .. e[0] .. ' | set shellcmdflag=' .. e[1]

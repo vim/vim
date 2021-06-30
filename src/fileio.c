@@ -5222,6 +5222,7 @@ vim_tempname(
     WCHAR	*chartab = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     char_u	*retval;
     char_u	*p;
+    char_u	*shname;
     long	i;
 
     wcscpy(itmp, L"");
@@ -5247,8 +5248,10 @@ vim_tempname(
     // "sh".  NOTE: This also checks 'shellcmdflag' to help those people who
     // didn't set 'shellslash' but only if not using PowerShell.
     retval = utf16_to_enc(itmp, NULL);
-    if ((strstr((char *)gettail(p_sh), "powershell") == NULL
-						&& *p_shcf == '-') || p_ssl)
+    shname = gettail(p_sh);
+    if ((*p_shcf == '-' && !(strstr((char *)shname, "powershell") != NULL
+			     || strstr((char *)shname, "pwsh") != NULL ))
+								    || p_ssl)
 	for (p = retval; *p; ++p)
 	    if (*p == '\\')
 		*p = '/';
