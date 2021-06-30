@@ -26,7 +26,8 @@
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
     int	    tcd_stack_len;	// size of ectx.ec_stack at ISN_TRY
-    int	    tcd_save_in_catch;	// saved ec_in_catch
+    int	    tcd_in_catch;	// in catch or finally block
+    int	    tcd_did_throw;	// set did_throw in :endtry
     int	    tcd_catch_idx;	// instruction of the first :catch or :finally
     int	    tcd_finally_idx;	// instruction of the :finally block or zero
     int	    tcd_endtry_idx;	// instruction of the :endtry
@@ -83,7 +84,6 @@ struct ectx_S {
     funclocal_T ec_funclocal;
 
     garray_T	ec_trystack;	// stack of trycmd_T values
-    int		ec_in_catch;	// when TRUE in catch or finally block
 
     int		ec_dfunc_idx;	// current function index
     isn_T	*ec_instr;	// array with instructions
@@ -1566,20 +1566,31 @@ exec_instructions(ectx_T *ectx)
 	    *msg_list = NULL;
 	}
 
-	if (did_throw && !ectx->ec_in_catch)
+	if (did_throw)
 	{
 	    garray_T	*trystack = &ectx->ec_trystack;
 	    trycmd_T    *trycmd = NULL;
+	    int		index = trystack->ga_len;
 
 	    // An exception jumps to the first catch, finally, or returns from
 	    // the current function.
-	    if (trystack->ga_len > 0)
-		trycmd = ((trycmd_T *)trystack->ga_data) + trystack->ga_len - 1;
+	    while (index > 0)
+	    {
+		trycmd = ((trycmd_T *)trystack->ga_data) + index - 1;
+		if (!trycmd->tcd_in_catch)
+		    break;
+		// In the catch and finally block of this try we have to go up
+		// one level.
+		--index;
+		trycmd = NULL;
+	    }
 	    if (trycmd != NULL && trycmd->tcd_frame_idx == ectx->ec_frame_idx)
 	    {
 		// jump to ":catch" or ":finally"
-		ectx->ec_in_catch = TRUE;
+		trycmd->tcd_in_catch = TRUE;
 		ectx->ec_iidx = trycmd->tcd_catch_idx;
+		did_throw = FALSE;  // don't come back here until :endtry
+		trycmd->tcd_did_throw = TRUE;
 	    }
 	    else
 	    {
@@ -3167,8 +3178,6 @@ exec_instructions(ectx_T *ectx)
 		    CLEAR_POINTER(trycmd);
 		    trycmd->tcd_frame_idx = ectx->ec_frame_idx;
 		    trycmd->tcd_stack_len = ectx->ec_stack.ga_len;
-		    trycmd->tcd_save_in_catch = ectx->ec_in_catch;
-		    ectx->ec_in_catch = FALSE;
 		    trycmd->tcd_catch_idx =
 					  iptr->isn_arg.try.try_ref->try_catch;
 		    trycmd->tcd_finally_idx =
@@ -3205,6 +3214,7 @@ exec_instructions(ectx_T *ectx)
 			trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - 1;
 			trycmd->tcd_caught = TRUE;
+			trycmd->tcd_did_throw = FALSE;
 		    }
 		    did_emsg = got_int = did_throw = FALSE;
 		    force_abort = need_rethrow = FALSE;
@@ -3268,7 +3278,8 @@ exec_instructions(ectx_T *ectx)
 			--trylevel;
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							    + trystack->ga_len;
-			ectx->ec_in_catch = trycmd->tcd_save_in_catch;
+			if (trycmd->tcd_did_throw)
+			    did_throw = TRUE;
 			if (trycmd->tcd_caught && current_exception != NULL)
 			{
 			    // discard the exception

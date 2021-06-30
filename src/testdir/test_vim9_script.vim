@@ -631,6 +631,17 @@ def Test_try_in_catch()
   END
 enddef
 
+def Test_error_in_catch()
+  var lines =<< trim END
+      try
+        eval [][0]
+      catch /E684:/
+        eval [][0]
+      endtry
+  END
+  CheckDefExecFailure(lines, 'E684:', 4)
+enddef
+
 " :while at the very start of a function that :continue jumps to
 def TryContinueFunc()
  while g:Count < 2
@@ -768,6 +779,30 @@ def Test_try_catch_nested()
 
   assert_equal('intry', ReturnFinally())
   assert_equal('finally', g:in_finally)
+
+  var l = []
+  try
+    l->add('1')
+    throw 'bad'
+    l->add('x')
+  catch /bad/
+    l->add('2')
+    try
+      l->add('3')
+      throw 'one'
+      l->add('x')
+    catch /one/
+      l->add('4')
+      try
+        l->add('5')
+        throw 'more'
+        l->add('x')
+      catch /more/
+        l->add('6')
+      endtry
+    endtry
+  endtry
+  assert_equal(['1', '2', '3', '4', '5', '6'], l)
 enddef
 
 def TryOne(): number
