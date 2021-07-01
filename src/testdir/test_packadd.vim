@@ -246,6 +246,20 @@ func Test_packloadall()
   call assert_equal(4321, g:plugin_bar_number)
 endfunc
 
+func Test_start_autoload()
+  " plugin foo with an autoload directory
+  let autodir = &packpath . '/pack/mine/start/foo/autoload'
+  call mkdir(autodir, 'p')
+  call writefile(['func! bar#test()',
+	\ '  return 1666',
+	\ 'endfunc'], autodir . '/bar.vim')
+
+  " should not be necessary, but neither works inside test suite :(
+  "packloadall!
+  "call writefile([&packpath, &rtp], '/tmp/foobar')
+  call assert_equal(1666, bar#test())
+endfunc
+
 func Test_helptags()
   let docdir1 = &packpath . '/pack/mine/start/foo/doc'
   let docdir2 = &packpath . '/pack/mine/start/bar/doc'
