@@ -109,6 +109,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'echoerr':
+                        cmd = '["ex","echoerr \\\"this is an error\\\""]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1] == 'bad command':
                         cmd = '["ex","foo bar"]'
                         print("sending: {0}".format(cmd))

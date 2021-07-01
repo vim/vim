@@ -115,6 +115,18 @@ func Ch_communicate(port)
   call WaitForAssert({-> assert_equal("added2", getline("$"))})
   call assert_equal('added1', getline(line('$') - 1))
 
+  " Request command "echoerr 'this is an error'".
+  " This will throw an exception, catch it here.
+  let caught = 'no'
+  try
+    call assert_equal('ok', ch_evalexpr(handle, 'echoerr'))
+  catch /this is an error/
+    let caught = 'yes'
+  endtry
+  if caught != 'yes'
+    call assert_report("Expected exception from error message")
+  endif
+
   " Request command "foo bar", which fails silently.
   call assert_equal('ok', ch_evalexpr(handle, 'bad command'))
   call WaitForAssert({-> assert_match("E492:.*foo bar", v:errmsg)})
