@@ -6,7 +6,7 @@
 " License:          MIT
 " Last Change:      2021-07-01
 
-runtime ftplugin/json.vim
+runtime! ftplugin/json.vim
 
 if exists('b:did_ftplugin_jsonc')
   finish
