@@ -5,7 +5,8 @@ source vim9.vim
 func Test_glob2regpat_invalid()
   if has('float')
     call assert_equal('^1\.33$', glob2regpat(1.33))
-    call CheckDefExecAndScriptFailure(['echo glob2regpat(1.33)'], 'E806:')
+    call CheckDefFailure(['echo glob2regpat(1.2)'], 'E1013:')
+    call CheckScriptFailure(['vim9script', 'echo glob2regpat(1.2)'], 'E806:')
   endif
   call assert_fails('call glob2regpat("}")', 'E219:')
   call assert_fails('call glob2regpat("{")', 'E220:')

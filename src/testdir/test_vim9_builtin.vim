@@ -180,12 +180,14 @@ def Test_balloon_show()
   CheckGui
   CheckFeature balloon_eval
 
+  assert_fails('balloon_show(10)', 'E1174:')
   assert_fails('balloon_show(true)', 'E1174:')
 enddef
 
 def Test_balloon_split()
   CheckFeature balloon_eval_term
 
+  assert_fails('balloon_split([])', 'E1174:')
   assert_fails('balloon_split(true)', 'E1174:')
 enddef
 
@@ -206,14 +208,28 @@ def Test_browse()
   CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 4')
 enddef
 
+def Test_bufadd()
+  assert_fails('bufadd([])', 'E730:')
+enddef
+
 def Test_bufexists()
-  assert_fails('bufexists(true)', 'E1174')
+  assert_fails('bufexists(true)', 'E1174:')
 enddef
 
 def Test_buflisted()
   var res: bool = buflisted('asdf')
   assert_equal(false, res)
-  assert_fails('buflisted(true)', 'E1174')
+  assert_fails('buflisted(true)', 'E1174:')
+  assert_fails('buflisted([])', 'E1174:')
+enddef
+
+def Test_bufload()
+  assert_fails('bufload([])', 'E730:')
+enddef
+
+def Test_bufloaded()
+  assert_fails('bufloaded(true)', 'E1174:')
+  assert_fails('bufloaded([])', 'E1174:')
 enddef
 
 def Test_bufname()
@@ -222,6 +238,8 @@ def Test_bufname()
   edit OtherFile
   bufname('#')->assert_equal('SomeFile')
   close
+  assert_fails('bufname(true)', 'E1138:')
+  assert_fails('bufname([])', 'E745:')
 enddef
 
 def Test_bufnr()
@@ -246,7 +264,19 @@ def Test_bufwinid()
   bwipe SomeFile
   bwipe OtherFile
 
-  assert_fails('bufwinid(true)', 'E1138')
+  assert_fails('bufwinid(true)', 'E1138:')
+  assert_fails('bufwinid([])', 'E745:')
+enddef
+
+def Test_bufwinnr()
+  assert_fails('bufwinnr(true)', 'E1138:')
+  assert_fails('bufwinnr([])', 'E745:')
+enddef
+
+def Test_byte2line()
+  CheckDefFailure(['byte2line("1")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  CheckDefFailure(['byte2line([])'], 'E1013: Argument 1: type mismatch, expected number but got list<unknown>')
+  assert_equal(-1, byte2line(0))
 enddef
 
 def Test_call_call()
@@ -259,22 +289,29 @@ def Test_ch_logfile()
   if !has('channel')
     CheckFeature channel
   endif
-  assert_fails('ch_logfile(true)', 'E1174')
-  assert_fails('ch_logfile("foo", true)', 'E1174')
+  assert_fails('ch_logfile(true)', 'E1174:')
+  assert_fails('ch_logfile("foo", true)', 'E1174:')
 enddef
 
 def Test_char2nr()
   char2nr('あ', true)->assert_equal(12354)
 
-  assert_fails('char2nr(true)', 'E1174')
+  assert_fails('char2nr(true)', 'E1174:')
 enddef
 
 def Test_charclass()
-  assert_fails('charclass(true)', 'E1174')
+  assert_fails('charclass(true)', 'E1174:')
 enddef
 
 def Test_chdir()
-  assert_fails('chdir(true)', 'E1174')
+  assert_fails('chdir(true)', 'E1174:')
+enddef
+
+def Test_cindent()
+  CheckDefFailure(['cindent([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  CheckDefFailure(['cindent(null)'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  assert_equal(-1, cindent(0))
+  assert_equal(0, cindent('.'))
 enddef
 
 def Test_clearmatches()
@@ -286,7 +323,7 @@ def Test_col()
   setline(1, 'asdf')
   col([1, '$'])->assert_equal(5)
 
-  assert_fails('col(true)', 'E1174')
+  assert_fails('col(true)', 'E1174:')
 enddef
 
 def Test_confirm()
@@ -294,9 +331,16 @@ def Test_confirm()
     CheckFeature dialog_con
   endif
 
-  assert_fails('confirm(true)', 'E1174')
-  assert_fails('confirm("yes", true)', 'E1174')
-  assert_fails('confirm("yes", "maybe", 2, true)', 'E1174')
+  assert_fails('confirm(true)', 'E1174:')
+  assert_fails('confirm("yes", true)', 'E1174:')
+  assert_fails('confirm("yes", "maybe", 2, true)', 'E1174:')
+enddef
+
+def Test_complete_info()
+  CheckDefFailure(['complete_info("")'], 'E1013: Argument 1: type mismatch, expected list<string> but got string')
+  CheckDefFailure(['complete_info({})'], 'E1013: Argument 1: type mismatch, expected list<string> but got dict<unknown>')
+  assert_equal({'pum_visible': 0, 'mode': '', 'selected': -1, 'items': []}, complete_info())
+  assert_equal({'mode': '', 'items': []}, complete_info(['mode', 'items']))
 enddef
 
 def Test_copy_return_type()
@@ -346,12 +390,32 @@ def Test_delete()
   assert_equal(true, res)
 enddef
 
+def Test_diff_filler()
+  CheckDefFailure(['diff_filler([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  CheckDefFailure(['diff_filler(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
+  assert_equal(0, diff_filler(1))
+  assert_equal(0, diff_filler('.'))
+enddef
+
+def Test_escape()
+  CheckDefFailure(['escape("a", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+  CheckDefFailure(['escape(10, " ")'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['escape(true, false)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
+  assert_equal('a\:b', escape("a:b", ":"))
+enddef
+
+def Test_eval()
+  CheckDefFailure(['eval(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['eval(null)'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  assert_equal(2, eval('1 + 1'))
+enddef
+
 def Test_executable()
   assert_false(executable(""))
   assert_false(executable(test_null_string()))
 
-  CheckDefExecFailure(['echo executable(123)'], 'E1174:')
-  CheckDefExecFailure(['echo executable(true)'], 'E1174:')
+  CheckDefExecFailure(['echo executable(123)'], 'E1013:')
+  CheckDefExecFailure(['echo executable(true)'], 'E1013:')
 enddef
 
 def Test_execute()
@@ -367,9 +431,14 @@ def Test_execute()
 enddef
 
 def Test_exepath()
-  CheckDefExecFailure(['echo exepath(true)'], 'E1174:')
-  CheckDefExecFailure(['echo exepath(v:null)'], 'E1174:')
+  CheckDefExecFailure(['echo exepath(true)'], 'E1013:')
+  CheckDefExecFailure(['echo exepath(v:null)'], 'E1013:')
   CheckDefExecFailure(['echo exepath("")'], 'E1175:')
+enddef
+
+def Test_exists()
+  CheckDefFailure(['exists(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  call assert_equal(1, exists('&tabstop'))
 enddef
 
 def Test_expand()
@@ -507,6 +576,16 @@ def Test_extend_with_error_function()
   CheckScriptFailure(lines, 'E1001: Variable not found: m')
 enddef
 
+def Test_feedkeys()
+  CheckDefFailure(['feedkeys(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['feedkeys("x", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+  CheckDefFailure(['feedkeys([], {})'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  g:TestVar = 1
+  feedkeys(":g:TestVar = 789\n", 'xt')
+  assert_equal(789, g:TestVar)
+  unlet g:TestVar
+enddef
+
 def Test_job_info_return_type()
   if has('job')
     job_start(&shell)
@@ -521,16 +600,16 @@ def Test_filereadable()
   assert_false(filereadable(""))
   assert_false(filereadable(test_null_string()))
 
-  CheckDefExecFailure(['echo filereadable(123)'], 'E1174:')
-  CheckDefExecFailure(['echo filereadable(true)'], 'E1174:')
+  CheckDefExecFailure(['echo filereadable(123)'], 'E1013:')
+  CheckDefExecFailure(['echo filereadable(true)'], 'E1013:')
 enddef
 
 def Test_filewritable()
   assert_false(filewritable(""))
   assert_false(filewritable(test_null_string()))
 
-  CheckDefExecFailure(['echo filewritable(123)'], 'E1174:')
-  CheckDefExecFailure(['echo filewritable(true)'], 'E1174:')
+  CheckDefExecFailure(['echo filewritable(123)'], 'E1013:')
+  CheckDefExecFailure(['echo filewritable(true)'], 'E1013:')
 enddef
 
 def Test_finddir()
@@ -620,15 +699,20 @@ def Test_float_funcs_args()
   CheckDefFailure(['echo trunc("a")'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
 
+def Test_fnameescape()
+  CheckDefFailure(['fnameescape(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal('\+a\%b\|', fnameescape('+a%b|'))
+enddef
+
 def Test_fnamemodify()
   CheckDefSuccess(['echo fnamemodify(test_null_string(), ":p")'])
   CheckDefSuccess(['echo fnamemodify("", ":p")'])
   CheckDefSuccess(['echo fnamemodify("file", test_null_string())'])
   CheckDefSuccess(['echo fnamemodify("file", "")'])
 
-  CheckDefExecFailure(['echo fnamemodify(true, ":p")'], 'E1174: String required for argument 1')
-  CheckDefExecFailure(['echo fnamemodify(v:null, ":p")'], 'E1174: String required for argument 1')
-  CheckDefExecFailure(['echo fnamemodify("file", true)'], 'E1174: String required for argument 2')
+  CheckDefExecFailure(['echo fnamemodify(true, ":p")'], 'E1013: Argument 1: type mismatch, expected string but got bool')
+  CheckDefExecFailure(['echo fnamemodify(v:null, ":p")'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  CheckDefExecFailure(['echo fnamemodify("file", true)'],  'E1013: Argument 2: type mismatch, expected string but got bool')
 enddef
 
 def Wrong_dict_key_type(items: list<number>): list<number>
@@ -652,6 +736,30 @@ def Test_filter_missing_argument()
   var dict = {aa: [1], ab: [2], ac: [3], de: [4]}
   var res = dict->filter((k, _) => k =~ 'a' && k !~ 'b')
   res->assert_equal({aa: [1], ac: [3]})
+enddef
+
+def Test_foldclosed()
+  CheckDefFailure(['foldclosed(function("min"))'], 'E1013: Argument 1: type mismatch, expected string but got func(...): any')
+  assert_equal(-1, foldclosed(1))
+  assert_equal(-1, foldclosed('$'))
+enddef
+
+def Test_foldclosedend()
+  CheckDefFailure(['foldclosedend(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
+  assert_equal(-1, foldclosedend(1))
+  assert_equal(-1, foldclosedend('w0'))
+enddef
+
+def Test_foldlevel()
+  CheckDefFailure(['foldlevel(0z10)'], 'E1013: Argument 1: type mismatch, expected string but got blob')
+  assert_equal(0, foldlevel(1))
+  assert_equal(0, foldlevel('.'))
+enddef
+
+def Test_foldtextresult()
+  CheckDefFailure(['foldtextresult(1.1)'], 'E1013: Argument 1: type mismatch, expected string but got float')
+  assert_equal('', foldtextresult(1))
+  assert_equal('', foldtextresult('.'))
 enddef
 
 def Test_fullcommand()
@@ -762,36 +870,40 @@ def Test_getloclist_return_type()
   d->assert_equal({items: []})
 enddef
 
+def Test_getfontname()
+  CheckDefFailure(['getfontname(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+enddef
+
 def Test_getfperm()
   assert_equal('', getfperm(""))
   assert_equal('', getfperm(test_null_string()))
 
-  CheckDefExecFailure(['echo getfperm(true)'], 'E1174:')
-  CheckDefExecFailure(['echo getfperm(v:null)'], 'E1174:')
+  CheckDefExecFailure(['echo getfperm(true)'], 'E1013:')
+  CheckDefExecFailure(['echo getfperm(v:null)'], 'E1013:')
 enddef
 
 def Test_getfsize()
   assert_equal(-1, getfsize(""))
   assert_equal(-1, getfsize(test_null_string()))
 
-  CheckDefExecFailure(['echo getfsize(true)'], 'E1174:')
-  CheckDefExecFailure(['echo getfsize(v:null)'], 'E1174:')
+  CheckDefExecFailure(['echo getfsize(true)'], 'E1013:')
+  CheckDefExecFailure(['echo getfsize(v:null)'], 'E1013:')
 enddef
 
 def Test_getftime()
   assert_equal(-1, getftime(""))
   assert_equal(-1, getftime(test_null_string()))
 
-  CheckDefExecFailure(['echo getftime(true)'], 'E1174:')
-  CheckDefExecFailure(['echo getftime(v:null)'], 'E1174:')
+  CheckDefExecFailure(['echo getftime(true)'], 'E1013:')
+  CheckDefExecFailure(['echo getftime(v:null)'], 'E1013:')
 enddef
 
 def Test_getftype()
   assert_equal('', getftype(""))
   assert_equal('', getftype(test_null_string()))
 
-  CheckDefExecFailure(['echo getftype(true)'], 'E1174:')
-  CheckDefExecFailure(['echo getftype(v:null)'], 'E1174:')
+  CheckDefExecFailure(['echo getftype(true)'], 'E1013:')
+  CheckDefExecFailure(['echo getftype(v:null)'], 'E1013:')
 enddef
 
 def Test_getjumplist()
@@ -800,8 +912,25 @@ def Test_getjumplist()
   CheckDefFailure(['echo getjumplist(1, "x")'], 'E1013: Argument 2: type mismatch, expected number but got string')
 enddef
 
+def Test_getmarklist()
+  CheckDefFailure(['getmarklist([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  assert_equal([], getmarklist(10000))
+  assert_fails('getmarklist("a%b@#")', 'E94:')
+enddef
+
 def Test_getmatches()
   CheckDefFailure(['echo getmatches("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+enddef
+
+def Test_getpos()
+  CheckDefFailure(['getpos(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal([0, 1, 1, 0], getpos('.'))
+  assert_equal([0, 0, 0, 0], getpos('a'))
+enddef
+
+def Test_getqflist()
+  CheckDefFailure(['getqflist([])'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
+  call assert_equal({}, getqflist({}))
 enddef
 
 def Test_getqflist_return_type()
@@ -847,6 +976,11 @@ def Test_gettagstack()
   CheckDefFailure(['echo gettagstack("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
 
+def Test_gettext()
+  CheckDefFailure(['gettext(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal('abc', gettext("abc"))
+enddef
+
 def Test_getwininfo()
   CheckDefFailure(['echo getwininfo("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
@@ -857,6 +991,11 @@ enddef
 
 def Test_glob()
   glob('runtest.vim', true, true, true)->assert_equal(['runtest.vim'])
+enddef
+
+def Test_glob2regpat()
+  CheckDefFailure(['glob2regpat(null)'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  assert_equal('^$', glob2regpat(''))
 enddef
 
 def Test_globpath()
@@ -880,8 +1019,54 @@ def Test_hasmapto()
   iunabbrev foo
 enddef
 
+def Test_histadd()
+  CheckDefFailure(['histadd(1, "x")'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['histadd(":", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+  histadd("search", 'skyblue')
+  assert_equal('skyblue', histget('/', -1))
+enddef
+
+def Test_histnr()
+  CheckDefFailure(['histnr(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal(-1, histnr('abc'))
+enddef
+
+def Test_hlID()
+  CheckDefFailure(['hlID(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal(0, hlID('NonExistingHighlight'))
+enddef
+
+def Test_hlexists()
+  CheckDefFailure(['hlexists([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  assert_equal(0, hlexists('NonExistingHighlight'))
+enddef
+
+def Test_iconv()
+  CheckDefFailure(['iconv(1, "from", "to")'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['iconv("abc", 10, "to")'], 'E1013: Argument 2: type mismatch, expected string but got number')
+  CheckDefFailure(['iconv("abc", "from", 20)'], 'E1013: Argument 3: type mismatch, expected string but got number')
+  assert_equal('abc', iconv('abc', 'fromenc', 'toenc'))
+enddef
+
 def Test_index()
   index(['a', 'b', 'a', 'B'], 'b', 2, true)->assert_equal(3)
+enddef
+
+def Test_inputlist()
+  CheckDefFailure(['inputlist(10)'], 'E1013: Argument 1: type mismatch, expected list<string> but got number')
+  CheckDefFailure(['inputlist("abc")'], 'E1013: Argument 1: type mismatch, expected list<string> but got string')
+  CheckDefFailure(['inputlist([1, 2, 3])'], 'E1013: Argument 1: type mismatch, expected list<string> but got list<number>')
+  feedkeys("2\<CR>", 't')
+  var r: number = inputlist(['a', 'b', 'c'])
+  assert_equal(2, r)
+enddef
+
+def Test_inputsecret()
+  CheckDefFailure(['inputsecret(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['inputsecret("Pass:", 20)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+  feedkeys("\<CR>", 't')
+  var ans: string = inputsecret('Pass:', '123')
+  assert_equal('123', ans)
 enddef
 
 let s:number_one = 1
@@ -928,13 +1113,51 @@ def Test_invert()
   CheckDefFailure(['echo invert("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
 
+def Test_isdirectory()
+  CheckDefFailure(['isdirectory(1.1)'], 'E1013: Argument 1: type mismatch, expected string but got float')
+  assert_false(isdirectory('NonExistingDir'))
+enddef
+
+def Test_items()
+  CheckDefFailure(['[]->items()'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
+  assert_equal([['a', 10], ['b', 20]], {'a': 10, 'b': 20}->items())
+  assert_equal([], {}->items())
+enddef
+
+def Test_js_decode()
+  CheckDefFailure(['js_decode(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal([1, 2], js_decode('[1,2]'))
+enddef
+
+def Test_json_decode()
+  CheckDefFailure(['json_decode(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
+  assert_equal(1.0, json_decode('1.0'))
+enddef
+
+def Test_keys()
+  CheckDefFailure(['keys([])'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
+  assert_equal(['a'], {a: 'v'}->keys())
+  assert_equal([], {}->keys())
+enddef
+
 def Test_keys_return_type()
   const var: list<string> = {a: 1, b: 2}->keys()
   var->assert_equal(['a', 'b'])
 enddef
 
 def Test_line()
-  assert_fails('line(true)', 'E1174')
+  assert_fails('line(true)', 'E1174:')
+enddef
+
+def Test_line2byte()
+  CheckDefFailure(['line2byte(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
+  assert_equal(-1, line2byte(1))
+  assert_equal(-1, line2byte(10000))
+enddef
+
+def Test_lispindent()
+  CheckDefFailure(['lispindent({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>')
+  assert_equal(0, lispindent(1))
 enddef
 
 def Test_list2str_str2list_utf8()
@@ -1080,6 +1303,13 @@ def Test_max()
   assert_equal([4, 5], l2)
 enddef
 
+def Test_menu_info()
+  CheckDefFailure(['menu_info(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['menu_info(10, "n")'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['menu_info("File", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+  assert_equal({}, menu_info('aMenu'))
+enddef
+
 def Test_min()
   g:flag = true
   var l1: list<number> = g:flag
@@ -1094,6 +1324,11 @@ def Test_min()
   assert_equal([4, 5], l2)
 enddef
 
+def Test_nextnonblank()
+  CheckDefFailure(['nextnonblank(null)'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  assert_equal(0, nextnonblank(1))
+enddef
+
 def Test_nr2char()
   nr2char(97, true)->assert_equal('a')
 enddef
@@ -1101,6 +1336,23 @@ enddef
 def Test_or()
   CheckDefFailure(['echo or("x", 0x2)'], 'E1013: Argument 1: type mismatch, expected number but got string')
   CheckDefFailure(['echo or(0x1, "x")'], 'E1013: Argument 2: type mismatch, expected number but got string')
+enddef
+
+def Test_prevnonblank()
+  CheckDefFailure(['prevnonblank(null)'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  assert_equal(0, prevnonblank(1))
+enddef
+
+def Test_prompt_getprompt()
+  CheckDefFailure(['prompt_getprompt([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  assert_equal('', prompt_getprompt('NonExistingBuf'))
+enddef
+
+def Test_rand()
+  CheckDefFailure(['rand(10)'], 'E1013: Argument 1: type mismatch, expected list<number> but got number')
+  CheckDefFailure(['rand(["a"])'], 'E1013: Argument 1: type mismatch, expected list<number> but got list<string>')
+  assert_true(rand() >= 0)
+  assert_true(rand(srand()) >= 0)
 enddef
 
 def Test_readdir()
@@ -1134,6 +1386,38 @@ def Test_readfile()
   delete('Xreadfile')
 enddef
 
+def Test_reltime()
+  CheckDefFailure(['reltime("x")'], 'E1013: Argument 1: type mismatch, expected list<number> but got string')
+  CheckDefFailure(['reltime(["x", "y"])'], 'E1013: Argument 1: type mismatch, expected list<number> but got list<string>')
+  CheckDefFailure(['reltime([1, 2], 10)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
+  CheckDefFailure(['reltime([1, 2], ["a", "b"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
+  var start: list<any> = reltime()
+  assert_true(type(reltime(start)) == v:t_list)
+  var end: list<any> = reltime()
+  assert_true(type(reltime(start, end)) == v:t_list)
+enddef
+
+def Test_reltimefloat()
+  CheckDefFailure(['reltimefloat("x")'], 'E1013: Argument 1: type mismatch, expected list<number> but got string')
+  CheckDefFailure(['reltimefloat([1.1])'], 'E1013: Argument 1: type mismatch, expected list<number> but got list<float>')
+  assert_true(type(reltimefloat(reltime())) == v:t_float)
+enddef
+
+def Test_reltimestr()
+  CheckDefFailure(['reltimestr(true)'], 'E1013: Argument 1: type mismatch, expected list<number> but got bool')
+  CheckDefFailure(['reltimestr([true])'], 'E1013: Argument 1: type mismatch, expected list<number> but got list<bool>')
+  assert_true(type(reltimestr(reltime())) == v:t_string)
+enddef
+
+def Test_remote_foreground()
+  CheckDefFailure(['remote_foreground(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_fails('remote_foreground("NonExistingServer")', 'E241:')
+enddef
+
+def Test_remote_startserver()
+  CheckDefFailure(['remote_startserver({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>')
+enddef
+
 def Test_remove_return_type()
   var l = remove({one: [1, 2], two: [3, 4]}, 'one')
   var res = 0
@@ -1141,6 +1425,16 @@ def Test_remove_return_type()
     res += n
   endfor
   res->assert_equal(3)
+enddef
+
+def Test_rename()
+  CheckDefFailure(['rename(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['rename("a", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+enddef
+
+def Test_resolve()
+  CheckDefFailure(['resolve([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  assert_equal('SomeFile', resolve('SomeFile'))
 enddef
 
 def Test_reverse_return_type()
@@ -1165,6 +1459,13 @@ enddef
 def Test_screenchars()
   CheckDefFailure(['echo screenchars("x", 1)'], 'E1013: Argument 1: type mismatch, expected number but got string')
   CheckDefFailure(['echo screenchars(1, "x")'], 'E1013: Argument 2: type mismatch, expected number but got string')
+enddef
+
+def Test_screenpos()
+  CheckDefFailure(['screenpos("a", 1, 1)'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  CheckDefFailure(['screenpos(1, "b", 1)'], 'E1013: Argument 2: type mismatch, expected number but got string')
+  CheckDefFailure(['screenpos(1, 1, "c")'], 'E1013: Argument 3: type mismatch, expected number but got string')
+  assert_equal({col: 1, row: 1, endcol: 1, curscol: 1}, screenpos(1, 1, 1))
 enddef
 
 def Test_screenstring()
@@ -1334,8 +1635,21 @@ def Test_setbufvar()
   getbufvar('%', 'myvar')->assert_equal(123)
 enddef
 
+def Test_setcharsearch()
+  CheckDefFailure(['setcharsearch("x")'], 'E1013: Argument 1: type mismatch, expected dict<any> but got string')
+  CheckDefFailure(['setcharsearch([])'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
+  var d: dict<any> = {char: 'x', forward: 1, until: 1}
+  setcharsearch(d)
+  assert_equal(d, getcharsearch())
+enddef
+
 def Test_setcmdpos()
   CheckDefFailure(['echo setcmdpos("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+enddef
+
+def Test_setfperm()
+  CheckDefFailure(['setfperm(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['setfperm("a", 0z10)'], 'E1013: Argument 2: type mismatch, expected string but got blob')
 enddef
 
 def Test_setloclist()
@@ -1353,8 +1667,19 @@ def Test_setreg()
   assert_fails('setreg("ab", 0)', 'E1162:')
 enddef 
 
+def Test_sha256()
+  CheckDefFailure(['sha256(100)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['sha256(0zABCD)'], 'E1013: Argument 1: type mismatch, expected string but got blob')
+  assert_equal('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad', sha256('abc'))
+enddef
+
 def Test_shiftwidth()
   CheckDefFailure(['echo shiftwidth("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+enddef
+
+def Test_simplify()
+  CheckDefFailure(['simplify(100)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  call assert_equal('NonExistingFile', simplify('NonExistingFile'))
 enddef
 
 def Test_slice()
@@ -1388,6 +1713,16 @@ def Test_spellsuggest()
   endif
 enddef
 
+def Test_sound_stop()
+  CheckFeature sound
+  CheckDefFailure(['sound_stop("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+enddef
+
+def Test_soundfold()
+  CheckDefFailure(['soundfold(20)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal('abc', soundfold('abc'))
+enddef
+
 def Test_sort_return_type()
   var res: list<number>
   res = [1, 2, 3]->sort()
@@ -1408,8 +1743,23 @@ def Test_sort_argument()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_spellbadword()
+  CheckDefFailure(['spellbadword(100)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  spellbadword('good')->assert_equal(['', ''])
+enddef
+
 def Test_split()
   split('  aa  bb  ', '\W\+', true)->assert_equal(['', 'aa', 'bb', ''])
+enddef
+
+def Test_srand()
+  CheckDefFailure(['srand("a")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  type(srand(100))->assert_equal(v:t_list)
+enddef
+
+def Test_state()
+  CheckDefFailure(['state({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>')
+  assert_equal('', state('a'))
 enddef
 
 def Run_str2float()
@@ -1439,6 +1789,30 @@ def Test_strchars()
   strchars("A\u20dd", true)->assert_equal(1)
 enddef
 
+def Test_strlen()
+  CheckDefFailure(['strlen([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  "abc"->strlen()->assert_equal(3)
+  strlen(99)->assert_equal(2)
+enddef
+
+def Test_strptime()
+  CheckFunction strptime
+  CheckDefFailure(['strptime(10, "2021")'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['strptime("%Y", 2021)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+  assert_true(strptime('%Y', '2021') != 0)
+enddef
+
+def Test_strtrans()
+  CheckDefFailure(['strtrans(20)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal('abc', strtrans('abc'))
+enddef
+
+def Test_strwidth()
+  CheckDefFailure(['strwidth(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckScriptFailure(['vim9script', 'echo strwidth(10)'], 'E1024:')
+  assert_equal(4, strwidth('abcd'))
+enddef
+
 def Test_submatch()
   var pat = 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)'
   var Rep = () => range(10)->mapnew((_, v) => submatch(v, true))->string()
@@ -1457,11 +1831,37 @@ def Test_substitute()
   endif
 enddef
 
+def Test_swapinfo()
+  CheckDefFailure(['swapinfo({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>')
+  call assert_equal({error: 'Cannot open file'}, swapinfo('x'))
+enddef
+
+def Test_swapname()
+  CheckDefFailure(['swapname([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  assert_fails('swapname("NonExistingBuf")', 'E94:')
+enddef
+
 def Test_synID()
   new
   setline(1, "text")
   synID(1, 1, true)->assert_equal(0)
   bwipe!
+enddef
+
+def Test_synIDtrans()
+  CheckDefFailure(['synIDtrans("a")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+enddef
+
+def Test_tabpagebuflist()
+  CheckDefFailure(['tabpagebuflist("t")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  assert_equal([bufnr('')], tabpagebuflist())
+  assert_equal([bufnr('')], tabpagebuflist(1))
+enddef
+
+def Test_tabpagenr()
+  CheckDefFailure(['tabpagenr(1)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal(1, tabpagenr('$'))
+  assert_equal(1, tabpagenr())
 enddef
 
 def Test_term_gettty()
@@ -1486,12 +1886,23 @@ def Test_term_start()
   endif
 enddef
 
+def Test_timer_info()
+  CheckDefFailure(['timer_info("id")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  assert_equal([], timer_info(100))
+  assert_equal([], timer_info())
+enddef
+
 def Test_timer_paused()
   var id = timer_start(50, () => 0)
   timer_pause(id, true)
   var info = timer_info(id)
   info[0]['paused']->assert_equal(1)
   timer_stop(id)
+enddef
+
+def Test_timer_stop()
+  CheckDefFailure(['timer_stop("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  assert_equal(0, timer_stop(100))
 enddef
 
 def Test_tolower()
@@ -1508,15 +1919,44 @@ def Test_tr()
   CheckDefFailure(['echo tr("a", "a", 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
 enddef
 
+def Test_undofile()
+  CheckDefFailure(['undofile(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  assert_equal('.abc.un~', fnamemodify(undofile('abc'), ':t'))
+enddef
+
+def Test_values()
+  CheckDefFailure(['values([])'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
+  assert_equal([], {}->values())
+  assert_equal(['sun'], {star: 'sun'}->values())
+enddef
+
 def Test_win_execute()
   assert_equal("\n" .. winnr(), win_execute(win_getid(), 'echo winnr()'))
   assert_equal('', win_execute(342343, 'echo winnr()'))
+enddef
+
+def Test_win_findbuf()
+  CheckDefFailure(['win_findbuf("a")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  assert_equal([], win_findbuf(1000))
+  assert_equal([win_getid()], win_findbuf(bufnr('')))
+enddef
+
+def Test_win_getid()
+  CheckDefFailure(['win_getid(".")'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  CheckDefFailure(['win_getid(1, ".")'], 'E1013: Argument 2: type mismatch, expected number but got string')
+  assert_equal(win_getid(), win_getid(1, 1))
 enddef
 
 def Test_win_splitmove()
   split
   win_splitmove(1, 2, {vertical: true, rightbelow: true})
   close
+enddef
+
+def Test_winnr()
+  CheckDefFailure(['winnr([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+  assert_equal(1, winnr())
+  assert_equal(1, winnr('$'))
 enddef
 
 def Test_winrestcmd()
@@ -1526,6 +1966,14 @@ def Test_winrestcmd()
   exe cmd
   assert_equal(cmd, winrestcmd())
   close
+enddef
+
+def Test_winrestview()
+  CheckDefFailure(['winrestview([])'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
+  :%d _
+  setline(1, 'Hello World')
+  winrestview({lnum: 1, col: 6})
+  assert_equal([1, 7], [line('.'), col('.')])
 enddef
 
 def Test_winsaveview()
