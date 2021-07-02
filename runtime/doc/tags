@@ -6571,6 +6571,7 @@ ft-docbkxml-syntax	syntax.txt	/*ft-docbkxml-syntax*
 ft-dosbatch-syntax	syntax.txt	/*ft-dosbatch-syntax*
 ft-dtd-syntax	syntax.txt	/*ft-dtd-syntax*
 ft-eiffel-syntax	syntax.txt	/*ft-eiffel-syntax*
+ft-elixir-syntax	syntax.txt	/*ft-elixir-syntax*
 ft-erlang-syntax	syntax.txt	/*ft-erlang-syntax*
 ft-euphoria-syntax	syntax.txt	/*ft-euphoria-syntax*
 ft-flexwiki-syntax	syntax.txt	/*ft-flexwiki-syntax*
