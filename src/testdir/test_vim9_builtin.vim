@@ -1344,8 +1344,10 @@ def Test_prevnonblank()
 enddef
 
 def Test_prompt_getprompt()
-  CheckDefFailure(['prompt_getprompt([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
-  assert_equal('', prompt_getprompt('NonExistingBuf'))
+  if has('channel')
+    CheckDefFailure(['prompt_getprompt([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
+    assert_equal('', prompt_getprompt('NonExistingBuf'))
+  endif
 enddef
 
 def Test_rand()

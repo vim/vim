@@ -8219,6 +8219,8 @@ prompt_getprompt({buf})					*prompt_getprompt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_getprompt()
 
+<		{only available when compiled with the |+channel| feature}
+
 
 prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 		Set prompt callback for buffer {buf} to {expr}.  When {expr}
@@ -8252,6 +8254,7 @@ prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 <		Can also be used as a |method|: >
 			GetBuffer()->prompt_setcallback(callback)
 
+<		{only available when compiled with the |+channel| feature}
 
 prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		Set a callback for buffer {buf} to {expr}.  When {expr} is an
@@ -8265,6 +8268,8 @@ prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setinterrupt(callback)
 
+<		{only available when compiled with the |+channel| feature}
+
 prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		Set prompt for buffer {buf} to {text}.  You most likely want
 		{text} to end in a space.
@@ -8274,6 +8279,8 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 <
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setprompt('command: ')
+
+<		{only available when compiled with the |+channel| feature}
 
 prop_ functions are documented here: |text-prop-functions|
 
