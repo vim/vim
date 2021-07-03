@@ -650,6 +650,9 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 " Gedcom
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
+" Gemtext
+au BufNewFile,BufRead *.gmi,*.gemini		setf gemtext
+
 " Gift (Moodle)
 autocmd BufRead,BufNewFile *.gift		setf gift
 
