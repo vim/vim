@@ -169,7 +169,8 @@ func Test_strwidth()
 
   if has('float')
     call assert_equal(3, strwidth(1.2))
-    call CheckDefExecAndScriptFailure(['echo strwidth(1.2)'], 'E806:')
+    call CheckDefFailure(['echo strwidth(1.2)'], 'E1013:')
+    call CheckScriptFailure(['vim9script', 'echo strwidth(1.2)'], 'E806:')
   endif
 
   set ambiwidth&
@@ -236,7 +237,7 @@ func Test_str2nr()
   call assert_fails('call str2nr({->2})', 'E729:')
   if has('float')
     call assert_equal(1, str2nr(1.2))
-    call CheckDefExecFailure(['echo str2nr(1.2)'], 'E1013:')
+    call CheckDefFailure(['echo str2nr(1.2)'], 'E1013:')
     call CheckScriptFailure(['vim9script', 'echo str2nr(1.2)'], 'E806:')
   endif
   call assert_fails('call str2nr(10, [])', 'E745:')
@@ -499,7 +500,8 @@ func Test_simplify()
   call assert_fails('call simplify({})', 'E731:')
   if has('float')
     call assert_equal('1.2', simplify(1.2))
-    call CheckDefExecAndScriptFailure(['echo simplify(1.2)'], 'E806:')
+    call CheckDefFailure(['echo simplify(1.2)'], 'E1013:')
+    call CheckScriptFailure(['vim9script', 'echo simplify(1.2)'], 'E806:')
   endif
 endfunc
 
