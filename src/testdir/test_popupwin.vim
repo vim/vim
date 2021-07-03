@@ -1437,6 +1437,7 @@ endfunc
 
 func Test_popup_atcursor_pos()
   CheckScreendump
+  CheckFeature conceal
 
   let lines =<< trim END
 	call setline(1, repeat([repeat('-', 60)], 15))
