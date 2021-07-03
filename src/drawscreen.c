@@ -2007,7 +2007,9 @@ win_update(win_T *wp)
 		ve_flags = save_ve_flags;
 #endif
 		++toc;
-		if (curwin->w_curswant == MAXCOL)
+		// Highlight to the end of the line, unless 'virtualedit' has
+		// "block".
+		if (curwin->w_curswant == MAXCOL && !(ve_flags & VE_BLOCK))
 		    toc = MAXCOL;
 
 		if (fromc != wp->w_old_cursor_fcol
