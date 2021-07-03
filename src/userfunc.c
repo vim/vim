@@ -5478,35 +5478,32 @@ find_var_in_scoped_ht(char_u *name, int no_autoload)
     int
 set_ref_in_previous_funccal(int copyID)
 {
-    int		abort = FALSE;
     funccall_T	*fc;
 
-    for (fc = previous_funccal; !abort && fc != NULL; fc = fc->caller)
+    for (fc = previous_funccal; fc != NULL; fc = fc->caller)
     {
 	fc->fc_copyID = copyID + 1;
-	abort = abort
-	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
-	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1, NULL)
-	    || set_ref_in_list_items(&fc->l_varlist, copyID + 1, NULL);
+	if (set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
+		|| set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1, NULL)
+		|| set_ref_in_list_items(&fc->l_varlist, copyID + 1, NULL))
+	    return TRUE;
     }
-    return abort;
+    return FALSE;
 }
 
     static int
 set_ref_in_funccal(funccall_T *fc, int copyID)
 {
-    int abort = FALSE;
-
     if (fc->fc_copyID != copyID)
     {
 	fc->fc_copyID = copyID;
-	abort = abort
-	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL)
-	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL)
-	    || set_ref_in_list_items(&fc->l_varlist, copyID, NULL)
-	    || set_ref_in_func(NULL, fc->func, copyID);
+	if (set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL)
+		|| set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL)
+		|| set_ref_in_list_items(&fc->l_varlist, copyID, NULL)
+		|| set_ref_in_func(NULL, fc->func, copyID))
+	    return TRUE;
     }
-    return abort;
+    return FALSE;
 }
 
 /*
@@ -5515,19 +5512,19 @@ set_ref_in_funccal(funccall_T *fc, int copyID)
     int
 set_ref_in_call_stack(int copyID)
 {
-    int			abort = FALSE;
     funccall_T		*fc;
     funccal_entry_T	*entry;
 
-    for (fc = current_funccal; !abort && fc != NULL; fc = fc->caller)
-	abort = abort || set_ref_in_funccal(fc, copyID);
+    for (fc = current_funccal; fc != NULL; fc = fc->caller)
+	if (set_ref_in_funccal(fc, copyID))
+	    return TRUE;
 
     // Also go through the funccal_stack.
-    for (entry = funccal_stack; !abort && entry != NULL; entry = entry->next)
-	for (fc = entry->top_funccal; !abort && fc != NULL; fc = fc->caller)
-	    abort = abort || set_ref_in_funccal(fc, copyID);
-
-    return abort;
+    for (entry = funccal_stack; entry != NULL; entry = entry->next)
+	for (fc = entry->top_funccal; fc != NULL; fc = fc->caller)
+	    if (set_ref_in_funccal(fc, copyID))
+		return TRUE;
+    return FALSE;
 }
 
 /*
@@ -5538,7 +5535,6 @@ set_ref_in_functions(int copyID)
 {
     int		todo;
     hashitem_T	*hi = NULL;
-    int		abort = FALSE;
     ufunc_T	*fp;
 
     todo = (int)func_hashtab.ht_used;
@@ -5548,11 +5544,12 @@ set_ref_in_functions(int copyID)
 	{
 	    --todo;
 	    fp = HI2UF(hi);
-	    if (!func_name_refcount(fp->uf_name))
-		abort = abort || set_ref_in_func(NULL, fp, copyID);
+	    if (!func_name_refcount(fp->uf_name)
+					  && set_ref_in_func(NULL, fp, copyID))
+		return TRUE;
 	}
     }
-    return abort;
+    return FALSE;
 }
 
 /*
@@ -5562,12 +5559,12 @@ set_ref_in_functions(int copyID)
 set_ref_in_func_args(int copyID)
 {
     int i;
-    int abort = FALSE;
 
     for (i = 0; i < funcargs.ga_len; ++i)
-	abort = abort || set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
-							  copyID, NULL, NULL);
-    return abort;
+	if (set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
+							  copyID, NULL, NULL))
+	    return TRUE;
+    return FALSE;
 }
 
 /*
