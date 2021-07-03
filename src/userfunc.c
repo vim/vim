@@ -5484,8 +5484,7 @@ set_ref_in_previous_funccal(int copyID)
     for (fc = previous_funccal; !abort && fc != NULL; fc = fc->caller)
     {
 	fc->fc_copyID = copyID + 1;
-	abort = abort
-	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
+	abort = set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
 	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1, NULL)
 	    || set_ref_in_list_items(&fc->l_varlist, copyID + 1, NULL);
     }
@@ -5520,12 +5519,12 @@ set_ref_in_call_stack(int copyID)
     funccal_entry_T	*entry;
 
     for (fc = current_funccal; !abort && fc != NULL; fc = fc->caller)
-	abort = abort || set_ref_in_funccal(fc, copyID);
+	abort = set_ref_in_funccal(fc, copyID);
 
     // Also go through the funccal_stack.
     for (entry = funccal_stack; !abort && entry != NULL; entry = entry->next)
 	for (fc = entry->top_funccal; !abort && fc != NULL; fc = fc->caller)
-	    abort = abort || set_ref_in_funccal(fc, copyID);
+	    abort = set_ref_in_funccal(fc, copyID);
 
     return abort;
 }
