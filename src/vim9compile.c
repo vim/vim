@@ -274,7 +274,7 @@ arg_exists(
 
     if (len == 0)
 	return FAIL;
-    for (idx = 0; idx < cctx->ctx_ufunc->uf_args.ga_len; ++idx)
+    for (idx = 0; idx < cctx->ctx_ufunc->uf_args_visible; ++idx)
     {
 	char_u *arg = FUNCARG(cctx->ctx_ufunc, idx);
 
@@ -9172,7 +9172,6 @@ compile_def_function(
     {
 	int	count = ufunc->uf_def_args.ga_len;
 	int	first_def_arg = ufunc->uf_args.ga_len - count;
-	int	uf_args_len = ufunc->uf_args.ga_len;
 	int	i;
 	char_u	*arg;
 	int	off = STACK_FRAME_SIZE + (ufunc->uf_va_name != NULL ? 1 : 0);
@@ -9195,12 +9194,11 @@ compile_def_function(
 		goto erret;
 
 	    // Make sure later arguments are not found.
-	    ufunc->uf_args.ga_len = i;
+	    ufunc->uf_args_visible = arg_idx;
 
 	    arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
 	    r = compile_expr0(&arg, &cctx);
 
-	    ufunc->uf_args.ga_len = uf_args_len;
 	    if (r == FAIL)
 		goto erret;
 
@@ -9230,6 +9228,7 @@ compile_def_function(
 	if (did_set_arg_type)
 	    set_function_type(ufunc);
     }
+    ufunc->uf_args_visible = ufunc->uf_args.ga_len;
 
     /*
      * Loop over all the lines of the function and generate instructions.

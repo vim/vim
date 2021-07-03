@@ -1610,6 +1610,8 @@ typedef struct
     int		uf_dfunc_idx;	// only valid if uf_def_status is UF_COMPILED
     garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions
+    int		uf_args_visible; // normally uf_args.ga_len, less when
+				 // compiling default argument expression.
 
     // for :def (for :function uf_ret_type is NULL)
     type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)

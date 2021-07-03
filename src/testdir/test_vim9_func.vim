@@ -452,6 +452,12 @@ def Test_call_default_args()
       MyDefaultThird('->', 'xx', v:none)->assert_equal('->xxbb')
       MyDefaultThird('->', v:none, 'yy')->assert_equal('->aayy')
       MyDefaultThird('->', 'xx', 'yy')->assert_equal('->xxyy')
+
+      def DefArg(mandatory: any, optional = mandatory): string
+        return mandatory .. optional
+      enddef
+      DefArg(1234)->assert_equal('12341234')
+      DefArg("ok")->assert_equal('okok')
   END
   CheckDefAndScriptSuccess(lines)
 
