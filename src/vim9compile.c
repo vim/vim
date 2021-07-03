@@ -7747,6 +7747,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     type_T	*vartype;
     type_T	*item_type = &t_any;
     int		idx;
+    int		prev_lnum = cctx->ctx_prev_lnum;
 
     p = skip_var_list(arg_start, TRUE, &var_count, &semicolon, FALSE);
     if (p == NULL)
@@ -7774,7 +7775,11 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     if (cctx->ctx_compile_type == CT_DEBUG && instr->ga_len > 0
 	    && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
 							.isn_type == ISN_DEBUG)
+    {
 	--instr->ga_len;
+	prev_lnum = ((isn_T *)instr->ga_data)[instr->ga_len]
+						 .isn_arg.debug.dbg_break_lnum;
+    }
 
     scope = new_scope(cctx, FOR_SCOPE);
     if (scope == NULL)
@@ -7934,8 +7939,15 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     }
 
     if (cctx->ctx_compile_type == CT_DEBUG)
+    {
+	int save_prev_lnum = cctx->ctx_prev_lnum;
+
 	// Add ISN_DEBUG here, so that the loop variables can be inspected.
+	// Use the prev_lnum from the ISN_DEBUG instruction removed above.
+	cctx->ctx_prev_lnum = prev_lnum;
 	generate_instr_debug(cctx);
+	cctx->ctx_prev_lnum = save_prev_lnum;
+    }
 
     return arg_end;
 
