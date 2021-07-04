@@ -1,4 +1,4 @@
-/* math.c */
+/* float.c */
 int string2float(char_u *text, float_T *value);
 void f_abs(typval_T *argvars, typval_T *rettv);
 void f_acos(typval_T *argvars, typval_T *rettv);
@@ -17,6 +17,7 @@ void f_isnan(typval_T *argvars, typval_T *rettv);
 void f_log(typval_T *argvars, typval_T *rettv);
 void f_log10(typval_T *argvars, typval_T *rettv);
 void f_pow(typval_T *argvars, typval_T *rettv);
+float_T vim_round(float_T f);
 void f_round(typval_T *argvars, typval_T *rettv);
 void f_sin(typval_T *argvars, typval_T *rettv);
 void f_sinh(typval_T *argvars, typval_T *rettv);
