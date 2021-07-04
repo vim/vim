@@ -388,6 +388,16 @@ def Test_assign_linebreak()
           ->copy()
   END
   CheckDefFailure(lines, 'E1012:', 2)
+
+  lines =<< trim END
+      var x: any
+      x.key = 1
+          + 2
+          + 3
+          + 4
+          + 5
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1148:', 'E1203:', 2)
 enddef
 
 def Test_assign_index()
