@@ -1130,7 +1130,12 @@ handle_swap_exists(bufref_T *old_curbuf)
 	close_buffer(curwin, curbuf, DOBUF_UNLOAD, FALSE, FALSE);
 	if (old_curbuf == NULL || !bufref_valid(old_curbuf)
 					      || old_curbuf->br_buf == curbuf)
+	{
+	    // Block autocommands here because curwin->w_buffer is NULL.
+	    block_autocmds();
 	    buf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
+	    unblock_autocmds();
+	}
 	else
 	    buf = old_curbuf->br_buf;
 	if (buf != NULL)
