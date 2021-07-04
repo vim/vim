@@ -1262,7 +1262,7 @@ func Test_visual_block_with_virtualedit()
   " clean up
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
-  call delete('XTest_beval')
+  call delete('XTest_block')
 endfunc
 
 
