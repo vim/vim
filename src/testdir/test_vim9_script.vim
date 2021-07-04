@@ -603,6 +603,15 @@ def Test_try_catch_throw()
   CheckScriptSuccess(lines)
   assert_match('E808: Number or Float required', g:caught)
   unlet g:caught
+
+  # missing catch and/or finally
+  lines =<< trim END
+      vim9script
+      try
+        echo 'something'
+      endtry
+  END
+  CheckScriptFailure(lines, 'E1032:')
 enddef
 
 def Test_try_in_catch()

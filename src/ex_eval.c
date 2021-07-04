@@ -1670,6 +1670,8 @@ ex_catch(exarg_T *eap)
 	for (idx = cstack->cs_idx; idx > 0; --idx)
 	    if (cstack->cs_flags[idx] & CSF_TRY)
 		break;
+	if (cstack->cs_flags[idx] & CSF_TRY)
+	    cstack->cs_flags[idx] |= CSF_CATCH;
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a ":catch" after ":finally" and ignore it.
@@ -1963,8 +1965,8 @@ ex_endtry(exarg_T *eap)
 	 * made inactive by a ":continue", ":break", ":return", or ":finish" in
 	 * the finally clause.  The latter case need not be tested since then
 	 * anything pending has already been discarded. */
-	skip = did_emsg || got_int || did_throw ||
-	    !(cstack->cs_flags[cstack->cs_idx] & CSF_TRUE);
+	skip = did_emsg || got_int || did_throw
+			     || !(cstack->cs_flags[cstack->cs_idx] & CSF_TRUE);
 
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
 	{
@@ -1991,6 +1993,14 @@ ex_endtry(exarg_T *eap)
 	else
 	{
 	    idx = cstack->cs_idx;
+
+	    if (in_vim9script()
+		     && (cstack->cs_flags[idx] & (CSF_CATCH|CSF_FINALLY)) == 0)
+	    {
+		// try/endtry without any catch or finally: give an error and
+		// continue.
+		eap->errmsg = _(e_missing_catch_or_finally);
+	    }
 
 	    /*
 	     * If we stopped with the exception currently being thrown at this
