@@ -3148,7 +3148,8 @@ call_func(
 	    argvars = argv;
 	    argcount = partial->pt_argc + argcount_in;
 
-	    if (funcexe->check_type != NULL)
+	    if (funcexe->check_type != NULL
+				     && funcexe->check_type->tt_argcount != -1)
 	    {
 		// Now funcexe->check_type is missing the added arguments, make
 		// a copy of the type with the correction.

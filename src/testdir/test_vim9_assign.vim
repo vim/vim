@@ -681,6 +681,16 @@ def Test_assignment_partial()
       assert_equal('done', Partial())
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Func(b: bool)
+      enddef
+      var Ref: func = function(Func, [true])
+      assert_equal('func()', typename(Ref))
+      Ref()
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_assignment_list_any_index()
