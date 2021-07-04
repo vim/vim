@@ -661,13 +661,16 @@ def Test_assignment_list()
   CheckDefExecAndScriptFailure(lines, 'E1012:', 5)
 enddef
 
-def PartFunc(b: bool): string
+def PartFuncBool(b: bool): string
   return 'done'
 enddef
 
 def Test_assignment_partial()
-  var Partial: func(): string = function(PartFunc, [true])
-  assert_equal('done', Partial())
+  var lines =<< trim END
+      var Partial: func(): string = function(PartFuncBool, [true])
+      assert_equal('done', Partial())
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_assignment_list_any_index()

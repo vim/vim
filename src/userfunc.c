@@ -3103,6 +3103,7 @@ call_func(
     int		argv_clear = 0;
     int		argv_base = 0;
     partial_T	*partial = funcexe->partial;
+    type_T	check_type;
 
     // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
     // even when call_func() returns FAIL.
@@ -3146,6 +3147,16 @@ call_func(
 		argv[i + argv_clear] = argvars_in[i];
 	    argvars = argv;
 	    argcount = partial->pt_argc + argcount_in;
+
+	    if (funcexe->check_type != NULL)
+	    {
+		// Now funcexe->check_type is missing the added arguments, make
+		// a copy of the type with the correction.
+		check_type = *funcexe->check_type;
+		funcexe->check_type = &check_type;
+		check_type.tt_argcount += partial->pt_argc;
+		check_type.tt_min_argcount += partial->pt_argc;
+	    }
 	}
     }
 

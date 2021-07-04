@@ -355,7 +355,20 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	    if (ufunc->uf_func_type == NULL)
 		set_function_type(ufunc);
 	    if (ufunc->uf_func_type != NULL)
+	    {
+		if (tv->v_type == VAR_PARTIAL
+					    && tv->vval.v_partial->pt_argc > 0)
+		{
+		    type = get_type_ptr(type_gap);
+		    if (type == NULL)
+			return NULL;
+		    *type = *ufunc->uf_func_type;
+		    type->tt_argcount -= tv->vval.v_partial->pt_argc;
+		    type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+		    return type;
+		}
 		return ufunc->uf_func_type;
+	    }
 	}
     }
 
