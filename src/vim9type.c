@@ -526,6 +526,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, where_T where)
 		ret = check_type(expected->tt_member, actual->tt_member,
 								 FALSE, where);
 	    if (ret == OK && expected->tt_argcount != -1
+		    && actual->tt_min_argcount != -1
 		    && (actual->tt_argcount == -1
 			|| (actual->tt_argcount < expected->tt_min_argcount
 			    || actual->tt_argcount > expected->tt_argcount)))
