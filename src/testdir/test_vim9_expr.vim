@@ -57,7 +57,7 @@ def Test_expr1_trinary()
       assert_equal(function('len'), Res)
 
       var RetOne: func(string): number = function('len')
-      var RetTwo: func(string): number = function('winnr')
+      var RetTwo: func(string): number = function('charcol')
       var RetThat: func = g:atrue ? RetOne : RetTwo
       assert_equal(function('len'), RetThat)
 

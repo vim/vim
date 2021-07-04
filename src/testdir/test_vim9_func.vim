@@ -1030,7 +1030,7 @@ def Test_pass_legacy_lambda_to_def_func()
 
   lines =<< trim END
       vim9script
-      def g:TestFunc(f: func())
+      def g:TestFunc(f: func)
       enddef
       legacy call g:TestFunc({-> 0})
       delfunc g:TestFunc

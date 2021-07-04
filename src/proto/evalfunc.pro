@@ -6,6 +6,7 @@ int find_internal_func(char_u *name);
 int has_internal_func(char_u *name);
 char *internal_func_name(int idx);
 int internal_func_check_arg_types(type_T **types, int idx, int argcount, cctx_T *cctx);
+void internal_func_get_argcount(int idx, int *argcount, int *min_argcount);
 type_T *internal_func_ret_type(int idx, int argcount, type_T **argtypes);
 int internal_func_is_map(int idx);
 int check_internal_func(int idx, int argcount);
@@ -21,7 +22,6 @@ void f_has(typval_T *argvars, typval_T *rettv);
 int dynamic_feature(char_u *feature);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 void range_list_materialize(list_T *list);
-float_T vim_round(float_T f);
 long do_searchpair(char_u *spat, char_u *mpat, char_u *epat, int dir, typval_T *skip, int flags, pos_T *match_pos, linenr_T lnum_stop, long time_limit);
 void f_string(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

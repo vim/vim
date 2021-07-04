@@ -2055,6 +2055,18 @@ internal_func_check_arg_types(
 }
 
 /*
+ * Get the argument count for function "idx".
+ * "argcount" is the total argument count, "min_argcount" the non-optional
+ * argument count.
+ */
+    void
+internal_func_get_argcount(int idx, int *argcount, int *min_argcount)
+{
+    *argcount = global_functions[idx].f_max_argc;
+    *min_argcount = global_functions[idx].f_min_argc;
+}
+
+/*
  * Call the "f_retfunc" function to obtain the return type of function "idx".
  * "argtypes" is the list of argument types or NULL when there are no
  * arguments.
