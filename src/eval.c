@@ -1660,6 +1660,7 @@ eval_for_line(
     evalarg_T	*evalarg)
 {
     forinfo_T	*fi;
+    char_u	*var_list_end;
     char_u	*expr;
     typval_T	tv;
     list_T	*l;
@@ -1671,15 +1672,19 @@ eval_for_line(
     if (fi == NULL)
 	return NULL;
 
-    expr = skip_var_list(arg, TRUE, &fi->fi_varcount, &fi->fi_semicolon, FALSE);
-    if (expr == NULL)
+    var_list_end = skip_var_list(arg, TRUE, &fi->fi_varcount,
+						     &fi->fi_semicolon, FALSE);
+    if (var_list_end == NULL)
 	return fi;
 
-    expr = skipwhite_and_linebreak(expr, evalarg);
+    expr = skipwhite_and_linebreak(var_list_end, evalarg);
     if (expr[0] != 'i' || expr[1] != 'n'
 				  || !(expr[2] == NUL || VIM_ISWHITE(expr[2])))
     {
-	emsg(_(e_missing_in));
+	if (in_vim9script() && *expr == ':' && expr != var_list_end)
+	    semsg(_(e_no_white_space_allowed_before_colon_str), expr);
+	else
+	    emsg(_(e_missing_in));
 	return fi;
     }
 

@@ -2566,6 +2566,13 @@ def Test_for_loop_fails()
       endfor
   END
   CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
+
+  lines =<< trim END
+      for n : number in [1, 2]
+        echo n
+      endfor
+  END
+  CheckDefAndScriptFailure(lines, 'E1059:', 1)
 enddef
 
 def Test_for_loop_script_var()

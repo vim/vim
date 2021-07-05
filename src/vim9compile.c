@@ -7775,7 +7775,10 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	return NULL;
     if (STRNCMP(p, "in", 2) != 0 || !IS_WHITE_OR_NUL(p[2]))
     {
-	emsg(_(e_missing_in));
+	if (*p == ':' && wp != p)
+	    semsg(_(e_no_white_space_allowed_before_colon_str), p);
+	else
+	    emsg(_(e_missing_in));
 	return NULL;
     }
     wp = p + 2;
