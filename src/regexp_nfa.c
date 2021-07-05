@@ -1707,12 +1707,23 @@ nfa_regatom(void)
 		    {
 			long_u	n = 0;
 			int	cmp = c;
+			int	cur = FALSE;
 
 			if (c == '<' || c == '>')
 			    c = getchr();
+			if (no_Magic(c) == '.')
+			{
+			    cur = TRUE;
+			    c = getchr();
+			}
 			while (VIM_ISDIGIT(c))
 			{
-			    long_u tmp = n * 10 + (c - '0');
+			    long_u tmp;
+
+			    if (cur)
+				semsg(_(e_regexp_number_after_dot_pos_search),
+								 no_Magic(c));
+			    tmp = n * 10 + (c - '0');
 
 			    if (tmp < n)
 			    {
@@ -1729,6 +1740,8 @@ nfa_regatom(void)
 
 			    if (c == 'l')
 			    {
+				if (cur)
+				    n = curwin->w_cursor.lnum;
 				// \%{n}l  \%{n}<l  \%{n}>l
 				EMIT(cmp == '<' ? NFA_LNUM_LT :
 				     cmp == '>' ? NFA_LNUM_GT : NFA_LNUM);
@@ -1736,11 +1749,26 @@ nfa_regatom(void)
 				    at_start = TRUE;
 			    }
 			    else if (c == 'c')
+			    {
+				if (cur)
+				{
+				    n = curwin->w_cursor.col;
+				    n++;
+				}
 				// \%{n}c  \%{n}<c  \%{n}>c
 				EMIT(cmp == '<' ? NFA_COL_LT :
 				     cmp == '>' ? NFA_COL_GT : NFA_COL);
+			    }
 			    else
 			    {
+				if (cur)
+				{
+				    colnr_T vcol = 0;
+
+				    getvvcol(curwin, &curwin->w_cursor,
+							    NULL, NULL, &vcol);
+				    n = ++vcol;
+				}
 				// \%{n}v  \%{n}<v  \%{n}>v
 				EMIT(cmp == '<' ? NFA_VCOL_LT :
 				     cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);

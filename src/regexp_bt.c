@@ -1628,14 +1628,20 @@ regatom(int *flagp)
 
 		default:
 			  if (VIM_ISDIGIT(c) || c == '<' || c == '>'
-								 || c == '\'')
+						|| c == '\'' || c == '.')
 			  {
 			      long_u	n = 0;
 			      int	cmp;
+			      int	cur = FALSE;
 
 			      cmp = c;
 			      if (cmp == '<' || cmp == '>')
 				  c = getchr();
+			      if (no_Magic(c) == '.')
+			      {
+				  cur = TRUE;
+				  c = getchr();
+			      }
 			      while (VIM_ISDIGIT(c))
 			      {
 				  n = n * 10 + (c - '0');
@@ -1657,16 +1663,42 @@ regatom(int *flagp)
 			      }
 			      else if (c == 'l' || c == 'c' || c == 'v')
 			      {
+				  if (cur && n)
+				  {
+				    semsg(_(e_regexp_number_after_dot_pos_search), no_Magic(c));
+				    rc_did_emsg = TRUE;
+				    return NULL;
+				  }
 				  if (c == 'l')
 				  {
+				      if (cur)
+					  n = curwin->w_cursor.lnum;
 				      ret = regnode(RE_LNUM);
 				      if (save_prev_at_start)
 					  at_start = TRUE;
 				  }
 				  else if (c == 'c')
+				  {
+				      if (cur)
+				      {
+					  n = curwin->w_cursor.col;
+					  n++;
+				      }
 				      ret = regnode(RE_COL);
+				  }
 				  else
+				  {
+				      if (cur)
+				      {
+					  colnr_T vcol = 0;
+
+					  getvvcol(curwin, &curwin->w_cursor,
+							    NULL, NULL, &vcol);
+					  ++vcol;
+					  n = vcol;
+				      }
 				      ret = regnode(RE_VCOL);
+				  }
 				  if (ret == JUST_CALC_SIZE)
 				      regsize += 5;
 				  else
