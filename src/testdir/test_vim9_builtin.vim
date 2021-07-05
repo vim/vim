@@ -1415,6 +1415,8 @@ def Test_remote_foreground()
   CheckFeature clientserver
   # remote_foreground() doesn't fail on MS-Windows
   CheckNotMSWindows
+  CheckEnv DISPLAY
+
   CheckDefFailure(['remote_foreground(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
   assert_fails('remote_foreground("NonExistingServer")', 'E241:')
 enddef
