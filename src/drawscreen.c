@@ -1382,7 +1382,10 @@ fold_line(
 
 # ifdef FEAT_CONCEAL
     // When the line was not folded w_wrow may have been set, recompute it.
-    if (wp == curwin && lnum == wp->w_cursor.lnum && conceal_cursor_line(wp))
+    if (wp == curwin
+	    && wp->w_cursor.lnum >= lnum
+	    && wp->w_cursor.lnum <= lnume
+	    && conceal_cursor_line(wp))
 	curs_columns(TRUE);
 # endif
 }
