@@ -4837,6 +4837,11 @@ mch_call_shell(
     signal(SIGTERM, SIG_IGN);
     signal(SIGABRT, SIG_IGN);
 
+#ifdef FEAT_RESTORE_ORIG_SCREEN
+    if (USE_VTP && p_rs)
+	vtp_printf("\033[m\033[0K"); // reset default and clear line
+#endif
+
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);	// set to normal mode
 
@@ -5600,10 +5605,15 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
-    if (!p_rs && USE_VTP)
+# ifdef FEAT_RESTORE_ORIG_SCREEN
+    if (!g_cbNonTermcap.IsValid && USE_VTP && p_rs)
+    {
+	SaveConsoleBuffer(&g_cbNonTermcap);
 	vtp_printf("\033[?1049h");
-
-    SaveConsoleBuffer(&g_cbNonTermcap);
+    }
+    else
+# endif
+	SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
     {
@@ -5706,11 +5716,19 @@ termcap_mode_end(void)
 	/*
 	 * Position the cursor at the leftmost column of the desired row.
 	 */
-	SetConsoleCursorPosition(g_hConOut, coord);
+# ifdef FEAT_RESTORE_ORIG_SCREEN
+	if (!(exiting && p_rs && USE_VTP))
+# endif
+	    SetConsoleCursorPosition(g_hConOut, coord);
     }
 
-    if (!p_rs && USE_VTP)
+# ifdef FEAT_RESTORE_ORIG_SCREEN
+    if (p_rs && USE_VTP && cb == &g_cbOrig)
+    {
 	vtp_printf("\033[?1049l");
+	SetConsoleCursorPosition(g_hConOut, cb->Info.dwCursorPosition);
+    }
+# endif
 
     g_fTermcapMode = FALSE;
 }
