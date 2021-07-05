@@ -1777,7 +1777,10 @@ next_for_item(void *fi_void, char_u *arg)
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
     int		flag = ASSIGN_FOR_LOOP | (in_vim9script()
-			 ? (ASSIGN_FINAL | ASSIGN_DECL | ASSIGN_NO_MEMBER_TYPE)
+			 ? (ASSIGN_FINAL
+			     // first round: error if variable exists
+			     | (fi->fi_bi == 0 ? 0 : ASSIGN_DECL)
+			     | ASSIGN_NO_MEMBER_TYPE)
 			 : 0);
     listitem_T	*item;
 
@@ -1807,6 +1810,7 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.v_lock = VAR_FIXED;
 	tv.vval.v_string = vim_strnsave(fi->fi_string + fi->fi_byte_idx, len);
 	fi->fi_byte_idx += len;
+	++fi->fi_bi;
 	result = ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
 					    fi->fi_varcount, flag, NULL) == OK;
 	vim_free(tv.vval.v_string);
@@ -1819,6 +1823,7 @@ next_for_item(void *fi_void, char_u *arg)
     else
     {
 	fi->fi_lw.lw_item = item->li_next;
+	++fi->fi_bi;
 	result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
 					   fi->fi_varcount, flag, NULL) == OK);
     }

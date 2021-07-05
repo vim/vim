@@ -2533,12 +2533,12 @@ def Test_for_loop()
 enddef
 
 def Test_for_loop_fails()
-  CheckDefFailure(['for '], 'E1097:')
-  CheckDefFailure(['for x'], 'E1097:')
-  CheckDefFailure(['for x in'], 'E1097:')
-  CheckDefFailure(['for # in range(5)'], 'E690:')
-  CheckDefFailure(['for i In range(5)'], 'E690:')
-  CheckDefFailure(['var x = 5', 'for x in range(5)'], 'E1017:')
+  CheckDefAndScriptFailure2(['for '], 'E1097:', 'E690:')
+  CheckDefAndScriptFailure2(['for x'], 'E1097:', 'E690:')
+  CheckDefAndScriptFailure2(['for x in'], 'E1097:', 'E15:')
+  CheckDefAndScriptFailure(['for # in range(5)'], 'E690:')
+  CheckDefAndScriptFailure(['for i In range(5)'], 'E690:')
+  CheckDefAndScriptFailure2(['var x = 5', 'for x in range(5)', 'endfor'], 'E1017:', 'E1041:')
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
   delfunc! g:Func
   CheckDefFailure(['for i in xxx'], 'E1001:')
