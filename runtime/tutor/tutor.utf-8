@@ -789,7 +789,7 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 
   1. Move to the line below marked ---> and place the cursor after "a)".
 
-  2. Start Visual mode with  v  and move the cursor to just before "first".
+  2. Start Visual mode with  v  and move the cursor to just before "the".
 
   3. Type  y  to yank (copy) the highlighted text.
 
