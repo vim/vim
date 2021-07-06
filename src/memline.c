@@ -1104,6 +1104,7 @@ add_b0_fenc(
 # include <sys/sysinfo.h>
 #endif
 
+#if defined(UNIX) || defined(MSWIN)
 /*
  * Return TRUE if the process with number "b0p->b0_pid" is still running.
  * "swap_fname" is the name of the swap file, if it's from before a reboot then
@@ -1112,7 +1113,7 @@ add_b0_fenc(
     static int
 swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
 {
-#ifdef HAVE_SYSINFO_UPTIME
+# ifdef HAVE_SYSINFO_UPTIME
     stat_T	    st;
     struct sysinfo  sinfo;
 
@@ -1121,14 +1122,15 @@ swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
     if (mch_stat((char *)swap_fname, &st) != -1
 	    && sysinfo(&sinfo) == 0
 	    && st.st_mtime < time(NULL) - (
-# ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
 		override_sysinfo_uptime >= 0 ? override_sysinfo_uptime :
-# endif
+#  endif
 		sinfo.uptime))
 	return FALSE;
-#endif
+# endif
     return mch_process_running(char_to_long(b0p->b0_pid));
 }
+#endif
 
 /*
  * Try to recover curbuf from the .swp file.
