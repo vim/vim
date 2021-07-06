@@ -1109,6 +1109,7 @@ add_b0_fenc(
  * "swap_fname" is the name of the swap file, if it's from before a reboot then
  * the result is FALSE;
  */
+#if defined(UNIX) || defined(MSWIN)
     static int
 swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
 {
@@ -1129,6 +1130,7 @@ swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
 #endif
     return mch_process_running(char_to_long(b0p->b0_pid));
 }
+#endif
 
 /*
  * Try to recover curbuf from the .swp file.
