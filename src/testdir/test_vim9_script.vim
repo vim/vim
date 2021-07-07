@@ -2488,6 +2488,12 @@ def Test_for_loop()
       endfor
       assert_equal('foobar', chars)
 
+      chars = ''
+      for x: string in {a: 'a', b: 'b'}->values()
+        chars ..= x
+      endfor
+      assert_equal('ab', chars)
+
       # unpack with type
       var res = ''
       for [n: number, s: string] in [[1, 'a'], [2, 'b']]
