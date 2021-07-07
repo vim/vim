@@ -121,6 +121,7 @@ colorname2rgb(char_u *name)
 save_colorname_hexstr(int r, int g, int b, char_u *name)
 {
     int        result;
+    dict_T     *colornames_table;
     dictitem_T *existing;
     char_u     hexstr[8];
 
@@ -130,7 +131,7 @@ save_colorname_hexstr(int r, int g, int b, char_u *name)
 	return;
     }
 
-    dict_T *colornames_table = get_vim_var_dict(VV_COLORNAMES);
+    colornames_table = get_vim_var_dict(VV_COLORNAMES);
     // The colornames_table dict is safe to use here because it is allocated at
     // startup in evalvars.c
     existing = dict_find(colornames_table, name, -1);
@@ -153,13 +154,13 @@ load_rgb_txt() {
     FILE	*fd;
     char	line[LINE_LEN];
     char_u	*fname;
+    int rgb_lines = 0;
     int		r, g, b, i;
     static char already_loaded = 0;
 
     if (already_loaded == 1)
 	return;
 
-    int rgb_lines = 0;
 
     fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
     if (fname == NULL)
