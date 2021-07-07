@@ -184,6 +184,7 @@ load_rgb_txt() {
     {
 	size_t	len;
 	int	pos;
+	char_u  *s;
 
 	vim_ignoredp = fgets(line, LINE_LEN, fd);
 	len = strlen(line);
@@ -197,7 +198,7 @@ load_rgb_txt() {
 	if (i != 3)
 	    continue;
 
-	char_u *s = strlow_save((char_u *)line + pos);
+	s = strlow_save((char_u *)line + pos);
 
 	if (s == NULL)
 	{
@@ -206,6 +207,7 @@ load_rgb_txt() {
 	}
 	save_colorname_hexstr(r, g, b, s);
 	vim_free(s);
+	s = NULL;
 	rgb_lines++;
 
 	// The distributed rgb.txt has less than 1000 entries. Limit to
