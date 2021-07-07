@@ -2573,6 +2573,14 @@ def Test_for_loop_fails()
       endfor
   END
   CheckDefAndScriptFailure(lines, 'E1059:', 1)
+
+  lines =<< trim END
+      var d: dict<number> = {a: 1, b: 2}
+      for [k: job, v: job] in d->items()
+        echo k v
+      endfor
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected job but got string', 2)
 enddef
 
 def Test_for_loop_script_var()

@@ -522,6 +522,11 @@ ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
     return &t_list_dict_any;
 }
     static type_T *
+ret_list_items(int argcount, type_T **argtypes UNUSED)
+{
+    return &t_list_list_any;
+}
+    static type_T *
 ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_dict_any;
@@ -1166,7 +1171,7 @@ static funcentry_T global_functions[] =
     {"isnan",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number_bool,    MATH_FUNC(f_isnan)},
     {"items",		1, 1, FEARG_1,	    arg1_dict,
-			ret_list_any,	    f_items},
+			ret_list_items,	    f_items},
     {"job_getchannel",	1, 1, FEARG_1,	    NULL,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
     {"job_info",	0, 1, FEARG_1,	    NULL,
@@ -3687,6 +3692,7 @@ ret_f_function(int argcount, type_T **argtypes)
 {
     if (argcount == 1 && argtypes[0]->tt_type == VAR_STRING)
 	return &t_func_any;
+    // Need to check the type at runtime, the function may be defined later.
     return &t_func_unknown;
 }
 
