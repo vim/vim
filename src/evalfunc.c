@@ -522,7 +522,7 @@ ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
     return &t_list_dict_any;
 }
     static type_T *
-ret_list_items(int argcount, type_T **argtypes UNUSED)
+ret_list_items(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_list_list_any;
 }
