@@ -13,9 +13,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 8.1\n"
+"Project-Id-Version: vim 8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-14 23:05+0200\n"
+"POT-Creation-Date: 2021-06-29 20:40+0200\n"
 "PO-Revision-Date: 2021-06-14 23:10+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
@@ -507,6 +507,11 @@ msgstr "E821: File cifrato con metodo sconosciuto"
 msgid "Warning: Using a weak encryption method; see :help 'cm'"
 msgstr "Avviso: Metodo di cifratura debole in uso; vedere :help 'cm'"
 
+msgid ""
+"Note: Encryption of swapfile not supported, disabling swap- and undofile"
+msgstr ""
+"Nota: La cifratura del file di swap non è supportata, swap e undo sono "
+"disabilitati"
 msgid "Enter encryption key: "
 msgstr "Immetti chiave di cifratura: "
 
@@ -6241,6 +6246,53 @@ msgstr "errore gvimext.dll"
 msgid "Path length too long!"
 msgstr "Percorso file troppo lungo!"
 
+msgid "E10: \\ should be followed by /, ? or &"
+msgstr "E10: \\ dovrebbe essere seguito da /, ? oppure &"
+
+msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
+msgstr "E11: Non valido nella finestra comandi; <INVIO> esegue, CTRL-C ignora"
+
+msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
+msgstr ""
+"E12: Comando non consentito da exrc/vimrc nella directory in uso o nella "
+"ricerca tag"
+
+msgid "E13: File exists (add ! to override)"
+msgstr "E13: File esistente (aggiungi ! per riscriverlo)"
+
+msgid "E15: Invalid expression: \"%s\""
+msgstr "E15: Espressione non valida: \"%s\""
+
+msgid "E16: Invalid range"
+msgstr "E16: Intervallo non valido"
+
+msgid "E17: \"%s\" is a directory"
+msgstr "E17: \"%s\" è una directory"
+
+msgid "E18: Unexpected characters in :let"
+msgstr "E18: Caratteri non attesi in :let"
+
+msgid "E18: Unexpected characters in assignment"
+msgstr "E18: Caratteri non attesi in assegnazione"
+
+msgid "E19: Mark has invalid line number"
+msgstr "E19: Marcatura con numero di riga non valido"
+
+msgid "E20: Mark not set"
+msgstr "E20: Marcatura non impostata"
+
+msgid "E21: Cannot make changes, 'modifiable' is off"
+msgstr "E21: Non posso fare modifiche, 'modifiable' è inibito"
+
+msgid "E22: Scripts nested too deep"
+msgstr "E22: Script troppo nidificati"
+
+msgid "E23: No alternate file"
+msgstr "E23: Nessun file alternato"
+
+msgid "E24: No such abbreviation"
+msgstr "E24: Abbreviazione inesistente"
+
 msgid "E121: Undefined variable: %s"
 msgstr "E121: Variabile non definita: %s"
 
@@ -6693,7 +6745,7 @@ msgstr "E1138: Uso di un valore Booleano come un Numero"
 msgid "E1139: Missing matching bracket after dict key"
 msgstr "E1139: Manca parentesi di chiusura dopo una chiave di Dizionario"
 
-msgid "E1140: For argument must be a sequence of lists"
+msgid "E1140: :for argument must be a sequence of lists"
 msgstr "E1140: L'argomento di :for dev'essere una sequenza di Liste"
 
 msgid "E1141: Indexable type required"
@@ -6869,6 +6921,44 @@ msgstr "E1191: Chiamata a funzione che non si riesce a compilare: %s"
 msgid "E1192: Empty function name"
 msgstr "E1192: Nome funzione vuoto"
 
+msgid "E1193: cryptmethod xchacha20 not built into this Vim"
+msgstr "E1193: Metodo di cifratura xchacha20 non disponibile in questa "
+"versione di Vim"
+
+msgid "E1194: Cannot encrypt header, not enough space"
+msgstr ""
+"E1194: Impossibile cifrare intestazione, non c'è spazio sufficiente"
+
+msgid "E1195: Cannot encrypt buffer, not enough space"
+msgstr ""
+"E1195: Impossibile cifrare buffer, non c'è spazio sufficiente"
+
+msgid "E1196: Cannot decrypt header, not enough space"
+msgstr ""
+"E1196: Impossibile decifrare intestazione, non c'è spazio sufficiente"
+
+msgid "E1197: Cannot allocate_buffer for encryption"
+msgstr "E1197: Fallita chiamata ad allocate_buffer per la cifratura"
+
+msgid "E1198: Decryption failed: Header incomplete!"
+msgstr "E1198: Decifrazione fallita: Intestazione incompleta!"
+
+msgid "E1199: Cannot decrypt buffer, not enough space"
+msgstr ""
+"E1199: Impossibile decifrare intestazione, non c'è spazio sufficiente"
+
+msgid "E1200: Decryption failed!"
+msgstr "E1200: Decifrazione fallita!"
+
+msgid "E1201: Decryption failed: pre-mature end of file!"
+msgstr "E1201: Decifrazione fallita: inattesa fine del file!"
+
+msgid "E1202: No white space allowed after '%s': %s"
+msgstr "E1202: Nessuno spazio bianco consentito dopo '%s': %s"
+
+msgid "E1203: Dot can only be used on a dictionary: %s"
+msgstr "E1203: Il punto può essere usato solo in un dizionario: %s"
+
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 
@@ -6881,17 +6971,6 @@ msgstr "E470: Comando finito male"
 
 msgid "E471: Argument required"
 msgstr "E471: Argomento necessario"
-
-msgid "E10: \\ should be followed by /, ? or &"
-msgstr "E10: \\ dovrebbe essere seguito da /, ? oppure &"
-
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr "E11: Non valido nella finestra comandi; <INVIO> esegue, CTRL-C ignora"
-
-msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
-msgstr ""
-"E12: Comando non consentito da exrc/vimrc nella directory in uso o nella "
-"ricerca tag"
 
 msgid "E171: Missing :endif"
 msgstr "E171: Manca :endif"
@@ -6922,9 +7001,6 @@ msgstr "E588: :endwhile senza :while"
 
 msgid "E588: :endfor without :for"
 msgstr "E588: :endfor senza :for"
-
-msgid "E13: File exists (add ! to override)"
-msgstr "E13: File esistente (aggiungi ! per riscriverlo)"
 
 msgid "E472: Command failed"
 msgstr "E472: Comando fallito"
@@ -6962,15 +7038,6 @@ msgstr "E475: Valore non valido per l'argomento %s"
 msgid "E475: Invalid value for argument %s: %s"
 msgstr "E475: Valore non valido per l'argomento %s: %s"
 
-msgid "E15: Invalid expression: \"%s\""
-msgstr "E15: Espressione non valida: \"%s\""
-
-msgid "E16: Invalid range"
-msgstr "E16: Intervallo non valido"
-
-msgid "E17: \"%s\" is a directory"
-msgstr "E17: \"%s\" è una directory"
-
 msgid "E756: Spell checking is not possible"
 msgstr "E756: Controllo ortografico non possibile"
 
@@ -6982,24 +7049,6 @@ msgstr "E667: Fsync fallito"
 
 msgid "E448: Could not load library function %s"
 msgstr "E448: Non posso caricare la funzione di libreria %s"
-
-msgid "E19: Mark has invalid line number"
-msgstr "E19: Marcatura con numero di riga non valido"
-
-msgid "E20: Mark not set"
-msgstr "E20: Marcatura non impostata"
-
-msgid "E21: Cannot make changes, 'modifiable' is off"
-msgstr "E21: Non posso fare modifiche, 'modifiable' è inibito"
-
-msgid "E22: Scripts nested too deep"
-msgstr "E22: Script troppo nidificati"
-
-msgid "E23: No alternate file"
-msgstr "E23: Nessun file alternato"
-
-msgid "E24: No such abbreviation"
-msgstr "E24: Abbreviazione inesistente"
 
 msgid "E477: No ! allowed"
 msgstr "E477: ! non consentito"
@@ -7178,9 +7227,6 @@ msgstr "E996: Non posso bloccare un'opzione"
 
 msgid "E113: Unknown option: %s"
 msgstr "E113: Opzione sconosciuta: %s"
-
-msgid "E18: Unexpected characters in :let"
-msgstr "E18: Caratteri non attesi in :let"
 
 msgid "E998: Reduce of an empty %s with no initial value"
 msgstr ""

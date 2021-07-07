@@ -35504,7 +35504,7 @@ Files:	    Filelist, src/testdir/Make_all.mak, src/testdir/check.vim,
             src/testdir/test_xxd.vim
 
 Patch 8.1.1545
-Problem:    When the screen is to small there is no message about that.
+Problem:    When the screen is too small there is no message about that.
             (Daniel Hahler)
 Solution:   Do not use :cquit. (closes #4534)
 Files:	    src/testdir/runtest.vim
@@ -41104,7 +41104,7 @@ Files:	    src/buffer.c, src/testdir/test_popupwin.vim
 Patch 8.1.2419
 Problem:    With a long file name the hit-enter prompt appears. (J. Lewis
             Muir)
-Solution:   When checking for text to wrap don't do this when outputing a CR.
+Solution:   When checking for text to wrap don't do this when outputting a CR.
 Files:	    src/message.c, src/testdir/test_display.vim,
             src/testdir/dumps/Test_long_file_name_1.dump
 

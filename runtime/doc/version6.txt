@@ -2696,7 +2696,7 @@ Multi-byte:
   double-wide character.
 - Overstrike mode for the cmdline replaced only the first byte of a multibyte
   character.
-- The cursor in Replace mode (also in the cmdline) was to small on a
+- The cursor in Replace mode (also in the cmdline) was too small on a
   double-wide character.
 - When a multibyte character contained a 0x80 byte, it didn't work (was using
   a CSI byte instead). (Muraoka Taro)
@@ -3546,7 +3546,7 @@ Added Simplified Chinese translation of the tutor. (Mendel L Chan)
 Added Russian keymap for yawerty keyboard.
 
 Added an explanation of using the vimrc file in the tutor.
-Changed tutor.vim to get the right encoding for the Taiwainese tutor.
+Changed tutor.vim to get the right encoding for the Taiwanese tutor.
 
 Added Russian tutor. (Andrey Kiselev)
 Added Polish tutor. (Mikolaj Machowski)

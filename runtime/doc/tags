@@ -6190,6 +6190,8 @@ dos-backslash	os_dos.txt	/*dos-backslash*
 dos-colors	os_dos.txt	/*dos-colors*
 dos-file-formats	os_dos.txt	/*dos-file-formats*
 dos-locations	os_dos.txt	/*dos-locations*
+dos-powershell	os_dos.txt	/*dos-powershell*
+dos-pwsh	os_dos.txt	/*dos-pwsh*
 dos-shell	os_dos.txt	/*dos-shell*
 dos-standard-mappings	os_dos.txt	/*dos-standard-mappings*
 dos-temp-files	os_dos.txt	/*dos-temp-files*
@@ -6202,6 +6204,7 @@ dp	diff.txt	/*dp*
 drag-n-drop	gui.txt	/*drag-n-drop*
 drag-n-drop-win32	gui_w32.txt	/*drag-n-drop-win32*
 drag-status-line	term.txt	/*drag-status-line*
+drop_file	gui.txt	/*drop_file*
 dtd.vim	syntax.txt	/*dtd.vim*
 dtd2vim	insert.txt	/*dtd2vim*
 dying-variable	eval.txt	/*dying-variable*
@@ -6222,6 +6225,7 @@ efm-%>	quickfix.txt	/*efm-%>*
 efm-entries	quickfix.txt	/*efm-entries*
 efm-ignore	quickfix.txt	/*efm-ignore*
 eiffel.vim	syntax.txt	/*eiffel.vim*
+elixir.vim	syntax.txt	/*elixir.vim*
 emacs-keys	tips.txt	/*emacs-keys*
 emacs-tags	tagsrch.txt	/*emacs-tags*
 emacs_tags	tagsrch.txt	/*emacs_tags*
@@ -6571,6 +6575,7 @@ ft-docbkxml-syntax	syntax.txt	/*ft-docbkxml-syntax*
 ft-dosbatch-syntax	syntax.txt	/*ft-dosbatch-syntax*
 ft-dtd-syntax	syntax.txt	/*ft-dtd-syntax*
 ft-eiffel-syntax	syntax.txt	/*ft-eiffel-syntax*
+ft-elixir-syntax	syntax.txt	/*ft-elixir-syntax*
 ft-erlang-syntax	syntax.txt	/*ft-erlang-syntax*
 ft-euphoria-syntax	syntax.txt	/*ft-euphoria-syntax*
 ft-flexwiki-syntax	syntax.txt	/*ft-flexwiki-syntax*

@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2021 Jun 23
+*testing.txt*	For Vim version 8.2.  Last change: 2021 Jul 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -82,7 +82,8 @@ test_getvalue({name})					*test_getvalue()*
 						*test_gui_drop_files()*
 test_gui_drop_files({list}, {row}, {col}, {mods})
 		Drop one or more files in {list} in the window at {row}, {col}.
-		This function only works when the GUI is running.
+		This function only works when the GUI is running and the
+		|drag-n-drop| feature is present.
 		
 		The supported values for {mods} are:
 			0x4	Shift

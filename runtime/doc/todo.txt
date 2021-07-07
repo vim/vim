@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Jun 26
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,11 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Memory eaten up by function returning a closure.  #8439
-Circular reference.  Should garbage collector find unused local variables?
-
 Vim9 - Make everything work:
 - possible leak in test_vim9_builtin ?
+- Make "for _ in range()" work, do not store the value in a var.
 - use CheckLegacyAndVim9Success(lines) in many more places
 - compile get_lambda_tv() in popup_add_timeout()
 - For builtin functions using tv_get_string*() use check_for_string() to be
@@ -247,6 +245,10 @@ this.
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
 Mapping with partial match not executed properly in GTK. (Ingo Karkat, #7082)
+
+Problem that a previous silent ":throw" causes a following try/catch not to
+work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
+Also see #8487 for an example.
 
 Patch for Template string: #4634
 Have another look at the implementation.
@@ -1419,9 +1421,6 @@ interfaces and how to build Vim with them.
 Appveyor build with self-installing executable, includes getting most
 interfaces: https://github.com/k-takata/vim/tree/chrisbra-appveyor-build
 result: https://ci.appveyor.com/project/k-takata/vim/history
-
-Problem that a previous silent ":throw" causes a following try/catch not to
-work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 

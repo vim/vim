@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jun 25
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jul 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -442,7 +442,8 @@ The function must already have been defined. >
 	var Funcref = MyFunction
 
 When using `function()` the resulting type is "func", a function with any
-number of arguments and any return type.  The function can be defined later.
+number of arguments and any return type (including void).  The function can be
+defined later.
 
 
 Lambda using => instead of -> ~
@@ -579,13 +580,18 @@ If the heredoc is inside a function 'cpoptions' must be set before :def and
 restored after the :enddef.
 
 In places where line continuation with a backslash is still needed, such as
-splitting up a long Ex command, comments can start with #\ instead of "\: >
-      syn region Text
+splitting up a long Ex command, comments can start with '#\ ': >
+	syn region Text
 	      \ start='foo'
 	      #\ comment
 	      \ end='bar'
-
-<							*E1050*
+Like with legacy script '"\ ' is used.  This is also needed when line
+continuation is used without a backslash and a line starts with a bar: >
+	au CursorHold * echom 'BEFORE bar'
+	      #\ some comment
+	      | echom 'AFTER bar'
+<
+							*E1050*
 To make it possible for the operator at the start of the line to be
 recognized, it is required to put a colon before a range.  This example will
 add "start" and print: >
@@ -1084,10 +1090,8 @@ The following builtin types are supported:
 Not supported yet:
 	tuple<a: {type}, b: {type}, ...>
 
-These types can be used in declarations, but no value will have this type:
-	{type}|{type}  {not implemented yet}
-	void
-	any
+These types can be used in declarations, but no simple value will actually
+have the "void" type.
 
 There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating lot of small pieces of
@@ -1096,8 +1100,16 @@ memory.
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
 				checking for arguments or return value
+func: void			any number and type of arguments, no return
+				value
 func: {type}			any number and type of arguments with specific
 				return type
+
+func()				function with no argument, does not return a
+				value
+func(): void			same
+func(): {type}			function with no argument and return type
+
 func({type})			function with argument type, does not return
 				a value
 func({type}): {type}		function with argument type and return type
@@ -1186,6 +1198,18 @@ dictionary.  If there is a mix of types, the "any" type is used. >
 	['a', 'b', 'c']	list<string>
 	[1, 'x', 3]	list<any>
 
+The common type of function references, if they do not all have the same
+number of arguments, uses "(...)" to indicate the number of arguments is not
+specified.  For example: >
+	def Foo(x: bool)
+	enddef
+	def Bar(x: bool, y: bool)
+	enddef
+	var funclist = [Foo, Bar]
+	echo funclist->typename()
+Results in:
+	list<func(...)>
+
 For script-local variables in Vim9 script the type is checked, also when the
 variable was declared in a legacy function.
 
@@ -1202,16 +1226,24 @@ In Vim9 script this has been made stricter.  In most places it works just as
 before, if the value used matches the expected type.  There will sometimes be
 an error, thus breaking backwards compatibility.  For example:
 - Using a number other than 0 or 1 where a boolean is expected.  *E1023*
-- Using a string value when setting a number options.
+- Using a string value when setting a number option.
 - Using a number where a string is expected.   *E1024*
 
 One consequence is that the item type of a list or dict given to map() must
 not change.  This will give an error in Vim9 script: >
-	map([1, 2, 3], (i, v) => 'item ' .. i)
+	vim9 echo map([1, 2, 3], (i, v) => 'item ' .. i)
 	E1012: Type mismatch; expected number but got string
-Instead use |mapnew()|.  If the item type was determined to be "any" it can
-change to a more specific type.  E.g. when a list of mixed types gets changed
-to a list of numbers.
+Instead use |mapnew(): >
+	vim9 echo mapnew([1, 2, 3], (i, v) => 'item ' .. i)
+	['item 0', 'item 1', 'item 2']
+
+If the item type was determined to be "any" it can change to a more specific
+type.  E.g. when a list of mixed types gets changed to a list of numbers: >
+	var mylist = [1, 2.0, '3']
+	# typename(mylist) == "list<any>"
+	map(mylist, (i, v) => 'item ' .. i)
+	# typename(mylist) == "list<string>", no error
+
 Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 |flattennew()| instead.
 
