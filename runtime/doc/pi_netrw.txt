@@ -54,7 +54,8 @@ Copyright: Copyright (C) 2017 Charles E Campbell    *netrw-copyright*
       Browsing With A Horizontally Split Window...........|netrw-o|
       Browsing With A New Tab.............................|netrw-t|
       Browsing With A Vertically Split Window.............|netrw-v|
-      Change Listing Style.(thin wide long tree)..........|netrw-i|
+      Change Listing Style (thin wide long tree)..........|netrw-i|
+      Change File Permission..............................|netrw-gp|
       Changing To A Bookmarked Directory..................|netrw-gb|
       Changing To A Predecessor Directory.................|netrw-u|
       Changing To A Successor Directory...................|netrw-U|
@@ -1095,6 +1096,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   gf	Force treatment as file                              |netrw-gf|
 	   gh	Quick hide/unhide of dot-files                       |netrw-gh|
 	   gn	Make top of tree the directory below the cursor      |netrw-gn|
+	   gp	Change file permission                               |netrw-gp|
 	   i	Cycle between thin, long, wide, and tree listings    |netrw-i|
 	   I	Toggle the displaying of the banner                  |netrw-I|
 	   mb	Bookmark current directory                           |netrw-mb|
