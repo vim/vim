@@ -616,7 +616,7 @@ handle_import(
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;
 
-	    // If already imported with the same propertis and the
+	    // If already imported with the same properties and the
 	    // IMP_FLAGS_RELOAD set then we keep that entry.  Otherwise create
 	    // a new one (and give an error for an existing import).
 	    imported = find_imported(name, len, cctx);
@@ -806,7 +806,7 @@ update_vim9_script_var(
     }
     else
     {
-	sv = find_typval_in_script(&di->di_tv, TRUE);
+	sv = find_typval_in_script(&di->di_tv);
     }
     if (sv != NULL)
     {
@@ -922,11 +922,10 @@ free_all_script_vars(scriptitem_T *si)
 
 /*
  * Find the script-local variable that links to "dest".
- * Returns NULL if not found and when "give_error" is TRUE this is considered
- * an internal error.
+ * Returns NULL if not found and give an internal error.
  */
     svar_T *
-find_typval_in_script(typval_T *dest, int give_error)
+find_typval_in_script(typval_T *dest)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx;
@@ -945,8 +944,7 @@ find_typval_in_script(typval_T *dest, int give_error)
 	if (sv->sv_name != NULL && sv->sv_tv == dest)
 	    return sv;
     }
-    if (give_error)
-	iemsg("find_typval_in_script(): not found");
+    iemsg("find_typval_in_script(): not found");
     return NULL;
 }
 
@@ -961,7 +959,7 @@ check_script_var_type(
 	char_u	    *name,
 	where_T	    where)
 {
-    svar_T  *sv = find_typval_in_script(dest, TRUE);
+    svar_T  *sv = find_typval_in_script(dest);
     int	    ret;
 
     if (sv != NULL)

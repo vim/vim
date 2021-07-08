@@ -1391,6 +1391,7 @@ def Test_import_as()
     vim9script
     export var one = 1
     export var yes = 'yes'
+    export var slist: list<string>
   END
   writefile(export_lines, 'XexportAs')
 
@@ -1414,6 +1415,13 @@ def Test_import_as()
     assert_fails('echo yes', 'E121:')
   END
   CheckScriptSuccess(import_lines)
+
+  import_lines =<< trim END
+    vim9script
+    import {slist as impSlist} from './XexportAs'
+    impSlist->add(123)
+  END
+  CheckScriptFailure(import_lines, 'E1012: Type mismatch; expected string but got number')
 
   delete('XexportAs')
 enddef
@@ -1947,8 +1955,8 @@ def Test_import_rtp()
         'g:imported_rtp = exported',
         ]
   writefile(import_lines, 'Ximport_rtp.vim')
-  mkdir('import')
-  writefile(s:export_script_lines, 'import/Xexport_rtp.vim')
+  mkdir('Ximport')
+  writefile(s:export_script_lines, 'Ximport/Xexport_rtp.vim')
 
   var save_rtp = &rtp
   &rtp = getcwd()
@@ -1960,7 +1968,7 @@ def Test_import_rtp()
   Undo_export_script_lines()
   unlet g:imported_rtp
   delete('Ximport_rtp.vim')
-  delete('import', 'rf')
+  delete('Ximport', 'rf')
 enddef
 
 def Test_import_compile_error()
