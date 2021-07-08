@@ -124,6 +124,7 @@ endfunc
 
 func Test_uncrypt_xchacha20_invalid()
   CheckFeature sodium
+
   " load an invalid encrypted file and verify it can be decrypted with an
   " error message
   try
@@ -142,6 +143,7 @@ endfunc
 
 func Test_uncrypt_xchacha20_2()
   CheckFeature sodium
+
   sp Xcrypt_sodium.txt
   " Create a larger file, so that Vim will write in several blocks
   call setline(1, range(1,4000))
@@ -159,7 +161,7 @@ func Test_uncrypt_xchacha20_2()
   " successfully decrypted
   call assert_equal(range(1, 4000)->map( {_, v -> string(v)}), getline(1,'$'))
   set key=
-  w!
+  w! ++ff=unix
   " enryption removed
   call assert_match('"Xcrypt_sodium.txt" 4000L, 18893B written', execute(':message'))
   bw!
@@ -170,6 +172,7 @@ endfunc
 func Test_uncrypt_xchacha20_3_persistent_undo()
   CheckFeature sodium
   CheckFeature persistent_undo
+
   sp Xcrypt_sodium_undo.txt
   set cryptmethod=xchacha20 undofile
   call feedkeys(":X\<CR>sodium\<CR>sodium\<CR>", 'xt')
@@ -191,7 +194,7 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
   " should fail
   norm! u
   call assert_match('Already at oldest change', execute(':1mess'))
-  call assert_fails('verbose rundo' .. fnameescape(ufile), 'E822')
+  call assert_fails('verbose rundo ' .. fnameescape(ufile), 'E822')
   bw!
   set undolevels& cryptmethod& undofile&
   call delete('Xcrypt_sodium_undo.txt')
