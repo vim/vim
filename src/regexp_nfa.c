@@ -1838,7 +1838,7 @@ collection:
 		 * Failed to recognize a character class. Use the simple
 		 * version that turns [abc] into 'a' OR 'b' OR 'c'
 		 */
-		startc = endc = oldstartc = -1;
+		startc = -1;
 		negated = FALSE;
 		if (*regparse == '^')			// negated range
 		{
