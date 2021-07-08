@@ -2545,6 +2545,7 @@ def Test_for_loop_fails()
   CheckDefAndScriptFailure(['for # in range(5)'], 'E690:')
   CheckDefAndScriptFailure(['for i In range(5)'], 'E690:')
   CheckDefAndScriptFailure2(['var x = 5', 'for x in range(5)', 'endfor'], 'E1017:', 'E1041:')
+  CheckScriptFailure(['vim9script', 'var x = 5', 'for x in range(5)', '# comment', 'endfor'], 'E1041:', 3)
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
   delfunc! g:Func
   CheckDefFailure(['for i in xxx'], 'E1001:')

@@ -1225,9 +1225,14 @@ ex_while(exarg_T *eap)
 	    }
 	    else
 	    {
+		long save_lnum = SOURCING_LNUM;
+
 		// Evaluate the argument and get the info in a structure.
 		fi = eval_for_line(eap->arg, &error, eap, &evalarg);
 		cstack->cs_forinfo[cstack->cs_idx] = fi;
+
+		// Errors should use the first line number.
+		SOURCING_LNUM = save_lnum;
 	    }
 
 	    // use the element at the start of the list and advance
