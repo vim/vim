@@ -1371,8 +1371,6 @@ nfa_regatom(void)
     int		negated;
     int		result;
     int		startc = -1;
-    int		endc = -1;
-    int		oldstartc = -1;
     int		save_prev_at_start = prev_at_start;
 
     c = getchr();
@@ -1838,7 +1836,7 @@ collection:
 		 * Failed to recognize a character class. Use the simple
 		 * version that turns [abc] into 'a' OR 'b' OR 'c'
 		 */
-		startc = endc = oldstartc = -1;
+		startc = -1;
 		negated = FALSE;
 		if (*regparse == '^')			// negated range
 		{
@@ -1859,7 +1857,8 @@ collection:
 		emit_range = FALSE;
 		while (regparse < endp)
 		{
-		    oldstartc = startc;
+		    int	    oldstartc = startc;
+
 		    startc = -1;
 		    got_coll_char = FALSE;
 		    if (*regparse == '[')
@@ -2017,7 +2016,8 @@ collection:
 		    // Previous char was '-', so this char is end of range.
 		    if (emit_range)
 		    {
-			endc = startc;
+			int	endc = startc;
+
 			startc = oldstartc;
 			if (startc > endc)
 			    EMSG_RET_FAIL(_(e_reverse_range));
