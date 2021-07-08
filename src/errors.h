@@ -490,3 +490,5 @@ EXTERN char e_dot_can_only_be_used_on_dictionary_str[]
 	INIT(= N_("E1203: Dot can only be used on a dictionary: %s"));
 EXTERN char e_regexp_number_after_dot_pos_search[]
 	INIT(= N_("E1204: No Number allowed after .: '\\%%%c'"));
+EXTERN char e_no_white_space_allowed_between_option_and[]
+	INIT(= N_("E1205: No white space allowed between option and"));

@@ -4076,23 +4076,32 @@ def Test_mapping_line_number()
 enddef
 
 def Test_option_modifier()
+  # legacy script allows for white space
   var lines =<< trim END
       set hlsearch &  hlsearch  !
       call assert_equal(1, &hlsearch)
   END
   CheckScriptSuccess(lines)
 
-  lines =<< trim END
-      vim9script
-      set hlsearch &
-  END
-  CheckScriptFailure(lines, 'E518:')
+  set hlsearch
+  set hlsearch!
+  assert_equal(false, &hlsearch)
+
+  set hlsearch
+  set hlsearch&
+  assert_equal(false, &hlsearch)
 
   lines =<< trim END
-      vim9script
-      set hlsearch &  hlsearch  !
+      set hlsearch &
   END
-  CheckScriptFailure(lines, 'E518:')
+  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: &')
+
+  lines =<< trim END
+      set hlsearch   !
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: !')
+
+  set hlsearch&
 enddef
 
 " Keep this last, it messes up highlighting.
