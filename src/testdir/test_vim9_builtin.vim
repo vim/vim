@@ -104,6 +104,13 @@ def Test_add_list()
       add(l, 123)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var l: list<string> = ['a']
+      l->add(123)
+  END
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
 enddef
 
 def Test_add_blob()

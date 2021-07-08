@@ -597,13 +597,16 @@ list_append(list_T *l, listitem_T *item)
 
 /*
  * Append typval_T "tv" to the end of list "l".  "tv" is copied.
- * Return FAIL when out of memory.
+ * Return FAIL when out of memory or the type is wrong.
  */
     int
 list_append_tv(list_T *l, typval_T *tv)
 {
     listitem_T	*li = listitem_alloc();
 
+    if (l->lv_type != NULL && l->lv_type->tt_member != NULL
+		&& check_typval_arg_type(l->lv_type->tt_member, tv, 0) == FAIL)
+	return FAIL;
     if (li == NULL)
 	return FAIL;
     copy_tv(tv, &li->li_tv);
