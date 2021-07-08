@@ -806,7 +806,7 @@ update_vim9_script_var(
     }
     else
     {
-	sv = find_typval_in_script(&di->di_tv);
+	sv = find_typval_in_script(&di->di_tv, TRUE);
     }
     if (sv != NULL)
     {
@@ -922,10 +922,11 @@ free_all_script_vars(scriptitem_T *si)
 
 /*
  * Find the script-local variable that links to "dest".
- * Returns NULL if not found.
+ * Returns NULL if not found and when "give_error" is TRUE this is considered
+ * an internal error.
  */
     svar_T *
-find_typval_in_script(typval_T *dest)
+find_typval_in_script(typval_T *dest, int give_error)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx;
@@ -944,7 +945,8 @@ find_typval_in_script(typval_T *dest)
 	if (sv->sv_name != NULL && sv->sv_tv == dest)
 	    return sv;
     }
-    iemsg("find_typval_in_script(): not found");
+    if (give_error)
+	iemsg("find_typval_in_script(): not found");
     return NULL;
 }
 
@@ -959,7 +961,7 @@ check_script_var_type(
 	char_u	    *name,
 	where_T	    where)
 {
-    svar_T  *sv = find_typval_in_script(dest);
+    svar_T  *sv = find_typval_in_script(dest, TRUE);
     int	    ret;
 
     if (sv != NULL)
