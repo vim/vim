@@ -1955,8 +1955,8 @@ def Test_import_rtp()
         'g:imported_rtp = exported',
         ]
   writefile(import_lines, 'Ximport_rtp.vim')
-  mkdir('Ximport')
-  writefile(s:export_script_lines, 'Ximport/Xexport_rtp.vim')
+  mkdir('import', 'p')
+  writefile(s:export_script_lines, 'import/Xexport_rtp.vim')
 
   var save_rtp = &rtp
   &rtp = getcwd()
@@ -1968,7 +1968,7 @@ def Test_import_rtp()
   Undo_export_script_lines()
   unlet g:imported_rtp
   delete('Ximport_rtp.vim')
-  delete('Ximport', 'rf')
+  delete('import', 'rf')
 enddef
 
 def Test_import_compile_error()
