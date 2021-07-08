@@ -2783,6 +2783,7 @@ win_line(
 	// Show "extends" character from 'listchars' if beyond the line end and
 	// 'list' is set.
 	if (wp->w_lcs_chars.ext != NUL
+		&& draw_state == WL_LINE
 		&& wp->w_p_list
 		&& !wp->w_p_wrap
 #ifdef FEAT_DIFF
@@ -3050,7 +3051,8 @@ win_line(
 	    wp->w_p_rl ? (col < 0) :
 #endif
 				    (col >= wp->w_width))
-		&& (*ptr != NUL
+		&& (draw_state != WL_LINE
+		    || *ptr != NUL
 #ifdef FEAT_DIFF
 		    || filler_todo > 0
 #endif
