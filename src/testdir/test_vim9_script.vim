@@ -4075,6 +4075,45 @@ def Test_mapping_line_number()
   delfunc g:FuncA
 enddef
 
+def Test_option_set()
+  # legacy script allows for white space
+  var lines =<< trim END
+      set foldlevel  =11
+      call assert_equal(11, &foldlevel)
+  END
+  CheckScriptSuccess(lines)
+
+  set foldlevel
+  set foldlevel=12
+  assert_equal(12, &foldlevel)
+  set foldlevel+=2
+  assert_equal(14, &foldlevel)
+  set foldlevel-=3
+  assert_equal(11, &foldlevel)
+
+  lines =<< trim END
+      set foldlevel =1
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: =1')
+
+  lines =<< trim END
+      set foldlevel +=1
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: +=1')
+
+  lines =<< trim END
+      set foldlevel ^=1
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: ^=1')
+
+  lines =<< trim END
+      set foldlevel -=1
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: -=1')
+
+  set foldlevel&
+enddef
+
 def Test_option_modifier()
   # legacy script allows for white space
   var lines =<< trim END

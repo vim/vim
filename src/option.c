@@ -1358,7 +1358,22 @@ do_set(
 	    // remember character after option name
 	    afterchar = arg[len];
 
-	    if (!in_vim9script())
+	    if (in_vim9script())
+	    {
+		char_u *p = skipwhite(arg + len);
+
+		// disallow white space before =val, +=val, -=val, ^=val
+		if (p > arg + len && (p[0] == '='
+			|| (vim_strchr((char_u *)"+-^", p[0]) != NULL
+							      && p[1] == '=')))
+		{
+		    errmsg = e_no_white_space_allowed_between_option_and;
+		    arg = p;
+		    startarg = p;
+		    goto skip;
+		}
+	    }
+	    else
 		// skip white space, allow ":set ai  ?", ":set hlsearch  !"
 		while (VIM_ISWHITE(arg[len]))
 		    ++len;
