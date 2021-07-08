@@ -993,8 +993,12 @@ curs_columns(
     if (textwidth <= 0)
     {
 	// No room for text, put cursor in last char of window.
+	// If not wrapping, the last non-empty line.
 	curwin->w_wcol = curwin->w_width - 1;
-	curwin->w_wrow = curwin->w_height - 1;
+	if (curwin->w_p_wrap)
+	    curwin->w_wrow = curwin->w_height - 1;
+	else
+	    curwin->w_wrow = curwin->w_height - 1 - curwin->w_empty_rows;
     }
     else if (curwin->w_p_wrap && curwin->w_width != 0)
     {
