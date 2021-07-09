@@ -1166,7 +1166,7 @@ type_name(type_T *type, char **tofree)
 
 	for (i = 0; i < type->tt_argcount; ++i)
 	{
-	    char *arg_free;
+	    char *arg_free = NULL;
 	    char *arg_type;
 	    int  len;
 

@@ -1943,6 +1943,12 @@ def Test_tr()
   CheckDefFailure(['echo tr("a", "a", 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
 enddef
 
+def Test_typename()
+  if has('float')
+    assert_equal('func([unknown], [unknown]): float', typename(function('pow')))
+  endif
+enddef
+
 def Test_undofile()
   CheckDefFailure(['undofile(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
   assert_equal('.abc.un~', fnamemodify(undofile('abc'), ':t'))
