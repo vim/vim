@@ -602,11 +602,12 @@ list_append(list_T *l, listitem_T *item)
     int
 list_append_tv(list_T *l, typval_T *tv)
 {
-    listitem_T	*li = listitem_alloc();
+    listitem_T	*li;
 
     if (l->lv_type != NULL && l->lv_type->tt_member != NULL
 		&& check_typval_arg_type(l->lv_type->tt_member, tv, 0) == FAIL)
 	return FAIL;
+    li = listitem_alloc();
     if (li == NULL)
 	return FAIL;
     copy_tv(tv, &li->li_tv);
