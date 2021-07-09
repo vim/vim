@@ -163,8 +163,6 @@ static struct achar {
 
 #define a_BYTE_ORDER_MARK		0xfeff
 
-#define ARRAY_SIZE(a)		(sizeof(a) / sizeof((a)[0]))
-
 /*
  * Find the struct achar pointer to the given Arabic char.
  * Returns NULL if not found.
@@ -175,7 +173,7 @@ find_achar(int c)
     int h, m, l;
 
     // using binary search to find c
-    h = ARRAY_SIZE(achars);
+    h = ARRAY_LENGTH(achars);
     l = 0;
     while (l < h)
     {

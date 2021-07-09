@@ -884,7 +884,7 @@ Merk: Hvis du vil ignorere store/små bokstaver for kun en søkekommando, bruk
 
   1. Start redigeringen av «vimrc»-filen. Dette avhenger av systemet ditt:
 	:e ~/.vimrc	  for Unix
-	:e $VIM/_vimrc	  for MS Windows
+	:e ~/_vimrc	  for MS Windows
 
   2. Les inn eksempelfilen for «vimrc»:
 	:r $VIMRUNTIME/vimrc_example.vim

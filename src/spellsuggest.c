@@ -791,7 +791,7 @@ spell_find_suggest(
     if (su->su_badlen >= MAXWLEN)
 	su->su_badlen = MAXWLEN - 1;	// just in case
     vim_strncpy(su->su_badword, su->su_badptr, su->su_badlen);
-    (void)spell_casefold(su->su_badptr, su->su_badlen,
+    (void)spell_casefold(curwin, su->su_badptr, su->su_badlen,
 						    su->su_fbadword, MAXWLEN);
     // TODO: make this work if the case-folded text is longer than the original
     // text. Currently an illegal byte causes wrong pointer computations.
@@ -1176,7 +1176,7 @@ suggest_try_change(suginfo_T *su)
     STRCPY(fword, su->su_fbadword);
     n = (int)STRLEN(fword);
     p = su->su_badptr + su->su_badlen;
-    (void)spell_casefold(p, (int)STRLEN(p), fword + n, MAXWLEN - n);
+    (void)spell_casefold(curwin, p, (int)STRLEN(p), fword + n, MAXWLEN - n);
 
     for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
     {
@@ -3005,7 +3005,8 @@ stp_sal_score(
     else
     {
 	// soundfold the bad word with more characters following
-	(void)spell_casefold(su->su_badptr, stp->st_orglen, fword, MAXWLEN);
+	(void)spell_casefold(curwin,
+				su->su_badptr, stp->st_orglen, fword, MAXWLEN);
 
 	// When joining two words the sound often changes a lot.  E.g., "t he"
 	// sounds like "t h" while "the" sounds like "@".  Avoid that by

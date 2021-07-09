@@ -260,8 +260,6 @@ main
 
 #ifdef MSWIN
     {
-	extern void set_alist_count(void);
-
 	// Remember the number of entries in the argument list.  If it changes
 	// we don't react on setting 'encoding'.
 	set_alist_count();
@@ -645,7 +643,7 @@ vim_main2(void)
 #endif
 
     /*
-     * When done something that is not allowed or error message call
+     * When done something that is not allowed or given an error message call
      * wait_return.  This must be done before starttermcap(), because it may
      * switch to another screen. It must be done after settmode(TMODE_RAW),
      * because we want to react on a single key stroke.
@@ -1662,7 +1660,7 @@ getout(int exitval)
     {
 	// give the user a chance to read the (error) message
 	no_wait_return = FALSE;
-	wait_return(FALSE);
+//	wait_return(FALSE);
     }
 
     // Position the cursor again, the autocommands may have moved it
@@ -3128,7 +3126,11 @@ source_startup_scripts(mparm_T *parmp)
     if (parmp->use_vimrc != NULL)
     {
 	if (STRCMP(parmp->use_vimrc, "DEFAULTS") == 0)
-	    do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
+	{
+	    if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL)
+									 != OK)
+		emsg(e_failed_to_source_defaults);
+	}
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
 	{
@@ -3200,7 +3202,9 @@ source_startup_scripts(mparm_T *parmp)
 		&& !has_dash_c_arg)
 	    {
 		// When no .vimrc file was found: source defaults.vim.
-		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
+		if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE,
+								 NULL) == FAIL)
+		    emsg(e_failed_to_source_defaults);
 	    }
 	}
 
@@ -3429,7 +3433,7 @@ usage(void)
     {
 	mch_msg(_(" vim [arguments] "));
 	mch_msg(_(use[i]));
-	if (i == (sizeof(use) / sizeof(char_u *)) - 1)
+	if (i == ARRAY_LENGTH(use) - 1)
 	    break;
 	mch_msg(_("\n   or:"));
     }

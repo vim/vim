@@ -144,7 +144,7 @@ func Test_string_concatenation()
   if has('float')
     let a = 'A'
     let b = 1.234
-    call assert_fails('echo a .. b', 'E806:')
+    call assert_equal('A1.234', a .. b)
   endif
 endfunc
 
@@ -165,7 +165,7 @@ func Test_string_concat_scriptversion2()
 
   call assert_fails('echo a . b', 'E15:')
   call assert_fails('let a .= b', 'E985:')
-  call assert_fails('let vers = 1.2.3', 'E15:')
+  call assert_fails('let vers = 1.2.3', 'E488:')
 
   if has('float')
     let f = .5

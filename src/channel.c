@@ -1232,7 +1232,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
 	    if (!buf->b_p_ma && !channel->ch_part[PART_OUT].ch_nomodifiable)
 	    {
-		emsg(_(e_modifiable));
+		emsg(_(e_cannot_make_changes_modifiable_is_off));
 	    }
 	    else
 	    {
@@ -1278,7 +1278,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 						!opt->jo_modifiable[PART_ERR];
 	    if (!buf->b_p_ma && !channel->ch_part[PART_ERR].ch_nomodifiable)
 	    {
-		emsg(_(e_modifiable));
+		emsg(_(e_cannot_make_changes_modifiable_is_off));
 	    }
 	    else
 	    {
@@ -2486,12 +2486,17 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 
     if (STRCMP(cmd, "ex") == 0)
     {
-	int called_emsg_before = called_emsg;
+	int	called_emsg_before = called_emsg;
+	char_u	*p = arg;
+	int	do_emsg_silent;
 
 	ch_log(channel, "Executing ex command '%s'", (char *)arg);
-	++emsg_silent;
+	do_emsg_silent = !checkforcmd(&p, "echoerr", 5);
+	if (do_emsg_silent)
+	    ++emsg_silent;
 	do_cmdline_cmd(arg);
-	--emsg_silent;
+	if (do_emsg_silent)
+	    --emsg_silent;
 	if (called_emsg > called_emsg_before)
 	    ch_log(channel, "Ex command error: '%s'",
 					  (char *)get_vim_var_str(VV_ERRMSG));
@@ -2545,7 +2550,8 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	    char_u	*json = NULL;
 
 	    // Don't pollute the display with errors.
-	    ++emsg_skip;
+	    // Do generate the errors so that try/catch works.
+	    ++emsg_silent;
 	    if (!is_call)
 	    {
 		ch_log(channel, "Evaluating expression '%s'", (char *)arg);
@@ -2581,7 +2587,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 		    vim_free(json);
 		}
 	    }
-	    --emsg_skip;
+	    --emsg_silent;
 	    if (tv == &res_tv)
 		clear_tv(tv);
 	    else
@@ -5013,6 +5019,24 @@ f_ch_status(typval_T *argvars, typval_T *rettv)
     }
 
     rettv->vval.v_string = vim_strsave((char_u *)channel_status(channel, part));
+}
+
+/*
+ * Get a string with information about the channel in "varp" in "buf".
+ * "buf" must be at least NUMBUFLEN long.
+ */
+    char_u *
+channel_to_string_buf(typval_T *varp, char_u *buf)
+{
+    channel_T *channel = varp->vval.v_channel;
+    char      *status = channel_status(channel, -1);
+
+    if (channel == NULL)
+	vim_snprintf((char *)buf, NUMBUFLEN, "channel %s", status);
+    else
+	vim_snprintf((char *)buf, NUMBUFLEN,
+				      "channel %d %s", channel->ch_id, status);
+    return buf;
 }
 
 #endif // FEAT_JOB_CHANNEL

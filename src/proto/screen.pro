@@ -1,6 +1,6 @@
 /* screen.c */
 int conceal_cursor_line(win_T *wp);
-void conceal_check_cursor_line(void);
+void conceal_check_cursor_line(int was_concealed);
 int get_wcr_attr(win_T *wp);
 void win_draw_end(win_T *wp, int c1, int c2, int draw_margin, int row, int endrow, hlf_T hl);
 int compute_foldcolumn(win_T *wp, int col);

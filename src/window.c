@@ -130,7 +130,7 @@ do_window(
     do { \
 	if (cmdwin_type != 0) \
 	{ \
-	    emsg(_(e_cmdwin)); \
+	    emsg(_(e_invalid_in_cmdline_window)); \
 	    return; \
 	} \
     } while (0)
@@ -187,7 +187,7 @@ do_window(
 					? curwin->w_alt_fnum : Prenum) == NULL)
 		{
 		    if (Prenum == 0)
-			emsg(_(e_noalt));
+			emsg(_(e_no_alternate_file));
 		    else
 			semsg(_("E92: Buffer %ld not found"), Prenum);
 		    break;
@@ -5057,8 +5057,9 @@ win_free(
 
 		// If there already is an entry with "wi_win" set to NULL it
 		// must be removed, it would never be used.
+		// Skip "wip" itself, otherwise Coverity complains.
 		for (wip2 = buf->b_wininfo; wip2 != NULL; wip2 = wip2->wi_next)
-		    if (wip2->wi_win == NULL)
+		    if (wip2 != wip && wip2->wi_win == NULL)
 		    {
 			if (wip2->wi_next != NULL)
 			    wip2->wi_next->wi_prev = wip2->wi_prev;

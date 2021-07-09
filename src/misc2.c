@@ -1050,7 +1050,6 @@ free_all_mem(void)
     if (entered_free_all_mem)
 	return;
     entered_free_all_mem = TRUE;
-
     // Don't want to trigger autocommands from here on.
     block_autocmds();
 
@@ -1397,7 +1396,9 @@ csh_like_shell(void)
 /*
  * Escape "string" for use as a shell argument with system().
  * This uses single quotes, except when we know we need to use double quotes
- * (MS-DOS and MS-Windows without 'shellslash' set).
+ * (MS-DOS and MS-Windows not using PowerShell and without 'shellslash' set).
+ * PowerShell also uses a novel escaping for enclosed single quotes - double
+ * them up.
  * Escape a newline, depending on the 'shell' option.
  * When "do_special" is TRUE also replace "!", "%", "#" and things starting
  * with "<" like "<cfile>".
@@ -1413,6 +1414,11 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     char_u	*escaped_string;
     int		l;
     int		csh_like;
+    char_u	*shname;
+    int		powershell;
+# ifdef MSWIN
+    int		double_quotes;
+# endif
 
     // Only csh and similar shells expand '!' within single quotes.  For sh and
     // the like we must not put a backslash before it, it will be taken
@@ -1420,12 +1426,21 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // Csh also needs to have "\n" escaped twice when do_special is set.
     csh_like = csh_like_shell();
 
+    // PowerShell uses it's own version for quoting single quotes
+    shname = gettail(p_sh);
+    powershell = strstr((char *)shname, "pwsh") != NULL;
+# ifdef MSWIN
+    powershell = powershell || strstr((char *)shname, "powershell") != NULL;
+    // PowerShell only accepts single quotes so override shellslash.
+    double_quotes = !powershell && !p_ssl;
+# endif
+
     // First count the number of extra bytes required.
     length = (unsigned)STRLEN(string) + 3;  // two quotes and a trailing NUL
     for (p = string; *p != NUL; MB_PTR_ADV(p))
     {
 # ifdef MSWIN
-	if (!p_ssl)
+	if (double_quotes)
 	{
 	    if (*p == '"')
 		++length;		// " -> ""
@@ -1433,7 +1448,12 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	else
 # endif
 	if (*p == '\'')
-	    length += 3;		// ' => '\''
+	{
+	    if (powershell)
+		length +=2;		// ' => ''
+	    else
+		length += 3;		// ' => '\''
+	}
 	if ((*p == '\n' && (csh_like || do_newline))
 		|| (*p == '!' && (csh_like || do_special)))
 	{
@@ -1456,7 +1476,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 
 	// add opening quote
 # ifdef MSWIN
-	if (!p_ssl)
+	if (double_quotes)
 	    *d++ = '"';
 	else
 # endif
@@ -1465,7 +1485,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	for (p = string; *p != NUL; )
 	{
 # ifdef MSWIN
-	    if (!p_ssl)
+	    if (double_quotes)
 	    {
 		if (*p == '"')
 		{
@@ -1479,10 +1499,18 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 # endif
 	    if (*p == '\'')
 	    {
-		*d++ = '\'';
-		*d++ = '\\';
-		*d++ = '\'';
-		*d++ = '\'';
+		if (powershell)
+		{
+		    *d++ = '\'';
+		    *d++ = '\'';
+		}
+		else
+		{
+		    *d++ = '\'';
+		    *d++ = '\\';
+		    *d++ = '\'';
+		    *d++ = '\'';
+		}
 		++p;
 		continue;
 	    }
@@ -1508,7 +1536,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 
 	// add terminating quote and finish with a NUL
 # ifdef MSWIN
-	if (!p_ssl)
+	if (double_quotes)
 	    *d++ = '"';
 	else
 # endif
@@ -2542,7 +2570,7 @@ static struct key_name_entry
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
 
-#define KEY_NAMES_TABLE_LEN (sizeof(key_names_table) / sizeof(struct key_name_entry))
+#define KEY_NAMES_TABLE_LEN ARRAY_LENGTH(key_names_table)
 
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given

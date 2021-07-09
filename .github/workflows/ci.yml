@@ -56,7 +56,7 @@ jobs:
 
       - name: Install packages
         run: |
-          sudo apt-get install -y \
+          sudo apt update && sudo apt install -y \
             autoconf \
             lcov \
             gettext \
@@ -71,7 +71,8 @@ jobs:
             cscope \
             libgtk2.0-dev \
             desktop-file-utils \
-            libtool-bin
+            libtool-bin \
+            libsodium-dev
 
       - name: Install clang-11
         if: matrix.compiler == 'clang'

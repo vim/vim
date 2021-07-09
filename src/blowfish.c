@@ -23,8 +23,6 @@
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 
-#define ARRAY_LENGTH(A)      (sizeof(A)/sizeof(A[0]))
-
 #define BF_BLOCK    8
 #define BF_BLOCK_MASK 7
 #define BF_MAX_CFB_LEN  (8 * BF_BLOCK)
@@ -598,7 +596,8 @@ crypt_blowfish_encode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last UNUSED)
 {
     bf_state_T *bfs = state->method_state;
     size_t	i;
@@ -621,7 +620,8 @@ crypt_blowfish_decode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last UNUSED)
 {
     bf_state_T *bfs = state->method_state;
     size_t	i;
@@ -682,5 +682,4 @@ blowfish_self_test(void)
     }
     return OK;
 }
-
 #endif // FEAT_CRYPT

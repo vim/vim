@@ -2848,7 +2848,7 @@ f_simplify(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
 
-    p = tv_get_string(&argvars[0]);
+    p = tv_get_string_strict(&argvars[0]);
     rettv->vval.v_string = vim_strsave(p);
     simplify_filename(rettv->vval.v_string);	// simplify in place
     rettv->v_type = VAR_STRING;

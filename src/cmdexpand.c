@@ -1370,6 +1370,8 @@ set_one_cmd_context(
 	case CMD_verbose:
 	case CMD_vertical:
 	case CMD_windo:
+	case CMD_vim9cmd:
+	case CMD_legacy:
 	    return arg;
 
 	case CMD_filter:
@@ -1555,9 +1557,11 @@ set_one_cmd_context(
 
 	case CMD_function:
 	case CMD_delfunction:
-	case CMD_disassemble:
 	    xp->xp_context = EXPAND_USER_FUNC;
 	    xp->xp_pattern = arg;
+	    break;
+	case CMD_disassemble:
+	    set_context_in_disassemble_cmd(xp, arg);
 	    break;
 
 	case CMD_echohl:
@@ -2118,6 +2122,7 @@ ExpandFromContext(
 	    {EXPAND_USER_VARS, get_user_var_name, FALSE, TRUE},
 	    {EXPAND_FUNCTIONS, get_function_name, FALSE, TRUE},
 	    {EXPAND_USER_FUNC, get_user_func_name, FALSE, TRUE},
+	    {EXPAND_DISASSEMBLE, get_disassemble_argument, FALSE, TRUE},
 	    {EXPAND_EXPRESSION, get_expr_name, FALSE, TRUE},
 # endif
 # ifdef FEAT_MENU
@@ -2155,7 +2160,7 @@ ExpandFromContext(
 	// Find a context in the table and call the ExpandGeneric() with the
 	// right function to do the expansion.
 	ret = FAIL;
-	for (i = 0; i < (int)(sizeof(tab) / sizeof(struct expgen)); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(tab); ++i)
 	    if (xp->xp_context == tab[i].context)
 	    {
 		if (tab[i].ic)

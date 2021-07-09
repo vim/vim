@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2021 Apr 24
+*index.txt*     For Vim version 8.2.  Last change: 2021 Jun 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -864,6 +864,8 @@ tag		char	      note action in Normal mode	~
 |zm|		zm		   subtract one from 'foldlevel'
 |zn|		zn		   reset 'foldenable'
 |zo|		zo		   open fold
+|zp|		zp		   paste in block-mode without trailing spaces
+|zP|		zP		   paste in block-mode without trailing spaces
 |zr|		zr		   add one to 'foldlevel'
 |zs|		zs		   when 'wrap' off scroll horizontally to
 				   position the cursor at the start (left
@@ -876,6 +878,7 @@ tag		char	      note action in Normal mode	~
 |zv|		zv		   open enough folds to view the cursor line
 |zw|		zw		   permanently mark word as incorrectly spelled
 |zx|		zx		   re-apply 'foldlevel' and do "zv"
+|zy|		zy		   yank without trailing spaces
 |zz|		zz		   redraw, cursor line at center of window
 |z<Left>|	z<Left>		   same as "zh"
 |z<Right>|	z<Right>	   same as "zl"
@@ -1309,6 +1312,7 @@ tag		command		action ~
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
 |:enew|		:ene[w]		edit a new, unnamed buffer
+|:eval|		:ev[al]		evaluate an expression and discard the result
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
 |:exit|		:exi[t]		same as ":xit"
@@ -1657,9 +1661,9 @@ tag		command		action ~
 |:tab|		:tab		create new tab when opening new window
 |:tag|		:ta[g]		jump to tag
 |:tags|		:tags		show the contents of the tag stack
-|:tcd|		:tcd		change directory for tab page
+|:tcd|		:tc[d]		change directory for tab page
 |:tchdir|	:tch[dir]	change directory for tab page
-|:tcl|		:tc[l]		execute Tcl command
+|:tcl|		:tcl		execute Tcl command
 |:tcldo|	:tcld[o]	execute Tcl command for each line
 |:tclfile|	:tclf[ile]	execute Tcl script file
 |:tearoff|	:te[aroff]	tear-off a menu

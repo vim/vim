@@ -700,12 +700,41 @@ S_POPMARK(pTHX)
 /* perl-5.32 needs Perl_POPMARK */
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
 #  define Perl_POPMARK S_POPMARK
+# endif
+
+/* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
+PERL_STATIC_INLINE bool
+Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
+{
+    if (UNLIKELY(SvIMMORTAL_INTERP(sv)))
+	return SvIMMORTAL_TRUE(sv);
+
+    if (! SvOK(sv))
+	return FALSE;
+
+    if (SvPOK(sv))
+	return SvPVXtrue(sv);
+
+    if (SvIOK(sv))
+	return SvIVX(sv) != 0; /* casts to bool */
+
+    if (SvROK(sv) && !(SvOBJECT(SvRV(sv)) && HvAMAGIC(SvSTASH(SvRV(sv)))))
+	return TRUE;
+
+    if (sv_2bool_is_fallback)
+	return sv_2bool_nomg(sv);
+
+    return isGV_with_GP(sv);
+}
+# endif
 
 /* perl-5.32 needs Perl_SvTRUE */
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
 PERL_STATIC_INLINE bool
 Perl_SvTRUE(pTHX_ SV *sv) {
     if (!LIKELY(sv))
-        return FALSE;
+	return FALSE;
     SvGETMAGIC(sv);
     return SvTRUE_nomg_NN(sv);
 }

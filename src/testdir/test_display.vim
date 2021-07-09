@@ -334,4 +334,21 @@ func Test_fold_fillchars()
   set fillchars& fdc& foldmethod& foldenable&
 endfunc
 
+func Test_display_linebreak_breakat()
+  new
+  vert resize 25
+  let _breakat = &breakat
+  setl signcolumn=yes linebreak breakat=) showbreak=+\ 
+  call setline(1, repeat('x', winwidth(0) - 2) .. ')abc')
+  let lines = ScreenLines([1, 2], 25)
+  let expected = [
+          \ '  xxxxxxxxxxxxxxxxxxxxxxx',
+          \ '  + )abc                 '
+          \ ]
+  call assert_equal(expected, lines)
+  %bw!
+  let &breakat=_breakat
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

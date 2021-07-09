@@ -226,7 +226,7 @@ endfunc
 func Test_xxd_version()
   new
   exe 'r! ' . s:xxd_cmd . ' -v'
-  call assert_match("xxd V1.10 .* by Juergen Weigert", join(getline(1, 3)))
+  call assert_match('xxd 20\d\d-\d\d-\d\d by Juergen Weigert et al\.', join(getline(1, 3)))
   bwipe!
 endfunc
 

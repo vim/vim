@@ -389,7 +389,7 @@ func Test_set_guifont()
   endif
 
   " This only works if 'renderoptions' exists and does not work for Windows XP
-  " and older. 
+  " and older.
   if exists('+renderoptions') && windowsversion() !~ '^[345]\.'
     " doing this four times used to cause a crash
     set renderoptions=type:directx
@@ -873,6 +873,384 @@ func Test_gui_recursive_mapping()
 
   nunmap '
   nunmap <C-W>a
+endfunc
+
+" Test GUI mouse events
+func Test_gui_mouse_event()
+  set mousemodel=extend
+  call test_override('no_query_mouse', 1)
+  new
+  call setline(1, ['one two three', 'four five six'])
+
+  " place the cursor using left click in normal mode
+  call cursor(1, 1)
+  call test_gui_mouse_event(0, 2, 4, 0, 0)
+  call test_gui_mouse_event(3, 2, 4, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 2, 4, 0], getpos('.'))
+
+  " select and yank a word
+  let @" = ''
+  call test_gui_mouse_event(0, 1, 9, 0, 0)
+  call test_gui_mouse_event(0, 1, 9, 1, 0)
+  call test_gui_mouse_event(3, 1, 9, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('three', @")
+
+  " create visual selection using right click
+  let @" = ''
+  call test_gui_mouse_event(0, 2, 6, 0, 0)
+  call test_gui_mouse_event(3, 2, 6, 0, 0)
+  call test_gui_mouse_event(2, 2, 13, 0, 0)
+  call test_gui_mouse_event(3, 2, 13, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('five six', @")
+
+  " paste using middle mouse button
+  let @* = 'abc '
+  call feedkeys('""', 'Lx!')
+  call test_gui_mouse_event(1, 1, 9, 0, 0)
+  call test_gui_mouse_event(3, 1, 9, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
+
+  " extend visual selection using right click in visual mode
+  let @" = ''
+  call cursor(1, 1)
+  call feedkeys('v', 'Lx!')
+  call test_gui_mouse_event(2, 1, 17, 0, 0)
+  call test_gui_mouse_event(3, 1, 17, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('one two abc three', @")
+
+  " extend visual selection using mouse drag
+  let @" = ''
+  call cursor(1, 1)
+  call test_gui_mouse_event(0, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x43, 2, 9, 0, 0)
+  call test_gui_mouse_event(0x3, 2, 9, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('four five', @")
+
+  " select text by moving the mouse
+  let @" = ''
+  call cursor(1, 1)
+  redraw!
+  call test_gui_mouse_event(0, 1, 4, 0, 0)
+  call test_gui_mouse_event(0x700, 1, 9, 0, 0)
+  call test_gui_mouse_event(0x700, 1, 13, 0, 0)
+  call test_gui_mouse_event(0x3, 1, 13, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal(' two abc t', @")
+
+  " Using mouse in insert mode
+  call cursor(1, 1)
+  call feedkeys('i', 't')
+  call test_gui_mouse_event(0, 2, 11, 0, 0)
+  call test_gui_mouse_event(3, 2, 11, 0, 0)
+  call feedkeys("po\<Esc>", 'Lx!')
+  call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
+
+  %d _
+  call setline(1, range(1, 100))
+  " scroll up
+  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(10, line('.'))
+
+  " scroll down
+  call test_gui_mouse_event(0x100, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x100, 2, 1, 0, 0)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(4, line('.'))
+
+  %d _
+  set nowrap
+  call setline(1, range(10)->join('')->repeat(10))
+  " scroll left
+  call test_gui_mouse_event(0x500, 1, 5, 0, 0)
+  call test_gui_mouse_event(0x500, 1, 10, 0, 0)
+  call test_gui_mouse_event(0x500, 1, 15, 0, 0)
+  call feedkeys('g0', 'Lx!')
+  call assert_equal(19, col('.'))
+
+  " scroll right
+  call test_gui_mouse_event(0x600, 1, 15, 0, 0)
+  call test_gui_mouse_event(0x600, 1, 10, 0, 0)
+  call feedkeys('g0', 'Lx!')
+  call assert_equal(7, col('.'))
+  set wrap&
+
+  %d _
+  call setline(1, repeat([repeat('a', 60)], 10))
+
+  " record various mouse events
+  let mouseEventNames = [
+        \ 'LeftMouse', 'LeftRelease', '2-LeftMouse', '3-LeftMouse',
+        \ 'S-LeftMouse', 'A-LeftMouse', 'C-LeftMouse', 'MiddleMouse',
+        \ 'MiddleRelease', '2-MiddleMouse', '3-MiddleMouse',
+        \ 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
+        \ 'RightMouse', 'RightRelease', '2-RightMouse',
+        \ '3-RightMouse', 'S-RightMouse', 'A-RightMouse', 'C-RightMouse',
+        \ 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse', 'C-X1Mouse', 'X2Mouse',
+        \ 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'
+        \ ]
+  let mouseEventCodes = map(copy(mouseEventNames), "'<' .. v:val .. '>'")
+  let g:events = []
+  for e in mouseEventCodes
+    exe 'nnoremap ' .. e .. ' <Cmd>call add(g:events, "' ..
+          \ substitute(e, '[<>]', '', 'g') .. '")<CR>'
+  endfor
+
+  " Test various mouse buttons (0 - Left, 1 - Middle, 2 - Right, 0x300 - X1,
+  " 0x300- X2)
+  for button in [0, 1, 2, 0x300, 0x400]
+    " Single click
+    call test_gui_mouse_event(button, 2, 5, 0, 0)
+    call test_gui_mouse_event(3, 2, 5, 0, 0)
+
+    " Double/Triple click is supported by only the Left/Middle/Right mouse
+    " buttons
+    if button <= 2
+      " Double Click
+      call test_gui_mouse_event(button, 2, 5, 0, 0)
+      call test_gui_mouse_event(button, 2, 5, 1, 0)
+      call test_gui_mouse_event(3, 2, 5, 0, 0)
+
+      " Triple Click
+      call test_gui_mouse_event(button, 2, 5, 0, 0)
+      call test_gui_mouse_event(button, 2, 5, 1, 0)
+      call test_gui_mouse_event(button, 2, 5, 1, 0)
+      call test_gui_mouse_event(3, 2, 5, 0, 0)
+    endif
+
+    " Shift click
+    call test_gui_mouse_event(button, 3, 7, 0, 4)
+    call test_gui_mouse_event(3, 3, 7, 0, 4)
+
+    " Alt click
+    call test_gui_mouse_event(button, 3, 7, 0, 8)
+    call test_gui_mouse_event(3, 3, 7, 0, 8)
+
+    " Ctrl click
+    call test_gui_mouse_event(button, 3, 7, 0, 16)
+    call test_gui_mouse_event(3, 3, 7, 0, 16)
+
+    call feedkeys("\<Esc>", 'Lx!')
+  endfor
+
+  call assert_equal(['LeftMouse', 'LeftRelease', 'LeftMouse', '2-LeftMouse',
+        \ 'LeftMouse', '2-LeftMouse', '3-LeftMouse', 'S-LeftMouse',
+        \ 'A-LeftMouse', 'C-LeftMouse', 'MiddleMouse', 'MiddleRelease',
+        \ 'MiddleMouse', '2-MiddleMouse', 'MiddleMouse', '2-MiddleMouse',
+        \ '3-MiddleMouse', 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
+        \ 'RightMouse', 'RightRelease', 'RightMouse', '2-RightMouse',
+        \ 'RightMouse', '2-RightMouse', '3-RightMouse', 'S-RightMouse',
+        \ 'A-RightMouse', 'C-RightMouse', 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse',
+        \ 'C-X1Mouse', 'X2Mouse', 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'],
+        \ g:events)
+
+  for e in mouseEventCodes
+    exe 'nunmap ' .. e
+  endfor
+
+  " modeless selection
+  set mouse=
+  let save_guioptions = &guioptions
+  set guioptions+=A
+  %d _
+  call setline(1, ['one two three', 'four five sixteen'])
+  call cursor(1, 1)
+  redraw!
+  " Double click should select the word and copy it to clipboard
+  let @* = ''
+  call test_gui_mouse_event(0, 2, 11, 0, 0)
+  call test_gui_mouse_event(0, 2, 11, 1, 0)
+  call test_gui_mouse_event(3, 2, 11, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  call assert_equal('sixteen', @*)
+  " Right click should extend the selection from cursor
+  call cursor(1, 6)
+  redraw!
+  let @* = ''
+  call test_gui_mouse_event(2, 1, 11, 0, 0)
+  call test_gui_mouse_event(3, 1, 11, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  call assert_equal('wo thr', @*)
+  " Middle click should paste the clipboard contents
+  call cursor(2, 1)
+  redraw!
+  call test_gui_mouse_event(1, 1, 11, 0, 0)
+  call test_gui_mouse_event(3, 1, 11, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 2, 7, 0], getpos('.'))
+  call assert_equal('wo thrfour five sixteen', getline(2))
+  set mouse&
+  let &guioptions = save_guioptions
+
+  " Test invalid parameters for test_gui_mouse_event()
+  call assert_fails('call test_gui_mouse_event("", 1, 2, 3, 4)', 'E474:')
+  call assert_fails('call test_gui_mouse_event(0, "", 2, 3, 4)', 'E474:')
+  call assert_fails('call test_gui_mouse_event(0, 1, "", 3, 4)', 'E474:')
+  call assert_fails('call test_gui_mouse_event(0, 1, 2, "", 4)', 'E474:')
+  call assert_fails('call test_gui_mouse_event(0, 1, 2, 3, "")', 'E474:')
+
+  bw!
+  call test_override('no_query_mouse', 0)
+  set mousemodel&
+endfunc
+
+" Test for 'guitablabel' and 'guitabtooltip' options
+func TestGuiTabLabel()
+  call add(g:TabLabels, v:lnum + 100)
+  let bufnrlist = tabpagebuflist(v:lnum)
+  return bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
+endfunc
+
+func TestGuiTabToolTip()
+  call add(g:TabToolTips, v:lnum + 200)
+  let bufnrlist = tabpagebuflist(v:lnum)
+  return bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
+endfunc
+
+func Test_gui_tablabel_tooltip()
+  CheckNotFeature gui_athena
+
+  %bw!
+  " Removing the tabline at the end of this test, reduces the window height by
+  " one. Save and restore it after the test.
+  let save_lines = &lines
+  edit one
+  set modified
+  tabnew two
+  set modified
+  tabnew three
+  set modified
+  let g:TabLabels = []
+  set guitablabel=%{TestGuiTabLabel()}
+  call test_override('starting', 1)
+  redrawtabline
+  call test_override('starting', 0)
+  call assert_true(index(g:TabLabels, 101) != -1)
+  call assert_true(index(g:TabLabels, 102) != -1)
+  call assert_true(index(g:TabLabels, 103) != -1)
+  set guitablabel&
+  unlet g:TabLabels
+
+  if has('gui_gtk')
+    " Only on GTK+, the tooltip function is called even if the mouse is not
+    " on the tabline. on Win32 and Motif, the tooltip function is called only
+    " when the mouse pointer is over the tabline.
+    let g:TabToolTips = []
+    set guitabtooltip=%{TestGuiTabToolTip()}
+    call test_override('starting', 1)
+    redrawtabline
+    call test_override('starting', 0)
+    call assert_true(index(g:TabToolTips, 201) != -1)
+    call assert_true(index(g:TabToolTips, 202) != -1)
+    call assert_true(index(g:TabToolTips, 203) != -1)
+    set guitabtooltip&
+    unlet g:TabToolTips
+  endif
+  %bw!
+  let &lines = save_lines
+endfunc
+
+" Test for dropping files into a window in GUI
+func DropFilesInCmdLine()
+  CheckFeature drop_file
+
+  call feedkeys(":\"", 'L')
+  call test_gui_drop_files(['a.c', 'b.c'], &lines, 1, 0)
+  call feedkeys("\<CR>", 'L')
+endfunc
+
+func Test_gui_drop_files()
+  CheckFeature drop_file
+
+  call assert_fails('call test_gui_drop_files(1, 1, 1, 0)', 'E474:')
+  call assert_fails('call test_gui_drop_files(["x"], "", 1, 0)', 'E474:')
+  call assert_fails('call test_gui_drop_files(["x"], 1, "", 0)', 'E474:')
+  call assert_fails('call test_gui_drop_files(["x"], 1, 1, "")', 'E474:')
+
+  %bw!
+  %argdelete
+  call test_gui_drop_files([], 1, 1, 0)
+  call assert_equal([], argv())
+  call test_gui_drop_files([1, 2], 1, 1, 0)
+  call assert_equal([], argv())
+
+  call test_gui_drop_files(['a.c', 'b.c'], 1, 1, 0)
+  call assert_equal(['a.c', 'b.c'], argv())
+  %bw!
+  %argdelete
+  call test_gui_drop_files([], 1, 1, 0)
+  call assert_equal([], argv())
+  %bw!
+  " if the buffer in the window is modified, then the file should be opened in
+  " a new window
+  set modified
+  call test_gui_drop_files(['x.c', 'y.c'], 1, 1, 0)
+  call assert_equal(['x.c', 'y.c'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal('x.c', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " if Ctrl is pressed, then the file should be opened in a new window
+  call test_gui_drop_files(['s.py', 't.py'], 1, 1, 0x10)
+  call assert_equal(['s.py', 't.py'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal('s.py', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " drop the files in a non-current window
+  belowright new
+  call test_gui_drop_files(['a.py', 'b.py'], 1, 1, 0)
+  call assert_equal(['a.py', 'b.py'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal(1, winnr())
+  call assert_equal('a.py', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " pressing shift when dropping files should change directory
+  let save_cwd = getcwd()
+  call mkdir('Xdir1')
+  call writefile([], 'Xdir1/Xfile1')
+  call writefile([], 'Xdir1/Xfile2')
+  call test_gui_drop_files(['Xdir1/Xfile1', 'Xdir1/Xfile2'], 1, 1, 0x4)
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xfile1', @%)
+  call chdir(save_cwd)
+  " pressing shift when dropping directory and files should change directory
+  call test_gui_drop_files(['Xdir1', 'Xdir1/Xfile2'], 1, 1, 0x4)
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir1', fnamemodify(@%, ':t'))
+  call chdir(save_cwd)
+  %bw!
+  %argdelete
+  " dropping a directory should edit it
+  call test_gui_drop_files(['Xdir1'], 1, 1, 0)
+  call assert_equal('Xdir1', @%)
+  %bw!
+  %argdelete
+  " dropping only a directory name with Shift should ignore it
+  call test_gui_drop_files(['Xdir1'], 1, 1, 0x4)
+  call assert_equal('', @%)
+  %bw!
+  %argdelete
+  call delete('Xdir1', 'rf')
+  " drop files in the command line. The GUI drop files adds the file names to
+  " the low level input buffer. So need to use a cmdline map and feedkeys()
+  " with 'Lx!' to process it in this function itself.
+  cnoremap <expr> <buffer> <F4> DropFilesInCmdLine()
+  call feedkeys(":\"\<F4>\<CR>", 'xt')
+  call feedkeys('k', 'Lx!')
+  call assert_equal('"a.c b.c', @:)
+  cunmap <buffer> <F4>
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

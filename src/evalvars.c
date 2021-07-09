@@ -1334,7 +1334,7 @@ ex_let_one(
 		semsg(_(e_letwrong), op);
 	    else if (endchars != NULL
 			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
-		emsg(_(e_letunexp));
+		emsg(_(e_unexpected_characters_in_let));
 	    else if (!check_secure())
 	    {
 		c1 = name[len];
@@ -1379,7 +1379,7 @@ ex_let_one(
 	p = find_option_end(&arg, &opt_flags);
 	if (p == NULL || (endchars != NULL
 			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
-	    emsg(_(e_letunexp));
+	    emsg(_(e_unexpected_characters_in_let));
 	else
 	{
 	    long	n = 0;
@@ -1439,6 +1439,7 @@ ex_let_one(
 			    case '%': n = (long)num_modulus(numval, n,
 							       &failed); break;
 			}
+			s = NULL;
 		    }
 		    else if (opt_type == gov_string
 					     && stringval != NULL && s != NULL)
@@ -1480,7 +1481,7 @@ ex_let_one(
 	    semsg(_(e_letwrong), op);
 	else if (endchars != NULL
 			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
-	    emsg(_(e_letunexp));
+	    emsg(_(e_unexpected_characters_in_let));
 	else
 	{
 	    char_u	*ptofree = NULL;
@@ -1519,7 +1520,7 @@ ex_let_one(
 	{
 	    if (endchars != NULL && vim_strchr(endchars,
 					   *skipwhite(lv.ll_name_end)) == NULL)
-		emsg(_(e_letunexp));
+		emsg(_(e_unexpected_characters_in_let));
 	    else
 	    {
 		set_var_lval(&lv, p, tv, copy, flags, op, var_idx);
@@ -2563,20 +2564,28 @@ eval_variable(
     int		ret = OK;
     typval_T	*tv = NULL;
     int		found = FALSE;
-    dictitem_T	*v;
+    hashtab_T	*ht = NULL;
     int		cc;
+    type_T	*type = NULL;
 
     // truncate the name, so that we can use strcmp()
     cc = name[len];
     name[len] = NUL;
 
-    // Check for user-defined variables.
-    v = find_var(name, NULL, flags & EVAL_VAR_NOAUTOLOAD);
-    if (v != NULL)
+    // Check for local variable when debugging.
+    if ((tv = lookup_debug_var(name)) == NULL)
     {
-	tv = &v->di_tv;
-	if (dip != NULL)
-	    *dip = v;
+	// Check for user-defined variables.
+	dictitem_T	*v = find_var(name, &ht, flags & EVAL_VAR_NOAUTOLOAD);
+
+	if (v != NULL)
+	{
+	    tv = &v->di_tv;
+	    if (dip != NULL)
+		*dip = v;
+	}
+	else
+	    ht = NULL;
     }
 
     if (tv == NULL && (in_vim9script() || STRNCMP(name, "s:", 2) == 0))
@@ -2622,6 +2631,7 @@ eval_variable(
 		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
 						    + import->imp_var_vals_idx;
 		tv = sv->sv_tv;
+		type = sv->sv_type;
 	    }
 	}
 	else if (in_vim9script())
@@ -2650,18 +2660,32 @@ eval_variable(
 	}
 	else if (rettv != NULL)
 	{
+	    if (ht != NULL && ht == get_script_local_ht())
+	    {
+		svar_T *sv = find_typval_in_script(tv);
+
+		if (sv != NULL)
+		    type = sv->sv_type;
+	    }
+
 	    // If a list or dict variable wasn't initialized, do it now.
 	    if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL)
 	    {
 		tv->vval.v_dict = dict_alloc();
 		if (tv->vval.v_dict != NULL)
+		{
 		    ++tv->vval.v_dict->dv_refcount;
+		    tv->vval.v_dict->dv_type = alloc_type(type);
+		}
 	    }
 	    else if (tv->v_type == VAR_LIST && tv->vval.v_list == NULL)
 	    {
 		tv->vval.v_list = list_alloc();
 		if (tv->vval.v_list != NULL)
+		{
 		    ++tv->vval.v_list->lv_refcount;
+		    tv->vval.v_list->lv_type = alloc_type(type);
+		}
 	    }
 	    else if (tv->v_type == VAR_BLOB && tv->vval.v_blob == NULL)
 	    {
@@ -2920,8 +2944,9 @@ find_var_ht(char_u *name, char_u **varname)
 	if (ht != NULL)
 	    return ht;				// local variable
 
-	// in Vim9 script items at the script level are script-local
-	if (in_vim9script())
+	// In Vim9 script items at the script level are script-local, except
+	// for autoload names.
+	if (in_vim9script() && vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 	{
 	    ht = get_script_local_ht();
 	    if (ht != NULL)

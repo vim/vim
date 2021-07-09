@@ -591,7 +591,7 @@ _match(char *s1, char *s2)
     static char *
 _find(char *s, char *set)
 {
-    for(; *s; s++)
+    for (; *s; s++)
     {
 	char	*ptr = set;
 

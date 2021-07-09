@@ -1105,7 +1105,7 @@ decode_key_event(
 	return TRUE;
     }
 
-    for (i = sizeof(VirtKeyMap) / sizeof(VirtKeyMap[0]);  --i >= 0;  )
+    for (i = ARRAY_LENGTH(VirtKeyMap);  --i >= 0;  )
     {
 	if (VirtKeyMap[i].wVirtKey == pker->wVirtualKeyCode)
 	{
@@ -1180,6 +1180,8 @@ static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
 static int g_xMouse;		    // mouse x coordinate
 static int g_yMouse;		    // mouse y coordinate
+static DWORD g_cmodein = 0;         // Original console input mode
+static DWORD g_cmodeout = 0;        // Original console output mode
 
 /*
  * Enable or disable mouse input
@@ -1200,11 +1202,17 @@ mch_setmouse(int on)
     GetConsoleMode(g_hConIn, &cmodein);
 
     if (g_fMouseActive)
+    {
 	cmodein |= ENABLE_MOUSE_INPUT;
+	cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+    }
     else
+    {
 	cmodein &= ~ENABLE_MOUSE_INPUT;
+	cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    }
 
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 }
 
 
@@ -1648,7 +1656,9 @@ WaitForChar(long msec, int ignore_input)
 	peek_console_input(g_hConIn, &ir, 1, &cRecords);
 
 # ifdef FEAT_MBYTE_IME
-	if (State & CMDLINE && msg_row == Rows - 1)
+	// May have to redraw if the cursor ends up in the wrong place.
+	// Only when not peeking.
+	if (State & CMDLINE && msg_row == Rows - 1 && msec != 0)
 	{
 	    CONSOLE_SCREEN_BUFFER_INFO csbi;
 
@@ -2125,6 +2135,7 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
     char_u	*pathbuf = NULL;
     char_u	*pathext = NULL;
     char_u	*pathextbuf = NULL;
+    char_u	*shname = NULL;
     int		noext = FALSE;
     int		retval = FALSE;
 
@@ -2132,7 +2143,10 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	return FALSE;
 
     // Using the name directly when a Unix-shell like 'shell'.
-    if (strstr((char *)gettail(p_sh), "sh") != NULL)
+    shname = gettail(p_sh);
+    if (strstr((char *)shname, "sh") != NULL &&
+	!(strstr((char *)shname, "powershell") != NULL
+				    || strstr((char *)shname, "pwsh") != NULL))
 	noext = TRUE;
 
     if (use_pathext)
@@ -2780,8 +2794,6 @@ SaveConsoleTitleAndIcon(void)
 static int g_fWindInitCalled = FALSE;
 static int g_fTermcapMode = FALSE;
 static CONSOLE_CURSOR_INFO g_cci;
-static DWORD g_cmodein = 0;
-static DWORD g_cmodeout = 0;
 
 /*
  * non-GUI version of mch_init().
@@ -2922,7 +2934,7 @@ mch_exit_c(int r)
     }
 
     SetConsoleCursorInfo(g_hConOut, &g_cci);
-    SetConsoleMode(g_hConIn,  g_cmodein);
+    SetConsoleMode(g_hConIn,  g_cmodein | ENABLE_EXTENDED_FLAGS);
     SetConsoleMode(g_hConOut, g_cmodeout);
 
 # ifdef DYNAMIC_GETTEXT
@@ -3037,7 +3049,7 @@ mch_get_user_name(
     int	    len)
 {
     WCHAR wszUserName[256 + 1];	// UNLEN is 256
-    DWORD wcch = sizeof(wszUserName) / sizeof(WCHAR);
+    DWORD wcch = ARRAY_LENGTH(wszUserName);
 
     if (GetUserNameW(wszUserName, &wcch))
     {
@@ -3064,7 +3076,7 @@ mch_get_host_name(
     int		len)
 {
     WCHAR wszHostName[256 + 1];
-    DWORD wcch = sizeof(wszHostName) / sizeof(WCHAR);
+    DWORD wcch = ARRAY_LENGTH(wszHostName);
 
     if (GetComputerNameW(wszHostName, &wcch))
     {
@@ -3745,7 +3757,14 @@ mch_settmode(tmode_T tmode)
 	cmodein &= ~(ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT |
 		     ENABLE_ECHO_INPUT);
 	if (g_fMouseActive)
+	{
 	    cmodein |= ENABLE_MOUSE_INPUT;
+	    cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+	}
+	else
+	{
+	    cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+	}
 	cmodeout &= ~(
 # ifdef FEAT_TERMGUICOLORS
 	    // Do not turn off the ENABLE_PROCESSED_OUTPUT flag when using
@@ -3764,7 +3783,7 @@ mch_settmode(tmode_T tmode)
 	cmodeout |= (ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT);
 	bEnableHandler = FALSE;
     }
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
     SetConsoleMode(g_hConOut, cmodeout);
     SetConsoleCtrlHandler(handler_routine, bEnableHandler);
 
@@ -4742,8 +4761,7 @@ mch_call_shell(
     WCHAR	szShellTitle[512];
 
     // Change the title to reflect that we are in a subshell.
-    if (GetConsoleTitleW(szShellTitle,
-		sizeof(szShellTitle)/sizeof(WCHAR) - 4) > 0)
+    if (GetConsoleTitleW(szShellTitle, ARRAY_LENGTH(szShellTitle) - 4) > 0)
     {
 	if (cmd == NULL)
 	    wcscat(szShellTitle, L" :sh");
@@ -4755,7 +4773,7 @@ mch_call_shell(
 	    {
 		wcscat(szShellTitle, L" - !");
 		if ((wcslen(szShellTitle) + wcslen(wn) <
-			    sizeof(szShellTitle)/sizeof(WCHAR)))
+			    ARRAY_LENGTH(szShellTitle)))
 		    wcscat(szShellTitle, wn);
 		SetConsoleTitleW(szShellTitle);
 		vim_free(wn);
@@ -5619,11 +5637,17 @@ termcap_mode_start(void)
 
     GetConsoleMode(g_hConIn, &cmodein);
     if (g_fMouseActive)
+    {
 	cmodein |= ENABLE_MOUSE_INPUT;
+	cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+    }
     else
+    {
 	cmodein &= ~ENABLE_MOUSE_INPUT;
+	cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    }
     cmodein |= ENABLE_WINDOW_INPUT;
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 
     redraw_later_clear();
     g_fTermcapMode = TRUE;
@@ -5648,7 +5672,8 @@ termcap_mode_end(void)
 
     GetConsoleMode(g_hConIn, &cmodein);
     cmodein &= ~(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
-    SetConsoleMode(g_hConIn, cmodein);
+    cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     cb = exiting ? &g_cbOrig : &g_cbNonTermcap;
@@ -7537,7 +7562,7 @@ myresetstkoflw(void)
 
 
 /*
- * The command line arguments in UCS2
+ * The command line arguments in UTF-16
  */
 static int	nArgsW = 0;
 static LPWSTR	*ArglistW = NULL;
@@ -7580,8 +7605,8 @@ get_cmd_argsW(char ***argvp)
 	    {
 		int	len;
 
-		// Convert each Unicode argument to the current codepage.
-		WideCharToMultiByte_alloc(GetACP(), 0,
+		// Convert each Unicode argument to UTF-8.
+		WideCharToMultiByte_alloc(CP_UTF8, 0,
 				ArglistW[i], (int)wcslen(ArglistW[i]) + 1,
 				(LPSTR *)&argv[i], &len, 0, 0);
 		if (argv[i] == NULL)
@@ -7657,7 +7682,7 @@ set_alist_count(void)
 
 /*
  * Fix the encoding of the command line arguments.  Invoked when 'encoding'
- * has been changed while starting up.  Use the UCS-2 command line arguments
+ * has been changed while starting up.  Use the UTF-16 command line arguments
  * and convert them to 'encoding'.
  */
     void

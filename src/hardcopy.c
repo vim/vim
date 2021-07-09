@@ -972,8 +972,6 @@ hardcopy_line(
  * http://www.adobe.com
  */
 
-#define NUM_ELEMENTS(arr)   (sizeof(arr)/sizeof((arr)[0]))
-
 #define PRT_PS_DEFAULT_DPI	    (72)    // Default user space resolution
 #define PRT_PS_DEFAULT_FONTSIZE     (10)
 #define PRT_PS_DEFAULT_BUFFER_SIZE  (80)
@@ -985,7 +983,7 @@ struct prt_mediasize_S
     float	height;
 };
 
-#define PRT_MEDIASIZE_LEN  (sizeof(prt_mediasize) / sizeof(struct prt_mediasize_S))
+#define PRT_MEDIASIZE_LEN  ARRAY_LENGTH(prt_mediasize)
 
 static struct prt_mediasize_S prt_mediasize[] =
 {
@@ -1210,33 +1208,33 @@ struct prt_ps_mbfont_S
 static struct prt_ps_mbfont_S prt_ps_mbfonts[] =
 {
     {
-	NUM_ELEMENTS(j_encodings),
+	ARRAY_LENGTH(j_encodings),
 	j_encodings,
-	NUM_ELEMENTS(j_charsets),
+	ARRAY_LENGTH(j_charsets),
 	j_charsets,
 	"jis_roman",
 	"JIS_X_1983"
     },
     {
-	NUM_ELEMENTS(sc_encodings),
+	ARRAY_LENGTH(sc_encodings),
 	sc_encodings,
-	NUM_ELEMENTS(sc_charsets),
+	ARRAY_LENGTH(sc_charsets),
 	sc_charsets,
 	"gb_roman",
 	"GB_2312-80"
     },
     {
-	NUM_ELEMENTS(tc_encodings),
+	ARRAY_LENGTH(tc_encodings),
 	tc_encodings,
-	NUM_ELEMENTS(tc_charsets),
+	ARRAY_LENGTH(tc_charsets),
 	tc_charsets,
 	"cns_roman",
 	"BIG5"
     },
     {
-	NUM_ELEMENTS(k_encodings),
+	ARRAY_LENGTH(k_encodings),
 	k_encodings,
-	NUM_ELEMENTS(k_charsets),
+	ARRAY_LENGTH(k_charsets),
 	k_charsets,
 	"ks_roman",
 	"KS_X_1992"
@@ -1793,12 +1791,12 @@ prt_next_dsc(struct prt_dsc_line_S *p_dsc_line)
 	return FALSE;
 
     // Find type of DSC comment
-    for (comment = 0; comment < (int)NUM_ELEMENTS(prt_dsc_table); comment++)
+    for (comment = 0; comment < (int)ARRAY_LENGTH(prt_dsc_table); comment++)
 	if (prt_resfile_strncmp(0, prt_dsc_table[comment].string,
 					    prt_dsc_table[comment].len) == 0)
 	    break;
 
-    if (comment != NUM_ELEMENTS(prt_dsc_table))
+    if (comment != ARRAY_LENGTH(prt_dsc_table))
     {
 	// Return type of comment
 	p_dsc_line->type = prt_dsc_table[comment].type;
@@ -2385,7 +2383,7 @@ mch_print_init(
 	int cmap_first = 0;
 
 	p_mbenc_first = NULL;
-	for (cmap = 0; cmap < (int)NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
+	for (cmap = 0; cmap < (int)ARRAY_LENGTH(prt_ps_mbfonts); cmap++)
 	    if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
 								    &p_mbenc))
 	    {

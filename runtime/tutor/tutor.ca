@@ -767,8 +767,8 @@ Nota: Així s'evita haver de prémer  i , l'últim caràcter, el text a inserir,
  fitxer "vimrc".
 
   1. Comenceu a editar el fitxer "vimrc", depenent del sistema
-        :edit ~/.vimrc                  per Unix
-        :edit $VIM/_vimrc               per MS-Windows
+        :edit ~/.vimrc         per Unix
+        :edit ~/_vimrc         per MS-Windows
 
   2. Llegiu el fitxer "vimrc" d'exemple:
 

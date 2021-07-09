@@ -4248,6 +4248,7 @@ add_termcode(char_u *name, char_u *string, int flags)
 	if (new_tc == NULL)
 	{
 	    tc_max_len -= 20;
+	    vim_free(s);
 	    return;
 	}
 	for (i = 0; i < tc_len; ++i)
@@ -5587,6 +5588,7 @@ check_termcode(
 		&& key_name[0] == (int)KS_EXTRA
 		&& (key_name[1] == (int)KE_X1MOUSE
 		    || key_name[1] == (int)KE_X2MOUSE
+		    || key_name[1] == (int)KE_MOUSEMOVE_XY
 		    || key_name[1] == (int)KE_MOUSELEFT
 		    || key_name[1] == (int)KE_MOUSERIGHT
 		    || key_name[1] == (int)KE_MOUSEDOWN
@@ -5600,6 +5602,9 @@ check_termcode(
 	    mouse_col = 128 * (bytes[0] - ' ' - 1) + bytes[1] - ' ' - 1;
 	    mouse_row = 128 * (bytes[2] - ' ' - 1) + bytes[3] - ' ' - 1;
 	    slen += num_bytes;
+	    // equal to K_MOUSEMOVE
+	    if (key_name[1] == (int)KE_MOUSEMOVE_XY)
+		key_name[1] = (int)KE_MOUSEMOVE;
 	}
 	else
 #endif
@@ -6724,7 +6729,7 @@ gui_get_color_cmn(char_u *name)
     }
 
     // Check if the name is one of the colors we know
-    for (i = 0; i < (int)(sizeof(rgb_table) / sizeof(rgb_table[0])); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(rgb_table); i++)
 	if (STRICMP(name, rgb_table[i].color_name) == 0)
 	    return gui_adjust_rgb(rgb_table[i].color);
 

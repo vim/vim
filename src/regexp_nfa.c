@@ -1371,8 +1371,6 @@ nfa_regatom(void)
     int		negated;
     int		result;
     int		startc = -1;
-    int		endc = -1;
-    int		oldstartc = -1;
     int		save_prev_at_start = prev_at_start;
 
     c = getchr();
@@ -1707,12 +1705,23 @@ nfa_regatom(void)
 		    {
 			long_u	n = 0;
 			int	cmp = c;
+			int	cur = FALSE;
 
 			if (c == '<' || c == '>')
 			    c = getchr();
+			if (no_Magic(c) == '.')
+			{
+			    cur = TRUE;
+			    c = getchr();
+			}
 			while (VIM_ISDIGIT(c))
 			{
-			    long_u tmp = n * 10 + (c - '0');
+			    long_u tmp;
+
+			    if (cur)
+				semsg(_(e_regexp_number_after_dot_pos_search),
+								 no_Magic(c));
+			    tmp = n * 10 + (c - '0');
 
 			    if (tmp < n)
 			    {
@@ -1729,6 +1738,8 @@ nfa_regatom(void)
 
 			    if (c == 'l')
 			    {
+				if (cur)
+				    n = curwin->w_cursor.lnum;
 				// \%{n}l  \%{n}<l  \%{n}>l
 				EMIT(cmp == '<' ? NFA_LNUM_LT :
 				     cmp == '>' ? NFA_LNUM_GT : NFA_LNUM);
@@ -1736,11 +1747,26 @@ nfa_regatom(void)
 				    at_start = TRUE;
 			    }
 			    else if (c == 'c')
+			    {
+				if (cur)
+				{
+				    n = curwin->w_cursor.col;
+				    n++;
+				}
 				// \%{n}c  \%{n}<c  \%{n}>c
 				EMIT(cmp == '<' ? NFA_COL_LT :
 				     cmp == '>' ? NFA_COL_GT : NFA_COL);
+			    }
 			    else
 			    {
+				if (cur)
+				{
+				    colnr_T vcol = 0;
+
+				    getvvcol(curwin, &curwin->w_cursor,
+							    NULL, NULL, &vcol);
+				    n = ++vcol;
+				}
 				// \%{n}v  \%{n}<v  \%{n}>v
 				EMIT(cmp == '<' ? NFA_VCOL_LT :
 				     cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);
@@ -1810,7 +1836,7 @@ collection:
 		 * Failed to recognize a character class. Use the simple
 		 * version that turns [abc] into 'a' OR 'b' OR 'c'
 		 */
-		startc = endc = oldstartc = -1;
+		startc = -1;
 		negated = FALSE;
 		if (*regparse == '^')			// negated range
 		{
@@ -1831,7 +1857,8 @@ collection:
 		emit_range = FALSE;
 		while (regparse < endp)
 		{
-		    oldstartc = startc;
+		    int	    oldstartc = startc;
+
 		    startc = -1;
 		    got_coll_char = FALSE;
 		    if (*regparse == '[')
@@ -1989,7 +2016,8 @@ collection:
 		    // Previous char was '-', so this char is end of range.
 		    if (emit_range)
 		    {
-			endc = startc;
+			int	endc = startc;
+
 			startc = oldstartc;
 			if (startc > endc)
 			    EMSG_RET_FAIL(_(e_reverse_range));
@@ -6806,22 +6834,30 @@ nfa_regmatch(
 	      {
 		pos_T	*pos = getmark_buf(rex.reg_buf, t->state->val, FALSE);
 
-		// Compare the mark position to the match position.
-		result = (pos != NULL		     // mark doesn't exist
-			&& pos->lnum > 0    // mark isn't set in reg_buf
-			&& (pos->lnum == rex.lnum + rex.reg_firstlnum
-				? (pos->col == (colnr_T)(rex.input - rex.line)
+		// Compare the mark position to the match position, if the mark
+		// exists and mark is set in reg_buf.
+		if (pos != NULL && pos->lnum > 0)
+		{
+		    colnr_T pos_col = pos->lnum == rex.lnum + rex.reg_firstlnum
+							  && pos->col == MAXCOL
+				      ? (colnr_T)STRLEN(reg_getline(
+						pos->lnum - rex.reg_firstlnum))
+				      : pos->col;
+
+		    result = (pos->lnum == rex.lnum + rex.reg_firstlnum
+				? (pos_col == (colnr_T)(rex.input - rex.line)
 				    ? t->state->c == NFA_MARK
-				    : (pos->col < (colnr_T)(rex.input - rex.line)
+				    : (pos_col < (colnr_T)(rex.input - rex.line)
 					? t->state->c == NFA_MARK_GT
 					: t->state->c == NFA_MARK_LT))
 				: (pos->lnum < rex.lnum + rex.reg_firstlnum
 				    ? t->state->c == NFA_MARK_GT
-				    : t->state->c == NFA_MARK_LT)));
-		if (result)
-		{
-		    add_here = TRUE;
-		    add_state = t->state->out;
+				    : t->state->c == NFA_MARK_LT));
+		    if (result)
+		    {
+			add_here = TRUE;
+			add_state = t->state->out;
+		    }
 		}
 		break;
 	      }

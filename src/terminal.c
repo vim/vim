@@ -445,6 +445,13 @@ term_start(
 
     if (check_restricted() || check_secure())
 	return NULL;
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+    {
+	emsg(_(e_cannot_open_terminal_from_command_line_window));
+	return NULL;
+    }
+#endif
 
     if ((opt->jo_set & (JO_IN_IO + JO_OUT_IO + JO_ERR_IO))
 					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)
@@ -5684,7 +5691,7 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 
     if (attr > HL_ALL)
 	attr = syn_attr2attr(attr);
-    for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
+    for (i = 0; i < ARRAY_LENGTH(attrs); ++i)
 	if (STRCMP(name, attrs[i].name) == 0)
 	{
 	    rettv->vval.v_number = (attr & attrs[i].attr) != 0 ? 1 : 0;

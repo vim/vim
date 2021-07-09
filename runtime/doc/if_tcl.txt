@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 8.2.  Last change: 2019 Jul 21
+*if_tcl.txt*    For Vim version 8.2.  Last change: 2021 May 27
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -25,12 +25,12 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 ==============================================================================
 1. Commands				*tcl-ex-commands* *E571* *E572*
 
-							*:tcl* *:tc*
-:tc[l] {cmd}		Execute Tcl command {cmd}.  A simple check if `:tcl`
+							*:tcl*
+:tcl {cmd}		Execute Tcl command {cmd}.  A simple check if `:tcl`
 			is working: >
 				:tcl puts "Hello"
 
-:[range]tc[l] << [trim] [{endmarker}]
+:[range]tcl << [trim] [{endmarker}]
 {script}
 {endmarker}
 			Execute Tcl script {script}.

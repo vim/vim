@@ -26,6 +26,8 @@
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
     int	    tcd_stack_len;	// size of ectx.ec_stack at ISN_TRY
+    int	    tcd_in_catch;	// in catch or finally block
+    int	    tcd_did_throw;	// set did_throw in :endtry
     int	    tcd_catch_idx;	// instruction of the first :catch or :finally
     int	    tcd_finally_idx;	// instruction of the :finally block or zero
     int	    tcd_endtry_idx;	// instruction of the :endtry
@@ -42,6 +44,14 @@ typedef struct {
     cmdmod_T	floc_save_cmdmod;
     int		floc_restore_cmdmod_stacklen;
 } funclocal_T;
+
+// Structure to hold a reference to an outer_T, with information of whether it
+// was allocated.
+typedef struct {
+    outer_T	*or_outer;
+    partial_T	*or_partial;	// decrement "or_partial->pt_refcount" later
+    int		or_outer_allocated;  // free "or_outer" later
+} outer_ref_T;
 
 // A stack is used to store:
 // - arguments passed to a :def function
@@ -70,11 +80,10 @@ struct ectx_S {
     int		ec_frame_idx;	// index in ec_stack: context of ec_dfunc_idx
     int		ec_initial_frame_idx;	// frame index when called
 
-    outer_T	*ec_outer;	// outer scope used for closures, allocated
+    outer_ref_T	*ec_outer_ref;	// outer scope used for closures, allocated
     funclocal_T ec_funclocal;
 
     garray_T	ec_trystack;	// stack of trycmd_T values
-    int		ec_in_catch;	// when TRUE in catch or finally block
 
     int		ec_dfunc_idx;	// current function index
     isn_T	*ec_instr;	// array with instructions
@@ -140,10 +149,27 @@ exe_newlist(int count, ectx_T *ectx)
 }
 
 /*
+ * If debug_tick changed check if "ufunc" has a breakpoint and update
+ * "uf_has_breakpoint".
+ */
+    static void
+update_has_breakpoint(ufunc_T *ufunc)
+{
+    if (ufunc->uf_debug_tick != debug_tick)
+    {
+	linenr_T breakpoint;
+
+	ufunc->uf_debug_tick = debug_tick;
+	breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name, 0);
+	ufunc->uf_has_breakpoint = breakpoint > 0;
+    }
+}
+
+/*
  * Call compiled function "cdf_idx" from compiled code.
  * This adds a stack frame and sets the instruction pointer to the start of the
  * called function.
- * If "pt" is not null use "pt->pt_outer" for ec_outer.
+ * If "pt" is not null use "pt->pt_outer" for ec_outer_ref->or_outer.
  *
  * Stack has:
  * - current arguments (already there)
@@ -164,6 +190,7 @@ call_dfunc(
     int		argcount = argcount_arg;
     dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
     ufunc_T	*ufunc = dfunc->df_ufunc;
+    int		did_emsg_before = did_emsg_cumul + did_emsg;
     int		arg_to_add;
     int		vararg_count = 0;
     int		varcount;
@@ -196,12 +223,28 @@ call_dfunc(
 	// Profiling might be enabled/disabled along the way.  This should not
 	// fail, since the function was compiled before and toggling profiling
 	// doesn't change any errors.
-	if (func_needs_compiling(ufunc, PROFILING(ufunc))
-		&& compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
+	if (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
+		&& compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL)
 								       == FAIL)
 	    return FAIL;
     }
 #endif
+
+    // Update uf_has_breakpoint if needed.
+    update_has_breakpoint(ufunc);
+
+    // When debugging and using "cont" switches to the not-debugged
+    // instructions, may need to still compile them.
+    if ((func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
+	       && compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL)
+								      == FAIL)
+	    || INSTRUCTIONS(dfunc) == NULL)
+    {
+	if (did_emsg_cumul + did_emsg == did_emsg_before)
+	    semsg(_(e_function_is_not_compiled_str),
+						   printable_func_name(ufunc));
+	return FAIL;
+    }
 
     if (ufunc->uf_va_name != NULL)
     {
@@ -256,6 +299,7 @@ call_dfunc(
     // If depth of calling is getting too high, don't execute the function.
     if (funcdepth_increment() == FAIL)
 	return FAIL;
+    ++ex_nesting_level;
 
     // Only make a copy of funclocal if it contains something to restore.
     if (ectx->ec_funclocal.floc_restore_cmdmod)
@@ -280,7 +324,8 @@ call_dfunc(
     STACK_TV_BOT(STACK_FRAME_FUNC_OFF)->vval.v_number = ectx->ec_dfunc_idx;
     STACK_TV_BOT(STACK_FRAME_IIDX_OFF)->vval.v_number = ectx->ec_iidx;
     STACK_TV_BOT(STACK_FRAME_INSTR_OFF)->vval.v_string = (void *)ectx->ec_instr;
-    STACK_TV_BOT(STACK_FRAME_OUTER_OFF)->vval.v_string = (void *)ectx->ec_outer;
+    STACK_TV_BOT(STACK_FRAME_OUTER_OFF)->vval.v_string =
+						    (void *)ectx->ec_outer_ref;
     STACK_TV_BOT(STACK_FRAME_FUNCLOCAL_OFF)->vval.v_string = (void *)floc;
     STACK_TV_BOT(STACK_FRAME_IDX_OFF)->vval.v_number = ectx->ec_frame_idx;
     ectx->ec_frame_idx = ectx->ec_stack.ga_len;
@@ -300,30 +345,40 @@ call_dfunc(
     if (pt != NULL || ufunc->uf_partial != NULL
 					     || (ufunc->uf_flags & FC_CLOSURE))
     {
-	outer_T *outer = ALLOC_CLEAR_ONE(outer_T);
+	outer_ref_T *ref = ALLOC_CLEAR_ONE(outer_ref_T);
 
-	if (outer == NULL)
+	if (ref == NULL)
 	    return FAIL;
 	if (pt != NULL)
 	{
-	    *outer = pt->pt_outer;
-	    outer->out_up_is_copy = TRUE;
+	    ref->or_outer = &pt->pt_outer;
+	    ++pt->pt_refcount;
+	    ref->or_partial = pt;
 	}
 	else if (ufunc->uf_partial != NULL)
 	{
-	    *outer = ufunc->uf_partial->pt_outer;
-	    outer->out_up_is_copy = TRUE;
+	    ref->or_outer = &ufunc->uf_partial->pt_outer;
+	    ++ufunc->uf_partial->pt_refcount;
+	    ref->or_partial = ufunc->uf_partial;
 	}
 	else
 	{
-	    outer->out_stack = &ectx->ec_stack;
-	    outer->out_frame_idx = ectx->ec_frame_idx;
-	    outer->out_up = ectx->ec_outer;
+	    ref->or_outer = ALLOC_CLEAR_ONE(outer_T);
+	    if (ref->or_outer == NULL)
+	    {
+		vim_free(ref);
+		return FAIL;
+	    }
+	    ref->or_outer_allocated = TRUE;
+	    ref->or_outer->out_stack = &ectx->ec_stack;
+	    ref->or_outer->out_frame_idx = ectx->ec_frame_idx;
+	    if (ectx->ec_outer_ref != NULL)
+		ref->or_outer->out_up = ectx->ec_outer_ref->or_outer;
 	}
-	ectx->ec_outer = outer;
+	ectx->ec_outer_ref = ref;
     }
     else
-	ectx->ec_outer = NULL;
+	ectx->ec_outer_ref = NULL;
 
     ++ufunc->uf_calls;
 
@@ -476,7 +531,6 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 		pt->pt_funcstack = funcstack;
 		pt->pt_outer.out_stack = &funcstack->fs_ga;
 		pt->pt_outer.out_frame_idx = ectx->ec_frame_idx - top;
-		pt->pt_outer.out_up = ectx->ec_outer;
 	    }
 	}
     }
@@ -587,7 +641,13 @@ func_return(ectx_T *ectx)
     if (ret_idx == ectx->ec_frame_idx + STACK_FRAME_IDX_OFF)
 	ret_idx = 0;
 
-    vim_free(ectx->ec_outer);
+    if (ectx->ec_outer_ref != NULL)
+    {
+	if (ectx->ec_outer_ref->or_outer_allocated)
+	    vim_free(ectx->ec_outer_ref->or_outer);
+	partial_unref(ectx->ec_outer_ref->or_partial);
+	vim_free(ectx->ec_outer_ref);
+    }
 
     // Restore the previous frame.
     ectx->ec_dfunc_idx = prev_dfunc_idx;
@@ -595,7 +655,7 @@ func_return(ectx_T *ectx)
 					+ STACK_FRAME_IIDX_OFF)->vval.v_number;
     ectx->ec_instr = (void *)STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_INSTR_OFF)->vval.v_string;
-    ectx->ec_outer = (void *)STACK_TV(ectx->ec_frame_idx
+    ectx->ec_outer_ref = (void *)STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_OUTER_OFF)->vval.v_string;
     floc = (void *)STACK_TV(ectx->ec_frame_idx
 				   + STACK_FRAME_FUNCLOCAL_OFF)->vval.v_string;
@@ -623,6 +683,7 @@ func_return(ectx_T *ectx)
 	ectx->ec_stack.ga_len = top;
 
     funcdepth_decrement();
+    --ex_nesting_level;
     return OK;
 }
 
@@ -696,7 +757,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
  * If the function is compiled this will add a stack frame and set the
  * instruction pointer at the start of the function.
  * Otherwise the function is called here.
- * If "pt" is not null use "pt->pt_outer" for ec_outer.
+ * If "pt" is not null use "pt->pt_outer" for ec_outer_ref->or_outer.
  * "iptr" can be used to replace the instruction with a more efficient one.
  */
     static int
@@ -712,14 +773,11 @@ call_ufunc(
     int		error;
     int		idx;
     int		did_emsg_before = did_emsg;
-#ifdef FEAT_PROFILE
-    int		profiling = do_profiling == PROF_YES && ufunc->uf_profiling;
-#else
-# define profiling FALSE
-#endif
+    compiletype_T compile_type = COMPILE_TYPE(ufunc);
 
-    if (func_needs_compiling(ufunc, profiling)
-		&& compile_def_function(ufunc, FALSE, profiling, NULL) == FAIL)
+    if (func_needs_compiling(ufunc, compile_type)
+		&& compile_def_function(ufunc, FALSE, compile_type, NULL)
+								       == FAIL)
 	return FAIL;
     if (ufunc->uf_def_status == UF_COMPILED)
     {
@@ -980,7 +1038,7 @@ store_var(char_u *name, typval_T *tv)
  * Return FAIL if not allowed.
  */
     static int
-do_2string(typval_T *tv, int is_2string_any)
+do_2string(typval_T *tv, int is_2string_any, int tolerant)
 {
     if (tv->v_type != VAR_STRING)
     {
@@ -995,6 +1053,41 @@ do_2string(typval_T *tv, int is_2string_any)
 		case VAR_NUMBER:
 		case VAR_FLOAT:
 		case VAR_BLOB:	break;
+
+		case VAR_LIST:
+				if (tolerant)
+				{
+				    char_u	*s, *e, *p;
+				    garray_T	ga;
+
+				    ga_init2(&ga, sizeof(char_u *), 1);
+
+				    // Convert to NL separated items, then
+				    // escape the items and replace the NL with
+				    // a space.
+				    str = typval2string(tv, TRUE);
+				    if (str == NULL)
+					return FAIL;
+				    s = str;
+				    while ((e = vim_strchr(s, '\n')) != NULL)
+				    {
+					*e = NUL;
+					p = vim_strsave_fnameescape(s, FALSE);
+					if (p != NULL)
+					{
+					    ga_concat(&ga, p);
+					    ga_concat(&ga, (char_u *)" ");
+					    vim_free(p);
+					}
+					s = e + 1;
+				    }
+				    vim_free(str);
+				    clear_tv(tv);
+				    tv->v_type = VAR_STRING;
+				    tv->vval.v_string = ga.ga_data;
+				    return OK;
+				}
+				// FALLTHROUGH
 		default:	to_string_error(tv->v_type);
 				return FAIL;
 	    }
@@ -1179,6 +1272,37 @@ get_script_svar(scriptref_T *sref, ectx_T *ectx)
 }
 
 /*
+ * Function passed to do_cmdline() for splitting a script joined by NL
+ * characters.
+ */
+    static char_u *
+get_split_sourceline(
+	int c UNUSED,
+	void *cookie,
+	int indent UNUSED,
+	getline_opt_T options UNUSED)
+{
+    source_cookie_T	*sp = (source_cookie_T *)cookie;
+    char_u		*p;
+    char_u		*line;
+
+    if (*sp->nextline == NUL)
+	return NULL;
+    p = vim_strchr(sp->nextline, '\n');
+    if (p == NULL)
+    {
+	line = vim_strsave(sp->nextline);
+	sp->nextline += STRLEN(sp->nextline);
+    }
+    else
+    {
+	line = vim_strnsave(sp->nextline, p - sp->nextline);
+	sp->nextline = p + 1;
+    }
+    return line;
+}
+
+/*
  * Execute a function by "name".
  * This can be a builtin function, user function or a funcref.
  * "iptr" can be used to replace the instruction with a more efficient one.
@@ -1229,24 +1353,31 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							  + ectx->ec_dfunc_idx;
 
-	// The closure needs to find arguments and local
-	// variables in the current stack.
+	// The closure may need to find arguments and local variables in the
+	// current stack.
 	pt->pt_outer.out_stack = &ectx->ec_stack;
 	pt->pt_outer.out_frame_idx = ectx->ec_frame_idx;
-	pt->pt_outer.out_up = ectx->ec_outer;
-	pt->pt_outer.out_up_is_copy = TRUE;
+	if (ectx->ec_outer_ref != NULL)
+	{
+	    // The current context already has a context, link to that one.
+	    pt->pt_outer.out_up = ectx->ec_outer_ref->or_outer;
+	    if (ectx->ec_outer_ref->or_partial != NULL)
+	    {
+		pt->pt_outer.out_up_partial = ectx->ec_outer_ref->or_partial;
+		++pt->pt_outer.out_up_partial->pt_refcount;
+	    }
+	}
 
-	// If this function returns and the closure is still
-	// being used, we need to make a copy of the context
-	// (arguments and local variables). Store a reference
-	// to the partial so we can handle that.
+	// If this function returns and the closure is still being used, we
+	// need to make a copy of the context (arguments and local variables).
+	// Store a reference to the partial so we can handle that.
 	if (ga_grow(&ectx->ec_funcrefs, 1) == FAIL)
 	{
 	    vim_free(pt);
 	    return FAIL;
 	}
-	// Extra variable keeps the count of closures created
-	// in the current function call.
+	// Extra variable keeps the count of closures created in the current
+	// function call.
 	++(((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx
 		       + STACK_FRAME_SIZE + dfunc->df_varcount)->vval.v_number;
 
@@ -1282,6 +1413,115 @@ typedef struct subs_expr_S {
 // Get pointer to a local variable on the stack.  Negative for arguments.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx + STACK_FRAME_SIZE + idx)
 
+// Set when calling do_debug().
+static ectx_T	*debug_context = NULL;
+static int	debug_var_count;
+
+/*
+ * When debugging lookup "name" and return the typeval.
+ * When not found return NULL.
+ */
+    typval_T *
+lookup_debug_var(char_u *name)
+{
+    int		    idx;
+    dfunc_T	    *dfunc;
+    ufunc_T	    *ufunc;
+    ectx_T	    *ectx = debug_context;
+    int		    varargs_off;
+
+    if (ectx == NULL)
+	return NULL;
+    dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
+
+    // Go through the local variable names, from last to first.
+    for (idx = debug_var_count - 1; idx >= 0; --idx)
+    {
+	if (STRCMP(((char_u **)dfunc->df_var_names.ga_data)[idx], name) == 0)
+	    return STACK_TV_VAR(idx);
+    }
+
+    // Go through argument names.
+    ufunc = dfunc->df_ufunc;
+    varargs_off = ufunc->uf_va_name == NULL ? 0 : 1;
+    for (idx = 0; idx < ufunc->uf_args.ga_len; ++idx)
+	if (STRCMP(((char_u **)(ufunc->uf_args.ga_data))[idx], name) == 0)
+	    return STACK_TV(ectx->ec_frame_idx - ufunc->uf_args.ga_len
+							  - varargs_off + idx);
+    if (ufunc->uf_va_name != NULL && STRCMP(ufunc->uf_va_name, name) == 0)
+	return STACK_TV(ectx->ec_frame_idx - 1);
+
+    return NULL;
+}
+
+    static void
+handle_debug(isn_T *iptr, ectx_T *ectx)
+{
+    char_u	*line;
+    ufunc_T	*ufunc = (((dfunc_T *)def_functions.ga_data)
+					       + ectx->ec_dfunc_idx)->df_ufunc;
+    isn_T	*ni;
+    int		end_lnum = iptr->isn_lnum;
+    garray_T	ga;
+    int		lnum;
+
+    if (ex_nesting_level > debug_break_level)
+    {
+	linenr_T breakpoint;
+
+	if (!ufunc->uf_has_breakpoint)
+	    return;
+
+	// check for the next breakpoint if needed
+	breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name,
+					   iptr->isn_arg.debug.dbg_break_lnum);
+	if (breakpoint <= 0 || breakpoint > iptr->isn_lnum)
+	    return;
+    }
+
+    SOURCING_LNUM = iptr->isn_lnum;
+    debug_context = ectx;
+    debug_var_count = iptr->isn_arg.debug.dbg_var_names_len;
+
+    for (ni = iptr + 1; ni->isn_type != ISN_FINISH; ++ni)
+	if (ni->isn_type == ISN_DEBUG
+		  || ni->isn_type == ISN_RETURN
+		  || ni->isn_type == ISN_RETURN_VOID)
+	{
+	    end_lnum = ni->isn_lnum;
+	    break;
+	}
+
+    if (end_lnum > iptr->isn_lnum)
+    {
+	ga_init2(&ga, sizeof(char_u *), 10);
+	for (lnum = iptr->isn_lnum; lnum < end_lnum; ++lnum)
+	{
+	    char_u *p = ((char_u **)ufunc->uf_lines.ga_data)[lnum - 1];
+
+	    if (p == NULL)
+		continue;  // left over from continuation line
+	    p = skipwhite(p);
+	    if (*p == '#')
+		break;
+	    if (ga_grow(&ga, 1) == OK)
+		((char_u **)(ga.ga_data))[ga.ga_len++] = p;
+	    if (STRNCMP(p, "def ", 4) == 0)
+		break;
+	}
+	line = ga_concat_strings(&ga, "  ");
+	vim_free(ga.ga_data);
+    }
+    else
+	line = ((char_u **)ufunc->uf_lines.ga_data)[iptr->isn_lnum - 1];
+
+    do_debug(line == NULL ? (char_u *)"[empty]" : line);
+    debug_context = NULL;
+
+    if (end_lnum > iptr->isn_lnum)
+	vim_free(line);
+}
+
 /*
  * Execute instructions in execution context "ectx".
  * Return OK or FAIL;
@@ -1291,6 +1531,8 @@ exec_instructions(ectx_T *ectx)
 {
     int		breakcheck_count = 0;
     typval_T	*tv;
+    int		ret = FAIL;
+    int		save_trylevel_at_start = ectx->ec_trylevel_at_start;
 
     // Start execution at the first instruction.
     ectx->ec_iidx = 0;
@@ -1312,7 +1554,7 @@ exec_instructions(ectx_T *ectx)
 	    // Turn CTRL-C into an exception.
 	    got_int = FALSE;
 	    if (throw_exception("Vim:Interrupt", ET_INTERRUPT, NULL) == FAIL)
-		return FAIL;
+		goto theend;
 	    did_throw = TRUE;
 	}
 
@@ -1321,32 +1563,50 @@ exec_instructions(ectx_T *ectx)
 	    // Turn an error message into an exception.
 	    did_emsg = FALSE;
 	    if (throw_exception(*msg_list, ET_ERROR, NULL) == FAIL)
-		return FAIL;
+		goto theend;
 	    did_throw = TRUE;
 	    *msg_list = NULL;
 	}
 
-	if (did_throw && !ectx->ec_in_catch)
+	if (did_throw)
 	{
 	    garray_T	*trystack = &ectx->ec_trystack;
 	    trycmd_T    *trycmd = NULL;
+	    int		index = trystack->ga_len;
 
 	    // An exception jumps to the first catch, finally, or returns from
 	    // the current function.
-	    if (trystack->ga_len > 0)
-		trycmd = ((trycmd_T *)trystack->ga_data) + trystack->ga_len - 1;
+	    while (index > 0)
+	    {
+		trycmd = ((trycmd_T *)trystack->ga_data) + index - 1;
+		if (!trycmd->tcd_in_catch || trycmd->tcd_finally_idx != 0)
+		    break;
+		// In the catch and finally block of this try we have to go up
+		// one level.
+		--index;
+		trycmd = NULL;
+	    }
 	    if (trycmd != NULL && trycmd->tcd_frame_idx == ectx->ec_frame_idx)
 	    {
-		// jump to ":catch" or ":finally"
-		ectx->ec_in_catch = TRUE;
-		ectx->ec_iidx = trycmd->tcd_catch_idx;
+		if (trycmd->tcd_in_catch)
+		{
+		    // exception inside ":catch", jump to ":finally" once
+		    ectx->ec_iidx = trycmd->tcd_finally_idx;
+		    trycmd->tcd_finally_idx = 0;
+		}
+		else
+		    // jump to first ":catch"
+		    ectx->ec_iidx = trycmd->tcd_catch_idx;
+		trycmd->tcd_in_catch = TRUE;
+		did_throw = FALSE;  // don't come back here until :endtry
+		trycmd->tcd_did_throw = TRUE;
 	    }
 	    else
 	    {
 		// Not inside try or need to return from current functions.
 		// Push a dummy return value.
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-		    return FAIL;
+		    goto theend;
 		tv = STACK_TV_BOT(0);
 		tv->v_type = VAR_NUMBER;
 		tv->vval.v_number = 0;
@@ -1356,12 +1616,12 @@ exec_instructions(ectx_T *ectx)
 		    // At the toplevel we are done.
 		    need_rethrow = TRUE;
 		    if (handle_closure_in_use(ectx, FALSE) == FAIL)
-			return FAIL;
+			goto theend;
 		    goto done;
 		}
 
 		if (func_return(ectx) == FAIL)
-		    return FAIL;
+		    goto theend;
 	    }
 	    continue;
 	}
@@ -1388,6 +1648,30 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    // execute Ex command line split at NL characters.
+	    case ISN_EXEC_SPLIT:
+		{
+		    source_cookie_T cookie;
+		    char_u	    *line;
+
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    CLEAR_FIELD(cookie);
+		    cookie.sourcing_lnum = iptr->isn_lnum - 1;
+		    cookie.nextline = iptr->isn_arg.string;
+		    line = get_split_sourceline(0, &cookie, 0, 0);
+		    if (do_cmdline(line,
+				get_split_sourceline, &cookie,
+				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED)
+									== FAIL
+				|| did_emsg)
+		    {
+			vim_free(line);
+			goto on_error;
+		    }
+		    vim_free(line);
+		}
+		break;
+
 	    // Evaluate an expression with legacy syntax, push it onto the
 	    // stack.
 	    case ISN_LEGACY_EVAL:
@@ -1397,7 +1681,7 @@ exec_instructions(ectx_T *ectx)
 		    int	    save_flags = cmdmod.cmod_flags;
 
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    init_tv(tv);
 		    cmdmod.cmod_flags |= CMOD_LEGACY;
@@ -1413,7 +1697,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_INSTR:
 		{
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    tv->vval.v_instr = ALLOC_ONE(instr_T);
 		    if (tv->vval.v_instr == NULL)
@@ -1480,7 +1764,7 @@ exec_instructions(ectx_T *ectx)
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
 		    {
 			vim_free(res);
-			return FAIL;
+			goto theend;
 		    }
 		    tv = STACK_TV_BOT(0);
 		    tv->v_type = VAR_STRING;
@@ -1545,7 +1829,7 @@ exec_instructions(ectx_T *ectx)
 			{
 			    cmd = alloc(len + 1);
 			    if (cmd == NULL)
-				return FAIL;
+				goto theend;
 			    len = 0;
 			}
 		    }
@@ -1665,7 +1949,7 @@ exec_instructions(ectx_T *ectx)
 	    // load local variable or argument
 	    case ISN_LOAD:
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-		    return FAIL;
+		    goto theend;
 		copy_tv(STACK_TV_VAR(iptr->isn_arg.number), STACK_TV_BOT(0));
 		++ectx->ec_stack.ga_len;
 		break;
@@ -1673,7 +1957,7 @@ exec_instructions(ectx_T *ectx)
 	    // load v: variable
 	    case ISN_LOADV:
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-		    return FAIL;
+		    goto theend;
 		copy_tv(get_vim_var_tv(iptr->isn_arg.number), STACK_TV_BOT(0));
 		++ectx->ec_stack.ga_len;
 		break;
@@ -1686,10 +1970,10 @@ exec_instructions(ectx_T *ectx)
 
 		    sv = get_script_svar(sref, ectx);
 		    if (sv == NULL)
-			return FAIL;
+			goto theend;
 		    allocate_if_null(sv->sv_tv);
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    copy_tv(sv->sv_tv, STACK_TV_BOT(0));
 		    ++ectx->ec_stack.ga_len;
 		}
@@ -1712,7 +1996,7 @@ exec_instructions(ectx_T *ectx)
 		    else
 		    {
 			if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			    return FAIL;
+			    goto theend;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx->ec_stack.ga_len;
 		    }
@@ -1748,7 +2032,7 @@ exec_instructions(ectx_T *ectx)
 			    namespace = 't';
 			    break;
 			default:  // Cannot reach here
-			    return FAIL;
+			    goto theend;
 		    }
 		    di = find_var_in_ht(ht, 0, iptr->isn_arg.string, TRUE);
 
@@ -1762,7 +2046,7 @@ exec_instructions(ectx_T *ectx)
 		    else
 		    {
 			if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			    return FAIL;
+			    goto theend;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx->ec_stack.ga_len;
 		    }
@@ -1775,7 +2059,7 @@ exec_instructions(ectx_T *ectx)
 		    char_u *name = iptr->isn_arg.string;
 
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (eval_variable(name, (int)STRLEN(name),
 			      STACK_TV_BOT(0), NULL, EVAL_VAR_VERBOSE) == FAIL)
@@ -1799,10 +2083,10 @@ exec_instructions(ectx_T *ectx)
 			case ISN_LOADWDICT: d = curwin->w_vars; break;
 			case ISN_LOADTDICT: d = curtab->tp_vars; break;
 			default:  // Cannot reach here
-			    return FAIL;
+			    goto theend;
 		    }
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    tv->v_type = VAR_DICT;
 		    tv->v_lock = 0;
@@ -1821,9 +2105,9 @@ exec_instructions(ectx_T *ectx)
 		    // This is not expected to fail, name is checked during
 		    // compilation: don't set SOURCING_LNUM.
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    if (eval_option(&name, &optval, TRUE) == FAIL)
-			return FAIL;
+			goto theend;
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx->ec_stack.ga_len;
 		}
@@ -1836,7 +2120,7 @@ exec_instructions(ectx_T *ectx)
 		    char_u	*name = iptr->isn_arg.string;
 
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    // name is always valid, checked when compiling
 		    (void)eval_env_var(&name, &optval, TRUE);
 		    *STACK_TV_BOT(0) = optval;
@@ -1847,7 +2131,7 @@ exec_instructions(ectx_T *ectx)
 	    // load @register
 	    case ISN_LOADREG:
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-		    return FAIL;
+		    goto theend;
 		tv = STACK_TV_BOT(0);
 		tv->v_type = VAR_STRING;
 		tv->v_lock = 0;
@@ -1899,7 +2183,7 @@ exec_instructions(ectx_T *ectx)
 
 		    sv = get_script_svar(sref, ectx);
 		    if (sv == NULL)
-			return FAIL;
+			goto theend;
 		    --ectx->ec_stack.ga_len;
 
 		    // "const" and "final" are checked at compile time, locking
@@ -1961,8 +2245,7 @@ exec_instructions(ectx_T *ectx)
 
 		    --ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(0);
-		    write_reg_contents(reg == '@' ? '"' : reg,
-						 tv_get_string(tv), -1, FALSE);
+		    write_reg_contents(reg, tv_get_string(tv), -1, FALSE);
 		    clear_tv(tv);
 		}
 		break;
@@ -2001,7 +2284,7 @@ exec_instructions(ectx_T *ectx)
 			    ht = &curtab->tp_vars->dv_hashtab;
 			    break;
 			default:  // Cannot reach here
-			    return FAIL;
+			    goto theend;
 		    }
 
 		    --ectx->ec_stack.ga_len;
@@ -2053,7 +2336,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			dest_type = tv_dest->v_type;
 			if (dest_type == VAR_DICT)
-			    status = do_2string(tv_idx, TRUE);
+			    status = do_2string(tv_idx, TRUE, FALSE);
 			else if (dest_type == VAR_LIST
 					       && tv_idx->v_type != VAR_NUMBER)
 			{
@@ -2106,7 +2389,7 @@ exec_instructions(ectx_T *ectx)
 				goto on_error;
 			    // append to list, only fails when out of memory
 			    if (list_append_tv(list, tv) == FAIL)
-				return FAIL;
+				goto theend;
 			    clear_tv(tv);
 			}
 		    }
@@ -2141,7 +2424,7 @@ exec_instructions(ectx_T *ectx)
 				goto on_error;
 			    // add to dict, only fails when out of memory
 			    if (dict_add_tv(dict, (char *)key, tv) == FAIL)
-				return FAIL;
+				goto theend;
 			    clear_tv(tv);
 			}
 		    }
@@ -2263,7 +2546,8 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_STOREOUTER:
 		{
 		    int		depth = iptr->isn_arg.outer.outer_depth;
-		    outer_T	*outer = ectx->ec_outer;
+		    outer_T	*outer = ectx->ec_outer_ref == NULL ? NULL
+						: ectx->ec_outer_ref->or_outer;
 
 		    while (depth > 1 && outer != NULL)
 		    {
@@ -2274,7 +2558,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			iemsg("LOADOUTER depth more than scope levels");
-			return FAIL;
+			goto theend;
 		    }
 		    tv = ((typval_T *)outer->out_stack->ga_data)
 				    + outer->out_frame_idx + STACK_FRAME_SIZE
@@ -2282,7 +2566,7 @@ exec_instructions(ectx_T *ectx)
 		    if (iptr->isn_type == ISN_LOADOUTER)
 		    {
 			if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			    return FAIL;
+			    goto theend;
 			copy_tv(tv, STACK_TV_BOT(0));
 			++ectx->ec_stack.ga_len;
 		    }
@@ -2444,7 +2728,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PUSHCHANNEL:
 	    case ISN_PUSHJOB:
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-		    return FAIL;
+		    goto theend;
 		tv = STACK_TV_BOT(0);
 		tv->v_lock = 0;
 		++ectx->ec_stack.ga_len;
@@ -2520,7 +2804,7 @@ exec_instructions(ectx_T *ectx)
 	    // for the list header and the items
 	    case ISN_NEWLIST:
 		if (exe_newlist(iptr->isn_arg.number, ectx) == FAIL)
-		    return FAIL;
+		    goto theend;
 		break;
 
 	    // create a dict from items on the stack
@@ -2533,7 +2817,7 @@ exec_instructions(ectx_T *ectx)
 		    int		idx;
 
 		    if (dict == NULL)
-			return FAIL;
+			goto theend;
 		    for (idx = 0; idx < count; ++idx)
 		    {
 			// have already checked key type is VAR_STRING
@@ -2554,7 +2838,7 @@ exec_instructions(ectx_T *ectx)
 			if (item == NULL)
 			{
 			    dict_unref(dict);
-			    return FAIL;
+			    goto theend;
 			}
 			item->di_tv = *STACK_TV_BOT(2 * (idx - count) + 1);
 			item->di_tv.v_lock = 0;
@@ -2562,14 +2846,14 @@ exec_instructions(ectx_T *ectx)
 			{
 			    // can this ever happen?
 			    dict_unref(dict);
-			    return FAIL;
+			    goto theend;
 			}
 		    }
 
 		    if (count > 0)
 			ectx->ec_stack.ga_len -= 2 * count - 1;
 		    else if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    else
 			++ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(-1);
@@ -2648,17 +2932,18 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
-	    // return from a :def function call
-	    case ISN_RETURN_ZERO:
+	    // return from a :def function call without a value
+	    case ISN_RETURN_VOID:
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-		    return FAIL;
+		    goto theend;
 		tv = STACK_TV_BOT(0);
 		++ectx->ec_stack.ga_len;
-		tv->v_type = VAR_NUMBER;
+		tv->v_type = VAR_VOID;
 		tv->vval.v_number = 0;
 		tv->v_lock = 0;
 		// FALLTHROUGH
 
+	    // return from a :def function call with what is on the stack
 	    case ISN_RETURN:
 		{
 		    garray_T	*trystack = &ectx->ec_trystack;
@@ -2682,7 +2967,7 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
-	    // push a function reference to a compiled function
+	    // push a partial, a reference to a compiled function
 	    case ISN_FUNCREF:
 		{
 		    partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
@@ -2690,16 +2975,15 @@ exec_instructions(ectx_T *ectx)
 					       + iptr->isn_arg.funcref.fr_func;
 
 		    if (pt == NULL)
-			return FAIL;
+			goto theend;
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
 		    {
 			vim_free(pt);
-			return FAIL;
+			goto theend;
 		    }
 		    if (fill_partial_and_closure(pt, pt_dfunc->df_ufunc,
 								 ectx) == FAIL)
-			return FAIL;
-
+			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    ++ectx->ec_stack.ga_len;
 		    tv->vval.v_partial = pt;
@@ -2715,7 +2999,7 @@ exec_instructions(ectx_T *ectx)
 
 		    if (copy_func(newfunc->nf_lambda, newfunc->nf_global,
 								 ectx) == FAIL)
-			return FAIL;
+			goto theend;
 		}
 		break;
 
@@ -2788,7 +3072,7 @@ exec_instructions(ectx_T *ectx)
 				   STACK_TV_VAR(iptr->isn_arg.forloop.for_idx);
 
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    if (ltv->v_type == VAR_LIST)
 		    {
 			list_T *list = ltv->vval.v_list;
@@ -2884,7 +3168,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			semsg(_(e_for_loop_on_str_not_supported),
 						    vartype_name(ltv->v_type));
-			return FAIL;
+			goto theend;
 		    }
 		}
 		break;
@@ -2895,7 +3179,7 @@ exec_instructions(ectx_T *ectx)
 		    trycmd_T    *trycmd = NULL;
 
 		    if (GA_GROW(&ectx->ec_trystack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    trycmd = ((trycmd_T *)ectx->ec_trystack.ga_data)
 						     + ectx->ec_trystack.ga_len;
 		    ++ectx->ec_trystack.ga_len;
@@ -2917,10 +3201,10 @@ exec_instructions(ectx_T *ectx)
 		{
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    iemsg("Evaluating catch while current_exception is NULL");
-		    return FAIL;
+		    goto theend;
 		}
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-		    return FAIL;
+		    goto theend;
 		tv = STACK_TV_BOT(0);
 		++ectx->ec_stack.ga_len;
 		tv->v_type = VAR_STRING;
@@ -2939,6 +3223,7 @@ exec_instructions(ectx_T *ectx)
 			trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - 1;
 			trycmd->tcd_caught = TRUE;
+			trycmd->tcd_did_throw = FALSE;
 		    }
 		    did_emsg = got_int = did_throw = FALSE;
 		    force_abort = need_rethrow = FALSE;
@@ -2958,7 +3243,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			siemsg("TRYCONT: expected %d levels, found %d",
 					trycont->tct_levels, trystack->ga_len);
-			return FAIL;
+			goto theend;
 		    }
 		    // Make :endtry jump to any outer try block and the last
 		    // :endtry inside the loop to the loop start.
@@ -3000,9 +3285,10 @@ exec_instructions(ectx_T *ectx)
 
 			--trystack->ga_len;
 			--trylevel;
-			ectx->ec_in_catch = FALSE;
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							    + trystack->ga_len;
+			if (trycmd->tcd_did_throw)
+			    did_throw = TRUE;
 			if (trycmd->tcd_caught && current_exception != NULL)
 			{
 			    // discard the exception
@@ -3049,7 +3335,7 @@ exec_instructions(ectx_T *ectx)
 			vim_free(tv->vval.v_string);
 			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_throw_with_empty_string));
-			return FAIL;
+			goto theend;
 		    }
 
 		    // Inside a "catch" we need to first discard the caught
@@ -3072,7 +3358,7 @@ exec_instructions(ectx_T *ectx)
 								       == FAIL)
 		    {
 			vim_free(tv->vval.v_string);
-			return FAIL;
+			goto theend;
 		    }
 		    did_throw = TRUE;
 		}
@@ -3277,7 +3563,7 @@ exec_instructions(ectx_T *ectx)
 			goto on_error;
 		    }
 		    if (list_append_tv(l, tv2) == FAIL)
-			return FAIL;
+			goto theend;
 		    clear_tv(tv2);
 		    --ectx->ec_stack.ga_len;
 		}
@@ -3569,21 +3855,21 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_GETITEM:
 		{
 		    listitem_T	*li;
-		    int		index = iptr->isn_arg.number;
+		    getitem_T	*gi = &iptr->isn_arg.getitem;
 
 		    // Get list item: list is at stack-1, push item.
 		    // List type and length is checked for when compiling.
-		    tv = STACK_TV_BOT(-1);
-		    li = list_find(tv->vval.v_list, index);
+		    tv = STACK_TV_BOT(-1 - gi->gi_with_op);
+		    li = list_find(tv->vval.v_list, gi->gi_index);
 
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    ++ectx->ec_stack.ga_len;
 		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
 
 		    // Useful when used in unpack assignment.  Reset at
 		    // ISN_DROP.
-		    ectx->ec_where.wt_index = index + 1;
+		    ectx->ec_where.wt_index = gi->gi_index + 1;
 		    ectx->ec_where.wt_variable = TRUE;
 		}
 		break;
@@ -3768,15 +4054,16 @@ exec_instructions(ectx_T *ectx)
 		    int n;
 		    int error = FALSE;
 
-		    tv = STACK_TV_BOT(-1);
 		    if (iptr->isn_type == ISN_2BOOL)
 		    {
+			tv = STACK_TV_BOT(iptr->isn_arg.tobool.offset);
 			n = tv2bool(tv);
-			if (iptr->isn_arg.number)  // invert
+			if (iptr->isn_arg.tobool.invert)
 			    n = !n;
 		    }
 		    else
 		    {
+			tv = STACK_TV_BOT(-1);
 			SOURCING_LNUM = iptr->isn_lnum;
 			n = tv_get_bool_chk(tv, &error);
 			if (error)
@@ -3791,8 +4078,9 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_2STRING:
 	    case ISN_2STRING_ANY:
 		SOURCING_LNUM = iptr->isn_lnum;
-		if (do_2string(STACK_TV_BOT(iptr->isn_arg.number),
-			iptr->isn_type == ISN_2STRING_ANY) == FAIL)
+		if (do_2string(STACK_TV_BOT(iptr->isn_arg.tostring.offset),
+				iptr->isn_type == ISN_2STRING_ANY,
+				      iptr->isn_arg.tostring.tolerant) == FAIL)
 			    goto on_error;
 		break;
 
@@ -3810,7 +4098,7 @@ exec_instructions(ectx_T *ectx)
 			goto on_error;
 
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    ++ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(-1);
 		    tv->v_type = VAR_NUMBER;
@@ -3912,7 +4200,7 @@ exec_instructions(ectx_T *ectx)
 
 		    CHECK_LIST_MATERIALIZE(l);
 		    if (GA_GROW(&ectx->ec_stack, count - 1) == FAIL)
-			return FAIL;
+			goto theend;
 		    ectx->ec_stack.ga_len += count - 1;
 
 		    // Variable after semicolon gets a list with the remaining
@@ -3923,7 +4211,7 @@ exec_instructions(ectx_T *ectx)
 				  list_alloc_with_items(l->lv_len - count + 1);
 
 			if (rem_list == NULL)
-			    return FAIL;
+			    goto theend;
 			tv = STACK_TV_BOT(-count);
 			tv->vval.v_list = rem_list;
 			++rem_list->lv_refcount;
@@ -3959,7 +4247,7 @@ exec_instructions(ectx_T *ectx)
 		    funccall_T cookie;
 		    ufunc_T	    *cur_ufunc =
 				    (((dfunc_T *)def_functions.ga_data)
-						 + ectx->ec_dfunc_idx)->df_ufunc;
+					       + ectx->ec_dfunc_idx)->df_ufunc;
 
 		    cookie.func = cur_ufunc;
 		    if (iptr->isn_type == ISN_PROF_START)
@@ -3972,6 +4260,10 @@ exec_instructions(ectx_T *ectx)
 			func_line_end(&cookie);
 #endif
 		}
+		break;
+
+	    case ISN_DEBUG:
+		handle_debug(iptr, ectx);
 		break;
 
 	    case ISN_SHUFFLE:
@@ -4007,7 +4299,7 @@ func_return:
 
 	if (func_return(ectx) == FAIL)
 	    // only fails when out of memory
-	    return FAIL;
+	    goto theend;
 	continue;
 
 on_error:
@@ -4037,11 +4329,14 @@ on_fatal_error:
 	// Jump here for an error that messes up the stack.
 	// If we are not inside a try-catch started here, abort execution.
 	if (trylevel <= ectx->ec_trylevel_at_start)
-	    return FAIL;
+	    goto theend;
     }
 
 done:
-    return OK;
+    ret = OK;
+theend:
+    ectx->ec_trylevel_at_start = save_trylevel_at_start;
+    return ret;
 }
 
 /*
@@ -4088,7 +4383,7 @@ exe_substitute_instr(void)
     {
 	typval_T *tv = STACK_TV_BOT(-1);
 
-	res = vim_strsave(tv_get_string(tv));
+	res = typval2string(tv, TRUE);
 	--ectx->ec_stack.ga_len;
 	clear_tv(tv);
     }
@@ -4130,6 +4425,7 @@ call_def_function(
     int		save_emsg_silent_def = emsg_silent_def;
     int		save_did_emsg_def = did_emsg_def;
     int		orig_funcdepth;
+    int		orig_nesting_level = ex_nesting_level;
 
 // Get pointer to item in the stack.
 #undef STACK_TV
@@ -4143,10 +4439,13 @@ call_def_function(
 #undef STACK_TV_VAR
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame_idx + STACK_FRAME_SIZE + idx)
 
+    // Update uf_has_breakpoint if needed.
+    update_has_breakpoint(ufunc);
+
     if (ufunc->uf_def_status == UF_NOT_COMPILED
 	    || ufunc->uf_def_status == UF_COMPILE_ERROR
-	    || (func_needs_compiling(ufunc, PROFILING(ufunc))
-		&& compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
+	    || (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
+		&& compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL)
 								      == FAIL))
     {
 	if (did_emsg_cumul + did_emsg == did_emsg_before)
@@ -4182,6 +4481,7 @@ call_def_function(
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
     ga_init2(&ectx.ec_funcrefs, sizeof(partial_T *), 10);
     ectx.ec_did_emsg_before = did_emsg_before;
+    ++ex_nesting_level;
 
     idx = argc - ufunc->uf_args.ga_len;
     if (idx > 0 && ufunc->uf_va_name == NULL)
@@ -4190,6 +4490,15 @@ call_def_function(
 	    emsg(_(e_one_argument_too_many));
 	else
 	    semsg(_(e_nr_arguments_too_many), idx);
+	goto failed_early;
+    }
+    idx = argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
+    if (idx < 0)
+    {
+	if (idx == -1)
+	    emsg(_(e_one_argument_too_few));
+	else
+	    semsg(_(e_nr_arguments_too_few), -idx);
 	goto failed_early;
     }
 
@@ -4278,22 +4587,31 @@ call_def_function(
 	// by copy_func().
 	if (partial != NULL || base_ufunc->uf_partial != NULL)
 	{
-	    ectx.ec_outer = ALLOC_CLEAR_ONE(outer_T);
-	    if (ectx.ec_outer == NULL)
+	    ectx.ec_outer_ref = ALLOC_CLEAR_ONE(outer_ref_T);
+	    if (ectx.ec_outer_ref == NULL)
 		goto failed_early;
 	    if (partial != NULL)
 	    {
 		if (partial->pt_outer.out_stack == NULL && current_ectx != NULL)
 		{
-		    if (current_ectx->ec_outer != NULL)
-			*ectx.ec_outer = *current_ectx->ec_outer;
+		    if (current_ectx->ec_outer_ref != NULL
+			    && current_ectx->ec_outer_ref->or_outer != NULL)
+			ectx.ec_outer_ref->or_outer =
+					  current_ectx->ec_outer_ref->or_outer;
 		}
 		else
-		    *ectx.ec_outer = partial->pt_outer;
+		{
+		    ectx.ec_outer_ref->or_outer = &partial->pt_outer;
+		    ++partial->pt_refcount;
+		    ectx.ec_outer_ref->or_partial = partial;
+		}
 	    }
 	    else
-		*ectx.ec_outer = base_ufunc->uf_partial->pt_outer;
-	    ectx.ec_outer->out_up_is_copy = TRUE;
+	    {
+		ectx.ec_outer_ref->or_outer = &base_ufunc->uf_partial->pt_outer;
+		++base_ufunc->uf_partial->pt_refcount;
+		ectx.ec_outer_ref->or_partial = base_ufunc->uf_partial;
+	    }
 	}
     }
 
@@ -4407,17 +4725,16 @@ failed_early:
     // Free all local variables, but not arguments.
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
 	clear_tv(STACK_TV(idx));
+    ex_nesting_level = orig_nesting_level;
 
     vim_free(ectx.ec_stack.ga_data);
     vim_free(ectx.ec_trystack.ga_data);
-
-    while (ectx.ec_outer != NULL)
+    if (ectx.ec_outer_ref != NULL)
     {
-	outer_T	    *up = ectx.ec_outer->out_up_is_copy
-						? NULL : ectx.ec_outer->out_up;
-
-	vim_free(ectx.ec_outer);
-	ectx.ec_outer = up;
+	if (ectx.ec_outer_ref->or_outer_allocated)
+	    vim_free(ectx.ec_outer_ref->or_outer);
+	partial_unref(ectx.ec_outer_ref->or_partial);
+	vim_free(ectx.ec_outer_ref);
     }
 
     // Not sure if this is necessary.
@@ -4484,6 +4801,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	{
 	    case ISN_EXEC:
 		smsg("%s%4d EXEC %s", pfx, current, iptr->isn_arg.string);
+		break;
+	    case ISN_EXEC_SPLIT:
+		smsg("%s%4d EXEC_SPLIT %s", pfx, current, iptr->isn_arg.string);
 		break;
 	    case ISN_LEGACY_EVAL:
 		smsg("%s%4d EVAL legacy %s", pfx, current,
@@ -4780,10 +5100,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		{
 		    typval_T	tv;
 		    char_u	*name;
+		    char_u	buf[NUMBUFLEN];
 
 		    tv.v_type = VAR_JOB;
 		    tv.vval.v_job = iptr->isn_arg.job;
-		    name = tv_get_string(&tv);
+		    name = job_to_string_buf(&tv, buf);
 		    smsg("%s%4d PUSHJOB \"%s\"", pfx, current, name);
 		}
 #endif
@@ -4863,8 +5184,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_RETURN:
 		smsg("%s%4d RETURN", pfx, current);
 		break;
-	    case ISN_RETURN_ZERO:
-		smsg("%s%4d RETURN 0", pfx, current);
+	    case ISN_RETURN_VOID:
+		smsg("%s%4d RETURN void", pfx, current);
 		break;
 	    case ISN_FUNCREF:
 		{
@@ -5078,8 +5399,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_ANYSLICE: smsg("%s%4d ANYSLICE", pfx, current); break;
 	    case ISN_SLICE: smsg("%s%4d SLICE %lld",
 					 pfx, current, iptr->isn_arg.number); break;
-	    case ISN_GETITEM: smsg("%s%4d ITEM %lld",
-					 pfx, current, iptr->isn_arg.number); break;
+	    case ISN_GETITEM: smsg("%s%4d ITEM %lld%s", pfx, current,
+					 iptr->isn_arg.getitem.gi_index,
+					 iptr->isn_arg.getitem.gi_with_op ?
+						       " with op" : ""); break;
 	    case ISN_MEMBER: smsg("%s%4d MEMBER", pfx, current); break;
 	    case ISN_STRINGMEMBER: smsg("%s%4d MEMBER %s", pfx, current,
 						  iptr->isn_arg.string); break;
@@ -5117,26 +5440,30 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		      break;
 		  }
 	    case ISN_COND2BOOL: smsg("%s%4d COND2BOOL", pfx, current); break;
-	    case ISN_2BOOL: if (iptr->isn_arg.number)
-				smsg("%s%4d INVERT (!val)", pfx, current);
+	    case ISN_2BOOL: if (iptr->isn_arg.tobool.invert)
+				smsg("%s%4d INVERT %d (!val)", pfx, current,
+					 iptr->isn_arg.tobool.offset);
 			    else
-				smsg("%s%4d 2BOOL (!!val)", pfx, current);
+				smsg("%s%4d 2BOOL %d (!!val)", pfx, current,
+					 iptr->isn_arg.tobool.offset);
 			    break;
 	    case ISN_2STRING: smsg("%s%4d 2STRING stack[%lld]", pfx, current,
-					 (varnumber_T)(iptr->isn_arg.number));
+				 (varnumber_T)(iptr->isn_arg.tostring.offset));
 			      break;
-	    case ISN_2STRING_ANY: smsg("%s%4d 2STRING_ANY stack[%lld]", pfx, current,
-					 (varnumber_T)(iptr->isn_arg.number));
+	    case ISN_2STRING_ANY: smsg("%s%4d 2STRING_ANY stack[%lld]",
+								  pfx, current,
+				 (varnumber_T)(iptr->isn_arg.tostring.offset));
 			      break;
-	    case ISN_RANGE: smsg("%s%4d RANGE %s", pfx, current, iptr->isn_arg.string);
+	    case ISN_RANGE: smsg("%s%4d RANGE %s", pfx, current,
+							 iptr->isn_arg.string);
 			    break;
 	    case ISN_PUT:
 	        if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
 		    smsg("%s%4d PUT %c above range",
-				       pfx, current, iptr->isn_arg.put.put_regname);
+				  pfx, current, iptr->isn_arg.put.put_regname);
 		else if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE)
 		    smsg("%s%4d PUT %c range",
-				       pfx, current, iptr->isn_arg.put.put_regname);
+				  pfx, current, iptr->isn_arg.put.put_regname);
 		else
 		    smsg("%s%4d PUT %c %ld", pfx, current,
 						 iptr->isn_arg.put.put_regname,
@@ -5163,11 +5490,19 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_CMDMOD_REV: smsg("%s%4d CMDMOD_REV", pfx, current); break;
 
 	    case ISN_PROF_START:
-		 smsg("%s%4d PROFILE START line %d", pfx, current, iptr->isn_lnum);
+		 smsg("%s%4d PROFILE START line %d", pfx, current,
+							       iptr->isn_lnum);
 		 break;
 
 	    case ISN_PROF_END:
 		smsg("%s%4d PROFILE END", pfx, current);
+		break;
+
+	    case ISN_DEBUG:
+		smsg("%s%4d DEBUG line %d-%d varcount %lld", pfx, current,
+			iptr->isn_arg.debug.dbg_break_lnum + 1,
+			iptr->isn_lnum,
+			iptr->isn_arg.debug.dbg_var_names_len);
 		break;
 
 	    case ISN_UNPACK: smsg("%s%4d UNPACK %d%s", pfx, current,
@@ -5192,6 +5527,40 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 }
 
 /*
+ * Handle command line completion for the :disassemble command.
+ */
+    void
+set_context_in_disassemble_cmd(expand_T *xp, char_u *arg)
+{
+    char_u	*p;
+
+    // Default: expand user functions, "debug" and "profile"
+    xp->xp_context = EXPAND_DISASSEMBLE;
+    xp->xp_pattern = arg;
+
+    // first argument already typed: only user function names
+    if (*arg != NUL && *(p = skiptowhite(arg)) != NUL)
+    {
+	xp->xp_context = EXPAND_USER_FUNC;
+	xp->xp_pattern = skipwhite(p);
+    }
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of :disassemble
+ * arguments.
+ */
+    char_u *
+get_disassemble_argument(expand_T *xp, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"debug";
+    if (idx == 1)
+	return (char_u *)"profile";
+    return get_user_func_name(xp, idx - 2);
+}
+
+/*
  * ":disassemble".
  * We don't really need this at runtime, but we do have tests that require it,
  * so always include this.
@@ -5206,6 +5575,18 @@ ex_disassemble(exarg_T *eap)
     isn_T	*instr;
     int		instr_count;
     int		is_global = FALSE;
+    compiletype_T compile_type = CT_NONE;
+
+    if (STRNCMP(arg, "profile", 7) == 0)
+    {
+	compile_type = CT_PROFILE;
+	arg = skipwhite(arg + 7);
+    }
+    else if (STRNCMP(arg, "debug", 5) == 0)
+    {
+	compile_type = CT_DEBUG;
+	arg = skipwhite(arg + 5);
+    }
 
     if (STRNCMP(arg, "<lambda>", 8) == 0)
     {
@@ -5237,8 +5618,8 @@ ex_disassemble(exarg_T *eap)
 	semsg(_(e_cannot_find_function_str), eap->arg);
 	return;
     }
-    if (func_needs_compiling(ufunc, eap->forceit)
-	    && compile_def_function(ufunc, FALSE, eap->forceit, NULL) == FAIL)
+    if (func_needs_compiling(ufunc, compile_type)
+	    && compile_def_function(ufunc, FALSE, compile_type, NULL) == FAIL)
 	return;
     if (ufunc->uf_def_status != UF_COMPILED)
     {
@@ -5251,14 +5632,24 @@ ex_disassemble(exarg_T *eap)
 	msg((char *)ufunc->uf_name);
 
     dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+    switch (compile_type)
+    {
+	case CT_PROFILE:
 #ifdef FEAT_PROFILE
-    instr = eap->forceit ? dfunc->df_instr_prof : dfunc->df_instr;
-    instr_count = eap->forceit ? dfunc->df_instr_prof_count
-						       : dfunc->df_instr_count;
-#else
-    instr = dfunc->df_instr;
-    instr_count = dfunc->df_instr_count;
+	    instr = dfunc->df_instr_prof;
+	    instr_count = dfunc->df_instr_prof_count;
+	    break;
 #endif
+	    // FALLTHROUGH
+	case CT_NONE:
+	    instr = dfunc->df_instr;
+	    instr_count = dfunc->df_instr_count;
+	    break;
+	case CT_DEBUG:
+	    instr = dfunc->df_instr_debug;
+	    instr_count = dfunc->df_instr_debug_count;
+	    break;
+    }
 
     list_instructions("", instr, instr_count, ufunc);
 }

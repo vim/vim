@@ -946,7 +946,12 @@ get_number(
 	    do_redraw = FALSE;
 	    break;
 	}
-	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC || c == 'q')
+	else if (c == Ctrl_C || c == ESC || c == 'q')
+	{
+	    n = 0;
+	    break;
+	}
+	else if (c == CAR || c == NL )
 	    break;
     }
     --no_mapping;

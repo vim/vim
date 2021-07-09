@@ -485,6 +485,11 @@ func Test_list_mappings()
   call assert_equal(['n  ,k            <Nop>'],
         \ execute('nmap ,k')->trim()->split("\n"))
 
+  " map with space at the beginning
+  exe "nmap \<C-V> w <Nop>"
+  call assert_equal(['n  <Space>w      <Nop>'],
+        \ execute("nmap \<C-V> w")->trim()->split("\n"))
+
   nmapclear
 endfunc
 
@@ -1409,6 +1414,21 @@ func Test_abbreviate_multi_byte()
   call assert_equal("bar…", getline(1))
   iunabbrev foo
   bwipe!
+endfunc
+
+" Test for abbreviations with 'latin1' encoding
+func Test_abbreviate_latin1_encoding()
+  set encoding=latin1
+  call assert_fails('abbr ab#$c ABC', 'E474:')
+  new
+  iabbr <buffer> #i #include
+  iabbr <buffer> ## #enddef
+  exe "normal i#i\<C-]>"
+  call assert_equal('#include', getline(1))
+  exe "normal 0Di##\<C-]>"
+  call assert_equal('#enddef', getline(1))
+  %bw!
+  set encoding=utf-8
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

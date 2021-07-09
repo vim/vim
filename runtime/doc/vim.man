@@ -135,9 +135,9 @@ OPTIONS
                    Vim behave mostly like Vi, even though a  .vimrc  file  ex‐
                    ists.
 
-       -d          Start  in  diff  mode.   There should be two, three or four
-                   file name arguments.  Vim will open all the files and  show
-                   differences between them.  Works like vimdiff(1).
+       -d          Start in diff mode.  There should between two to eight file
+                   name arguments.  Vim will open all the files and show  dif‐
+                   ferences between them.  Works like vimdiff(1).
 
        -d {device} Open  {device}  for  use as a terminal.  Only on the Amiga.
                    Example: "-d con:20/30/600/150".

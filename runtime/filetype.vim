@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Apr 17
+" Last Change:	2021 Jul 03
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -393,7 +393,7 @@ au BufNewFile,BufRead *.cfm,*.cfi,*.cfc		setf cf
 " Configure scripts
 au BufNewFile,BufRead configure.in,configure.ac setf config
 
-" CUDA  Cumpute Unified Device Architecture
+" CUDA Compute Unified Device Architecture
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 
 " Dockerfile; Podman uses the same syntax with name Containerfile
@@ -408,8 +408,15 @@ au BufNewFile,BufRead *enlightenment/*.cfg	setf c
 " Eterm
 au BufNewFile,BufRead *Eterm/*.cfg		setf eterm
 
+" Elixir or Euphoria
+au BufNewFile,BufRead *.ex call dist#ft#ExCheck()
+
+" Elixir
+au BufRead,BufNewFile mix.lock,*.exs setf elixir
+au BufRead,BufNewFile *.eex,*.leex setf eelixir
+
 " Euphoria 3 or 4
-au BufNewFile,BufRead *.eu,*.ew,*.ex,*.exu,*.exw  call dist#ft#EuphoriaCheck()
+au BufNewFile,BufRead *.eu,*.ew,*.exu,*.exw  call dist#ft#EuphoriaCheck()
 if has("fname_case")
    au BufNewFile,BufRead *.EU,*.EW,*.EX,*.EXU,*.EXW  call dist#ft#EuphoriaCheck()
 endif
@@ -643,6 +650,9 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 " Gedcom
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
+" Gemtext
+au BufNewFile,BufRead *.gmi,*.gemini		setf gemtext
+
 " Gift (Moodle)
 autocmd BufRead,BufNewFile *.gift		setf gift
 
@@ -718,7 +728,7 @@ au BufNewFile,BufRead *.haml			setf haml
 au BufNewFile,BufRead *.hsm			setf hamster
 
 " Haskell
-au BufNewFile,BufRead *.hs,*.hsc,*.hs-boot	setf haskell
+au BufNewFile,BufRead *.hs,*.hsc,*.hs-boot,*.hsig setf haskell
 au BufNewFile,BufRead *.lhs			setf lhaskell
 au BufNewFile,BufRead *.chs			setf chaskell
 au BufNewFile,BufRead cabal.project		setf cabalproject
@@ -854,6 +864,15 @@ au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
 " JSON
 au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
+
+" JSON Patch (RFC 6902)
+au BufNewFile,BufRead *.json-patch			setf json
+
+" Jupyter Notebook is also json
+au BufNewFile,BufRead *.ipynb				setf json
+
+" JSONC
+au BufNewFile,BufRead *.jsonc			setf jsonc
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
@@ -1496,7 +1515,7 @@ au BufNewFile,BufRead *.sass			setf sass
 au BufNewFile,BufRead *.sa			setf sather
 
 " Scala
-au BufNewFile,BufRead *.scala			setf scala
+au BufNewFile,BufRead *.scala,*.sc		setf scala
 
 " SBT - Scala Build Tool
 au BufNewFile,BufRead *.sbt			setf sbt

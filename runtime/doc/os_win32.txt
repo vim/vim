@@ -30,6 +30,7 @@ File formats			|dos-file-formats|
 Interrupting			|dos-CTRL-Break|
 Temp files			|dos-temp-files|
 Shell option default		|dos-shell|
+PowerShell defaults		|dos-powershell|
 
 Win32 GUI			|gui-w32|
 

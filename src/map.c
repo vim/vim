@@ -2478,13 +2478,12 @@ init_mappings(void)
     if (!gui.starting)
 #  endif
     {
-	for (i = 0;
-		i < (int)(sizeof(cinitmappings) / sizeof(struct initmap)); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(cinitmappings); ++i)
 	    add_map(cinitmappings[i].arg, cinitmappings[i].mode);
     }
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(MACOS_X)
-    for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(initmappings); ++i)
 	add_map(initmappings[i].arg, initmappings[i].mode);
 # endif
 #endif
@@ -2718,7 +2717,7 @@ do_exmap(exarg_T *eap, int isabbrev)
     {
 	case 1: emsg(_(e_invarg));
 		break;
-	case 2: emsg((isabbrev ? _(e_noabbr) : _(e_nomap)));
+	case 2: emsg((isabbrev ? _(e_no_such_abbreviation) : _(e_nomap)));
 		break;
     }
 }

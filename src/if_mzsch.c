@@ -3799,7 +3799,7 @@ make_modules(void)
     mod = scheme_primitive_module(vimext_symbol, environment);
     MZ_GC_CHECK();
     // all prims made closed so they can access their own names
-    for (i = 0; i < (int)(sizeof(prims)/sizeof(prims[0])); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(prims); i++)
     {
 	Vim_Prim *prim = prims + i;
 	closed_prim = scheme_make_closed_prim_w_arity(prim->prim, prim, prim->name,

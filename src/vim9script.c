@@ -166,19 +166,30 @@ vim9_comment_start(char_u *p)
 ex_incdec(exarg_T *eap)
 {
     char_u	*cmd = eap->cmd;
-    size_t	len = STRLEN(eap->cmd) + 6;
+    char_u	*nextcmd = eap->nextcmd;
+    size_t	len = STRLEN(eap->cmd) + 8;
+
+    if (VIM_ISWHITE(cmd[2]))
+    {
+	semsg(_(e_no_white_space_allowed_after_str_str),
+			 eap->cmdidx == CMD_increment ? "++" : "--", eap->cmd);
+	return;
+    }
 
     // This works like "nr += 1" or "nr -= 1".
+    // Add a '|' to avoid looking in the next line.
     eap->cmd = alloc(len);
     if (eap->cmd == NULL)
 	return;
-    vim_snprintf((char *)eap->cmd, len, "%s %c= 1", cmd + 2,
+    vim_snprintf((char *)eap->cmd, len, "%s %c= 1 |", cmd + 2,
 				     eap->cmdidx == CMD_increment ? '+' : '-');
     eap->arg = eap->cmd;
     eap->cmdidx = CMD_var;
+    eap->nextcmd = NULL;
     ex_let(eap);
     vim_free(eap->cmd);
     eap->cmd = cmd;
+    eap->nextcmd = nextcmd;
 }
 
 /*
@@ -605,7 +616,7 @@ handle_import(
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;
 
-	    // If already imported with the same propertis and the
+	    // If already imported with the same properties and the
 	    // IMP_FLAGS_RELOAD set then we keep that entry.  Otherwise create
 	    // a new one (and give an error for an existing import).
 	    imported = find_imported(name, len, cctx);
@@ -709,10 +720,10 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     }
     name = vim_strnsave(arg, p - arg);
 
-    // parse type
+    // parse type, check for reserved name
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list, TRUE);
-    if (type == NULL)
+    if (type == NULL || check_reserved_name(name) == FAIL)
     {
 	vim_free(name);
 	return p;
@@ -911,7 +922,7 @@ free_all_script_vars(scriptitem_T *si)
 
 /*
  * Find the script-local variable that links to "dest".
- * Returns NULL if not found.
+ * Returns NULL if not found and give an internal error.
  */
     svar_T *
 find_typval_in_script(typval_T *dest)
@@ -972,6 +983,29 @@ check_script_var_type(
     }
 
     return OK; // not really
+}
+
+// words that cannot be used as a variable
+static char *reserved[] = {
+    "true",
+    "false",
+    "null",
+    "this",
+    NULL
+};
+
+    int
+check_reserved_name(char_u *name)
+{
+    int idx;
+
+    for (idx = 0; reserved[idx] != NULL; ++idx)
+	if (STRCMP(reserved[idx], name) == 0)
+	{
+	    semsg(_(e_cannot_use_reserved_name), name);
+	    return FAIL;
+	}
+    return OK;
 }
 
 #endif // FEAT_EVAL

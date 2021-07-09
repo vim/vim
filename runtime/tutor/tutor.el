@@ -768,8 +768,8 @@
   περισσότερα χαρακτηριστικά πρέπει να φτιάξετε ένα αρχείο "vimrc".
 
   1. Αρχίστε διορθώνοντας το αρχείο "vimrc", αυτό εξαρτάται από το σύστημά σας:
-	:edit ~/.vimrc               για Unix
-	:edit $VIM/_vimrc            για MS-Windows
+	:edit ~/.vimrc            για Unix
+	:edit ~/_vimrc            για MS-Windows
 
   2. Τώρα εισάγετε το κείμενο παραδείγματος για αρχείο "vimrc":
 	:read $VIMRUNTIME/vimrc_example.vim

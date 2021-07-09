@@ -41,6 +41,13 @@
 #
 #	Sound support: SOUND=yes (default is yes)
 #
+#	Sodium support: SODIUM=[Path to Sodium directory]
+#	 Dynamic built with libsodium
+#	 You need to install the msvc package from
+#	 https://download.libsodium.org/libsodium/releases/
+#	 and package the libsodium.dll with Vim
+#
+#
 #	DLL support (EXPERIMENTAL): VIMDLL=yes (default is no)
 #	  Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
 #	  The shared codes between the GUI and the console are built into
@@ -372,6 +379,26 @@ SOUND = no
 ! endif
 !endif
 
+!ifndef SODIUM
+SODIUM = no
+!endif
+
+!if "$(SODIUM)" != "no"
+! if "$(CPU)" == "AMD64"
+SOD_LIB		= $(SODIUM)\x64\Release\v140\dynamic
+! elseif "$(CPU)" == "i386"
+SOD_LIB		= $(SODIUM)\Win32\Release\v140\dynamic
+! else
+SODIUM = no
+! endif
+!endif
+
+!if "$(SODIUM)" != "no"
+SOD_INC		= /I "$(SODIUM)\include"
+SOD_DEFS	= -DFEAT_SODIUM
+SOD_LIB		= $(SOD_LIB)\libsodium.lib
+!endif
+
 !ifndef NETBEANS
 NETBEANS = $(GUI)
 !endif
@@ -491,7 +518,7 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 
 CFLAGS = -c /W3 /GF /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
 		$(CSCOPE_DEFS) $(TERM_DEFS) $(SOUND_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
-		$(NBDEBUG_DEFS) $(XPM_DEFS) \
+		$(NBDEBUG_DEFS) $(XPM_DEFS) $(SOD_DEFS) $(SOD_INC) \
 		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
 
 #>>>>> end of choices
@@ -743,6 +770,7 @@ OBJ = \
 	$(OUTDIR)\fileio.obj \
 	$(OUTDIR)\filepath.obj \
 	$(OUTDIR)\findfile.obj \
+	$(OUTDIR)\float.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\gui_xim.obj \
@@ -1281,7 +1309,7 @@ conflags = $(conflags) /map /mapinfo:lines
 LINKARGS1 = $(linkdebug) $(conflags)
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
-		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
+		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(LINK_PDB)
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG
@@ -1599,6 +1627,8 @@ $(OUTDIR)/filepath.obj:	$(OUTDIR) filepath.c  $(INCL)
 
 $(OUTDIR)/findfile.obj:	$(OUTDIR) findfile.c  $(INCL)
 
+$(OUTDIR)/float.obj:	$(OUTDIR) float.c  $(INCL)
+
 $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
 $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
@@ -1806,11 +1836,11 @@ $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 	$(CC) $(CFLAGS_OUTDIR) $(XPM_INC) xpm_w32.c
 
 !if "$(VIMDLL)" == "yes"
-$(OUTDIR)/vimc.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vimc.res:	$(OUTDIR) vim.rc vim.manifest version.h gui_w32_rc.h \
 				vim.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS:-DFEAT_GUI_MSWIN=) vim.rc
 
-$(OUTDIR)/vimg.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vimg.res:	$(OUTDIR) vim.rc vim.manifest version.h gui_w32_rc.h \
 				vim.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
 
@@ -1819,7 +1849,7 @@ $(OUTDIR)/vimd.res:	$(OUTDIR) vim.rc version.h gui_w32_rc.h \
 				vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) -DRCDLL -DVIMDLLBASE=\"$(VIMDLLBASE)\" vim.rc
 !else
-$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc vim.manifest version.h gui_w32_rc.h \
 				tools.bmp tearoff.bmp vim.ico vim_error.ico \
 				vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
@@ -1935,6 +1965,7 @@ proto.h: \
 	proto/fileio.pro \
 	proto/filepath.pro \
 	proto/findfile.pro \
+	proto/float.pro \
 	proto/getchar.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \

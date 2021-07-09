@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2021 Mar 01
+*change.txt*    For Vim version 8.2.  Last change: 2021 Jun 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -780,11 +780,14 @@ For compatibility with Vi these two exceptions are allowed:
 "\/{string}/" and "\?{string}?" do the same as "//{string}/r".
 "\&{string}&" does the same as "//{string}/".
 						*pattern-delimiter* *E146*
-Instead of the '/' which surrounds the pattern and replacement string, you
-can use any other single-byte character, but not an alphanumeric character,
-'\', '"' or '|'.  This is useful if you want to include a '/' in the search
-pattern or replacement string.  Example: >
+Instead of the '/' which surrounds the pattern and replacement string, you can
+use another single-byte character.  This is useful if you want to include a
+'/' in the search pattern or replacement string.  Example: >
 	:s+/+//+
+
+You can use most characters, but not an alphanumeric character, '\', '"' or
+'|'.  In Vim9 script you should not use '#' because it may be recognized as
+the start of a comment.
 
 For the definition of a pattern, see |pattern|.  In Visual block mode, use
 |/\%V| in the pattern to have the substitute work in the block only.
@@ -1042,6 +1045,10 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			cursor to the end of line (which is more logical,
 			but not Vi-compatible) use ":map Y y$".
 
+							*zy*
+["x]zy{motion}		Yank {motion} text [into register x].  Only differs
+			from `y` when selecting a block of text, see |v_zy|.
+
 							*v_y*
 {Visual}["x]y		Yank the highlighted text [into register x] (for
 			{Visual} see |Visual-mode|).
@@ -1049,6 +1056,12 @@ inside of strings can change!  Also see 'softtabstop' option. >
 							*v_Y*
 {Visual}["x]Y		Yank the highlighted lines [into register x] (for
 			{Visual} see |Visual-mode|).
+
+							*v_zy*
+{Visual}["x]zy		Yank the highlighted text [into register x].  Trailing
+			whitespace at the end of each line of a selected block
+			won't be yanked.  Especially useful in combination
+			with `zp`.  (for {Visual} see |Visual-mode|)
 
 							*:y* *:yank* *E850*
 :[range]y[ank] [x]	Yank [range] lines [into register x]. Yanking to the
@@ -1126,6 +1139,12 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			Using the mouse only works when 'mouse' contains 'n'
 			or 'a'.
 
+["x]zp		    or					*zp* *zP*
+["x]zP			Like "p" and "P", except without adding trailing spaces
+			when pasting a block.  Thus the inserted text will not
+			always be a rectangle.  Especially useful in
+			combination with |v_zy|.
+
 You can use these commands to copy text from one place to another.  Do this
 by first getting the text into a register with a yank, delete or change
 command, then inserting the register contents with a put command.  You can
@@ -1164,6 +1183,9 @@ When you use a blockwise Visual mode command and yank only a single line into
 a register, a paste on a visual selected area will paste that single line on
 each of the selected lines (thus replacing the blockwise selected region by a
 block of the pasted line).
+
+Use |zP|/|zp| to paste a blockwise yanked register without appending trailing
+spaces.
 
 							*blockwise-register*
 If you use a blockwise Visual mode command to get the text into the register,

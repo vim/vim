@@ -1253,8 +1253,11 @@ cmdline_insert_reg(int *gotesc UNUSED)
 	}
 #endif
     }
+    // remove the double quote
     redrawcmd();
-    return CMDLINE_CHANGED;
+
+    // The text has been stuffed, the command line didn't change yet.
+    return CMDLINE_NOT_CHANGED;
 }
 
 /*
@@ -2619,7 +2622,7 @@ get_text_locked_msg(void)
 {
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
-	return e_cmdwin;
+	return e_invalid_in_cmdline_window;
 #endif
     if (textwinlock != 0)
 	return e_textwinlock;

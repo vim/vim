@@ -1211,8 +1211,44 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (argvars[0].v_type != VAR_NUMBER || (argvars[1].v_type) != VAR_NUMBER)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
     mouse_row = (time_t)tv_get_number(&argvars[0]) - 1;
     mouse_col = (time_t)tv_get_number(&argvars[1]) - 1;
+}
+
+    void
+f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_GUI
+    int		button;
+    int		row;
+    int		col;
+    int		repeated_click;
+    int_u	mods;
+
+    if (argvars[0].v_type != VAR_NUMBER
+	    || (argvars[1].v_type) != VAR_NUMBER
+	    || (argvars[2].v_type) != VAR_NUMBER
+	    || (argvars[3].v_type) != VAR_NUMBER
+	    || (argvars[4].v_type) != VAR_NUMBER)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    button = tv_get_number(&argvars[0]);
+    row = tv_get_number(&argvars[1]);
+    col = tv_get_number(&argvars[2]);
+    repeated_click = tv_get_number(&argvars[3]);
+    mods = tv_get_number(&argvars[4]);
+
+    gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1), repeated_click, mods);
+# endif
 }
 
     void
@@ -1221,5 +1257,61 @@ f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
     time_for_testing = (time_t)tv_get_number(&argvars[0]);
 }
 
+    void
+f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#if defined(HAVE_DROP_FILE)
+    int		row;
+    int		col;
+    int_u	mods;
+    char_u	**fnames;
+    int		count = 0;
+    list_T	*l;
+    listitem_T	*li;
+
+    if (argvars[0].v_type != VAR_LIST
+	    || (argvars[1].v_type) != VAR_NUMBER
+	    || (argvars[2].v_type) != VAR_NUMBER
+	    || (argvars[3].v_type) != VAR_NUMBER)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    row = tv_get_number(&argvars[1]);
+    col = tv_get_number(&argvars[2]);
+    mods = tv_get_number(&argvars[3]);
+
+    l = argvars[0].vval.v_list;
+    if (list_len(l) == 0)
+	return;
+
+    fnames = ALLOC_MULT(char_u *, list_len(l));
+    if (fnames == NULL)
+	return;
+
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	// ignore non-string items
+	if (li->li_tv.v_type != VAR_STRING)
+	    continue;
+
+	fnames[count] = vim_strsave(li->li_tv.vval.v_string);
+	if (fnames[count] == NULL)
+	{
+	    while (--count >= 0)
+		vim_free(fnames[count]);
+	    vim_free(fnames);
+	    return;
+	}
+	count++;
+    }
+
+    if (count > 0)
+	gui_handle_drop(TEXT_X(col - 1), TEXT_Y(row - 1), mods, fnames, count);
+    else
+	vim_free(fnames);
+# endif
+}
 
 #endif // defined(FEAT_EVAL)

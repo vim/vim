@@ -134,6 +134,21 @@ func XlistTests(cchar)
   call assert_equal([' 2 Xtestfile1:1 col 3: Line1',
 		   \ ' 3: non-error 2', ' 4 Xtestfile2:2 col 2: Line2'], l)
 
+  " Ranged entries
+  call g:Xsetlist([{'lnum':10,'text':'Line1'},
+	      \ {'lnum':20,'col':10,'text':'Line2'},
+	      \ {'lnum':30,'col':15,'end_col':20,'text':'Line3'},
+	      \ {'lnum':40,'end_lnum':45,'text':'Line4'},
+	      \ {'lnum':50,'end_lnum':55,'col':15,'text':'Line5'},
+	      \ {'lnum':60,'end_lnum':65,'col':25,'end_col':35,'text':'Line6'}])
+  let l = split(execute('Xlist', ""), "\n")
+  call assert_equal([' 1:10: Line1',
+	      \ ' 2:20 col 10: Line2',
+	      \ ' 3:30 col 15-20: Line3',
+	      \ ' 4:40-45: Line4',
+	      \ ' 5:50-55 col 15: Line5',
+	      \ ' 6:60-65 col 25-35: Line6'], l)
+
   " Different types of errors
   call g:Xsetlist([{'lnum':10,'col':5,'type':'W', 'text':'Warning','nr':11},
 	      \ {'lnum':20,'col':10,'type':'e','text':'Error','nr':22},
@@ -644,6 +659,7 @@ func s:test_xhelpgrep(cchar)
   call assert_true(&buftype == 'help')
   call assert_true(winnr() == 1)
   call assert_true(winnr('$') == 2)
+  call assert_match('|\d\+ col \d\+-\d\+|', getbufline(winbufnr(2), 1)[0])
 
   " This wipes out the buffer, make sure that doesn't cause trouble.
   Xclose
@@ -1514,10 +1530,13 @@ func SetXlistTests(cchar, bnum)
   call s:setup_commands(a:cchar)
 
   call g:Xsetlist([{'bufnr': a:bnum, 'lnum': 1},
-	      \  {'bufnr': a:bnum, 'lnum': 2}])
+	      \  {'bufnr': a:bnum, 'lnum': 2, 'end_lnum': 3, 'col': 4, 'end_col': 5}])
   let l = g:Xgetlist()
   call assert_equal(2, len(l))
   call assert_equal(2, l[1].lnum)
+  call assert_equal(3, l[1].end_lnum)
+  call assert_equal(4, l[1].col)
+  call assert_equal(5, l[1].end_col)
 
   Xnext
   call g:Xsetlist([{'bufnr': a:bnum, 'lnum': 3}], 'a')
@@ -2852,7 +2871,9 @@ func XvimgrepTests(cchar)
   let l = g:Xgetlist()
   call assert_equal(2, len(l))
   call assert_equal(8, l[0].col)
+  call assert_equal(11, l[0].end_col)
   call assert_equal(12, l[1].col)
+  call assert_equal(15, l[1].end_col)
 
   1Xvimgrep ?Editor? Xtestfile*
   let l = g:Xgetlist()
@@ -5098,15 +5119,21 @@ func Xtest_qftextfunc(cchar)
   call assert_equal('Tqfexpr', &quickfixtextfunc)
   call assert_equal('',
         \ g:Xgetlist({'quickfixtextfunc' : 1}).quickfixtextfunc)
-  Xexpr ['F1:10:2:green', 'F1:20:4:blue']
+  call g:Xsetlist([
+        \ { 'filename': 'F1', 'lnum': 10, 'col': 2,
+        \   'end_col': 7, 'text': 'green'},
+        \ { 'filename': 'F1', 'lnum': 20, 'end_lnum': 25, 'col': 4,
+        \   'end_col': 8, 'text': 'blue'},
+        \ ])
+
   Xwindow
   call assert_equal('F1-L10C2-green', getline(1))
   call assert_equal('F1-L20C4-blue', getline(2))
   Xclose
   set quickfixtextfunc&vim
   Xwindow
-  call assert_equal('F1|10 col 2| green', getline(1))
-  call assert_equal('F1|20 col 4| blue', getline(2))
+  call assert_equal('F1|10 col 2-7| green', getline(1))
+  call assert_equal('F1|20-25 col 4-8| blue', getline(2))
   Xclose
   set efm&
   set quickfixtextfunc&
@@ -5231,6 +5258,64 @@ func Test_qftextfunc()
   call Xtest_qftextfunc('l')
 endfunc
 
+" Test for updating a location list for some other window and check that
+" 'qftextfunc' uses the correct location list.
+func Test_qftextfunc_other_loclist()
+  %bw!
+  call setloclist(0, [], 'f')
+
+  " create a window and a location list for it and open the location list
+  " window
+  lexpr ['F1:10:12:one', 'F1:20:14:two']
+  let w1_id = win_getid()
+  call setloclist(0, [], ' ',
+        \ {'lines': ['F1:10:12:one', 'F1:20:14:two'],
+        \  'quickfixtextfunc':
+        \    {d -> map(getloclist(d.winid, {'id' : d.id,
+        \                'items' : 1}).items[d.start_idx-1:d.end_idx-1],
+        \          "'Line ' .. v:val.lnum .. ', Col ' .. v:val.col")}})
+  lwindow
+  let w2_id = win_getid()
+
+  " create another window and a location list for it and open the location
+  " list window
+  topleft new
+  let w3_id = win_getid()
+  call setloclist(0, [], ' ',
+        \ {'lines': ['F2:30:32:eleven', 'F2:40:34:twelve'],
+        \  'quickfixtextfunc':
+        \    {d -> map(getloclist(d.winid, {'id' : d.id,
+        \                'items' : 1}).items[d.start_idx-1:d.end_idx-1],
+        \          "'Ligne ' .. v:val.lnum .. ', Colonne ' .. v:val.col")}})
+  lwindow
+  let w4_id = win_getid()
+
+  topleft new
+  lexpr ['F3:50:52:green', 'F3:60:54:blue']
+  let w5_id = win_getid()
+
+  " change the location list for some other window
+  call setloclist(0, [], 'r', {'lines': ['F3:55:56:aaa', 'F3:57:58:bbb']})
+  call setloclist(w1_id, [], 'r', {'lines': ['F1:62:63:bbb', 'F1:64:65:ccc']})
+  call setloclist(w3_id, [], 'r', {'lines': ['F2:76:77:ddd', 'F2:78:79:eee']})
+  call assert_equal(['Line 62, Col 63', 'Line 64, Col 65'],
+        \ getbufline(winbufnr(w2_id), 1, '$'))
+  call assert_equal(['Ligne 76, Colonne 77', 'Ligne 78, Colonne 79'],
+        \ getbufline(winbufnr(w4_id), 1, '$'))
+  call setloclist(w2_id, [], 'r', {'lines': ['F1:32:33:fff', 'F1:34:35:ggg']})
+  call setloclist(w4_id, [], 'r', {'lines': ['F2:46:47:hhh', 'F2:48:49:jjj']})
+  call assert_equal(['Line 32, Col 33', 'Line 34, Col 35'],
+        \ getbufline(winbufnr(w2_id), 1, '$'))
+  call assert_equal(['Ligne 46, Colonne 47', 'Ligne 48, Colonne 49'],
+        \ getbufline(winbufnr(w4_id), 1, '$'))
+
+  call win_gotoid(w5_id)
+  lwindow
+  call assert_equal(['F3|55 col 56| aaa', 'F3|57 col 58| bbb'],
+        \ getline(1, '$'))
+  %bw!
+endfunc
+
 " Running :lhelpgrep command more than once in a help window, doesn't jump to
 " the help topic
 func Test_lhelpgrep_from_help_window()
@@ -5281,7 +5366,42 @@ func Test_add_invalid_entry_with_qf_window()
   call setqflist(['bb'], 'a')
   call assert_equal(1, line('$'))
   call assert_equal(['Xfile1|10| aa'], getline(1, '$'))
-  call assert_equal([{'lnum': 10, 'bufnr': bufnr('Xfile1'), 'col': 0, 'pattern': '', 'valid': 1, 'vcol': 0, 'nr': -1, 'type': '', 'module': '', 'text': 'aa'}], getqflist())
+  call assert_equal([{'lnum': 10                    , 'end_lnum': 0    , 'bufnr': bufnr('Xfile1') , 'col': 0   , 'end_col': 0    , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
+
+  call setqflist([{'lnum': 10                                          , 'bufnr': bufnr('Xfile1') , 'col': 0                     , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , 'r')
+  call assert_equal(1                               , line('$'))
+  call assert_equal(['Xfile1|10| aa']               , getline(1        , '$'))
+  call assert_equal([{'lnum': 10                    , 'end_lnum': 0    , 'bufnr': bufnr('Xfile1') , 'col': 0   , 'end_col': 0    , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
+
+  call setqflist([{'lnum': 10                       , 'end_lnum': 0    , 'bufnr': bufnr('Xfile1') , 'col': 0   , 'end_col': 0    , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , 'r')
+  call assert_equal(1                               , line('$'))
+  call assert_equal(['Xfile1|10| aa']               , getline(1        , '$'))
+  call assert_equal([{'lnum': 10                    , 'end_lnum': 0    , 'bufnr': bufnr('Xfile1') , 'col': 0   , 'end_col': 0    , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
+
+  call setqflist([{'lnum': 10                       , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 0   , 'end_col': -456 , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , 'r')
+  call assert_equal(1                               , line('$'))
+  call assert_equal(['Xfile1|10| aa']               , getline(1        , '$'))
+  call assert_equal([{'lnum': 10                    , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 0   , 'end_col': -456 , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
+
+  call setqflist([{'lnum': 10                       , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': 0    , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , 'r')
+  call assert_equal(1                               , line('$'))
+  call assert_equal(['Xfile1|10 col 666| aa']       , getline(1        , '$'))
+  call assert_equal([{'lnum': 10                    , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': 0    , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
+
+  call setqflist([{'lnum': 10                       , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': -456 , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , 'r')
+  call assert_equal(1                               , line('$'))
+  call assert_equal(['Xfile1|10 col 666| aa']       , getline(1        , '$'))
+  call assert_equal([{'lnum': 10                    , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': -456 , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
+
+  call setqflist([{'lnum': 10                       , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': 222  , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , 'r')
+  call assert_equal(1                               , line('$'))
+  call assert_equal(['Xfile1|10 col 666-222| aa']   , getline(1        , '$'))
+  call assert_equal([{'lnum': 10                    , 'end_lnum': -123 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': 222  , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
+
+  call setqflist([{'lnum': 10                       , 'end_lnum': 6 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': 222  , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , 'r')
+  call assert_equal(1                               , line('$'))
+  call assert_equal(['Xfile1|10-6 col 666-222| aa'] , getline(1        , '$'))
+  call assert_equal([{'lnum': 10                    , 'end_lnum': 6 , 'bufnr': bufnr('Xfile1') , 'col': 666 , 'end_col': 222  , 'pattern': '' , 'valid': 1 , 'vcol': 0 , 'nr': -1 , 'type': '' , 'module': '' , 'text': 'aa'}] , getqflist())
   cclose
 endfunc
 

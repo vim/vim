@@ -69,6 +69,14 @@ func Test_file_cmd()
   call assert_fails('3file', 'E474:')
   call assert_fails('0,0file', 'E474:')
   call assert_fails('0file abc', 'E474:')
+  if !has('win32')
+    " Change the name of the buffer to the same name
+    new Xfile1
+    file Xfile1
+    call assert_equal('Xfile1', @%)
+    call assert_equal('Xfile1', @#)
+    bw!
+  endif
 endfunc
 
 " Test for the :drop command
@@ -584,6 +592,12 @@ func Sandbox_tests()
   endif
   if has('unix')
     call assert_fails('cd `pwd`', 'E48:')
+  endif
+  " some options cannot be changed in a sandbox
+  call assert_fails('set exrc', 'E48:')
+  call assert_fails('set cdpath', 'E48:')
+  if has('xim') && has('gui_gtk')
+    call assert_fails('set imstyle', 'E48:')
   endif
 endfunc
 

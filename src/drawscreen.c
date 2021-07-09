@@ -1379,6 +1379,15 @@ fold_line(
 	curwin->w_cline_folded = TRUE;
 	curwin->w_valid |= (VALID_CHEIGHT|VALID_CROW);
     }
+
+# ifdef FEAT_CONCEAL
+    // When the line was not folded w_wrow may have been set, recompute it.
+    if (wp == curwin
+	    && wp->w_cursor.lnum >= lnum
+	    && wp->w_cursor.lnum <= lnume
+	    && conceal_cursor_line(wp))
+	curs_columns(TRUE);
+# endif
 }
 #endif
 
@@ -2003,12 +2012,41 @@ win_update(win_T *wp)
 		    ve_flags = VE_ALL;
 #endif
 		getvcols(wp, &VIsual, &curwin->w_cursor, &fromc, &toc);
+		++toc;
 #if defined(FEAT_LINEBREAK)
 		ve_flags = save_ve_flags;
 #endif
-		++toc;
+		// Highlight to the end of the line, unless 'virtualedit' has
+		// "block".
 		if (curwin->w_curswant == MAXCOL)
-		    toc = MAXCOL;
+		{
+		    if (ve_flags & VE_BLOCK)
+		    {
+			pos_T	    pos;
+			int	    cursor_above =
+					   curwin->w_cursor.lnum < VIsual.lnum;
+
+			// Need to find the longest line.
+			toc = 0;
+			pos.coladd = 0;
+			for (pos.lnum = curwin->w_cursor.lnum; cursor_above
+					? pos.lnum <= VIsual.lnum
+					: pos.lnum >= VIsual.lnum;
+					     pos.lnum += cursor_above ? 1 : -1)
+			{
+			    colnr_T t;
+
+			    pos.col = (int)STRLEN(ml_get_buf(wp->w_buffer,
+							     pos.lnum, FALSE));
+			    getvvcol(wp, &pos, NULL, NULL, &t);
+			    if (toc < t)
+				toc = t;
+			}
+			++toc;
+		    }
+		    else
+			toc = MAXCOL;
+		}
 
 		if (fromc != wp->w_old_cursor_fcol
 			|| toc != wp->w_old_cursor_lcol)

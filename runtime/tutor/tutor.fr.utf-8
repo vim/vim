@@ -950,7 +950,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
 
   1. Commencez à éditer le fichier "vimrc". Ceci dépend de votre système :
         :edit ~/.vimrc         pour Unix
-        :edit $VIM/_vimrc      pour Windows
+        :edit ~/_vimrc         pour Windows
 
   2. Lisez maintenant le fichier d'exemple "vimrc" :
         :r $VIMRUNTIME/vimrc_example.vim

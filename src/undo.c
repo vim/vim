@@ -316,7 +316,7 @@ undo_allowed(void)
     // Don't allow changes when 'modifiable' is off.
     if (!curbuf->b_p_ma)
     {
-	emsg(_(e_modifiable));
+	emsg(_(e_cannot_make_changes_modifiable_is_off));
 	return FALSE;
     }
 
@@ -963,7 +963,9 @@ undo_flush(bufinfo_T *bi)
 {
     if (bi->bi_buffer != NULL && bi->bi_state != NULL && bi->bi_used > 0)
     {
-	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
+	// Last parameter is only used for sodium encryption and that
+	// explicitly disables encryption of undofiles.
+	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used, FALSE);
 	if (fwrite(bi->bi_buffer, bi->bi_used, (size_t)1, bi->bi_fp) != 1)
 	    return FAIL;
 	bi->bi_used = 0;
@@ -995,7 +997,9 @@ fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len)
 	    if (copy == NULL)
 		return 0;
 	}
-	crypt_encode(bi->bi_state, ptr, len, copy);
+	// Last parameter is only used for sodium encryption and that
+	// explicitly disables encryption of undofiles.
+	crypt_encode(bi->bi_state, ptr, len, copy, TRUE);
 	i = fwrite(copy, len, (size_t)1, bi->bi_fp);
 	if (copy != small_buf)
 	    vim_free(copy);
@@ -1129,7 +1133,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 		}
 		bi->bi_avail = n;
 		bi->bi_used = 0;
-		crypt_decode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_avail);
+		crypt_decode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_avail, FALSE);
 	    }
 	    n = size_todo;
 	    if (n > bi->bi_avail - bi->bi_used)
@@ -1176,7 +1180,7 @@ read_string_decrypt(bufinfo_T *bi, int len)
 	ptr[len] = NUL;
 #ifdef FEAT_CRYPT
 	if (bi->bi_state != NULL && bi->bi_buffer == NULL)
-	    crypt_decode_inplace(bi->bi_state, ptr, len);
+	    crypt_decode_inplace(bi->bi_state, ptr, len, FALSE);
 #endif
     }
     return ptr;

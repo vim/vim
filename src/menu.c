@@ -73,7 +73,7 @@ static const char *toolbar_names[] =
     /* 25 */ "Make", "TagJump", "RunCtags", "WinVSplit", "WinMaxWidth",
     /* 30 */ "WinMinWidth", "Exit"
 };
-# define TOOLBAR_NAME_COUNT (sizeof(toolbar_names) / sizeof(char *))
+# define TOOLBAR_NAME_COUNT ARRAY_LENGTH(toolbar_names)
 #endif
 
 /*

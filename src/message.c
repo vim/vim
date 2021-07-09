@@ -2751,19 +2751,21 @@ msg_puts_printf(char_u *str, int maxlen)
 
     if (*p != NUL && !(silent_mode && p_verbose == 0))
     {
-	int c = -1;
+	char_u *tofree = NULL;
 
 	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
 	{
-	    c = p[maxlen];
-	    p[maxlen] = 0;
+	    tofree = vim_strnsave(p, (size_t)maxlen);
+	    p = tofree;
 	}
-	if (info_message)
-	    mch_msg((char *)p);
-	else
-	    mch_errmsg((char *)p);
-	if (c != -1)
-	    p[maxlen] = c;
+	if (p != NULL)
+	{
+	    if (info_message)
+		mch_msg((char *)p);
+	    else
+		mch_errmsg((char *)p);
+	    vim_free(tofree);
+	}
     }
 
     msg_didout = TRUE;	    // assume that line is not empty

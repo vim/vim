@@ -884,7 +884,7 @@ Anmörkung:  Sollt klain/grooß bei ayner ainzignen Suech wurst sein,  benutz  \
 
   1. Lög ayn "vimrc"-Dautticht an;  dös geet  ie naach Betribsgebäu  verschidn:
      :e ~/.vimrc     für s Unix
-     :e $VIM/_vimrc  bei n Fenstl
+     :e ~/_vimrc     bei n Fenstl
 
   2. Ietz lis önn Inhalt von dyr Beispil-"vimrc"-Dautticht ein:
      :r $VIMRUNTIME/vimrc_example.vim

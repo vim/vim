@@ -121,6 +121,37 @@ test_trunc_string(void)
 }
 
 /*
+ * Test trunc_string() with mbyte chars.
+ */
+    static void
+test_trunc_string_mbyte(void)
+{
+    char_u  *buf; // allocated every time to find uninit errors
+    char_u  *s;
+
+    buf = alloc(40);
+    s = vim_strsave((char_u *)"Ä text tha just fits");
+    trunc_string(s, buf, 20, 40);
+    assert(STRCMP(buf, "Ä text tha just fits") == 0);
+    vim_free(buf);
+    vim_free(s);
+
+    buf = alloc(40);
+    s = vim_strsave((char_u *)"a text ÄÖÜä nott fits");
+    trunc_string(s, buf, 20, 40);
+    assert(STRCMP(buf, "a text Ä...nott fits") == 0);
+    vim_free(buf);
+    vim_free(s);
+
+    buf = alloc(40);
+    s = vim_strsave((char_u *)"a text that not fitsÄ");
+    trunc_string(s, buf, 20, 40);
+    assert(STRCMP(buf, "a text t...not fitsÄ") == 0);
+    vim_free(buf);
+    vim_free(s);
+}
+
+/*
  * Test vim_snprintf() with a focus on checking that truncation is
  * correct when buffer is small, since it cannot be tested from
  * vim scrip tests. Check that:
@@ -286,6 +317,7 @@ main(int argc, char **argv)
     set_option_value((char_u *)"encoding", 0, (char_u *)"utf-8", 0);
     init_chartab();
     test_trunc_string();
+    test_trunc_string_mbyte();
     test_vim_snprintf();
 
     set_option_value((char_u *)"encoding", 0, (char_u *)"latin1", 0);

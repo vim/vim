@@ -117,9 +117,26 @@ def Test_disassemble_exec_expr()
         '\d 2STRING stack\[-1\]\_s*' ..
         '\d\+ PUSHS ".txt"\_s*' ..
         '\d\+ EXECCONCAT 4\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
+
+if has('python3')
+  def s:PyHeredoc()
+    python3 << EOF
+      print('hello')
+EOF
+  enddef
+
+  def Test_disassemble_python_heredoc()
+    var res = execute('disass s:PyHeredoc')
+    assert_match('<SNR>\d*_PyHeredoc.*' ..
+          "    python3 << EOF^@      print('hello')^@EOF\\_s*" ..
+          '\d EXEC_SPLIT     python3 << EOF^@      print(''hello'')^@EOF\_s*' ..
+          '\d RETURN void',
+          res)
+  enddef
+endif
 
 def s:Substitute()
   var expr = "abc"
@@ -136,7 +153,7 @@ def Test_disassemble_substitute()
         '\d SUBSTITUTE   :%s/a/\\=expr/&g#c\_s*' ..
         '    0 LOAD $0\_s*' ..
         '    -------------\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -164,7 +181,7 @@ def Test_disassemble_seachpair()
         ' -------------\_s*' ..
         '\d BCALL searchpair(argc 5)\_s*' ..
         '\d DROP\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -192,7 +209,7 @@ def Test_disassemble_redir_var()
         '\d REDIR END\_s*' ..
         '\d CONCAT\_s*' ..
         '\d STORE $0\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -211,7 +228,7 @@ def Test_disassemble_cexpr()
         '\d CEXPR pre cexpr\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d CEXPR core cexpr "cexpr errors"\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -227,7 +244,7 @@ def Test_disassemble_yank_range()
         '\d EXEC   norm! m\[jjm\]\_s*' ..
         '  :''\[,''\]yank\_s*' ..
         '\d EXEC   :''\[,''\]yank\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -241,7 +258,7 @@ def Test_disassemble_put_expr()
         ' :3put ="text"\_s*' ..
         '\d PUSHS "text"\_s*' ..
         '\d PUT = 3\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -255,7 +272,7 @@ def Test_disassemble_put_range()
         ' :$-2put a\_s*' ..
         '\d RANGE $-2\_s*' ..
         '\d PUT a range\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -373,7 +390,7 @@ def Test_disassemble_store_member()
         '\d\+ PUSHNR 1\_s*' ..
         '\d\+ LOAD $2\_s*' ..
         '\d\+ STOREINDEX blob\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -396,7 +413,7 @@ def Test_disassemble_store_index()
         '\d LOAD $0\_s*' ..
         '\d MEMBER dd\_s*' ..
         '\d STOREINDEX any\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -431,7 +448,38 @@ def Test_disassemble_list_assign()
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
         '\d\+ STORE $2\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
+        res)
+enddef
+
+def s:ListAssignWithOp()
+  var a = 2
+  var b = 3
+  [a, b] += [4, 5]
+enddef
+
+def Test_disassemble_list_assign_with_op()
+  var res = execute('disass s:ListAssignWithOp')
+  assert_match('<SNR>\d*_ListAssignWithOp\_s*' ..
+        'var a = 2\_s*' ..
+        '\d STORE 2 in $0\_s*' ..
+        'var b = 3\_s*' ..
+        '\d STORE 3 in $1\_s*' ..
+        '\[a, b\] += \[4, 5\]\_s*' ..
+        '\d\+ PUSHNR 4\_s*' ..
+        '\d\+ PUSHNR 5\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ CHECKLEN 2\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ ITEM 0 with op\_s*' ..
+        '\d\+ OPNR +\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ ITEM 1 with op\_s*' ..
+        '\d\+ OPNR +\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -459,7 +507,7 @@ def Test_disassemble_list_add()
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ LISTAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -486,7 +534,7 @@ def Test_disassemble_blob_add()
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ BLOBAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -513,7 +561,7 @@ def Test_disassemble_blob_index_slice()
         '\d\+ PUSHNR 2\_s*' ..
         '\d\+ BLOBSLICE\_s*' ..
         '\d\+ ECHO 1\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -703,7 +751,7 @@ def Test_disassemble_closure()
         '\d LOAD arg\[-1\]\_s*' ..
         '\d CONCAT\_s*' ..
         '\d STOREOUTER level 1 $0\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 
   res = execute('disass g:Get')
@@ -737,7 +785,7 @@ def Test_disassemble_pcall()
         '\d PCALL top (argc 1)\_s*' ..
         '\d PCALL end\_s*' ..
         '\d DROP\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -995,7 +1043,7 @@ def Test_disassemble_function()
         '\d PUSHS "UserFunc"\_s*' ..
         '\d BCALL funcref(argc 1)\_s*' ..
         '\d STORE $2\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         instr)
 enddef
 
@@ -1022,7 +1070,7 @@ def Test_disassemble_channel()
         'var chan1: channel\_s*' ..
         '\d PUSHCHANNEL 0\_s*' ..
         '\d STORE $2\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         instr)
 enddef
 
@@ -1094,7 +1142,7 @@ def Test_disassemble_nested_func()
         'echomsg "inner"\_s*' ..
         'enddef\_s*' ..
         '\d NEWFUNC <lambda>\d\+ Inner\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         instr)
 enddef
 
@@ -1116,7 +1164,7 @@ def Test_disassemble_nested_def_list()
         '\d DEF /Info\_s*' ..
         'def /Info/\_s*' ..
         '\d DEF /Info/\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         instr)
 enddef
 
@@ -1247,7 +1295,7 @@ def Test_disassemble_for_loop_unpack()
         'endfor\_s*' ..
         '\d\+ JUMP -> 8\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         instr)
 enddef
 
@@ -1304,7 +1352,7 @@ def Test_disassemble_for_loop_continue()
         'endfor\_s*' ..
         '21 JUMP -> 4\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         instr)
 enddef
 
@@ -1324,7 +1372,7 @@ def Test_disassemble_typecast()
         '\d NEWLIST size 2\_s*' ..
         '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
-        '\d RETURN 0\_s*',
+        '\d RETURN void\_s*',
         instr)
 enddef
 
@@ -1650,11 +1698,11 @@ def Test_disassemble_invert_bool()
         '\d STORE $0\_s*' ..
         'var invert = !flag\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d INVERT (!val)\_s*' ..
+        '\d INVERT -1 (!val)\_s*' ..
         '\d STORE $1\_s*' ..
         'var res = !!flag\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d 2BOOL (!!val)\_s*' ..
+        '\d 2BOOL -1 (!!val)\_s*' ..
         '\d STORE $2\_s*',
         instr)
   assert_equal(true, InvertBool())
@@ -1811,7 +1859,7 @@ def Test_dsassemble_falsy_op()
       'echo "" ?? "empty string"\_s*' ..
       '\d\+ PUSHS "empty string"\_s*' ..
       '\d\+ ECHO 1\_s*' ..
-      '\d\+ RETURN 0',
+      '\d\+ RETURN void',
       res)
 enddef
 
@@ -1838,7 +1886,7 @@ def Test_disassemble_compare_const()
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*' ..
           '\d PUSHNR 42.*' ..
           '\d ECHO 1.*' ..
-          '\d RETURN 0',
+          '\d RETURN void',
           instr)
     else
       # condition false, function just returns
@@ -1846,7 +1894,7 @@ def Test_disassemble_compare_const()
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '[ \n]*' ..
           'echo 42[ \n]*' ..
           'endif[ \n]*' ..
-          '\d RETURN 0',
+          '\d RETURN void',
           instr)
     endif
 
@@ -1884,7 +1932,7 @@ def Test_disassemble_execute()
         '\d\+ LOAD $1\_s*' ..
         '\d\+ CONCAT\_s*' ..
         '\d\+ EXECUTE 1\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -1903,7 +1951,7 @@ def Test_disassemble_echomsg()
         "echoerr 'went' .. 'wrong'\\_s*" ..
         '\d PUSHS "wentwrong"\_s*' ..
         '\d ECHOERR 1\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -2012,7 +2060,7 @@ def Test_shuffle()
         '\d SHUFFLE 2 up 1\_s*' ..
         '\d BCALL append(argc 2)\_s*' ..
         '\d DROP\_s*' ..
-        '\d RETURN 0',
+        '\d RETURN void',
         res)
 enddef
 
@@ -2035,7 +2083,7 @@ def Test_silent()
         '\d PUSHS "error"\_s*' ..
         '\d ECHOERR 1\_s*' ..
         '\d CMDMOD_REV\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -2064,7 +2112,7 @@ def Test_silent_if()
         '\d\+ CMDMOD_REV\_s*' ..
         '\d\+ JUMP_IF_FALSE -> \d\+\_s*' ..
         'endif\_s*' ..
-        '\d\+ RETURN 0',
+        '\d\+ RETURN void',
         res)
 enddef
 
@@ -2087,7 +2135,7 @@ def Test_silent_for()
         'endfor\_s*' ..
         '\d JUMP -> 5\_s*' ..
         '8 DROP\_s*' ..
-        '\d RETURN 0\_s*',
+        '\d RETURN void\_s*',
         res)
 enddef
 
@@ -2108,7 +2156,7 @@ def Test_silent_while()
 
         'endwhile\_s*' ..
         '\d JUMP -> 0\_s*' ..
-        '6 RETURN 0\_s*',
+        '6 RETURN void\_s*',
          res)
 enddef
 
@@ -2128,7 +2176,10 @@ def Test_silent_return()
 enddef
 
 def s:Profiled(): string
+  # comment
   echo "profiled"
+  # comment
+  var some = "some text"
   return "done"
 enddef
 
@@ -2136,18 +2187,45 @@ def Test_profiled()
   if !has('profile')
     MissingFeature 'profile'
   endif
-  var res = execute('disass! s:Profiled')
+  var res = execute('disass profile s:Profiled')
   assert_match('<SNR>\d*_Profiled\_s*' ..
+        '# comment\_s*' ..
         'echo "profiled"\_s*' ..
-        '\d PROFILE START line 1\_s*' ..
+        '\d PROFILE START line 2\_s*' ..
         '\d PUSHS "profiled"\_s*' ..
         '\d ECHO 1\_s*' ..
+        '# comment\_s*' ..
+        'var some = "some text"\_s*' ..
+        '\d PROFILE END\_s*' ..
+        '\d PROFILE START line 4\_s*' ..
+        '\d PUSHS "some text"\_s*' ..
+        '\d STORE $0\_s*' ..
         'return "done"\_s*' ..
         '\d PROFILE END\_s*' ..
-        '\d PROFILE START line 2\_s*' ..
+        '\d PROFILE START line 5\_s*' ..
         '\d PUSHS "done"\_s*' ..
-        '\d RETURN\_s*' ..
-        '\d PROFILE END',
+        '\d\+ RETURN\_s*' ..
+        '\d\+ PROFILE END',
+        res)
+enddef
+
+def Test_debugged()
+  var res = execute('disass debug s:Profiled')
+  assert_match('<SNR>\d*_Profiled\_s*' ..
+        '# comment\_s*' ..
+        'echo "profiled"\_s*' ..
+        '\d DEBUG line 1-2 varcount 0\_s*' ..
+        '\d PUSHS "profiled"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        '# comment\_s*' ..
+        'var some = "some text"\_s*' ..
+        '\d DEBUG line 3-4 varcount 0\_s*' ..
+        '\d PUSHS "some text"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return "done"\_s*' ..
+        '\d DEBUG line 5-5 varcount 1\_s*' ..
+        '\d PUSHS "done"\_s*' ..
+        '\d RETURN\_s*',
         res)
 enddef
 

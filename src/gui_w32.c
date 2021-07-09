@@ -1627,7 +1627,7 @@ gui_mch_get_color(char_u *name)
     /*
      * Try to look up a system colour.
      */
-    for (i = 0; i < sizeof(sys_table) / sizeof(sys_table[0]); i++)
+    for (i = 0; i < ARRAY_LENGTH(sys_table); i++)
 	if (STRICMP(name, sys_table[i].name) == 0)
 	    return GetSysColor(sys_table[i].color);
 
@@ -2942,7 +2942,9 @@ gui_mswin_get_valid_dimensions(
     int w,
     int h,
     int *valid_w,
-    int *valid_h)
+    int *valid_h,
+    int *cols,
+    int *rows)
 {
     int	    base_width, base_height;
 
@@ -2957,10 +2959,10 @@ gui_mswin_get_valid_dimensions(
 	+ gui_mswin_get_menu_height(FALSE)
 #endif
 	;
-    *valid_w = base_width +
-		    ((w - base_width) / gui.char_width) * gui.char_width;
-    *valid_h = base_height +
-		    ((h - base_height) / gui.char_height) * gui.char_height;
+    *cols = (w - base_width) / gui.char_width;
+    *rows = (h - base_height) / gui.char_height;
+    *valid_w = base_width + *cols * gui.char_width;
+    *valid_h = base_height + *rows * gui.char_height;
 }
 
     void
@@ -4480,6 +4482,46 @@ _OnWindowPosChanged(
 }
 #endif
 
+
+static HWND hwndTip = NULL;
+
+    static void
+show_sizing_tip(int cols, int rows)
+{
+    TOOLINFOA ti = {sizeof(ti)};
+    char buf[32];
+
+    ti.hwnd = s_hwnd;
+    ti.uId = (UINT_PTR)s_hwnd;
+    ti.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
+    ti.lpszText = buf;
+    sprintf(buf, "%dx%d", cols, rows);
+    if (hwndTip == NULL)
+    {
+	hwndTip = CreateWindowExA(0, TOOLTIPS_CLASSA, NULL,
+		WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
+		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		s_hwnd, NULL, GetModuleHandle(NULL), NULL);
+	SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&ti);
+	SendMessage(hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&ti);
+    }
+    else
+    {
+	SendMessage(hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+    }
+    SendMessage(hwndTip, TTM_POPUP, 0, 0);
+}
+
+    static void
+destroy_sizing_tip(void)
+{
+    if (hwndTip != NULL)
+    {
+	DestroyWindow(hwndTip);
+	hwndTip = NULL;
+    }
+}
+
     static int
 _DuringSizing(
     UINT fwSide,
@@ -4488,10 +4530,11 @@ _DuringSizing(
     int	    w, h;
     int	    valid_w, valid_h;
     int	    w_offset, h_offset;
+    int	    cols, rows;
 
     w = lprc->right - lprc->left;
     h = lprc->bottom - lprc->top;
-    gui_mswin_get_valid_dimensions(w, h, &valid_w, &valid_h);
+    gui_mswin_get_valid_dimensions(w, h, &valid_w, &valid_h, &cols, &rows);
     w_offset = w - valid_w;
     h_offset = h - valid_h;
 
@@ -4508,6 +4551,8 @@ _DuringSizing(
     else if (fwSide == WMSZ_BOTTOM || fwSide == WMSZ_BOTTOMLEFT
 			    || fwSide == WMSZ_BOTTOMRIGHT)
 	lprc->bottom -= h_offset;
+
+    show_sizing_tip(cols, rows);
     return TRUE;
 }
 
@@ -4647,6 +4692,10 @@ _WndProc(
 #else
 	return 0L;
 #endif
+
+    case WM_EXITSIZEMOVE:
+	destroy_sizing_tip();
+	break;
 
     case WM_SIZING:	// HANDLE_MSG doesn't seem to handle this one
 	return _DuringSizing((UINT)wParam, (LPRECT)lParam);
@@ -5077,7 +5126,7 @@ error:
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
  * deleted from argv, and *argc is decremented accordingly.  This is called
- * when vim is started, whether or not the GUI has been started.
+ * when Vim is started, whether or not the GUI has been started.
  */
     void
 gui_mch_prepare(int *argc, char **argv)

@@ -549,7 +549,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     }
     if (start < 1 || end < 1)
     {
-	emsg(_(e_invrange));
+	emsg(_(e_invalid_range));
 	return;
     }
 
@@ -646,7 +646,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
     {
-	emsg(_(e_invrange));
+	emsg(_(e_invalid_range));
 	return;
     }
 
@@ -779,7 +779,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
     }
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
     {
-	emsg(_(e_invrange));
+	emsg(_(e_invalid_range));
 	return;
     }
 
@@ -839,7 +839,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    end = tv_get_number(&argvars[2]);
 	if (start < 1 || end < 1)
 	{
-	    emsg(_(e_invrange));
+	    emsg(_(e_invalid_range));
 	    return;
 	}
     }

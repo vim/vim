@@ -83,16 +83,26 @@ conceal_cursor_line(win_T *wp)
 
 /*
  * Check if the cursor line needs to be redrawn because of 'concealcursor'.
+ * To be called after changing the state, "was_concealed" is the value of
+ * "conceal_cursor_line()" before the change.
+ * "
  */
     void
-conceal_check_cursor_line(void)
+conceal_check_cursor_line(int was_concealed)
 {
-    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
+    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin) != was_concealed)
     {
+	int wcol = curwin->w_wcol;
+
 	need_cursor_line_redraw = TRUE;
 	// Need to recompute cursor column, e.g., when starting Visual mode
 	// without concealing.
 	curs_columns(TRUE);
+
+	// When concealing now w_wcol will be computed wrong, keep the previous
+	// value, it will be updated in win_line().
+	if (!was_concealed)
+	    curwin->w_wcol = wcol;
     }
 }
 #endif
@@ -4817,14 +4827,14 @@ set_chars_option(win_T *wp, char_u **varp)
     {
 	tab = lcstab;
 	CLEAR_FIELD(lcs_chars);
-	entries = sizeof(lcstab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(lcstab);
 	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
 	    varp = &p_lcs;
     }
     else
     {
 	tab = filltab;
-	entries = sizeof(filltab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(filltab);
     }
 
     // first round: check for valid value, second round: assign values

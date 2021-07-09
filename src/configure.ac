@@ -1436,7 +1436,7 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
     dnl -- get its version number
     AC_CACHE_CHECK(Python version,vi_cv_var_python3_version,
     [[vi_cv_var_python3_version=`
-          ${vi_cv_path_python3} -c 'import sys; print(sys.version[:3])'`
+          ${vi_cv_path_python3} -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
     ]])
 
     dnl -- it must be at least version 3
@@ -1487,7 +1487,10 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
       [
        vi_cv_path_python3_conf=
        config_dir="config-${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
-       d=`${vi_cv_path_python3} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_var('LIBPL'))"`
+       d=`${vi_cv_path_python3} -c "import sysconfig; print(sysconfig.get_config_var('LIBPL'))" 2> /dev/null`
+       if test "x$d" = "x"; then
+         d=`${vi_cv_path_python3} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_var('LIBPL'))"`
+       fi
        if test -d "$d" && test -f "$d/config.c"; then
          vi_cv_path_python3_conf="$d"
        else
@@ -3764,6 +3767,43 @@ if test "$enable_canberra" = "yes"; then
        AC_MSG_RESULT(no; try installing libcanberra-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
 fi
 
+AC_MSG_CHECKING(--enable-libsodium argument)
+AC_ARG_ENABLE(libsodium,
+	[  --disable-libsodium      Do not use libsodium.],
+	, [enable_libsodium="maybe"])
+
+if test "$enable_libsodium" = "maybe"; then
+  if test "$features" = "big" -o "$features" = "huge"; then
+    AC_MSG_RESULT(Defaulting to yes)
+    enable_libsodium="yes"
+  else
+    AC_MSG_RESULT(Defaulting to no)
+    enable_libsodium="no"
+  fi
+else
+  AC_MSG_RESULT($enable_libsodium)
+fi
+if test "$enable_libsodium" = "yes"; then
+  if test "x$PKG_CONFIG" != "xno"; then
+    libsodium_lib=`$PKG_CONFIG --libs libsodium 2>/dev/null`
+    libsodium_cflags=`$PKG_CONFIG --cflags libsodium 2>/dev/null`
+  fi
+  if test "x$libsodium_lib" = "x"; then
+    libsodium_lib=-lsodium
+    libsodium_cflags=
+  fi
+  AC_MSG_CHECKING(for libsodium)
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $libsodium_cflags"
+  LIBS="$LIBS $libsodium_lib"
+  AC_TRY_LINK([
+  # include <sodium.h>
+      ], [
+     printf("%d", sodium_init()); ],
+       AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SODIUM),
+       AC_MSG_RESULT(no; try installing libsodium-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
+fi
 
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible
 AC_MSG_CHECKING(for st_blksize)

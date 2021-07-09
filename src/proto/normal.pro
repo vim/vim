@@ -3,6 +3,7 @@ void init_normal_cmds(void);
 void normal_cmd(oparg_T *oap, int toplevel);
 void check_visual_highlight(void);
 void end_visual_mode(void);
+void end_visual_mode_keep_button(void);
 void reset_VIsual_and_resel(void);
 void reset_VIsual(void);
 void restore_visual_mode(void);

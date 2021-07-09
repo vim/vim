@@ -56,7 +56,6 @@ int set_ref_in_item(typval_T *tv, int copyID, ht_stack_T **ht_stack, list_stack_
 char_u *echo_string_core(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int composite_val);
 char_u *echo_string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 char_u *string_quote(char_u *str, int function);
-int string2float(char_u *text, float_T *value);
 int buf_byteidx_to_charidx(buf_T *buf, int lnum, int byteidx);
 int buf_charidx_to_byteidx(buf_T *buf, int lnum, int charidx);
 pos_T *var2fpos(typval_T *varp, int dollar_lnum, int *fnum, int charcol);

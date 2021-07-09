@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 8.2.  Last change: 2008 Jun 21
+*sponsor.txt*   For Vim version 8.2.  Last change: 2021 Jul 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -11,9 +11,8 @@ Fixing bugs and adding new features takes a lot of time and effort.  To show
 your appreciation for the work and motivate Bram and others to continue
 working on Vim please send a donation.
 
-Since Bram is back to a paid job the money will now be used to help children
-in Uganda.  See |uganda|.  But at the same time donations increase Bram's
-motivation to keep working on Vim!
+Since Bram does not need the money it will be used to help children in Uganda,
+see |uganda|.  Donations increase Bram's motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
 
@@ -73,19 +72,6 @@ Other methods	See |iccf-donations|.
 		your money transfer.  Send me an e-mail that mentions the
 		amount you transferred if you want to vote for features and
 		show others you are a registered Vim user or sponsor.
-
-Cash		Small amounts can be sent with ordinary mail.  Put something
-		around the money, so that it's not noticeable from the
-		outside.  Mention your e-mail address if you want to vote for
-		features and show others you are a registered Vim user or
-		sponsor.
-
-You can use this permanent address:
-			Bram Moolenaar
-			Finsterruetihof 1
-			8134 Adliswil
-			Switzerland
-
 
 
 QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*

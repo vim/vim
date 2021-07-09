@@ -242,6 +242,7 @@ NEW_TESTS = \
 	test_selectmode \
 	test_set \
 	test_sha256 \
+	test_shell \
 	test_shift \
 	test_shortpathname \
 	test_signals \
@@ -471,6 +472,7 @@ NEW_TESTS_RES = \
 	test_search.res \
 	test_search_stat.res \
 	test_selectmode.res \
+	test_shell.res \
 	test_shortpathname.res \
 	test_signals.res \
 	test_signs.res \

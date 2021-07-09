@@ -171,7 +171,7 @@ alloc_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
     if (type == NULL)
 	return &t_any;
     type->tt_type = VAR_FUNC;
-    type->tt_member = ret_type;
+    type->tt_member = ret_type == NULL ? &t_unknown : ret_type;
     type->tt_argcount = argcount;
     type->tt_args = NULL;
     return type;
@@ -188,7 +188,7 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
     // recognize commonly used types
     if (argcount <= 0)
     {
-	if (ret_type == &t_unknown)
+	if (ret_type == &t_unknown || ret_type == NULL)
 	{
 	    // (argcount == 0) is not possible
 	    return &t_func_unknown;
@@ -260,6 +260,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
     type_T  *type;
     type_T  *member_type = &t_any;
     int	    argcount = 0;
+    int	    min_argcount = 0;
 
     if (tv->v_type == VAR_NUMBER)
 	return &t_number;
@@ -337,8 +338,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 
 	    if (idx >= 0)
 	    {
-		// TODO: get actual arg count and types
-		argcount = -1;
+		internal_func_get_argcount(idx, &argcount, &min_argcount);
 		member_type = internal_func_ret_type(idx, 0, NULL);
 	    }
 	    else
@@ -349,13 +349,26 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	    // May need to get the argument types from default values by
 	    // compiling the function.
 	    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
-			    && compile_def_function(ufunc, TRUE, FALSE, NULL)
+			    && compile_def_function(ufunc, TRUE, CT_NONE, NULL)
 								       == FAIL)
 		return NULL;
 	    if (ufunc->uf_func_type == NULL)
 		set_function_type(ufunc);
 	    if (ufunc->uf_func_type != NULL)
+	    {
+		if (tv->v_type == VAR_PARTIAL
+					    && tv->vval.v_partial->pt_argc > 0)
+		{
+		    type = get_type_ptr(type_gap);
+		    if (type == NULL)
+			return NULL;
+		    *type = *ufunc->uf_func_type;
+		    type->tt_argcount -= tv->vval.v_partial->pt_argc;
+		    type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+		    return type;
+		}
 		return ufunc->uf_func_type;
+	    }
 	}
     }
 
@@ -364,6 +377,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	return NULL;
     type->tt_type = tv->v_type;
     type->tt_argcount = argcount;
+    type->tt_min_argcount = min_argcount;
     type->tt_member = member_type;
 
     return type;
@@ -525,9 +539,10 @@ check_type(type_T *expected, type_T *actual, int give_msg, where_T where)
 		ret = check_type(expected->tt_member, actual->tt_member,
 								 FALSE, where);
 	    if (ret == OK && expected->tt_argcount != -1
-		    && actual->tt_argcount != -1
-		    && (actual->tt_argcount < expected->tt_min_argcount
-			|| actual->tt_argcount > expected->tt_argcount))
+		    && actual->tt_min_argcount != -1
+		    && (actual->tt_argcount == -1
+			|| (actual->tt_argcount < expected->tt_min_argcount
+			    || actual->tt_argcount > expected->tt_argcount)))
 		ret = FAIL;
 	    if (ret == OK && expected->tt_args != NULL
 						    && actual->tt_args != NULL)
@@ -1032,7 +1047,10 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 		}
 	    }
 	    else
+		// Use -1 for "tt_argcount" to indicate an unknown number of
+		// arguments.
 		*dest = alloc_func_type(common, -1, type_gap);
+
 	    // Use the minimum of min_argcount.
 	    (*dest)->tt_min_argcount =
 			type1->tt_min_argcount < type2->tt_min_argcount
@@ -1148,7 +1166,7 @@ type_name(type_T *type, char **tofree)
 
 	for (i = 0; i < type->tt_argcount; ++i)
 	{
-	    char *arg_free;
+	    char *arg_free = NULL;
 	    char *arg_type;
 	    int  len;
 

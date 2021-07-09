@@ -5570,7 +5570,7 @@ func Test_expr_eval_error_msg()
     call T(19, '{(1} + CONT(19)',	'E110',	"Missing ')'")
     call T(20, '("abc"[1) + CONT(20)',	'E111',	"Missing ']'")
     call T(21, '(1 +) + CONT(21)',	'E15',	"Invalid expression")
-    call T(22, '1 2 + CONT(22)',	'E15',	"Invalid expression")
+    call T(22, '1 2 + CONT(22)',	'E488',	"Trailing characters: 2 +")
     call T(23, '(1 ? 2) + CONT(23)',	'E109',	"Missing ':' after '?'")
     call T(24, '("abc) + CONT(24)',	'E114',	"Missing quote")
     call T(25, "('abc) + CONT(25)",	'E115',	"Missing quote")
@@ -7082,6 +7082,15 @@ func Test_compound_assignment_operators()
     call assert_equal(1, &scrolljump)
     call assert_fails('let &scrolljump .= "j"', 'E734:')
     set scrolljump&vim
+
+    let &foldlevelstart = 2
+    let &foldlevelstart -= 1
+    call assert_equal(1, &foldlevelstart)
+    let &foldlevelstart -= 1
+    call assert_equal(0, &foldlevelstart)
+    let &foldlevelstart = 2
+    let &foldlevelstart -= 2
+    call assert_equal(0, &foldlevelstart)
 
     " Test for register
     let @/ = 1

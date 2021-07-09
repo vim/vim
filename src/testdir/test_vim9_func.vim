@@ -74,6 +74,40 @@ def TestCompilingErrorInTry()
   delete('Xdir', 'rf')
 enddef
 
+def Test_compile_error_in_called_function()
+  var lines =<< trim END
+      vim9script
+      var n: number
+      def Foo()
+        &hls = n
+      enddef
+      def Bar()
+        Foo()
+      enddef
+      silent! Foo()
+      Bar()
+  END
+  CheckScriptFailureList(lines, ['E1012:', 'E1191:'])
+enddef
+
+def Test_wrong_function_name()
+  var lines =<< trim END
+      vim9script
+      func _Foo()
+        echo 'foo'
+      endfunc
+  END
+  CheckScriptFailure(lines, 'E128:')
+
+  lines =<< trim END
+      vim9script
+      def _Foo()
+        echo 'foo'
+      enddef
+  END
+  CheckScriptFailure(lines, 'E128:')
+enddef
+
 def Test_autoload_name_mismatch()
   var dir = 'Xdir/autoload'
   mkdir(dir, 'p')
@@ -93,6 +127,34 @@ def Test_autoload_name_mismatch()
       call script#Function()
   END
   CheckScriptFailure(lines, 'E746:', 2)
+
+  &rtp = save_rtp
+  delete(dir, 'rf')
+enddef
+
+def Test_autoload_names()
+  var dir = 'Xdir/autoload'
+  mkdir(dir, 'p')
+
+  var lines =<< trim END
+      func foobar#function()
+        return 'yes'
+      endfunc
+      let foobar#var = 'no'
+  END
+  writefile(lines, dir .. '/foobar.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp=' .. getcwd() .. '/Xdir'
+
+  lines =<< trim END
+      assert_equal('yes', foobar#function())
+      var Function = foobar#function
+      assert_equal('yes', Function())
+
+      assert_equal('no', foobar#var)
+  END
+  CheckDefAndScriptSuccess(lines)
 
   &rtp = save_rtp
   delete(dir, 'rf')
@@ -390,6 +452,12 @@ def Test_call_default_args()
       MyDefaultThird('->', 'xx', v:none)->assert_equal('->xxbb')
       MyDefaultThird('->', v:none, 'yy')->assert_equal('->aayy')
       MyDefaultThird('->', 'xx', 'yy')->assert_equal('->xxyy')
+
+      def DefArg(mandatory: any, optional = mandatory): string
+        return mandatory .. optional
+      enddef
+      DefArg(1234)->assert_equal('12341234')
+      DefArg("ok")->assert_equal('okok')
   END
   CheckDefAndScriptSuccess(lines)
 
@@ -397,6 +465,7 @@ def Test_call_default_args()
   delfunc g:Func
   CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
   delfunc g:Func
+  CheckDefFailure(['def Func(x: number = )', 'enddef'], 'E15:')
 
   lines =<< trim END
       vim9script
@@ -855,6 +924,22 @@ def Test_call_lambda_args()
   CheckScriptFailure(['vim9script'] + lines, 'E1168:')
 
   lines =<< trim END
+    var Ref: func(any, ?any): bool
+    Ref = (_, y = 1) => false
+  END
+  CheckDefAndScriptFailure(lines, 'E1172:')
+
+  lines =<< trim END
+      var a = 0
+      var b = (a == 0 ? 1 : 2)
+      assert_equal(1, b)
+      var txt = 'a'
+      b = (txt =~ 'x' ? 1 : 2)
+      assert_equal(2, b)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
       def ShadowLocal()
         var one = 1
         var l = [1, 2, 3]
@@ -887,6 +972,12 @@ def Test_lambda_return_type()
   END
   CheckDefAndScriptFailure(lines, 'E1157:', 1)
 
+  # no space before the return type
+  lines =<< trim END
+    var Ref = (x):number => x + 1
+  END
+  CheckDefAndScriptFailure(lines, 'E1069:', 1)
+
   # this works
   for x in ['foo', 'boo']
     echo FilterWithCond(x, (v) => v =~ '^b')
@@ -897,6 +988,26 @@ def Test_lambda_return_type()
       echo FilterWithCond('foo', (v) => v .. '^b')
   END
   CheckDefAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected func(string): bool but got func(any): string', 1)
+
+  lines =<< trim END
+      var Lambda1 = (x) => {
+              return x
+              }
+      assert_equal('asdf', Lambda1('asdf'))
+      var Lambda2 = (x): string => {
+              return x
+              }
+      assert_equal('foo', Lambda2('foo'))
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var Lambda = (x): string => {
+              return x
+              }
+      echo Lambda(['foo'])
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012:')
 enddef
 
 def Test_lambda_uses_assigned_var()
@@ -914,6 +1025,20 @@ def Test_pass_legacy_lambda_to_def_func()
       def Bar(y: any)
       enddef
       Foo()
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def g:TestFunc(f: func)
+      enddef
+      legacy call g:TestFunc({-> 0})
+      delfunc g:TestFunc
+
+      def g:TestFunc(f: func(number))
+      enddef
+      legacy call g:TestFunc({nr -> 0})
+      delfunc g:TestFunc
   END
   CheckScriptSuccess(lines)
 enddef
@@ -1309,6 +1434,8 @@ def Test_arg_type_wrong()
   CheckScriptFailure(['def Func4(...)', 'echo "a"', 'enddef'], 'E1055: Missing name after ...')
   CheckScriptFailure(['def Func5(items:string)', 'echo "a"'], 'E1069:')
   CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')
+  CheckScriptFailure(['def Func6(...x:list<number>)', 'echo "a"', 'enddef'], 'E1069:')
+  CheckScriptFailure(['def Func7(...x: int)', 'echo "a"', 'enddef'], 'E1010:')
 enddef
 
 def Test_white_space_before_comma()
@@ -1318,6 +1445,7 @@ def Test_white_space_before_comma()
     enddef
   END
   CheckScriptFailure(lines, 'E1068:')
+  call assert_fails('vim9cmd echo stridx("a" .. "b" , "a")', 'E1068:')
 enddef
 
 def Test_white_space_after_comma()
@@ -2102,6 +2230,33 @@ def Test_nested_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_double_nested_lambda()
+  var lines =<< trim END
+      vim9script
+      def F(head: string): func(string): func(string): string
+        return (sep: string): func(string): string => ((tail: string): string => {
+            return head .. sep .. tail
+          })
+      enddef
+      assert_equal('hello-there', F('hello')('-')('there'))
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_nested_inline_lambda()
+  # TODO: use the "text" argument
+  var lines =<< trim END
+      vim9script
+      def F(text: string): func(string): func(string): string
+        return (arg: string): func(string): string => ((sep: string): string => {
+            return sep .. arg
+          })
+      enddef
+      assert_equal('--there', F('unused')('there')('--'))
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Shadowed(): list<number>
   var FuncList: list<func: number> = [() => 42]
   return FuncList->mapnew((_, Shadowed) => Shadowed())
@@ -2181,6 +2336,32 @@ def Test_legacy_lambda()
       legacy call s:Func()
   END
   CheckScriptSuccess(lines)
+enddef
+
+def Test_legacy()
+  var lines =<< trim END
+      vim9script
+      func g:LegacyFunction()
+        let g:legacyvar = 1
+      endfunc
+      def Testit()
+        legacy call g:LegacyFunction()
+      enddef
+      Testit()
+      assert_equal(1, g:legacyvar)
+      unlet g:legacyvar
+      delfunc g:LegacyFunction
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_legacy_errors()
+  for cmd in ['if', 'elseif', 'else', 'endif',
+              'for', 'endfor', 'continue', 'break',
+              'while', 'endwhile',
+              'try', 'catch', 'finally', 'endtry']
+    CheckDefFailure(['legacy ' .. cmd .. ' expr'], 'E1189:')
+  endfor
 enddef
 
 def DoFilterThis(a: string): list<string>
@@ -2696,6 +2877,11 @@ def Test_ignored_argument()
       var _ = 1
   END
   CheckDefAndScriptFailure(lines, 'E1181:', 1)
+
+  lines =<< trim END
+      var x = _
+  END
+  CheckDefAndScriptFailure(lines, 'E1181:', 1)
 enddef
 
 def Test_too_many_arguments()
@@ -2719,6 +2905,34 @@ def Test_closing_brace_at_start_of_line()
   END
   call CheckDefAndScriptSuccess(lines)
 enddef
+
+if has('python3')
+  def Test_python3_heredoc()
+    py3 << trim EOF
+      import vim
+      vim.vars['didit'] = 'yes'
+    EOF
+    assert_equal('yes', g:didit)
+
+    python3 << trim EOF
+      import vim
+      vim.vars['didit'] = 'again'
+    EOF
+    assert_equal('again', g:didit)
+  enddef
+endif
+
+" This messes up syntax highlight, keep near the end.
+if has('lua')
+  def Test_lua_heredoc()
+    g:d = {}
+    lua << trim EOF
+        x = vim.eval('g:d')
+        x['key'] = 'val'
+    EOF
+    assert_equal('val', g:d.key)
+  enddef
+endif
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

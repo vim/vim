@@ -786,8 +786,8 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
   standard. För att börja använda fler funktioner måste du skapa en "vimrc"-fil.
 
   1. Börja redigera "vimrc"-filen, detta beror på ditt system:
-	:edit ~/.vimrc			för Unix
-	:edit $VIM/_vimrc		för MS-Windows
+	:edit ~/.vimrc		för Unix
+	:edit ~/_vimrc		för MS-Windows
 
   2. Läs nu texten i exempel "vimrc"-filen:
 

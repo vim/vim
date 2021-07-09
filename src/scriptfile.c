@@ -1119,6 +1119,7 @@ do_source(
     int			    save_debug_break_level = debug_break_level;
     int			    sid;
     scriptitem_T	    *si = NULL;
+    int			    save_estack_compiling = estack_compiling;
 #endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
@@ -1142,8 +1143,9 @@ do_source(
 	smsg(_("Cannot source a directory: \"%s\""), fname);
 	goto theend;
     }
-
 #ifdef FEAT_EVAL
+    estack_compiling = FALSE;
+
     // See if we loaded this script before.
     for (sid = script_items.ga_len; sid > 0; --sid)
     {
@@ -1508,6 +1510,9 @@ almosttheend:
 
 theend:
     vim_free(fname_exp);
+#ifdef FEAT_EVAL
+    estack_compiling = save_estack_compiling;
+#endif
     return retval;
 }
 
@@ -1788,6 +1793,8 @@ getsourceline(
     if (line != NULL && options != GETLINE_NONE
 				      && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
+	int comment_char = in_vim9script() ? '#' : '"';
+
 	// compensate for the one line read-ahead
 	--sp->sourcing_lnum;
 
@@ -1800,7 +1807,8 @@ getsourceline(
 	sp->nextline = get_one_sourceline(sp);
 	if (sp->nextline != NULL
 		&& (*(p = skipwhite(sp->nextline)) == '\\'
-			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+			      || (p[0] == comment_char
+						&& p[1] == '\\' && p[2] == ' ')
 			      || (do_vim9_all && (*p == NUL
 						     || vim9_comment_start(p)))
 			      || (do_bar_cont && p[0] == '|' && p[1] != '|')))
@@ -1842,7 +1850,8 @@ getsourceline(
 			ga_concat(&ga, p);
 		    }
 		}
-		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+		else if (!(p[0] == (comment_char)
+						&& p[1] == '\\' && p[2] == ' ')
 		     && !(do_vim9_all && (*p == NUL || vim9_comment_start(p))))
 		    break;
 		/* drop a # comment or "\ comment line */

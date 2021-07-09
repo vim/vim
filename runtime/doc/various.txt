@@ -444,6 +444,7 @@ m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
 T  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
 N  *+smartindent*	|'smartindent'|
+B  *+sodium*		compiled with libsodium for better encryption support
 B  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
 N  *+spell*		spell checking support, see |spell|
 N  *+startuptime*	|--startuptime| argument
@@ -724,7 +725,7 @@ K			Run a program to lookup the keyword under the
 			feature}
 
 							*:sl!* *:sleep!*
-:[N]sl[eep]! [N] [m]	Same as above, but hide the cursor.
+:[N]sl[eep]! [N][m]	Same as above, but hide the cursor.
 
 							*:xrestore* *:xr*
 :xr[estore] [display]	Reinitializes the connection to the X11 server. Useful

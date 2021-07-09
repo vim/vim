@@ -595,7 +595,7 @@ endfunc
 " Test for errors with z command
 func Test_normal_z_error()
   call assert_beeps('normal! z2p')
-  call assert_beeps('normal! zp')
+  call assert_beeps('normal! zq')
 endfunc
 
 func Test_normal15_z_scroll_vert()
@@ -1986,6 +1986,16 @@ func Test_normal30_changecase()
   call assert_equal(['aaaaaa', 'AAAAaa'], getline(1, 2))
   set whichwrap&
 
+  " try changing the case with a double byte encoding (DBCS)
+  %bw!
+  let enc = &enc
+  set encoding=cp932
+  call setline(1, "\u8470")
+  normal ~
+  normal gU$gu$gUgUg~g~gugu
+  call assert_equal("\u8470", getline(1))
+  let &encoding = enc
+
   " clean up
   bw!
 endfunc
@@ -2191,9 +2201,9 @@ func Test_normal33_g_cmd2()
   %d
   15vsp
   set wrap listchars= sbr=
-  let lineA='abcdefghijklmnopqrstuvwxyz'
-  let lineB='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  let lineC='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let lineA = 'abcdefghijklmnopqrstuvwxyz'
+  let lineB = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let lineC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   $put =lineA
   $put =lineB
 
@@ -2227,6 +2237,28 @@ func Test_normal33_g_cmd2()
   call assert_equal(15, col('.'))
   call assert_equal('l', getreg(0))
   call assert_beeps('normal 5g$')
+
+  " Test for g$ with double-width character half displayed
+  vsplit
+  9wincmd |
+  setlocal nowrap nonumber
+  call setline(2, 'asdfasdfヨ')
+  2
+  normal 0g$
+  call assert_equal(8, col('.'))
+  10wincmd |
+  normal 0g$
+  call assert_equal(9, col('.'))
+
+  setlocal signcolumn=yes
+  11wincmd |
+  normal 0g$
+  call assert_equal(8, col('.'))
+  12wincmd |
+  normal 0g$
+  call assert_equal(9, col('.'))
+
+  close
 
   " Test for g_
   call assert_beeps('normal! 100g_')
@@ -3322,6 +3354,57 @@ func Test_normal_percent_jump()
   call assert_equal(50, line('.'))
   call assert_equal(-1, foldclosedend(50))
   close!
+endfunc
+
+" Test for << and >> commands to shift text by 'shiftwidth'
+func Test_normal_shift_rightleft()
+  new
+  call setline(1, ['one', '', "\t", '  two', "\tthree", '      four'])
+  set shiftwidth=2 tabstop=8
+  normal gg6>>
+  call assert_equal(['  one', '', "\t  ", '    two', "\t  three", "\tfour"],
+        \ getline(1, '$'))
+  normal ggVG2>>
+  call assert_equal(['      one', '', "\t      ", "\ttwo",
+        \ "\t      three", "\t    four"], getline(1, '$'))
+  normal gg6<<
+  call assert_equal(['    one', '', "\t    ", '      two', "\t    three",
+        \ "\t  four"], getline(1, '$'))
+  normal ggVG2<<
+  call assert_equal(['one', '', "\t", '  two', "\tthree", '      four'],
+        \ getline(1, '$'))
+  set shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Some commands like yy, cc, dd, >>, << and !! accept a count after
+" typing the first letter of the command.
+func Test_normal_count_after_operator()
+  new
+  setlocal shiftwidth=4 tabstop=8 autoindent
+  call setline(1, ['one', 'two', 'three', 'four', 'five'])
+  let @a = ''
+  normal! j"ay4y
+  call assert_equal("two\nthree\nfour\nfive\n", @a)
+  normal! 3G>2>
+  call assert_equal(['one', 'two', '    three', '    four', 'five'],
+        \ getline(1, '$'))
+  exe "normal! 3G0c2cred\nblue"
+  call assert_equal(['one', 'two', '    red', '    blue', 'five'],
+        \ getline(1, '$'))
+  exe "normal! gg<8<"
+  call assert_equal(['one', 'two', 'red', 'blue', 'five'],
+        \ getline(1, '$'))
+  exe "normal! ggd3d"
+  call assert_equal(['blue', 'five'], getline(1, '$'))
+  call setline(1, range(1, 4))
+  call feedkeys("gg!3!\<C-B>\"\<CR>", 'xt')
+  call assert_equal('".,.+2!', @:)
+  call feedkeys("gg!1!\<C-B>\"\<CR>", 'xt')
+  call assert_equal('".!', @:)
+  call feedkeys("gg!9!\<C-B>\"\<CR>", 'xt')
+  call assert_equal('".,$!', @:)
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -294,6 +294,9 @@ func Test_dict_assign()
   let d.1 = 1
   let d._ = 2
   call assert_equal({'1': 1, '_': 2}, d)
+
+  let n = 0
+  call assert_fails('let n.key = 3', 'E1203: Dot can only be used on a dictionary: n.key = 3')
 endfunc
 
 " Function in script-local List or Dict
@@ -513,6 +516,11 @@ func Test_list_locked_var_unlet()
       call assert_equal(expected[depth][u][1], ps)
     endfor
   endfor
+  " Deleting a list range should fail if the range is locked
+  let l = [1, 2, 3, 4]
+  lockvar l[1:2]
+  call assert_fails('unlet l[1:2]', 'E741:')
+  unlet l
 endfunc
 
 " Locked variables and :unlet or list / dict functions
@@ -854,7 +862,7 @@ func Test_listdict_extend()
   call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 'error')", 'E737:')
   call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 'xxx')", 'E475:')
   if has('float')
-    call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 1.2)", 'E806:')
+    call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 1.2)", 'E475:')
   endif
   call assert_equal({'a': 'A', 'b': 'B'}, d)
 
@@ -1017,9 +1025,9 @@ func Test_listdict_index()
   call assert_fails("let l = insert([1,2,3], 4, [])", 'E745:')
   let l = [1, 2, 3]
   call assert_fails("let l[i] = 3", 'E121:')
-  call assert_fails("let l[1.1] = 4", 'E806:')
+  call assert_fails("let l[1.1] = 4", 'E805:')
   call assert_fails("let l[:i] = [4, 5]", 'E121:')
-  call assert_fails("let l[:3.2] = [4, 5]", 'E806:')
+  call assert_fails("let l[:3.2] = [4, 5]", 'E805:')
   let t = test_unknown()
   call assert_fails("echo t[0]", 'E685:')
 endfunc

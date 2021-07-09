@@ -30,6 +30,7 @@ struct bw_info
     int		bw_flags;	// FIO_ flags
 #ifdef FEAT_CRYPT
     buf_T	*bw_buffer;	// buffer being written
+    int         bw_finish;      // finish encrypting
 #endif
     char_u	bw_rest[CONV_RESTLEN]; // not converted bytes
     int		bw_restlen;	// nr of bytes in bw_rest[]
@@ -493,14 +494,16 @@ buf_write_bytes(struct bw_info *ip)
 	if (crypt_works_inplace(ip->bw_buffer->b_cryptstate))
 	{
 # endif
-	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len);
+	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len,
+								ip->bw_finish);
 # ifdef CRYPT_NOT_INPLACE
 	}
 	else
 	{
 	    char_u *outbuf;
 
-	    len = crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf);
+	    len = crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf,
+								ip->bw_finish);
 	    if (len == 0)
 		return OK;  // Crypt layer is buffering, will flush later.
 	    wlen = write_eintr(ip->bw_fd, outbuf, len);
@@ -724,6 +727,7 @@ buf_write(
 #endif
 #ifdef FEAT_CRYPT
     write_info.bw_buffer = buf;
+    write_info.bw_finish = FALSE;
 #endif
 
     // After writing a file changedtick changes but we don't want to display
@@ -1978,10 +1982,18 @@ restore_backup:
 	write_info.bw_start_lnum = start;
 
 #ifdef FEAT_PERSISTENT_UNDO
+	// TODO: if the selected crypt method prevents the undo file from being
+	// written, and existing undo file should be deleted.
 	write_undo_file = (buf->b_p_udf
 			    && overwriting
 			    && !append
 			    && !filtering
+# ifdef CRYPT_NOT_INPLACE
+			    // writing undo file requires
+			    // crypt_encode_inplace()
+			    && (curbuf->b_cryptstate == NULL
+				|| crypt_works_inplace(curbuf->b_cryptstate))
+# endif
 			    && reset_changed
 			    && !checking_conversion);
 	if (write_undo_file)
@@ -2015,6 +2027,13 @@ restore_backup:
 		++s;
 		if (++len != bufsize)
 		    continue;
+#ifdef FEAT_CRYPT
+		if (write_info.bw_fd > 0 && lnum == end
+			&& (write_info.bw_flags & FIO_ENCRYPTED)
+			&& *buf->b_p_key != NUL && !filtering
+			&& *ptr == NUL)
+		    write_info.bw_finish = TRUE;
+ #endif
 		if (buf_write_bytes(&write_info) == FAIL)
 		{
 		    end = 0;		// write error: break loop
@@ -2118,6 +2137,12 @@ restore_backup:
 	if (len > 0 && end > 0)
 	{
 	    write_info.bw_len = len;
+#ifdef FEAT_CRYPT
+	    if (write_info.bw_fd > 0 && lnum >= end
+		    && (write_info.bw_flags & FIO_ENCRYPTED)
+		    && *buf->b_p_key != NUL && !filtering)
+		write_info.bw_finish = TRUE;
+ #endif
 	    if (buf_write_bytes(&write_info) == FAIL)
 		end = 0;		    // write error
 	    nchars += len;

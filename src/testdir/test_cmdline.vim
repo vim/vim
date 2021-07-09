@@ -475,6 +475,7 @@ func Test_fullcommand()
   for [in, want] in items(tests)
     call assert_equal(want, fullcommand(in))
   endfor
+  call assert_equal('', fullcommand(test_null_string()))
 
   call assert_equal('syntax', 'syn'->fullcommand())
 endfunc
@@ -802,6 +803,22 @@ func Test_cmdline_complete_various()
   " completion for a command with a command modifier
   call feedkeys(":topleft new\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"topleft new", @:)
+
+  " completion for vim9 and legacy commands
+  call feedkeys(":vim9 call strle\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"vim9 call strlen(", @:)
+  call feedkeys(":legac call strle\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"legac call strlen(", @:)
+
+  " completion for the :disassemble command
+  call feedkeys(":disas deb\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas debug", @:)
+  call feedkeys(":disas pro\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas profile", @:)
+  call feedkeys(":disas debug Test_cmdline_complete_var\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas debug Test_cmdline_complete_various", @:)
+  call feedkeys(":disas profile Test_cmdline_complete_var\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas profile Test_cmdline_complete_various", @:)
 
   " completion for the :match command
   call feedkeys(":match Search /pat/\<C-A>\<C-B>\"\<CR>", 'xt')
@@ -1191,6 +1208,21 @@ func Test_cmdwin_restore()
   call delete('XTest_restore')
 endfunc
 
+func Test_cmdwin_no_terminal()
+  CheckFeature cmdwin
+  CheckFeature terminal
+  CheckNotMSWindows
+
+  let buf = RunVimInTerminal('', {'rows': 12})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":set cmdheight=2\<CR>")
+  call term_sendkeys(buf, "q:")
+  call term_sendkeys(buf, ":let buf = term_start(['/bin/echo'], #{hidden: 1})\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_no_terminal', {})
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_buffers_lastused()
   " check that buffers are sorted by time when wildmode has lastused
   call test_settime(1550020000)	  " middle
@@ -1309,13 +1341,22 @@ func Test_cmdlineclear_tabenter()
   call delete('XtestCmdlineClearTabenter')
 endfunc
 
-" Test for failure in expanding special keywords in cmdline
+" Test for expanding special keywords in cmdline
 func Test_cmdline_expand_special()
   %bwipe!
   call assert_fails('e #', 'E499:')
   call assert_fails('e <afile>', 'E495:')
   call assert_fails('e <abuf>', 'E496:')
   call assert_fails('e <amatch>', 'E497:')
+
+  call writefile([], 'Xfile.cpp')
+  call writefile([], 'Xfile.java')
+  new Xfile.cpp
+  call feedkeys(":e %:r\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.cpp Xfile.java', @:)
+  close
+  call delete('Xfile.cpp')
+  call delete('Xfile.java')
 endfunc
 
 func Test_cmdwin_jump_to_win()
@@ -1810,6 +1851,12 @@ func Test_cmd_map_cmdlineChanged()
   call feedkeys(":\<F1>\<CR>", 'xt')
   call assert_equal(['l', 'ls'], g:log)
 
+  let @b = 'b'
+  cnoremap <F1> a<C-R>b
+  let g:log = []
+  call feedkeys(":\<F1>\<CR>", 'xt')
+  call assert_equal(['a', 'ab'], g:log)
+
   unlet g:log
   cunmap <F1>
   augroup test
@@ -1817,5 +1864,24 @@ func Test_cmd_map_cmdlineChanged()
   augroup END
 endfunc
 
+" Test for the 'suffixes' option
+func Test_suffixes_opt()
+  call writefile([], 'Xfile')
+  call writefile([], 'Xfile.c')
+  call writefile([], 'Xfile.o')
+  set suffixes=
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile Xfile.c Xfile.o', @:)
+  set suffixes=.c
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile Xfile.o Xfile.c', @:)
+  set suffixes=,,
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.c Xfile.o Xfile', @:)
+  set suffixes&
+  call delete('Xfile')
+  call delete('Xfile.c')
+  call delete('Xfile.o')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -198,7 +198,7 @@ get_function_args(
 	ga_init2(newargs, (int)sizeof(char_u *), 3);
     if (argtypes != NULL)
 	ga_init2(argtypes, (int)sizeof(char_u *), 3);
-    if (default_args != NULL)
+    if (!skip && default_args != NULL)
 	ga_init2(default_args, (int)sizeof(char_u *), 3);
 
     if (varargs != NULL)
@@ -266,13 +266,19 @@ get_function_args(
 	}
 	else
 	{
+	    char_u *np;
+
 	    arg = p;
 	    p = one_function_arg(p, newargs, argtypes, types_optional,
 							 evalarg, FALSE, skip);
 	    if (p == arg)
 		break;
 
-	    if (*skipwhite(p) == '=' && default_args != NULL)
+	    // Recognize " = expr" but not " == expr".  A lambda can have
+	    // "(a = expr" but "(a == expr" and "(a =~ expr" are not a lambda.
+	    np = skipwhite(p);
+	    if (*np == '=' && np[1] != '=' && np[1] != '~'
+						       && default_args != NULL)
 	    {
 		typval_T	rettv;
 
@@ -284,24 +290,27 @@ get_function_args(
 		expr = p;
 		if (eval1(&p, &rettv, NULL) != FAIL)
 		{
-		    if (ga_grow(default_args, 1) == FAIL)
-			goto err_ret;
-
-		    // trim trailing whitespace
-		    while (p > expr && VIM_ISWHITE(p[-1]))
-			p--;
-		    c = *p;
-		    *p = NUL;
-		    expr = vim_strsave(expr);
-		    if (expr == NULL)
+		    if (!skip)
 		    {
-			*p = c;
-			goto err_ret;
-		    }
-		    ((char_u **)(default_args->ga_data))
+			if (ga_grow(default_args, 1) == FAIL)
+			    goto err_ret;
+
+			// trim trailing whitespace
+			while (p > expr && VIM_ISWHITE(p[-1]))
+			    p--;
+			c = *p;
+			*p = NUL;
+			expr = vim_strsave(expr);
+			if (expr == NULL)
+			{
+			    *p = c;
+			    goto err_ret;
+			}
+			((char_u **)(default_args->ga_data))
 						 [default_args->ga_len] = expr;
-		    default_args->ga_len++;
-		    *p = c;
+			default_args->ga_len++;
+			*p = c;
+		    }
 		}
 		else
 		    mustend = TRUE;
@@ -352,7 +361,7 @@ get_function_args(
 err_ret:
     if (newargs != NULL)
 	ga_clear_strings(newargs);
-    if (default_args != NULL)
+    if (!skip && default_args != NULL)
 	ga_clear_strings(default_args);
     return FAIL;
 }
@@ -606,6 +615,7 @@ is_function_cmd(char_u **cmd)
 
 /*
  * Read the body of a function, put every line in "newlines".
+ * This stops at "}", "endfunction" or "enddef".
  * "newlines" must already have been initialized.
  * "eap->cmdidx" is CMD_function, CMD_def or CMD_block;
  */
@@ -630,7 +640,11 @@ get_function_body(
     char_u	*skip_until = NULL;
     int		ret = FAIL;
     int		is_heredoc = FALSE;
+    int		heredoc_concat_len = 0;
+    garray_T	heredoc_ga;
     char_u	*heredoc_trimmed = NULL;
+
+    ga_init2(&heredoc_ga, 1, 500);
 
     // Detect having skipped over comment lines to find the return
     // type.  Add NULL lines to keep the line count correct.
@@ -732,6 +746,20 @@ get_function_body(
 		    getline_options = vim9_function
 				? GETLINE_CONCAT_CONTBAR : GETLINE_CONCAT_CONT;
 		    is_heredoc = FALSE;
+
+		    if (heredoc_concat_len > 0)
+		    {
+			// Replace the starting line with all the concatenated
+			// lines.
+			ga_concat(&heredoc_ga, theline);
+			vim_free(((char_u **)(newlines->ga_data))[
+						      heredoc_concat_len - 1]);
+			((char_u **)(newlines->ga_data))[
+				  heredoc_concat_len - 1] = heredoc_ga.ga_data;
+			ga_init(&heredoc_ga);
+			heredoc_concat_len = 0;
+			theline += STRLEN(theline);  // skip the "EOF"
+		    }
 		}
 	    }
 	}
@@ -885,6 +913,8 @@ get_function_body(
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		getline_options = GETLINE_NONE;
 		is_heredoc = TRUE;
+		if (eap->cmdidx == CMD_def)
+		    heredoc_concat_len = newlines->ga_len + 1;
 	    }
 
 	    // Check for ":cmd v =<< [trim] EOF"
@@ -927,10 +957,21 @@ get_function_body(
 	if (ga_grow(newlines, 1 + sourcing_lnum_off) == FAIL)
 	    goto theend;
 
-	// Copy the line to newly allocated memory.  get_one_sourceline()
-	// allocates 250 bytes per line, this saves 80% on average.  The cost
-	// is an extra alloc/free.
-	p = vim_strsave(theline);
+	if (heredoc_concat_len > 0)
+	{
+	    // For a :def function "python << EOF" concatenats all the lines,
+	    // to be used for the instruction later.
+	    ga_concat(&heredoc_ga, theline);
+	    ga_concat(&heredoc_ga, (char_u *)"\n");
+	    p = vim_strsave((char_u *)"");
+	}
+	else
+	{
+	    // Copy the line to newly allocated memory.  get_one_sourceline()
+	    // allocates 250 bytes per line, this saves 80% on average.  The
+	    // cost is an extra alloc/free.
+	    p = vim_strsave(theline);
+	}
 	if (p == NULL)
 	    goto theend;
 	((char_u **)(newlines->ga_data))[newlines->ga_len++] = p;
@@ -945,14 +986,14 @@ get_function_body(
 	    line_arg = NULL;
     }
 
-    // Don't define the function when skipping commands or when an error was
-    // detected.
-    if (!eap->skip && !did_emsg)
+    // Return OK when no error was detected.
+    if (!did_emsg)
 	ret = OK;
 
 theend:
     vim_free(skip_until);
     vim_free(heredoc_trimmed);
+    vim_free(heredoc_ga.ga_data);
     need_wait_return |= saved_wait_return;
     return ret;
 }
@@ -960,6 +1001,7 @@ theend:
 /*
  * Handle the body of a lambda.  *arg points to the "{", process statements
  * until the matching "}".
+ * When not evaluating "newargs" is NULL.
  * When successful "rettv" is set to a funcref.
  */
     static int
@@ -974,6 +1016,8 @@ lambda_function_body(
 	char_u	    *ret_type)
 {
     int		evaluate = (evalarg->eval_flags & EVAL_EVALUATE);
+    garray_T	*gap = &evalarg->eval_ga;
+    garray_T	*freegap = &evalarg->eval_freega;
     ufunc_T	*ufunc = NULL;
     exarg_T	eap;
     garray_T	newlines;
@@ -1010,6 +1054,52 @@ lambda_function_body(
 	vim_free(cmdline);
 	goto erret;
     }
+
+    // When inside a lambda must add the function lines to evalarg.eval_ga.
+    evalarg->eval_break_count += newlines.ga_len;
+    if (gap->ga_itemsize > 0)
+    {
+	int	idx;
+	char_u	*last;
+	size_t  plen;
+	char_u  *pnl;
+
+	for (idx = 0; idx < newlines.ga_len; ++idx)
+	{
+	    char_u  *p = skipwhite(((char_u **)newlines.ga_data)[idx]);
+
+	    if (ga_grow(gap, 1) == FAIL || ga_grow(freegap, 1) == FAIL)
+		goto erret;
+
+	    // Going to concatenate the lines after parsing.  For an empty or
+	    // comment line use an empty string.
+	    // Insert NL characters at the start of each line, the string will
+	    // be split again later in .get_lambda_tv().
+	    if (*p == NUL || vim9_comment_start(p))
+		p = (char_u *)"";
+	    plen = STRLEN(p);
+	    pnl = vim_strnsave((char_u *)"\n", plen + 1);
+	    if (pnl != NULL)
+		mch_memmove(pnl + 1, p, plen + 1);
+	    ((char_u **)gap->ga_data)[gap->ga_len++] = pnl;
+	    ((char_u **)freegap->ga_data)[freegap->ga_len++] = pnl;
+	}
+	if (ga_grow(gap, 1) == FAIL || ga_grow(freegap, 1) == FAIL)
+	    goto erret;
+	if (cmdline != NULL)
+	    // more is following after the "}", which was skipped
+	    last = cmdline;
+	else
+	    // nothing is following the "}"
+	    last = (char_u *)"}";
+	plen = STRLEN(last);
+	pnl = vim_strnsave((char_u *)"\n", plen + 1);
+	if (pnl != NULL)
+	    mch_memmove(pnl + 1, last, plen + 1);
+	((char_u **)gap->ga_data)[gap->ga_len++] = pnl;
+	((char_u **)freegap->ga_data)[freegap->ga_len++] = pnl;
+    }
+
     if (cmdline != NULL)
     {
 	// Something comes after the "}".
@@ -1021,6 +1111,12 @@ lambda_function_body(
     }
     else
 	*arg = (char_u *)"";
+
+    if (!evaluate)
+    {
+	ret = OK;
+	goto erret;
+    }
 
     name = get_lambda_name();
     ufunc = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
@@ -1078,7 +1174,8 @@ erret:
 	SOURCING_LNUM = lnum_save;
     vim_free(line_to_free);
     ga_clear_strings(&newlines);
-    ga_clear_strings(newargs);
+    if (newargs != NULL)
+	ga_clear_strings(newargs);
     ga_clear_strings(default_args);
     if (ufunc != NULL)
     {
@@ -1134,7 +1231,7 @@ get_lambda_tv(
     s = *arg + 1;
     ret = get_function_args(&s, equal_arrow ? ')' : '-', NULL,
 	    types_optional ? &argtypes : NULL, types_optional, evalarg,
-						 NULL, NULL, TRUE, NULL, NULL);
+					NULL, &default_args, TRUE, NULL, NULL);
     if (ret == FAIL || skip_arrow(s, equal_arrow, &ret_type, NULL) == NULL)
     {
 	if (types_optional)
@@ -1222,6 +1319,7 @@ get_lambda_tv(
 	int	    len;
 	int	    flags = 0;
 	char_u	    *p;
+	char_u	    *line_end;
 	char_u	    *name = get_lambda_name();
 
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
@@ -1236,14 +1334,37 @@ get_lambda_tv(
 	if (ga_grow(&newlines, 1) == FAIL)
 	    goto errret;
 
-	// Add "return " before the expression.
-	len = 7 + (int)(end - start) + 1;
+	// If there are line breaks, we need to split up the string.
+	line_end = vim_strchr(start, '\n');
+	if (line_end == NULL)
+	    line_end = end;
+
+	// Add "return " before the expression (or the first line).
+	len = 7 + (int)(line_end - start) + 1;
 	p = alloc(len);
 	if (p == NULL)
 	    goto errret;
 	((char_u **)(newlines.ga_data))[newlines.ga_len++] = p;
 	STRCPY(p, "return ");
-	vim_strncpy(p + 7, start, end - start);
+	vim_strncpy(p + 7, start, line_end - start);
+
+	if (line_end != end)
+	{
+	    // Add more lines, split by line breaks.  Thus is used when a
+	    // lambda with { cmds } is encountered.
+	    while (*line_end == '\n')
+	    {
+		if (ga_grow(&newlines, 1) == FAIL)
+		    goto errret;
+		start = line_end + 1;
+		line_end = vim_strchr(start, '\n');
+		if (line_end == NULL)
+		    line_end = end;
+		((char_u **)(newlines.ga_data))[newlines.ga_len++] =
+					 vim_strnsave(start, line_end - start);
+	    }
+	}
+
 	if (strstr((char *)p + 7, "a:") == NULL)
 	    // No a: variables are used for sure.
 	    flags |= FC_NOARGS;
@@ -1265,7 +1386,7 @@ get_lambda_tv(
 		    goto errret;
 	    }
 	    else
-		fp->uf_ret_type = &t_any;
+		fp->uf_ret_type = &t_unknown;
 	}
 
 	fp->uf_lines = newlines;
@@ -1314,7 +1435,11 @@ errret:
     ga_clear_strings(&newlines);
     ga_clear_strings(&default_args);
     if (types_optional)
+    {
 	ga_clear_strings(&argtypes);
+	if (fp != NULL)
+	    vim_free(fp->uf_arg_types);
+    }
     vim_free(fp);
     vim_free(pt);
     if (evalarg != NULL && evalarg->eval_tofree == NULL)
@@ -1352,6 +1477,7 @@ deref_func_name(
 
     cc = name[*lenp];
     name[*lenp] = NUL;
+
     v = find_var(name, &ht, no_autoload);
     name[*lenp] = cc;
     if (v != NULL)
@@ -2977,6 +3103,7 @@ call_func(
     int		argv_clear = 0;
     int		argv_base = 0;
     partial_T	*partial = funcexe->partial;
+    type_T	check_type;
 
     // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
     // even when call_func() returns FAIL.
@@ -3020,6 +3147,17 @@ call_func(
 		argv[i + argv_clear] = argvars_in[i];
 	    argvars = argv;
 	    argcount = partial->pt_argc + argcount_in;
+
+	    if (funcexe->check_type != NULL
+				     && funcexe->check_type->tt_argcount != -1)
+	    {
+		// Now funcexe->check_type is missing the added arguments, make
+		// a copy of the type with the correction.
+		check_type = *funcexe->check_type;
+		funcexe->check_type = &check_type;
+		check_type.tt_argcount += partial->pt_argc;
+		check_type.tt_min_argcount += partial->pt_argc;
+	    }
 	}
     }
 
@@ -3478,7 +3616,8 @@ trans_function_name(
 		lead += (int)STRLEN(sid_buf);
 	}
     }
-    else if (!(flags & TFN_INT) && builtin_function(lv.ll_name, len))
+    else if (!(flags & TFN_INT) && (builtin_function(lv.ll_name, len)
+				   || (in_vim9script() && *lv.ll_name == '_')))
     {
 	semsg(_("E128: Function name must start with a capital or \"s:\": %s"),
 								       start);
@@ -3935,7 +4074,10 @@ define_function(exarg_T *eap, char_u *name_arg)
     // Save the starting line number.
     sourcing_lnum_top = SOURCING_LNUM;
 
-    if (get_function_body(eap, &newlines, line_arg, &line_to_free) == FAIL)
+    // Do not define the function when getting the body fails and when
+    // skipping.
+    if (get_function_body(eap, &newlines, line_arg, &line_to_free) == FAIL
+	    || eap->skip)
 	goto erret;
 
     /*
@@ -4275,7 +4417,7 @@ ex_defcompile(exarg_T *eap UNUSED)
 		    && ufunc->uf_def_status == UF_TO_BE_COMPILED
 		    && (ufunc->uf_flags & FC_DEAD) == 0)
 	    {
-		(void)compile_def_function(ufunc, FALSE, FALSE, NULL);
+		(void)compile_def_function(ufunc, FALSE, CT_NONE, NULL);
 
 		if (func_hashtab.ht_changed != changed)
 		{
@@ -4734,7 +4876,7 @@ ex_call(exarg_T *eap)
 	    {
 		// If the function deleted lines or switched to another buffer
 		// the line number may become invalid.
-		emsg(_(e_invrange));
+		emsg(_(e_invalid_range));
 		break;
 	    }
 	    curwin->w_cursor.lnum = lnum;
@@ -5348,35 +5490,32 @@ find_var_in_scoped_ht(char_u *name, int no_autoload)
     int
 set_ref_in_previous_funccal(int copyID)
 {
-    int		abort = FALSE;
     funccall_T	*fc;
 
-    for (fc = previous_funccal; !abort && fc != NULL; fc = fc->caller)
+    for (fc = previous_funccal; fc != NULL; fc = fc->caller)
     {
 	fc->fc_copyID = copyID + 1;
-	abort = abort
-	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
-	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1, NULL)
-	    || set_ref_in_list_items(&fc->l_varlist, copyID + 1, NULL);
+	if (set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
+		|| set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1, NULL)
+		|| set_ref_in_list_items(&fc->l_varlist, copyID + 1, NULL))
+	    return TRUE;
     }
-    return abort;
+    return FALSE;
 }
 
     static int
 set_ref_in_funccal(funccall_T *fc, int copyID)
 {
-    int abort = FALSE;
-
     if (fc->fc_copyID != copyID)
     {
 	fc->fc_copyID = copyID;
-	abort = abort
-	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL)
-	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL)
-	    || set_ref_in_list_items(&fc->l_varlist, copyID, NULL)
-	    || set_ref_in_func(NULL, fc->func, copyID);
+	if (set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL)
+		|| set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL)
+		|| set_ref_in_list_items(&fc->l_varlist, copyID, NULL)
+		|| set_ref_in_func(NULL, fc->func, copyID))
+	    return TRUE;
     }
-    return abort;
+    return FALSE;
 }
 
 /*
@@ -5385,19 +5524,19 @@ set_ref_in_funccal(funccall_T *fc, int copyID)
     int
 set_ref_in_call_stack(int copyID)
 {
-    int			abort = FALSE;
     funccall_T		*fc;
     funccal_entry_T	*entry;
 
-    for (fc = current_funccal; !abort && fc != NULL; fc = fc->caller)
-	abort = abort || set_ref_in_funccal(fc, copyID);
+    for (fc = current_funccal; fc != NULL; fc = fc->caller)
+	if (set_ref_in_funccal(fc, copyID))
+	    return TRUE;
 
     // Also go through the funccal_stack.
-    for (entry = funccal_stack; !abort && entry != NULL; entry = entry->next)
-	for (fc = entry->top_funccal; !abort && fc != NULL; fc = fc->caller)
-	    abort = abort || set_ref_in_funccal(fc, copyID);
-
-    return abort;
+    for (entry = funccal_stack; entry != NULL; entry = entry->next)
+	for (fc = entry->top_funccal; fc != NULL; fc = fc->caller)
+	    if (set_ref_in_funccal(fc, copyID))
+		return TRUE;
+    return FALSE;
 }
 
 /*
@@ -5408,7 +5547,6 @@ set_ref_in_functions(int copyID)
 {
     int		todo;
     hashitem_T	*hi = NULL;
-    int		abort = FALSE;
     ufunc_T	*fp;
 
     todo = (int)func_hashtab.ht_used;
@@ -5418,11 +5556,12 @@ set_ref_in_functions(int copyID)
 	{
 	    --todo;
 	    fp = HI2UF(hi);
-	    if (!func_name_refcount(fp->uf_name))
-		abort = abort || set_ref_in_func(NULL, fp, copyID);
+	    if (!func_name_refcount(fp->uf_name)
+					  && set_ref_in_func(NULL, fp, copyID))
+		return TRUE;
 	}
     }
-    return abort;
+    return FALSE;
 }
 
 /*
@@ -5432,12 +5571,12 @@ set_ref_in_functions(int copyID)
 set_ref_in_func_args(int copyID)
 {
     int i;
-    int abort = FALSE;
 
     for (i = 0; i < funcargs.ga_len; ++i)
-	abort = abort || set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
-							  copyID, NULL, NULL);
-    return abort;
+	if (set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
+							  copyID, NULL, NULL))
+	    return TRUE;
+    return FALSE;
 }
 
 /*

@@ -1,5 +1,6 @@
 /* option.c */
 void set_init_1(int clean_arg);
+void set_fencs_unicode(void);
 void set_string_default(char *name, char_u *val);
 void set_number_default(char *name, long val);
 void set_local_options_default(win_T *wp, int do_buffer);
