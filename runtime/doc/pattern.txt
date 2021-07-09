@@ -936,7 +936,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	can be any line number.  The first line is 1.
 	WARNING: When inserting or deleting lines Vim does not automatically
 	update the matches.  This means Syntax highlighting quickly becomes
-	wrong.  Also when refering to the cursor position (".") and
+	wrong.  Also when referring to the cursor position (".") and
 	the cursor moves the display isn't updated for this change.  An update
 	is done when using the |CTRL-L| command (the whole screen is updated).
 	Example, to highlight the line where the cursor currently is: >
@@ -959,7 +959,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	for multibyte characters).
 	WARNING: When inserting or deleting text Vim does not automatically
 	update the matches.  This means Syntax highlighting quickly becomes
-	wrong.  Also when refering to the cursor position (".") and
+	wrong.  Also when referring to the cursor position (".") and
 	the cursor moves the display isn't updated for this change.  An update
 	is done when using the |CTRL-L| command (the whole screen is updated).
 
@@ -989,7 +989,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	one screen character.
 	WARNING: When inserting or deleting text Vim does not automatically
 	update highlighted matches.  This means Syntax highlighting quickly
-	becomes wrong.  Also when refering to the cursor position (".") and
+	becomes wrong.  Also when referring to the cursor position (".") and
 	the cursor moves the display isn't updated for this change.  An update
 	is done when using the |CTRL-L| command (the whole screen is updated).
 	Example, to highlight all the characters after virtual column 72: >

@@ -164,7 +164,7 @@ syn keyword smclCCLword searchdefault		contained
 syn keyword smclCCLword pi			contained
 syn keyword smclCCLword rc			contained
 
-" Directive for the contant and current-value class
+" Directive for the constant and current-value class
 syn region smclCCL start=/{ccl / end=/}/ oneline contains=smclCCLword
 
 " The order of the following syntax definitions is roughly that of the on-line

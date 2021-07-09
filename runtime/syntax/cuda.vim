@@ -11,7 +11,7 @@ endif
 " Read the C++ syntax to start with
 runtime! syntax/cpp.vim
 
-" CUDA extentions
+" CUDA extensions
 syn keyword cudaStorageClass	__device__ __global__ __host__
 syn keyword cudaStorageClass	__constant__ __shared__
 syn keyword cudaStorageClass	__inline__ __align__ __thread__

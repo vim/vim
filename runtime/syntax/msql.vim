@@ -36,7 +36,7 @@ syn keyword msqlEnvVar CONTENT_LENGTH HTTPS HTTPS_KEYSIZE HTTPS_SECRETKEYSIZE  c
 syn keyword msqlEnvVar HTTP_ACCECT HTTP_USER_AGENT HTTP_IF_MODIFIED_SINCE  contained
 syn keyword msqlEnvVar HTTP_FROM HTTP_REFERER contained
 
-" Inlclude lLite
+" Include lLite
 syn include @msqlLite <sfile>:p:h/lite.vim
 
 " Msql Region

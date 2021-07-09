@@ -24,7 +24,7 @@ syn sync lines=200
 "some general stuff
 "syn match texinfoError     "\S" contained TODO
 syn match texinfoIdent	    "\k\+"		  contained "IDENTifier
-syn match texinfoAssignment "\k\+\s*=\s*\k\+\s*$" contained "assigment statement ( var = val )
+syn match texinfoAssignment "\k\+\s*=\s*\k\+\s*$" contained "assignment statement ( var = val )
 syn match texinfoSinglePar  "\k\+\s*$"		  contained "single parameter (used for several @-commands)
 syn match texinfoIndexPar   "\k\k\s*$"		  contained "param. used for different *index commands (+ @documentlanguage command)
 

@@ -188,7 +188,7 @@ endif
 
 syn keyword nroffTodo TODO XXX FIXME contained
 
-" {{{1 Hilighting
+" {{{1 Highlighting
 " ------------------------------------------------------------
 "
 

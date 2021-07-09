@@ -181,7 +181,7 @@ syn case match
 syn match	freebasicOctal2			"\<0\o*\>"
 syn match	freebasicOctal2Error	"\<0\o*[89a-zA-Z]"
 "
-"	String and Character contstants
+"	String and Character constants
 "
 syn region	freebasicString		start='"' end='"' contains=freebasicSpecial,freebasicTodo
 syn region	freebasicString		start="'" end="'" contains=freebasicSpecial,freebasicTodo

@@ -3069,7 +3069,7 @@ Awaiting updated patches:
 7   When 'rightleft' is set, the search pattern should be displayed right
     to left as well?  See patch of Dec 26. (Nadim Shaikli)
 8   Option to lock all used memory so that it doesn't get swapped to disk
-    (uncrypted).  Patch by Jason Holt, 2003 May 23.  Uses mlock.
+    (unencrypted).  Patch by Jason Holt, 2003 May 23.  Uses mlock.
 7   Add ! register, for shell commands. (patch from Grenie)
 8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
     done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.

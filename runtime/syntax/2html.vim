@@ -499,7 +499,7 @@ if s:settings.prevent_copy =~# 'n'
     endif
   elseif s:settings.line_ids
     " if lines are not being numbered the only reason this function gets called
-    " is to put the line IDs on each line; "text" will be emtpy but lnr will
+    " is to put the line IDs on each line; "text" will be empty but lnr will
     " always be non-zero, however we don't want to use the <input> because that
     " won't work as nice for empty text
     function! s:HtmlFormat_n(text, style_id, diff_style_id, lnr)

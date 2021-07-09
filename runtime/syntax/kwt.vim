@@ -12,7 +12,7 @@ endif
 runtime! syntax/cpp.vim
 unlet b:current_syntax
 
-" kimwitu++ extentions
+" kimwitu++ extensions
 
 " Don't stop at eol, messes around with CPP mode, but gives line spanning
 " strings in unparse rules

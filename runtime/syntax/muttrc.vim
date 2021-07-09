@@ -663,7 +663,7 @@ syn match muttrcUnColorIndexNL	contained skipwhite skipnl /\s*\\$/ nextgroup=mut
 syn match muttrcUnColorKeyword	contained skipwhite /^\s*uncolor\s\+/ nextgroup=muttrcUnColorIndex,muttrcUnColorIndexNL
 syn region muttrcUnColorLine keepend start=+^\s*uncolor\s+ skip=+\\$+ end=+$+ contains=muttrcUnColorKeyword,muttrcComment,muttrcUnHighlightSpace
 
-" Mono are almost like color (ojects inherited from color)
+" Mono are almost like color (objects inherited from color)
 syn keyword muttrcMonoAttrib	contained bold none normal reverse standout underline
 syn keyword muttrcMono		contained mono		skipwhite nextgroup=muttrcColorField
 syn match   muttrcMonoLine	"^\s*mono\s\+\S\+"	skipwhite nextgroup=muttrcMonoAttrib contains=muttrcMono

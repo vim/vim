@@ -130,7 +130,7 @@ syn region  ctermComment	start="remark" end="$" contains=ctermTodo
 
 syn region ctermVar		start="\$("  end=")"
 
-" String and Character contstants
+" String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match   ctermSpecial		contained "\\\d\d\d\|\\."
 syn match   ctermSpecial		contained "\^."
