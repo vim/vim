@@ -691,7 +691,7 @@ enddef
 def Test_cnext_works_in_catch()
   var lines =<< trim END
       vim9script
-      au BufEnter * eval 0
+      au BufEnter * eval 1 + 2
       writefile(['text'], 'Xfile1')
       writefile(['text'], 'Xfile2')
       var items = [
@@ -1754,6 +1754,21 @@ def Test_script_var_shadows_function()
   CheckScriptFailure(lines, 'E1041:', 5)
 enddef
 
+def Test_script_var_shadows_command()
+  var lines =<< trim END
+      var undo = 1
+      undo = 2
+      assert_equal(2, undo)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var undo = 1
+      undo
+  END
+  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+enddef
+
 def s:RetSome(): string
   return 'some'
 enddef
@@ -2270,7 +2285,7 @@ def Test_if_const_expr()
   assert_equal(false, res)
 
   # with constant "false" expression may be invalid so long as the syntax is OK
-  if false | eval 0 | endif
+  if false | eval 1 + 2 | endif
   if false | eval burp + 234 | endif
   if false | echo burp 234 'asd' | endif
   if false

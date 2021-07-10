@@ -647,7 +647,7 @@ def Test_expr4_equal()
   CheckDefFailure(["var x = 'a' == "], 'E1097:', 3)
   CheckScriptFailure(['vim9script', "var x = 'a' == "], 'E15:', 2)
 
-  CheckDefExecAndScriptFailure2(['var items: any', 'eval 1', 'eval 2', 'if items == []', 'endif'], 'E691:', 'E1072:', 4)
+  CheckDefExecAndScriptFailure2(['var items: any', 'eval 1 + 1', 'eval 2 + 2', 'if items == []', 'endif'], 'E691:', 'E1072:', 4)
 
   CheckDefExecAndScriptFailure(['var x: any = "a"', 'echo x == true'], 'E1072: Cannot compare string with bool', 2)
   CheckDefExecAndScriptFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)

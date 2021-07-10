@@ -208,7 +208,7 @@ cause_errthrow(
      * not skipped.  Errors in those commands may affect what of the subsequent
      * commands are regarded part of catch and finally clauses.  Catching the
      * exception would then cause execution of commands not intended by the
-     * user, who wouldn't even get aware of the problem.  Therefor, discard the
+     * user, who wouldn't even get aware of the problem.  Therefore, discard the
      * exception currently being thrown to prevent it from being caught.  Just
      * execute finally clauses and terminate.
      */
@@ -896,11 +896,28 @@ ex_eval(exarg_T *eap)
 {
     typval_T	tv;
     evalarg_T	evalarg;
+    int		name_only = FALSE;
+    char_u	*p;
+    long	lnum = SOURCING_LNUM;
+
+    if (in_vim9script())
+    {
+	char_u	*alias;
+
+	p = eap->arg;
+	get_name_len(&p, &alias, FALSE, FALSE);
+	name_only = ends_excmd2(eap->arg, skipwhite(p));
+	vim_free(alias);
+    }
 
     fill_evalarg_from_eap(&evalarg, eap, eap->skip);
 
     if (eval0(eap->arg, &tv, eap, &evalarg) == OK)
+    {
 	clear_tv(&tv);
+	if (in_vim9script() && name_only && lnum == SOURCING_LNUM)
+	    semsg(_(e_expression_without_effect_str), eap->arg);
+    }
 
     clear_evalarg(&evalarg, eap);
 }
@@ -1287,7 +1304,7 @@ ex_continue(exarg_T *eap)
     {
 	// Try to find the matching ":while".  This might stop at a try
 	// conditional not in its finally clause (which is then to be executed
-	// next).  Therefor, inactivate all conditionals except the ":while"
+	// next).  Therefore, inactivate all conditionals except the ":while"
 	// itself (if reached).
 	idx = cleanup_conditionals(cstack, CSF_WHILE | CSF_FOR, FALSE);
 	if (idx >= 0 && (cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))

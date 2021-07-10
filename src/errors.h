@@ -494,3 +494,5 @@ EXTERN char e_no_white_space_allowed_between_option_and[]
 	INIT(= N_("E1205: No white space allowed between option and"));
 EXTERN char e_dict_required_for_argument_nr[]
 	INIT(= N_("E1206: Dictionary required for argument %d"));
+EXTERN char e_expression_without_effect_str[]
+	INIT(= N_("E1207: Expression without an effect: %s"));

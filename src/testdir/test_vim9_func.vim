@@ -2538,7 +2538,7 @@ def Test_restore_modifiers()
       set eventignore=
       autocmd QuickFixCmdPost * copen
       def AutocmdsDisabled()
-        eval 0
+        eval 1 + 2
       enddef
       func Func()
         noautocmd call s:AutocmdsDisabled()
@@ -2551,8 +2551,8 @@ def Test_restore_modifiers()
 enddef
 
 def StackTop()
-  eval 1
-  eval 2
+  eval 1 + 2
+  eval 2 + 3
   # call not on fourth line
   StackBot()
 enddef

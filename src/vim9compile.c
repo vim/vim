@@ -8563,6 +8563,37 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
     return p;
 }
 
+    static char_u *
+compile_eval(char_u *arg, cctx_T *cctx)
+{
+    char_u	*p = arg;
+    int		name_only;
+    char_u	*alias;
+    long	lnum = SOURCING_LNUM;
+
+    // find_ex_command() will consider a variable name an expression, assuming
+    // that something follows on the next line.  Check that something actually
+    // follows, otherwise it's probably a misplaced command.
+    get_name_len(&p, &alias, FALSE, FALSE);
+    name_only = ends_excmd2(arg, skipwhite(p));
+    vim_free(alias);
+
+    p = arg;
+    if (compile_expr0(&p, cctx) == FAIL)
+	return NULL;
+
+    if (name_only && lnum == SOURCING_LNUM)
+    {
+	semsg(_(e_expression_without_effect_str), arg);
+	return NULL;
+    }
+
+    // drop the result
+    generate_instr_drop(cctx, ISN_DROP, 1);
+
+    return skipwhite(p);
+}
+
 /*
  * compile "echo expr"
  * compile "echomsg expr"
@@ -9630,13 +9661,7 @@ compile_def_function(
 		    break;
 
 	    case CMD_eval:
-		    if (compile_expr0(&p, &cctx) == FAIL)
-			goto erret;
-
-		    // drop the result
-		    generate_instr_drop(&cctx, ISN_DROP, 1);
-
-		    line = skipwhite(p);
+		    line = compile_eval(p, &cctx);
 		    break;
 
 	    case CMD_echo:
