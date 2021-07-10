@@ -1340,7 +1340,7 @@ endfunc
 func Test_prop_func_invalid_args()
   call assert_fails('call prop_clear(1, 2, [])', 'E715:')
   call assert_fails('call prop_clear(-1, 2)', 'E16:')
-  call assert_fails('call prop_find(test_null_dict())', 'E474:')
+  call assert_fails('call prop_find(test_null_dict())', 'E715:')
   call assert_fails('call prop_find({"bufnr" : []})', 'E730:')
   call assert_fails('call prop_find({})', 'E968:')
   call assert_fails('call prop_find({}, "x")', 'E474:')

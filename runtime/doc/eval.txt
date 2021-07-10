@@ -3173,6 +3173,7 @@ append({lnum}, {text})					*append()*
 		the current buffer.
 		Any type of item is accepted and converted to a String.
 		{lnum} can be zero to insert a line before the first one.
+		{lnum} is used like with |getline()|.
 		Returns 1 for failure ({lnum} out of range or out of memory),
 		0 for success.  Example: >
 			:let failed = append(line('$'), "# THE END")
@@ -3673,10 +3674,10 @@ charidx({string}, {idx} [, {countcc}])
 		The index of the first character is zero.
 		If there are no multibyte characters the returned value is
 		equal to {idx}.
-		When {countcc} is omitted or zero, then composing characters
-		are not counted separately, their byte length is added to the
-		preceding base character.
-		When {countcc} is set to 1, then composing characters are
+		When {countcc} is omitted or |FALSE|, then composing characters
+		are not counted separately, their byte length is
+		added to the preceding base character.
+		When {countcc} is |TRUE|, then composing characters are
 		counted as separate characters.
 		Returns -1 if the arguments are invalid or if {idx} is greater
 		than the index of the last byte in {string}.  An error is
@@ -4063,6 +4064,7 @@ cursor({list})
 		|setcursorcharpos()|.
 
 		Does not change the jumplist.
+		{lnum} is used like with |getline()|.
 		If {lnum} is greater than the number of lines in the buffer,
 		the cursor will be positioned at the last line in the buffer.
 		If {lnum} is zero, the cursor will stay in the current line.
@@ -7033,9 +7035,9 @@ line2byte({lnum})					*line2byte()*
 		below the last line: >
 			line2byte(line("$") + 1)
 <		This is the buffer size plus one.  If 'fileencoding' is empty
-		it is the file size plus one.
-		When {lnum} is invalid, or the |+byte_offset| feature has been
-		disabled at compile time, -1 is returned.
+		it is the file size plus one.  {lnum} is used like with
+		|getline()|.  When {lnum} is invalid, or the |+byte_offset|
+		feature has been disabled at compile time, -1 is returned.
 		Also see |byte2line()|, |go| and |:goto|.
 
 		Can also be used as a |method|: >
@@ -7925,6 +7927,7 @@ nextnonblank({lnum})					*nextnonblank()*
 			if getline(nextnonblank(1)) =~ "Java"
 <		When {lnum} is invalid or there is no non-blank line at or
 		below it, zero is returned.
+		{lnum} is used like with |getline()|.
 		See also |prevnonblank()|.
 
 		Can also be used as a |method|: >
@@ -8017,6 +8020,7 @@ prevnonblank({lnum})					*prevnonblank()*
 			let ind = indent(prevnonblank(v:lnum - 1))
 <		When {lnum} is invalid or there is no non-blank line at or
 		above it, zero is returned.
+		{lnum} is used like with |getline()|.
 		Also see |nextnonblank()|.
 
 		Can also be used as a |method|: >
@@ -10740,7 +10744,7 @@ synID({lnum}, {col}, {trans})				*synID()*
 		line.  'synmaxcol' applies, in a longer line zero is returned.
 		Note that when the position is after the last character,
 		that's where the cursor can be in Insert mode, synID() returns
-		zero.
+		zero.  {lnum} is used like with |getline()|.
 
 		When {trans} is |TRUE|, transparent items are reduced to the
 		item that they reveal.  This is useful when wanting to know
@@ -10808,7 +10812,7 @@ synconcealed({lnum}, {col})				*synconcealed()*
 		The result is a |List| with currently three items:
 		1. The first item in the list is 0 if the character at the
 		   position {lnum} and {col} is not part of a concealable
-		   region, 1 if it is.
+		   region, 1 if it is.  {lnum} is used like with |getline()|.
 		2. The second item in the list is a string. If the first item
 		   is 1, the second item contains the text which will be
 		   displayed in place of the concealed text, depending on the
@@ -10832,8 +10836,9 @@ synconcealed({lnum}, {col})				*synconcealed()*
 
 synstack({lnum}, {col})					*synstack()*
 		Return a |List|, which is the stack of syntax items at the
-		position {lnum} and {col} in the current window.  Each item in
-		the List is an ID like what |synID()| returns.
+		position {lnum} and {col} in the current window.  {lnum} is
+		used like with |getline()|.  Each item in the List is an ID
+		like what |synID()| returns.
 		The first item in the List is the outer region, following are
 		items contained in that one.  The last one is what |synID()|
 		returns, unless not the whole item is highlighted or it is a

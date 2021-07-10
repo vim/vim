@@ -605,7 +605,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_dictreq));
 	return;
     }
     dict = argvars[0].vval.v_dict;

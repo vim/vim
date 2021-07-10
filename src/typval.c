@@ -385,6 +385,23 @@ check_for_nonempty_string_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "tv" is a dict.
+ */
+    int
+check_for_dict_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_DICT)
+    {
+	if (idx >= 0)
+	    semsg(_(e_dict_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_dictreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Get the string value of a variable.
  * If it is a Number variable, the number is converted into a string.
  * tv_get_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!
@@ -456,13 +473,13 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg(_("E729: using Funcref as a String"));
+	    emsg(_("E729: Using a Funcref as a String"));
 	    break;
 	case VAR_LIST:
-	    emsg(_("E730: using List as a String"));
+	    emsg(_("E730: Using a List as a String"));
 	    break;
 	case VAR_DICT:
-	    emsg(_("E731: using Dictionary as a String"));
+	    emsg(_("E731: Using a Dictionary as a String"));
 	    break;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -483,7 +500,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
         case VAR_BLOB:
-	    emsg(_("E976: using Blob as a String"));
+	    emsg(_("E976: Using a Blob as a String"));
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
