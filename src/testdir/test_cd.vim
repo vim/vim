@@ -1,6 +1,7 @@
 " Test for :cd and chdir()
 
 source shared.vim
+source check.vim
 
 func Test_cd_large_path()
   " This used to crash with a heap write overflow.
@@ -175,6 +176,21 @@ func Test_lcd_split()
   lcd -
   call assert_equal(curdir, getcwd())
   quit!
+endfunc
+
+func Test_cd_from_non_existing_dir()
+  CheckNotMSWindows
+
+  let saveddir = getcwd()
+  call mkdir('Xdeleted_dir')
+  cd Xdeleted_dir
+  call delete(saveddir .. '/Xdeleted_dir', 'd')
+
+  " Expect E187 as the current directory was deleted.
+  call assert_fails('pwd', 'E187:')
+  call assert_equal('', getcwd())
+  cd -
+  call assert_equal(saveddir, getcwd())
 endfunc
 
 func Test_cd_completion()
