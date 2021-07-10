@@ -384,6 +384,8 @@ endfunc
 " Test for buffer match URL(scheme) check
 " scheme is alpha and inner hyphen only.
 func Test_buffer_scheme()
+  CheckMSWindows
+  set noshellslash
   %bwipe!
   let bufnames = [
     \ {'id':'b0', 'name':'test://xyz/foo/b0'    , 'match': 1},
