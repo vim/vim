@@ -695,7 +695,8 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	if (finish_op)
 	{
 	    buf[1] = 'o';
-	    // to be able to detect force-linewise/blockwise/characterwise operations
+	    // to be able to detect force-linewise/blockwise/characterwise
+	    // operations
 	    buf[2] = motion_force;
 	}
 	else if (restart_edit == 'I' || restart_edit == 'R'
@@ -2097,29 +2098,6 @@ match_user(char_u *name)
 	    result = 1; // partial match
     }
     return result;
-}
-
-/*
- * Concatenate two strings and return the result in allocated memory.
- * Returns NULL when out of memory.
- */
-    char_u  *
-concat_str(char_u *str1, char_u *str2)
-{
-    char_u  *dest;
-    size_t  l = str1 == NULL ? 0 : STRLEN(str1);
-
-    dest = alloc(l + (str2 == NULL ? 0 : STRLEN(str2)) + 1L);
-    if (dest != NULL)
-    {
-	if (str1 == NULL)
-	    *dest = NUL;
-	else
-	    STRCPY(dest, str1);
-	if (str2 != NULL)
-	    STRCPY(dest + l, str2);
-    }
-    return dest;
 }
 
     static void

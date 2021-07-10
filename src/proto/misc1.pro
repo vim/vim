@@ -36,7 +36,6 @@ void vim_setenv(char_u *name, char_u *val);
 char_u *get_env_name(expand_T *xp, int idx);
 char_u *get_users(expand_T *xp, int idx);
 int match_user(char_u *name);
-char_u *concat_str(char_u *str1, char_u *str2);
 void preserve_exit(void);
 void line_breakcheck(void);
 void fast_breakcheck(void);
