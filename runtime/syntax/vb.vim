@@ -4,7 +4,6 @@
 " Former Maintainer:	Robert M. Cortopassi <cortopar@mindspring.com>
 "	(tried multiple times to contact, but email bounced)
 " Last Change:
-"   2021 May 17  Fixed spelling error
 "   2005 May 25  Synched with work by Thomas Barthel
 "   2004 May 30  Added a few keywords
 
@@ -327,7 +326,7 @@ syn match  vbFloat		"[-+]\=\<\d\+[eE][\-+]\=\d\+"
 syn match  vbFloat		"[-+]\=\<\d\+\.\d*\([eE][\-+]\=\d\+\)\="
 syn match  vbFloat		"[-+]\=\<\.\d\+\([eE][\-+]\=\d\+\)\="
 
-" String and Character constants
+" String and Character contstants
 syn region  vbString		start=+"+  end=+"\|$+
 syn region  vbComment		start="\(^\|\s\)REM\s" end="$" contains=vbTodo
 syn region  vbComment		start="\(^\|\s\)\'"   end="$" contains=vbTodo

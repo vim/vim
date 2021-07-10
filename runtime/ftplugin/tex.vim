@@ -2,7 +2,7 @@
 " Language:     LaTeX (ft=tex)
 " Maintainer:   Benji Fisher, Ph.D. <benji@member.AMS.org>
 " Version:	1.4
-" Last Change: 2021 May 17
+" Last Change:	Wed 19 Apr 2006
 "  URL:		http://www.vim.org/script.php?script_id=411
 
 " Only do this when not done yet for this buffer.
@@ -28,7 +28,7 @@ let &l:define .= '\|\\\(re\)\=new\(boolean\|command\|counter\|environment\|font'
 
 " Tell Vim how to recognize LaTeX \include{foo} and plain \input bar :
 let &l:include .= '\|\\include{'
-" On some file systems, "{" and "}" are included in 'isfname'.  In case the
+" On some file systems, "{" and "}" are inluded in 'isfname'.  In case the
 " TeX file has \include{fname} (LaTeX only), strip everything except "fname".
 let &l:includeexpr = "substitute(v:fname, '^.\\{-}{\\|}.*', '', 'g')"
 

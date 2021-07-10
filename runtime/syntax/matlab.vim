@@ -27,7 +27,7 @@ syn keyword matlabOO			classdef properties events methods
 syn keyword matlabTodo			contained  TODO
 syn keyword matlabScope			global persistent
 
-" If you do not want these operators lit, uncomment them and the "hi link" below
+" If you do not want these operators lit, uncommment them and the "hi link" below
 syn match matlabArithmeticOperator	"[-+]"
 syn match matlabArithmeticOperator	"\.\=[*/\\^]"
 syn match matlabRelationalOperator	"[=~]="
@@ -53,7 +53,7 @@ syn match matlabFloat		"\<\d\+\(\.\d*\)\=\([edED][-+]\=\d\+\)\=[ij]\=\>"
 " floating point number, starting with a dot, optional exponent
 syn match matlabFloat		"\.\d\+\([edED][-+]\=\d\+\)\=[ij]\=\>"
 
-" Transpose character and delimiters: Either use just [...] or (...) as well
+" Transpose character and delimiters: Either use just [...] or (...) aswell
 syn match matlabDelimiter		"[][]"
 "syn match matlabDelimiter		"[][()]"
 syn match matlabTransposeOperator	"[])a-zA-Z0-9.]'"lc=1

@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:     EDIF (Electronic Design Interchange Format)
 " Maintainer:   Artem Zankovich <z_artem@hotbox.ru>
-" Last Change:  May 17, 2021
+" Last Change:  Oct 14, 2002
 "
-" Supported standards are:
+" Supported standarts are:
 "   ANSI/EIA Standard 548-1988 (EDIF Version 2 0 0)
 "   IEC 61690-1 (EDIF Version 3 0 0)
 "   IEC 61690-2 (EDIF Version 4 0 0)

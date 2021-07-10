@@ -101,7 +101,7 @@ syn region loutHeadings matchgroup=loutHeads start='@\(\(Title\)\|\(Caption\)\)\
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
 
-" The default methods for highlighting. Can be overridden later.
+" The default methods for highlighting. Can be overrriden later.
 hi def link loutTodo Todo
 hi def link loutDefine Define
 hi def link loutEOmlDef Define

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     TSS (Thermal Synthesizer System) Geometry
 " Maintainer:   Adrian Nagle, anagle@ball.com
-" Last Change:  2021 May 17
+" Last Change:  2003 May 11
 " Filenames:    *.tssgm
 " URL:		http://www.naglenet.org/vim/syntax/tssgm.vim
 " MAIN URL:     http://www.naglenet.org/vim/
@@ -36,7 +36,7 @@ syn keyword tssgmParam  p1 p2 p3 p4 p5 p6 rot1 rot2 rot3 tx ty tz
 syn keyword tssgmSurfType  rectangle trapezoid disc ellipse triangle
 syn keyword tssgmSurfType  polygon cylinder cone sphere ellipic-cone
 syn keyword tssgmSurfType  ogive torus box paraboloid hyperboloid ellipsoid
-syn keyword tssgmSurfType  quadrilateral trapezoid
+syn keyword tssgmSurfType  quadrilateral trapeziod
 
 syn keyword tssgmArgs   OUT IN DOWN BOTH DOUBLE NONE SINGLE RADK CC FECC
 syn keyword tssgmArgs   white red blue green yellow orange violet pink

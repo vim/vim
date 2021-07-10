@@ -1,7 +1,7 @@
 " Vim indent file
 " Language: TypeScript
 " Maintainer: See https://github.com/HerringtonDarkholme/yats.vim
-" Last Change: 2021 May 17
+" Last Change: 2019 Oct 18
 " Acknowledgement: Based off of vim-ruby maintained by Nikolai Weibull http://vim-ruby.rubyforge.org
 
 " 0. Initialization {{{1
@@ -460,7 +460,7 @@ function! Fixedgq(lnum, count)
         return 1
     endif
 
-    " Put all the lines on one line and do normal splitting after that
+    " Put all the lines on one line and do normal spliting after that
     if l:count > 1
         while l:count > 1
             let l:count -= 1

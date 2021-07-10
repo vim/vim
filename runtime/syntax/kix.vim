@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	KixTart 95, Kix2001 Windows script language http://kixtart.org/
 " Maintainer:	Richard Howarth <rhowarth@sgb.co.uk>
-" Last Change:  2021 May 17
+" Last Change:	2003 May 11
 " URL:		http://www.howsoft.demon.co.uk/
 
 " KixTart files identified by *.kix extension.
@@ -9,8 +9,8 @@
 " Amendment History:
 " 26 April 2001: RMH
 "    Removed development comments from distro version
-"    Renamed "Kix*" to "kix*" for consistency
-"    Changes made in preparation for VIM version 5.8/6.00
+"    Renamed "Kix*" to "kix*" for consistancy
+"    Changes made in preperation for VIM version 5.8/6.00
 
 " TODO:
 "	Handle arrays highlighting
@@ -76,7 +76,7 @@ syn match   kixFloat		"-\=\.\d\+\>\|-\=\<\d\+\.\d\+\>" contains=NONE
 " Hex numeric constants
 syn match   kixHex		"\&\x\+\>" contains=NONE
 
-" Other constants
+" Other contants
 " Kix2001
 syn keyword kixConstant		on off
 
@@ -101,7 +101,7 @@ syn cluster kixDoBut		contains=kixDoError,kixSelectOK,kixIfOK,kixWhileOK,kixForE
 syn cluster kixWhileBut		contains=kixWhileError,kixSelectOK,kixIfOK,kixDoOK,kixForEachOK,kixForNextOK
 syn cluster kixForEachBut	contains=kixForEachError,kixSelectOK,kixIfOK,kixDoOK,kixForNextOK,kixWhileOK
 syn cluster kixForNextBut	contains=kixForNextError,kixSelectOK,kixIfOK,kixDoOK,kixForEachOK,kixWhileOK
-" Conditional construct errors.
+" Condtional construct errors.
 syn match   kixIfError		"\<if\>\|\<else\>\|\<endif\>"
 syn match   kixIfOK		contained "\<if\>\|\<else\>\|\<endif\>"
 syn region  kixIf		transparent matchgroup=kixIfOK start="\<if\>" end="\<endif\>" contains=ALLBUT,@kixIfBut

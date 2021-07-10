@@ -146,8 +146,13 @@ if !exists("pascal_no_functions")
   " ordinal functions
   syn keyword pascalFunction	Ord Chr Succ Pred
 
+<<<<<<< HEAD
   " transfer functions
   syn keyword pascalFunction	Round Trunc
+=======
+  " transfert functions
+  syn keyword pascalFunction	Chr Ord Round Trunc
+>>>>>>> parent of 2ec5ea284 (Fix typos, spelling and grammar errors mostly found by codespell.)
 endif
 
 

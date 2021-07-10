@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     TSS (Thermal Synthesizer System) Command Line
 " Maintainer:   Adrian Nagle, anagle@ball.com
-" Last Change:  2021 May 17
+" Last Change:  2003 May 11
 " Filenames:    *.tsscl
 " URL:		http://www.naglenet.org/vim/syntax/tsscl.vim
 " MAIN URL:     http://www.naglenet.org/vim/
@@ -60,7 +60,7 @@ syn match  tssclComment     "#.*$"
 "  !       Logical NOT
 "
 " algebraic operators:
-"  ^ or ** Exponentiation
+"  ^ or ** Exponentation
 "  *       Multiplication
 "  /       Division
 "  %       Remainder
@@ -120,9 +120,9 @@ syn match  tssclContChar  "-$"
 
 " C library functoins
 " Bessel functions (jn, yn)
-" Error and complementary error functions (erf, erfc)
+" Error and complementary error fuctions (erf, erfc)
 " Exponential functions (exp)
-" Logarithm (log, log10)
+" Logrithm (log, log10)
 " Power (pow)
 " Square root (sqrt)
 " Floor (floor)
@@ -136,7 +136,7 @@ syn match  tssclContChar  "-$"
 " Trigometric functions in degrees (sind, cosd, tand, asind, acosd, atand,
 "    atan2d)
 "
-" local variables: cl_arg1, cl_arg2, etc. (cl_arg is an array of arguments)
+" local varialbles: cl_arg1, cl_arg2, etc. (cl_arg is an array of arguments)
 " cl_args is the number of arguments
 "
 "

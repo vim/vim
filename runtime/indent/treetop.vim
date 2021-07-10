@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:             Treetop
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2021 May 17
+" Latest Revision:      2011-03-14
 
 if exists("b:did_indent")
   finish
@@ -34,5 +34,5 @@ function GetTreetopIndent()
     let ind -= shiftwidth()
   end
 
-  return ind
+  retur ind
 endfunction

@@ -1,7 +1,7 @@
 "   Vim indent file
 "   Language:	    Objective-C
 "   Maintainer:	    Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
-"   Last Change:    2021 May 17
+"   Last Change:    2004 May 16
 "
 
 
@@ -15,7 +15,7 @@ setlocal cindent
 " Set the function to do the work.
 setlocal indentexpr=GetObjCIndent()
 
-" To make a colon (:) suggest an indentation other than a goto/switch label,
+" To make a colon (:) suggest an indentation other than a goto/swich label,
 setlocal indentkeys-=:
 setlocal indentkeys+=<:>
 

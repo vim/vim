@@ -14,12 +14,12 @@
 if exists("b:current_syntax")
   finish
 endif
-"  Assembler syntax is case insensitive
+"  Assembler syntax is case insensetive
 syn case ignore
 
 
 
-" Vim search and movement commands on identifiers
+" Vim search and movement commands on identifers
 "  Comments at start of a line inside which to skip search for indentifiers
 setlocal comments=:;
 "  Identifier Keyword characters (defines \k)
@@ -60,7 +60,7 @@ else
   syn match   nasmSpecialLabel	"\<\.\.@\(\h\|[?@]\)\k*\>"
   syn match   nasmSpecialLabel	"\<\$\.\.@\(\h\|[?@]\)\k*\>"ms=s+1
 endif
-"  Labels can be dereferenced with '$' to distinguish them from reserved words
+"  Labels can be dereferenced with '$' to destinguish them from reserved words
 syn match   nasmLabelError	"\<\$\K\k*\s*:"
 syn match   nasmLabelError	"^\s*\$\K\k*\>"
 syn match   nasmLabelError	"\<\~\s*\(\k*\s*:\|\$\=\.\k*\)"

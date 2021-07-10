@@ -24,7 +24,7 @@ syntax case match
 syn keyword euphoria3Debug	with without trace profile  
 syn keyword euphoria3Debug	profile_time warning type_check 
 
-" Keywords (Statements) - from $EUDIR/bin/keywords.e:
+" Keywords (Statments) - from $EUDIR/bin/keywords.e:
 syn keyword euphoria3Keyword	if end then procedure else for return 	
 syn keyword euphoria3Keyword	do elsif while type constant to and or
 syn keyword euphoria3Keyword	exit function global by not include

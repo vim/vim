@@ -17,7 +17,7 @@ set cpo&vim
 syn match makeSpecial	"^\s*[@+-]\+"
 syn match makeNextLine	"\\\n\s*"
 
-" catch unmatched define/endef keywords.  endef only matches it is by itself on a line, possibly followed by a comment
+" catch unmatched define/endef keywords.  endef only matches it is by itself on a line, possibly followed by a commend
 syn region makeDefine start="^\s*define\s" end="^\s*endef\s*\(#.*\)\?$"
 	\ contains=makeStatement,makeIdent,makePreCondit,makeDefine
 

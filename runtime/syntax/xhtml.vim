@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	XHTML
-" Maintainer:	no one
+" Maintainer:	noone
 " Last Change:	2003 Feb 04
 
 " Load the HTML syntax for now.

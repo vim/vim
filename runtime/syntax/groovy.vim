@@ -362,7 +362,7 @@ exec "syn sync ccomment groovyComment minlines=" . groovy_minlines
 
 " Mark these as operators
 
-" Highlight brackets
+" Hightlight brackets
 " syn match  groovyBraces		"[{}]"
 " syn match  groovyBraces		"[\[\]]"
 " syn match  groovyBraces		"[\|]"

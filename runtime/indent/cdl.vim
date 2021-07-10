@@ -1,7 +1,7 @@
 " Description:	Comshare Dimension Definition Language (CDL)
 " Author:	Raul Segura Acevedo <raulseguraaceved@netscape.net>
-" Last Change: 2021 May 17
-"
+" Last Change:	Fri Nov 30 13:35:48  2001 CST
+
 if exists("b:did_indent")
     "finish
 endif
@@ -16,9 +16,9 @@ if exists("*CdlGetIndent")
     "finish
 endif
 
-" find out if an "...=..." expression is an assignment (or a conditional)
-" it scans 'line' first, and then the previous lines
-fun! CdlAssignment(lnum, line)
+" find out if an "...=..." expresion is an assignment (or a conditional)
+" it scans 'line' first, and then the previos lines
+fun! CdlAsignment(lnum, line)
   let f = -1
   let lnum = a:lnum
   let line = a:line
@@ -33,7 +33,7 @@ fun! CdlAssignment(lnum, line)
       endif
       " it's formula if there's a ';', 'elsE', 'theN', 'enDif' or 'expr'
       " conditional if there's a '<', '>', 'elseif', 'if', 'and', 'or', 'not',
-      " 'memberis', 'childrenof' and other \k\+of functions
+      " 'memberis', 'childrenof' and other \k\+of funcions
       let f = line[inicio-1] =~? '[en;]' || strpart(line, inicio-4, 4) =~? 'ndif\|expr'
     endw
     let lnum = prevnonblank(lnum-1)
@@ -68,7 +68,7 @@ fun! CdlGetIndent(lnum)
   " One 'closing' element at the beginning of the line has already reduced the
   " indent, but 'else', 'elseif' & 'then' increment it for the next line.
   " '=' at the beginning already has the right indent (increased for
-  " assignments).
+  " asignments).
   let f = -1
   let inicio = matchend(line, '^\c\s*\(else\a*\|then\|endif\|/[*/]\|[);={]\)')
   if inicio > 0
@@ -106,9 +106,9 @@ fun! CdlGetIndent(lnum)
     elseif c == '(' || c ==? 'f' " '(' or 'if'
       let ind = ind + shiftwidth()
     else " c == '='
-      " if it is an assignment increase indent
+      " if it is an asignment increase indent
       if f == -1 " we don't know yet, find out
-	let f = CdlAssignment(lnum, strpart(line, 0, inicio))
+	let f = CdlAsignment(lnum, strpart(line, 0, inicio))
       end
       if f == 1 " formula increase it
 	let ind = ind + shiftwidth()
@@ -117,12 +117,12 @@ fun! CdlGetIndent(lnum)
   endw
 
   " CURRENT LINE, if it starts with a closing element, decrease indent
-  " or if it starts with '=' (assignment), increase indent
+  " or if it starts with '=' (asignment), increase indent
   if match(thisline, '^\c\s*\(else\|then\|endif\|[);]\)') >= 0
     let ind = ind - shiftwidth()
   elseif match(thisline, '^\s*=') >= 0
-    if f == -1 " we don't know yet if is an assignment, find out
-      let f = CdlAssignment(lnum, "")
+    if f == -1 " we don't know yet if is an asignment, find out
+      let f = CdlAsignment(lnum, "")
     end
     if f == 1 " formula increase it
       let ind = ind + shiftwidth()

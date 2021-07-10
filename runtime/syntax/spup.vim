@@ -2,7 +2,7 @@
 " Language:     Speedup, plant simulator from AspenTech
 " Maintainer:   Stefan.Schwarzer <s.schwarzer@ndh.net>
 " URL:		http://www.ndh.net/home/sschwarzer/download/spup.vim
-" Last Change:  2021  May 17 by Shaun Case
+" Last Change:  2012 Feb 03 by Thilo Six
 " Filename:     spup.vim
 
 " Bugs
@@ -25,7 +25,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-" don't highlight several keywords like subsections
+" don't hightlight several keywords like subsections
 "let strict_subsections = 1
 
 " highlight types usually found in DECLARE section
@@ -35,7 +35,7 @@ endif
 
 " one line comment syntax (# comments)
 " 1. allow appended code after comment, do not complain
-" 2. show code beginning with the second # as an error
+" 2. show code beginnig with the second # as an error
 " 3. show whole lines with more than one # as an error
 if !exists("oneline_comments")
     let oneline_comments = 2
@@ -177,7 +177,7 @@ syn cluster spupOrdinary  contains=spupNumber,spupIdentifier,spupSymbol
 syn cluster spupOrdinary  add=spupError,spupString,spupComment
 syn cluster spupTextproc  contains=spupTextprocGeneric,spupTextprocError
 
-" define synchronizing; especially OPERATION sections can become very large
+" define syncronizing; especially OPERATION sections can become very large
 syn sync clear
 syn sync minlines=100
 syn sync maxlines=500

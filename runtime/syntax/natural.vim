@@ -100,7 +100,7 @@ syn match   naturalNumber	"\.\d\+"
 " Formats in write statement
 syn match   naturalFormat	"\<\d\+[TX]\>"
 
-" String and Character constants
+" String and Character contstants
 syn match   naturalString	"H'\x\+'"
 syn region  naturalString	start=+"+ end=+"+
 syn region  naturalString	start=+'+ end=+'+

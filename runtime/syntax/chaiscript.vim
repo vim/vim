@@ -61,7 +61,7 @@ syn region  chaiscriptFunc         matchgroup=chaiscriptFunc start="`" end="`"
 " Intentionally leaving out all of the normal, well known operators
 syn match   chaiscriptOperator     "\.\."
 
-" Guard separator as an operator
+" Guard seperator as an operator
 syn match   chaiscriptOperator     ":"
 
 " Comments

@@ -24,7 +24,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-" MOST important - else most of the keywords won't work!
+" MOST important - else most of the keywords wont work!
 setlocal isk=@,48-57,-,_
 
 if !exists('g:cobol_inline_comment')

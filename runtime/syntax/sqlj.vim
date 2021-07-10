@@ -16,7 +16,7 @@ endif
 " Read the Java syntax to start with
 source <sfile>:p:h/java.vim
 
-" SQLJ extensions
+" SQLJ extentions
 " The SQL reserved words, defined as keywords.
 
 syn case ignore

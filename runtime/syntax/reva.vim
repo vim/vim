@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Reva Forth
 " Version:	2011.2
-" Last Change:	2021 May 17
+" Last Change:	2019 Sep 27
 " Maintainer:	Ron Aaron <ron@ronware.org>
 " URL:		http://ronware.org/reva/
 " Filetypes:	*.rf *.frt
@@ -126,7 +126,7 @@ syn match revavocs /[^~ ]*\~\>/
 syn keyword revamath decimal hex base binary octal
 syn match revainteger '\<-\=[0-9.]*[0-9.]\+\>'
 " recognize hex and binary numbers, the '$' and '%' notation is for greva
-syn match revainteger '\<\$\x*\x\+\>' " *1* --- don't mess
+syn match revainteger '\<\$\x*\x\+\>' " *1* --- dont't mess
 syn match revainteger '\<\x*\d\x*\>'  " *2* --- this order!
 syn match revainteger '\<%[0-1]*[0-1]\+\>'
 syn match revainteger "\<'.\>"

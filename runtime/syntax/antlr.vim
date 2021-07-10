@@ -1,7 +1,7 @@
 " Vim syntax file
 " Antlr:	ANTLR, Another Tool For Language Recognition <www.antlr.org>
 " Maintainer:	Mathieu Clabaut <mathieu.clabaut@free.fr>
-" LastChange:	2021 May 17
+" LastChange:	02 May 2001
 " Original:	Comes from JavaCC.vim
 
 " quit when a syntax file was already loaded
@@ -9,7 +9,7 @@ if exists("b:current_syntax")
    finish
 endif
 
-" This syntax file is a first attempt. It is far from perfect...
+" This syntac file is a first attempt. It is far from perfect...
 
 " Uses java.vim, and adds a few special things for JavaCC Parser files.
 " Those files usually have the extension  *.jj

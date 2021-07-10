@@ -11,7 +11,7 @@ endif
 " Read the C++ syntax to start with
 runtime! syntax/cpp.vim
 
-" ESQL-C extensions
+" ESQL-C extentions
 
 syntax keyword esqlcPreProc	EXEC SQL INCLUDE
 

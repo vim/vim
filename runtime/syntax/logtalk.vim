@@ -2,7 +2,7 @@
 "
 " Language:	Logtalk
 " Maintainer:	Paulo Moura <pmoura@logtalk.org>
-" Last Change:	May 17, 2021
+" Last Change:	August 3, 2018
 
 
 " quit when a syntax file was already loaded
@@ -330,7 +330,7 @@ syn match	logtalkKeyword		"\<t\(an\|runcate\)\ze("
 syn match	logtalkKeyword		"\<ceiling\ze("
 
 
-" Other arithmetic functors
+" Other arithemtic functors
 
 syn match	logtalkOperator		"\*\*"
 syn match	logtalkKeyword		"\<s\(in\|qrt\)\ze("

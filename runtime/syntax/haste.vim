@@ -52,7 +52,7 @@ syn match   hasteStatement	"\<\(sel\|les\)\>"
 syn match   hasteError		"\<\d\+[_a-zA-Z]\+\>"
 syn match   hasteError		"\(\([[:alnum:]]\+\s*(\s\+\|)\s*,\)\)\s*\([[:alnum:]]\+\s*(\)"
 
-" Predefined Haste types
+" Predifined Haste types
 syn keyword hasteType bool
 
 " Values for standard Haste types

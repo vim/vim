@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language: Essbase script
 " Maintainer:	Raul Segura Acevedo <raulseguraaceved@netscape.net>
-" Last change:	Mon May 17 18:29:11 PDT 2021 by Shaun Case
+" Last change:	2011 Dec 25 by Thilo Six
+
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
 	finish
@@ -140,7 +141,7 @@ sy	keyword	cscBPMacro	contained EndLoop AllMembers SelectedMembers If Else EndIf
 sy	match	cscBPMacro	contained	"!"
 sy	match	cscBPW	"!\s*\a*"	contains=cscBPmacro
 
-" when wanted, highlighting lhs members or errors in assignments (may lag the editing)
+" when wanted, highlighting lhs members or erros in asignments (may lag the editing)
 if exists("csc_asignment")
 	sy	match	cscEqError	'\("[^"]*"\s*\|[^][\t !%()*+,--/:;<=>{}~]\+\s*\|->\s*\)*=\([^=]\@=\|$\)'
 	sy	region	cscFormula	transparent matchgroup=cscVarName start='\("[^"]*"\|[^][\t !%()*+,--/:;<=>{}~]\+\)\s*=\([^=]\@=\|\n\)' skip='"[^"]*"' end=';' contains=ALLBUT,cscFormula,cscFormulaIn,cscBPMacro,cscCondition

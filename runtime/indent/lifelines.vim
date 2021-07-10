@@ -2,7 +2,7 @@
 " Language:	LifeLines
 " Maintainer:	Patrick Texier <p.texier@orsennes.com>
 " Location:	<http://patrick.texier.free.fr/vim/indent/lifelines.vim>
-" Last Change:  2021 May 17
+" Last Change:	2010 May 7
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -11,7 +11,7 @@ endif
 let b:did_indent = 1
 
 " LifeLines uses cindent without ; line terminator, C functions
-" declarations, C keywords, C++ formatting
+" declarations, C keywords, C++ formating
 setlocal cindent
 setlocal cinwords=""
 setlocal cinoptions+=+0

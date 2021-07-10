@@ -1,6 +1,6 @@
 " Language:     Verilog HDL
 " Maintainer:	Chih-Tsun Huang <cthuang@cs.nthu.edu.tw>
-" Last Change:	2021 May 17 by Shaun Case
+" Last Change:	2017 Aug 25 by Chih-Tsun Huang
 " URL:		    http://www.cs.nthu.edu.tw/~cthuang/vim/indent/verilog.vim
 "
 " Credits:
@@ -76,7 +76,7 @@ function GetVerilogIndent()
     let vverb = 0
   endif
 
-  " Indent according to last line
+  " Indent accoding to last line
   " End of multiple-line comment
   if last_line =~ '\*/\s*$' && last_line !~ '/\*.\{-}\*/'
     let ind = ind - offset_comment1
@@ -219,7 +219,7 @@ function GetVerilogIndent()
 
   endif
 
-  " Return the indentation
+  " Return the indention
   return ind
 endfunction
 

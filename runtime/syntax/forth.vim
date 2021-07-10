@@ -172,7 +172,7 @@ syn keyword forthFileWords SLURP-FILE SLURP-FID STDIN STDOUT STDERR
 syn keyword forthFileWords INCLUDE-FILE INCLUDED REQUIRED
 syn keyword forthBlocks OPEN-BLOCKS USE LOAD --> BLOCK-OFFSET
 syn keyword forthBlocks GET-BLOCK-FID BLOCK-POSITION LIST SCR BLOCK
-syn keyword forthBlocks BUFFER EMPTY-BUFFERS EMPTY-BUFFER UPDATE UPDATED?
+syn keyword forthBlocks BUFER EMPTY-BUFFERS EMPTY-BUFFER UPDATE UPDATED?
 syn keyword forthBlocks SAVE-BUFFERS SAVE-BUFFER FLUSH THRU +LOAD +THRU
 syn keyword forthBlocks BLOCK-INCLUDED BLK
 
@@ -181,7 +181,7 @@ syn keyword forthMath DECIMAL HEX BASE
 syn match forthInteger '\<-\=[0-9]\+.\=\>'
 syn match forthInteger '\<&-\=[0-9]\+.\=\>'
 " recognize hex and binary numbers, the '$' and '%' notation is for gforth
-syn match forthInteger '\<\$\x*\x\+\>' " *1* --- don't mess
+syn match forthInteger '\<\$\x*\x\+\>' " *1* --- dont't mess
 syn match forthInteger '\<\x*\d\x*\>'  " *2* --- this order!
 syn match forthInteger '\<%[0-1]*[0-1]\+\>'
 syn match forthFloat '\<-\=\d*[.]\=\d\+[DdEe]\d\+\>'

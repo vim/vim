@@ -2,7 +2,7 @@
 " Language:	Modsim III, by compuware corporation (www.compuware.com)
 " Maintainer:	Philipp Jocham <flip@sbox.tu-graz.ac.at>
 " Extension:	*.mod
-" Last Change:  2021 May 17
+" Last Change:	2001 May 10
 "
 " 2001 March 24:
 "  - Modsim III is a registered trademark from compuware corporation
@@ -18,7 +18,7 @@ if exists("b:current_syntax")
 endif
 
 
-" syn case match " case sensitive match is default
+" syn case match " case sensitiv match is default
 
 " A bunch of keywords
 syn keyword modsim3Keyword ACTID ALL AND AS ASK
@@ -55,7 +55,7 @@ syn keyword modsim3Type ANYARRAY ANYOBJ ANYREC ARRAY BOOLEAN CHAR INTEGER
 syn keyword modsim3Type LMONITORED LRMONITORED NILARRAY NILOBJ NILREC REAL
 syn keyword modsim3Type RECORD RMONITOR RMONITORED STRING
 
-" catch errors caused by wrong parenthesis
+" catch errros cause by wrong parenthesis
 " slight problem with "( *)" or "(* )". Hints?
 syn region modsim3Paren	transparent start='(' end=')' contains=ALLBUT,modsim3ParenError
 syn match modsim3ParenError ")"
@@ -94,3 +94,4 @@ hi def link modsim3BuiltinNoParen	Function
 let b:current_syntax = "modsim3"
 
 " vim: ts=8 sw=2
+

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Smalltalk
 " Maintainer:	Arndt Hesse <hesse@self.de>
-" Last Change:	May 17 2021 by Shaun Case
+" Last Change:	2012 Feb 12 by Thilo Six
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -44,7 +44,7 @@ syn match  stCharacter	"$."
 
 syn case ignore
 
-" the symbols prefixed by a '#'
+" the symols prefixed by a '#'
 syn match  stSymbol	"\(#\<[a-z_][a-z0-9_]*\>\)"
 syn match  stSymbol	"\(#'[^']*'\)"
 
@@ -58,7 +58,7 @@ syn match  stFloat	"\<\d\+e[-+]\=\d\+[fl]\=\>"
 
 syn case match
 
-" a try to highlight paren mismatches
+" a try to higlight paren mismatches
 syn region stParen	transparent start='(' end=')' contains=ALLBUT,stParenError
 syn match  stParenError	")"
 syn region stBlock	transparent start='\[' end='\]' contains=ALLBUT,stBlockError

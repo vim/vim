@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Good old CFG files
 " Maintainer:	Igor N. Prischepoff (igor@tyumbit.ru, pri_igor@mail.ru)
-" Last change:	2021 May 17
+" Last change:	2012 Aug 11
 
 " quit when a syntax file was already loaded
 if exists ("b:current_syntax")
@@ -32,7 +32,7 @@ syn match  CfgComment	"#.*"
 syn match  CfgComment	";.*"
 syn match  CfgComment	"\/\/.*"
 
-" Define the default highlighting.
+" Define the default hightlighting.
 " Only when an item doesn't have highlighting yet
 hi def link CfgOnOff     Label
 hi def link CfgComment	Comment

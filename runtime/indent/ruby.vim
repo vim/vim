@@ -265,7 +265,7 @@ function! GetRubyIndent(...) abort
         \ ]
 
   " Most Significant line based on the previous one -- in case it's a
-  " continuation of something above
+  " contination of something above
   let indent_info.plnum_msl = s:GetMSL(indent_info.plnum)
 
   for callback_name in indent_callback_names

@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	generic Changelog file
-" Maintainer:	no one
-" Last Change:	2021 May 17 
+" Maintainer:	noone
+" Last Change:	2005 Mar 29
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")

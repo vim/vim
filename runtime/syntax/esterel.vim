@@ -40,7 +40,7 @@ syn keyword esterelStatement	relation
 syn keyword esterelFunctions	function procedure task
 syn keyword esterelSysCall		call trap exit exec
 " Esterel Types
-syn keyword esterelType 		integer float boolean
+syn keyword esterelType 		integer float bolean
 " Esterel Comment
 syn match esterelComment		"%.*$"
 " Operators and special characters

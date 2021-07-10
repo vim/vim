@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	po (gettext)
 " Maintainer:	Dwayne Bailey <dwayne@translate.org.za>
-" Last Change:	2021 May 17
+" Last Change:	2015 Jun 07
 " Contributors: Dwayne Bailey (Most advanced syntax highlighting)
 "               Leonardo Fontenelle (Spell checking)
 "               Nam SungHyun <namsh@kldp.org> (Original maintainer)
@@ -42,7 +42,7 @@ syn match     poHeaderItem "\(Project-Id-Version\|Report-Msgid-Bugs-To\|POT-Crea
 syn match     poHeaderUndefined "\(PACKAGE VERSION\|YEAR-MO-DA HO:MI+ZONE\|FULL NAME <EMAIL@ADDRESS>\|LANGUAGE <LL@li.org>\|CHARSET\|ENCODING\|INTEGER\|EXPRESSION\)" contained
 syn match     poCopyrightUnset "SOME DESCRIPTIVE TITLE\|FIRST AUTHOR <EMAIL@ADDRESS>, YEAR\|Copyright (C) YEAR Free Software Foundation, Inc\|YEAR THE PACKAGE\'S COPYRIGHT HOLDER\|PACKAGE" contained
 
-" Translation comment block including: translator comment, automatic comments, flags and locations
+" Translation comment block including: translator comment, automatic coments, flags and locations
 syn match     poComment "^#.*$"
 syn keyword   poFlagFuzzy fuzzy contained
 syn match     poCommentTranslator "^# .*$" contains=poCopyrightUnset

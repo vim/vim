@@ -2,7 +2,7 @@
 " Language:	SMIL (Synchronized Multimedia Integration Language)
 " Maintainer:	Herve Foucher <Herve.Foucher@helio.org>
 " URL:		http://www.helio.org/vim/syntax/smil.vim
-" Last Change:	2021 May 17 by Shaun Case
+" Last Change:	2012 Feb 03 by Thilo Six
 
 " To learn more about SMIL, please refer to http://www.w3.org/AudioVideo/
 " and to http://www.helio.org/products/smil/tutorial/
@@ -71,7 +71,7 @@ syn match   smilArg contained "skip-content"
 
 
 " SMIL Boston ext.
-" These are new SMIL functionalities seen on www.w3.org on August 3rd 1999
+" This are new SMIL functionnalities seen on www.w3.org on August 3rd 1999
 
 " Animation
 syn keyword smilTagName contained animate set move

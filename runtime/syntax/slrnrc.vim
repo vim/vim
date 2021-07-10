@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Slrn setup file (based on slrn 0.9.8.1)
 " Maintainer:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
-" Last Change:	17 May 2021
+" Last Change:	23 April 2006
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -94,7 +94,7 @@ syn region  slrnrcColorObjStr	contained matchgroup=slrnrcColorObj start=+"+ end=
 syn keyword slrnrcColorVal	contained default
 syn keyword slrnrcColorVal	contained black blue brightblue brightcyan brightgreen brightmagenta brightred brown cyan gray green lightgray magenta red white yellow
 syn region  slrnrcColorValStr	contained matchgroup=slrnrcColorVal start=+"+ end=+"+ oneline contains=slrnrcColorVal,slrnrcSpaceError
-" Matching a function with three arguments
+" Mathcing a function with three arguments
 syn keyword slrnrcColor		contained color
 syn match   slrnrcColorInit	contained "^\s*color\s\+\S\+" skipwhite nextgroup=slrnrcColorVal\(Str\)\= contains=slrnrcColor\(Obj\|ObjStr\)\=
 syn match   slrnrcColorLine	"^\s*color\s\+\S\+\s\+\S\+" skipwhite nextgroup=slrnrcColorVal\(Str\)\= contains=slrnrcColor\(Init\|Val\|ValStr\)

@@ -4,7 +4,7 @@
 " Repository: https://github.com/chrisbra/vim-xml-ftplugin
 " Previous Maintainer: Johannes Zellner <johannes@zellner.org>
 " Author: Daniel Amyot <damyot@site.uottawa.ca>
-" Last Changed:	May 17 2021
+" Last Changed:	Sept 24, 2019
 " Filenames: *.dtd
 "
 " REFERENCES:
@@ -45,7 +45,7 @@ if !exists("dtd_no_tag_errors")
     syn region dtdError contained start=+<!+lc=2 end=+>+
 endif
 
-" if this is a html like comment highlight also
+" if this is a html like comment hightlight also
 " the opening <! and the closing > as Comment.
 syn region dtdComment		start=+<![ \t]*--+ end=+-->+ contains=dtdTodo,@Spell
 

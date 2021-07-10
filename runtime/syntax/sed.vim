@@ -2,7 +2,7 @@
 " Language:	sed
 " Maintainer:	Haakon Riiser <hakonrk@fys.uio.no>
 " URL:		http://folk.uio.no/hakonrk/vim/syntax/sed.vim
-" Last Change:	2021 May 17
+" Last Change:	2010 May 29
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -66,7 +66,7 @@ syn region sedAddress matchgroup=Special start=+\\@\(\\@\)\=+ skip=+[^\\]\(\\\\\
 syn region sedRegexp64 matchgroup=Special start=+@\(\\\\\|\\@\)*+ skip=+[^\\@]\(\\\\\)*\\@+ end=+@+me=e-1 contains=sedTab,sedRegexpMeta keepend contained nextgroup=sedReplacement64
 syn region sedReplacement64 matchgroup=Special start=+@\(\\\\\|\\@\)*+ skip=+[^\\@]\(\\\\\)*\\@+ end=+@+ contains=sedTab,sedReplaceMeta keepend contained nextgroup=sedFlag
 
-" Since the syntax for the substitution command is very similar to the
+" Since the syntax for the substituion command is very similar to the
 " syntax for the transform command, I use the same pattern matching
 " for both commands.  There is one problem -- the transform command
 " (y) does not allow any flags.  To save memory, I ignore this problem.
