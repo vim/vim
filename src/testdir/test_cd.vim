@@ -177,6 +177,19 @@ func Test_lcd_split()
   quit!
 endfunc
 
+func Test_cd_from_non_existing_dir()
+  let saveddir = getcwd()
+  call mkdir('Xdeleted_dir')
+  cd Xdeleted_dir
+  call delete(saveddir .. '/Xdeleted_dir', 'd')
+
+  " Expect E187 as the current directory was deleted.
+  call assert_fails('pwd', 'E187:')
+  call assert_equal('', getcwd())
+  cd -
+  call assert_equal(saveddir, getcwd())
+endfunc
+
 func Test_cd_completion()
   call mkdir('XComplDir1', 'p')
   call mkdir('XComplDir2', 'p')
