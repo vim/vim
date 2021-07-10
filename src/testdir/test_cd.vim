@@ -1,6 +1,7 @@
 " Test for :cd and chdir()
 
 source shared.vim
+source check.vim
 
 func Test_cd_large_path()
   " This used to crash with a heap write overflow.
@@ -178,6 +179,8 @@ func Test_lcd_split()
 endfunc
 
 func Test_cd_from_non_existing_dir()
+  CheckNotMSWindows
+
   let saveddir = getcwd()
   call mkdir('Xdeleted_dir')
   cd Xdeleted_dir
