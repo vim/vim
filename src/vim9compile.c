@@ -3624,10 +3624,12 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	ufunc->uf_ret_type = &t_unknown;
     compile_def_function(ufunc, FALSE, cctx->ctx_compile_type, cctx);
 
+#ifdef FEAT_PROFILE
     // When the outer function is compiled for profiling, the lambda may be
     // called without profiling.  Compile it here in the right context.
     if (cctx->ctx_compile_type == CT_PROFILE)
 	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
+#endif
 
     // evalarg.eval_tofree_cmdline may have a copy of the last line and "*arg"
     // points into it.  Point to the original line to avoid a dangling pointer.
@@ -5630,6 +5632,14 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	func_ptr_unref(ufunc);
 	goto theend;
     }
+
+#ifdef FEAT_PROFILE
+    // When the outer function is compiled for profiling, the nested function
+    // may be called without profiling.  Compile it here in the right context.
+    if (COMPILE_TYPE(ufunc) == CT_PROFILE
+				       && func_needs_compiling(ufunc, CT_NONE))
+	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
+#endif
 
     if (is_global)
     {

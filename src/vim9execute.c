@@ -197,6 +197,7 @@ call_dfunc(
     int		idx;
     estack_T	*entry;
     funclocal_T	*floc = NULL;
+    int		res = OK;
 
     if (dfunc->df_deleted)
     {
@@ -219,14 +220,6 @@ call_dfunc(
 			(((dfunc_T *)def_functions.ga_data)
 					      + ectx->ec_dfunc_idx)->df_ufunc);
 	}
-
-	// Profiling might be enabled/disabled along the way.  This should not
-	// fail, since the function was compiled before and toggling profiling
-	// doesn't change any errors.
-	if (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
-		&& compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL)
-								       == FAIL)
-	    return FAIL;
     }
 #endif
 
@@ -235,10 +228,14 @@ call_dfunc(
 
     // When debugging and using "cont" switches to the not-debugged
     // instructions, may need to still compile them.
-    if ((func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
-	       && compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL)
-								      == FAIL)
-	    || INSTRUCTIONS(dfunc) == NULL)
+    if (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc)))
+    {
+	res = compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL);
+
+	// compile_def_function() may cause def_functions.ga_data to change
+	dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
+    }
+    if (res == FAIL || INSTRUCTIONS(dfunc) == NULL)
     {
 	if (did_emsg_cumul + did_emsg == did_emsg_before)
 	    semsg(_(e_function_is_not_compiled_str),
