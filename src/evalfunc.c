@@ -431,9 +431,10 @@ arg_item_of_prev(type_T *type, argcontext_T *context)
     static int
 arg_str_or_nr_or_list(type_T *type, argcontext_T *context)
 {
-    if (type->tt_type == VAR_STRING
-		     || type->tt_type == VAR_NUMBER
-		     || type->tt_type == VAR_LIST)
+    if (type->tt_type == VAR_ANY
+		|| type->tt_type == VAR_STRING
+		|| type->tt_type == VAR_NUMBER
+		|| type->tt_type == VAR_LIST)
 	return OK;
     arg_type_mismatch(&t_string, type, context->arg_idx + 1);
     return FAIL;
