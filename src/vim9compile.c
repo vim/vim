@@ -1781,6 +1781,7 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     garray_T	*stack = &cctx->ctx_type_stack;
     int		argoff;
     type_T	**argtypes = NULL;
+    type_T	*shuffled_argtypes[MAX_FUNC_ARGS];
     type_T	*maptype = NULL;
 
     RETURN_OK_IF_SKIP(cctx);
@@ -1800,6 +1801,16 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     {
 	// Check the types of the arguments.
 	argtypes = ((type_T **)stack->ga_data) + stack->ga_len - argcount;
+	if (method_call && argoff > 1)
+	{
+	    int i;
+
+	    for (i = 0; i < argcount; ++i)
+		shuffled_argtypes[i] = (i < argoff - 1)
+			    ? argtypes[i + 1]
+			    : (i == argoff - 1) ? argtypes[0] : argtypes[i];
+	    argtypes = shuffled_argtypes;
+	}
 	if (internal_func_check_arg_types(argtypes, func_idx, argcount,
 								 cctx) == FAIL)
 	    return FAIL;

@@ -2305,6 +2305,8 @@ enddef
 
 def Test_win_execute()
   assert_equal("\n" .. winnr(), win_execute(win_getid(), 'echo winnr()'))
+  assert_equal("\n" .. winnr(), 'echo winnr()'->win_execute(win_getid()))
+  assert_equal("\n" .. winnr(), win_execute(win_getid(), 'echo winnr()', 'silent'))
   assert_equal('', win_execute(342343, 'echo winnr()'))
 enddef
 

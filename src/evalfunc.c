@@ -450,6 +450,7 @@ argcheck_T arg2_dict_string_or_nr[] = {arg_dict_any, arg_string_or_nr};
 argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
 argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
 argcheck_T arg2_execute[] = {arg_string_or_list, arg_string};
+argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list, arg_string};
 argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
 argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
 argcheck_T arg3_string[] = {arg_string, arg_string, arg_string};
@@ -1832,7 +1833,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_visualmode},
     {"wildmenumode",	0, 0, 0,	    NULL,
 			ret_number,	    f_wildmenumode},
-    {"win_execute",	2, 3, FEARG_2,	    NULL,
+    {"win_execute",	2, 3, FEARG_2,	    arg23_win_execute,
 			ret_string,	    f_win_execute},
     {"win_findbuf",	1, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_win_findbuf},
