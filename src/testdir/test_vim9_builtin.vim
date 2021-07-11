@@ -213,12 +213,19 @@ def Test_assert_notmatch()
   CheckDefFailure(['assert_notmatch("a", "b", null)'], 'E1013: Argument 3: type mismatch, expected string but got special')
 enddef
 
+def Test_assert_report()
+  CheckDefAndScriptFailure2(['assert_report([1, 2])'], 'E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1174: String required for argument 1')
+enddef
+
 def Test_balloon_show()
   CheckGui
   CheckFeature balloon_eval
 
   assert_fails('balloon_show(10)', 'E1174:')
   assert_fails('balloon_show(true)', 'E1174:')
+
+  CheckDefAndScriptFailure2(['balloon_show(1.2)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['balloon_show({"a": 10})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1')
 enddef
 
 def Test_balloon_split()
@@ -387,6 +394,13 @@ enddef
 def Test_charcol()
   CheckDefFailure(['charcol(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
   CheckDefFailure(['charcol({a: 10})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>')
+  new
+  setline(1, ['abcdefgh'])
+  cursor(1, 4)
+  assert_equal(4, charcol('.'))
+  assert_equal(9, charcol([1, '$']))
+  assert_equal(0, charcol([10, '$']))
+  bw!
 enddef
 
 def Test_charidx()
@@ -412,8 +426,11 @@ enddef
 
 def Test_col()
   new
-  setline(1, 'asdf')
-  col([1, '$'])->assert_equal(5)
+  setline(1, 'abcdefgh')
+  cursor(1, 4)
+  assert_equal(4, col('.'))
+  col([1, '$'])->assert_equal(9)
+  assert_equal(0, col([10, '$']))
 
   assert_fails('col(true)', 'E1174:')
 
@@ -1503,9 +1520,34 @@ def Test_or()
   CheckDefFailure(['or(0x1, "x")'], 'E1013: Argument 2: type mismatch, expected number but got string')
 enddef
 
+def Test_popup_atcursor()
+  CheckDefAndScriptFailure2(['popup_atcursor({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E450: buffer number, text or a list required')
+  CheckDefAndScriptFailure2(['popup_atcursor("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
+enddef
+
+def Test_popup_beval()
+  CheckDefAndScriptFailure2(['popup_beval({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E450: buffer number, text or a list required')
+  CheckDefAndScriptFailure2(['popup_beval("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
+enddef
+
+def Test_popup_dialog()
+  CheckDefAndScriptFailure2(['popup_dialog({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E450: buffer number, text or a list required')
+  CheckDefAndScriptFailure2(['popup_dialog("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
+enddef
+
 def Test_popup_locate()
   CheckDefAndScriptFailure2(['popup_locate("a", 20)'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1030: Using a String as a Number')
   CheckDefAndScriptFailure2(['popup_locate(10, "b")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1030: Using a String as a Number')
+enddef
+
+def Test_popup_menu()
+  CheckDefAndScriptFailure2(['popup_menu({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E450: buffer number, text or a list required')
+  CheckDefAndScriptFailure2(['popup_menu("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
+enddef
+
+def Test_popup_notification()
+  CheckDefAndScriptFailure2(['popup_notification({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E450: buffer number, text or a list required')
+  CheckDefAndScriptFailure2(['popup_notification("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
 enddef
 
 def Test_prevnonblank()
@@ -1885,6 +1927,17 @@ enddef
 def Test_setfperm()
   CheckDefFailure(['setfperm(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number')
   CheckDefFailure(['setfperm("a", 0z10)'], 'E1013: Argument 2: type mismatch, expected string but got blob')
+enddef
+
+def Test_setline()
+  new
+  setline(1, range(1, 4))
+  assert_equal(['1', '2', '3', '4'], getline(1, '$'))
+  setline(1, ['a', 'b', 'c', 'd'])
+  assert_equal(['a', 'b', 'c', 'd'], getline(1, '$'))
+  setline(1, 'one')
+  assert_equal(['one', 'b', 'c', 'd'], getline(1, '$'))
+  bw!
 enddef
 
 def Test_setloclist()
@@ -2301,6 +2354,13 @@ enddef
 
 def Test_virtcol()
   CheckDefAndScriptFailure2(['virtcol(1.1)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+  new
+  setline(1, ['abcdefgh'])
+  cursor(1, 4)
+  assert_equal(4, virtcol('.'))
+  assert_equal(9, virtcol([1, '$']))
+  assert_equal(0, virtcol([10, '$']))
+  bw!
 enddef
 
 def Test_win_execute()
