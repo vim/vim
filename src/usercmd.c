@@ -1027,7 +1027,15 @@ ex_command(exarg_T *eap)
 		  && STRNCMP(name, "Next", name_len > 4 ? 4 : name_len) == 0))
 	emsg(_("E841: Reserved name, cannot be used for user defined command"));
     else if (compl > 0 && (argt & EX_EXTRA) == 0)
-	emsg(_(e_complete_used_without_nargs));
+    {
+	// Some plugins rely on silently ignoring the mistake, only make this
+	// an error in Vim9 script.
+	if (in_vim9script())
+	    emsg(_(e_complete_used_without_nargs));
+	else
+	    give_warning_with_source(
+		       (char_u *)_(e_complete_used_without_nargs), TRUE, TRUE);
+    }
     else
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
 						  addr_type_arg, eap->forceit);

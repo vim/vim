@@ -69,6 +69,7 @@ void verbose_leave_scroll(void);
 void verbose_stop(void);
 int verbose_open(void);
 void give_warning(char_u *message, int hl);
+void give_warning_with_source(char_u *message, int hl, int with_source);
 void give_warning2(char_u *message, char_u *a1, int hl);
 void msg_advance(int col);
 int do_dialog(int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield, int ex_cmd);

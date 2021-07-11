@@ -1,5 +1,7 @@
 " Tests for user defined commands
 
+source vim9.vim
+
 " Test for <mods> in user defined commands
 function Test_cmdmods()
   let g:mods = ''
@@ -270,12 +272,28 @@ func Test_CmdErrors()
   call assert_fails('com! -complete=custom DoCmd :', 'E467:')
   call assert_fails('com! -complete=customlist DoCmd :', 'E467:')
   call assert_fails('com! -complete=behave,CustomComplete DoCmd :', 'E468:')
-  call assert_fails('com! -complete=file DoCmd :', 'E1208:')
-  call assert_fails('com! -nargs=0 -complete=file DoCmd :', 'E1208:')
   call assert_fails('com! -nargs=x DoCmd :', 'E176:')
   call assert_fails('com! -count=1 -count=2 DoCmd :', 'E177:')
   call assert_fails('com! -count=x DoCmd :', 'E178:')
   call assert_fails('com! -range=x DoCmd :', 'E178:')
+
+  com! -complete=file DoCmd :
+  call assert_match('E1208:', v:warningmsg)
+  let v:warningmsg = ''
+  com! -nargs=0 -complete=file DoCmd :
+  call assert_match('E1208:', v:warningmsg)
+
+  let lines =<< trim END
+      vim9script
+      com! -complete=file DoCmd :
+  END
+  call CheckScriptFailure(lines, 'E1208', 2)
+
+  let lines =<< trim END
+      vim9script
+      com! -nargs=0 -complete=file DoCmd :
+  END
+  call CheckScriptFailure(lines, 'E1208', 2)
 
   com! -nargs=0 DoCmd :
   call assert_fails('DoCmd x', 'E488:')
