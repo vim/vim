@@ -4167,6 +4167,16 @@ def Test_option_modifier()
   set hlsearch&
 enddef
 
+" This must be called last, it may cause following :def functions to fail
+def Test_xxx_echoerr_line_number()
+  var lines =<< trim END
+      echoerr 'some'
+         .. ' error'
+         .. ' continued'
+  END
+  CheckDefExecAndScriptFailure(lines, 'some error continued', 1)
+enddef
+
 def ProfiledFunc()
   var n = 3
   echo [[1, 2], [3, 4]]->filter((_, l) => l[0] == n)

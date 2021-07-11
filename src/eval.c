@@ -6191,6 +6191,7 @@ ex_execute(exarg_T *eap)
     char_u	*p;
     garray_T	ga;
     int		len;
+    long	start_lnum = SOURCING_LNUM;
 
     ga_init2(&ga, 1, 80);
 
@@ -6244,6 +6245,9 @@ ex_execute(exarg_T *eap)
 
     if (ret != FAIL && ga.ga_data != NULL)
     {
+	// use the first line of continuation lines for messages
+	SOURCING_LNUM = start_lnum;
+
 	if (eap->cmdidx == CMD_echomsg || eap->cmdidx == CMD_echoerr)
 	{
 	    // Mark the already saved text as finishing the line, so that what
