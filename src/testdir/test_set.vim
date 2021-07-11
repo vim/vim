@@ -41,7 +41,7 @@ func Test_set_no_arg()
 
   setglobal textwidth=77
   let a = execute('setglobal')
-  call assert_equal("\n--- Global option values ---\n  textwidth=77", a)
+  call assert_match("^\n--- Global option values ---\n.*textwidth=77", a)
   setglobal textwidth&
 endfunc
 
