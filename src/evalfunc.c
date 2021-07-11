@@ -446,6 +446,7 @@ argcheck_T arg2_number[] = {arg_number, arg_number};
 argcheck_T arg2_string[] = {arg_string, arg_string};
 argcheck_T arg2_list_nr[] = {arg_list_number, arg_list_number};
 argcheck_T arg2_dict_string[] = {arg_dict_any, arg_string};
+argcheck_T arg2_dict_string_or_nr[] = {arg_dict_any, arg_string_or_nr};
 argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
 argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
 argcheck_T arg2_execute[] = {arg_string_or_list, arg_string};
@@ -1109,7 +1110,7 @@ static funcentry_T global_functions[] =
 			ret_any,	    f_globpath},
     {"has",		1, 2, 0,	    NULL,
 			ret_number_bool,    f_has},
-    {"has_key",		2, 2, FEARG_1,	    arg2_dict_string,
+    {"has_key",		2, 2, FEARG_1,	    arg2_dict_string_or_nr,
 			ret_number_bool,    f_has_key},
     {"haslocaldir",	0, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_haslocaldir},

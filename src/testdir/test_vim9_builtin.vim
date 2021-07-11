@@ -1131,6 +1131,12 @@ def Test_has()
 enddef
 
 def Test_has_key()
+  var d = {123: 'xx'}
+  assert_true(has_key(d, '123'))
+  assert_true(has_key(d, 123))
+  assert_false(has_key(d, 'x'))
+  assert_false(has_key(d, 99))
+
   CheckDefAndScriptFailure2(['has_key([1, 2], "k")'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
   CheckDefAndScriptFailure2(['has_key({"a": 10}, ["a"])'], 'E1013: Argument 2: type mismatch, expected string but got list<string>', 'E730: Using a List as a String')
 enddef
