@@ -2660,7 +2660,8 @@ eval_variable(
 	}
 	else if (rettv != NULL)
 	{
-	    if (ht != NULL && ht == get_script_local_ht())
+	    if (ht != NULL && ht == get_script_local_ht()
+		    && tv != &SCRIPT_SV(current_sctx.sc_sid)->sv_var.di_tv)
 	    {
 		svar_T *sv = find_typval_in_script(tv);
 

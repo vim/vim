@@ -2478,6 +2478,13 @@ def Test_expr7_dict_vim9script()
   else
     CheckDefAndScriptFailure(lines, 'E117:', 0)
   endif
+
+  lines =<< trim END
+      vim9script
+      var x = 99
+      assert_equal({x: 99}, s:)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_call_2bool()
