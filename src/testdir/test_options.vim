@@ -935,12 +935,12 @@ endfunc
 
 func Test_set_in_sandbox()
   " Some boolean options cannot be set in sandbox, some can.
-  call assert_fails('sandbox set fsync', 'E48:')
+  call assert_fails('sandbox set modelineexpr', 'E48:')
   sandbox set number
   call assert_true(&number)
   set number&
 
-  " 'pythonversion' is the only numeric option not allowed in sandbox.
+  " Some boolean options cannot be set in sandbox, some can.
   if has('python') || has('python3')
     call assert_fails('sandbox set pyxversion=3', 'E48:')
   endif
