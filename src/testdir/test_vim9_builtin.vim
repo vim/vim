@@ -1523,11 +1523,25 @@ enddef
 def Test_popup_atcursor()
   CheckDefAndScriptFailure2(['popup_atcursor({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E450: buffer number, text or a list required')
   CheckDefAndScriptFailure2(['popup_atcursor("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
+
+  # Pass variable of type 'any' to popup_atcursor()
+  var what: any = 'Hello'
+  var popupID = what->popup_atcursor({moved: 'any'})
+  assert_equal(0, popupID->popup_getoptions().tabpage)
+  popupID->popup_close()
 enddef
 
 def Test_popup_beval()
   CheckDefAndScriptFailure2(['popup_beval({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E450: buffer number, text or a list required')
   CheckDefAndScriptFailure2(['popup_beval("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E715: Dictionary required')
+enddef
+
+def Test_popup_create()
+  # Pass variable of type 'any' to popup_create()
+  var what: any = 'Hello'
+  var popupID = what->popup_create({})
+  assert_equal(0, popupID->popup_getoptions().tabpage)
+  popupID->popup_close()
 enddef
 
 def Test_popup_dialog()
@@ -2358,6 +2372,7 @@ def Test_virtcol()
   setline(1, ['abcdefgh'])
   cursor(1, 4)
   assert_equal(4, virtcol('.'))
+  assert_equal(4, virtcol([1, 4]))
   assert_equal(9, virtcol([1, '$']))
   assert_equal(0, virtcol([10, '$']))
   bw!
