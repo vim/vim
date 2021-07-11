@@ -4190,6 +4190,14 @@ def ProfiledNested()
   Nested()
 enddef
 
+def ProfiledNestedProfiled()
+  var x = 0
+  def Nested(): any
+      return x
+  enddef
+  Nested()
+enddef
+
 " Execute this near the end, profiling doesn't stop until Vim exists.
 " This only tests that it works, not the profiling output.
 def Test_xx_profile_with_lambda()
@@ -4198,8 +4206,17 @@ def Test_xx_profile_with_lambda()
   profile start Xprofile.log
   profile func ProfiledWithLambda
   ProfiledWithLambda()
+
   profile func ProfiledNested
   ProfiledNested()
+
+  # Also profile the nested function.  Use a different function, although the
+  # contents is the same, to make sure it was not already compiled.
+  profile func *
+  ProfiledNestedProfiled()
+
+  profdel func *
+  profile pause
 enddef
 
 " Keep this last, it messes up highlighting.

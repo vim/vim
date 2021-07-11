@@ -5570,6 +5570,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     char_u	*lambda_name;
     ufunc_T	*ufunc;
     int		r = FAIL;
+    compiletype_T   compile_type;
 
     if (eap->forceit)
     {
@@ -5636,9 +5637,15 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	}
     }
 
-    if (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
-	    && compile_def_function(ufunc, TRUE, COMPILE_TYPE(ufunc), cctx)
-								       == FAIL)
+    compile_type = COMPILE_TYPE(ufunc);
+#ifdef FEAT_PROFILE
+    // If the outer function is profiled, also compile the nested function for
+    // profiling.
+    if (cctx->ctx_compile_type == CT_PROFILE)
+	compile_type = CT_PROFILE;
+#endif
+    if (func_needs_compiling(ufunc, compile_type)
+	    && compile_def_function(ufunc, TRUE, compile_type, cctx) == FAIL)
     {
 	func_ptr_unref(ufunc);
 	goto theend;
@@ -5647,8 +5654,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 #ifdef FEAT_PROFILE
     // When the outer function is compiled for profiling, the nested function
     // may be called without profiling.  Compile it here in the right context.
-    if (COMPILE_TYPE(ufunc) == CT_PROFILE
-				       && func_needs_compiling(ufunc, CT_NONE))
+    if (compile_type == CT_PROFILE && func_needs_compiling(ufunc, CT_NONE))
 	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
 #endif
 
