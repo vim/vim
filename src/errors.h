@@ -496,3 +496,5 @@ EXTERN char e_dict_required_for_argument_nr[]
 	INIT(= N_("E1206: Dictionary required for argument %d"));
 EXTERN char e_expression_without_effect_str[]
 	INIT(= N_("E1207: Expression without an effect: %s"));
+EXTERN char e_complete_used_without_nargs[]
+	INIT(= N_("E1208: -complete used without -nargs"));
