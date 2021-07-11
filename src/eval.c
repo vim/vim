@@ -5376,6 +5376,8 @@ var2fpos(
 	}
 	return &pos;
     }
+    if (in_vim9script())
+	semsg(_(e_invalid_value_for_line_number_str), name);
     return NULL;
 }
 

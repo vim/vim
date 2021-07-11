@@ -474,7 +474,7 @@ def Test_cursor()
   var lines =<< trim END
     cursor('2', 1)
   END
-  CheckDefExecAndScriptFailure(lines, 'E475:')
+  CheckDefExecAndScriptFailure(lines, 'E1209:')
 enddef
 
 def Test_debugbreak()
@@ -1036,6 +1036,25 @@ def Test_getjumplist()
   CheckDefFailure(['getjumplist(1, "x")'], 'E1013: Argument 2: type mismatch, expected number but got string')
 enddef
 
+def Test_getline()
+  var lines =<< trim END
+      new
+      setline(1, ['hello', 'there', 'again'])
+      assert_equal('hello', getline(1))
+      assert_equal('hello', getline('.'))
+
+      normal 2Gvjv
+      assert_equal('there', getline("'<"))
+      assert_equal('again', getline("'>"))
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      echo getline('1')
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1209:')
+enddef
+
 def Test_getmarklist()
   CheckDefFailure(['getmarklist([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
   assert_equal([], getmarklist(10000))
@@ -1049,7 +1068,7 @@ enddef
 def Test_getpos()
   CheckDefFailure(['getpos(10)'], 'E1013: Argument 1: type mismatch, expected string but got number')
   assert_equal([0, 1, 1, 0], getpos('.'))
-  assert_equal([0, 0, 0, 0], getpos('a'))
+  CheckDefExecFailure(['getpos("a")'], 'E1209:')
 enddef
 
 def Test_getqflist()

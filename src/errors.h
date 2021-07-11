@@ -498,3 +498,5 @@ EXTERN char e_expression_without_effect_str[]
 	INIT(= N_("E1207: Expression without an effect: %s"));
 EXTERN char e_complete_used_without_nargs[]
 	INIT(= N_("E1208: -complete used without -nargs"));
+EXTERN char e_invalid_value_for_line_number_str[]
+	INIT(= N_("E1209: Invalid value for a line number: \"%s\""));
