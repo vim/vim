@@ -4175,6 +4175,8 @@ enddef
 " Execute this near the end, profiling doesn't stop until Vim exists.
 " This only tests that it works, not the profiling output.
 def Test_xx_profile_with_lambda()
+  CheckFeature profile
+
   profile start Xprofile.log
   profile func ProfiledFunc
   ProfiledFunc()
