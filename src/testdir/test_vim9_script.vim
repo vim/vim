@@ -4167,6 +4167,19 @@ def Test_option_modifier()
   set hlsearch&
 enddef
 
+def ProfiledFunc()
+  var n = 3
+  echo [[1, 2], [3, 4]]->filter((_, l) => l[0] == n)
+enddef
+
+" Execute this near the end, profiling doesn't stop until Vim exists.
+" This only tests that it works, not the profiling output.
+def Test_xx_profile_with_lambda()
+  profile start Xprofile.log
+  profile func ProfiledFunc
+  ProfiledFunc()
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

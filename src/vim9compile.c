@@ -3624,6 +3624,11 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	ufunc->uf_ret_type = &t_unknown;
     compile_def_function(ufunc, FALSE, cctx->ctx_compile_type, cctx);
 
+    // When the outer function is compiled for profiling, the lambda may be
+    // called without profiling.  Compile it here in the right context.
+    if (cctx->ctx_compile_type == CT_PROFILE)
+	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
+
     // evalarg.eval_tofree_cmdline may have a copy of the last line and "*arg"
     // points into it.  Point to the original line to avoid a dangling pointer.
     if (evalarg.eval_tofree_cmdline != NULL)
