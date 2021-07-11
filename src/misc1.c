@@ -2600,8 +2600,8 @@ path_is_url(char_u *p)
 }
 
 /*
- * Check if "fname" starts with "name://".  Return URL_SLASH if it does.
- * Return URL_BACKSLASH for "name:\\".
+ * Check if "fname" starts with "name://" or "name:\\".
+ * Return URL_SLASH for "name://", URL_BACKSLASH for "name:\\".
  * Return zero otherwise.
  */
     int
@@ -2609,7 +2609,22 @@ path_with_url(char_u *fname)
 {
     char_u *p;
 
-    for (p = fname; isalpha(*p); ++p)
+    // We accept alphabetic characters and a dash in scheme part.
+    // RFC 3986 allows for more, but it increases the risk of matching
+    // non-URL text.
+
+    // first character must be alpha
+    if (!isalpha(*fname))
+	return 0;
+
+    // check body: alpha or dash
+    for (p = fname; (isalpha(*p) || (*p == '-')); ++p)
 	;
+
+    // check last char is not a dash
+    if (p[-1] == '-')
+	return 0;
+
+    // "://" or ":\\" must follow
     return path_is_url(p);
 }
