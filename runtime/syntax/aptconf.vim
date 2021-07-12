@@ -396,10 +396,13 @@ syn cluster	aptconfSynaptic_ contains=aptconfSynaptic,
 " }}}
 " Unattended Upgrade: {{{
 syn keyword	aptconfUnattendedUpgrade contained
-	\ AutoFixInterruptedDpkg Automatic-Reboot Automatic-Reboot-Time
-	\ Automatic-Reboot-WithUsers InstallOnShutdown Mail MailOnlyOnError
-	\ MinimalSteps Origins-Pattern Package-Blacklist
-	\ Remove-Unused-Dependencies
+	\ Allow-APT-Mark-Fallback Allow-downgrade AutoFixInterruptedDpkg
+	\ Automatic-Reboot Automatic-Reboot-Time Automatic-Reboot-WithUsers
+	\ Debug InstallOnShutdown Mail MailOnlyOnError MailReport MinimalSteps
+	\ OnlyOnACPower Origins-Pattern Package-Blacklist
+	\ Remove-New-Unused-Dependencies Remove-Unused-Dependencies
+	\ Remove-Unused-Kernel-Packages Skip-Updates-On-Metered-Connections
+	\ SyslogEnable SyslogFacility
 
 syn cluster	aptconfUnattendedUpgrade_ contains=aptconfUnattendedUpgrade
 " }}}
