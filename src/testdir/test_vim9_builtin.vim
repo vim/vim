@@ -2217,6 +2217,7 @@ enddef
 
 def Test_term_getansicolors()
   CheckRunVimInTerminal
+  CheckFeature termguicolors
   CheckDefAndScriptFailure2(['term_getansicolors(["a"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E745: Using a List as a Number')
 enddef
 
