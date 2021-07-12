@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	APT config file
 " Maintainer:	Yann Amar <quidame@poivron.org>
-" Last Change:	2015 Dec 22
+" Last Change:	2021 Jul 12
 
 " quit when a syntax file was already loaded
 if !exists("main_syntax")
@@ -402,7 +402,7 @@ syn keyword	aptconfUnattendedUpgrade contained
 	\ OnlyOnACPower Origins-Pattern Package-Blacklist
 	\ Remove-New-Unused-Dependencies Remove-Unused-Dependencies
 	\ Remove-Unused-Kernel-Packages Skip-Updates-On-Metered-Connections
-	\ SyslogEnable SyslogFacility
+	\ SyslogEnable SyslogFacility Verbose
 
 syn cluster	aptconfUnattendedUpgrade_ contains=aptconfUnattendedUpgrade
 " }}}
