@@ -762,7 +762,7 @@ func Test_breakindent20_list()
   " reset linebreak option
   " Note: it indents by one additional
   " space, because of the leading space.
-  setl linebreak&vim list listchars+=space:_
+  setl linebreak&vim list listchars=eol:$,space:_
   redraw!
   let expect = [
 	\ "__1.__Congress_shall",
@@ -775,7 +775,7 @@ func Test_breakindent20_list()
   let lines = s:screen_lines2(1, 6, 20)
   call s:compare_lines(expect, lines)
 
-  call s:close_windows('set breakindent& briopt& linebreak&')
+  call s:close_windows('set breakindent& briopt& linebreak& list& listchars&')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
