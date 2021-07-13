@@ -769,9 +769,16 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     void
 f_prop_list(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T lnum = tv_get_number(&argvars[0]);
+    linenr_T lnum;
     buf_T    *buf = curbuf;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN &&
+		    check_for_dict_arg(argvars, 1) == FAIL)))
+	return;
+
+    lnum = tv_get_number(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	if (get_bufnr_from_arg(&argvars[1], &buf) == FAIL)

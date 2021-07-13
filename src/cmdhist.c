@@ -597,6 +597,12 @@ f_histget(typval_T *argvars UNUSED, typval_T *rettv)
     int		idx;
     char_u	*str;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_number_arg(argvars, 1) == FAIL)))
+	return;
+
     str = tv_get_string_chk(&argvars[0]);	// NULL on type error
     if (str == NULL)
 	rettv->vval.v_string = NULL;

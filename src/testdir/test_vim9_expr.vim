@@ -2982,7 +2982,7 @@ def Test_expr7_method_call()
     enddef
     RetVoid()->byteidx(3)
   END
-  CheckDefExecAndScriptFailure(lines, 'E1031:')
+  CheckDefExecFailure(lines, 'E1013:')
 enddef
 
 

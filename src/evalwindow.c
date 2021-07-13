@@ -653,6 +653,12 @@ f_tabpagewinnr(typval_T *argvars UNUSED, typval_T *rettv)
     int		nr = 1;
     tabpage_T	*tp;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_string_arg(argvars, 1) == FAIL)))
+	return;
+
     tp = find_tabpage((int)tv_get_number(&argvars[0]));
     if (tp == NULL)
 	nr = 0;

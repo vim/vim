@@ -169,6 +169,10 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 # ifdef FEAT_RELTIME
     proftime_T	res;
     proftime_T	start;
+    long	n1, n2;
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
@@ -198,20 +202,15 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	profile_sub(&res, &start);
     }
 
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	long	n1, n2;
-
 #  ifdef MSWIN
-	n1 = res.HighPart;
-	n2 = res.LowPart;
+    n1 = res.HighPart;
+    n2 = res.LowPart;
 #  else
-	n1 = res.tv_sec;
-	n2 = res.tv_usec;
+    n1 = res.tv_sec;
+    n2 = res.tv_usec;
 #  endif
-	list_append_number(rettv->vval.v_list, (varnumber_T)n1);
-	list_append_number(rettv->vval.v_list, (varnumber_T)n2);
-    }
+    list_append_number(rettv->vval.v_list, (varnumber_T)n1);
+    list_append_number(rettv->vval.v_list, (varnumber_T)n2);
 # endif
 }
 
@@ -268,6 +267,12 @@ f_strftime(typval_T *argvars, typval_T *rettv)
     struct tm	*curtime;
     time_t	seconds;
     char_u	*p;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_number_arg(argvars, 1) == FAIL)))
+	return;
 
     rettv->v_type = VAR_STRING;
 

@@ -5689,6 +5689,11 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 	{"reverse",   HL_INVERSE},
     };
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     attr = tv_get_number(&argvars[0]);
     name = tv_get_string_chk(&argvars[1]);
     if (name == NULL)

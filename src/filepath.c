@@ -1447,6 +1447,12 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     int		trim_len = 1;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_number_arg(argvars, 1) == FAIL)))
+	return;
+
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	trim_len = (int)tv_get_number(&argvars[1]);

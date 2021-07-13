@@ -2359,13 +2359,21 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
     void
 f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
 {
-    int		id = tv_get_number(&argvars[0]);
-    win_T	*wp = win_id2wp(id);
-    char_u	*key = tv_get_string(&argvars[1]);
+    int		id;
+    win_T	*wp;
+    char_u	*key;
     typval_T	res;
     int		c;
     linenr_T	old_lnum;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    id = tv_get_number(&argvars[0]);
+    wp = win_id2wp(id);
+    key = tv_get_string(&argvars[1]);
     // If the popup has been closed do not consume the key.
     if (wp == NULL)
 	return;
@@ -2416,12 +2424,20 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
     void
 f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
 {
-    int		id = tv_get_number(&argvars[0]);
-    win_T	*wp = win_id2wp(id);
-    char_u	*key = tv_get_string(&argvars[1]);
+    int		id;
+    win_T	*wp;
+    char_u	*key;
     typval_T	res;
     int		c;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    id = tv_get_number(&argvars[0]);
+    wp = win_id2wp(id);
+    key = tv_get_string(&argvars[1]);
     // If the popup has been closed don't consume the key.
     if (wp == NULL)
 	return;
@@ -2727,9 +2743,16 @@ close_all_popups(int force)
 f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 {
     dict_T	*dict;
-    int		id = (int)tv_get_number(argvars);
-    win_T	*wp = find_popup_win(id);
+    int		id;
+    win_T	*wp;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_dict_arg(argvars, 1) == FAIL))
+	return;
+
+    id = (int)tv_get_number(argvars);
+    wp = find_popup_win(id);
     if (wp == NULL)
 	return;  // invalid {id}
 
@@ -2754,10 +2777,17 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 {
     dict_T	*dict;
-    int		id = (int)tv_get_number(argvars);
-    win_T	*wp = find_popup_win(id);
+    int		id;
+    win_T	*wp;
     linenr_T	old_firstline;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_dict_arg(argvars, 1) == FAIL))
+	return;
+
+    id = (int)tv_get_number(argvars);
+    wp = find_popup_win(id);
     if (wp == NULL)
 	return;  // invalid {id}
 
