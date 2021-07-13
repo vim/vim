@@ -5961,7 +5961,10 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
-	    semsg(_(e_trailing_arg), end);
+	{
+	    semsg(_(lv.ll_name == lv.ll_name_end
+					   ? e_invarg2 : e_trailing_arg), end);
+	}
 	else
 	{
 	    if (lv.ll_tv == NULL)

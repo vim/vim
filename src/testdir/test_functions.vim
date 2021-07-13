@@ -95,6 +95,11 @@ func Test_test_void()
   call assert_fails('let x = copy([test_void()])', 'E1031:')
 endfunc
 
+func Test_islocked()
+  call assert_fails('call islocked(99)', 'E475:')
+  call assert_fails('call islocked("s: x")', 'E488:')
+endfunc
+
 func Test_len()
   call assert_equal(1, len(0))
   call assert_equal(2, len(12))
