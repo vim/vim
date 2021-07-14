@@ -854,6 +854,7 @@ briopt_check(win_T *wp)
     int		bri_shift = 0;
     long	bri_min = 20;
     int		bri_sbr = FALSE;
+    int		bri_list = 0;
 
     p = wp->w_p_briopt;
     while (*p != NUL)
@@ -874,6 +875,11 @@ briopt_check(win_T *wp)
 	    p += 3;
 	    bri_sbr = TRUE;
 	}
+	else if (STRNCMP(p, "list:", 5) == 0)
+	{
+	    p += 5;
+	    bri_list = getdigits(&p);
+	}
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
 	if (*p == ',')
@@ -883,6 +889,7 @@ briopt_check(win_T *wp)
     wp->w_briopt_shift = bri_shift;
     wp->w_briopt_min   = bri_min;
     wp->w_briopt_sbr   = bri_sbr;
+    wp->w_briopt_list  = bri_list;
 
     return OK;
 }
@@ -941,9 +948,25 @@ get_breakindent_win(
     // Add offset for number column, if 'n' is in 'cpoptions'
     bri += win_col_off2(wp);
 
+    // add additional indent for numbered lists
+    if (wp->w_briopt_list > 0)
+    {
+	regmatch_T	    regmatch;
+
+	regmatch.regprog = vim_regcomp(curbuf->b_p_flp,
+				   RE_MAGIC + RE_STRING + RE_AUTO + RE_STRICT);
+	if (regmatch.regprog != NULL)
+	{
+	    if (vim_regexec(&regmatch, line, 0))
+		bri += wp->w_briopt_list;
+	    vim_regfree(regmatch.regprog);
+	}
+    }
+
     // never indent past left window margin
     if (bri < 0)
 	bri = 0;
+
     // always leave at least bri_min characters on the left,
     // if text width is sufficient
     else if (bri > eff_wwidth - wp->w_briopt_min)

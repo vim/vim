@@ -3671,6 +3671,7 @@ struct window_S
     int		w_briopt_min;	    // minimum width for breakindent
     int		w_briopt_shift;	    // additional shift for breakindent
     int		w_briopt_sbr;	    // sbr in 'briopt'
+    int		w_briopt_list;      // additional indent for lists
 #endif
 
     // transform a pointer to a "onebuf" option into a "allbuf" option
