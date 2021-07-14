@@ -3461,6 +3461,7 @@ qf_jump_newwin(qf_info_T	*qi,
     }
 
     qfl->qf_index = qf_index;
+    qfl->qf_ptr = qf_ptr;
     if (qf_win_pos_update(qi, old_qf_index))
 	// No need to print the error message if it's visible in the error
 	// window
