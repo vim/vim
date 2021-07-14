@@ -178,7 +178,11 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     else if (argvars[1].v_type == VAR_UNKNOWN)
     {
 	if (list2proftime(&argvars[0], &res) == FAIL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_invarg));
 	    return;
+	}
 	profile_end(&res);
     }
     else
@@ -186,7 +190,11 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	// Two arguments: compute the difference.
 	if (list2proftime(&argvars[0], &start) == FAIL
 		|| list2proftime(&argvars[1], &res) == FAIL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_invarg));
 	    return;
+	}
 	profile_sub(&res, &start);
     }
 
@@ -223,6 +231,8 @@ f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
 #  ifdef FEAT_RELTIME
     if (list2proftime(&argvars[0], &tm) == OK)
 	rettv->vval.v_float = profile_float(&tm);
+    else if (in_vim9script())
+	emsg(_(e_invarg));
 #  endif
 }
 # endif
@@ -242,6 +252,8 @@ f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
 # ifdef FEAT_RELTIME
     if (list2proftime(&argvars[0], &tm) == OK)
 	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
+    else if (in_vim9script())
+	emsg(_(e_invarg));
 # endif
 }
 

@@ -1652,6 +1652,11 @@ def Test_readfile()
 enddef
 
 def Test_reltime()
+  CheckFeature reltime
+
+  CheckDefExecAndScriptFailure(['[]->reltime()'], 'E474:')
+  CheckDefExecAndScriptFailure(['[]->reltime([])'], 'E474:')
+
   CheckDefFailure(['reltime("x")'], 'E1013: Argument 1: type mismatch, expected list<number> but got string')
   CheckDefFailure(['reltime(["x", "y"])'], 'E1013: Argument 1: type mismatch, expected list<number> but got list<string>')
   CheckDefFailure(['reltime([1, 2], 10)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
@@ -1663,12 +1668,20 @@ def Test_reltime()
 enddef
 
 def Test_reltimefloat()
+  CheckFeature reltime
+
+  CheckDefExecAndScriptFailure(['[]->reltimefloat()'], 'E474:')
+
   CheckDefFailure(['reltimefloat("x")'], 'E1013: Argument 1: type mismatch, expected list<number> but got string')
   CheckDefFailure(['reltimefloat([1.1])'], 'E1013: Argument 1: type mismatch, expected list<number> but got list<float>')
   assert_true(type(reltimefloat(reltime())) == v:t_float)
 enddef
 
 def Test_reltimestr()
+  CheckFeature reltime
+
+  CheckDefExecAndScriptFailure(['[]->reltimestr()'], 'E474:')
+
   CheckDefFailure(['reltimestr(true)'], 'E1013: Argument 1: type mismatch, expected list<number> but got bool')
   CheckDefFailure(['reltimestr([true])'], 'E1013: Argument 1: type mismatch, expected list<number> but got list<bool>')
   assert_true(type(reltimestr(reltime())) == v:t_string)
