@@ -6948,6 +6948,27 @@ func Test_bitwise_functions()
     endif
     call assert_fails("call invert([])", 'E745:')
     call assert_fails("call invert({})", 'E728:')
+    " lshift
+    call assert_equal(1024, lshift(1, 10))
+    call assert_equal(0xC0, lshift(0b11000000, 0))
+    eval 1->lshift(3)->assert_equal(8)
+    call assert_fails("call lshift([], 1)", 'E474:')
+    call assert_fails("call lshift(1, {})", 'E474:')
+    if has('float')
+      call assert_fails("call lshift(1.0, 1)", 'E474:')
+      call assert_fails("call lshift(1, 1.0)", 'E474:')
+    endif
+    " rshift
+    call assert_equal(1, rshift(1024, 10))
+    call assert_equal(0, rshift(0b1000, 5))
+    call assert_equal(0xC0, rshift(0b11000000, 0))
+    eval 0x80->rshift(4)->assert_equal(8)
+    call assert_fails("call rshift([], 1)", 'E474:')
+    call assert_fails("call rshift(1, {})", 'E474:')
+    if has('float')
+      call assert_fails("call rshift(1.0, 1)", 'E474:')
+      call assert_fails("call rshift(1, 1.0)", 'E474:')
+    endif
 endfunc
 
 " Test using bang after user command				    {{{1
