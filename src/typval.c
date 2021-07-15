@@ -385,6 +385,23 @@ check_for_nonempty_string_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "tv" is a number.
+ */
+    int
+check_for_number_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_number_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_numberreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Give an error and return FAIL unless "tv" is a dict.
  */
     int

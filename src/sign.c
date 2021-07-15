@@ -2274,7 +2274,11 @@ f_sign_getdefined(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	    return;
 	name = tv_get_string(&argvars[0]);
+    }
 
     sign_getlist(name, rettv->vval.v_list);
 }

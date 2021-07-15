@@ -2614,7 +2614,7 @@ func Test_normal40_ctrl_bsl()
   set noim
   call assert_equal('are   some words', getline(1))
   call assert_false(&insertmode)
-  call assert_beeps("normal! \<C-\>\<C-A>", 'xt')
+  call assert_beeps("normal! \<C-\>\<C-A>")
 
   if has('cmdwin')
     " Using CTRL-\ CTRL-N in cmd window should close the window

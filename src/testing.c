@@ -340,10 +340,14 @@ assert_append_cmd_or_arg(garray_T *gap, typval_T *argvars, char_u *cmd)
     static int
 assert_beeps(typval_T *argvars, int no_beep)
 {
-    char_u	*cmd = tv_get_string_chk(&argvars[0]);
+    char_u	*cmd;
     garray_T	ga;
     int		ret = 0;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return 0;
+
+    cmd = tv_get_string_chk(&argvars[0]);
     called_vim_beep = FALSE;
     suppress_errthrow = TRUE;
     emsg_silent = FALSE;
@@ -367,7 +371,7 @@ assert_beeps(typval_T *argvars, int no_beep)
 }
 
 /*
- * "assert_beeps(cmd [, error])" function
+ * "assert_beeps(cmd)" function
  */
     void
 f_assert_beeps(typval_T *argvars, typval_T *rettv)
@@ -376,7 +380,7 @@ f_assert_beeps(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "assert_nobeep(cmd [, error])" function
+ * "assert_nobeep(cmd)" function
  */
     void
 f_assert_nobeep(typval_T *argvars, typval_T *rettv)
@@ -946,6 +950,11 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
     char_u *name = (char_u *)"";
     int     val;
     static int save_starting = -1;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
 
     if (argvars[0].v_type != VAR_STRING
 	    || (argvars[1].v_type) != VAR_NUMBER)

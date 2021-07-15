@@ -887,8 +887,15 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	*r = NULL;
 
 #ifdef FEAT_CLIENTSERVER
-    char_u	*serverid = tv_get_string_chk(&argvars[0]);
+    char_u	*serverid;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_number_arg(argvars, 1) == FAIL)))
+	return;
+
+    serverid = tv_get_string_chk(&argvars[0]);
     if (serverid != NULL && !check_restricted() && !check_secure())
     {
 	int timeout = 0;
