@@ -2054,6 +2054,35 @@ f_setdigraphs(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = VVAL_TRUE;
 }
 
+/*
+ * "getdigraphs() function
+ */
+    void
+f_getdigraphs(typval_T *argvars, typval_T *rettv)
+{
+    int		code;
+    char_u 	buf[NUMBUFLEN];
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = (char_u*)"";
+    char_u *digraphs = tv_get_string_chk(&argvars[0]);
+    if (STRLEN(digraphs) != 2)
+    {
+	semsg(_("EXXXX: Digraph declared with too many characters: %s"), digraphs);
+	return;
+    }
+    code = getdigraph(digraphs[0], digraphs[1], FALSE);
+
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(code, buf)] = NUL;
+    else {
+	buf[0] = code;
+	buf[1] = NUL;
+    }
+
+    rettv->vval.v_string = vim_strsave(buf);
+}
+
 
 /*
  * Add the digraphs in the argument to the digraph table.

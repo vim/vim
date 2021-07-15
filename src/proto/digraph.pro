@@ -4,6 +4,7 @@ char_u *get_digraph_for_char(int val_arg);
 int get_digraph(int cmdline);
 int getdigraph(int char1, int char2, int meta_char);
 void f_setdigraphs(typval_T *argvars, typval_T *rettv);
+void f_getdigraphs(typval_T *argvars, typval_T *rettv);
 void putdigraph(char_u *str);
 void listdigraphs(int use_headers);
 char *keymap_init(void);

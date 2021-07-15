@@ -515,7 +515,7 @@ func Test_entering_digraph()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_digraphs_function()
+func Test_setdigraphs_function()
   new
   call setdigraphs('aa', 12354)
   call Put_Dig('aa')
@@ -526,6 +526,33 @@ func Test_digraphs_function()
   call setdigraphs('  ', 12358)
   call Put_Dig('  ')
   call assert_equal('う', getline('$'))
+  bwipe!
+endfunc
+
+func Test_getdigraphs_function()
+  " Built-in digraphs
+  call assert_equal('∞', getdigraphs('00'))
+
+  " User-defined digraphs
+  call setdigraphs('aa', 12354)
+  call setdigraphs(' i', 12356)
+  call setdigraphs('  ', 12358)
+  call assert_equal('あ', getdigraphs('aa'))
+  call assert_equal('い', getdigraphs(' i'))
+  call assert_equal('う', getdigraphs('  '))
+endfunc
+
+func Test_getdigraphs_function_encode()
+  CheckFeature iconv
+  let testcases = {
+        \'00': '∞',
+        \'aa': 'あ',
+        \}->map('iconv(v:val, "utf-8", "euc-jp")')
+  set encoding=euc-jp
+  for [key, ch] in items(testcases)
+    call assert_equal(ch, getdigraphs(key))
+  endfor
+  set encoding&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

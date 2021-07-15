@@ -1103,6 +1103,8 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_getcursorcharpos},
     {"getcwd",		0, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_getcwd},
+    {"getdigraphs",     1, 1, FEARG_1,      arg1_string,
+                        ret_string,         f_getdigraphs},
     {"getenv",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_getenv},
     {"getfontname",	0, 1, 0,	    arg1_string,
