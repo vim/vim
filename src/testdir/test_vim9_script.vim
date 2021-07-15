@@ -3699,6 +3699,46 @@ def Test_script_var_in_autocmd()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_error_in_autoload_script()
+  var save_rtp = &rtp
+  var dir = getcwd() .. '/Xruntime'
+  &rtp = dir
+  mkdir(dir .. '/autoload', 'p')
+
+  var lines =<< trim END
+      vim9script noclear
+      def script#autoloaded()
+      enddef
+      def Broken()
+        var x: any = ''
+        eval x != 0
+      enddef
+      Broken()
+  END
+  writefile(lines, dir .. '/autoload/script.vim')
+
+  lines =<< trim END
+      vim9script
+      def CallAutoloaded()
+        script#autoloaded()
+      enddef
+
+      function Legacy()
+        try
+          call s:CallAutoloaded()
+        catch
+          call assert_match('E1030: Using a String as a Number', v:exception)
+        endtry
+      endfunction
+
+      Legacy()
+  END
+  CheckScriptSuccess(lines)
+
+  &rtp = save_rtp
+  delete(dir, 'rf')
+enddef
+
 def Test_cmdline_win()
   # if the Vim syntax highlighting uses Vim9 constructs they can be used from
   # the command line window.

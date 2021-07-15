@@ -4737,7 +4737,8 @@ failed_early:
     // Not sure if this is necessary.
     suppress_errthrow = save_suppress_errthrow;
 
-    if (ret != OK && did_emsg_cumul + did_emsg == did_emsg_before)
+    if (ret != OK && did_emsg_cumul + did_emsg == did_emsg_before
+							      && !need_rethrow)
 	semsg(_(e_unknown_error_while_executing_str),
 						   printable_func_name(ufunc));
     funcdepth_restore(orig_funcdepth);
