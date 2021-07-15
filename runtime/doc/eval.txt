@@ -2620,6 +2620,7 @@ getcompletion({pat}, {type} [, {filtered}])
 getcurpos([{winnr}])		List	position of the cursor
 getcursorcharpos([{winnr}])	List	character position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
+getdigraphs({chars})		String	get the digraph of {chars}
 getenv({name})			String	return environment variable
 getfontname([{name}])		String	name of font being used
 getfperm({fname})		String	file permissions of file {fname}
@@ -4211,6 +4212,7 @@ setdigraphs({digraphs}, {number})			*setdigraphs()*
 		Can be used as a |method|: >
 			GetString()->setdigraphs(12288)
 <
+		{only available when compiled with the |+digraphs| feature}
 
 echoraw({expr})						*echoraw()*
 		Output {expr} as-is, including unprintable characters.  This
@@ -5588,6 +5590,28 @@ getcwd([{winnr} [, {tabnr}]])
 <		Can also be used as a |method|: >
 			GetWinnr()->getcwd()
 <
+					      *getdigraphs()* *EXXXX*
+getdigraphs({chars})
+		Return the digraph of {chars}.  If {chars} are not just two
+		characters, or the digraph of {chars} does not exist, an empty
+		string is returned.  The character will be converted from Unicode
+		to 'encoding' when needed.  This does require the conversion to
+		be available, it might fail.
+
+		Examples: >
+		" Get a built-in digraph
+		:echo getdigraphs('00')		" Returns '∞'
+
+		" Get a user-defined digraph
+		:call setdigraphs('aa', 12354)
+		:echo getdigraphs('aa')		" Returns 'あ'
+
+<
+		Can also be used as a |method|: >
+			GetChars()->getdigraphs()
+<
+		{only available when compiled with the |+digraphs| feature}
+
 getenv({name})						*getenv()*
 		Return the value of environment variable {name}.
 		When the variable does not exist |v:null| is returned.  That
