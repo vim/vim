@@ -2548,8 +2548,6 @@ deletebufline({expr}, {first} [, {last}])
 did_filetype()			Number	|TRUE| if FileType autocmd event used
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
-setdigraphs({digraphs}, {number})
-				Boolean  register |digraph|
 echoraw({expr})			none	output {expr} as-is
 empty({expr})			Number	|TRUE| if {expr} is empty
 environ()			Dict	return environment variables
@@ -2888,6 +2886,8 @@ setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		Dict	set character search from {dict}
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
+setdigraphs({digraphs}, {number})
+				Boolean  register |digraph|
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
