@@ -634,6 +634,7 @@ get_function_body(
 						   || eap->cmdidx == CMD_block;
 #define MAX_FUNC_NESTING 50
     char	nesting_def[MAX_FUNC_NESTING];
+    char	nesting_inline[MAX_FUNC_NESTING];
     int		nesting = 0;
     getline_opt_T getline_options;
     int		indent = 2;
@@ -658,7 +659,8 @@ get_function_body(
 	    ((char_u **)(newlines->ga_data))[newlines->ga_len++] = NULL;
     }
 
-    nesting_def[nesting] = vim9_function;
+    nesting_def[0] = vim9_function;
+    nesting_inline[0] = eap->cmdidx == CMD_block;
     getline_options = vim9_function
 				? GETLINE_CONCAT_CONTBAR : GETLINE_CONCAT_CONT;
     for (;;)
@@ -705,10 +707,10 @@ get_function_body(
 	    SOURCING_LNUM = sourcing_lnum_top;
 	    if (skip_until != NULL)
 		semsg(_(e_missing_heredoc_end_marker_str), skip_until);
+	    else if (nesting_inline[nesting])
+		emsg(_(e_missing_end_block));
 	    else if (eap->cmdidx == CMD_def)
 		emsg(_(e_missing_enddef));
-	    else if (eap->cmdidx == CMD_block)
-		emsg(_(e_missing_end_block));
 	    else
 		emsg(_("E126: Missing :endfunction"));
 	    goto theend;
@@ -765,7 +767,8 @@ get_function_body(
 	}
 	else
 	{
-	    int c;
+	    int	    c;
+	    char_u  *end;
 
 	    // skip ':' and blanks
 	    for (p = theline; VIM_ISWHITE(*p) || *p == ':'; ++p)
@@ -773,7 +776,7 @@ get_function_body(
 
 	    // Check for "endfunction", "enddef" or "}".
 	    // When a ":" follows it must be a dict key; "enddef: value,"
-	    if ((nesting == 0 && eap->cmdidx == CMD_block)
+	    if (nesting_inline[nesting]
 		    ? *p == '}'
 		    : (checkforcmd(&p, nesting_def[nesting]
 						? "enddef" : "endfunction", 4)
@@ -857,6 +860,31 @@ get_function_body(
 		    {
 			++nesting;
 			nesting_def[nesting] = (c == 'd');
+			nesting_inline[nesting] = FALSE;
+			indent += 2;
+		    }
+		}
+	    }
+
+	    // Check for nested inline function.
+	    end = p + STRLEN(p) - 1;
+	    while (end > p && VIM_ISWHITE(*end))
+		--end;
+	    if (*end == '{')
+	    {
+		--end;
+		while (end > p && VIM_ISWHITE(*end))
+		    --end;
+		if (end > p - 2 && end[-1] == '=' && end[0] == '>')
+		{
+		    // found trailing "=> {", start of an inline function
+		    if (nesting == MAX_FUNC_NESTING - 1)
+			emsg(_(e_function_nesting_too_deep));
+		    else
+		    {
+			++nesting;
+			nesting_def[nesting] = TRUE;
+			nesting_inline[nesting] = TRUE;
 			indent += 2;
 		    }
 		}

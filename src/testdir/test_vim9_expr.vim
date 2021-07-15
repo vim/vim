@@ -2082,7 +2082,8 @@ def Test_expr7_lambda_block()
       var Func = (nr: number): int => {
               return nr
   END
-  CheckDefAndScriptFailure(lines, 'E1171', 1)  # line nr is function start
+  CheckDefFailure(lines, 'E1171', 0)  # line nr is function start
+  CheckScriptFailure(['vim9script'] + lines, 'E1171', 2)
 
   lines =<< trim END
       var Func = (nr: number): int => {
