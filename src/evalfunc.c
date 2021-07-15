@@ -1104,7 +1104,13 @@ static funcentry_T global_functions[] =
     {"getcwd",		0, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_getcwd},
     {"getdigraphs",     1, 1, FEARG_1,      arg1_string,
-                        ret_string,         f_getdigraphs},
+                        ret_string,
+#ifdef FEAT_DIGRAPHS
+                        f_getdigraphs
+#else
+                        NULL
+#endif
+    },
     {"getenv",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_getenv},
     {"getfontname",	0, 1, 0,	    arg1_string,
@@ -1566,7 +1572,13 @@ static funcentry_T global_functions[] =
     {"setcursorcharpos", 1, 3, FEARG_1,	    NULL,
 			ret_number_bool,    f_setcursorcharpos},
     {"setdigraphs",	2, 2, FEARG_1,	    arg2_string_number,
-			ret_bool,	    f_setdigraphs},
+			ret_bool,
+#ifdef FEAT_DIGRAPHS
+                        f_setdigraphs
+#else
+                        NULL
+#endif
+    },
     {"setenv",		2, 2, FEARG_2,	    NULL,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    arg2_string,
