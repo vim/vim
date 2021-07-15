@@ -1580,6 +1580,7 @@ install_registry(void)
     char	display_name[BUFSIZE];
     char	uninstall_string[BUFSIZE];
     char	icon_string[BUFSIZE];
+    char	version_string[BUFSIZE];
     int		i;
     int		loop_count = is_64bit_os() ? 2 : 1;
     DWORD	flag;
@@ -1652,13 +1653,15 @@ install_registry(void)
 
     sprintf(icon_string, "%s\\gvim.exe,0", installdir);
 
+    sprintf(version_string, VIM_VERSION_SHORT "." VIM_VERSION_PATCHLEVEL_STR);
+
     lRet = register_uninstall(
 	HKEY_LOCAL_MACHINE,
 	"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
 	display_name,
 	uninstall_string,
 	icon_string,
-	VIM_VERSION_SHORT,
+	version_string,
 	"Bram Moolenaar et al.");
     if (ERROR_SUCCESS != lRet)
 	return FAIL;
