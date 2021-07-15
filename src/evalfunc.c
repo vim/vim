@@ -1563,6 +1563,8 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcmdpos},
     {"setcursorcharpos", 1, 3, FEARG_1,	    NULL,
 			ret_number_bool,    f_setcursorcharpos},
+    {"setdigraphs",	2, 2, FEARG_1,	    arg2_string_number,
+			ret_bool,	    f_setdigraphs},
     {"setenv",		2, 2, FEARG_2,	    NULL,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    arg2_string,

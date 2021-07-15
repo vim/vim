@@ -2548,6 +2548,8 @@ deletebufline({expr}, {first} [, {last}])
 did_filetype()			Number	|TRUE| if FileType autocmd event used
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
+setdigraphs({digraphs}, {number})
+				Boolean  register |digraph|
 echoraw({expr})			none	output {expr} as-is
 empty({expr})			Number	|TRUE| if {expr} is empty
 environ()			Dict	return environment variables
@@ -4195,6 +4197,20 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
 
+setdigraphs({digraphs}, {number})			*setdigraphs()*
+		Add digraph {chars} to the list.  {chars} must be two
+		characters.  For the use of {number}, see |:digraphs|. This is
+		similar to |:digraphs| command, but useful to add digraphs
+		start with a white space.  The function result is a |Number|,
+		which is true if |digraph| is registered or false if failed to
+		register it.
+		Example: >
+			call setdigraphs('  ', 12288)
+<
+
+		Can be used as a |method|: >
+			GetString()->setdigraphs(12288)
+<
 
 echoraw({expr})						*echoraw()*
 		Output {expr} as-is, including unprintable characters.  This

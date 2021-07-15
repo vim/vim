@@ -515,4 +515,17 @@ func Test_entering_digraph()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_digraphs_function()
+  new
+  call setdigraphs('aa', 12354)
+  call Put_Dig('aa')
+  call assert_equal('あ', getline('$'))
+  call setdigraphs(' i', 12356)
+  call Put_Dig(' i')
+  call assert_equal('い', getline('$'))
+  call setdigraphs('  ', 12358)
+  call Put_Dig('  ')
+  call assert_equal('う', getline('$'))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

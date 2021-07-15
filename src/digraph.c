@@ -25,6 +25,7 @@ typedef struct digraph
 } digr_T;
 
 static void printdigraph(digr_T *dp, result_T *previous);
+static void registerdigraph(int char1, int char2, int n);
 
 // digraphs added by the user
 static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
@@ -1993,6 +1994,68 @@ getdigraph(int char1, int char2, int meta_char)
 }
 
 /*
+ * Add the digraphs to the digraph table.
+ */
+    static void
+registerdigraph(int char1, int char2, int n)
+{
+    int		i;
+    digr_T	*dp;
+
+    // If the digraph already exists, replace the result.
+    dp = (digr_T *)user_digraphs.ga_data;
+    for (i = 0; i < user_digraphs.ga_len; ++i)
+    {
+	if ((int)dp->char1 == char1 && (int)dp->char2 == char2)
+	{
+	    dp->result = n;
+	    break;
+	}
+	++dp;
+    }
+
+    // Add a new digraph to the table.
+    if (i == user_digraphs.ga_len)
+    {
+	if (ga_grow(&user_digraphs, 1) == OK)
+	{
+	    dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
+	    dp->char1 = char1;
+	    dp->char2 = char2;
+	    dp->result = n;
+	    ++user_digraphs.ga_len;
+	}
+    }
+}
+
+/*
+ * "setdigraphs()" function
+ */
+    void
+f_setdigraphs(typval_T *argvars, typval_T *rettv)
+{
+    varnumber_T n;
+    int		error = FALSE;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_FALSE;
+    char_u *digraphs = tv_get_string_chk(&argvars[0]);
+    if (STRLEN(digraphs) != 2)
+    {
+	semsg(_("EXXXX: Digraph declared with too many characters: %s"), digraphs);
+	return;
+    }
+
+    n = tv_get_number_chk(&argvars[1], &error);
+    if (error)
+	return;
+
+    registerdigraph((int)digraphs[0], (int)digraphs[1], (int)n);
+    rettv->vval.v_number = VVAL_TRUE;
+}
+
+
+/*
  * Add the digraphs in the argument to the digraph table.
  * format: {c1}{c2} char {c1}{c2} char ...
  */
@@ -2000,8 +2063,6 @@ getdigraph(int char1, int char2, int meta_char)
 putdigraph(char_u *str)
 {
     int		char1, char2, n;
-    int		i;
-    digr_T	*dp;
 
     while (*str != NUL)
     {
@@ -2028,30 +2089,7 @@ putdigraph(char_u *str)
 	}
 	n = getdigits(&str);
 
-	// If the digraph already exists, replace the result.
-	dp = (digr_T *)user_digraphs.ga_data;
-	for (i = 0; i < user_digraphs.ga_len; ++i)
-	{
-	    if ((int)dp->char1 == char1 && (int)dp->char2 == char2)
-	    {
-		dp->result = n;
-		break;
-	    }
-	    ++dp;
-	}
-
-	// Add a new digraph to the table.
-	if (i == user_digraphs.ga_len)
-	{
-	    if (ga_grow(&user_digraphs, 1) == OK)
-	    {
-		dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
-		dp->char1 = char1;
-		dp->char2 = char2;
-		dp->result = n;
-		++user_digraphs.ga_len;
-	    }
-	}
+	registerdigraph(char1, char2, n);
     }
 }
 
