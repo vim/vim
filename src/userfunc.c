@@ -875,7 +875,7 @@ get_function_body(
 		--end;
 		while (end > p && VIM_ISWHITE(*end))
 		    --end;
-		if (end > p - 2 && end[-1] == '=' && end[0] == '>')
+		if (end > p + 2 && end[-1] == '=' && end[0] == '>')
 		{
 		    // found trailing "=> {", start of an inline function
 		    if (nesting == MAX_FUNC_NESTING - 1)
