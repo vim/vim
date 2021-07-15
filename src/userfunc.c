@@ -870,7 +870,7 @@ get_function_body(
 	    end = p + STRLEN(p) - 1;
 	    while (end > p && VIM_ISWHITE(*end))
 		--end;
-	    if (*end == '{')
+	    if (end > p && *end == '{')
 	    {
 		--end;
 		while (end > p && VIM_ISWHITE(*end))
