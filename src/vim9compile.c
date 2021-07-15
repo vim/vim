@@ -5095,6 +5095,7 @@ compile_and_or(
 	while (p[0] == opchar && p[1] == opchar)
 	{
 	    long	start_lnum = SOURCING_LNUM;
+	    long	save_sourcing_lnum;
 	    int		start_ctx_lnum = cctx->ctx_lnum;
 	    int		save_lnum;
 
@@ -5116,6 +5117,7 @@ compile_and_or(
 	    generate_ppconst(cctx, ppconst);
 
 	    // Every part must evaluate to a bool.
+	    save_sourcing_lnum = SOURCING_LNUM;
 	    SOURCING_LNUM = start_lnum;
 	    save_lnum = cctx->ctx_lnum;
 	    cctx->ctx_lnum = start_ctx_lnum;
@@ -5138,6 +5140,7 @@ compile_and_or(
 				 ?  JUMP_IF_COND_TRUE : JUMP_IF_COND_FALSE, 0);
 
 	    // eval the next expression
+	    SOURCING_LNUM = save_sourcing_lnum;
 	    if (may_get_next_line_error(p + 2, arg, cctx) == FAIL)
 	    {
 		ga_clear(&end_ga);
