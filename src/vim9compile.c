@@ -1051,7 +1051,8 @@ need_type(
 
     // If the actual type can be the expected type add a runtime check.
     // If it's a constant a runtime check makes no sense.
-    if (!actual_is_const && use_typecheck(actual, expected))
+    if ((!actual_is_const || actual == &t_any)
+					    && use_typecheck(actual, expected))
     {
 	generate_TYPECHECK(cctx, expected, offset, arg_idx);
 	return OK;

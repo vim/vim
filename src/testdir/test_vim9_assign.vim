@@ -1667,6 +1667,16 @@ def Test_var_type_check()
     s:d = {}
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    var d = {a: 1, b: [2]}
+    def Func(b: bool)
+      var l: list<number> = b ? d.b : [3]
+    enddef
+    defcompile
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 let g:dict_number = #{one: 1, two: 2}
