@@ -3312,7 +3312,6 @@ jumpto_tag(
     int		forceit,	// :ta with !
     int		keep_help)	// keep help flag (FALSE for cscope)
 {
-    int		save_secure;
     optmagic_T	save_magic_overruled;
     int		save_p_ws, save_p_scs, save_p_ic;
     linenr_T	save_lnum;
@@ -3500,11 +3499,6 @@ jumpto_tag(
 	curwin->w_set_curswant = TRUE;
 	postponed_split = 0;
 
-	save_secure = secure;
-	secure = 1;
-#ifdef HAVE_SANDBOX
-	++sandbox;
-#endif
 	save_magic_overruled = magic_overruled;
 	magic_overruled = OPTION_MAGIC_OFF;	// always execute with 'nomagic'
 #ifdef FEAT_SEARCH_EXTRA
@@ -3621,22 +3615,28 @@ jumpto_tag(
 	}
 	else
 	{
+	    int		save_secure = secure;
+
+	    // Setup the sandbox for executing the command from the tags file.
+	    secure = 1;
+#ifdef HAVE_SANDBOX
+	    ++sandbox;
+#endif
 	    curwin->w_cursor.lnum = 1;		// start command in line 1
 	    do_cmdline_cmd(pbuf);
 	    retval = OK;
+
+	    // When the command has done something that is not allowed make
+	    // sure the error message can be seen.
+	    if (secure == 2)
+		wait_return(TRUE);
+	    secure = save_secure;
+#ifdef HAVE_SANDBOX
+	    --sandbox;
+#endif
 	}
 
-	/*
-	 * When the command has done something that is not allowed make sure
-	 * the error message can be seen.
-	 */
-	if (secure == 2)
-	    wait_return(TRUE);
-	secure = save_secure;
 	magic_overruled = save_magic_overruled;
-#ifdef HAVE_SANDBOX
-	--sandbox;
-#endif
 #ifdef FEAT_SEARCH_EXTRA
 	// restore no_hlsearch when keeping the old search pattern
 	if (search_options)
