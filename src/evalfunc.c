@@ -62,6 +62,7 @@ static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
+static void f_getdigraphs(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
@@ -153,6 +154,7 @@ static void f_searchpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_setcursorcharpos(typval_T *argvars, typval_T *rettv);
+static void f_setdigraphs(typval_T *argvars, typval_T *rettv);
 static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
@@ -7032,6 +7034,19 @@ theend:
 }
 
 /*
+ * "setdigraphs()" function
+ */
+    static void
+f_setdigraphs(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_DIGRAPHS
+    f_setdigraphs_impl(argvars, rettv);
+#else
+    emsg(e_no_digraphs_version);
+#endif
+}
+
+/*
  * "srand()" function
  */
     static void
@@ -7128,6 +7143,19 @@ range_list_materialize(list_T *list)
     for (i = start; stride > 0 ? i <= end : i >= end; i += stride)
 	if (list_append_number(list, (varnumber_T)i) == FAIL)
 	    break;
+}
+
+/*
+ * "getdigraphs()" function
+ */
+    static void
+f_getdigraphs(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_DIGRAPHS
+    f_getdigraphs_impl(argvars, rettv);
+#else
+    emsg(e_no_digraphs_version);
+#endif
 }
 
 /*

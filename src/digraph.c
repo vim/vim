@@ -2029,10 +2029,10 @@ registerdigraph(int char1, int char2, int n)
 }
 
 /*
- * "setdigraphs()" function
+ * "setdigraphs()" function's implementation.
  */
     void
-f_setdigraphs(typval_T *argvars, typval_T *rettv)
+f_setdigraphs_impl(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T n;
     int		error = FALSE;
@@ -2055,10 +2055,10 @@ f_setdigraphs(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "getdigraphs() function
+ * "getdigraphs() function's implementation.
  */
     void
-f_getdigraphs(typval_T *argvars, typval_T *rettv)
+f_getdigraphs_impl(typval_T *argvars, typval_T *rettv)
 {
     int		code;
     char_u 	buf[NUMBUFLEN];
