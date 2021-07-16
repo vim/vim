@@ -1800,12 +1800,14 @@ EXTERN char e_elseif_without_if[] INIT(= N_("E582: :elseif without :if"));
 EXTERN char e_endif_without_if[] INIT(= N_("E580: :endif without :if"));
 EXTERN char e_continue[]	INIT(= N_("E586: :continue without :while or :for"));
 EXTERN char e_break[]		INIT(= N_("E587: :break without :while or :for"));
-#ifndef FEAT_DIGRAPHS
-EXTERN char e_no_digraphs_version[] INIT(= N_("E196: No digraphs in this version"));
-#endif
 EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before parenthesis"));
 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
+#ifdef FEAT_DIGRAPHS
+EXTERN char e_digraph_too_many_chars[]  INIT(= N_("E1200: Digraph declared with too many characters: %s"));
+#else
+EXTERN char e_no_digraphs_version[] INIT(= N_("E196: No digraphs in this version"));
+#endif
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));

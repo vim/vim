@@ -2042,7 +2042,7 @@ f_setdigraphs_impl(typval_T *argvars, typval_T *rettv)
     char_u *digraphs = tv_get_string_chk(&argvars[0]);
     if (STRLEN(digraphs) != 2)
     {
-	semsg(_("EXXXX: Digraph declared with too many characters: %s"), digraphs);
+	semsg(e_digraph_too_many_chars, digraphs);
 	return;
     }
 
@@ -2068,7 +2068,7 @@ f_getdigraphs_impl(typval_T *argvars, typval_T *rettv)
     char_u *digraphs = tv_get_string_chk(&argvars[0]);
     if (STRLEN(digraphs) != 2)
     {
-	semsg(_("EXXXX: Digraph declared with too many characters: %s"), digraphs);
+	semsg(e_digraph_too_many_chars, digraphs);
 	return;
     }
     code = getdigraph(digraphs[0], digraphs[1], FALSE);

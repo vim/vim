@@ -4198,7 +4198,7 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
 
-setdigraphs({digraphs}, {number})			*setdigraphs()*
+setdigraphs({digraphs}, {number})			*setdigraphs()* *E1200*
 		Add digraph {chars} to the list.  {chars} must be two
 		characters.  For the use of {number}, see |:digraphs|. This is
 		similar to |:digraphs| command, but useful to add digraphs
@@ -5590,7 +5590,7 @@ getcwd([{winnr} [, {tabnr}]])
 <		Can also be used as a |method|: >
 			GetWinnr()->getcwd()
 <
-					      *getdigraphs()* *EXXXX*
+					      *getdigraphs()* *E1200*
 getdigraphs({chars})
 		Return the digraph of {chars}.  If {chars} are not just two
 		characters, or the digraph of {chars} does not exist, an empty
