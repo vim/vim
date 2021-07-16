@@ -2032,7 +2032,7 @@ registerdigraph(int char1, int char2, int n)
  * If they are valid, returns TRUE; otherwise, give an error message and
  * returns FALSE.
  */
-    static int
+    int
 check_digraph_chars_valid(char_u char1, char_u char2)
 {
     if (char2 == 0)
