@@ -493,6 +493,7 @@ static argcheck_T arg1_chan_or_job[] = {arg_chan_or_job};
 static argcheck_T arg2_float_or_nr[] = {arg_float_or_nr, arg_float_or_nr};
 static argcheck_T arg2_number[] = {arg_number, arg_number};
 static argcheck_T arg2_string[] = {arg_string, arg_string};
+static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_list_nr[] = {arg_list_number, arg_list_number};
 static argcheck_T arg2_nr_string[] = {arg_number, arg_string};
 static argcheck_T arg2_dict_string[] = {arg_dict_any, arg_string};
