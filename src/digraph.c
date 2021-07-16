@@ -1995,7 +1995,7 @@ getdigraph(int char1, int char2, int meta_char)
 /*
  * Add the digraphs to the digraph table.
  */
-    static void
+    void
 registerdigraph(int char1, int char2, int n)
 {
     int		i;
