@@ -2887,8 +2887,7 @@ setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		Dict	set character search from {dict}
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
-setdigraphs({digraphs}, {number})
-				Boolean  register |digraph|
+setdigraphs({chars}, {number})	Boolean  register |digraph|
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
@@ -4198,7 +4197,7 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
 
-setdigraphs({digraphs}, {number})			*setdigraphs()* *E1200*
+setdigraphs({chars}, {number})			*setdigraphs()* *E1200*
 		Add digraph {chars} to the list.  {chars} must be two
 		characters.  For the use of {number}, see |:digraphs|. This is
 		similar to |:digraphs| command, but useful to add digraphs
