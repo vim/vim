@@ -1805,10 +1805,12 @@ EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before pare
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 #ifdef FEAT_DIGRAPHS
 EXTERN char e_digraph_too_many_chars[]  INIT(= N_("E1200: Digraph declared with too many characters: %s"));
-#else
+#endif
+#endif
+#ifndef FEAT_DIGRAPHS
 EXTERN char e_no_digraphs_version[] INIT(= N_("E196: No digraphs in this version"));
 #endif
-#endif
+
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
 #endif
