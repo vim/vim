@@ -7040,7 +7040,27 @@ theend:
 f_setdigraphs(typval_T *argvars, typval_T *rettv)
 {
 #ifdef FEAT_DIGRAPHS
-    f_setdigraphs_impl(argvars, rettv);
+    varnumber_T n;
+    int		error = FALSE;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_FALSE;
+    char_u *digraphs = tv_get_string_chk(&argvars[0]);
+    if (STRLEN(digraphs) != 2)
+    {
+	semsg(e_digraph_too_many_chars, digraphs);
+	return;
+    }
+
+    if (!check_digraph_chars_valid((int)digraphs[0], (int)digraphs[1]))
+	return;
+
+    n = tv_get_number_chk(&argvars[1], &error);
+    if (error)
+	return;
+
+    registerdigraph((int)digraphs[0], (int)digraphs[1], (int)n);
+    rettv->vval.v_number = VVAL_TRUE;
 #else
     emsg(e_no_digraphs_version);
 #endif
@@ -7152,7 +7172,27 @@ range_list_materialize(list_T *list)
 f_getdigraphs(typval_T *argvars, typval_T *rettv)
 {
 #ifdef FEAT_DIGRAPHS
-    f_getdigraphs_impl(argvars, rettv);
+    int		code;
+    char_u 	buf[NUMBUFLEN];
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = (char_u*)"";
+    char_u *digraphs = tv_get_string_chk(&argvars[0]);
+    if (STRLEN(digraphs) != 2)
+    {
+	semsg(e_digraph_too_many_chars, digraphs);
+	return;
+    }
+    code = getdigraph(digraphs[0], digraphs[1], FALSE);
+
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(code, buf)] = NUL;
+    else {
+	buf[0] = code;
+	buf[1] = NUL;
+    }
+
+    rettv->vval.v_string = vim_strsave(buf);
 #else
     emsg(e_no_digraphs_version);
 #endif

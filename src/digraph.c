@@ -25,7 +25,6 @@ typedef struct digraph
 } digr_T;
 
 static void printdigraph(digr_T *dp, result_T *previous);
-static void registerdigraph(int char1, int char2, int n);
 
 // digraphs added by the user
 static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
@@ -2029,59 +2028,26 @@ registerdigraph(int char1, int char2, int n)
 }
 
 /*
- * "setdigraphs()" function's implementation.
+ * Check the characters are valid for digraph.
+ * If they are valid, returns TRUE; otherwise, give an error message and
+ * returns FALSE.
  */
-    void
-f_setdigraphs_impl(typval_T *argvars, typval_T *rettv)
+    static int
+check_digraph_chars_valid(char_u char1, char_u char2)
 {
-    varnumber_T n;
-    int		error = FALSE;
-
-    rettv->v_type = VAR_BOOL;
-    rettv->vval.v_number = VVAL_FALSE;
-    char_u *digraphs = tv_get_string_chk(&argvars[0]);
-    if (STRLEN(digraphs) != 2)
+    if (char2 == 0)
     {
-	semsg(e_digraph_too_many_chars, digraphs);
-	return;
+	emsg(_(e_invarg));
+	return FALSE;
     }
-
-    n = tv_get_number_chk(&argvars[1], &error);
-    if (error)
-	return;
-
-    registerdigraph((int)digraphs[0], (int)digraphs[1], (int)n);
-    rettv->vval.v_number = VVAL_TRUE;
+    if (char1 == ESC || char2 == ESC)
+    {
+	emsg(_("E104: Escape not allowed in digraph"));
+	return FALSE;
+    }
+    return TRUE;
 }
 
-/*
- * "getdigraphs() function's implementation.
- */
-    void
-f_getdigraphs_impl(typval_T *argvars, typval_T *rettv)
-{
-    int		code;
-    char_u 	buf[NUMBUFLEN];
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = (char_u*)"";
-    char_u *digraphs = tv_get_string_chk(&argvars[0]);
-    if (STRLEN(digraphs) != 2)
-    {
-	semsg(e_digraph_too_many_chars, digraphs);
-	return;
-    }
-    code = getdigraph(digraphs[0], digraphs[1], FALSE);
-
-    if (has_mbyte)
-	buf[(*mb_char2bytes)(code, buf)] = NUL;
-    else {
-	buf[0] = code;
-	buf[1] = NUL;
-    }
-
-    rettv->vval.v_string = vim_strsave(buf);
-}
 
 
 /*
@@ -2100,16 +2066,10 @@ putdigraph(char_u *str)
 	    return;
 	char1 = *str++;
 	char2 = *str++;
-	if (char2 == 0)
-	{
-	    emsg(_(e_invarg));
+
+	if (!check_digraph_chars_valid(char1, char2))
 	    return;
-	}
-	if (char1 == ESC || char2 == ESC)
-	{
-	    emsg(_("E104: Escape not allowed in digraph"));
-	    return;
-	}
+
 	str = skipwhite(str);
 	if (!VIM_ISDIGIT(*str))
 	{
