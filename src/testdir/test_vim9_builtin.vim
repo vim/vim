@@ -1662,7 +1662,7 @@ def Test_mzeval()
   if !has('mzscheme')
     CheckFeature mzscheme
   endif
-  CheckDefAndScriptFailure2(['mzscheme(["a"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E730: Using a List as a String')
+  CheckDefAndScriptFailure2(['mzeval(["a"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E730: Using a List as a String')
 enddef
 
 def Test_nextnonblank()
