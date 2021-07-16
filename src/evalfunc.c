@@ -7042,10 +7042,11 @@ f_setdigraphs(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_DIGRAPHS
     varnumber_T n;
     int		error = FALSE;
+    char_u      *digraphs;
 
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = VVAL_FALSE;
-    char_u *digraphs = tv_get_string_chk(&argvars[0]);
+    digraphs = tv_get_string_chk(&argvars[0]);
     if (STRLEN(digraphs) != 2)
     {
 	semsg(e_digraph_too_many_chars, digraphs);
@@ -7174,10 +7175,11 @@ f_getdigraphs(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_DIGRAPHS
     int		code;
     char_u 	buf[NUMBUFLEN];
+    char_u *    digraphs;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = (char_u*)"";
-    char_u *digraphs = tv_get_string_chk(&argvars[0]);
+    digraphs = tv_get_string_chk(&argvars[0]);
     if (STRLEN(digraphs) != 2)
     {
 	semsg(e_digraph_too_many_chars, digraphs);
