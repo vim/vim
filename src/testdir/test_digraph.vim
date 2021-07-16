@@ -551,8 +551,8 @@ func Test_getdigraphs_function_encode()
   let testcases = {
         \'00': '∞',
         \'aa': 'あ',
-        \}->map('iconv(v:val, "utf-8", "euc-jp")')
-  set encoding=euc-jp
+        \}->map('iconv(v:val, "utf-8", "japan")')
+  set encoding=japan
   for [key, ch] in items(testcases)
     call assert_equal(ch, getdigraphs(key))
   endfor
