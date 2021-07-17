@@ -7098,8 +7098,6 @@ f_setdigraph(typval_T *argvars, typval_T *rettv)
 f_setdigraphlist(typval_T * argvars, typval_T *rettv)
 {
 #ifdef FEAT_DIGRAPHS
-    typval_T	*chars, *digraphs;
-    varnumber_T n;
     list_T	*pl, *l;
     listitem_T	*pli;
 
