@@ -502,3 +502,7 @@ EXTERN char e_invalid_value_for_line_number_str[]
 	INIT(= N_("E1209: Invalid value for a line number: \"%s\""));
 EXTERN char e_number_required_for_argument_nr[]
 	INIT(= N_("E1210: Number required for argument %d"));
+EXTERN char e_list_required_for_argument_nr[]
+	INIT(= N_("E1211: List required for argument %d"));
+EXTERN char e_bool_required_for_argument_nr[]
+	INIT(= N_("E1211: Bool required for argument %d"));

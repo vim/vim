@@ -902,6 +902,12 @@ f_str2list(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_bool_arg(argvars, 1) == FAIL)))
+	return;
+
     if (argvars[1].v_type != VAR_UNKNOWN)
 	utf8 = (int)tv_get_bool_chk(&argvars[1], NULL);
 
@@ -1107,6 +1113,12 @@ f_strcharlen(typval_T *argvars, typval_T *rettv)
 f_strchars(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T		skipcc = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_bool_arg(argvars, 1) == FAIL)))
+	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
 	skipcc = tv_get_bool(&argvars[1]);

@@ -12,6 +12,8 @@ float_T tv_get_float(typval_T *varp);
 int check_for_string_arg(typval_T *args, int idx);
 int check_for_nonempty_string_arg(typval_T *args, int idx);
 int check_for_number_arg(typval_T *args, int idx);
+int check_for_bool_arg(typval_T *args, int idx);
+int check_for_list_arg(typval_T *args, int idx);
 int check_for_dict_arg(typval_T *args, int idx);
 char_u *tv_get_string(typval_T *varp);
 char_u *tv_get_string_strict(typval_T *varp);

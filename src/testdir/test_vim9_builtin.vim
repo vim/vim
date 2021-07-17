@@ -473,6 +473,12 @@ def Test_char2nr()
   char2nr('あ', true)->assert_equal(12354)
 
   assert_fails('char2nr(true)', 'E1174:')
+  CheckDefAndScriptFailure2(['char2nr(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['char2nr("a", 2)'], 'E1013: Argument 2: type mismatch, expected bool but got number', 'E1211: Bool required for argument 2')
+  assert_equal(97, char2nr('a', 1))
+  assert_equal(97, char2nr('a', 0))
+  assert_equal(97, char2nr('a', true))
+  assert_equal(97, char2nr('a', false))
 enddef
 
 def Test_charclass()
@@ -600,6 +606,11 @@ def Test_diff_filler()
   CheckDefFailure(['diff_filler(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
   assert_equal(0, diff_filler(1))
   assert_equal(0, diff_filler('.'))
+enddef
+
+def Test_diff_hlID()
+  CheckDefAndScriptFailure2(['diff_hlID(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['diff_hlID(1, "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
 enddef
 
 def Test_echoraw()
@@ -1599,6 +1610,21 @@ def Test_map_failure()
   delete('Xtmpfile')
 enddef
 
+def Test_match()
+  CheckDefAndScriptFailure2(['match(0z12, "p")'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['match(["s"], [2])'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['match("s", "p", "q")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefAndScriptFailure2(['match("s", "p", 1, "r")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
+  assert_equal(2, match('ab12cd', '12'))
+  assert_equal(-1, match('ab12cd', '34'))
+  assert_equal(6, match('ab12cd12ef', '12', 4))
+  assert_equal(2, match('abcd', '..', 0, 3))
+  assert_equal(1, match(['a', 'b', 'c'], 'b'))
+  assert_equal(-1, match(['a', 'b', 'c'], 'd'))
+  assert_equal(3, match(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2))
+  assert_equal(5, match(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2, 2))
+enddef
+
 def Test_matcharg()
   CheckDefFailure(['matcharg("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
@@ -1607,6 +1633,71 @@ def Test_matchdelete()
   CheckDefFailure(['matchdelete("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
   CheckDefFailure(['matchdelete("x", 1)'], 'E1013: Argument 1: type mismatch, expected number but got string')
   CheckDefFailure(['matchdelete(1, "x")'], 'E1013: Argument 2: type mismatch, expected number but got string')
+enddef
+
+def Test_matchend()
+  CheckDefAndScriptFailure2(['matchend(0z12, "p")'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['matchend(["s"], [2])'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['matchend("s", "p", "q")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefAndScriptFailure2(['matchend("s", "p", 1, "r")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
+  assert_equal(4, matchend('ab12cd', '12'))
+  assert_equal(-1, matchend('ab12cd', '34'))
+  assert_equal(8, matchend('ab12cd12ef', '12', 4))
+  assert_equal(4, matchend('abcd', '..', 0, 3))
+  assert_equal(1, matchend(['a', 'b', 'c'], 'b'))
+  assert_equal(-1, matchend(['a', 'b', 'c'], 'd'))
+  assert_equal(3, matchend(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2))
+  assert_equal(5, matchend(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2, 2))
+enddef
+
+def Test_matchlist()
+  CheckDefAndScriptFailure2(['matchlist(0z12, "p")'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['matchlist(["s"], [2])'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['matchlist("s", "p", "q")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefAndScriptFailure2(['matchlist("s", "p", 1, "r")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
+  var l: list<string> = ['12',  '', '', '', '', '', '', '', '', '']
+  assert_equal(l, matchlist('ab12cd', '12'))
+  assert_equal([], matchlist('ab12cd', '34'))
+  assert_equal(l, matchlist('ab12cd12ef', '12', 4))
+  l[0] = 'cd'
+  assert_equal(l, matchlist('abcd', '..', 0, 3))
+  l[0] = 'b'
+  assert_equal(l, matchlist(['a', 'b', 'c'], 'b'))
+  assert_equal([], matchlist(['a', 'b', 'c'], 'd'))
+  assert_equal(l, matchlist(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2))
+  assert_equal(l, matchlist(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2, 2))
+enddef
+
+def Test_matchstr()
+  CheckDefAndScriptFailure2(['matchstr(0z12, "p")'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['matchstr(["s"], [2])'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['matchstr("s", "p", "q")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefAndScriptFailure2(['matchstr("s", "p", 1, "r")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
+  assert_equal('12', matchstr('ab12cd', '12'))
+  assert_equal('', matchstr('ab12cd', '34'))
+  assert_equal('12', matchstr('ab12cd12ef', '12', 4))
+  assert_equal('cd', matchstr('abcd', '..', 0, 3))
+  assert_equal('b', matchstr(['a', 'b', 'c'], 'b'))
+  assert_equal('', matchstr(['a', 'b', 'c'], 'd'))
+  assert_equal('b', matchstr(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2))
+  assert_equal('b', matchstr(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2, 2))
+enddef
+
+def Test_matchstrpos()
+  CheckDefAndScriptFailure2(['matchstrpos(0z12, "p")'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['matchstrpos(["s"], [2])'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['matchstrpos("s", "p", "q")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefAndScriptFailure2(['matchstrpos("s", "p", 1, "r")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
+  assert_equal(['12', 2, 4], matchstrpos('ab12cd', '12'))
+  assert_equal(['', -1, -1], matchstrpos('ab12cd', '34'))
+  assert_equal(['12', 6, 8], matchstrpos('ab12cd12ef', '12', 4))
+  assert_equal(['cd', 2, 4], matchstrpos('abcd', '..', 0, 3))
+  assert_equal(['b', 1, 0, 1], matchstrpos(['a', 'b', 'c'], 'b'))
+  assert_equal(['', -1, -1, -1], matchstrpos(['a', 'b', 'c'], 'd'))
+  assert_equal(['b', 3, 0, 1],
+                    matchstrpos(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2))
+  assert_equal(['b', 5, 0, 1],
+                    matchstrpos(['a', 'b', 'c', 'b', 'd', 'b'], 'b', 2, 2))
 enddef
 
 def Test_max()
@@ -1790,6 +1881,14 @@ def Test_prompt_getprompt()
     CheckDefFailure(['prompt_getprompt([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
     assert_equal('', prompt_getprompt('NonExistingBuf'))
   endif
+enddef
+
+def Test_prompt_setprompt()
+  if !has('channel')
+    CheckFeature channel
+  endif
+  CheckDefAndScriptFailure2(['prompt_setprompt([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['prompt_setprompt(1, [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2')
 enddef
 
 def Test_prop_find()
@@ -2407,6 +2506,14 @@ def Run_str2float()
   endif
 enddef
 
+def Test_str2list()
+  CheckDefAndScriptFailure2(['str2list(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['str2list("a", 2)'], 'E1013: Argument 2: type mismatch, expected bool but got number', 'E1211: Bool required for argument 2')
+  assert_equal([97], str2list('a'))
+  assert_equal([97], str2list('a', 1))
+  assert_equal([97], str2list('a', true))
+enddef
+
 def Test_str2nr()
   str2nr("1'000'000", 10, true)->assert_equal(1000000)
 
@@ -2426,6 +2533,11 @@ enddef
 
 def Test_strchars()
   strchars("A\u20dd", true)->assert_equal(1)
+  CheckDefAndScriptFailure2(['strchars(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['strchars("a", 2)'], 'E1013: Argument 2: type mismatch, expected bool but got number', 'E1211: Bool required for argument 2')
+  assert_equal(3, strchars('abc'))
+  assert_equal(3, strchars('abc', 1))
+  assert_equal(3, strchars('abc', true))
 enddef
 
 def Test_strdisplaywidth()
@@ -2521,6 +2633,16 @@ def Test_synIDtrans()
   CheckDefFailure(['synIDtrans("a")'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
 
+def Test_synconcealed()
+  CheckDefAndScriptFailure2(['synconcealed(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['synconcealed(1, "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+enddef
+
+def Test_synstack()
+  CheckDefAndScriptFailure2(['synstack(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['synstack(1, "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+enddef
+
 def Test_tabpagebuflist()
   CheckDefFailure(['tabpagebuflist("t")'], 'E1013: Argument 1: type mismatch, expected number but got string')
   assert_equal([bufnr('')], tabpagebuflist())
@@ -2607,6 +2729,29 @@ def Test_term_gettty()
   endif
 enddef
 
+def Test_term_sendkeys()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_sendkeys([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_sendkeys(1, [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2')
+enddef
+
+def Test_term_setapi()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_setapi([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_setapi(1, [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2')
+enddef
+
+def Test_term_setkill()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_setkill([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_setkill(1, [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2')
+enddef
+
+def Test_term_setrestore()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_setrestore([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_setrestore(1, [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2')
+enddef
 def Test_term_start()
   if !has('terminal')
     MissingFeature 'terminal'
@@ -2617,6 +2762,12 @@ def Test_term_start()
     winnr()->assert_equal(winnr)
     bwipe!
   endif
+enddef
+
+def Test_term_wait()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_wait(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_wait(1, "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
 enddef
 
 def Test_test_alloc_fail()
