@@ -7021,6 +7021,53 @@ theend:
     rettv->vval.v_number = -1;
 }
 
+#ifdef FEAT_DIGRAPHS
+    static int
+setdigraph_common(typval_T *argchars, typval_T *argdigraph)
+{
+    char_u      *chars;
+    char_u	*digraph;
+    char_u	*p;
+    char_u	buf_digraph[NUMBUFLEN];
+    char_u	buf_chars[NUMBUFLEN];
+    varnumber_T n;
+
+    chars = tv_get_string_buf_chk(argchars, buf_chars);
+
+    if (chars == NULL)
+	return FALSE;
+    else if (STRLEN(chars) != 2)
+    {
+	semsg(e_digraph_not_exact_chars, chars);
+	return FALSE;
+    }
+
+    if (!check_digraph_chars_valid((int)chars[0], (int)chars[1]))
+	return FALSE;
+
+
+    digraph = tv_get_string_buf_chk(argdigraph, buf_digraph);
+    if (digraph == NULL)
+	return FALSE;
+
+    p = digraph;
+    mb_cptr2char_adv(&p);
+    if (*p != NUL)
+    {
+	semsg(_("E1201: Digraph must be one character: %s"), digraph);
+	return FALSE;
+    }
+
+    if (has_mbyte)
+	n = utf_ptr2char(digraph);  // Digraph must be utf-8 encoded
+    else
+	n = digraph[0];
+
+    registerdigraph((int)chars[0], (int)chars[1], (int)n);
+    return TRUE;
+}
+#endif
+
 /*
  * "setdigraph()" function
  */
@@ -7028,28 +7075,18 @@ theend:
 f_setdigraph(typval_T *argvars, typval_T *rettv)
 {
 #ifdef FEAT_DIGRAPHS
-    varnumber_T n;
-    int		error = FALSE;
-    char_u      *digraphs;
-
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = VVAL_FALSE;
-    digraphs = tv_get_string_chk(&argvars[0]);
-    if (STRLEN(digraphs) != 2)
-    {
-	semsg(e_digraph_not_exact_chars, digraphs);
-	return;
-    }
 
-    if (!check_digraph_chars_valid((int)digraphs[0], (int)digraphs[1]))
+
+    if (!setdigraph_common(&argvars[0], &argvars[1]))
 	return;
 
-    n = tv_get_number_chk(&argvars[1], &error);
-    if (error)
-	return;
-
-    registerdigraph((int)digraphs[0], (int)digraphs[1], (int)n);
     rettv->vval.v_number = VVAL_TRUE;
+#else
+    emsg(e_no_digraphs_version);
+#endif
+}
 #else
     emsg(e_no_digraphs_version);
 #endif
@@ -7166,11 +7203,14 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
     char_u *    digraphs;
 
     rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;  // Return empty string for failure
     digraphs = tv_get_string_chk(&argvars[0]);
-    if (STRLEN(digraphs) != 2)
+
+    if (digraphs == NULL)
+	return;
+    else if (STRLEN(digraphs) != 2)
     {
 	semsg(e_digraph_not_exact_chars, digraphs);
-        rettv->vval.v_string = vim_strsave((char_u*)"");
 	return;
     }
     code = getdigraph(digraphs[0], digraphs[1], FALSE);

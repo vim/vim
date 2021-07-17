@@ -2887,7 +2887,7 @@ setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		Dict	set character search from {dict}
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
-setdigraph({chars}, {number})	Boolean  register |digraph|
+setdigraph({chars}, {digraph})	Boolean  register |digraph|
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
@@ -4196,22 +4196,6 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
-
-setdigraph({chars}, {number})			*setdigraph()* *E1200*
-		Add digraph {chars} to the list.  {chars} must be two
-		characters.  For the use of {number}, see |:digraphs|. This is
-		similar to |:digraphs| command, but useful to add digraphs
-		start with a white space.  The function result is a |Number|,
-		which is true if |digraph| is registered or false if failed to
-		register it.
-		Example: >
-			call setdigraph('  ', 12288)
-<
-
-		Can be used as a |method|: >
-			GetString()->setdigraph(12288)
-<
-		{only available when compiled with the |+digraphs| feature}
 
 echoraw({expr})						*echoraw()*
 		Output {expr} as-is, including unprintable characters.  This
@@ -5609,7 +5593,9 @@ getdigraph({chars})
 		Can also be used as a |method|: >
 			GetChars()->getdigraph()
 <
-		{only available when compiled with the |+digraphs| feature}
+		This function works only when compiled with the |+digraphs|
+		feature.  If this feature is disabled, this function will display
+		an error message.
 
 getenv({name})						*getenv()*
 		Return the value of environment variable {name}.
@@ -9528,6 +9514,28 @@ setcursorcharpos({list})
 
 		Can also be used as a |method|: >
 			GetCursorPos()->setcursorcharpos()
+
+setdigraph({chars}, {digraph})		*setdigraph()* *E1200* *E1201*
+		Add digraph {chars} to the list.  {chars} must be two
+		characters.  {digraph} is one utf-8 encoded character. Be careful,
+		composing characters are NOT ignored.
+		This function is similar to |:digraphs| command, but useful to add
+		digraphs start with a white space.  The function result is a
+		|Number|, which is true if |digraph| is registered or false if
+		failed to register it.
+		Example: >
+			call setdigraph('  ', 'あ')
+<
+		If you want to define multiple digraphs at once, you can use
+		|setdigraphlist()|.
+
+		Can be used as a |method|: >
+			GetString()->setdigraph('あ')
+<
+		This function works only when compiled with the |+digraphs|
+		feature.  If this feature is disabled, this function will display
+		an error message.
+
 
 setenv({name}, {val})						*setenv()*
 		Set environment variable {name} to {val}.

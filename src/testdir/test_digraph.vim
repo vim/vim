@@ -515,33 +515,37 @@ func Test_entering_digraph()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_setdigraphs_function()
+func Test_setdigraph_function()
   new
-  call setdigraph('aa', 12354)
+  call setdigraph('aa', 'あ')
   call Put_Dig('aa')
   call assert_equal('あ', getline('$'))
-  call setdigraph(' i', 12356)
+  call setdigraph(' i', 'い')
   call Put_Dig(' i')
   call assert_equal('い', getline('$'))
-  call setdigraph('  ', 12358)
+  call setdigraph('  ', 'う')
   call Put_Dig('  ')
   call assert_equal('う', getline('$'))
-  eval 'aa'->setdigraph(12360)
+
+  eval 'aa'->setdigraph('え')
   call Put_Dig('aa')
   call assert_equal('え', getline('$'))
-  call assert_fails('call setdigraph("aaa", 12354)', 'E1200: Digraph characters must be just two characters: aaa')
-  call assert_fails('call setdigraph("b", 12354)', 'E1200: Digraph characters must be just two characters: b')
+
+  call assert_fails('call setdigraph("aaa", "あ")', 'E1200: Digraph characters must be just two characters: aaa')
+  call assert_fails('call setdigraph("b", "あ")', 'E1200: Digraph characters must be just two characters: b')
+  call assert_fails('call setdigraph("aa", "ああ")', 'E1201: Digraph must be one character: ああ')
+  call assert_fails('call setdigraph("aa", "か" .. nr2char(0x3099))',  'E1201: Digraph must be one character: か' .. nr2char(0x3099))
   bwipe!
 endfunc
 
-func Test_getdigraphs_function()
+func Test_getdigraph_function()
   " Built-in digraphs
   call assert_equal('∞', getdigraph('00'))
 
   " User-defined digraphs
-  call setdigraph('aa', 12354)
-  call setdigraph(' i', 12356)
-  call setdigraph('  ', 12358)
+  call setdigraph('aa', 'あ')
+  call setdigraph(' i', 'い')
+  call setdigraph('  ', 'う')
   call assert_equal('あ', getdigraph('aa'))
   call assert_equal('あ', 'aa'->getdigraph())
   call assert_equal('い', getdigraph(' i'))
@@ -550,17 +554,18 @@ func Test_getdigraphs_function()
   call assert_fails('call getdigraph("b")', 'E1200: Digraph characters must be just two characters: b')
 endfunc
 
-func Test_getdigraphs_function_encode()
+func Test_getdigraph_function_encode()
   CheckFeature iconv
   let testcases = {
         \'00': '∞',
         \'aa': 'あ',
-        \}->map('iconv(v:val, "utf-8", "japan")')
-  set encoding=japan
+        \}
   for [key, ch] in items(testcases)
-    call assert_equal(ch, getdigraph(key))
+    call setdigraph(key, ch)
+    set encoding=japan
+    call assert_equal(iconv(ch, 'utf-8', 'japan'), getdigraph(key))
+    set encoding&
   endfor
-  set encoding&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
