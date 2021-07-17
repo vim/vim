@@ -203,6 +203,48 @@ func dist#ft#DtraceCheck()
   endif
 endfunc
 
+func dist#ft#FTdef()
+  " search for Modula-2 dialect tag
+  let n = 1
+  while n < 100
+    let line = getline(n)
+    if line =~ '(\*!m2pim\(+[a-z][a-z0-9]*\)\?\*)'
+      setf modula2pim
+      return
+    endif
+    if line =~ '(\*!m2iso\(+[a-z][a-z0-9]*\)\?\*)'
+      setf modula2iso
+      return
+    endif
+    if line =~ '(\*!m2r10\(+[a-z][a-z0-9]*\)\?\*)'
+      setf modula2r10
+      return
+    endif
+    let n = n + 1
+  endwhile
+  " no dialect tag found, search for module header
+  let n = 1
+  while n < 100
+    let line = getline(n)
+    if line =~ '\<DEFINITION\>\s\<MODULE\>'
+      if exists("g:modula2_default_dialect") &&
+        \ g:modula2_default_dialect =~ 'm2pim\|m2iso\|m2r10'
+        exe 'setf ' . g:modula2_default_dialect
+      else
+        setf modula2pim
+      endif
+      return
+    endif
+    if line =~ '\<BLUEPRINT\>'
+      setf modula2r10
+      return
+    endif
+    let n = n + 1
+  endwhile
+  " no dialect tag and no module header found, default to MSFT
+  setf def
+endfunc
+
 func dist#ft#FTe()
   if exists('g:filetype_euphoria')
     exe 'setf ' . g:filetype_euphoria
@@ -322,6 +364,48 @@ func dist#ft#FTmms()
     let n = n + 1
   endwhile
   setf mmix
+endfunc
+
+func dist#ft#FTmod()
+  " check first line for LambdaProlog module header
+  if getline(1) =~ '\<module\>'
+    setf lprolog
+    return
+  endif
+  " no LambdaProlog module header found, search for Modula-2 dialect tag
+  let n = 1
+  while n < 100
+    let line = getline(n)
+    if line =~ '(\*!m2pim\(+[a-z][a-z0-9]*\)\?\*)'
+      setf modula2pim
+      return
+    endif
+    if line =~ '(\*!m2iso\(+[a-z][a-z0-9]*\)\?\*)'
+      setf modula2iso
+      return
+    endif
+    if line =~ '(\*!m2r10\(+[a-z][a-z0-9]*\)\?\*)'
+      setf modula2r10
+      return
+    endif
+    let n = n + 1
+  endwhile
+  " no Modula-2 dialect tag found, search for Modula-2 module header
+  let n = 1
+  while n < 100
+    if getline(n) =~ '\<MODULE\>'
+      if exists("g:modula2_default_dialect") &&
+        \ g:modula2_default_dialect =~ 'm2pim\|m2iso\|m2r10'
+        exe 'setf ' . g:modula2_default_dialect
+      else
+        setf modula2pim
+      endif
+      return
+    endif
+    let n = n + 1
+  endwhile
+  " no module headers and no dialect tag found, default to Modsim III
+  setf modsim3
 endfunc
 
 " This function checks if one of the first five lines start with a dot.  In

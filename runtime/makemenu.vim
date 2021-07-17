@@ -381,8 +381,10 @@ SynMenu M.MMIX:mmix
 SynMenu M.Modconf:modconf
 SynMenu M.Model:model
 SynMenu M.Modsim\ III:modsim3
-SynMenu M.Modula\ 2:modula2
-SynMenu M.Modula\ 3:modula3
+SynMenu M.Modula-2.R10\ (2010):modula2r10
+SynMenu M.Modula-2.ISO\ (1994):modula2iso
+SynMenu M.Modula-2.PIM\ (1985):modula2pim
+SynMenu M.Modula-3:modula3
 SynMenu M.Monk:monk
 SynMenu M.Motorola\ S-Record:srec
 SynMenu M.Mplayer\ config:mplayerconf
