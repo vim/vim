@@ -529,6 +529,8 @@ func Test_setdigraphs_function()
   eval 'aa'->setdigraph(12360)
   call Put_Dig('aa')
   call assert_equal('え', getline('$'))
+  call assert_fails('call setdigraph("aaa", 12354)', 'E1200: Digraph characters must be just two characters: aaa')
+  call assert_fails('call setdigraph("b", 12354)', 'E1200: Digraph characters must be just two characters: b')
   bwipe!
 endfunc
 
@@ -544,6 +546,8 @@ func Test_getdigraphs_function()
   call assert_equal('あ', 'aa'->getdigraph())
   call assert_equal('い', getdigraph(' i'))
   call assert_equal('う', getdigraph('  '))
+  call assert_fails('call getdigraph("aaa")', 'E1200: Digraph characters must be just two characters: aaa')
+  call assert_fails('call getdigraph("b")', 'E1200: Digraph characters must be just two characters: b')
 endfunc
 
 func Test_getdigraphs_function_encode()
