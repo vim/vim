@@ -2888,6 +2888,7 @@ setcharsearch({dict})		Dict	set character search from {dict}
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
 setdigraph({chars}, {digraph})	Boolean  register |digraph|
+setdigraphlist({digraphlist})	Boolean  register multiple |digraph|s
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
@@ -9536,6 +9537,25 @@ setdigraph({chars}, {digraph})		*setdigraph()* *E1200* *E1201*
 		feature.  If this feature is disabled, this function will display
 		an error message.
 
+setdigraphlist({digraphlist})			*setdigraphlist()*
+		Similar to |setdigraph()| but this function can add multiple
+		digraphs at once.  {digraphlist} is a list composed of lists of
+		{chars} and {digraph} in |setdigraph()|.
+		Example: >
+		    call setdigraphlist([['aa', 'あ'], ['ii', 'い']])
+<
+		It is equal to the following: >
+		    for [chars, digraph] in [['aa', 'あ'], ['ii', 'い']]
+			  call setdigraph(chars, digraph)
+		    endfor
+<
+
+		Can be used as a |method|: >
+		    GetList()->setdigraphlist()
+<
+		This function works only when compiled with the |+digraphs|
+		feature.  If this feature is disabled, this function will display
+		an error message.
 
 setenv({name}, {val})						*setenv()*
 		Set environment variable {name} to {val}.
