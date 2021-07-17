@@ -7178,11 +7178,11 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
     char_u *    digraphs;
 
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = (char_u*)"";
     digraphs = tv_get_string_chk(&argvars[0]);
     if (STRLEN(digraphs) != 2)
     {
 	semsg(e_digraph_not_exact_chars, digraphs);
+        rettv->vval.v_string = vim_strsave((char_u*)"");
 	return;
     }
     code = getdigraph(digraphs[0], digraphs[1], FALSE);
