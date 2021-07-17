@@ -60,9 +60,11 @@ if (!exists("g:vim_json_warnings") || g:vim_json_warnings==1)
 	" Syntax: Decimals smaller than one should begin with 0 (so .1 should be 0.1).
 	syn match   jsonNumError  "\:\@<=[[:blank:]\r\n]*\zs\.\d\+"
 
-	" Syntax: No comments in JSON, see http://stackoverflow.com/questions/244777/can-i-comment-a-json-file
-	syn match   jsonCommentError  "//.*"
-	syn match   jsonCommentError  "\(/\*\)\|\(\*/\)"
+	"if (!exists("g:vim_json_allow_comments") || g:vim_json_allow_comments==0)
+		" Syntax: No comments in JSON, see http://stackoverflow.com/questions/244777/can-i-comment-a-json-file
+		syn match   jsonCommentError  "//.*"
+		syn match   jsonCommentError  "\(/\*\)\|\(\*/\)"
+	"endif
 
 	" Syntax: No semicolons in JSON
 	syn match   jsonSemicolonError  ";"
@@ -109,7 +111,11 @@ hi def link jsonKeyword         Label
 
 if (!exists("g:vim_json_warnings") || g:vim_json_warnings==1)
 hi def link jsonNumError        Error
-hi def link jsonCommentError    Error
+	if(!exists("g:vim_json_allow_comments") || g:vim_json_allow_comments==0)
+		hi def link jsonCommentError    Error
+	else
+		hi def link jsonCommentError	Comment
+	endif
 hi def link jsonSemicolonError  Error
 hi def link jsonTrailingCommaError     Error
 hi def link jsonMissingCommaError      Error
