@@ -62,7 +62,7 @@ static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
-static void f_getdigraphs(typval_T *argvars, typval_T *rettv);
+static void f_getdigraph(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
@@ -154,7 +154,7 @@ static void f_searchpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_setcursorcharpos(typval_T *argvars, typval_T *rettv);
-static void f_setdigraphs(typval_T *argvars, typval_T *rettv);
+static void f_setdigraph(typval_T *argvars, typval_T *rettv);
 static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
@@ -1106,10 +1106,10 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_getcursorcharpos},
     {"getcwd",		0, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_getcwd},
-    {"getdigraphs",     1, 1, FEARG_1,      arg1_string,
+    {"getdigraph",     1, 1, FEARG_1,      arg1_string,
                         ret_string,
 #ifdef FEAT_DIGRAPHS
-                        f_getdigraphs
+                        f_getdigraph
 #else
                         NULL
 #endif
@@ -1574,10 +1574,10 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcmdpos},
     {"setcursorcharpos", 1, 3, FEARG_1,	    NULL,
 			ret_number_bool,    f_setcursorcharpos},
-    {"setdigraphs",	2, 2, FEARG_1,	    arg2_string_number,
+    {"setdigraph",	2, 2, FEARG_1,	    arg2_string_number,
 			ret_bool,
 #ifdef FEAT_DIGRAPHS
-                        f_setdigraphs
+                        f_setdigraph
 #else
                         NULL
 #endif
@@ -7034,10 +7034,10 @@ theend:
 }
 
 /*
- * "setdigraphs()" function
+ * "setdigraph()" function
  */
     static void
-f_setdigraphs(typval_T *argvars, typval_T *rettv)
+f_setdigraph(typval_T *argvars, typval_T *rettv)
 {
 #ifdef FEAT_DIGRAPHS
     varnumber_T n;
@@ -7167,10 +7167,10 @@ range_list_materialize(list_T *list)
 }
 
 /*
- * "getdigraphs()" function
+ * "getdigraph()" function
  */
     static void
-f_getdigraphs(typval_T *argvars, typval_T *rettv)
+f_getdigraph(typval_T *argvars, typval_T *rettv)
 {
 #ifdef FEAT_DIGRAPHS
     int		code;

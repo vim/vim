@@ -2620,7 +2620,7 @@ getcompletion({pat}, {type} [, {filtered}])
 getcurpos([{winnr}])		List	position of the cursor
 getcursorcharpos([{winnr}])	List	character position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
-getdigraphs({chars})		String	get the digraph of {chars}
+getdigraph({chars})		String	get the digraph of {chars}
 getenv({name})			String	return environment variable
 getfontname([{name}])		String	name of font being used
 getfperm({fname})		String	file permissions of file {fname}
@@ -2887,7 +2887,7 @@ setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		Dict	set character search from {dict}
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
-setdigraphs({chars}, {number})	Boolean  register |digraph|
+setdigraph({chars}, {number})	Boolean  register |digraph|
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
@@ -4197,7 +4197,7 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
 
-setdigraphs({chars}, {number})			*setdigraphs()* *E1200*
+setdigraph({chars}, {number})			*setdigraph()* *E1200*
 		Add digraph {chars} to the list.  {chars} must be two
 		characters.  For the use of {number}, see |:digraphs|. This is
 		similar to |:digraphs| command, but useful to add digraphs
@@ -4205,11 +4205,11 @@ setdigraphs({chars}, {number})			*setdigraphs()* *E1200*
 		which is true if |digraph| is registered or false if failed to
 		register it.
 		Example: >
-			call setdigraphs('  ', 12288)
+			call setdigraph('  ', 12288)
 <
 
 		Can be used as a |method|: >
-			GetString()->setdigraphs(12288)
+			GetString()->setdigraph(12288)
 <
 		{only available when compiled with the |+digraphs| feature}
 
@@ -5589,8 +5589,8 @@ getcwd([{winnr} [, {tabnr}]])
 <		Can also be used as a |method|: >
 			GetWinnr()->getcwd()
 <
-					      *getdigraphs()* *E1200*
-getdigraphs({chars})
+					      *getdigraph()* *E1200*
+getdigraph({chars})
 		Return the digraph of {chars}.  If {chars} are not just two
 		characters, or the digraph of {chars} does not exist, an empty
 		string is returned.  The character will be converted from Unicode
@@ -5599,15 +5599,15 @@ getdigraphs({chars})
 
 		Examples: >
 		" Get a built-in digraph
-		:echo getdigraphs('00')		" Returns '∞'
+		:echo getdigraph('00')		" Returns '∞'
 
 		" Get a user-defined digraph
-		:call setdigraphs('aa', 12354)
-		:echo getdigraphs('aa')		" Returns 'あ'
+		:call setdigraph('aa', 12354)
+		:echo getdigraph('aa')		" Returns 'あ'
 
 <
 		Can also be used as a |method|: >
-			GetChars()->getdigraphs()
+			GetChars()->getdigraph()
 <
 		{only available when compiled with the |+digraphs| feature}
 

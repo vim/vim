@@ -517,16 +517,16 @@ endfunc
 
 func Test_setdigraphs_function()
   new
-  call setdigraphs('aa', 12354)
+  call setdigraph('aa', 12354)
   call Put_Dig('aa')
   call assert_equal('あ', getline('$'))
-  call setdigraphs(' i', 12356)
+  call setdigraph(' i', 12356)
   call Put_Dig(' i')
   call assert_equal('い', getline('$'))
-  call setdigraphs('  ', 12358)
+  call setdigraph('  ', 12358)
   call Put_Dig('  ')
   call assert_equal('う', getline('$'))
-  eval 'aa'->setdigraphs(12360)
+  eval 'aa'->setdigraph(12360)
   call Put_Dig('aa')
   call assert_equal('え', getline('$'))
   bwipe!
@@ -534,16 +534,16 @@ endfunc
 
 func Test_getdigraphs_function()
   " Built-in digraphs
-  call assert_equal('∞', getdigraphs('00'))
+  call assert_equal('∞', getdigraph('00'))
 
   " User-defined digraphs
-  call setdigraphs('aa', 12354)
-  call setdigraphs(' i', 12356)
-  call setdigraphs('  ', 12358)
-  call assert_equal('あ', getdigraphs('aa'))
-  call assert_equal('あ', 'aa'->getdigraphs())
-  call assert_equal('い', getdigraphs(' i'))
-  call assert_equal('う', getdigraphs('  '))
+  call setdigraph('aa', 12354)
+  call setdigraph(' i', 12356)
+  call setdigraph('  ', 12358)
+  call assert_equal('あ', getdigraph('aa'))
+  call assert_equal('あ', 'aa'->getdigraph())
+  call assert_equal('い', getdigraph(' i'))
+  call assert_equal('う', getdigraph('  '))
 endfunc
 
 func Test_getdigraphs_function_encode()
@@ -554,7 +554,7 @@ func Test_getdigraphs_function_encode()
         \}->map('iconv(v:val, "utf-8", "japan")')
   set encoding=japan
   for [key, ch] in items(testcases)
-    call assert_equal(ch, getdigraphs(key))
+    call assert_equal(ch, getdigraph(key))
   endfor
   set encoding&
 endfunc
