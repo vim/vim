@@ -9510,7 +9510,8 @@ compile_def_function(
 		}
 	    }
 	}
-	p = find_ex_command(&ea, NULL, starts_with_colon
+	p = find_ex_command(&ea, NULL,
+		starts_with_colon || (local_cmdmod.cmod_flags & CMOD_LEGACY)
 						  ? NULL : item_exists, &cctx);
 
 	if (p == NULL)

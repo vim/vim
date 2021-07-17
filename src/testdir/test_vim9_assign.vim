@@ -1632,6 +1632,13 @@ def Test_script_local_in_legacy()
     let s:legvar = 'one'
   END
   CheckScriptFailure(lines, 'E476:', 1)
+
+  edit! Xfile
+  lines =<< trim END
+      var edit: bool
+      legacy edit
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_var_type_check()
