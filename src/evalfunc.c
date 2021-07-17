@@ -7049,7 +7049,7 @@ f_setdigraph(typval_T *argvars, typval_T *rettv)
     digraphs = tv_get_string_chk(&argvars[0]);
     if (STRLEN(digraphs) != 2)
     {
-	semsg(e_digraph_too_many_chars, digraphs);
+	semsg(e_digraph_not_exact_chars, digraphs);
 	return;
     }
 
@@ -7182,7 +7182,7 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
     digraphs = tv_get_string_chk(&argvars[0]);
     if (STRLEN(digraphs) != 2)
     {
-	semsg(e_digraph_too_many_chars, digraphs);
+	semsg(e_digraph_not_exact_chars, digraphs);
 	return;
     }
     code = getdigraph(digraphs[0], digraphs[1], FALSE);
