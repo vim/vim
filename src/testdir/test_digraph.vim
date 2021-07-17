@@ -568,4 +568,11 @@ func Test_getdigraph_function_encode()
   endfor
 endfunc
 
+func Test_setdigraphlist_function()
+  call setdigraphlist([['aa', 'き'], ['bb', 'く']])
+  call assert_equal('き', getdigraph('aa'))
+  call assert_equal('く', getdigraph('bb'))
+
+  call assert_fails('call setdigraphlist([[]])', 'E474: Invalid argument')
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

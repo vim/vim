@@ -155,6 +155,7 @@ static void f_setcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_setcursorcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setdigraph(typval_T *argvars, typval_T *rettv);
+static void f_setdigraphlist(typval_T *argvars, typval_T *rettv);
 static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
@@ -1570,6 +1571,8 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcursorcharpos},
     {"setdigraph",	2, 2, FEARG_1,	    arg2_string_number,
 			ret_bool,           f_setdigraph},
+    {"setdigraphlist",	1, 1, FEARG_1,	    arg1_list_string,
+			ret_bool,	    f_setdigraphlist},
     {"setenv",		2, 2, FEARG_2,	    NULL,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    arg2_string,
@@ -7087,6 +7090,58 @@ f_setdigraph(typval_T *argvars, typval_T *rettv)
     emsg(e_no_digraphs_version);
 #endif
 }
+
+/*
+ * "setdigraphlist()" function
+ */
+    static void
+f_setdigraphlist(typval_T * argvars, typval_T *rettv)
+{
+#ifdef FEAT_DIGRAPHS
+    typval_T	*chars, *digraphs;
+    varnumber_T n;
+    list_T	*pl, *l;
+    listitem_T	*pli;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_FALSE;
+
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(e_invarg);
+	return;
+    }
+
+    pl = argvars[0].vval.v_list;
+    if (pl == NULL)
+    {
+	// Empty list always results in success.
+	rettv->vval.v_number = VVAL_TRUE;
+	return;
+    }
+
+    FOR_ALL_LIST_ITEMS(pl, pli)
+    {
+	if (pli->li_tv.v_type != VAR_LIST)
+	{
+	    emsg(e_invarg);
+	    return;
+	}
+
+	l = pli->li_tv.vval.v_list;
+
+	if (l == NULL || l->lv_len != 2)
+	{
+	    emsg(e_invarg);
+	    return;
+	}
+
+	if (!setdigraph_common(&l->lv_first->li_tv,
+		    &l->lv_first->li_next->li_tv))
+	    return;
+
+    }
+    rettv->vval.v_number = VVAL_TRUE;
 #else
     emsg(e_no_digraphs_version);
 #endif
@@ -7227,6 +7282,7 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
     emsg(e_no_digraphs_version);
 #endif
 }
+
 
 /*
  * "getreginfo()" function
