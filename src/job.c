@@ -1725,6 +1725,13 @@ f_prompt_setprompt(typval_T *argvars, typval_T *rettv UNUSED)
     buf_T	*buf;
     char_u	*text;
 
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_NUMBER
+		    && check_for_string_arg(argvars, 0) == FAIL)
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     if (check_secure())
 	return;
     buf = tv_get_buf(&argvars[0], FALSE);

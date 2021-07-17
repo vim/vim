@@ -6093,10 +6093,18 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     void
 f_term_sendkeys(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = term_get_buf(argvars, "term_sendkeys()");
+    buf_T	*buf;
     char_u	*msg;
     term_T	*term;
 
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_NUMBER
+		    && check_for_string_arg(argvars, 0) == FAIL)
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    buf = term_get_buf(argvars, "term_sendkeys()");
     if (buf == NULL)
 	return;
 
@@ -6193,10 +6201,18 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_term_setapi(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = term_get_buf(argvars, "term_setapi()");
+    buf_T	*buf;
     term_T	*term;
     char_u	*api;
 
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_NUMBER
+		    && check_for_string_arg(argvars, 0) == FAIL)
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    buf = term_get_buf(argvars, "term_setapi()");
     if (buf == NULL)
 	return;
     term = buf->b_term;
@@ -6215,10 +6231,18 @@ f_term_setapi(typval_T *argvars, typval_T *rettv UNUSED)
 f_term_setrestore(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #if defined(FEAT_SESSION)
-    buf_T	*buf = term_get_buf(argvars, "term_setrestore()");
+    buf_T	*buf;
     term_T	*term;
     char_u	*cmd;
 
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_NUMBER
+		    && check_for_string_arg(argvars, 0) == FAIL)
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    buf = term_get_buf(argvars, "term_setrestore()");
     if (buf == NULL)
 	return;
     term = buf->b_term;
@@ -6237,10 +6261,18 @@ f_term_setrestore(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_term_setkill(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = term_get_buf(argvars, "term_setkill()");
+    buf_T	*buf;
     term_T	*term;
     char_u	*how;
 
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_NUMBER
+		    && check_for_string_arg(argvars, 0) == FAIL)
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    buf = term_get_buf(argvars, "term_setkill()");
     if (buf == NULL)
 	return;
     term = buf->b_term;
@@ -6286,8 +6318,17 @@ f_term_start(typval_T *argvars, typval_T *rettv)
     void
 f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = term_get_buf(argvars, "term_wait()");
+    buf_T	*buf;
 
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_NUMBER
+		    && check_for_string_arg(argvars, 0) == FAIL) ||
+		(argvars[1].v_type != VAR_UNKNOWN
+		 && check_for_number_arg(argvars, 1) == FAIL)))
+	return;
+
+    buf = term_get_buf(argvars, "term_wait()");
     if (buf == NULL)
 	return;
     if (buf->b_term->tl_job == NULL)

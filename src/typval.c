@@ -352,7 +352,7 @@ tv_get_float(typval_T *varp)
 #endif
 
 /*
- * Give an error and return FAIL unless "tv" is a string.
+ * Give an error and return FAIL unless "args[idx]" is a string.
  */
     int
 check_for_string_arg(typval_T *args, int idx)
@@ -385,7 +385,7 @@ check_for_nonempty_string_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "tv" is a number.
+ * Give an error and return FAIL unless "args[idx]" is a number.
  */
     int
 check_for_number_arg(typval_T *args, int idx)
@@ -402,7 +402,44 @@ check_for_number_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "tv" is a dict.
+ * Give an error and return FAIL unless "args[idx]" is a bool.
+ */
+    int
+check_for_bool_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_BOOL
+	    && !(args[idx].v_type == VAR_NUMBER
+		&& (args[idx].vval.v_number == 0
+		    || args[idx].vval.v_number == 1)))
+    {
+	if (idx >= 0)
+	    semsg(_(e_bool_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_boolreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list.
+ */
+    int
+check_for_list_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST)
+    {
+	if (idx >= 0)
+	    semsg(_(e_list_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_listreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a dict.
  */
     int
 check_for_dict_arg(typval_T *args, int idx)

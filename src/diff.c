@@ -3283,7 +3283,7 @@ f_diff_filler(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_DIFF
-    linenr_T		lnum = tv_get_lnum(argvars);
+    linenr_T		lnum;
     static linenr_T	prev_lnum = 0;
     static varnumber_T	changedtick = 0;
     static int		fnum = 0;
@@ -3293,6 +3293,14 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int			filler_lines;
     int			col;
 
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_NUMBER
+		    && check_for_string_arg(argvars, 0) == FAIL)
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
+    lnum = tv_get_lnum(argvars);
     if (lnum < 0)	// ignore type error in {lnum} arg
 	lnum = 0;
     if (lnum != prev_lnum
