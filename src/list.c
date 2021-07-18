@@ -1566,12 +1566,32 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 		    vimlist_remove(l, item, item2);
 		    if (rettv_list_alloc(rettv) == OK)
 		    {
-			l = rettv->vval.v_list;
-			l->lv_first = item;
-			l->lv_u.mat.lv_last = item2;
-			item->li_prev = NULL;
-			item2->li_next = NULL;
-			l->lv_len = cnt;
+			list_T *rl = rettv->vval.v_list;
+
+			if (l->lv_with_items > 0)
+			{
+			    // need to copy the list items and move the value
+			    while (item != NULL)
+			    {
+				li = listitem_alloc();
+				if (li == NULL)
+				    return;
+				li->li_tv = item->li_tv;
+				init_tv(&item->li_tv);
+				list_append(rl, li);
+				if (item == item2)
+				    break;
+				item = item->li_next;
+			    }
+			}
+			else
+			{
+			    rl->lv_first = item;
+			    rl->lv_u.mat.lv_last = item2;
+			    item->li_prev = NULL;
+			    item2->li_next = NULL;
+			    rl->lv_len = cnt;
+			}
 		    }
 		}
 	    }

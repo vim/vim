@@ -2083,6 +2083,12 @@ def Test_remote_startserver()
   CheckDefFailure(['remote_startserver({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>')
 enddef
 
+def Test_remove_const_list()
+  var l: list<number> = [1, 2, 3, 4]
+  assert_equal([1, 2], remove(l, 0, 1))
+  assert_equal([3, 4], l)
+enddef
+
 def Test_remove_return_type()
   var l = remove({one: [1, 2], two: [3, 4]}, 'one')
   var res = 0
