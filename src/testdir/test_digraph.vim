@@ -533,6 +533,7 @@ func Test_setdigraph_function()
 
   call assert_fails('call setdigraph("aaa", "あ")', 'E1200: Digraph characters must be just two characters: aaa')
   call assert_fails('call setdigraph("b", "あ")', 'E1200: Digraph characters must be just two characters: b')
+  call assert_fails('call setdigraph("あ", "あ")', 'E1200: Digraph characters must be just two characters: あ')
   call assert_fails('call setdigraph("aa", "ああ")', 'E1201: Digraph must be one character: ああ')
   call assert_fails('call setdigraph("aa", "か" .. nr2char(0x3099))',  'E1201: Digraph must be one character: か' .. nr2char(0x3099))
   bwipe!
@@ -574,5 +575,14 @@ func Test_setdigraphlist_function()
   call assert_equal('く', getdigraph('bb'))
 
   call assert_fails('call setdigraphlist([[]])', 'E474: Invalid argument')
+  call assert_fails('call setdigraphlist([["aa", "b", "cc"]])', 'E474: Invalid argument')
+endfunc
+func Test_getdigraphlist_function()
+  " Make sure user-defined digraphs are defined
+  call setdigraphlist([['aa', 'き'], ['bb', 'く']])
+
+  for pair in getdigraphlist(0)
+    call assert_equal(getdigraph(pair[0]), pair[1])
+  endfor
 endfunc
 " vim: shiftwidth=2 sts=2 expandtab
