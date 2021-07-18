@@ -170,9 +170,9 @@ valid_yank_reg(
     if (       (regname > 0 && ASCII_ISALNUM(regname))
 	    || (!writing && vim_strchr((char_u *)
 #ifdef FEAT_EVAL
-				    "/.%:="
+				    "/.,;%:="
 #else
-				    "/.%:"
+				    "/.,;%:"
 #endif
 					, regname) != NULL)
 	    || regname == '#'
@@ -574,7 +574,8 @@ do_execreg(
 	regname = execreg_lastc;
     }
     // check for valid regname
-    if (regname == '%' || regname == '#' || !valid_yank_reg(regname, FALSE))
+    if (regname == '%' || regname == '#' ||
+     regname == ',' || regname == ';' || !valid_yank_reg(regname, FALSE))
     {
 	emsg_invreg(regname);
 	return FAIL;
@@ -792,6 +793,9 @@ insert_reg(
     regname = may_get_selection(regname);
 #endif
 
+    // in insert mode use the old redo buffer
+    if ((State & INSERT) && regname == ',') regname = ';';
+
     if (regname == '.')			// insert last inserted text
 	retval = stuff_inserted(NUL, 1L, TRUE);
     else if (get_spec_reg(regname, &arg, &allocated, TRUE))
@@ -882,6 +886,14 @@ get_spec_reg(
 	    *allocated = TRUE;
 	    if (*argp == NULL && errmsg)
 		emsg(_(e_noinstext));
+	    return TRUE;
+
+	case ',':		// redo buffer ('.' command)
+	    *argp = get_inserted(FALSE);
+	    return TRUE;
+
+	case ';':		// old redo buffer
+	    *argp = get_inserted(TRUE);
 	    return TRUE;
 
 #ifdef FEAT_SEARCHPATH
@@ -2383,6 +2395,24 @@ ex_display(exarg_T *eap)
 	dis_msg(p, TRUE);
     }
 
+    // display redo buffer
+    if ((p = get_inserted(FALSE)) != NULL
+		  && (arg == NULL || vim_strchr(arg, ',') != NULL) && !got_int
+						      && !message_filtered(p))
+    {
+	msg_puts("\n  c  \",   ");
+	dis_msg(p, TRUE);
+    }
+
+    // display old redo buffer
+    if ((p = get_inserted(TRUE)) != NULL
+		  && (arg == NULL || vim_strchr(arg, ';') != NULL) && !got_int
+						      && !message_filtered(p))
+    {
+	msg_puts("\n  c  \";   ");
+	dis_msg(p, TRUE);
+    }
+
     // display last command line
     if (last_cmdline != NULL && (arg == NULL || vim_strchr(arg, ':') != NULL)
 			       && !got_int && !message_filtered(last_cmdline))
@@ -2496,6 +2526,8 @@ get_reg_type(int regname, long *reglen)
 	case ':':		// last command line
 	case '/':		// last search-pattern
 	case '.':		// last inserted text
+	case ',':		// redo buffer ('.' command)
+	case ';':		// old redo buffer
 # ifdef FEAT_SEARCHPATH
 	case Ctrl_F:		// Filename under cursor
 	case Ctrl_P:		// Path under cursor, expand via "path"
@@ -2724,7 +2756,7 @@ write_reg_contents_lst(
 {
     yankreg_T  *old_y_previous, *old_y_current;
 
-    if (name == '/' || name == '=')
+    if (name == '/' || name == '=' || name == ',' || name == ';')
     {
 	char_u	*s;
 
@@ -2732,7 +2764,7 @@ write_reg_contents_lst(
 	    s = (char_u *)"";
 	else if (strings[1] != NULL)
 	{
-	    emsg(_("E883: search pattern and expression register may not "
+	    emsg(_("E883: search pattern, expression and redo register may not "
 			"contain two or more lines"));
 	    return;
 	}
@@ -2775,6 +2807,13 @@ write_reg_contents_ex(
     if (name == '/')
     {
 	set_last_search_pat(str, RE_SEARCH, TRUE, TRUE);
+	return;
+    }
+
+    // Special case: ',' and ';' redo buffer
+    if (name == ',' || name == ';')
+    {
+	set_inserted(name == ';', str, -1L);
 	return;
     }
 
