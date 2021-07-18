@@ -2177,6 +2177,11 @@ eval_next_line(evalarg_T *evalarg)
 	vim_free(evalarg->eval_tofree);
 	evalarg->eval_tofree = line;
     }
+
+    // Advanced to the next line, "arg" no longer points into the previous
+    // line.
+    VIM_CLEAR(evalarg->eval_tofree_cmdline);
+
     return skipwhite(line);
 }
 

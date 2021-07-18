@@ -2265,6 +2265,22 @@ def Test_nested_inline_lambda()
         })
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      def s:func()
+        range(10)
+          ->mapnew((_, _) => ({
+            key: range(10)->mapnew((_, _) => {
+              return ' '
+            }),
+          }))
+      enddef
+
+      defcomp
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Shadowed(): list<number>
