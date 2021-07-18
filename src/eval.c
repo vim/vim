@@ -1358,7 +1358,8 @@ set_var_lval(
 			 || (!var_check_ro(di->di_flags, lp->ll_name, FALSE)
 			   && !tv_check_lock(&di->di_tv, lp->ll_name, FALSE)))
 			&& tv_op(&tv, rettv, op) == OK)
-		    set_var(lp->ll_name, &tv, FALSE);
+		    set_var_const(lp->ll_name, NULL, &tv, FALSE,
+							    ASSIGN_NO_DECL, 0);
 		clear_tv(&tv);
 	    }
 	}

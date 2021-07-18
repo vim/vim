@@ -506,3 +506,5 @@ EXTERN char e_list_required_for_argument_nr[]
 	INIT(= N_("E1211: List required for argument %d"));
 EXTERN char e_bool_required_for_argument_nr[]
 	INIT(= N_("E1211: Bool required for argument %d"));
+EXTERN char e_redefining_imported_item_str[]
+	INIT(= N_("E1212: Redefining imported item %s"));

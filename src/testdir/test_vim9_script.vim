@@ -1062,6 +1062,12 @@ let s:export_script_lines =<< trim END
   export def Exported(): string
     return 'Exported'
   enddef
+  export def ExportedValue(): number
+    return exported
+  enddef
+  export def ExportedInc()
+    exported += 5
+  enddef
   export final theList = [1]
 END
 
@@ -1073,10 +1079,21 @@ enddef
 def Test_vim9_import_export()
   var import_script_lines =<< trim END
     vim9script
-    import {exported, Exported} from './Xexport.vim'
-    g:imported = exported
+    import {exported, Exported, ExportedValue} from './Xexport.vim'
+    g:exported1 = exported
     exported += 3
-    g:imported_added = exported
+    g:exported2 = exported
+    g:exported3 = ExportedValue()
+
+    import ExportedInc from './Xexport.vim'
+    ExportedInc()
+    g:exported_i1 = exported
+    g:exported_i2 = ExportedValue()
+
+    exported = 11
+    g:exported_s1 = exported
+    g:exported_s2 = ExportedValue()
+
     g:imported_func = Exported()
 
     def GetExported(): string
@@ -1091,7 +1108,7 @@ def Test_vim9_import_export()
     g:imported_name = exp_name
     exp_name ..= ' Doe'
     g:imported_name_appended = exp_name
-    g:imported_later = exported
+    g:exported_later = exported
 
     import theList from './Xexport.vim'
     theList->add(2)
@@ -1105,9 +1122,17 @@ def Test_vim9_import_export()
 
   assert_equal('bobbie', g:result)
   assert_equal('bob', g:localname)
-  assert_equal(9876, g:imported)
-  assert_equal(9879, g:imported_added)
-  assert_equal(9879, g:imported_later)
+  assert_equal(9876, g:exported1)
+  assert_equal(9879, g:exported2)
+  assert_equal(9879, g:exported3)
+
+  assert_equal(9884, g:exported_i1)
+  assert_equal(9884, g:exported_i2)
+
+  assert_equal(11, g:exported_s1)
+  assert_equal(11, g:exported_s2)
+  assert_equal(11, g:exported_later)
+
   assert_equal('Exported', g:imported_func)
   assert_equal('Exported', g:funcref_result)
   assert_equal('John', g:imported_name)
@@ -1115,9 +1140,12 @@ def Test_vim9_import_export()
   assert_false(exists('g:name'))
 
   Undo_export_script_lines()
-  unlet g:imported
-  unlet g:imported_added
-  unlet g:imported_later
+  unlet g:exported1
+  unlet g:exported2
+  unlet g:exported3
+  unlet g:exported_i1
+  unlet g:exported_i2
+  unlet g:exported_later
   unlet g:imported_func
   unlet g:imported_name g:imported_name_appended
   delete('Ximport.vim')
@@ -1131,22 +1159,22 @@ def Test_vim9_import_export()
         }
         from
         './Xexport.vim'
-    g:imported = exported
-    exported += 5
-    g:imported_added = exported
+    g:exported = exported
+    exported += 7
+    g:exported_added = exported
     g:imported_func = Exported()
   END
   writefile(import_line_break_script_lines, 'Ximport_lbr.vim')
   source Ximport_lbr.vim
 
-  assert_equal(9876, g:imported)
-  assert_equal(9881, g:imported_added)
+  assert_equal(11, g:exported)
+  assert_equal(18, g:exported_added)
   assert_equal('Exported', g:imported_func)
 
   # exported script not sourced again
   assert_false(exists('g:result'))
-  unlet g:imported
-  unlet g:imported_added
+  unlet g:exported
+  unlet g:exported_added
   unlet g:imported_func
   delete('Ximport_lbr.vim')
 
@@ -1154,18 +1182,20 @@ def Test_vim9_import_export()
     vim9script
     import * as Export from './Xexport.vim'
     def UseExport()
-      g:imported_def = Export.exported
+      g:exported_def = Export.exported
     enddef
-    g:imported_script = Export.exported
+    g:exported_script = Export.exported
     assert_equal(1, exists('Export.exported'))
     assert_equal(0, exists('Export.notexported'))
     UseExport()
   END
   writefile(import_star_as_lines, 'Ximport.vim')
   source Ximport.vim
-  # FIXME: this should be 9881
-  assert_equal(9876, g:imported_def)
-  assert_equal(9876, g:imported_script)
+
+  assert_equal(18, g:exported_def)
+  assert_equal(18, g:exported_script)
+  unlet g:exported_def
+  unlet g:exported_script
 
   var import_star_as_lines_no_dot =<< trim END
     vim9script
@@ -1234,13 +1264,14 @@ def Test_vim9_import_export()
         from
         './Xexport.vim'
     def UseExport()
-      g:imported = Export.exported
+      g:exported = Export.exported
     enddef
     UseExport()
   END
   writefile(import_star_as_lbr_lines, 'Ximport.vim')
   source Ximport.vim
-  assert_equal(9876, g:imported)
+  assert_equal(18, g:exported)
+  unlet g:exported
 
   var import_star_lines =<< trim END
     vim9script
