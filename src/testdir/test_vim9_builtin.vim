@@ -398,9 +398,11 @@ def Test_ch_close_in()
 enddef
 
 def Test_ch_getjob()
-  CheckDefAndScriptFailure2(['ch_getjob(1)'], 'E1013: Argument 1: type mismatch, expected channel but got number', 'E475: Invalid argument:')
-  CheckDefAndScriptFailure2(['ch_getjob({"a": 10})'], 'E1013: Argument 1: type mismatch, expected channel but got dict<number>', 'E731: Using a Dictionary as a String')
-  assert_equal(0, ch_getjob(test_null_channel()))
+  if has('channel')
+    CheckDefAndScriptFailure2(['ch_getjob(1)'], 'E1013: Argument 1: type mismatch, expected channel but got number', 'E475: Invalid argument:')
+    CheckDefAndScriptFailure2(['ch_getjob({"a": 10})'], 'E1013: Argument 1: type mismatch, expected channel but got dict<number>', 'E731: Using a Dictionary as a String')
+    assert_equal(0, ch_getjob(test_null_channel()))
+  endif
 enddef
 
 def Test_ch_info()
@@ -1425,13 +1427,17 @@ def Test_items()
 enddef
 
 def Test_job_getchannel()
-  CheckDefAndScriptFailure2(['job_getchannel("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
-  assert_fails('job_getchannel(test_null_job())', 'E916: not a valid job')
+  if has('channel')
+    CheckDefAndScriptFailure2(['job_getchannel("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
+    assert_fails('job_getchannel(test_null_job())', 'E916: not a valid job')
+  endif
 enddef
 
 def Test_job_info()
-  CheckDefAndScriptFailure2(['job_info("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
-  assert_fails('job_info(test_null_job())', 'E916: not a valid job')
+  if has('job')
+    CheckDefAndScriptFailure2(['job_info("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
+    assert_fails('job_info(test_null_job())', 'E916: not a valid job')
+  endif
 enddef
 
 def Test_job_info_return_type()
@@ -1445,8 +1451,10 @@ def Test_job_info_return_type()
 enddef
 
 def Test_job_status()
-  CheckDefAndScriptFailure2(['job_status("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
-  assert_equal('fail', job_status(test_null_job()))
+  if has('job')
+    CheckDefAndScriptFailure2(['job_status("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
+    assert_equal('fail', job_status(test_null_job()))
+  endif
 enddef
 
 def Test_js_decode()
