@@ -660,13 +660,36 @@ def Test_expr4_equal()
   CheckDefExecAndScriptFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)
   CheckDefExecAndScriptFailure2(["var x: any = 99", 'echo x == true'], 'E1138', 'E1072:', 2)
   CheckDefExecAndScriptFailure2(["var x: any = 'a'", 'echo x == 99'], 'E1030:', 'E1072:', 2)
+enddef
 
+def Test_expr4_wrong_type()
   for op in ['>', '>=', '<', '<=', '=~', '!~']
     CheckDefExecAndScriptFailure([
         "var a: any = 'a'",
         'var b: any = true',
         'echo a ' .. op .. ' b'], 'E1072:', 3)
   endfor
+  for op in ['>', '>=', '<', '<=']
+    CheckDefExecAndScriptFailure2([
+        "var n: any = 2",
+        'echo n ' .. op .. ' "3"'], 'E1030:', 'E1072:', 2)
+  endfor
+  for op in ['=~', '!~']
+    CheckDefExecAndScriptFailure([
+        "var n: any = 2",
+        'echo n ' .. op .. ' "3"'], 'E1072:', 2)
+  endfor
+
+  CheckDefAndScriptFailure([
+      'echo v:none == true'], 'E1072:', 1)
+  CheckDefAndScriptFailure([
+      'echo false >= true'], 'E1072:', 1)
+  CheckDefExecAndScriptFailure([
+      "var n: any = v:none",
+      'echo n == true'], 'E1072:', 2)
+  CheckDefExecAndScriptFailure([
+      "var n: any = v:none",
+      'echo n < true'], 'E1072:', 2)
 enddef
 
 " test != comperator

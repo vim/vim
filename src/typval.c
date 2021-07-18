@@ -937,7 +937,9 @@ typval_compare(
 	}
     }
     else if (in_vim9script() && (typ1->v_type == VAR_BOOL
-						 || typ2->v_type == VAR_BOOL))
+				    || typ2->v_type == VAR_BOOL
+				    || (typ1->v_type == VAR_SPECIAL
+					      && typ2->v_type == VAR_SPECIAL)))
     {
 	if (typ1->v_type != typ2->v_type)
 	{
@@ -955,13 +957,23 @@ typval_compare(
 	    case EXPR_ISNOT:
 	    case EXPR_NEQUAL:   n1 = (n1 != n2); break;
 	    default:
-		emsg(_(e_invalid_operation_for_bool));
+		semsg(_(e_invalid_operation_for_str),
+						   vartype_name(typ1->v_type));
 		clear_tv(typ1);
 		return FAIL;
 	}
     }
     else
     {
+	if (in_vim9script()
+	      && ((typ1->v_type != VAR_STRING && typ1->v_type != VAR_SPECIAL)
+	       || (typ2->v_type != VAR_STRING && typ2->v_type != VAR_SPECIAL)))
+	{
+	    semsg(_(e_cannot_compare_str_with_str),
+		       vartype_name(typ1->v_type), vartype_name(typ2->v_type));
+	    clear_tv(typ1);
+	    return FAIL;
+	}
 	s1 = tv_get_string_buf(typ1, buf1);
 	s2 = tv_get_string_buf(typ2, buf2);
 	if (type != EXPR_MATCH && type != EXPR_NOMATCH)
