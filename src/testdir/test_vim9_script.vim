@@ -2557,6 +2557,12 @@ def Test_for_loop()
         dd.counter = 12
       endfor
       assert_equal([{a: 'Cat', counter: 12}], foo)
+
+      reslist = []
+      for _ in range(3)
+        reslist->add('x')
+      endfor
+      assert_equal(['x', 'x', 'x'], reslist)
   END
   CheckDefAndScriptSuccess(lines)
 enddef

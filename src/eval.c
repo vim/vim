@@ -1784,6 +1784,8 @@ next_for_item(void *fi_void, char_u *arg)
 			     | ASSIGN_NO_MEMBER_TYPE)
 			 : 0);
     listitem_T	*item;
+    int		skip_assign = in_vim9script() && arg[0] == '_'
+						      && !eval_isnamec(arg[1]);
 
     if (fi->fi_blob != NULL)
     {
@@ -1795,6 +1797,8 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.v_lock = VAR_FIXED;
 	tv.vval.v_number = blob_get(fi->fi_blob, fi->fi_bi);
 	++fi->fi_bi;
+	if (skip_assign)
+	    return TRUE;
 	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
 					    fi->fi_varcount, flag, NULL) == OK;
     }
@@ -1812,7 +1816,10 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.vval.v_string = vim_strnsave(fi->fi_string + fi->fi_byte_idx, len);
 	fi->fi_byte_idx += len;
 	++fi->fi_bi;
-	result = ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
+	if (skip_assign)
+	    result = TRUE;
+	else
+	    result = ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
 					    fi->fi_varcount, flag, NULL) == OK;
 	vim_free(tv.vval.v_string);
 	return result;
@@ -1825,7 +1832,10 @@ next_for_item(void *fi_void, char_u *arg)
     {
 	fi->fi_lw.lw_item = item->li_next;
 	++fi->fi_bi;
-	result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
+	if (skip_assign)
+	    result = TRUE;
+	else
+	    result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
 					   fi->fi_varcount, flag, NULL) == OK);
     }
     return result;
