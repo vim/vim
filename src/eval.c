@@ -4184,6 +4184,15 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
     void
 f_slice(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_LIST
+		    && argvars[0].v_type != VAR_BLOB
+		    && argvars[0].v_type != VAR_STRING
+		    && check_for_list_arg(argvars, 0) == FAIL)
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL))
+	return;
+
     if (check_can_index(argvars, TRUE, FALSE) == OK)
     {
 	copy_tv(argvars, rettv);

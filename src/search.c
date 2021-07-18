@@ -4794,6 +4794,12 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     int		ret;
     int		matchseq = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_list_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
+
     CLEAR_POINTER(&cb);
 
     // validate and get the arguments

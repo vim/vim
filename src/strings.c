@@ -904,8 +904,7 @@ f_str2list(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_bool_arg(argvars, 1) == FAIL)))
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -1116,8 +1115,7 @@ f_strchars(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_bool_arg(argvars, 1) == FAIL)))
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -1141,8 +1139,7 @@ f_strdisplaywidth(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_number_arg(argvars, 1) == FAIL)))
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
 	return;
 
     s = tv_get_string(&argvars[0]);
@@ -1177,6 +1174,14 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
     int		len = 0;
     int		slen;
     int		error = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 3) == FAIL)))
+	return;
 
     p = tv_get_string(&argvars[0]);
     slen = (int)STRLEN(p);
@@ -1260,6 +1265,14 @@ f_strpart(typval_T *argvars, typval_T *rettv)
     int		len;
     int		slen;
     int		error = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 3) == FAIL)))
+	return;
 
     p = tv_get_string(&argvars[0]);
     slen = (int)STRLEN(p);

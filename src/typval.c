@@ -385,6 +385,16 @@ check_for_nonempty_string_arg(typval_T *args, int idx)
 }
 
 /*
+ * Check for an optional string argument at 'idx'
+ */
+    int
+check_for_opt_string_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_string_arg(args, idx) != FAIL);
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a number.
  */
     int
@@ -399,6 +409,16 @@ check_for_number_arg(typval_T *args, int idx)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Check for an optional number argument at 'idx'
+ */
+    int
+check_for_opt_number_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_number_arg(args, idx) != FAIL);
 }
 
 /*
@@ -422,6 +442,16 @@ check_for_bool_arg(typval_T *args, int idx)
 }
 
 /*
+ * Check for an optional bool argument at 'idx'
+ */
+    int
+check_for_opt_bool_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_bool_arg(args, idx) != FAIL);
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a list.
  */
     int
@@ -439,6 +469,16 @@ check_for_list_arg(typval_T *args, int idx)
 }
 
 /*
+ * Check for an optional list argument at 'idx'
+ */
+    int
+check_for_opt_list_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_list_arg(args, idx) != FAIL);
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a dict.
  */
     int
@@ -450,6 +490,169 @@ check_for_dict_arg(typval_T *args, int idx)
 	    semsg(_(e_dict_required_for_argument_nr), idx + 1);
 	else
 	    emsg(_(e_dictreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional dict argument at 'idx'
+ */
+    int
+check_for_opt_dict_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_dict_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a blob.
+ */
+    int
+check_for_blob_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_BLOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_blob_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_blobreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a channel or a job.
+ */
+    int
+check_for_chan_or_job_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_CHANNEL && args[idx].v_type != VAR_JOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_chan_or_job_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_chan_or_job_req));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a job.
+ */
+    int
+check_for_job_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_JOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_job_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_jobreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or
+ * a number.
+ */
+    int
+check_for_string_or_number_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or
+ * a number (buffer)
+ */
+    int
+check_for_buffer_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or
+ * a number (line)
+ */
+    int
+check_for_lnum_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or
+ * a number (line)
+ */
+    int
+check_for_opt_lnum_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_UNKNOWN
+	    && args[idx].v_type != VAR_STRING
+	    && args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional string or number argument at 'idx'
+ */
+    int
+check_for_opt_string_or_number_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_string_or_number_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or
+ * a blob.
+ */
+    int
+check_for_string_or_blob_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_BLOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
 	return FAIL;
     }
     return OK;

@@ -655,8 +655,7 @@ f_tabpagewinnr(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_string_arg(argvars, 1) == FAIL)))
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
 	return;
 
     tp = find_tabpage((int)tv_get_number(&argvars[0]));
@@ -833,6 +832,12 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
     win_T   *wp;
     win_T   *targetwin;
     int     flags = 0, size = 0;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
 
     wp = find_win_by_nr_or_id(&argvars[0]);
     targetwin = find_win_by_nr_or_id(&argvars[1]);

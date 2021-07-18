@@ -1700,10 +1700,11 @@ EXTERN char e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%
 EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
 EXTERN char e_stringreq[]	INIT(= N_("E928: String required"));
 EXTERN char e_numberreq[]	INIT(= N_("E889: Number required"));
-EXTERN char e_boolreq[]		INIT(= N_("E839: Number required"));
+EXTERN char e_boolreq[]		INIT(= N_("E839: Bool required"));
 EXTERN char e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 EXTERN char e_dictreq[]		INIT(= N_("E715: Dictionary required"));
 EXTERN char e_listidx[]		INIT(= N_("E684: list index out of range: %ld"));
+EXTERN char e_blobreq[]		INIT(= N_("E538: Dictionary required"));
 EXTERN char e_blobidx[]		INIT(= N_("E979: Blob index out of range: %ld"));
 EXTERN char e_invalblob[]	INIT(= N_("E978: Invalid operation for Blob"));
 EXTERN char e_toomanyarg[]	INIT(= N_("E118: Too many arguments for function: %s"));
@@ -1810,6 +1811,8 @@ EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s")
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
 #endif
+EXTERN char e_chan_or_job_req[]	INIT(= N_("E706: Channel or Job required"));
+EXTERN char e_jobreq[]		INIT(= N_("E693: Job required"));
 
 EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));
 EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));

@@ -1246,15 +1246,12 @@ f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int		repeated_click;
     int_u	mods;
 
-    if (argvars[0].v_type != VAR_NUMBER
-	    || (argvars[1].v_type) != VAR_NUMBER
-	    || (argvars[2].v_type) != VAR_NUMBER
-	    || (argvars[3].v_type) != VAR_NUMBER
-	    || (argvars[4].v_type) != VAR_NUMBER)
-    {
-	emsg(_(e_invarg));
+    if (check_for_number_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL
+	    || check_for_number_arg(argvars, 3) == FAIL
+	    || check_for_number_arg(argvars, 4) == FAIL)
 	return;
-    }
 
     button = tv_get_number(&argvars[0]);
     row = tv_get_number(&argvars[1]);

@@ -1045,14 +1045,21 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     listitem_T	*li;
     dict_T	*d;
     list_T	*s = NULL;
-    win_T	*win = get_optional_window(argvars, 1);
+    win_T	*win;
 
     rettv->vval.v_number = -1;
+
+    if (in_vim9script()
+	    && (check_for_list_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
+
     if (argvars[0].v_type != VAR_LIST)
     {
 	emsg(_(e_listreq));
 	return;
     }
+    win = get_optional_window(argvars, 1);
     if (win == NULL)
 	return;
 

@@ -387,6 +387,12 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
     char_u	*name;
 
+    if (in_vim9script()
+	    && (check_for_opt_string_or_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 1) == FAIL)))
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
 	buf = curbuf;
     else
@@ -458,6 +464,12 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     win_T	*curwin_save = NULL;
     tabpage_T	*tp;
     win_T	*wp;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_lnum_arg(argvars, 1) == FAIL
+		|| check_for_opt_lnum_arg(argvars, 2) == FAIL))
+	return;
 
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
@@ -726,6 +738,12 @@ f_getbufline(typval_T *argvars, typval_T *rettv)
     linenr_T	lnum = 1;
     linenr_T	end = 1;
     buf_T	*buf;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_lnum_arg(argvars, 1) == FAIL
+		|| check_for_opt_lnum_arg(argvars, 2) == FAIL))
+	return;
 
     buf = tv_get_buf_from_arg(&argvars[0]);
     if (buf != NULL)
