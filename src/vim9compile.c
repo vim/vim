@@ -4335,7 +4335,6 @@ compile_subscript(
 		    semsg(_(e_missing_paren), *arg);
 		    return FAIL;
 		}
-		// TODO: base value may not be the first argument
 		if (compile_call(arg, p - *arg, cctx, ppconst, 1) == FAIL)
 		    return FAIL;
 	    }
@@ -7294,15 +7293,6 @@ compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
 }
 
 /*
- * Compile an :import command.
- */
-    static char_u *
-compile_import(char_u *arg, cctx_T *cctx)
-{
-    return handle_import(arg, &cctx->ctx_imports, 0, NULL, cctx);
-}
-
-/*
  * generate a jump to the ":endif"/":endfor"/":endwhile"/":finally"/":endtry".
  */
     static int
@@ -9638,7 +9628,8 @@ compile_def_function(
 		    break;
 
 	    case CMD_import:
-		    line = compile_import(p, &cctx);
+		    emsg(_(e_import_can_only_be_used_in_script));
+		    line = NULL;
 		    break;
 
 	    case CMD_if:

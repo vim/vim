@@ -1354,6 +1354,9 @@ script file to avoid confusion.
 `:import` can also be used in legacy Vim script.  The imported items still
 become script-local, even when the "s:" prefix is not given.
 
+`:import` can not be used in a function.  Imported items are intended to exist
+at the script level and only imported once.
+
 The script name after `import` can be:
 - A relative path, starting "." or "..".  This finds a file relative to the
   location of the script file itself.  This is useful to split up a large
@@ -1363,6 +1366,7 @@ The script name after `import` can be:
 - A path not being relative or absolute.  This will be found in the
   "import" subdirectories of 'runtimepath' entries.  The name will usually be
   longer and unique, to avoid loading the wrong file.
+  Note that "after/import" is not used.
 
 Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
