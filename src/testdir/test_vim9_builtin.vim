@@ -398,9 +398,13 @@ def Test_ch_close_in()
 enddef
 
 def Test_ch_getjob()
-  CheckDefAndScriptFailure2(['ch_getjob(1)'], 'E1013: Argument 1: type mismatch, expected channel but got number', 'E475: Invalid argument:')
-  CheckDefAndScriptFailure2(['ch_getjob({"a": 10})'], 'E1013: Argument 1: type mismatch, expected channel but got dict<number>', 'E731: Using a Dictionary as a String')
-  assert_equal(0, ch_getjob(test_null_channel()))
+  if !has('channel')
+    CheckFeature channel
+  else
+    CheckDefAndScriptFailure2(['ch_getjob(1)'], 'E1013: Argument 1: type mismatch, expected channel but got number', 'E475: Invalid argument:')
+    CheckDefAndScriptFailure2(['ch_getjob({"a": 10})'], 'E1013: Argument 1: type mismatch, expected channel but got dict<number>', 'E731: Using a Dictionary as a String')
+    assert_equal(0, ch_getjob(test_null_channel()))
+  endif
 enddef
 
 def Test_ch_info()
@@ -1425,17 +1429,27 @@ def Test_items()
 enddef
 
 def Test_job_getchannel()
-  CheckDefAndScriptFailure2(['job_getchannel("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
-  assert_fails('job_getchannel(test_null_job())', 'E916: not a valid job')
+  if !has('job')
+    CheckFeature job
+  else
+    CheckDefAndScriptFailure2(['job_getchannel("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
+    assert_fails('job_getchannel(test_null_job())', 'E916: not a valid job')
+  endif
 enddef
 
 def Test_job_info()
-  CheckDefAndScriptFailure2(['job_info("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
-  assert_fails('job_info(test_null_job())', 'E916: not a valid job')
+  if !has('job')
+    CheckFeature job
+  else
+    CheckDefAndScriptFailure2(['job_info("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
+    assert_fails('job_info(test_null_job())', 'E916: not a valid job')
+  endif
 enddef
 
 def Test_job_info_return_type()
-  if has('job')
+  if !has('job')
+    CheckFeature job
+  else
     job_start(&shell)
     var jobs = job_info()
     assert_equal('list<job>', typename(jobs))
@@ -1445,8 +1459,12 @@ def Test_job_info_return_type()
 enddef
 
 def Test_job_status()
-  CheckDefAndScriptFailure2(['job_status("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
-  assert_equal('fail', job_status(test_null_job()))
+  if !has('job')
+    CheckFeature job
+  else
+    CheckDefAndScriptFailure2(['job_status("a")'], 'E1013: Argument 1: type mismatch, expected job but got string', 'E475: Invalid argument')
+    assert_equal('fail', job_status(test_null_job()))
+  endif
 enddef
 
 def Test_js_decode()
@@ -1877,7 +1895,9 @@ def Test_prevnonblank()
 enddef
 
 def Test_prompt_getprompt()
-  if has('channel')
+  if !has('channel')
+    CheckFeature channel
+  else
     CheckDefFailure(['prompt_getprompt([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
     assert_equal('', prompt_getprompt('NonExistingBuf'))
   endif
@@ -2439,7 +2459,7 @@ enddef
 
 def Test_spellsuggest()
   if !has('spell')
-    MissingFeature 'spell'
+    CheckFeature spell
   else
     spellsuggest('marrch', 1, true)->assert_equal(['March'])
   endif
@@ -2496,7 +2516,7 @@ enddef
 
 def Run_str2float()
   if !has('float')
-    MissingFeature 'float'
+    CheckFeature float
   endif
     str2float("1.00")->assert_equal(1.00)
     str2float("2e-2")->assert_equal(0.02)
@@ -2721,7 +2741,7 @@ enddef
 
 def Test_term_gettty()
   if !has('terminal')
-    MissingFeature 'terminal'
+    CheckFeature terminal
   else
     var buf = Run_shell_in_terminal({})
     term_gettty(buf, true)->assert_notequal('')
@@ -2754,7 +2774,7 @@ def Test_term_setrestore()
 enddef
 def Test_term_start()
   if !has('terminal')
-    MissingFeature 'terminal'
+    CheckFeature terminal
   else
     botright new
     var winnr = winnr()
