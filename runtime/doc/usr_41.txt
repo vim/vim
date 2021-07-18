@@ -1002,6 +1002,7 @@ Mappings and Menus:			    *mapping-functions*
 	wildmenumode()		check if the wildmode is active
 	getdigraph()	get |digraph|
 	setdigraph()	register |digraph|
+	getdigraphlist()	get all |digraph|s
 	setdigraphlist()	register multiple |digraph|s
 
 Testing:				    *test-functions*

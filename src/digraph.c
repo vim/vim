@@ -25,6 +25,7 @@ typedef struct digraph
 } digr_T;
 
 static void printdigraph(digr_T *dp, result_T *previous);
+static void getdigraphlist_appendpair(digr_T *dp, list_T *l);
 
 // digraphs added by the user
 static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
@@ -2139,6 +2140,97 @@ listdigraphs(int use_headers)
     }
     must_redraw = CLEAR;    // clear screen, because some digraphs may be
 			    // wrong, in which case we messed up ScreenLines
+}
+
+    void
+getdigraphlist_common(int list_all, typval_T *rettv)
+{
+    int		i;
+    digr_T	*dp;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (list_all)
+    {
+	dp = digraphdefault;
+	for (i = 0; dp->char1 != NUL && !got_int; ++i)
+	{
+#ifdef USE_UNICODE_DIGRAPHS
+	    digr_T tmp;
+
+	    tmp.char1 = dp->char1;
+	    tmp.char2 = dp->char2;
+	    tmp.result = getexactdigraph(tmp.char1, tmp.char2, FALSE);
+	    if (tmp.result != 0 && tmp.result != tmp.char2
+					  && (has_mbyte || tmp.result <= 255))
+		getdigraphlist_appendpair(&tmp, rettv->vval.v_list);
+#else
+	    if (getexactdigraph(dp->char1, dp->char2, FALSE) == dp->result
+		    && (has_mbyte || dp->result <= 255))
+		getdigraphlist_appendpair(dp, rettv->vval.v_list);
+#endif
+	    ++dp;
+	}
+    }
+
+    dp = (digr_T *)user_digraphs.ga_data;
+    for (i = 0; i < user_digraphs.ga_len && !got_int; ++i)
+    {
+	getdigraphlist_appendpair(dp, rettv->vval.v_list);
+	++dp;
+    }
+}
+
+    static void
+getdigraphlist_appendpair(digr_T *dp, list_T *l)
+{
+    char_u	buf[30];
+    char_u	*p;
+    list_T	*l2;
+    listitem_T	*li, *li2;
+
+
+    li = listitem_alloc();
+    if (li == NULL)
+	return;
+    list_append(l, li);
+    li->li_tv.v_type = VAR_LIST;
+    li->li_tv.v_lock = 0;
+
+    l2 = list_alloc();
+    li->li_tv.vval.v_list = l2;
+    if (l2 == NULL)
+	return;
+    ++l2->lv_refcount;
+
+    li2 = listitem_alloc();
+    if (li2 == NULL)
+	return;
+    list_append(l2, li2);
+    li2->li_tv.v_type = VAR_STRING;
+    li2->li_tv.v_lock = 0;
+
+    buf[0] = dp->char1;
+    buf[1] = dp->char2;
+    buf[2] = NUL;
+    li2->li_tv.vval.v_string = vim_strsave(&buf[0]);
+
+    li2 = listitem_alloc();
+    if (li2 == NULL)
+	return;
+    list_append(l2, li2);
+    li2->li_tv.v_type = VAR_STRING;
+    li2->li_tv.v_lock = 0;
+
+    p = buf;
+    if (has_mbyte)
+	p += (*mb_char2bytes)(dp->result, p);
+    else
+	*p++ = (char_u)dp->result;
+    *p = NUL;
+
+    li2->li_tv.vval.v_string = vim_strsave(buf);
 }
 
 static struct dg_header_entry {

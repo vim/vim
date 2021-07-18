@@ -63,6 +63,7 @@ static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_getdigraph(typval_T *argvars, typval_T *rettv);
+static void f_getdigraphlist(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
@@ -584,6 +585,12 @@ ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
 ret_list_items(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_list_list_any;
+}
+
+    static type_T *
+ret_list_string_items(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_list_list_string;
 }
     static type_T *
 ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
@@ -1109,6 +1116,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getcwd},
     {"getdigraph",     1, 1, FEARG_1,      arg1_string,
                         ret_string,         f_getdigraph},
+    {"getdigraphlist",  0, 1, FEARG_1,      arg1_number,
+                        ret_list_string_items, f_getdigraphlist},
     {"getenv",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_getenv},
     {"getfontname",	0, 1, 0,	    arg1_string,
@@ -7276,6 +7285,32 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
     }
 
     rettv->vval.v_string = vim_strsave(buf);
+#else
+    emsg(e_no_digraphs_version);
+#endif
+}
+
+/*
+ * "getdigraphlist()" function
+ */
+    static void
+f_getdigraphlist(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_DIGRAPHS
+    int     flag_list_all;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	flag_list_all = FALSE;
+    else
+    {
+	int         error = FALSE;
+	varnumber_T flag = tv_get_number_chk(&argvars[0], &error);
+	if (error)
+	    return;
+	flag_list_all = flag ? TRUE : FALSE;
+    }
+
+    getdigraphlist_common(flag_list_all, rettv);
 #else
     emsg(e_no_digraphs_version);
 #endif

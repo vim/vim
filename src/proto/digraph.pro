@@ -7,6 +7,7 @@ void registerdigraph(int char1, int char2, int n);
 int check_digraph_chars_valid(char_u char1, char_u char2);
 void putdigraph(char_u *str);
 void listdigraphs(int use_headers);
+void getdigraphlist_common(int list_all, typval_T *rettv);
 char *keymap_init(void);
 void ex_loadkeymap(exarg_T *eap);
 void keymap_clear(garray_T *kmap);

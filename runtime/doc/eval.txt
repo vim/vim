@@ -2621,6 +2621,7 @@ getcurpos([{winnr}])		List	position of the cursor
 getcursorcharpos([{winnr}])	List	character position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
 getdigraph({chars})		String	get the digraph of {chars}
+getdigraphlist([{listall}])	List		get all |digraph|s
 getenv({name})			String	return environment variable
 getfontname([{name}])		String	name of font being used
 getfperm({fname})		String	file permissions of file {fname}
@@ -5597,6 +5598,10 @@ getdigraph({chars})
 		This function works only when compiled with the |+digraphs|
 		feature.  If this feature is disabled, this function will display
 		an error message.
+
+getdigraphlist({listall})			*getdigraphlist()*
+		TODO: write
+
 
 getenv({name})						*getenv()*
 		Return the value of environment variable {name}.
