@@ -493,6 +493,7 @@ static argcheck_T arg1_chan_or_job[] = {arg_chan_or_job};
 static argcheck_T arg2_float_or_nr[] = {arg_float_or_nr, arg_float_or_nr};
 static argcheck_T arg2_number[] = {arg_number, arg_number};
 static argcheck_T arg2_string[] = {arg_string, arg_string};
+static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_list_nr[] = {arg_list_number, arg_list_number};
 static argcheck_T arg2_nr_string[] = {arg_number, arg_string};
 static argcheck_T arg2_dict_string[] = {arg_dict_any, arg_string};
@@ -584,6 +585,12 @@ ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
 ret_list_items(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_list_list_any;
+}
+
+    static type_T *
+ret_list_string_items(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_list_list_string;
 }
     static type_T *
 ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
@@ -1107,6 +1114,10 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_getcursorcharpos},
     {"getcwd",		0, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_getcwd},
+    {"getdigraph",     1, 1, FEARG_1,      arg1_string,
+                        ret_string,         f_getdigraph},
+    {"getdigraphlist",  0, 1, FEARG_1,      arg1_number,
+                        ret_list_string_items, f_getdigraphlist},
     {"getenv",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_getenv},
     {"getfontname",	0, 1, 0,	    arg1_string,
@@ -1567,6 +1578,10 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcmdpos},
     {"setcursorcharpos", 1, 3, FEARG_1,	    NULL,
 			ret_number_bool,    f_setcursorcharpos},
+    {"setdigraph",	2, 2, FEARG_1,	    arg2_string_number,
+			ret_bool,           f_setdigraph},
+    {"setdigraphlist",	1, 1, FEARG_1,	    arg1_list_string,
+			ret_bool,	    f_setdigraphlist},
     {"setenv",		2, 2, FEARG_2,	    NULL,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    arg2_string,

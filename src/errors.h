@@ -54,6 +54,10 @@ EXTERN char e_undefined_variable_str[]
 EXTERN char e_undefined_variable_char_str[]
 	INIT(= N_("E121: Undefined variable: %c:%s"));
 #endif
+#ifndef FEAT_DIGRAPHS
+EXTERN char e_no_digraphs_version[]
+	INIT(= N_("E196: No digraphs in this version"));
+#endif
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
 EXTERN char e_invalid_command[]
@@ -508,3 +512,11 @@ EXTERN char e_bool_required_for_argument_nr[]
 	INIT(= N_("E1212: Bool required for argument %d"));
 EXTERN char e_redefining_imported_item_str[]
 	INIT(= N_("E1213: Redefining imported item %s"));
+#if defined(FEAT_DIGRAPHS) && defined(FEAT_EVAL)
+EXTERN char e_digraph_must_be_just_two_characters_str[]
+	INIT(= N_("E1214: Digraph must be just two characters: %s"));
+EXTERN char e_digraph_argument_must_be_one_character_str[]
+	INIT(= N_("E1215: Digraph must be one character: %s"));
+EXTERN char e_setdigraphlist_argument_must_be_list_of_lists_with_two_items[]
+	INIT(= N_("E1216: setdigraphlist() argument must be a list of lists with two items"));
+#endif

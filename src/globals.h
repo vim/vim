@@ -442,6 +442,7 @@ EXTERN type_T t_list_string INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_string, NULL
 EXTERN type_T t_list_job INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_job, NULL);
 EXTERN type_T t_list_dict_any INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_dict_any, NULL);
 EXTERN type_T t_list_list_any INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_any, NULL);
+EXTERN type_T t_list_list_string INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_string, NULL);
 
 EXTERN type_T t_dict_bool INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_bool, NULL);
 EXTERN type_T t_dict_number INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_number, NULL);
@@ -1805,6 +1806,7 @@ EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before pare
 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 #endif
+
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
 #endif
