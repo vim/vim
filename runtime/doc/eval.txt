@@ -4199,6 +4199,7 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
 
+
 echoraw({expr})						*echoraw()*
 		Output {expr} as-is, including unprintable characters.  This
 		can be used to output a terminal code. For example, to disable
@@ -5583,6 +5584,8 @@ getdigraph({chars})
 		to 'encoding' when needed.  This does require the conversion to
 		be available, it might fail.
 
+		Also see |getdigraphlist()|.
+
 		Examples: >
 		" Get a built-in digraph
 		:echo getdigraph('00')		" Returns '∞'
@@ -5599,8 +5602,28 @@ getdigraph({chars})
 		feature.  If this feature is disabled, this function will display
 		an error message.
 
-getdigraphlist({listall})			*getdigraphlist()*
-		TODO: write
+getdigraphlist([{listall}])			*getdigraphlist()*
+		Return the list of digraphs.  If the {listall} is given and it is
+		true, return all digraphs, including the default digraphs.
+		Otherwise, return only user-defined digraphs.  The characters will
+		be converted from Unicode to 'encoding' when needed.  This does
+		require the conservation to be available, it might fail.
+
+		Also see |getdigraph()|.
+
+		Examples: >
+		" Get user-defined digraphs
+		:echo getdigraphlist()
+
+		" Get all the digraphs, including default digraphs
+		:echo digraphlist(1)
+<
+		Can also be used as a |method|: >
+			GetNumber()->getdigraphlist()
+<
+		This function works only when compiled with the |+digraphs|
+		feature.  If this feature is disabled, this function will display
+		an error message.
 
 
 getenv({name})						*getenv()*
@@ -9529,12 +9552,13 @@ setdigraph({chars}, {digraph})		*setdigraph()* *E1200* *E1201*
 		digraphs start with a white space.  The function result is a
 		|Number|, which is true if |digraph| is registered or false if
 		failed to register it.
-		Example: >
-			call setdigraph('  ', 'あ')
-<
+
 		If you want to define multiple digraphs at once, you can use
 		|setdigraphlist()|.
 
+		Example: >
+			call setdigraph('  ', 'あ')
+<
 		Can be used as a |method|: >
 			GetString()->setdigraph('あ')
 <
