@@ -383,8 +383,8 @@ popup_add_timeout(win_T *wp, int time)
     typval_T	    tv;
 
     vim_snprintf((char *)cbbuf, sizeof(cbbuf),
-				       "{_ -> popup_close(%d)}", wp->w_id);
-    if (get_lambda_tv(&ptr, &tv, FALSE, &EVALARG_EVALUATE) == OK)
+				       "(_) => popup_close(%d)", wp->w_id);
+    if (get_lambda_tv_and_compile(&ptr, &tv, FALSE, &EVALARG_EVALUATE) == OK)
     {
 	wp->w_popup_timer = create_timer(time, 0);
 	wp->w_popup_timer->tr_callback = get_callback(&tv);
