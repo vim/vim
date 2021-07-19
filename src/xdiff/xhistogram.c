@@ -42,11 +42,9 @@
  */
 
 #include "xinclude.h"
-#include "xtypes.h"
-#include "xdiff.h"
 
-#define MAX_PTR	INT_MAX
-#define MAX_CNT	INT_MAX
+#define MAX_PTR	UINT_MAX
+#define MAX_CNT	UINT_MAX
 
 #define LINE_END(n) (line##n + count##n - 1)
 #define LINE_END_PTR(n) (*line##n + *count##n - 1)
@@ -55,8 +53,8 @@ struct histindex {
 	struct record {
 		unsigned int ptr, cnt;
 		struct record *next;
-	} **records, // an occurrence
-	  **line_map; // map of line to record chain
+	} **records, /* an occurrence */
+	  **line_map; /* map of line to record chain */
 	chastore_t rcha;
 	unsigned int *next_ptrs;
 	unsigned int table_bits,
@@ -109,7 +107,7 @@ static int cmp_recs(xpparam_t const *xpp,
 
 static int scanA(struct histindex *index, int line1, int count1)
 {
-	int ptr, tbl_idx;
+	unsigned int ptr, tbl_idx;
 	unsigned int chain_len;
 	struct record **rec_chain, *rec;
 
@@ -128,7 +126,7 @@ static int scanA(struct histindex *index, int line1, int count1)
 				 */
 				NEXT_PTR(index, ptr) = rec->ptr;
 				rec->ptr = ptr;
-				// cap rec->cnt at MAX_CNT
+				/* cap rec->cnt at MAX_CNT */
 				rec->cnt = XDL_MIN(MAX_CNT, rec->cnt + 1);
 				LINE_MAP(index, ptr) = rec;
 				goto continue_scan;
@@ -154,7 +152,7 @@ static int scanA(struct histindex *index, int line1, int count1)
 		LINE_MAP(index, ptr) = rec;
 
 continue_scan:
-		; // no op
+		; /* no op */
 	}
 
 	return 0;
@@ -188,14 +186,14 @@ static int try_lcs(struct histindex *index, struct region *lcs, int b_ptr,
 			be = bs;
 			rc = rec->cnt;
 
-			while (line1 < (int)as && line2 < (int)bs
+			while (line1 < as && line2 < bs
 				&& CMP(index, 1, as - 1, 2, bs - 1)) {
 				as--;
 				bs--;
 				if (1 < rc)
 					rc = XDL_MIN(rc, CNT(index, as));
 			}
-			while ((int)ae < LINE_END(1) && (int)be < LINE_END(2)
+			while (ae < LINE_END(1) && be < LINE_END(2)
 				&& CMP(index, 1, ae + 1, 2, be + 1)) {
 				ae++;
 				be++;
@@ -237,6 +235,8 @@ static int fall_back_to_classic_diff(xpparam_t const *xpp, xdfenv_t *env,
 		int line1, int count1, int line2, int count2)
 {
 	xpparam_t xpparam;
+
+	memset(&xpparam, 0, sizeof(xpparam));
 	xpparam.flags = xpp->flags & ~XDF_DIFF_ALGORITHM_MASK;
 
 	return xdl_fall_back_diff(env, &xpparam,
@@ -266,7 +266,7 @@ static int find_lcs(xpparam_t const *xpp, xdfenv_t *env,
 
 	index.records = NULL;
 	index.line_map = NULL;
-	// in case of early xdl_cha_free()
+	/* in case of early xdl_cha_free() */
 	index.rcha.head = NULL;
 
 	index.table_bits = xdl_hashbits(count1);
@@ -288,7 +288,7 @@ static int find_lcs(xpparam_t const *xpp, xdfenv_t *env,
 		goto cleanup;
 	memset(index.next_ptrs, 0, sz);
 
-	// lines / 4 + 1 comes from xprepare.c:xdl_prepare_ctx()
+	/* lines / 4 + 1 comes from xprepare.c:xdl_prepare_ctx() */
 	if (xdl_cha_init(&index.rcha, sizeof(struct record), count1 / 4 + 1) < 0)
 		goto cleanup;
 
