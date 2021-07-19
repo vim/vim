@@ -531,11 +531,11 @@ func Test_setdigraph_function()
   call Put_Dig('aa')
   call assert_equal('え', getline('$'))
 
-  call assert_fails('call setdigraph("aaa", "あ")', 'E1200: Digraph characters must be just two characters: aaa')
-  call assert_fails('call setdigraph("b", "あ")', 'E1200: Digraph characters must be just two characters: b')
-  call assert_fails('call setdigraph("あ", "あ")', 'E1200: Digraph characters must be just two characters: あ')
-  call assert_fails('call setdigraph("aa", "ああ")', 'E1201: Digraph must be one character: ああ')
-  call assert_fails('call setdigraph("aa", "か" .. nr2char(0x3099))',  'E1201: Digraph must be one character: か' .. nr2char(0x3099))
+  call assert_fails('call setdigraph("aaa", "あ")', 'E1214: Digraph characters must be just two characters: aaa')
+  call assert_fails('call setdigraph("b", "あ")', 'E1214: Digraph characters must be just two characters: b')
+  call assert_fails('call setdigraph("あ", "あ")', 'E1214: Digraph characters must be just two characters: あ')
+  call assert_fails('call setdigraph("aa", "ああ")', 'E1215: Digraph must be one character: ああ')
+  call assert_fails('call setdigraph("aa", "か" .. nr2char(0x3099))',  'E1215: Digraph must be one character: か' .. nr2char(0x3099))
   bwipe!
 endfunc
 
@@ -551,8 +551,8 @@ func Test_getdigraph_function()
   call assert_equal('あ', 'aa'->getdigraph())
   call assert_equal('い', getdigraph(' i'))
   call assert_equal('う', getdigraph('  '))
-  call assert_fails('call getdigraph("aaa")', 'E1200: Digraph characters must be just two characters: aaa')
-  call assert_fails('call getdigraph("b")', 'E1200: Digraph characters must be just two characters: b')
+  call assert_fails('call getdigraph("aaa")', 'E1214: Digraph characters must be just two characters: aaa')
+  call assert_fails('call getdigraph("b")', 'E1214: Digraph characters must be just two characters: b')
 endfunc
 
 func Test_getdigraph_function_encode()
@@ -576,7 +576,7 @@ func Test_setdigraphlist_function()
 
   call assert_fails('call setdigraphlist([[]])', 'E474: Invalid argument')
   call assert_fails('call setdigraphlist([["aa", "b", "cc"]])', 'E474: Invalid argument')
-  call assert_fails('call setdigraphlist([["あ", "あ"]])', 'E1200: Digraph characters must be just two characters: あ')
+  call assert_fails('call setdigraphlist([["あ", "あ"]])', 'E1214: Digraph characters must be just two characters: あ')
 endfunc
 
 func Test_getdigraphlist_function()

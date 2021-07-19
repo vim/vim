@@ -1805,7 +1805,7 @@ EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before pare
 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 #ifdef FEAT_DIGRAPHS
-EXTERN char e_digraph_not_exact_chars[]  INIT(= N_("E1200: Digraph characters must be just two characters: %s"));
+EXTERN char e_digraph_not_exact_chars[]  INIT(= N_("E1214: Digraph characters must be just two characters: %s"));
 #endif
 #endif
 #ifndef FEAT_DIGRAPHS

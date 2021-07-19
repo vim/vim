@@ -7066,7 +7066,7 @@ setdigraph_common(typval_T *argchars, typval_T *argdigraph)
     mb_cptr2char_adv(&p);
     if (*p != NUL)
     {
-	semsg(_("E1201: Digraph must be one character: %s"), digraph);
+	semsg(_("E1215: Digraph must be one character: %s"), digraph);
 	return FALSE;
     }
 
