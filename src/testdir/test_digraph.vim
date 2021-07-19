@@ -576,13 +576,20 @@ func Test_setdigraphlist_function()
 
   call assert_fails('call setdigraphlist([[]])', 'E474: Invalid argument')
   call assert_fails('call setdigraphlist([["aa", "b", "cc"]])', 'E474: Invalid argument')
+  call assert_fails('call setdigraphlist([["あ", "あ"]])', 'E1200: Digraph characters must be just two characters: あ')
 endfunc
+
 func Test_getdigraphlist_function()
   " Make sure user-defined digraphs are defined
   call setdigraphlist([['aa', 'き'], ['bb', 'く']])
 
-  for pair in getdigraphlist(0)
+  for pair in getdigraphlist(1)
     call assert_equal(getdigraph(pair[0]), pair[1])
   endfor
+
+  " We don't know how many digraphs are registered before, so check the number
+  " of digraphs returned.
+  call assert_equal(getdigraphlist()->len(), getdigraphlist(0)->len())
+  call assert_notequal((getdigraphlist()->len()), getdigraphlist(1)->len())
 endfunc
 " vim: shiftwidth=2 sts=2 expandtab
