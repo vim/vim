@@ -1375,6 +1375,30 @@ def Test_vim9_import_export()
   writefile(import_missing_comma_lines, 'Ximport3.vim')
   assert_fails('source Ximport3.vim', 'E1046:', '', 2, 'Ximport3.vim')
 
+  var import_redefining_lines =<< trim END
+    vim9script
+    import exported from './Xexport.vim'
+    var exported = 5
+  END
+  writefile(import_redefining_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1213: Redefining imported item "exported"', '', 3)
+
+  var import_assign_wrong_type_lines =<< trim END
+    vim9script
+    import exported from './Xexport.vim'
+    exported = 'xxx'
+  END
+  writefile(import_assign_wrong_type_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1012: Type mismatch; expected number but got string', '', 3)
+
+  var import_assign_const_lines =<< trim END
+    vim9script
+    import CONST from './Xexport.vim'
+    CONST = 4321
+  END
+  writefile(import_assign_const_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E741: Value is locked: CONST', '', 3)
+
   delete('Ximport.vim')
   delete('Ximport3.vim')
   delete('Xexport.vim')
