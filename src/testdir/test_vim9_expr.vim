@@ -2075,6 +2075,10 @@ def Test_expr7_lambda_block()
         })
       assert_equal(['no', 'yes', 'no'], dll)
 
+      # ignored_inline(0, (_) => {
+      #   echo 'body'
+      # })
+
       sandbox var Safe = (nr: number): number => {
           return nr + 7
         }

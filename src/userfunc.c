@@ -866,26 +866,29 @@ get_function_body(
 		}
 	    }
 
-	    // Check for nested inline function.
-	    end = p + STRLEN(p) - 1;
-	    while (end > p && VIM_ISWHITE(*end))
-		--end;
-	    if (end > p && *end == '{')
+	    if (nesting_def[nesting] ? *p != '#' : *p != '"')
 	    {
-		--end;
+		// Not a comment line: check for nested inline function.
+		end = p + STRLEN(p) - 1;
 		while (end > p && VIM_ISWHITE(*end))
 		    --end;
-		if (end > p + 2 && end[-1] == '=' && end[0] == '>')
+		if (end > p && *end == '{')
 		{
-		    // found trailing "=> {", start of an inline function
-		    if (nesting == MAX_FUNC_NESTING - 1)
-			emsg(_(e_function_nesting_too_deep));
-		    else
+		    --end;
+		    while (end > p && VIM_ISWHITE(*end))
+			--end;
+		    if (end > p + 2 && end[-1] == '=' && end[0] == '>')
 		    {
-			++nesting;
-			nesting_def[nesting] = TRUE;
-			nesting_inline[nesting] = TRUE;
-			indent += 2;
+			// found trailing "=> {", start of an inline function
+			if (nesting == MAX_FUNC_NESTING - 1)
+			    emsg(_(e_function_nesting_too_deep));
+			else
+			{
+			    ++nesting;
+			    nesting_def[nesting] = TRUE;
+			    nesting_inline[nesting] = TRUE;
+			    indent += 2;
+			}
 		    }
 		}
 	    }
