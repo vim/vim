@@ -64,7 +64,7 @@ match_add(
     }
     if ((hlg_id = syn_namen2id(grp, (int)STRLEN(grp))) == 0)
     {
-	semsg(_(e_nogroup), grp);
+	semsg(_(e_no_such_highlight_group_name_str), grp);
 	return -1;
     }
     if (pat != NULL && (regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)

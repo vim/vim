@@ -1571,7 +1571,7 @@ qf_setup_state(
 
     if (efile != NULL && (pstate->fd = mch_fopen((char *)efile, "r")) == NULL)
     {
-	semsg(_(e_openerrf), efile);
+	semsg(_(e_cant_open_errorfile_str), efile);
 	return FAIL;
     }
 
@@ -3439,7 +3439,7 @@ qf_jump_newwin(qf_info_T	*qi,
 
     if (qf_stack_empty(qi) || qf_list_empty(qf_get_curlist(qi)))
     {
-	emsg(_(e_quickfix));
+	emsg(_(e_no_errors));
 	return;
     }
 
@@ -3619,7 +3619,7 @@ qf_list(exarg_T *eap)
 
     if (qf_stack_empty(qi) || qf_list_empty(qf_get_curlist(qi)))
     {
-	emsg(_(e_quickfix));
+	emsg(_(e_no_errors));
 	return;
     }
     if (*arg == '+')
@@ -4025,7 +4025,7 @@ qf_view_result(int split)
 
     if (qf_list_empty(qf_get_curlist(qi)))
     {
-	emsg(_(e_quickfix));
+	emsg(_(e_no_errors));
 	return;
     }
 
@@ -5668,7 +5668,7 @@ ex_cbelow(exarg_T *eap)
 	buf_has_flag = BUF_HAS_LL_ENTRY;
     if (!(curbuf->b_has_qf_entry & buf_has_flag))
     {
-	emsg(_(e_quickfix));
+	emsg(_(e_no_errors));
 	return;
     }
 
@@ -5679,7 +5679,7 @@ ex_cbelow(exarg_T *eap)
     // check if the list has valid errors
     if (!qf_list_has_valid_entries(qfl))
     {
-	emsg(_(e_quickfix));
+	emsg(_(e_no_errors));
 	return;
     }
 
@@ -5843,7 +5843,7 @@ vgr_init_regmatch(regmmatch_T *regmatch, char_u *s)
 	// Pattern is empty, use last search pattern.
 	if (last_search_pat() == NULL)
 	{
-	    emsg(_(e_noprevre));
+	    emsg(_(e_no_previous_regular_expression));
 	    return;
 	}
 	regmatch->regprog = vim_regcomp(last_search_pat(), RE_MAGIC);

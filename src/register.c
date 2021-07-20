@@ -594,7 +594,7 @@ do_execreg(
     {
 	if (last_cmdline == NULL)
 	{
-	    emsg(_(e_nolastcmd));
+	    emsg(_(e_no_previous_command_line));
 	    return FAIL;
 	}
 	// don't keep the cmdline containing @:
@@ -632,7 +632,7 @@ do_execreg(
 	p = get_last_insert_save();
 	if (p == NULL)
 	{
-	    emsg(_(e_noinstext));
+	    emsg(_(e_no_inserted_text_yet));
 	    return FAIL;
 	}
 	retval = put_in_typebuf(p, FALSE, colon, silent);
@@ -867,13 +867,13 @@ get_spec_reg(
 
 	case ':':		// last command line
 	    if (last_cmdline == NULL && errmsg)
-		emsg(_(e_nolastcmd));
+		emsg(_(e_no_previous_command_line));
 	    *argp = last_cmdline;
 	    return TRUE;
 
 	case '/':		// last search-pattern
 	    if (last_search_pat() == NULL && errmsg)
-		emsg(_(e_noprevre));
+		emsg(_(e_no_previous_regular_expression));
 	    *argp = last_search_pat();
 	    return TRUE;
 
@@ -881,7 +881,7 @@ get_spec_reg(
 	    *argp = get_last_insert_save();
 	    *allocated = TRUE;
 	    if (*argp == NULL && errmsg)
-		emsg(_(e_noinstext));
+		emsg(_(e_no_inserted_text_yet));
 	    return TRUE;
 
 #ifdef FEAT_SEARCHPATH

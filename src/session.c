@@ -977,7 +977,7 @@ get_view_file(int c)
 
     if (curbuf->b_ffname == NULL)
     {
-	emsg(_(e_noname));
+	emsg(_(e_no_file_name));
 	return NULL;
     }
     sname = home_replace_save(NULL, curbuf->b_ffname);

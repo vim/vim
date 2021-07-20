@@ -5028,7 +5028,7 @@ do_return(
 		if ((cstack->cs_rettv[idx] = alloc_tv()) != NULL)
 		    *(typval_T *)cstack->cs_rettv[idx] = *(typval_T *)rettv;
 		else
-		    emsg(_(e_outofmem));
+		    emsg(_(e_out_of_memory));
 	    }
 	    else
 		cstack->cs_rettv[idx] = NULL;

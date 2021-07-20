@@ -757,7 +757,7 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	if (argvars[0].v_type != VAR_NUMBER)
-	    emsg(_(e_number_exp));
+	    emsg(_(e_number_expected));
 	else
 	{
 	    timer = find_timer((int)tv_get_number(&argvars[0]));
@@ -783,7 +783,7 @@ f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     if (argvars[0].v_type != VAR_NUMBER)
-	emsg(_(e_number_exp));
+	emsg(_(e_number_expected));
     else
     {
 	int	paused = (int)tv_get_bool(&argvars[1]);
@@ -844,7 +844,7 @@ f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_NUMBER)
     {
-	emsg(_(e_number_exp));
+	emsg(_(e_number_expected));
 	return;
     }
     timer = find_timer((int)tv_get_number(&argvars[0]));

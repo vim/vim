@@ -2137,7 +2137,7 @@ did_set_spelllang(win_T *wp)
 		    if (ga_grow(&ga, 1) == FAIL)
 		    {
 			ga_clear(&ga);
-			ret_msg = e_outofmem;
+			ret_msg = e_out_of_memory;
 			goto theend;
 		    }
 		    LANGP_ENTRY(ga, ga.ga_len)->lp_slang = slang;

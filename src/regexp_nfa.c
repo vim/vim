@@ -1527,7 +1527,7 @@ nfa_regatom(void)
 		// Generated as "\%(pattern\)".
 		if (reg_prev_sub == NULL)
 		{
-		    emsg(_(e_nopresub));
+		    emsg(_(e_no_previous_substitute_regular_expression));
 		    return FAIL;
 		}
 		for (lp = reg_prev_sub; *lp != NUL; MB_CPTR_ADV(lp))
@@ -7356,7 +7356,7 @@ nfa_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	iemsg(_(e_null));
+	iemsg(_(e_null_argument));
 	goto theend;
     }
 

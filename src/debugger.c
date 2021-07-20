@@ -562,7 +562,7 @@ dbg_parsearg(
     {
 	if (curbuf->b_ffname == NULL)
 	{
-	    emsg(_(e_noname));
+	    emsg(_(e_no_file_name));
 	    return FAIL;
 	}
 	bp->dbg_type = DBG_FILE;

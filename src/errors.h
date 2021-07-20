@@ -48,7 +48,63 @@ EXTERN char e_no_alternate_file[]
 	INIT(= N_("E23: No alternate file"));
 EXTERN char e_no_such_abbreviation[]
 	INIT(= N_("E24: No such abbreviation"));
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+EXTERN char e_gui_cannot_be_used_not_enabled_at_compile_time[]
+	INIT(= N_("E25: GUI cannot be used: Not enabled at compile time"));
+#endif
+#ifndef FEAT_RIGHTLEFT
+EXTERN char e_hebrew_cannot_be_used_not_enabled_at_compile_time[]
+	INIT(= N_("E26: Hebrew cannot be used: Not enabled at compile time\n"));
+#endif
+EXTERN char e_farsi_support_has_been_removed[]
+	INIT(= N_("E27: Farsi support has been removed\n"));
 #ifdef FEAT_EVAL
+#if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_SYN_HL)
+EXTERN char e_no_such_highlight_group_name_str[]
+	INIT(= N_("E28: No such highlight group name: %s"));
+#endif
+EXTERN char e_no_inserted_text_yet[]
+	INIT(= N_("E29: No inserted text yet"));
+EXTERN char e_no_previous_command_line[]
+	INIT(= N_("E30: No previous command line"));
+EXTERN char e_no_such_mapping[]
+	INIT(= N_("E31: No such mapping"));
+EXTERN char e_no_file_name[]
+	INIT(= N_("E32: No file name"));
+EXTERN char e_no_previous_substitute_regular_expression[]
+	INIT(= N_("E33: No previous substitute regular expression"));
+EXTERN char e_no_previous_command[]
+	INIT(= N_("E34: No previous command"));
+EXTERN char e_no_previous_regular_expression[]
+	INIT(= N_("E35: No previous regular expression"));
+EXTERN char e_not_enough_room[]
+	INIT(= N_("E36: Not enough room"));
+EXTERN char e_no_write_since_last_change[]
+	INIT(= N_("E37: No write since last change"));
+EXTERN char e_no_write_since_last_change_add_bang_to_override[]
+	INIT(= N_("E37: No write since last change (add ! to override)"));
+EXTERN char e_null_argument[]
+	INIT(= N_("E38: Null argument"));
+#if defined(FEAT_DIGRAPHS) || defined(FEAT_TIMERS) || defined(FEAT_EVAL)
+EXTERN char e_number_expected[]
+	INIT(= N_("E39: Number expected"));
+#endif
+#ifdef FEAT_QUICKFIX
+EXTERN char e_cant_open_errorfile_str[]
+	INIT(= N_("E40: Can't open errorfile %s"));
+#endif
+EXTERN char e_out_of_memory[]
+	INIT(= N_("E41: Out of memory!"));
+#ifdef FEAT_QUICKFIX
+EXTERN char e_no_errors[]
+	INIT(= N_("E42: No Errors"));
+#endif
+EXTERN char e_damaged_match_string[]
+	INIT(= N_("E43: Damaged match string"));
+EXTERN char e_corrupted_regexp_program[]
+	INIT(= N_("E44: Corrupted regexp program"));
+EXTERN char e_readonly_option_is_set_add_bang_to_override[]
+	INIT(= N_("E45: 'readonly' option is set (add ! to override)"));
 EXTERN char e_undefined_variable_str[]
 	INIT(= N_("E121: Undefined variable: %s"));
 EXTERN char e_undefined_variable_char_str[]

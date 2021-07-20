@@ -148,9 +148,9 @@ search_regcomp(
 	if (spats[i].pat == NULL)	// pattern was never defined
 	{
 	    if (pat_use == RE_SUBST)
-		emsg(_(e_nopresub));
+		emsg(_(e_no_previous_substitute_regular_expression));
 	    else
-		emsg(_(e_noprevre));
+		emsg(_(e_no_previous_regular_expression));
 	    rc_did_emsg = TRUE;
 	    return FAIL;
 	}
@@ -1323,7 +1323,7 @@ do_search(
 		searchstr = spats[RE_SUBST].pat;
 		if (searchstr == NULL)
 		{
-		    emsg(_(e_noprevre));
+		    emsg(_(e_no_previous_regular_expression));
 		    retval = 0;
 		    goto end_do_search;
 		}

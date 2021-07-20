@@ -2074,7 +2074,7 @@ putdigraph(char_u *str)
 	str = skipwhite(str);
 	if (!VIM_ISDIGIT(*str))
 	{
-	    emsg(_(e_number_exp));
+	    emsg(_(e_number_expected));
 	    return;
 	}
 	n = getdigits(&str);
@@ -2571,7 +2571,7 @@ keymap_init(void)
 	buflen = STRLEN(curbuf->b_p_keymap) + STRLEN(p_enc) + 14;
 	buf = alloc(buflen);
 	if (buf == NULL)
-	    return e_outofmem;
+	    return e_out_of_memory;
 
 	// try finding "keymap/'keymap'_'encoding'.vim"  in 'runtimepath'
 	vim_snprintf((char *)buf, buflen, "keymap/%s_%s.vim",

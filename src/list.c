@@ -3049,7 +3049,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	}
 	else if (argvars[2].v_type != VAR_NUMBER)
 	{
-	    emsg(_(e_number_exp));
+	    emsg(_(e_number_expected));
 	    return;
 	}
 	else

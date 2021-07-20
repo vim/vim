@@ -255,7 +255,7 @@ cause_errthrow(
 	    if (elem == NULL)
 	    {
 		suppress_errthrow = TRUE;
-		emsg(_(e_outofmem));
+		emsg(_(e_out_of_memory));
 	    }
 	    else
 	    {
@@ -264,7 +264,7 @@ cause_errthrow(
 		{
 		    vim_free(elem);
 		    suppress_errthrow = TRUE;
-		    emsg(_(e_outofmem));
+		    emsg(_(e_out_of_memory));
 		}
 		else
 		{
@@ -592,7 +592,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 nomem:
     vim_free(excp);
     suppress_errthrow = TRUE;
-    emsg(_(e_outofmem));
+    emsg(_(e_out_of_memory));
 fail:
     current_exception = NULL;
     return FAIL;
@@ -1639,7 +1639,7 @@ ex_try(exarg_T *eap)
 
 		elem = ALLOC_ONE(struct eslist_elem);
 		if (elem == NULL)
-		    emsg(_(e_outofmem));
+		    emsg(_(e_out_of_memory));
 		else
 		{
 		    elem->saved_emsg_silent = emsg_silent;

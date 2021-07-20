@@ -2133,7 +2133,7 @@ command_line_scan(mparm_T *parmp)
 		break;
 
 	    case 'F':		// "-F" was for Farsi mode
-		mch_errmsg(_(e_nofarsi));
+		mch_errmsg(_(e_farsi_support_has_been_removed));
 		mch_exit(2);
 		break;
 
@@ -2151,7 +2151,7 @@ command_line_scan(mparm_T *parmp)
 		p_hkmap = TRUE;
 		set_option_value((char_u *)"rl", 1L, NULL, 0);
 #else
-		mch_errmsg(_(e_nohebrew));
+		mch_errmsg(_(e_hebrew_cannot_be_used_not_enabled_at_compile_time));
 		mch_exit(2);
 #endif
 		break;
@@ -3282,7 +3282,7 @@ main_start_gui(void)
 #ifdef FEAT_GUI
     gui.starting = TRUE;	// start GUI a bit later
 #else
-    mch_errmsg(_(e_nogvim));
+    mch_errmsg(_(e_gui_cannot_be_used_not_enabled_at_compile_time));
     mch_errmsg("\n");
     mch_exit(2);
 #endif

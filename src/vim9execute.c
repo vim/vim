@@ -2337,7 +2337,7 @@ exec_instructions(ectx_T *ectx)
 			else if (dest_type == VAR_LIST
 					       && tv_idx->v_type != VAR_NUMBER)
 			{
-			    emsg(_(e_number_exp));
+			    emsg(_(e_number_expected));
 			    status = FAIL;
 			}
 		    }
@@ -3955,7 +3955,7 @@ exec_instructions(ectx_T *ectx)
 			)
 		{
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    emsg(_(e_number_exp));
+		    emsg(_(e_number_expected));
 		    goto on_error;
 		}
 #ifdef FEAT_FLOAT

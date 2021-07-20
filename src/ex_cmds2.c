@@ -413,7 +413,7 @@ check_fname(void)
 {
     if (curbuf->b_ffname == NULL)
     {
-	emsg(_(e_noname));
+	emsg(_(e_no_file_name));
 	return FAIL;
     }
     return OK;

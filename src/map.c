@@ -2723,7 +2723,8 @@ do_exmap(exarg_T *eap, int isabbrev)
     {
 	case 1: emsg(_(e_invarg));
 		break;
-	case 2: emsg((isabbrev ? _(e_no_such_abbreviation) : _(e_nomap)));
+	case 2: emsg((isabbrev ? _(e_no_such_abbreviation)
+						      : _(e_no_such_mapping)));
 		break;
     }
 }

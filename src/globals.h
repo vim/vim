@@ -1636,30 +1636,12 @@ EXTERN char e_loadlib[]	INIT(= N_("E370: Could not load library %s"));
 EXTERN char e_loadfunc[]	INIT(= N_("E448: Could not load library function %s"));
 #endif
 EXTERN char e_nobang[]	INIT(= N_("E477: No ! allowed"));
-#if !defined(FEAT_GUI) || defined(VIMDLL)
-EXTERN char e_nogvim[]	INIT(= N_("E25: GUI cannot be used: Not enabled at compile time"));
-#endif
-#ifndef FEAT_RIGHTLEFT
-EXTERN char e_nohebrew[]	INIT(= N_("E26: Hebrew cannot be used: Not enabled at compile time\n"));
-#endif
-EXTERN char e_nofarsi[]		INIT(= N_("E27: Farsi support has been removed\n"));
 #ifndef FEAT_ARABIC
 EXTERN char e_noarabic[]	INIT(= N_("E800: Arabic cannot be used: Not enabled at compile time\n"));
 #endif
-#if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_SYN_HL)
-EXTERN char e_nogroup[]	INIT(= N_("E28: No such highlight group name: %s"));
-#endif
-EXTERN char e_noinstext[]	INIT(= N_("E29: No inserted text yet"));
-EXTERN char e_nolastcmd[]	INIT(= N_("E30: No previous command line"));
-EXTERN char e_nomap[]		INIT(= N_("E31: No such mapping"));
 EXTERN char e_nomatch[]	INIT(= N_("E479: No match"));
 EXTERN char e_nomatch2[]	INIT(= N_("E480: No match: %s"));
-EXTERN char e_noname[]	INIT(= N_("E32: No file name"));
-EXTERN char e_nopresub[]	INIT(= N_("E33: No previous substitute regular expression"));
-EXTERN char e_noprev[]	INIT(= N_("E34: No previous command"));
-EXTERN char e_noprevre[]	INIT(= N_("E35: No previous regular expression"));
 EXTERN char e_norange[]	INIT(= N_("E481: No range allowed"));
-EXTERN char e_noroom[]	INIT(= N_("E36: Not enough room"));
 #ifdef FEAT_CLIENTSERVER
 EXTERN char e_noserver[]	INIT(= N_("E247: no registered server named \"%s\""));
 #endif
@@ -1667,17 +1649,9 @@ EXTERN char e_notcreate[]	INIT(= N_("E482: Can't create file %s"));
 EXTERN char e_notmp[]		INIT(= N_("E483: Can't get temp file name"));
 EXTERN char e_notopen[]		INIT(= N_("E484: Can't open file %s"));
 EXTERN char e_notread[]		INIT(= N_("E485: Can't read file %s"));
-EXTERN char e_null[]		INIT(= N_("E38: Null argument"));
-#if defined(FEAT_DIGRAPHS) || defined(FEAT_TIMERS) || defined(FEAT_EVAL)
-EXTERN char e_number_exp[]	INIT(= N_("E39: Number expected"));
-#endif
-#ifdef FEAT_QUICKFIX
-EXTERN char e_openerrf[]	INIT(= N_("E40: Can't open errorfile %s"));
-#endif
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 EXTERN char e_opendisp[]	INIT(= N_("E233: cannot open display"));
 #endif
-EXTERN char e_outofmem[]	INIT(= N_("E41: Out of memory!"));
 EXTERN char e_patnotf[]		INIT(= N_("Pattern not found"));
 EXTERN char e_patnotf2[]	INIT(= N_("E486: Pattern not found: %s"));
 EXTERN char e_positive[]	INIT(= N_("E487: Argument must be positive"));
@@ -1686,12 +1660,8 @@ EXTERN char e_prev_dir[]	INIT(= N_("E459: Cannot go back to previous directory")
 #endif
 
 #ifdef FEAT_QUICKFIX
-EXTERN char e_quickfix[]	INIT(= N_("E42: No Errors"));
 EXTERN char e_loclist[]		INIT(= N_("E776: No location list"));
 #endif
-EXTERN char e_re_damg[]		INIT(= N_("E43: Damaged match string"));
-EXTERN char e_re_corr[]		INIT(= N_("E44: Corrupted regexp program"));
-EXTERN char e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
 EXTERN char e_letwrong[]	INIT(= N_("E734: Wrong variable type for %s="));
 EXTERN char e_illvar[]		INIT(= N_("E461: Illegal variable name: %s"));
