@@ -761,7 +761,7 @@ func Test_breakindent20_list()
   call s:compare_lines(expect, lines)
   " check formatlistpat indent
   setl briopt+=list:-1
-  let &flp= '^\s*\d\+\.\?[\]:)}\t ]\s*'
+  let &l:flp = '^\s*\d\+\.\?[\]:)}\t ]\s*'
   redraw!
   let expect = [
 	\ "  1.  Congress      ",
