@@ -776,9 +776,34 @@ func Test_breakindent20_list()
 	\ ]
   let lines = s:screen_lines2(1, 9, 20)
   call s:compare_lines(expect, lines)
-  " reset linebreak option
+  " check formatlistpat indent with different list levels
+  let &l:flp = '^\s*\*\+\s\+'
+  redraw!
+  %delete _
+  call setline(1, ['* Congress shall make no law',
+        \ '*** Congress shall make no law',
+        \ '**** Congress shall make no law'])
+  norm! 1gg
+  let expect = [
+	\ "* Congress shall    ",
+	\ "  make no law       ",
+	\ "*** Congress shall  ",
+	\ "    make no law     ",
+	\ "**** Congress       ",
+	\ "     shall make no  ",
+	\ "     law            ",
+	\ ]
+  let lines = s:screen_lines2(1, 7, 20)
+  call s:compare_lines(expect, lines)
+
+  " reset linebreak option and restore default input
   " Note: it indents by one additional
   " space, because of the leading space.
+  %delete _
+  call setline(1, ['  1.  Congress shall make no law',
+        \ '  2.) Congress shall make no law',
+        \ '  3.] Congress shall make no law'])
+  norm! 1gg
   setl linebreak&vim list listchars=eol:$,space:_
   redraw!
   let expect = [
