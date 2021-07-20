@@ -44,7 +44,7 @@ on startup, add this into your vimrc: >
 	  \ on_startup: v:false,
 	  \ }
 
-You will still be able to enable the highlighting later with `:MatchParenOn`.
+You will still be able to enable the highlighting later with `:MatchParen on`.
 
 The highlighting group used is MatchParen.  You can specify different colors
 with the ":highlight" command.  Example: >
