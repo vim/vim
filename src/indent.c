@@ -945,7 +945,7 @@ get_breakindent_win(
     bri += win_col_off2(wp);
 
     // add additional indent for numbered lists
-    if (wp->w_briopt_list > 0 || wp->w_briopt_list == -1)
+    if (wp->w_briopt_list != 0)
     {
 	regmatch_T	    regmatch;
 
@@ -954,10 +954,12 @@ get_breakindent_win(
 	if (regmatch.regprog != NULL)
 	{
 	    if (vim_regexec(&regmatch, line, 0))
+	    {
 		if (wp->w_briopt_list > 0)
 		    bri += wp->w_briopt_list;
 		else
 		    bri = (*regmatch.endp - *regmatch.startp);
+	    }
 	    vim_regfree(regmatch.regprog);
 	}
     }
