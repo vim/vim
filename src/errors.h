@@ -58,7 +58,6 @@ EXTERN char e_hebrew_cannot_be_used_not_enabled_at_compile_time[]
 #endif
 EXTERN char e_farsi_support_has_been_removed[]
 	INIT(= N_("E27: Farsi support has been removed\n"));
-#ifdef FEAT_EVAL
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_SYN_HL)
 EXTERN char e_no_such_highlight_group_name_str[]
 	INIT(= N_("E28: No such highlight group name: %s"));
@@ -109,7 +108,6 @@ EXTERN char e_undefined_variable_str[]
 	INIT(= N_("E121: Undefined variable: %s"));
 EXTERN char e_undefined_variable_char_str[]
 	INIT(= N_("E121: Undefined variable: %c:%s"));
-#endif
 #ifndef FEAT_DIGRAPHS
 EXTERN char e_no_digraphs_version[]
 	INIT(= N_("E196: No digraphs in this version"));
