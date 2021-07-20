@@ -813,7 +813,22 @@ func Test_breakindent20_list()
   let lines = s:screen_lines2(1, 6, 20)
   call s:compare_lines(expect, lines)
 
-  call s:close_windows('set breakindent& briopt& linebreak& list& listchars&')
+  " check formatlistpat indent with different list level
+  " showbreak and sbr
+  setl briopt+=sbr
+  setl showbreak=>
+  redraw!
+  let expect = [
+	\ "* Congress shall    ",
+	\ "> make no law       ",
+	\ "*** Congress shall  ",
+	\ ">   make no law     ",
+	\ "**** Congress shall ",
+	\ ">    make no law    ",
+	\ ]
+  let lines = s:screen_lines2(1, 6, 20)
+  call s:compare_lines(expect, lines)
+  call s:close_windows('set breakindent& briopt& linebreak& list& listchars& showbreak&')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
