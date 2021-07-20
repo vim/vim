@@ -815,7 +815,7 @@ func Test_breakindent20_list()
 
   " check formatlistpat indent with different list level
   " showbreak and sbr
-  setl briopt+=sbr
+  setl briopt+=sbr,shift:2
   setl showbreak=>
   redraw!
   let expect = [
