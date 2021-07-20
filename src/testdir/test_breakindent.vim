@@ -759,6 +759,23 @@ func Test_breakindent20_list()
 	\ ]
   let lines = s:screen_lines2(1, 9, 20)
   call s:compare_lines(expect, lines)
+  " check formatlistpat indent
+  setl briopt+=list:-1
+  let &flp= '^\s*\d\+\.\?[\]:)}\t ]\s*'
+  redraw!
+  let expect = [
+	\ "  1.  Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ "  2.) Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ "  3.] Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ ]
+  let lines = s:screen_lines2(1, 9, 20)
+  call s:compare_lines(expect, lines)
   " reset linebreak option
   " Note: it indents by one additional
   " space, because of the leading space.
