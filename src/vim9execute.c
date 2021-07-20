@@ -2679,7 +2679,8 @@ exec_instructions(ectx_T *ectx)
 			// indexes must be a number
 			SOURCING_LNUM = iptr->isn_lnum;
 			if (check_for_number(tv_idx1) == FAIL
-				|| check_for_number(tv_idx2) == FAIL)
+				|| (tv_idx2->v_type != VAR_SPECIAL
+					 && check_for_number(tv_idx2) == FAIL))
 			{
 			    status = FAIL;
 			}
@@ -2687,14 +2688,32 @@ exec_instructions(ectx_T *ectx)
 			{
 			    list_T	*l = tv_dest->vval.v_list;
 			    long	n1 = (long)tv_idx1->vval.v_number;
-			    long	n2 = (long)tv_idx2->vval.v_number;
+			    long	n2 = tv_idx2->v_type == VAR_SPECIAL
+					    ? 0 : (long)tv_idx2->vval.v_number;
 			    listitem_T	*li;
 
 			    li = list_find_index(l, &n1);
-			    if (li == NULL
-				     || list_unlet_range(l, li, NULL, n1,
-							    TRUE, n2) == FAIL)
+			    if (li == NULL)
 				status = FAIL;
+			    else
+			    {
+				if (n1 < 0)
+				    n1 = list_idx_of_item(l, li);
+				if (n2 < 0)
+				{
+				    listitem_T *li2 = list_find(l, n2);
+
+				    if (li2 == NULL)
+					status = FAIL;
+				    else
+					n2 = list_idx_of_item(l, li2);
+				}
+				if (status != FAIL
+					&& list_unlet_range(l, li, NULL, n1,
+					    tv_idx2->v_type != VAR_SPECIAL, n2)
+								       == FAIL)
+				    status = FAIL;
+			    }
 			}
 		    }
 		    else

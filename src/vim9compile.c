@@ -6599,7 +6599,7 @@ compile_assign_unlet(
 		return FAIL;
 	    }
 	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if ((dest_type != VAR_BLOB || type != &t_special)
+	    if ((dest_type != VAR_BLOB && type != &t_special)
 		    && need_type(type, &t_number,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
