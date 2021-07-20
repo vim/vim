@@ -581,6 +581,9 @@ def Test_try_catch_throw()
   endfor
   assert_equal(4, counter)
 
+  # no requirement for spaces before |
+  try|echo 0|catch|endtry
+
   # return in finally after empty catch
   def ReturnInFinally(): number
     try
