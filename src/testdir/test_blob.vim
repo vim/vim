@@ -425,24 +425,6 @@ func Test_blob_func_remove()
 
   let lines =<< trim END
       VAR b = 0zDEADBEEF
-      call remove(1, 0)
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E896:')
-
-  let lines =<< trim END
-      VAR b = 0zDEADBEEF
-      call remove(b, b)
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E974:')
-
-  let lines =<< trim END
-      VAR b = 0zDEADBEEF
-      call remove(b, 1, [])
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E745:')
-
-  let lines =<< trim END
-      VAR b = 0zDEADBEEF
       call remove(test_null_blob(), 1, 2)
   END
   call CheckLegacyAndVim9Failure(lines, 'E979:')
@@ -504,16 +486,6 @@ func Test_blob_index()
       call assert_equal(-1, index(test_null_blob(), 1))
   END
   call CheckLegacyAndVim9Success(lines)
-
-  let lines =<< trim END
-      echo index(0z11110111, 0x11, [])
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E745:')
-
-  let lines =<< trim END
-      call index("asdf", 0)
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E897:')
 endfunc
 
 func Test_blob_insert()

@@ -270,8 +270,7 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_number_arg(argvars, 1) == FAIL)))
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
 	return;
 
     rettv->v_type = VAR_STRING;
@@ -777,12 +776,17 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
 f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
 {
     timer_T	*timer = NULL;
-    int		paused = (int)tv_get_bool(&argvars[1]);
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_bool_arg(argvars, 1) == FAIL))
+	return;
 
     if (argvars[0].v_type != VAR_NUMBER)
 	emsg(_(e_number_exp));
     else
     {
+	int	paused = (int)tv_get_bool(&argvars[1]);
 	timer = find_timer((int)tv_get_number(&argvars[0]));
 	if (timer != NULL)
 	    timer->tr_paused = paused;

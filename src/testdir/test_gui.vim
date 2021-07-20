@@ -1093,11 +1093,11 @@ func Test_gui_mouse_event()
   let &guioptions = save_guioptions
 
   " Test invalid parameters for test_gui_mouse_event()
-  call assert_fails('call test_gui_mouse_event("", 1, 2, 3, 4)', 'E474:')
-  call assert_fails('call test_gui_mouse_event(0, "", 2, 3, 4)', 'E474:')
-  call assert_fails('call test_gui_mouse_event(0, 1, "", 3, 4)', 'E474:')
-  call assert_fails('call test_gui_mouse_event(0, 1, 2, "", 4)', 'E474:')
-  call assert_fails('call test_gui_mouse_event(0, 1, 2, 3, "")', 'E474:')
+  call assert_fails('call test_gui_mouse_event("", 1, 2, 3, 4)', 'E1210:')
+  call assert_fails('call test_gui_mouse_event(0, "", 2, 3, 4)', 'E1210:')
+  call assert_fails('call test_gui_mouse_event(0, 1, "", 3, 4)', 'E1210:')
+  call assert_fails('call test_gui_mouse_event(0, 1, 2, "", 4)', 'E1210:')
+  call assert_fails('call test_gui_mouse_event(0, 1, 2, 3, "")', 'E1210:')
 
   bw!
   call test_override('no_query_mouse', 0)

@@ -1254,6 +1254,15 @@ f_glob(typval_T *argvars, typval_T *rettv)
     expand_T	xpc;
     int		error = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && (check_for_opt_bool_arg(argvars, 2) == FAIL
+			|| (argvars[2].v_type != VAR_UNKNOWN
+			    && check_for_opt_bool_arg(argvars, 3) == FAIL)))))
+	return;
+
     // When the optional second argument is non-zero, don't remove matches
     // for 'wildignore' and don't put matches for 'suffixes' at the end.
     rettv->v_type = VAR_STRING;
@@ -1318,10 +1327,22 @@ f_globpath(typval_T *argvars, typval_T *rettv)
 {
     int		flags = WILD_IGNORE_COMPLETESLASH;
     char_u	buf1[NUMBUFLEN];
-    char_u	*file = tv_get_string_buf_chk(&argvars[1], buf1);
+    char_u	*file;
     int		error = FALSE;
     garray_T	ga;
     int		i;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_bool_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && (check_for_opt_bool_arg(argvars, 3) == FAIL
+			|| (argvars[3].v_type != VAR_UNKNOWN
+			    && check_for_opt_bool_arg(argvars, 4) == FAIL)))))
+	return;
+
+    file = tv_get_string_buf_chk(&argvars[1], buf1);
 
     // When the optional second argument is non-zero, don't remove matches
     // for 'wildignore' and don't put matches for 'suffixes' at the end.
@@ -1449,8 +1470,7 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_number_arg(argvars, 1) == FAIL)))
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -2423,10 +2443,12 @@ f_browse(typval_T *argvars UNUSED, typval_T *rettv)
     int		error = FALSE;
 
     if (in_vim9script()
-	    && (check_for_string_arg(argvars, 1) == FAIL
+	    && (check_for_bool_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
 		|| check_for_string_arg(argvars, 2) == FAIL
 		|| check_for_string_arg(argvars, 3) == FAIL))
 	return;
+
     save = (int)tv_get_number_chk(&argvars[0], &error);
     title = tv_get_string_chk(&argvars[1]);
     initdir = tv_get_string_buf_chk(&argvars[2], buf);

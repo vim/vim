@@ -4039,6 +4039,11 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     varname = tv_get_string_chk(&argvars[1]);
     tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
     if (tp != NULL && varname != NULL)
@@ -4073,6 +4078,12 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
     void
 f_gettabwinvar(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL))
+	return;
+
     getwinvar(argvars, rettv, 1);
 }
 
@@ -4082,6 +4093,11 @@ f_gettabwinvar(typval_T *argvars, typval_T *rettv)
     void
 f_getwinvar(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     getwinvar(argvars, rettv, 0);
 }
 
@@ -4165,6 +4181,11 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     if (check_secure())
 	return;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
     varname = tv_get_string_chk(&argvars[1]);
     varp = &argvars[2];
@@ -4195,6 +4216,12 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_settabwinvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL))
+	return;
+
     setwinvar(argvars, 1);
 }
 
@@ -4204,6 +4231,11 @@ f_settabwinvar(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_setwinvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     setwinvar(argvars, 0);
 }
 
