@@ -15,26 +15,26 @@ You can avoid loading this plugin by setting the "loaded_matchparen" variable: >
 The plugin installs autocommands listening to various events including
 CursorMoved, CursorMovedI and WinEnter to update the highlighting.
 
-		*:MatchParenOn* *:MatchParenOff* *:MatchParenToggle*
+							*:MatchParen*
 					*:NoMatchParen* *:DoMatchParen*
 To disable the plugin after it was loaded use this command: >
 
-	:MatchParenOff
+	:MatchParen off
 
 To enable it again: >
 
-	:MatchParenOn
+	:MatchParen on
 
 To toggle it: >
 
-	:MatchParenToggle
+	:MatchParen toggle
 
 For backwards compatibility, :NoMatchParen and :DoMatchParen are also available
 to respectively disable and enable the plugin.  If you don't want them to be
 installed, add this into your vimrc: >
 
 	let g:matchparen_config = #{
-	  \ old_commands: v:false,
+	  \ compatible: v:false,
 	  \ }
 
 And if you don't want the plugin to highlight matching characters immediately
@@ -81,7 +81,7 @@ g:matchparen_config, and its buffer-local equivalent b:matchparen_config: >
 	  \ timeout_insert: 60,
 	  \ syntax_ignored: v:false,
 	  \ on_startup: v:true,
-	  \ old_commands: v:true,
+	  \ compatible: v:true,
 	  \ }
 
 In case of a conflict between the value of a key in the global dictionary and

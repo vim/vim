@@ -2,7 +2,7 @@ vim9script noclear
 
 # Vim plugin for showing matching parens
 # Maintainer:  Bram Moolenaar <Bram@vim.org>
-# Last Change: 2021 May 20
+# Last Change: 2021 Jul 20
 
 # Exit quickly when:
 # - this plugin was already loaded (or disabled)
@@ -18,7 +18,7 @@ g:loaded_matchparen = 1
 # Configuration {{{1
 
 var config: dict<any> = {
-  old_commands: true,
+  compatible: true,
   on_startup: true,
   syntax_ignored: false,
   # Need to inspect g:matchparen_timeout to be backwards compatible.
@@ -35,15 +35,13 @@ endif
 
 # Commands {{{1
 
-# Define commands that will disable and enable the plugin.
-com -bar MatchParenOn Toggle(true)
-com -bar MatchParenOff Toggle(false)
-com -bar MatchParenToggle Toggle()
+# Define command that will disable and enable the plugin.
+com -bar -complete=custom,Complete -nargs=1 MatchParen Toggle(<q-args>)
 
 # Need to install these commands to be backwards compatible.
-if config.old_commands
-  com -bar DoMatchParen MatchParenOn
-  com -bar NoMatchParen MatchParenOff
+if config.compatible
+  com -bar DoMatchParen MatchParen on
+  com -bar NoMatchParen MatchParen off
 endif
 
 # Autocommands {{{1
@@ -95,6 +93,10 @@ var matchpairs: string
 var pairs: dict<list<string>>
 
 # Functions {{{1
+def Complete(_, _, _): string #{{{2
+  return ['on', 'off', 'toggle']->join("\n")
+enddef
+
 def ParseMatchpairs() #{{{2
   if matchpairs == &matchpairs
     return
@@ -118,6 +120,8 @@ def UpdateHighlight() #{{{2
 
   # Avoid that we remove the popup menu.
   if pumvisible()
+  # Nothing to highlight if we're in a closed fold.
+  || foldclosed('.') != -1
     return
   endif
 
@@ -230,26 +234,65 @@ else
 
 endif
 
-def Toggle(enable = !exists('#matchparen')) #{{{2
-  if enable
+def Toggle(args: string) #{{{2
+  if args == ''
+    var usage: list<string> =<< trim END
+      # to enable the plugin
+      :MatchParen on
+
+      # to disable the plugin
+      :MatchParen off
+
+      # to toggle the plugin
+      :MatchParen toggle
+    END
+    echo usage->join("\n")
+    return
+  endif
+
+  if ['on', 'off', 'toggle']->index(args) == -1
+    redraw
+    echohl ErrorMsg
+    echom 'matchparen: invalid argument'
+    echohl NONE
+    return
+  endif
+
+  def Enable()
     Autocmds(true)
     ParseMatchpairs()
     UpdateHighlight()
-  else
+  enddef
+
+  def Disable()
     Autocmds(false)
     RemoveHighlight()
+  enddef
+
+  if args == 'on'
+    Enable()
+  elseif args == 'off'
+    Disable()
+  elseif args == 'toggle'
+    if !exists('#matchparen')
+      Enable()
+    else
+      Disable()
+    endif
   endif
 enddef
 
 def InStringOrComment(): bool #{{{2
+# Should return true when the current cursor position is in certain syntax types
+# (string, comment,  etc.); evaluated inside  lambda passed as skip  argument to
+# searchpairpos().
+
   # can improve the performance when inserting characters in front of a paren
   # while there are closed folds in the buffer
   if foldclosed('.') != -1
     return false
   endif
-  # Should return true when the current cursor position is in certain syntax
-  # types (string, comment, etc.); evaluated inside lambda passed as skip
-  # argument to searchpairpos().
+
   for synID in synstack('.', col('.'))
     # We match "escape" and "symbol" for special items, such as
     # lispEscapeSpecial or lispBarSymbol.
