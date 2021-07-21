@@ -18,7 +18,6 @@ The 32 bit version also runs on 64 bit MS-Windows systems.
 4. Using the mouse		|win32-mouse|
 5. Running under Windows 95	|win32-win95|
 6. Running under Windows 3.1	|win32-win3.1|
-7. Win32 mini FAQ		|win32-faq|
 7. Installation package		|win32-installer|
 8. Win32 mini FAQ		|win32-faq|
 
