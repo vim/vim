@@ -372,9 +372,9 @@ enddef
 
 def Test_expr2_fails()
   var msg = "White space required before and after '||'"
-  call CheckDefAndScriptFailure(["var x = 1||2"], msg, 1)
-  call CheckDefAndScriptFailure(["var x = 1 ||2"], msg, 1)
-  call CheckDefAndScriptFailure(["var x = 1|| 2"], msg, 1)
+  call CheckDefAndScriptFailure(["var x = 1||0"], msg, 1)
+  call CheckDefAndScriptFailure(["var x = 1 ||0"], msg, 1)
+  call CheckDefAndScriptFailure(["var x = 1|| 0"], msg, 1)
 
   call CheckDefFailure(["var x = false || "], 'E1097:', 3)
   call CheckScriptFailure(['vim9script', "var x = false || "], 'E15:', 2)
@@ -386,8 +386,8 @@ def Test_expr2_fails()
 
   call CheckDefAndScriptFailure2(["if 'yes' || 0", 'echo 0', 'endif'], 'E1012: Type mismatch; expected bool but got string', 'E1135: Using a String as a Bool', 1)
 
-  # TODO: should fail at compile time
-  call CheckDefExecAndScriptFailure(["var x = 3 || 7"], 'E1023:', 1)
+  call CheckDefAndScriptFailure2(["var x = 3 || false"], 'E1012:', 'E1023:', 1)
+  call CheckDefAndScriptFailure2(["var x = false || 3"], 'E1012:', 'E1023:', 1)
 
   call CheckDefAndScriptFailure(["if 3"], 'E1023:', 1)
   call CheckDefExecAndScriptFailure(['var x = 3', 'if x', 'endif'], 'E1023:', 2)
@@ -505,15 +505,15 @@ enddef
 
 def Test_expr3_fails()
   var msg = "White space required before and after '&&'"
-  CheckDefAndScriptFailure(["var x = 1&&2"], msg, 1)
-  CheckDefAndScriptFailure(["var x = 1 &&2"], msg, 1)
-  CheckDefAndScriptFailure(["var x = 1&& 2"], msg, 1)
+  CheckDefAndScriptFailure(["var x = 1&&0"], msg, 1)
+  CheckDefAndScriptFailure(["var x = 1 &&0"], msg, 1)
+  CheckDefAndScriptFailure(["var x = 1&& 0"], msg, 1)
   var lines =<< trim END
     var x = 1
-      &&2
+      &&0
     # comment
   END
-  CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''&&'' at "&&2"', 2)
+  CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''&&'' at "&&0"', 2)
 
   g:vals = []
   CheckDefAndScriptFailure2(["if 'yes' && 0", 'echo 0', 'endif'], 'E1012: Type mismatch; expected bool but got string', 'E1135: Using a String as a Bool', 1)
@@ -525,7 +525,14 @@ def Test_expr3_fails()
           && true
       endif
   END
-  CheckDefExecAndScriptFailure(lines, 'E1023:', 1)
+  CheckDefAndScriptFailure2(lines, 'E1012:', 'E1023:', 1)
+
+  lines =<< trim END
+      if true
+          && 3
+      endif
+  END
+  CheckDefAndScriptFailure2(lines, 'E1012:', 'E1023:', 2)
 
   lines =<< trim END
       if 'yes'

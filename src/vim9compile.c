@@ -2796,6 +2796,24 @@ generate_ppconst(cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
+ * Check that the last item of "ppconst" is a bool.
+ */
+    static int
+check_ppconst_bool(ppconst_T *ppconst)
+{
+    if (ppconst->pp_used > 0)
+    {
+	typval_T    *tv = &ppconst->pp_tv[ppconst->pp_used - 1];
+	where_T	    where;
+
+	where.wt_index = 0;
+	where.wt_variable = FALSE;
+	return check_typval_type(&t_bool, tv, where);
+    }
+    return OK;
+}
+
+/*
  * Clear ppconst constants.  Used when failing.
  */
     static void
@@ -5138,6 +5156,7 @@ compile_and_or(
 	    long	save_sourcing_lnum;
 	    int		start_ctx_lnum = cctx->ctx_lnum;
 	    int		save_lnum;
+	    int		status;
 
 	    if (next != NULL)
 	    {
@@ -5152,28 +5171,29 @@ compile_and_or(
 		return FAIL;
 	    }
 
-	    // TODO: use ppconst if the value is a constant and check
-	    // evaluating to bool
-	    generate_ppconst(cctx, ppconst);
-
-	    // Every part must evaluate to a bool.
 	    save_sourcing_lnum = SOURCING_LNUM;
 	    SOURCING_LNUM = start_lnum;
 	    save_lnum = cctx->ctx_lnum;
 	    cctx->ctx_lnum = start_ctx_lnum;
-	    if (bool_on_stack(cctx) == FAIL)
+
+	    status = check_ppconst_bool(ppconst);
+	    if (status == OK)
 	    {
-		cctx->ctx_lnum = save_lnum;
-		ga_clear(&end_ga);
-		return FAIL;
+		// TODO: use ppconst if the value is a constant
+		generate_ppconst(cctx, ppconst);
+
+		// Every part must evaluate to a bool.
+		status = (bool_on_stack(cctx));
+		if (status == OK)
+		    status = ga_grow(&end_ga, 1);
 	    }
 	    cctx->ctx_lnum = save_lnum;
-
-	    if (ga_grow(&end_ga, 1) == FAIL)
+	    if (status == FAIL)
 	    {
 		ga_clear(&end_ga);
 		return FAIL;
 	    }
+
 	    *(((int *)end_ga.ga_data) + end_ga.ga_len) = instr->ga_len;
 	    ++end_ga.ga_len;
 	    generate_JUMP(cctx, opchar == '|'
@@ -5195,6 +5215,12 @@ compile_and_or(
 	    }
 
 	    p = may_peek_next_line(cctx, *arg, &next);
+	}
+
+	if (check_ppconst_bool(ppconst) == FAIL)
+	{
+	    ga_clear(&end_ga);
+	    return FAIL;
 	}
 	generate_ppconst(cctx, ppconst);
 
