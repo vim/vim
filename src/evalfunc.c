@@ -2873,8 +2873,9 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 		    && argvars[0].v_type != VAR_STRING
 		    && argvars[0].v_type != VAR_LIST
 		    && check_for_number_arg(argvars, 0) == FAIL)
-		|| check_for_number_arg(argvars, 1) == FAIL
-		|| check_for_opt_number_arg(argvars, 2) == FAIL))
+		|| check_for_opt_number_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
     rettv->vval.v_number = -1;

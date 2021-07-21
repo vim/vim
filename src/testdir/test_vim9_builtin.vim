@@ -652,6 +652,8 @@ def Test_cursor()
   assert_equal(2, getcurpos()[1])
   cursor('$', 1)
   assert_equal(4, getcurpos()[1])
+  cursor([2, 1])
+  assert_equal(2, getcurpos()[1])
 
   var lines =<< trim END
     cursor('2', 1)
