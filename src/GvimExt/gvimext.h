@@ -129,18 +129,12 @@ protected:
 	    int iShowCmd,
 	    int idHWnd);
 
-    STDMETHODIMP InvokeGvim(HWND hParent,
-	    LPCSTR pszWorkingDir,
-	    LPCSTR pszCmd,
-	    LPCSTR pszParam,
-	    int iShowCmd);
-
     STDMETHODIMP InvokeSingleGvim(HWND hParent,
 	    LPCSTR pszWorkingDir,
 	    LPCSTR pszCmd,
 	    LPCSTR pszParam,
 	    int iShowCmd,
-	    int useDiff);
+	    int gvimExtraOptions);
 
 public:
     int		 m_cntOfHWnd;
