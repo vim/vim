@@ -1726,7 +1726,7 @@ f_prompt_setprompt(typval_T *argvars, typval_T *rettv UNUSED)
     char_u	*text;
 
     if (in_vim9script()
-	    && (check_for_string_or_number_arg(argvars, 0) == FAIL
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
 		|| check_for_string_arg(argvars, 1) == FAIL))
 	return;
 

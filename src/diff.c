@@ -3294,7 +3294,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int			col;
 
     if (in_vim9script()
-	    && (check_for_string_or_number_arg(argvars,0) == FAIL
+	    && (check_for_lnum_arg(argvars,0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 

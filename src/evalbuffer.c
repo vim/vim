@@ -388,7 +388,7 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
     char_u	*name;
 
     if (in_vim9script()
-	    && (check_for_opt_string_or_number_arg(argvars, 0) == FAIL
+	    && (check_for_opt_buffer_arg(argvars, 0) == FAIL
 		|| (argvars[0].v_type != VAR_UNKNOWN
 		    && check_for_opt_bool_arg(argvars, 1) == FAIL)))
 	return;
@@ -635,6 +635,11 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script()
+	    && argvars[0].v_type != VAR_UNKNOWN
+	    && check_for_buffer_or_dict_arg(argvars, 0) == FAIL)
+	return;
+
     // List of all the buffers or selected buffers
     if (argvars[0].v_type == VAR_DICT)
     {
@@ -773,6 +778,11 @@ f_getline(typval_T *argvars, typval_T *rettv)
     linenr_T	lnum;
     linenr_T	end;
     int		retlist;
+
+    if (in_vim9script()
+	    && (check_for_lnum_arg(argvars, 0) == FAIL
+		|| check_for_opt_lnum_arg(argvars, 1) == FAIL))
+	return;
 
     lnum = tv_get_lnum(argvars);
     if (argvars[1].v_type == VAR_UNKNOWN)

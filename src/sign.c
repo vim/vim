@@ -2301,7 +2301,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (in_vim9script()
-	    && (check_for_opt_string_or_number_arg(argvars, 0) == FAIL
+	    && (check_for_opt_buffer_arg(argvars, 0) == FAIL
 		|| (argvars[0].v_type != VAR_UNKNOWN
 		    && check_for_opt_dict_arg(argvars, 1) == FAIL)))
 	return;

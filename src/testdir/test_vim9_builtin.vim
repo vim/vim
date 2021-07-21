@@ -652,6 +652,8 @@ def Test_cursor()
   assert_equal(2, getcurpos()[1])
   cursor('$', 1)
   assert_equal(4, getcurpos()[1])
+  cursor([2, 1])
+  assert_equal(2, getcurpos()[1])
 
   var lines =<< trim END
     cursor('2', 1)
@@ -1105,6 +1107,7 @@ def Test_getbufinfo()
   getbufinfo({bufloaded: true, buflisted: true, bufmodified: false})
       ->len()->assert_equal(3)
   bwipe Xtestfile1 Xtestfile2
+  CheckDefAndScriptFailure2(['getbufinfo(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
 enddef
 
 def Test_getbufline()
@@ -1246,6 +1249,8 @@ def Test_getline()
       echo getline('1')
   END
   CheckDefExecAndScriptFailure(lines, 'E1209:')
+  CheckDefAndScriptFailure2(['getline(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['getline(1, true)'], 'E1013: Argument 2: type mismatch, expected string but got bool', 'E1174: String required for argument 2')
 enddef
 
 def Test_getloclist()
@@ -3066,6 +3071,12 @@ def Test_term_getjob()
   CheckDefAndScriptFailure2(['term_getjob(0z10)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E974: Using a Blob as a Number')
 enddef
 
+def Test_term_getline()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_getline(1.1, 1)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_getline(1, 1.1)'], 'E1013: Argument 2: type mismatch, expected string but got float', 'E1174: String required for argument 2')
+enddef
+
 def Test_term_getscrolled()
   CheckRunVimInTerminal
   CheckDefAndScriptFailure2(['term_getscrolled(1.1)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E805: Using a Float as a Number')
@@ -3098,6 +3109,12 @@ def Test_term_gettty()
   CheckDefAndScriptFailure2(['term_gettty(1, 2)'], 'E1013: Argument 2: type mismatch, expected bool but got number', 'E1212: Bool required for argument 2')
 enddef
 
+def Test_term_scrape()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_scrape(1.1, 1)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_scrape(1, 1.1)'], 'E1013: Argument 2: type mismatch, expected string but got float', 'E1174: String required for argument 2')
+enddef
+
 def Test_term_sendkeys()
   CheckRunVimInTerminal
   CheckDefAndScriptFailure2(['term_sendkeys([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
@@ -3127,6 +3144,14 @@ def Test_term_setrestore()
   CheckDefAndScriptFailure2(['term_setrestore([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['term_setrestore(1, [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2')
 enddef
+
+def Test_term_setsize()
+  CheckRunVimInTerminal
+  CheckDefAndScriptFailure2(['term_setsize(1.1, 2, 3)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_setsize(1, "2", 3)'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  CheckDefAndScriptFailure2(['term_setsize(1, 2, "3")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+enddef
+
 def Test_term_start()
   if !has('terminal')
     CheckFeature terminal
@@ -3137,6 +3162,9 @@ def Test_term_start()
     winnr()->assert_equal(winnr)
     bwipe!
   endif
+  CheckDefAndScriptFailure2(['term_start({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['term_start([], [])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 2')
+  CheckDefAndScriptFailure2(['term_start("", "")'], 'E1013: Argument 2: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 2')
 enddef
 
 def Test_term_wait()
