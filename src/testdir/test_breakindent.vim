@@ -777,7 +777,7 @@ func Test_breakindent20_list()
   call s:compare_lines(expect, lines)
 
   " check formatlistpat indent
-  setl briopt+=list:-1
+  setl briopt=min:5,list:-1
   setl linebreak list&vim listchars&vim
   let &l:flp = '^\s*\d\+\.\?[\]:)}\t ]\s*'
   redraw!
@@ -815,7 +815,7 @@ func Test_breakindent20_list()
 
   " check formatlistpat indent with different list level
   " showbreak and sbr
-  setl briopt+=sbr,shift:2
+  setl briopt=min:5,sbr,list:-1,shift:2
   setl showbreak=>
   redraw!
   let expect = [
