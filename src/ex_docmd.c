@@ -2112,7 +2112,7 @@ do_one_cmd(
 	if (sandbox != 0 && !(ea.argt & EX_SBOXOK))
 	{
 	    // Command not allowed in sandbox.
-	    errormsg = _(e_sandbox);
+	    errormsg = _(e_not_allowed_in_sandbox);
 	    goto doend;
 	}
 #endif

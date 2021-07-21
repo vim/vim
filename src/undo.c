@@ -324,7 +324,7 @@ undo_allowed(void)
     // In the sandbox it's not allowed to change the text.
     if (sandbox != 0)
     {
-	emsg(_(e_sandbox));
+	emsg(_(e_not_allowed_in_sandbox));
 	return FALSE;
     }
 #endif

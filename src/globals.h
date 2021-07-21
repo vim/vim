@@ -1666,7 +1666,6 @@ EXTERN char e_loclist[]		INIT(= N_("E776: No location list"));
 EXTERN char e_letwrong[]	INIT(= N_("E734: Wrong variable type for %s="));
 EXTERN char e_illvar[]		INIT(= N_("E461: Illegal variable name: %s"));
 EXTERN char e_cannot_mod[]	INIT(= N_("E995: Cannot modify existing variable"));
-EXTERN char e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
 EXTERN char e_stringreq[]	INIT(= N_("E928: String required"));
 EXTERN char e_numberreq[]	INIT(= N_("E889: Number required"));
@@ -1692,12 +1691,6 @@ EXTERN char e_unknown_option[]	INIT(= N_("E113: Unknown option: %s"));
 EXTERN char e_reduceempty[]	INIT(= N_("E998: Reduce of an empty %s with no initial value"));
 EXTERN char e_no_dict_key[]	INIT(= N_("E857: Dictionary key \"%s\" required"));
 #endif
-#ifdef FEAT_QUICKFIX
-EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
-#endif
-#ifdef HAVE_SANDBOX
-EXTERN char e_sandbox[]		INIT(= N_("E48: Not allowed in sandbox"));
-#endif
 EXTERN char e_secure[]		INIT(= N_("E523: Not allowed here"));
 EXTERN char e_textlock[]	INIT(= N_("E578: Not allowed to change text here"));
 EXTERN char e_textwinlock[]	INIT(= N_("E565: Not allowed to change text or change window"));
@@ -1705,7 +1698,6 @@ EXTERN char e_textwinlock[]	INIT(= N_("E565: Not allowed to change text or chang
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));
 #endif
-EXTERN char e_scroll[]	INIT(= N_("E49: Invalid scroll size"));
 EXTERN char e_shellempty[]	INIT(= N_("E91: 'shell' option is empty"));
 #if defined(FEAT_SIGN_ICONS) && !defined(FEAT_GUI_GTK)
 EXTERN char e_signdata[]	INIT(= N_("E255: Couldn't read in sign data!"));

@@ -1485,7 +1485,7 @@ do_set(
 	    // Disallow changing some options in the sandbox
 	    if (sandbox != 0 && (flags & P_SECURE))
 	    {
-		errmsg = e_sandbox;
+		errmsg = e_not_allowed_in_sandbox;
 		goto skip;
 	    }
 #endif
@@ -3757,7 +3757,7 @@ set_num_option(
 	if (pp == &(curwin->w_p_scr))
 	{
 	    if (curwin->w_p_scr != 0)
-		errmsg = e_scroll;
+		errmsg = e_invalid_scroll_size;
 	    win_comp_scroll(curwin);
 	}
 	// If 'scroll' became invalid because of a side effect silently adjust
@@ -3793,7 +3793,7 @@ set_num_option(
 	    p_sj = Rows / 2;
 	else
 	{
-	    errmsg = e_scroll;
+	    errmsg = e_invalid_scroll_size;
 	    p_sj = 1;
 	}
     }
@@ -4366,7 +4366,7 @@ set_option_value(
 	// Disallow changing some options in the sandbox
 	if (sandbox > 0 && (flags & P_SECURE))
 	{
-	    emsg(_(e_sandbox));
+	    emsg(_(e_not_allowed_in_sandbox));
 	    return NULL;
 	}
 #endif

@@ -3596,7 +3596,7 @@ check_secure(void)
      */
     if (sandbox != 0)
     {
-	emsg(_(e_sandbox));
+	emsg(_(e_not_allowed_in_sandbox));
 	return TRUE;
     }
 #endif

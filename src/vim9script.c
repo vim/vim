@@ -962,7 +962,7 @@ check_script_var_type(
     {
 	if (sv->sv_const != 0)
 	{
-	    semsg(_(e_readonlyvar), name);
+	    semsg(_(e_cannot_change_readonly_variable_str), name);
 	    return FAIL;
 	}
 	ret = check_typval_type(sv->sv_type, value, where);

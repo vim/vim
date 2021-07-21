@@ -2232,7 +2232,7 @@ set_vim_var_tv(int idx, typval_T *tv)
     // VV_RO is also checked when compiling, but let's check here as well.
     if (vimvars[idx].vv_flags & VV_RO)
     {
-	semsg(_(e_readonlyvar), vimvars[idx].vv_name);
+	semsg(_(e_cannot_change_readonly_variable_str), vimvars[idx].vv_name);
 	return FAIL;
     }
     if (sandbox && (vimvars[idx].vv_flags & VV_RO_SBX))
@@ -3499,7 +3499,8 @@ var_check_ro(int flags, char_u *name, int use_gettext)
 {
     if (flags & DI_FLAGS_RO)
     {
-	semsg(_(e_readonlyvar), use_gettext ? (char_u *)_(name) : name);
+	semsg(_(e_cannot_change_readonly_variable_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     if ((flags & DI_FLAGS_RO_SBX) && sandbox)

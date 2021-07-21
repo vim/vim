@@ -165,7 +165,7 @@ edit(
     // Don't allow inserting in the sandbox.
     if (sandbox != 0)
     {
-	emsg(_(e_sandbox));
+	emsg(_(e_not_allowed_in_sandbox));
 	return FALSE;
     }
 #endif

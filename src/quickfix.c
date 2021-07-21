@@ -1769,7 +1769,7 @@ qf_init_ext(
 	retval = qfl->qf_count;
 	goto qf_init_end;
     }
-    emsg(_(e_readerrf));
+    emsg(_(e_error_while_reading_errorfile));
 error2:
     if (!adding)
     {

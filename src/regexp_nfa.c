@@ -2561,14 +2561,15 @@ nfa_reg(
     if (paren != REG_NOPAREN && getchr() != Magic(')'))
     {
 	if (paren == REG_NPAREN)
-	    EMSG2_RET_FAIL(_(e_unmatchedpp), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_FAIL(_(e_unmatched_str_percent_open),
+						       reg_magic == MAGIC_ALL);
 	else
-	    EMSG2_RET_FAIL(_(e_unmatchedp), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_FAIL(_(e_unmatched_str_open), reg_magic == MAGIC_ALL);
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
 	if (peekchr() == Magic(')'))
-	    EMSG2_RET_FAIL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_FAIL(_(e_unmatched_str_close), reg_magic == MAGIC_ALL);
 	else
 	    EMSG_RET_FAIL(_("E873: (NFA regexp) proper termination error"));
     }
