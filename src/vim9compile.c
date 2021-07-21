@@ -4354,8 +4354,7 @@ compile_subscript(
 		}
 
 		type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-		if (generate_PCALL(cctx, argcount,
-				(char_u *)"[expression]", type, FALSE) == FAIL)
+		if (generate_PCALL(cctx, argcount, p - 2, type, FALSE) == FAIL)
 		    return FAIL;
 	    }
 	    else

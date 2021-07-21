@@ -960,6 +960,12 @@ def Test_call_lambda_args()
     echo ((a) => a)('aa', 'bb')
   END
   CheckDefAndScriptFailure(lines, 'E118:', 1)
+
+  lines =<< trim END
+    echo 'aa'->((a) => a)('bb')
+  END
+  CheckDefFailure(lines, 'E118: Too many arguments for function: ->((a) => a)(''bb'')', 1)
+  CheckScriptFailure(['vim9script'] + lines, 'E118: Too many arguments for function: <lambda>', 2)
 enddef
 
 def FilterWithCond(x: string, Cond: func(string): bool): bool
