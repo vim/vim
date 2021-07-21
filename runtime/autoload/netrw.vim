@@ -5264,6 +5264,12 @@ fun! netrw#BrowseX(fname,remote)
   endif
 "  call Decho("not a local file nor a webpage request",'~'.expand("<slnum>"))
 
+  if exists("g:netrw_browsex_viewer") && exists("g:netrw_browsex_support_remote") && !g:netrw_browsex_support_remote
+    let remote = a:remote
+  else
+    let remote = 0
+  endif
+
   let ykeep      = @@
   let screenposn = winsaveview()
 "  call Decho("saving posn to screenposn<".string(screenposn).">",'~'.expand("<slnum>"))
@@ -5308,9 +5314,9 @@ fun! netrw#BrowseX(fname,remote)
   endif
 "  call Decho("exten<".exten.">",'~'.expand("<slnum>"))
 
-  if a:remote == 1
+  if remote == 1
    " create a local copy
-"   call Decho("remote: a:remote=".a:remote.": create a local copy of <".a:fname.">",'~'.expand("<slnum>"))
+"   call Decho("remote: remote=".remote.": create a local copy of <".a:fname.">",'~'.expand("<slnum>"))
    setl bh=delete
    call netrw#NetRead(3,a:fname)
    " attempt to rename tempfile
@@ -5332,7 +5338,7 @@ fun! netrw#BrowseX(fname,remote)
     let fname= s:netrw_tmpfile
    endif
   else
-"   call Decho("local: a:remote=".a:remote.": handling local copy of <".a:fname.">",'~'.expand("<slnum>"))
+"   call Decho("local: remote=".remote.": handling local copy of <".a:fname.">",'~'.expand("<slnum>"))
    let fname= a:fname
    " special ~ handler for local
    if fname =~ '^\~' && expand("$HOME") != ""
@@ -5475,12 +5481,12 @@ fun! netrw#BrowseX(fname,remote)
   "          return to prior buffer (directory listing)
   "          Feb 12, 2008: had to de-activiate removal of
   "          temporary file because it wasn't getting seen.
-"  if a:remote == 1 && fname != a:fname
+"  if remote == 1 && fname != a:fname
 ""   call Decho("deleting temporary file<".fname.">",'~'.expand("<slnum>"))
 "   call s:NetrwDelete(fname)
 "  endif
 
-  if a:remote == 1
+  if remote == 1
    setl bh=delete bt=nofile
    if g:netrw_use_noswf
     setl noswf
