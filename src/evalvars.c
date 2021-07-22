@@ -3250,7 +3250,7 @@ set_var_const(
 	{
 	    scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
 	    svar_T	    *sv;
-	    where_T	    where;
+	    where_T	    where = WHERE_INIT;
 
 	    // imported variable from another script
 	    if ((flags & ASSIGN_NO_DECL) == 0)
@@ -3260,7 +3260,6 @@ set_var_const(
 	    }
 	    sv = ((svar_T *)si->sn_var_vals.ga_data) + import->imp_var_vals_idx;
 
-	    where.wt_index = 0;
 	    where.wt_variable = TRUE;
 	    if (check_typval_type(sv->sv_type, tv, where) == FAIL
 		    || value_check_lock(sv->sv_tv->v_lock, name, FALSE))
@@ -3314,7 +3313,7 @@ set_var_const(
 
 		if (var_in_vim9script)
 		{
-		    where_T where;
+		    where_T where = WHERE_INIT;
 
 		    // check the type and adjust to bool if needed
 		    where.wt_index = var_idx;
