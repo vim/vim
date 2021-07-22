@@ -605,7 +605,8 @@ list_append_tv(list_T *l, typval_T *tv)
     listitem_T	*li;
 
     if (l->lv_type != NULL && l->lv_type->tt_member != NULL
-		&& check_typval_arg_type(l->lv_type->tt_member, tv, 0) == FAIL)
+		&& check_typval_arg_type(l->lv_type->tt_member, tv,
+							      NULL, 0) == FAIL)
 	return FAIL;
     li = listitem_alloc();
     if (li == NULL)
@@ -722,7 +723,8 @@ list_insert_tv(list_T *l, typval_T *tv, listitem_T *item)
     listitem_T	*ni;
 
     if (l->lv_type != NULL && l->lv_type->tt_member != NULL
-		&& check_typval_arg_type(l->lv_type->tt_member, tv, 0) == FAIL)
+		&& check_typval_arg_type(l->lv_type->tt_member, tv,
+							      NULL, 0) == FAIL)
 	return FAIL;
     ni = listitem_alloc();
     if (ni == NULL)
@@ -2085,9 +2087,9 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     blob_T	*b = NULL;
     int		rem;
     int		todo;
-    char_u	*ermsg = (char_u *)(filtermap == FILTERMAP_MAP ? "map()"
+    char	*func_name = filtermap == FILTERMAP_MAP ? "map()"
 				  : filtermap == FILTERMAP_MAPNEW ? "mapnew()"
-				  : "filter()");
+				  : "filter()";
     char_u	*arg_errmsg = (char_u *)(filtermap == FILTERMAP_MAP
 							 ? N_("map() argument")
 				       : filtermap == FILTERMAP_MAPNEW
@@ -2144,7 +2146,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     }
     else
     {
-	semsg(_(e_listdictblobarg), ermsg);
+	semsg(_(e_listdictblobarg), func_name);
 	goto theend;
     }
 
@@ -2210,7 +2212,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    if (filtermap == FILTERMAP_MAP)
 		    {
 			if (type != NULL && check_typval_arg_type(
-					   type->tt_member, &newtv, 0) == FAIL)
+				     type->tt_member, &newtv,
+							 func_name, 0) == FAIL)
 			{
 			    clear_tv(&newtv);
 			    break;
@@ -2345,7 +2348,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    {
 			if (filtermap == FILTERMAP_MAP && type != NULL
 				      && check_typval_arg_type(
-					   type->tt_member, &newtv, 0) == FAIL)
+				     type->tt_member, &newtv,
+							 func_name, 0) == FAIL)
 			{
 			    clear_tv(&newtv);
 			    break;
@@ -2389,7 +2393,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    if (filtermap == FILTERMAP_MAP)
 		    {
 			if (type != NULL && check_typval_arg_type(
-					   type->tt_member, &newtv, 0) == FAIL)
+				type->tt_member, &newtv, func_name, 0) == FAIL)
 			{
 			    clear_tv(&newtv);
 			    break;
@@ -2627,6 +2631,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 {
     type_T	*type = NULL;
     garray_T	type_list;
+    char	*func_name = is_new ? "extendnew()" : "extend()";
 
     if (!is_new && in_vim9script())
     {
@@ -2680,7 +2685,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 	    else
 		item = NULL;
 	    if (type != NULL && check_typval_arg_type(
-						 type, &argvars[1], 2) == FAIL)
+				      type, &argvars[1], func_name, 2) == FAIL)
 		goto theend;
 	    list_extend(l1, l2, item);
 
@@ -2737,10 +2742,10 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 	    else
 		action = (char_u *)"force";
 
-	    if (type != NULL && check_typval_arg_type(
-						 type, &argvars[1], 2) == FAIL)
+	    if (type != NULL && check_typval_arg_type(type, &argvars[1],
+							 func_name, 2) == FAIL)
 		goto theend;
-	    dict_extend(d1, d2, action);
+	    dict_extend(d1, d2, action, func_name);
 
 	    if (is_new)
 	    {
@@ -2753,7 +2758,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 	}
     }
     else
-	semsg(_(e_listdictarg), is_new ? "extendnew()" : "extend()");
+	semsg(_(e_listdictarg), func_name);
 
 theend:
     if (type != NULL)

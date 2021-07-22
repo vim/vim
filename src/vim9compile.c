@@ -1033,7 +1033,7 @@ need_type(
 	int	silent,
 	int	actual_is_const)
 {
-    where_T where;
+    where_T where = WHERE_INIT;
 
     if (expected == &t_bool && actual != &t_bool
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
@@ -1045,7 +1045,6 @@ need_type(
     }
 
     where.wt_index = arg_idx;
-    where.wt_variable = FALSE;
     if (check_type(expected, actual, FALSE, where) == OK)
 	return OK;
 
@@ -2804,10 +2803,8 @@ check_ppconst_bool(ppconst_T *ppconst)
     if (ppconst->pp_used > 0)
     {
 	typval_T    *tv = &ppconst->pp_tv[ppconst->pp_used - 1];
-	where_T	    where;
+	where_T	    where = WHERE_INIT;
 
-	where.wt_index = 0;
-	where.wt_variable = FALSE;
 	return check_typval_type(&t_bool, tv, where);
     }
     return OK;
@@ -4822,12 +4819,10 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	garray_T    *stack = &cctx->ctx_type_stack;
 	type_T	    *actual;
-	where_T	    where;
+	where_T	    where = WHERE_INIT;
 
 	generate_ppconst(cctx, ppconst);
 	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	where.wt_index = 0;
-	where.wt_variable = FALSE;
 	if (check_type(want_type, actual, FALSE, where) == FAIL)
 	{
 	    if (need_type(actual, want_type, -1, 0, cctx, FALSE, FALSE) == FAIL)
@@ -7975,7 +7970,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	int		vimvaridx = -1;
 	type_T		*type = &t_any;
 	type_T		*lhs_type = &t_any;
-	where_T		where;
+	where_T		where = WHERE_INIT;
 
 	p = skip_var_one(arg, FALSE);
 	varlen = p - arg;
@@ -9325,7 +9320,7 @@ compile_def_function(
 	    garray_T	*stack = &cctx.ctx_type_stack;
 	    type_T	*val_type;
 	    int		arg_idx = first_def_arg + i;
-	    where_T	where;
+	    where_T	where = WHERE_INIT;
 	    int		r;
 	    int		jump_instr_idx = instr->ga_len;
 	    isn_T	*isn;
@@ -9348,7 +9343,6 @@ compile_def_function(
 	    // specified type.
 	    val_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	    where.wt_index = arg_idx + 1;
-	    where.wt_variable = FALSE;
 	    if (ufunc->uf_arg_types[arg_idx] == &t_unknown)
 	    {
 		did_set_arg_type = TRUE;

@@ -1073,7 +1073,7 @@ failret:
  * Otherwise duplicate keys are ignored ("action" is "keep").
  */
     void
-dict_extend(dict_T *d1, dict_T *d2, char_u *action)
+dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 {
     dictitem_T	*di1;
     hashitem_T	*hi2;
@@ -1106,8 +1106,8 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 	    }
 
 	    if (type != NULL
-		     && check_typval_arg_type(type, &HI2DI(hi2)->di_tv, 0)
-								       == FAIL)
+		     && check_typval_arg_type(type, &HI2DI(hi2)->di_tv,
+							 func_name, 0) == FAIL)
 		break;
 
 	    if (di1 == NULL)

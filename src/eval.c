@@ -1365,8 +1365,8 @@ set_var_lval(
 	}
 	else
 	{
-	    if (lp->ll_type != NULL
-		       && check_typval_arg_type(lp->ll_type, rettv, 0) == FAIL)
+	    if (lp->ll_type != NULL && check_typval_arg_type(lp->ll_type, rettv,
+							      NULL, 0) == FAIL)
 		return;
 	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy,
 							       flags, var_idx);
@@ -1450,7 +1450,8 @@ set_var_lval(
 	}
 
 	if (lp->ll_valtype != NULL
-		    && check_typval_arg_type(lp->ll_valtype, rettv, 0) == FAIL)
+		    && check_typval_arg_type(lp->ll_valtype, rettv,
+							      NULL, 0) == FAIL)
 	    return;
 
 	if (lp->ll_newkey != NULL)

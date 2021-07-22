@@ -192,8 +192,12 @@ EXTERN char e_name_too_long_str[]
 	INIT(= N_("E1011: Name too long: %s"));
 EXTERN char e_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1012: Type mismatch; expected %s but got %s"));
+EXTERN char e_type_mismatch_expected_str_but_got_str_in_str[]
+	INIT(= N_("E1012: Type mismatch; expected %s but got %s in %s"));
 EXTERN char e_argument_nr_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1013: Argument %d: type mismatch, expected %s but got %s"));
+EXTERN char e_argument_nr_type_mismatch_expected_str_but_got_str_in_str[]
+	INIT(= N_("E1013: Argument %d: type mismatch, expected %s but got %s in %s"));
 EXTERN char e_invalid_key_str[]
 	INIT(= N_("E1014: Invalid key: %s"));
 EXTERN char e_name_expected_str[]
@@ -494,6 +498,8 @@ EXTERN char e_register_name_must_be_one_char_str[]
 	INIT(= N_("E1162: Register name must be one character: %s"));
 EXTERN char e_variable_nr_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1163: Variable %d: type mismatch, expected %s but got %s"));
+EXTERN char e_variable_nr_type_mismatch_expected_str_but_got_str_in_str[]
+	INIT(= N_("E1163: Variable %d: type mismatch, expected %s but got %s in %s"));
 EXTERN char e_vim9cmd_must_be_followed_by_command[]
 	INIT(= N_("E1164: vim9cmd must be followed by a command"));
 EXTERN char e_cannot_use_range_with_assignment_str[]

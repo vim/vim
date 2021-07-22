@@ -795,6 +795,8 @@ def Test_extend_arg_types()
 
   CheckDefFailure(['extend([1], ["b"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
   CheckDefExecFailure(['extend([1], ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any>')
+
+  CheckScriptFailure(['vim9script', 'extend([1], ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any> in extend()')
 enddef
 
 func g:ExtendDict(d)
@@ -1741,19 +1743,19 @@ def Test_map_item_type()
     var l: list<number> = [0]
     echo map(l, (_, v) => [])
   END
-  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 2)
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown> in map()', 2)
 
   lines =<< trim END
     var l: list<number> = range(2)
     echo map(l, (_, v) => [])
   END
-  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 2)
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown> in map()', 2)
 
   lines =<< trim END
     var d: dict<number> = {key: 0}
     echo map(d, (_, v) => [])
   END
-  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 2)
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown> in map()', 2)
 enddef
 
 def Test_maparg()

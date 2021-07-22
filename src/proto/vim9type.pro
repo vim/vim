@@ -11,7 +11,7 @@ int func_type_add_arg_types(type_T *functype, int argcount, garray_T *type_gap);
 int need_convert_to_bool(type_T *type, typval_T *tv);
 type_T *typval2type(typval_T *tv, int copyID, garray_T *type_gap, int do_member);
 type_T *typval2type_vimvar(typval_T *tv, garray_T *type_gap);
-int check_typval_arg_type(type_T *expected, typval_T *actual_tv, int arg_idx);
+int check_typval_arg_type(type_T *expected, typval_T *actual_tv, char *func_name, int arg_idx);
 int check_typval_type(type_T *expected, typval_T *actual_tv, where_T where);
 void type_mismatch(type_T *expected, type_T *actual);
 void arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx);

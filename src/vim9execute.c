@@ -730,15 +730,18 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
     int		idx;
     int		did_emsg_before = did_emsg;
     ectx_T	*prev_ectx = current_ectx;
+    char	*save_func_name = ectx->ec_where.wt_func_name;
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
 	return FAIL;
+    ectx->ec_where.wt_func_name = internal_func_name(func_idx);
 
     // Call the builtin function.  Set "current_ectx" so that when it
     // recursively invokes call_def_function() a closure context can be set.
     current_ectx = ectx;
     call_internal_func_by_idx(func_idx, argvars, STACK_TV_BOT(-1));
     current_ectx = prev_ectx;
+    ectx->ec_where.wt_func_name = save_func_name;
 
     // Clear the arguments.
     for (idx = 0; idx < argcount; ++idx)
@@ -907,7 +910,7 @@ call_by_name(
 		else if (ufunc->uf_va_type != NULL)
 		    type = ufunc->uf_va_type->tt_member;
 		if (type != NULL && check_typval_arg_type(type,
-						      &argv[i], i + 1) == FAIL)
+						&argv[i], NULL, i + 1) == FAIL)
 		    return FAIL;
 	    }
 	}
@@ -4535,7 +4538,8 @@ call_def_function(
 	{
 	    if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
 		    && check_typval_arg_type(
-			ufunc->uf_arg_types[idx], &argv[idx], idx + 1) == FAIL)
+			ufunc->uf_arg_types[idx], &argv[idx],
+							NULL, idx + 1) == FAIL)
 		goto failed_early;
 	    copy_tv(&argv[idx], STACK_TV_BOT(0));
 	}
@@ -4567,7 +4571,7 @@ call_def_function(
 	    for (idx = 0; idx < vararg_count; ++idx)
 	    {
 		if (check_typval_arg_type(expected, &li->li_tv,
-						       argc + idx + 1) == FAIL)
+						 NULL, argc + idx + 1) == FAIL)
 		    goto failed_early;
 		li = li->li_next;
 	    }
