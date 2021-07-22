@@ -738,6 +738,7 @@ OBJ = \
 	$(OUTDIR)/clipboard.o \
 	$(OUTDIR)/cmdexpand.o \
 	$(OUTDIR)/cmdhist.o \
+	$(OUTDIR)/colornames.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
 	$(OUTDIR)/debugger.o \

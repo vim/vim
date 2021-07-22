@@ -69,6 +69,7 @@ extern int _stricoll(char *a, char *b);
 # include "clipboard.pro"
 # include "cmdexpand.pro"
 # include "cmdhist.pro"
+# include "colornames.pro"
 # include "if_cscope.pro"
 # include "debugger.pro"
 # include "dict.pro"

@@ -85,6 +85,7 @@ NEW_TESTS = \
 	test_clientserver \
 	test_close_count \
 	test_cmdline \
+	test_colornames \
 	test_command_count \
 	test_comments \
 	test_comparators \
@@ -343,6 +344,7 @@ NEW_TESTS_RES = \
 	test_clientserver.res \
 	test_close_count.res \
 	test_cmdline.res \
+	test_colornames.res \
 	test_command_count.res \
 	test_comments.res \
 	test_comparators.res \
