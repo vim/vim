@@ -26,6 +26,11 @@ setlocal fo+=tcql
 " Add n:> to 'comments, in case it was removed elsewhere
 setlocal comments+=n:>
 
+" .eml files are universally formatted with DOS line-endings, per RFC5322.
+if expand('%:e') is# 'eml'
+    setlocal fileformat=dos
+endif
+
 " Add mappings, unless the user doesn't want this.
 if !exists("no_plugin_maps") && !exists("no_mail_maps")
   " Quote text by inserting "> "
