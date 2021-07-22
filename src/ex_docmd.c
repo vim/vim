@@ -3451,7 +3451,8 @@ find_ex_command(
 			    // "varname[]" is an expression.
 			    *p == '['
 			    // "varname.key" is an expression.
-			 || (*p == '.' && ASCII_ISALPHA(p[1]))))
+			 || (*p == '.' && (ASCII_ISALPHA(p[1])
+							     || p[1] == '_'))))
 	    {
 		char_u	*after = eap->cmd;
 

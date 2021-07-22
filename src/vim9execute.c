@@ -2712,6 +2712,13 @@ exec_instructions(ectx_T *ectx)
 					n2 = list_idx_of_item(l, li2);
 				}
 				if (status != FAIL
+					&& tv_idx2->v_type != VAR_SPECIAL
+					&& n2 < n1)
+				{
+				    semsg(_(e_listidx), n2);
+				    status = FAIL;
+				}
+				if (status != FAIL
 					&& list_unlet_range(l, li, NULL, n1,
 					    tv_idx2->v_type != VAR_SPECIAL, n2)
 								       == FAIL)
