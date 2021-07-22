@@ -105,10 +105,12 @@ static void luaV_call_lua_func_free(void *state);
 # define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 # define symbol_from_dll dlsym
 # define close_dll dlclose
+# define load_dll_error dlerror
 #else
 # define load_dll vimLoadLib
 # define symbol_from_dll GetProcAddress
 # define close_dll FreeLibrary
+# define load_dll_error GetWin32Error
 #endif
 
 // lauxlib
@@ -446,7 +448,7 @@ lua_link_init(char *libname, int verbose)
     if (!hinstLua)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname, load_dll_error());
 	return FAIL;
     }
     for (reg = luaV_dll; reg->func; reg++)

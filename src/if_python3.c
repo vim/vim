@@ -125,10 +125,12 @@ typedef PySliceObject PySliceObject_T;
 #  endif
 #  define close_dll dlclose
 #  define symbol_from_dll dlsym
+#  define load_dll_error dlerror
 # else
 #  define load_dll vimLoadLib
 #  define close_dll FreeLibrary
 #  define symbol_from_dll GetProcAddress
+#  define load_dll_error GetWin32Error
 # endif
 /*
  * Wrapper defines
@@ -795,7 +797,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (!hinstPy3)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname, load_dll_error());
 	return FAIL;
     }
 

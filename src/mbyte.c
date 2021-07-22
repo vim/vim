@@ -4902,7 +4902,8 @@ iconv_enabled(int verbose)
 	{
 	    verbose_enter();
 	    semsg(_(e_loadlib),
-		    hIconvDLL == 0 ? DYNAMIC_ICONV_DLL : DYNAMIC_MSVCRT_DLL);
+		    hIconvDLL == 0 ? DYNAMIC_ICONV_DLL : DYNAMIC_MSVCRT_DLL,
+		    GetWin32Error());
 	    verbose_leave();
 	}
 	iconv_end();

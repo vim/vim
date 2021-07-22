@@ -1329,24 +1329,6 @@ clear_csinfo(int i)
 #endif
 }
 
-#ifndef UNIX
-    static char *
-GetWin32Error(void)
-{
-    char *msg = NULL;
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-	    NULL, GetLastError(), 0, (LPSTR)&msg, 0, NULL);
-    if (msg != NULL)
-    {
-	// remove trailing \r\n
-	char *pcrlf = strstr(msg, "\r\n");
-	if (pcrlf != NULL)
-	    *pcrlf = '\0';
-    }
-    return msg;
-}
-#endif
-
 /*
  * Insert a new cscope database filename into the filelist.
  */
