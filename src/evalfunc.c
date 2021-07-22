@@ -711,6 +711,8 @@ static argcheck_T arg3_slice[] = {arg_slice1, arg_number, arg_number};
 static argcheck_T arg4_strpart[] = {arg_string, arg_number, arg_number, arg_bool};
 static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
 static argcheck_T arg4_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
+static argcheck_T arg15_search[] = {arg_string, arg_string, arg_number, arg_number, NULL};
+
 
 /*
  * Functions that return the return type of a builtin function.
@@ -1738,7 +1740,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_screenrow},
     {"screenstring",	2, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_screenstring},
-    {"search",		1, 5, FEARG_1,	    NULL,
+    {"search",		1, 5, FEARG_1,	    arg15_search,
 			ret_number,	    f_search},
     {"searchcount",	0, 1, FEARG_1,	    arg1_dict_any,
 			ret_dict_any,	    f_searchcount},

@@ -3244,6 +3244,9 @@ compile_string(isn_T *isn, cctx_T *cctx)
     int		instr_count;
     isn_T	*instr = NULL;
 
+    // Remove the string type from the stack.
+    --cctx->ctx_type_stack.ga_len;
+
     // Temporarily reset the list of instructions so that the jump labels are
     // correct.
     cctx->ctx_instr.ga_len = 0;
@@ -4263,8 +4266,8 @@ compile_subscript(
 	    }
 	}
 
-	// Do not skip over white space to find the "(", "execute 'x' ()" is
-	// not a function call.
+	// Do not skip over white space to find the "(", "execute 'x' (expr)"
+	// is not a function call.
 	if (**arg == '(')
 	{
 	    garray_T    *stack = &cctx->ctx_type_stack;
