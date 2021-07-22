@@ -1526,8 +1526,6 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     static int
 exec_instructions(ectx_T *ectx)
 {
-    int		breakcheck_count = 0;
-    typval_T	*tv;
     int		ret = FAIL;
     int		save_trylevel_at_start = ectx->ec_trylevel_at_start;
 
@@ -1539,7 +1537,9 @@ exec_instructions(ectx_T *ectx)
 
     for (;;)
     {
+	static int  breakcheck_count = 0;  // using "static" makes it faster
 	isn_T	    *iptr;
+	typval_T    *tv;
 
 	if (++breakcheck_count >= 100)
 	{
