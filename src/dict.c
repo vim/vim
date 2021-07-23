@@ -1340,11 +1340,6 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     char_u	*key;
     dictitem_T	*di;
 
-    if (in_vim9script()
-	    && (check_for_dict_arg(argvars, 0) == FAIL
-		|| check_for_string_or_number_arg(argvars, 1) == FAIL))
-	return;
-
     if (argvars[2].v_type != VAR_UNKNOWN)
 	semsg(_(e_toomanyarg), "remove()");
     else if ((d = argvars[0].vval.v_dict) != NULL

@@ -4756,7 +4756,7 @@ dump_term_color(FILE *fd, VTermColor *color)
     void
 f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = term_get_buf(argvars, "term_dumpwrite()");
+    buf_T	*buf;
     term_T	*term;
     char_u	*fname;
     int		max_height = 0;
@@ -4771,6 +4771,14 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_restricted() || check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
+
+    buf = term_get_buf(argvars, "term_dumpwrite()");
     if (buf == NULL)
 	return;
     term = buf->b_term;
@@ -5643,6 +5651,12 @@ term_swap_diff()
     void
 f_term_dumpdiff(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
+
     term_load_dump(argvars, rettv, TRUE);
 }
 
