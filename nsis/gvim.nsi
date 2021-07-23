@@ -126,10 +126,11 @@ RequestExecutionLevel highest
 # This adds '\Vim' to the user choice automagically.  The actual value is
 # obtained below with CheckOldVim.
 !ifdef WIN64
-InstallDir "$PROGRAMFILES64\Vim"
+  !define DEFAULT_INSTDIR "$PROGRAMFILES64\Vim"
 !else
-InstallDir "$PROGRAMFILES\Vim"
+  !define DEFAULT_INSTDIR "$PROGRAMFILES\Vim"
 !endif
+InstallDir ${DEFAULT_INSTDIR}
 
 # Types of installs we can perform:
 InstType $(str_type_typical)
@@ -710,8 +711,13 @@ Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
 !endif
 
-  # Check $VIM
-  ReadEnvStr $INSTDIR "VIM"
+  ${If} $INSTDIR == ${DEFAULT_INSTDIR}
+    # Check $VIM
+    ReadEnvStr $3 "VIM"
+    ${If} $3 != ""
+      StrCpy $INSTDIR $3
+    ${EndIf}
+  ${EndIf}
 
   call CheckOldVim
   Pop $3
@@ -721,18 +727,9 @@ Function .onInit
     SectionSetInstTypes ${id_section_old_ver} 0
     SectionSetText ${id_section_old_ver} ""
   ${Else}
-    ${If} $INSTDIR == ""
+    ${If} $INSTDIR == ${DEFAULT_INSTDIR}
       StrCpy $INSTDIR $3
     ${EndIf}
-  ${EndIf}
-
-  # If did not find a path: use the default dir.
-  ${If} $INSTDIR == ""
-!ifdef WIN64
-    StrCpy $INSTDIR "$PROGRAMFILES64\Vim"
-!else
-    StrCpy $INSTDIR "$PROGRAMFILES\Vim"
-!endif
   ${EndIf}
 
   ${If} ${RunningX64}
