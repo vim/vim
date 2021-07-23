@@ -228,4 +228,22 @@ func Test_find_cmd()
   call assert_fails('tabfind', 'E471:')
 endfunc
 
+func Test_find_non_existing_path()
+  new
+  let save_path = &path
+  let save_dir = getcwd()
+  call mkdir('dir1/dir2', 'p')
+  call writefile([], 'dir1/file.txt')
+  call writefile([], 'dir1/dir2/base.txt')
+  call chdir('dir1/dir2')
+  e base.txt
+  set path=../include
+
+  call assert_fails(':find file.txt', 'E345:')
+
+  call chdir(save_dir)
+  call delete('dir1', 'rf')
+  let &path = save_path
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
