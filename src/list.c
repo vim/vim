@@ -1540,12 +1540,6 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     int		error = FALSE;
     long	idx;
 
-    if (in_vim9script()
-	    && (check_for_list_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL
-		|| check_for_opt_number_arg(argvars, 2) == FAIL))
-	return;
-
     if ((l = argvars[0].vval.v_list) == NULL
 			     || value_check_lock(l->lv_lock, arg_errmsg, TRUE))
 	return;
@@ -1805,6 +1799,12 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     sortinfo_T	info;
     long	len;
     long	i;
+
+    if (in_vim9script()
+	    && (check_for_list_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_dict_arg(argvars, 2) == FAIL)))
+	return;
 
     // Pointer to current info struct used in compare function. Save and
     // restore the current one for nested calls.
@@ -2103,6 +2103,11 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     // map() and filter() return the first argument, also on failure.
     if (filtermap != FILTERMAP_MAPNEW)
 	copy_tv(&argvars[0], rettv);
+
+    if (in_vim9script()
+	    && (check_for_list_or_dict_or_blob_arg(argvars, 0) == FAIL))
+	return;
+
     if (filtermap == FILTERMAP_MAP && in_vim9script())
     {
 	// Check that map() does not change the type of the dict.
@@ -2463,6 +2468,13 @@ f_mapnew(typval_T *argvars, typval_T *rettv)
 f_add(typval_T *argvars, typval_T *rettv)
 {
     rettv->vval.v_number = 1; // Default: Failed
+
+    if (in_vim9script()
+	    && (check_for_list_or_blob_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type == VAR_BLOB
+		    && check_for_number_arg(argvars, 1) == FAIL)))
+	return;
+
     if (argvars[0].v_type == VAR_LIST)
     {
 	list_T	*l = argvars[0].vval.v_list;
@@ -2799,6 +2811,13 @@ f_insert(typval_T *argvars, typval_T *rettv)
     listitem_T	*item;
     int		error = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_list_or_blob_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type == VAR_BLOB
+		    && check_for_number_arg(argvars, 1) == FAIL)
+		|| check_for_opt_number_arg(argvars, 2) == FAIL))
+	return;
+
     if (argvars[0].v_type == VAR_BLOB)
     {
 	int	    val, len;
@@ -2888,6 +2907,16 @@ f_remove(typval_T *argvars, typval_T *rettv)
 {
     char_u	*arg_errmsg = (char_u *)N_("remove() argument");
 
+    if (in_vim9script()
+	    && (check_for_list_or_dict_or_blob_arg(argvars, 0) == FAIL
+		|| ((argvars[0].v_type == VAR_LIST
+			|| argvars[0].v_type == VAR_BLOB)
+		    && (check_for_number_arg(argvars, 1) == FAIL
+			|| check_for_opt_number_arg(argvars, 2) == FAIL))
+		|| (argvars[0].v_type == VAR_DICT
+		    && check_for_string_or_number_arg(argvars, 1) == FAIL)))
+	return;
+
     if (argvars[0].v_type == VAR_DICT)
 	dict_remove(argvars, rettv, arg_errmsg);
     else if (argvars[0].v_type == VAR_BLOB)
@@ -2906,6 +2935,9 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
     listitem_T	*li, *ni;
+
+    if (in_vim9script() && check_for_list_or_blob_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type == VAR_BLOB)
     {

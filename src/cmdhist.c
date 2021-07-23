@@ -570,6 +570,11 @@ f_histdel(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     char_u	buf[NUMBUFLEN];
     char_u	*str;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_or_number_arg(argvars, 1) == FAIL))
+	return;
+
     str = tv_get_string_chk(&argvars[0]);	// NULL on type error
     if (str == NULL)
 	n = 0;

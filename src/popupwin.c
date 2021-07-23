@@ -2597,9 +2597,16 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    int		id = (int)tv_get_number(&argvars[0]);
-    win_T	*wp = find_popup_win(id);
+    int		id;
+    win_T	*wp;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_or_list_arg(argvars, 1) == FAIL))
+	return;
+
+    id = (int)tv_get_number(&argvars[0]);
+    wp = find_popup_win(id);
     if (wp != NULL)
     {
 	if (argvars[1].v_type != VAR_STRING && argvars[1].v_type != VAR_LIST)

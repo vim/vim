@@ -418,12 +418,6 @@ blob_remove(typval_T *argvars, typval_T *rettv)
     long	idx;
     long	end;
 
-    if (in_vim9script()
-	    && (check_for_blob_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL
-		|| check_for_opt_number_arg(argvars, 2) == FAIL))
-	return;
-
     idx = (long)tv_get_number_chk(&argvars[1], &error);
     if (!error)
     {

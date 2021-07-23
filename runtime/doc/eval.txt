@@ -4673,15 +4673,18 @@ filewritable({file})					*filewritable()*
 
 
 filter({expr1}, {expr2})				*filter()*
-		{expr1} must be a |List| or a |Dictionary|.
+		{expr1} must be a |List|, |Blob| or |Dictionary|.
 		For each item in {expr1} evaluate {expr2} and when the result
-		is zero remove the item from the |List| or |Dictionary|.
+		is zero remove the item from the |List| or |Dictionary|. For a
+		|Blob| each byte is removed.
+
 		{expr2} must be a |string| or |Funcref|.
 
 		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
 		of the current item and for a |List| |v:key| has the index of
-		the current item.
+		the current item.  For a |Blob| |v:key| has the index of the
+		current byte.
 		Examples: >
 			call filter(mylist, 'v:val !~ "OLD"')
 <		Removes the items where "OLD" appears. >
@@ -4712,11 +4715,11 @@ filter({expr1}, {expr2})				*filter()*
 		|Dictionary| to remain unmodified make a copy first: >
 			:let l = filter(copy(mylist), 'v:val =~ "KEEP"')
 
-<		Returns {expr1}, the |List| or |Dictionary| that was filtered.
-		When an error is encountered while evaluating {expr2} no
-		further items in {expr1} are processed.  When {expr2} is a
-		Funcref errors inside a function are ignored, unless it was
-		defined with the "abort" flag.
+<		Returns {expr1}, the |List| , |Blob| or |Dictionary| that was
+		filtered.  When an error is encountered while evaluating
+		{expr2} no further items in {expr1} are processed.  When
+		{expr2} is a Funcref errors inside a function are ignored,
+		unless it was defined with the "abort" flag.
 
 		Can also be used as a |method|: >
 			mylist->filter(expr2)
@@ -7286,7 +7289,8 @@ map({expr1}, {expr2})					*map()*
 		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
 		of the current item and for a |List| |v:key| has the index of
-		the current item.
+		the current item.  For a |Blob| |v:key| has the index of the
+		current byte.
 		Example: >
 			:call map(mylist, '"> " . v:val . " <"')
 <		This puts "> " before and " <" after each item in "mylist".
