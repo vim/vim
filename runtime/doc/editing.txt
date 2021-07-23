@@ -1685,6 +1685,9 @@ The file searching is currently used for the 'path', 'cdpath' and 'tags'
 options, for |finddir()| and |findfile()|.  Other commands use |wildcards|
 which is slightly different.
 
+Note: If your 'path' setting uses an non-existing directory, Vim will skip the
+leaf directory, but include the rest of the directories for searching.
+
 There are three different types of searching:
 
 1) Downward search:					*starstar*
