@@ -1163,8 +1163,8 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 # ifdef FEAT_SEARCH_EXTRA
     char_u	buf[NUMBUFLEN];
-    char_u	*grp = tv_get_string_buf_chk(&argvars[0], buf);	// group
-    char_u	*pat = tv_get_string_buf_chk(&argvars[1], buf);	// pattern
+    char_u	*grp;		// group
+    char_u	*pat;		// pattern
     int		prio = 10;	// default priority
     int		id = -1;
     int		error = FALSE;
@@ -1173,6 +1173,18 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 3) == FAIL
+			|| (argvars[3].v_type != VAR_UNKNOWN
+			    && check_for_opt_dict_arg(argvars, 4) == FAIL)))))
+	return;
+
+    grp = tv_get_string_buf_chk(&argvars[0], buf);	// group
+    pat = tv_get_string_buf_chk(&argvars[1], buf);	// pattern
     if (grp == NULL || pat == NULL)
 	return;
     if (argvars[2].v_type != VAR_UNKNOWN)
@@ -1216,6 +1228,16 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     win_T	*win = curwin;
 
     rettv->vval.v_number = -1;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_list_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 3) == FAIL
+			|| (argvars[3].v_type != VAR_UNKNOWN
+			    && check_for_opt_dict_arg(argvars, 4) == FAIL)))))
+	return;
 
     group = tv_get_string_buf_chk(&argvars[0], buf);
     if (group == NULL)

@@ -357,13 +357,13 @@ func Test_blob_add()
       VAR b = 0z0011
       call add(b, [9])
   END
-  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1012:', 'E745:'])
+  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1012:', 'E1210:'])
 
   let lines =<< trim END
       VAR b = 0z0011
       call add("", 0x01)
   END
-  call CheckLegacyAndVim9Failure(lines, 'E897:')
+  call CheckLegacyAndVim9Failure(lines, ['E897:', 'E1013:', 'E1211:'])
 
   let lines =<< trim END
       add(test_null_blob(), 0x22)
@@ -519,7 +519,7 @@ func Test_blob_insert()
       VAR b = 0zDEADBEEF
       call insert(b, 0, [9])
   END
-  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E745:'])
+  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E1210:'])
 
   let lines =<< trim END
       VAR b = 0zDEADBEEF
@@ -537,7 +537,7 @@ func Test_blob_insert()
       VAR b = 0zDEADBEEF
       call insert(b, [])
   END
-  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E745:'])
+  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E1210:'])
 
   let lines =<< trim END
       insert(test_null_blob(), 0x33)

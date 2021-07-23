@@ -2180,6 +2180,12 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     if (check_secure())
 	return;
 
+    if (in_vim9script()
+	    && (check_for_list_or_blob_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_string_arg(argvars, 2) == FAIL))
+	return;
+
     if (argvars[0].v_type == VAR_LIST)
     {
 	list = argvars[0].vval.v_list;

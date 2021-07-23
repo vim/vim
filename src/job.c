@@ -1899,6 +1899,12 @@ f_job_start(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_JOB;
     if (check_restricted() || check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
     rettv->vval.v_job = job_start(argvars, NULL, NULL, NULL);
 }
 
