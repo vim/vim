@@ -1082,7 +1082,8 @@ current_block(
     while (count-- > 0)
     {
 	if ((pos = findmatch(NULL, what)) == NULL)
-	    break;
+	    if ((pos = findmatchlimit(NULL, what, FM_FORWARD, 0)) == NULL)
+		break;
 	curwin->w_cursor = *pos;
 	start_pos = *pos;   // the findmatch for end_pos will overwrite *pos
     }
