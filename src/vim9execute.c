@@ -22,6 +22,12 @@
 
 #include "vim9.h"
 
+#if defined(__GNUC__) || defined(__clang__)
+#define unlikely(x)  __builtin_expect((x),0)
+#else
+#define unlikely(x)  (x)
+#endif
+
 // Structure put on ec_trystack when ISN_TRY is encountered.
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
@@ -1529,6 +1535,8 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     static int
 exec_instructions(ectx_T *ectx)
 {
+    int  breakcheck_count = 0;
+    typval_T    *tv;
     int		ret = FAIL;
     int		save_trylevel_at_start = ectx->ec_trylevel_at_start;
 
@@ -1540,25 +1548,24 @@ exec_instructions(ectx_T *ectx)
 
     for (;;)
     {
-	static int  breakcheck_count = 0;  // using "static" makes it faster
 	isn_T	    *iptr;
-	typval_T    *tv;
 
-	if (++breakcheck_count >= 100)
+	if (unlikely(++breakcheck_count >= 100))
 	{
 	    line_breakcheck();
 	    breakcheck_count = 0;
-	}
-	if (got_int)
-	{
-	    // Turn CTRL-C into an exception.
-	    got_int = FALSE;
-	    if (throw_exception("Vim:Interrupt", ET_INTERRUPT, NULL) == FAIL)
-		goto theend;
-	    did_throw = TRUE;
+
+	    if (unlikely(got_int))
+	    {
+		// Turn CTRL-C into an exception.
+		got_int = FALSE;
+		if (throw_exception("Vim:Interrupt", ET_INTERRUPT, NULL) == FAIL)
+		    goto theend;
+		did_throw = TRUE;
+	    }
 	}
 
-	if (did_emsg && msg_list != NULL && *msg_list != NULL)
+	if (unlikely(did_emsg && msg_list != NULL && *msg_list != NULL))
 	{
 	    // Turn an error message into an exception.
 	    did_emsg = FALSE;
@@ -1568,7 +1575,7 @@ exec_instructions(ectx_T *ectx)
 	    *msg_list = NULL;
 	}
 
-	if (did_throw)
+	if (unlikely(did_throw))
 	{
 	    garray_T	*trystack = &ectx->ec_trystack;
 	    trycmd_T    *trycmd = NULL;
