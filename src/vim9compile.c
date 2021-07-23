@@ -5175,14 +5175,14 @@ compile_and_or(
 	    cctx->ctx_lnum = start_ctx_lnum;
 
 	    status = check_ppconst_bool(ppconst);
-	    if (status == OK)
+	    if (status != FAIL)
 	    {
 		// TODO: use ppconst if the value is a constant
 		generate_ppconst(cctx, ppconst);
 
 		// Every part must evaluate to a bool.
-		status = (bool_on_stack(cctx));
-		if (status == OK)
+		status = bool_on_stack(cctx);
+		if (status != FAIL)
 		    status = ga_grow(&end_ga, 1);
 	    }
 	    cctx->ctx_lnum = save_lnum;
