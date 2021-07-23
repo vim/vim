@@ -4112,6 +4112,11 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
     dictitem_T	*v;
     int		done = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     varname = tv_get_string_chk(&argvars[1]);
     buf = tv_get_buf_from_arg(&argvars[0]);
 
@@ -4251,6 +4256,12 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     varname = tv_get_string_chk(&argvars[1]);
     buf = tv_get_buf_from_arg(&argvars[0]);
     varp = &argvars[2];

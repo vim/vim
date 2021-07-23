@@ -1658,6 +1658,10 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_secure())
 	return;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
 	return;
@@ -1681,6 +1685,10 @@ f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_secure())
 	return;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
 	return;
