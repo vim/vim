@@ -365,16 +365,21 @@ f_bufname(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
     typval_T	*tv = &argvars[0];
+    char_u	*name;
 
     if (tv->v_type == VAR_UNKNOWN)
 	buf = curbuf;
     else
 	buf = tv_get_buf_from_arg(tv);
     rettv->v_type = VAR_STRING;
-    if (buf != NULL && buf->b_fname != NULL)
-	rettv->vval.v_string = vim_strsave(buf->b_fname);
-    else
+    if (buf == NULL)
 	rettv->vval.v_string = NULL;
+    else {
+	name = buf_spname(buf);
+	if (name == NULL)
+	    name = buf->b_fname;
+	rettv->vval.v_string = vim_strsave(name);
+    }
 }
 
 /*
