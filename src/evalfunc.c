@@ -542,7 +542,8 @@ arg_dict_any_or_string(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the third argument of extend().
+ * Check "type" which is the third argument of extend() (number or string or
+ * any)
  */
     static int
 arg_extend3(type_T *type, argcontext_T *context)
@@ -557,7 +558,8 @@ arg_extend3(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the second argument of remove().
+ * Check "type" which is the second argument of remove() (number or string or
+ * any)
  */
     static int
 arg_remove2(type_T *type, argcontext_T *context)
@@ -572,7 +574,8 @@ arg_remove2(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the first argument of repeat().
+ * Check "type" which is the first argument of repeat() (string or number or
+ * list or any)
  */
     static int
 arg_repeat1(type_T *type, argcontext_T *context)
@@ -588,7 +591,8 @@ arg_repeat1(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the first argument of slice().
+ * Check "type" which is the first argument of slice() (list or blob or string
+ * or any)
  */
     static int
 arg_slice1(type_T *type, argcontext_T *context)
@@ -604,7 +608,8 @@ arg_slice1(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the first argument of count().
+ * Check "type" which is the first argument of count() (string or list or dict
+ * or any)
  */
     static int
 arg_count1(type_T *type, argcontext_T *context)
@@ -620,7 +625,8 @@ arg_count1(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the first argument of cursor().
+ * Check "type" which is the first argument of cursor() (number or string or
+ * list or any)
  */
     static int
 arg_cursor1(type_T *type, argcontext_T *context)
@@ -666,6 +672,7 @@ static argcheck_T arg2_string_list_nr[] = {arg_string, arg_list_number};
 static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
+static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
 static argcheck_T arg2_list_number[] = {arg_list_number, arg_list_number};
 static argcheck_T arg2_list_number_bool[] = {arg_list_number, arg_bool};
 static argcheck_T arg2_list_any_string[] = {arg_list_any, arg_string};
@@ -690,11 +697,14 @@ static argcheck_T arg2_buffer_number[] = {arg_buffer, arg_number};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_lnum[] = {arg_buffer, arg_lnum};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
+static argcheck_T arg2_buffer_any[] = {arg_buffer, NULL};
 static argcheck_T arg3_string[] = {arg_string, arg_string, arg_string};
 static argcheck_T arg3_number[] = {arg_number, arg_number, arg_number};
 static argcheck_T arg3_number_number_dict[] = {arg_number, arg_number, arg_dict_any};
+static argcheck_T arg3_number_string_string[] = {arg_number, arg_string, arg_string};
 static argcheck_T arg3_number_string_any[] = {arg_number, arg_string, NULL};
 static argcheck_T arg3_number_string_buffer[] = {arg_number, arg_string, arg_buffer};
+static argcheck_T arg3_number_any_dict[] = {arg_number, NULL, arg_dict_any};
 static argcheck_T arg3_string_nr_bool[] = {arg_string, arg_number, arg_bool};
 static argcheck_T arg3_string_string_nr[] = {arg_string, arg_string, arg_number};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
@@ -707,6 +717,7 @@ static argcheck_T arg3_lnum_number_bool[] = {arg_lnum, arg_number, arg_bool};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
 static argcheck_T arg3_buffer_string_dict[] = {arg_buffer, arg_string, arg_dict_any};
+static argcheck_T arg3_buffer_string_any[] = {arg_buffer, arg_string, NULL};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
 static argcheck_T arg5_number[] = {arg_number, arg_number, arg_number, arg_number, arg_number};
@@ -726,12 +737,13 @@ static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_numb
 static argcheck_T arg2_mapfilter[] = {arg_list_or_dict_or_blob, NULL};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
-static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_number, arg_number, arg_number, arg_dict_any};
+static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg23_reduce[] = {arg_list_or_blob, NULL, NULL};
 static argcheck_T arg24_remote_expr[] = {arg_string, arg_string, arg_string, arg_number};
 static argcheck_T arg23_remove[] = {arg_list_or_dict_or_blob, arg_remove2, arg_number};
 static argcheck_T arg2_repeat[] = {arg_repeat1, arg_number};
 static argcheck_T arg15_search[] = {arg_string, arg_string, arg_number, arg_number, NULL};
+static argcheck_T arg37_searchpair[] = {arg_string, arg_string, arg_string, arg_string, NULL, arg_number, arg_number};
 static argcheck_T arg3_setbufline[] = {arg_buffer, arg_lnum, arg_str_or_nr_or_list};
 static argcheck_T arg2_setline[] = {arg_lnum, NULL};
 static argcheck_T arg24_setloclist[] = {arg_number, arg_list_any, arg_string, arg_dict_any};
@@ -1146,7 +1158,7 @@ static funcentry_T global_functions[] =
 			ret_job,	    JOB_FUNC(f_ch_getjob)},
     {"ch_info",		1, 1, FEARG_1,	    arg1_chan_or_job,
 			ret_dict_any,	    JOB_FUNC(f_ch_info)},
-    {"ch_log",		1, 2, FEARG_1,	    NULL,
+    {"ch_log",		1, 2, FEARG_1,	    arg2_string_chan_or_job,
 			ret_void,	    JOB_FUNC(f_ch_log)},
     {"ch_logfile",	1, 2, FEARG_1,	    arg2_string,
 			ret_void,	    JOB_FUNC(f_ch_logfile)},
@@ -1202,7 +1214,7 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_cosh)},
     {"count",		2, 4, FEARG_1,	    arg24_count,
 			ret_number,	    f_count},
-    {"cscope_connection",0,3, 0,	    NULL,
+    {"cscope_connection",0,3, 0,	    arg3_number_string_string,
 			ret_number,	    f_cscope_connection},
     {"cursor",		1, 3, FEARG_1,	    arg13_cursor,
 			ret_number,	    f_cursor},
@@ -1310,7 +1322,7 @@ static funcentry_T global_functions[] =
 			ret_list_dict_any,  f_getbufinfo},
     {"getbufline",	2, 3, FEARG_1,	    arg3_buffer_lnum_lnum,
 			ret_list_string,    f_getbufline},
-    {"getbufvar",	2, 3, FEARG_1,	    NULL,
+    {"getbufvar",	2, 3, FEARG_1,	    arg3_buffer_string_any,
 			ret_any,	    f_getbufvar},
     {"getchangelist",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_list_any,	    f_getchangelist},
@@ -1650,9 +1662,9 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_printf},
     {"prompt_getprompt", 1, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    JOB_FUNC(f_prompt_getprompt)},
-    {"prompt_setcallback", 2, 2, FEARG_1,   NULL,
+    {"prompt_setcallback", 2, 2, FEARG_1,   arg2_buffer_any,
 			ret_void,	    JOB_FUNC(f_prompt_setcallback)},
-    {"prompt_setinterrupt", 2, 2, FEARG_1,  NULL,
+    {"prompt_setinterrupt", 2, 2, FEARG_1,  arg2_buffer_any,
 			ret_void,	    JOB_FUNC(f_prompt_setinterrupt)},
     {"prompt_setprompt", 2, 2, FEARG_1,	    arg2_buffer_string,
 			ret_void,	    JOB_FUNC(f_prompt_setprompt)},
@@ -1780,9 +1792,9 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_searchcount},
     {"searchdecl",	1, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_number_bool,    f_searchdecl},
-    {"searchpair",	3, 7, 0,	    NULL,
+    {"searchpair",	3, 7, 0,	    arg37_searchpair,
 			ret_number,	    f_searchpair},
-    {"searchpairpos",	3, 7, 0,	    NULL,
+    {"searchpairpos",	3, 7, 0,	    arg37_searchpair,
 			ret_list_number,    f_searchpairpos},
     {"searchpos",	1, 5, FEARG_1,	    arg15_search,
 			ret_list_number,    f_searchpos},
@@ -1792,7 +1804,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_serverlist},
     {"setbufline",	3, 3, FEARG_3,	    arg3_setbufline,
 			ret_number_bool,    f_setbufline},
-    {"setbufvar",	3, 3, FEARG_3,	    NULL,
+    {"setbufvar",	3, 3, FEARG_3,	    arg3_buffer_string_any,
 			ret_void,	    f_setbufvar},
     {"setcellwidths",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_void,	    f_setcellwidths},
@@ -1950,7 +1962,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_swapname},
     {"synID",		3, 3, 0,	    arg3_lnum_number_bool,
 			ret_number,	    f_synID},
-    {"synIDattr",	2, 3, FEARG_1,	    NULL,
+    {"synIDattr",	2, 3, FEARG_1,	    arg3_number_string_string,
 			ret_string,	    f_synIDattr},
     {"synIDtrans",	1, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_synIDtrans},
@@ -2102,7 +2114,7 @@ static funcentry_T global_functions[] =
 			ret_list_dict_any,  TIMER_FUNC(f_timer_info)},
     {"timer_pause",	2, 2, FEARG_1,	    arg2_number_bool,
 			ret_void,	    TIMER_FUNC(f_timer_pause)},
-    {"timer_start",	2, 3, FEARG_1,	    NULL,
+    {"timer_start",	2, 3, FEARG_1,	    arg3_number_any_dict,
 			ret_number,	    TIMER_FUNC(f_timer_start)},
     {"timer_stop",	1, 1, FEARG_1,	    arg1_number,
 			ret_void,	    TIMER_FUNC(f_timer_stop)},
@@ -8044,6 +8056,18 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
     long	lnum_stop = 0;
     long	time_limit = 0;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL
+		|| check_for_opt_string_arg(argvars, 3) == FAIL
+		|| (argvars[3].v_type != VAR_UNKNOWN
+		    && argvars[4].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 5) == FAIL
+			|| (argvars[5].v_type != VAR_UNKNOWN
+			    && check_for_opt_number_arg(argvars, 6) == FAIL)))))
+	goto theend;
+
     // Get the three pattern arguments: start, middle, end. Will result in an
     // error if not a valid argument.
     spat = tv_get_string_chk(&argvars[0]);
@@ -9244,6 +9268,13 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	*mode;
     char_u	modebuf[NUMBUFLEN];
     int		modec;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| (check_for_string_arg(argvars, 1) == FAIL
+		    || (argvars[1].v_type != VAR_UNKNOWN
+			&& check_for_opt_string_arg(argvars, 2) == FAIL))))
+	return;
 
     id = (int)tv_get_number(&argvars[0]);
     what = tv_get_string(&argvars[1]);

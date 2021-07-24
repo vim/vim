@@ -4890,9 +4890,15 @@ f_ch_info(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_ch_log(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    char_u	*msg = tv_get_string(&argvars[0]);
+    char_u	*msg;
     channel_T	*channel = NULL;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_chan_or_job_arg(argvars, 1) == FAIL))
+	return;
+
+    msg = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN)
 	channel = get_channel_arg(&argvars[1], FALSE, FALSE, 0);
 

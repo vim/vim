@@ -445,6 +445,15 @@ def Test_ch_info()
   endif
 enddef
 
+def Test_ch_log()
+  if !has('channel')
+    CheckFeature channel
+  else
+    CheckDefAndScriptFailure2(['ch_log(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
+    CheckDefAndScriptFailure2(['ch_log("a", 1)'], 'E1013: Argument 2: type mismatch, expected channel but got number', 'E1217: Channel or Job required for argument 2')
+  endif
+enddef
+
 def Test_ch_logfile()
   if !has('channel')
     CheckFeature channel
@@ -652,6 +661,14 @@ def Test_count()
   count([1, 2, 2, 3], 2)->assert_equal(2)
   count([1, 2, 2, 3], 2, false, 2)->assert_equal(1)
   count({a: 1.1, b: 2.2, c: 1.1}, 1.1)->assert_equal(2)
+enddef
+
+def Test_cscope_connection()
+  CheckFeature cscope
+  assert_equal(0, cscope_connection())
+  CheckDefAndScriptFailure2(['cscope_connection("a")'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
+  CheckDefAndScriptFailure2(['cscope_connection(1, 2)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['cscope_connection(1, "b", 3)'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
 enddef
 
 def Test_cursor()
@@ -1142,6 +1159,11 @@ def Test_getbufline()
   CheckDefAndScriptFailure2(['getbufline([], 2)'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['getbufline("a", [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2')
   CheckDefAndScriptFailure2(['getbufline("a", 2, 0z10)'], 'E1013: Argument 3: type mismatch, expected string but got blob', 'E1174: String required for argument 3')
+enddef
+
+def Test_getbufvar()
+  CheckDefAndScriptFailure2(['getbufvar(true, "v")'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['getbufvar(1, 2, 3)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
 enddef
 
 def Test_getchangelist()
@@ -1862,8 +1884,7 @@ enddef
 
 def Test_matchaddpos()
   CheckDefAndScriptFailure2(['matchaddpos(1, [1])'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
-  CheckDefAndScriptFailure2(['matchaddpos("a", "b")'], 'E1013: Argument 2: type mismatch, expected list<number> but got string', 'E1211: List required for argument 2')
-  CheckDefFailure(['matchaddpos("a", ["2"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
+  CheckDefAndScriptFailure2(['matchaddpos("a", "b")'], 'E1013: Argument 2: type mismatch, expected list<any> but got string', 'E1211: List required for argument 2')
   CheckDefAndScriptFailure2(['matchaddpos("a", [1], "c")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
   CheckDefAndScriptFailure2(['matchaddpos("a", [1], 1, "d")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
   CheckDefAndScriptFailure2(['matchaddpos("a", [1], 1, 1, [])'], 'E1013: Argument 5: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 5')
@@ -2145,6 +2166,22 @@ def Test_prompt_getprompt()
   else
     CheckDefFailure(['prompt_getprompt([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>')
     assert_equal('', prompt_getprompt('NonExistingBuf'))
+  endif
+enddef
+
+def Test_prompt_setcallback()
+  if !has('channel')
+    CheckFeature channel
+  else
+    CheckDefAndScriptFailure2(['prompt_setcallback(true, "1")'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
+  endif
+enddef
+
+def Test_prompt_setinterrupt()
+  if !has('channel')
+    CheckFeature channel
+  else
+    CheckDefAndScriptFailure2(['prompt_setinterrupt(true, "1")'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
   endif
 enddef
 
@@ -2575,13 +2612,20 @@ def Test_searchpair()
 
   lines =<< trim END
       def TestPair()
-        echo searchpair("a", "b", "c", "d", "1", "f")
+        echo searchpair("a", "b", "c", "d", "1", 99)
       enddef
       defcompile
   END
   CheckScriptSuccess(lines)
 
   bwipe!
+  CheckDefAndScriptFailure2(['searchpair(1, "b", "c")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['searchpair("a", 2, "c")'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['searchpair("a", "b", 3)'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
+  CheckDefAndScriptFailure2(['searchpair("a", "b", "c", 4)'], 'E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4')
+  # BUG: Vim crashes with the following test
+  #CheckDefAndScriptFailure2(['searchpair("a", "b", "c", "d", "1", "f")'], 'E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4')
+  #CheckDefAndScriptFailure2(['searchpair("a", "b", "c", "d", "1", 3, "g")'], 'E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4')
 enddef
 
 def Test_searchpos()
@@ -2676,6 +2720,9 @@ def Test_setbufvar()
 
   setbufvar('%', 'myvar', 123)
   getbufvar('%', 'myvar')->assert_equal(123)
+
+  CheckDefAndScriptFailure2(['setbufvar(true, "v", 3)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['setbufvar(1, 2, 3)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
 enddef
 
 def Test_setbufline()
@@ -3112,6 +3159,12 @@ def Test_synID()
   CheckDefAndScriptFailure2(['synID(1, 1, 2)'], 'E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3')
 enddef
 
+def Test_synIDattr()
+  CheckDefAndScriptFailure2(['synIDattr("a", "b")'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
+  CheckDefAndScriptFailure2(['synIDattr(1, 2)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['synIDattr(1, "b", 3)'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
+enddef
+
 def Test_synIDtrans()
   CheckDefFailure(['synIDtrans("a")'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
@@ -3377,6 +3430,11 @@ def Test_timer_paused()
   var info = timer_info(id)
   info[0]['paused']->assert_equal(1)
   timer_stop(id)
+enddef
+
+def Test_timer_start()
+  CheckDefAndScriptFailure2(['timer_start("a", "1")'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
+  CheckDefAndScriptFailure2(['timer_start(1, "1", [1])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
 enddef
 
 def Test_timer_stop()

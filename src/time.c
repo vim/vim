@@ -799,7 +799,7 @@ f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_timer_start(typval_T *argvars, typval_T *rettv)
 {
-    long	msec = (long)tv_get_number(&argvars[0]);
+    long	msec;
     timer_T	*timer;
     int		repeat = 0;
     callback_T	callback;
@@ -808,6 +808,13 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = -1;
     if (check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
+
+    msec = (long)tv_get_number(&argvars[0]);
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	if (argvars[2].v_type != VAR_DICT
