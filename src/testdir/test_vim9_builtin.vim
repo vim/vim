@@ -2566,8 +2566,13 @@ def Test_searchpair()
   END
   CheckScriptSuccess(lines)
   assert_equal('yes', g:caught)
-
   unlet g:caught
+
+  lines =<< trim END
+      echo searchpair("a", "b", "c", "d", "1", "f")
+  END
+  CheckDefAndScriptFailure2(lines, 'E1001:', 'E475:')
+
   bwipe!
 enddef
 

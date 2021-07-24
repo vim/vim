@@ -3263,6 +3263,7 @@ compile_string(isn_T *isn, cctx_T *cctx)
 	    semsg(_(e_trailing_arg), s);
 	clear_instr_ga(&cctx->ctx_instr);
 	cctx->ctx_instr = save_ga;
+	++cctx->ctx_type_stack.ga_len;
 	return FAIL;
     }
 
