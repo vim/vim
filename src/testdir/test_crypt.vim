@@ -133,7 +133,7 @@ func Test_uncrypt_xchacha20_invalid()
   catch
     call assert_exception('pre-mature')
   endtry
-  call assert_match("Note: Encryption of swapfile not supported, disabling swap- and undofile", execute(':5messages'))
+  call assert_match("Note: Encryption of swapfile not supported, disabling swap file", execute(':5messages'))
 
   call assert_equal(0, &swapfile)
   call assert_equal("xchacha20", &cryptmethod)
@@ -152,7 +152,7 @@ func Test_uncrypt_xchacha20_2()
   call feedkeys(":X\<CR>sodium\<CR>sodium\<CR>", 'xt')
   " swapfile disabled
   call assert_equal(0, &swapfile)
-  call assert_match("Note: Encryption of swapfile not supported, disabling swap- and undofile", execute(':messages'))
+  call assert_match("Note: Encryption of swapfile not supported, disabling swap file", execute(':messages'))
   w!
   " encrypted using xchacha20
   call assert_match("\[xchacha20\]", execute(':messages'))
@@ -176,7 +176,7 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
   sp Xcrypt_sodium_undo.txt
   set cryptmethod=xchacha20 undofile
   call feedkeys(":X\<CR>sodium\<CR>sodium\<CR>", 'xt')
-  call assert_equal(0, &undofile)
+  call assert_equal(1, &undofile)
   let ufile=undofile(@%)
   call append(0, ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
   call cursor(1, 1)
@@ -189,6 +189,7 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
   normal dd
   set undolevels=100
   w!
+  call assert_equal(0, &undofile)
   bw!
   call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
   " should fail
