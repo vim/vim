@@ -1602,6 +1602,13 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_dict_arg(argvars, 2) == FAIL)))
+	return;
+
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
@@ -1648,6 +1655,13 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_dict_arg(argvars, 2) == FAIL)))
+	return;
+
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 

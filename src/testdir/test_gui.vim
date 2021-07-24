@@ -1172,10 +1172,10 @@ endfunc
 func Test_gui_drop_files()
   CheckFeature drop_file
 
-  call assert_fails('call test_gui_drop_files(1, 1, 1, 0)', 'E474:')
-  call assert_fails('call test_gui_drop_files(["x"], "", 1, 0)', 'E474:')
-  call assert_fails('call test_gui_drop_files(["x"], 1, "", 0)', 'E474:')
-  call assert_fails('call test_gui_drop_files(["x"], 1, 1, "")', 'E474:')
+  call assert_fails('call test_gui_drop_files(1, 1, 1, 0)', 'E1211:')
+  call assert_fails('call test_gui_drop_files(["x"], "", 1, 0)', 'E1210:')
+  call assert_fails('call test_gui_drop_files(["x"], 1, "", 0)', 'E1210:')
+  call assert_fails('call test_gui_drop_files(["x"], 1, 1, "")', 'E1210:')
 
   %bw!
   %argdelete

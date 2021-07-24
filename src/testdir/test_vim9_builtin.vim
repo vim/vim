@@ -373,6 +373,8 @@ def Test_call_call()
   var l = [3, 2, 1]
   call('reverse', [l])
   l->assert_equal([1, 2, 3])
+  CheckDefAndScriptFailure2(['call("reverse", 2)'], 'E1013: Argument 2: type mismatch, expected list<any> but got number', 'E1211: List required for argument 2')
+  CheckDefAndScriptFailure2(['call("reverse", [2], [1])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
 enddef
 
 def Test_ch_canread()
@@ -1126,6 +1128,16 @@ def Test_fullcommand()
   assert_equal('', fullcommand('scg'))
 enddef
 
+def Test_funcref()
+  CheckDefAndScriptFailure2(['funcref("reverse", 2)'], 'E1013: Argument 2: type mismatch, expected list<any> but got number', 'E1211: List required for argument 2')
+  CheckDefAndScriptFailure2(['funcref("reverse", [2], [1])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
+enddef
+
+def Test_function()
+  CheckDefAndScriptFailure2(['function("reverse", 2)'], 'E1013: Argument 2: type mismatch, expected list<any> but got number', 'E1211: List required for argument 2')
+  CheckDefAndScriptFailure2(['function("reverse", [2], [1])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
+enddef
+
 def Test_garbagecollect()
   garbagecollect(true)
   CheckDefAndScriptFailure2(['garbagecollect("1")'], 'E1013: Argument 1: type mismatch, expected bool but got string', 'E1135: Using a String as a Bool')
@@ -1691,6 +1703,20 @@ def Test_keys_return_type()
   var->assert_equal(['a', 'b'])
 enddef
 
+def Test_libcall()
+  CheckFeature libcall
+  CheckDefAndScriptFailure2(['libcall(1, "b", 3)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['libcall("a", 2, 3)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['libcall("a", "b", 1.1)'], 'E1013: Argument 3: type mismatch, expected string but got float', 'E1174: String required for argument 3')
+enddef
+
+def Test_libcallnr()
+  CheckFeature libcall
+  CheckDefAndScriptFailure2(['libcallnr(1, "b", 3)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['libcallnr("a", 2, 3)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['libcallnr("a", "b", 1.1)'], 'E1013: Argument 3: type mismatch, expected string but got float', 'E1174: String required for argument 3')
+enddef
+
 def Test_line()
   assert_fails('line(true)', 'E1174:')
   CheckDefAndScriptFailure2(['line(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
@@ -1724,6 +1750,10 @@ def SID(): number
   return expand('<SID>')
           ->matchstr('<SNR>\zs\d\+\ze_$')
           ->str2nr()
+enddef
+
+def Test_listener_add()
+  CheckDefAndScriptFailure2(['listener_add("1", true)'], 'E1013: Argument 2: type mismatch, expected string but got bool', 'E1174: String required for argument 2')
 enddef
 
 def Test_listener_flush()
@@ -2285,8 +2315,15 @@ def Test_range()
 enddef
 
 def Test_readdir()
-   eval expand('sautest')->readdir((e) => e[0] !=# '.')
-   eval expand('sautest')->readdirex((e) => e.name[0] !=# '.')
+  eval expand('sautest')->readdir((e) => e[0] !=# '.')
+  eval expand('sautest')->readdirex((e) => e.name[0] !=# '.')
+  CheckDefAndScriptFailure2(['readdir(["a"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['readdir("a", "1", [3])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
+enddef
+
+def Test_readdirex()
+  CheckDefAndScriptFailure2(['readdirex(["a"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['readdirex("a", "1", [3])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
 enddef
 
 def Test_readblob()
@@ -2604,28 +2641,19 @@ def Test_searchpair()
   CheckScriptSuccess(lines)
   assert_equal('yes', g:caught)
   unlet g:caught
+  bwipe!
 
   lines =<< trim END
       echo searchpair("a", "b", "c", "d", "f", 33)
   END
   CheckDefAndScriptFailure2(lines, 'E1001: Variable not found: f', 'E475: Invalid argument: d')
 
-  lines =<< trim END
-      def TestPair()
-        echo searchpair("a", "b", "c", "d", "1", 99)
-      enddef
-      defcompile
-  END
-  CheckScriptSuccess(lines)
-
-  bwipe!
   CheckDefAndScriptFailure2(['searchpair(1, "b", "c")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['searchpair("a", 2, "c")'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   CheckDefAndScriptFailure2(['searchpair("a", "b", 3)'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
   CheckDefAndScriptFailure2(['searchpair("a", "b", "c", 4)'], 'E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4')
-  # BUG: Vim crashes with the following test
-  #CheckDefAndScriptFailure2(['searchpair("a", "b", "c", "d", "1", "f")'], 'E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4')
-  #CheckDefAndScriptFailure2(['searchpair("a", "b", "c", "d", "1", 3, "g")'], 'E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4')
+  CheckDefAndScriptFailure2(['searchpair("a", "b", "c", "r", "1", "f")'], 'E1013: Argument 6: type mismatch, expected number but got string', 'E1210: Number required for argument 6')
+  CheckDefAndScriptFailure2(['searchpair("a", "b", "c", "r", "1", 3, "g")'], 'E1013: Argument 7: type mismatch, expected number but got string', 'E1210: Number required for argument 7')
 enddef
 
 def Test_searchpos()
@@ -2951,6 +2979,16 @@ def Test_spellsuggest()
   CheckDefAndScriptFailure2(['spellsuggest("a", 1, 0z01)'], 'E1013: Argument 3: type mismatch, expected bool but got blob', 'E1212: Bool required for argument 3')
 enddef
 
+def Test_sound_playevent()
+  CheckFeature sound
+  CheckDefAndScriptFailure2(['sound_playevent(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+enddef
+
+def Test_sound_playfile()
+  CheckFeature sound
+  CheckDefAndScriptFailure2(['sound_playfile(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+enddef
+
 def Test_sound_stop()
   CheckFeature sound
   CheckDefFailure(['sound_stop("x")'], 'E1013: Argument 1: type mismatch, expected number but got string')
@@ -3137,6 +3175,9 @@ def Test_substitute()
     assert_fails('"text"->substitute(".*", () => job_start(":"), "")', 'E908: using an invalid value as a String: job')
     assert_fails('"text"->substitute(".*", () => job_start(":")->job_getchannel(), "")', 'E908: using an invalid value as a String: channel')
   endif
+  CheckDefAndScriptFailure2(['substitute(1, "b", "1", "d")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['substitute("a", 2, "1", "d")'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefAndScriptFailure2(['substitute("a", "b", "1", 4)'], 'E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4')
 enddef
 
 def Test_swapinfo()
@@ -3376,6 +3417,14 @@ def Test_test_getvalue()
   CheckDefAndScriptFailure2(['test_getvalue(1.1)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E474: Invalid argument')
 enddef
 
+def Test_test_gui_drop_files()
+  CheckGui
+  CheckDefAndScriptFailure2(['test_gui_drop_files("a", 1, 1, 0)'], 'E1013: Argument 1: type mismatch, expected list<string> but got string', 'E1211: List required for argument 1')
+  CheckDefAndScriptFailure2(['test_gui_drop_files(["x"], "", 1, 0)'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  CheckDefAndScriptFailure2(['test_gui_drop_files(["x"], 1, "", 0)'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefAndScriptFailure2(['test_gui_drop_files(["x"], 1, 1, "")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
+enddef
+
 def Test_test_gui_mouse_event()
   CheckGui
   CheckDefAndScriptFailure2(['test_gui_mouse_event(1.1, 1, 1, 1, 1)'], 'E1013: Argument 1: type mismatch, expected number but got float', 'E1210: Number required for argument 1')
@@ -3397,6 +3446,13 @@ enddef
 def Test_test_override()
   CheckDefAndScriptFailure2(['test_override(1, 1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['test_override("a", "x")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+enddef
+
+def Test_test_scrollbar()
+  CheckGui
+  CheckDefAndScriptFailure2(['test_scrollbar(1, 2, 3)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['test_scrollbar("a", "b", 3)'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  CheckDefAndScriptFailure2(['test_scrollbar("a", 2, "c")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
 enddef
 
 def Test_test_setmouse()
