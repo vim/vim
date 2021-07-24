@@ -184,11 +184,13 @@
 #  define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 #  define symbol_from_dll dlsym
 #  define close_dll dlclose
+#  define load_dll_error dlerror
 # else
 #  define RUBY_PROC FARPROC
 #  define load_dll vimLoadLib
 #  define symbol_from_dll GetProcAddress
 #  define close_dll FreeLibrary
+#  define load_dll_error GetWin32Error
 # endif
 #endif
 
@@ -806,7 +808,7 @@ ruby_runtime_link_init(char *libname, int verbose)
     if (!hinstRuby)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname, load_dll_error());
 	return FAIL;
     }
 

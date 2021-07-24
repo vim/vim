@@ -175,11 +175,13 @@ typedef int perl_key;
 #  define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 #  define symbol_from_dll dlsym
 #  define close_dll dlclose
+#  define load_dll_error dlerror
 # else
 #  define PERL_PROC FARPROC
 #  define load_dll vimLoadLib
 #  define symbol_from_dll GetProcAddress
 #  define close_dll FreeLibrary
+#  define load_dll_error GetWin32Error
 # endif
 /*
  * Wrapper defines

@@ -6862,8 +6862,9 @@ dyn_winpty_init(int verbose)
     if (!hWinPtyDLL)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), *p_winptydll != NUL ? p_winptydll
-						       : (char_u *)WINPTY_DLL);
+	    semsg(_(e_loadlib),
+		    (*p_winptydll != NUL ? p_winptydll : (char_u *)WINPTY_DLL),
+		    GetWin32Error());
 	return FAIL;
     }
     for (i = 0; winpty_entry[i].name != NULL
