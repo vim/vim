@@ -2516,9 +2516,13 @@ find_popup_win(int id)
     void
 f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    int		id = (int)tv_get_number(argvars);
+    int		id;
     win_T	*wp;
 
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    id = (int)tv_get_number(argvars);
     if (
 # ifdef FEAT_TERMINAL
 	// if the popup contains a terminal it will become hidden

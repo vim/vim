@@ -422,6 +422,23 @@ check_for_opt_number_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a float or a number.
+ */
+    int
+check_for_float_or_nr_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_FLOAT && args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_number_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_numberreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a bool.
  */
     int
@@ -650,6 +667,16 @@ check_for_string_or_list_arg(typval_T *args, int idx)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Check for an optional string or list argument at 'idx'
+ */
+    int
+check_for_opt_string_or_list_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_string_or_list_arg(args, idx));
 }
 
 /*

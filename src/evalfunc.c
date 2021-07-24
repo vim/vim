@@ -558,6 +558,44 @@ arg_extend3(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" which is the first argument of get() (blob or list or dict or
+ * funcref)
+ */
+    static int
+arg_get1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_BLOB
+	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_DICT
+	    || type->tt_type == VAR_FUNC
+	    || type->tt_type == VAR_PARTIAL)
+	return OK;
+
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" which is the first argument of len() (number or string or
+ * blob or list or dict)
+ */
+    static int
+arg_len1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_NUMBER
+	    || type->tt_type == VAR_BLOB
+	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_DICT)
+	return OK;
+
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
  * Check "type" which is the second argument of remove() (number or string or
  * any)
  */
@@ -685,6 +723,7 @@ static argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
 static argcheck_T arg2_lnum[] = {arg_lnum, arg_lnum};
 static argcheck_T arg2_lnum_number[] = {arg_lnum, arg_number};
 static argcheck_T arg2_number[] = {arg_number, arg_number};
+static argcheck_T arg2_number_any[] = {arg_number, NULL};
 static argcheck_T arg2_number_bool[] = {arg_number, arg_bool};
 static argcheck_T arg2_number_dict_any[] = {arg_number, arg_dict_any};
 static argcheck_T arg2_number_list[] = {arg_number, arg_list_any};
@@ -716,6 +755,7 @@ static argcheck_T arg3_number_string_buffer[] = {arg_number, arg_string, arg_buf
 static argcheck_T arg3_number_string_string[] = {arg_number, arg_string, arg_string};
 static argcheck_T arg3_string[] = {arg_string, arg_string, arg_string};
 static argcheck_T arg3_string_any_dict[] = {arg_string, NULL, arg_dict_any};
+static argcheck_T arg3_string_any_string[] = {arg_string, NULL, arg_string};
 static argcheck_T arg3_string_bool_bool[] = {arg_string, arg_bool, arg_bool};
 static argcheck_T arg3_string_bool_dict[] = {arg_string, arg_bool, arg_dict_any};
 static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool};
@@ -729,6 +769,8 @@ static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NUL
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
 static argcheck_T arg5_number[] = {arg_number, arg_number, arg_number, arg_number, arg_number};
 /* Function specific argument types (not covered by the above) */
+static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, NULL, arg_number, arg_string};
+static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, arg_float_or_nr, arg_string};
 static argcheck_T arg4_browse[] = {arg_bool, arg_string, arg_string, arg_string};
 static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, NULL, arg_dict_any};
 static argcheck_T arg23_chanraw[] = {arg_chan_or_job, arg_string_or_blob, arg_dict_any};
@@ -738,15 +780,18 @@ static argcheck_T arg12_deepcopy[] = {NULL, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
 static argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
 static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
+static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, NULL};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg24_index[] = {arg_list_or_blob, arg_item_of_prev, arg_number, arg_bool};
 static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
+static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_mapfilter[] = {arg_list_or_dict_or_blob, NULL};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
+static argcheck_T arg119_printf[] = {arg_string_or_nr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 static argcheck_T arg23_reduce[] = {arg_list_or_blob, NULL, NULL};
 static argcheck_T arg24_remote_expr[] = {arg_string, arg_string, arg_string, arg_number};
 static argcheck_T arg23_remove[] = {arg_list_or_dict_or_blob, arg_remove2, arg_number};
@@ -1067,11 +1112,11 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_assert_equalfile},
     {"assert_exception", 1, 2, 0,	    arg2_string,
 			ret_number_bool,    f_assert_exception},
-    {"assert_fails",	1, 5, FEARG_1,	    NULL,
+    {"assert_fails",	1, 5, FEARG_1,	    arg15_assert_fails,
 			ret_number_bool,    f_assert_fails},
     {"assert_false",	1, 2, FEARG_1,	    NULL,
 			ret_number_bool,    f_assert_false},
-    {"assert_inrange",	3, 4, FEARG_3,	    NULL,
+    {"assert_inrange",	3, 4, FEARG_3,	    arg34_assert_inrange,
 			ret_number_bool,    f_assert_inrange},
     {"assert_match",	2, 3, FEARG_2,	    arg3_string,
 			ret_number_bool,    f_assert_match},
@@ -1325,7 +1370,7 @@ static funcentry_T global_functions[] =
 			ret_f_function,	    f_function},
     {"garbagecollect",	0, 1, 0,	    arg1_bool,
 			ret_void,	    f_garbagecollect},
-    {"get",		2, 3, FEARG_1,	    NULL,
+    {"get",		2, 3, FEARG_1,	    arg23_get,
 			ret_any,	    f_get},
     {"getbufinfo",	0, 1, FEARG_1,	    arg1_buffer_or_dict_any,
 			ret_list_dict_any,  f_getbufinfo},
@@ -1515,7 +1560,7 @@ static funcentry_T global_functions[] =
 			ret_list_string,    f_keys},
     {"last_buffer_nr",	0, 0, 0,	    NULL,	// obsolete
 			ret_number,	    f_last_buffer_nr},
-    {"len",		1, 1, FEARG_1,	    NULL,
+    {"len",		1, 1, FEARG_1,	    arg1_len,
 			ret_number,	    f_len},
     {"libcall",		3, 3, FEARG_3,	    arg3_libcall,
 			ret_string,	    f_libcall},
@@ -1541,7 +1586,7 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_log)},
     {"log10",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_log10)},
-    {"luaeval",		1, 2, FEARG_1,	    NULL,
+    {"luaeval",		1, 2, FEARG_1,	    arg2_string_any,
 			ret_any,
 #ifdef FEAT_LUA
 		f_luaeval
@@ -1627,7 +1672,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    PROP_FUNC(f_popup_beval)},
     {"popup_clear",	0, 1, 0,	    arg1_bool,
 			ret_void,	    PROP_FUNC(f_popup_clear)},
-    {"popup_close",	1, 2, FEARG_1,	    NULL,
+    {"popup_close",	1, 2, FEARG_1,	    arg2_number_any,
 			ret_void,	    PROP_FUNC(f_popup_close)},
     {"popup_create",	2, 2, FEARG_1,	    arg2_str_or_nr_or_list_dict,
 			ret_number,	    PROP_FUNC(f_popup_create)},
@@ -1667,7 +1712,7 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_pow)},
     {"prevnonblank",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_prevnonblank},
-    {"printf",		1, 19, FEARG_2,	    NULL,
+    {"printf",		1, 19, FEARG_2,	    arg119_printf,
 			ret_string,	    f_printf},
     {"prompt_getprompt", 1, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    JOB_FUNC(f_prompt_getprompt)},
@@ -1829,7 +1874,7 @@ static funcentry_T global_functions[] =
 			ret_bool,           f_setdigraph},
     {"setdigraphlist",	1, 1, FEARG_1,	    arg1_list_string,
 			ret_bool,	    f_setdigraphlist},
-    {"setenv",		2, 2, FEARG_2,	    NULL,
+    {"setenv",		2, 2, FEARG_2,	    arg2_string_any,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_setfperm},
@@ -1843,7 +1888,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setpos},
     {"setqflist",	1, 3, FEARG_1,	    arg13_setqflist,
 			ret_number_bool,    f_setqflist},
-    {"setreg",		2, 3, FEARG_2,	    NULL,
+    {"setreg",		2, 3, FEARG_2,	    arg3_string_any_string,
 			ret_number_bool,    f_setreg},
     {"settabvar",	3, 3, FEARG_3,	    arg3_number_string_any,
 			ret_void,	    f_settabvar},
@@ -6563,6 +6608,9 @@ f_luaeval(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     str = tv_get_string_buf(&argvars[0], buf);
     do_luaeval(str, argvars + 1, rettv);
 }
@@ -7138,6 +7186,9 @@ f_printf(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+
+    if (in_vim9script() && check_for_string_or_number_arg(argvars, 0) == FAIL)
+	return;
 
     // Get the required length, allocate the buffer and do it for real.
     did_emsg = FALSE;
@@ -8515,8 +8566,12 @@ f_setenv(typval_T *argvars, typval_T *rettv UNUSED)
 {
     char_u   namebuf[NUMBUFLEN];
     char_u   valbuf[NUMBUFLEN];
-    char_u  *name = tv_get_string_buf(&argvars[0], namebuf);
+    char_u  *name;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    name = tv_get_string_buf(&argvars[0], namebuf);
     if (argvars[1].v_type == VAR_SPECIAL
 				      && argvars[1].vval.v_number == VVAL_NULL)
 	vim_unsetenv(name);
@@ -8615,6 +8670,11 @@ f_setreg(typval_T *argvars, typval_T *rettv)
     long	block_len;
     typval_T	*regcontents;
     int		pointreg;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 2) == FAIL))
+	return;
 
     pointreg = 0;
     regcontents = NULL;
