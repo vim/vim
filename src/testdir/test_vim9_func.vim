@@ -2352,6 +2352,42 @@ def Test_list_lambda()
   assert_match('def <lambda>\d\+(_: any): number\n1  return 0\n   enddef', body)
 enddef
 
+def Test_lamba_block_variable()
+  var lines =<< trim END
+      vim9script
+      var flist: list<func>
+      for i in range(10)
+          var inloop = i
+          flist[i] = () => inloop
+      endfor
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      if true
+        var outloop = 5
+        var flist: list<func>
+        for i in range(10)
+          flist[i] = () => outloop
+        endfor
+      endif
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      if true
+        var outloop = 5
+      endif
+      var flist: list<func>
+      for i in range(10)
+        flist[i] = () => outloop
+      endfor
+  END
+  CheckScriptFailure(lines, 'E1001: Variable not found: outloop', 1)
+enddef
+
 def Test_legacy_lambda()
   legacy echo {x -> 'hello ' .. x}('foo')
 
