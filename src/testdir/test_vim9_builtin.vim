@@ -2569,9 +2569,17 @@ def Test_searchpair()
   unlet g:caught
 
   lines =<< trim END
-      echo searchpair("a", "b", "c", "d", "1", "f")
+      echo searchpair("a", "b", "c", "d", "f", 33)
   END
-  CheckDefAndScriptFailure2(lines, 'E1001:', 'E475:')
+  CheckDefAndScriptFailure2(lines, 'E1001: Variable not found: f', 'E475: Invalid argument: d')
+
+  lines =<< trim END
+      def TestPair()
+        echo searchpair("a", "b", "c", "d", "1", "f")
+      enddef
+      defcompile
+  END
+  CheckScriptSuccess(lines)
 
   bwipe!
 enddef

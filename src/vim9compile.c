@@ -3315,7 +3315,7 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, int is_searchpair)
 	    return FAIL;
 	++*argcount;
 
-	if (is_searchpair && *argcount >= 5
+	if (is_searchpair && *argcount == 5
 		&& cctx->ctx_instr.ga_len == instr_count + 1)
 	{
 	    isn_T *isn = ((isn_T *)cctx->ctx_instr.ga_data) + instr_count;
