@@ -241,6 +241,9 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     listener_T	*lnr;
     buf_T	*buf = curbuf;
 
+    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 1) == FAIL)
+	return;
+
     callback = get_callback(&argvars[0]);
     if (callback.cb_name == NULL)
 	return;

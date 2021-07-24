@@ -179,6 +179,9 @@ invoke_sound_callback(void)
     static void
 sound_play_common(typval_T *argvars, typval_T *rettv, int playfile)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (context == NULL)
 	ca_context_create(&context);
     if (context != NULL)
@@ -351,6 +354,9 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
 {
     WCHAR	    *wp;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     wp = enc_to_utf16(tv_get_string(&argvars[0]), NULL);
     if (wp == NULL)
 	return;
@@ -370,6 +376,9 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     soundcb_T	*soundcb;
     char	buf[32];
     MCIERROR	err;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
 
     esc = vim_strsave_shellescape(tv_get_string(&argvars[0]), FALSE, FALSE);
 

@@ -1193,6 +1193,11 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
     int		dragging;
     scrollbar_T *sb = NULL;
 
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_STRING
 	    || (argvars[1].v_type) != VAR_NUMBER
 	    || (argvars[2].v_type) != VAR_NUMBER)
@@ -1281,14 +1286,11 @@ f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     list_T	*l;
     listitem_T	*li;
 
-    if (argvars[0].v_type != VAR_LIST
-	    || (argvars[1].v_type) != VAR_NUMBER
-	    || (argvars[2].v_type) != VAR_NUMBER
-	    || (argvars[3].v_type) != VAR_NUMBER)
-    {
-	emsg(_(e_invarg));
+    if (check_for_list_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL
+	    || check_for_number_arg(argvars, 3) == FAIL)
 	return;
-    }
 
     row = tv_get_number(&argvars[1]);
     col = tv_get_number(&argvars[2]);
