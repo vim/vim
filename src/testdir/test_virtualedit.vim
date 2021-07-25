@@ -402,4 +402,68 @@ func Test_delete_past_eol()
   bw!
 endfunc
 
+" Utility function for Test_global_local()
+func s:TryVirtualeditReplace()
+  call setline(1, 'a')
+  normal gg7l
+  normal rx
+  let s:result_ve_on  = 'a      x'
+  let s:result_ve_off = 'x'
+endfunc
+
+" Test for :set and :setlocal
+func Test_global_local()
+  new
+
+  " Verify that 'virtualedit' is initialized to empty, can be set globally to
+  " all and to empty, and can be set locally to all and to empty.
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+  set ve=all
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  set ve=
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+  setlocal ve=all
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  setlocal ve=
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+
+  " Verify that :set affects multiple buffers
+  new
+  set ve=all
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  wincmd p
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  set ve=
+  wincmd p
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+  bwipe!
+
+  " Verify that :setlocal affects only the current buffer
+  setlocal ve=all
+  new
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+  setlocal ve=all
+  wincmd p
+  setlocal ve=
+  wincmd p
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  bwipe!
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+
+  bwipe!
+  setlocal virtualedit&
+  set virtualedit&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

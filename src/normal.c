@@ -5757,7 +5757,7 @@ n_start_visual_mode(int c)
 
     // Corner case: the 0 position in a tab may change when going into
     // virtualedit.  Recalculate curwin->w_cursor to avoid bad highlighting.
-    if (c == Ctrl_V && (ve_flags & VE_BLOCK) && gchar_cursor() == TAB)
+    if (c == Ctrl_V && (get_ve_flags() & VE_BLOCK) && gchar_cursor() == TAB)
     {
 	validate_virtcol();
 	coladvance(curwin->w_virtcol);
@@ -6780,7 +6780,7 @@ adjust_cursor(oparg_T *oap)
     // - 'virtualedit' is not "all" and not "onemore".
     if (curwin->w_cursor.col > 0 && gchar_cursor() == NUL
 		&& (!VIsual_active || *p_sel == 'o')
-		&& !virtual_active() && (ve_flags & VE_ONEMORE) == 0)
+		&& !virtual_active() && (get_ve_flags() & VE_ONEMORE) == 0)
     {
 	--curwin->w_cursor.col;
 	// prevent cursor from moving on the trail byte
@@ -7014,7 +7014,7 @@ nv_esc(cmdarg_T *cap)
 set_cursor_for_append_to_line(void)
 {
     curwin->w_set_curswant = TRUE;
-    if (ve_flags == VE_ALL)
+    if (get_ve_flags() == VE_ALL)
     {
 	int save_State = State;
 
