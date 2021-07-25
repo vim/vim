@@ -121,6 +121,37 @@ func Test_omni_dash()
   set omnifunc=
 endfunc
 
+func Test_omni_autoload()
+  let save_rtp = &rtp
+  set rtp=Xruntime/some
+  let dir = 'Xruntime/some/autoload'
+  call mkdir(dir, 'p')
+
+  let lines =<< trim END
+      vim9script
+      def omni#func(findstart: bool, base: string): any
+          if findstart
+              return 1
+          else
+              return ['match']
+          endif
+      enddef
+      {
+          eval 1 + 2
+      }
+  END
+  call writefile(lines, dir .. '/omni.vim')
+
+  new
+  setlocal omnifunc=omni#func
+  call feedkeys("i\<C-X>\<C-O>\<Esc>", 'xt')
+
+  bwipe!
+  call delete('Xruntime', 'rf')
+  set omnifunc=
+  let &rtp = save_rtp
+endfunc
+
 func Test_completefunc_args()
   let s:args = []
   func! CompleteFunc(findstart, base)
