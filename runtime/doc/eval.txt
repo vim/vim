@@ -3446,8 +3446,7 @@ bufloaded({expr})					*bufloaded()*
 			let loaded = 'somename'->bufloaded()
 
 bufname([{expr}])					*bufname()*
-		The result is the name of a buffer, as it is displayed by the
-		":ls" command.
+		The result is the name of a buffer.
 		If {expr} is omitted the current buffer is used.
 		If {expr} is a Number, that buffer number's name is given.
 		Number zero is the alternate buffer for the current window.
@@ -3481,9 +3480,8 @@ bufname([{expr}])					*bufname()*
 
 							*bufnr()*
 bufnr([{expr} [, {create}]])
-		The result is the number of a buffer, as it is displayed by
-		the ":ls" command.  For the use of {expr}, see |bufname()|
-		above.
+		The result is the number of a buffer.
+		For the use of {expr}, see |bufname()| above.
 
 		If the buffer doesn't exist, -1 is returned.  Or, if the
 		{create} argument is present and TRUE, a new, unlisted,
