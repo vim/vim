@@ -355,9 +355,22 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
 	return NULL;
 
     sav = HI2SAV(hi);
-    if (sav->sav_block_id == 0 || cctx == NULL)
-	// variable defined in the script scope or not in a function.
+    if (sav->sav_block_id == 0)
+	// variable defined in the top script scope is always visible
 	return sav;
+
+    if (cctx == NULL)
+    {
+	// Not in a function scope, find variable with block id equal to or
+	// smaller than the current block id.
+	while (sav != NULL)
+	{
+	    if (sav->sav_block_id <= si->sn_current_block_id)
+		break;
+	    sav = sav->sav_next;
+	}
+	return sav;
+    }
 
     // Go over the variables with this name and find one that was visible
     // from the function.

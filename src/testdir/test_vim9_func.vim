@@ -2352,7 +2352,7 @@ def Test_list_lambda()
   assert_match('def <lambda>\d\+(_: any): number\n1  return 0\n   enddef', body)
 enddef
 
-def Test_lamba_block_variable()
+def Test_lambda_block_variable()
   var lines =<< trim END
       vim9script
       var flist: list<func>
@@ -2386,6 +2386,15 @@ def Test_lamba_block_variable()
       endfor
   END
   CheckScriptFailure(lines, 'E1001: Variable not found: outloop', 1)
+
+  lines =<< trim END
+      vim9script
+      for i in range(10)
+        var Ref = () => 0
+      endfor
+      assert_equal(0, ((i) => 0)(0))
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_legacy_lambda()
