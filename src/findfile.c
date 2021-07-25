@@ -578,7 +578,16 @@ vim_findfile_init(
 
 	    if (p > search_ctx->ffsc_fix_path)
 	    {
+		// do not add '..' to the path and start upwards searching
 		len = (int)(p - search_ctx->ffsc_fix_path) - 1;
+		if ((len >= 2
+			&& STRNCMP(search_ctx->ffsc_fix_path, "..", 2) == 0)
+			&& (len == 2
+				   || search_ctx->ffsc_fix_path[2] == PATHSEP))
+		{
+		    vim_free(buf);
+		    goto error_return;
+		}
 		STRNCAT(ff_expand_buffer, search_ctx->ffsc_fix_path, len);
 		add_pathsep(ff_expand_buffer);
 	    }
