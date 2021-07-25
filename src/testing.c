@@ -566,11 +566,22 @@ f_assert_exception(typval_T *argvars, typval_T *rettv)
     void
 f_assert_fails(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*cmd = tv_get_string_chk(&argvars[0]);
+    char_u	*cmd;
     garray_T	ga;
     int		save_trylevel = trylevel;
     int		called_emsg_before = called_emsg;
     char	*wrong_arg_msg = NULL;
+
+    if (check_for_string_or_number_arg(argvars, 0) == FAIL
+	    || check_for_opt_string_or_list_arg(argvars, 1) == FAIL
+	    || (argvars[1].v_type != VAR_UNKNOWN
+		&& (argvars[2].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 3) == FAIL
+			|| (argvars[3].v_type != VAR_UNKNOWN
+			    && check_for_opt_string_arg(argvars, 4) == FAIL)))))
+	return;
+
+    cmd = tv_get_string_chk(&argvars[0]);
 
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
@@ -799,6 +810,12 @@ assert_inrange(typval_T *argvars)
     void
 f_assert_inrange(typval_T *argvars, typval_T *rettv)
 {
+    if (check_for_float_or_nr_arg(argvars, 0) == FAIL
+	    || check_for_float_or_nr_arg(argvars, 1) == FAIL
+	    || check_for_float_or_nr_arg(argvars, 2) == FAIL
+	    || check_for_opt_string_arg(argvars, 3) == FAIL)
+	return;
+
     rettv->vval.v_number = assert_inrange(argvars);
 }
 
