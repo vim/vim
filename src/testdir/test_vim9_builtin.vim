@@ -3352,8 +3352,13 @@ enddef
 
 def Test_term_setansicolors()
   CheckRunVimInTerminal
-  CheckDefAndScriptFailure2(['term_setansicolors([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
-  CheckDefAndScriptFailure2(['term_setansicolors(10, {})'], 'E1013: Argument 2: type mismatch, expected list<any> but got dict<unknown>', 'E1211: List required for argument 2')
+
+  if has('termguicolors') || has('gui')
+    CheckDefAndScriptFailure2(['term_setansicolors([], "p")'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+    CheckDefAndScriptFailure2(['term_setansicolors(10, {})'], 'E1013: Argument 2: type mismatch, expected list<any> but got dict<unknown>', 'E1211: List required for argument 2')
+  else
+    throw 'Skipped: Only works with termguicolors or gui feature'
+  endif
 enddef
 
 def Test_term_setapi()
