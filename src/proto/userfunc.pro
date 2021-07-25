@@ -5,7 +5,7 @@ char_u *get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **type, int no_autoload);
-void emsg_funcname(char *ermsg, char_u *name);
+void emsg_funcname(char *ermsg, char_u *name) ATTRIBUTE_COLD;
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);
 char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error);
 ufunc_T *find_func_even_dead(char_u *name, int is_global, cctx_T *cctx);

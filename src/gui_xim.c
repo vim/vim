@@ -31,7 +31,9 @@
  * in the "xim.log" file.
  */
 // #define XIM_DEBUG
-#ifdef XIM_DEBUG
+#if defined(XIM_DEBUG) && defined(FEAT_GUI_GTK)
+static void xim_log(char *s, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
     static void
 xim_log(char *s, ...)
 {

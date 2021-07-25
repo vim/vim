@@ -42,11 +42,7 @@ typedef enum {
 } WtWait;
 
 
-void		 nbdbg(char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-   __attribute__((format(printf, 1, 2)))
-# endif
-;
+void		 nbdbg(char *, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 void nbdebug_wait(u_int wait_flags, char *wait_var, u_int wait_secs);
 void nbdebug_log_init(char *log_var, char *level_var);
