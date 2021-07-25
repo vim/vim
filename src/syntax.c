@@ -3723,7 +3723,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 		id = syn_namen2id(arg, (int)(arg_end - arg));
 		if (id == 0)
 		{
-		    semsg(_(e_nogroup), arg);
+		    semsg(_(e_no_such_highlight_group_name_str), arg);
 		    break;
 		}
 		else
@@ -3921,7 +3921,7 @@ syn_cmd_list(
 	    {
 		id = syn_namen2id(arg, (int)(arg_end - arg));
 		if (id == 0)
-		    semsg(_(e_nogroup), arg);
+		    semsg(_(e_no_such_highlight_group_name_str), arg);
 		else
 		    syn_list_one(id, syncing, TRUE);
 	    }

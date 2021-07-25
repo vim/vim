@@ -148,9 +148,9 @@ search_regcomp(
 	if (spats[i].pat == NULL)	// pattern was never defined
 	{
 	    if (pat_use == RE_SUBST)
-		emsg(_(e_nopresub));
+		emsg(_(e_no_previous_substitute_regular_expression));
 	    else
-		emsg(_(e_noprevre));
+		emsg(_(e_no_previous_regular_expression));
 	    rc_did_emsg = TRUE;
 	    return FAIL;
 	}
@@ -1217,7 +1217,8 @@ first_submatch(regmmatch_T *rp)
 do_search(
     oparg_T	    *oap,	// can be NULL
     int		    dirc,	// '/' or '?'
-    int		    search_delim, // the delimiter for the search, e.g. '%' in s%regex%replacement%
+    int		    search_delim, // the delimiter for the search, e.g. '%' in
+				  // s%regex%replacement%
     char_u	    *pat,
     long	    count,
     int		    options,
@@ -1322,7 +1323,7 @@ do_search(
 		searchstr = spats[RE_SUBST].pat;
 		if (searchstr == NULL)
 		{
-		    emsg(_(e_noprevre));
+		    emsg(_(e_no_previous_regular_expression));
 		    retval = 0;
 		    goto end_do_search;
 		}
@@ -1476,11 +1477,11 @@ do_search(
 			msgbuf = trunc;
 		    }
 
-    #ifdef FEAT_RIGHTLEFT
-		    // The search pattern could be shown on the right in rightleft
-		    // mode, but the 'ruler' and 'showcmd' area use it too, thus
-		    // it would be blanked out again very soon.  Show it on the
-		    // left, but do reverse the text.
+#ifdef FEAT_RIGHTLEFT
+		    // The search pattern could be shown on the right in
+		    // rightleft mode, but the 'ruler' and 'showcmd' area use
+		    // it too, thus it would be blanked out again very soon.
+		    // Show it on the left, but do reverse the text.
 		    if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
 		    {
 			char_u *r;
@@ -1503,7 +1504,7 @@ do_search(
 				vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
 			}
 		    }
-    #endif
+#endif
 		    msg_outtrans(msgbuf);
 		    msg_clr_eos();
 		    msg_check();
@@ -1548,6 +1549,9 @@ do_search(
 	    }
 	}
 
+	/*
+	 * The actual search.
+	 */
 	c = searchit(curwin, curbuf, &pos, NULL,
 					      dirc == '/' ? FORWARD : BACKWARD,
 		searchstr, count, spats[0].off.end + (options &
@@ -1557,7 +1561,7 @@ do_search(
 		RE_LAST, sia);
 
 	if (dircp != NULL)
-	    *dircp = search_delim;	// restore second '/' or '?' for normal_cmd()
+	    *dircp = search_delim; // restore second '/' or '?' for normal_cmd()
 
 	if (!shortmess(SHM_SEARCH)
 		&& ((dirc == '/' && LT_POS(pos, curwin->w_cursor))
@@ -4793,6 +4797,12 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     char_u	*key = NULL;
     int		ret;
     int		matchseq = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_list_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
 
     CLEAR_POINTER(&cb);
 

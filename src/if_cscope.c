@@ -1329,24 +1329,6 @@ clear_csinfo(int i)
 #endif
 }
 
-#ifndef UNIX
-    static char *
-GetWin32Error(void)
-{
-    char *msg = NULL;
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-	    NULL, GetLastError(), 0, (LPSTR)&msg, 0, NULL);
-    if (msg != NULL)
-    {
-	// remove trailing \r\n
-	char *pcrlf = strstr(msg, "\r\n");
-	if (pcrlf != NULL)
-	    *pcrlf = '\0';
-    }
-    return msg;
-}
-#endif
-
 /*
  * Insert a new cscope database filename into the filelist.
  */
@@ -2513,6 +2495,14 @@ f_cscope_connection(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     char_u	*dbpath = NULL;
     char_u	*prepend = NULL;
     char_u	buf[NUMBUFLEN];
+
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && (check_for_opt_string_arg(argvars, 1) == FAIL
+			|| (argvars[1].v_type != VAR_UNKNOWN
+			    && check_for_opt_string_arg(argvars, 2) == FAIL)))))
+	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN
 	    && argvars[1].v_type != VAR_UNKNOWN)

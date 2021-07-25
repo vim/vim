@@ -1,5 +1,7 @@
 " Tests for the List and Dict types
 
+source vim9.vim
+
 func TearDown()
   " Run garbage collection after every test
   call test_garbagecollect_now()
@@ -44,68 +46,120 @@ endfunc
 
 " List identity
 func Test_list_identity()
-  let l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
-  let ll = l
-  let lx = copy(l)
-  call assert_true(l == ll)
-  call assert_false(l isnot ll)
-  call assert_true(l is ll)
-  call assert_true(l == lx)
-  call assert_false(l is lx)
-  call assert_true(l isnot lx)
+  let lines =<< trim END
+      VAR l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
+      VAR ll = l
+      VAR lx = copy(l)
+      call assert_true(l == ll)
+      call assert_false(l isnot ll)
+      call assert_true(l is ll)
+      call assert_true(l == lx)
+      call assert_false(l is lx)
+      call assert_true(l isnot lx)
+  END
+  call CheckLegacyAndVim9Success(lines)
 endfunc
 
 " removing items with :unlet
 func Test_list_unlet()
-  let l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
-  unlet l[2]
-  call assert_equal([1, 'as''d', {'a': 1}], l)
-  let l = range(8)
-  unlet l[:3]
-  unlet l[1:]
-  call assert_equal([4], l)
+  let lines =<< trim END
+      VAR l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
+      unlet l[2]
+      call assert_equal([1, 'as''d', {'a': 1}], l)
+      LET l = range(8)
+      unlet l[: 3]
+      unlet l[1 :]
+      call assert_equal([4], l)
 
-  " removing items out of range: silently skip items that don't exist
-  let l = [0, 1, 2, 3]
-  call assert_fails('unlet l[2:1]', 'E684:')
+      #" removing items out of range: silently skip items that don't exist
+      LET l = [0, 1, 2, 3]
+      unlet l[2 : 2]
+      call assert_equal([0, 1, 3], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[2 : 3]
+      call assert_equal([0, 1], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[2 : 4]
+      call assert_equal([0, 1], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[2 : 5]
+      call assert_equal([0, 1], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[-2 : 2]
+      call assert_equal([0, 1, 3], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[-3 : 2]
+      call assert_equal([0, 3], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[-4 : 2]
+      call assert_equal([3], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[-5 : 2]
+      call assert_equal([3], l)
+      LET l = [0, 1, 2, 3]
+      unlet l[-6 : 2]
+      call assert_equal([3], l)
+  END
+  call CheckLegacyAndVim9Success(lines)
+
   let l = [0, 1, 2, 3]
   unlet l[2:2]
   call assert_equal([0, 1, 3], l)
   let l = [0, 1, 2, 3]
   unlet l[2:3]
   call assert_equal([0, 1], l)
-  let l = [0, 1, 2, 3]
-  unlet l[2:4]
-  call assert_equal([0, 1], l)
-  let l = [0, 1, 2, 3]
-  unlet l[2:5]
-  call assert_equal([0, 1], l)
-  let l = [0, 1, 2, 3]
-  call assert_fails('unlet l[-1:2]', 'E684:')
-  let l = [0, 1, 2, 3]
-  unlet l[-2:2]
-  call assert_equal([0, 1, 3], l)
-  let l = [0, 1, 2, 3]
-  unlet l[-3:2]
-  call assert_equal([0, 3], l)
-  let l = [0, 1, 2, 3]
-  unlet l[-4:2]
-  call assert_equal([3], l)
-  let l = [0, 1, 2, 3]
-  unlet l[-5:2]
-  call assert_equal([3], l)
-  let l = [0, 1, 2, 3]
-  unlet l[-6:2]
-  call assert_equal([3], l)
+
+  let lines =<< trim END
+      VAR l = [0, 1, 2, 3]
+      unlet l[2 : 1]
+  END
+  call CheckLegacyAndVim9Failure(lines, 'E684:')
+
+  let lines =<< trim END
+      VAR l = [0, 1, 2, 3]
+      unlet l[-1 : 2]
+  END
+  call CheckLegacyAndVim9Failure(lines, 'E684:')
 endfunc
 
 " assignment to a list
 func Test_list_assign()
-  let l = [0, 1, 2, 3]
-  let [va, vb] = l[2:3]
-  call assert_equal([2, 3], [va, vb])
-  call assert_fails('let [va, vb] = l', 'E687:')
-  call assert_fails('let [va, vb] = l[1:1]', 'E688:')
+  let lines =<< trim END
+      VAR l = [0, 1, 2, 3]
+      VAR va = 0
+      VAR vb = 0
+      LET [va, vb] = l[2 : 3]
+      call assert_equal([2, 3], [va, vb])
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+      let l = [0, 1, 2, 3]
+      let [va, vb] = l
+  END
+  call CheckScriptFailure(lines, 'E687:')
+  let lines =<< trim END
+      var l = [0, 1, 2, 3]
+      var va = 0
+      var vb = 0
+      [va, vb] = l
+  END
+  call CheckScriptFailure(['vim9script'] + lines, 'E687:')
+  call CheckDefExecFailure(lines, 'E1093: Expected 2 items but got 4')
+
+  let lines =<< trim END
+      let l = [0, 1, 2, 3]
+      let [va, vb] = l[1:1]
+  END
+  call CheckScriptFailure(lines, 'E688:')
+  let lines =<< trim END
+      var l = [0, 1, 2, 3]
+      var va = 0
+      var vb = 0
+      [va, vb] = l[1 : 1]
+  END
+  call CheckScriptFailure(['vim9script'] + lines, 'E688:')
+  call CheckDefExecFailure(lines, 'E1093: Expected 2 items but got 1')
 endfunc
 
 " test for range assign
@@ -119,31 +173,34 @@ endfunc
 
 " Test removing items in list
 func Test_list_func_remove()
-  " Test removing 1 element
-  let l = [1, 2, 3, 4]
-  call assert_equal(1, remove(l, 0))
-  call assert_equal([2, 3, 4], l)
+  let lines =<< trim END
+      #" Test removing 1 element
+      VAR l = [1, 2, 3, 4]
+      call assert_equal(1, remove(l, 0))
+      call assert_equal([2, 3, 4], l)
 
-  let l = [1, 2, 3, 4]
-  call assert_equal(2, remove(l, 1))
-  call assert_equal([1, 3, 4], l)
+      LET l = [1, 2, 3, 4]
+      call assert_equal(2, remove(l, 1))
+      call assert_equal([1, 3, 4], l)
 
-  let l = [1, 2, 3, 4]
-  call assert_equal(4, remove(l, -1))
-  call assert_equal([1, 2, 3], l)
+      LET l = [1, 2, 3, 4]
+      call assert_equal(4, remove(l, -1))
+      call assert_equal([1, 2, 3], l)
 
-  " Test removing range of element(s)
-  let l = [1, 2, 3, 4]
-  call assert_equal([3], remove(l, 2, 2))
-  call assert_equal([1, 2, 4], l)
+      #" Test removing range of element(s)
+      LET l = [1, 2, 3, 4]
+      call assert_equal([3], remove(l, 2, 2))
+      call assert_equal([1, 2, 4], l)
 
-  let l = [1, 2, 3, 4]
-  call assert_equal([2, 3], remove(l, 1, 2))
-  call assert_equal([1, 4], l)
+      LET l = [1, 2, 3, 4]
+      call assert_equal([2, 3], remove(l, 1, 2))
+      call assert_equal([1, 4], l)
 
-  let l = [1, 2, 3, 4]
-  call assert_equal([2, 3], remove(l, -3, -2))
-  call assert_equal([1, 4], l)
+      LET l = [1, 2, 3, 4]
+      call assert_equal([2, 3], remove(l, -3, -2))
+      call assert_equal([1, 4], l)
+  END
+  call CheckLegacyAndVim9Success(lines)
 
   " Test invalid cases
   let l = [1, 2, 3, 4]
@@ -156,15 +213,20 @@ endfunc
 
 " List add() function
 func Test_list_add()
-  let l = []
-  call add(l, 1)
-  call add(l, [2, 3])
-  call add(l, [])
-  call add(l, test_null_list())
-  call add(l, {'k' : 3})
-  call add(l, {})
-  call add(l, test_null_dict())
-  call assert_equal([1, [2, 3], [], [], {'k' : 3}, {}, {}], l)
+  let lines =<< trim END
+      VAR l = []
+      call add(l, 1)
+      call add(l, [2, 3])
+      call add(l, [])
+      call add(l, test_null_list())
+      call add(l, {'k': 3})
+      call add(l, {})
+      call add(l, test_null_dict())
+      call assert_equal([1, [2, 3], [], [], {'k': 3}, {}, {}], l)
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  " weird legacy behavior
   call assert_equal(1, add(test_null_list(), 4))
 endfunc
 
@@ -172,11 +234,21 @@ endfunc
 
 func Test_dict()
   " Creating Dictionary directly with different types
+  let lines =<< trim END
+      VAR d = {'1': 'asd', 'b': [1, 2, function('strlen')], '-1': {'a': 1}, }
+      call assert_equal("{'1': 'asd', 'b': [1, 2, function('strlen')], '-1': {'a': 1}}", string(d))
+      call assert_equal('asd', d.1)
+      call assert_equal(['-1', '1', 'b'], sort(keys(d)))
+      call assert_equal(['asd', [1, 2, function('strlen')], {'a': 1}], values(d))
+      call extend(d, {3: 33, 1: 99})
+      call extend(d, {'b': 'bbb', 'c': 'ccc'}, "keep")
+      call assert_equal({'c': 'ccc', '1': 99, 'b': [1, 2, function('strlen')], '3': 33, '-1': {'a': 1}}, d)
+  END
+  call CheckLegacyAndVim9Success(lines)
+
   let d = {001: 'asd', 'b': [1, 2, function('strlen')], -1: {'a': 1},}
   call assert_equal("{'1': 'asd', 'b': [1, 2, function('strlen')], '-1': {'a': 1}}", string(d))
-  call assert_equal('asd', d.1)
-  call assert_equal(['-1', '1', 'b'], sort(keys(d)))
-  call assert_equal(['asd', [1, 2, function('strlen')], {'a': 1}], values(d))
+
   let v = []
   for [key, val] in items(d)
     call extend(v, [key, val])
@@ -184,12 +256,8 @@ func Test_dict()
   endfor
   call assert_equal(['1','asd','b',[1, 2, function('strlen')],'-1',{'a': 1}], v)
 
-  call extend(d, {3:33, 1:99})
-  call extend(d, {'b':'bbb', 'c':'ccc'}, "keep")
+  call extend(d, {3: 33, 1: 99})
   call assert_fails("call extend(d, {3:333,4:444}, 'error')", 'E737:')
-  call assert_equal({'c': 'ccc', '1': 99, 'b': [1, 2, function('strlen')], '3': 33, '-1': {'a': 1}}, d)
-  call filter(d, 'v:key =~ ''[ac391]''')
-  call assert_equal({'c': 'ccc', '1': 99, '3': 33, '-1': {'a': 1}}, d)
 
   " duplicate key
   call assert_fails("let d = {'k' : 10, 'k' : 20}", 'E721:')
@@ -211,23 +279,29 @@ let s:dict_with_spaces_lit = #{one : 1 , two : 2 , three : 3}
 
 " Dictionary identity
 func Test_dict_identity()
-  let d = {001: 'asd', 'b': [1, 2, function('strlen')], -1: {'a': 1},}
-  let dd = d
-  let dx = copy(d)
-  call assert_true(d == dd)
-  call assert_false(d isnot dd)
-  call assert_true(d is dd)
-  call assert_true(d == dx)
-  call assert_false(d is dx)
-  call assert_true(d isnot dx)
+  let lines =<< trim END
+      VAR d = {'1': 'asd', 'b': [1, 2, function('strlen')], -1: {'a': 1}, }
+      VAR dd = d
+      VAR dx = copy(d)
+      call assert_true(d == dd)
+      call assert_false(d isnot dd)
+      call assert_true(d is dd)
+      call assert_true(d == dx)
+      call assert_false(d is dx)
+      call assert_true(d isnot dx)
+  END
+  call CheckLegacyAndVim9Success(lines)
 endfunc
 
 " removing items with :unlet
 func Test_dict_unlet()
-  let d = {'b':'bbb', '1': 99, '3': 33, '-1': {'a': 1}}
-  unlet d.b
-  unlet d[-1]
-  call assert_equal({'1': 99, '3': 33}, d)
+  let lines =<< trim END
+      VAR d = {'b': 'bbb', '1': 99, '3': 33, '-1': {'a': 1}}
+      unlet d.b
+      unlet d[-1]
+      call assert_equal({'1': 99, '3': 33}, d)
+  END
+  call CheckLegacyAndVim9Success(lines)
 endfunc
 
 " manipulating a big Dictionary (hashtable.c has a border of 1000 entries)
@@ -295,8 +369,30 @@ func Test_dict_assign()
   let d._ = 2
   call assert_equal({'1': 1, '_': 2}, d)
 
-  let n = 0
-  call assert_fails('let n.key = 3', 'E1203: Dot can only be used on a dictionary: n.key = 3')
+  let lines =<< trim END
+      VAR d = {}
+      LET d.a = 1
+      LET d._ = 2
+      call assert_equal({'a': 1, '_': 2}, d)
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+    let n = 0
+    let n.key = 3
+  END
+  call CheckScriptFailure(lines, 'E1203: Dot can only be used on a dictionary: n.key = 3')
+  let lines =<< trim END
+    vim9script
+    var n = 0
+    n.key = 3
+  END
+  call CheckScriptFailure(lines, 'E1203: Dot can only be used on a dictionary: n.key = 3')
+  let lines =<< trim END
+    var n = 0
+    n.key = 3
+  END
+  call CheckDefFailure(lines, 'E1141:')
 endfunc
 
 " Function in script-local List or Dict
@@ -313,13 +409,41 @@ endfunc
 
 " Test removing items in a dictionary
 func Test_dict_func_remove()
-  let d = {1:'a', 2:'b', 3:'c'}
-  call assert_equal('b', remove(d, 2))
-  call assert_equal({1:'a', 3:'c'}, d)
+  let lines =<< trim END
+      VAR d = {1: 'a', 2: 'b', 3: 'c'}
+      call assert_equal('b', remove(d, 2))
+      call assert_equal({1: 'a', 3: 'c'}, d)
+  END
+  call CheckLegacyAndVim9Success(lines)
 
-  call assert_fails("call remove(d, 1, 2)", 'E118:')
-  call assert_fails("call remove(d, 'a')", 'E716:')
-  call assert_fails("call remove(d, [])", 'E730:')
+  let lines =<< trim END
+      VAR d = {1: 'a', 3: 'c'}
+      call remove(d, 1, 2)
+  END
+  call CheckLegacyAndVim9Failure(lines, 'E118:')
+
+  let lines =<< trim END
+      VAR d = {1: 'a', 3: 'c'}
+      call remove(d, 'a')
+  END
+  call CheckLegacyAndVim9Failure(lines, 'E716:')
+
+  let lines =<< trim END
+      let d = {1: 'a', 3: 'c'}
+      call remove(d, [])
+  END
+  call CheckScriptFailure(lines, 'E730:')
+  let lines =<< trim END
+      vim9script
+      var d = {1: 'a', 3: 'c'}
+      call remove(d, [])
+  END
+  call CheckScriptFailure(lines, 'E1174: String required for argument 2')
+  let lines =<< trim END
+      var d = {1: 'a', 3: 'c'}
+      call remove(d, [])
+  END
+  call CheckDefExecFailure(lines, 'E1013: Argument 2: type mismatch, expected string but got list<unknown>')
 endfunc
 
 " Nasty: remove func from Dict that's being called (works)
@@ -335,7 +459,7 @@ endfunc
 func Test_dict_literal_keys()
   call assert_equal({'one': 1, 'two2': 2, '3three': 3, '44': 4}, #{one: 1, two2: 2, 3three: 3, 44: 4},)
 
-  " why *{} cannot be used
+  " why *{} cannot be used for a literal dictionary
   let blue = 'blue'
   call assert_equal('6', trim(execute('echo 2 *{blue: 3}.blue')))
 endfunc
@@ -527,7 +651,6 @@ endfunc
 
 " No :unlet after lock on dict:
 func Test_dict_lock_unlet()
-  unlet! d
   let d = {'a': 99, 'b': 100}
   lockvar 1 d
   call assert_fails('unlet d.a', 'E741:')
@@ -535,7 +658,6 @@ endfunc
 
 " unlet after lock on dict item
 func Test_dict_item_lock_unlet()
-  unlet! d
   let d = {'a': 99, 'b': 100}
   lockvar d.a
   unlet d.a
@@ -544,7 +666,6 @@ endfunc
 
 " filter() after lock on dict item
 func Test_dict_lock_filter()
-  unlet! d
   let d = {'a': 99, 'b': 100}
   lockvar d.a
   call filter(d, 'v:key != "a"')
@@ -553,7 +674,6 @@ endfunc
 
 " map() after lock on dict
 func Test_dict_lock_map()
-  unlet! d
   let d = {'a': 99, 'b': 100}
   lockvar 1 d
   call map(d, 'v:val + 200')
@@ -562,7 +682,6 @@ endfunc
 
 " No extend() after lock on dict item
 func Test_dict_lock_extend()
-  unlet! d
   let d = {'a': 99, 'b': 100}
   lockvar d.a
   call assert_fails("call extend(d, {'a' : 123})", 'E741:')
@@ -571,7 +690,6 @@ endfunc
 
 " Cannot use += with a locked dict
 func Test_dict_lock_operator()
-  unlet! d
   let d = {}
   lockvar d
   call assert_fails("let d += {'k' : 10}", 'E741:')
@@ -672,9 +790,6 @@ endfunc
 
 func Test_func_arg_list()
   call s:arg_list_test(1, 2, [3, 4], {5: 6})
-endfunc
-
-func Test_dict_item_locked()
 endfunc
 
 " Tests for reverse(), sort(), uniq()

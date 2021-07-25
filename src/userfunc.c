@@ -614,6 +614,35 @@ is_function_cmd(char_u **cmd)
 }
 
 /*
+ * Called when defining a function: The context may be needed for script
+ * variables declared in a block that is visible now but not when the function
+ * is compiled or called later.
+ */
+    static void
+function_using_block_scopes(ufunc_T *fp, cstack_T *cstack)
+{
+    if (cstack != NULL && cstack->cs_idx >= 0)
+    {
+	int	    count = cstack->cs_idx + 1;
+	int	    i;
+
+	fp->uf_block_ids = ALLOC_MULT(int, count);
+	if (fp->uf_block_ids != NULL)
+	{
+	    mch_memmove(fp->uf_block_ids, cstack->cs_block_id,
+							  sizeof(int) * count);
+	    fp->uf_block_depth = count;
+	}
+
+	// Set flag in each block to indicate a function was defined.  This
+	// is used to keep the variable when leaving the block, see
+	// hide_script_var().
+	for (i = 0; i <= cstack->cs_idx; ++i)
+	    cstack->cs_flags[i] |= CSF_FUNC_DEF;
+    }
+}
+
+/*
  * Read the body of a function, put every line in "newlines".
  * This stops at "}", "endfunction" or "enddef".
  * "newlines" must already have been initialized.
@@ -634,6 +663,7 @@ get_function_body(
 						   || eap->cmdidx == CMD_block;
 #define MAX_FUNC_NESTING 50
     char	nesting_def[MAX_FUNC_NESTING];
+    char	nesting_inline[MAX_FUNC_NESTING];
     int		nesting = 0;
     getline_opt_T getline_options;
     int		indent = 2;
@@ -658,7 +688,8 @@ get_function_body(
 	    ((char_u **)(newlines->ga_data))[newlines->ga_len++] = NULL;
     }
 
-    nesting_def[nesting] = vim9_function;
+    nesting_def[0] = vim9_function;
+    nesting_inline[0] = eap->cmdidx == CMD_block;
     getline_options = vim9_function
 				? GETLINE_CONCAT_CONTBAR : GETLINE_CONCAT_CONT;
     for (;;)
@@ -705,10 +736,10 @@ get_function_body(
 	    SOURCING_LNUM = sourcing_lnum_top;
 	    if (skip_until != NULL)
 		semsg(_(e_missing_heredoc_end_marker_str), skip_until);
+	    else if (nesting_inline[nesting])
+		emsg(_(e_missing_end_block));
 	    else if (eap->cmdidx == CMD_def)
 		emsg(_(e_missing_enddef));
-	    else if (eap->cmdidx == CMD_block)
-		emsg(_(e_missing_end_block));
 	    else
 		emsg(_("E126: Missing :endfunction"));
 	    goto theend;
@@ -765,7 +796,8 @@ get_function_body(
 	}
 	else
 	{
-	    int c;
+	    int	    c;
+	    char_u  *end;
 
 	    // skip ':' and blanks
 	    for (p = theline; VIM_ISWHITE(*p) || *p == ':'; ++p)
@@ -773,7 +805,7 @@ get_function_body(
 
 	    // Check for "endfunction", "enddef" or "}".
 	    // When a ":" follows it must be a dict key; "enddef: value,"
-	    if ((nesting == 0 && eap->cmdidx == CMD_block)
+	    if (nesting_inline[nesting]
 		    ? *p == '}'
 		    : (checkforcmd(&p, nesting_def[nesting]
 						? "enddef" : "endfunction", 4)
@@ -857,7 +889,35 @@ get_function_body(
 		    {
 			++nesting;
 			nesting_def[nesting] = (c == 'd');
+			nesting_inline[nesting] = FALSE;
 			indent += 2;
+		    }
+		}
+	    }
+
+	    if (nesting_def[nesting] ? *p != '#' : *p != '"')
+	    {
+		// Not a comment line: check for nested inline function.
+		end = p + STRLEN(p) - 1;
+		while (end > p && VIM_ISWHITE(*end))
+		    --end;
+		if (end > p && *end == '{')
+		{
+		    --end;
+		    while (end > p && VIM_ISWHITE(*end))
+			--end;
+		    if (end > p + 2 && end[-1] == '=' && end[0] == '>')
+		    {
+			// found trailing "=> {", start of an inline function
+			if (nesting == MAX_FUNC_NESTING - 1)
+			    emsg(_(e_function_nesting_too_deep));
+			else
+			{
+			    ++nesting;
+			    nesting_def[nesting] = TRUE;
+			    nesting_inline[nesting] = TRUE;
+			    indent += 2;
+			}
 		    }
 		}
 	    }
@@ -1164,6 +1224,8 @@ lambda_function_body(
     ufunc->uf_script_ctx.sc_lnum += sourcing_lnum_top;
     set_function_type(ufunc);
 
+    function_using_block_scopes(ufunc, evalarg->eval_cstack);
+
     rettv->vval.v_partial = pt;
     rettv->v_type = VAR_PARTIAL;
     ufunc = NULL;
@@ -1411,6 +1473,8 @@ get_lambda_tv(
 	fp->uf_script_ctx = current_sctx;
 	fp->uf_script_ctx.sc_lnum += SOURCING_LNUM - newlines.ga_len;
 
+	function_using_block_scopes(fp, evalarg->eval_cstack);
+
 	pt->pt_func = fp;
 	pt->pt_refcount = 1;
 	rettv->vval.v_partial = pt;
@@ -1428,6 +1492,7 @@ theend:
     vim_free(tofree2);
     if (types_optional)
 	ga_clear_strings(&argtypes);
+
     return OK;
 
 errret:
@@ -4282,28 +4347,8 @@ define_function(exarg_T *eap, char_u *name_arg)
 	// error messages are for the first function line
 	SOURCING_LNUM = sourcing_lnum_top;
 
-	if (cstack != NULL && cstack->cs_idx >= 0)
-	{
-	    int	    count = cstack->cs_idx + 1;
-	    int	    i;
-
-	    // The block context may be needed for script variables declared in
-	    // a block that is visible now but not when the function is called
-	    // later.
-	    fp->uf_block_ids = ALLOC_MULT(int, count);
-	    if (fp->uf_block_ids != NULL)
-	    {
-		mch_memmove(fp->uf_block_ids, cstack->cs_block_id,
-							  sizeof(int) * count);
-		fp->uf_block_depth = count;
-	    }
-
-	    // Set flag in each block to indicate a function was defined.  This
-	    // is used to keep the variable when leaving the block, see
-	    // hide_script_var().
-	    for (i = 0; i <= cstack->cs_idx; ++i)
-		cstack->cs_flags[i] |= CSF_FUNC_DEF;
-	}
+	// The function may use script variables from the context.
+	function_using_block_scopes(fp, cstack);
 
 	if (parse_argument_types(fp, &argtypes, varargs) == FAIL)
 	{
@@ -4997,7 +5042,7 @@ do_return(
 		if ((cstack->cs_rettv[idx] = alloc_tv()) != NULL)
 		    *(typval_T *)cstack->cs_rettv[idx] = *(typval_T *)rettv;
 		else
-		    emsg(_(e_outofmem));
+		    emsg(_(e_out_of_memory));
 	    }
 	    else
 		cstack->cs_rettv[idx] = NULL;

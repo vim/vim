@@ -340,10 +340,14 @@ assert_append_cmd_or_arg(garray_T *gap, typval_T *argvars, char_u *cmd)
     static int
 assert_beeps(typval_T *argvars, int no_beep)
 {
-    char_u	*cmd = tv_get_string_chk(&argvars[0]);
+    char_u	*cmd;
     garray_T	ga;
     int		ret = 0;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return 0;
+
+    cmd = tv_get_string_chk(&argvars[0]);
     called_vim_beep = FALSE;
     suppress_errthrow = TRUE;
     emsg_silent = FALSE;
@@ -367,7 +371,7 @@ assert_beeps(typval_T *argvars, int no_beep)
 }
 
 /*
- * "assert_beeps(cmd [, error])" function
+ * "assert_beeps(cmd)" function
  */
     void
 f_assert_beeps(typval_T *argvars, typval_T *rettv)
@@ -376,7 +380,7 @@ f_assert_beeps(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "assert_nobeep(cmd [, error])" function
+ * "assert_nobeep(cmd)" function
  */
     void
 f_assert_nobeep(typval_T *argvars, typval_T *rettv)
@@ -562,11 +566,22 @@ f_assert_exception(typval_T *argvars, typval_T *rettv)
     void
 f_assert_fails(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*cmd = tv_get_string_chk(&argvars[0]);
+    char_u	*cmd;
     garray_T	ga;
     int		save_trylevel = trylevel;
     int		called_emsg_before = called_emsg;
     char	*wrong_arg_msg = NULL;
+
+    if (check_for_string_or_number_arg(argvars, 0) == FAIL
+	    || check_for_opt_string_or_list_arg(argvars, 1) == FAIL
+	    || (argvars[1].v_type != VAR_UNKNOWN
+		&& (argvars[2].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 3) == FAIL
+			|| (argvars[3].v_type != VAR_UNKNOWN
+			    && check_for_opt_string_arg(argvars, 4) == FAIL)))))
+	return;
+
+    cmd = tv_get_string_chk(&argvars[0]);
 
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
@@ -795,6 +810,12 @@ assert_inrange(typval_T *argvars)
     void
 f_assert_inrange(typval_T *argvars, typval_T *rettv)
 {
+    if (check_for_float_or_nr_arg(argvars, 0) == FAIL
+	    || check_for_float_or_nr_arg(argvars, 1) == FAIL
+	    || check_for_float_or_nr_arg(argvars, 2) == FAIL
+	    || check_for_opt_string_arg(argvars, 3) == FAIL)
+	return;
+
     rettv->vval.v_number = assert_inrange(argvars);
 }
 
@@ -946,6 +967,11 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
     char_u *name = (char_u *)"";
     int     val;
     static int save_starting = -1;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
 
     if (argvars[0].v_type != VAR_STRING
 	    || (argvars[1].v_type) != VAR_NUMBER)
@@ -1184,6 +1210,11 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
     int		dragging;
     scrollbar_T *sb = NULL;
 
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_STRING
 	    || (argvars[1].v_type) != VAR_NUMBER
 	    || (argvars[2].v_type) != VAR_NUMBER)
@@ -1237,15 +1268,12 @@ f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int		repeated_click;
     int_u	mods;
 
-    if (argvars[0].v_type != VAR_NUMBER
-	    || (argvars[1].v_type) != VAR_NUMBER
-	    || (argvars[2].v_type) != VAR_NUMBER
-	    || (argvars[3].v_type) != VAR_NUMBER
-	    || (argvars[4].v_type) != VAR_NUMBER)
-    {
-	emsg(_(e_invarg));
+    if (check_for_number_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL
+	    || check_for_number_arg(argvars, 3) == FAIL
+	    || check_for_number_arg(argvars, 4) == FAIL)
 	return;
-    }
 
     button = tv_get_number(&argvars[0]);
     row = tv_get_number(&argvars[1]);
@@ -1275,14 +1303,11 @@ f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     list_T	*l;
     listitem_T	*li;
 
-    if (argvars[0].v_type != VAR_LIST
-	    || (argvars[1].v_type) != VAR_NUMBER
-	    || (argvars[2].v_type) != VAR_NUMBER
-	    || (argvars[3].v_type) != VAR_NUMBER)
-    {
-	emsg(_(e_invarg));
+    if (check_for_list_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL
+	    || check_for_number_arg(argvars, 3) == FAIL)
 	return;
-    }
 
     row = tv_get_number(&argvars[1]);
     col = tv_get_number(&argvars[2]);

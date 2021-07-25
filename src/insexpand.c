@@ -2436,6 +2436,11 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     int	    startcol;
     int	    save_textlock = textlock;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_list_arg(argvars, 1) == FAIL))
+	return;
+
     if ((State & INSERT) == 0)
     {
 	emsg(_("E785: complete() can only be used in Insert mode"));
@@ -2468,6 +2473,12 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_complete_add(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (argvars[0].v_type != VAR_DICT
+		&& argvars[0].v_type != VAR_STRING
+		&& check_for_string_arg(argvars, 0) == FAIL))
+	return;
+
     rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0, FALSE);
 }
 

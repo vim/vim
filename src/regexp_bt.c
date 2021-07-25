@@ -1424,7 +1424,7 @@ regatom(int *flagp)
 		}
 	    }
 	    else
-		EMSG_RET_NULL(_(e_nopresub));
+		EMSG_RET_NULL(_(e_no_previous_substitute_regular_expression));
 	    break;
 
       case Magic('1'):
@@ -2158,7 +2158,7 @@ regpiece(int *flagp)
 			      }
 		}
 		if (lop == END)
-		    EMSG2_RET_NULL(_("E59: invalid character after %s@"),
+		    EMSG2_RET_NULL(_(e_invalid_character_after_str_at),
 						      reg_magic == MAGIC_ALL);
 		// Look behind must match with behind_pos.
 		if (lop == BEHIND || lop == NOBEHIND)
@@ -2199,7 +2199,7 @@ regpiece(int *flagp)
 	    else
 	    {
 		if (num_complex_braces >= 10)
-		    EMSG2_RET_NULL(_("E60: Too many complex %s{...}s"),
+		    EMSG2_RET_NULL(_(e_too_many_complex_str_curly),
 						      reg_magic == MAGIC_ALL);
 		reginsert(BRACE_COMPLEX + num_complex_braces, ret);
 		regoptail(ret, regnode(BACK));
@@ -2369,7 +2369,7 @@ reg(
     {
 	// Make a ZOPEN node.
 	if (regnzpar >= NSUBEXP)
-	    EMSG_RET_NULL(_("E50: Too many \\z("));
+	    EMSG_RET_NULL(_(e_too_many_z));
 	parno = regnzpar;
 	regnzpar++;
 	ret = regnode(ZOPEN + parno);
@@ -2380,7 +2380,7 @@ reg(
     {
 	// Make a MOPEN node.
 	if (regnpar >= NSUBEXP)
-	    EMSG2_RET_NULL(_("E51: Too many %s("), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_NULL(_(e_too_many_str_open), reg_magic == MAGIC_ALL);
 	parno = regnpar;
 	++regnpar;
 	ret = regnode(MOPEN + parno);
@@ -2437,18 +2437,18 @@ reg(
     {
 #ifdef FEAT_SYN_HL
 	if (paren == REG_ZPAREN)
-	    EMSG_RET_NULL(_("E52: Unmatched \\z("));
+	    EMSG_RET_NULL(_(e_unmatched_z));
 	else
 #endif
 	    if (paren == REG_NPAREN)
-	    EMSG2_RET_NULL(_(e_unmatchedpp), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_NULL(_(e_unmatched_str_percent_open), reg_magic == MAGIC_ALL);
 	else
-	    EMSG2_RET_NULL(_(e_unmatchedp), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_NULL(_(e_unmatched_str_open), reg_magic == MAGIC_ALL);
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
 	if (curchr == Magic(')'))
-	    EMSG2_RET_NULL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_NULL(_(e_unmatched_str_close), reg_magic == MAGIC_ALL);
 	else
 	    EMSG_RET_NULL(_(e_trailing));	// "Can't happen".
 	// NOTREACHED
@@ -2491,7 +2491,7 @@ bt_regcomp(char_u *expr, int re_flags)
     int		flags;
 
     if (expr == NULL)
-	IEMSG_RET_NULL(_(e_null));
+	IEMSG_RET_NULL(_(e_null_argument));
 
     init_class_tab();
 
@@ -3115,7 +3115,7 @@ do_class:
 	break;
 
       default:			// Oh dear.  Called inappropriately.
-	iemsg(_(e_re_corr));
+	iemsg(_(e_corrupted_regexp_program));
 #ifdef DEBUG
 	printf("Called regrepeat with op code %d\n", OP(p));
 #endif
@@ -4309,7 +4309,7 @@ regmatch(
 	    break;
 
 	  default:
-	    iemsg(_(e_re_corr));
+	    iemsg(_(e_corrupted_regexp_program));
 #ifdef DEBUG
 	    printf("Illegal op code %d\n", op);
 #endif
@@ -4709,7 +4709,7 @@ regmatch(
 	{
 	    // We get here only if there's trouble -- normally "case END" is
 	    // the terminating point.
-	    iemsg(_(e_re_corr));
+	    iemsg(_(e_corrupted_regexp_program));
 #ifdef DEBUG
 	    printf("Premature EOL\n");
 #endif
@@ -4859,7 +4859,7 @@ bt_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	iemsg(_(e_null));
+	iemsg(_(e_null_argument));
 	goto theend;
     }
 

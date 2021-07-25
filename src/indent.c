@@ -941,15 +941,11 @@ get_breakindent_win(
     }
     bri = prev_indent + wp->w_briopt_shift;
 
-    // indent minus the length of the showbreak string
-    if (wp->w_briopt_sbr)
-	bri -= vim_strsize(get_showbreak_value(wp));
-
     // Add offset for number column, if 'n' is in 'cpoptions'
     bri += win_col_off2(wp);
 
     // add additional indent for numbered lists
-    if (wp->w_briopt_list > 0)
+    if (wp->w_briopt_list != 0)
     {
 	regmatch_T	    regmatch;
 
@@ -958,10 +954,20 @@ get_breakindent_win(
 	if (regmatch.regprog != NULL)
 	{
 	    if (vim_regexec(&regmatch, line, 0))
-		bri += wp->w_briopt_list;
+	    {
+		if (wp->w_briopt_list > 0)
+		    bri += wp->w_briopt_list;
+		else
+		    bri = (*regmatch.endp - *regmatch.startp);
+	    }
 	    vim_regfree(regmatch.regprog);
 	}
     }
+
+    // indent minus the length of the showbreak string
+    if (wp->w_briopt_sbr)
+	bri -= vim_strsize(get_showbreak_value(wp));
+
 
     // never indent past left window margin
     if (bri < 0)

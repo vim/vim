@@ -5038,7 +5038,7 @@ ex_gui(exarg_T *eap)
 #if defined(VIMDLL) && !defined(EXPERIMENTAL_GUI_CMD)
 	if (!gui.starting)
 	{
-	    emsg(_(e_nogvim));
+	    emsg(_(e_gui_cannot_be_used_not_enabled_at_compile_time));
 	    return;
 	}
 #endif

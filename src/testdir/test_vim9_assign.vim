@@ -1632,6 +1632,13 @@ def Test_script_local_in_legacy()
     let s:legvar = 'one'
   END
   CheckScriptFailure(lines, 'E476:', 1)
+
+  edit! Xfile
+  lines =<< trim END
+      var edit: bool
+      legacy edit
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_var_type_check()
@@ -1665,6 +1672,16 @@ def Test_var_type_check()
     vim9script
     var s:d: dict<number>
     s:d = {}
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    var d = {a: 1, b: [2]}
+    def Func(b: bool)
+      var l: list<number> = b ? d.b : [3]
+    enddef
+    defcompile
   END
   CheckScriptSuccess(lines)
 enddef

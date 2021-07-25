@@ -616,11 +616,8 @@ crypt_check_swapfile_curbuf(void)
 	// swap and undo files, so disable them
 	mf_close_file(curbuf, TRUE);	// remove the swap file
 	set_option_value((char_u *)"swf", 0, NULL, OPT_LOCAL);
-#ifdef FEAT_PERSISTENT_UNDO
-	set_option_value((char_u *)"udf", 0, NULL, OPT_LOCAL);
-#endif
 	msg_scroll = TRUE;
-	msg(_("Note: Encryption of swapfile not supported, disabling swap- and undofile"));
+	msg(_("Note: Encryption of swapfile not supported, disabling swap file"));
     }
 }
 #endif

@@ -357,13 +357,13 @@ func Test_blob_add()
       VAR b = 0z0011
       call add(b, [9])
   END
-  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1012:', 'E745:'])
+  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1012:', 'E1210:'])
 
   let lines =<< trim END
       VAR b = 0z0011
       call add("", 0x01)
   END
-  call CheckLegacyAndVim9Failure(lines, 'E897:')
+  call CheckLegacyAndVim9Failure(lines, ['E897:', 'E1013:', 'E1211:'])
 
   let lines =<< trim END
       add(test_null_blob(), 0x22)
@@ -422,24 +422,6 @@ func Test_blob_func_remove()
       call remove(b, 3, 2)
   END
   call CheckLegacyAndVim9Failure(lines, 'E979:')
-
-  let lines =<< trim END
-      VAR b = 0zDEADBEEF
-      call remove(1, 0)
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E896:')
-
-  let lines =<< trim END
-      VAR b = 0zDEADBEEF
-      call remove(b, b)
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E974:')
-
-  let lines =<< trim END
-      VAR b = 0zDEADBEEF
-      call remove(b, 1, [])
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E745:')
 
   let lines =<< trim END
       VAR b = 0zDEADBEEF
@@ -504,16 +486,6 @@ func Test_blob_index()
       call assert_equal(-1, index(test_null_blob(), 1))
   END
   call CheckLegacyAndVim9Success(lines)
-
-  let lines =<< trim END
-      echo index(0z11110111, 0x11, [])
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E745:')
-
-  let lines =<< trim END
-      call index("asdf", 0)
-  END
-  call CheckLegacyAndVim9Failure(lines, 'E897:')
 endfunc
 
 func Test_blob_insert()
@@ -547,7 +519,7 @@ func Test_blob_insert()
       VAR b = 0zDEADBEEF
       call insert(b, 0, [9])
   END
-  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E745:'])
+  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E1210:'])
 
   let lines =<< trim END
       VAR b = 0zDEADBEEF
@@ -565,7 +537,7 @@ func Test_blob_insert()
       VAR b = 0zDEADBEEF
       call insert(b, [])
   END
-  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E745:'])
+  call CheckLegacyAndVim9Failure(lines, ['E745:', 'E1013:', 'E1210:'])
 
   let lines =<< trim END
       insert(test_null_blob(), 0x33)

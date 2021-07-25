@@ -165,7 +165,7 @@ edit(
     // Don't allow inserting in the sandbox.
     if (sandbox != 0)
     {
-	emsg(_(e_sandbox));
+	emsg(_(e_not_allowed_in_sandbox));
 	return FALSE;
     }
 #endif
@@ -2874,7 +2874,7 @@ stuff_inserted(
     ptr = get_last_insert();
     if (ptr == NULL)
     {
-	emsg(_(e_noinstext));
+	emsg(_(e_no_inserted_text_yet));
 	return FAIL;
     }
 

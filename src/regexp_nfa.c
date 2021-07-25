@@ -1527,7 +1527,7 @@ nfa_regatom(void)
 		// Generated as "\%(pattern\)".
 		if (reg_prev_sub == NULL)
 		{
-		    emsg(_(e_nopresub));
+		    emsg(_(e_no_previous_substitute_regular_expression));
 		    return FAIL;
 		}
 		for (lp = reg_prev_sub; *lp != NUL; MB_CPTR_ADV(lp))
@@ -2561,14 +2561,15 @@ nfa_reg(
     if (paren != REG_NOPAREN && getchr() != Magic(')'))
     {
 	if (paren == REG_NPAREN)
-	    EMSG2_RET_FAIL(_(e_unmatchedpp), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_FAIL(_(e_unmatched_str_percent_open),
+						       reg_magic == MAGIC_ALL);
 	else
-	    EMSG2_RET_FAIL(_(e_unmatchedp), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_FAIL(_(e_unmatched_str_open), reg_magic == MAGIC_ALL);
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
 	if (peekchr() == Magic(')'))
-	    EMSG2_RET_FAIL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
+	    EMSG2_RET_FAIL(_(e_unmatched_str_close), reg_magic == MAGIC_ALL);
 	else
 	    EMSG_RET_FAIL(_("E873: (NFA regexp) proper termination error"));
     }
@@ -7356,7 +7357,7 @@ nfa_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	iemsg(_(e_null));
+	iemsg(_(e_null_argument));
 	goto theend;
     }
 

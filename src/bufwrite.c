@@ -1982,8 +1982,6 @@ restore_backup:
 	write_info.bw_start_lnum = start;
 
 #ifdef FEAT_PERSISTENT_UNDO
-	// TODO: if the selected crypt method prevents the undo file from being
-	// written, and existing undo file should be deleted.
 	write_undo_file = (buf->b_p_udf
 			    && overwriting
 			    && !append
@@ -1991,11 +1989,22 @@ restore_backup:
 # ifdef CRYPT_NOT_INPLACE
 			    // writing undo file requires
 			    // crypt_encode_inplace()
-			    && (curbuf->b_cryptstate == NULL
-				|| crypt_works_inplace(curbuf->b_cryptstate))
+			    && (buf->b_cryptstate == NULL
+				|| crypt_works_inplace(buf->b_cryptstate))
 # endif
 			    && reset_changed
 			    && !checking_conversion);
+# ifdef CRYPT_NOT_INPLACE
+	// remove undo file if encrypting it is not possible
+	if (buf->b_p_udf
+		&& overwriting
+		&& !append
+		&& !filtering
+		&& !checking_conversion
+		&& buf->b_cryptstate != NULL
+		&& !crypt_works_inplace(buf->b_cryptstate))
+	    u_undofile_reset_and_delete(buf);
+# endif
 	if (write_undo_file)
 	    // Prepare for computing the hash value of the text.
 	    sha256_start(&sha_ctx);

@@ -415,9 +415,10 @@ blob_set_range(blob_T *dest, long n1, long n2, typval_T *src)
 blob_remove(typval_T *argvars, typval_T *rettv)
 {
     int		error = FALSE;
-    long	idx = (long)tv_get_number_chk(&argvars[1], &error);
+    long	idx;
     long	end;
 
+    idx = (long)tv_get_number_chk(&argvars[1], &error);
     if (!error)
     {
 	blob_T  *b = argvars[0].vval.v_blob;

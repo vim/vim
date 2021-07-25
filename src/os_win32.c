@@ -716,7 +716,7 @@ dyn_libintl_init(void)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadlib), GETTEXT_DLL);
+	    semsg(_(e_loadlib), GETTEXT_DLL, GetWin32Error());
 	    verbose_leave();
 	}
 	return 0;
@@ -8353,3 +8353,19 @@ resize_console_buf(void)
     }
 }
 #endif
+
+    char *
+GetWin32Error(void)
+{
+    char *msg = NULL;
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+	    NULL, GetLastError(), 0, (LPSTR)&msg, 0, NULL);
+    if (msg != NULL)
+    {
+	// remove trailing \r\n
+	char *pcrlf = strstr(msg, "\r\n");
+	if (pcrlf != NULL)
+	    *pcrlf = '\0';
+    }
+    return msg;
+}

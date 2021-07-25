@@ -2316,6 +2316,12 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     int		nowait;
     char_u	*arg;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_bool_arg(argvars, 1) == FAIL
+		|| check_for_dict_arg(argvars, 2) == FAIL))
+	return;
+
     which = tv_get_string_buf_chk(&argvars[0], buf);
     if (which == NULL)
 	return;
@@ -2717,7 +2723,8 @@ do_exmap(exarg_T *eap, int isabbrev)
     {
 	case 1: emsg(_(e_invarg));
 		break;
-	case 2: emsg((isabbrev ? _(e_no_such_abbreviation) : _(e_nomap)));
+	case 2: emsg((isabbrev ? _(e_no_such_abbreviation)
+						      : _(e_no_such_mapping)));
 		break;
     }
 }

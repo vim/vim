@@ -428,12 +428,16 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
 }
 
     int
-check_typval_arg_type(type_T *expected, typval_T *actual_tv, int arg_idx)
+check_typval_arg_type(
+	type_T	    *expected,
+	typval_T    *actual_tv,
+	char	    *func_name,
+	int	    arg_idx)
 {
-    where_T	where;
+    where_T	where = WHERE_INIT;
 
     where.wt_index = arg_idx;
-    where.wt_variable = FALSE;
+    where.wt_func_name = func_name;
     return check_typval_type(expected, actual_tv, where);
 }
 
@@ -465,10 +469,9 @@ type_mismatch(type_T *expected, type_T *actual)
     void
 arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx)
 {
-    where_T	where;
+    where_T	where = WHERE_INIT;
 
     where.wt_index = arg_idx;
-    where.wt_variable = FALSE;
     type_mismatch_where(expected, actual, where);
 }
 
@@ -481,14 +484,23 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
 
     if (where.wt_index > 0)
     {
-	semsg(_(where.wt_variable
-			? e_variable_nr_type_mismatch_expected_str_but_got_str
-			: e_argument_nr_type_mismatch_expected_str_but_got_str),
+	if (where.wt_func_name == NULL)
+	    semsg(_(where.wt_variable
+			 ? e_variable_nr_type_mismatch_expected_str_but_got_str
+		       : e_argument_nr_type_mismatch_expected_str_but_got_str),
 					 where.wt_index, typename1, typename2);
+	else
+	    semsg(_(where.wt_variable
+		  ? e_variable_nr_type_mismatch_expected_str_but_got_str_in_str
+		: e_argument_nr_type_mismatch_expected_str_but_got_str_in_str),
+		     where.wt_index, typename1, typename2, where.wt_func_name);
     }
-    else
+    else if (where.wt_func_name == NULL)
 	semsg(_(e_type_mismatch_expected_str_but_got_str),
 							 typename1, typename2);
+    else
+	semsg(_(e_type_mismatch_expected_str_but_got_str_in_str),
+				     typename1, typename2, where.wt_func_name);
     vim_free(tofree1);
     vim_free(tofree2);
 }
@@ -604,7 +616,7 @@ check_argument_types(
 	    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
 	else
 	    expected = type->tt_args[i];
-	if (check_typval_arg_type(expected, &argvars[i], i + 1) == FAIL)
+	if (check_typval_arg_type(expected, &argvars[i], NULL, i + 1) == FAIL)
 	    return FAIL;
     }
     return OK;

@@ -352,7 +352,7 @@ tv_get_float(typval_T *varp)
 #endif
 
 /*
- * Give an error and return FAIL unless "tv" is a string.
+ * Give an error and return FAIL unless "args[idx]" is a string.
  */
     int
 check_for_string_arg(typval_T *args, int idx)
@@ -385,7 +385,118 @@ check_for_nonempty_string_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "tv" is a dict.
+ * Check for an optional string argument at 'idx'
+ */
+    int
+check_for_opt_string_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_string_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a number.
+ */
+    int
+check_for_number_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_number_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_numberreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional number argument at 'idx'
+ */
+    int
+check_for_opt_number_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_number_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a float or a number.
+ */
+    int
+check_for_float_or_nr_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_FLOAT && args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_number_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_numberreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a bool.
+ */
+    int
+check_for_bool_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_BOOL
+	    && !(args[idx].v_type == VAR_NUMBER
+		&& (args[idx].vval.v_number == 0
+		    || args[idx].vval.v_number == 1)))
+    {
+	if (idx >= 0)
+	    semsg(_(e_bool_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_boolreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional bool argument at 'idx'
+ */
+    int
+check_for_opt_bool_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_bool_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list.
+ */
+    int
+check_for_list_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST)
+    {
+	if (idx >= 0)
+	    semsg(_(e_list_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_listreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional list argument at 'idx'
+ */
+    int
+check_for_opt_list_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_list_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a dict.
  */
     int
 check_for_dict_arg(typval_T *args, int idx)
@@ -396,6 +507,230 @@ check_for_dict_arg(typval_T *args, int idx)
 	    semsg(_(e_dict_required_for_argument_nr), idx + 1);
 	else
 	    emsg(_(e_dictreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional dict argument at 'idx'
+ */
+    int
+check_for_opt_dict_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_dict_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a channel or a job.
+ */
+    int
+check_for_chan_or_job_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_CHANNEL && args[idx].v_type != VAR_JOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_chan_or_job_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_chan_or_job_req));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is an optional channel or a
+ * job.
+ */
+    int
+check_for_opt_chan_or_job_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_chan_or_job_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a job.
+ */
+    int
+check_for_job_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_JOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_job_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_jobreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or
+ * a number.
+ */
+    int
+check_for_string_or_number_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_NUMBER)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional string or number argument at 'idx'.
+ */
+    int
+check_for_opt_string_or_number_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_string_or_number_arg(args, idx) != FAIL);
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a buffer number.
+ * Buffer number can be a number or a string.
+ */
+    int
+check_for_buffer_arg(typval_T *args, int idx)
+{
+    return check_for_string_or_number_arg(args, idx);
+}
+
+/*
+ * Check for an optional buffer argument at 'idx'
+ */
+    int
+check_for_opt_buffer_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_buffer_arg(args, idx));
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a line number.
+ * Line number can be a number or a string.
+ */
+    int
+check_for_lnum_arg(typval_T *args, int idx)
+{
+    return check_for_string_or_number_arg(args, idx);
+}
+
+/*
+ * Check for an optional line number argument at 'idx'
+ */
+    int
+check_for_opt_lnum_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_lnum_arg(args, idx));
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or a blob.
+ */
+    int
+check_for_string_or_blob_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_BLOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or a list.
+ */
+    int
+check_for_string_or_list_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_LIST)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional string or list argument at 'idx'
+ */
+    int
+check_for_opt_string_or_list_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_string_or_list_arg(args, idx));
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list or a blob.
+ */
+    int
+check_for_list_or_blob_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST && args[idx].v_type != VAR_BLOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_list_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_listreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list or dict or a
+ * blob.
+ */
+    int
+check_for_list_or_dict_or_blob_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_DICT
+	    && args[idx].v_type != VAR_BLOB)
+    {
+	if (idx >= 0)
+	    semsg(_(e_list_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_listreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a buffer number or a
+ * dict.
+ */
+    int
+check_for_buffer_or_dict_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING
+	    && args[idx].v_type != VAR_NUMBER
+	    && args[idx].v_type != VAR_DICT)
+    {
+	if (idx >= 0)
+	    semsg(_(e_string_required_for_argument_nr), idx + 1);
+	else
+	    emsg(_(e_stringreq));
 	return FAIL;
     }
     return OK;
@@ -883,7 +1218,9 @@ typval_compare(
 	}
     }
     else if (in_vim9script() && (typ1->v_type == VAR_BOOL
-						 || typ2->v_type == VAR_BOOL))
+				    || typ2->v_type == VAR_BOOL
+				    || (typ1->v_type == VAR_SPECIAL
+					      && typ2->v_type == VAR_SPECIAL)))
     {
 	if (typ1->v_type != typ2->v_type)
 	{
@@ -901,13 +1238,23 @@ typval_compare(
 	    case EXPR_ISNOT:
 	    case EXPR_NEQUAL:   n1 = (n1 != n2); break;
 	    default:
-		emsg(_(e_invalid_operation_for_bool));
+		semsg(_(e_invalid_operation_for_str),
+						   vartype_name(typ1->v_type));
 		clear_tv(typ1);
 		return FAIL;
 	}
     }
     else
     {
+	if (in_vim9script()
+	      && ((typ1->v_type != VAR_STRING && typ1->v_type != VAR_SPECIAL)
+	       || (typ2->v_type != VAR_STRING && typ2->v_type != VAR_SPECIAL)))
+	{
+	    semsg(_(e_cannot_compare_str_with_str),
+		       vartype_name(typ1->v_type), vartype_name(typ2->v_type));
+	    clear_tv(typ1);
+	    return FAIL;
+	}
 	s1 = tv_get_string_buf(typ1, buf1);
 	s2 = tv_get_string_buf(typ2, buf2);
 	if (type != EXPR_MATCH && type != EXPR_NOMATCH)

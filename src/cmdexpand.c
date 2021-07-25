@@ -2891,6 +2891,12 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     int		options = WILD_SILENT | WILD_USE_NL | WILD_ADD_SLASH
 								| WILD_NO_BEEP;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
+	return;
+
     if (argvars[1].v_type != VAR_STRING)
     {
 	semsg(_(e_invarg2), "type must be a string");

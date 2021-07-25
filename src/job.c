@@ -1658,6 +1658,10 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_secure())
 	return;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
 	return;
@@ -1681,6 +1685,10 @@ f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_secure())
 	return;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
 	return;
@@ -1724,6 +1732,11 @@ f_prompt_setprompt(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf;
     char_u	*text;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
 
     if (check_secure())
 	return;
@@ -1868,9 +1881,15 @@ f_job_info(typval_T *argvars, typval_T *rettv)
     void
 f_job_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    job_T	*job = get_job_arg(&argvars[0]);
+    job_T	*job;
     jobopt_T	opt;
 
+    if (in_vim9script()
+	    && (check_for_job_arg(argvars, 0) == FAIL
+		|| check_for_dict_arg(argvars, 1) == FAIL))
+	return;
+
+    job = get_job_arg(&argvars[0]);
     if (job == NULL)
 	return;
     clear_job_options(&opt);
@@ -1888,6 +1907,12 @@ f_job_start(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_JOB;
     if (check_restricted() || check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
     rettv->vval.v_job = job_start(argvars, NULL, NULL, NULL);
 }
 
@@ -1921,8 +1946,14 @@ f_job_status(typval_T *argvars, typval_T *rettv)
     void
 f_job_stop(typval_T *argvars, typval_T *rettv)
 {
-    job_T	*job = get_job_arg(&argvars[0]);
+    job_T	*job;
 
+    if (in_vim9script()
+	    && (check_for_job_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_or_number_arg(argvars, 1) == FAIL))
+	return;
+
+    job = get_job_arg(&argvars[0]);
     if (job != NULL)
 	rettv->vval.v_number = job_stop(job, argvars, NULL);
 }

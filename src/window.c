@@ -863,7 +863,7 @@ win_split_ins(
     {
 	if (VISIBLE_HEIGHT(oldwin) <= p_wmh && new_wp == NULL)
 	{
-	    emsg(_(e_noroom));
+	    emsg(_(e_not_enough_room));
 	    return FAIL;
 	}
 	need_status = STATUS_HEIGHT;
@@ -921,7 +921,7 @@ win_split_ins(
 	}
 	if (available < needed && new_wp == NULL)
 	{
-	    emsg(_(e_noroom));
+	    emsg(_(e_not_enough_room));
 	    return FAIL;
 	}
 	if (new_size == 0)
@@ -1004,7 +1004,7 @@ win_split_ins(
 	}
 	if (available < needed && new_wp == NULL)
 	{
-	    emsg(_(e_noroom));
+	    emsg(_(e_not_enough_room));
 	    return FAIL;
 	}
 	oldwin_height = oldwin->w_height;
@@ -5867,7 +5867,7 @@ win_setminheight(void)
 	--p_wmh;
 	if (first)
 	{
-	    emsg(_(e_noroom));
+	    emsg(_(e_not_enough_room));
 	    first = FALSE;
 	}
     }
@@ -5893,7 +5893,7 @@ win_setminwidth(void)
 	--p_wmw;
 	if (first)
 	{
-	    emsg(_(e_noroom));
+	    emsg(_(e_not_enough_room));
 	    first = FALSE;
 	}
     }
@@ -6385,7 +6385,7 @@ command_height(void)
 	    {
 		if (frp == NULL)
 		{
-		    emsg(_(e_noroom));
+		    emsg(_(e_not_enough_room));
 		    p_ch = old_p_ch;
 		    curtab->tp_ch_used = p_ch;
 		    cmdline_row = Rows - p_ch;
@@ -6476,7 +6476,7 @@ last_status_rec(frame_T *fr, int statusline)
 	    {
 		if (fp == topframe)
 		{
-		    emsg(_(e_noroom));
+		    emsg(_(e_not_enough_room));
 		    return;
 		}
 		// In a column of frames: go to frame above.  If already at

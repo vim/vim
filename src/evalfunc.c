@@ -255,6 +255,15 @@ arg_dict_any(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a list of 'any'.
+ */
+    static int
+arg_list_any(type_T *type, argcontext_T *context)
+{
+    return check_arg_type(&t_list_any, type, context);
+}
+
+/*
  * Check "type" is a list of numbers.
  */
     static int
@@ -287,14 +296,11 @@ arg_string(type_T *type, argcontext_T *context)
     static int
 arg_bool(type_T *type, argcontext_T *context)
 {
-    if (type->tt_type == VAR_ANY
-		   || type->tt_type == VAR_NUMBER || type->tt_type == VAR_BOOL)
-	return OK;
     return check_arg_type(&t_bool, type, context);
 }
 
 /*
- * Check "type" is a list or a blob.
+ * Check "type" is a list of 'any' or a blob.
  */
     static int
 arg_list_or_blob(type_T *type, argcontext_T *context)
@@ -318,6 +324,48 @@ arg_string_or_nr(type_T *type, argcontext_T *context)
     arg_type_mismatch(&t_string, type, context->arg_idx + 1);
     return FAIL;
 }
+
+/*
+ * Check "type" is a buffer (string or a number)
+ */
+    static int
+arg_buffer(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING || type->tt_type == VAR_NUMBER)
+	return OK;
+    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" is a buffer or a dict of any
+ */
+    static int
+arg_buffer_or_dict_any(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_NUMBER
+	    || type->tt_type == VAR_DICT)
+	return OK;
+    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" is a line (string or a number)
+ */
+    static int
+arg_lnum(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING || type->tt_type == VAR_NUMBER)
+	return OK;
+    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
 /*
  * Check "type" is a string or a list of strings.
  */
@@ -353,7 +401,20 @@ arg_string_or_list_any(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" is a list or a dict.
+ * Check "type" is a string or a blob
+ */
+    static int
+arg_string_or_blob(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING || type->tt_type == VAR_BLOB)
+	return OK;
+    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" is a list of 'any' or a dict of 'any'.
  */
     static int
 arg_list_or_dict(type_T *type, argcontext_T *context)
@@ -366,12 +427,38 @@ arg_list_or_dict(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a list of 'any' or a dict of 'any' or a blob.
+ */
+    static int
+arg_list_or_dict_or_blob(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+		     || type->tt_type == VAR_LIST
+		     || type->tt_type == VAR_DICT
+		     || type->tt_type == VAR_BLOB)
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" is a job.
+ */
+    static int
+arg_job(type_T *type, argcontext_T *context)
+{
+    return check_arg_type(&t_job, type, context);
+}
+
+/*
  * Check "type" is a channel or a job.
  */
     static int
 arg_chan_or_job(type_T *type, argcontext_T *context)
 {
-    if (type->tt_type == VAR_CHANNEL || type->tt_type == VAR_JOB)
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_CHANNEL
+	    || type->tt_type == VAR_JOB)
 	return OK;
     arg_type_mismatch(&t_channel, type, context->arg_idx + 1);
     return FAIL;
@@ -441,7 +528,22 @@ arg_str_or_nr_or_list(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the third argument of extend().
+ * Check "type" is a dict of 'any' or a string
+ */
+    static int
+arg_dict_any_or_string(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+		|| type->tt_type == VAR_DICT
+		|| type->tt_type == VAR_STRING)
+	return OK;
+    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" which is the third argument of extend() (number or string or
+ * any)
  */
     static int
 arg_extend3(type_T *type, argcontext_T *context)
@@ -455,42 +557,262 @@ arg_extend3(type_T *type, argcontext_T *context)
     return OK;
 }
 
+/*
+ * Check "type" which is the first argument of get() (blob or list or dict or
+ * funcref)
+ */
+    static int
+arg_get1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_BLOB
+	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_DICT
+	    || type->tt_type == VAR_FUNC
+	    || type->tt_type == VAR_PARTIAL)
+	return OK;
+
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" which is the first argument of len() (number or string or
+ * blob or list or dict)
+ */
+    static int
+arg_len1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_NUMBER
+	    || type->tt_type == VAR_BLOB
+	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_DICT)
+	return OK;
+
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" which is the second argument of remove() (number or string or
+ * any)
+ */
+    static int
+arg_remove2(type_T *type, argcontext_T *context)
+{
+    type_T *first_type = context->arg_types[context->arg_idx - 1];
+
+    if (first_type->tt_type == VAR_LIST || first_type->tt_type == VAR_BLOB)
+	return arg_number(type, context);
+    if (first_type->tt_type == VAR_DICT)
+	return arg_string_or_nr(type, context);
+    return OK;
+}
+
+/*
+ * Check "type" which is the first argument of repeat() (string or number or
+ * list or any)
+ */
+    static int
+arg_repeat1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_NUMBER
+	    || type->tt_type == VAR_LIST)
+	return OK;
+
+    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" which is the first argument of slice() (list or blob or string
+ * or any)
+ */
+    static int
+arg_slice1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_BLOB
+	    || type->tt_type == VAR_STRING)
+	return OK;
+
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" which is the first argument of count() (string or list or dict
+ * or any)
+ */
+    static int
+arg_count1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_DICT)
+	return OK;
+
+    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" which is the first argument of cursor() (number or string or
+ * list or any)
+ */
+    static int
+arg_cursor1(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_NUMBER
+	    || type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_LIST)
+	return OK;
+
+    arg_type_mismatch(&t_number, type, context->arg_idx + 1);
+    return FAIL;
+}
 
 /*
  * Lists of functions that check the argument types of a builtin function.
  */
-argcheck_T arg1_string[] = {arg_string};
-argcheck_T arg1_number[] = {arg_number};
-argcheck_T arg1_dict[] = {arg_dict_any};
-argcheck_T arg1_list_nr[] = {arg_list_number};
-argcheck_T arg1_list_string[] = {arg_list_string};
-argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
-argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
-argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
-argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
-argcheck_T arg1_list_or_blob[] = {arg_list_or_blob};
-argcheck_T arg1_chan_or_job[] = {arg_chan_or_job};
-argcheck_T arg2_float_or_nr[] = {arg_float_or_nr, arg_float_or_nr};
-argcheck_T arg2_number[] = {arg_number, arg_number};
-argcheck_T arg2_string[] = {arg_string, arg_string};
-argcheck_T arg2_list_nr[] = {arg_list_number, arg_list_number};
-argcheck_T arg2_dict_string[] = {arg_dict_any, arg_string};
-argcheck_T arg2_dict_string_or_nr[] = {arg_dict_any, arg_string_or_nr};
-argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
-argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
-argcheck_T arg2_str_or_nr_or_list_dict[] = {arg_str_or_nr_or_list, arg_dict_any};
-argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
-argcheck_T arg3_string[] = {arg_string, arg_string, arg_string};
-argcheck_T arg3_number[] = {arg_number, arg_number, arg_number};
-argcheck_T arg3_string_nr_bool[] = {arg_string, arg_number, arg_bool};
-argcheck_T arg3_string_string_nr[] = {arg_string, arg_string, arg_number};
-argcheck_T arg2_execute[] = {arg_string_or_list_string, arg_string};
-argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
-argcheck_T arg2_setline[] = {arg_string_or_nr, arg_string_or_list_any};
-argcheck_T arg3_setbufline[] = {arg_string_or_nr, arg_string_or_nr, arg_string_or_list_any};
-argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
-argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
-argcheck_T arg3_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
+static argcheck_T arg1_bool[] = {arg_bool};
+static argcheck_T arg1_buffer[] = {arg_buffer};
+static argcheck_T arg1_buffer_or_dict_any[] = {arg_buffer_or_dict_any};
+static argcheck_T arg1_chan_or_job[] = {arg_chan_or_job};
+static argcheck_T arg1_dict_any[] = {arg_dict_any};
+static argcheck_T arg1_dict_or_string[] = {arg_dict_any_or_string};
+static argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
+static argcheck_T arg1_job[] = {arg_job};
+static argcheck_T arg1_list_any[] = {arg_list_any};
+static argcheck_T arg1_list_number[] = {arg_list_number};
+static argcheck_T arg1_list_or_blob[] = {arg_list_or_blob};
+static argcheck_T arg1_list_or_dict[] = {arg_list_or_dict};
+static argcheck_T arg1_list_string[] = {arg_list_string};
+static argcheck_T arg1_lnum[] = {arg_lnum};
+static argcheck_T arg1_number[] = {arg_number};
+static argcheck_T arg1_string[] = {arg_string};
+static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
+static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
+static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
+static argcheck_T arg2_any_buffer[] = {NULL, arg_buffer};
+static argcheck_T arg2_buffer_any[] = {arg_buffer, NULL};
+static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
+static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
+static argcheck_T arg2_buffer_lnum[] = {arg_buffer, arg_lnum};
+static argcheck_T arg2_buffer_number[] = {arg_buffer, arg_number};
+static argcheck_T arg2_buffer_string[] = {arg_buffer, arg_string};
+static argcheck_T arg2_chan_or_job_dict[] = {arg_chan_or_job, arg_dict_any};
+static argcheck_T arg2_chan_or_job_string[] = {arg_chan_or_job, arg_string};
+static argcheck_T arg2_dict_any_string_or_nr[] = {arg_dict_any, arg_string_or_nr};
+static argcheck_T arg2_dict_string[] = {arg_dict_any, arg_string};
+static argcheck_T arg2_float_or_nr[] = {arg_float_or_nr, arg_float_or_nr};
+static argcheck_T arg2_job_dict[] = {arg_job, arg_dict_any};
+static argcheck_T arg2_job_string_or_number[] = {arg_job, arg_string_or_nr};
+static argcheck_T arg2_list_any_number[] = {arg_list_any, arg_number};
+static argcheck_T arg2_list_any_string[] = {arg_list_any, arg_string};
+static argcheck_T arg2_list_number[] = {arg_list_number, arg_list_number};
+static argcheck_T arg2_list_number_bool[] = {arg_list_number, arg_bool};
+static argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
+static argcheck_T arg2_lnum[] = {arg_lnum, arg_lnum};
+static argcheck_T arg2_lnum_number[] = {arg_lnum, arg_number};
+static argcheck_T arg2_number[] = {arg_number, arg_number};
+static argcheck_T arg2_number_any[] = {arg_number, NULL};
+static argcheck_T arg2_number_bool[] = {arg_number, arg_bool};
+static argcheck_T arg2_number_dict_any[] = {arg_number, arg_dict_any};
+static argcheck_T arg2_number_list[] = {arg_number, arg_list_any};
+static argcheck_T arg2_number_string[] = {arg_number, arg_string};
+static argcheck_T arg2_number_string_or_list[] = {arg_number, arg_string_or_list_any};
+static argcheck_T arg2_str_or_nr_or_list_dict[] = {arg_str_or_nr_or_list, arg_dict_any};
+static argcheck_T arg2_string[] = {arg_string, arg_string};
+static argcheck_T arg2_string_any[] = {arg_string, NULL};
+static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
+static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
+static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
+static argcheck_T arg2_string_list_number[] = {arg_string, arg_list_number};
+static argcheck_T arg2_string_number[] = {arg_string, arg_number};
+static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
+static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
+static argcheck_T arg3_any_list_dict[] = {NULL, arg_list_any, arg_dict_any};
+static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
+static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
+static argcheck_T arg3_buffer_string_any[] = {arg_buffer, arg_string, NULL};
+static argcheck_T arg3_buffer_string_dict[] = {arg_buffer, arg_string, arg_dict_any};
+static argcheck_T arg3_dict_number_number[] = {arg_dict_any, arg_number, arg_number};
+static argcheck_T arg3_list_string_dict[] = {arg_list_any, arg_string, arg_dict_any};
+static argcheck_T arg3_lnum_number_bool[] = {arg_lnum, arg_number, arg_bool};
+static argcheck_T arg3_number[] = {arg_number, arg_number, arg_number};
+static argcheck_T arg3_number_any_dict[] = {arg_number, NULL, arg_dict_any};
+static argcheck_T arg3_number_number_dict[] = {arg_number, arg_number, arg_dict_any};
+static argcheck_T arg3_number_string_any[] = {arg_number, arg_string, NULL};
+static argcheck_T arg3_number_string_buffer[] = {arg_number, arg_string, arg_buffer};
+static argcheck_T arg3_number_string_string[] = {arg_number, arg_string, arg_string};
+static argcheck_T arg3_string[] = {arg_string, arg_string, arg_string};
+static argcheck_T arg3_string_any_dict[] = {arg_string, NULL, arg_dict_any};
+static argcheck_T arg3_string_any_string[] = {arg_string, NULL, arg_string};
+static argcheck_T arg3_string_bool_bool[] = {arg_string, arg_bool, arg_bool};
+static argcheck_T arg3_string_bool_dict[] = {arg_string, arg_bool, arg_dict_any};
+static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool};
+static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
+static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
+static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
+static argcheck_T arg3_string_string_nr[] = {arg_string, arg_string, arg_number};
+static argcheck_T arg4_list_number_number_number[] = {arg_list_string, arg_number, arg_number, arg_number};
+static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
+static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NULL, arg_string};
+static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
+static argcheck_T arg5_number[] = {arg_number, arg_number, arg_number, arg_number, arg_number};
+/* Function specific argument types (not covered by the above) */
+static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, NULL, arg_number, arg_string};
+static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, arg_float_or_nr, arg_string};
+static argcheck_T arg4_browse[] = {arg_bool, arg_string, arg_string, arg_string};
+static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, NULL, arg_dict_any};
+static argcheck_T arg23_chanraw[] = {arg_chan_or_job, arg_string_or_blob, arg_dict_any};
+static argcheck_T arg24_count[] = {arg_count1, NULL, arg_bool, arg_number};
+static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
+static argcheck_T arg12_deepcopy[] = {NULL, arg_bool};
+static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
+static argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
+static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
+static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, NULL};
+static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
+static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
+static argcheck_T arg24_index[] = {arg_list_or_blob, arg_item_of_prev, arg_number, arg_bool};
+static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
+static argcheck_T arg1_len[] = {arg_len1};
+static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
+static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
+static argcheck_T arg2_mapfilter[] = {arg_list_or_dict_or_blob, NULL};
+static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
+static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
+static argcheck_T arg119_printf[] = {arg_string_or_nr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static argcheck_T arg23_reduce[] = {arg_list_or_blob, NULL, NULL};
+static argcheck_T arg24_remote_expr[] = {arg_string, arg_string, arg_string, arg_number};
+static argcheck_T arg23_remove[] = {arg_list_or_dict_or_blob, arg_remove2, arg_number};
+static argcheck_T arg2_repeat[] = {arg_repeat1, arg_number};
+static argcheck_T arg15_search[] = {arg_string, arg_string, arg_number, arg_number, NULL};
+static argcheck_T arg37_searchpair[] = {arg_string, arg_string, arg_string, arg_string, NULL, arg_number, arg_number};
+static argcheck_T arg3_setbufline[] = {arg_buffer, arg_lnum, arg_str_or_nr_or_list};
+static argcheck_T arg2_setline[] = {arg_lnum, NULL};
+static argcheck_T arg24_setloclist[] = {arg_number, arg_list_any, arg_string, arg_dict_any};
+static argcheck_T arg13_setqflist[] = {arg_list_any, arg_string, arg_dict_any};
+static argcheck_T arg23_settagstack[] = {arg_number, arg_dict_any, arg_string};
+static argcheck_T arg02_sign_getplaced[] = {arg_buffer, arg_dict_any};
+static argcheck_T arg45_sign_place[] = {arg_number, arg_string, arg_string, arg_buffer, arg_dict_any};
+static argcheck_T arg23_slice[] = {arg_slice1, arg_number, arg_number};
+static argcheck_T arg13_sortuniq[] = {arg_list_any, NULL, arg_dict_any};
+static argcheck_T arg24_strpart[] = {arg_string, arg_number, arg_number, arg_bool};
+static argcheck_T arg12_system[] = {arg_string, arg_str_or_nr_or_list};
+static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
+static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
+static argcheck_T arg4_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
+
 
 /*
  * Functions that return the return type of a builtin function.
@@ -555,6 +877,12 @@ ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
 ret_list_items(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_list_list_any;
+}
+
+    static type_T *
+ret_list_string_items(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_list_list_string;
 }
     static type_T *
 ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
@@ -758,13 +1086,13 @@ static funcentry_T global_functions[] =
 			ret_any,	    FLOAT_FUNC(f_abs)},
     {"acos",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_acos)},
-    {"add",		2, 2, FEARG_1,	    NULL /* arg2_listblob_item */,
+    {"add",		2, 2, FEARG_1,	    arg2_listblob_item,
 			ret_first_arg,	    f_add},
     {"and",		2, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_and},
-    {"append",		2, 2, FEARG_2,	    NULL,
+    {"append",		2, 2, FEARG_2,	    arg2_setline,
 			ret_number_bool,    f_append},
-    {"appendbufline",	3, 3, FEARG_3,	    NULL,
+    {"appendbufline",	3, 3, FEARG_3,	    arg3_setbufline,
 			ret_number_bool,    f_appendbufline},
     {"argc",		0, 1, 0,	    arg1_number,
 			ret_number,	    f_argc},
@@ -776,7 +1104,7 @@ static funcentry_T global_functions[] =
 			ret_argv,	    f_argv},
     {"asin",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_asin)},
-    {"assert_beeps",	1, 2, FEARG_1,	    NULL,
+    {"assert_beeps",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_assert_beeps},
     {"assert_equal",	2, 3, FEARG_2,	    NULL,
 			ret_number_bool,    f_assert_equal},
@@ -784,15 +1112,15 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_assert_equalfile},
     {"assert_exception", 1, 2, 0,	    arg2_string,
 			ret_number_bool,    f_assert_exception},
-    {"assert_fails",	1, 5, FEARG_1,	    NULL,
+    {"assert_fails",	1, 5, FEARG_1,	    arg15_assert_fails,
 			ret_number_bool,    f_assert_fails},
     {"assert_false",	1, 2, FEARG_1,	    NULL,
 			ret_number_bool,    f_assert_false},
-    {"assert_inrange",	3, 4, FEARG_3,	    NULL,
+    {"assert_inrange",	3, 4, FEARG_3,	    arg34_assert_inrange,
 			ret_number_bool,    f_assert_inrange},
     {"assert_match",	2, 3, FEARG_2,	    arg3_string,
 			ret_number_bool,    f_assert_match},
-    {"assert_nobeep",	1, 2, FEARG_1,	    NULL,
+    {"assert_nobeep",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_assert_nobeep},
     {"assert_notequal",	2, 3, FEARG_2,	    NULL,
 			ret_number_bool,    f_assert_notequal},
@@ -830,41 +1158,41 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"browse",		4, 4, 0,	    NULL,
+    {"browse",		4, 4, 0,	    arg4_browse,
 			ret_string,	    f_browse},
     {"browsedir",	2, 2, 0,	    arg2_string,
 			ret_string,	    f_browsedir},
     {"bufadd",		1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_bufadd},
-    {"bufexists",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"bufexists",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_number_bool,    f_bufexists},
-    {"buffer_exists",	1, 1, FEARG_1,	    arg1_string_or_nr,	// obsolete
+    {"buffer_exists",	1, 1, FEARG_1,	    arg1_buffer,	// obsolete
 			ret_number_bool,    f_bufexists},
-    {"buffer_name",	0, 1, FEARG_1,	    arg1_string_or_nr,	// obsolete
+    {"buffer_name",	0, 1, FEARG_1,	    arg1_buffer,	// obsolete
 			ret_string,	    f_bufname},
-    {"buffer_number",	0, 1, FEARG_1,	    NULL,	// obsolete
+    {"buffer_number",	0, 1, FEARG_1,	    arg1_buffer,	// obsolete
 			ret_number,	    f_bufnr},
-    {"buflisted",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"buflisted",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_number_bool,    f_buflisted},
-    {"bufload",		1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"bufload",		1, 1, FEARG_1,	    arg1_buffer,
 			ret_void,	    f_bufload},
-    {"bufloaded",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"bufloaded",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_number_bool,    f_bufloaded},
-    {"bufname",		0, 1, FEARG_1,	    arg1_string_or_nr,
+    {"bufname",		0, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    f_bufname},
-    {"bufnr",		0, 2, FEARG_1,	    NULL,
+    {"bufnr",		0, 2, FEARG_1,	    arg2_buffer_bool,
 			ret_number,	    f_bufnr},
-    {"bufwinid",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"bufwinid",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_number,	    f_bufwinid},
-    {"bufwinnr",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"bufwinnr",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_number,	    f_bufwinnr},
     {"byte2line",	1, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_byte2line},
-    {"byteidx",		2, 2, FEARG_1,	    NULL,
+    {"byteidx",		2, 2, FEARG_1,	    arg2_string_number,
 			ret_number,	    f_byteidx},
-    {"byteidxcomp",	2, 2, FEARG_1,	    NULL,
+    {"byteidxcomp",	2, 2, FEARG_1,	    arg2_string_number,
 			ret_number,	    f_byteidxcomp},
-    {"call",		2, 3, FEARG_1,	    NULL,
+    {"call",		2, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_any,	    f_call},
     {"ceil",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_ceil)},
@@ -874,63 +1202,63 @@ static funcentry_T global_functions[] =
 			ret_void,	    JOB_FUNC(f_ch_close)},
     {"ch_close_in",	1, 1, FEARG_1,	    arg1_chan_or_job,
 			ret_void,	    JOB_FUNC(f_ch_close_in)},
-    {"ch_evalexpr",	2, 3, FEARG_1,	    NULL,
+    {"ch_evalexpr",	2, 3, FEARG_1,	    arg23_chanexpr,
 			ret_any,	    JOB_FUNC(f_ch_evalexpr)},
-    {"ch_evalraw",	2, 3, FEARG_1,	    NULL,
+    {"ch_evalraw",	2, 3, FEARG_1,	    arg23_chanraw,
 			ret_any,	    JOB_FUNC(f_ch_evalraw)},
-    {"ch_getbufnr",	2, 2, FEARG_1,	    NULL,
+    {"ch_getbufnr",	2, 2, FEARG_1,	    arg2_chan_or_job_string,
 			ret_number,	    JOB_FUNC(f_ch_getbufnr)},
-    {"ch_getjob",	1, 1, FEARG_1,	    NULL,
+    {"ch_getjob",	1, 1, FEARG_1,	    arg1_chan_or_job,
 			ret_job,	    JOB_FUNC(f_ch_getjob)},
     {"ch_info",		1, 1, FEARG_1,	    arg1_chan_or_job,
 			ret_dict_any,	    JOB_FUNC(f_ch_info)},
-    {"ch_log",		1, 2, FEARG_1,	    NULL,
+    {"ch_log",		1, 2, FEARG_1,	    arg2_string_chan_or_job,
 			ret_void,	    JOB_FUNC(f_ch_log)},
     {"ch_logfile",	1, 2, FEARG_1,	    arg2_string,
 			ret_void,	    JOB_FUNC(f_ch_logfile)},
     {"ch_open",		1, 2, FEARG_1,	    arg2_string_dict,
 			ret_channel,	    JOB_FUNC(f_ch_open)},
-    {"ch_read",		1, 2, FEARG_1,	    NULL,
+    {"ch_read",		1, 2, FEARG_1,	    arg2_chan_or_job_dict,
 			ret_string,	    JOB_FUNC(f_ch_read)},
-    {"ch_readblob",	1, 2, FEARG_1,	    NULL,
+    {"ch_readblob",	1, 2, FEARG_1,	    arg2_chan_or_job_dict,
 			ret_blob,	    JOB_FUNC(f_ch_readblob)},
-    {"ch_readraw",	1, 2, FEARG_1,	    NULL,
+    {"ch_readraw",	1, 2, FEARG_1,	    arg2_chan_or_job_dict,
 			ret_string,	    JOB_FUNC(f_ch_readraw)},
-    {"ch_sendexpr",	2, 3, FEARG_1,	    NULL,
+    {"ch_sendexpr",	2, 3, FEARG_1,	    arg23_chanexpr,
 			ret_void,	    JOB_FUNC(f_ch_sendexpr)},
-    {"ch_sendraw",	2, 3, FEARG_1,	    NULL,
+    {"ch_sendraw",	2, 3, FEARG_1,	    arg23_chanraw,
 			ret_void,	    JOB_FUNC(f_ch_sendraw)},
-    {"ch_setoptions",	2, 2, FEARG_1,	    NULL,
+    {"ch_setoptions",	2, 2, FEARG_1,	    arg2_chan_or_job_dict,
 			ret_void,	    JOB_FUNC(f_ch_setoptions)},
-    {"ch_status",	1, 2, FEARG_1,	    NULL,
+    {"ch_status",	1, 2, FEARG_1,	    arg2_chan_or_job_dict,
 			ret_string,	    JOB_FUNC(f_ch_status)},
     {"changenr",	0, 0, 0,	    NULL,
 			ret_number,	    f_changenr},
-    {"char2nr",		1, 2, FEARG_1,	    NULL,
+    {"char2nr",		1, 2, FEARG_1,	    arg2_string_bool,
 			ret_number,	    f_char2nr},
     {"charclass",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_charclass},
     {"charcol",		1, 1, FEARG_1,	    arg1_string_or_list_any,
 			ret_number,	    f_charcol},
-    {"charidx",		2, 3, FEARG_1,	    arg3_string_nr_bool,
+    {"charidx",		2, 3, FEARG_1,	    arg3_string_number_bool,
 			ret_number,	    f_charidx},
     {"chdir",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_chdir},
-    {"cindent",		1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"cindent",		1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_cindent},
     {"clearmatches",	0, 1, FEARG_1,	    arg1_number,
 			ret_void,	    f_clearmatches},
     {"col",		1, 1, FEARG_1,	    arg1_string_or_list_any,
 			ret_number,	    f_col},
-    {"complete",	2, 2, FEARG_2,	    NULL,
+    {"complete",	2, 2, FEARG_2,	    arg2_number_list,
 			ret_void,	    f_complete},
-    {"complete_add",	1, 1, FEARG_1,	    NULL,
+    {"complete_add",	1, 1, FEARG_1,	    arg1_dict_or_string,
 			ret_number,	    f_complete_add},
     {"complete_check",	0, 0, 0,	    NULL,
 			ret_number_bool,    f_complete_check},
     {"complete_info",	0, 1, FEARG_1,	    arg1_list_string,
 			ret_dict_any,	    f_complete_info},
-    {"confirm",		1, 4, FEARG_1,	    NULL,
+    {"confirm",		1, 4, FEARG_1,	    arg4_string_string_number_string,
 			ret_number,	    f_confirm},
     {"copy",		1, 1, FEARG_1,	    NULL,
 			ret_first_arg,	    f_copy},
@@ -938,11 +1266,11 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_cos)},
     {"cosh",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_cosh)},
-    {"count",		2, 4, FEARG_1,	    NULL,
+    {"count",		2, 4, FEARG_1,	    arg24_count,
 			ret_number,	    f_count},
-    {"cscope_connection",0,3, 0,	    NULL,
+    {"cscope_connection",0,3, 0,	    arg3_number_string_string,
 			ret_number,	    f_cscope_connection},
-    {"cursor",		1, 3, FEARG_1,	    NULL,
+    {"cursor",		1, 3, FEARG_1,	    arg13_cursor,
 			ret_number,	    f_cursor},
     {"debugbreak",	1, 1, FEARG_1,	    arg1_number,
 			ret_number,
@@ -952,19 +1280,19 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"deepcopy",	1, 2, FEARG_1,	    NULL,
+    {"deepcopy",	1, 2, FEARG_1,	    arg12_deepcopy,
 			ret_first_arg,	    f_deepcopy},
     {"delete",		1, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_delete},
-    {"deletebufline",	2, 3, FEARG_1,	    NULL,
+    {"deletebufline",	2, 3, FEARG_1,	    arg3_buffer_lnum_lnum,
 			ret_number_bool,    f_deletebufline},
     {"did_filetype",	0, 0, 0,	    NULL,
 			ret_number_bool,    f_did_filetype},
-    {"diff_filler",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"diff_filler",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_diff_filler},
-    {"diff_hlID",	2, 2, FEARG_1,	    NULL,
+    {"diff_hlID",	2, 2, FEARG_1,	    arg2_lnum_number,
 			ret_number,	    f_diff_hlID},
-    {"echoraw",		1, 1, FEARG_1,	    NULL,
+    {"echoraw",		1, 1, FEARG_1,	    arg1_string,
 			ret_void,	    f_echoraw},
     {"empty",		1, 1, FEARG_1,	    NULL,
 			ret_number_bool,    f_empty},
@@ -978,7 +1306,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_eventhandler},
     {"executable",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_executable},
-    {"execute",		1, 2, FEARG_1,	    arg2_execute,
+    {"execute",		1, 2, FEARG_1,	    arg12_execute,
 			ret_string,	    f_execute},
     {"exepath",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_exepath},
@@ -986,7 +1314,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_exists},
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_exp)},
-    {"expand",		1, 3, FEARG_1,	    NULL,
+    {"expand",		1, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_any,	    f_expand},
     {"expandcmd",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_expandcmd},
@@ -1002,15 +1330,15 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_filereadable},
     {"filewritable",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_filewritable},
-    {"filter",		2, 2, FEARG_1,	    NULL,
+    {"filter",		2, 2, FEARG_1,	    arg2_mapfilter,
 			ret_first_arg,	    f_filter},
     {"finddir",		1, 3, FEARG_1,	    arg3_string_string_nr,
 			ret_string,	    f_finddir},
     {"findfile",	1, 3, FEARG_1,	    arg3_string_string_nr,
 			ret_string,	    f_findfile},
-    {"flatten",		1, 2, FEARG_1,	    NULL,
+    {"flatten",		1, 2, FEARG_1,	    arg2_list_any_number,
 			ret_list_any,	    f_flatten},
-    {"flattennew",	1, 2, FEARG_1,	    NULL,
+    {"flattennew",	1, 2, FEARG_1,	    arg2_list_any_number,
 			ret_list_any,	    f_flattennew},
     {"float2nr",	1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number,	    FLOAT_FUNC(f_float2nr)},
@@ -1022,45 +1350,45 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_fnameescape},
     {"fnamemodify",	2, 2, FEARG_1,	    arg2_string,
 			ret_string,	    f_fnamemodify},
-    {"foldclosed",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"foldclosed",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_foldclosed},
-    {"foldclosedend",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"foldclosedend",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_foldclosedend},
-    {"foldlevel",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"foldlevel",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_foldlevel},
     {"foldtext",	0, 0, 0,	    NULL,
 			ret_string,	    f_foldtext},
-    {"foldtextresult",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"foldtextresult",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_string,	    f_foldtextresult},
     {"foreground",	0, 0, 0,	    NULL,
 			ret_void,	    f_foreground},
     {"fullcommand",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_fullcommand},
-    {"funcref",		1, 3, FEARG_1,	    NULL,
+    {"funcref",		1, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_func_any,	    f_funcref},
-    {"function",	1, 3, FEARG_1,	    NULL,
+    {"function",	1, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_f_function,	    f_function},
-    {"garbagecollect",	0, 1, 0,	    NULL,
+    {"garbagecollect",	0, 1, 0,	    arg1_bool,
 			ret_void,	    f_garbagecollect},
-    {"get",		2, 3, FEARG_1,	    NULL,
+    {"get",		2, 3, FEARG_1,	    arg23_get,
 			ret_any,	    f_get},
-    {"getbufinfo",	0, 1, FEARG_1,	    NULL,
+    {"getbufinfo",	0, 1, FEARG_1,	    arg1_buffer_or_dict_any,
 			ret_list_dict_any,  f_getbufinfo},
-    {"getbufline",	2, 3, FEARG_1,	    NULL,
+    {"getbufline",	2, 3, FEARG_1,	    arg3_buffer_lnum_lnum,
 			ret_list_string,    f_getbufline},
-    {"getbufvar",	2, 3, FEARG_1,	    NULL,
+    {"getbufvar",	2, 3, FEARG_1,	    arg3_buffer_string_any,
 			ret_any,	    f_getbufvar},
-    {"getchangelist",	0, 1, FEARG_1,	    arg1_string_or_nr,
+    {"getchangelist",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_list_any,	    f_getchangelist},
-    {"getchar",		0, 1, 0,	    NULL,
+    {"getchar",		0, 1, 0,	    arg1_bool,
 			ret_any,	    f_getchar},
     {"getcharmod",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcharmod},
-    {"getcharpos",	1, 1, FEARG_1,	    NULL,
+    {"getcharpos",	1, 1, FEARG_1,	    arg1_string,
 			ret_list_number,    f_getcharpos},
     {"getcharsearch",	0, 0, 0,	    NULL,
 			ret_dict_any,	    f_getcharsearch},
-    {"getcharstr",	0, 1, 0,	    NULL,
+    {"getcharstr",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_getcharstr},
     {"getcmdline",	0, 0, 0,	    NULL,
 			ret_string,	    f_getcmdline},
@@ -1070,7 +1398,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getcmdtype},
     {"getcmdwintype",	0, 0, 0,	    NULL,
 			ret_string,	    f_getcmdwintype},
-    {"getcompletion",	2, 3, FEARG_1,	    NULL,
+    {"getcompletion",	2, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_list_string,    f_getcompletion},
     {"getcurpos",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_getcurpos},
@@ -1078,6 +1406,10 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_getcursorcharpos},
     {"getcwd",		0, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_getcwd},
+    {"getdigraph",     1, 1, FEARG_1,      arg1_string,
+                        ret_string,         f_getdigraph},
+    {"getdigraphlist",  0, 1, FEARG_1,      arg1_number,
+                        ret_list_string_items, f_getdigraphlist},
     {"getenv",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_getenv},
     {"getfontname",	0, 1, 0,	    arg1_string,
@@ -1094,11 +1426,11 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_getimstatus},
     {"getjumplist",	0, 2, FEARG_1,	    arg2_number,
 			ret_list_any,	    f_getjumplist},
-    {"getline",		1, 2, FEARG_1,	    NULL,
+    {"getline",		1, 2, FEARG_1,	    arg2_lnum,
 			ret_f_getline,	    f_getline},
-    {"getloclist",	1, 2, 0,	    NULL,
+    {"getloclist",	1, 2, 0,	    arg2_number_dict_any,
 			ret_list_or_dict_1, f_getloclist},
-    {"getmarklist",	0, 1, FEARG_1,	    arg1_string_or_nr,
+    {"getmarklist",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_list_dict_any,  f_getmarklist},
     {"getmatches",	0, 1, 0,	    arg1_number,
 			ret_list_dict_any,  f_getmatches},
@@ -1108,9 +1440,9 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_getpid},
     {"getpos",		1, 1, FEARG_1,	    arg1_string,
 			ret_list_number,    f_getpos},
-    {"getqflist",	0, 1, 0,	    arg1_dict,
+    {"getqflist",	0, 1, 0,	    arg1_dict_any,
 			ret_list_or_dict_0, f_getqflist},
-    {"getreg",		0, 3, FEARG_1,	    NULL,
+    {"getreg",		0, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
@@ -1118,9 +1450,9 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getregtype},
     {"gettabinfo",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_dict_any,  f_gettabinfo},
-    {"gettabvar",	2, 3, FEARG_1,	    NULL,
+    {"gettabvar",	2, 3, FEARG_1,	    arg3_number_string_any,
 			ret_any,	    f_gettabvar},
-    {"gettabwinvar",	3, 4, FEARG_1,	    NULL,
+    {"gettabwinvar",	3, 4, FEARG_1,	    arg4_number_number_string_any,
 			ret_any,	    f_gettabwinvar},
     {"gettagstack",	0, 1, FEARG_1,	    arg1_number,
 			ret_dict_any,	    f_gettagstack},
@@ -1134,31 +1466,31 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_getwinposx},
     {"getwinposy",	0, 0, 0,	    NULL,
 			ret_number,	    f_getwinposy},
-    {"getwinvar",	2, 3, FEARG_1,	    NULL,
+    {"getwinvar",	2, 3, FEARG_1,	    arg3_number_string_any,
 			ret_any,	    f_getwinvar},
-    {"glob",		1, 4, FEARG_1,	    NULL,
+    {"glob",		1, 4, FEARG_1,	    arg14_glob,
 			ret_any,	    f_glob},
     {"glob2regpat",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_glob2regpat},
-    {"globpath",	2, 5, FEARG_2,	    NULL,
+    {"globpath",	2, 5, FEARG_2,	    arg25_globpath,
 			ret_any,	    f_globpath},
-    {"has",		1, 2, 0,	    NULL,
+    {"has",		1, 2, 0,	    arg2_string_bool,
 			ret_number_bool,    f_has},
-    {"has_key",		2, 2, FEARG_1,	    arg2_dict_string_or_nr,
+    {"has_key",		2, 2, FEARG_1,	    arg2_dict_any_string_or_nr,
 			ret_number_bool,    f_has_key},
     {"haslocaldir",	0, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_haslocaldir},
-    {"hasmapto",	1, 3, FEARG_1,	    NULL,
+    {"hasmapto",	1, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_number_bool,    f_hasmapto},
-    {"highlightID",	1, 1, FEARG_1,	    NULL,	// obsolete
+    {"highlightID",	1, 1, FEARG_1,	    arg1_string,	// obsolete
 			ret_number,	    f_hlID},
-    {"highlight_exists",1, 1, FEARG_1,	    NULL,	// obsolete
+    {"highlight_exists",1, 1, FEARG_1,	    arg1_string,	// obsolete
 			ret_number_bool,    f_hlexists},
     {"histadd",		2, 2, FEARG_2,	    arg2_string,
 			ret_number_bool,    f_histadd},
-    {"histdel",		1, 2, FEARG_1,	    NULL,
+    {"histdel",		1, 2, FEARG_1,	    arg2_string_string_or_number,
 			ret_number_bool,    f_histdel},
-    {"histget",		1, 2, FEARG_1,	    NULL,
+    {"histget",		1, 2, FEARG_1,	    arg2_string_number,
 			ret_string,	    f_histget},
     {"histnr",		1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_histnr},
@@ -1170,9 +1502,9 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_hostname},
     {"iconv",		3, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_iconv},
-    {"indent",		1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"indent",		1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_indent},
-    {"index",		2, 4, FEARG_1,	    NULL,
+    {"index",		2, 4, FEARG_1,	    arg24_index,
 			ret_number,	    f_index},
     {"input",		1, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_input},
@@ -1186,7 +1518,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_inputsave},
     {"inputsecret",	1, 2, FEARG_1,	    arg2_string,
 			ret_string,	    f_inputsecret},
-    {"insert",		2, 3, FEARG_1,	    arg3_insert,
+    {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
@@ -1196,25 +1528,25 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_isdirectory},
     {"isinf",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number,	    MATH_FUNC(f_isinf)},
-    {"islocked",	1, 1, FEARG_1,	    NULL,
+    {"islocked",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_islocked},
     {"isnan",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number_bool,    MATH_FUNC(f_isnan)},
-    {"items",		1, 1, FEARG_1,	    arg1_dict,
+    {"items",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_items,	    f_items},
-    {"job_getchannel",	1, 1, FEARG_1,	    NULL,
+    {"job_getchannel",	1, 1, FEARG_1,	    arg1_job,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
-    {"job_info",	0, 1, FEARG_1,	    NULL,
+    {"job_info",	0, 1, FEARG_1,	    arg1_job,
 			ret_job_info,	    JOB_FUNC(f_job_info)},
-    {"job_setoptions",	2, 2, FEARG_1,	    NULL,
+    {"job_setoptions",	2, 2, FEARG_1,	    arg2_job_dict,
 			ret_void,	    JOB_FUNC(f_job_setoptions)},
-    {"job_start",	1, 2, FEARG_1,	    NULL,
+    {"job_start",	1, 2, FEARG_1,	    arg2_string_or_list_dict,
 			ret_job,	    JOB_FUNC(f_job_start)},
-    {"job_status",	1, 1, FEARG_1,	    NULL,
+    {"job_status",	1, 1, FEARG_1,	    arg1_job,
 			ret_string,	    JOB_FUNC(f_job_status)},
-    {"job_stop",	1, 2, FEARG_1,	    NULL,
+    {"job_stop",	1, 2, FEARG_1,	    arg2_job_string_or_number,
 			ret_number_bool,    JOB_FUNC(f_job_stop)},
-    {"join",		1, 2, FEARG_1,	    NULL,
+    {"join",		1, 2, FEARG_1,	    arg2_list_any_string,
 			ret_string,	    f_join},
     {"js_decode",	1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_js_decode},
@@ -1224,27 +1556,27 @@ static funcentry_T global_functions[] =
 			ret_any,	    f_json_decode},
     {"json_encode",	1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_json_encode},
-    {"keys",		1, 1, FEARG_1,	    arg1_dict,
+    {"keys",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_string,    f_keys},
-    {"last_buffer_nr",	0, 0, 0,	    arg1_string_or_nr,	// obsolete
+    {"last_buffer_nr",	0, 0, 0,	    NULL,	// obsolete
 			ret_number,	    f_last_buffer_nr},
-    {"len",		1, 1, FEARG_1,	    NULL,
+    {"len",		1, 1, FEARG_1,	    arg1_len,
 			ret_number,	    f_len},
-    {"libcall",		3, 3, FEARG_3,	    NULL,
+    {"libcall",		3, 3, FEARG_3,	    arg3_libcall,
 			ret_string,	    f_libcall},
-    {"libcallnr",	3, 3, FEARG_3,	    NULL,
+    {"libcallnr",	3, 3, FEARG_3,	    arg3_libcall,
 			ret_number,	    f_libcallnr},
-    {"line",		1, 2, FEARG_1,	    NULL,
+    {"line",		1, 2, FEARG_1,	    arg2_string_number,
 			ret_number,	    f_line},
-    {"line2byte",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"line2byte",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_line2byte},
-    {"lispindent",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"lispindent",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_lispindent},
-    {"list2str",	1, 2, FEARG_1,	    NULL,
+    {"list2str",	1, 2, FEARG_1,	    arg2_list_number_bool,
 			ret_string,	    f_list2str},
-    {"listener_add",	1, 2, FEARG_2,	    NULL,
+    {"listener_add",	1, 2, FEARG_2,	    arg2_any_buffer,
 			ret_number,	    f_listener_add},
-    {"listener_flush",	0, 1, FEARG_1,	    arg1_string_or_nr,
+    {"listener_flush",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_void,	    f_listener_flush},
     {"listener_remove",	1, 1, FEARG_1,	    arg1_number,
 			ret_number_bool,    f_listener_remove},
@@ -1254,7 +1586,7 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_log)},
     {"log10",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_log10)},
-    {"luaeval",		1, 2, FEARG_1,	    NULL,
+    {"luaeval",		1, 2, FEARG_1,	    arg2_string_any,
 			ret_any,
 #ifdef FEAT_LUA
 		f_luaeval
@@ -1262,39 +1594,39 @@ static funcentry_T global_functions[] =
 		NULL
 #endif
 			},
-    {"map",		2, 2, FEARG_1,	    NULL,
+    {"map",		2, 2, FEARG_1,	    arg2_mapfilter,
 			ret_first_cont,	    f_map},
-    {"maparg",		1, 4, FEARG_1,	    NULL,
+    {"maparg",		1, 4, FEARG_1,	    arg14_maparg,
 			ret_maparg,	    f_maparg},
-    {"mapcheck",	1, 3, FEARG_1,	    NULL,
+    {"mapcheck",	1, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_string,	    f_mapcheck},
-    {"mapnew",		2, 2, FEARG_1,	    NULL,
+    {"mapnew",		2, 2, FEARG_1,	    arg2_mapfilter,
 			ret_first_cont,	    f_mapnew},
-    {"mapset",		3, 3, FEARG_1,	    NULL,
+    {"mapset",		3, 3, FEARG_1,	    arg3_string_bool_dict,
 			ret_void,	    f_mapset},
-    {"match",		2, 4, FEARG_1,	    NULL,
+    {"match",		2, 4, FEARG_1,	    arg4_match_func,
 			ret_any,	    f_match},
-    {"matchadd",	2, 5, FEARG_1,	    NULL,
+    {"matchadd",	2, 5, FEARG_1,	    arg25_matchadd,
 			ret_number,	    f_matchadd},
-    {"matchaddpos",	2, 5, FEARG_1,	    NULL,
+    {"matchaddpos",	2, 5, FEARG_1,	    arg25_matchaddpos,
 			ret_number,	    f_matchaddpos},
     {"matcharg",	1, 1, FEARG_1,	    arg1_number,
 			ret_list_string,    f_matcharg},
     {"matchdelete",	1, 2, FEARG_1,	    arg2_number,
 			ret_number_bool,    f_matchdelete},
-    {"matchend",	2, 4, FEARG_1,	    NULL,
+    {"matchend",	2, 4, FEARG_1,	    arg4_match_func,
 			ret_number,	    f_matchend},
-    {"matchfuzzy",	2, 3, FEARG_1,	    NULL,
+    {"matchfuzzy",	2, 3, FEARG_1,	    arg3_list_string_dict,
 			ret_list_string,    f_matchfuzzy},
-    {"matchfuzzypos",	2, 3, FEARG_1,	    NULL,
+    {"matchfuzzypos",	2, 3, FEARG_1,	    arg3_list_string_dict,
 			ret_list_any,	    f_matchfuzzypos},
-    {"matchlist",	2, 4, FEARG_1,	    NULL,
+    {"matchlist",	2, 4, FEARG_1,	    arg4_match_func,
 			ret_list_string,    f_matchlist},
-    {"matchstr",	2, 4, FEARG_1,	    NULL,
+    {"matchstr",	2, 4, FEARG_1,	    arg4_match_func,
 			ret_string,	    f_matchstr},
-    {"matchstrpos",	2, 4, FEARG_1,	    NULL,
+    {"matchstrpos",	2, 4, FEARG_1,	    arg4_match_func,
 			ret_list_any,	    f_matchstrpos},
-    {"max",		1, 1, FEARG_1,	    NULL,
+    {"max",		1, 1, FEARG_1,	    arg1_list_or_dict,
 			ret_number,	    f_max},
     {"menu_info",	1, 2, FEARG_1,	    arg2_string,
 			ret_dict_any,
@@ -1304,13 +1636,13 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"min",		1, 1, FEARG_1,	    NULL,
+    {"min",		1, 1, FEARG_1,	    arg1_list_or_dict,
 			ret_number,	    f_min},
     {"mkdir",		1, 3, FEARG_1,	    arg3_string_string_nr,
 			ret_number_bool,    f_mkdir},
-    {"mode",		0, 1, FEARG_1,	    NULL,
+    {"mode",		0, 1, FEARG_1,	    arg1_bool,
 			ret_string,	    f_mode},
-    {"mzeval",		1, 1, FEARG_1,	    NULL,
+    {"mzeval",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #ifdef FEAT_MZSCHEME
 	    f_mzeval
@@ -1318,15 +1650,15 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"nextnonblank",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"nextnonblank",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_nextnonblank},
-    {"nr2char",		1, 2, FEARG_1,	    NULL,
+    {"nr2char",		1, 2, FEARG_1,	    arg2_number_bool,
 			ret_string,	    f_nr2char},
     {"or",		2, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_or},
-    {"pathshorten",	1, 2, FEARG_1,	    NULL,
+    {"pathshorten",	1, 2, FEARG_1,	    arg2_string_number,
 			ret_string,	    f_pathshorten},
-    {"perleval",	1, 1, FEARG_1,	    NULL,
+    {"perleval",	1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #ifdef FEAT_PERL
 	    f_perleval
@@ -1338,27 +1670,27 @@ static funcentry_T global_functions[] =
 			ret_number,	    PROP_FUNC(f_popup_atcursor)},
     {"popup_beval",	2, 2, FEARG_1,	    arg2_str_or_nr_or_list_dict,
 			ret_number,	    PROP_FUNC(f_popup_beval)},
-    {"popup_clear",	0, 1, 0,	    NULL,
+    {"popup_clear",	0, 1, 0,	    arg1_bool,
 			ret_void,	    PROP_FUNC(f_popup_clear)},
-    {"popup_close",	1, 2, FEARG_1,	    NULL,
+    {"popup_close",	1, 2, FEARG_1,	    arg2_number_any,
 			ret_void,	    PROP_FUNC(f_popup_close)},
     {"popup_create",	2, 2, FEARG_1,	    arg2_str_or_nr_or_list_dict,
 			ret_number,	    PROP_FUNC(f_popup_create)},
     {"popup_dialog",	2, 2, FEARG_1,	    arg2_str_or_nr_or_list_dict,
 			ret_number,	    PROP_FUNC(f_popup_dialog)},
-    {"popup_filter_menu", 2, 2, 0,	    NULL,
+    {"popup_filter_menu", 2, 2, 0,	    arg2_number_string,
 			ret_bool,	    PROP_FUNC(f_popup_filter_menu)},
-    {"popup_filter_yesno", 2, 2, 0,	    NULL,
+    {"popup_filter_yesno", 2, 2, 0,	    arg2_number_string,
 			ret_bool,	    PROP_FUNC(f_popup_filter_yesno)},
     {"popup_findinfo",	0, 0, 0,	    NULL,
 			ret_number,	    PROP_FUNC(f_popup_findinfo)},
     {"popup_findpreview", 0, 0, 0,	    NULL,
 			ret_number,	    PROP_FUNC(f_popup_findpreview)},
-    {"popup_getoptions", 1, 1, FEARG_1,	    NULL,
+    {"popup_getoptions", 1, 1, FEARG_1,	    arg1_number,
 			ret_dict_any,	    PROP_FUNC(f_popup_getoptions)},
-    {"popup_getpos",	1, 1, FEARG_1,	    NULL,
+    {"popup_getpos",	1, 1, FEARG_1,	    arg1_number,
 			ret_dict_any,	    PROP_FUNC(f_popup_getpos)},
-    {"popup_hide",	1, 1, FEARG_1,	    NULL,
+    {"popup_hide",	1, 1, FEARG_1,	    arg1_number,
 			ret_void,	    PROP_FUNC(f_popup_hide)},
     {"popup_list",	0, 0, 0,	    NULL,
 			ret_list_number,    PROP_FUNC(f_popup_list)},
@@ -1366,39 +1698,39 @@ static funcentry_T global_functions[] =
 			ret_number,	    PROP_FUNC(f_popup_locate)},
     {"popup_menu",	2, 2, FEARG_1,	    arg2_str_or_nr_or_list_dict,
 			ret_number,	    PROP_FUNC(f_popup_menu)},
-    {"popup_move",	2, 2, FEARG_1,	    NULL,
+    {"popup_move",	2, 2, FEARG_1,	    arg2_number_dict_any,
 			ret_void,	    PROP_FUNC(f_popup_move)},
     {"popup_notification", 2, 2, FEARG_1,   arg2_str_or_nr_or_list_dict,
 			ret_number,	    PROP_FUNC(f_popup_notification)},
-    {"popup_setoptions", 2, 2, FEARG_1,	    NULL,
+    {"popup_setoptions", 2, 2, FEARG_1,	    arg2_number_dict_any,
 			ret_void,	    PROP_FUNC(f_popup_setoptions)},
-    {"popup_settext",	2, 2, FEARG_1,	    NULL,
+    {"popup_settext",	2, 2, FEARG_1,	    arg2_number_string_or_list,
 			ret_void,	    PROP_FUNC(f_popup_settext)},
-    {"popup_show",	1, 1, FEARG_1,	    NULL,
+    {"popup_show",	1, 1, FEARG_1,	    arg1_number,
 			ret_void,	    PROP_FUNC(f_popup_show)},
     {"pow",		2, 2, FEARG_1,	    arg2_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_pow)},
-    {"prevnonblank",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"prevnonblank",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_prevnonblank},
-    {"printf",		1, 19, FEARG_2,	    NULL,
+    {"printf",		1, 19, FEARG_2,	    arg119_printf,
 			ret_string,	    f_printf},
-    {"prompt_getprompt", 1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"prompt_getprompt", 1, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    JOB_FUNC(f_prompt_getprompt)},
-    {"prompt_setcallback", 2, 2, FEARG_1,   NULL,
+    {"prompt_setcallback", 2, 2, FEARG_1,   arg2_buffer_any,
 			ret_void,	    JOB_FUNC(f_prompt_setcallback)},
-    {"prompt_setinterrupt", 2, 2, FEARG_1,  NULL,
+    {"prompt_setinterrupt", 2, 2, FEARG_1,  arg2_buffer_any,
 			ret_void,	    JOB_FUNC(f_prompt_setinterrupt)},
-    {"prompt_setprompt", 2, 2, FEARG_1,	    NULL,
+    {"prompt_setprompt", 2, 2, FEARG_1,	    arg2_buffer_string,
 			ret_void,	    JOB_FUNC(f_prompt_setprompt)},
-    {"prop_add",	3, 3, FEARG_1,	    NULL,
+    {"prop_add",	3, 3, FEARG_1,	    arg3_number_number_dict,
 			ret_void,	    PROP_FUNC(f_prop_add)},
-    {"prop_clear",	1, 3, FEARG_1,	    NULL,
+    {"prop_clear",	1, 3, FEARG_1,	    arg3_number_number_dict,
 			ret_void,	    PROP_FUNC(f_prop_clear)},
     {"prop_find",	1, 2, FEARG_1,	    arg2_dict_string,
 			ret_dict_any,	    PROP_FUNC(f_prop_find)},
-    {"prop_list",	1, 2, FEARG_1,	    NULL,
+    {"prop_list",	1, 2, FEARG_1,	    arg2_number_dict_any,
 			ret_list_dict_any,  PROP_FUNC(f_prop_list)},
-    {"prop_remove",	1, 3, FEARG_1,	    NULL,
+    {"prop_remove",	1, 3, FEARG_1,	    arg3_dict_number_number,
 			ret_number,	    PROP_FUNC(f_prop_remove)},
     {"prop_type_add",	2, 2, FEARG_1,	    arg2_string_dict,
 			ret_void,	    PROP_FUNC(f_prop_type_add)},
@@ -1408,13 +1740,13 @@ static funcentry_T global_functions[] =
 			ret_void,	    PROP_FUNC(f_prop_type_delete)},
     {"prop_type_get",	1, 2, FEARG_1,	    arg2_string_dict,
 			ret_dict_any,	    PROP_FUNC(f_prop_type_get)},
-    {"prop_type_list",	0, 1, FEARG_1,	    NULL,
+    {"prop_type_list",	0, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_string,    PROP_FUNC(f_prop_type_list)},
     {"pum_getpos",	0, 0, 0,	    NULL,
 			ret_dict_number,    f_pum_getpos},
     {"pumvisible",	0, 0, 0,	    NULL,
 			ret_number_bool,    f_pumvisible},
-    {"py3eval",		1, 1, FEARG_1,	    NULL,
+    {"py3eval",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #ifdef FEAT_PYTHON3
 	    f_py3eval
@@ -1422,7 +1754,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 	    },
-    {"pyeval",		1, 1, FEARG_1,	    NULL,
+    {"pyeval",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #ifdef FEAT_PYTHON
 	    f_pyeval
@@ -1430,7 +1762,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"pyxeval",		1, 1, FEARG_1,	    NULL,
+    {"pyxeval",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 	    f_pyxeval
@@ -1438,47 +1770,47 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"rand",		0, 1, FEARG_1,	    arg1_list_nr,
+    {"rand",		0, 1, FEARG_1,	    arg1_list_number,
 			ret_number,	    f_rand},
     {"range",		1, 3, FEARG_1,	    arg3_number,
 			ret_list_number,    f_range},
     {"readblob",	1, 1, FEARG_1,	    arg1_string,
 			ret_blob,	    f_readblob},
-    {"readdir",		1, 3, FEARG_1,	    NULL,
+    {"readdir",		1, 3, FEARG_1,	    arg3_string_any_dict,
 			ret_list_string,    f_readdir},
-    {"readdirex",	1, 3, FEARG_1,	    NULL,
+    {"readdirex",	1, 3, FEARG_1,	    arg3_string_any_dict,
 			ret_list_dict_any,  f_readdirex},
     {"readfile",	1, 3, FEARG_1,	    arg3_string_string_nr,
 			ret_list_string,    f_readfile},
-    {"reduce",		2, 3, FEARG_1,	    NULL,
+    {"reduce",		2, 3, FEARG_1,	    arg23_reduce,
 			ret_any,	    f_reduce},
     {"reg_executing",	0, 0, 0,	    NULL,
 			ret_string,	    f_reg_executing},
     {"reg_recording",	0, 0, 0,	    NULL,
 			ret_string,	    f_reg_recording},
-    {"reltime",		0, 2, FEARG_1,	    arg2_list_nr,
+    {"reltime",		0, 2, FEARG_1,	    arg2_list_number,
 			ret_list_any,	    f_reltime},
-    {"reltimefloat",	1, 1, FEARG_1,	    arg1_list_nr,
+    {"reltimefloat",	1, 1, FEARG_1,	    arg1_list_number,
 			ret_float,	    FLOAT_FUNC(f_reltimefloat)},
-    {"reltimestr",	1, 1, FEARG_1,	    arg1_list_nr,
+    {"reltimestr",	1, 1, FEARG_1,	    arg1_list_number,
 			ret_string,	    f_reltimestr},
-    {"remote_expr",	2, 4, FEARG_1,	    NULL,
+    {"remote_expr",	2, 4, FEARG_1,	    arg24_remote_expr,
 			ret_string,	    f_remote_expr},
     {"remote_foreground", 1, 1, FEARG_1,    arg1_string,
 			ret_string,	    f_remote_foreground},
     {"remote_peek",	1, 2, FEARG_1,	    arg2_string,
 			ret_number,	    f_remote_peek},
-    {"remote_read",	1, 2, FEARG_1,	    NULL,
+    {"remote_read",	1, 2, FEARG_1,	    arg2_string_number,
 			ret_string,	    f_remote_read},
-    {"remote_send",	2, 3, FEARG_1,	    NULL,
+    {"remote_send",	2, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_remote_send},
     {"remote_startserver", 1, 1, FEARG_1,   arg1_string,
 			ret_void,	    f_remote_startserver},
-    {"remove",		2, 3, FEARG_1,	    NULL,
+    {"remove",		2, 3, FEARG_1,	    arg23_remove,
 			ret_remove,	    f_remove},
     {"rename",		2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_rename},
-    {"repeat",		2, 2, FEARG_1,	    NULL,
+    {"repeat",		2, 2, FEARG_1,	    arg2_repeat,
 			ret_first_arg,	    f_repeat},
     {"resolve",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_resolve},
@@ -1486,7 +1818,7 @@ static funcentry_T global_functions[] =
 			ret_first_arg,	    f_reverse},
     {"round",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_round)},
-    {"rubyeval",	1, 1, FEARG_1,	    NULL,
+    {"rubyeval",	1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #ifdef FEAT_RUBY
 	    f_rubyeval
@@ -1508,59 +1840,63 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_screenrow},
     {"screenstring",	2, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_screenstring},
-    {"search",		1, 5, FEARG_1,	    NULL,
+    {"search",		1, 5, FEARG_1,	    arg15_search,
 			ret_number,	    f_search},
-    {"searchcount",	0, 1, FEARG_1,	    arg1_dict,
+    {"searchcount",	0, 1, FEARG_1,	    arg1_dict_any,
 			ret_dict_any,	    f_searchcount},
-    {"searchdecl",	1, 3, FEARG_1,	    NULL,
+    {"searchdecl",	1, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_number_bool,    f_searchdecl},
-    {"searchpair",	3, 7, 0,	    NULL,
+    {"searchpair",	3, 7, 0,	    arg37_searchpair,
 			ret_number,	    f_searchpair},
-    {"searchpairpos",	3, 7, 0,	    NULL,
+    {"searchpairpos",	3, 7, 0,	    arg37_searchpair,
 			ret_list_number,    f_searchpairpos},
-    {"searchpos",	1, 5, FEARG_1,	    NULL,
+    {"searchpos",	1, 5, FEARG_1,	    arg15_search,
 			ret_list_number,    f_searchpos},
     {"server2client",	2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_server2client},
     {"serverlist",	0, 0, 0,	    NULL,
 			ret_string,	    f_serverlist},
-    {"setbufline",	3, 3, FEARG_3,	    NULL,
+    {"setbufline",	3, 3, FEARG_3,	    arg3_setbufline,
 			ret_number_bool,    f_setbufline},
-    {"setbufvar",	3, 3, FEARG_3,	    NULL,
+    {"setbufvar",	3, 3, FEARG_3,	    arg3_buffer_string_any,
 			ret_void,	    f_setbufvar},
-    {"setcellwidths",	1, 1, FEARG_1,	    NULL,
+    {"setcellwidths",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_void,	    f_setcellwidths},
-    {"setcharpos",	2, 2, FEARG_2,	    NULL,
+    {"setcharpos",	2, 2, FEARG_2,	    arg2_string_list_number,
 			ret_number_bool,    f_setcharpos},
-    {"setcharsearch",	1, 1, FEARG_1,	    arg1_dict,
+    {"setcharsearch",	1, 1, FEARG_1,	    arg1_dict_any,
 			ret_void,	    f_setcharsearch},
     {"setcmdpos",	1, 1, FEARG_1,	    arg1_number,
 			ret_number_bool,    f_setcmdpos},
-    {"setcursorcharpos", 1, 3, FEARG_1,	    NULL,
+    {"setcursorcharpos", 1, 3, FEARG_1,	    arg13_cursor,
 			ret_number_bool,    f_setcursorcharpos},
-    {"setenv",		2, 2, FEARG_2,	    NULL,
+    {"setdigraph",	2, 2, FEARG_1,	    arg2_string_number,
+			ret_bool,           f_setdigraph},
+    {"setdigraphlist",	1, 1, FEARG_1,	    arg1_list_string,
+			ret_bool,	    f_setdigraphlist},
+    {"setenv",		2, 2, FEARG_2,	    arg2_string_any,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_setfperm},
-    {"setline",		2, 2, FEARG_2,	    NULL,
+    {"setline",		2, 2, FEARG_2,	    arg2_setline,
 			ret_number_bool,    f_setline},
-    {"setloclist",	2, 4, FEARG_2,	    NULL,
+    {"setloclist",	2, 4, FEARG_2,	    arg24_setloclist,
 			ret_number_bool,    f_setloclist},
-    {"setmatches",	1, 2, FEARG_1,	    NULL,
+    {"setmatches",	1, 2, FEARG_1,	    arg2_list_any_number,
 			ret_number_bool,    f_setmatches},
-    {"setpos",		2, 2, FEARG_2,	    NULL,
+    {"setpos",		2, 2, FEARG_2,	    arg2_string_list_number,
 			ret_number_bool,    f_setpos},
-    {"setqflist",	1, 3, FEARG_1,	    NULL,
+    {"setqflist",	1, 3, FEARG_1,	    arg13_setqflist,
 			ret_number_bool,    f_setqflist},
-    {"setreg",		2, 3, FEARG_2,	    NULL,
+    {"setreg",		2, 3, FEARG_2,	    arg3_string_any_string,
 			ret_number_bool,    f_setreg},
-    {"settabvar",	3, 3, FEARG_3,	    NULL,
+    {"settabvar",	3, 3, FEARG_3,	    arg3_number_string_any,
 			ret_void,	    f_settabvar},
-    {"settabwinvar",	4, 4, FEARG_4,	    NULL,
+    {"settabwinvar",	4, 4, FEARG_4,	    arg4_number_number_string_any,
 			ret_void,	    f_settabwinvar},
-    {"settagstack",	2, 3, FEARG_2,	    NULL,
+    {"settagstack",	2, 3, FEARG_2,	    arg23_settagstack,
 			ret_number_bool,    f_settagstack},
-    {"setwinvar",	3, 3, FEARG_3,	    NULL,
+    {"setwinvar",	3, 3, FEARG_3,	    arg3_number_string_any,
 			ret_void,	    f_setwinvar},
     {"sha256",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,
@@ -1570,27 +1906,27 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"shellescape",	1, 2, FEARG_1,	    NULL,
+    {"shellescape",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_string,	    f_shellescape},
     {"shiftwidth",	0, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_shiftwidth},
     {"sign_define",	1, 2, FEARG_1,	    arg2_string_or_list_dict,
 			ret_any,	    SIGN_FUNC(f_sign_define)},
-    {"sign_getdefined",	0, 1, FEARG_1,	    NULL,
+    {"sign_getdefined",	0, 1, FEARG_1,	    arg1_string,
 			ret_list_dict_any,  SIGN_FUNC(f_sign_getdefined)},
-    {"sign_getplaced",	0, 2, FEARG_1,	    NULL,
+    {"sign_getplaced",	0, 2, FEARG_1,	    arg02_sign_getplaced,
 			ret_list_dict_any,  SIGN_FUNC(f_sign_getplaced)},
-    {"sign_jump",	3, 3, FEARG_1,	    NULL,
+    {"sign_jump",	3, 3, FEARG_1,	    arg3_number_string_buffer,
 			ret_number,	    SIGN_FUNC(f_sign_jump)},
-    {"sign_place",	4, 5, FEARG_1,	    NULL,
+    {"sign_place",	4, 5, FEARG_1,	    arg45_sign_place,
 			ret_number,	    SIGN_FUNC(f_sign_place)},
-    {"sign_placelist",	1, 1, FEARG_1,	    NULL,
+    {"sign_placelist",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_list_number,    SIGN_FUNC(f_sign_placelist)},
     {"sign_undefine",	0, 1, FEARG_1,	    arg1_string_or_list_string,
 			ret_number_bool,    SIGN_FUNC(f_sign_undefine)},
     {"sign_unplace",	1, 2, FEARG_1,	    arg2_string_dict,
 			ret_number_bool,    SIGN_FUNC(f_sign_unplace)},
-    {"sign_unplacelist", 1, 2, FEARG_1,	    NULL,
+    {"sign_unplacelist", 1, 2, FEARG_1,	    arg1_list_any,
 			ret_list_number,    SIGN_FUNC(f_sign_unplacelist)},
     {"simplify",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_simplify},
@@ -1598,15 +1934,15 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_sin)},
     {"sinh",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_sinh)},
-    {"slice",		2, 3, FEARG_1,	    NULL,
+    {"slice",		2, 3, FEARG_1,	    arg23_slice,
 			ret_first_arg,	    f_slice},
-    {"sort",		1, 3, FEARG_1,	    NULL,
+    {"sort",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_sort},
     {"sound_clear",	0, 0, 0,	    NULL,
 			ret_void,	    SOUND_FUNC(f_sound_clear)},
-    {"sound_playevent",	1, 2, FEARG_1,	    NULL,
+    {"sound_playevent",	1, 2, FEARG_1,	    arg2_string_any,
 			ret_number,	    SOUND_FUNC(f_sound_playevent)},
-    {"sound_playfile",	1, 2, FEARG_1,	    NULL,
+    {"sound_playfile",	1, 2, FEARG_1,	    arg2_string_any,
 			ret_number,	    SOUND_FUNC(f_sound_playfile)},
     {"sound_stop",	1, 1, FEARG_1,	    arg1_number,
 			ret_void,	    SOUND_FUNC(f_sound_stop)},
@@ -1614,9 +1950,9 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_soundfold},
     {"spellbadword",	0, 1, FEARG_1,	    arg1_string,
 			ret_list_string,    f_spellbadword},
-    {"spellsuggest",	1, 3, FEARG_1,	    NULL,
+    {"spellsuggest",	1, 3, FEARG_1,	    arg3_string_number_bool,
 			ret_list_string,    f_spellsuggest},
-    {"split",		1, 3, FEARG_1,	    NULL,
+    {"split",		1, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_list_string,    f_split},
     {"sqrt",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_sqrt)},
@@ -1626,19 +1962,19 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_state},
     {"str2float",	1, 1, FEARG_1,	    arg1_string,
 			ret_float,	    FLOAT_FUNC(f_str2float)},
-    {"str2list",	1, 2, FEARG_1,	    NULL,
+    {"str2list",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_list_number,    f_str2list},
-    {"str2nr",		1, 3, FEARG_1,	    arg3_string_nr_bool,
+    {"str2nr",		1, 3, FEARG_1,	    arg3_string_number_bool,
 			ret_number,	    f_str2nr},
-    {"strcharlen",	1, 1, FEARG_1,	    NULL,
+    {"strcharlen",	1, 1, FEARG_1,	    arg1_string_or_nr,
 			ret_number,	    f_strcharlen},
-    {"strcharpart",	2, 4, FEARG_1,	    NULL,
+    {"strcharpart",	2, 4, FEARG_1,	    arg24_strpart,
 			ret_string,	    f_strcharpart},
-    {"strchars",	1, 2, FEARG_1,	    NULL,
+    {"strchars",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_number,	    f_strchars},
-    {"strdisplaywidth",	1, 2, FEARG_1,	    NULL,
+    {"strdisplaywidth",	1, 2, FEARG_1,	    arg2_string_number,
 			ret_number,	    f_strdisplaywidth},
-    {"strftime",	1, 2, FEARG_1,	    NULL,
+    {"strftime",	1, 2, FEARG_1,	    arg2_string_number,
 			ret_string,
 #ifdef HAVE_STRFTIME
 	    f_strftime
@@ -1646,7 +1982,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"strgetchar",	2, 2, FEARG_1,	    NULL,
+    {"strgetchar",	2, 2, FEARG_1,	    arg2_string_number,
 			ret_number,	    f_strgetchar},
     {"stridx",		2, 3, FEARG_1,	    arg3_string_string_nr,
 			ret_number,	    f_stridx},
@@ -1654,7 +1990,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_string},
     {"strlen",		1, 1, FEARG_1,	    arg1_string_or_nr,
 			ret_number,	    f_strlen},
-    {"strpart",		2, 4, FEARG_1,	    NULL,
+    {"strpart",		2, 4, FEARG_1,	    arg24_strpart,
 			ret_string,	    f_strpart},
     {"strptime",	2, 2, FEARG_1,	    arg2_string,
 			ret_number,
@@ -1670,33 +2006,33 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_strtrans},
     {"strwidth",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_strwidth},
-    {"submatch",	1, 2, FEARG_1,	    NULL,
+    {"submatch",	1, 2, FEARG_1,	    arg2_number_bool,
 			ret_string,	    f_submatch},
-    {"substitute",	4, 4, FEARG_1,	    NULL,
+    {"substitute",	4, 4, FEARG_1,	    arg4_string_string_any_string,
 			ret_string,	    f_substitute},
     {"swapinfo",	1, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_swapinfo},
-    {"swapname",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"swapname",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    f_swapname},
-    {"synID",		3, 3, 0,	    NULL,
+    {"synID",		3, 3, 0,	    arg3_lnum_number_bool,
 			ret_number,	    f_synID},
-    {"synIDattr",	2, 3, FEARG_1,	    NULL,
+    {"synIDattr",	2, 3, FEARG_1,	    arg3_number_string_string,
 			ret_string,	    f_synIDattr},
     {"synIDtrans",	1, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_synIDtrans},
-    {"synconcealed",	2, 2, 0,	    NULL,
+    {"synconcealed",	2, 2, 0,	    arg2_lnum_number,
 			ret_list_any,	    f_synconcealed},
-    {"synstack",	2, 2, 0,	    NULL,
+    {"synstack",	2, 2, 0,	    arg2_lnum_number,
 			ret_list_number,    f_synstack},
-    {"system",		1, 2, FEARG_1,	    NULL,
+    {"system",		1, 2, FEARG_1,	    arg12_system,
 			ret_string,	    f_system},
-    {"systemlist",	1, 2, FEARG_1,	    NULL,
+    {"systemlist",	1, 2, FEARG_1,	    arg12_system,
 			ret_list_string,    f_systemlist},
     {"tabpagebuflist",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_tabpagebuflist},
     {"tabpagenr",	0, 1, 0,	    arg1_string,
 			ret_number,	    f_tabpagenr},
-    {"tabpagewinnr",	1, 2, FEARG_1,	    NULL,
+    {"tabpagewinnr",	1, 2, FEARG_1,	    arg2_number_string,
 			ret_number,	    f_tabpagewinnr},
     {"tagfiles",	0, 0, 0,	    NULL,
 			ret_list_string,    f_tagfiles},
@@ -1708,15 +2044,15 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_tanh)},
     {"tempname",	0, 0, 0,	    NULL,
 			ret_string,	    f_tempname},
-    {"term_dumpdiff",	2, 3, FEARG_1,	    NULL,
+    {"term_dumpdiff",	2, 3, FEARG_1,	    arg3_string_string_dict,
 			ret_number,	    TERM_FUNC(f_term_dumpdiff)},
     {"term_dumpload",	1, 2, FEARG_1,	    arg2_string_dict,
 			ret_number,	    TERM_FUNC(f_term_dumpload)},
-    {"term_dumpwrite",	2, 3, FEARG_2,	    NULL,
+    {"term_dumpwrite",	2, 3, FEARG_2,	    arg3_buffer_string_dict,
 			ret_void,	    TERM_FUNC(f_term_dumpwrite)},
-    {"term_getaltscreen", 1, 1, FEARG_1,    arg1_string_or_nr,
+    {"term_getaltscreen", 1, 1, FEARG_1,    arg1_buffer,
 			ret_number,	    TERM_FUNC(f_term_getaltscreen)},
-    {"term_getansicolors", 1, 1, FEARG_1,   arg1_string_or_nr,
+    {"term_getansicolors", 1, 1, FEARG_1,   arg1_buffer,
 			ret_list_string,
 #if defined(FEAT_TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
 	    f_term_getansicolors
@@ -1724,31 +2060,31 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"term_getattr",	2, 2, FEARG_1,	    NULL,
+    {"term_getattr",	2, 2, FEARG_1,	    arg2_number_string,
 			ret_number,	    TERM_FUNC(f_term_getattr)},
-    {"term_getcursor",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"term_getcursor",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_list_any,	    TERM_FUNC(f_term_getcursor)},
-    {"term_getjob",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"term_getjob",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_job,	    TERM_FUNC(f_term_getjob)},
-    {"term_getline",	2, 2, FEARG_1,	    NULL,
+    {"term_getline",	2, 2, FEARG_1,	    arg2_buffer_lnum,
 			ret_string,	    TERM_FUNC(f_term_getline)},
-    {"term_getscrolled", 1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"term_getscrolled", 1, 1, FEARG_1,	    arg1_buffer,
 			ret_number,	    TERM_FUNC(f_term_getscrolled)},
-    {"term_getsize",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"term_getsize",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_list_number,    TERM_FUNC(f_term_getsize)},
-    {"term_getstatus",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"term_getstatus",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    TERM_FUNC(f_term_getstatus)},
-    {"term_gettitle",	1, 1, FEARG_1,	    arg1_string_or_nr,
+    {"term_gettitle",	1, 1, FEARG_1,	    arg1_buffer,
 			ret_string,	    TERM_FUNC(f_term_gettitle)},
-    {"term_gettty",	1, 2, FEARG_1,	    NULL,
+    {"term_gettty",	1, 2, FEARG_1,	    arg2_buffer_bool,
 			ret_string,	    TERM_FUNC(f_term_gettty)},
     {"term_list",	0, 0, 0,	    NULL,
 			ret_list_number,    TERM_FUNC(f_term_list)},
-    {"term_scrape",	2, 2, FEARG_1,	    NULL,
+    {"term_scrape",	2, 2, FEARG_1,	    arg2_buffer_lnum,
 			ret_list_dict_any,  TERM_FUNC(f_term_scrape)},
-    {"term_sendkeys",	2, 2, FEARG_1,	    NULL,
+    {"term_sendkeys",	2, 2, FEARG_1,	    arg2_buffer_string,
 			ret_void,	    TERM_FUNC(f_term_sendkeys)},
-    {"term_setansicolors", 2, 2, FEARG_1,   NULL,
+    {"term_setansicolors", 2, 2, FEARG_1,   arg2_buffer_list_any,
 			ret_void,
 #if defined(FEAT_TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
 	    f_term_setansicolors
@@ -1756,17 +2092,17 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"term_setapi",	2, 2, FEARG_1,	    NULL,
+    {"term_setapi",	2, 2, FEARG_1,	    arg2_buffer_string,
 			ret_void,	    TERM_FUNC(f_term_setapi)},
-    {"term_setkill",	2, 2, FEARG_1,	    NULL,
+    {"term_setkill",	2, 2, FEARG_1,	    arg2_buffer_string,
 			ret_void,	    TERM_FUNC(f_term_setkill)},
-    {"term_setrestore",	2, 2, FEARG_1,	    NULL,
+    {"term_setrestore",	2, 2, FEARG_1,	    arg2_buffer_string,
 			ret_void,	    TERM_FUNC(f_term_setrestore)},
-    {"term_setsize",	3, 3, FEARG_1,	    NULL,
+    {"term_setsize",	3, 3, FEARG_1,	    arg3_buffer_number_number,
 			ret_void,	    TERM_FUNC(f_term_setsize)},
-    {"term_start",	1, 2, FEARG_1,	    NULL,
+    {"term_start",	1, 2, FEARG_1,	    arg2_string_or_list_dict,
 			ret_number,	    TERM_FUNC(f_term_start)},
-    {"term_wait",	1, 2, FEARG_1,	    NULL,
+    {"term_wait",	1, 2, FEARG_1,	    arg2_buffer_number,
 			ret_void,	    TERM_FUNC(f_term_wait)},
     {"terminalprops",	0, 0, 0,	    NULL,
 			ret_dict_string,    f_terminalprops},
@@ -1782,9 +2118,9 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_garbagecollect_soon},
     {"test_getvalue",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_test_getvalue},
-    {"test_gui_drop_files",	4, 4, 0,	    NULL,
+    {"test_gui_drop_files",	4, 4, 0,    arg4_list_number_number_number,
 			ret_void,	    f_test_gui_drop_files},
-    {"test_gui_mouse_event",	5, 5, 0,	    NULL,
+    {"test_gui_mouse_event",	5, 5, 0,    arg5_number,
 			ret_void,	    f_test_gui_mouse_event},
     {"test_ignore_error", 1, 1, FEARG_1,    arg1_string,
 			ret_void,	    f_test_ignore_error},
@@ -1806,11 +2142,11 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_test_null_string},
     {"test_option_not_set", 1, 1, FEARG_1,  arg1_string,
 			ret_void,	    f_test_option_not_set},
-    {"test_override",	2, 2, FEARG_2,	    NULL,
+    {"test_override",	2, 2, FEARG_2,	    arg2_string_number,
 			ret_void,	    f_test_override},
     {"test_refcount",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_test_refcount},
-    {"test_scrollbar",	3, 3, FEARG_2,	    NULL,
+    {"test_scrollbar",	3, 3, FEARG_2,	    arg3_string_number_number,
 			ret_void,
 #ifdef FEAT_GUI
 	f_test_scrollbar
@@ -1830,9 +2166,9 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_void},
     {"timer_info",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_dict_any,  TIMER_FUNC(f_timer_info)},
-    {"timer_pause",	2, 2, FEARG_1,	    NULL,
+    {"timer_pause",	2, 2, FEARG_1,	    arg2_number_bool,
 			ret_void,	    TIMER_FUNC(f_timer_pause)},
-    {"timer_start",	2, 3, FEARG_1,	    NULL,
+    {"timer_start",	2, 3, FEARG_1,	    arg3_number_any_dict,
 			ret_number,	    TIMER_FUNC(f_timer_start)},
     {"timer_stop",	1, 1, FEARG_1,	    arg1_number,
 			ret_void,	    TIMER_FUNC(f_timer_stop)},
@@ -1856,13 +2192,13 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_undofile},
     {"undotree",	0, 0, 0,	    NULL,
 			ret_dict_any,	    f_undotree},
-    {"uniq",		1, 3, FEARG_1,	    NULL,
+    {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_list_any,	    f_uniq},
-    {"values",		1, 1, FEARG_1,	    arg1_dict,
+    {"values",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_any,	    f_values},
     {"virtcol",		1, 1, FEARG_1,	    arg1_string_or_list_any,
 			ret_number,	    f_virtcol},
-    {"visualmode",	0, 1, 0,	    NULL,
+    {"visualmode",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_visualmode},
     {"wildmenumode",	0, 0, 0,	    NULL,
 			ret_number,	    f_wildmenumode},
@@ -1882,7 +2218,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_win_id2win},
     {"win_screenpos",	1, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_win_screenpos},
-    {"win_splitmove",   2, 3, FEARG_1,	    NULL,
+    {"win_splitmove",   2, 3, FEARG_1,	    arg3_number_number_dict,
 			ret_number_bool,    f_win_splitmove},
     {"winbufnr",	1, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_winbufnr},
@@ -1900,7 +2236,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_winnr},
     {"winrestcmd",	0, 0, 0,	    NULL,
 			ret_string,	    f_winrestcmd},
-    {"winrestview",	1, 1, FEARG_1,	    arg1_dict,
+    {"winrestview",	1, 1, FEARG_1,	    arg1_dict_any,
 			ret_void,	    f_winrestview},
     {"winsaveview",	0, 0, 0,	    NULL,
 			ret_dict_number,    f_winsaveview},
@@ -1908,7 +2244,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_winwidth},
     {"wordcount",	0, 0, 0,	    NULL,
 			ret_dict_number,    f_wordcount},
-    {"writefile",	2, 3, FEARG_1,	    NULL,
+    {"writefile",	2, 3, FEARG_1,	    arg23_writefile,
 			ret_number_bool,    f_writefile},
     {"xor",		2, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_xor},
@@ -2400,6 +2736,11 @@ f_call(typval_T *argvars, typval_T *rettv)
     partial_T   *partial = NULL;
     dict_T	*selfdict = NULL;
 
+    if (in_vim9script()
+	    && (check_for_list_arg(argvars, 1) == FAIL
+		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
+	return;
+
     if (argvars[1].v_type != VAR_LIST)
     {
 	emsg(_(e_listreq));
@@ -2448,8 +2789,11 @@ f_changenr(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_char2nr(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
 	return;
+
     if (has_mbyte)
     {
 	int	utf8 = 0;
@@ -2563,7 +2907,13 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     char_u	*typestr;
     int		error = FALSE;
 
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| (check_for_opt_string_arg(argvars, 1) == FAIL
+		    || (argvars[1].v_type != VAR_UNKNOWN
+			&& (check_for_opt_number_arg(argvars, 2) == FAIL
+			    || (argvars[2].v_type != VAR_UNKNOWN
+				&& check_for_opt_string_arg(argvars, 3) == FAIL))))))
 	return;
 
     message = tv_get_string_chk(&argvars[0]);
@@ -2630,6 +2980,16 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
     long	line, col;
     long	coladd = 0;
     int		set_curswant = TRUE;
+
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_NUMBER
+		    && argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_LIST
+		    && check_for_number_arg(argvars, 0) == FAIL)
+		|| check_for_opt_number_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
+	return;
 
     rettv->vval.v_number = -1;
     if (argvars[0].v_type == VAR_LIST)
@@ -2737,6 +3097,10 @@ f_deepcopy(typval_T *argvars, typval_T *rettv)
     varnumber_T	noref = 0;
     int		copyID;
 
+    if (in_vim9script()
+	    && (check_for_opt_bool_arg(argvars, 1) == FAIL))
+	return;
+
     if (argvars[1].v_type != VAR_UNKNOWN)
 	noref = tv_get_bool_chk(&argvars[1], NULL);
     if (noref < 0 || noref > 1)
@@ -2763,8 +3127,12 @@ f_did_filetype(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_echoraw(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    char_u *str = tv_get_string_chk(&argvars[0]);
+    char_u *str;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    str = tv_get_string_chk(&argvars[0]);
     if (str != NULL && *str != NUL)
     {
 	out_str(str);
@@ -3182,7 +3550,16 @@ f_expand(typval_T *argvars, typval_T *rettv)
     char_u	*result;
 #ifdef BACKSLASH_IN_FILENAME
     char_u	*p_csl_save = p_csl;
+#endif
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
+#ifdef BACKSLASH_IN_FILENAME
     // avoid using 'completeslash' here
     p_csl = empty_option;
 #endif
@@ -3415,6 +3792,12 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     partial_T   *arg_pt = NULL;
     char_u	*trans_name = NULL;
     int		is_global = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_opt_list_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_dict_arg(argvars, 2) == FAIL)))
+	return;
 
     if (argvars[0].v_type == VAR_FUNC)
     {
@@ -4079,6 +4462,13 @@ f_getreg(typval_T *argvars, typval_T *rettv)
     int		arg2 = FALSE;
     int		return_list = FALSE;
     int		error = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
@@ -5362,6 +5752,11 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{NULL, 0}
     };
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
+	return;
+
     name = tv_get_string(&argvars[0]);
     for (i = 0; has_list[i].name != NULL; ++i)
 	if (STRICMP(name, has_list[i].name) == 0)
@@ -5650,6 +6045,13 @@ f_hasmapto(typval_T *argvars, typval_T *rettv)
     char_u	buf[NUMBUFLEN];
     int		abbr = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
     name = tv_get_string(&argvars[0]);
     if (argvars[1].v_type == VAR_UNKNOWN)
 	mode = (char_u *)"nvo";
@@ -5711,6 +6113,16 @@ f_index(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
 
     rettv->vval.v_number = -1;
+
+    if (in_vim9script()
+	    && (check_for_list_or_blob_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type == VAR_BLOB
+		    && check_for_number_arg(argvars, 1) == FAIL)
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 3) == FAIL)))
+	return;
+
     if (argvars[0].v_type == VAR_BLOB)
     {
 	typval_T	tv;
@@ -5956,6 +6368,10 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     dictitem_T	*di;
 
     rettv->vval.v_number = -1;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     end = get_lval(tv_get_string(&argvars[0]), NULL, &lv, FALSE, FALSE,
 			     GLV_NO_AUTOLOAD | GLV_READ_ONLY, FNE_CHECK_START);
     if (end != NULL && lv.ll_name != NULL)
@@ -6066,6 +6482,12 @@ libcall_common(typval_T *argvars UNUSED, typval_T *rettv, int type)
     if (check_restricted() || check_secure())
 	return;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_or_number_arg(argvars, 2) == FAIL))
+	return;
+
 #ifdef FEAT_LIBCALL
     // The first two args must be strings, otherwise it's meaningless
     if (argvars[0].v_type == VAR_STRING && argvars[1].v_type == VAR_STRING)
@@ -6121,6 +6543,11 @@ f_line(typval_T *argvars, typval_T *rettv)
     win_T	*wp;
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -6181,6 +6608,9 @@ f_luaeval(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     str = tv_get_string_buf(&argvars[0], buf);
     do_luaeval(str, argvars + 1, rettv);
 }
@@ -6192,6 +6622,15 @@ f_luaeval(typval_T *argvars, typval_T *rettv)
     static void
 f_maparg(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && (check_for_opt_bool_arg(argvars, 2) == FAIL
+			|| (argvars[2].v_type != VAR_UNKNOWN
+			    && check_for_opt_bool_arg(argvars, 3) == FAIL)))))
+		return;
+
     get_maparg(argvars, rettv, TRUE);
 }
 
@@ -6201,6 +6640,13 @@ f_maparg(typval_T *argvars, typval_T *rettv)
     static void
 f_mapcheck(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
     get_maparg(argvars, rettv, FALSE);
 }
 
@@ -6264,6 +6710,16 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = NULL;
     }
+
+    if (in_vim9script()
+	    && ((argvars[0].v_type != VAR_STRING
+		    && argvars[0].v_type != VAR_LIST
+		    && check_for_string_arg(argvars, 0) == FAIL)
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 3) == FAIL)))
+	goto theend;
 
     if (argvars[0].v_type == VAR_LIST)
     {
@@ -6643,6 +7099,11 @@ f_nr2char(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[NUMBUFLEN];
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
+	return;
+
     if (has_mbyte)
     {
 	int	utf8 = 0;
@@ -6725,6 +7186,9 @@ f_printf(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+
+    if (in_vim9script() && check_for_string_or_number_arg(argvars, 0) == FAIL)
+	return;
 
     // Get the required length, allocate the buffer and do it for real.
     did_emsg = FALSE;
@@ -7201,6 +7665,13 @@ f_repeat(typval_T *argvars, typval_T *rettv)
     char_u	*r;
     int		i;
 
+    if (in_vim9script()
+	    && (argvars[0].v_type != VAR_STRING
+		&& argvars[0].v_type != VAR_NUMBER
+		&& argvars[0].v_type != VAR_LIST
+		&& check_for_string_arg(argvars, 0) == FAIL))
+	return;
+
     n = (int)tv_get_number(&argvars[1]);
     if (argvars[0].v_type == VAR_LIST)
     {
@@ -7319,6 +7790,15 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     searchit_arg_T sia;
     int		use_skip = FALSE;
     pos_T	firstpos;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 2) == FAIL
+			|| (argvars[2].v_type != VAR_UNKNOWN
+			    && check_for_opt_number_arg(argvars, 3) == FAIL)))))
+	goto theend;
 
     pat = tv_get_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], flagsp);	// may set p_ws
@@ -7617,6 +8097,13 @@ f_searchdecl(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = 1;	// default: FAIL
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
     name = tv_get_string_chk(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -7645,6 +8132,18 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
     int		retval = 0;		// default: FAIL
     long	lnum_stop = 0;
     long	time_limit = 0;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL
+		|| check_for_opt_string_arg(argvars, 3) == FAIL
+		|| (argvars[3].v_type != VAR_UNKNOWN
+		    && argvars[4].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 5) == FAIL
+			|| (argvars[5].v_type != VAR_UNKNOWN
+			    && check_for_opt_number_arg(argvars, 6) == FAIL)))))
+	goto theend;
 
     // Get the three pattern arguments: start, middle, end. Will result in an
     // error if not a valid argument.
@@ -7965,6 +8464,11 @@ set_position(typval_T *argvars, typval_T *rettv, int charpos)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_list_arg(argvars, 1) == FAIL))
+	return;
+
     name = tv_get_string_chk(argvars);
     if (name != NULL)
     {
@@ -8062,8 +8566,12 @@ f_setenv(typval_T *argvars, typval_T *rettv UNUSED)
 {
     char_u   namebuf[NUMBUFLEN];
     char_u   valbuf[NUMBUFLEN];
-    char_u  *name = tv_get_string_buf(&argvars[0], namebuf);
+    char_u  *name;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    name = tv_get_string_buf(&argvars[0], namebuf);
     if (argvars[1].v_type == VAR_SPECIAL
 				      && argvars[1].vval.v_number == VVAL_NULL)
 	vim_unsetenv(name);
@@ -8162,6 +8670,11 @@ f_setreg(typval_T *argvars, typval_T *rettv)
     long	block_len;
     typval_T	*regcontents;
     int		pointreg;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 2) == FAIL))
+	return;
 
     pointreg = 0;
     regcontents = NULL;
@@ -8328,6 +8841,12 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_dict_arg(argvars, 1) == FAIL
+		|| check_for_opt_string_arg(argvars, 2) == FAIL))
+	return;
+
     // first argument: window number or id
     wp = find_win_by_nr_or_id(&argvars[0]);
     if (wp == NULL)
@@ -8394,8 +8913,14 @@ f_sha256(typval_T *argvars, typval_T *rettv)
     static void
 f_shellescape(typval_T *argvars, typval_T *rettv)
 {
-    int do_special = non_zero_arg(&argvars[1]);
+    int do_special;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
+	return;
+
+    do_special = non_zero_arg(&argvars[1]);
     rettv->vval.v_string = vim_strsave_shellescape(
 			   tv_get_string(&argvars[0]), do_special, do_special);
     rettv->v_type = VAR_STRING;
@@ -8537,6 +9062,13 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
     int		need_capital = FALSE;
     int		wo_spell_save = curwin->w_p_spell;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
     if (!curwin->w_p_spell)
     {
 	did_set_spelllang(curwin);
@@ -8615,6 +9147,13 @@ f_split(typval_T *argvars, typval_T *rettv)
     int		keepempty = FALSE;
     int		typeerr = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
     p_cpo = empty_option;
@@ -8685,6 +9224,11 @@ f_submatch(typval_T *argvars, typval_T *rettv)
     int		no;
     int		retList = 0;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
+	return;
+
     no = (int)tv_get_number_chk(&argvars[0], &error);
     if (error)
 	return;
@@ -8719,12 +9263,21 @@ f_substitute(typval_T *argvars, typval_T *rettv)
     char_u	patbuf[NUMBUFLEN];
     char_u	subbuf[NUMBUFLEN];
     char_u	flagsbuf[NUMBUFLEN];
-
-    char_u	*str = tv_get_string_chk(&argvars[0]);
-    char_u	*pat = tv_get_string_buf_chk(&argvars[1], patbuf);
+    char_u	*str;
+    char_u	*pat;
     char_u	*sub = NULL;
     typval_T	*expr = NULL;
-    char_u	*flg = tv_get_string_buf_chk(&argvars[3], flagsbuf);
+    char_u	*flg;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 3) == FAIL))
+	return;
+
+    str = tv_get_string_chk(&argvars[0]);
+    pat = tv_get_string_buf_chk(&argvars[1], patbuf);
+    flg = tv_get_string_buf_chk(&argvars[3], flagsbuf);
 
     if (argvars[2].v_type == VAR_FUNC || argvars[2].v_type == VAR_PARTIAL)
 	expr = &argvars[2];
@@ -8779,6 +9332,12 @@ f_synID(typval_T *argvars UNUSED, typval_T *rettv)
     int		trans;
     int		transerr = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_lnum_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_bool_arg(argvars, 2) == FAIL))
+	return;
+
     lnum = tv_get_lnum(argvars);		// -1 on type error
     col = (linenr_T)tv_get_number(&argvars[1]) - 1;	// -1 on type error
     trans = (int)tv_get_bool_chk(&argvars[2], &transerr);
@@ -8804,6 +9363,13 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	*mode;
     char_u	modebuf[NUMBUFLEN];
     int		modec;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| (check_for_string_arg(argvars, 1) == FAIL
+		    || (argvars[1].v_type != VAR_UNKNOWN
+			&& check_for_opt_string_arg(argvars, 2) == FAIL))))
+	return;
 
     id = (int)tv_get_number(&argvars[0]);
     what = tv_get_string(&argvars[1]);
@@ -8922,6 +9488,11 @@ f_synconcealed(typval_T *argvars UNUSED, typval_T *rettv)
 
     rettv_list_set(rettv, NULL);
 
+    if (in_vim9script()
+	    && (check_for_lnum_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
 #if defined(FEAT_SYN_HL) && defined(FEAT_CONCEAL)
     lnum = tv_get_lnum(argvars);		// -1 on type error
     col = (colnr_T)tv_get_number(&argvars[1]) - 1;	// -1 on type error
@@ -8977,6 +9548,11 @@ f_synstack(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 
     rettv_list_set(rettv, NULL);
+
+    if (in_vim9script()
+	    && (check_for_lnum_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
 
 #ifdef FEAT_SYN_HL
     lnum = tv_get_lnum(argvars);		// -1 on type error

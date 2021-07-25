@@ -852,7 +852,7 @@ available.
 job_getchannel({job})					 *job_getchannel()*
 		Get the channel handle that {job} is using.
 		To check if the job has no channel: >
-			if string(job_getchannel()) == 'channel fail'
+			if string(job_getchannel(job)) == 'channel fail'
 <
 		Can also be used as a |method|: >
 			GetJob()->job_getchannel()

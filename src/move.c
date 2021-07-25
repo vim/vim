@@ -1229,7 +1229,7 @@ textpos2screenpos(
     int		rowoff = 0;
     colnr_T	coloff = 0;
 
-    if (pos->lnum >= wp->w_topline && pos->lnum < wp->w_botline)
+    if (pos->lnum >= wp->w_topline && pos->lnum <= wp->w_botline)
     {
 	colnr_T off;
 	colnr_T col;
@@ -1256,11 +1256,11 @@ textpos2screenpos(
 	col -= wp->w_leftcol;
 	if (col >= wp->w_width)
 	    col = -1;
-	if (col >= 0)
+	if (col >= 0 && row + rowoff <= wp->w_height)
 	    coloff = col - scol + wp->w_wincol + 1;
 	else
-	    // character is left or right of the window
-	    row = scol = ccol = ecol = 0;
+	    // character is left, right or below of the window
+	    row = rowoff = scol = ccol = ecol = 0;
     }
     *rowp = W_WINROW(wp) + row + rowoff;
     *scolp = scol + coloff;
