@@ -2592,6 +2592,34 @@ def Test_for_loop()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_for_loop_with_closure()
+  var lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        var inloop = i
+        flist[i] = () => inloop
+      endfor
+      for i in range(5)
+        assert_equal(4, flist[i]())
+      endfor
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        var inloop = i
+        flist[i] = () => {
+              return inloop
+            }
+      endfor
+      for i in range(5)
+        assert_equal(4, flist[i]())
+      endfor
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_for_loop_fails()
   CheckDefAndScriptFailure2(['for '], 'E1097:', 'E690:')
   CheckDefAndScriptFailure2(['for x'], 'E1097:', 'E690:')

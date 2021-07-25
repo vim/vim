@@ -972,9 +972,6 @@ leave_block(cstack_T *cstack)
 		hide_script_var(si, i, func_defined);
 	}
 
-	// TODO: is this needed?
-	cstack->cs_script_var_len[cstack->cs_idx] = si->sn_var_vals.ga_len;
-
 	if (cstack->cs_idx == 0)
 	    si->sn_current_block_id = 0;
 	else
@@ -1178,6 +1175,8 @@ ex_while(exarg_T *eap)
 	    {
 		scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
 		int		i;
+		int		func_defined = cstack->cs_flags[cstack->cs_idx]
+								& CSF_FUNC_DEF;
 
 		// Any variables defined in the previous round are no longer
 		// visible.
@@ -1192,10 +1191,8 @@ ex_while(exarg_T *eap)
 		    if (sv->sv_name != NULL)
 			// Remove a variable declared inside the block, if it
 			// still exists, from sn_vars.
-			hide_script_var(si, i, FALSE);
+			hide_script_var(si, i, func_defined);
 		}
-		cstack->cs_script_var_len[cstack->cs_idx] =
-							si->sn_var_vals.ga_len;
 	    }
 	}
 	cstack->cs_flags[cstack->cs_idx] =
@@ -1222,14 +1219,7 @@ ex_while(exarg_T *eap)
 	    /*
 	     * ":for var in list-expr"
 	     */
-	    CLEAR_FIELD(evalarg);
-	    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
-	    if (getline_equal(eap->getline, eap->cookie, getsourceline))
-	    {
-		evalarg.eval_getline = eap->getline;
-		evalarg.eval_cookie = eap->cookie;
-	    }
-
+	    fill_evalarg_from_eap(&evalarg, eap, skip);
 	    if ((cstack->cs_lflags & CSL_HAD_LOOP) != 0)
 	    {
 		// Jumping here from a ":continue" or ":endfor": use the

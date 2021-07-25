@@ -1888,6 +1888,9 @@ typedef struct {
     // used when compiling a :def function, NULL otherwise
     cctx_T	*eval_cctx;
 
+    // used when executing commands from a script, NULL otherwise
+    cstack_T	*eval_cstack;
+
     // Used to collect lines while parsing them, so that they can be
     // concatenated later.  Used when "eval_ga.ga_itemsize" is not zero.
     // "eval_ga.ga_data" is a list of pointers to lines.

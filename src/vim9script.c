@@ -758,47 +758,72 @@ update_vim9_script_var(
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     hashitem_T	    *hi;
-    svar_T	    *sv;
+    svar_T	    *sv = NULL;
 
     if (create)
     {
-	sallvar_T	    *newsav;
+	sallvar_T   *newsav;
+	sallvar_T   *sav = NULL;
 
 	// Store a pointer to the typval_T, so that it can be found by index
 	// instead of using a hastab lookup.
 	if (ga_grow(&si->sn_var_vals, 1) == FAIL)
 	    return;
 
-	sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
-	newsav = (sallvar_T *)alloc_clear(
-				       sizeof(sallvar_T) + STRLEN(di->di_key));
-	if (newsav == NULL)
-	    return;
-
-	sv->sv_tv = &di->di_tv;
-	sv->sv_const = (flags & ASSIGN_FINAL) ? ASSIGN_FINAL
-				   : (flags & ASSIGN_CONST) ? ASSIGN_CONST : 0;
-	sv->sv_export = is_export;
-	newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
-	++si->sn_var_vals.ga_len;
-	STRCPY(&newsav->sav_key, di->di_key);
-	sv->sv_name = newsav->sav_key;
-	newsav->sav_di = di;
-	newsav->sav_block_id = si->sn_current_block_id;
-
-	hi = hash_find(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+	hi = hash_find(&si->sn_all_vars.dv_hashtab, di->di_key);
 	if (!HASHITEM_EMPTY(hi))
 	{
-	    sallvar_T *sav = HI2SAV(hi);
-
-	    // variable with this name exists in another block
-	    while (sav->sav_next != NULL)
-		sav = sav->sav_next;
-	    sav->sav_next = newsav;
+	    // Variable with this name exists, either in this block or in
+	    // another block.
+	    for (sav = HI2SAV(hi); ; sav = sav->sav_next)
+	    {
+		if (sav->sav_block_id == si->sn_current_block_id)
+		{
+		    // variable defined in a loop, re-use the entry
+		    sv = ((svar_T *)si->sn_var_vals.ga_data)
+						       + sav->sav_var_vals_idx;
+		    // unhide the variable
+		    if (sv->sv_tv == &sav->sav_tv)
+		    {
+			clear_tv(&sav->sav_tv);
+			sv->sv_tv = &di->di_tv;
+			sav->sav_di = di;
+		    }
+		    break;
+		}
+		if (sav->sav_next == NULL)
+		    break;
+	    }
 	}
-	else
-	    // new variable name
-	    hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+
+	if (sv == NULL)
+	{
+	    // Variable not defined or not defined in current block: Add a
+	    // svar_T and create a new sallvar_T.
+	    sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
+	    newsav = (sallvar_T *)alloc_clear(
+				       sizeof(sallvar_T) + STRLEN(di->di_key));
+	    if (newsav == NULL)
+		return;
+
+	    sv->sv_tv = &di->di_tv;
+	    sv->sv_const = (flags & ASSIGN_FINAL) ? ASSIGN_FINAL
+				   : (flags & ASSIGN_CONST) ? ASSIGN_CONST : 0;
+	    sv->sv_export = is_export;
+	    newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
+	    ++si->sn_var_vals.ga_len;
+	    STRCPY(&newsav->sav_key, di->di_key);
+	    sv->sv_name = newsav->sav_key;
+	    newsav->sav_di = di;
+	    newsav->sav_block_id = si->sn_current_block_id;
+
+	    if (HASHITEM_EMPTY(hi))
+		// new variable name
+		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+	    else if (sav != NULL)
+		// existing name in a new block, append to the list
+		sav->sav_next = newsav;
+	}
     }
     else
     {
@@ -807,8 +832,7 @@ update_vim9_script_var(
     if (sv != NULL)
     {
 	if (*type == NULL)
-	    *type = typval2type(tv, get_copyID(), &si->sn_type_list,
-								    do_member);
+	    *type = typval2type(tv, get_copyID(), &si->sn_type_list, do_member);
 	sv->sv_type = *type;
     }
 
