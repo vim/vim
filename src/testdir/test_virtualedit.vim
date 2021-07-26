@@ -402,13 +402,16 @@ func Test_delete_past_eol()
   bw!
 endfunc
 
+" After calling s:TryVirtualeditReplace(), line 1 will contain one of these
+" two strings, depending on whether virtual editing is on or off.
+let s:result_ve_on  = 'a      x'
+let s:result_ve_off = 'x'
+
 " Utility function for Test_global_local()
 func s:TryVirtualeditReplace()
   call setline(1, 'a')
   normal gg7l
   normal rx
-  let s:result_ve_on  = 'a      x'
-  let s:result_ve_off = 'x'
 endfunc
 
 " Test for :set and :setlocal
@@ -461,7 +464,57 @@ func Test_global_local()
   call s:TryVirtualeditReplace()
   call assert_equal(s:result_ve_off, getline(1))
 
+  " Verify that the buffer 'virtualedit' state follows the global value only
+  " when empty and that "none" works as expected.
+  "
+  "          'virtualedit' State
+  " +--------+--------------------------+
+  " | Local  |          Global          |
+  " |        |                          |
+  " +--------+--------+--------+--------+
+  " |        | ""     | "all"  | "none" |
+  " +--------+--------+--------+--------+
+  " | ""     |  off   |  on    |  off   |
+  " | "all"  |  on    |  on    |  on    |
+  " | "none" |  off   |  off   |  off   |
+  " +--------+--------+--------+--------+
+  new
+
+  setglobal ve=
+  setlocal ve=
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+  setlocal ve=all
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  setlocal ve=none
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+
+  setglobal ve=all
+  setlocal ve=
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  setlocal ve=all
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  setlocal ve=none
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+
+  setglobal ve=none
+  setlocal ve=
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+  setlocal ve=all
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  setlocal ve=none
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+
   bwipe!
+
   setlocal virtualedit&
   set virtualedit&
 endfunc

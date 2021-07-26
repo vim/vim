@@ -7041,7 +7041,7 @@ get_bkc_value(buf_T *buf)
     unsigned int
 get_ve_flags(void)
 {
-    return curbuf->b_ve_flags ? curbuf->b_ve_flags : ve_flags;
+    return (curbuf->b_ve_flags ? curbuf->b_ve_flags : ve_flags) & ~VE_NONE;
 }
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
