@@ -501,6 +501,9 @@ func Test_global_local()
   setlocal ve=none
   call s:TryVirtualeditReplace()
   call assert_equal(s:result_ve_off, getline(1))
+  setlocal ve=NONE
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
 
   setglobal ve=none
   setlocal ve=

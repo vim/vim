@@ -8652,6 +8652,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    none	When used as the local value, do not allow virtual
 			editing even when the global value is set.  When used
 			as the global value, "none" is the same as "".
+	    NONE	Alternative spelling of "none".
 
 	Virtual editing means that the cursor can be positioned where there is
 	no actual character.  This can be halfway into a tab or beyond the end
