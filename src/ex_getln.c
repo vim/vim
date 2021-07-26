@@ -2390,7 +2390,7 @@ cmdline_changed:
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 #ifdef FEAT_SEARCH_EXTRA
-	if (xpc.xp_context == EXPAND_NOTHING)
+	if (xpc.xp_context == EXPAND_NOTHING && (KeyTyped || vpeekc() == NUL))
 	    may_do_incsearch_highlighting(firstc, count, &is_state);
 #endif
 
