@@ -3562,14 +3562,18 @@ to_name_end(char_u *arg, int use_namespace)
 
 /*
  * Like to_name_end() but also skip over a list or dict constant.
+ * Also accept "<SNR>123_Func".
  * This intentionally does not handle line continuation.
  */
     char_u *
 to_name_const_end(char_u *arg)
 {
-    char_u	*p = to_name_end(arg, TRUE);
+    char_u	*p = arg;
     typval_T	rettv;
 
+    if (STRNCMP(p, "<SNR>", 5) == 0)
+	p = skipdigits(p + 5);
+    p = to_name_end(p, TRUE);
     if (p == arg && *arg == '[')
     {
 

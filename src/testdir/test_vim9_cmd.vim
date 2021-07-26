@@ -14,6 +14,20 @@ def Test_vim9cmd()
   END
   CheckScriptSuccess(lines)
   assert_fails('vim9cmd', 'E1164:')
+
+  lines =<< trim END
+      vim9script
+      def Foo()
+        g:found_bar = "bar"
+      enddef
+      nmap ,; :vim9cmd <SID>Foo()<CR>
+  END
+  CheckScriptSuccess(lines)
+  feedkeys(',;', 'xt')
+  assert_equal("bar", g:found_bar)
+
+  nunmap ,;
+  unlet g:found_bar
 enddef
 
 def Test_edit_wildcards()
