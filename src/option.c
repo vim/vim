@@ -5181,6 +5181,10 @@ unset_global_local_option(char_u *name, void *from)
 	    set_chars_option((win_T *)from, &((win_T *)from)->w_p_lcs);
 	    redraw_later(NOT_VALID);
 	    break;
+	case PV_VE:
+	    clear_string_option(&buf->b_p_ve);
+	    buf->b_ve_flags = 0;
+	    break;
     }
 }
 #endif
@@ -5239,7 +5243,8 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 #endif
 	    case PV_BKC:  return (char_u *)&(curbuf->b_p_bkc);
 	    case PV_MENC: return (char_u *)&(curbuf->b_p_menc);
-	    case PV_LCS: return (char_u *)&(curwin->w_p_lcs);
+	    case PV_LCS:  return (char_u *)&(curwin->w_p_lcs);
+	    case PV_VE:	  return (char_u *)&(curbuf->b_p_ve);
 
 	}
 	return NULL; // "cannot happen"
@@ -5507,6 +5512,8 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
+	case PV_VE:	return *curbuf->b_p_ve != NUL
+				    ? (char_u *)&(curbuf->b_p_ve) : p->var;
 	default:	iemsg(_("E356: get_varp ERROR"));
     }
     // always return a valid pointer to avoid a crash!
@@ -6084,6 +6091,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_lw = empty_option;
 #endif
 	    buf->b_p_menc = empty_option;
+	    buf->b_p_ve = empty_option;
+	    buf->b_ve_flags = 0;
 
 	    /*
 	     * Don't copy the options set by ex_help(), use the saved values,
@@ -7024,6 +7033,16 @@ get_sidescrolloff_value(void)
 get_bkc_value(buf_T *buf)
 {
     return buf->b_bkc_flags ? buf->b_bkc_flags : bkc_flags;
+}
+
+/*
+ * Get the local or global value of the 'virtualedit' flags.
+ */
+    unsigned int
+get_ve_flags(void)
+{
+    return (curbuf->b_ve_flags ? curbuf->b_ve_flags : ve_flags)
+	   & ~(VE_NONE | VE_NONEU);
 }
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)

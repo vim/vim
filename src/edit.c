@@ -861,7 +861,7 @@ doESCkey:
 	    ins_ctrl_o();
 
 	    // don't move the cursor left when 'virtualedit' has "onemore".
-	    if (ve_flags & VE_ONEMORE)
+	    if (get_ve_flags() & VE_ONEMORE)
 	    {
 		ins_at_eol = FALSE;
 		nomove = TRUE;
@@ -2673,7 +2673,7 @@ oneright(void)
 
     // move "l" bytes right, but don't end up on the NUL, unless 'virtualedit'
     // contains "onemore".
-    if (ptr[l] == NUL && (ve_flags & VE_ONEMORE) == 0)
+    if (ptr[l] == NUL && (get_ve_flags() & VE_ONEMORE) == 0)
 	return FAIL;
     curwin->w_cursor.col += l;
 
@@ -3656,7 +3656,7 @@ ins_esc(
 #endif
 				      )
     {
-	if (curwin->w_cursor.coladd > 0 || ve_flags == VE_ALL)
+	if (curwin->w_cursor.coladd > 0 || get_ve_flags() == VE_ALL)
 	{
 	    oneleft();
 	    if (restart_edit != NUL)

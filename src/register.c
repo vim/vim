@@ -1556,6 +1556,7 @@ do_put(
     long	cnt;
     pos_T	orig_start = curbuf->b_op_start;
     pos_T	orig_end = curbuf->b_op_end;
+    unsigned int cur_ve_flags = get_ve_flags();
 
 #ifdef FEAT_CLIPBOARD
     // Adjust register name for "unnamed" in 'clipboard'.
@@ -1742,7 +1743,7 @@ do_put(
 
     yanklen = (int)STRLEN(y_array[0]);
 
-    if (ve_flags == VE_ALL && y_type == MCHAR)
+    if (cur_ve_flags == VE_ALL && y_type == MCHAR)
     {
 	if (gchar_cursor() == TAB)
 	{
@@ -1777,7 +1778,7 @@ do_put(
 
 	if (dir == FORWARD && c != NUL)
 	{
-	    if (ve_flags == VE_ALL)
+	    if (cur_ve_flags == VE_ALL)
 		getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2);
 	    else
 		getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col);
@@ -1786,7 +1787,7 @@ do_put(
 		// move to start of next multi-byte character
 		curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 	    else
-	    if (c != TAB || ve_flags != VE_ALL)
+	    if (c != TAB || cur_ve_flags != VE_ALL)
 		++curwin->w_cursor.col;
 	    ++col;
 	}
@@ -1794,7 +1795,7 @@ do_put(
 	    getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2);
 
 	col += curwin->w_cursor.coladd;
-	if (ve_flags == VE_ALL
+	if (cur_ve_flags == VE_ALL
 		&& (curwin->w_cursor.coladd > 0
 		    || endcol2 == curwin->w_cursor.col))
 	{

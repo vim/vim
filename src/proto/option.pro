@@ -73,6 +73,7 @@ int can_bs(int what);
 long get_scrolloff_value(void);
 long get_sidescrolloff_value(void);
 unsigned int get_bkc_value(buf_T *buf);
+unsigned int get_ve_flags(void);
 char_u *get_showbreak_value(win_T *win);
 dict_T *get_winbuf_options(int bufopt);
 int fill_culopt_flags(char_u *val, win_T *wp);

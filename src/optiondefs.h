@@ -153,6 +153,7 @@
 # define PV_VSTS		OPT_BUF(BV_VSTS)
 # define PV_VTS		OPT_BUF(BV_VTS)
 #endif
+#define PV_VE		OPT_BOTH(OPT_BUF(BV_VE))
 
 // Definition of the PV_ values for window-local options.
 // The WV_ values are defined in option.h.
@@ -2806,7 +2807,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"virtualedit", "ve",   P_STRING|P_ONECOMMA|P_NODUP|P_VI_DEF
 							    |P_VIM|P_CURSWANT,
-			    (char_u *)&p_ve, PV_NONE,
+			    (char_u *)&p_ve, PV_VE,
 			    {(char_u *)"", (char_u *)""}
 			    SCTX_INIT},
     {"visualbell",  "vb",   P_BOOL|P_VI_DEF,
