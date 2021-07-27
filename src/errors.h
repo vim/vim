@@ -224,8 +224,10 @@ EXTERN char e_using_number_as_string[]
 	INIT(= N_("E1024: Using a Number as a String"));
 EXTERN char e_using_rcurly_outside_if_block_scope[]
 	INIT(= N_("E1025: Using } outside of a block scope"));
+#endif
 EXTERN char e_missing_rcurly[]
 	INIT(= N_("E1026: Missing }"));
+#ifdef FEAT_EVAL
 EXTERN char e_missing_return_statement[]
 	INIT(= N_("E1027: Missing return statement"));
 EXTERN char e_compiling_def_function_failed[]
