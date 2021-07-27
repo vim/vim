@@ -1172,6 +1172,16 @@ def Test_get()
   var F: func = function('min', [[5, 8, 6]])
   F->get('name')->assert_equal('min')
   F->get('args')->assert_equal([[5, 8, 6]])
+
+  var lines =<< trim END
+      vim9script
+      def DoThat(): number
+        var Getqflist: func = function('getqflist', [{id: 42}])
+        return Getqflist()->get('id', 77)
+      enddef
+      assert_equal(0, DoThat())
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_getbufinfo()

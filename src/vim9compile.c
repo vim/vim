@@ -2130,6 +2130,9 @@ generate_PCALL(
 	    }
 	}
 	ret_type = type->tt_member;
+	if (ret_type == &t_unknown)
+	    // return type not known yet, use a runtime check
+	    ret_type = &t_any;
     }
     else
     {
