@@ -3808,11 +3808,16 @@ cmd_exists(char_u *name)
 f_fullcommand(typval_T *argvars, typval_T *rettv)
 {
     exarg_T  ea;
-    char_u   *name = argvars[0].vval.v_string;
+    char_u   *name;
     char_u   *p;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    name = argvars[0].vval.v_string;
     if (name == NULL)
 	return;
 

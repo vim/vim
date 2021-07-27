@@ -1156,6 +1156,9 @@ f_js_decode(typval_T *argvars, typval_T *rettv)
 {
     js_read_T	reader;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     reader.js_buf = tv_get_string(&argvars[0]);
     reader.js_fill = NULL;
     reader.js_used = 0;
@@ -1180,6 +1183,9 @@ f_js_encode(typval_T *argvars, typval_T *rettv)
 f_json_decode(typval_T *argvars, typval_T *rettv)
 {
     js_read_T	reader;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
 
     reader.js_buf = tv_get_string(&argvars[0]);
     reader.js_fill = NULL;

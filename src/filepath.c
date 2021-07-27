@@ -834,6 +834,11 @@ f_delete(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
     name = tv_get_string(&argvars[0]);
     if (name == NULL || *name == NUL)
     {
@@ -899,6 +904,7 @@ f_filereadable(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
+
 #ifndef O_NONBLOCK
 # define O_NONBLOCK 0
 #endif
@@ -946,7 +952,11 @@ findfilendir(
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
-    if (in_vim9script() && check_for_nonempty_string_arg(argvars, 0) == FAIL)
+    if (in_vim9script()
+	    && (check_for_nonempty_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
 #ifdef FEAT_SEARCHPATH
@@ -1027,9 +1037,11 @@ f_fnamemodify(typval_T *argvars, typval_T *rettv)
     char_u	*fbuf = NULL;
     char_u	buf[NUMBUFLEN];
 
-    if (in_vim9script() && (check_for_string_arg(argvars, 0) == FAIL
-	    || check_for_string_arg(argvars, 1) == FAIL))
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
 	return;
+
     fname = tv_get_string_chk(&argvars[0]);
     mods = tv_get_string_buf_chk(&argvars[1], buf);
     if (mods == NULL || fname == NULL)
@@ -1076,6 +1088,12 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
+	return;
 
     if (argvars[0].v_type == VAR_NUMBER
 	    && argvars[0].vval.v_number == -1
@@ -1141,6 +1159,7 @@ f_getfperm(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
+
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
@@ -1190,6 +1209,7 @@ f_getftime(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
+
     fname = tv_get_string(&argvars[0]);
     if (mch_stat((char *)fname, &st) >= 0)
 	rettv->vval.v_number = (varnumber_T)st.st_mtime;
@@ -1236,6 +1256,7 @@ f_getftype(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
+
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
@@ -1311,9 +1332,12 @@ f_glob(typval_T *argvars, typval_T *rettv)
 f_glob2regpat(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[NUMBUFLEN];
-    char_u	*pat = tv_get_string_buf_chk_strict(&argvars[0], buf,
-							      in_vim9script());
+    char_u	*pat;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    pat = tv_get_string_buf_chk_strict(&argvars[0], buf, in_vim9script());
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = (pat == NULL)
 			 ? NULL : file_pat_to_reg_pat(pat, NULL, NULL, FALSE);
@@ -1382,6 +1406,9 @@ f_globpath(typval_T *argvars, typval_T *rettv)
     void
 f_isdirectory(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_number = mch_isdir(tv_get_string(&argvars[0]));
 }
 
@@ -1427,6 +1454,13 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = FAIL;
     if (check_restricted() || check_secure())
+	return;
+
+    if (in_vim9script()
+	    && (check_for_nonempty_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
     dir = tv_get_string_buf(&argvars[0], buf);
@@ -1919,6 +1953,9 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     void
 f_readblob(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     read_file_or_blob(argvars, rettv, TRUE);
 }
 
@@ -1928,6 +1965,13 @@ f_readblob(typval_T *argvars, typval_T *rettv)
     void
 f_readfile(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_nonempty_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
+	return;
+
     read_file_or_blob(argvars, rettv, FALSE);
 }
 
@@ -1941,6 +1985,9 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 #ifdef HAVE_READLINK
     char_u	*buf = NULL;
 #endif
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
 
     p = tv_get_string(&argvars[0]);
 #ifdef FEAT_SHORTCUT
@@ -2496,6 +2543,11 @@ f_browsedir(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	*title;
     char_u	*initdir;
     char_u	buf[NUMBUFLEN];
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
 
     title = tv_get_string_chk(&argvars[0]);
     initdir = tv_get_string_buf_chk(&argvars[1], buf);

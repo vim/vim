@@ -82,6 +82,9 @@ get_float_arg(typval_T *argvars, float_T *f)
     void
 f_abs(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_FLOAT)
     {
 	rettv->v_type = VAR_FLOAT;
@@ -110,6 +113,9 @@ f_acos(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = acos(f);
@@ -124,6 +130,9 @@ f_acos(typval_T *argvars, typval_T *rettv)
 f_asin(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
+
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -140,6 +149,9 @@ f_atan(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = atan(f);
@@ -154,6 +166,11 @@ f_atan(typval_T *argvars, typval_T *rettv)
 f_atan2(typval_T *argvars, typval_T *rettv)
 {
     float_T	fx = 0.0, fy = 0.0;
+
+    if (in_vim9script()
+	    && (check_for_float_or_nr_arg(argvars, 0) == FAIL
+		|| check_for_float_or_nr_arg(argvars, 1) == FAIL))
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &fx) == OK
@@ -171,6 +188,9 @@ f_ceil(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = ceil(f);
@@ -185,6 +205,9 @@ f_ceil(typval_T *argvars, typval_T *rettv)
 f_cos(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
+
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -201,6 +224,9 @@ f_cosh(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = cosh(f);
@@ -216,6 +242,9 @@ f_exp(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = exp(f);
@@ -230,6 +259,9 @@ f_exp(typval_T *argvars, typval_T *rettv)
 f_float2nr(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
+
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
 
     if (get_float_arg(argvars, &f) == OK)
     {
@@ -250,6 +282,9 @@ f_floor(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = floor(f);
@@ -264,6 +299,11 @@ f_floor(typval_T *argvars, typval_T *rettv)
 f_fmod(typval_T *argvars, typval_T *rettv)
 {
     float_T	fx = 0.0, fy = 0.0;
+
+    if (in_vim9script()
+	    && (check_for_float_or_nr_arg(argvars, 0) == FAIL
+		|| check_for_float_or_nr_arg(argvars, 1) == FAIL))
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &fx) == OK
@@ -280,6 +320,9 @@ f_fmod(typval_T *argvars, typval_T *rettv)
     void
 f_isinf(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_FLOAT && isinf(argvars[0].vval.v_float))
 	rettv->vval.v_number = argvars[0].vval.v_float > 0.0 ? 1 : -1;
 }
@@ -290,6 +333,9 @@ f_isinf(typval_T *argvars, typval_T *rettv)
     void
 f_isnan(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_number = argvars[0].v_type == VAR_FLOAT
 					    && isnan(argvars[0].vval.v_float);
 }
@@ -302,6 +348,9 @@ f_isnan(typval_T *argvars, typval_T *rettv)
 f_log(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
+
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -318,6 +367,9 @@ f_log10(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = log10(f);
@@ -332,6 +384,11 @@ f_log10(typval_T *argvars, typval_T *rettv)
 f_pow(typval_T *argvars, typval_T *rettv)
 {
     float_T	fx = 0.0, fy = 0.0;
+
+    if (in_vim9script()
+	    && (check_for_float_or_nr_arg(argvars, 0) == FAIL
+		|| check_for_float_or_nr_arg(argvars, 1) == FAIL))
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &fx) == OK
@@ -359,6 +416,9 @@ f_round(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = vim_round(f);
@@ -373,6 +433,9 @@ f_round(typval_T *argvars, typval_T *rettv)
 f_sin(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
+
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
@@ -389,6 +452,9 @@ f_sinh(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = sinh(f);
@@ -404,6 +470,9 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = sqrt(f);
@@ -417,8 +486,14 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     void
 f_str2float(typval_T *argvars, typval_T *rettv)
 {
-    char_u *p = skipwhite(tv_get_string_strict(&argvars[0]));
-    int     isneg = (*p == '-');
+    char_u *p;
+    int     isneg;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    p = skipwhite(tv_get_string_strict(&argvars[0]));
+    isneg = (*p == '-');
 
     if (*p == '+' || *p == '-')
 	p = skipwhite(p + 1);
@@ -436,6 +511,9 @@ f_tan(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = tan(f);
@@ -451,6 +529,9 @@ f_tanh(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
 
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)
 	rettv->vval.v_float = tanh(f);
@@ -465,6 +546,9 @@ f_tanh(typval_T *argvars, typval_T *rettv)
 f_trunc(typval_T *argvars, typval_T *rettv)
 {
     float_T	f = 0.0;
+
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
 
     rettv->v_type = VAR_FLOAT;
     if (get_float_arg(argvars, &f) == OK)

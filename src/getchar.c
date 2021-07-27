@@ -2025,6 +2025,9 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     varnumber_T		n;
     int			error = FALSE;
 
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
+
 #ifdef MESSAGE_QUEUE
     // vpeekc() used to check for messages, but that caused problems, invoking
     // a callback where it was not expected.  Some plugins use getchar(1) in a

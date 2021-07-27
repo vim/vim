@@ -2473,10 +2473,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_complete_add(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script()
-	    && (argvars[0].v_type != VAR_DICT
-		&& argvars[0].v_type != VAR_STRING
-		&& check_for_string_arg(argvars, 0) == FAIL))
+    if (in_vim9script() && check_for_string_or_dict_arg(argvars, 0) == FAIL)
 	return;
 
     rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0, FALSE);
@@ -2664,6 +2661,9 @@ f_complete_info(typval_T *argvars, typval_T *rettv)
     list_T	*what_list = NULL;
 
     if (rettv_dict_alloc(rettv) != OK)
+	return;
+
+    if (in_vim9script() && check_for_opt_list_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)

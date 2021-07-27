@@ -268,7 +268,7 @@ func Test_assert_fail_fails()
   catch
     let exp = v:exception
   endtry
-  call assert_match("E1174: String required for argument 2", exp)
+  call assert_match("E1222: String or List required for argument 2", exp)
 
   try
     call assert_equal(1, assert_fails('xxx', 'E492', '', 'burp'))

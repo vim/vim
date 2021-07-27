@@ -604,7 +604,7 @@ def Test_try_catch_throw()
       endtry
   END
   CheckScriptSuccess(lines)
-  assert_match('E808: Number or Float required', g:caught)
+  assert_match('E1219: Float or Number required for argument 1', g:caught)
   unlet g:caught
 
   # missing catch and/or finally

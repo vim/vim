@@ -438,7 +438,7 @@ func Test_dict_func_remove()
       var d = {1: 'a', 3: 'c'}
       call remove(d, [])
   END
-  call CheckScriptFailure(lines, 'E1174: String required for argument 2')
+  call CheckScriptFailure(lines, 'E1220: String or Number required for argument 2')
   let lines =<< trim END
       var d = {1: 'a', 3: 'c'}
       call remove(d, [])
