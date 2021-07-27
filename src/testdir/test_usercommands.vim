@@ -622,4 +622,22 @@ func Test_usercmd_custom()
   delfunc T2
 endfunc
 
+func Test_usercmd_with_block()
+  command DoSomething {
+        g:didit = 'yes'
+        g:didmore = 'more'
+      }
+  DoSomething
+  call assert_equal('yes', g:didit)
+  call assert_equal('more', g:didmore)
+  unlet g:didit
+  unlet g:didmore
+
+  let lines =<< trim END
+      command DoesNotEnd {
+         echo 'hello'
+  END
+  call CheckScriptFailure(lines, 'E1026:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

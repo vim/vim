@@ -1572,6 +1572,16 @@ feature.  Use the full name for new scripts.
 
 Replacement text ~
 
+The {repl} argument is normally one long string, possibly with "|" separated
+commands.  A special case is when the argument is "{", then the following
+lines, up to a line starting with "}" are used and |Vim9| syntax applies.
+Example: >
+	:command MyCommand {
+		echo 'hello'
+		g:calledMyCommand = true
+	    }
+No nesting is supported.
+
 The replacement text {repl} for a user defined command is scanned for special
 escape sequences, using <...> notation.  Escape sequences are replaced with
 values from the entered command line, and all other text is copied unchanged.

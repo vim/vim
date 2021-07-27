@@ -1488,7 +1488,6 @@ ga_grow_inner(garray_T *gap, int n)
     return OK;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH) || defined(PROTO)
 /*
  * For a growing array that contains a list of strings: concatenate all the
  * strings with a separating "sep".
@@ -1524,27 +1523,27 @@ ga_concat_strings(garray_T *gap, char *sep)
     }
     return s;
 }
-#endif
 
-#if defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Make a copy of string "p" and add it to "gap".
- * When out of memory nothing changes.
+ * When out of memory nothing changes and FAIL is returned.
  */
-    void
+    int
 ga_add_string(garray_T *gap, char_u *p)
 {
     char_u *cp = vim_strsave(p);
 
-    if (cp != NULL)
+    if (cp == NULL)
+	return FAIL;
+
+    if (ga_grow(gap, 1) == FAIL)
     {
-	if (ga_grow(gap, 1) == OK)
-	    ((char_u **)(gap->ga_data))[gap->ga_len++] = cp;
-	else
-	    vim_free(cp);
+	vim_free(cp);
+	return FAIL;
     }
+    ((char_u **)(gap->ga_data))[gap->ga_len++] = cp;
+    return OK;
 }
-#endif
 
 /*
  * Concatenate a string to a growarray which contains bytes.
