@@ -1851,6 +1851,11 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     int		nr;
     int		i;
 
+    if (in_vim9script()
+	    && (check_for_string_or_number_or_list_arg(argvars, 0) == FAIL
+		|| check_for_dict_arg(argvars, 1) == FAIL))
+	return NULL;
+
     if (argvars != NULL)
     {
 	// Check that arguments look OK.
@@ -2140,6 +2145,9 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 f_popup_clear(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int force = FALSE;
+
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
 	force = (int)tv_get_bool(&argvars[0]);
@@ -2558,9 +2566,14 @@ popup_hide(win_T *wp)
     void
 f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    int		id = (int)tv_get_number(argvars);
-    win_T	*wp = find_popup_win(id);
+    int		id;
+    win_T	*wp;
 
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    id = (int)tv_get_number(argvars);
+    wp = find_popup_win(id);
     if (wp != NULL)
 	popup_hide(wp);
 }
@@ -2582,9 +2595,14 @@ popup_show(win_T *wp)
     void
 f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    int		id = (int)tv_get_number(argvars);
-    win_T	*wp = find_popup_win(id);
+    int		id;
+    win_T	*wp;
 
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    id = (int)tv_get_number(argvars);
+    wp = find_popup_win(id);
     if (wp != NULL)
     {
 	popup_show(wp);
@@ -2824,13 +2842,18 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 f_popup_getpos(typval_T *argvars, typval_T *rettv)
 {
     dict_T	*dict;
-    int		id = (int)tv_get_number(argvars);
-    win_T	*wp = find_popup_win(id);
+    int		id;
+    win_T	*wp;
     int		top_extra;
     int		left_extra;
 
     if (rettv_dict_alloc(rettv) == OK)
     {
+	if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	    return;
+
+	id = (int)tv_get_number(argvars);
+	wp = find_popup_win(id);
 	if (wp == NULL)
 	    return;  // invalid {id}
 	top_extra = popup_top_extra(wp);
@@ -2886,10 +2909,17 @@ f_popup_list(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_popup_locate(typval_T *argvars, typval_T *rettv)
 {
-    int		row = tv_get_number(&argvars[0]) - 1;
-    int		col = tv_get_number(&argvars[1]) - 1;
+    int		row;
+    int		col;
     win_T	*wp;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
+    row = tv_get_number(&argvars[0]) - 1;
+    col = tv_get_number(&argvars[1]) - 1;
     wp = mouse_find_win(&row, &col, FIND_POPUP);
     if (wp != NULL && WIN_IS_POPUP(wp))
 	rettv->vval.v_number = wp->w_id;
@@ -3003,13 +3033,18 @@ get_moved_list(dict_T *dict, win_T *wp)
 f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 {
     dict_T	*dict;
-    int		id = (int)tv_get_number(argvars);
-    win_T	*wp = find_popup_win(id);
+    int		id;
+    win_T	*wp;
     tabpage_T	*tp;
     int		i;
 
     if (rettv_dict_alloc(rettv) == OK)
     {
+	if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	    return;
+
+	id = (int)tv_get_number(argvars);
+	wp = find_popup_win(id);
 	if (wp == NULL)
 	    return;
 

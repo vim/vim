@@ -1714,6 +1714,9 @@ f_prompt_getprompt(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     buf = tv_get_buf_from_arg(&argvars[0]);
     if (buf == NULL)
 	return;
@@ -1776,8 +1779,12 @@ get_job_arg(typval_T *tv)
     void
 f_job_getchannel(typval_T *argvars, typval_T *rettv)
 {
-    job_T	*job = get_job_arg(&argvars[0]);
+    job_T	*job;
 
+    if (in_vim9script() && check_for_job_arg(argvars, 0) == FAIL)
+	return;
+
+    job = get_job_arg(&argvars[0]);
     if (job != NULL)
     {
 	rettv->v_type = VAR_CHANNEL;
@@ -1864,10 +1871,14 @@ job_info_all(list_T *l)
     void
 f_job_info(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_opt_job_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	job_T	*job = get_job_arg(&argvars[0]);
+	job_T	*job;
 
+	job = get_job_arg(&argvars[0]);
 	if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
 	    job_info(job, rettv->vval.v_dict);
     }
@@ -1922,6 +1933,9 @@ f_job_start(typval_T *argvars, typval_T *rettv)
     void
 f_job_status(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_job_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_JOB && argvars[0].vval.v_job == NULL)
     {
 	// A job that never started returns "fail".

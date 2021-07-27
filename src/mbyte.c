@@ -4977,6 +4977,12 @@ f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL))
+	return;
+
     str = tv_get_string(&argvars[0]);
     from = enc_canonize(enc_skip(tv_get_string_buf(&argvars[1], buf1)));
     to = enc_canonize(enc_skip(tv_get_string_buf(&argvars[2], buf2)));
@@ -5504,6 +5510,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     int		    i;
     listitem_T	    **ptrs;
     cw_interval_T   *table;
+
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
     {

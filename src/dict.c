@@ -1201,6 +1201,9 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
     dict_T	*d;
     int		todo;
 
+    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_DICT)
     {
 	emsg(_(e_dictreq));
@@ -1318,6 +1321,11 @@ dict_set_items_ro(dict_T *di)
     void
 f_has_key(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_dict_arg(argvars, 0) == FAIL
+		|| check_for_string_or_number_arg(argvars, 1) == FAIL))
+	return;
+
     if (argvars[0].v_type != VAR_DICT)
     {
 	emsg(_(e_dictreq));

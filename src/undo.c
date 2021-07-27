@@ -3646,6 +3646,9 @@ u_eval_tree(u_header_T *first_uhp, list_T *list)
     void
 f_undofile(typval_T *argvars UNUSED, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_STRING;
 #ifdef FEAT_PERSISTENT_UNDO
     {

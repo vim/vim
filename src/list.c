@@ -2528,10 +2528,7 @@ f_count(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
 
     if (in_vim9script()
-	    && ((argvars[0].v_type != VAR_STRING
-		    && argvars[0].v_type != VAR_LIST
-		    && argvars[0].v_type != VAR_DICT
-		    && check_for_string_arg(argvars, 0) == FAIL)
+	    && (check_for_string_or_list_or_dict_arg(argvars, 0) == FAIL
 		|| check_for_opt_bool_arg(argvars, 2) == FAIL
 		|| (argvars[2].v_type != VAR_UNKNOWN
 		    && check_for_opt_number_arg(argvars, 3) == FAIL)))

@@ -618,6 +618,11 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     int		dir = 1;    // 1 = forward, -1 = backward
     int		both;
 
+    if (in_vim9script()
+	    && (check_for_dict_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
 	emsg(_(e_dictreq));
@@ -985,6 +990,11 @@ prop_type_set(typval_T *argvars, int add)
     dictitem_T  *di;
     proptype_T	*prop;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_dict_arg(argvars, 1) == FAIL))
+	return;
+
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
@@ -1115,6 +1125,11 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     buf_T	*buf = NULL;
     hashitem_T	*hi;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
@@ -1149,8 +1164,14 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_prop_type_get(typval_T *argvars, typval_T *rettv)
 {
-    char_u *name = tv_get_string(&argvars[0]);
+    char_u *name;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
+    name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
 	emsg(_(e_invarg));
@@ -1216,6 +1237,9 @@ f_prop_type_list(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (rettv_list_alloc(rettv) == OK)
     {
+	if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
+	    return;
+
 	if (argvars[0].v_type != VAR_UNKNOWN)
 	{
 	    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)

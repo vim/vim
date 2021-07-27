@@ -4111,6 +4111,9 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 
+    if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
     if (shortmess(SHM_SEARCHCOUNT))	// 'shortmess' contains 'S' flag
 	recompute = TRUE;
 

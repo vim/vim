@@ -814,6 +814,9 @@ f_remote_expr(typval_T *argvars UNUSED, typval_T *rettv)
 f_remote_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_CLIENTSERVER
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
 # ifdef MSWIN
     // On Win32 it's done in this application.
     {
@@ -846,17 +849,18 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 # endif
     char_u	*serverid;
 
+    rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
-    {
-	rettv->vval.v_number = -1;
 	return;
-    }
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
     serverid = tv_get_string_chk(&argvars[0]);
     if (serverid == NULL)
-    {
-	rettv->vval.v_number = -1;
 	return;		// type error; errmsg already given
-    }
 # ifdef MSWIN
     sscanf((const char *)serverid, SCANF_HEX_LONG_U, &n);
     if (n == 0)
@@ -959,8 +963,12 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
 f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_CLIENTSERVER
-    char_u	*server = tv_get_string_chk(&argvars[0]);
+    char_u	*server;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    server = tv_get_string_chk(&argvars[0]);
     if (server == NULL)
 	return;		// type error; errmsg already given
     if (serverName != NULL)
@@ -984,14 +992,23 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 {
 #ifdef FEAT_CLIENTSERVER
     char_u	buf[NUMBUFLEN];
-    char_u	*server = tv_get_string_chk(&argvars[0]);
-    char_u	*reply = tv_get_string_buf_chk(&argvars[1], buf);
+    char_u	*server;
+    char_u	*reply;
 
     rettv->vval.v_number = -1;
-    if (server == NULL || reply == NULL)
-	return;
     if (check_restricted() || check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    server = tv_get_string_chk(&argvars[0]);
+    reply = tv_get_string_buf_chk(&argvars[1], buf);
+    if (server == NULL || reply == NULL)
+	return;
+
 # ifdef FEAT_X11
     if (check_connection() == FAIL)
 	return;

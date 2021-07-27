@@ -174,6 +174,12 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script()
+	    && (check_for_opt_list_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_list_arg(argvars, 1) == FAIL)))
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	// No arguments: get current time.
@@ -228,6 +234,9 @@ f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_FLOAT;
     rettv->vval.v_float = 0;
 #  ifdef FEAT_RELTIME
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
     if (list2proftime(&argvars[0], &tm) == OK)
 	rettv->vval.v_float = profile_float(&tm);
     else if (in_vim9script())
@@ -249,6 +258,9 @@ f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 # ifdef FEAT_RELTIME
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
     if (list2proftime(&argvars[0], &tm) == OK)
 	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
     else if (in_vim9script())
@@ -341,6 +353,11 @@ f_strptime(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     vimconv_T   conv;
     char_u	*enc;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
 
     CLEAR_FIELD(tmval);
     tmval.tm_isdst = -1;
@@ -754,6 +771,10 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
+
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	if (argvars[0].v_type != VAR_NUMBER)
@@ -848,6 +869,9 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
     timer_T *timer;
+
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type != VAR_NUMBER)
     {

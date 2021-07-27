@@ -246,6 +246,9 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (context != NULL)
 	ca_context_cancel(context, tv_get_number(&argvars[0]));
 }
@@ -427,9 +430,13 @@ failure:
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    long    id = tv_get_number(&argvars[0]);
+    long    id;
     char    buf[32];
 
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    id = tv_get_number(&argvars[0]);
     vim_snprintf(buf, sizeof(buf), "stop sound%06ld", id);
     mciSendString(buf, NULL, 0, NULL);
 }

@@ -1271,6 +1271,9 @@ f_argc(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
 	// use the current window
 	rettv->vval.v_number = ARGCOUNT;
@@ -1306,6 +1309,12 @@ f_arglistid(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
+	return;
+
     rettv->vval.v_number = -1;
     wp = find_tabwin(&argvars[0], &argvars[1], NULL);
     if (wp != NULL)
@@ -1335,6 +1344,12 @@ f_argv(typval_T *argvars, typval_T *rettv)
     int		idx;
     aentry_T	*arglist = NULL;
     int		argcount = -1;
+
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
+	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {

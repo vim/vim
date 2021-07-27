@@ -363,7 +363,7 @@ func Test_blob_add()
       VAR b = 0z0011
       call add("", 0x01)
   END
-  call CheckLegacyAndVim9Failure(lines, ['E897:', 'E1013:', 'E1211:'])
+  call CheckLegacyAndVim9Failure(lines, ['E897:', 'E1013:', 'E1226:'])
 
   let lines =<< trim END
       add(test_null_blob(), 0x22)
