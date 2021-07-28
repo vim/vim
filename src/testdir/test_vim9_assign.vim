@@ -1392,6 +1392,14 @@ def Test_heredoc()
   [END]
   CheckScriptFailure(lines, 'E1145: Missing heredoc end marker: END')
   delfunc! g:Func
+
+  lines =<< trim END
+      var lines: number =<< trim STOP
+        aaa
+        bbb
+      STOP
+  END
+  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<string>', 1)
 enddef
 
 def Test_var_func_call()
