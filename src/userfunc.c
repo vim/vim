@@ -1674,7 +1674,8 @@ get_func_tv(
 
     if (ret == OK)
     {
-	int		i = 0;
+	int	i = 0;
+	int	did_emsg_before = did_emsg;
 
 	if (get_vim_var_nr(VV_TESTING))
 	{
@@ -1689,6 +1690,10 @@ get_func_tv(
 	}
 
 	ret = call_func(name, len, rettv, argcount, argvars, funcexe);
+	if (in_vim9script() && did_emsg > did_emsg_before)
+	    // An error in a builtin function does not return FAIL, but we do
+	    // want to abort further processing if an error was given.
+	    ret = FAIL;
 
 	funcargs.ga_len -= i;
     }

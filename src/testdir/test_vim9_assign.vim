@@ -2002,5 +2002,20 @@ def Test_inc_dec()
   CheckDefAndScriptFailure(lines, "E1202: No white space allowed after '++': ++ nr")
 enddef
 
+def Test_abort_after_error()
+  # should abort after strpart() fails, not give another type error
+  var lines =<< trim END
+      vim9script
+      var x: string
+      x = strpart(1, 2)
+  END
+  writefile(lines, 'Xtestscript')
+  var expected = 'E1174: String required for argument 1'
+  assert_fails('so Xtestscript', [expected, expected], 3)
+
+  delete('Xtestscript')
+enddef
+
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
