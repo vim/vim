@@ -727,6 +727,17 @@ check_for_string_or_number_or_list_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is an optional string
+ * or number or a list
+ */
+    int
+check_for_opt_string_or_number_or_list_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_string_or_number_or_list_arg(args, idx) != FAIL);
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a string or a list
  * or a dict.
  */
