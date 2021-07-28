@@ -3290,11 +3290,17 @@ enddef
 def Test_system()
   CheckDefAndScriptFailure2(['system(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['system("a", {})'], 'E1013: Argument 2: type mismatch, expected string but got dict<unknown>', 'E1224: String or List required for argument 2')
+  assert_equal("123\n", system('echo 123'))
 enddef
 
 def Test_systemlist()
   CheckDefAndScriptFailure2(['systemlist(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['systemlist("a", {})'], 'E1013: Argument 2: type mismatch, expected string but got dict<unknown>', 'E1224: String or List required for argument 2')
+  if has('win32')
+    call assert_equal(["123\r"], systemlist('echo 123'))
+  else
+    call assert_equal(['123'], systemlist('echo 123'))
+  endif
 enddef
 
 def Test_tabpagebuflist()
