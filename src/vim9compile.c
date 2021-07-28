@@ -2177,7 +2177,11 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
     type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
     if (type->tt_type != VAR_DICT && type != &t_any)
     {
-	emsg(_(e_dictreq));
+	char *tofree;
+
+	semsg(_(e_expected_dictionary_for_using_key_str_but_got_str),
+					       name, type_name(type, &tofree));
+	vim_free(tofree);
 	return FAIL;
     }
     // change dict type to dict member type

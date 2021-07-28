@@ -639,3 +639,5 @@ EXTERN char e_list_or_dict_required_for_argument_nr[]
 	INIT(= N_("E1227: List or Dictionary required for argument %d"));
 EXTERN char e_list_or_dict_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1228: List or Dictionary or Blob required for argument %d"));
+EXTERN char e_expected_dictionary_for_using_key_str_but_got_str[]
+	INIT(= N_("E1229: Expected dictionary for using key \"%s\", but got %s"));
