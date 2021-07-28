@@ -632,6 +632,13 @@ func Test_usercmd_with_block()
   call assert_equal('more', g:didmore)
   unlet g:didit
   unlet g:didmore
+  delcommand DoSomething
+
+  command DoMap {
+	echo [1, 2, 3]->map((_, v) => v + 1)
+    }
+  DoMap
+  delcommand DoMap
 
   let lines =<< trim END
       command DoesNotEnd {

@@ -1398,7 +1398,7 @@ get_lambda_tv(
 
 	// If there are line breaks, we need to split up the string.
 	line_end = vim_strchr(start, '\n');
-	if (line_end == NULL)
+	if (line_end == NULL || line_end > end)
 	    line_end = end;
 
 	// Add "return " before the expression (or the first line).
