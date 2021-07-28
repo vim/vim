@@ -870,8 +870,8 @@ endfunc
 
 " Test for dealing with strings containing newlines and null character
 func Test_lua_string_with_newline()
-  let x = execute('lua print("Hello\nWorld")')
-  call assert_equal("\nHello\nWorld", x)
+  let x = execute('lua print("Hello\nWorld", 2)')
+  call assert_equal("\nHello\nWorld 2", x)
   new
   lua k = vim.buffer(vim.eval('bufnr()'))
   lua k:insert("Hello\0World", 0)

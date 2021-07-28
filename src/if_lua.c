@@ -1737,6 +1737,7 @@ luaV_print(lua_State *L)
 	if (i > 1)
 	    luaL_addchar(&b, ' '); // use space instead of tab
 	luaV_addlstring(&b, s, l, 0);
+	lua_pop(L, 1);
     }
     luaL_pushresult(&b);
     if (!got_int)
