@@ -140,7 +140,8 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     if (arg->vval.v_dict == NULL)
 	return OK;  // NULL dict is like an empty dict
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
-    if (di != NULL)
+    if (di != NULL && (di->di_tv.v_type != VAR_NUMBER
+					      || di->di_tv.vval.v_number != 0))
     {
 	*buf = get_buf_arg(&di->di_tv);
 	if (*buf == NULL)
@@ -506,15 +507,27 @@ find_type_by_id(hashtab_T *ht, int id)
 prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 {
     proptype_T *pt;
+    int buflocal = TRUE;
 
     dict_add_number(dict, "col", prop->tp_col);
     dict_add_number(dict, "length", prop->tp_len);
     dict_add_number(dict, "id", prop->tp_id);
     dict_add_number(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
     dict_add_number(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
-    pt = text_prop_type_by_id(buf, prop->tp_type);
+
+    pt = find_type_by_id(buf->b_proptypes, prop->tp_type);
+    if (pt == NULL)
+    {
+	pt = find_type_by_id(global_proptypes, prop->tp_type);
+	buflocal = FALSE;
+    }
     if (pt != NULL)
 	dict_add_string(dict, "type", pt->pt_name);
+
+    if (buflocal)
+	dict_add_number(dict, "type_bufnr", buf->b_fnum);
+    else
+	dict_add_number(dict, "type_bufnr", 0);
 }
 
 /*
@@ -1159,7 +1172,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
- * prop_type_get({name} [, {bufnr}])
+ * prop_type_get({name} [, {props}])
  */
     void
 f_prop_type_get(typval_T *argvars, typval_T *rettv)
