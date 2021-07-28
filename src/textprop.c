@@ -140,7 +140,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     if (arg->vval.v_dict == NULL)
 	return OK;  // NULL dict is like an empty dict
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
-    if (di != NULL)
+    if (di != NULL && STRCMP(tv_get_string(&di->di_tv), "0") != 0)
     {
 	*buf = get_buf_arg(&di->di_tv);
 	if (*buf == NULL)

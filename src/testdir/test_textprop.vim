@@ -85,7 +85,7 @@ def Test_proptype_buf_list()
       {type: 'global', type_bufnr: 0,     id: 0, col: 1, end: 1, length: 0, start: 1},
     ], prop_list(1))
     assert_equal(
-      {lnum: 1, id: 0, col: 1, type_bufnr: 41, end: 1, type: 'local', length: 0, start: 1},
+      {lnum: 1, id: 0, col: 1, type_bufnr: bufnr, end: 1, type: 'local', length: 0, start: 1},
       prop_find({lnum: 1, type: 'local'}))
     assert_equal(
       {lnum: 1, id: 0, col: 1, type_bufnr: 0, end: 1, type: 'global', length: 0, start: 1},
@@ -96,7 +96,7 @@ def Test_proptype_buf_list()
   finally
     prop_type_delete('global')
     prop_type_delete('local', {bufnr: bufnr})
-    close
+    bwipe!
   endtry
 enddef
 
@@ -1547,6 +1547,37 @@ def Test_prop_add_delete_line()
 
   prop_type_delete('Test')
   bwipe!
+enddef
+
+" Buffer number of 0 should be ignored, as if the parameter wasn't passed.
+def Test_prop_bufnr_zero()
+  new
+  try
+    var bufnr = bufnr('')
+    setline(1, 'hello')
+    prop_type_add('bufnr-global', {highlight: 'ErrorMsg'})
+    prop_type_add('bufnr-buffer', {highlight: 'StatusLine', bufnr: bufnr})
+
+    prop_add(1, 1, {type: 'bufnr-global', length: 1})
+    prop_add(1, 2, {type: 'bufnr-buffer', length: 1})
+
+    var list = prop_list(1)
+    assert_equal([
+       {id: 0, col: 1, type_bufnr: 0,         end: 1, type: 'bufnr-global', length: 1, start: 1},
+       {id: 0, col: 2, type_bufnr: bufnr, end: 1, type: 'bufnr-buffer', length: 1, start: 1},
+    ], list)
+
+    assert_equal(
+      {highlight: 'ErrorMsg', end_incl: 0, start_incl: 0, priority: 0, combine: 1},
+      prop_type_get('bufnr-global', {bufnr: list[0].type_bufnr}))
+
+    assert_equal(
+      {highlight: 'StatusLine', end_incl: 0, start_incl: 0, priority: 0, bufnr: bufnr, combine: 1},
+      prop_type_get('bufnr-buffer', {bufnr: list[1].type_bufnr}))
+  finally
+    bwipe!
+    prop_type_delete('bufnr-global')
+  endtry
 enddef
 
 
