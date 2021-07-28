@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 8.2.  Last change: 2021 May 13
+*version7.txt*  For Vim version 8.2.  Last change: 2021 May 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -16225,7 +16225,7 @@ Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok,
 Patch 7.3.1018
 Problem:    New regexp engine wastes memory.
 Solution:   Allocate prog with actual number of states, not estimated maximum
-	    number of sates.
+	    number of states.
 Files:	    src/regexp_nfa.c
 
 Patch 7.3.1019

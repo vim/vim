@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Jul 01
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3177,6 +3177,7 @@ append({lnum}, {text})					*append()*
 		the current buffer.
 		Any type of item is accepted and converted to a String.
 		{lnum} can be zero to insert a line before the first one.
+		{lnum} is used like with |getline()|.
 		Returns 1 for failure ({lnum} out of range or out of memory),
 		0 for success.  Example: >
 			:let failed = append(line('$'), "# THE END")
@@ -3446,8 +3447,9 @@ bufloaded({expr})					*bufloaded()*
 			let loaded = 'somename'->bufloaded()
 
 bufname([{expr}])					*bufname()*
-		The result is the name of a buffer, as it is displayed by the
-		":ls" command.
+		The result is the name of a buffer.  Mostly as it is displayed
+		by the `:ls` command, but not using special names such as
+		"[No Name]".
 		If {expr} is omitted the current buffer is used.
 		If {expr} is a Number, that buffer number's name is given.
 		Number zero is the alternate buffer for the current window.
@@ -3482,7 +3484,7 @@ bufname([{expr}])					*bufname()*
 							*bufnr()*
 bufnr([{expr} [, {create}]])
 		The result is the number of a buffer, as it is displayed by
-		the ":ls" command.  For the use of {expr}, see |bufname()|
+		the `:ls` command.  For the use of {expr}, see |bufname()|
 		above.
 
 		If the buffer doesn't exist, -1 is returned.  Or, if the
@@ -3677,10 +3679,10 @@ charidx({string}, {idx} [, {countcc}])
 		The index of the first character is zero.
 		If there are no multibyte characters the returned value is
 		equal to {idx}.
-		When {countcc} is omitted or zero, then composing characters
-		are not counted separately, their byte length is added to the
-		preceding base character.
-		When {countcc} is set to 1, then composing characters are
+		When {countcc} is omitted or |FALSE|, then composing characters
+		are not counted separately, their byte length is
+		added to the preceding base character.
+		When {countcc} is |TRUE|, then composing characters are
 		counted as separate characters.
 		Returns -1 if the arguments are invalid or if {idx} is greater
 		than the index of the last byte in {string}.  An error is
@@ -3852,7 +3854,9 @@ complete_info([{what}])
 				See |complete-items|.
 		   selected	Selected item index.  First index is zero.
 				Index is -1 if no item is selected (showing
-				typed text only)
+				typed text only, or the last completion after
+				no item is selected when using the <Up> or
+				<Down> keys)
 		   inserted	Inserted string. [NOT IMPLEMENT YET]
 
 							*complete_info_mode*
@@ -4067,6 +4071,7 @@ cursor({list})
 		|setcursorcharpos()|.
 
 		Does not change the jumplist.
+		{lnum} is used like with |getline()|.
 		If {lnum} is greater than the number of lines in the buffer,
 		the cursor will be positioned at the last line in the buffer.
 		If {lnum} is zero, the cursor will stay in the current line.
@@ -4437,6 +4442,8 @@ exepath({expr})						*exepath()*
 							*exists()*
 exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 		zero otherwise.
+		Note: In a compiled |:def| function local variables and
+		arguments are not visible to `exists()`.
 
 		For checking for a supported feature use |has()|.
 		For checking if a file exists use |filereadable()|.
@@ -4459,9 +4466,11 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 			varname		internal variable (see
 					|internal-variables|).  Also works
 					for |curly-braces-names|, |Dictionary|
-					entries, |List| items, etc.  Beware
-					that evaluating an index may cause an
-					error message for an invalid
+					entries, |List| items, etc.
+					Does not work for local variables in a
+					compiled `:def` function.
+					Beware that evaluating an index may
+					cause an error message for an invalid
 					expression.  E.g.: >
 					   :let l = [1, 2, 3]
 					   :echo exists("l[5]")
@@ -4774,15 +4783,18 @@ filewritable({file})					*filewritable()*
 
 
 filter({expr1}, {expr2})				*filter()*
-		{expr1} must be a |List| or a |Dictionary|.
+		{expr1} must be a |List|, |Blob| or |Dictionary|.
 		For each item in {expr1} evaluate {expr2} and when the result
-		is zero remove the item from the |List| or |Dictionary|.
+		is zero remove the item from the |List| or |Dictionary|. For a
+		|Blob| each byte is removed.
+
 		{expr2} must be a |string| or |Funcref|.
 
 		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
 		of the current item and for a |List| |v:key| has the index of
-		the current item.
+		the current item.  For a |Blob| |v:key| has the index of the
+		current byte.
 		Examples: >
 			call filter(mylist, 'v:val !~ "OLD"')
 <		Removes the items where "OLD" appears. >
@@ -4813,11 +4825,11 @@ filter({expr1}, {expr2})				*filter()*
 		|Dictionary| to remain unmodified make a copy first: >
 			:let l = filter(copy(mylist), 'v:val =~ "KEEP"')
 
-<		Returns {expr1}, the |List| or |Dictionary| that was filtered.
-		When an error is encountered while evaluating {expr2} no
-		further items in {expr1} are processed.  When {expr2} is a
-		Funcref errors inside a function are ignored, unless it was
-		defined with the "abort" flag.
+<		Returns {expr1}, the |List| , |Blob| or |Dictionary| that was
+		filtered.  When an error is encountered while evaluating
+		{expr2} no further items in {expr1} are processed.  When
+		{expr2} is a Funcref errors inside a function are ignored,
+		unless it was defined with the "abort" flag.
 
 		Can also be used as a |method|: >
 			mylist->filter(expr2)
@@ -7138,9 +7150,9 @@ line2byte({lnum})					*line2byte()*
 		below the last line: >
 			line2byte(line("$") + 1)
 <		This is the buffer size plus one.  If 'fileencoding' is empty
-		it is the file size plus one.
-		When {lnum} is invalid, or the |+byte_offset| feature has been
-		disabled at compile time, -1 is returned.
+		it is the file size plus one.  {lnum} is used like with
+		|getline()|.  When {lnum} is invalid, or the |+byte_offset|
+		feature has been disabled at compile time, -1 is returned.
 		Also see |byte2line()|, |go| and |:goto|.
 
 		Can also be used as a |method|: >
@@ -7313,6 +7325,8 @@ luaeval({expr} [, {expr}])					*luaeval()*
 		as-is.
 		Other objects are returned as zero without any errors.
 		See |lua-luaeval| for more details.
+		Note that in a `:def` function local variables are not visible
+		to {expr}.
 
 		Can also be used as a |method|: >
 			GetExpr()->luaeval()
@@ -7332,7 +7346,8 @@ map({expr1}, {expr2})					*map()*
 		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
 		of the current item and for a |List| |v:key| has the index of
-		the current item.
+		the current item.  For a |Blob| |v:key| has the index of the
+		current byte.
 		Example: >
 			:call map(mylist, '"> " . v:val . " <"')
 <		This puts "> " before and " <" after each item in "mylist".
@@ -8023,6 +8038,9 @@ mzeval({expr})							*mzeval()*
 		    :echo mzeval("l")
 		    :echo mzeval("h")
 <
+		Note that in a `:def` function local variables are not visible
+		to {expr}.
+
 		Can also be used as a |method|: >
 			GetExpr()->mzeval()
 <
@@ -8034,6 +8052,7 @@ nextnonblank({lnum})					*nextnonblank()*
 			if getline(nextnonblank(1)) =~ "Java"
 <		When {lnum} is invalid or there is no non-blank line at or
 		below it, zero is returned.
+		{lnum} is used like with |getline()|.
 		See also |prevnonblank()|.
 
 		Can also be used as a |method|: >
@@ -8095,6 +8114,9 @@ perleval({expr})					*perleval()*
 			:echo perleval('[1 .. 4]')
 <			[1, 2, 3, 4]
 
+		Note that in a `:def` function local variables are not visible
+		to {expr}.
+
 		Can also be used as a |method|: >
 			GetExpr()->perleval()
 
@@ -8126,6 +8148,7 @@ prevnonblank({lnum})					*prevnonblank()*
 			let ind = indent(prevnonblank(v:lnum - 1))
 <		When {lnum} is invalid or there is no non-blank line at or
 		above it, zero is returned.
+		{lnum} is used like with |getline()|.
 		Also see |nextnonblank()|.
 
 		Can also be used as a |method|: >
@@ -8433,6 +8456,8 @@ py3eval({expr})						*py3eval()*
 		Lists are represented as Vim |List| type.
 		Dictionaries are represented as Vim |Dictionary| type with
 		keys converted to strings.
+		Note that in a `:def` function local variables are not visible
+		to {expr}.
 
 		Can also be used as a |method|: >
 			GetExpr()->py3eval()
@@ -8448,6 +8473,8 @@ pyeval({expr})						*pyeval()*
 		Lists are represented as Vim |List| type.
 		Dictionaries are represented as Vim |Dictionary| type,
 		non-string keys result in error.
+		Note that in a `:def` function local variables are not visible
+		to {expr}.
 
 		Can also be used as a |method|: >
 			GetExpr()->pyeval()
@@ -8707,7 +8734,8 @@ reltime([{start} [, {end}]])				*reltime()*
 		and {end}.
 
 		The {start} and {end} arguments must be values returned by
-		reltime().
+		reltime().  If there is an error zero is returned in legacy
+		script, in Vim9 script an error is given.
 
 		Can also be used as a |method|: >
 			GetStart()->reltime()
@@ -8722,6 +8750,8 @@ reltimefloat({time})				*reltimefloat()*
 			let seconds = reltimefloat(reltime(start))
 <		See the note of reltimestr() about overhead.
 		Also see |profiling|.
+		If there is an error 0.0 is returned in legacy script, in Vim9
+		script an error is given.
 
 		Can also be used as a |method|: >
 			reltime(start)->reltimefloat()
@@ -8741,6 +8771,8 @@ reltimestr({time})				*reltimestr()*
 		can use split() to remove it. >
 			echo split(reltimestr(reltime(start)))[0]
 <		Also see |profiling|.
+		If there is an error an empty string is returned in legacy
+		script, in Vim9 script an error is given.
 
 		Can also be used as a |method|: >
 			reltime(start)->reltimestr()
@@ -8974,6 +9006,8 @@ rubyeval({expr})					*rubyeval()*
 		Hashes are represented as Vim |Dictionary| type.
 		Other objects are represented as strings resulted from their
 		"Object#to_s" method.
+		Note that in a `:def` function local variables are not visible
+		to {expr}.
 
 		Can also be used as a |method|: >
 			GetRubyExpr()->rubyeval()
@@ -10850,7 +10884,7 @@ synID({lnum}, {col}, {trans})				*synID()*
 		line.  'synmaxcol' applies, in a longer line zero is returned.
 		Note that when the position is after the last character,
 		that's where the cursor can be in Insert mode, synID() returns
-		zero.
+		zero.  {lnum} is used like with |getline()|.
 
 		When {trans} is |TRUE|, transparent items are reduced to the
 		item that they reveal.  This is useful when wanting to know
@@ -10918,7 +10952,7 @@ synconcealed({lnum}, {col})				*synconcealed()*
 		The result is a |List| with currently three items:
 		1. The first item in the list is 0 if the character at the
 		   position {lnum} and {col} is not part of a concealable
-		   region, 1 if it is.
+		   region, 1 if it is.  {lnum} is used like with |getline()|.
 		2. The second item in the list is a string. If the first item
 		   is 1, the second item contains the text which will be
 		   displayed in place of the concealed text, depending on the
@@ -10942,8 +10976,9 @@ synconcealed({lnum}, {col})				*synconcealed()*
 
 synstack({lnum}, {col})					*synstack()*
 		Return a |List|, which is the stack of syntax items at the
-		position {lnum} and {col} in the current window.  Each item in
-		the List is an ID like what |synID()| returns.
+		position {lnum} and {col} in the current window.  {lnum} is
+		used like with |getline()|.  Each item in the List is an ID
+		like what |synID()| returns.
 		The first item in the List is the outer region, following are
 		items contained in that one.  The last one is what |synID()|
 		returns, unless not the whole item is highlighted or it is a
@@ -11670,7 +11705,7 @@ win_screenpos({nr})					*win_screenpos()*
 		[1, 1], unless there is a tabline, then it is [2, 1].
 		{nr} can be the window number or the |window-ID|.  Use zero
 		for the current window.
-		Return [0, 0] if the window cannot be found in the current
+		Returns [0, 0] if the window cannot be found in the current
 		tabpage.
 
 		Can also be used as a |method|: >
@@ -14388,7 +14423,7 @@ displayed.
 
 							*except-several-errors*
 When several errors appear in a single command, the first error message is
-usually the most specific one and therefor converted to the error exception.
+usually the most specific one and therefore converted to the error exception.
    Example: >
 	echo novar
 causes >

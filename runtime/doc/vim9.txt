@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jul 07
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -321,6 +321,25 @@ used: >
 	}
 	echo temp  # Error!
 
+This is especially useful in a user command: >
+
+	command -range Rename {
+		| var save = @a
+		| @a = 'some expression'
+		| echo 'do something with ' .. @a
+		| @a = save
+		|}
+
+And with autocommands: >
+
+   au BufWritePre *.go {
+		| var save = winsaveview()
+		| silent! exe ':%! some formatting command'
+		| winrestview(save)
+		|}
+
+Although using a :def function probably works better.
+
 Declaring a variable with a type but without an initializer will initialize to
 zero, false or empty.
 
@@ -331,6 +350,9 @@ with `:unlet`.
 
 `:lockvar` does not work on local variables.  Use `:const` and `:final`
 instead.
+
+The `exists()` function does not work on local variables or arguments.  These
+are visible at compile time only, not at runtime.
 
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.
@@ -425,6 +447,12 @@ is both the `:substitute` command and the `substitute()` function.  When the
 line starts with `substitute(` this will use the function. Prepend a colon to
 use the command instead: >
 	:substitute(pattern (replacement (
+
+If the expression starts with "!" this is interpreted as a shell command, not
+negation of a condition.  Thus this is a shell command: >
+	!shellCommand->something
+Put the expression in parenthesis to use the "!" for negation: >
+	(!expression)->Method()
 
 Note that while variables need to be defined before they can be used,
 functions can be called before being defined.  This is required to allow
@@ -686,6 +714,9 @@ White space is not allowed:
 	Func(
 	      arg	   # OK
 	      )
+
+White space space is not allowed in a `:set` command between the option name
+and a following "&", "!", "<", "=", "+=", "-=" or "^=".
 
 
 No curly braces expansion ~
@@ -1045,26 +1076,36 @@ For these the backtick expansion can be used.  Example: >
 	  g/pattern/s/^/`=newText`/
 	enddef
 
+Or a script variable can be used: >
+	var newText = 'blah'
+	def Replace()
+	  g/pattern/s/^/\=newText/
+	enddef
+
 Closures defined in a loop will share the same context.  For example: >
 	var flist: list<func>
-	for i in range(10)
+	for i in range(5)
 	  var inloop = i
 	  flist[i] = () => inloop
 	endfor
+	echo range(5)->map((i, _) => flist[i]())
+	# Result: [4, 4, 4, 4, 4]
 
 The "inloop" variable will exist only once, all closures put in the list refer
-to the same instance, which in the end will have the value 9.  This is
-efficient.  If you do want a separate context for each closure call a function
-to define it: >
-	def GetFunc(i: number): func
-	  var inloop = i
-	  return () => inloop
+to the same instance, which in the end will have the value 4.  This is
+efficient, also when looping many times.  If you do want a separate context
+for each closure call a function to define it: >
+	def GetClosure(i: number): func
+	  var infunc = i
+	  return () => infunc
 	enddef
 
 	var flist: list<func>
-	for i in range(10)
-	  flist[i] = GetFunc(i)
+	for i in range(5)
+	  flist[i] = GetClosure(i)
 	endfor
+	echo range(5)->map((i, _) => flist[i]())
+	# Result: [0, 1, 2, 3, 4]
 
 ==============================================================================
 
@@ -1366,7 +1407,8 @@ The script name after `import` can be:
 - A path not being relative or absolute.  This will be found in the
   "import" subdirectories of 'runtimepath' entries.  The name will usually be
   longer and unique, to avoid loading the wrong file.
-  Note that "after/import" is not used.
+  Note that "after/import" is not used, unless it is explicitly added in
+  'runtimepath'.
 
 Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
@@ -1457,7 +1499,7 @@ Some examples: >
 	    var name: string
 	    
 	    def constructor(name: string)
-		this.name = name;
+		this.name = name
 	    enddef
 
 	    def display(): void

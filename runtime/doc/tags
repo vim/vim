@@ -3978,7 +3978,9 @@ E12	message.txt	/*E12*
 E120	eval.txt	/*E120*
 E1200	options.txt	/*E1200*
 E1201	options.txt	/*E1201*
+E1205	eval.txt	/*E1205*
 E121	eval.txt	/*E121*
+E1214	eval.txt	/*E1214*
 E122	eval.txt	/*E122*
 E123	eval.txt	/*E123*
 E124	eval.txt	/*E124*
@@ -6161,6 +6163,10 @@ digraph-encoding	digraph.txt	/*digraph-encoding*
 digraph-table	digraph.txt	/*digraph-table*
 digraph-table-mbyte	digraph.txt	/*digraph-table-mbyte*
 digraph.txt	digraph.txt	/*digraph.txt*
+digraph_get()	eval.txt	/*digraph_get()*
+digraph_getlist()	eval.txt	/*digraph_getlist()*
+digraph_set()	eval.txt	/*digraph_set()*
+digraph_setlist()	eval.txt	/*digraph_setlist()*
 digraphs	digraph.txt	/*digraphs*
 digraphs-changed	version6.txt	/*digraphs-changed*
 digraphs-default	digraph.txt	/*digraphs-default*
@@ -10160,6 +10166,7 @@ vim-8.2	version8.txt	/*vim-8.2*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*
+vim-changelog	version8.txt	/*vim-changelog*
 vim-default-editor	gui_w32.txt	/*vim-default-editor*
 vim-dev	intro.txt	/*vim-dev*
 vim-mac	intro.txt	/*vim-mac*
@@ -10305,6 +10312,7 @@ win32-faq	os_win32.txt	/*win32-faq*
 win32-gettext	mlang.txt	/*win32-gettext*
 win32-gui	gui_w32.txt	/*win32-gui*
 win32-hidden-menus	gui.txt	/*win32-hidden-menus*
+win32-installer	os_win32.txt	/*win32-installer*
 win32-mouse	os_win32.txt	/*win32-mouse*
 win32-open-with-menu	gui_w32.txt	/*win32-open-with-menu*
 win32-popup-menu	gui_w32.txt	/*win32-popup-menu*

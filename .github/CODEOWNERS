@@ -51,6 +51,7 @@ runtime/compiler/sass.vim		@tpope
 runtime/compiler/se.vim			@dkearns
 runtime/compiler/shellcheck.vim		@dkearns
 runtime/compiler/sml.vim		@dkearns
+runtime/compiler/spectral.vim		@romainl
 runtime/compiler/stylelint.vim		@dkearns
 runtime/compiler/tcl.vim		@dkearns
 runtime/compiler/tidy.vim		@dkearns
@@ -59,6 +60,7 @@ runtime/compiler/tsc.vim		@dkearns
 runtime/compiler/typedoc.vim		@dkearns
 runtime/compiler/xmllint.vim		@dkearns
 runtime/compiler/xo.vim			@dkearns
+runtime/compiler/yamllint.vim		@romainl
 runtime/compiler/zsh.vim		@dkearns
 runtime/doc/pi_getscript.txt		@cecamp
 runtime/doc/pi_logipat.txt		@cecamp

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2021 May 16
+*map.txt*       For Vim version 8.2.  Last change: 2021 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1580,7 +1580,8 @@ Example: >
 		echo 'hello'
 		g:calledMyCommand = true
 	    }
-No nesting is supported.
+No nesting is supported.  Using `:normal` directly does not work, you can use
+it indirectly with `:execute`.
 
 The replacement text {repl} for a user defined command is scanned for special
 escape sequences, using <...> notation.  Escape sequences are replaced with

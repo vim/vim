@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2021 May 13
+*version8.txt*  For Vim version 8.2.  Last change: 2021 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,6 +40,10 @@ Patches					|patches-8.2|
 See |vi_diff.txt| for an overview of differences between Vi and Vim 8.0.
 See |version4.txt|, |version5.txt|, |version6.txt| and |version7.txt| for
 differences between other versions.
+
+							*vim-changelog*
+You can find an overview of the most important changes (according to Martin
+Tournoij) on this site: https://www.arp242.net/vimlog/
 
 ==============================================================================
 NEW FEATURES						*new-8*
@@ -12980,7 +12984,7 @@ Files:      src/evalfunc.c, src/testdir/test_cmdline.vim
 Patch 7.4.2113
 Problem:    Test for undo is flaky.
 Solution:   Turn it into a new style test.  Use test_settime() to avoid
-            flakyness.
+            flakiness.
 Files:      src/Makefile, src/undo.c, src/testdir/test61.in,
             src/testdir/test61.ok, src/testdir/test_undo.vim,
             src/testdir/test_undolevels.vim, src/testdir/Make_all.mak,
@@ -30906,7 +30910,7 @@ Files:	    src/eval.c, src/testdir/test_assert.vim
 Patch 8.1.0820
 Problem:    Test for sending large data over channel sometimes fails.
 Solution:   Handle that the job may have finished early.  Also fix that file
-            changed test doesn't work in the GUI and reduce flakyness. (Ozaki
+            changed test doesn't work in the GUI and reduce flakiness. (Ozaki
             Kiichi, closes #3861)
 Files:	    src/testdir/test_channel.vim, src/testdir/test_filechanged.vim
 
@@ -39253,7 +39257,7 @@ Files:	    src/option.c
 
 Patch 8.1.2117
 Problem:    CursorLine highlight used while 'cursorline' is off.
-Solution:   Check 'cursorline' is set. (cloes #5017)
+Solution:   Check 'cursorline' is set. (closes #5017)
 Files:	    src/drawline.c, src/testdir/test_cursorline.vim
 
 Patch 8.1.2118

@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 8.2.  Last change: 2019 Jun 02
+*fold.txt*      For Vim version 8.2.  Last change: 2021 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -540,6 +540,8 @@ characters below it.  This column stops where the open fold stops.  When folds
 nest, the nested fold is one character right of the fold it's contained in.
 
 A closed fold is indicated with a '+'.
+
+These characters can be changed with the 'fillchars' option.
 
 Where the fold column is too narrow to display all nested folds, digits are
 shown to indicate the nesting level.
