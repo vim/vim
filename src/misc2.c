@@ -1566,6 +1566,22 @@ ga_concat(garray_T *gap, char_u *s)
 }
 
 /*
+ * Concatenate 'len' bytes from string 's' to a growarray.
+ * When "s" is NULL does not do anything.
+ */
+    void
+ga_concat_len(garray_T *gap, char_u *s, size_t len)
+{
+    if (s == NULL || *s == NUL)
+	return;
+    if (ga_grow(gap, len) == OK)
+    {
+	mch_memmove((char *)gap->ga_data + gap->ga_len, s, (size_t)len);
+	gap->ga_len += len;
+    }
+}
+
+/*
  * Append one byte to a growarray which contains bytes.
  */
     void

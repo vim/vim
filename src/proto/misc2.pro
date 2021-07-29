@@ -45,6 +45,7 @@ int ga_grow_inner(garray_T *gap, int n);
 char_u *ga_concat_strings(garray_T *gap, char *sep);
 int ga_add_string(garray_T *gap, char_u *p);
 void ga_concat(garray_T *gap, char_u *s);
+void ga_concat_len(garray_T *gap, char_u *s, size_t len);
 void ga_append(garray_T *gap, int c);
 void append_ga_line(garray_T *gap);
 int simplify_key(int key, int *modifiers);
