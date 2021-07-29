@@ -2736,4 +2736,7 @@ long elapsed(DWORD start_tick);
 // Maximum number of characters that can be fuzzy matched
 #define MAX_FUZZY_MATCHES	256
 
+// flags for equal_type()
+#define ETYPE_ARG_UNKNOWN 1
+
 #endif // VIM__H

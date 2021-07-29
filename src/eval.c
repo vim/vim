@@ -3359,7 +3359,7 @@ eval7t(
 	{
 	    type_T *actual = typval2type(rettv, get_copyID(), &type_list, TRUE);
 
-	    if (!equal_type(want_type, actual))
+	    if (!equal_type(want_type, actual, 0))
 	    {
 		if (want_type == &t_bool && actual != &t_bool
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))

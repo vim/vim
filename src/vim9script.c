@@ -623,9 +623,10 @@ handle_import(
 		    && (imported->imp_flags & IMP_FLAGS_RELOAD)
 		    && imported->imp_sid == sid
 		    && (idx >= 0
-			? (equal_type(imported->imp_type, type)
+			? (equal_type(imported->imp_type, type, 0)
 			    && imported->imp_var_vals_idx == idx)
-			: (equal_type(imported->imp_type, ufunc->uf_func_type)
+			: (equal_type(imported->imp_type, ufunc->uf_func_type,
+							     ETYPE_ARG_UNKNOWN)
 			    && STRCMP(imported->imp_funcname,
 							ufunc->uf_name) == 0)))
 	    {

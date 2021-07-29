@@ -1271,7 +1271,7 @@ get_script_svar(scriptref_T *sref, ectx_T *ectx)
 	return NULL;
     }
     sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
-    if (!equal_type(sv->sv_type, sref->sref_type))
+    if (!equal_type(sv->sv_type, sref->sref_type, 0))
     {
 	emsg(_(e_script_variable_type_changed));
 	return NULL;

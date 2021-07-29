@@ -1626,6 +1626,9 @@ def Test_vim9script_reload_noclear()
   var lines =<< trim END
     vim9script
     export var exported = 'thexport'
+
+    export def TheFunc(x = 0)
+    enddef
   END
   writefile(lines, 'XExportReload')
   lines =<< trim END
@@ -1637,6 +1640,9 @@ def Test_vim9script_reload_noclear()
     def Again(): string
       return 'again'
     enddef
+
+    import TheFunc from './XExportReload'
+    TheFunc()
 
     if exists('s:loaded') | finish | endif
     var s:loaded = true
