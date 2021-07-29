@@ -411,6 +411,7 @@ handle_import(
     int		mult = FALSE;
     garray_T	names;
     garray_T	as_names;
+    long	start_lnum = SOURCING_LNUM;
 
     tv.v_type = VAR_UNKNOWN;
     ga_init2(&names, sizeof(char_u *), 10);
@@ -510,6 +511,9 @@ handle_import(
 	goto erret;
     }
     cmd_end = arg;
+
+    // Give error messages for the start of the line.
+    SOURCING_LNUM = start_lnum;
 
     /*
      * find script file
