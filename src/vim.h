@@ -486,6 +486,10 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 # endif
 #endif
 
+#ifdef HAVE_SODIUM
+# include <sodium.h>
+#endif
+
 // ================ end of the header file puzzle ===============
 
 /*

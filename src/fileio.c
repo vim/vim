@@ -13,10 +13,6 @@
 
 #include "vim.h"
 
-#ifdef FEAT_SODIUM
-# include <sodium.h>
-#endif
-
 #if defined(__TANDEM)
 # include <limits.h>		// for SSIZE_MAX
 #endif

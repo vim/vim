@@ -12,10 +12,6 @@
  */
 #include "vim.h"
 
-#ifdef FEAT_SODIUM
-# include <sodium.h>
-#endif
-
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
  * Optional encryption support.

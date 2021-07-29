@@ -48,11 +48,6 @@
 # include <time.h>
 #endif
 
-// for randombytes_buf
-#ifdef FEAT_SODIUM
-# include <sodium.h>
-#endif
-
 #if defined(SASC) || defined(__amigaos4__)
 # include <proto/dos.h>	    // for Open() and Close()
 #endif
