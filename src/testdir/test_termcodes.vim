@@ -2348,4 +2348,16 @@ func Test_special_term_keycodes()
   bw!
 endfunc
 
+func Test_terminal_builtin_without_gui()
+  CheckNotMSWindows
+
+  " builtin_gui should not be output by :set term=xxx
+  let output = systemlist("TERM=dumb " .. v:progpath .. " --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
+  redraw!
+  call map(output, {_, val -> trim(val)})
+  call assert_equal(-1, index(output, 'builtin_gui'))
+  call assert_notequal(-1, index(output, 'builtin_dumb'))
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
