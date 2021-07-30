@@ -10223,15 +10223,14 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 <		Also see |uniq()|.
 
 		Example: >
-			func MyCompare(i1, i2)
-			   return a:i1 == a:i2 ? 0 : a:i1 > a:i2 ? 1 : -1
-			endfunc
-			let sortedlist = sort(mylist, "MyCompare")
+			let mylist = [666, 42, 3]
+			mylist->sort({a, b -> a == b ? 0 : a > b ? 1 : -1})
+<		Since sorting is in-place you can ignore the return value;
+		create a copy to leave the original list intact: >
+			let sorted = mylist->copy()->sort({a, b -> a == b ? 0 : a > b ? 1 : -1})
 <		A shorter compare version for this specific simple case, which
 		ignores overflow: >
-			func MyCompare(i1, i2)
-			   return a:i1 - a:i2
-			endfunc
+			mylist->sort({a, b -> a - b})
 <
 sound_clear()						*sound_clear()*
 		Stop playing all sounds.
