@@ -1786,7 +1786,8 @@ report_term_error(char *error_msg, char_u *term)
     mch_errmsg("\r\n");
     for (termp = &(builtin_termcaps[0]); termp->bt_string != NULL; ++termp)
     {
-	if (termp->bt_entry == (int)KS_NAME)
+	if (termp->bt_entry == (int)KS_NAME &&
+	    (STRNCMP(termp->bt_string, "gui", 3) != 0))
 	{
 #ifdef HAVE_TGETENT
 	    mch_errmsg("    builtin_");
