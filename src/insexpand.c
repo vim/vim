@@ -2712,7 +2712,7 @@ ins_compl_get_exp(pos_T *ini)
     char_u	*dict = NULL;
     int		dict_f = 0;
     int		set_match_pos;
-    pos_T prev_pos;
+    pos_T prev_pos = {.lnum = 0, .col = 0};
     int looped_around = FALSE;
 
     if (!compl_started)
@@ -2996,7 +2996,7 @@ ins_compl_get_exp(pos_T *ini)
                                 && first_match_pos.col == last_match_pos.col) {
 		    found_new_match = FAIL;
 		}
-		else if (prev_pos.lnum >= last_match_pos.lnum
+		else if (prev_pos.lnum > last_match_pos.lnum
 			|| (prev_pos.lnum == last_match_pos.lnum
 			    && prev_pos.col >= last_match_pos.col)) {
 		    if (looped_around) {
