@@ -395,7 +395,7 @@ SODIUM = no
 
 !if "$(SODIUM)" != "no"
 SOD_INC		= /I "$(SODIUM)\include"
-SOD_DEFS	= -DFEAT_SODIUM
+SOD_DEFS	= -DHAVE_SODIUM
 SOD_LIB		= $(SOD_LIB)\libsodium.lib
 !endif
 
