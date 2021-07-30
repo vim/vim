@@ -98,8 +98,6 @@ static void f_line2byte(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_LUA
 static void f_luaeval(typval_T *argvars, typval_T *rettv);
 #endif
-static void f_maparg(typval_T *argvars, typval_T *rettv);
-static void f_mapcheck(typval_T *argvars, typval_T *rettv);
 static void f_match(typval_T *argvars, typval_T *rettv);
 static void f_matchend(typval_T *argvars, typval_T *rettv);
 static void f_matchlist(typval_T *argvars, typval_T *rettv);
@@ -6733,40 +6731,6 @@ f_luaeval(typval_T *argvars, typval_T *rettv)
     do_luaeval(str, argvars + 1, rettv);
 }
 #endif
-
-/*
- * "maparg()" function
- */
-    static void
-f_maparg(typval_T *argvars, typval_T *rettv)
-{
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_arg(argvars, 1) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && (check_for_opt_bool_arg(argvars, 2) == FAIL
-			|| (argvars[2].v_type != VAR_UNKNOWN
-			    && check_for_opt_bool_arg(argvars, 3) == FAIL)))))
-		return;
-
-    get_maparg(argvars, rettv, TRUE);
-}
-
-/*
- * "mapcheck()" function
- */
-    static void
-f_mapcheck(typval_T *argvars, typval_T *rettv)
-{
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_arg(argvars, 1) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
-	return;
-
-    get_maparg(argvars, rettv, FALSE);
-}
 
 typedef enum
 {
