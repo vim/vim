@@ -2184,7 +2184,7 @@ check_map(
     return NULL;
 }
 
-    void
+    static void
 get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 {
     char_u	*keys;
@@ -2285,6 +2285,40 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 
     vim_free(keys_buf);
     vim_free(alt_keys_buf);
+}
+
+/*
+ * "maparg()" function
+ */
+    void
+f_maparg(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && (check_for_opt_bool_arg(argvars, 2) == FAIL
+			|| (argvars[2].v_type != VAR_UNKNOWN
+			    && check_for_opt_bool_arg(argvars, 3) == FAIL)))))
+		return;
+
+    get_maparg(argvars, rettv, TRUE);
+}
+
+/*
+ * "mapcheck()" function
+ */
+    void
+f_mapcheck(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
+    get_maparg(argvars, rettv, FALSE);
 }
 
 /*
