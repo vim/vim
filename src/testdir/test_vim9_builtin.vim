@@ -2558,9 +2558,15 @@ enddef
 def Test_repeat()
   CheckDefAndScriptFailure2(['repeat(1.1, 2)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['repeat({a: 10}, 2)'], 'E1013: Argument 1: type mismatch, expected string but got dict<', 'E1224: String, Number or List required for argument 1')
-  assert_equal('aaa', repeat('a', 3))
-  assert_equal('111', repeat(1, 3))
-  assert_equal([1, 1, 1], repeat([1], 3))
+  var lines =<< trim END
+      assert_equal('aaa', repeat('a', 3))
+      assert_equal('111', repeat(1, 3))
+      assert_equal([1, 1, 1], repeat([1], 3))
+      var s = '-'
+      s ..= repeat(5, 3)
+      assert_equal('-555', s)
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_resolve()

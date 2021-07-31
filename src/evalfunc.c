@@ -931,6 +931,13 @@ ret_first_arg(int argcount, type_T **argtypes)
 	return argtypes[0];
     return &t_void;
 }
+    static type_T *
+ret_repeat(int argcount UNUSED, type_T **argtypes)
+{
+    if (argtypes[0] == &t_number)
+	return &t_string;
+    return argtypes[0];
+}
 // for map(): returns first argument but item type may differ
     static type_T *
 ret_first_cont(int argcount UNUSED, type_T **argtypes)
@@ -1813,7 +1820,7 @@ static funcentry_T global_functions[] =
     {"rename",		2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_rename},
     {"repeat",		2, 2, FEARG_1,	    arg2_repeat,
-			ret_first_arg,	    f_repeat},
+			ret_repeat,	    f_repeat},
     {"resolve",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_resolve},
     {"reverse",		1, 1, FEARG_1,	    arg1_list_or_blob,
