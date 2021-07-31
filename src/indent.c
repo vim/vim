@@ -1822,6 +1822,13 @@ get_expr_indent(void)
     check_cursor();
     State = save_State;
 
+    // Reset did_throw, unless 'debug' has "throw" and inside a try/catch.
+    if (did_throw && (vim_strchr(p_debug, 't') == NULL || trylevel == 0))
+    {
+	handle_did_throw();
+	did_throw = FALSE;
+    }
+
     // If there is an error, just keep the current indent.
     if (indent < 0)
 	indent = get_indent();
