@@ -76,7 +76,7 @@ def Test_abs()
 enddef
 
 def Test_add()
-  CheckDefAndScriptFailure2(['add({}, 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<unknown>', 'E1226: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['add({}, 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<unknown>', 'E1226: List or Blob required for argument 1')
   CheckDefFailure(['add([1], "a")'], 'E1012: Type mismatch; expected number but got string')
 enddef
 
@@ -198,7 +198,7 @@ def Test_appendbufline()
   assert_equal(['zero'], getbufline(bnum, 1))
   CheckDefAndScriptFailure2(['appendbufline([1], 1, "x")'], 'E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['appendbufline(1, [1], "x")'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 2')
-  CheckDefAndScriptFailure2(['appendbufline(1, 1, {"a": 10})'], 'E1013: Argument 3: type mismatch, expected string but got dict<number>', 'E1224: String or List required for argument 3')
+  CheckDefAndScriptFailure2(['appendbufline(1, 1, {"a": 10})'], 'E1013: Argument 3: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 3')
   bnum->bufwinid()->win_gotoid()
   bwipe!
 enddef
@@ -628,7 +628,7 @@ def Test_complete()
 enddef
 
 def Test_complete_add()
-  CheckDefAndScriptFailure2(['complete_add([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1223: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['complete_add([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1223: String or Dictionary required for argument 1')
 enddef
 
 def Test_complete_info()
@@ -673,7 +673,7 @@ enddef
 def Test_count()
   count('ABC ABC ABC', 'b', true)->assert_equal(3)
   count('ABC ABC ABC', 'b', false)->assert_equal(0)
-  CheckDefAndScriptFailure2(['count(10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1225: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['count(10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1225: String, List or Dictionary required for argument 1')
   CheckDefAndScriptFailure2(['count("a", [1], 2)'], 'E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3')
   CheckDefAndScriptFailure2(['count("a", [1], 0, "b")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
   count([1, 2, 2, 3], 2)->assert_equal(2)
@@ -703,7 +703,7 @@ def Test_cursor()
     cursor('2', 1)
   END
   CheckDefExecAndScriptFailure(lines, 'E1209:')
-  CheckDefAndScriptFailure2(['cursor(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected number but got blob', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['cursor(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected number but got blob', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['cursor(1, "2")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['cursor(1, 2, "3")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
 enddef
@@ -1072,7 +1072,7 @@ def Wrong_dict_key_type(items: list<number>): list<number>
 enddef
 
 def Test_filter()
-  CheckDefAndScriptFailure2(['filter(1.1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1228: List or Dictionary or Blob required for argument 1')
+  CheckDefAndScriptFailure2(['filter(1.1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1228: List, Dictionary or Blob required for argument 1')
   assert_equal([], filter([1, 2, 3], '0'))
   assert_equal([1, 2, 3], filter([1, 2, 3], '1'))
   assert_equal({b: 20}, filter({a: 10, b: 20}, 'v:val == 20'))
@@ -1556,7 +1556,7 @@ enddef
 
 def Test_index()
   index(['a', 'b', 'a', 'B'], 'b', 2, true)->assert_equal(3)
-  CheckDefAndScriptFailure2(['index("a", "a")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['index("a", "a")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: List or Blob required for argument 1')
   CheckDefFailure(['index(["1"], 1)'], 'E1013: Argument 2: type mismatch, expected string but got number')
   CheckDefAndScriptFailure2(['index(0z10, "b")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['index([1], 1, "c")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
@@ -1629,7 +1629,7 @@ def Test_insert()
   assert_equal(['a', 'b', 'c'], insert(['b', 'c'], 'a'))
   assert_equal(0z1234, insert(0z34, 0x12))
 
-  CheckDefAndScriptFailure2(['insert("a", 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['insert("a", 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: List or Blob required for argument 1')
   CheckDefFailure(['insert([2, 3], "a")'], 'E1013: Argument 2: type mismatch, expected number but got string')
   CheckDefAndScriptFailure2(['insert([2, 3], 1, "x")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
 enddef
@@ -1821,8 +1821,8 @@ def Test_lua()
 enddef
 
 def Test_map()
-  CheckDefAndScriptFailure2(['map("x", "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1228: List or Dictionary or Blob required for argument 1')
-  CheckDefAndScriptFailure2(['map(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List or Dictionary or Blob required for argument 1')
+  CheckDefAndScriptFailure2(['map("x", "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1228: List, Dictionary or Blob required for argument 1')
+  CheckDefAndScriptFailure2(['map(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List, Dictionary or Blob required for argument 1')
 enddef
 
 def Test_map_failure()
@@ -1935,8 +1935,8 @@ def Test_mapcheck()
 enddef
 
 def Test_mapnew()
-  CheckDefAndScriptFailure2(['mapnew("x", "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1228: List or Dictionary or Blob required for argument 1')
-  CheckDefAndScriptFailure2(['mapnew(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List or Dictionary or Blob required for argument 1')
+  CheckDefAndScriptFailure2(['mapnew("x", "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1228: List, Dictionary or Blob required for argument 1')
+  CheckDefAndScriptFailure2(['mapnew(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List, Dictionary or Blob required for argument 1')
 enddef
 
 def Test_mapset()
@@ -2148,7 +2148,7 @@ def Test_perleval()
 enddef
 
 def Test_popup_atcursor()
-  CheckDefAndScriptFailure2(['popup_atcursor({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['popup_atcursor({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['popup_atcursor("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 2')
 
   # Pass variable of type 'any' to popup_atcursor()
@@ -2159,7 +2159,7 @@ def Test_popup_atcursor()
 enddef
 
 def Test_popup_beval()
-  CheckDefAndScriptFailure2(['popup_beval({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['popup_beval({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['popup_beval("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 2')
 enddef
 
@@ -2181,7 +2181,7 @@ def Test_popup_create()
 enddef
 
 def Test_popup_dialog()
-  CheckDefAndScriptFailure2(['popup_dialog({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['popup_dialog({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['popup_dialog("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 2')
 enddef
 
@@ -2216,7 +2216,7 @@ def Test_popup_locate()
 enddef
 
 def Test_popup_menu()
-  CheckDefAndScriptFailure2(['popup_menu({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['popup_menu({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['popup_menu("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 2')
 enddef
 
@@ -2226,7 +2226,7 @@ def Test_popup_move()
 enddef
 
 def Test_popup_notification()
-  CheckDefAndScriptFailure2(['popup_notification({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['popup_notification({"a": 10}, {})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['popup_notification("a", [1, 2])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 2')
 enddef
 
@@ -2517,7 +2517,7 @@ def Test_remove_const_list()
 enddef
 
 def Test_remove()
-  CheckDefAndScriptFailure2(['remove("a", 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1228: List or Dictionary or Blob required for argument 1')
+  CheckDefAndScriptFailure2(['remove("a", 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1228: List, Dictionary or Blob required for argument 1')
   CheckDefAndScriptFailure2(['remove([], "b")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['remove([], 1, "c")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
   CheckDefAndScriptFailure2(['remove({}, 1.1)'], 'E1013: Argument 2: type mismatch, expected string but got float', 'E1220: String or Number required for argument 2')
@@ -2556,8 +2556,8 @@ def Test_rename()
 enddef
 
 def Test_repeat()
-  CheckDefAndScriptFailure2(['repeat(1.1, 2)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1224: String or List required for argument 1')
-  CheckDefAndScriptFailure2(['repeat({a: 10}, 2)'], 'E1013: Argument 1: type mismatch, expected string but got dict<', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['repeat(1.1, 2)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1224: String, Number or List required for argument 1')
+  CheckDefAndScriptFailure2(['repeat({a: 10}, 2)'], 'E1013: Argument 1: type mismatch, expected string but got dict<', 'E1224: String, Number or List required for argument 1')
   assert_equal('aaa', repeat('a', 3))
   assert_equal('111', repeat(1, 3))
   assert_equal([1, 1, 1], repeat([1], 3))
@@ -2569,8 +2569,8 @@ def Test_resolve()
 enddef
 
 def Test_reverse()
-  CheckDefAndScriptFailure2(['reverse(10)'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1226: String or List required for argument 1')
-  CheckDefAndScriptFailure2(['reverse("abc")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['reverse(10)'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1226: List or Blob required for argument 1')
+  CheckDefAndScriptFailure2(['reverse("abc")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: List or Blob required for argument 1')
 enddef
 
 def Test_reverse_return_type()
@@ -2830,7 +2830,7 @@ def Test_setbufline()
   assert_equal(['1', '2', '3', 'one', '10', 'two', '11'], getbufline(bnum, 1, '$'))
   CheckDefAndScriptFailure2(['setbufline([1], 1, "x")'], 'E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['setbufline(1, [1], "x")'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 2')
-  CheckDefAndScriptFailure2(['setbufline(1, 1, {"a": 10})'], 'E1013: Argument 3: type mismatch, expected string but got dict<number>', 'E1224: String or List required for argument 3')
+  CheckDefAndScriptFailure2(['setbufline(1, 1, {"a": 10})'], 'E1013: Argument 3: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 3')
   bnum->bufwinid()->win_gotoid()
   bw!
 enddef
@@ -2859,7 +2859,7 @@ def Test_setcmdpos()
 enddef
 
 def Test_setcursorcharpos()
-  CheckDefAndScriptFailure2(['setcursorcharpos(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected number but got blob', 'E1224: String or List required for argument 1')
+  CheckDefAndScriptFailure2(['setcursorcharpos(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected number but got blob', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['setcursorcharpos(1, "2")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['setcursorcharpos(1, 2, "3")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
 enddef
@@ -3289,13 +3289,13 @@ enddef
 
 def Test_system()
   CheckDefAndScriptFailure2(['system(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
-  CheckDefAndScriptFailure2(['system("a", {})'], 'E1013: Argument 2: type mismatch, expected string but got dict<unknown>', 'E1224: String or List required for argument 2')
+  CheckDefAndScriptFailure2(['system("a", {})'], 'E1013: Argument 2: type mismatch, expected string but got dict<unknown>', 'E1224: String, Number or List required for argument 2')
   assert_equal("123\n", system('echo 123'))
 enddef
 
 def Test_systemlist()
   CheckDefAndScriptFailure2(['systemlist(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
-  CheckDefAndScriptFailure2(['systemlist("a", {})'], 'E1013: Argument 2: type mismatch, expected string but got dict<unknown>', 'E1224: String or List required for argument 2')
+  CheckDefAndScriptFailure2(['systemlist("a", {})'], 'E1013: Argument 2: type mismatch, expected string but got dict<unknown>', 'E1224: String, Number or List required for argument 2')
   if has('win32')
     call assert_equal(["123\r"], systemlist('echo 123'))
   else

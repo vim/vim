@@ -718,7 +718,7 @@ check_for_string_or_number_or_list_arg(typval_T *args, int idx)
 	    && args[idx].v_type != VAR_LIST)
     {
 	if (idx >= 0)
-	    semsg(_(e_string_or_number_or_list_required_for_argument_nr), idx + 1);
+	    semsg(_(e_string_number_or_list_required_for_argument_nr), idx + 1);
 	else
 	    emsg(_(e_stringreq));
 	return FAIL;
@@ -749,7 +749,7 @@ check_for_string_or_list_or_dict_arg(typval_T *args, int idx)
 	    && args[idx].v_type != VAR_DICT)
     {
 	if (idx >= 0)
-	    semsg(_(e_string_or_list_or_dict_required_for_argument_nr), idx + 1);
+	    semsg(_(e_string_list_or_dict_required_for_argument_nr), idx + 1);
 	else
 	    emsg(_(e_stringreq));
 	return FAIL;
@@ -804,7 +804,7 @@ check_for_list_or_dict_or_blob_arg(typval_T *args, int idx)
 	    && args[idx].v_type != VAR_BLOB)
     {
 	if (idx >= 0)
-	    semsg(_(e_list_or_dict_or_blob_required_for_argument_nr), idx + 1);
+	    semsg(_(e_list_dict_or_blob_required_for_argument_nr), idx + 1);
 	else
 	    emsg(_(e_listreq));
 	return FAIL;

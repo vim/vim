@@ -628,17 +628,17 @@ EXTERN char e_string_or_blob_required_for_argument_nr[]
 EXTERN char e_string_or_list_required_for_argument_nr[]
 	INIT(= N_("E1222: String or List required for argument %d"));
 EXTERN char e_string_or_dict_required_for_argument_nr[]
-	INIT(= N_("E1223: String or List required for argument %d"));
-EXTERN char e_string_or_number_or_list_required_for_argument_nr[]
-	INIT(= N_("E1224: String or List required for argument %d"));
-EXTERN char e_string_or_list_or_dict_required_for_argument_nr[]
-	INIT(= N_("E1225: String or List required for argument %d"));
+	INIT(= N_("E1223: String or Dictionary required for argument %d"));
+EXTERN char e_string_number_or_list_required_for_argument_nr[]
+	INIT(= N_("E1224: String, Number or List required for argument %d"));
+EXTERN char e_string_list_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1225: String, List or Dictionary required for argument %d"));
 EXTERN char e_list_or_blob_required_for_argument_nr[]
-	INIT(= N_("E1226: String or List required for argument %d"));
+	INIT(= N_("E1226: List or Blob required for argument %d"));
 EXTERN char e_list_or_dict_required_for_argument_nr[]
 	INIT(= N_("E1227: List or Dictionary required for argument %d"));
-EXTERN char e_list_or_dict_or_blob_required_for_argument_nr[]
-	INIT(= N_("E1228: List or Dictionary or Blob required for argument %d"));
+EXTERN char e_list_dict_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1228: List, Dictionary or Blob required for argument %d"));
 EXTERN char e_expected_dictionary_for_using_key_str_but_got_str[]
 	INIT(= N_("E1229: Expected dictionary for using key \"%s\", but got %s"));
 EXTERN char e_encryption_sodium_mlock_failed[]
