@@ -1388,6 +1388,7 @@ do_cmdline(
     return retval;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Handle when "did_throw" is set after executing commands.
  */
@@ -1455,7 +1456,6 @@ handle_did_throw()
     estack_pop();
 }
 
-#ifdef FEAT_EVAL
 /*
  * Obtain a line when inside a ":while" or ":for" loop.
  */
