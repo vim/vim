@@ -664,8 +664,6 @@ do_cmdline(
 #endif
     static int	call_depth = 0;		// recursiveness
 #ifdef FEAT_EVAL
-    ESTACK_CHECK_DECLARATION
-
     // For every pair of do_cmdline()/do_one_cmd() calls, use an extra memory
     // location for storing error messages to be converted to an exception.
     // This ensures that the do_errthrow() call in do_one_cmd() does not
@@ -1397,6 +1395,7 @@ handle_did_throw()
 {
     char	*p = NULL;
     msglist_T	*messages = NULL;
+    ESTACK_CHECK_DECLARATION
 
     /*
      * If the uncaught exception is a user exception, report it as an
