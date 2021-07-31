@@ -1904,6 +1904,10 @@ luaV_getvar(lua_State *L)
 luaV_command(lua_State *L)
 {
     char_u  *s = vim_strsave((char_u *)luaL_checkstring(L, 1));
+    if (s == FAIL)
+	luaL_error(L, "lua: call_vim_command failed");
+    if (did_emsg)
+	luaL_error(L, "command failed");
 
     execute_cmds_from_string(s);
     vim_free(s);
@@ -1915,8 +1919,8 @@ luaV_command(lua_State *L)
 luaV_eval(lua_State *L)
 {
     typval_T *tv = eval_expr((char_u *) luaL_checkstring(L, 1), NULL);
-
-    if (tv == NULL) luaL_error(L, "invalid expression");
+    if (tv == NULL)
+	luaL_error(L, "invalid expression");
     luaV_pushtypval(L, tv);
     free_tv(tv);
     return 1;
@@ -2200,6 +2204,10 @@ luaV_call(lua_State *L)
     if (call_vim_function(funcname, argc, argv, &rettv) == FAIL)
     {
 	error = "lua: call_vim_function failed";
+	goto free_vim_args;
+    }
+    if (did_emsg) {
+	error = "lua: function failed";
 	goto free_vim_args;
     }
 
