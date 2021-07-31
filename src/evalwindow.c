@@ -953,6 +953,12 @@ f_win_gettype(typval_T *argvars, typval_T *rettv)
     else if (wp == curwin && cmdwin_type != 0)
 	rettv->vval.v_string = vim_strsave((char_u *)"command");
 #endif
+#ifdef FEAT_QUICKFIX
+    else if (bt_quickfix(wp->w_buffer))
+	rettv->vval.v_string = vim_strsave((char_u *)
+		(wp->w_llist_ref != NULL ? "loclist" : "quickfix"));
+#endif
+
 }
 
 /*
