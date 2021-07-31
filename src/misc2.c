@@ -1574,10 +1574,10 @@ ga_concat_len(garray_T *gap, char_u *s, size_t len)
 {
     if (s == NULL || *s == NUL)
 	return;
-    if (ga_grow(gap, len) == OK)
+    if (ga_grow(gap, (int)len) == OK)
     {
-	mch_memmove((char *)gap->ga_data + gap->ga_len, s, (size_t)len);
-	gap->ga_len += len;
+	mch_memmove((char *)gap->ga_data + gap->ga_len, s, len);
+	gap->ga_len += (int)len;
     }
 }
 
