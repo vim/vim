@@ -239,6 +239,32 @@ def Test_assignment()
   END
 enddef
 
+let g:someNumber = 43
+
+def Test_assign_concat()
+  var lines =<< trim END
+    var s = '-'
+    s ..= 99
+    s ..= true
+    s ..= '-'
+    s ..= v:null
+    s ..= g:someNumber
+    assert_equal('-99true-null43', s)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var s = '-'
+    s ..= [1, 2]
+  END
+  CheckDefAndScriptFailure2(lines, 'E1105: Cannot convert list to string', 'E734: Wrong variable type for .=', 2)
+  lines =<< trim END
+    var s = '-'
+    s ..= {a: 2}
+  END
+  CheckDefAndScriptFailure2(lines, 'E1105: Cannot convert dict to string', 'E734: Wrong variable type for .=', 2)
+enddef
+
 def Test_assign_register()
   var lines =<< trim END
     @c = 'areg'

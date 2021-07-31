@@ -1254,7 +1254,7 @@ def Test_disassemble_for_loop_eval()
         'res ..= str\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ LOAD $2\_s*' ..
-        '\d\+ CHECKTYPE string stack\[-1\]\_s*' ..
+        '\d 2STRING_ANY stack\[-1\]\_s*' ..
         '\d\+ CONCAT\_s*' ..
         '\d\+ STORE $0\_s*' ..
         'endfor\_s*' ..

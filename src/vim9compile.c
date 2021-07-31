@@ -7086,18 +7086,23 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    type_T	    *stacktype;
 
 	    if (*op == '.')
-		expected = &t_string;
+	    {
+		if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		    goto theend;
+	    }
 	    else
+	    {
 		expected = lhs.lhs_member_type;
-	    stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if (
+		stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+		if (
 #ifdef FEAT_FLOAT
-		// If variable is float operation with number is OK.
-		!(expected == &t_float && stacktype == &t_number) &&
+		    // If variable is float operation with number is OK.
+		    !(expected == &t_float && stacktype == &t_number) &&
 #endif
 		    need_type(stacktype, expected, -1, 0, cctx,
 							 FALSE, FALSE) == FAIL)
-		goto theend;
+		    goto theend;
+	    }
 
 	    if (*op == '.')
 	    {
