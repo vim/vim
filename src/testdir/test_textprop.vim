@@ -239,6 +239,9 @@ func Test_prop_find()
   let result = prop_find({'type': 'prop_name', 'lnum': 1}, 'f')
   call assert_equal(expected[0], result)
 
+  " When ID is -1 it's like prop is not found.
+  call assert_equal({}, prop_find({'id': -1}))
+
   call prop_clear(1,6)
   call prop_type_delete('prop_name')
 

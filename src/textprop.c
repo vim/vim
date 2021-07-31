@@ -686,7 +686,11 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     skipstart = dict_get_bool(dict, (char_u *)"skipstart", 0);
 
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
+    {
 	id = dict_get_number(dict, (char_u *)"id");
+	if (id == -1)
+	    id = -2;
+    }
     if (dict_find(dict, (char_u *)"type", -1))
     {
 	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
