@@ -298,7 +298,6 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_vsts);
     check_string_option(&buf->b_p_vts);
 #endif
-    check_string_option(&buf->b_p_ve);
 }
 
 /*
@@ -2083,8 +2082,8 @@ ambw_end:
 
 	if (opt_flags & OPT_LOCAL)
 	{
-	    ve = curbuf->b_p_ve;
-	    flags = &curbuf->b_ve_flags;
+	    ve = curwin->w_p_ve;
+	    flags = &curwin->w_ve_flags;
 	}
 
 	if ((opt_flags & OPT_LOCAL) && *ve == NUL)

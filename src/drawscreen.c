@@ -2006,15 +2006,15 @@ win_update(win_T *wp)
 	    {
 		colnr_T	    fromc, toc;
 #if defined(FEAT_LINEBREAK)
-		int	    save_ve_flags = curbuf->b_ve_flags;
+		int	    save_ve_flags = curwin->w_ve_flags;
 
 		if (curwin->w_p_lbr)
-		    curbuf->b_ve_flags = VE_ALL;
+		    curwin->w_ve_flags = VE_ALL;
 #endif
 		getvcols(wp, &VIsual, &curwin->w_cursor, &fromc, &toc);
 		++toc;
 #if defined(FEAT_LINEBREAK)
-		curbuf->b_ve_flags = save_ve_flags;
+		curwin->w_ve_flags = save_ve_flags;
 #endif
 		// Highlight to the end of the line, unless 'virtualedit' has
 		// "block".
