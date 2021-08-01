@@ -2741,7 +2741,7 @@ checkforcmd(
  * Check for an Ex command with optional tail, not followed by "(".
  * If there is a match advance "pp" to the argument and return TRUE.
  */
-    static int
+    int
 checkforcmd_noparen(
     char_u	**pp,		// start of command
     char	*cmd,		// name of command

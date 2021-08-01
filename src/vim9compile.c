@@ -8861,11 +8861,13 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
  * A command that is not compiled, execute with legacy code.
  */
     static char_u *
-compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
+compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 {
+    char_u	*line = line_arg;
     char_u	*p;
     int		has_expr = FALSE;
     char_u	*nextcmd = (char_u *)"";
+    char_u	*tofree = NULL;
 
     if (cctx->ctx_skip == SKIP_YES)
 	goto theend;
@@ -8920,6 +8922,34 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 	    {
 		*p = NUL;
 		nextcmd = p + 1;
+	    }
+	}
+	else if (eap->cmdidx == CMD_command || eap->cmdidx == CMD_autocmd)
+	{
+	    // If there is a trailing '{' read lines until the '}'
+	    p = eap->arg + STRLEN(eap->arg) - 1;
+	    while (p > eap->arg && VIM_ISWHITE(*p))
+		--p;
+	    if (*p == '{')
+	    {
+		exarg_T ea;
+		int	flags;  // unused
+		int	start_lnum = SOURCING_LNUM;
+
+		CLEAR_FIELD(ea);
+		ea.arg = eap->arg;
+		fill_exarg_from_cctx(&ea, cctx);
+		(void)may_get_cmd_block(&ea, p, &tofree, &flags);
+		if (tofree != NULL)
+		{
+		    *p = NUL;
+		    line = concat_str(line, tofree);
+		    if (line == NULL)
+			goto theend;
+		    vim_free(tofree);
+		    tofree = line;
+		    SOURCING_LNUM = start_lnum;
+		}
 	    }
 	}
     }
@@ -9008,6 +9038,7 @@ theend:
 	--nextcmd;
 	*nextcmd = '|';
     }
+    vim_free(tofree);
 
     return nextcmd;
 }

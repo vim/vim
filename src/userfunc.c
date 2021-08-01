@@ -903,12 +903,25 @@ get_function_body(
 		    --end;
 		if (end > p && *end == '{')
 		{
+		    int	    is_block;
+
+		    // check for trailing "=> {": start of an inline function
 		    --end;
 		    while (end > p && VIM_ISWHITE(*end))
 			--end;
-		    if (end > p + 2 && end[-1] == '=' && end[0] == '>')
+		    is_block = end > p + 2 && end[-1] == '=' && end[0] == '>';
+		    if (!is_block)
 		    {
-			// found trailing "=> {", start of an inline function
+			char_u *s = p;
+
+			// check for line starting with "au" for :autocmd or
+			// "com" for :command, these can use a {} block
+			is_block = checkforcmd_noparen(&s, "autocmd", 2)
+				      || checkforcmd_noparen(&s, "command", 3);
+		    }
+
+		    if (is_block)
+		    {
 			if (nesting == MAX_FUNC_NESTING - 1)
 			    emsg(_(e_function_nesting_too_deep));
 			else

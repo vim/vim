@@ -334,6 +334,34 @@ def Test_block_local_vars_with_func()
   CheckScriptSuccess(lines)
 enddef
 
+" legacy func for command that's defined later
+func InvokeSomeCommand()
+  SomeCommand
+endfunc
+
+def Test_autocommand_block()
+  com SomeCommand {
+      g:someVar = 'some'
+    }
+  InvokeSomeCommand()
+  assert_equal('some', g:someVar)
+
+  delcommand SomeCommand
+  unlet g:someVar
+enddef
+
+def Test_command_block()
+  au BufNew *.xml {
+      g:otherVar = 'other'
+    }
+  split other.xml
+  assert_equal('other', g:otherVar)
+
+  bwipe!
+  au! BufNew *.xml
+  unlet g:otherVar
+enddef
+
 func g:NoSuchFunc()
   echo 'none'
 endfunc
