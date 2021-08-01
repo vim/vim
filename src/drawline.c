@@ -1005,6 +1005,14 @@ win_line(
 	// Skip this quickly when working on the text.
 	if (draw_state != WL_LINE)
 	{
+#ifdef FEAT_SYN_HL
+	    if (cul_screenline)
+	    {
+		cul_attr = 0;
+		line_attr = line_attr_save;
+	    }
+#endif
+
 #ifdef FEAT_CMDWIN
 	    if (draw_state == WL_CMDLINE - 1 && n_extra == 0)
 	    {
@@ -1194,13 +1202,7 @@ win_line(
 		    char_attr = 0;
 # ifdef FEAT_DIFF
 		    if (diff_hlf != (hlf_T)0)
-		    {
 			char_attr = HL_ATTR(diff_hlf);
-#  ifdef FEAT_SYN_HL
-			if (cul_attr != 0)
-			    char_attr = hl_combine_attr(char_attr, cul_attr);
-#  endif
-		    }
 # endif
 		    p_extra = NULL;
 		    c_extra = ' ';
@@ -1297,20 +1299,12 @@ win_line(
 	    }
 	}
 #ifdef FEAT_SYN_HL
-	if (cul_screenline)
+	if (cul_screenline && draw_state == WL_LINE
+		&& vcol >= left_curline_col
+		&& vcol < right_curline_col)
 	{
-	    if (draw_state == WL_LINE
-		    && vcol >= left_curline_col
-		    && vcol < right_curline_col)
-	    {
-		cul_attr = HL_ATTR(HLF_CUL);
-		line_attr = cul_attr;
-	    }
-	    else
-	    {
-		cul_attr = 0;
-		line_attr = line_attr_save;
-	    }
+	    cul_attr = HL_ATTR(HLF_CUL);
+	    line_attr = cul_attr;
 	}
 #endif
 
