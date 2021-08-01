@@ -1515,9 +1515,11 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
     char_u	*s;
     int		failed = FALSE;
 
-    // Can't do anything with a Funcref, Dict, v:true on the right.
+    // Can't do anything with a Funcref or Dict on the right.
+    // v:true and friends only work with "..=".
     if (tv2->v_type != VAR_FUNC && tv2->v_type != VAR_DICT
-		      && tv2->v_type != VAR_BOOL && tv2->v_type != VAR_SPECIAL)
+		    && ((tv2->v_type != VAR_BOOL && tv2->v_type != VAR_SPECIAL)
+								|| *op == '.'))
     {
 	switch (tv1->v_type)
 	{
