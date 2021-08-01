@@ -1254,26 +1254,33 @@ string_slice(char_u *str, varnumber_T first, varnumber_T last, int exclusive)
     return vim_strnsave(str + start_byte, end_byte - start_byte);
 }
 
+/*
+ * Get a script variable for ISN_STORESCRIPT and ISN_LOADSCRIPT.
+ * When "dfunc_idx" is negative don't give an error.
+ * Returns NULL for an error.
+ */
     static svar_T *
-get_script_svar(scriptref_T *sref, ectx_T *ectx)
+get_script_svar(scriptref_T *sref, int dfunc_idx)
 {
     scriptitem_T    *si = SCRIPT_ITEM(sref->sref_sid);
-    dfunc_T	    *dfunc = ((dfunc_T *)def_functions.ga_data)
-							  + ectx->ec_dfunc_idx;
+    dfunc_T	    *dfunc = dfunc_idx < 0 ? NULL
+			      : ((dfunc_T *)def_functions.ga_data) + dfunc_idx;
     svar_T	    *sv;
 
     if (sref->sref_seq != si->sn_script_seq)
     {
-	// The script was reloaded after the function was
-	// compiled, the script_idx may not be valid.
-	semsg(_(e_script_variable_invalid_after_reload_in_function_str),
-						 dfunc->df_ufunc->uf_name_exp);
+	// The script was reloaded after the function was compiled, the
+	// script_idx may not be valid.
+	if (dfunc != NULL)
+	    semsg(_(e_script_variable_invalid_after_reload_in_function_str),
+					 printable_func_name(dfunc->df_ufunc));
 	return NULL;
     }
     sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
     if (!equal_type(sv->sv_type, sref->sref_type, 0))
     {
-	emsg(_(e_script_variable_type_changed));
+	if (dfunc != NULL)
+	    emsg(_(e_script_variable_type_changed));
 	return NULL;
     }
     return sv;
@@ -1976,7 +1983,7 @@ exec_instructions(ectx_T *ectx)
 		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
 		    svar_T	 *sv;
 
-		    sv = get_script_svar(sref, ectx);
+		    sv = get_script_svar(sref, ectx->ec_dfunc_idx);
 		    if (sv == NULL)
 			goto theend;
 		    allocate_if_null(sv->sv_tv);
@@ -2189,7 +2196,7 @@ exec_instructions(ectx_T *ectx)
 		    scriptref_T	    *sref = iptr->isn_arg.script.scriptref;
 		    svar_T	    *sv;
 
-		    sv = get_script_svar(sref, ectx);
+		    sv = get_script_svar(sref, ectx->ec_dfunc_idx);
 		    if (sv == NULL)
 			goto theend;
 		    --ectx->ec_stack.ga_len;
@@ -4942,12 +4949,16 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_LOADSCRIPT:
 		{
-		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
-		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
-		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-							      + sref->sref_idx;
+		    scriptref_T	    *sref = iptr->isn_arg.script.scriptref;
+		    scriptitem_T    *si = SCRIPT_ITEM(sref->sref_sid);
+		    svar_T	    *sv;
 
-		    smsg("%s%4d LOADSCRIPT %s-%d from %s", pfx, current,
+		    sv = get_script_svar(sref, -1);
+		    if (sv == NULL)
+			smsg("%s%4d LOADSCRIPT [deleted] from %s",
+						    pfx, current, si->sn_name);
+		    else
+			smsg("%s%4d LOADSCRIPT %s-%d from %s", pfx, current,
 					    sv->sv_name,
 					    sref->sref_idx,
 					    si->sn_name);
@@ -4996,7 +5007,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		smsg("%s%4d LOADENV %s", pfx, current, iptr->isn_arg.string);
 		break;
 	    case ISN_LOADREG:
-		smsg("%s%4d LOADREG @%c", pfx, current, (int)(iptr->isn_arg.number));
+		smsg("%s%4d LOADREG @%c", pfx, current,
+						  (int)(iptr->isn_arg.number));
 		break;
 
 	    case ISN_STORE:
@@ -5004,7 +5016,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    smsg("%s%4d STORE arg[%lld]", pfx, current,
 				      iptr->isn_arg.number + STACK_FRAME_SIZE);
 		else
-		    smsg("%s%4d STORE $%lld", pfx, current, iptr->isn_arg.number);
+		    smsg("%s%4d STORE $%lld", pfx, current,
+							 iptr->isn_arg.number);
 		break;
 	    case ISN_STOREOUTER:
 		{
@@ -5048,12 +5061,16 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_STORESCRIPT:
 		{
-		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
-		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
-		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-							      + sref->sref_idx;
+		    scriptref_T	    *sref = iptr->isn_arg.script.scriptref;
+		    scriptitem_T    *si = SCRIPT_ITEM(sref->sref_sid);
+		    svar_T	    *sv;
 
-		    smsg("%s%4d STORESCRIPT %s-%d in %s", pfx, current,
+		    sv = get_script_svar(sref, -1);
+		    if (sv == NULL)
+			smsg("%s%4d STORESCRIPT [deleted] in %s",
+						    pfx, current, si->sn_name);
+		    else
+			smsg("%s%4d STORESCRIPT %s-%d in %s", pfx, current,
 					     sv->sv_name,
 					     sref->sref_idx,
 					     si->sn_name);
@@ -5067,7 +5084,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		smsg("%s%4d STOREENV $%s", pfx, current, iptr->isn_arg.string);
 		break;
 	    case ISN_STOREREG:
-		smsg("%s%4d STOREREG @%c", pfx, current, (int)iptr->isn_arg.number);
+		smsg("%s%4d STOREREG @%c", pfx, current,
+						    (int)iptr->isn_arg.number);
 		break;
 	    case ISN_STORENR:
 		smsg("%s%4d STORE %lld in $%d", pfx, current,
@@ -5193,9 +5211,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 							     + cdfunc->cdf_idx;
 
 		    smsg("%s%4d DCALL %s(argc %d)", pfx, current,
-			    df->df_ufunc->uf_name_exp != NULL
-				? df->df_ufunc->uf_name_exp
-				: df->df_ufunc->uf_name, cdfunc->cdf_argcount);
+					    printable_func_name(df->df_ufunc),
+							 cdfunc->cdf_argcount);
 		}
 		break;
 	    case ISN_UCALL:
@@ -5662,10 +5679,7 @@ ex_disassemble(exarg_T *eap)
 	semsg(_(e_function_is_not_compiled_str), eap->arg);
 	return;
     }
-    if (ufunc->uf_name_exp != NULL)
-	msg((char *)ufunc->uf_name_exp);
-    else
-	msg((char *)ufunc->uf_name);
+    msg((char *)printable_func_name(ufunc));
 
     dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
     switch (compile_type)
