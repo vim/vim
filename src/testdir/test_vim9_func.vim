@@ -2582,24 +2582,31 @@ def Test_invalid_function_name()
 enddef
 
 def Test_partial_call()
-  var Xsetlist = function('setloclist', [0])
-  Xsetlist([], ' ', {title: 'test'})
-  getloclist(0, {title: 1})->assert_equal({title: 'test'})
+  var lines =<< trim END
+      var Xsetlist: func
+      Xsetlist = function('setloclist', [0])
+      Xsetlist([], ' ', {title: 'test'})
+      getloclist(0, {title: 1})->assert_equal({title: 'test'})
 
-  Xsetlist = function('setloclist', [0, [], ' '])
-  Xsetlist({title: 'test'})
-  getloclist(0, {title: 1})->assert_equal({title: 'test'})
+      Xsetlist = function('setloclist', [0, [], ' '])
+      Xsetlist({title: 'test'})
+      getloclist(0, {title: 1})->assert_equal({title: 'test'})
 
-  Xsetlist = function('setqflist')
-  Xsetlist([], ' ', {title: 'test'})
-  getqflist({title: 1})->assert_equal({title: 'test'})
+      Xsetlist = function('setqflist')
+      Xsetlist([], ' ', {title: 'test'})
+      getqflist({title: 1})->assert_equal({title: 'test'})
 
-  Xsetlist = function('setqflist', [[], ' '])
-  Xsetlist({title: 'test'})
-  getqflist({title: 1})->assert_equal({title: 'test'})
+      Xsetlist = function('setqflist', [[], ' '])
+      Xsetlist({title: 'test'})
+      getqflist({title: 1})->assert_equal({title: 'test'})
 
-  var Len: func: number = function('len', ['word'])
-  assert_equal(4, Len())
+      var Len: func: number = function('len', ['word'])
+      assert_equal(4, Len())
+
+      var RepeatFunc = function('repeat', ['o'])
+      assert_equal('ooooo', RepeatFunc(5))
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_cmd_modifier()

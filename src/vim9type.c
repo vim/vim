@@ -378,6 +378,11 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
     type->tt_type = tv->v_type;
     type->tt_argcount = argcount;
     type->tt_min_argcount = min_argcount;
+    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial->pt_argc > 0)
+    {
+	type->tt_argcount -= tv->vval.v_partial->pt_argc;
+	type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+    }
     type->tt_member = member_type;
 
     return type;
