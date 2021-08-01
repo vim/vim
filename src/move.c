@@ -1286,6 +1286,12 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
     dict = rettv->vval.v_dict;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_number_arg(argvars, 2) == FAIL))
+	return;
+
     wp = find_win_by_nr_or_id(&argvars[0]);
     if (wp == NULL)
 	return;

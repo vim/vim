@@ -882,6 +882,8 @@ EXTERN int	VIsual_active INIT(= FALSE);
 				// whether Visual mode is active
 EXTERN int	VIsual_select INIT(= FALSE);
 				// whether Select mode is active
+EXTERN int	restart_VIsual_select INIT(= 0);
+				// restart Select mode when next cmd finished
 EXTERN int	VIsual_reselect;
 				// whether to restart the selection after a
 				// Select mode mapping or menu

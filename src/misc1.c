@@ -632,6 +632,9 @@ f_mode(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[4];
 
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
+
     CLEAR_FIELD(buf);
 
     if (time_for_testing == 93784)
@@ -649,7 +652,11 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	if (VIsual_select)
 	    buf[0] = VIsual_mode + 's' - 'v';
 	else
+	{
 	    buf[0] = VIsual_mode;
+	    if (restart_VIsual_select)
+	        buf[1] = 's';
+	}
     }
     else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
 		|| State == CONFIRM)
@@ -732,6 +739,9 @@ f_state(typval_T *argvars, typval_T *rettv)
     garray_T	ga;
     char_u	*include = NULL;
     int		i;
+
+    if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
+	return;
 
     ga_init2(&ga, 1, 20);
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -2353,7 +2363,7 @@ get_cmd_output_as_rettv(
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_or_number_arg(argvars, 1) == FAIL))
+		|| check_for_opt_string_or_number_or_list_arg(argvars, 1) == FAIL))
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)

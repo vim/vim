@@ -13,10 +13,6 @@
 
 #include "vim.h"
 
-#ifdef FEAT_SODIUM
-# include <sodium.h>
-#endif
-
 #if defined(__TANDEM)
 # include <limits.h>		// for SSIZE_MAX
 #endif
@@ -2921,15 +2917,16 @@ check_for_cryptkey(
 	{
 	    int header_len;
 
-	    curbuf->b_cryptstate = crypt_create_from_header(
-						       method, cryptkey, ptr);
-	    crypt_set_cm_option(curbuf, method);
-
-	    // Remove cryptmethod specific header from the text.
 	    header_len = crypt_get_header_len(method);
 	    if (*sizep <= header_len)
 		// invalid header, buffer can't be encrypted
 		return NULL;
+
+	    curbuf->b_cryptstate = crypt_create_from_header(
+							method, cryptkey, ptr);
+	    crypt_set_cm_option(curbuf, method);
+
+	    // Remove cryptmethod specific header from the text.
 	    *filesizep += header_len;
 	    *sizep -= header_len;
 	    mch_memmove(ptr, ptr + header_len, (size_t)*sizep);

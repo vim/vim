@@ -850,10 +850,28 @@ func Test_luafile_error()
   bwipe!
 endfunc
 
+" Test :luafile printing a long string
+func Test_luafile_print()
+  new Xlua_file
+  let lines =<< trim END
+      local data = ''
+      for i = 1, 130 do
+	data = data .. 'xxxxx asd as as dad sad sad xz cxz  czxcxzczxc ad ad asd asd asd asd asd'
+      end
+      print(data)
+  END
+  call setline(1, lines)
+  w
+  luafile %
+
+  call delete('Xlua_file')
+  bwipe!
+endfunc
+
 " Test for dealing with strings containing newlines and null character
 func Test_lua_string_with_newline()
-  let x = execute('lua print("Hello\nWorld")')
-  call assert_equal("\nHello\nWorld", x)
+  let x = execute('lua print("Hello\nWorld", 2)')
+  call assert_equal("\nHello\nWorld 2", x)
   new
   lua k = vim.buffer(vim.eval('bufnr()'))
   lua k:insert("Hello\0World", 0)

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2021 Jun 07
+*usr_41.txt*	For Vim version 8.2.  Last change: 2021 Jul 19
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -994,16 +994,16 @@ Window size and position:			*window-size-functions*
 	winrestview()		restore saved view of current window
 
 Mappings and Menus:			    *mapping-functions*
+	digraph_get()		get |digraph|
+	digraph_getlist()	get all |digraph|s
+	digraph_set()		register |digraph|
+	digraph_setlist()	register multiple |digraph|s
 	hasmapto()		check if a mapping exists
 	mapcheck()		check if a matching mapping exists
 	maparg()		get rhs of a mapping
 	mapset()		restore a mapping
 	menu_info()		get information about a menu item
 	wildmenumode()		check if the wildmode is active
-	getdigraph()		get |digraph|
-	getdigraphlist()	get all |digraph|s
-	setdigraph()		register |digraph|
-	setdigraphlist()	register multiple |digraph|s
 
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal

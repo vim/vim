@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 May 27
+*editing.txt*   For Vim version 8.2.  Last change: 2021 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1469,8 +1469,11 @@ be readable again.  If you use a wrong key, it will be a mess.
 :X	Prompt for an encryption key.  The typing is done without showing the
 	actual text, so that someone looking at the display won't see it.
 	The typed key is stored in the 'key' option, which is used to encrypt
-	the file when it is written.  The file will remain unchanged until you
-	write it.  See also |-x|.
+	the file when it is written.
+	The file will remain unchanged until you write it.  Note that commands
+	such as `:xit` and `ZZ` will NOT write the file unless there are other
+	changes.
+	See also |-x|.
 
 The value of the 'key' options is used when text is written.  When the option
 is not empty, the written file will be encrypted, using the value as the

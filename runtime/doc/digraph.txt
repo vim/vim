@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 8.2.  Last change: 2020 Jul 16
+*digraph.txt*   For Vim version 8.2.  Last change: 2021 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,7 +40,7 @@ An alternative is using the 'keymap' option.
 			future.
 			NOTE: This command cannot add a digraph that starts
 			with a white space.  If you want to add such digraph,
-			you can use |setdigraph()| instead.
+			you can use |digraph_set()| instead.
 
 Vim is normally compiled with the |+digraphs| feature.  If the feature is
 disabled, the ":digraph" command will display an error message.

@@ -140,7 +140,8 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     if (arg->vval.v_dict == NULL)
 	return OK;  // NULL dict is like an empty dict
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
-    if (di != NULL)
+    if (di != NULL && (di->di_tv.v_type != VAR_NUMBER
+					      || di->di_tv.vval.v_number != 0))
     {
 	*buf = get_buf_arg(&di->di_tv);
 	if (*buf == NULL)
@@ -506,15 +507,27 @@ find_type_by_id(hashtab_T *ht, int id)
 prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 {
     proptype_T *pt;
+    int buflocal = TRUE;
 
     dict_add_number(dict, "col", prop->tp_col);
     dict_add_number(dict, "length", prop->tp_len);
     dict_add_number(dict, "id", prop->tp_id);
     dict_add_number(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
     dict_add_number(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
-    pt = text_prop_type_by_id(buf, prop->tp_type);
+
+    pt = find_type_by_id(buf->b_proptypes, prop->tp_type);
+    if (pt == NULL)
+    {
+	pt = find_type_by_id(global_proptypes, prop->tp_type);
+	buflocal = FALSE;
+    }
     if (pt != NULL)
 	dict_add_string(dict, "type", pt->pt_name);
+
+    if (buflocal)
+	dict_add_number(dict, "type_bufnr", buf->b_fnum);
+    else
+	dict_add_number(dict, "type_bufnr", 0);
 }
 
 /*
@@ -610,13 +623,19 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     int		lnum_start;
     int		start_pos_has_prop = 0;
     int		seen_end = 0;
-    int		id = -1;
+    int		id = 0;
+    int		id_found = FALSE;
     int		type_id = -1;
     int		skipstart = 0;
     int		lnum = -1;
     int		col = -1;
     int		dir = 1;    // 1 = forward, -1 = backward
     int		both;
+
+    if (in_vim9script()
+	    && (check_for_dict_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
 
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
@@ -668,7 +687,10 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     skipstart = dict_get_bool(dict, (char_u *)"skipstart", 0);
 
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
+    {
 	id = dict_get_number(dict, (char_u *)"id");
+	id_found = id != 0;
+    }
     if (dict_find(dict, (char_u *)"type", -1))
     {
 	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
@@ -679,12 +701,12 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	type_id = type->pt_id;
     }
     both = dict_get_bool(dict, (char_u *)"both", FALSE);
-    if (id == -1 && type_id == -1)
+    if (!id_found && type_id == -1)
     {
 	emsg(_("E968: Need at least one of 'id' or 'type'"));
 	return;
     }
-    if (both && (id == -1 || type_id == -1))
+    if (both && (!id_found || type_id == -1))
     {
 	emsg(_("E860: Need 'id' and 'type' with 'both'"));
 	return;
@@ -722,7 +744,8 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		    continue;
 	    }
 	    if (both ? prop.tp_id == id && prop.tp_type == type_id
-		     : prop.tp_id == id || prop.tp_type == type_id)
+		     : (id_found && prop.tp_id == id)
+						    || prop.tp_type == type_id)
 	    {
 		// Check if the starting position has text props.
 		if (lnum_start == lnum
@@ -985,6 +1008,11 @@ prop_type_set(typval_T *argvars, int add)
     dictitem_T  *di;
     proptype_T	*prop;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_dict_arg(argvars, 1) == FAIL))
+	return;
+
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
@@ -1115,6 +1143,11 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     buf_T	*buf = NULL;
     hashitem_T	*hi;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
@@ -1144,13 +1177,19 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
- * prop_type_get({name} [, {bufnr}])
+ * prop_type_get({name} [, {props}])
  */
     void
 f_prop_type_get(typval_T *argvars, typval_T *rettv)
 {
-    char_u *name = tv_get_string(&argvars[0]);
+    char_u *name;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
+    name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
 	emsg(_(e_invarg));
@@ -1216,6 +1255,9 @@ f_prop_type_list(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (rettv_list_alloc(rettv) == OK)
     {
+	if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
+	    return;
+
 	if (argvars[0].v_type != VAR_UNKNOWN)
 	{
 	    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)

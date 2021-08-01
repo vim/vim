@@ -1510,6 +1510,9 @@ f_getmarklist(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	get_global_marks(rettv->vval.v_list);

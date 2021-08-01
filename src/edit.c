@@ -5219,7 +5219,7 @@ ins_digraph(void)
 	if (cc != ESC)
 	{
 	    AppendToRedobuff((char_u *)CTRL_V_STR);
-	    c = getdigraph(c, cc, TRUE);
+	    c = digraph_get(c, cc, TRUE);
 #ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
 #endif

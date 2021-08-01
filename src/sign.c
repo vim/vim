@@ -2278,6 +2278,9 @@ f_sign_getdefined(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc_id(rettv, aid_sign_getdefined) != OK)
 	return;
 
+    if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
@@ -2573,6 +2576,9 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_LIST)
     {
 	emsg(_(e_listreq));
@@ -2619,6 +2625,10 @@ sign_undefine_multiple(list_T *l, list_T *retlist)
 f_sign_undefine(typval_T *argvars, typval_T *rettv)
 {
     char_u *name;
+
+    if (in_vim9script()
+	    && check_for_opt_string_or_list_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_UNKNOWN)
     {
@@ -2761,6 +2771,11 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
     if (argvars[0].v_type != VAR_STRING)
     {
 	emsg(_(e_invarg));
@@ -2790,6 +2805,9 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
     int		retval;
 
     if (rettv_list_alloc(rettv) != OK)
+	return;
+
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type != VAR_LIST)

@@ -959,8 +959,12 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 f_clearmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_SEARCH_EXTRA
-    win_T   *win = get_optional_window(argvars, 0);
+    win_T   *win;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
+    win = get_optional_window(argvars, 0);
     if (win != NULL)
 	clear_matches(win);
 #endif
@@ -976,8 +980,12 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     dict_T	*dict;
     matchitem_T	*cur;
     int		i;
-    win_T	*win = get_optional_window(argvars, 0);
+    win_T	*win;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
+    win = get_optional_window(argvars, 0);
     if (rettv_list_alloc(rettv) == FAIL || win == NULL)
 	return;
 
@@ -1288,9 +1296,13 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
     if (rettv_list_alloc(rettv) == OK)
     {
 # ifdef FEAT_SEARCH_EXTRA
-	int	    id = (int)tv_get_number(&argvars[0]);
+	int	    id;
 	matchitem_T *m;
 
+	if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	    return;
+
+	id = (int)tv_get_number(&argvars[0]);
 	if (id >= 1 && id <= 3)
 	{
 	    if ((m = (matchitem_T *)get_match(curwin, id)) != NULL)
@@ -1316,8 +1328,14 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
 f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 # ifdef FEAT_SEARCH_EXTRA
-    win_T   *win = get_optional_window(argvars, 1);
+    win_T   *win;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
+
+    win = get_optional_window(argvars, 1);
     if (win == NULL)
 	rettv->vval.v_number = -1;
     else

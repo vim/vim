@@ -807,7 +807,7 @@ free_all_options(void)
 	else if (options[i].var != VAR_WIN
 		&& (options[i].flags & P_STRING))
 	    // buffer-local option: free global value
-	    free_string_option(*(char_u **)options[i].var);
+	    clear_string_option((char_u **)options[i].var);
     }
 }
 #endif
@@ -6095,6 +6095,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_lw = empty_option;
 #endif
 	    buf->b_p_menc = empty_option;
+	    buf->b_p_ve = empty_option;
+	    buf->b_ve_flags = 0;
 
 	    /*
 	     * Don't copy the options set by ex_help(), use the saved values,

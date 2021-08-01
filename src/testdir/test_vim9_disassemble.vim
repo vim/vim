@@ -1254,7 +1254,7 @@ def Test_disassemble_for_loop_eval()
         'res ..= str\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ LOAD $2\_s*' ..
-        '\d\+ CHECKTYPE string stack\[-1\]\_s*' ..
+        '\d 2STRING_ANY stack\[-1\]\_s*' ..
         '\d\+ CONCAT\_s*' ..
         '\d\+ STORE $0\_s*' ..
         'endfor\_s*' ..
@@ -2239,6 +2239,54 @@ def Test_disassemble_nextcmd()
   assert_match('<SNR>\d*_EchoMessages\_s*' ..
         'echohl ErrorMsg | echom v:exception | echohl NONE',
         res)
+enddef
+
+def Test_disassemble_after_reload()
+    var lines =<< trim END
+        vim9script
+        if exists('g:ThisFunc')
+          finish
+        endif
+        var name: any
+        def g:ThisFunc(): number
+          g:name = name
+          return 0
+        enddef
+        def g:ThatFunc(): number
+          name = g:name
+          return 0
+        enddef
+    END
+    lines->writefile('Xreload.vim')
+
+    source Xreload.vim
+    g:ThisFunc()
+    g:ThatFunc()
+
+    source Xreload.vim
+    var res = execute('disass g:ThisFunc')
+    assert_match('ThisFunc\_s*' ..
+          'g:name = name\_s*' ..
+          '\d LOADSCRIPT \[deleted\] from .*/Xreload.vim\_s*' ..
+          '\d STOREG g:name\_s*' ..
+          'return 0\_s*' ..
+          '\d PUSHNR 0\_s*' ..
+          '\d RETURN\_s*',
+          res)
+
+    res = execute('disass g:ThatFunc')
+    assert_match('ThatFunc\_s*' ..
+          'name = g:name\_s*' ..
+          '\d LOADG g:name\_s*' ..
+          '\d STORESCRIPT \[deleted\] in .*/Xreload.vim\_s*' ..
+          'return 0\_s*' ..
+          '\d PUSHNR 0\_s*' ..
+          '\d RETURN\_s*',
+          res)
+
+    delete('Xreload.vim')
+    delfunc g:ThisFunc
+    delfunc g:ThatFunc
 enddef
 
 

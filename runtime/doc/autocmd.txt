@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2021 Jul 02
+*autocmd.txt*   For Vim version 8.2.  Last change: 2021 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -75,6 +75,12 @@ If the `:autocmd` is in Vim9 script (a script that starts with `:vim9script`
 and in a `:def` function) then {cmd} will be executed as in Vim9
 script.  Thus this depends on where the autocmd is defined, not where it is
 triggered.
+
+{cmd} can use a block, like with `:command`, see |:command-repl|.  Example: >
+	au BufReadPost *.xml {
+		  setlocal matchpairs+=<:>
+		  /<start
+		}
 
 Note: The ":autocmd" command can only be followed by another command when the
 '|' appears before {cmd}.  This works: >
@@ -679,7 +685,8 @@ CursorHoldI			Just like CursorHold, but in Insert mode.
 CursorMoved			After the cursor was moved in Normal or Visual
 				mode.  Also when the text of the cursor line
 				has been changed, e.g., with "x", "rx" or "p".
-				Not triggered when there is typeahead, when
+				Not triggered when there is typeahead, while
+				executing commands in a script file, when
 				an operator is pending or when moving to
 				another window while remaining at the same
 				cursor position.

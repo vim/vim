@@ -5465,7 +5465,7 @@ Files:	    src/fileio.c
 Patch 6.0.267
 Problem:    UTF-8: Although 'isprint' says a character is printable,
 	    utf_char2cells() still considers it unprintable.
-Solution:   Use vim_isprintc() for characters upto 0x100. (Yasuhiro Matsumoto)
+Solution:   Use vim_isprintc() for characters up to 0x100. (Yasuhiro Matsumoto)
 Files:	    src/mbyte.c
 
 Patch 6.0.268 (extra) (depends on patch 6.0.255)

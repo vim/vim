@@ -366,7 +366,7 @@ jobs:
             features: NORMAL
 
     steps:
-      - name: Initalize
+      - name: Initialize
         id: init
         shell: bash
         run: |

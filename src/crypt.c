@@ -12,10 +12,6 @@
  */
 #include "vim.h"
 
-#ifdef FEAT_SODIUM
-# include <sodium.h>
-#endif
-
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
  * Optional encryption support.
@@ -447,6 +443,8 @@ crypt_free_state(cryptstate_T *state)
 #ifdef FEAT_SODIUM
     if (state->method_nr == CRYPT_M_SOD)
     {
+	sodium_munlock(((sodium_state_T *)state->method_state)->key,
+							 crypto_box_SEEDBYTES);
 	sodium_memzero(state->method_state, sizeof(sodium_state_T));
 	sodium_free(state->method_state);
     }
@@ -726,6 +724,7 @@ crypt_sodium_init(
     // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
     unsigned char	dkey[crypto_box_SEEDBYTES]; // 32
     sodium_state_T	*sd_state;
+    int			retval = 0;
 
     if (sodium_init() < 0)
 	return FAIL;
@@ -743,6 +742,16 @@ crypt_sodium_init(
 	return FAIL;
     }
     memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
+
+    retval += sodium_mlock(sd_state->key, crypto_box_SEEDBYTES);
+    retval += sodium_mlock(key, STRLEN(key));
+
+    if (retval < 0)
+    {
+	emsg(_(e_encryption_sodium_mlock_failed));
+	sodium_free(sd_state);
+	return FAIL;
+    }
     sd_state->count = 0;
     state->method_state = sd_state;
 

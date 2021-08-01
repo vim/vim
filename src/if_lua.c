@@ -1720,11 +1720,12 @@ static const luaL_Reg luaV_Window_mt[] = {
     static int
 luaV_print(lua_State *L)
 {
-    int i, n = lua_gettop(L); // nargs
-    const char *s;
-    size_t l;
-    luaL_Buffer b;
-    luaL_buffinit(L, &b);
+    int		i, n = lua_gettop(L); // nargs
+    const char	*s;
+    size_t	l;
+    garray_T	msg_ga;
+
+    ga_init2(&msg_ga, 1, 128);
     lua_getglobal(L, "tostring");
     for (i = 1; i <= n; i++)
     {
@@ -1734,13 +1735,20 @@ luaV_print(lua_State *L)
 	s = lua_tolstring(L, -1, &l);
 	if (s == NULL)
 	    return luaL_error(L, "cannot convert to string");
-	if (i > 1) luaL_addchar(&b, ' '); // use space instead of tab
-	luaV_addlstring(&b, s, l, 0);
+	if (i > 1)
+	    ga_append(&msg_ga, ' '); // use space instead of tab
+	ga_concat_len(&msg_ga, (char_u *)s, l);
 	lua_pop(L, 1);
     }
-    luaL_pushresult(&b);
+    // Replace any "\n" with "\0"
+    for (i = 0; i < msg_ga.ga_len; i++)
+	if (((char *)msg_ga.ga_data)[i] == '\n')
+	    ((char *)msg_ga.ga_data)[i] = '\0';
+    lua_pushlstring(L, msg_ga.ga_data, msg_ga.ga_len);
     if (!got_int)
 	luaV_msg(L);
+
+    ga_clear(&msg_ga);
     return 0;
 }
 

@@ -604,7 +604,7 @@ def Test_try_catch_throw()
       endtry
   END
   CheckScriptSuccess(lines)
-  assert_match('E808: Number or Float required', g:caught)
+  assert_match('E1219: Float or Number required for argument 1', g:caught)
   unlet g:caught
 
   # missing catch and/or finally
@@ -1223,6 +1223,16 @@ def Test_vim9_import_export()
   writefile(import_star_as_lines_dot_space, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1074:', '', 1, 'Func')
 
+  var import_func_duplicated =<< trim END
+    vim9script
+    import ExportedInc from './Xexport.vim'
+    import ExportedInc from './Xexport.vim'
+
+    ExportedInc()
+  END
+  writefile(import_func_duplicated, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
+
   var import_star_as_duplicated =<< trim END
     vim9script
     import * as Export from './Xexport.vim'
@@ -1616,6 +1626,9 @@ def Test_vim9script_reload_noclear()
   var lines =<< trim END
     vim9script
     export var exported = 'thexport'
+
+    export def TheFunc(x = 0)
+    enddef
   END
   writefile(lines, 'XExportReload')
   lines =<< trim END
@@ -1627,6 +1640,9 @@ def Test_vim9script_reload_noclear()
     def Again(): string
       return 'again'
     enddef
+
+    import TheFunc from './XExportReload'
+    TheFunc()
 
     if exists('s:loaded') | finish | endif
     var s:loaded = true

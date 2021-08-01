@@ -1781,7 +1781,7 @@ do_digraph(int c)
     else if (p_dg)
     {
 	if (backspaced >= 0)
-	    c = getdigraph(backspaced, c, FALSE);
+	    c = digraph_get(backspaced, c, FALSE);
 	backspaced = -1;
 	if ((c == K_BS || c == Ctrl_H) && lastchar >= 0)
 	    backspaced = lastchar;
@@ -1887,7 +1887,7 @@ get_digraph(
 	--no_mapping;
 	--allow_keys;
 	if (cc != ESC)	    // ESC cancels CTRL-K
-	    return getdigraph(c, cc, TRUE);
+	    return digraph_get(c, cc, TRUE);
     }
     return NUL;
 }
@@ -1981,7 +1981,7 @@ getexactdigraph(int char1, int char2, int meta_char)
  * Allow for both char1-char2 and char2-char1
  */
     int
-getdigraph(int char1, int char2, int meta_char)
+digraph_get(int char1, int char2, int meta_char)
 {
     int	    retval;
 
@@ -2143,7 +2143,7 @@ listdigraphs(int use_headers)
 }
 
     static void
-getdigraphlist_appendpair(digr_T *dp, list_T *l)
+digraph_getlist_appendpair(digr_T *dp, list_T *l)
 {
     char_u	buf[30];
     char_u	*p;
@@ -2194,7 +2194,7 @@ getdigraphlist_appendpair(digr_T *dp, list_T *l)
 }
 
     void
-getdigraphlist_common(int list_all, typval_T *rettv)
+digraph_getlist_common(int list_all, typval_T *rettv)
 {
     int		i;
     digr_T	*dp;
@@ -2215,11 +2215,11 @@ getdigraphlist_common(int list_all, typval_T *rettv)
 	    tmp.result = getexactdigraph(tmp.char1, tmp.char2, FALSE);
 	    if (tmp.result != 0 && tmp.result != tmp.char2
 					  && (has_mbyte || tmp.result <= 255))
-		getdigraphlist_appendpair(&tmp, rettv->vval.v_list);
+		digraph_getlist_appendpair(&tmp, rettv->vval.v_list);
 #else
 	    if (getexactdigraph(dp->char1, dp->char2, FALSE) == dp->result
 		    && (has_mbyte || dp->result <= 255))
-		getdigraphlist_appendpair(dp, rettv->vval.v_list);
+		digraph_getlist_appendpair(dp, rettv->vval.v_list);
 #endif
 	    ++dp;
 	}
@@ -2228,7 +2228,7 @@ getdigraphlist_common(int list_all, typval_T *rettv)
     dp = (digr_T *)user_digraphs.ga_data;
     for (i = 0; i < user_digraphs.ga_len && !got_int; ++i)
     {
-	getdigraphlist_appendpair(dp, rettv->vval.v_list);
+	digraph_getlist_appendpair(dp, rettv->vval.v_list);
 	++dp;
     }
 }
@@ -2363,7 +2363,7 @@ get_digraph_chars(typval_T *arg, int *char1, int *char2)
 }
 
     static int
-setdigraph_common(typval_T *argchars, typval_T *argdigraph)
+digraph_set_common(typval_T *argchars, typval_T *argdigraph)
 {
     int		char1, char2;
     char_u	*digraph;
@@ -2394,10 +2394,10 @@ setdigraph_common(typval_T *argchars, typval_T *argdigraph)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * "getdigraph()" function
+ * "digraph_get()" function
  */
     void
-f_getdigraph(typval_T *argvars, typval_T *rettv)
+f_digraph_get(typval_T *argvars, typval_T *rettv)
 {
 # ifdef FEAT_DIGRAPHS
     int		code;
@@ -2406,6 +2406,10 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;  // Return empty string for failure
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     digraphs = tv_get_string_chk(&argvars[0]);
 
     if (digraphs == NULL)
@@ -2415,7 +2419,7 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
 	semsg(_(e_digraph_must_be_just_two_characters_str), digraphs);
 	return;
     }
-    code = getdigraph(digraphs[0], digraphs[1], FALSE);
+    code = digraph_get(digraphs[0], digraphs[1], FALSE);
 
     if (has_mbyte)
 	buf[(*mb_char2bytes)(code, buf)] = NUL;
@@ -2431,13 +2435,16 @@ f_getdigraph(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "getdigraphlist()" function
+ * "digraph_getlist()" function
  */
     void
-f_getdigraphlist(typval_T *argvars, typval_T *rettv)
+f_digraph_getlist(typval_T *argvars, typval_T *rettv)
 {
 # ifdef FEAT_DIGRAPHS
     int     flag_list_all;
+
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
 	flag_list_all = FALSE;
@@ -2450,23 +2457,28 @@ f_getdigraphlist(typval_T *argvars, typval_T *rettv)
 	flag_list_all = flag ? TRUE : FALSE;
     }
 
-    getdigraphlist_common(flag_list_all, rettv);
+    digraph_getlist_common(flag_list_all, rettv);
 # else
     emsg(_(e_no_digraphs_version));
 # endif
 }
 
 /*
- * "setdigraph()" function
+ * "digraph_set()" function
  */
     void
-f_setdigraph(typval_T *argvars, typval_T *rettv)
+f_digraph_set(typval_T *argvars, typval_T *rettv)
 {
 # ifdef FEAT_DIGRAPHS
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = VVAL_FALSE;
 
-    if (!setdigraph_common(&argvars[0], &argvars[1]))
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
+    if (!digraph_set_common(&argvars[0], &argvars[1]))
 	return;
 
     rettv->vval.v_number = VVAL_TRUE;
@@ -2476,10 +2488,10 @@ f_setdigraph(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "setdigraphlist()" function
+ * "digraph_setlist()" function
  */
     void
-f_setdigraphlist(typval_T * argvars, typval_T *rettv)
+f_digraph_setlist(typval_T * argvars, typval_T *rettv)
 {
 # ifdef FEAT_DIGRAPHS
     list_T	*pl, *l;
@@ -2490,7 +2502,7 @@ f_setdigraphlist(typval_T * argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_setdigraphlist_argument_must_be_list_of_lists_with_two_items));
+	emsg(_(e_digraph_setlist_argument_must_be_list_of_lists_with_two_items));
 	return;
     }
 
@@ -2506,18 +2518,18 @@ f_setdigraphlist(typval_T * argvars, typval_T *rettv)
     {
 	if (pli->li_tv.v_type != VAR_LIST)
 	{
-	    emsg(_(e_setdigraphlist_argument_must_be_list_of_lists_with_two_items));
+	    emsg(_(e_digraph_setlist_argument_must_be_list_of_lists_with_two_items));
 	    return;
 	}
 
 	l = pli->li_tv.vval.v_list;
 	if (l == NULL || l->lv_len != 2)
 	{
-	    emsg(_(e_setdigraphlist_argument_must_be_list_of_lists_with_two_items));
+	    emsg(_(e_digraph_setlist_argument_must_be_list_of_lists_with_two_items));
 	    return;
 	}
 
-	if (!setdigraph_common(&l->lv_first->li_tv,
+	if (!digraph_set_common(&l->lv_first->li_tv,
 						 &l->lv_first->li_next->li_tv))
 	    return;
     }

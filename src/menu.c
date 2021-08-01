@@ -2941,6 +2941,11 @@ f_menu_info(typval_T *argvars, typval_T *rettv)
 	return;
     retdict = rettv->vval.v_dict;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
     menu_name = tv_get_string_chk(&argvars[0]);
     if (menu_name == NULL)
 	return;

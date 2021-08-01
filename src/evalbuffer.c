@@ -277,9 +277,38 @@ done:
     void
 f_append(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T	lnum = tv_get_lnum(&argvars[0]);
+    linenr_T	lnum;
 
+    if (in_vim9script() && check_for_lnum_arg(argvars, 0) == FAIL)
+	return;
+
+    lnum = tv_get_lnum(&argvars[0]);
     set_buffer_lines(curbuf, lnum, TRUE, &argvars[1], rettv);
+}
+
+/*
+ * Set or append lines to a buffer.
+ */
+    static void
+buf_set_append_line(typval_T *argvars, typval_T *rettv, int append)
+{
+    linenr_T	lnum;
+    buf_T	*buf;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_lnum_arg(argvars, 1) == FAIL
+		|| check_for_string_or_number_or_list_arg(argvars, 2) == FAIL))
+	return;
+
+    buf = tv_get_buf(&argvars[0], FALSE);
+    if (buf == NULL)
+	rettv->vval.v_number = 1; // FAIL
+    else
+    {
+	lnum = tv_get_lnum_buf(&argvars[1], buf);
+	set_buffer_lines(buf, lnum, append, &argvars[2], rettv);
+    }
 }
 
 /*
@@ -288,17 +317,7 @@ f_append(typval_T *argvars, typval_T *rettv)
     void
 f_appendbufline(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T	lnum;
-    buf_T	*buf;
-
-    buf = tv_get_buf(&argvars[0], FALSE);
-    if (buf == NULL)
-	rettv->vval.v_number = 1; // FAIL
-    else
-    {
-	lnum = tv_get_lnum_buf(&argvars[1], buf);
-	set_buffer_lines(buf, lnum, TRUE, &argvars[2], rettv);
-    }
+    buf_set_append_line(argvars, rettv, TRUE);
 }
 
 /*
@@ -307,8 +326,12 @@ f_appendbufline(typval_T *argvars, typval_T *rettv)
     void
 f_bufadd(typval_T *argvars, typval_T *rettv)
 {
-    char_u *name = tv_get_string(&argvars[0]);
+    char_u *name;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    name = tv_get_string(&argvars[0]);
     rettv->vval.v_number = buflist_add(*name == NUL ? NULL : name, 0);
 }
 
@@ -318,6 +341,9 @@ f_bufadd(typval_T *argvars, typval_T *rettv)
     void
 f_bufexists(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_number = (find_buffer(&argvars[0]) != NULL);
 }
 
@@ -329,6 +355,9 @@ f_buflisted(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
 
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     buf = find_buffer(&argvars[0]);
     rettv->vval.v_number = (buf != NULL && buf->b_p_bl);
 }
@@ -339,8 +368,12 @@ f_buflisted(typval_T *argvars, typval_T *rettv)
     void
 f_bufload(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = get_buf_arg(&argvars[0]);
+    buf_T	*buf;
 
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
+    buf = get_buf_arg(&argvars[0]);
     if (buf != NULL)
 	buffer_ensure_loaded(buf);
 }
@@ -352,6 +385,9 @@ f_bufload(typval_T *argvars, typval_T *rettv UNUSED)
 f_bufloaded(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
 
     buf = find_buffer(&argvars[0]);
     rettv->vval.v_number = (buf != NULL && buf->b_ml.ml_mfp != NULL);
@@ -365,6 +401,9 @@ f_bufname(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
     typval_T	*tv = &argvars[0];
+
+    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
+	return;
 
     if (tv->v_type == VAR_UNKNOWN)
 	buf = curbuf;
@@ -420,6 +459,9 @@ buf_win_common(typval_T *argvars, typval_T *rettv, int get_nr)
     win_T	*wp;
     int		winnr = 0;
     buf_T	*buf;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
 
     buf = tv_get_buf_from_arg(&argvars[0]);
     FOR_ALL_WINDOWS(wp)
@@ -636,8 +678,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (in_vim9script()
-	    && argvars[0].v_type != VAR_UNKNOWN
-	    && check_for_buffer_or_dict_arg(argvars, 0) == FAIL)
+	    && check_for_opt_buffer_or_dict_arg(argvars, 0) == FAIL)
 	return;
 
     // List of all the buffers or selected buffers
@@ -805,17 +846,7 @@ f_getline(typval_T *argvars, typval_T *rettv)
     void
 f_setbufline(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T	lnum;
-    buf_T	*buf;
-
-    buf = tv_get_buf(&argvars[0], FALSE);
-    if (buf == NULL)
-	rettv->vval.v_number = 1; // FAIL
-    else
-    {
-	lnum = tv_get_lnum_buf(&argvars[1], buf);
-	set_buffer_lines(buf, lnum, FALSE, &argvars[2], rettv);
-    }
+    buf_set_append_line(argvars, rettv, FALSE);
 }
 
 /*
@@ -824,8 +855,12 @@ f_setbufline(typval_T *argvars, typval_T *rettv)
     void
 f_setline(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T	lnum = tv_get_lnum(&argvars[0]);
+    linenr_T	lnum;
 
+    if (in_vim9script() && check_for_lnum_arg(argvars, 0) == FAIL)
+	return;
+
+    lnum = tv_get_lnum(&argvars[0]);
     set_buffer_lines(curbuf, lnum, FALSE, &argvars[1], rettv);
 }
 #endif  // FEAT_EVAL

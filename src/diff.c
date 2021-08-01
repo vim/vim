@@ -3272,6 +3272,9 @@ xdiff_out(void *priv, mmbuffer_t *mb, int nbuf)
 f_diff_filler(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_DIFF
+    if (in_vim9script() && check_for_lnum_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_number = diff_check_fill(curwin, tv_get_lnum(argvars));
 #endif
 }

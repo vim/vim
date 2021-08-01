@@ -2857,6 +2857,9 @@ f_simplify(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     p = tv_get_string_strict(&argvars[0]);
     rettv->vval.v_string = vim_strsave(p);
     simplify_filename(rettv->vval.v_string);	// simplify in place

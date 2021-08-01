@@ -114,8 +114,6 @@ static struct
     {ADDR_NONE, NULL, NULL}
 };
 
-#define UC_BUFFER	1	// -buffer: local to current buffer
-
 /*
  * Search for a user command that matches "eap->cmd".
  * Return cmdidx in "eap->cmdidx", flags in "eap->argt", idx in "eap->useridx".
@@ -872,10 +870,10 @@ uc_add_command(
     replace_termcodes(rep, &rep_buf, 0, NULL);
     if (rep_buf == NULL)
     {
-	// Can't replace termcodes - try using the string as is
+	// can't replace termcodes - try using the string as is
 	rep_buf = vim_strsave(rep);
 
-	// Give up if out of memory
+	// give up if out of memory
 	if (rep_buf == NULL)
 	    return FAIL;
     }
@@ -955,6 +953,8 @@ uc_add_command(
     cmd->uc_def = def;
     cmd->uc_compl = compl;
     cmd->uc_script_ctx = current_sctx;
+    if (flags & UC_VIM9)
+	cmd->uc_script_ctx.sc_version = SCRIPT_VERSION_VIM9;
 #ifdef FEAT_EVAL
     cmd->uc_script_ctx.sc_lnum += SOURCING_LNUM;
     cmd->uc_compl_arg = compl_arg;
@@ -969,6 +969,49 @@ fail:
     vim_free(compl_arg);
 #endif
     return FAIL;
+}
+
+/*
+ * If "p" starts with "{" then read a block of commands until "}".
+ * Used for ":command" and ":autocmd".
+ */
+    char_u *
+may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
+{
+    char_u *retp = p;
+
+    if (*p == '{' && ends_excmd2(eap->arg, skipwhite(p + 1))
+						       && eap->getline != NULL)
+    {
+	garray_T	ga;
+	char_u	*line = NULL;
+
+	ga_init2(&ga, sizeof(char_u *), 10);
+	if (ga_add_string(&ga, p) == FAIL)
+	    return retp;
+
+	// Read lines between '{' and '}'.  Does not support nesting or
+	// here-doc constructs.
+	for (;;)
+	{
+	    vim_free(line);
+	    if ((line = eap->getline(':', eap->cookie,
+				       0, GETLINE_CONCAT_CONTBAR)) == NULL)
+	    {
+		emsg(_(e_missing_rcurly));
+		break;
+	    }
+	    if (ga_add_string(&ga, line) == FAIL)
+		break;
+	    if (*skipwhite(line) == '}')
+		break;
+	}
+	vim_free(line);
+	retp = *tofree = ga_concat_strings(&ga, "\n");
+	ga_clear_strings(&ga);
+	*flags |= UC_VIM9;
+    }
+    return retp;
 }
 
 /*
@@ -1037,8 +1080,15 @@ ex_command(exarg_T *eap)
 		       (char_u *)_(e_complete_used_without_nargs), TRUE, TRUE);
     }
     else
+    {
+	char_u *tofree = NULL;
+
+	p = may_get_cmd_block(eap, p, &tofree, &flags);
+
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
 						  addr_type_arg, eap->forceit);
+	vim_free(tofree);
+    }
 }
 
 /*

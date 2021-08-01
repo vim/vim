@@ -509,7 +509,7 @@ SendEventProc(
 	    /*
 	     * Didn't recognize this thing.  Just skip through the next
 	     * null character and try again.
-	     * Also, throw away commands that we cant process anyway.
+	     * Also, throw away commands that we can't process anyway.
 	     */
 
 	    while (*p != 0)

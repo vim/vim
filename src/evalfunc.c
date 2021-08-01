@@ -98,8 +98,6 @@ static void f_line2byte(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_LUA
 static void f_luaeval(typval_T *argvars, typval_T *rettv);
 #endif
-static void f_maparg(typval_T *argvars, typval_T *rettv);
-static void f_mapcheck(typval_T *argvars, typval_T *rettv);
 static void f_match(typval_T *argvars, typval_T *rettv);
 static void f_matchend(typval_T *argvars, typval_T *rettv);
 static void f_matchlist(typval_T *argvars, typval_T *rettv);
@@ -762,7 +760,7 @@ static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool}
 static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
-static argcheck_T arg3_string_string_nr[] = {arg_string, arg_string, arg_number};
+static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
 static argcheck_T arg4_list_number_number_number[] = {arg_list_string, arg_number, arg_number, arg_number};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NULL, arg_string};
@@ -811,7 +809,7 @@ static argcheck_T arg24_strpart[] = {arg_string, arg_number, arg_number, arg_boo
 static argcheck_T arg12_system[] = {arg_string, arg_str_or_nr_or_list};
 static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};
 static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
-static argcheck_T arg4_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
+static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
 
 
 /*
@@ -933,16 +931,28 @@ ret_first_arg(int argcount, type_T **argtypes)
 	return argtypes[0];
     return &t_void;
 }
+    static type_T *
+ret_repeat(int argcount, type_T **argtypes)
+{
+    if (argcount == 0)
+	return &t_any;
+    if (argtypes[0] == &t_number)
+	return &t_string;
+    return argtypes[0];
+}
 // for map(): returns first argument but item type may differ
     static type_T *
-ret_first_cont(int argcount UNUSED, type_T **argtypes)
+ret_first_cont(int argcount, type_T **argtypes)
 {
-    if (argtypes[0]->tt_type == VAR_LIST)
-	return &t_list_any;
-    if (argtypes[0]->tt_type == VAR_DICT)
-	return &t_dict_any;
-    if (argtypes[0]->tt_type == VAR_BLOB)
-	return argtypes[0];
+    if (argcount > 0)
+    {
+	if (argtypes[0]->tt_type == VAR_LIST)
+	    return &t_list_any;
+	if (argtypes[0]->tt_type == VAR_DICT)
+	    return &t_dict_any;
+	if (argtypes[0]->tt_type == VAR_BLOB)
+	    return argtypes[0];
+    }
     return &t_any;
 }
 
@@ -982,9 +992,9 @@ ret_argv(int argcount, type_T **argtypes UNUSED)
 }
 
     static type_T *
-ret_remove(int argcount UNUSED, type_T **argtypes)
+ret_remove(int argcount, type_T **argtypes)
 {
-    if (argtypes != NULL)
+    if (argcount > 0)
     {
 	if (argtypes[0]->tt_type == VAR_LIST
 		|| argtypes[0]->tt_type == VAR_DICT)
@@ -1292,6 +1302,14 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_diff_filler},
     {"diff_hlID",	2, 2, FEARG_1,	    arg2_lnum_number,
 			ret_number,	    f_diff_hlID},
+    {"digraph_get",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_digraph_get},
+    {"digraph_getlist",0, 1, FEARG_1,	    arg1_number,
+			ret_list_string_items, f_digraph_getlist},
+    {"digraph_set",	2, 2, FEARG_1,	    arg2_string_number,
+			ret_bool,	f_digraph_set},
+    {"digraph_setlist",1, 1, FEARG_1,	    arg1_list_string,
+			ret_bool,	    f_digraph_setlist},
     {"echoraw",		1, 1, FEARG_1,	    arg1_string,
 			ret_void,	    f_echoraw},
     {"empty",		1, 1, FEARG_1,	    NULL,
@@ -1332,9 +1350,9 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_filewritable},
     {"filter",		2, 2, FEARG_1,	    arg2_mapfilter,
 			ret_first_arg,	    f_filter},
-    {"finddir",		1, 3, FEARG_1,	    arg3_string_string_nr,
+    {"finddir",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_string,	    f_finddir},
-    {"findfile",	1, 3, FEARG_1,	    arg3_string_string_nr,
+    {"findfile",	1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_string,	    f_findfile},
     {"flatten",		1, 2, FEARG_1,	    arg2_list_any_number,
 			ret_list_any,	    f_flatten},
@@ -1406,10 +1424,6 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_getcursorcharpos},
     {"getcwd",		0, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_getcwd},
-    {"getdigraph",     1, 1, FEARG_1,      arg1_string,
-                        ret_string,         f_getdigraph},
-    {"getdigraphlist",  0, 1, FEARG_1,      arg1_number,
-                        ret_list_string_items, f_getdigraphlist},
     {"getenv",		1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_getenv},
     {"getfontname",	0, 1, 0,	    arg1_string,
@@ -1604,7 +1618,7 @@ static funcentry_T global_functions[] =
 			ret_first_cont,	    f_mapnew},
     {"mapset",		3, 3, FEARG_1,	    arg3_string_bool_dict,
 			ret_void,	    f_mapset},
-    {"match",		2, 4, FEARG_1,	    arg4_match_func,
+    {"match",		2, 4, FEARG_1,	    arg24_match_func,
 			ret_any,	    f_match},
     {"matchadd",	2, 5, FEARG_1,	    arg25_matchadd,
 			ret_number,	    f_matchadd},
@@ -1614,17 +1628,17 @@ static funcentry_T global_functions[] =
 			ret_list_string,    f_matcharg},
     {"matchdelete",	1, 2, FEARG_1,	    arg2_number,
 			ret_number_bool,    f_matchdelete},
-    {"matchend",	2, 4, FEARG_1,	    arg4_match_func,
+    {"matchend",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_number,	    f_matchend},
     {"matchfuzzy",	2, 3, FEARG_1,	    arg3_list_string_dict,
 			ret_list_string,    f_matchfuzzy},
     {"matchfuzzypos",	2, 3, FEARG_1,	    arg3_list_string_dict,
 			ret_list_any,	    f_matchfuzzypos},
-    {"matchlist",	2, 4, FEARG_1,	    arg4_match_func,
+    {"matchlist",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_list_string,    f_matchlist},
-    {"matchstr",	2, 4, FEARG_1,	    arg4_match_func,
+    {"matchstr",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_string,	    f_matchstr},
-    {"matchstrpos",	2, 4, FEARG_1,	    arg4_match_func,
+    {"matchstrpos",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_list_any,	    f_matchstrpos},
     {"max",		1, 1, FEARG_1,	    arg1_list_or_dict,
 			ret_number,	    f_max},
@@ -1638,7 +1652,7 @@ static funcentry_T global_functions[] =
 			},
     {"min",		1, 1, FEARG_1,	    arg1_list_or_dict,
 			ret_number,	    f_min},
-    {"mkdir",		1, 3, FEARG_1,	    arg3_string_string_nr,
+    {"mkdir",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number_bool,    f_mkdir},
     {"mode",		0, 1, FEARG_1,	    arg1_bool,
 			ret_string,	    f_mode},
@@ -1780,7 +1794,7 @@ static funcentry_T global_functions[] =
 			ret_list_string,    f_readdir},
     {"readdirex",	1, 3, FEARG_1,	    arg3_string_any_dict,
 			ret_list_dict_any,  f_readdirex},
-    {"readfile",	1, 3, FEARG_1,	    arg3_string_string_nr,
+    {"readfile",	1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_list_string,    f_readfile},
     {"reduce",		2, 3, FEARG_1,	    arg23_reduce,
 			ret_any,	    f_reduce},
@@ -1811,7 +1825,7 @@ static funcentry_T global_functions[] =
     {"rename",		2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_rename},
     {"repeat",		2, 2, FEARG_1,	    arg2_repeat,
-			ret_first_arg,	    f_repeat},
+			ret_repeat,	    f_repeat},
     {"resolve",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_resolve},
     {"reverse",		1, 1, FEARG_1,	    arg1_list_or_blob,
@@ -1870,10 +1884,6 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcmdpos},
     {"setcursorcharpos", 1, 3, FEARG_1,	    arg13_cursor,
 			ret_number_bool,    f_setcursorcharpos},
-    {"setdigraph",	2, 2, FEARG_1,	    arg2_string_number,
-			ret_bool,           f_setdigraph},
-    {"setdigraphlist",	1, 1, FEARG_1,	    arg1_list_string,
-			ret_bool,	    f_setdigraphlist},
     {"setenv",		2, 2, FEARG_2,	    arg2_string_any,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    arg2_string,
@@ -1984,7 +1994,7 @@ static funcentry_T global_functions[] =
 			},
     {"strgetchar",	2, 2, FEARG_1,	    arg2_string_number,
 			ret_number,	    f_strgetchar},
-    {"stridx",		2, 3, FEARG_1,	    arg3_string_string_nr,
+    {"stridx",		2, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number,	    f_stridx},
     {"string",		1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_string},
@@ -2000,7 +2010,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"strridx",		2, 3, FEARG_1,	    arg3_string_string_nr,
+    {"strridx",		2, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number,	    f_strridx},
     {"strtrans",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_strtrans},
@@ -2180,7 +2190,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_toupper},
     {"tr",		3, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_tr},
-    {"trim",		1, 3, FEARG_1,	    arg3_string_string_nr,
+    {"trim",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_trunc)},
@@ -2441,6 +2451,7 @@ internal_func_get_argcount(int idx, int *argcount, int *min_argcount)
  * Call the "f_retfunc" function to obtain the return type of function "idx".
  * "argtypes" is the list of argument types or NULL when there are no
  * arguments.
+ * "argcount" may be less than the actual count when only getting the type.
  */
     type_T *
 internal_func_ret_type(int idx, int argcount, type_T **argtypes)
@@ -2607,6 +2618,11 @@ non_zero_arg(typval_T *argvars)
     static void
 f_and(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
     rettv->vval.v_number = tv_get_number_chk(&argvars[0], NULL)
 					& tv_get_number_chk(&argvars[1], NULL);
 }
@@ -2633,6 +2649,10 @@ f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
 {
     if (balloonEval != NULL)
     {
+	if (in_vim9script()
+		&& check_for_string_or_list_arg(argvars, 0) == FAIL)
+	    return;
+
 	if (argvars[0].v_type == VAR_LIST
 # ifdef FEAT_GUI
 		&& !gui.in_use
@@ -2716,6 +2736,9 @@ f_byte2line(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = -1;
 #else
     long	boff = 0;
+
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
 
     boff = tv_get_number(&argvars[0]) - 1;  // boff gets -1 on type error
     if (boff < 0)
@@ -2821,6 +2844,10 @@ get_col(typval_T *argvars, typval_T *rettv, int charcol)
     colnr_T	col = 0;
     pos_T	*fp;
     int		fnum = curbuf->b_fnum;
+
+    if (in_vim9script()
+	    && check_for_string_or_list_arg(argvars, 0) == FAIL)
+	return;
 
     fp = var2fpos(&argvars[0], FALSE, &fnum, charcol);
     if (fp != NULL && fnum == curbuf->b_fnum)
@@ -2982,10 +3009,7 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
     int		set_curswant = TRUE;
 
     if (in_vim9script()
-	    && ((argvars[0].v_type != VAR_NUMBER
-		    && argvars[0].v_type != VAR_STRING
-		    && argvars[0].v_type != VAR_LIST
-		    && check_for_number_arg(argvars, 0) == FAIL)
+	    && (check_for_string_or_number_or_list_arg(argvars, 0) == FAIL
 		|| check_for_opt_number_arg(argvars, 1) == FAIL
 		|| (argvars[1].v_type != VAR_UNKNOWN
 		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
@@ -3071,6 +3095,9 @@ f_debugbreak(typval_T *argvars, typval_T *rettv)
     int		pid;
 
     rettv->vval.v_number = FAIL;
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
     pid = (int)tv_get_number(&argvars[0]);
     if (pid == 0)
 	emsg(_(e_invarg));
@@ -3269,6 +3296,11 @@ f_escape(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[NUMBUFLEN];
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     rettv->vval.v_string = vim_strsave_escaped(tv_get_string(&argvars[0]),
 					 tv_get_string_buf(&argvars[1], buf));
     rettv->v_type = VAR_STRING;
@@ -3281,6 +3313,9 @@ f_escape(typval_T *argvars, typval_T *rettv)
 f_eval(typval_T *argvars, typval_T *rettv)
 {
     char_u	*s, *p;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
 
     s = tv_get_string_chk(&argvars[0]);
     if (s != NULL)
@@ -3475,6 +3510,11 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     static void
 f_execute(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
     execute_common(argvars, rettv, 0);
 }
 
@@ -3486,6 +3526,9 @@ f_exists(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
     int		n = FALSE;
+
+    if (in_vim9script() && check_for_nonempty_string_arg(argvars, 0) == FAIL)
+	return;
 
     p = tv_get_string(&argvars[0]);
     if (*p == '$')			// environment variable
@@ -3631,6 +3674,9 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     char_u	*cmdstr;
     char	*errormsg = NULL;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_STRING;
     cmdstr = vim_strsave(tv_get_string(&argvars[0]));
 
@@ -3669,6 +3715,11 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     // executed in the sandbox it would be OK, but it probably happens later,
     // when "sandbox" is no longer set.
     if (check_secure())
+	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
 	return;
 
     keys = tv_get_string(&argvars[0]);
@@ -3760,6 +3811,9 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 f_fnameescape(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_string = vim_strsave_fnameescape(
 					   tv_get_string(&argvars[0]), FALSE);
     rettv->v_type = VAR_STRING;
@@ -4029,6 +4083,9 @@ f_function(typval_T *argvars, typval_T *rettv)
     static void
 f_garbagecollect(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
+
     // This is postponed until we are back at the toplevel, because we may be
     // using Lists and Dicts internally.  E.g.: ":echo [garbagecollect()]".
     want_garbage_collect = TRUE;
@@ -4175,6 +4232,9 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
+	return;
+
 #ifdef FEAT_JUMPLIST
     if (argvars[0].v_type == VAR_UNKNOWN)
 	buf = curbuf;
@@ -4292,6 +4352,9 @@ getpos_both(
     static void
 f_getcharpos(typval_T *argvars UNUSED, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     getpos_both(argvars, rettv, FALSE, TRUE);
 }
 
@@ -4318,8 +4381,12 @@ f_getcharsearch(typval_T *argvars UNUSED, typval_T *rettv)
 f_getenv(typval_T *argvars, typval_T *rettv)
 {
     int	    mustfree = FALSE;
-    char_u  *p = vim_getenv(tv_get_string(&argvars[0]), &mustfree);
+    char_u  *p;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    p = vim_getenv(tv_get_string(&argvars[0]), &mustfree);
     if (p == NULL)
     {
 	rettv->v_type = VAR_SPECIAL;
@@ -4340,6 +4407,10 @@ f_getfontname(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+
+    if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
+	return;
+
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
@@ -4383,6 +4454,12 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 #endif
 
     if (rettv_list_alloc(rettv) != OK)
+	return;
+
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
 	return;
 
 #ifdef FEAT_JUMPLIST
@@ -4433,12 +4510,18 @@ f_getpid(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_getcurpos(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     getpos_both(argvars, rettv, TRUE, FALSE);
 }
 
     static void
 f_getcursorcharpos(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     getpos_both(argvars, rettv, TRUE, TRUE);
 }
 
@@ -4448,6 +4531,9 @@ f_getcursorcharpos(typval_T *argvars, typval_T *rettv)
     static void
 f_getpos(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     getpos_both(argvars, rettv, FALSE, FALSE);
 }
 
@@ -4464,10 +4550,11 @@ f_getreg(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
 
     if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_bool_arg(argvars, 1) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	    && (check_for_opt_string_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && (check_for_opt_bool_arg(argvars, 1) == FAIL
+			|| (argvars[1].v_type != VAR_UNKNOWN
+			    && check_for_opt_bool_arg(argvars, 2) == FAIL)))))
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -4526,6 +4613,9 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
     char_u	buf[NUMBUFLEN + 2];
     long	reglen = 0;
 
+    if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	strregname = tv_get_string_chk(&argvars[0]);
@@ -4575,6 +4665,9 @@ f_gettagstack(typval_T *argvars, typval_T *rettv)
     if (rettv_dict_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	wp = find_win_by_nr_or_id(&argvars[0]);
@@ -4591,6 +4684,9 @@ f_gettagstack(typval_T *argvars, typval_T *rettv)
     static void
 f_gettext(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_STRING
 	    || argvars[0].vval.v_string == NULL
 	    || *argvars[0].vval.v_string == NUL)
@@ -6023,6 +6119,12 @@ f_haslocaldir(typval_T *argvars, typval_T *rettv)
     tabpage_T	*tp = NULL;
     win_T	*wp = NULL;
 
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
+	return;
+
     wp = find_tabwin(&argvars[0], &argvars[1], &tp);
 
     // Check for window-local and tab-local directories
@@ -6074,6 +6176,9 @@ f_hasmapto(typval_T *argvars, typval_T *rettv)
     static void
 f_hlID(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_number = syn_name2id(tv_get_string(&argvars[0]));
 }
 
@@ -6083,6 +6188,9 @@ f_hlID(typval_T *argvars, typval_T *rettv)
     static void
 f_hlexists(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_number = highlight_exists(tv_get_string(&argvars[0]));
 }
 
@@ -6214,6 +6322,13 @@ f_inputdialog(typval_T *argvars, typval_T *rettv)
 	char_u	buf[NUMBUFLEN];
 	char_u	*defstr = (char_u *)"";
 
+	if (in_vim9script()
+		&& (check_for_string_arg(argvars, 0) == FAIL
+		    || check_for_opt_string_arg(argvars, 1) == FAIL
+		    || (argvars[1].v_type != VAR_UNKNOWN
+			&& check_for_opt_string_arg(argvars, 2) == FAIL)))
+	    return;
+
 	message = tv_get_string_chk(&argvars[0]);
 	if (argvars[1].v_type != VAR_UNKNOWN
 		&& (defstr = tv_get_string_buf_chk(&argvars[1], buf)) != NULL)
@@ -6258,6 +6373,9 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
     if (no_console_input() && !is_not_a_term())
 	return;
 #endif
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
     {
 	semsg(_(e_listarg), "inputlist()");
@@ -6332,6 +6450,11 @@ f_inputsave(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_inputsecret(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
     ++cmdline_star;
     ++inputsecret_flag;
     f_input(argvars, rettv);
@@ -6354,6 +6477,9 @@ f_interrupt(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_invert(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->vval.v_number = ~tv_get_number_chk(&argvars[0], NULL);
 }
 
@@ -6585,6 +6711,9 @@ f_line2byte(typval_T *argvars UNUSED, typval_T *rettv)
 #else
     linenr_T	lnum;
 
+    if (in_vim9script() && check_for_lnum_arg(argvars, 0) == FAIL)
+	return;
+
     lnum = tv_get_lnum(argvars);
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count + 1)
 	rettv->vval.v_number = -1;
@@ -6615,40 +6744,6 @@ f_luaeval(typval_T *argvars, typval_T *rettv)
     do_luaeval(str, argvars + 1, rettv);
 }
 #endif
-
-/*
- * "maparg()" function
- */
-    static void
-f_maparg(typval_T *argvars, typval_T *rettv)
-{
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_arg(argvars, 1) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && (check_for_opt_bool_arg(argvars, 2) == FAIL
-			|| (argvars[2].v_type != VAR_UNKNOWN
-			    && check_for_opt_bool_arg(argvars, 3) == FAIL)))))
-		return;
-
-    get_maparg(argvars, rettv, TRUE);
-}
-
-/*
- * "mapcheck()" function
- */
-    static void
-f_mapcheck(typval_T *argvars, typval_T *rettv)
-{
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_arg(argvars, 1) == FAIL
-		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
-	return;
-
-    get_maparg(argvars, rettv, FALSE);
-}
 
 typedef enum
 {
@@ -6712,9 +6807,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
     }
 
     if (in_vim9script()
-	    && ((argvars[0].v_type != VAR_STRING
-		    && argvars[0].v_type != VAR_LIST
-		    && check_for_string_arg(argvars, 0) == FAIL)
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
 		|| check_for_string_arg(argvars, 1) == FAIL
 		|| check_for_opt_number_arg(argvars, 2) == FAIL
 		|| (argvars[2].v_type != VAR_UNKNOWN
@@ -6947,6 +7040,9 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
     varnumber_T	i;
     int		error = FALSE;
 
+    if (in_vim9script() && check_for_list_or_dict_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_LIST)
     {
 	list_T		*l;
@@ -7052,6 +7148,10 @@ f_mzeval(typval_T *argvars, typval_T *rettv)
 
     if (check_restricted() || check_secure())
 	return;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     str = tv_get_string_buf(&argvars[0], buf);
     do_mzeval(str, rettv);
 }
@@ -7077,6 +7177,9 @@ mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv)
 f_nextnonblank(typval_T *argvars, typval_T *rettv)
 {
     linenr_T	lnum;
+
+    if (in_vim9script() && check_for_lnum_arg(argvars, 0) == FAIL)
+	return;
 
     for (lnum = tv_get_lnum(argvars); ; ++lnum)
     {
@@ -7130,6 +7233,11 @@ f_nr2char(typval_T *argvars, typval_T *rettv)
     static void
 f_or(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
     rettv->vval.v_number = tv_get_number_chk(&argvars[0], NULL)
 					| tv_get_number_chk(&argvars[1], NULL);
 }
@@ -7144,6 +7252,9 @@ f_perleval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     str = tv_get_string_buf(&argvars[0], buf);
     do_perleval(str, rettv);
 }
@@ -7156,6 +7267,9 @@ f_perleval(typval_T *argvars, typval_T *rettv)
 f_prevnonblank(typval_T *argvars, typval_T *rettv)
 {
     linenr_T	lnum;
+
+    if (in_vim9script() && check_for_lnum_arg(argvars, 0) == FAIL)
+	return;
 
     lnum = tv_get_lnum(argvars);
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
@@ -7241,6 +7355,9 @@ f_py3eval(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (p_pyx == 0)
 	p_pyx = 3;
 
@@ -7262,6 +7379,9 @@ f_pyeval(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (p_pyx == 0)
 	p_pyx = 2;
 
@@ -7278,6 +7398,9 @@ f_pyeval(typval_T *argvars, typval_T *rettv)
 f_pyxeval(typval_T *argvars, typval_T *rettv)
 {
     if (check_restricted() || check_secure())
+	return;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
 # if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
@@ -7300,6 +7423,9 @@ static int	srand_seed_for_testing_is_used = FALSE;
     static void
 f_test_srand_seed(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
 	srand_seed_for_testing_is_used = FALSE;
     else
@@ -7383,6 +7509,9 @@ f_rand(typval_T *argvars, typval_T *rettv)
     listitem_T	*lx, *ly, *lz, *lw;
     UINT32_T	x = 0, y, z, w, t, result;
 
+    if (in_vim9script() && check_for_opt_list_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	// When no argument is given use the global seed list.
@@ -7449,6 +7578,10 @@ f_srand(typval_T *argvars, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
+
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	init_srand(&x);
@@ -7482,6 +7615,13 @@ f_range(typval_T *argvars, typval_T *rettv)
     varnumber_T	end;
     varnumber_T	stride = 1;
     int		error = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
+	return;
 
     start = tv_get_number_chk(&argvars[0], &error);
     if (argvars[1].v_type == VAR_UNKNOWN)
@@ -7550,6 +7690,9 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     long	reglen = 0;
     dict_T	*dict;
     list_T	*list;
+
+    if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
@@ -7645,10 +7788,16 @@ f_rename(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[NUMBUFLEN];
 
+    rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
-	rettv->vval.v_number = -1;
-    else
-	rettv->vval.v_number = vim_rename(tv_get_string(&argvars[0]),
+	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    rettv->vval.v_number = vim_rename(tv_get_string(&argvars[0]),
 				      tv_get_string_buf(&argvars[1], buf));
 }
 
@@ -7666,10 +7815,8 @@ f_repeat(typval_T *argvars, typval_T *rettv)
     int		i;
 
     if (in_vim9script()
-	    && (argvars[0].v_type != VAR_STRING
-		&& argvars[0].v_type != VAR_NUMBER
-		&& argvars[0].v_type != VAR_LIST
-		&& check_for_string_arg(argvars, 0) == FAIL))
+	    && (check_for_string_or_number_or_list_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
     n = (int)tv_get_number(&argvars[1]);
@@ -7932,6 +8079,9 @@ f_rubyeval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     str = tv_get_string_buf(&argvars[0], buf);
     do_rubyeval(str, rettv);
 }
@@ -7946,6 +8096,11 @@ f_screenattr(typval_T *argvars, typval_T *rettv)
     int		row;
     int		col;
     int		c;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
 
     row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
     col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
@@ -7967,6 +8122,11 @@ f_screenchar(typval_T *argvars, typval_T *rettv)
     int		col;
     int		off;
     int		c;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
 
     row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
     col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
@@ -7997,6 +8157,12 @@ f_screenchars(typval_T *argvars, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
     row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
     col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
     if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
@@ -8052,6 +8218,11 @@ f_screenstring(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
 
     row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
     col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
@@ -8515,6 +8686,9 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
     dictitem_T	*di;
     char_u	*csearch;
 
+    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_DICT)
     {
 	emsg(_(e_dictreq));
@@ -8593,6 +8767,12 @@ f_setfperm(typval_T *argvars, typval_T *rettv)
     int		mode = 0;
 
     rettv->vval.v_number = 0;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     fname = tv_get_string_chk(&argvars[0]);
     if (fname == NULL)
 	return;
@@ -8900,6 +9080,9 @@ f_sha256(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     p = tv_get_string(&argvars[0]);
     rettv->vval.v_string = vim_strsave(
 				    sha256_bytes(p, (int)STRLEN(p), NULL, 0));
@@ -8934,6 +9117,9 @@ f_shiftwidth(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = 0;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	long	col;
@@ -8958,6 +9144,9 @@ f_soundfold(typval_T *argvars, typval_T *rettv)
 {
     char_u	*s;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_STRING;
     s = tv_get_string(&argvars[0]);
 #ifdef FEAT_SPELL
@@ -8978,6 +9167,9 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
     int		len = 0;
 #ifdef FEAT_SPELL
     int		wo_spell_save = curwin->w_p_spell;
+
+    if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
+	return;
 
     if (!curwin->w_p_spell)
     {
@@ -9298,6 +9490,9 @@ f_substitute(typval_T *argvars, typval_T *rettv)
     static void
 f_swapinfo(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (rettv_dict_alloc(rettv) == OK)
 	get_b0_dict(tv_get_string(argvars), rettv->vval.v_dict);
 }
@@ -9311,6 +9506,10 @@ f_swapname(typval_T *argvars, typval_T *rettv)
     buf_T	*buf;
 
     rettv->v_type = VAR_STRING;
+
+    if (in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL || buf->b_ml.ml_mfp == NULL
 					|| buf->b_ml.ml_mfp->mf_fname == NULL)
@@ -9460,6 +9659,9 @@ f_synIDtrans(typval_T *argvars UNUSED, typval_T *rettv)
     int		id;
 
 #ifdef FEAT_SYN_HL
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
     id = (int)tv_get_number(&argvars[0]);
 
     if (id > 0)
@@ -9584,6 +9786,9 @@ f_tabpagebuflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     tabpage_T	*tp;
     win_T	*wp = NULL;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
 	wp = firstwin;
     else
@@ -9633,6 +9838,11 @@ f_taglist(typval_T *argvars, typval_T *rettv)
 {
     char_u  *fname = NULL;
     char_u  *tag_pattern;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
 
     tag_pattern = tv_get_string(&argvars[0]);
 
@@ -9690,6 +9900,10 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
     int		fnum = curbuf->b_fnum;
     int		len;
 
+    if (in_vim9script()
+	    && check_for_string_or_list_arg(argvars, 0) == FAIL)
+	return;
+
     fp = var2fpos(&argvars[0], FALSE, &fnum, FALSE);
     if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count
 						    && fnum == curbuf->b_fnum)
@@ -9717,6 +9931,9 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
 f_visualmode(typval_T *argvars, typval_T *rettv)
 {
     char_u	str[2];
+
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
 
     rettv->v_type = VAR_STRING;
     str[0] = curbuf->b_visual_mode_eval;
@@ -9767,6 +9984,11 @@ f_wordcount(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_xor(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
     rettv->vval.v_number = tv_get_number_chk(&argvars[0], NULL)
 					^ tv_get_number_chk(&argvars[1], NULL);
 }

@@ -2390,7 +2390,7 @@ cmdline_changed:
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 #ifdef FEAT_SEARCH_EXTRA
-	if (xpc.xp_context == EXPAND_NOTHING)
+	if (xpc.xp_context == EXPAND_NOTHING && (KeyTyped || vpeekc() == NUL))
 	    may_do_incsearch_highlighting(firstc, count, &is_state);
 #endif
 
@@ -4061,8 +4061,12 @@ set_cmdline_pos(
     void
 f_setcmdpos(typval_T *argvars, typval_T *rettv)
 {
-    int		pos = (int)tv_get_number(&argvars[0]) - 1;
+    int		pos;
 
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    pos = (int)tv_get_number(&argvars[0]) - 1;
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
 }
@@ -4517,7 +4521,7 @@ get_user_input(
     int		inputdialog,
     int		secret)
 {
-    char_u	*prompt = tv_get_string_chk(&argvars[0]);
+    char_u	*prompt;
     char_u	*p = NULL;
     int		c;
     char_u	buf[NUMBUFLEN];
@@ -4530,6 +4534,15 @@ get_user_input(
     rettv->vval.v_string = NULL;
     if (input_busy)
 	return;  // this doesn't work recursively.
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_string_arg(argvars, 2) == FAIL)))
+	return;
+
+    prompt = tv_get_string_chk(&argvars[0]);
 
 #ifdef NO_CONSOLE_INPUT
     // While starting up, there is no place to enter text. When running tests

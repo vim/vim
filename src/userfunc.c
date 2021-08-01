@@ -1398,7 +1398,7 @@ get_lambda_tv(
 
 	// If there are line breaks, we need to split up the string.
 	line_end = vim_strchr(start, '\n');
-	if (line_end == NULL)
+	if (line_end == NULL || line_end > end)
 	    line_end = end;
 
 	// Add "return " before the expression (or the first line).
@@ -1674,7 +1674,8 @@ get_func_tv(
 
     if (ret == OK)
     {
-	int		i = 0;
+	int	i = 0;
+	int	did_emsg_before = did_emsg;
 
 	if (get_vim_var_nr(VV_TESTING))
 	{
@@ -1689,6 +1690,13 @@ get_func_tv(
 	}
 
 	ret = call_func(name, len, rettv, argcount, argvars, funcexe);
+	if (in_vim9script() && did_emsg > did_emsg_before)
+	{
+	    // An error in a builtin function does not return FAIL, but we do
+	    // want to abort further processing if an error was given.
+	    ret = FAIL;
+	    clear_tv(rettv);
+	}
 
 	funcargs.ga_len -= i;
     }

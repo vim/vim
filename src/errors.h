@@ -224,8 +224,10 @@ EXTERN char e_using_number_as_string[]
 	INIT(= N_("E1024: Using a Number as a String"));
 EXTERN char e_using_rcurly_outside_if_block_scope[]
 	INIT(= N_("E1025: Using } outside of a block scope"));
+#endif
 EXTERN char e_missing_rcurly[]
 	INIT(= N_("E1026: Missing }"));
+#ifdef FEAT_EVAL
 EXTERN char e_missing_return_statement[]
 	INIT(= N_("E1027: Missing return statement"));
 EXTERN char e_compiling_def_function_failed[]
@@ -610,10 +612,34 @@ EXTERN char e_digraph_must_be_just_two_characters_str[]
 	INIT(= N_("E1214: Digraph must be just two characters: %s"));
 EXTERN char e_digraph_argument_must_be_one_character_str[]
 	INIT(= N_("E1215: Digraph must be one character: %s"));
-EXTERN char e_setdigraphlist_argument_must_be_list_of_lists_with_two_items[]
-	INIT(= N_("E1216: setdigraphlist() argument must be a list of lists with two items"));
+EXTERN char e_digraph_setlist_argument_must_be_list_of_lists_with_two_items[]
+	INIT(= N_("E1216: digraph_setlist() argument must be a list of lists with two items"));
 #endif
 EXTERN char e_chan_or_job_required_for_argument_nr[]
 	INIT(= N_("E1217: Channel or Job required for argument %d"));
 EXTERN char e_job_required_for_argument_nr[]
 	INIT(= N_("E1218: Job required for argument %d"));
+EXTERN char e_float_or_number_required_for_argument_nr[]
+	INIT(= N_("E1219: Float or Number required for argument %d"));
+EXTERN char e_string_or_number_required_for_argument_nr[]
+	INIT(= N_("E1220: String or Number required for argument %d"));
+EXTERN char e_string_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1221: String or Blob required for argument %d"));
+EXTERN char e_string_or_list_required_for_argument_nr[]
+	INIT(= N_("E1222: String or List required for argument %d"));
+EXTERN char e_string_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1223: String or Dictionary required for argument %d"));
+EXTERN char e_string_number_or_list_required_for_argument_nr[]
+	INIT(= N_("E1224: String, Number or List required for argument %d"));
+EXTERN char e_string_list_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1225: String, List or Dictionary required for argument %d"));
+EXTERN char e_list_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1226: List or Blob required for argument %d"));
+EXTERN char e_list_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1227: List or Dictionary required for argument %d"));
+EXTERN char e_list_dict_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1228: List, Dictionary or Blob required for argument %d"));
+EXTERN char e_expected_dictionary_for_using_key_str_but_got_str[]
+	INIT(= N_("E1229: Expected dictionary for using key \"%s\", but got %s"));
+EXTERN char e_encryption_sodium_mlock_failed[]
+	INIT(= N_("E1230: encryption: sodium_mlock() failed"));

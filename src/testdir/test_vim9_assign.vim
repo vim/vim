@@ -239,6 +239,32 @@ def Test_assignment()
   END
 enddef
 
+let g:someNumber = 43
+
+def Test_assign_concat()
+  var lines =<< trim END
+    var s = '-'
+    s ..= 99
+    s ..= true
+    s ..= '-'
+    s ..= v:null
+    s ..= g:someNumber
+    assert_equal('-99true-null43', s)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var s = '-'
+    s ..= [1, 2]
+  END
+  CheckDefAndScriptFailure2(lines, 'E1105: Cannot convert list to string', 'E734: Wrong variable type for .=', 2)
+  lines =<< trim END
+    var s = '-'
+    s ..= {a: 2}
+  END
+  CheckDefAndScriptFailure2(lines, 'E1105: Cannot convert dict to string', 'E734: Wrong variable type for .=', 2)
+enddef
+
 def Test_assign_register()
   var lines =<< trim END
     @c = 'areg'
@@ -439,6 +465,12 @@ def Test_assign_index()
   d3.one.two = {}
   d3.one.two.three = 123
   assert_equal({one: {two: {three: 123}}}, d3)
+
+  # should not read the next line when generating "a.b"
+  var a = {}
+  a.b = {}
+  a.b.c = {}
+          ->copy()
 
   lines =<< trim END
       var d3: dict<dict<number>>
@@ -1392,6 +1424,14 @@ def Test_heredoc()
   [END]
   CheckScriptFailure(lines, 'E1145: Missing heredoc end marker: END')
   delfunc! g:Func
+
+  lines =<< trim END
+      var lines: number =<< trim STOP
+        aaa
+        bbb
+      STOP
+  END
+  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<string>', 1)
 enddef
 
 def Test_var_func_call()
@@ -2001,6 +2041,21 @@ def Test_inc_dec()
   END
   CheckDefAndScriptFailure(lines, "E1202: No white space allowed after '++': ++ nr")
 enddef
+
+def Test_abort_after_error()
+  # should abort after strpart() fails, not give another type error
+  var lines =<< trim END
+      vim9script
+      var x: string
+      x = strpart(1, 2)
+  END
+  writefile(lines, 'Xtestscript')
+  var expected = 'E1174: String required for argument 1'
+  assert_fails('so Xtestscript', [expected, expected], 3)
+
+  delete('Xtestscript')
+enddef
+
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
