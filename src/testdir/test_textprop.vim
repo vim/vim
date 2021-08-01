@@ -239,12 +239,18 @@ func Test_prop_find()
   let result = prop_find({'type': 'prop_name', 'lnum': 1}, 'f')
   call assert_equal(expected[0], result)
 
-  " When ID is -1 it's like prop is not found.
+  " Negative ID is possible, just like prop is not found.
   call assert_equal({}, prop_find({'id': -1}))
+  call assert_equal({}, prop_find({'id': -2}))
 
-  call prop_clear(1,6)
+  call prop_clear(1, 6)
+
+  " Default ID is zero
+  call prop_add(5, 4, {'type': 'prop_name', 'length': 1})
+  call assert_equal(#{lnum: 5, id: 0, col: 4, type_bufnr: 0, end: 1, type: 'prop_name', length: 1, start: 1}, prop_find({'id': 0}))
+
   call prop_type_delete('prop_name')
-
+  call prop_clear(1, 6)
   bwipe!
 endfunc
 

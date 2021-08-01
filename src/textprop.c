@@ -689,7 +689,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
     {
 	id = dict_get_number(dict, (char_u *)"id");
-	id_found = id != 0;
+	id_found = TRUE;
     }
     if (dict_find(dict, (char_u *)"type", -1))
     {
