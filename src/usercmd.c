@@ -114,9 +114,6 @@ static struct
     {ADDR_NONE, NULL, NULL}
 };
 
-#define UC_BUFFER	1	// -buffer: local to current buffer
-#define UC_VIM9		2	// {} argument: Vim9 syntax.
-
 /*
  * Search for a user command that matches "eap->cmd".
  * Return cmdidx in "eap->cmdidx", flags in "eap->argt", idx in "eap->useridx".
@@ -975,6 +972,49 @@ fail:
 }
 
 /*
+ * If "p" starts with "{" then read a block of commands until "}".
+ * Used for ":command" and ":autocmd".
+ */
+    char_u *
+may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
+{
+    char_u *retp = p;
+
+    if (*p == '{' && ends_excmd2(eap->arg, skipwhite(p + 1))
+						       && eap->getline != NULL)
+    {
+	garray_T	ga;
+	char_u	*line = NULL;
+
+	ga_init2(&ga, sizeof(char_u *), 10);
+	if (ga_add_string(&ga, p) == FAIL)
+	    return retp;
+
+	// Read lines between '{' and '}'.  Does not support nesting or
+	// here-doc constructs.
+	for (;;)
+	{
+	    vim_free(line);
+	    if ((line = eap->getline(':', eap->cookie,
+				       0, GETLINE_CONCAT_CONTBAR)) == NULL)
+	    {
+		emsg(_(e_missing_rcurly));
+		break;
+	    }
+	    if (ga_add_string(&ga, line) == FAIL)
+		break;
+	    if (*skipwhite(line) == '}')
+		break;
+	}
+	vim_free(line);
+	retp = *tofree = ga_concat_strings(&ga, "\n");
+	ga_clear_strings(&ga);
+	*flags |= UC_VIM9;
+    }
+    return retp;
+}
+
+/*
  * ":command ..." implementation
  */
     void
@@ -1043,38 +1083,7 @@ ex_command(exarg_T *eap)
     {
 	char_u *tofree = NULL;
 
-	if (*p == '{' && ends_excmd2(eap->arg, skipwhite(p + 1))
-						       && eap->getline != NULL)
-	{
-	    garray_T	ga;
-	    char_u	*line = NULL;
-
-	    ga_init2(&ga, sizeof(char_u *), 10);
-	    if (ga_add_string(&ga, p) == FAIL)
-		return;
-
-	    // Read lines between '{' and '}'.  Does not support nesting or
-	    // here-doc constructs.
-	    //
-	    for (;;)
-	    {
-		vim_free(line);
-		if ((line = eap->getline(':', eap->cookie,
-					   0, GETLINE_CONCAT_CONTBAR)) == NULL)
-		{
-		    emsg(_(e_missing_rcurly));
-		    break;
-		}
-		if (ga_add_string(&ga, line) == FAIL)
-		    break;
-		if (*skipwhite(line) == '}')
-		    break;
-	    }
-	    vim_free(line);
-	    p = tofree = ga_concat_strings(&ga, "\n");
-	    ga_clear_strings(&ga);
-	    flags |= UC_VIM9;
-	}
+	p = may_get_cmd_block(eap, p, &tofree, &flags);
 
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
 						  addr_type_arg, eap->forceit);

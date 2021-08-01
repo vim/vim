@@ -5203,7 +5203,7 @@ ex_autocmd(exarg_T *eap)
 	      _(e_command_not_allowed_from_vimrc_in_current_dir_or_tag_search);
     }
     else if (eap->cmdidx == CMD_autocmd)
-	do_autocmd(eap->arg, eap->forceit);
+	do_autocmd(eap, eap->arg, eap->forceit);
     else
 	do_augroup(eap->arg, eap->forceit);
 }

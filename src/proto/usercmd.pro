@@ -10,6 +10,7 @@ char_u *get_user_cmd_complete(expand_T *xp, int idx);
 int cmdcomplete_str_to_type(char_u *complete_str);
 char *uc_fun_cmd(void);
 int parse_compl_arg(char_u *value, int vallen, int *complp, long *argt, char_u **compl_arg);
+char_u *may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags);
 void ex_command(exarg_T *eap);
 void ex_comclear(exarg_T *eap);
 void uc_clear(garray_T *gap);

@@ -76,6 +76,12 @@ and in a `:def` function) then {cmd} will be executed as in Vim9
 script.  Thus this depends on where the autocmd is defined, not where it is
 triggered.
 
+{cmd} can use a block, like with `:command`, see |:command-repl|.  Example: >
+	au BufReadPost *.xml {
+		  setlocal matchpairs+=<:>
+		  /<start
+		}
+
 Note: The ":autocmd" command can only be followed by another command when the
 '|' appears before {cmd}.  This works: >
 	:augroup mine | au! BufRead | augroup END

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2021 Jul 28
+*map.txt*       For Vim version 8.2.  Last change: 2021 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1571,7 +1571,7 @@ feature.  Use the full name for new scripts.
 
 
 Replacement text ~
-
+							*:command-repl*
 The {repl} argument is normally one long string, possibly with "|" separated
 commands.  A special case is when the argument is "{", then the following
 lines, up to a line starting with "}" are used and |Vim9| syntax applies.
@@ -1580,8 +1580,8 @@ Example: >
 		echo 'hello'
 		g:calledMyCommand = true
 	    }
-No nesting is supported.  Using `:normal` directly does not work, you can use
-it indirectly with `:execute`.
+No nesting is supported, inline functions cannot be used.  Using `:normal`
+directly does not work, you can use it indirectly with `:execute`.
 
 The replacement text {repl} for a user defined command is scanned for special
 escape sequences, using <...> notation.  Escape sequences are replaced with

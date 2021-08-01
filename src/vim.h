@@ -2739,4 +2739,9 @@ long elapsed(DWORD start_tick);
 // flags for equal_type()
 #define ETYPE_ARG_UNKNOWN 1
 
+// flags used by user commands and :autocmd
+#define UC_BUFFER	1	// -buffer: local to current buffer
+#define UC_VIM9		2	// {} argument: Vim9 syntax.
+
+
 #endif // VIM__H

@@ -2810,5 +2810,21 @@ func Test_autocmd_vimgrep()
   augroup END
 endfunc
 
+func Test_autocmd_with_block()
+  augroup block_testing
+    au BufReadPost *.xml {
+            setlocal matchpairs+=<:>
+            /<start
+          }
+  augroup END
+
+  let expected = "\n--- Autocommands ---\nblock_testing  BufRead\n    *.xml     {^@            setlocal matchpairs+=<:>^@            /<start^@          }"
+  call assert_equal(expected, execute('au BufReadPost *.xml'))
+
+  augroup block_testing
+    au!
+  augroup END
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
