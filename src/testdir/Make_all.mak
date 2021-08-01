@@ -58,6 +58,7 @@ NEW_TESTS = \
 	test_arabic \
 	test_arglist \
 	test_assert \
+	test_auto_complete_no_halt \
 	test_autochdir \
 	test_autocmd \
 	test_autoload \
@@ -319,6 +320,7 @@ NEW_TESTS_RES = \
 	test_arabic.res \
 	test_arglist.res \
 	test_assert.res \
+	test_auto_complete_no_halt.res \
 	test_autochdir.res \
 	test_autocmd.res \
 	test_autoload.res \
