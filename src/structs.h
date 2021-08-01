@@ -2973,8 +2973,6 @@ struct file_buffer
 #ifdef FEAT_TERMINAL
     long	b_p_twsl;	// 'termwinscroll'
 #endif
-    char_u	*b_p_ve;	// 'virtualedit' local value
-    unsigned	b_ve_flags;     // flags for 'virtualedit'
 
     /*
      * end of buffer options

@@ -6095,8 +6095,6 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_lw = empty_option;
 #endif
 	    buf->b_p_menc = empty_option;
-	    buf->b_p_ve = empty_option;
-	    buf->b_ve_flags = 0;
 
 	    /*
 	     * Don't copy the options set by ex_help(), use the saved values,
