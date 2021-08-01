@@ -901,7 +901,7 @@ get_function_body(
 		end = p + STRLEN(p) - 1;
 		while (end > p && VIM_ISWHITE(*end))
 		    --end;
-		if (end > p && *end == '{')
+		if (end > p + 1 && *end == '{' && VIM_ISWHITE(end[-1]))
 		{
 		    int	    is_block;
 
