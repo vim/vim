@@ -466,6 +466,12 @@ def Test_assign_index()
   d3.one.two.three = 123
   assert_equal({one: {two: {three: 123}}}, d3)
 
+  # should not read the next line when generating "a.b"
+  var a = {}
+  a.b = {}
+  a.b.c = {}
+          ->copy()
+
   lines =<< trim END
       var d3: dict<dict<number>>
       d3.one = {}
