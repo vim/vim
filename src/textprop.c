@@ -623,7 +623,8 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     int		lnum_start;
     int		start_pos_has_prop = 0;
     int		seen_end = 0;
-    int		id = -1;
+    int		id = 0;
+    int		id_found = FALSE;
     int		type_id = -1;
     int		skipstart = 0;
     int		lnum = -1;
@@ -688,8 +689,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
     {
 	id = dict_get_number(dict, (char_u *)"id");
-	if (id == -1)
-	    id = -2;
+	id_found = id != 0;
     }
     if (dict_find(dict, (char_u *)"type", -1))
     {
@@ -701,12 +701,12 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	type_id = type->pt_id;
     }
     both = dict_get_bool(dict, (char_u *)"both", FALSE);
-    if (id == -1 && type_id == -1)
+    if (!id_found && type_id == -1)
     {
 	emsg(_("E968: Need at least one of 'id' or 'type'"));
 	return;
     }
-    if (both && (id == -1 || type_id == -1))
+    if (both && (!id_found || type_id == -1))
     {
 	emsg(_("E860: Need 'id' and 'type' with 'both'"));
 	return;
@@ -744,7 +744,8 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		    continue;
 	    }
 	    if (both ? prop.tp_id == id && prop.tp_type == type_id
-		     : prop.tp_id == id || prop.tp_type == type_id)
+		     : (id_found && prop.tp_id == id)
+						    || prop.tp_type == type_id)
 	    {
 		// Check if the starting position has text props.
 		if (lnum_start == lnum
