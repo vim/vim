@@ -54,7 +54,7 @@ static void special_keys(char_u *args);
 static int getConnInfo(char *file, char **host, char **port, char **password);
 
 static void nb_init_graphics(void);
-static void coloncmd(char *cmd, ...);
+static void coloncmd(char *cmd, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 static void nb_set_curbuf(buf_T *buf);
 static void nb_parse_cmd(char_u *);
 static int  nb_do_cmd(int, char_u *, int, int, char_u *);

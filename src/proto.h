@@ -121,52 +121,26 @@ extern int _stricoll(char *a, char *b);
 # endif
 
 // These prototypes cannot be produced automatically.
-int smsg(const char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 2)))
-# endif
-    ;
+int smsg(const char *, ...) ATTRIBUTE_COLD ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
-int smsg_attr(int, const char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 2, 3)))
-# endif
-    ;
+int smsg_attr(int, const char *, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
-int smsg_attr_keep(int, const char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 2, 3)))
-# endif
-    ;
+int smsg_attr_keep(int, const char *, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 // These prototypes cannot be produced automatically.
-int semsg(const char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 2)))
-# endif
-    ;
+int semsg(const char *, ...) ATTRIBUTE_COLD ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 // These prototypes cannot be produced automatically.
-void siemsg(const char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 2)))
-# endif
-    ;
+void siemsg(const char *, ...) ATTRIBUTE_COLD ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
-int vim_snprintf_add(char *, size_t, const char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 3, 4)))
-# endif
-    ;
+int vim_snprintf_add(char *, size_t, const char *, ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
 
-int vim_snprintf(char *, size_t, const char *, ...)
-# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 3, 4)))
-# endif
-    ;
+int vim_snprintf(char *, size_t, const char *, ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
 
-int vim_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
-int vim_vsnprintf_typval(char *str, size_t str_m, const char *fmt, va_list ap, typval_T *tvs);
+int vim_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap)
+	ATTRIBUTE_FORMAT_PRINTF(3, 0);
+int vim_vsnprintf_typval(char *str, size_t str_m, const char *fmt, va_list ap, typval_T *tvs)
+	ATTRIBUTE_FORMAT_PRINTF(3, 0);
 
 # include "message.pro"
 # include "misc1.pro"
@@ -284,11 +258,7 @@ void mbyte_im_set_active(int active_arg);
 #  include "channel.pro"
 
 // Not generated automatically, to add extra attribute.
-void ch_log(channel_T *ch, const char *fmt, ...)
-#  ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 2, 3)))
-#  endif
-    ;
+void ch_log(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 # endif
 

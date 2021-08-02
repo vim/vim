@@ -32,7 +32,7 @@
 FILE		*nb_debug = NULL;
 u_int		 nb_dlevel = 0;		// nb_debug verbosity level
 
-void		 nbdb(char *, ...);
+void		 nbdb(char *, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 static int	 lookup(char *);
 #ifdef USE_NB_ERRORHANDLER

@@ -100,7 +100,7 @@ char		*tgetstr(char *, char **);
     // Change this to "if 1" to debug what happens with termresponse.
 #  if 0
 #   define DEBUG_TERMRESPONSE
-static void log_tr(const char *fmt, ...);
+static void log_tr(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 #   define LOG_TR(msg) log_tr msg
 #  else
 #   define LOG_TR(msg) do { /**/ } while (0)

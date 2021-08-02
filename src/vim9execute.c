@@ -22,14 +22,6 @@
 
 #include "vim9.h"
 
-#if defined(__GNUC__) || defined(__clang__)
-# define likely(x)    __builtin_expect((x), 1)
-# define unlikely(x)  __builtin_expect((x), 0)
-#else
-# define unlikely(x)  (x)
-# define likely(x)    (x)
-#endif
-
 // Structure put on ec_trystack when ISN_TRY is encountered.
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
