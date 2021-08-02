@@ -3402,6 +3402,7 @@ compile_call(
     {
 	char_u	    *s = skipwhite(*arg + varlen + 1);
 	typval_T    argvars[2];
+	int	    is_has = **arg == 'h';
 
 	argvars[0].v_type = VAR_UNKNOWN;
 	if (*s == '"')
@@ -3410,8 +3411,8 @@ compile_call(
 	    (void)eval_lit_string(&s, &argvars[0], TRUE);
 	s = skipwhite(s);
 	if (*s == ')' && argvars[0].v_type == VAR_STRING
-	       && ((**arg == 'h' && !dynamic_feature(argvars[0].vval.v_string))
-		    || (**arg == 'e' && (*argvars[0].vval.v_string == '+'
+	       && ((is_has && !dynamic_feature(argvars[0].vval.v_string))
+		    || (!is_has && (*argvars[0].vval.v_string == '+'
 			    || *argvars[0].vval.v_string == '&'))))
 	{
 	    typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
@@ -3420,7 +3421,7 @@ compile_call(
 	    argvars[1].v_type = VAR_UNKNOWN;
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = 0;
-	    if (**arg == 'h')
+	    if (is_has)
 		f_has(argvars, tv);
 	    else
 		f_exists(argvars, tv);
@@ -7096,7 +7097,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (oplen > 0 && *op != '=')
 	{
 	    type_T	    *expected;
-	    type_T	    *stacktype;
+	    type_T	    *stacktype = NULL;
 
 	    if (*op == '.')
 	    {
