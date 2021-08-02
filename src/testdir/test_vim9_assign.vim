@@ -223,6 +223,12 @@ def Test_assignment()
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
 
+  if has('float')
+    var f: float
+    f += 1
+    assert_equal(1.0, f)
+  endif
+
   $SOME_ENV_VAR ..= 'more'
   assert_equal('somemore', $SOME_ENV_VAR)
   CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1051:')

@@ -7111,7 +7111,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		if (
 #ifdef FEAT_FLOAT
 		    // If variable is float operation with number is OK.
-		    !(expected == &t_float && stacktype == &t_number) &&
+		    !(expected == &t_float && (stacktype == &t_number
+			    || stacktype == &t_number_bool)) &&
 #endif
 		    need_type(stacktype, expected, -1, 0, cctx,
 							 FALSE, FALSE) == FAIL)
