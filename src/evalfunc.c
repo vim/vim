@@ -49,7 +49,6 @@ static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
 static void f_execute(typval_T *argvars, typval_T *rettv);
-static void f_exists(typval_T *argvars, typval_T *rettv);
 static void f_expand(typval_T *argvars, typval_T *rettv);
 static void f_expandcmd(typval_T *argvars, typval_T *rettv);
 static void f_feedkeys(typval_T *argvars, typval_T *rettv);
@@ -3521,7 +3520,7 @@ f_execute(typval_T *argvars, typval_T *rettv)
 /*
  * "exists()" function
  */
-    static void
+    void
 f_exists(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;

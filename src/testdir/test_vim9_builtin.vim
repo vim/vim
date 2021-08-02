@@ -790,6 +790,25 @@ enddef
 def Test_exists()
   CheckDefAndScriptFailure2(['exists(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   call assert_equal(1, exists('&tabstop'))
+
+  if exists('+newoption')
+    if &newoption == 'ok'
+    endif
+  endif
+  if exists('&newoption')
+    if &newoption == 'ok'
+    endif
+  endif
+  if exists('+tabstop')
+    assert_equal(8, &tabstop)
+  else
+    assert_report('tabstop option not existing?')
+  endif
+  if exists('&tabstop')
+    assert_equal(8, &tabstop)
+  else
+    assert_report('tabstop option not existing?')
+  endif
 enddef
 
 def Test_expand()

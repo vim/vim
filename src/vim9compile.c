@@ -3395,8 +3395,10 @@ compile_call(
     int		is_autoload;
     int		is_searchpair;
 
-    // we can evaluate "has('name')" at compile time
-    if (varlen == 3 && STRNCMP(*arg, "has", 3) == 0)
+    // We can evaluate "has('name')" at compile time.
+    // We can evaluate some "exists()" values at compile time.
+    if ((varlen == 3 && STRNCMP(*arg, "has", 3) == 0)
+	    || (varlen == 6 && STRNCMP(*arg, "exists", 6) == 0))
     {
 	char_u	    *s = skipwhite(*arg + varlen + 1);
 	typval_T    argvars[2];
@@ -3408,7 +3410,9 @@ compile_call(
 	    (void)eval_lit_string(&s, &argvars[0], TRUE);
 	s = skipwhite(s);
 	if (*s == ')' && argvars[0].v_type == VAR_STRING
-		&& !dynamic_feature(argvars[0].vval.v_string))
+	       && ((**arg == 'h' && !dynamic_feature(argvars[0].vval.v_string))
+		    || (**arg == 'e' && (*argvars[0].vval.v_string == '+'
+			    || *argvars[0].vval.v_string == '&'))))
 	{
 	    typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
 
@@ -3416,7 +3420,10 @@ compile_call(
 	    argvars[1].v_type = VAR_UNKNOWN;
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = 0;
-	    f_has(argvars, tv);
+	    if (**arg == 'h')
+		f_has(argvars, tv);
+	    else
+		f_exists(argvars, tv);
 	    clear_tv(&argvars[0]);
 	    ++ppconst->pp_used;
 	    return OK;

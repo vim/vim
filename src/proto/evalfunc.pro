@@ -18,6 +18,7 @@ buf_T *get_buf_arg(typval_T *arg);
 win_T *get_optional_window(typval_T *argvars, int idx);
 void execute_redir_str(char_u *value, int value_len);
 void execute_common(typval_T *argvars, typval_T *rettv, int arg_off);
+void f_exists(typval_T *argvars, typval_T *rettv);
 void f_has(typval_T *argvars, typval_T *rettv);
 int dynamic_feature(char_u *feature);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
