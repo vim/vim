@@ -137,7 +137,7 @@ exe_newlist(int count, ectx_T *ectx)
 
     if (count > 0)
 	ectx->ec_stack.ga_len -= count - 1;
-    else if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 	return FAIL;
     else
 	++ectx->ec_stack.ga_len;
@@ -210,7 +210,7 @@ call_dfunc(
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
     {
-	if (likely(ga_grow(&profile_info_ga, 1) == OK))
+	if (GA_GROW_OK(&profile_info_ga, 1))
 	{
 	    profinfo_T *info = ((profinfo_T *)profile_info_ga.ga_data)
 						      + profile_info_ga.ga_len;
@@ -289,8 +289,7 @@ call_dfunc(
     // - if needed: a counter for number of closures created in
     //   ectx->ec_funcrefs.
     varcount = dfunc->df_varcount + dfunc->df_has_closure;
-    if (unlikely(ga_grow(&ectx->ec_stack, arg_to_add + STACK_FRAME_SIZE
-							  + varcount) == FAIL))
+    if (GA_GROW_FAILS(&ectx->ec_stack, arg_to_add + STACK_FRAME_SIZE + varcount))
 	return FAIL;
 
     // If depth of calling is getting too high, don't execute the function.
@@ -703,7 +702,7 @@ call_prepare(int argcount, typval_T *argvars, ectx_T *ectx)
     // Result replaces the arguments on the stack.
     if (argcount > 0)
 	ectx->ec_stack.ga_len -= argcount - 1;
-    else if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 	return FAIL;
     else
 	++ectx->ec_stack.ga_len;
@@ -941,7 +940,7 @@ call_partial(
 	{
 	    // Make space for arguments from the partial, shift the "argcount"
 	    // arguments up.
-	    if (unlikely(ga_grow(&ectx->ec_stack, pt->pt_argc) == FAIL))
+	    if (GA_GROW_FAILS(&ectx->ec_stack, pt->pt_argc))
 		return FAIL;
 	    for (i = 1; i <= argcount; ++i)
 		*STACK_TV_BOT(-i + pt->pt_argc) = *STACK_TV_BOT(-i);
@@ -1378,7 +1377,7 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 	// If this function returns and the closure is still being used, we
 	// need to make a copy of the context (arguments and local variables).
 	// Store a reference to the partial so we can handle that.
-	if (unlikely(ga_grow(&ectx->ec_funcrefs, 1) == FAIL))
+	if (GA_GROW_FAILS(&ectx->ec_funcrefs, 1))
 	{
 	    vim_free(pt);
 	    return FAIL;
@@ -1511,7 +1510,7 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
 	    p = skipwhite(p);
 	    if (*p == '#')
 		break;
-	    if (likely(ga_grow(&ga, 1) == OK))
+	    if (GA_GROW_OK(&ga, 1))
 		((char_u **)(ga.ga_data))[ga.ga_len++] = p;
 	    if (STRNCMP(p, "def ", 4) == 0)
 		break;
@@ -1612,7 +1611,7 @@ exec_instructions(ectx_T *ectx)
 	    {
 		// Not inside try or need to return from current functions.
 		// Push a dummy return value.
-		if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
 		tv->v_type = VAR_NUMBER;
@@ -1687,7 +1686,7 @@ exec_instructions(ectx_T *ectx)
 		    int	    res;
 		    int	    save_flags = cmdmod.cmod_flags;
 
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    init_tv(tv);
@@ -1703,7 +1702,7 @@ exec_instructions(ectx_T *ectx)
 	    // push typeval VAR_INSTR with instructions to be executed
 	    case ISN_INSTR:
 		{
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    tv->vval.v_instr = ALLOC_ONE(instr_T);
@@ -1768,7 +1767,7 @@ exec_instructions(ectx_T *ectx)
 		    clear_redir_lval();
 		    redir_vname = 0;
 
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    {
 			vim_free(res);
 			goto theend;
@@ -1904,7 +1903,7 @@ exec_instructions(ectx_T *ectx)
 			    p = tv_stringify(tv, buf);
 
 			len = (int)STRLEN(p);
-			if (unlikely(ga_grow(&ga, len + 2) == FAIL))
+			if (GA_GROW_FAILS(&ga, len + 2))
 			    failed = TRUE;
 			else
 			{
@@ -1955,7 +1954,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // load local variable or argument
 	    case ISN_LOAD:
-		if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		copy_tv(STACK_TV_VAR(iptr->isn_arg.number), STACK_TV_BOT(0));
 		++ectx->ec_stack.ga_len;
@@ -1963,7 +1962,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // load v: variable
 	    case ISN_LOADV:
-		if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		copy_tv(get_vim_var_tv(iptr->isn_arg.number), STACK_TV_BOT(0));
 		++ectx->ec_stack.ga_len;
@@ -1979,7 +1978,7 @@ exec_instructions(ectx_T *ectx)
 		    if (sv == NULL)
 			goto theend;
 		    allocate_if_null(sv->sv_tv);
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    copy_tv(sv->sv_tv, STACK_TV_BOT(0));
 		    ++ectx->ec_stack.ga_len;
@@ -2002,7 +2001,7 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    else
 		    {
-			if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			    goto theend;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx->ec_stack.ga_len;
@@ -2052,7 +2051,7 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    else
 		    {
-			if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			    goto theend;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx->ec_stack.ga_len;
@@ -2065,7 +2064,7 @@ exec_instructions(ectx_T *ectx)
 		{
 		    char_u *name = iptr->isn_arg.string;
 
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (eval_variable(name, (int)STRLEN(name),
@@ -2092,7 +2091,7 @@ exec_instructions(ectx_T *ectx)
 			default:  // Cannot reach here
 			    goto theend;
 		    }
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    tv->v_type = VAR_DICT;
@@ -2111,7 +2110,7 @@ exec_instructions(ectx_T *ectx)
 
 		    // This is not expected to fail, name is checked during
 		    // compilation: don't set SOURCING_LNUM.
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    if (eval_option(&name, &optval, TRUE) == FAIL)
 			goto theend;
@@ -2126,7 +2125,7 @@ exec_instructions(ectx_T *ectx)
 		    typval_T	optval;
 		    char_u	*name = iptr->isn_arg.string;
 
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    // name is always valid, checked when compiling
 		    (void)eval_env_var(&name, &optval, TRUE);
@@ -2137,7 +2136,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // load @register
 	    case ISN_LOADREG:
-		if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
 		tv->v_type = VAR_STRING;
@@ -2572,7 +2571,7 @@ exec_instructions(ectx_T *ectx)
 				    + iptr->isn_arg.outer.outer_idx;
 		    if (iptr->isn_type == ISN_LOADOUTER)
 		    {
-			if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			    goto theend;
 			copy_tv(tv, STACK_TV_BOT(0));
 			++ectx->ec_stack.ga_len;
@@ -2760,7 +2759,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PUSHFUNC:
 	    case ISN_PUSHCHANNEL:
 	    case ISN_PUSHJOB:
-		if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
 		tv->v_lock = 0;
@@ -2885,7 +2884,7 @@ exec_instructions(ectx_T *ectx)
 
 		    if (count > 0)
 			ectx->ec_stack.ga_len -= 2 * count - 1;
-		    else if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    else
 			++ectx->ec_stack.ga_len;
@@ -2967,7 +2966,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // return from a :def function call without a value
 	    case ISN_RETURN_VOID:
-		if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
 		++ectx->ec_stack.ga_len;
@@ -3009,7 +3008,7 @@ exec_instructions(ectx_T *ectx)
 
 		    if (pt == NULL)
 			goto theend;
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    {
 			vim_free(pt);
 			goto theend;
@@ -3104,7 +3103,7 @@ exec_instructions(ectx_T *ectx)
 		    typval_T	*idxtv =
 				   STACK_TV_VAR(iptr->isn_arg.forloop.for_idx);
 
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    if (ltv->v_type == VAR_LIST)
 		    {
@@ -3211,7 +3210,7 @@ exec_instructions(ectx_T *ectx)
 		{
 		    trycmd_T    *trycmd = NULL;
 
-		    if (unlikely(GA_GROW(&ectx->ec_trystack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_trystack, 1))
 			goto theend;
 		    trycmd = ((trycmd_T *)ectx->ec_trystack.ga_data)
 						     + ectx->ec_trystack.ga_len;
@@ -3236,7 +3235,7 @@ exec_instructions(ectx_T *ectx)
 		    iemsg("Evaluating catch while current_exception is NULL");
 		    goto theend;
 		}
-		if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
 		++ectx->ec_stack.ga_len;
@@ -3895,7 +3894,7 @@ exec_instructions(ectx_T *ectx)
 		    tv = STACK_TV_BOT(-1 - gi->gi_with_op);
 		    li = list_find(tv->vval.v_list, gi->gi_index);
 
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    ++ectx->ec_stack.ga_len;
 		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
@@ -4130,7 +4129,7 @@ exec_instructions(ectx_T *ectx)
 		    if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
 			goto on_error;
 
-		    if (unlikely(GA_GROW(&ectx->ec_stack, 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    ++ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(-1);
@@ -4232,7 +4231,7 @@ exec_instructions(ectx_T *ectx)
 		    }
 
 		    CHECK_LIST_MATERIALIZE(l);
-		    if (unlikely(GA_GROW(&ectx->ec_stack, count - 1) == FAIL))
+		    if (GA_GROW_FAILS(&ectx->ec_stack, count - 1))
 			goto theend;
 		    ectx->ec_stack.ga_len += count - 1;
 
@@ -4506,7 +4505,7 @@ call_def_function(
     CLEAR_FIELD(ectx);
     ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
-    if (unlikely(ga_grow(&ectx.ec_stack, 20) == FAIL))
+    if (GA_GROW_FAILS(&ectx.ec_stack, 20))
     {
 	funcdepth_decrement();
 	return FAIL;

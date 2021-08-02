@@ -148,7 +148,7 @@ alist_set(
 	return;
 
     alist_clear(al);
-    if (ga_grow(&al->al_ga, count) == OK)
+    if (GA_GROW_OK(&al->al_ga, count))
     {
 	for (i = 0; i < count; ++i)
 	{
@@ -355,7 +355,7 @@ alist_add_list(
     int		old_argcount = ARGCOUNT;
 
     if (check_arglist_locked() != FAIL
-	    && ga_grow(&ALIST(curwin)->al_ga, count) == OK)
+	    && GA_GROW_OK(&ALIST(curwin)->al_ga, count))
     {
 	if (after < 0)
 	    after = 0;
@@ -599,7 +599,7 @@ ex_args(exarg_T *eap)
 	garray_T	*gap = &curwin->w_alist->al_ga;
 
 	// ":argslocal": make a local copy of the global argument list.
-	if (ga_grow(gap, GARGCOUNT) == OK)
+	if (GA_GROW_OK(gap, GARGCOUNT))
 	    for (i = 0; i < GARGCOUNT; ++i)
 		if (GARGLIST[i].ae_fname != NULL)
 		{

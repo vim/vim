@@ -387,8 +387,10 @@
 // Inline the condition for performance.
 #define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
 
-// Inlined version of ga_grow().  Especially useful if "n" is a constant.
-#define GA_GROW(gap, n) (((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK)
+// Inlined version of ga_grow() with optimized condition that it fails.
+#define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
+// Inlined version of ga_grow() with optimized condition that it succeeds.
+#define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK) == OK)
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))
