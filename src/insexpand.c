@@ -2712,7 +2712,7 @@ ins_compl_get_exp(pos_T *ini)
     char_u	*dict = NULL;
     int		dict_f = 0;
     int		set_match_pos;
-    pos_T	prev_pos = {.lnum = 0, .col = 0};
+    pos_T	prev_pos = {0, 0, 0};
     int		looped_around = FALSE;
 
     if (!compl_started)
