@@ -1262,7 +1262,7 @@ def Test_substitute_expr()
   # List results in multiple lines
   new
   setline(1, 'some text here')
-  s/text/\=['aaa', 'bbb', 'ccc']/ 
+  s/text/\=['aaa', 'bbb', 'ccc']/
   assert_equal(['some aaa', 'bbb', 'ccc', ' here'], getline(1, '$'))
   bwipe!
 enddef
@@ -1336,6 +1336,19 @@ def Test_echo_void()
       defcompile
   END
   CheckScriptFailure(lines, 'E1186:', 1)
+enddef
+
+def Test_cmdwin_block()
+  augroup justTesting
+    autocmd BufEnter * {
+      echomsg 'in block'
+    }
+  augroup END
+  feedkeys('q:', 'xt')
+  redraw
+  feedkeys("aclose\<CR>", 'xt')
+
+  au! justTesting
 enddef
 
 
