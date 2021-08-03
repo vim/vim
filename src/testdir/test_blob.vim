@@ -543,6 +543,22 @@ func Test_blob_insert()
       insert(test_null_blob(), 0x33)
   END
   call CheckDefExecAndScriptFailure(lines, 'E1131:')
+
+  let lines =<< trim END
+      let b = 0zDEADBEEF
+      lockvar b
+      call insert(b, 3)
+      unlockvar b
+  END
+  call CheckScriptFailure(lines, 'E741:')
+
+  let lines =<< trim END
+      vim9script
+      var b = 0zDEADBEEF
+      lockvar b
+      insert(b, 3)
+  END
+  call CheckScriptFailure(lines, 'E741:')
 endfunc
 
 func Test_blob_reverse()
