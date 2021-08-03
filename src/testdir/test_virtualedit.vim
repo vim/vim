@@ -407,7 +407,7 @@ endfunc
 let s:result_ve_on  = 'a      x'
 let s:result_ve_off = 'x'
 
-" Utility function for Test_global_local()
+" Utility function for Test_global_local_virtualedit()
 func s:TryVirtualeditReplace()
   call setline(1, 'a')
   normal gg7l
@@ -415,7 +415,7 @@ func s:TryVirtualeditReplace()
 endfunc
 
 " Test for :set and :setlocal
-func Test_global_local()
+func Test_global_local_virtualedit()
   new
 
   " Verify that 'virtualedit' is initialized to empty, can be set globally to
@@ -435,8 +435,8 @@ func Test_global_local()
   call s:TryVirtualeditReplace()
   call assert_equal(s:result_ve_off, getline(1))
 
-  " Verify that :set affects multiple buffers
-  new
+  " Verify that :set affects multiple windows.
+  split
   set ve=all
   call s:TryVirtualeditReplace()
   call assert_equal(s:result_ve_on, getline(1))
@@ -449,17 +449,15 @@ func Test_global_local()
   call assert_equal(s:result_ve_off, getline(1))
   bwipe!
 
-  " Verify that :setlocal affects only the current buffer
-  setlocal ve=all
+  " Verify that :setlocal affects only the current window.
   new
-  call s:TryVirtualeditReplace()
-  call assert_equal(s:result_ve_off, getline(1))
+  split
   setlocal ve=all
-  wincmd p
-  setlocal ve=
-  wincmd p
   call s:TryVirtualeditReplace()
   call assert_equal(s:result_ve_on, getline(1))
+  wincmd p
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
   bwipe!
   call s:TryVirtualeditReplace()
   call assert_equal(s:result_ve_off, getline(1))
@@ -516,6 +514,23 @@ func Test_global_local()
   call s:TryVirtualeditReplace()
   call assert_equal(s:result_ve_off, getline(1))
 
+  bwipe!
+
+  " Verify that the 'virtualedit' state is copied to new windows.
+  new
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
+  split
+  setlocal ve=all
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  split
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_on, getline(1))
+  setlocal ve=
+  split
+  call s:TryVirtualeditReplace()
+  call assert_equal(s:result_ve_off, getline(1))
   bwipe!
 
   setlocal virtualedit&

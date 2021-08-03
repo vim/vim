@@ -5182,8 +5182,8 @@ unset_global_local_option(char_u *name, void *from)
 	    redraw_later(NOT_VALID);
 	    break;
 	case PV_VE:
-	    clear_string_option(&buf->b_p_ve);
-	    buf->b_ve_flags = 0;
+	    clear_string_option(&((win_T *)from)->w_p_ve);
+	    ((win_T *)from)->w_ve_flags = 0;
 	    break;
     }
 }
@@ -5244,7 +5244,7 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 	    case PV_BKC:  return (char_u *)&(curbuf->b_p_bkc);
 	    case PV_MENC: return (char_u *)&(curbuf->b_p_menc);
 	    case PV_LCS:  return (char_u *)&(curwin->w_p_lcs);
-	    case PV_VE:	  return (char_u *)&(curbuf->b_p_ve);
+	    case PV_VE:	  return (char_u *)&(curwin->w_p_ve);
 
 	}
 	return NULL; // "cannot happen"
@@ -5345,6 +5345,8 @@ get_varp(struct vimoption *p)
 	case PV_LIST:	return (char_u *)&(curwin->w_p_list);
 	case PV_LCS:	return *curwin->w_p_lcs != NUL
 				    ? (char_u *)&(curwin->w_p_lcs) : p->var;
+	case PV_VE:	return *curwin->w_p_ve != NUL
+				    ? (char_u *)&(curwin->w_p_ve) : p->var;
 #ifdef FEAT_SPELL
 	case PV_SPELL:	return (char_u *)&(curwin->w_p_spell);
 #endif
@@ -5512,8 +5514,6 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
-	case PV_VE:	return *curbuf->b_p_ve != NUL
-				    ? (char_u *)&(curbuf->b_p_ve) : p->var;
 	default:	iemsg(_("E356: get_varp ERROR"));
     }
     // always return a valid pointer to avoid a crash!
@@ -5593,6 +5593,8 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_lcs = vim_strsave(from->wo_lcs);
     to->wo_nu = from->wo_nu;
     to->wo_rnu = from->wo_rnu;
+    to->wo_ve = vim_strsave(from->wo_ve);
+    to->wo_ve_flags = from->wo_ve_flags;
 #ifdef FEAT_LINEBREAK
     to->wo_nuw = from->wo_nuw;
 #endif
@@ -5726,6 +5728,7 @@ check_winopt(winopt_T *wop UNUSED)
 #endif
     check_string_option(&wop->wo_wcr);
     check_string_option(&wop->wo_lcs);
+    check_string_option(&wop->wo_ve);
 }
 
 /*
@@ -5772,6 +5775,7 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_tws);
 #endif
     clear_string_option(&wop->wo_lcs);
+    clear_string_option(&wop->wo_ve);
 }
 
 #ifdef FEAT_EVAL
@@ -6091,8 +6095,6 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_lw = empty_option;
 #endif
 	    buf->b_p_menc = empty_option;
-	    buf->b_p_ve = empty_option;
-	    buf->b_ve_flags = 0;
 
 	    /*
 	     * Don't copy the options set by ex_help(), use the saved values,
@@ -7041,8 +7043,8 @@ get_bkc_value(buf_T *buf)
     unsigned int
 get_ve_flags(void)
 {
-    return (curbuf->b_ve_flags ? curbuf->b_ve_flags : ve_flags)
-	   & ~(VE_NONE | VE_NONEU);
+    return (curwin->w_ve_flags ? curwin->w_ve_flags : ve_flags)
+	    & ~(VE_NONE | VE_NONEU);
 }
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
