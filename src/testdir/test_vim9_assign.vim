@@ -1228,22 +1228,10 @@ def Test_assign_dict()
 
       d.somekey = 'someval'
       assert_equal({key: 'value', '123': 'qwerty', somekey: 'someval'}, d)
-      # unlet d.somekey
-      # assert_equal({key: 'value', '123': 'qwerty'}, d)
+      unlet d.somekey
+      assert_equal({key: 'value', '123': 'qwerty'}, d)
   END
   CheckDefAndScriptSuccess(lines)
-
-  # TODO: move to above once "unlet d.somekey" in :def is implemented
-  lines =<< trim END
-      vim9script
-      var d: dict<string> = {}
-      d['key'] = 'value'
-      d.somekey = 'someval'
-      assert_equal({key: 'value', somekey: 'someval'}, d)
-      unlet d.somekey
-      assert_equal({key: 'value'}, d)
-  END
-  CheckScriptSuccess(lines)
 
   CheckDefFailure(["var d: dict<number> = {a: '', b: true}"], 'E1012: Type mismatch; expected dict<number> but got dict<any>', 1)
   CheckDefFailure(["var d: dict<dict<number>> = {x: {a: '', b: true}}"], 'E1012: Type mismatch; expected dict<dict<number>> but got dict<dict<any>>', 1)

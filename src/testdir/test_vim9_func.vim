@@ -2250,15 +2250,14 @@ def Test_double_nested_lambda()
 enddef
 
 def Test_nested_inline_lambda()
-  # TODO: use the "text" argument
   var lines =<< trim END
       vim9script
       def F(text: string): func(string): func(string): string
         return (arg: string): func(string): string => ((sep: string): string => {
-            return sep .. arg
+            return sep .. arg .. text
           })
       enddef
-      assert_equal('--there', F('unused')('there')('--'))
+      assert_equal('--there++', F('++')('there')('--'))
   END
   CheckScriptSuccess(lines)
 

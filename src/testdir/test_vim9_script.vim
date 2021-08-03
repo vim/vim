@@ -188,8 +188,7 @@ def Test_const()
     var varlist = [7, 8]
     const constlist = [1, varlist, 3]
     varlist[0] = 77
-    # TODO: does not work yet
-    # constlist[1][1] = 88
+    constlist[1][1] = 88
     var cl = constlist[1]
     cl[1] = 88
     constlist->assert_equal([1, [77, 88], 3])
@@ -197,8 +196,7 @@ def Test_const()
     var vardict = {five: 5, six: 6}
     const constdict = {one: 1, two: vardict, three: 3}
     vardict['five'] = 55
-    # TODO: does not work yet
-    # constdict['two']['six'] = 66
+    constdict['two']['six'] = 66
     var cd = constdict['two']
     cd['six'] = 66
     constdict->assert_equal({one: 1, two: {five: 55, six: 66}, three: 3})
