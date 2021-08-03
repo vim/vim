@@ -366,7 +366,8 @@ EXTERN char e_returning_value_in_function_without_return_type[]
 	INIT(= N_("E1096: Returning a value in a function without a return type"));
 EXTERN char e_line_incomplete[]
 	INIT(= N_("E1097: Line incomplete"));
-// E1098 unused
+EXTERN char e_string_list_or_blob_required[]
+	INIT(= N_("E1098: String, List or Blob required"));
 EXTERN char e_unknown_error_while_executing_str[]
 	INIT(= N_("E1099: Unknown error while executing %s"));
 EXTERN char e_cannot_declare_script_variable_in_function[]

@@ -65,9 +65,9 @@ func Test_E963()
 endfunc
 
 func Test_for_invalid()
-  call assert_fails("for x in 99", 'E714:')
-  call assert_fails("for x in function('winnr')", 'E714:')
-  call assert_fails("for x in {'a': 9}", 'E714:')
+  call assert_fails("for x in 99", 'E1098:')
+  call assert_fails("for x in function('winnr')", 'E1098:')
+  call assert_fails("for x in {'a': 9}", 'E1098:')
 
   if 0
     /1/5/2/s/\n
