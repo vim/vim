@@ -85,7 +85,6 @@ if exists("loaded_matchit")
         \ . " | unlet! b:match_words b:match_skip b:match_ignorecase"
         \ . " | unlet! b:julia_begin_keywords b:julia_end_keywords"
         \ . " | delfunction JuliaGetMatchWords"
-        \ . " | call julia_blocks#remove_mappings()"
 
 endif
 

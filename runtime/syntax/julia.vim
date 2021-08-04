@@ -10,6 +10,9 @@ elseif exists("b:current_syntax")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 if version < 704
   " this is used to disable regex syntax like `\@3<='
   " on older vim versions
@@ -37,9 +40,9 @@ let s:julia_highlight_operators = get(g:, "julia_highlight_operators", 1)
 " It doesn't include a few characters (spaces and all closing parentheses)
 " because those may or may not be valid in the lookbehind on a case-by-case
 " basis.
-let s:nonid_chars = '\U00-\U08' . '\U0A-\U1F' .
-      \             '\U21-\U28' . '\U2A-\U2F' . '\U3A-\U40' . '\U5B-\U5E' . '\U60' . '\U7B\U7C' .
-      \             '\U7E-\UA1' . '\UA7\UA8' . '\UAB-\UAD' . '\UAF\UB1\UB4' . '\UB6-\UB8' . '\UBB\UBF' . '\UD7\UF7'
+let s:nonid_chars = '\U00-\U08' . '\U0A-\U1F'
+      \             . '\U21-\U28' . '\U2A-\U2F' . '\U3A-\U40' . '\U5B-\U5E' . '\U60' . '\U7B\U7C'
+      \             . '\U7E-\UA1' . '\UA7\UA8' . '\UAB-\UAD' . '\UAF\UB1\UB4' . '\UB6-\UB8' . '\UBB\UBF' . '\UD7\UF7'
 
 " The complete list
 let s:nonidS_chars = '[:space:])\U5D}' . s:nonid_chars
@@ -542,3 +545,6 @@ hi def link juliaError			Error
 syntax sync fromstart
 
 let b:current_syntax = "julia"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
