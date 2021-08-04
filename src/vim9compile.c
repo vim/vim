@@ -1184,6 +1184,7 @@ generate_PUSHS(cctx_T *cctx, char_u *str)
 	vim_free(str);
 	return OK;
     }
+
     if ((isn = generate_instr_type(cctx, ISN_PUSHS, &t_string)) == NULL)
 	return FAIL;
     isn->isn_arg.string = str;
@@ -3838,7 +3839,13 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (key == NULL)
 		return FAIL;
 	    if (generate_PUSHS(cctx, key) == FAIL)
+	    {
+		vim_free(key);
 		return FAIL;
+	    }
+
+	    if (cctx->ctx_skip == SKIP_YES)
+		key = NULL;
 	}
 
 	// Check for duplicate keys, if using string keys.
