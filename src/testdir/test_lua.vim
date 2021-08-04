@@ -965,8 +965,8 @@ func Test_lua_global_var_table()
   let g:Var1 = [10, 20]
   let g:Var2 = #{one: 'mercury', two: 'mars'}
   lua << trim END
-    table.remove(vim.g.Var1, 2)
-    table.insert(vim.g.Var1, 2, 15)
+    vim.g.Var1[2] = Nil
+    vim.g.Var1[3] = 15
     vim.g.Var2['two'] = Nil
     vim.g.Var2['three'] = 'earth'
   END
@@ -1000,13 +1000,13 @@ func Test_lua_global_var_table()
   unlockvar g:Var1
   let g:Var2 = [7, 14]
   lockvar 0 g:Var2
-  lua table.remove(vim.g.Var2, 2)
-  lua table.insert(vim.g.Var2, 2, 21)
+  lua vim.g.Var2[2] = Nil
+  lua vim.g.Var2[3] = 21
   call assert_fails('lua vim.g.Var2 = Nil', 'variable is locked')
   call assert_equal([7, 21], g:Var2)
   lockvar 1 g:Var2
-  call assert_fails('lua table.remove(vim.g.Var2, 2)', 'list is locked')
-  call assert_fails('lua table.insert(vim.g.Var2, 2, 21)', 'list is locked')
+  call assert_fails('lua vim.g.Var2[2] = Nil', 'list is locked')
+  call assert_fails('lua vim.g.Var2[3] = 21', 'list is locked')
   unlockvar g:Var2
 
   " Attempt to access a non-existing global variable
@@ -1030,7 +1030,7 @@ func Test_lua_predefined_var_table()
   lua vim.v.oldfiles = vim.list({})
   call assert_equal([], v:oldfiles)
   call assert_equal(v:null, luaeval('vim.v.null'))
-  call assert_fails('lua table.remove(vim.v.argv, 1)', 'list is locked')
+  call assert_fails('lua vim.v.argv[1] = Nil', 'list is locked')
   call assert_fails('lua vim.v.newvar = 1', 'Dictionary is locked')
 endfunc
 
