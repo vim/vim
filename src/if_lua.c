@@ -1777,6 +1777,122 @@ luaV_debug(lua_State *L)
     }
 }
 
+    static dict_T *
+luaV_get_var_scope(lua_State *L)
+{
+    const char	*scope = luaL_checkstring(L, 1);
+    dict_T	*dict = NULL;
+
+    if (STRICMP((char *)scope, "g") == 0)
+	dict = get_globvar_dict();
+    else if (STRICMP((char *)scope, "v") == 0)
+	dict = get_vimvar_dict();
+    else if (STRICMP((char *)scope, "b") == 0)
+	dict = curbuf->b_vars;
+    else if (STRICMP((char *)scope, "w") == 0)
+	dict = curwin->w_vars;
+    else if (STRICMP((char *)scope, "t") == 0)
+	dict = curtab->tp_vars;
+    else
+    {
+	luaL_error(L, "invalid scope %s", scope);
+	return NULL;
+    }
+
+    return dict;
+}
+
+    static int
+luaV_setvar(lua_State *L)
+{
+    dict_T	*dict;
+    dictitem_T	*di;
+    size_t	len;
+    char	*name;
+    int		del;
+    char	*error = NULL;
+
+    name = (char *)luaL_checklstring(L, 3, &len);
+    del = (lua_gettop(L) < 4) || lua_isnil(L, 4);
+
+    dict = luaV_get_var_scope(L);
+    if (dict == NULL)
+	return 0;
+
+    di = dict_find(dict, (char_u *)name, len);
+    if (di != NULL)
+    {
+	if (di->di_flags & DI_FLAGS_RO)
+	    error = "variable is read-only";
+	else if (di->di_flags & DI_FLAGS_LOCK)
+	    error = "variable is locked";
+	else if (del && di->di_flags & DI_FLAGS_FIX)
+	    error = "variable is fixed";
+	if (error != NULL)
+	    return luaL_error(L, error);
+    }
+    else if (dict->dv_lock)
+	return luaL_error(L, "Dictionary is locked");
+
+    if (del)
+    {
+	// Delete the key
+	if (di == NULL)
+	    // Doesn't exist, nothing to do
+	    return 0;
+	else
+	    // Delete the entry
+	    dictitem_remove(dict, di);
+    }
+    else
+    {
+	// Update the key
+	typval_T	tv;
+
+	// Convert the lua value to a vimscript type in the temporary variable
+	lua_pushvalue(L, 4);
+	if (luaV_totypval(L, -1, &tv) == FAIL)
+	    return luaL_error(L, "Couldn't convert lua value");
+
+	if (di == NULL)
+	{
+	    // Need to create an entry
+	    di = dictitem_alloc((char_u *)name);
+	    if (di == NULL)
+		return 0;
+	    // Update the value
+	    copy_tv(&tv, &di->di_tv);
+	    dict_add(dict, di);
+	} else
+	{
+	    // Clear the old value
+	    clear_tv(&di->di_tv);
+	    // Update the value
+	    copy_tv(&tv, &di->di_tv);
+	}
+
+	// Clear the temporary variable
+	clear_tv(&tv);
+    }
+
+    return 0;
+}
+
+    static int
+luaV_getvar(lua_State *L)
+{
+    dict_T	*dict = luaV_get_var_scope(L);
+    size_t	len;
+    const char	*name = luaL_checklstring(L, 3, &len);
+
+    dictitem_T	*di = dict_find(dict, (char_u *)name, len);
+    if (di == NULL)
+	return 0;  // nil
+
+    luaV_pushtypval(L, &di->di_tv);
+    return 1;
+}
+
     static int
 luaV_command(lua_State *L)
 {
@@ -2103,6 +2219,8 @@ static const luaL_Reg luaV_module[] = {
     {"open", luaV_open},
     {"type", luaV_type},
     {"call", luaV_call},
+    {"_getvar", luaV_getvar},
+    {"_setvar", luaV_setvar},
     {"lua_version", NULL},
     {NULL, NULL}
 };
@@ -2275,6 +2393,25 @@ luaV_pushversion(lua_State *L)
     "  last_vim_paths = cur_vim_paths\n"\
     "end"
 
+#define LUA_VIM_SETUP_VARIABLE_DICTS \
+    "do\n"\
+    "  local function make_dict_accessor(scope)\n"\
+    "    local mt = {}\n"\
+    "    function mt:__newindex(k, v)\n"\
+    "      return vim._setvar(scope, 0, k, v)\n"\
+    "    end\n"\
+    "    function mt:__index(k)\n"\
+    "      return vim._getvar(scope, 0, k)\n"\
+    "    end\n"\
+    "    return setmetatable({}, mt)\n"\
+    "  end\n"\
+    "  vim.g = make_dict_accessor('g')\n"\
+    "  vim.v = make_dict_accessor('v')\n"\
+    "  vim.b = make_dict_accessor('b')\n"\
+    "  vim.w = make_dict_accessor('w')\n"\
+    "  vim.t = make_dict_accessor('t')\n"\
+    "end"
+
     static int
 luaopen_vim(lua_State *L)
 {
@@ -2335,6 +2472,7 @@ luaopen_vim(lua_State *L)
     // custom code
     (void)luaL_dostring(L, LUA_VIM_FN_CODE);
     (void)luaL_dostring(L, LUA_VIM_UPDATE_PACKAGE_PATHS);
+    (void)luaL_dostring(L, LUA_VIM_SETUP_VARIABLE_DICTS);
 
     lua_getglobal(L, "vim");
     lua_getfield(L, -1, "_update_package_paths");
