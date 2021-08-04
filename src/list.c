@@ -2921,7 +2921,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_DICT)
 	dict_remove(argvars, rettv, arg_errmsg);
     else if (argvars[0].v_type == VAR_BLOB)
-	blob_remove(argvars, rettv);
+	blob_remove(argvars, rettv, arg_errmsg);
     else if (argvars[0].v_type == VAR_LIST)
 	list_remove(argvars, rettv, arg_errmsg);
     else
