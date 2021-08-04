@@ -2330,4 +2330,33 @@ func Test_cb_with_input()
   unlet g:wait_exit_cb
 endfunc
 
+function s:HandleBufEnter() abort
+  let queue = []
+  let job = job_start(['date'], {'callback': { j, d -> add(queue, d) }})
+  while empty(queue)
+    sleep! 10m
+  endwhile
+endfunction
+
+func Test_parse_messages_in_autocmd()
+  CheckUnix
+
+  " Check that in the BufEnter autocommand events are being handled
+  augroup bufenterjob
+    autocmd!
+    autocmd BufEnter Xbufenterjob call s:HandleBufEnter()
+  augroup END
+
+  only
+  split Xbufenterjob
+  wincmd p
+  redraw
+
+  close
+  augroup bufenterjob
+    autocmd!
+  augroup END
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
