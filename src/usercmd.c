@@ -1077,10 +1077,11 @@ ex_command(exarg_T *eap)
 	// Some plugins rely on silently ignoring the mistake, only make this
 	// an error in Vim9 script.
 	if (in_vim9script())
-	    emsg(_(e_complete_used_without_nargs));
+	    emsg(_(e_complete_used_without_allowing_arguments));
 	else
 	    give_warning_with_source(
-		       (char_u *)_(e_complete_used_without_nargs), TRUE, TRUE);
+		       (char_u *)_(e_complete_used_without_allowing_arguments),
+								   TRUE, TRUE);
     }
     else
     {

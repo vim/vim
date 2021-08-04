@@ -595,8 +595,8 @@ EXTERN char e_dict_required_for_argument_nr[]
 	INIT(= N_("E1206: Dictionary required for argument %d"));
 EXTERN char e_expression_without_effect_str[]
 	INIT(= N_("E1207: Expression without an effect: %s"));
-EXTERN char e_complete_used_without_nargs[]
-	INIT(= N_("E1208: -complete used without -nargs"));
+EXTERN char e_complete_used_without_allowing_arguments[]
+	INIT(= N_("E1208: -complete used without allowing arguments"));
 EXTERN char e_invalid_value_for_line_number_str[]
 	INIT(= N_("E1209: Invalid value for a line number: \"%s\""));
 EXTERN char e_number_required_for_argument_nr[]
