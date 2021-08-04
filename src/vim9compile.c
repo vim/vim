@@ -1172,21 +1172,26 @@ generate_PUSHF(cctx_T *cctx, float_T fnumber)
 
 /*
  * Generate an ISN_PUSHS instruction.
- * Consumes "str".
+ * Consumes "*str".  When freed *str is set to NULL, unless "str" is NULL.
  */
     static int
-generate_PUSHS(cctx_T *cctx, char_u *str)
+generate_PUSHS(cctx_T *cctx, char_u **str)
 {
     isn_T	*isn;
 
     if (cctx->ctx_skip == SKIP_YES)
     {
-	vim_free(str);
+	if (str != NULL)
+	    VIM_CLEAR(*str);
 	return OK;
     }
     if ((isn = generate_instr_type(cctx, ISN_PUSHS, &t_string)) == NULL)
+    {
+	if (str != NULL)
+	    VIM_CLEAR(*str);
 	return FAIL;
-    isn->isn_arg.string = str;
+    }
+    isn->isn_arg.string = str == NULL ? NULL : *str;
 
     return OK;
 }
@@ -2785,7 +2790,7 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 		tv->vval.v_blob = NULL;
 		break;
 	    case VAR_STRING:
-		generate_PUSHS(cctx, tv->vval.v_string);
+		generate_PUSHS(cctx, &tv->vval.v_string);
 		tv->vval.v_string = NULL;
 		break;
 	    default:
@@ -3837,7 +3842,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    key = get_literal_key(arg);
 	    if (key == NULL)
 		return FAIL;
-	    if (generate_PUSHS(cctx, key) == FAIL)
+	    if (generate_PUSHS(cctx, &key) == FAIL)
 		return FAIL;
 	}
 
@@ -6525,7 +6530,7 @@ compile_assign_index(
 	char_u *key_end = to_name_end(p + 1, TRUE);
 	char_u *key = vim_strnsave(p + 1, key_end - p - 1);
 
-	r = generate_PUSHS(cctx, key);
+	r = generate_PUSHS(cctx, &key);
     }
     return r;
 }
@@ -6811,7 +6816,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    // Push each line and the create the list.
 	    FOR_ALL_LIST_ITEMS(l, li)
 	    {
-		generate_PUSHS(cctx, li->li_tv.vval.v_string);
+		generate_PUSHS(cctx, &li->li_tv.vval.v_string);
 		li->li_tv.vval.v_string = NULL;
 	    }
 	    generate_NEWLIST(cctx, l->lv_len);
@@ -8520,7 +8525,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	p += len + 2 + dropped;
 	if (pat == NULL)
 	    return FAIL;
-	if (generate_PUSHS(cctx, pat) == FAIL)
+	if (generate_PUSHS(cctx, &pat) == FAIL)
 	    return FAIL;
 
 	if (generate_COMPARE(cctx, EXPR_MATCH, FALSE) == FAIL)
@@ -9008,7 +9013,9 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	{
 	    if (p > start)
 	    {
-		generate_PUSHS(cctx, vim_strnsave(start, p - start));
+		char_u *val = vim_strnsave(start, p - start);
+
+		generate_PUSHS(cctx, &val);
 		++count;
 	    }
 	    p += 2;
@@ -9029,7 +9036,9 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	    {
 		if (*skipwhite(start) != NUL)
 		{
-		    generate_PUSHS(cctx, vim_strsave(start));
+		    char_u *val = vim_strsave(start);
+
+		    generate_PUSHS(cctx, &val);
 		    ++count;
 		}
 		break;
@@ -9847,6 +9856,7 @@ compile_def_function(
 	    case CMD_execute:
 	    case CMD_echomsg:
 	    case CMD_echoerr:
+	    // TODO:  "echoconsole"
 		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 
@@ -9884,8 +9894,6 @@ compile_def_function(
 		    line = NULL;
 #endif
 		    break;
-
-	    // TODO: any other commands with an expression argument?
 
 	    case CMD_append:
 	    case CMD_change:
