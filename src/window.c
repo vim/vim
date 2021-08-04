@@ -40,7 +40,7 @@ static void enter_tabpage(tabpage_T *tp, buf_T *old_curbuf, int trigger_enter_au
 static void frame_fix_height(win_T *wp);
 static int frame_minheight(frame_T *topfrp, win_T *next_curwin);
 static int may_open_tabpage(void);
-static void win_enter_ext(win_T *wp, int undo_sync, int no_curwin, int trigger_new_autocmds, int trigger_enter_autocmds, int trigger_leave_autocmds);
+static void win_enter_ext(win_T *wp, int flags);
 static void win_free(win_T *wp, tabpage_T *tp);
 static int win_unlisted(win_T *wp);
 static void win_append(win_T *after, win_T *wp);
@@ -66,6 +66,13 @@ static win_T *win_alloc(win_T *after, int hidden);
 #define NOWIN		(win_T *)-1	// non-existing window
 
 #define ROWS_AVAIL (Rows - p_ch - tabline_height())
+
+// flags for win_enter_ext()
+#define WEE_UNDO_SYNC			0x01
+#define WEE_CURWIN_INVALID		0x02
+#define WEE_TRIGGER_NEW_AUTOCMDS	0x04
+#define WEE_TRIGGER_ENTER_AUTOCMDS	0x08
+#define WEE_TRIGGER_LEAVE_AUTOCMDS	0x10
 
 static char *m_onlyone = N_("Already only one window");
 
@@ -1331,7 +1338,8 @@ win_split_ins(
     /*
      * make the new window the current window
      */
-    win_enter_ext(wp, FALSE, FALSE, TRUE, TRUE, TRUE);
+    win_enter_ext(wp, WEE_TRIGGER_NEW_AUTOCMDS | WEE_TRIGGER_ENTER_AUTOCMDS
+						 | WEE_TRIGGER_LEAVE_AUTOCMDS);
     if (flags & WSP_VERT)
 	p_wiw = i;
     else
@@ -2653,7 +2661,8 @@ win_close(win_T *win, int free_buf)
 	win_comp_pos();
     if (close_curwin)
     {
-	win_enter_ext(wp, FALSE, TRUE, FALSE, TRUE, TRUE);
+	win_enter_ext(wp, WEE_CURWIN_INVALID | WEE_TRIGGER_ENTER_AUTOCMDS
+						 | WEE_TRIGGER_LEAVE_AUTOCMDS);
 	if (other_buffer)
 	    // careful: after this wp and win may be invalid!
 	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
@@ -4179,8 +4188,9 @@ enter_tabpage(
     // We would like doing the TabEnter event first, but we don't have a
     // valid current window yet, which may break some commands.
     // This triggers autocommands, thus may make "tp" invalid.
-    win_enter_ext(tp->tp_curwin, FALSE, TRUE, FALSE,
-			      trigger_enter_autocmds, trigger_leave_autocmds);
+    win_enter_ext(tp->tp_curwin, WEE_CURWIN_INVALID
+		  | (trigger_enter_autocmds ? WEE_TRIGGER_ENTER_AUTOCMDS : 0)
+		  | (trigger_leave_autocmds ? WEE_TRIGGER_LEAVE_AUTOCMDS : 0));
     prevwin = next_prevwin;
 
     last_status(FALSE);		// status line may appear or disappear
@@ -4679,24 +4689,20 @@ win_goto_hor(
     void
 win_enter(win_T *wp, int undo_sync)
 {
-    win_enter_ext(wp, undo_sync, FALSE, FALSE, TRUE, TRUE);
+    win_enter_ext(wp, (undo_sync ? WEE_UNDO_SYNC : 0)
+		    | WEE_TRIGGER_ENTER_AUTOCMDS | WEE_TRIGGER_LEAVE_AUTOCMDS);
 }
 
 /*
- * Make window wp the current window.
- * Can be called with "curwin_invalid" TRUE, which means that curwin has just
- * been closed and isn't valid.
+ * Make window "wp" the current window.
+ * Can be called with "flags" containing WEE_CURWIN_INVALID, which means that
+ * curwin has just been closed and isn't valid.
  */
     static void
-win_enter_ext(
-    win_T	*wp,
-    int		undo_sync,
-    int		curwin_invalid,
-    int		trigger_new_autocmds,
-    int		trigger_enter_autocmds,
-    int		trigger_leave_autocmds)
+win_enter_ext(win_T *wp, int flags)
 {
     int		other_buffer = FALSE;
+    int		curwin_invalid = (flags & WEE_CURWIN_INVALID);
 
     if (wp == curwin && !curwin_invalid)	// nothing to do
 	return;
@@ -4706,7 +4712,7 @@ win_enter_ext(
 	leaving_window(curwin);
 #endif
 
-    if (!curwin_invalid && trigger_leave_autocmds)
+    if (!curwin_invalid && (flags & WEE_TRIGGER_LEAVE_AUTOCMDS))
     {
 	/*
 	 * Be careful: If autocommands delete the window, return now.
@@ -4729,7 +4735,7 @@ win_enter_ext(
     }
 
     // sync undo before leaving the current buffer
-    if (undo_sync && curbuf != wp->w_buffer)
+    if ((flags & WEE_UNDO_SYNC) && curbuf != wp->w_buffer)
 	u_sync(FALSE);
 
     // Might need to scroll the old window before switching, e.g., when the
@@ -4786,9 +4792,9 @@ win_enter_ext(
     entering_window(curwin);
 #endif
     // Careful: autocommands may close the window and make "wp" invalid
-    if (trigger_new_autocmds)
+    if (flags & WEE_TRIGGER_NEW_AUTOCMDS)
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
-    if (trigger_enter_autocmds)
+    if (flags & WEE_TRIGGER_ENTER_AUTOCMDS)
     {
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
 	if (other_buffer)
