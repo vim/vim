@@ -2484,7 +2484,9 @@ win_close(win_T *win, int free_buf)
 #ifdef FEAT_DIFF
     int		had_diffmode = win->w_p_diff;
 #endif
+#ifdef MESSAGE_QUEUE
     int		did_decrement = FALSE;
+#endif
 
 #if defined(FEAT_TERMINAL) && defined(FEAT_PROP_POPUP)
     // Can close a popup window with a terminal if the job has finished.
@@ -2665,7 +2667,12 @@ win_close(win_T *win, int free_buf)
     {
 	// Pass WEE_ALLOW_PARSE_MESSAGES to decrement dont_parse_messages
 	// before autocommands.
-	did_decrement = win_enter_ext(wp,
+#ifdef MESSAGE_QUEUE
+	did_decrement =
+#else
+	(void)
+#endif
+	    win_enter_ext(wp,
 		WEE_CURWIN_INVALID | WEE_TRIGGER_ENTER_AUTOCMDS
 		      | WEE_TRIGGER_LEAVE_AUTOCMDS | WEE_ALLOW_PARSE_MESSAGES);
 	if (other_buffer)
