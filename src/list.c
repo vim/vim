@@ -2817,45 +2817,49 @@ f_insert(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_BLOB)
     {
-	int	    val, len;
-	char_u	    *p;
+	blob_T	*b = argvars[0].vval.v_blob;
 
-	if (argvars[0].vval.v_blob == NULL)
+	if (b == NULL)
 	{
 	    if (in_vim9script())
 		emsg(_(e_cannot_add_to_null_blob));
-	    return;
 	}
-
-	len = blob_len(argvars[0].vval.v_blob);
-	if (argvars[2].v_type != VAR_UNKNOWN)
+	else if (!value_check_lock(b->bv_lock,
+				     (char_u *)N_("insert() argument"), TRUE))
 	{
-	    before = (long)tv_get_number_chk(&argvars[2], &error);
-	    if (error)
-		return;		// type error; errmsg already given
-	    if (before < 0 || before > len)
+	    int		val, len;
+	    char_u	*p;
+
+	    len = blob_len(b);
+	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
-		semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+		before = (long)tv_get_number_chk(&argvars[2], &error);
+		if (error)
+		    return;		// type error; errmsg already given
+		if (before < 0 || before > len)
+		{
+		    semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+		    return;
+		}
+	    }
+	    val = tv_get_number_chk(&argvars[1], &error);
+	    if (error)
+		return;
+	    if (val < 0 || val > 255)
+	    {
+		semsg(_(e_invarg2), tv_get_string(&argvars[1]));
 		return;
 	    }
-	}
-	val = tv_get_number_chk(&argvars[1], &error);
-	if (error)
-	    return;
-	if (val < 0 || val > 255)
-	{
-	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
-	    return;
-	}
 
-	if (ga_grow(&argvars[0].vval.v_blob->bv_ga, 1) == FAIL)
-	    return;
-	p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
-	mch_memmove(p + before + 1, p + before, (size_t)len - before);
-	*(p + before) = val;
-	++argvars[0].vval.v_blob->bv_ga.ga_len;
+	    if (ga_grow(&b->bv_ga, 1) == FAIL)
+		return;
+	    p = (char_u *)b->bv_ga.ga_data;
+	    mch_memmove(p + before + 1, p + before, (size_t)len - before);
+	    *(p + before) = val;
+	    ++b->bv_ga.ga_len;
 
-	copy_tv(&argvars[0], rettv);
+	    copy_tv(&argvars[0], rettv);
+	}
     }
     else if (argvars[0].v_type != VAR_LIST)
 	semsg(_(e_listblobarg), "insert()");
@@ -2917,7 +2921,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_DICT)
 	dict_remove(argvars, rettv, arg_errmsg);
     else if (argvars[0].v_type == VAR_BLOB)
-	blob_remove(argvars, rettv);
+	blob_remove(argvars, rettv, arg_errmsg);
     else if (argvars[0].v_type == VAR_LIST)
 	list_remove(argvars, rettv, arg_errmsg);
     else
