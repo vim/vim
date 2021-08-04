@@ -874,6 +874,9 @@ au BufNewFile,BufRead *.ipynb				setf json
 " JSONC
 au BufNewFile,BufRead *.jsonc			setf jsonc
 
+" Julia
+au BufNewFile,BufRead *.jl			setf julia
+
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
 
