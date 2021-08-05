@@ -1859,12 +1859,20 @@ luaV_setvar(lua_State *L)
 	    // Need to create an entry
 	    di = dictitem_alloc((char_u *)name);
 	    if (di == NULL)
+	    {
+		clear_tv(&tv);
 		return 0;
+	    }
 	    // Update the value
 	    copy_tv(&tv, &di->di_tv);
 	    if (dict_add(dict, di) == FAIL)
+	    {
+		dictitem_free(di);
+		clear_tv(&tv);
 		return luaL_error(L, "Couldn't add to dictionary");
-	} else
+	    }
+	}
+	else
 	{
 	    // Clear the old value
 	    clear_tv(&di->di_tv);
