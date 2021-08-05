@@ -1352,6 +1352,41 @@ Other commands ~
  *:Asm*	     jump to the window with the disassembly, create it if there
 	     isn't one
 
+Events ~
+						*termdebug-events*
+The plugin provides a set of events to run custom commands upon
+starting or ending a debugging session.
+
+Name				triggered by ~
+
+|TermdebugStartPre|		before starting debugging
+|TermdebugStartPost|		after debugging has initialized
+|TermdebugStopPre|		before debugging ends
+|TermdebugStopPost|		after debugging has ended
+
+						*TermdebugStopPost*
+TermdebugStopPost		After debugging has ended, gdb-related windows
+				are closed, buffers wiped out and Vim is
+				reverted back to its original state before the
+				debugging was started.
+						*TermdebugStopPre*
+TermdebugStopPre		Before debugging ends, when gdb is terminated,
+				most likely by issuing a "quit" command in the
+				gdb window.
+						*TermdebugStartPost*
+TermdebugStartPost		After debugging has initialized.
+				If a "!" bang is passed to `:Termdebug` or
+				`:TermdebugCommand` the event is triggered
+				before running the provided command in gdb.
+						*TermdebugStartPre*
+TermdebugStartPre		Before starting debugging.
+				Not triggered if the debugger is already
+				running or |g:termdebugger| cannot be
+				executed.
+
+Autocommands can be set for these by using the |User| event: >
+	autocmd User TermdebugStartPre set number
+<
 
 Prompt mode ~
 						*termdebug-prompt*
