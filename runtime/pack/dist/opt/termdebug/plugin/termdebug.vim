@@ -117,6 +117,10 @@ func s:StartDebug_internal(dict)
     return
   endif
 
+  if exists('#User#TermdebugStartPre')
+    doautocmd <nomodeline> User TermdebugStartPre
+  endif
+
   let s:ptywin = 0
   let s:pid = 0
   let s:asmwin = 0
@@ -455,6 +459,10 @@ func s:StartDebugCommon(dict)
     au OptionSet background call s:Highlight(0, v:option_old, v:option_new)
   augroup END
 
+  if exists('#User#TermdebugStartPost')
+    doautocmd <nomodeline> User TermdebugStartPost
+  endif
+
   " Run the command if the bang attribute was given and got to the debug
   " window.
   if get(a:dict, 'bang', 0)
@@ -596,7 +604,12 @@ func s:GetAsmAddr(msg)
   let addr = s:DecodeMessage(substitute(a:msg, '.*addr=', '', ''))
   return addr
 endfunc
+
 func s:EndTermDebug(job, status)
+  if exists('#User#TermdebugStopPre')
+    doautocmd <nomodeline> User TermdebugStopPre
+  endif
+
   exe 'bwipe! ' . s:commbuf
   unlet s:gdbwin
 
@@ -643,9 +656,17 @@ func s:EndDebugCommon()
   endif
 
   au! TermDebug
+
+  if exists('#User#TermdebugStopPost')
+    doautocmd <nomodeline> User TermdebugStopPost
+  endif
 endfunc
 
 func s:EndPromptDebug(job, status)
+  if exists('#User#TermdebugStopPre')
+    doautocmd <nomodeline> User TermdebugStopPre
+  endif
+
   let curwinid = win_getid(winnr())
   call win_gotoid(s:gdbwin)
   set nomodified
