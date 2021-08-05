@@ -2331,7 +2331,10 @@ do_one_cmd(
 	    || ea.cmdidx == CMD_global
 	    || ea.cmdidx == CMD_vglobal
 	    || ea.usefilter
-	    || inside_block(&ea))
+#ifdef FEAT_EVAL
+	    || inside_block(&ea)
+#endif
+	    )
     {
 	for (p = ea.arg; *p; ++p)
 	{
