@@ -787,6 +787,8 @@ def Test_exepath()
   CheckDefExecFailure(['echo exepath("")'], 'E1175:')
 enddef
 
+command DoSomeCommand let g:didSomeCommand = 4
+
 def Test_exists()
   CheckDefAndScriptFailure2(['exists(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   call assert_equal(1, exists('&tabstop'))
@@ -808,6 +810,26 @@ def Test_exists()
     assert_equal(8, &tabstop)
   else
     assert_report('tabstop option not existing?')
+  endif
+
+  if exists(':DoSomeCommand') >= 2
+    DoSomeCommand
+  endif
+  assert_equal(4, g:didSomeCommand)
+  if exists(':NoSuchCommand') >= 2
+    NoSuchCommand
+  endif
+
+  var found = false
+  if exists('*CheckScriptSuccess')
+    found = true
+  endif
+  assert_true(found)
+  if exists('*NoSuchFunction')
+    NoSuchFunction()
+  endif
+  if exists('*no_such_function')
+    no_such_function()
   endif
 enddef
 
@@ -2948,7 +2970,7 @@ def Test_setreg()
   assert_fails('setreg("ab", 0)', 'E1162:')
   CheckDefAndScriptFailure2(['setreg(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['setreg("a", "b", 3)'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
-enddef 
+enddef
 
 def Test_settabvar()
   CheckDefAndScriptFailure2(['settabvar("a", "b", 1)'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')

@@ -3417,8 +3417,8 @@ compile_call(
 	s = skipwhite(s);
 	if (*s == ')' && argvars[0].v_type == VAR_STRING
 	       && ((is_has && !dynamic_feature(argvars[0].vval.v_string))
-		    || (!is_has && (*argvars[0].vval.v_string == '+'
-			    || *argvars[0].vval.v_string == '&'))))
+		    || (!is_has && vim_strchr((char_u *)"+&:*",
+						  *argvars[0].vval.v_string))))
 	{
 	    typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
 
