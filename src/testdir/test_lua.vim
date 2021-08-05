@@ -1009,6 +1009,10 @@ func Test_lua_global_var_table()
   call assert_fails('lua vim.g.Var2[3] = 21', 'list is locked')
   unlockvar g:Var2
 
+  let g:TestFunc = function('len')
+  call assert_fails('lua vim.g.func = vim.g.TestFunc', ['E704:', 'Couldn''t add to dictionary'])
+  unlet g:TestFunc
+
   " Attempt to access a non-existing global variable
   call assert_equal(v:null, luaeval('vim.g.NonExistingVar'))
   lua vim.g.NonExisting = Nil

@@ -1862,7 +1862,8 @@ luaV_setvar(lua_State *L)
 		return 0;
 	    // Update the value
 	    copy_tv(&tv, &di->di_tv);
-	    dict_add(dict, di);
+	    if (dict_add(dict, di) == FAIL)
+		return luaL_error(L, "Couldn't add to dictionary");
 	} else
 	{
 	    // Clear the old value
