@@ -311,7 +311,7 @@ ex_import(exarg_T *eap)
     cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid,
 							       &evalarg, NULL);
     if (cmd_end != NULL)
-	eap->nextcmd = check_nextcmd(cmd_end);
+	set_nextcmd(eap, cmd_end);
     clear_evalarg(&evalarg, eap);
 }
 

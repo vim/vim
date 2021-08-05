@@ -3842,7 +3842,7 @@ define_function(exarg_T *eap, char_u *name_arg)
     {
 	if (!eap->skip)
 	    list_functions(NULL);
-	eap->nextcmd = check_nextcmd(eap->arg);
+	set_nextcmd(eap, eap->arg);
 	return NULL;
     }
 
@@ -3869,7 +3869,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	}
 	if (*p == '/')
 	    ++p;
-	eap->nextcmd = check_nextcmd(p);
+	set_nextcmd(eap, p);
 	return NULL;
     }
 
@@ -3947,7 +3947,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    semsg(_(e_trailing_arg), p);
 	    goto ret_free;
 	}
-	eap->nextcmd = check_nextcmd(p);
+	set_nextcmd(eap, p);
 	if (eap->nextcmd != NULL)
 	    *p = NUL;
 	if (!eap->skip && !got_int)
@@ -4655,7 +4655,7 @@ ex_delfunction(exarg_T *eap)
 	semsg(_(e_trailing_arg), p);
 	return;
     }
-    eap->nextcmd = check_nextcmd(p);
+    set_nextcmd(eap, p);
     if (eap->nextcmd != NULL)
 	*p = NUL;
 
@@ -4844,7 +4844,7 @@ ex_return(exarg_T *eap)
     if (returning)
 	eap->nextcmd = NULL;
     else if (eap->nextcmd == NULL)	    // no argument
-	eap->nextcmd = check_nextcmd(arg);
+	set_nextcmd(eap, arg);
 
     if (eap->skip)
 	--emsg_skip;
@@ -5004,7 +5004,7 @@ ex_call(exarg_T *eap)
 	    }
 	}
 	else
-	    eap->nextcmd = check_nextcmd(arg);
+	    set_nextcmd(eap, arg);
     }
 
 end:

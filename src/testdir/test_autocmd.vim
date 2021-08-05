@@ -2816,10 +2816,18 @@ func Test_autocmd_with_block()
             setlocal matchpairs+=<:>
             /<start
           }
+    au CursorHold * {
+        autocmd BufReadPre * ++once echo 'one' | echo 'two'
+        g:gotSafeState = 77
+      }
   augroup END
 
   let expected = "\n--- Autocommands ---\nblock_testing  BufRead\n    *.xml     {^@            setlocal matchpairs+=<:>^@            /<start^@          }"
   call assert_equal(expected, execute('au BufReadPost *.xml'))
+
+  doautocmd CursorHold
+  call assert_equal(77, g:gotSafeState)
+  unlet g:gotSafeState
 
   augroup block_testing
     au!

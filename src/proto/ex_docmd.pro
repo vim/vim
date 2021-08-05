@@ -33,6 +33,7 @@ int ends_excmd(int c);
 int ends_excmd2(char_u *cmd_start, char_u *cmd);
 char_u *find_nextcmd(char_u *p);
 char_u *check_nextcmd(char_u *p);
+void set_nextcmd(exarg_T *eap, char_u *p);
 char_u *get_command_name(expand_T *xp, int idx);
 void not_exiting(void);
 int before_quit_autocmds(win_T *wp, int quit_all, int forceit);

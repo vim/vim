@@ -450,7 +450,7 @@ ex_sort(exarg_T *eap)
 	    unique = TRUE;
 	else if (*p == '"')	// comment start
 	    break;
-	else if (check_nextcmd(p) != NULL)
+	else if (eap->nextcmd == NULL && check_nextcmd(p) != NULL)
 	{
 	    eap->nextcmd = check_nextcmd(p);
 	    break;
@@ -3930,7 +3930,7 @@ ex_substitute(exarg_T *eap)
     cmd = skipwhite(cmd);
     if (*cmd && *cmd != '"')	    // if not end-of-line or comment
     {
-	eap->nextcmd = check_nextcmd(cmd);
+	set_nextcmd(eap, cmd);
 	if (eap->nextcmd == NULL)
 	{
 	    semsg(_(e_trailing_arg), cmd);

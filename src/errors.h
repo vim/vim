@@ -643,4 +643,6 @@ EXTERN char e_list_dict_or_blob_required_for_argument_nr[]
 EXTERN char e_expected_dictionary_for_using_key_str_but_got_str[]
 	INIT(= N_("E1229: Expected dictionary for using key \"%s\", but got %s"));
 EXTERN char e_encryption_sodium_mlock_failed[]
-	INIT(= N_("E1230: encryption: sodium_mlock() failed"));
+	INIT(= N_("E1230: Encryption: sodium_mlock() failed"));
+EXTERN char e_cannot_use_bar_to_separate_commands_here_str[]
+	INIT(= N_("E1231: Cannot use a bar to separate commands here: %s"));

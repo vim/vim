@@ -645,6 +645,14 @@ func Test_usercmd_with_block()
          echo 'hello'
   END
   call CheckScriptFailure(lines, 'E1026:')
+
+  let lines =<< trim END
+      command BarCommand {
+         echo 'hello' | echo 'there'
+        }
+      BarCommand
+  END
+  call CheckScriptFailure(lines, 'E1231:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -812,7 +812,7 @@ ex_let(exarg_T *eap)
 	    list_func_vars(&first);
 	    list_vim_vars(&first);
 	}
-	eap->nextcmd = check_nextcmd(arg);
+	set_nextcmd(eap, arg);
     }
     else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
@@ -1629,7 +1629,7 @@ ex_unletlock(
 	arg = skipwhite(name_end);
     } while (!ends_excmd2(name_end, arg));
 
-    eap->nextcmd = check_nextcmd(arg);
+    set_nextcmd(eap, arg);
 }
 
     static int

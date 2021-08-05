@@ -2314,22 +2314,24 @@ do_one_cmd(
 	ea.do_ecmd_cmd = getargcmd(&ea.arg);
 
     /*
-     * Check for '|' to separate commands and '"' or '#' to start comments.
-     * Don't do this for ":read !cmd" and ":write !cmd".
-     */
-    if ((ea.argt & EX_TRLBAR) && !ea.usefilter)
-	separate_nextcmd(&ea);
-
-    /*
-     * Check for <newline> to end a shell command.
+     * For commands that do not use '|' inside their argument: Check for '|' to
+     * separate commands and '"' or '#' to start comments.
+     *
+     * Otherwise: Check for <newline> to end a shell command.
      * Also do this for ":read !cmd", ":write !cmd" and ":global".
+     * Also do this inside a { - } block after :command and :autocmd.
      * Any others?
      */
+    if ((ea.argt & EX_TRLBAR) && !ea.usefilter)
+    {
+	separate_nextcmd(&ea);
+    }
     else if (ea.cmdidx == CMD_bang
 	    || ea.cmdidx == CMD_terminal
 	    || ea.cmdidx == CMD_global
 	    || ea.cmdidx == CMD_vglobal
-	    || ea.usefilter)
+	    || ea.usefilter
+	    || inside_block(&ea))
     {
 	for (p = ea.arg; *p; ++p)
 	{
@@ -5410,6 +5412,21 @@ check_nextcmd(char_u *p)
 }
 
 /*
+ * If "eap->nextcmd" is not set, check for a next command at "p".
+ */
+    void
+set_nextcmd(exarg_T *eap, char_u *arg)
+{
+    char_u *p = check_nextcmd(arg);
+
+    if (eap->nextcmd == NULL)
+	eap->nextcmd = p;
+    else if (p != NULL)
+	// cannot use "| command" inside a  {} block
+	semsg(_(e_cannot_use_bar_to_separate_commands_here_str), arg);
+}
+
+/*
  * - if there are more files to edit
  * - and this is the last window
  * - and forceit not used
@@ -7546,7 +7563,7 @@ ex_wincmd(exarg_T *eap)
     else
 	p = eap->arg + 1;
 
-    eap->nextcmd = check_nextcmd(p);
+    set_nextcmd(eap, p);
     p = skipwhite(p);
     if (*p != NUL && *p != (
 #ifdef FEAT_EVAL
@@ -8580,7 +8597,7 @@ ex_findpat(exarg_T *eap)
 	    if (!ends_excmd2(eap->arg, p))
 		eap->errmsg = ex_errmsg(e_trailing_arg, p);
 	    else
-		eap->nextcmd = check_nextcmd(p);
+		set_nextcmd(eap, p);
 	}
     }
     if (!eap->skip)

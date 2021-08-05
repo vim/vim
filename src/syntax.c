@@ -3789,7 +3789,7 @@ syn_cmd_enable(exarg_T *eap, int syncing UNUSED)
     static void
 syn_cmd_reset(exarg_T *eap, int syncing UNUSED)
 {
-    eap->nextcmd = check_nextcmd(eap->arg);
+    set_nextcmd(eap, eap->arg);
     if (!eap->skip)
     {
 	set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"reset");
@@ -3821,7 +3821,7 @@ syn_cmd_onoff(exarg_T *eap, char *name)
 {
     char_u	buf[100];
 
-    eap->nextcmd = check_nextcmd(eap->arg);
+    set_nextcmd(eap, eap->arg);
     if (!eap->skip)
     {
 	STRCPY(buf, "so ");
@@ -3928,7 +3928,7 @@ syn_cmd_list(
 	    arg = skipwhite(arg_end);
 	}
     }
-    eap->nextcmd = check_nextcmd(arg);
+    set_nextcmd(eap, arg);
 }
 
     static void
@@ -4921,7 +4921,7 @@ error:
     }
 
     if (rest != NULL)
-	eap->nextcmd = check_nextcmd(rest);
+	set_nextcmd(eap, rest);
     else
 	semsg(_(e_invarg2), arg);
 
@@ -4978,7 +4978,7 @@ syn_cmd_match(
 	/*
 	 * Check for trailing command and illegal trailing arguments.
 	 */
-	eap->nextcmd = check_nextcmd(rest);
+	set_nextcmd(eap, rest);
 	if (!ends_excmd2(eap->cmd, rest) || eap->skip)
 	    rest = NULL;
 	else if (ga_grow(&curwin->w_s->b_syn_patterns, 1) != FAIL
@@ -5218,7 +5218,7 @@ syn_cmd_region(
 	 * Check for trailing garbage or command.
 	 * If OK, add the item.
 	 */
-	eap->nextcmd = check_nextcmd(rest);
+	set_nextcmd(eap, rest);
 	if (!ends_excmd(*rest) || eap->skip)
 	    rest = NULL;
 	else if (ga_grow(&(curwin->w_s->b_syn_patterns), pat_count) != FAIL
@@ -5896,7 +5896,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 	semsg(_("E404: Illegal arguments: %s"), arg_start);
     else if (!finished)
     {
-	eap->nextcmd = check_nextcmd(arg_start);
+	set_nextcmd(eap, arg_start);
 	redraw_curbuf_later(SOME_VALID);
 	syn_stack_free_all(curwin->w_s);	// Need to recompute all syntax.
     }

@@ -1580,8 +1580,11 @@ Example: >
 		echo 'hello'
 		g:calledMyCommand = true
 	    }
-No nesting is supported, inline functions cannot be used.  Using `:normal`
-directly does not work, you can use it indirectly with `:execute`.
+<							*E1231*
+There must be white space before the "{".  No nesting is supported, inline
+functions cannot be used.  Commands where a "|" may appear in the argument,
+such as commands with an expression argument, cannot be followed by a "|" and
+another command.
 
 The replacement text {repl} for a user defined command is scanned for special
 escape sequences, using <...> notation.  Escape sequences are replaced with

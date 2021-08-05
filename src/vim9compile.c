@@ -5691,7 +5691,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	name_end = skip_regexp(name_start + 1, '/', TRUE);
 	if (*name_end == '/')
 	    ++name_end;
-	eap->nextcmd = check_nextcmd(name_end);
+	set_nextcmd(eap, name_end);
     }
     if (name_end == name_start || *skipwhite(name_end) != '(')
     {
