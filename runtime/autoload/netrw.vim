@@ -208,7 +208,6 @@ let g:netrw_localcopycmdopt    = ""
 let g:netrw_localcopydircmdopt = ""
 let g:netrw_localmkdiropt      = ""
 let g:netrw_localmovecmdopt    = ""
-let g:netrw_localrmdiropt      = ""
 
 " ---------------------------------------------------------------------
 " Default values for netrw's global protocol variables {{{2
@@ -11389,34 +11388,8 @@ fun! s:NetrwLocalRmFile(path,fname,all)
    let rmfile= substitute(rmfile,'[\/]$','','e')
 
    if all || ok =~# 'y\%[es]' || ok == ""
-    if v:version < 704 || (v:version == 704 && !has("patch1107"))
-" "    call Decho("1st attempt: system(netrw#WinPath(".g:netrw_localrmdir.') '.s:ShellEscape(rmfile).')','~'.expand("<slnum>"))
-     call system(netrw#WinPath(g:netrw_localrmdir).' '.s:ShellEscape(rmfile))
-" "    call Decho("v:shell_error=".v:shell_error,'~'.expand("<slnum>"))
-
-     if v:shell_error != 0
-" "     call Decho("2nd attempt to remove directory<".rmfile.">",'~'.expand("<slnum>"))
-      let errcode= s:NetrwDelete(rmfile)
-" "     call Decho("errcode=".errcode,'~'.expand("<slnum>"))
-
-      if errcode != 0
-       if has("unix")
-" "       call Decho("3rd attempt to remove directory<".rmfile.">",'~'.expand("<slnum>"))
-	call system("rm ".s:ShellEscape(rmfile))
-	if v:shell_error != 0 && !exists("g:netrw_quiet")
-	 call netrw#ErrorMsg(s:ERROR,"unable to remove directory<".rmfile."> -- is it empty?",34)
-	 let ok="no"
-	endif
-       elseif !exists("g:netrw_quiet")
-	call netrw#ErrorMsg(s:ERROR,"unable to remove directory<".rmfile."> -- is it empty?",35)
-	let ok="no"
-       endif
-      endif
-     endif
-    else
-     if delete(rmfile,"d")
-      call netrw#ErrorMsg(s:ERROR,"unable to delete directory <".rmfile.">!",103)
-     endif
+    if delete(rmfile,"d")
+     call netrw#ErrorMsg(s:ERROR,"unable to delete directory <".rmfile.">!",103)
     endif
    endif
   endif

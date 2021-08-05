@@ -159,8 +159,6 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_localmkdiropt     = '.g:netrw_localmkdiropt
   put = 'let g:netrw_localmovecmd      = '.g:netrw_localmovecmd
   put = 'let g:netrw_localmovecmdopt   = '.g:netrw_localmovecmdopt
-  put = 'let g:netrw_localrmdir        = '.g:netrw_localrmdir
-  put = 'let g:netrw_localrmdiropt     = '.g:netrw_localrmdiropt
   put = 'let g:netrw_maxfilenamelen    = '.g:netrw_maxfilenamelen
   put = 'let g:netrw_menu              = '.g:netrw_menu
   put = 'let g:netrw_mousemaps         = '.g:netrw_mousemaps
