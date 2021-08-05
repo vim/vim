@@ -2712,6 +2712,8 @@ ins_compl_get_exp(pos_T *ini)
     char_u	*dict = NULL;
     int		dict_f = 0;
     int		set_match_pos;
+    pos_T	prev_pos = {0, 0, 0};
+    int		looped_around = FALSE;
 
     if (!compl_started)
     {
@@ -2964,6 +2966,7 @@ ins_compl_get_exp(pos_T *ini)
 		p_ws = FALSE;
 	    else if (*e_cpt == '.')
 		p_ws = TRUE;
+	    looped_around = FALSE;
 	    for (;;)
 	    {
 		int	cont_s_ipos = FALSE;
@@ -2991,8 +2994,31 @@ ins_compl_get_exp(pos_T *ini)
 		    set_match_pos = FALSE;
 		}
 		else if (first_match_pos.lnum == last_match_pos.lnum
-				 && first_match_pos.col == last_match_pos.col)
+                                && first_match_pos.col == last_match_pos.col)
+		{
 		    found_new_match = FAIL;
+		}
+		else if ((compl_direction == FORWARD)
+			&& (prev_pos.lnum > pos->lnum
+			    || (prev_pos.lnum == pos->lnum
+				&& prev_pos.col >= pos->col)))
+		{
+		    if (looped_around)
+			found_new_match = FAIL;
+		    else
+			looped_around = TRUE;
+		}
+		else if ((compl_direction != FORWARD)
+			&& (prev_pos.lnum < pos->lnum
+			    || (prev_pos.lnum == pos->lnum
+				&& prev_pos.col <= pos->col)))
+		{
+		    if (looped_around)
+			found_new_match = FAIL;
+		    else
+			looped_around = TRUE;
+		}
+		prev_pos = *pos;
 		if (found_new_match == FAIL)
 		{
 		    if (ins_buf == curbuf)

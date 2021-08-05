@@ -162,6 +162,7 @@ NEW_TESTS = \
 	test_increment_dbcs \
 	test_indent \
 	test_ins_complete \
+	test_ins_complete_no_halt \
 	test_interrupt \
 	test_job_fails \
 	test_join \
@@ -405,6 +406,7 @@ NEW_TESTS_RES = \
 	test_increment_dbcs.res \
 	test_indent.res \
 	test_ins_complete.res \
+	test_ins_complete_no_halt.res \
 	test_interrupt.res \
 	test_job_fails.res \
 	test_join.res \
