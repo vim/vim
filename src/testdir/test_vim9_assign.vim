@@ -245,6 +245,23 @@ def Test_assignment()
   END
 enddef
 
+def Test_float_and_number()
+  if !has('float')
+    MissingFeature float
+  else
+    var lines =<< trim END
+         var f: float
+         f += 2
+         f -= 1
+         assert_equal(1.0, f)
+         ++f
+         --f
+         assert_equal(1.0, f)
+    END
+    CheckDefAndScriptSuccess(lines)
+  endif
+enddef
+
 let g:someNumber = 43
 
 def Test_assign_concat()
