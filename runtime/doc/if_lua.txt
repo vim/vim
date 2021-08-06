@@ -175,10 +175,17 @@ Vim evaluation and command execution, and others.
 					:lua print(type(l), vim.type(l))
 					:" list
 <
-	vim.command({cmd})	Executes the vim (ex-mode) command {cmd}.
+	vim.command({cmds})	Executes one or more lines of Ex-mode commands
+				in {cmds}.
 				Examples: >
 					:lua vim.command"set tw=60"
 					:lua vim.command"normal ddp"
+					lua << trim END
+					  vim.command([[
+					      new Myfile.js
+					      call search('start')
+					  ]])
+					END
 <
 	vim.eval({expr})	Evaluates expression {expr} (see |expression|),
 				converts the result to Lua, and returns it.
@@ -210,6 +217,12 @@ Vim evaluation and command execution, and others.
 <
 	vim.lua_version		The Lua version Vim was compiled with, in the
 				form {major}.{minor}.{patch}, e.g. "5.1.4".
+
+	vim.version()		Returns a Lua table with the Vim version.
+				The table will have the following keys:
+					major - major Vim version.
+					minor - minor Vim version.
+					patch - latest patch included.
 
                                                         *lua-vim-variables*
 The Vim editor global dictionaries |g:| |w:| |b:| |t:| |v:| can be accessed

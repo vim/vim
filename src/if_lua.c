@@ -10,6 +10,7 @@
  */
 
 #include "vim.h"
+#include "version.h"
 
 #include <lua.h>
 #include <lualib.h>
@@ -191,6 +192,7 @@ static void luaV_call_lua_func_free(void *state);
 #define lua_rawget dll_lua_rawget
 #define lua_rawgeti dll_lua_rawgeti
 #define lua_createtable dll_lua_createtable
+#define lua_settable dll_lua_settable
 #if LUA_VERSION_NUM >= 504
  #define lua_newuserdatauv dll_lua_newuserdatauv
 #else
@@ -302,6 +304,7 @@ int (*dll_lua_rawget) (lua_State *L, int idx);
 int (*dll_lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
 #endif
 void (*dll_lua_createtable) (lua_State *L, int narr, int nrec);
+void (*dll_lua_settable) (lua_State *L, int idx);
 #if LUA_VERSION_NUM >= 504
 void *(*dll_lua_newuserdatauv) (lua_State *L, size_t sz, int nuvalue);
 #else
@@ -413,6 +416,7 @@ static const luaV_Reg luaV_dll[] = {
     {"lua_rawget", (luaV_function) &dll_lua_rawget},
     {"lua_rawgeti", (luaV_function) &dll_lua_rawgeti},
     {"lua_createtable", (luaV_function) &dll_lua_createtable},
+    {"lua_settable", (luaV_function) &dll_lua_settable},
 #if LUA_VERSION_NUM >= 504
     {"lua_newuserdatauv", (luaV_function) &dll_lua_newuserdatauv},
 #else
@@ -1819,7 +1823,7 @@ luaV_setvar(lua_State *L)
     if (dict == NULL)
 	return 0;
 
-    di = dict_find(dict, (char_u *)name, len);
+    di = dict_find(dict, (char_u *)name, (int)len);
     if (di != NULL)
     {
 	if (di->di_flags & DI_FLAGS_RO)
@@ -1893,8 +1897,8 @@ luaV_getvar(lua_State *L)
     dict_T	*dict = luaV_get_var_scope(L);
     size_t	len;
     const char	*name = luaL_checklstring(L, 3, &len);
+    dictitem_T	*di = dict_find(dict, (char_u *)name, (int)len);
 
-    dictitem_T	*di = dict_find(dict, (char_u *)name, len);
     if (di == NULL)
 	return 0;  // nil
 
@@ -1905,7 +1909,10 @@ luaV_getvar(lua_State *L)
     static int
 luaV_command(lua_State *L)
 {
-    do_cmdline_cmd((char_u *) luaL_checkstring(L, 1));
+    char_u  *s = vim_strsave((char_u *)luaL_checkstring(L, 1));
+
+    execute_cmds_from_string(s);
+    vim_free(s);
     update_screen(VALID);
     return 0;
 }
@@ -1914,6 +1921,7 @@ luaV_command(lua_State *L)
 luaV_eval(lua_State *L)
 {
     typval_T *tv = eval_expr((char_u *) luaL_checkstring(L, 1), NULL);
+
     if (tv == NULL) luaL_error(L, "invalid expression");
     luaV_pushtypval(L, tv);
     free_tv(tv);
@@ -2214,6 +2222,25 @@ free_vim_args:
 	return luaL_error(L, error);
 }
 
+/*
+ * Return the Vim version as a Lua table
+ */
+    static int
+luaV_version(lua_State *L)
+{
+    lua_newtable(L);
+    lua_pushstring(L, "major");
+    lua_pushinteger(L, VIM_VERSION_MAJOR);
+    lua_settable(L, -3);
+    lua_pushstring(L, "minor");
+    lua_pushinteger(L, VIM_VERSION_MINOR);
+    lua_settable(L, -3);
+    lua_pushstring(L, "patch");
+    lua_pushinteger(L, highest_patch());
+    lua_settable(L, -3);
+    return 1;
+}
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -2230,6 +2257,7 @@ static const luaL_Reg luaV_module[] = {
     {"call", luaV_call},
     {"_getvar", luaV_getvar},
     {"_setvar", luaV_setvar},
+    {"version", luaV_version},
     {"lua_version", NULL},
     {NULL, NULL}
 };

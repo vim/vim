@@ -1162,4 +1162,36 @@ func Test_lua_tabpage_var_table()
   %bw!
 endfunc
 
+" Test for vim.version()
+func Test_lua_vim_version()
+  lua << trim END
+    vimver = vim.version()
+    vimver_n = vimver.major * 100 + vimver.minor
+  END
+  call assert_equal(v:version, luaeval('vimver_n'))
+endfunc
+
+" Test for running multiple commands using vim.command()
+func Test_lua_multiple_commands()
+  lua << trim END
+    vim.command([[
+        let Var1 = []
+        for i in range(3)
+          let Var1 += [#{name: 'x'}]
+        endfor
+        augroup Luagroup
+          autocmd!
+          autocmd User Luatest echo 'Hello'
+        augroup END
+      ]])
+  END
+  call assert_equal([{'name': 'x'}, {'name': 'x'}, {'name': 'x'}], Var1)
+  call assert_true(exists('#Luagroup'))
+  call assert_true(exists('#Luagroup#User#Luatest'))
+  augroup Luagroup
+    autocmd!
+  augroup END
+  augroup! Luagroup
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

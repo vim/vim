@@ -3365,6 +3365,48 @@ execute_redir_str(char_u *value, int value_len)
 }
 
 /*
+ * Get next line from a string containing NL separated lines.
+ * Called by do_cmdline() to get the next line.
+ * Returns an allocated string, or NULL when at the end of the string.
+ */
+    static char_u *
+get_str_line(
+    int	    c UNUSED,
+    void    *cookie,
+    int	    indent UNUSED,
+    getline_opt_T options UNUSED)
+{
+    char_u	*start = *(char_u **)cookie;
+    char_u	*line;
+    char_u	*p;
+
+    p = start;
+    if (p == NULL || *p == NUL)
+	return NULL;
+    p = vim_strchr(p, '\n');
+    if (p == NULL)
+	line = vim_strsave(start);
+    else
+    {
+	line = vim_strnsave(start, p - start);
+	p++;
+    }
+
+    *(char_u **)cookie = p;
+    return line;
+}
+
+/*
+ * Execute a series of Ex commands in 'str'
+ */
+    void
+execute_cmds_from_string(char_u *str)
+{
+    do_cmdline(NULL, get_str_line, (void *)&str,
+	    DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT|DOCMD_KEYTYPED);
+}
+
+/*
  * Get next line from a list.
  * Called by do_cmdline() to get the next line.
  * Returns allocated string, or NULL for end of function.
