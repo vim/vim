@@ -723,6 +723,7 @@ LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -l
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
+	$(OUTDIR)/alloc.o \
 	$(OUTDIR)/arabic.o \
 	$(OUTDIR)/arglist.o \
 	$(OUTDIR)/autocmd.o \
