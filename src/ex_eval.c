@@ -2018,6 +2018,10 @@ ex_endtry(exarg_T *eap)
 	{
 	    idx = cstack->cs_idx;
 
+	    // Set CSL_HAD_FINA to cstack->cs_lflags in ex_finally() only when
+	    // skip is FALSE, and set CSF_FINALLY to cstack->cs_flags[] in
+	    // do_cmdline() only when cstack->cs_lflags contains CSL_HAD_FINA.
+	    // Thus we need to check if skip is false.
 	    if (!skip && in_vim9script()
 		     && (cstack->cs_flags[idx] & (CSF_CATCH|CSF_FINALLY)) == 0)
 	    {
