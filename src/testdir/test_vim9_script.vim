@@ -641,6 +641,21 @@ def Test_try_catch_throw()
       endtry
   END
   CheckScriptFailure(lines, 'E1032:')
+
+  # skipping try-finally-endtry when try-finally-endtry is used in another block
+  lines =<< trim END
+      vim9script
+      if v:true
+        try
+        finally
+        endtry
+      else
+        try
+        finally
+        endtry
+      endif
+  END
+  CheckScriptSuccess(lines, 'E607:')
 enddef
 
 def Test_try_in_catch()
