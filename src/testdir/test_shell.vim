@@ -84,7 +84,8 @@ func Test_shell_options()
         r !echo hello
         call assert_equal('hello', substitute(getline(2), '\W', '', 'g'), e[0])
       catch
-        call assert_report('Failed to run shell command, shell: ' .. e[0])
+        call assert_report('Failed to run shell command, shell: ' .. e[0]
+              \ .. ', caught ' .. v:exception)
       finally
         bwipe!
       endtry
