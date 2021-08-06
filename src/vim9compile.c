@@ -8597,7 +8597,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 
 	// Fill in the "end" label in jumps at the end of the blocks.
 	compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
-							     this_instr, cctx);
+								this_instr, cctx);
 
 	// If there is no :catch then an exception jumps to :finally.
 	if (isn->isn_arg.try.try_ref->try_catch == 0)
