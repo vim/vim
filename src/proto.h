@@ -58,6 +58,7 @@ extern int _stricoll(char *a, char *b);
 #  include "crypt.pro"
 #  include "crypt_zip.pro"
 # endif
+# include "alloc.pro"
 # include "arglist.pro"
 # include "autocmd.pro"
 # include "buffer.pro"

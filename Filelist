@@ -23,6 +23,7 @@ SRC_ALL =	\
 		ci/setup-xvfb.sh \
 		src/Make_all.mak \
 		src/README.md \
+		src/alloc.c \
 		src/alloc.h \
 		src/arabic.c \
 		src/arglist.c \
@@ -210,6 +211,7 @@ SRC_ALL =	\
 		src/testdir/popupbounce.vim \
 		src/proto.h \
 		src/protodef.h \
+		src/proto/alloc.pro \
 		src/proto/arabic.pro \
 		src/proto/arglist.pro \
 		src/proto/autocmd.pro \

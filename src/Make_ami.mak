@@ -80,6 +80,7 @@ endif
 
 # Common sources
 SRC += \
+	alloc.c \
 	arabic.c \
 	arglist.c \
 	autocmd.c \
