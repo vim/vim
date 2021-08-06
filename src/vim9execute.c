@@ -85,8 +85,8 @@ struct ectx_S {
 
     garray_T	ec_trystack;	// stack of trycmd_T values
 
-    int		ec_dfunc_idx;	// current function index
     isn_T	*ec_instr;	// array with instructions
+    int		ec_dfunc_idx;	// current function index
     int		ec_iidx;	// index in ec_instr: instruction to execute
 
     garray_T	ec_funcrefs;	// partials that might be a closure
