@@ -555,6 +555,24 @@ func_do_profile(ufunc_T *fp)
 }
 
 /*
+ * Save time when starting to invoke another script or function.
+ */
+    static void
+script_prof_save(
+    proftime_T	*tm)	    // place to store wait time
+{
+    scriptitem_T    *si;
+
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+    {
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	if (si->sn_prof_on && si->sn_pr_nest++ == 0)
+	    profile_start(&si->sn_pr_child);
+    }
+    profile_get_wait(tm);
+}
+
+/*
  * When calling a function: may initialize for profiling.
  */
     void
@@ -790,24 +808,6 @@ script_do_profile(scriptitem_T *si)
     si->sn_prl_idx = -1;
     si->sn_prof_on = TRUE;
     si->sn_pr_nest = 0;
-}
-
-/*
- * Save time when starting to invoke another script or function.
- */
-    void
-script_prof_save(
-    proftime_T	*tm)	    // place to store wait time
-{
-    scriptitem_T    *si;
-
-    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
-    {
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
-	if (si->sn_prof_on && si->sn_pr_nest++ == 0)
-	    profile_start(&si->sn_pr_child);
-    }
-    profile_get_wait(tm);
 }
 
 /*

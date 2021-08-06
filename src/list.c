@@ -620,7 +620,7 @@ list_append_tv(list_T *l, typval_T *tv)
  * As list_append_tv() but move the value instead of copying it.
  * Return FAIL when out of memory.
  */
-    int
+    static int
 list_append_tv_move(list_T *l, typval_T *tv)
 {
     listitem_T	*li = listitem_alloc();

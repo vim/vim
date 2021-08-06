@@ -24,7 +24,7 @@
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
  * be easily freed later.
  */
-    type_T *
+    static type_T *
 get_type_ptr(garray_T *type_gap)
 {
     type_T *type;

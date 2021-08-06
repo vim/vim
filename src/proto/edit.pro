@@ -2,7 +2,6 @@
 int edit(int cmdchar, int startln, long count);
 int ins_need_undo_get(void);
 void ins_redraw(int ready);
-int decodeModifyOtherKeys(int c);
 void edit_putchar(int c, int highlight);
 void set_insstart(linenr_T lnum, int col);
 void edit_unputchar(void);

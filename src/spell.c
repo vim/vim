@@ -1240,7 +1240,7 @@ spell_valid_case(
 /*
  * Return TRUE if spell checking is not enabled.
  */
-    int
+    static int
 no_spell_checking(win_T *wp)
 {
     if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL

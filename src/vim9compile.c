@@ -1012,7 +1012,7 @@ generate_SETTYPE(
  * Return TRUE if "actual" could be "expected" and a runtime typecheck is to be
  * used.  Return FALSE if the types will never match.
  */
-    int
+    static int
 use_typecheck(type_T *actual, type_T *expected)
 {
     if (actual->tt_type == VAR_ANY
@@ -3579,7 +3579,7 @@ theend:
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
-    char_u *
+    static char_u *
 to_name_end(char_u *arg, int use_namespace)
 {
     char_u	*p;
