@@ -658,7 +658,7 @@ def Test_try_catch_throw()
       enddef
       s:f()
   END
-  CheckScriptSuccess(lines, 'E607:')
+  CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
@@ -672,7 +672,7 @@ def Test_try_catch_throw()
         endtry
       endif
   END
-  CheckScriptSuccess(lines, 'E1032:')
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_try_in_catch()
