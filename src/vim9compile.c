@@ -8569,49 +8569,52 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
 
-    // End :catch or :finally scope: set value in ISN_TRY instruction
-    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-    if (isn->isn_arg.try.try_ref->try_finally != 0)
+    if (cctx->ctx_skip != SKIP_YES)
     {
-	emsg(_(e_finally_dup));
-	return NULL;
-    }
+	// End :catch or :finally scope: set value in ISN_TRY instruction
+	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
+	if (isn->isn_arg.try.try_ref->try_finally != 0)
+	{
+	    emsg(_(e_finally_dup));
+	    return NULL;
+	}
 
-    this_instr = instr->ga_len;
+	this_instr = instr->ga_len;
 #ifdef FEAT_PROFILE
-    if (cctx->ctx_compile_type == CT_PROFILE
-	    && ((isn_T *)instr->ga_data)[this_instr - 1]
-						   .isn_type == ISN_PROF_START)
-    {
-	// jump to the profile start of the "finally"
-	--this_instr;
-
-	// jump to the profile end above it
-	if (this_instr > 0 && ((isn_T *)instr->ga_data)[this_instr - 1]
-						     .isn_type == ISN_PROF_END)
+	if (cctx->ctx_compile_type == CT_PROFILE
+		&& ((isn_T *)instr->ga_data)[this_instr - 1]
+						       .isn_type == ISN_PROF_START)
+	{
+	    // jump to the profile start of the "finally"
 	    --this_instr;
-    }
+
+	    // jump to the profile end above it
+	    if (this_instr > 0 && ((isn_T *)instr->ga_data)[this_instr - 1]
+							 .isn_type == ISN_PROF_END)
+		--this_instr;
+	}
 #endif
 
-    // Fill in the "end" label in jumps at the end of the blocks.
-    compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
-							     this_instr, cctx);
+	// Fill in the "end" label in jumps at the end of the blocks.
+	compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
+								this_instr, cctx);
 
-    // If there is no :catch then an exception jumps to :finally.
-    if (isn->isn_arg.try.try_ref->try_catch == 0)
-	isn->isn_arg.try.try_ref->try_catch = this_instr;
-    isn->isn_arg.try.try_ref->try_finally = this_instr;
-    if (scope->se_u.se_try.ts_catch_label != 0)
-    {
-	// Previous catch without match jumps here
-	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
-	isn->isn_arg.jump.jump_where = this_instr;
-	scope->se_u.se_try.ts_catch_label = 0;
+	// If there is no :catch then an exception jumps to :finally.
+	if (isn->isn_arg.try.try_ref->try_catch == 0)
+	    isn->isn_arg.try.try_ref->try_catch = this_instr;
+	isn->isn_arg.try.try_ref->try_finally = this_instr;
+	if (scope->se_u.se_try.ts_catch_label != 0)
+	{
+	    // Previous catch without match jumps here
+	    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
+	    isn->isn_arg.jump.jump_where = this_instr;
+	    scope->se_u.se_try.ts_catch_label = 0;
+	}
+	if (generate_instr(cctx, ISN_FINALLY) == NULL)
+	    return NULL;
+
+	// TODO: set index in ts_finally_label jumps
     }
-    if (generate_instr(cctx, ISN_FINALLY) == NULL)
-	return NULL;
-
-    // TODO: set index in ts_finally_label jumps
 
     return arg;
 }

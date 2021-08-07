@@ -2018,7 +2018,8 @@ ex_endtry(exarg_T *eap)
 	{
 	    idx = cstack->cs_idx;
 
-	    if (in_vim9script()
+	    // Check the flags only when not in a skipped block.
+	    if (!skip && in_vim9script()
 		     && (cstack->cs_flags[idx] & (CSF_CATCH|CSF_FINALLY)) == 0)
 	    {
 		// try/endtry without any catch or finally: give an error and

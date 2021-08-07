@@ -641,6 +641,20 @@ def Test_try_catch_throw()
       endtry
   END
   CheckScriptFailure(lines, 'E1032:')
+
+  # skipping try-finally-endtry when try-finally-endtry is used in another block
+  lines =<< trim END
+      if v:true
+        try
+        finally
+        endtry
+      else
+        try
+        finally
+        endtry
+      endif
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_try_in_catch()
