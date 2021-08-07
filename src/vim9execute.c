@@ -893,7 +893,7 @@ call_by_name(
 
     if (ufunc != NULL)
     {
-	if (ufunc->uf_arg_types != NULL)
+	if (ufunc->uf_arg_types != NULL || ufunc->uf_va_type != NULL)
 	{
 	    int i;
 	    typval_T	*argv = STACK_TV_BOT(0) - argcount;
@@ -904,7 +904,7 @@ call_by_name(
 	    {
 		type_T *type = NULL;
 
-		if (i < ufunc->uf_args.ga_len)
+		if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
 		    type = ufunc->uf_arg_types[i];
 		else if (ufunc->uf_va_type != NULL)
 		    type = ufunc->uf_va_type->tt_member;

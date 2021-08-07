@@ -1149,6 +1149,18 @@ def Test_call_def_varargs()
       enddef
   END
   CheckScriptFailure(lines, 'E1160:')
+
+  lines =<< trim END
+      vim9script
+      def DoIt()
+        g:Later('')
+      enddef
+      defcompile
+      def g:Later(...l:  list<number>)
+      enddef
+      DoIt()
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
 
 let s:value = ''
