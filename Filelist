@@ -9,6 +9,7 @@ SRC_ALL =	\
 		.github/CODEOWNERS \
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
+		.github/workflows/coverity.yml \
 		.gitignore \
 		.hgignore \
 		.lgtm.yml \
