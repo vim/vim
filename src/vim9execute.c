@@ -3435,13 +3435,22 @@ exec_instructions(ectx_T *ectx)
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
 		    varnumber_T arg1 = tv1->vval.v_number;
 		    varnumber_T arg2 = tv2->vval.v_number;
-		    varnumber_T res;
+		    varnumber_T res = 0;
+		    int		div_zero = FALSE;
 
 		    switch (iptr->isn_arg.op.op_type)
 		    {
 			case EXPR_MULT: res = arg1 * arg2; break;
-			case EXPR_DIV: res = arg1 / arg2; break;
-			case EXPR_REM: res = arg1 % arg2; break;
+			case EXPR_DIV:  if (arg2 == 0)
+					    div_zero = TRUE;
+					else
+					    res = arg1 / arg2;
+					break;
+			case EXPR_REM:  if (arg2 == 0)
+					    div_zero = TRUE;
+					else
+					    res = arg1 % arg2;
+					break;
 			case EXPR_SUB: res = arg1 - arg2; break;
 			case EXPR_ADD: res = arg1 + arg2; break;
 
@@ -3451,7 +3460,7 @@ exec_instructions(ectx_T *ectx)
 			case EXPR_GEQUAL: res = arg1 >= arg2; break;
 			case EXPR_SMALLER: res = arg1 < arg2; break;
 			case EXPR_SEQUAL: res = arg1 <= arg2; break;
-			default: res = 0; break;
+			default: break;
 		    }
 
 		    --ectx->ec_stack.ga_len;
@@ -3462,6 +3471,12 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    else
 			tv1->vval.v_number = res;
+		    if (div_zero)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_divide_by_zero));
+			goto on_error;
+		    }
 		}
 		break;
 

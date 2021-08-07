@@ -1348,7 +1348,7 @@ enddef
 
 def Test_expr5_vim9script_channel()
   if !has('channel')
-    MissingFeature 'float'
+    MissingFeature 'channel'
   else
     var lines =<< trim END
         echo 'a' .. test_null_job()
@@ -1502,6 +1502,18 @@ def Test_expr6()
 
   CheckDefExecAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
   CheckDefExecAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
+
+  lines =<< trim END
+    var n = 0
+    eval 1 / n
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1154', 2)
+
+  lines =<< trim END
+    var n = 0
+    eval 1 % n
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1154', 2)
 enddef
 
 def Test_expr6_vim9script()
