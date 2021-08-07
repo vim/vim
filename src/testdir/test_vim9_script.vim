@@ -2493,10 +2493,11 @@ def Test_echomsg_cmd_vimscript()
 enddef
 
 def Test_echoerr_cmd()
+  var local = 'local'
   try
-    echoerr 'something' 'wrong' # comment
+    echoerr 'something' local 'wrong' # comment
   catch
-    assert_match('something wrong', v:exception)
+    assert_match('something local wrong', v:exception)
   endtry
 enddef
 
@@ -2513,6 +2514,12 @@ def Test_echoerr_cmd_vimscript()
       endtry
   END
   CheckScriptSuccess(lines)
+enddef
+
+def Test_echoconsole_cmd()
+  var local = 'local'
+  echoconsole 'something' local # comment
+  # output goes anywhere
 enddef
 
 def Test_for_outside_of_function()

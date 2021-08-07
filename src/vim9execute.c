@@ -1869,9 +1869,11 @@ exec_instructions(ectx_T *ectx)
 
 	    // :execute {string} ...
 	    // :echomsg {string} ...
+	    // :echoconsole {string} ...
 	    // :echoerr {string} ...
 	    case ISN_EXECUTE:
 	    case ISN_ECHOMSG:
+	    case ISN_ECHOCONSOLE:
 	    case ISN_ECHOERR:
 		{
 		    int		count = iptr->isn_arg.number;
@@ -1940,6 +1942,12 @@ exec_instructions(ectx_T *ectx)
 			    {
 				msg_attr(ga.ga_data, echo_attr);
 				out_flush();
+			    }
+			    else if (iptr->isn_type == ISN_ECHOCONSOLE)
+			    {
+				ui_write(ga.ga_data, (int)STRLEN(ga.ga_data),
+									 TRUE);
+				ui_write((char_u *)"\r\n", 2, TRUE);
 			    }
 			    else
 			    {
@@ -4900,15 +4908,19 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_EXECUTE:
 		smsg("%s%4d EXECUTE %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					  (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOMSG:
 		smsg("%s%4d ECHOMSG %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					  (varnumber_T)(iptr->isn_arg.number));
+		break;
+	    case ISN_ECHOCONSOLE:
+		smsg("%s%4d ECHOCONSOLE %lld", pfx, current,
+					  (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOERR:
 		smsg("%s%4d ECHOERR %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					  (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_LOAD:
 		{

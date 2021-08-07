@@ -1938,6 +1938,7 @@ enddef
 
 def s:Echomsg()
   echomsg 'some' 'message'
+  echoconsole 'nothing'
   echoerr 'went' .. 'wrong'
 enddef
 
@@ -1948,6 +1949,9 @@ def Test_disassemble_echomsg()
         '\d PUSHS "some"\_s*' ..
         '\d PUSHS "message"\_s*' ..
         '\d ECHOMSG 2\_s*' ..
+        "echoconsole 'nothing'\\_s*" ..
+        '\d PUSHS "nothing"\_s*' ..
+        '\d ECHOCONSOLE 1\_s*' ..
         "echoerr 'went' .. 'wrong'\\_s*" ..
         '\d PUSHS "wentwrong"\_s*' ..
         '\d ECHOERR 1\_s*' ..

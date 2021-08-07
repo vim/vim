@@ -8754,6 +8754,7 @@ compile_eval(char_u *arg, cctx_T *cctx)
  * compile "echo expr"
  * compile "echomsg expr"
  * compile "echoerr expr"
+ * compile "echoconsole expr"
  * compile "execute expr"
  */
     static char_u *
@@ -8804,6 +8805,8 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 	    generate_MULT_EXPR(cctx, ISN_EXECUTE, count);
 	else if (cmdidx == CMD_echomsg)
 	    generate_MULT_EXPR(cctx, ISN_ECHOMSG, count);
+	else if (cmdidx == CMD_echoconsole)
+	    generate_MULT_EXPR(cctx, ISN_ECHOCONSOLE, count);
 	else
 	    generate_MULT_EXPR(cctx, ISN_ECHOERR, count);
 
@@ -9861,7 +9864,7 @@ compile_def_function(
 	    case CMD_execute:
 	    case CMD_echomsg:
 	    case CMD_echoerr:
-	    // TODO:  "echoconsole"
+	    case CMD_echoconsole:
 		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 
@@ -10307,6 +10310,7 @@ delete_instr(isn_T *isn)
 	case ISN_DEBUG:
 	case ISN_DROP:
 	case ISN_ECHO:
+	case ISN_ECHOCONSOLE:
 	case ISN_ECHOERR:
 	case ISN_ECHOMSG:
 	case ISN_ENDTRY:

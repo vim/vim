@@ -16,10 +16,11 @@ typedef enum {
     ISN_EXECCONCAT, // execute Ex command from isn_arg.number items on stack
     ISN_EXEC_SPLIT, // execute Ex command from isn_arg.string split at NL
     ISN_LEGACY_EVAL, // evaluate expression isn_arg.string with legacy syntax.
-    ISN_ECHO,	    // echo isn_arg.echo.echo_count items on top of stack
-    ISN_EXECUTE,    // execute Ex commands isn_arg.number items on top of stack
-    ISN_ECHOMSG,    // echo Ex commands isn_arg.number items on top of stack
-    ISN_ECHOERR,    // echo Ex commands isn_arg.number items on top of stack
+    ISN_ECHO,	    // :echo with isn_arg.echo.echo_count items on top of stack
+    ISN_EXECUTE,    // :execute with isn_arg.number items on top of stack
+    ISN_ECHOMSG,    // :echomsg with isn_arg.number items on top of stack
+    ISN_ECHOCONSOLE, // :echoconsole with isn_arg.number items on top of stack
+    ISN_ECHOERR,    // :echoerr with isn_arg.number items on top of stack
     ISN_RANGE,	    // compute range from isn_arg.string, push to stack
     ISN_SUBSTITUTE, // :s command with expression
     ISN_INSTR,	    // instructions compiled from expression
