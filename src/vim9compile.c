@@ -9730,14 +9730,12 @@ compile_def_function(
 
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{
-	    if (cctx.ctx_skip == SKIP_YES)
+	    if (cctx.ctx_skip == SKIP_YES && ea.cmdidx != CMD_eval)
 	    {
 		line += STRLEN(line);
 		goto nextline;
 	    }
-
-	    // Expression or function call.
-	    if (ea.cmdidx != CMD_eval)
+	    else if (ea.cmdidx != CMD_eval)
 	    {
 		// CMD_var cannot happen, compile_assignment() above would be
 		// used.  Most likely an assignment to a non-existing variable.

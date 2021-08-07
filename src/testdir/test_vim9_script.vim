@@ -2372,6 +2372,14 @@ def Test_if_const_expr()
   if false
     burp
   endif
+
+  # expression with line breaks skipped
+  if false
+      ('aaa'
+      .. 'bbb'
+      .. 'ccc'
+      )->setline(1)
+  endif
 enddef
 
 def Test_if_const_expr_fails()
