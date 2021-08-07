@@ -3896,7 +3896,7 @@ update_popups(void (*win_update)(win_T *wp))
 	title_wincol = wp->w_wincol + 1;
 	if (wp->w_popup_title != NULL)
 	{
-	    title_len = (int)MB_CHARLEN(wp->w_popup_title);
+	    title_len = vim_strsize(wp->w_popup_title);
 
 	    // truncate the title if too long
 	    if (title_len > total_width - 2)
