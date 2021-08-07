@@ -2832,14 +2832,47 @@ def Test_expr7_namespace()
       assert_equal('some', get(t:, 'some_var', 'xxx'))
       assert_equal('xxx', get(t:, 'no_var', 'xxx'))
       unlet t:some_var
-
-      # check using g: in a for loop more than DO_NOT_FREE_CNT times
-      for i in range(100000)
-        if has_key(g:, 'does-not-exist')
-        endif
-      endfor
   END
   CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_expr7_namespace_loop_def()
+  var lines =<< trim END
+      # check using g: in a for loop more than DO_NOT_FREE_CNT times
+      var exists = 0
+      var exists_not = 0
+      for i in range(100000)
+        if has_key(g:, 'does-not-exist')
+          exists += 1
+        else
+          exists_not += 1
+        endif
+      endfor
+      assert_equal(0, exists)
+      assert_equal(100000, exists_not)
+  END
+  CheckDefSuccess(lines)
+enddef
+
+" NOTE: this is known to be slow.  To skip use:
+"   :let $TEST_SKIP_PAT = 'Test_expr7_namespace_loop_script'
+def Test_expr7_namespace_loop_script()
+  var lines =<< trim END
+      vim9script
+      # check using g: in a for loop more than DO_NOT_FREE_CNT times
+      var exists = 0
+      var exists_not = 0
+      for i in range(100000)
+        if has_key(g:, 'does-not-exist')
+          exists += 1
+        else
+          exists_not += 1
+        endif
+      endfor
+      assert_equal(0, exists)
+      assert_equal(100000, exists_not)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_parens()
