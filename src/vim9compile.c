@@ -1039,6 +1039,42 @@ use_typecheck(type_T *actual, type_T *expected)
  * If "actual_is_const" is TRUE then the type won't change at runtime, do not
  * generate a TYPECHECK.
  */
+    static int
+need_type_where(
+	type_T	*actual,
+	type_T	*expected,
+	int	offset,
+	where_T	where,
+	cctx_T	*cctx,
+	int	silent,
+	int	actual_is_const)
+{
+    if (expected == &t_bool && actual != &t_bool
+					&& (actual->tt_flags & TTFLAG_BOOL_OK))
+    {
+	// Using "0", "1" or the result of an expression with "&&" or "||" as a
+	// boolean is OK but requires a conversion.
+	generate_2BOOL(cctx, FALSE, offset);
+	return OK;
+    }
+
+    if (check_type(expected, actual, FALSE, where) == OK)
+	return OK;
+
+    // If the actual type can be the expected type add a runtime check.
+    // If it's a constant a runtime check makes no sense.
+    if ((!actual_is_const || actual == &t_any)
+					    && use_typecheck(actual, expected))
+    {
+	generate_TYPECHECK(cctx, expected, offset, where.wt_index);
+	return OK;
+    }
+
+    if (!silent)
+	type_mismatch_where(expected, actual, where);
+    return FAIL;
+}
+
     int
 need_type(
 	type_T	*actual,
@@ -1051,31 +1087,9 @@ need_type(
 {
     where_T where = WHERE_INIT;
 
-    if (expected == &t_bool && actual != &t_bool
-					&& (actual->tt_flags & TTFLAG_BOOL_OK))
-    {
-	// Using "0", "1" or the result of an expression with "&&" or "||" as a
-	// boolean is OK but requires a conversion.
-	generate_2BOOL(cctx, FALSE, offset);
-	return OK;
-    }
-
     where.wt_index = arg_idx;
-    if (check_type(expected, actual, FALSE, where) == OK)
-	return OK;
-
-    // If the actual type can be the expected type add a runtime check.
-    // If it's a constant a runtime check makes no sense.
-    if ((!actual_is_const || actual == &t_any)
-					    && use_typecheck(actual, expected))
-    {
-	generate_TYPECHECK(cctx, expected, offset, arg_idx);
-	return OK;
-    }
-
-    if (!silent)
-	arg_type_mismatch(expected, actual, arg_idx);
-    return FAIL;
+    return need_type_where(actual, expected, offset, where,
+						cctx, silent, actual_is_const);
 }
 
 /*
@@ -7004,14 +7018,17 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    else if (*op == '=')
 		    {
 			type_T *use_type = lhs.lhs_lvar->lv_type;
+			where_T where = WHERE_INIT;
 
 			// Without operator check type here, otherwise below.
 			// Use the line number of the assignment.
 			SOURCING_LNUM = start_lnum;
+			where.wt_index = var_count > 0 ? var_idx + 1 : 0;
+			where.wt_variable = var_count > 0;
 			if (lhs.lhs_has_index)
 			    use_type = lhs.lhs_member_type;
-			if (need_type(rhs_type, use_type, -1, 0, cctx,
-						      FALSE, is_const) == FAIL)
+			if (need_type_where(rhs_type, use_type, -1, where,
+				    cctx, FALSE, is_const) == FAIL)
 			    goto theend;
 		    }
 		}

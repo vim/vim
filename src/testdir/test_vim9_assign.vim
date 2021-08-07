@@ -414,6 +414,22 @@ def Test_assign_unpack()
     [x, y] = g:values
   END
   CheckDefExecAndScriptFailure(lines, 'E1163: Variable 2: type mismatch, expected string but got number')
+
+  lines =<< trim END
+    var x: number
+    var y: number
+    var z: string
+    [x, y, z] = [1, 2, 3]
+  END
+  CheckDefAndScriptFailure(lines, 'E1163: Variable 3: type mismatch, expected string but got number')
+
+  lines =<< trim END
+    var x: number
+    var y: string
+    var z: string
+    [x, y, z] = [1, '2', 3]
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1163: Variable 3: type mismatch, expected string but got number')
 enddef
 
 def Test_assign_linebreak()
