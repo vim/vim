@@ -1287,10 +1287,11 @@ do_autocmd_event(
  */
     int
 do_doautocmd(
-    char_u	*arg,
+    char_u	*arg_start,
     int		do_msg,	    // give message for no matching autocmds?
     int		*did_something)
 {
+    char_u	*arg = arg_start;
     char_u	*fname;
     int		nothing_done = TRUE;
     int		group;
@@ -1329,8 +1330,12 @@ do_doautocmd(
 				      fname, NULL, TRUE, group, curbuf, NULL))
 	    nothing_done = FALSE;
 
-    if (nothing_done && do_msg)
-	msg(_("No matching autocommands"));
+    if (nothing_done && do_msg
+#ifdef FEAT_EVAL
+		&& !aborting()
+#endif
+	       )
+	smsg(_("No matching autocommands: %s"), arg_start);
     if (did_something != NULL)
 	*did_something = !nothing_done;
 
