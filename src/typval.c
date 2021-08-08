@@ -1704,6 +1704,7 @@ eval_number(
 	int	    want_string UNUSED)
 {
     int		len;
+    int		skip_quotes = current_sctx.sc_version >= 4;
 #ifdef FEAT_FLOAT
     char_u	*p;
     int		get_float = FALSE;
@@ -1718,7 +1719,20 @@ eval_number(
     if (**arg == '.')
 	p = *arg;
     else
-	p = skipdigits(*arg + 1);
+    {
+	p = *arg + 1;
+	if (skip_quotes)
+	    for (;;)
+	    {
+		if (*p == '\'')
+		    ++p;
+		if (!vim_isdigit(*p))
+		    break;
+		p = skipdigits(p);
+	    }
+	else
+	    p = skipdigits(p);
+    }
     if (!want_string && p[0] == '.' && vim_isdigit(p[1]))
     {
 	get_float = TRUE;
@@ -1740,7 +1754,7 @@ eval_number(
     {
 	float_T	f;
 
-	*arg += string2float(*arg, &f);
+	*arg += string2float(*arg, &f, skip_quotes);
 	if (evaluate)
 	{
 	    rettv->v_type = VAR_FLOAT;
@@ -1784,7 +1798,7 @@ eval_number(
 	varnumber_T	n;
 
 	// decimal, hex or octal number
-	vim_str2nr(*arg, NULL, &len, current_sctx.sc_version >= 4
+	vim_str2nr(*arg, NULL, &len, skip_quotes
 		      ? STR2NR_NO_OCT + STR2NR_QUOTE
 		      : STR2NR_ALL, &n, NULL, 0, TRUE);
 	if (len == 0)

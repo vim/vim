@@ -791,12 +791,13 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    {
 				float_T f;
 
-				len = string2float(p, &f);
+				len = string2float(p, &f, FALSE);
 			    }
 			    else
 			    {
 				cur_item->v_type = VAR_FLOAT;
-				len = string2float(p, &cur_item->vval.v_float);
+				len = string2float(p, &cur_item->vval.v_float,
+									FALSE);
 			    }
 			}
 			else

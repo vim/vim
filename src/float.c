@@ -29,7 +29,8 @@
     int
 string2float(
     char_u	*text,
-    float_T	*value)	    // result stored here
+    float_T	*value,	    // result stored here
+    int		skip_quotes)
 {
     char	*s = (char *)text;
     float_T	f;
@@ -50,6 +51,32 @@ string2float(
 	*value = NAN;
 	return 3;
     }
+    if (skip_quotes && vim_strchr((char_u *)s, '\'') != NULL)
+    {
+	char_u	    buf[100];
+	char_u	    *p = buf;
+	int	    quotes = 0;
+
+	vim_strncpy(buf, (char_u *)s, 99);
+	p = buf;
+	for (;;)
+	{
+	    // remove single quotes between digits, not in the exponent
+	    if (*p == '\'')
+	    {
+		++quotes;
+		mch_memmove(p, p + 1, STRLEN(p));
+	    }
+	    if (!vim_isdigit(*p))
+		break;
+	    p = skipdigits(p);
+	}
+	s = (char *)buf;
+	f = strtod(s, &s);
+	*value = f;
+	return (int)((char_u *)s - buf) + quotes;
+    }
+
     f = strtod(s, &s);
     *value = f;
     return (int)((char_u *)s - text);
@@ -488,16 +515,19 @@ f_str2float(typval_T *argvars, typval_T *rettv)
 {
     char_u *p;
     int     isneg;
+    int	    skip_quotes;
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
+
+    skip_quotes = argvars[1].v_type != VAR_UNKNOWN && tv_get_bool(&argvars[1]);
 
     p = skipwhite(tv_get_string_strict(&argvars[0]));
     isneg = (*p == '-');
 
     if (*p == '+' || *p == '-')
 	p = skipwhite(p + 1);
-    (void)string2float(p, &rettv->vval.v_float);
+    (void)string2float(p, &rettv->vval.v_float, skip_quotes);
     if (isneg)
 	rettv->vval.v_float *= -1;
     rettv->v_type = VAR_FLOAT;

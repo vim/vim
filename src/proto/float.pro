@@ -1,5 +1,5 @@
 /* float.c */
-int string2float(char_u *text, float_T *value);
+int string2float(char_u *text, float_T *value, int skip_quotes);
 void f_abs(typval_T *argvars, typval_T *rettv);
 void f_acos(typval_T *argvars, typval_T *rettv);
 void f_asin(typval_T *argvars, typval_T *rettv);

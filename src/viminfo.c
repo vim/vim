@@ -1247,7 +1247,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 				       (int)(tab - virp->vir_line + 1), TRUE);
 #ifdef FEAT_FLOAT
 		else if (type == VAR_FLOAT)
-		    (void)string2float(tab + 1, &tv.vval.v_float);
+		    (void)string2float(tab + 1, &tv.vval.v_float, FALSE);
 #endif
 		else
 		{
