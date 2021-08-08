@@ -261,6 +261,10 @@ def Test_float_quotes()
   call assert_fails("echo string(123'456.7'89)", 'E116:')
 enddef
 
+func Test_float_quotes_from_legacy()
+  call assert_equal("\n123456.789", execute("vim9 echo 12'34'56.789"))
+endfunc
+
 func Test_float2nr()
   call assert_equal(1, float2nr(1.234))
   call assert_equal(123, float2nr(1.234e2))

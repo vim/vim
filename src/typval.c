@@ -1704,7 +1704,7 @@ eval_number(
 	int	    want_string UNUSED)
 {
     int		len;
-    int		skip_quotes = current_sctx.sc_version >= 4;
+    int		skip_quotes = current_sctx.sc_version >= 4 || in_vim9script();
 #ifdef FEAT_FLOAT
     char_u	*p;
     int		get_float = FALSE;
