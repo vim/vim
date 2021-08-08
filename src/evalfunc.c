@@ -1972,7 +1972,7 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_srand},
     {"state",		0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_state},
-    {"str2float",	1, 1, FEARG_1,	    arg1_string,
+    {"str2float",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_float,	    FLOAT_FUNC(f_str2float)},
     {"str2list",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_list_number,    f_str2list},
