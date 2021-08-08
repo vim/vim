@@ -9657,7 +9657,9 @@ setcursorcharpos({list})
 setenv({name}, {val})						*setenv()*
 		Set environment variable {name} to {val}.
 		When {val} is |v:null| the environment variable is deleted.
-		See also |expr-env|.
+		Use only the variable name without os specific identifiers
+		See also |expr-env|. For example:
+			setenv('HOME', '/home/myhome')
 
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
