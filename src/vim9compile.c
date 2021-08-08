@@ -3415,9 +3415,9 @@ compile_call(
     int		is_searchpair;
 
     // We can evaluate "has('name')" at compile time.
-    // We can evaluate some "exists()" values at compile time.
+    // We always evaluate "exists_compiled()" at compile time.
     if ((varlen == 3 && STRNCMP(*arg, "has", 3) == 0)
-	    || (varlen == 6 && STRNCMP(*arg, "exists", 6) == 0))
+	    || (varlen == 15 && STRNCMP(*arg, "exists_compiled", 6) == 0))
     {
 	char_u	    *s = skipwhite(*arg + varlen + 1);
 	typval_T    argvars[2];
@@ -3431,8 +3431,7 @@ compile_call(
 	s = skipwhite(s);
 	if (*s == ')' && argvars[0].v_type == VAR_STRING
 	       && ((is_has && !dynamic_feature(argvars[0].vval.v_string))
-		    || (!is_has && vim_strchr((char_u *)"+&:*",
-						  *argvars[0].vval.v_string))))
+		    || !is_has))
 	{
 	    typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
 
@@ -3449,6 +3448,11 @@ compile_call(
 	    return OK;
 	}
 	clear_tv(&argvars[0]);
+	if (!is_has)
+	{
+	    emsg(_(e_argument_of_exists_compiled_must_be_literal_string));
+	    return FAIL;
+	}
     }
 
     if (generate_ppconst(cctx, ppconst) == FAIL)

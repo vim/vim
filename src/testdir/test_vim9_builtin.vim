@@ -793,42 +793,57 @@ def Test_exists()
   CheckDefAndScriptFailure2(['exists(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   call assert_equal(1, exists('&tabstop'))
 
-  if exists('+newoption')
+  var lines =<< trim END
+    if exists('+newoption')
+      if &newoption == 'ok'
+      endif
+    endif
+  END
+  CheckDefFailure(lines, 'E113:')
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_exists_compiled()
+  call assert_equal(1, exists_compiled('&tabstop'))
+  CheckDefAndScriptFailure2(['exists_compiled(10)'], 'E1232:', 'E1233:')
+  CheckDefAndScriptFailure2(['exists_compiled(v:progname)'], 'E1232:', 'E1233:')
+
+  if exists_compiled('+newoption')
     if &newoption == 'ok'
     endif
   endif
-  if exists('&newoption')
+  if exists_compiled('&newoption')
     if &newoption == 'ok'
     endif
   endif
-  if exists('+tabstop')
+  if exists_compiled('+tabstop')
     assert_equal(8, &tabstop)
   else
     assert_report('tabstop option not existing?')
   endif
-  if exists('&tabstop')
+  if exists_compiled('&tabstop')
     assert_equal(8, &tabstop)
   else
     assert_report('tabstop option not existing?')
   endif
 
-  if exists(':DoSomeCommand') >= 2
+  if exists_compiled(':DoSomeCommand') >= 2
     DoSomeCommand
   endif
   assert_equal(4, g:didSomeCommand)
-  if exists(':NoSuchCommand') >= 2
+  if exists_compiled(':NoSuchCommand') >= 2
     NoSuchCommand
   endif
 
   var found = false
-  if exists('*CheckScriptSuccess')
+  if exists_compiled('*CheckScriptSuccess')
     found = true
   endif
   assert_true(found)
-  if exists('*NoSuchFunction')
+  if exists_compiled('*NoSuchFunction')
     NoSuchFunction()
   endif
-  if exists('*no_such_function')
+  if exists_compiled('*no_such_function')
     no_such_function()
   endif
 enddef

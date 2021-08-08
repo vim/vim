@@ -49,6 +49,7 @@ static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
 static void f_execute(typval_T *argvars, typval_T *rettv);
+static void f_exists_compiled(typval_T *argvars, typval_T *rettv);
 static void f_expand(typval_T *argvars, typval_T *rettv);
 static void f_expandcmd(typval_T *argvars, typval_T *rettv);
 static void f_feedkeys(typval_T *argvars, typval_T *rettv);
@@ -1329,6 +1330,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_exepath},
     {"exists",		1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_exists},
+    {"exists_compiled",	1, 1, FEARG_1,	    arg1_string,
+			ret_number_bool,    f_exists_compiled},
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_exp)},
     {"expand",		1, 3, FEARG_1,	    arg3_string_bool_bool,
@@ -3624,6 +3627,12 @@ f_exists(typval_T *argvars, typval_T *rettv)
     }
 
     rettv->vval.v_number = n;
+}
+
+    static void
+f_exists_compiled(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    emsg(_(e_exists_compiled_can_only_be_used_in_def_function));
 }
 
 /*

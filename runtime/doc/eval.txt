@@ -2473,14 +2473,14 @@ browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
 bufadd({name})			Number	add a buffer to the buffer list
-bufexists({expr})		Number	|TRUE| if buffer {expr} exists
-buflisted({expr})		Number	|TRUE| if buffer {expr} is listed
-bufload({expr})			Number	load buffer {expr} if not loaded yet
-bufloaded({expr})		Number	|TRUE| if buffer {expr} is loaded
-bufname([{expr}])		String	Name of the buffer {expr}
-bufnr([{expr} [, {create}]])	Number	Number of the buffer {expr}
-bufwinid({expr})		Number	window ID of buffer {expr}
-bufwinnr({expr})		Number	window number of buffer {expr}
+bufexists({buf})		Number	|TRUE| if buffer {buf} exists
+buflisted({buf})		Number	|TRUE| if buffer {buf} is listed
+bufload({buf})			Number	load buffer {buf} if not loaded yet
+bufloaded({buf})		Number	|TRUE| if buffer {buf} is loaded
+bufname([{buf}])		String	Name of the buffer {buf}
+bufnr([{buf} [, {create}]])	Number	Number of the buffer {buf}
+bufwinid({buf})			Number	window ID of buffer {buf}
+bufwinnr({buf})			Number	window number of buffer {buf}
 byte2line({byte})		Number	line number at byte count {byte}
 byteidx({expr}, {nr})		Number	byte index of {nr}'th char in {expr}
 byteidxcomp({expr}, {nr})	Number	byte index of {nr}'th char in {expr}
@@ -2562,6 +2562,7 @@ executable({expr})		Number	1 if executable {expr} exists
 execute({command})		String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
+exists_compiled({expr})		Number	|TRUE| if {expr} exists at compile time
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
@@ -4442,8 +4443,10 @@ exepath({expr})						*exepath()*
 							*exists()*
 exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 		zero otherwise.
-		Note: In a compiled |:def| function local variables and
-		arguments are not visible to `exists()`.
+
+		Note: In a compiled |:def| function the evaluation is done at
+		runtime.  Use `exists_compiled()` to evaluate the expression
+		at compile time.
 
 		For checking for a supported feature use |has()|.
 		For checking if a file exists use |filereadable()|.
@@ -4534,8 +4537,23 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 
 		Can also be used as a |method|: >
 			Varname()->exists()
+<
 
-exp({expr})						*exp()*
+exists_compiled({expr})						*exists()*
+		Like `exists()` but evaluated at compile time.  This is useful
+		to skip a block where a function is used that would otherwise
+		give an error: >
+			if exists_compiled('*ThatFunction')
+			   ThatFunction('works')
+			endif
+<		If `exists()` were used then a compilation error would be
+		given if ThatFunction() is not defined.
+
+		{expr} must be a literal string. *E1232*
+		Can only be used in a |:def| function. *E1233*
+
+
+exp({expr})							*exp()*
 		Return the exponential of {expr} as a |Float| in the range
 		[0, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
@@ -6434,7 +6452,7 @@ has({feature} [, {check}])
 		features that have been abandoned will not be known by the
 		current Vim version.
 
-		Also see |exists()|.
+		Also see |exists()| and |exists_compiled()|.
 
 		Note that to skip code that has a syntax error when the
 		feature is not available, Vim may skip the rest of the line

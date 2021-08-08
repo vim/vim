@@ -646,3 +646,7 @@ EXTERN char e_encryption_sodium_mlock_failed[]
 	INIT(= N_("E1230: Encryption: sodium_mlock() failed"));
 EXTERN char e_cannot_use_bar_to_separate_commands_here_str[]
 	INIT(= N_("E1231: Cannot use a bar to separate commands here: %s"));
+EXTERN char e_argument_of_exists_compiled_must_be_literal_string[]
+	INIT(= N_("E1232: Argument of exists_compiled() must be a literal string"));
+EXTERN char e_exists_compiled_can_only_be_used_in_def_function[]
+	INIT(= N_("E1233: exists_compiled() can only be used in a :def function"));
