@@ -5712,7 +5712,9 @@ getenv({name})						*getenv()*
 		When the variable does not exist |v:null| is returned.  That
 		is different from a variable set to an empty string, although
 		some systems interpret the empty value as the variable being
-		deleted.  See also |expr-env|.
+		deleted. Use only the variable name without os specific 
+		identifiers. See also |expr-env|. For example:
+			`getenv('HOME')`
 
 		Can also be used as a |method|: >
 			GetVarname()->getenv()
