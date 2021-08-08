@@ -4066,8 +4066,15 @@ define_function(exarg_T *eap, char_u *name_arg)
     if (eap->cmdidx == CMD_def)
     {
 	// find the return type: :def Func(): type
-	if (*p == ':')
+	if (*skipwhite(p) == ':')
 	{
+	    if (*p != ':')
+	    {
+		semsg(_(e_no_white_space_allowed_before_colon_str), p);
+		p = skipwhite(p);
+	    }
+	    else if (!IS_WHITE_OR_NUL(p[1]))
+		semsg(_(e_white_space_required_after_str_str), ":", p);
 	    ret_type = skipwhite(p + 1);
 	    p = skip_type(ret_type, FALSE);
 	    if (p > ret_type)

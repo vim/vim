@@ -1429,6 +1429,27 @@ def Test_return_type_wrong()
         'defcompile'], 'E1003:')
   delfunc! g:Func
 
+  CheckScriptFailure([
+        'def Func():number',
+        'return 123',
+        'enddef',
+        'defcompile'], 'E1069:')
+  delfunc! g:Func
+
+  CheckScriptFailure([
+        'def Func() :number',
+        'return 123',
+        'enddef',
+        'defcompile'], 'E1059:')
+  delfunc! g:Func
+
+  CheckScriptFailure([
+        'def Func() : number',
+        'return 123',
+        'enddef',
+        'defcompile'], 'E1059:')
+  delfunc! g:Func
+
   CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
   delfunc! g:Func
   CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
