@@ -59,8 +59,8 @@ jobs:
         run: |
           ./configure --with-features=huge ${CONFOPT} --enable-fail-if-missing
           # Append various warning flags to CFLAGS.
-          sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-          sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+          sed -i -f ci/config.mk.sed src/auto/config.mk
+          sed -i -f ci/config.mk.${CC}.sed src/auto/config.mk
 
       - name: Build/scan vim
         run: |
