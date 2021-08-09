@@ -922,6 +922,12 @@ def Test_extend_dict_item_type()
   END
   CheckDefExecFailure(lines, 'E1012: Type mismatch; expected number but got string', 0)
   CheckScriptFailure(['vim9script'] + lines, 'E1012:', 1)
+
+  lines =<< trim END
+       var d: dict<bool>
+       extend(d, {b: 0})
+  END
+  CheckDefAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<bool> but got dict<number>', 2)
 enddef
 
 func g:ExtendList(l)
@@ -947,6 +953,12 @@ def Test_extend_list_item_type()
   END
   CheckDefExecFailure(lines, 'E1012: Type mismatch; expected number but got string', 0)
   CheckScriptFailure(['vim9script'] + lines, 'E1012:', 1)
+
+  lines =<< trim END
+       var l: list<bool>
+       extend(l, [0])
+  END
+  CheckDefAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected list<bool> but got list<number>', 2)
 enddef
 
 def Test_extend_return_type()

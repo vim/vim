@@ -274,10 +274,12 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	list_T	    *l = tv->vval.v_list;
 	listitem_T  *li;
 
-	if (l == NULL || l->lv_first == NULL)
+	if (l == NULL || (l->lv_first == NULL && l->lv_type == NULL))
 	    return &t_list_empty;
 	if (!do_member)
 	    return &t_list_any;
+	if (l->lv_type != NULL)
+	    return l->lv_type;
 	if (l->lv_first == &range_list_item)
 	    return &t_list_number;
 	if (l->lv_copyID == copyID)
@@ -299,10 +301,12 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	typval_T	*value;
 	dict_T		*d = tv->vval.v_dict;
 
-	if (d == NULL || d->dv_hashtab.ht_used == 0)
+	if (d == NULL || (d->dv_hashtab.ht_used == 0 && d->dv_type == NULL))
 	    return &t_dict_empty;
 	if (!do_member)
 	    return &t_dict_any;
+	if (d->dv_type != NULL)
+	    return d->dv_type;
 	if (d->dv_copyID == copyID)
 	    // avoid recursion
 	    return &t_dict_any;
