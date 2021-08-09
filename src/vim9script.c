@@ -246,6 +246,48 @@ new_imported(garray_T *gap)
 }
 
 /*
+ * Free the script variables from "sn_all_vars".
+ */
+    static void
+free_all_script_vars(scriptitem_T *si)
+{
+    int		todo;
+    hashtab_T	*ht = &si->sn_all_vars.dv_hashtab;
+    hashitem_T	*hi;
+    sallvar_T	*sav;
+    sallvar_T	*sav_next;
+
+    hash_lock(ht);
+    todo = (int)ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+
+	    // Free the variable.  Don't remove it from the hashtab, ht_array
+	    // might change then.  hash_clear() takes care of it later.
+	    sav = HI2SAV(hi);
+	    while (sav != NULL)
+	    {
+		sav_next = sav->sav_next;
+		if (sav->sav_di == NULL)
+		    clear_tv(&sav->sav_tv);
+		vim_free(sav);
+		sav = sav_next;
+	    }
+	}
+    }
+    hash_clear(ht);
+    hash_init(ht);
+
+    ga_clear(&si->sn_var_vals);
+
+    // existing commands using script variable indexes are no longer valid
+    si->sn_script_seq = current_sctx.sc_seq;
+}
+
+/*
  * Free all imported items in script "sid".
  */
     void
@@ -286,115 +328,12 @@ mark_imports_for_reload(int sid)
 }
 
 /*
- * ":import Item from 'filename'"
- * ":import Item as Alias from 'filename'"
- * ":import {Item} from 'filename'".
- * ":import {Item as Alias} from 'filename'"
- * ":import {Item, Item} from 'filename'"
- * ":import {Item, Item as Alias} from 'filename'"
- *
- * ":import * as Name from 'filename'"
- */
-    void
-ex_import(exarg_T *eap)
-{
-    char_u	*cmd_end;
-    evalarg_T	evalarg;
-
-    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
-    {
-	emsg(_(e_import_can_only_be_used_in_script));
-	return;
-    }
-    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
-
-    cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid,
-							       &evalarg, NULL);
-    if (cmd_end != NULL)
-	set_nextcmd(eap, cmd_end);
-    clear_evalarg(&evalarg, eap);
-}
-
-/*
- * Find an exported item in "sid" matching the name at "*argp".
- * When it is a variable return the index.
- * When it is a user function return "*ufunc".
- * When not found returns -1 and "*ufunc" is NULL.
- */
-    int
-find_exported(
-	int	    sid,
-	char_u	    *name,
-	ufunc_T	    **ufunc,
-	type_T	    **type,
-	cctx_T	    *cctx,
-	int	    verbose)
-{
-    int		idx = -1;
-    svar_T	*sv;
-    scriptitem_T *script = SCRIPT_ITEM(sid);
-
-    // Find name in "script".
-    idx = get_script_item_idx(sid, name, 0, cctx);
-    if (idx >= 0)
-    {
-	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
-	if (!sv->sv_export)
-	{
-	    if (verbose)
-		semsg(_(e_item_not_exported_in_script_str), name);
-	    return -1;
-	}
-	*type = sv->sv_type;
-	*ufunc = NULL;
-    }
-    else
-    {
-	char_u	buffer[200];
-	char_u	*funcname;
-
-	// it could be a user function.
-	if (STRLEN(name) < sizeof(buffer) - 15)
-	    funcname = buffer;
-	else
-	{
-	    funcname = alloc(STRLEN(name) + 15);
-	    if (funcname == NULL)
-		return -1;
-	}
-	funcname[0] = K_SPECIAL;
-	funcname[1] = KS_EXTRA;
-	funcname[2] = (int)KE_SNR;
-	sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
-	*ufunc = find_func(funcname, FALSE, NULL);
-	if (funcname != buffer)
-	    vim_free(funcname);
-
-	if (*ufunc == NULL)
-	{
-	    if (verbose)
-		semsg(_(e_item_not_found_in_script_str), name);
-	    return -1;
-	}
-	else if (((*ufunc)->uf_flags & FC_EXPORT) == 0)
-	{
-	    if (verbose)
-		semsg(_(e_item_not_exported_in_script_str), name);
-	    *ufunc = NULL;
-	    return -1;
-	}
-    }
-
-    return idx;
-}
-
-/*
  * Handle an ":import" command and add the resulting imported_T to "gap", when
  * not NULL, or script "import_sid" sn_imports.
  * "cctx" is NULL at the script level.
  * Returns a pointer to after the command or NULL in case of failure
  */
-    char_u *
+    static char_u *
 handle_import(
 	char_u	    *arg_start,
 	garray_T    *gap,
@@ -676,6 +615,109 @@ erret:
 }
 
 /*
+ * ":import Item from 'filename'"
+ * ":import Item as Alias from 'filename'"
+ * ":import {Item} from 'filename'".
+ * ":import {Item as Alias} from 'filename'"
+ * ":import {Item, Item} from 'filename'"
+ * ":import {Item, Item as Alias} from 'filename'"
+ *
+ * ":import * as Name from 'filename'"
+ */
+    void
+ex_import(exarg_T *eap)
+{
+    char_u	*cmd_end;
+    evalarg_T	evalarg;
+
+    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	emsg(_(e_import_can_only_be_used_in_script));
+	return;
+    }
+    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
+
+    cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid,
+							       &evalarg, NULL);
+    if (cmd_end != NULL)
+	set_nextcmd(eap, cmd_end);
+    clear_evalarg(&evalarg, eap);
+}
+
+/*
+ * Find an exported item in "sid" matching the name at "*argp".
+ * When it is a variable return the index.
+ * When it is a user function return "*ufunc".
+ * When not found returns -1 and "*ufunc" is NULL.
+ */
+    int
+find_exported(
+	int	    sid,
+	char_u	    *name,
+	ufunc_T	    **ufunc,
+	type_T	    **type,
+	cctx_T	    *cctx,
+	int	    verbose)
+{
+    int		idx = -1;
+    svar_T	*sv;
+    scriptitem_T *script = SCRIPT_ITEM(sid);
+
+    // Find name in "script".
+    idx = get_script_item_idx(sid, name, 0, cctx);
+    if (idx >= 0)
+    {
+	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
+	if (!sv->sv_export)
+	{
+	    if (verbose)
+		semsg(_(e_item_not_exported_in_script_str), name);
+	    return -1;
+	}
+	*type = sv->sv_type;
+	*ufunc = NULL;
+    }
+    else
+    {
+	char_u	buffer[200];
+	char_u	*funcname;
+
+	// it could be a user function.
+	if (STRLEN(name) < sizeof(buffer) - 15)
+	    funcname = buffer;
+	else
+	{
+	    funcname = alloc(STRLEN(name) + 15);
+	    if (funcname == NULL)
+		return -1;
+	}
+	funcname[0] = K_SPECIAL;
+	funcname[1] = KS_EXTRA;
+	funcname[2] = (int)KE_SNR;
+	sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
+	*ufunc = find_func(funcname, FALSE, NULL);
+	if (funcname != buffer)
+	    vim_free(funcname);
+
+	if (*ufunc == NULL)
+	{
+	    if (verbose)
+		semsg(_(e_item_not_found_in_script_str), name);
+	    return -1;
+	}
+	else if (((*ufunc)->uf_flags & FC_EXPORT) == 0)
+	{
+	    if (verbose)
+		semsg(_(e_item_not_exported_in_script_str), name);
+	    *ufunc = NULL;
+	    return -1;
+	}
+    }
+
+    return idx;
+}
+
+/*
  * Declare a script-local variable without init: "let var: type".
  * "const" is an error since the value is missing.
  * Returns a pointer to after the type.
@@ -901,48 +943,6 @@ hide_script_var(scriptitem_T *si, int idx, int func_defined)
 	    delete_var(script_ht, script_hi);
 	}
     }
-}
-
-/*
- * Free the script variables from "sn_all_vars".
- */
-    void
-free_all_script_vars(scriptitem_T *si)
-{
-    int		todo;
-    hashtab_T	*ht = &si->sn_all_vars.dv_hashtab;
-    hashitem_T	*hi;
-    sallvar_T	*sav;
-    sallvar_T	*sav_next;
-
-    hash_lock(ht);
-    todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
-    {
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    --todo;
-
-	    // Free the variable.  Don't remove it from the hashtab, ht_array
-	    // might change then.  hash_clear() takes care of it later.
-	    sav = HI2SAV(hi);
-	    while (sav != NULL)
-	    {
-		sav_next = sav->sav_next;
-		if (sav->sav_di == NULL)
-		    clear_tv(&sav->sav_tv);
-		vim_free(sav);
-		sav = sav_next;
-	    }
-	}
-    }
-    hash_clear(ht);
-    hash_init(ht);
-
-    ga_clear(&si->sn_var_vals);
-
-    // existing commands using script variable indexes are no longer valid
-    si->sn_script_seq = current_sctx.sc_seq;
 }
 
 /*

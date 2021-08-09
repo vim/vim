@@ -4475,7 +4475,7 @@ win_goto(win_T *wp)
 #endif
 }
 
-#if defined(FEAT_PERL) || defined(FEAT_LUA) || defined(PROTO)
+#if defined(FEAT_PERL) || defined(PROTO)
 /*
  * Find window number "winnr" (counting top to bottom).
  */

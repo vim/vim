@@ -1587,7 +1587,7 @@ ins_ctrl_v(void)
  * Note that this doesn't wait for characters, they must be in the typeahead
  * buffer already.
  */
-    int
+    static int
 decodeModifyOtherKeys(int c)
 {
     char_u  *p = typebuf.tb_buf + typebuf.tb_off;

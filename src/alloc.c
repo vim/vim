@@ -232,19 +232,15 @@ lalloc(size_t size, int message)
     mem_pre_alloc_l(&size);
 #endif
 
-    /*
-     * Loop when out of memory: Try to release some memfile blocks and
-     * if some blocks are released call malloc again.
-     */
+    // Loop when out of memory: Try to release some memfile blocks and
+    // if some blocks are released call malloc again.
     for (;;)
     {
-	/*
-	 * Handle three kind of systems:
-	 * 1. No check for available memory: Just return.
-	 * 2. Slow check for available memory: call mch_avail_mem() after
-	 *    allocating KEEP_ROOM amount of memory.
-	 * 3. Strict check for available memory: call mch_avail_mem()
-	 */
+	// Handle three kind of systems:
+	// 1. No check for available memory: Just return.
+	// 2. Slow check for available memory: call mch_avail_mem() after
+	//    allocating KEEP_ROOM amount of memory.
+	// 3. Strict check for available memory: call mch_avail_mem()
 	if ((p = malloc(size)) != NULL)
 	{
 #ifndef HAVE_AVAIL_MEM
@@ -268,10 +264,8 @@ lalloc(size_t size, int message)
 		goto theend;
 #endif
 	}
-	/*
-	 * Remember that mf_release_all() is being called to avoid an endless
-	 * loop, because mf_release_all() may call alloc() recursively.
-	 */
+	// Remember that mf_release_all() is being called to avoid an endless
+	// loop, because mf_release_all() may call alloc() recursively.
 	if (releasing)
 	    break;
 	releasing = TRUE;

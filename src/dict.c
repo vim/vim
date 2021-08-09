@@ -805,7 +805,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
  * Advance over a literal key, including "-".  If the first character is not a
  * literal key character then "key" is returned.
  */
-    char_u *
+    static char_u *
 skip_literal_key(char_u *key)
 {
     char_u *p;

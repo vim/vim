@@ -2029,7 +2029,7 @@ registerdigraph(int char1, int char2, int n)
  * If they are valid, returns TRUE; otherwise, give an error message and
  * returns FALSE.
  */
-    int
+    static int
 check_digraph_chars_valid(int char1, int char2)
 {
     if (char2 == 0)
@@ -2193,7 +2193,7 @@ digraph_getlist_appendpair(digr_T *dp, list_T *l)
     li2->li_tv.vval.v_string = vim_strsave(buf);
 }
 
-    void
+    static void
 digraph_getlist_common(int list_all, typval_T *rettv)
 {
     int		i;

@@ -20,7 +20,6 @@ char *job_status(job_T *job);
 int job_stop(job_T *job, typval_T *argvars, char *type);
 void invoke_prompt_callback(void);
 int invoke_prompt_interrupt(void);
-char_u *buf_prompt_text(buf_T *buf);
 char_u *prompt_text(void);
 void init_prompt(int cmdchar_todo);
 int prompt_curpos_editable(void);

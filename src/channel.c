@@ -3025,7 +3025,7 @@ channel_has_readahead(channel_T *channel, ch_part_T part)
  * Return a string indicating the status of the channel.
  * If "req_part" is not negative check that part.
  */
-    char *
+    static char *
 channel_status(channel_T *channel, int req_part)
 {
     ch_part_T part;

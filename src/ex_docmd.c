@@ -598,7 +598,7 @@ do_cmdline_cmd(char_u *cmd)
  * Execute the "+cmd" argument of "edit +cmd fname" and the like.
  * This allows for using a range without ":" in Vim9 script.
  */
-    int
+    static int
 do_cmd_argument(char_u *cmd)
 {
     return do_cmdline(cmd, NULL, NULL,
