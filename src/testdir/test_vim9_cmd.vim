@@ -807,6 +807,17 @@ def Test_modifier_silent_unsilent()
     echomsg "caught"
   endtry
   assert_equal("\ncaught", execute(':1messages'))
+
+  var lines =<< trim END
+      vim9script
+      set history=11
+      silent! while 0
+        set history=22
+      silent! endwhile
+      assert_equal(11, &history)
+      set history&
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_range_after_command_modifier()
@@ -836,13 +847,16 @@ def Test_useless_command_modifier()
       for i in [0]
       silent endfor
   END
-  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+  CheckDefFailure(lines, 'E1176:', 2)
+  CheckScriptSuccess(['vim9script'] + lines)
 
   lines =<< trim END
       while g:maybe
       silent endwhile
   END
-  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+  CheckDefFailure(lines, 'E1176:', 2)
+  g:maybe = false
+  CheckScriptSuccess(['vim9script'] + lines)
 
   lines =<< trim END
       silent try

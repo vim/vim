@@ -3061,9 +3061,11 @@ parse_command_modifiers(
  * Return TRUE if "cmod" has anything set.
  */
     int
-has_cmdmod(cmdmod_T *cmod)
+has_cmdmod(cmdmod_T *cmod, int ignore_silent)
 {
-    return cmod->cmod_flags != 0
+    return (cmod->cmod_flags != 0 && (!ignore_silent
+		|| (cmod->cmod_flags
+		      & ~(CMOD_SILENT | CMOD_ERRSILENT | CMOD_UNSILENT)) != 0))
 	    || cmod->cmod_split != 0
 	    || cmod->cmod_verbose != 0
 	    || cmod->cmod_tab != 0
@@ -3074,9 +3076,9 @@ has_cmdmod(cmdmod_T *cmod)
  * If Vim9 script and "cmdmod" has anything set give an error and return TRUE.
  */
     int
-cmdmod_error(void)
+cmdmod_error(int ignore_silent)
 {
-    if (in_vim9script() && has_cmdmod(&cmdmod))
+    if (in_vim9script() && has_cmdmod(&cmdmod, ignore_silent))
     {
 	emsg(_(e_misplaced_command_modifier));
 	return TRUE;

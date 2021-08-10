@@ -2344,7 +2344,7 @@ generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod)
 {
     isn_T	*isn;
 
-    if (has_cmdmod(cmod))
+    if (has_cmdmod(cmod, FALSE))
     {
 	cctx->ctx_has_cmdmod = TRUE;
 
