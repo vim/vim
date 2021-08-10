@@ -2930,6 +2930,27 @@ def Test_check_func_arg_types()
   CheckScriptFailure(lines + ['echo H(G(F2))'], 'E1013:')
 enddef
 
+def Test_list_any_type_checked()
+  var lines =<< trim END
+      vim9script
+      def Foo()
+        --decl--
+        Bar(l)
+      enddef
+      def Bar(ll: list<dict<any>>)
+      enddef
+      Foo()
+  END
+  lines[2] = 'var l: list<any>'
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<dict<any>> but got list<any>', 2)
+
+  lines[2] = 'var l: list<any> = []'
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<dict<any>> but got list<any>', 2)
+
+  lines[2] = 'var l: list<any> = [11]'
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<dict<any>> but got list<number>', 2)
+enddef
+
 def Test_compile_error()
   var lines =<< trim END
     def g:Broken()

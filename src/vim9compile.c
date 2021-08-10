@@ -1598,7 +1598,7 @@ generate_NEWLIST(cctx_T *cctx, int count)
 
     // get the member type from all the items on the stack.
     if (count == 0)
-	member = &t_void;
+	member = &t_unknown;
     else
 	member = get_member_type_from_stack(
 	    ((type_T **)stack->ga_data) + stack->ga_len, count, 1,
@@ -7190,10 +7190,15 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    && (lhs.lhs_type->tt_type == VAR_DICT
 					  || lhs.lhs_type->tt_type == VAR_LIST)
 		    && lhs.lhs_type->tt_member != NULL
-		    && lhs.lhs_type->tt_member != &t_any
+		    && !(lhs.lhs_type->tt_member == &t_any
+			    && oplen > 0
+			    && rhs_type != NULL
+			    && rhs_type->tt_type == lhs.lhs_type->tt_type
+			    && rhs_type->tt_member != &t_unknown)
 		    && lhs.lhs_type->tt_member != &t_unknown)
 		// Set the type in the list or dict, so that it can be checked,
-		// also in legacy script.
+		// also in legacy script.  Not for "list<any> = val", then the
+		// type of "val" is used.
 		generate_SETTYPE(cctx, lhs.lhs_type);
 
 	    if (generate_store_lhs(cctx, &lhs, instr_count) == FAIL)

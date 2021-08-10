@@ -435,6 +435,7 @@ def Test_disassemble_list_assign()
         '\d STORE $1\_s*' ..
         'var l: list<any>\_s*' ..
         '\d NEWLIST size 0\_s*' ..
+        '\d SETTYPE list<any>\_s*' ..
         '\d STORE $2\_s*' ..
         '\[x, y; l\] = g:stringlist\_s*' ..
         '\d LOADG g:stringlist\_s*' ..
