@@ -4539,7 +4539,7 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 			Varname()->exists()
 <
 
-exists_compiled({expr})						*exists()*
+exists_compiled({expr})					*exists_compiled()*
 		Like `exists()` but evaluated at compile time.  This is useful
 		to skip a block where a function is used that would otherwise
 		give an error: >
