@@ -1258,13 +1258,15 @@ read_compound(FILE *fd, slang_T *slang, int len)
 
 	gap = &slang->sl_comppat;
 	c = get2c(fd);					// <comppatcount>
+	if (c < 0)
+	    return SP_TRUNCERROR;
 	todo -= 2;
 	ga_init2(gap, sizeof(char_u *), c);
 	if (ga_grow(gap, c) == OK)
 	    while (--c >= 0)
 	    {
 		((char_u **)(gap->ga_data))[gap->ga_len++] =
-						 read_cnt_string(fd, 1, &cnt);
+						  read_cnt_string(fd, 1, &cnt);
 					    // <comppatlen> <comppattext>
 		if (cnt < 0)
 		    return cnt;
