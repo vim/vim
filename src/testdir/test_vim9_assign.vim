@@ -1821,7 +1821,7 @@ def Test_unlet()
   CheckDefFailure([
     'var ll = [1, 2]',
     'll[1 : 2] = 7',
-    ], 'E1165:', 2)
+    ], 'E1012: Type mismatch; expected list<number> but got number', 2)
   CheckDefFailure([
     'var dd = {a: 1}',
     'unlet dd["a" : "a"]',

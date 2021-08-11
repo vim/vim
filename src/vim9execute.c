@@ -2503,14 +2503,53 @@ exec_instructions(ectx_T *ectx)
 		    // -4 value to be stored
 		    // -3 first index or "none"
 		    // -2 second index or "none"
-		    // -1 destination blob
+		    // -1 destination list or blob
 		    tv = STACK_TV_BOT(-4);
-		    if (tv_dest->v_type != VAR_BLOB)
+		    if (tv_dest->v_type == VAR_LIST)
 		    {
-			status = FAIL;
-			emsg(_(e_blob_required));
+			long	n1;
+			long	n2;
+			int	error = FALSE;
+
+			SOURCING_LNUM = iptr->isn_lnum;
+			n1 = (long)tv_get_number_chk(tv_idx1, &error);
+			if (error)
+			    status = FAIL;
+			else
+			{
+			    if (tv_idx2->v_type == VAR_SPECIAL
+					&& tv_idx2->vval.v_number == VVAL_NONE)
+				n2 = list_len(tv_dest->vval.v_list) - 1;
+			    else
+				n2 = (long)tv_get_number_chk(tv_idx2, &error);
+			    if (error)
+				status = FAIL;
+			    else
+			    {
+				listitem_T *li1 = check_range_index_one(
+					tv_dest->vval.v_list, &n1, FALSE);
+
+				if (li1 == NULL)
+				    status = FAIL;
+				else
+				{
+				    status = check_range_index_two(
+					    tv_dest->vval.v_list,
+					    &n1, li1, &n2, FALSE);
+				    if (status != FAIL)
+					status = list_assign_range(
+						tv_dest->vval.v_list,
+						tv->vval.v_list,
+						n1,
+						n2,
+						tv_idx2->v_type == VAR_SPECIAL,
+						(char_u *)"=",
+						(char_u *)"[unknown]");
+				}
+			    }
+			}
 		    }
-		    else
+		    else if (tv_dest->v_type == VAR_BLOB)
 		    {
 			varnumber_T n1;
 			varnumber_T n2;
@@ -2530,7 +2569,7 @@ exec_instructions(ectx_T *ectx)
 				status = FAIL;
 			    else
 			    {
-				long	bloblen = blob_len(tv_dest->vval.v_blob);
+				long  bloblen = blob_len(tv_dest->vval.v_blob);
 
 				if (check_blob_index(bloblen,
 							     n1, FALSE) == FAIL
@@ -2542,6 +2581,11 @@ exec_instructions(ectx_T *ectx)
 					     tv_dest->vval.v_blob, n1, n2, tv);
 			    }
 			}
+		    }
+		    else
+		    {
+			status = FAIL;
+			emsg(_(e_blob_required));
 		    }
 
 		    clear_tv(tv_idx1);
@@ -5469,7 +5513,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_ANYINDEX: smsg("%s%4d ANYINDEX", pfx, current); break;
 	    case ISN_ANYSLICE: smsg("%s%4d ANYSLICE", pfx, current); break;
 	    case ISN_SLICE: smsg("%s%4d SLICE %lld",
-					 pfx, current, iptr->isn_arg.number); break;
+				    pfx, current, iptr->isn_arg.number); break;
 	    case ISN_GETITEM: smsg("%s%4d ITEM %lld%s", pfx, current,
 					 iptr->isn_arg.getitem.gi_index,
 					 iptr->isn_arg.getitem.gi_with_op ?
@@ -5490,7 +5534,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 					  type_name(ct->ct_type, &tofree),
 					  (int)ct->ct_off);
 		      else
-			  smsg("%s%4d CHECKTYPE %s stack[%d] arg %d", pfx, current,
+			  smsg("%s%4d CHECKTYPE %s stack[%d] arg %d",
+					  pfx, current,
 					  type_name(ct->ct_type, &tofree),
 					  (int)ct->ct_off,
 					  (int)ct->ct_arg_idx);

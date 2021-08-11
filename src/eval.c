@@ -45,7 +45,6 @@ typedef struct
     int		fi_byte_idx;	// byte index in fi_string
 } forinfo_T;
 
-static int tv_op(typval_T *tv1, typval_T *tv2, char_u  *op);
 static int eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
@@ -827,7 +826,6 @@ get_lval(
     typval_T	var1;
     typval_T	var2;
     int		empty1 = FALSE;
-    listitem_T	*ni;
     char_u	*key = NULL;
     int		len;
     hashtab_T	*ht = NULL;
@@ -1210,23 +1208,11 @@ get_lval(
 
 	    lp->ll_dict = NULL;
 	    lp->ll_list = lp->ll_tv->vval.v_list;
-	    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
+	    lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1, quiet);
 	    if (lp->ll_li == NULL)
 	    {
-		// Vim9: Allow for adding an item at the end.
-		if (in_vim9script() && lp->ll_n1 == lp->ll_list->lv_len
-						  && lp->ll_list->lv_lock == 0)
-		{
-		    list_append_number(lp->ll_list, 0);
-		    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
-		}
-		if (lp->ll_li == NULL)
-		{
-		    clear_tv(&var2);
-		    if (!quiet)
-			semsg(_(e_listidx), lp->ll_n1);
-		    return NULL;
-		}
+		clear_tv(&var2);
+		return NULL;
 	    }
 
 	    if (lp->ll_valtype != NULL)
@@ -1244,27 +1230,10 @@ get_lval(
 		lp->ll_n2 = (long)tv_get_number(&var2);
 						    // is number or string
 		clear_tv(&var2);
-		if (lp->ll_n2 < 0)
-		{
-		    ni = list_find(lp->ll_list, lp->ll_n2);
-		    if (ni == NULL)
-		    {
-			if (!quiet)
-			    semsg(_(e_listidx), lp->ll_n2);
-			return NULL;
-		    }
-		    lp->ll_n2 = list_idx_of_item(lp->ll_list, ni);
-		}
-
-		// Check that lp->ll_n2 isn't before lp->ll_n1.
-		if (lp->ll_n1 < 0)
-		    lp->ll_n1 = list_idx_of_item(lp->ll_list, lp->ll_li);
-		if (lp->ll_n2 < lp->ll_n1)
-		{
-		    if (!quiet)
-			semsg(_(e_listidx), lp->ll_n2);
+		if (check_range_index_two(lp->ll_list,
+					    &lp->ll_n1, lp->ll_li,
+					    &lp->ll_n2, quiet) == FAIL)
 		    return NULL;
-		}
 	    }
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
@@ -1303,7 +1272,6 @@ set_var_lval(
     int		var_idx)    // index for "let [a, b] = list"
 {
     int		cc;
-    listitem_T	*ri;
     dictitem_T	*di;
 
     if (lp->ll_tv == NULL)
@@ -1383,9 +1351,6 @@ set_var_lval(
 	;
     else if (lp->ll_range)
     {
-	listitem_T *ll_li = lp->ll_li;
-	int	    ll_n1 = lp->ll_n1;
-
 	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	{
@@ -1393,53 +1358,8 @@ set_var_lval(
 	    return;
 	}
 
-	/*
-	 * Check whether any of the list items is locked
-	 */
-	for (ri = rettv->vval.v_list->lv_first; ri != NULL && ll_li != NULL; )
-	{
-	    if (value_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
-		return;
-	    ri = ri->li_next;
-	    if (ri == NULL || (!lp->ll_empty2 && lp->ll_n2 == ll_n1))
-		break;
-	    ll_li = ll_li->li_next;
-	    ++ll_n1;
-	}
-
-	/*
-	 * Assign the List values to the list items.
-	 */
-	for (ri = rettv->vval.v_list->lv_first; ri != NULL; )
-	{
-	    if (op != NULL && *op != '=')
-		tv_op(&lp->ll_li->li_tv, &ri->li_tv, op);
-	    else
-	    {
-		clear_tv(&lp->ll_li->li_tv);
-		copy_tv(&ri->li_tv, &lp->ll_li->li_tv);
-	    }
-	    ri = ri->li_next;
-	    if (ri == NULL || (!lp->ll_empty2 && lp->ll_n2 == lp->ll_n1))
-		break;
-	    if (lp->ll_li->li_next == NULL)
-	    {
-		// Need to add an empty item.
-		if (list_append_number(lp->ll_list, 0) == FAIL)
-		{
-		    ri = NULL;
-		    break;
-		}
-	    }
-	    lp->ll_li = lp->ll_li->li_next;
-	    ++lp->ll_n1;
-	}
-	if (ri != NULL)
-	    emsg(_(e_list_value_has_more_items_than_targets));
-	else if (lp->ll_empty2
-		? (lp->ll_li != NULL && lp->ll_li->li_next != NULL)
-		: lp->ll_n1 != lp->ll_n2)
-	    emsg(_(e_list_value_does_not_have_enough_items));
+	(void)list_assign_range(lp->ll_list, rettv->vval.v_list,
+			 lp->ll_n1, lp->ll_n2, lp->ll_empty2, op, lp->ll_name);
     }
     else
     {
@@ -1507,7 +1427,7 @@ set_var_lval(
  * and "tv1 .= tv2"
  * Returns OK or FAIL.
  */
-    static int
+    int
 tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 {
     varnumber_T	n;

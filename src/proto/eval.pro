@@ -26,6 +26,7 @@ int eval_foldexpr(char_u *arg, int *cp);
 char_u *get_lval(char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int flags, int fne_flags);
 void clear_lval(lval_T *lp);
 void set_var_lval(lval_T *lp, char_u *endp, typval_T *rettv, int copy, int flags, char_u *op, int var_idx);
+int tv_op(typval_T *tv1, typval_T *tv2, char_u *op);
 void *eval_for_line(char_u *arg, int *errp, exarg_T *eap, evalarg_T *evalarg);
 void skip_for_lines(void *fi_void, evalarg_T *evalarg);
 int next_for_item(void *fi_void, char_u *arg);

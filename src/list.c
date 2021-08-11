@@ -762,6 +762,158 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 }
 
 /*
+ * Get the list item in "l" with index "n1".  "n1" is adjusted if needed.
+ * In Vim9, it is at the end of the list, add an item.
+ * Return NULL if there is no such item.
+ */
+    listitem_T *
+check_range_index_one(list_T *l, long *n1, int quiet)
+{
+    listitem_T *li = list_find_index(l, n1);
+
+    if (li == NULL)
+    {
+	// Vim9: Allow for adding an item at the end.
+	if (in_vim9script() && *n1 == l->lv_len && l->lv_lock == 0)
+	{
+	    list_append_number(l, 0);
+	    li = list_find_index(l, n1);
+	}
+	if (li == NULL)
+	{
+	    if (!quiet)
+		semsg(_(e_listidx), *n1);
+	    return NULL;
+	}
+    }
+    return li;
+}
+
+/*
+ * Check that "n2" can be used as the second index in a range of list "l".
+ * If "n1" or "n2" is negative it is changed to the positive index.
+ * "li1" is the item for item "n1".
+ * Return OK or FAIL.
+ */
+    int
+check_range_index_two(
+	list_T	    *l,
+	long	    *n1,
+	listitem_T  *li1,
+	long	    *n2,
+	int	    quiet)
+{
+    if (*n2 < 0)
+    {
+	listitem_T	*ni = list_find(l, *n2);
+
+	if (ni == NULL)
+	{
+	    if (!quiet)
+		semsg(_(e_listidx), *n2);
+	    return FAIL;
+	}
+	*n2 = list_idx_of_item(l, ni);
+    }
+
+    // Check that n2 isn't before n1.
+    if (*n1 < 0)
+	*n1 = list_idx_of_item(l, li1);
+    if (*n2 < *n1)
+    {
+	if (!quiet)
+	    semsg(_(e_listidx), *n2);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Assign values from list "src" into a range of "dest".
+ * "idx1_arg" is the index of the first item in "dest" to be replaced.
+ * "idx2" is the index of last item to be replaced, but when "empty_idx2" is
+ * TRUE then replace all items after "idx1".
+ * "op" is the operator, normally "=" but can be "+=" and the like.
+ * "varname" is used for error messages.
+ * Returns OK or FAIL.
+ */
+    int
+list_assign_range(
+	list_T	    *dest,
+	list_T	    *src,
+	long	    idx1_arg,
+	long	    idx2,
+	int	    empty_idx2,
+	char_u	    *op,
+	char_u	    *varname)
+{
+    listitem_T	*src_li;
+    listitem_T	*dest_li;
+    long	idx1 = idx1_arg;
+    listitem_T	*first_li = list_find_index(dest, &idx1);
+    long	idx;
+
+    /*
+     * Check whether any of the list items is locked before making any changes.
+     */
+    idx = idx1;
+    dest_li = first_li;
+    for (src_li = src->lv_first; src_li != NULL && dest_li != NULL; )
+    {
+	if (value_check_lock(dest_li->li_tv.v_lock, varname, FALSE))
+	    return FAIL;
+	src_li = src_li->li_next;
+	if (src_li == NULL || (!empty_idx2 && idx2 == idx))
+	    break;
+	dest_li = dest_li->li_next;
+	++idx;
+    }
+
+    /*
+     * Assign the List values to the list items.
+     */
+    idx = idx1;
+    dest_li = first_li;
+    for (src_li = src->lv_first; src_li != NULL; )
+    {
+	if (op != NULL && *op != '=')
+	    tv_op(&dest_li->li_tv, &src_li->li_tv, op);
+	else
+	{
+	    clear_tv(&dest_li->li_tv);
+	    copy_tv(&src_li->li_tv, &dest_li->li_tv);
+	}
+	src_li = src_li->li_next;
+	if (src_li == NULL || (!empty_idx2 && idx2 == idx))
+	    break;
+	if (dest_li->li_next == NULL)
+	{
+	    // Need to add an empty item.
+	    if (list_append_number(dest, 0) == FAIL)
+	    {
+		src_li = NULL;
+		break;
+	    }
+	}
+	dest_li = dest_li->li_next;
+	++idx;
+    }
+    if (src_li != NULL)
+    {
+	emsg(_(e_list_value_has_more_items_than_targets));
+	return FAIL;
+    }
+    if (empty_idx2
+	    ? (dest_li != NULL && dest_li->li_next != NULL)
+	    : idx != idx2)
+    {
+	emsg(_(e_list_value_does_not_have_enough_items));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Flatten "list" to depth "maxdepth".
  * It does nothing if "maxdepth" is 0.
  * Returns FAIL when out of memory.

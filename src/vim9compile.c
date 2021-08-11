@@ -6485,6 +6485,29 @@ compile_assign_lhs(
 }
 
 /*
+ * Return TRUE if "lhs" has a range index: "[expr : expr]".
+ */
+    static int
+has_list_index(char_u *idx_start, cctx_T *cctx)
+{
+    char_u  *p = idx_start;
+    int	    save_skip;
+
+    if (*p != '[')
+	return FALSE;
+
+    p = skipwhite(p + 1);
+    if (*p == ':')
+	return TRUE;
+
+    save_skip = cctx->ctx_skip;
+    cctx->ctx_skip = SKIP_YES;
+    (void)compile_expr0(&p, cctx);
+    cctx->ctx_skip = save_skip;
+    return *skipwhite(p) == ':';
+}
+
+/*
  * For an assignment with an index, compile the "idx" in "var[idx]" or "key" in
  * "var.key".
  */
@@ -6652,8 +6675,10 @@ compile_assign_unlet(
 
     if (compile_assign_index(var_start, lhs, &range, cctx) == FAIL)
 	return FAIL;
-    if (is_assign && range && lhs->lhs_type != &t_blob
-						    && lhs->lhs_type != &t_any)
+    if (is_assign && range
+	    && lhs->lhs_type->tt_type != VAR_LIST
+	    && lhs->lhs_type != &t_blob
+	    && lhs->lhs_type != &t_any)
     {
 	semsg(_(e_cannot_use_range_with_assignment_str), var_start);
 	return FAIL;
@@ -7029,7 +7054,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			SOURCING_LNUM = start_lnum;
 			where.wt_index = var_count > 0 ? var_idx + 1 : 0;
 			where.wt_variable = var_count > 0;
-			if (lhs.lhs_has_index)
+			// If assigning to a list or dict member, use the
+			// member type.  Not for "list[:] =".
+			if (lhs.lhs_has_index
+				&& !has_list_index(var_start + lhs.lhs_varlen,
+									 cctx))
 			    use_type = lhs.lhs_member_type;
 			if (need_type_where(rhs_type, use_type, -1, where,
 				    cctx, FALSE, is_const) == FAIL)
