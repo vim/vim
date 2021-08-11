@@ -253,17 +253,18 @@ viminfo_readstring(
     int		off,		    // offset for virp->vir_line
     int		convert UNUSED)	    // convert the string
 {
-    char_u	*retval;
+    char_u	*retval = NULL;
     char_u	*s, *d;
     long	len;
 
     if (virp->vir_line[off] == Ctrl_V && vim_isdigit(virp->vir_line[off + 1]))
     {
 	len = atol((char *)virp->vir_line + off + 1);
-	retval = lalloc(len, TRUE);
+	if (len > 0 && len < 1000000)
+	    retval = lalloc(len, TRUE);
 	if (retval == NULL)
 	{
-	    // Line too long?  File messed up?  Skip next line.
+	    // Invalid length, line too long, out of memory?  Skip next line.
 	    (void)vim_fgets(virp->vir_line, 10, virp->vir_fd);
 	    return NULL;
 	}
