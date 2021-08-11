@@ -783,15 +783,35 @@ mch_stackcheck(char *p)
  * completely full.
  */
 
-#if !defined SIGSTKSZ && !defined(HAVE_SYSCONF_SIGSTKSZ)
-# define SIGSTKSZ 8000    // just a guess of how much stack is needed...
-#endif
-
 # ifdef HAVE_SIGALTSTACK
 static stack_t sigstk;			// for sigaltstack()
 # else
 static struct sigstack sigstk;		// for sigstack()
 # endif
+
+/*
+ * Get a size of signal stack.
+ * Preference (if available): sysconf > SIGSTKSZ > guessed size
+ */
+static long int get_signal_stack_size()
+{
+# ifdef HAVE_SYSCONF_SIGSTKSZ
+    long int size = -1;
+
+    // return size only if sysconf doesn't return an error
+    if ((size = sysconf(_SC_SIGSTKSZ)) > -1)
+	return size;
+# endif
+
+# ifdef SIGSTKSZ
+    // if sysconf() isn't available or gives error, return SIGSTKSZ
+    // if defined
+    return SIGSTKSZ;
+# endif
+
+    // otherwise guess the size
+    return 8000;
+}
 
 static char *signal_stack;
 
@@ -806,21 +826,13 @@ init_signal_stack(void)
 #  else
 	sigstk.ss_sp = signal_stack;
 #  endif
-#  ifdef HAVE_SYSCONF_SIGSTKSZ
-	sigstk.ss_size = sysconf(_SC_SIGSTKSZ);
-#  else
-	sigstk.ss_size = SIGSTKSZ;
-#  endif
+	sigstk.ss_size = get_signal_stack_size();
 	sigstk.ss_flags = 0;
 	(void)sigaltstack(&sigstk, NULL);
 # else
 	sigstk.ss_sp = signal_stack;
 	if (stack_grows_downwards)
-#  ifdef HAVE_SYSCONF_SIGSTKSZ
-	    sigstk.ss_sp += sysconf(_SC_SIGSTKSZ) - 1;
-#  else
-	    sigstk.ss_sp += SIGSTKSZ - 1;
-#  endif
+	    sigstk.ss_sp += get_signal_stack_size() - 1;
 	sigstk.ss_onstack = 0;
 	(void)sigstack(&sigstk, NULL);
 # endif
@@ -3278,11 +3290,7 @@ mch_early_init(void)
      * Ignore any errors.
      */
 #if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-# ifdef HAVE_SYSCONF_SIGSTKSZ
-    signal_stack = alloc(sysconf(_SC_SIGSTKSZ));
-# else
-    signal_stack = alloc(SIGSTKSZ);
-# endif
+    signal_stack = alloc(get_signal_stack_size());
     init_signal_stack();
 #endif
 }
