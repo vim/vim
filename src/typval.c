@@ -2082,6 +2082,7 @@ eval_env_var(char_u **arg, typval_T *rettv, int evaluate)
 
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = string;
+	rettv->v_lock = 0;
     }
 
     return OK;
