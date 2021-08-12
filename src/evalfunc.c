@@ -6556,7 +6556,8 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	return;
 
     end = get_lval(tv_get_string(&argvars[0]), NULL, &lv, FALSE, FALSE,
-			     GLV_NO_AUTOLOAD | GLV_READ_ONLY, FNE_CHECK_START);
+			     GLV_NO_AUTOLOAD | GLV_READ_ONLY | GLV_NO_DECL,
+			     FNE_CHECK_START);
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)

@@ -7433,7 +7433,7 @@ compile_lock_unlock(
     // Cannot use :lockvar and :unlockvar on local variables.
     if (p[1] != ':')
     {
-	char_u *end = skip_var_one(p, FALSE);
+	char_u *end = find_name_end(p, NULL, NULL, FNE_CHECK_START);
 
 	if (lookup_local(p, end - p, NULL, cctx) == OK)
 	{
