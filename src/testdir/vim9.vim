@@ -172,6 +172,9 @@ def CheckTransLegacySuccess(lines: list<string>)
   var legacylines = lines->mapnew((_, v) =>
   				v->substitute('\<VAR\>', 'let', 'g')
 		           	 ->substitute('\<LET\>', 'let', 'g')
+		           	 ->substitute('\<LSTART\>', '{', 'g')
+		           	 ->substitute('\<LMIDDLE\>', '->', 'g')
+				 ->substitute('\<LEND\>', '}', 'g')
 		           	 ->substitute('#"', ' "', 'g'))
   CheckLegacySuccess(legacylines)
 enddef
@@ -181,7 +184,10 @@ enddef
 def CheckTransDefSuccess(lines: list<string>)
   var vim9lines = lines->mapnew((_, v) =>
   				v->substitute('\<VAR\>', 'var', 'g')
-		           	 ->substitute('\<LET ', '', 'g'))
+		           	 ->substitute('\<LET ', '', 'g')
+		           	 ->substitute('\<LSTART\>', '(', 'g')
+		           	 ->substitute('\<LMIDDLE\>', ') =>', 'g')
+				 ->substitute(' *\<LEND\> *', '', 'g'))
   CheckDefSuccess(vim9lines)
 enddef
 
@@ -190,7 +196,10 @@ enddef
 def CheckTransVim9Success(lines: list<string>)
   var vim9lines = lines->mapnew((_, v) =>
   				v->substitute('\<VAR\>', 'var', 'g')
-		           	 ->substitute('\<LET ', '', 'g'))
+		           	 ->substitute('\<LET ', '', 'g')
+		           	 ->substitute('\<LSTART\>', '(', 'g')
+		           	 ->substitute('\<LMIDDLE\>', ') =>', 'g')
+				 ->substitute(' *\<LEND\> *', '', 'g'))
   CheckScriptSuccess(['vim9script'] + vim9lines)
 enddef
 
@@ -198,6 +207,7 @@ enddef
 " Use 'VAR' for a declaration.
 " Use 'LET' for an assignment
 " Use ' #"' for a comment
+" Use LSTART arg LMIDDLE expr LEND for lambda
 def CheckLegacyAndVim9Success(lines: list<string>)
   CheckTransLegacySuccess(lines)
   CheckTransDefSuccess(lines)
