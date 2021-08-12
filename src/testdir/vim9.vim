@@ -107,7 +107,7 @@ def CheckDefAndScriptFailure(lines: list<string>, error: string, lnum = -3)
   CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)
 enddef
 
-" As CheckDefAndScriptFailure() but with two different exepected errors.
+" As CheckDefAndScriptFailure() but with two different expected errors.
 def CheckDefAndScriptFailure2(
   	lines: list<string>,
 	errorDef: string,
@@ -166,22 +166,42 @@ func CheckLegacyFailure(lines, error)
   endtry
 endfunc
 
-" Execute "lines" in a legacy function, :def function and Vim9 script.
-" Use 'VAR' for a declaration.
-" Use 'LET' for an assignment
-" Use ' #"' for a comment
-def CheckLegacyAndVim9Success(lines: list<string>)
+" Execute "lines" in a legacy function, translated as in
+" CheckLegacyAndVim9Success()
+def CheckTransLegacySuccess(lines: list<string>)
   var legacylines = lines->mapnew((_, v) =>
   				v->substitute('\<VAR\>', 'let', 'g')
 		           	 ->substitute('\<LET\>', 'let', 'g')
 		           	 ->substitute('#"', ' "', 'g'))
   CheckLegacySuccess(legacylines)
+enddef
 
+" Execute "lines" in a :def function, translated as in
+" CheckLegacyAndVim9Success()
+def CheckTransDefSuccess(lines: list<string>)
   var vim9lines = lines->mapnew((_, v) =>
   				v->substitute('\<VAR\>', 'var', 'g')
 		           	 ->substitute('\<LET ', '', 'g'))
   CheckDefSuccess(vim9lines)
+enddef
+
+" Execute "lines" in a Vim9 script, translated as in
+" CheckLegacyAndVim9Success()
+def CheckTransVim9Success(lines: list<string>)
+  var vim9lines = lines->mapnew((_, v) =>
+  				v->substitute('\<VAR\>', 'var', 'g')
+		           	 ->substitute('\<LET ', '', 'g'))
   CheckScriptSuccess(['vim9script'] + vim9lines)
+enddef
+
+" Execute "lines" in a legacy function, :def function and Vim9 script.
+" Use 'VAR' for a declaration.
+" Use 'LET' for an assignment
+" Use ' #"' for a comment
+def CheckLegacyAndVim9Success(lines: list<string>)
+  CheckTransLegacySuccess(lines)
+  CheckTransDefSuccess(lines)
+  CheckTransVim9Success(lines)
 enddef
 
 " Execute "lines" in a legacy function, :def function and Vim9 script.
