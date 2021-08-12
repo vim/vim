@@ -42,6 +42,23 @@ func Test_list_slice()
   let l[:1] += [1, 2]
   let l[2:] -= [1]
   call assert_equal([2, 4, 2], l)
+
+  let lines =<< trim END
+      VAR l = [1, 2]
+      call assert_equal([1, 2], l[:])
+      call assert_equal([2], l[-1 : -1])
+      call assert_equal([1, 2], l[-2 : -1])
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  let l = [1, 2]
+  call assert_equal([], l[-3 : -1])
+
+  let lines =<< trim END
+      var l = [1, 2]
+      assert_equal([1, 2], l[-3 : -1])
+  END
+  call CheckDefAndScriptSuccess(lines)
 endfunc
 
 " List identity

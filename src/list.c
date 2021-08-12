@@ -1146,15 +1146,19 @@ list_slice_or_index(
 	n1 = len + n1;
     if (n1 < 0 || n1 >= len)
     {
-	// For a range we allow invalid values and return an empty
-	// list.  A list index out of range is an error.
+	// For a range we allow invalid values and for legacy script return an
+	// empty list, for Vim9 script start at the first item.
+	// A list index out of range is an error.
 	if (!range)
 	{
 	    if (verbose)
 		semsg(_(e_listidx), (long)n1_arg);
 	    return FAIL;
 	}
-	n1 = n1 < 0 ? 0 : len;
+	if (in_vim9script())
+	    n1 = n1 < 0 ? 0 : len;
+	else
+	    n1 = len;
     }
     if (range)
     {
