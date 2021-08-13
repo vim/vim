@@ -906,6 +906,7 @@ get_lval(
     {
 	// using local variable
 	lp->ll_tv = lval_root;
+	v = NULL;
     }
     else
     {
@@ -967,6 +968,7 @@ get_lval(
 	}
 
 	if (in_vim9script() && lp->ll_valtype == NULL
+		&& v != NULL
 		&& lp->ll_tv == &v->di_tv
 		&& ht != NULL && ht == get_script_local_ht())
 	{
