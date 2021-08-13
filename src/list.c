@@ -852,6 +852,7 @@ list_assign_range(
     long	idx1 = idx1_arg;
     listitem_T	*first_li = list_find_index(dest, &idx1);
     long	idx;
+    type_T	*member_type = NULL;
 
     /*
      * Check whether any of the list items is locked before making any changes.
@@ -869,6 +870,10 @@ list_assign_range(
 	++idx;
     }
 
+    if (in_vim9script() && dest->lv_type != NULL
+					   && dest->lv_type->tt_member != NULL)
+	member_type = dest->lv_type->tt_member;
+
     /*
      * Assign the List values to the list items.
      */
@@ -880,6 +885,10 @@ list_assign_range(
 	    tv_op(&dest_li->li_tv, &src_li->li_tv, op);
 	else
 	{
+	    if (member_type != NULL
+		    && check_typval_arg_type(member_type, &src_li->li_tv,
+							      NULL, 0) == FAIL)
+		return FAIL;
 	    clear_tv(&dest_li->li_tv);
 	    copy_tv(&src_li->li_tv, &dest_li->li_tv);
 	}
