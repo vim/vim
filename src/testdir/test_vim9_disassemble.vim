@@ -588,6 +588,25 @@ def Test_disassemble_unlet()
         res)
 enddef
 
+def s:LockLocal()
+  var d = {a: 1}
+  lockvar d.a
+enddef
+
+def Test_disassemble_locl_local()
+  var res = execute('disass s:LockLocal')
+  assert_match('<SNR>\d*_LockLocal\_s*' ..
+        'var d = {a: 1}\_s*' ..
+        '\d PUSHS "a"\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d NEWDICT size 1\_s*' ..
+        '\d STORE $0\_s*' ..
+        'lockvar d.a\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d LOCKUNLOCK lockvar d.a\_s*',
+        res)
+enddef
+
 def s:ScriptFuncTry()
   try
     echo "yes"

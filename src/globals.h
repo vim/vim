@@ -1835,6 +1835,8 @@ EXTERN int  timer_busy INIT(= 0);   // when timer is inside vgetc() then > 0
 #endif
 #ifdef FEAT_EVAL
 EXTERN int  input_busy INIT(= 0);   // when inside get_user_input() then > 0
+
+EXTERN typval_T	*lval_root INIT(= NULL);
 #endif
 
 #ifdef FEAT_BEVAL_TERM

@@ -2262,12 +2262,12 @@ generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
 }
 
     static int
-generate_EXEC(cctx_T *cctx, char_u *line)
+generate_EXEC(cctx_T *cctx, isntype_T isntype, char_u *line)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_EXEC)) == NULL)
+    if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
     isn->isn_arg.string = vim_strsave(line);
     return OK;
@@ -7426,6 +7426,7 @@ compile_lock_unlock(
     int		ret = OK;
     size_t	len;
     char_u	*buf;
+    isntype_T	isn = ISN_EXEC;
 
     if (cctx->ctx_skip == SKIP_YES)
 	return OK;
@@ -7437,8 +7438,19 @@ compile_lock_unlock(
 
 	if (lookup_local(p, end - p, NULL, cctx) == OK)
 	{
-	    emsg(_(e_cannot_lock_unlock_local_variable));
-	    return FAIL;
+	    char_u *s = p;
+
+	    if (*end != '.' && *end != '[')
+	    {
+		emsg(_(e_cannot_lock_unlock_local_variable));
+		return FAIL;
+	    }
+
+	    // For "d.member" put the local variable on the stack, it will be
+	    // passed to ex_lockvar() indirectly.
+	    if (compile_load(&s, end, cctx, FALSE, FALSE) == FAIL)
+		return FAIL;
+	    isn = ISN_LOCKUNLOCK;
 	}
     }
 
@@ -7453,7 +7465,7 @@ compile_lock_unlock(
 	vim_snprintf((char *)buf, len, "%s %s",
 		eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar",
 		p);
-	ret = generate_EXEC(cctx, buf);
+	ret = generate_EXEC(cctx, isn, buf);
 
 	vim_free(buf);
 	*name_end = cc;
@@ -9110,7 +9122,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	generate_EXECCONCAT(cctx, count);
     }
     else
-	generate_EXEC(cctx, line);
+	generate_EXEC(cctx, ISN_EXEC, line);
 
 theend:
     if (*nextcmd != NUL)
@@ -10198,6 +10210,7 @@ delete_instr(isn_T *isn)
 	case ISN_LOADOPT:
 	case ISN_LOADT:
 	case ISN_LOADW:
+	case ISN_LOCKUNLOCK:
 	case ISN_PUSHEXC:
 	case ISN_PUSHFUNC:
 	case ISN_PUSHS:

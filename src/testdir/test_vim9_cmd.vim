@@ -1195,6 +1195,23 @@ def Test_lockvar()
   s:theList[1] = 44
   assert_equal([1, 44, 3], s:theList)
 
+  var d = {a: 1, b: 2}
+  d.a = 3
+  d.b = 4
+  assert_equal({a: 3, b: 4}, d)
+  lockvar d.a
+  d.b = 5
+  var ex = ''
+  try
+    d.a = 6
+  catch
+    ex = v:exception
+  endtry
+  assert_match('E1121:', ex)
+  unlockvar d.a
+  d.a = 7
+  assert_equal({a: 7, b: 5}, d)
+
   var lines =<< trim END
       vim9script
       var theList = [1, 2, 3]
