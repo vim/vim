@@ -183,6 +183,200 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * Attach a text property 'type_name' to the text starting
+ * at [start_lnum, start_col] and ending at [end_lnum, end_col] in
+ * the buffer 'buf' and assign identifier 'id'.
+ */
+    static int
+prop_add_one(
+	buf_T		*buf,
+	char_u		*type_name,
+	int		id,
+	linenr_T	start_lnum,
+	linenr_T	end_lnum,
+	colnr_T		start_col,
+	colnr_T		end_col)
+{
+    proptype_T	*type;
+    linenr_T	lnum;
+    int		proplen;
+    char_u	*props = NULL;
+    char_u	*newprops;
+    size_t	textlen;
+    char_u	*newtext;
+    int		i;
+    textprop_T	tmp_prop;
+
+    type = lookup_prop_type(type_name, buf);
+    if (type == NULL)
+	return FAIL;
+
+    if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
+    {
+	semsg(_(e_invalid_lnum), (long)start_lnum);
+	return FAIL;
+    }
+    if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
+    {
+	semsg(_(e_invalid_lnum), (long)end_lnum);
+	return FAIL;
+    }
+
+    if (buf->b_ml.ml_mfp == NULL)
+    {
+	emsg(_("E275: Cannot add text property to unloaded buffer"));
+	return FAIL;
+    }
+
+    for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
+    {
+	colnr_T col;	// start column
+	long	length;	// in bytes
+
+	// Fetch the line to get the ml_line_len field updated.
+	proplen = get_text_props(buf, lnum, &props, TRUE);
+	textlen = buf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
+
+	if (lnum == start_lnum)
+	    col = start_col;
+	else
+	    col = 1;
+	if (col - 1 > (colnr_T)textlen)
+	{
+	    semsg(_(e_invalid_col), (long)start_col);
+	    return FAIL;
+	}
+
+	if (lnum == end_lnum)
+	    length = end_col - col;
+	else
+	    length = (int)textlen - col + 1;
+	if (length > (long)textlen)
+	    length = (int)textlen;	// can include the end-of-line
+	if (length < 0)
+	    length = 0;		// zero-width property
+
+	// Allocate the new line with space for the new property.
+	newtext = alloc(buf->b_ml.ml_line_len + sizeof(textprop_T));
+	if (newtext == NULL)
+	    return FAIL;
+	// Copy the text, including terminating NUL.
+	mch_memmove(newtext, buf->b_ml.ml_line_ptr, textlen);
+
+	// Find the index where to insert the new property.
+	// Since the text properties are not aligned properly when stored with
+	// the text, we need to copy them as bytes before using it as a struct.
+	for (i = 0; i < proplen; ++i)
+	{
+	    mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
+							   sizeof(textprop_T));
+	    if (tmp_prop.tp_col >= col)
+		break;
+	}
+	newprops = newtext + textlen;
+	if (i > 0)
+	    mch_memmove(newprops, props, sizeof(textprop_T) * i);
+
+	tmp_prop.tp_col = col;
+	tmp_prop.tp_len = length;
+	tmp_prop.tp_id = id;
+	tmp_prop.tp_type = type->pt_id;
+	tmp_prop.tp_flags = (lnum > start_lnum ? TP_FLAG_CONT_PREV : 0)
+			  | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0);
+	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
+							   sizeof(textprop_T));
+
+	if (i < proplen)
+	    mch_memmove(newprops + (i + 1) * sizeof(textprop_T),
+					    props + i * sizeof(textprop_T),
+					    sizeof(textprop_T) * (proplen - i));
+
+	if (buf->b_ml.ml_flags & ML_LINE_DIRTY)
+	    vim_free(buf->b_ml.ml_line_ptr);
+	buf->b_ml.ml_line_ptr = newtext;
+	buf->b_ml.ml_line_len += sizeof(textprop_T);
+	buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+    }
+
+    changed_lines_buf(buf, start_lnum, end_lnum + 1, 0);
+    return OK;
+}
+
+/*
+ * prop_add_list()
+ * First argument specifies the text property:
+ *   {'type': <str>, 'id': <num>, 'bufnr': <num>}
+ * Second argument is a List where each item is a List with the following
+ * entries: [lnum, start_col, end_col]
+ */
+    void
+f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    dict_T	*dict;
+    char_u	*type_name;
+    buf_T	*buf = curbuf;
+    int		id = 0;
+    listitem_T	*li;
+    list_T	*pos_list;
+    linenr_T	start_lnum;
+    colnr_T	start_col;
+    linenr_T	end_lnum;
+    colnr_T	end_col;
+    int		error = FALSE;
+
+    if (check_for_dict_arg(argvars, 0) == FAIL
+	    || check_for_list_arg(argvars, 1) == FAIL)
+	return;
+
+    if (argvars[1].vval.v_list == NULL)
+    {
+	emsg(_(e_listreq));
+	return;
+    }
+
+    dict = argvars[0].vval.v_dict;
+    if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
+    {
+	emsg(_("E965: missing property type name"));
+	return;
+    }
+    type_name = dict_get_string(dict, (char_u *)"type", FALSE);
+
+    if (dict_find(dict, (char_u *)"id", -1) != NULL)
+	id = dict_get_number(dict, (char_u *)"id");
+
+    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	return;
+
+    FOR_ALL_LIST_ITEMS(argvars[1].vval.v_list, li)
+    {
+	if (li->li_tv.v_type != VAR_LIST || li->li_tv.vval.v_list == NULL)
+	{
+	    emsg(_(e_listreq));
+	    return;
+	}
+
+	pos_list = li->li_tv.vval.v_list;
+	start_lnum = list_find_nr(pos_list, 0L, &error);
+	start_col = list_find_nr(pos_list, 1L, &error);
+	end_lnum = list_find_nr(pos_list, 2L, &error);
+	end_col = list_find_nr(pos_list, 3L, &error);
+	if (error || start_lnum <= 0 || start_col <= 0
+		|| end_lnum <= 0 || end_col <= 0)
+	{
+	    emsg(_(e_invarg));
+	    return;
+	}
+	if (prop_add_one(buf, type_name, id, start_lnum, end_lnum,
+						start_col, end_col) == FAIL)
+	    return;
+    }
+
+    buf->b_has_textprop = TRUE;  // this is never reset
+    redraw_buf_later(buf, VALID);
+}
+
+/*
  * Shared between prop_add() and popup_create().
  * "dict_arg" is the function argument of a dict containing "bufnr".
  * it is NULL for popup_create().
@@ -195,20 +389,11 @@ prop_add_common(
 	buf_T	    *default_buf,
 	typval_T    *dict_arg)
 {
-    linenr_T	lnum;
     linenr_T	end_lnum;
     colnr_T	end_col;
     char_u	*type_name;
-    proptype_T	*type;
     buf_T	*buf = default_buf;
     int		id = 0;
-    char_u	*newtext;
-    int		proplen;
-    size_t	textlen;
-    char_u	*props = NULL;
-    char_u	*newprops;
-    textprop_T	tmp_prop;
-    int		i;
 
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
@@ -260,99 +445,9 @@ prop_add_common(
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	return;
 
-    type = lookup_prop_type(type_name, buf);
-    if (type == NULL)
-	return;
-
-    if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
-    {
-	semsg(_(e_invalid_lnum), (long)start_lnum);
-	return;
-    }
-    if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
-    {
-	semsg(_(e_invalid_lnum), (long)end_lnum);
-	return;
-    }
-
-    if (buf->b_ml.ml_mfp == NULL)
-    {
-	emsg(_("E275: Cannot add text property to unloaded buffer"));
-	return;
-    }
-
-    for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
-    {
-	colnr_T col;	// start column
-	long	length;	// in bytes
-
-	// Fetch the line to get the ml_line_len field updated.
-	proplen = get_text_props(buf, lnum, &props, TRUE);
-	textlen = buf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
-
-	if (lnum == start_lnum)
-	    col = start_col;
-	else
-	    col = 1;
-	if (col - 1 > (colnr_T)textlen)
-	{
-	    semsg(_(e_invalid_col), (long)start_col);
-	    return;
-	}
-
-	if (lnum == end_lnum)
-	    length = end_col - col;
-	else
-	    length = (int)textlen - col + 1;
-	if (length > (long)textlen)
-	    length = (int)textlen;	// can include the end-of-line
-	if (length < 0)
-	    length = 0;		// zero-width property
-
-	// Allocate the new line with space for the new property.
-	newtext = alloc(buf->b_ml.ml_line_len + sizeof(textprop_T));
-	if (newtext == NULL)
-	    return;
-	// Copy the text, including terminating NUL.
-	mch_memmove(newtext, buf->b_ml.ml_line_ptr, textlen);
-
-	// Find the index where to insert the new property.
-	// Since the text properties are not aligned properly when stored with
-	// the text, we need to copy them as bytes before using it as a struct.
-	for (i = 0; i < proplen; ++i)
-	{
-	    mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
-							   sizeof(textprop_T));
-	    if (tmp_prop.tp_col >= col)
-		break;
-	}
-	newprops = newtext + textlen;
-	if (i > 0)
-	    mch_memmove(newprops, props, sizeof(textprop_T) * i);
-
-	tmp_prop.tp_col = col;
-	tmp_prop.tp_len = length;
-	tmp_prop.tp_id = id;
-	tmp_prop.tp_type = type->pt_id;
-	tmp_prop.tp_flags = (lnum > start_lnum ? TP_FLAG_CONT_PREV : 0)
-			  | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0);
-	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
-							   sizeof(textprop_T));
-
-	if (i < proplen)
-	    mch_memmove(newprops + (i + 1) * sizeof(textprop_T),
-					    props + i * sizeof(textprop_T),
-					    sizeof(textprop_T) * (proplen - i));
-
-	if (buf->b_ml.ml_flags & ML_LINE_DIRTY)
-	    vim_free(buf->b_ml.ml_line_ptr);
-	buf->b_ml.ml_line_ptr = newtext;
-	buf->b_ml.ml_line_len += sizeof(textprop_T);
-	buf->b_ml.ml_flags |= ML_LINE_DIRTY;
-    }
+    prop_add_one(buf, type_name, id, start_lnum, end_lnum, start_col, end_col);
 
     buf->b_has_textprop = TRUE;  // this is never reset
-    changed_lines_buf(buf, start_lnum, end_lnum + 1, 0);
     redraw_buf_later(buf, VALID);
 }
 

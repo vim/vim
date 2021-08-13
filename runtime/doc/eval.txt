@@ -2802,6 +2802,9 @@ prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
 prop_add({lnum}, {col}, {props})  none	add a text property
+prop_add_list({props}, [[{lnum}, {col}, {end-col}], ...])
+				none	add a text property at multiple
+					positions.
 prop_clear({lnum} [, {lnum-end} [, {props}]])
 				none	remove all text properties
 prop_find({props} [, {direction}])
@@ -8527,6 +8530,21 @@ pyxeval({expr})						*pyxeval()*
 <		{only available when compiled with the |+python| or the
 		|+python3| feature}
 
+rand([{expr}])						*rand()* *random*
+		Return a pseudo-random Number generated with an xoshiro128**
+		algorithm using seed {expr}.  The returned number is 32 bits,
+		also on 64 bits systems, for consistency.
+		{expr} can be initialized by |srand()| and will be updated by
+		rand().  If {expr} is omitted, an internal seed value is used
+		and updated.
+
+		Examples: >
+			:echo rand()
+			:let seed = srand()
+			:echo rand(seed)
+			:echo rand(seed) % 16  " random number 0 - 15
+<
+
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*
 		Returns a |List| with Numbers:
@@ -8548,21 +8566,6 @@ range({expr} [, {max} [, {stride}]])				*range()*
 <
 		Can also be used as a |method|: >
 			GetExpr()->range()
-<
-
-rand([{expr}])						*rand()* *random*
-		Return a pseudo-random Number generated with an xoshiro128**
-		algorithm using seed {expr}.  The returned number is 32 bits,
-		also on 64 bits systems, for consistency.
-		{expr} can be initialized by |srand()| and will be updated by
-		rand().  If {expr} is omitted, an internal seed value is used
-		and updated.
-
-		Examples: >
-			:echo rand()
-			:let seed = srand()
-			:echo rand(seed)
-			:echo rand(seed) % 16  " random number 0 - 15
 <
 
 readblob({fname})					*readblob()*
