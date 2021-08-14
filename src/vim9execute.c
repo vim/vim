@@ -844,12 +844,13 @@ may_restore_cmdmod(funclocal_T *funclocal)
 }
 
 /*
- * Return TRUE if an error was given or CTRL-C was pressed.
+ * Return TRUE if an error was given (not caught in try/catch) or CTRL-C was
+ * pressed.
  */
     static int
-vim9_aborting(int prev_called_emsg)
+vim9_aborting(int prev_uncaught_emsg)
 {
-    return called_emsg > prev_called_emsg || got_int || did_throw;
+    return uncaught_emsg > prev_uncaught_emsg || got_int || did_throw;
 }
 
 /*
@@ -882,12 +883,13 @@ call_by_name(
 
     if (ufunc == NULL)
     {
-	int called_emsg_before = called_emsg;
+	int prev_uncaught_emsg = uncaught_emsg;
 
 	if (script_autoload(name, TRUE))
 	    // loaded a package, search for the function again
 	    ufunc = find_func(name, FALSE, NULL);
-	if (vim9_aborting(called_emsg_before))
+
+	if (vim9_aborting(prev_uncaught_emsg))
 	    return FAIL;  // bail out if loading the script caused an error
     }
 

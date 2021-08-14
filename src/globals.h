@@ -238,8 +238,8 @@ EXTERN int	did_emsg_def;		    // set by emsg() when emsg_silent
 EXTERN int	did_emsg_cumul;		    // cumulative did_emsg, increased
 					    // when did_emsg is reset.
 EXTERN int	called_vim_beep;	    // set if vim_beep() is called
-EXTERN int	did_uncaught_emsg;	    // emsg() was called and did not
-					    // cause an exception
+EXTERN int	uncaught_emsg;		    // number of times emsg() was
+					    // called and did show a message
 #endif
 EXTERN int	did_emsg_syntax;	    // did_emsg set because of a
 					    // syntax error

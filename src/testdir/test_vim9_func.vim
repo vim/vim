@@ -160,6 +160,52 @@ def Test_autoload_names()
   delete(dir, 'rf')
 enddef
 
+def Test_autoload_error_in_script()
+  var dir = 'Xdir/autoload'
+  mkdir(dir, 'p')
+
+  var lines =<< trim END
+      func scripterror#function()
+        let g:called_function = 'yes'
+      endfunc
+      let 0 = 1
+  END
+  writefile(lines, dir .. '/scripterror.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp=' .. getcwd() .. '/Xdir'
+
+  g:called_function = 'no'
+  # The error in the autoload script cannot be checked with assert_fails(), use
+  # CheckDefSuccess() instead of CheckDefFailure()
+  try
+    CheckDefSuccess(['scripterror#function()'])
+  catch
+    assert_match('E121: Undefined variable: 0', v:exception)
+  endtry
+  assert_equal('no', g:called_function)
+
+  lines =<< trim END
+      func scriptcaught#function()
+        let g:called_function = 'yes'
+      endfunc
+      try
+        let 0 = 1
+      catch
+        let g:caught = v:exception
+      endtry
+  END
+  writefile(lines, dir .. '/scriptcaught.vim')
+
+  g:called_function = 'no'
+  CheckDefSuccess(['scriptcaught#function()'])
+  assert_match('E121: Undefined variable: 0', g:caught)
+  assert_equal('yes', g:called_function)
+
+  &rtp = save_rtp
+  delete(dir, 'rf')
+enddef
+
 def CallRecursive(n: number): number
   return CallRecursive(n + 1)
 enddef

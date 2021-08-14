@@ -12,10 +12,10 @@ func CheckDefSuccess(lines)
   try
     exe 'so ' .. fname
     call Func()
-    delfunc! Func
   finally
     call chdir(cwd)
     call delete(fname)
+    delfunc! Func
   endtry
 endfunc
 

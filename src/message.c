@@ -733,7 +733,7 @@ emsg_core(char_u *s)
 	    flush_buffers(FLUSH_MINIMAL);  // flush internal buffers
 	++did_emsg;			   // flag for DoOneCmd()
 #ifdef FEAT_EVAL
-	did_uncaught_emsg = TRUE;
+	++uncaught_emsg;
 #endif
     }
 

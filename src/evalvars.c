@@ -1193,7 +1193,8 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		semsg(_(e_trailing_arg), arg);
+		if (!error)
+		    semsg(_(e_trailing_arg), arg);
 		break;
 	    }
 	}
