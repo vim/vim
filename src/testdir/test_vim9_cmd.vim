@@ -14,6 +14,7 @@ def Test_vim9cmd()
   END
   CheckScriptSuccess(lines)
   assert_fails('vim9cmd', 'E1164:')
+  assert_fails('vim9cmd echo "con" . "cat"', 'E15:')
 
   lines =<< trim END
       vim9script
