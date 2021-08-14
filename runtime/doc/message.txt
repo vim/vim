@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.2.  Last change: 2020 Dec 29
+*message.txt*   For Vim version 8.2.  Last change: 2021 Jul 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -774,6 +774,14 @@ a user-defined command.
 This can only happen when changing the source code, when adding a command in
 src/ex_cmds.h.  The lookup table then needs to be updated, by running: >
 	make cmdidxs
+<
+						*E928* *E889* *E839*  >
+  E928: String required
+  E889: Number required
+  E839: Bool required
+
+These happen when a value or expression is used that does not have the
+expected type.
 
 ==============================================================================
 3. Messages						*messages*

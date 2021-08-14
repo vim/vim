@@ -111,12 +111,6 @@ Keywords[sr]=Текст;едитор;
 Keywords[tr]=Metin;düzenleyici;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
-Icon[de]=gvim
-Icon[eo]=gvim
-Icon[fr]=gvim
-Icon[it]=gvim
-Icon[ru]=gvim
-Icon[sr]=gvim
 Icon=gvim
 Categories=Utility;TextEditor;
 StartupNotify=false

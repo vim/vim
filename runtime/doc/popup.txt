@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2021 Feb 21
+*popup.txt*  For Vim version 8.2.  Last change: 2021 Aug 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -903,6 +903,8 @@ Some recommended key actions:
 	x		close the popup (see note below)
 	cursor keys	select another entry
 	Tab		accept current suggestion
+
+When CTRL-C is pressed the popup is closed, the filter will not be invoked.
 
 A mouse click arrives as <LeftMouse>.  The coordinates can be obtained with
 |getmousepos()|.

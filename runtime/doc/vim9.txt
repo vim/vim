@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jul 28
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -324,19 +324,19 @@ used: >
 This is especially useful in a user command: >
 
 	command -range Rename {
-		| var save = @a
-		| @a = 'some expression'
-		| echo 'do something with ' .. @a
-		| @a = save
-		|}
+		 var save = @a
+		 @a = 'some expression'
+		 echo 'do something with ' .. @a
+		 @a = save
+	    }
 
 And with autocommands: >
 
    au BufWritePre *.go {
-		| var save = winsaveview()
-		| silent! exe ':%! some formatting command'
-		| winrestview(save)
-		|}
+		 var save = winsaveview()
+		 silent! exe ':%! some formatting command'
+		 winrestview(save)
+	   }
 
 Although using a :def function probably works better.
 
@@ -351,8 +351,8 @@ with `:unlet`.
 `:lockvar` does not work on local variables.  Use `:const` and `:final`
 instead.
 
-The `exists()` function does not work on local variables or arguments.  These
-are visible at compile time only, not at runtime.
+The `exists()` and `exists_compiled()` functions do not work on local variables
+or arguments.
 
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.
@@ -372,6 +372,32 @@ called without "g:". >
 	enddef
 	echo GlobalFunc()
 The "g:" prefix is not needed for auto-load functions.
+
+					*vim9-function-defined-later*
+Although global functions can be called without the "g:" prefix, they must
+exist when compiled.  By adding the "g:" prefix the function can be defined
+later.  Example: >
+	def CallPluginFunc()
+	  if exists('g:loaded_plugin')
+	    g:PluginFunc()
+	  endif
+	enddef
+
+If you would do it like this you get an error at compile time that
+"PluginFunc" does not exist, even when "g:loaded_plugin" does not exist: >
+	def CallPluginFunc()
+	  if exists('g:loaded_plugin')
+	    PluginFunc()   # Error - function not found
+	  endif
+	enddef
+
+You can use exists_compiled() to avoid the error, but then the function would
+not be called, even when "g:loaded_plugin" is defined later: >
+	def CallPluginFunc()
+	  if exists_compiled('g:loaded_plugin')
+	    PluginFunc()   # Function may never be called
+	  endif
+	enddef
 
 Since `&opt = value` is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
@@ -940,7 +966,8 @@ evaluates to false: >
 	    use-feature
 	  endif
 	enddef
-<							*vim9-user-command*
+The `exists_compiled()` function can also be used for this.
+							*vim9-user-command*
 Another side effect of compiling a function is that the presence of a user
 command is checked at compile time.  If the user command is defined later an
 error will result.  This works: >
@@ -1407,8 +1434,7 @@ The script name after `import` can be:
 - A path not being relative or absolute.  This will be found in the
   "import" subdirectories of 'runtimepath' entries.  The name will usually be
   longer and unique, to avoid loading the wrong file.
-  Note that "after/import" is not used, unless it is explicitly added in
-  'runtimepath'.
+  Note that "after/import" is not used.
 
 Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.

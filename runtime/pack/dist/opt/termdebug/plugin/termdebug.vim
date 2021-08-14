@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2021 May 18
+" Last Change: 2021 Aug 06
 "
 " WORK IN PROGRESS - Only the basics work
 " Note: On MS-Windows you need a recent version of gdb.  The one included with
@@ -121,6 +121,10 @@ func s:StartDebug_internal(dict)
   let s:pid = 0
   let s:asmwin = 0
 
+  if exists('#User#TermdebugStartPre')
+    doauto <nomodeline> User TermdebugStartPre
+  endif
+
   " Uncomment this line to write logging in "debuglog".
   " call ch_logfile('debuglog', 'w')
 
@@ -166,6 +170,10 @@ func s:StartDebug_internal(dict)
       call s:GotoAsmwinOrCreateIt()
       call win_gotoid(curwinid)
     endif
+  endif
+
+  if exists('#User#TermdebugStartPost')
+    doauto <nomodeline> User TermdebugStartPost
   endif
 endfunc
 
@@ -596,7 +604,12 @@ func s:GetAsmAddr(msg)
   let addr = s:DecodeMessage(substitute(a:msg, '.*addr=', '', ''))
   return addr
 endfunc
+
 func s:EndTermDebug(job, status)
+  if exists('#User#TermdebugStopPre')
+    doauto <nomodeline> User TermdebugStopPre
+  endif
+
   exe 'bwipe! ' . s:commbuf
   unlet s:gdbwin
 
@@ -642,10 +655,18 @@ func s:EndDebugCommon()
     endif
   endif
 
+  if exists('#User#TermdebugStopPost')
+    doauto <nomodeline> User TermdebugStopPost
+  endif
+
   au! TermDebug
 endfunc
 
 func s:EndPromptDebug(job, status)
+  if exists('#User#TermdebugStopPre')
+    doauto <nomodeline> User TermdebugStopPre
+  endif
+
   let curwinid = win_getid(winnr())
   call win_gotoid(s:gdbwin)
   set nomodified
