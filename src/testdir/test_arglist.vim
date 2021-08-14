@@ -83,7 +83,9 @@ func Test_argadd()
   arga
   call assert_equal(0, len(argv()))
 
-  call assert_fails('argadd `Xdoes_not_exist`', 'E479:')
+  if has('unix')
+    call assert_fails('argadd `Xdoes_not_exist`', 'E479:')
+  endif
 endfunc
 
 func Test_argadd_empty_curbuf()

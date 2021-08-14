@@ -1427,8 +1427,6 @@ func Test_cmd_backtick()
   argadd `echo abc def`
   call assert_equal(['abc def'], argv())
   %argd
-  call assert_fails('argadd `Xdoes_not_exist`', 'E479:')
-  call assert_equal([], argv())
 endfunc
 
 " Test for the :! command
