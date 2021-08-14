@@ -845,6 +845,14 @@ func Test_cmdline_complete_various()
   call feedkeys(":doautocmd BufNew,BufEn\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"doautocmd BufNew,BufEnter", @:)
 
+  " completion of file name in :doautocmd
+  call writefile([], 'Xfile1')
+  call writefile([], 'Xfile2')
+  call feedkeys(":doautocmd BufEnter Xfi\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"doautocmd BufEnter Xfile1 Xfile2", @:)
+  call delete('Xfile1')
+  call delete('Xfile2')
+
   " completion for the :augroup command
   augroup XTest
   augroup END
@@ -1415,6 +1423,12 @@ func Test_cmd_backtick()
   argadd `=['a', 'b', 'c']`
   call assert_equal(['a', 'b', 'c'], argv())
   %argd
+
+  argadd `echo abc def`
+  call assert_equal(['abc def'], argv())
+  %argd
+  call assert_fails('argadd `Xdoes_not_exist`', 'E479:')
+  call assert_equal([], argv())
 endfunc
 
 " Test for the :! command
