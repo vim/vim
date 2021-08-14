@@ -1184,6 +1184,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
     char_u	*arg_subsc;
     char_u	*tofree;
     typval_T    tv;
+    int		prev_uncaught_emsg = uncaught_emsg;
 
     while (!ends_excmd2(eap->cmd, arg) && !got_int)
     {
@@ -1193,7 +1194,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		if (!error)
+		if (uncaught_emsg == prev_uncaught_emsg)
 		    semsg(_(e_trailing_arg), arg);
 		break;
 	    }
