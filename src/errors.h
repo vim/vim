@@ -650,3 +650,5 @@ EXTERN char e_argument_of_exists_compiled_must_be_literal_string[]
 	INIT(= N_("E1232: Argument of exists_compiled() must be a literal string"));
 EXTERN char e_exists_compiled_can_only_be_used_in_def_function[]
 	INIT(= N_("E1233: exists_compiled() can only be used in a :def function"));
+EXTERN char e_legacy_must_be_followed_by_command[]
+	INIT(= N_("E1234: legacy must be followed by a command"));

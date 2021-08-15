@@ -774,7 +774,7 @@ ex_let(exarg_T *eap)
 	--argend;
     expr = skipwhite(argend);
     concat = expr[0] == '.'
-	&& ((expr[1] == '=' && current_sctx.sc_version < 2)
+	&& ((expr[1] == '=' && in_old_script(2))
 		|| (expr[1] == '.' && expr[2] == '='));
     has_assign =  *expr == '=' || (vim_strchr((char_u *)"+-*/%", *expr) != NULL
 							    && expr[1] == '=');
@@ -2932,7 +2932,7 @@ find_var_ht(char_u *name, char_u **varname)
 
 	// "version" is "v:version" in all scopes if scriptversion < 3.
 	// Same for a few other variables marked with VV_COMPAT.
-	if (current_sctx.sc_version < 3)
+	if (in_old_script(3))
 	{
 	    hi = hash_find(&compat_hashtab, name);
 	    if (!HASHITEM_EMPTY(hi))

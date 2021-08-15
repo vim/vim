@@ -2860,8 +2860,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	// "++" and "--" on the next line are a separate command.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	op = *p;
-	concat = op == '.' && (*(p + 1) == '.'
-			      || (current_sctx.sc_version < 2 && !vim9script));
+	concat = op == '.' && (*(p + 1) == '.' || in_old_script(2));
 	if ((op != '+' && op != '-' && !concat) || p[1] == '='
 					       || (p[1] == '.' && p[2] == '='))
 	    break;
@@ -3402,7 +3401,7 @@ eval7(
 
     if (**arg == '.' && (!isdigit(*(*arg + 1))
 #ifdef FEAT_FLOAT
-	    || current_sctx.sc_version < 2
+	    || in_old_script(2)
 #endif
 	    ))
     {
@@ -5877,7 +5876,7 @@ handle_subscript(
 		|| (**arg == '.' && (rettv->v_type == VAR_DICT
 			|| (!evaluate
 			    && (*arg)[1] != '.'
-			    && current_sctx.sc_version >= 2))))
+			    && !in_old_script(2)))))
 	{
 	    dict_unref(selfdict);
 	    if (rettv->v_type == VAR_DICT)

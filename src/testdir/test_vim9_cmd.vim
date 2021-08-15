@@ -13,8 +13,24 @@ def Test_vim9cmd()
     vim9cm assert_equal('yes', y)
   END
   CheckScriptSuccess(lines)
+
   assert_fails('vim9cmd', 'E1164:')
+  assert_fails('legacy', 'E1234:')
   assert_fails('vim9cmd echo "con" . "cat"', 'E15:')
+
+  lines =<< trim END
+      let str = 'con'
+      vim9cmd str .= 'cat'
+  END
+  CheckScriptFailure(lines, 'E492:')
+
+  lines =<< trim END
+      vim9script
+      legacy echo "con" . "cat"
+      legacy let str = 'con'
+      legacy let str .= 'cat'
+  END
+  CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
@@ -24,11 +40,47 @@ def Test_vim9cmd()
       nmap ,; :vim9cmd <SID>Foo()<CR>
   END
   CheckScriptSuccess(lines)
+
   feedkeys(',;', 'xt')
   assert_equal("bar", g:found_bar)
-
   nunmap ,;
   unlet g:found_bar
+
+  lines =<< trim END
+      vim9script
+      legacy echo 1'000
+  END
+  CheckScriptFailure(lines, 'E115:')
+
+  if has('float')
+    lines =<< trim END
+        vim9script
+        echo .10
+    END
+    CheckScriptSuccess(lines)
+    lines =<< trim END
+        vim9cmd echo .10
+    END
+    CheckScriptSuccess(lines)
+    lines =<< trim END
+        vim9script
+        legacy echo .10
+    END
+    CheckScriptFailure(lines, 'E15:')
+  endif
+
+  echo v:version
+  assert_fails('vim9cmd echo version', 'E121:')
+  lines =<< trim END
+      vim9script
+      echo version
+  END
+  CheckScriptFailure(lines, 'E121:')
+  lines =<< trim END
+      vim9script
+      legacy echo version
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_edit_wildcards()

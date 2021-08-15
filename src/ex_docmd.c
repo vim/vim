@@ -2951,7 +2951,7 @@ parse_command_modifiers(
 			    if (ends_excmd2(p, eap->cmd))
 			    {
 				*errormsg =
-				      _(e_vim9cmd_must_be_followed_by_command);
+				      _(e_legacy_must_be_followed_by_command);
 				return FAIL;
 			    }
 			    cmod->cmod_flags |= CMOD_LEGACY;
