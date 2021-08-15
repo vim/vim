@@ -4210,10 +4210,15 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	    --p;
 	if (*p == '-' || *p == '+')
 	{
-	    int	    negate = *p == '-';
-	    isn_T   *isn;
+	    int		negate = *p == '-';
+	    isn_T	*isn;
+	    garray_T    *stack = &cctx->ctx_type_stack;
+	    type_T	*type;
 
-	    // TODO: check type
+	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    if (need_type(type, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+		return FAIL;
+
 	    while (p > start && (p[-1] == '-' || p[-1] == '+'))
 	    {
 		--p;
@@ -4222,11 +4227,11 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	    }
 	    // only '-' has an effect, for '+' we only check the type
 	    if (negate)
+	    {
 		isn = generate_instr(cctx, ISN_NEGATENR);
-	    else
-		isn = generate_instr(cctx, ISN_CHECKNR);
-	    if (isn == NULL)
-		return FAIL;
+		if (isn == NULL)
+		    return FAIL;
+	    }
 	}
 	else if (numeric_only)
 	{
@@ -5809,7 +5814,6 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	    goto theend;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
     }
-    // TODO: warning for trailing text?
 
 theend:
     vim_free(lambda_name);
@@ -5852,7 +5856,6 @@ generate_loadvar(
     switch (dest)
     {
 	case dest_option:
-	    // TODO: check the option exists
 	    generate_LOAD(cctx, ISN_LOADOPT, 0, name, type);
 	    break;
 	case dest_global:

@@ -469,21 +469,21 @@ def Test_try_catch_throw()
 
   try
     n = -g:astring
-  catch /E39:/
+  catch /E1012:/
     n = 233
   endtry
   assert_equal(233, n)
 
   try
     n = +g:astring
-  catch /E1030:/
+  catch /E1012:/
     n = 244
   endtry
   assert_equal(244, n)
 
   try
     n = +g:alist
-  catch /E745:/
+  catch /E1012:/
     n = 255
   endtry
   assert_equal(255, n)
