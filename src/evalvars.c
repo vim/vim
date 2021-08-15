@@ -2636,6 +2636,8 @@ eval_variable(
 	{
 	    ufunc_T *ufunc = find_func(name, FALSE, NULL);
 
+	    // In Vim9 script we can get a function reference by using the
+	    // function name.
 	    if (ufunc != NULL)
 	    {
 		found = TRUE;
@@ -2643,6 +2645,8 @@ eval_variable(
 		{
 		    rettv->v_type = VAR_FUNC;
 		    rettv->vval.v_string = vim_strsave(ufunc->uf_name);
+		    if (rettv->vval.v_string != NULL)
+			func_ref(ufunc->uf_name);
 		}
 	    }
 	}

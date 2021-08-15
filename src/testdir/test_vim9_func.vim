@@ -3089,6 +3089,23 @@ def Test_closing_brace_at_start_of_line()
   call CheckDefAndScriptSuccess(lines)
 enddef
 
+func CreateMydict()
+  let g:mydict = {}
+  func g:mydict.afunc()
+    let g:result = self.key
+  endfunc
+endfunc
+
+def Test_numbered_function_reference()
+  CreateMydict()
+  var output = execute('legacy func g:mydict.afunc')
+  var funcName = 'g:' .. substitute(output, '.*function \(\d\+\).*', '\1', '')
+  execute 'function(' .. funcName .. ', [], {key: 42})()'
+  # check that the function still exists
+  assert_equal(output, execute('legacy func g:mydict.afunc'))
+  unlet g:mydict
+enddef
+
 if has('python3')
   def Test_python3_heredoc()
     py3 << trim EOF
