@@ -809,8 +809,18 @@ func Test_prop_line2byte()
   call assert_equal(19, line2byte(3))
   call prop_add(1, 1, {'end_col': 3, 'type': 'comment'})
   call assert_equal(19, line2byte(3))
-
   bwipe!
+
+  new
+  call setline(1, range(500))
+  call assert_equal(1491, line2byte(401))
+  call prop_add(2, 1, {'type': 'comment'})
+  call prop_add(222, 1, {'type': 'comment'})
+  call assert_equal(1491, line2byte(401))
+  call prop_remove({'type': 'comment'})
+  call assert_equal(1491, line2byte(401))
+  bwipe!
+
   call prop_type_delete('comment')
 endfunc
 
