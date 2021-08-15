@@ -630,6 +630,17 @@ def Test_nested_function()
       assert_equal(2, Test())
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Outer()
+        def Inner()
+          echo 'hello'
+        enddef burp
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: burp', 3)
 enddef
 
 def Test_not_nested_function()
