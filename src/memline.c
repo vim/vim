@@ -3977,7 +3977,7 @@ ml_flush_line(buf_T *buf)
 	     */
 	    if ((int)dp->db_free >= extra)
 	    {
-#ifdef FEAT_BYTEOFF
+#if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
 		int old_prop_len = 0;
 #endif
 		// if the length changes and there are following lines
@@ -3998,7 +3998,7 @@ ml_flush_line(buf_T *buf)
 		// adjust free space
 		dp->db_free -= extra;
 		dp->db_txt_start -= extra;
-#ifdef FEAT_BYTEOFF
+#if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
 		if (buf->b_has_textprop)
 		    old_prop_len = old_len - STRLEN(new_line) - 1;
 #endif
@@ -4006,7 +4006,7 @@ ml_flush_line(buf_T *buf)
 		// copy new line into the data block
 		mch_memmove(old_line - extra, new_line, (size_t)new_len);
 		buf->b_ml.ml_flags |= (ML_LOCKED_DIRTY | ML_LOCKED_POS);
-#ifdef FEAT_BYTEOFF
+#if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
 		// The else case is already covered by the insert and delete
 		if (buf->b_has_textprop)
 		{
