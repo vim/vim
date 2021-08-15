@@ -40,8 +40,8 @@ in_vim9script(void)
     int
 in_old_script(int max_version)
 {
-    return (current_sctx.sc_version <= max_version
-					 && !(cmdmod.cmod_flags & CMOD_VIM9CMD))
+    return (current_sctx.sc_version < max_version
+					&& !(cmdmod.cmod_flags & CMOD_VIM9CMD))
 		|| (cmdmod.cmod_flags & CMOD_LEGACY);
 }
 
