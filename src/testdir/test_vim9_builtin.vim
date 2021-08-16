@@ -2364,6 +2364,11 @@ def Test_prop_add()
   CheckDefAndScriptFailure2(['prop_add(1, 2, [])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 3')
 enddef
 
+def Test_prop_add_list()
+  CheckDefAndScriptFailure2(['prop_add_list([], [])'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 1')
+  CheckDefAndScriptFailure2(['prop_add_list({}, {})'], 'E1013: Argument 2: type mismatch, expected list<any> but got dict<unknown>', 'E1211: List required for argument 2')
+enddef
+
 def Test_prop_clear()
   CheckDefAndScriptFailure2(['prop_clear("a")'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
   CheckDefAndScriptFailure2(['prop_clear(1, "b")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')

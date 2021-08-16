@@ -2801,7 +2801,9 @@ prompt_getprompt({buf})		String	get prompt text
 prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
-prop_add({lnum}, {col}, {props})  none	add a text property
+prop_add({lnum}, {col}, {props})  none	add one text property
+prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
+				none	add multiple text properties
 prop_clear({lnum} [, {lnum-end} [, {props}]])
 				none	remove all text properties
 prop_find({props} [, {direction}])
