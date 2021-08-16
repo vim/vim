@@ -656,8 +656,6 @@ let s:script_checks = {
       \ 'yaml': [['%YAML 1.2']],
       \ 'pascal': [['#!/path/instantfpc']],
       \ 'fennel': [['#!/path/fennel']],
-      \ 'dsl': [['<!doctype dsssl-spec [']],
-      \ 'structurizr': [['workspace {']],
       \ }
 
 " Various forms of "env" optional arguments.
@@ -832,6 +830,23 @@ func Test_ex_file()
   bwipe!
 
   call delete('Xfile.ex')
+  filetype off
+endfunc
+
+func Test_dsl_file()
+  filetype on
+
+  call writefile(['<!doctype dsssl-spec ['], 'dslfile.dsl')
+  split dslfile.dsl
+  call assert_equal('dsl', &filetype)
+  bwipe!
+
+  call writefile(['workspace {'], 'dslfile.dsl')
+  split dslfile.dsl
+  call assert_equal('structurizr', &filetype)
+  bwipe!
+
+  call delete('dslfile.dsl')
   filetype off
 endfunc
 
