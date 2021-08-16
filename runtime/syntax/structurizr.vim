@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language:      Structurizr DSL (
+" Language:      Structurizr DSL
 " Maintainer:    Bastian Venthur <venthur@debian.org>
 " Last Change:   2021-08-16
 " Remark:        For a language reference, see
