@@ -35,4 +35,4 @@ hi def link dslComment		Comment
 " compare the following with xmlCdataStart / xmlCdataEnd
 hi def link dslCondDelim	Type
 
-let b:current_syntax = "dsl"
+let b:current_syntax = "dsssl"
