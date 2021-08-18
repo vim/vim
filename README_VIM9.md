@@ -337,7 +337,7 @@ let start = reltime()
 echo Python()
 echo 'Python: ' .. reltimestr(reltime(start))
 bwipe!
- 
+
 new
 call setline(1, range(100000))
 let start = reltime()

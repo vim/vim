@@ -56,7 +56,7 @@ indenttest:
 	cd runtime/indent && \
 		$(MAKE) clean && \
 		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
-		
+
 
 #########################################################################
 # 2. Creating the various distribution files.
