@@ -3878,11 +3878,16 @@ expand_tags(
     char_u	***file)
 {
     int		i;
-    int		c;
+    size_t	c;
     int		tagnmflag;
-    char_u      tagnm[100];
+    char_u	*tagnm;
+    size_t	tagnmsize = 100;
     tagptrs_T	t_p;
     int		ret;
+
+    tagnm = alloc(tagnmsize);
+    if (!tagnm)
+	return FAIL;
 
     if (tagnames)
 	tagnmflag = TAG_NAMES;
@@ -3903,17 +3908,26 @@ expand_tags(
 	 for (i = 0; i < *num_file; i++)
 	 {
 	     parse_match((*file)[i], &t_p);
-	     c = (int)(t_p.tagname_end - t_p.tagname);
-	     mch_memmove(tagnm, t_p.tagname, (size_t)c);
+	     c = (size_t)(t_p.tagname_end - t_p.tagname);
+	     if (c > tagnmsize - 3)
+	     {
+		tagnm = vim_realloc(tagnm, c + 3);
+		tagnmsize = c + 3;
+		if (!tagnm)
+		    return FAIL;
+	     }
+
+	     mch_memmove(tagnm, t_p.tagname, c);
 	     tagnm[c++] = 0;
 	     tagnm[c++] = (t_p.tagkind != NULL && *t_p.tagkind)
 							 ? *t_p.tagkind : 'f';
 	     tagnm[c++] = 0;
 	     mch_memmove((*file)[i] + c, t_p.fname, t_p.fname_end - t_p.fname);
 	     (*file)[i][c + (t_p.fname_end - t_p.fname)] = 0;
-	     mch_memmove((*file)[i], tagnm, (size_t)c);
+	     mch_memmove((*file)[i], tagnm, c);
 	}
     }
+    vim_free(tagnm);
     return ret;
 }
 
