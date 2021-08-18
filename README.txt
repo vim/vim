@@ -33,7 +33,7 @@ This README.txt file comes with the runtime archive.  It includes the
 documentation, syntax files and other files that are used at runtime.  To run
 Vim you must get either one of the binary archives or a source archive.
 Which one you need depends on the system you want to run it on and whether you
-want or must compile it yourself.  Check "http://www.vim.org/download.php" for
+want or must compile it yourself.  Check "https://www.vim.org/download.php" for
 an overview of currently available distributions.
 
 Some popular places to get the latest Vim:
@@ -101,7 +101,7 @@ increase Bram's motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
 
-	http://www.vim.org/sponsor/
+	https://www.vim.org/sponsor/
 
 
 CONTRIBUTING
@@ -112,15 +112,15 @@ If you would like to help making Vim better, see the CONTRIBUTING.md file.
 INFORMATION
 
 The latest news about Vim can be found on the Vim home page:
-	http://www.vim.org/
+	https://www.vim.org/
 
 If you have problems, have a look at the Vim documentation or tips:
-	http://www.vim.org/docs.php
-	http://vim.wikia.com/wiki/Vim_Tips_Wiki
+	https://www.vim.org/docs.php
+	https://vim.fandom.com/wiki/Vim_Tips_Wiki
 
 If you still have problems or any other questions, use one of the mailing
 lists to discuss them with Vim users and developers:
-	http://www.vim.org/maillist.php
+	https://www.vim.org/maillist.php
 
 If nothing else works, report bugs directly:
 	Bram Moolenaar <Bram@vim.org>
