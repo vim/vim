@@ -5,7 +5,7 @@
 # 24.7.95 jw.
 
 retval=0
-reply="`sh -version -c exit 2>&1 < /dev/null`"
+reply="$(sh -version -c exit 2>&1 < /dev/null)"
 case "$reply" in
 	GNU*1.14.3*)
 		echo "- sh is	'$reply'";
@@ -19,7 +19,7 @@ case "$reply" in
 	*)	;;
 esac
 
-reply="`sed --version 2>&1 < /dev/null`"
+reply="$(sed --version 2>&1 < /dev/null)"
 case "$reply" in
 	GNU\ sed\ version\ 2.0[34])
 		echo "- sed is	'$reply'";
