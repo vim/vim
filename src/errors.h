@@ -652,3 +652,5 @@ EXTERN char e_exists_compiled_can_only_be_used_in_def_function[]
 	INIT(= N_("E1233: exists_compiled() can only be used in a :def function"));
 EXTERN char e_legacy_must_be_followed_by_command[]
 	INIT(= N_("E1234: legacy must be followed by a command"));
+EXTERN char e_function_reference_is_not_set[]
+	INIT(= N_("E1235: Function reference is not set"));

@@ -461,6 +461,16 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     type_T	*actual_type;
     int		res = FAIL;
 
+    // For some values there is no type, assume an error will be given later
+    // for an invalid value.
+    if ((actual_tv->v_type == VAR_FUNC && actual_tv->vval.v_string == NULL)
+	    || (actual_tv->v_type == VAR_PARTIAL
+					 && actual_tv->vval.v_partial == NULL))
+    {
+	emsg(_(e_function_reference_is_not_set));
+	return FAIL;
+    }
+
     ga_init2(&type_list, sizeof(type_T *), 10);
     actual_type = typval2type(actual_tv, get_copyID(), &type_list, TRUE);
     if (actual_type != NULL)

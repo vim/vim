@@ -2696,6 +2696,15 @@ def Test_partial_call()
       assert_equal('ooooo', RepeatFunc(5))
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Foo(Parser: any)
+      enddef
+      var Expr: func(dict<any>): dict<any>
+      const Call = Foo(Expr)
+  END
+  CheckScriptFailure(lines, 'E1235:')
 enddef
 
 def Test_cmd_modifier()
