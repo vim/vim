@@ -2856,6 +2856,89 @@ def Test_for_loop_with_try_continue()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_while_skipped_block()
+  # test skipped blocks at outside of function
+  var lines =<< trim END
+    var result = []
+    var n = 0
+    if true
+      n = 1
+      while n < 3
+        result += [n]
+        n += 1
+      endwhile
+    else
+      n = 3
+      while n < 5
+        result += [n]
+        n += 1
+      endwhile
+    endif
+    assert_equal([1, 2], result)
+
+    result = []
+    if false
+      n = 1
+      while n < 3
+        result += [n]
+        n += 1
+      endwhile
+    else
+      n = 3
+      while n < 5
+        result += [n]
+        n += 1
+      endwhile
+    endif
+    assert_equal([3, 4], result)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  # test skipped blocks at inside of function
+  lines =<< trim END
+    def DefTrue()
+      var result = []
+      var n = 0
+      if true
+        n = 1
+        while n < 3
+          result += [n]
+          n += 1
+        endwhile
+      else
+        n = 3
+        while n < 5
+          result += [n]
+          n += 1
+        endwhile
+      endif
+      assert_equal([1, 2], result)
+    enddef
+    DefTrue()
+
+    def DefFalse()
+      var result = []
+      var n = 0
+      if false
+        n = 1
+        while n < 3
+          result += [n]
+          n += 1
+        endwhile
+      else
+        n = 3
+        while n < 5
+          result += [n]
+          n += 1
+        endwhile
+      endif
+      assert_equal([3, 4], result)
+    enddef
+    DefFalse()
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_while_loop()
   var result = ''
   var cnt = 0

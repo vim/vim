@@ -8267,22 +8267,26 @@ compile_while(char_u *arg, cctx_T *cctx)
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
 	return NULL;
-    if (!ends_excmd2(arg, skipwhite(p)))
+
+    if (cctx->ctx_skip != SKIP_YES)
     {
-	semsg(_(e_trailing_arg), p);
-	return NULL;
+	if (!ends_excmd2(arg, skipwhite(p)))
+	{
+	    semsg(_(e_trailing_arg), p);
+	    return NULL;
+	}
+
+	if (bool_on_stack(cctx) == FAIL)
+	    return FAIL;
+
+	// CMDMOD_REV must come before the jump
+	generate_undo_cmdmods(cctx);
+
+	// "while_end" is set when ":endwhile" is found
+	if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,
+						      JUMP_IF_FALSE, cctx) == FAIL)
+	    return FAIL;
     }
-
-    if (bool_on_stack(cctx) == FAIL)
-	return FAIL;
-
-    // CMDMOD_REV must come before the jump
-    generate_undo_cmdmods(cctx);
-
-    // "while_end" is set when ":endwhile" is found
-    if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,
-						  JUMP_IF_FALSE, cctx) == FAIL)
-	return FAIL;
 
     return p;
 }
@@ -8304,20 +8308,23 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     cctx->ctx_scope = scope->se_outer;
-    unwind_locals(cctx, scope->se_local_count);
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	unwind_locals(cctx, scope->se_local_count);
 
 #ifdef FEAT_PROFILE
-    // count the endwhile before jumping
-    may_generate_prof_end(cctx, cctx->ctx_lnum);
+	// count the endwhile before jumping
+	may_generate_prof_end(cctx, cctx->ctx_lnum);
 #endif
 
-    // At end of ":for" scope jump back to the FOR instruction.
-    generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
+	// At end of ":for" scope jump back to the FOR instruction.
+	generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
 
-    // Fill in the "end" label in the WHILE statement so it can jump here.
-    // And in any jumps for ":break"
-    compile_fill_jump_to_end(&scope->se_u.se_while.ws_end_label,
+	// Fill in the "end" label in the WHILE statement so it can jump here.
+	// And in any jumps for ":break"
+	compile_fill_jump_to_end(&scope->se_u.se_while.ws_end_label,
 							  instr->ga_len, cctx);
+    }
 
     vim_free(scope);
 
