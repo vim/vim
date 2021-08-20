@@ -78,4 +78,5 @@ char_u *get_showbreak_value(win_T *win);
 dict_T *get_winbuf_options(int bufopt);
 int fill_culopt_flags(char_u *val, win_T *wp);
 int magic_isset(void);
+int option_set_callback_func(char_u *optval, callback_T *optcb);
 /* vim: set ft=c : */
