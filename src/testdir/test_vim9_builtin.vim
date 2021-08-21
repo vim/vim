@@ -1268,7 +1268,7 @@ enddef
 def Test_getbufline()
   e SomeFile
   var buf = bufnr()
-  e #
+  sp Otherfile
   var lines = ['aaa', 'bbb', 'ccc']
   setbufline(buf, 1, lines)
   getbufline('#', 1, '$')->assert_equal(lines)

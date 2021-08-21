@@ -1365,7 +1365,7 @@ endfunc
 " Test for expanding special keywords in cmdline
 func Test_cmdline_expand_special()
   %bwipe!
-  call assert_fails('e #', 'E499:')
+  call assert_fails('e #', 'E194:')
   call assert_fails('e <afile>', 'E495:')
   call assert_fails('e <abuf>', 'E496:')
   call assert_fails('e <amatch>', 'E497:')

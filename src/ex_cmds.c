@@ -2648,6 +2648,8 @@ do_ecmd(
      */
     if (other_file)
     {
+	int prev_alt_fnum = curwin->w_alt_fnum;
+
 	if (!(flags & (ECMD_ADDBUF | ECMD_ALTBUF)))
 	{
 	    if ((cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
@@ -2691,6 +2693,10 @@ do_ecmd(
 	}
 	if (buf == NULL)
 	    goto theend;
+	if (curwin->w_alt_fnum == buf->b_fnum && prev_alt_fnum != 0)
+	    // reusing the buffer, keep the old alternate file
+	    curwin->w_alt_fnum = prev_alt_fnum;
+
 	if (buf->b_ml.ml_mfp == NULL)		// no memfile yet
 	{
 	    oldbuf = FALSE;

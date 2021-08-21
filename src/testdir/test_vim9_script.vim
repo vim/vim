@@ -3495,7 +3495,7 @@ def Test_vim9_comment_gui()
   CheckScriptFailure([
       'vim9script',
       'gui -f#comment'
-      ], 'E499:')
+      ], 'E194:')
 enddef
 
 def Test_vim9_comment_not_compiled()
