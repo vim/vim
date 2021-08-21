@@ -3425,12 +3425,26 @@ find_ex_command(
     {
 	char_u *pskip = skip_option_env_lead(eap->cmd);
 
-	if (vim_strchr((char_u *)"{('[\"@", *p) != NULL
+	if (vim_strchr((char_u *)"{('[\"@&", *p) != NULL
 	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
 	{
 	    int	    oplen;
 	    int	    heredoc;
-	    char_u  *swp = skipwhite(p);
+	    char_u  *swp;
+
+	    if (*eap->cmd == '&')
+	    {
+		p = to_name_end(eap->cmd + 1, FALSE);
+		if (ends_excmd(*skipwhite(p)))
+		{
+		    // "&option <NL>" is the start of an expression.
+		    eap->cmdidx = CMD_eval;
+		    return eap->cmd;
+		}
+		// "&option" can be followed by "->" or "=", check below
+	    }
+
+	    swp = skipwhite(p);
 
 	    if (
 		// "(..." is an expression.
@@ -3530,10 +3544,14 @@ find_ex_command(
 
 	    // Recognize an assignment if we recognize the variable name:
 	    // "g:var = expr"
+	    // "@r = expr"
+	    // "&opt = expr"
 	    // "var = expr"  where "var" is a variable name or we are skipping
 	    // (variable declaration might have been skipped).
 	    if (*eap->cmd == '@')
 		p = eap->cmd + 2;
+	    else if (*eap->cmd == '&')
+		p = skiptowhite_esc(eap->cmd + 1);
 	    oplen = assignment_len(skipwhite(p), &heredoc);
 	    if (oplen > 0)
 	    {

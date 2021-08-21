@@ -8,6 +8,7 @@ imported_T *find_imported(char_u *name, size_t len, cctx_T *cctx);
 imported_T *find_imported_in_script(char_u *name, size_t len, int sid);
 char_u *peek_next_line_from_context(cctx_T *cctx);
 char_u *next_line_from_context(cctx_T *cctx, int skip_comment);
+char_u *to_name_end(char_u *arg, int use_namespace);
 char_u *to_name_const_end(char_u *arg);
 int get_lambda_tv_and_compile(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 exprtype_T get_compare_type(char_u *p, int *len, int *type_is);

@@ -3579,7 +3579,7 @@ theend:
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
-    static char_u *
+    char_u *
 to_name_end(char_u *arg, int use_namespace)
 {
     char_u	*p;
