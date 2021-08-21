@@ -2552,6 +2552,70 @@ def Test_for_outside_of_function()
   delete('Xvim9for.vim')
 enddef
 
+def Test_for_skipped_block()
+  # test skipped blocks at outside of function
+  var lines =<< trim END
+    var result = []
+    if true
+      for n in [1, 2]
+        result += [n]
+      endfor
+    else
+      for n in [3, 4]
+        result += [n]
+      endfor
+    endif
+    assert_equal([1, 2], result)
+
+    result = []
+    if false
+      for n in [1, 2]
+        result += [n]
+      endfor
+    else
+      for n in [3, 4]
+        result += [n]
+      endfor
+    endif
+    assert_equal([3, 4], result)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  # test skipped blocks at inside of function
+  lines =<< trim END
+    def DefTrue()
+      var result = []
+      if true
+        for n in [1, 2]
+          result += [n]
+        endfor
+      else
+        for n in [3, 4]
+          result += [n]
+        endfor
+      endif
+      assert_equal([1, 2], result)
+    enddef
+    DefTrue()
+
+    def DefFalse()
+      var result = []
+      if false
+        for n in [1, 2]
+          result += [n]
+        endfor
+      else
+        for n in [3, 4]
+          result += [n]
+        endfor
+      endif
+      assert_equal([3, 4], result)
+    enddef
+    DefFalse()
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_for_loop()
   var lines =<< trim END
       var result = ''
