@@ -537,6 +537,22 @@ def Test_option_use_linebreak()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_register_use_linebreak()
+  var lines =<< trim END
+      new
+      @a = 'one'
+      @a->setline(1)
+      @b = 'two'
+      @b   ->setline(2)
+      @c = 'three'
+      @c  
+          ->setline(3)
+      assert_equal(['one', 'two', 'three'], getline(1, '$'))
+      bwipe!
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_skipped_expr_linebreak()
   if 0
     var x = []

@@ -3432,12 +3432,23 @@ find_ex_command(
 	    int	    heredoc;
 	    char_u  *swp;
 
-	    if (*eap->cmd == '&')
+	    if (*eap->cmd == '&' || (eap->cmd[0] == '@'
+					&& (valid_yank_reg(eap->cmd[1], FALSE)
+						       || eap->cmd[1] == '@')))
 	    {
-		p = to_name_end(eap->cmd + 1, FALSE);
+		if (*eap->cmd == '&')
+		{
+		    p = eap->cmd + 1;
+		    if (STRNCMP("l:", p, 2) == 0 || STRNCMP("g:", p, 2) == 0)
+			p += 2;
+		    p = to_name_end(p, FALSE);
+		}
+		else
+		    p = eap->cmd + 2;
 		if (ends_excmd(*skipwhite(p)))
 		{
-		    // "&option <NL>" is the start of an expression.
+		    // "&option <NL>" and "@r <NL>" is the start of an
+		    // expression.
 		    eap->cmdidx = CMD_eval;
 		    return eap->cmd;
 		}
@@ -3548,10 +3559,6 @@ find_ex_command(
 	    // "&opt = expr"
 	    // "var = expr"  where "var" is a variable name or we are skipping
 	    // (variable declaration might have been skipped).
-	    if (*eap->cmd == '@')
-		p = eap->cmd + 2;
-	    else if (*eap->cmd == '&')
-		p = skiptowhite_esc(eap->cmd + 1);
 	    oplen = assignment_len(skipwhite(p), &heredoc);
 	    if (oplen > 0)
 	    {
