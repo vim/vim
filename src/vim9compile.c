@@ -2387,7 +2387,7 @@ misplaced_cmdmod(cctx_T *cctx)
 
 /*
  * Get the index of the current instruction.
- * This compenstates for a preceding ISN_CMDMOD and ISN_PROF_START.
+ * This compensates for a preceding ISN_CMDMOD and ISN_PROF_START.
  */
     static int
 current_instr_idx(cctx_T *cctx)
@@ -7732,7 +7732,9 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 
     if (cctx->ctx_skip == SKIP_UNKNOWN)
     {
-	int moved_cmdmod = FALSE;
+	int	    moved_cmdmod = FALSE;
+	int	    saved_debug = FALSE;
+	isn_T	    debug_isn;
 
 	// Move any CMDMOD instruction to after the jump
 	if (((isn_T *)instr->ga_data)[instr->ga_len - 1].isn_type == ISN_CMDMOD)
@@ -7745,14 +7747,35 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	    moved_cmdmod = TRUE;
 	}
 
+	// Remove the already generated ISN_DEBUG, it is written below the
+	// ISN_FOR instruction.
+	if (cctx->ctx_compile_type == CT_DEBUG && instr->ga_len > 0
+		&& ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+							.isn_type == ISN_DEBUG)
+	{
+	    --instr->ga_len;
+	    debug_isn = ((isn_T *)instr->ga_data)[instr->ga_len];
+	    saved_debug = TRUE;
+	}
+
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
 	    return NULL;
 	// previous "if" or "elseif" jumps here
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
 	isn->isn_arg.jump.jump_where = instr->ga_len;
+
 	if (moved_cmdmod)
 	    ++instr->ga_len;
+
+	if (saved_debug)
+	{
+	    // move the debug instruction here
+	    if (GA_GROW_FAILS(instr, 1))
+		return NULL;
+	    ((isn_T *)instr->ga_data)[instr->ga_len] = debug_isn;
+	    ++instr->ga_len;
+	}
     }
 
     // compile "expr"; if we know it evaluates to FALSE skip the block
