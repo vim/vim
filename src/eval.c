@@ -887,7 +887,13 @@ get_lval(
 	    if (*p == ':')
 	    {
 		scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
-		char_u	 *tp = skipwhite(p + 1);
+		char_u	     *tp = skipwhite(p + 1);
+
+		if (tp == p + 1 && !quiet)
+		{
+		    semsg(_(e_white_space_required_after_str_str), ":", p);
+		    return NULL;
+		}
 
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp, &si->sn_type_list, !quiet);
