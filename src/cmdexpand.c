@@ -1278,11 +1278,7 @@ set_one_cmd_context(
 	}
 
 	// Check for environment variable
-	if (*xp->xp_pattern == '$'
-#if defined(MSWIN)
-		|| *xp->xp_pattern == '%'
-#endif
-		)
+	if (*xp->xp_pattern == '$')
 	{
 	    for (p = xp->xp_pattern + 1; *p != NUL; ++p)
 		if (!vim_isIDc(*p))
