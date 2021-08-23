@@ -762,6 +762,167 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 }
 
 /*
+ * Get the list item in "l" with index "n1".  "n1" is adjusted if needed.
+ * In Vim9, it is at the end of the list, add an item.
+ * Return NULL if there is no such item.
+ */
+    listitem_T *
+check_range_index_one(list_T *l, long *n1, int quiet)
+{
+    listitem_T *li = list_find_index(l, n1);
+
+    if (li == NULL)
+    {
+	// Vim9: Allow for adding an item at the end.
+	if (in_vim9script() && *n1 == l->lv_len && l->lv_lock == 0)
+	{
+	    list_append_number(l, 0);
+	    li = list_find_index(l, n1);
+	}
+	if (li == NULL)
+	{
+	    if (!quiet)
+		semsg(_(e_listidx), *n1);
+	    return NULL;
+	}
+    }
+    return li;
+}
+
+/*
+ * Check that "n2" can be used as the second index in a range of list "l".
+ * If "n1" or "n2" is negative it is changed to the positive index.
+ * "li1" is the item for item "n1".
+ * Return OK or FAIL.
+ */
+    int
+check_range_index_two(
+	list_T	    *l,
+	long	    *n1,
+	listitem_T  *li1,
+	long	    *n2,
+	int	    quiet)
+{
+    if (*n2 < 0)
+    {
+	listitem_T	*ni = list_find(l, *n2);
+
+	if (ni == NULL)
+	{
+	    if (!quiet)
+		semsg(_(e_listidx), *n2);
+	    return FAIL;
+	}
+	*n2 = list_idx_of_item(l, ni);
+    }
+
+    // Check that n2 isn't before n1.
+    if (*n1 < 0)
+	*n1 = list_idx_of_item(l, li1);
+    if (*n2 < *n1)
+    {
+	if (!quiet)
+	    semsg(_(e_listidx), *n2);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Assign values from list "src" into a range of "dest".
+ * "idx1_arg" is the index of the first item in "dest" to be replaced.
+ * "idx2" is the index of last item to be replaced, but when "empty_idx2" is
+ * TRUE then replace all items after "idx1".
+ * "op" is the operator, normally "=" but can be "+=" and the like.
+ * "varname" is used for error messages.
+ * Returns OK or FAIL.
+ */
+    int
+list_assign_range(
+	list_T	    *dest,
+	list_T	    *src,
+	long	    idx1_arg,
+	long	    idx2,
+	int	    empty_idx2,
+	char_u	    *op,
+	char_u	    *varname)
+{
+    listitem_T	*src_li;
+    listitem_T	*dest_li;
+    long	idx1 = idx1_arg;
+    listitem_T	*first_li = list_find_index(dest, &idx1);
+    long	idx;
+    type_T	*member_type = NULL;
+
+    /*
+     * Check whether any of the list items is locked before making any changes.
+     */
+    idx = idx1;
+    dest_li = first_li;
+    for (src_li = src->lv_first; src_li != NULL && dest_li != NULL; )
+    {
+	if (value_check_lock(dest_li->li_tv.v_lock, varname, FALSE))
+	    return FAIL;
+	src_li = src_li->li_next;
+	if (src_li == NULL || (!empty_idx2 && idx2 == idx))
+	    break;
+	dest_li = dest_li->li_next;
+	++idx;
+    }
+
+    if (in_vim9script() && dest->lv_type != NULL
+					   && dest->lv_type->tt_member != NULL)
+	member_type = dest->lv_type->tt_member;
+
+    /*
+     * Assign the List values to the list items.
+     */
+    idx = idx1;
+    dest_li = first_li;
+    for (src_li = src->lv_first; src_li != NULL; )
+    {
+	if (op != NULL && *op != '=')
+	    tv_op(&dest_li->li_tv, &src_li->li_tv, op);
+	else
+	{
+	    if (member_type != NULL
+		    && check_typval_arg_type(member_type, &src_li->li_tv,
+							      NULL, 0) == FAIL)
+		return FAIL;
+	    clear_tv(&dest_li->li_tv);
+	    copy_tv(&src_li->li_tv, &dest_li->li_tv);
+	}
+	src_li = src_li->li_next;
+	if (src_li == NULL || (!empty_idx2 && idx2 == idx))
+	    break;
+	if (dest_li->li_next == NULL)
+	{
+	    // Need to add an empty item.
+	    if (list_append_number(dest, 0) == FAIL)
+	    {
+		src_li = NULL;
+		break;
+	    }
+	}
+	dest_li = dest_li->li_next;
+	++idx;
+    }
+    if (src_li != NULL)
+    {
+	emsg(_(e_list_value_has_more_items_than_targets));
+	return FAIL;
+    }
+    if (empty_idx2
+	    ? (dest_li != NULL && dest_li->li_next != NULL)
+	    : idx != idx2)
+    {
+	emsg(_(e_list_value_does_not_have_enough_items));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Flatten "list" to depth "maxdepth".
  * It does nothing if "maxdepth" is 0.
  * Returns FAIL when out of memory.
@@ -994,15 +1155,19 @@ list_slice_or_index(
 	n1 = len + n1;
     if (n1 < 0 || n1 >= len)
     {
-	// For a range we allow invalid values and return an empty
-	// list.  A list index out of range is an error.
+	// For a range we allow invalid values and for legacy script return an
+	// empty list, for Vim9 script start at the first item.
+	// A list index out of range is an error.
 	if (!range)
 	{
 	    if (verbose)
 		semsg(_(e_listidx), (long)n1_arg);
 	    return FAIL;
 	}
-	n1 = n1 < 0 ? 0 : len;
+	if (in_vim9script())
+	    n1 = n1 < 0 ? 0 : len;
+	else
+	    n1 = len;
     }
     if (range)
     {
@@ -1284,14 +1449,14 @@ f_join(typval_T *argvars, typval_T *rettv)
 	emsg(_(e_listreq));
 	return;
     }
+    rettv->v_type = VAR_STRING;
     if (argvars[0].vval.v_list == NULL)
 	return;
+
     if (argvars[1].v_type == VAR_UNKNOWN)
 	sep = (char_u *)" ";
     else
 	sep = tv_get_string_chk(&argvars[1]);
-
-    rettv->v_type = VAR_STRING;
 
     if (sep != NULL)
     {
@@ -1816,11 +1981,13 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     else
     {
 	l = argvars[0].vval.v_list;
-	if (l == NULL || value_check_lock(l->lv_lock,
+	if (l != NULL && value_check_lock(l->lv_lock,
 	     (char_u *)(sort ? N_("sort() argument") : N_("uniq() argument")),
 									TRUE))
 	    goto theend;
 	rettv_list_set(rettv, l);
+	if (l == NULL)
+	    goto theend;
 	CHECK_LIST_MATERIALIZE(l);
 
 	len = list_len(l);
@@ -2958,32 +3125,35 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
 	semsg(_(e_listblobarg), "reverse()");
-    else if ((l = argvars[0].vval.v_list) != NULL
+    else
+    {
+	l = argvars[0].vval.v_list;
+	rettv_list_set(rettv, l);
+	if (l != NULL
 	    && !value_check_lock(l->lv_lock,
 				    (char_u *)N_("reverse() argument"), TRUE))
-    {
-	if (l->lv_first == &range_list_item)
 	{
-	    varnumber_T new_start = l->lv_u.nonmat.lv_start
+	    if (l->lv_first == &range_list_item)
+	    {
+		varnumber_T new_start = l->lv_u.nonmat.lv_start
 				  + (l->lv_len - 1) * l->lv_u.nonmat.lv_stride;
-	    l->lv_u.nonmat.lv_end = new_start
+		l->lv_u.nonmat.lv_end = new_start
 			   - (l->lv_u.nonmat.lv_end - l->lv_u.nonmat.lv_start);
-	    l->lv_u.nonmat.lv_start = new_start;
-	    l->lv_u.nonmat.lv_stride = -l->lv_u.nonmat.lv_stride;
-	    rettv_list_set(rettv, l);
-	    return;
+		l->lv_u.nonmat.lv_start = new_start;
+		l->lv_u.nonmat.lv_stride = -l->lv_u.nonmat.lv_stride;
+		return;
+	    }
+	    li = l->lv_u.mat.lv_last;
+	    l->lv_first = l->lv_u.mat.lv_last = NULL;
+	    l->lv_len = 0;
+	    while (li != NULL)
+	    {
+		ni = li->li_prev;
+		list_append(l, li);
+		li = ni;
+	    }
+	    l->lv_u.mat.lv_idx = l->lv_len - l->lv_u.mat.lv_idx - 1;
 	}
-	li = l->lv_u.mat.lv_last;
-	l->lv_first = l->lv_u.mat.lv_last = NULL;
-	l->lv_len = 0;
-	while (li != NULL)
-	{
-	    ni = li->li_prev;
-	    list_append(l, li);
-	    li = ni;
-	}
-	rettv_list_set(rettv, l);
-	l->lv_u.mat.lv_idx = l->lv_len - l->lv_u.mat.lv_idx - 1;
     }
 }
 

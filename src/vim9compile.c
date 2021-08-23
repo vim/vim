@@ -2262,12 +2262,12 @@ generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
 }
 
     static int
-generate_EXEC(cctx_T *cctx, char_u *line)
+generate_EXEC(cctx_T *cctx, isntype_T isntype, char_u *line)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_EXEC)) == NULL)
+    if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
     isn->isn_arg.string = vim_strsave(line);
     return OK;
@@ -2387,7 +2387,7 @@ misplaced_cmdmod(cctx_T *cctx)
 
 /*
  * Get the index of the current instruction.
- * This compenstates for a preceding ISN_CMDMOD and ISN_PROF_START.
+ * This compensates for a preceding ISN_CMDMOD and ISN_PROF_START.
  */
     static int
 current_instr_idx(cctx_T *cctx)
@@ -3579,7 +3579,7 @@ theend:
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
-    static char_u *
+    char_u *
 to_name_end(char_u *arg, int use_namespace)
 {
     char_u	*p;
@@ -4210,10 +4210,15 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	    --p;
 	if (*p == '-' || *p == '+')
 	{
-	    int	    negate = *p == '-';
-	    isn_T   *isn;
+	    int		negate = *p == '-';
+	    isn_T	*isn;
+	    garray_T    *stack = &cctx->ctx_type_stack;
+	    type_T	*type;
 
-	    // TODO: check type
+	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    if (need_type(type, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+		return FAIL;
+
 	    while (p > start && (p[-1] == '-' || p[-1] == '+'))
 	    {
 		--p;
@@ -4222,11 +4227,11 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	    }
 	    // only '-' has an effect, for '+' we only check the type
 	    if (negate)
+	    {
 		isn = generate_instr(cctx, ISN_NEGATENR);
-	    else
-		isn = generate_instr(cctx, ISN_CHECKNR);
-	    if (isn == NULL)
-		return FAIL;
+		if (isn == NULL)
+		    return FAIL;
+	    }
 	}
 	else if (numeric_only)
 	{
@@ -4464,8 +4469,6 @@ compile_subscript(
 	    // dict member: dict[key]
 	    // string index: text[123]
 	    // blob index: blob[123]
-	    // TODO: more arguments
-	    // TODO: recognize list or dict at runtime
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
@@ -5809,7 +5812,6 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	    goto theend;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
     }
-    // TODO: warning for trailing text?
 
 theend:
     vim_free(lambda_name);
@@ -5852,7 +5854,6 @@ generate_loadvar(
     switch (dest)
     {
 	case dest_option:
-	    // TODO: check the option exists
 	    generate_LOAD(cctx, ISN_LOADOPT, 0, name, type);
 	    break;
 	case dest_global:
@@ -6485,6 +6486,29 @@ compile_assign_lhs(
 }
 
 /*
+ * Return TRUE if "lhs" has a range index: "[expr : expr]".
+ */
+    static int
+has_list_index(char_u *idx_start, cctx_T *cctx)
+{
+    char_u  *p = idx_start;
+    int	    save_skip;
+
+    if (*p != '[')
+	return FALSE;
+
+    p = skipwhite(p + 1);
+    if (*p == ':')
+	return TRUE;
+
+    save_skip = cctx->ctx_skip;
+    cctx->ctx_skip = SKIP_YES;
+    (void)compile_expr0(&p, cctx);
+    cctx->ctx_skip = save_skip;
+    return *skipwhite(p) == ':';
+}
+
+/*
  * For an assignment with an index, compile the "idx" in "var[idx]" or "key" in
  * "var.key".
  */
@@ -6652,8 +6676,10 @@ compile_assign_unlet(
 
     if (compile_assign_index(var_start, lhs, &range, cctx) == FAIL)
 	return FAIL;
-    if (is_assign && range && lhs->lhs_type != &t_blob
-						    && lhs->lhs_type != &t_any)
+    if (is_assign && range
+	    && lhs->lhs_type->tt_type != VAR_LIST
+	    && lhs->lhs_type != &t_blob
+	    && lhs->lhs_type != &t_any)
     {
 	semsg(_(e_cannot_use_range_with_assignment_str), var_start);
 	return FAIL;
@@ -7029,7 +7055,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			SOURCING_LNUM = start_lnum;
 			where.wt_index = var_count > 0 ? var_idx + 1 : 0;
 			where.wt_variable = var_count > 0;
-			if (lhs.lhs_has_index)
+			// If assigning to a list or dict member, use the
+			// member type.  Not for "list[:] =".
+			if (lhs.lhs_has_index
+				&& !has_list_index(var_start + lhs.lhs_varlen,
+									 cctx))
 			    use_type = lhs.lhs_member_type;
 			if (need_type_where(rhs_type, use_type, -1, where,
 				    cctx, FALSE, is_const) == FAIL)
@@ -7397,6 +7427,7 @@ compile_lock_unlock(
     int		ret = OK;
     size_t	len;
     char_u	*buf;
+    isntype_T	isn = ISN_EXEC;
 
     if (cctx->ctx_skip == SKIP_YES)
 	return OK;
@@ -7404,12 +7435,23 @@ compile_lock_unlock(
     // Cannot use :lockvar and :unlockvar on local variables.
     if (p[1] != ':')
     {
-	char_u *end = skip_var_one(p, FALSE);
+	char_u *end = find_name_end(p, NULL, NULL, FNE_CHECK_START);
 
 	if (lookup_local(p, end - p, NULL, cctx) == OK)
 	{
-	    emsg(_(e_cannot_lock_unlock_local_variable));
-	    return FAIL;
+	    char_u *s = p;
+
+	    if (*end != '.' && *end != '[')
+	    {
+		emsg(_(e_cannot_lock_unlock_local_variable));
+		return FAIL;
+	    }
+
+	    // For "d.member" put the local variable on the stack, it will be
+	    // passed to ex_lockvar() indirectly.
+	    if (compile_load(&s, end, cctx, FALSE, FALSE) == FAIL)
+		return FAIL;
+	    isn = ISN_LOCKUNLOCK;
 	}
     }
 
@@ -7424,7 +7466,7 @@ compile_lock_unlock(
 	vim_snprintf((char *)buf, len, "%s %s",
 		eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar",
 		p);
-	ret = generate_EXEC(cctx, buf);
+	ret = generate_EXEC(cctx, isn, buf);
 
 	vim_free(buf);
 	*name_end = cc;
@@ -7690,7 +7732,9 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 
     if (cctx->ctx_skip == SKIP_UNKNOWN)
     {
-	int moved_cmdmod = FALSE;
+	int	    moved_cmdmod = FALSE;
+	int	    saved_debug = FALSE;
+	isn_T	    debug_isn;
 
 	// Move any CMDMOD instruction to after the jump
 	if (((isn_T *)instr->ga_data)[instr->ga_len - 1].isn_type == ISN_CMDMOD)
@@ -7703,14 +7747,35 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	    moved_cmdmod = TRUE;
 	}
 
+	// Remove the already generated ISN_DEBUG, it is written below the
+	// ISN_FOR instruction.
+	if (cctx->ctx_compile_type == CT_DEBUG && instr->ga_len > 0
+		&& ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+							.isn_type == ISN_DEBUG)
+	{
+	    --instr->ga_len;
+	    debug_isn = ((isn_T *)instr->ga_data)[instr->ga_len];
+	    saved_debug = TRUE;
+	}
+
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
 	    return NULL;
 	// previous "if" or "elseif" jumps here
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
 	isn->isn_arg.jump.jump_where = instr->ga_len;
+
 	if (moved_cmdmod)
 	    ++instr->ga_len;
+
+	if (saved_debug)
+	{
+	    // move the debug instruction here
+	    if (GA_GROW_FAILS(instr, 1))
+		return NULL;
+	    ((isn_T *)instr->ga_data)[instr->ga_len] = debug_isn;
+	    ++instr->ga_len;
+	}
     }
 
     // compile "expr"; if we know it evaluates to FALSE skip the block
@@ -7999,151 +8064,154 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     }
     arg_end = arg;
 
-    // If we know the type of "var" and it is a not a supported type we can
-    // give an error now.
-    vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (vartype->tt_type != VAR_LIST && vartype->tt_type != VAR_STRING
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	// If we know the type of "var" and it is a not a supported type we can
+	// give an error now.
+	vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	if (vartype->tt_type != VAR_LIST && vartype->tt_type != VAR_STRING
 		&& vartype->tt_type != VAR_BLOB && vartype->tt_type != VAR_ANY)
-    {
-	semsg(_(e_for_loop_on_str_not_supported),
-					       vartype_name(vartype->tt_type));
-	drop_scope(cctx);
-	return NULL;
-    }
-
-    if (vartype->tt_type == VAR_STRING)
-	item_type = &t_string;
-    else if (vartype->tt_type == VAR_BLOB)
-	item_type = &t_number;
-    else if (vartype->tt_type == VAR_LIST
-				     && vartype->tt_member->tt_type != VAR_ANY)
-    {
-	if (!var_list)
-	    item_type = vartype->tt_member;
-	else if (vartype->tt_member->tt_type == VAR_LIST
-		      && vartype->tt_member->tt_member->tt_type != VAR_ANY)
-	    // TODO: should get the type for each lhs
-	    item_type = vartype->tt_member->tt_member;
-    }
-
-    // CMDMOD_REV must come before the FOR instruction.
-    generate_undo_cmdmods(cctx);
-
-    // "for_end" is set when ":endfor" is found
-    scope->se_u.se_for.fs_top_label = current_instr_idx(cctx);
-
-    generate_FOR(cctx, loop_lvar->lv_idx);
-
-    arg = arg_start;
-    if (var_list)
-    {
-	generate_UNPACK(cctx, var_count, semicolon);
-	arg = skipwhite(arg + 1);	// skip white after '['
-
-	// the list item is replaced by a number of items
-	if (GA_GROW_FAILS(stack, var_count - 1))
 	{
+	    semsg(_(e_for_loop_on_str_not_supported),
+					       vartype_name(vartype->tt_type));
 	    drop_scope(cctx);
 	    return NULL;
 	}
-	--stack->ga_len;
+
+	if (vartype->tt_type == VAR_STRING)
+	    item_type = &t_string;
+	else if (vartype->tt_type == VAR_BLOB)
+	    item_type = &t_number;
+	else if (vartype->tt_type == VAR_LIST
+				     && vartype->tt_member->tt_type != VAR_ANY)
+	{
+	    if (!var_list)
+		item_type = vartype->tt_member;
+	    else if (vartype->tt_member->tt_type == VAR_LIST
+			  && vartype->tt_member->tt_member->tt_type != VAR_ANY)
+		// TODO: should get the type for each lhs
+		item_type = vartype->tt_member->tt_member;
+	}
+
+	// CMDMOD_REV must come before the FOR instruction.
+	generate_undo_cmdmods(cctx);
+
+	// "for_end" is set when ":endfor" is found
+	scope->se_u.se_for.fs_top_label = current_instr_idx(cctx);
+
+	generate_FOR(cctx, loop_lvar->lv_idx);
+
+	arg = arg_start;
+	if (var_list)
+	{
+	    generate_UNPACK(cctx, var_count, semicolon);
+	    arg = skipwhite(arg + 1);	// skip white after '['
+
+	    // the list item is replaced by a number of items
+	    if (GA_GROW_FAILS(stack, var_count - 1))
+	    {
+		drop_scope(cctx);
+		return NULL;
+	    }
+	    --stack->ga_len;
+	    for (idx = 0; idx < var_count; ++idx)
+	    {
+		((type_T **)stack->ga_data)[stack->ga_len] =
+				 (semicolon && idx == 0) ? vartype : item_type;
+		++stack->ga_len;
+	    }
+	}
+
 	for (idx = 0; idx < var_count; ++idx)
 	{
-	    ((type_T **)stack->ga_data)[stack->ga_len] =
-				(semicolon && idx == 0) ? vartype : item_type;
-	    ++stack->ga_len;
-	}
-    }
+	    assign_dest_T	dest = dest_local;
+	    int		opt_flags = 0;
+	    int		vimvaridx = -1;
+	    type_T		*type = &t_any;
+	    type_T		*lhs_type = &t_any;
+	    where_T		where = WHERE_INIT;
 
-    for (idx = 0; idx < var_count; ++idx)
-    {
-	assign_dest_T	dest = dest_local;
-	int		opt_flags = 0;
-	int		vimvaridx = -1;
-	type_T		*type = &t_any;
-	type_T		*lhs_type = &t_any;
-	where_T		where = WHERE_INIT;
+	    p = skip_var_one(arg, FALSE);
+	    varlen = p - arg;
+	    name = vim_strnsave(arg, varlen);
+	    if (name == NULL)
+		goto failed;
+	    if (*p == ':')
+	    {
+		p = skipwhite(p + 1);
+		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+	    }
 
-	p = skip_var_one(arg, FALSE);
-	varlen = p - arg;
-	name = vim_strnsave(arg, varlen);
-	if (name == NULL)
-	    goto failed;
-	if (*p == ':')
-	{
-	    p = skipwhite(p + 1);
-	    lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
-	}
-
-	// TODO: script var not supported?
-	if (get_var_dest(name, &dest, CMD_for, &opt_flags,
+	    // TODO: script var not supported?
+	    if (get_var_dest(name, &dest, CMD_for, &opt_flags,
 					      &vimvaridx, &type, cctx) == FAIL)
-	    goto failed;
-	if (dest != dest_local)
-	{
-	    if (generate_store_var(cctx, dest, opt_flags, vimvaridx,
+		goto failed;
+	    if (dest != dest_local)
+	    {
+		if (generate_store_var(cctx, dest, opt_flags, vimvaridx,
 						     0, 0, type, name) == FAIL)
-		goto failed;
-	}
-	else if (varlen == 1 && *arg == '_')
-	{
-	    // Assigning to "_": drop the value.
-	    if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
-		goto failed;
-	}
-	else
-	{
-	    if (lookup_local(arg, varlen, NULL, cctx) == OK)
-	    {
-		semsg(_(e_variable_already_declared), arg);
-		goto failed;
+		    goto failed;
 	    }
-
-	    if (STRNCMP(name, "s:", 2) == 0)
+	    else if (varlen == 1 && *arg == '_')
 	    {
-		semsg(_(e_cannot_declare_script_variable_in_function), name);
-		goto failed;
+		// Assigning to "_": drop the value.
+		if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
+		    goto failed;
 	    }
-
-	    // Reserve a variable to store "var".
-	    where.wt_index = var_list ? idx + 1 : 0;
-	    where.wt_variable = TRUE;
-	    if (lhs_type == &t_any)
-		lhs_type = item_type;
-	    else if (item_type != &t_unknown
-			&& (item_type == &t_any
-			  ? need_type(item_type, lhs_type,
-						     -1, 0, cctx, FALSE, FALSE)
-			  : check_type(lhs_type, item_type, TRUE, where))
-			== FAIL)
-		goto failed;
-	    var_lvar = reserve_local(cctx, arg, varlen, TRUE, lhs_type);
-	    if (var_lvar == NULL)
-		// out of memory or used as an argument
-		goto failed;
-
-	    if (semicolon && idx == var_count - 1)
-		var_lvar->lv_type = vartype;
 	    else
-		var_lvar->lv_type = item_type;
-	    generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
+	    {
+		if (lookup_local(arg, varlen, NULL, cctx) == OK)
+		{
+		    semsg(_(e_variable_already_declared), arg);
+		    goto failed;
+		}
+
+		if (STRNCMP(name, "s:", 2) == 0)
+		{
+		    semsg(_(e_cannot_declare_script_variable_in_function), name);
+		    goto failed;
+		}
+
+		// Reserve a variable to store "var".
+		where.wt_index = var_list ? idx + 1 : 0;
+		where.wt_variable = TRUE;
+		if (lhs_type == &t_any)
+		    lhs_type = item_type;
+		else if (item_type != &t_unknown
+			    && (item_type == &t_any
+			      ? need_type(item_type, lhs_type,
+						     -1, 0, cctx, FALSE, FALSE)
+			      : check_type(lhs_type, item_type, TRUE, where))
+			    == FAIL)
+		    goto failed;
+		var_lvar = reserve_local(cctx, arg, varlen, TRUE, lhs_type);
+		if (var_lvar == NULL)
+		    // out of memory or used as an argument
+		    goto failed;
+
+		if (semicolon && idx == var_count - 1)
+		    var_lvar->lv_type = vartype;
+		else
+		    var_lvar->lv_type = item_type;
+		generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
+	    }
+
+	    if (*p == ',' || *p == ';')
+		++p;
+	    arg = skipwhite(p);
+	    vim_free(name);
 	}
 
-	if (*p == ',' || *p == ';')
-	    ++p;
-	arg = skipwhite(p);
-	vim_free(name);
-    }
+	if (cctx->ctx_compile_type == CT_DEBUG)
+	{
+	    int save_prev_lnum = cctx->ctx_prev_lnum;
 
-    if (cctx->ctx_compile_type == CT_DEBUG)
-    {
-	int save_prev_lnum = cctx->ctx_prev_lnum;
-
-	// Add ISN_DEBUG here, so that the loop variables can be inspected.
-	// Use the prev_lnum from the ISN_DEBUG instruction removed above.
-	cctx->ctx_prev_lnum = prev_lnum;
-	generate_instr_debug(cctx);
-	cctx->ctx_prev_lnum = save_prev_lnum;
+	    // Add ISN_DEBUG here, so that the loop variables can be inspected.
+	    // Use the prev_lnum from the ISN_DEBUG instruction removed above.
+	    cctx->ctx_prev_lnum = prev_lnum;
+	    generate_instr_debug(cctx);
+	    cctx->ctx_prev_lnum = save_prev_lnum;
+	}
     }
 
     return arg_end;
@@ -8175,21 +8243,24 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     }
     forscope = &scope->se_u.se_for;
     cctx->ctx_scope = scope->se_outer;
-    unwind_locals(cctx, scope->se_local_count);
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	unwind_locals(cctx, scope->se_local_count);
 
-    // At end of ":for" scope jump back to the FOR instruction.
-    generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
+	// At end of ":for" scope jump back to the FOR instruction.
+	generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
 
-    // Fill in the "end" label in the FOR statement so it can jump here.
-    isn = ((isn_T *)instr->ga_data) + forscope->fs_top_label;
-    isn->isn_arg.forloop.for_end = instr->ga_len;
+	// Fill in the "end" label in the FOR statement so it can jump here.
+	isn = ((isn_T *)instr->ga_data) + forscope->fs_top_label;
+	isn->isn_arg.forloop.for_end = instr->ga_len;
 
-    // Fill in the "end" label any BREAK statements
-    compile_fill_jump_to_end(&forscope->fs_end_label, instr->ga_len, cctx);
+	// Fill in the "end" label any BREAK statements
+	compile_fill_jump_to_end(&forscope->fs_end_label, instr->ga_len, cctx);
 
-    // Below the ":for" scope drop the "expr" list from the stack.
-    if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
-	return NULL;
+	// Below the ":for" scope drop the "expr" list from the stack.
+	if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
+	    return NULL;
+    }
 
     vim_free(scope);
 
@@ -8223,22 +8294,26 @@ compile_while(char_u *arg, cctx_T *cctx)
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
 	return NULL;
+
     if (!ends_excmd2(arg, skipwhite(p)))
     {
 	semsg(_(e_trailing_arg), p);
 	return NULL;
     }
 
-    if (bool_on_stack(cctx) == FAIL)
-	return FAIL;
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	if (bool_on_stack(cctx) == FAIL)
+	    return FAIL;
 
-    // CMDMOD_REV must come before the jump
-    generate_undo_cmdmods(cctx);
+	// CMDMOD_REV must come before the jump
+	generate_undo_cmdmods(cctx);
 
-    // "while_end" is set when ":endwhile" is found
-    if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,
+	// "while_end" is set when ":endwhile" is found
+	if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,
 						  JUMP_IF_FALSE, cctx) == FAIL)
-	return FAIL;
+	    return FAIL;
+    }
 
     return p;
 }
@@ -8260,20 +8335,23 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     cctx->ctx_scope = scope->se_outer;
-    unwind_locals(cctx, scope->se_local_count);
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	unwind_locals(cctx, scope->se_local_count);
 
 #ifdef FEAT_PROFILE
-    // count the endwhile before jumping
-    may_generate_prof_end(cctx, cctx->ctx_lnum);
+	// count the endwhile before jumping
+	may_generate_prof_end(cctx, cctx->ctx_lnum);
 #endif
 
-    // At end of ":for" scope jump back to the FOR instruction.
-    generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
+	// At end of ":for" scope jump back to the FOR instruction.
+	generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
 
-    // Fill in the "end" label in the WHILE statement so it can jump here.
-    // And in any jumps for ":break"
-    compile_fill_jump_to_end(&scope->se_u.se_while.ws_end_label,
+	// Fill in the "end" label in the WHILE statement so it can jump here.
+	// And in any jumps for ":break"
+	compile_fill_jump_to_end(&scope->se_u.se_while.ws_end_label,
 							  instr->ga_len, cctx);
+    }
 
     vim_free(scope);
 
@@ -9081,7 +9159,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	generate_EXECCONCAT(cctx, count);
     }
     else
-	generate_EXEC(cctx, line);
+	generate_EXEC(cctx, ISN_EXEC, line);
 
 theend:
     if (*nextcmd != NUL)
@@ -10169,6 +10247,7 @@ delete_instr(isn_T *isn)
 	case ISN_LOADOPT:
 	case ISN_LOADT:
 	case ISN_LOADW:
+	case ISN_LOCKUNLOCK:
 	case ISN_PUSHEXC:
 	case ISN_PUSHFUNC:
 	case ISN_PUSHS:

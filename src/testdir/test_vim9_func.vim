@@ -160,6 +160,52 @@ def Test_autoload_names()
   delete(dir, 'rf')
 enddef
 
+def Test_autoload_error_in_script()
+  var dir = 'Xdir/autoload'
+  mkdir(dir, 'p')
+
+  var lines =<< trim END
+      func scripterror#function()
+        let g:called_function = 'yes'
+      endfunc
+      let 0 = 1
+  END
+  writefile(lines, dir .. '/scripterror.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp=' .. getcwd() .. '/Xdir'
+
+  g:called_function = 'no'
+  # The error in the autoload script cannot be checked with assert_fails(), use
+  # CheckDefSuccess() instead of CheckDefFailure()
+  try
+    CheckDefSuccess(['scripterror#function()'])
+  catch
+    assert_match('E121: Undefined variable: 0', v:exception)
+  endtry
+  assert_equal('no', g:called_function)
+
+  lines =<< trim END
+      func scriptcaught#function()
+        let g:called_function = 'yes'
+      endfunc
+      try
+        let 0 = 1
+      catch
+        let g:caught = v:exception
+      endtry
+  END
+  writefile(lines, dir .. '/scriptcaught.vim')
+
+  g:called_function = 'no'
+  CheckDefSuccess(['scriptcaught#function()'])
+  assert_match('E121: Undefined variable: 0', g:caught)
+  assert_equal('yes', g:called_function)
+
+  &rtp = save_rtp
+  delete(dir, 'rf')
+enddef
+
 def CallRecursive(n: number): number
   return CallRecursive(n + 1)
 enddef
@@ -584,6 +630,17 @@ def Test_nested_function()
       assert_equal(2, Test())
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Outer()
+        def Inner()
+          echo 'hello'
+        enddef burp
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: burp', 3)
 enddef
 
 def Test_not_nested_function()
@@ -2639,6 +2696,15 @@ def Test_partial_call()
       assert_equal('ooooo', RepeatFunc(5))
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Foo(Parser: any)
+      enddef
+      var Expr: func(dict<any>): dict<any>
+      const Call = Foo(Expr)
+  END
+  CheckScriptFailure(lines, 'E1235:')
 enddef
 
 def Test_cmd_modifier()
@@ -3041,6 +3107,23 @@ def Test_closing_brace_at_start_of_line()
       )
   END
   call CheckDefAndScriptSuccess(lines)
+enddef
+
+func CreateMydict()
+  let g:mydict = {}
+  func g:mydict.afunc()
+    let g:result = self.key
+  endfunc
+endfunc
+
+def Test_numbered_function_reference()
+  CreateMydict()
+  var output = execute('legacy func g:mydict.afunc')
+  var funcName = 'g:' .. substitute(output, '.*function \(\d\+\).*', '\1', '')
+  execute 'function(' .. funcName .. ', [], {key: 42})()'
+  # check that the function still exists
+  assert_equal(output, execute('legacy func g:mydict.afunc'))
+  unlet g:mydict
 enddef
 
 if has('python3')

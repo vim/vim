@@ -708,6 +708,7 @@ static argcheck_T arg2_buffer_number[] = {arg_buffer, arg_number};
 static argcheck_T arg2_buffer_string[] = {arg_buffer, arg_string};
 static argcheck_T arg2_chan_or_job_dict[] = {arg_chan_or_job, arg_dict_any};
 static argcheck_T arg2_chan_or_job_string[] = {arg_chan_or_job, arg_string};
+static argcheck_T arg2_dict_any_list_any[] = {arg_dict_any, arg_list_any};
 static argcheck_T arg2_dict_any_string_or_nr[] = {arg_dict_any, arg_string_or_nr};
 static argcheck_T arg2_dict_string[] = {arg_dict_any, arg_string};
 static argcheck_T arg2_float_or_nr[] = {arg_float_or_nr, arg_float_or_nr};
@@ -1740,6 +1741,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    JOB_FUNC(f_prompt_setprompt)},
     {"prop_add",	3, 3, FEARG_1,	    arg3_number_number_dict,
 			ret_void,	    PROP_FUNC(f_prop_add)},
+    {"prop_add_list",	2, 2, FEARG_1,	    arg2_dict_any_list_any,
+			ret_void,	    PROP_FUNC(f_prop_add_list)},
     {"prop_clear",	1, 3, FEARG_1,	    arg3_number_number_dict,
 			ret_void,	    PROP_FUNC(f_prop_clear)},
     {"prop_find",	1, 2, FEARG_1,	    arg2_dict_string,
@@ -2306,7 +2309,8 @@ get_function_name(expand_T *xp, int idx)
 	name = get_user_func_name(xp, idx);
 	if (name != NULL)
 	{
-	    if (*name != '<' && STRNCMP("g:", xp->xp_pattern, 2) == 0)
+	    if (*name != NUL && *name != '<'
+				      && STRNCMP("g:", xp->xp_pattern, 2) == 0)
 		return cat_prefix_varname('g', name);
 	    return name;
 	}
@@ -6556,7 +6560,8 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	return;
 
     end = get_lval(tv_get_string(&argvars[0]), NULL, &lv, FALSE, FALSE,
-			     GLV_NO_AUTOLOAD | GLV_READ_ONLY, FNE_CHECK_START);
+			     GLV_NO_AUTOLOAD | GLV_READ_ONLY | GLV_NO_DECL,
+			     FNE_CHECK_START);
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)

@@ -2307,6 +2307,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :command-nargs	map.txt	/*:command-nargs*
 :command-range	map.txt	/*:command-range*
 :command-register	map.txt	/*:command-register*
+:command-repl	map.txt	/*:command-repl*
 :command-verbose	map.txt	/*:command-verbose*
 :comment	cmdline.txt	/*:comment*
 :comp	quickfix.txt	/*:comp*
@@ -3983,6 +3984,9 @@ E121	eval.txt	/*E121*
 E1214	eval.txt	/*E1214*
 E122	eval.txt	/*E122*
 E123	eval.txt	/*E123*
+E1231	map.txt	/*E1231*
+E1232	eval.txt	/*E1232*
+E1233	eval.txt	/*E1233*
 E124	eval.txt	/*E124*
 E125	eval.txt	/*E125*
 E126	eval.txt	/*E126*
@@ -4740,7 +4744,7 @@ E835	options.txt	/*E835*
 E836	if_pyth.txt	/*E836*
 E837	if_pyth.txt	/*E837*
 E838	netbeans.txt	/*E838*
-E839	insert.txt	/*E839*
+E839	message.txt	/*E839*
 E84	windows.txt	/*E84*
 E840	insert.txt	/*E840*
 E841	map.txt	/*E841*
@@ -4793,6 +4797,7 @@ E885	sign.txt	/*E885*
 E886	starting.txt	/*E886*
 E887	if_pyth.txt	/*E887*
 E888	pattern.txt	/*E888*
+E889	message.txt	/*E889*
 E89	message.txt	/*E89*
 E890	syntax.txt	/*E890*
 E891	eval.txt	/*E891*
@@ -4835,7 +4840,7 @@ E924	quickfix.txt	/*E924*
 E925	quickfix.txt	/*E925*
 E926	quickfix.txt	/*E926*
 E927	eval.txt	/*E927*
-E928	eval.txt	/*E928*
+E928	message.txt	/*E928*
 E929	starting.txt	/*E929*
 E93	windows.txt	/*E93*
 E930	eval.txt	/*E930*
@@ -5165,6 +5170,10 @@ TabNew	autocmd.txt	/*TabNew*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
+TermdebugStartPost	terminal.txt	/*TermdebugStartPost*
+TermdebugStartPre	terminal.txt	/*TermdebugStartPre*
+TermdebugStopPost	terminal.txt	/*TermdebugStopPost*
+TermdebugStopPre	terminal.txt	/*TermdebugStopPre*
 Terminal-Job	terminal.txt	/*Terminal-Job*
 Terminal-Normal	terminal.txt	/*Terminal-Normal*
 Terminal-mode	terminal.txt	/*Terminal-mode*
@@ -6312,6 +6321,7 @@ execute-menus	gui.txt	/*execute-menus*
 exepath()	eval.txt	/*exepath()*
 exim	starting.txt	/*exim*
 exists()	eval.txt	/*exists()*
+exists_compiled()	eval.txt	/*exists_compiled()*
 exiting	starting.txt	/*exiting*
 exiting-variable	eval.txt	/*exiting-variable*
 exp()	eval.txt	/*exp()*
@@ -6942,6 +6952,7 @@ g:tar_nomax	pi_tar.txt	/*g:tar_nomax*
 g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
 g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
+g:termdebugger	terminal.txt	/*g:termdebugger*
 g:terminal_ansi_colors	terminal.txt	/*g:terminal_ansi_colors*
 g:tex_comment_nospell	syntax.txt	/*g:tex_comment_nospell*
 g:tex_conceal	syntax.txt	/*g:tex_conceal*
@@ -7770,6 +7781,7 @@ lua-funcref	if_lua.txt	/*lua-funcref*
 lua-list	if_lua.txt	/*lua-list*
 lua-luaeval	if_lua.txt	/*lua-luaeval*
 lua-vim	if_lua.txt	/*lua-vim*
+lua-vim-variables	if_lua.txt	/*lua-vim-variables*
 lua-window	if_lua.txt	/*lua-window*
 lua.vim	syntax.txt	/*lua.vim*
 luaeval()	eval.txt	/*luaeval()*
@@ -9646,6 +9658,7 @@ termcap-title	term.txt	/*termcap-title*
 termdebug-commands	terminal.txt	/*termdebug-commands*
 termdebug-communication	terminal.txt	/*termdebug-communication*
 termdebug-customizing	terminal.txt	/*termdebug-customizing*
+termdebug-events	terminal.txt	/*termdebug-events*
 termdebug-example	terminal.txt	/*termdebug-example*
 termdebug-prompt	terminal.txt	/*termdebug-prompt*
 termdebug-starting	terminal.txt	/*termdebug-starting*
@@ -10176,7 +10189,12 @@ vim-raku	ft_raku.txt	/*vim-raku*
 vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-use	intro.txt	/*vim-use*
 vim-variable	eval.txt	/*vim-variable*
+vim.b	if_lua.txt	/*vim.b*
+vim.g	if_lua.txt	/*vim.g*
+vim.t	if_lua.txt	/*vim.t*
+vim.v	if_lua.txt	/*vim.v*
 vim.vim	syntax.txt	/*vim.vim*
+vim.w	if_lua.txt	/*vim.w*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
 vim9	vim9.txt	/*vim9*
@@ -10189,6 +10207,7 @@ vim9-declarations	usr_46.txt	/*vim9-declarations*
 vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
 vim9-final	vim9.txt	/*vim9-final*
+vim9-function-defined-later	vim9.txt	/*vim9-function-defined-later*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
 vim9-ignored-argument	vim9.txt	/*vim9-ignored-argument*
 vim9-import	vim9.txt	/*vim9-import*

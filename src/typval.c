@@ -1704,7 +1704,7 @@ eval_number(
 	int	    want_string UNUSED)
 {
     int		len;
-    int		skip_quotes = current_sctx.sc_version >= 4 || in_vim9script();
+    int		skip_quotes = !in_old_script(4);
 #ifdef FEAT_FLOAT
     char_u	*p;
     int		get_float = FALSE;
@@ -2082,6 +2082,7 @@ eval_env_var(char_u **arg, typval_T *rettv, int evaluate)
 
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = string;
+	rettv->v_lock = 0;
     }
 
     return OK;

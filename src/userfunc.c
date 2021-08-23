@@ -822,6 +822,8 @@ get_function_body(
 		    else if (*p != NUL && *p != (vim9_function ? '#' : '"')
 					   && (vim9_function || p_verbose > 0))
 		    {
+			SOURCING_LNUM = sourcing_lnum_top
+							+ newlines->ga_len + 1;
 			if (eap->cmdidx == CMD_def)
 			    semsg(_(e_text_found_after_enddef_str), p);
 			else

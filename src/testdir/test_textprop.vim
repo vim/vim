@@ -339,6 +339,41 @@ func Test_prop_add()
   bwipe!
 endfunc
 
+" Test for the prop_add_list() function
+func Test_prop_add_list()
+  new
+  call AddPropTypes()
+  call setline(1, ['one one one', 'two two two', 'six six six', 'ten ten ten'])
+  call prop_add_list(#{type: 'one', id: 2},
+        \ [[1, 1, 1, 3], [2, 5, 2, 7], [3, 6, 4, 6]])
+  call assert_equal([#{id: 2, col: 1, type_bufnr: 0, end: 1, type: 'one',
+        \ length: 2, start: 1}], prop_list(1))
+  call assert_equal([#{id: 2, col: 5, type_bufnr: 0, end: 1, type: 'one',
+        \ length: 2, start: 1}], prop_list(2))
+  call assert_equal([#{id: 2, col: 6, type_bufnr: 0, end: 0, type: 'one',
+        \ length: 7, start: 1}], prop_list(3))
+  call assert_equal([#{id: 2, col: 1, type_bufnr: 0, end: 1, type: 'one',
+        \ length: 5, start: 0}], prop_list(4))
+  call assert_fails('call prop_add_list([1, 2], [[1, 1, 3]])', 'E1206:')
+  call assert_fails('call prop_add_list({}, {})', 'E1211:')
+  call assert_fails('call prop_add_list({}, [[1, 1, 3]])', 'E965:')
+  call assert_fails('call prop_add_list(#{type: "abc"}, [[1, 1, 1, 3]])', 'E971:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[]])', 'E474:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[1, 1, 1, 1], {}])', 'E714:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[1, 1, "a"]])', 'E474:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[2, 2]])', 'E474:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[1, 1, 2], [2, 2]])', 'E474:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[1, 1, 1, 2], [4, 1, 5, 2]])', 'E966:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[3, 1, 1, 2]])', 'E966:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [[2, 2, 2, 2], [3, 20, 3, 22]])', 'E964:')
+  call assert_fails('eval #{type: "one"}->prop_add_list([[2, 2, 2, 2], [3, 20, 3, 22]])', 'E964:')
+  call assert_fails('call prop_add_list(test_null_dict(), [[2, 2, 2]])', 'E965:')
+  call assert_fails('call prop_add_list(#{type: "one"}, test_null_list())', 'E714:')
+  call assert_fails('call prop_add_list(#{type: "one"}, [test_null_list()])', 'E714:')
+  call DeletePropTypes()
+  bw!
+endfunc
+
 func Test_prop_remove()
   new
   call AddPropTypes()
@@ -809,8 +844,19 @@ func Test_prop_line2byte()
   call assert_equal(19, line2byte(3))
   call prop_add(1, 1, {'end_col': 3, 'type': 'comment'})
   call assert_equal(19, line2byte(3))
-
   bwipe!
+
+  new
+  setlocal ff=unix
+  call setline(1, range(500))
+  call assert_equal(1491, line2byte(401))
+  call prop_add(2, 1, {'type': 'comment'})
+  call prop_add(222, 1, {'type': 'comment'})
+  call assert_equal(1491, line2byte(401))
+  call prop_remove({'type': 'comment'})
+  call assert_equal(1491, line2byte(401))
+  bwipe!
+
   call prop_type_delete('comment')
 endfunc
 

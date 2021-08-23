@@ -45,7 +45,6 @@ typedef struct
     int		fi_byte_idx;	// byte index in fi_string
 } forinfo_T;
 
-static int tv_op(typval_T *tv1, typval_T *tv2, char_u  *op);
 static int eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
@@ -827,7 +826,6 @@ get_lval(
     typval_T	var1;
     typval_T	var2;
     int		empty1 = FALSE;
-    listitem_T	*ni;
     char_u	*key = NULL;
     int		len;
     hashtab_T	*ht = NULL;
@@ -904,17 +902,27 @@ get_lval(
     if ((*p != '[' && *p != '.') || lp->ll_name == NULL)
 	return p;
 
-    cc = *p;
-    *p = NUL;
-    // When we would write to the variable pass &ht and prevent autoload.
-    writing = !(flags & GLV_READ_ONLY);
-    v = find_var(lp->ll_name, writing ? &ht : NULL,
+    if (in_vim9script() && lval_root != NULL)
+    {
+	// using local variable
+	lp->ll_tv = lval_root;
+	v = NULL;
+    }
+    else
+    {
+	cc = *p;
+	*p = NUL;
+	// When we would write to the variable pass &ht and prevent autoload.
+	writing = !(flags & GLV_READ_ONLY);
+	v = find_var(lp->ll_name, writing ? &ht : NULL,
 					 (flags & GLV_NO_AUTOLOAD) || writing);
-    if (v == NULL && !quiet)
-	semsg(_(e_undefined_variable_str), lp->ll_name);
-    *p = cc;
-    if (v == NULL)
-	return NULL;
+	if (v == NULL && !quiet)
+	    semsg(_(e_undefined_variable_str), lp->ll_name);
+	*p = cc;
+	if (v == NULL)
+	    return NULL;
+	lp->ll_tv = &v->di_tv;
+    }
 
     if (in_vim9script() && (flags & GLV_NO_DECL) == 0)
     {
@@ -926,7 +934,6 @@ get_lval(
     /*
      * Loop until no more [idx] or .key is following.
      */
-    lp->ll_tv = &v->di_tv;
     var1.v_type = VAR_UNKNOWN;
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
@@ -961,6 +968,7 @@ get_lval(
 	}
 
 	if (in_vim9script() && lp->ll_valtype == NULL
+		&& v != NULL
 		&& lp->ll_tv == &v->di_tv
 		&& ht != NULL && ht == get_script_local_ht())
 	{
@@ -1210,23 +1218,11 @@ get_lval(
 
 	    lp->ll_dict = NULL;
 	    lp->ll_list = lp->ll_tv->vval.v_list;
-	    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
+	    lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1, quiet);
 	    if (lp->ll_li == NULL)
 	    {
-		// Vim9: Allow for adding an item at the end.
-		if (in_vim9script() && lp->ll_n1 == lp->ll_list->lv_len
-						  && lp->ll_list->lv_lock == 0)
-		{
-		    list_append_number(lp->ll_list, 0);
-		    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
-		}
-		if (lp->ll_li == NULL)
-		{
-		    clear_tv(&var2);
-		    if (!quiet)
-			semsg(_(e_listidx), lp->ll_n1);
-		    return NULL;
-		}
+		clear_tv(&var2);
+		return NULL;
 	    }
 
 	    if (lp->ll_valtype != NULL)
@@ -1244,27 +1240,10 @@ get_lval(
 		lp->ll_n2 = (long)tv_get_number(&var2);
 						    // is number or string
 		clear_tv(&var2);
-		if (lp->ll_n2 < 0)
-		{
-		    ni = list_find(lp->ll_list, lp->ll_n2);
-		    if (ni == NULL)
-		    {
-			if (!quiet)
-			    semsg(_(e_listidx), lp->ll_n2);
-			return NULL;
-		    }
-		    lp->ll_n2 = list_idx_of_item(lp->ll_list, ni);
-		}
-
-		// Check that lp->ll_n2 isn't before lp->ll_n1.
-		if (lp->ll_n1 < 0)
-		    lp->ll_n1 = list_idx_of_item(lp->ll_list, lp->ll_li);
-		if (lp->ll_n2 < lp->ll_n1)
-		{
-		    if (!quiet)
-			semsg(_(e_listidx), lp->ll_n2);
+		if (check_range_index_two(lp->ll_list,
+					    &lp->ll_n1, lp->ll_li,
+					    &lp->ll_n2, quiet) == FAIL)
 		    return NULL;
-		}
 	    }
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
@@ -1303,7 +1282,6 @@ set_var_lval(
     int		var_idx)    // index for "let [a, b] = list"
 {
     int		cc;
-    listitem_T	*ri;
     dictitem_T	*di;
 
     if (lp->ll_tv == NULL)
@@ -1383,9 +1361,6 @@ set_var_lval(
 	;
     else if (lp->ll_range)
     {
-	listitem_T *ll_li = lp->ll_li;
-	int	    ll_n1 = lp->ll_n1;
-
 	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	{
@@ -1393,53 +1368,8 @@ set_var_lval(
 	    return;
 	}
 
-	/*
-	 * Check whether any of the list items is locked
-	 */
-	for (ri = rettv->vval.v_list->lv_first; ri != NULL && ll_li != NULL; )
-	{
-	    if (value_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
-		return;
-	    ri = ri->li_next;
-	    if (ri == NULL || (!lp->ll_empty2 && lp->ll_n2 == ll_n1))
-		break;
-	    ll_li = ll_li->li_next;
-	    ++ll_n1;
-	}
-
-	/*
-	 * Assign the List values to the list items.
-	 */
-	for (ri = rettv->vval.v_list->lv_first; ri != NULL; )
-	{
-	    if (op != NULL && *op != '=')
-		tv_op(&lp->ll_li->li_tv, &ri->li_tv, op);
-	    else
-	    {
-		clear_tv(&lp->ll_li->li_tv);
-		copy_tv(&ri->li_tv, &lp->ll_li->li_tv);
-	    }
-	    ri = ri->li_next;
-	    if (ri == NULL || (!lp->ll_empty2 && lp->ll_n2 == lp->ll_n1))
-		break;
-	    if (lp->ll_li->li_next == NULL)
-	    {
-		// Need to add an empty item.
-		if (list_append_number(lp->ll_list, 0) == FAIL)
-		{
-		    ri = NULL;
-		    break;
-		}
-	    }
-	    lp->ll_li = lp->ll_li->li_next;
-	    ++lp->ll_n1;
-	}
-	if (ri != NULL)
-	    emsg(_(e_list_value_has_more_items_than_targets));
-	else if (lp->ll_empty2
-		? (lp->ll_li != NULL && lp->ll_li->li_next != NULL)
-		: lp->ll_n1 != lp->ll_n2)
-	    emsg(_(e_list_value_does_not_have_enough_items));
+	(void)list_assign_range(lp->ll_list, rettv->vval.v_list,
+			 lp->ll_n1, lp->ll_n2, lp->ll_empty2, op, lp->ll_name);
     }
     else
     {
@@ -1507,7 +1437,7 @@ set_var_lval(
  * and "tv1 .= tv2"
  * Returns OK or FAIL.
  */
-    static int
+    int
 tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 {
     varnumber_T	n;
@@ -2930,7 +2860,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	// "++" and "--" on the next line are a separate command.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	op = *p;
-	concat = op == '.' && (*(p + 1) == '.' || current_sctx.sc_version < 2);
+	concat = op == '.' && (*(p + 1) == '.' || in_old_script(2));
 	if ((op != '+' && op != '-' && !concat) || p[1] == '='
 					       || (p[1] == '.' && p[2] == '='))
 	    break;
@@ -3471,7 +3401,7 @@ eval7(
 
     if (**arg == '.' && (!isdigit(*(*arg + 1))
 #ifdef FEAT_FLOAT
-	    || current_sctx.sc_version < 2
+	    || in_old_script(2)
 #endif
 	    ))
     {
@@ -5946,7 +5876,7 @@ handle_subscript(
 		|| (**arg == '.' && (rettv->v_type == VAR_DICT
 			|| (!evaluate
 			    && (*arg)[1] != '.'
-			    && current_sctx.sc_version >= 2))))
+			    && !in_old_script(2)))))
 	{
 	    dict_unref(selfdict);
 	    if (rettv->v_type == VAR_DICT)

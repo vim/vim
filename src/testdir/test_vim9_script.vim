@@ -469,21 +469,21 @@ def Test_try_catch_throw()
 
   try
     n = -g:astring
-  catch /E39:/
+  catch /E1012:/
     n = 233
   endtry
   assert_equal(233, n)
 
   try
     n = +g:astring
-  catch /E1030:/
+  catch /E1012:/
     n = 244
   endtry
   assert_equal(244, n)
 
   try
     n = +g:alist
-  catch /E745:/
+  catch /E1012:/
     n = 255
   endtry
   assert_equal(255, n)
@@ -2552,6 +2552,70 @@ def Test_for_outside_of_function()
   delete('Xvim9for.vim')
 enddef
 
+def Test_for_skipped_block()
+  # test skipped blocks at outside of function
+  var lines =<< trim END
+    var result = []
+    if true
+      for n in [1, 2]
+        result += [n]
+      endfor
+    else
+      for n in [3, 4]
+        result += [n]
+      endfor
+    endif
+    assert_equal([1, 2], result)
+
+    result = []
+    if false
+      for n in [1, 2]
+        result += [n]
+      endfor
+    else
+      for n in [3, 4]
+        result += [n]
+      endfor
+    endif
+    assert_equal([3, 4], result)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  # test skipped blocks at inside of function
+  lines =<< trim END
+    def DefTrue()
+      var result = []
+      if true
+        for n in [1, 2]
+          result += [n]
+        endfor
+      else
+        for n in [3, 4]
+          result += [n]
+        endfor
+      endif
+      assert_equal([1, 2], result)
+    enddef
+    DefTrue()
+
+    def DefFalse()
+      var result = []
+      if false
+        for n in [1, 2]
+          result += [n]
+        endfor
+      else
+        for n in [3, 4]
+          result += [n]
+        endfor
+      endif
+      assert_equal([3, 4], result)
+    enddef
+    DefFalse()
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_for_loop()
   var lines =<< trim END
       var result = ''
@@ -2852,6 +2916,89 @@ def Test_for_loop_with_try_continue()
       endfor
       assert_equal(3, looped)
       assert_equal(3, cleanup)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_while_skipped_block()
+  # test skipped blocks at outside of function
+  var lines =<< trim END
+    var result = []
+    var n = 0
+    if true
+      n = 1
+      while n < 3
+        result += [n]
+        n += 1
+      endwhile
+    else
+      n = 3
+      while n < 5
+        result += [n]
+        n += 1
+      endwhile
+    endif
+    assert_equal([1, 2], result)
+
+    result = []
+    if false
+      n = 1
+      while n < 3
+        result += [n]
+        n += 1
+      endwhile
+    else
+      n = 3
+      while n < 5
+        result += [n]
+        n += 1
+      endwhile
+    endif
+    assert_equal([3, 4], result)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  # test skipped blocks at inside of function
+  lines =<< trim END
+    def DefTrue()
+      var result = []
+      var n = 0
+      if true
+        n = 1
+        while n < 3
+          result += [n]
+          n += 1
+        endwhile
+      else
+        n = 3
+        while n < 5
+          result += [n]
+          n += 1
+        endwhile
+      endif
+      assert_equal([1, 2], result)
+    enddef
+    DefTrue()
+
+    def DefFalse()
+      var result = []
+      var n = 0
+      if false
+        n = 1
+        while n < 3
+          result += [n]
+          n += 1
+        endwhile
+      else
+        n = 3
+        while n < 5
+          result += [n]
+          n += 1
+        endwhile
+      endif
+      assert_equal([3, 4], result)
+    enddef
+    DefFalse()
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -3412,7 +3559,7 @@ def Test_vim9_comment_gui()
   CheckScriptFailure([
       'vim9script',
       'gui -f#comment'
-      ], 'E499:')
+      ], 'E194:')
 enddef
 
 def Test_vim9_comment_not_compiled()

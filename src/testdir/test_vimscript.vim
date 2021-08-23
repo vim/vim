@@ -5657,7 +5657,12 @@ func Test_throw_multi_error()
           call EXEC(cmd . ' novar #')		" normal plus syntax error
         catch /^Vim\((\a\+)\)\=:/
           Xloop 'e'
-          call assert_match('E488: Trailing characters', v:exception)
+          if cmd =~ 'unlet'
+            " TODO: should get error for 'novar'
+            call assert_match('E488: Trailing characters', v:exception)
+          else
+            call assert_match('E121: Undefined variable: novar', v:exception)
+          endif
         finally
           Xloop 'f'
           call assert_equal("", v:errmsg)

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Jul 26
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Aug 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,14 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Try out callgrind with kcachegrind.
-
 Vim9 - Make everything work:
-- Check TODO items in vim9compile.c and vim9execute.c
 - use CheckLegacyAndVim9Success(lines) in many more places
-    This doesn't work - Test_list_assign():
-	  var l = [0]
-	  l[:] = [1, 2]
+- Check TODO items in vim9compile.c and vim9execute.c
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
@@ -60,6 +55,7 @@ Vim9 - Make everything work:
   defined.
 - Unexpected error message when using "var x: any | x.key = 9", because "x" is
   given the type number.  Can we use VAR_ANY?
+- Check performance with callgrind and kcachegrind.
 
 Once Vim9 is stable:
 - Add the "vim9script" feature, can use has('vim9script')
@@ -75,6 +71,8 @@ Further Vim9 improvements, possibly after launch:
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
   'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
   Give an error if compilation fails. (#7625)
+  Alternatively: Detect a compiled function call and skip the expression
+  evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
 - implement :type, "import type"
@@ -235,7 +233,6 @@ Valgrind reports overlapping memcpy in
     test_normal
     test_popupwin.35 et al.
     test_search_stat
-Using uninitialized value in test_crypt (can't explain why).
 Memory leak in test_debugger
 Memory leak in test_paste, using XtOpenDisplay several times
 OLD:
@@ -291,8 +288,6 @@ Scroll doesn't work correctly, why?
 glob() and globfile() do not always honor 'wildignorecase'. #8350
 globpath() does not use 'wildignorecase' at all?
 
-":find" incorrectly searches parent directory of path (#8533)
-
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
 
@@ -304,9 +299,6 @@ Missing filetype test for bashrc, PKGBUILD, etc.
 
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
 changes.
-
-MS-Windows: instead of "edit with multiple Vims" use "Edit with Vim in
-multiple tabs". #8404
 
 When using ":bwipe!" also get rid of references to be buffer, e.g. in the
 jumplist and alternate file.
@@ -723,9 +715,6 @@ tab page. (Ingo Karkat, #4324)
 
 This modeline throws unexpected errors: (#4165)
     vim: syn=nosyntax
-
-":doau SomeEvent" gives "No matching autocommands".  This message doesn't give
-a hint about how to fix it. (#4300)
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)

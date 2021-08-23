@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2021 Jul 19
+*usr_41.txt*	For Vim version 8.2.  Last change: 2021 Aug 08
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1161,6 +1161,7 @@ Prompt Buffer:					*promptbuffer-functions*
 
 Text Properties:				*text-property-functions*
 	prop_add()		attach a property at a position
+	prop_add_list()		attach a property at multiple positions
 	prop_clear()		remove all properties from a line or lines
 	prop_find()		search for a property
 	prop_list()		return a list of all properties in a line

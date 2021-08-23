@@ -3123,6 +3123,17 @@ def Test_expr7_not()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+let g:anumber = 42
+
+def Test_expr7_negate()
+  var lines =<< trim END
+      var nr = 1
+      assert_equal(-1, -nr)
+      assert_equal(-42, -g:anumber)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 func Test_expr7_fails()
   call CheckDefFailure(["var x = (12"], "E1097:", 3)
   call CheckScriptFailure(['vim9script', "var x = (12"], 'E110:', 2)
@@ -3130,8 +3141,8 @@ func Test_expr7_fails()
   call CheckDefAndScriptFailure(["var x = -'xx'"], "E1030:", 1)
   call CheckDefAndScriptFailure(["var x = +'xx'"], "E1030:", 1)
   call CheckDefAndScriptFailure(["var x = -0z12"], "E974:", 1)
-  call CheckDefExecAndScriptFailure2(["var x = -[8]"], "E39:", 'E745:', 1)
-  call CheckDefExecAndScriptFailure2(["var x = -{a: 1}"], "E39:", 'E728:', 1)
+  call CheckDefExecAndScriptFailure2(["var x = -[8]"], "E1012:", 'E745:', 1)
+  call CheckDefExecAndScriptFailure2(["var x = -{a: 1}"], "E1012:", 'E728:', 1)
 
   call CheckDefAndScriptFailure(["var x = @"], "E1002:", 1)
   call CheckDefAndScriptFailure(["var x = @<"], "E354:", 1)
@@ -3154,10 +3165,10 @@ func Test_expr7_fails()
   call CheckDefAndScriptFailure2(["echo l:somevar"], 'E1075:', 'E121:', 1)
   call CheckDefAndScriptFailure2(["echo x:somevar"], 'E1075:', 'E121:', 1)
 
-  call CheckDefExecAndScriptFailure(["var x = +g:astring"], 'E1030:', 1)
-  call CheckDefExecAndScriptFailure(["var x = +g:ablob"], 'E974:', 1)
-  call CheckDefExecAndScriptFailure(["var x = +g:alist"], 'E745:', 1)
-  call CheckDefExecAndScriptFailure(["var x = +g:adict"], 'E728:', 1)
+  call CheckDefExecAndScriptFailure2(["var x = +g:astring"], 'E1012:', 'E1030:', 1)
+  call CheckDefExecAndScriptFailure2(["var x = +g:ablob"], 'E1012:', 'E974:', 1)
+  call CheckDefExecAndScriptFailure2(["var x = +g:alist"], 'E1012:', 'E745:', 1)
+  call CheckDefExecAndScriptFailure2(["var x = +g:adict"], 'E1012:', 'E728:', 1)
 
   call CheckDefAndScriptFailure2(["var x = ''", "var y = x.memb"], 'E1229: Expected dictionary for using key "memb", but got string', 'E488:', 2)
 

@@ -2951,7 +2951,7 @@ parse_command_modifiers(
 			    if (ends_excmd2(p, eap->cmd))
 			    {
 				*errormsg =
-				      _(e_vim9cmd_must_be_followed_by_command);
+				      _(e_legacy_must_be_followed_by_command);
 				return FAIL;
 			    }
 			    cmod->cmod_flags |= CMOD_LEGACY;
@@ -3425,12 +3425,37 @@ find_ex_command(
     {
 	char_u *pskip = skip_option_env_lead(eap->cmd);
 
-	if (vim_strchr((char_u *)"{('[\"@", *p) != NULL
+	if (vim_strchr((char_u *)"{('[\"@&", *p) != NULL
 	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
 	{
 	    int	    oplen;
 	    int	    heredoc;
-	    char_u  *swp = skipwhite(p);
+	    char_u  *swp;
+
+	    if (*eap->cmd == '&' || (eap->cmd[0] == '@'
+					&& (valid_yank_reg(eap->cmd[1], FALSE)
+						       || eap->cmd[1] == '@')))
+	    {
+		if (*eap->cmd == '&')
+		{
+		    p = eap->cmd + 1;
+		    if (STRNCMP("l:", p, 2) == 0 || STRNCMP("g:", p, 2) == 0)
+			p += 2;
+		    p = to_name_end(p, FALSE);
+		}
+		else
+		    p = eap->cmd + 2;
+		if (ends_excmd(*skipwhite(p)))
+		{
+		    // "&option <NL>" and "@r <NL>" is the start of an
+		    // expression.
+		    eap->cmdidx = CMD_eval;
+		    return eap->cmd;
+		}
+		// "&option" can be followed by "->" or "=", check below
+	    }
+
+	    swp = skipwhite(p);
 
 	    if (
 		// "(..." is an expression.
@@ -3530,10 +3555,10 @@ find_ex_command(
 
 	    // Recognize an assignment if we recognize the variable name:
 	    // "g:var = expr"
+	    // "@r = expr"
+	    // "&opt = expr"
 	    // "var = expr"  where "var" is a variable name or we are skipping
 	    // (variable declaration might have been skipped).
-	    if (*eap->cmd == '@')
-		p = eap->cmd + 2;
 	    oplen = assignment_len(skipwhite(p), &heredoc);
 	    if (oplen > 0)
 	    {

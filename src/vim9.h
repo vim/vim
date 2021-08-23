@@ -70,6 +70,7 @@ typedef enum {
     ISN_UNLETINDEX,	// unlet item of list or dict
     ISN_UNLETRANGE,	// unlet items of list
 
+    ISN_LOCKUNLOCK,	// :lock and :unlock for local variable member
     ISN_LOCKCONST,	// lock constant value
 
     // constants

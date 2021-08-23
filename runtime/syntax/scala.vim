@@ -3,7 +3,7 @@
 " Maintainer:           Derek Wyatt
 " URL:                  https://github.com/derekwyatt/vim-scala
 " License:              Same as Vim
-" Last Change:          11 August 2021
+" Last Change:          23 August 2021
 " ----------------------------------------------------------------------------
 
 if !exists('main_syntax')

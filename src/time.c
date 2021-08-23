@@ -520,6 +520,7 @@ check_due_timer(void)
 	    int save_timer_busy = timer_busy;
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_did_emsg = did_emsg;
+	    int prev_uncaught_emsg = uncaught_emsg;
 	    int save_called_emsg = called_emsg;
 	    int save_must_redraw = must_redraw;
 	    int save_trylevel = trylevel;
@@ -536,7 +537,6 @@ check_due_timer(void)
 	    vgetc_busy = 0;
 	    called_emsg = 0;
 	    did_emsg = FALSE;
-	    did_uncaught_emsg = FALSE;
 	    must_redraw = 0;
 	    trylevel = 0;
 	    did_throw = FALSE;
@@ -555,7 +555,7 @@ check_due_timer(void)
 	    did_one = TRUE;
 	    timer_busy = save_timer_busy;
 	    vgetc_busy = save_vgetc_busy;
-	    if (did_uncaught_emsg)
+	    if (uncaught_emsg > prev_uncaught_emsg)
 		++timer->tr_emsg_count;
 	    did_emsg = save_did_emsg;
 	    called_emsg = save_called_emsg;

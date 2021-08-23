@@ -34,6 +34,18 @@ in_vim9script(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
+ * Return TRUE when currently in a script with script version smaller than
+ * "max_version" or command modifiers forced it.
+ */
+    int
+in_old_script(int max_version)
+{
+    return (current_sctx.sc_version < max_version
+					&& !(cmdmod.cmod_flags & CMOD_VIM9CMD))
+		|| (cmdmod.cmod_flags & CMOD_LEGACY);
+}
+
+/*
  * Return TRUE if the current script is Vim9 script.
  * This also returns TRUE in a legacy function in a Vim9 script.
  */

@@ -774,7 +774,7 @@ ex_let(exarg_T *eap)
 	--argend;
     expr = skipwhite(argend);
     concat = expr[0] == '.'
-	&& ((expr[1] == '=' && current_sctx.sc_version < 2)
+	&& ((expr[1] == '=' && in_old_script(2))
 		|| (expr[1] == '.' && expr[2] == '='));
     has_assign =  *expr == '=' || (vim_strchr((char_u *)"+-*/%", *expr) != NULL
 							    && expr[1] == '=');
@@ -1193,7 +1193,8 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		semsg(_(e_trailing_arg), arg);
+		if (!did_emsg)
+		    semsg(_(e_trailing_arg), arg);
 		break;
 	    }
 	}
@@ -2635,6 +2636,8 @@ eval_variable(
 	{
 	    ufunc_T *ufunc = find_func(name, FALSE, NULL);
 
+	    // In Vim9 script we can get a function reference by using the
+	    // function name.
 	    if (ufunc != NULL)
 	    {
 		found = TRUE;
@@ -2642,6 +2645,8 @@ eval_variable(
 		{
 		    rettv->v_type = VAR_FUNC;
 		    rettv->vval.v_string = vim_strsave(ufunc->uf_name);
+		    if (rettv->vval.v_string != NULL)
+			func_ref(ufunc->uf_name);
 		}
 	    }
 	}
@@ -2931,7 +2936,7 @@ find_var_ht(char_u *name, char_u **varname)
 
 	// "version" is "v:version" in all scopes if scriptversion < 3.
 	// Same for a few other variables marked with VV_COMPAT.
-	if (current_sctx.sc_version < 3)
+	if (in_old_script(3))
 	{
 	    hi = hash_find(&compat_hashtab, name);
 	    if (!HASHITEM_EMPTY(hi))
