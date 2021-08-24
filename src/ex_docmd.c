@@ -3425,14 +3425,16 @@ find_ex_command(
     {
 	char_u *pskip = skip_option_env_lead(eap->cmd);
 
-	if (vim_strchr((char_u *)"{('[\"@&", *p) != NULL
+	if (vim_strchr((char_u *)"{('[\"@&$", *p) != NULL
 	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
 	{
 	    int	    oplen;
 	    int	    heredoc;
 	    char_u  *swp;
 
-	    if (*eap->cmd == '&' || (eap->cmd[0] == '@'
+	    if (*eap->cmd == '&'
+		    || *eap->cmd == '$'
+		    || (eap->cmd[0] == '@'
 					&& (valid_yank_reg(eap->cmd[1], FALSE)
 						       || eap->cmd[1] == '@')))
 	    {
@@ -3443,12 +3445,14 @@ find_ex_command(
 			p += 2;
 		    p = to_name_end(p, FALSE);
 		}
+		else if (*eap->cmd == '$')
+		    p = to_name_end(eap->cmd + 1, FALSE);
 		else
 		    p = eap->cmd + 2;
 		if (ends_excmd(*skipwhite(p)))
 		{
-		    // "&option <NL>" and "@r <NL>" is the start of an
-		    // expression.
+		    // "&option <NL>", "$ENV <NL>" and "@r <NL>" are the start
+		    // of an expression.
 		    eap->cmdidx = CMD_eval;
 		    return eap->cmd;
 		}

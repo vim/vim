@@ -9745,9 +9745,11 @@ compile_def_function(
 	 * COMMAND after range
 	 * 'text'->func() should not be confused with 'a mark
 	 * "++nr" and "--nr" are eval commands
+	 * in "$ENV->func()" the "$" is not a range
 	 */
 	cmd = ea.cmd;
 	if (!(local_cmdmod.cmod_flags & CMOD_LEGACY)
+		&& (*cmd != '$' || starts_with_colon)
 		&& (starts_with_colon || !(*cmd == '\''
 		       || (cmd[0] == cmd[1] && (*cmd == '+' || *cmd == '-')))))
 	{

@@ -1722,6 +1722,8 @@ def Test_var_type_check()
   END
   CheckScriptFailure(lines, 'E1069:')
 
+  CheckDefAndScriptFailure(['var n:number = 42'], 'E1069:')
+
   lines =<< trim END
     vim9script
     var name: asdf
