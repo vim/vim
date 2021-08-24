@@ -553,6 +553,22 @@ def Test_register_use_linebreak()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_environment_use_linebreak()
+  var lines =<< trim END
+      new
+      $TESTENV = 'one'
+      $TESTENV->setline(1)
+      $TESTENV = 'two'
+      $TESTENV  ->setline(2)
+      $TESTENV = 'three'
+      $TESTENV  
+          ->setline(3)
+      assert_equal(['one', 'two', 'three'], getline(1, '$'))
+      bwipe!
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_skipped_expr_linebreak()
   if 0
     var x = []
