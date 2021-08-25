@@ -858,6 +858,7 @@ func Test_prop_line2byte()
   bwipe!
 
   new
+  setlocal ff=unix
   call setline(1, range(520))
   call assert_equal(1491, line2byte(401))
   call prop_add(2, 1, {'type': 'comment'})
