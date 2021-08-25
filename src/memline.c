@@ -3251,9 +3251,15 @@ ml_append_int(
     }
 
 #ifdef FEAT_BYTEOFF
+# ifdef FEAT_PROP_POPUP
+    if (curbuf->b_has_textprop)
+	// only use the space needed for the text, ignore properties
+	len = (colnr_T)STRLEN(line) + 1;
+# endif
     // The line was inserted below 'lnum'
     ml_updatechunk(buf, lnum + 1, (long)len, ML_CHNK_ADDLINE);
 #endif
+
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
     {
@@ -3752,7 +3758,11 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
     }
 
 #ifdef FEAT_BYTEOFF
-    ml_updatechunk(buf, lnum, line_size, ML_CHNK_DELLINE);
+    ml_updatechunk(buf, lnum, line_size
+# ifdef FEAT_PROP_POPUP
+					- textprop_save_len
+# endif
+							    , ML_CHNK_DELLINE);
 #endif
     ret = OK;
 

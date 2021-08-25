@@ -857,6 +857,15 @@ func Test_prop_line2byte()
   call assert_equal(1491, line2byte(401))
   bwipe!
 
+  new
+  call setline(1, range(520))
+  call assert_equal(1491, line2byte(401))
+  call prop_add(2, 1, {'type': 'comment'})
+  call assert_equal(1491, line2byte(401))
+  2delete
+  call assert_equal(1489, line2byte(400))
+  bwipe!
+
   call prop_type_delete('comment')
 endfunc
 
