@@ -887,6 +887,26 @@ report_discard_pending(int pending, void *value)
     }
 }
 
+    int
+cmd_is_name_only(char_u *arg)
+{
+    char_u  *p = arg;
+    char_u  *alias;
+    int	    name_only = FALSE;
+
+    if (*p == '&')
+    {
+	++p;
+	if (STRNCMP("l:", p, 2) == 0 || STRNCMP("g:", p, 2) == 0)
+	    p += 2;
+    }
+    else if (*p == '@')
+	++p;
+    get_name_len(&p, &alias, FALSE, FALSE);
+    name_only = ends_excmd2(arg, skipwhite(p));
+    vim_free(alias);
+    return name_only;
+}
 
 /*
  * ":eval".
@@ -897,18 +917,10 @@ ex_eval(exarg_T *eap)
     typval_T	tv;
     evalarg_T	evalarg;
     int		name_only = FALSE;
-    char_u	*p;
     long	lnum = SOURCING_LNUM;
 
     if (in_vim9script())
-    {
-	char_u	*alias;
-
-	p = eap->arg;
-	get_name_len(&p, &alias, FALSE, FALSE);
-	name_only = ends_excmd2(eap->arg, skipwhite(p));
-	vim_free(alias);
-    }
+	name_only = cmd_is_name_only(eap->arg);
 
     fill_evalarg_from_eap(&evalarg, eap, eap->skip);
 

@@ -12,6 +12,7 @@ int throw_exception(void *value, except_type_T type, char_u *cmdname);
 void discard_current_exception(void);
 void catch_exception(except_T *excp);
 void report_make_pending(int pending, void *value);
+int cmd_is_name_only(char_u *arg);
 void ex_eval(exarg_T *eap);
 void ex_if(exarg_T *eap);
 void ex_endif(exarg_T *eap);

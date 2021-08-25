@@ -537,7 +537,7 @@ def Test_option_use_linebreak()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_register_use_linebreak()
+def Test_use_register()
   var lines =<< trim END
       new
       @a = 'one'
@@ -551,6 +551,12 @@ def Test_register_use_linebreak()
       bwipe!
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      @a = 'echo "text"'
+      @a
+  END
+  CheckDefAndScriptFailure(lines, 'E1207:')
 enddef
 
 def Test_environment_use_linebreak()

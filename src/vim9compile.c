@@ -8828,17 +8828,13 @@ compile_eval(char_u *arg, cctx_T *cctx)
 {
     char_u	*p = arg;
     int		name_only;
-    char_u	*alias;
     long	lnum = SOURCING_LNUM;
 
     // find_ex_command() will consider a variable name an expression, assuming
     // that something follows on the next line.  Check that something actually
     // follows, otherwise it's probably a misplaced command.
-    get_name_len(&p, &alias, FALSE, FALSE);
-    name_only = ends_excmd2(arg, skipwhite(p));
-    vim_free(alias);
+    name_only = cmd_is_name_only(arg);
 
-    p = arg;
     if (compile_expr0(&p, cctx) == FAIL)
 	return NULL;
 
