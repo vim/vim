@@ -146,7 +146,7 @@ NOTE: As you go through this tutor, do not try to memorize, learn by usage.
   1. Exit this tutor as you did in lesson 1.2:  :q!
      Or, if you have access to another terminal, do the following there.
 
-  2. At the shell prompt type this command:  vim tutor <ENTER>
+  2. At the shell prompt type this command:  vimtutor <ENTER>
      'vim' is the command to start the Vim editor, 'tutor' is the name of the
      file you wish to edit.  Use a file that may be changed.
 
