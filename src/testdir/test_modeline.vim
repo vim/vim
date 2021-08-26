@@ -360,4 +360,11 @@ func Test_modeline_diff_buffer()
   bw
 endfunc
 
+func Test_modeline_disable()
+  set modeline
+  call writefile(['vim: nomodeline: sw=3'], 'Xmodeline_disable')
+  call assert_equal(8, &sw)
+  call delete('Xmodeline_disable')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
