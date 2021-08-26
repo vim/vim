@@ -751,6 +751,11 @@ func Test_cmdline_complete_expression()
   unlet g:SomeVar
 endfunc
 
+" Unique function name for completion below
+func s:WeirdFunc()
+  echo 'weird'
+endfunc
+
 " Test for various command-line completion
 func Test_cmdline_complete_various()
   " completion for a command starting with a comment
@@ -832,6 +837,9 @@ func Test_cmdline_complete_various()
   call assert_equal("\"disas debug Test_cmdline_complete_various", @:)
   call feedkeys(":disas profile Test_cmdline_complete_var\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"disas profile Test_cmdline_complete_various", @:)
+
+  call feedkeys(":disas s:WeirdF\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_match('"disas <SNR>\d\+_WeirdFunc()', @:)
 
   " completion for the :match command
   call feedkeys(":match Search /pat/\<C-A>\<C-B>\"\<CR>", 'xt')

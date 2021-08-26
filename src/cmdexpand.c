@@ -2073,7 +2073,9 @@ ExpandFromContext(
 
     // When expanding a function name starting with s:, match the <SNR>nr_
     // prefix.
-    if (xp->xp_context == EXPAND_USER_FUNC && STRNCMP(pat, "^s:", 3) == 0)
+    if ((xp->xp_context == EXPAND_USER_FUNC
+				       || xp->xp_context == EXPAND_DISASSEMBLE)
+	    && STRNCMP(pat, "^s:", 3) == 0)
     {
 	int len = (int)STRLEN(pat) + 20;
 
