@@ -1756,6 +1756,8 @@ func Test_edit_insertmode_esc_beeps()
   set insertmode&
   " unsupported CTRL-G command should beep in insert mode.
   call assert_beeps("normal i\<C-G>l")
+  " CTRL-G CTRL-G should not beep
+  call assert_nobeep("normal i\<C-G>\<C-G>")
   close!
 endfunc
 

@@ -390,6 +390,8 @@ CTRL-G u	break undo sequence, start new change	     *i_CTRL-G_u*
 CTRL-G U	don't break undo with next left/right cursor *i_CTRL-G_U*
 		movement, if the cursor stays within the
 		same line
+CTRL-G CTRL-G	stop |ins-completion| without changing the      *i_CTRL-G_CTRL-G*
+		match
 -----------------------------------------------------------------------
 
 Note: If the cursor keys take you out of Insert mode, check the 'noesckeys'
@@ -1311,6 +1313,7 @@ CTRL-E		  End completion, go back to what was there before selecting a
 		  insert it.
 <Space> or <Tab>  Stop completion without changing the match and insert the
 		  typed character.
+CTRL-G CTRL-G	  Stop completion without changing the match.
 
 The behavior of the <Enter> key depends on the state you are in:
 first state:	  Use the text as it is and insert a line break.

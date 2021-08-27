@@ -3510,6 +3510,10 @@ ins_ctrl_g(void)
 		  dont_sync_undo = MAYBE;
 		  break;
 
+	// CTRL-G CTRL-G: stop ins-completion or i_CTRL-X without inserting or removing text
+	case Ctrl_G:
+		  break;
+
 	// Unknown CTRL-G command, reserved for future expansion.
 	default:  vim_beep(BO_CTRLG);
     }

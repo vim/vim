@@ -52,6 +52,7 @@ tag		char		action in Insert mode	~
 |i_CTRL-G_k|	CTRL-G <Up>	line up, to column where inserting started
 |i_CTRL-G_u|	CTRL-G u	start new undoable edit
 |i_CTRL-G_U|	CTRL-G U	don't break undo with next cursor movement
+|i_CTRL-G_CTRL-G| CTRL-G CTRL-G	stop |ins-completion| without changing the match
 |i_<BS>|	<BS>		delete character before the cursor
 |i_digraph|	{char1}<BS>{char2}
 				enter digraph (only when 'digraph' option set)

@@ -733,6 +733,47 @@ func Test_complete_cmdline()
   close!
 endfunc
 
+" Test for <CTRL-G> <CTRL-G> stopping completion without changing the match
+func Test_complete_CTRL_G_CTRL_G()
+  new
+  func Save_mode1()
+    let g:mode1 = mode(1)
+    return ''
+  endfunc
+  func Save_mode2()
+    let g:mode2 = mode(1)
+    return ''
+  endfunc
+  inoremap <F1> <C-R>=Save_mode1()<CR>
+  inoremap <F2> <C-R>=Save_mode2()<CR>
+  call setline(1, ['aaa bbb ccc '])
+  exe "normal A\<C-N>\<C-P>\<F1>\<C-G>\<C-G>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc ', getline(1))
+  exe "normal A\<C-N>\<Down>\<F1>\<C-G>\<C-G>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc aaa', getline(1))
+  set completeopt+=noselect
+  exe "normal A \<C-N>\<Down>\<Down>\<C-L>\<C-L>\<F1>\<C-G>\<C-G>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc aaa bb', getline(1))
+  exe "normal A d\<C-N>\<F1>\<C-G>\<C-G>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc aaa bb d', getline(1))
+  set completeopt&
+  unlet g:mode1
+  unlet g:mode2
+  iunmap <F1>
+  iunmap <F2>
+  delfunc Save_mode1
+  delfunc Save_mode2
+  close!
+endfunc
+
 func Test_issue_7021()
   CheckMSWindows
 
