@@ -1277,12 +1277,8 @@ set_one_cmd_context(
 		xp->xp_context = EXPAND_SHELLCMD;
 	}
 
-	// Check for environment variable
-	if (*xp->xp_pattern == '$'
-#if defined(MSWIN)
-		|| *xp->xp_pattern == '%'
-#endif
-		)
+	// Check for environment variable.
+	if (*xp->xp_pattern == '$')
 	{
 	    for (p = xp->xp_pattern + 1; *p != NUL; ++p)
 		if (!vim_isIDc(*p))
@@ -1296,7 +1292,7 @@ set_one_cmd_context(
 		    compl = EXPAND_ENV_VARS;
 	    }
 	}
-	// Check for user names
+	// Check for user names.
 	if (*xp->xp_pattern == '~')
 	{
 	    for (p = xp->xp_pattern + 1; *p != NUL && *p != '/'; ++p)
