@@ -541,6 +541,14 @@ chance that a normal word like "lex:" is caught.  There is one exception:
 version 3.0).  Using "ex:" at the start of the line will be ignored (this
 could be short for "example:").
 
+If modeline is disabled within a modeline, subsequent modelines will be
+ignored. This is to allow turning off modeline on a per-file basis. For
+example, it would be good to prepend a YAML file containing strings like "vim:"
+with
+    # vim: nomodeline ~
+so as to avoid modeline misdetection. Subsequent trailing commands on the same
+line after modeline deactivation, if any, are still evaluated.
+
 							*modeline-local*
 The options are set like with ":setlocal": The new value only applies to the
 buffer and window that contain the file.  Although it's possible to set global
