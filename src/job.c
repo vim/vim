@@ -1983,7 +1983,10 @@ job_to_string_buf(typval_T *varp, char_u *buf)
     char  *status;
 
     if (job == NULL)
-	return (char_u *)"no process";
+    {
+	vim_snprintf((char *)buf, NUMBUFLEN, "no process");
+	return buf;
+    }
     status = job->jv_status == JOB_FAILED ? "fail"
 		    : job->jv_status >= JOB_ENDED ? "dead"
 		    : "run";

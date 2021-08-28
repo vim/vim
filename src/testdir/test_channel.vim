@@ -1718,6 +1718,10 @@ func Test_job_stop_immediately()
   endtry
 endfunc
 
+func Test_null_job_eval()
+  call assert_fails('eval test_null_job()->eval()', 'E121:')
+endfunc
+
 " This was leaking memory.
 func Test_partial_in_channel_cycle()
   let d = {}
