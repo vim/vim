@@ -327,7 +327,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	char_u	*name = NULL;
 	ufunc_T *ufunc = NULL;
 
-	if (tv->v_type == VAR_PARTIAL)
+	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
 	{
 	    if (tv->vval.v_partial->pt_func != NULL)
 		ufunc = tv->vval.v_partial->pt_func;
@@ -382,7 +382,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
     type->tt_type = tv->v_type;
     type->tt_argcount = argcount;
     type->tt_min_argcount = min_argcount;
-    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial->pt_argc > 0)
+    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
+					    && tv->vval.v_partial->pt_argc > 0)
     {
 	type->tt_argcount -= tv->vval.v_partial->pt_argc;
 	type->tt_min_argcount -= tv->vval.v_partial->pt_argc;

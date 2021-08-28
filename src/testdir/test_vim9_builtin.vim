@@ -3679,6 +3679,15 @@ def Test_typename()
   if has('float')
     assert_equal('func([unknown], [unknown]): float', typename(function('pow')))
   endif
+  assert_equal('func', test_null_partial()->typename())
+  assert_equal('list<unknown>', test_null_list()->typename())
+  assert_equal('dict<unknown>', test_null_dict()->typename())
+  if has('job')
+    assert_equal('job', test_null_job()->typename())
+  endif
+  if has('channel')
+    assert_equal('channel', test_null_channel()->typename())
+  endif
 enddef
 
 def Test_undofile()
