@@ -1902,7 +1902,7 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 #endif
 
 #define FOR_ALL_LIST_ITEMS(l, li) \
-    for ((li) = (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
+    for ((li) = (l) == NULL ? NULL : (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
 
 // While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
 // overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.

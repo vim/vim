@@ -2012,4 +2012,11 @@ func Test_sign_funcs_multi()
   call delete("Xsign")
 endfunc
 
+func Test_sign_null_list()
+  eval test_null_list()->sign_define()
+  eval test_null_list()->sign_placelist()
+  eval test_null_list()->sign_undefine()
+  eval test_null_list()->sign_unplacelist()
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
