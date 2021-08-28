@@ -4625,7 +4625,8 @@ get_user_func_name(expand_T *xp, int idx)
 	    return fp->uf_name;	// prevents overflow
 
 	cat_func_name(IObuff, fp);
-	if (xp->xp_context != EXPAND_USER_FUNC)
+	if (xp->xp_context != EXPAND_USER_FUNC
+				       && xp->xp_context != EXPAND_DISASSEMBLE)
 	{
 	    STRCAT(IObuff, "(");
 	    if (!has_varargs(fp) && fp->uf_args.ga_len == 0)
