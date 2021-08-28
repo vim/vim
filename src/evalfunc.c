@@ -3932,6 +3932,11 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	s = tv_get_string(&argvars[0]);
 	use_string = TRUE;
     }
+    if (s == NULL)
+    {
+	semsg(_(e_invarg2), "NULL");
+	return;
+    }
 
     if ((use_string && vim_strchr(s, AUTOLOAD_CHAR) == NULL) || is_funcref)
     {
