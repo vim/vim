@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2021 Aug 10
+*terminal.txt*	For Vim version 8.2.  Last change: 2021 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -752,18 +752,6 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 			GetBufnr()->term_sendkeys(keys)
 
 
-term_setapi({buf}, {expr})				*term_setapi()*
-		Set the function name prefix to be used for the |terminal-api|
-		function in terminal {buf}.  For example: >
-		    :call term_setapi(buf, "Myapi_")
-		    :call term_setapi(buf, "")
-<
-		The default is "Tapi_".  When {expr} is an empty string then
-		no |terminal-api| function can be used for {buf}.
-
-		When used as a method the base is used for {buf}: >
-			GetBufnr()->term_setapi({expr})
-
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.
 		{colors} must be a List of 16 valid color names or hexadecimal
@@ -798,6 +786,20 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 
 <		{only available with GUI enabled and/or the |+termguicolors|
 		feature}
+
+
+term_setapi({buf}, {expr})				*term_setapi()*
+		Set the function name prefix to be used for the |terminal-api|
+		function in terminal {buf}.  For example: >
+		    :call term_setapi(buf, "Myapi_")
+		    :call term_setapi(buf, "")
+<
+		The default is "Tapi_".  When {expr} is an empty string then
+		no |terminal-api| function can be used for {buf}.
+
+		When used as a method the base is used for {buf}: >
+			GetBufnr()->term_setapi({expr})
+
 
 term_setkill({buf}, {how})				*term_setkill()*
 		When exiting Vim or trying to close the terminal window in

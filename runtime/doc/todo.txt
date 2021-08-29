@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Aug 14
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,6 +44,7 @@ Vim9 - Make everything work:
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
+- Disallow using numbered function with "g:123" in Vim9 script?  #8760
 - Check many more builtin function arguments at compile time.
     map() could check that the return type of the function argument matches
     the type of the list or dict member. (#8092)
@@ -75,6 +76,7 @@ Further Vim9 improvements, possibly after launch:
   evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
+- Handle command that is only a range more efficient than calling ISN_EXEC
 - implement :type, "import type"
 - implement enum,  "import enum".
 - implement class and interface: See |vim9-classes|
@@ -240,6 +242,8 @@ TODO: be able to run all parts of test_alot with valgrind separately
 Memory leak in test_alot with pyeval() (allocating partial)
 Memory leak in test_alot with expand()
 Memory leaks in test_channel? (or is it because of fork())
+
+Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 
 ":set &shellpipe" and ":set &shellredir" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for

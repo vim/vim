@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2021 Jan 14
+*term.txt*      For Vim version 8.2.  Last change: 2021 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -126,6 +126,37 @@ automatically, you can try using something like this: >
 	  exec "set t_PS=\e[200~"
 	  exec "set t_PE=\e[201~"
 	endif
+<
+							*tmux-integration*
+If you experience issues when running Vim inside tmux, here are a few hints.
+You can comment-out parts if something doesn't work (it may depend on the
+terminal that tmux is running in): >
+
+    if !has('gui_running') && &term =~ '^\%(screen\|tmux\)'
+        " Better mouse support, see  :help 'ttymouse'
+        set ttymouse=sgr
+
+        " Enable true colors, see  :help xterm-true-color
+        let &termguicolors = v:true
+        let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+        let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+
+        " Enable bracketed paste mode, see  :help xterm-bracketed-paste
+        let &t_BE = "\<Esc>[?2004h"
+        let &t_BD = "\<Esc>[?2004l"
+        let &t_PS = "\<Esc>[200~"
+        let &t_PE = "\<Esc>[201~"
+
+        " Enable focus event tracking, see  :help xterm-focus-event
+        let &t_fe = "\<Esc>[?1004h"
+        let &t_fd = "\<Esc>[?1004l"
+
+        " Enable modified arrow keys, see  :help xterm-modifier-keys
+        execute "silent! set <xUp>=\<Esc>[@;*A"
+        execute "silent! set <xDown>=\<Esc>[@;*B"
+        execute "silent! set <xRight>=\<Esc>[@;*C"
+        execute "silent! set <xLeft>=\<Esc>[@;*D"
+    endif
 <
 							*cs7-problem*
 Note: If the terminal settings are changed after running Vim, you might have
@@ -559,6 +590,11 @@ Focus event tracking is disabled by a 't_fd' sequence when exiting "raw" mode.
 If you would like to disable this feature, add the following to your .vimrc:
 	`set t_fd=`
 	`set t_fe=`
+If your terminal does support this but Vim does not recognize the terminal,
+you may have to set the options yourself: >
+	let &t_fe = "\<Esc>[?1004h"
+	let &t_fd = "\<Esc>[?1004l"
+If this causes garbage to show when Vim starts up then it doesn't work.
 
 							*termcap-colors*
 Note about colors: The 't_Co' option tells Vim the number of colors available.

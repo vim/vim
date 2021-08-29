@@ -5,4 +5,4 @@
 # Usage: gvimtutor [xx]
 # See vimtutor for usage.
 
-exec `dirname $0`/vimtutor -g "$@"
+exec $(dirname $0)/vimtutor -g "$@"

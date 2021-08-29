@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Jul 22
+*options.txt*	For Vim version 8.2.  Last change: 2021 Aug 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -195,10 +195,17 @@ include the "|" in the option value, use "\|" instead.  This example sets the
 This sets the 'titlestring' option to "hi" and 'iconstring' to "there": >
    :set titlestring=hi|set iconstring=there
 
-Similarly, the double quote character starts a comment.  To include the '"' in
-the option value, use '\"' instead.  This example sets the 'titlestring'
-option to 'hi "there"': >
+Similarly, in legacy script the double quote character starts a comment.  To
+include the '"' in the option value, use '\"' instead.  This example sets the
+'titlestring' option to 'hi "there"': >
    :set titlestring=hi\ \"there\"
+
+In |Vim9| script it's simpler, comments start with a '#' character, and only
+when preceded by white space.  A backslash is needed less often: >
+   vim9script
+   set titlestring=hi\ "there"
+   set titlestring=hi#there#
+   set titlestring=hi\ \#there#
 
 For Win32 backslashes in file names are mostly not removed.  More precise: For
 options that expect a file name (those where environment variables are

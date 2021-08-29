@@ -12232,7 +12232,7 @@ Files:	    Makefile, src/gvim.exe.mnf, src/vim.rc
 
 Patch 6.2.348
 Problem:    Win32: "vim c:\dir\(test)" doesn't work, because the 'isfname'
-	    default value doesn't contain parenthesis.
+	    default value doesn't contain parentheses.
 Solution:   Temporarily add '(' and ')' to 'isfname' when expanding file name
 	    arguments.
 Files:	    src/main.c

@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2021 May 26
+*textprop.txt*  For Vim version 8.2.  Last change: 2021 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

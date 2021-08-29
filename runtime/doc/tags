@@ -6834,10 +6834,12 @@ g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_banner	pi_netrw.txt	/*g:netrw_banner*
 g:netrw_bannerbackslash	pi_netrw.txt	/*g:netrw_bannerbackslash*
 g:netrw_browse_split	pi_netrw.txt	/*g:netrw_browse_split*
+g:netrw_browsex_support_remote	pi_netrw.txt	/*g:netrw_browsex_support_remote*
 g:netrw_browsex_viewer	pi_netrw.txt	/*g:netrw_browsex_viewer*
 g:netrw_bufsettings	pi_netrw.txt	/*g:netrw_bufsettings*
 g:netrw_chgperm	pi_netrw.txt	/*g:netrw_chgperm*
 g:netrw_chgwin	pi_netrw.txt	/*g:netrw_chgwin*
+g:netrw_clipboard	pi_netrw.txt	/*g:netrw_clipboard*
 g:netrw_compress	pi_netrw.txt	/*g:netrw_compress*
 g:netrw_ctags	pi_netrw.txt	/*g:netrw_ctags*
 g:netrw_cursor	pi_netrw.txt	/*g:netrw_cursor*
@@ -8625,6 +8627,7 @@ prompt_setprompt()	eval.txt	/*prompt_setprompt()*
 promptbuffer-functions	usr_41.txt	/*promptbuffer-functions*
 pronounce	intro.txt	/*pronounce*
 prop_add()	textprop.txt	/*prop_add()*
+prop_add_list()	textprop.txt	/*prop_add_list()*
 prop_clear()	textprop.txt	/*prop_clear()*
 prop_find()	textprop.txt	/*prop_find()*
 prop_list()	textprop.txt	/*prop_list()*
@@ -9788,6 +9791,7 @@ timestamps	editing.txt	/*timestamps*
 tips	tips.txt	/*tips*
 tips.txt	tips.txt	/*tips.txt*
 tmux	syntax.txt	/*tmux*
+tmux-integration	term.txt	/*tmux-integration*
 todo	todo.txt	/*todo*
 todo.txt	todo.txt	/*todo.txt*
 toggle	options.txt	/*toggle*
@@ -10215,6 +10219,7 @@ vim9-lambda	vim9.txt	/*vim9-lambda*
 vim9-lambda-arguments	vim9.txt	/*vim9-lambda-arguments*
 vim9-mix	vim9.txt	/*vim9-mix*
 vim9-namespace	vim9.txt	/*vim9-namespace*
+vim9-no-dict-function	vim9.txt	/*vim9-no-dict-function*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
 vim9-scopes	vim9.txt	/*vim9-scopes*

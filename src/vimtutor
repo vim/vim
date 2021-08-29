@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # Start Vim on a copy of the tutor file.
 
@@ -13,11 +13,11 @@
 # have Vim installed with its version number.
 # We anticipate up to a future Vim 8.1 version :-).
 seq="vim vim81 vim80 vim8 vim74 vim73 vim72 vim71 vim70 vim7 vim6 vi"
-if test "$1" = "-g"; then 
-  # Try to use the GUI version of Vim if possible, it will fall back
-  # on Vim if Gvim is not installed.
-  seq="gvim gvim81 gvim80 gvim8 gvim74 gvim73 gvim72 gvim71 gvim70 gvim7 gvim6 $seq"
-  shift
+if test "$1" = "-g"; then
+    # Try to use the GUI version of Vim if possible, it will fall back
+    # on Vim if Gvim is not installed.
+    seq="gvim gvim81 gvim80 gvim8 gvim74 gvim73 gvim72 gvim71 gvim70 gvim7 gvim6 $seq"
+    shift
 fi
 
 xx=$1
@@ -53,17 +53,17 @@ export TUTORCOPY
 trap "rm -rf $TODELETE" 0 1 2 3 9 11 13 15
 
 for i in $seq; do
-	testvim=`which $i 2>/dev/null`
-	if test -f "$testvim"; then
-		VIM=$i
-		break
-	fi
+    testvim=$(which $i 2>/dev/null)
+    if test -f "$testvim"; then
+        VIM=$i
+        break
+    fi
 done
 
 # When no Vim version was found fall back to "vim", you'll get an error message
 # below.
 if test -z "$VIM"; then
-	VIM=vim
+    VIM=vim
 fi
 
 # Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
@@ -71,4 +71,4 @@ fi
 $VIM -f -u NONE -c 'so $VIMRUNTIME/tutor/tutor.vim'
 
 # Start vim without any .vimrc, set 'nocompatible' and 'showcmd'
-$VIM -f -u NONE -c "set nocp showcmd" $TUTORCOPY
+$VIM -f -u NONE -c "set nocp showcmd" "$TUTORCOPY"

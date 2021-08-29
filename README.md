@@ -46,7 +46,7 @@ This `README.md` file comes with the runtime archive.  It includes the
 documentation, syntax files and other files that are used at runtime.  To run
 Vim you must get either one of the binary archives or a source archive.
 Which one you need depends on the system you want to run it on and whether you
-want or must compile it yourself.  Check http://www.vim.org/download.php for
+want or must compile it yourself.  Check https://www.vim.org/download.php for
 an overview of currently available distributions.
 
 Some popular places to get the latest Vim:
@@ -86,7 +86,7 @@ The Vim tutor is a one hour training course for beginners.  Often it can be
 started as `vimtutor`.  See `:help tutor` for more information.
 
 The best is to use `:help` in Vim.  If you don't have an executable yet, read
-[`runtime/doc/help.txt`](/runtime/doc/help.txt). 
+[`runtime/doc/help.txt`](/runtime/doc/help.txt).
 It contains pointers to the other documentation files.
 The User Manual reads like a book and is recommended to learn to use
 Vim.  See `:help user-manual`.
@@ -117,7 +117,7 @@ in Uganda.  See [`runtime/doc/uganda.txt`](runtime/doc/uganda.txt).  But
 at the same time donations increase Bram's motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
-	http://www.vim.org/sponsor/
+	https://www.vim.org/sponsor/
 
 
 ## Contributing ##
@@ -129,15 +129,15 @@ If you would like to help making Vim better, see the
 ## Information ##
 
 The latest news about Vim can be found on the Vim home page:
-	http://www.vim.org/
+	https://www.vim.org/
 
 If you have problems, have a look at the Vim documentation or tips:
-	http://www.vim.org/docs.php
-	http://vim.wikia.com/wiki/Vim_Tips_Wiki
+	https://www.vim.org/docs.php
+	https://vim.fandom.com/wiki/Vim_Tips_Wiki
 
 If you still have problems or any other questions, use one of the mailing
 lists to discuss them with Vim users and developers:
-	http://www.vim.org/maillist.php
+	https://www.vim.org/maillist.php
 
 If nothing else works, report bugs directly:
 	Bram Moolenaar <Bram@vim.org>

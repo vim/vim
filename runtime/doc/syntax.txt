@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2021 Jul 02
+*syntax.txt*	For Vim version 8.2.  Last change: 2021 Aug 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1132,11 +1132,13 @@ The ColdFusion syntax file is based on the HTML syntax file.
 
 CPP						*cpp.vim* *ft-cpp-syntax*
 
-Most of things are same as |ft-c-syntax|.
+Most things are the same as |ft-c-syntax|.
 
 Variable		Highlight ~
 cpp_no_cpp11		don't highlight C++11 standard items
 cpp_no_cpp14		don't highlight C++14 standard items
+cpp_no_cpp17		don't highlight C++17 standard items
+cpp_no_cpp20		don't highlight C++20 standard items
 
 
 CSH						*csh.vim* *ft-csh-syntax*
@@ -5201,9 +5203,8 @@ LineNrAbove	Line number for when the 'relativenumber'
 LineNrBelow	Line number for when the 'relativenumber'
 		option is set, below the cursor line.
 							*hl-CursorLineNr*
-CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt' is
-		set to "number" or "both", or 'relativenumber' is set, for
-		the cursor line.
+CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt'
+		contains "number" or is "both", for the cursor line.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|
