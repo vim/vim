@@ -10111,6 +10111,10 @@ shellescape({string} [, {special}])			*shellescape()*
 		escaped.  When 'shell' containing "csh" in the tail it's
 		escaped a second time.
 
+		The "\" character will be escaped when 'shell' contains "fish"
+		in the tail. That is because for fish "\" is used as an escape
+		character inside single quotes.
+
 		Example of use with a |:!| command: >
 		    :exe '!dir ' . shellescape(expand('<cfile>'), 1)
 <		This results in a directory listing for the file under the
