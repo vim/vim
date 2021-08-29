@@ -61,18 +61,21 @@ func Test_shell_options()
   for e in shells
     exe 'set shell=' .. e[0]
     if e[0] =~# '.*csh$' || e[0] =~# '.*csh.exe$'
-      let str1 = "'cmd \"arg1\" '\\''arg2'\\'' \\!%#'"
-      let str2 = "'cmd \"arg1\" '\\''arg2'\\'' \\\\!\\%\\#'"
+      let str1 = "'cmd \"arg1\" '\\''arg2'\\'' \\!%# \\'"
+      let str2 = "'cmd \"arg1\" '\\''arg2'\\'' \\\\!\\%\\# \\'"
     elseif e[0] =~# '.*powershell$' || e[0] =~# '.*powershell.exe$'
           \ || e[0] =~# '.*pwsh$' || e[0] =~# '.*pwsh.exe$'
-      let str1 = "'cmd \"arg1\" ''arg2'' !%#'"
-      let str2 = "'cmd \"arg1\" ''arg2'' \\!\\%\\#'"
+      let str1 = "'cmd \"arg1\" ''arg2'' !%# \\'"
+      let str2 = "'cmd \"arg1\" ''arg2'' \\!\\%\\# \\'"
+    elseif e[0] =~# '.*fish$' || e[0] =~# '.*fish.exe$'
+      let str1 = "'cmd \"arg1\" '\\''arg2'\\'' !%# \\\\'"
+      let str2 = "'cmd \"arg1\" '\\''arg2'\\'' \\!\\%\\# \\\\'"
     else
-      let str1 = "'cmd \"arg1\" '\\''arg2'\\'' !%#'"
-      let str2 = "'cmd \"arg1\" '\\''arg2'\\'' \\!\\%\\#'"
+      let str1 = "'cmd \"arg1\" '\\''arg2'\\'' !%# \\'"
+      let str2 = "'cmd \"arg1\" '\\''arg2'\\'' \\!\\%\\# \\'"
     endif
-    call assert_equal(str1, shellescape("cmd \"arg1\" 'arg2' !%#"), e[0])
-    call assert_equal(str2, shellescape("cmd \"arg1\" 'arg2' !%#", 1), e[0])
+    call assert_equal(str1, shellescape("cmd \"arg1\" 'arg2' !%# \\"), e[0])
+    call assert_equal(str2, shellescape("cmd \"arg1\" 'arg2' !%# \\", 1), e[0])
 
     " Try running an external command with the shell.
     if executable(e[0])

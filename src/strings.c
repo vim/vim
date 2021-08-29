@@ -125,6 +125,15 @@ csh_like_shell(void)
 }
 
 /*
+ * Return TRUE when 'shell' has "fish" in the tail.
+ */
+    int
+fish_like_shell(void)
+{
+    return (strstr((char *)gettail(p_sh), "fish") != NULL);
+}
+
+/*
  * Escape "string" for use as a shell argument with system().
  * This uses single quotes, except when we know we need to use double quotes
  * (MS-DOS and MS-Windows not using PowerShell and without 'shellslash' set).
@@ -145,6 +154,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     char_u	*escaped_string;
     int		l;
     int		csh_like;
+    int		fish_like;
     char_u	*shname;
     int		powershell;
 # ifdef MSWIN
@@ -156,6 +166,10 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // literally.  If do_special is set the '!' will be escaped twice.
     // Csh also needs to have "\n" escaped twice when do_special is set.
     csh_like = csh_like_shell();
+
+    // Fish shell uses '\' as an escape character within single quotes, so '\'
+    // itself must be escaped to get a literal '\'.
+    fish_like = fish_like_shell();
 
     // PowerShell uses it's own version for quoting single quotes
     shname = gettail(p_sh);
@@ -197,6 +211,8 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	    ++length;			// insert backslash
 	    p += l - 1;
 	}
+	if (*p == '\\' && fish_like)
+	    ++length;			// insert backslash
     }
 
     // Allocate memory for the result and fill it.
@@ -260,6 +276,11 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 		while (--l >= 0)	// copy the var
 		    *d++ = *p++;
 		continue;
+	    }
+	    if (*p == '\\' && fish_like)
+	    {
+		*d++ = '\\';
+		*d++ = *p++;
 	    }
 
 	    MB_COPY_CHAR(p, d);
