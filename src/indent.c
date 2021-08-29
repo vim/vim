@@ -953,6 +953,7 @@ get_breakindent_win(
 				   RE_MAGIC + RE_STRING + RE_AUTO + RE_STRICT);
 	if (regmatch.regprog != NULL)
 	{
+	    regmatch.rm_ic = FALSE;
 	    if (vim_regexec(&regmatch, line, 0))
 	    {
 		if (wp->w_briopt_list > 0)
