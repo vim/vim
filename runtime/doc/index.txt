@@ -170,6 +170,8 @@ commands in CTRL-X submode				*i_CTRL-X_index*
 |i_CTRL-X_CTRL-V|	CTRL-X CTRL-V	complete like in : command line
 |i_CTRL-X_CTRL-]|	CTRL-X CTRL-]	complete tags
 |i_CTRL-X_s|		CTRL-X s	spelling suggestions
+|i_CTRL-X_CTRL-Z|	CTRL-X CTRL-Z	stop completion without changing the
+					match
 
 commands in completion mode (see |popupmenu-keys|)
 
