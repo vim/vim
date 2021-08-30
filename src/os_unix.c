@@ -2602,6 +2602,10 @@ mch_FullName(
 	 */
 	if (p != NULL)
 	{
+	    if (STRCMP(p, "/..") == 0)
+		// for "/path/dir/.." include the "/.."
+		p += 3;
+
 #ifdef HAVE_FCHDIR
 	    /*
 	     * Use fchdir() if possible, it's said to be faster and more
@@ -2644,8 +2648,10 @@ mch_FullName(
 		    vim_strncpy(buf, fname, p - fname);
 		    if (mch_chdir((char *)buf))
 			retval = FAIL;
-		    else
+		    else if (*p == '/')
 			fname = p + 1;
+		    else
+			fname = p;
 		    *buf = NUL;
 		}
 	    }
