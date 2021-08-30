@@ -127,7 +127,7 @@ csh_like_shell(void)
 /*
  * Return TRUE when 'shell' has "fish" in the tail.
  */
-    int
+    static int
 fish_like_shell(void)
 {
     return (strstr((char *)gettail(p_sh), "fish") != NULL);
