@@ -1970,17 +1970,22 @@ win_line(
 		if (wp->w_p_lbr && c0 == c
 				  && VIM_ISBREAK(c) && !VIM_ISBREAK((int)*ptr))
 		{
-		    int mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1) : 0;
-		    char_u *p = ptr - (mb_off + 1);
+		    int	    mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1)
+									   : 0;
+		    char_u  *p = ptr - (mb_off + 1);
 
 		    // TODO: is passing p for start of the line OK?
 		    n_extra = win_lbr_chartabsize(wp, line, p, (colnr_T)vcol,
 								    NULL) - 1;
 
 		    // We have just drawn the showbreak value, no need to add
-		    // space for it again
+		    // space for it again.
 		    if (vcol == vcol_sbr)
+		    {
 			n_extra -= MB_CHARLEN(get_showbreak_value(wp));
+			if (n_extra < 0)
+			    n_extra = 0;
+		    }
 
 		    if (c == TAB && n_extra + col > wp->w_width)
 # ifdef FEAT_VARTABS
