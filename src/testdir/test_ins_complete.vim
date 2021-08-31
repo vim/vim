@@ -730,6 +730,66 @@ func Test_complete_cmdline()
   call assert_equal('call getqflist(', getline(2))
   exe "normal oabcxyz(\<C-X>\<C-V>"
   call assert_equal('abcxyz(', getline(3))
+  com! -buffer TestCommand1 echo 'TestCommand1'
+  com! -buffer TestCommand2 echo 'TestCommand2'
+  write TestCommand1Test
+  write TestCommand2Test
+  " Test repeating <CTRL-X> <CTRL-V> and switching to another CTRL-X mode
+  exe "normal oT\<C-X>\<C-V>\<C-X>\<C-V>\<C-X>\<C-F>\<Esc>"
+  call assert_equal('TestCommand2Test', getline(4))
+  call delete('TestCommand1Test')
+  call delete('TestCommand2Test')
+  delcom TestCommand1
+  delcom TestCommand2
+  close!
+endfunc
+
+" Test for <CTRL-X> <CTRL-Z> stopping completion without changing the match
+func Test_complete_stop()
+  new
+  func Save_mode1()
+    let g:mode1 = mode(1)
+    return ''
+  endfunc
+  func Save_mode2()
+    let g:mode2 = mode(1)
+    return ''
+  endfunc
+  inoremap <F1> <C-R>=Save_mode1()<CR>
+  inoremap <F2> <C-R>=Save_mode2()<CR>
+  call setline(1, ['aaa bbb ccc '])
+  exe "normal A\<C-N>\<C-P>\<F1>\<C-X>\<C-Z>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc ', getline(1))
+  exe "normal A\<C-N>\<Down>\<F1>\<C-X>\<C-Z>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc aaa', getline(1))
+  set completeopt+=noselect
+  exe "normal A \<C-N>\<Down>\<Down>\<C-L>\<C-L>\<F1>\<C-X>\<C-Z>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc aaa bb', getline(1))
+  set completeopt&
+  exe "normal A d\<C-N>\<F1>\<C-X>\<C-Z>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('aaa bbb ccc aaa bb d', getline(1))
+  com! -buffer TestCommand1 echo 'TestCommand1'
+  com! -buffer TestCommand2 echo 'TestCommand2'
+  exe "normal oT\<C-X>\<C-V>\<C-X>\<C-V>\<F1>\<C-X>\<C-Z>\<F2>\<Esc>"
+  call assert_equal('ic', g:mode1)
+  call assert_equal('i', g:mode2)
+  call assert_equal('TestCommand2', getline(2))
+  delcom TestCommand1
+  delcom TestCommand2
+  unlet g:mode1
+  unlet g:mode2
+  iunmap <F1>
+  iunmap <F2>
+  delfunc Save_mode1
+  delfunc Save_mode2
   close!
 endfunc
 

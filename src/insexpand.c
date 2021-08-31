@@ -37,6 +37,7 @@
 # define CTRL_X_SPELL		14
 # define CTRL_X_LOCAL_MSG	15	// only used in "ctrl_x_msgs"
 # define CTRL_X_EVAL		16	// for builtin function complete()
+# define CTRL_X_CMDLINE_CTRL_X	17	// CTRL-X typed in CTRL_X_CMDLINE
 
 # define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
 
@@ -60,6 +61,7 @@ static char *ctrl_x_msgs[] =
     N_(" Spelling suggestion (s^N^P)"),
     N_(" Keyword Local completion (^N^P)"),
     NULL,   // CTRL_X_EVAL doesn't use msg.
+    N_(" Command-line completion (^V^N^P)"),
 };
 
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
@@ -80,7 +82,8 @@ static char *ctrl_x_mode_names[] = {
 	"omni",
 	"spell",
 	NULL,		    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
-	"eval"
+	"eval",
+	"cmdline",
 };
 #endif
 
@@ -222,9 +225,7 @@ static int  spell_bad_len = 0;	// length of located bad word
     void
 ins_ctrl_x(void)
 {
-    // CTRL-X after CTRL-X CTRL-V doesn't do anything, so that CTRL-X
-    // CTRL-V works like CTRL-N
-    if (ctrl_x_mode != CTRL_X_CMDLINE)
+    if (!ctrl_x_mode_cmdline())
     {
 	// if the next ^X<> won't ADD nothing, then reset
 	// compl_cont_status
@@ -238,6 +239,10 @@ ins_ctrl_x(void)
 	edit_submode_pre = NULL;
 	showmode();
     }
+    else
+	// CTRL-X in CTRL-X CTRL-V mode behaves differently to make CTRL-X
+	// CTRL-V look like CTRL-N
+	ctrl_x_mode = CTRL_X_CMDLINE_CTRL_X;
 }
 
 /*
@@ -255,7 +260,9 @@ int ctrl_x_mode_path_defines(void) {
 				   return ctrl_x_mode == CTRL_X_PATH_DEFINES; }
 int ctrl_x_mode_dictionary(void) { return ctrl_x_mode == CTRL_X_DICTIONARY; }
 int ctrl_x_mode_thesaurus(void) { return ctrl_x_mode == CTRL_X_THESAURUS; }
-int ctrl_x_mode_cmdline(void) { return ctrl_x_mode == CTRL_X_CMDLINE; }
+int ctrl_x_mode_cmdline(void) {
+	return ctrl_x_mode == CTRL_X_CMDLINE
+		|| ctrl_x_mode == CTRL_X_CMDLINE_CTRL_X; }
 int ctrl_x_mode_function(void) { return ctrl_x_mode == CTRL_X_FUNCTION; }
 int ctrl_x_mode_omni(void) { return ctrl_x_mode == CTRL_X_OMNI; }
 int ctrl_x_mode_spell(void) { return ctrl_x_mode == CTRL_X_SPELL; }
@@ -272,7 +279,8 @@ ctrl_x_mode_not_default(void)
 }
 
 /*
- * Whether CTRL-X was typed without a following character.
+ * Whether CTRL-X was typed without a following character,
+ * not including when in CTRL-X CTRL-V mode.
  */
     int
 ctrl_x_mode_not_defined_yet(void)
@@ -333,12 +341,14 @@ vim_is_ctrl_x_key(int c)
 	case 0:		    // Not in any CTRL-X mode
 	    return (c == Ctrl_N || c == Ctrl_P || c == Ctrl_X);
 	case CTRL_X_NOT_DEFINED_YET:
+	case CTRL_X_CMDLINE_CTRL_X:
 	    return (   c == Ctrl_X || c == Ctrl_Y || c == Ctrl_E
 		    || c == Ctrl_L || c == Ctrl_F || c == Ctrl_RSB
 		    || c == Ctrl_I || c == Ctrl_D || c == Ctrl_P
 		    || c == Ctrl_N || c == Ctrl_T || c == Ctrl_V
 		    || c == Ctrl_Q || c == Ctrl_U || c == Ctrl_O
-		    || c == Ctrl_S || c == Ctrl_K || c == 's');
+		    || c == Ctrl_S || c == Ctrl_K || c == 's'
+		    || c == Ctrl_Z);
 	case CTRL_X_SCROLL:
 	    return (c == Ctrl_Y || c == Ctrl_E);
 	case CTRL_X_WHOLE_LINE:
@@ -396,6 +406,7 @@ ins_compl_accept_char(int c)
 	    return vim_isfilec(c) && !vim_ispathsep(c);
 
 	case CTRL_X_CMDLINE:
+	case CTRL_X_CMDLINE_CTRL_X:
 	case CTRL_X_OMNI:
 	    // Command line and Omni completion can work with just about any
 	    // printable character, but do stop at white space.
@@ -1860,6 +1871,29 @@ ins_compl_prep(int c)
     }
 #endif
 
+    if (ctrl_x_mode == CTRL_X_CMDLINE_CTRL_X && c != Ctrl_X)
+    {
+	if (c == Ctrl_V || c == Ctrl_Q || c == Ctrl_Z || ins_compl_pum_key(c)
+		|| !vim_is_ctrl_x_key(c))
+	{
+	    // Not starting another completion mode.
+	    ctrl_x_mode = CTRL_X_CMDLINE;
+
+	    // CTRL-X CTRL-Z should stop completion without inserting anything
+	    if (c == Ctrl_Z)
+		retval = TRUE;
+	}
+	else
+	{
+	    ctrl_x_mode = CTRL_X_CMDLINE;
+
+	    // Other CTRL-X keys first stop completion, then start another
+	    // completion mode.
+	    ins_compl_prep(' ');
+	    ctrl_x_mode = CTRL_X_NOT_DEFINED_YET;
+	}
+    }
+
     // Set "compl_get_longest" when finding the first matches.
     if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET
 			   || (ctrl_x_mode == CTRL_X_NORMAL && !compl_started))
@@ -1932,6 +1966,12 @@ ins_compl_prep(int c)
 	    case Ctrl_V:
 	    case Ctrl_Q:
 		ctrl_x_mode = CTRL_X_CMDLINE;
+		break;
+	    case Ctrl_Z:
+		ctrl_x_mode = CTRL_X_NORMAL;
+		edit_submode = NULL;
+		showmode();
+		retval = TRUE;
 		break;
 	    case Ctrl_P:
 	    case Ctrl_N:
@@ -2929,6 +2969,7 @@ ins_compl_get_exp(pos_T *ini)
 	    break;
 
 	case CTRL_X_CMDLINE:
+	case CTRL_X_CMDLINE_CTRL_X:
 	    if (expand_cmdline(&compl_xp, compl_pattern,
 			(int)STRLEN(compl_pattern),
 					 &num_matches, &matches) == EXPAND_OK)
