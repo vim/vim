@@ -2134,8 +2134,8 @@ ExpandFromContext(
 	    {EXPAND_SYNTIME, get_syntime_arg, TRUE, TRUE},
 # endif
 	    {EXPAND_HIGHLIGHT, get_highlight_name, TRUE, TRUE},
-	    {EXPAND_EVENTS, get_event_name, TRUE, TRUE},
-	    {EXPAND_AUGROUP, get_augroup_name, TRUE, TRUE},
+	    {EXPAND_EVENTS, get_event_name, TRUE, FALSE},
+	    {EXPAND_AUGROUP, get_augroup_name, TRUE, FALSE},
 # ifdef FEAT_CSCOPE
 	    {EXPAND_CSCOPE, get_cscope_name, TRUE, TRUE},
 # endif
