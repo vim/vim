@@ -281,6 +281,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	    {
 		*d++ = '\\';
 		*d++ = *p++;
+		continue;
 	    }
 
 	    MB_COPY_CHAR(p, d);
