@@ -5,6 +5,7 @@ char_u *char_from_string(char_u *str, varnumber_T index);
 char_u *string_slice(char_u *str, varnumber_T first, varnumber_T last, int exclusive);
 int fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx);
 typval_T *lookup_debug_var(char_u *name);
+int may_break_in_function(ufunc_T *ufunc);
 int exe_typval_instr(typval_T *tv, typval_T *rettv);
 char_u *exe_substitute_instr(void);
 int call_def_function(ufunc_T *ufunc, int argc_arg, typval_T *argv, partial_T *partial, typval_T *rettv);

@@ -518,6 +518,7 @@ static garray_T dbg_breakp = {0, 0, sizeof(struct debuggy), 4, NULL};
 #define BREAKP(idx)		(((struct debuggy *)dbg_breakp.ga_data)[idx])
 #define DEBUGGY(gap, idx)	(((struct debuggy *)gap->ga_data)[idx])
 static int last_breakp = 0;	// nr of last defined breakpoint
+static int has_expr_breakpoint = FALSE;
 
 #ifdef FEAT_PROFILE
 // Profiling uses file and func names similar to breakpoints.
@@ -691,6 +692,8 @@ ex_breakadd(exarg_T *eap)
 	    // DBG_EXPR
 	    DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
 	    ++debug_tick;
+	    if (gap == &dbg_breakp)
+		has_expr_breakpoint = TRUE;
 	}
     }
 }
@@ -705,6 +708,29 @@ ex_debuggreedy(exarg_T *eap)
 	debug_greedy = TRUE;
     else
 	debug_greedy = FALSE;
+}
+
+    static void
+update_has_expr_breakpoint()
+{
+    int i;
+
+    has_expr_breakpoint = FALSE;
+    for (i = 0; i < dbg_breakp.ga_len; ++i)
+	if (BREAKP(i).dbg_type == DBG_EXPR)
+	{
+	    has_expr_breakpoint = TRUE;
+	    break;
+	}
+}
+
+/*
+ * Return TRUE if there is any expression breakpoint.
+ */
+    int
+debug_has_expr_breakpoint()
+{
+    return has_expr_breakpoint;
 }
 
 /*
@@ -799,6 +825,8 @@ ex_breakdel(exarg_T *eap)
 	// If all breakpoints were removed clear the array.
 	if (gap->ga_len == 0)
 	    ga_clear(gap);
+	if (gap == &dbg_breakp)
+	    update_has_expr_breakpoint();
     }
 }
 

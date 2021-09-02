@@ -513,14 +513,14 @@ extern garray_T def_functions;
 // Keep in sync with COMPILE_TYPE()
 #ifdef FEAT_PROFILE
 # define INSTRUCTIONS(dfunc) \
-	(debug_break_level > 0 || dfunc->df_ufunc->uf_has_breakpoint \
+	(debug_break_level > 0 || may_break_in_function(dfunc->df_ufunc) \
 	    ? (dfunc)->df_instr_debug \
 	    : ((do_profiling == PROF_YES && (dfunc->df_ufunc)->uf_profiling) \
 		? (dfunc)->df_instr_prof \
 		: (dfunc)->df_instr))
 #else
 # define INSTRUCTIONS(dfunc) \
-	(debug_break_level > 0 || dfunc->df_ufunc->uf_has_breakpoint \
+	(debug_break_level > 0 || may_break_in_function(dfunc->df_ufunc) \
 		? (dfunc)->df_instr_debug \
 		: (dfunc)->df_instr)
 #endif

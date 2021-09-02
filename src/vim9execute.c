@@ -1483,6 +1483,16 @@ lookup_debug_var(char_u *name)
     return NULL;
 }
 
+/*
+ * Return TRUE if there might be a breakpoint in "ufunc", which is when a
+ * breakpoint was set in that function or when there is any expression.
+ */
+    int
+may_break_in_function(ufunc_T *ufunc)
+{
+    return ufunc->uf_has_breakpoint || debug_has_expr_breakpoint();
+}
+
     static void
 handle_debug(isn_T *iptr, ectx_T *ectx)
 {
@@ -1498,7 +1508,7 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     {
 	linenr_T breakpoint;
 
-	if (!ufunc->uf_has_breakpoint)
+	if (!may_break_in_function(ufunc))
 	    return;
 
 	// check for the next breakpoint if needed
