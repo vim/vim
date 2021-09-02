@@ -284,6 +284,7 @@ edit(
     else
 	State = INSERT;
 
+    trigger_modechanged();
     stop_insert_mode = FALSE;
 
 #ifdef FEAT_CONCEAL
@@ -3681,6 +3682,7 @@ ins_esc(
 #endif
 
     State = NORMAL;
+    trigger_modechanged();
     // need to position cursor again (e.g. when on a TAB )
     changed_cline_bef_curs();
 
@@ -3811,6 +3813,7 @@ ins_insert(int replaceState)
 	State = INSERT | (State & LANGMAP);
     else
 	State = replaceState | (State & LANGMAP);
+    trigger_modechanged();
     AppendCharToRedobuff(K_INS);
     showmode();
 #ifdef CURSOR_SHAPE
