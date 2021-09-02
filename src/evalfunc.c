@@ -6691,7 +6691,10 @@ libcall_common(typval_T *argvars UNUSED, typval_T *rettv, int type)
 	if (type == VAR_NUMBER)
 	    string_result = NULL;
 	else
+	{
+	    rettv->vval.v_string = NULL;
 	    string_result = &rettv->vval.v_string;
+	}
 	if (mch_libcall(argvars[0].vval.v_string,
 			     argvars[1].vval.v_string,
 			     string_in,
