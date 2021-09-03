@@ -1841,6 +1841,8 @@ msg_prt_line(char_u *s, int list)
     int		attr = 0;
     char_u	*trail = NULL;
     char_u	*lead = NULL;
+    int		in_multispace = FALSE;
+    int		multispace_pos = 0;
     int		l;
     char_u	buf[MB_MAXBYTES + 1];
 
@@ -1912,6 +1914,10 @@ msg_prt_line(char_u *s, int list)
 	{
 	    attr = 0;
 	    c = *s++;
+	    in_multispace = c == ' '
+		&& ((col > 0 && s[-2] == ' ') || *s == ' ');
+	    if (!in_multispace)
+		multispace_pos = 0;
 	    if (c == TAB && (!list || curwin->w_lcs_chars.tab1))
 	    {
 		// tab amount depends on current column
@@ -1963,20 +1969,31 @@ msg_prt_line(char_u *s, int list)
 		// the same in plain text.
 		attr = HL_ATTR(HLF_8);
 	    }
-	    else if (c == ' ' && lead != NULL && s <= lead)
+	    else if (c == ' ')
 	    {
-		c = curwin->w_lcs_chars.lead;
-		attr = HL_ATTR(HLF_8);
-	    }
-	    else if (c == ' ' && trail != NULL && s > trail)
-	    {
-		c = curwin->w_lcs_chars.trail;
-		attr = HL_ATTR(HLF_8);
-	    }
-	    else if (c == ' ' && list && curwin->w_lcs_chars.space != NUL)
-	    {
-		c = curwin->w_lcs_chars.space;
-		attr = HL_ATTR(HLF_8);
+		if (lead != NULL && s <= lead)
+		{
+		    c = curwin->w_lcs_chars.lead;
+		    attr = HL_ATTR(HLF_8);
+		}
+		else if (trail != NULL && s > trail)
+		{
+		    c = curwin->w_lcs_chars.trail;
+		    attr = HL_ATTR(HLF_8);
+		}
+		else if (list && in_multispace
+			&& curwin->w_lcs_chars.multispace != NULL)
+		{
+		    c = curwin->w_lcs_chars.multispace[multispace_pos++];
+		    if (curwin->w_lcs_chars.multispace[multispace_pos] == NUL)
+			multispace_pos = 0;
+		    attr = HL_ATTR(HLF_8);
+		}
+		else if (list && curwin->w_lcs_chars.space != NUL)
+		{
+		    c = curwin->w_lcs_chars.space;
+		    attr = HL_ATTR(HLF_8);
+		}
 	    }
 	}
 
