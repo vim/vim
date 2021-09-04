@@ -1027,6 +1027,14 @@ def Test_filewritable()
 enddef
 
 def Test_finddir()
+  mkdir('Xtestdir')
+  finddir('Xtestdir', '**', -1)->assert_equal(['Xtestdir'])
+  var lines =<< trim END
+      var l: list<string> = finddir('nothing', '*;', -1)
+  END
+  CheckDefAndScriptSuccess(lines)
+  delete('Xtestdir', 'rf')
+
   CheckDefAndScriptFailure2(['finddir(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['finddir(v:null)'], 'E1013: Argument 1: type mismatch, expected string but got special', 'E1174: String required for argument 1')
   CheckDefExecFailure(['echo finddir("")'], 'E1175:')
@@ -1035,6 +1043,12 @@ def Test_finddir()
 enddef
 
 def Test_findfile()
+  findfile('runtest.vim', '**', -1)->assert_equal(['runtest.vim'])
+  var lines =<< trim END
+      var l: list<string> = findfile('nothing', '*;', -1)
+  END
+  CheckDefAndScriptSuccess(lines)
+
   CheckDefExecFailure(['findfile(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
   CheckDefExecFailure(['findfile(v:null)'], 'E1013: Argument 1: type mismatch, expected string but got special')
   CheckDefExecFailure(['findfile("")'], 'E1175:')
