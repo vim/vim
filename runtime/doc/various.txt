@@ -170,8 +170,13 @@ g8			Print the hex values of the bytes used in the
 			If the mark is "=", a line of dashes is printed
 			around the current line.
 
-:[range]z#[+-^.=][count]				*:z#*
-			Like ":z", but number the lines.
+							*:z!
+:[range]z![+-^.=][count]
+			Like ":z:", but when [count] is not specified, it
+			defaults to the Vim window height minus one.
+
+:[range]z[!]#[+-^.=][count]				*:z#*
+			Like ":z" or ":z!", but number the lines.
 
 							*:=*
 := [flags]		Print the last line number.
@@ -418,7 +423,7 @@ N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
-   *+num64*		64-bit Number support |Number| 
+   *+num64*		64-bit Number support |Number|
    			Always enabled since 8.2.0271, use v:numbersize to
 			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
