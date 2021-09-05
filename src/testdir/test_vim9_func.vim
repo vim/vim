@@ -467,6 +467,10 @@ def Test_call_varargs()
   MyVarargs('one', 'two', 'three')->assert_equal('one,two,three')
 enddef
 
+def Test_call_white_space()
+  CheckDefAndScriptFailure2(["call Test ('text')"], 'E476:', 'E1068:')
+enddef
+
 def MyDefaultArgs(name = 'string'): string
   return name
 enddef

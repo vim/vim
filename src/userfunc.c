@@ -4921,11 +4921,14 @@ ex_call(exarg_T *eap)
     // Skip white space to allow ":call func ()".  Not good, but required for
     // backward compatibility.
     startarg = skipwhite(arg);
-    rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
-
     if (*startarg != '(')
     {
 	semsg(_(e_missing_paren), eap->arg);
+	goto end;
+    }
+    if (in_vim9script() && startarg > arg)
+    {
+	semsg(_(e_no_white_space_allowed_before_str_str), "(", eap->arg);
 	goto end;
     }
 
@@ -4969,6 +4972,7 @@ ex_call(exarg_T *eap)
 	funcexe.partial = partial;
 	funcexe.selfdict = fudi.fd_dict;
 	funcexe.check_type = type;
+	rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
 	if (get_func_tv(name, -1, &rettv, &arg, &evalarg, &funcexe) == FAIL)
 	{
 	    failed = TRUE;
