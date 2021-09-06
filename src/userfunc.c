@@ -4669,6 +4669,13 @@ ex_delfunction(exarg_T *eap)
     if (eap->nextcmd != NULL)
 	*p = NUL;
 
+    if (isdigit(*name) && fudi.fd_dict == NULL)
+    {
+	if (!eap->skip)
+	    semsg(_(e_invarg2), eap->arg);
+	vim_free(name);
+	return;
+    }
     if (!eap->skip)
 	fp = find_func(name, is_global, NULL);
     vim_free(name);
