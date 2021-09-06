@@ -624,7 +624,8 @@ endfunc
 
 func Test_usercmd_with_block()
   command DoSomething {
-        g:didit = 'yes'
+        g:didit = 'yes'  # comment
+        # comment line
         g:didmore = 'more'
       }
   DoSomething

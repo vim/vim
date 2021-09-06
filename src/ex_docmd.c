@@ -2807,7 +2807,16 @@ parse_command_modifiers(
 
 	// ignore comment and empty lines
 	if (comment_start(eap->cmd, starts_with_colon))
+	{
+	    // a comment ends at a NL
+	    if (eap->nextcmd == NULL)
+	    {
+		eap->nextcmd = vim_strchr(eap->cmd, '\n');
+		if (eap->nextcmd != NULL)
+		    ++eap->nextcmd;
+	    }
 	    return FAIL;
+	}
 	if (*eap->cmd == NUL)
 	{
 	    if (!skip_only)
