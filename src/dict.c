@@ -229,6 +229,7 @@ dictitem_alloc(char_u *key)
 	STRCPY(di->di_key, key);
 	di->di_flags = DI_FLAGS_ALLOC;
 	di->di_tv.v_lock = 0;
+	di->di_tv.v_type = VAR_UNKNOWN;
     }
     return di;
 }
