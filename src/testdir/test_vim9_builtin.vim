@@ -181,6 +181,7 @@ def Test_append()
   append(0, function('min'))
   assert_equal("function('min')", getline(1))
   CheckDefAndScriptFailure2(['append([1], "x")'], 'E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['append("", "x")'], 'E1209: Invalid value for a line number')
   bwipe!
 enddef
 
@@ -308,6 +309,7 @@ enddef
 
 def Test_bufexists()
   assert_fails('bufexists(true)', 'E1220:')
+  bufexists('')->assert_false()
 enddef
 
 def Test_buflisted()
@@ -315,6 +317,7 @@ def Test_buflisted()
   assert_equal(false, res)
   assert_fails('buflisted(true)', 'E1220:')
   assert_fails('buflisted([])', 'E1220:')
+  buflisted('')->assert_false()
 enddef
 
 def Test_bufload()
@@ -324,6 +327,7 @@ enddef
 def Test_bufloaded()
   assert_fails('bufloaded(true)', 'E1220:')
   assert_fails('bufloaded([])', 'E1220:')
+  bufloaded('')->assert_false()
 enddef
 
 def Test_bufname()
@@ -490,6 +494,7 @@ def Test_ch_open()
   else
     CheckDefAndScriptFailure2(['ch_open({"a": 10}, "a")'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1')
     CheckDefAndScriptFailure2(['ch_open("a", [1])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 2')
+    CheckDefExecAndScriptFailure(['ch_open("")'], 'E475: Invalid argument')
   endif
 enddef
 
@@ -576,6 +581,7 @@ enddef
 def Test_charcol()
   CheckDefAndScriptFailure2(['charcol(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1')
   CheckDefAndScriptFailure2(['charcol({a: 10})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1222: String or List required for argument 1')
+  CheckDefExecAndScriptFailure(['charcol("")'], 'E1209: Invalid value for a line number')
   new
   setline(1, ['abcdefgh'])
   cursor(1, 4)
@@ -598,6 +604,7 @@ enddef
 def Test_cindent()
   CheckDefAndScriptFailure2(['cindent([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['cindent(null)'], 'E1013: Argument 1: type mismatch, expected string but got special', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['cindent("")'], 'E1209: Invalid value for a line number')
   assert_equal(-1, cindent(0))
   assert_equal(0, cindent('.'))
 enddef
@@ -619,6 +626,7 @@ def Test_col()
   CheckDefAndScriptFailure2(['col(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1')
   CheckDefAndScriptFailure2(['col({a: 10})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1222: String or List required for argument 1')
   CheckDefAndScriptFailure2(['col(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1222: String or List required for argument 1')
+  CheckDefExecAndScriptFailure(['col("")'], 'E1209: Invalid value for a line number')
   bw!
 enddef
 
@@ -706,6 +714,7 @@ def Test_cursor()
   CheckDefAndScriptFailure2(['cursor(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected number but got blob', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['cursor(1, "2")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['cursor(1, 2, "3")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefExecAndScriptFailure(['cursor("", 2)'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_debugbreak()
@@ -723,6 +732,7 @@ def Test_delete()
 
   CheckDefAndScriptFailure2(['delete(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['delete("a", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefExecAndScriptFailure(['delete("")'], 'E474: Invalid argument')
 enddef
 
 def Test_deletebufline()
@@ -734,6 +744,7 @@ enddef
 def Test_diff_filler()
   CheckDefAndScriptFailure2(['diff_filler([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['diff_filler(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['diff_filler("")'], 'E1209: Invalid value for a line number')
   assert_equal(0, diff_filler(1))
   assert_equal(0, diff_filler('.'))
 enddef
@@ -741,6 +752,28 @@ enddef
 def Test_diff_hlID()
   CheckDefAndScriptFailure2(['diff_hlID(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['diff_hlID(1, "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  CheckDefExecAndScriptFailure(['diff_hlID("", 10)'], 'E1209: Invalid value for a line number')
+enddef
+
+def Test_digraph_get()
+  CheckDefAndScriptFailure2(['digraph_get(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefExecAndScriptFailure(['digraph_get("")'], 'E1214: Digraph must be just two characters')
+enddef
+
+def Test_digraph_getlist()
+  CheckDefAndScriptFailure2(['digraph_getlist(10)'], 'E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1')
+  CheckDefAndScriptFailure2(['digraph_getlist("")'], 'E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1')
+enddef
+
+def Test_digraph_set()
+  CheckDefAndScriptFailure2(['digraph_set(10, "a")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefAndScriptFailure2(['digraph_set("ab", 0z10)'], 'E1013: Argument 2: type mismatch, expected string but got blob', 'E1174: String required for argument 2')
+  CheckDefExecAndScriptFailure(['digraph_set("", "a")'], 'E1214: Digraph must be just two characters')
+enddef
+
+def Test_digraph_setlist()
+  CheckDefAndScriptFailure2(['digraph_setlist("a")'], 'E1013: Argument 1: type mismatch, expected list<string> but got string', 'E1216: digraph_setlist() argument must be a list of lists with two items')
+  CheckDefAndScriptFailure2(['digraph_setlist({})'], 'E1013: Argument 1: type mismatch, expected list<string> but got dict<unknown>', 'E1216: digraph_setlist() argument must be a list of lists with two items')
 enddef
 
 def Test_echoraw()
@@ -758,6 +791,7 @@ enddef
 def Test_eval()
   CheckDefAndScriptFailure2(['eval(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['eval(null)'], 'E1013: Argument 1: type mismatch, expected string but got special', 'E1174: String required for argument 1')
+  CheckDefExecAndScriptFailure(['eval("")'], 'E15: Invalid expression')
   assert_equal(2, eval('1 + 1'))
 enddef
 
@@ -1181,24 +1215,28 @@ enddef
 
 def Test_foldclosed()
   CheckDefAndScriptFailure2(['foldclosed(function("min"))'], 'E1013: Argument 1: type mismatch, expected string but got func(...): any', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['foldclosed("")'], 'E1209: Invalid value for a line number')
   assert_equal(-1, foldclosed(1))
   assert_equal(-1, foldclosed('$'))
 enddef
 
 def Test_foldclosedend()
   CheckDefAndScriptFailure2(['foldclosedend(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['foldclosedend("")'], 'E1209: Invalid value for a line number')
   assert_equal(-1, foldclosedend(1))
   assert_equal(-1, foldclosedend('w0'))
 enddef
 
 def Test_foldlevel()
   CheckDefAndScriptFailure2(['foldlevel(0z10)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['foldlevel("")'], 'E1209: Invalid value for a line number')
   assert_equal(0, foldlevel(1))
   assert_equal(0, foldlevel('.'))
 enddef
 
 def Test_foldtextresult()
   CheckDefAndScriptFailure2(['foldtextresult(1.1)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['foldtextresult("")'], 'E1209: Invalid value for a line number')
   assert_equal('', foldtextresult(1))
   assert_equal('', foldtextresult('.'))
 enddef
@@ -1320,6 +1358,7 @@ enddef
 def Test_getcharpos()
   CheckDefAndScriptFailure2(['getcharpos(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['getcharpos(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefExecAndScriptFailure(['getcharpos("")'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_getcharstr()
@@ -1335,10 +1374,12 @@ def Test_getcompletion()
   CheckDefAndScriptFailure2(['getcompletion(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['getcompletion("a", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   CheckDefAndScriptFailure2(['getcompletion("a", "b", 2)'], 'E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3')
+  CheckDefExecAndScriptFailure(['getcompletion("a", "")'], 'E475: Invalid argument')
+  getcompletion('', 'messages')->assert_equal(['clear'])
 enddef
 
 def Test_getcurpos()
-  CheckDefAndScriptFailure2(['getcursorcharpos("x")'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
+  CheckDefAndScriptFailure2(['getcurpos("x")'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
 enddef
 
 def Test_getcursorcharpos()
@@ -1425,6 +1466,7 @@ def Test_getline()
   CheckDefExecAndScriptFailure(lines, 'E1209:')
   CheckDefAndScriptFailure2(['getline(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['getline(1, true)'], 'E1013: Argument 2: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 2')
+  CheckDefExecAndScriptFailure(['getline("")'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_getloclist()
@@ -1454,6 +1496,7 @@ def Test_getpos()
   CheckDefAndScriptFailure2(['getpos(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   assert_equal([0, 1, 1, 0], getpos('.'))
   CheckDefExecFailure(['getpos("a")'], 'E1209:')
+  CheckDefExecAndScriptFailure(['getpos("")'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_getqflist()
@@ -1520,6 +1563,7 @@ enddef
 
 def Test_gettext()
   CheckDefAndScriptFailure2(['gettext(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefExecAndScriptFailure(['gettext("")'], 'E475: Invalid argument')
   assert_equal('abc', gettext("abc"))
 enddef
 
@@ -1596,11 +1640,13 @@ def Test_histadd()
   CheckDefAndScriptFailure2(['histadd(":", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   histadd("search", 'skyblue')
   assert_equal('skyblue', histget('/', -1))
+  histadd("search", '')->assert_equal(0)
 enddef
 
 def Test_histdel()
   CheckDefAndScriptFailure2(['histdel(1, "x")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['histdel(":", true)'], 'E1013: Argument 2: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 2')
+  histdel('search', '')->assert_equal(0)
 enddef
 
 def Test_histget()
@@ -1633,6 +1679,7 @@ enddef
 def Test_indent()
   CheckDefAndScriptFailure2(['indent([1])'], 'E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['indent(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['indent("")'], 'E1209: Invalid value for a line number')
   assert_equal(0, indent(1))
 enddef
 
@@ -1852,16 +1899,19 @@ def Test_line()
   assert_fails('line(true)', 'E1174:')
   CheckDefAndScriptFailure2(['line(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['line(".", "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  CheckDefExecAndScriptFailure(['line("")'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_line2byte()
   CheckDefAndScriptFailure2(['line2byte(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['line2byte("")'], 'E1209: Invalid value for a line number')
   assert_equal(-1, line2byte(1))
   assert_equal(-1, line2byte(10000))
 enddef
 
 def Test_lispindent()
   CheckDefAndScriptFailure2(['lispindent({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['lispindent("")'], 'E1209: Invalid value for a line number')
   assert_equal(0, lispindent(1))
 enddef
 
@@ -2048,6 +2098,8 @@ def Test_matchadd()
   CheckDefAndScriptFailure2(['matchadd("a", "b", "c")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
   CheckDefAndScriptFailure2(['matchadd("a", "b", 1, "d")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
   CheckDefAndScriptFailure2(['matchadd("a", "b", 1, 1, [])'], 'E1013: Argument 5: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 5')
+  matchadd('', 'a')->assert_equal(-1)
+  matchadd('Search', '')->assert_equal(-1)
 enddef
 
 def Test_matchaddpos()
@@ -2056,6 +2108,7 @@ def Test_matchaddpos()
   CheckDefAndScriptFailure2(['matchaddpos("a", [1], "c")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
   CheckDefAndScriptFailure2(['matchaddpos("a", [1], 1, "d")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
   CheckDefAndScriptFailure2(['matchaddpos("a", [1], 1, 1, [])'], 'E1013: Argument 5: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 5')
+  matchaddpos('', [1])->assert_equal(-1)
 enddef
 
 def Test_matcharg()
@@ -2203,6 +2256,7 @@ enddef
 
 def Test_nextnonblank()
   CheckDefAndScriptFailure2(['nextnonblank(null)'], 'E1013: Argument 1: type mismatch, expected string but got special', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['nextnonblank("")'], 'E1209: Invalid value for a line number')
   assert_equal(0, nextnonblank(1))
 enddef
 
@@ -2329,6 +2383,7 @@ enddef
 
 def Test_prevnonblank()
   CheckDefAndScriptFailure2(['prevnonblank(null)'], 'E1013: Argument 1: type mismatch, expected string but got special', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['prevnonblank("")'], 'E1209: Invalid value for a line number')
   assert_equal(0, prevnonblank(1))
 enddef
 
@@ -2472,11 +2527,19 @@ def Test_readdir()
   eval expand('sautest')->readdirex((e) => e.name[0] !=# '.')
   CheckDefAndScriptFailure2(['readdir(["a"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['readdir("a", "1", [3])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
+  if has('unix')
+    # only fails on Unix-like systems
+    assert_fails('readdir("")', 'E484: Can''t open file')
+  endif
 enddef
 
 def Test_readdirex()
   CheckDefAndScriptFailure2(['readdirex(["a"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['readdirex("a", "1", [3])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
+  if has('unix')
+    # only fails on Unix-like systems
+    assert_fails('readdirex("")', 'E484: Can''t open file')
+  endif
 enddef
 
 def Test_readblob()
@@ -2489,6 +2552,7 @@ def Test_readblob()
       var read: list<string> = readblob('Xreadblob')
   END
   CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected list<string> but got blob', 1)
+  CheckDefExecAndScriptFailure(['readblob("")'], 'E484: Can''t open file <empty>')
   delete('Xreadblob')
 enddef
 
@@ -2574,6 +2638,7 @@ def Test_remote_peek()
   CheckEnv DISPLAY
   CheckDefAndScriptFailure2(['remote_peek(0z10)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['remote_peek("a5b6c7", [1])'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1174: String required for argument 2')
+  CheckDefExecAndScriptFailure(['remote_peek("")'], 'E573: Invalid server id used')
 enddef
 
 def Test_remote_read()
@@ -2581,6 +2646,7 @@ def Test_remote_read()
   CheckEnv DISPLAY
   CheckDefAndScriptFailure2(['remote_read(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['remote_read("a", "x")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  CheckDefExecAndScriptFailure(['remote_read("")'], 'E573: Invalid server id used')
 enddef
 
 def Test_remote_send()
@@ -2827,6 +2893,7 @@ def Test_server2client()
   CheckEnv DISPLAY
   CheckDefAndScriptFailure2(['server2client(10, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['server2client("a", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefExecAndScriptFailure(['server2client("", "a")'], 'E573: Invalid server id used')
 enddef
 
 def Test_shellescape()
@@ -2910,6 +2977,7 @@ def Test_setbufvar()
 
   CheckDefAndScriptFailure2(['setbufvar(true, "v", 3)'], 'E1013: Argument 1: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['setbufvar(1, 2, 3)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  assert_fails('setbufvar("%", "", 10)', 'E461: Illegal variable name')
 enddef
 
 def Test_setbufline()
@@ -2937,6 +3005,7 @@ def Test_setcharpos()
   CheckDefAndScriptFailure2(['setcharpos(1, [])'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefFailure(['setcharpos(".", ["a"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
   CheckDefAndScriptFailure2(['setcharpos(".", 1)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number', 'E1211: List required for argument 2')
+  CheckDefExecAndScriptFailure(['setcharpos("", [0, 1, 1, 1])'], 'E474: Invalid argument')
 enddef
 
 def Test_setcharsearch()
@@ -2955,6 +3024,7 @@ def Test_setcursorcharpos()
   CheckDefAndScriptFailure2(['setcursorcharpos(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected number but got blob', 'E1224: String, Number or List required for argument 1')
   CheckDefAndScriptFailure2(['setcursorcharpos(1, "2")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['setcursorcharpos(1, 2, "3")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
+  CheckDefExecAndScriptFailure(['setcursorcharpos("", 10)'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_setenv()
@@ -2964,6 +3034,7 @@ enddef
 def Test_setfperm()
   CheckDefAndScriptFailure2(['setfperm(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['setfperm("a", 0z10)'], 'E1013: Argument 2: type mismatch, expected string but got blob', 'E1174: String required for argument 2')
+  CheckDefExecAndScriptFailure(['setfperm("Xfile", "")'], 'E475: Invalid argument')
 enddef
 
 def Test_setline()
@@ -2977,6 +3048,7 @@ def Test_setline()
   setline(1, 10)
   assert_equal(['10', 'b', 'c', 'd'], getline(1, '$'))
   CheckDefAndScriptFailure2(['setline([1], "x")'], 'E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1')
+  CheckDefExecAndScriptFailure(['setline("", "x")'], 'E1209: Invalid value for a line number')
   bw!
 enddef
 
@@ -3000,6 +3072,7 @@ def Test_setpos()
   CheckDefAndScriptFailure2(['setpos(1, [])'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefFailure(['setpos(".", ["a"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
   CheckDefAndScriptFailure2(['setpos(".", 1)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number', 'E1211: List required for argument 2')
+  CheckDefExecAndScriptFailure(['setpos("", [0, 1, 1, 1])'], 'E474: Invalid argument')
 enddef
 
 def Test_setqflist()
@@ -3021,12 +3094,14 @@ enddef
 def Test_settabvar()
   CheckDefAndScriptFailure2(['settabvar("a", "b", 1)'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
   CheckDefAndScriptFailure2(['settabvar(1, 2, "c")'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  assert_fails('settabvar(1, "", 10)', 'E461: Illegal variable name')
 enddef
 
 def Test_settabwinvar()
   CheckDefAndScriptFailure2(['settabwinvar("a", 2, "c", true)'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
   CheckDefAndScriptFailure2(['settabwinvar(1, "b", "c", [])'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['settabwinvar(1, 1, 3, {})'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
+  assert_fails('settabwinvar(1, 1, "", 10)', 'E461: Illegal variable name')
 enddef
 
 def Test_settagstack()
@@ -3038,6 +3113,7 @@ enddef
 def Test_setwinvar()
   CheckDefAndScriptFailure2(['setwinvar("a", "b", 1)'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
   CheckDefAndScriptFailure2(['setwinvar(1, 2, "c")'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  assert_fails('setwinvar(1, "", 10)', 'E461: Illegal variable name')
 enddef
 
 def Test_sha256()
@@ -3142,6 +3218,7 @@ def Test_spellsuggest()
   CheckDefAndScriptFailure2(['spellsuggest(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['spellsuggest("a", "b")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['spellsuggest("a", 1, 0z01)'], 'E1013: Argument 3: type mismatch, expected bool but got blob', 'E1212: Bool required for argument 3')
+  spellsuggest('')->assert_equal([])
 enddef
 
 def Test_sound_playevent()
@@ -3342,7 +3419,8 @@ enddef
 
 def Test_swapinfo()
   CheckDefAndScriptFailure2(['swapinfo({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>', 'E1174: String required for argument 1')
-  call assert_equal({error: 'Cannot open file'}, swapinfo('x'))
+  call swapinfo('x')->assert_equal({error: 'Cannot open file'})
+  call swapinfo('')->assert_equal({error: 'Cannot open file'})
 enddef
 
 def Test_swapname()
@@ -3358,6 +3436,7 @@ def Test_synID()
   CheckDefAndScriptFailure2(['synID(0z10, 1, true)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['synID("a", true, false)'], 'E1013: Argument 2: type mismatch, expected number but got bool', 'E1210: Number required for argument 2')
   CheckDefAndScriptFailure2(['synID(1, 1, 2)'], 'E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3')
+  CheckDefExecAndScriptFailure(['synID("", 10, true)'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_synIDattr()
@@ -3373,11 +3452,15 @@ enddef
 def Test_synconcealed()
   CheckDefAndScriptFailure2(['synconcealed(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['synconcealed(1, "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  if has('conceal')
+    CheckDefExecAndScriptFailure(['synconcealed("", 4)'], 'E1209: Invalid value for a line number')
+  endif
 enddef
 
 def Test_synstack()
   CheckDefAndScriptFailure2(['synstack(0z10, 1)'], 'E1013: Argument 1: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['synstack(1, "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+  CheckDefExecAndScriptFailure(['synstack("", 4)'], 'E1209: Invalid value for a line number')
 enddef
 
 def Test_system()
@@ -3404,6 +3487,7 @@ enddef
 
 def Test_tabpagenr()
   CheckDefAndScriptFailure2(['tabpagenr(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
+  CheckDefExecAndScriptFailure(['tabpagenr("")'], 'E15: Invalid expression')
   assert_equal(1, tabpagenr('$'))
   assert_equal(1, tabpagenr())
 enddef
@@ -3411,6 +3495,7 @@ enddef
 def Test_tabpagewinnr()
   CheckDefAndScriptFailure2(['tabpagewinnr("x")'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
   CheckDefAndScriptFailure2(['tabpagewinnr(1, 2)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+  CheckDefExecAndScriptFailure(['tabpagewinnr(1, "")'], 'E15: Invalid expression')
 enddef
 
 def Test_taglist()
@@ -3423,6 +3508,7 @@ def Test_term_dumpload()
   CheckDefAndScriptFailure2(['term_dumpload({"a": 10})'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['term_dumpload({"a": 10}, "b")'], 'E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['term_dumpload("a", ["b"])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<string>', 'E1206: Dictionary required for argument 2')
+  CheckDefExecAndScriptFailure(['term_dumpload("")'], 'E485: Can''t read file')
 enddef
 
 def Test_term_dumpdiff()
@@ -3430,6 +3516,7 @@ def Test_term_dumpdiff()
   CheckDefAndScriptFailure2(['term_dumpdiff(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['term_dumpdiff("a", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   CheckDefAndScriptFailure2(['term_dumpdiff("a", "b", [1])'], 'E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3')
+  CheckDefExecAndScriptFailure(['term_dumpdiff("", "")'], 'E485: Can''t read file')
 enddef
 
 def Test_term_dumpwrite()
@@ -3565,6 +3652,7 @@ def Test_term_start()
   CheckDefAndScriptFailure2(['term_start({})'], 'E1013: Argument 1: type mismatch, expected string but got dict<unknown>', 'E1222: String or List required for argument 1')
   CheckDefAndScriptFailure2(['term_start([], [])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 2')
   CheckDefAndScriptFailure2(['term_start("", "")'], 'E1013: Argument 2: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 2')
+  CheckDefExecAndScriptFailure(['term_start("")'], 'E474: Invalid argument')
 enddef
 
 def Test_term_wait()
@@ -3722,6 +3810,7 @@ enddef
 
 def Test_virtcol()
   CheckDefAndScriptFailure2(['virtcol(1.1)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1222: String or List required for argument 1')
+  CheckDefExecAndScriptFailure(['virtcol("")'], 'E1209: Invalid value for a line number')
   new
   setline(1, ['abcdefgh'])
   cursor(1, 4)
@@ -3802,6 +3891,7 @@ enddef
 
 def Test_winnr()
   CheckDefAndScriptFailure2(['winnr([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+  CheckDefExecAndScriptFailure(['winnr("")'], 'E15: Invalid expression')
   assert_equal(1, winnr())
   assert_equal(1, winnr('$'))
 enddef
@@ -3839,6 +3929,10 @@ enddef
 def Test_xor()
   CheckDefAndScriptFailure2(['xor("x", 0x2)'], 'E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1')
   CheckDefAndScriptFailure2(['xor(0x1, "x")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
+enddef
+
+def Test_writefile()
+  CheckDefExecAndScriptFailure(['writefile(["a"], "")'], 'E482: Can''t create file <empty>')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

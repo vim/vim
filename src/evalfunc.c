@@ -1305,9 +1305,9 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_diff_hlID},
     {"digraph_get",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_digraph_get},
-    {"digraph_getlist",0, 1, FEARG_1,	    arg1_number,
+    {"digraph_getlist",0, 1, FEARG_1,	    arg1_bool,
 			ret_list_string_items, f_digraph_getlist},
-    {"digraph_set",	2, 2, FEARG_1,	    arg2_string_number,
+    {"digraph_set",	2, 2, FEARG_1,	    arg2_string,
 			ret_bool,	f_digraph_set},
     {"digraph_setlist",1, 1, FEARG_1,	    arg1_list_string,
 			ret_bool,	    f_digraph_setlist},
@@ -2954,8 +2954,6 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	error = TRUE;
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	if (in_vim9script() && check_for_string_arg(argvars, 1) == FAIL)
-	    return;
 	buttons = tv_get_string_buf_chk(&argvars[1], buf);
 	if (buttons == NULL)
 	    error = TRUE;
@@ -2964,8 +2962,6 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    def = (int)tv_get_number_chk(&argvars[2], &error);
 	    if (argvars[3].v_type != VAR_UNKNOWN)
 	    {
-		if (in_vim9script() && check_for_string_arg(argvars, 3) == FAIL)
-		    return;
 		typestr = tv_get_string_buf_chk(&argvars[3], buf2);
 		if (typestr == NULL)
 		    error = TRUE;

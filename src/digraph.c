@@ -2443,7 +2443,7 @@ f_digraph_getlist(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_DIGRAPHS
     int     flag_list_all;
 
-    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
@@ -2475,7 +2475,7 @@ f_digraph_set(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL))
+		|| check_for_string_arg(argvars, 1) == FAIL))
 	return;
 
     if (!digraph_set_common(&argvars[0], &argvars[1]))
