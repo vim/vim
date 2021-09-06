@@ -170,7 +170,7 @@ g8			Print the hex values of the bytes used in the
 			If the mark is "=", a line of dashes is printed
 			around the current line.
 
-							*:z!
+							*:z!*
 :[range]z![+-^.=][count]
 			Like ":z:", but when [count] is not specified, it
 			defaults to the Vim window height minus one.
