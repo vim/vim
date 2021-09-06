@@ -4504,6 +4504,12 @@ if test "$MACOS_X" = "yes"; then
   fi
 fi
 
+dnl On some systems REENTRANT needs to be defined.  It should not hurt to use
+dnl it everywhere.
+if `echo "$CFLAGS" | grep -v D_REENTRANT >/dev/null`; then
+  CFLAGS="$CFLAGS -D_REENTRANT"
+fi
+
 dnl gcc 3.1 changed the meaning of -MM.  The only solution appears to be to
 dnl use "-isystem" instead of "-I" for all non-Vim include dirs.
 dnl But only when making dependencies, cproto and lint don't take "-isystem".

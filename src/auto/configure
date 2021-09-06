@@ -14960,6 +14960,10 @@ $as_echo "no" >&6; }
   fi
 fi
 
+if `echo "$CFLAGS" | grep -v D_XEENTRANT >/dev/null`; then
+  CFLAGS="$CFLAGS -D_REENTRANT"
+fi
+
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC 3 or later" >&5
