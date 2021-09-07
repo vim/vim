@@ -1480,16 +1480,17 @@ enddef
 def Test_import_star_fails()
   writefile([], 'Xfoo.vim')
   var lines =<< trim END
-      import * as foo from '/tmp/foo.vim'
+      import * as foo from './Xfoo.vim'
       foo = 'bar'
   END
   CheckDefAndScriptFailure2(lines, 'E1094:', 'E1236: Cannot use foo itself')
   lines =<< trim END
       vim9script
-      import * as foo from '/tmp/foo.vim'
+      import * as foo from './Xfoo.vim'
       var that = foo
   END
   CheckScriptFailure(lines, 'E1029: Expected ''.''')
+  delete('Xfoo.vim')
 enddef
 
 def Test_import_as()
