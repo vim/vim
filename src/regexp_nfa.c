@@ -5664,7 +5664,8 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
 		match = FALSE;
 		break;
 	    }
-	    len2 += MB_CHAR2LEN(c2);
+	    len2 += enc_utf8 ? utf_ptr2len(rex.line + col + len2)
+							     : MB_CHAR2LEN(c2);
 	}
 	if (match
 		// check that no composing char follows
