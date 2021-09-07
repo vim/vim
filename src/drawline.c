@@ -2109,55 +2109,60 @@ win_line(
 			int	i;
 			int	saved_nextra = n_extra;
 
-#ifdef FEAT_CONCEAL
+# ifdef FEAT_CONCEAL
 			if (vcol_off > 0)
 			    // there are characters to conceal
 			    tab_len += vcol_off;
+
 			// boguscols before FIX_FOR_BOGUSCOLS macro from above
 			if (wp->w_p_list && wp->w_lcs_chars.tab1
 							&& old_boguscols > 0
 							&& n_extra > tab_len)
 			    tab_len += n_extra - tab_len;
-#endif
-
-			// if n_extra > 0, it gives the number of chars, to
+# endif
+			// If n_extra > 0, it gives the number of chars, to
 			// use for a tab, else we need to calculate the width
-			// for a tab
+			// for a tab.
 			len = (tab_len * mb_char2len(wp->w_lcs_chars.tab2));
+			if (wp->w_lcs_chars.tab3)
+			    len += mb_char2len(wp->w_lcs_chars.tab3);
 			if (n_extra > 0)
 			    len += n_extra - tab_len;
 			c = wp->w_lcs_chars.tab1;
 			p = alloc(len + 1);
-			vim_memset(p, ' ', len);
-			p[len] = NUL;
-			vim_free(p_extra_free);
-			p_extra_free = p;
-			for (i = 0; i < tab_len; i++)
+			if (p == NULL)
+			    n_extra = 0;
+			else
 			{
-			    int lcs = wp->w_lcs_chars.tab2;
-
-			    if (*p == NUL)
+			    vim_memset(p, ' ', len);
+			    p[len] = NUL;
+			    vim_free(p_extra_free);
+			    p_extra_free = p;
+			    for (i = 0; i < tab_len; i++)
 			    {
-				tab_len = i;
-				break;
-			    }
+				int lcs = wp->w_lcs_chars.tab2;
 
-			    // if tab3 is given, need to change the char
-			    // for tab
-			    if (wp->w_lcs_chars.tab3 && i == tab_len - 1)
-				lcs = wp->w_lcs_chars.tab3;
-			    mb_char2bytes(lcs, p);
-			    p += mb_char2len(lcs);
-			    n_extra += mb_char2len(lcs)
+				if (*p == NUL)
+				{
+				    tab_len = i;
+				    break;
+				}
+
+				// if tab3 is given, use it for the last char
+				if (wp->w_lcs_chars.tab3 && i == tab_len - 1)
+				    lcs = wp->w_lcs_chars.tab3;
+				p += mb_char2bytes(lcs, p);
+				n_extra += mb_char2len(lcs)
 						  - (saved_nextra > 0 ? 1 : 0);
+			    }
+			    p_extra = p_extra_free;
+# ifdef FEAT_CONCEAL
+			    // n_extra will be increased by FIX_FOX_BOGUSCOLS
+			    // macro below, so need to adjust for that here
+			    if (vcol_off > 0)
+				n_extra -= vcol_off;
+# endif
 			}
-			p_extra = p_extra_free;
-#ifdef FEAT_CONCEAL
-			// n_extra will be increased by FIX_FOX_BOGUSCOLS
-			// macro below, so need to adjust for that here
-			if (vcol_off > 0)
-			    n_extra -= vcol_off;
-#endif
 		    }
 #endif
 #ifdef FEAT_CONCEAL
