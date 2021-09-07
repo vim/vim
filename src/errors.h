@@ -654,3 +654,5 @@ EXTERN char e_legacy_must_be_followed_by_command[]
 	INIT(= N_("E1234: legacy must be followed by a command"));
 EXTERN char e_function_reference_is_not_set[]
 	INIT(= N_("E1235: Function reference is not set"));
+EXTERN char e_cannot_use_str_itself_it_is_imported_with_star[]
+	INIT(= N_("E1236: Cannot use %s itself, it is imported with '*'"));
