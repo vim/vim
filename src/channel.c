@@ -1309,7 +1309,7 @@ channel_open_func(typval_T *argvars)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_dict_arg(argvars, 1) == FAIL))
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return NULL;
 
     address = tv_get_string(&argvars[0]);

@@ -5663,7 +5663,7 @@ f_term_dumpload(typval_T *argvars, typval_T *rettv)
 {
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_dict_arg(argvars, 1) == FAIL))
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return;
 
     term_load_dump(argvars, rettv, FALSE);
