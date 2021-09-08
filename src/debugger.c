@@ -531,6 +531,29 @@ static garray_T prof_ga = {0, 0, sizeof(struct debuggy), 4, NULL};
 static linenr_T debuggy_find(int file,char_u *fname, linenr_T after, garray_T *gap, int *fp);
 
 /*
+ * Evaluate the "bp->dbg_name" expression and return the result.
+ * Restore the got_int and called_emsg flags.
+ */
+    static typval_T *
+eval_expr_restore(struct debuggy *bp)
+{
+    typval_T	*tv;
+    int		prev_called_emsg = called_emsg;
+    int		prev_did_emsg = did_emsg;
+
+    got_int = FALSE;
+    tv = eval_expr(bp->dbg_name, NULL);
+
+    // Evaluating the expression should not result in breaking the sequence of
+    // commands.
+    got_int = FALSE;
+    called_emsg = prev_called_emsg;
+    did_emsg = prev_did_emsg;
+
+    return tv;
+}
+
+/*
  * Parse the arguments of ":profile", ":breakadd" or ":breakdel" and put them
  * in the entry just after the last one in dbg_breakp.  Note that "dbg_name"
  * is allocated.
@@ -614,7 +637,7 @@ dbg_parsearg(
     {
 	bp->dbg_name = vim_strsave(p);
 	if (bp->dbg_name != NULL)
-	    bp->dbg_val = eval_expr(bp->dbg_name, NULL);
+	    bp->dbg_val = eval_expr_restore(bp);
     }
     else
     {
@@ -960,10 +983,7 @@ debuggy_find(
 	    typval_T *tv;
 	    int	      line = FALSE;
 
-	    prev_got_int = got_int;
-	    got_int = FALSE;
-
-	    tv = eval_expr(bp->dbg_name, NULL);
+	    tv = eval_expr_restore(bp);
 	    if (tv != NULL)
 	    {
 		if (bp->dbg_val == NULL)
@@ -984,7 +1004,7 @@ debuggy_find(
 			debug_oldval = typval_tostring(bp->dbg_val, TRUE);
 			// Need to evaluate again, typval_compare() overwrites
 			// "tv".
-			v = eval_expr(bp->dbg_name, NULL);
+			v = eval_expr_restore(bp);
 			debug_newval = typval_tostring(v, TRUE);
 			free_tv(bp->dbg_val);
 			bp->dbg_val = v;
@@ -1006,8 +1026,6 @@ debuggy_find(
 		lnum = after > 0 ? after : 1;
 		break;
 	    }
-
-	    got_int |= prev_got_int;
 	}
 #endif
     }
