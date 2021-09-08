@@ -2224,5 +2224,29 @@ func Test_user_command_try_catch()
   unlet g:caught
 endfunc
 
+" Test for using throw in a called function with following error    {{{1
+func Test_user_command_throw_in_function_call()
+  let lines =<< trim END
+      function s:get_dict() abort
+        throw 'my_error'
+      endfunction
+
+      try
+        call s:get_dict().foo()
+      catch /my_error/
+        let caught = 'yes'
+      catch
+        let caught = 'no'
+      endtry
+      call assert_equal('yes', caught)
+  END
+  call writefile(lines, 'XtestThrow')
+  source XtestThrow
+
+  call delete('XtestThrow')
+  unlet g:caught
+endfunc
+
+
 " Modeline								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

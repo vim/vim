@@ -5012,7 +5012,7 @@ ex_call(exarg_T *eap)
     clear_evalarg(&evalarg, eap);
 
     // When inside :try we need to check for following "| catch".
-    if (!failed || eap->cstack->cs_trylevel > 0)
+    if (!aborting() && (!failed || eap->cstack->cs_trylevel > 0))
     {
 	// Check for trailing illegal characters and a following command.
 	arg = skipwhite(arg);
