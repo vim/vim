@@ -396,12 +396,19 @@ handle_import(
 	arg = skipwhite_and_linebreak(arg, evalarg);
 	if (STRNCMP("as", arg, 2) == 0 && IS_WHITE_OR_NUL(arg[2]))
 	{
-	    // skip over "as Name "; no line break allowed after "as"
+	    // Skip over "as Name "; no line break allowed after "as".
+	    // Do not allow for ':' and '#'.
 	    arg = skipwhite(arg + 2);
 	    p = arg;
 	    if (eval_isnamec1(*arg))
-		while (eval_isnamec(*arg))
+		while (ASCII_ISALNUM(*arg) || *arg == '_')
 		    ++arg;
+	    if (p == arg || !(IS_WHITE_OR_NUL(*arg)
+				  || (mult && (*arg == ',' || *arg == '}'))))
+	    {
+		semsg(_(e_syntax_error_in_import_str), p);
+		goto erret;
+	    }
 	    if (check_defined(p, arg - p, cctx, FALSE) == FAIL)
 		goto erret;
 	    as_name = vim_strnsave(p, arg - p);
@@ -439,7 +446,7 @@ handle_import(
 
     if (names.ga_len == 0)
     {
-	emsg(_(e_syntax_error_in_import));
+	semsg(_(e_syntax_error_in_import_str), arg_start);
 	goto erret;
     }
 
