@@ -3895,8 +3895,8 @@ f_fullcommand(typval_T *argvars, typval_T *rettv)
     }
 
     rettv->vval.v_string = vim_strsave(IS_USER_CMDIDX(ea.cmdidx)
-				    ? get_user_commands(NULL, ea.useridx)
-				    : cmdnames[ea.cmdidx].cmd_name);
+				 ? get_user_command_name(ea.useridx, ea.cmdidx)
+				 : cmdnames[ea.cmdidx].cmd_name);
 }
 #endif
 
@@ -5519,7 +5519,7 @@ check_more(
 get_command_name(expand_T *xp UNUSED, int idx)
 {
     if (idx >= (int)CMD_SIZE)
-	return get_user_command_name(idx);
+	return expand_user_command_name(idx);
     return cmdnames[idx].cmd_name;
 }
 

@@ -289,7 +289,7 @@ set_context_in_user_cmd(expand_T *xp, char_u *arg_in)
 }
 
     char_u *
-get_user_command_name(int idx)
+expand_user_command_name(int idx)
 {
     return get_user_commands(NULL, idx - (int)CMD_SIZE);
 }
@@ -312,6 +312,32 @@ get_user_commands(expand_T *xp UNUSED, int idx)
     idx -= buf->b_ucmds.ga_len;
     if (idx < ucmds.ga_len)
 	return USER_CMD(idx)->uc_name;
+    return NULL;
+}
+
+/*
+ * Get the name of user command "idx".  "cmdidx" can be CMD_USER or
+ * CMD_USER_BUF.
+ * Returns NULL if the command is not found.
+ */
+    char_u *
+get_user_command_name(int idx, int cmdidx)
+{
+    if (cmdidx == CMD_USER && idx < ucmds.ga_len)
+	return USER_CMD(idx)->uc_name;
+    if (cmdidx == CMD_USER_BUF)
+    {
+	// In cmdwin, the alternative buffer should be used.
+	buf_T *buf =
+#ifdef FEAT_CMDWIN
+		    (cmdwin_type != 0 && get_cmdline_type() == NUL)
+							  ? prevwin->w_buffer :
+#endif
+	    curbuf;
+
+	if (idx < buf->b_ucmds.ga_len)
+	    return USER_CMD_GA(&buf->b_ucmds, idx)->uc_name;
+    }
     return NULL;
 }
 

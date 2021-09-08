@@ -1,8 +1,9 @@
 /* usercmd.c */
 char_u *find_ucmd(exarg_T *eap, char_u *p, int *full, expand_T *xp, int *complp);
 char_u *set_context_in_user_cmd(expand_T *xp, char_u *arg_in);
-char_u *get_user_command_name(int idx);
+char_u *expand_user_command_name(int idx);
 char_u *get_user_commands(expand_T *xp, int idx);
+char_u *get_user_command_name(int idx, int cmdidx);
 char_u *get_user_cmd_addr_type(expand_T *xp, int idx);
 char_u *get_user_cmd_flags(expand_T *xp, int idx);
 char_u *get_user_cmd_nargs(expand_T *xp, int idx);
