@@ -690,12 +690,16 @@ check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
     return OK;
 }
 
+/*
+ * Generate instruction for "+".  For a list this creates a new list.
+ */
     static int
 generate_add_instr(
 	cctx_T *cctx,
 	vartype_T vartype,
 	type_T *type1,
-	type_T *type2)
+	type_T *type2,
+	exprtype_T expr_type)
 {
     garray_T	*stack = &cctx->ctx_type_stack;
     isn_T	*isn = generate_instr_drop(cctx,
@@ -715,7 +719,12 @@ generate_add_instr(
 	return FAIL;
 
     if (isn != NULL)
-	isn->isn_arg.op.op_type = EXPR_ADD;
+    {
+	if (isn->isn_type == ISN_ADDLIST)
+	    isn->isn_arg.op.op_type = expr_type;
+	else
+	    isn->isn_arg.op.op_type = EXPR_ADD;
+    }
 
     // When concatenating two lists with different member types the member type
     // becomes "any".
@@ -769,7 +778,8 @@ generate_two_op(cctx_T *cctx, char_u *op)
     switch (*op)
     {
 	case '+':
-		  if (generate_add_instr(cctx, vartype, type1, type2) == FAIL)
+		  if (generate_add_instr(cctx, vartype, type1, type2,
+							    EXPR_COPY) == FAIL)
 		      return FAIL;
 		  break;
 
@@ -7186,7 +7196,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    {
 		if (generate_add_instr(cctx,
 			    operator_type(lhs.lhs_member_type, stacktype),
-				       lhs.lhs_member_type, stacktype) == FAIL)
+				       lhs.lhs_member_type, stacktype,
+							  EXPR_APPEND) == FAIL)
 		    goto theend;
 	    }
 	    else if (generate_two_op(cctx, op) == FAIL)

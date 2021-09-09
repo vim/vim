@@ -557,20 +557,21 @@ enddef
 
 def Test_extend_list()
   var lines =<< trim END
-      vim9script
-      var l: list<number>
-      l += [123]
-      assert_equal([123], l)
+      var l1: list<number>
+      var l2 = l1
+      assert_true(l1 is l2)
+      l1 += [123]
+      assert_equal([123], l1)
+      assert_true(l1 is l2)
   END
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
-      vim9script
       var list: list<string>
       extend(list, ['x'])
       assert_equal(['x'], list)
   END
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
 
   # appending to NULL list from a function
   lines =<< trim END

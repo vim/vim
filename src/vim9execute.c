@@ -3677,7 +3677,14 @@ exec_instructions(ectx_T *ectx)
 
 		    // add two lists or blobs
 		    if (iptr->isn_type == ISN_ADDLIST)
-			eval_addlist(tv1, tv2);
+		    {
+			if (iptr->isn_arg.op.op_type == EXPR_APPEND
+						   && tv1->vval.v_list != NULL)
+			    list_extend(tv1->vval.v_list, tv2->vval.v_list,
+									 NULL);
+			else
+			    eval_addlist(tv1, tv2);
+		    }
 		    else
 			eval_addblob(tv1, tv2);
 		    clear_tv(tv2);

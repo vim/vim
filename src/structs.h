@@ -4106,6 +4106,9 @@ typedef enum
     EXPR_MULT,		// *
     EXPR_DIV,		// /
     EXPR_REM,		// %
+    // used with ISN_ADDLIST
+    EXPR_COPY,		// create new list
+    EXPR_APPEND,	// append to first list
 } exprtype_T;
 
 /*
