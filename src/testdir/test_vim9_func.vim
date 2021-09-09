@@ -438,6 +438,29 @@ def Test_return_invalid()
   CheckScriptFailure(lines, 'E1010:')
 enddef
 
+def Test_return_list_any()
+  var lines =<< trim END
+      vim9script
+      def Func(): list<string>
+        var l: list<any>
+        l->add('string')
+        return l
+      enddef
+      echo Func()
+  END
+  CheckScriptFailure(lines, 'E1012:')
+  lines =<< trim END
+      vim9script
+      def Func(): list<string>
+        var l: list<any>
+        l += ['string']
+        return l
+      enddef
+      echo Func()
+  END
+  CheckScriptFailure(lines, 'E1012:')
+enddef
+
 func Increment()
   let g:counter += 1
 endfunc
