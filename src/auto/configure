@@ -12978,7 +12978,9 @@ if test "$enable_canberra" = "yes"; then
 $as_echo_n "checking for libcanberra... " >&6; }
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
-  CFLAGS="$CFLAGS $canberra_cflags"
+  if `echo "$CFLAGS" | grep -v "$canberra_cflags" >/dev/null`; then
+    CFLAGS="$CFLAGS $canberra_cflags"
+  fi
   LIBS="$LIBS $canberra_lib"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14960,7 +14962,7 @@ $as_echo "no" >&6; }
   fi
 fi
 
-if `echo "$CFLAGS" | grep -v D_XEENTRANT >/dev/null`; then
+if `echo "$CFLAGS" | grep -v D_REENTRANT >/dev/null`; then
   CFLAGS="$CFLAGS -D_REENTRANT"
 fi
 

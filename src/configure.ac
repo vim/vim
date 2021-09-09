@@ -3756,7 +3756,9 @@ if test "$enable_canberra" = "yes"; then
   AC_MSG_CHECKING(for libcanberra)
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
-  CFLAGS="$CFLAGS $canberra_cflags"
+  if `echo "$CFLAGS" | grep -v "$canberra_cflags" >/dev/null`; then
+    CFLAGS="$CFLAGS $canberra_cflags"
+  fi
   LIBS="$LIBS $canberra_lib"
   AC_TRY_LINK([
   # include <canberra.h>
