@@ -2321,6 +2321,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cope	quickfix.txt	/*:cope*
 :copen	quickfix.txt	/*:copen*
 :copy	change.txt	/*:copy*
+:count_quit	windows.txt	/*:count_quit*
 :cp	quickfix.txt	/*:cp*
 :cpf	quickfix.txt	/*:cpf*
 :cpfile	quickfix.txt	/*:cpfile*
@@ -3502,6 +3503,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :y	change.txt	/*:y*
 :yank	change.txt	/*:yank*
 :z	various.txt	/*:z*
+:z!	various.txt	/*:z!*
 :z#	various.txt	/*:z#*
 :~	change.txt	/*:~*
 ;	motion.txt	/*;*
@@ -5920,6 +5922,7 @@ compl-keyword	insert.txt	/*compl-keyword*
 compl-omni	insert.txt	/*compl-omni*
 compl-omni-filetypes	insert.txt	/*compl-omni-filetypes*
 compl-spelling	insert.txt	/*compl-spelling*
+compl-stop	insert.txt	/*compl-stop*
 compl-tag	insert.txt	/*compl-tag*
 compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
@@ -7479,6 +7482,7 @@ i_CTRL-X_CTRL-T	insert.txt	/*i_CTRL-X_CTRL-T*
 i_CTRL-X_CTRL-U	insert.txt	/*i_CTRL-X_CTRL-U*
 i_CTRL-X_CTRL-V	insert.txt	/*i_CTRL-X_CTRL-V*
 i_CTRL-X_CTRL-Y	insert.txt	/*i_CTRL-X_CTRL-Y*
+i_CTRL-X_CTRL-Z	insert.txt	/*i_CTRL-X_CTRL-Z*
 i_CTRL-X_CTRL-]	insert.txt	/*i_CTRL-X_CTRL-]*
 i_CTRL-X_index	index.txt	/*i_CTRL-X_index*
 i_CTRL-X_s	insert.txt	/*i_CTRL-X_s*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Aug 25
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Sep 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,13 +38,15 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+:delcommand -buffer should work
+
 Vim9 - Make everything work:
+- Disallow using numbered function with "g:123" in Vim9 script?  #8760
 - use CheckLegacyAndVim9Success(lines) in many more places
 - Check TODO items in vim9compile.c and vim9execute.c
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
-- Disallow using numbered function with "g:123" in Vim9 script?  #8760
 - Check many more builtin function arguments at compile time.
     map() could check that the return type of the function argument matches
     the type of the list or dict member. (#8092)
@@ -223,6 +225,9 @@ Need to handle extra bytes.
 Test_communicate_ipv6(): is flaky on many systems
 Fails in line 64 of Ch_communicate, no exception is thrown.
 
+Patch for Template string: #4634
+Have another look at the implementation.
+
 Rename getdigraphlist -> digraph_getlist() etc.
 
 Valgrind reports memory leaks in test_options.
@@ -258,9 +263,6 @@ Mapping with partial match not executed properly in GTK. (Ingo Karkat, #7082)
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 Also see #8487 for an example.
-
-Patch for Template string: #4634
-Have another look at the implementation.
 
 Patch to implement the vimtutor with a plugin: #6414
 Was originally written by Felipe Morales.
@@ -1038,6 +1040,9 @@ always nested.
 matchit hasn't been maintained for a long time.  #955.
 
 Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
+
+'delcombine' does not work for the command line. (Tony Mechelynck, 2009 Jul
+20)
 
 MS-Windows: buffer completion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
@@ -2299,9 +2304,6 @@ string_convert() should be able to convert between utf-8 and utf-16le.  Used
 for GTK clipboard.  Avoid requirement for iconv.
 
 Now that colnr_T is int instead of unsigned, more type casts can be removed.
-
-'delcombine' does not work for the command line. (Tony Mechelynck, 2009 Jul
-20)
 
 Don't load macmap.vim on startup, turn it into a plugin. (Ron Aaron,
 2009 Apr 7)  Reminder Apr 14.

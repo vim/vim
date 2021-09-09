@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Mar 23
+*various.txt*   For Vim version 8.2.  Last change: 2021 Sep 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -170,7 +170,7 @@ g8			Print the hex values of the bytes used in the
 			If the mark is "=", a line of dashes is printed
 			around the current line.
 
-							*:z!
+							*:z!*
 :[range]z![+-^.=][count]
 			Like ":z:", but when [count] is not specified, it
 			defaults to the Vim window height minus one.

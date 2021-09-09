@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Aug 16
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Sep 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4864,14 +4864,17 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 		Find directory {name} in {path}.  Supports both downwards and
 		upwards recursive directory searches.  See |file-searching|
 		for the syntax of {path}.
+
 		Returns the path of the first found match.  When the found
 		directory is below the current directory a relative path is
 		returned.  Otherwise a full path is returned.
 		If {path} is omitted or empty then 'path' is used.
+
 		If the optional {count} is given, find {count}'s occurrence of
 		{name} in {path} instead of the first one.
 		When {count} is negative return all the matches in a |List|.
-		This is quite similar to the ex-command |:find|.
+
+		This is quite similar to the ex-command `:find`.
 		{only available when compiled with the |+file_in_path|
 		feature}
 
@@ -5094,7 +5097,7 @@ fullcommand({name})						*fullcommand()*
 		The string argument {name} may start with a `:` and can
 		include a [range], these are skipped and not returned.
 		Returns an empty string if a command doesn't exist or if it's
-		ambiguous (for user-defined functions).
+		ambiguous (for user-defined commands).
 
 		For example `fullcommand('s')`, `fullcommand('sub')`,
 		`fullcommand(':%substitute')` all return "substitute".
