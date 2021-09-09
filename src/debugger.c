@@ -532,23 +532,17 @@ static linenr_T debuggy_find(int file,char_u *fname, linenr_T after, garray_T *g
 
 /*
  * Evaluate the "bp->dbg_name" expression and return the result.
- * Restore the got_int and called_emsg flags.
+ * Disables error messages.
  */
     static typval_T *
-eval_expr_restore(struct debuggy *bp)
+eval_expr_no_emsg(struct debuggy *bp)
 {
     typval_T	*tv;
-    int		prev_called_emsg = called_emsg;
-    int		prev_did_emsg = did_emsg;
 
-    got_int = FALSE;
+    // Disable error messages, a bad expression would make Vim unusable.
+    ++emsg_off;
     tv = eval_expr(bp->dbg_name, NULL);
-
-    // Evaluating the expression should not result in breaking the sequence of
-    // commands.
-    got_int = FALSE;
-    called_emsg = prev_called_emsg;
-    did_emsg = prev_did_emsg;
+    --emsg_off;
 
     return tv;
 }
@@ -637,7 +631,7 @@ dbg_parsearg(
     {
 	bp->dbg_name = vim_strsave(p);
 	if (bp->dbg_name != NULL)
-	    bp->dbg_val = eval_expr_restore(bp);
+	    bp->dbg_val = eval_expr_no_emsg(bp);
     }
     else
     {
@@ -983,7 +977,7 @@ debuggy_find(
 	    typval_T *tv;
 	    int	      line = FALSE;
 
-	    tv = eval_expr_restore(bp);
+	    tv = eval_expr_no_emsg(bp);
 	    if (tv != NULL)
 	    {
 		if (bp->dbg_val == NULL)
@@ -1004,7 +998,7 @@ debuggy_find(
 			debug_oldval = typval_tostring(bp->dbg_val, TRUE);
 			// Need to evaluate again, typval_compare() overwrites
 			// "tv".
-			v = eval_expr_restore(bp);
+			v = eval_expr_no_emsg(bp);
 			debug_newval = typval_tostring(v, TRUE);
 			free_tv(bp->dbg_val);
 			bp->dbg_val = v;
