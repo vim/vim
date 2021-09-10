@@ -4787,6 +4787,8 @@ set_chars_option(win_T *wp, char_u **varp)
     int		round, i, len, entries;
     char_u	*p, *s;
     int		c1 = 0, c2 = 0, c3 = 0;
+    char_u	*last_multispace;	// Last occurrence of "multispace:"
+    int		multispace_len = 0;	// Length of lcs-multispace string
     struct charstab
     {
 	int	*cp;
@@ -4853,6 +4855,13 @@ set_chars_option(win_T *wp, char_u **varp)
 	    {
 		lcs_chars.tab1 = NUL;
 		lcs_chars.tab3 = NUL;
+		if (multispace_len)
+		{
+		    lcs_chars.multispace = ALLOC_MULT(int, multispace_len + 1);
+		    lcs_chars.multispace[multispace_len] = NUL;
+		}
+		else
+		    lcs_chars.multispace = NULL;
 	    }
 	    else
 	    {
@@ -4877,19 +4886,19 @@ set_chars_option(win_T *wp, char_u **varp)
 		    s = p + len + 1;
 		    c1 = mb_ptr2char_adv(&s);
 		    if (mb_char2cells(c1) > 1)
-			continue;
+			return e_invarg;
 		    if (tab[i].cp == &lcs_chars.tab2)
 		    {
 			if (*s == NUL)
-			    continue;
+			    return e_invarg;
 			c2 = mb_ptr2char_adv(&s);
 			if (mb_char2cells(c2) > 1)
-			    continue;
+			    return e_invarg;
 			if (!(*s == ',' || *s == NUL))
 			{
 			    c3 = mb_ptr2char_adv(&s);
 			    if (mb_char2cells(c3) > 1)
-				continue;
+				return e_invarg;
 			}
 		    }
 
@@ -4914,13 +4923,57 @@ set_chars_option(win_T *wp, char_u **varp)
 	    }
 
 	    if (i == entries)
-		return e_invarg;
+	    {
+		len = STRLEN("multispace");
+		if ((varp == &p_lcs || varp == &wp->w_p_lcs)
+			&& STRNCMP(p, "multispace", len) == 0
+			&& p[len] == ':'
+			&& p[len + 1] != NUL)
+		{
+		    s = p + len + 1;
+		    if (round == 0)
+		    {
+			// Get length of lcs-multispace string in first round
+			last_multispace = p;
+			multispace_len = 0;
+			while (*s != NUL && *s != ',')
+			{
+			    c1 = mb_ptr2char_adv(&s);
+			    if (mb_char2cells(c1) > 1)
+				return e_invarg;
+			    ++multispace_len;
+			}
+			if (multispace_len == 0)
+			    // lcs-multispace cannot be an empty string
+			    return e_invarg;
+			p = s;
+		    }
+		    else
+		    {
+			int multispace_pos = 0;
+			while (*s != NUL && *s != ',')
+			{
+			    c1 = mb_ptr2char_adv(&s);
+			    if (p == last_multispace)
+				lcs_chars.multispace[multispace_pos++] = c1;
+			}
+			p = s;
+		    }
+		}
+		else
+		    return e_invarg;
+	    }
+
 	    if (*p == ',')
 		++p;
 	}
     }
     if (tab == lcstab)
+    {
+	if (wp->w_lcs_chars.multispace != NULL)
+	    vim_free(wp->w_lcs_chars.multispace);
 	wp->w_lcs_chars = lcs_chars;
+    }
 
     return NULL;	// no error
 }

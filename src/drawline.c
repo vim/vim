@@ -340,6 +340,8 @@ win_line(
 #endif
     colnr_T	trailcol = MAXCOL;	// start of trailing spaces
     colnr_T	leadcol = 0;		// start of leading spaces
+    int		in_multispace = FALSE;	// in multiple consecutive spaces
+    int		multispace_pos = 0;	// position in lcs-multispace string
 #ifdef FEAT_LINEBREAK
     int		need_showbreak = FALSE; // overlong line, skipping first x
 					// chars
@@ -736,6 +738,7 @@ win_line(
     if (wp->w_p_list)
     {
 	if (wp->w_lcs_chars.space
+		|| wp->w_lcs_chars.multispace != NULL
 		|| wp->w_lcs_chars.trail
 		|| wp->w_lcs_chars.lead
 		|| wp->w_lcs_chars.nbsp)
@@ -2011,6 +2014,11 @@ win_line(
 		}
 #endif
 
+		in_multispace = c == ' '
+		    && ((ptr > line + 1 && ptr[-2] == ' ') || *ptr == ' ');
+		if (!in_multispace)
+		    multispace_pos = 0;
+
 		// 'list': Change char 160 to 'nbsp' and space to 'space'
 		// setting in 'listchars'.  But not when the character is
 		// followed by a composing character (use mb_l to check that).
@@ -2022,12 +2030,21 @@ win_line(
 			     && wp->w_lcs_chars.nbsp)
 			    || (c == ' '
 				&& mb_l == 1
-				&& wp->w_lcs_chars.space
+				&& (wp->w_lcs_chars.space
+				    || (in_multispace
+					&& wp->w_lcs_chars.multispace != NULL))
 				&& ptr - line >= leadcol
 				&& ptr - line <= trailcol)))
 		{
-		    c = (c == ' ') ? wp->w_lcs_chars.space :
-							wp->w_lcs_chars.nbsp;
+		    if (in_multispace && wp->w_lcs_chars.multispace != NULL)
+		    {
+			c = wp->w_lcs_chars.multispace[multispace_pos++];
+			if (wp->w_lcs_chars.multispace[multispace_pos] == NUL)
+			    multispace_pos = 0;
+		    }
+		    else
+			c = (c == ' ') ? wp->w_lcs_chars.space
+					: wp->w_lcs_chars.nbsp;
 		    if (area_attr == 0 && search_attr == 0)
 		    {
 			n_attr = 1;

@@ -3376,6 +3376,7 @@ typedef struct
     int		tab3;
     int		trail;
     int		lead;
+    int		*multispace;
 #ifdef FEAT_CONCEAL
     int		conceal;
 #endif
