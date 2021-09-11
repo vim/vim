@@ -5099,19 +5099,23 @@ nv_replace(cmdarg_T *cap)
 	    {
 		/*
 		 * Get ptr again, because u_save and/or showmatch() will have
-		 * released the line.  At the same time we let know that the
-		 * line will be changed.
+		 * released the line.  This may also happen in ins_copychar().
+		 * At the same time we let know that the line will be changed.
 		 */
-		ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum, TRUE);
 		if (cap->nchar == Ctrl_E || cap->nchar == Ctrl_Y)
 		{
 		  int c = ins_copychar(curwin->w_cursor.lnum
 					   + (cap->nchar == Ctrl_Y ? -1 : 1));
+
+		  ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum, TRUE);
 		  if (c != NUL)
 		    ptr[curwin->w_cursor.col] = c;
 		}
 		else
+		{
+		    ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum, TRUE);
 		    ptr[curwin->w_cursor.col] = cap->nchar;
+		}
 		if (p_sm && msg_silent == 0)
 		    showmatch(cap->nchar);
 		++curwin->w_cursor.col;
