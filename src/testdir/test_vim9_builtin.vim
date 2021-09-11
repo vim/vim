@@ -1090,6 +1090,13 @@ def Test_findfile()
   CheckDefAndScriptFailure2(['findfile("a", "b", "c")'], 'E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3')
 enddef
 
+def Test_flatten()
+  var lines =<< trim END
+      echo flatten([1, 2, 3])
+  END
+  CheckDefAndScriptFailure(lines, 'E1158:')
+enddef
+
 def Test_flattennew()
   var lines =<< trim END
       var l = [1, [2, [3, 4]], 5]
@@ -1098,13 +1105,12 @@ def Test_flattennew()
 
       call assert_equal([1, 2, [3, 4], 5], flattennew(l, 1))
       call assert_equal([1, [2, [3, 4]], 5], l)
+
+      var ll: list<list<string>> = [['a', 'b', 'c']]
+      assert_equal(['a', 'b', 'c'], ll->flattennew())
   END
   CheckDefAndScriptSuccess(lines)
 
-  lines =<< trim END
-      echo flatten([1, 2, 3])
-  END
-  CheckDefAndScriptFailure(lines, 'E1158:')
   CheckDefAndScriptFailure2(['flattennew({})'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<unknown>', 'E1211: List required for argument 1')
   CheckDefAndScriptFailure2(['flattennew([], "1")'], 'E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2')
 enddef
