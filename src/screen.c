@@ -4787,8 +4787,8 @@ set_chars_option(win_T *wp, char_u **varp)
     int		round, i, len, entries;
     char_u	*p, *s;
     int		c1 = 0, c2 = 0, c3 = 0;
-    char_u	*last_multispace;	// Last occurrence of "multispace:"
-    int		multispace_len = 0;	// Length of lcs-multispace string
+    char_u	*last_multispace = NULL; // Last occurrence of "multispace:"
+    int		multispace_len = 0;	 // Length of lcs-multispace string
     struct charstab
     {
 	int	*cp;
