@@ -293,6 +293,18 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
     invoke_listeners(buf);
 }
 
+
+    static void
+remove_listener(buf_T *buf, listener_T *lnr, listener_T *prev)
+{
+    if (prev != NULL)
+	prev->lr_next = lnr->lr_next;
+    else
+	buf->b_listener = lnr->lr_next;
+    free_callback(&lnr->lr_callback);
+    vim_free(lnr);
+}
+
 /*
  * listener_remove() function
  */
@@ -317,12 +329,13 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
 	    next = lnr->lr_next;
 	    if (lnr->lr_id == id)
 	    {
-		if (prev != NULL)
-		    prev->lr_next = lnr->lr_next;
-		else
-		    buf->b_listener = lnr->lr_next;
-		free_callback(&lnr->lr_callback);
-		vim_free(lnr);
+		if (textwinlock > 0)
+		{
+		    // in invoke_listeners(), clear ID and delete later
+		    lnr->lr_id = 0;
+		    return;
+		}
+		remove_listener(buf, lnr, prev);
 		rettv->vval.v_number = 1;
 		return;
 	    }
@@ -357,6 +370,7 @@ invoke_listeners(buf_T *buf)
     linenr_T	added = 0;
     int		save_updating_screen = updating_screen;
     static int	recursive = FALSE;
+    listener_T	*next;
 
     if (buf->b_recorded_changes == NULL  // nothing changed
 	    || buf->b_listener == NULL   // no listeners
@@ -398,6 +412,18 @@ invoke_listeners(buf_T *buf)
     {
 	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
 	clear_tv(&rettv);
+    }
+
+    // If f_listener_remove() was called may have to remove a listener now.
+    for (lnr = buf->b_listener; lnr != NULL; lnr = next)
+    {
+	listener_T	*prev = NULL;
+
+	next = lnr->lr_next;
+	if (lnr->lr_id == 0)
+	    remove_listener(buf, lnr, prev);
+	else
+	    prev = lnr;
     }
 
     --textwinlock;

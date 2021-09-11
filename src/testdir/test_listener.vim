@@ -370,4 +370,22 @@ func Test_col_after_deletion_moved_cur()
   delfunc Listener
 endfunc
 
+func Test_remove_listener_in_callback()
+  new
+  let s:ID = listener_add('Listener')
+  func Listener(...)
+    call listener_remove(s:ID)
+    let g:listener_called = 'yes'
+  endfunc
+  call setline(1, ['foo'])
+  call feedkeys("lD", 'xt')
+  call listener_flush()
+  call assert_equal('yes', g:listener_called)
+
+  bwipe!
+  delfunc Listener
+  unlet g:listener_called
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
