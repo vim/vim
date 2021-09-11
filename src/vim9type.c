@@ -258,7 +258,7 @@ func_type_add_arg_types(
 typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 {
     type_T  *type;
-    type_T  *member_type = &t_any;
+    type_T  *member_type = NULL;
     int	    argcount = 0;
     int	    min_argcount = 0;
 
@@ -268,6 +268,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	return &t_bool;
     if (tv->v_type == VAR_STRING)
 	return &t_string;
+    if (tv->v_type == VAR_BLOB)
+	return &t_blob;
 
     if (tv->v_type == VAR_LIST)
     {

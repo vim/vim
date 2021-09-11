@@ -3462,9 +3462,21 @@ set_var_const(
     if (vim9script && type != NULL)
     {
 	if (type->tt_type == VAR_DICT && dest_tv->vval.v_dict != NULL)
-	    dest_tv->vval.v_dict->dv_type = alloc_type(type);
+	{
+	    if (dest_tv->vval.v_dict->dv_type != type)
+	    {
+		free_type(dest_tv->vval.v_dict->dv_type);
+		dest_tv->vval.v_dict->dv_type = alloc_type(type);
+	    }
+	}
 	else if (type->tt_type == VAR_LIST && dest_tv->vval.v_list != NULL)
-	    dest_tv->vval.v_list->lv_type = alloc_type(type);
+	{
+	    if (dest_tv->vval.v_list->lv_type != type)
+	    {
+		free_type(dest_tv->vval.v_list->lv_type);
+		dest_tv->vval.v_list->lv_type = alloc_type(type);
+	    }
+	}
     }
 
     // ":const var = value" locks the value
