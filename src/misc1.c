@@ -630,7 +630,7 @@ ask_yesno(char_u *str, int direct)
     void
 f_mode(typval_T *argvars, typval_T *rettv)
 {
-    char_u	buf[4];
+    char_u	buf[MODE_MAX_LENGTH];
 
     if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
 	return;
@@ -2642,4 +2642,43 @@ path_with_url(char_u *fname)
 
     // "://" or ":\\" must follow
     return path_is_url(p);
+}
+
+/*
+ * Fires a ModeChanged autocmd
+ */
+    void
+trigger_modechanged()
+{
+#if defined(FEAT_EVAL) || defined(PROTO)
+    dict_T	    *v_event;
+    typval_T	    rettv;
+    typval_T	    tv;
+    char_u	    *pat_pre;
+    char_u	    *pat;
+
+    if (!has_modechanged())
+	return;
+
+    v_event = get_vim_var_dict(VV_EVENT);
+
+    tv.v_type = VAR_UNKNOWN;
+    f_mode(&tv, &rettv);
+    (void)dict_add_string(v_event, "new_mode", rettv.vval.v_string);
+    (void)dict_add_string(v_event, "old_mode", last_mode);
+    dict_set_items_ro(v_event);
+
+    // concatenate modes in format "old_mode:new_mode"
+    pat_pre = concat_str(last_mode, (char_u*)":");
+    pat = concat_str(pat_pre, rettv.vval.v_string);
+    vim_free(pat_pre);
+
+    apply_autocmds(EVENT_MODECHANGED, pat, NULL, FALSE, curbuf);
+    STRCPY(last_mode, rettv.vval.v_string);
+
+    vim_free(rettv.vval.v_string);
+    vim_free(pat);
+    dict_free_contents(v_event);
+    hash_init(&v_event->dv_hashtab);
+#endif
 }

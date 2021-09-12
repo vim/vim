@@ -688,6 +688,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define TERMINAL        0x2000  // Terminal mode
 #define MODE_ALL	0xffff
 
+#define MODE_MAX_LENGTH	4	// max mode length returned in mode()
+
 // all mode bits used for mapping
 #define MAP_ALL_MODES	(0x3f | SELECTMODE | TERMINAL)
 
@@ -1317,6 +1319,7 @@ enum auto_event
     EVENT_INSERTLEAVEPRE,	// just before leaving Insert mode
     EVENT_INSERTLEAVE,		// just after leaving Insert mode
     EVENT_MENUPOPUP,		// just before popup menu is displayed
+    EVENT_MODECHANGED,		// after changing the mode
     EVENT_OPTIONSET,		// option was set
     EVENT_QUICKFIXCMDPOST,	// after :make, :grep etc.
     EVENT_QUICKFIXCMDPRE,	// before :make, :grep etc.

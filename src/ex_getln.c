@@ -1696,6 +1696,10 @@ getcmdline_int(
     // Trigger CmdlineEnter autocommands.
     cmdline_type = firstc == NUL ? '-' : firstc;
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINEENTER);
+#ifdef FEAT_EVAL
+    if (!debug_mode)
+	trigger_modechanged();
+#endif
 
     init_history();
     hiscnt = get_hislen();	// set hiscnt to impossible history value
@@ -2461,6 +2465,12 @@ returncmd:
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVE);
 
     State = save_State;
+
+#ifdef FEAT_EVAL
+    if (!debug_mode)
+	trigger_modechanged();
+#endif
+
 #ifdef HAVE_INPUT_METHOD
     if (b_im_ptr != NULL && *b_im_ptr != B_IMODE_LMAP)
 	im_save_status(b_im_ptr);

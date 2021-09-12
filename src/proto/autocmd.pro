@@ -25,6 +25,7 @@ int has_insertcharpre(void);
 int has_cmdundefined(void);
 int has_textyankpost(void);
 int has_completechanged(void);
+int has_modechanged(void);
 void block_autocmds(void);
 void unblock_autocmds(void);
 int is_autocmd_blocked(void);
