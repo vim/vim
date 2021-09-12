@@ -660,3 +660,5 @@ EXTERN char e_cannot_use_str_itself_it_is_imported_with_star[]
 	INIT(= N_("E1236: Cannot use %s itself, it is imported with '*'"));
 EXTERN char e_no_such_user_defined_command_in_current_buffer_str[]
 	INIT(= N_("E1237: No such user-defined command in current buffer: %s"));
+EXTERN char e_blob_required_for_argument_nr[]
+	INIT(= N_("E1238: Blob required for argument %d"));
