@@ -1162,8 +1162,16 @@ ex_delcommand(exarg_T *eap)
 {
     int		i = 0;
     ucmd_T	*cmd = NULL;
-    int		cmp = -1;
+    int		res = -1;
     garray_T	*gap;
+    char_u	*arg = eap->arg;
+    int		buffer_only = FALSE;
+
+    if (STRNCMP(arg, "-buffer", 7) == 0 && VIM_ISWHITE(arg[7]))
+    {
+	buffer_only = TRUE;
+	arg = skipwhite(arg + 7);
+    }
 
     gap = &curbuf->b_ucmds;
     for (;;)
@@ -1171,18 +1179,20 @@ ex_delcommand(exarg_T *eap)
 	for (i = 0; i < gap->ga_len; ++i)
 	{
 	    cmd = USER_CMD_GA(gap, i);
-	    cmp = STRCMP(eap->arg, cmd->uc_name);
-	    if (cmp <= 0)
+	    res = STRCMP(arg, cmd->uc_name);
+	    if (res <= 0)
 		break;
 	}
-	if (gap == &ucmds || cmp == 0)
+	if (gap == &ucmds || res == 0 || buffer_only)
 	    break;
 	gap = &ucmds;
     }
 
-    if (cmp != 0)
+    if (res != 0)
     {
-	semsg(_("E184: No such user-defined command: %s"), eap->arg);
+	semsg(_(buffer_only
+		    ? e_no_such_user_defined_command_in_current_buffer_str
+		    : e_no_such_user_defined_command_str), arg);
 	return;
     }
 

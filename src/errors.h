@@ -141,6 +141,8 @@ EXTERN char e_undefined_variable_str[]
 EXTERN char e_undefined_variable_char_str[]
 	INIT(= N_("E121: Undefined variable: %c:%s"));
 #endif
+EXTERN char e_no_such_user_defined_command_str[]
+	INIT(= N_("E184: No such user-defined command: %s"));
 #ifndef FEAT_DIGRAPHS
 EXTERN char e_no_digraphs_version[]
 	INIT(= N_("E196: No digraphs in this version"));
@@ -656,3 +658,5 @@ EXTERN char e_function_reference_is_not_set[]
 	INIT(= N_("E1235: Function reference is not set"));
 EXTERN char e_cannot_use_str_itself_it_is_imported_with_star[]
 	INIT(= N_("E1236: Cannot use %s itself, it is imported with '*'"));
+EXTERN char e_no_such_user_defined_command_in_current_buffer_str[]
+	INIT(= N_("E1237: No such user-defined command in current buffer: %s"));

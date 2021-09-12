@@ -656,4 +656,25 @@ func Test_usercmd_with_block()
   call CheckScriptFailure(lines, 'E1231:')
 endfunc
 
+func Test_delcommand_buffer()
+  command Global echo 'global'
+  command -buffer OneBuffer echo 'one'
+  new
+  command -buffer TwoBuffer echo 'two'
+  call assert_equal(0, exists(':OneBuffer'))
+  call assert_equal(2, exists(':Global'))
+  call assert_equal(2, exists(':TwoBuffer'))
+  delcommand -buffer TwoBuffer
+  call assert_equal(0, exists(':TwoBuffer'))
+  call assert_fails('delcommand -buffer Global', 'E1237:')
+  call assert_fails('delcommand -buffer OneBuffer', 'E1237:')
+  bwipe!
+  call assert_equal(2, exists(':OneBuffer'))
+  delcommand -buffer OneBuffer
+  call assert_equal(0, exists(':OneBuffer'))
+  call assert_fails('delcommand -buffer Global', 'E1237:')
+  delcommand Global
+  call assert_equal(0, exists(':Global'))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
