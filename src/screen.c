@@ -4924,7 +4924,7 @@ set_chars_option(win_T *wp, char_u **varp)
 
 	    if (i == entries)
 	    {
-		len = STRLEN("multispace");
+		len = (int)STRLEN("multispace");
 		if ((varp == &p_lcs || varp == &wp->w_p_lcs)
 			&& STRNCMP(p, "multispace", len) == 0
 			&& p[len] == ':'
