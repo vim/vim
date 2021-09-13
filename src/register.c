@@ -74,6 +74,13 @@ set_y_previous(yankreg_T *yreg)
     y_previous = yreg;
 }
 
+    void
+reset_y_append(void)
+{
+    y_append = FALSE;
+}
+
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Keep the last expression line here, for repeating.

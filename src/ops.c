@@ -695,6 +695,8 @@ op_delete(oparg_T *oap)
 	    if (op_yank(oap, TRUE, FALSE) == OK)   // yank without message
 		did_yank = TRUE;
 	}
+	else
+	    reset_y_append(); // not appending to unnamed register
 
 	/*
 	 * Put deleted text into register 1 and shift number registers if the
