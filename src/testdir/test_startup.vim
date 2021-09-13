@@ -508,36 +508,47 @@ func Test_font()
   call delete('Xtest_font')
 endfunc
 
-" Test the -geometry argument (for GUI only).
-func Test_geometry()
+" Test the -geometry argument's window size interpretation (for GUI only).
+" Should not be run in the presence of a window manager because the window
+" manager can and likely will override the window size.
+func Test_geometry_area()
   CheckCanRunGui
   CheckAnyOf Feature:gui_gtk Feature:gui_motif Feature:gui_athena
 
-  if has('gui_motif') || has('gui_athena')
-    " FIXME: With GUI Athena or Motif, the value of getwinposx(),
-    "        getwinposy() and getwinpos() do not match exactly the
-    "        value given in -geometry. Why?
-    "        So only check &columns and &lines for those GUIs.
-    let after =<< trim [CODE]
-      call writefile([&columns, &lines], "Xtest_geometry")
-      qall
-    [CODE]
-    if RunVim([], after, '-f -g -geometry 31x13+41+43')
-      let lines = readfile('Xtest_geometry')
-      call assert_equal(['31', '13'], lines)
-    endif
-  else
-    let after =<< trim [CODE]
-      call writefile([&columns, &lines, getwinposx(), getwinposy(), string(getwinpos())], "Xtest_geometry")
-      qall
-    [CODE]
-    if RunVim([], after, '-f -g -geometry 31x13+41+43')
-      let lines = readfile('Xtest_geometry')
-      call assert_equal(['31', '13', '41', '43', '[41, 43]'], lines)
-    endif
+  let after =<< trim [CODE]
+    call writefile([&columns, &lines], "Xtest_geometry_area")
+    qall
+  [CODE]
+  " Disable the toolbar but keep the menu. If the toolbar is enabled in GTK3
+  " it can cause the window to be smaller than requested. If the menu is
+  " disabled in GTK2 then the window can be smaller than requested. The window
+  " width cannot be set too small here (roughly less than 35 columns) because
+  " in GTK3 the menubar can cause the window to be larger than expected.
+  if RunVim([], after, '-f -g -geometry 62x13 --cmd "set guioptions=m"')
+    let lines = readfile('Xtest_geometry_area')
+    call assert_equal(['62', '13'], lines)
   endif
 
-  call delete('Xtest_geometry')
+  call delete('Xtest_geometry_area')
+endfunc
+
+" Test the -geometry argument's window position interpretation (for GUI only).
+" Should not be run in the presence of a window manager because the window
+" manager can and likely will override the window position.
+func Test_geometry_position()
+  CheckCanRunGui
+  CheckAnyOf Feature:gui_gtk Feature:gui_motif Feature:gui_athena
+
+  let after =<< trim [CODE]
+    call writefile([getwinposx(), getwinposy(), string(getwinpos())], "Xtest_geometry_position")
+    qall
+  [CODE]
+  if RunVim([], after, '-f -g -geometry +41+43')
+    let lines = readfile('Xtest_geometry_position')
+    call assert_equal(['41', '43', '[41, 43]'], lines)
+  endif
+
+  call delete('Xtest_geometry_position')
 endfunc
 
 " Test the -iconic argument (for GUI only).
