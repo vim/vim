@@ -459,13 +459,15 @@ check_for_bool_arg(typval_T *args, int idx)
 }
 
 /*
- * Check for an optional bool argument at 'idx'
+ * Check for an optional bool argument at 'idx'.
+ * Return FAIL if the type is wrong.
  */
     int
 check_for_opt_bool_arg(typval_T *args, int idx)
 {
-    return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_bool_arg(args, idx) != FAIL);
+    if (args[idx].v_type == VAR_UNKNOWN)
+	return OK;
+    return check_for_bool_arg(args, idx);
 }
 
 /*
