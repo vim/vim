@@ -162,6 +162,9 @@ typedef enum {
     ISN_CHECKLEN,   // check list length is isn_arg.checklen.cl_min_len
     ISN_SETTYPE,    // set dict type to isn_arg.type.ct_type
 
+    ISN_CLEARDICT,  // clear dict saved by ISN_MEMBER/ISN_STRINGMEMBER
+    ISN_USEDICT,    // use or clear dict saved by ISN_MEMBER/ISN_STRINGMEMBER
+
     ISN_PUT,	    // ":put", uses isn_arg.put
 
     ISN_CMDMOD,	    // set cmdmod

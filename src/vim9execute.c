@@ -165,6 +165,75 @@ update_has_breakpoint(ufunc_T *ufunc)
     }
 }
 
+static garray_T dict_stack = GA_EMPTY;
+
+/*
+ * Put a value on the dict stack.  This consumes "tv".
+ */
+    static int
+dict_stack_save(typval_T *tv)
+{
+    if (dict_stack.ga_growsize == 0)
+	ga_init2(&dict_stack, (int)sizeof(typval_T), 10);
+    if (ga_grow(&dict_stack, 1) == FAIL)
+	return FAIL;
+    ((typval_T *)dict_stack.ga_data)[dict_stack.ga_len] = *tv;
+    ++dict_stack.ga_len;
+    return OK;
+}
+
+/*
+ * Get the typval at top of the dict stack.
+ */
+    static typval_T *
+dict_stack_get_tv(void)
+{
+    if (dict_stack.ga_len == 0)
+	return NULL;
+    return ((typval_T *)dict_stack.ga_data) + dict_stack.ga_len - 1;
+}
+
+/*
+ * Get the dict at top of the dict stack.
+ */
+    static dict_T *
+dict_stack_get_dict(void)
+{
+    typval_T *tv;
+
+    if (dict_stack.ga_len == 0)
+	return NULL;
+    tv = ((typval_T *)dict_stack.ga_data) + dict_stack.ga_len - 1;
+    if (tv->v_type == VAR_DICT)
+	return tv->vval.v_dict;
+    return NULL;
+}
+
+/*
+ * Drop an item from the dict stack.
+ */
+    static void
+dict_stack_drop(void)
+{
+    if (dict_stack.ga_len == 0)
+    {
+	iemsg("Dict stack underflow");
+	return;
+    }
+    --dict_stack.ga_len;
+    clear_tv(((typval_T *)dict_stack.ga_data) + dict_stack.ga_len);
+}
+
+/*
+ * Drop items from the dict stack until the length is equal to "len".
+ */
+    static void
+dict_stack_clear(int len)
+{
+    while (dict_stack.ga_len > len)
+	dict_stack_drop();
+}
+
 /*
  * Call compiled function "cdf_idx" from compiled code.
  * This adds a stack frame and sets the instruction pointer to the start of the
@@ -765,7 +834,8 @@ call_ufunc(
 	partial_T   *pt,
 	int	    argcount,
 	ectx_T	    *ectx,
-	isn_T	    *iptr)
+	isn_T	    *iptr,
+	dict_T	    *selfdict)
 {
     typval_T	argvars[MAX_FUNC_ARGS];
     funcexe_T   funcexe;
@@ -807,11 +877,12 @@ call_ufunc(
 	return FAIL;
     CLEAR_FIELD(funcexe);
     funcexe.evaluate = TRUE;
+    funcexe.selfdict = selfdict != NULL ? selfdict : dict_stack_get_dict();
 
     // Call the user function.  Result goes in last position on the stack.
     // TODO: add selfdict if there is one
     error = call_user_func_check(ufunc, argcount, argvars,
-					     STACK_TV_BOT(-1), &funcexe, NULL);
+				 STACK_TV_BOT(-1), &funcexe, funcexe.selfdict);
 
     // Clear the arguments.
     for (idx = 0; idx < argcount; ++idx)
@@ -864,7 +935,8 @@ call_by_name(
 	char_u	    *name,
 	int	    argcount,
 	ectx_T	    *ectx,
-	isn_T	    *iptr)
+	isn_T	    *iptr,
+	dict_T	    *selfdict)
 {
     ufunc_T *ufunc;
 
@@ -916,7 +988,7 @@ call_by_name(
 	    }
 	}
 
-	return call_ufunc(ufunc, NULL, argcount, ectx, iptr);
+	return call_ufunc(ufunc, NULL, argcount, ectx, iptr, selfdict);
     }
 
     return FAIL;
@@ -932,6 +1004,7 @@ call_partial(
     char_u	*name = NULL;
     int		called_emsg_before = called_emsg;
     int		res = FAIL;
+    dict_T	*selfdict = NULL;
 
     if (tv->v_type == VAR_PARTIAL)
     {
@@ -953,9 +1026,10 @@ call_partial(
 	    for (i = 0; i < pt->pt_argc; ++i)
 		copy_tv(&pt->pt_argv[i], STACK_TV_BOT(-argcount + i));
 	}
+	selfdict = pt->pt_dict;
 
 	if (pt->pt_func != NULL)
-	    return call_ufunc(pt->pt_func, pt, argcount, ectx, NULL);
+	    return call_ufunc(pt->pt_func, pt, argcount, ectx, NULL, selfdict);
 
 	name = pt->pt_name;
     }
@@ -973,7 +1047,7 @@ call_partial(
 	if (error != FCERR_NONE)
 	    res = FAIL;
 	else
-	    res = call_by_name(fname, argcount, ectx, NULL);
+	    res = call_by_name(fname, argcount, ectx, NULL, selfdict);
 	vim_free(tofree);
     }
 
@@ -1325,7 +1399,7 @@ call_eval_func(
     int	    called_emsg_before = called_emsg;
     int	    res;
 
-    res = call_by_name(name, argcount, ectx, iptr);
+    res = call_by_name(name, argcount, ectx, iptr, NULL);
     if (res == FAIL && called_emsg == called_emsg_before)
     {
 	dictitem_T	*v;
@@ -1570,6 +1644,7 @@ exec_instructions(ectx_T *ectx)
 {
     int		ret = FAIL;
     int		save_trylevel_at_start = ectx->ec_trylevel_at_start;
+    int		dict_stack_len_at_start = dict_stack.ga_len;
 
     // Start execution at the first instruction.
     ectx->ec_iidx = 0;
@@ -4022,7 +4097,6 @@ exec_instructions(ectx_T *ectx)
 		    dict_T	*dict;
 		    char_u	*key;
 		    dictitem_T	*di;
-		    typval_T	temp_tv;
 
 		    // dict member: dict is at stack-2, key at stack-1
 		    tv = STACK_TV_BOT(-2);
@@ -4041,23 +4115,24 @@ exec_instructions(ectx_T *ectx)
 			semsg(_(e_dictkey), key);
 
 			// If :silent! is used we will continue, make sure the
-			// stack contents makes sense.
+			// stack contents makes sense and the dict stack is
+			// updated.
 			clear_tv(tv);
 			--ectx->ec_stack.ga_len;
 			tv = STACK_TV_BOT(-1);
-			clear_tv(tv);
+			(void) dict_stack_save(tv);
 			tv->v_type = VAR_NUMBER;
 			tv->vval.v_number = 0;
 			goto on_fatal_error;
 		    }
 		    clear_tv(tv);
 		    --ectx->ec_stack.ga_len;
-		    // Clear the dict only after getting the item, to avoid
-		    // that it makes the item invalid.
+		    // Put the dict used on the dict stack, it might be used by
+		    // a dict function later.
 		    tv = STACK_TV_BOT(-1);
-		    temp_tv = *tv;
+		    if (dict_stack_save(tv) == FAIL)
+			goto on_fatal_error;
 		    copy_tv(&di->di_tv, tv);
-		    clear_tv(&temp_tv);
 		}
 		break;
 
@@ -4066,7 +4141,6 @@ exec_instructions(ectx_T *ectx)
 		{
 		    dict_T	*dict;
 		    dictitem_T	*di;
-		    typval_T	temp_tv;
 
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
@@ -4084,11 +4158,37 @@ exec_instructions(ectx_T *ectx)
 			semsg(_(e_dictkey), iptr->isn_arg.string);
 			goto on_error;
 		    }
-		    // Clear the dict after getting the item, to avoid that it
-		    // make the item invalid.
-		    temp_tv = *tv;
+		    // Put the dict used on the dict stack, it might be used by
+		    // a dict function later.
+		    if (dict_stack_save(tv) == FAIL)
+			goto on_fatal_error;
+
 		    copy_tv(&di->di_tv, tv);
-		    clear_tv(&temp_tv);
+		}
+		break;
+
+	    case ISN_CLEARDICT:
+		dict_stack_drop();
+		break;
+
+	    case ISN_USEDICT:
+		{
+		    typval_T *dict_tv = dict_stack_get_tv();
+
+		    // Turn "dict.Func" into a partial for "Func" bound to
+		    // "dict".  Don't do this when "Func" is already a partial
+		    // that was bound explicitly (pt_auto is FALSE).
+		    tv = STACK_TV_BOT(-1);
+		    if (dict_tv != NULL
+			    && dict_tv->v_type == VAR_DICT
+			    && dict_tv->vval.v_dict != NULL
+			    && (tv->v_type == VAR_FUNC
+				|| (tv->v_type == VAR_PARTIAL
+				    && (tv->vval.v_partial->pt_auto
+				     || tv->vval.v_partial->pt_dict == NULL))))
+		    dict_tv->vval.v_dict =
+					make_partial(dict_tv->vval.v_dict, tv);
+		    dict_stack_drop();
 		}
 		break;
 
@@ -4478,6 +4578,7 @@ on_fatal_error:
 done:
     ret = OK;
 theend:
+    dict_stack_clear(dict_stack_len_at_start);
     ectx->ec_trylevel_at_start = save_trylevel_at_start;
     return ret;
 }
@@ -5568,6 +5669,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_MEMBER: smsg("%s%4d MEMBER", pfx, current); break;
 	    case ISN_STRINGMEMBER: smsg("%s%4d MEMBER %s", pfx, current,
 						  iptr->isn_arg.string); break;
+	    case ISN_CLEARDICT: smsg("%s%4d CLEARDICT", pfx, current); break;
+	    case ISN_USEDICT: smsg("%s%4d USEDICT", pfx, current); break;
+
 	    case ISN_NEGATENR: smsg("%s%4d NEGATENR", pfx, current); break;
 
 	    case ISN_CHECKNR: smsg("%s%4d CHECKNR", pfx, current); break;

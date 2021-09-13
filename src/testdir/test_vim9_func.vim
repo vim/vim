@@ -2557,6 +2557,37 @@ def Test_legacy_errors()
   endfor
 enddef
 
+def Test_call_legacy_with_dict()
+  var lines =<< trim END
+      vim9script
+      func Legacy() dict
+        let g:result = self.value
+      endfunc
+      def TestDirect()
+        var d = {value: 'yes', func: Legacy}
+        d.func()
+      enddef
+      TestDirect()
+      assert_equal('yes', g:result)
+      unlet g:result
+
+      def TestIndirect()
+        var d = {value: 'foo', func: Legacy}
+        var Fi = d.func
+        Fi()
+      enddef
+      TestIndirect()
+      assert_equal('foo', g:result)
+      unlet g:result
+
+      var d = {value: 'bar', func: Legacy}
+      d.func()
+      assert_equal('bar', g:result)
+      unlet g:result
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def DoFilterThis(a: string): list<string>
   # closure nested inside another closure using argument
   var Filter = (l) => filter(l, (_, v) => stridx(v, a) == 0)

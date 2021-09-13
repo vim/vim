@@ -412,7 +412,8 @@ def Test_disassemble_store_index()
         '\d PUSHNR 0\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d MEMBER dd\_s*' ..
-        '\d STOREINDEX any\_s*' ..
+        '\d\+ USEDICT\_s*' ..
+        '\d\+ STOREINDEX any\_s*' ..
         '\d\+ RETURN void',
         res)
 enddef
@@ -1625,11 +1626,13 @@ def Test_disassemble_dict_member()
         'var res = d.item\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ MEMBER item\_s*' ..
+        '\d\+ USEDICT\_s*' ..
         '\d\+ STORE $1\_s*' ..
         'res = d\["item"\]\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ PUSHS "item"\_s*' ..
         '\d\+ MEMBER\_s*' ..
+        '\d\+ USEDICT\_s*' ..
         '\d\+ STORE $1\_s*',
         instr)
   assert_equal(1, DictMember())
@@ -2302,6 +2305,35 @@ def Test_debug_elseif()
         res)
 enddef
 
+func Legacy() dict
+  echo 'legacy'
+endfunc
+
+def s:UseMember()
+  var d = {func: Legacy}
+  var v = d.func()
+enddef
+
+def Test_disassemble_dict_stack()
+  var res = execute('disass s:UseMember')
+  assert_match('<SNR>\d*_UseMember\_s*' ..
+          'var d = {func: Legacy}\_s*' ..
+          '\d PUSHS "func"\_s*' ..
+          '\d PUSHFUNC "Legacy"\_s*' ..
+          '\d NEWDICT size 1\_s*' ..
+          '\d STORE $0\_s*' ..
+
+          'var v = d.func()\_s*' ..
+          '\d LOAD $0\_s*' ..
+          '\d MEMBER func\_s*' ..
+          '\d PCALL top (argc 0)\_s*' ..
+          '\d PCALL end\_s*' ..
+          '\d CLEARDICT\_s*' ..
+          '\d\+ STORE $1\_s*' ..
+          '\d\+ RETURN void*',
+        res)
+enddef
+
 def s:EchoMessages()
   echohl ErrorMsg | echom v:exception | echohl NONE
 enddef
@@ -2361,6 +2393,7 @@ def Test_disassemble_after_reload()
     delfunc g:ThisFunc
     delfunc g:ThatFunc
 enddef
+
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

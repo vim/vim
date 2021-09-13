@@ -2878,9 +2878,10 @@ clear_ppconst(ppconst_T *ppconst)
 /*
  * Compile getting a member from a list/dict/string/blob.  Stack has the
  * indexable value and the index or the two indexes of a slice.
+ * "keeping_dict" is used for dict[func](arg) to pass dict to func.
  */
     static int
-compile_member(int is_slice, cctx_T *cctx)
+compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 {
     type_T	**typep;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -2935,6 +2936,8 @@ compile_member(int is_slice, cctx_T *cctx)
 	    return FAIL;
 	if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 	    return FAIL;
+	if (keeping_dict != NULL)
+	    *keeping_dict = TRUE;
     }
     else if (vartype == VAR_STRING)
     {
@@ -4314,6 +4317,7 @@ compile_subscript(
 	ppconst_T *ppconst)
 {
     char_u	*name_start = *end_leader;
+    int		keeping_dict = FALSE;
 
     for (;;)
     {
@@ -4360,6 +4364,12 @@ compile_subscript(
 		return FAIL;
 	    if (generate_PCALL(cctx, argcount, name_start, type, TRUE) == FAIL)
 		return FAIL;
+	    if (keeping_dict)
+	    {
+		keeping_dict = FALSE;
+		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		    return FAIL;
+	    }
 	}
 	else if (*p == '-' && p[1] == '>')
 	{
@@ -4470,6 +4480,12 @@ compile_subscript(
 		if (compile_call(arg, p - *arg, cctx, ppconst, 1) == FAIL)
 		    return FAIL;
 	    }
+	    if (keeping_dict)
+	    {
+		keeping_dict = FALSE;
+		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		    return FAIL;
+	    }
 	}
 	else if (**arg == '[')
 	{
@@ -4537,7 +4553,13 @@ compile_subscript(
 	    }
 	    *arg = *arg + 1;
 
-	    if (compile_member(is_slice, cctx) == FAIL)
+	    if (keeping_dict)
+	    {
+		keeping_dict = FALSE;
+		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		    return FAIL;
+	    }
+	    if (compile_member(is_slice, &keeping_dict, cctx) == FAIL)
 		return FAIL;
 	}
 	else if (*p == '.' && p[1] != '.')
@@ -4562,18 +4584,21 @@ compile_subscript(
 		semsg(_(e_syntax_error_at_str), *arg);
 		return FAIL;
 	    }
+	    if (keeping_dict && generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		return FAIL;
 	    if (generate_STRINGMEMBER(cctx, *arg, p - *arg) == FAIL)
 		return FAIL;
+	    keeping_dict = TRUE;
 	    *arg = p;
 	}
 	else
 	    break;
     }
 
-    // TODO - see handle_subscript():
     // Turn "dict.Func" into a partial for "Func" bound to "dict".
-    // Don't do this when "Func" is already a partial that was bound
-    // explicitly (pt_auto is FALSE).
+    // This needs to be done at runtime to be able to check the type.
+    if (keeping_dict && generate_instr(cctx, ISN_USEDICT) == NULL)
+	return FAIL;
 
     return OK;
 }
@@ -6661,7 +6686,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	}
 
 	// Get the member.
-	if (compile_member(FALSE, cctx) == FAIL)
+	if (compile_member(FALSE, NULL, cctx) == FAIL)
 	    return FAIL;
     }
     return OK;
@@ -10406,6 +10431,7 @@ delete_instr(isn_T *isn)
 	case ISN_CEXPR_AUCMD:
 	case ISN_CHECKLEN:
 	case ISN_CHECKNR:
+	case ISN_CLEARDICT:
 	case ISN_CMDMOD_REV:
 	case ISN_COMPAREANY:
 	case ISN_COMPAREBLOB:
@@ -10482,6 +10508,7 @@ delete_instr(isn_T *isn)
 	case ISN_UNLETINDEX:
 	case ISN_UNLETRANGE:
 	case ISN_UNPACK:
+	case ISN_USEDICT:
 	    // nothing allocated
 	    break;
     }
