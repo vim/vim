@@ -2469,6 +2469,7 @@ atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
+blob2list({blob})		List	convert {blob} into a list of numbers
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -2721,7 +2722,8 @@ libcallnr({lib}, {func}, {arg})	Number	idem, but return a Number
 line({expr} [, {winid}])	Number	line nr of cursor, last line or mark
 line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
-list2str({list} [, {utf8}])	String	turn numbers in {list} into a String
+list2blob({list})		Blob	turn {list} of numbers into a Blob
+list2str({list} [, {utf8}])	String	turn {list} of numbers into a String
 listener_add({callback} [, {buf}])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
@@ -3354,6 +3356,17 @@ balloon_split({msg})					*balloon_split()*
 
 <		{only available when compiled with the |+balloon_eval_term|
 		feature}
+
+blob2list({blob})					*blob2list()*
+		Return a List containing the number value of each byte in Blob
+		{blob}.  Examples: >
+			blob2list(0z0102.0304)	returns [1, 2, 3, 4]
+			blob2list(0z)		returns []
+<		Returns an empty List on error.  |list2blob()| does the
+		opposite.
+
+		Can also be used as a |method|: >
+			GetBlob()->blob2list()
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
@@ -7207,6 +7220,19 @@ lispindent({lnum})					*lispindent()*
 
 		Can also be used as a |method|: >
 			GetLnum()->lispindent()
+
+list2blob({list})					*list2blob()*
+		Return a Blob concatenating all the number values in {list}.
+		Examples: >
+			list2blob([1, 2, 3, 4])	returns 0z01020304
+			list2blob([])		returns 0z
+<		Returns an empty Blob on error.  If one of the numbers is
+		negative or more than 255 error *E1239* is given.
+
+		|blob2list()| does the opposite.
+
+		Can also be used as a |method|: >
+			GetList()->list2blob()
 
 list2str({list} [, {utf8}])				*list2str()*
 		Convert each number in {list} to a character string can

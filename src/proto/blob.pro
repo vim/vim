@@ -19,4 +19,6 @@ int check_blob_index(long bloblen, varnumber_T n1, int quiet);
 int check_blob_range(long bloblen, varnumber_T n1, varnumber_T n2, int quiet);
 int blob_set_range(blob_T *dest, long n1, long n2, typval_T *src);
 void blob_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
+void f_blob2list(typval_T *argvars, typval_T *rettv);
+void f_list2blob(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

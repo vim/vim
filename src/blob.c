@@ -483,4 +483,65 @@ blob_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     }
 }
 
+/*
+ * blob2list() function
+ */
+    void
+f_blob2list(typval_T *argvars, typval_T *rettv)
+{
+    blob_T	*blob;
+    list_T	*l;
+    int		i;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (check_for_blob_arg(argvars, 0) == FAIL)
+	return;
+
+    blob = argvars->vval.v_blob;
+    l = rettv->vval.v_list;
+    for (i = 0; i < blob_len(blob); i++)
+	list_append_number(l, blob_get(blob, i));
+}
+
+/*
+ * list2blob() function
+ */
+    void
+f_list2blob(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T	*li;
+    blob_T	*blob;
+
+    if (rettv_blob_alloc(rettv) == FAIL)
+	return;
+    blob = rettv->vval.v_blob;
+
+    if (check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
+    l = argvars->vval.v_list;
+    if (l == NULL)
+	return;
+
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	int		error;
+	varnumber_T	n;
+
+	error = FALSE;
+	n = tv_get_number_chk(&li->li_tv, &error);
+	if (error == TRUE || n < 0 || n > 255)
+	{
+	    if (!error)
+		semsg(_(e_invalid_value_for_blob_nr), n);
+	    ga_clear(&blob->bv_ga);
+	    return;
+	}
+	ga_append(&blob->bv_ga, n);
+    }
+}
+
 #endif // defined(FEAT_EVAL)

@@ -289,6 +289,15 @@ arg_string(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a blob
+ */
+    static int
+arg_blob(type_T *type, argcontext_T *context)
+{
+    return check_arg_type(&t_blob, type, context);
+}
+
+/*
  * Check "type" is a bool or number 0 or 1.
  */
     static int
@@ -680,6 +689,7 @@ arg_cursor1(type_T *type, argcontext_T *context)
 /*
  * Lists of functions that check the argument types of a builtin function.
  */
+static argcheck_T arg1_blob[] = {arg_blob};
 static argcheck_T arg1_bool[] = {arg_bool};
 static argcheck_T arg1_buffer[] = {arg_buffer};
 static argcheck_T arg1_buffer_or_dict_any[] = {arg_buffer_or_dict_any};
@@ -1169,6 +1179,8 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
+    {"blob2list",	1, 1, FEARG_1,	    arg1_blob,
+			ret_list_number,    f_blob2list},
     {"browse",		4, 4, 0,	    arg4_browse,
 			ret_string,	    f_browse},
     {"browsedir",	2, 2, 0,	    arg2_string,
@@ -1589,6 +1601,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_line2byte},
     {"lispindent",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_lispindent},
+    {"list2blob",	1, 1, FEARG_1,	    arg1_list_number,
+			ret_blob,	    f_list2blob},
     {"list2str",	1, 2, FEARG_1,	    arg2_list_number_bool,
 			ret_string,	    f_list2str},
     {"listener_add",	1, 2, FEARG_2,	    arg2_any_buffer,
