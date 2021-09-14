@@ -7226,7 +7226,8 @@ list2blob({list})					*list2blob()*
 		Examples: >
 			list2blob([1, 2, 3, 4])	returns 0z01020304
 			list2blob([])		returns 0z
-<		Returns an empty Blob on error.  |blob2list()| does the
+<		The accepted range of values for a list item is 0-255.
+		Returns an empty Blob on error.  |blob2list()| does the
 		opposite.
 
 		Can also be used as a |method|: >
