@@ -533,8 +533,9 @@ f_list2blob(typval_T *argvars, typval_T *rettv)
 
 	error = FALSE;
 	n = tv_get_number_chk(&li->li_tv, &error);
-	if (error == TRUE || n < 0)
+	if (error == TRUE || n < 0 || n > 255)
 	{
+	    // Accepted range is 0-255 as 8-bits are used for each list item.
 	    ga_clear(&blob->bv_ga);
 	    return;
 	}
