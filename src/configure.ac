@@ -3849,13 +3849,14 @@ AC_CACHE_CHECK([for nanoseconds field of struct stat],
   ac_cv_struct_st_mtim_nsec,
   [ac_save_CPPFLAGS="$CPPFLAGS"
    ac_cv_struct_st_mtim_nsec=no
-   # st_mtim.tv_nsec          -- the usual case
-   # st_mtim._tv_nsec         -- Solaris 2.6, if
+   # st_mtim.tv_nsec -- the usual case
+   # st_mtim._tv_nsec -- Solaris 2.6, if
    #	(defined _XOPEN_SOURCE && _XOPEN_SOURCE_EXTENDED == 1
    #	 && !defined __EXTENSIONS__)
-   # st_mtim.st__tim.tv_nsec   -- UnixWare 2.1.2
-   # st_mtimespec.tv_nsec     -- 4.4BSD, FreeBSD, NetBSD, OpenBSD, etc.
-   for ac_val in st_mtim.tv_nsec st_mtim._tv_nsec st_mtim.st__tim.tv_nsec st_mtimespec.tv_nsec; do
+   # st_mtim.st__tim.tv_nsec -- UnixWare 2.1.2
+   # st_mtime_n -- AIX 5.2 and above
+   # st_mtimespec.tv_nsec -- Darwin (Mac OSX)
+   for ac_val in st_mtim.tv_nsec st_mtim._tv_nsec st_mtim.st__tim.tv_nsec st_mtime_n st_mtimespec.tv_nsec; do
      CPPFLAGS="$ac_save_CPPFLAGS -DST_MTIM_NSEC=$ac_val"
      AC_TRY_COMPILE([#include <sys/types.h>
 #include <sys/stat.h>], [struct stat s; s.ST_MTIM_NSEC;],
