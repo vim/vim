@@ -1040,6 +1040,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	    long_to_char(0L, b0p->b0_ino);
 #endif
 	    buf->b_mtime = 0;
+	    buf->b_mtime_ns = 0;
 	    buf->b_mtime_read = 0;
 	    buf->b_orig_size = 0;
 	    buf->b_orig_mode = 0;

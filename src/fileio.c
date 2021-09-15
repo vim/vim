@@ -432,6 +432,7 @@ readfile(
 	else
 	{
 	    curbuf->b_mtime = 0;
+	    curbuf->b_mtime_ns = 0;
 	    curbuf->b_mtime_read = 0;
 	    curbuf->b_orig_size = 0;
 	    curbuf->b_orig_mode = 0;
@@ -4073,6 +4074,9 @@ buf_check_timestamp(
 	    && buf->b_mtime != 0
 	    && ((stat_res = mch_stat((char *)buf->b_ffname, &st)) < 0
 		|| time_differs((long)st.st_mtime, buf->b_mtime)
+#ifdef ST_MTIM_NSEC
+		|| (long)st.ST_MTIM_NSEC != buf->b_mtime_ns
+#endif
 		|| st.st_size != buf->b_orig_size
 #ifdef HAVE_ST_MODE
 		|| (int)st.st_mode != buf->b_orig_mode
@@ -4468,6 +4472,11 @@ buf_reload(buf_T *buf, int orig_mode)
 buf_store_time(buf_T *buf, stat_T *st, char_u *fname UNUSED)
 {
     buf->b_mtime = (long)st->st_mtime;
+#ifdef ST_MTIM_NSEC
+    buf->b_mtime_ns = (long)st->ST_MTIM_NSEC;
+#else
+    buf->b_mtime_ns = 0;
+#endif
     buf->b_orig_size = st->st_size;
 #ifdef HAVE_ST_MODE
     buf->b_orig_mode = (int)st->st_mode;
