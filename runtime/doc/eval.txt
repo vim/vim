@@ -1426,7 +1426,7 @@ A string constant accepts these special characters:
 \<xxx>	Special key named "xxx".  e.g. "\<C-W>" for CTRL-W.  This is for use
 	in mappings, the 0x80 byte is escaped.
 	To use the double quote character it must be escaped: "<M-\">".
-	Don't use <Char-xxxx> to get a utf-8 character, use \uxxxx as
+	Don't use <Char-xxxx> to get a UTF-8 character, use \uxxxx as
 	mentioned above.
 \<*xxx>	Like \<xxx> but prepends a modifier instead of including it in the
 	character.  E.g. "\<C-w>" is one character 0x17 while "\<*C-w>" is four
@@ -2516,7 +2516,7 @@ ch_setoptions({handle}, {options})
 ch_status({handle} [, {options}])
 				String	status of channel {handle}
 changenr()			Number	current change number
-char2nr({expr} [, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
+char2nr({expr} [, {utf8}])	Number	ASCII/UTF-8 value of first char in {expr}
 charclass({string})		Number	character class of {string}
 charcol({expr})			Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc}])
@@ -2769,7 +2769,7 @@ mkdir({name} [, {path} [, {prot}]])
 mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
-nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
+nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value {expr}
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr} [, {len}])	String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
@@ -2959,7 +2959,7 @@ srand([{expr}])			List	get seed for |rand()|
 state([{what}])			String	current state of Vim
 str2float({expr} [, {quoted}])	Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
-					ASCII/UTF8 value
+					ASCII/UTF-8 value
 str2nr({expr} [, {base} [, {quoted}]])
 				Number	convert String to Number
 strcharlen({expr})		Number	character length of the String {expr}
@@ -3656,7 +3656,7 @@ char2nr({string} [, {utf8}])					*char2nr()*
 		Example for "utf-8": >
 			char2nr("á")		returns 225
 			char2nr("á"[0])		returns 195
-<		With {utf8} set to TRUE, always treat as utf-8 characters.
+<		With {utf8} set to TRUE, always treat as UTF-8 characters.
 		A combining character is a separate character.
 		|nr2char()| does the opposite.
 		To turn a string into a list of character numbers: >
@@ -4281,7 +4281,7 @@ digraph_getlist([{listall}])				*digraph_getlist()*
 
 digraph_set({chars}, {digraph})				*digraph_set()* *E1205*
 		Add digraph {chars} to the list.  {chars} must be a string
-		with two characters.  {digraph} is a string with one utf-8
+		with two characters.  {digraph} is a string with one UTF-8
 		encoded character. Be careful, composing characters are NOT
 		ignored.  This function is similar to |:digraphs| command, but
 		useful to add digraphs start with a white space.
@@ -7247,8 +7247,8 @@ list2str({list} [, {utf8}])				*list2str()*
 <		|str2list()| does the opposite.
 
 		When {utf8} is omitted or zero, the current 'encoding' is used.
-		With {utf8} is 1, always return utf-8 characters.
-		With utf-8 composing characters work as expected: >
+		With {utf8} is 1, always return UTF-8 characters.
+		With UTF-8 composing characters work as expected: >
 			list2str([97, 769])	returns "á"
 <
 		Can also be used as a |method|: >
@@ -8149,7 +8149,7 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 <		When {utf8} is omitted or zero, the current 'encoding' is used.
 		Example for "utf-8": >
 			nr2char(300)		returns I with bow character
-<		With {utf8} set to 1, always return utf-8 characters.
+<		With {utf8} set to 1, always return UTF-8 characters.
 		Note that a NUL character in the file is specified with
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
@@ -10579,8 +10579,8 @@ str2list({string} [, {utf8}])					*str2list()*
 <		|list2str()| does the opposite.
 
 		When {utf8} is omitted or zero, the current 'encoding' is used.
-		With {utf8} set to 1, always treat the String as utf-8
-		characters.  With utf-8 composing characters are handled
+		With {utf8} set to 1, always treat the String as UTF-8
+		characters.  With UTF-8 composing characters are handled
 		properly: >
 			str2list("á")		returns [97, 769]
 
