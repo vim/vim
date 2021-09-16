@@ -5268,6 +5268,7 @@ compile_and_or(
 	    {
 		semsg(_(e_white_space_required_before_and_after_str_at_str),
 									op, p);
+		ga_clear(&end_ga);
 		return FAIL;
 	    }
 
@@ -5388,8 +5389,8 @@ compile_and_or(
 				  + *(((int *)end_ga.ga_data) + end_ga.ga_len);
 		isn->isn_arg.jump.jump_where = instr->ga_len;
 	    }
-	    ga_clear(&end_ga);
 	}
+	ga_clear(&end_ga);
 
 	cctx->ctx_skip = save_skip;
     }
