@@ -5487,6 +5487,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			case JUMP_ALWAYS:
 			    when = "JUMP";
 			    break;
+			case JUMP_NEVER:
+			    iemsg("JUMP_NEVER should not be used");
+			    break;
 			case JUMP_AND_KEEP_IF_TRUE:
 			    when = "JUMP_AND_KEEP_IF_TRUE";
 			    break;
