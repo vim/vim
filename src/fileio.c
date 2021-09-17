@@ -408,6 +408,7 @@ readfile(
 	{
 	    buf_store_time(curbuf, &st, fname);
 	    curbuf->b_mtime_read = curbuf->b_mtime;
+	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
 	    filesize_disk = st.st_size;
 #ifdef UNIX
 	    /*
@@ -434,6 +435,7 @@ readfile(
 	    curbuf->b_mtime = 0;
 	    curbuf->b_mtime_ns = 0;
 	    curbuf->b_mtime_read = 0;
+	    curbuf->b_mtime_read_ns = 0;
 	    curbuf->b_orig_size = 0;
 	    curbuf->b_orig_mode = 0;
 	}
@@ -2570,6 +2572,7 @@ failed:
 	{
 	    buf_store_time(curbuf, &st, fname);
 	    curbuf->b_mtime_read = curbuf->b_mtime;
+	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
 	}
 #endif
     }
@@ -4194,6 +4197,7 @@ buf_check_timestamp(
 			// Only timestamp changed, store it to avoid a warning
 			// in check_mtime() later.
 			buf->b_mtime_read = buf->b_mtime;
+			buf->b_mtime_read_ns = buf->b_mtime_ns;
 		}
 	    }
 	}
