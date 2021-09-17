@@ -1951,8 +1951,6 @@ item_compare2(const void *s1, const void *s2)
 	    res = 1;
 	else if (res < 0)
 	    res = -1;
-	else
-	    res = 0;
     }
     if (sortinfo->item_compare_func_err)
 	res = ITEM_COMPARE_FAIL;  // return value has wrong type
