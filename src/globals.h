@@ -1333,7 +1333,7 @@ extern char *Version;
 #if defined(HAVE_DATE_TIME) && defined(VMS) && defined(VAXC)
 extern char longVersion[];
 #else
-EXTERN char *longVersion INIT(= NULL);
+extern char *longVersion;
 #endif
 
 /*

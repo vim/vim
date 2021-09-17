@@ -51,6 +51,8 @@ init_longVersion(void)
 }
 
 # else
+char	*longVersion = NULL;
+
     void
 init_longVersion(void)
 {
@@ -72,7 +74,7 @@ init_longVersion(void)
 	    longVersion = VIM_VERSION_LONG;
 	else
 	    vim_snprintf(longVersion, len, msg,
-			  VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
     }
 }
 # endif
@@ -755,6 +757,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    3445,
 /**/
     3444,
 /**/
