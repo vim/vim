@@ -4194,10 +4194,12 @@ buf_check_timestamp(
 			mesg2 = _("See \":help W16\" for more info.");
 		    }
 		    else
+		    {
 			// Only timestamp changed, store it to avoid a warning
 			// in check_mtime() later.
 			buf->b_mtime_read = buf->b_mtime;
 			buf->b_mtime_read_ns = buf->b_mtime_ns;
+		    }
 		}
 	    }
 	}
