@@ -38,12 +38,12 @@ function! csscomplete#CompleteCSS(findstart, base)
   if exists("b:compl_context")
     let line = getline('.')
     let compl_begin = col('.') - 2
-    let after = line[compl_begin:]
+    let b:after = line[compl_begin:]
     let line = b:compl_context
     unlet! b:compl_context
   else
     let line = a:base
-    let after = ''
+    let b:after = ''
   endif
 
   let res = []
