@@ -5011,14 +5011,16 @@ ex_call(exarg_T *eap)
 	--emsg_skip;
     clear_evalarg(&evalarg, eap);
 
-    // When inside :try we need to check for following "| catch".
-    if (!aborting() && (!failed || eap->cstack->cs_trylevel > 0))
+    // When inside :try we need to check for following "| catch" or "| endtry".
+    // Not when there was an error, but do check if an exception was thrown.
+    if ((!aborting() || did_throw)
+				  && (!failed || eap->cstack->cs_trylevel > 0))
     {
 	// Check for trailing illegal characters and a following command.
 	arg = skipwhite(arg);
 	if (!ends_excmd2(eap->arg, arg))
 	{
-	    if (!failed)
+	    if (!failed && !aborting())
 	    {
 		emsg_severe = TRUE;
 		semsg(_(e_trailing_arg), arg);
