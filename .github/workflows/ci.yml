@@ -7,7 +7,7 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     env:
       CC: ${{ matrix.compiler }}
@@ -229,7 +229,7 @@ jobs:
           done
 
   #  coveralls:
-  #    runs-on: ubuntu-18.04
+  #    runs-on: ubuntu-latest
   #
   #    needs: linux
   #    if: always() && github.event_name != 'pull_request'
