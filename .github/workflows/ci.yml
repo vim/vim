@@ -201,18 +201,18 @@ jobs:
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
-      - name: Coveralls
-        if: matrix.coverage && success() && github.event_name != 'pull_request'
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          COVERALLS_PARALLEL: true
-          TRAVIS_JOB_ID: ${{ github.run_id }}
-        run: |
-          sudo apt-get install -y python3-setuptools python3-wheel
-          sudo -H pip3 install pip -U
-          # needed for https support for coveralls building cffi only works with gcc, not with clang
-          CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
-          ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
+      #      - name: Coveralls
+      #        if: matrix.coverage && success() && github.event_name != 'pull_request'
+      #        env:
+      #          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      #          COVERALLS_PARALLEL: true
+      #          TRAVIS_JOB_ID: ${{ github.run_id }}
+      #        run: |
+      #          sudo apt-get install -y python3-setuptools python3-wheel
+      #          sudo -H pip3 install pip -U
+      #          # needed for https support for coveralls building cffi only works with gcc, not with clang
+      #          CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
+      #          ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
 
       - name: Codecov
         if: matrix.coverage && success()
@@ -228,18 +228,18 @@ jobs:
             false # in order to fail a job
           done
 
-  coveralls:
-    runs-on: ubuntu-18.04
-
-    needs: linux
-    if: always() && github.event_name != 'pull_request'
-
-    steps:
-      - name: Parallel finished
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          curl -k "https://coveralls.io/webhook?repo_token=${COVERALLS_REPO_TOKEN}" -d "payload[build_num]=${GITHUB_RUN_ID}&payload[status]=done"
+  #  coveralls:
+  #    runs-on: ubuntu-18.04
+  #
+  #    needs: linux
+  #    if: always() && github.event_name != 'pull_request'
+  #
+  #    steps:
+  #      - name: Parallel finished
+  #        env:
+  #          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+  #        run: |
+  #          curl -k "https://coveralls.io/webhook?repo_token=${COVERALLS_REPO_TOKEN}" -d "payload[build_num]=${GITHUB_RUN_ID}&payload[status]=done"
 
   macos:
     runs-on: macos-latest
