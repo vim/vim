@@ -3989,6 +3989,8 @@ E123	eval.txt	/*E123*
 E1231	map.txt	/*E1231*
 E1232	eval.txt	/*E1232*
 E1233	eval.txt	/*E1233*
+E1237	map.txt	/*E1237*
+E1239	eval.txt	/*E1239*
 E124	eval.txt	/*E124*
 E125	eval.txt	/*E125*
 E126	eval.txt	/*E126*
@@ -5015,6 +5017,7 @@ Macintosh	os_mac.txt	/*Macintosh*
 Mark	motion.txt	/*Mark*
 MenuPopup	autocmd.txt	/*MenuPopup*
 MiNT	os_mint.txt	/*MiNT*
+ModeChanged	autocmd.txt	/*ModeChanged*
 Moolenaar	intro.txt	/*Moolenaar*
 MorphOS	os_amiga.txt	/*MorphOS*
 Motif	gui_x11.txt	/*Motif*
@@ -5553,10 +5556,12 @@ beval_winnr-variable	eval.txt	/*beval_winnr-variable*
 binary-number	eval.txt	/*binary-number*
 bitwise-function	usr_41.txt	/*bitwise-function*
 blob	eval.txt	/*blob*
+blob-functions	usr_41.txt	/*blob-functions*
 blob-identity	eval.txt	/*blob-identity*
 blob-index	eval.txt	/*blob-index*
 blob-literal	eval.txt	/*blob-literal*
 blob-modification	eval.txt	/*blob-modification*
+blob2list()	eval.txt	/*blob2list()*
 blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
 blockwise-register	change.txt	/*blockwise-register*
@@ -7200,6 +7205,7 @@ gui-x11-printing	gui_x11.txt	/*gui-x11-printing*
 gui-x11-start	gui_x11.txt	/*gui-x11-start*
 gui-x11-various	gui_x11.txt	/*gui-x11-various*
 gui.txt	gui.txt	/*gui.txt*
+gui_running	eval.txt	/*gui_running*
 gui_w32.txt	gui_w32.txt	/*gui_w32.txt*
 gui_x11.txt	gui_x11.txt	/*gui_x11.txt*
 guifontwide_gtk	gui.txt	/*guifontwide_gtk*
@@ -7701,6 +7707,7 @@ lcs-conceal	options.txt	/*lcs-conceal*
 lcs-eol	options.txt	/*lcs-eol*
 lcs-extends	options.txt	/*lcs-extends*
 lcs-lead	options.txt	/*lcs-lead*
+lcs-multispace	options.txt	/*lcs-multispace*
 lcs-nbsp	options.txt	/*lcs-nbsp*
 lcs-precedes	options.txt	/*lcs-precedes*
 lcs-space	options.txt	/*lcs-space*
@@ -7735,6 +7742,7 @@ list-identity	eval.txt	/*list-identity*
 list-index	eval.txt	/*list-index*
 list-modification	eval.txt	/*list-modification*
 list-repeat	windows.txt	/*list-repeat*
+list2blob()	eval.txt	/*list2blob()*
 list2str()	eval.txt	/*list2str()*
 listener_add()	eval.txt	/*listener_add()*
 listener_flush()	eval.txt	/*listener_flush()*

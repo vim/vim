@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Sep 08
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Sep 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -658,7 +658,7 @@ It is not necessary to use the "dict" attribute for a numbered function.
 
 If you get an error for a numbered function, you can find out what it is with
 a trick.  Assuming the function is 42, the command is: >
-	:function {42}
+	:function g:42
 
 
 Functions for Dictionaries ~
@@ -6140,6 +6140,7 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		(see |NL-used-for-Nul|).
 		When the register was not set an empty list is returned.
 
+		If {regname} is "", the unnamed register '"' is used.
 		If {regname} is not specified, |v:register| is used.
 		In |Vim9-script| {regname} must be one character.
 
@@ -6167,6 +6168,7 @@ getreginfo([{regname}])					*getreginfo()*
 
 		The {regname} argument is a string.  If {regname} is invalid
 		or not set, an empty Dictionary will be returned.
+		If {regname} is "" or "@", the unnamed register '"' is used.
 		If {regname} is not specified, |v:register| is used.
 		The returned Dictionary can be passed to |setreg()|.
 		In |Vim9-script| {regname} must be one character.
@@ -6182,8 +6184,9 @@ getregtype([{regname}])					*getregtype()*
 		    "<CTRL-V>{width}"	for |blockwise-visual| text
 		    ""			for an empty or unknown register
 		<CTRL-V> is one character with value 0x16.
-		The {regname} argument is a string.  If {regname} is not
-		specified, |v:register| is used.
+		The {regname} argument is a string.  If {regname} is "", the
+		unnamed register '"' is used.  If {regname} is not specified,
+		|v:register| is used.
 		In |Vim9-script| {regname} must be one character.
 
 		Can also be used as a |method|: >
@@ -12078,6 +12081,7 @@ There are three types of features:
 1.  Features that are only supported when they have been enabled when Vim
     was compiled |+feature-list|.  Example: >
 	:if has("cindent")
+<							*gui_running*
 2.  Features that are only supported when certain conditions have been met.
     Example: >
 	:if has("gui_running")

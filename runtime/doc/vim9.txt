@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Sep 08
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -179,6 +179,15 @@ For now you will need to pass the dictionary explicitly: >
 	enddef
 	var d = {item: 'value', func: DictFunc}
 	d.func(d, 'item')
+
+You can call a legacy dict function though: >
+	func Legacy() dict
+	  echo self.value
+	endfunc
+	def CallLegacy()
+	  var d = {func: Legacy, value: 'text'}
+	  d.func()
+	enddef
 
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy

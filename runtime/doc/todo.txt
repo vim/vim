@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Sep 08
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Sep 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,12 +38,14 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-:delcommand -buffer should work
+Flaky test op Windows:
+From test_vim9_script.vim:
+    Found errors in Test_no_unknown_error_after_error():
+    command line..script D:/a/vim/vim/src2/testdir/runtest.vim[486]..function RunTheTest[44]..Test_no_unknown_error_after_error line 22: Expected 'E1012:' but got 'E684: list index out of range: 0': so Xdef
 
 Vim9 - Make everything work:
-- Disallow using numbered function with "g:123" in Vim9 script?  #8760
-- use CheckLegacyAndVim9Success(lines) in many more places
 - Check TODO items in vim9compile.c and vim9execute.c
+- use CheckLegacyAndVim9Success(lines) in many more places
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
@@ -365,10 +367,6 @@ autocommands for the buffer lifecycle:
     BufIsWiped    (after buffer ID was wiped)
     BufIsRenamed  (after buffer ID gets another name)
 The buffer list and windows are locked, no changes possible
-
-Add a ModeChanged autocommand that has an argument indicating the old and new
-mode, as what's returned from mode().  Also used for switching Terminal mode.
-#8360, #7863, #7363
 
 Matchparen doesn't remove highlight after undo. (#7054)
 Is OK when syntax HL is active.
@@ -4845,7 +4843,6 @@ Autocommands:
     command used dos fileformat.  Same for 'fileencoding'.
 -   Add events to autocommands:
     Error	    - When an error happens
-    ModeChange	    - after changing mode (before waiting for a char)
     VimLeaveCheck    - Before Vim decides to exit, so that it can be cancelled
 		      when exiting isn't a good idea.
     CursorHoldC     - CursorHold while command-line editing

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Sep 06
+*options.txt*	For Vim version 8.2.  Last change: 2021 Sep 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4983,7 +4983,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    :set lcs=tab:>-,eol:<,nbsp:%
 	    :set lcs=extends:>,precedes:<
 <	The "NonText" highlighting will be used for "eol", "extends" and
-	"precedes".  "SpecialKey" for "nbsp", "space", "tab" and "trail".
+	"precedes".  "SpecialKey" will be used for "tab", "nbsp", "space",
+	"multispace", "lead" and "trail".
 	|hl-NonText| |hl-SpecialKey|
 
 			*'lpl'* *'nolpl'* *'loadplugins'* *'noloadplugins'*
@@ -8780,8 +8781,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	More info here: |cmdline-completion|.
 	The character is not recognized when used inside a macro.  See
 	'wildcharm' for that.
+	Some keys will not work, such as CTRL-C, <CR> and Enter.
 	Although 'wc' is a number option, you can set it to a special key: >
-		:set wc=<Esc>
+		:set wc=<Tab>
 <	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
