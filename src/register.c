@@ -2065,6 +2065,8 @@ do_put(
 	}
 	else
 	{
+	    linenr_T	new_lnum = new_cursor.lnum;
+
 	    // Insert at least one line.  When y_type is MCHAR, break the first
 	    // line in two.
 	    for (cnt = 1; cnt <= count; ++cnt)
@@ -2085,6 +2087,7 @@ do_put(
 		    STRCAT(newp, ptr);
 		    // insert second line
 		    ml_append(lnum, newp, (colnr_T)0, FALSE);
+		    ++new_lnum;
 		    vim_free(newp);
 
 		    oldp = ml_get(lnum);
@@ -2103,10 +2106,13 @@ do_put(
 
 		for (; i < y_size; ++i)
 		{
-		    if ((y_type != MCHAR || i < y_size - 1)
-			    && ml_append(lnum, y_array[i], (colnr_T)0, FALSE)
+		    if (y_type != MCHAR || i < y_size - 1)
+		    {
+			if (ml_append(lnum, y_array[i], (colnr_T)0, FALSE)
 								      == FAIL)
 			    goto error;
+			new_lnum++;
+		    }
 		    lnum++;
 		    ++nr_lines;
 		    if (flags & PUT_FIXINDENT)
@@ -2138,6 +2144,8 @@ do_put(
 			    lendiff -= (int)STRLEN(ml_get(lnum));
 		    }
 		}
+		if (cnt == 1)
+		    new_lnum = lnum;
 	    }
 
 error:
@@ -2195,7 +2203,7 @@ error:
 		}
 		else
 		{
-		    curwin->w_cursor.lnum = lnum;
+		    curwin->w_cursor.lnum = new_lnum;
 		    curwin->w_cursor.col = col;
 		}
 	    }
