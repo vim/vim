@@ -2205,6 +2205,9 @@ error:
 		{
 		    curwin->w_cursor.lnum = new_lnum;
 		    curwin->w_cursor.col = col;
+		    curbuf->b_op_end = curwin->w_cursor;
+		    if (col > 1)
+			curbuf->b_op_end.col = col - 1;
 		}
 	    }
 	    else if (y_type == MLINE)
