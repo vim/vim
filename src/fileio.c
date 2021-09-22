@@ -338,7 +338,7 @@ readfile(
 	    filemess(curbuf, fname, (char_u *)_(msg_is_a_directory), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
-	    return FAIL;
+	    return NOTDONE;
 	}
     }
 
