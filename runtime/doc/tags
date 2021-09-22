@@ -6609,6 +6609,7 @@ ft-fortran-plugin	filetype.txt	/*ft-fortran-plugin*
 ft-fortran-syntax	syntax.txt	/*ft-fortran-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
+ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
