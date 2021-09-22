@@ -3610,8 +3610,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	systems without an fsync() implementation, this variable is always
 	off.
 	Also see 'swapsync' for controlling fsync() on swap files.
-	'fsync' also applies to |writefile()|, unless a flag is used to
-	overrule it.
+	'fsync' also applies to |writefile()| (unless a flag is used to
+	overrule it) and when writing undo files (see |undo-persistence|).
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
