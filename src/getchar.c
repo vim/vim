@@ -293,7 +293,7 @@ add_char_buff(buffheader_T *buf, int c)
 	    // Translate a CSI to a CSI - KS_EXTRA - KE_CSI sequence
 	    temp[0] = CSI;
 	    temp[1] = KS_EXTRA;
-	    temp[2] = (int)KE_CSI;
+	    temp[2] = KE_CSI;
 	    temp[3] = NUL;
 	}
 #endif
@@ -564,7 +564,7 @@ AppendToRedobuffLit(
 	if (*s == NUL && (s[-1] == '0' || s[-1] == '^'))
 	    --s;
 	if (s > start)
-	    add_buff(&redobuff, start, (long)(s - start));
+	    add_buff(&redobuff, start, (s - start));
 
 	if (*s == NUL || (len >= 0 && s - str >= len))
 	    break;
@@ -710,7 +710,7 @@ stuffescaped(char_u *arg, int literally)
 		|| (*arg == K_SPECIAL && !literally))
 	    ++arg;
 	if (arg > start)
-	    stuffReadbuffLen(start, (long)(arg - start));
+	    stuffReadbuffLen(start, (arg - start));
 
 	// stuff a single special character
 	if (*arg != NUL)
@@ -1853,7 +1853,7 @@ vgetc(void)
 			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
 			// too.
 			c = vgetorpeek(TRUE);
-			if (vgetorpeek(TRUE) == (int)KE_CSI && c == KS_EXTRA)
+			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
 			    buf[i] = CSI;
 		    }
 		}
@@ -2521,7 +2521,7 @@ handle_mapping(
 		    if (*s == RM_SCRIPT
 			    && (mp->m_keys[0] != K_SPECIAL
 				|| mp->m_keys[1] != KS_EXTRA
-				|| mp->m_keys[2] != (int)KE_SNR))
+				|| mp->m_keys[2] != KE_SNR))
 			continue;
 
 		    // If one of the typed keys cannot be remapped, skip the
@@ -3139,7 +3139,7 @@ vgetorpeek(int advance)
 				    if (!VIM_ISWHITE(ptr[col]))
 					curwin->w_wcol = vcol;
 				    vcol += lbr_chartabsize(ptr, ptr + col,
-							       (colnr_T)vcol);
+							       vcol);
 				    if (has_mbyte)
 					col += (*mb_ptr2len)(ptr + col);
 				    else
@@ -3612,7 +3612,7 @@ fix_input_buffer(char_u *buf, int len)
 	    mch_memmove(p + 3, p + 1, (size_t)i);
 	    *p++ = K_SPECIAL;
 	    *p++ = KS_EXTRA;
-	    *p = (int)KE_CSI;
+	    *p = KE_CSI;
 	    len += 2;
 	}
 # endif
@@ -3620,7 +3620,7 @@ fix_input_buffer(char_u *buf, int len)
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
 		    // timeout may generate K_CURSORHOLD
-		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
+		    && (i < 2 || p[1] != KS_EXTRA || p[2] != KE_CURSORHOLD)
 #if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 		    // Win32 console passes modifiers
 		    && (

@@ -3688,7 +3688,7 @@ find_ex_command(
 	    int c1 = eap->cmd[0];
 	    int c2 = len == 1 ? NUL : eap->cmd[1];
 
-	    if (command_count != (int)CMD_SIZE)
+	    if (command_count != CMD_SIZE)
 	    {
 		iemsg(_("E943: Command table needs to be updated, run 'make cmdidxs'"));
 		getout(1);
@@ -3705,7 +3705,7 @@ find_ex_command(
 	else
 	    eap->cmdidx = CMD_bang;
 
-	for ( ; (int)eap->cmdidx < (int)CMD_SIZE;
+	for ( ; (int)eap->cmdidx < CMD_SIZE;
 			       eap->cmdidx = (cmdidx_T)((int)eap->cmdidx + 1))
 	    if (STRNCMP(cmdnames[(int)eap->cmdidx].cmd_name, (char *)eap->cmd,
 							    (size_t)len) == 0)
@@ -3906,7 +3906,7 @@ excmd_get_cmdidx(char_u *cmd, int len)
 {
     cmdidx_T idx;
 
-    for (idx = (cmdidx_T)0; (int)idx < (int)CMD_SIZE;
+    for (idx = (cmdidx_T)0; (int)idx < CMD_SIZE;
 	    idx = (cmdidx_T)((int)idx + 1))
 	if (STRNCMP(cmdnames[(int)idx].cmd_name, cmd, (size_t)len) == 0)
 	    break;
@@ -5519,7 +5519,7 @@ check_more(
     char_u *
 get_command_name(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= (int)CMD_SIZE)
+    if (idx >= CMD_SIZE)
 	return expand_user_command_name(idx);
     return cmdnames[idx].cmd_name;
 }
@@ -6749,7 +6749,7 @@ ex_resize(exarg_T *eap)
 	    n += wp->w_width;
 	else if (n == 0 && eap->arg[0] == NUL)	// default is very wide
 	    n = 9999;
-	win_setwidth_win((int)n, wp);
+	win_setwidth_win(n, wp);
     }
     else
     {
@@ -6757,7 +6757,7 @@ ex_resize(exarg_T *eap)
 	    n += wp->w_height;
 	else if (n == 0 && eap->arg[0] == NUL)	// default is very high
 	    n = 9999;
-	win_setheight_win((int)n, wp);
+	win_setheight_win(n, wp);
     }
 }
 
@@ -7472,7 +7472,7 @@ ex_sleep(exarg_T *eap)
     {
 	n = W_WINROW(curwin) + curwin->w_wrow - msg_scrolled;
 	if (n >= 0)
-	    windgoto((int)n, curwin->w_wincol + curwin->w_wcol);
+	    windgoto(n, curwin->w_wincol + curwin->w_wcol);
     }
 
     len = eap->line2;
@@ -8407,7 +8407,7 @@ ex_normal(exarg_T *eap)
 		    if (*p == CSI)
 		    {
 			arg[len++] = KS_EXTRA;
-			arg[len++] = (int)KE_CSI;
+			arg[len++] = KE_CSI;
 		    }
 #endif
 		    for (l = (*mb_ptr2len)(p) - 1; l > 0; --l)
@@ -8422,7 +8422,7 @@ ex_normal(exarg_T *eap)
 			else if (*p == CSI)
 			{
 			    arg[len++] = KS_EXTRA;
-			    arg[len++] = (int)KE_CSI;
+			    arg[len++] = KE_CSI;
 			}
 #endif
 		    }

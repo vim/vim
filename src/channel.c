@@ -634,7 +634,7 @@ channel_gui_register_one(channel_T *channel, ch_part_T part UNUSED)
 	channel->ch_part[part].ch_inputHandler = gdk_input_add(
 		(gint)channel->ch_part[part].ch_fd,
 		(GdkInputCondition)
-			     ((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
+			     (GDK_INPUT_READ + GDK_INPUT_EXCEPTION),
 		messageFromServerGtk2,
 		(gpointer)(long)channel->ch_part[part].ch_fd);
 #   endif
@@ -818,7 +818,7 @@ channel_connect(
 	    ch_log(channel,
 		      "Waiting for connection (waiting %d msec)...", waitnow);
 
-	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
+	    ret = select(sd + 1, &rfds, &wfds, NULL, &tv);
 	    if (ret < 0)
 	    {
 		SOCK_ERRNO;
@@ -1669,7 +1669,7 @@ channel_write_in(channel_T *channel)
     }
     else
 	ch_log(channel, "Still %ld more lines to write",
-				   (long)(buf->b_ml.ml_line_count - lnum + 1));
+				   (buf->b_ml.ml_line_count - lnum + 1));
 }
 
 /*
@@ -1763,7 +1763,7 @@ channel_write_new_lines(buf_T *buf)
 		ch_log(channel, "written %d lines to channel", written);
 	    if (lnum < buf->b_ml.ml_line_count)
 		ch_log(channel, "Still %ld more lines to write",
-				       (long)(buf->b_ml.ml_line_count - lnum));
+				       (buf->b_ml.ml_line_count - lnum));
 
 	    in_part->ch_buf_bot = lnum;
 	}

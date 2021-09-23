@@ -3131,7 +3131,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 
 # if defined(FEAT_TIMERS)
 	dict_add_number(dict, "time", wp->w_popup_timer != NULL
-				 ?  (long)wp->w_popup_timer->tr_interval : 0L);
+				 ?  wp->w_popup_timer->tr_interval : 0L);
 # endif
     }
 }

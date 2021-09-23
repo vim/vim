@@ -937,7 +937,7 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
 	return;
     if (lastbyte >= oldlen)
 	lastbyte = oldlen - 1;
-    newtext = alloc(oldlen - (int)(lastbyte - first));
+    newtext = alloc(oldlen - (lastbyte - first));
     if (newtext != NULL)
     {
 	mch_memmove(newtext, oldtext, first);

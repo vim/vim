@@ -291,7 +291,7 @@ set_context_in_user_cmd(expand_T *xp, char_u *arg_in)
     char_u *
 expand_user_command_name(int idx)
 {
-    return get_user_commands(NULL, idx - (int)CMD_SIZE);
+    return get_user_commands(NULL, idx - CMD_SIZE);
 }
 
 /*
@@ -1697,7 +1697,7 @@ do_ucmd(exarg_T *eap)
 			&& (start == NULL || ksp < start || end == NULL)
 			&& ((ksp[1] == KS_SPECIAL && ksp[2] == KE_FILLER)
 # ifdef FEAT_GUI
-			    || (ksp[1] == KS_EXTRA && ksp[2] == (int)KE_CSI)
+			    || (ksp[1] == KS_EXTRA && ksp[2] == KE_CSI)
 # endif
 			    ))
 		{

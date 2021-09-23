@@ -1330,7 +1330,7 @@ do_source(
 	// It's new, generate a new SID.
 	current_sctx.sc_sid = ++last_current_SID;
 	if (ga_grow(&script_items,
-		     (int)(current_sctx.sc_sid - script_items.ga_len)) == FAIL)
+		     (current_sctx.sc_sid - script_items.ga_len)) == FAIL)
 	    goto almosttheend;
 	while (script_items.ga_len < current_sctx.sc_sid)
 	{

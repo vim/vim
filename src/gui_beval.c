@@ -393,13 +393,13 @@ pointer_event(BalloonEval *beval, int x, int y, unsigned state)
 	cancelBalloon(beval);
 
 	// Mouse buttons are pressed - no balloon now
-	if (!(state & ((int)GDK_BUTTON1_MASK | (int)GDK_BUTTON2_MASK
-						    | (int)GDK_BUTTON3_MASK)))
+	if (!(state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK
+						    | GDK_BUTTON3_MASK)))
 	{
 	    beval->x = x;
 	    beval->y = y;
 
-	    if (state & (int)GDK_MOD1_MASK)
+	    if (state & GDK_MOD1_MASK)
 	    {
 		/*
 		 * Alt is pressed -- enter super-evaluate-mode,
@@ -431,13 +431,13 @@ key_event(BalloonEval *beval, unsigned keyval, int is_keypress)
 	    case GDK_Shift_R:
 		beval->showState = ShS_UPDATE_PENDING;
 		(*beval->msgCB)(beval, (is_keypress)
-						   ? (int)GDK_SHIFT_MASK : 0);
+						   ? GDK_SHIFT_MASK : 0);
 		break;
 	    case GDK_Control_L:
 	    case GDK_Control_R:
 		beval->showState = ShS_UPDATE_PENDING;
 		(*beval->msgCB)(beval, (is_keypress)
-						 ? (int)GDK_CONTROL_MASK : 0);
+						 ? GDK_CONTROL_MASK : 0);
 		break;
 	    default:
 		// Don't do this for key release, we apparently get these with

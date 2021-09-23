@@ -4380,7 +4380,7 @@ mb_unescape(char_u **pp)
 # endif
 		 )
 		&& str[n + 1] == KS_EXTRA
-		&& str[n + 2] == (int)KE_CSI)
+		&& str[n + 2] == KE_CSI)
 	{
 	    buf[m++] = CSI;
 	    n += 2;

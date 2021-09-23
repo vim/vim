@@ -337,14 +337,14 @@ inchar_loop(
 
 			ibuf[0] = CSI;
 			ibuf[1] = KS_EXTRA;
-			ibuf[2] = (int)KE_CURSORHOLD;
+			ibuf[2] = KE_CURSORHOLD;
 			add_to_input_buf(ibuf, 3);
 		    }
 		    else
 		    {
 			buf[0] = K_SPECIAL;
 			buf[1] = KS_EXTRA;
-			buf[2] = (int)KE_CURSORHOLD;
+			buf[2] = KE_CURSORHOLD;
 		    }
 		    return 3;
 		}
@@ -869,7 +869,7 @@ add_to_input_buf_csi(char_u *str, int len)
 	{
 	    // Turn CSI into K_CSI.
 	    buf[0] = KS_EXTRA;
-	    buf[1] = (int)KE_CSI;
+	    buf[1] = KE_CSI;
 	    add_to_input_buf(buf, 2);
 	}
     }
@@ -1101,8 +1101,8 @@ check_col(int col)
 {
     if (col < 0)
 	return 0;
-    if (col >= (int)screen_Columns)
-	return (int)screen_Columns - 1;
+    if (col >= screen_Columns)
+	return screen_Columns - 1;
     return col;
 }
 
@@ -1114,8 +1114,8 @@ check_row(int row)
 {
     if (row < 0)
 	return 0;
-    if (row >= (int)screen_Rows)
-	return (int)screen_Rows - 1;
+    if (row >= screen_Rows)
+	return screen_Rows - 1;
     return row;
 }
 

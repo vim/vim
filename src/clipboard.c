@@ -792,7 +792,7 @@ clip_process_selection(
 			    && cb->end.col - col > col - cb->start.col))
 			|| ((diff = (cb->end.lnum - row) -
 						   (row - cb->start.lnum)) > 0
-			    || (diff == 0 && col < (int)(cb->start.col +
+			    || (diff == 0 && col < (cb->start.col +
 							 cb->end.col) / 2)))))
 	{
 	    cb->origin_row = (short_u)cb->end.lnum;
@@ -1162,7 +1162,7 @@ clip_copy_modeless_selection(int both UNUSED)
     clip_own_selection(&clip_star);
 
     // Yank the text into the '*' register.
-    clip_yank_selection(MCHAR, buffer, (long)(bufp - buffer), &clip_star);
+    clip_yank_selection(MCHAR, buffer, (bufp - buffer), &clip_star);
 
     // Make the register contents available to the outside world.
     clip_gen_set_selection(&clip_star);
@@ -1173,7 +1173,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	// Do the same for the '+' register.
 	clip_free_selection(&clip_plus);
 	clip_own_selection(&clip_plus);
-	clip_yank_selection(MCHAR, buffer, (long)(bufp - buffer), &clip_plus);
+	clip_yank_selection(MCHAR, buffer, (bufp - buffer), &clip_plus);
 	clip_gen_set_selection(&clip_plus);
     }
 #endif
@@ -1487,7 +1487,7 @@ clip_x11_convert_selection_cb(
 	// create NUL terminated string which XmbTextListToTextProperty wants
 	mch_memmove(string_nt, string, (size_t)*length);
 	string_nt[*length] = NUL;
-	conv_result = XmbTextListToTextProperty(X_DISPLAY, (char **)&string_nt,
+	conv_result = XmbTextListToTextProperty(X_DISPLAY, &string_nt,
 					   1, XCompoundTextStyle, &text_prop);
 	if (conv_result != Success)
 	{

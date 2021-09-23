@@ -128,7 +128,7 @@ profile_setlimit(long msec, proftime_T *tm)
 	long	    usec;
 
 	gettimeofday(tm, NULL);
-	usec = (long)tm->tv_usec + (long)msec * 1000;
+	usec = (long)tm->tv_usec + msec * 1000;
 	tm->tv_usec = usec % 1000000L;
 	tm->tv_sec += usec / 1000000L;
 # endif

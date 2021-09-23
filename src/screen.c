@@ -153,13 +153,13 @@ screen_fill_end(
     if (wp->w_p_rl)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - nn, (int)W_ENDCOL(wp) - off,
+		W_ENDCOL(wp) - nn, W_ENDCOL(wp) - off,
 		c1, c2, attr);
     }
     else
 #endif
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + off, (int)wp->w_wincol + nn,
+		wp->w_wincol + off, wp->w_wincol + nn,
 		c1, c2, attr);
     return nn;
 }
@@ -222,7 +222,7 @@ win_draw_end(
 #endif
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + n, (int)W_ENDCOL(wp),
+		wp->w_wincol + n, W_ENDCOL(wp),
 		c1, c2, attr);
     }
 
@@ -3363,7 +3363,7 @@ setcursor_mayforce(int force)
 #ifdef FEAT_RIGHTLEFT
 		// With 'rightleft' set and the cursor on a double-wide
 		// character, position it on the leftmost column.
-		curwin->w_p_rl ? ((int)curwin->w_width - curwin->w_wcol
+		curwin->w_p_rl ? (curwin->w_width - curwin->w_wcol
 		    - ((has_mbyte
 			   && (*mb_ptr2cells)(ml_get_cursor()) == 2
 			   && vim_isprintc(gchar_cursor())) ? 2 : 1)) :
@@ -3433,7 +3433,7 @@ win_ins_lines(
 	if (lastrow > Rows)
 	    lastrow = Rows;
 	screen_fill(nextrow - line_count, lastrow - line_count,
-		  wp->w_wincol, (int)W_ENDCOL(wp),
+		  wp->w_wincol, W_ENDCOL(wp),
 		  ' ', ' ', 0);
     }
 
@@ -3548,7 +3548,7 @@ win_do_lines(
     if (row + line_count >= wp->w_height)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
-		wp->w_wincol, (int)W_ENDCOL(wp),
+		wp->w_wincol, W_ENDCOL(wp),
 		' ', ' ', 0);
 	return OK;
     }
@@ -4202,7 +4202,7 @@ showmode(void)
 		    if (edit_submode_extra != NULL)
 		    {
 			msg_puts_attr(" ", attr);  // add a space in between
-			if ((int)edit_submode_highl < (int)HLF_COUNT)
+			if ((int)edit_submode_highl < HLF_COUNT)
 			    sub_attr = HL_ATTR(edit_submode_highl);
 			else
 			    sub_attr = attr;

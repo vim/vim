@@ -3035,7 +3035,7 @@ current_search(
 
 	result = searchit(curwin, curbuf, &pos, &end_pos,
 		(dir ? FORWARD : BACKWARD),
-		spats[last_idx].pat, (long) (i ? count : 1),
+		spats[last_idx].pat, (i ? count : 1),
 		SEARCH_KEEP | flags, RE_SEARCH, NULL);
 
 	p_ws = old_p_ws;

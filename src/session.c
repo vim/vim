@@ -464,7 +464,7 @@ put_view(
 	else if (fprintf(fd,
 		    "let s:l = %ld - ((%ld * winheight(0) + %ld) / %ld)",
 		    (long)wp->w_cursor.lnum,
-		    (long)(wp->w_cursor.lnum - wp->w_topline),
+		    (wp->w_cursor.lnum - wp->w_topline),
 		    (long)wp->w_height / 2, (long)wp->w_height) < 0)
 	    return FAIL;
 

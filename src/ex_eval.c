@@ -808,7 +808,7 @@ report_pending(int action, int pending, void *value)
 		vim_snprintf((char *)IObuff, IOSIZE, mesg, _("Exception"));
 		mesg = (char *)vim_strnsave(IObuff, STRLEN(IObuff) + 4);
 		STRCAT(mesg, ": %s");
-		s = (char *)((except_T *)value)->value;
+		s = ((except_T *)value)->value;
 	    }
 	    else if ((pending & CSTP_ERROR) && (pending & CSTP_INTERRUPT))
 		s = _("Error and interrupt");
@@ -2262,7 +2262,7 @@ leave_cleanup(cleanup_T *csp)
     {
 	if (pending & CSTP_THROW)
 	    // Cancel the pending exception (includes report).
-	    discard_exception((except_T *)csp->exception, FALSE);
+	    discard_exception(csp->exception, FALSE);
 	else
 	    report_discard_pending(pending, NULL);
 

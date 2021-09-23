@@ -4744,7 +4744,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	    lnum = buf->b_ml.ml_line_count;
 	}
 
-	qftf_list = call_qftf_func(qfl, qf_winid, (long)(lnum + 1),
+	qftf_list = call_qftf_func(qfl, qf_winid, (lnum + 1),
 							(long)qfl->qf_count);
 	if (qftf_list != NULL)
 	    qftf_li = qftf_list->lv_first;

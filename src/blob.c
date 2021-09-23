@@ -237,7 +237,7 @@ blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
     {
 	if (i > 0 && (i & 3) == 0)
 	    ga_concat(&ga, (char_u *)".");
-	vim_snprintf((char *)numbuf, NUMBUFLEN, "%02X", (int)blob_get(blob, i));
+	vim_snprintf((char *)numbuf, NUMBUFLEN, "%02X", blob_get(blob, i));
 	ga_concat(&ga, numbuf);
     }
     *tofree = ga.ga_data;

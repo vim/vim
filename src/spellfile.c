@@ -3621,7 +3621,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	}
 
 	// Store the word in the hashtable to be able to find duplicates.
-	dw = (char_u *)getroom_save(spin, w);
+	dw = getroom_save(spin, w);
 	if (dw == NULL)
 	{
 	    retval = FAIL;
@@ -3922,7 +3922,7 @@ store_aff_word(
 			    {
 				// Remove chop string.
 				p = newword + STRLEN(newword);
-				i = (int)MB_CHARLEN(ae->ae_chop);
+				i = MB_CHARLEN(ae->ae_chop);
 				for ( ; i > 0; --i)
 				    MB_PTR_BACK(newword, p);
 				*p = NUL;

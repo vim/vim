@@ -3694,7 +3694,7 @@ set_num_option(
     {
 	if (errbuf != NULL)
 	{
-	    vim_snprintf((char *)errbuf, errbuflen,
+	    vim_snprintf(errbuf, errbuflen,
 			       _("E593: Need at least %d lines"), min_rows());
 	    errmsg = errbuf;
 	}
@@ -3704,7 +3704,7 @@ set_num_option(
     {
 	if (errbuf != NULL)
 	{
-	    vim_snprintf((char *)errbuf, errbuflen,
+	    vim_snprintf(errbuf, errbuflen,
 			    _("E594: Need at least %d columns"), MIN_COLUMNS);
 	    errmsg = errbuf;
 	}

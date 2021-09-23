@@ -530,7 +530,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
 
 	if (get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)
-		&& (int)(this_ru_col - len) > (int)(STRLEN(NameBuff) + 1))
+		&& (this_ru_col - len) > (int)(STRLEN(NameBuff) + 1))
 	    screen_puts(NameBuff, row, (int)(this_ru_col - STRLEN(NameBuff)
 						   - 1 + wp->w_wincol), attr);
 
@@ -790,7 +790,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	i = redraw_cmdline;
 	screen_fill(row, row + 1,
 		this_ru_col + off + (int)STRLEN(buffer),
-		(int)(off + width),
+		(off + width),
 		fillchar, fillchar, attr);
 	// don't redraw the cmdline because of showing the ruler
 	redraw_cmdline = i;
@@ -1031,8 +1031,8 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp->w_winrow, wp->w_wincol, (int)wp->w_width,
-							  (int)wp->w_width, 0);
+    screen_line(wp->w_winrow, wp->w_wincol, wp->w_width,
+							  wp->w_width, 0);
 }
 #endif
 
@@ -1365,8 +1365,8 @@ fold_line(
     }
 #endif
 
-    screen_line(row + W_WINROW(wp), wp->w_wincol, (int)wp->w_width,
-						     (int)wp->w_width, 0);
+    screen_line(row + W_WINROW(wp), wp->w_wincol, wp->w_width,
+						     wp->w_width, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
@@ -2599,7 +2599,7 @@ win_update(win_T *wp)
 	    screen_puts_len((char_u *)"@@", 2, scr_row, wp->w_wincol,
 							      HL_ATTR(HLF_AT));
 	    screen_fill(scr_row, scr_row + 1,
-		    (int)wp->w_wincol + 2, (int)W_ENDCOL(wp),
+		    wp->w_wincol + 2, W_ENDCOL(wp),
 		    '@', ' ', HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
@@ -2609,7 +2609,7 @@ win_update(win_T *wp)
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
-		    (int)W_ENDCOL(wp) - 3, (int)W_ENDCOL(wp),
+		    W_ENDCOL(wp) - 3, W_ENDCOL(wp),
 		    '@', '@', HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;

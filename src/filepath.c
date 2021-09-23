@@ -1905,11 +1905,11 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
 		// small, to avoid repeatedly 'allocing' large and
 		// 'reallocing' small.
 		if (prevsize == 0)
-		    prevsize = (long)(p - start);
+		    prevsize = (p - start);
 		else
 		{
 		    long grow50pc = (prevsize * 3) / 2;
-		    long growmin  = (long)((p - start) * 2 + prevlen);
+		    long growmin  = ((p - start) * 2 + prevlen);
 		    prevsize = grow50pc > growmin ? grow50pc : growmin;
 		}
 		newprev = vim_realloc(prev, prevsize);
@@ -1923,7 +1923,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
 	    }
 	    // Add the line part to end of "prev".
 	    mch_memmove(prev + prevlen, start, p - start);
-	    prevlen += (long)(p - start);
+	    prevlen += (p - start);
 	}
     } // while
 

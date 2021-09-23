@@ -386,7 +386,7 @@ au_cleanup(void)
 	return;
 
     // loop over all events
-    for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+    for (event = (event_T)0; (int)event < NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
     {
 	// loop over all autocommand patterns
@@ -460,7 +460,7 @@ aubuflocal_remove(buf_T *buf)
 	    apc->arg_bufnr = 0;
 
     // invalidate buflocals looping through events
-    for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+    for (event = (event_T)0; (int)event < NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	// loop over all autocommand patterns
 	FOR_ALL_AUTOCMD_PATTERNS(event, ap)
@@ -523,7 +523,7 @@ au_del_group(char_u *name)
 	AutoPat	*ap;
 	int	in_use = FALSE;
 
-	for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+	for (event = (event_T)0; (int)event < NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	{
 	    FOR_ALL_AUTOCMD_PATTERNS(event, ap)
@@ -695,7 +695,7 @@ find_end_event(
     {
 	for (pat = arg; *pat && *pat != '|' && !VIM_ISWHITE(*pat); pat = p)
 	{
-	    if ((int)event_name2nr(pat, &p) >= (int)NUM_EVENTS)
+	    if ((int)event_name2nr(pat, &p) >= NUM_EVENTS)
 	    {
 		if (have_group)
 		    semsg(_("E216: No such event: %s"), pat);
@@ -967,7 +967,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 	if (!forceit && *cmd != NUL)
 	    emsg(_(e_cannot_define_autocommands_for_all_events));
 	else
-	    for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+	    for (event = (event_T)0; (int)event < NUM_EVENTS;
 					     event = (event_T)((int)event + 1))
 		if (do_autocmd_event(event, pat,
 			     once, nested, cmd, forceit, group, flags) == FAIL)
@@ -1708,7 +1708,7 @@ apply_autocmds_retval(
     static int
 has_cursorhold(void)
 {
-    return (first_autopat[(int)(get_real_state() == NORMAL_BUSY
+    return (first_autopat[(get_real_state() == NORMAL_BUSY
 			    ? EVENT_CURSORHOLD : EVENT_CURSORHOLDI)] != NULL);
 }
 
@@ -1739,7 +1739,7 @@ trigger_cursorhold(void)
     int
 has_cursormoved(void)
 {
-    return (first_autopat[(int)EVENT_CURSORMOVED] != NULL);
+    return (first_autopat[EVENT_CURSORMOVED] != NULL);
 }
 
 /*
@@ -1748,7 +1748,7 @@ has_cursormoved(void)
     int
 has_cursormovedI(void)
 {
-    return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
+    return (first_autopat[EVENT_CURSORMOVEDI] != NULL);
 }
 
 /*
@@ -1757,7 +1757,7 @@ has_cursormovedI(void)
     int
 has_textchanged(void)
 {
-    return (first_autopat[(int)EVENT_TEXTCHANGED] != NULL);
+    return (first_autopat[EVENT_TEXTCHANGED] != NULL);
 }
 
 /*
@@ -1766,7 +1766,7 @@ has_textchanged(void)
     int
 has_textchangedI(void)
 {
-    return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
+    return (first_autopat[EVENT_TEXTCHANGEDI] != NULL);
 }
 
 /*
@@ -1775,7 +1775,7 @@ has_textchangedI(void)
     int
 has_textchangedP(void)
 {
-    return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
+    return (first_autopat[EVENT_TEXTCHANGEDP] != NULL);
 }
 
 /*
@@ -1784,7 +1784,7 @@ has_textchangedP(void)
     int
 has_insertcharpre(void)
 {
-    return (first_autopat[(int)EVENT_INSERTCHARPRE] != NULL);
+    return (first_autopat[EVENT_INSERTCHARPRE] != NULL);
 }
 
 /*
@@ -1793,7 +1793,7 @@ has_insertcharpre(void)
     int
 has_cmdundefined(void)
 {
-    return (first_autopat[(int)EVENT_CMDUNDEFINED] != NULL);
+    return (first_autopat[EVENT_CMDUNDEFINED] != NULL);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -1803,7 +1803,7 @@ has_cmdundefined(void)
     int
 has_textyankpost(void)
 {
-    return (first_autopat[(int)EVENT_TEXTYANKPOST] != NULL);
+    return (first_autopat[EVENT_TEXTYANKPOST] != NULL);
 }
 #endif
 
@@ -1814,7 +1814,7 @@ has_textyankpost(void)
     int
 has_completechanged(void)
 {
-    return (first_autopat[(int)EVENT_COMPLETECHANGED] != NULL);
+    return (first_autopat[EVENT_COMPLETECHANGED] != NULL);
 }
 #endif
 
@@ -1825,7 +1825,7 @@ has_completechanged(void)
     int
 has_modechanged(void)
 {
-    return (first_autopat[(int)EVENT_MODECHANGED] != NULL);
+    return (first_autopat[EVENT_MODECHANGED] != NULL);
 }
 #endif
 

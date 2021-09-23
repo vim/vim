@@ -296,7 +296,7 @@ foldedCount(win_T *win, linenr_T lnum, foldinfo_T *infop)
     linenr_T	last;
 
     if (hasFoldingWin(win, lnum, NULL, &last, FALSE, infop))
-	return (long)(last - lnum + 1);
+	return (last - lnum + 1);
     return 0;
 }
 
@@ -1999,7 +1999,7 @@ get_foldtext(
     if (text == NULL)
 #endif
     {
-	long count = (long)(lnume - lnum + 1);
+	long count = (lnume - lnum + 1);
 
 	vim_snprintf((char *)buf, FOLD_TEXT_LEN,
 		     NGETTEXT("+--%3ld line folded ",
@@ -2548,14 +2548,14 @@ foldUpdateIEMSRecurse(
 				// like lines are inserted
 				foldMarkAdjustRecurse(&fp->fd_nested,
 					(linenr_T)0, (linenr_T)MAXLNUM,
-					(long)(fp->fd_top - firstlnum), 0L);
+					(fp->fd_top - firstlnum), 0L);
 			    else
 				// like lines are deleted
 				foldMarkAdjustRecurse(&fp->fd_nested,
 					(linenr_T)0,
-					(long)(firstlnum - fp->fd_top - 1),
+					(firstlnum - fp->fd_top - 1),
 					(linenr_T)MAXLNUM,
-					(long)(fp->fd_top - firstlnum));
+					(fp->fd_top - firstlnum));
 			    fp->fd_len += fp->fd_top - firstlnum;
 			    fp->fd_top = firstlnum;
 			    fold_changed = TRUE;
@@ -2636,7 +2636,7 @@ foldUpdateIEMSRecurse(
 			// to stop just above startlnum.
 			fp->fd_len = startlnum - fp->fd_top;
 			foldMarkAdjustRecurse(&fp->fd_nested,
-				(linenr_T)fp->fd_len, (linenr_T)MAXLNUM,
+				fp->fd_len, (linenr_T)MAXLNUM,
 						       (linenr_T)MAXLNUM, 0L);
 			fold_changed = TRUE;
 		    }
@@ -2828,8 +2828,8 @@ foldUpdateIEMSRecurse(
 	    {
 		// Make fold that includes lnum start at lnum.
 		foldMarkAdjustRecurse(&fp2->fd_nested,
-			(linenr_T)0, (long)(flp->lnum - fp2->fd_top - 1),
-			(linenr_T)MAXLNUM, (long)(fp2->fd_top - flp->lnum));
+			(linenr_T)0, (flp->lnum - fp2->fd_top - 1),
+			(linenr_T)MAXLNUM, (fp2->fd_top - flp->lnum));
 		fp2->fd_len -= flp->lnum - fp2->fd_top;
 		fp2->fd_top = flp->lnum;
 		fold_changed = TRUE;
@@ -2990,8 +2990,8 @@ foldRemove(garray_T *gap, linenr_T top, linenr_T bot)
 	    {
 		// 5: Make fold that includes bot start below bot.
 		foldMarkAdjustRecurse(&fp->fd_nested,
-			(linenr_T)0, (long)(bot - fp->fd_top),
-			(linenr_T)MAXLNUM, (long)(fp->fd_top - bot - 1));
+			(linenr_T)0, (bot - fp->fd_top),
+			(linenr_T)MAXLNUM, (fp->fd_top - bot - 1));
 		fp->fd_len -= bot - fp->fd_top + 1;
 		fp->fd_top = bot + 1;
 		break;
@@ -3759,7 +3759,7 @@ f_foldtext(typval_T *argvars UNUSED, typval_T *rettv)
 		    s = skipwhite(s + 1);
 	    }
 	}
-	count = (long)(foldend - foldstart + 1);
+	count = (foldend - foldstart + 1);
 	txt = NGETTEXT("+-%s%3ld line: ", "+-%s%3ld lines: ", count);
 	r = alloc(STRLEN(txt)
 		    + STRLEN(dashes)	    // for %s

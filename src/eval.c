@@ -4278,7 +4278,7 @@ eval_index_inner(
 			return FAIL;
 		}
 
-		item = dict_find(rettv->vval.v_dict, key, (int)keylen);
+		item = dict_find(rettv->vval.v_dict, key, keylen);
 
 		if (item == NULL && verbose)
 		    semsg(_(e_dictkey), key);
@@ -5502,7 +5502,7 @@ get_name_len(
     *alias = NULL;  // default to no alias
 
     if ((*arg)[0] == K_SPECIAL && (*arg)[1] == KS_EXTRA
-						  && (*arg)[2] == (int)KE_SNR)
+						  && (*arg)[2] == KE_SNR)
     {
 	// hard coded <SNR>, already translated
 	*arg += 3;

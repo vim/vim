@@ -790,7 +790,7 @@ deleted_lines(linenr_T lnum, long count)
     void
 deleted_lines_mark(linenr_T lnum, long count)
 {
-    mark_adjust(lnum, (linenr_T)(lnum + count - 1), (long)MAXLNUM, -count);
+    mark_adjust(lnum, (linenr_T)(lnum + count - 1), MAXLNUM, -count);
     changed_lines(lnum, 0, lnum + count, -count);
 }
 

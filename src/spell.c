@@ -650,7 +650,7 @@ find_word(matchinf_T *mip, int mode)
 		// Makes you wonder why someone puts a compound flag on a word
 		// that's too short...  Myspell compatibility requires this
 		// anyway.
-		if (((unsigned)flags >> 24) == 0
+		if ((flags >> 24) == 0
 			     || wlen - mip->mi_compoff < slang->sl_compminlen)
 		    continue;
 		// For multi-byte chars check character length against
@@ -679,7 +679,7 @@ find_word(matchinf_T *mip, int mode)
 		if (!byte_in_str(mip->mi_complen == 0
 					? slang->sl_compstartflags
 					: slang->sl_compallflags,
-					    ((unsigned)flags >> 24)))
+					    (flags >> 24)))
 		    continue;
 
 		// If there is a match with a CHECKCOMPOUNDPATTERN rule
@@ -726,7 +726,7 @@ find_word(matchinf_T *mip, int mode)
 		// If the word ends the sequence of compound flags of the
 		// words must match with one of the COMPOUNDRULE items and
 		// the number of syllables must not be too large.
-		mip->mi_compflags[mip->mi_complen] = ((unsigned)flags >> 24);
+		mip->mi_compflags[mip->mi_complen] = (flags >> 24);
 		mip->mi_compflags[mip->mi_complen + 1] = NUL;
 		if (word_ends)
 		{

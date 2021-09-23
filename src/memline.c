@@ -334,7 +334,7 @@ ml_open(buf_T *buf)
 
     b0p->b0_id[0] = BLOCK0_ID0;
     b0p->b0_id[1] = BLOCK0_ID1;
-    b0p->b0_magic_long = (long)B0_MAGIC_LONG;
+    b0p->b0_magic_long = B0_MAGIC_LONG;
     b0p->b0_magic_int = (int)B0_MAGIC_INT;
     b0p->b0_magic_short = (short)B0_MAGIC_SHORT;
     b0p->b0_magic_char = B0_MAGIC_CHAR;
@@ -550,7 +550,7 @@ ml_set_crypt_key(
 		mf_put(mfp, hp, FALSE, FALSE);	// release previous block
 
 	    // get the block (pointer or data)
-	    if ((hp = mf_get(mfp, (blocknr_T)bnum, page_count)) == NULL)
+	    if ((hp = mf_get(mfp, bnum, page_count)) == NULL)
 	    {
 		if (bnum == 1)
 		    break;
@@ -1507,7 +1507,7 @@ ml_recover(int checkext)
 	/*
 	 * get block
 	 */
-	if ((hp = mf_get(mfp, (blocknr_T)bnum, page_count)) == NULL)
+	if ((hp = mf_get(mfp, bnum, page_count)) == NULL)
 	{
 	    if (bnum == 1)
 	    {
@@ -3661,7 +3661,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
-	netbeans_removed(buf, lnum, 0, (long)line_size);
+	netbeans_removed(buf, lnum, 0, line_size);
 #endif
 #ifdef FEAT_PROP_POPUP
     // If there are text properties, make a copy, so that we can update
@@ -5160,7 +5160,7 @@ findswapname(
     static int
 b0_magic_wrong(ZERO_BL *b0p)
 {
-    return (b0p->b0_magic_long != (long)B0_MAGIC_LONG
+    return (b0p->b0_magic_long != B0_MAGIC_LONG
 	    || b0p->b0_magic_int != (int)B0_MAGIC_INT
 	    || b0p->b0_magic_short != (short)B0_MAGIC_SHORT
 	    || b0p->b0_magic_char != B0_MAGIC_CHAR);

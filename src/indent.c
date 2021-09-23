@@ -112,12 +112,12 @@ tabstop_padding(colnr_T col, int ts_arg, int *vts)
 	tabcol += vts[t];
 	if (tabcol > col)
 	{
-	    padding = (int)(tabcol - col);
+	    padding = (tabcol - col);
 	    break;
 	}
     }
     if (t > tabcount)
-	padding = vts[tabcount] - (int)((col - tabcol) % vts[tabcount]);
+	padding = vts[tabcount] - ((col - tabcol) % vts[tabcount]);
 
     return padding;
 }
@@ -224,12 +224,12 @@ tabstop_fromto(
 	tabcol += vts[t];
 	if (tabcol > start_col)
 	{
-	    padding = (int)(tabcol - start_col);
+	    padding = (tabcol - start_col);
 	    break;
 	}
     }
     if (t > tabcount)
-	padding = vts[tabcount] - (int)((start_col - tabcol) % vts[tabcount]);
+	padding = vts[tabcount] - ((start_col - tabcol) % vts[tabcount]);
 
     // If the space needed is less than the padding no tabs can be used.
     if (spaces < padding)

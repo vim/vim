@@ -725,16 +725,16 @@ translate_pango_attributes(PangoAttrIterator *iter)
 
     attr = pango_attr_iterator_get(iter, PANGO_ATTR_UNDERLINE);
     if (attr != NULL && ((PangoAttrInt *)attr)->value
-						 != (int)PANGO_UNDERLINE_NONE)
+						 != PANGO_UNDERLINE_NONE)
 	char_attr |= HL_UNDERLINE;
 
     attr = pango_attr_iterator_get(iter, PANGO_ATTR_WEIGHT);
-    if (attr != NULL && ((PangoAttrInt *)attr)->value >= (int)PANGO_WEIGHT_BOLD)
+    if (attr != NULL && ((PangoAttrInt *)attr)->value >= PANGO_WEIGHT_BOLD)
 	char_attr |= HL_BOLD;
 
     attr = pango_attr_iterator_get(iter, PANGO_ATTR_STYLE);
     if (attr != NULL && ((PangoAttrInt *)attr)->value
-						   != (int)PANGO_STYLE_NORMAL)
+						   != PANGO_STYLE_NORMAL)
 	char_attr |= HL_ITALIC;
 
     attr = pango_attr_iterator_get(iter, PANGO_ATTR_BACKGROUND);
@@ -1044,8 +1044,8 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 	    // Otherwise e.g. <S-C-space> would be unusable for other purposes
 	    // if the IM activate key is <S-space>.
 	    state_mask  = im_activatekey_state;
-	    state_mask |= ((int)GDK_SHIFT_MASK | (int)GDK_CONTROL_MASK
-							| (int)GDK_MOD1_MASK);
+	    state_mask |= (GDK_SHIFT_MASK | GDK_CONTROL_MASK
+							| GDK_MOD1_MASK);
 
 	    if ((event->state & state_mask) != im_activatekey_state)
 		return FALSE;

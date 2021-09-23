@@ -689,11 +689,11 @@ add_timer_info(typval_T *rettv, timer_T *timer)
     list_append_dict(list, dict);
 
     dict_add_number(dict, "id", timer->tr_id);
-    dict_add_number(dict, "time", (long)timer->tr_interval);
+    dict_add_number(dict, "time", timer->tr_interval);
 
     profile_start(&now);
     remaining = proftime_time_left(&timer->tr_due, &now);
-    dict_add_number(dict, "remaining", (long)remaining);
+    dict_add_number(dict, "remaining", remaining);
 
     dict_add_number(dict, "repeat",
 		    (long)(timer->tr_repeat < 0 ? -1 : timer->tr_repeat + 1));
@@ -1106,7 +1106,7 @@ add_time(char_u *buf, size_t buflen, time_t tt)
     else
 #endif
     {
-	long seconds = (long)(vim_time() - tt);
+	long seconds = (vim_time() - tt);
 
 	vim_snprintf((char *)buf, buflen,
 		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),

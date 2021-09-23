@@ -692,8 +692,8 @@ do_mouse(
     {
 	int key = KEY2TERMCAP1(c);
 
-	if (key == (int)KE_LEFTRELEASE || key == (int)KE_MIDDLERELEASE
-					       || key == (int)KE_RIGHTRELEASE)
+	if (key == KE_LEFTRELEASE || key == KE_MIDDLERELEASE
+					       || key == KE_RIGHTRELEASE)
 	    netbeans_button_release(which_button);
     }
 #endif
@@ -1102,7 +1102,7 @@ ins_mousescroll(int dir)
 	{
 	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 		scroll_redraw(dir,
-			(long)(curwin->w_botline - curwin->w_topline));
+			(curwin->w_botline - curwin->w_topline));
 	    else
 		scroll_redraw(dir, 3L);
 # ifdef FEAT_PROP_POPUP
@@ -1187,31 +1187,31 @@ static struct mousetable
     int	    is_drag;		// Is it a mouse drag event?
 } mouse_table[] =
 {
-    {(int)KE_LEFTMOUSE,		MOUSE_LEFT,	TRUE,	FALSE},
+    {KE_LEFTMOUSE,		MOUSE_LEFT,	TRUE,	FALSE},
 #ifdef FEAT_GUI
-    {(int)KE_LEFTMOUSE_NM,	MOUSE_LEFT,	TRUE,	FALSE},
+    {KE_LEFTMOUSE_NM,	MOUSE_LEFT,	TRUE,	FALSE},
 #endif
-    {(int)KE_LEFTDRAG,		MOUSE_LEFT,	FALSE,	TRUE},
-    {(int)KE_LEFTRELEASE,	MOUSE_LEFT,	FALSE,	FALSE},
+    {KE_LEFTDRAG,		MOUSE_LEFT,	FALSE,	TRUE},
+    {KE_LEFTRELEASE,	MOUSE_LEFT,	FALSE,	FALSE},
 #ifdef FEAT_GUI
-    {(int)KE_LEFTRELEASE_NM,	MOUSE_LEFT,	FALSE,	FALSE},
+    {KE_LEFTRELEASE_NM,	MOUSE_LEFT,	FALSE,	FALSE},
 #endif
-    {(int)KE_MIDDLEMOUSE,	MOUSE_MIDDLE,	TRUE,	FALSE},
-    {(int)KE_MIDDLEDRAG,	MOUSE_MIDDLE,	FALSE,	TRUE},
-    {(int)KE_MIDDLERELEASE,	MOUSE_MIDDLE,	FALSE,	FALSE},
-    {(int)KE_RIGHTMOUSE,	MOUSE_RIGHT,	TRUE,	FALSE},
-    {(int)KE_RIGHTDRAG,		MOUSE_RIGHT,	FALSE,	TRUE},
-    {(int)KE_RIGHTRELEASE,	MOUSE_RIGHT,	FALSE,	FALSE},
-    {(int)KE_X1MOUSE,		MOUSE_X1,	TRUE,	FALSE},
-    {(int)KE_X1DRAG,		MOUSE_X1,	FALSE,	TRUE},
-    {(int)KE_X1RELEASE,		MOUSE_X1,	FALSE,	FALSE},
-    {(int)KE_X2MOUSE,		MOUSE_X2,	TRUE,	FALSE},
-    {(int)KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
-    {(int)KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
+    {KE_MIDDLEMOUSE,	MOUSE_MIDDLE,	TRUE,	FALSE},
+    {KE_MIDDLEDRAG,	MOUSE_MIDDLE,	FALSE,	TRUE},
+    {KE_MIDDLERELEASE,	MOUSE_MIDDLE,	FALSE,	FALSE},
+    {KE_RIGHTMOUSE,	MOUSE_RIGHT,	TRUE,	FALSE},
+    {KE_RIGHTDRAG,		MOUSE_RIGHT,	FALSE,	TRUE},
+    {KE_RIGHTRELEASE,	MOUSE_RIGHT,	FALSE,	FALSE},
+    {KE_X1MOUSE,		MOUSE_X1,	TRUE,	FALSE},
+    {KE_X1DRAG,		MOUSE_X1,	FALSE,	TRUE},
+    {KE_X1RELEASE,		MOUSE_X1,	FALSE,	FALSE},
+    {KE_X2MOUSE,		MOUSE_X2,	TRUE,	FALSE},
+    {KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
+    {KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
     // DRAG without CLICK
-    {(int)KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
+    {KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
     // RELEASE without CLICK
-    {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
+    {KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
     {0,				0,		0,	0},
 };
 
@@ -1262,15 +1262,15 @@ get_pseudo_mouse_code(
 		    mouse_col = 0;
 		else
 		    mouse_col -= MOUSE_COLOFF;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTMOUSE)
-		    return (int)KE_LEFTMOUSE_NM;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTRELEASE)
-		    return (int)KE_LEFTRELEASE_NM;
+		if (mouse_table[i].pseudo_code == KE_LEFTMOUSE)
+		    return KE_LEFTMOUSE_NM;
+		if (mouse_table[i].pseudo_code == KE_LEFTRELEASE)
+		    return KE_LEFTRELEASE_NM;
 	    }
 #endif
 	    return mouse_table[i].pseudo_code;
 	}
-    return (int)KE_IGNORE;	    // not recognized, ignore it
+    return KE_IGNORE;	    // not recognized, ignore it
 }
 
 # define HMT_NORMAL	1
@@ -2818,13 +2818,13 @@ check_termcode_mouse(
 	    *modifiers |= MOD_MASK_ALT;
 
 	if (wheel_code & 1 && wheel_code & 2)
-	    key_name[1] = (int)KE_MOUSELEFT;
+	    key_name[1] = KE_MOUSELEFT;
 	else if (wheel_code & 2)
-	    key_name[1] = (int)KE_MOUSERIGHT;
+	    key_name[1] = KE_MOUSERIGHT;
 	else if (wheel_code & 1)
-	    key_name[1] = (int)KE_MOUSEUP;
+	    key_name[1] = KE_MOUSEUP;
 	else
-	    key_name[1] = (int)KE_MOUSEDOWN;
+	    key_name[1] = KE_MOUSEDOWN;
 
 	held_button = MOUSE_RELEASE;
     }

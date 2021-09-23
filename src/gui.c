@@ -4837,7 +4837,7 @@ gui_focus_change(int in_focus)
 
 	bytes[0] = CSI;
 	bytes[1] = KS_EXTRA;
-	bytes[2] = in_focus ? (int)KE_FOCUSGAINED : (int)KE_FOCUSLOST;
+	bytes[2] = in_focus ? KE_FOCUSGAINED : KE_FOCUSLOST;
 	add_to_input_buf(bytes, 3);
     }
 #endif
@@ -4966,7 +4966,7 @@ gui_mouse_correct(void)
     if (wp != curwin && wp != NULL)	// If in other than current window
     {
 	validate_cline_row();
-	gui_mch_setmouse((int)W_ENDCOL(curwin) * gui.char_width - 3,
+	gui_mch_setmouse(W_ENDCOL(curwin) * gui.char_width - 3,
 		(W_WINROW(curwin) + curwin->w_wrow) * gui.char_height
 						     + (gui.char_height) / 2);
     }
@@ -5373,7 +5373,7 @@ gui_do_findrepl(
 		    // A button was pressed thus undo should be synced.
 		    u_sync(FALSE);
 
-		    del_bytes((long)(regmatch.endp[0] - regmatch.startp[0]),
+		    del_bytes((regmatch.endp[0] - regmatch.startp[0]),
 								FALSE, FALSE);
 		    ins_str(repl_text);
 		}

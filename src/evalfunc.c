@@ -6971,7 +6971,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 		    break;
 	    }
 
-	    match = vim_regexec_nl(&regmatch, str, (colnr_T)startcol);
+	    match = vim_regexec_nl(&regmatch, str, startcol);
 
 	    if (match && --nth <= 0)
 		break;
@@ -7756,7 +7756,7 @@ range_list_materialize(list_T *list)
     list->lv_len = 0;
     list->lv_u.mat.lv_idx_item = NULL;
     for (i = start; stride > 0 ? i <= end : i >= end; i += stride)
-	if (list_append_number(list, (varnumber_T)i) == FAIL)
+	if (list_append_number(list, i) == FAIL)
 	    break;
 }
 
@@ -9625,7 +9625,7 @@ f_synID(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (!transerr && lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
 	    && col >= 0 && col < (long)STRLEN(ml_get(lnum)))
-	id = syn_get_id(curwin, lnum, (colnr_T)col, trans, NULL, FALSE);
+	id = syn_get_id(curwin, lnum, col, trans, NULL, FALSE);
 #endif
 
     rettv->vval.v_number = id;
@@ -9846,7 +9846,7 @@ f_synstack(typval_T *argvars UNUSED, typval_T *rettv)
 	    && col >= 0 && col <= (long)STRLEN(ml_get(lnum))
 	    && rettv_list_alloc(rettv) != FAIL)
     {
-	(void)syn_get_id(curwin, lnum, (colnr_T)col, FALSE, NULL, TRUE);
+	(void)syn_get_id(curwin, lnum, col, FALSE, NULL, TRUE);
 	for (i = 0; ; ++i)
 	{
 	    id = syn_get_stack_item(i);

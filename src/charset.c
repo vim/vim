@@ -715,7 +715,7 @@ ptr2cells(char_u *p)
     int
 vim_strsize(char_u *s)
 {
-    return vim_strnsize(s, (int)MAXCOL);
+    return vim_strnsize(s, MAXCOL);
 }
 
 /*

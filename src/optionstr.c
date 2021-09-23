@@ -181,7 +181,7 @@ trigger_optionsset_string(
 	    set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, -1);
 	}
 	apply_autocmds(EVENT_OPTIONSET,
-		       (char_u *)get_option_fullname(opt_idx), NULL, FALSE,
+		       get_option_fullname(opt_idx), NULL, FALSE,
 		       NULL);
 	reset_v_option_vars();
     }

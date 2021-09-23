@@ -3393,7 +3393,7 @@ nv_colon(cmdarg_T *cap)
 	    if (cap->count0 > 1)
 	    {
 		stuffReadbuff((char_u *)",.+");
-		stuffnumReadbuff((long)cap->count0 - 1L);
+		stuffnumReadbuff(cap->count0 - 1L);
 	    }
 	}
 
@@ -4304,7 +4304,7 @@ nv_dollar(cmdarg_T *cap)
     if (!virtual_active() || gchar_cursor() != NUL
 					       || cap->oap->op_type == OP_NOP)
 	curwin->w_curswant = MAXCOL;	// so we stay at the end
-    if (cursor_down((long)(cap->count1 - 1),
+    if (cursor_down((cap->count1 - 1),
 					 cap->oap->op_type == OP_NOP) == FAIL)
 	clearopbeep(cap->oap);
 #ifdef FEAT_FOLDING
@@ -5127,7 +5127,7 @@ nv_replace(cmdarg_T *cap)
 		colnr_T  start = (colnr_T)(curwin->w_cursor.col - cap->count1);
 
 		netbeans_removed(curbuf, curwin->w_cursor.lnum, start,
-							   (long)cap->count1);
+							   cap->count1);
 		netbeans_inserted(curbuf, curwin->w_cursor.lnum, start,
 					       &ptr[start], (int)cap->count1);
 	    }
@@ -6095,7 +6095,7 @@ nv_g_cmd(cmdarg_T *cap)
 	cap->oap->motion_type = MCHAR;
 	cap->oap->inclusive = TRUE;
 	curwin->w_curswant = MAXCOL;
-	if (cursor_down((long)(cap->count1 - 1),
+	if (cursor_down((cap->count1 - 1),
 					 cap->oap->op_type == OP_NOP) == FAIL)
 	    clearopbeep(cap->oap);
 	else

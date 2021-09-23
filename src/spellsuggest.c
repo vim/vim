@@ -1350,7 +1350,7 @@ suggest_trie_walk(
 
 		// At end of a prefix or at start of prefixtree: check for
 		// following word.
-		if (byts[arridx] == 0 || n == (int)STATE_NOPREFIX)
+		if (byts[arridx] == 0 || n == STATE_NOPREFIX)
 		{
 		    // Set su->su_badflags to the caps type at this position.
 		    // Use the caps type until here for the prefix itself.
@@ -2999,7 +2999,7 @@ stp_sal_score(
     char_u	goodword[MAXWLEN];
     int		lendiff;
 
-    lendiff = (int)(su->su_badlen - stp->st_orglen);
+    lendiff = (su->su_badlen - stp->st_orglen);
     if (lendiff >= 0)
 	pbad = badsound;
     else

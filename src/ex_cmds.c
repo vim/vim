@@ -646,7 +646,7 @@ ex_sort(exarg_T *eap)
     deleted = (long)(count - (lnum - eap->line2));
     if (deleted > 0)
     {
-	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+	mark_adjust(eap->line2 - deleted, eap->line2, MAXLNUM, -deleted);
 	msgmore(-deleted);
     }
     else if (deleted < 0)
@@ -1183,7 +1183,7 @@ do_filter(
 
     if (do_out)
     {
-	if (u_save((linenr_T)(line2), (linenr_T)(line2 + 1)) == FAIL)
+	if (u_save((line2), (linenr_T)(line2 + 1)) == FAIL)
 	{
 	    vim_free(cmd_buf);
 	    goto error;
@@ -3424,7 +3424,7 @@ ex_change(exarg_T *eap)
 
     // make sure the cursor is not beyond the end of the file now
     check_cursor_lnum();
-    deleted_lines_mark(eap->line1, (long)(eap->line2 - lnum));
+    deleted_lines_mark(eap->line1, (eap->line2 - lnum));
 
     // ":append" on the line above the deleted lines.
     eap->line2 = eap->line1;
@@ -4660,7 +4660,7 @@ skip:
 			    for (i = 0; i < nmatch_tl; ++i)
 				ml_delete(lnum);
 			    mark_adjust(lnum, lnum + nmatch_tl - 1,
-						   (long)MAXLNUM, -nmatch_tl);
+						   MAXLNUM, -nmatch_tl);
 			    if (subflags.do_ask)
 				deleted_lines(lnum, nmatch_tl);
 			    --lnum;

@@ -221,47 +221,47 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * GUI pseudo term-cap.
  */
-    {(int)KS_NAME,	"gui"},
-    {(int)KS_CE,	IF_EB("\033|$", ESC_STR "|$")},
-    {(int)KS_AL,	IF_EB("\033|i", ESC_STR "|i")},
+    {KS_NAME,	"gui"},
+    {KS_CE,	IF_EB("\033|$", ESC_STR "|$")},
+    {KS_AL,	IF_EB("\033|i", ESC_STR "|i")},
 # ifdef TERMINFO
-    {(int)KS_CAL,	IF_EB("\033|%p1%dI", ESC_STR "|%p1%dI")},
+    {KS_CAL,	IF_EB("\033|%p1%dI", ESC_STR "|%p1%dI")},
 # else
     {(int)KS_CAL,	IF_EB("\033|%dI", ESC_STR "|%dI")},
 # endif
-    {(int)KS_DL,	IF_EB("\033|d", ESC_STR "|d")},
+    {KS_DL,	IF_EB("\033|d", ESC_STR "|d")},
 # ifdef TERMINFO
-    {(int)KS_CDL,	IF_EB("\033|%p1%dD", ESC_STR "|%p1%dD")},
-    {(int)KS_CS,	IF_EB("\033|%p1%d;%p2%dR", ESC_STR "|%p1%d;%p2%dR")},
-    {(int)KS_CSV,	IF_EB("\033|%p1%d;%p2%dV", ESC_STR "|%p1%d;%p2%dV")},
+    {KS_CDL,	IF_EB("\033|%p1%dD", ESC_STR "|%p1%dD")},
+    {KS_CS,	IF_EB("\033|%p1%d;%p2%dR", ESC_STR "|%p1%d;%p2%dR")},
+    {KS_CSV,	IF_EB("\033|%p1%d;%p2%dV", ESC_STR "|%p1%d;%p2%dV")},
 # else
     {(int)KS_CDL,	IF_EB("\033|%dD", ESC_STR "|%dD")},
     {(int)KS_CS,	IF_EB("\033|%d;%dR", ESC_STR "|%d;%dR")},
     {(int)KS_CSV,	IF_EB("\033|%d;%dV", ESC_STR "|%d;%dV")},
 # endif
-    {(int)KS_CL,	IF_EB("\033|C", ESC_STR "|C")},
+    {KS_CL,	IF_EB("\033|C", ESC_STR "|C")},
 			// attributes switched on with 'h', off with * 'H'
-    {(int)KS_ME,	IF_EB("\033|31H", ESC_STR "|31H")}, // HL_ALL
-    {(int)KS_MR,	IF_EB("\033|1h", ESC_STR "|1h")},   // HL_INVERSE
-    {(int)KS_MD,	IF_EB("\033|2h", ESC_STR "|2h")},   // HL_BOLD
-    {(int)KS_SE,	IF_EB("\033|16H", ESC_STR "|16H")}, // HL_STANDOUT
-    {(int)KS_SO,	IF_EB("\033|16h", ESC_STR "|16h")}, // HL_STANDOUT
-    {(int)KS_UE,	IF_EB("\033|8H", ESC_STR "|8H")},   // HL_UNDERLINE
-    {(int)KS_US,	IF_EB("\033|8h", ESC_STR "|8h")},   // HL_UNDERLINE
-    {(int)KS_UCE,	IF_EB("\033|8C", ESC_STR "|8C")},   // HL_UNDERCURL
-    {(int)KS_UCS,	IF_EB("\033|8c", ESC_STR "|8c")},   // HL_UNDERCURL
-    {(int)KS_STE,	IF_EB("\033|4C", ESC_STR "|4C")},   // HL_STRIKETHROUGH
-    {(int)KS_STS,	IF_EB("\033|4c", ESC_STR "|4c")},   // HL_STRIKETHROUGH
-    {(int)KS_CZR,	IF_EB("\033|4H", ESC_STR "|4H")},   // HL_ITALIC
-    {(int)KS_CZH,	IF_EB("\033|4h", ESC_STR "|4h")},   // HL_ITALIC
-    {(int)KS_VB,	IF_EB("\033|f", ESC_STR "|f")},
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},
-    {(int)KS_XN,	"y"},
-    {(int)KS_LE,	"\b"},		// cursor-left = BS
-    {(int)KS_ND,	"\014"},	// cursor-right = CTRL-L
+    {KS_ME,	IF_EB("\033|31H", ESC_STR "|31H")}, // HL_ALL
+    {KS_MR,	IF_EB("\033|1h", ESC_STR "|1h")},   // HL_INVERSE
+    {KS_MD,	IF_EB("\033|2h", ESC_STR "|2h")},   // HL_BOLD
+    {KS_SE,	IF_EB("\033|16H", ESC_STR "|16H")}, // HL_STANDOUT
+    {KS_SO,	IF_EB("\033|16h", ESC_STR "|16h")}, // HL_STANDOUT
+    {KS_UE,	IF_EB("\033|8H", ESC_STR "|8H")},   // HL_UNDERLINE
+    {KS_US,	IF_EB("\033|8h", ESC_STR "|8h")},   // HL_UNDERLINE
+    {KS_UCE,	IF_EB("\033|8C", ESC_STR "|8C")},   // HL_UNDERCURL
+    {KS_UCS,	IF_EB("\033|8c", ESC_STR "|8c")},   // HL_UNDERCURL
+    {KS_STE,	IF_EB("\033|4C", ESC_STR "|4C")},   // HL_STRIKETHROUGH
+    {KS_STS,	IF_EB("\033|4c", ESC_STR "|4c")},   // HL_STRIKETHROUGH
+    {KS_CZR,	IF_EB("\033|4H", ESC_STR "|4H")},   // HL_ITALIC
+    {KS_CZH,	IF_EB("\033|4h", ESC_STR "|4h")},   // HL_ITALIC
+    {KS_VB,	IF_EB("\033|f", ESC_STR "|f")},
+    {KS_MS,	"y"},
+    {KS_UT,	"y"},
+    {KS_XN,	"y"},
+    {KS_LE,	"\b"},		// cursor-left = BS
+    {KS_ND,	"\014"},	// cursor-right = CTRL-L
 # ifdef TERMINFO
-    {(int)KS_CM,	IF_EB("\033|%p1%d;%p2%dM", ESC_STR "|%p1%d;%p2%dM")},
+    {KS_CM,	IF_EB("\033|%p1%d;%p2%dM", ESC_STR "|%p1%d;%p2%dM")},
 # else
     {(int)KS_CM,	IF_EB("\033|%d;%dM", ESC_STR "|%d;%dM")},
 # endif
@@ -275,33 +275,33 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * Amiga console window, default for Amiga
  */
-    {(int)KS_NAME,	"amiga"},
-    {(int)KS_CE,	"\033[K"},
-    {(int)KS_CD,	"\033[J"},
-    {(int)KS_AL,	"\033[L"},
+    {KS_NAME,	"amiga"},
+    {KS_CE,	"\033[K"},
+    {KS_CD,	"\033[J"},
+    {KS_AL,	"\033[L"},
 #  ifdef TERMINFO
-    {(int)KS_CAL,	"\033[%p1%dL"},
+    {KS_CAL,	"\033[%p1%dL"},
 #  else
     {(int)KS_CAL,	"\033[%dL"},
 #  endif
-    {(int)KS_DL,	"\033[M"},
+    {KS_DL,	"\033[M"},
 #  ifdef TERMINFO
-    {(int)KS_CDL,	"\033[%p1%dM"},
+    {KS_CDL,	"\033[%p1%dM"},
 #  else
     {(int)KS_CDL,	"\033[%dM"},
 #  endif
-    {(int)KS_CL,	"\014"},
-    {(int)KS_VI,	"\033[0 p"},
-    {(int)KS_VE,	"\033[1 p"},
-    {(int)KS_ME,	"\033[0m"},
-    {(int)KS_MR,	"\033[7m"},
-    {(int)KS_MD,	"\033[1m"},
-    {(int)KS_SE,	"\033[0m"},
-    {(int)KS_SO,	"\033[33m"},
-    {(int)KS_US,	"\033[4m"},
-    {(int)KS_UE,	"\033[0m"},
-    {(int)KS_CZH,	"\033[3m"},
-    {(int)KS_CZR,	"\033[0m"},
+    {KS_CL,	"\014"},
+    {KS_VI,	"\033[0 p"},
+    {KS_VE,	"\033[1 p"},
+    {KS_ME,	"\033[0m"},
+    {KS_MR,	"\033[7m"},
+    {KS_MD,	"\033[1m"},
+    {KS_SE,	"\033[0m"},
+    {KS_SO,	"\033[33m"},
+    {KS_US,	"\033[4m"},
+    {KS_UE,	"\033[0m"},
+    {KS_CZH,	"\033[3m"},
+    {KS_CZR,	"\033[0m"},
 #if defined(__amigaos4__) || defined(__MORPHOS__) || defined(__AROS__)
     {(int)KS_CCO,	"8"},		// allow 8 colors
 #  ifdef TERMINFO
@@ -313,11 +313,11 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
     {(int)KS_OP,	"\033[m"},	// reset colors
 #endif
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
+    {KS_MS,	"y"},
+    {KS_UT,	"y"},		// guessed
+    {KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
+    {KS_CM,	"\033[%i%p1%d;%p2%dH"},
 #  else
     {(int)KS_CM,	"\033[%i%d;%dH"},
 #  endif
@@ -325,7 +325,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_SR,	"\033M"},
 #endif
 #  ifdef TERMINFO
-    {(int)KS_CRI,	"\033[%p1%dC"},
+    {KS_CRI,	"\033[%p1%dC"},
 #  else
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
@@ -375,54 +375,54 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * almost standard ANSI terminal
  */
-    {(int)KS_CE,	"\033[K"},
-    {(int)KS_CD,	"\033[J"},
-    {(int)KS_AL,	"\033[L"},
+    {KS_CE,	"\033[K"},
+    {KS_CD,	"\033[J"},
+    {KS_AL,	"\033[L"},
 #  ifdef TERMINFO
-    {(int)KS_CAL,	"\033[%p1%dL"},
+    {KS_CAL,	"\033[%p1%dL"},
 #  else
     {(int)KS_CAL,	"\033[%dL"},
 #  endif
-    {(int)KS_DL,	"\033[M"},
+    {KS_DL,	"\033[M"},
 #  ifdef TERMINFO
-    {(int)KS_CDL,	"\033[%p1%dM"},
+    {KS_CDL,	"\033[%p1%dM"},
 #  else
     {(int)KS_CDL,	"\033[%dM"},
 #  endif
-    {(int)KS_CL,	"\033[H\033[2J"},
+    {KS_CL,	"\033[H\033[2J"},
 #ifdef notyet
     {(int)KS_VI,	"[VI]"}, // cursor invisible, VT320: CSI ? 25 l
     {(int)KS_VE,	"[VE]"}, // cursor visible, VT320: CSI ? 25 h
 #endif
-    {(int)KS_ME,	"\033[m"},	// normal mode
-    {(int)KS_MR,	"\033[7m"},	// reverse
-    {(int)KS_MD,	"\033[1m"},	// bold
-    {(int)KS_SO,	"\033[31m"},	// standout mode: red
-    {(int)KS_SE,	"\033[m"},	// standout end
-    {(int)KS_CZH,	"\033[35m"},	// italic: purple
-    {(int)KS_CZR,	"\033[m"},	// italic end
-    {(int)KS_US,	"\033[4m"},	// underscore mode
-    {(int)KS_UE,	"\033[m"},	// underscore end
-    {(int)KS_CCO,	"8"},		// allow 8 colors
+    {KS_ME,	"\033[m"},	// normal mode
+    {KS_MR,	"\033[7m"},	// reverse
+    {KS_MD,	"\033[1m"},	// bold
+    {KS_SO,	"\033[31m"},	// standout mode: red
+    {KS_SE,	"\033[m"},	// standout end
+    {KS_CZH,	"\033[35m"},	// italic: purple
+    {KS_CZR,	"\033[m"},	// italic end
+    {KS_US,	"\033[4m"},	// underscore mode
+    {KS_UE,	"\033[m"},	// underscore end
+    {KS_CCO,	"8"},		// allow 8 colors
 #  ifdef TERMINFO
-    {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
-    {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
+    {KS_CAB,	"\033[4%p1%dm"},// set background color
+    {KS_CAF,	"\033[3%p1%dm"},// set foreground color
 #  else
     {(int)KS_CAB,	"\033[4%dm"},	// set background color
     {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
 #  endif
-    {(int)KS_OP,	"\033[m"},	// reset colors
-    {(int)KS_MS,	"y"},		// safe to move cur in reverse mode
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
+    {KS_OP,	"\033[m"},	// reset colors
+    {KS_MS,	"y"},		// safe to move cur in reverse mode
+    {KS_UT,	"y"},		// guessed
+    {KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
+    {KS_CM,	"\033[%i%p1%d;%p2%dH"},
 #  else
     {(int)KS_CM,	"\033[%i%d;%dH"},
 #  endif
-    {(int)KS_SR,	"\033M"},
+    {KS_SR,	"\033M"},
 #  ifdef TERMINFO
-    {(int)KS_CRI,	"\033[%p1%dC"},
+    {KS_CRI,	"\033[%p1%dC"},
 #  else
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
@@ -437,33 +437,33 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * standard ANSI terminal, default for unix
  */
-    {(int)KS_NAME,	"ansi"},
-    {(int)KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
-    {(int)KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
+    {KS_NAME,	"ansi"},
+    {KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
+    {KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
 #  ifdef TERMINFO
-    {(int)KS_CAL,	IF_EB("\033[%p1%dL", ESC_STR "[%p1%dL")},
+    {KS_CAL,	IF_EB("\033[%p1%dL", ESC_STR "[%p1%dL")},
 #  else
     {(int)KS_CAL,	IF_EB("\033[%dL", ESC_STR "[%dL")},
 #  endif
-    {(int)KS_DL,	IF_EB("\033[M", ESC_STR "[M")},
+    {KS_DL,	IF_EB("\033[M", ESC_STR "[M")},
 #  ifdef TERMINFO
-    {(int)KS_CDL,	IF_EB("\033[%p1%dM", ESC_STR "[%p1%dM")},
+    {KS_CDL,	IF_EB("\033[%p1%dM", ESC_STR "[%p1%dM")},
 #  else
     {(int)KS_CDL,	IF_EB("\033[%dM", ESC_STR "[%dM")},
 #  endif
-    {(int)KS_CL,	IF_EB("\033[H\033[2J", ESC_STR "[H" ESC_STR_nc "[2J")},
-    {(int)KS_ME,	IF_EB("\033[0m", ESC_STR "[0m")},
-    {(int)KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
+    {KS_CL,	IF_EB("\033[H\033[2J", ESC_STR "[H" ESC_STR_nc "[2J")},
+    {KS_ME,	IF_EB("\033[0m", ESC_STR "[0m")},
+    {KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
+    {KS_MS,	"y"},
+    {KS_UT,	"y"},		// guessed
+    {KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH", ESC_STR "[%i%p1%d;%p2%dH")},
+    {KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH", ESC_STR "[%i%p1%d;%p2%dH")},
 #  else
     {(int)KS_CM,	IF_EB("\033[%i%d;%dH", ESC_STR "[%i%d;%dH")},
 #  endif
 #  ifdef TERMINFO
-    {(int)KS_CRI,	IF_EB("\033[%p1%dC", ESC_STR "[%p1%dC")},
+    {KS_CRI,	IF_EB("\033[%p1%dC", ESC_STR "[%p1%dC")},
 #  else
     {(int)KS_CRI,	IF_EB("\033[%dC", ESC_STR "[%dC")},
 #  endif
@@ -476,39 +476,39 @@ static struct builtin_term builtin_termcaps[] =
  * K_NUL '\316' in mch_inchar(), because we cannot handle NULs in key codes.
  * CTRL-arrow is used instead of SHIFT-arrow.
  */
-    {(int)KS_NAME,	"pcansi"},
-    {(int)KS_DL,	"\033[M"},
-    {(int)KS_AL,	"\033[L"},
-    {(int)KS_CE,	"\033[K"},
-    {(int)KS_CL,	"\033[2J"},
-    {(int)KS_ME,	"\033[0m"},
-    {(int)KS_MR,	"\033[5m"},	// reverse: black on lightgrey
-    {(int)KS_MD,	"\033[1m"},	// bold: white text
-    {(int)KS_SE,	"\033[0m"},	// standout end
-    {(int)KS_SO,	"\033[31m"},	// standout: white on blue
-    {(int)KS_CZH,	"\033[34;43m"},	// italic mode: blue text on yellow
-    {(int)KS_CZR,	"\033[0m"},	// italic mode end
-    {(int)KS_US,	"\033[36;41m"},	// underscore mode: cyan text on red
-    {(int)KS_UE,	"\033[0m"},	// underscore mode end
-    {(int)KS_CCO,	"8"},		// allow 8 colors
+    {KS_NAME,	"pcansi"},
+    {KS_DL,	"\033[M"},
+    {KS_AL,	"\033[L"},
+    {KS_CE,	"\033[K"},
+    {KS_CL,	"\033[2J"},
+    {KS_ME,	"\033[0m"},
+    {KS_MR,	"\033[5m"},	// reverse: black on lightgrey
+    {KS_MD,	"\033[1m"},	// bold: white text
+    {KS_SE,	"\033[0m"},	// standout end
+    {KS_SO,	"\033[31m"},	// standout: white on blue
+    {KS_CZH,	"\033[34;43m"},	// italic mode: blue text on yellow
+    {KS_CZR,	"\033[0m"},	// italic mode end
+    {KS_US,	"\033[36;41m"},	// underscore mode: cyan text on red
+    {KS_UE,	"\033[0m"},	// underscore mode end
+    {KS_CCO,	"8"},		// allow 8 colors
 #  ifdef TERMINFO
-    {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
-    {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
+    {KS_CAB,	"\033[4%p1%dm"},// set background color
+    {KS_CAF,	"\033[3%p1%dm"},// set foreground color
 #  else
     {(int)KS_CAB,	"\033[4%dm"},	// set background color
     {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
 #  endif
-    {(int)KS_OP,	"\033[0m"},	// reset colors
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
+    {KS_OP,	"\033[0m"},	// reset colors
+    {KS_MS,	"y"},
+    {KS_UT,	"y"},		// guessed
+    {KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
+    {KS_CM,	"\033[%i%p1%d;%p2%dH"},
 #  else
     {(int)KS_CM,	"\033[%i%d;%dH"},
 #  endif
 #  ifdef TERMINFO
-    {(int)KS_CRI,	"\033[%p1%dC"},
+    {KS_CRI,	"\033[%p1%dC"},
 #  else
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
@@ -556,70 +556,70 @@ static struct builtin_term builtin_termcaps[] =
  * ESC | are translated into console calls in os_win32.c.  The function keys
  * are also translated in os_win32.c.
  */
-    {(int)KS_NAME,	"win32"},
-    {(int)KS_CE,	"\033|K"},	// clear to end of line
-    {(int)KS_AL,	"\033|L"},	// add new blank line
+    {KS_NAME,	"win32"},
+    {KS_CE,	"\033|K"},	// clear to end of line
+    {KS_AL,	"\033|L"},	// add new blank line
 #  ifdef TERMINFO
-    {(int)KS_CAL,	"\033|%p1%dL"},	// add number of new blank lines
+    {KS_CAL,	"\033|%p1%dL"},	// add number of new blank lines
 #  else
     {(int)KS_CAL,	"\033|%dL"},	// add number of new blank lines
 #  endif
-    {(int)KS_DL,	"\033|M"},	// delete line
+    {KS_DL,	"\033|M"},	// delete line
 #  ifdef TERMINFO
-    {(int)KS_CDL,	"\033|%p1%dM"},	// delete number of lines
-    {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
+    {KS_CDL,	"\033|%p1%dM"},	// delete number of lines
+    {KS_CSV,	"\033|%p1%d;%p2%dV"},
 #  else
     {(int)KS_CDL,	"\033|%dM"},	// delete number of lines
     {(int)KS_CSV,	"\033|%d;%dV"},
 #  endif
-    {(int)KS_CL,	"\033|J"},	// clear screen
-    {(int)KS_CD,	"\033|j"},	// clear to end of display
-    {(int)KS_VI,	"\033|v"},	// cursor invisible
-    {(int)KS_VE,	"\033|V"},	// cursor visible
+    {KS_CL,	"\033|J"},	// clear screen
+    {KS_CD,	"\033|j"},	// clear to end of display
+    {KS_VI,	"\033|v"},	// cursor invisible
+    {KS_VE,	"\033|V"},	// cursor visible
 
-    {(int)KS_ME,	"\033|0m"},	// normal
-    {(int)KS_MR,	"\033|112m"},	// reverse: black on lightgray
-    {(int)KS_MD,	"\033|15m"},	// bold: white on black
+    {KS_ME,	"\033|0m"},	// normal
+    {KS_MR,	"\033|112m"},	// reverse: black on lightgray
+    {KS_MD,	"\033|15m"},	// bold: white on black
 #if 1
-    {(int)KS_SO,	"\033|31m"},	// standout: white on blue
-    {(int)KS_SE,	"\033|0m"},	// standout end
+    {KS_SO,	"\033|31m"},	// standout: white on blue
+    {KS_SE,	"\033|0m"},	// standout end
 #else
     {(int)KS_SO,	"\033|F"},	// standout: high intensity
     {(int)KS_SE,	"\033|f"},	// standout end
 #endif
-    {(int)KS_CZH,	"\033|225m"},	// italic: blue text on yellow
-    {(int)KS_CZR,	"\033|0m"},	// italic end
-    {(int)KS_US,	"\033|67m"},	// underscore: cyan text on red
-    {(int)KS_UE,	"\033|0m"},	// underscore end
-    {(int)KS_CCO,	"16"},		// allow 16 colors
+    {KS_CZH,	"\033|225m"},	// italic: blue text on yellow
+    {KS_CZR,	"\033|0m"},	// italic end
+    {KS_US,	"\033|67m"},	// underscore: cyan text on red
+    {KS_UE,	"\033|0m"},	// underscore end
+    {KS_CCO,	"16"},		// allow 16 colors
 #  ifdef TERMINFO
-    {(int)KS_CAB,	"\033|%p1%db"},	// set background color
-    {(int)KS_CAF,	"\033|%p1%df"},	// set foreground color
+    {KS_CAB,	"\033|%p1%db"},	// set background color
+    {KS_CAF,	"\033|%p1%df"},	// set foreground color
 #  else
     {(int)KS_CAB,	"\033|%db"},	// set background color
     {(int)KS_CAF,	"\033|%df"},	// set foreground color
 #  endif
 
-    {(int)KS_MS,	"y"},		// save to move cur in reverse mode
-    {(int)KS_UT,	"y"},
-    {(int)KS_XN,	"y"},
-    {(int)KS_LE,	"\b"},
+    {KS_MS,	"y"},		// save to move cur in reverse mode
+    {KS_UT,	"y"},
+    {KS_XN,	"y"},
+    {KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"}, // cursor motion
+    {KS_CM,	"\033|%i%p1%d;%p2%dH"}, // cursor motion
 #  else
     {(int)KS_CM,	"\033|%i%d;%dH"}, // cursor motion
 #  endif
-    {(int)KS_VB,	"\033|B"},	// visual bell
-    {(int)KS_TI,	"\033|S"},	// put terminal in termcap mode
-    {(int)KS_TE,	"\033|E"},	// out of termcap mode
+    {KS_VB,	"\033|B"},	// visual bell
+    {KS_TI,	"\033|S"},	// put terminal in termcap mode
+    {KS_TE,	"\033|E"},	// out of termcap mode
 #  ifdef TERMINFO
-    {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
+    {KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
 #  else
     {(int)KS_CS,	"\033|%i%d;%dr"}, // scroll region
 #  endif
 #  ifdef FEAT_TERMGUICOLORS
-    {(int)KS_8F,	"\033|38;2;%lu;%lu;%lum"},
-    {(int)KS_8B,	"\033|48;2;%lu;%lu;%lum"},
+    {KS_8F,	"\033|38;2;%lu;%lu;%lum"},
+    {KS_8B,	"\033|48;2;%lu;%lu;%lum"},
 #  endif
 
     {K_UP,		"\316H"},
@@ -690,47 +690,47 @@ static struct builtin_term builtin_termcaps[] =
  * TODO:- rewrite ESC[ codes to CSI
  *      - keyboard languages (CSI ? 26 n)
  */
-    {(int)KS_NAME,	"vt320"},
-    {(int)KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
-    {(int)KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
+    {KS_NAME,	"vt320"},
+    {KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
+    {KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
 #  ifdef TERMINFO
-    {(int)KS_CAL,	IF_EB("\033[%p1%dL", ESC_STR "[%p1%dL")},
+    {KS_CAL,	IF_EB("\033[%p1%dL", ESC_STR "[%p1%dL")},
 #  else
     {(int)KS_CAL,	IF_EB("\033[%dL", ESC_STR "[%dL")},
 #  endif
-    {(int)KS_DL,	IF_EB("\033[M", ESC_STR "[M")},
+    {KS_DL,	IF_EB("\033[M", ESC_STR "[M")},
 #  ifdef TERMINFO
-    {(int)KS_CDL,	IF_EB("\033[%p1%dM", ESC_STR "[%p1%dM")},
+    {KS_CDL,	IF_EB("\033[%p1%dM", ESC_STR "[%p1%dM")},
 #  else
     {(int)KS_CDL,	IF_EB("\033[%dM", ESC_STR "[%dM")},
 #  endif
-    {(int)KS_CL,	IF_EB("\033[H\033[2J", ESC_STR "[H" ESC_STR_nc "[2J")},
-    {(int)KS_CD,	IF_EB("\033[J", ESC_STR "[J")},
-    {(int)KS_CCO,	"8"},			// allow 8 colors
-    {(int)KS_ME,	IF_EB("\033[0m", ESC_STR "[0m")},
-    {(int)KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
-    {(int)KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},  // bold mode
-    {(int)KS_SE,	IF_EB("\033[22m", ESC_STR "[22m")},// normal mode
-    {(int)KS_UE,	IF_EB("\033[24m", ESC_STR "[24m")},// exit underscore mode
-    {(int)KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},  // underscore mode
-    {(int)KS_CZH,	IF_EB("\033[34;43m", ESC_STR "[34;43m")},  // italic mode: blue text on yellow
-    {(int)KS_CZR,	IF_EB("\033[0m", ESC_STR "[0m")},	    // italic mode end
-    {(int)KS_CAB,	IF_EB("\033[4%dm", ESC_STR "[4%dm")},	    // set background color (ANSI)
-    {(int)KS_CAF,	IF_EB("\033[3%dm", ESC_STR "[3%dm")},	    // set foreground color (ANSI)
-    {(int)KS_CSB,	IF_EB("\033[102;%dm", ESC_STR "[102;%dm")},	// set screen background color
-    {(int)KS_CSF,	IF_EB("\033[101;%dm", ESC_STR "[101;%dm")},	// set screen foreground color
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},
-    {(int)KS_XN,	"y"},
-    {(int)KS_LE,	"\b"},
+    {KS_CL,	IF_EB("\033[H\033[2J", ESC_STR "[H" ESC_STR_nc "[2J")},
+    {KS_CD,	IF_EB("\033[J", ESC_STR "[J")},
+    {KS_CCO,	"8"},			// allow 8 colors
+    {KS_ME,	IF_EB("\033[0m", ESC_STR "[0m")},
+    {KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
+    {KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},  // bold mode
+    {KS_SE,	IF_EB("\033[22m", ESC_STR "[22m")},// normal mode
+    {KS_UE,	IF_EB("\033[24m", ESC_STR "[24m")},// exit underscore mode
+    {KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},  // underscore mode
+    {KS_CZH,	IF_EB("\033[34;43m", ESC_STR "[34;43m")},  // italic mode: blue text on yellow
+    {KS_CZR,	IF_EB("\033[0m", ESC_STR "[0m")},	    // italic mode end
+    {KS_CAB,	IF_EB("\033[4%dm", ESC_STR "[4%dm")},	    // set background color (ANSI)
+    {KS_CAF,	IF_EB("\033[3%dm", ESC_STR "[3%dm")},	    // set foreground color (ANSI)
+    {KS_CSB,	IF_EB("\033[102;%dm", ESC_STR "[102;%dm")},	// set screen background color
+    {KS_CSF,	IF_EB("\033[101;%dm", ESC_STR "[101;%dm")},	// set screen foreground color
+    {KS_MS,	"y"},
+    {KS_UT,	"y"},
+    {KS_XN,	"y"},
+    {KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
+    {KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
 						  ESC_STR "[%i%p1%d;%p2%dH")},
 #  else
     {(int)KS_CM,	IF_EB("\033[%i%d;%dH", ESC_STR "[%i%d;%dH")},
 #  endif
 #  ifdef TERMINFO
-    {(int)KS_CRI,	IF_EB("\033[%p1%dC", ESC_STR "[%p1%dC")},
+    {KS_CRI,	IF_EB("\033[%p1%dC", ESC_STR "[%p1%dC")},
 #  else
     {(int)KS_CRI,	IF_EB("\033[%dC", ESC_STR "[%dC")},
 #  endif
@@ -790,19 +790,19 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * Ordinary vt52
  */
-    {(int)KS_NAME,	"vt52"},
-    {(int)KS_CE,	IF_EB("\033K", ESC_STR "K")},
-    {(int)KS_CD,	IF_EB("\033J", ESC_STR "J")},
+    {KS_NAME,	"vt52"},
+    {KS_CE,	IF_EB("\033K", ESC_STR "K")},
+    {KS_CD,	IF_EB("\033J", ESC_STR "J")},
 #  ifdef TERMINFO
-    {(int)KS_CM,	IF_EB("\033Y%p1%' '%+%c%p2%' '%+%c",
+    {KS_CM,	IF_EB("\033Y%p1%' '%+%c%p2%' '%+%c",
 			    ESC_STR "Y%p1%' '%+%c%p2%' '%+%c")},
 #  else
     {(int)KS_CM,	IF_EB("\033Y%+ %+ ", ESC_STR "Y%+ %+ ")},
 #  endif
-    {(int)KS_LE,	"\b"},
-    {(int)KS_SR,	IF_EB("\033I", ESC_STR "I")},
-    {(int)KS_AL,	IF_EB("\033L", ESC_STR "L")},
-    {(int)KS_DL,	IF_EB("\033M", ESC_STR "M")},
+    {KS_LE,	"\b"},
+    {KS_SR,	IF_EB("\033I", ESC_STR "I")},
+    {KS_AL,	IF_EB("\033L", ESC_STR "L")},
+    {KS_DL,	IF_EB("\033M", ESC_STR "M")},
     {K_UP,		IF_EB("\033A", ESC_STR "A")},
     {K_DOWN,		IF_EB("\033B", ESC_STR "B")},
     {K_LEFT,		IF_EB("\033D", ESC_STR "D")},
@@ -810,112 +810,112 @@ static struct builtin_term builtin_termcaps[] =
     {K_F1,		IF_EB("\033P", ESC_STR "P")},
     {K_F2,		IF_EB("\033Q", ESC_STR "Q")},
     {K_F3,		IF_EB("\033R", ESC_STR "R")},
-    {(int)KS_CL,	IF_EB("\033H\033J", ESC_STR "H" ESC_STR_nc "J")},
-    {(int)KS_MS,	"y"},
+    {KS_CL,	IF_EB("\033H\033J", ESC_STR "H" ESC_STR_nc "J")},
+    {KS_MS,	"y"},
 # endif
 
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS)
-    {(int)KS_NAME,	"xterm"},
-    {(int)KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
-    {(int)KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
+    {KS_NAME,	"xterm"},
+    {KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
+    {KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
 #  ifdef TERMINFO
-    {(int)KS_CAL,	IF_EB("\033[%p1%dL", ESC_STR "[%p1%dL")},
+    {KS_CAL,	IF_EB("\033[%p1%dL", ESC_STR "[%p1%dL")},
 #  else
     {(int)KS_CAL,	IF_EB("\033[%dL", ESC_STR "[%dL")},
 #  endif
-    {(int)KS_DL,	IF_EB("\033[M", ESC_STR "[M")},
+    {KS_DL,	IF_EB("\033[M", ESC_STR "[M")},
 #  ifdef TERMINFO
-    {(int)KS_CDL,	IF_EB("\033[%p1%dM", ESC_STR "[%p1%dM")},
+    {KS_CDL,	IF_EB("\033[%p1%dM", ESC_STR "[%p1%dM")},
 #  else
     {(int)KS_CDL,	IF_EB("\033[%dM", ESC_STR "[%dM")},
 #  endif
 #  ifdef TERMINFO
-    {(int)KS_CS,	IF_EB("\033[%i%p1%d;%p2%dr",
+    {KS_CS,	IF_EB("\033[%i%p1%d;%p2%dr",
 						  ESC_STR "[%i%p1%d;%p2%dr")},
 #  else
     {(int)KS_CS,	IF_EB("\033[%i%d;%dr", ESC_STR "[%i%d;%dr")},
 #  endif
-    {(int)KS_CL,	IF_EB("\033[H\033[2J", ESC_STR "[H" ESC_STR_nc "[2J")},
-    {(int)KS_CD,	IF_EB("\033[J", ESC_STR "[J")},
-    {(int)KS_ME,	IF_EB("\033[m", ESC_STR "[m")},
-    {(int)KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
-    {(int)KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},
-    {(int)KS_UE,	IF_EB("\033[m", ESC_STR "[m")},
-    {(int)KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},
-    {(int)KS_STE,	IF_EB("\033[29m", ESC_STR "[29m")},
-    {(int)KS_STS,	IF_EB("\033[9m", ESC_STR "[9m")},
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},
-    {(int)KS_LE,	"\b"},
-    {(int)KS_VI,	IF_EB("\033[?25l", ESC_STR "[?25l")},
-    {(int)KS_VE,	IF_EB("\033[?25h", ESC_STR "[?25h")},
-    {(int)KS_VS,	IF_EB("\033[?12h", ESC_STR "[?12h")},
-    {(int)KS_CVS,	IF_EB("\033[?12l", ESC_STR "[?12l")},
+    {KS_CL,	IF_EB("\033[H\033[2J", ESC_STR "[H" ESC_STR_nc "[2J")},
+    {KS_CD,	IF_EB("\033[J", ESC_STR "[J")},
+    {KS_ME,	IF_EB("\033[m", ESC_STR "[m")},
+    {KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
+    {KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},
+    {KS_UE,	IF_EB("\033[m", ESC_STR "[m")},
+    {KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},
+    {KS_STE,	IF_EB("\033[29m", ESC_STR "[29m")},
+    {KS_STS,	IF_EB("\033[9m", ESC_STR "[9m")},
+    {KS_MS,	"y"},
+    {KS_UT,	"y"},
+    {KS_LE,	"\b"},
+    {KS_VI,	IF_EB("\033[?25l", ESC_STR "[?25l")},
+    {KS_VE,	IF_EB("\033[?25h", ESC_STR "[?25h")},
+    {KS_VS,	IF_EB("\033[?12h", ESC_STR "[?12h")},
+    {KS_CVS,	IF_EB("\033[?12l", ESC_STR "[?12l")},
 #  ifdef TERMINFO
-    {(int)KS_CSH,	IF_EB("\033[%p1%d q", ESC_STR "[%p1%d q")},
+    {KS_CSH,	IF_EB("\033[%p1%d q", ESC_STR "[%p1%d q")},
 #  else
     {(int)KS_CSH,	IF_EB("\033[%d q", ESC_STR "[%d q")},
 #  endif
-    {(int)KS_CRC,	IF_EB("\033[?12$p", ESC_STR "[?12$p")},
-    {(int)KS_CRS,	IF_EB("\033P$q q\033\\", ESC_STR "P$q q" ESC_STR "\\")},
+    {KS_CRC,	IF_EB("\033[?12$p", ESC_STR "[?12$p")},
+    {KS_CRS,	IF_EB("\033P$q q\033\\", ESC_STR "P$q q" ESC_STR "\\")},
 #  ifdef TERMINFO
-    {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
+    {KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
 						  ESC_STR "[%i%p1%d;%p2%dH")},
 #  else
     {(int)KS_CM,	IF_EB("\033[%i%d;%dH", ESC_STR "[%i%d;%dH")},
 #  endif
-    {(int)KS_SR,	IF_EB("\033M", ESC_STR "M")},
+    {KS_SR,	IF_EB("\033M", ESC_STR "M")},
 #  ifdef TERMINFO
-    {(int)KS_CRI,	IF_EB("\033[%p1%dC", ESC_STR "[%p1%dC")},
+    {KS_CRI,	IF_EB("\033[%p1%dC", ESC_STR "[%p1%dC")},
 #  else
     {(int)KS_CRI,	IF_EB("\033[%dC", ESC_STR "[%dC")},
 #  endif
-    {(int)KS_KS,	IF_EB("\033[?1h\033=", ESC_STR "[?1h" ESC_STR_nc "=")},
-    {(int)KS_KE,	IF_EB("\033[?1l\033>", ESC_STR "[?1l" ESC_STR_nc ">")},
+    {KS_KS,	IF_EB("\033[?1h\033=", ESC_STR "[?1h" ESC_STR_nc "=")},
+    {KS_KE,	IF_EB("\033[?1l\033>", ESC_STR "[?1l" ESC_STR_nc ">")},
 #  ifdef FEAT_XTERM_SAVE
     {(int)KS_TI,	IF_EB("\0337\033[?47h", ESC_STR "7" ESC_STR_nc "[?47h")},
     {(int)KS_TE,	IF_EB("\033[?47l\0338",
 					   ESC_STR_nc "[?47l" ESC_STR_nc "8")},
 #  endif
-    {(int)KS_CTI,	IF_EB("\033[>4;2m", ESC_STR_nc "[>4;2m")},
-    {(int)KS_CTE,	IF_EB("\033[>4;m", ESC_STR_nc "[>4;m")},
-    {(int)KS_CIS,	IF_EB("\033]1;", ESC_STR "]1;")},
-    {(int)KS_CIE,	"\007"},
-    {(int)KS_TS,	IF_EB("\033]2;", ESC_STR "]2;")},
-    {(int)KS_FS,	"\007"},
-    {(int)KS_CSC,	IF_EB("\033]12;", ESC_STR "]12;")},
-    {(int)KS_CEC,	"\007"},
+    {KS_CTI,	IF_EB("\033[>4;2m", ESC_STR_nc "[>4;2m")},
+    {KS_CTE,	IF_EB("\033[>4;m", ESC_STR_nc "[>4;m")},
+    {KS_CIS,	IF_EB("\033]1;", ESC_STR "]1;")},
+    {KS_CIE,	"\007"},
+    {KS_TS,	IF_EB("\033]2;", ESC_STR "]2;")},
+    {KS_FS,	"\007"},
+    {KS_CSC,	IF_EB("\033]12;", ESC_STR "]12;")},
+    {KS_CEC,	"\007"},
 #  ifdef TERMINFO
-    {(int)KS_CWS,	IF_EB("\033[8;%p1%d;%p2%dt",
+    {KS_CWS,	IF_EB("\033[8;%p1%d;%p2%dt",
 						  ESC_STR "[8;%p1%d;%p2%dt")},
-    {(int)KS_CWP,	IF_EB("\033[3;%p1%d;%p2%dt",
+    {KS_CWP,	IF_EB("\033[3;%p1%d;%p2%dt",
 						  ESC_STR "[3;%p1%d;%p2%dt")},
-    {(int)KS_CGP,	IF_EB("\033[13t", ESC_STR "[13t")},
+    {KS_CGP,	IF_EB("\033[13t", ESC_STR "[13t")},
 #  else
     {(int)KS_CWS,	IF_EB("\033[8;%d;%dt", ESC_STR "[8;%d;%dt")},
     {(int)KS_CWP,	IF_EB("\033[3;%d;%dt", ESC_STR "[3;%d;%dt")},
     {(int)KS_CGP,	IF_EB("\033[13t", ESC_STR "[13t")},
 #  endif
-    {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
-    {(int)KS_RFG,	IF_EB("\033]10;?\007", ESC_STR "]10;?\007")},
-    {(int)KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
-    {(int)KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
+    {KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
+    {KS_RFG,	IF_EB("\033]10;?\007", ESC_STR "]10;?\007")},
+    {KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
+    {KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
 #  ifdef FEAT_TERMGUICOLORS
     // These are printf strings, not terminal codes.
-    {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
-    {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
-    {(int)KS_8U,	IF_EB("\033[58;2;%lu;%lu;%lum", ESC_STR "[58;2;%lu;%lu;%lum")},
+    {KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
+    {KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
+    {KS_8U,	IF_EB("\033[58;2;%lu;%lu;%lum", ESC_STR "[58;2;%lu;%lu;%lum")},
 #  endif
-    {(int)KS_CAU,	IF_EB("\033[58;5;%dm", ESC_STR "[58;5;%dm")},
-    {(int)KS_CBE,	IF_EB("\033[?2004h", ESC_STR "[?2004h")},
-    {(int)KS_CBD,	IF_EB("\033[?2004l", ESC_STR "[?2004l")},
-    {(int)KS_CST,	IF_EB("\033[22;2t", ESC_STR "[22;2t")},
-    {(int)KS_CRT,	IF_EB("\033[23;2t", ESC_STR "[23;2t")},
-    {(int)KS_SSI,	IF_EB("\033[22;1t", ESC_STR "[22;1t")},
-    {(int)KS_SRI,	IF_EB("\033[23;1t", ESC_STR "[23;1t")},
+    {KS_CAU,	IF_EB("\033[58;5;%dm", ESC_STR "[58;5;%dm")},
+    {KS_CBE,	IF_EB("\033[?2004h", ESC_STR "[?2004h")},
+    {KS_CBD,	IF_EB("\033[?2004l", ESC_STR "[?2004l")},
+    {KS_CST,	IF_EB("\033[22;2t", ESC_STR "[22;2t")},
+    {KS_CRT,	IF_EB("\033[23;2t", ESC_STR "[23;2t")},
+    {KS_SSI,	IF_EB("\033[22;1t", ESC_STR "[22;1t")},
+    {KS_SRI,	IF_EB("\033[23;1t", ESC_STR "[23;1t")},
 #  if (defined(UNIX) || defined(VMS))
-    {(int)KS_FD,	IF_EB("\033[?1004l", ESC_STR "[?1004l")},
-    {(int)KS_FE,	IF_EB("\033[?1004h", ESC_STR "[?1004h")},
+    {KS_FD,	IF_EB("\033[?1004l", ESC_STR "[?1004l")},
+    {KS_FE,	IF_EB("\033[?1004h", ESC_STR "[?1004h")},
 #  endif
 
     {K_UP,		IF_EB("\033O*A", ESC_STR "O*A")},
@@ -1017,18 +1017,18 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * iris-ansi for Silicon Graphics machines.
  */
-    {(int)KS_NAME,	"iris-ansi"},
-    {(int)KS_CE,	"\033[K"},
-    {(int)KS_CD,	"\033[J"},
-    {(int)KS_AL,	"\033[L"},
+    {KS_NAME,	"iris-ansi"},
+    {KS_CE,	"\033[K"},
+    {KS_CD,	"\033[J"},
+    {KS_AL,	"\033[L"},
 #  ifdef TERMINFO
-    {(int)KS_CAL,	"\033[%p1%dL"},
+    {KS_CAL,	"\033[%p1%dL"},
 #  else
     {(int)KS_CAL,	"\033[%dL"},
 #  endif
-    {(int)KS_DL,	"\033[M"},
+    {KS_DL,	"\033[M"},
 #  ifdef TERMINFO
-    {(int)KS_CDL,	"\033[%p1%dM"},
+    {KS_CDL,	"\033[%p1%dM"},
 #  else
     {(int)KS_CDL,	"\033[%dM"},
 #  endif
@@ -1039,53 +1039,53 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CS,	"\033[%i%d;%dr"},
 #  endif
 #endif
-    {(int)KS_CL,	"\033[H\033[2J"},
-    {(int)KS_VE,	"\033[9/y\033[12/y"},	// These aren't documented
-    {(int)KS_VS,	"\033[10/y\033[=1h\033[=2l"}, // These aren't documented
-    {(int)KS_TI,	"\033[=6h"},
-    {(int)KS_TE,	"\033[=6l"},
-    {(int)KS_SE,	"\033[21;27m"},
-    {(int)KS_SO,	"\033[1;7m"},
-    {(int)KS_ME,	"\033[m"},
-    {(int)KS_MR,	"\033[7m"},
-    {(int)KS_MD,	"\033[1m"},
-    {(int)KS_CCO,	"8"},			// allow 8 colors
-    {(int)KS_CZH,	"\033[3m"},		// italic mode on
-    {(int)KS_CZR,	"\033[23m"},		// italic mode off
-    {(int)KS_US,	"\033[4m"},		// underline on
-    {(int)KS_UE,	"\033[24m"},		// underline off
+    {KS_CL,	"\033[H\033[2J"},
+    {KS_VE,	"\033[9/y\033[12/y"},	// These aren't documented
+    {KS_VS,	"\033[10/y\033[=1h\033[=2l"}, // These aren't documented
+    {KS_TI,	"\033[=6h"},
+    {KS_TE,	"\033[=6l"},
+    {KS_SE,	"\033[21;27m"},
+    {KS_SO,	"\033[1;7m"},
+    {KS_ME,	"\033[m"},
+    {KS_MR,	"\033[7m"},
+    {KS_MD,	"\033[1m"},
+    {KS_CCO,	"8"},			// allow 8 colors
+    {KS_CZH,	"\033[3m"},		// italic mode on
+    {KS_CZR,	"\033[23m"},		// italic mode off
+    {KS_US,	"\033[4m"},		// underline on
+    {KS_UE,	"\033[24m"},		// underline off
 #  ifdef TERMINFO
-    {(int)KS_CAB,	"\033[4%p1%dm"},    // set background color (ANSI)
-    {(int)KS_CAF,	"\033[3%p1%dm"},    // set foreground color (ANSI)
-    {(int)KS_CSB,	"\033[102;%p1%dm"}, // set screen background color
-    {(int)KS_CSF,	"\033[101;%p1%dm"}, // set screen foreground color
+    {KS_CAB,	"\033[4%p1%dm"},    // set background color (ANSI)
+    {KS_CAF,	"\033[3%p1%dm"},    // set foreground color (ANSI)
+    {KS_CSB,	"\033[102;%p1%dm"}, // set screen background color
+    {KS_CSF,	"\033[101;%p1%dm"}, // set screen foreground color
 #  else
     {(int)KS_CAB,	"\033[4%dm"},	    // set background color (ANSI)
     {(int)KS_CAF,	"\033[3%dm"},	    // set foreground color (ANSI)
     {(int)KS_CSB,	"\033[102;%dm"},    // set screen background color
     {(int)KS_CSF,	"\033[101;%dm"},    // set screen foreground color
 #  endif
-    {(int)KS_MS,	"y"},		// guessed
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
+    {KS_MS,	"y"},		// guessed
+    {KS_UT,	"y"},		// guessed
+    {KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
+    {KS_CM,	"\033[%i%p1%d;%p2%dH"},
 #  else
     {(int)KS_CM,	"\033[%i%d;%dH"},
 #  endif
-    {(int)KS_SR,	"\033M"},
+    {KS_SR,	"\033M"},
 #  ifdef TERMINFO
-    {(int)KS_CRI,	"\033[%p1%dC"},
+    {KS_CRI,	"\033[%p1%dC"},
 #  else
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
-    {(int)KS_CIS,	"\033P3.y"},
-    {(int)KS_CIE,	"\234"},    // ST "String Terminator"
-    {(int)KS_TS,	"\033P1.y"},
-    {(int)KS_FS,	"\234"},    // ST "String Terminator"
+    {KS_CIS,	"\033P3.y"},
+    {KS_CIE,	"\234"},    // ST "String Terminator"
+    {KS_TS,	"\033P1.y"},
+    {KS_FS,	"\234"},    // ST "String Terminator"
 #  ifdef TERMINFO
-    {(int)KS_CWS,	"\033[203;%p1%d;%p2%d/y"},
-    {(int)KS_CWP,	"\033[205;%p1%d;%p2%d/y"},
+    {KS_CWS,	"\033[203;%p1%d;%p2%d/y"},
+    {KS_CWP,	"\033[205;%p1%d;%p2%d/y"},
 #  else
     {(int)KS_CWS,	"\033[203;%d;%d/y"},
     {(int)KS_CWP,	"\033[205;%d;%d/y"},
@@ -1133,97 +1133,97 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * for debugging
  */
-    {(int)KS_NAME,	"debug"},
-    {(int)KS_CE,	"[CE]"},
-    {(int)KS_CD,	"[CD]"},
-    {(int)KS_AL,	"[AL]"},
+    {KS_NAME,	"debug"},
+    {KS_CE,	"[CE]"},
+    {KS_CD,	"[CD]"},
+    {KS_AL,	"[AL]"},
 #  ifdef TERMINFO
-    {(int)KS_CAL,	"[CAL%p1%d]"},
+    {KS_CAL,	"[CAL%p1%d]"},
 #  else
     {(int)KS_CAL,	"[CAL%d]"},
 #  endif
-    {(int)KS_DL,	"[DL]"},
+    {KS_DL,	"[DL]"},
 #  ifdef TERMINFO
-    {(int)KS_CDL,	"[CDL%p1%d]"},
+    {KS_CDL,	"[CDL%p1%d]"},
 #  else
     {(int)KS_CDL,	"[CDL%d]"},
 #  endif
 #  ifdef TERMINFO
-    {(int)KS_CS,	"[%p1%dCS%p2%d]"},
+    {KS_CS,	"[%p1%dCS%p2%d]"},
 #  else
     {(int)KS_CS,	"[%dCS%d]"},
 #  endif
 #  ifdef TERMINFO
-    {(int)KS_CSV,	"[%p1%dCSV%p2%d]"},
+    {KS_CSV,	"[%p1%dCSV%p2%d]"},
 #  else
     {(int)KS_CSV,	"[%dCSV%d]"},
 #  endif
 #  ifdef TERMINFO
-    {(int)KS_CAB,	"[CAB%p1%d]"},
-    {(int)KS_CAF,	"[CAF%p1%d]"},
-    {(int)KS_CSB,	"[CSB%p1%d]"},
-    {(int)KS_CSF,	"[CSF%p1%d]"},
+    {KS_CAB,	"[CAB%p1%d]"},
+    {KS_CAF,	"[CAF%p1%d]"},
+    {KS_CSB,	"[CSB%p1%d]"},
+    {KS_CSF,	"[CSF%p1%d]"},
 #  else
     {(int)KS_CAB,	"[CAB%d]"},
     {(int)KS_CAF,	"[CAF%d]"},
     {(int)KS_CSB,	"[CSB%d]"},
     {(int)KS_CSF,	"[CSF%d]"},
 #  endif
-    {(int)KS_CAU,	"[CAU%d]"},
-    {(int)KS_OP,	"[OP]"},
-    {(int)KS_LE,	"[LE]"},
-    {(int)KS_CL,	"[CL]"},
-    {(int)KS_VI,	"[VI]"},
-    {(int)KS_VE,	"[VE]"},
-    {(int)KS_VS,	"[VS]"},
-    {(int)KS_ME,	"[ME]"},
-    {(int)KS_MR,	"[MR]"},
-    {(int)KS_MB,	"[MB]"},
-    {(int)KS_MD,	"[MD]"},
-    {(int)KS_SE,	"[SE]"},
-    {(int)KS_SO,	"[SO]"},
-    {(int)KS_UE,	"[UE]"},
-    {(int)KS_US,	"[US]"},
-    {(int)KS_UCE,	"[UCE]"},
-    {(int)KS_UCS,	"[UCS]"},
-    {(int)KS_STE,	"[STE]"},
-    {(int)KS_STS,	"[STS]"},
-    {(int)KS_MS,	"[MS]"},
-    {(int)KS_UT,	"[UT]"},
-    {(int)KS_XN,	"[XN]"},
+    {KS_CAU,	"[CAU%d]"},
+    {KS_OP,	"[OP]"},
+    {KS_LE,	"[LE]"},
+    {KS_CL,	"[CL]"},
+    {KS_VI,	"[VI]"},
+    {KS_VE,	"[VE]"},
+    {KS_VS,	"[VS]"},
+    {KS_ME,	"[ME]"},
+    {KS_MR,	"[MR]"},
+    {KS_MB,	"[MB]"},
+    {KS_MD,	"[MD]"},
+    {KS_SE,	"[SE]"},
+    {KS_SO,	"[SO]"},
+    {KS_UE,	"[UE]"},
+    {KS_US,	"[US]"},
+    {KS_UCE,	"[UCE]"},
+    {KS_UCS,	"[UCS]"},
+    {KS_STE,	"[STE]"},
+    {KS_STS,	"[STS]"},
+    {KS_MS,	"[MS]"},
+    {KS_UT,	"[UT]"},
+    {KS_XN,	"[XN]"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	"[%p1%dCM%p2%d]"},
+    {KS_CM,	"[%p1%dCM%p2%d]"},
 #  else
     {(int)KS_CM,	"[%dCM%d]"},
 #  endif
-    {(int)KS_SR,	"[SR]"},
+    {KS_SR,	"[SR]"},
 #  ifdef TERMINFO
-    {(int)KS_CRI,	"[CRI%p1%d]"},
+    {KS_CRI,	"[CRI%p1%d]"},
 #  else
     {(int)KS_CRI,	"[CRI%d]"},
 #  endif
-    {(int)KS_VB,	"[VB]"},
-    {(int)KS_KS,	"[KS]"},
-    {(int)KS_KE,	"[KE]"},
-    {(int)KS_TI,	"[TI]"},
-    {(int)KS_TE,	"[TE]"},
-    {(int)KS_CIS,	"[CIS]"},
-    {(int)KS_CIE,	"[CIE]"},
-    {(int)KS_CSC,	"[CSC]"},
-    {(int)KS_CEC,	"[CEC]"},
-    {(int)KS_TS,	"[TS]"},
-    {(int)KS_FS,	"[FS]"},
+    {KS_VB,	"[VB]"},
+    {KS_KS,	"[KS]"},
+    {KS_KE,	"[KE]"},
+    {KS_TI,	"[TI]"},
+    {KS_TE,	"[TE]"},
+    {KS_CIS,	"[CIS]"},
+    {KS_CIE,	"[CIE]"},
+    {KS_CSC,	"[CSC]"},
+    {KS_CEC,	"[CEC]"},
+    {KS_TS,	"[TS]"},
+    {KS_FS,	"[FS]"},
 #  ifdef TERMINFO
-    {(int)KS_CWS,	"[%p1%dCWS%p2%d]"},
-    {(int)KS_CWP,	"[%p1%dCWP%p2%d]"},
+    {KS_CWS,	"[%p1%dCWS%p2%d]"},
+    {KS_CWP,	"[%p1%dCWP%p2%d]"},
 #  else
     {(int)KS_CWS,	"[%dCWS%d]"},
     {(int)KS_CWP,	"[%dCWP%d]"},
 #  endif
-    {(int)KS_CRV,	"[CRV]"},
-    {(int)KS_U7,	"[U7]"},
-    {(int)KS_RFG,	"[RFG]"},
-    {(int)KS_RBG,	"[RBG]"},
+    {KS_CRV,	"[CRV]"},
+    {KS_U7,	"[U7]"},
+    {KS_RFG,	"[RFG]"},
+    {KS_RBG,	"[RBG]"},
     {K_UP,		"[KU]"},
     {K_DOWN,		"[KD]"},
     {K_LEFT,		"[KL]"},
@@ -1320,10 +1320,10 @@ static struct builtin_term builtin_termcaps[] =
  * The most minimal terminal: only clear screen and cursor positioning
  * Always included.
  */
-    {(int)KS_NAME,	"dumb"},
-    {(int)KS_CL,	"\014"},
+    {KS_NAME,	"dumb"},
+    {KS_CL,	"\014"},
 #ifdef TERMINFO
-    {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
+    {KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
 						  ESC_STR "[%i%p1%d;%p2%dH")},
 #else
     {(int)KS_CM,	IF_EB("\033[%i%d;%dH", ESC_STR "[%i%d;%dH")},
@@ -1332,7 +1332,7 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * end marker
  */
-    {(int)KS_NAME,	NULL}
+    {KS_NAME,	NULL}
 
 };	// end of builtin_termcaps
 
@@ -1397,7 +1397,7 @@ termgui_mch_get_rgb(guicolor_T color)
  * It is initialized with the default values by parse_builtin_tcap().
  * The values can be changed by setting the option with the same name.
  */
-char_u *(term_strings[(int)KS_LAST + 1]);
+char_u *(term_strings[KS_LAST + 1]);
 
 static int	need_gather = FALSE;	    // need to fill termleader[]
 static char_u	termleader[256 + 1];	    // for check_termcode()
@@ -1493,7 +1493,7 @@ find_builtin_term(char_u *term)
     p = builtin_termcaps;
     while (p->bt_string != NULL)
     {
-	if (p->bt_entry == (int)KS_NAME)
+	if (p->bt_entry == KS_NAME)
 	{
 #ifdef UNIX
 	    if (STRCMP(p->bt_string, "iris-ansi") == 0 && vim_is_iris(term))
@@ -1534,9 +1534,9 @@ parse_builtin_tcap(char_u *term)
     if (p->bt_string == NULL)
 	return;
 
-    for (++p; p->bt_entry != (int)KS_NAME && p->bt_entry != BT_EXTRA_KEYS; ++p)
+    for (++p; p->bt_entry != KS_NAME && p->bt_entry != BT_EXTRA_KEYS; ++p)
     {
-	if ((int)p->bt_entry >= 0)	// KS_xx entry
+	if (p->bt_entry >= 0)	// KS_xx entry
 	{
 	    // Only set the value if it wasn't set yet.
 	    if (term_strings[p->bt_entry] == NULL
@@ -1786,7 +1786,7 @@ report_term_error(char *error_msg, char_u *term)
     mch_errmsg("\r\n");
     for (termp = &(builtin_termcaps[0]); termp->bt_string != NULL; ++termp)
     {
-	if (termp->bt_entry == (int)KS_NAME
+	if (termp->bt_entry == KS_NAME
 		&& STRCMP(termp->bt_string, "gui") != 0)
 	{
 #ifdef HAVE_TGETENT
@@ -2007,7 +2007,7 @@ set_termname(char_u *term)
 	    add_termcode((char_u *)"kb", (bs_p = (char_u *)CTRL_H_STR), FALSE);
 	if ((del_p == NULL || *del_p == NUL) &&
 					    (bs_p == NULL || *bs_p != DEL))
-	    add_termcode((char_u *)"kD", (char_u *)DEL_STR, FALSE);
+	    add_termcode((char_u *)"kD", DEL_STR, FALSE);
     }
 
 #if defined(UNIX) || defined(VMS)
@@ -2325,9 +2325,9 @@ add_termcap_entry(char_u *name, int force)
 	    {
 		key = TERMCAP2KEY(name[0], name[1]);
 		++termp;
-		while (termp->bt_entry != (int)KS_NAME)
+		while (termp->bt_entry != KS_NAME)
 		{
-		    if ((int)termp->bt_entry == key)
+		    if (termp->bt_entry == key)
 		    {
 			add_termcode(name, (char_u *)termp->bt_string,
 							  term_is_8bit(term));
@@ -3310,15 +3310,15 @@ get_bytes_from_buf(char_u *buf, char_u *bytes, int num_bytes)
 	{
 	    if (buf[len] == NUL || buf[len + 1] == NUL)	    // cannot happen?
 		return -1;
-	    if (buf[len++] == (int)KS_ZERO)
+	    if (buf[len++] == KS_ZERO)
 		c = NUL;
 	    // else it should be KS_SPECIAL; when followed by KE_FILLER c is
 	    // K_SPECIAL, or followed by KE_CSI and c must be CSI.
-	    if (buf[len++] == (int)KE_CSI)
+	    if (buf[len++] == KE_CSI)
 		c = CSI;
 	}
 	else if (c == CSI && buf[len] == KS_EXTRA
-					       && buf[len + 1] == (int)KE_CSI)
+					       && buf[len + 1] == KE_CSI)
 	    // CSI is stored as CSI KS_SPECIAL KE_CSI to avoid confusion with
 	    // the start of a special key, see add_to_input_buf_csi().
 	    len += 2;
@@ -4561,7 +4561,7 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
 	if (modifiers != 0)
 	{
 	    string[new_slen++] = K_SPECIAL;
-	    string[new_slen++] = (int)KS_MODIFIER;
+	    string[new_slen++] = KS_MODIFIER;
 	    string[new_slen++] = modifiers;
 	}
     }
@@ -4989,8 +4989,8 @@ handle_csi(
     {
 	handle_u7_response(arg, tp, csi_len);
 
-	key_name[0] = (int)KS_EXTRA;
-	key_name[1] = (int)KE_IGNORE;
+	key_name[0] = KS_EXTRA;
+	key_name[1] = KE_IGNORE;
 	*slen = csi_len;
     }
 
@@ -5006,8 +5006,8 @@ handle_csi(
 # endif
 	apply_autocmds(EVENT_TERMRESPONSE,
 					NULL, NULL, FALSE, curbuf);
-	key_name[0] = (int)KS_EXTRA;
-	key_name[1] = (int)KE_IGNORE;
+	key_name[0] = KS_EXTRA;
+	key_name[1] = KE_IGNORE;
     }
 
     // Check blinking cursor from xterm:
@@ -5025,8 +5025,8 @@ handle_csi(
 	initial_cursor_blink = (arg[1] == '1');
 	rbm_status.tr_progress = STATUS_GOT;
 	LOG_TR(("Received cursor blinking mode response: %s", tp));
-	key_name[0] = (int)KS_EXTRA;
-	key_name[1] = (int)KE_IGNORE;
+	key_name[0] = KS_EXTRA;
+	key_name[1] = KE_IGNORE;
 	*slen = csi_len;
 # ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMBLINKRESP, tp, *slen);
@@ -5041,8 +5041,8 @@ handle_csi(
 	winpos_x = arg[1];
 	winpos_y = arg[2];
 	// got finished code: consume it
-	key_name[0] = (int)KS_EXTRA;
-	key_name[1] = (int)KE_IGNORE;
+	key_name[0] = KS_EXTRA;
+	key_name[1] = KE_IGNORE;
 	*slen = csi_len;
 
 	if (--did_request_winpos <= 0)
@@ -5145,8 +5145,8 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		}
 
 		// got finished code: consume it
-		key_name[0] = (int)KS_EXTRA;
-		key_name[1] = (int)KE_IGNORE;
+		key_name[0] = KS_EXTRA;
+		key_name[1] = KE_IGNORE;
 		*slen = i + 1 + (tp[i] == ESC);
 # ifdef FEAT_EVAL
 		set_vim_var_string(is_bg ? VV_TERMRBGRESP
@@ -5197,8 +5197,8 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	    {
 		if (i - j >= 3)
 		    got_code_from_term(tp + j, i);
-		key_name[0] = (int)KS_EXTRA;
-		key_name[1] = (int)KE_IGNORE;
+		key_name[0] = KS_EXTRA;
+		key_name[1] = KE_IGNORE;
 		*slen = i + 1 + (tp[i] == ESC);
 		break;
 	    }
@@ -5235,8 +5235,8 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		rcs_status.tr_progress = STATUS_GOT;
 		LOG_TR(("Received cursor shape response: %s", tp));
 
-		key_name[0] = (int)KS_EXTRA;
-		key_name[1] = (int)KE_IGNORE;
+		key_name[0] = KS_EXTRA;
+		key_name[1] = KE_IGNORE;
 		*slen = i + 1;
 # ifdef FEAT_EVAL
 		set_vim_var_string(VV_TERMSTYLERESP, tp, *slen);
@@ -5586,14 +5586,14 @@ check_termcode(
 	 * so that we know which window to scroll later.
 	 */
 	if (gui.in_use
-		&& key_name[0] == (int)KS_EXTRA
-		&& (key_name[1] == (int)KE_X1MOUSE
-		    || key_name[1] == (int)KE_X2MOUSE
-		    || key_name[1] == (int)KE_MOUSEMOVE_XY
-		    || key_name[1] == (int)KE_MOUSELEFT
-		    || key_name[1] == (int)KE_MOUSERIGHT
-		    || key_name[1] == (int)KE_MOUSEDOWN
-		    || key_name[1] == (int)KE_MOUSEUP))
+		&& key_name[0] == KS_EXTRA
+		&& (key_name[1] == KE_X1MOUSE
+		    || key_name[1] == KE_X2MOUSE
+		    || key_name[1] == KE_MOUSEMOVE_XY
+		    || key_name[1] == KE_MOUSELEFT
+		    || key_name[1] == KE_MOUSERIGHT
+		    || key_name[1] == KE_MOUSEDOWN
+		    || key_name[1] == KE_MOUSEUP))
 	{
 	    char_u	bytes[6];
 	    int		num_bytes = get_bytes_from_buf(tp + slen, bytes, 4);
@@ -5604,8 +5604,8 @@ check_termcode(
 	    mouse_row = 128 * (bytes[2] - ' ' - 1) + bytes[3] - ' ' - 1;
 	    slen += num_bytes;
 	    // equal to K_MOUSEMOVE
-	    if (key_name[1] == (int)KE_MOUSEMOVE_XY)
-		key_name[1] = (int)KE_MOUSEMOVE;
+	    if (key_name[1] == KE_MOUSEMOVE_XY)
+		key_name[1] = KE_MOUSEMOVE;
 	}
 	else
 #endif
@@ -5659,7 +5659,7 @@ check_termcode(
 	 * new value of the scrollbar.
 	 */
 # ifdef FEAT_MENU
-	else if (key_name[0] == (int)KS_MENU)
+	else if (key_name[0] == KS_MENU)
 	{
 	    long_u	val;
 	    int		num_bytes = get_long_from_buf(tp + slen, &val);
@@ -5674,12 +5674,12 @@ check_termcode(
 	    if (check_menu_pointer(root_menu, current_menu) == FAIL)
 	    {
 		key_name[0] = KS_EXTRA;
-		key_name[1] = (int)KE_IGNORE;
+		key_name[1] = KE_IGNORE;
 	    }
 	}
 # endif
 # ifdef FEAT_GUI_TABLINE
-	else if (key_name[0] == (int)KS_TABLINE)
+	else if (key_name[0] == KS_TABLINE)
 	{
 	    // Selecting tabline tab or using its menu.
 	    char_u	bytes[6];
@@ -5692,7 +5692,7 @@ check_termcode(
 		current_tab = -1;
 	    slen += num_bytes;
 	}
-	else if (key_name[0] == (int)KS_TABMENU)
+	else if (key_name[0] == KS_TABMENU)
 	{
 	    // Selecting tabline tab or using its menu.
 	    char_u	bytes[6];
@@ -5780,7 +5780,7 @@ check_termcode(
 		    did_cursorhold = TRUE;
 		    focus_state = TRUE;
 		}
-		key_name[1] = (int)KE_IGNORE;
+		key_name[1] = KE_IGNORE;
 	    }
 	    else if (key_name[1] == KE_FOCUSLOST)
 	    {
@@ -5790,7 +5790,7 @@ check_termcode(
 		    did_cursorhold = TRUE;
 		    focus_state = FALSE;
 		}
-		key_name[1] = (int)KE_IGNORE;
+		key_name[1] = KE_IGNORE;
 	    }
 	}
 #endif
@@ -5973,8 +5973,8 @@ replace_termcodes(
 		{
 		    src += 5;
 		    result[dlen++] = K_SPECIAL;
-		    result[dlen++] = (int)KS_EXTRA;
-		    result[dlen++] = (int)KE_SNR;
+		    result[dlen++] = KS_EXTRA;
+		    result[dlen++] = KE_SNR;
 		    sprintf((char *)result + dlen, "%ld",
 						    (long)current_sctx.sc_sid);
 		    dlen += (int)STRLEN(result + dlen);
@@ -6091,7 +6091,7 @@ replace_termcodes(
 	    {
 		result[dlen++] = K_SPECIAL;
 		result[dlen++] = KS_EXTRA;
-		result[dlen++] = (int)KE_CSI;
+		result[dlen++] = KE_CSI;
 	    }
 # endif
 	    else

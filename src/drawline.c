@@ -904,7 +904,7 @@ win_line(
 #ifdef FEAT_SEARCH_EXTRA
     if (!number_only)
     {
-	v = (long)(ptr - line);
+	v = (ptr - line);
 	area_highlighting |= prepare_search_hl_line(wp, lnum, (colnr_T)v,
 					      &line, &screen_search_hl,
 					      &search_attr);
@@ -1322,7 +1322,7 @@ win_line(
 #endif
 		)
 	{
-	    screen_line(screen_row, wp->w_wincol, col, -(int)wp->w_width,
+	    screen_line(screen_row, wp->w_wincol, col, -wp->w_width,
 							    screen_line_flags);
 	    // Pretend we have finished updating the window.  Except when
 	    // 'cursorcolumn' is set.
@@ -1356,7 +1356,7 @@ win_line(
 		// Check for start/end of 'hlsearch' and other matches.
 		// After end, check for start/end of next match.
 		// When another match, have to check for start again.
-		v = (long)(ptr - line);
+		v = (ptr - line);
 		search_attr = update_search_hl(wp, lnum, (colnr_T)v, &line,
 				      &screen_search_hl, &has_match_conc,
 				      &match_conc, did_line_attr, lcs_eol_one);
@@ -1473,7 +1473,7 @@ win_line(
 		    save_did_emsg = did_emsg;
 		    did_emsg = FALSE;
 
-		    v = (long)(ptr - line);
+		    v = (ptr - line);
 		    if (v == prev_syntax_col)
 			// at same column again
 			syntax_attr = prev_syntax_attr;
@@ -1883,7 +1883,7 @@ win_line(
 		// Only do this when there is no syntax highlighting, the
 		// @Spell cluster is not used or the current syntax item
 		// contains the @Spell cluster.
-		v = (long)(ptr - line);
+		v = (ptr - line);
 		if (has_spell && v >= word_end && v > cur_checked_col)
 		{
 		    spell_attr = 0;
@@ -2627,7 +2627,7 @@ win_line(
 	    // flag to indicate whether prevcol equals startcol of search_hl or
 	    // one of the matches
 	    int prevcol_hl_flag = get_prevcol_hl_flag(wp, &screen_search_hl,
-					      (long)(ptr - line) - (c == NUL));
+					      (ptr - line) - (c == NUL));
 #endif
 	    // Invert at least one char, used for Visual and empty line or
 	    // highlight match at end of line. If it's beyond the last
@@ -2690,7 +2690,7 @@ win_line(
 		    // Use attributes from match with highest priority among
 		    // 'search_hl' and the match list.
 		    get_search_match_hl(wp, &screen_search_hl,
-					       (long)(ptr - line), &char_attr);
+					       (ptr - line), &char_attr);
 		}
 #endif
 		ScreenAttrs[off] = char_attr;
@@ -2783,7 +2783,7 @@ win_line(
 #endif
 
 	    screen_line(screen_row, wp->w_wincol, col,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 	    row++;
 
 	    // Update w_cline_height and w_cline_folded if the cursor line was
@@ -3084,7 +3084,7 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    screen_line(screen_row, wp->w_wincol, col - boguscols,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 	    boguscols = 0;
 #else
 	    screen_line(screen_row, wp->w_wincol, col,

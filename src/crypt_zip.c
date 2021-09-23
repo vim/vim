@@ -148,7 +148,7 @@ crypt_zip_decode(
     for (i = 0; i < len; ++i)
     {
 	temp = (short_u)zs->keys[2] | 2;
-	temp = (int)(((unsigned)(temp * (temp ^ 1U)) >> 8) & 0xff);
+	temp = (int)(((temp * (temp ^ 1U)) >> 8) & 0xff);
 	UPDATE_KEYS_ZIP(zs->keys, to[i] = from[i] ^ temp);
     }
 }

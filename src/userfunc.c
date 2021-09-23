@@ -1761,7 +1761,7 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
     {
 	fname_buf[0] = K_SPECIAL;
 	fname_buf[1] = KS_EXTRA;
-	fname_buf[2] = (int)KE_SNR;
+	fname_buf[2] = KE_SNR;
 	i = 3;
 	if (eval_fname_sid(name))	// "<SID>" or "s:"
 	{
@@ -1808,7 +1808,7 @@ find_func_with_sid(char_u *name, int sid)
 
     buffer[0] = K_SPECIAL;
     buffer[1] = KS_EXTRA;
-    buffer[2] = (int)KE_SNR;
+    buffer[2] = KE_SNR;
     vim_snprintf((char *)buffer + 3, sizeof(buffer) - 3, "%ld_%s",
 							      (long)sid, name);
     hi = hash_find(&func_hashtab, buffer);
@@ -2903,7 +2903,7 @@ delete_script_functions(int sid)
 
     buf[0] = K_SPECIAL;
     buf[1] = KS_EXTRA;
-    buf[2] = (int)KE_SNR;
+    buf[2] = KE_SNR;
     sprintf((char *)buf + 3, "%d_", sid);
     len = STRLEN(buf);
 
@@ -3520,7 +3520,7 @@ trans_function_name(
     // Check for hard coded <SNR>: already translated function ID (from a user
     // command).
     if ((*pp)[0] == K_SPECIAL && (*pp)[1] == KS_EXTRA
-						   && (*pp)[2] == (int)KE_SNR)
+						   && (*pp)[2] == KE_SNR)
     {
 	*pp += 3;
 	len = get_id_len(pp) + 3;
@@ -3626,7 +3626,7 @@ trans_function_name(
 	    // Change "<SNR>" to the byte sequence.
 	    name[0] = K_SPECIAL;
 	    name[1] = KS_EXTRA;
-	    name[2] = (int)KE_SNR;
+	    name[2] = KE_SNR;
 	    mch_memmove(name + 3, name + 5, STRLEN(name + 5) + 1);
 	}
 	goto theend;
@@ -3729,7 +3729,7 @@ trans_function_name(
 	{
 	    name[0] = K_SPECIAL;
 	    name[1] = KS_EXTRA;
-	    name[2] = (int)KE_SNR;
+	    name[2] = KE_SNR;
 	    if (vim9script || lead > 3)	// If it's "<SID>"
 		STRCPY(name + 3, sid_buf);
 	}

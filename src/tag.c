@@ -1225,7 +1225,7 @@ tag_strnicmp(char_u *s1, char_u *s2, size_t len)
 
     while (len > 0)
     {
-	i = (int)TOUPPER_ASC(*s1) - (int)TOUPPER_ASC(*s2);
+	i = TOUPPER_ASC(*s1) - TOUPPER_ASC(*s2);
 	if (i != 0)
 	    return i;			// this character different
 	if (*s1 == NUL)
@@ -2293,7 +2293,7 @@ parse_line:
 		     */
 		    i = (int)tagp.tagname[0];
 		    if (sortic)
-			i = (int)TOUPPER_ASC(tagp.tagname[0]);
+			i = TOUPPER_ASC(tagp.tagname[0]);
 		    if (i < search_info.low_char || i > search_info.high_char)
 			sort_error = TRUE;
 
@@ -2802,7 +2802,7 @@ findtag_end:
 			if (*p == TAG_SEP)
 			    *p = NUL;
 		}
-		matches[match_count++] = (char_u *)mfp;
+		matches[match_count++] = mfp;
 	    }
 	}
 
@@ -3735,7 +3735,7 @@ expand_tag_fname(char_u *fname, char_u *tag_fname, int expand)
     {
 	ExpandInit(&xpc);
 	xpc.xp_context = EXPAND_FILES;
-	expanded_fname = ExpandOne(&xpc, (char_u *)fname, NULL,
+	expanded_fname = ExpandOne(&xpc, fname, NULL,
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
 	if (expanded_fname != NULL)
 	    fname = expanded_fname;
@@ -4004,7 +4004,7 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
     long	is_static;
 
     ret = find_tags(pat, &num_matches, &matches,
-				TAG_REGEXP | TAG_NOIC, (int)MAXCOL, buf_fname);
+				TAG_REGEXP | TAG_NOIC, MAXCOL, buf_fname);
     if (ret == OK && num_matches > 0)
     {
 	for (i = 0; i < num_matches; ++i)

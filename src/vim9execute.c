@@ -5099,7 +5099,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_EXECCONCAT:
 		smsg("%s%4d EXECCONCAT %lld", pfx, current,
-					      (varnumber_T)iptr->isn_arg.number);
+					      iptr->isn_arg.number);
 		break;
 	    case ISN_ECHO:
 		{
@@ -5112,19 +5112,19 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_EXECUTE:
 		smsg("%s%4d EXECUTE %lld", pfx, current,
-					  (varnumber_T)(iptr->isn_arg.number));
+					  (iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOMSG:
 		smsg("%s%4d ECHOMSG %lld", pfx, current,
-					  (varnumber_T)(iptr->isn_arg.number));
+					  (iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOCONSOLE:
 		smsg("%s%4d ECHOCONSOLE %lld", pfx, current,
-					  (varnumber_T)(iptr->isn_arg.number));
+					  (iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOERR:
 		smsg("%s%4d ECHOERR %lld", pfx, current,
-					  (varnumber_T)(iptr->isn_arg.number));
+					  (iptr->isn_arg.number));
 		break;
 	    case ISN_LOAD:
 		{
@@ -5134,7 +5134,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 							  + STACK_FRAME_SIZE));
 		    else
 			smsg("%s%4d LOAD $%lld", pfx, current,
-					  (varnumber_T)(iptr->isn_arg.number));
+					  (iptr->isn_arg.number));
 		}
 		break;
 	    case ISN_LOADOUTER:
@@ -5312,7 +5312,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    // constants
 	    case ISN_PUSHNR:
 		smsg("%s%4d PUSHNR %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					    (iptr->isn_arg.number));
 		break;
 	    case ISN_PUSHBOOL:
 	    case ISN_PUSHSPEC:
@@ -5397,11 +5397,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_NEWLIST:
 		smsg("%s%4d NEWLIST size %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					    (iptr->isn_arg.number));
 		break;
 	    case ISN_NEWDICT:
 		smsg("%s%4d NEWDICT size %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					    (iptr->isn_arg.number));
 		break;
 
 	    // function call

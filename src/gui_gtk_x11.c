@@ -765,7 +765,7 @@ property_event(GtkWidget *widget,
 	       gpointer data UNUSED)
 {
     if (event->type == GDK_PROPERTY_NOTIFY
-	    && event->state == (int)GDK_PROPERTY_NEW_VALUE
+	    && event->state == GDK_PROPERTY_NEW_VALUE
 	    && GDK_WINDOW_XID(event->window) == commWindow
 	    && GET_X_ATOM(event->atom) == commProperty)
     {
@@ -1160,7 +1160,7 @@ key_press_event(GtkWidget *widget UNUSED,
 	    {
 		// Turn CSI into K_CSI.
 		*d++ = KS_EXTRA;
-		*d++ = (int)KE_CSI;
+		*d++ = KE_CSI;
 	    }
 	}
 	len = d - string;
@@ -3471,13 +3471,13 @@ gui_gtk_set_selection_targets(void)
 	    targets[j++] = selection_targets[i];
     }
 
-    gtk_selection_clear_targets(gui.drawarea, (GdkAtom)GDK_SELECTION_PRIMARY);
-    gtk_selection_clear_targets(gui.drawarea, (GdkAtom)clip_plus.gtk_sel_atom);
+    gtk_selection_clear_targets(gui.drawarea, GDK_SELECTION_PRIMARY);
+    gtk_selection_clear_targets(gui.drawarea, clip_plus.gtk_sel_atom);
     gtk_selection_add_targets(gui.drawarea,
-			      (GdkAtom)GDK_SELECTION_PRIMARY,
+			      GDK_SELECTION_PRIMARY,
 			      targets, n_targets);
     gtk_selection_add_targets(gui.drawarea,
-			      (GdkAtom)clip_plus.gtk_sel_atom,
+			      clip_plus.gtk_sel_atom,
 			      targets, n_targets);
 }
 

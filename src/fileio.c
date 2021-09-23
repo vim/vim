@@ -1580,7 +1580,7 @@ retry:
 		// move the linerest to before the converted characters
 		line_start = ptr - linerest;
 		mch_memmove(line_start, buffer, (size_t)linerest);
-		size = (long)((char_u *)top - ptr);
+		size = ((char_u *)top - ptr);
 	    }
 #endif
 
@@ -1978,7 +1978,7 @@ retry:
 		// move the linerest to before the converted characters
 		line_start = dest - linerest;
 		mch_memmove(line_start, buffer, (size_t)linerest);
-		size = (long)((ptr + real_size) - dest);
+		size = ((ptr + real_size) - dest);
 		ptr = dest;
 	    }
 	    else if (enc_utf8 && !curbuf->b_p_bin)
@@ -2253,7 +2253,7 @@ rewind_retry:
 		}
 	    }
 	}
-	linerest = (long)(ptr - line_start);
+	linerest = (ptr - line_start);
 	ui_breakcheck();
     }
 
@@ -4932,10 +4932,10 @@ readdir_core(
 # ifdef FEAT_EVAL
 	readdirex_sort = sort;
 	if (withattr)
-	    qsort((void*)gap->ga_data, (size_t)gap->ga_len, sizeof(dict_T*),
+	    qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(dict_T*),
 		    compare_readdirex_item);
 	else
-	    qsort((void*)gap->ga_data, (size_t)gap->ga_len, sizeof(char_u *),
+	    qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(char_u *),
 		    compare_readdir_item);
 # else
 	    sort_strings((char_u **)gap->ga_data, gap->ga_len);

@@ -387,7 +387,7 @@ PaintArrows(ScrollbarWidget sbw)
 	if ((int)thickness * 2 > (int)sbw->scrollbar.length)
 	{
 	    size = sbw->scrollbar.length / 2;
-	    off = (int)(thickness - size) / 2;
+	    off = (thickness - size) / 2;
 	}
 	else
 	{

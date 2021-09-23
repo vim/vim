@@ -712,7 +712,7 @@ find_exported(
 	}
 	funcname[0] = K_SPECIAL;
 	funcname[1] = KS_EXTRA;
-	funcname[2] = (int)KE_SNR;
+	funcname[2] = KE_SNR;
 	sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
 	*ufunc = find_func(funcname, FALSE, NULL);
 	if (funcname != buffer)

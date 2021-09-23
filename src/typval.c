@@ -920,7 +920,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 		break;
 	    }
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%lld",
-					    (varnumber_T)varp->vval.v_number);
+					    varp->vval.v_number);
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:

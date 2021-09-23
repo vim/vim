@@ -103,7 +103,7 @@ read_buffer(
     retval = readfile(
 	    read_stdin ? NULL : curbuf->b_ffname,
 	    read_stdin ? NULL : curbuf->b_fname,
-	    (linenr_T)line_count, (linenr_T)0, (linenr_T)MAXLNUM, eap,
+	    line_count, (linenr_T)0, (linenr_T)MAXLNUM, eap,
 	    flags | READ_BUFFER);
     if (retval == OK)
     {
@@ -1657,7 +1657,7 @@ do_bufdel(
 	     */
 	    if (bnr == curbuf->b_fnum)
 		do_current = bnr;
-	    else if (do_buffer_ext(command, DOBUF_FIRST, FORWARD, (int)bnr,
+	    else if (do_buffer_ext(command, DOBUF_FIRST, FORWARD, bnr,
 			  DOBUF_NOPOPUP | (forceit ? DOBUF_FORCEIT : 0)) == OK)
 		++deleted;
 
@@ -3775,7 +3775,7 @@ fileinfo(
     }
     else
     {
-	p = (char *)msg_trunc_attr(buffer, FALSE, 0);
+	p = msg_trunc_attr(buffer, FALSE, 0);
 	if (restart_edit != 0 || (msg_scrolled && !need_wait_return))
 	    // Need to repeat the message after redrawing when:
 	    // - When restart_edit is set (otherwise there will be a delay
@@ -4364,7 +4364,7 @@ build_stl_str_hl(
 		    }
 		}
 		else
-		    n = (long)(p - t) - stl_items[stl_groupitem[groupdepth]]
+		    n = (p - t) - stl_items[stl_groupitem[groupdepth]]
 							       .stl_maxwid + 1;
 
 		*t = '<';
@@ -4400,7 +4400,7 @@ build_stl_str_hl(
 		    l = (n - l) * MB_CHAR2LEN(fillchar);
 		    mch_memmove(t + l, t, (size_t)(p - t));
 		    if (p + l >= out + outlen)
-			l = (long)((out + outlen) - p - 1);
+			l = ((out + outlen) - p - 1);
 		    p += l;
 		    for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
 			stl_items[n].stl_start += l;

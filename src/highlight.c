@@ -3413,7 +3413,7 @@ highlight_changed(void)
     /*
      * Clear all attributes.
      */
-    for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
+    for (hlf = 0; hlf < HLF_COUNT; ++hlf)
 	highlight_attr[hlf] = 0;
 
     /*
@@ -3431,11 +3431,11 @@ highlight_changed(void)
 
 	while (*p)
 	{
-	    for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
+	    for (hlf = 0; hlf < HLF_COUNT; ++hlf)
 		if (hl_flags[hlf] == *p)
 		    break;
 	    ++p;
-	    if (hlf == (int)HLF_COUNT || *p == NUL)
+	    if (hlf == HLF_COUNT || *p == NUL)
 		return FAIL;
 
 	    /*
@@ -3482,15 +3482,15 @@ highlight_changed(void)
 				attr = syn_id2attr(id);
 				p = end - 1;
 #if defined(FEAT_STL_OPT) && defined(USER_HIGHLIGHT)
-				if (hlf == (int)HLF_SNC)
+				if (hlf == HLF_SNC)
 				    id_SNC = syn_get_final_id(id);
 # ifdef FEAT_TERMINAL
-				else if (hlf == (int)HLF_ST)
+				else if (hlf == HLF_ST)
 				    id_ST = syn_get_final_id(id);
-				else if (hlf == (int)HLF_STNC)
+				else if (hlf == HLF_STNC)
 				    id_STNC = syn_get_final_id(id);
 # endif
-				else if (hlf == (int)HLF_S)
+				else if (hlf == HLF_S)
 				    id_S = syn_get_final_id(id);
 #endif
 				break;

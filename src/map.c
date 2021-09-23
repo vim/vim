@@ -1703,7 +1703,7 @@ vim_unescape_csi(char_u *p)
 	    s += 3;
 	}
 	else if ((s[0] == K_SPECIAL || s[0] == CSI)
-				   && s[1] == KS_EXTRA && s[2] == (int)KE_CSI)
+				   && s[1] == KS_EXTRA && s[2] == KE_CSI)
 	{
 	    *d++ = CSI;
 	    s += 3;
@@ -1766,7 +1766,7 @@ makemap(
 		// they probably don't work when loaded again
 		for (p = mp->m_str; *p != NUL; ++p)
 		    if (p[0] == K_SPECIAL && p[1] == KS_EXTRA
-						       && p[2] == (int)KE_SNR)
+						       && p[2] == KE_SNR)
 			break;
 		if (*p != NUL)
 		    continue;

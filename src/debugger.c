@@ -389,7 +389,7 @@ do_showbacktrace(char_u *cmd)
     }
 
     if (SOURCING_LNUM != 0)
-       smsg(_("line %ld: %s"), (long)SOURCING_LNUM, cmd);
+       smsg(_("line %ld: %s"), SOURCING_LNUM, cmd);
     else
        smsg(_("cmd: %s"), cmd);
 }
@@ -440,7 +440,7 @@ dbg_check_breakpoint(exarg_T *eap)
 	    // replace K_SNR with "<SNR>"
 	    if (debug_breakpoint_name[0] == K_SPECIAL
 		    && debug_breakpoint_name[1] == KS_EXTRA
-		    && debug_breakpoint_name[2] == (int)KE_SNR)
+		    && debug_breakpoint_name[2] == KE_SNR)
 		p = (char_u *)"<SNR>";
 	    else
 		p = (char_u *)"";
