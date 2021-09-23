@@ -647,4 +647,12 @@ func Test_command_not_implemented_E319()
   endif
 endfunc
 
+func Test_not_break_expression_register()
+  call setreg('=', '1+1')
+  if 0
+    put =1
+  endif
+  call assert_equal('1+1', getreg('=', 1))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
