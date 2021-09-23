@@ -2182,7 +2182,7 @@ f_getcharmod(typval_T *argvars UNUSED, typval_T *rettv)
 /*
  * Process messages that have been queued for netbeans or clientserver.
  * Also check if any jobs have ended.
- * These functions can call arbitrary vimscript and should only be called when
+ * These functions can call arbitrary Vim script and should only be called when
  * it is safe to do so.
  */
     void

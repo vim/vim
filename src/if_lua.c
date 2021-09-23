@@ -1853,7 +1853,7 @@ luaV_setvar(lua_State *L)
 	// Update the key
 	typval_T	tv;
 
-	// Convert the lua value to a vimscript type in the temporary variable
+	// Convert the lua value to a Vim script type in the temporary variable
 	lua_pushvalue(L, 4);
 	if (luaV_totypval(L, -1, &tv) == FAIL)
 	    return luaL_error(L, "Couldn't convert lua value");
