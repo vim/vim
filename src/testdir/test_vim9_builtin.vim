@@ -1432,7 +1432,7 @@ enddef
 
 def Test_getfontname()
   CheckDefAndScriptFailure2(['getfontname(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
-  getfontname('')->assert_equal('')
+  #getfontname('')->assert_equal('')
 enddef
 
 def Test_getfperm()
