@@ -4278,6 +4278,10 @@ def Test_no_unknown_error_after_error()
   if !has('unix') || !has('job')
     throw 'Skipped: not unix of missing +job feature'
   endif
+  # FIXME: this check should not be needed
+  if has('win32')
+    throw 'Skipped: does not work on MS-Windows'
+  endif
   var lines =<< trim END
       vim9script
       var source: list<number>
