@@ -1143,6 +1143,14 @@ au BufNewFile,BufRead Neomuttrc			setf neomuttrc
 " Netrc
 au BufNewFile,BufRead .netrc			setf netrc
 
+" Nginx
+au BufNewFile,BufRead *.nginx			setf nginx
+au BufNewFile,BufRead nginx*.conf			setf nginx
+au BufNewFile,BufRead *nginx.conf			setf nginx
+au BufNewFile,BufRead */etc/nginx/*			setf nginx
+au BufNewFile,BufRead */usr/local/nginx/conf/*			setf nginx
+au BufNewFile,BufRead */nginx/*.conf			setf nginx
+
 " Ninja file
 au BufNewFile,BufRead *.ninja			setf ninja
 
