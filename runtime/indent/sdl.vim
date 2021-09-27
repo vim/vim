@@ -14,6 +14,8 @@ let b:did_indent = 1
 setlocal indentexpr=GetSDLIndent()
 setlocal indentkeys+==~end,=~state,*<Return>
 
+let b:undo_indent = "setl inde< indk<"
+
 " Only define the function once.
 if exists("*GetSDLIndent")
 "  finish
