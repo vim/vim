@@ -37,7 +37,7 @@ if len(s:c)
   syn region c matchgroup=schemeComment start=/#>/ end=/<#/ contains=@c
 endif
 
-# SRFI 26
+" SRFI 26
 syn match schemeSyntax /\(([ \t\n]*\)\@<=\(cut\|cute\)\>/
 
 syn keyword schemeSyntax and-let*
