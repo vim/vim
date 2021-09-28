@@ -621,6 +621,9 @@ EXTERN char_u	*p_guifontset;	// 'guifontset'
 EXTERN char_u	*p_guifontwide;	// 'guifontwide'
 EXTERN int	p_guipty;	// 'guipty'
 #endif
+#ifdef FEAT_GUI_GTK
+EXTERN char_u	*p_guiligatures;// 'guiligatures'
+# endif
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 EXTERN long	p_ghr;		// 'guiheadroom'
 #endif

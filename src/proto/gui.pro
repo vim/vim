@@ -7,6 +7,7 @@ void gui_exit(int rc);
 void gui_shell_closed(void);
 int gui_init_font(char_u *font_list, int fontset);
 int gui_get_wide_font(void);
+void gui_set_ligatures(void);
 void gui_update_cursor(int force, int clear_selection);
 void gui_position_menu(void);
 int gui_get_base_width(void);

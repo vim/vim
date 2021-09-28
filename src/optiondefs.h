@@ -1205,6 +1205,19 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+
+
+    {"guiligatures", "gli", P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
+#if defined(FEAT_GUI_GTK)
+			    (char_u *)&p_guiligatures, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
+
+
     {"guiheadroom", "ghr",  P_NUM|P_VI_DEF,
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 			    (char_u *)&p_ghr, PV_NONE,

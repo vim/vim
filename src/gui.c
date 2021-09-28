@@ -460,6 +460,10 @@ gui_init_check(void)
     gui.scrollbar_width = gui.scrollbar_height = SB_DEFAULT_WIDTH;
     gui.prev_wrap = -1;
 
+# ifdef FEAT_GUI_GTK
+    CLEAR_FIELD(gui.ligatures_map);
+#endif
+
 #if defined(ALWAYS_USE_GUI) || defined(VIMDLL)
     result = OK;
 #else
@@ -1064,6 +1068,38 @@ gui_get_wide_font(void)
 #endif
     return OK;
 }
+
+#ifdef FEAT_GUI_GTK
+/*
+ * Set list of ascii characters that combined can create ligature.
+ * Store them in char map for quick access from gui_gtk2_draw_string.
+ */
+    void
+gui_set_ligatures(void)
+{
+    char_u	*p;
+
+    if (p_guiligatures != NULL && *p_guiligatures != NUL)
+    {
+	// Error check
+	for (p = p_guiligatures; *p != NUL; ++p)
+	{
+	    if (((*p) < 32) || ((*p) > 127)) {
+		emsg(_("E1240: ASCII code not in 32-127 range"));
+		return;
+	    }
+	}
+	// Store valid setting into ligatures_map
+	CLEAR_FIELD(gui.ligatures_map);
+	for (p = p_guiligatures; *p != NUL; ++p)
+	    gui.ligatures_map[*p] = 1;
+    }
+    else
+    {
+	CLEAR_FIELD(gui.ligatures_map);
+    }
+}
+#endif // FEAT_GUI_GTK
 
     static void
 gui_set_cursor(int row, int col)
