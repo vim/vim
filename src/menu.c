@@ -2830,9 +2830,27 @@ menu_translate_tab_and_shift(char_u *arg_start)
  * Get the information about a menu item in mode 'which'
  */
     static int
-menuitem_getinfo(vimmenu_T *menu, int modes, dict_T *dict)
+menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 {
     int		status;
+    list_T	*l;
+
+    if (*menu_name == NUL)
+    {
+	// Return all the top-level menus
+	vimmenu_T	*topmenu;
+
+	l = list_alloc();
+	if (l == NULL)
+	    return FAIL;
+
+	dict_add_list(dict, "submenus", l);
+	// get all the children.  Skip PopUp[nvoci].
+	for (topmenu = menu; topmenu != NULL; topmenu = topmenu->next)
+	    if (!menu_is_hidden(topmenu->dname))
+		list_append_string(l, topmenu->dname, -1);
+	return OK;
+    }
 
     if (menu_is_tearoff(menu->dname))		// skip tearoff menu item
 	return OK;
@@ -2903,9 +2921,9 @@ menuitem_getinfo(vimmenu_T *menu, int modes, dict_T *dict)
     // If there are submenus, add all the submenu display names
     if (status == OK && menu->children != NULL)
     {
-	list_T		*l = list_alloc();
 	vimmenu_T	*child;
 
+	l = list_alloc();
 	if (l == NULL)
 	    return FAIL;
 
@@ -2992,7 +3010,7 @@ f_menu_info(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (menu->modes & modes)
-	menuitem_getinfo(menu, modes, retdict);
+	menuitem_getinfo(menu_name, menu, modes, retdict);
 }
 
 #endif // FEAT_MENU

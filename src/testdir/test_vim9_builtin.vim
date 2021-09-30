@@ -201,6 +201,8 @@ def Test_appendbufline()
   CheckDefAndScriptFailure2(['appendbufline(1, [1], "x")'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 2')
   CheckDefAndScriptFailure2(['appendbufline(1, 1, {"a": 10})'], 'E1013: Argument 3: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 3')
   bnum->bufwinid()->win_gotoid()
+  appendbufline('', 0, 'numbers')
+  getline(1)->assert_equal('numbers')
   bwipe!
 enddef
 
@@ -326,6 +328,7 @@ enddef
 
 def Test_bufload()
   assert_fails('bufload([])', 'E1220:')
+  bufload('')->assert_equal(0)
 enddef
 
 def Test_bufloaded()
@@ -452,6 +455,10 @@ def Test_ch_getbufnr()
   else
     CheckDefAndScriptFailure2(['ch_getbufnr(1, "a")'], 'E1013: Argument 1: type mismatch, expected channel but got number', 'E1217: Channel or Job required for argument 1')
     CheckDefAndScriptFailure2(['ch_getbufnr(test_null_channel(), 1)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
+    # test empty string argument for ch_getbufnr()
+    var job: job = job_start(&shell)
+    job->ch_getbufnr('')->assert_equal(-1)
+    job_stop(job)
   endif
 enddef
 
@@ -488,6 +495,7 @@ def Test_ch_logfile()
   else
     assert_fails('ch_logfile(true)', 'E1174:')
     assert_fails('ch_logfile("foo", true)', 'E1174:')
+    ch_logfile('', '')->assert_equal(0)
 
     CheckDefAndScriptFailure2(['ch_logfile(1)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
     CheckDefAndScriptFailure2(['ch_logfile("a", true)'], 'E1013: Argument 2: type mismatch, expected string but got bool', 'E1174: String required for argument 2')
@@ -749,6 +757,11 @@ def Test_deletebufline()
   CheckDefAndScriptFailure2(['deletebufline([], 2)'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['deletebufline("a", [])'], 'E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1220: String or Number required for argument 2')
   CheckDefAndScriptFailure2(['deletebufline("a", 2, 0z10)'], 'E1013: Argument 3: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 3')
+  new
+  setline(1, ['one', 'two'])
+  deletebufline('', 1)
+  getline(1, '$')->assert_equal(['two'])
+  bwipe!
 enddef
 
 def Test_diff_filler()
@@ -2705,6 +2718,7 @@ def Test_remote_expr()
   CheckDefAndScriptFailure2(['remote_expr("a", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   CheckDefAndScriptFailure2(['remote_expr("a", "b", 3)'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
   CheckDefAndScriptFailure2(['remote_expr("a", "b", "c", "d")'], 'E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4')
+  CheckDefExecAndScriptFailure(['remote_expr("", "")'], 'E241: Unable to send to ')
 enddef
 
 def Test_remote_foreground()
@@ -2715,6 +2729,7 @@ def Test_remote_foreground()
 
   CheckDefAndScriptFailure2(['remote_foreground(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   assert_fails('remote_foreground("NonExistingServer")', 'E241:')
+  assert_fails('remote_foreground("")', 'E241:')
 enddef
 
 def Test_remote_peek()
@@ -2739,6 +2754,7 @@ def Test_remote_send()
   CheckDefAndScriptFailure2(['remote_send(1, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['remote_send("a", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   CheckDefAndScriptFailure2(['remote_send("a", "b", 3)'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
+  assert_fails('remote_send("", "")', 'E241:')
 enddef
 
 def Test_remote_startserver()
@@ -2985,6 +3001,7 @@ def Test_server2client()
   CheckDefAndScriptFailure2(['server2client(10, "b")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['server2client("a", 10)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   CheckDefExecAndScriptFailure(['server2client("", "a")'], 'E573: Invalid server id used')
+  CheckDefExecAndScriptFailure(['server2client("", "")'], 'E573: Invalid server id used')
 enddef
 
 def Test_shellescape()
@@ -3087,6 +3104,8 @@ def Test_setbufline()
   CheckDefAndScriptFailure2(['setbufline(1, [1], "x")'], 'E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 2')
   CheckDefAndScriptFailure2(['setbufline(1, 1, {"a": 10})'], 'E1013: Argument 3: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 3')
   bnum->bufwinid()->win_gotoid()
+  setbufline('', 1, 'nombres')
+  getline(1)->assert_equal('nombres')
   bw!
 enddef
 
@@ -3244,6 +3263,8 @@ def Test_sign_getplaced()
   CheckDefAndScriptFailure2(['sign_getplaced(["x"])'], 'E1013: Argument 1: type mismatch, expected string but got list<string>', 'E1220: String or Number required for argument 1')
   CheckDefAndScriptFailure2(['sign_getplaced(1, ["a"])'], 'E1013: Argument 2: type mismatch, expected dict<any> but got list<string>', 'E1206: Dictionary required for argument 2')
   CheckDefAndScriptFailure2(['sign_getplaced("a", 1.1)'], 'E1013: Argument 2: type mismatch, expected dict<any> but got float', 'E1206: Dictionary required for argument 2')
+  CheckDefExecAndScriptFailure(['sign_getplaced(bufnr(), {lnum: ""})'], 'E1030: Using a String as a Number:')
+  sign_getplaced('')->assert_equal([{signs: [], bufnr: bufnr()}])
 enddef
 
 def Test_sign_jump()
@@ -3258,12 +3279,14 @@ def Test_sign_place()
   CheckDefAndScriptFailure2(['sign_place(1, "b", 3, "d")'], 'E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3')
   CheckDefAndScriptFailure2(['sign_place(1, "b", "c", 1.1)'], 'E1013: Argument 4: type mismatch, expected string but got float', 'E1220: String or Number required for argument 4')
   CheckDefAndScriptFailure2(['sign_place(1, "b", "c", "d", [1])'], 'E1013: Argument 5: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 5')
+  CheckDefExecAndScriptFailure(['sign_place(0, "", "MySign", bufnr(), {lnum: ""})'], 'E1209: Invalid value for a line number: ""')
   assert_fails("sign_place(0, '', '', '')", 'E155:')
 enddef
 
 def Test_sign_placelist()
   CheckDefAndScriptFailure2(['sign_placelist("x")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1')
   CheckDefAndScriptFailure2(['sign_placelist({"a": 10})'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1211: List required for argument 1')
+  CheckDefExecAndScriptFailure(['sign_placelist([{"name": "MySign", "buffer": bufnr(), "lnum": ""}])'], 'E1209: Invalid value for a line number: ""')
 enddef
 
 def Test_sign_undefine()
