@@ -19,6 +19,8 @@ setlocal indentkeys+=0=else,0=if,0=of,0=import,0=then,0=type,0\|,0},0\],0),=-},0
 setlocal nolisp
 setlocal nosmartindent
 
+let b:undo_indent = "setl et< inde< indk< lisp< si<"
+
 " Only define the function once.
 if exists('*GetElmIndent')
 	finish
