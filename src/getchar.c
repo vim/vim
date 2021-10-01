@@ -1853,7 +1853,7 @@ vgetc(void)
 			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
 			// too.
 			c = vgetorpeek(TRUE);
-			if (vgetorpeek(TRUE) == (int)KE_CSI && c == KS_EXTRA)
+			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
 			    buf[i] = CSI;
 		    }
 		}
@@ -2521,7 +2521,7 @@ handle_mapping(
 		    if (*s == RM_SCRIPT
 			    && (mp->m_keys[0] != K_SPECIAL
 				|| mp->m_keys[1] != KS_EXTRA
-				|| mp->m_keys[2] != (int)KE_SNR))
+				|| mp->m_keys[2] != KE_SNR))
 			continue;
 
 		    // If one of the typed keys cannot be remapped, skip the
@@ -3139,7 +3139,7 @@ vgetorpeek(int advance)
 				    if (!VIM_ISWHITE(ptr[col]))
 					curwin->w_wcol = vcol;
 				    vcol += lbr_chartabsize(ptr, ptr + col,
-							       (colnr_T)vcol);
+							       vcol);
 				    if (has_mbyte)
 					col += (*mb_ptr2len)(ptr + col);
 				    else

@@ -2802,7 +2802,7 @@ findtag_end:
 			if (*p == TAG_SEP)
 			    *p = NUL;
 		}
-		matches[match_count++] = (char_u *)mfp;
+		matches[match_count++] = mfp;
 	    }
 	}
 
