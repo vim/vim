@@ -588,7 +588,7 @@ ex_hardcopy(exarg_T *eap)
      */
     if (mch_print_init(&settings,
 			curbuf->b_fname == NULL
-			    ? (char_u *)buf_spname(curbuf)
+			    ? buf_spname(curbuf)
 			    : curbuf->b_sfname == NULL
 				? curbuf->b_fname
 				: curbuf->b_sfname,
@@ -1931,7 +1931,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 	    break;
 
 	case PRT_DSC_ENDCOMMENTS_TYPE:
-	    // Wont find title or resource after this comment, stop searching
+	    // Won't find title or resource after this comment, stop searching
 	    seen_all = TRUE;
 	    break;
 

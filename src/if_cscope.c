@@ -1253,7 +1253,7 @@ cs_find_common(
 	int matched = 0;
 
 	// read output
-	cs_fill_results((char *)pat, totmatches, nummatches, &matches,
+	cs_fill_results(pat, totmatches, nummatches, &matches,
 							 &contexts, &matched);
 	vim_free(nummatches);
 	if (matches == NULL)
@@ -1745,7 +1745,7 @@ cs_parse_results(
      *
      *	<filename> <context> <line number> <pattern>
      */
-    if ((name = strtok((char *)buf, (const char *)" ")) == NULL)
+    if ((name = strtok(buf, (const char *)" ")) == NULL)
 	return NULL;
     if ((*context = strtok(NULL, (const char *)" ")) == NULL)
 	return NULL;
