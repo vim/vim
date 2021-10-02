@@ -10,10 +10,12 @@ if exists("b:current_syntax")
   finish
 endif
 
+syn spell notoplevel
+
 syn keyword xpmType		char
 syn keyword xpmStorageClass	static
 syn keyword xpmTodo		TODO FIXME XXX  contained
-syn region  xpmComment		start="/\*"  end="\*/"  contains=xpmTodo
+syn region  xpmComment		start="/\*"  end="\*/"  contains=xpmTodo,@Spell
 syn region  xpmPixelString	start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=@xpmColors
 
 if has("gui_running") || has("termguicolors") && &termguicolors
