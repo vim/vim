@@ -8061,7 +8061,7 @@ mode([expr])	Return a string that indicates the current mode.
 		returned, otherwise only the first letter is returned.
 		Also see |state()|.
 
-		   n	    Normal, Terminal-Normal
+		   n	    Normal
 		   no	    Operator-pending
 		   nov	    Operator-pending (forced characterwise |o_v|)
 		   noV	    Operator-pending (forced linewise |o_V|)
@@ -8070,6 +8070,7 @@ mode([expr])	Return a string that indicates the current mode.
 		   niI	    Normal using |i_CTRL-O| in |Insert-mode|
 		   niR	    Normal using |i_CTRL-O| in |Replace-mode|
 		   niV	    Normal using |i_CTRL-O| in |Virtual-Replace-mode|
+		   nt	    Terminal-Normal (insert goes to Terminal-Job mode)
 		   v	    Visual by character
 		   V	    Visual by line
 		   CTRL-V   Visual blockwise

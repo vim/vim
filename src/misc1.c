@@ -712,6 +712,10 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	    buf[1] = 'i';
 	    buf[2] = restart_edit;
 	}
+#ifdef FEAT_TERMINAL
+	else if (term_in_normal_mode())
+	    buf[1] = 't';
+#endif
     }
 
     // Clear out the minor mode when the argument is not a non-zero number or
