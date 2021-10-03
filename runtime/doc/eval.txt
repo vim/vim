@@ -8074,22 +8074,24 @@ mode([expr])	Return a string that indicates the current mode.
 		   niV	    Normal using |i_CTRL-O| in |Virtual-Replace-mode|
 		   nt	    Terminal-Normal (insert goes to Terminal-Job mode)
 		   v	    Visual by character
+		   vs	    Visual by character using |v_CTRL-O| from
+				Select mode
 		   V	    Visual by line
+		   Vs	    Visual by line using |v_CTRL-O| from Select mode
 		   CTRL-V   Visual blockwise
+		   CTRL-Vs  Visual blockwise using |v_CTRL-O| from Select mode
 		   s	    Select by character
 		   S	    Select by line
 		   CTRL-S   Select blockwise
-		   vs	    Visual by character using |v_CTRL-O| from
-				Select mode
-		   Vs	    Visual by line using |v_CTRL-O| from Select mode
-		   CTRL-Vs  Visual blockwise using |v_CTRL-O| from Select mode
 		   i	    Insert
 		   ic	    Insert mode completion |compl-generic|
 		   ix	    Insert mode |i_CTRL-X| completion
 		   R	    Replace |R|
 		   Rc	    Replace mode completion |compl-generic|
-		   Rv	    Virtual Replace |gR|
 		   Rx	    Replace mode |i_CTRL-X| completion
+		   Rv	    Virtual Replace |gR|
+		   Rvc	    Virtual Replace mode completion |compl-generic|
+		   Rvx	    Virtual Replace mode |i_CTRL-X| completion
 		   c	    Command-line editing
 		   cv	    Vim Ex mode |gQ|
 		   ce	    Normal Ex mode |Q|
