@@ -675,6 +675,11 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	{
 	    buf[0] = 'R';
 	    buf[1] = 'v';
+
+	    if (ins_compl_active())
+		buf[2] = 'c';
+	    else if (ctrl_x_mode_not_defined_yet())
+		buf[2] = 'x';
 	}
 	else
 	{
@@ -682,6 +687,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
 		buf[0] = 'R';
 	    else
 		buf[0] = 'i';
+
 	    if (ins_compl_active())
 		buf[1] = 'c';
 	    else if (ctrl_x_mode_not_defined_yet())
