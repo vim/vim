@@ -37,7 +37,7 @@ syn match gnuplotUnit		"\d+cm"
 syn match gnuplotUnit		"\d+pt"
 
 " external (shell) commands are special
-syn region gnuplotExternal	start="!" end="$"
+syn region gnuplotExternal	start="^\s*!" end="$"
 
 " ---- Comments ---- "
 
