@@ -784,6 +784,12 @@ func Test_mode()
   " i_CTRL-X CTRL-L: No match
   exe "normal iabc\<C-X>\<C-L>\<F2>\<Esc>u"
   call assert_equal('i-ic', g:current_modes)
+  " i_CTRL-X CTRL-E
+  exe "normal i\<C-X>\<C-E>\<F2>\<Esc>"
+  call assert_equal('i-is', g:current_modes)
+  " i_CTRL-X CTRL-Y
+  exe "normal i\<C-X>\<C-Y>\<F2>\<Esc>"
+  call assert_equal('i-is', g:current_modes)
 
   " R_CTRL-P: Multiple matches
   exe "normal RBa\<C-P>\<F2>\<Esc>u"
@@ -818,6 +824,12 @@ func Test_mode()
   " R_CTRL-X CTRL-L: No match
   exe "normal Rabc\<C-X>\<C-L>\<F2>\<Esc>u"
   call assert_equal('R-Rc', g:current_modes)
+  " R_CTRL-X CTRL-E
+  exe "normal R\<C-X>\<C-E>\<F2>\<Esc>"
+  call assert_equal('R-Rs', g:current_modes)
+  " R_CTRL-X CTRL-Y
+  exe "normal R\<C-X>\<C-Y>\<F2>\<Esc>"
+  call assert_equal('R-Rs', g:current_modes)
 
   call assert_equal('n', 0->mode())
   call assert_equal('n', 1->mode())

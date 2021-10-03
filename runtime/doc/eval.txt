@@ -8083,9 +8083,13 @@ mode([expr])	Return a string that indicates the current mode.
 		   CTRL-Vs  Visual blockwise using |v_CTRL-O| from Select mode
 		   i	    Insert
 		   ic	    Insert mode completion |compl-generic|
+		   is	    Insert mode |i_CTRL-X_CTRL-E| |i_CTRL-X_CTRL-Y|
+		   		scrolling
 		   ix	    Insert mode |i_CTRL-X| completion
 		   R	    Replace |R|
 		   Rc	    Replace mode completion |compl-generic|
+		   Rs	    Replace mode |i_CTRL-X_CTRL-E| |i_CTRL-X_CTRL-Y|
+		   		scrolling
 		   Rv	    Virtual Replace |gR|
 		   Rx	    Replace mode |i_CTRL-X| completion
 		   c	    Command-line editing
