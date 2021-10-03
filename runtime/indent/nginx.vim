@@ -1,3 +1,8 @@
+" Vim indent file
+" Language: nginx.conf
+" Maintainer: Chris Aumann <me@chr4.org>
+" Last Change: Apr 15, 2017
+
 if exists("b:did_indent")
     finish
 endif
