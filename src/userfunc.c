@@ -4131,7 +4131,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 
     // When there is a line break use what follows for the function body.
     // Makes 'exe "func Test()\n...\nendfunc"' work.
-    if (*p == '\n')
+    if (*p == '\n' || *p == '|')
 	line_arg = p + 1;
     else if (*p != NUL
 	    && !(*p == '"' && (!vim9script || eap->cmdidx == CMD_function)
