@@ -2647,7 +2647,15 @@ mch_FullName(
 		{
 		    vim_strncpy(buf, fname, p - fname);
 		    if (mch_chdir((char *)buf))
-			retval = FAIL;
+		    {
+			// Path does not exist (yet).  For a full path fail,
+			// will use the path as-is.  For a relative path use
+			// the current directory and append the file name.
+			if (mch_isFullName(fname))
+			    retval = FAIL;
+			else
+			    p = NULL;
+		    }
 		    else if (*p == '/')
 			fname = p + 1;
 		    else
