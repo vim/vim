@@ -612,7 +612,8 @@ may_adjust_incsearch_highlighting(
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state,
+							    &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	return OK;
@@ -626,6 +627,11 @@ may_adjust_incsearch_highlighting(
     if (search_delim == ccline.cmdbuff[skiplen])
     {
 	pat = last_search_pattern();
+	if (pat == NULL)
+	{
+	    restore_last_search_pattern();
+	    return FAIL;
+	}
 	skiplen = 0;
 	patlen = (int)STRLEN(pat);
     }
