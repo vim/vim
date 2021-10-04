@@ -2382,9 +2382,12 @@ do_one_cmd(
 	    // for '=' register: accept the rest of the line as an expression
 	    if (ea.arg[-1] == '=' && ea.arg[0] != NUL)
 	    {
-		set_expr_line(vim_strsave(ea.arg), &ea);
+		if (!ea.skip)
+		{
+		    set_expr_line(vim_strsave(ea.arg), &ea);
+		    did_set_expr_line = TRUE;
+		}
 		ea.arg += STRLEN(ea.arg);
-		did_set_expr_line = TRUE;
 	    }
 #endif
 	    ea.arg = skipwhite(ea.arg);
