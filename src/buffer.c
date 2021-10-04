@@ -3399,7 +3399,17 @@ setfname(
 #endif
 	if (obuf != NULL && obuf != buf)
 	{
-	    if (obuf->b_ml.ml_mfp != NULL)	// it's loaded, fail
+	    win_T	*win;
+	    tabpage_T   *tab;
+	    int		in_use = FALSE;
+
+	    // during startup a window may use a buffer that is not loaded yet
+	    FOR_ALL_TAB_WINDOWS(tab, win)
+		if (win->w_buffer == obuf)
+		    in_use = TRUE;
+
+	    // it's loaded or used in a window, fail
+	    if (obuf->b_ml.ml_mfp != NULL || in_use)
 	    {
 		if (message)
 		    emsg(_("E95: Buffer with this name already exists"));
