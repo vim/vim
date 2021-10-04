@@ -2374,7 +2374,8 @@ cleanup_conditionals(
 		    default:
 			if (cstack->cs_flags[idx] & CSF_FINALLY)
 			{
-			    if (cstack->cs_pending[idx] & CSTP_THROW)
+			    if ((cstack->cs_pending[idx] & CSTP_THROW)
+				    && cstack->cs_exception[idx] != NULL)
 			    {
 				// Cancel the pending exception.  This is in the
 				// finally clause, so that the stack of the
