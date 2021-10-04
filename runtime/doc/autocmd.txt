@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2021 Aug 01
+*autocmd.txt*   For Vim version 8.2.  Last change: 2021 Oct 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -940,7 +940,7 @@ ModeChanged			After changing the mode. The pattern is
 				have the value of new_mode when the event was
 				last triggered.
 				Usage example to use relative line numbers
-				when entering visual mode: >
+				when entering Visual mode: >
 	:autocmd ModeChanged *:v set relativenumber
 <							*OptionSet*
 OptionSet			After setting an option.  The pattern is
@@ -1501,6 +1501,13 @@ Example: >
 
 This prevents having the autocommands defined twice (e.g., after sourcing the
 .vimrc file again).
+
+						*FileExplorer*
+There is one group that is recognized by Vim: FileExplorer.  If this group
+exists Vim assumes that editing a directory is possible and will trigger a
+plugin that lists the files in that directory.  This is used by the |netrw|
+plugin.  This allows you to do: >
+	browse edit
 
 ==============================================================================
 9. Executing autocommands				*autocmd-execute*

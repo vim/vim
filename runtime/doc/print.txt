@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
+*print.txt*     For Vim version 8.2.  Last change: 2021 Oct 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -717,7 +717,7 @@ There are a couple of points to bear in mind:
 ==============================================================================
 8. Formfeed Characters					*printing-formfeed*
 
-By default Vim does not do any special processing of |formfeed| control
+By default Vim does not do any special processing of formfeed control
 characters.  Setting the 'printoptions' formfeed item will make Vim recognize
 formfeed characters and continue printing the current line at the beginning
 of the first line on a new page.  The use of formfeed characters provides

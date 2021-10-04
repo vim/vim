@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Jul 25
+*editing.txt*   For Vim version 8.2.  Last change: 2021 Oct 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1225,7 +1225,9 @@ If you want to always use ":confirm", set the 'confirm' option.
 			|:diffsplit|, |:diffpatch|, |:open|, |:pedit|,
 			|:redir|, |:source|, |:update|, |:visual|, |:vsplit|,
 			and |:qall| if 'confirm' is set.
-			{only in Win32, Athena, Motif, GTK and Mac GUI}
+			{only in Win32, Athena, Motif, GTK and Mac GUI, in
+			console `browse edit` works if the FileExplorer
+			autocommand group exists}
 			When ":browse" is not possible you get an error
 			message.  If the |+browse| feature is missing or the
 			{command} doesn't support browsing, the {command} is

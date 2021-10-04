@@ -97,6 +97,7 @@ runtime/ftplugin/markdown.vim		@tpope
 runtime/ftplugin/matlab.vim		@cecamp
 runtime/ftplugin/meson.vim		@Liambeguin
 runtime/ftplugin/modula3.vim		@dkearns
+runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/octave.vim		@dkearns
@@ -117,20 +118,39 @@ runtime/ftplugin/typescriptreact.vim	@dkearns
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/zsh.vim		@chrisbra
 runtime/indent/bst.vim			@tpope
+runtime/indent/cdl.vim			@dkearns
+runtime/indent/config.vim		@dkearns
+runtime/indent/css.vim			@dkearns
 runtime/indent/cucumber.vim		@tpope
+runtime/indent/d.vim			@dkearns
 runtime/indent/dosbatch.vim		@k-takata
+runtime/indent/dtd.vim			@dkearns
+runtime/indent/dylan.vim		@dkearns
+runtime/indent/elm.vim			@andys8
 runtime/indent/eruby.vim		@tpope @dkearns
+runtime/indent/eterm.vim		@dkearns
+runtime/indent/framescript.vim		@dkearns
 runtime/indent/gitconfig.vim		@tpope
 runtime/indent/haml.vim			@tpope
+runtime/indent/idlang.vim		@dkearns
+runtime/indent/ld.vim			@dkearns
 runtime/indent/liquid.vim		@tpope
+runtime/indent/make.vim			@dkearns
 runtime/indent/meson.vim		@Liambeguin
+runtime/indent/mma.vim			@dkearns
+runtime/indent/nginx.vim		@chr4
 runtime/indent/nsis.vim			@k-takata
+runtime/indent/occam.vim		@dkearns
+runtime/indent/postscr.vim		@dkearns
+runtime/indent/prolog.vim		@dkearns
 runtime/indent/ps1.vim			@heaths
+runtime/indent/readline.vim		@dkearns
 runtime/indent/ruby.vim			@AndrewRadev @dkearns
 runtime/indent/sass.vim			@tpope
 runtime/indent/scss.vim			@tpope
 runtime/indent/sh.vim			@chrisbra
 runtime/indent/systemverilog.vim	@Kocha
+runtime/indent/tcl.vim			@dkearns
 runtime/indent/teraterm.vim		@k-takata
 runtime/indent/xml.vim			@chrisbra
 runtime/indent/zsh.vim			@chrisbra
@@ -192,6 +212,7 @@ runtime/syntax/markdown.vim		@tpope
 runtime/syntax/meson.vim		@Liambeguin
 runtime/syntax/modula3.vim		@dkearns
 runtime/syntax/netrw.vim		@cecamp
+runtime/syntax/nginx.vim		@chr4
 runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/pascal.vim		@dkearns

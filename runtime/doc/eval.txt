@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Sep 19
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Oct 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1417,7 +1417,7 @@ A string constant accepts these special characters:
 \U....	same as \u but allows up to 8 hex numbers.
 \b	backspace <BS>
 \e	escape <Esc>
-\f	formfeed <FF>
+\f	formfeed 0x0C
 \n	newline <NL>
 \r	return <CR>
 \t	tab <Tab>
@@ -1426,7 +1426,7 @@ A string constant accepts these special characters:
 \<xxx>	Special key named "xxx".  e.g. "\<C-W>" for CTRL-W.  This is for use
 	in mappings, the 0x80 byte is escaped.
 	To use the double quote character it must be escaped: "<M-\">".
-	Don't use <Char-xxxx> to get a utf-8 character, use \uxxxx as
+	Don't use <Char-xxxx> to get a UTF-8 character, use \uxxxx as
 	mentioned above.
 \<*xxx>	Like \<xxx> but prepends a modifier instead of including it in the
 	character.  E.g. "\<C-w>" is one character 0x17 while "\<*C-w>" is four
@@ -2516,7 +2516,7 @@ ch_setoptions({handle}, {options})
 ch_status({handle} [, {options}])
 				String	status of channel {handle}
 changenr()			Number	current change number
-char2nr({expr} [, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
+char2nr({expr} [, {utf8}])	Number	ASCII/UTF-8 value of first char in {expr}
 charclass({string})		Number	character class of {string}
 charcol({expr})			Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc}])
@@ -2769,7 +2769,7 @@ mkdir({name} [, {path} [, {prot}]])
 mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
-nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
+nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value {expr}
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr} [, {len}])	String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
@@ -2787,7 +2787,7 @@ popup_getoptions({id})		Dict	get options of popup window {id}
 popup_getpos({id})		Dict	get position of popup window {id}
 popup_hide({id})		none	hide popup menu {id}
 popup_list()			List	get a list of window IDs of all popups
-popup_locate({row}, {col})	Number 	get window ID of popup at position
+popup_locate({row}, {col})	Number	get window ID of popup at position
 popup_menu({what}, {options})	Number	create a popup window used as a menu
 popup_move({id}, {options})	none	set position of popup window {id}
 popup_notification({what}, {options})
@@ -2899,7 +2899,7 @@ setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
 setloclist({nr}, {list} [, {action}])
- 				Number	modify location list using {list}
+				Number	modify location list using {list}
 setloclist({nr}, {list}, {action}, {what})
 				Number	modify specific location list props
 setmatches({list} [, {win}])	Number	restore a list of matches
@@ -2959,7 +2959,7 @@ srand([{expr}])			List	get seed for |rand()|
 state([{what}])			String	current state of Vim
 str2float({expr} [, {quoted}])	Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
-					ASCII/UTF8 value
+					ASCII/UTF-8 value
 str2nr({expr} [, {base} [, {quoted}]])
 				Number	convert String to Number
 strcharlen({expr})		Number	character length of the String {expr}
@@ -3656,7 +3656,7 @@ char2nr({string} [, {utf8}])					*char2nr()*
 		Example for "utf-8": >
 			char2nr("á")		returns 225
 			char2nr("á"[0])		returns 195
-<		With {utf8} set to TRUE, always treat as utf-8 characters.
+<		When {utf8} is TRUE, always treat as UTF-8 characters.
 		A combining character is a separate character.
 		|nr2char()| does the opposite.
 		To turn a string into a list of character numbers: >
@@ -4283,7 +4283,7 @@ digraph_getlist([{listall}])				*digraph_getlist()*
 
 digraph_set({chars}, {digraph})				*digraph_set()* *E1205*
 		Add digraph {chars} to the list.  {chars} must be a string
-		with two characters.  {digraph} is a string with one utf-8
+		with two characters.  {digraph} is a string with one UTF-8
 		encoded character. Be careful, composing characters are NOT
 		ignored.  This function is similar to |:digraphs| command, but
 		useful to add digraphs start with a white space.
@@ -7249,8 +7249,8 @@ list2str({list} [, {utf8}])				*list2str()*
 <		|str2list()| does the opposite.
 
 		When {utf8} is omitted or zero, the current 'encoding' is used.
-		With {utf8} is 1, always return utf-8 characters.
-		With utf-8 composing characters work as expected: >
+		When {utf8} is TRUE, always return UTF-8 characters.
+		With UTF-8 composing characters work as expected: >
 			list2str([97, 769])	returns "á"
 <
 		Can also be used as a |method|: >
@@ -7492,7 +7492,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		  "lhs"	     The {lhs} of the mapping as it would be typed
 		  "lhsraw"   The {lhs} of the mapping as raw bytes
 		  "lhsrawalt" The {lhs} of the mapping as raw bytes, alternate
-		  	      form, only present when it differs from "lhsraw"
+			      form, only present when it differs from "lhsraw"
 		  "rhs"	     The {rhs} of the mapping as typed.
 		  "silent"   1 for a |:map-silent| mapping, else 0.
 		  "noremap"  1 if the {rhs} of the mapping is not remappable.
@@ -8154,7 +8154,7 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 <		When {utf8} is omitted or zero, the current 'encoding' is used.
 		Example for "utf-8": >
 			nr2char(300)		returns I with bow character
-<		With {utf8} set to 1, always return utf-8 characters.
+<		When {utf8} is TRUE, always return UTF-8 characters.
 		Note that a NUL character in the file is specified with
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
@@ -9635,7 +9635,7 @@ setcellwidths({list})					*setcellwidths()*
 		tells Vim how wide characters are, counted in screen cells.
 		This overrides 'ambiwidth'.  Example: >
 		   setcellwidths([[0xad, 0xad, 1],
-		   		\ [0x2194, 0x2199, 2]])
+				\ [0x2194, 0x2199, 2]])
 
 <					*E1109* *E1110* *E1111* *E1112* *E1113*
 		The {list} argument is a list of lists with each three
@@ -10549,7 +10549,7 @@ state([{what}])						*state()*
 		    w	blocked on waiting, e.g. ch_evalexpr(), ch_read() and
 			ch_readraw() when reading json
 		    S	not triggering SafeState or SafeStateAgain, e.g. after
-		    	|f| or a count
+			|f| or a count
 		    c	callback invoked, including timer (repeats for
 			recursiveness up to "ccc")
 		    s	screen has scrolled for messages
@@ -10584,8 +10584,8 @@ str2list({string} [, {utf8}])					*str2list()*
 <		|list2str()| does the opposite.
 
 		When {utf8} is omitted or zero, the current 'encoding' is used.
-		With {utf8} set to 1, always treat the String as utf-8
-		characters.  With utf-8 composing characters are handled
+		When {utf8} is TRUE, always treat the String as UTF-8
+		characters.  With UTF-8 composing characters are handled
 		properly: >
 			str2list("á")		returns [97, 769]
 
@@ -13120,7 +13120,7 @@ text...
 			literal then the items also cannot be changed: >
 				const ll = [1, 2, 3]
 				let ll[1] = 5  " Error!
-< 			Nested references are not locked: >
+<			Nested references are not locked: >
 				let lvar = ['a']
 				const lconst = [0, lvar]
 				let lconst[0] = 2  " Error!
@@ -13174,8 +13174,8 @@ text...
 			Example with [depth] 0: >
 				let mylist = [1, 2, 3]
 				lockvar 0 mylist
-				let mylist[0] = 77   	" OK
-				call add(mylist, 4]  	" OK
+				let mylist[0] = 77	" OK
+				call add(mylist, 4]	" OK
 				let mylist = [7, 8, 9]  " Error!
 <								*E743*
 			For unlimited depth use [!] and omit [depth].

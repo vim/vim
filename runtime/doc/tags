@@ -4943,6 +4943,7 @@ FileChangedRO	autocmd.txt	/*FileChangedRO*
 FileChangedShell	autocmd.txt	/*FileChangedShell*
 FileChangedShellPost	autocmd.txt	/*FileChangedShellPost*
 FileEncoding	autocmd.txt	/*FileEncoding*
+FileExplorer	autocmd.txt	/*FileExplorer*
 FileReadCmd	autocmd.txt	/*FileReadCmd*
 FileReadPost	autocmd.txt	/*FileReadPost*
 FileReadPre	autocmd.txt	/*FileReadPre*
@@ -6550,7 +6551,6 @@ format-bullet-list	tips.txt	/*format-bullet-list*
 format-comments	change.txt	/*format-comments*
 format-formatexpr	change.txt	/*format-formatexpr*
 formatting	change.txt	/*formatting*
-formfeed	intro.txt	/*formfeed*
 fortran.vim	syntax.txt	/*fortran.vim*
 friendship	intro.txt	/*friendship*
 frombook	usr_01.txt	/*frombook*
@@ -6609,6 +6609,7 @@ ft-fortran-plugin	filetype.txt	/*ft-fortran-plugin*
 ft-fortran-syntax	syntax.txt	/*ft-fortran-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
+ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*

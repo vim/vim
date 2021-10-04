@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Sep 20
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Sep 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -428,6 +428,9 @@ undo result wrong: Masato Nishihata, #4798
 
 After recovering from a swap file the undofile should not be used, it causes
 corruption.  (#6631)
+
+When the computer crashes while writing the undofile, the contents may be
+lost.  Write to a temp file, fsync and rename. (#8879)
 
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
