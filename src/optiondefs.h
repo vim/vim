@@ -140,6 +140,9 @@
 #ifdef FEAT_EVAL
 # define PV_TFU		OPT_BUF(BV_TFU)
 #endif
+#ifdef FEAT_COMPL_FUNC
+# define PV_THSFU		OPT_BUF(BV_THSFU)
+#endif
 #define PV_TAGS		OPT_BOTH(OPT_BUF(BV_TAGS))
 #define PV_TC		OPT_BOTH(OPT_BUF(BV_TC))
 #define PV_TS		OPT_BUF(BV_TS)
@@ -2616,6 +2619,15 @@ static struct vimoption options[] =
     {"thesaurus",   "tsr",  P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA|P_NODUP|P_NDNAME,
 			    (char_u *)&p_tsr, PV_TSR,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"thesaurusfunc", "thsfu",  P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
+#ifdef FEAT_COMPL_FUNC
+			    (char_u *)&p_thsfu, PV_THSFU,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"tildeop",	    "top",  P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_to, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},

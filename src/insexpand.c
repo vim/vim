@@ -299,7 +299,11 @@ has_compl_option(int dict_opt)
 							&& !curwin->w_p_spell
 #endif
 							)
-		 : (*curbuf->b_p_tsr == NUL && *p_tsr == NUL))
+		 : (*curbuf->b_p_tsr == NUL && *p_tsr == NUL
+#ifdef FEAT_COMPL_FUNC
+		     && *curbuf->b_p_thsfu == NUL
+#endif
+		   ))
     {
 	ctrl_x_mode = CTRL_X_NORMAL;
 	edit_submode = NULL;
@@ -2230,6 +2234,25 @@ ins_compl_next_buf(buf_T *buf, int flag)
 
 #ifdef FEAT_COMPL_FUNC
 /*
+ * Get the user-defined completion function name for completion 'type'
+ */
+    static char_u *
+get_complete_funcname(int type)
+{
+    switch (type)
+    {
+	case CTRL_X_FUNCTION:
+	    return curbuf->b_p_cfu;
+	case CTRL_X_OMNI:
+	    return curbuf->b_p_ofu;
+	case CTRL_X_THESAURUS:
+	    return curbuf->b_p_thsfu;
+	default:
+	    return (char_u *)"";
+    }
+}
+
+/*
  * Execute user defined complete function 'completefunc' or 'omnifunc', and
  * get matches in "matches".
  */
@@ -2246,7 +2269,7 @@ expand_by_function(
     typval_T	rettv;
     int		save_State = State;
 
-    funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
+    funcname = get_complete_funcname(type);
     if (*funcname == NUL)
 	return;
 
@@ -2721,6 +2744,21 @@ f_complete_info(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
+ * Returns TRUE when using a user-defined function for thesaurus completion.
+ */
+    static int
+thesaurus_func_complete(int type UNUSED)
+{
+#ifdef FEAT_COMPL_FUNC
+    return (type == CTRL_X_THESAURUS
+		&& curbuf->b_p_thsfu != NULL
+		&& *curbuf->b_p_thsfu != NUL);
+#else
+    return FALSE;
+#endif
+}
+
+/*
  * Get the next expansion(s), using "compl_pattern".
  * The search starts at position "ini" in curbuf and in the direction
  * compl_direction.
@@ -2906,7 +2944,12 @@ ins_compl_get_exp(pos_T *ini)
 
 	case CTRL_X_DICTIONARY:
 	case CTRL_X_THESAURUS:
-	    ins_compl_dictionaries(
+#ifdef FEAT_COMPL_FUNC
+	    if (thesaurus_func_complete(type))
+		expand_by_function(type, compl_pattern);
+	    else
+#endif
+		ins_compl_dictionaries(
 		    dict != NULL ? dict
 			 : (type == CTRL_X_THESAURUS
 			     ? (*curbuf->b_p_tsr == NUL
@@ -3760,7 +3803,9 @@ ins_complete(int c, int enable_pum)
 	}
 
 	// Work out completion pattern and original text -- webb
-	if (ctrl_x_mode == CTRL_X_NORMAL || (ctrl_x_mode & CTRL_X_WANT_IDENT))
+	if (ctrl_x_mode == CTRL_X_NORMAL
+		|| (ctrl_x_mode & CTRL_X_WANT_IDENT
+		    && !thesaurus_func_complete(ctrl_x_mode)))
 	{
 	    if ((compl_cont_status & CONT_SOL)
 		    || ctrl_x_mode == CTRL_X_PATH_DEFINES)
@@ -3910,7 +3955,8 @@ ins_complete(int c, int enable_pum)
 		compl_col = (int)(compl_xp.xp_pattern - compl_pattern);
 	    compl_length = curs_col - compl_col;
 	}
-	else if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OMNI)
+	else if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OMNI
+		|| thesaurus_func_complete(ctrl_x_mode))
 	{
 #ifdef FEAT_COMPL_FUNC
 	    // Call user defined function 'completefunc' with "a:findstart"
@@ -3923,8 +3969,7 @@ ins_complete(int c, int enable_pum)
 
 	    // Call 'completefunc' or 'omnifunc' and get pattern length as a
 	    // string
-	    funcname = ctrl_x_mode == CTRL_X_FUNCTION
-					  ? curbuf->b_p_cfu : curbuf->b_p_ofu;
+	    funcname = get_complete_funcname(ctrl_x_mode);
 	    if (*funcname == NUL)
 	    {
 		semsg(_(e_notset), ctrl_x_mode == CTRL_X_FUNCTION

@@ -5433,6 +5433,7 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_COMPL_FUNC
 	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
 	case PV_OFU:	return (char_u *)&(curbuf->b_p_ofu);
+	case PV_THSFU:	return (char_u *)&(curbuf->b_p_thsfu);
 #endif
 #ifdef FEAT_EVAL
 	case PV_TFU:	return (char_u *)&(curbuf->b_p_tfu);
@@ -5935,6 +5936,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_CFU);
 	    buf->b_p_ofu = vim_strsave(p_ofu);
 	    COPY_OPT_SCTX(buf, BV_OFU);
+	    buf->b_p_thsfu = vim_strsave(p_thsfu);
+	    COPY_OPT_SCTX(buf, BV_THSFU);
 #endif
 #ifdef FEAT_EVAL
 	    buf->b_p_tfu = vim_strsave(p_tfu);

@@ -2864,6 +2864,7 @@ struct file_buffer
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	// 'completefunc'
     char_u	*b_p_ofu;	// 'omnifunc'
+    char_u	*b_p_thsfu;	// 'thesaurusfunc'
 #endif
 #ifdef FEAT_EVAL
     char_u	*b_p_tfu;	// 'tagfunc'
