@@ -82,10 +82,10 @@ skip_string(char_u *p)
     {
 	if (p[0] == '\'')		    // 'c' or '\n' or '\000'
 	{
-	    if (!p[1])			    // ' at end of line
+	    if (p[1] == NUL)		    // ' at end of line
 		break;
 	    i = 2;
-	    if (p[1] == '\\')		    // '\n' or '\000'
+	    if (p[1] == '\\' && p[2] != NUL)    // '\n' or '\000'
 	    {
 		++i;
 		while (vim_isdigit(p[i - 1]))   // '\000'
