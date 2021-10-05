@@ -40,6 +40,7 @@ jobs:
             compiler: gcc
             coverage: true
             extra: testgui
+            uchar: true
           - features: huge
             compiler: clang
             extra: asan
@@ -111,9 +112,13 @@ jobs:
             ;;
           esac
 
+          CFLAGS=""
           if ${{ matrix.coverage == true }}; then
-            echo "CFLAGS=--coverage -DUSE_GCOV_FLUSH"
+            CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
+          fi
+          if ${{ matrix.uchar == true }}; then
+            CFLAGS="$CFLAGS -funsigned-char"
           fi
           if ${{ contains(matrix.extra, 'testgui') }}; then
             echo "TEST=-C src testgui"
@@ -130,6 +135,7 @@ jobs:
           if ${{ contains(matrix.extra, 'vimtags') }}; then
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
+          echo "CFLAGS=$CFLAGS"
           ) >> $GITHUB_ENV
 
       - name: Set up system
