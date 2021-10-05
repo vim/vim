@@ -2362,5 +2362,9 @@ func Test_parse_messages_in_autocmd()
   augroup END
 endfunc
 
+func Test_job_start_with_invalid_argument()
+  call assert_fails('call job_start([0zff])', 'E976:')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -2953,6 +2953,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 
 	    for (i = 0; i < *argc; ++i)
 		VIM_CLEAR((*argv)[i]);
+	    (*argv)[0] = NULL;
 	    return FAIL;
 	}
 	(*argv)[*argc] = (char *)vim_strsave(s);
