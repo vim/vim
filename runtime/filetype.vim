@@ -1853,7 +1853,7 @@ au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 au BufNewFile,BufRead *.tf,.tfrc,tfrc		setf tf
 
 " tmux configuration
-au BufNewFile,BufRead {.,}tmux*.conf		setf tmux
+au BufNewFile,BufRead {.,}tmux*.conf*		setf tmux
 
 " TOML
 au BufNewFile,BufRead *.toml			setf toml
