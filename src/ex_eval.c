@@ -2401,8 +2401,12 @@ cleanup_conditionals(
 	    if (!(cstack->cs_flags[idx] & CSF_FINALLY))
 	    {
 		if ((cstack->cs_flags[idx] & CSF_ACTIVE)
-			&& (cstack->cs_flags[idx] & CSF_CAUGHT))
+			&& (cstack->cs_flags[idx] & CSF_CAUGHT)
+			&& !(cstack->cs_flags[idx] & CSF_FINISHED))
+		{
 		    finish_exception((except_T *)cstack->cs_exception[idx]);
+		    cstack->cs_flags[idx] |= CSF_FINISHED;
+		}
 		// Stop at this try conditional - except the try block never
 		// got active (because of an inactive surrounding conditional
 		// or when the ":try" appeared after an error or interrupt or

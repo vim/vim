@@ -943,11 +943,12 @@ typedef struct {
 # define CSF_CATCH	0x0400	// ":catch" has been seen
 # define CSF_THROWN	0x0800	// exception thrown to this try conditional
 # define CSF_CAUGHT	0x1000  // exception caught by this try conditional
-# define CSF_SILENT	0x2000	// "emsg_silent" reset by ":try"
+# define CSF_FINISHED	0x2000  // CSF_CAUGHT was handled by finish_exception()
+# define CSF_SILENT	0x4000	// "emsg_silent" reset by ":try"
 // Note that CSF_ELSE is only used when CSF_TRY and CSF_WHILE are unset
 // (an ":if"), and CSF_SILENT is only used when CSF_TRY is set.
-//
-#define CSF_FUNC_DEF	0x4000	// a function was defined in this block
+
+# define CSF_FUNC_DEF	0x8000	// a function was defined in this block
 
 /*
  * What's pending for being reactivated at the ":endtry" of this try
