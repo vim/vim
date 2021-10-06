@@ -12,7 +12,7 @@ func Create_vim_dict()
   return {'a': 1}
 endfunction
 
-let s:system_error_pat = 'Vim(py3):SystemError: \(<built-in function eval> returned NULL without setting an error\|error return without exception set\)'
+let s:system_error_pat = 'Vim(py3):SystemError: \(<built-in function eval> returned NULL without setting an \(error\|exception\)\|error return without exception set\)'
 
 " This function should be called first. This sets up python functions used by
 " the other tests.
