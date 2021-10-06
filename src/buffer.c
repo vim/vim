@@ -327,6 +327,7 @@ open_buffer(
     // Set last_changedtick to avoid triggering a TextChanged autocommand right
     // after it was added.
     curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
+    curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
     curbuf->b_last_changedtick_pum = CHANGEDTICK(curbuf);
 
     // require "!" to overwrite the file, because it wasn't read completely

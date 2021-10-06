@@ -2863,5 +2863,43 @@ func Test_autocmd_with_block()
   augroup END
 endfunc
 
+" Test TextChangedI and TextChanged
+func Test_Changed_ChangedI()
+  new
+  call test_override("char_avail", 1)
+  let [g:autocmd_i, g:autocmd_n] = ['','']
+
+  func! TextChangedAutocmdI(char)
+    let g:autocmd_{tolower(a:char)} = a:char .. b:changedtick
+  endfunc
+
+  augroup Test_TextChanged
+    au!
+    au TextChanged  <buffer> :call TextChangedAutocmdI('N')
+    au TextChangedI <buffer> :call TextChangedAutocmdI('I')
+  augroup END
+
+  call feedkeys("ifoo\<esc>", 'tnix')
+  " TODO: Test test does not seem to trigger TextChanged autocommand, why?
+  " It works, when running interactively.
+  " call assert_equal('N3', g:autocmd_n)
+  call assert_equal('I3', g:autocmd_i)
+
+  call feedkeys("yyp", 'tnix')
+  " TODO: Test test does not seem to trigger TextChanged autocommand, why?
+  " It works, when running interactively.
+  " call assert_equal('N4', g:autocmd_n)
+  call assert_equal('I3', g:autocmd_i)
+
+  " CleanUp
+  call test_override("char_avail", 0)
+  au! TextChanged  <buffer>
+  au! TextChangedI <buffer>
+  augroup! Test_TextChanged
+  delfu TextChangedAutocmdI
+  unlet! g:autocmd_i g:autocmd_n
+
+  bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
