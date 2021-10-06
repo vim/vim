@@ -1109,7 +1109,7 @@ add_b0_fenc(
     static int
 swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
 {
-# ifdef HAVE_SYSINFO_UPTIME
+#if defined(HAVE_SYSINFO) && defined(HAVE_SYSINFO_UPTIME)
     stat_T	    st;
     struct sysinfo  sinfo;
 

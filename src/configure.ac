@@ -4113,9 +4113,10 @@ AC_TRY_COMPILE(
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSCTL),
 	AC_MSG_RESULT(not usable))
 
-dnl sysinfo() may exist but not be Linux compatible
+dnl sysinfo() may exist but not be Linux compatible.
+dnl On some FreeBSD systems it may depend on libsysinfo, use TRY_LINK
 AC_MSG_CHECKING(for sysinfo)
-AC_TRY_COMPILE(
+AC_TRY_LINK(
 [#include <sys/types.h>
 #include <sys/sysinfo.h>],
 [	struct sysinfo sinfo;
