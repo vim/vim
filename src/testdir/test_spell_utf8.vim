@@ -765,4 +765,20 @@ func Test_spellfile_value()
   set spellfile=Xdir/Xtest.utf-8.add,Xtest_other.add
 endfunc
 
+func Test_no_crash_with_weird_text()
+  new
+  let lines =<< trim END
+      r<sfile>
+      
+
+
+      
+  END
+  call setline(1, lines)
+  exe "%norm \<C-v>ez=>\<C-v>wzG"
+
+  bwipe!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

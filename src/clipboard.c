@@ -199,7 +199,8 @@ clip_lose_selection(Clipboard_T *cbd)
 					    || get_real_state() == SELECTMODE)
 		&& (cbd == &clip_star ?
 				clip_isautosel_star() : clip_isautosel_plus())
-		&& HL_ATTR(HLF_V) != HL_ATTR(HLF_VNC))
+		&& HL_ATTR(HLF_V) != HL_ATTR(HLF_VNC)
+		&& !exiting)
 	{
 	    update_curbuf(INVERTED_ALL);
 	    setcursor();
