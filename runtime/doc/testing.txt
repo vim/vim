@@ -85,14 +85,14 @@ test_getvalue({name})					*test_getvalue()*
 test_gui_drop_files({list}, {row}, {col}, {mods})
 		Drop one or more files in {list} in the window at {row}, {col}.
 		This function only works when the GUI is running and the
-		|drag-n-drop| feature is present.
-		
+		|drop_file| feature is present.
+
 		The supported values for {mods} are:
 			0x4	Shift
 			0x8	Alt
 			0x10	Ctrl
-		The files are added to the argument list and the first file in
-		{list} is edited in the window.  See |drag-n-drop| for more
+		The files are added to the |argument-list| and the first file
+		in {list} is edited in the window.  See |drag-n-drop| for more
 		information.
 
 						*test_gui_mouse_event()*
