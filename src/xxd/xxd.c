@@ -347,15 +347,11 @@ huntype(
 	  if ((++p >= cols) && !hextype)
 	    {
 	      /* skip rest of line as garbage */
-	      want_off = 0;
-	      while ((c = getc(fpi)) != '\n' && c != EOF)
-		;
-	      if (c == EOF && ferror(fpi))
-		die(2);
-	      ign_garb = 1;
+	      n2 = -1;
+	      n3 = -1;
 	    }
 	}
-      else if (n1 < 0 && n2 < 0 && n3 < 0)
+      if (n1 < 0 && n2 < 0 && n3 < 0)
 	{
 	  /* already stumbled into garbage, skip line, wait and see */
 	  if (!hextype)
