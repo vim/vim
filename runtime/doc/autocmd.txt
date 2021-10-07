@@ -1195,9 +1195,9 @@ TextYankPost			After text has been yanked or deleted in the
 						register, as a list of lines,
 						like with: >
 						getreg(r, 1, 1)
-<				   regname	Name of the |expr-register| or
-						empty string for the unnamed
-						register.
+<				   regname	Name of the register or empty
+						string for the unnamed
+						register, see |registers|.
 				   regtype	Type of the register, see
 						|getregtype()|.
 				   visual	True if the operation is
