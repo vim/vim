@@ -243,7 +243,6 @@ add_buff(
 	buf->bh_curr->b_next = p;
 	buf->bh_curr = p;
     }
-    return;
 }
 
 /*
