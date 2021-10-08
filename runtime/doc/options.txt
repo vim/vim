@@ -542,6 +542,19 @@ Examples:
    /* vim: set ai tw=75: */ ~
    /* Vim: set ai tw=75: */ ~
 
+NOTE: For the first form all of the rest of the line is used, thus a line like:
+   /* vi:ts=4: */ ~
+will give an error message for the trailing "*/".  This line is OK:
+   /* vi:set ts=4: */ ~
+
+If an error is detected the rest of the line is skipped.
+
+If you want to include a ':' in a set command precede it with a '\'.  The
+backslash in front of the ':' will be removed.  Example:
+   /* vi:set fillchars=stl\:^,vert\:\|: */ ~
+This sets the 'fillchars' option to "stl:^,vert:\|".  Only a single backslash
+before the ':' is removed.  Thus to include "\:" you have to specify "\\:".
+
 The white space before {vi:|vim:|Vim:|ex:} is required.  This minimizes the
 chance that a normal word like "lex:" is caught.  There is one exception:
 "vi:" and "vim:" can also be at the start of the line (for compatibility with
@@ -587,19 +600,6 @@ There can be no blanks between "vim" and the ":".
 The number of lines that are checked can be set with the 'modelines' option.
 If 'modeline' is off or 'modelines' is 0 no lines are checked.
 
-Note that for the first form all of the rest of the line is used, thus a line
-like:
-   /* vi:ts=4: */ ~
-will give an error message for the trailing "*/".  This line is OK:
-   /* vi:set ts=4: */ ~
-
-If an error is detected the rest of the line is skipped.
-
-If you want to include a ':' in a set command precede it with a '\'.  The
-backslash in front of the ':' will be removed.  Example:
-   /* vi:set fillchars=stl\:^,vert\:\|: */ ~
-This sets the 'fillchars' option to "stl:^,vert:\|".  Only a single backslash
-before the ':' is removed.  Thus to include "\:" you have to specify "\\:".
 							*E992*
 No other commands than "set" are supported, for security reasons (somebody
 might create a Trojan horse text file with modelines).  And not all options
