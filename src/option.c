@@ -6391,8 +6391,6 @@ set_context_in_set_cmd(
 	}
 #endif
     }
-
-    return;
 }
 
     int

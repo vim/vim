@@ -3029,8 +3029,6 @@ buflist_setfpos(
     wip->wi_prev = NULL;
     if (wip->wi_next)
 	wip->wi_next->wi_prev = wip;
-
-    return;
 }
 
 #ifdef FEAT_DIFF

@@ -2682,7 +2682,6 @@ get_scroll_overlap(lineoff_T *lp, int dir)
 	*lp = loff1;	// 1 line overlap
     else
 	*lp = loff2;	// 2 lines overlap
-    return;
 }
 
 /*

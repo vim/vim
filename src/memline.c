@@ -1786,7 +1786,6 @@ theend:
 	apply_autocmds(EVENT_BUFREADPOST, NULL, curbuf->b_fname, FALSE, curbuf);
 	apply_autocmds(EVENT_BUFWINENTER, NULL, curbuf->b_fname, FALSE, curbuf);
     }
-    return;
 }
 
 /*
@@ -3930,7 +3929,6 @@ ml_clearmarked(void)
     }
 
     lowest_marked = 0;
-    return;
 }
 
 /*
