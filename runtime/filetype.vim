@@ -707,6 +707,7 @@ au BufNewFile,BufRead *.gpi			setf gnuplot
 
 " Go (Google)
 au BufNewFile,BufRead *.go			setf go
+au BufNewFile,BufRead Gopkg.lock		setf toml
 
 " GrADS scripts
 au BufNewFile,BufRead *.gs			setf grads
@@ -1290,7 +1291,7 @@ au BufNewFile,BufRead *.rcp			setf pilrc
 au BufNewFile,BufRead .pinerc,pinerc,.pinercex,pinercex		setf pine
 
 " Pipenv Pipfiles
-au BufNewFile,BufRead Pipfile			setf config
+au BufNewFile,BufRead Pipfile			setf toml
 au BufNewFile,BufRead Pipfile.lock		setf json
 
 " PL/1, PL/I
@@ -1524,6 +1525,7 @@ au BufNewFile,BufRead [rR]antfile,*.rant,[rR]akefile,*.rake	setf ruby
 
 " Rust
 au BufNewFile,BufRead *.rs			setf rust
+au BufNewFile,BufRead Cargo.lock,*/.cargo/config,*/.cargo/credentials	setf toml
 
 " S-lang (or shader language, or SmallLisp)
 au BufNewFile,BufRead *.sl			setf slang

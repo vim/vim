@@ -113,6 +113,7 @@ runtime/ftplugin/spec.vim		@ignatenkobrain
 runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/tidy.vim		@dkearns
 runtime/ftplugin/tmux.vim		@ericpruitt
+runtime/ftplugin/toml.vim		@averms
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
 runtime/ftplugin/xml.vim		@chrisbra
@@ -242,6 +243,7 @@ runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/tex.vim			@cecamp
 runtime/syntax/tidy.vim			@dkearns
 runtime/syntax/tmux.vim			@ericpruitt
+runtime/syntax/toml.vim			@averms
 runtime/syntax/vim.vim			@cecamp
 runtime/syntax/wget.vim			@dkearns
 runtime/syntax/xbl.vim			@dkearns
