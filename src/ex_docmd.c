@@ -4229,8 +4229,10 @@ get_address(
 
 		    // When '/' or '?' follows another address, start from
 		    // there.
-		    if (lnum != MAXLNUM)
-			curwin->w_cursor.lnum = lnum;
+		    if (lnum > 0 && lnum != MAXLNUM)
+			curwin->w_cursor.lnum =
+				lnum > curbuf->b_ml.ml_line_count
+					   ? curbuf->b_ml.ml_line_count : lnum;
 
 		    // Start a forward search at the end of the line (unless
 		    // before the first line).
