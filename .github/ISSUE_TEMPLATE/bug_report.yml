@@ -1,0 +1,47 @@
+---
+name: Bug report
+description: Create a report to help us improve Vim.
+labels: [bug]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting issues of Vim!
+        
+        To make it easier for us to help you please enter detailed information below.
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. 
+        2. 
+        3. 
+        4. 
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behaviour
+      placeholder: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Operating system
+      description: >
+        Your operating system name, version and desktop environment.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version of Vim
+      description: >
+        The name of your development environment, version. [e.g. GNOME Terminal (v0.0.0000)]
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs and stack traces
+      placeholder: Insert log or other text here (if necessary)
+      render: shell
