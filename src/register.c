@@ -2011,8 +2011,15 @@ do_put(
 	    }
 
 	    do {
-		totlen = count * yanklen;
-		if (totlen > 0)
+		long multlen = count * yanklen;
+
+		totlen = multlen;
+		if (totlen != multlen)
+		{
+		    emsg(_(e_resulting_text_too_long));
+		    break;
+		}
+		else if (totlen > 0)
 		{
 		    oldp = ml_get(lnum);
 		    if (lnum > start_lnum)

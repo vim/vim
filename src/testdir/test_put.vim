@@ -134,4 +134,12 @@ func Test_gp_with_count_leaves_cursor_at_end()
   bwipe!
 endfunc
 
+func Test_very_larg_count()
+  new
+  let @" = 'x'
+  call assert_fails('norm 44444444444444p', 'E1240:')
+  bwipe!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
