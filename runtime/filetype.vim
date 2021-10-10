@@ -1853,7 +1853,7 @@ au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 au BufNewFile,BufRead *.tf,.tfrc,tfrc		setf tf
 
 " tmux configuration
-au BufNewFile,BufRead {.,}tmux*.conf*		setf tmux
+au BufNewFile,BufRead {.,}tmux*.conf		setf tmux
 
 " TOML
 au BufNewFile,BufRead *.toml			setf toml
@@ -2304,6 +2304,9 @@ au BufNewFile,BufRead .tcshrc*	call dist#ft#SetFileTypeShell("tcsh")
 
 " csh scripts ending in a star
 au BufNewFile,BufRead .login*,.cshrc*  call dist#ft#CSH()
+
+" tmux configuration with arbitrary extension
+au BufNewFile,BufRead {.,}tmux*.conf*		setf tmux
 
 " VHDL
 au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
