@@ -647,6 +647,9 @@ Suggested by Hiroki Kokubun:
 - [hybrid](https://github.com/w0ng/vim-hybrid)
 Include solarized color scheme?, it does not support termguicolors.
 - Sanitized version of pablo (Lifepillar, 2017 Nov 21)
+NOTE: modernizing the default colorschemes _AND_ introducing new ones is now
+a project in its own right: https://github.com/vim/colorschemes. Feel free to
+reach out if you want to lend a hand.
 
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
