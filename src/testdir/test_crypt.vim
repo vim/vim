@@ -3,6 +3,13 @@
 source check.vim
 CheckFeature cryptv
 
+let s:xxd_cmd = ''
+if empty($XXDPROG) && executable('..\xxd\xxd.exe')
+  let s:xxd_cmd = '..\xxd\xxd.exe'
+elseif !empty($XXDPROG) && executable($XXDPROG)
+  let s:xxd_cmd = $XXDPROG
+endif
+
 func Common_head_only(text)
   " This was crashing Vim
   split Xtest.txt
@@ -81,8 +88,11 @@ func Uncrypt_stable(method, crypted_text, key, uncrypted_text)
 endfunc
 
 func Uncrypt_stable_xxd(method, hex, key, uncrypted_text)
+  if empty(s:xxd_cmd)
+    throw 'Skipped: xxd program missing'
+  endif
   " use xxd to write the binary content
-  call system('xxd -r >Xtest.txt', a:hex)
+  call system(s:xxd_cmd .. ' -r >Xtest.txt', a:hex)
   call feedkeys(":split Xtest.txt\<CR>" . a:key . "\<CR>", 'xt')
   call assert_equal(a:uncrypted_text, getline(1, len(a:uncrypted_text)))
   bwipe!
