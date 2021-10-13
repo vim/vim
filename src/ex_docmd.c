@@ -3600,6 +3600,15 @@ find_ex_command(
 	    }
 	}
 
+	// "g:", "s:" and "l:" are always assumed to be a variable, thus start
+	// an expression.  A global/substitute/list command needs to use a
+	// longer name.
+	if (vim_strchr((char_u *)"gsl", *p) != NULL && p[1] == ':')
+	{
+	    eap->cmdidx = CMD_eval;
+	    return eap->cmd;
+	}
+
 	// If it is an ID it might be a variable with an operator on the next
 	// line, if the variable exists it can't be an Ex command.
 	if (p > eap->cmd && ends_excmd(*skipwhite(p))

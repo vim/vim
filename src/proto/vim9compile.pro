@@ -17,6 +17,7 @@ void fill_exarg_from_cctx(exarg_T *eap, cctx_T *cctx);
 int assignment_len(char_u *p, int *heredoc);
 void vim9_declare_error(char_u *name);
 int check_vim9_unlet(char_u *name);
+int check_global_and_subst(char_u *cmd, char_u *arg);
 int compile_def_function(ufunc_T *ufunc, int check_return_type, compiletype_T compile_type, cctx_T *outer_cctx);
 void set_function_type(ufunc_T *ufunc);
 void delete_instr(isn_T *isn);

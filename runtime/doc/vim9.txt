@@ -942,8 +942,21 @@ Ex command ranges need to be prefixed with a colon. >
 
 Some Ex commands can be confused with assignments in Vim9 script: >
 	g:name = value    # assignment
-	g:pattern:cmd	  # invalid command - ERROR
 	:g:pattern:cmd	  # :global command
+
+To avoid confusion between a `:global` or `:substitute` command and an
+expression or assignment, a few separators cannot be used when these commands
+are abbreviated to a single character: ':', '-' and '.'. >
+	g:pattern:cmd	  # invalid command - ERROR
+	s:pattern:repl	  # invalid command - ERROR
+	g-pattern-cmd	  # invalid command - ERROR
+	s-pattern-repl	  # invalid command - ERROR
+	g.pattern.cmd	  # invalid command - ERROR
+	s.pattern.repl	  # invalid command - ERROR
+
+Also, there cannot be a space between the command and the separator: >
+	g /pattern/cmd	  # invalid command - ERROR
+	s /pattern/repl	  # invalid command - ERROR
 
 Functions defined with `:def` compile the whole function.  Legacy functions
 can bail out, and the following lines are not parsed: >

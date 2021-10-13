@@ -1489,5 +1489,54 @@ def Test_cmdwin_block()
   au! justTesting
 enddef
 
+def Test_var_not_cmd()
+  var lines =<< trim END
+      g:notexist:cmd
+  END
+  CheckDefAndScriptFailure2(lines, 'E488: Trailing characters: :cmd', 'E121: Undefined variable: g:notexist', 1)
+
+  lines =<< trim END
+      g-pat-cmd
+  END
+  CheckDefAndScriptFailure(lines, 'E1241:', 1)
+
+  lines =<< trim END
+      s:notexist:repl
+  END
+  CheckDefAndScriptFailure2(lines, 'E488: Trailing characters: :repl', 'E121: Undefined variable: s:notexist', 1)
+
+  lines =<< trim END
+      s-pat-repl
+  END
+  CheckDefAndScriptFailure(lines, 'E1241:', 1)
+
+  lines =<< trim END
+      w:notexist->len()
+  END
+  CheckDefExecAndScriptFailure(lines, 'E121: Undefined variable: w:notexist', 1)
+
+  lines =<< trim END
+      b:notexist->len()
+  END
+  CheckDefExecAndScriptFailure(lines, 'E121: Undefined variable: b:notexist', 1)
+
+  lines =<< trim END
+      t:notexist->len()
+  END
+  CheckDefExecAndScriptFailure(lines, 'E121: Undefined variable: t:notexist', 1)
+enddef
+
+def Test_no_space_after_command()
+  var lines =<< trim END
+      g /pat/cmd
+  END
+  CheckDefAndScriptFailure(lines, 'E1242:', 1)
+
+  lines =<< trim END
+      s /pat/repl
+  END
+  CheckDefAndScriptFailure(lines, 'E1242:', 1)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

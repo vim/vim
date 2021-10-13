@@ -9473,6 +9473,26 @@ compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
 #endif
 
 /*
+ * Check if the separator for a :global or :substitute command is OK.
+ */
+    int
+check_global_and_subst(char_u *cmd, char_u *arg)
+{
+    if (arg == cmd + 1 && vim_strchr(":-.", *arg) != NULL)
+    {
+	semsg(_(e_separator_not_supported_str), arg);
+	return FAIL;
+    }
+    if (VIM_ISWHITE(cmd[1]))
+    {
+	semsg(_(e_no_white_space_allowed_before_separator_str), cmd);
+	return FAIL;
+    }
+    return OK;
+}
+
+
+/*
  * Add a function to the list of :def functions.
  * This sets "ufunc->uf_dfunc_idx" but the function isn't compiled yet.
  */
@@ -10066,6 +10086,8 @@ compile_def_function(
 		    break;
 
 	    case CMD_substitute:
+		    if (check_global_and_subst(ea.cmd, p) == FAIL)
+			goto erret;
 		    if (cctx.ctx_skip == SKIP_YES)
 			line = (char_u *)"";
 		    else
@@ -10132,6 +10154,10 @@ compile_def_function(
 			line = compile_script(line, &cctx);
 		    break;
 
+	    case CMD_global:
+		    if (check_global_and_subst(ea.cmd, p) == FAIL)
+			goto erret;
+		    // FALLTHROUGH
 	    default:
 		    // Not recognized, execute with do_cmdline_cmd().
 		    ea.arg = p;
