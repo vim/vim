@@ -9478,7 +9478,7 @@ compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
     int
 check_global_and_subst(char_u *cmd, char_u *arg)
 {
-    if (arg == cmd + 1 && vim_strchr(":-.", *arg) != NULL)
+    if (arg == cmd + 1 && vim_strchr((char_u *)":-.", *arg) != NULL)
     {
 	semsg(_(e_separator_not_supported_str), arg);
 	return FAIL;
