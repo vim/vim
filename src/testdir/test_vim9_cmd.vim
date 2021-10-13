@@ -1531,11 +1531,35 @@ def Test_no_space_after_command()
       g /pat/cmd
   END
   CheckDefAndScriptFailure(lines, 'E1242:', 1)
+  lines =<< trim END
+      g #pat#cmd
+  END
+  CheckDefAndScriptFailure(lines, 'E1242:', 1)
+  lines =<< trim END
+      g#pat#cmd
+  END
+  CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+      g# pat#cmd
+  END
+  CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
       s /pat/repl
   END
   CheckDefAndScriptFailure(lines, 'E1242:', 1)
+  lines =<< trim END
+      s #pat#repl
+  END
+  CheckDefAndScriptFailure(lines, 'E1242:', 1)
+  lines =<< trim END
+      s#pat#repl
+  END
+  CheckDefExecAndScriptFailure(lines, 'E486:', 1)
+  lines =<< trim END
+      s# pat#repl
+  END
+  CheckDefExecAndScriptFailure(lines, 'E486:', 1)
 enddef
 
 
