@@ -3319,7 +3319,7 @@ set_var_const(
 		    goto failed;
 		}
 
-		if (var_in_vim9script)
+		if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
 		{
 		    where_T where = WHERE_INIT;
 
@@ -3331,7 +3331,8 @@ set_var_const(
 			goto failed;
 		}
 
-		if (var_check_permission(di, name) == FAIL)
+		if ((flags & ASSIGN_FOR_LOOP) == 0
+				     && var_check_permission(di, name) == FAIL)
 		    goto failed;
 	    }
 	    else

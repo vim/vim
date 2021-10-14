@@ -978,8 +978,9 @@ find_typval_in_script(typval_T *dest)
 	// legacy script doesn't store variable types
 	return NULL;
 
-    // Find the svar_T in sn_var_vals.
-    for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+    // Find the svar_T in sn_var_vals.  Start at the end, in a for loop the
+    // variable was added at the end.
+    for (idx = si->sn_var_vals.ga_len - 1; idx >= 0; --idx)
     {
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
