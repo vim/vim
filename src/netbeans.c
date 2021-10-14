@@ -1760,7 +1760,10 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 		nbdebug(("    invalid buffer identifier in setModtime\n"));
 	    else
+	    {
 		buf->bufp->b_mtime = atoi((char *)args);
+		buf->bufp->b_mtime_ns = 0;
+	    }
 // =====================================================================
 	}
 	else if (streq((char *)cmd, "setReadOnly"))

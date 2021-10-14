@@ -1032,6 +1032,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 #endif
 	    buf_store_time(buf, &st, buf->b_ffname);
 	    buf->b_mtime_read = buf->b_mtime;
+	    buf->b_mtime_read_ns = buf->b_mtime_ns;
 	}
 	else
 	{
@@ -1040,7 +1041,9 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	    long_to_char(0L, b0p->b0_ino);
 #endif
 	    buf->b_mtime = 0;
+	    buf->b_mtime_ns = 0;
 	    buf->b_mtime_read = 0;
+	    buf->b_mtime_read_ns = 0;
 	    buf->b_orig_size = 0;
 	    buf->b_orig_mode = 0;
 	}
@@ -2436,6 +2439,9 @@ ml_sync_all(int check_file, int check_char)
 	     */
 	    if (mch_stat((char *)buf->b_ffname, &st) == -1
 		    || st.st_mtime != buf->b_mtime_read
+#ifdef ST_MTIM_NSEC
+		    || st.ST_MTIM_NSEC != buf->b_mtime_read_ns
+#endif
 		    || st.st_size != buf->b_orig_size)
 	    {
 		ml_preserve(buf, FALSE);

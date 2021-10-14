@@ -408,6 +408,7 @@ readfile(
 	{
 	    buf_store_time(curbuf, &st, fname);
 	    curbuf->b_mtime_read = curbuf->b_mtime;
+	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
 	    filesize_disk = st.st_size;
 #ifdef UNIX
 	    /*
@@ -432,7 +433,9 @@ readfile(
 	else
 	{
 	    curbuf->b_mtime = 0;
+	    curbuf->b_mtime_ns = 0;
 	    curbuf->b_mtime_read = 0;
+	    curbuf->b_mtime_read_ns = 0;
 	    curbuf->b_orig_size = 0;
 	    curbuf->b_orig_mode = 0;
 	}
@@ -2569,6 +2572,7 @@ failed:
 	{
 	    buf_store_time(curbuf, &st, fname);
 	    curbuf->b_mtime_read = curbuf->b_mtime;
+	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
 	}
 #endif
     }
@@ -3115,15 +3119,19 @@ msg_add_eol(void)
 }
 
     int
-time_differs(long t1, long t2)
+time_differs(stat_T *st, long mtime, long mtime_ns UNUSED)
 {
 #if defined(__linux__) || defined(MSWIN)
     // On a FAT filesystem, esp. under Linux, there are only 5 bits to store
     // the seconds.  Since the roundoff is done when flushing the inode, the
     // time may change unexpectedly by one second!!!
-    return (t1 - t2 > 1 || t2 - t1 > 1);
+    return (long)st->st_mtime - mtime > 1 || mtime - (long)st->st_mtime > 1
+# ifdef ST_MTIM_NSEC
+		|| (long)st->ST_MTIM_NSEC != mtime_ns
+# endif
+		;
 #else
-    return (t1 != t2);
+    return (long)st->st_mtime != mtime;
 #endif
 }
 
@@ -4072,7 +4080,7 @@ buf_check_timestamp(
     if (       !(buf->b_flags & BF_NOTEDITED)
 	    && buf->b_mtime != 0
 	    && ((stat_res = mch_stat((char *)buf->b_ffname, &st)) < 0
-		|| time_differs((long)st.st_mtime, buf->b_mtime)
+		|| time_differs(&st, buf->b_mtime, buf->b_mtime_ns)
 		|| st.st_size != buf->b_orig_size
 #ifdef HAVE_ST_MODE
 		|| (int)st.st_mode != buf->b_orig_mode
@@ -4187,9 +4195,12 @@ buf_check_timestamp(
 			mesg2 = _("See \":help W16\" for more info.");
 		    }
 		    else
+		    {
 			// Only timestamp changed, store it to avoid a warning
 			// in check_mtime() later.
 			buf->b_mtime_read = buf->b_mtime;
+			buf->b_mtime_read_ns = buf->b_mtime_ns;
+		    }
 		}
 	    }
 	}
@@ -4468,6 +4479,11 @@ buf_reload(buf_T *buf, int orig_mode)
 buf_store_time(buf_T *buf, stat_T *st, char_u *fname UNUSED)
 {
     buf->b_mtime = (long)st->st_mtime;
+#ifdef ST_MTIM_NSEC
+    buf->b_mtime_ns = (long)st->ST_MTIM_NSEC;
+#else
+    buf->b_mtime_ns = 0;
+#endif
     buf->b_orig_size = st->st_size;
 #ifdef HAVE_ST_MODE
     buf->b_orig_mode = (int)st->st_mode;

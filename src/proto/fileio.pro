@@ -12,7 +12,7 @@ void msg_add_fname(buf_T *buf, char_u *fname);
 int msg_add_fileformat(int eol_type);
 void msg_add_lines(int insert_space, long lnum, off_T nchars);
 void msg_add_eol(void);
-int time_differs(long t1, long t2);
+int time_differs(stat_T *st, long mtime, long mtime_ns);
 int need_conversion(char_u *fenc);
 int get_fio_flags(char_u *ptr);
 int get_win_fio_flags(char_u *ptr);

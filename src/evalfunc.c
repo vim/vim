@@ -5479,6 +5479,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"nanotime",
+#ifdef ST_MTIM_NSEC
+		1
+#else
+		0
+#endif
+	},
 	{"num64", 1},
 	{"ole",
 #ifdef FEAT_OLE

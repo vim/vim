@@ -527,7 +527,7 @@ buf_write_bytes(struct bw_info *ip)
 check_mtime(buf_T *buf, stat_T *st)
 {
     if (buf->b_mtime_read != 0
-	    && time_differs((long)st->st_mtime, buf->b_mtime_read))
+		  && time_differs(st, buf->b_mtime_read, buf->b_mtime_read_ns))
     {
 	msg_scroll = TRUE;	    // don't overwrite messages here
 	msg_silent = 0;		    // must give this prompt
@@ -2558,6 +2558,7 @@ nofail:
 	    {
 		buf_store_time(buf, &st_old, fname);
 		buf->b_mtime_read = buf->b_mtime;
+		buf->b_mtime_read_ns = buf->b_mtime_ns;
 	    }
 	}
     }

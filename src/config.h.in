@@ -144,6 +144,9 @@
 /* Define if stat() ignores a trailing slash */
 #undef STAT_IGNORES_SLASH
 
+/* Define to nanoseconds field of struct stat */
+#undef ST_MTIM_NSEC
+
 /* Define if tgetstr() has a second argument that is (char *) */
 #undef TGETSTR_CHAR_P
 
