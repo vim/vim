@@ -1499,6 +1499,10 @@ def Test_var_not_cmd()
       g-pat-cmd
   END
   CheckDefAndScriptFailure(lines, 'E1241:', 1)
+  lines =<< trim END
+      g.pat.cmd
+  END
+  CheckDefAndScriptFailure2(lines, 'E1001: Variable not found: g', 'E121: Undefined variable: g', 1)
 
   lines =<< trim END
       s:notexist:repl
@@ -1509,6 +1513,10 @@ def Test_var_not_cmd()
       s-pat-repl
   END
   CheckDefAndScriptFailure(lines, 'E1241:', 1)
+  lines =<< trim END
+      s.pat.repl
+  END
+  CheckDefAndScriptFailure2(lines, 'E1001: Variable not found: s', 'E121: Undefined variable: s', 1)
 
   lines =<< trim END
       w:notexist->len()
