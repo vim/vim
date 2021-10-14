@@ -533,6 +533,10 @@ CClink = $(CC)
 # CONF_OPT_CANBERRA = --enable-canberra
 # CONF_OPT_CANBERRA = --disable-canberra
 
+# libsodium - For enhanced encryption.  Default is on.
+# Uncomment the next line to not use libsodium
+# CONF_OPT_SODIUM = --disable-libsodium
+
 # FEATURES - For creating Vim with more or less features
 # Uncomment one of these lines when you want to include few to many features.
 # The default is "huge" for most systems.
@@ -615,7 +619,7 @@ CClink = $(CC)
 # Note: If you use -Wextra and get warnings in GTK code about function
 #       parameters, you can add -Wno-cast-function-type (but not with clang)
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
-#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
@@ -777,10 +781,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 ###     AIX 4.3.3.12 with xic 3.6.6 (David R. Favor)
 #       needed to avoid a problem where strings.h gets included
 #CFLAGS = -qsrcmsg -O2 -qmaxmem=8192 -D__STR31__
-
-### (W) Solaris with multi-threaded libraries (-lthread):
-###	If suspending doesn't work properly, try using this line:
-#EXTRA_DEFS = -D_REENTRANT
 
 ### (7) Solaris 2.4/2.5 with Centerline compiler
 #CC = clcc
@@ -1455,12 +1455,12 @@ CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) \
 #	  -D"__attribute__\\(x\\)=" -D"__asm__\\(x\\)=" \
 #	  -D__extension__= -D__restrict="" \
 #	  -D__gnuc_va_list=char -D__builtin_va_list=char
-
 #
 #     This is for cproto 3 patchlevel 9 or above (currently 4.6, 4.7g)
 #     __inline and __attribute__ are now recognized by cproto
+#     __attribute() is not recognized and used in X11/Intrinsic.h
 #     -D"foo()=" is not supported by all compilers so do not use it
-NO_ATTR=
+NO_ATTR = -D"__attribute\\(x\\)="
 #
 # Use this for cproto 3 patchlevel 6 or below (use "cproto -V" to check):
 # PROTO_FLAGS = -f4 -d -E"$(CPP)" $(NO_ATTR)
@@ -2087,7 +2087,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_ARGS4) $(CONF_ARGS5) $(CONF_ARGS6) \
 		$(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
 		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
-		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA); \
+		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA) $(CONF_OPT_SODIUM); \
 	fi
 
 # Use "make reconfig" to rerun configure without cached values.
