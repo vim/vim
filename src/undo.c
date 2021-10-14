@@ -1786,6 +1786,11 @@ u_write_undo(
 	write_ok = FALSE;
 #endif
 
+#if defined(UNIX) && defined(HAVE_FSYNC)
+    if (p_fs && fflush(fp) == 0 && vim_fsync(fd) != 0)
+	write_ok = FALSE;
+#endif
+
 write_error:
     fclose(fp);
     if (!write_ok)
