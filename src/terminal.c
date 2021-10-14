@@ -1995,6 +1995,7 @@ term_check_timers(int next_due_arg, proftime_T *now)
 set_terminal_mode(term_T *term, int normal_mode)
 {
     term->tl_normal_mode = normal_mode;
+    trigger_modechanged();
     if (!normal_mode)
 	handle_postponed_scrollback(term);
     VIM_CLEAR(term->tl_status_text);
