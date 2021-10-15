@@ -3121,18 +3121,19 @@ msg_add_eol(void)
     int
 time_differs(stat_T *st, long mtime, long mtime_ns UNUSED)
 {
-#if defined(__linux__) || defined(MSWIN)
-    // On a FAT filesystem, esp. under Linux, there are only 5 bits to store
-    // the seconds.  Since the roundoff is done when flushing the inode, the
-    // time may change unexpectedly by one second!!!
-    return (long)st->st_mtime - mtime > 1 || mtime - (long)st->st_mtime > 1
-# ifdef ST_MTIM_NSEC
-		|| (long)st->ST_MTIM_NSEC != mtime_ns
-# endif
-		;
-#else
-    return (long)st->st_mtime != mtime;
+    return
+#ifdef ST_MTIM_NSEC
+	(long)st->ST_MTIM_NSEC != mtime_ns ||
 #endif
+#if defined(__linux__) || defined(MSWIN)
+	// On a FAT filesystem, esp. under Linux, there are only 5 bits to store
+	// the seconds.  Since the roundoff is done when flushing the inode, the
+	// time may change unexpectedly by one second!!!
+	(long)st->st_mtime - mtime > 1 || mtime - (long)st->st_mtime > 1
+#else
+	(long)st->st_mtime != mtime
+#endif
+	;
 }
 
 /*
