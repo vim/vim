@@ -2909,10 +2909,34 @@ cell2attr(
 #ifdef FEAT_TERMGUICOLORS
     if (p_tgc)
     {
-	guicolor_T fg, bg;
+	guicolor_T fg = INVALCOLOR;
+	guicolor_T bg = INVALCOLOR;
 
-	fg = gui_get_rgb_color_cmn(cellfg.red, cellfg.green, cellfg.blue);
-	bg = gui_get_rgb_color_cmn(cellbg.red, cellbg.green, cellbg.blue);
+	// Use the 'wincolor' or "Terminal" highlighting for the default
+	// colors.
+	if (VTERM_COLOR_IS_DEFAULT_FG(&cellfg)
+		|| VTERM_COLOR_IS_DEFAULT_BG(&cellbg))
+	{
+	    int id = 0;
+
+	    if (wp != NULL && *wp->w_p_wcr != NUL)
+		id = syn_name2id(wp->w_p_wcr);
+	    if (id == 0)
+		id = syn_name2id(term_get_highlight_name(term));
+	    if (id > 0)
+		syn_id2colors(id, &fg, &bg);
+	    if (!VTERM_COLOR_IS_DEFAULT_FG(&cellfg))
+		fg = gui_get_rgb_color_cmn(cellfg.red, cellfg.green,
+					   cellfg.blue);
+	    if (!VTERM_COLOR_IS_DEFAULT_BG(&cellbg))
+		bg = gui_get_rgb_color_cmn(cellbg.red, cellbg.green,
+					   cellbg.blue);
+	}
+	else
+	{
+	    fg = gui_get_rgb_color_cmn(cellfg.red, cellfg.green, cellfg.blue);
+	    bg = gui_get_rgb_color_cmn(cellbg.red, cellbg.green, cellbg.blue);
+	}
 
 	return get_tgc_attr_idx(attr, fg, bg);
     }
