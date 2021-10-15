@@ -2731,38 +2731,6 @@ set_terminal_default_colors(int cterm_fg, int cterm_bg)
     term_default_cterm_bg = cterm_bg - 1;
 }
 
-    static int
-get_default_cterm_fg(term_T *term)
-{
-    if (term->tl_highlight_name != NULL)
-    {
-	int id = syn_name2id(term->tl_highlight_name);
-	int fg = -1;
-	int bg = -1;
-
-	if (id > 0)
-	    syn_id2cterm_bg(id, &fg, &bg);
-	return fg;
-    }
-    return term_default_cterm_fg;
-}
-
-    static int
-get_default_cterm_bg(term_T *term)
-{
-    if (term->tl_highlight_name != NULL)
-    {
-	int id = syn_name2id(term->tl_highlight_name);
-	int fg = -1;
-	int bg = -1;
-
-	if (id > 0)
-	    syn_id2cterm_bg(id, &fg, &bg);
-	return bg;
-    }
-    return term_default_cterm_bg;
-}
-
 /*
  * Reverse engineer the RGB value into a cterm color index.
  * First color is 1.  Return 0 if no match found (default color).
@@ -2951,41 +2919,20 @@ cell2attr(
 	// colors.
 	if ((fg == 0 || bg == 0) && t_colors >= 16)
 	{
-	    int wincolor_fg = -1;
-	    int wincolor_bg = -1;
+	    int cterm_fg = -1;
+	    int cterm_bg = -1;
+	    int id = 0;
 
 	    if (wp != NULL && *wp->w_p_wcr != NUL)
-	    {
-		int id = syn_name2id(curwin->w_p_wcr);
-
-		// Get the 'wincolor' group colors.
-		if (id > 0)
-		    syn_id2cterm_bg(id, &wincolor_fg, &wincolor_bg);
-	    }
-	    if (fg == 0)
-	    {
-		if (wincolor_fg >= 0)
-		    fg = wincolor_fg + 1;
-		else
-		{
-		    int cterm_fg = get_default_cterm_fg(term);
-
-		    if (cterm_fg >= 0)
-			fg = cterm_fg + 1;
-		}
-	    }
-	    if (bg == 0)
-	    {
-		if (wincolor_bg >= 0)
-		    bg = wincolor_bg + 1;
-		else
-		{
-		    int cterm_bg = get_default_cterm_bg(term);
-
-		    if (cterm_bg >= 0)
-			bg = cterm_bg + 1;
-		}
-	    }
+		id = syn_name2id(wp->w_p_wcr);
+	    if (id == 0)
+		id = syn_name2id(term_get_highlight_name(term));
+	    if (id > 0)
+		syn_id2cterm_bg(id, &cterm_fg, &cterm_bg);
+	    if (fg == 0 && cterm_fg >= 0)
+		fg = cterm_fg + 1;
+	    if (bg == 0 && cterm_bg >= 0)
+		bg = cterm_bg + 1;
 	}
 
 	// with 8 colors set the bold attribute to get a bright foreground
@@ -4065,8 +4012,9 @@ init_default_colors(term_T *term, win_T *wp)
 #endif
     if (id != 0 && t_colors >= 16)
     {
-	int cterm_fg = get_default_cterm_fg(term);
-	int cterm_bg = get_default_cterm_bg(term);
+	int cterm_fg = -1;
+	int cterm_bg = -1;
+	syn_id2cterm_bg(id, &cterm_fg, &cterm_bg);
 
 	if (cterm_fg >= 0)
 	    cterm_color2vterm(cterm_fg, fg);
