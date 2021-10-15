@@ -168,9 +168,6 @@ terminal window will start with a white or black background.
 To use a different color the Terminal highlight group can be used, for
 example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
-The highlight needs to be defined before the terminal is created.  Doing it
-later, or setting 'wincolor', will only have effect when the program running
-in the terminal displays text or clears the terminal.
 Instead of Terminal another group can be specified with the "term_highlight"
 option for `term_start()`.
 
