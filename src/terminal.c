@@ -204,10 +204,6 @@ static void handle_postponed_scrollback(term_T *term);
 // backspace key.
 static int term_backspace_char = BS;
 
-// "Terminal" highlight group colors.
-static int term_default_cterm_fg = -1;
-static int term_default_cterm_bg = -1;
-
 // Store the last set and the desired cursor properties, so that we only update
 // them when needed.  Doing it unnecessary may result in flicker.
 static char_u	*last_set_cursor_color = NULL;
@@ -2719,16 +2715,6 @@ may_toggle_cursor(term_T *term)
 	else
 	    cursor_off();
     }
-}
-
-/*
- * Cache "Terminal" highlight group colors.
- */
-    void
-set_terminal_default_colors(int cterm_fg, int cterm_bg)
-{
-    term_default_cterm_fg = cterm_fg - 1;
-    term_default_cterm_bg = cterm_bg - 1;
 }
 
 /*

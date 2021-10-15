@@ -641,9 +641,6 @@ do_highlight(
     int		error = FALSE;
     int		color;
     int		is_normal_group = FALSE;	// "Normal" group
-#ifdef FEAT_TERMINAL
-    int		is_terminal_group = FALSE;	// "Terminal" group
-#endif
 #ifdef FEAT_GUI_X11
     int		is_menu_group = FALSE;		// "Menu" group
     int		is_scrollbar_group = FALSE;	// "Scrollbar" group
@@ -882,10 +879,6 @@ do_highlight(
 
     if (STRCMP(HL_TABLE()[idx].sg_name_u, "NORMAL") == 0)
 	is_normal_group = TRUE;
-#ifdef FEAT_TERMINAL
-    else if (STRCMP(HL_TABLE()[idx].sg_name_u, "TERMINAL") == 0)
-	is_terminal_group = TRUE;
-#endif
 #ifdef FEAT_GUI_X11
     else if (STRCMP(HL_TABLE()[idx].sg_name_u, "MENU") == 0)
 	is_menu_group = TRUE;
@@ -1534,11 +1527,6 @@ do_highlight(
 	    control_console_color_rgb();
 #endif
 	}
-#ifdef FEAT_TERMINAL
-	else if (is_terminal_group)
-	    set_terminal_default_colors(
-		    HL_TABLE()[idx].sg_cterm_fg, HL_TABLE()[idx].sg_cterm_bg);
-#endif
 #ifdef FEAT_GUI_X11
 # ifdef FEAT_MENU
 	else if (is_menu_group)
