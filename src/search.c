@@ -84,15 +84,14 @@ static int	lastc_bytelen = 1;	// >1 for multi-byte char
 
 // copy of spats[], for keeping the search patterns while executing autocmds
 static spat_T	    saved_spats[2];
+static char_u	    *saved_mr_pattern = NULL;
 # ifdef FEAT_SEARCH_EXTRA
 static int	    saved_spats_last_idx = 0;
 static int	    saved_spats_no_hlsearch = 0;
 # endif
 
-static char_u	    *mr_pattern = NULL;	// pattern used by search_regcomp()
-#ifdef FEAT_RIGHTLEFT
-static int	    mr_pattern_alloced = FALSE; // mr_pattern was allocated
-#endif
+// allocated copy of pattern used by search_regcomp()
+static char_u	    *mr_pattern = NULL;
 
 #ifdef FEAT_FIND_ID
 /*
@@ -161,29 +160,13 @@ search_regcomp(
     else if (options & SEARCH_HIS)	// put new pattern in history
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
 
+    vim_free(mr_pattern);
 #ifdef FEAT_RIGHTLEFT
-    if (mr_pattern_alloced)
-    {
-	vim_free(mr_pattern);
-	mr_pattern_alloced = FALSE;
-    }
-
     if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
-    {
-	char_u *rev_pattern;
-
-	rev_pattern = reverse_text(pat);
-	if (rev_pattern == NULL)
-	    mr_pattern = pat;	    // out of memory, keep normal pattern.
-	else
-	{
-	    mr_pattern = rev_pattern;
-	    mr_pattern_alloced = TRUE;
-	}
-    }
+	mr_pattern = reverse_text(pat);
     else
 #endif
-	mr_pattern = pat;
+	mr_pattern = vim_strsave(pat);
 
     /*
      * Save the currently used pattern in the appropriate place,
@@ -294,6 +277,10 @@ save_search_patterns(void)
 	saved_spats[1] = spats[1];
 	if (spats[1].pat != NULL)
 	    saved_spats[1].pat = vim_strsave(spats[1].pat);
+	if (mr_pattern == NULL)
+	    saved_mr_pattern = NULL;
+	else
+	    saved_mr_pattern = vim_strsave(mr_pattern);
 #ifdef FEAT_SEARCH_EXTRA
 	saved_spats_last_idx = last_idx;
 	saved_spats_no_hlsearch = no_hlsearch;
@@ -313,6 +300,8 @@ restore_search_patterns(void)
 #endif
 	vim_free(spats[1].pat);
 	spats[1] = saved_spats[1];
+	vim_free(mr_pattern);
+	mr_pattern = saved_mr_pattern;
 #ifdef FEAT_SEARCH_EXTRA
 	last_idx = saved_spats_last_idx;
 	set_no_hlsearch(saved_spats_no_hlsearch);
@@ -326,15 +315,7 @@ free_search_patterns(void)
 {
     vim_free(spats[0].pat);
     vim_free(spats[1].pat);
-
-# ifdef FEAT_RIGHTLEFT
-    if (mr_pattern_alloced)
-    {
-	vim_free(mr_pattern);
-	mr_pattern_alloced = FALSE;
-	mr_pattern = NULL;
-    }
-# endif
+    VIM_CLEAR(mr_pattern);
 }
 #endif
 
