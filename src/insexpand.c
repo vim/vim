@@ -301,7 +301,7 @@ has_compl_option(int dict_opt)
 							)
 		 : (*curbuf->b_p_tsr == NUL && *p_tsr == NUL
 #ifdef FEAT_COMPL_FUNC
-		     && *curbuf->b_p_thsfu == NUL
+		     && *curbuf->b_p_tsrfu == NUL
 #endif
 		   ))
     {
@@ -2246,7 +2246,7 @@ get_complete_funcname(int type)
 	case CTRL_X_OMNI:
 	    return curbuf->b_p_ofu;
 	case CTRL_X_THESAURUS:
-	    return curbuf->b_p_thsfu;
+	    return curbuf->b_p_tsrfu;
 	default:
 	    return (char_u *)"";
     }
@@ -2751,8 +2751,8 @@ thesaurus_func_complete(int type UNUSED)
 {
 #ifdef FEAT_COMPL_FUNC
     return (type == CTRL_X_THESAURUS
-		&& curbuf->b_p_thsfu != NULL
-		&& *curbuf->b_p_thsfu != NUL);
+		&& curbuf->b_p_tsrfu != NULL
+		&& *curbuf->b_p_tsrfu != NUL);
 #else
     return FALSE;
 #endif

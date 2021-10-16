@@ -271,7 +271,7 @@ check_buf_options(buf_T *buf)
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
     check_string_option(&buf->b_p_ofu);
-    check_string_option(&buf->b_p_thsfu);
+    check_string_option(&buf->b_p_tsrfu);
 #endif
 #ifdef FEAT_EVAL
     check_string_option(&buf->b_p_tfu);
