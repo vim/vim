@@ -2013,8 +2013,6 @@ hex2nr(int c)
     return c - '0';
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) \
-        || defined(PROTO) || defined(FEAT_AUTOSHELLDIR)
 /*
  * Convert two hex characters to a byte.
  * Return -1 if one of the characters is not hex.
@@ -2026,7 +2024,6 @@ hexhex2nr(char_u *p)
 	return -1;
     return (hex2nr(p[0]) << 4) + hex2nr(p[1]);
 }
-#endif
 
 /*
  * Return TRUE if "str" starts with a backslash that should be removed.
