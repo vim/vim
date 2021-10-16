@@ -698,6 +698,7 @@ func Test_terminal_list_args()
 endfunction
 
 func Test_terminal_noblock()
+  let g:test_is_flaky = 1
   let buf = term_start(&shell)
   let wait_time = 5000
   let letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -805,6 +806,7 @@ func Test_terminal_duplicate_eof_arg()
 endfunc
 
 func Test_terminal_no_cmd()
+  let g:test_is_flaky = 1
   let buf = term_start('NONE', {})
   call assert_notequal(0, buf)
 
@@ -855,6 +857,7 @@ func Test_terminal_wrong_options()
 endfunc
 
 func Test_terminal_redir_file()
+  let g:test_is_flaky = 1
   let cmd = Get_cat_123_cmd()
   let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
   call TermWait(buf)
@@ -946,6 +949,7 @@ func Test_terminal_wqall()
 endfunc
 
 func Test_terminal_composing_unicode()
+  let g:test_is_flaky = 1
   let save_enc = &encoding
   set encoding=utf-8
 

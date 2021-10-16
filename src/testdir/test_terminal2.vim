@@ -217,6 +217,7 @@ func Test_termwinscroll()
   CheckUnix
   " TODO: Somehow this test sometimes hangs in the GUI
   CheckNotGui
+  let g:test_is_flaky = 1
 
   " Let the terminal output more than 'termwinscroll' lines, some at the start
   " will be dropped.
@@ -412,6 +413,7 @@ func Test_terminal_does_not_truncate_last_newlines()
   if has('conpty')
     throw 'Skipped: fail on ConPTY'
   endif
+  let g:test_is_flaky = 1
   let contents = [
   \   [ 'One', '', 'X' ],
   \   [ 'Two', '', '' ],

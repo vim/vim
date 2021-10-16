@@ -404,42 +404,6 @@ else
   endtry
 endif
 
-" Names of flaky tests.
-let s:flaky_tests = [
-      \ 'Test_BufWrite_lockmarks()',
-      \ 'Test_autocmd_SafeState()',
-      \ 'Test_bufunload_all()',
-      \ 'Test_client_server()',
-      \ 'Test_close_and_exit_cb()',
-      \ 'Test_close_output_buffer()',
-      \ 'Test_collapse_buffers()',
-      \ 'Test_cwd()',
-      \ 'Test_diff_screen()',
-      \ 'Test_exit_callback_interval()',
-      \ 'Test_map_timeout_with_timer_interrupt()',
-      \ 'Test_out_cb()',
-      \ 'Test_pipe_through_sort_all()',
-      \ 'Test_pipe_through_sort_some()',
-      \ 'Test_popup_and_window_resize()',
-      \ 'Test_quoteplus()',
-      \ 'Test_quotestar()',
-      \ 'Test_reltime()',
-      \ 'Test_state()',
-      \ 'Test_terminal_composing_unicode()',
-      \ 'Test_terminal_does_not_truncate_last_newlines()',
-      \ 'Test_terminal_no_cmd()',
-      \ 'Test_terminal_noblock()',
-      \ 'Test_terminal_redir_file()',
-      \ 'Test_termwinscroll()',
-      \ 'Test_timer_oneshot()',
-      \ 'Test_timer_paused()',
-      \ 'Test_timer_repeat_many()',
-      \ 'Test_timer_repeat_three()',
-      \ 'Test_timer_stop_all_in_callback()',
-      \ 'Test_timer_stop_in_callback()',
-      \ 'Test_timer_with_partial_callback()',
-      \ ]
-
 " Locate Test_ functions and execute them.
 redir @q
 silent function /^Test_
@@ -491,8 +455,7 @@ for g:testfunc in sort(s:tests)
   " - it fails five times (with a different message)
   if len(v:errors) > 0
         \ && $TEST_NO_RETRY == ''
-        \ && (index(s:flaky_tests, g:testfunc) >= 0
-        \      || g:test_is_flaky)
+        \ && g:test_is_flaky
     while 1
       call add(s:messages, 'Found errors in ' . g:testfunc . ':')
       call extend(s:messages, v:errors)

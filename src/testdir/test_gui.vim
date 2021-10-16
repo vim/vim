@@ -120,6 +120,7 @@ func Test_getwinpos()
 endfunc
 
 func Test_quoteplus()
+  let g:test_is_flaky = 1
   let skipped = ''
 
   if !g:x11_based_gui

@@ -136,6 +136,8 @@ endfunc
 
 func Test_xrestore()
   CheckFeature xterm_clipboard
+  let g:test_is_flaky = 1
+
   let display = $DISPLAY
   new
   call CheckCopyPaste()
