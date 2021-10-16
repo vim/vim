@@ -2422,8 +2422,8 @@ restore_backup:
 	    && (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL))
     {
 	unchanged(buf, TRUE, FALSE);
-	// b:changedtick is may be incremented in unchanged() but that
-	// should not trigger a TextChanged event.
+	// b:changedtick may be incremented in unchanged() but that should not
+	// trigger a TextChanged event.
 	if (buf->b_last_changedtick + 1 == CHANGEDTICK(buf))
 	    buf->b_last_changedtick = CHANGEDTICK(buf);
 	u_unchanged(buf);
