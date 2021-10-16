@@ -404,6 +404,7 @@ EXTERN char_u	*p_cinw;	// 'cinwords'
 #ifdef FEAT_COMPL_FUNC
 EXTERN char_u	*p_cfu;		// 'completefunc'
 EXTERN char_u	*p_ofu;		// 'omnifunc'
+EXTERN char_u	*p_thsfu;	// 'thesaurusfunc'
 #endif
 EXTERN int	p_ci;		// 'copyindent'
 #if defined(FEAT_GUI) && defined(MACOS_X)
@@ -1217,6 +1218,9 @@ enum
 #endif
     , BV_TAGS
     , BV_TC
+#ifdef FEAT_COMPL_FUNC
+    , BV_THSFU
+#endif
     , BV_TS
     , BV_TW
     , BV_TX
