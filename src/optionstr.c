@@ -1560,6 +1560,13 @@ ambw_end:
 	redraw_gui_only = TRUE;
     }
 #endif
+# if defined(FEAT_GUI_GTK)
+    else if (varp == &p_guiligatures)
+    {
+	gui_set_ligatures();
+	redraw_gui_only = TRUE;
+    }
+# endif
 
 #ifdef CURSOR_SHAPE
     // 'guicursor'

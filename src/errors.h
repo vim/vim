@@ -670,3 +670,5 @@ EXTERN char e_separator_not_supported_str[]
 	INIT(= N_("E1241: Separator not supported: %s"));
 EXTERN char e_no_white_space_allowed_before_separator_str[]
 	INIT(= N_("E1242: No white space allowed before separator: %s"));
+EXTERN char e_ascii_code_not_in_range[]
+	INIT(= N_("E1243: ASCII code not in 32-127 range"));

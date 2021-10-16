@@ -5595,18 +5595,22 @@ draw_under(int flags, int row, int col, int cells)
     int
 gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 {
-    GdkRectangle	area;		    // area for clip mask
-    PangoGlyphString	*glyphs;	    // glyphs of current item
-    int			column_offset = 0;  // column offset in cells
-    int			i;
-    char_u		*conv_buf = NULL;   // result of UTF-8 conversion
-    char_u		*new_conv_buf;
-    int			convlen;
-    char_u		*sp, *bp;
-    int			plen;
-#if GTK_CHECK_VERSION(3,0,0)
-    cairo_t		*cr;
-#endif
+    char_u	*conv_buf = NULL;   // result of UTF-8 conversion
+    char_u	*new_conv_buf;
+    int		convlen;
+    char_u	*sp, *bp;
+    int		plen;
+    int		len_sum;	// return value needs to add up since we are
+				// printing substrings
+    int		byte_sum;	// byte position in string
+    char_u	*cs;		// current *s pointer
+    int		needs_pango;	// look ahead, 0=ascii 1=unicode/ligatures
+    int		should_need_pango;
+    int		slen;
+    int		is_ligature;
+    int		next_is_ligature;
+    int		is_utf8;
+    char_u	backup_ch;
 
     if (gui.text_context == NULL || gtk_widget_get_window(gui.drawarea) == NULL)
 	return len;
@@ -5653,6 +5657,124 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
     }
 
     /*
+     * Ligature support and complex utf-8 char optimization:
+     * String received to output to screen can print using pre-cached glyphs
+     * (fast) or Pango (slow). Ligatures and multibype utf-8 must use Pango.
+     * Since we receive mixed content string, split it into logical segments
+     * that are guaranteed to go trough glyphs as much as possible. Since
+     * single ligature char prints as ascii, print it that way.
+     */
+    len_sum = 0;    // return value needs to add up since we are printing
+		    // substrings
+    byte_sum = 0;
+    cs = s;
+    // look ahead, 0=ascii 1=unicode/ligatures
+    needs_pango = ((*cs & 0x80) || gui.ligatures_map[*cs]);
+
+    // split string into ascii and non-ascii (ligatures + utf-8) substrings,
+    // print glyphs or use Pango
+    while (cs < s + len)
+    {
+	slen = 0;
+	while (slen < (len - byte_sum))
+	{
+	    is_ligature = gui.ligatures_map[*(cs + slen)];
+	    // look ahead, single ligature char between ascii is ascii
+	    if (is_ligature && !needs_pango)
+	    {
+		if ((slen + 1) < (len - byte_sum))
+		{
+		    next_is_ligature = gui.ligatures_map[*(cs + slen + 1)];
+		    if (!next_is_ligature)
+			is_ligature = 0;
+		}
+		else
+		{
+		    is_ligature = 0;
+		}
+	    }
+	    is_utf8 = *(cs + slen) & 0x80;
+	    should_need_pango = (is_ligature || is_utf8);
+	    if (needs_pango != should_need_pango) // mode switch
+		break;
+	    if (needs_pango)
+	    {
+		if (is_ligature)
+		{
+		    slen++; // ligature char by char
+		}
+		else
+		{
+		    if ((*(cs + slen) & 0xC0) == 0x80)
+		    {
+			// a continuation, find next 0xC0 != 0x80 but don't
+			// include it
+			while ((slen < (len - byte_sum))
+					    && ((*(cs + slen) & 0xC0) == 0x80))
+			{
+			    slen++;
+			}
+		    }
+		    else if ((*(cs + slen) & 0xE0) == 0xC0)
+		    {
+			// + one byte utf8
+			slen++;
+		    }
+		    else if ((*(cs + slen) & 0xF0) == 0xE0)
+		    {
+			// + two bytes utf8
+			slen += 2;
+		    }
+		    else if ((*(cs + slen) & 0xF8) == 0xF0)
+		    {
+			// + three bytes utf8
+			slen += 3;
+		    }
+		    else
+		    {
+			// this should not happen, try moving forward, Pango
+			// will catch it
+			slen++;
+		    }
+		}
+	    }
+	    else
+	    {
+		slen++; // ascii
+	    }
+	}
+	// temporarily zero terminate substring, print, restore char, wrap
+	backup_ch = *(cs + slen);
+	*(cs + slen) = 0;
+	len_sum += gui_gtk2_draw_string_ext(row, col + len_sum,
+						 cs, slen, flags, needs_pango);
+	*(cs + slen) = backup_ch;
+	cs += slen;
+	byte_sum += slen;
+	needs_pango = should_need_pango;
+    }
+    vim_free(conv_buf);
+    return len_sum;
+}
+
+    int
+gui_gtk2_draw_string_ext(
+	int	row,
+	int	col,
+	char_u	*s,
+	int	len,
+	int	flags,
+	int	force_pango)
+{
+    GdkRectangle	area;		    // area for clip mask
+    PangoGlyphString	*glyphs;	    // glyphs of current item
+    int			column_offset = 0;  // column offset in cells
+    int			i;
+#if GTK_CHECK_VERSION(3,0,0)
+    cairo_t		*cr;
+#endif
+
+    /*
      * Restrict all drawing to the current screen line in order to prevent
      * fuzzy font lookups from messing up the screen.
      */
@@ -5679,7 +5801,8 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
      */
     if (!(flags & DRAW_ITALIC)
 	    && !((flags & DRAW_BOLD) && gui.font_can_bold)
-	    && gui.ascii_glyphs != NULL)
+	    && gui.ascii_glyphs != NULL
+	    && !force_pango)
     {
 	char_u *p;
 
@@ -5883,7 +6006,6 @@ skipitall:
 #endif
 
     pango_glyph_string_free(glyphs);
-    vim_free(conv_buf);
 
 #if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);

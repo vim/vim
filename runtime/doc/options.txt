@@ -3790,6 +3790,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen.  Set it to a negative value to allow windows taller than the
 	screen.
 
+						*'guiligatures'* *'gli'* *E1243*
+'guiligatures' 'gli'	string	(default "")
+			global
+			{only for GTK GUI}
+	List of ASCII characters that, when combined together, can create more
+	complex shapes. Each character must be a printable ASCII character
+	with a value in the 32-127 range.
+	Example: >
+		:set guiligatures=!\"#$%&()*+-./:<=>?@[]^_{\|~
+<	Changing this option updates screen output immediately. Set it to an
+	empty string to disable ligatures.
+
 						*'guioptions'* *'go'*
 'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
 					   "t" is removed in |defaults.vim|),

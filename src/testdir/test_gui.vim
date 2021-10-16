@@ -567,6 +567,31 @@ func Test_set_guifontwide()
   endif
 endfunc
 
+func Test_set_guiligatures()
+  let skipped = ''
+
+  if !g:x11_based_gui
+    let skipped = g:not_supported . 'guiligatures'
+  else
+    if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+      " Try correct value
+      set guiligatures=<>=ab
+      call assert_equal("<>=ab", &guiligatures)
+      " Try to throw error
+      try
+        set guiligatures=<>=šab
+        call assert_report("'set guiligatures=<>=šab should have failed")
+      catch
+        call assert_exception('E1243:')
+      endtry
+    endif
+  endif
+
+  if !empty(skipped)
+    throw skipped
+  endif
+endfunc
+
 func Test_set_guiheadroom()
   let skipped = ''
 

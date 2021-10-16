@@ -43,6 +43,7 @@ void gui_mch_set_fg_color(guicolor_T color);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);
 int gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags);
+int gui_gtk2_draw_string_ext(int row, int col, char_u *s, int len, int flags, int force_pango);
 int gui_mch_haskey(char_u *name);
 int gui_get_x11_windis(Window *win, Display **dis);
 Display *gui_mch_get_display(void);
