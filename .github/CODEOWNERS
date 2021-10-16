@@ -73,6 +73,7 @@ runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
 runtime/ftplugin/cfg.vim		@chrisbra
+runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/eiffel.vim		@dkearns
@@ -111,8 +112,10 @@ runtime/ftplugin/sass.vim		@tpope
 runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/spec.vim		@ignatenkobrain
 runtime/ftplugin/systemverilog.vim	@Kocha
+runtime/ftplugin/tcsh.vim		@dkearns
 runtime/ftplugin/tidy.vim		@dkearns
 runtime/ftplugin/tmux.vim		@ericpruitt
+runtime/ftplugin/toml.vim		@averms
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
 runtime/ftplugin/xml.vim		@chrisbra
@@ -151,6 +154,7 @@ runtime/indent/scss.vim			@tpope
 runtime/indent/sh.vim			@chrisbra
 runtime/indent/systemverilog.vim	@Kocha
 runtime/indent/tcl.vim			@dkearns
+runtime/indent/tcsh.vim			@dkearns
 runtime/indent/teraterm.vim		@k-takata
 runtime/indent/xml.vim			@chrisbra
 runtime/indent/zsh.vim			@chrisbra
@@ -238,10 +242,12 @@ runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/sudoers.vim		@e-kwsm
 runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tags.vim			@cecamp
+runtime/syntax/tcsh.vim			@dkearns
 runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/tex.vim			@cecamp
 runtime/syntax/tidy.vim			@dkearns
 runtime/syntax/tmux.vim			@ericpruitt
+runtime/syntax/toml.vim			@averms
 runtime/syntax/vim.vim			@cecamp
 runtime/syntax/wget.vim			@dkearns
 runtime/syntax/xbl.vim			@dkearns

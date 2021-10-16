@@ -103,7 +103,7 @@ script and `:def` functions; details are below:
 	writefile(['done'], 'file.txt')
 - You cannot use `:xit`, `:t`, `:k`, `:append`, `:change`, `:insert`, `:open`,
   and `:s` or `:d` with only flags.
-  or curly-braces names.
+- You cannot use curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
 - Executing a register with "@r" does not work, you can prepend a colon or use
@@ -206,7 +206,7 @@ When a function argument is optional (it has a default value) passing `v:none`
 as the argument results in using the default value.  This is useful when you
 want to specify a value for an argument that comes after an argument that
 should use its default value.  Example: >
-	def MyFunc(one = 'one', last = 'last)
+	def MyFunc(one = 'one', last = 'last')
 	  ...
 	enddef
 	MyFunc(v:none, 'LAST')  # first argument uses default value 'one'
@@ -631,7 +631,7 @@ at the start of the line indicates line continuation: >
 		|   echo 'match'
 		| endif
 
-Note that this means that in heredoc the first line cannot be a bar: >
+Note that this means that in heredoc the first line cannot start with a bar: >
 	var lines =<< trim END
 	   | this doesn't work
 	END
@@ -639,7 +639,7 @@ Either use an empty line at the start or do not use heredoc.  Or temporarily
 add the "C" flag to 'cpoptions': >
 	set cpo+=C
 	var lines =<< trim END
-	   | this doesn't work
+	   | this works
 	END
 	set cpo-=C
 If the heredoc is inside a function 'cpoptions' must be set before :def and
@@ -1118,7 +1118,7 @@ The map argument is a string expression, which is evaluated without the
 function scope.  Instead, use a lambda: >
 	def MapList(): list<string>
 	  var list = ['aa', 'bb', 'cc', 'dd']
-	  return range(1, 2)->map(( _, v) => list[v])
+	  return range(1, 2)->map((_, v) => list[v])
 	enddef
 
 The same is true for commands that are not compiled, such as `:global`.
@@ -1322,16 +1322,16 @@ an error, thus breaking backwards compatibility.  For example:
 - Using a string value when setting a number option.
 - Using a number where a string is expected.   *E1024*
 
-One consequence is that the item type of a list or dict given to map() must
+One consequence is that the item type of a list or dict given to |map()| must
 not change.  This will give an error in Vim9 script: >
-	vim9 echo map([1, 2, 3], (i, v) => 'item ' .. i)
+	echo map([1, 2, 3], (i, v) => 'item ' .. i)
 	E1012: Type mismatch; expected number but got string
-Instead use |mapnew(): >
-	vim9 echo mapnew([1, 2, 3], (i, v) => 'item ' .. i)
+Instead use |mapnew()|: >
+	echo mapnew([1, 2, 3], (i, v) => 'item ' .. i)
 	['item 0', 'item 1', 'item 2']
 
 If the item type was determined to be "any" it can change to a more specific
-type.  E.g. when a list of mixed types gets changed to a list of numbers: >
+type.  E.g. when a list of mixed types gets changed to a list of strings: >
 	var mylist = [1, 2.0, '3']
 	# typename(mylist) == "list<any>"
 	map(mylist, (i, v) => 'item ' .. i)

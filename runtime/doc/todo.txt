@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Sep 22
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Oct 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,12 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Flaky test op Windows:
-From test_vim9_script.vim:
-    Found errors in Test_no_unknown_error_after_error():
-    command line..script D:/a/vim/vim/src2/testdir/runtest.vim[486]..function RunTheTest[44]..Test_no_unknown_error_after_error line 22: Expected 'E1012:' but got 'E684: list index out of range: 0': so Xdef
+Remove s:flaky_tests from runtest.vim, set g:test_is_flaky in each test.
 
 Vim9 - Make everything work:
+- "filter #pat# ls" should work, #pat# is not a comment
+    vim9script
+    edit foobar
+    filter #foobar# ls
 - Check TODO items in vim9compile.c and vim9execute.c
 - use CheckLegacyAndVim9Success(lines) in many more places
 - For builtin functions using tv_get_string*() use check_for_string() to be
@@ -629,24 +630,27 @@ Window size changes after closing a tab. (#4741)
 
 Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
 
-Lifepillar: Updated/cleaned up color schemes:
-https://github.com/lifepillar/vim8-colorschemes.
-
-Include a few color schemes, based on popularity:
-http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
+Color schemes:
+NOTE: modernizing the default colorschemes _AND_ introducing new ones is now
+a project in its own right: https://github.com/vim/colorschemes. Feel free to
+reach out if you want to lend a hand.
+- Lifepillar: Updated/cleaned up color schemes:
+  https://github.com/lifepillar/vim8-colorschemes.
+- Include a few color schemes, based on popularity:
+  - http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
 http://vimawesome.com/?q=tag:color-scheme
-Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
-- monokai - Xia Crusoe (2017 Aug 4)
-- seoul256 - Christian Brabandt (2017 Aug 3)
-- gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
-      Lifepillar, 2018 Jan 22, #2573)
-- janah - Marco Hinz (2017 Aug 4)
-- apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
-Suggested by Hiroki Kokubun:
-- [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
-- [hybrid](https://github.com/w0ng/vim-hybrid)
-Include solarized color scheme?, it does not support termguicolors.
-- Sanitized version of pablo (Lifepillar, 2017 Nov 21)
+- Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
+  - monokai - Xia Crusoe (2017 Aug 4)
+  - seoul256 - Christian Brabandt (2017 Aug 3)
+  - gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
+        Lifepillar, 2018 Jan 22, #2573)
+  - janah - Marco Hinz (2017 Aug 4)
+  - apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
+- Suggested by Hiroki Kokubun:
+  - [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
+  - [hybrid](https://github.com/w0ng/vim-hybrid)
+- Include solarized color scheme?, it does not support termguicolors.
+  - Sanitized version of pablo (Lifepillar, 2017 Nov 21)
 
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)

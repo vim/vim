@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Oct 04
+*editing.txt*   For Vim version 8.2.  Last change: 2021 Oct 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1329,12 +1329,12 @@ present in 'cpoptions' and "!" is not used in the command.
 			other tabs and for windows in the current tab that
 			have their own window-local directory.
 
-							*:tch* *:tchdir*
-:tch[dir][!]		Same as |:tcd|.
-
 							*:tcd-*
 :tc[d][!] -		Change to the previous current directory, before the
 			last ":tcd {path}" command.
+
+							*:tch* *:tchdir*
+:tch[dir][!]		Same as |:tcd|.
 
 							*:lc* *:lcd*
 :lc[d][!] {path}	Like |:cd|, but only set the current directory when
@@ -1342,12 +1342,12 @@ present in 'cpoptions' and "!" is not used in the command.
 			directory for other windows is not changed, switching
 			to another window will stop using {path}.
 
-							*:lch* *:lchdir*
-:lch[dir][!]		Same as |:lcd|.
-
 							*:lcd-*
 :lcd[!] -		Change to the previous current directory, before the
 			last ":lcd {path}" command.
+
+							*:lch* *:lchdir*
+:lch[dir][!]		Same as |:lcd|.
 
 							*:pw* *:pwd* *E187*
 :pw[d]			Print the current directory name.
@@ -1375,14 +1375,14 @@ change anything for the current directory.
 When a |:lcd| command has been used for a window, the specified directory
 becomes the current directory for that window.  Windows where the |:lcd|
 command has not been used stick to the global or tab-local current directory.
-When jumping to another window the current directory will become the last
+When jumping to another window the current directory is changed to the last
 specified local current directory.  If none was specified, the global or
 tab-local current directory is used.
 
 When a |:tcd| command has been used for a tab page, the specified directory
 becomes the current directory for the current tab page and the current window.
 The current directory of other tab pages is not affected.  When jumping to
-another tab page, the current directory will become the last specified local
+another tab page, the current directory is changed to the last specified local
 directory for that tab page. If the current tab has no local current directory
 the global current directory is used.
 
@@ -1675,6 +1675,11 @@ differences (the "diff" program can be used for this).
 It is also possible that you modified the file yourself, from another edit
 session or with another command (e.g., a filter command).  Then you will know
 which version of the file you want to keep.
+
+The accuracy of the time check depends on the filesystem.  On Unix it is
+usually sub-second.  With old file sytems and on MS-Windows it is normally one
+second.  Use has('nanotime') check if sub-second time stamp checks are
+available.
 
 There is one situation where you get the message while there is nothing wrong:
 On a Win32 system on the day daylight saving time starts.  There is something

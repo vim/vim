@@ -708,7 +708,7 @@ EncodingChanged			Fires off after the 'encoding' option has been
 							*FileAppendCmd*
 FileAppendCmd			Before appending to a file.  Should do the
 				appending to the file.  Use the '[ and ']
-				marks for the range of lines.|Cmd-event|
+				marks for the range of lines. |Cmd-event|
 							*FileAppendPost*
 FileAppendPost			After appending to a file.
 							*FileAppendPre*
@@ -836,7 +836,7 @@ FilterReadPre			Before reading a file from a filter command.
 							*FilterWritePost*
 FilterWritePost			After writing a file for a filter command or
 				making a diff with an external diff (see
-				DiffUpdated for internal diff).
+				|DiffUpdated| for internal diff).
 				Vim checks the pattern against the name of
 				the current buffer as with FilterWritePre.
 				Not triggered when 'shelltemp' is off.
@@ -1195,9 +1195,9 @@ TextYankPost			After text has been yanked or deleted in the
 						register, as a list of lines,
 						like with: >
 						getreg(r, 1, 1)
-<				   regname	Name of the |register| or
-						empty string for the unnamed
-						register.
+<				   regname	Name of the register or empty
+						string for the unnamed
+						register, see |registers|.
 				   regtype	Type of the register, see
 						|getregtype()|.
 				   visual	True if the operation is

@@ -2410,7 +2410,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   xchacha20	XChaCha20 Cipher with Poly1305 Message Authentication
 			Code.  Medium strong till strong encryption.
 			Encryption is provided by the libsodium library, it
-			requires Vim to be built with |+sodium|
+			requires Vim to be built with |+sodium|.
 			It adds a seed and a message authentication code (MAC)
 			to the file.  This needs at least a Vim 8.2.3022 to
 			read the encrypted file.
@@ -7406,13 +7406,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      return value of expr contains % items they will get expanded.
 	      The expression can contain the } character, the end of
 	      expression is denoted by %}.
-	      The For example: >
+	      For example: >
 		func! Stl_filename() abort
 		    return "%t"
 		endfunc
 <	        `stl=%{Stl_filename()}`   results in `"%t"`
 	        `stl=%{%Stl_filename()%}` results in `"Name of current file"`
-	} -   End of `{%` expression
+	%} -  End of `{%` expression
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
 	) -   End of item group.  No width fields allowed.
