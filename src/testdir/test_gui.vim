@@ -61,11 +61,9 @@ func Test_colorscheme()
 endfunc
 
 func Test_getfontname_with_arg()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_athena') || has('gui_motif')
+  if has('gui_athena') || has('gui_motif')
     " Invalid font name. The result should be an empty string.
     call assert_equal('', getfontname('notexist'))
 
@@ -82,20 +80,14 @@ func Test_getfontname_with_arg()
     let fname = 'Bitstream Vera Sans Mono 12'
     call assert_equal(fname, getfontname(fname))
   endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
 endfunc
 
 func Test_getfontname_without_arg()
-  let skipped = ''
+  CheckX11BasedGui
 
   let fname = getfontname()
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_kde')
+  if has('gui_kde')
     " 'expected' is the value specified by SetUp() above.
     call assert_equal('Courier 10 Pitch/8/-1/5/50/0/0/0/0/0', fname)
   elseif has('gui_athena') || has('gui_motif')
@@ -105,10 +97,6 @@ func Test_getfontname_without_arg()
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " 'expected' is DEFAULT_FONT of gui_gtk_x11.c.
     call assert_equal('Monospace 10', fname)
-  endif
-
-  if !empty(skipped)
-    throw skipped
   endif
 endfunc
 
@@ -120,48 +108,41 @@ func Test_getwinpos()
 endfunc
 
 func Test_quoteplus()
+  CheckX11BasedGui
+
   let g:test_is_flaky = 1
-  let skipped = ''
 
-  if !g:x11_based_gui
-    let skipped = g:not_supported . 'quoteplus'
-  else
-    let quoteplus_saved = @+
+  let quoteplus_saved = @+
 
-    let test_call     = 'Can you hear me?'
-    let test_response = 'Yes, I can.'
-    let vim_exe = GetVimCommand()
-    let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
-          \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
-    " Ignore the "failed to create input context" error.
-    let cmd = 'call test_ignore_error("E285") | '
-	  \ . 'gui -f | '
-	  \ . 'call feedkeys("'
-          \ . '\"+p'
-          \ . ':s/' . test_call . '/' . test_response . '/\<CR>'
-          \ . '\"+yis'
-          \ . ':q!\<CR>", "tx")'
-    let run_vimtest = printf(testee, cmd)
+  let test_call     = 'Can you hear me?'
+  let test_response = 'Yes, I can.'
+  let vim_exe = GetVimCommand()
+  let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
+        \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
+  " Ignore the "failed to create input context" error.
+  let cmd = 'call test_ignore_error("E285") | '
+        \ . 'gui -f | '
+        \ . 'call feedkeys("'
+        \ . '\"+p'
+        \ . ':s/' . test_call . '/' . test_response . '/\<CR>'
+        \ . '\"+yis'
+        \ . ':q!\<CR>", "tx")'
+  let run_vimtest = printf(testee, cmd)
 
-    " Set the quoteplus register to test_call, and another gvim will launched.
-    " Then, it first tries to paste the content of its own quotedplus register
-    " onto it.  Second, it tries to substitute test_response for the pasted
-    " sentence.  If the sentence is identical to test_call, the substitution
-    " should succeed.  Third, it tries to yank the result of the substitution
-    " to its own quoteplus register, and last it quits.  When system()
-    " returns, the content of the quoteplus register should be identical to
-    " test_response if those quoteplus registers are synchronized properly
-    " with/through the X11 clipboard.
-    let @+ = test_call
-    call system(run_vimtest)
-    call assert_equal(test_response, @+)
+  " Set the quoteplus register to test_call, and another gvim will launched.
+  " Then, it first tries to paste the content of its own quotedplus register
+  " onto it.  Second, it tries to substitute test_response for the pasted
+  " sentence.  If the sentence is identical to test_call, the substitution
+  " should succeed.  Third, it tries to yank the result of the substitution
+  " to its own quoteplus register, and last it quits.  When system()
+  " returns, the content of the quoteplus register should be identical to
+  " test_response if those quoteplus registers are synchronized properly
+  " with/through the X11 clipboard.
+  let @+ = test_call
+  call system(run_vimtest)
+  call assert_equal(test_response, @+)
 
-    let @+ = quoteplus_saved
-  endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
+  let @+ = quoteplus_saved
 endfunc
 
 func Test_set_background()
@@ -333,8 +314,29 @@ func Test_set_guicursor()
   let &guicursor = guicursor_saved
 endfunc
 
+func Test_set_guifont_errors()
+  if has('win32')
+    " Invalid font names are accepted in GTK GUI
+    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+  endif
+
+  " This only works if 'renderoptions' exists and does not work for Windows XP
+  " and older.
+  if exists('+renderoptions') && windowsversion() !~ '^[345]\.'
+    " doing this four times used to cause a crash
+    set renderoptions=type:directx
+    for i in range(5)
+      set guifont=
+    endfor
+    set renderoptions=
+    for i in range(5)
+      set guifont=
+    endfor
+  endif
+endfunc
+
 func Test_set_guifont()
-  let skipped = ''
+  CheckX11BasedGui
 
   let guifont_saved = &guifont
   if has('xfontset')
@@ -343,9 +345,7 @@ func Test_set_guifont()
     set guifontset=
   endif
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_athena') || has('gui_motif')
+  if has('gui_athena') || has('gui_motif')
     " Non-empty font list with invalid font names.
     "
     " This test is twofold: (1) It checks if the command fails as expected
@@ -384,33 +384,10 @@ func Test_set_guifont()
     call assert_equal('Monospace 10', getfontname())
   endif
 
-  if has('win32')
-    " Invalid font names are accepted in GTK GUI
-    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
-  endif
-
-  " This only works if 'renderoptions' exists and does not work for Windows XP
-  " and older.
-  if exists('+renderoptions') && windowsversion() !~ '^[345]\.'
-    " doing this four times used to cause a crash
-    set renderoptions=type:directx
-    for i in range(5)
-      set guifont=
-    endfor
-    set renderoptions=
-    for i in range(5)
-      set guifont=
-    endfor
-  endif
-
   if has('xfontset')
     let &guifontset = guifontset_saved
   endif
   let &guifont = guifont_saved
-
-  if !empty(skipped)
-    throw skipped
-  endif
 endfunc
 
 func Test_set_guifontset()
@@ -485,12 +462,11 @@ func Test_set_guifontset()
 endfunc
 
 func Test_set_guifontwide()
-  call assert_fails('set guifontwide=*', 'E533:')
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_gtk')
+  call assert_fails('set guifontwide=*', 'E533:')
+
+  if has('gui_gtk')
     let guifont_saved = &guifont
     let guifontwide_saved = &guifontwide
 
@@ -561,51 +537,31 @@ func Test_set_guifontwide()
       let &encoding    = encoding_saved
     endif
   endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
 endfunc
 
 func Test_set_guiligatures()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_supported . 'guiligatures'
-  else
-    if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
-      " Try correct value
-      set guiligatures=<>=ab
-      call assert_equal("<>=ab", &guiligatures)
-      " Try to throw error
-      try
-        set guiligatures=<>=šab
-        call assert_report("'set guiligatures=<>=šab should have failed")
-      catch
-        call assert_exception('E1243:')
-      endtry
-    endif
-  endif
-
-  if !empty(skipped)
-    throw skipped
+  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+    " Try correct value
+    set guiligatures=<>=ab
+    call assert_equal("<>=ab", &guiligatures)
+    " Try to throw error
+    try
+      set guiligatures=<>=šab
+      call assert_report("'set guiligatures=<>=šab should have failed")
+    catch
+      call assert_exception('E1243:')
+    endtry
   endif
 endfunc
 
 func Test_set_guiheadroom()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_supported . 'guiheadroom'
-  else
-    " Since this script is to be read together with '-U NONE', the default
-    " value must be preserved.
-    call assert_equal(50, &guiheadroom)
-  endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
+  " Since this script is to be read together with '-U NONE', the default
+  " value must be preserved.
+  call assert_equal(50, &guiheadroom)
 endfunc
 
 func Test_set_guioptions()

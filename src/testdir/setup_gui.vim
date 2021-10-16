@@ -5,7 +5,6 @@ let g:x11_based_gui = has('gui_athena') || has('gui_motif')
 
 " Reasons for 'skipped'.
 let g:not_supported   = "Skipped: Feature/Option not supported by this GUI: "
-let g:not_implemented = "Skipped: Test not implemented yet for this GUI"
 let g:not_hosted      = "Skipped: Test not hosted by the system/environment"
 
 " For KDE set a font, empty 'guifont' may cause a hang.
