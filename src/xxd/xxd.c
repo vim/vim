@@ -224,7 +224,7 @@ exit_with_usage(void)
   fprintf(stderr, "    -c cols     format <cols> octets per line. Default 16 (-i: 12, -ps: 30).\n");
   fprintf(stderr, "    -E          show characters in EBCDIC. Default ASCII.\n");
   fprintf(stderr, "    -e          little-endian dump (incompatible with -ps,-i,-r).\n");
-  fprintf(stderr, "    -g          number of octets per group in normal output. Default 2 (-e: 4).\n");
+  fprintf(stderr, "    -g bytes    number of octets per group in normal output. Default 2 (-e: 4).\n");
   fprintf(stderr, "    -h          print this summary.\n");
   fprintf(stderr, "    -i          output in C include file style.\n");
   fprintf(stderr, "    -l len      stop after <len> octets.\n");
