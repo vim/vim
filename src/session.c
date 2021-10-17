@@ -43,7 +43,7 @@ ses_put_fname(FILE *fd, char_u *name, unsigned *flagp)
     }
 
     // escape special characters
-    p = vim_strsave_fnameescape(sname, FALSE);
+    p = vim_strsave_fnameescape(sname, VSE_NONE);
     vim_free(sname);
     if (p == NULL)
 	return FAIL;

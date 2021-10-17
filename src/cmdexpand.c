@@ -48,6 +48,8 @@ ExpandEscape(
 {
     int		i;
     char_u	*p;
+    int		vse_what = xp->xp_context == EXPAND_BUFFERS
+						       ? VSE_BUFFER : VSE_NONE;
 
     // May change home directory back to "~"
     if (options & WILD_HOME_REPLACE)
@@ -84,9 +86,10 @@ ExpandEscape(
 		    }
 		}
 #ifdef BACKSLASH_IN_FILENAME
-		p = vim_strsave_fnameescape(files[i], FALSE);
+		p = vim_strsave_fnameescape(files[i], vse_what);
 #else
-		p = vim_strsave_fnameescape(files[i], xp->xp_shell);
+		p = vim_strsave_fnameescape(files[i],
+					  xp->xp_shell ? VSE_SHELL : vse_what);
 #endif
 		if (p != NULL)
 		{

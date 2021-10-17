@@ -26,7 +26,7 @@ void redrawcmd(void);
 void compute_cmdrow(void);
 void cursorcmd(void);
 void gotocmdline(int clr);
-char_u *vim_strsave_fnameescape(char_u *fname, int shell);
+char_u *vim_strsave_fnameescape(char_u *fname, int what);
 void escape_fname(char_u **pp);
 void tilde_replace(char_u *orig_pat, int num_files, char_u **files);
 cmdline_info_T *get_cmdline_info(void);

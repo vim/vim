@@ -3894,27 +3894,32 @@ ccheck_abbr(int c)
 }
 
 /*
- * Escape special characters in "fname" for when used as a file name argument
- * after a Vim command, or, when "shell" is non-zero, a shell command.
+ * Escape special characters in "fname", depending on "what":
+ * VSE_NONE: for when used as a file name argument after a Vim command.
+ * VSE_SHELL: for a shell command.
+ * VSE_BUFFER: for the ":buffer" command.
  * Returns the result in allocated memory.
  */
     char_u *
-vim_strsave_fnameescape(char_u *fname, int shell UNUSED)
+vim_strsave_fnameescape(char_u *fname, int what)
 {
     char_u	*p;
 #ifdef BACKSLASH_IN_FILENAME
     char_u	buf[20];
     int		j = 0;
 
-    // Don't escape '[', '{' and '!' if they are in 'isfname'.
-    for (p = PATH_ESC_CHARS; *p != NUL; ++p)
+    // Don't escape '[', '{' and '!' if they are in 'isfname' and for the
+    // ":buffer" command.
+    for (p = what == VSE_BUFFER ? BUFFER_ESC_CHARS : PATH_ESC_CHARS;
+								*p != NUL; ++p)
 	if ((*p != '[' && *p != '{' && *p != '!') || !vim_isfilec(*p))
 	    buf[j++] = *p;
     buf[j] = NUL;
     p = vim_strsave_escaped(fname, buf);
 #else
-    p = vim_strsave_escaped(fname, shell ? SHELL_ESC_CHARS : PATH_ESC_CHARS);
-    if (shell && csh_like_shell() && p != NULL)
+    p = vim_strsave_escaped(fname, what == VSE_SHELL ? SHELL_ESC_CHARS
+		    : what == VSE_BUFFER ? BUFFER_ESC_CHARS : PATH_ESC_CHARS);
+    if (what == VSE_SHELL && csh_like_shell() && p != NULL)
     {
 	char_u	    *s;
 

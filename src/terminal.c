@@ -667,7 +667,7 @@ term_start(
 
 	    if (s == NULL)
 		break;
-	    p = vim_strsave_fnameescape(s, FALSE);
+	    p = vim_strsave_fnameescape(s, VSE_NONE);
 	    if (p == NULL)
 		break;
 	    ga_concat(&ga, p);

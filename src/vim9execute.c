@@ -1147,7 +1147,8 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 				    while ((e = vim_strchr(s, '\n')) != NULL)
 				    {
 					*e = NUL;
-					p = vim_strsave_fnameescape(s, FALSE);
+					p = vim_strsave_fnameescape(s,
+								     VSE_NONE);
 					if (p != NULL)
 					{
 					    ga_concat(&ga, p);
