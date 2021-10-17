@@ -5131,6 +5131,11 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_TSR:
 	    clear_string_option(&buf->b_p_tsr);
 	    break;
+#ifdef FEAT_COMPL_FUNC
+	case PV_TSRFU:
+	    clear_string_option(&buf->b_p_tsrfu);
+	    break;
+#endif
 	case PV_FP:
 	    clear_string_option(&buf->b_p_fp);
 	    break;
@@ -5225,6 +5230,9 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 #endif
 	    case PV_DICT: return (char_u *)&(curbuf->b_p_dict);
 	    case PV_TSR:  return (char_u *)&(curbuf->b_p_tsr);
+#ifdef FEAT_COMPL_FUNC
+	    case PV_TSRFU: return (char_u *)&(curbuf->b_p_tsrfu);
+#endif
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 	    case PV_BEXPR: return (char_u *)&(curbuf->b_p_bexpr);
 #endif
@@ -5305,6 +5313,10 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&(curbuf->b_p_dict) : p->var;
 	case PV_TSR:	return *curbuf->b_p_tsr != NUL
 				    ? (char_u *)&(curbuf->b_p_tsr) : p->var;
+#ifdef FEAT_COMPL_FUNC
+	case PV_TSRFU:	return *curbuf->b_p_tsrfu != NUL
+				    ? (char_u *)&(curbuf->b_p_tsrfu) : p->var;
+#endif
 	case PV_FP:	return *curbuf->b_p_fp != NUL
 				    ? (char_u *)&(curbuf->b_p_fp) : p->var;
 #ifdef FEAT_QUICKFIX
@@ -5433,7 +5445,6 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_COMPL_FUNC
 	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
 	case PV_OFU:	return (char_u *)&(curbuf->b_p_ofu);
-	case PV_THSFU:	return (char_u *)&(curbuf->b_p_tsrfu);
 #endif
 #ifdef FEAT_EVAL
 	case PV_TFU:	return (char_u *)&(curbuf->b_p_tfu);
@@ -5936,8 +5947,6 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_CFU);
 	    buf->b_p_ofu = vim_strsave(p_ofu);
 	    COPY_OPT_SCTX(buf, BV_OFU);
-	    buf->b_p_tsrfu = vim_strsave(p_thsfu);
-	    COPY_OPT_SCTX(buf, BV_THSFU);
 #endif
 #ifdef FEAT_EVAL
 	    buf->b_p_tfu = vim_strsave(p_tfu);
@@ -6080,6 +6089,9 @@ buf_copy_options(buf_T *buf, int flags)
 #endif
 	    buf->b_p_dict = empty_option;
 	    buf->b_p_tsr = empty_option;
+#ifdef FEAT_COMPL_FUNC
+	    buf->b_p_tsrfu = empty_option;
+#endif
 #ifdef FEAT_TEXTOBJ
 	    buf->b_p_qe = vim_strsave(p_qe);
 	    COPY_OPT_SCTX(buf, BV_QE);

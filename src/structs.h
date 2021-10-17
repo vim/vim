@@ -2864,7 +2864,6 @@ struct file_buffer
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	// 'completefunc'
     char_u	*b_p_ofu;	// 'omnifunc'
-    char_u	*b_p_tsrfu;	// 'thesaurusfunc'
 #endif
 #ifdef FEAT_EVAL
     char_u	*b_p_tfu;	// 'tagfunc'
@@ -2967,6 +2966,9 @@ struct file_buffer
     unsigned	b_tc_flags;     // flags for 'tagcase'
     char_u	*b_p_dict;	// 'dictionary' local value
     char_u	*b_p_tsr;	// 'thesaurus' local value
+#ifdef FEAT_COMPL_FUNC
+    char_u	*b_p_tsrfu;	// 'thesaurusfunc' local value
+#endif
     long	b_p_ul;		// 'undolevels' local value
 #ifdef FEAT_PERSISTENT_UNDO
     int		b_p_udf;	// 'undofile'
