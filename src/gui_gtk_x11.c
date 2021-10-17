@@ -5605,7 +5605,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
     int		byte_sum;	// byte position in string
     char_u	*cs;		// current *s pointer
     int		needs_pango;	// look ahead, 0=ascii 1=unicode/ligatures
-    int		should_need_pango;
+    int		should_need_pango = FALSE;
     int		slen;
     int		is_ligature;
     int		next_is_ligature;
@@ -5743,6 +5743,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 		slen++; // ascii
 	    }
 	}
+
 	// temporarily zero terminate substring, print, restore char, wrap
 	backup_ch = *(cs + slen);
 	*(cs + slen) = 0;
