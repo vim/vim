@@ -2305,8 +2305,8 @@ win_update(win_T *wp)
 			    ++new_rows;
 			else
 #endif
-#ifdef FEAT_DIFF
 			{
+#ifdef FEAT_DIFF
 			    if (l == wp->w_topline)
 				new_rows += plines_win_nofill(wp, l, TRUE)
 							  + wp->w_topfill;
