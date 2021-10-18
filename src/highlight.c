@@ -377,10 +377,8 @@ init_highlight(
 #ifdef FEAT_EVAL
     char_u	*p;
 
-    /*
-     * Try finding the color scheme file.  Used when a color file was loaded
-     * and 'background' or 't_Co' is changed.
-     */
+    // Try finding the color scheme file.  Used when a color file was loaded
+    // and 'background' or 't_Co' is changed.
     p = get_var_value((char_u *)"g:colors_name");
     if (p != NULL)
     {
@@ -400,9 +398,7 @@ init_highlight(
 
 #endif
 
-    /*
-     * Didn't use a color file, use the compiled-in colors.
-     */
+    // Didn't use a color file, use the compiled-in colors.
     if (both)
     {
 	had_both = TRUE;
@@ -441,9 +437,7 @@ init_highlight(
     }
 
 #ifdef FEAT_SYN_HL
-    /*
-     * If syntax highlighting is enabled load the highlighting for it.
-     */
+    // If syntax highlighting is enabled load the highlighting for it.
     if (get_var_value((char_u *)"g:syntax_on") != NULL)
     {
 	static int	recursive = 0;
@@ -581,11 +575,9 @@ lookup_color(int idx, int foreground, int *boldp)
     else if (t_colors == 16 || t_colors == 88
 					   || t_colors >= 256)
     {
-	/*
-	 * Guess: if the termcap entry ends in 'm', it is
-	 * probably an xterm-like terminal.  Use the changed
-	 * order for colors.
-	 */
+	// Guess: if the termcap entry ends in 'm', it is
+	// probably an xterm-like terminal.  Use the changed
+	// order for colors.
 	if (*T_CAF != NUL)
 	    p = T_CAF;
 	else
@@ -611,6 +603,758 @@ lookup_color(int idx, int foreground, int *boldp)
 }
 
 /*
+ * Link highlight group 'from_hg' to 'to_hg'.
+ * 'dodefault' is set to TRUE for ":highlight default link".
+ * 'forceit' is set to TRUE for ":higlight! link"
+ * 'init' is set to TRUE when initializing all the highlight groups.
+ */
+    static void
+highlight_group_link(
+	char_u	*from_hg,
+	int	from_len,
+	char_u	*to_hg,
+	int	to_len,
+	int	dodefault,
+	int	forceit,
+	int	init)
+{
+    int		from_id;
+    int		to_id;
+    hl_group_T	*hlgroup = NULL;
+
+    from_id = syn_check_group(from_hg, from_len);
+    if (STRNCMP(to_hg, "NONE", 4) == 0)
+	to_id = 0;
+    else
+	to_id = syn_check_group(to_hg, to_len);
+
+    if (from_id > 0)
+    {
+	hlgroup = &HL_TABLE()[from_id - 1];
+	if (dodefault && (forceit || hlgroup->sg_deflink == 0))
+	{
+	    hlgroup->sg_deflink = to_id;
+#ifdef FEAT_EVAL
+	    hlgroup->sg_deflink_sctx = current_sctx;
+	    hlgroup->sg_deflink_sctx.sc_lnum += SOURCING_LNUM;
+#endif
+	}
+    }
+
+    if (from_id > 0 && (!init || hlgroup->sg_set == 0))
+    {
+	// Don't allow a link when there already is some highlighting
+	// for the group, unless '!' is used
+	if (to_id > 0 && !forceit && !init
+		&& hl_has_settings(from_id - 1, dodefault))
+	{
+	    if (SOURCING_NAME == NULL && !dodefault)
+		emsg(_("E414: group has settings, highlight link ignored"));
+	}
+	else if (hlgroup->sg_link != to_id
+#ifdef FEAT_EVAL
+		|| hlgroup->sg_script_ctx.sc_sid != current_sctx.sc_sid
+#endif
+		|| hlgroup->sg_cleared)
+	{
+	    if (!init)
+		hlgroup->sg_set |= SG_LINK;
+	    hlgroup->sg_link = to_id;
+#ifdef FEAT_EVAL
+	    hlgroup->sg_script_ctx = current_sctx;
+	    hlgroup->sg_script_ctx.sc_lnum += SOURCING_LNUM;
+#endif
+	    hlgroup->sg_cleared = FALSE;
+	    redraw_all_later(SOME_VALID);
+
+	    // Only call highlight_changed() once after multiple changes.
+	    need_highlight_changed = TRUE;
+	}
+    }
+
+}
+
+/*
+ * Reset all highlighting to the defaults. Removes all highlighting for the
+ * groups added by the user.
+ */
+    static void
+highlight_reset_all(void)
+{
+    int		idx;
+
+#ifdef FEAT_GUI
+    // First, we do not destroy the old values, but allocate the new
+    // ones and update the display. THEN we destroy the old values.
+    // If we destroy the old values first, then the old values
+    // (such as GuiFont's or GuiFontset's) will still be displayed but
+    // invalid because they were free'd.
+    if (gui.in_use)
+    {
+# ifdef FEAT_BEVAL_TIP
+	gui_init_tooltip_font();
+# endif
+# if defined(FEAT_MENU) && (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF))
+	gui_init_menu_font();
+# endif
+    }
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_X11)
+    gui_mch_def_colors();
+# endif
+# ifdef FEAT_GUI_X11
+#  ifdef FEAT_MENU
+
+    // This only needs to be done when there is no Menu highlight
+    // group defined by default, which IS currently the case.
+    gui_mch_new_menu_colors();
+#  endif
+    if (gui.in_use)
+    {
+	gui_new_scrollbar_colors();
+#  ifdef FEAT_BEVAL_GUI
+	gui_mch_new_tooltip_colors();
+#  endif
+#  ifdef FEAT_MENU
+	gui_mch_new_menu_font();
+#  endif
+    }
+# endif
+
+    // Ok, we're done allocating the new default graphics items.
+    // The screen should already be refreshed at this point.
+    // It is now Ok to clear out the old data.
+#endif
+#ifdef FEAT_EVAL
+    do_unlet((char_u *)"g:colors_name", TRUE);
+#endif
+    restore_cterm_colors();
+
+    // Clear all default highlight groups and load the defaults.
+    for (idx = 0; idx < highlight_ga.ga_len; ++idx)
+	highlight_clear(idx);
+    init_highlight(TRUE, TRUE);
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    if (USE_24BIT)
+	highlight_gui_started();
+    else
+#endif
+	highlight_changed();
+    redraw_later_clear();
+}
+
+/*
+ * Set the 'term' or 'cterm' or 'gui' attributes for the highlight group at
+ * index 'idx'.
+ * 'key' is one of 'TERM' or 'CTERM' or 'GUI'
+ * 'arg' is the list of attribute names separated by comma.
+ * 'init' is set to TRUE when initializing all the highlight groups.
+ * Returns TRUE if the attributes are set.
+ */
+    static int
+highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
+{
+    int		attr;
+    int		off;
+    long	i;
+    int		len;
+
+    attr = 0;
+    off = 0;
+    while (arg[off] != NUL)
+    {
+	for (i = ARRAY_LENGTH(hl_attr_table); --i >= 0; )
+	{
+	    len = (int)STRLEN(hl_name_table[i]);
+	    if (STRNICMP(arg + off, hl_name_table[i], len) == 0)
+	    {
+		attr |= hl_attr_table[i];
+		off += len;
+		break;
+	    }
+	}
+	if (i < 0)
+	{
+	    semsg(_("E418: Illegal value: %s"), arg);
+	    return FALSE;
+	}
+	if (arg[off] == ',')		// another one follows
+	    ++off;
+    }
+    if (*key == 'T')
+    {
+	if (!init || !(HL_TABLE()[idx].sg_set & SG_TERM))
+	{
+	    if (!init)
+		HL_TABLE()[idx].sg_set |= SG_TERM;
+	    HL_TABLE()[idx].sg_term = attr;
+	}
+    }
+    else if (*key == 'C')
+    {
+	if (!init || !(HL_TABLE()[idx].sg_set & SG_CTERM))
+	{
+	    if (!init)
+		HL_TABLE()[idx].sg_set |= SG_CTERM;
+	    HL_TABLE()[idx].sg_cterm = attr;
+	    HL_TABLE()[idx].sg_cterm_bold = FALSE;
+	}
+    }
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+    else
+    {
+	if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
+	{
+	    if (!init)
+		HL_TABLE()[idx].sg_set |= SG_GUI;
+	    HL_TABLE()[idx].sg_gui = attr;
+	}
+    }
+#endif
+
+    return TRUE;
+}
+
+#ifdef FEAT_GUI
+/*
+ * Set the font for the highlight group at 'idx'.
+ * 'arg' is the font name.
+ * Returns TRUE if the font is changed.
+ */
+    static int
+highlight_set_font(
+	int	idx,
+	char_u	*arg,
+	int	is_normal_group,
+	int	is_menu_group,
+	int	is_tooltip_group)
+{
+    int		did_change = FALSE;
+
+    // in non-GUI fonts are simply ignored
+    if (HL_TABLE()[idx].sg_font_name != NULL
+	    && STRCMP(HL_TABLE()[idx].sg_font_name, arg) == 0)
+    {
+	// Font name didn't change, ignore.
+    }
+    else if (!gui.shell_created)
+    {
+	// GUI not started yet, always accept the name.
+	vim_free(HL_TABLE()[idx].sg_font_name);
+	HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
+	did_change = TRUE;
+    }
+    else
+    {
+	GuiFont temp_sg_font = HL_TABLE()[idx].sg_font;
+# ifdef FEAT_XFONTSET
+	GuiFontset temp_sg_fontset = HL_TABLE()[idx].sg_fontset;
+# endif
+	// First, save the current font/fontset.
+	// Then try to allocate the font/fontset.
+	// If the allocation fails, HL_TABLE()[idx].sg_font OR
+	// sg_fontset will be set to NOFONT or NOFONTSET respectively.
+
+	HL_TABLE()[idx].sg_font = NOFONT;
+# ifdef FEAT_XFONTSET
+	HL_TABLE()[idx].sg_fontset = NOFONTSET;
+# endif
+	hl_do_font(idx, arg, is_normal_group, is_menu_group,
+		is_tooltip_group, FALSE);
+
+# ifdef FEAT_XFONTSET
+	if (HL_TABLE()[idx].sg_fontset != NOFONTSET)
+	{
+	    // New fontset was accepted. Free the old one, if there
+	    // was one.
+	    gui_mch_free_fontset(temp_sg_fontset);
+	    vim_free(HL_TABLE()[idx].sg_font_name);
+	    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
+	    did_change = TRUE;
+	}
+	else
+	    HL_TABLE()[idx].sg_fontset = temp_sg_fontset;
+# endif
+	if (HL_TABLE()[idx].sg_font != NOFONT)
+	{
+	    // New font was accepted. Free the old one, if there was
+	    // one.
+	    gui_mch_free_font(temp_sg_font);
+	    vim_free(HL_TABLE()[idx].sg_font_name);
+	    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
+	    did_change = TRUE;
+	}
+	else
+	    HL_TABLE()[idx].sg_font = temp_sg_font;
+    }
+
+    return did_change;
+}
+#endif
+
+/*
+ * Set the cterm foreground color for the highlight group at 'idx' to 'color'.
+ * Returns TRUE if the foreground color is set.
+ */
+    static void
+highlight_set_ctermfg(int idx, int color, int is_normal_group)
+{
+    HL_TABLE()[idx].sg_cterm_fg = color + 1;
+    if (is_normal_group)
+    {
+	cterm_normal_fg_color = color + 1;
+	cterm_normal_fg_bold = (HL_TABLE()[idx].sg_cterm & HL_BOLD);
+#ifdef FEAT_GUI
+	// Don't do this if the GUI is used.
+	if (!gui.in_use && !gui.starting)
+#endif
+	{
+	    must_redraw = CLEAR;
+	    if (termcap_active && color >= 0)
+		term_fg_color(color);
+	}
+    }
+}
+
+/*
+ * Set the cterm background color for the highlight group at 'idx' to 'color'.
+ * Returns TRUE if the background color is set.
+ */
+    static void
+highlight_set_ctermbg(int idx, int color, int is_normal_group)
+{
+    HL_TABLE()[idx].sg_cterm_bg = color + 1;
+    if (is_normal_group)
+    {
+	cterm_normal_bg_color = color + 1;
+#ifdef FEAT_GUI
+	// Don't mess with 'background' if the GUI is used.
+	if (!gui.in_use && !gui.starting)
+#endif
+	{
+	    must_redraw = CLEAR;
+	    if (color >= 0)
+	    {
+		int dark = -1;
+
+		if (termcap_active)
+		    term_bg_color(color);
+		if (t_colors < 16)
+		    dark = (color == 0 || color == 4);
+		// Limit the heuristic to the standard 16 colors
+		else if (color < 16)
+		    dark = (color < 7 || color == 8);
+		// Set the 'background' option if the value is
+		// wrong.
+		if (dark != -1
+			&& dark != (*p_bg == 'd')
+			&& !option_was_set((char_u *)"bg"))
+		{
+		    set_option_value((char_u *)"bg", 0L,
+			    (char_u *)(dark ? "dark" : "light"), 0);
+		    reset_option_was_set((char_u *)"bg");
+		}
+	    }
+	}
+    }
+}
+
+/*
+ * Set the cterm underline color for the highlight group at 'idx' to 'color'.
+ * Returns TRUE if the underline color is set.
+ */
+    static void
+highlight_set_ctermul(int idx, int color, int is_normal_group)
+{
+    HL_TABLE()[idx].sg_cterm_ul = color + 1;
+    if (is_normal_group)
+    {
+	cterm_normal_ul_color = color + 1;
+#ifdef FEAT_GUI
+	// Don't do this if the GUI is used.
+	if (!gui.in_use && !gui.starting)
+#endif
+	{
+	    must_redraw = CLEAR;
+	    if (termcap_active && color >= 0)
+		term_ul_color(color);
+	}
+    }
+}
+
+/*
+ * Set the cterm fg/bg/ul color for the highlight group at 'idx'.
+ * 'key' is one of 'CTERMFG' or 'CTERMBG' or 'CTERMUL'.
+ * 'keystart' is the color name/value.
+ * 'arg' is the color name or the numeric value as a string.
+ * 'is_normal_group' is set if the highlight group is 'NORMAL'
+ * 'init' is set to TRUE when initializing highlighting.
+ * Called for the ":highlight" command and the "hlset()" function.
+ *
+ * Returns TRUE if the color is set.
+ */
+    static int
+highlight_set_cterm_color(
+	int	idx,
+	char_u	*key,
+	char_u	*key_start,
+	char_u	*arg,
+	int	is_normal_group,
+	int	init)
+{
+    int		color;
+    long	i;
+    int		off;
+
+    if (!init || !(HL_TABLE()[idx].sg_set & SG_CTERM))
+    {
+	if (!init)
+	    HL_TABLE()[idx].sg_set |= SG_CTERM;
+
+	// When setting the foreground color, and previously the "bold"
+	// flag was set for a light color, reset it now
+	if (key[5] == 'F' && HL_TABLE()[idx].sg_cterm_bold)
+	{
+	    HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
+	    HL_TABLE()[idx].sg_cterm_bold = FALSE;
+	}
+
+	if (VIM_ISDIGIT(*arg))
+	    color = atoi((char *)arg);
+	else if (STRICMP(arg, "fg") == 0)
+	{
+	    if (cterm_normal_fg_color)
+		color = cterm_normal_fg_color - 1;
+	    else
+	    {
+		emsg(_("E419: FG color unknown"));
+		return FALSE;
+	    }
+	}
+	else if (STRICMP(arg, "bg") == 0)
+	{
+	    if (cterm_normal_bg_color > 0)
+		color = cterm_normal_bg_color - 1;
+	    else
+	    {
+		emsg(_("E420: BG color unknown"));
+		return FALSE;
+	    }
+	}
+	else if (STRICMP(arg, "ul") == 0)
+	{
+	    if (cterm_normal_ul_color > 0)
+		color = cterm_normal_ul_color - 1;
+	    else
+	    {
+		emsg(_("E453: UL color unknown"));
+		return FALSE;
+	    }
+	}
+	else
+	{
+	    int bold = MAYBE;
+
+	    // reduce calls to STRICMP a bit, it can be slow
+	    off = TOUPPER_ASC(*arg);
+	    for (i = ARRAY_LENGTH(color_names); --i >= 0; )
+		if (off == color_names[i][0]
+			&& STRICMP(arg + 1, color_names[i] + 1) == 0)
+		    break;
+	    if (i < 0)
+	    {
+		semsg(_("E421: Color name or number not recognized: %s"),
+								key_start);
+		return FALSE;
+	    }
+
+	    color = lookup_color(i, key[5] == 'F', &bold);
+
+	    // set/reset bold attribute to get light foreground
+	    // colors (on some terminals, e.g. "linux")
+	    if (bold == TRUE)
+	    {
+		HL_TABLE()[idx].sg_cterm |= HL_BOLD;
+		HL_TABLE()[idx].sg_cterm_bold = TRUE;
+	    }
+	    else if (bold == FALSE)
+		HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
+	}
+
+	// Add one to the argument, to avoid zero.  Zero is used for
+	// "NONE", then "color" is -1.
+	if (key[5] == 'F')
+	    highlight_set_ctermfg(idx, color, is_normal_group);
+	else if (key[5] == 'B')
+	    highlight_set_ctermbg(idx, color, is_normal_group);
+	else // ctermul
+	    highlight_set_ctermul(idx, color, is_normal_group);
+    }
+
+    return TRUE;
+}
+
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+/*
+ * Set the GUI foreground color for the highlight group at 'idx'.
+ * Returns TRUE if the color is set.
+ */
+    static int
+highlight_set_guifg(
+	int	idx,
+	char_u	*arg,
+	int	is_menu_group UNUSED,
+	int	is_scrollbar_group UNUSED,
+	int	is_tooltip_group UNUSED,
+	int	*do_colors UNUSED,
+	int	init)
+{
+    long	i;
+    char_u	**namep;
+    int		did_change = FALSE;
+
+    namep = &HL_TABLE()[idx].sg_gui_fg_name;
+    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
+    {
+	if (!init)
+	    HL_TABLE()[idx].sg_set |= SG_GUI;
+
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	// In GUI guifg colors are only used when recognized
+	i = color_name2handle(arg);
+	if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
+	{
+	    HL_TABLE()[idx].sg_gui_fg = i;
+# endif
+	    if (*namep == NULL || STRCMP(*namep, arg) != 0)
+	    {
+		vim_free(*namep);
+		if (STRCMP(arg, "NONE") != 0)
+		    *namep = vim_strsave(arg);
+		else
+		    *namep = NULL;
+		did_change = TRUE;
+	    }
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+#  ifdef FEAT_GUI_X11
+	    if (is_menu_group && gui.menu_fg_pixel != i)
+	    {
+		gui.menu_fg_pixel = i;
+		*do_colors = TRUE;
+	    }
+	    if (is_scrollbar_group && gui.scroll_fg_pixel != i)
+	    {
+		gui.scroll_fg_pixel = i;
+		*do_colors = TRUE;
+	    }
+#   ifdef FEAT_BEVAL_GUI
+	    if (is_tooltip_group && gui.tooltip_fg_pixel != i)
+	    {
+		gui.tooltip_fg_pixel = i;
+		*do_colors = TRUE;
+	    }
+#   endif
+#  endif
+	}
+# endif
+    }
+
+    return did_change;
+}
+
+/*
+ * Set the GUI background color for the highlight group at 'idx'.
+ * Returns TRUE if the color is set.
+ */
+    static int
+highlight_set_guibg(
+	int	idx,
+	char_u	*arg,
+	int	is_menu_group UNUSED,
+	int	is_scrollbar_group UNUSED,
+	int	is_tooltip_group UNUSED,
+	int	*do_colors UNUSED,
+	int	init)
+{
+    int		i;
+    char_u	**namep;
+    int		did_change = FALSE;
+
+    namep = &HL_TABLE()[idx].sg_gui_bg_name;
+    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
+    {
+	if (!init)
+	    HL_TABLE()[idx].sg_set |= SG_GUI;
+
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	// In GUI guifg colors are only used when recognized
+	i = color_name2handle(arg);
+	if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
+	{
+	    HL_TABLE()[idx].sg_gui_bg = i;
+# endif
+	    if (*namep == NULL || STRCMP(*namep, arg) != 0)
+	    {
+		vim_free(*namep);
+		if (STRCMP(arg, "NONE") != 0)
+		    *namep = vim_strsave(arg);
+		else
+		    *namep = NULL;
+		did_change = TRUE;
+	    }
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+#  ifdef FEAT_GUI_X11
+	    if (is_menu_group && gui.menu_bg_pixel != i)
+	    {
+		gui.menu_bg_pixel = i;
+		*do_colors = TRUE;
+	    }
+	    if (is_scrollbar_group && gui.scroll_bg_pixel != i)
+	    {
+		gui.scroll_bg_pixel = i;
+		*do_colors = TRUE;
+	    }
+#   ifdef FEAT_BEVAL_GUI
+	    if (is_tooltip_group && gui.tooltip_bg_pixel != i)
+	    {
+		gui.tooltip_bg_pixel = i;
+		*do_colors = TRUE;
+	    }
+#   endif
+#  endif
+	}
+# endif
+    }
+
+    return did_change;
+}
+
+/*
+ * Set the GUI undercurl/strikethrough color for the highlight group at 'idx'.
+ * Returns TRUE if the color is set.
+ */
+    static int
+highlight_set_guisp(int idx, char_u *arg, int init)
+{
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    int		i;
+# endif
+    int		did_change = FALSE;
+    char_u	**namep;
+
+    namep = &HL_TABLE()[idx].sg_gui_sp_name;
+    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
+    {
+	if (!init)
+	    HL_TABLE()[idx].sg_set |= SG_GUI;
+
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	// In GUI guisp colors are only used when recognized
+	i = color_name2handle(arg);
+	if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
+	{
+	    HL_TABLE()[idx].sg_gui_sp = i;
+# endif
+	    if (*namep == NULL || STRCMP(*namep, arg) != 0)
+	    {
+		vim_free(*namep);
+		if (STRCMP(arg, "NONE") != 0)
+		    *namep = vim_strsave(arg);
+		else
+		    *namep = NULL;
+		did_change = TRUE;
+	    }
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	}
+# endif
+    }
+
+    return did_change;
+}
+#endif
+
+/*
+ * Set the start/stop terminal codes for a highlight group.
+ * Returns TRUE if the terminal code is set.
+ */
+    static int
+highlight_set_startstop_termcode(int idx, char_u *key, char_u *arg, int init)
+{
+    int		off;
+    char_u	buf[100];
+    int		len;
+    char_u	*tname;
+    char_u	*p;
+
+    if (!init)
+	HL_TABLE()[idx].sg_set |= SG_TERM;
+
+    // The "start" and "stop"  arguments can be a literal escape
+    // sequence, or a comma separated list of terminal codes.
+    if (STRNCMP(arg, "t_", 2) == 0)
+    {
+	off = 0;
+	buf[0] = 0;
+	while (arg[off] != NUL)
+	{
+	    // Isolate one termcap name
+	    for (len = 0; arg[off + len] &&
+		    arg[off + len] != ','; ++len)
+		;
+	    tname = vim_strnsave(arg + off, len);
+	    if (tname == NULL)		// out of memory
+		return FALSE;
+	    // lookup the escape sequence for the item
+	    p = get_term_code(tname);
+	    vim_free(tname);
+	    if (p == NULL)	    // ignore non-existing things
+		p = (char_u *)"";
+
+	    // Append it to the already found stuff
+	    if ((int)(STRLEN(buf) + STRLEN(p)) >= 99)
+	    {
+		semsg(_("E422: terminal code too long: %s"), arg);
+		return FALSE;
+	    }
+	    STRCAT(buf, p);
+
+	    // Advance to the next item
+	    off += len;
+	    if (arg[off] == ',')	    // another one follows
+		++off;
+	}
+    }
+    else
+    {
+	// Copy characters from arg[] to buf[], translating <> codes.
+	for (p = arg, off = 0; off < 100 - 6 && *p; )
+	{
+	    len = trans_special(&p, buf + off, FSK_SIMPLIFY, NULL);
+	    if (len > 0)	    // recognized special char
+		off += len;
+	    else		    // copy as normal char
+		buf[off++] = *p++;
+	}
+	buf[off] = NUL;
+    }
+
+    if (STRCMP(buf, "NONE") == 0)	// resetting the value
+	p = NULL;
+    else
+	p = vim_strsave(buf);
+    if (key[2] == 'A')
+    {
+	vim_free(HL_TABLE()[idx].sg_start);
+	HL_TABLE()[idx].sg_start = p;
+    }
+    else
+    {
+	vim_free(HL_TABLE()[idx].sg_stop);
+	HL_TABLE()[idx].sg_stop = p;
+    }
+    return TRUE;
+}
+
+/*
  * Handle the ":highlight .." command.
  * When using ":hi clear" this is called recursively for each group with
  * "forceit" and "init" both TRUE.
@@ -622,15 +1366,11 @@ do_highlight(
     int		init)	    // TRUE when called for initializing
 {
     char_u	*name_end;
-    char_u	*p;
     char_u	*linep;
     char_u	*key_start;
     char_u	*arg_start;
     char_u	*key = NULL, *arg = NULL;
     long	i;
-    int		off;
-    int		len;
-    int		attr;
     int		id;
     int		idx;
     hl_group_T	item_before;
@@ -639,24 +1379,24 @@ do_highlight(
     int		doclear = FALSE;
     int		dolink = FALSE;
     int		error = FALSE;
-    int		color;
     int		is_normal_group = FALSE;	// "Normal" group
 #ifdef FEAT_GUI_X11
     int		is_menu_group = FALSE;		// "Menu" group
     int		is_scrollbar_group = FALSE;	// "Scrollbar" group
     int		is_tooltip_group = FALSE;	// "Tooltip" group
-    int		do_colors = FALSE;		// need to update colors?
 #else
 # define is_menu_group 0
 # define is_tooltip_group 0
+# define is_scrollbar_group 0
+#endif
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+    int		do_colors = FALSE;		// need to update colors?
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     int		did_highlight_changed = FALSE;
 #endif
 
-    /*
-     * If no argument, list current highlighting.
-     */
+    // If no argument, list current highlighting.
     if (!init && ends_excmd2(line - 1, line))
     {
 	for (i = 1; i <= highlight_ga.ga_len && !got_int; ++i)
@@ -665,15 +1405,11 @@ do_highlight(
 	return;
     }
 
-    /*
-     * Isolate the name.
-     */
+    // Isolate the name.
     name_end = skiptowhite(line);
     linep = skipwhite(name_end);
 
-    /*
-     * Check for "default" argument.
-     */
+    // Check for "default" argument.
     if (STRNCMP(line, "default", name_end - line) == 0)
     {
 	dodefault = TRUE;
@@ -682,17 +1418,13 @@ do_highlight(
 	linep = skipwhite(name_end);
     }
 
-    /*
-     * Check for "clear" or "link" argument.
-     */
+    // Check for "clear" or "link" argument.
     if (STRNCMP(line, "clear", name_end - line) == 0)
 	doclear = TRUE;
     if (STRNCMP(line, "link", name_end - line) == 0)
 	dolink = TRUE;
 
-    /*
-     * ":highlight {group-name}": list highlighting for one group.
-     */
+    // ":highlight {group-name}": list highlighting for one group.
     if (!doclear && !dolink && ends_excmd2(line, linep))
     {
 	id = syn_namen2id(line, (int)(name_end - line));
@@ -703,18 +1435,15 @@ do_highlight(
 	return;
     }
 
-    /*
-     * Handle ":highlight link {from} {to}" command.
-     */
+    // Handle ":highlight link {from} {to}" command.
     if (dolink)
     {
 	char_u	    *from_start = linep;
 	char_u	    *from_end;
+	int	    from_len;
 	char_u	    *to_start;
 	char_u	    *to_end;
-	int	    from_id;
-	int	    to_id;
-	hl_group_T  *hlgroup = NULL;
+	int	    to_len;
 
 	from_end = skiptowhite(from_start);
 	to_start = skipwhite(from_end);
@@ -734,127 +1463,20 @@ do_highlight(
 	    return;
 	}
 
-	from_id = syn_check_group(from_start, (int)(from_end - from_start));
-	if (STRNCMP(to_start, "NONE", 4) == 0)
-	    to_id = 0;
-	else
-	    to_id = syn_check_group(to_start, (int)(to_end - to_start));
-
-	if (from_id > 0)
-	{
-	    hlgroup = &HL_TABLE()[from_id - 1];
-	    if (dodefault && (forceit || hlgroup->sg_deflink == 0))
-	    {
-		hlgroup->sg_deflink = to_id;
-#ifdef FEAT_EVAL
-		hlgroup->sg_deflink_sctx = current_sctx;
-		hlgroup->sg_deflink_sctx.sc_lnum += SOURCING_LNUM;
-#endif
-	    }
-	}
-
-	if (from_id > 0 && (!init || hlgroup->sg_set == 0))
-	{
-	    /*
-	     * Don't allow a link when there already is some highlighting
-	     * for the group, unless '!' is used
-	     */
-	    if (to_id > 0 && !forceit && !init
-				   && hl_has_settings(from_id - 1, dodefault))
-	    {
-		if (SOURCING_NAME == NULL && !dodefault)
-		    emsg(_("E414: group has settings, highlight link ignored"));
-	    }
-	    else if (hlgroup->sg_link != to_id
-#ifdef FEAT_EVAL
-		    || hlgroup->sg_script_ctx.sc_sid != current_sctx.sc_sid
-#endif
-		    || hlgroup->sg_cleared)
-	    {
-		if (!init)
-		    hlgroup->sg_set |= SG_LINK;
-		hlgroup->sg_link = to_id;
-#ifdef FEAT_EVAL
-		hlgroup->sg_script_ctx = current_sctx;
-		hlgroup->sg_script_ctx.sc_lnum += SOURCING_LNUM;
-#endif
-		hlgroup->sg_cleared = FALSE;
-		redraw_all_later(SOME_VALID);
-
-		// Only call highlight_changed() once after multiple changes.
-		need_highlight_changed = TRUE;
-	    }
-	}
-
+	from_len = (int)(from_end - from_start);
+	to_len = (int)(to_end - to_start);
+	highlight_group_link(from_start, from_len, to_start, to_len,
+						dodefault, forceit, init);
 	return;
     }
 
     if (doclear)
     {
-	/*
-	 * ":highlight clear [group]" command.
-	 */
+	// ":highlight clear [group]" command.
 	if (ends_excmd2(line, linep))
 	{
-#ifdef FEAT_GUI
-	    // First, we do not destroy the old values, but allocate the new
-	    // ones and update the display. THEN we destroy the old values.
-	    // If we destroy the old values first, then the old values
-	    // (such as GuiFont's or GuiFontset's) will still be displayed but
-	    // invalid because they were free'd.
-	    if (gui.in_use)
-	    {
-# ifdef FEAT_BEVAL_TIP
-		gui_init_tooltip_font();
-# endif
-# if defined(FEAT_MENU) && (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF))
-		gui_init_menu_font();
-# endif
-	    }
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_X11)
-	    gui_mch_def_colors();
-# endif
-# ifdef FEAT_GUI_X11
-#  ifdef FEAT_MENU
-
-	    // This only needs to be done when there is no Menu highlight
-	    // group defined by default, which IS currently the case.
-	    gui_mch_new_menu_colors();
-#  endif
-	    if (gui.in_use)
-	    {
-		gui_new_scrollbar_colors();
-#  ifdef FEAT_BEVAL_GUI
-		gui_mch_new_tooltip_colors();
-#  endif
-#  ifdef FEAT_MENU
-		gui_mch_new_menu_font();
-#  endif
-	    }
-# endif
-
-	    // Ok, we're done allocating the new default graphics items.
-	    // The screen should already be refreshed at this point.
-	    // It is now Ok to clear out the old data.
-#endif
-#ifdef FEAT_EVAL
-	    do_unlet((char_u *)"g:colors_name", TRUE);
-#endif
-	    restore_cterm_colors();
-
-	    /*
-	     * Clear all default highlight groups and load the defaults.
-	     */
-	    for (idx = 0; idx < highlight_ga.ga_len; ++idx)
-		highlight_clear(idx);
-	    init_highlight(TRUE, TRUE);
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-	    if (USE_24BIT)
-		highlight_gui_started();
-	    else
-#endif
-		highlight_changed();
-	    redraw_later_clear();
+	    // ":highlight clear" without group name
+	    highlight_reset_all();
 	    return;
 	}
 	line = linep;
@@ -862,13 +1484,11 @@ do_highlight(
 	linep = skipwhite(name_end);
     }
 
-    /*
-     * Find the group name in the table.  If it does not exist yet, add it.
-     */
+    // Find the group name in the table.  If it does not exist yet, add it.
     id = syn_check_group(line, (int)(name_end - line));
-    if (id == 0)			// failed (out of memory)
+    if (id == 0)	// failed (out of memory)
 	return;
-    idx = id - 1;			// index is ID minus one
+    idx = id - 1;	// index is ID minus one
 
     // Return if "default" was used and the group already has settings.
     if (dodefault && hl_has_settings(idx, TRUE))
@@ -897,609 +1517,164 @@ do_highlight(
     }
 
     if (!doclear)
-      while (!ends_excmd2(line, linep))
-      {
-	key_start = linep;
-	if (*linep == '=')
+	while (!ends_excmd2(line, linep))
 	{
-	    semsg(_("E415: unexpected equal sign: %s"), key_start);
-	    error = TRUE;
-	    break;
-	}
-
-	/*
-	 * Isolate the key ("term", "ctermfg", "ctermbg", "font", "guifg" or
-	 * "guibg").
-	 */
-	while (*linep && !VIM_ISWHITE(*linep) && *linep != '=')
-	    ++linep;
-	vim_free(key);
-	key = vim_strnsave_up(key_start, linep - key_start);
-	if (key == NULL)
-	{
-	    error = TRUE;
-	    break;
-	}
-	linep = skipwhite(linep);
-
-	if (STRCMP(key, "NONE") == 0)
-	{
-	    if (!init || HL_TABLE()[idx].sg_set == 0)
+	    key_start = linep;
+	    if (*linep == '=')
 	    {
-		if (!init)
-		    HL_TABLE()[idx].sg_set |= SG_TERM+SG_CTERM+SG_GUI;
-		highlight_clear(idx);
-	    }
-	    continue;
-	}
-
-	/*
-	 * Check for the equal sign.
-	 */
-	if (*linep != '=')
-	{
-	    semsg(_("E416: missing equal sign: %s"), key_start);
-	    error = TRUE;
-	    break;
-	}
-	++linep;
-
-	/*
-	 * Isolate the argument.
-	 */
-	linep = skipwhite(linep);
-	if (*linep == '\'')		// guifg='color name'
-	{
-	    arg_start = ++linep;
-	    linep = vim_strchr(linep, '\'');
-	    if (linep == NULL)
-	    {
-		semsg(_(e_invarg2), key_start);
+		semsg(_("E415: unexpected equal sign: %s"), key_start);
 		error = TRUE;
 		break;
 	    }
-	}
-	else
-	{
-	    arg_start = linep;
-	    linep = skiptowhite(linep);
-	}
-	if (linep == arg_start)
-	{
-	    semsg(_("E417: missing argument: %s"), key_start);
-	    error = TRUE;
-	    break;
-	}
-	vim_free(arg);
-	arg = vim_strnsave(arg_start, linep - arg_start);
-	if (arg == NULL)
-	{
-	    error = TRUE;
-	    break;
-	}
-	if (*linep == '\'')
+
+	    // Isolate the key ("term", "ctermfg", "ctermbg", "font", "guifg"
+	    // or "guibg").
+	    while (*linep && !VIM_ISWHITE(*linep) && *linep != '=')
+		++linep;
+	    vim_free(key);
+	    key = vim_strnsave_up(key_start, linep - key_start);
+	    if (key == NULL)
+	    {
+		error = TRUE;
+		break;
+	    }
+	    linep = skipwhite(linep);
+
+	    if (STRCMP(key, "NONE") == 0)
+	    {
+		if (!init || HL_TABLE()[idx].sg_set == 0)
+		{
+		    if (!init)
+			HL_TABLE()[idx].sg_set |= SG_TERM+SG_CTERM+SG_GUI;
+		    highlight_clear(idx);
+		}
+		continue;
+	    }
+
+	    // Check for the equal sign.
+	    if (*linep != '=')
+	    {
+		semsg(_("E416: missing equal sign: %s"), key_start);
+		error = TRUE;
+		break;
+	    }
 	    ++linep;
 
-	/*
-	 * Store the argument.
-	 */
-	if (  STRCMP(key, "TERM") == 0
-		|| STRCMP(key, "CTERM") == 0
-		|| STRCMP(key, "GUI") == 0)
-	{
-	    attr = 0;
-	    off = 0;
-	    while (arg[off] != NUL)
+	    // Isolate the argument.
+	    linep = skipwhite(linep);
+	    if (*linep == '\'')		// guifg='color name'
 	    {
-		for (i = ARRAY_LENGTH(hl_attr_table); --i >= 0; )
+		arg_start = ++linep;
+		linep = vim_strchr(linep, '\'');
+		if (linep == NULL)
 		{
-		    len = (int)STRLEN(hl_name_table[i]);
-		    if (STRNICMP(arg + off, hl_name_table[i], len) == 0)
-		    {
-			attr |= hl_attr_table[i];
-			off += len;
-			break;
-		    }
-		}
-		if (i < 0)
-		{
-		    semsg(_("E418: Illegal value: %s"), arg);
+		    semsg(_(e_invarg2), key_start);
 		    error = TRUE;
 		    break;
 		}
-		if (arg[off] == ',')		// another one follows
-		    ++off;
 	    }
-	    if (error)
+	    else
+	    {
+		arg_start = linep;
+		linep = skiptowhite(linep);
+	    }
+	    if (linep == arg_start)
+	    {
+		semsg(_("E417: missing argument: %s"), key_start);
+		error = TRUE;
 		break;
-	    if (*key == 'T')
-	    {
-		if (!init || !(HL_TABLE()[idx].sg_set & SG_TERM))
-		{
-		    if (!init)
-			HL_TABLE()[idx].sg_set |= SG_TERM;
-		    HL_TABLE()[idx].sg_term = attr;
-		}
 	    }
-	    else if (*key == 'C')
+	    vim_free(arg);
+	    arg = vim_strnsave(arg_start, linep - arg_start);
+	    if (arg == NULL)
 	    {
-		if (!init || !(HL_TABLE()[idx].sg_set & SG_CTERM))
-		{
-		    if (!init)
-			HL_TABLE()[idx].sg_set |= SG_CTERM;
-		    HL_TABLE()[idx].sg_cterm = attr;
-		    HL_TABLE()[idx].sg_cterm_bold = FALSE;
-		}
-	    }
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
-	    else
-	    {
-		if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
-		{
-		    if (!init)
-			HL_TABLE()[idx].sg_set |= SG_GUI;
-		    HL_TABLE()[idx].sg_gui = attr;
-		}
-	    }
-#endif
-	}
-	else if (STRCMP(key, "FONT") == 0)
-	{
-	    // in non-GUI fonts are simply ignored
-#ifdef FEAT_GUI
-	    if (HL_TABLE()[idx].sg_font_name != NULL
-			     && STRCMP(HL_TABLE()[idx].sg_font_name, arg) == 0)
-	    {
-		// Font name didn't change, ignore.
-	    }
-	    else if (!gui.shell_created)
-	    {
-		// GUI not started yet, always accept the name.
-		vim_free(HL_TABLE()[idx].sg_font_name);
-		HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
-		did_change = TRUE;
-	    }
-	    else
-	    {
-		GuiFont temp_sg_font = HL_TABLE()[idx].sg_font;
-# ifdef FEAT_XFONTSET
-		GuiFontset temp_sg_fontset = HL_TABLE()[idx].sg_fontset;
-# endif
-		// First, save the current font/fontset.
-		// Then try to allocate the font/fontset.
-		// If the allocation fails, HL_TABLE()[idx].sg_font OR
-		// sg_fontset will be set to NOFONT or NOFONTSET respectively.
-
-		HL_TABLE()[idx].sg_font = NOFONT;
-# ifdef FEAT_XFONTSET
-		HL_TABLE()[idx].sg_fontset = NOFONTSET;
-# endif
-		hl_do_font(idx, arg, is_normal_group, is_menu_group,
-						     is_tooltip_group, FALSE);
-
-# ifdef FEAT_XFONTSET
-		if (HL_TABLE()[idx].sg_fontset != NOFONTSET)
-		{
-		    // New fontset was accepted. Free the old one, if there
-		    // was one.
-		    gui_mch_free_fontset(temp_sg_fontset);
-		    vim_free(HL_TABLE()[idx].sg_font_name);
-		    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
-		    did_change = TRUE;
-		}
-		else
-		    HL_TABLE()[idx].sg_fontset = temp_sg_fontset;
-# endif
-		if (HL_TABLE()[idx].sg_font != NOFONT)
-		{
-		    // New font was accepted. Free the old one, if there was
-		    // one.
-		    gui_mch_free_font(temp_sg_font);
-		    vim_free(HL_TABLE()[idx].sg_font_name);
-		    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
-		    did_change = TRUE;
-		}
-		else
-		    HL_TABLE()[idx].sg_font = temp_sg_font;
-	    }
-#endif
-	}
-	else if (STRCMP(key, "CTERMFG") == 0 || STRCMP(key, "CTERMBG") == 0
-						|| STRCMP(key, "CTERMUL") == 0)
-	{
-	  if (!init || !(HL_TABLE()[idx].sg_set & SG_CTERM))
-	  {
-	    if (!init)
-		HL_TABLE()[idx].sg_set |= SG_CTERM;
-
-	    // When setting the foreground color, and previously the "bold"
-	    // flag was set for a light color, reset it now
-	    if (key[5] == 'F' && HL_TABLE()[idx].sg_cterm_bold)
-	    {
-		HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
-		HL_TABLE()[idx].sg_cterm_bold = FALSE;
-	    }
-
-	    if (VIM_ISDIGIT(*arg))
-		color = atoi((char *)arg);
-	    else if (STRICMP(arg, "fg") == 0)
-	    {
-		if (cterm_normal_fg_color)
-		    color = cterm_normal_fg_color - 1;
-		else
-		{
-		    emsg(_("E419: FG color unknown"));
-		    error = TRUE;
-		    break;
-		}
-	    }
-	    else if (STRICMP(arg, "bg") == 0)
-	    {
-		if (cterm_normal_bg_color > 0)
-		    color = cterm_normal_bg_color - 1;
-		else
-		{
-		    emsg(_("E420: BG color unknown"));
-		    error = TRUE;
-		    break;
-		}
-	    }
-	    else if (STRICMP(arg, "ul") == 0)
-	    {
-		if (cterm_normal_ul_color > 0)
-		    color = cterm_normal_ul_color - 1;
-		else
-		{
-		    emsg(_("E453: UL color unknown"));
-		    error = TRUE;
-		    break;
-		}
-	    }
-	    else
-	    {
-		int bold = MAYBE;
-
-		// reduce calls to STRICMP a bit, it can be slow
-		off = TOUPPER_ASC(*arg);
-		for (i = ARRAY_LENGTH(color_names); --i >= 0; )
-		    if (off == color_names[i][0]
-				 && STRICMP(arg + 1, color_names[i] + 1) == 0)
-			break;
-		if (i < 0)
-		{
-		    semsg(_("E421: Color name or number not recognized: %s"), key_start);
-		    error = TRUE;
-		    break;
-		}
-
-		color = lookup_color(i, key[5] == 'F', &bold);
-
-		// set/reset bold attribute to get light foreground
-		// colors (on some terminals, e.g. "linux")
-		if (bold == TRUE)
-		{
-		    HL_TABLE()[idx].sg_cterm |= HL_BOLD;
-		    HL_TABLE()[idx].sg_cterm_bold = TRUE;
-		}
-		else if (bold == FALSE)
-		    HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
-	    }
-
-	    // Add one to the argument, to avoid zero.  Zero is used for
-	    // "NONE", then "color" is -1.
-	    if (key[5] == 'F')
-	    {
-		HL_TABLE()[idx].sg_cterm_fg = color + 1;
-		if (is_normal_group)
-		{
-		    cterm_normal_fg_color = color + 1;
-		    cterm_normal_fg_bold = (HL_TABLE()[idx].sg_cterm & HL_BOLD);
-#ifdef FEAT_GUI
-		    // Don't do this if the GUI is used.
-		    if (!gui.in_use && !gui.starting)
-#endif
-		    {
-			must_redraw = CLEAR;
-			if (termcap_active && color >= 0)
-			    term_fg_color(color);
-		    }
-		}
-	    }
-	    else if (key[5] == 'B')
-	    {
-		HL_TABLE()[idx].sg_cterm_bg = color + 1;
-		if (is_normal_group)
-		{
-		    cterm_normal_bg_color = color + 1;
-#ifdef FEAT_GUI
-		    // Don't mess with 'background' if the GUI is used.
-		    if (!gui.in_use && !gui.starting)
-#endif
-		    {
-			must_redraw = CLEAR;
-			if (color >= 0)
-			{
-			    int dark = -1;
-
-			    if (termcap_active)
-				term_bg_color(color);
-			    if (t_colors < 16)
-				dark = (color == 0 || color == 4);
-			    // Limit the heuristic to the standard 16 colors
-			    else if (color < 16)
-				dark = (color < 7 || color == 8);
-			    // Set the 'background' option if the value is
-			    // wrong.
-			    if (dark != -1
-				    && dark != (*p_bg == 'd')
-				    && !option_was_set((char_u *)"bg"))
-			    {
-				set_option_value((char_u *)"bg", 0L,
-				       (char_u *)(dark ? "dark" : "light"), 0);
-				reset_option_was_set((char_u *)"bg");
-			    }
-			}
-		    }
-		}
-	    }
-	    else // ctermul
-	    {
-		HL_TABLE()[idx].sg_cterm_ul = color + 1;
-		if (is_normal_group)
-		{
-		    cterm_normal_ul_color = color + 1;
-#ifdef FEAT_GUI
-		    // Don't do this if the GUI is used.
-		    if (!gui.in_use && !gui.starting)
-#endif
-		    {
-			must_redraw = CLEAR;
-			if (termcap_active && color >= 0)
-			    term_ul_color(color);
-		    }
-		}
-	    }
-	  }
-	}
-	else if (STRCMP(key, "GUIFG") == 0)
-	{
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
-	    char_u **namep = &HL_TABLE()[idx].sg_gui_fg_name;
-
-	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
-	    {
-		if (!init)
-		    HL_TABLE()[idx].sg_set |= SG_GUI;
-
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-		// In GUI guifg colors are only used when recognized
-		i = color_name2handle(arg);
-		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
-		{
-		    HL_TABLE()[idx].sg_gui_fg = i;
-# endif
-		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-		    {
-			vim_free(*namep);
-			if (STRCMP(arg, "NONE") != 0)
-			    *namep = vim_strsave(arg);
-			else
-			    *namep = NULL;
-			did_change = TRUE;
-		    }
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-#  ifdef FEAT_GUI_X11
-		    if (is_menu_group && gui.menu_fg_pixel != i)
-		    {
-			gui.menu_fg_pixel = i;
-			do_colors = TRUE;
-		    }
-		    if (is_scrollbar_group && gui.scroll_fg_pixel != i)
-		    {
-			gui.scroll_fg_pixel = i;
-			do_colors = TRUE;
-		    }
-#   ifdef FEAT_BEVAL_GUI
-		    if (is_tooltip_group && gui.tooltip_fg_pixel != i)
-		    {
-			gui.tooltip_fg_pixel = i;
-			do_colors = TRUE;
-		    }
-#   endif
-#  endif
-		}
-# endif
-	    }
-#endif
-	}
-	else if (STRCMP(key, "GUIBG") == 0)
-	{
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
-	    char_u **namep = &HL_TABLE()[idx].sg_gui_bg_name;
-
-	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
-	    {
-		if (!init)
-		    HL_TABLE()[idx].sg_set |= SG_GUI;
-
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-		// In GUI guifg colors are only used when recognized
-		i = color_name2handle(arg);
-		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
-		{
-		    HL_TABLE()[idx].sg_gui_bg = i;
-# endif
-		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-		    {
-			vim_free(*namep);
-			if (STRCMP(arg, "NONE") != 0)
-			    *namep = vim_strsave(arg);
-			else
-			    *namep = NULL;
-			did_change = TRUE;
-		    }
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-#  ifdef FEAT_GUI_X11
-		    if (is_menu_group && gui.menu_bg_pixel != i)
-		    {
-			gui.menu_bg_pixel = i;
-			do_colors = TRUE;
-		    }
-		    if (is_scrollbar_group && gui.scroll_bg_pixel != i)
-		    {
-			gui.scroll_bg_pixel = i;
-			do_colors = TRUE;
-		    }
-#   ifdef FEAT_BEVAL_GUI
-		    if (is_tooltip_group && gui.tooltip_bg_pixel != i)
-		    {
-			gui.tooltip_bg_pixel = i;
-			do_colors = TRUE;
-		    }
-#   endif
-#  endif
-		}
-# endif
-	    }
-#endif
-	}
-	else if (STRCMP(key, "GUISP") == 0)
-	{
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
-	    char_u **namep = &HL_TABLE()[idx].sg_gui_sp_name;
-
-	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
-	    {
-		if (!init)
-		    HL_TABLE()[idx].sg_set |= SG_GUI;
-
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-		// In GUI guisp colors are only used when recognized
-		i = color_name2handle(arg);
-		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
-		{
-		    HL_TABLE()[idx].sg_gui_sp = i;
-# endif
-		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-		    {
-			vim_free(*namep);
-			if (STRCMP(arg, "NONE") != 0)
-			    *namep = vim_strsave(arg);
-			else
-			    *namep = NULL;
-			did_change = TRUE;
-		    }
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-		}
-# endif
-	    }
-#endif
-	}
-	else if (STRCMP(key, "START") == 0 || STRCMP(key, "STOP") == 0)
-	{
-	    char_u	buf[100];
-	    char_u	*tname;
-
-	    if (!init)
-		HL_TABLE()[idx].sg_set |= SG_TERM;
-
-	    /*
-	     * The "start" and "stop"  arguments can be a literal escape
-	     * sequence, or a comma separated list of terminal codes.
-	     */
-	    if (STRNCMP(arg, "t_", 2) == 0)
-	    {
-		off = 0;
-		buf[0] = 0;
-		while (arg[off] != NUL)
-		{
-		    // Isolate one termcap name
-		    for (len = 0; arg[off + len] &&
-						 arg[off + len] != ','; ++len)
-			;
-		    tname = vim_strnsave(arg + off, len);
-		    if (tname == NULL)		// out of memory
-		    {
-			error = TRUE;
-			break;
-		    }
-		    // lookup the escape sequence for the item
-		    p = get_term_code(tname);
-		    vim_free(tname);
-		    if (p == NULL)	    // ignore non-existing things
-			p = (char_u *)"";
-
-		    // Append it to the already found stuff
-		    if ((int)(STRLEN(buf) + STRLEN(p)) >= 99)
-		    {
-			semsg(_("E422: terminal code too long: %s"), arg);
-			error = TRUE;
-			break;
-		    }
-		    STRCAT(buf, p);
-
-		    // Advance to the next item
-		    off += len;
-		    if (arg[off] == ',')	    // another one follows
-			++off;
-		}
-	    }
-	    else
-	    {
-		/*
-		 * Copy characters from arg[] to buf[], translating <> codes.
-		 */
-		for (p = arg, off = 0; off < 100 - 6 && *p; )
-		{
-		    len = trans_special(&p, buf + off, FSK_SIMPLIFY, NULL);
-		    if (len > 0)	    // recognized special char
-			off += len;
-		    else		    // copy as normal char
-			buf[off++] = *p++;
-		}
-		buf[off] = NUL;
-	    }
-	    if (error)
+		error = TRUE;
 		break;
+	    }
+	    if (*linep == '\'')
+		++linep;
 
-	    if (STRCMP(buf, "NONE") == 0)	// resetting the value
-		p = NULL;
-	    else
-		p = vim_strsave(buf);
-	    if (key[2] == 'A')
+	    // Store the argument.
+	    if (STRCMP(key, "TERM") == 0
+		    || STRCMP(key, "CTERM") == 0
+		    || STRCMP(key, "GUI") == 0)
 	    {
-		vim_free(HL_TABLE()[idx].sg_start);
-		HL_TABLE()[idx].sg_start = p;
+		if (!highlight_set_termgui_attr(idx, key, arg, init))
+		{
+		    error = TRUE;
+		    break;
+		}
+	    }
+	    else if (STRCMP(key, "FONT") == 0)
+	    {
+		// in non-GUI fonts are simply ignored
+#ifdef FEAT_GUI
+		if (highlight_set_font(idx, arg, is_normal_group,
+					      is_menu_group, is_tooltip_group))
+		    did_change = TRUE;
+#endif
+	    }
+	    else if (STRCMP(key, "CTERMFG") == 0
+		    || STRCMP(key, "CTERMBG") == 0
+		    || STRCMP(key, "CTERMUL") == 0)
+	    {
+		if (!highlight_set_cterm_color(idx, key, key_start, arg,
+							is_normal_group, init))
+		{
+		    error = TRUE;
+		    break;
+		}
+	    }
+	    else if (STRCMP(key, "GUIFG") == 0)
+	    {
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+		if (highlight_set_guifg(idx, arg, is_menu_group,
+					  is_scrollbar_group, is_tooltip_group,
+							     &do_colors, init))
+		    did_change = TRUE;
+#endif
+	    }
+	    else if (STRCMP(key, "GUIBG") == 0)
+	    {
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+		if (highlight_set_guibg(idx, arg, is_menu_group,
+			    is_scrollbar_group, is_tooltip_group,
+			    &do_colors, init))
+		    did_change = TRUE;
+#endif
+	    }
+	    else if (STRCMP(key, "GUISP") == 0)
+	    {
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+		if (highlight_set_guisp(idx, arg, init))
+		    did_change = TRUE;
+#endif
+	    }
+	    else if (STRCMP(key, "START") == 0 || STRCMP(key, "STOP") == 0)
+	    {
+		if (!highlight_set_startstop_termcode(idx, key, arg, init))
+		{
+		    error = TRUE;
+		    break;
+		}
 	    }
 	    else
 	    {
-		vim_free(HL_TABLE()[idx].sg_stop);
-		HL_TABLE()[idx].sg_stop = p;
+		semsg(_("E423: Illegal argument: %s"), key_start);
+		error = TRUE;
+		break;
 	    }
+	    HL_TABLE()[idx].sg_cleared = FALSE;
+
+	    // When highlighting has been given for a group, don't link it.
+	    if (!init || !(HL_TABLE()[idx].sg_set & SG_LINK))
+		HL_TABLE()[idx].sg_link = 0;
+
+	    // Continue with next argument.
+	    linep = skipwhite(linep);
 	}
-	else
-	{
-	    semsg(_("E423: Illegal argument: %s"), key_start);
-	    error = TRUE;
-	    break;
-	}
-	HL_TABLE()[idx].sg_cleared = FALSE;
 
-	/*
-	 * When highlighting has been given for a group, don't link it.
-	 */
-	if (!init || !(HL_TABLE()[idx].sg_set & SG_LINK))
-	    HL_TABLE()[idx].sg_link = 0;
-
-	/*
-	 * Continue with next argument.
-	 */
-	linep = skipwhite(linep);
-      }
-
-    /*
-     * If there is an error, and it's a new entry, remove it from the table.
-     */
+    // If there is an error, and it's a new entry, remove it from the table.
     if (error && idx == highlight_ga.ga_len)
 	syn_unadd_group();
     else
@@ -1510,10 +1685,8 @@ do_highlight(
 	    HL_TABLE()[idx].sg_cterm_attr = 0;
 #ifdef FEAT_GUI
 	    HL_TABLE()[idx].sg_gui_attr = 0;
-	    /*
-	     * Need to update all groups, because they might be using "bg"
-	     * and/or "fg", which have been changed now.
-	     */
+	    // Need to update all groups, because they might be using "bg"
+	    // and/or "fg", which have been changed now.
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    if (USE_24BIT)
@@ -2088,15 +2261,11 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
     attrentry_T	*taep;
     static int	recursive = FALSE;
 
-    /*
-     * Init the table, in case it wasn't done yet.
-     */
+    // Init the table, in case it wasn't done yet.
     table->ga_itemsize = sizeof(attrentry_T);
     table->ga_growsize = 7;
 
-    /*
-     * Try to find an entry with the same specifications.
-     */
+    // Try to find an entry with the same specifications.
     for (i = 0; i < table->ga_len; ++i)
     {
 	taep = &(((attrentry_T *)table->ga_data)[i]);
@@ -2149,11 +2318,9 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 
     if (table->ga_len + ATTR_OFF > MAX_TYPENR)
     {
-	/*
-	 * Running out of attribute entries!  remove all attributes, and
-	 * compute new ones for all groups.
-	 * When called recursively, we are really out of numbers.
-	 */
+	// Running out of attribute entries!  remove all attributes, and
+	// compute new ones for all groups.
+	// When called recursively, we are really out of numbers.
 	if (recursive)
 	{
 	    emsg(_("E424: Too many different highlighting attributes in use"));
@@ -2171,9 +2338,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	recursive = FALSE;
     }
 
-    /*
-     * This is a new combination of colors and font, add an entry.
-     */
+    // This is a new combination of colors and font, add an entry.
     if (ga_grow(table, 1) == FAIL)
 	return 0;
 
@@ -2852,10 +3017,8 @@ set_hl_attr(
 	return;
 
 #ifdef FEAT_GUI
-    /*
-     * For the GUI mode: If there are other than "normal" highlighting
-     * attributes, need to allocate an attr number.
-     */
+    // For the GUI mode: If there are other than "normal" highlighting
+    // attributes, need to allocate an attr number.
     if (sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
 	    && sgp->sg_gui_sp == INVALCOLOR
@@ -2880,10 +3043,8 @@ set_hl_attr(
 	sgp->sg_gui_attr = get_attr_entry(&gui_attr_table, &at_en);
     }
 #endif
-    /*
-     * For the term mode: If there are other than "normal" highlighting
-     * attributes, need to allocate an attr number.
-     */
+    // For the term mode: If there are other than "normal" highlighting
+    // attributes, need to allocate an attr number.
     if (sgp->sg_start == NULL && sgp->sg_stop == NULL)
 	sgp->sg_term_attr = sgp->sg_term;
     else
@@ -2894,10 +3055,8 @@ set_hl_attr(
 	sgp->sg_term_attr = get_attr_entry(&term_attr_table, &at_en);
     }
 
-    /*
-     * For the color term mode: If there are other than "normal"
-     * highlighting attributes, need to allocate an attr number.
-     */
+    // For the color term mode: If there are other than "normal"
+    // highlighting attributes, need to allocate an attr number.
     if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 && sgp->sg_cterm_ul == 0
 # ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
@@ -3088,9 +3247,7 @@ syn_add_group(char_u *name)
 	}
     }
 
-    /*
-     * First call for this growarray: init growing array.
-     */
+    // First call for this growarray: init growing array.
     if (highlight_ga.ga_data == NULL)
     {
 	highlight_ga.ga_itemsize = sizeof(hl_group_T);
@@ -3104,9 +3261,7 @@ syn_add_group(char_u *name)
 	return 0;
     }
 
-    /*
-     * Make room for at least one other syntax_highlight entry.
-     */
+    // Make room for at least one other syntax_highlight entry.
     if (ga_grow(&highlight_ga, 1) == FAIL)
     {
 	vim_free(name);
@@ -3158,9 +3313,7 @@ syn_id2attr(int hl_id)
     sgp = &HL_TABLE()[hl_id - 1];	    // index is ID minus one
 
 #ifdef FEAT_GUI
-    /*
-     * Only use GUI attr when the GUI is being used.
-     */
+    // Only use GUI attr when the GUI is being used.
     if (gui.in_use)
 	attr = sgp->sg_gui_attr;
     else
@@ -3220,10 +3373,8 @@ syn_get_final_id(int hl_id)
     if (hl_id > highlight_ga.ga_len || hl_id < 1)
 	return 0;			// Can be called from eval!!
 
-    /*
-     * Follow links until there is no more.
-     * Look out for loops!  Break after 100 links.
-     */
+    // Follow links until there is no more.
+    // Look out for loops!  Break after 100 links.
     for (count = 100; --count >= 0; )
     {
 	sgp = &HL_TABLE()[hl_id - 1];	    // index is ID minus one
@@ -3398,16 +3549,12 @@ highlight_changed(void)
 
     need_highlight_changed = FALSE;
 
-    /*
-     * Clear all attributes.
-     */
+    // Clear all attributes.
     for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
 	highlight_attr[hlf] = 0;
 
-    /*
-     * First set all attributes to their default value.
-     * Then use the attributes from the 'highlight' option.
-     */
+    // First set all attributes to their default value.
+    // Then use the attributes from the 'highlight' option.
     for (i = 0; i < 2; ++i)
     {
 	if (i)
@@ -3426,10 +3573,8 @@ highlight_changed(void)
 	    if (hlf == (int)HLF_COUNT || *p == NUL)
 		return FAIL;
 
-	    /*
-	     * Allow several hl_flags to be combined, like "bu" for
-	     * bold-underlined.
-	     */
+	    // Allow several hl_flags to be combined, like "bu" for
+	    // bold-underlined.
 	    attr = 0;
 	    for ( ; *p && *p != ','; ++p)	    // parse up to comma
 	    {
@@ -3492,17 +3637,15 @@ highlight_changed(void)
     }
 
 #ifdef USER_HIGHLIGHT
-    /*
-     * Setup the user highlights
-     *
-     * Temporarily utilize 28 more hl entries:
-     * 9 for User1-User9 combined with StatusLineNC
-     * 9 for User1-User9 combined with StatusLineTerm
-     * 9 for User1-User9 combined with StatusLineTermNC
-     * 1 for StatusLine default
-     * Have to be in there simultaneously in case of table overflows in
-     * get_attr_entry()
-     */
+    // Setup the user highlights
+    //
+    // Temporarily utilize 28 more hl entries:
+    // 9 for User1-User9 combined with StatusLineNC
+    // 9 for User1-User9 combined with StatusLineTerm
+    // 9 for User1-User9 combined with StatusLineTermNC
+    // 1 for StatusLine default
+    // Have to be in there simultaneously in case of table overflows in
+    // get_attr_entry()
 # ifdef FEAT_STL_OPT
     if (ga_grow(&highlight_ga, 28) == FAIL)
 	return FAIL;
