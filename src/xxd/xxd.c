@@ -302,10 +302,8 @@ huntype(
 
       ign_garb = 0;
 
-      if (p >= cols)
+      if (!hextype && (p >= cols))
 	{
-	  if (!hextype)
-	    {
 	      if (n1 < 0)
 		{
 		  p = 0;
@@ -313,9 +311,6 @@ huntype(
 		}
 	      want_off = (want_off << 4) | n1;
 	      continue;
-	    }
-	  else
-	    p = 0;
 	}
 
       if (base_off + want_off != have_off)
@@ -344,7 +339,7 @@ huntype(
 	  have_off++;
 	  want_off++;
 	  n1 = -1;
-	  if ((++p >= cols) && !hextype)
+	  if (!hextype && (++p >= cols))
 	    {
 	      /* skip the rest of the line as garbage */
 	      n2 = -1;
