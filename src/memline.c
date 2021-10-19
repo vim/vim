@@ -2064,7 +2064,9 @@ recover_names(
 /*
  * Need _very_ long file names.
  * Append the full path to name with path separators made into percent
- * signs, to dir. An unnamed buffer is handled as "" (<currentdir>/"")
+ * signs, to "dir". An unnamed buffer is handled as "" (<currentdir>/"")
+ * The last character in "dir" must be an extra slash or backslash, it is
+ * removed.
  */
     char_u *
 make_percent_swname(char_u *dir, char_u *name)
@@ -2081,6 +2083,8 @@ make_percent_swname(char_u *dir, char_u *name)
 	    for (d = s; *d != NUL; MB_PTR_ADV(d))
 		if (vim_ispathsep(*d))
 		    *d = '%';
+
+	    dir[STRLEN(dir) - 1] = NUL;  // remove one trailing slash
 	    d = concat_fnames(dir, s, TRUE);
 	    vim_free(s);
 	}
