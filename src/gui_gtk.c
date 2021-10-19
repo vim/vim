@@ -1011,6 +1011,9 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
     {
 	GtkAdjustment *adjustment;
 
+	// ignore events triggered by moving the thumb (happens in GTK 3)
+	++hold_gui_events;
+
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
 
 	gtk_adjustment_set_lower(adjustment, 0.0);
@@ -1022,6 +1025,8 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 	gtk_adjustment_set_step_increment(adjustment, 1.0);
 
 	g_signal_handler_block(G_OBJECT(adjustment), (gulong)sb->handler_id);
+
+	--hold_gui_events;
 
 #if !GTK_CHECK_VERSION(3,18,0)
 	gtk_adjustment_changed(adjustment);
