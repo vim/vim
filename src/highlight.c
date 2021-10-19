@@ -1108,7 +1108,9 @@ highlight_set_guifg(
 	int	*do_colors UNUSED,
 	int	init)
 {
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long	i;
+# endif
     char_u	**namep;
     int		did_change = FALSE;
 
@@ -1175,7 +1177,9 @@ highlight_set_guibg(
 	int	*do_colors UNUSED,
 	int	init)
 {
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     int		i;
+# endif
     char_u	**namep;
     int		did_change = FALSE;
 
