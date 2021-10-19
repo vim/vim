@@ -3314,6 +3314,7 @@ op_function(oparg_T *oap UNUSED)
 #ifdef FEAT_EVAL
     typval_T	argv[2];
     int		save_virtual_op = virtual_op;
+    int		save_finish_op = finish_op;
     pos_T	orig_start = curbuf->b_op_start;
     pos_T	orig_end = curbuf->b_op_end;
 
@@ -3341,9 +3342,13 @@ op_function(oparg_T *oap UNUSED)
 	// function.
 	virtual_op = MAYBE;
 
+	// Reset finish_op so that mode() returns the right value.
+	finish_op = FALSE;
+
 	(void)call_func_noret(p_opfunc, 1, argv);
 
 	virtual_op = save_virtual_op;
+	finish_op = save_finish_op;
 	if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
 	{
 	    curbuf->b_op_start = orig_start;

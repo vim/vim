@@ -912,6 +912,20 @@ func Test_mode()
   call assert_equal('c-ce', g:current_modes)
   " How to test Ex mode?
 
+  " Test mode in operatorfunc (it used to be Operator-pending).
+  set operatorfunc=OperatorFunc
+  function OperatorFunc(_)
+    call Save_mode()
+  endfunction
+  execute "normal! g@l\<Esc>"
+  call assert_equal('n-n', g:current_modes)
+  execute "normal! i\<C-o>g@l\<Esc>"
+  call assert_equal('n-niI', g:current_modes)
+  execute "normal! R\<C-o>g@l\<Esc>"
+  call assert_equal('n-niR', g:current_modes)
+  execute "normal! gR\<C-o>g@l\<Esc>"
+  call assert_equal('n-niV', g:current_modes)
+
   if has('terminal')
     term
     call feedkeys("\<C-W>N", 'xt')
@@ -924,6 +938,8 @@ func Test_mode()
   iunmap <F2>
   xunmap <F2>
   set complete&
+  set operatorfunc&
+  delfunction OperatorFunc
 endfunc
 
 " Test for append()
