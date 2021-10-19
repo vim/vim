@@ -2183,7 +2183,7 @@ error:
 					   curbuf->b_op_start.lnum, nr_lines);
 
 	    // put '] mark at last inserted character
-	    curbuf->b_op_end.lnum = lnum;
+	    curbuf->b_op_end.lnum = new_lnum;
 	    // correct length for change in indent
 	    col = (colnr_T)STRLEN(y_array[y_size - 1]) - lendiff;
 	    if (col > 1)

@@ -136,6 +136,18 @@ func Test_gp_with_count_leaves_cursor_at_end()
   bwipe!
 endfunc
 
+func Test_p_with_count_leaves_mark_at_end()
+  new
+  call setline(1, '<---->')
+  call setreg('@', "start\nend", 'c')
+  normal 1G3|3p
+  call assert_equal([0, 1, 4, 0], getpos("."))
+  call assert_equal(['<--start', 'endstart', 'endstart', 'end-->'], getline(1, '$'))
+  call assert_equal([0, 4, 3, 0], getpos("']"))
+
+  bwipe!
+endfunc
+
 func Test_very_large_count()
   " FIXME: should actually check if sizeof(int) == sizeof(long)
   CheckNotMSWindows
