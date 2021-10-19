@@ -2819,10 +2819,12 @@ highlight_has_attr(
 	attr = HL_TABLE()[id - 1].sg_gui;
     else
 #endif
-	 if (modec == 'c')
-	attr = HL_TABLE()[id - 1].sg_cterm;
-    else
-	attr = HL_TABLE()[id - 1].sg_term;
+    {
+	if (modec == 'c')
+	    attr = HL_TABLE()[id - 1].sg_cterm;
+	else
+	    attr = HL_TABLE()[id - 1].sg_term;
+    }
 
     if (attr & flag)
 	return (char_u *)"1";
