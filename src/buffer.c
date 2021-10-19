@@ -94,11 +94,9 @@ read_buffer(
     int		retval = OK;
     linenr_T	line_count;
 
-    /*
-     * Read from the buffer which the text is already filled in and append at
-     * the end.  This makes it possible to retry when 'fileformat' or
-     * 'fileencoding' was guessed wrong.
-     */
+    // Read from the buffer which the text is already filled in and append at
+    // the end.  This makes it possible to retry when 'fileformat' or
+    // 'fileencoding' was guessed wrong.
     line_count = curbuf->b_ml.ml_line_count;
     retval = readfile(
 	    read_stdin ? NULL : curbuf->b_ffname,
@@ -178,29 +176,23 @@ open_buffer(
 #endif
     int		read_fifo = FALSE;
 
-    /*
-     * The 'readonly' flag is only set when BF_NEVERLOADED is being reset.
-     * When re-entering the same buffer, it should not change, because the
-     * user may have reset the flag by hand.
-     */
+    // The 'readonly' flag is only set when BF_NEVERLOADED is being reset.
+    // When re-entering the same buffer, it should not change, because the
+    // user may have reset the flag by hand.
     if (readonlymode && curbuf->b_ffname != NULL
 					&& (curbuf->b_flags & BF_NEVERLOADED))
 	curbuf->b_p_ro = TRUE;
 
     if (ml_open(curbuf) == FAIL)
     {
-	/*
-	 * There MUST be a memfile, otherwise we can't do anything
-	 * If we can't create one for the current buffer, take another buffer
-	 */
+	// There MUST be a memfile, otherwise we can't do anything
+	// If we can't create one for the current buffer, take another buffer
 	close_buffer(NULL, curbuf, 0, FALSE, FALSE);
 	FOR_ALL_BUFFERS(curbuf)
 	    if (curbuf->b_ml.ml_mfp != NULL)
 		break;
-	/*
-	 * If there is no memfile at all, exit.
-	 * This is OK, since there are no changes to lose.
-	 */
+	// If there is no memfile at all, exit.
+	// This is OK, since there are no changes to lose.
 	if (curbuf == NULL)
 	{
 	    emsg(_("E82: Cannot allocate any buffer, exiting..."));
@@ -281,12 +273,10 @@ open_buffer(
     {
 	int	save_bin = curbuf->b_p_bin;
 
-	/*
-	 * First read the text in binary mode into the buffer.
-	 * Then read from that same buffer and append at the end.  This makes
-	 * it possible to retry when 'fileformat' or 'fileencoding' was
-	 * guessed wrong.
-	 */
+	// First read the text in binary mode into the buffer.
+	// Then read from that same buffer and append at the end.  This makes
+	// it possible to retry when 'fileformat' or 'fileencoding' was
+	// guessed wrong.
 	curbuf->b_p_bin = TRUE;
 	retval = readfile(NULL, NULL, (linenr_T)0,
 		  (linenr_T)0, (linenr_T)MAXLNUM, NULL,
@@ -305,11 +295,10 @@ open_buffer(
 #endif
     }
 
-    /*
-     * Set/reset the Changed flag first, autocmds may change the buffer.
-     * Apply the automatic commands, before processing the modelines.
-     * So the modelines have priority over autocommands.
-     */
+    // Set/reset the Changed flag first, autocmds may change the buffer.
+    // Apply the automatic commands, before processing the modelines.
+    // So the modelines have priority over autocommands.
+    //
     // When reading stdin, the buffer contents always needs writing, so set
     // the changed flag.  Unless in readonly mode: "ls | gview -".
     // When interrupted and 'cpoptions' contains 'i' set changed flag.
@@ -360,10 +349,8 @@ open_buffer(
 
     if (retval == OK)
     {
-	/*
-	 * The autocommands may have changed the current buffer.  Apply the
-	 * modelines to the correct buffer, if it still exists and is loaded.
-	 */
+	// The autocommands may have changed the current buffer.  Apply the
+	// modelines to the correct buffer, if it still exists and is loaded.
 	if (bufref_valid(&old_curbuf) && old_curbuf.br_buf->b_ml.ml_mfp != NULL)
 	{
 	    aco_save_T	aco;
@@ -521,11 +508,10 @@ close_buffer(
     int		del_buf = (action == DOBUF_DEL || wipe_buf);
 
     CHECK_CURBUF;
-    /*
-     * Force unloading or deleting when 'bufhidden' says so.
-     * The caller must take care of NOT deleting/freeing when 'bufhidden' is
-     * "hide" (otherwise we could never free or delete a buffer).
-     */
+
+    // Force unloading or deleting when 'bufhidden' says so.
+    // The caller must take care of NOT deleting/freeing when 'bufhidden' is
+    // "hide" (otherwise we could never free or delete a buffer).
     if (buf->b_p_bh[0] == 'd')		// 'bufhidden' == "delete"
     {
 	del_buf = TRUE;
@@ -681,10 +667,9 @@ aucmd_abort:
 	    )
 	end_visual_mode();
 
-    /*
-     * Free all things allocated for this buffer.
-     * Also calls the "BufDelete" autocommands when del_buf is TRUE.
-     */
+    // Free all things allocated for this buffer.
+    // Also calls the "BufDelete" autocommands when del_buf is TRUE.
+    //
     // Remember if we are closing the current buffer.  Restore the number of
     // windows, so that autocommands in buf_freeall() don't get confused.
     is_curbuf = (buf == curbuf);
@@ -703,13 +688,11 @@ aucmd_abort:
 	return FALSE;
 #endif
 
-    /*
-     * It's possible that autocommands change curbuf to the one being deleted.
-     * This might cause the previous curbuf to be deleted unexpectedly.  But
-     * in some cases it's OK to delete the curbuf, because a new one is
-     * obtained anyway.  Therefore only return if curbuf changed to the
-     * deleted buffer.
-     */
+    // It's possible that autocommands change curbuf to the one being deleted.
+    // This might cause the previous curbuf to be deleted unexpectedly.  But
+    // in some cases it's OK to delete the curbuf, because a new one is
+    // obtained anyway.  Therefore only return if curbuf changed to the
+    // deleted buffer.
     if (buf == curbuf && !is_curbuf)
 	return FALSE;
 
@@ -856,12 +839,10 @@ buf_freeall(buf_T *buf, int flags)
 	return;
 #endif
 
-    /*
-     * It's possible that autocommands change curbuf to the one being deleted.
-     * This might cause curbuf to be deleted unexpectedly.  But in some cases
-     * it's OK to delete the curbuf, because a new one is obtained anyway.
-     * Therefore only return if curbuf changed to the deleted buffer.
-     */
+    // It's possible that autocommands change curbuf to the one being deleted.
+    // This might cause curbuf to be deleted unexpectedly.  But in some cases
+    // it's OK to delete the curbuf, because a new one is obtained anyway.
+    // Therefore only return if curbuf changed to the deleted buffer.
     if (buf == curbuf && !is_curbuf)
 	return;
 #ifdef FEAT_DIFF
@@ -1215,11 +1196,9 @@ empty_curbuf(
     retval = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE,
 					  forceit ? ECMD_FORCEIT : 0, curwin);
 
-    /*
-     * do_ecmd() may create a new buffer, then we have to delete
-     * the old one.  But do_ecmd() may have done that already, check
-     * if the buffer still exists.
-     */
+    // do_ecmd() may create a new buffer, then we have to delete
+    // the old one.  But do_ecmd() may have done that already, check
+    // if the buffer still exists.
     if (buf != curbuf && bufref_valid(&bufref) && buf->b_nwindows == 0)
 	close_buffer(NULL, buf, action, FALSE, FALSE);
     if (!close_others)
@@ -1350,7 +1329,7 @@ do_buffer_ext(
 #endif
 
     /*
-     * delete buffer buf from memory and/or the list
+     * delete buffer "buf" from memory and/or the list
      */
     if (unload)
     {
@@ -1396,21 +1375,17 @@ do_buffer_ext(
 	if (buf == curbuf && VIsual_active)
 	    end_visual_mode();
 
-	/*
-	 * If deleting the last (listed) buffer, make it empty.
-	 * The last (listed) buffer cannot be unloaded.
-	 */
+	// If deleting the last (listed) buffer, make it empty.
+	// The last (listed) buffer cannot be unloaded.
 	FOR_ALL_BUFFERS(bp)
 	    if (bp->b_p_bl && bp != buf)
 		break;
 	if (bp == NULL && buf == curbuf)
 	    return empty_curbuf(TRUE, (flags & DOBUF_FORCEIT), action);
 
-	/*
-	 * If the deleted buffer is the current one, close the current window
-	 * (unless it's the only window).  Repeat this so long as we end up in
-	 * a window with this buffer.
-	 */
+	// If the deleted buffer is the current one, close the current window
+	// (unless it's the only window).  Repeat this so long as we end up in
+	// a window with this buffer.
 	while (buf == curbuf
 		   && !(curwin->w_closing || curwin->w_buffer->b_locked > 0)
 		   && (!ONE_WINDOW || first_tabpage->tp_next != NULL))
@@ -1419,9 +1394,7 @@ do_buffer_ext(
 		break;
 	}
 
-	/*
-	 * If the buffer to be deleted is not the current one, delete it here.
-	 */
+	// If the buffer to be deleted is not the current one, delete it here.
 	if (buf != curbuf)
 	{
 	    close_windows(buf, FALSE);
@@ -1535,7 +1508,7 @@ do_buffer_ext(
     }
 
     /*
-     * make buf current buffer
+     * make "buf" the current buffer
      */
     if (action == DOBUF_SPLIT)	    // split window first
     {
@@ -1555,9 +1528,7 @@ do_buffer_ext(
     if (buf == curbuf)
 	return OK;
 
-    /*
-     * Check if the current buffer may be abandoned.
-     */
+    // Check if the current buffer may be abandoned.
     if (action == DOBUF_GOTO && !can_abandon(curbuf, (flags & DOBUF_FORCEIT)))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -1650,21 +1621,17 @@ do_bufdel(
 
 	for ( ;!got_int; ui_breakcheck())
 	{
-	    /*
-	     * Delete the current buffer last, otherwise when the
-	     * current buffer is deleted, the next buffer becomes
-	     * the current one and will be loaded, which may then
-	     * also be deleted, etc.
-	     */
+	    // Delete the current buffer last, otherwise when the
+	    // current buffer is deleted, the next buffer becomes
+	    // the current one and will be loaded, which may then
+	    // also be deleted, etc.
 	    if (bnr == curbuf->b_fnum)
 		do_current = bnr;
 	    else if (do_buffer_ext(command, DOBUF_FIRST, FORWARD, (int)bnr,
 			  DOBUF_NOPOPUP | (forceit ? DOBUF_FORCEIT : 0)) == OK)
 		++deleted;
 
-	    /*
-	     * find next buffer number to delete/unload
-	     */
+	    // find next buffer number to delete/unload
 	    if (addr_count == 2)
 	    {
 		if (++bnr > end_bnr)
@@ -2011,7 +1978,7 @@ buflist_new(
     fname_expand(curbuf, &ffname, &sfname);	// will allocate ffname
 
     /*
-     * If file name already exists in the list, update the entry.
+     * If the file name already exists in the list, update the entry.
      */
 #ifdef UNIX
     // On Unix we can use inode numbers when the file exists.  Works better
@@ -2152,9 +2119,7 @@ buflist_new(
     }
     else
     {
-	/*
-	 * put new buffer at the end of the buffer list
-	 */
+	// put the new buffer at the end of the buffer list
 	buf->b_next = NULL;
 	if (firstbuf == NULL)		// buffer list is empty
 	{
@@ -2209,9 +2174,7 @@ buflist_new(
 	}
 	buf_hashtab_add(buf);
 
-	/*
-	 * Always copy the options from the current buffer.
-	 */
+	// Always copy the options from the current buffer.
 	buf_copy_options(buf, BCO_ALWAYS);
     }
 
@@ -2759,10 +2722,8 @@ ExpandBufnames(
     else
 	patc = pat;
 
-    /*
-     * attempt == 0: try match with    '\<', match at start of word
-     * attempt == 1: try match without '\<', match anywhere
-     */
+    // attempt == 0: try match with    '\<', match at start of word
+    // attempt == 1: try match without '\<', match anywhere
     for (attempt = 0; attempt <= 1; ++attempt)
     {
 	regmatch_T	regmatch;
@@ -2777,10 +2738,8 @@ ExpandBufnames(
 	    return FAIL;
 	}
 
-	/*
-	 * round == 1: Count the matches.
-	 * round == 2: Build the array to keep the matches.
-	 */
+	// round == 1: Count the matches.
+	// round == 2: Build the array to keep the matches.
 	for (round = 1; round <= 2; ++round)
 	{
 	    count = 0;
@@ -3383,7 +3342,7 @@ setfname(
 	    return FAIL;
 
 	/*
-	 * if the file name is already used in another buffer:
+	 * If the file name is already used in another buffer:
 	 * - if the buffer is loaded, fail
 	 * - if the buffer is not loaded, delete it from the list
 	 */
