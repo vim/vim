@@ -2653,8 +2653,15 @@ mch_FullName(
 			// the current directory and append the file name.
 			if (mch_isFullName(fname))
 			    retval = FAIL;
-			else
+			else {
 			    p = NULL;
+#ifdef HAVE_FCHDIR
+			    if (fd >= 0) {
+				close(fd);
+				fd = -1;
+			    }
+#endif
+			}
 		    }
 		    else if (*p == '/')
 			fname = p + 1;
