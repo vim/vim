@@ -977,6 +977,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define READ_DUMMY	0x10	// reading into a dummy buffer
 #define READ_KEEP_UNDO	0x20	// keep undo info
 #define READ_FIFO	0x40	// read from fifo or socket
+#define READ_NOWINENTER 0x80	// do not trigger BufWinEnter
 
 // Values for change_indent()
 #define INDENT_SET	1	// set indent
@@ -1043,6 +1044,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define ECMD_FORCEIT	0x08	// ! used in Ex command
 #define ECMD_ADDBUF	0x10	// don't edit, just add to buffer list
 #define ECMD_ALTBUF	0x20	// like ECMD_ADDBUF and set the alternate file
+#define ECMD_NOWINENTER	0x40	// do not trigger BufWinEnter
 
 // for lnum argument in do_ecmd()
 #define ECMD_LASTL	(linenr_T)0	// use last position in loaded file

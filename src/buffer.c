@@ -360,11 +360,12 @@ open_buffer(
 	    do_modelines(0);
 	    curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
 
+	    if ((flags & READ_NOWINENTER) == 0)
 #ifdef FEAT_EVAL
-	    apply_autocmds_retval(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf,
-								      &retval);
+		apply_autocmds_retval(EVENT_BUFWINENTER, NULL, NULL, FALSE,
+							      curbuf, &retval);
 #else
-	    apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
+		apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
 #endif
 
 	    // restore curwin/curbuf and a few other things
