@@ -3995,7 +3995,7 @@ gui_mch_replace_dialog(exarg_T *eap)
 }
 
 /*
- * Synchronize all gui elements, which are dependant upon the
+ * Synchronize all gui elements, which are dependent upon the
  * main text font used. Those are in esp. the find/replace dialogs.
  * If you don't understand why this should be needed, please try to
  * search for "pi\xea\xb6\xe6" in iso8859-2.

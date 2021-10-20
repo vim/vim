@@ -34,7 +34,7 @@ func Test_ga_command()
   call assert_equal("\n<e>  101,  Hex 65,  Octal 145 < ́> 769, Hex 0301, Octal 1401 < ̱> 817, Hex 0331, Octal 1461 < ̸> 824, Hex 0338, Octal 1470", Do_ga("e\u0301\u0331\u0338"))
 
   " When using Mac fileformat, CR instead of NL is used for line termination
-  enew!
+  new!
   set fileformat=mac
   call assert_equal("\n<^J>  10,  Hex 0a,  Oct 012, Digr NU",    Do_ga("\r"))
 

@@ -81,7 +81,7 @@ syn keyword nastranDmapImplicit getdiag getsys ichar imag impl index indexstr
 syn keyword nastranDmapImplicit int itol leq lge lgt lle llt lne log log10
 syn keyword nastranDmapImplicit logx ltoi mcgetsys mcputsys max min mod neqvl
 syn keyword nastranDmapImplicit nint noop normal notl numeq numge numgt numle
-syn keyword nastranDmapImplicit numlt numne orl pi precison putdiag putsys
+syn keyword nastranDmapImplicit numlt numne orl pi precision putdiag putsys
 syn keyword nastranDmapImplicit rand rdiagon real rtimtogo setcore sign sin
 syn keyword nastranDmapImplicit sinh sngl sprod sqrt substrin tan tanh
 syn keyword nastranDmapImplicit timetogo wlen xorl

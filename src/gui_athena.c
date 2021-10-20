@@ -2073,7 +2073,7 @@ dialog_wm_handler(
     Widget	w UNUSED,
     XtPointer	client_data UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     if (event->type == ClientMessage
 	    && (Atom)((XClientMessageEvent *)event)->data.l[0] == dialogatom)

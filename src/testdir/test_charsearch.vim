@@ -1,7 +1,7 @@
 " Test for character search commands - t, T, f, F, ; and ,
 
 func Test_charsearch()
-  enew!
+  new!
   call append(0, ['Xabcdefghijkemnopqretuvwxyz',
 	      \ 'Yabcdefghijkemnopqretuvwxyz',
 	      \ 'Zabcdefghijkemnokqretkvwxyz'])
@@ -40,7 +40,7 @@ func Test_charsearch()
   call assert_equal('', getcharsearch().char)
 
   call assert_fails("call setcharsearch([])", 'E715:')
-  enew!
+  new!
 endfunc
 
 " Test for character search in virtual edit mode with <Tab>
@@ -72,7 +72,7 @@ endfunc
 " characters.
 func Test_charsearch_composing_char()
   new
-  call setline(1, "one two thq\u0328\u0301r\u0328\u0301ree")
+  call setline(1, "one two the\u0328\u0301r\u0328\u0301ree")
   call feedkeys("fr\u0328\u0301", 'xt')
   call assert_equal([0, 1, 16, 0, 12], getcurpos())
 

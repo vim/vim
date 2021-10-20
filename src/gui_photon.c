@@ -448,7 +448,7 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
     if (p_mh)
 	gui_mch_mousehide(MOUSE_HIDE);
 
-    // We're a good lil photon program, aren't we? yes we are, yeess wee arrr
+    // We're a good lil photon program, aren't we? yes we are, yeess we arrr
     if (key->key_flags & Pk_KF_Compose)
 	return Pt_CONTINUE;
 

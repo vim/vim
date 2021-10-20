@@ -5058,7 +5058,7 @@ do_return(
 	current_funccal->returned = FALSE;
 
     /*
-     * Cleanup (and inactivate) conditionals, but stop when a try conditional
+     * Cleanup (and deactivate) conditionals, but stop when a try conditional
      * not in its finally clause (which then is to be executed next) is found.
      * In this case, make the ":return" pending for execution at the ":endtry".
      * Otherwise, return normally.

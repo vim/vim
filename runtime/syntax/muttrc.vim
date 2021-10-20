@@ -314,7 +314,7 @@ syn match muttrcIndexFormatConditionals contained /%?[EFHlLMNOXyY]?/ nextgroup=m
 " The following info was pulled from alias_format_str in addrbook.c
 syn match muttrcAliasFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\)\?\)\?[:_]\?[afnrt%]/
 " The following info was pulled from query_format_str in query.c
-syn match muttrcQueryFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\)\?\)\?[:_]\?[acent%]/
+syn match muttrcQueryFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\)\?\)\?[:_]\?[ascent%]/
 syn match muttrcQueryFormatConditionals contained /%?[e]?/ nextgroup=muttrcFormatConditionals2
 " The following info was pulled from mutt_attach_fmt in recvattach.c
 syn match muttrcAttachFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\)\?\)\?[:_]\?[CcDdeFfImMnQstTuX%]/
@@ -663,7 +663,7 @@ syn match muttrcUnColorIndexNL	contained skipwhite skipnl /\s*\\$/ nextgroup=mut
 syn match muttrcUnColorKeyword	contained skipwhite /^\s*uncolor\s\+/ nextgroup=muttrcUnColorIndex,muttrcUnColorIndexNL
 syn region muttrcUnColorLine keepend start=+^\s*uncolor\s+ skip=+\\$+ end=+$+ contains=muttrcUnColorKeyword,muttrcComment,muttrcUnHighlightSpace
 
-" Mono are almost like color (ojects inherited from color)
+" Mono are almost like color (objects inherited from color)
 syn keyword muttrcMonoAttrib	contained bold none normal reverse standout underline
 syn keyword muttrcMono		contained mono		skipwhite nextgroup=muttrcColorField
 syn match   muttrcMonoLine	"^\s*mono\s\+\S\+"	skipwhite nextgroup=muttrcMonoAttrib contains=muttrcMono

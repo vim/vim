@@ -152,7 +152,7 @@ endif
 syn match nroffReqName /\(d[ei]\|am\)/ contained nextgroup=nroffIdent skipwhite
 syn match nroffIdent /[^[?( \t]\+/ contained
 if exists("b:nroff_is_groff")
-	syn match nroffReqName /als/ contained nextgroup=nroffIdent skipwhite
+	syn match nroffReqName /also/ contained nextgroup=nroffIdent skipwhite
 endif
 
 " {{{2 Register definition: .rn .rr
@@ -188,7 +188,7 @@ endif
 
 syn keyword nroffTodo TODO XXX FIXME contained
 
-" {{{1 Hilighting
+" {{{1 Highlighting
 " ------------------------------------------------------------
 "
 

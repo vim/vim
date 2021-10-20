@@ -5661,7 +5661,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
      * String received to output to screen can print using pre-cached glyphs
      * (fast) or Pango (slow). Ligatures and multibype utf-8 must use Pango.
      * Since we receive mixed content string, split it into logical segments
-     * that are guaranteed to go trough glyphs as much as possible. Since
+     * that are guaranteed to go through glyphs as much as possible. Since
      * single ligature char prints as ascii, print it that way.
      */
     len_sum = 0;    // return value needs to add up since we are printing

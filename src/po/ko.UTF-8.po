@@ -285,7 +285,7 @@ msgstr "같은 키를 다시 입력: "
 msgid "Keys don't match!"
 msgstr "키가 맞지 않습니다!"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[암호화 되었습니다]"
 
 #, c-format
@@ -2958,7 +2958,7 @@ msgstr "-register\t\t이 gvim OLE에 등록"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tgvim을 OLE에서 등록취소"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tGUI로 실행 (\"gvim\"과 같음)"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -3006,8 +3006,8 @@ msgstr "-C\t\t\tVi 호환: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tVi와 호환되지 않음: 'nocompatible'"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
-msgstr "-V[N][fname]\t\tBe verbose [level N] [fname에 메시지 저장]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
+msgstr "-V[N][fname]\t\the verbose [level N] [fname에 메시지 저장]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\t디버깅 모드"
@@ -3167,7 +3167,7 @@ msgstr ""
 "\n"
 "gvim이 알고 있는 인자 (아테나 판):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <display>\t빔을 <display>에서 실행"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3216,7 +3216,7 @@ msgstr ""
 "\n"
 "gvim이 알고있는 인자 (GTK+ 판):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <display>\t빔을 <display>에서 실행 (also: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"

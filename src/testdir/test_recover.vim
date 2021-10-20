@@ -75,7 +75,7 @@ func Test_swap_file()
   endwhile
 
   set undolevels&
-  enew! | only
+  new! | only
 endfunc
 
 func Test_nocatch_process_still_running()

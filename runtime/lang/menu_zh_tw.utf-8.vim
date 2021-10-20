@@ -35,11 +35,11 @@ menutrans &File				檔案(&F)
 " ------------------------------------------------------------------------
 menutrans &Open\.\.\.<Tab>:e		開啟(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	分割視窗並開啟(&L)<Tab>:sp
-menutrans &New<Tab>:enew		編輯新檔案(&N)<Tab>:enew
+menutrans &New<Tab>:new		編輯新檔案(&N)<Tab>:new
 menutrans &Close<Tab>:close		關閉檔案(&C)<Tab>:close
 " ------------------------------------------------------------------------
 menutrans &Save<Tab>:w			儲存(&S)<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	另存新檔(&A)\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	另存新檔(&A)\.\.\.<Tab>:save
 " ------------------------------------------------------------------------
 menutrans Split\ &Diff\ with\.\.\.	比較(&Diff)\.\.\.
 menutrans Split\ Patched\ &By\.\.\.	執行Patch(&B)\.\.\.
@@ -129,14 +129,14 @@ menutrans &Folding			覆疊(Fold)設定(&F)
     " {{{ Tools.Fold
     menutrans &Enable/Disable\ folds<Tab>zi	    切換使用\ Folding(&E)<Tab>zi
     menutrans &View\ Cursor\ Line<Tab>zv	    檢視此層\ Fold(&V)<Tab>zv
-    menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx    只檢視此\ Fold(&W)<Tab>zMzx
+    menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx    只檢視此\ Fold(&W)<Tab>zMzx
     menutrans C&lose\ more\ folds<Tab>zm	    收起一層\ Folds(&L)<Tab>zm
     menutrans &Close\ all\ folds<Tab>zM		    收起所有\ Folds(&C)<Tab>zM
     menutrans O&pen\ more\ folds<Tab>zr		    打開一層\ Folds(&P)<Tab>zr
     menutrans &Open\ all\ folds<Tab>zR		    打開所有\ Folds(&O)<Tab>zR
     menutrans Fold\ Met&hod			    Folding\ 方式(&H)
 	" {{{ Tools.Fold.Method
-	menutrans M&anual		手動建立(&A)
+	menutrans M&annual		手動建立(&A)
 	menutrans I&ndent		依照縮排(&N)
 	menutrans E&xpression		自訂運算式(&X)
 	menutrans S&yntax		依照語法設定(&Y)

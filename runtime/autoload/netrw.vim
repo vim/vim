@@ -2587,11 +2587,11 @@ fun! netrw#NetWrite(...) range
 "    call Decho("write via ftp+.netrc (method #2)",'~'.expand("<slnum>"))
     let netrw_fname = b:netrw_fname
 
-    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using enew workaround instead
+    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using new workaround instead
     let bhkeep      = &l:bh
     let curbuf      = bufnr("%")
     setl bh=hide
-    keepj keepalt enew
+    keepj keepalt new
 
 "    call Decho("filter input window#".winnr(),'~'.expand("<slnum>"))
     setl ff=unix
@@ -2617,7 +2617,7 @@ fun! netrw#NetWrite(...) range
      let mod=1
     endif
 
-    " remove enew buffer (quietly)
+    " remove new buffer (quietly)
     let filtbuf= bufnr("%")
     exe curbuf."b!"
     let &l:bh            = bhkeep
@@ -2633,10 +2633,10 @@ fun! netrw#NetWrite(...) range
     let netrw_fname = b:netrw_fname
     let bhkeep      = &l:bh
 
-    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using enew workaround instead
+    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using new workaround instead
     let curbuf      = bufnr("%")
     setl bh=hide
-    keepj keepalt enew
+    keepj keepalt new
     setl ff=unix
 
     if exists("g:netrw_port") && g:netrw_port != ""
@@ -2684,7 +2684,7 @@ fun! netrw#NetWrite(...) range
      let mod=1
     endif
 
-    " remove enew buffer (quietly)
+    " remove new buffer (quietly)
     let filtbuf= bufnr("%")
     exe curbuf."b!"
     let &l:bh= bhkeep
@@ -2723,10 +2723,10 @@ fun! netrw#NetWrite(...) range
     let netrw_fname = escape(b:netrw_fname,g:netrw_fname_escape)
     let bhkeep      = &l:bh
 
-    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using enew workaround instead
+    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using new workaround instead
     let curbuf      = bufnr("%")
     setl bh=hide
-    keepj keepalt enew
+    keepj keepalt new
 
     setl ff=unix
     if exists("g:netrw_port") && g:netrw_port != ""
@@ -2743,7 +2743,7 @@ fun! netrw#NetWrite(...) range
     NetrwKeepj norm! 1G"_dd
     call s:NetrwExe(s:netrw_silentxfer."%!".g:netrw_dav_cmd)
 
-    " remove enew buffer (quietly)
+    " remove new buffer (quietly)
     let filtbuf= bufnr("%")
     exe curbuf."b!"
     let &l:bh            = bhkeep
@@ -2769,11 +2769,11 @@ fun! netrw#NetWrite(...) range
      let uid_machine = g:netrw_machine
     endif
 
-    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using enew workaround instead
+    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using new workaround instead
     let bhkeep = &l:bh
     let curbuf = bufnr("%")
     setl bh=hide
-    keepj keepalt enew
+    keepj keepalt new
 
     setl ff=unix
     call setline(1,'put "'.escape(tmpfile,'\').'" '.netrw_fname)
@@ -4289,15 +4289,15 @@ fun! s:NetrwGetBuffer(islocal,dirname)
   endif
   " Aug 14, 2021: was thinking about looking for a [No Name] buffer here and using it, but that might cause problems
 
-  " get enew buffer and name it -or- re-use buffer {{{3
-  if bufnum < 0      " get enew buffer and name it
-"   call Decho("--get enew buffer and name it  (bufnum#".bufnum."<0 OR bufexists(".bufnum.")=".bufexists(bufnum)."==0)",'~'.expand("<slnum>"))
+  " get new buffer and name it -or- re-use buffer {{{3
+  if bufnum < 0      " get new buffer and name it
+"   call Decho("--get new buffer and name it  (bufnum#".bufnum."<0 OR bufexists(".bufnum.")=".bufexists(bufnum)."==0)",'~'.expand("<slnum>"))
    call s:NetrwEnew(dirname)
-"   call Decho("  got enew buffer#".bufnr("%")." (altbuf<".expand("#").">)",'~'.expand("<slnum>"))
+"   call Decho("  got new buffer#".bufnr("%")." (altbuf<".expand("#").">)",'~'.expand("<slnum>"))
    " name the buffer
    if exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST
-    " Got enew buffer; transform into a NetrwTreeListing
-"    call Decho("--transform enew buffer#".bufnr("%")." into a NetrwTreeListing --",'~'.expand("<slnum>"))
+    " Got new buffer; transform into a NetrwTreeListing
+"    call Decho("--transform new buffer#".bufnr("%")." into a NetrwTreeListing --",'~'.expand("<slnum>"))
     let w:netrw_treebufnr = bufnr("%")
     call s:NetrwBufRename("NetrwTreeListing")
     if g:netrw_use_noswf
@@ -4317,7 +4317,7 @@ fun! s:NetrwGetBuffer(islocal,dirname)
 "    call Decho("update netrwbuf dictionary: s:netrwbuf[".s:NetrwFullPath(dirname)."]=".bufnr("%"),'~'.expand("<slnum>"))
 "    call Decho("netrwbuf dictionary=".string(s:netrwbuf),'~'.expand("<slnum>"))
    endif
-"   call Decho("  named enew buffer#".bufnr("%")."<".bufname("%").">",'~'.expand("<slnum>"))
+"   call Decho("  named new buffer#".bufnr("%")."<".bufname("%").">",'~'.expand("<slnum>"))
 
   else " Re-use the buffer
 "   call Decho("--re-use buffer#".bufnum." (bufnum#".bufnum.">=0 AND bufexists(".bufnum.")=".bufexists(bufnum)."!=0)",'~'.expand("<slnum>"))
@@ -5357,14 +5357,14 @@ fun! netrw#BrowseX(fname,remote)
 
   " set up the filename
   " (lower case the extension, make a local copy of a remote file)
-  let exten= substitute(a:fname,'.*\.\(.\{-}\)','\1','e')
+  let extent= substitute(a:fname,'.*\.\(.\{-}\)','\1','e')
   if has("win32") || has("win95") || has("win64") || has("win16")
-   let exten= substitute(exten,'^.*$','\L&\E','')
+   let extent= substitute(extent,'^.*$','\L&\E','')
   endif
-  if exten =~ "[\\/]"
-   let exten= ""
+  if extent =~ "[\\/]"
+   let extent= ""
   endif
-"  call Decho("exten<".exten.">",'~'.expand("<slnum>"))
+"  call Decho("extent<".extent.">",'~'.expand("<slnum>"))
 
   if remote == 1
    " create a local copy
@@ -5399,7 +5399,7 @@ fun! netrw#BrowseX(fname,remote)
    endif
   endif
 "  call Decho("fname<".fname.">",'~'.expand("<slnum>"))
-"  call Decho("exten<".exten."> "."netrwFileHandlers#NFH_".exten."():exists=".exists("*netrwFileHandlers#NFH_".exten),'~'.expand("<slnum>"))
+"  call Decho("extent<".extent."> "."netrwFileHandlers#NFH_".extent."():exists=".exists("*netrwFileHandlers#NFH_".extent),'~'.expand("<slnum>"))
 
   " set up redirection (avoids browser messages)
   " by default, g:netrw_suppress_gx_mesg is true
@@ -5444,7 +5444,7 @@ fun! netrw#BrowseX(fname,remote)
 "  call Decho("execute the file handler (if any)",'~'.expand("<slnum>"))
   if exists("g:netrw_browsex_viewer") && g:netrw_browsex_viewer == '-'
 "   call Decho("(netrw#BrowseX) g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
-   let ret= netrwFileHandlers#Invoke(exten,fname)
+   let ret= netrwFileHandlers#Invoke(extent,fname)
 
   elseif exists("g:netrw_browsex_viewer") && executable(viewer)
 "   call Decho("(netrw#BrowseX) g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
@@ -5516,13 +5516,13 @@ fun! netrw#BrowseX(fname,remote)
   else
    " netrwFileHandlers#Invoke() always returns 0
 "   call Decho("(netrw#BrowseX) use netrwFileHandlers",'~'.expand("<slnum>"))
-   let ret= netrwFileHandlers#Invoke(exten,fname)
+   let ret= netrwFileHandlers#Invoke(extent,fname)
   endif
 
   " if unsuccessful, attempt netrwFileHandlers#Invoke()
   if ret
 "   call Decho("(netrw#BrowseX) ret=".ret," indicates unsuccessful thus far",'~'.expand("<slnum>"))
-   let ret= netrwFileHandlers#Invoke(exten,fname)
+   let ret= netrwFileHandlers#Invoke(extent,fname)
   endif
 
   " restoring redraw! after external file handlers
@@ -5757,7 +5757,7 @@ fun! s:NetrwGlob(direntry,expr,pare)
 "  call Dfunc("s:NetrwGlob(direntry<".a:direntry."> expr<".a:expr."> pare=".a:pare.")")
   if netrw#CheckIfRemote()
    keepalt 1sp
-   keepalt enew
+   keepalt new
    let keep_liststyle    = w:netrw_liststyle
    let w:netrw_liststyle = s:THINLIST
    if s:NetrwRemoteListing() == 0
@@ -7482,7 +7482,7 @@ fun! s:NetrwMarkFileExe(islocal,enbloc)
    NetrwKeepj call netrw#ErrorMsg(s:ERROR,"no files marked!",59)
   endif
 
- else " apply command to global list of files, en bloc
+ else " apply command to global list of files, en block
 
   call inputsave()
   let cmd= input("Enter command: ","","file")
@@ -8515,7 +8515,7 @@ fun! s:NetrwMenu(domenu)
     exe 'sil! menu '.g:NetrwMenuPriority.'.16.4.1 '.g:NetrwTopLvlMenu.'Style.Sorting\ Method.Name<tab>s       :let g:netrw_sort_by="name"<cr><c-L>'
     exe 'sil! menu '.g:NetrwMenuPriority.'.16.4.2 '.g:NetrwTopLvlMenu.'Style.Sorting\ Method.Time<tab>s       :let g:netrw_sort_by="time"<cr><c-L>'
     exe 'sil! menu '.g:NetrwMenuPriority.'.16.4.3 '.g:NetrwTopLvlMenu.'Style.Sorting\ Method.Size<tab>s       :let g:netrw_sort_by="size"<cr><c-L>'
-    exe 'sil! menu '.g:NetrwMenuPriority.'.16.4.3 '.g:NetrwTopLvlMenu.'Style.Sorting\ Method.Exten<tab>s      :let g:netrw_sort_by="exten"<cr><c-L>'
+    exe 'sil! menu '.g:NetrwMenuPriority.'.16.4.3 '.g:NetrwTopLvlMenu.'Style.Sorting\ Method.Extent<tab>s      :let g:netrw_sort_by="extent"<cr><c-L>'
     exe 'sil! menu '.g:NetrwMenuPriority.'.17     '.g:NetrwTopLvlMenu.'Rename\ File/Directory<tab>R	R'
     exe 'sil! menu '.g:NetrwMenuPriority.'.18     '.g:NetrwTopLvlMenu.'Set\ Current\ Directory<tab>c	c'
     let s:netrw_menucnt= 28
@@ -8525,7 +8525,7 @@ fun! s:NetrwMenu(domenu)
    elseif !a:domenu
     let s:netrwcnt = 0
     let curwin     = winnr()
-    windo if getline(2) =~# "Netrw" | let s:netrwcnt= s:netrwcnt + 1 | endif
+    window if getline(2) =~# "Netrw" | let s:netrwcnt= s:netrwcnt + 1 | endif
     exe curwin."wincmd w"
 
     if s:netrwcnt <= 1
@@ -8628,7 +8628,7 @@ fun! s:NetrwPrevWinOpen(islocal)
    " user if s/he wants to abandon modifications therein.
    if prevmod
 "    call Decho("detected that prev window's buffer has been modified: prevbufnr=".prevbufnr." winnr()#".winnr(),'~'.expand("<slnum>"))
-    windo if winbufnr(0) == prevbufnr | let bnrcnt=bnrcnt+1 | endif
+    window if winbufnr(0) == prevbufnr | let bnrcnt=bnrcnt+1 | endif
 "    call Decho("prevbufnr=".prevbufnr." bnrcnt=".bnrcnt." buftype=".&bt." winnr()=".winnr()." prevwinnr#".prevwinnr,'~'.expand("<slnum>"))
     exe prevwinnr."wincmd w"
 
@@ -8671,7 +8671,7 @@ fun! s:NetrwPrevWinOpen(islocal)
    let &ei= eikeep
   endif
 
-  " restore b:netrw_curdir (window split/enew may have lost it)
+  " restore b:netrw_curdir (window split/new may have lost it)
   let b:netrw_curdir= curdir
   if a:islocal < 2
    if a:islocal
@@ -9151,7 +9151,7 @@ fun! s:NetrwSetTgt(islocal,bookhist,choice)
 endfun
 
 " =====================================================================
-" s:NetrwSortStyle: change sorting style (name - time - size - exten) and refresh display {{{2
+" s:NetrwSortStyle: change sorting style (name - time - size - extent) and refresh display {{{2
 fun! s:NetrwSortStyle(islocal)
 "  call Dfunc("s:NetrwSortStyle(islocal=".a:islocal.") netrw_sort_by<".g:netrw_sort_by.">")
   NetrwKeepj call s:NetrwSaveWordPosn()
@@ -9837,7 +9837,7 @@ fun! s:PerformListing(islocal)
 "  call Decho("w:netrw_bannercnt=".w:netrw_bannercnt." win#".winnr(),'~'.expand("<slnum>"))
 "  call Decho("tab#".tabpagenr()." win#".winnr()." buf#".bufnr("%")."<".bufname("%")."> line#".line(".")." col#".col(".")." winline#".winline()." wincol#".wincol()." line($)=".line("$"),'~'.expand("<slnum>"))
 
-  " construct sortby string: [name|time|size|exten] [reversed]
+  " construct sortby string: [name|time|size|extent] [reversed]
   let sortby= g:netrw_sort_by
   if g:netrw_sort_direction =~# "^r"
    let sortby= sortby." reversed"
@@ -9854,7 +9854,7 @@ fun! s:PerformListing(islocal)
     let w:netrw_bannercnt= w:netrw_bannercnt + 2
    else
 "   call Decho("directories will be sorted by size or time",'~'.expand("<slnum>"))
-    " sorted by time, size, exten
+    " sorted by time, size, extent
     NetrwKeepj put ='\"   Sorted by '.sortby
     let w:netrw_bannercnt= w:netrw_bannercnt + 1
    endif
@@ -9965,7 +9965,7 @@ fun! s:PerformListing(islocal)
      NetrwKeepj call histdel("/",-1)
 
     elseif g:netrw_sort_by =~# "^ext"
-     " exten: sort by extension
+     " extent: sort by extension
      "   The histdel(...,-1) calls remove the last search from the search history
 "     call Decho("sort by extension",'~'.expand("<slnum>"))
      exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g+/+s/^/001'.g:netrw_sepchr.'/'
@@ -12011,13 +12011,13 @@ fun! s:NetrwEnew(...)
   if exists("b:netrw_prvdir")         |let netrw_prvdir          = b:netrw_prvdir         |endif
 
   NetrwKeepj call s:NetrwOptionsRestore("w:")
-"  call Decho("generate a buffer with NetrwKeepj keepalt enew!",'~'.expand("<slnum>"))
+"  call Decho("generate a buffer with NetrwKeepj keepalt new!",'~'.expand("<slnum>"))
   " when tree listing uses file TreeListing... a new buffer is made.
   " Want the old buffer to be unlisted.
   " COMBAK: this causes a problem, see P43
 "  setl nobl
   let netrw_keepdiff= &l:diff
-  noswapfile NetrwKeepj keepalt enew!
+  noswapfile NetrwKeepj keepalt new!
   let &l:diff= netrw_keepdiff
 "  call Decho("bufnr($)=".bufnr("$")."<".bufname(bufnr("$"))."> winnr($)=".winnr("$"),'~'.expand("<slnum>"))
   NetrwKeepj call s:NetrwOptionsSave("w:")

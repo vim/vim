@@ -225,7 +225,7 @@ syn keyword mvLibrary Eigenvals	Prem	commutat	genpoly	nops	solve
 syn keyword mvLibrary EllipticCE	Primfield	comparray	harmonic	norm	sort
 syn keyword mvLibrary EllipticCK	Primitive	compoly	has	normal	sparse
 syn keyword mvLibrary EllipticCPi	Primpart	conjugate	hasfun	numboccur	spline
-syn keyword mvLibrary EllipticE	ProbSplit	content	hasoption	numer	split
+syn keyword mvLibrary EllipticE	ProbSplit	content	hasoption	number	split
 syn keyword mvLibrary EllipticF	Product	convergs	hastype	op	splits
 syn keyword mvLibrary EllipticK	Psi	convert	heap	open	sprem
 syn keyword mvLibrary EllipticModulus	Quo	coords	history	optimize	sprintf
@@ -365,7 +365,7 @@ endif
 " Package: group: permutation and finitely-presented groups {{{2
 if exists("mv_group")
   syn keyword mvPkg_group	DerivedS	areconjugate	cosets	grouporder	issubgroup	permrep
-  syn keyword mvPkg_group	LCS	center	cosrep	inter	mulperms	pres
+  syn keyword mvPkg_group	LCS	center	cosrep	inter	mulperms	press
   syn keyword mvPkg_group	NormalClosure	centralizer	derived	invperm	normalizer	subgrel
   syn keyword mvPkg_group	RandElement	convert	grelgroup	isabelian	orbit	type
   syn keyword mvPkg_group	Sylow	core	groupmember	isnormal	permgroup

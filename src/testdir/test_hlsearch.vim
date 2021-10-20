@@ -31,7 +31,7 @@ func Test_hlsearch()
   call assert_fails('let v:hlsearch=[]', 'E745:')
   call garbagecollect(1)
   call getchar(1)
-  enew!
+  new!
 endfunc
 
 func Test_hlsearch_hangs()

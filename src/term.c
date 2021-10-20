@@ -1968,7 +1968,7 @@ set_termname(char_u *term)
 /*
  * special: There is no info in the termcap about whether the cursor
  * positioning is relative to the start of the screen or to the start of the
- * scrolling region.  We just guess here. Only msdos pcterm is known to do it
+ * scrolling region.  We just guess here. Only ms-dos pcterm is known to do it
  * relative.
  */
     if (STRCMP(term, "pcterm") == 0)

@@ -458,7 +458,7 @@ func Test_three_windows()
   call assert_equal('Xanother', expand('%'))
 
   au!
-  enew
+  new
   call delete('Xtestje1')
   call delete('Xtestje2')
   call delete('Xtestje3')
@@ -1278,7 +1278,7 @@ endfunc
 
 " Test for autocommand that changes the buffer list, when doing ":ball".
 func Test_Acmd_BufAll()
-  enew!
+  new!
   %bwipe!
   call writefile(['Test file Xxx1'], 'Xxx1')
   call writefile(['Test file Xxx2'], 'Xxx2')
@@ -1307,7 +1307,7 @@ func Test_Acmd_BufAll()
   call delete('Xxx1')
   call delete('Xxx2')
   call delete('Xxx3')
-  enew! | only
+  new! | only
 endfunc
 
 " Test for autocommand that changes current buffer on BufEnter event.
@@ -1350,7 +1350,7 @@ endfunc
 " Test for issue #57
 " do not move cursor on <c-o> when autoindent is set
 func Test_ai_CTRL_O()
-  enew!
+  new!
   set ai
   let save_fo = &fo
   set fo+=r
@@ -1360,7 +1360,7 @@ func Test_ai_CTRL_O()
 
   set ai&vim
   let &fo = save_fo
-  enew!
+  new!
 endfunc
 
 " Test for autocommand that deletes the current buffer on BufLeave event.
@@ -1541,7 +1541,7 @@ func Test_buflocal_autocmd()
   " autocmd should not trigger
   edit somefile
   call assert_equal('', g:bname)
-  enew
+  new
   unlet g:bname
 endfunc
 
@@ -1549,7 +1549,7 @@ endfunc
 func Test_Cmd_Autocmds()
   call writefile(['start of Xxx', "\tabc2", 'end of Xxx'], 'Xxx')
 
-  enew!
+  new!
   au BufReadCmd XtestA 0r Xxx|$del
   edit XtestA			" will read text of Xxd instead
   call assert_equal('start of Xxx', getline(1))
@@ -1623,7 +1623,7 @@ func Test_Cmd_Autocmds()
   au! FileAppendCmd
   %bwipe!
   call delete('Xxx')
-  enew!
+  new!
 endfunc
 
 func s:ReadFile()
@@ -1756,7 +1756,7 @@ endfunc
 func Test_Filter_noshelltemp()
   CheckExecutable cat
 
-  enew!
+  new!
   call setline(1, ['a', 'b', 'c', 'd'])
 
   let shelltemp = &shelltemp
@@ -1786,7 +1786,7 @@ func Test_Filter_noshelltemp()
 endfunc
 
 func Test_TextYankPost()
-  enew!
+  new!
   call setline(1, ['foo'])
 
   let g:event = []
@@ -2187,7 +2187,7 @@ func Test_ReadWrite_Autocmds()
 	      \ 'line 10 Abcdefghijklmnopqrstuvwxyz'
 	      \ ])
   1,9write! Xtestfile.gz
-  enew! | close
+  new! | close
 
   new
   " Read and decompress the testfile
@@ -2203,7 +2203,7 @@ func Test_ReadWrite_Autocmds()
 	      \ 'line 9	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
 	      \ 'line 10 Abcdefghijklmnopqrstuvwxyz'
 	      \ ], getline(1, 9))
-  enew! | close
+  new! | close
 
   augroup Test1
     au!
@@ -2227,7 +2227,7 @@ func Test_ReadWrite_Autocmds()
   call assert_equal(' * Here is a new .c file', contents[5])
 
   call delete('test.out')
-  enew! | close
+  new! | close
   augroup Test2
     au!
   augroup END
@@ -2550,7 +2550,7 @@ endfunc
 func Test_TermChanged()
   CheckNotGui
 
-  enew!
+  new!
   tabnew
   call setline(1, ['a', 'b', 'c', 'd'])
   $

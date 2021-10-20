@@ -86,7 +86,7 @@ SynMenu AB.Assembly.PIC:pic
 SynMenu AB.Assembly.Turbo:tasm
 SynMenu AB.Assembly.VAX\ Macro\ Assembly:vmasm
 SynMenu AB.Assembly.Z-80:z8a
-SynMenu AB.Assembly.xa\ 6502\ cross\ assember:a65
+SynMenu AB.Assembly.xa\ 6502\ cross\ assembler:a65
 SynMenu AB.ASN\.1:asn
 SynMenu AB.Asterisk\ config:asterisk
 SynMenu AB.Asterisk\ voicemail\ config:asteriskvm
@@ -511,7 +511,7 @@ SynMenu S-Sm.Scheme:scheme
 SynMenu S-Sm.Scilab:scilab
 SynMenu S-Sm.Screen\ RC:screen
 SynMenu S-Sm.SCSS:scss
-SynMenu S-Sm.SDC\ Synopsys\ Design\ Constraints:sdc
+SynMenu S-Sm.SDC\ Synopsis\ Design\ Constraints:sdc
 SynMenu S-Sm.SDL:sdl
 SynMenu S-Sm.Sed:sed
 SynMenu S-Sm.Sendmail\.cf:sm

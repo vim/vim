@@ -21,7 +21,7 @@ syntax keyword gedcom_record MARC MARL MARR MARS MEDI NATI NATU NCHI NICK NMR
 syntax keyword gedcom_record NOTE NPFX NSFX OBJE OCCU ORDI ORDN PAGE PEDI PHON
 syntax keyword gedcom_record PLAC POST PROB PROP PUBL QUAY REFN RELA RELI REPO
 syntax keyword gedcom_record RESI RESN RETI RFN RIN ROLE SEX SLGC SLGS SOUR
-syntax keyword gedcom_record SPFX SSN STAE STAT SUBM SUBN SURN TEMP TEXT TIME
+syntax keyword gedcom_record SPFX SSN STATE STAT SUBM SUBN SURN TEMP TEXT TIME
 syntax keyword gedcom_record TITL TRLR TYPE VERS WIFE WILL
 syntax keyword gedcom_record DATE nextgroup=gedcom_date
 syntax keyword gedcom_record NAME nextgroup=gedcom_name

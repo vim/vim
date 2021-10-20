@@ -3,7 +3,7 @@
 " This is a test if a URL is recognized by "gf", with the cursor before and
 " after the "://".  Also test ":\\".
 func Test_gf_url()
-  enew!
+  new!
   call append(0, [
       \ "first test for URL://machine.name/tmp/vimtest2a and other text",
       \ "second test for URL://machine.name/tmp/vimtest2b. And other text",
@@ -47,7 +47,7 @@ func Test_gf_url()
   close!
 
   set isf&vim
-  enew!
+  new!
 endfunc
 
 func Test_gF()
@@ -66,7 +66,7 @@ func Test_gF()
   call assert_equal('Xfile', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
-  enew!
+  new!
   call setline(1, ['one', 'the Xfile line 2, and more', 'three'])
   w! Xfile2
   normal 2GfX

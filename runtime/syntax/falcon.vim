@@ -32,7 +32,7 @@ syn case match
 " Keywords
 syn keyword falconKeyword all allp any anyp as attributes brigade cascade catch choice class const
 syn keyword falconKeyword continue def directive do list dropping enum eq eval exit export from function
-syn keyword falconKeyword give global has hasnt in init innerfunc lambda launch launch len List list
+syn keyword falconKeyword give global has hasn't in init innerfunc lambda launch launch len List list
 syn keyword falconKeyword load notin object pass print printl provides raise return self sender static to
 syn keyword falconKeyword try xamp
 

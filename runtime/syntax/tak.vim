@@ -48,7 +48,7 @@ syn keyword takControl  PLOT
 
 syn keyword takSolids   PLATE CYL
 syn keyword takSolidsArg   ID MATNAM NTYPE TEMP XL YL ZL ISTRN ISTRG NNX
-syn keyword takSolidsArg   NNY NNZ INCX INCY INCZ IAK IAC DIFF ARITH BOUN
+syn keyword takSolidsArg   NNY NNZ INCX INCY INCZ IAK IAC DIFF ARITH BOUND
 syn keyword takSolidsArg   RMIN RMAX AXMAX NNR NNTHETA INCR INCTHETA END
 
 syn case ignore

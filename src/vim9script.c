@@ -266,7 +266,7 @@ free_all_script_vars(scriptitem_T *si)
     int		todo;
     hashtab_T	*ht = &si->sn_all_vars.dv_hashtab;
     hashitem_T	*hi;
-    sallvar_T	*sav;
+    sallvar_T	*save;
     sallvar_T	*sav_next;
 
     hash_lock(ht);
@@ -279,14 +279,14 @@ free_all_script_vars(scriptitem_T *si)
 
 	    // Free the variable.  Don't remove it from the hashtab, ht_array
 	    // might change then.  hash_clear() takes care of it later.
-	    sav = HI2SAV(hi);
-	    while (sav != NULL)
+	    save = HI2SAV(hi);
+	    while (save != NULL)
 	    {
 		sav_next = sav->sav_next;
 		if (sav->sav_di == NULL)
 		    clear_tv(&sav->sav_tv);
-		vim_free(sav);
-		sav = sav_next;
+		vim_free(save);
+		save = sav_next;
 	    }
 	}
     }
@@ -829,7 +829,7 @@ update_vim9_script_var(
     if (create)
     {
 	sallvar_T   *newsav;
-	sallvar_T   *sav = NULL;
+	sallvar_T   *save = NULL;
 
 	// Store a pointer to the typval_T, so that it can be found by index
 	// instead of using a hastab lookup.
@@ -841,7 +841,7 @@ update_vim9_script_var(
 	{
 	    // Variable with this name exists, either in this block or in
 	    // another block.
-	    for (sav = HI2SAV(hi); ; sav = sav->sav_next)
+	    for (save = HI2SAV(hi); ; save = save->sav_next)
 	    {
 		if (sav->sav_block_id == si->sn_current_block_id)
 		{
@@ -886,7 +886,7 @@ update_vim9_script_var(
 	    if (HASHITEM_EMPTY(hi))
 		// new variable name
 		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
-	    else if (sav != NULL)
+	    else if (save != NULL)
 		// existing name in a new block, append to the list
 		sav->sav_next = newsav;
 	}
@@ -929,17 +929,17 @@ hide_script_var(scriptitem_T *si, int idx, int func_defined)
     if (!HASHITEM_EMPTY(script_hi) && !HASHITEM_EMPTY(all_hi))
     {
 	dictitem_T	*di = HI2DI(script_hi);
-	sallvar_T	*sav = HI2SAV(all_hi);
+	sallvar_T	*save = HI2SAV(all_hi);
 	sallvar_T	*sav_prev = NULL;
 
 	// There can be multiple entries with the same name in different
 	// blocks, find the right one.
-	while (sav != NULL && sav->sav_var_vals_idx != idx)
+	while (save != NULL && save->sav_var_vals_idx != idx)
 	{
-	    sav_prev = sav;
-	    sav = sav->sav_next;
+	    sav_prev = save;
+	    save = save->sav_next;
 	}
-	if (sav != NULL)
+	if (save != NULL)
 	{
 	    if (func_defined)
 	    {
@@ -957,7 +957,7 @@ hide_script_var(scriptitem_T *si, int idx, int func_defined)
 		else
 		    sav_prev->sav_next = sav->sav_next;
 		sv->sv_name = NULL;
-		vim_free(sav);
+		vim_free(save);
 	    }
 	    delete_var(script_ht, script_hi);
 	}

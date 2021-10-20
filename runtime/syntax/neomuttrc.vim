@@ -166,7 +166,7 @@ call s:escapesConditionals('PGPCmdFormat', '[afprs]', 0, 1)
 " Note: crypt_format_str() supports 'p', but pgp_entry_fmt() does not
 call s:escapesConditionals('PGPFormat', '[AaCcFfKkLlnptu[]', 0, 0)
 " Ref: query_format_str() in alias/dlgquery.c
-call s:escapesConditionals('QueryFormat', '[acent]', 1, 1)
+call s:escapesConditionals('QueryFormat', '[ascent]', 1, 1)
 " Ref: sidebar_format_str() in sidebar.c
 call s:escapesConditionals('SidebarFormat', '[!BDdFLNnorStZ]', 1, 1)
 " Ref: smime_command_format_str() in ncrypt/smime.c

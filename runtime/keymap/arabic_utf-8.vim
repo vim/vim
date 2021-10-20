@@ -26,7 +26,7 @@ d	<char-0x064a>			" (1610)	- YEH
 f	<char-0x0628>			" (1576)	- BEH
 g	<char-0x0644>			" (1604)	- LAM
 h	<char-0x0627>			" (1575)	- ALEF
-j	<char-0x062a>			" (1578)	- TEH
+j	<char-0x062a>			" (1578)	- THE
 k	<char-0x0646>			" (1606)	- NOON
 l	<char-0x0645>			" (1605)	- MEEM
 ;	<char-0x0643>			" (1603)	- KAF
@@ -37,7 +37,7 @@ c	<char-0x0624>			" (1572)	- WAW with HAMZA ABOVE
 v	<char-0x0631>			" (1585)	- REH
 b	<char-0x0644><char-0x0627>	" (1604/1575)	- LAA (lam alef)
 n	<char-0x0649>			" (1609)	- ALEF MAKSURA
-m	<char-0x0629>			" (1577)	- TEH MARBUTA
+m	<char-0x0629>			" (1577)	- THE MARBUTA
 ,	<char-0x0648>			" (1608)	- WAW
 .	<char-0x0632>			" (1586)	- ZAIN
 /	<char-0x0638>			" (1592)	- ZAH

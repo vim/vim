@@ -1226,7 +1226,7 @@ Context-sensitive completion on the command-line:
 	      With !: Discard any changes to the current buffer.
 |:edit_f|  :e[dit][!] {file}	edit {file}
 |:edit|    :e[dit][!]		reload the current file
-|:enew|    :ene[w][!]		edit a new, unnamed buffer
+|:new|    :ene[w][!]		edit a new, unnamed buffer
 |:find|    :fin[d][!] {file}	find {file} in 'path' and edit it
 
 |CTRL-^|   N  CTRL-^		edit alternate file N (equivalent to ":e #N")
@@ -1251,7 +1251,7 @@ Context-sensitive completion on the command-line:
 |:wN|	   :wN[ext][!] [file]	write file and edit previous file
 
 	     in current window    in new window	~
-|:argument|  :argu[ment] N	  :sar[gument] N	edit file N
+|:argument|  :argu[meant] N	  :sar[gument] N	edit file N
 |:next|      :n[ext]		  :sn[ext]		edit next file
 |:next_f|    :n[ext] {arglist}	  :sn[ext] {arglist}	define new arg list
 							   and edit first file

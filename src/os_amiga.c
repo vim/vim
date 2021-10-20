@@ -1684,7 +1684,7 @@ mch_getenv(char_u *var)
     int		    len;
     UBYTE	    *buf;		// buffer to expand in
     char_u	    *retval;		// return value
-    static char_u   *alloced = NULL;	// allocated memory
+    static char_u   *allocated = NULL;	// allocated memory
 
 #ifdef FEAT_ARP
     if (!dos2)
@@ -1692,7 +1692,7 @@ mch_getenv(char_u *var)
     else
 #endif
     {
-	VIM_CLEAR(alloced);
+	VIM_CLEAR(allocated);
 	retval = NULL;
 
 	buf = alloc(IOSIZE);
@@ -1703,7 +1703,7 @@ mch_getenv(char_u *var)
 	if (len >= 0)
 	{
 	    retval = vim_strsave((char_u *)buf);
-	    alloced = retval;
+	    allocated = retval;
 	}
 
 	vim_free(buf);

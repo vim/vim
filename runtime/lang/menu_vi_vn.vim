@@ -48,11 +48,11 @@ menutrans &About			&Về\ Vim
 " File menu
 menutrans &Open\.\.\.<Tab>:e		&Mở\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	&Chia-Mở\.\.\.<Tab>:sp
-menutrans &New<Tab>:enew		Mớ&i<Tab>:enew
+menutrans &New<Tab>:new		Mớ&i<Tab>:new
 menutrans &Close<Tab>:close		Đó&ng<Tab>:close
 "--------------------
 menutrans &Save<Tab>:w			&Ghi\ nhớ<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	Ghi\ n&hư\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	Ghi\ n&hư\.\.\.<Tab>:save
 "--------------------
 menutrans Split\ &Diff\ with\.\.\.	&So\ sánh\ với\.\.\.
 menutrans Split\ Patched\ &By\.\.\.	So\ sánh\ đã\ vá\ lỗi\ &bởi\.\.\.
@@ -76,9 +76,9 @@ menutrans &Delete<Tab>x			&Xóa<Tab>x
 menutrans &Select\ All<Tab>ggVG		Chọ&n\ tất\ cả<Tab>ggVG
 "--------------------
 menutrans &Find\.\.\.<Tab>/		&Tìm\ kiếm\.\.\.<Tab>/
-menutrans Find\ and\ Rep&lace\.\.\.     Tìm\ kiếm\ &và\ thay\ thế\.\.\.
-menutrans Find\ and\ Rep&lace\.\.\.<Tab>:%s     Tìm\ kiếm\ &và\ thay\ thế\.\.\.<Tab>:%s
-menutrans Find\ and\ Rep&lace\.\.\.<Tab>:s     Tìm\ kiếm\ &và\ thay\ thế\.\.\<Tab>:s
+menutrans Find\ and\ Rep&lace\.\.\.     Tìm\ kiếm\ &và\ they\ thế\.\.\.
+menutrans Find\ and\ Rep&lace\.\.\.<Tab>:%s     Tìm\ kiếm\ &và\ they\ thế\.\.\.<Tab>:%s
+menutrans Find\ and\ Rep&lace\.\.\.<Tab>:s     Tìm\ kiếm\ &và\ they\ thế\.\.\<Tab>:s
 "--------------------
 menutrans Settings\ &Window		Cửa\ &sổ\ thiết\ lập
 menutrans &Global\ Settings		Thiết\ lập\ t&oàn\ cầu
@@ -112,7 +112,7 @@ menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	 Đánh\ &số\ dòng<Tab>:set\
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!		 &Chế\ độ\ danh\ sách<Tab>:set\ list!
 menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		 &Ngắt\ những\ dòng\ dài<Tab>:set\ wrap!
 menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	 Ngắt\ từ\ nguyên\ &vẹn<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		 &Dấu\ trắng\ thay\ cho\ tab<Tab>:set\ et!
+menutrans Toggle\ &expand-tab<Tab>:set\ et!		 &Dấu\ trắng\ they\ cho\ tab<Tab>:set\ et!
 menutrans Toggle\ &auto-indent<Tab>:set\ ai!		 &Tự\ động\ thụt\ dòng<Tab>:set\ ai!
 menutrans Toggle\ &C-indenting<Tab>:set\ cin!		 T&hụt\ dòng\ kiểu\ C<Tab>:set\ cin!
 ">>>---
@@ -166,7 +166,7 @@ menutrans Conve&rt\ back<Tab>:%!xxd\ -r			Chuyển\ từ\ HE&X<Tab>:%!xxd\ -r
 ">>>---------------- Folds
 menutrans &Enable/Disable\ folds<Tab>zi			&Bật/tắt\ nếp\ gấp<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv			&Xem\ dòng\ có\ con\ trỏ<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		&Chỉ\ xem\ dòng\ có\ con\ trỏ<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx		&Chỉ\ xem\ dòng\ có\ con\ trỏ<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm			Đóng\ &nhiều\ nếp\ gấp\ hơn<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM			Đóng\ mọi\ nếp\ &gấp<Tab>zM
 menutrans &Open\ all\ folds<Tab>zR			&Mở\ mọi\ nếp\ gấp<Tab>zR
@@ -177,14 +177,14 @@ menutrans &Delete\ Fold<Tab>zd				Xó&a\ nếp\ gấp<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD			Xóa\ mọ&i\ nếp\ gấp<Tab>zD
 menutrans Fold\ col&umn\ width				Chiều\ &rộng\ cột\ nếp\ gấp
 ">>>->>>----------- Tools/Folds/Fold Method
-menutrans M&anual					&Thủ\ công
+menutrans M&annual					&Thủ\ công
 menutrans I&ndent					Thụt\ &dòng
 menutrans E&xpression					&Biểu\ thức
 menutrans S&yntax					&Cú\ pháp
 menutrans Ma&rker					&Dấu\ hiệu
 ">>>--------------- Tools/Diff
 menutrans &Update					&Cập\ nhật
-menutrans &Get\ Block					&Thay\ đổi\ bộ\ đệm\ này
+menutrans &Get\ Block					&They\ đổi\ bộ\ đệm\ này
 menutrans &Put\ Block					T&hay\ đổi\ bộ\ đệm\ khác
 ">>>--------------- Tools/Diff/Error window
 menutrans &Update<Tab>:cwin				&Cập\ nhật<Tab>:cwin
@@ -195,7 +195,7 @@ menutrans &Open<Tab>:copen				&Mở<Tab>:copen
 " Syntax menu
 "
 menutrans &Show\ filetypes\ in\ menu			&Hiển\ thị\ loại\ tập\ tin\ trong\ trình\ đơn
-menutrans Set\ '&syntax'\ only				&Chỉ\ thay\ đổi\ giá\ trị\ 'syntax'
+menutrans Set\ '&syntax'\ only				&Chỉ\ they\ đổi\ giá\ trị\ 'syntax'
 menutrans Set\ '&filetype'\ too				Th&ay\ đổi\ cả\ giá\ trị\ 'filetype'
 menutrans &Off						&Tắt
 menutrans &Manual					&Bằng\ tay
@@ -291,7 +291,7 @@ if has("toolbar")
     tmenu ToolBar.Find					Tìm kiếm
     tmenu ToolBar.FindNext				Tìm tiếp theo
     tmenu ToolBar.FindPrev				Tìm ngược lại
-    tmenu ToolBar.Replace				Thay thế...
+    tmenu ToolBar.Replace				They thế...
     tmenu ToolBar.LoadSesn				Nạp buổi làm việc
     tmenu ToolBar.SaveSesn				Ghi nhớ buổi làm việc
     tmenu ToolBar.RunScript				Chạy script của Vim

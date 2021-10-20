@@ -191,7 +191,7 @@
 #QNX 4.23	      Watcom	     -X11		4.2  (F) John Oleynick
 #SCO Unix v3.2.5      cc	     +X11 Motif		3.27 (C) M. Kuperblum
 #SCO Open Server 5    gcc 2.7.2.3    +X11 +GUI Motif	5.3  (A) Glauber Ribeiro
-#SINIX-N 5.43 RM400 R4000   cc	     +X11 +GUI		5.0l (I) Martin Furter
+#SINIX-N 5.43 RM400 R4000   cc	     +X11 +GUI		5.0l (I) Martin Further
 #SINIX-Z 5.42 i386    gcc 2.7.2.3    +X11 +GUI Motif	5.1  (I) Joachim Fehn
 #SINIX-Y 5.43 RM600 R4000  gcc 2.7.2.3 +X11 +GUI Motif	5.1  (I) Joachim Fehn
 #Reliant/SINIX 5.44   cc	     +X11 +GUI		5.5a (I) B. Pruemmer

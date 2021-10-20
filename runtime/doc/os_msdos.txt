@@ -4,7 +4,7 @@
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-					*msdos* *ms-dos* *MSDOS* *MS-DOS*
+					*ms-dos* *ms-dos* *MS-DOS* *MS-DOS*
 This file used to contain the particularities for the MS-DOS version of Vim.
 MS-DOS support was removed in patch 7.4.1399.  If you want to use it you will
 need to get a version older than that.  Note that the MS-DOS version doesn't

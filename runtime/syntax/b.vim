@@ -19,8 +19,8 @@ syn keyword bRepeat		WHILE FOR
 syn keyword bOps		bool card conc closure closure1 dom first fnc front not or id inter iseq iseq1 iterate last max min mod perm pred prj1 prj2 ran rel rev seq seq1 size skip succ tail union
 syn keyword bKeywords		LET VAR BE IN BEGIN END  POW POW1 FIN FIN1  PRE  SIGMA STRING UNION IS ANY WHERE
 
-syn keyword bBoolean	TRUE FALSE bfalse btrue
-syn keyword bConstant	PI MAXINT MININT User_Pass PatchProver PatchProverH0 PatchProverB0 FLAT ARI DED SUB RES
+syn keyword boolean	TRUE FALSE bfalse btrue
+syn keyword bConstant	PI MAXINT MININT User_Pass PatchProver PatchProverH0 PatchProverB0 FLAT ARI DEAD SUB RES
 syn keyword bGuard binhyp band bnot bguard bsearch bflat bfresh bguardi bget bgethyp barith bgetresult bresult bgoal bmatch bmodr bnewv  bnum btest bpattern bprintf bwritef bsubfrm  bvrb blvar bcall bappend bclose
 
 syn keyword bLogic	or not
@@ -83,7 +83,7 @@ hi def link bOctalError	bError
 hi def link bParenError	bError
 " hi def link bInParen	bError
 hi def link bCommentError	bError
-hi def link bBoolean	Identifier
+hi def link boolean	Identifier
 hi def link bConstant	Identifier
 hi def link bGuard	Identifier
 hi def link bOperator	Operator

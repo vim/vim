@@ -15,15 +15,15 @@ syn keyword avraRegister r15 r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27
 syn keyword avraRegister r28 r29 r30 r31
 
 syn keyword avraInstr add adc adiw sub subi sbc sbci sbiw and andi or ori eor
-syn keyword avraInstr com neg sbr cbr inc dec tst clr ser mul muls mulsu fmul
-syn keyword avraInstr fmuls fmulsu des rjmp ijmp eijmp jmp rcall icall eicall
+syn keyword avraInstr com neg sbr cbr inc dec tst clr set mul muls mulsu fmul
+syn keyword avraInstr fmuls fmulsu des rjmp ijmp eijmp jmp recall icall eicall
 syn keyword avraInstr call ret reti cpse cp cpc cpi sbrc sbrs sbic sbis brbs
 syn keyword avraInstr brbc breq brne brcs brcc brsh brlo brmi brpl brge brlt
 syn keyword avraInstr brhs brhc brts brtc brvs brvc brie brid mov movw ldi lds
 syn keyword avraInstr ld ldd sts st std lpm elpm spm in out push pop xch las
 syn keyword avraInstr lac lat lsl lsr rol ror asr swap bset bclr sbi cbi bst bld
 syn keyword avraInstr sec clc sen cln sez clz sei cli ses cls sev clv set clt
-syn keyword avraInstr seh clh break nop sleep wdr
+syn keyword avraInstr she clh break nop sleep wdr
 
 syn keyword avraDirective .byte .cseg .db .def .device .dseg .dw .endmacro .equ
 syn keyword avraDirective .eseg .exit .include .list .listmac .macro .nolist

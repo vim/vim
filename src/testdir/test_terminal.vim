@@ -961,7 +961,7 @@ func Test_terminal_composing_unicode()
     let lnum = [1, 3, 5]
   endif
 
-  enew
+  new
   let buf = term_start(cmd, {'curwin': 1})
   let g:job = term_getjob(buf)
   call WaitFor({-> term_getline(buf, 1) !=# ''}, 1000)

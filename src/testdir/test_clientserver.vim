@@ -153,12 +153,12 @@ func Test_client_server()
 
     " Edit a file using --remote-wait
     eval name->remote_send(":source $VIMRUNTIME/plugin/rrhelper.vim\<CR>")
-    call system(cmd .. ' --remote-wait +enew Xfile1')
+    call system(cmd .. ' --remote-wait +new Xfile1')
     call assert_match('.*\<Xfile1', remote_expr(name, 'bufname("#")'))
     eval name->remote_send(":%bw!\<CR>")
 
     " Edit files using --remote-tab-wait
-    call system(cmd .. ' --remote-tabwait +tabonly\|enew Xfile1 Xfile2')
+    call system(cmd .. ' --remote-tabwait +tabonly\|new Xfile1 Xfile2')
     call assert_equal('1', remote_expr(name, 'tabpagenr("$")'))
     eval name->remote_send(":%bw!\<CR>")
 

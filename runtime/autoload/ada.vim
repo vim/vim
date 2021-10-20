@@ -6,7 +6,7 @@
 "		Martin Krischik <krischik@users.sourceforge.net>
 "		Taylor Venable <taylor@metasyntax.net>
 "		Neil Bird <neil@fnxweb.com>
-"		Ned Okie <nokie@radford.edu>
+"		Need Okie <nokie@radford.edu>
 "      $Author: krischik $
 "	 $Date: 2017-01-31 20:20:05 +0200 (Mon, 01 Jan 2017) $
 "      Version: 4.6

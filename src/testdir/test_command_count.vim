@@ -72,7 +72,7 @@ func Test_command_count_1()
   only
   blast|bd
 
-  tabe|tabe|tabe|tabe
+  table|table|table|table
   normal 2gt
   command! -range -addr=tabs RangeTabs :let lines = [<line1>, <line2>]
   .,$RangeTabs
@@ -123,7 +123,7 @@ func Test_command_count_2()
 
   call assert_fails('$+close', 'E16:')
 
-  $tabe
+  $table
   call assert_equal(2, tabpagenr())
 
   call assert_fails('$+tabe', 'E16:')
@@ -186,7 +186,7 @@ func Test_command_count_4()
   call assert_equal([bufnr + 2, bufnr + 4, bufnr +  5], buffers)
 
   " create tabpages to get 5
-  tabe|tabe|tabe|tabe
+  table|table|table|table
   normal! 2gt
   let tabpages = []
   .,$-tabdo call add(tabpages, tabpagenr())

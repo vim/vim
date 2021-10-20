@@ -72,9 +72,9 @@ func TriggerTheProblem()
 endfunc
 
 func Test_visual_mode_reset()
-  enew
+  new
   let g:msg = "Everything's fine."
-  enew
+  new
   setl buftype=nofile
   call append(line('$'), 'Delete this line.')
 
@@ -198,7 +198,7 @@ func Test_virtual_replace()
     let save_t_kb = &t_kb
   endif
   exe "set t_kD=\<C-V>x7f t_kb=\<C-V>x08"
-  enew!
+  new!
   exe "normal a\nabcdefghi\njk\tlmn\n    opq	rst\n\<C-D>uvwxyz"
   call cursor(1,1)
   set ai bs=2
@@ -234,7 +234,7 @@ func Test_virtual_replace()
   call assert_equal("\txaaaa", getline(1))
   set softtabstop&
 
-  enew!
+  new!
   set noai bs&vim
   if exists('save_t_kD')
     let &t_kD = save_t_kD
@@ -246,7 +246,7 @@ endfunc
 
 " Test Virtual replace mode.
 func Test_virtual_replace2()
-  enew!
+  new!
   set bs=2
   exe "normal a\nabcdefghi\njk\tlmn\n    opq	rst\n\<C-D>uvwxyz"
   call cursor(1,1)
@@ -735,7 +735,7 @@ func Test_visual_block_mode()
   call cursor(1, 1)
 
   " Test shift-right of a block
-  exe "normal jllll\<C-V>jj>wll\<C-V>jlll>"
+  exe "normal jllll\<C-V>jj>will\<C-V>jlll>"
   " Test shift-left of a block
   exe "normal G$hhhh\<C-V>kk<"
   " Test block-insert

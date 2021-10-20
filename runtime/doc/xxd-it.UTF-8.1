@@ -68,7 +68,7 @@ Richiesta di una immagine binaria (cifre binarie), invece che esadecimale.
 Questa opzione scrive un byte come otto cifre "1" e "0" invece di usare i
 numeri esadecimali. Ogni linea è preceduta da un indirizzo in esadecimale e
 seguita da una decodifica ascii (o ebcdic). Le opzioni specificabili dalla
-linea comando \-r, \-p, \-i non funzionano in questo modo.
+linea commando \-r, \-p, \-i non funzionano in questo modo.
 .TP
 .IR "\-c colonne " | " \-cols colonne"
 .IR "\-c colonne " | " \-cols colonne"
@@ -91,7 +91,7 @@ Specificando
 .I \-g 0
 i byte di output non sono separati da alcuno spazio.
 .RI < numero_byte > ha come valore di default " 2
-in modalità normale [esadecimale] e \fI1\fP in modalità binaria.
+in modalità normal [esadecimale] e \fI1\fP in modalità binaria.
 Il raggruppamento non si applica agli stili "PostScript" e "include".
 .TP
 .IR \-h " | " \-help
@@ -200,11 +200,11 @@ Stampa immagine esadecimale dalla posizione file 0x480 (=1024+128) in poi.
 Il segno `+' vuol dire "rispetto alla posizione corrente", quindi il `128'
 si aggiunge a 1k (1024) dove `dd' si era fermato.
 .br
-\fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +128 > esadecimale' < file
+\fI% sh \-c 'dd of=normal bs=1k count=1; xxd \-s +128 > esadecimale' < file
 .PP
 Immagine esadecimale dalla posizione 0x100 ( = 1024\-768 ) del file in avanti.
 .br
-\fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +\-768 > esadecimale' < file
+\fI% sh \-c 'dd of=normal bs=1k count=1; xxd \-s +\-768 > esadecimale' < file
 .PP
 Comunque, questo capita raramente, e l'uso del `+' non serve quasi mai.
 L'autore preferisce monitorare il comportamento di xxd con strace(1) o
@@ -212,7 +212,7 @@ truss(1), quando si usa l'opzione \-s.
 .SH ESEMPI
 .PP
 .br
-Stampa tutto tranne le prime tre linee (0x30 byte esadecimali) di
+Stampa tutto tranne le prime tree linee (0x30 byte esadecimali) di
 .B file
 \.
 .br
@@ -387,7 +387,7 @@ Questa pagina di manuale documenta la versione 1.7 di xxd.
 .br
 <jnweiger@informatik.uni\-erlangen.de>
 .LP
-Distribuite liberamente ed attribuitemi il credito,
+Distribute liberamente ed attribuitemi il credito,
 .br
 fate soldi e condivideteli con me
 .br

@@ -3,7 +3,7 @@
 " Maintainer:   Artem Zankovich <z_artem@hotbox.ru>
 " Last Change:  Oct 14, 2002
 "
-" Supported standarts are:
+" Supported standards are:
 "   ANSI/EIA Standard 548-1988 (EDIF Version 2 0 0)
 "   IEC 61690-1 (EDIF Version 3 0 0)
 "   IEC 61690-2 (EDIF Version 4 0 0)

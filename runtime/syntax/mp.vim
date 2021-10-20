@@ -111,7 +111,7 @@ if get(g:, "plain_mp_macros", 1) || get(g:, "mp_metafun_macros", 0)
   syn keyword mpDef          label loggingall makelabel numtok penstroke pickup
   syn keyword mpDef          range reflectedabout rotatedaround shipit
   syn keyword mpDef          stop superellipse takepower tracingall tracingnone
-  syn keyword mpDef          undraw undrawdot unfill unfilldraw upto
+  syn keyword mpDef          undraw undrawdot unfill unfilldraw up to
   syn match   mpDef          "???"
   syn keyword mpVardef       arrowhead bbox bot buildcycle byte ceiling center
   syn keyword mpVardef       counterclockwise decr dir direction directionpoint

@@ -2058,7 +2058,7 @@ func Test_cindent_1()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_2()
@@ -2100,7 +2100,7 @@ func Test_cindent_2()
 
   call assert_equal(expected, getline(1, '$'))
   set wm&
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_3()
@@ -2160,7 +2160,7 @@ func Test_cindent_3()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_4()
@@ -2190,7 +2190,7 @@ func Test_cindent_4()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_5()
@@ -2240,7 +2240,7 @@ func Test_cindent_5()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_6()
@@ -2303,7 +2303,7 @@ func Test_cindent_6()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_7()
@@ -2344,7 +2344,7 @@ func Test_cindent_7()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_8()
@@ -2392,7 +2392,7 @@ func Test_cindent_8()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_9()
@@ -2435,7 +2435,7 @@ func Test_cindent_9()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_10()
@@ -2477,7 +2477,7 @@ func Test_cindent_10()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_11()
@@ -2561,7 +2561,7 @@ func Test_cindent_11()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_12()
@@ -2601,7 +2601,7 @@ func Test_cindent_12()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_13()
@@ -2641,7 +2641,7 @@ func Test_cindent_13()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_14()
@@ -2676,7 +2676,7 @@ func Test_cindent_14()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_15()
@@ -2711,7 +2711,7 @@ func Test_cindent_15()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_16()
@@ -2746,7 +2746,7 @@ func Test_cindent_16()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_17()
@@ -2782,7 +2782,7 @@ func Test_cindent_17()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_18()
@@ -2818,7 +2818,7 @@ func Test_cindent_18()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_19()
@@ -2854,7 +2854,7 @@ func Test_cindent_19()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_20()
@@ -2888,7 +2888,7 @@ func Test_cindent_20()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_21()
@@ -2922,7 +2922,7 @@ func Test_cindent_21()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_22()
@@ -2964,7 +2964,7 @@ func Test_cindent_22()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_23()
@@ -3006,7 +3006,7 @@ func Test_cindent_23()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_24()
@@ -3050,7 +3050,7 @@ func Test_cindent_24()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_25()
@@ -3063,13 +3063,13 @@ func Test_cindent_25()
   {
   	invokeme(
   	argu,
-  	ment);
+  	meant);
   	invokeme(
   	argu,
-  	ment
+  	meant
   	);
   	invokeme(argu,
-  	ment
+  	meant
   	);
   }
   [CODE]
@@ -3083,20 +3083,20 @@ func Test_cindent_25()
   {
   	invokeme(
   		 argu,
-  		 ment);
+  		 meant);
   	invokeme(
   		 argu,
-  		 ment
+  		 meant
   		 );
   	invokeme(argu,
-  			 ment
+  			 meant
   			);
   }
 
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_26()
@@ -3128,7 +3128,7 @@ func Test_cindent_26()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_27()
@@ -3160,7 +3160,7 @@ func Test_cindent_27()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_28()
@@ -3198,7 +3198,7 @@ func Test_cindent_28()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_29()
@@ -3234,7 +3234,7 @@ func Test_cindent_29()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_30()
@@ -3270,7 +3270,7 @@ foo()
 [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_31()
@@ -3364,7 +3364,7 @@ func Test_cindent_31()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_32()
@@ -3398,7 +3398,7 @@ func Test_cindent_32()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_33()
@@ -3434,7 +3434,7 @@ func Test_cindent_33()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_34()
@@ -3474,7 +3474,7 @@ func Test_cindent_34()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_35()
@@ -3634,7 +3634,7 @@ func Test_cindent_35()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_36()
@@ -3701,7 +3701,7 @@ func Test_cindent_36()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_37()
@@ -3735,7 +3735,7 @@ func Test_cindent_37()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_38()
@@ -3768,7 +3768,7 @@ func Test_cindent_38()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_39()
@@ -3806,7 +3806,7 @@ func Test_cindent_39()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_40()
@@ -3876,7 +3876,7 @@ func Test_cindent_40()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_41()
@@ -3946,7 +3946,7 @@ func Test_cindent_41()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_42()
@@ -4018,7 +4018,7 @@ func Test_cindent_42()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_43()
@@ -4100,7 +4100,7 @@ func Test_cindent_43()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_44()
@@ -4160,7 +4160,7 @@ func Test_cindent_44()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_45()
@@ -4238,7 +4238,7 @@ func Test_cindent_45()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_46()
@@ -4290,7 +4290,7 @@ func Test_cindent_46()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_47()
@@ -4477,7 +4477,7 @@ func Test_cindent_47()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_48()
@@ -4526,7 +4526,7 @@ func Test_cindent_48()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_49()
@@ -4561,7 +4561,7 @@ func Test_cindent_49()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_50()
@@ -4600,7 +4600,7 @@ func Test_cindent_50()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_51()
@@ -4741,7 +4741,7 @@ func Test_cindent_51()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_52()
@@ -4794,7 +4794,7 @@ func Test_cindent_52()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_53()
@@ -4851,7 +4851,7 @@ func Test_cindent_53()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_54()
@@ -5174,7 +5174,7 @@ func Test_cindent_54()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_55()
@@ -5219,7 +5219,7 @@ func Test_cindent_55()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_cindent_56()
@@ -5247,7 +5247,7 @@ func Test_cindent_56()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 " this was going beyond the end of the line.
@@ -5304,7 +5304,7 @@ func Test_cindent_pragma()
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_backslash_at_end_of_line()

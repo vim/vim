@@ -4,7 +4,7 @@
 "          $Id: gnat.vim 887 2008-07-08 14:29:01Z krischik $
 "    Copyright: Copyright (C) 2006 Martin Krischik
 "   Maintainer:	Martin Krischi <krischik@users.sourceforge.net>k
-"		Ned Okie <nokie@radford.edu>
+"		Need Okie <nokie@radford.edu>
 "      $Author: krischik $
 "        $Date: 2008-07-08 16:29:01 +0200 (Di, 08 Jul 2008) $
 "      Version: 4.6

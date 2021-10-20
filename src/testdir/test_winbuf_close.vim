@@ -10,7 +10,7 @@
 " :edit
 "
 func Test_winbuf_close()
-  enew | only
+  new | only
 
   call writefile(['testtext 1'], 'Xtest1')
   call writefile(['testtext 2'], 'Xtest2')
@@ -186,7 +186,7 @@ func Test_winfixwidth_non_leaf_frame()
 endf
 
 func Test_tabwin_close()
-  enew
+  new
   let l:wid = win_getid()
   tabedit
   call win_execute(l:wid, 'close')

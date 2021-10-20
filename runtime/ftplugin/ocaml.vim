@@ -1,6 +1,6 @@
 " Language:    OCaml
 " Maintainer:  David Baelde        <firstname.name@ens-lyon.org>
-"              Mike Leary          <leary@nwlink.com>
+"              Mike Leery          <leery@nwlink.com>
 "              Markus Mottl        <markus.mottl@gmail.com>
 "              Pierre Vittet       <pierre-vittet@pvittet.com>
 "              Stefano Zacchiroli  <zack@bononia.it>
@@ -276,7 +276,7 @@ endfunction
   "      <SP> is a space character (ASCII 0x20)
   "      <LF> is a line-feed character (ASCII 0x0A)
   "      num is a sequence of decimal digits
-  "      filename is a string with the lexical conventions of O'Caml
+  "      filename is a string with the lexical conventions of ocaml
   "      open-paren is an open parenthesis (ASCII 0x28)
   "      close-paren is a closed parenthesis (ASCII 0x29)
   "      data is any sequence of characters where <LF> is always followed by

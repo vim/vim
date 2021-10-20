@@ -45,7 +45,7 @@ midl_pragma warning( disable: 2395) // polymorphic types not supported in the TL
 #endif
 
 #ifndef DO_NO_IMPORTS
-import "unknwn.idl";
+import "unknown.idl";
 #endif
 
 [

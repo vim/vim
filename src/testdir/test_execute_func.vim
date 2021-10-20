@@ -110,7 +110,7 @@ endfunc
 func Test_win_execute_update_ruler()
   CheckFeature quickfix
 
-  enew
+  new
   call setline(1, range(500))
   20
   split

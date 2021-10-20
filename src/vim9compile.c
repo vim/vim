@@ -338,7 +338,7 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     hashitem_T	    *hi;
     int		    cc;
-    sallvar_T	    *sav;
+    sallvar_T	    *save;
     sallvar_T	    *found_sav;
     ufunc_T	    *ufunc;
 
@@ -354,29 +354,29 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
     if (HASHITEM_EMPTY(hi))
 	return NULL;
 
-    sav = HI2SAV(hi);
+    save = HI2SAV(hi);
     if (sav->sav_block_id == 0)
 	// variable defined in the top script scope is always visible
-	return sav;
+	return save;
 
     if (cctx == NULL)
     {
 	// Not in a function scope, find variable with block id equal to or
 	// smaller than the current block id.
-	while (sav != NULL)
+	while (save != NULL)
 	{
 	    if (sav->sav_block_id <= si->sn_current_block_id)
 		break;
-	    sav = sav->sav_next;
+	    save = save->sav_next;
 	}
-	return sav;
+	return save;
     }
 
     // Go over the variables with this name and find one that was visible
     // from the function.
     ufunc = cctx->ctx_ufunc;
-    found_sav = sav;
-    while (sav != NULL)
+    found_sav = save;
+    while (save != NULL)
     {
 	int idx;
 
@@ -384,8 +384,8 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
 	// variable block ID matches it was visible to the function.
 	for (idx = 0; idx < ufunc->uf_block_depth; ++idx)
 	    if (ufunc->uf_block_ids[idx] == sav->sav_block_id)
-		return sav;
-	sav = sav->sav_next;
+		return save;
+	save = save->sav_next;
     }
 
     // Not found, assume variable at script level was visible.
@@ -2554,9 +2554,9 @@ get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx)
 	return -1;
     if (sid == current_sctx.sc_sid)
     {
-	sallvar_T *sav = find_script_var(name, 0, cctx);
+	sallvar_T *save = find_script_var(name, 0, cctx);
 
-	if (sav == NULL)
+	if (save == NULL)
 	    return -2;
 	idx = sav->sav_var_vals_idx;
 	sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;

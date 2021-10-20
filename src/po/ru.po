@@ -503,7 +503,7 @@ msgstr "Повторите ввод пароля: "
 msgid "Keys don't match!"
 msgstr "Введённые пароли не совпадают!"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[зашифровано]"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
@@ -2982,7 +2982,7 @@ msgstr "-register\t\tЗарегистрировать этот gvim для OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tОтключить регистрацию данного gvim для OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tЗапустить с графическим интерфейсом (как \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -3031,7 +3031,7 @@ msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tРежим неполной совместимости с Vi: 'nocompatible'"
 
 # \n\t\t.. для умещения в 80 столбцов
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr ""
 "-V[N][файл]\t\tВыводить дополнительные сообщения\n"
 "\t\t\t\t[уровень N] [записывать в файл]"
@@ -3207,7 +3207,7 @@ msgstr ""
 "\n"
 "Параметры для gvim (версия Athena):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <дисплей>\tЗапустить Vim на указанном <дисплее>"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3257,7 +3257,7 @@ msgstr ""
 "\n"
 "Параметры для gvim (версия GTK+):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr ""
 "-display <дисплей>\tЗапустить Vim на указанном <дисплее> (или --display)"
 

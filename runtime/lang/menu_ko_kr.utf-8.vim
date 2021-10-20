@@ -31,10 +31,10 @@ menutrans &File				파일(&F)
 menutrans &Open\.\.\.<Tab>:e		열기(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	나눠서\ 열기(&l)\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	탭\ 열기\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew		새로운(&N)<Tab>:enew
+menutrans &New<Tab>:new		새로운(&N)<Tab>:new
 menutrans &Close<Tab>:close		닫기(&C)<Tab>:close
 menutrans &Save<Tab>:w			저장(&S)<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	다른\ 이름으로\ 저장(&A)\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	다른\ 이름으로\ 저장(&A)\.\.\.<Tab>:save
 "menutrans Split\ &Diff\ with\.\.\.	Split\ &Diff\ with\.\.\.
 "menutrans Split\ Patched\ &By\.\.\.	Split\ Patched\ &By\.\.\.
 menutrans &Print			인쇄(&P)
@@ -129,14 +129,14 @@ menutrans &Folding			접기(&F)
 " open close folds
 menutrans &Enable/Disable\ folds<Tab>zi	접기\ 사용\ 토글(&E)<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	커서\ 줄\ 보기(&V)<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx 커서\ 줄만\ 보기(&w)<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx 커서\ 줄만\ 보기(&w)<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm	더\ 많은\ 접기\ 닫기(&l)<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM	모든\ 접기\ 닫기(&C)<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr	더\ 많은\ 접기\ 열기(&p)<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	접힌\ 부분\ 모두\ 펴기(&O)<Tab>zR
 " fold method
 menutrans Fold\ Met&hod			접는\ 방법(&h)
-menutrans M&anual			수동(&a)
+menutrans M&annual			수동(&a)
 menutrans I&ndent			들여쓰기(&n)
 menutrans E&xpression			표현식(&x)
 menutrans S&yntax			신택스(&y)

@@ -233,7 +233,7 @@ func Test_setcharpos()
   call assert_equal([2, 11], [line('.'), col('.')])
   " unload the buffer and try to set the mark
   let bnr = bufnr()
-  enew!
+  new!
   call assert_equal(-1, setcharpos("'m", [bnr, 2, 2, 0]))
 
   %bw!

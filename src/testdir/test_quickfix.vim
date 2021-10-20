@@ -366,7 +366,7 @@ func XfileTests(cchar)
   call writefile(['Xtestfile1:700:10:Line 700',
 	\ 'Xtestfile2:800:15:Line 800'], 'Xqftestfile1')
 
-  enew!
+  new!
   Xfile Xqftestfile1
   let l = g:Xgetlist()
   call assert_true(len(l) == 2 &&
@@ -377,7 +377,7 @@ func XfileTests(cchar)
   call assert_fails('Xfile non_existent_file', 'E40:')
 
   " Run cfile/lfile from a modified buffer
-  enew!
+  new!
   silent! put ='Quickfix'
   silent! Xfile Xqftestfile1
   call assert_true(v:errmsg ==# 'E37: No write since last change (add ! to override)')
@@ -391,7 +391,7 @@ func XfileTests(cchar)
   call writefile(['Xtestfile1:222:77:Line 222',
 	\ 'Xtestfile2:333:88:Line 333'], 'Xqftestfile1')
 
-  enew!
+  new!
   Xgetfile Xqftestfile1
   let l = g:Xgetlist()
   call assert_true(len(l) == 2 &&
@@ -418,7 +418,7 @@ endfunc
 func XbufferTests(cchar)
   call s:setup_commands(a:cchar)
 
-  enew!
+  new!
   silent! call setline(1, ['Xtestfile7:700:10:Line 700',
 	\ 'Xtestfile8:800:15:Line 800'])
   Xbuffer!
@@ -427,7 +427,7 @@ func XbufferTests(cchar)
 	\ l[0].lnum == 700 && l[0].col == 10 && l[0].text ==# 'Line 700' &&
 	\ l[1].lnum == 800 && l[1].col == 15 && l[1].text ==# 'Line 800')
 
-  enew!
+  new!
   silent! call setline(1, ['Xtestfile9:900:55:Line 900',
 	\ 'Xtestfile10:950:66:Line 950'])
   Xgetbuffer
@@ -436,7 +436,7 @@ func XbufferTests(cchar)
 	\ l[0].lnum == 900 && l[0].col == 55 && l[0].text ==# 'Line 900' &&
 	\ l[1].lnum == 950 && l[1].col == 66 && l[1].text ==# 'Line 950')
 
-  enew!
+  new!
   silent! call setline(1, ['Xtestfile11:700:20:Line 700',
 	\ 'Xtestfile12:750:25:Line 750'])
   Xaddbuffer
@@ -445,7 +445,7 @@ func XbufferTests(cchar)
 	\ l[1].lnum == 950 && l[1].col == 66 && l[1].text ==# 'Line 950' &&
 	\ l[2].lnum == 700 && l[2].col == 20 && l[2].text ==# 'Line 700' &&
 	\ l[3].lnum == 750 && l[3].col == 25 && l[3].text ==# 'Line 750')
-  enew!
+  new!
 
   " Check for invalid buffer
   call assert_fails('Xbuffer 199', 'E474:')
@@ -453,7 +453,7 @@ func XbufferTests(cchar)
   " Check for unloaded buffer
   edit Xtestfile1
   let bnr = bufnr('%')
-  enew!
+  new!
   call assert_fails('Xbuffer ' . bnr, 'E681:')
 
   " Check for invalid range
@@ -666,7 +666,7 @@ func s:test_xhelpgrep(cchar)
 
   " When the current window is vertically split, jumping to a help match
   " should open the help window at the top.
-  only | enew
+  only | new
   let w1 = win_getid()
   vert new
   let w2 = win_getid()
@@ -860,7 +860,7 @@ func ReadTestProtocol(name)
 endfunc
 
 func Test_locationlist()
-  enew
+  new
 
   augroup testgroup
     au!
@@ -880,7 +880,7 @@ func Test_locationlist()
 
   " Test A
   lrewind
-  enew
+  new
   lopen
   4lnext
   vert split
@@ -967,7 +967,7 @@ func Test_locationlist_cross_tab_jump()
   silent lgrep loclistfoo loclist*
   call assert_equal(1, tabpagenr())
 
-  enew | only | tabonly
+  new | only | tabonly
   set switchbuf&vim
   call delete('loclistfoo')
   call delete('loclistbar')
@@ -1623,7 +1623,7 @@ func Test_setqflist()
   call SetXlistTests('c', bnum)
   call SetXlistTests('l', bnum)
 
-  enew!
+  new!
   call delete('Xtestfile')
 endfunc
 
@@ -1767,7 +1767,7 @@ func Test_setqflist_user_sets_buftype()
   call setqflist([{'text': 'foo'}, {'text': 'bar'}])
   set buftype=quickfix
   call setqflist([], 'a')
-  enew
+  new
 endfunc
 
 func Test_quickfix_set_list_with_act()
@@ -1878,7 +1878,7 @@ func Test_switchbuf()
   " Test for 'switchbuf' set to search for files in windows in the current
   " tabpage and jump to an existing window (if present)
   set switchbuf=useopen
-  enew
+  new
   cfirst | cnext
   call assert_equal(file1_winid, win_getid())
   2cnext
@@ -1888,7 +1888,7 @@ func Test_switchbuf()
 
   " Test for 'switchbuf' set to search for files in tabpages and jump to an
   " existing tabpage (if present)
-  enew | only
+  new | only
   set switchbuf=usetab
   tabedit Xqftestfile1
   tabedit Xqftestfile2
@@ -1904,7 +1904,7 @@ func Test_switchbuf()
   call assert_equal(2, tabpagenr())
   2cnfile
   call assert_equal(4, tabpagenr())
-  tabfirst | tabonly | enew
+  tabfirst | tabonly | new
 
   " Test for 'switchbuf' set to open a new window for every file
   set switchbuf=split
@@ -1917,14 +1917,14 @@ func Test_switchbuf()
 
   " Test for 'switchbuf' set to open a new tabpage for every file
   set switchbuf=newtab
-  enew | only
+  new | only
   cfirst | cnext
   call assert_equal(1, tabpagenr('$'))
   cnext | cnext
   call assert_equal(2, tabpagenr('$'))
   cnext | cnext
   call assert_equal(3, tabpagenr('$'))
-  tabfirst | enew | tabonly | only
+  tabfirst | new | tabonly | only
 
   set switchbuf=uselast
   split
@@ -1932,7 +1932,7 @@ func Test_switchbuf()
   copen
   exe "normal 1G\<CR>"
   call assert_equal(last_winid, win_getid())
-  enew | only
+  new | only
 
   " With an empty 'switchbuf', jumping to a quickfix entry should open the
   " file in an existing window (if present)
@@ -1954,7 +1954,7 @@ func Test_switchbuf()
 
   " If only quickfix window is open in the current tabpage, jumping to an
   " entry with 'switchbuf' set to 'usetab' should search in other tabpages.
-  enew | only
+  new | only
   set switchbuf=usetab
   tabedit Xqftestfile1
   tabedit Xqftestfile2
@@ -1963,7 +1963,7 @@ func Test_switchbuf()
   copen | only
   clast
   call assert_equal(4, tabpagenr())
-  tabfirst | tabonly | enew | only
+  tabfirst | tabonly | new | only
 
   " Jumping to a file that is not present in any of the tabpages and the
   " current tabpage doesn't have any usable windows, should open it in a new
@@ -1977,17 +1977,17 @@ func Test_switchbuf()
   " retained.
   set modeline&vim
   call writefile(["vim: switchbuf=split"], 'Xqftestfile1')
-  enew | only
+  new | only
   set switchbuf&vim
   cexpr "Xqftestfile1:1:10"
   call assert_equal('split', &switchbuf)
   call writefile(["vim: switchbuf=usetab"], 'Xqftestfile1')
-  enew | only
+  new | only
   set switchbuf=useopen
   cexpr "Xqftestfile1:1:10"
   call assert_equal('usetab', &switchbuf)
   call writefile(["vim: switchbuf&vim"], 'Xqftestfile1')
-  enew | only
+  new | only
   set switchbuf=useopen
   cexpr "Xqftestfile1:1:10"
   call assert_equal('', &switchbuf)
@@ -1997,13 +1997,13 @@ func Test_switchbuf()
   call delete('Xqftestfile3')
   set switchbuf&vim
 
-  enew | only
+  new | only
 endfunc
 
 func Xadjust_qflnum(cchar)
   call s:setup_commands(a:cchar)
 
-  enew | only
+  new | only
 
   let fname = 'Xqftestfile' . a:cchar
   call s:create_test_file(fname)
@@ -2028,7 +2028,7 @@ func Xadjust_qflnum(cchar)
   1,2delete
   call assert_equal([], g:Xgetlist())
 
-  enew!
+  new!
   call delete(fname)
 endfunc
 
@@ -2048,14 +2048,14 @@ func s:test_xgrep(cchar)
   " Grep_Test_Text: Match 2
   " GrepAdd_Test_Text: Match 1
   " GrepAdd_Test_Text: Match 2
-  enew! | only
+  new! | only
   set makeef&vim
   silent Xgrep Grep_Test_Text: test_quickfix.vim
   call assert_true(len(g:Xgetlist()) == 5)
   Xopen
   call assert_true(w:quickfix_title =~ '^:grep')
   Xclose
-  enew
+  new
   set makeef=Temp_File_##
   silent Xgrepadd GrepAdd_Test_Text: test_quickfix.vim
   call assert_true(len(g:Xgetlist()) == 9)
@@ -2550,11 +2550,11 @@ func Test_Autocmd()
   call assert_equal(l, g:acmds)
 
   let g:acmds = []
-  enew! | call append(0, "F2:10:Line 10")
+  new! | call append(0, "F2:10:Line 10")
   cbuffer!
-  enew! | call append(0, "F2:20:Line 20")
+  new! | call append(0, "F2:20:Line 20")
   cgetbuffer
-  enew! | call append(0, "F2:30:Line 30")
+  new! | call append(0, "F2:30:Line 30")
   caddbuffer
   new
   let bnum = bufnr('%')
@@ -2562,7 +2562,7 @@ func Test_Autocmd()
   exe 'silent! cbuffer! ' . bnum
   exe 'silent! cgetbuffer ' . bnum
   exe 'silent! caddbuffer ' . bnum
-  enew!
+  new!
   let l = ['precbuffer',
 	      \ 'postcbuffer',
 	      \ 'precgetbuffer',
@@ -2752,7 +2752,7 @@ func Test_cwindow_jump()
   " Jump to an entry.
   " Should create a new window and jump to the entry. The scratch buffer
   " should not be used.
-  enew | only
+  new | only
   set buftype=nofile
   below new
   lgetexpr ["F1%10%Line 10", "F2%20%Line 20", "F3%30%Line 30"]
@@ -2766,7 +2766,7 @@ func Test_cwindow_jump()
   " Open the location list window and close the previous window
   " Jump to an entry in the location list window
   " Should open the file in the first window and not set the location list.
-  enew | only
+  new | only
   lgetexpr ["F1%5%Line 5"]
   below new
   lgetexpr ["F1%10%Line 10", "F2%20%Line 20", "F3%30%Line 30"]
@@ -2776,7 +2776,7 @@ func Test_cwindow_jump()
   call assert_true(winnr() == 1)
   call assert_true(getloclist(0)[0].text == 'Line 5')
 
-  enew | only
+  new | only
   cgetexpr ["F1%10%Line 10", "F2%20%Line 20", "F3%30%Line 30"]
   copen
   cnext
@@ -2785,7 +2785,7 @@ func Test_cwindow_jump()
 
   " open the quickfix buffer in two windows and jump to an entry. Should open
   " the file in the first quickfix window.
-  enew | only
+  new | only
   copen
   let bnum = bufnr('')
   exe 'sbuffer ' . bnum
@@ -2793,7 +2793,7 @@ func Test_cwindow_jump()
   cfirst
   call assert_equal(2, winnr())
   call assert_equal('F1', @%)
-  enew | only
+  new | only
   exe 'sb' bnum
   exe 'botright sb' bnum
   wincmd t
@@ -2804,7 +2804,7 @@ func Test_cwindow_jump()
 
   " Jumping to a file from the location list window should find a usable
   " window by wrapping around the window list.
-  enew | only
+  new | only
   call setloclist(0, [], 'f')
   new | new
   lgetexpr ["F1%10%Line 10", "F2%20%Line 20", "F3%30%Line 30"]
@@ -2815,7 +2815,7 @@ func Test_cwindow_jump()
   call assert_equal(3, winnr())
   call assert_equal(getloclist(1, {'id' : 0}).id, getloclist(3, {'id' : 0}).id)
 
-  enew | only
+  new | only
   set efm&vim
 endfunc
 
@@ -2912,7 +2912,7 @@ endfunc
 " Test for incsearch highlighting of the :vimgrep pattern
 " This test used to cause "E315: ml_get: invalid lnum" errors.
 func Test_vimgrep_incsearch()
-  enew
+  new
   set incsearch
   call test_override("char_avail", 1)
 
@@ -2977,7 +2977,7 @@ endfunc
 func XfreeTests(cchar)
   call s:setup_commands(a:cchar)
 
-  enew | only
+  new | only
 
   " Deleting the quickfix stack should work even When the current list is
   " somewhere in the middle of the stack
@@ -3625,7 +3625,7 @@ func Xqfjump_tests(cchar)
   if a:cchar == 'l'
     " When jumping to a location list entry in the location list window and
     " no usable windows are available, then a new window should be opened.
-    enew! | new | only
+    new! | new | only
     call g:Xsetlist([], 'f')
     setlocal buftype=nofile
     new
@@ -3655,7 +3655,7 @@ func Xqfjump_tests(cchar)
   endif
 
   " Cleanup
-  enew!
+  new!
   new | only
 
   call delete('F1')
@@ -3797,11 +3797,11 @@ func Xqftick_tests(cchar)
   call g:Xsetlist([], 'a', {'title' : 'New Title'})
   call assert_equal(5, g:Xgetlist({'changedtick' : 0}).changedtick)
 
-  enew!
+  new!
   call append(0, ["F5:50:L50", "F6:60:L60"])
   Xaddbuffer
   call assert_equal(6, g:Xgetlist({'changedtick' : 0}).changedtick)
-  enew!
+  new!
 
   call g:Xsetlist([], 'a', {'context' : {'bus' : 'pci'}})
   call assert_equal(7, g:Xgetlist({'changedtick' : 0}).changedtick)
@@ -3861,7 +3861,7 @@ func Test_ll_window_ctx()
   lopen | only
   call test_garbagecollect_now()
   echo getloclist(0, {'context' : 1}).context
-  enew | only
+  new | only
 endfunc
 
 " The following test used to crash vim
@@ -3896,7 +3896,7 @@ func Test_lexpr_crash()
     au!
   augroup END
 
-  enew | only
+  new | only
   augroup QF_Test
     au!
     au BufNew * call setloclist(0, [], 'f')
@@ -3906,7 +3906,7 @@ func Test_lexpr_crash()
     au!
   augroup END
 
-  enew | only
+  new | only
   lexpr ''
   lopen
   augroup QF_Test
@@ -3941,7 +3941,7 @@ func Test_lvimgrep_crash()
     au!
   augroup END
 
-  enew | only
+  new | only
 endfunc
 
 func Test_lvimgrep_crash2()
@@ -4297,13 +4297,13 @@ func Xjumpto_first_error_test(cchar)
   let l = ['Xtestfile1:2:Line2', 'Xtestfile2:4:Line4']
 
   " Test for cexpr/lexpr
-  enew
+  new
   Xexpr l
   call assert_equal('Xtestfile1', @%)
   call assert_equal(2, line('.'))
 
   " Test for cfile/lfile
-  enew
+  new
   call writefile(l, 'Xerr')
   Xfile Xerr
   call assert_equal('Xtestfile1', @%)
@@ -4522,7 +4522,7 @@ endfunc
 
 " Test for parsing entries using visual screen column
 func Test_viscol()
-  enew
+  new
   call writefile(["Col1\tCol2\tCol3"], 'Xfile1')
   edit Xfile1
 
@@ -4550,7 +4550,7 @@ func Test_viscol()
   cnext
   call assert_equal([14, 20], [col('.'), virtcol('.')])
 
-  enew
+  new
   call writefile(["Col1\täü\töß\tCol4"], 'Xfile1')
 
   " Use byte offset for column number
@@ -4572,7 +4572,7 @@ func Test_viscol()
   call assert_equal([16, 25], [col('.'), virtcol('.')])
 
   " Use screen column number with a multi-line error message
-  enew
+  new
   call writefile(["à test"], 'Xfile1')
   set efm=%E===\ %f\ ===,%C%l:%v,%Z%m
   cexpr ["=== Xfile1 ===", "1:3", "errormsg"]
@@ -4586,7 +4586,7 @@ func Test_viscol()
   call assert_equal('Xfile1', @%)
   call assert_equal([0, 1, 3, 0], getpos('.'))
 
-  enew | only
+  new | only
   set efm&
   call delete('Xfile1')
 endfunc
@@ -4697,14 +4697,14 @@ endfunc
 " Test to make sure that an empty quickfix buffer is not reused for loading
 " a normal buffer.
 func Test_empty_qfbuf()
-  enew | only
+  new | only
   call writefile(["Test"], 'Xfile1')
   call setqflist([], 'f')
   copen | only
   let qfbuf = bufnr('')
   edit Xfile1
   call assert_notequal(qfbuf, bufnr(''))
-  enew
+  new
   call delete('Xfile1')
 endfunc
 
@@ -4940,7 +4940,7 @@ func Xtest_qfcmd_abort(cchar)
   call delete('Xfile1')
 
   " cgetbuffer/lgetbuffer
-  enew!
+  new!
   call append(0, ["F1:10:Line10", "F2:20:Line20"])
   let e = ''
   try
@@ -4950,7 +4950,7 @@ func Xtest_qfcmd_abort(cchar)
   endtry
   call assert_equal('AbortCmd', e)
   call assert_equal(0, g:Xgetlist({'nr' : '$'}).nr)
-  enew!
+  new!
 
   " vimgrep/lvimgrep
   let e = ''

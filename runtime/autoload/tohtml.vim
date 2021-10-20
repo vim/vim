@@ -302,7 +302,7 @@ func! tohtml#Convert2HTML(line1, line2) "{{{
   else "{{{
     let win_list = []
     let buf_list = []
-    windo if &diff | call add(win_list, winbufnr(0)) | endif
+    window if &diff | call add(win_list, winbufnr(0)) | endif
     let s:settings.whole_filler = 1
     let g:html_diff_win_num = 0
     for window in win_list

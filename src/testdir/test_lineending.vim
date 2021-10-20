@@ -7,7 +7,7 @@ func Test_lineending()
 	      \ "this one does\<CR>",
 	      \ "and the last one doesn't"]
   set ta tx
-  enew!
+  new!
   call append(0, l)
   $delete
   write Xfile1

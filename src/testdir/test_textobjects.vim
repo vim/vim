@@ -90,7 +90,7 @@ endfunc
 func Test_string_html_objects()
 
   for e in ['utf-8', 'latin1', 'cp932']
-    enew!
+    new!
     exe 'set enc=' .. e
 
     let t = '"wo\"rd\\" foo'
@@ -258,7 +258,7 @@ x
 endfunc
 
 func Test_sentence()
-  enew!
+  new!
   call setline(1, 'A sentence.  A sentence?  A sentence!')
 
   normal yis
@@ -292,7 +292,7 @@ func Test_sentence()
 endfunc
 
 func Test_sentence_with_quotes()
-  enew!
+  new!
   call setline(1, 'A "sentence."  A sentence.')
 
   normal yis
@@ -311,7 +311,7 @@ func Test_sentence_with_quotes()
 endfunc
 
 func Test_sentence_with_cursor_on_delimiter()
-  enew!
+  new!
   call setline(1, "A '([sentence.])'  A sentence.")
 
   normal! 15|yis

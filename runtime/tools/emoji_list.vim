@@ -4,7 +4,7 @@
 if &modified
   new
 else
-  enew
+  new
 endif
 
 " Use a compiled Vim9 function for speed

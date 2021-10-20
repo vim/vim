@@ -78,9 +78,9 @@ test_trunc_string(void)
     vim_free(buf);
 
     buf = alloc(40);
-    STRCPY(buf, "a text that nott fits");
+    STRCPY(buf, "a text that not fits");
     trunc_string(buf, buf, 20, 40);
-    assert(STRCMP(buf, "a text t...nott fits") == 0);
+    assert(STRCMP(buf, "a text t...not fits") == 0);
     vim_free(buf);
 
     // copy from string to buf
@@ -113,9 +113,9 @@ test_trunc_string(void)
     vim_free(s);
 
     buf = alloc(40);
-    s = vim_strsave((char_u *)"a text that nott fits");
+    s = vim_strsave((char_u *)"a text that not fits");
     trunc_string(s, buf, 20, 40);
-    assert(STRCMP(buf, "a text t...nott fits") == 0);
+    assert(STRCMP(buf, "a text t...not fits") == 0);
     vim_free(buf);
     vim_free(s);
 }
@@ -137,9 +137,9 @@ test_trunc_string_mbyte(void)
     vim_free(s);
 
     buf = alloc(40);
-    s = vim_strsave((char_u *)"a text ÄÖÜä nott fits");
+    s = vim_strsave((char_u *)"a text ÄÖÜä not fits");
     trunc_string(s, buf, 20, 40);
-    assert(STRCMP(buf, "a text Ä...nott fits") == 0);
+    assert(STRCMP(buf, "a text Ä...not fits") == 0);
     vim_free(buf);
     vim_free(s);
 

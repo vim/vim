@@ -119,7 +119,7 @@ syn keyword vbFunction FileDateTime FileLen FilterFix Fix Format
 syn keyword vbFunction FormatCurrency FormatDateTime FormatNumber
 syn keyword vbFunction FormatPercent FreeFile GetAllStrings GetAttr
 syn keyword vbFunction GetAutoServerSettings GetObject GetSetting Hex
-syn keyword vbFunction Hour IIf IMEStatus IPmt InStr Input InputB
+syn keyword vbFunction Hour if IMEStatus IPmt InStr Input InputB
 syn keyword vbFunction InputBox InstrB Int IsArray IsDate IsEmpty IsError
 syn keyword vbFunction IsMissing IsNull IsNumeric IsObject Join LBound
 syn keyword vbFunction LCase LOF LTrim Left LeftB Len LenB LoadPicture
@@ -206,7 +206,7 @@ syn keyword vbMethods Span Split SplitContaining StartLabelEdit
 syn keyword vbMethods StartLogging Stop Synchronize Tag TextHeight
 syn keyword vbMethods TextWidth ToDefaults Trace TwipsToChartPart
 syn keyword vbMethods TypeByChartType URLFor Update UpdateControls
-syn keyword vbMethods UpdateRecord UpdateRow Upto ValidateControls Value
+syn keyword vbMethods UpdateRecord UpdateRow Up to ValidateControls Value
 syn keyword vbMethods WhatsThisMode Write WriteBlankLines WriteLine
 syn keyword vbMethods WriteProperty WriteTemplate ZOrder
 syn keyword vbMethods rdoCreateEnvironment rdoRegisterDataSource
@@ -326,7 +326,7 @@ syn match  vbFloat		"[-+]\=\<\d\+[eE][\-+]\=\d\+"
 syn match  vbFloat		"[-+]\=\<\d\+\.\d*\([eE][\-+]\=\d\+\)\="
 syn match  vbFloat		"[-+]\=\<\.\d\+\([eE][\-+]\=\d\+\)\="
 
-" String and Character contstants
+" String and Character constants
 syn region  vbString		start=+"+  end=+"\|$+
 syn region  vbComment		start="\(^\|\s\)REM\s" end="$" contains=vbTodo
 syn region  vbComment		start="\(^\|\s\)\'"   end="$" contains=vbTodo

@@ -654,7 +654,7 @@ func Test_copy_winopt()
 
   " Test copy option from current buffer in window
   split
-  enew
+  new
   setlocal numberwidth=5
   wincmd w
   call assert_equal(4,&numberwidth)
@@ -665,7 +665,7 @@ func Test_copy_winopt()
 
   " Test copy value from window that used to be display the buffer
   split
-  enew
+  new
   setlocal numberwidth=6
   bnext
   wincmd w
@@ -677,7 +677,7 @@ func Test_copy_winopt()
   " Test that if buffer is current, don't use the stale cached value
   " from the last time the buffer was displayed.
   split
-  enew
+  new
   setlocal numberwidth=7
   bnext
   bnext
@@ -689,7 +689,7 @@ func Test_copy_winopt()
   bw!
 
   " Test value is not copied if window already has seen the buffer
-  enew
+  new
   split
   setlocal numberwidth=9
   bnext
@@ -1008,7 +1008,7 @@ func Test_window_opt()
   call assert_equal(2, line('w0'))
   exe "normal \<C-B>"
   call assert_equal(1, line('w0'))
-  enew!
+  new!
   set window&
 endfunc
 

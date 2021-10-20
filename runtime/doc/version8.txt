@@ -3859,7 +3859,7 @@ Files:	    src/ex_docmd.c, src/ex_cmds.h, src/testdir/test62.in,
 	    src/testdir/test_command_count.ok
 
 Patch 7.4.566
-Problem:    :argdo, :bufdo, :windo and :tabdo don't take a range.
+Problem:    :argdo, :bufdo, :window and :tabdo don't take a range.
 Solution:   Support the range. (Marcin Szamotulski)
 Files:	    runtime/doc/editing.txt, runtime/doc/tabpage.txt,
 	    runtime/doc/windows.txt, src/ex_cmds.h, src/ex_cmds2.c,
@@ -4042,7 +4042,7 @@ Solution:   Initialize v_lock. (Yukihiro Nakadaira)
 Files:	    src/eval.c
 
 Patch 7.4.598
-Problem:    ":tabdo windo echo 'hi'" causes "* register not to be changed.
+Problem:    ":tabdo window echo 'hi'" causes "* register not to be changed.
 	    (Salman Halim)
 Solution:   Change how clip_did_set_selection is used and add
 	    clipboard_needs_update and global_change_count.  (Christian
@@ -10276,7 +10276,7 @@ Solution:   Accept any number of matches.
 Files:      src/testdir/test_quickfix.vim
 
 Patch 7.4.1651
-Problem:    Some dead (MSDOS) code remains.
+Problem:    Some dead (MS-DOS) code remains.
 Solution:   Remove the unused lines. (Ken Takata)
 Files:      src/misc1.c
 
@@ -14888,7 +14888,7 @@ Files:      src/vim.h
 
 Patch 8.0.0039
 Problem:    When Vim 8 reads an old viminfo and exits, the next time marks are
-            not read from viminfo. (Ned Batchelder)
+            not read from viminfo. (Need Batchelder)
 Solution:   Set a mark when it wasn't set before, even when the timestamp is
             zero. (closes #1170)
 Files:      src/mark.c, src/testdir/test_viminfo.vim
@@ -18027,7 +18027,7 @@ Solution:   Catch both possible errors. (closes #1601)
 Files:      src/testdir/test_options.vim
 
 Patch 8.0.0560
-Problem:    :windo allows for ! but it's not supported.
+Problem:    :window allows for ! but it's not supported.
 Solution:   Disallow passing !. (Hirohito Higashi)
 Files:      src/ex_cmds.h
 
@@ -40223,7 +40223,7 @@ Files:	    src/popupmenu.c, src/testdir/test_balloon.vim,
             src/testdir/dumps/Test_balloon_eval_term_02.dump
 
 Patch 8.1.2275
-Problem:    Using "seesion" looks like a mistake.
+Problem:    Using "session" looks like a mistake.
 Solution:   Use an underscore to make the function sort first.
 Files:	    src/testdir/test_mksession.vim
 

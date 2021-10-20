@@ -796,7 +796,7 @@ endfunc
 
 func Test_close_output_buffer()
   let g:test_is_flaky = 1
-  enew!
+  new!
   let test_lines = ['one', 'two']
   call setline(1, test_lines)
   let options = {'out_io': 'buffer'}
@@ -1697,7 +1697,7 @@ func Test_job_start_fails()
 
   edit! XXX
   let bnum = bufnr()
-  enew
+  new
   call assert_fails("call job_start('ls',
         \ {'in_io' : 'buffer', 'in_buf' : bnum})", 'E918:')
 
@@ -2311,7 +2311,7 @@ endfunc
 func Test_job_with_list_args()
   CheckMSWindows
 
-  enew!
+  new!
   let bnum = bufnr()
   let job = job_start(['cmd', '/c', 'echo', 'Hello', 'World'], {'out_io' : 'buffer', 'out_buf' : bnum})
   call WaitForAssert({-> assert_equal("dead", job_status(job))})

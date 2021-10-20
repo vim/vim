@@ -542,12 +542,12 @@ func Test_setreg_basic()
     let &cb='unnamed'
     1y
     call Assert_reg('*', 'V', "clipboard contents\n", "['clipboard contents']", "clipboard contents\n", "['clipboard contents']")
-    tabdo :windo :echo "hi"
+    tabdo :window :echo "hi"
     2y
     call Assert_reg('*', 'V', "something else\n", "['something else']", "something else\n", "['something else']")
     let &cb=_clipopt
     call call('setreg', _clipreg)
-    enew!
+    new!
   endif
 
   " Error cases

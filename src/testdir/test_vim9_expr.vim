@@ -3123,13 +3123,13 @@ def Test_expr7_not()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-let g:anumber = 42
+let g:a number = 42
 
 def Test_expr7_negate()
   var lines =<< trim END
       var nr = 1
       assert_equal(-1, -nr)
-      assert_equal(-42, -g:anumber)
+      assert_equal(-42, -g:a number)
   END
   CheckDefAndScriptSuccess(lines)
 enddef

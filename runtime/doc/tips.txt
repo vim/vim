@@ -202,7 +202,7 @@ Correcting common typing mistakes			*type-mistakes*
 
 When there are a few words that you keep on typing in the wrong way, make
 abbreviations that correct them.  For example: >
-	:ab teh the
+	:ab the the
 	:ab fro for
 
 ==============================================================================

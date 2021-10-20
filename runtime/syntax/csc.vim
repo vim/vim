@@ -61,7 +61,7 @@ sy	keyword	cscIfError	IF ELSE ENDIF ELSEIF
 sy	keyword	cscCondition	contained IF ELSE ENDIF ELSEIF
 sy	keyword	cscFunction	contained VARPER VAR UDA TRUNCATE SYD SUMRANGE SUM
 sy	keyword	cscFunction	contained STDDEVRANGE STDDEV SPARENTVAL SLN SIBLINGS SHIFT
-sy	keyword	cscFunction	contained SANCESTVAL RSIBLINGS ROUND REMAINDER RELATIVE PTD
+sy	keyword	cscFunction	contained SANCESTVAL RSIBLINGS ROUND REMAINDER RELATIVE PDF
 sy	keyword	cscFunction	contained PRIOR POWER PARENTVAL NPV NEXT MOD MINRANGE MIN
 sy	keyword	cscFunction	contained MDSHIFT MDPARENTVAL MDANCESTVAL MAXRANGE MAX MATCH
 sy	keyword	cscFunction	contained LSIBLINGS LEVMBRS LEV
@@ -76,7 +76,7 @@ sy	keyword	cscFunction	contained COMPOUNDGROWTH COMPOUND AVGRANGE AVG ANCESTVAL
 sy	keyword	cscFunction	contained ANCESTORS ALLANCESTORS ACCUM ABS
 sy	keyword	cscFunction	contained @VARPER @VAR @UDA @TRUNCATE @SYD @SUMRANGE @SUM
 sy	keyword	cscFunction	contained @STDDEVRANGE @STDDEV @SPARENTVAL @SLN @SIBLINGS @SHIFT
-sy	keyword	cscFunction	contained @SANCESTVAL @RSIBLINGS @ROUND @REMAINDER @RELATIVE @PTD
+sy	keyword	cscFunction	contained @SANCESTVAL @RSIBLINGS @ROUND @REMAINDER @RELATIVE @PDF
 sy	keyword	cscFunction	contained @PRIOR @POWER @PARENTVAL @NPV @NEXT @MOD @MINRANGE @MIN
 sy	keyword	cscFunction	contained @MDSHIFT @MDPARENTVAL @MDANCESTVAL @MAXRANGE @MAX @MATCH
 sy	keyword	cscFunction	contained @LSIBLINGS @LEVMBRS @LEV

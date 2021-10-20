@@ -211,7 +211,7 @@ swap file.  You will be asked for the crypt key twice:
 
 	Need encryption key for "/tmp/tt" ~
 	Enter encryption key: ****** ~
-	"/tmp/tt" [crypted] 23200L, 522129C ~
+	"/tmp/tt" [encrypted] 23200L, 522129C ~
 	Using swap file "/tmp/.tt.swp" ~
 	Original file "/tmp/tt" ~
 	Swap file is encrypted: "/tmp/.tt.swp" ~

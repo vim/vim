@@ -201,7 +201,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type
 			them.
-			When used after |:global|, |:argdo|, |:windo|,
+			When used after |:global|, |:argdo|, |:window|,
 			|:bufdo|, in a loop or when another command follows
 			the display won't be updated while executing the
 			commands.
@@ -967,8 +967,8 @@ LISTING BREAKPOINTS
 
 OBSCURE
 
-						*:debugg* *:debuggreedy*
-:debugg[reedy]
+						*:debug* *:debuggreedy*
+:debug[reedy]
 		Read debug mode commands from the normal input stream, instead
 		of getting them directly from the user.  Only useful for test
 		scripts.  Example: >

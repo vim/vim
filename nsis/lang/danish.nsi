@@ -76,7 +76,7 @@ LangString str_desc_plugin          ${LANG_DANISH}     "Opret plugin-mapper. Plu
 LangString str_section_plugin_home  ${LANG_DANISH}     "Private"
 LangString str_desc_plugin_home     ${LANG_DANISH}     "Opret plugin-mapper i HOME (hvis du har defineret et) eller Vim-installationsmappe."
 
-LangString str_section_plugin_vim   ${LANG_DANISH}     "Delte"
+LangString str_section_plugin_vim   ${LANG_DANISH}     "Delete"
 LangString str_desc_plugin_vim      ${LANG_DANISH}     "Opret plugin-mapper i Vim-installationsmappe, det bruges af alle på systemet."
 
 LangString str_section_vis_vim      ${LANG_DANISH}     "VisVim-udvidelser"
@@ -97,7 +97,7 @@ LangString str_desc_rm_plugin       ${LANG_DANISH}     "Fjern plugin-mapperne, h
 LangString str_unsection_plugin_home ${LANG_DANISH}     "Private"
 LangString str_desc_rm_plugin_home  ${LANG_DANISH}     "Fjern plugin-mapperne fra HOME-mappen."
 
-LangString str_unsection_plugin_vim ${LANG_DANISH}     "Delte"
+LangString str_unsection_plugin_vim ${LANG_DANISH}     "Delete"
 LangString str_desc_rm_plugin_vim   ${LANG_DANISH}     "Fjern plugin-mapperne fra Vim-installationsmappen."
 
 LangString str_unsection_rootdir    ${LANG_DANISH}     "Fjern Vim-rodmappen"
@@ -124,9 +124,9 @@ LangString str_desc_rm_rootdir      ${LANG_DANISH}     "Fjern Vim-rodmappen. Den
 
 #LangString str_msg_rm_fail       ${LANG_DANISH}     "Kunne ikke afinstallere følgende version:"
 
-#LangString str_msg_no_rm_key     ${LANG_DANISH}     "Kan ikke finde registreringsdatabasenøgle for afinstallationsguiden."
+#LangString str_msg_no_rm_key     ${LANG_DANISH}     "Kan ikke find registreringsdatabasenøgle for afinstallationsguiden."
 
-#LangString str_msg_no_rm_reg     ${LANG_DANISH}     "Kan ikke finde afinstallationsguiden fra registreringsdatabasen."
+#LangString str_msg_no_rm_reg     ${LANG_DANISH}     "Kan ikke find afinstallationsguiden fra registreringsdatabasen."
 
 #LangString str_msg_no_rm_exe     ${LANG_DANISH}     "Kan ikke tilgå afinstallationsguide."
 

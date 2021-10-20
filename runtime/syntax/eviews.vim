@@ -32,7 +32,7 @@ syn match eFloat /\d\+[Ee][-+]\=\d\+/
 " identifier with leading letter and optional following keyword characters
 syn match eIdentifier /\a\k*/
 
-" Eviews Programing Language
+" Eviews Programming Language
 syn keyword eProgLang  @date else endif @errorcount @evpath exitloop for if @isobject next poff pon return statusline step stop  @temppath then @time to @toc wend while  include call subroutine endsub and or
 
 " Eviews Objects, Views and Procedures

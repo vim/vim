@@ -31,7 +31,7 @@ each tab page.  With the mouse you can click on the label to jump to that tab
 page.  There are other ways to move between tab pages, see below.
 
 Most commands work only in the current tab page.  That includes the |CTRL-W|
-commands, |:windo|, |:all| and |:ball| (when not using the |:tab| modifier).
+commands, |:window|, |:all| and |:ball| (when not using the |:tab| modifier).
 The commands that are aware of other tab pages than the current one are
 mentioned below.
 
@@ -59,7 +59,7 @@ In the GUI tab pages line you can use the right mouse button to open menu.
 
 For the related autocommands see |tabnew-autocmd|.
 
-:[count]tabe[dit]				*:tabe* *:tabedit* *:tabnew*
+:[count]table[dit]				*:table* *:tabedit* *:tabnew*
 :[count]tabnew
 		Open a new tab page with an empty window, after the current
 		tab page.  If [count] is given the new tab page appears after
@@ -73,7 +73,7 @@ For the related autocommands see |tabnew-autocmd|.
 		    :0tabnew	" opens tabpage before the first one
 		    :$tabnew	" opens tabpage after the last one
 
-:[count]tabe[dit] [++opt] [+cmd] {file}
+:[count]table[dit] [++opt] [+cmd] {file}
 :[count]tabnew [++opt] [+cmd] {file}
 		Open a new tab page and edit {file}, like with |:edit|.
 		For [count] see |:tabnew| above.
@@ -296,7 +296,7 @@ LOOPING OVER TAB PAGES:
 		current tab page.
 		{cmd} can contain '|' to concatenate several commands.
 		{cmd} must not open or close tab pages or reorder them.
-		Also see |:windo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|, |:cfdo|
+		Also see |:window|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|, |:cfdo|
 		and |:lfdo|
 
 ==============================================================================

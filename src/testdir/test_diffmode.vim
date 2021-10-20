@@ -5,7 +5,7 @@ source screendump.vim
 source check.vim
 
 func Test_diff_fold_sync()
-  enew!
+  new!
   let g:update_count = 0
   au DiffUpdated * let g:update_count += 1
 
@@ -37,7 +37,7 @@ func Test_diff_fold_sync()
   call assert_equal(1, g:update_count)
   au! DiffUpdated
 
-  windo diffoff
+  window diffoff
   close!
   set nomodified
 endfunc
@@ -169,28 +169,28 @@ func Common_vert_split()
 
   call delete('Xtest')
   call delete('Xtest2')
-  windo bw!
+  window bw!
 endfunc
 
 func Test_filler_lines()
   " Test that diffing shows correct filler lines
-  enew!
+  new!
   put =range(4,10)
   1d _
   vnew
   put =range(1,10)
   1d _
-  windo diffthis
+  window diffthis
   wincmd h
   call assert_equal(1, line('w0'))
   unlet! diff_fdm diff_fdc
-  windo diffoff
+  window diffoff
   bwipe!
-  enew!
+  new!
 endfunc
 
 func Test_diffget_diffput()
-  enew!
+  new!
   let l = range(50)
   call setline(1, l)
   call assert_fails('diffget', 'E99:')
@@ -219,7 +219,7 @@ func Test_diffget_diffput()
   diffthis
   call assert_fails('diffget', 'E101:')
 
-  windo diffoff
+  window diffoff
   %bwipe!
 endfunc
 
@@ -248,7 +248,7 @@ func Test_diffget_diffput_range()
   call setline(1, range(1, 10))
   new
   call setline(1, range(11, 20))
-  windo diffthis
+  window diffthis
   3,5diffget
   call assert_equal(['13', '14', '15'], getline(3, 5))
   call setline(1, range(1, 10))
@@ -263,7 +263,7 @@ func Test_diffget_diffput_empty_buffer()
   %d _
   new
   call setline(1, 'one')
-  windo diffthis
+  window diffthis
   diffget
   call assert_equal(['one'], getline(1, '$'))
   %d _
@@ -382,7 +382,7 @@ func Test_dp_do_buffer()
   call assert_fails('diffput not_in_diff_mode', 'E94:')
   call assert_fails('diffget not_in_diff_mode', 'E94:')
 
-  windo diffoff
+  window diffoff
   %bwipe!
 endfunc
 
@@ -404,12 +404,12 @@ func Test_do_lastline()
   norm do
   call assert_equal(3, line('$'))
 
-  windo diffoff
+  window diffoff
   %bwipe!
 endfunc
 
 func Test_diffoff()
-  enew!
+  new!
   call setline(1, ['Two', 'Three'])
   redraw
   let normattr = screenattr(1, 1)
@@ -501,7 +501,7 @@ func Test_diffopt_iwhite_internal()
 endfunc
 
 func Test_diffopt_context()
-  enew!
+  new!
   call setline(1, ['1', '2', '3', '4', '5', '6', '7'])
   diffthis
   new
@@ -619,7 +619,7 @@ func Test_setting_cursor()
   put =range(1,100)
   wq
 
-  tabe Xtest2
+  table Xtest2
   $
   diffsp Xtest1
   tabclose
@@ -661,7 +661,7 @@ func Test_diffexpr()
   set diffexpr=DiffExpr()
   set diffopt=foldcolumn:0
 
-  enew!
+  new!
   call setline(1, ['one', 'two', 'three'])
   redraw
   let normattr = screenattr(1, 1)
@@ -790,7 +790,7 @@ func Test_diff_filler()
 endfunc
 
 func Test_diff_lastline()
-  enew!
+  new!
   only!
   call setline(1, ['This is a ', 'line with five ', 'rows'])
   diffthis
@@ -1001,7 +1001,7 @@ func Test_diff_with_scroll_and_change()
 	call setline(1, range(1, 15))
 	vnew
 	call setline(1, range(9, 15))
-	windo diffthis
+	window diffthis
 	wincmd h
 	exe "normal Gl5\<C-E>"
   END
@@ -1135,7 +1135,7 @@ func Test_diff_of_diff()
 endfunc
 
 func CloseoffSetup()
-  enew
+  new
   call setline(1, ['one', 'two', 'three'])
   diffthis
   new
@@ -1149,14 +1149,14 @@ func Test_diff_closeoff()
   " "closeoff" included by default: last diff win gets 'diff' reset'
   call CloseoffSetup()
   call assert_equal(0, &diff)
-  enew!
+  new!
 
   " "closeoff" excluded: last diff win keeps 'diff' set'
   set diffopt-=closeoff
   call CloseoffSetup()
   call assert_equal(1, &diff)
   diffoff!
-  enew!
+  new!
 endfunc
 
 func Test_diff_followwrap()
@@ -1175,7 +1175,7 @@ func Test_diff_followwrap()
 endfunc
 
 func Test_diff_maintains_change_mark()
-  enew!
+  new!
   call setline(1, ['a', 'b', 'c', 'd'])
   diffthis
   new
@@ -1227,7 +1227,7 @@ func Test_diff_rnu()
     call setline(1, ['a', 'a', 'a', 'y', 'b', 'b', 'b', 'b', 'b'])
     vnew
     call setline(1, ['a', 'a', 'a', 'x', 'x', 'x', 'b', 'b', 'b', 'b', 'b'])
-    windo diffthis
+    window diffthis
     setlocal number rnu foldcolumn=0
   END
   call writefile(content, 'Xtest_diff_rnu')
@@ -1284,7 +1284,7 @@ func Test_diff_filler_cursorcolumn()
     call setline(1, ['aa', 'bb', 'cc'])
     vnew
     call setline(1, ['aa', 'cc'])
-    windo diffthis
+    window diffthis
     wincmd p
     setlocal cursorcolumn foldcolumn=0
     norm! gg0
@@ -1313,13 +1313,13 @@ endfunc
 " Test for adding/removing lines inside diff chunks, between diff chunks
 " and before diff chunks
 func Test_diff_modify_chunks()
-  enew!
+  new!
   let w2_id = win_getid()
   call setline(1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'])
   new
   let w1_id = win_getid()
   call setline(1, ['a', '2', '3', 'd', 'e', 'f', '7', '8', 'i'])
-  windo diffthis
+  window diffthis
 
   " remove a line between two diff chunks and create a new diff chunk
   call win_gotoid(w2_id)

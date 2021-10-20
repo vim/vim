@@ -240,7 +240,7 @@ endfunc
 func dist#ft#FTidl()
   let n = 1
   while n < 50 && n <= line("$")
-    if getline(n) =~ '^\s*import\s\+"\(unknwn\|objidl\)\.idl"'
+    if getline(n) =~ '^\s*import\s\+"\(unknown\|objidl\)\.idl"'
       setf msidl
       return
     endif

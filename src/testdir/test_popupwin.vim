@@ -827,7 +827,7 @@ func Test_popup_with_mask()
   call popup_clear()
 
   " this was causing an internal error
-  enew
+  new
   set nowrap
   call repeat('x', &columns)->setline(1)
   call prop_type_add('textprop', {})
@@ -1039,7 +1039,7 @@ func Test_win_execute_not_allowed()
   call assert_fails('call win_execute(winid, "bfirst")', 'E994:')
   call assert_fails('call win_execute(winid, "blast")', 'E994:')
   call assert_fails('call win_execute(winid, "edit")', 'E994:')
-  call assert_fails('call win_execute(winid, "enew")', 'E994:')
+  call assert_fails('call win_execute(winid, "new")', 'E994:')
   call assert_fails('call win_execute(winid, "help")', 'E994:')
   call assert_fails('call win_execute(winid, "1only")', 'E994:')
   call assert_fails('call win_execute(winid, "wincmd x")', 'E994:')
@@ -1055,7 +1055,7 @@ func Test_popup_with_wrap()
   let lines =<< trim END
 	 call setline(1, range(1, 100))
 	 let winid = popup_create(
-	   \ 'a long line that wont fit',
+	   \ 'a long line that won't fit',
 	   \ #{line: 3, col: 20, maxwidth: 10, wrap: 1})
   END
   call writefile(lines, 'XtestPopup')
@@ -1073,7 +1073,7 @@ func Test_popup_without_wrap()
   let lines =<< trim END
 	 call setline(1, range(1, 100))
 	 let winid = popup_create(
-	   \ 'a long line that wont fit',
+	   \ 'a long line that won't fit',
 	   \ #{line: 3, col: 20, maxwidth: 10, wrap: 0})
   END
   call writefile(lines, 'XtestPopup')
@@ -2670,7 +2670,7 @@ func Test_popupwin_filter_mouse()
   endfor
 
   call popup_close(winid)
-  enew!
+  new!
   delfunc MyPopupFilter
 endfunc
 

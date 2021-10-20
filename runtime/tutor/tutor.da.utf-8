@@ -3,9 +3,9 @@
 ===============================================================================
 
      Vim er en meget kraftfuld editor med mange kommandoer, for mange til
-     at forklare i en vejledning som denne. Vejledningen er designet til at
+     at forklare i en vejledning some denne. Vejledningen er designet til at
      beskrive nok af kommandoerne til at du vil være i stand til let at bruge
-     Vim som en alsidig editor.
+     Vim some en alsidig editor.
 
      Det tager cirka 25-30 minutter at fuldføre vejledningen,
      afhængig af hvor meget tid der bruges på at eksperimentere.
@@ -25,7 +25,7 @@
 			Lektion 1.1: FLYT MARKØREN
 
 
-   ** Tryk på h-,j-,k-,l-tasterne som vist, for at flytte markøren. **
+   ** Tryk på h-,j-,k-,l-tasterne some vist, for at flytte markøren. **
 	     ^
 	     k		    Fif: H-tasten er til venstre og flytter til venstre.
        < h	 l >		 L-tasten er til højre og flytter til højre.
@@ -53,30 +53,30 @@ BEMÆRK: Piletasterne bør også virke. Men med hjkl kan du flytte rundt
   1. Tryk på <ESC>-tasten (for at være sikker på, at du er i normal tilstand).
 
   2. Skriv:	:q! <ENTER>.
-     Det afslutter editoren, hvorved ændringer som du har foretaget forkastes.
+     Det afslutter editoren, hvorved ændringer some du har foretaget forkastes.
 
-  3. Vend tilbage hertil ved at udføre kommandoen som fik dig ind i
+  3. Vend tilbage hertil ved at udføre kommandoen some fik dig ind i
      vejledningen. Det var muligvis:  vimtutor <ENTER>
 
   4. Hvis du har lært trinnene udenad og er klar, så udfør trin
      1 til 3 for at afslutte og komme ind i editoren igen.
 
-BEMÆRK: :q! <ENTER>  forkaster ændringer som du har foretaget. Om få lektioner
+BEMÆRK: :q! <ENTER>  forkaster ændringer some du har foretaget. Om få lektioner
         vil du lære at gemme ændringerne til en fil.
 
-  5. Flyt markøren ned til lektion 1.3.
+  5. Flyt markøren need til lektion 1.3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		       Lektion 1.3: TEKSTREDIGERING - SLET
 
 
-	   ** Tryk på  x  for at slette tegnet som markøren er ovenpå. **
+	   ** Tryk på  x  for at slette tegnet some markøren er ovenpå. **
 
-  1. Flyt markøren ned til linjen med --->.
+  1. Flyt markøren need til linjen med --->.
 
   2. Ret fejlene ved at flytte markøren indtil den er ovenpå
-     tegnet som skal slettes.
+     tegnet some skal slettes.
 
   3. Tryk på	x-tasten  for at slette det uønskede tegn.
 
@@ -86,7 +86,7 @@ BEMÆRK: :q! <ENTER>  forkaster ændringer som du har foretaget. Om få lektione
 
   5. Gå videre til lektion 1.4, nu hvor linjen er korrekt.
 
-BEMÆRK: Efterhånden som du gennemgår vejledningen, så lær det ikke udenad,
+BEMÆRK: Efterhånden some du gennemgår vejledningen, så lær det ikke udenad,
         lær det ved at gøre det.
 
 
@@ -94,22 +94,22 @@ BEMÆRK: Efterhånden som du gennemgår vejledningen, så lær det ikke udenad,
 		      Lektion 1.4: TEKSTREDIGERING - INDSÆT
 
 
-			** Tryk på  i  for at indsætte tekst. **
+			** Tryk på  i  for at indsætte text. **
 
-  1. Flyt markøren ned til den første linje med --->.
+  1. Flyt markøren need til den første linje med --->.
 
   2. For at gøre den første linje magen til den anden, skal markøren flyttes
      ovenpå det først tegn EFTER der hvor teksten skal indsættes.
 
   3. Tryk på  i  og skriv de nødvendige tilføjelser.
 
-  4. Efterhånden som hver fejl rettes, så tryk på <ESC> for at vende tilbage
+  4. Efterhånden some hver fejl rettes, så tryk på <ESC> for at vende tilbage
      til normal tilstand. Gentag trin 2 til 4 for at rette sætningen.
 
----> Der mangler tekst dene .
----> Der mangler noget tekst på denne linje.
+---> Der mangler text dene .
+---> Der mangler noget text på denne linje.
 
-  5. Når du fortrolig med at indsætte tekst, så flyt til lektion 1.5.
+  5. Når du fortrolig med at indsætte text, så flyt til lektion 1.5.
 
 
 
@@ -117,9 +117,9 @@ BEMÆRK: Efterhånden som du gennemgår vejledningen, så lær det ikke udenad,
 		     Lektion 1.5: TEKSTREDIGERING - VEDHÆFT
 
 
-			** Tryk på  A  for at vedhæfte tekst. **
+			** Tryk på  A  for at vedhæfte text. **
 
-  1. Flyt markøren ned til den første linje med --->.
+  1. Flyt markøren need til den første linje med --->.
      Det er lige meget hvilket tegn markøren er på, på linjen.
 
   2. Tryk på  A  og skriv de nødvendige tilføjelser.
@@ -129,12 +129,12 @@ BEMÆRK: Efterhånden som du gennemgår vejledningen, så lær det ikke udenad,
   4. Flyt markøren til den anden linje med ---> og gentag
      trin 2 og 3 for at rette sætningen.
 
----> Der mangler noget tekst på den
-     Der mangler noget tekst på denne linje.
+---> Der mangler noget text på den
+     Der mangler noget text på denne linje.
 ---> Der mangler også noget tek
-     Der mangler også noget tekst her.
+     Der mangler også noget text her.
 
-  5. Når du er fortrolig med at vedhæfte tekst, så flyt til lektion 1.6.
+  5. Når du er fortrolig med at vedhæfte text, så flyt til lektion 1.6.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		         Lektion 1.6: REDIGER EN FIL
@@ -143,18 +143,18 @@ BEMÆRK: Efterhånden som du gennemgår vejledningen, så lær det ikke udenad,
 
   !! BEMÆRK: Læs hele lektionen, inden trinnene nedenfor udføres!!
 
-  1. Afslut vejledningen som du gjorde i lektion 1.2:  :q!
+  1. Afslut vejledningen some du gjorde i lektion 1.2:  :q!
      Eller gør følgende i en anden terminal, hvis du har adgang til en.
 
   2. Skriv denne kommando i skalprompten:  vim tutor <ENTER>
      'vim' er kommandoen til at starte Vim-editoren, 'tutor' er navnet på
-     filen som du vil redigere. Brug en fil som kan ændres.
+     filen some du vil redigere. Brug en fil some kan ændres.
 
-  3. Indsæt og slet tekst, som du lærte vi de forrige lektioner.
+  3. Indsæt og slet text, some du lærte vi de forrige lektioner.
 
   4. Gem filen med ændringer og afslut Vim med:  :wq  <ENTER>
 
-  5. Hvis du afsluttede vimtutor i trin 1, så genstart vimtutor og flyt ned
+  5. Hvis du afsluttede vimtutor i trin 1, så genstart vimtutor og flyt need
      til følgende opsummering.
 
   6. Udfør trinnene ovenfor, når du har læst og forstået dem.
@@ -164,7 +164,7 @@ BEMÆRK: Efterhånden som du gennemgår vejledningen, så lær det ikke udenad,
 
 
   1. Markøren flyttes enten med piletasterne eller hjkl-tasterne.
-	 h (venstre)	j (ned)       k (op)	    l (højre)
+	 h (venstre)	j (need)       k (op)	    l (højre)
 
   2. Vim startes fra skalprompten, ved at skrive:  vim FILNAVN <ENTER>
 
@@ -173,9 +173,9 @@ BEMÆRK: Efterhånden som du gennemgår vejledningen, så lær det ikke udenad,
 
   4. Slet tegn ved markøren, ved at skrive:  x
 
-  5. Indsæt eller vedhæft tekst, ved at skrive:
-	 i   skriv indsat tekst       <ESC>		indsæt inden markøren
-	 A   skriv vedhæftet tekst    <ESC>		vedhæft efter linjen
+  5. Indsæt eller vedhæft text, ved at skrive:
+	 i   skriv indsat text       <ESC>		indsæt inden markøren
+	 A   skriv vedhæftet text    <ESC>		vedhæft efter linjen
 
 BEMÆRK: Når der trykkes på <ESC>, så stilles du i normal tilstand eller også
         annulleres en uønsket og delvist fuldført kommando.
@@ -190,17 +190,17 @@ Fortsæt nu med lektion 2.
 
   1. Tryk på  <ESC>  for at være sikker på, at du er i normal tilstand.
 
-  2. Flyt markøren ned til linjen med --->.
+  2. Flyt markøren need til linjen med --->.
 
-  3. Flyt markøren til begyndelsen af et ord som skal slettes.
+  3. Flyt markøren til begyndelsen af et ord some skal slettes.
 
   4. Skriv   dw	 for at få ordet til at forsvinde.
 
   BEMÆRK: Bogstavet  d  vises på den sidste linje på den skærm du skrev
-		det på. Vim venter på at du skriver  w . Hvis du ser et andet tegn
+		det på. Vim venter på at du skriver  w . Hvis du set et andet tegn
 		end  d  , så skrev du forkert; tryk på  <ESC>  og start forfra.
 
----> Der er regnorm nogle ord som sjovt ikke hører til papir i sætningen.
+---> Der er regnorm nogle ord some sjovt ikke hører til papir i sætningen.
 
   5. Gentag trin 3 og 4 indtil sætningen er korrekt og gå til lektion 2.2.
 
@@ -213,7 +213,7 @@ Fortsæt nu med lektion 2.
 
   1. Tryk på  <ESC>  for at være sikker på, at du er i normal tilstand.
 
-  2. Flyt markøren ned til linjen med --->.
+  2. Flyt markøren need til linjen med --->.
 
   3. Flyt markøren til slutningen af den rette linje (EFTER det første . ).
 
@@ -232,8 +232,8 @@ Fortsæt nu med lektion 2.
 		     Lektion 2.3: OM OPERATORER OG BEVÆGELSER
 
 
-  Mange kommandoer som ændre tekst skabes fra en operator og en bevægelse.
-  Formatet til en slettekommando med sletteoperatoren  d  er som følger:
+  Mange kommandoer some ændre text skabes fra en operator og en bevægelse.
+  Formatet til en slettekommando med sletteoperatoren  d  er some følger:
 
   	d   bevægelse
 
@@ -249,7 +249,7 @@ Fortsæt nu med lektion 2.
   Så når der skrives  de  så slettes der fra markøren til slutningen af ordet.
 
 BEMÆRK: Når kun bevægelsen trykkes i normal tilstand, uden en operator,
-        så flyttes markøren som angivet.
+        så flyttes markøren some angivet.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		    Lektion 2.4: BRUG TÆLLER TIL EN BEVÆGELSE
@@ -257,7 +257,7 @@ BEMÆRK: Når kun bevægelsen trykkes i normal tilstand, uden en operator,
 
    ** Når der skrives et nummer inden en bevægelse, så gentages den det antal gange. **
 
-  1. Flyt markøren ned til begyndelsen af linjen med --->.
+  1. Flyt markøren need til begyndelsen af linjen med --->.
 
   2. Skriv  2w  for at flytte markøren fremad to ord.
 
@@ -267,7 +267,7 @@ BEMÆRK: Når kun bevægelsen trykkes i normal tilstand, uden en operator,
 
   5. Gentag trin 2 og 3 med forskellige numre.
 
----> Dette er blot en linje med ord som du kan flytte rundt i.
+---> Dette er blot en linje med ord some du kan flytte rundt i.
 
   6. Flyt videre til lektion 2.5.
 
@@ -326,7 +326,7 @@ BEMÆRK: Når kun bevægelsen trykkes i normal tilstand, uden en operator,
 
    ** Tryk på  u	for at fortryde de sidste kommandoer,   U  for at rette en hel linje. **
 
-  1. Flyt markøren ned til linjen med ---> og placer den på
+  1. Flyt markøren need til linjen med ---> og placer den på
      den første fejl.
   2. Skriv  x  for at slette det første uønskede tegn.
   3. Skriv nu  u  for at fortryde den sidste kommando der blev udført.
@@ -357,7 +357,7 @@ BEMÆRK: Når kun bevægelsen trykkes i normal tilstand, uden en operator,
      hvor:
        operator    - er hvad der skal gøres, såsom  d  for at slette
        [nummer]    - er en valgfri tæller til at gentage bevægelsen
-       bevægelse   - flytter over teksten som der skal arbejde på, såsom  w (ord),
+       bevægelse   - flytter over teksten some der skal arbejde på, såsom  w (ord),
 		   $ (til slutningen af linjen), osv.
 
   6. Flyt til begyndelsen af linjen med et nul:  0
@@ -370,9 +370,9 @@ BEMÆRK: Når kun bevægelsen trykkes i normal tilstand, uden en operator,
 			 Lektion 3.1: PUT-INDSÆTTE-KOMMANDOEN
 
 
-       ** Skriv	p  for at put-indsætte tidligere slettede tekst efter markøren. **
+       ** Skriv	p  for at put-indsætte tidligere slettede text efter markøren. **
 
-  1. Flyt markøren ned til den første linje med --->.
+  1. Flyt markøren need til den første linje med --->.
 
   2. Skriv  dd  for at slette linjen og gemme den i et Vim-register.
 
@@ -395,11 +395,11 @@ BEMÆRK: Når kun bevægelsen trykkes i normal tilstand, uden en operator,
 
        ** Skriv  rx  for at erstatte tegnet ved markøren med  x . **
 
-  1. Flyt markøren ned til den første linje med --->.
+  1. Flyt markøren need til den første linje med --->.
 
   2. Flyt markøren så den er ovenpå den første fejl.
 
-  3. Skriv   r	og så tegnet som skal være der.
+  3. Skriv   r	og så tegnet some skal være der.
 
   4. Gentag trin 2 og 3 indtil den første linje er magen til den anden.
 
@@ -418,7 +418,7 @@ BEMÆRK: Husk på at du skal lære ved at gøre det, ikke ved at lære det udena
 
 	   ** Ændr indtil slutningen af et ord, ved at skrive  ce . **
 
-  1. Flyt markøren ned til den første linje med --->.
+  1. Flyt markøren need til den første linje med --->.
 
   2. Placer markøren på  k'et  i  likibj.
 
@@ -428,8 +428,8 @@ BEMÆRK: Husk på at du skal lære ved at gøre det, ikke ved at lære det udena
 
   5. Gentag trin 3 og 4 indtil den første sætning er magen til den anden.
 
----> Likibj har nogle få ndo som vnes ændres vrf ændringsoperatoren.
----> Linjen har nogle få ord som skal ændres med ændringsoperatoren.
+---> Likibj har nogle få ndo some vnes ændres vrf ændringsoperatoren.
+---> Linjen har nogle få ord some skal ændres med ændringsoperatoren.
 
 Bemærk at  ce  sletter ordet og stiller dig i indsæt-tilstand.
 
@@ -439,19 +439,19 @@ Bemærk at  ce  sletter ordet og stiller dig i indsæt-tilstand.
 		       Lektion 3.4: FLERE ÆNDRINGER MED c
 
 
-     ** ÆNDRINGSOPERATOREN bruges med de samme bevægelser som slet. **
+     ** ÆNDRINGSOPERATOREN bruges med de samme bevægelser some slet. **
 
-  1. Ændringsoperatoren virker på samme måde som slet. Formatet er:
+  1. Ændringsoperatoren virker på samme måde some slet. Formatet er:
 
          c    [nummer]   bevægelse
 
   2. Bevægelserne er de samme, såsom   w (ord) og  $ (slutningen af linjen).
 
-  3. Flyt ned til den første linje med --->.
+  3. Flyt need til den første linje med --->.
 
   4. Flyt markøren til den første fejl.
 
-  5. Skriv  c$  og skriv resten af linjen som den anden linje og tryk på <ESC>.
+  5. Skriv  c$  og skriv resten af linjen some den anden linje og tryk på <ESC>.
 
 ---> Slutningen af linjen har brug for lidt hjælp til at blive ligesom den anden.
 ---> Slutningen af linjen skal rettes med   c$-kommandoen.
@@ -462,12 +462,12 @@ BEMÆRK: Du kan bruge backspace-tasten til at rette fejl når du skriver.
 			         Lektion 3 OPSUMMERING
 
 
-  1. Put-indsæt tekst tilbage som lige er blevet slettet, ved at skrive   p .
-     Det put-indsætter den slettede tekst EFTER markøren (hvis en linje blev
+  1. Put-indsæt text tilbage some lige er blevet slettet, ved at skrive   p .
+     Det put-indsætter den slettede text EFTER markøren (hvis en linje blev
      slettet, så vil den være på linjen nedenunder markøren).
 
   2. Erstat tegnet under markøren, ved at skrive   r   og så
-     tegnet som du vil have der.
+     tegnet some du vil have der.
 
   3. Ændringsoperatoren giver dig mulighed for at ændre fra markøren til hvor
      bevægelsen tager dig hen. Skriv f.eks.  ce  for at ændre fra markøren til
@@ -484,7 +484,7 @@ Gå nu videre til den næste lektion.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   Lektion 4.1: MARKØRPLACERING OG FILSTATUS
 
-  ** Skriv CTRL-G for at vise din placering i filen og filstatussen.
+  ** Skriv CTRL-G for at vice din placering i filen og filstatussen.
      Skriv  G  for at flytte til en linje i filen. **
 
   BEMÆRK: Læs hele lektionen, inden trinnene udføres!!
@@ -493,7 +493,7 @@ Gå nu videre til den næste lektion.
      Der vises en meddelelse nederst på siden med filnavnet og
      placeringen i filen. Husk linjenummeret til trin 3.
 
-BEMÆRK: Du ser muligvis markørplaceringen nederst i højre hjørne af skærmen.
+BEMÆRK: Du set muligvis markørplaceringen nederst i højre hjørne af skærmen.
         Det sker når 'ruler'-valgmuligheden er sat (se  :help 'ruler'  )
 
   2. Tryk på  G  for at flytte dig nederst i filen.
@@ -511,7 +511,7 @@ BEMÆRK: Du ser muligvis markørplaceringen nederst i højre hjørne af skærmen
      ** Skriv  /  efterfulgt af en frase for at søge efter frasen. **
 
   1. I normal tilstand, skriv  /-tegnet  . Bemærk at det og markøren
-     vises i bunden af skærmen som med  :-kommandoen	.
+     vises i bunden af skærmen some med  :-kommandoen	.
 
   2. Skriv nu 'feeejjl' <ENTER>. Det er ordet du vil søge efter.
 
@@ -531,7 +531,7 @@ BEMÆRK: Når søgningen når slutningen af filen, så fortsætter den ved
 		 Lektion 4.3: SØG EFTER MODSVARENDE PARENTESER
 
 
-	      ** Skriv  %  for at finde en modsvarende ),], eller } . **
+	      ** Skriv  %  for at find en modsvarende ),], eller } . **
 
   1. Placer markøren på (, [, eller { på linjen nedenfor med --->.
 
@@ -546,7 +546,7 @@ BEMÆRK: Når søgningen når slutningen af filen, så fortsætter den ved
 ---> Dette ( er en testlinje med ('er, ['er ] og {'er }. ))
 
 
-BEMÆRK: Det er meget nyttigt ved fejlretning af et program som mangler
+BEMÆRK: Det er meget nyttigt ved fejlretning af et program some mangler
         modsvarende parenteser!
 
 
@@ -556,7 +556,7 @@ BEMÆRK: Det er meget nyttigt ved fejlretning af et program som mangler
 
 	** Skriv  :s/gammel/ny/g  for at udskifte 'gammel' med 'ny'. **
 
-  1. Flyt markøren ned til linjen med --->.
+  1. Flyt markøren need til linjen med --->.
 
   2. Skriv  :s/dett/det <ENTER> . Bemærk at kommandoen kun ændre den
      første forekomst af "dett" på linjen.
@@ -570,7 +570,7 @@ BEMÆRK: Det er meget nyttigt ved fejlretning af et program som mangler
      ved at skrive   :#,#s/gammel/ny/g    hvor #,# er linjenumrene over området
                                           af linjer hvor udskiftningen skal ske.
      Skriv           :%s/gammel/ny/g      for at ændre hver forekomst i hele filen.
-     Skriv           :%s/gammel/ny/gc     for at finde hver forekomst i hele filen,
+     Skriv           :%s/gammel/ny/gc     for at find hver forekomst i hele filen,
      			                  med en prompt om hvorvidt der skal udskiftes eller ej.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -584,7 +584,7 @@ BEMÆRK: Det er meget nyttigt ved fejlretning af et program som mangler
 
   2. Når der skrives  /	efterfulgt af en frase, så søges der FREMAD efter frasen.
      Når der skrives  ?	efterfulgt af en frase, så søges der BAGLÆNS efter frasen.
-     Skriv  n  efter en søgning, for at finde den næste forekomst i den samme retning,
+     Skriv  n  efter en søgning, for at find den næste forekomst i den samme retning,
      eller  N  for at søge i den modsatte retning.
      CTRL-O tager dig tilbage til ældre placeringer, CTRL-I til nyere placeringer.
 
@@ -623,14 +623,14 @@ BEMÆRK: Alle  :-kommandoer  skal afsluttes ved at trykke på <ENTER>.
 		      Lektion 5.2: MERE OM AT SKRIVE FILER
 
 
-     ** Gem ændringerne som er foretaget til teksten, ved at skrive  :w FILNAVN. **
+     ** Gem ændringerne some er foretaget til teksten, ved at skrive  :w FILNAVN. **
 
   1. Skriv  :!dir  eller  :!ls  for at få en liste over din mappe.
      Du ved allerede at du skal trykke på <ENTER> bagefter.
 
-  2. Vælg et filnavn som ikke findes endnu, såsom TEST.
+  2. Vælg et filnavn some ikke findes endnu, såsom TEST.
 
-  3. Skriv nu:	 :w TEST   (hvor TEST er filnavnet som du vælger.)
+  3. Skriv nu:	 :w TEST   (hvor TEST er filnavnet some du vælger.)
 
   4. Det gemmer hele filen (Vim-vejledningen) under navnet TEST.
      Bekræft det, ved igen at skrive    :!dir  eller  :!ls   for at se din mappe.
@@ -643,7 +643,7 @@ BEMÆRK: Hvis du afslutter Vim og starter den igen med  vim TEST , så vil
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lektion 5.3: MARKÉR TEKST SOM SKAL SKRIVES
+		    Lektion 5.3: MARKÉR TEXT SOME SKAL SKRIVES
 
 
 	** Gem en del af en fil, ved at skrive  v  bevægelse  :w FILNAVN **
@@ -655,8 +655,8 @@ BEMÆRK: Hvis du afslutter Vim og starter den igen med  vim TEST , så vil
 
   3. Tryk på  :-tegnet  . Nederst på skærmen vises  :'<,'>.
 
-  4. Skriv  w TEST  , hvor TEST er filnavnet som endnu ikke findes. Bekræft
-     at du ser  :'<,'>w TEST  inden du trykker på <ENTER>.
+  4. Skriv  w TEST  , hvor TEST er filnavnet some endnu ikke findes. Bekræft
+     at du set  :'<,'>w TEST  inden du trykker på <ENTER>.
 
   5. Vim skriver de markerede linjer til filen TEST. Brug  :!dir  eller  :!ls
      for at se den. Fjern den ikke endnu! Vi bruger den i den næste lektion.
@@ -674,11 +674,11 @@ BEMÆRK: Når der trykkes på  v  startes visuel markering. Du kan flytte markø
   1. Placer markøren lige ovenover denne linje.
 
 BEMÆRK: Når trin 2 er udført vil du se teksten fra lektion 5.3. Flyt så
-        NED for at se denne lektion igen.
+        NEED for at se denne lektion igen.
 
   2. Indhent nu din TEST-fil med kommandoen   :r TEST   , hvor TEST er
-     navnet på filen som du brugte.
-     Filen som du indhenter placeres under markørens linje.
+     navnet på filen some du brugte.
+     Filen some du indhenter placeres under markørens linje.
 
   3. Bekræft at en fil blev indhentet, ved at flytte markøren tilbage og bemærk
      at der nu er to kopier af lektion 5.3, den originale og filversionen.
@@ -717,12 +717,12 @@ BEMÆRK: Du kan også læse outputtet fra en ekstern kommando. F.eks. læser
 
  ** Skriv  o  for at åbne en linje under markøren og stille dig i indsæt-tilstand. **
 
-  1. Flyt markøren ned til linjen med --->.
+  1. Flyt markøren need til linjen med --->.
 
   2. Skriv bogstavet  o  med småt, for at åbne en linje UNDER markøren og stille
      dig i indsæt-tilstand.
 
-  3. Skriv nu noget tekst og tryk på <ESC> for at afslutte indsæt-tilstand.
+  3. Skriv nu noget text og tryk på <ESC> for at afslutte indsæt-tilstand.
 
 ---> Efter  o  er blevet skrevet, placeres markøren på den åbne linje i indsæt-tilstand.
 
@@ -738,21 +738,21 @@ BEMÆRK: Du kan også læse outputtet fra en ekstern kommando. F.eks. læser
 			Lektion 6.2: VEDHÆFT-KOMMANDOEN
 
 
-	     ** Skriv  a  for at indsætte tekst EFTER markøren. **
+	     ** Skriv  a  for at indsætte text EFTER markøren. **
 
-  1. Flyt markøren ned til begyndelsen af linjen med --->.
+  1. Flyt markøren need til begyndelsen af linjen med --->.
   
   2. Tryk på  e  indtil markøren er på slutningen af  lin .
 
-  3. Skriv et  a  (med småt) for at vedhæfte tekst EFTER markøren.
+  3. Skriv et  a  (med småt) for at vedhæfte text EFTER markøren.
 
   4. Fuldfør ordet ligesom linjen under det. Tryk på <ESC> for at afslutte
      indsæt-tilstand.
 
   5. Brug  e  til at flytte til det næste ufærdige ord og gentag trin 3 og 4.
   
----> Lin giver dig mulighed for at øv vedhæftnin af tekst til en linje.
----> Linjen giver dig mulighed for at øve vedhæftning af tekst til en linje.
+---> Lin giver dig mulighed for at øv vedhæftnin af text til en linje.
+---> Linjen giver dig mulighed for at øve vedhæftning af text til en linje.
 
 BEMÆRK: a, i og A går alle til den samme indsæt-tilstand,
         den eneste forskel er hvor tegnene indsættes.
@@ -763,10 +763,10 @@ BEMÆRK: a, i og A går alle til den samme indsæt-tilstand,
 
       ** Skriv et stort  R  for at erstatte flere end ét tegn. **
 
-  1. Flyt markøren ned til den første linje med --->. Flyt markøren til
+  1. Flyt markøren need til den første linje med --->. Flyt markøren til
      begyndelsen af den første  xxx .
 
-  2. Tryk nu på  R  og skriv nummeret som er under det på den anden linje,
+  2. Tryk nu på  R  og skriv nummeret some er under det på den anden linje,
      så det erstatter xxx .
 
   3. Tryk på <ESC> for at forlade erstat-tilstand. Bemærk at resten af linjen
@@ -781,16 +781,16 @@ BEMÆRK: Erstat-tilstand er ligesom indsæt-tilstand, men hvert indtastede
         tegn sletter et eksisterende tegn.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lektion 6.4: KOPÍER OG INDSÆT TEKST
+			Lektion 6.4: KOPÍER OG INDSÆT TEXT
 
 
-	  ** Brug  y-operatoren  til at kopiere tekst og  p  til at indsætte den **
+	  ** Brug  y-operatoren  til at kopiere text og  p  til at indsætte den **
 
-  1. Gå ned til linjen med ---> og placer markøren efter "a)".
+  1. Gå need til linjen med ---> og placer markøren efter "a)".
   
   2. Start visuel tilstand med  v  og flyt markøren til lige inden "første".
   
-  3. Skriv  y  for at yank-udtrække (kopiere) den fremhævede tekst.
+  3. Skriv  y  for at yank-udtrække (kopiere) den fremhævede text.
 
   4. Flyt markøren til slutningen af den næste linje:  j$
 
@@ -802,7 +802,7 @@ BEMÆRK: Erstat-tilstand er ligesom indsæt-tilstand, men hvert indtastede
 --->  a) dette er det første punkt.
       b)
 
-  BEMÆRK: du kan også bruge  y  som en operator;  yw  yank-udtrækker et ord.
+  BEMÆRK: du kan også bruge  y  some en operator;  yw  yank-udtrækker et ord.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  Lektion 6.5: SÆT VALGMULIGHED
 
@@ -832,19 +832,19 @@ BEMÆRK: Hvis du vil ignorere case for en enkelt søg-kommando, så brug  \c
   1. Skriv  o  for at åbne en linje NEDENUNDER markøren og starte indsæt-tilstand.
      Skriv  O  for at åbne en linje OVENOVER markøren.
 
-  2. Skriv  a  for at indsætte tekst EFTER markøren.
-     Skriv  A  for at indsætte tekst efter slutningen af linjen.
+  2. Skriv  a  for at indsætte text EFTER markøren.
+     Skriv  A  for at indsætte text efter slutningen af linjen.
 
   3.   e-kommandoen  flytter til slutningen af et ord.
 
-  4.   y-operatoren  yank-udtrækker (kopierer) tekst,  p  put-indsætter (indsætter) den.
+  4.   y-operatoren  yank-udtrækker (kopierer) text,  p  put-indsætter (indsætter) den.
 
   5. Når der skrives et stort  R  stilles du i erstat-tilstand indtil der trykkes på  <ESC>  .
 
   6. Når der skrives ":set xxx", så sættes valgmuligheden "xxx". Nogle valgmuligheder er:
   	'ic' 'ignorecase'	ignorer forskelle på store/små bogstaver når der søges
 	'is' 'incsearch'	vis delvise match for en søgefrase
-	'hls' 'hlsearch'	fremhæv alle fraser som matcher
+	'hls' 'hlsearch'	fremhæv alle fraser some matcher
      Du kan enten bruge det lange eller korte valgmulighedsnavn.
 
   7. Vedhæft "no" i begyndelsen, for at slå en valgmulighed fra:   :set noic
@@ -855,17 +855,17 @@ BEMÆRK: Hvis du vil ignorere case for en enkelt søg-kommando, så brug  \c
 
 		      ** Brug online-hjælpesystemet **
 
-  Vim har et omfattende online-hjælpesystem. Prøv en af disse tre,
+  Vim har et omfattende online-hjælpesystem. Prøv en af disse tree,
   for at komme i gang:
 	- tryk på <HELP>-tasten (hvis du har en)
 	- tryk på <F1>-tasten (hvis du har en)
 	- skriv   :help <ENTER>
 
-  Læs teksten i hjælpevinduet for at finde ud af hvordan hjælpen virker.
+  Læs teksten i hjælpevinduet for at find ud af hvordan hjælpen virker.
   Skriv  CTRL-W CTRL-W   for at hoppe fra et vindue til et andet.
   Skriv    :q <ENTER>    for at lukke hjælpevinduet.
 
-  Du kan finde hjælp om næsten alle emner, ved at give et argument til
+  Du kan find hjælp om næsten alle emner, ved at give et argument til
   ":help"-kommandoen. Prøv disse (husk at trykke på <ENTER>):
 
 	:help w
@@ -878,7 +878,7 @@ BEMÆRK: Hvis du vil ignorere case for en enkelt søg-kommando, så brug  \c
 
 			  ** Aktivér Vim-funktionaliteter **
 
-  Vim har mange flere funktionaliteter end Vi, men de fleste er deaktiveret som
+  Vim har mange flere funktionaliteter end Vi, men de fleste er deaktiveret some
   standard. For at bruge flere funktionaliteter skal du oprette en "vimrc"-fil.
 
   1. Begynd at redigere "vimrc"-filen. Det afhænger af dit system:
@@ -924,7 +924,7 @@ BEMÆRK: Fuldførelse virker til mange kommandoer. Prøv blot at trykke på
 
   1. Skriv  :help  eller tryk på <F1> eller <Help>  for at åbne et hjælpevindue.
 
-  2. Skriv  :help kommando  for at finde hjælp om  kommando .
+  2. Skriv  :help kommando  for at find hjælp om  kommando .
 
   3. Skriv  CTRL-W CTRL-W  for at hoppe til et andet vindue
 
@@ -946,12 +946,12 @@ BEMÆRK: Fuldførelse virker til mange kommandoer. Prøv blot at trykke på
   Det afslutter Vim-vejledningen. Det var meningen den skulle give et
   kortfattet overblik af Vim-editoren, lige nok til at du kan bruge editoren
   nogenlunde let. Den er langt fra komplet, da Vim har mange mange flere
-  kommandoer. Læs brugermanualen som det næste: ":help user-manual".
+  kommandoer. Læs brugermanualen some det næste: ":help user-manual".
 
   Denne bog anbefales, til yderligere læsning og studering:
 	Vim - Vi Improved - af Steve Oualline
 	Forlag: New Riders
-  Den første bog som helt er tilegnet Vim. Specielt nyttig for begyndere.
+  Den første bog some helt er tilegnet Vim. Specielt nyttig for begyndere.
   Der er mange eksempler og billeder.
   Se http://iccf-holland.org/click5.html
 

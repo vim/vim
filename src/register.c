@@ -414,7 +414,7 @@ do_record(int c)
 
 /*
  * Stuff string "p" into yank register "regname" as a single line (append if
- * uppercase).	"p" must have been alloced.
+ * uppercase).	"p" must have been allocated.
  *
  * return FAIL for failure, OK otherwise
  */

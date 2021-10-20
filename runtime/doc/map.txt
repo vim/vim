@@ -1014,7 +1014,7 @@ you can use it to automatically correct obvious spelling errors.
 Examples:
 
 	:iab ms Microsoft
-	:iab tihs this
+	:iab this this
 
 There are three types of abbreviations:
 
@@ -1125,7 +1125,7 @@ When 'verbose' is non-zero, listing an abbreviation will also display where it
 was last defined.  Example: >
 
 	:verbose abbreviate
-	!  teh		 the
+	!  the		 the
 		Last set from /home/abcd/vim/abbr.vim
 
 See |:verbose-cmd| for more information.

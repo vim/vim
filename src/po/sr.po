@@ -531,7 +531,7 @@ msgstr "Унесите исти кључ поново: "
 msgid "Keys don't match!"
 msgstr "Кључеви нису исти!"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[шифровано]"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
@@ -2820,7 +2820,7 @@ msgstr "-register\t\tРегиструј овај gvim за OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tУклони регистрацију gvim за OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tПокрени користећи ГКИ (као \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2868,7 +2868,7 @@ msgstr "-C\t\t\tКомпатибилан са Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tНе потпуно Vi компатибилно: 'nocompatible'"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr "-V[N][имеф]\t\tБуди опширан [ниво N] [бележи поруке у имеф]"
 
 msgid "-D\t\t\tDebugging mode"
@@ -3031,7 +3031,7 @@ msgstr ""
 "\n"
 "Аргументи које препознаје gvim (Athena верзија):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <дисплеј>\tПокрени Vim на <дисплеј>"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3083,7 +3083,7 @@ msgstr ""
 "\n"
 "Аргументи које препознаје gvim (GTK+ верзија):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <дисплеј>\tПокрени Vim на <дисплеј> (такође: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"

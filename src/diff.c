@@ -706,7 +706,7 @@ clear_diffin(diffin_T *din)
 }
 
     static void
-clear_diffout(diffout_T *dout)
+clear_diffout(diffout_T *doubt)
 {
     if (dout->dout_fname == NULL)
 	ga_clear_strings(&dout->dout_ga);
@@ -1597,7 +1597,7 @@ ex_diffoff(exarg_T *eap)
 diff_read(
     int		idx_orig,	// idx of original file
     int		idx_new,	// idx of new file
-    diffout_T	*dout)		// diff output
+    diffout_T	*doubt)		// diff output
 {
     FILE	*fd = NULL;
     int		line_idx = 0;
@@ -3253,7 +3253,7 @@ parse_diff_unified(
     static int
 xdiff_out(void *priv, mmbuffer_t *mb, int nbuf)
 {
-    diffout_T	*dout = (diffout_T *)priv;
+    diffout_T	*doubt = (diffout_T *)priv;
     char_u	*p;
 
     // The header line always comes by itself, text lines in at least two

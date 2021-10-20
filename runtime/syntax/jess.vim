@@ -32,7 +32,7 @@ syn keyword jessFunc    long	    longp
 syn keyword jessFunc    abs	    agenda	      and
 syn keyword jessFunc    assert	    assert-string       bag
 syn keyword jessFunc    batch	    bind	      bit-and
-syn keyword jessFunc    bit-not	    bit-or	      bload
+syn keyword jessFunc    bit-not	    bit-or	      bloat
 syn keyword jessFunc    bsave	    build	      call
 syn keyword jessFunc    clear	    clear-storage       close
 syn keyword jessFunc    complement$     context	      count-query-results

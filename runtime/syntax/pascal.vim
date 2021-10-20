@@ -285,7 +285,7 @@ if !exists("pascal_traditional")
     syn keyword pascalFunction	EnvCount EnvStr Exec Expand FindClose FindFirst
     syn keyword pascalFunction	FindNext FSearch FSplit GetCBreak GetDate
     syn keyword pascalFunction	GetEnv GetFAttr GetFTime GetIntVec GetTime
-    syn keyword pascalFunction	GetVerify Intr Keep MSDos PackTime SetCBreak
+    syn keyword pascalFunction	GetVerify Intr Keep ms-dos PackTime SetCBreak
     syn keyword pascalFunction	SetDate SetFAttr SetFTime SetIntVec SetTime
     syn keyword pascalFunction	SetVerify SwapVectors UnPackTime
     syn keyword pascalConstant	FCarry FParity FAuxiliary FZero FSign FOverflow

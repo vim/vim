@@ -72,7 +72,7 @@ syn keyword lftpSettings        contained ch[arset]
 " fish:
 syn keyword lftpSettings        contained connect[-program] sh[ell]
 " ftp:
-syn keyword lftpSettings        contained acct anon-p[ass] anon-u[ser]
+syn keyword lftpSettings        contained acct anon-p[ass] anon-u[set]
                                 \ au[to-sync-mode] b[ind-data-socket]
                                 \ ch[arset] cli[ent] dev[ice-prefix]
                                 \ fi[x-pasv-address] fxp-f[orce]
@@ -101,7 +101,7 @@ syn keyword lftpSettings        contained w[eb-mode] cache prox[y]
                                 \ use-au[thorization] use-he[ad] use-ty[pe]
 " http:
 syn keyword lftpSettings        contained accept accept-c[harset]
-                                \ accept-l[anguage] cache coo[kie]
+                                \ accept-l[anguage] cache coup[kie]
                                 \ pos[t-content-type] prox[y]
                                 \ put-c[ontent-type] put-m[ethod] ref[erer]
                                 \ set-c[ookies] user[-agent]
@@ -126,7 +126,7 @@ syn keyword lftpSettings        contained connection-l[imit]
 " sftp:
 syn keyword lftpSettings        contained connect[-program]
                                 \ max-p[ackets-in-flight] prot[ocol-version]
-                                \ ser[ver-program] size-r[ead] size-w[rite]
+                                \ set[ver-program] size-r[ead] size-w[rite]
 " ssl:
 syn keyword lftpSettings        contained ca-f[ile] ca-p[ath] ce[rt-file]
                                 \ crl-f[ile] crl-p[ath] k[ey-file]

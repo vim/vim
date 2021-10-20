@@ -371,7 +371,7 @@ would sell copies of the manual to contribute to Uganda.
 After  "ayy  don't let  ""yy  or  :let @" = val  overwrite the "a register.
 Use the unnamed register instead.
 
-MSDOS: A pattern "*.*" previously also matched a file name without a dot.
+MS-DOS: A pattern "*.*" previously also matched a file name without a dot.
 This was inconsistent with other versions.
 
 In Insert mode, CTRL-O CTRL-\ CTRL-N {cmd} remains in Normal mode.  Previously
@@ -1236,7 +1236,7 @@ Use "vim{version}:" for modelines, only to be executed when the version is
 
 Ex commands: ~
 
-:sav[eas][!] {file}
+:save[eas][!] {file}
 		Works like ":w file" and ":e #", but without loading the file
 		again and avoiding other side effects. |:saveas|
 
@@ -1272,7 +1272,7 @@ Ex commands: ~
 :first, :bfirst, :ptfirst, etc.
 		Alias for ":rewind".  It's more logical compared to ":last".
 
-:enew		Edit a new, unnamed buffer.  This is needed, because ":edit"
+:new		Edit a new, unnamed buffer.  This is needed, because ":edit"
 		re-edits the same file. (Wall)
 
 :quitall	Same as ":qall".
@@ -1285,7 +1285,7 @@ Ex commands: ~
 :menu disable	Commands to enable/disable menu entries without removing them.
 		(Monish Shah)
 
-:windo		Execute a command in all windows.
+:window		Execute a command in all windows.
 :bufdo		Execute a command in all buffers.
 
 :wincmd		Window (CTRL-W) command.  Useful when a Normal mode command
@@ -3106,7 +3106,7 @@ When using <C-RightMouse> a count was discarded.
 When typing CTRL-V and <RightMouse> in the command line, would insert
 <LeftMouse>.
 
-Using "vis" or "vas" when 'selection' is exclusive didn't include the last
+Using "vis" or "was" when 'selection' is exclusive didn't include the last
 character.
 
 When adding to an option like 'grepprg', leading space would be lost.  Don't
@@ -3583,7 +3583,7 @@ The script for conversion to HTML contained an "if" in the wrong place.
 
 Allow using ":ascii" in the sandbox, it's harmless.
 
-Removed creat() from osdef2.h.in, it wasn't used and may cause a problem when
+Removed create() from osdef2.h.in, it wasn't used and may cause a problem when
 it's redefined to creat64().
 
 The text files in the VisVim directory were in "dos" format.  This caused
@@ -4606,7 +4606,7 @@ Solution:   Clear the local mappings when deleting a buffer.
 Files:	    src/buffer.c, src/getchar.c, src/proto/getchar.pro, src/vim.h
 
 Patch 6.0.141
-Problem:    When using ":enew" in an empty buffer, some buffer-local things
+Problem:    When using ":new" in an empty buffer, some buffer-local things
 	    are not cleared.  b:keymap_name is not set.
 Solution:   Clear user commands and mappings local to the buffer when re-using
 	    the current buffer.  Reload the keymap.
@@ -7170,11 +7170,11 @@ Solution:   Add has("macunix") and has("win32unix").
 Files:	    runtime/doc/eval.txt, src/eval.c
 
 Patch 6.1.112
-Problem:    When using ":argdo", ":bufdo" or ":windo", CTRL-O doesn't go to
+Problem:    When using ":argdo", ":bufdo" or ":window", CTRL-O doesn't go to
 	    the cursor position from before this command but every position
 	    where the argument was executed.
 Solution:   Only remember the cursor position from before the ":argdo",
-	    ":bufdo" and ":windo".
+	    ":bufdo" and ":window".
 Files:	    src/ex_cmds2.c, src/mark.c
 
 Patch 6.1.113
@@ -7815,8 +7815,8 @@ Files:	    src/buffer.c, src/eval.c, src/ex_docmd.c, src/fileio.c,
 
 Patch 6.1.212
 Problem:    When Vim was started with "-R" ":new" creates a buffer
-	    'noreadonly' while ":enew" has 'readonly' set. (Preben Guldberg)
-Solution:   Don't set 'readonly' in a new empty buffer for ":enew".
+	    'noreadonly' while ":new" has 'readonly' set. (Preben Guldberg)
+Solution:   Don't set 'readonly' in a new empty buffer for ":new".
 Files:	    src/ex_docmd.c
 
 Patch 6.1.213
@@ -10350,7 +10350,7 @@ Files:	    runtime/doc/eval.txt, src/eval.c, src/tag.c,
 	    src/testdir/test49.vim
 
 Patch 6.2.065
-Problem:    ":windo 123" only updates other windows when entering them.
+Problem:    ":window 123" only updates other windows when entering them.
 	    (Walter Briscoe)
 Solution:   Update the topline before going to the next window.
 Files:	    src/ex_cmds2.c
@@ -11517,7 +11517,7 @@ Files:	    src/gui_gtk.c, src/gui.c
 
 Patch 6.2.240
 Problem:    GTK 2: Searching for bitmaps for the toolbar doesn't work as with
-	    other systems.  Need to explicitly use "icon=name".  (Ned Konz,
+	    other systems.  Need to explicitly use "icon=name".  (Need Konz,
 	    Christian J.  Robinson)
 Solution:   Search for icons like done for Motif.
 Files:	    src/gui_gtk.c
@@ -12091,8 +12091,8 @@ Solution:   Escape the space with a backslash.
 Files:	    src/option.c
 
 Patch 6.2.326
-Problem:    ":windo set syntax=foo" doesn't work.  (Tim Chase)
-Solution:   Don't change 'eventignore' for ":windo".
+Problem:    ":window set syntax=foo" doesn't work.  (Tim Chase)
+Solution:   Don't change 'eventignore' for ":window".
 Files:	    src/ex_cmds2.c
 
 Patch 6.2.327
@@ -12590,7 +12590,7 @@ Files:	    src/Makefile
 Patch 6.2.403
 Problem:    ":@y" checks stdin if there are more commands to execute.  This
 	    fails if stdin is not connected, e.g., when starting the GUI from
-	    KDE. (Ned Konz)
+	    KDE. (Need Konz)
 Solution:   Only check for a next command if there still is typeahead.
 Files:	    src/ex_docmd.c
 

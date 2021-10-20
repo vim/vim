@@ -80,7 +80,7 @@ Copyright: Copyright (C) 2017 Charles E Campbell    *netrw-copyright*
       Marking Files By QuickFix List......................|netrw-qF|
       Marking Files By Regular Expression.................|netrw-mr|
       Marked Files: Arbitrary Shell Command...............|netrw-mx|
-      Marked Files: Arbitrary Shell Command, En Bloc......|netrw-mX|
+      Marked Files: Arbitrary Shell Command, En Block......|netrw-mX|
       Marked Files: Arbitrary Vim Command.................|netrw-mv|
       Marked Files: Argument List.........................|netrw-ma| |netrw-mA|
       Marked Files: Buffer List...........................|netrw-cb| |netrw-cB|
@@ -440,11 +440,11 @@ settings are described below, in |netrw-browser-options|, and in
 
  *g:netrw_use_errorwindow* =2: messages from netrw will use a popup window
 			     Move the mouse and pause to remove the popup window.
-			     (default value if popup windows are availble)
+			     (default value if popup windows are available)
 			 =1 : messages from netrw will use a separate one
 			      line window.  This window provides reliable
 			      delivery of messages.
-			     (default value if popup windows are not availble)
+			     (default value if popup windows are not available)
 			 =0 : messages from netrw will use echoerr ;
 			      messages don't always seem to show up this
 			      way, but one doesn't have to quit the window.
@@ -1115,7 +1115,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   mu	Unmark all marked files                              |netrw-mu|
 	   mv	Apply arbitrary vim   command to marked files        |netrw-mv|
 	   mx	Apply arbitrary shell command to marked files        |netrw-mx|
-	   mX	Apply arbitrary shell command to marked files en bloc|netrw-mX|
+	   mX	Apply arbitrary shell command to marked files en block|netrw-mX|
 	   mz	Compress/decompress marked files                     |netrw-mz|
 	   o	Enter the file/directory under the cursor in a new   |netrw-o|
 	    	browser window.  A horizontal split is used.
@@ -1198,7 +1198,7 @@ If there are marked files and/or directories, mb will add them to the bookmark
 list.
 
 								*netrw-:NetrwMB*
-Addtionally, one may use :NetrwMB to bookmark files or directories. >
+Additionally, one may use :NetrwMB to bookmark files or directories. >
 
 	:NetrwMB[!] [files/directories]
 
@@ -2160,7 +2160,7 @@ The following netrw maps make use of marked files:
     |netrw-mT|	Generate tags using marked files
     |netrw-mv|	Apply vim command to marked files
     |netrw-mx|	Apply shell command to marked files
-    |netrw-mX|	Apply shell command to marked files, en bloc
+    |netrw-mX|	Apply shell command to marked files, en block
     |netrw-mz|	Compress/Decompress marked files
     |netrw-O|	Obtain marked files
     |netrw-R|	Rename marked files
@@ -2271,13 +2271,13 @@ Example:
 	...
 
 
-MARKED FILES, ARBITRARY SHELL COMMAND, EN BLOC 			*netrw-mX* {{{2
+MARKED FILES, ARBITRARY SHELL COMMAND, EN BLOCK 			*netrw-mX* {{{2
 	    (See |netrw-mf| and |netrw-mr| for how to mark files)
 		      (uses the global marked-file list)
 
 Upon activation of the 'mX' map, netrw will query the user for some (external)
 command to be applied to all marked files on the global marked file list.  The
-"en bloc" means that one command will be executed on all the files at once: >
+"en block" means that one command will be executed on all the files at once: >
 
 	command files
 
@@ -2951,7 +2951,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 default: "NETRWSERVER"
 
   *g:netrw_sort_by*		sort by "name", "time", "size", or
-  				"exten".
+  				"extent".
 				 default: "name"
 
   *g:netrw_sort_direction*	sorting direction: "normal" or "reverse"

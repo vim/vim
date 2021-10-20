@@ -19,7 +19,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 " Keywords {{{1
-syn keyword basicStatement	BEEP beep Beep BLOAD bload Bload BSAVE bsave Bsave
+syn keyword basicStatement	BEEP beep Beep BLOAT bloat Bloat BSAVE bsave Bsave
 syn keyword basicStatement	CALL call Call ABSOLUTE absolute Absolute
 syn keyword basicStatement	CHAIN chain Chain CHDIR chdir Chdir
 syn keyword basicStatement	CIRCLE circle Circle CLEAR clear Clear
@@ -65,7 +65,7 @@ syn keyword basicStatement	SEEK seek Seek SELECT select Select
 syn keyword basicStatement	CASE case Case SHARED shared Shared
 syn keyword basicStatement	SHELL shell Shell SLEEP sleep Sleep
 syn keyword basicStatement	SOUND sound Sound STATIC static Static
-syn keyword basicStatement	STOP stop Stop STRIG strig Strig
+syn keyword basicStatement	STOP stop Stop STRING string String
 syn keyword basicStatement	SUB sub Sub SWAP swap Swap
 syn keyword basicStatement	SYSTEM system System TIMER timer Timer
 syn keyword basicStatement	TROFF troff Troff TRON tron Tron
@@ -99,7 +99,7 @@ syn keyword basicFunction	SADD sadd Sadd SCREEN screen Screen
 syn keyword basicFunction	SEEK seek Seek SETMEM setmem Setmem
 syn keyword basicFunction	SGN sgn Sgn SIN sin Sin
 syn keyword basicFunction	SPC spc Spc SQR sqr Sqr
-syn keyword basicFunction	STICK stick Stick STRIG strig Strig
+syn keyword basicFunction	STICK stick Stick STRING string String
 syn keyword basicFunction	TAB tab Tab TAN tan Tan
 syn keyword basicFunction	UBOUND ubound Ubound VAL val Val
 syn keyword basicFunction	VALPTR valptr Valptr VALSEG valseg Valseg

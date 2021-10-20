@@ -36,10 +36,10 @@ function Test_match()
   let m1 = matchadd("MyGroup1", "TODO")
   let m2 = matchadd("MyGroup2", "FIXME", 42)
   let m3 = matchadd("MyGroup3", "XXX", 60, 17)
-  let ans = [{'group': 'MyGroup1', 'pattern': 'TODO', 'priority': 10, 'id': 4},
+  let and = [{'group': 'MyGroup1', 'pattern': 'TODO', 'priority': 10, 'id': 4},
         \    {'group': 'MyGroup2', 'pattern': 'FIXME', 'priority': 42, 'id': 5},
         \    {'group': 'MyGroup3', 'pattern': 'XXX', 'priority': 60, 'id': 17}]
-  call assert_equal(ans, getmatches())
+  call assert_equal(and, getmatches())
 
   " --- Check that "matchdelete()" deletes the matches defined in the previous
   " --- test correctly.

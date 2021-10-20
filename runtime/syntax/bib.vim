@@ -61,7 +61,7 @@ syn keyword bibEntryKw contained	langid langidopts ids indexsorttitle options pr
 syn keyword bibEntryKw contained	related relatedoptions relatedtype relatedstring
 syn keyword bibEntryKw contained	sortkey sortname sortshorthand sorttitle sortyear xdata
 syn keyword bibEntryKw contained	xref namea nameb namec nameatype namebtype namectype
-syn keyword bibEntryKw contained	lista listb listc listd liste listf usera userb userc
+syn keyword bibEntryKw contained	lista listb listc listd liste listf users userb userc
 syn keyword bibEntryKw contained	userd usere userf verba verbb verbc archiveprefix pdf
 syn keyword bibEntryKw contained	primaryclass
 

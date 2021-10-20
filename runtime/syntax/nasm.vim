@@ -14,12 +14,12 @@
 if exists("b:current_syntax")
   finish
 endif
-"  Assembler syntax is case insensetive
+"  Assembler syntax is case insensitive
 syn case ignore
 
 
 
-" Vim search and movement commands on identifers
+" Vim search and movement commands on identifiers
 "  Comments at start of a line inside which to skip search for indentifiers
 setlocal comments=:;
 "  Identifier Keyword characters (defines \k)
@@ -60,7 +60,7 @@ else
   syn match   nasmSpecialLabel	"\<\.\.@\(\h\|[?@]\)\k*\>"
   syn match   nasmSpecialLabel	"\<\$\.\.@\(\h\|[?@]\)\k*\>"ms=s+1
 endif
-"  Labels can be dereferenced with '$' to destinguish them from reserved words
+"  Labels can be dereferenced with '$' to distinguish them from reserved words
 syn match   nasmLabelError	"\<\$\K\k*\s*:"
 syn match   nasmLabelError	"^\s*\$\K\k*\>"
 syn match   nasmLabelError	"\<\~\s*\(\k*\s*:\|\$\=\.\k*\)"
@@ -113,7 +113,7 @@ syn match   nasmStructureLabel	contained "\<\(AT\|I\=\(END\)\=\(STRUCT\=\|UNION\
 "   structures cannot be nested (yet) -> use: 'keepend' and 're='
 syn cluster nasmGrpCntnStruc	contains=ALLBUT,@nasmGrpInComments,nasmMacroDef,@nasmGrpInMacros,@nasmGrpInPreCondits,nasmStructureDef,@nasmGrpInStrucs
 syn region  nasmStructureDef	transparent matchgroup=nasmStructure keepend start="^\s*STRUCT\>"hs=e-5 end="^\s*ENDSTRUCT\>"re=e-9 contains=@nasmGrpCntnStruc
-syn region  nasmStructureDef	transparent matchgroup=nasmStructure keepend start="^\s*STRUC\>"hs=e-4  end="^\s*ENDSTRUC\>"re=e-8  contains=@nasmGrpCntnStruc
+syn region  nasmStructureDef	transparent matchgroup=nasmStructure keepend start="^\s*STRUCT\>"hs=e-4  end="^\s*ENDSTRUC\>"re=e-8  contains=@nasmGrpCntnStruc
 syn region  nasmStructureDef	transparent matchgroup=nasmStructure keepend start="\<ISTRUCT\=\>" end="\<IEND\(STRUCT\=\)\=\>" contains=@nasmGrpCntnStruc,nasmInStructure
 "   union types are not part of nasm (yet)
 "syn region  nasmStructureDef	transparent matchgroup=nasmStructure keepend start="^\s*UNION\>"hs=e-4 end="^\s*ENDUNION\>"re=e-8 contains=@nasmGrpCntnStruc
@@ -160,13 +160,13 @@ syn match   nasmInMacPreProc	contained "^\s*%pop\>"hs=e-3
 syn match   nasmInMacPreProc	contained "^\s*%\(push\|repl\)\>"hs=e-4 skipwhite nextgroup=@nasmGrpNxtCtx
 "   structures cannot be nested (yet) -> use: 'keepend' and 're='
 syn region  nasmInMacStrucDef	contained transparent matchgroup=nasmStructure keepend start="^\s*STRUCT\>"hs=e-5 end="^\s*ENDSTRUCT\>"re=e-9 contains=@nasmGrpCntnMacro
-syn region  nasmInMacStrucDef	contained transparent matchgroup=nasmStructure keepend start="^\s*STRUC\>"hs=e-4  end="^\s*ENDSTRUC\>"re=e-8  contains=@nasmGrpCntnMacro
+syn region  nasmInMacStrucDef	contained transparent matchgroup=nasmStructure keepend start="^\s*STRUCT\>"hs=e-4  end="^\s*ENDSTRUC\>"re=e-8  contains=@nasmGrpCntnMacro
 syn region  nasmInMacStrucDef	contained transparent matchgroup=nasmStructure keepend start="\<ISTRUCT\=\>" end="\<IEND\(STRUCT\=\)\=\>" contains=@nasmGrpCntnMacro,nasmInStructure
 "   union types are not part of nasm (yet)
 "syn region  nasmInMacStrucDef	contained transparent matchgroup=nasmStructure keepend start="^\s*UNION\>"hs=e-4 end="^\s*ENDUNION\>"re=e-8 contains=@nasmGrpCntnMacro
 "syn region  nasmInMacStrucDef	contained transparent matchgroup=nasmStructure keepend start="\<IUNION\>" end="\<IEND\(UNION\)\=\>" contains=@nasmGrpCntnMacro,nasmInStructure
 syn region  nasmInMacPreConDef	contained transparent matchgroup=nasmInMacPreCondit start="^\s*%ifnidni\>"hs=e-7 start="^\s*%if\(idni\|n\(ctx\|def\|idn\|num\|str\)\)\>"hs=e-6 start="^\s*%if\(ctx\|def\|idn\|nid\|num\|str\)\>"hs=e-5 start="^\s*%ifid\>"hs=e-4 start="^\s*%if\>"hs=e-2 end="%endif\>" contains=@nasmGrpCntnMacro,nasmInMacPreCondit,nasmInPreCondit
-" Todo: allow STRUC/ISTRUC to be used inside preprocessor conditional block
+" Todo: allow STRUCT/ISTRUC to be used inside preprocessor conditional block
 syn match   nasmInMacPreCondit	contained transparent "ctx\s"lc=3 skipwhite nextgroup=@nasmGrpNxtCtx
 syn match   nasmInMacPreCondit	contained "^\s*%elifctx\>"hs=e-7 skipwhite nextgroup=@nasmGrpNxtCtx
 syn match   nasmInMacPreCondit	contained "^\s*%elifnctx\>"hs=e-8 skipwhite nextgroup=@nasmGrpNxtCtx
@@ -311,7 +311,7 @@ syn keyword nasmStdInstruction	AAA AAD AAM AAS ADC ADD AND
 syn keyword nasmStdInstruction	BOUND BSF BSR BSWAP BT[C] BTR BTS
 syn keyword nasmStdInstruction	CALL CBW CDQ CLC CLD CMC CMP CMPSB CMPSD CMPSW CMPSQ
 syn keyword nasmStdInstruction	CMPXCHG CMPXCHG8B CPUID CWD[E] CQO
-syn keyword nasmStdInstruction	DAA DAS DEC DIV ENTER
+syn keyword nasmStdInstruction	DATA DAS DEC DIV ENTER
 syn keyword nasmStdInstruction	IDIV IMUL INC INT[O] IRET[D] IRETW IRETQ
 syn keyword nasmStdInstruction	JCXZ JECXZ JMP
 syn keyword nasmStdInstruction	LAHF LDS LEA LEAVE LES LFS LGS LODSB LODSD LODSQ

@@ -30,10 +30,10 @@ menutrans &About		o\ &Programie
 menutrans &File				&Plik
 menutrans &Open\.\.\.<Tab>:e		&Otwórz\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Otwórz\ z\ &podziałem\.\.\.<Tab>:sp
-menutrans &New<Tab>:enew       &Nowy<Tab>:enew
+menutrans &New<Tab>:new       &Nowy<Tab>:new
 menutrans &Close<Tab>:close		&Zamknij<Tab>:close
 menutrans &Save<Tab>:w			Za&pisz<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	Zapisz\ &jako\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	Zapisz\ &jako\.\.\.<Tab>:save
 menutrans Split\ &Diff\ with\.\.\.	Podziel\ na\ diff-a\ między\.\.\.
 menutrans Split\ Patched\ &By\.\.\.	Podziel\ łatane\ przez\.\.\.
 menutrans &Print			&Drukuj
@@ -136,7 +136,7 @@ menutrans &Find\ More\ Languages	&Znajdź\ więcej\ języków
 menutrans &Folding				&Zwijanie
 menutrans &Enable/Disable\ folds<Tab>zi		&Zwiń/rozwiń<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv			&Linia\ kursora<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx			&Tylko\ linia\ kursora<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx			&Tylko\ linia\ kursora<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm				Zwiń\ więcej<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM				Z&wiń\ wszystkie<Tab>zM
 menutrans &Open\ all\ folds<Tab>zR				Rozwiń\ wszystkie<Tab>zR
@@ -147,7 +147,7 @@ menutrans &Delete\ Fold<Tab>zd				U&suń\ zawinięcie<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD				&Usuń\ wszystkie\ zawinięcia<Tab>zD
 menutrans Fold\ column\ &width				Szerokość\ kolumny\ za&winięć
 menutrans Fold\ Met&hod		Me&toda\ zawijania
-menutrans M&anual			&Ręcznie
+menutrans M&annual			&Ręcznie
 menutrans I&ndent			W&cięcie
 menutrans E&xpression W&yrażenie
 menutrans S&yntax			S&kładnia
@@ -159,7 +159,7 @@ menutrans &Get\ Block			&Pobierz\ blok
 menutrans &Put\ Block			&Wstaw\ blok
 
 " Make and stuff...
-menutrans &Make<Tab>:make		M&ake<Tab>:make
+menutrans &Make<Tab>:make		M&ache<Tab>:make
 menutrans &List\ Errors<Tab>:cl		&Pokaż\ błędy<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!	W&ylicz\ powiadomienia<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn		&Następny\ błąd<Tab>:cn
@@ -173,7 +173,7 @@ menutrans &Open<Tab>:copen			&Otwórz<Tab>:copen
 
 menutrans Se&T\ Compiler				U&staw\ kompilator
 menutrans &Convert\ to\ HEX<Tab>:%!xxd     Kody\ szesnastkowe<Tab>:%!xxd
-menutrans Conve&rt\ back<Tab>:%!xxd\ -r     Zwykły\ tekst<Tab>:%!xxd\ -r
+menutrans Conve&rt\ back<Tab>:%!xxd\ -r     Zwykły\ text<Tab>:%!xxd\ -r
 
 " Names for buffer menu.
 menutrans &Buffers	&Bufory

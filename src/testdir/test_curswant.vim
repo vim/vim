@@ -19,7 +19,7 @@ func Test_curswant()
   let &ttimeoutlen=&ttimeoutlen
   call assert_equal(7, winsaveview().curswant)
 
-  enew!
+  new!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

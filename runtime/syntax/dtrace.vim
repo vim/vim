@@ -42,7 +42,7 @@ exec 'syn match dtraceProbe "'.s:oneProbe.'\%(,\_s*'.s:oneProbe.'\)*\ze\_s\%({\|
 " Also be careful not to eat `c = a / b; b = a / 2;`. We use the same
 " technique as the dtrace lexer: a predicate has to be followed by {, ;, or
 " EOF. Also note that dtrace doesn't allow an empty predicate // (we do).
-" This regex doesn't allow a divison operator in the predicate.
+" This regex doesn't allow a division operator in the predicate.
 " Make sure that this matches the empty predicate as well.
 " XXX: This doesn't work if followed by a comment.
 syn match dtracePredicate "/\*\@!\_[^/]*/\ze\_s*\%({\|;\|\%$\)"
@@ -52,7 +52,7 @@ syn match dtracePredicate "/\*\@!\_[^/]*/\ze\_s*\%({\|;\|\%$\)"
 " dtrace seems not to support whitespace before or after the '='.  dtrace
 " supports only one option per #pragma, and no continuations of #pragma over
 " several lines with '\'.
-" Note that dtrace treats units (Hz etc) as case-insenstive, we allow only
+" Note that dtrace treats units (Hz etc) as case-insensitive, we allow only
 " sane unit capitalization in this script (ie 'ns', 'us', 'ms', 's' have to be
 " small, Hertz can be 'Hz' or 'hz')
 " XXX: "cpu" is always highlighted as builtin var, not as option

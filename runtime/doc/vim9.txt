@@ -690,7 +690,7 @@ file "_cb: Func})" and exit.  To avoid this kind of mistake in Vim9 script
 there must be white space between most command names and the argument.
 
 However, the argument of a command that is a command won't be recognized.  For
-example, after "windo echo expr" a line break inside "expr" will not be seen.
+example, after "window echo expr" a line break inside "expr" will not be seen.
 
 
 Notes:

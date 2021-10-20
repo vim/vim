@@ -411,7 +411,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call assert_equal('yellow', readfile('Xbuf')[0])
 
-  " Test for selecting text using doubleclick
+  " Test for selecting text using double-click
   call delete('Xbuf')
   call test_setmouse(1, 11)
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>")

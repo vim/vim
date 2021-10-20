@@ -537,7 +537,7 @@ fun! tar#Write(fname)
    if s:tblfile_{winnr()} =~ '^\a\+://'
 "    call Decho("handle writing <".tarfile."> across network to <".s:tblfile_{winnr()}.">")
     let tblfile= s:tblfile_{winnr()}
-    1split|noswapfile enew
+    1split|noswapfile new
     let binkeep= &l:binary
     let eikeep = &ei
     set binary ei=all

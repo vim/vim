@@ -590,7 +590,7 @@ gui_x11_visibility_cb(
     Widget	w UNUSED,
     XtPointer	dud UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     if (event->type != VisibilityNotify)
 	return;
@@ -613,7 +613,7 @@ gui_x11_expose_cb(
     Widget	w UNUSED,
     XtPointer	dud UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     XExposeEvent	*gevent;
     int			new_x;
@@ -688,7 +688,7 @@ gui_x11_resize_window_cb(
     Widget	w UNUSED,
     XtPointer	dud UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     static int lastWidth, lastHeight;
 
@@ -725,7 +725,7 @@ gui_x11_focus_change_cb(
     Widget	w UNUSED,
     XtPointer	data UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     gui_focus_change(event->type == FocusIn);
 }
@@ -735,7 +735,7 @@ gui_x11_enter_cb(
     Widget	w UNUSED,
     XtPointer	data UNUSED,
     XEvent	*event UNUSED,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     gui_focus_change(TRUE);
 }
@@ -745,7 +745,7 @@ gui_x11_leave_cb(
     Widget	w UNUSED,
     XtPointer	data UNUSED,
     XEvent	*event UNUSED,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     gui_focus_change(FALSE);
 }
@@ -761,7 +761,7 @@ gui_x11_key_hit_cb(
     Widget	w UNUSED,
     XtPointer	dud UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     XKeyPressedEvent	*ev_press;
 #ifdef FEAT_XIM
@@ -1015,7 +1015,7 @@ gui_x11_mouse_cb(
     Widget	w UNUSED,
     XtPointer	dud UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     static XtIntervalId timer = (XtIntervalId)0;
     static int	timed_out = TRUE;
@@ -2928,7 +2928,7 @@ gui_x11_wm_protocol_handler(
     Widget	w UNUSED,
     XtPointer	client_data UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     /*
      * Only deal with Client messages.
@@ -2970,7 +2970,7 @@ gui_x11_send_event_handler(
     Widget	w UNUSED,
     XtPointer	client_data UNUSED,
     XEvent	*event,
-    Boolean	*dum UNUSED)
+    Boolean	*dumb UNUSED)
 {
     XPropertyEvent *e = (XPropertyEvent *) event;
 

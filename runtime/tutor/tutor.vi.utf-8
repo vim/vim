@@ -9,7 +9,7 @@
 	Cần khoảng 25-30 phút để hoàn thành bài học, phụ thuộc vào thời
 	gian thực hành.
 
-	Các câu lệnh trong bài học sẽ thay đổi văn bản này. Vì thế hãy tạo
+	Các câu lệnh trong bài học sẽ they đổi văn bản này. Vì thế hãy tạo
 	một bản sao của tập tin này để thực hành (nếu bạn dùng "vimtutor"
 	thì đây đã là bản sao).
 
@@ -53,8 +53,8 @@ Chú ý: Các phím mũi tên cũng làm việc. Nhưng một khi sử dụng th
 
   2. Gõ:			:q! <ENTER>.
 
----> Lệnh này sẽ thoát trình soạn thảo mà KHÔNG ghi nhớ bất kỳ thay đổi nào mà bạn đã làm.
-     Nếu bạn muốn ghi nhớ những thay đổi đó và thoát thì hãy gõ:
+---> Lệnh này sẽ thoát trình soạn thảo mà KHÔNG ghi nhớ bất kỳ they đổi nào mà bạn đã làm.
+     Nếu bạn muốn ghi nhớ những they đổi đó và thoát thì hãy gõ:
 				:wq  <ENTER>
 
   3. Khi thấy dấu nhắc shell, hãy gõ câu lệnh đã đưa bạn tới hướng dẫn này. Có
@@ -105,8 +105,8 @@ Chú ý: Khi học theo cuốn hướng dẫn này đừng cố nhớ, mà học
   4. Sau mỗi lần chèn từ còn thiếu nhấn <ESC> để trở lại chế dộ Câu lệnh.
      Lặp lại các bước từ 2 tới 4 để sửa câu này.
 
----> Mot lam chang nen , ba cay chum lai hon cao.
----> Mot cay lam chang nen non, ba cay chum lai nen hon nui cao.
+---> Not lam chang nen , ba cay chum lai hon cao.
+---> Not cay lam chang nen non, ba cay chum lai nen hon nui cao.
 
   5. Sau khi thấy quen với việc chèn văn bản hãy chuyển tới phần tổng kết
 	 ở dưới.
@@ -121,8 +121,8 @@ Chú ý: Khi học theo cuốn hướng dẫn này đừng cố nhớ, mà học
 
   2. Để vào Vim (từ dấu nhắc %) gõ:  vim TÊNTẬPTIN <ENTER>
 
-  3. Muốn thoát Vim gõ:	   <ESC>   :q!	 <ENTER>  để vứt bỏ mọi thay đổi.
-	     HOẶC gõ:	   <ESC>   :wq	 <ENTER>  để ghi nhớ thay đổi.
+  3. Muốn thoát Vim gõ:	   <ESC>   :q!	 <ENTER>  để vứt bỏ mọi they đổi.
+	     HOẶC gõ:	   <ESC>   :wq	 <ENTER>  để ghi nhớ they đổi.
 
   4. Để xóa bỏ ký tự nằm dưới con trỏ trong chế độ Câu lệnh gõ:  x
 
@@ -220,7 +220,7 @@ CHÚ Ý:  Dành cho những người ham tìm hiểu, chỉ nhấn đối tượ
 
 	 1) Trong tim em khắc sâu bao kỉ niệm
 	 2) Tình yêu chân thành em dành cả cho anh
-	 3) Dẫu cuộc đời như bể dâu thay đổi
+	 3) Dẫu cuộc đời như bể dâu they đổi
 	 4) Anh mãi là ngọn lửa ấm trong đêm
 	 5) Đã qua đi những tháng năm khờ dại
 	 7) Hãy để tự em lau nước mắt của mình
@@ -285,7 +285,7 @@ CHÚ Ý:  Dành cho những người ham tìm hiểu, chỉ nhấn đối tượ
 
   3. Di chuyển con trỏ tới dòng Ở TRÊN chỗ cần dán.
 
-  4. Trong chế độ Câu lệnh, gõ    p	 để thay thế dòng.
+  4. Trong chế độ Câu lệnh, gõ    p	 để they thế dòng.
 
   5. Lặp lại các bước từ 2 tới 4 để đặt các dòng theo đúng thứ tự của chúng.
 
@@ -297,10 +297,10 @@ CHÚ Ý:  Dành cho những người ham tìm hiểu, chỉ nhấn đối tượ
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Bài 3.2: CÂU LỆNH THAY THẾ
+		       Bài 3.2: CÂU LỆNH THEY THẾ
 
 
-  ** Gõ  r  và một ký tự để thay thế ký tự nằm dưới con trỏ. **
+  ** Gõ  r  và một ký tự để they thế ký tự nằm dưới con trỏ. **
 
   1. Di chuyển con trỏ tới dòng có dấu --->.
 
@@ -320,10 +320,10 @@ CHÚ Ý: Hãy nhớ rằng bạn cần thực hành, không nên "học vẹt".
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Bài 3.3: CÂU LỆNH THAY ĐỔI
+			Bài 3.3: CÂU LỆNH THEY ĐỔI
 
 
-	   ** Để thay đổi một phần hay cả một từ, gõ  cw . **
+	   ** Để they đổi một phần hay cả một từ, gõ  cw . **
 
   1. Di chuyển con trỏ tới dòng có dấu --->.
 
@@ -331,24 +331,24 @@ CHÚ Ý: Hãy nhớ rằng bạn cần thực hành, không nên "học vẹt".
 
   3. Gõ  cw  và sửa lại từ (trong trường hợp này, gõ  'ine'.)
 
-  4. Gõ <ESC> và chuyển tới lỗi tiếp theo (chữ cái đầu tiên trong số cần thay.)
+  4. Gõ <ESC> và chuyển tới lỗi tiếp theo (chữ cái đầu tiên trong số cần they.)
 
   5. Lặp lại các bước 3 và 4 cho tới khi thu được dòng như dòng thứ hai.
 
----> Trên dùgn này có một dầy từ cần tyays đổi, sử dunk câu lệnh thay đổi.
----> Trên dong này có một vai từ cần thay đổi, sử dung câu lệnh thay đổi.
+---> Trên dùgn này có một dầy từ cần tyays đổi, sử dunk câu lệnh they đổi.
+---> Trên dong này có một vai từ cần they đổi, sử dung câu lệnh they đổi.
 
-Chú ý rằng  cw  không chỉ thay đổi từ, nhưng còn đưa bạn vào chế độ chèn.
+Chú ý rằng  cw  không chỉ they đổi từ, nhưng còn đưa bạn vào chế độ chèn.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Bài 3.4: TIẾP TỤC THAY ĐỔI VỚI c
+		       Bài 3.4: TIẾP TỤC THEY ĐỔI VỚI c
 
 
-     ** Câu lệnh thay đổi được sử dụng với cùng đối tượng như câu lệnh xóa. **
+     ** Câu lệnh they đổi được sử dụng với cùng đối tượng như câu lệnh xóa. **
 
-  1. Câu lệnh thay đổi làm việc tương tự như câu lệnh xóa. Định dạng như sau:
+  1. Câu lệnh they đổi làm việc tương tự như câu lệnh xóa. Định dạng như sau:
 
         [số]   c   đối_tượng     HOẶC     c	[số]   đối_tượng
 
@@ -373,14 +373,14 @@ Chú ý rằng  cw  không chỉ thay đổi từ, nhưng còn đưa bạn vào 
 	 PHÍA SAU con trỏ (nếu một dòng vừa bị xóa, dòng này sẽ được đặt vào dòng
 	 nằm dưới con trỏ).
 
-  2. Để thay thế ký tự dưới con trỏ, gõ   r   và sau đó gõ
-     ký tự muốn thay vào.
+  2. Để they thế ký tự dưới con trỏ, gõ   r   và sau đó gõ
+     ký tự muốn they vào.
 
-  3. Câu lệnh thay đổi cho phép bạn thay đổi đối tượng chỉ ra từ con
-     trỏ tới cuối đối tượng.  vd. Gõ  cw  để thay đổi từ
-     con trỏ tới cuối một từ, c$	để thay đổi tới cuối một dòng.
+  3. Câu lệnh they đổi cho phép bạn they đổi đối tượng chỉ ra từ con
+     trỏ tới cuối đối tượng.  vd. Gõ  cw  để they đổi từ
+     con trỏ tới cuối một từ, c$	để they đổi tới cuối một dòng.
 
-  4. Định dạng để thay đổi:
+  4. Định dạng để they đổi:
 
 	[số]   c   đối_tượng     HOẶC     c	[số]   đối_tượng
 
@@ -426,7 +426,7 @@ Bây giờ chúng ta tiếp tục bài học mới.
      Để tìm kiếm cụm từ theo hướng ngược lại, gõ  Shift-N .
 
   4. Nếu bạn muối tìm kiếm cụm từ theo hướng ngược lại đầu tập tin, sử dụng
-     câu lệnh  ?  thay cho /.
+     câu lệnh  ?  they cho /.
 
 ---> "loiiiii" là những gì không đúng lắm;  loiiiii thường xuyên xảy ra.
 
@@ -461,21 +461,21 @@ Chú ý: Rất có ích khi sửa lỗi chương trình, khi có các lỗi th�
 		      Bài 4.4: MỘT CÁCH SỬA LỖI
 
 
-	** Gõ  :s/cũ/mới/g  để thay thế 'mới' vào 'cũ'. **
+	** Gõ  :s/cũ/mới/g  để they thế 'mới' vào 'cũ'. **
 
   1. Di chuyển con trỏ tới dòng có dấu --->.
 
-  2. Gõ  :s/duou/ruou <ENTER> .  Chú ý rằng câu lệnh này chỉ thay đổi từ tìm
+  2. Gõ  :s/duou/ruou <ENTER> .  Chú ý rằng câu lệnh này chỉ they đổi từ tìm
      thấy đầu tiên trên dòng (từ 'duou' đầu dòng).
 
-  3. Bây giờ gõ	 :s/duou/ruou/g	   để thực hiện thay thế trên toàn bộ dòng.
-     Lệnh này sẽ thay thế tất cả những từ ('duou') tìm thấy trên dòng.
+  3. Bây giờ gõ	 :s/duou/ruou/g	   để thực hiện they thế trên toàn bộ dòng.
+     Lệnh này sẽ they thế tất cả những từ ('duou') tìm thấy trên dòng.
 
 ---> duou ngon phai co ban hie. Khong duou cung khong hoa.
 
-  4. Để thay thế thực hiện trong đoạn văn bản giữa hai dòng,
+  4. Để they thế thực hiện trong đoạn văn bản giữa hai dòng,
      gõ   :#,#s/cũ/mới/g    trong đó #,# là số thứ tự của hai dòng.
-     Gõ   :%s/cũ/mới/g    để thực hiện thay thế trong toàn bộ tập tin.
+     Gõ   :%s/cũ/mới/g    để thực hiện they thế trong toàn bộ tập tin.
 
 
 
@@ -496,11 +496,11 @@ Chú ý: Rất có ích khi sửa lỗi chương trình, khi có các lỗi th�
   3. Gõ  %	khi con trỏ nằm trên một  (,),[,],{, hay }  sẽ chỉ ra vị trí của
      dấu ngoặc còn lại trong cặp.
 
-  4. Để thay thế 'mới' cho 'cũ' đầu tiên trên dòng, gõ    :s/cũ/mới
-     Để thay thế 'mới' cho tất cả 'cũ' trên dòng, gõ	   :s/cũ/mới/g
-     Để thay thế giữa hai dòng, gõ	   :#,#s/cũ/mới/g
-     Để thay thế trong toàn bộ tập tin, gõ	   :%s/cũ/mới/g
-     Để chương trình hỏi lại trước khi thay thế, thêm 'c'	:%s/cũ/mới/gc
+  4. Để they thế 'mới' cho 'cũ' đầu tiên trên dòng, gõ    :s/cũ/mới
+     Để they thế 'mới' cho tất cả 'cũ' trên dòng, gõ	   :s/cũ/mới/g
+     Để they thế giữa hai dòng, gõ	   :#,#s/cũ/mới/g
+     Để they thế trong toàn bộ tập tin, gõ	   :%s/cũ/mới/g
+     Để chương trình hỏi lại trước khi they thế, thêm 'c'	:%s/cũ/mới/gc
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -530,7 +530,7 @@ Chú ý:  Tất cả các câu lệnh  :  cần kết thúc bởi phím <ENTER>
 		      Bài 5.2: GHI LẠI CÁC TẬP TIN
 
 
-     ** Để ghi lại các thay đổi, gõ  :w TÊNTỆPTIN. **
+     ** Để ghi lại các they đổi, gõ  :w TÊNTỆPTIN. **
 
   1. Gõ  :!dir  hoặc  :!ls  để lấy bảng liệt kê thư mục hiện thời.
      Như bạn đã biết, bạn cần gõ <ENTER> để thực hiện.
@@ -634,7 +634,7 @@ CHÚ Ý:  Tập tin được đọc sẽ đặt bắt đầu từ vị trí củ
 
 ---> Sau khi gõ  o  con trỏ sẽ đặt trên dòng vừa mở trong chế độ Soạn thảo.
 
-  4. Để mở một dòng Ở TRÊN con trỏ, đơn giản gõ một chữ	O hoa, thay cho
+  4. Để mở một dòng Ở TRÊN con trỏ, đơn giản gõ một chữ	O hoa, they cho
      chữ  o thường.  Hãy thử thực hiện trên dòng dưới đây.
 Di chuyển con trỏ tới dòng này, rồi gõ Shift-O sẽ mở một dòng trên nó.
 
@@ -653,7 +653,7 @@ Di chuyển con trỏ tới dòng này, rồi gõ Shift-O sẽ mở một dòng 
   2. Gõ  a  (chữ thường) để thêm văn bản vào SAU ký tự dưới con trỏ.
      (Chữ  A  hoa thêm văn bản vào cuối một dòng.)
 
-Chú ý: Lệnh này thay cho việc gõ  i , ký tự cuối cùng, văn bản muốn chèn,
+Chú ý: Lệnh này they cho việc gõ  i , ký tự cuối cùng, văn bản muốn chèn,
      <ESC>, mũi tên sang phải, và cuối cùng, x , chỉ để thêm vào cuối dòng!
 
   3. Bây giờ thêm cho đủ dòng thứ nhất. Chú ý rằng việc thêm giống hệt với
@@ -665,17 +665,17 @@ Chú ý: Lệnh này thay cho việc gõ  i , ký tự cuối cùng, văn bản 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Bài 6.3: MỘT CÁCH THAY THẾ KHÁC
+		    Bài 6.3: MỘT CÁCH THEY THẾ KHÁC
 
 
-      ** Gõ chữ cái  R  hoa để thay thế nhiều ký tự. **
+      ** Gõ chữ cái  R  hoa để they thế nhiều ký tự. **
 
   1. Di chuyển con trỏ tới cuối dòng đầu tiên có ký hiệu --->.
 
   2. Đặt con trỏ tại chữ cái đầu của từ đầu tiên khác với dòng có dấu
      ---> tiếp theo (từ 'tren').
 
-  3. Bây giờ gõ R và thay thế phần còn lại của dòng thứ nhất bằng cách gõ
+  3. Bây giờ gõ R và they thế phần còn lại của dòng thứ nhất bằng cách gõ
      đè lên văn bản cũ để cho hai dòng giống nhau.
 
 ---> De cho dong thu nhat giong voi dong thu hai tren trang nay.
@@ -690,7 +690,7 @@ Chú ý: Lệnh này thay cho việc gõ  i , ký tự cuối cùng, văn bản 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Bài 6.4: THIẾT LẬP CÁC THAM SỐ
 
-	  ** Thiết lập một tùy chọn để việc tìm kiếm hay thay thế lờ đi kiểu chữ **
+	  ** Thiết lập một tùy chọn để việc tìm kiếm hay they thế lờ đi kiểu chữ **
 
   1. Tìm kiếm từ 'lodi' bằng cách gõ:
      /lodi
@@ -721,7 +721,7 @@ Chú ý: Lệnh này thay cho việc gõ  i , ký tự cuối cùng, văn bản 
   2. Gõ  a  để chèn văn bản vào SAU ký tự nằm dưới con trỏ.
      Gõ một chữ  A  hoa tự động thêm văn bản vào cuối một dòng.
 
-  3. Gõ một chữ  R  hoa chuyển vào chế độ Thay thế cho đến khi nhấn  <ESC>.
+  3. Gõ một chữ  R  hoa chuyển vào chế độ They thế cho đến khi nhấn  <ESC>.
 
   4. Gõ ":set xxx" sẽ đặt tham số "xxx"
 

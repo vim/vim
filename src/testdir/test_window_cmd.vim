@@ -133,7 +133,7 @@ func Test_window_split_edit_alternate()
   only
 
   " Test for the expected behavior when the alternate buffer is not named.
-  enew | let l:nr1 = bufnr('%')
+  new | let l:nr1 = bufnr('%')
   edit Xfoo | let l:nr2 = bufnr('%')
   wincmd ^
   call assert_equal(l:nr1, winbufnr(1))
@@ -399,7 +399,7 @@ func Test_window_width()
 
   " when the current window width is less than the new 'winwidth', the current
   " window width should be increased.
-  enew | only
+  new | only
   split
   10vnew
   set winwidth=15
@@ -411,7 +411,7 @@ endfunc
 func Test_equalalways_on_close()
   set equalalways
   vsplit
-  windo split
+  window split
   split
   wincmd J
   " now we have a frame top-left with two windows, a frame top-right with two
@@ -535,7 +535,7 @@ func GetScreenStr(row)
 endfunc
 
 func Test_window_contents()
-  enew! | only | new
+  new! | only | new
   call setline(1, range(1,256))
 
   exe "norm! \<C-W>t\<C-W>=1Gzt\<C-W>w\<C-W>+"
@@ -731,7 +731,7 @@ endfunc
 func Test_relative_cursor_position_after_move_and_resize()
   let so_save = &so
   set so=0
-  enew
+  new
   call setline(1, range(1, 10000))
   normal 50%
   split
@@ -770,7 +770,7 @@ endfunc
 func Test_relative_cursor_position_after_resize()
   let so_save = &so
   set so=0
-  enew
+  new
   call setline(1, range(1, 10000))
   normal 50%
   split
@@ -797,7 +797,7 @@ endfunc
 func Test_relative_cursor_second_line_after_resize()
   let so_save = &so
   set so=0
-  enew
+  new
   call setline(1, range(1, 10000))
   normal 50%
   split
@@ -833,7 +833,7 @@ endfunc
 
 func Test_split_noscroll()
   let so_save = &so
-  enew
+  new
   call setline(1, range(1, 8))
   normal 100%
   split
@@ -1038,7 +1038,7 @@ func Run_noroom_for_newwindow_test(dir_arg)
 
   " Buffer related commands
   set modified
-  hide enew
+  hide new
   for cmd in ['sbuffer Xfile1', 'sbnext', 'sbprevious', 'sbNext', 'sbrewind',
 		\ 'sbfirst', 'sblast', 'sball', 'sbmodified', 'sunhide']
     call assert_fails(dir .. cmd, 'E36:')
@@ -1079,7 +1079,7 @@ func Run_noroom_for_newwindow_test(dir_arg)
     call setline(1, 'Xfile1')
     call assert_fails('call feedkeys("gg\<C-W>f", "xt")', 'E36:')
   endif
-  enew!
+  new!
 
   " Tag commands (:stag, :stselect and :stjump)
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",

@@ -355,7 +355,7 @@ processing a quickfix or location list command, it will be aborted.
 			Example: >
     :g/mypattern/caddexpr expand("%") . ":" . line(".") .  ":" . getline(".")
 <
-						*:lad* *:addd* *:laddexpr*
+						*:lad* *:add* *:laddexpr*
 :lad[dexpr] {expr}	Same as ":caddexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
@@ -509,7 +509,7 @@ EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 			autocommand event is disabled by adding it to
 			'eventignore'.  This considerably speeds up editing
 			each buffer.
-			Also see |:bufdo|, |:tabdo|, |:argdo|, |:windo|,
+			Also see |:bufdo|, |:tabdo|, |:argdo|, |:window|,
 			|:ldo|, |:cfdo| and |:lfdo|.
 
 							*:cfdo*

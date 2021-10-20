@@ -71,7 +71,7 @@ syn match   smilArg contained "skip-content"
 
 
 " SMIL Boston ext.
-" This are new SMIL functionnalities seen on www.w3.org on August 3rd 1999
+" This are new SMIL functionalities seen on www.w3.org on August 3rd 1999
 
 " Animation
 syn keyword smilTagName contained animate set move

@@ -38,7 +38,7 @@ syn keyword mfPairExp        scaled shifted slanted transformed xscaled yscaled
 syn keyword mfPairExp        zscaled
 
 " Page 213: 'path expressions'
-syn keyword mfPathExp        atleast controls curl cycle makepath reverse
+syn keyword mfPathExp        at least controls curl cycle makepath reverse
 syn keyword mfPathExp        subpath tension
 
 " Page 214: 'pen expressions'
@@ -112,7 +112,7 @@ if get(g:, "plain_mf_macros", 1)
   syn keyword mfDef          rotatedaround screenchars screenrule screenstrokes
   syn keyword mfDef          shipit showit smode stop superellipse takepower
   syn keyword mfDef          tracingall tracingnone undraw undrawdot unfill
-  syn keyword mfDef          unfilldraw upto z
+  syn keyword mfDef          unfilldraw up to z
   syn match   mfDef          "???"
   syn keyword mfVardef       bot byte ceiling counterclockwise cutoff decr dir
   syn keyword mfVardef       direction directionpoint grayfont hround incr

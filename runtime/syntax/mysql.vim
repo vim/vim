@@ -51,7 +51,7 @@ syn keyword mysqlSpecial         false null true
 syn region mysqlString           start=+"+  skip=+\\\\\|\\"+  end=+"+
 syn region mysqlString           start=+'+  skip=+\\\\\|\\'+  end=+'+
 
-" Numbers and hexidecimal values
+" Numbers and hexadecimal values
 syn match mysqlNumber            "-\=\<[0-9]*\>"
 syn match mysqlNumber            "-\=\<[0-9]*\.[0-9]*\>"
 syn match mysqlNumber            "-\=\<[0-9][0-9]*e[+-]\=[0-9]*\>"

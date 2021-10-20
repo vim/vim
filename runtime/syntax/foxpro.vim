@@ -56,7 +56,7 @@ syn match foxproSpecial "\<m\>\."
 
 " @ Statements
 syn match foxproAtSymbol contained "^\s*@"
-syn match foxproAtCmd    contained "\<say\>\|\<get\>\|\<edit\>\|\<box\>\|\<clea\%[r]\>\|\<fill\>\|\<menu\>\|\<prom\%[pt]\>\|\<scro\%[ll]\>\|\<to\>"
+syn match foxproAtCmd    contained "\<say\>\|\<get\>\|\<edit\>\|\<box\>\|\<clean\%[r]\>\|\<fill\>\|\<menu\>\|\<prom\%[pt]\>\|\<scro\%[ll]\>\|\<to\>"
 syn match foxproAtStart  transparent "^\s*@.*" contains=ALL
 
 " preprocessor directives
@@ -70,7 +70,7 @@ syn match foxproFunc "\<acop\%[y]\>\s*("me=e-1
 syn match foxproFunc "\<acos\>\s*("me=e-1
 syn match foxproFunc "\<adel\>\s*("me=e-1
 syn match foxproFunc "\<adir\>\s*("me=e-1
-syn match foxproFunc "\<aele\%[ment]\>\s*("me=e-1
+syn match foxproFunc "\<aele\%[meant]\>\s*("me=e-1
 syn match foxproFunc "\<afie\%[lds]\>\s*("me=e-1
 syn match foxproFunc "\<afon\%[t]\>\s*("me=e-1
 syn match foxproFunc "\<ains\>\s*("me=e-1
@@ -137,7 +137,7 @@ syn match foxproFunc "\<dtor\>\s*("me=e-1
 syn match foxproFunc "\<dtos\>\s*("me=e-1
 syn match foxproFunc "\<empt\%[y]\>\s*("me=e-1
 syn match foxproFunc "\<eof\>\s*("me=e-1
-syn match foxproFunc "\<erro\%[r]\>\s*("me=e-1
+syn match foxproFunc "\<error\%[r]\>\s*("me=e-1
 syn match foxproFunc "\<eval\%[uate]\>\s*("me=e-1
 syn match foxproFunc "\<exp\>\s*("me=e-1
 syn match foxproFunc "\<fchs\%[ize]\>\s*("me=e-1
@@ -179,7 +179,7 @@ syn match foxproFunc "\<gomo\%[nth]\>\s*("me=e-1
 syn match foxproFunc "\<head\%[er]\>\s*("me=e-1
 syn match foxproFunc "\<home\>\s*("me=e-1
 syn match foxproFunc "\<idxc\%[ollate]\>\s*("me=e-1
-syn match foxproFunc "\<iif\>\s*("me=e-1
+syn match foxproFunc "\<if\>\s*("me=e-1
 syn match foxproFunc "\<inke\%[y]\>\s*("me=e-1
 syn match foxproFunc "\<inli\%[st]\>\s*("me=e-1
 syn match foxproFunc "\<insm\%[ode]\>\s*("me=e-1
@@ -211,7 +211,7 @@ syn match foxproFunc "\<mcol\>\s*("me=e-1
 syn match foxproFunc "\<mdow\%[n]\>\s*("me=e-1
 syn match foxproFunc "\<mdx\>\s*("me=e-1
 syn match foxproFunc "\<mdy\>\s*("me=e-1
-syn match foxproFunc "\<meml\%[ines]\>\s*("me=e-1
+syn match foxproFunc "\<meml\%[lines]\>\s*("me=e-1
 syn match foxproFunc "\<memo\%[ry]\>\s*("me=e-1
 syn match foxproFunc "\<menu\>\s*("me=e-1
 syn match foxproFunc "\<mess\%[age]\>\s*("me=e-1
@@ -316,7 +316,7 @@ syn match foxproFunc "\<wlco\%[l]\>\s*("me=e-1
 syn match foxproFunc "\<wlro\%[w]\>\s*("me=e-1
 syn match foxproFunc "\<wmax\%[imum]\>\s*("me=e-1
 syn match foxproFunc "\<wmin\%[imum]\>\s*("me=e-1
-syn match foxproFunc "\<wont\%[op]\>\s*("me=e-1
+syn match foxproFunc "\<won't\%[op]\>\s*("me=e-1
 syn match foxproFunc "\<wout\%[put]\>\s*("me=e-1
 syn match foxproFunc "\<wpar\%[ent]\>\s*("me=e-1
 syn match foxproFunc "\<wrea\%[d]\>\s*("me=e-1
@@ -342,14 +342,14 @@ syn match foxproCmd "^\s*\<blan\%[k]\>"
 syn match foxproCmd "^\s*\<brow\%[se]\>"
 syn match foxproCmd "^\s*\<buil\%[d]\>\s*\<app\>"
 syn match foxproCmd "^\s*\<buil\%[d]\>\s*\<exe\>"
-syn match foxproCmd "^\s*\<buil\%[d]\>\s*\<proj\%[ect]\>"
+syn match foxproCmd "^\s*\<buil\%[d]\>\s*\<proj\%[etc]\>"
 syn match foxproCmd "^\s*\<calc\%[ulate]\>"
 syn match foxproCmd "^\s*\<call\>"
 syn match foxproCmd "^\s*\<canc\%[el]\>"
 syn match foxproCmd "^\s*\<chan\%[ge]\>"
-syn match foxproCmd "^\s*\<clea\%[r]\>"
-syn match foxproCmd "^\s*\<clos\%[e]\>"
-syn match foxproCmd "^\s*\<clos\%[e]\>\s*\<memo\>"
+syn match foxproCmd "^\s*\<clean\%[r]\>"
+syn match foxproCmd "^\s*\<close\%[e]\>"
+syn match foxproCmd "^\s*\<close\%[e]\>\s*\<memo\>"
 syn match foxproCmd "^\s*\<comp\%[ile]\>"
 syn match foxproCmd "^\s*\<cont\%[inue]\>"
 syn match foxproCmd "^\s*\<copy\>\s*\<file\>"
@@ -367,7 +367,7 @@ syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<curs\%[or]\>"
 syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<from\>"
 syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<labe\%[l]\>"
 syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<menu\>"
-syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<proj\%[ect]\>"
+syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<proj\%[etc]\>"
 syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<quer\%[y]\>"
 syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<repo\%[rt]\>"
 syn match foxproCmd "^\s*\<crea\%[te]\>\s*\<scre\%[en]\>"
@@ -416,7 +416,7 @@ syn match foxproCmd "^\s*\<hide\>\s*\<popu\%[p]\>"
 syn match foxproCmd "^\s*\<hide\>\s*\<wind\%[ow]\>"
 syn match foxproCmd "^\s*\<impo\%[rt]\>"
 syn match foxproCmd "^\s*\<inde\%[x]\>"
-syn match foxproCmd "^\s*\<inpu\%[t]\>"
+syn match foxproCmd "^\s*\<input\%[t]\>"
 syn match foxproCmd "^\s*\<inse\%[rt]\>"
 syn match foxproCmd "^\s*\<join\>"
 syn match foxproCmd "^\s*\<keyb\%[oard]\>"
@@ -433,7 +433,7 @@ syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<gene\%[ral]\>"
 syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<labe\%[l]\>"
 syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<memo\>"
 syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<menu\>"
-syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<proj\%[ect]\>"
+syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<proj\%[etc]\>"
 syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<quer\%[y]\>"
 syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<repo\%[rt]\>"
 syn match foxproCmd "^\s*\<modi\%[fy]\>\s*\<scre\%[en]\>"
@@ -444,7 +444,7 @@ syn match foxproCmd "^\s*\<move\>\s*\<wind\%[ow]\>"
 syn match foxproCmd "^\s*\<note\>"
 syn match foxproCmd "^\s*\<on\>\s*\<apla\%[bout]\>"
 syn match foxproCmd "^\s*\<on\>\s*\<bar\>"
-syn match foxproCmd "^\s*\<on\>\s*\<erro\%[r]\>"
+syn match foxproCmd "^\s*\<on\>\s*\<error\%[r]\>"
 syn match foxproCmd "^\s*\<on\>\s*\<esca\%[pe]\>"
 syn match foxproCmd "^\s*\<on\>\s*\<exit\>\s*\<bar\>"
 syn match foxproCmd "^\s*\<on\>\s*\<exit\>\s*\<menu\>"
@@ -510,12 +510,12 @@ syn match foxproCmd "^\s*\<set\>\s*\<apla\%[bout]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<auto\%[save]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<bell\>"
 syn match foxproCmd "^\s*\<set\>\s*\<blin\%[k]\>"
-syn match foxproCmd "^\s*\<set\>\s*\<bloc\%[ksize]\>"
+syn match foxproCmd "^\s*\<set\>\s*\<block\%[ksize]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<bord\%[er]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<brst\%[atus]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<carr\%[y]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<cent\%[ury]\>"
-syn match foxproCmd "^\s*\<set\>\s*\<clea\%[r]\>"
+syn match foxproCmd "^\s*\<set\>\s*\<clean\%[r]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<cloc\%[k]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<coll\%[ate]\>"
 syn match foxproCmd "^\s*\<set\>\s*\<colo\%[r]\>\s*\<of\>"
@@ -634,7 +634,7 @@ syn match foxproCmd "^\s*\<zoom\>\s*\<wind\%[ow]\>"
 " Enclosed Block
 syn match foxproEnBlk "^\s*\<do\>\s*\<case\>"
 syn match foxproEnBlk "^\s*\<case\>"
-syn match foxproEnBlk "^\s*\<othe\%[rwise]\>"
+syn match foxproEnBlk "^\s*\<other\%[rwise]\>"
 syn match foxproEnBlk "^\s*\<endc\%[ase]\>"
 syn match foxproEnBlk "^\s*\<do\>\s*\<whil\%[e]\>"
 syn match foxproEnBlk "^\s*\<endd\%[o]\>"

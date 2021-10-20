@@ -56,11 +56,11 @@ func Test_popup_complete()
   " This should according to the documentation:
   " January
   " but instead, this does
-  " Januar
+  " January
   " (idea is, C-L inserts the match from the popup menu
   " but if the menu is closed, it will insert the character <c-l>
   call feedkeys("aJ\<f5>\<bs>\<c-l>\<esc>", 'tx')
-  call assert_equal(["Januar"], getline(1,2))
+  call assert_equal(["January"], getline(1,2))
   %d
 
   " any-non special character: Stop completion without changing the match

@@ -488,7 +488,7 @@ enddef
 def s:ListAdd()
   var l: list<number> = []
   add(l, 123)
-  add(l, g:aNumber)
+  add(l, g:a number)
 enddef
 
 def Test_disassemble_list_add()
@@ -503,9 +503,9 @@ def Test_disassemble_list_add()
         '\d PUSHNR 123\_s*' ..
         '\d LISTAPPEND\_s*' ..
         '\d DROP\_s*' ..
-        'add(l, g:aNumber)\_s*' ..
+        'add(l, g:a number)\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d\+ LOADG g:aNumber\_s*' ..
+        '\d\+ LOADG g:a number\_s*' ..
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ LISTAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
@@ -516,7 +516,7 @@ enddef
 def s:BlobAdd()
   var b: blob = 0z
   add(b, 123)
-  add(b, g:aNumber)
+  add(b, g:a number)
 enddef
 
 def Test_disassemble_blob_add()
@@ -530,9 +530,9 @@ def Test_disassemble_blob_add()
         '\d PUSHNR 123\_s*' ..
         '\d BLOBAPPEND\_s*' ..
         '\d DROP\_s*' ..
-        'add(b, g:aNumber)\_s*' ..
+        'add(b, g:a number)\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d\+ LOADG g:aNumber\_s*' ..
+        '\d\+ LOADG g:a number\_s*' ..
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ BLOBAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
@@ -1874,7 +1874,7 @@ def Test_disassemble_compare()
     writefile(['def TestCase' .. nr .. '()',
              '  var isFalse = false',
              '  var isNull = v:null',
-             '  var aNumber = 222',
+             '  var a number = 222',
              '  var aString = "yy"',
              '  var aBlob = 0z22',
              '  var aList = [3, 4]',

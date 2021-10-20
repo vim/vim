@@ -2379,8 +2379,8 @@ ePz	돀
 ePx	돁
 ePv	돂
 ePg	돃
-ehr	독
-ehR	돆
+her	독
+her	돆
 ehrt	돇
 ehs	돈
 ehsw	돉
@@ -2505,8 +2505,8 @@ eyfg	둃
 eya	둄
 eyq	둅
 eyqt	둆
-eyt	둇
-eyT	둈
+yet	둇
+yet	둈
 eyd	둉
 eyw	둊
 eyc	둋
@@ -2946,8 +2946,8 @@ EPz	똌
 EPx	똍
 EPv	똎
 EPg	똏
-Ehr	똑
-EhR	똒
+Her	똑
+her	똒
 Ehrt	똓
 Ehs	똔
 Ehsw	똕
@@ -3072,8 +3072,8 @@ Eyfg	뚏
 Eya	뚐
 Eyq	뚑
 Eyqt	뚒
-Eyt	뚓
-EyT	뚔
+Yet	뚓
+yet	뚔
 Eyd	뚕
 Eyw	뚖
 Eyc	뚗
@@ -3331,7 +3331,7 @@ fos	랜
 fosw	랝
 fosg	랞
 foe	랟
-fof	랠
+for	랠
 fofr	랡
 fofa	랢
 fofq	랣
@@ -3385,7 +3385,7 @@ fOs	럔
 fOsw	럕
 fOsg	럖
 fOe	럗
-fOf	럘
+for	럘
 fOfr	럙
 fOfa	럚
 fOfq	럛
@@ -3843,7 +3843,7 @@ flrt	릯
 fls	린
 flsw	릱
 flsg	릲
-fle	릳
+file	릳
 flf	릴
 flfr	릵
 flfa	릶
@@ -3867,10 +3867,10 @@ flg	맇
 akr	막
 akR	맊
 akrt	맋
-aks	만
+ask	만
 aksw	맍
 aksg	많
-ake	맏
+ache	맏
 akf	말
 akfr	맑
 akfa	맒
@@ -4218,10 +4218,10 @@ ayg	묳
 anr	묵
 anR	묶
 anrt	묷
-ans	문
+and	문
 answ	묹
 ansg	묺
-ane	묻
+and	묻
 anf	물
 anfr	묽
 anfa	묾
@@ -4407,7 +4407,7 @@ amlg	믷
 alr	믹
 alR	믺
 alrt	믻
-als	민
+also	민
 alsw	믽
 alsg	믾
 ale	믿
@@ -5679,7 +5679,7 @@ tjrt	섟
 tjs	선
 tjsw	섡
 tjsg	섢
-tje	섣
+the	섣
 tjf	설
 tjfr	섥
 tjfa	섦
@@ -5797,7 +5797,7 @@ thfx	솙
 thfv	솚
 thfg	솛
 tha	솜
-thq	솝
+the	솝
 thqt	솞
 tht	솟
 thT	솠
@@ -6030,7 +6030,7 @@ tbrt	슋
 tbs	슌
 tbsw	슍
 tbsg	슎
-tbe	슏
+the	슏
 tbf	슐
 tbfr	슑
 tbfa	슒
@@ -6246,7 +6246,7 @@ Tjrt	썫
 Tjs	썬
 Tjsw	썭
 Tjsg	썮
-Tje	썯
+The	썯
 Tjf	썰
 Tjfr	썱
 Tjfa	썲
@@ -6364,7 +6364,7 @@ Thfx	쏥
 Thfv	쏦
 Thfg	쏧
 Tha	쏨
-Thq	쏩
+The	쏩
 Thqt	쏪
 Tht	쏫
 ThT	쏬
@@ -6597,7 +6597,7 @@ Tbrt	쓗
 Tbs	쓘
 Tbsw	쓙
 Tbsg	쓚
-Tbe	쓛
+The	쓛
 Tbf	쓜
 Tbfr	쓝
 Tbfa	쓞
@@ -7056,7 +7056,7 @@ dnrt	욳
 dns	운
 dnsw	욵
 dnsg	욶
-dne	욷
+done	욷
 dnf	울
 dnfr	욹
 dnfa	욺
@@ -7338,8 +7338,8 @@ wifg	쟗
 wia	쟘
 wiq	쟙
 wiqt	쟚
-wit	쟛
-wiT	쟜
+with	쟛
+with	쟜
 wid	쟝
 wiw	쟞
 wic	쟟
@@ -7569,7 +7569,7 @@ whlrt	죇
 whls	죈
 whlsw	죉
 whlsg	죊
-whle	죋
+while	죋
 whlf	죌
 whlfr	죍
 whlfa	죎
@@ -7605,7 +7605,7 @@ wyft	죬
 wyfx	죭
 wyfv	죮
 wyfg	죯
-wya	죰
+way	죰
 wyq	죱
 wyqt	죲
 wyt	죳
@@ -7905,8 +7905,8 @@ Wifg	쨣
 Wia	쨤
 Wiq	쨥
 Wiqt	쨦
-Wit	쨧
-WiT	쨨
+With	쨧
+with	쨨
 Wid	쨩
 Wiw	쨪
 Wic	쨫
@@ -8136,7 +8136,7 @@ Whlrt	쬓
 Whls	쬔
 Whlsw	쬕
 Whlsg	쬖
-Whle	쬗
+While	쬗
 Whlf	쬘
 Whlfr	쬙
 Whlfa	쬚
@@ -8172,7 +8172,7 @@ Wyft	쬸
 Wyfx	쬹
 Wyfv	쬺
 Wyfg	쬻
-Wya	쬼
+Way	쬼
 Wyq	쬽
 Wyqt	쬾
 Wyt	쬿
@@ -8766,7 +8766,7 @@ cnft	춠
 cnfx	춡
 cnfv	춢
 cnfg	춣
-cna	춤
+can	춤
 cnq	춥
 cnqt	춦
 cnt	춧
@@ -10161,7 +10161,7 @@ virt	퍇
 vis	퍈
 visw	퍉
 visg	퍊
-vie	퍋
+via	퍋
 vif	퍌
 vifr	퍍
 vifa	퍎
@@ -10722,8 +10722,8 @@ goz	햌
 gox	햍
 gov	햎
 gog	햏
-gir	햑
-giR	햒
+git	햑
+git	햒
 girt	햓
 gis	햔
 gisw	햕
@@ -10850,7 +10850,7 @@ guq	협
 guqt	혒
 gut	혓
 guT	혔
-gud	형
+good	형
 guw	혖
 guc	혗
 guz	혘

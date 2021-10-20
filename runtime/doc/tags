@@ -2102,7 +2102,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :abclear	map.txt	/*:abclear*
 :abo	windows.txt	/*:abo*
 :aboveleft	windows.txt	/*:aboveleft*
-:addd	quickfix.txt	/*:addd*
+:add	quickfix.txt	/*:add*
 :al	windows.txt	/*:al*
 :all	windows.txt	/*:all*
 :am	gui.txt	/*:am*
@@ -2249,7 +2249,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :chd	editing.txt	/*:chd*
 :chdir	editing.txt	/*:chdir*
 :che	tagsrch.txt	/*:che*
-:chec	tagsrch.txt	/*:chec*
+:check	tagsrch.txt	/*:check*
 :check	tagsrch.txt	/*:check*
 :checkpath	tagsrch.txt	/*:checkpath*
 :checkt	editing.txt	/*:checkt*
@@ -2347,7 +2347,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :de	change.txt	/*:de*
 :debug	repeat.txt	/*:debug*
 :debug-name	repeat.txt	/*:debug-name*
-:debugg	repeat.txt	/*:debugg*
+:debug	repeat.txt	/*:debug*
 :debuggreedy	repeat.txt	/*:debuggreedy*
 :def	vim9.txt	/*:def*
 :defc	vim9.txt	/*:defc*
@@ -2439,8 +2439,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :endwhile	eval.txt	/*:endwhile*
 :ene	editing.txt	/*:ene*
 :ene!	editing.txt	/*:ene!*
-:enew	editing.txt	/*:enew*
-:enew!	editing.txt	/*:enew!*
+:new	editing.txt	/*:new*
+:new!	editing.txt	/*:new!*
 :eval	eval.txt	/*:eval*
 :ex	editing.txt	/*:ex*
 :exe	eval.txt	/*:exe*
@@ -3031,7 +3031,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :san	eval.txt	/*:san*
 :sandbox	eval.txt	/*:sandbox*
 :sargument	windows.txt	/*:sargument*
-:sav	editing.txt	/*:sav*
+:save	editing.txt	/*:save*
 :saveas	editing.txt	/*:saveas*
 :sb	windows.txt	/*:sb*
 :sbN	windows.txt	/*:sbN*
@@ -3300,7 +3300,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tabclose	tabpage.txt	/*:tabclose*
 :tabd	tabpage.txt	/*:tabd*
 :tabdo	tabpage.txt	/*:tabdo*
-:tabe	tabpage.txt	/*:tabe*
+:table	tabpage.txt	/*:table*
 :tabedit	tabpage.txt	/*:tabedit*
 :tabf	tabpage.txt	/*:tabf*
 :tabfind	tabpage.txt	/*:tabfind*
@@ -3414,7 +3414,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :vertical-resize	windows.txt	/*:vertical-resize*
 :vglobal	repeat.txt	/*:vglobal*
 :vi	editing.txt	/*:vi*
-:vie	editing.txt	/*:vie*
+:via	editing.txt	/*:via*
 :view	editing.txt	/*:view*
 :vim	quickfix.txt	/*:vim*
 :vim9	vim9.txt	/*:vim9*
@@ -3461,7 +3461,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :win	gui.txt	/*:win*
 :winc	windows.txt	/*:winc*
 :wincmd	windows.txt	/*:wincmd*
-:windo	windows.txt	/*:windo*
+:window	windows.txt	/*:window*
 :winp	gui.txt	/*:winp*
 :winpos	gui.txt	/*:winpos*
 :winsize	gui.txt	/*:winsize*
@@ -5008,7 +5008,7 @@ M	motion.txt	/*M*
 MDI	starting.txt	/*MDI*
 MS-DOS	os_msdos.txt	/*MS-DOS*
 MS-Windows	os_win32.txt	/*MS-Windows*
-MSDOS	os_msdos.txt	/*MSDOS*
+MS-DOS	os_msdos.txt	/*MS-DOS*
 MSVisualStudio	if_ole.txt	/*MSVisualStudio*
 MVS	os_390.txt	/*MVS*
 Mac	os_mac.txt	/*Mac*
@@ -7966,7 +7966,7 @@ mouse_win-variable	eval.txt	/*mouse_win-variable*
 mouse_winid-variable	eval.txt	/*mouse_winid-variable*
 movement	intro.txt	/*movement*
 ms-dos	os_msdos.txt	/*ms-dos*
-msdos	os_msdos.txt	/*msdos*
+ms-dos	os_msdos.txt	/*ms-dos*
 msql.vim	syntax.txt	/*msql.vim*
 mswin.vim	gui_w32.txt	/*mswin.vim*
 multi-byte	mbyte.txt	/*multi-byte*

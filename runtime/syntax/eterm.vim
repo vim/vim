@@ -119,7 +119,7 @@ syn region  etermIClassContext    fold transparent matchgroup=etermContext
 syn keyword etermImageOptions     contained type nextgroup=etermImageType
                                   \ skipwhite
 
-syn keyword etermImageTypes       contained background trough anchor up_arrow
+syn keyword etermImageTypes       contained background through anchor up_arrow
                                   \ left_arrow right_arrow menu menuitem
                                   \ submenu button buttonbar down_arrow
 

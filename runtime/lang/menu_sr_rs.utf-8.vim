@@ -31,10 +31,10 @@ menutrans &File			    &Фајл
 menutrans &Open\.\.\.<Tab>:e	    &Отвори\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Подели-отвори\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	Отвори\ картицу\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew	    &Нов<Tab>:enew
+menutrans &New<Tab>:new	    &Нов<Tab>:new
 menutrans &Close<Tab>:close	    &Затвори<Tab>:close
 menutrans &Save<Tab>:w		    &Сачувај<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav  Сачувај\ &као\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save  Сачувај\ &као\.\.\.<Tab>:save
 menutrans Split\ &Diff\ with\.\.\.  Подели\ и\ &упореди\ са\.\.\.
 menutrans Split\ Patched\ &By\.\.\. По&дели\ и\ преправи\ са\.\.\.
 menutrans &Print		    Шта&мпај
@@ -148,7 +148,7 @@ menutrans &Find\ More\ Languages	Пронађи\ још\ језика
 " Tools/Folding
 menutrans &Enable/Disable\ folds<Tab>zi   &Омогући/прекини\ свијање<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	  &Покажи\ ред\ са\ курсором<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx Покажи\ &само\ ред\ са\ курсором<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx Покажи\ &само\ ред\ са\ курсором<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm   &Затвори\ више\ свијутака<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM    Затвори\ с&ве\ свијутке<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr    Отвори\ виш&е\ свијутака<Tab>zr
@@ -157,7 +157,7 @@ menutrans Fold\ Met&hod		       &Начин\ подвијања
 menutrans Fold\ Col&umn\ Width	Ширина\ колоне\ испред\ свијутака
 
 " Tools/Folding/Fold Method
-menutrans M&anual	&Ручно
+menutrans M&annual	&Ручно
 menutrans I&ndent	&Увученост
 menutrans E&xpression	&Израз
 menutrans S&yntax	&Синтакса
@@ -174,7 +174,7 @@ menutrans &Update<Tab>:cwin   &Ажурирај<Tab>:cwin
 menutrans &Open<Tab>:copen    &Отвори<Tab>:copen
 menutrans &Close<Tab>:cclose  &Затвори<Tab>:cclose
 
-" Bufers menu
+" Buffers menu
 menutrans &Buffers	   &Бафери
 menutrans &Refresh\ menu   &Ажурирај
 menutrans Delete	   &Обриши

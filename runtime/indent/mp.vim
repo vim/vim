@@ -293,7 +293,7 @@ function! GetMetaPostIndentIntern()
   "
   " Example:
   "
-  " def f = enddef for i = 1 upto 5: if x[i] > 0: 1 else: 2 fi
+  " def f = enddef for i = 1 up to 5: if x[i] > 0: 1 else: 2 fi
   "     ... % This line will be indented (because of the unterminated `for`)
   if s:Weight(prev_text) > 0
     return s:DecreaseIndentOnClosingTag(indent(lnum) + shiftwidth())
@@ -330,7 +330,7 @@ function! GetMetaPostIndentIntern()
   "        shifted S
   "        scaled T;      % L
   "
-  "    for i = 1 upto 3:  % <-- Current line: this gets the same indent as `draw ...`
+  "    for i = 1 up to 3:  % <-- Current line: this gets the same indent as `draw ...`
   "
   " NOTE: we get here only if L does not contain a statement (among those
   " listed in g:mp_statement).

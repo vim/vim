@@ -1907,7 +1907,7 @@ func Test_edit_browse()
   augroup END
 
   " When the USE_FNAME_CASE is defined this used to cause a crash.
-  browse enew
+  browse new
   bwipe!
 
   browse split

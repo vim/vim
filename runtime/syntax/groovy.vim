@@ -160,7 +160,7 @@ syn keyword groovyJDKMethods    withReader withStream withWriter withPrintWriter
 syn keyword groovyJDKMethods    withWriterAppend readBytes splitEachLine
 syn keyword groovyJDKMethods    newInputStream newOutputStream newPrintWriter newReader newWriter
 syn keyword groovyJDKMethods    compareTo next previous isCase
-syn keyword groovyJDKMethods    times step toInteger upto any collect dump every find findAll grep
+syn keyword groovyJDKMethods    times step toInteger up to any collect dump every find findAll grep
 syn keyword groovyJDKMethods    inspect invokeMethods join
 syn keyword groovyJDKMethods    getErr getIn getOut waitForOrKill
 syn keyword groovyJDKMethods    count tokenize asList flatten immutable intersect reverse reverseEach
@@ -362,7 +362,7 @@ exec "syn sync ccomment groovyComment minlines=" . groovy_minlines
 
 " Mark these as operators
 
-" Hightlight brackets
+" Highlight brackets
 " syn match  groovyBraces		"[{}]"
 " syn match  groovyBraces		"[\[\]]"
 " syn match  groovyBraces		"[\|]"

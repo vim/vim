@@ -19,10 +19,10 @@ menutrans &File				&Soubor
 menutrans &Open\.\.\.<Tab>:e		&Otevrit\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Otevrit\ v\ no&vem\ okne\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otevrit\ tab\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew		&Novy<Tab>:enew
+menutrans &New<Tab>:new		&Novy<Tab>:new
 menutrans &Close<Tab>:close		&Zavrit<Tab>:close
 menutrans &Save<Tab>:w			&Ulozit<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	Ulozit\ &jako\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	Ulozit\ &jako\.\.\.<Tab>:save
 if has("printer") || has("unix")
    menutrans &Print			&Tisk
 endif
@@ -129,13 +129,13 @@ if has("Folding")
    menutrans &Folding			&Skladani
    menutrans &Enable/Disable\ folds<Tab>zi &Ano/Ne<Tab>zi
    menutrans &View\ Cursor\ Line<Tab>zv	Zobrazit\ radek\ &kurzoru<Tab>zv
-   menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		Zobrazit\ &pouze\ radek\ kurzoru\ <Tab>zMzx
+   menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx		Zobrazit\ &pouze\ radek\ kurzoru\ <Tab>zMzx
    menutrans C&lose\ more\ folds<Tab>zm	Slozit\ &jednu\ uroven\ skladu<Tab>zm
    menutrans &Close\ all\ folds<Tab>zM	Slozit\ vsechny\ sklady<Tab>zM
    menutrans O&pen\ more\ folds<Tab>zr	Pridat\ jednu\ uroven\ skladu<Tab>zr
    menutrans &Open\ all\ folds<Tab>zR	&Otevrit\ vsechny\ sklady<Tab>zR
    menutrans Fold\ Met&hod			&Metoda\ skladani
-   menutrans M&anual			&Rucne
+   menutrans M&annual			&Rucne
    menutrans I&ndent			&Odsazeni
    menutrans E&xpression	&Vyraz
    menutrans S&yntax			&Syntaxe
@@ -160,7 +160,7 @@ menutrans &Next\ Error<Tab>:cn		Dalsi\ ch&yba<Tab>:cn
 menutrans &Previous\ Error<Tab>:cp	&Predchozi\ chyba<Tab>:cp
 menutrans &Older\ List<Tab>:cold	Sta&rsi\ seznam<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	N&ovejsi\ seznam<Tab>:cnew
-menutrans Error\ &Window		Chybove\ o&kno
+menutrans Error\ &Window		Chybove\ o&know
 menutrans SeT\ Compiler			Nas&taveni\ kompilatoru
 menutrans &Update<Tab>:cwin		O&bnovit<Tab>:cwin
 menutrans &Open<Tab>:copen		&Otevrit<Tab>:copen

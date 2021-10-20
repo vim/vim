@@ -699,7 +699,7 @@ Swap file:
 - Make swap file "hidden", if possible.  On Unix this is done by prepending a
   dot to the swap file name.  When long file names are used, the DJGPP and
   Win32 versions also prepend a dot, in case a file on a mounted Unix file
-  system is edited.  |:swapname|  On MSDOS the hidden file attribute is NOT
+  system is edited.  |:swapname|  On MS-DOS the hidden file attribute is NOT
   set, because this causes problems with share.exe.
 - 'updatecount' always defaults to non-zero, also for Vi compatible mode.
   This means there is a swap file, which can be used for recovery.
@@ -833,7 +833,7 @@ Vim now remembers the '< and '> marks for each buffer.  This fixes a problem
 that a line-delete in one buffer invalidated the '< and '> marks in another
 buffer.  |'<|
 
-For MSDOS, Unix and OS/2: When $VIM not set, use the path from the executable.
+For MS-DOS, Unix and OS/2: When $VIM not set, use the path from the executable.
 When using the executable path for $VIM, remove "src/" when present.  Should
 make Vim find the docs and syntax files when it is run directly after
 compiling.  |$VIM|
@@ -905,10 +905,10 @@ register.
 When using "!!", don't put ":5,5!" on the command-line, but ":.!".  And some
 other enhancements to replace the line number with "." or "$" when possible.
 
-MSDOS et al.: Renamed $VIM/viminfo to $VIM/_viminfo.  It's more consistent:
+MS-DOS et al.: Renamed $VIM/viminfo to $VIM/_viminfo.  It's more consistent:
 .vimrc/_vimrc and .viminfo/_viminfo
 
-For systems where case doesn't matter in file names (MSDOS, Amiga), ignore
+For systems where case doesn't matter in file names (MS-DOS, Amiga), ignore
 case while sorting file names.  For buffer names too.
 
 When reading from stdin doesn't work, read from stderr (helps for "foo | xargs
@@ -1011,7 +1011,7 @@ then create a backup file for this, which was never deleted.  Now no backup
 file is made when filtering.
 
 simplify_filename() could remove a ".." after a link, resulting in the wrong
-file name.  Made simplify_filename also work for MSDOS.  Don't use it for
+file name.  Made simplify_filename also work for MS-DOS.  Don't use it for
 Amiga, since it doesn't have "../".
 
 otherfile() was unreliable when using links.  Could think that reading/writing
@@ -1432,7 +1432,7 @@ Bug in viminfo history.  Could cause a crash on exit.
 With 'showcmd' set and 'timeoutlen' set to a few seconds, trick to position
 the cursor leftwards didn't work.
 
-AIX stty settings were restored to cs5 instead of cs8 (Winn).
+AIX stty settings were restored to cs5 instead of cs8 (Win).
 
 File name completion didn't work for "zsh" versions that put spaces between
 file names, instead of NULs.
@@ -1853,7 +1853,7 @@ CTRL-Home and CTRL-End didn't work for MS-DOS versions.
 Could include NUL in 'iskeyword', causing a crash when doing insert mode
 completion.
 
-Use _dos_commit() to flush the swap file to disk for MSDOS 16 bit version.
+Use _dos_commit() to flush the swap file to disk for MS-DOS 16 bit version.
 
 In mappings, CTRL-H was replaced by the backspace key code.  This caused
 problems when it was used as text, e.g. ":map _U :%s/.^H//g<CR>".
@@ -2442,7 +2442,7 @@ New compile-time feature: modify_fname.  For file name modifiers, e.g,
 When using whole-line completion in Insert mode, and 'cindent' is set, indent
 the line properly.
 
-MSDOS and Win32 console: 'guicursor' sets cursor thickness. (Negri)
+MS-DOS and Win32 console: 'guicursor' sets cursor thickness. (Negri)
 
 Included new set of Farsi fonts. (Shiran)
 
@@ -3262,7 +3262,7 @@ Files can be encrypted when writing and decrypted when reading.  Added the
 on patch from Mohsin Ahmed)
 
 When reading a file, there is an automatic detection whether it has been
-crypted.  Vim will then prompt for the key.
+encrypted.  Vim will then prompt for the key.
 
 Note that the encryption method is not compatible with Vi.  The encryption is
 not unbreakable.  This allows it to be exported from the US.
@@ -3907,7 +3907,7 @@ minimal version:
 		Visual area with one character.
 +comments:	'comments'
 +cmdline_info:	'ruler' and 'showcmd'.  Replaces +showcmd.
-"+title"	Don't add code to set title or icon for MSDOS, this was not
+"+title"	Don't add code to set title or icon for MS-DOS, this was not
 		possible anyway.
 +cmdline_compl	Disable commandline completion at compile time, except for
 		files, directories and help items.
@@ -3983,7 +3983,7 @@ that.  Removed including string.h from os_unixx.h, since it's already in
 vim.h. (Savage)
 AIX: defining _NO_PROTO in os_unix.h causes a conflict between string.h and
 strings.h, but after the configure check said it was OK.  Also define
-_NO_PROTO for AIX in the configure check. (Winn)
+_NO_PROTO for AIX in the configure check. (Win)
 
 When closing a window with CTRL-W c, the value of 'hidden' was not taken into
 account, the buffer was always unloaded. (Negri)
@@ -3994,7 +3994,7 @@ for the existence of an old executable.
 The command line for "make install" could get too long, because of the many
 syntax files.  Now first do a "cd" to reduce the length.
 
-On RISCOS and MSDOS, reading a file could fail, because the short filename was
+On RISCOS and MS-DOS, reading a file could fail, because the short filename was
 used, which can be wrong after a ":!cd".
 
 In the DOS versions, the wrong install.exe was included (required Windows).
@@ -4008,14 +4008,14 @@ would also be recorded.
 file" for "file" in the local directory, while "\file" did exist.  When
 "file" in the current directory existed, this didn't happen.
 
-MSDOS: Mouse could not go beyond 80 columns in 132 columns mode. (Young)
+MS-DOS: Mouse could not go beyond 80 columns in 132 columns mode. (Young)
 
 "make test" failed in the RedHat RPM, because compatible is off by default.
 
 In Insert mode <C-O><C-W><C-W> changes to other window, but the status bars
 were not updated until another character was typed.
 
-MSDOS: environment options in lowercase didn't work, although they did in the
+MS-DOS: environment options in lowercase didn't work, although they did in the
 Win32 versions. (Negri)
 
 After ":nohlsearch", a tag command switched highlighting back on.
@@ -5268,7 +5268,7 @@ Solution:   For the buffer in win32_expandpath() don't use a fixed size array,
 	    allocate it.
 Files:	    src/os_win32.c
 
-MSDOS: Added "-Wall" to Makefile.djg compile flags.  Function prototypes for
+MS-DOS: Added "-Wall" to Makefile.djg compile flags.  Function prototypes for
 fname_case() and mch_update_cursor() were missing.  "fd" was unused in
 mf_sync().  "puiLocation" was unused in myputch().  "newcmd" unused in
 mch_call_shell() for DJGPP version.
@@ -5811,7 +5811,7 @@ Files:	    src/eval.c, src/version.c
 Patch 5.5a.13
 Problem:    OS/2: When $HOME is not defined, "C:/" is used for the viminfo
 	    file.  That is very wrong when OS/2 is on another partition.
-Solution:   Use $VIM for the viminfo file when it is defined, like for MSDOS.
+Solution:   Use $VIM for the viminfo file when it is defined, like for MS-DOS.
 	    Also: Makefile.os2 didn't depend on os_unix.h.
 Files:	    src/os_unix.h, src/Makefile.os2
 
@@ -6725,7 +6725,7 @@ Many fixes to Macintosh specific parts: (mostly by Dany StAmant)
 - 'isprint' default includes all chars above '~'. (Axel Kielhorn)
 - mac_expandpath() was leaking memory.
 - Add digraphs table. (Axel Kielhorn)
-- Multi-byte support: (Kenichi Asai)
+- Multi-byte support: (Kenichi Asia)
   Switch keyscript when going in/out of Insert mode.
   Draw multibyte character correctly.
   Don't use mblen() but highest bit of char to detect multibyte char.
@@ -6733,7 +6733,7 @@ Many fixes to Macintosh specific parts: (mostly by Dany StAmant)
 - mouse button was not initialized properly to MOUSE_LEFT when
   USE_CTRLCLICKMENU not defined.
 - With Japanese SJIS characters: Make "w", "b", and "e" work
-  properly.  (Kenichi Asai)
+  properly.  (Kenichi Asia)
 - Replaced old CodeWarrior file os_mac.CW9.hqx with os_mac.cw5.sit.hqx.
 
 Fixes for VMS: (Zoltan Arpadffy) (also see patch 5.6.045 below)
@@ -7095,7 +7095,7 @@ Patch 5.6.052
 Problem:    Multi-byte: When an Ex command has a '|' or '"' as a second byte,
 	    it terminates the command.
 Solution:   Skip second byte of multibyte char when checking for '|' and '"'.
-	    (Asai Kenichi)
+	    (Asia Kenichi)
 Files:	    src/ex_docmd.c
 
 Patch 5.6.053
@@ -7622,7 +7622,7 @@ argument was fixed.
 Previously released patches for Vim 5.7:
 
 Patch 5.7.001
-Problem:    When the current buffer is crypted, and another modified buffer
+Problem:    When the current buffer is encrypted, and another modified buffer
 	    isn't, ":wall" will encrypt the other buffer.
 Solution:   In buf_write() use "buf" instead of "curbuf" to check for the
 	    crypt key.

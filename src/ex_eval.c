@@ -1306,7 +1306,7 @@ ex_continue(exarg_T *eap)
     {
 	// Try to find the matching ":while".  This might stop at a try
 	// conditional not in its finally clause (which is then to be executed
-	// next).  Therefore, inactivate all conditionals except the ":while"
+	// next).  Therefore, deactivate all conditionals except the ":while"
 	// itself (if reached).
 	idx = cleanup_conditionals(cstack, CSF_WHILE | CSF_FOR, FALSE);
 	if (idx >= 0 && (cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))
@@ -1342,7 +1342,7 @@ ex_break(exarg_T *eap)
 	eap->errmsg = _(e_break);
     else
     {
-	// Inactivate conditionals until the matching ":while" or a try
+	// Deactivate conditionals until the matching ":while" or a try
 	// conditional not in its finally clause (which is then to be
 	// executed next) is found.  In the latter case, make the ":break"
 	// pending for execution at the ":endtry".
@@ -1525,11 +1525,11 @@ do_throw(cstack_T *cstack)
     int		inactivate_try = FALSE;
 
     /*
-     * Cleanup and inactivate up to the next surrounding try conditional that
-     * is not in its finally clause.  Normally, do not inactivate the try
+     * Cleanup and deactivate up to the next surrounding try conditional that
+     * is not in its finally clause.  Normally, do not deactivate the try
      * conditional itself, so that its ACTIVE flag can be tested below.  But
      * if a previous error or interrupt has not been converted to an exception,
-     * inactivate the try conditional, too, as if the conversion had been done,
+     * deactivate the try conditional, too, as if the conversion had been done,
      * and reset the did_emsg or got_int flag, so this won't happen again at
      * the next surrounding try conditional.
      */

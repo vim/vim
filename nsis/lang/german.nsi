@@ -130,7 +130,7 @@ LangString str_desc_vis_vim         ${LANG_GERMAN} \
 LangString str_section_nls          ${LANG_GERMAN} \
     "Unterstützung für andere Sprachen"
 LangString str_desc_nls             ${LANG_GERMAN} \
-    "Dateien zur Unterstützung anderer Sprachen als Englisch installieren."
+    "Dateien zur Unterstützung anderer Sprachen also Englisch installieren."
 
 LangString str_unsection_register   ${LANG_GERMAN} \
     "Vim deinstallieren"
@@ -221,7 +221,7 @@ LangString str_msg_install_fail  ${LANG_GERMAN} \
 
 LangString str_msg_rm_exe_fail   ${LANG_GERMAN} \
     "Einige Dateien im Pfad $0 konnten nicht gelöscht werden!$\r$\n\
-     Diese Dateien müssen manuell gelöscht werden."
+     Diese Dateien müssen manual gelöscht werden."
 
 #LangString str_msg_rm_root_fail  ${LANG_GERMAN} \
 #    "Achtung: Kann Verzeichnis $\"$vim_install_root$\" nicht entfernen, \

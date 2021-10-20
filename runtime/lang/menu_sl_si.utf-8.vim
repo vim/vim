@@ -21,10 +21,10 @@ menutrans &File				&Datoteka
 menutrans &Open\.\.\.<Tab>:e		&Odpri\ \.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Odpri\ de&ljeno\ \.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	Odpri\ v\ zavi&hku\ \.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew		&Nova<Tab>:enew
+menutrans &New<Tab>:new		&Nova<Tab>:new
 menutrans &Close<Tab>:close		&Zapri<Tab>:close
 menutrans &Save<Tab>:w			&Shrani<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	Shrani\ &kot\ \.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	Shrani\ &kot\ \.\.\.<Tab>:save
 menutrans &Print			Na&tisni
 menutrans Sa&ve-Exit<Tab>:wqa		Shrani\ in\ &končaj<Tab>:wqa
 menutrans E&xit<Tab>:qa			&Izhod<Tab>:qa
@@ -129,14 +129,14 @@ if has("folding")
   " open close folds
   menutrans &Enable/Disable\ folds<Tab>zi		Omogoči/onemogoči\ zvijanje<Tab>zi " Omogoči/onemogoči\ zavihke
   menutrans &View\ Cursor\ Line<Tab>zv			Pokaži\ vrstico\ s\ kazalčkom<Tab>zv " kjer je kazalec
-  menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		Pokaži\ samo\ vrstico\ s\ kazalčkom<Tab>zMzx
+  menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx		Pokaži\ samo\ vrstico\ s\ kazalčkom<Tab>zMzx
   menutrans C&lose\ more\ folds<Tab>zm			Zvij\ naslednji\ nivo<Tab>zm " Zapri\ več\ zavihkov
   menutrans &Close\ all\ folds<Tab>zM			Zvij\ vso\ kodo<Tab>zM " Zapri\ vse\ zavihke
   menutrans O&pen\ more\ folds<Tab>zr			Razvij\ en\ nivo<Tab>zr " Odpri\ več\ zavihkov
   menutrans &Open\ all\ folds<Tab>zR			Razvij\ vso\ kodo<Tab>zR " Odpri\ vse\ zavihke
   " fold method
   menutrans Fold\ Met&hod				Kriterij\ za\ zvijanje " Ustvarjanje\ zavihkov
-  menutrans M&anual					&Ročno
+  menutrans M&annual					&Ročno
   menutrans I&ndent					Glede\ na\ &poravnavo
   menutrans E&xpression					Z\ &izrazi\ (foldexpr)
   menutrans S&yntax					Glede\ na\ &sintakso
@@ -207,7 +207,7 @@ menutrans &Window			&Okno
 menutrans &New<Tab>^Wn			&Novo<Tab>^Wn
 menutrans S&plit<Tab>^Ws		Razdeli<Tab>^Ws
 menutrans Split\ &Vertically<Tab>^Wv	Razdeli\ navpično<Tab>^Ws
-menutrans Split\ File\ E&xplorer	Razdeli:\ Vsebina\ mape
+menutrans Split\ File\ E&xplorer	Razdeli:\ Vsebina\ map
 menutrans Sp&lit\ To\ #<Tab>^W^^	Razdeli\ v\ #<Tab>^W^^
 menutrans &Close<Tab>^Wc		&Zapri<Tab>^Wc
 menutrans Close\ &Other(s)<Tab>^Wo	Zapri\ &ostala<Tab>^Wo

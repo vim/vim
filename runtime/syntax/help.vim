@@ -88,7 +88,7 @@ syn match helpSpecial		"\[ident]"
 syn match helpSpecial		"\[addr]"
 syn match helpSpecial		"\[group]"
 " Don't highlight [converted] and others that do not have a tag
-syn match helpNormal		"\[\(readonly\|fifo\|socket\|converted\|crypted\)]"
+syn match helpNormal		"\[\(readonly\|fifo\|socket\|converted\|encrypted\)]"
 
 syn match helpSpecial		"CTRL-."
 syn match helpSpecial		"CTRL-SHIFT-."

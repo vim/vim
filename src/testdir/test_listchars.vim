@@ -5,7 +5,7 @@ source view_util.vim
 source screendump.vim
 
 func Test_listchars()
-  enew!
+  new!
   set ff=unix
   set list
 
@@ -267,13 +267,13 @@ func Test_listchars()
   call cursor(1, 1)
   call assert_equal([expected], ScreenLines(1, &columns))
 
-  enew!
+  new!
   set listchars& ff&
 endfunc
 
 " Test that unicode listchars characters get properly inserted
 func Test_listchars_unicode()
-  enew!
+  new!
   let oldencoding=&encoding
   set encoding=utf-8
   set ff=unix
@@ -299,12 +299,12 @@ func Test_listchars_unicode()
   call assert_equal(expected, ScreenLines(1, virtcol('$')))
 
   let &encoding=oldencoding
-  enew!
+  new!
   set listchars& ff&
 endfunction
 
 func Test_listchars_invalid()
-  enew!
+  new!
   set ff=unix
 
   set listchars&
@@ -341,14 +341,14 @@ func Test_listchars_invalid()
   call assert_fails('set listchars=multispace:·', 'E474:')
   call assert_fails('set listchars=multispace:xxx·', 'E474:')
 
-  enew!
+  new!
   set ambiwidth& listchars& ff&
 endfunction
 
 " Tests that space characters following composing character won't get replaced
 " by listchars.
 func Test_listchars_composing()
-  enew!
+  new!
   let oldencoding=&encoding
   set encoding=utf-8
   set ff=unix
@@ -368,7 +368,7 @@ func Test_listchars_composing()
   call cursor(1, 1)
   call assert_equal(expected, ScreenLines(1, virtcol('$')))
   let &encoding=oldencoding
-  enew!
+  new!
   set listchars& ff&
 endfunction
 
@@ -430,7 +430,7 @@ func Test_listchars_window_local()
 
   " Using setglobal in a window with local setting should not affect the
   " window. But should impact other windows using the global setting.
-  enew! | only
+  new! | only
   call setline(1, ["\t  one  two  "])
   set listchars=tab:[.],lead:#,space:_,trail:.,eol:&
   split
@@ -505,7 +505,7 @@ func Test_listchars_foldcolumn()
       call setline(1, ['aaa', '', 'a', 'aaaaaa'])
       vsplit
       vsplit
-      windo set signcolumn=yes foldcolumn=1 winminwidth=0 nowrap list listchars=extends:>,precedes:<
+      window set signcolumn=yes foldcolumn=1 winminwidth=0 nowrap list listchars=extends:>,precedes:<
   END
   call writefile(lines, 'XTest_listchars')
 

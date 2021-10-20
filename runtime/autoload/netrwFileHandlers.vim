@@ -32,12 +32,12 @@ set cpo&vim
 
 " ---------------------------------------------------------------------
 " netrwFileHandlers#Invoke: {{{1
-fun! netrwFileHandlers#Invoke(exten,fname)
-"  call Dfunc("netrwFileHandlers#Invoke(exten<".a:exten."> fname<".a:fname.">)")
-  let exten= a:exten
+fun! netrwFileHandlers#Invoke(extent,fname)
+"  call Dfunc("netrwFileHandlers#Invoke(extent<".a:extent."> fname<".a:fname.">)")
+  let extent= a:extent
   " list of supported special characters.  Consider rcs,v --- that can be
   " supported with a NFH_rcsCOMMAv() handler
-  if exten =~ '[@:,$!=\-+%?;~]'
+  if extent =~ '[@:,$!=\-+%?;~]'
    let specials= {
 \   '@' : 'AT',
 \   ':' : 'COLON',
@@ -51,18 +51,18 @@ fun! netrwFileHandlers#Invoke(exten,fname)
 \   '?' : 'QUESTION',
 \   ';' : 'SEMICOLON',
 \   '~' : 'TILDE'}
-   let exten= substitute(a:exten,'[@:,$!=\-+%?;~]','\=specials[submatch(0)]','ge')
+   let extent= substitute(a:extent,'[@:,$!=\-+%?;~]','\=specials[submatch(0)]','ge')
 "   call Decho('fname<'.fname.'> done with dictionary')
   endif
 
-  if a:exten != "" && exists("*NFH_".exten)
+  if a:extent != "" && exists("*NFH_".extent)
    " support user NFH_*() functions
-"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.fname.'")')
-   exe "let ret= NFH_".exten.'("'.a:fname.'")'
-  elseif a:exten != "" && exists("*s:NFH_".exten)
+"   call Decho("let ret= netrwFileHandlers#NFH_".a:extent.'("'.fname.'")')
+   exe "let ret= NFH_".extent.'("'.a:fname.'")'
+  elseif a:extent != "" && exists("*s:NFH_".extent)
    " use builtin-NFH_*() functions
-"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.fname.'")')
-   exe "let ret= s:NFH_".a:exten.'("'.a:fname.'")'
+"   call Decho("let ret= netrwFileHandlers#NFH_".a:extent.'("'.fname.'")')
+   exe "let ret= s:NFH_".a:extent.'("'.a:fname.'")'
   endif
 
 "  call Dret("netrwFileHandlers#Invoke 0 : ret=".ret)

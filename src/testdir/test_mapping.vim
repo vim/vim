@@ -119,7 +119,7 @@ func Test_map_langmap()
   unmap x
   bwipe!
 
-  " 'langnoremap' follows 'langremap' and vise versa
+  " 'langnoremap' follows 'langremap' and vice versa
   set langremap
   set langnoremap
   call assert_equal(0, &langremap)
@@ -191,9 +191,9 @@ func Test_map_cursor()
   call assert_equal('Test1: text with a (here some more text)', getline(line('$') - 1))
 
   " test undo
-  call feedkeys("G2o\<Esc>ki\<CR>Test2: text wit a (here some more text [und undo]\<C-G>u\<Esc>k.u", "xt")
+  call feedkeys("G2o\<Esc>ki\<CR>Test2: text with a (here some more text [und undo]\<C-G>u\<Esc>k.u", "xt")
   call assert_equal('', getline(line('$') - 2))
-  call assert_equal('Test2: text wit a (here some more text [und undo])', getline(line('$') - 1))
+  call assert_equal('Test2: text with a (here some more text [und undo])', getline(line('$') - 1))
   set nomodified
   imapclear
 endfunc
@@ -706,17 +706,17 @@ endfunc
 " Test for <expr> in abbreviation
 func Test_expr_abbr()
   new
-  iabbr <expr> teh "the"
+  iabbr <expr> the "the"
   call feedkeys("iteh ", "tx")
   call assert_equal('the ', getline(1))
   iabclear
   call setline(1, '')
 
   " invalid <expr> abbreviation
-  abbr <expr> hte GetAbbr()
+  abbr <expr> the GetAbbr()
   call assert_fails('normal ihte ', 'E117:')
   call assert_equal('', getline(1))
-  unabbr <expr> hte
+  unabbr <expr> the
 
   close!
 endfunc
@@ -861,10 +861,10 @@ endfunc
 " Trigger an abbreviation using a special key
 func Test_abbr_trigger_special()
   new
-  iabbr teh the
+  iabbr the the
   call feedkeys("iteh\<F2>\<Esc>", 'xt')
   call assert_equal('the<F2>', getline(1))
-  iunab teh
+  iunab the
   close!
 endfunc
 

@@ -3,7 +3,7 @@
 source check.vim
 
 func Test_text_format()
-  enew!
+  new!
 
   setl noai tw=2 fo=t
   call append('$', [
@@ -193,12 +193,12 @@ func Test_text_format()
               \ 'Feynman!'], getline(1, 2))
 
   setl ai& tw& fo& si& comments&
-  enew!
+  new!
 endfunc
 
 " Tests for :right, :center and :left on text with embedded TAB.
 func Test_format_align()
-  enew!
+  new!
   set tw=65
 
   " :left alignment
@@ -224,7 +224,7 @@ func Test_format_align()
 	      \ "asxxdfa		a",
 	      \ ""
 	      \ ], getline(1, '$'))
-  enew!
+  new!
 
   " :center alignment
   call append(0, [
@@ -249,7 +249,7 @@ func Test_format_align()
 	      \ "			asxxdfa		a",
 	      \ ""
 	      \ ], getline(1, '$'))
-  enew!
+  new!
 
   " :right alignment
   call append(0, [
@@ -422,7 +422,7 @@ func Test_format_align()
 	      \ "\t\t\t\t      asdfaqwer		axxxoikey",
 	      \ ""
 	      \ ], getline(1, '$'))
-  enew!
+  new!
 
   " align text with 'wrapmargin'
   50vnew
@@ -453,7 +453,7 @@ endfunc
 
 " Test formatting a paragraph.
 func Test_format_para()
-  enew!
+  new!
   set fo+=tcroql tw=72
 
   call append(0, [
@@ -478,12 +478,12 @@ func Test_format_para()
 	\ ], getline(1, '$'))
 
   set fo& tw&
-  enew!
+  new!
 endfunc
 
 " Test undo after ":%s" and formatting.
 func Test_format_undo()
-  enew!
+  new!
   map gg :.,.+2s/^/x/<CR>kk:set tw=3<CR>gqq
 
   call append(0, [
@@ -504,7 +504,7 @@ func Test_format_undo()
 
   unmap gg
   set tw&
-  enew!
+  new!
 endfunc
 
 func Test_format_list_auto()

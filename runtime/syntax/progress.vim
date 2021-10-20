@@ -69,7 +69,7 @@ syn keyword ProgressReserved	first-of focus font for form[at] fram[e] frame-col 
 syn keyword ProgressReserved	frame-name frame-row frame-val[ue] from from-c[hars] from-p[ixels] function-call-type gateway[s] get-attr-call-type get-byte
 syn keyword ProgressReserved	get-codepage[s] get-coll[ations] get-column get-error-column get-error-row get-file-name get-file-offse[t] get-key-val[ue]
 syn keyword ProgressReserved	get-message-type get-row getbyte global go-on go-pend[ing] grant graphic-e[dge] group having header help hide host-byte-order if
-syn keyword ProgressReserved	import in index indicator input input-o[utput] insert into is is-attr[-space] join kblabel key-code key-func[tion] key-label
+syn keyword ProgressReserved	import in index indicator input input-o[output] insert into is is-attr[-space] join kblabel key-code key-func[tion] key-label
 syn keyword ProgressReserved	keycode keyfunc[tion] keylabel keys keyword label last last-even[t] last-key last-of lastkey ldbname leave library like
 syn keyword ProgressReserved	like-sequential line-count[er] listi[ng] little-endian locked log-manager lookup machine-class map member message message-lines mouse
 syn keyword ProgressReserved	mpe new next next-prompt no no-attr[-space] no-error no-f[ill] no-help no-hide no-label[s] no-lobs no-lock no-map
@@ -224,7 +224,7 @@ syn keyword ProgressOperator	num-top-buffers num-visible-col[umns] numeric numer
 syn keyword ProgressOperator	on-frame[-border] ordered-join ordinal orientation origin-handle origin-rowid os-getenv outer outer-join override owner owner-document
 syn keyword ProgressOperator	page-size page-wid[th] paged parent parent-buffer parent-rel[ation] parse-status partial-key pascal pathname
 syn keyword ProgressOperator	pbe-hash-alg[orithm] pbe-key-rounds perf[ormance] persistent-cache-disabled persistent-procedure pfc[olor] pixels-per-col[umn]
-syn keyword ProgressOperator	pixels-per-row popup-m[enu] popup-o[nly] portrait position precision prefer-dataset prepare-string prepared presel[ect] prev
+syn keyword ProgressOperator	pixels-per-row popup-m[enu] popup-o[nly] portrait position precision prefer-dataset prepare-string prepared presel[etc] prev
 syn keyword ProgressOperator	prev-col[umn] prev-sibling prev-tab-i[tem] primary printer printer-control-handle printer-hdc printer-name printer-port
 syn keyword ProgressOperator	printer-setup private private-d[ata] proce[dure] procedure-name progress-s[ource] property protected proxy proxy-password
 syn keyword ProgressOperator	proxy-userid public public-id published-events put-bits put-bytes put-double put-float put-long put-short put-string
@@ -234,7 +234,7 @@ syn keyword ProgressOperator	refresh-audit-policy refreshable register-domain re
 syn keyword ProgressOperator	remote-host remote-port remove-attribute remove-child remove-events-proc[edure] remove-super-proc[edure] replace replace-child
 syn keyword ProgressOperator	replace-selection-text replication-create replication-delete replication-write reposition-back[ward] reposition-forw[ard] reposition-to-row
 syn keyword ProgressOperator	reposition-to-rowid request reset resiza[ble] resize restart-row restart-rowid result retain-s[hape] retry-cancel return-ins[erted]
-syn keyword ProgressOperator	return-to-start-di[r] return-value-data-type returns reverse-from rgb-v[alue] right right-align[ed] right-trim roles round rounded
+syn keyword ProgressOperator	return-to-start-di[r] return-value-data-type returns reverse-from rgb-v[value] right right-align[ed] right-trim roles round rounded
 syn keyword ProgressOperator	routine-level row row-height[-chars] row-height-p[ixels] row-ma[rkers] row-of row-resizable row-state rowid rule run-proc[edure]
 syn keyword ProgressOperator	save-as save-file save-row-changes save-where-string sax-attributes sax-parse sax-parse-first sax-parse-next sax-reader
 syn keyword ProgressOperator	sax-writer schema-change schema-location schema-marshal schema-path screen-val[ue] scroll-bars scroll-delta scroll-offset

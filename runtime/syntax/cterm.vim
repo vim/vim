@@ -14,7 +14,7 @@ syn case ignore
 "FUNCTIONS
 syn keyword ctermFunction	abort addcr addlf answer at attr batch baud
 syn keyword ctermFunction	break call capture cd cdelay charset cls color
-syn keyword ctermFunction	combase config commect copy cread
+syn keyword ctermFunction	combase config connect copy cread
 syn keyword ctermFunction	creadint devprefix dialer dialog dimint
 syn keyword ctermFunction	dimlog dimstr display dtimeout dwait edit
 syn keyword ctermFunction	editor emulate erase escloop fcreate
@@ -130,7 +130,7 @@ syn region  ctermComment	start="remark" end="$" contains=ctermTodo
 
 syn region ctermVar		start="\$("  end=")"
 
-" String and Character contstants
+" String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match   ctermSpecial		contained "\\\d\d\d\|\\."
 syn match   ctermSpecial		contained "\^."

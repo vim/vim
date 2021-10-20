@@ -56,7 +56,7 @@ syn keyword fsMountPointKeyword contained none swap
 " Type
 syn cluster fsTypeCluster contains=fsTypeKeyword,fsTypeUnknown
 syn match fsTypeUnknown /\s\+\zs\w\+/ contained
-syn keyword fsTypeKeyword contained adfs ados affs anon_inodefs atfs audiofs auto autofs bdev befs bfs btrfs binfmt_misc cd9660 cfs cgroup cifs coda configfs cpuset cramfs devfs devpts devtmpfs e2compr efs ext2 ext2fs ext3 ext4 fdesc ffs filecore fuse fuseblk fusectl hfs hpfs hugetlbfs iso9660 jffs jffs2 jfs kernfs lfs linprocfs mfs minix mqueue msdos ncpfs nfs nfsd nilfs2 none ntfs null nwfs overlay ovlfs pipefs portal proc procfs pstore ptyfs qnx4 reiserfs ramfs romfs securityfs shm smbfs squashfs sockfs sshfs std subfs swap sysfs sysv tcfs tmpfs udf ufs umap umsdos union usbfs userfs vfat vs3fs vxfs wrapfs wvfs xenfs xfs zisofs
+syn keyword fsTypeKeyword contained adfs ados affs anon_inodefs atfs audiofs auto autofs bdev befs bfs btrfs binfmt_misc cd9660 cfs cgroup cifs coda configfs cpuset cramfs devfs devpts devtmpfs e2compr efs ext2 ext2fs ext3 ext4 fdesc ffs filecore fuse fuseblk fusectl hfs hpfs hugetlbfs iso9660 jffs jffs2 jfs kernfs lfs linprocfs mfs minix mqueue ms-dos ncpfs nfs nfsd nilfs2 none ntfs null nwfs overlay ovlfs pipefs portal proc procfs pstore ptyfs qnx4 reiserfs ramfs romfs securityfs shm smbfs squashfs sockfs sshfs std subfs swap sysfs sysv tcfs tmpfs udf ufs umap umsdos union usbfs userfs vfat vs3fs vxfs wrapfs wvfs xenfs xfs zisofs
 
 " Options
 " -------

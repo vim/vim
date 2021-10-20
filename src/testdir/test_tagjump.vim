@@ -124,7 +124,7 @@ func Test_tagjump_switchbuf()
         \ 'Xtags')
   call writefile(['first', 'second', 'third'], 'Xfile1')
 
-  enew | only
+  new | only
   set switchbuf=
   stag second
   call assert_equal(2, winnr('$'))
@@ -133,7 +133,7 @@ func Test_tagjump_switchbuf()
   call assert_equal(3, winnr('$'))
   call assert_equal(3, line('.'))
 
-  enew | only
+  new | only
   set switchbuf=useopen
   stag second
   call assert_equal(2, winnr('$'))
@@ -142,7 +142,7 @@ func Test_tagjump_switchbuf()
   call assert_equal(2, winnr('$'))
   call assert_equal(3, line('.'))
 
-  enew | only
+  new | only
   set switchbuf=usetab
   tab stag second
   call assert_equal(2, tabpagenr('$'))
@@ -152,7 +152,7 @@ func Test_tagjump_switchbuf()
   call assert_equal(3, line('.'))
 
   tabclose!
-  enew | only
+  new | only
   call delete('Xfile1')
   call delete('Xtags')
   set tags&
@@ -188,7 +188,7 @@ function Test_keyword_jump()
   " invalid tag search pattern
   call assert_fails('tag /\%(/', 'E426:')
 
-  enew! | only
+  new! | only
   call delete('Xtestfile')
   call delete('Xinclude')
 endfunction
@@ -213,7 +213,7 @@ func Test_tag_symbolic()
   " wrong, this will give the ATTENTION message.  The next space will then be
   " eaten by hit-return, instead of moving the cursor to 'd'.
   set tags=Xtags
-  enew!
+  new!
   call append(0, 'SECTION_OFF')
   call cursor(1,1)
   exe "normal \<C-]> "
@@ -222,7 +222,7 @@ func Test_tag_symbolic()
 
   set hidden&
   set tags&
-  enew!
+  new!
   call delete('Xtags')
   call delete('Xtest.c')
   call delete("Xtest.dir", "rf")
@@ -362,7 +362,7 @@ func Test_getsettagstack()
   call writefile(['line1', 'line2', 'line3'], 'Xfile2')
   call writefile(['line1', 'line2', 'line3'], 'Xfile3')
 
-  enew | only
+  new | only
   call settagstack(1, {'items' : []})
   call assert_equal(0, gettagstack(1).length)
   call assert_equal([], 1->gettagstack().items)
@@ -707,7 +707,7 @@ func Test_tag_preview()
   set tags=Xtags
   call writefile(['first', 'second', 'third'], 'Xfile1')
 
-  enew | only
+  new | only
   ptag third
   call assert_equal(2, winnr())
   call assert_equal(2, winnr('$'))
@@ -815,7 +815,7 @@ func Test_tag_fold()
   [CODE]
   call writefile(code, 'Xfoo')
 
-  enew
+  new
   tag second
   call assert_equal('Xfoo', bufname(''))
   call assert_equal(2, line('.'))
@@ -842,7 +842,7 @@ func Test_ltag()
   [CODE]
   call writefile(code, 'Xfoo')
 
-  enew
+  new
   call setloclist(0, [], 'f')
   ltag third
   call assert_equal('Xfoo', bufname(''))
@@ -881,7 +881,7 @@ func Test_tag_last_search_pat()
   [CODE]
   call writefile(code, 'Xfoo')
 
-  enew
+  new
   let save_cpo = &cpo
   set cpo+=t
   let @/ = ''
@@ -911,7 +911,7 @@ func Test_tag_stack()
   call writefile(l, 'Xfoo')
 
   " Jump to a tag when the tag stack is full. Oldest entry should be removed.
-  enew
+  new
   for i in range(10, 30)
     exe "tag var" .. i
   endfor
@@ -933,11 +933,11 @@ func Test_tag_stack()
   call assert_fails('0pop', 'E556:')
 
   " Pop from an unsaved buffer
-  enew!
+  new!
   call append(1, "sample text")
   call assert_fails('pop', 'E37:')
   call assert_equal(21, gettagstack().curidx)
-  enew!
+  new!
 
   " Pop all the entries in the tag stack
   call assert_fails('30pop', 'E555:')
@@ -1022,7 +1022,7 @@ func Test_preview_tag_multimatch()
   [CODE]
   call writefile(code, 'Xfoo')
 
-  enew | only
+  new | only
   ptag first
   ptlast
   wincmd P
@@ -1397,7 +1397,7 @@ func Test_tag_length()
   tag tape
   call assert_equal('Xfile1', @%)
   " Tag search should jump to the right tag
-  enew
+  new
   tag /^tape$
   call assert_equal('Xfile2', @%)
 
@@ -1416,7 +1416,7 @@ func Test_tagfile_errors()
         \ "foo\tXfile\t"], 'Xtags', 'b')
   call writefile(['foo'], 'Xfile')
 
-  enew
+  new
   tag foo
   call assert_equal('', @%)
   let caught_431 = v:false

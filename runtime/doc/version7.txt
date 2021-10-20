@@ -2021,7 +2021,7 @@ indirectly invokes ":normal".
 Diff mode failed when $DIFF_OPTIONS was set in the environment.  Unset it
 before invoking "diff".
 
-Completion didn't work after ":argdo", ":windo" and ":bufdo".  Also for ":set
+Completion didn't work after ":argdo", ":window" and ":bufdo".  Also for ":set
 &l:opt" and ":set &g:opt". (Peter Winters)
 
 When setting 'ttymouse' to "dec" in an xterm that supports the DEC mouse
@@ -4572,7 +4572,7 @@ Solution:   Don't call out_flush() from win_alloc().  Also avoid this for
 Files:	    src/window.c
 
 Patch 7.0.241
-Problem:    ":windo throw 'foo'" loops forever. (Andy Wokula)
+Problem:    ":window throw 'foo'" loops forever. (Andy Wokula)
 Solution:   Detect that win_goto() doesn't work.
 Files:	    src/ex_cmds2.c
 
@@ -6845,7 +6845,7 @@ Files:	    runtime/autoload/spellfile.vim
 
 Patch 7.2a.005
 Problem:    A few error messages use confusing names.  Misspelling.
-Solution:   Change "dissallows" to "disallows". (Dominique Pelle)  Change
+Solution:   Change "disallows" to "disallows". (Dominique Pelle)  Change
 	    "number" to "Number".
 Files:	    src/eval.c, src/fileio.c
 
@@ -7355,7 +7355,7 @@ Liquid (Tim Pope)
 Markdown (Tim Pope)
 wavefront's obj file (Vincent Berthoux)
 Perl 6 (Andy Lester)
-SDC - Synopsys Design Constraints (Maurizio Tranchero)
+SDC - Synopsis Design Constraints (Maurizio Tranchero)
 SVG - Scalable Vector Graphics (Vincent Berthoux)
 task data (John Florian)
 task 42 edit (John Florian)
@@ -11199,7 +11199,7 @@ Files:	    Filelist, src/Makefile, src/main.c, src/memfile.c,
 	    src/testdir/Makefile, src/testdir/test77.in, src/testdir/test77.ok
 
 Patch 7.3.144
-Problem:    Crash with ":python help(dir)". (Kearn Holliday)
+Problem:    Crash with ":python help(dir)". (Kearn Holiday)
 Solution:   Fix the way the type is set on objects. (Tobias Columbus)
 Files:	    src/if_python.c
 
@@ -11439,7 +11439,7 @@ Solution:   Make buffer size bigger. (Dominique Pelle)
 Files:	    src/gui_riscos.c
 
 Patch 7.3.185
-Problem:    ":windo g/pattern/q" closes windows and reports "N more lines".
+Problem:    ":window g/pattern/q" closes windows and reports "N more lines".
 	    (Tim Chase)
 Solution:   Remember what buffer ":global" started in. (Jean-Rene David)
 Files:	    src/ex_cmds.c

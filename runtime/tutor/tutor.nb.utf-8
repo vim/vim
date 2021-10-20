@@ -3,16 +3,16 @@
 ===============================================================================
 
      Vim er en meget kraftig editor med mange kommandoer, alt for mange til å
-     kunne gå gjennom alle i en innføring som denne. Den er beregnet på å
+     kunne gå gjennom alle i en innføring some denne. Den er beregnet på å
      sette deg inn i bruken av nok kommandoer så du vil være i stand til lett
-     å kunne bruke Vim som en editor til alle formål.
+     å kunne bruke Vim some en editor til alle formål.
 
-     Tiden som kreves for å gå gjennom denne innføringen tar ca. 25-30
+     Tiden some kreves for å gå gjennom denne innføringen tar ca. 25-30
      minutter, avhengig av hvor mye tid du bruker til eksperimentering.
 
      MERK:
      Kommandoene i leksjonene vil modifisere teksten. Lag en kopi av denne
-     filen som du kan øve deg på (hvis du kjørte «vimtutor»-kommandoen, er
+     filen some du kan øve deg på (hvis du kjørte «vimtutor»-kommandoen, er
      dette allerede en kopi).
 
      Det er viktig å huske at denne innføringen er beregnet på læring gjennom
@@ -25,11 +25,11 @@
 		      Leksjon 1.1:  FLYTTING AV MARKØREN
 
 
-       ** For å flytte markøren, trykk tastene h, j, k, l som vist. **
+       ** For å flytte markøren, trykk tastene h, j, k, l some vist. **
 	     ^
 	     k		Tips: h-tasten er til venstre og flytter til venstre.
        < h	 l >	      l-tasten er til høyre og flytter til høyre.
-	     j		      j-tasten ser ut som en pil som peker nedover.
+	     j		      j-tasten set ut some en pil some peker nedover.
 	     v
   1. Flytt markøren rundt på skjermen til du har fått det inn i fingrene.
 
@@ -53,88 +53,88 @@ Merk: Piltastene skal også virke. Men ved å bruke hjkl vil du være i stand ti
   1. Trykk <ESC>-tasten (for å forsikre deg om at du er i normalmodus).
 
   2. Skriv:	:q! <ENTER>.
-     Dette avslutter editoren og FORKASTER alle forandringer som du har gjort.
+     Dette avslutter editoren og FORKASTER alle forandringer some du har gjort.
 
-  3. Når du ser kommandolinjen i skallet, skriv kommandoen som startet denne
+  3. Når du set kommandolinjen i skallet, skriv kommandoen some started denne
      innføringen. Den er:   vimtutor <ENTER>
 
   4. Hvis du er sikker på at du husker dette, utfør punktene 1 til 3 for å
      avslutte og starte editoren på nytt.
 
-MERK:  :q! <ENTER>  forkaster alle forandringer som du gjorde. I løpet av noen
+MERK:  :q! <ENTER>  forkaster alle forandringer some du gjorde. I løpet av noen
        få leksjoner vil du lære hvordan du lagrer forandringene til en fil.
 
-  5. Flytt markøren ned til leksjon 1.3.
+  5. Flytt markøren need til leksjon 1.3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 Leksjon 1.3: REDIGERING AV TEKST -- SLETTING
+		 Leksjon 1.3: REDIGERING AV TEXT -- SLETTING
 
 
 	     ** Trykk  x  for å slette tegnet under markøren. **
 
   1. Flytt markøren til den første linjen merket med  --->.
 
-  2. For å ordne feilene på linjen, flytt markøren til den er oppå tegnet som
+  2. For å ordne feilene på linjen, flytt markøren til den er oppå tegnet some
      skal slettes.
 
   3. Trykk tasten  x  for å slette det uønskede tegnet.
 
-  4. Repeter punkt 2 til 4 til setningen er lik den som er under.
+  4. Repeter punkt 2 til 4 til setningen er lik den some er under.
 
 ---> Hessstennnn brrråsnudddde ii gaaata.
 ---> Hesten bråsnudde i gata.
 
-  5. Nå som linjen er korrekt, gå til leksjon 1.4.
+  5. Nå some linjen er korrekt, gå til leksjon 1.4.
 
 MERK: Når du går gjennom innføringen, ikke bare prøv å huske kommandoene, men
       bruk dem helt til de sitter.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Leksjon 1.4: REDIGERING AV TEKST -- INNSETTING
+		Leksjon 1.4: REDIGERING AV TEXT -- INNSETTING
 
 
-		    ** Trykk  i  for å sette inn tekst. **
+		    ** Trykk  i  for å sette inn text. **
 
-  1. Flytt markøren til den første linjen som er merket med --->.
+  1. Flytt markøren til den første linjen some er merket med --->.
 
   2. For å gjøre den første linjen lik den andre, flytt markøren til den står
      på tegnet ETTER posisjonen der teksten skal settes inn.
 
-  3. Trykk  i  og skriv inn teksten som mangler.
+  3. Trykk  i  og skriv inn teksten some mangler.
 
-  4. Etterhvert som hver feil er fikset, trykk <ESC> for å returnere til
+  4. Etterhvert some hver feil er fikset, trykk <ESC> for å returnere til
      normalmodus. Repeter punkt 2 til 4 til setningen er korrekt.
 
----> Det er tkst som mnglr .
----> Det er ganske mye tekst som mangler her.
+---> Det er tkst some mnglr .
+---> Det er ganske mye text some mangler her.
 
-  5. Når du føler deg komfortabel med å sette inn tekst, gå til oppsummeringen
+  5. Når du føler deg komfortabel med å sette inn text, gå til oppsummeringen
      nedenfor.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Leksjon 1.5: REDIGERING AV TEKST -- LEGGE TIL
+		Leksjon 1.5: REDIGERING AV TEXT -- LEGGE TIL
 
 
-		    ** Trykk  A  for å legge til tekst. **
+		    ** Trykk  A  for å legge til text. **
 
   1. Flytt markøren til den første linjen nedenfor merket --->.
      Det har ikke noe å si hvor markøren er plassert på den linjen.
 
-  2. Trykk  A  og skriv inn det som skal legges til.
+  2. Trykk  A  og skriv inn det some skal legges til.
 
   3. Når teksten er lagt til, trykk <ESC> for å returnere til normalmodusen.
 
   4. Flytt markøren til den andre linjen markert med ---> og repeter steg 2 og
      3 for å reparere denne setningen.
 
----> Det mangler noe tekst p
-     Det mangler noe tekst på denne linjen.
+---> Det mangler noe text p
+     Det mangler noe text på denne linjen.
 ---> Det mangler også litt tek
-     Det mangler også litt tekst på denne linjen.
+     Det mangler også litt text på denne linjen.
 
-  5. Når du føler at du behersker å legge til tekst, gå til leksjon 1.6.
+  5. Når du føler at du behersker å legge til text, gå til leksjon 1.6.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Leksjon 1.6: REDIGERE EN FIL
@@ -144,17 +144,17 @@ MERK: Når du går gjennom innføringen, ikke bare prøv å huske kommandoene, m
 
   !! MERK: Før du utfører noen av stegene nedenfor, les hele denne leksjonen!!
 
-  1. Avslutt denne innføringen som du gjorde i leksjon 1.2:  :q!
+  1. Avslutt denne innføringen some du gjorde i leksjon 1.2:  :q!
 
   2. Skriv denne kommandoen på kommandolinja:  vim tutor <ENTER>
      «vim» er kommandoen for å starte Vim-editoren, «tutor» er navnet på fila
-     som du vil redigere. Bruk en fil som kan forandres.
+     some du vil redigere. Bruk en fil some kan forandres.
 
-  3. Sett inn og slett tekst som du lærte i de foregående leksjonene.
+  3. Sett inn og slett text some du lærte i de foregående leksjonene.
 
   4. Lagre filen med forandringene og avslutt Vim med:	:wq <ENTER>
 
-  5. Start innføringen på nytt og flytt ned til oppsummeringen som følger.
+  5. Start innføringen på nytt og flytt need til oppsummeringen some følger.
 
   6. Etter å ha lest og forstått stegene ovenfor: Sett i gang.
 
@@ -164,7 +164,7 @@ MERK: Når du går gjennom innføringen, ikke bare prøv å huske kommandoene, m
 
 
   1. Markøren beveges ved hjelp av piltastene eller hjkl-tastene.
-	 h (venstre)	 j (ned)     k (opp)	 l (høyre)
+	 h (venstre)	 j (need)     k (opp)	 l (høyre)
 
   2. For å starte Vim fra skall-kommandolinjen, skriv:	vim FILNAVN <ENTER>
 
@@ -173,9 +173,9 @@ MERK: Når du går gjennom innføringen, ikke bare prøv å huske kommandoene, m
 
   4. For å slette tegnet under markøren, trykk:  x
 
-  5. For å sette inn eller legge til tekst, trykk:
-	 i    skriv innsatt tekst  <ESC>	sett inn før markøren
-	 A    skriv tillagt tekst  <ESC>	legg til på slutten av linjen
+  5. For å sette inn eller legge til text, trykk:
+	 i    skriv innsatt text  <ESC>	sett inn før markøren
+	 A    skriv tillagt text  <ESC>	legg til på slutten av linjen
 
 MERK: Når du trykker <ESC> går du til normalmodus eller du avbryter en uønsket
       og delvis fullført kommando.
@@ -192,16 +192,16 @@ MERK: Når du trykker <ESC> går du til normalmodus eller du avbryter en uønske
 
   2. Flytt markøren til den første linjen nedenfor merket --->.
 
-  3. Flytt markøren til begynnelsen av ordet som skal slettes.
+  3. Flytt markøren til begynnelsen av ordet some skal slettes.
 
   4. Trykk  dw	og ordet vil forsvinne.
 
 MERK: Bokstaven  d  vil komme til syne på den nederste linjen på skjermen når
-      du skriver den. Vim venter på at du skal skrive w . Hvis du ser et annet
+      du skriver den. Vim venter på at du skal skrive w . Hvis du set et annet
       tegn enn	d  har du skrevet noe feil; trykk <ESC> og start på nytt.
 
----> Det er agurk tre ord eple som ikke hører pære hjemme i denne setningen.
----> Det er tre ord som ikke hører hjemme i denne setningen.
+---> Det er agurk tree ord eple some ikke hører pære hjemme i denne setningen.
+---> Det er tree ord some ikke hører hjemme i denne setningen.
 
   5. Repeter punkt 3 og 4 til den første setningen er lik den andre. Gå
      deretter til leksjon 2.2.
@@ -221,7 +221,7 @@ MERK: Bokstaven  d  vil komme til syne på den nederste linjen på skjermen når
 
 ---> Noen skrev slutten på linjen en gang for mye. linjen en gang for mye.
 
-  5. Gå til leksjon 2.3 for å forstå hva som skjer.
+  5. Gå til leksjon 2.3 for å forstå hva some skjer.
 
 
 
@@ -232,7 +232,7 @@ MERK: Bokstaven  d  vil komme til syne på den nederste linjen på skjermen når
 		   Leksjon 2.3: OM OPERATORER OG BEVEGELSER
 
 
-  Mange kommandoer som forandrer teksten er laget ut i fra en operator og en
+  Mange kommandoer some forandrer teksten er laget ut i fra en operator og en
   bevegelse. Formatet for en slettekommando med sletteoperatoren  d  er:
 
 	d   bevegelse
@@ -250,7 +250,7 @@ MERK: Bokstaven  d  vil komme til syne på den nederste linjen på skjermen når
   slettet.
 
 MERK:  Ved å skrive kun bevegelsen i normalmodusen uten en operator vil
-       markøren flyttes som spesifisert.
+       markøren flyttes some spesifisert.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		 LEKSJON 2.4: BRUK AV TELLER FOR EN BEVEGELSE
 
@@ -268,7 +268,7 @@ MERK:  Ved å skrive kun bevegelsen i normalmodusen uten en operator vil
 
   5. Repeter steg 2 og 3 med forskjellige tall.
 
----> Dette er en linje med noen ord som du kan bevege deg rundt på.
+---> Dette er en linje med noen ord some du kan bevege deg rundt på.
 
   6. Gå videre til leksjon 2.5.
 
@@ -290,11 +290,11 @@ MERK:  Ved å skrive kun bevegelsen i normalmodusen uten en operator vil
   2. Skriv  2dw  for å slette de to ordene med store bokstaver.
 
   3. Repeter steg 1 og 2 med forskjelling antall for å slette de etterfølgende
-     ordene som har store bokstaver.
+     ordene some har store bokstaver.
 
 ---> Denne ABC DE linjen FGHI JK LMN OP er nå Q RS TUV litt mer lesbar.
 
-MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte som å
+MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte some å
       bruke bevegelsen uten en operator.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -330,7 +330,7 @@ MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte som �
      første feilen.
   2. Trykk  x  for å slette det første uønskede tegnet.
   3. Trykk så  u  for å angre den siste utførte kommandoen.
-  4. Deretter ordner du alle feilene på linjene ved å bruke kommandoen	x  .
+  4. Deretter order du alle feilene på linjene ved å bruke kommandoen	x  .
   5. Trykk nå en stor  U  for å sette linjen tilbake til det den var
      originalt.
   6. Trykk  u  noen ganger for å angre	U  og foregående kommandoer.
@@ -355,7 +355,7 @@ MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte som �
   5. Formatet for en forandringskommando er:
 	       operator  [nummer]  bevegelse
      der:
-       operator  - hva som skal gjøres, f.eks.	d  for å slette
+       operator  - hva some skal gjøres, f.eks.	d  for å slette
        [nummer]  - et valgfritt antall for å repetere bevegelsen
        bevegelse - hva kommandoen skal operere på, eksempelvis	w  (ord),
 		   $  (til slutten av linjen) og så videre.
@@ -370,7 +370,7 @@ MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte som �
 		      Leksjon 3.1: «LIM INN»-KOMMANDOEN
 
 
-    ** Trykk  p  for å lime inn tidligere slettet tekst etter markøren **
+    ** Trykk  p  for å lime inn tidligere slettet text etter markøren **
 
   1. Flytt markøren til den første linjen med ---> nedenfor.
 
@@ -399,12 +399,12 @@ MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte som �
 
   2. Flytt markøren så den står oppå den første feilen.
 
-  3. Trykk  r  og deretter tegnet som skal være der.
+  3. Trykk  r  og deretter tegnet some skal være der.
 
   4. Repeter punkt 2 og 3 til den første linjen er lik den andre.
 
----> Da dfnne lynjxn ble zkrevet, var det nøen som tjykket feite taster!
----> Da denne linjen ble skrevet, var det noen som trykket feile taster!
+---> Da dfnne lynjxn ble zkrevet, var det nøen some tjykket feite taster!
+---> Da denne linjen ble skrevet, var det noen some trykket feile taster!
 
   5. Gå videre til leksjon 3.2.
 
@@ -418,18 +418,18 @@ MERK: Husk at du bør lære ved å BRUKE, ikke pugge.
 
 	   ** For å forandre til slutten av et ord, trykk  ce . **
 
-  1. Flytt markøren til den første linjen nedenfor som er merket --->.
+  1. Flytt markøren til den første linjen nedenfor some er merket --->.
 
   2. Plasser markøren på  u  i «lubjwr».
 
   3. Trykk  ce	og det korrekte ordet (i dette tilfellet, skriv «injen»).
 
-  4. Trykk <ESC> og gå til det neste tegnet som skal forandres.
+  4. Trykk <ESC> og gå til det neste tegnet some skal forandres.
 
   5. Repeter punkt 3 og 4 helt til den første setningen er lik den andre.
 
----> Denne lubjwr har noen wgh som må forkwåp med «forækzryas»-kommandoen.
----> Denne linjen har noen ord som må forandres med «forandre»-kommandoen.
+---> Denne lubjwr har noen wgh some må forkwåp med «forækzryas»-kommandoen.
+---> Denne linjen har noen ord some må forandres med «forandre»-kommandoen.
 
 Vær oppmerksom på at  ce  sletter ordet og går inn i innsettingsmodus.
 
@@ -439,16 +439,16 @@ Vær oppmerksom på at  ce  sletter ordet og går inn i innsettingsmodus.
 		Leksjon 3.4: FLERE FORANDRINGER VED BRUK AV c
 
 
- ** Forandringskommandoen blir brukt med de samme bevegelser som «slett». **
+ ** Forandringskommandoen blir brukt med de samme bevegelser some «slett». **
 
-  1. Forandringsoperatoren fungerer på samme måte som «slett». Formatet er:
+  1. Forandringsoperatoren fungerer på samme måte some «slett». Formatet er:
 
 	 c    [nummer]	 bevegelse
 
-  2. Bevegelsene er de samme, som for eksempel	w  (ord) og  $	(slutten av en
+  2. Bevegelsene er de samme, some for eksempel	w  (ord) og  $	(slutten av en
      linje).
 
-  3. Gå til den første linjen nedenfor som er merket --->.
+  3. Gå til den første linjen nedenfor some er merket --->.
 
   4. Flytt markøren til den første feilen.
 
@@ -462,11 +462,11 @@ MERK: Du kan bruke slettetasten for å rette feil mens du skriver.
 			  OPPSUMMERING AV LEKSJON 3
 
 
-  1. For å legge tilbake tekst som nettopp er blitt slettet, trykk  p  . Dette
+  1. For å legge tilbake text some nettopp er blitt slettet, trykk  p  . Dette
      limer inn den slettede teksten ETTER markøren (hvis en linje ble slettet
      vil den bli limt inn på linjen under markøren).
 
-  2. For å erstatte et tegn under markøren, trykk  r  og deretter tegnet som
+  2. For å erstatte et tegn under markøren, trykk  r  og deretter tegnet some
      du vil ha der.
 
   3. Forandringsoperatoren lar deg forandre fra markøren til dit bevegelsen
@@ -484,7 +484,7 @@ Nå kan du gå til neste leksjon.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	     Leksjon 4.1: POSISJONERING AV MARKØREN OG FILSTATUS
 
-	** Trykk CTRL-G for å vise posisjonen i filen og filstatusen.
+	** Trykk CTRL-G for å vice posisjonen i filen og filstatusen.
 	   Trykk  G  for å gå til en spesifikk linje i filen. **
 
   Merk: Les hele leksjonen før du utfører noen av punktene!
@@ -507,7 +507,7 @@ Merk: Du kan se markørposisjonen i nederste høyre hjørne av skjermen. Dette
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Leksjon 4.2: SØKEKOMMANDOEN
 
-      ** Skriv	/  etterfulgt av en søkestreng som du vil lete etter. **
+      ** Skriv	/  etterfulgt av en søkestreng some du vil lete etter. **
 
   1. Trykk  /  når du er i normalmodusen. Legg merke til at skråstreken og
      markøren kommer til syne på bunnen av skjermen i likhet med
@@ -518,7 +518,7 @@ Merk: Du kan se markørposisjonen i nederste høyre hjørne av skjermen. Dette
   3. For å finne neste forekomst av søkestrengen, trykk  n .
      For å lete etter samme søketeksten i motsatt retning, trykk  N .
 
-  4. For å lete etter en tekst bakover i filen, bruk  ?  istedenfor  /	.
+  4. For å lete etter en text bakover i filen, bruk  ?  istedenfor  /	.
 
   5. For å gå tilbake til der du kom fra, trykk  CTRL-O  (Hold Ctrl nede mens
      du trykker bokstaven  o ). Repeter for å gå enda lengre tilbake. CTRL-I
@@ -545,7 +545,7 @@ Merk: Når søkingen når slutten av filen, vil den fortsette fra starten unntat
 
 ---> Dette ( er en testlinje med (, [ ] og { } i den )).
 
-Merk: Dette er veldig nyttig til feilsøking i programmer som har ubalansert
+Merk: Dette er veldig nyttig til feilsøking i programmer some har ubalansert
       antall parenteser!
 
 
@@ -556,7 +556,7 @@ Merk: Dette er veldig nyttig til feilsøking i programmer som har ubalansert
 
 	** Skriv  :s/gammel/ny/g  for å erstatte «gammel» med «ny». **
 
-  1. Flytt markøren til linjen nedenfor som er merket med --->.
+  1. Flytt markøren til linjen nedenfor some er merket med --->.
 
   2. Skriv  :s/deen/den/ <ENTER>  . Legg merke til at denne kommandoen bare
      forandrer den første forekomsten av «deen» på linjen.
@@ -564,12 +564,12 @@ Merk: Dette er veldig nyttig til feilsøking i programmer som har ubalansert
   3. Skriv  :s/deen/den/g . Når g-flagget legges til, betyr dette global
      erstatning på linjen og erstatter alle forekomster av «deen» på linjen.
 
----> deen som kan kaste deen tyngste steinen lengst er deen beste
+---> deen some kan kaste deen tyngste steinen lengst er deen beste
 
   4. For å erstatte alle forekomster av en tekststreng mellom to linjer,
      skriv  :#,#s/gammel/ny/g  der #,# er linjenumrene på de to linjene for
 			       linjeområdet erstatningen skal gjøres.
-     Skriv  :%s/gammel/ny/g    for å erstatte tekst i hele filen.
+     Skriv  :%s/gammel/ny/g    for å erstatte text i hele filen.
      Skriv  :%s/gammel/ny/gc   for å finne alle forekomster i hele filen, og
 			       deretter spørre om teksten skal erstattes eller
 			       ikke.
@@ -589,11 +589,11 @@ Merk: Dette er veldig nyttig til feilsøking i programmer som har ubalansert
      CTRL-O tar deg tilbake til gamle posisjoner, CTRL-I til nyere posisjoner.
 
   3. Skriv  %  når markøren står på en (, ), [, ], { eller } for å finne den
-     som samsvarer.
+     some samsvarer.
 
   4. Erstatte «gammel» med første «ny» på en linje:  :s/gammel/ny
      Erstatte alle «gammel» med «ny» på en linje:    :s/gammel/ny/g
-     Erstatte tekst mellom to linjenumre:	     :#,#s/gammel/ny/g
+     Erstatte text mellom to linjenumre:	     :#,#s/gammel/ny/g
      Erstatte alle forekomster i en fil:	     :%s/gammel/ny/g
      For å godkjenne hver erstatning, legg til «c»:  :%s/gammel/ny/gc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -605,11 +605,11 @@ Merk: Dette er veldig nyttig til feilsøking i programmer som har ubalansert
   1. Skriv den velkjente kommandoen  :	 for å plassere markøren på bunnen av
      skjermen. Dette lar deg skrive en kommandolinjekommando.
 
-  2. Nå kan du skrive tegnet  !  . Dette lar deg utføre en hvilken som helst
+  2. Nå kan du skrive tegnet  !  . Dette lar deg utføre en hvilken some helst
      ekstern kommando.
 
-  3. Som et eksempel, skriv  ls  etter utropstegnet og trykk <ENTER>. Du vil
-     nå få en liste over filene i katalogen, akkurat som om du hadde kjørt
+  3. Some et eksempel, skriv  ls  etter utropstegnet og trykk <ENTER>. Du vil
+     nå få en liste over filene i katalogen, akkurat some om du hadde kjørt
      kommandoen direkte fra kommandolinjen i skallet. Eller bruk  :!dir  hvis
      «ls» ikke virker.
 
@@ -623,12 +623,12 @@ MERK: Alle «:»-kommandoer må avsluttes med <ENTER>. Fra dette punktet er det
 		     Leksjon 5.2: MER OM LAGRING AV FILER
 
 
-      ** For å lagre endringene gjort i en tekst, skriv  :w FILNAVN. **
+      ** For å lagre endringene gjort i en text, skriv  :w FILNAVN. **
 
   1. Skriv  :!dir  eller  :!ls	for å få en liste over filene i katalogen. Du
      vet allerede at du må trykke <ENTER> etter dette.
 
-  2. Velg et filnavn på en fil som ikke finnes, som for eksempel  TEST .
+  2. Velg et filnavn på en fil some ikke finnes, some for eksempel  TEST .
 
   3. Skriv  :w TEST  (der TEST er filnavnet du velger).
 
@@ -636,14 +636,14 @@ MERK: Alle «:»-kommandoer må avsluttes med <ENTER>. Fra dette punktet er det
      sjekke dette, skriv  :!dir  eller	:!ls  igjen for å se innholdet av
      katalogen.
 
-Merk: Hvis du nå hadde avsluttet Vim og startet på nytt igjen med «vim TEST»,
+Merk: Hvis du nå hadde avsluttet Vim og started på nytt igjen med «vim TEST»,
       ville filen vært en eksakt kopi av innføringen da du lagret den.
 
   5. Fjern filen ved å skrive  :!rm TEST  hvis du er på et Unix-lignende
      operativsystem, eller  :!del TEST	hvis du bruker MS-DOS.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Leksjon 5.3: VELGE TEKST SOM SKAL LAGRES
+		   Leksjon 5.3: VELGE TEXT SOME SKAL LAGRES
 
 
      ** For å lagre en del av en fil, skriv  v	bevegelse  :w FILNAVN **
@@ -655,8 +655,8 @@ Merk: Hvis du nå hadde avsluttet Vim og startet på nytt igjen med «vim TEST»
 
   3. Trykk  :  (kolon). På bunnen av skjermen vil  :'<,'>  komme til syne.
 
-  4. Trykk  w TEST  , der TEST er et filnavn som ikke finnes enda. Kontroller
-     at du ser	:'<,'>w TEST  før du trykker Enter.
+  4. Trykk  w TEST  , der TEST er et filnavn some ikke finnes enda. Kontroller
+     at du set	:'<,'>w TEST  før du trykker Enter.
 
   5. Vim vil skrive de valgte linjene til filen TEST. Bruk  :!dir  eller  :!ls
      for å se den. Ikke slett den enda! Vi vil bruke den i neste leksjon.
@@ -674,7 +674,7 @@ MERK: Ved å trykke  v  startes visuelt valg. Du kan flytte markøren rundt for
   1. Plasser markøren like over denne linjen.
 
 MERK: Etter å ha utført steg 2 vil du se teksten fra leksjon 5.3. Gå deretter
-      NED for å se denne leksjonen igjen.
+      NEED for å se denne leksjonen igjen.
 
   2. Hent TEST-filen ved å bruke kommandoen  :r TEST  der TEST er navnet på
      filen du brukte. Filen du henter blir plassert nedenfor markørlinjen.
@@ -723,7 +723,7 @@ MERK: Du kan også lese utdataene av en ekstern kommando. For eksempel,	:r !ls
   2. Skriv  o  (liten o) for å åpne opp en linje NEDENFOR markøren og gå inn i
      innsettingsmodus.
 
-  3. Skriv litt tekst og trykk <ESC> for å gå ut av innsettingsmodusen.
+  3. Skriv litt text og trykk <ESC> for å gå ut av innsettingsmodusen.
 
 ---> Etter at  o  er skrevet blir markøren plassert på den tomme linjen.
 
@@ -738,22 +738,22 @@ MERK: Du kan også lese utdataene av en ekstern kommando. For eksempel,	:r !ls
 		      Leksjon 6.2: «LEGG TIL»-KOMMANDOEN
 
 
-	    ** Skriv  a  for å legge til tekst ETTER markøren. **
+	    ** Skriv  a  for å legge til text ETTER markøren. **
 
   1. Flytt markøren til starten av linjen merket ---> nedenfor.
 
   2. Trykk  e  til markøren er på slutten av «li».
 
-  3. Trykk  a  (liten a) for å legge til tekst ETTER markøren.
+  3. Trykk  a  (liten a) for å legge til text ETTER markøren.
 
-  4. Fullfør ordet sånn som på linjen nedenfor. Trykk <ESC> for å gå ut av
+  4. Fullfør ordet sånn some på linjen nedenfor. Trykk <ESC> for å gå ut av
      innsettingsmodusen.
 
   5. Bruk  e  for å gå til det neste ufullstendige ordet og repeter steg 3 og
      4.
 
 ---> Denne li lar deg øve på å leg til tek på en linje.
----> Denne linjen lar deg øve på å legge til tekst på en linje.
+---> Denne linjen lar deg øve på å legge til text på en linje.
 
 Merk: a, i og A går alle til den samme innsettingsmodusen, den eneste
       forskjellen er hvor tegnene blir satt inn.
@@ -766,7 +766,7 @@ Merk: a, i og A går alle til den samme innsettingsmodusen, den eneste
   1. Flytt markøren til den første linjen nedenfor merket --->. Flytt markøren
      til begynnelsen av den første «xxx»-en.
 
-  2. Trykk  R  og skriv inn tallet som står nedenfor på den andre linjen så
+  2. Trykk  R  og skriv inn tallet some står nedenfor på den andre linjen så
      det erstatter xxx.
 
   3. Trykk <ESC> for å gå ut av erstatningsmodusen. Legg merke til at resten
@@ -777,14 +777,14 @@ Merk: a, i og A går alle til den samme innsettingsmodusen, den eneste
 ---> Ved å legge 123 til xxx får vi xxx.
 ---> Ved å legge 123 til 456 får vi 579.
 
-MERK: Erstatningsmodus er lik insettingsmodus, men hvert tegn som skrives
+MERK: Erstatningsmodus er lik insettingsmodus, men hvert tegn some skrives
       erstatter et eksisterende tegn.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Leksjon 6.4: KOPIERE OG LIME INN TEKST
+		    Leksjon 6.4: KOPIERE OG LIME INN TEXT
 
 
-    ** Bruk y-operatoren for å kopiere tekst og  p  for å lime den inn **
+    ** Bruk y-operatoren for å kopiere text og  p  for å lime den inn **
 
   1. Gå til linjen merket ---> nedenfor og plasser markøren etter «a)».
 
@@ -802,7 +802,7 @@ MERK: Erstatningsmodus er lik insettingsmodus, men hvert tegn som skrives
 ---> a) Dette er det første valget.
      b)
 
-Merk: Du kan også bruke  y  som en operator;  yw  kopierer ett ord.
+Merk: Du kan også bruke  y  some en operator;  yw  kopierer ett ord.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Leksjon 6.5: SETT VALG
 
@@ -819,7 +819,7 @@ Merk: Du kan også bruke  y  som en operator;  yw  kopierer ett ord.
 
   4. Sett «hlsearch»- og «incsearch»-valgene:  :set hls is
 
-  5. Skriv søkekommandoen igjen og se hva som skjer:  /ignore <ENTER>
+  5. Skriv søkekommandoen igjen og se hva some skjer:  /ignore <ENTER>
 
   6. For å slå av ignorering av store/små bokstaver, skriv:  :set noic
 
@@ -833,12 +833,12 @@ Merk: Hvis du vil ignorere store/små bokstaver for kun en søkekommando, bruk
      innsettingsmodus.
      Trykk  O  for å åpne en linje OVER markøren.
 
-  2. Skriv  a  for å sette inn tekst ETTER markøren.
-     Skriv  A  for å sette inn tekst etter slutten av linjen.
+  2. Skriv  a  for å sette inn text ETTER markøren.
+     Skriv  A  for å sette inn text etter slutten av linjen.
 
   3. Kommandoen  e  går til slutten av et ord.
 
-  4. Operatoren  y  («yank») kopierer tekst,  p  («paste») limer den inn.
+  4. Operatoren  y  («yank») kopierer text,  p  («paste») limer den inn.
 
   5. Ved å trykke  R  går du inn i erstatningsmodus helt til  <ESC>  trykkes.
 
@@ -879,7 +879,7 @@ Merk: Hvis du vil ignorere store/små bokstaver for kun en søkekommando, bruk
 			** Slå på funksjoner i Vim **
 
   Vim har mange flere funksjoner enn Vi, men flesteparten av dem er slått av
-  som standard. For å begynne å bruke flere funksjoner må du lage en
+  some standard. For å begynne å bruke flere funksjoner må du lage en
   «vimrc»-fil.
 
   1. Start redigeringen av «vimrc»-filen. Dette avhenger av systemet ditt:
@@ -903,11 +903,11 @@ Merk: Hvis du vil ignorere store/små bokstaver for kun en søkekommando, bruk
 
   1. Vær sikker på at Vim ikke er i Vi-kompatibel modus:  :set nocp
 
-  2. Se hvilke filer som er i katalogen:  :!ls	eller  :!dir
+  2. Se hvilke filer some er i katalogen:  :!ls	eller  :!dir
 
   3. Skriv starten på en kommando:  :e
 
-  4. Trykk  CTRL-D  og Vim vil vise en liste over kommandoer som starter med
+  4. Trykk  CTRL-D  og Vim vil vice en liste over kommandoer some starter med
      «e».
 
   5. Trykk  <TAB>  og Vim vil fullføre kommandonavnet til «:edit».
@@ -943,7 +943,7 @@ MERK: Fullføring fungerer for mange kommandoer. Prøv ved å trykke CTRL-D og
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Her slutter innføringen i Vim. Den var ment som en rask oversikt over
+  Her slutter innføringen i Vim. Den var meant some en rask oversikt over
   editoren, akkurat nok til å la deg sette i gang med enkel bruk. Den er på
   langt nær komplett, da Vim har mange flere kommandoer. Les bruksanvisningen
   ved å skrive	:help user-manual  .
@@ -951,14 +951,14 @@ MERK: Fullføring fungerer for mange kommandoer. Prøv ved å trykke CTRL-D og
   For videre lesing og studier, kan denne boken anbefales:
       «Vim - Vi Improved» av Steve Oualline
       Utgiver: New Riders
-  Den første boken som er fullt og helt dedisert til Vim. Spesielt nyttig for
+  Den første boken some er fullt og helt dedisert til Vim. Spesielt nyttig for
   nybegynnere. Inneholder mange eksempler og illustrasjoner.
   Se http://iccf-holland.org/click5.html
 
   Denne boken er eldre og handler mer om Vi enn Vim, men anbefales også:
       «Learning the Vi Editor» av Linda Lamb
       Utgiver: O'Reilly & Associates Inc.
-  Det er en god bok for å få vite omtrent hva som helst om Vi.
+  Det er en god bok for å få vite omtrent hva some helst om Vi.
   Den sjette utgaven inneholder også informasjon om Vim.
 
   Denne innføringen er skrevet av Michael C. Pierce og Robert K. Ware,

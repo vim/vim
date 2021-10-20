@@ -201,7 +201,7 @@ func Test_find_cmd()
   call assert_fails('3find foo', 'E347:')
 
   " Test for :sfind
-  enew
+  new
   sfind barfoo
   call assert_equal('Xdir2/Xdir3/barfoo', expand('%:.'))
   call assert_equal(3, winnr('$'))
@@ -210,7 +210,7 @@ func Test_find_cmd()
   call assert_equal(2, winnr('$'))
 
   " Test for :tabfind
-  enew
+  new
   tabfind foobar
   call assert_equal('Xdir2/foobar', expand('%:.'))
   call assert_equal(2, tabpagenr('$'))

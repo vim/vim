@@ -24,7 +24,7 @@ endfunc
 
 " Tests for the :cdo and :ldo commands
 func XdoTests(cchar)
-  enew
+  new
 
   " Shortcuts for calling the cdo and ldo commands
   let Xdo = a:cchar . 'do'
@@ -46,46 +46,46 @@ func XdoTests(cchar)
 
   " Run command only on selected error lines
   let l = []
-  enew
+  new
   exe "2,3" . XdoCmd
   call assert_equal(['Xtestfile2 2L 2C', 'Xtestfile3 3L 1C'], l)
 
   " Boundary condition tests
   let l = []
-  enew
+  new
   exe "1,1" . XdoCmd
   call assert_equal(['Xtestfile1 1L 3C'], l)
 
   let l = []
-  enew
+  new
   exe "3" . XdoCmd
   call assert_equal(['Xtestfile3 3L 1C'], l)
 
   " Range test commands
   let l = []
-  enew
+  new
   exe "%" . XdoCmd
   call assert_equal(['Xtestfile1 1L 3C', 'Xtestfile2 2L 2C', 'Xtestfile3 3L 1C'], l)
 
   let l = []
-  enew
+  new
   exe "1,$" . XdoCmd
   call assert_equal(['Xtestfile1 1L 3C', 'Xtestfile2 2L 2C', 'Xtestfile3 3L 1C'], l)
 
   let l = []
-  enew
+  new
   exe Xprev
   exe "." . XdoCmd
   call assert_equal(['Xtestfile2 2L 2C'], l)
 
   let l = []
-  enew
+  new
   exe "+" . XdoCmd
   call assert_equal(['Xtestfile3 3L 1C'], l)
 
   " Invalid error lines test
   let l = []
-  enew
+  new
   exe "silent! 27" . XdoCmd
   exe "silent! 4,5" . XdoCmd
   call assert_equal([], l)
@@ -93,7 +93,7 @@ func XdoTests(cchar)
   " Run commands from an unsaved buffer
   let v:errmsg=''
   let l = []
-  enew
+  new
   setlocal modified
   exe "silent! 2,2" . XdoCmd
   if v:errmsg !~# 'No write since last change'
@@ -101,7 +101,7 @@ func XdoTests(cchar)
   endif
 
   " If the executed command fails, then the operation should be aborted
-  enew!
+  new!
   let subst_count = 0
   exe "silent!" . Xdo . " s/Line/xLine/ | let subst_count += 1"
   if subst_count != 1 || getline('.') != 'xLine1'
@@ -136,7 +136,7 @@ endfunc
 
 " Tests for the :cfdo and :lfdo commands
 func XfdoTests(cchar)
-  enew
+  new
 
   " Shortcuts for calling the cfdo and lfdo commands
   let Xfdo = a:cchar . 'fdo'
@@ -205,7 +205,7 @@ endfunc
 
 " Test for making 'shm' doesn't interfere with the output.
 func Test_cdo_print()
-  enew | only!
+  new | only!
   cgetexpr ["Xtestfile1:1:Line1", "Xtestfile2:1:Line1", "Xtestfile3:1:Line1"]
   cdo print
   call assert_equal('Line1', Screenline(&lines))

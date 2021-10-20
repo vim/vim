@@ -26,15 +26,15 @@ endfunc
 func Test_buffers_lastused()
   call test_settime(localtime() - 2000) " middle
   edit bufa
-  enew
+  new
   call test_settime(localtime() - 10)   " newest
   edit bufb
-  enew
+  new
   call test_settime(1550010000)	        " oldest
   edit bufc
-  enew
+  new
   call test_settime(0)
-  enew
+  new
 
   let ls = split(execute('buffers t', 'silent!'), '\n')
   let bufs = ls->map({i,v->split(v, '"\s*')[1:2]})
@@ -82,7 +82,7 @@ endfunc
 " Test for the :drop command
 func Test_drop_cmd()
   call writefile(['L1', 'L2'], 'Xfile')
-  enew | only
+  new | only
   drop Xfile
   call assert_equal('L2', getline(2))
   " Test for switching to an existing window
@@ -90,13 +90,13 @@ func Test_drop_cmd()
   drop Xfile
   call assert_equal(1, winnr())
   " Test for splitting the current window
-  enew | only
+  new | only
   set modified
   drop Xfile
   call assert_equal(2, winnr('$'))
   " Check for setting the argument list
   call assert_equal(['Xfile'], argv())
-  enew | only!
+  new | only!
   call delete('Xfile')
 endfunc
 

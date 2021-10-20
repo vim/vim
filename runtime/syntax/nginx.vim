@@ -724,7 +724,7 @@ if !exists('g:loaded_sslsecure')
   syn match ngxSSLCipherInsecure '[^!]\zsIDEA'
   syn match ngxSSLCipherInsecure '[^!]\zsSEED'
   syn match ngxSSLCipherInsecure '[^!]\zsEXP\w*'        " Match all EXPORT ciphers
-  syn match ngxSSLCipherInsecure '[^!]\zsaGOST\w*'      " Match all GOST ciphers
+  syn match ngxSSLCipherInsecure '[^!]\zsaGOST\w*'      " Match all GHOST ciphers
   syn match ngxSSLCipherInsecure '[^!]\zskGOST\w*'
   syn match ngxSSLCipherInsecure '[^!ak]\zsGOST\w*'
   syn match ngxSSLCipherInsecure '[^!]\zs[kae]\?FZA'    " Not implemented
@@ -980,7 +980,7 @@ syn keyword ngxDirectiveThirdParty set_encrypt_session
 syn keyword ngxDirectiveThirdParty set_decrypt_session
 
 " Enhanced Memcached Module <https://github.com/bpaquet/ngx_http_enhanced_memcached_module>
-" This module is based on the standard Nginx Memcached module, with some additonal features
+" This module is based on the standard Nginx Memcached module, with some additional features
 syn keyword ngxDirectiveThirdParty enhanced_memcached_pass
 syn keyword ngxDirectiveThirdParty enhanced_memcached_hash_keys_with_md5
 syn keyword ngxDirectiveThirdParty enhanced_memcached_allow_put
@@ -1813,7 +1813,7 @@ syn keyword ngxDirectiveThirdParty set_sha1
 syn keyword ngxDirectiveThirdParty set_sha1_upper
 
 " Set Lang Module <https://github.com/simpl/ngx_http_set_lang>
-" Provides a variety of ways for setting a variable denoting the langauge that content should be returned in.
+" Provides a variety of ways for setting a variable denoting the language that content should be returned in.
 syn keyword ngxDirectiveThirdParty set_lang
 syn keyword ngxDirectiveThirdParty set_lang_method
 syn keyword ngxDirectiveThirdParty lang_cookie
@@ -1940,7 +1940,7 @@ syn keyword ngxDirectiveThirdParty srcache_default_expire
 syn keyword ngxDirectiveThirdParty srcache_max_expire
 
 " SSSD Info Module <https://github.com/veruu/ngx_sssd_info>
-" Retrives additional attributes from SSSD for current authentizated user
+" Retrieves additional attributes from SSSD for current authentizated user
 syn keyword ngxDirectiveThirdParty sssd_info
 syn keyword ngxDirectiveThirdParty sssd_info_output_to
 syn keyword ngxDirectiveThirdParty sssd_info_groups
@@ -1992,7 +1992,7 @@ syn keyword ngxDirectiveThirdParty lua_lingering_time
 syn keyword ngxDirectiveThirdParty lua_lingering_timeout
 
 " Stream Upsync Module <https://github.com/xiaokai-wang/nginx-stream-upsync-module>
-" Sync upstreams from consul or others, dynamiclly modify backend-servers attribute(weight, max_fails,...), needn't reload nginx.
+" Sync upstreams from consul or others, dynamically modify backend-servers attribute(weight, max_fails,...), needn't reload nginx.
 syn keyword ngxDirectiveThirdParty upsync
 syn keyword ngxDirectiveThirdParty upsync_dump_path
 syn keyword ngxDirectiveThirdParty upsync_lb
@@ -2032,7 +2032,7 @@ syn keyword ngxDirectiveThirdParty tnt_http_rest_methods
 syn keyword ngxDirectiveThirdParty tnt_pass_http_request
 syn keyword ngxDirectiveThirdParty tnt_pass_http_request_buffer_size
 syn keyword ngxDirectiveThirdParty tnt_method
-syn keyword ngxDirectiveThirdParty tnt_http_allowed_methods - experemental
+syn keyword ngxDirectiveThirdParty tnt_http_allowed_methods - experimental
 syn keyword ngxDirectiveThirdParty tnt_send_timeout
 syn keyword ngxDirectiveThirdParty tnt_read_timeout
 syn keyword ngxDirectiveThirdParty tnt_buffer_size
@@ -2155,7 +2155,7 @@ syn keyword ngxDirectiveDeprecated hash_again
 syn keyword ngxDirectiveThirdParty jdomain
 
 " Upsync Module <https://github.com/weibocom/nginx-upsync-module>
-" Sync upstreams from consul or others, dynamiclly modify backend-servers attribute(weight, max_fails,...), needn't reload nginx
+" Sync upstreams from consul or others, dynamically modify backend-servers attribute(weight, max_fails,...), needn't reload nginx
 syn keyword ngxDirectiveThirdParty upsync
 syn keyword ngxDirectiveThirdParty upsync_dump_path
 syn keyword ngxDirectiveThirdParty upsync_lb
@@ -2171,7 +2171,7 @@ syn keyword ngxDirectiveThirdParty url_encoding_convert_to
 " Match browsers and crawlers
 syn keyword ngxDirectiveThirdParty user_agent
 
-" Upstrema Ketama Chash Module <https://github.com/flygoast/ngx_http_upstream_ketama_chash>
+" Upstream Ketama Chash Module <https://github.com/flygoast/ngx_http_upstream_ketama_chash>
 " Nginx load-balancer module implementing ketama consistent hashing.
 syn keyword ngxDirectiveThirdParty ketama_chash
 

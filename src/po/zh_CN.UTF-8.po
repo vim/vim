@@ -1505,7 +1505,7 @@ msgstr "[未转换]"
 msgid "[converted]"
 msgstr "[已转换]"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[已加密]"
 
 #, c-format
@@ -2726,7 +2726,7 @@ msgstr "-register\t\t注册此 gvim 到 OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\t取消 OLE 中的 gvim 注册"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\t使用图形界面 (同 \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2918,7 +2918,7 @@ msgstr ""
 "\n"
 "gvim (Athena 版本) 可识别的参数:\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <display>\t在 <display> 上运行 vim"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -2986,7 +2986,7 @@ msgstr ""
 "\n"
 "gvim (GTK+ 版本) 可识别的参数:\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <display>\t在 <display> 上运行 Vim (也可用 --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"

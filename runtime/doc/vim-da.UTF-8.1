@@ -31,8 +31,8 @@ vim \- Vi IMproved, en programmørs teksteditor
 .B rgview
 .SH BESKRIVELSE
 .B Vim
-er en teksteditor som er opad kompatibel med Vi.
-Den kan bruges til at redigere alle slags ren tekst.
+er en teksteditor some er opad kompatibel med Vi.
+Den kan bruges til at redigere alle slags ren text.
 Den er særlig nyttig til at redigere programmer.
 .PP
 Der er mange forbedringer over Vi: multiniveau fortryd,
@@ -62,27 +62,27 @@ med:
 .PP
 Hvis fillisten mangler, så startes editoren med en tom buffer.
 Ellers kan én af følgende fire måder bruges til at vælge en eller
-flere filer som skal redigeres.
+flere filer some skal redigeres.
 .TP 12
 fil ..
 En liste over filnavne.
 Den første bliver den nuværende fil og læses ind i bufferen.
 Markøren placeres på den første linje i bufferen.
 Du kan gå til de andre filer med ":next"-kommandoen. Skriv "\-\-" foran
-fillisten, for at redigere en fil som begynder med en bindestreg.
+fillisten, for at redigere en fil some begynder med en bindestreg.
 .TP
 \-
-Filen som skal redigeres læses fra stdin. Kommandoer læses fra stderr, hvilket
+Filen some skal redigeres læses fra stdin. Kommandoer læses fra stderr, hvilket
 skal være en tty.
 .TP
 \-t {tag}
-Filen som skal redigeres og den indledende markørplacering afhænger af
+Filen some skal redigeres og den indledende markørplacering afhænger af
 et "tag", en slags gå til-etiket.
 {tag} opslås i tags-filen, den tilknyttede fil bliver den nuværende
 fil og den tilknyttede kommando udføres.
 Det bruges mest til C-programmer, hvor {tag} kunne være et
 funktionsnavn.
-Virkningen er at filen som indeholder funktionen bliver den nuværende fil
+Virkningen er at filen some indeholder funktionen bliver den nuværende fil
 og markøren placeres i begyndelsen af funktionen.
 Se ":help tag\-commands".
 .TP
@@ -100,7 +100,7 @@ opfører sig anderledes, afhængig af navnet på kommandoen (eksekverbaren kan
 stadig være den samme fil).
 .TP 10
 vim
-Den "normale" måde, alt er standard.
+Den "normal" måde, alt er standard.
 .TP
 ex
 Start i Ex-tilstand.
@@ -122,7 +122,7 @@ Starter et nyt vindue.
 Det kan også gøres med "\-y"-argumentet.
 .TP
 rvim rview rgvim rgview
-Som dem ovenfor, men med restriktioner. Det vil ikke være muligt at starte
+Some dem ovenfor, men med restriktioner. Det vil ikke være muligt at starte
 skalkommandoer, eller at suspendere
 .B Vim\c
 \&.
@@ -144,7 +144,7 @@ Se ":help search\-pattern" for tilgængelige søgemønstre.
 .TP
 \-c {kommando}
 {kommando} udføres efter den første fil er blevet læst.
-{kommando} fortolkes som en Ex-kommando.
+{kommando} fortolkes some en Ex-kommando.
 Hvis {kommando} indeholder mellemrum, så skal den omsluttes af
 dobbelte citationstegn (det afhænger af den skal der bruges).
 Eksempel: vim "+set si" main.c
@@ -166,7 +166,7 @@ Du kan bruge op til 10 af disse kommandoer, uafhængigt af "\-c"-kommandoer.
 \-A
 Hvis
 .B Vim
-blev kompileret med understøttelse af ARABIC til redigering af filer som er
+blev kompileret med understøttelse af ARABIC til redigering af filer some er
 orienteret højre mod venstre og arabisk tastaturlayout, så starter tilvalget
 .B Vim
 i arabisk tilstand, dvs. 'arabic' sættes.
@@ -176,24 +176,24 @@ afbrydes.
 .TP
 \-b
 Binær tilstand.
-Der sættes nogle få valgmuligheder som gør det muligt at redigere en
+Der sættes nogle få valgmuligheder some gør det muligt at redigere en
 binær eller eksekverbar fil.
 .TP
 \-C
 Kompatibel. Sæt 'compatible'-valgmuligheden.
 Det får
 .B Vim
-til at opføre sig mest som Vi, selvom der findes en .vimrc-fil.
+til at opføre sig mest some Vi, selvom der findes en .vimrc-fil.
 .TP
 \-d
 Start i diff-tilstand.
-Der skal være to, tre eller fire filnavneargumenter.
+Der skal være to, tree eller fire filnavneargumenter.
 .B Vim
 åbner alle filerne og viser forskellene mellem dem.
 Virker ligesom vimdiff(1).
 .TP
 \-d {enhed}
-Åbn {enhed} til brug som en terminal.
+Åbn {enhed} til brug some en terminal.
 Kun på Amiga.
 Eksempel:
 "\-d con:20/30/600/150".
@@ -215,7 +215,7 @@ i forbedret Ex-tilstand, ligesom hvis "exim"-eksekverbaren blev kaldt.
 \-f
 Forgrund. I GUI-versionen, vil
 .B Vim
-ikke fork'e og frigøre fra skallen som den blev startet i.
+ikke fork'e og frigøre fra skallen some den blev started i.
 På Amiga, genstartes
 .B Vim
 ikke for at åbne et nyt vindue.
@@ -228,12 +228,12 @@ På Amiga virker ":sh"- og ":!"-kommandoerne ikke.
 \-\-nofork
 Forgrund. I GUI-versionen, vil
 .B Vim
-ikke fork'e og frigøre fra skallen som den blev startet i.
+ikke fork'e og frigøre fra skallen some den blev started i.
 .TP
 \-F
 Hvis
 .B Vim
-blev kompileret med understøttelse af FKMAP til redigering af filer som er
+blev kompileret med understøttelse af FKMAP til redigering af filer some er
 orienteret højre mod venstre og persisk tastaturlayout, så starter tilvalget
 .B Vim
 i persisk tilstand, dvs. 'fkmap' og 'rightleft' sættes.
@@ -259,7 +259,7 @@ Herefter afsluttes
 \-H
 Hvis
 .B Vim
-blev kompileret med understøttelse af RIGHTLEFT til redigering af filer som er
+blev kompileret med understøttelse af RIGHTLEFT til redigering af filer some er
 orienteret højre mod venstre og hebraisk tastaturlayout, så starter tilvalget
 .B Vim
 i hebraisk tilstand, dvs. 'hkmap' og 'rightleft' sættes.
@@ -269,12 +269,12 @@ afbrydes.
 .TP
 \-i {viminfo}
 Når brug af viminfo-filen er aktiveret, så sætter tilvalget det
-filnavn som skal bruges, i stedet for standarden "~/.viminfo".
+filnavn some skal bruges, i stedet for standarden "~/.viminfo".
 Det kan også bruges til at springe brugen af .viminfo-filen over,
 ved at give navnet "NONE".
 .TP
 \-L
-Samme som \-r.
+Samme some \-r.
 .TP
 \-l
 Lisp-tilstand.
@@ -325,7 +325,7 @@ Skrivebeskyttet tilstand.
 Du kan stadig redigere bufferen, men vil være forhindret i
 fejlagtigt at overskrive en fil.
 Hvis du vil overskrive en fil, så tilføj et
-udråbstegn til Ex-kommandoen, som i ":w!".
+udråbstegn til Ex-kommandoen, some i ":w!".
 \-R-tilvalget indebærer også \-n-tilvalget (se ovenfor).
 \&'readonly'-valgmuligheden kan slås fra med ":set noro".
 Se ":help 'readonly'".
@@ -335,18 +335,18 @@ Oplist swap-filer, med information om at bruge dem til gendannelse.
 .TP
 \-r {fil}
 Gendannelsestilstand.
-Swap-filen bruges til at gendanne en redigeringssession som holdt
-op med at virke. Swap-filen er en fil med det samme filnavn som tekstfilen,
+Swap-filen bruges til at gendanne en redigeringssession some holdt
+op med at virke. Swap-filen er en fil med det samme filnavn some tekstfilen,
 med ".swp" tilføjet i slutningen.
 Se ":help recovery".
 .TP
 \-s
-Stille tilstand. Kun når der startes som "Ex" eller
+Stille tilstand. Kun når der startes some "Ex" eller
 når "\-e"-tilvalget blev givet inden "\-s"-tilvalget.
 .TP
 \-s {scriptind}
 Script-filen {scriptind} læses.
-Tegnene i filen fortolkes som havde du skrevet dem.
+Tegnene i filen fortolkes some havde du skrevet dem.
 Det samme kan gøres med kommandoen ":source! {scriptind}".
 Hvis slutningen af filen nås inden editoren afslutter,
 så læses yderligere tegn fra tastaturet.
@@ -354,9 +354,9 @@ så læses yderligere tegn fra tastaturet.
 \-T {terminal}
 Fortæller
 .B Vim
-navnet på terminalen som du bruger.
+navnet på terminalen some du bruger.
 Kræves kun når den automatisk måde ikke virker.
-Skal være en terminal som kendes af
+Skal være en terminal some kendes af
 .B Vim
 (indbygget) eller defineret i termcap- eller terminfo-filen.
 .TP
@@ -374,7 +374,7 @@ Den kan også bruges til at springe alle GUI-initialiseringer over,
 ved at give navnet "NONE". Se ":help gui\-init" i vim for flere detaljer.
 .TP
 \-V[N]
-Uddybende. Giv meddelelser om hvilke filer som er sourced og til læsning og
+Uddybende. Giv meddelelser om hvilke filer some er sourced og til læsning og
 skrivning af en viminfo-fil. Det valgfrie nummer N er værdien af 'verbose'.
 Standard er 10.
 .TP
@@ -385,10 +385,10 @@ i Vi-tilstand, ligesom eksekverbaren kaldet "vi". Det har kun virkning når
 eksekverbaren kaldes "ex".
 .TP
 \-w {scriptud}
-Alle tegnene som du skrev optages i filen {scriptud}, indtil du afslutter
+Alle tegnene some du skrev optages i filen {scriptud}, indtil du afslutter
 .B Vim\c
 \&.
-Det er nyttigt hvis du vil oprette en script-fil som skal bruges med
+Det er nyttigt hvis du vil oprette en script-fil some skal bruges med
 "vim \-s" eller ":source!".
 Hvis {scriptud}-filen findes, så tilføjes tegnene til slutningen.
 .TP
@@ -400,7 +400,7 @@ Brug kryptering når der skrives filer. Spørger efter en krypteringsnøgle.
 .TP
 \-X
 Opret ikke forbindelse til X-serveren. Afkorter opstartstiden i en terminal,
-men vinduets titel og udklipsholder bruges ikke.
+men vinduets title og udklipsholder bruges ikke.
 .TP
 \-y
 Start
@@ -408,15 +408,15 @@ Start
 i easy-tilstand, ligesom hvis "evim"- eller "eview"-eksekverbarene blev kaldt.
 Får
 .B Vim
-til at opføre sig som en klik og skriv-editor.
+til at opføre sig some en klik og skriv-editor.
 .TP
 \-Z
-Restriktiv tilstand. Virker ligesom eksekverbaren som begynder med "r".
+Restriktiv tilstand. Virker ligesom eksekverbaren some begynder med "r".
 .TP
 \-\-
 Betegner slutningen af tilvalgene.
-Argumenter efter dette håndteres som et filnavn.
-Det kan bruges til at redigere et filnavn som begynder med et '\-'.
+Argumenter efter dette håndteres some et filnavn.
+Det kan bruges til at redigere et filnavn some begynder med et '\-'.
 .TP
 \-\-echo\-wid
 Kun GTK GUI: Ekko vinduets id på stdout.
@@ -433,7 +433,7 @@ Spring indlæsning af plugins over. Indebæres af \-u NONE.
 .TP
 \-\-remote
 Opret forbindelse til en Vim-server og få den til at redigere filerne
-som gives i resten af argumenterne. Hvis der ikke findes nogen server,
+some gives i resten af argumenterne. Hvis der ikke findes nogen server,
 så gives der en advarsel og filerne redigeres i den nuværende Vim.
 .TP
 \-\-remote\-expr {udtryk}
@@ -444,21 +444,21 @@ Opret forbindelse til en Vim-server, evaluer
 Opret forbindelse til en Vim-server and send {nøgler} til den.
 .TP
 \-\-remote\-silent
-Som \-\-remote, men uden advarslen når der ikke findes nogen server.
+Some \-\-remote, men uden advarslen når der ikke findes nogen server.
 .TP
 \-\-remote\-wait
-Som \-\-remote, men Vim afslutter ikke før filerne er blevet redigeret.
+Some \-\-remote, men Vim afslutter ikke før filerne er blevet redigeret.
 .TP
 \-\-remote\-wait\-silent
-Som \-\-remote\-wait, men uden advarslen når der ikke findes nogen server.
+Some \-\-remote\-wait, men uden advarslen når der ikke findes nogen server.
 .TP
 \-\-serverlist
-Oplist navnene på alle Vim-servere som der kan findes.
+Oplist navnene på alle Vim-servere some der kan findes.
 .TP
 \-\-servername {navn}
 Brug servernavnet {navn}. Bruges til den nuværende Vim,
 medmindre det bruges med et \-\-remote-argument,
-så er det navnet på serveren som der skal oprettes forbindelse til.
+så er det navnet på serveren some der skal oprettes forbindelse til.
 .TP
 \-\-socketid {id}
 Kun GTK GUI: Brug GtkPlug-mekanismen til at køre gvim i et andet vindue.
@@ -484,7 +484,7 @@ Alle dokumentationsfiler kan vises på denne måde, f.eks.
 Brug ":help doc\-file\-list" for at få den fulde liste.
 .TP
 /usr/local/lib/vim/doc/tags
-Tags-filen som bruges til at finde information i dokumentationsfilerne.
+Tags-filen some bruges til at find information i dokumentationsfilerne.
 .TP
 /usr/local/lib/vim/syntax/syntax.vim
 Systembrede syntaksinitialiseringer.
@@ -509,8 +509,8 @@ Systembrede gvim-initialiseringer.
 Dine personlige gvim-initialiseringer.
 .TP
 /usr/local/lib/vim/optwin.vim
-Script som bruges til ":options"-kommandoen,
-en god måde til at vise og sætte valgmuligheder.
+Script some bruges til ":options"-kommandoen,
+en god måde til at vice og sætte valgmuligheder.
 .TP
 /usr/local/lib/vim/menu.vim
 Systembrede menu-initialiseringer til gvim.
@@ -525,7 +525,7 @@ Script til at registrere filtypen ud fra navnet. Se ":help 'filetype'".
 Script til at registrere filtypen ud fra indholdet. Se ":help 'filetype'".
 .TP
 /usr/local/lib/vim/print/*.ps
-Filer som bruges til PostScript-udskrivning.
+Filer some bruges til PostScript-udskrivning.
 .PP
 Læs VIM-hjemmesiden for seneste info:
 .br
@@ -548,7 +548,7 @@ Selvom der næsten ikke er noget af den originale kode tilbage.
 Formodentligt.
 Se ":help todo" for en liste over kendte problemer.
 .PP
-Bemærk at flere ting som af nogle kan anses som værende fejl,
+Bemærk at flere ting some af nogle kan anses some værende fejl,
 faktisk er pga. en for nær reproduktion af Vi's opførsel.
 Og hvis du tænker at andre ting er fejl "fordi Vi gør det anderledes",
 så kig nærmere på vi_diff.txt-filen (eller skriv :help vi_diff.txt i Vim).

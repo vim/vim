@@ -50,7 +50,7 @@ msgid "E931: Buffer cannot be registered"
 msgstr "E931: Buffer kan ikke registreres"
 
 msgid "E937: Attempt to delete a buffer that is in use"
-msgstr "E937: Forsøg på at slette en buffer som er i brug"
+msgstr "E937: Forsøg på at slette en buffer some er i brug"
 
 msgid "E515: No buffers were unloaded"
 msgstr "E515: Ingen buffere blev udlæst"
@@ -230,7 +230,7 @@ msgid "E898: socket() in channel_open()"
 msgstr "E898: socket() i channel_open()"
 
 msgid "E903: received command with non-string argument"
-msgstr "E903: modtog kommando med argument som ikke er en streng"
+msgstr "E903: modtog kommando med argument some ikke er en streng"
 
 msgid "E904: last argument for expr/call must be a number"
 msgstr "E904: sidste argument for udtryk/kald skal være et nummer"
@@ -286,8 +286,8 @@ msgstr "Indtast samme nøgle igen: "
 msgid "Keys don't match!"
 msgstr "Nøglerne er ikke ens!"
 
-msgid "[crypted]"
-msgstr "[crypted]"
+msgid "[encrypted]"
+msgstr "[encrypted]"
 
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
@@ -346,7 +346,7 @@ msgstr ""
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
-msgstr "E102: Kan ikke finde bufferen \"%s\""
+msgstr "E102: Kan ikke find bufferen \"%s\""
 
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
@@ -416,7 +416,7 @@ msgid "E839: Completion function changed window"
 msgstr "E839: Fuldførelse-funktion ændrede vindue"
 
 msgid "E840: Completion function deleted text"
-msgstr "E840: Fuldførelse-funktion slettede tekst"
+msgstr "E840: Fuldførelse-funktion slettede text"
 
 msgid "'dictionary' option is empty"
 msgstr "'dictionary'-tilvalget er tomt"
@@ -472,7 +472,7 @@ msgstr "E18: Uventede tegn i :let"
 
 #, c-format
 msgid "E121: Undefined variable: %s"
-msgstr "E121: Udefineret variabel: %s"
+msgstr "E121: Udefineret variable: %s"
 
 msgid "E111: Missing ']'"
 msgstr "E111: Manglende ']'"
@@ -489,7 +489,7 @@ msgid "E461: Illegal variable name: %s"
 msgstr "E461: Ulovligt variabelnavn: %s"
 
 msgid "E806: using Float as a String"
-msgstr "E806: bruger flydende kommatal som en streng"
+msgstr "E806: bruger flydende kommatal some en streng"
 
 msgid "E687: Less targets than List items"
 msgstr "E687: Færre mål end listepunkter"
@@ -524,14 +524,14 @@ msgstr "E690: Manglende \"in\" efter :for"
 
 #, c-format
 msgid "E108: No such variable: \"%s\""
-msgstr "E108: Ingen sådan variabel: \"%s\""
+msgstr "E108: Ingen sådan variable: \"%s\""
 
 #, c-format
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Kan ikke låse eller låse op for variablen %s"
 
 msgid "E743: variable nested too deep for (un)lock"
-msgstr "E743: variabel indlejret for dybt til at blive låst/låst op"
+msgstr "E743: variable indlejret for dybt til at blive låst/låst op"
 
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: Manglende ':' efter '?'"
@@ -546,7 +546,7 @@ msgid "E695: Cannot index a Funcref"
 msgstr "E695: Kan ikke indeksere en funcref"
 
 msgid "E909: Cannot index a special variable"
-msgstr "E909: Kan ikke indeksere en speciel variabel"
+msgstr "E909: Kan ikke indeksere en speciel variable"
 
 #, c-format
 msgid "E112: Option name missing: %s"
@@ -569,58 +569,58 @@ msgstr ""
 "Ikke nok hukommelse til at sætte referencer, affaldsindsamling afbrudt!"
 
 msgid "E724: variable nested too deep for displaying"
-msgstr "E724: variabel indlejret for dybt til at blive vist"
+msgstr "E724: variable indlejret for dybt til at blive vist"
 
 msgid "E805: Using a Float as a Number"
-msgstr "E805: Bruger et flydende kommatal som et nummer"
+msgstr "E805: Bruger et flydende kommatal some et nummer"
 
 msgid "E703: Using a Funcref as a Number"
-msgstr "E703: Bruger en funcref som et nummer"
+msgstr "E703: Bruger en funcref some et nummer"
 
 msgid "E745: Using a List as a Number"
-msgstr "E745: Bruger en liste som et nummer"
+msgstr "E745: Bruger en liste some et nummer"
 
 msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: Bruger en ordbog som et nummer"
+msgstr "E728: Bruger en ordbog some et nummer"
 
 msgid "E910: Using a Job as a Number"
-msgstr "E910: Bruger et job som et nummer"
+msgstr "E910: Bruger et job some et nummer"
 
 msgid "E913: Using a Channel as a Number"
-msgstr "E913: Bruger en kanal som et nummer"
+msgstr "E913: Bruger en kanal some et nummer"
 
 msgid "E891: Using a Funcref as a Float"
-msgstr "E891: Bruger en funcref som et fyldende kommatal"
+msgstr "E891: Bruger en funcref some et fyldende kommatal"
 
 msgid "E892: Using a String as a Float"
-msgstr "E892: Bruger en streng som et flydende kommatal"
+msgstr "E892: Bruger en streng some et flydende kommatal"
 
 msgid "E893: Using a List as a Float"
-msgstr "E893: Bruger en liste som et flydende kommatal"
+msgstr "E893: Bruger en liste some et flydende kommatal"
 
 msgid "E894: Using a Dictionary as a Float"
-msgstr "E894: Bruger en ordbog som et flydende kommatal"
+msgstr "E894: Bruger en ordbog some et flydende kommatal"
 
 msgid "E907: Using a special value as a Float"
-msgstr "E907: Bruger en speciel værdi som et flydende kommatal"
+msgstr "E907: Bruger en speciel værdi some et flydende kommatal"
 
 msgid "E911: Using a Job as a Float"
-msgstr "E911: Bruger et job som et flydende kommatal"
+msgstr "E911: Bruger et job some et flydende kommatal"
 
 msgid "E914: Using a Channel as a Float"
-msgstr "E914: Bruger en kanal som et flydende kommatal"
+msgstr "E914: Bruger en kanal some et flydende kommatal"
 
 msgid "E729: using Funcref as a String"
-msgstr "E729: bruger funcref som en streng"
+msgstr "E729: bruger funcref some en streng"
 
 msgid "E730: using List as a String"
-msgstr "E730: bruger liste som en streng"
+msgstr "E730: bruger liste some en streng"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: bruger ordbog som en streng"
+msgstr "E731: bruger ordbog some en streng"
 
 msgid "E908: using an invalid value as a String"
-msgstr "E908: bruger en ugyldig værdi som en streng"
+msgstr "E908: bruger en ugyldig værdi some en streng"
 
 #, c-format
 msgid "E795: Cannot delete variable %s"
@@ -632,7 +632,7 @@ msgstr "E704: Funcref-variabelnavn skal begynde med et stort bogstav: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: Variabelnavn er i konflikt med eksisterende funktion: %s"
+msgstr "E705: Variabelnavn er i konflikt med eksisterende function: %s"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -646,7 +646,7 @@ msgid "E742: Cannot change value of %s"
 msgstr "E742: Kan ikke ændre værdien af %s"
 
 msgid "E698: variable nested too deep for making a copy"
-msgstr "E698: variabel indlejret for dybt til at lave en kopi"
+msgstr "E698: variable indlejret for dybt til at lave en kopi"
 
 msgid ""
 "\n"
@@ -710,7 +710,7 @@ msgstr[1] "+-%s%3ld linjer: "
 
 #, c-format
 msgid "E700: Unknown function: %s"
-msgstr "E700: Ukendt funktion: %s"
+msgstr "E700: Ukendt function: %s"
 
 msgid "E922: expected a dict"
 msgstr "E922: ventede en ordbog"
@@ -764,7 +764,7 @@ msgid "E277: Unable to read a server reply"
 msgstr "E277: Kan ikke læse et serversvar"
 
 msgid "E941: already started a server"
-msgstr "E941: allerede startet en server"
+msgstr "E941: allerede started en server"
 
 msgid "E942: +clientserver feature not available"
 msgstr "E942: +clientserver-funktionalitet ikke tilgængelig"
@@ -835,7 +835,7 @@ msgid "> %d, Hex %08x, Octal %o"
 msgstr "> %d, hex %08x, octal %o"
 
 msgid "E134: Move lines into themselves"
-msgstr "E134: flyt linjer ind i dem selv"
+msgstr "E134: flyt linjer ind i dem self"
 
 msgid "1 line moved"
 msgstr "1 linje flyttet"
@@ -922,7 +922,7 @@ msgstr ""
 "#-bjælkelinjer, kopieret ordret:\n"
 
 msgid "Save As"
-msgstr "Gem som"
+msgstr "Gem some"
 
 msgid "Write partial file?"
 msgstr "Skriv ufuldstændig fil?"
@@ -1103,7 +1103,7 @@ msgid "E158: Invalid buffer name: %s"
 msgstr "E158: Ugyldigt buffernavn: %s"
 
 msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Kan ikke hoppe til en buffer som ikke har et navn"
+msgstr "E934: Kan ikke hoppe til en buffer some ikke har et navn"
 
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
@@ -1301,7 +1301,7 @@ msgid "End of sourced file"
 msgstr "Slut på sourced fil"
 
 msgid "End of function"
-msgstr "Slutning af funktion"
+msgstr "Slutning af function"
 
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Flertydig brug af brugerdefineret kommando"
@@ -1346,13 +1346,13 @@ msgid ""
 "    Name        Args       Address   Complete  Definition"
 msgstr ""
 "\n"
-"    Navn        Argumenter Adresse   Fuldført  Definition"
+"    Navn        Argumenter Address   Fuldført  Definition"
 
 msgid "No user-defined commands found"
 msgstr "Fandt ingen brugerdefinerede kommandoer"
 
 msgid "E175: No attribute specified"
-msgstr "E175: Ingen attribut angivet"
+msgstr "E175: Ingen attribute angivet"
 
 msgid "E176: Invalid number of arguments"
 msgstr "E176: Ugyldigt antal argumenter"
@@ -1371,7 +1371,7 @@ msgstr "E179: argument kræves til -addr"
 
 #, c-format
 msgid "E181: Invalid attribute: %s"
-msgstr "E181: Ugyldig attribut: %s"
+msgstr "E181: Ugyldig attribute: %s"
 
 msgid "E182: Invalid command name"
 msgstr "E182: Ugyldigt kommandonavn"
@@ -1405,7 +1405,7 @@ msgstr "ukendt"
 
 #, c-format
 msgid "E185: Cannot find color scheme '%s'"
-msgstr "E185: Kan ikke finde farveskemaet '%s'"
+msgstr "E185: Kan ikke find farveskemaet '%s'"
 
 msgid "Greetings, Vim user!"
 msgstr "Hejsa, Vim-bruger!"
@@ -1626,7 +1626,7 @@ msgid "E602: :endtry without :try"
 msgstr "E602: :endtry uden :try"
 
 msgid "E193: :endfunction not inside a function"
-msgstr "E193: :endfunction ikke i en funktion"
+msgstr "E193: :endfunction ikke i en function"
 
 msgid "E788: Not allowed to edit another buffer now"
 msgstr "E788: Ikke tilladt at redigere anden buffer nu"
@@ -1750,7 +1750,7 @@ msgid "[READ ERRORS]"
 msgstr "[LÆSEFEJL]"
 
 msgid "Can't find temp file for conversion"
-msgstr "Kan ikke finde midlertidig fil til konvertering"
+msgstr "Kan ikke find midlertidig fil til konvertering"
 
 msgid "Conversion with 'charconvert' failed"
 msgstr "Konvertering med 'charconvert' mislykkedes"
@@ -1762,7 +1762,7 @@ msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Ingen matchende autokommandoer for acwrite-buffer"
 
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
-msgstr "E203: Autokommandoer slettet eller udlæste buffer som skal skrives"
+msgstr "E203: Autokommandoer slettet eller udlæste buffer some skal skrives"
 
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Autokommando ændrede antal linjer på en uventede måde"
@@ -1774,7 +1774,7 @@ msgid "Partial writes disallowed for NetBeans buffers"
 msgstr "Ufuldstændige skrivninger er ikke tilladt for NetBeans-buffere"
 
 msgid "is not a file or writable device"
-msgstr "er ikke en fil eller enhed som der kan skrives til"
+msgstr "er ikke en fil eller enhed some der kan skrives til"
 
 msgid "writing to device disabled with 'opendevice' option"
 msgstr "skrivning til enhed er deaktiveret med 'opendevice'-tilvalget"
@@ -1808,7 +1808,7 @@ msgstr ""
 "tilsidesætte)"
 
 msgid "E214: Can't find temp file for writing"
-msgstr "E214: Kan ikke finde midlertidig fil til skrivning"
+msgstr "E214: Kan ikke find midlertidig fil til skrivning"
 
 msgid "E213: Cannot convert (add ! to write without conversion)"
 msgstr "E213: Kan ikke konvertere (tilføj ! for at skrive uden konvertering)"
@@ -2014,7 +2014,7 @@ msgid "E936: Cannot delete the current group"
 msgstr "E936: Kan ikke slette den nuværende gruppe"
 
 msgid "W19: Deleting augroup that is still in use"
-msgstr "W19: Sletter augroup som stadig er i brug"
+msgstr "W19: Sletter augroup some stadig er i brug"
 
 #, c-format
 msgid "E215: Illegal character after *: %s"
@@ -2113,7 +2113,7 @@ msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Ulovlig tilstand"
 
 msgid "E851: Failed to create a new process for the GUI"
-msgstr "E851: Kunne ikke oprette en ny proces for GUI'en"
+msgstr "E851: Kunne ikke oprette en ny process for GUI'en"
 
 msgid "E852: The child process failed to start the GUI"
 msgstr "E852: Barneprocessen kunne ikke starte GUI'en"
@@ -2228,7 +2228,7 @@ msgid "Up"
 msgstr "Op"
 
 msgid "Down"
-msgstr "Ned"
+msgstr "Need"
 
 msgid "Find Next"
 msgstr "Find næste"
@@ -2297,10 +2297,10 @@ msgid "Open tab..."
 msgstr "Åbn faneblad..."
 
 msgid "Find string (use '\\\\' to find a '\\')"
-msgstr "Find streng (brug '\\\\' til at finde et '\\')"
+msgstr "Find streng (brug '\\\\' til at find et '\\')"
 
 msgid "Find & Replace (use '\\\\' to find a '\\')"
-msgstr "Find og erstat (brug '\\\\' til at finde et '\\')"
+msgstr "Find og erstat (brug '\\\\' til at find et '\\')"
 
 msgid "Not Used"
 msgstr "Ikke brugt"
@@ -2310,7 +2310,7 @@ msgstr "Mappe\t\t*.nothing\n"
 
 #, c-format
 msgid "E671: Cannot find window title \"%s\""
-msgstr "E671: Kan ikke finde vinduestitlen \"%s\""
+msgstr "E671: Kan ikke find vinduestitlen \"%s\""
 
 #, c-format
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
@@ -2384,7 +2384,7 @@ msgid "Font:"
 msgstr "Skrifttype:"
 
 msgid "Style:"
-msgstr "Stil:"
+msgstr "Still:"
 
 msgid "Size:"
 msgstr "Størrelse:"
@@ -2406,7 +2406,7 @@ msgid "Page %d"
 msgstr "Side %d"
 
 msgid "No text to be printed"
-msgstr "Ingen tekst at udskrive"
+msgstr "Ingen text at udskrive"
 
 #, c-format
 msgid "Printing page %d (%d%%)"
@@ -2463,14 +2463,14 @@ msgid "E456: Can't open file \"%s\""
 msgstr "E456: Kan ikke åbne filen \"%s\""
 
 msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: Kan ikke finde PostScript-ressourcefilen \"prolog.ps\""
+msgstr "E456: Kan ikke find PostScript-ressourcefilen \"prolog.ps\""
 
 msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E456: Kan ikke finde PostScript-ressourcefilen \"cidfont.ps\""
+msgstr "E456: Kan ikke find PostScript-ressourcefilen \"cidfont.ps\""
 
 #, c-format
 msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: Kan ikke finde PostScript-ressourcefilen \"%s.ps\""
+msgstr "E456: Kan ikke find PostScript-ressourcefilen \"%s.ps\""
 
 #, c-format
 msgid "E620: Unable to convert to print encoding \"%s\""
@@ -2591,12 +2591,12 @@ msgid ""
 msgstr ""
 "\n"
 "       a: Find tildelinger til symbolet\n"
-"       c: Find funktioner som kalder funktionen\n"
-"       d: Find funktioner som kaldes af funktionen\n"
+"       c: Find funktioner some kalder funktionen\n"
+"       d: Find funktioner some kaldes af funktionen\n"
 "       e: Find dette egrep-mønster\n"
 "       f: Find filen\n"
 "       g: Find definitionen\n"
-"       i: Find filer som #inkludere filen\n"
+"       i: Find filer some #inkludere filen\n"
 "       s: Find C-symbolet\n"
 "       t: Find tekststrengen\n"
 
@@ -2808,7 +2808,7 @@ msgid "keyboard interrupt"
 msgstr "tastaturafbryd"
 
 msgid "cannot create buffer/window command: object is being deleted"
-msgstr "kan ikke oprette buffer-/vindue-kommando: objekt slettes"
+msgstr "kan ikke oprette buffer-/vindue-kommando: object slettes"
 
 msgid ""
 "cannot register callback command: buffer/window is already being deleted"
@@ -2938,7 +2938,7 @@ msgid "[file ..]       edit specified file(s)"
 msgstr "[fil ..]        rediger angivne fil(er)"
 
 msgid "-               read text from stdin"
-msgstr "-               læs tekst fra stdin"
+msgstr "-               læs text fra stdin"
 
 msgid "-t tag          edit file where tag is defined"
 msgstr "-t tag          rediger fil hvor tag er defineret"
@@ -2994,7 +2994,7 @@ msgstr "-register\t\tRegistrer denne gvim til OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tAfregistrer gvim for OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tKør med GUI (ligesom \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -3028,7 +3028,7 @@ msgid "-m\t\t\tModifications (writing files) not allowed"
 msgstr "-m\t\t\tÆndringer (skrivning af filer) ikke tilladt"
 
 msgid "-M\t\t\tModifications in text not allowed"
-msgstr "-M\t\t\tÆndringer i tekst ikke tilladt"
+msgstr "-M\t\t\tÆndringer i text ikke tilladt"
 
 msgid "-b\t\t\tBinary mode"
 msgstr "-b\t\t\tBinær tilstand"
@@ -3042,7 +3042,7 @@ msgstr "-C\t\t\tKompatibel med Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tIkke fuldt ud Vi-kompatibel: 'nocompatible'"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr "-V[N][fnavn]\t\tVær uddybende [niveau N] [log meddelelser til fnavn]"
 
 msgid "-D\t\t\tDebugging mode"
@@ -3055,10 +3055,10 @@ msgid "-r\t\t\tList swap files and exit"
 msgstr "-r\t\t\tOplist swap-filer og afslut"
 
 msgid "-r (with file name)\tRecover crashed session"
-msgstr "-r (med filnavn)\tGendan session som holdt op med at virke"
+msgstr "-r (med filnavn)\tGendan session some holdt op med at virke"
 
 msgid "-L\t\t\tSame as -r"
-msgstr "-L\t\t\tSamme som -r"
+msgstr "-L\t\t\tSamme some -r"
 
 msgid "-f\t\t\tDon't use newcli to open window"
 msgstr "-f\t\t\tBrug ikke newcli til at åbne vindue"
@@ -3080,7 +3080,7 @@ msgstr "-T <terminal>\tSæt terminaltype til <terminal>"
 
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr ""
-"--not-a-term\t\tSpring advarsel over for input/output som ikke er en terminal"
+"--not-a-term\t\tSpring advarsel over for input/output some ikke er en terminal"
 
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tAfslut hvis input eller output ikke er en terminal"
@@ -3149,7 +3149,7 @@ msgstr ""
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
-"--remote-wait <filer>  Som --remote men vent på filer som skal redigeres"
+"--remote-wait <filer>  Some --remote men vent på filer some skal redigeres"
 
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
@@ -3160,7 +3160,7 @@ msgstr ""
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
-"--remote-tab[-wait][-silent] <filer>  Som --remote men brug fanebladsside "
+"--remote-tab[-wait][-silent] <filer>  Some --remote men brug fanebladsside "
 "pr. fil"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
@@ -3198,42 +3198,42 @@ msgid ""
 "Arguments recognised by gvim (Motif version):\n"
 msgstr ""
 "\n"
-"Argumenter som genkendes af gvim (Motif-version):\n"
+"Argumenter some genkendes af gvim (Motif-version):\n"
 
 msgid ""
 "\n"
 "Arguments recognised by gvim (neXtaw version):\n"
 msgstr ""
 "\n"
-"Argumenter som genkendes af gvim (neXtaw-version):\n"
+"Argumenter some genkendes af gvim (neXtaw-version):\n"
 
 msgid ""
 "\n"
 "Arguments recognised by gvim (Athena version):\n"
 msgstr ""
 "\n"
-"Argumenter som genkendes af gvim (Athena-version):\n"
+"Argumenter some genkendes af gvim (Athena-version):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <display>\tKør Vim på <display>"
 
 msgid "-iconic\t\tStart Vim iconified"
-msgstr "-iconic\t\tStart Vim som ikon"
+msgstr "-iconic\t\tStart Vim some ikon"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <farve>\tBrug <farve> til baggrunden (også: -bg)"
 
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
-msgstr "-foreground <farve>\tBrug <farve> til normal tekst (også: -fg)"
+msgstr "-foreground <farve>\tBrug <farve> til normal text (også: -fg)"
 
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
-msgstr "-font <skrifttype>\tBrug <skrifttype> til normal tekst (også: -fn)"
+msgstr "-font <skrifttype>\tBrug <skrifttype> til normal text (også: -fn)"
 
 msgid "-boldfont <font>\tUse <font> for bold text"
-msgstr "-boldfont <skrifttype>\tBrug <skrifttype> til fed tekst"
+msgstr "-boldfont <skrifttype>\tBrug <skrifttype> til fed text"
 
 msgid "-italicfont <font>\tUse <font> for italic text"
-msgstr "-italicfont <skriftt.>\tBrug <skrifttype> til kursiv tekst"
+msgstr "-italicfont <skriftt.>\tBrug <skrifttype> til kursiv text"
 
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr "-geometry <geom>\tBrug <geom> for indledende geometri (også: -geom)"
@@ -3255,7 +3255,7 @@ msgid "+reverse\t\tDon't use reverse video (also: +rv)"
 msgstr "+reverse\t\tBrug ikke omvendt grafik (også: +rv)"
 
 msgid "-xrm <resource>\tSet the specified resource"
-msgstr "-xrm <ressource>\tSæt den angivne ressource"
+msgstr "-xrm <resource>\tSæt den angivne resource"
 
 msgid ""
 "\n"
@@ -3264,7 +3264,7 @@ msgstr ""
 "\n"
 "Argumenter genkendt af gvim (GTK+-version):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <display>\tKør Vim på <display> (også: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
@@ -3313,21 +3313,21 @@ msgid ""
 "mark line  col file/text"
 msgstr ""
 "\n"
-"mærke linje kol fil/tekst"
+"mærke linje kol fil/text"
 
 msgid ""
 "\n"
 " jump line  col file/text"
 msgstr ""
 "\n"
-" hop  linje kol fil/tekst"
+" hop  linje kol fil/text"
 
 msgid ""
 "\n"
 "change line  col text"
 msgstr ""
 "\n"
-"skift  linje kol tekst"
+"skift  linje kol text"
 
 msgid ""
 "\n"
@@ -3369,7 +3369,7 @@ msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: Advarsel: Kunne ikke sætte destroy callback til IM"
 
 msgid "E288: input method doesn't support any style"
-msgstr "E288: inputmetode understøtter ikke nogen stil"
+msgstr "E288: inputmetode understøtter ikke nogen still"
 
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: inputmetode understøtter ikke min preedit-type"
@@ -3422,7 +3422,7 @@ msgid "E305: No swap file found for %s"
 msgstr "E305: Fandt ingen swap-fil for %s"
 
 msgid "Enter number of swap file to use (0 to quit): "
-msgstr "Indtast antal swap-filer som der skal bruges (0 for at afslutte): "
+msgstr "Indtast antal swap-filer some der skal bruges (0 for at afslutte): "
 
 #, c-format
 msgid "E306: Cannot open %s"
@@ -3553,7 +3553,7 @@ msgstr "E311: Gendannelse afbrudt"
 msgid ""
 "E312: Errors detected while recovering; look for lines starting with ???"
 msgstr ""
-"E312: Fejl registreret ved gendannelse; kig efter linjer som begynder med ???"
+"E312: Fejl registreret ved gendannelse; kig efter linjer some begynder med ???"
 
 msgid "See \":help E312\" for more information."
 msgstr "Se \":help E312\" for mere information."
@@ -3573,7 +3573,7 @@ msgstr "og kør diff men den originale fil for at tjekke for ændringer)"
 
 msgid "Recovery completed. Buffer contents equals file contents."
 msgstr ""
-"Gendannelse gennemført. Bufferens indhold er det samme som filens indhold."
+"Gendannelse gennemført. Bufferens indhold er det samme some filens indhold."
 
 msgid ""
 "\n"
@@ -3695,7 +3695,7 @@ msgstr "E315: ml_get: ugyldig lnum: %ld"
 
 #, c-format
 msgid "E316: ml_get: cannot find line %ld"
-msgstr "E316: ml_get: kan ikke finde linje %ld"
+msgstr "E316: ml_get: kan ikke find linje %ld"
 
 msgid "E317: pointer block id wrong 3"
 msgstr "E317: forkert blok-id for pointer 3"
@@ -3714,7 +3714,7 @@ msgstr "slettede blok 1?"
 
 #, c-format
 msgid "E320: Cannot find line %ld"
-msgstr "E320: Kan ikke finde linje %ld"
+msgstr "E320: Kan ikke find linje %ld"
 
 msgid "E317: pointer block id wrong"
 msgstr "E317: forkert blok-id for pointer"
@@ -3765,7 +3765,7 @@ msgstr ""
 "\n"
 "(1) Et andet program redigere muligvis den samme fil. Hvis det er "
 "tilfældet,\n"
-"    så pas på ikke at ende med to forskellige instanser af den samme\n"
+"    så pas på ikke at end med to forskellige instanser af den samme\n"
 "    fil når der foretages ændringer. Afslut, eller fortsæt med "
 "forsigtighed.\n"
 
@@ -3913,7 +3913,7 @@ msgid "-- More --"
 msgstr "-- Mere --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " MELLEMRUM/d/j: skærm/side/linje ned, b/u/k: op, q: afslut "
+msgstr " MELLEMRUM/d/j: skærm/side/linje need, b/u/k: op, q: afslut "
 
 msgid "Question"
 msgstr "Spørgsmål"
@@ -4050,11 +4050,11 @@ msgstr ""
 
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E344: Kan ikke finde mappen \"%s\" i cdpath"
+msgstr "E344: Kan ikke find mappen \"%s\" i cdpath"
 
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345: Kan ikke finde filen \"%s\" i path"
+msgstr "E345: Kan ikke find filen \"%s\" i path"
 
 #, c-format
 msgid "E346: No more directory \"%s\" found in cdpath"
@@ -4312,7 +4312,7 @@ msgid "E528: Must specify a ' value"
 msgstr "E528: Skal angive en '-værdi"
 
 msgid "E595: contains unprintable or wide character"
-msgstr "E595: indeholder tegn som ikke kan udskrives eller er bredt"
+msgstr "E595: indeholder tegn some ikke kan udskrives eller er bredt"
 
 msgid "E596: Invalid font(s)"
 msgstr "E596: Ugyldig skrifttype(r)"
@@ -4397,7 +4397,7 @@ msgid ""
 "--- Local option values ---"
 msgstr ""
 "\n"
-"--- Værdier for lokale tilvalg ---"
+"--- Værdier for locale tilvalg ---"
 
 msgid ""
 "\n"
@@ -4625,7 +4625,7 @@ msgid "logoff"
 msgstr "log ud"
 
 msgid "shutdown"
-msgstr "luk ned"
+msgstr "luk need"
 
 msgid "E371: Command not found"
 msgstr "E371: Kommando ikke fundet"
@@ -4818,7 +4818,7 @@ msgstr "E71: Ugyldigt tegn efter %s%%"
 
 #, c-format
 msgid "E554: Syntax error in %s{...}"
-msgstr "E554: Fejl ved syntaks i %s{...}"
+msgstr "E554: Fejl ved syntax i %s{...}"
 
 msgid "External submatches:\n"
 msgstr "Eksterne undermatch:\n"
@@ -5001,10 +5001,10 @@ msgid "No included files"
 msgstr "Ingen inkluderede filer"
 
 msgid "E388: Couldn't find definition"
-msgstr "E388: Kunne ikke finde definition"
+msgstr "E388: Kunne ikke find definition"
 
 msgid "E389: Couldn't find pattern"
-msgstr "E389: Kunne ikke finde mønster"
+msgstr "E389: Kunne ikke find mønster"
 
 msgid "Substitute "
 msgstr "Erstatning "
@@ -5025,12 +5025,12 @@ msgstr "E756: Stavekontrol er ikke aktiveret"
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
 msgstr ""
-"Advarsel: Kan ikke finde ordlisten \"%s_%s.spl\" eller \"%s_ascii.spl\""
+"Advarsel: Kan ikke find ordlisten \"%s_%s.spl\" eller \"%s_ascii.spl\""
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr ""
-"Advarsel: Kan ikke finde ordlisten \"%s.%s.spl\" eller \"%s.ascii.spl\""
+"Advarsel: Kan ikke find ordlisten \"%s.%s.spl\" eller \"%s.ascii.spl\""
 
 msgid "E797: SpellFileMissing autocommand deleted buffer"
 msgstr "E797: SpellFileMissing-autokommando slettede buffer"
@@ -5066,7 +5066,7 @@ msgstr "E758: Afkortet spell-fil"
 
 #, c-format
 msgid "Trailing text in %s line %d: %s"
-msgstr "Efterstillede tekst i %s linje %d: %s"
+msgstr "Efterstillede text i %s linje %d: %s"
 
 #, c-format
 msgid "Affix name too long in %s line %d: %s"
@@ -5089,7 +5089,7 @@ msgid "E757: This does not look like a spell file"
 msgstr "E757: Det ligner ikke en spell-fil"
 
 msgid "E771: Old spell file, needs to be updated"
-msgstr "E771: Gammel spell-fil, som skal opdateres"
+msgstr "E771: Gammel spell-fil, some skal opdateres"
 
 msgid "E772: Spell file is for newer version of Vim"
 msgstr "E772: Spell-filen er til en nyere version af Vim"
@@ -5103,7 +5103,7 @@ msgstr "E778: ligner ikke en .sug-fil: %s"
 
 #, c-format
 msgid "E779: Old .sug file, needs to be updated: %s"
-msgstr "E779: Gammel .sug-fil, som skal opdateres: %s"
+msgstr "E779: Gammel .sug-fil, some skal opdateres: %s"
 
 #, c-format
 msgid "E780: .sug file is for newer version of Vim: %s"
@@ -5251,7 +5251,7 @@ msgstr "Ulovligt flag i %s linje %d: %s"
 
 #, c-format
 msgid "%s value differs from what is used in another .aff file"
-msgstr "%s-værdi er ikke den samme som bruges i en anden .aff-fil"
+msgstr "%s-værdi er ikke den samme some bruges i en anden .aff-fil"
 
 #, c-format
 msgid "Reading dictionary file %s..."
@@ -5470,7 +5470,7 @@ msgid " line breaks"
 msgstr " linjeombrydninger"
 
 msgid "E395: contains argument not accepted here"
-msgstr "E395: indeholder argument som ikke accepteres her"
+msgstr "E395: indeholder argument some ikke accepteres her"
 
 msgid "E844: invalid cchar value"
 msgstr "E844: ugyldig cchar-værdi"
@@ -5486,7 +5486,7 @@ msgid "E397: Filename required"
 msgstr "E397: Filnavn kræves"
 
 msgid "E847: Too many syntax includes"
-msgstr "E847: For mange syntaks inkluderinger"
+msgstr "E847: For mange syntax inkluderinger"
 
 #, c-format
 msgid "E789: Missing ']': %s"
@@ -5502,7 +5502,7 @@ msgstr "E398: Manglende '=': %s"
 
 #, c-format
 msgid "E399: Not enough arguments: syntax region %s"
-msgstr "E399: For mange argumenter: syntaks region %s"
+msgstr "E399: For mange argumenter: syntax region %s"
 
 msgid "E848: Too many syntax clusters"
 msgstr "E848: For mange syntaks-clusters"
@@ -5520,7 +5520,7 @@ msgstr "E402: Affald efter mønster: %s"
 
 msgid "E403: syntax sync: line continuations pattern specified twice"
 msgstr ""
-"E403: syntaks synkronisering: linjefortsættelsesmønster angivet to gange"
+"E403: syntax synkronisering: linjefortsættelsesmønster angivet to gange"
 
 #, c-format
 msgid "E404: Illegal arguments: %s"
@@ -5611,7 +5611,7 @@ msgid "E424: Too many different highlighting attributes in use"
 msgstr "E424: For mange forskellige fremhævningsattributter i brug"
 
 msgid "E669: Unprintable character in group name"
-msgstr "E669: Tegn som ikke kan udskrives i gruppenavn"
+msgstr "E669: Tegn some ikke kan udskrives i gruppenavn"
 
 msgid "W18: Invalid character in group name"
 msgstr "W18: Ugyldige tegn i gruppenavn"
@@ -5667,7 +5667,7 @@ msgid ""
 "  # TO tag         FROM line  in file/text"
 msgstr ""
 "\n"
-"  # TIL tag        FRA linje  i fil/tekst"
+"  # TIL tag        FRA linje  i fil/text"
 
 #, c-format
 msgid "Searching tags file %s"
@@ -5696,10 +5696,10 @@ msgid "E433: No tags file"
 msgstr "E433: Ingen tags-fil"
 
 msgid "E434: Can't find tag pattern"
-msgstr "E434: Kan ikke finde tag-mønster"
+msgstr "E434: Kan ikke find tag-mønster"
 
 msgid "E435: Couldn't find tag, just guessing!"
-msgstr "E435: Kunne ikke finde tag, gætter bare!"
+msgstr "E435: Kunne ikke find tag, gætter bare!"
 
 #, c-format
 msgid "Duplicate field name: %s"
@@ -5764,7 +5764,7 @@ msgid "E955: Not a terminal buffer"
 msgstr "E955: Ikke en terminal-buffer"
 
 msgid "new shell started\n"
-msgstr "ny skal startet\n"
+msgstr "ny skal started\n"
 
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Fejl ved læsning af input, afslutter...\n"
@@ -5919,7 +5919,7 @@ msgstr "E718: Funcref kræves"
 
 #, c-format
 msgid "E130: Unknown function: %s"
-msgstr "E130: Ukendt funktion: %s"
+msgstr "E130: Ukendt function: %s"
 
 #, c-format
 msgid "E125: Illegal argument: %s"
@@ -5961,11 +5961,11 @@ msgstr "E699: For mange argumenter"
 
 #, c-format
 msgid "E117: Unknown function: %s"
-msgstr "E117: Ukendt funktion: %s"
+msgstr "E117: Ukendt function: %s"
 
 #, c-format
 msgid "E933: Function was deleted: %s"
-msgstr "E933: Funktion blev slettet: %s"
+msgstr "E933: Function blev slettet: %s"
 
 #, c-format
 msgid "E119: Not enough arguments for function: %s"
@@ -5993,7 +5993,7 @@ msgstr "E884: Funktionsnavnet må ikke indeholdet et kolon: %s"
 
 #, c-format
 msgid "E123: Undefined function: %s"
-msgstr "E123: Udefineret funktion: %s"
+msgstr "E123: Udefineret function: %s"
 
 #, c-format
 msgid "E124: Missing '(': %s"
@@ -6011,7 +6011,7 @@ msgstr "E126: Manglende :endfunction"
 
 #, c-format
 msgid "W22: Text found after :endfunction: %s"
-msgstr "W22: Tekst fundet efter :endfunction: %s"
+msgstr "W22: Text fundet efter :endfunction: %s"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
@@ -6030,7 +6030,7 @@ msgid "E131: Cannot delete function %s: It is in use"
 msgstr "E131: Kan ikke slette funktionen %s: Den er i brug"
 
 msgid "E133: :return not inside a function"
-msgstr "E133: :return ikke i en funktion"
+msgstr "E133: :return ikke i en function"
 
 #, c-format
 msgid "E107: Missing parentheses: %s"
@@ -6097,7 +6097,7 @@ msgid ""
 "Included patches: "
 msgstr ""
 "\n"
-"Rettelser som er med: "
+"Rettelser some er med: "
 
 msgid ""
 "\n"
@@ -6188,7 +6188,7 @@ msgid "with Cocoa GUI."
 msgstr "med Cocoa-GUI."
 
 msgid "  Features included (+) or not (-):\n"
-msgstr "  Funktionaliteter som er med (+) eller ikke (-):\n"
+msgstr "  Funktionaliteter some er med (+) eller ikke (-):\n"
 
 msgid "   system vimrc file: \""
 msgstr "    system vimrc-fil: \""
@@ -6284,7 +6284,7 @@ msgid "menu  Help->Orphans           for information    "
 msgstr "menu  Hjælp->Forældreløse børnfor information    "
 
 msgid "Running modeless, typed text is inserted"
-msgstr "Kører tilstandsløs, skrevet tekst indsættes"
+msgstr "Kører tilstandsløs, skrevet text indsættes"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr "menu  Rediger->Globale indstillinger->Indsæt-tilstand til/fra  "
@@ -6311,7 +6311,7 @@ msgid "type  :help register<Enter>   for information "
 msgstr "skriv :help register<Enter>   for information "
 
 msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "menu  Hjælp->Sponsorer/registrer  for information    "
+msgstr "menu  Hjælp->Sponsorer/register  for information    "
 
 msgid "Already only one window"
 msgstr "Allerede kun ét vindue"
@@ -6342,7 +6342,7 @@ msgstr "E446: Intet filnavn under markør"
 
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
-msgstr "E447: Kan ikke finde filen \"%s\" i sti"
+msgstr "E447: Kan ikke find filen \"%s\" i sti"
 
 #, c-format
 msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
@@ -6350,7 +6350,7 @@ msgstr "E799: Ugyldigt ID: %ld (skal være større end eller lig med 1)"
 
 #, c-format
 msgid "E801: ID already taken: %ld"
-msgstr "E801: ID allerede taget: %ld"
+msgstr "E801: ID allerede target: %ld"
 
 msgid "E290: List or number required"
 msgstr "E290: Liste eller nummer kræves"
@@ -6393,7 +6393,7 @@ msgid "Edits the selected file(s) with Vim"
 msgstr "Redigerer den valgt fil(er) med Vim"
 
 msgid "Error creating process: Check if gvim is in your path!"
-msgstr "Fejl ved oprettelse af proces: Tjek om gvim er i din sti!"
+msgstr "Fejl ved oprettelse af process: Tjek om gvim er i din sti!"
 
 msgid "gvimext.dll error"
 msgstr "fejl ved gvimext.dll"
@@ -6467,7 +6467,7 @@ msgid "Interrupted"
 msgstr "Afbrudt"
 
 msgid "E14: Invalid address"
-msgstr "E14: Ugyldig adresse"
+msgstr "E14: Ugyldig address"
 
 msgid "E474: Invalid argument"
 msgstr "E474: Ugyldigt argument"
@@ -6547,7 +6547,7 @@ msgid "E28: No such highlight group name: %s"
 msgstr "E28: Intet sådan fremhævningsgruppenavn: %s"
 
 msgid "E29: No inserted text yet"
-msgstr "E29: Endnu ingen indsat tekst"
+msgstr "E29: Endnu ingen indsat text"
 
 msgid "E30: No previous command line"
 msgstr "E30: Ingen tidligere kommandolinje"
@@ -6645,11 +6645,11 @@ msgstr "E45: 'readonly'-tilvalget er sat (tilføj ! for at tilsidesætte)"
 
 #, c-format
 msgid "E46: Cannot change read-only variable \"%s\""
-msgstr "E46: Kan ikke ændre skrivebeskyttet variabel \"%s\""
+msgstr "E46: Kan ikke ændre skrivebeskyttet variable \"%s\""
 
 #, c-format
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
-msgstr "E794: Kan ikke sætte variabel i sandboksen: \"%s\""
+msgstr "E794: Kan ikke sætte variable i sandboksen: \"%s\""
 
 msgid "E713: Cannot use empty key for Dictionary"
 msgstr "E713: Kan ikke bruge tom nøgle til ordbog"
@@ -6663,7 +6663,7 @@ msgstr "E684: listeindeks udenfor område: %ld"
 
 #, c-format
 msgid "E118: Too many arguments for function: %s"
-msgstr "E118: For mange argumenter til funktion: %s"
+msgstr "E118: For mange argumenter til function: %s"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: %s"
@@ -6734,7 +6734,7 @@ msgid "E80: Error while writing"
 msgstr "E80: Fejl ved skrivning"
 
 msgid "E939: Positive count required"
-msgstr "E939: Positiv tælling kræves"
+msgstr "E939: Positive tælling kræves"
 
 msgid "E81: Using <SID> not in a script context"
 msgstr "E81: Bruger <SID> ikke i et script kontekst"
@@ -6817,13 +6817,13 @@ msgstr "ventede bytes()- eller str()-instans, min fik %s"
 msgid ""
 "expected int(), long() or something supporting coercing to long(), but got %s"
 msgstr ""
-"ventede int(), long() eller noget som understøtter coercing til long(), min "
+"ventede int(), long() eller noget some understøtter coercing til long(), min "
 "fik %s"
 
 #, c-format
 msgid "expected int() or something supporting coercing to int(), but got %s"
 msgstr ""
-"ventede int() eller noget som understøtter coercing til int(), min fik %s"
+"ventede int() eller noget some understøtter coercing til int(), min fik %s"
 
 msgid "value is too large to fit into C int type"
 msgstr "værdi er for stor til at passe i C-heltalstype"
@@ -6842,7 +6842,7 @@ msgstr "kan ikke slette OutputObject-attributter"
 
 #, c-format
 msgid "invalid attribute: %s"
-msgstr "ugyldig attribut: %s"
+msgstr "ugyldig attribute: %s"
 
 msgid "E264: Python: Error initialising I/O objects"
 msgstr "E264: Python: Fejl ved initialisering af I/O-objekter"
@@ -6852,12 +6852,12 @@ msgstr "kunne ikke skifte mappe"
 
 #, c-format
 msgid "expected 3-tuple as imp.find_module() result, but got %s"
-msgstr "ventede 3-tuple som imp.find_module() resultat, men fik %s"
+msgstr "ventede 3-tuple some imp.find_module() resultat, men fik %s"
 
 #, c-format
 msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
 msgstr ""
-"ventede 3-tuple som imp.find_module() resultat, men fik tuple af størrelse %d"
+"ventede 3-tuple some imp.find_module() resultat, men fik tuple af størrelse %d"
 
 msgid "internal error: imp.find_module returned tuple with NULL"
 msgstr "intern fejl: imp.find_module returnerede tuple med NULL"
@@ -6894,7 +6894,7 @@ msgstr "slice-trin må ikke være nul"
 
 #, c-format
 msgid "attempt to assign sequence of size greater than %d to extended slice"
-msgstr "forsøg på at tildele sekvens som er større end %d til udvidet slice"
+msgstr "forsøg på at tildele sekvens some er større end %d til udvidet slice"
 
 #, c-format
 msgid "internal error: no Vim list item %d"
@@ -6923,7 +6923,7 @@ msgstr "kan ikke ændre fast liste"
 
 #, c-format
 msgid "unnamed function %s does not exist"
-msgstr "unavngivet funktion %s findes ikke"
+msgstr "unavngivet function %s findes ikke"
 
 #, c-format
 msgid "function %s does not exist"
@@ -6948,7 +6948,7 @@ msgstr "kan ikke fjerne det globale tilvalg %s"
 
 #, c-format
 msgid "unable to unset option %s which does not have global value"
-msgstr "kan ikke fjerne tilvalget %s som ikke har global værdi"
+msgstr "kan ikke fjerne tilvalget %s some ikke har global værdi"
 
 msgid "attempt to refer to deleted tab page"
 msgstr "forsøg på at referere til slettet fanebladsside"
@@ -6960,7 +6960,7 @@ msgid "attempt to refer to deleted window"
 msgstr "forsøg på at referere til slettet vindue"
 
 msgid "readonly attribute: buffer"
-msgstr "skrivebeskyttet attribut: buffer"
+msgstr "skrivebeskyttet attribute: buffer"
 
 msgid "cursor position outside buffer"
 msgstr "markørposition udenfor buffer"
@@ -6990,7 +6990,7 @@ msgid "expected vim.Window object, but got %s"
 msgstr "ventede vim.Window-objekt, men fik %s"
 
 msgid "failed to find window in the current tab page"
-msgstr "kunne ikke finde vindue i den nuværende fanebladsside"
+msgstr "kunne ikke find vindue i den nuværende fanebladsside"
 
 msgid "did not switch to the specified window"
 msgstr "skiftede ikke til det angivne vindue"

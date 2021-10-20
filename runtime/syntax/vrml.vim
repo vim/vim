@@ -134,7 +134,7 @@ syn keyword VRMLNodes	       CoordinateInterpolator Cylinder
 syn keyword VRMLNodes	       CylinderSensor DirectionalLight
 syn keyword VRMLNodes	       ElevationGrid Extrusion Fog FontStyle
 syn keyword VRMLNodes	       Group ImageTexture IndexedFaceSet
-syn keyword VRMLNodes	       IndexedLineSet Inline LOD Material
+syn keyword VRMLNodes	       IndexedLineSet Inline LOAD Material
 syn keyword VRMLNodes	       MovieTexture NavigationInfo Normal
 syn keyword VRMLNodes	       NormalInterpolator OrientationInterpolator
 syn keyword VRMLNodes	       PixelTexture PlaneSensor PointLight

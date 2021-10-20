@@ -78,7 +78,7 @@ func Test_cscopeWithCscopeConnections()
 
     " Test: Find this egrep pattern
     " test all matches returned by cscope
-    for cmd in ['cs find e ^\#includ.', 'cs find 6 ^\#includ.']
+    for cmd in ['cs find e ^\#include.', 'cs find 6 ^\#include.']
       let a = execute(cmd)
       call assert_match('\n(1 of 3): <<<unknown>>> #include <assert.h>', a)
       call assert_equal('#include <assert.h>', getline('.'))
@@ -90,7 +90,7 @@ func Test_cscopeWithCscopeConnections()
     endfor
 
     " Test: Find the same egrep pattern using lcscope this time.
-    let a = execute('lcs find e ^\#includ.')
+    let a = execute('lcs find e ^\#include.')
     call assert_match('\n(1 of 3): <<<unknown>>> #include <assert.h>', a)
     call assert_equal('#include <assert.h>', getline('.'))
     lnext
@@ -101,7 +101,7 @@ func Test_cscopeWithCscopeConnections()
 
     " Test: Find this file
     for cmd in ['cs find f Xmemfile_test.c', 'cs find 7 Xmemfile_test.c']
-      enew
+      new
       let a = execute(cmd)
       call assert_true(a =~ '"Xmemfile_test.c" \d\+L, \d\+B')
       call assert_equal('Xmemfile_test.c', @%)
@@ -109,7 +109,7 @@ func Test_cscopeWithCscopeConnections()
 
     " Test: Find files #including this file
     for cmd in ['cs find i assert.h', 'cs find 8 assert.h']
-      enew
+      new
       let a = execute(cmd)
       let alines = split(a, '\n', 1)
       call assert_equal('', alines[0])

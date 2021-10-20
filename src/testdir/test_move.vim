@@ -1,7 +1,7 @@
 " Test the ":move" command.
 
 func Test_move()
-  enew!
+  new!
   call append(0, ['line 1', 'line 2', 'line 3'])
   g /^$/ delete _
   set nomodified

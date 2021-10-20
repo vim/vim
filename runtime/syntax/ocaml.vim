@@ -8,7 +8,7 @@
 " Last Change:
 "               2018 Nov 08 - Improved highlighting of operators (Maëlan)
 "               2018 Apr 22 - Improved support for PPX (Andrey Popp)
-"               2018 Mar 16 - Remove raise, lnot and not from keywords (Étienne Millon, "copy")
+"               2018 Mar 16 - Remove raise, lnot and not from keywords (Étienne Million, "copy")
 "               2017 Apr 11 - Improved matching of negative numbers (MM)
 "               2016 Mar 11 - Improved support for quoted strings (Glen Mével)
 "               2015 Aug 13 - Allow apostrophes in identifiers (Jonathan Chan, Einar Lielmanis)

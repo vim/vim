@@ -188,7 +188,7 @@ Builtin  name@ f:name@ open f:open open-ro f:open-ro popen f:popen print f:print
 Builtin  relpath f:relpath rglob f:rglob rm f:rm rmdir f:rmdir seek f:seek sep f:sep size f:size slurp f:slurp
 Builtin  sparse? f:sparse? spit f:spit stderr f:stderr stdin f:stdin stdout f:stdout tell f:tell times f:times
 Builtin  tmpspit f:tmpspit trash f:trash truncate f:truncate ungetb f:ungetb ungetc f:ungetc unzip f:unzip
-Builtin  unzip-entry f:unzip-entry watch f:watch write f:write writen f:writen zip+ f:zip+ zip@ f:zip@
+Builtin  unzip-entry f:unzip-entry watch f:watch write f:write written f:written zip+ f:zip+ zip@ f:zip@
 Builtin  zipentry f:zipentry zipnew f:zipnew zipopen f:zipopen zipsave f:zipsave atlas! font:atlas!
 Builtin  atlas@ font:atlas@ default-size font:default-size info font:info ls font:ls measure font:measure
 Builtin  new font:new oversample font:oversample pixels font:pixels pixels? font:pixels? +edge gr:+edge
@@ -344,7 +344,7 @@ syn keyword eighthMath decimal hex base@ base!
 syn match eighthInteger '\<-\=[0-9.]*[0-9.]\+\>'
 
 " recognize hex and binary numbers, the '$' and '%' notation is for eighth
-syn match eighthInteger '\<\$\x*\x\+\>' " *1* --- dont't mess
+syn match eighthInteger '\<\$\x*\x\+\>' " *1* --- don't mess
 syn match eighthInteger '\<\x*\d\x*\>'  " *2* --- this order!
 syn match eighthInteger '\<%[0-1]*[0-1]\+\>'
 syn match eighthInteger "\<'.\>"
@@ -363,7 +363,7 @@ syn region eighthComment start="\zs\\" end="$" contains=eighthTodo
 if !exists("did_eighth_syntax_inits")
     let did_eighth_syntax_inits=1
 
-    " The default methods for highlighting. Can be overriden later.
+    " The default methods for highlighting. Can be overridden later.
     hi def link eighthTodo Todo
     hi def link eighthOperators Operator
     hi def link eighthMath Number

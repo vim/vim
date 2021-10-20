@@ -488,7 +488,7 @@ msgstr "もう一度同じキーを入力してください: "
 msgid "Keys don't match!"
 msgstr "キーが一致しません"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[暗号化]"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
@@ -2920,7 +2920,7 @@ msgstr "-register\t\tこのgvimをOLEとして登録する"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tgvimのOLE登録を解除する"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tGUIで起動する (\"gvim\" と同じ)"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2968,7 +2968,7 @@ msgstr "-C\t\t\tVi互換モード: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tVi非互換モード: 'nocompatible"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr "-V[N][fname]\t\tログ出力設定 [レベル N] [ログファイル名 fname]"
 
 msgid "-D\t\t\tDebugging mode"
@@ -3127,7 +3127,7 @@ msgstr ""
 "\n"
 "gvimによって解釈される引数(Athenaバージョン):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <display>\t<display> でvimを実行する"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3177,7 +3177,7 @@ msgstr ""
 "\n"
 "gvimによって解釈される引数(GTK+バージョン):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <display>\t<display> でVimを実行する(同義: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"

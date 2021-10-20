@@ -2004,8 +2004,8 @@ BODY
 
 Let's start with the body of the plugin, the lines that do the actual work: >
 
- 14	iabbrev teh the
- 15	iabbrev otehr other
+ 14	iabbrev the the
+ 15	iabbrev other other
  16	iabbrev wnat want
  17	iabbrev synchronisation
  18		\ synchronization
@@ -2267,8 +2267,8 @@ Here is the resulting complete example: >
  11	let s:save_cpo = &cpo
  12	set cpo&vim
  13
- 14	iabbrev teh the
- 15	iabbrev otehr other
+ 14	iabbrev the the
+ 15	iabbrev other other
  16	iabbrev wnat want
  17	iabbrev synchronisation
  18		\ synchronization

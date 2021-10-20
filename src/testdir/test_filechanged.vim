@@ -161,7 +161,7 @@ func Test_FileChangedShell_newbuf()
   call writefile(['one', 'two'], 'Xfile')
   new Xfile
   augroup testnewbuf
-    autocmd FileChangedShell * enew
+    autocmd FileChangedShell * new
   augroup END
   call writefile(['red'], 'Xfile')
   call assert_fails('checktime', 'E811:')

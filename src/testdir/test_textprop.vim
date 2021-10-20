@@ -1556,7 +1556,7 @@ endfunc
 
 " this was causing an ml_get error because w_botline was wrong
 func Test_prop_one_line_window()
-  enew
+  new
   call range(2)->setline(1)
   call prop_type_add('testprop', {})
   call prop_add(1, 1, {'type': 'testprop'})

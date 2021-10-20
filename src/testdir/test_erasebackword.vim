@@ -1,7 +1,7 @@
 " Test for i_CTRL-W
 
 func Test_erasebackword()
-  enew
+  new
 
   exe "normal o wwwこんにちわ世界ワールドvim \<C-W>"
   call assert_equal(' wwwこんにちわ世界ワールド', getline('.'))
@@ -16,7 +16,7 @@ func Test_erasebackword()
   exe "normal o wwwこんにちわ世界ワールドvim \<C-W>\<C-W>\<C-W>\<C-W>\<C-W>\<C-W>"
   call assert_equal('', getline('.'))
 
-  enew!
+  new!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

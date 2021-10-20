@@ -73,7 +73,7 @@ version), a number of X resources are available.  You should use Vim's class
     reverseVideo	Boolean: should reverse video be used?
     background		Color of background.
     foreground		Color of normal text.
-    scrollBackground	Color of trough portion of scrollbars.
+    scrollBackground	Color of through portion of scrollbars.
     scrollForeground	Color of slider and arrow portions of scrollbars.
     menuBackground	Color of menu backgrounds.
     menuForeground	Color of menu foregrounds.

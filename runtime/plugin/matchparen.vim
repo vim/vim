@@ -208,7 +208,7 @@ command NoMatchParen call s:NoMatchParen()
 
 func s:NoMatchParen()
   let w = winnr()
-  noau windo silent! call matchdelete(3)
+  noau window silent! call matchdelete(3)
   unlet! g:loaded_matchparen
   exe "noau ". w . "wincmd w"
   au! matchparen
@@ -217,7 +217,7 @@ endfunc
 func s:DoMatchParen()
   runtime plugin/matchparen.vim
   let w = winnr()
-  silent windo doau CursorMoved
+  silent window doau CursorMoved
   exe "noau ". w . "wincmd w"
 endfunc
 

@@ -517,16 +517,16 @@ vim_strncpy(char_u *to, char_u *from, size_t len)
     void
 vim_strcat(char_u *to, char_u *from, size_t tosize)
 {
-    size_t tolen = STRLEN(to);
+    size_t token = STRLEN(to);
     size_t fromlen = STRLEN(from);
 
-    if (tolen + fromlen + 1 > tosize)
+    if (token + fromlen + 1 > tosize)
     {
-	mch_memmove(to + tolen, from, tosize - tolen - 1);
+	mch_memmove(to + token, from, tosize - token - 1);
 	to[tosize - 1] = NUL;
     }
     else
-	mch_memmove(to + tolen, from, fromlen + 1);
+	mch_memmove(to + token, from, fromlen + 1);
 }
 
 #if (!defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)) || defined(PROTO)
@@ -1473,7 +1473,7 @@ f_tr(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     int		inlen;
     int		fromlen;
-    int		tolen;
+    int		token;
     int		idx;
     char_u	*cpstr;
     int		cplen;
@@ -1523,12 +1523,12 @@ error:
 		fromlen = (*mb_ptr2len)(p);
 		if (fromlen == inlen && STRNCMP(in_str, p, inlen) == 0)
 		{
-		    for (p = tostr; *p != NUL; p += tolen)
+		    for (p = tostr; *p != NUL; p += token)
 		    {
-			tolen = (*mb_ptr2len)(p);
+			token = (*mb_ptr2len)(p);
 			if (idx-- == 0)
 			{
-			    cplen = tolen;
+			    cplen = token;
 			    cpstr = p;
 			    break;
 			}
@@ -1546,9 +1546,9 @@ error:
 		// (multi-byte) characters.  Done only once when a character
 		// of in_str doesn't appear in fromstr.
 		first = FALSE;
-		for (p = tostr; *p != NUL; p += tolen)
+		for (p = tostr; *p != NUL; p += token)
 		{
-		    tolen = (*mb_ptr2len)(p);
+		    token = (*mb_ptr2len)(p);
 		    --idx;
 		}
 		if (idx != 0)

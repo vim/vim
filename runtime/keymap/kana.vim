@@ -206,7 +206,7 @@ hyu ひゅ
 hyo ひょ
 
 mya みゃ
-myu みゅ
+my みゅ
 myo みょ
 
 rya りゃ
@@ -512,7 +512,7 @@ HYU ヒュ
 HYO ヒョ
 
 MYA ミャ
-MYU ミュ
+MY ミュ
 MYO ミョ
 
 RYA リャ

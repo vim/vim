@@ -54,7 +54,7 @@ syn match AspVBSError contained "\<On\s\+Error\>\|\<On\>\|\<Error\>\|\<Resume\s\
 syn match AspVBSError contained "\<Option\s\+\(Base\|Compare\|Private\s\+Module\)\>"
 " This one I want 'cause I always seem to mis-spell it.
 syn match AspVBSError contained "Respon\?ce\.\S*"
-syn match AspVBSError contained "Respose\.\S*"
+syn match AspVBSError contained "Response\.\S*"
 " When I looked up the VBScript syntax it mentioned that Property Get/Set/Let
 " statements are illegal, however, I have received reports that they do work.
 " So I commented it out for now.

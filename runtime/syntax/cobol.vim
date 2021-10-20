@@ -24,7 +24,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-" MOST important - else most of the keywords wont work!
+" MOST important - else most of the keywords won't work!
 setlocal isk=@,48-57,-,_
 
 if !exists('g:cobol_inline_comment')
@@ -61,7 +61,7 @@ syn keyword cobolParagraphName  contained PROGRAM-ID SOURCE-COMPUTER OBJECT-COMP
 "#C22032019: Remove BY, REPLACING, PROGRAM, TO, IN from 'keyword' group and add
 "to 'match' group or other 'keyword' group
 syn keyword cobolReserved contained ACCEPT ACCESS ADD ADDRESS ADVANCING AFTER ALPHABET ALPHABETIC
-syn keyword cobolReserved contained ALPHABETIC-LOWER ALPHABETIC-UPPER ALPHANUMERIC ALPHANUMERIC-EDITED ALS
+syn keyword cobolReserved contained ALPHABETIC-LOWER ALPHABETIC-UPPER ALPHANUMERIC ALPHANUMERIC-EDITED ALSO
 syn keyword cobolReserved contained ALTERNATE AND ANY ARE AREA AREAS ASCENDING ASSIGN AT AUTHOR BEFORE BINARY
 syn keyword cobolReserved contained BLANK BLOCK BOTTOM CANCEL CBLL CD CF CH CHARACTER CHARACTERS CLASS
 syn keyword cobolReserved contained CLOCK-UNITS CLOSE COBOL CODE CODE-SET COLLATING COLUMN COMMA COMMON

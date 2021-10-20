@@ -65,7 +65,7 @@ syn keyword	clReserved	ERROR EXIT INTERRUPT LOCKED LREPLY MODE MCOL MLINE MREPLY
 
 syn keyword	clFunction	asc asize chr name random slen srandom day getarg getcgi getenv lcase scat sconv sdel skey smult srep substr sword trim ucase match
 
-syn keyword	clStatement	clear clear_eol clear_eos close copy create unique with where empty define define ldefine delay_form delete escape exit_block exit_do exit_process field fork format get getfile getnext getprev goto head join maintain message no_join on_eop on_key on_exit on_delete openin openout openapp pause popenin popenout popenio print put range read redisplay refresh restart_block screen select sleep text unlock write and not or do
+syn keyword	clStatement	clear clear_eol clear_eos close copy create unique with where empty define define ldefine delay_form delete escape exit_block exit_do exit_process field fork format get getfile getnext getprev goto head join maintain message no_join on_eop on_key on_exit on_delete opening openout openapp pause popenin popenout popenio print put range read redisplay refresh restart_block screen select sleep text unlock write and not or do
 
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet

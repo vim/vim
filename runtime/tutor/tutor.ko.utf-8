@@ -325,7 +325,7 @@
   7. CTRL-R (CTRL 키를 누른 상태에서 R을 누르는 것) 을 몇 번 눌러서
      명령을 다시 실행해봅시다. (취소한 것을 취소함.)
 
----> Fiix the errors oon thhis line and reeplace them witth undo.
+---> Fiix the errors oon thhis line and reeplace them with undo.
 
   8. 이 명령은 매우 유용합니다.  그럼 Lesson 2 요약으로 넘어가도록 합시다.
 
@@ -547,10 +547,10 @@ ce 는 단어를 치환하는 것 뿐만 아니라, 내용을 삽입할 수 있�
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                      Lesson 4.4: 치환(SUBTITUTE) 명령
+                      Lesson 4.4: 치환(SUBSTITUTE) 명령
 
 
-     **  :s/old/new/g  하면 'old' 를  'new' 로 치환(SUBTITUTE)합니다. **
+     **  :s/old/new/g  하면 'old' 를  'new' 로 치환(SUBSTITUTE)합니다. **
 
   1. 커서를 ---> 로 표시된 줄에 가져다 놓습니다.
 

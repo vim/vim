@@ -87,7 +87,7 @@ syn region specSectionMacroBracketArea oneline matchgroup=specSectionMacro start
 "TODO %config valid parameters: missingok\|noreplace
 "TODO %verify valid parameters: \(not\)\= \(md5\|atime\|...\)
 syn region specFilesArea matchgroup=specSection start='^%[Ff][Ii][Ll][Ee][Ss]\>' skip='%\(attrib\|defattr\|attr\|dir\|config\|docdir\|doc\|lang\|license\|verify\|ghost\|exclude\)\>' end='^%[a-zA-Z]'me=e-2 contains=specFilesOpts,specFilesDirective,@specListedFiles,specComment,specCommandSpecial,specMacroIdentifier
-"tip: remember to include new itens in specFilesArea above
+"tip: remember to include new items in specFilesArea above
 syn match  specFilesDirective contained '%\(attrib\|defattr\|attr\|dir\|config\|docdir\|doc\|lang\|license\|verify\|ghost\|exclude\)\>'
 
 "valid options for certain section headers
@@ -111,7 +111,7 @@ syn region specDescriptionArea matchgroup=specSection start='^%description' end=
 syn region specPackageArea matchgroup=specSection start='^%package' end='^%'me=e-1 contains=specPackageOpts,specPreAmble,specComment
 
 "%% Scripts Section %%
-syn region specScriptArea matchgroup=specSection start='^%\(prep\|build\|install\|clean\|check\|pre\|postun\|preun\|post\|posttrans\)\>' skip='^%{\|^%\(define\|patch\d*\|configure\|GNUconfigure\|setup\|autosetup\|autopatch\|find_lang\|make_build\|makeinstall\|make_install\)\>' end='^%'me=e-1 contains=specSpecialVariables,specVariables,@specCommands,specVariables,shDo,shFor,shCaseEsac,specNoNumberHilite,specCommandOpts,shComment,shIf,specSpecialChar,specMacroIdentifier,specSectionMacroArea,specSectionMacroBracketArea,shOperator,shQuote1,shQuote2
+syn region specScriptArea matchgroup=specSection start='^%\(prep\|build\|install\|clean\|check\|pre\|postun\|preun\|post\|posttrans\)\>' skip='^%{\|^%\(define\|patch\d*\|configure\|GNUconfigure\|setup\|autosetup\|autopatch\|find_lang\|make_build\|makeinstall\|make_install\)\>' end='^%'me=e-1 contains=specSpecialVariables,specVariables,@specCommands,specVariables,shDo,shFor,shCaseEsac,specNoNumberHilite,specCommandOpts,shComment,shift,specSpecialChar,specMacroIdentifier,specSectionMacroArea,specSectionMacroBracketArea,shOperator,shQuote1,shQuote2
 
 "%% Changelog Section %%
 syn region specChangelogArea matchgroup=specSection start='^%changelog' end='^%'me=e-1 contains=specEmail,specURL,specWeekday,specMonth,specNumber,specComment,specLicense
@@ -138,7 +138,7 @@ syn region shDo transparent matchgroup=specBlock start="\<do\>" end="\<done\>" c
 
 syn region specIf  matchgroup=specBlock start="%ifosf\|%ifos\|%ifnos\|%ifarch\|%ifnarch\|%else"  end='%endif'  contains=ALLBUT, specIfError, shCase
 
-syn region  shIf transparent matchgroup=specBlock start="\<if\>" end="\<fi\>" contains=ALLBUT,shFunction,shIfError,shCase,@specListedFiles
+syn region  shift transparent matchgroup=specBlock start="\<if\>" end="\<fi\>" contains=ALLBUT,shFunction,shIfError,shCase,@specListedFiles
 
 syn region  shFor  matchgroup=specBlock start="\<for\>" end="\<in\>" contains=ALLBUT,shFunction,shInError,shCase,@specListedFiles
 
@@ -148,8 +148,8 @@ syn region shCase matchgroup=specBlock contained start=")"  end=";;" contains=AL
 
 syn sync match shDoSync       grouphere  shDo       "\<do\>"
 syn sync match shDoSync       groupthere shDo       "\<done\>"
-syn sync match shIfSync       grouphere  shIf       "\<if\>"
-syn sync match shIfSync       groupthere shIf       "\<fi\>"
+syn sync match shIfSync       grouphere  shift       "\<if\>"
+syn sync match shIfSync       groupthere shift       "\<fi\>"
 syn sync match specIfSync     grouphere  specIf     "%ifarch\|%ifos\|%ifnos"
 syn sync match specIfSync     groupthere specIf     "%endIf"
 syn sync match shForSync      grouphere  shFor      "\<for\>"
@@ -176,7 +176,7 @@ endif
 "sh colors
 hi def link shComment			Comment
 hi def link dnlComment			Comment
-hi def link shIf				Statement
+hi def link shift				Statement
 hi def link shOperator			Special
 hi def link shQuote1			String
 hi def link shQuote2			String

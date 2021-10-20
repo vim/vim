@@ -11,7 +11,7 @@ func Test_nosmartindent()
   exe "normal! gg/some\<CR>"
   exe "normal! 2cc#test\<Esc>"
   call assert_equal("		#test", getline(1))
-  enew! | close
+  new! | close
 endfunc
 
 func MyIndent()

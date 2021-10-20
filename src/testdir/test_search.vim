@@ -728,7 +728,7 @@ func Run_search_regexp_magic_opt()
 endfunc
 
 func Test_search_regexp()
-  enew!
+  new!
 
   set regexpengine=1
   call Run_search_regexp_magic_opt()
@@ -751,7 +751,7 @@ func Test_search_regexp()
   call assert_equal(3, line('$'))
 
   set undolevels&
-  enew!
+  new!
 endfunc
 
 func Test_search_cmdline_incsearch_highlight()
@@ -1336,11 +1336,11 @@ endfunc
 func Test_search_multibyte()
   let save_enc = &encoding
   set encoding=utf8
-  enew!
+  new!
   call append('$', 'Ａ')
   call cursor(2, 1)
   call assert_equal(2, search('Ａ', 'bce', line('.')))
-  enew!
+  new!
   let &encoding = save_enc
 endfunc
 

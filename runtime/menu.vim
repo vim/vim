@@ -122,16 +122,16 @@ endfun
 an 10.310 &File.&Open\.\.\.<Tab>:e		:browse confirm e<CR>
 an 10.320 &File.Sp&lit-Open\.\.\.<Tab>:sp	:browse sp<CR>
 an 10.320 &File.Open\ Tab\.\.\.<Tab>:tabnew	:browse tabnew<CR>
-an 10.325 &File.&New<Tab>:enew			:confirm enew<CR>
+an 10.325 &File.&New<Tab>:new			:confirm new<CR>
 an <silent> 10.330 &File.&Close<Tab>:close
 	\ :if winheight(2) < 0 && tabpagewinnr(2) == 0 <Bar>
-	\   confirm enew <Bar>
+	\   confirm new <Bar>
 	\ else <Bar>
 	\   confirm close <Bar>
 	\ endif<CR>
 an 10.335 &File.-SEP1-				<Nop>
 an <silent> 10.340 &File.&Save<Tab>:w		:if expand("%") == ""<Bar>browse confirm w<Bar>else<Bar>confirm w<Bar>endif<CR>
-an 10.350 &File.Save\ &As\.\.\.<Tab>:sav	:browse confirm saveas<CR>
+an 10.350 &File.Save\ &As\.\.\.<Tab>:save	:browse confirm saveas<CR>
 
 if has("diff")
   an 10.400 &File.-SEP2-			<Nop>
@@ -521,15 +521,15 @@ if has("folding")
   " open close folds
   an 40.340.110 &Tools.&Folding.&Enable/Disable\ Folds<Tab>zi		zi
   an 40.340.120 &Tools.&Folding.&View\ Cursor\ Line<Tab>zv		zv
-  an 40.340.120 &Tools.&Folding.Vie&w\ Cursor\ Line\ Only<Tab>zMzx	zMzx
-  inoremenu 40.340.120 &Tools.&Folding.Vie&w\ Cursor\ Line\ Only<Tab>zMzx  <C-O>zM<C-O>zx
+  an 40.340.120 &Tools.&Folding.Via&w\ Cursor\ Line\ Only<Tab>zMzx	zMzx
+  inoremenu 40.340.120 &Tools.&Folding.Via&w\ Cursor\ Line\ Only<Tab>zMzx  <C-O>zM<C-O>zx
   an 40.340.130 &Tools.&Folding.C&lose\ More\ Folds<Tab>zm		zm
   an 40.340.140 &Tools.&Folding.&Close\ All\ Folds<Tab>zM		zM
   an 40.340.150 &Tools.&Folding.O&pen\ More\ Folds<Tab>zr		zr
   an 40.340.160 &Tools.&Folding.&Open\ All\ Folds<Tab>zR		zR
   " fold method
   an 40.340.200 &Tools.&Folding.-SEP1-			<Nop>
-  an 40.340.210 &Tools.&Folding.Fold\ Met&hod.M&anual	:set fdm=manual<CR>
+  an 40.340.210 &Tools.&Folding.Fold\ Met&hod.M&annual	:set fdm=manual<CR>
   an 40.340.210 &Tools.&Folding.Fold\ Met&hod.I&ndent	:set fdm=indent<CR>
   an 40.340.210 &Tools.&Folding.Fold\ Met&hod.E&xpression :set fdm=expr<CR>
   an 40.340.210 &Tools.&Folding.Fold\ Met&hod.S&yntax	:set fdm=syntax<CR>
@@ -950,11 +950,11 @@ vnoremenu 1.70 PopUp.Select\ &Word	<C-C>vaw
 inoremenu 1.70 PopUp.Select\ &Word	<C-O>vaw
 cnoremenu 1.70 PopUp.Select\ &Word	<C-C>vaw
 
-nnoremenu 1.73 PopUp.Select\ &Sentence	vas
+nnoremenu 1.73 PopUp.Select\ &Sentence	was
 onoremenu 1.73 PopUp.Select\ &Sentence	as
-vnoremenu 1.73 PopUp.Select\ &Sentence	<C-C>vas
-inoremenu 1.73 PopUp.Select\ &Sentence	<C-O>vas
-cnoremenu 1.73 PopUp.Select\ &Sentence	<C-C>vas
+vnoremenu 1.73 PopUp.Select\ &Sentence	<C-C>was
+inoremenu 1.73 PopUp.Select\ &Sentence	<C-O>was
+cnoremenu 1.73 PopUp.Select\ &Sentence	<C-C>was
 
 nnoremenu 1.77 PopUp.Select\ Pa&ragraph	vap
 onoremenu 1.77 PopUp.Select\ Pa&ragraph	ap

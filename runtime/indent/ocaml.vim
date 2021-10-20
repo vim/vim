@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:     OCaml
 " Maintainers:  Jean-Francois Yuen   <jfyuen@happycoders.org>
-"               Mike Leary           <leary@nwlink.com>
+"               Mike Leery           <leery@nwlink.com>
 "               Markus Mottl         <markus.mottl@gmail.com>
 " URL:          https://github.com/ocaml/vim-ocaml
 " Last Change:  2017 Jun 13

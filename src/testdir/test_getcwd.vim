@@ -126,7 +126,7 @@ endfunc
 
 " Test for :tcd
 function Test_Tab_Local_Cwd()
-  enew | only | tabonly
+  new | only | tabonly
 
   call mkdir('Xtabdir1')
   call mkdir('Xtabdir2')
@@ -261,7 +261,7 @@ function Test_Tab_Local_Cwd()
   call assert_equal("y Xdir1 0", GetCwdInfo(2, 3))
   call assert_equal("z Xwindir3 1", GetCwdInfo(3, 3))
 
-  enew | only | tabonly
+  new | only | tabonly
   new
 endfunc
 

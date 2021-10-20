@@ -708,32 +708,32 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
 	    lib_multiarch="lib/${multiarch}"
 	  fi
 	fi
-	dnl Determine the sover for the current version, but fallback to
+	dnl Determine the solver for the current version, but fallback to
 	dnl liblua${vi_cv_version_lua}.so if no sover-versioned file is found.
 	AC_MSG_CHECKING(if liblua${luajit}*.${ext}* can be found in $vi_cv_path_lua_pfx)
 	for subdir in "${lib_multiarch}" lib64 lib; do
 	  if test -z "$subdir"; then
 	    continue
 	  fi
-	  for sover in "${vi_cv_version_lua}.${ext}" "-${vi_cv_version_lua}.${ext}" \
+	  for solver in "${vi_cv_version_lua}.${ext}" "-${vi_cv_version_lua}.${ext}" \
 	    ".${vi_cv_version_lua}.${ext}" ".${ext}.${vi_cv_version_lua}"; do
 	    for i in $indexes ""; do
-	      if test -f "${vi_cv_path_lua_pfx}/${subdir}/liblua${luajit}${sover}$i"; then
+	      if test -f "${vi_cv_path_lua_pfx}/${subdir}/liblua${luajit}${solver}$i"; then
 		sover2="$i"
 		break 3
 	      fi
 	    done
 	  done
-	  sover=""
+	  solver=""
 	done
-	if test "X$sover" = "X"; then
+	if test "X$solver" = "X"; then
 	  AC_MSG_RESULT(no)
 	  lua_ok="no"
 	  vi_cv_dll_name_lua="liblua${luajit}.${ext}"
 	else
 	  AC_MSG_RESULT(yes)
 	  lua_ok="yes"
-	  vi_cv_dll_name_lua="liblua${luajit}${sover}$sover2"
+	  vi_cv_dll_name_lua="liblua${luajit}${solver}$sover2"
 	fi
       fi
       AC_DEFINE(DYNAMIC_LUA)
@@ -3330,7 +3330,7 @@ cppflags_save=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $X_CFLAGS"
 AC_TRY_COMPILE([
 #if defined(_AIX) && !defined(_AIX51) && !defined(_NO_PROTO)
-# define _NO_PROTO	/* like in os_unix.h, causes conflict for AIX (Winn) */
+# define _NO_PROTO	/* like in os_unix.h, causes conflict for AIX (Win) */
 			/* but don't do it on AIX 5.1 (Uribarri) */
 #endif
 #ifdef HAVE_XM_XM_H

@@ -2,13 +2,13 @@
 = V ä l k o m m e n  t i l l  h a n d l e d n i n g e n  i  V i m  - Ver. 1.5 =
 ===============================================================================
 
-     Vim är en väldigt kraftfull redigerare som har många kommandon, alltför
-     många att förklara i en handledning som denna. Den här handledningen är
+     Vim är en väldigt kraftfull redigerare some har många kommandon, alltför
+     många att förklara i en handledning some denna. Den här handledningen är
      gjord för att förklara tillräckligt många kommandon så att du enkelt ska
-     kunna använda Vim som en redigerare för alla ändamål.
+     kunna använda Vim some en redigerare för alla ändamål.
 
      Den beräknade tiden för att slutföra denna handledning är 25-30 minuter,
-     beroende på hur mycket tid som läggs ned på experimentering.
+     beroende på hur mycket tid some läggs need på experimentering.
 
      Kommandona i lektionerna kommer att modifiera texten. Gör en kopia av den
      här filen att öva på (om du startade "vimtutor är det här redan en kopia).
@@ -25,18 +25,18 @@
 			Lektion 1.1: FLYTTA MARKÖREN
 
 
-   ** För att flytta markören, tryck på tangenterna h,j,k,l som indikerat. **
+   ** För att flytta markören, tryck på tangenterna h,j,k,l some indikerat. **
 	     ^
 	     k		Tips:
        < h	 l >	h-tangenten är till vänster och flyttar till vänster.
 	     j		l-tangenten är till höger och flyttar till höger.
-	     v		j-tangenten ser ut som en pil ned.
+	     v		j-tangenten set ut some en pil need.
   1. Flytta runt markören på skärmen tills du känner dig bekväm.
 
-  2. Håll ned tangenten pil ned (j) tills att den repeterar.
+  2. Håll need tangenten pil need (j) tills att den repeterar.
 ---> Nu vet du hur du tar dig till nästa lektion.
 
-  3. Flytta till Lektion 1.2, med hjälp av ned tangenten.
+  3. Flytta till Lektion 1.2, med hjälp av need tangenten.
 
 Notera: Om du är osäker på någonting du skrev, tryck <ESC> för att placera dig
 	dig i Normal-läge. Skriv sedan om kommandot.
@@ -56,17 +56,17 @@ Notera: Piltangenterna borde också fungera.  Men om du använder hjkl så komme
   2. Skriv:			:q! <ENTER>.
 
 ---> Detta avslutar redigeraren UTAN att spara några ändringar du gjort.
-     Om du vill spara ändringarna och avsluta skriv:
+     Om du will spara ändringarna och avsluta skriv:
 				:wq  <ENTER>
 
-  3. När du ser skal-prompten, skriv kommandot som tog dig in i den här
+  3. När du set skal-prompten, skriv kommandot some tog dig in i den här
      handledningen.  Det kan vara:	vimtutor <ENTER>
-     Normalt vill du använda:		vim tutor <ENTER>
+     Normalt will du använda:		vim tutor <ENTER>
 
----> 'vim' betyder öppna redigeraren vim, 'tutor' är filen du vill redigera.
+---> 'vim' betyder öppna redigeraren vim, 'tutor' är filen du will redigera.
 
   4. Om du har memorerat dessa steg och känner dig självsäker, kör då stegen
-     1 till 3 för att avsluta och starta om redigeraren. Flytta sedan ned
+     1 till 3 för att avsluta och starta om redigeraren. Flytta sedan need
      markören till Lektion 1.3.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Lektion 1.3: TEXT REDIGERING - BORTTAGNING
@@ -76,7 +76,7 @@ Notera: Piltangenterna borde också fungera.  Men om du använder hjkl så komme
 
   1. Flytta markören till raden nedan med markeringen --->.
 
-  2. För att rätta felen, flytta markören tills den står på tecknet som ska
+  2. För att rätta felen, flytta markören tills den står på tecknet some ska
      tas bort. fix the errors, move the cursor until it is on top of the
 
   3. Tryck på	x-tangenten för att ta bort det felaktiga tecknet.
@@ -100,10 +100,10 @@ NOTERA: När du går igenom den här handledningen, försök inte att memorera, 
 
   1. Flytta markören till den första raden nedan med markeringen --->.
 
-  2. För att göra den första raden likadan som den andra, flytta markören till
+  2. För att göra den första raden likadan some den andra, flytta markören till
      det första tecknet EFTER där text ska infogas.
 
-  3. Tryck  i  och skriv in det som saknas.
+  3. Tryck  i  och skriv in det some saknas.
 
   4. När du rättat ett fel tryck <ESC> för att återgå till Normal-läge.
      Upprepa steg 2 till 4 för att rätta meningen.
@@ -121,7 +121,7 @@ NOTERA: När du går igenom den här handledningen, försök inte att memorera, 
 
 
   1. Markören flyttas genom att använda piltangenterna eller hjkl-tangenterna.
-	 h (vänster)	j (ned)       k (upp)	    l (höger)
+	 h (vänster)	j (need)       k (upp)	    l (höger)
 
   2. För att starta Vim (från %-prompten) skriv:  vim FILNAMN <ENTER>
 
@@ -149,14 +149,14 @@ Fortsätt nu med Lektion 2.
 
   2. Flytta markören till raden nedan markerad --->.
 
-  3. Flytta markören till början av ett ord som måste raderas.
+  3. Flytta markören till början av ett ord some måste raderas.
 
   4. Skriv   dw	 för att radera ordet.
 
   NOTERA: Bokstäverna dw kommer att synas på den sista raden på skärmen när
 	du skriver dem. Om du skrev något fel, tryck  <ESC>  och börja om.
 
----> Det är ett några ord roliga att som inte hör hemma i den här meningen.
+---> Det är ett några ord roliga att some inte hör hemma i den här meningen.
 
   5. Upprepa stegen 3 och 4 tills meningen är korrekt och gå till Lektion 2.2.
 
@@ -179,31 +179,31 @@ Fortsätt nu med Lektion 2.
 ---> Någon skrev slutet på den här raden två gånger. den här raden två gånger.
 
 
-  5. Gå vidare till Lektion 2.3 för att förstå vad det är som händer.
+  5. Gå vidare till Lektion 2.3 för att förstå vad det är some händer.
 
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lesson 2.3: KOMMANDON OCH OBJEKT
+		     Lesson 2.3: KOMMANDON OCH OBJECT
 
 
   Syntaxen för  d  raderingskommandot är följande:
 
-	 [nummer]   d	objekt	    ELLER	     d	 [nummer]   objekt
+	 [nummer]   d	object	    ELLER	     d	 [nummer]   object
   Var:
     nummer - är antalet upprepningar av kommandot (valfritt, standard=1).
     d - är kommandot för att radera.
-    objekt - är vad kommandot kommer att operera på (listade nedan).
+    object - är vad kommandot kommer att operera på (listade nedan).
 
-  En kort lista över objekt:
+  En kort lista över object:
     w - från markören till slutet av ordet, inklusive blanksteget.
     e - från markören till slutet av ordet, EJ inklusive blanksteget.
     $ - från markören till slutet på raden.
 
 NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
-	 Normal-läge (utan kommando) så kommer markören att flyttas som
+	 Normal-läge (utan kommando) så kommer markören att flyttas some
 	 angivet i objektlistan.
 
 
@@ -247,7 +247,7 @@ NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
   4. Rätta den här gången alla felen på raden med  x-kommandot.
   5. Skriv nu  U  för att återställa raden till dess ursprungliga utseende.
   6. Skriv nu  u  några gånger för att ångra  U  och tidigare kommandon.
-  7. Tryck nu CTRL-R (håll inne CTRL samtidigt som du trycker R) några gånger
+  7. Tryck nu CTRL-R (håll inne CTRL samtidigt some du trycker R) några gånger
      för att upprepa kommandona (ångra ångringarna).
 
 ---> Fiixa felen ppå deen häär meningen och återskapa dem med ångra.
@@ -270,11 +270,11 @@ NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
 
   4. Syntaxen för ett kommando i Normal-läge är:
 
-       [nummer]   kommando   objekt   ELLER   kommando   [nummer]   objekt
+       [nummer]   kommando   object   ELLER   kommando   [nummer]   object
      där:
        nummer - är hur många gånger kommandot kommandot ska repeteras
-       kommando - är vad som ska göras, t.ex.  d  för att radera
-       objekt - är vad kommandot ska operera på, som t.ex.  w (ord),
+       kommando - är vad some ska göras, t.ex.  d  för att radera
+       object - är vad kommandot ska operera på, some t.ex.  w (ord),
 		$ (till slutet av raden), etc.
 
   5. För att ångra tidigare kommandon, skriv:  u (litet u)
@@ -314,7 +314,7 @@ NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
 
   2. Flytta markören så att den står på det första felet.
 
-  3. Skriv   r	och sedan det tecken som borde ersätta felet.
+  3. Skriv   r	och sedan det tecken some borde ersätta felet.
 
   4. Repetera steg 2 och 3 tills den första raden är korrekt.
 
@@ -339,13 +339,13 @@ NOTERA: Kom ihåg att du skall lära dig genom användning, inte genom memorerin
 
   3. Skriv  cw  och det rätta ordet (i det här fallet, skriv "aden".)
 
-  4. Tryck <ESC> och flytta markören till nästa fel (det första tecknet som
+  4. Tryck <ESC> och flytta markören till nästa fel (det första tecknet some
      ska ändras.)
 
-  5. Repetera steg 3 och 4 tills den första raden är likadan som den andra.
+  5. Repetera steg 3 och 4 tills den första raden är likadan some den andra.
 
----> Den här rdrtn har några otf som brhotrt ändras mrf ändra-komjendit.
----> Den här raden har några ord som behöver ändras med ändra-kommandot.
+---> Den här rdrtn har några otf some brhotrt ändras mrf ändra-komjendit.
+---> Den här raden har några ord some behöver ändras med ändra-kommandot.
 
 Notera att  cw  inte bara ändrar ordet, utan även placerar dig i infogningsläge.
 
@@ -355,19 +355,19 @@ Notera att  cw  inte bara ändrar ordet, utan även placerar dig i infogningslä
 		       Lektion 3.4: FLER ÄNDRINGAR MED c
 
 
-     ** Ändra-kommandot används på samma objekt som radera. **
+     ** Ändra-kommandot används på samma object some radera. **
 
-  1. Ändra-kommandot fungerar på samma sätt som radera. Syntaxen är:
+  1. Ändra-kommandot fungerar på samma sätt some radera. Syntaxen är:
 
-       [nummer]   c   objekt	   ELLER	    c	[nummer]   objekt
+       [nummer]   c   object	   ELLER	    c	[nummer]   object
 
-  2. Objekten är också de samma, som t.ex.   w (ord), $ (slutet av raden), etc.
+  2. Objekten är också de samma, some t.ex.   w (ord), $ (slutet av raden), etc.
 
   3. Flytta till den första raden nedan markerad -->.
 
   4. Flytta markören till det första felet.
 
-  5. Skriv  c$  för att göra resten av raden likadan som den andra och tryck
+  5. Skriv  c$  för att göra resten av raden likadan some den andra och tryck
      <ESC>.
 
 ---> Slutet på den här raden behöver hjälp med att få den att likna den andra.
@@ -379,11 +379,11 @@ Notera att  cw  inte bara ändrar ordet, utan även placerar dig i infogningslä
 			       LEKTION 3 SAMMANFATTNING
 
 
-  1. För att ersätta text som redan har blivit raderad, skriv   p .
+  1. För att ersätta text some redan har blivit raderad, skriv   p .
      Detta klistrar in den raderade texten EFTER markören (om en rad raderades
      kommer den att hamna på raden under markören.
 
-  2. För att ersätta tecknet under markören, skriv   r   och sedan tecknet som
+  2. För att ersätta tecknet under markören, skriv   r   och sedan tecknet some
      kommer att ersätta orginalet.
 
   3. Ändra-kommandot låter dig ändra det angivna objektet från markören till
@@ -392,7 +392,7 @@ Notera att  cw  inte bara ändrar ordet, utan även placerar dig i infogningslä
 
   4. Syntaxen för ändra-kommandot är:
 
-	 [nummer]   c	objekt	      ELLER	c   [nummer]   objekt
+	 [nummer]   c	object	      ELLER	c   [nummer]   object
 
 Gå nu till nästa lektion.
 
@@ -407,7 +407,7 @@ Gå nu till nästa lektion.
 
   Notera: Läsa hela den lektion innan du utför något av stegen!!
 
-  1. Håll ned Ctrl-tangenten och tryck  g . En statusrad med filnamn och raden
+  1. Håll need Ctrl-tangenten och tryck  g . En statusrad med filnamn och raden
      du befinner dig på kommer att synas. Kom ihåg radnummret till Steg 3.
 
   2. Tryck shift-G för att flytta markören till slutet på filen.
@@ -427,14 +427,14 @@ Gå nu till nästa lektion.
      ** Skriv  /  följt av en fras för att söka efter frasen. **
 
   1. I Normal-läge skriv /-tecknet. Notera att det och markören blir synlig
-     längst ned på skärmen precis som med :-kommandot.
+     längst need på skärmen precis some med :-kommandot.
 
-  2. Skriv nu "feeel" <ENTER>. Det här är ordet du vill söka efter.
+  2. Skriv nu "feeel" <ENTER>. Det här är ordet du will söka efter.
 
   3. För att söka efter samma fras igen, tryck helt enkelt  n .
      För att söka efter samma fras igen i motsatt riktning, tryck  Shift-N .
 
-  4. Om du vill söka efter en fras bakåt i filen, använd kommandot  ?  istället
+  4. Om du will söka efter en fras bakåt i filen, använd kommandot  ?  istället
      för /.
 
 ---> "feeel" är inte rätt sätt att stava fel: feeel är ett fel.
@@ -519,17 +519,17 @@ Notera: Det här är väldigt användbart vid avlusning av ett program med icke
 
    ** Skriv  :!	följt av ett externt kommando för att köra det kommandot. **
 
-  1. Skriv det välbekanta kommandot	:  för att placera markören längst ned
+  1. Skriv det välbekanta kommandot	:  för att placera markören längst need
      på skärmen på skärmen. Detta låter dig skriva in ett kommando.
 
   2. Skriv nu  !  (utropstecken).  Detta låter dig köra ett godtyckligt externt
      skalkommando.
 
-  3. Som ett exempel skriv   ls   efter ! och tryck sedan <ENTER>. Detta kommer
-     att visa dig en listning av din katalog, precis som om du kört det vid
+  3. Some ett example skriv   ls   efter ! och tryck sedan <ENTER>. Detta kommer
+     att visa dig en listning av din katalog, precis some om du kört det vid
      skalprompten. Använd  :!dir  om ls inte fungerar.
 
-Notera:  Det är möjligt att köra vilket externt kommando som helst på det här
+Notera:  Det är möjligt att köra vilket externt kommando some helst på det här
 	 sättet.
 
 Notera:  Alla  :-kommandon måste avslutas med att trycka på <ENTER>
@@ -546,7 +546,7 @@ Notera:  Alla  :-kommandon måste avslutas med att trycka på <ENTER>
   1. Skriv  :!dir  eller  :!ls  för att få en listning av din katalog.
      Du vet redan att du måste trycka <ENTER> efter det här.
 
-  2. Välj ett filnamn som inte redan existerar, som t.ex. TEST.
+  2. Välj ett filnamn some inte redan existerar, some t.ex. TEST.
 
   3. Skriv nu:	 :w TEST   (där TEST är filnamnet du valt.)
 
@@ -567,12 +567,12 @@ Notera: Om du skulle avsluta Vim och sedan öppna igen med filnamnet TEST så
 	** För att spara en del av en fil, skriv   :#,# w FILNAMN **
 
   1. Ännu en gång, skriv  :!dir  eller  :!ls  för att få en listning av din
-     katalog och välj ett passande filnamn som t.ex. TEST.
+     katalog och välj ett passande filnamn some t.ex. TEST.
 
   2. Flytta markören högst upp på den här sidan och tryck  Ctrl-g  för att få
      reda på radnumret på den raden. KOM IHÅG DET NUMMRET!
 
-  3. Flytta nu längst ned på sidan och skriv  Ctrl-g igen.
+  3. Flytta nu längst need på sidan och skriv  Ctrl-g igen.
      KOM IHÅG DET RADNUMMRET OCKSÅ!
 
   4. För att BARA spara en sektion till en fil, skriv   :#,# w TEST
@@ -596,7 +596,7 @@ Notera: Om du skulle avsluta Vim och sedan öppna igen med filnamnet TEST så
   2. Placera markören högst upp på den här sidan.
 
 NOTERA:  Efter att du kört Steg 3 kommer du att se Lektion 5.3.
-	 Flytta då NED till den här lektionen igen.
+	 Flytta då NEED till den här lektionen igen.
 
   3. Ta nu emot din TEST-fil med kommandot   :r TEST   där TEST är namnet på
      filen.
@@ -614,7 +614,7 @@ NOTERA:  Filen du tar emot placeras där markören är placerad.
 
   1.  :!kommando  kör ett externt kommando.
 
-      Några användbara exempel är:
+      Några användbara example är:
 	 (MS-DOS)	  (Unix)
 	  :!dir		   :!ls		  -  visar en kataloglistning.
 	  :!del FILNAMN    :!rm FILNAMN   -  tar bort filen FILNAMN.
@@ -673,7 +673,7 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 	slutet på en rad!
 
   3. Gör nu färdigt den första raden. Notera också att lägga till är likadant
-      som Infoga-läge, enda skillnaden är positionen där texten blir infogad.
+      some Infoga-läge, enda skillnaden är positionen där texten blir infogad.
 
 ---> Här kan du träna
 ---> Här kan du träna på att lägga till text i slutet på en rad.
@@ -688,15 +688,15 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 
   1. Flytta markören till den första raden nedan markerad --->.
 
-  2. Placera markören vid början av det första ordet som är annorlunda jämfört
+  2. Placera markören vid början av det första ordet some är annorlunda jämfört
      med den andra raden markerad ---> (ordet "sista").
 
   3. Skriv nu  R  och ersätt resten av texten på den första raden genom att
-     skriva över den gamla texten så att den första raden blir likadan som
+     skriva över den gamla texten så att den första raden blir likadan some
      den andra.
 
----> För att få den första raden lika som den sista, använd tangenterna.
----> För att få den första raden lika som den andra, skriv R och den nya texten.
+---> För att få den första raden lika some den sista, använd tangenterna.
+---> För att få den första raden lika some den andra, skriv R och den nya texten.
 
   4. Notera att när du trycker <ESC> för att avsluta, så blir eventuell
      oförändrad text kvar.
@@ -723,7 +723,7 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
   4. Sätt 'hlsearch' and 'incsearch' flaggorna:
      :set hls is
 
-  5. Skriv nu in sök-kommandot igen, och se vad som händer:
+  5. Skriv nu in sök-kommandot igen, och se vad some händer:
      /ignore
 
   6. För att ta bort framhävningen av träffar, skriv
@@ -734,10 +734,10 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 
   1. Genom att skriva  o  öpnnas en rad NEDANFÖR markören och markören placeras
      på den öppna raden i Infoga-läge.
-     Genom att skriva ett stort  O  öppnas raden OVANFÖR raden som markören är
+     Genom att skriva ett stort  O  öppnas raden OVANFÖR raden some markören är
      på.
 
-  2. Skriv ett  a  för att infoga text EFTER tecknet som markören står på.
+  2. Skriv ett  a  för att infoga text EFTER tecknet some markören står på.
      Genom att skriva ett stort  A  läggs text automatiskt till i slutet på
      raden.
 
@@ -761,7 +761,7 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 		      ** Använd on-line hjälpsystemet **
 
   Vim har ett omfattande on-line hjälpsystem. För att komma igång pröva ett av
-  dessa tre:
+  dessa tree:
 	- tryck <HELP> tangenten (om du har någon)
 	- tryck <F1> tangenten (om du har någon)
 	- skriv   :help <ENTER>
@@ -782,14 +782,14 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 
 			  ** Aktivera Vim- funktioner **
 
-  Vim har många fler funktioner än Vi, men de flesta av dem är inaktiverade som
+  Vim har många fler funktioner än Vi, men de flesta av dem är inaktiverade some
   standard. För att börja använda fler funktioner måste du skapa en "vimrc"-fil.
 
   1. Börja redigera "vimrc"-filen, detta beror på ditt system:
 	:edit ~/.vimrc		för Unix
 	:edit ~/_vimrc		för MS-Windows
 
-  2. Läs nu texten i exempel "vimrc"-filen:
+  2. Läs nu texten i example "vimrc"-filen:
 
 	:read $VIMRUNTIME/vimrc_example.vim
 
@@ -810,14 +810,14 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
   För vidare läsning rekommenderas den här boken:
 	Vim - Vi Improved - av Steve Oualline
 	Förlag: New Riders
-  Den första boken som är endast behandlar Vim. Speciellt användbar för
-  nybörjare. Det finns många exempel och bilder.
+  Den första boken some är endast behandlar Vim. Speciellt användbar för
+  nybörjare. Det finns många example och bilder.
   Se http://iccf-holland.org/click5.html
 
   Den här boken är äldre och behandlar mer Vi än Vim, men rekommenderas också:
 	Learning the Vi Editor - av Linda Lamb
 	Förlag: O'Reilly & Associates Inc.
-  Det är en bra bok för att lära sig nästan allt som du vill kunna göra med Vi.
+  Det är en bra bok för att lära sig nästan allt some du will kunna göra med Vi.
   Den sjätte upplagan inkluderar också information om Vim.
 
   Den här handledningen är skriven av Michael C. Pierce och Robert K. Ware,

@@ -39,10 +39,10 @@ menutrans &File		文件(&F)
 menutrans &Open\.\.\.<Tab>:e			打开(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp		在拆分窗口打开(&L)\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	在标签页打开\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew				新建(&N)<Tab>:enew
+menutrans &New<Tab>:new				新建(&N)<Tab>:new
 menutrans &Close<Tab>:close				关闭(&C)<Tab>:close
 menutrans &Save<Tab>:w					保存(&S)<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav		另存为(&A)\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save		另存为(&A)\.\.\.<Tab>:save
 menutrans Split\ &Diff\ With\.\.\.		拆分窗口以对比差异(Diff)(&D)\.\.\.
 menutrans Split\ Patched\ &By\.\.\.		拆分窗口以进行修补(Patch)(&B)\.\.\.
 menutrans &Print						打印(&P)
@@ -182,7 +182,7 @@ menutrans &Folding								折叠(&F)
 " open close folds
 menutrans &Enable/Disable\ Folds<Tab>zi			启用/禁用折叠(&E)<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv			展开光标所在行(&V)<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ Only<Tab>zMzx	只展开光标所在行(&W)<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ Only<Tab>zMzx	只展开光标所在行(&W)<Tab>zMzx
 menutrans C&lose\ More\ Folds<Tab>zm			折叠一级(&L)<Tab>zm
 menutrans &Close\ All\ Folds<Tab>zM				折叠全部(&C)<Tab>zM
 menutrans O&pen\ More\ Folds<Tab>zr				展开一级(&P)<Tab>zr
@@ -190,7 +190,7 @@ menutrans &Open\ All\ Folds<Tab>zR				展开全部(&O)<Tab>zR
 " fold method
 menutrans Fold\ Met&hod							折叠方式(&H)
 " Tools.Fold.Fold Method menuitems {{{3
-menutrans M&anual		手动(&A)
+menutrans M&annual		手动(&A)
 menutrans I&ndent		缩进(&N)
 menutrans E&xpression	表达式(&X)
 menutrans S&yntax		语法(&Y)
@@ -437,7 +437,7 @@ menutrans Set\ '&filetype'\ Too			也设置\ 'filetype'(&F)
   menutrans Name<tab>s		文件名<tab>s
   menutrans Time<tab>s  	修改时间<tab>s
   menutrans Size<tab>s  	大小<tab>s
-  menutrans Exten<tab>s		扩展名<tab>s
+  menutrans Extent<tab>s		扩展名<tab>s
   " }}}
   " }}}
   menutrans Rename\ File/Directory<tab>R	重命名文件/目录<tab>R

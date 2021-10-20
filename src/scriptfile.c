@@ -958,7 +958,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 	// Need to execute the commands directly.  This is required at least
 	// for:
 	// - ":g" command busy
-	// - after ":argdo", ":windo" or ":bufdo"
+	// - after ":argdo", ":window" or ":bufdo"
 	// - another command follows
 	// - inside a loop
 	openscript(fname, global_busy || listcmd_busy || eap->nextcmd != NULL
@@ -1981,7 +1981,7 @@ do_finish(exarg_T *eap, int reanimate)
 	((source_cookie_T *)getline_cookie(eap->getline,
 					      eap->cookie))->finished = FALSE;
 
-    // Cleanup (and inactivate) conditionals, but stop when a try conditional
+    // Cleanup (and deactivate) conditionals, but stop when a try conditional
     // not in its finally clause (which then is to be executed next) is found.
     // In this case, make the ":finish" pending for execution at the ":endtry".
     // Otherwise, finish normally.

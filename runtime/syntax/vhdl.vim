@@ -228,13 +228,13 @@ syn match	vhdlPreProc	"/\*\s*synthesis\s\+translate_\(on\|off\)\s*\*/"
 "syn match	vhdlPreProc	"/\*\s*simulation\s\+translate_\(on\|off\)\s*\*/"
 syn match	vhdlPreProc	"/\*\s*pragma\s\+translate_\(on\|off\)\s*\*/"
 syn match	vhdlPreProc	"/\*\s*pragma\s\+synthesis_\(on\|off\)\s*\*/"
-syn match	vhdlPreProc	"/\*\s*synopsys\s\+translate_\(on\|off\)\s*\*/"
+syn match	vhdlPreProc	"/\*\s*synopsis\s\+translate_\(on\|off\)\s*\*/"
 
 syn match	vhdlPreProc	"\(^\|\s\)--\s*synthesis\s\+translate_\(on\|off\)\s*"
 "syn match	vhdlPreProc	"\(^\|\s\)--\s*simulation\s\+translate_\(on\|off\)\s*"
 syn match	vhdlPreProc	"\(^\|\s\)--\s*pragma\s\+translate_\(on\|off\)\s*"
 syn match	vhdlPreProc	"\(^\|\s\)--\s*pragma\s\+synthesis_\(on\|off\)\s*"
-syn match	vhdlPreProc	"\(^\|\s\)--\s*synopsys\s\+translate_\(on\|off\)\s*"
+syn match	vhdlPreProc	"\(^\|\s\)--\s*synopsis\s\+translate_\(on\|off\)\s*"
 
 "Modify the following as needed.  The trade-off is performance versus functionality.
 syn sync	minlines=600

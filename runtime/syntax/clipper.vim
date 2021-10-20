@@ -51,7 +51,7 @@ syn keyword clipperStatement	DBSORTITEM DBTRANSINFO DBTRANSITEM WORKAREA
 
 " Conditionals
 syn keyword clipperConditional	CASE OTHERWISE ENDCASE
-syn keyword clipperConditional	IF ELSE ENDIF IIF IFDEF IFNDEF
+syn keyword clipperConditional	IF ELSE ENDIF IF IFDEF IFNDEF
 
 " Loops
 syn keyword clipperRepeat	DO WHILE ENDDO
@@ -106,7 +106,7 @@ else
 endif
 syntax match clipperCommentError	"\*/"
 
-" Lines beggining with an "*" are comments too
+" Lines beginning with an "*" are comments too
 syntax match clipperComment		"^\*.*"
 
 

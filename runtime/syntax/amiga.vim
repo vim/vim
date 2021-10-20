@@ -13,7 +13,7 @@ endif
 syn case ignore
 
 " Amiga Devices
-syn match amiDev "\(par\|ser\|prt\|con\|nil\):"
+syn match amiDev "\(par\|set\|prt\|con\|nil\):"
 
 " Amiga aliases and paths
 syn match amiAlias	"\<[a-zA-Z][a-zA-Z0-9]\+:"

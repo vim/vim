@@ -87,12 +87,12 @@ lues depuis stderr, qui devrait être un terminal.
 \-t {marqueur}
 Le fichier à éditer et la position initiale du curseur dépendent
 d'un "marqueur", qui est une sorte d'étiquette.
-{marqueur} est recherché dans le fichier des marqueurs, le fichier correspondant
+{marqueur} est recherché dans le fichier des marqueurs, le fichier correspondent
 devient le fichier courant et la commande associée est exécutée.
 Principalement utile pour les programmes en C ; dans ce cas, {marqueur}
-peut être le nom d'une fonction.
-Au final, le fichier contenant cette fonction devient le fichier
-courant et le curseur est placé au début de la fonction.
+peut être le nom d'une function.
+Au final, le fichier contenant cette function devient le fichier
+courant et le curseur est placé au début de la function.
 Voir ":help tag\-commands".
 .TP
 \-q [fichiererreurs]
@@ -109,7 +109,7 @@ se comporte différemment selon le nom de la commande (l'exécutable peut
 cependant être le même fichier).
 .TP 10
 vim
-La façon "normale", le comportement par défaut.
+La façon "normal", le comportement par défaut.
 .TP
 ex
 Démarre en mode Ex.
@@ -154,9 +154,9 @@ disponibles.
 \-c {commande}
 Exécute {commande} après la lecture du premier fichier.
 {commande} est interprétée comme une commande Ex.
-Si la {commande} contient des espaces, elle doit être entourée
+Si la {commande} contient des escapes, elle doit être entourée
 de doubles-apostrophes (cela dépend du shell utilisé).
-Exemple : vim "+set si" main.c
+Example : vim "+set si" main.c
 .br
 Note : vous pouvez utiliser jusqu'à 10 commandes "+" ou "\-c".
 .TP
@@ -204,7 +204,7 @@ Fonctionne comme vimdiff(1).
 \-d {périph}
 Ouvre {périph} pour l'utiliser comme terminal.
 Uniquement sur Amiga.
-Exemple :
+Example :
 "\-d con:20/30/600/150".
 .TP
 \-D
@@ -231,7 +231,7 @@ n'est pas relancé pour ouvrir une nouvelle fenêtre.
 Cette option est utile quand
 .B Vim
 est exécuté par un programme qui attend la fin de la session d'édition
-(par exemple mail).
+(par example mail).
 Sur Amiga, les commandes ":sh" et ":!" ne fonctionneront pas.
 .TP
 \-\-nofork
@@ -343,7 +343,7 @@ L'option 'readonly' peut être désactivée avec ":set noro".
 Voir ":help 'readonly'".
 .TP
 \-r
-Donne la liste des fichiers d'échange, avec des informations pour les utiliser
+Donne la liste des fichiers d'échange, avec des information pour les utiliser
 à des fins de recouvrement.
 .TP
 \-r {file}
@@ -412,13 +412,13 @@ C'est utile quand vous voulez créer un fichier de script à utiliser avec
 Si le fichier {scriptSortie} existe, les caractères sont ajoutés à la fin.
 .TP
 \-W {scriptSortie}
-Comme \-w, mais un fichier existant sera écrasé.
+Comme \-w, mais un fichier existent sera écrasé.
 .TP
 \-x
 Chiffre les fichiers lors de l'écriture. Une clé de chiffrement sera demandée.
 .TP
 \-X
-Ne se connecte pas au serveur X. Accélère le temps de démarrage dans un
+Ne se connected pas au serveur X. Accélère le temps de démarrage dans un
 terminal, mais le titre de la fenêtre et le presse-papier seront inaccessibles.
 .TP
 \-y
@@ -451,16 +451,16 @@ jokers. N'a aucun effet sur Unix, où le shell étend les jokers.
 Ne charge pas les greffons. Implicite avec \-u NONE.
 .TP
 \-\-remote
-Se connecte à un serveur Vim et lui fait éditer les fichiers spécifiés dans
+Se connected à un serveur Vim et lui fait éditer les fichiers spécifiés dans
 le reste des arguments. Si aucun serveur n'est trouvé, un avertissement est
 émis et les fichiers sont édités dans le Vim courant.
 .TP
 \-\-remote\-expr {expr}
-Se connecte à un serveur Vim, y évalue {expr} et affiche le résultat sur la
+Se connected à un serveur Vim, y évalue {expr} et affiche le résultat sur la
 sortie standard (stdout).
 .TP
 \-\-remote\-send {touches}
-Se connecte à un serveur Vim et y envoie {touches}.
+Se connected à un serveur Vim et y envoie {touches}.
 .TP
 \-\-remote\-silent
 Comme \-\-remote, mais sans émettre d'avertissement si aucun serveur n'est
@@ -487,19 +487,19 @@ IHM graphique GTK+ uniquement : utilise le mécanisme GtkPlug pour faire
 fonctionner gvim dans une autre fenêtre.
 .TP
 \-\-version
-Affiche les informations sur la version puis quitte.
+Affiche les information sur la version puis quitte.
 .SH AIDE EN LIGNE
 Taper ":help" dans
 .B Vim
 pour commencer.
 Taper ":help sujet" pour obtenir de l'aide sur un sujet précis.
-Par exemple : ":help ZZ" pour consulter l'aide sur la commande "ZZ".
+Par example : ":help ZZ" pour consulter l'aide sur la commande "ZZ".
 Utiliser <Tab> et CTRL\-D pour compléter les sujets (":help
 cmdline\-completion").
 Des marqueurs sont inclus dans l'aide et vous permettent de sauter d'un endroit
 à un autre (comme des liens hypertextes, voir ":help").
 L'ensemble des fichiers de la documentation peut être consulté de cette
-façon, par exemple ":help syntax.txt".
+façon, par example ":help syntax.txt".
 .SH FICHIERS
 .TP 15
 /usr/local/lib/vim/doc/*.txt
@@ -508,7 +508,7 @@ Les fichiers de la documentation de
 Utiliser ":help doc\-file\-list" pour obtenir la liste complète.
 .TP
 /usr/local/lib/vim/doc/tags
-Le fichier des marqueurs utilisé pour trouver les informations dans les
+Le fichier des marqueurs utilisé pour trouver les information dans les
 fichiers de la documentation.
 .TP
 /usr/local/lib/vim/syntax/syntax.vim

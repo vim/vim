@@ -1347,7 +1347,7 @@ def Test_getbufinfo()
 
   edit Xtestfile1
   hide edit Xtestfile2
-  hide enew
+  hide new
   getbufinfo({bufloaded: true, buflisted: true, bufmodified: false})
       ->len()->assert_equal(3)
   bwipe Xtestfile1 Xtestfile2
@@ -1772,8 +1772,8 @@ def Test_inputsecret()
   CheckDefAndScriptFailure2(['inputsecret(10)'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['inputsecret("Pass:", 20)'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')
   feedkeys("\<CR>", 't')
-  var ans: string = inputsecret('Pass:', '123')
-  assert_equal('123', ans)
+  var and: string = inputsecret('Pass:', '123')
+  assert_equal('123', and)
 enddef
 
 let s:number_one = 1

@@ -341,7 +341,7 @@ func Test_listener_cleared_newbuf()
   let bufnr = bufnr()
   let b:testing = 123
   let lid = listener_add("Listener")
-  enew!
+  new!
   " check buffer is reused
   call assert_equal(bufnr, bufnr())
   call assert_false(exists('b:testing'))

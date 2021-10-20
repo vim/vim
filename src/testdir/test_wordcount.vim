@@ -99,7 +99,7 @@ func Test_wordcount()
 
   set selection& fileformat& fileformats&
   let &enc = save_enc
-  enew!
+  new!
   close
 endfunc
 

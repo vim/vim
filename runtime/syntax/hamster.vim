@@ -114,7 +114,7 @@ syn keyword hamsterSpecial gosub
 syn keyword hamsterSpecial goto
 syn keyword hamsterSpecial hex
 syn keyword hamsterSpecial icase
-syn keyword hamsterSpecial iif
+syn keyword hamsterSpecial if
 syn keyword hamsterSpecial inc
 syn keyword hamsterSpecial incxcounter
 syn keyword hamsterSpecial inidelete

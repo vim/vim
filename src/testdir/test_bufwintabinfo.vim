@@ -14,7 +14,7 @@ func Test_getbufwintabinfo()
   call assert_equal([], getbufinfo(2016))
   edit Xtestfile1
   hide edit Xtestfile2
-  hide enew
+  hide new
   call assert_equal(3, len(getbufinfo({'bufloaded':1})))
 
   set tabstop&vim
@@ -44,7 +44,7 @@ func Test_getbufwintabinfo()
     call assert_equal('Mark', l[0].signs[0].name)
     sign unplace *
     sign undefine Mark
-    enew!
+    new!
   endif
   call assert_notequal([], getbufinfo(test_null_dict()))
 
@@ -151,10 +151,10 @@ endfunc
 function Test_getbufinfo_lastused()
   call test_settime(1234567)
   edit Xtestfile1
-  enew
+  new
   call test_settime(7654321)
   edit Xtestfile2
-  enew
+  new
   call assert_equal(getbufinfo('Xtestfile1')[0].lastused, 1234567)
   call assert_equal(getbufinfo('Xtestfile2')[0].lastused, 7654321)
   call test_settime(0)

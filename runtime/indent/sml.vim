@@ -4,7 +4,7 @@
 " 				Hubert Chao <hc85@cornell.edu>
 " Original OCaml Version:
 " 				Jean-Francois Yuen  <jfyuen@ifrance.com>
-"               Mike Leary          <leary@nwlink.com>
+"               Mike Leery          <leery@nwlink.com>
 "               Markus Mottl        <markus@oefai.at>
 " OCaml URL:    http://www.oefai.at/~markus/vim/indent/ocaml.vim
 " Last Change:  2003 Jan 04	- Adapted to SML

@@ -71,7 +71,7 @@ syn match idlangRoutine "QUERY_\a*"
 syn match idlangRoutine "\<MAX\s*("he=e-1
 syn match idlangRoutine "\<MIN\s*("he=e-1
 
-syn keyword idlangRoutine A_CORRELATE ABS ACOS ADAPT_HIST_EQUAL ALOG ALOG10
+syn keyword idlangRoutine A_CORRELATE ABS ACOS ADAPT_HIST_EQUAL ALONG ALOG10
 syn keyword idlangRoutine AMOEBA ANNOTATE ARG_PRESENT ARRAY_EQUAL ARROW
 syn keyword idlangRoutine ASCII_TEMPLATE ASIN ASSOC ATAN AXIS BAR_PLOT
 syn keyword idlangRoutine BESELI BESELJ BESELK BESELY BETA BILINEAR BIN_DATE
@@ -106,7 +106,7 @@ syn keyword idlangRoutine DISSOLVE DIST DLM_LOAD DLM_REGISTER
 syn keyword idlangRoutine DO_APPLE_SCRIPT DOC_LIBRARY DOUBLE DRAW_ROI EFONT
 syn keyword idlangRoutine EIGENQL EIGENVEC ELMHES EMPTY ENABLE_SYSRTN EOF
 syn keyword idlangRoutine ERASE ERODE ERRORF ERRPLOT EXECUTE EXIT EXP EXPAND
-syn keyword idlangRoutine EXPAND_PATH EXPINT EXTRAC EXTRACT_SLICE F_CVF
+syn keyword idlangRoutine EXPAND_PATH EXPINT EXTRACT EXTRACT_SLICE F_CVF
 syn keyword idlangRoutine F_PDF FACTORIAL FFT FILE_CHMOD FILE_DELETE
 syn keyword idlangRoutine FILE_EXPAND_PATH FILE_MKDIR FILE_TEST FILE_WHICH
 syn keyword idlangRoutine FILEPATH FINDFILE FINDGEN FINITE FIX FLICK FLOAT

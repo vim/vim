@@ -27,7 +27,7 @@ syn keyword euphoria4Debug	includes inline warning define
 " Keywords for conditional compilation - from $EUDIR/include/euphoria/keywords.e:
 syn keyword euphoria4PreProc	elsedef elsifdef ifdef 
 
-" Keywords (Statments) - from $EUDIR/include/euphoria/keywords.e:
+" Keywords (Statements) - from $EUDIR/include/euphoria/keywords.e:
 syn keyword euphoria4Keyword	and as break by case constant continue do else     
 syn keyword euphoria4Keyword	elsif end entry enum exit export
 syn keyword euphoria4Keyword	fallthru for function global goto if include
@@ -110,7 +110,7 @@ syn keyword euphoria4Library 	get_position get_rand get_screen_char get_text
 syn keyword euphoria4Library 	get_vector getaddrinfo getmxrr getnsrr graphics_mode
 syn keyword euphoria4Library 	harmean has has_console has_match hex_text
 syn keyword euphoria4Library 	host_by_addr host_by_name http_get http_post iff
-syn keyword euphoria4Library 	iif info init_class init_curdir insertion_sort
+syn keyword euphoria4Library 	if info init_class init_curdir insertion_sort
 syn keyword euphoria4Library 	instance int_to_bits int_to_bytes intdiv
 syn keyword euphoria4Library 	is_DEP_supported is_empty is_even is_even_obj
 syn keyword euphoria4Library 	is_in_list is_in_range is_inetaddr is_leap_year

@@ -336,7 +336,7 @@
   7. 然后多次输入 CTRL-R (先按下 CTRL 键不放开，接着按 R 键)，这样就
      可以重做被撤消的命令，也就是撤消掉撤消命令。
 
----> Fiix the errors oon thhis line and reeplace them witth undo.
+---> Fiix the errors oon thhis line and reeplace them with undo.
 
   8. 这些都是非常有用的命令。下面是第二讲的小结了。
 

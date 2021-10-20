@@ -3537,12 +3537,12 @@ inchar(
 	if (got_int)
 	{
 #define DUM_LEN MAXMAPLEN * 3 + 3
-	    char_u	dum[DUM_LEN + 1];
+	    char_u	dumb[DUM_LEN + 1];
 
 	    for (;;)
 	    {
-		len = ui_inchar(dum, DUM_LEN, 0L, 0);
-		if (len == 0 || (len == 1 && dum[0] == 3))
+		len = ui_inchar(dumb, DUM_LEN, 0L, 0);
+		if (len == 0 || (len == 1 && dumb[0] == 3))
 		    break;
 	    }
 	    return retesc;

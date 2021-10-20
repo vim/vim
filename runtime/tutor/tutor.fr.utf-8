@@ -32,7 +32,7 @@
           ^
           k        Astuce :  La touche h est à gauche et déplace à gauche.
     < h       l >            La touche l est à droite et déplace à droite.
-          j                  La touche j ressemble à une flèche vers le bas.
+          j                  La touche j resemble à une flèche vers le bas.
           v
   1. Déplacez le curseur sur l'écran jusqu'à vous sentir à l'aise.
 
@@ -61,7 +61,7 @@ NOTE : Les touches fléchées devraient également fonctionner. Mais en utilisan
      Ceci quitte l'éditeur SANS enregistrer les changements que vous avez
      faits.
 
-  3. Revenez ici en tapant la commande qui vous a mené à ce tutoriel.
+  3. Revenez ici en tapant la commande qui vous a mené à ce tutorial.
      Cela pourrait être :    vimtutor <Entrée>
 
   4. Si vous avez mémorisé ces étapes et êtes confiant, effectuez les étapes
@@ -153,7 +153,7 @@ NOTE : En avançant dans ce cours, n'essayez pas de mémoriser, apprenez par
 
 !! NOTE : Lisez toute la leçon avant d'exécuter les instructions ci-dessous !!
 
-  1. Sortez de ce tutoriel comme vous l'avez fait dans la Leçon 1.2 :  :q!
+  1. Sortez de ce tutorial comme vous l'avez fait dans la Leçon 1.2 :  :q!
      Ou, si vous avez accès à un autre terminal, exécutez-y les actions
      qui suivent.
 
@@ -202,15 +202,15 @@ Passez maintenant à la leçon 2.
                        Leçon 2.1 : COMMANDES D'EFFACEMENT
 
 
-                     ** Tapez  dw  pour effacer un mot. **
+                     ** Tapez  dw  pour effacer un not. **
 
   1. Appuyez  <Échap>  pour être sûr d'être en mode Normal.
 
   2. Déplacez le curseur sur la ligne marquée ---> ci-dessous.
 
-  3. Placez le curseur sur le début d'un mot qui a besoin d'être effacé.
+  3. Placez le curseur sur le début d'un not qui a besoin d'être effacé.
 
-  4. Tapez  dw  pour faire disparaître ce mot.
+  4. Tapez  dw  pour faire disparaître ce not.
 
 NOTE : La lettre  d  apparaîtra sur la dernière ligne de l'écran lors de
        votre frappe. Vim attend que vous tapiez  w . Si vous voyez un autre
@@ -259,11 +259,11 @@ NOTE : La lettre  d  apparaîtra sur la dernière ligne de l'écran lors de
                 ci-dessous)
 
   Une courte liste de mouvements :
-    w - jusqu'au début du prochain mot, en EXCLUANT son premier caractère.
-    e - jusqu'à la fin du mot courant, en EXCLUANT son dernier caractère.
+    w - jusqu'au début du prochain not, en EXCLUANT son premier caractère.
+    e - jusqu'à la fin du not courant, en EXCLUANT son dernier caractère.
     $ - jusqu'à la fin de la ligne, en INCLUANT son dernier caractère.
 
-  Ainsi, taper  de  va effacer depuis le curseur jusqu'à la fin du mot.
+  Ainsi, taper  de  va effacer depuis le curseur jusqu'à la fin du not.
 
 NOTE : Le seul appui d'un mouvement en mode Normal, sans commande, déplace le
        curseur comme indiqué.
@@ -279,7 +279,7 @@ NOTE : Le seul appui d'un mouvement en mode Normal, sans commande, déplace le
 
   2. Tapez  2w  pour déplacer le curseur de 2 mots vers l'avant.
 
-  3. Tapez  3e  pour déplacer le curseur à la fin du troisième mot vers
+  3. Tapez  3e  pour déplacer le curseur à la fin du troisième not vers
      l'avant.
 
   4. Tapez  0  (zéro) pour déplacer au début de la ligne.
@@ -302,7 +302,7 @@ NOTE : Le seul appui d'un mouvement en mode Normal, sans commande, déplace le
   pour effacer encore plus :
        d   nombre   déplacement
 
-  1. Déplacez le curseur vers le premier mot en MAJUSCULES dans la ligne
+  1. Déplacez le curseur vers le premier not en MAJUSCULES dans la ligne
      marquée --->.
 
   2. Tapez  d2w  pour effacer les deux mots en MAJUSCULES.
@@ -366,7 +366,7 @@ NOTE : Le seul appui d'un mouvement en mode Normal, sans commande, déplace le
                              RÉSUMÉ DE LA LEÇON 2
 
 
-  1. Pour effacer du curseur jusqu'au mot suivant tapez :         dw
+  1. Pour effacer du curseur jusqu'au not suivant tapez :         dw
 
   2. Pour effacer du curseur jusqu'à la fin d'une ligne tapez :   d$
 
@@ -381,7 +381,7 @@ NOTE : Le seul appui d'un mouvement en mode Normal, sans commande, déplace le
      Où :
        opérateur   - est ce qu'il faut faire, comme  d  pour effacer.
        [nombre]    - un quantificateur optionnel pour répéter le déplacement.
-       déplacement - déplace le long du texte à opérer, tel que  w  (mot),
+       déplacement - déplace le long du texte à opérer, tel que  w  (not),
                      $ (jusqu'à la fin de ligne), etc.
 
   6. Pour se déplacer au début de ligne, utilisez un zéro :  0
@@ -442,13 +442,13 @@ NOTE : N'oubliez pas que vous devriez apprendre par la pratique, pas par
                      Leçon 3.3 : L'OPÉRATEUR DE CHANGEMENT
 
 
-            ** Pour changer jusqu'à la fin d'un mot, tapez  ce .**
+            ** Pour changer jusqu'à la fin d'un not, tapez  ce .**
 
   1. Déplacez le curseur sur la première ligne marquée ---> ci-dessous.
 
   2. Placez le curseur sur le  u  de luhko.
 
-  3. Tapez  ce  et corrigez le mot (dans notre cas, tapez  'igne'.)
+  3. Tapez  ce  et corrigez le not (dans notre cas, tapez  'igne'.)
 
   4. Appuyez <Échap> et placez-vous sur le prochain caractère qui doit
      être changé.
@@ -459,7 +459,7 @@ NOTE : N'oubliez pas que vous devriez apprendre par la pratique, pas par
 ---> Cette luhko contient quelques myqa qui ont ricne d'être chantufip.
 ---> Cette ligne contient quelques mots qui ont besoin d'être changés.
 
-Notez que  ce  efface le mot et vous place ensuite en mode Insertion.
+Notez que  ce  efface le not et vous place ensuite en mode Insertion.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -474,7 +474,7 @@ Notez que  ce  efface le mot et vous place ensuite en mode Insertion.
 
          c   [nombre]   déplacement
 
-  2. Les déplacements sont identiques :  w (mot) et  $ (fin de ligne).
+  2. Les déplacements sont identiques :  w (not) et  $ (fin de ligne).
 
   3. Déplacez-vous sur la première ligne marquée ---> ci-dessous.
 
@@ -502,8 +502,8 @@ NOTE :  Vous pouvez utiliser la touche Retour Arrière pour corriger les
      qui remplacera l'original.
 
   3. L'opérateur de changement vous permet de changer depuis la position du
-     curseur jusqu'où le déplacement vous amène. Par exemple, tapez  ce
-     pour changer du curseur jusqu'à la fin du mot,  c$  pour changer jusqu'à
+     curseur jusqu'où le déplacement vous amène. Par example, tapez  ce
+     pour changer du curseur jusqu'à la fin du not,  c$  pour changer jusqu'à
      la fin d'une ligne.
 
   4. Le format pour le changement est :
@@ -549,7 +549,7 @@ NOTE : Vous pouvez peut-être voir le curseur en bas à droite de l'écran.
   1. Tapez le caractère  /  en mode Normal. Notez que celui-ci et le curseur
      apparaissent en bas de l'écran, comme lorsque l'on utilise  : .
 
-  2. Puis tapez 'errreuur' <Entrée>. C'est le mot que vous voulez rechercher.
+  2. Puis tapez 'errreuur' <Entrée>. C'est le not que vous voulez rechercher.
 
   3. Pour rechercher à nouveau le même texte, tapez simplement  n .
      Pour rechercher le même texte dans la direction opposée, tapez  N .
@@ -567,17 +567,17 @@ NOTE : Quand la recherche atteint la fin du fichier, elle reprend au début
             Leçon 4.3 : RECHERCHE DES PARENTHÈSES CORRESPONDANTES
 
 
-           ** Tapez  %  pour trouver des ), ] ou } correspondants. **
+           ** Tapez  %  pour trouver des ), ] ou } correspondents. **
 
   1. Placez le curseur sur l'un des (, [ ou { de la ligne marquée --->
      ci-dessous.
 
   2. Puis tapez le caractère  % .
 
-  3. Le curseur se déplacera sur la parenthèse ou crochet correspondant.
+  3. Le curseur se déplacera sur la parenthèse ou crochet correspondent.
 
   4. Tapez  %  pour replacer le curseur sur la parenthèse ou crochet
-     correspondant.
+     correspondent.
 
   5. Déplacez le curseur sur un autre (,),[,],{ ou } et regardez ce que
      fait  % .
@@ -631,7 +631,7 @@ NOTE : Cette fonctionnalité est très utile lors du débogage d'un programme qu
      même direction ou  Maj-N  pour rechercher dans la direction opposée.
 
   3. Taper  %  lorsque le curseur est sur  (, ), [, ], { ou }  déplace
-     celui-ci sur le caractère correspondant.
+     celui-ci sur le caractère correspondent.
 
   4. Pour remplacer le premier aa par bb sur une ligne tapez     :s/aa/bb
      Pour remplacer tous les aa par bb sur une ligne tapez       :s/aa/bb/g
@@ -650,9 +650,9 @@ NOTE : Cette fonctionnalité est très utile lors du débogage d'un programme qu
      permet de saisir une commande.
 
   2. Puis tapez un  !  (point d'exclamation). Cela vous permet d'exécuter
-     n'importe quelle commande valide pour votre interpréteur (shell).
+     n'importe quelle commande valid pour votre interpréteur (shell).
 
-  3. Par exemple, tapez  ls  après le  !  et appuyez <Entrée>. Ceci affichera
+  3. Par example, tapez  ls  après le  !  et appuyez <Entrée>. Ceci affichera
      la liste des fichiers du répertoire courant, comme si vous aviez tapé la
      commande à l'invite du shell. Utilisez  :!dir  si  :!ls  ne marche pas.
 
@@ -673,11 +673,11 @@ NOTE :  Toutes les commandes  :  doivent finir par la frappe de <Entrée>.
      répertoire courant. Vous savez déjà qu'il faut appuyer <Entrée> après
      cela.
 
-  2. Choisissez un nom de fichier qui n'existe pas encore, par exemple TEST.
+  2. Choisissez un nom de fichier qui n'existe pas encore, par example TEST.
 
   3. Puis tapez  :w TEST  (où TEST est le nom que vous avez choisi).
 
-  4. Cela enregistre tout le fichier (Tutoriel Vim) sous le nom TEST.
+  4. Cela enregistre tout le fichier (Tutorial Vim) sous le nom TEST.
      Pour le vérifier, tapez  :!dir  ou  :!ls  de nouveau pour revisualiser
      votre répertoire.
 
@@ -713,7 +713,7 @@ NOTE : Si vous quittez Vim et le redémarrez de nouveau avec le fichier TEST,
 NOTE : L'appui de  v  démarre la sélection Visuelle. Vous pouvez déplacer le
        curseur pour agrandir ou rétrécir la sélection. Puis vous pouvez
        utiliser un opérateur pour faire quelque chose sur le texte. Par
-       exemple,  d  efface le texte.
+       example,  d  efface le texte.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -735,7 +735,7 @@ NOTE :  Après avoir exécuté l'étape 2 vous verrez du texte de la Leçon 5.3.
      qu'il y a maintenant deux copies de la Leçon 5.3, l'originale et celle
      contenue dans le fichier.
 
-NOTE :  Vous pouvez aussi lire la sortie d'une commande externe. Par exemple,
+NOTE :  Vous pouvez aussi lire la sortie d'une commande externe. Par example,
         :r !ls  lit la sortie de la commande ls et la place sous la ligne du
         curseur.
 
@@ -746,7 +746,7 @@ NOTE :  Vous pouvez aussi lire la sortie d'une commande externe. Par exemple,
 
   1. :!commande  exécute une commande externe.
 
-     Quelques exemples pratiques :
+     Quelques examples pratiques :
       (Windows)       (Unix)
        :!dir           :!ls          affiche le contenu du répertoire courant.
        :!del FICHIER   :!rm FICHIER  efface FICHIER.
@@ -798,10 +798,10 @@ NOTE :  Vous pouvez aussi lire la sortie d'une commande externe. Par exemple,
 
   3. Appuyez  a  (minuscule) pour ajouter du texte APRÈS le curseur.
 
-  4. Complétez le mot comme dans la ligne dessous. Appuyez <Échap> pour
+  4. Complétez le not comme dans la ligne dessous. Appuyez <Échap> pour
      sortir du mode Insertion.
 
-  5. Utilisez  e  pour vous déplacer vers le mot incomplet suivant et
+  5. Utilisez  e  pour vous déplacer vers le not incomplet suivant et
      répétez les étapes 3 et 4.
 
 ---> Cette li vous perm de pratiq l'ajout de t dans une ligne.
@@ -833,7 +833,7 @@ NOTE :  a, i, A vont tous dans le même mode Insertion, la seule différence
 ---> L'ajout de 123 à 456 donne 579.
 
 NOTE : Le mode Remplacement est comme le mode Insertion, mais tous les
-       caractères tapés effacent un caractère existant.
+       caractères tapés effacent un caractère existent.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -898,7 +898,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
   2. Taper  a  pour insérer du texte APRÈS le curseur.
      Taper  A  pour insérer du texte après la fin de ligne.
 
-  3. Taper  e  déplace à la fin du mot.
+  3. Taper  e  déplace à la fin du not.
 
   4. Taper  y  copie du texte,  p  le colle.
 
@@ -917,7 +917,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
 
                   ** Utiliser le système d'aide en ligne. **
 
-  Vim a un système complet d'aide en ligne. Pour y accéder, essayez l'une de
+  Vim a un système complete d'aide en ligne. Pour y accéder, essayez l'une de
   ces trois méthodes :
         - appuyez la touche <Help> (si vous en avez une)
         - appuyez la touche <F1> (si vous en avez une)
@@ -929,7 +929,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
   Tapez  :q <Entrée>     pour fermer la fenêtre d'aide.
 
   Vous pouvez accéder à l'aide sur à peu près n'importe quel sujet en donnant
-  des arguments à la commande  :help . Essayez par exemple (n'oubliez pas
+  des arguments à la commande  :help . Essayez par example (n'oubliez pas
   d'appuyer sur <Entrée>) :
 
         :help w
@@ -980,7 +980,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
 
   5. Appuyez  d<TAB>  et Vim complétera le nom de la commande :  ":edit"
 
-  6. Ajoutez maintenant un espace et le début d'un fichier existant :
+  6. Ajoutez maintenant un escape et le début d'un fichier existent :
      :edit  FIC
 
   7  Appuyez  <TAB>. Vim va compléter le nom (s'il est unique).
@@ -1009,9 +1009,9 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Ceci conclut le Tutoriel Vim. Le but était de vous donner un bref aperçu de
+  Ceci conclut le Tutorial Vim. Le but était de vous donner un bref aperçu de
   l'éditeur Vim, juste assez pour vous permettre d'utiliser l'éditeur
-  relativement facilement. Il est loin d'être complet, vu que Vim a beaucoup
+  relativement facilement. Il est loin d'être complete, vu que Vim a beaucoup
   plus de commandes. Un Manuel de l'utilisateur est disponible en anglais :
     :help user-manual
 
@@ -1022,10 +1022,10 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
         ISBN : 2-84177-102-4
 
   Deux livres en anglais sont également mentionnés dans la version originale
-  de ce tutoriel, dont un qui traite spécifiquement de Vim. Merci de vous y
+  de ce tutorial, dont un qui traite spécifiquement de Vim. Merci de vous y
   référer si vous êtes intéressés.
 
-  Ce tutoriel a été écrit par Michael C. Pierce et Robert K. Ware de l'École
+  Ce tutorial a été écrit par Michael C. Pierce et Robert K. Ware de l'École
   des Mines du Colorado et reprend des idées fournies par Charles Smith,
   Université d'État du Colorado. E-mail : bware@mines.colorado.edu.
 

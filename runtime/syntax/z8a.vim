@@ -12,7 +12,7 @@ syn case ignore
 
 " Common Z80 Assembly instructions
 syn keyword z8aInstruction adc add and bit ccf cp cpd cpdr cpi cpir cpl
-syn keyword z8aInstruction daa di djnz ei exx halt im in
+syn keyword z8aInstruction data di djnz ei exx halt im in
 syn keyword z8aInstruction ind ini indr inir jp jr ld ldd lddr ldi ldir
 syn keyword z8aInstruction neg nop or otdr otir out outd outi
 syn keyword z8aInstruction res rl rla rlc rlca rld

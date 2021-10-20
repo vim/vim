@@ -795,7 +795,7 @@ A short example, with line numbers:
 
 	1	1234 ~
 	2	aan ~
-	3	Als ~
+	3	Also ~
 	4	Etten-Leur ~
 	5	et al. ~
 	6	's-Gravenhage ~
@@ -836,10 +836,10 @@ not match either.
 The word with all upper-case characters will always be OK,
 
 	word list	matches			does not match ~
-	als		als Als ALS		ALs AlS aLs aLS
-	Als		Als  ALS		als ALs AlS aLs aLS
-	ALS		ALS			als Als ALs AlS aLs aLS
-	AlS		AlS ALS			als Als ALs aLs aLS
+	also		also Also ALSO		also also also also
+	Also		Also  ALSO		also also also also also
+	ALSO		ALSO			also Also also also also also
+	also		also ALSO			also Also also also also
 
 The KEEPCASE affix ID can be used to specifically match a word with identical
 case only, see below |spell-KEEPCASE|.

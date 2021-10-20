@@ -141,7 +141,7 @@ func _SetUpHiddenBuffer()
   edit hidden
   setlocal bufhidden=hide
 
-  enew
+  new
   let lnum = 0
   while lnum < 10
     call append( 1, string( lnum ) )
@@ -2455,7 +2455,7 @@ func Test_python_errors()
 
   py << trim EOF
     d = vim.Dictionary()
-    ned = vim.Dictionary(foo='bar', baz='abcD')
+    need = vim.Dictionary(foo='bar', baz='abcD')
     dl = vim.Dictionary(a=1)
     dl.locked = True
     l = vim.List()
@@ -2680,7 +2680,7 @@ func Test_python_errors()
     ee('"" in d')
     ee('0 in d')
     cb.append(">> DictionaryIterNext")
-    ee('for i in ned: ned["a"] = 1')
+    ee('for i in need: need["a"] = 1')
     del i
     cb.append(">> DictionaryAssItem")
     ee('dl["b"] = 1')
@@ -2810,7 +2810,7 @@ func Test_python_errors()
     ee('vim.current.tabpage = True')
     ee('vim.current.xxx = True')
     del d
-    del ned
+    del need
     del dl
     del l
     del ll
@@ -2953,7 +2953,7 @@ func Test_python_errors()
     "" in d:ValueError:('empty keys are not allowed',)
     0 in d:TypeError:('expected str() or unicode() instance, but got int',)
     >> DictionaryIterNext
-    for i in ned: ned["a"] = 1:RuntimeError:('hashtab changed during iteration',)
+    for i in need: need["a"] = 1:RuntimeError:('hashtab changed during iteration',)
     >> DictionaryAssItem
     dl["b"] = 1:error:('dictionary is locked',)
     >>> Testing StringToChars using d[%s] = 1

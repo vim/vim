@@ -291,7 +291,7 @@ msgstr "Повторіть ключ: "
 msgid "Keys don't match!"
 msgstr "Ключі не однакові!"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[зашифровано]"
 
 # msgstr "E235: "
@@ -3063,7 +3063,7 @@ msgstr "-register\t\tЗареєструвати цей gvim для OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tСкасувати реєстрацію цього gvim для OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tЗапустити GUI (ніби «gvim»)"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -3111,7 +3111,7 @@ msgstr "-C\t\t\tСумісний з Vi режим: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tНе зовсім сумісний з Vi режим: 'nocompatible'"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr "-V[N][файл]\t\tБільше повідомлень [рівень N] [файл журн. повідомлень]"
 
 msgid "-D\t\t\tDebugging mode"
@@ -3280,7 +3280,7 @@ msgstr ""
 "\n"
 "Аргументи для gvim (версія Athena)\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <дисплей>\tВиконати Vim на заданому <дисплеї>"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3330,7 +3330,7 @@ msgstr ""
 "\n"
 "Аргументи gvim (версія GTK+)\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <дисплей>\tВиконати Vim на <дисплеї> (також: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"

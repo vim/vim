@@ -73,7 +73,7 @@ func Test_user_func()
   call assert_equal(9, g:retval)
   " call assert_equal(333, 333->g:FuncRef())
 
-  enew
+  new
 
   normal oXX+-XX
   call assert_equal('XX111-XX', getline('.'))
@@ -107,7 +107,7 @@ func Test_user_func()
   delfunc ListItem
   delfunc ListReset
   unlet g:retval g:counter
-  enew!
+  new!
 endfunc
 
 func Log(val, base = 10)

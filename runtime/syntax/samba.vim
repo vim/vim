@@ -27,7 +27,7 @@ syn keyword sambaBoolean true false yes no
 syn keyword sambaKeyword contained account acl action add address admin aliases
 syn keyword sambaKeyword contained allow alternate always announce anonymous
 syn keyword sambaKeyword contained archive as auto available bind blocking
-syn keyword sambaKeyword contained bmpx break browsable browse browseable ca
+syn keyword sambaKeyword contained bmpx break browsable browse browsable ca
 syn keyword sambaKeyword contained cache case casesignames cert certDir
 syn keyword sambaKeyword contained certFile change char character chars chat
 syn keyword sambaKeyword contained ciphers client clientcert code coding
@@ -52,7 +52,7 @@ syn keyword sambaKeyword contained only open oplock oplocks options order os
 syn keyword sambaKeyword contained output packet page panic passwd password
 syn keyword sambaKeyword contained passwords path permissions pipe port ports
 syn keyword sambaKeyword contained postexec postscript prediction preexec
-syn keyword sambaKeyword contained prefered preferred preload preserve print
+syn keyword sambaKeyword contained preferred preferred preload preserve print
 syn keyword sambaKeyword contained printable printcap printer printers
 syn keyword sambaKeyword contained printing program protocol proxy public
 syn keyword sambaKeyword contained queuepause queueresume raw read readonly

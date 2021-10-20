@@ -33,11 +33,11 @@ Unfortunately, upper/lowercase differences matter.  Also watch out for the
 use of "-" and "_".
 
 					    *:lan* *:lang* *:language* *E197*
-:lan[guage]
-:lan[guage] mes[sages]
-:lan[guage] cty[pe]
-:lan[guage] tim[e]
-:lan[guage] col[late]
+:lan[gauge]
+:lan[gauge] mes[sages]
+:lan[gauge] cty[pe]
+:lan[gauge] tim[e]
+:lan[gauge] col[late]
 			Print the current language (aka locale).
 			With the "messages" argument the language used for
 			messages is printed.  Technical: LC_MESSAGES.
@@ -53,11 +53,11 @@ use of "-" and "_".
 			|v:lang|, |v:ctype|, |v:collate| and |v:lc_time|
 			variables.
 
-:lan[guage] {name}
-:lan[guage] mes[sages] {name}
-:lan[guage] cty[pe] {name}
-:lan[guage] tim[e] {name}
-:lan[guage] col[late] {name}
+:lan[gauge] {name}
+:lan[gauge] mes[sages] {name}
+:lan[gauge] cty[pe] {name}
+:lan[gauge] tim[e] {name}
+:lan[gauge] col[late] {name}
 			Set the current language (aka locale) to {name}.
 			The locale {name} must be a valid locale on your
 			system.  Some systems accept aliases like "en" or

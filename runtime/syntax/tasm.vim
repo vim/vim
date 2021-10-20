@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language: TASM: turbo assembler by Borland
-" Maintaner: FooLman of United Force <foolman@bigfoot.com>
+" Maintainer: FooLman of United Force <foolman@bigfoot.com>
 " Last Change: 2012 Feb 03 by Thilo Six, and 2018 Nov 27.
 
 " quit when a syntax file was already loaded
@@ -34,14 +34,14 @@ syn keyword tasmDirective PROCTYPE PUBLIC PUBLICDLL PURGE %PUSHCTL PUSHSTATE
 "rept, ret
 syn keyword tasmDirective QUIRKS RADIX RECORD RETCODE SEGMENT SETFIELD
 syn keyword tasmDirective SETFLAG SIZESTR SMALLSTACK SMART STACK STARTUPCODE
-syn keyword tasmDirective STRUC SUBSTR %SUBTTL %SYMS TABLE %TABSIZE TBLINIT
+syn keyword tasmDirective STRUCT SUBSTR %SUBTTL %SYMS TABLE %TABSIZE TBLINIT
 syn keyword tasmDirective TBLINST TBLPTR TESTFLAG %TEXT %TITLE %TRUNC TYPEDEF
 syn keyword tasmDirective UDATASEG UFARDATA UNION USES VERSION WAR WHILE ?DEBUG
 
 syn keyword tasmInstruction AAA AAD AAM AAS ADC ADD AND ARPL BOUND BSF BSR
 syn keyword tasmInstruction BSWAP BT BTC BTR BTS CALL CBW CLC CLD CLI CLTS
 syn keyword tasmInstruction CMC CMP CMPXCHG CMPXCHG8B CPUID CWD CDQ CWDE
-syn keyword tasmInstruction DAA DAS DEC DIV ENTER RETN RETF F2XM1
+syn keyword tasmInstruction DATA DAS DEC DIV ENTER RETN RETF F2XM1
 syn keyword tasmCoprocInstr FABS FADD FADDP FBLD FBSTP FCHG FCOM FCOM2 FCOMI
 syn keyword tasmCoprocInstr FCOMIP FCOMP FCOMP3 FCOMP5 FCOMPP FCOS FDECSTP
 syn keyword tasmCoprocInstr FDISI FDIV FDIVP FDIVR FENI FFREE FFREEP FIADD

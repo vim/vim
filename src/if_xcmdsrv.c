@@ -1412,7 +1412,7 @@ server_parse_message(
 	    char_u	*enc;
 
 	    /*
-	     * This is a (n)otification.  Sent with serverreply_send in Vim
+	     * This is a (n)notification.  Sent with serverreply_send in Vim
 	     * script.  Execute any autocommand and save it for later retrieval
 	     */
 	    p += 2;

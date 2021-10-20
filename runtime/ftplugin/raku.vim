@@ -23,7 +23,7 @@ setlocal keywordprg=p6doc
 setlocal comments=:#\|,:#=,:#
 setlocal commentstring=#%s
 
-" Provided by Ned Konz <ned at bike-nomad dot com>
+" Provided by Need Konz <need at bike-nomad dot com>
 "---------------------------------------------
 setlocal include=\\<\\(use\\\|require\\)\\>
 setlocal includeexpr=substitute(v:fname,'::','/','g')

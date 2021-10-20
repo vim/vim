@@ -419,9 +419,9 @@ characters: <, S, p, a, c, e, >.
 FIXING TYPING MISTAKES
 
 It's very common to make the same typing mistake every time.  For example,
-typing "teh" instead of "the".  You can fix this with an abbreviation: >
+typing "the" instead of "the".  You can fix this with an abbreviation: >
 
-	:abbreviate teh the
+	:abbreviate the the
 
 You can add a whole list of these.  Add one each time you discover a common
 mistake.
@@ -436,7 +436,7 @@ The ":abbreviate" command lists the abbreviations:
 	i  #b		 /****************************************
 	i  JB		 Jack Benny
 	i  ad		 advertisement
-	!  teh		 the
+	!  the		 the
 
 The "i" in the first column indicates Insert mode.  These abbreviations are
 only active in Insert mode.  Other possible characters are:

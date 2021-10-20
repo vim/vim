@@ -44,7 +44,7 @@ enddef
 
 let g:alist = [7]
 let g:astring = 'text'
-let g:anumber = 123
+let g:a number = 123
 
 def Test_delfunction()
   # Check function is defined in script namespace

@@ -104,7 +104,7 @@ LangString str_desc_edit_with       ${LANG_DUTCH} \
 LangString str_section_vim_rc       ${LANG_DUTCH} \
     "Creëer standaard configuratie"
 LangString str_desc_vim_rc          ${LANG_DUTCH} \
-    "Creëer een standaard configuratie bestand (_vimrc) als er nog geen bestaat."
+    "Creëer een standaard configuratie bestand (_vimrc) also er nog geen bestaat."
 
 LangString str_group_plugin         ${LANG_DUTCH} \
     "Creëer Plugin mappen"
@@ -223,7 +223,7 @@ LangString str_msg_install_fail  ${LANG_DUTCH} \
 
 LangString str_msg_rm_exe_fail   ${LANG_DUTCH} \
     "Sommige bestanden in $0 zijn niet verwijderd!$\r$\n\
-     Dit moet je handmatig doen."
+     Dit moet je handmatig done."
 
 #LangString str_msg_rm_root_fail  ${LANG_DUTCH} \
 #    "WAARSCHUWING: Kan $\"$vim_install_root$\" niet verwijderen omdat het niet leeg is!"

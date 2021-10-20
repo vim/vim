@@ -379,7 +379,7 @@ function s:reconstruct_tabpage_for_test(nr)
 endfunc
 
 func Test_tabpage_ctrl_pgup_pgdown()
-  enew!
+  new!
   tabnew tab1
   tabnew tab2
 
@@ -581,7 +581,7 @@ func Test_close_on_quitpre()
 endfunc
 
 func Test_tabs()
-  enew!
+  new!
   tabnew tab1
   norm ixxx
   let a=split(execute(':tabs'), "\n")

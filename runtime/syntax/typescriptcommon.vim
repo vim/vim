@@ -839,7 +839,7 @@ if get(g:, 'yats_host_keyword', 1)
   syntax keyword typescriptTestGlobal containedin=typescriptIdentifierName after beforeEach
   syntax keyword typescriptTestGlobal containedin=typescriptIdentifierName afterEach
   syntax keyword typescriptTestGlobal containedin=typescriptIdentifierName beforeAll
-  syntax keyword typescriptTestGlobal containedin=typescriptIdentifierName afterAll
+  syntax keyword typescriptTestGlobal containedin=typescriptIdentifierName after all
   syntax keyword typescriptTestGlobal containedin=typescriptIdentifierName expect assert
 
   syntax keyword typescriptBOM containedin=typescriptIdentifierName AbortController

@@ -37,11 +37,11 @@ menutrans &About	&Hakkında
 menutrans &Open\.\.\.<Tab>:e		&Aç\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	&Yeni\ Bölümde\ Aç\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	S&ekme\ Aç\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew	        Yeni\ &Sekme<Tab>:enew
+menutrans &New<Tab>:new	        Yeni\ &Sekme<Tab>:new
 menutrans &Close<Tab>:close		Ka&pat<Tab>:close
 "--------------------
 menutrans &Save<Tab>:w			Kayde&t<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	&Farklı\ Kaydet\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	&Farklı\ Kaydet\.\.\.<Tab>:save
 "--------------------
 menutrans Split\ &Diff\ With\.\.\.	Ka&rşılaştır\.\.\.
 menutrans Split\ Patched\ &By\.\.\.	Ya&ma\ İle\ Karşılaştır\.\.\.
@@ -163,7 +163,7 @@ let g:menutrans_spell_ignore_ARG =		'"%s"\ sözcüğünü\ yoksay'
 ">>>---------------- Folds
 menutrans &Enable/Disable\ Folds<Tab>zi		&Kıvırmaları\ Aç/Kapat<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv		İ&mlecin\ Olduğu\ Satırı\ Görüntüle<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ Only<Tab>zMzx	Ya&lnızca\ İmlecin\ Olduğu\ Satırı\ Görüntüle<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ Only<Tab>zMzx	Ya&lnızca\ İmlecin\ Olduğu\ Satırı\ Görüntüle<Tab>zMzx
 menutrans C&lose\ More\ Folds<Tab>zm		&Daha\ Fazla\ Kıvırma\ Kapat<Tab>zm
 menutrans &Close\ All\ Folds<Tab>zM		Bütün\ Kı&vırmaları\ Kapat<Tab>zM
 menutrans &Open\ All\ Folds<Tab>zR		Bü&tün\ Kıvırmaları\ Aç<Tab>zR
@@ -174,7 +174,7 @@ menutrans &Delete\ Fold<Tab>zd			Kıvırma\ &Sil<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD		Tü&m\ Kıvırmaları\ Sil<Tab>zD
 menutrans Fold\ col&umn\ Width			Kıvırma\ Sütunu\ &Genişliği
 ">>>->>>----------- Tools/Folds/Fold Method
-menutrans M&anual	&El\ İle
+menutrans M&annual	&El\ İle
 menutrans I&ndent	&Girinti
 menutrans E&xpression	İ&fade
 menutrans S&yntax	&Sözdizim

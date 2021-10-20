@@ -1366,7 +1366,7 @@ func Test_sort_cmd()
   endif
 
   for t in tests
-    enew!
+    new!
     call append(0, t.input)
     $delete _
     setlocal nomodified
@@ -1390,7 +1390,7 @@ func Test_sort_cmd()
   call assert_fails('sort #pat%', 'E654:')
   call assert_fails('sort /\%(/', 'E53:')
 
-  enew!
+  new!
 endfunc
 
 func Test_sort_large_num()
@@ -1463,7 +1463,7 @@ endfunc
 
 
 func Test_sort_cmd_report()
-    enew!
+    new!
     call append(0, repeat([1], 3) + repeat([2], 3) + repeat([3], 3))
     $delete _
     setlocal nomodified
@@ -1471,7 +1471,7 @@ func Test_sort_cmd_report()
 
     call assert_equal([1,2,3], map(getline(1, '$'), 'v:val+0'))
     call assert_match("6 fewer lines", res)
-    enew!
+    new!
     call append(0, repeat([1], 3) + repeat([2], 3) + repeat([3], 3))
     $delete _
     setlocal nomodified report=10
@@ -1479,7 +1479,7 @@ func Test_sort_cmd_report()
 
     call assert_equal([1,2,3], map(getline(1, '$'), 'v:val+0'))
     call assert_equal("", res)
-    enew!
+    new!
     call append(0, repeat([1], 3) + repeat([2], 3) + repeat([3], 3))
     $delete _
     setl report&vim
@@ -1489,7 +1489,7 @@ func Test_sort_cmd_report()
     call assert_equal([1,2,3], map(getline(1, '$'), 'v:val+0'))
     " the output comes from the :g command, not from the :sort
     call assert_match("6 fewer lines", res)
-    enew!
+    new!
 endfunc
 
 " Test for a :sort command followed by another command

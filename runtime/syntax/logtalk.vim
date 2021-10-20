@@ -254,7 +254,7 @@ syn match	logtalkOperator		">="
 
 " Stream selection and control
 
-syn match	logtalkKeyword		"\<\(curren\|se\)t_\(in\|out\)put\ze("
+syn match	logtalkKeyword		"\<\(current\|se\)t_\(in\|out\)put\ze("
 syn match	logtalkKeyword		"\<open\ze("
 syn match	logtalkKeyword		"\<close\ze("
 syn match	logtalkKeyword		"\<flush_output\ze("
@@ -298,7 +298,7 @@ syn match	logtalkKeyword		"\<number_c\(har\|ode\)s\ze("
 
 " Implementation defined hooks functions
 
-syn match	logtalkKeyword		"\<\(curren\|se\)t_prolog_flag\ze("
+syn match	logtalkKeyword		"\<\(current\|se\)t_prolog_flag\ze("
 syn match	logtalkKeyword		"\<halt\ze("
 syn match	logtalkKeyword		"\<halt\>"
 
@@ -330,7 +330,7 @@ syn match	logtalkKeyword		"\<t\(an\|runcate\)\ze("
 syn match	logtalkKeyword		"\<ceiling\ze("
 
 
-" Other arithemtic functors
+" Other arithmetic functors
 
 syn match	logtalkOperator		"\*\*"
 syn match	logtalkKeyword		"\<s\(in\|qrt\)\ze("

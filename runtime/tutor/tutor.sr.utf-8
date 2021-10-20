@@ -10,12 +10,12 @@
      25 i 30 minuta, u zavisnosti od vremena potrošenog na vežbu.
 
      UPOZORENJE:
-     Komande u lekcijama će menjati tekst.  Iskopirajte ovaj fajl i
+     Komande u lekcijama će menjati text.  Iskopirajte ovaj fajl i
      vežbajte na kopiji (ako ste pokrenuli "vimtutor" ovo je već kopija).
 
      Važno je upamtiti da je ovaj priručnik zamišljen za aktivnu vežbu.
      To znači da morate upotrebljavati komande o kojima čitate da biste
-     ih naučili.  Ako samo čitate tekst, zaboravićete komande!
+     ih naučili.  Ako samo čitate text, zaboravićete komande!
 
      Ako je Caps Lock uključen ISKLJUČITE ga.  Pritisnite taster  j  dovoljno
      puta da lekcija 1.1 cela stane na ekran.
@@ -27,7 +27,7 @@
  ** Za pomeranje kursora, pritiskajte tastere h,j,k,l kako je prikazano **
 	     ^
 	     k		    Savet: h je s leve strane i pomera kursor u levo.
-       < h	 l >		   l je s desne strane i pomera kursor u desno.
+       < h	 l >		   l je s dense strane i pomera kursor u desno.
 	     j                     j izgleda kao strelica naniže.
 	     v
   1. Pomerajte kursor po ekranu dok se ne naviknete na komande.
@@ -97,8 +97,8 @@ NAPOMENA:  Dok koristite priručnik, nemojte učiti komande napamet,
 
   1. Pomerite kursor na prvi sledeći red označen sa --->.
 
-  2. Da biste tekst prvog reda izjednačili s tekstom drugog, namestite
-     kursor na prvi znak POSLE kog ćete ubaciti potreban tekst.
+  2. Da biste text prvog reda izjednačili s tekstom drugog, namestite
+     kursor na prvi znak POSLE kog ćete ubaciti potreban text.
 
   3. Pritisnite  i  pa unesite potrebne dopune.
 
@@ -121,13 +121,13 @@ NAPOMENA:  Dok koristite priručnik, nemojte učiti komande napamet,
   1. Pomerite kursor na prvi sledeći red označen sa --->.
      Nije važno gde se nalazi kursor u tom redu.
 
-  2. Pritisnite  A  i unesite dodatni tekst.
+  2. Pritisnite  A  i unesite dodatni text.
 
-  3. Pošto ste dodali tekst, pritisnite <ESC> za povratak u
+  3. Pošto ste dodali text, pritisnite <ESC> za povratak u
      Normal mod.
 
   4. Pomerite kursor na drugi red označen sa ---> i ponavljajte
-     korake 2 i 3 dok ne ispravite tekst.
+     korake 2 i 3 dok ne ispravite text.
 
 ---> Deo teksta nedostaje u
      Deo teksta nedostaje u ovom redu.
@@ -149,9 +149,9 @@ NAPOMENA:  Dok koristite priručnik, nemojte učiti komande napamet,
      'vim' je komanda za pokretanja Vim editora, 'tutor' je ime fajla koji
      želite da menjate.  Koristite fajl koji imate pravo da menjate.
 
-  3. Ubacujte i brišite tekst kao u prethodnim lekcijama.
+  3. Ubacujte i brišite text kao u prethodnim lekcijama.
 
-  4. Snimite izmenjeni tekst i izađite iz Vim-a:  :wq <ENTER>
+  4. Snimite izmenjeni text i izađite iz Vim-a:  :wq <ENTER>
 
   5. Ponovo pokrenite vimtutor i pročitajte rezime koji sledi.
 
@@ -173,8 +173,8 @@ NAPOMENA:  Dok koristite priručnik, nemojte učiti komande napamet,
   4. Brisanje znaka na kome se nalazi kursor:  x
 
   5. Ubacivanja ili dodavanje teksta:
-	 i   unesite tekst <ESC>	unos ispred kursora
-	 A   unesite tekst <ESC>	dodavanje na kraju reda
+	 i   unesite text <ESC>	unos ispred kursora
+	 A   unesite text <ESC>	dodavanje na kraju reda
 
 NAPOMENA:  Pritiskom na <ESC> prebacujete Vim u Normal mod i
            prekidate neželjenu ili delimično izvršenu komandu.
@@ -245,7 +245,7 @@ NAPOMENA:  Slovo  d  će se pojaviti na dnu ekrana kad ga otkucate.  Vim čeka
     e - sve do kraja tekuće reči, UKLJUČUJUĆI poslednje slovo.
     $ - sve do kraje reda, UKLJUČUJUĆI poslednje slovo.
 
-  Kucanjem  de  brisaće se tekst od kursora do kraja reči.
+  Kucanjem  de  brisaće se text od kursora do kraja reči.
 
 NAPOMENA:  Pritiskom samo na taster pokreta dok ste u Normal modu, bez
            operatora, kursor se pomera kao što je opisano.
@@ -369,7 +369,7 @@ NAPOMENA:  Pritiskom samo na taster pokreta dok ste u Normal modu, bez
 		       Lekcija 3.1: KOMANDA POSTAVLJANJA
 
 
-  ** Otkucajte  p  da postavite prethodno izbrisan tekst iza kursora. **
+  ** Otkucajte  p  da postavite prethodno izbrisan text iza kursora. **
 
   1. Pomerite kursor na prvi sledeći red označen sa --->.
 
@@ -462,7 +462,7 @@ NAPOMENA:  Za ispravljanje grešaka možete koristiti Backspace .
 
 
   1. Za postavljanje teksta koji ste upravo izbrisali, pritisnite  p . Ovo
-     postavlja tekst IZA kursora (ako je bio izbrisan jedan ili više redova
+     postavlja text IZA kursora (ako je bio izbrisan jedan ili više redova
      sadržaj će doći na red ispod kursora).
 
   2. Za zamenu znaka na kome se nalazi kursor, pritisnite  r  i onda
@@ -635,7 +635,7 @@ NAPOMENA:  Sve  :  komande se izvršavaju pošto pritisnete <ENTER> .
      sadržaja direktorijuma.
 
 NAPOMENA:  Ako biste napustili Vim i ponovo ga pokrenuli sa vim TEST ,
-           tekst bi bio tačna kopija ovog fajla u trenutku kad ste
+           text bi bio tačna kopija ovog fajla u trenutku kad ste
 	   ga snimili.
 
   5. Izbrišite fajl tako što ćete otkucati (MS-DOS):	:!del TEST
@@ -650,29 +650,29 @@ NAPOMENA:  Ako biste napustili Vim i ponovo ga pokrenuli sa vim TEST ,
   1. Pomerite kursor na ovu liniju.
 
   2. Pritisnite  v  i pomerite kursor pet redova ispod.  Primetite da je
-     tekst označen inverzno.
+     text označen inverzno.
 
   3. Pritisnite  : .  Na dnu ekrana pojaviće se  :'<,'> .
 
   4. Otkucajte  w TEST  , gde je TEST ime fajla koji još ne postoji.
      Proverite da zaista piše  :'<,'>w TEST  pre nego što pritisnete <ENTER>.
 
-  5. Vim će snimiti označeni tekst u TEST.  Proverite sa  :!dir  ili  !ls .
+  5. Vim će snimiti označeni text u TEST.  Proverite sa  :!dir  ili  !ls .
      Nemojte još brisati fajl!  Koristićemo ga u narednoj lekciji.
 
 NAPOMENA:  Komanda  v  započinje vizuelno označavanje.  Možete pomerati kursor
            i tako menjati veličinu označenog teksta.  Onda možete upotrebiti
-           operatore nad tekstom.  Na primer,  d  će izbrisati označeni tekst.
+           operatore nad tekstom.  Na primer,  d  će izbrisati označeni text.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lekcija 5.4: UČITAVANJE FAJLA U TEKST
+		   Lekcija 5.4: UČITAVANJE FAJLA U TEXT
 
 
        ** Za ubacivanje sadržaja fajla, otkucajte  :r IME_FAJLA  **
 
   1. Postavite kursor iznad ove linije.
 
-NAPOMENA:  Pošto izvršite 2. korak videćete tekst iz lekcije 5.3.  Tada
+NAPOMENA:  Pošto izvršite 2. korak videćete text iz lekcije 5.3.  Tada
            pomerite kursor DOLE da biste ponovo videli ovu lekciju.
 
   2. Učitajte fajl TEST koristeći komandu  :r TEST  gde je TEST ime fajla
@@ -698,7 +698,7 @@ NAPOMENA:  Takođe možete učitati izlaz spoljašnje komande.  Na primer,
 	  :!dir		   :!ls		   -  pregled sadržaja direktorijuma.
 	  :!del FAJL       :!rm FAJL       -  briše fajl FAJL.
 
-  2.  :w FAJL  zapisuje trenutni tekst na disk pod imenom FAJL.
+  2.  :w FAJL  zapisuje trenutni text na disk pod imenom FAJL.
 
   3.  v  pokret  :w IME_FAJLA  snima vizuelno označene redove u fajl
       IME_FAJLA.
@@ -722,7 +722,7 @@ NAPOMENA:  Takođe možete učitati izlaz spoljašnje komande.  Na primer,
   2. Otkucajte malo  o  da biste otvorili novi red ISPOD kursora
      i prešli u Insert mod.
 
-  3. Otkucajte neki tekst i onda pritisnite <ESC> da biste izašli
+  3. Otkucajte neki text i onda pritisnite <ESC> da biste izašli
      iz Insert moda.
 
 ---> Kad pritisnete  o  kursor prelazi u novootvoreni red u Insert modu.
@@ -743,7 +743,7 @@ NAPOMENA:  Takođe možete učitati izlaz spoljašnje komande.  Na primer,
   
   2. Kucajte  e  dok kursor ne dođe na kraj reči  re .
 
-  3. Otkucajte  a  (malo) da biste dodali tekst IZA kursora.
+  3. Otkucajte  a  (malo) da biste dodali text IZA kursora.
 
   4. Dopunite reč kao što je u redu ispod.  Pritisnite <ESC> za izlazak
      iz Insert moda.
@@ -754,7 +754,7 @@ NAPOMENA:  Takođe možete učitati izlaz spoljašnje komande.  Na primer,
 ---> Ovaj red omogućava vežbanje dodavanja teksta u nekom redu.
 
 NAPOMENA:  Komande a, i, i  A  aktiviraju isti Insert mod, jedina
-           razlika je u poziciji od koje će se tekst ubacivati.
+           razlika je u poziciji od koje će se text ubacivati.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		    Lekcija 6.3: DRUGI NAČIN ZAMENE
@@ -789,14 +789,14 @@ NAPOMENA:  Replace mod je kao Insert mod, s tom razlikom što svaki
   
   2. Aktivirajte Visual mod sa  v  i pomerite kursor sve do ispred "prvi".
   
-  3. Pritisnite  y  da biste kopirali označeni tekst u interni bafer.
+  3. Pritisnite  y  da biste kopirali označeni text u interni bafer.
 
   4. Pomerite kursor do kraja sledećeg reda:  j$
 
-  5. Pritisnite  p  da biste zalepili tekst.  Onda otkucajte:  a drugi <ESC> .
+  5. Pritisnite  p  da biste zalepili text.  Onda otkucajte:  a drugi <ESC> .
 
   6. Upotrebite Visual mod da označite " red.", kopirajte sa  y , kursor
-     pomerite na kraj sledećeg reda sa  j$  i tamo zalepite tekst sa  p .
+     pomerite na kraj sledećeg reda sa  j$  i tamo zalepite text sa  p .
 
 --->  a) ovo je prvi red.
       b)
@@ -836,13 +836,13 @@ NAPOMENA:  Ako želite da ne razlikujete veličinu slova u samo jednoj komandi
 
   3. Komanda  e  pomera kursor na kraj reči.
 
-  4. Operator  y  kopira tekst,  p  ga lepi.
+  4. Operator  y  kopira text,  p  ga lepi.
 
   5. Kucanje velikog  R  aktivira Replace mod dok ne pritisnete <ESC> .
 
   6. Kucanje ":set xxx" aktivira opciju "xxx".  Neke opcije su:
   	'ic' 'ignorecase'	ne razlikuje velika/mala slova pri traženju
-	'is' 'incsearch'	prikazuje pronađen tekst dok kucate izraz
+	'is' 'incsearch'	prikazuje pronađen text dok kucate izraz
 	'hls' 'hlsearch'	označava inverzno sve pronađene izraze
      Možete koristite dugo ili kratko ime opcije.
 
@@ -852,15 +852,15 @@ NAPOMENA:  Ako želite da ne razlikujete veličinu slova u samo jednoj komandi
 		       Lekcija 7.1: DOBIJANJE POMOĆI
 
 
-		   ** Koristite on-line sistem za pomoć **
+		   ** Koristite on-line system za pomoć **
 
-  Vim ima detaljan on-line sistem za pomoć.  Za početak, pokušajte nešto
+  Vim ima detaljan on-line system za pomoć.  Za početak, pokušajte nešto
   od sledećeg:
 	- pritisnite taster <HELP> (ako ga imate na tastaturi)
 	- pritisnite taster <F1> (ako ga imate na tastaturi)
 	- otkucajte  :help <ENTER>
 
-  Pročitajte tekst u prozoru pomoći da biste naučili pomoć radi.
+  Pročitajte text u prozoru pomoći da biste naučili pomoć radi.
   Kucanjem  CTRL-W CTRL-W  prelazite iz jednog prozora u drugi.
   Otkucajte  :q <ENTER>  da zatvorite prozor pomoći.
 

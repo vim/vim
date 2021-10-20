@@ -36,7 +36,7 @@ syn keyword gvType char double float int long unsigned void
                  \ edge_t graph_t node_t obj_t
 syn match   gvVar 
   \ "\$\(\(F\|G\|NG\|O\|T\|tgtname\|tvedge\|tvnext\|tvroot\|tvtype\)\>\)\?\(\<\)\@!"
-syn keyword gvWord break continue else for forr if return switch while
+syn keyword gvWord break continue else for for if return switch while
 
 " numbers adapted from c.vim's cNumbers and friends
 syn match gvNums      transparent "\<\d\|\.\d" contains=gvNumber,gvFloat,gvOctal

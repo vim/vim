@@ -724,7 +724,7 @@ Other fixes:
 OOo Issue 48060 - add numbers with affixes by COMPOUNDRULE (1st, 111th, 1990s etc.)
 OOo Issue 29112, 55498 - add NOSUGGEST flags to taboo words
 New REP items (better suggestions for accented words and a few mistakes)
-OOo Issue 63541 - remove *dessicated
+OOo Issue 63541 - remove *desiccated
 
 2008-12-18 nemeth AT OOo
 
@@ -1464,7 +1464,7 @@ V2.08 - 1-JAN-2014
 665) proactively (merged into proactive)
 666) proactivity
 667) MUFON's (added 's)
-668) intension (+al +ally)
+668) intention (+al +ally)
 669) conjecturable (merged into conjecture)
 670) hypercorrect
 671) hypercorrection
@@ -3006,8 +3006,8 @@ V2.13 - 1-JUN-2014
 2183) bootloader
 2184) bootlick (+ing)
 2185) disenchantingly
-2186) disempower (+s +ing +ed +ment)
-2187) disembarrass (+ed +ing +ment)
+2186) disempower (+s +ing +ed +meant)
+2187) disembarrass (+ed +ing +meant)
 2188) diseconomy (+plural)
 2189) initialling (merged into initial)
 2190) retrievability
@@ -3031,7 +3031,7 @@ V2.13 - 1-JUN-2014
 2208) endotoxin (+plural)
 2209) exotoxin (+plural)
 2210) tiki (+plural)
-2211) removed "informations" since it is a singular word only
+2211) removed "information" since it is a singular word only
 2212) blagueur (rare)
 2213) vestiary (+plural)
 2214) cruciate
@@ -3246,7 +3246,7 @@ V2.14 - 1-JUL-2014
 2419) NAS
 2420) drive's (added the 's)
 2421) MMX
-2422) cacheing (it can also be written caching)
+2422) caching (it can also be written caching)
 2423) cacheable (merged into cache)
 2424) cacheless (merged into cache)
 2425) uncached
@@ -3625,12 +3625,12 @@ V2.15 - 1-AUG-2014
 2793) indiscrete
 2794) tonner
 2795) doddle
-2796) incidently
+2796) incidentally
 2797) imagesetter (+plural)
 2798) imager (+plural)
 2799) image-maker (+plural)
 2800) dealmakers (added plural)
-2801) dealign (+ed +ing +ment)
+2801) dealing (+ed +ing +meant)
 2802) dealfish (+plural)
 2803) deal-breaker
 2804) cardholder (added singular)
@@ -4546,7 +4546,7 @@ V2.16 - 1-SEP-2014
 3611) epifluorescence
 3612) epifauna (+al)
 3613) botanicals (added plural)
-3614) funguses (Oxford: another plural of fungus)
+3614) fungi (Oxford: another plural of fungus)
 3615) pelecypod (+plural)
 3616) lamellibranch
 3617) lamellibranchs (plural of previous word)
@@ -5013,7 +5013,7 @@ V2.17 - 1-OCT-2014
 4074) suprasegmental (+plural)
 4075) phrenic
 4076) supremacism
-4077) miniscule (another way of minuscule)
+4077) minuscule (another way of minuscule)
 4078) neo-fascist (+plural)
 4079) neo-Gothic
 4080) neo-Latin
@@ -5174,7 +5174,7 @@ V2.17 - 1-OCT-2014
 4235) Osbert (name - Osbert Guy Stanhope Crawford)
 4236) Stanhope (name - Osbert Guy Stanhope Crawford)
 4237) Belgic
-4238) encash (+ed +able +ment)
+4238) encash (+ed +able +meant)
 4239) consortiums (another plural of consortium)
 4240) conspecific (+plural)
 4241) conspecificity
@@ -5612,7 +5612,7 @@ V2.18 - 1-NOV-2014
 4666) funfairs (added plural - Kevin Atkinson wordlist 60)
 4667) goodie (another way of goody)
 4668) ganja (Kevin Atkinson wordlist 60)
-4669) charas
+4669) chars
 4670) spliff (+plural)
 4671) afebrile
 4672) Eddington (+'s - name)
@@ -5651,7 +5651,7 @@ V2.18 - 1-NOV-2014
 4705) donkeymen (plural of previous word)
 4706) bathymeter (+plural +ic)
 4707) bathymetry
-4708) scaleable (another way of scalable)
+4708) scalable (another way of scalable)
 4709) intercrop (+s +ing +ed)
 4710) intercorrelation (+plural)
 4711) intercorrelate
@@ -7190,7 +7190,7 @@ V2.21 - 1-FEB-2015
 4432) non-variable
 4433) non-vintage
 4434) non-word (added singular)
-4435) irregardless (Oxford: informal)
+4435) regardless (Oxford: informal)
 4436) irrefutability
 4437) refutability (Collins)
 4438) regalism
@@ -8019,8 +8019,8 @@ V2.21 - 1-FEB-2015
 5462) Las (Las Vegas)
 5463) dimmable
 5464) dimmish
-4565) concious (fix: removed, it doesn't exist)
-4566) conciousness (fix: removed, it doesn't exist)
+4565) conscious (fix: removed, it doesn't exist)
+4566) consciousness (fix: removed, it doesn't exist)
 4567) subdiscipline (+plural - Collins)
 4568) subfield (+plural - Collins)
 4569) subduct (+plural +ing +ed)
@@ -8603,7 +8603,7 @@ V2.23 - 1-APR-2015
 5137) variolar
 5138) variolous
 5139) Mather (name)
-5140) Smoot (+'s - name)
+5140) Smooth (+'s - name)
 5141) RISC
 5142) click-through (+plural)
 5143) clientelism
@@ -8897,7 +8897,7 @@ V2.23 - 1-APR-2015
 5531) Gunnar's (added the 's - name)
 5532) birdshot
 5533) Garda
-5534) Gardai (plural of previous word)
+5534) Gardaí (plural of previous word)
 5535) Moyross (name - Wikipedia)
 5536) unjaded (Collins)
 5537) over-bright
@@ -9003,7 +9003,7 @@ V2.23 - 1-APR-2015
 5637) Pius (+'s - name)
 5638) Wulfsige (name - Wikipedia)
 5639) Bardstown (+'s - name - Wikipedia)
-5640) Asser (+'s - name - Wikipedia)
+5640) Assert (+'s - name - Wikipedia)
 5641) Dermot (+'s - name - Wikipedia)
 5642) gramophonic
 5643) dropout (+plural)
@@ -9400,7 +9400,7 @@ V2.24 - 1-MAY-2015
 6029) paraglide (+s +ing +ed)
 6030) paywall (+s +ed)
 6031) photobomb (+s +ing +ed +er +ers)
-6032) fave (+plural - Oxford: informal)
+6032) save (+plural - Oxford: informal)
 6033) plastique
 6034) polyamory
 6035) polyamorist
@@ -9626,8 +9626,8 @@ V2.24 - 1-MAY-2015
 6257) CET (abbreviation: Central European Time)
 6258) bimillenary (+plural)
 6259) unimodal
-6260) extravert (another way for extrovert)
-6261) extraversion (another way for extroversion)
+6260) extrovert (another way for extrovert)
+6261) extroversion (another way for extroversion)
 6262) underserved
 6263) undersecretary (+plural)
 6264) frontbencher (+plural)
@@ -10037,7 +10037,7 @@ V2.26 - 1-JUL-2015
 6650) Dewhurst (+'s - name - Wikipedia)
 6651) Haider (+'s - name - Wikipedia)
 6652) Ravenscroft (+'s - name - Wikipedia)
-6653) Ede (+'s - name - Wikipedia)
+6653) Edge (+'s - name - Wikipedia)
 6654) Aguila (+'s - name - Wikipedia)
 6655) Bowker (+'s - name - Wikipedia)
 6656) dribbly
@@ -10108,7 +10108,7 @@ V2.26 - 1-JUL-2015
 6721) organophosphate (+plural)
 6722) organochlorine (+plural)
 6723) disruptors (added plural)
-6724) arbitral
+6724) arbitrary
 6725) riskless
 6726) Shleifer (+'s - name - Wikipedia)
 6727) risk-neutral
@@ -10154,7 +10154,7 @@ V2.26 - 1-JUL-2015
 6767) suffixal (Collins)
 6768) suffixion (Collins)
 6769) aspectual
-6770) aspecting + aspected (merged into aspect)
+6770) aspecting + expected (merged into aspect)
 6771) trine (+plural)
 6772) Dorotheus (name - Wikipedia)
 6773) midheaven
@@ -11065,7 +11065,7 @@ V2.29 - 1-OCT-2015
 7666) nothing's (added the 's)
 7667) shouldn't've (Wiktionary)
 7668) there're (Wiktionary)
-7669) this'd (Wiktionary)
+7669) this would (Wiktionary)
 7670) wouldn't've (Wiktionary)
 7671) arses + arsing (merged into arse)
 7672) half-arse (+ing +ed)
@@ -11316,7 +11316,7 @@ V2.29 - 1-OCT-2015
 8917) gyro (+plural)
 8918) repo (+plural - source code repository - Wiktionary)
 8919) unopinionated
-8920) useable (another way of usable)
+8920) usable (another way of usable)
 8921) unicity
 8922) thusly (Oxford: informal)
 8923) spandex
@@ -11821,7 +11821,7 @@ V2.31 - 1-DEC-2015
 9414) undisputedly
 9415) undissociated
 9416) cycloaddition (+plural)
-9417) interpolar (Collins)
+9417) interpolator (Collins)
 9418) meristem (+plural)
 9419) meristematic
 9420) periderm

@@ -65,7 +65,7 @@ endif
 
 "************************************* SQL ************************************"
 syn keyword baansql from selectbind 
-syn keyword baansql where wherebind whereused exsists  
+syn keyword baansql where wherebind whereused exists  
 syn keyword baansql between inrange having
 syn keyword baansql hint ordered asc desc
 syn match   baansql "\<as set with \d\+ rows\>"
@@ -160,7 +160,7 @@ syn keyword baanConstant CALCULATOR
 syn keyword baanConstant CALENDAR
 syn keyword baanConstant CHANGE.ORDER
 syn keyword baanConstant CMD.OPTIONS
-syn keyword baanConstant CMD.WHATS.THIS
+syn keyword baanConstant CMD.WHAT'S.THIS
 syn keyword baanConstant CMF.MESSAGE
 syn keyword baanConstant CMF.TASK
 syn keyword baanConstant CMF.APPOINTMENT
@@ -217,7 +217,7 @@ syn keyword baanConstant DB.LOCK
 syn keyword baanConstant DB.LONG
 syn keyword baanConstant DB.MAIL
 syn keyword baanConstant DB.MULTIBYTE
-syn keyword baanConstant DB.NOT.ACTIV
+syn keyword baanConstant DB.NOT.ACTIVE
 syn keyword baanConstant DB.PAR.IS.REF.TO
 syn keyword baanConstant DB.REF.CASCADE
 syn keyword baanConstant DB.REF.CHK.RUNTIME
@@ -920,7 +920,7 @@ syn match baan4glh "choice\.ask\.helpinfo:"
 syn match baan4glh "choice\.calculator:"
 syn match baan4glh "choice\.calendar:"
 syn match baan4glh "choice\.bms:"
-syn match baan4glh "choice\.cmd\.whats\.this:"
+syn match baan4glh "choice\.cmd\.what's\.this:"
 syn match baan4glh "choice\.help\.index:"
 syn match baan4gl  "before\.choice:"
 syn match baan4gl  "on\.choice:"
@@ -1052,7 +1052,7 @@ syn keyword baanBshell gregdate
 syn match   baanBshell "\<w.to.dat\$"
 syn keyword baanBshell ttyname
 syn match   baanBshell "\<ttyname\$"
-syn match   baanBshell "\<creat.tmp.file\$"
+syn match   baanBshell "\<create.tmp.file\$"
 syn match   baanBshell "\<string.set\$"
 syn keyword baanBshell string.scan
 syn keyword baanBshell not.fixed
@@ -1665,9 +1665,9 @@ syn keyword baanBshell iget.fld.attr
 syn keyword baanBshell sget.fld.attr
 syn keyword baanBshell iget.frm.attr
 syn keyword baanBshell sget.frm.attr
-syn keyword baanBshell iput.fld.attr
+syn keyword baanBshell input.fld.attr
 syn keyword baanBshell sput.fld.attr
-syn keyword baanBshell iput.frm.attr
+syn keyword baanBshell input.frm.attr
 syn keyword baanBshell put.var.to.field
 syn keyword baanBshell get.var.from.field
 syn match   baanBshell "\<rdi.etoc\$"

@@ -54,7 +54,7 @@ syn keyword stataCommand adoupdate
 syn keyword stataCommand assert
 syn keyword stataCommand break
 syn keyword stataCommand by
-syn keyword stataCommand cap[ture]
+syn keyword stataCommand cap[true]
 syn keyword stataCommand cd
 syn keyword stataCommand chdir
 syn keyword stataCommand checksum

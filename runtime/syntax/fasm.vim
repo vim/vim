@@ -41,7 +41,7 @@ syn keyword fasmInstr	cmpunordpd cmpunordps cmpunordsd cmpunordss cmpxchg cmpxch
 syn keyword fasmInstr	comisd comiss cpuid cvtdq2pd cvtdq2ps cvtpd2dq cvtpd2pi cvtpd2ps
 syn keyword fasmInstr	cvtpi2pd cvtpi2ps cvtps2dq cvtps2pd cvtps2pi cvtsd2si cvtsd2ss
 syn keyword fasmInstr	cvtsi2sd cvtsi2ss cvtss2sd cvtss2si cvttpd2dq cvttpd2pi cvttps2dq
-syn keyword fasmInstr	cvttps2pi cvttsd2si cvttss2si cwd cwde daa das data dec div
+syn keyword fasmInstr	cvttps2pi cvttsd2si cvttss2si cwd cwde data das data dec div
 syn keyword fasmInstr	divpd divps divsd divss else emms end enter extrn f2xm1 fabs
 syn keyword fasmInstr	fadd faddp fbld fbstp fchs fclex fcmovb fcmovbe fcmove fcmovnb
 syn keyword fasmInstr	fcmovnbe fcmovne fcmovnu fcmovu fcom fcomi fcomip fcomp fcompp
@@ -94,7 +94,7 @@ syn keyword fasmInstr	stosd stosw str sub subpd subps subsd subss sysenter sysex
 syn keyword fasmInstr	test ucomisd ucomiss ud2 unpckhpd unpckhps unpcklpd unpcklps
 syn keyword fasmInstr	verr verw wait wbinvd wrmsr xadd xchg xlat xlatb xor xorpd
 syn keyword fasmPreprocess 	common equ fix forward include local macro purge restore
-syn keyword fasmPreprocess	reverse struc
+syn keyword fasmPreprocess	reverse struct
 syn keyword fasmDirective 	align binary code coff console discardable display dll
 syn keyword fasmDirective	elf entry executable export extern far fixups format gui
 syn keyword fasmDirective	import label ms mz native near notpageable pe public readable

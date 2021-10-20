@@ -107,7 +107,7 @@ if (exists("b:fvwm_version") && b:fvwm_version == 1)
     " name collision with several commands, they are contained.
     syn keyword fvwmKeyword	contained
 				\ BackColor BorderWidth BoundaryWidth Button
-				\ CirculateHit CirculateSkip Color DoubleClick
+				\ CirculateHit CirculateSkip Color double-click
 				\ ForeColor Handles HandleWidth Icon IconTitle
 				\ NoBorder NoBoundaryWidth NoButton NoHandles
 				\ NoIcon NoIconTitle NoTitle Slippery
@@ -242,7 +242,7 @@ else
 		\ start='.' skip='\\$' end='$'
     syn keyword	fvwmCSNames	contained
 				\ fg Fore Foreground bg Back Background hi
-				\ Hilite Hilight sh Shade Shadow fgsh Pixmap
+				\ Hilite Highlight sh Shade Shadow fgsh Pixmap
 				\ TiledPixmap AspectPixmap RootTransparent
 				\ Shape TiledShape AspectShape Tint fgTint
 				\ bgTint Alpha fgAlpha Dither IconTint
@@ -512,7 +512,7 @@ else
 				\ OnlySticky NoStickyAcrossPages
 				\ StickyAcrossPages OnlyStickyAcrossPages
 				\ NoStickyAcrossDesks StickyAcrossDesks
-				\ OnlyStickyAcrossDesks NoOnTop OnTop
+				\ OnlyStickyAcrossDesks NoOnTop on top
 				\ OnlyOnTop NoOnBottom OnBottom OnlyOnBottom
 				\ Layer UseListSkip OnlyListSkip NoDeskSort
 				\ ReverseOrder CurrentAtEnd IconifiedAtEnd

@@ -29,10 +29,10 @@ menutrans &File			    &Datoteka
 menutrans &Open\.\.\.<Tab>:e	    &Otvori\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Podeli-otvori\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otvori\ karticu\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew	    &Nova<Tab>:enew
+menutrans &New<Tab>:new	    &Nova<Tab>:new
 menutrans &Close<Tab>:close	    &Zatvori<Tab>:close
 menutrans &Save<Tab>:w		    &Sacuvaj<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav  Sacuvaj\ &kao\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save  Sacuvaj\ &kao\.\.\.<Tab>:save
 menutrans Split\ &Diff\ with\.\.\.  Podeli\ i\ &uporedi\ sa\.\.\.
 menutrans Split\ Patched\ &By\.\.\. Po&deli\ i\ prepravi\ sa\.\.\.
 menutrans &Print		    Sta&mpaj
@@ -64,8 +64,8 @@ menutrans Te&xt\ Width\.\.\.	 &Sirina\ teksta\.\.\.
 menutrans &File\ Format\.\.\.	 &Vrsta\ datoteke\.\.\.
 menutrans Show\ C&olor\ Schemes\ in\ Menu	Prikazi\ seme\ bo&ja\ u\ meniju
 menutrans C&olor\ Scheme	\Seme\ bo&ja
-menutrans Show\ &Keymaps\ in\ Menu	Prikazi\ pres&likavanja\ tastature\ u\ meniju
-menutrans &Keymap	Pres&likavanja\ tastature
+menutrans Show\ &Keymaps\ in\ Menu	Prikazi\ press&likavanja\ tastature\ u\ meniju
+menutrans &Keymap	Press&likavanja\ tastature
 menutrans Select\ Fo&nt\.\.\.	 Izbor\ &fonta\.\.\.
 
 " Edit/Global Settings
@@ -146,8 +146,8 @@ menutrans &Find\ More\ Languages	Pronadji\ jos\ jezika
 " Tools/Folding
 menutrans &Enable/Disable\ folds<Tab>zi   &Omoguci/prekini\ podvijanje<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	  &Pokazi\ red\ sa\ kursorom<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx Pokazi\ &samo\ red\ sa\ kursorom<Tab>zMzx
-menutrans C&lose\ more\ folds<Tab>zm   &Zatvori\ vise\ podvijutaka<Tab>zm
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx Pokazi\ &samo\ red\ sa\ kursorom<Tab>zMzx
+menutrans C&lose\ more\ folds<Tab>zm   &Zatvori\ vice\ podvijutaka<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM    Zatvori\ s&ve\ podvijutke<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr    Otvori\ vis&e\ podvijutaka<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR     O&tvori\ sve\ podvijutke<Tab>zR
@@ -155,7 +155,7 @@ menutrans Fold\ Met&hod		       &Nacin\ podvijanja
 menutrans Fold\ Col&umn\ Width	Sirina\ kolone\ ispred\ podvijutaka
 
 " Tools/Folding/Fold Method
-menutrans M&anual	&Rucno
+menutrans M&annual	&Rucno
 menutrans I&ndent	&Uvucenost
 menutrans E&xpression	&Izraz
 menutrans S&yntax	&Sintaksa
@@ -172,7 +172,7 @@ menutrans &Update<Tab>:cwin   &Azuriraj<Tab>:cwin
 menutrans &Open<Tab>:copen    &Otvori<Tab>:copen
 menutrans &Close<Tab>:cclose  &Zatvori<Tab>:cclose
 
-" Bufers menu
+" Buffers menu
 menutrans &Buffers	   &Baferi
 menutrans &Refresh\ menu   &Azuriraj
 menutrans Delete	   &Obrisi

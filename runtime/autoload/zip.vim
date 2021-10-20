@@ -338,7 +338,7 @@ fun! zip#Write(fname)
    " support writing zipfiles across a network
    let netzipfile= s:zipfile_{winnr()}
 "   call Decho("handle writing <".zipfile."> across network as <".netzipfile.">")
-   1split|enew
+   1split|new
    let binkeep= &binary
    let eikeep = &ei
    set binary ei=all

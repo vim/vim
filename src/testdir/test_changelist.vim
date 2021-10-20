@@ -7,7 +7,7 @@ func Test_getchangelist()
   CheckFeature jumplist
 
   bwipe!
-  enew
+  new
   call assert_equal([], 10->getchangelist())
   call assert_equal([[], 0], getchangelist())
 
@@ -32,7 +32,7 @@ func Test_getchangelist()
 	      \ {'lnum' : 1, 'col' : 6, 'coladd' : 0},
 	      \ {'lnum' : 3, 'col' : 6, 'coladd' : 0}], 2],
 	      \ getchangelist('%'))
-  hide enew
+  hide new
 
   call assert_equal([[
 	      \ {'lnum' : 2, 'col' : 4, 'coladd' : 0},

@@ -73,7 +73,7 @@ syn match diffOnly	"^Nur en .*"
 syn match diffIdentical	"^Dosieroj .* kaj .* estas samaj$"
 syn match diffDiffer	"^Dosieroj .* kaj .* estas malsamaj$"
 syn match diffBDiffer	"^Dosieroj .* kaj .* estas malsamaj$"
-syn match diffIsA	"^Dosiero .* estas .*, dum dosiero .* estas .*"
+syn match diffIsA	"^Dosiero .* estas .*, dumb dosiero .* estas .*"
 syn match diffNoEOL	"^\\ Mankas linifino ĉe fino de dosiero"
 syn match diffCommon	"^Komunaj subdosierujoj: .* kaj .*"
 
@@ -236,7 +236,7 @@ syn match diffIdentical	"^Os aquivos .* e .* são idênticos$"
 syn match diffDiffer	"^Os arquivos .* e .* são diferentes$"
 syn match diffBDiffer	"^Os arquivos binários .* e .* são diferentes$"
 syn match diffIsA	"^O arquivo .* é .* enquanto o arquivo .* é .*"
-syn match diffNoEOL	"^\\ Falta o caracter nova linha no final do arquivo"
+syn match diffNoEOL	"^\\ Falta o character nova linha no final do arquivo"
 syn match diffCommon	"^Subdiretórios idênticos: .* e .*"
 
 " ro

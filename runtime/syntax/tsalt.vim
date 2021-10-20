@@ -52,7 +52,7 @@ syn keyword tsaltFunction	Set_Terminal Show_Directory TelixVersion
 syn keyword tsaltFunction	Terminal TransTab Update_Term
 
 " Script Management
-syn keyword tsaltFunction	ArgCount Call CallD CompileScript GetRunPath
+syn keyword tsaltFunction	ArgCount Call called CompileScript GetRunPath
 syn keyword tsaltFunction	Is_Loaded Load_Scr ScriptVersion
 syn keyword tsaltFunction	TelixForWindows Unload_Scr
 
@@ -87,7 +87,7 @@ syn keyword tsaltFunction	DDEExecute DDEInitate DDEPoke DDERequest
 syn keyword tsaltFunction	DDETerminate DDETerminateAll
 "END FUNCTIONS
 
-"PREDEFINED VARAIABLES
+"PREDEFINED VARIABLES
 syn keyword tsaltSysVar	_add_lf _alarm_on _answerback_str _asc_rcrtrans
 syn keyword tsaltSysVar	_asc_remabort _asc_rlftrans _asc_scpacing
 syn keyword tsaltSysVar	_asc_scrtrans _asc_secho _asc_slpacing
@@ -106,7 +106,7 @@ syn keyword tsaltSysVar	_scr_chk_key _script_dir _sound_on
 syn keyword tsaltSysVar	_strip_high _swap_bs _telix_dir _up_dir
 syn keyword tsaltSysVar	_usage_fname _zmodauto _zmod_rcrash
 syn keyword tsaltSysVar	_zmod_scrash
-"END PREDEFINED VARAIABLES
+"END PREDEFINED VARIABLES
 
 "TYPE
 syn keyword tsaltType	str int

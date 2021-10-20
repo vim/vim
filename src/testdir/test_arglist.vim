@@ -202,14 +202,14 @@ func Test_argument()
   " Setting argument list should fail when the current buffer has unsaved
   " changes
   %argd
-  enew!
+  new!
   set modified
   call assert_fails('args x y z', 'E37:')
   args! x y z
   call assert_equal(['x', 'y', 'z'], argv())
   call assert_equal('x', expand('%:t'))
 
-  last | enew | argu
+  last | new | argu
   call assert_equal('z', expand('%:t'))
 
   %argdelete
@@ -309,7 +309,7 @@ func Test_arglistid()
   call assert_equal(1, arglistid(1, 1))
   call assert_equal(0, arglistid(2, 1))
   call assert_equal(1, arglistid(1, 2))
-  tabonly | only | enew!
+  tabonly | only | new!
   argglobal
   call assert_equal(0, arglistid())
 endfunc
@@ -355,7 +355,7 @@ func Test_argv()
   call assert_equal(3, argc())
   call assert_equal('d', argv(3, -1))
   call assert_equal(['a', 'b', 'c', 'd'], argv(-1, -1))
-  tabonly | only | enew!
+  tabonly | only | new!
   " Negative test cases
   call assert_equal(-1, argc(100))
   call assert_equal('', argv(1, 100))
@@ -392,7 +392,7 @@ func Test_argedit()
   else
     call assert_equal(['x', 'a', 'b', 'a', 'C', 'C', 'D'], argv())
   endif
-  enew! | set modified
+  new! | set modified
   call assert_fails('argedit y', 'E37:')
   argedit! y
   if has('fname_case')
@@ -499,7 +499,7 @@ func Test_arglist_autocmd()
   call assert_equal('test file Xxx2', getline(1))
 
   autocmd! BufReadPost Xxx2
-  enew! | only
+  new! | only
   call delete('Xxx1')
   call delete('Xxx2')
   call delete('Xxx3')

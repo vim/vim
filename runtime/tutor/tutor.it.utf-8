@@ -39,7 +39,7 @@
   3. Usando il tasto "giù" spostati alla Lezione 1.2.
 
 NOTA: Quando non sei sicuro del tasto che hai premuto, premi <ESC> per andare
-      in Modalità Normale [Normal Mode]. Poi ri-immetti il comando che volevi.
+      in Modalità Normal [Normal Mode]. Poi ri-immetti il commando che volevi.
 
 NOTA: I tasti con le frecce fanno lo stesso servizio. Ma usando hjkl riesci
       a muoverti molto più rapidamente, dopo che ci si abitua.  Davvero!
@@ -50,12 +50,12 @@ NOTA: I tasti con le frecce fanno lo stesso servizio. Ma usando hjkl riesci
 
   !! NOTA: Prima di eseguire quanto richiesto, leggi la Lezione per intero!!
 
-  1. Premi il tasto <ESC> (per assicurarti di essere in Modalità Normale).
+  1. Premi il tasto <ESC> (per assicurarti di essere in Modalità Normal).
 
   2. Batti:     :q! <INVIO>.
      Così esci dall'Editor SCARTANDO qualsiasi modifica fatta.
 
-  3. Quando vedi il PROMPT della Shell, batti il comando con cui sei arrivato
+  3. Quando vedi il PROMPT della Shell, batti il commando con cui sei arrivato
      qui.  Sarebbe:	vimtutor <INVIO>
 
   4. Se hai memorizzato questi comandi e ti senti pronto, esegui i passi
@@ -103,7 +103,7 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 
   3. Premi  i  e batti le aggiunte opportune.
 
-  4. Quando un errore è corretto, premi <ESC> per tornare in Modalità Normale.
+  4. Quando un errore è corretto, premi <ESC> per tornare in Modalità Normal.
      Ripeti i passi da 2 a 4 fino a completare la correzione della frase.
 
 ---> C'era del tsto mncnt questa .
@@ -124,7 +124,7 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 
   2. Batti  A  e inserisci le necessarie aggiunte.
 
-  3. Alla fine della aggiunta premi <ESC> per tornare in modalità Normale.
+  3. Alla fine della aggiunta premi <ESC> per tornare in modalità Normal.
 
   4. Muovi il cursore alla seconda linea indicata ---> e ripeti
      i passi 2 e 3 per correggere questa frase.
@@ -146,8 +146,8 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 
   1. Esci da Vim come hai fatto nella lezione 1.2:  :q!
 
-  2. Quando vedi il PROMPT della Shell, batti il comando:  vim tutor <INVIO>
-     'vim' è il comando per richiamare Vim, 'tutor' è il nome del file che
+  2. Quando vedi il PROMPT della Shell, batti il commando:  vim tutor <INVIO>
+     'vim' è il commando per richiamare Vim, 'tutor' è il nome del file che
      desideri modificare.  Usa un file che possa essere modificato.
 
   3. Inserisci e cancella testo come hai imparato nelle lezioni precedenti.
@@ -177,8 +177,8 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 	 i     batti testo inserito	<ESC>	inserisci prima del cursore
 	 A     batti testo aggiunto	<ESC>	aggiungi a fine linea
 
-NOTA: premendo <ESC> ritornerai in Modalità Normale o annullerai
-      un comando errato che puoi aver inserito in parte.
+NOTA: premendo <ESC> ritornerai in Modalità Normal o annullerai
+      un commando errato che puoi aver inserito in parte.
 
 Ora continua con la Lezione 2.
 
@@ -188,7 +188,7 @@ Ora continua con la Lezione 2.
 
 		** Batti  dw  per cancellare una parola. **
 
-  1. Premi  <ESC>  per accertarti di essere in Modalità Normale.
+  1. Premi  <ESC>  per accertarti di essere in Modalità Normal.
 
   2. Muovi il cursore fino alla linea qui sotto, indicata da --->.
 
@@ -196,7 +196,7 @@ Ora continua con la Lezione 2.
 
   4. Batti   dw   per cancellare la parola.
 
-NOTA: La lettera  d  sarà visibile sull'ultima linea dello schermo mentre la
+NOTA: La lettera  d  sarà visible sull'ultima linea dello schermo mentre la
       batti. Vim attende che tu batta  w . Se vedi una lettera diversa
       da  d  hai battuto qualcosa di sbagliato; premi  <ESC>  e ricomincia.
 
@@ -211,7 +211,7 @@ NOTA: La lettera  d  sarà visibile sull'ultima linea dello schermo mentre la
 
 	   ** Batti  d$	per cancellare fino a fine linea. **
 
-  1. Premi  <ESC>  per accertarti di essere in Modalità Normale.
+  1. Premi  <ESC>  per accertarti di essere in Modalità Normal.
 
   2. Muovi il cursore fino alla linea qui sotto, indicata da --->.
 
@@ -222,7 +222,7 @@ NOTA: La lettera  d  sarà visibile sull'ultima linea dello schermo mentre la
 ---> Qualcuno ha battuto la fine di questa linea due volte. linea due volte.
 
 
-  5. Vai alla Lezione 2.3 per capire il funzionamento di questo comando.
+  5. Vai alla Lezione 2.3 per capire il funzionamento di questo commando.
 
 
 
@@ -233,7 +233,7 @@ NOTA: La lettera  d  sarà visibile sull'ultima linea dello schermo mentre la
 
 
   Molti comandi di modifica testi consistono in un operatore e un movimento.
-  Il formato del comando di cancellazione con l'operatore  d  è il seguente:
+  Il formato del commando di cancellazione con l'operatore  d  è il seguente:
 
 	 d	movimento
 
@@ -248,7 +248,7 @@ NOTA: La lettera  d  sarà visibile sull'ultima linea dello schermo mentre la
 
   Quindi se batti  de  cancelli dal cursore fino a fine parola.
 
-NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
+NOTA:  Se batti solo il movimento mentre sei in Modalità Normal, senza
        nessun operatore, il cursore si muoverà come specificato.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -289,7 +289,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
   2. Batti  d2w  per cancellare le due parole MAIUSCOLE
 
   3. Ripeti i passi 1 e 2 con un contatore diverso per cancellare le parole
-     MAIUSCOLE consecutive con un solo comando
+     MAIUSCOLE consecutive con un solo commando
 
 --->  questa ABC DE linea FGHI JK LMN OP di parole è Q RS TUV ora ripulita.
 
@@ -321,7 +321,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	      Lezione 2.7: IL COMANDO UNDO [ANNULLA]
+	      Lezione 2.7: IL COMMANDO UNDO [ANNULLA]
 
     **  Premi  u  per annullare gli ultimi comandi eseguiti.  **
     ** Premi  U  per annullare le modifiche all'ultima linea. **
@@ -329,8 +329,8 @@ NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
   1. Muovi il cursore fino alla linea qui sotto, indicata da --->.
      e posizionati sul primo errore.
   2. Batti  x  per cancellare il primo carattere sbagliato.
-  3. Adesso batti  u  per annullare l'ultimo comando eseguito.
-  4. Ora invece, correggi tutti gli errori sulla linea usando il comando  x .
+  3. Adesso batti  u  per annullare l'ultimo commando eseguito.
+  4. Ora invece, correggi tutti gli errori sulla linea usando il commando  x .
   5. Adesso batti una U Maiuscola per riportare la linea al suo stato originale.
   6. Adesso batti  u  più volte per annullare la  U  e i comandi precedenti.
   7. Adesso batti più volte CTRL-r (tieni il tasto CTRL schiacciato
@@ -351,7 +351,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
   2. Per cancellare dal cursore fino alla fine della linea batti:     d$
   3. Per cancellare un'intera linea batti:    dd
   4. Per eseguire più volte un movimento, mettici davanti un numero:  2w
-  5. Il formato per un comando di modifica è:
+  5. Il formato per un commando di modifica è:
 
        operatore   [numero]   movimento
      dove:
@@ -367,7 +367,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 Lezione 3.1: IL COMANDO PUT [METTI, PONI]
+		 Lezione 3.1: IL COMMANDO PUT [METTI, PONI]
 
 
    ** Batti  p  per porre [put] testo (cancellato prima) dopo il cursore. **
@@ -390,7 +390,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	      Lezione 3.2: IL COMANDO REPLACE [RIMPIAZZARE]
+	      Lezione 3.2: IL COMMANDO REPLACE [RIMPIAZZARE]
 
 
   ** Batti  rx  per rimpiazzare il carattere sotto al cursore con x . **
@@ -455,7 +455,7 @@ Nota che  ce  cancella la parola, e ti mette anche in Modalità Inserimento
      linea seguente, e quando hai finito premi <ESC>
 
 ---> La fine di questa linea deve essere aiutata a divenire come la seguente.
----> La fine di questa linea deve essere corretta usando il comando  c$  .
+---> La fine di questa linea deve essere corretta usando il commando  c$  .
 
 NOTA:  Puoi usare il tasto Backspace se devi correggere errori di battitura.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -505,12 +505,12 @@ NOTA: La posizione del cursore si vede nell'angolo in basso a destra dello
   4. Se ti senti sicuro nel farlo, esegui i passi da 1 a 3.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Lezione 4.2: IL COMANDO SEARCH [RICERCA]
+		Lezione 4.2: IL COMMANDO SEARCH [RICERCA]
 
      ** Batti  /  seguito da una frase per ricercare quella frase. **
 
-  1. in Modalità Normale batti il carattere  /  . Nota che la "/" e il cursore
-     sono visibili in fondo dello schermo come quando si usa il comando  : .
+  1. in Modalità Normal batti il carattere  /  . Nota che la "/" e il cursore
+     sono visibili in fondo dello schermo come quando si usa il commando  : .
 
   2. Adesso batti 'errroore' <INVIO>. Questa è la parola che vuoi ricercare.
 
@@ -557,7 +557,7 @@ NOTA: Questo è molto utile nel "debug" di un programma con parentesi errate!
 
   1. Muovi il cursore fino alla linea qui sotto, indicata da --->.
 
-  2. Batti  :s/lla/la <INVIO> .  Nota che questo comando cambia solo
+  2. Batti  :s/lla/la <INVIO> .  Nota che questo commando cambia solo
      LA PRIMA occorrenza di "lla" sulla linea.
 
   3. Adesso batti  :s/lla/la/g . Aggiungendo la flag  g  si chiede di
@@ -597,22 +597,22 @@ NOTA: Questo è molto utile nel "debug" di un programma con parentesi errate!
    Per sostituire tutte le occorrenze nel file batti	     :%s/vecchio/nuovo/g
    Per chiedere conferma ogni volta aggiungi 'c'	    :%s/vecchio/nuovo/gc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	      Lezione 5.1: COME ESEGUIRE UN COMANDO ESTERNO
+	      Lezione 5.1: COME ESEGUIRE UN COMMANDO ESTERNO
 
 
-  ** Batti  :!  seguito da un comando esterno per eseguire quel comando. **
+  ** Batti  :!  seguito da un commando esterno per eseguire quel commando. **
 
-  1. Batti il comando   :   per posizionare il cursore in fondo allo schermo.
-     Ciò ti permette di immettere un comando dalla linea comandi.
+  1. Batti il commando   :   per posizionare il cursore in fondo allo schermo.
+     Ciò ti permette di immettere un commando dalla linea comandi.
 
   2. Adesso batti il carattere  !  (punto esclamativo).  Ciò ti permette di
-     eseguire qualsiasi comando esterno si possa eseguire nella "shell".
+     eseguire qualsiasi commando esterno si possa eseguire nella "shell".
 
   3. Ad esempio batti   ls   dopo il ! e poi premi <INVIO>.  Questo
      visualizza una lista della tua directory, proprio come se fossi in una
      "shell". Usa   :!dir  se  ls  non funziona.   [Unix: ls  MS-DOS: dir]
 
-NOTA:  È possibile in questo modo eseguire un comando a piacere, specificando
+NOTA:  È possible in questo modo eseguire un commando a piacere, specificando
        anche dei parametri per i comandi stessi.
 
 NOTA:  Tutti i comandi  :  devono essere terminati premendo <INVIO>
@@ -626,7 +626,7 @@ NOTA:  Tutti i comandi  :  devono essere terminati premendo <INVIO>
    ** Per salvare le modifiche apportate a un testo batti :w NOMEFILE. **
 
   1. Batti  :!dir  or  :!ls  per procurarti una lista della tua directory.
-     Già sai che devi premere <INVIO> dopo aver scritto il comando.
+     Già sai che devi premere <INVIO> dopo aver scritto il commando.
 
   2. Scegli un NOMEFILE che ancora non esista, ad es. TEST   .
 
@@ -636,7 +636,7 @@ NOTA:  Tutti i comandi  :  devono essere terminati premendo <INVIO>
      Per verifica batti ancora  :!dir  o  :!ls  per listare la tua directory.
 
 NOTA: Se esci da Vim e riesegui Vim battendo  vim TEST , il file aperto
-      sarà una copia esatta di "tutor.it" al momento del salvataggio.
+      sarà una copia esatta di "tutor.it" al memento del salvataggio.
 
   5. Ora cancella il file battendo (MS-DOS):   :!del TEST
 				 o (Unix):     :!rm TEST
@@ -661,7 +661,7 @@ NOTA: Se esci da Vim e riesegui Vim battendo  vim TEST , il file aperto
      o  :!ls  per controllare che esiste.  Non cancellarlo ora!  Ti servirà
      nella prossima lezione.
 
-NOTA:  Battere  v  inizia una selezione visuale.  Puoi muovere il cursore
+NOTA:  Battere  v  inizia una selezione visual.  Puoi muovere il cursore
        come vuoi, e rendere la selezione più piccola o più grande.  Poi
        puoi usare un operatore per agire sul testo selezionato.
        Ad es.,  d  cancella il testo.
@@ -676,7 +676,7 @@ NOTA:  Battere  v  inizia una selezione visuale.  Puoi muovere il cursore
 NOTA: Dopo aver eseguito il Passo 2 vedrai il testo della Lezione 5.3.
       Quindi spostati IN GIU' per tornare ancora a questa Lezione.
 
-  2. Ora inserisci il tuo file TEST con il comando   :r TEST   dove TEST è
+  2. Ora inserisci il tuo file TEST con il commando   :r TEST   dove TEST è
      il nome che hai usato per creare il file.
      Il file richiesto è inserito sotto la linea in cui si trova il cursore.
 
@@ -684,35 +684,35 @@ NOTA: Dopo aver eseguito il Passo 2 vedrai il testo della Lezione 5.3.
      e nota che ci sono ora 2 copie della Lezione 5.3, quella originale e
      quella che viene dal file.
 
-NOTA:  Puoi anche leggere l'output prodotto da un comando esterno. Ad es.
-       :r !ls  legge l'output del comando  ls e lo inserisce sotto la linea
+NOTA:  Puoi anche leggere l'output prodotto da un commando esterno. Ad es.
+       :r !ls  legge l'output del commando  ls e lo inserisce sotto la linea
        in cui si trova il cursore.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			       Lezione 5 SOMMARIO
 
 
-  1.  :!comando  esegue un comando esterno.
+  1.  :!commando  esegue un commando esterno.
 
-      Alcuni esempi utili sono [in MSDOS]:
+      Alcuni esempi utili sono [in MS-DOS]:
 	  :!dir		     -	visualizza lista directory
 	  :!del NOMEFILE     -	cancella file NOMEFILE.
 
   2.  :w NOMEFILE  scrive su disco il file che stai editando con nome NOMEFILE.
 
   3.  v movimento :w NOMEFILE  salva le linee selezionate in maniera
-      visuale nel file NOMEFILE.
+      visual nel file NOMEFILE.
 
   4.  :r NOMEFILE  legge il file NOMEFILE da disco e lo inserisce nel file
       che stai modificando, dopo la linea in cui è posizionato il cursore.
 
-  5.  :r !dir  legge l'output del comando  dir  e lo inserisce dopo la
+  5.  :r !dir  legge l'output del commando  dir  e lo inserisce dopo la
       linea in cui è posizionato il cursore.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 Lezione 6.1: IL COMANDO OPEN [APRIRE]
+		 Lezione 6.1: IL COMMANDO OPEN [APRIRE]
 
 
         ** Batti   o   per aprire una linea sotto il cursore **
@@ -735,7 +735,7 @@ NOTA:  Puoi anche leggere l'output prodotto da un comando esterno. Ad es.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Lezione 6.2: IL COMANDO APPEND [AGGIUNGERE]
+		Lezione 6.2: IL COMMANDO APPEND [AGGIUNGERE]
 
 	     ** Batti   a   per inserire testo DOPO il cursore. **
 
@@ -788,7 +788,7 @@ NOTA:  La Modalità Replace è come la Modalità Inserimento, ma ogni carattere
 
   1. Vai alla linea indicata da ---> qui sotto, e metti il cursore dopo "a)".
   
-  2. Entra in Modalità Visuale con  v  e metti il cursore davanti a "primo".
+  2. Entra in Modalità Visual con  v  e metti il cursore davanti a "primo".
   
   3. Batti  y  per copiare [yank] il testo evidenziato.
 
@@ -796,7 +796,7 @@ NOTA:  La Modalità Replace è come la Modalità Inserimento, ma ogni carattere
 
   5. Batti  p  per incollare [paste] il testo.  Poi batti:  a secondo <ESC> .
 
-  6. Usa la Modalità Visuale per selezionare " elemento.", copialo con  y ,
+  6. Usa la Modalità Visual per selezionare " elemento.", copialo con  y ,
      Vai alla fine della linea successiva con  j$  e incolla il testo con  p .
 
 --->  a) questo è il primo elemento.
@@ -812,7 +812,7 @@ NOTA: Puoi usare  y  come operatore;  yw  copia una parola [word].
  1. Ricerca 'nota' battendo:   /nota <ENTER>
     Ripeti la ricerca più volte usando il tasto   n
 
- 2. Imposta l'opzione 'ic' (Ignore Case, [Ignora maiuscolo/minuscolo])
+ 2. Imposta l'opzione 'ic' (Ignore Case, [Ignore maiuscolo/minuscolo])
     battendo:  :set ic
 
  3. Ora ricerca ancora 'nota' premendo il tasto    n
@@ -820,12 +820,12 @@ NOTA: Puoi usare  y  come operatore;  yw  copia una parola [word].
 
  4. Imposta le opzioni 'hlsearch' e 'incsearch'    :set hls is
 
- 5. Ora batti ancora il comando di ricerca, e guarda cosa succede:    /nota
+ 5. Ora batti ancora il commando di ricerca, e guarda cosa succeed:    /nota
  
  6. Per disabilitare il riconoscimento di maiuscole/minuscole batti:  :set noic
 NOTA: Per non evidenziare le occorrenze trovate batti:   :nohlsearch
 NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
-      nel comando di ricerca:    /nota\c <INVIO>
+      nel commando di ricerca:    /nota\c <INVIO>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		       Lezione 6 SOMMARIO
 
@@ -836,7 +836,7 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
   2. Batti  a  per inserire testo DOPO il cursore.
      Batti  A  per inserire testo alla fine della linea.
 
-  3. Il comando   e  sposta il cursore alla fine di una parola.
+  3. Il commando   e  sposta il cursore alla fine di una parola.
 
   4. L'operatore  y  copia del testo,  p  incolla del testo.
 
@@ -864,7 +864,7 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
   Batti  CTRL-W CTRL-W	per passare da una finestra all'altra.
   Batti  :q <INVIO>   per chiudere la finestra di aiuto.
 
-  Puoi trovare aiuto su quasi tutto, dando un argomento al comando ":help"
+  Puoi trovare aiuto su quasi tutto, dando un argomento al commando ":help"
   Prova questi (non dimenticare di premere <INVIO>):
 
 	:help w
@@ -901,19 +901,19 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 
 	      ** Completamento linea comandi con CTRL-D e <TAB> **
 
-  1. Imposta Vim in modalità compatibile:  :set nocp
+  1. Imposta Vim in modalità compatible:  :set nocp
 
   2. Guarda i file esistenti nella directory:  :!ls   o  :!dir
 
-  3. Batti l'inizio di un comando:  :e
+  3. Batti l'inizio di un commando:  :e
 
   4. Premi  CTRL-D  e Vim ti mostra una lista di comandi che iniziano per "e".
 
-  5. Premi  <TAB>  e Vim completa per te il nome comando come ":edit".
+  5. Premi  <TAB>  e Vim completa per te il nome commando come ":edit".
 
   6. Ora batti uno spazio e l'inizio del nome di un file esistente:  :edit FIL
 
-  7. Premi <TAB>.  Vim completerà il nome del file (se è il solo possibile).
+  7. Premi <TAB>.  Vim completerà il nome del file (se è il solo possible).
 
 NOTA:  Il completamento è disponibile per molti comandi.  Prova a battere
        CTRL-D e <TAB>.  Particolarmente utile per  :help .
@@ -924,7 +924,7 @@ NOTA:  Il completamento è disponibile per molti comandi.  Prova a battere
 
   1. Batti  :help  o premi <F1> o <Help>  per aprire una finestra di aiuto.
 
-  2. Batti  :help comando  per avere aiuto su  comando .
+  2. Batti  :help commando  per avere aiuto su  commando .
 
   3. Batti  CTRL-W CTRL-W  per saltare alla prossima finestra.
 
@@ -932,7 +932,7 @@ NOTA:  Il completamento è disponibile per molti comandi.  Prova a battere
 
   5. Crea uno script iniziale vimrc contenente le tue impostazioni preferite.
 
-  6. Mentre batti un comando  : , premi CTRL-D per vedere i possibili
+  6. Mentre batti un commando  : , premi CTRL-D per vedere i possibili
      completamenti.  Premi <TAB> per usare il completamento desiderato.
 
 

@@ -1426,7 +1426,7 @@ func Test_normal21_nv_hat()
   call assert_equal('Xbar', fnamemodify(bufname('%'), ':t'))
 
   " Test for the expected behavior when only one buffer is named.
-  enew | let l:nr = bufnr('%')
+  new | let l:nr = bufnr('%')
   call feedkeys("\<C-^>", 'tx')
   call assert_equal('Xbar', fnamemodify(bufname('%'), ':t'))
   call feedkeys("\<C-^>", 'tx')
@@ -2075,7 +2075,7 @@ func Test_normal31_r_cmd()
   " Different code paths are used for utf-8 and latin1 encodings
   set showmatch
   for enc in ['latin1', 'utf-8']
-    enew!
+    new!
     let &encoding = enc
     call setline(1, [' {a}', 'xxxxxxxxxx', '      [b]'])
     exe "norm! 2gg5r\<C-Y>l5r\<C-E>"
@@ -2721,7 +2721,7 @@ endfunc
 
 func Test_normal47_visual_buf_wipe()
   " This was causing a crash or ml_get error.
-  enew!
+  new!
   call setline(1,'xxx')
   normal $
   new
@@ -2872,7 +2872,7 @@ endfunc
 " Test for the gr (virtual replace) command
 " Test for the bug fixed by 7.4.387
 func Test_gr_command()
-  enew!
+  new!
   let save_cpo = &cpo
   call append(0, ['First line', 'Second line', 'Third line'])
   exe "normal i\<C-G>u"
@@ -2897,7 +2897,7 @@ func Test_gr_command()
   call assert_fails('normal! grx', 'E21:')
   call assert_fails('normal! gRx', 'E21:')
   set modifiable&
-  enew!
+  new!
 endfunc
 
 " When splitting a window the changelist position is wrong.
@@ -2905,7 +2905,7 @@ endfunc
 " Test for the bug fixed by 7.4.386
 func Test_changelist()
   let save_ul = &ul
-  enew!
+  new!
   call append('$', ['1', '2'])
   exe "normal i\<C-G>u"
   exe "normal Gkylpa\<C-G>u"

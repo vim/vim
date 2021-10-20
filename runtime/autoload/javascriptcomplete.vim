@@ -255,7 +255,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 					\ 'disabled', 'form', 'id', 'name', 'tabIndex', 'type', 'value'] 
 		let radimeth = ['blur', 'click', 'focus', 'select', 'onBlur', 'onFocus']
 		call map(radimeth, 'v:val."("')
-		let radis = radiprop + radimeth
+		let radix = radiprop + radimeth
 		" Reset - accessible only by other properties
 		let reseprop = ['accept', 'accessKey', 'align', 'alt', 'defaultValue', 
 					\ 'disabled', 'form', 'id', 'name', 'size', 'tabIndex', 'type', 'value'] 

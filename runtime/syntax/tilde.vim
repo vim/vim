@@ -9,7 +9,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-"tilde dosent care ...
+"tilde doesn't care ...
 syn case ignore
 
 syn match	tildeFunction	"\~[a-z_0-9]\+"ms=s+1

@@ -35,7 +35,7 @@ endfunc
 
 " Tests for setting the '[,'] marks when joining lines.
 func Test_join_marks()
-  enew
+  new
   call append(0, [
 	      \ "\t\tO sodales, ludite, vos qui",
 	      \ "attamen consulite per voster honur. Tua pulchra " .
@@ -52,7 +52,7 @@ func Test_join_marks()
   /^This line/;'}-join
   call assert_equal([0, 4, 11, 0], getpos("'["))
   call assert_equal([0, 4, 67, 0], getpos("']"))
-  enew!
+  new!
 endfunc
 
 " Test for joining lines and marks in them
@@ -141,7 +141,7 @@ ert
 
   call assert_equal(expected, getline(1, '$'))
 
-  enew!
+  new!
   call append(0, text)
   normal gg
 
@@ -184,7 +184,7 @@ ert
 
   call assert_equal(expected, getline(1, '$'))
 
-  enew!
+  new!
   call append(0, text)
   normal gg
 

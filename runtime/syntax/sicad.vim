@@ -201,7 +201,7 @@ syn keyword sicadStatement edt egaus egdef egdefs eglist
 syn keyword sicadStatement egloe egloenp egloes egxx eib
 syn keyword sicadStatement ekur ekuradd elel elpos epg
 syn keyword sicadStatement esau esauadd esek eta etap
-syn keyword sicadStatement etav feparam ficonv filse fl
+syn keyword sicadStatement etav feparam ficonv files fl
 syn keyword sicadStatement fli flin flini flinit flins
 syn keyword sicadStatement flkor fln flnli flop flout
 syn keyword sicadStatement flowert flparam flraster flsy flsyd
@@ -311,7 +311,7 @@ syn keyword sicadStatement rbsta rbtile rbtrpix rbvtor rcol
 syn keyword sicadStatement rd rdchange re reb rebmod
 syn keyword sicadStatement refunc ren renel rk rkpos
 syn keyword sicadStatement rohr rohrpos rpr rr rr0
-syn keyword sicadStatement rra rrar rs samtosdb sav
+syn keyword sicadStatement rra rrar rs samtosdb save
 syn keyword sicadStatement savd savesim savx scol scopy
 syn keyword sicadStatement scopye sdbtosam sddk sdwr se
 syn keyword sicadStatement selaus selpos seman semi sesch
@@ -339,7 +339,7 @@ syn keyword sicadStatement tcnwe tcpairs tcpath tcrect tcrmdli
 syn keyword sicadStatement tcscheme tcschmap tcse tcselc tcstar
 syn keyword sicadStatement tcstrman tcsubnet tcsymbol tctable tcthrcab
 syn keyword sicadStatement tctrans tctst tdb tdbdel tdbget
-syn keyword sicadStatement tdblist tdbput tgmod titel tmoff
+syn keyword sicadStatement tdblist tdbput tgmod title tmoff
 syn keyword sicadStatement tmon tp tpa tps tpta
 syn keyword sicadStatement tra trans transkdo transopt transpro
 syn keyword sicadStatement triangle trm trpg trrkd trs
@@ -348,7 +348,7 @@ syn keyword sicadStatement txcng txju txl txp txpv
 syn keyword sicadStatement txtcmp txv txz uckon uiinfo
 syn keyword sicadStatement uistatus umdk umdk1 umdka umge
 syn keyword sicadStatement umges umr verbo verflli verif
-syn keyword sicadStatement verly versinfo vfg vpactive vpcenter
+syn keyword sicadStatement very versinfo vfg vpactive vpcenter
 syn keyword sicadStatement vpcreate vpdelete vpinfo vpmodify vpscroll
 syn keyword sicadStatement vpsta wabsym wzmerk zdrhf zdrhfn
 syn keyword sicadStatement zdrhfw zdrhfwn zefp zfl zflaus

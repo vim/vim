@@ -395,7 +395,7 @@ hi def link dPragmaIdentifier    Identifier
 hi def link dExtern              dExternal
 hi def link dExternIdentifier    Identifier
 
-" Marks contents of the asm statment body as special
+" Marks contents of the asm statement body as special
 
 syn match dAsmStatement "\<asm\>"
 syn region dAsmBody start="asm[\n]*\s*{"hs=e+1 end="}"he=e-1 contains=dAsmStatement,dAsmOpCode,@dComment,DUserLabel
@@ -428,7 +428,7 @@ syn keyword dAsmOpCode contained	cvtps2pd	cvtpd2pi	comiss		cmpss
 syn keyword dAsmOpCode contained	cvtps2pi	cvtsd2si	cvtsd2ss	cvtsi2sd
 syn keyword dAsmOpCode contained	cvtss2sd	cvtss2si	cvttpd2dq	cvttpd2pi
 syn keyword dAsmOpCode contained	cvttps2pi	cvttsd2si	cvttss2si	cwd
-syn keyword dAsmOpCode contained	da		daa		das		db
+syn keyword dAsmOpCode contained	da		data		das		db
 syn keyword dAsmOpCode contained	dd		cwde		cvttps2dq	cvtsi2ss
 syn keyword dAsmOpCode contained	de		dec		df		di
 syn keyword dAsmOpCode contained	divpd		divps		divsd		divss

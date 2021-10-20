@@ -587,7 +587,7 @@ language begins an if statement with "if" and ends it with "fi":
 To define a "grouphere" directive for this syntax, you use the following
 command: >
 
-	:syntax sync match shIfSync grouphere shIf "\<if\>"
+	:syntax sync match shIfSync grouphere shift "\<if\>"
 
 The "groupthere" argument tells Vim that the pattern ends a group.  For
 example, the end of the if/fi group is as follows: >

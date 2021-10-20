@@ -16,7 +16,7 @@ func Test_global_local_lispwords()
 endfunc
 
 func Test_lisp_indent()
-  enew!
+  new!
 
   call append(0, [
 	      \ '(defun html-file (base)',
@@ -80,7 +80,7 @@ func Test_lisp_indent()
 	      \ ''
 	      \ ], getline(1, "$"))
 
-  enew!
+  new!
   let &cpoptions=save_copt
   set nolisp
 endfunc

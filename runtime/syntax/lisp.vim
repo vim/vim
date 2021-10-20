@@ -409,7 +409,7 @@ if exists("g:lispsyntax_clisp")
   syn match lispFunc	"\<\(ext:\)\?memoized\>"
   syn match lispFunc	"\<\(ext:\)\?getenv\>"
   syn match lispFunc	"\<\(ext:\)\?convert-string-\(to\|from\)-bytes\>"
-  syn match lispFunc	"\<\(ext:\)\?ethe\>"
+  syn match lispFunc	"\<\(ext:\)\?the\>"
   syn match lispFunc	"\<\(ext:\)\?with-gensyms\>"
   syn match lispFunc	"\<\(ext:\)\?open-http\>"
   syn match lispFunc	"\<\(ext:\)\?string-concat\>"
@@ -469,7 +469,7 @@ syn keyword lispKey	:load-toplevel	:compile-toplevel	:execute
 syn keyword lispKey	:while      :until       :for         :do       :if          :then         :else     :when      :unless :in
 syn keyword lispKey	:across     :finally     :collect     :nconc    :maximize    :minimize     :sum
 syn keyword lispKey	:and        :with        :initially   :append   :into        :count        :end      :repeat
-syn keyword lispKey	:always     :never       :thereis     :from     :to          :upto         :downto   :below
+syn keyword lispKey	:always     :never       :thereis     :from     :to          :up to         :downto   :below
 syn keyword lispKey	:above      :by          :on          :being    :each        :the          :hash-key :hash-keys
 syn keyword lispKey	:hash-value :hash-values :using       :of-type  :upfrom      :downfrom
 if exists("g:lispsyntax_clisp")

@@ -201,7 +201,7 @@ func Nb_basic(port)
   call assert_equal('send: 0:setFullName!44 "XSomeBuf"', l[-1])
   let g:last += 3
 
-  enew!
+  new!
 
   " Test for E644
   call appendbufline(cmdbufnr, '$', 'E644_Test')
@@ -508,7 +508,7 @@ func Nb_basic(port)
   let g:last += 3
 
   " setVisible test
-  hide enew
+  hide new
   call appendbufline(cmdbufnr, '$', 'setVisible_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
@@ -721,7 +721,7 @@ func Nb_basic(port)
   let g:last += 3
 
   " Open a buffer not monitored by netbeans
-  enew | only!
+  new | only!
   nbkey "\<C-F3>"
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 1)')
   let l = ReadXnetbeans()

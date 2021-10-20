@@ -107,7 +107,7 @@ func Test_sign()
   call assert_equal('B', getline('.'))
 
   " Check for jumping to a sign in a hidden buffer
-  enew! | only!
+  new! | only!
   edit foo
   call setline(1, ['A', 'B', 'C', 'D'])
   let fn = expand('%:p')
@@ -281,7 +281,7 @@ func Test_sign_completion()
   sign unplace * group=*
   sign undefine Sign1
   sign undefine Sign2
-  enew
+  new
   call delete('XsignOne')
   call delete('XsignTwo')
 endfunc
@@ -533,12 +533,12 @@ func Test_sign_funcs()
   call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
-  enew | only
+  new | only
 endfunc
 
 " Tests for sign groups
 func Test_sign_group()
-  enew | only
+  new | only
   " Remove all the signs
   call sign_unplace('*')
   call sign_undefine()
@@ -786,7 +786,7 @@ func Test_sign_group()
   call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
-  enew | only
+  new | only
 endfunc
 
 " Place signs used for ":sign unplace" command test
@@ -820,7 +820,7 @@ endfunc
 
 " Tests for the ':sign unplace' command
 func Test_sign_unplace()
-  enew | only
+  new | only
   " Remove all the signs
   call sign_unplace('*')
   call sign_undefine()
@@ -1135,14 +1135,14 @@ func Test_sign_unplace()
 
   call sign_unplace('*')
   call sign_undefine()
-  enew | only
+  new | only
   call delete("Xsign1")
   call delete("Xsign2")
 endfunc
 
 " Tests for auto-generating the sign identifier.
 func Test_aaa_sign_id_autogen()
-  enew | only
+  new | only
   call sign_unplace('*')
   call sign_undefine()
 
@@ -1174,12 +1174,12 @@ func Test_aaa_sign_id_autogen()
   call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
-  enew | only
+  new | only
 endfunc
 
 " Test for sign priority
 func Test_sign_priority()
-  enew | only
+  new | only
   call sign_unplace('*')
   call sign_undefine()
 
@@ -1544,7 +1544,7 @@ func Test_sign_priority()
 
   call sign_unplace('*')
   call sign_undefine()
-  enew | only
+  new | only
   call delete("Xsign")
 endfunc
 
@@ -1586,13 +1586,13 @@ func Test_sign_memfailures()
 
   call sign_unplace('*')
   call sign_undefine()
-  enew | only
+  new | only
   call delete("Xsign")
 endfunc
 
 " Test for auto-adjusting the line number of a placed sign.
 func Test_sign_lnum_adjust()
-  enew! | only!
+  new! | only!
 
   sign define sign1 text=#> linehl=Comment
   call setline(1, ['A', 'B', 'C', 'D', 'E'])
@@ -1650,12 +1650,12 @@ func Test_sign_lnum_adjust()
 
   sign unplace * group=*
   sign undefine sign1
-  enew!
+  new!
 endfunc
 
 " Test for changing the type of a placed sign
 func Test_sign_change_type()
-  enew! | only!
+  new! | only!
 
   sign define sign1 text=#> linehl=Comment
   sign define sign2 text=@@ linehl=Comment
@@ -1684,12 +1684,12 @@ func Test_sign_change_type()
   sign unplace * group=*
   sign undefine sign1
   sign undefine sign2
-  enew!
+  new!
 endfunc
 
 " Test for the sign_jump() function
 func Test_sign_jump_func()
-  enew! | only!
+  new! | only!
 
   sign define sign1 text=#> linehl=Comment
 
@@ -1729,7 +1729,7 @@ func Test_sign_jump_func()
 
   sign unplace * group=*
   sign undefine sign1
-  enew! | only!
+  new! | only!
 endfunc
 
 " Test for correct cursor position after the sign column appears or disappears.
@@ -1892,7 +1892,7 @@ func Test_sign_numcol()
   sign undefine sign1
   set signcolumn&
   set number&
-  enew!  | close
+  new!  | close
 endfunc
 
 " Test for managing multiple signs using the sign functions
@@ -2008,7 +2008,7 @@ func Test_sign_funcs_multi()
 
   call sign_unplace('*')
   call sign_undefine()
-  enew!
+  new!
   call delete("Xsign")
 endfunc
 

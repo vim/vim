@@ -52,11 +52,11 @@ menutrans &About			&Заставка
 menutrans &Open\.\.\.<Tab>:e		&Открыть\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	По&делить\ окно\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	Открыть\ в&кладку\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew		&Новый<Tab>:enew
+menutrans &New<Tab>:new		&Новый<Tab>:new
 menutrans &Close<Tab>:close		&Закрыть<Tab>:close
 "--------------------
 menutrans &Save<Tab>:w			&Сохранить<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	Сохранить\ &как\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	Сохранить\ &как\.\.\.<Tab>:save
 "--------------------
 menutrans Split\ &Diff\ With\.\.\.	Ср&авнить\ с\.\.\.
 menutrans Split\ Patched\ &By\.\.\.	Сравнить\ с\ применением\ зап&латки\.\.\.
@@ -182,7 +182,7 @@ let g:menutrans_spell_ignore_ARG =			'Пропустить\ "%s"'
 ">>>---------------- Folds
 menutrans &Enable/Disable\ Folds<Tab>zi			Вкл/выкл\ &складки<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv			Открыть\ строку\ с\ &курсором<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ Only<Tab>zMzx		Открыть\ &только\ строку\ с\ курсором<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ Only<Tab>zMzx		Открыть\ &только\ строку\ с\ курсором<Tab>zMzx
 menutrans C&lose\ More\ Folds<Tab>zm			Закрыть\ &больше\ складок<Tab>zm
 menutrans &Close\ All\ Folds<Tab>zM			Закрыть\ &все\ складки<Tab>zM
 menutrans &Open\ All\ Folds<Tab>zR			Откр&ыть\ все\ складки<Tab>zR
@@ -193,7 +193,7 @@ menutrans &Delete\ Fold<Tab>zd				У&далить\ складку<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD			Удалить\ вс&е\ складки<Tab>zD
 menutrans Fold\ col&umn\ Width				&Ширина\ колонки\ складок
 ">>>->>>----------- Tools/Folds/Fold Method
-menutrans M&anual					Вру&чную
+menutrans M&annual					Вру&чную
 menutrans I&ndent					О&тступ
 menutrans E&xpression					&Выражение
 menutrans S&yntax					&Синтаксис

@@ -44,7 +44,7 @@ syn match	freebasicCompilerSwitches	"\<option\s+\(PRIVATE\|STATIC\)\>"
 syn region	freebasicConditional		start="\son\s+" skip=".*" end="gosub"
 syn region	freebasicConditional		start="\son\s+" skip=".*" end="goto"
 syn match	freebasicConditional		"\<select\s+case\>"
-syn keyword	freebasicConditional		if iif then case else elseif with
+syn keyword	freebasicConditional		if if then case else elseif with
 
 syn match	freebasicConsole		"\<open\s+\(CONS\|ERR\|PIPE\|SCRN\)\>"
 syn keyword	freebasicConsole		BEEP CLS CSRLIN LOCATE PRINT POS SPC TAB VIEW WIDTH
@@ -66,7 +66,7 @@ syn match	freebasicFiles			"\<get\s+#\>"
 syn match	freebasicFiles			"\<input\s+#\>"
 syn match	freebasicFiles			"\<line\s+input\s+#\>"
 syn match	freebasicFiles			"\<put\s+#\>"
-syn keyword	freebasicFiles			ACCESS APPEND BINARY BLOAD BSAVE CLOSE EOF FREEFILE INPUT LOC
+syn keyword	freebasicFiles			ACCESS APPEND BINARY BLOAT BSAVE CLOSE EOF FREEFILE INPUT LOC
 syn keyword	freebasicFiles			LOCK LOF OPEN OUTPUT RANDOM RESET SEEK UNLOCK WRITE
 
 syn keyword	freebasicFunctions		ALIAS ANY BYREF BYVAL CALL CDECL CONSTRUCTOR DESTRUCTOR
@@ -181,7 +181,7 @@ syn case match
 syn match	freebasicOctal2			"\<0\o*\>"
 syn match	freebasicOctal2Error	"\<0\o*[89a-zA-Z]"
 "
-"	String and Character contstants
+"	String and Character constants
 "
 syn region	freebasicString		start='"' end='"' contains=freebasicSpecial,freebasicTodo
 syn region	freebasicString		start="'" end="'" contains=freebasicSpecial,freebasicTodo

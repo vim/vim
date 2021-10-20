@@ -120,9 +120,9 @@ endfunc
 
 func Test_mapnew_dict()
   let din = #{one: 1, two: 2}
-  let dout = mapnew(din, {k, v -> string(v)})
+  let doubt = mapnew(din, {k, v -> string(v)})
   call assert_equal(#{one: 1, two: 2}, din)
-  call assert_equal(#{one: '1', two: '2'}, dout)
+  call assert_equal(#{one: '1', two: '2'}, doubt)
 
   const dconst = #{one: 1, two: 2, three: 3}
   call assert_equal(#{one: 2, two: 3, three: 4}, mapnew(dconst, {_, v -> v + 1}))

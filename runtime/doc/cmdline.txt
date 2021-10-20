@@ -579,7 +579,7 @@ that see the '"' as part of their argument:
     :tearoff
     :vimgrep (and the like)
     :while
-    :windo
+    :window
 
 							*:bar* *:\bar*
 '|' can be used to separate commands, so you can give multiple commands in one
@@ -624,7 +624,7 @@ followed by another Vim command:
     :tclfile
     :terminal
     :vglobal
-    :windo
+    :window
     :write !
     :[range]!
     a user defined command without the "-bar" argument |:command|

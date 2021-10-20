@@ -170,7 +170,7 @@ tau    <char-166><char-188><char-199>
 
 d      <char-240>
 da     <char-188>
-daa    <char-188><char-161>
+data    <char-188><char-161>
 dA     <char-188><char-161>
 di     <char-202>
 dii    <char-203>
@@ -202,7 +202,7 @@ Nee    <char-167><char-189>
 NE     <char-167><char-189>
 Nai    <char-168><char-189>
 No     <char-166><char-189><char-161>
-Noo    <char-167><char-189><char-161>
+No    <char-167><char-189><char-161>
 NO     <char-167><char-189><char-161>
 Nau    <char-166><char-189><char-199>
 
@@ -236,7 +236,7 @@ wu     <char-209>
 wuu    <char-225>
 wU     <char-225>
 we     <char-166><char-191>
-wee    <char-167><char-191>
+we    <char-167><char-191>
 wE     <char-167><char-191>
 wai    <char-168><char-191>
 wo     <char-166><char-191><char-161>
@@ -468,7 +468,7 @@ nee    <char-167><char-201>
 nE     <char-167><char-201>
 nai    <char-168><char-201>
 no     <char-166><char-201><char-161>
-noo    <char-167><char-201><char-161>
+no    <char-167><char-201><char-161>
 nO     <char-167><char-201><char-161>
 nau    <char-166><char-201><char-199>
 
@@ -532,7 +532,7 @@ Sau    <char-166><char-133><char-199>
 
 h      <char-139>
 ha     <char-134>
-haa    <char-134><char-161>
+has    <char-134><char-161>
 hA     <char-134><char-161>
 hi     <char-134><char-162>
 hii    <char-134><char-163>

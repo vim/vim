@@ -77,7 +77,7 @@ PIEZĪME:  :q! <ENTER> komanda atceļ visas failā radītās izmaiņas. Pēc da�
 
   3. Spiediet x taustiņu, lai izdzēstu nevajadzīgo burtu.
 
-  4. Atkārtojiet 2. līdz 4. soļus, līdz teksts ir pareizs.
+  4. Atkārtojiet 2. līdz 4. soļus, līdz texts ir pareizs.
 
 ---> Hiiipijiiii čččauuukstiiina celllofānu.
 
@@ -100,7 +100,7 @@ PIEZĪME: Izpildot šo pamācību, centieties mācīties nevis domājot,
   3. Spiediet i un ievadiet visu nepieciešamo tekstu.
 
   4. Pēc katra papildinājuma, spiediet <ESC> lai atgrieztos normālajā režīmā.
-     Atkārtojiet 2. līdz 4. soļus, līdz teksts ir pareizs.
+     Atkārtojiet 2. līdz 4. soļus, līdz texts ir pareizs.
 
 ---> Šaā lnij no tksta rūkt dai buti.
      Šajā līnijā no teksta trūkst daži burti.
@@ -118,7 +118,7 @@ PIEZĪME: Izpildot šo pamācību, centieties mācīties nevis domājot,
 
   2. Spiediet A un pievienojiet iztrūkstošo tekstu.
 
-  3. Kad nepieciešamais teksts ir pievienots, spiediet <ESC>,
+  3. Kad nepieciešamais texts ir pievienots, spiediet <ESC>,
      lai atgrieztos normālajā režīmā.
 
   4. Pārvietojiet kursoru uz otro līniju ar atzīmi --->
@@ -171,8 +171,8 @@ PIEZĪME: Izpildot šo pamācību, centieties mācīties nevis domājot,
   4. Lai izdzēstu burtu zem kursora, spiediet x
 
   5. Lai ievietotu vai pievienotu tekstu, spiediet:
-	 i   ievadāmais teksts          <ESC>   lai ievietotu pirms kursora
-	 A   pievienojamais teksts      <ESC>   lai pievienotu rindas beigās
+	 i   ievadāmais texts          <ESC>   lai ievietotu pirms kursora
+	 A   pievienojamais texts      <ESC>   lai pievienotu rindas beigās
 
 PIEZĪME: <ESC> spiešana atgriezīs jūs normālajā režīmā, vai arī atcels
          nepareizu vai daļēji ievadītu komandu.
@@ -200,7 +200,7 @@ PIEZĪME: Nospiežot d, ekrāna labajā apakšējā stūrī parādīsies d burts
 
 ---> Šajā kuku teikumā ir tata daži lala vārdi, kuri mumu nav vajadzīgi.
 
-  5. Izpildiet 3. — 4. soļus, līdz teksts ir pareizs un dodieties uz 2.2. nodarbību.
+  5. Izpildiet 3. — 4. soļus, līdz texts ir pareizs un dodieties uz 2.2. nodarbību.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -243,7 +243,7 @@ PIEZĪME: Nospiežot d, ekrāna labajā apakšējā stūrī parādīsies d burts
     e - līdz tekošā vārda beigām, IESKAITOT pēdējo burtu.
     $ - līdz rindas beigām, IESKAITOT tās pēdējo burtu.
 
-  Piemēram, ievadot  de  tiks izdzēsts teksts no kursora līdz rindas beigām.
+  Piemēram, ievadot  de  tiks izdzēsts texts no kursora līdz rindas beigām.
 
 PIEZĪME: Ievadot kustības komandu normālajā režīmā, tā pārvietos kursoru uz
          norādīto vietu.
@@ -486,7 +486,7 @@ Tagad dodieties uz nākamo nodarbību.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    4.1 nodarbība: KURSORA VIETA FAILĀ UN FAILA STATUSS
+                    4.1 nodarbība: KURSORA VIETA FAILĀ UN FAILA STATUS
 
   ** Lai noteiktu kursora atrašanās vietu failā un faila statusu, spiediet  CTRL-g
      Lai pārvietotu kursoru uz noteiktu faila rindu, spiediet  G  **
@@ -580,7 +580,7 @@ PIEZĪME: Šī iespēja ir ļoti noderīga, lai pārbaudītu nelīdzsvarotas iek
      Ievērojiet, ka šī komanda nomaina tikai pirmo atrasto frāzi.
 
   3. Tagad ievadiet :s/ss/s/g<ENTER>
-     Ievērojiet, ka slēdzis g liek aizvietot frāzi visās atrastajās vietās.
+     Ievērojiet, ka slēdzis g like aizvietot frāzi visās atrastajās vietās.
 
 ---> visslabākaiss laikss vērot ziedus ir pavassariss.
 
@@ -777,7 +777,7 @@ PIEZĪME: Jūs varat ievadīt saturu failā, izpildot ārēju komandu.
   5. Ievadiet e, lai novietotu kursoru nākamā nepabiegtā vārda beigās,
      un atkārtojiet soļus 3 un 4.
 
----> Šī rin ju palīd praktiz tekst pievienoš vārd bei
+---> Šī rin ju palīd praktiz text pievienoš vārd bei
 ---> Šī rinda jums palīdzēs praktizēties teksta pievienošanā vārdu beigās.
 
 PIEZĪME:  No normālā režīma pāriet uz ievades režīmu ievadot a, i, A un I.

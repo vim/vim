@@ -5025,7 +5025,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 	{
 	    ftp = &((fromto_T *)gap->ga_data)[i];
 	    l += 1 + (int)STRLEN(ftp->ft_from);  // count <*fromlen> and <*from>
-	    l += 1 + (int)STRLEN(ftp->ft_to);    // count <*tolen> and <*to>
+	    l += 1 + (int)STRLEN(ftp->ft_to);    // count <*token> and <*to>
 	}
 	if (round == 2)
 	    ++l;	// count <salflags>

@@ -308,7 +308,7 @@ msgid "E839: Completion function changed window"
 msgstr "E839: Funkcja uzupełniania zmieniła okno"
 
 msgid "E840: Completion function deleted text"
-msgstr "E840: Funkcja uzupełnania usunęła tekst"
+msgstr "E840: Funkcja uzupełnania usunęła text"
 
 msgid "'dictionary' option is empty"
 msgstr "opcja 'dictionary' jest pusta"
@@ -1188,7 +1188,7 @@ msgstr "E612: Zbyt wiele nazw znaków"
 
 #, c-format
 msgid "E239: Invalid sign text: %s"
-msgstr "E239: Niewłaściwy tekst znaku: %s"
+msgstr "E239: Niewłaściwy text znaku: %s"
 
 #, c-format
 msgid "E155: Unknown sign: %s"
@@ -1665,7 +1665,7 @@ msgstr "[przemienione]"
 msgid "[blowfish]"
 msgstr "[blowfish]"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[zakodowane]"
 
 #, c-format
@@ -1961,7 +1961,7 @@ msgstr ""
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number "
-msgstr "E680: <buffer=%d>: niewłaściwy numer bufora"
+msgstr "E680: <buffer=%d>: niewłaściwy number bufora"
 
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Nie można wykonywać autokomend dla wydarzeń ALL"
@@ -2069,7 +2069,7 @@ msgid "E851: Failed to create a new process for the GUI"
 msgstr "E851: Nie mogłem stworzyć nowego procesu dla GUI"
 
 msgid "E852: The child process failed to start the GUI"
-msgstr "E852: Proces potomny nie mógł uruchomić GUI"
+msgstr "E852: Process potomny nie mógł uruchomić GUI"
 
 msgid "E229: Cannot start the GUI"
 msgstr "E229: Nie mogę odpalić GUI"
@@ -2620,7 +2620,7 @@ msgid "window is invalid"
 msgstr "okno jest nieważne"
 
 msgid "linenr out of range"
-msgstr "numer wiersza poza zakresem"
+msgstr "number wiersza poza zakresem"
 
 msgid "not allowed in the Vim sandbox"
 msgstr "Niedozwolone w piaskownicy Vima"
@@ -2733,7 +2733,7 @@ msgid "connected"
 msgstr "podłączony"
 
 msgid "invalid buffer number"
-msgstr "niewłaściwy numer bufora"
+msgstr "niewłaściwy number bufora"
 
 msgid "not implemented yet"
 msgstr "obecnie nie zaimplementowano"
@@ -2756,7 +2756,7 @@ msgid "cannot insert/append line"
 msgstr "nie mogę wprowadzić/dołączyć wiersza"
 
 msgid "line number out of range"
-msgstr "numer wiersza poza zakresem"
+msgstr "number wiersza poza zakresem"
 
 msgid "unknown flag: "
 msgstr "nieznana flaga: "
@@ -2886,7 +2886,7 @@ msgid "[file ..]       edit specified file(s)"
 msgstr "[plik ..]       edytuj zadane pliki"
 
 msgid "-               read text from stdin"
-msgstr "-               czytaj tekst ze stdin"
+msgstr "-               czytaj text ze stdin"
 
 msgid "-t tag          edit file where tag is defined"
 msgstr "-t znacznik   edytuj plik, w którym dany znacznik jest zdefiniowany"
@@ -2942,7 +2942,7 @@ msgstr "-register\t\tZarejestruj tego gvima w OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tWyrejestruj gvima z OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tStartuj w GUI (tak jak \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2990,7 +2990,7 @@ msgstr "-C\t\t\tBądź zgodny z Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tBądź niezupełnie zgodny z Vi: 'nocompatible'"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr "-V[N][nazwap]\t\tGadatliwy [poziom N] [zapisuj wiadomości do nazwap]"
 
 msgid "-D\t\t\tDebugging mode"
@@ -3151,7 +3151,7 @@ msgstr ""
 "\n"
 "Argumenty rozpoznawane przez gvim (wersja Athena):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <display>\tZaładuj Vim na <display>"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3204,7 +3204,7 @@ msgstr ""
 "\n"
 "Argumenty rozpoznawane przez gvim (wersja GTK+):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <display>\tZastartuj Vim na <display> (również: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
@@ -3256,7 +3256,7 @@ msgid ""
 "mark line  col file/text"
 msgstr ""
 "\n"
-"zakł. wiersz kol plik/tekst"
+"zakł. wiersz kol plik/text"
 
 #. Highlight title
 msgid ""
@@ -3264,7 +3264,7 @@ msgid ""
 " jump line  col file/text"
 msgstr ""
 "\n"
-" skok wiersz kol plik/tekst"
+" skok wiersz kol plik/text"
 
 #. Highlight title
 msgid ""
@@ -3272,7 +3272,7 @@ msgid ""
 "change line  col text"
 msgstr ""
 "\n"
-"zmień wrsz. kol tekst"
+"zmień wrsz. kol text"
 
 msgid ""
 "\n"
@@ -3370,7 +3370,7 @@ msgid "E305: No swap file found for %s"
 msgstr "E305: Nie znaleziono pliku wymiany dla %s"
 
 msgid "Enter number of swap file to use (0 to quit): "
-msgstr "Wprowadź numer pliku wymiany, którego użyć (0 by wyjść): "
+msgstr "Wprowadź number pliku wymiany, którego użyć (0 by wyjść): "
 
 #, c-format
 msgid "E306: Cannot open %s"
@@ -3670,7 +3670,7 @@ msgstr "pe_line_count wynosi zero"
 
 #, c-format
 msgid "E322: line number out of range: %ld past the end"
-msgstr "E322: numer wiersza poza zakresem: %ld jest poza końcem"
+msgstr "E322: number wiersza poza zakresem: %ld jest poza końcem"
 
 #, c-format
 msgid "E323: line count wrong in block %ld"
@@ -3916,10 +3916,10 @@ msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: OSTRZEŻENIE: Zmiany w pliku tylko do odczytu"
 
 msgid "Type number and <Enter> or click with mouse (empty cancels): "
-msgstr "Wpisz numer i <Enter> lub wybierz myszą (pusta wartość anuluje): "
+msgstr "Wpisz number i <Enter> lub wybierz myszą (pusta wartość anuluje): "
 
 msgid "Type number and <Enter> (empty cancels): "
-msgstr "Wpisz numer i <Enter> (puste anuluje): "
+msgstr "Wpisz number i <Enter> (puste anuluje): "
 
 msgid "1 more line"
 msgstr "1 wiersz więcej"
@@ -4015,7 +4015,7 @@ msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
 msgstr ""
-"E343: Niewłaściwy trop: '**[numer]' musi być na końcu tropu lub po nim musi "
+"E343: Niewłaściwy trop: '**[number]' musi być na końcu tropu lub po nim musi "
 "być '%s'."
 
 #, c-format
@@ -4227,7 +4227,7 @@ msgid "E846: Key code not set"
 msgstr "E846: Kod klucza nie jest ustawiony"
 
 msgid "E521: Number required after ="
-msgstr "E521: Po = wymagany jest numer"
+msgstr "E521: Po = wymagany jest number"
 
 msgid "E522: Not found in termcap"
 msgstr "E522: Nie znaleziono w termcap"
@@ -4970,7 +4970,7 @@ msgstr "E758: Obcięty plik sprawdzania pisowni"
 
 #, c-format
 msgid "Trailing text in %s line %d: %s"
-msgstr "Zbędny tekst w %s wiersz %d: %s"
+msgstr "Zbędny text w %s wiersz %d: %s"
 
 #, c-format
 msgid "Affix name too long in %s line %d: %s"
@@ -5211,7 +5211,7 @@ msgstr "wiersz / zignorowano w %s wierszu %d: %s"
 
 #, c-format
 msgid "Invalid region nr in %s line %d: %s"
-msgstr "Nieprawidłowy numer regionu w %s wierszu %d: %s"
+msgstr "Nieprawidłowy number regionu w %s wierszu %d: %s"
 
 #, c-format
 msgid "Unrecognized flags in %s line %d: %s"
@@ -6056,7 +6056,7 @@ msgid "version "
 msgstr "wersja "
 
 msgid "by Bram Moolenaar et al."
-msgstr "Autor: Bram Moolenaar i Inni."
+msgstr "Author: Bram Moolenaar i Inni."
 
 msgid "Vim is open source and freely distributable"
 msgstr "Vim jest open source i rozprowadzany darmowo"
@@ -6089,7 +6089,7 @@ msgid "menu  Help->Orphans           for information    "
 msgstr "menu Pomoc->Sieroty        dla informacji to tym  "
 
 msgid "Running modeless, typed text is inserted"
-msgstr "Uruchomiony bez trybów, wpisany tekst jest wprowadzany"
+msgstr "Uruchomiony bez trybów, wpisany text jest wprowadzany"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr "menu  Edytuj->Ustawienia globalne->Tryb wstawiania"
@@ -6262,7 +6262,7 @@ msgid "Interrupted"
 msgstr "Przerwane"
 
 msgid "E14: Invalid address"
-msgstr "E14: Niewłaściwy adres"
+msgstr "E14: Niewłaściwy address"
 
 msgid "E474: Invalid argument"
 msgstr "E474: Niewłaściwy argument"
@@ -6294,7 +6294,7 @@ msgid "E448: Could not load library function %s"
 msgstr "E448: Nie można załadować funkcji biblioteki %s"
 
 msgid "E19: Mark has invalid line number"
-msgstr "E19: Zakładka ma niewłaściwy numer wiersza"
+msgstr "E19: Zakładka ma niewłaściwy number wiersza"
 
 msgid "E20: Mark not set"
 msgstr "E20: Zakładka nienastawiona"

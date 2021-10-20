@@ -9,8 +9,8 @@
 " Amendment History:
 " 26 April 2001: RMH
 "    Removed development comments from distro version
-"    Renamed "Kix*" to "kix*" for consistancy
-"    Changes made in preperation for VIM version 5.8/6.00
+"    Renamed "Kix*" to "kix*" for consistency
+"    Changes made in preparation for VIM version 5.8/6.00
 
 " TODO:
 "	Handle arrays highlighting
@@ -101,7 +101,7 @@ syn cluster kixDoBut		contains=kixDoError,kixSelectOK,kixIfOK,kixWhileOK,kixForE
 syn cluster kixWhileBut		contains=kixWhileError,kixSelectOK,kixIfOK,kixDoOK,kixForEachOK,kixForNextOK
 syn cluster kixForEachBut	contains=kixForEachError,kixSelectOK,kixIfOK,kixDoOK,kixForNextOK,kixWhileOK
 syn cluster kixForNextBut	contains=kixForNextError,kixSelectOK,kixIfOK,kixDoOK,kixForEachOK,kixWhileOK
-" Condtional construct errors.
+" Conditional construct errors.
 syn match   kixIfError		"\<if\>\|\<else\>\|\<endif\>"
 syn match   kixIfOK		contained "\<if\>\|\<else\>\|\<endif\>"
 syn region  kixIf		transparent matchgroup=kixIfOK start="\<if\>" end="\<endif\>" contains=ALLBUT,@kixIfBut

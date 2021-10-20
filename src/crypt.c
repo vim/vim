@@ -702,7 +702,7 @@ crypt_append_msg(
     buf_T *buf)
 {
     if (crypt_get_method_nr(buf) == 0)
-	STRCAT(IObuff, _("[crypted]"));
+	STRCAT(IObuff, _("[encrypted]"));
     else
     {
 	STRCAT(IObuff, "[");

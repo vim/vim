@@ -1202,7 +1202,7 @@ serialize_header(bufinfo_T *bi, char_u *hash)
 	return FAIL;
 
     // If the buffer is encrypted then all text bytes following will be
-    // encrypted.  Numbers and other info is not crypted.
+    // encrypted.  Numbers and other info is not encrypted.
 #ifdef FEAT_CRYPT
     if (*buf->b_p_key != NUL)
     {

@@ -1,6 +1,6 @@
 " Vim indent file
 " Language:	generic Changelog file
-" Maintainer:	noone
+" Maintainer:	no one
 " Last Change:	2005 Mar 29
 
 " Only load this indent file when no other was loaded.

@@ -23,7 +23,7 @@ syn keyword sdlStatement	channel endchannel connect
 syn keyword sdlStatement	synonym dcl signal gate timer signallist signalset
 syn keyword sdlStatement	create output set reset call
 syn keyword sdlStatement	operators literals
-syn keyword sdlStatement	active alternative any as atleast constants
+syn keyword sdlStatement	active alternative any as at least constants
 syn keyword sdlStatement	default endalternative endmacro endoperator
 syn keyword sdlStatement	endselect endsubstructure external
 syn keyword sdlStatement	if then fi for import macro macrodefinition
@@ -61,7 +61,7 @@ if exists("sdl_2000")
     syn keyword sdlStatement	SYNONYM DCL SIGNAL GATE TIMER SIGNALLIST SIGNALSET
     syn keyword sdlStatement	CREATE OUTPUT SET RESET CALL
     syn keyword sdlStatement	OPERATORS LITERALS
-    syn keyword sdlStatement	ACTIVE ALTERNATIVE ANY AS ATLEAST CONSTANTS
+    syn keyword sdlStatement	ACTIVE ALTERNATIVE ANY AS AT LEAST CONSTANTS
     syn keyword sdlStatement	DEFAULT ENDALTERNATIVE ENDMACRO ENDOPERATOR
     syn keyword sdlStatement	ENDSELECT ENDSUBSTRUCTURE EXTERNAL
     syn keyword sdlStatement	IF THEN FI FOR IMPORT MACRO MACRODEFINITION
@@ -81,7 +81,7 @@ if exists("sdl_2000")
     syn keyword sdlException	CATCH NEW RAISE
 endif
 
-" String and Character contstants
+" String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match   sdlSpecial		contained "\\\d\d\d\|\\."
 syn region  sdlString		start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=cSpecial

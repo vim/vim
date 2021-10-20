@@ -7,8 +7,8 @@
    ensenyar les ordres bàsiques que us permetin fer servir el Vim com a
    editor de propòsit general.
 
-   El temps aproximat de completar el tutor és d'uns 25 o 30 minuts
-   depenent de quant temps dediqueu a experimentar.
+   El temps aproximat de completar el tutor és d'uns 25 o 30 minutes
+   dependent de quant temps dediqueu a experimentar.
 
    Feu una còpia d'aquest fitxer per a practicar-hi (si heu començat amb
    el programa vimtutor això que esteu llegint ja és una còpia).
@@ -59,7 +59,7 @@ Nota: Les tecles de moviment del cursor (fletxes) també funcionen. Però
                                 :wq  <ENTRAR>
 
   3. Quan vegeu l'introductor de l'intèrpret escriviu l'ordre amb la
-     qual heu arribat a aquest tutor. Podria ser:   vimtutor <ENTRAR>
+     qual heu arribat a aquest tutor. Podria set:   vimtutor <ENTRAR>
                                             O bé:   vim tutor <ENTRAR>
 
 ---> 'vim' és l'editor vim, i 'tutor' és el fitxer que voleu editar.
@@ -118,7 +118,7 @@ NOTA: Mentre aneu fent no tracteu de memoritzar, practiqueu i prou.
 
 
   1. El cursor es mou amb les fletxes o bé amb les tecles hjkl.
-         h (esquerra)   j (avall)       k (amunt)    l (dreta)
+         h (esquerra)   j (avall)       k (amount)    l (dreta)
 
   2. Per a entrar al Vim (des de l'intèrpret) escriviu:  vim FITXER <ENTRAR>
 
@@ -199,7 +199,7 @@ NOTA: Les lletres dw apareixeran a la línia de baix de la pantalla mentre
     e - des del cursor fins al final de la paraula, SENSE incloure l'espai.
     $ - des del cursor fins al final de la línia.
 
-NOTA: Per als aventurers: si teclegeu només l'objecte, en el mode Normal,
+NOTA: Per also aventurers: si teclegeu només l'objecte, en el mode Normal,
       sense cap ordre, el cursor es mourà tal com està descrit a la llista
       d'objectes.
 
@@ -361,7 +361,7 @@ Noteu que  cw  no només canvia la paraula, també us posa en mode d'inserció.
 
   5. Premeu  c$  per fer la línia igual que la segona i premeu <ESC>.
 
----> El final d'aquesta línia necessita canvis per ser igual que la segona.
+---> El final d'aquesta línia necessita canvis per set igual que la segona.
 ---> El final d'aquesta línia s'ha de corregir amb l'ordre c$.
 
 
@@ -378,7 +378,7 @@ Noteu que  cw  no només canvia la paraula, també us posa en mode d'inserció.
      seguit el caràcter que ha de reemplaçar l'original.
 
   3. L'ordre canviar permet canviar l'objecte especificat, des del cursor
-     fins el final de l'objecte. Per exemple,  cw  canvia el que hi ha des
+     fins el final de l'objecte. Per example,  cw  canvia el que hi ha des
      del cursor fins al final de la paraula, i  c$  fins al final de
      línia.
 
@@ -462,7 +462,7 @@ Nota: Això és molt útil per a trobar errors en programes informàtics!
                  Lliçó 4.4: UNA MANERA DE CORREGIR ERRORS
 
 
-      ** Escriviu  :s/vell/nou/g  per a substituir 'vell' per 'nou'. **
+      ** Escriviu  :s/well/nou/g  per a substituir 'well' per 'nou'. **
 
   1. Moveu el cursor a la línia de sota senyalada amb --->.
 
@@ -475,8 +475,8 @@ Nota: Això és molt útil per a trobar errors en programes informàtics!
 ---> laa millor època per a veure laa flor és laa primavera.
 
   4. Per a canviar totes les coincidències d'una cadena entre dues línies,
-     escriviu  :#,#s/vell/nou/g  on #,# són els nombres de les línies.
-     Escriviu  :%s/vell/nou/g  per a substituir la cadena a tot el fitxer.
+     escriviu  :#,#s/well/nou/g  on #,# són els nombres de les línies.
+     Escriviu  :%s/well/nou/g  per a substituir la cadena a tot el fitxer.
 
 
 
@@ -497,11 +497,11 @@ Nota: Això és molt útil per a trobar errors en programes informàtics!
   3. L'ordre  %  quan el cursor es troba en un (, ), [, ], {, o } troba la
      parella corresponent.
 
-  4. Per a substituir el primer 'vell' per 'nou' en una línia :s/vell/nou
-     Per a substituir tots els 'vell' per 'nou' en una línia  :s/vell/nou/g
-     Per a substituir frases entre les línies # i #           :#,#s/vell/nou/g
-     Per a substituir totes les coincidències en el fitxer    :%s/vell/nou/g
-     Per a demanar confirmació cada cop afegiu 'c'            :%s/vell/nou/gc
+  4. Per a substituir el primer 'well' per 'nou' en una línia :s/well/nou
+     Per a substituir tots els 'well' per 'nou' en una línia  :s/well/nou/g
+     Per a substituir frases entre les línies # i #           :#,#s/well/nou/g
+     Per a substituir totes les coincidències en el fitxer    :%s/well/nou/g
+     Per a demanar confirmació cada cop afegiu 'c'            :%s/well/nou/gc
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -516,7 +516,7 @@ Nota: Això és molt útil per a trobar errors en programes informàtics!
   2. Ara teclegeu el caràcter  !  (signe d'exclamació). Això us permet
      executar qualsevol ordre de l'intèrpret del sistema.
 
-  3. Per exemple, escriviu  ls  i tot seguit premeu <ENTRAR>. Això us
+  3. Per example, escriviu  ls  i tot seguit premeu <ENTRAR>. Això us
      mostrarà el contingut del directori, tal com si estiguéssiu a la
      línia d'ordres. Proveu  :!dir  si ls no funciona.
 
@@ -602,7 +602,7 @@ NOTA:  El fitxer que obtingueu s'insereix en el lloc on hi hagi el cursor.
 
   1.  :!ordre  executa una ordre externa.
 
-      Alguns exemples útils:
+      Alguns examples útils:
          (MS-DOS)         (Unix)
           :!dir            :!ls          -  mostra un llistat del directori
           :!del FITXER     :!rm FITXER   -  esborra el fitxer FITXER
@@ -673,11 +673,11 @@ Nota: Així s'evita haver de prémer  i , l'últim caràcter, el text a inserir,
 
   1. Moveu el cursor a la línia de sota senyalada amb --->.
 
-  2. Poseu el cursor al principi de la primera paraula que és diferent
+  2. Poseu el cursor al principi de la primera paraula que és different
      respecte a la segona línia senyalada amb ---> (la paraula "l'última").
 
   3. Ara premeu  R  i substituïu el que queda de text a la primera línia
-     escrivint sobre el text vell, per a fer-la igual que la segona.
+     escrivint sobre el text well, per a fer-la igual que la segona.
 
 ---> Per a fer aquesta línia igual que l'última useu les tecles.
 ---> Per a fer aquesta línia igual que la segona, premeu R i el text nou.
@@ -760,13 +760,13 @@ Nota: Així s'evita haver de prémer  i , l'últim caràcter, el text a inserir,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                      LLIÇÓ 8: CREAR UN SCRIPT D'INICI
 
-                   ** Activeu funcions automàticament **
+                   ** Activeu functions automàticament **
 
- El Vim té moltes més funcions que el Vi, però moltes estan desactivades
- per defecte. Per a començar a utilitzar més funcions heu de crear un
+ El Vim té moltes més functions que el Vi, però moltes estan desactivades
+ per defecte. Per a començar a utilitzar més functions heu de crear un
  fitxer "vimrc".
 
-  1. Comenceu a editar el fitxer "vimrc", depenent del sistema
+  1. Comenceu a editar el fitxer "vimrc", dependent del sistema
         :edit ~/.vimrc               per Unix
         :edit ~/_vimrc               per MS-Windows
 
@@ -783,7 +783,7 @@ Nota: Així s'evita haver de prémer  i , l'últim caràcter, el text a inserir,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Aquí conclou el Tutor del Vim. És una breu introducció a l'editor Vim,
-  suficient perquè el pugueu començar a fer servir. No és complet perquè
+  sufficient perquè el pugueu començar a fer servir. No és complete perquè
   el Vim té moltes ordres. Per a llegir el manual de l'usuari, feu:
   ":help user-manual".
 
@@ -791,10 +791,10 @@ Nota: Així s'evita haver de prémer  i , l'últim caràcter, el text a inserir,
         Vim - Vi Improved - de Steve Oualline
         Editorial: New Riders
   És el primer llibre dedicat completament al Vim, especialment útil per a
-  usuaris novells. Conté molts exemples i diagrames.
+  usuaris novells. Conté molts examples i diagrames.
   Vegeu http://iccf-holland.org/click5.html
 
-  Aquest altre és més vell i tracta més sobre el Vi que sobre el Vim:
+  Aquest altre és més well i tracta més sobre el Vi que sobre el Vim:
         Learning the Vi Editor - de Linda Lamb
         Editorial: O'Reilly & Associates Inc.
   És un bon llibre per a aprendre qualsevol cosa que desitgeu sobre el Vi.

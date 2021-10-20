@@ -205,13 +205,13 @@ func Test_undolist()
   call feedkeys('achange1', 'xt')
   call feedkeys('achange2', 'xt')
   let a = execute('undolist')
-  call assert_match("^\nnumber changes  when  *saved\n *2  *2 .*$", a)
+  call assert_match("^\number changes  when  *saved\n *2  *2 .*$", a)
 
   " 2 leaves.
   call feedkeys('u', 'xt')
   call feedkeys('achange3\<Esc>', 'xt')
   let a = execute('undolist')
-  call assert_match("^\nnumber changes  when  *saved\n *2  *2  *.*\n *3  *2 .*$", a)
+  call assert_match("^\number changes  when  *saved\n *2  *2  *.*\n *3  *2 .*$", a)
   close!
 endfunc
 
@@ -419,7 +419,7 @@ endfunc
 " Test for undo working properly when executing commands from a register.
 " Also test this in an empty buffer.
 func Test_cmd_in_reg_undo()
-  enew!
+  new!
   let @a = "Ox\<Esc>jAy\<Esc>kdd"
   edit +/^$ test_undo.vim
   normal @au

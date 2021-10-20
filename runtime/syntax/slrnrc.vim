@@ -88,13 +88,13 @@ syn keyword slrnrcColorObj	contained high_score italicstext menu menu_press mess
 syn keyword slrnrcColorObj	contained subject thread_number tilde tree underlinetext unread_subject url verbatim
 
 " Listed for removal
-syn keyword slrnrcColorObj	contained verbatum
+syn keyword slrnrcColorObj	contained verbatim
 
 syn region  slrnrcColorObjStr	contained matchgroup=slrnrcColorObj start=+"+ end=+"+ oneline contains=slrnrcColorObj,slrnrcSpaceError
 syn keyword slrnrcColorVal	contained default
 syn keyword slrnrcColorVal	contained black blue brightblue brightcyan brightgreen brightmagenta brightred brown cyan gray green lightgray magenta red white yellow
 syn region  slrnrcColorValStr	contained matchgroup=slrnrcColorVal start=+"+ end=+"+ oneline contains=slrnrcColorVal,slrnrcSpaceError
-" Mathcing a function with three arguments
+" Matching a function with three arguments
 syn keyword slrnrcColor		contained color
 syn match   slrnrcColorInit	contained "^\s*color\s\+\S\+" skipwhite nextgroup=slrnrcColorVal\(Str\)\= contains=slrnrcColor\(Obj\|ObjStr\)\=
 syn match   slrnrcColorLine	"^\s*color\s\+\S\+\s\+\S\+" skipwhite nextgroup=slrnrcColorVal\(Str\)\= contains=slrnrcColor\(Init\|Val\|ValStr\)

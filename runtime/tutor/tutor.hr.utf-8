@@ -10,13 +10,13 @@
      30 minuta a ovisi o tome koliko će te vremena odvojiti za vježbanje.
 
      UPOZORENJE:
-     Naredbe u ovom priručniku će promijeniti ovaj tekst.
+     Naredbe u ovom priručniku će promijeniti ovaj text.
      Napravite kopiju ove datoteke kako bi ste na istoj vježbali
      (ako ste pokrenuli "vimtutor" ovo je već kopija).
 
      Vrlo je važno primijetiti da je ovaj priručnik namijenjen za vježbanje.
      Preciznije, morate izvršiti naredbe u Vim-u kako bi ste iste naučili
-     pravilno koristiti. Ako samo čitate tekst, zaboraviti će te naredbe!
+     pravilno koristiti. Ako samo čitate text, zaboraviti će te naredbe!
 
      Ako je CapsLock uključen ISKLJUČITE ga.  Pritiskajte tipku  j  kako
      bi pomakli kursor sve dok Lekcija 1.1 ne ispuni ekran.
@@ -99,7 +99,7 @@ NAPOMENA:  Koristeći ovaj priručnik ne pokušavajte pamtiti
   1. Pomaknite kursor na prvu sljedeću liniju označenu s --->.
 
   2. Kako bi napravili prvu liniju istovjetnoj drugoj, pomaknite
-     kursor na prvi znak POSLIJE kojeg će te utipkati potreban tekst.
+     kursor na prvi znak POSLIJE kojeg će te utipkati potreban text.
 
   3. Pritisnite  i  te utipkajte potrebne nadopune.
 
@@ -124,11 +124,11 @@ NAPOMENA:  Koristeći ovaj priručnik ne pokušavajte pamtiti
 
   2. Pritisnite  A  i napravite potrebne promjene.
 
-  3. Nakon što ste dodali tekst, pritisnite <ESC>
+  3. Nakon što ste dodali text, pritisnite <ESC>
      za povratak u Normal mod.
 
   4. Pomaknite kursor na drugu liniju označenu s --->
-     i ponovite korake 2 i 3 dok ne popravite tekst.
+     i ponovite korake 2 i 3 dok ne popravite text.
 
 ---> Ima nešto teksta koji nedostaje n
      Ima nešto teksta koji nedostaje na ovoj liniji.
@@ -150,9 +150,9 @@ NAPOMENA:  Koristeći ovaj priručnik ne pokušavajte pamtiti
      'vim' je naredba pokretanja Vim editora, 'tutor' je ime datoteke koju
      želite uređivati.  Koristite datoteku koju imate ovlasti mijenjati.
 
-  3. Ubacite i izbrišite tekst kao što ste to napravili u lekcijama prije.
+  3. Ubacite i izbrišite text kao što ste to napravili u lekcijama prije.
 
-  4. Sačuvajte promjenjeni tekst i izađite iz Vim-a:  :wq  <ENTER>
+  4. Sačuvajte promjenjeni text i izađite iz Vim-a:  :wq  <ENTER>
 
   5. Ponovno pokrenite vimtutor i nastavite čitati sažetak koji sljedi.
 
@@ -174,8 +174,8 @@ NAPOMENA:  Koristeći ovaj priručnik ne pokušavajte pamtiti
   4. Brisanje znaka na kojem se nalazi kursor:  x
 
   5. Ubacivanja ili dodavanje teksta:
-	 i   utipkajte tekst <ESC>	unos ispred kursora
-	 A   utipkajte tekst <ESC>	dodavanje na kraju linije
+	 i   utipkajte text <ESC>	unos ispred kursora
+	 A   utipkajte text <ESC>	dodavanje na kraju linije
 
 NAPOMENA:  Tipkanjem tipke <ESC> prebacuje Vim u Normal mod i
            prekida neželjenu ili djelomično završenu naredbu.
@@ -232,7 +232,7 @@ NAPOMENA:  Vim će prikazati slovo  d  na zadnjoj liniji kad ga otipkate.
 	      Lekcija 2.3: UKRATKO O OPERATORIMA I POKRETIMA
 
 
-  Mnogo naredbi koje mijenjaju tekst se sastoje od operatora i pokreta.
+  Mnogo naredbi koje mijenjaju text se sastoje od operatora i pokreta.
   Oblik naredbe brisanja sa  d  operatorom je sljedeći:
 
   	d   pokret
@@ -463,7 +463,7 @@ NAPOMENA:  Možete koristiti Backspace za ispravljanje grešaka.
 
 
   1. Za postavljanje teksta koji je upravo izbrisan, pritisnite  p . Ovo
-     postavlja tekst IZA kursora (ako je pak linija izbrisana tekst se
+     postavlja text IZA kursora (ako je pak linija izbrisana text se
      postavlja na liniju ispod kursora).
 
   2. Za promjenu znaka na kojem se nalazi kursor, pritisnite  r  i nakon toga
@@ -651,7 +651,7 @@ NAPOMENA:  Ako bi napustili Vim i ponovno ga pokrenuli sa vim TEST ,
   1. Pomaknite kursor na ovu liniju.
 
   2. Pritisnite  v  i pomaknite kursor pet linija ispod ove.
-     Primijetite promjenu, označeni tekst se razlikuje od običnog.
+     Primijetite promjenu, označeni text se razlikuje od običnog.
 
   3. Pritisnite  :  znak.  Na dnu ekrana pojavit će se  :'<,'> .
 
@@ -659,12 +659,12 @@ NAPOMENA:  Ako bi napustili Vim i ponovno ga pokrenuli sa vim TEST ,
      Provjerite da zaista piše  :'<,'>w TEST
      prije nego što pritisnite <ENTER>.
 
-  5. Vim će spremiti označeni tekst u TEST.  Provjerite sa :!dir  ili  :!ls .
+  5. Vim će spremiti označeni text u TEST.  Provjerite sa :!dir  ili  :!ls .
      Nemojte je još brisati!  Koristiti će te je u sljedećoj lekciji.
 
 NAPOMENA:  Tipka  v  započinje Vizualno označavanje.  Možete pomicati kursor
            unaokolo kako bi mijenjali veličinu označenog teksta. Možete
-           koristiti i operatore.  Npr,  d  će izbrisati označeni tekst.
+           koristiti i operatore.  Npr,  d  će izbrisati označeni text.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   Lekcija 5.4: UČITAVANJE DATOTEKA
 
@@ -673,7 +673,7 @@ NAPOMENA:  Tipka  v  započinje Vizualno označavanje.  Možete pomicati kursor
 
   1. Postavite kursor iznad ove linije.
 
-NAPOMENA:  Nakon što izvršite 2. korak vidjeti će te tekst iz Lekcije 5.3.
+NAPOMENA:  Nakon što izvršite 2. korak vidjeti će te text iz Lekcije 5.3.
            Stoga pomaknite kursor DOLJE kako bi ponovno vidjeli ovu lekciju.
 
   2. Učitajte vašu TEST datoteku koristeći naredbu   :r TEST
@@ -744,7 +744,7 @@ NAPOMENA:  Možete također učitati ispis vanjske naredbe.  Npr,  :r !ls
   
   2. Tipkajte  e  dok se kursor ne nalazi na kraju  li .
 
-  3. Otipkajte  a  (malo) kako bi dodali tekst IZA kursora.
+  3. Otipkajte  a  (malo) kako bi dodali text IZA kursora.
 
   4. Dopunite riječ kao što je na liniji ispod.
      Pritisnite <ESC> za izlaz iz Insert moda.
@@ -755,7 +755,7 @@ NAPOMENA:  Možete također učitati ispis vanjske naredbe.  Npr,  :r !ls
 ---> Ova linija omogućava vježbanje dodavanja teksta nekoj liniji.
 
 NAPOMENA:  Sa i, a, i  A  prelazite u isti Insert mod, jedina
-           razlika je u poziciji od koje će se tekst ubacivati.
+           razlika je u poziciji od koje će se text ubacivati.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		    Lekcija 6.3: DRUGI NAČIN MIJENJANJA
@@ -790,14 +790,14 @@ NAPOMENA:  Replace mod je kao Insert mod, ali sa bitnom razlikom,
   
   2. Pokrenite Visual mod sa  v  i pomaknite kursor sve do ispred "prva".
   
-  3. Pritisnite  y  kako bi kopirali označeni tekst.
+  3. Pritisnite  y  kako bi kopirali označeni text.
 
   4. Pomaknite kursor do kraja sljedeće linije:  j$
 
-  5. Pritisnite  p  kako bi zalijepili tekst.  Onda utipkajte:  druga <ESC> .
+  5. Pritisnite  p  kako bi zalijepili text.  Onda utipkajte:  druga <ESC> .
 
   6. Koristite Visual mod kako bi označili " linija.", kopirajte:  y , kursor
-     postavite na kraj sljedeće linije:  j$  i ondje zalijepite tekst:  p .
+     postavite na kraj sljedeće linije:  j$  i ondje zalijepite text:  p .
 
 --->  a) ovo je prva linija.
       b)
@@ -837,7 +837,7 @@ NAPOMENA:  Bez razlikovanja velikih i malih slova u samo jednoj naredbi
 
   3. Naredba  e  pomiče kursor na kraj riječi.
 
-  4. Operator  y  kopira tekst,  p  ga lijepi.
+  4. Operator  y  kopira text,  p  ga lijepi.
 
   5. Tipkanjem velikog  R  Vim prelazi u Replace mod dok ne pritisnete <ESC> .
 
@@ -861,7 +861,7 @@ NAPOMENA:  Bez razlikovanja velikih i malih slova u samo jednoj naredbi
 	- pritisnite <F1> tipku (ako je vaša tipkovnica ima)
 	- utipkajte   :help <ENTER>
 
-  Pročitajte tekst u prozoru pomoći kako bi ste se znali služiti istom.
+  Pročitajte text u prozoru pomoći kako bi ste se znali služiti istom.
   Tipkanjem  CTRL-W CTRL-W   prelazite iz jednog prozora u drugi.
   Otipkajte    :q <ENTER>    kako bi zatvorili prozor pomoći.
 

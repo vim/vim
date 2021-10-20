@@ -144,7 +144,7 @@ EXTERN int	clear_cmdline INIT(= FALSE);	// cmdline must be cleared
 EXTERN int	mode_displayed INIT(= FALSE);	// mode is being displayed
 EXTERN int	no_win_do_lines_ins INIT(= FALSE); // don't insert lines
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-EXTERN int	cmdline_star INIT(= FALSE);	// cmdline is crypted
+EXTERN int	cmdline_star INIT(= FALSE);	// cmdline is encrypted
 #endif
 
 EXTERN int	exec_from_reg INIT(= FALSE);	// executing register
@@ -1252,7 +1252,7 @@ EXTERN int	did_swapwrite_msg INIT(= FALSE);
 					    // set after swap write error msg
 EXTERN int	undo_off INIT(= FALSE);	    // undo switched off for now
 EXTERN int	global_busy INIT(= 0);	    // set when :global is executing
-EXTERN int	listcmd_busy INIT(= FALSE); // set when :argdo, :windo or
+EXTERN int	listcmd_busy INIT(= FALSE); // set when :argdo, :window or
 					    // :bufdo is executing
 EXTERN int	need_start_insertmode INIT(= FALSE);
 					    // start insert mode soon

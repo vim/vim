@@ -156,7 +156,7 @@ func Test_find_complete()
   call feedkeys(":find stu\t\n", "xt")
   call assert_equal('Another Holy Grail', getline(1))
 
-  enew | only
+  new | only
   call chdir(cwd)
   call delete('Xfind', 'rf')
   set path&

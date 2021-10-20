@@ -112,7 +112,7 @@ if !exists("inform_highlight_simple")
   syn keyword informLibAction  Predictable XPurloin XAbstract XTree
   syn keyword informLibAction  Scope Goto Gonear Inv InvTall InvWide
   syn keyword informLibAction  Take Drop Remove PutOn Insert Transfer
-  syn keyword informLibAction  Empty Enter Exit GetOff Go Goin Look
+  syn keyword informLibAction  Empty Enter Exit GetOff Go Going Look
   syn keyword informLibAction  Examine Search Give Show Unlock Lock
   syn keyword informLibAction  SwitchOn SwitchOff Open Close Disrobe
   syn keyword informLibAction  Wear Eat Yes No Burn Pray Wake
@@ -225,7 +225,7 @@ endif
 syn keyword informMetaAttrib remaining create destroy recreate copy call
 syn keyword informMetaAttrib print_to_array
 
-syn keyword informPredicate has hasnt in notin ofclass or
+syn keyword informPredicate has hasn't in notin ofclass or
 syn keyword informPredicate provides
 
 syn keyword informGrammar contained noun held multi multiheld multiexcept
@@ -246,7 +246,7 @@ if exists("inform_highlight_glulx")
   syn keyword informAsm contained bitxor bitnot shiftl sshiftr ushiftr jump jz
   syn keyword informAsm contained jnz jeq jne jlt jge jgt jle jltu jgeu jgtu
   syn keyword informAsm contained jleu call return catch throw tailcall copy
-  syn keyword informAsm contained copys copyb sexs sexb aload aloads aloadb
+  syn keyword informAsm contained copies copyb sexs sexb aload aloads aloadb
   syn keyword informAsm contained aloadbit astore astores astoreb astorebit
   syn keyword informAsm contained stkcount stkpeek stkswap stkroll stkcopy
   syn keyword informAsm contained streamchar streamnum streamstr gestalt
@@ -330,7 +330,7 @@ SynDisplay match informNumber "\<\$\$[01]\+\>"
 " Comments
 syn match informComment "!.*" contains=informTodo
 
-" Syncronization
+" Synchronization
 syn sync match informSyncStringEnd grouphere NONE /"[;,]\s*$/
 syn sync match informSyncRoutineEnd grouphere NONE /][;,]\s*$/
 syn sync match informSyncCommentEnd grouphere NONE /^\s*!.*$/

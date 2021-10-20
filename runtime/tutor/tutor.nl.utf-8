@@ -4,19 +4,19 @@
 
   Vim is een krachtige editor met veel commando's, te veel om uit te leggen
   in lessen zoals deze. Deze lessen zijn bedoeld om voldoende commando's te
-  behandelen om je in staat te stellen met Vim te werken als een editor voor
+  behandelen om je in staat te stellen met Vim te werken also een editor voor
   algemeen gebruik.
 
   Deze lessen zullen 25 tot 30 minuten in beslag nemen, afhankelijk van de
   tijd die wordt besteed aan het uitproberen van de commando's.
 
   LET OP:
-  Door de commando's in deze lessen verandert de tekst. Maak een kopie van
-  dit bestand om mee te oefenen (als je "vimtutor" uitvoerde, is dit al een
+  Door de commando's in deze lessen verandert de text. Maak een kopie van
+  dit bestand om mee te oefenen (also je "vimtutor" uitvoerde, is dit al een
   kopie).
 
   Deze lessen zijn bedoeld om al doende te leren. Dat betekent dat je de
-  commando's moet uitvoeren om ze goed te leren kennen. Als je de tekst
+  commando's moet uitvoeren om ze goed te leren kennen. Also je de text
   alleen maar doorleest, zal je de commando's niet leren!
 
   Zorg ervoor dat de <Caps Lock> toets NIET is ingedrukt en druk vaak genoeg
@@ -44,11 +44,11 @@
 
   3. Gebruik de omlaag-toets om naar les 1.2 te gaan.
 
-  OPMERKING: Als je twijfelt aan wat je tikte, druk <ESC> om in de opdracht-
+  OPMERKING: Also je twijfelt aan wat je tikte, druk <ESC> om in de opdracht-
              modus te komen. Tik daarna het commando dat bedoeld wordt.
 
   OPMERKING: Pijltjes-toetsen werken ook. Met de hjkl-toetsen kan je sneller
-             rondbewegen, als je er eenmaal aan gewend bent. Echt waar!
+             rondbewegen, also je er eenmaal aan gewend bent. Echt waar!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 1.2: VIM AFSLUITEN
@@ -63,7 +63,7 @@
   3. Nu zie je de shell-prompt. Tik het commando waarmee je deze lessen
      hebt opgeroepen. Dat is normaal gesproken:  vimtutor <ENTER>
 
-  4. Als je deze stappen goed hebt doorgelezen, voer dan de stappen 1 tot 3
+  4. Also je deze stappen goed hebt doorgelezen, voer dan de stappen 1 tot 3
      uit om de editor te verlaten en weer op te starten.
 
   LET OP: :q! <ENTER> verwerpt alle veranderingen die je aanbracht. Een paar
@@ -73,7 +73,7 @@
   5. Beweeg de cursor omlaag naar les 1.3.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   Les 1.3: TEKST BEWERKEN - WISSEN
+                   Les 1.3: TEXT BEWERKEN - WISSEN
 
           ** Tik  x  om het teken onder de cursor te wissen. **
 
@@ -93,14 +93,14 @@
   LET OP: Probeer de lessen niet uit je hoofd te leren. Leer al doende.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   Les 1.4: TEKST BEWERKEN - INVOEGEN
+                   Les 1.4: TEXT BEWERKEN - INVOEGEN
 
-              ** Tik  i  ('insert') om tekst in te voegen. **
+              ** Tik  i  ('insert') om text in te voegen. **
 
   1. Ga met de cursor naar de eerste regel verderop met --->.
 
   2. Maak de eerste regel gelijk aan de tweede. Zet daarvoor de cursor op
-     het karakter waarvoor tekst moet worden ingevoegd.
+     het karakter waarvoor text moet worden ingevoegd.
 
   3. Tik  i  en daarna de nodige aanvullingen.
 
@@ -108,33 +108,33 @@
      Herhaal de stappen 2 tot 4 om de zin te verbeteren.
 
   ---> Aan regel ontekt wat .
-  ---> Aan deze regel ontbreekt wat tekst.
+  ---> Aan deze regel ontbreekt wat text.
 
-  5. Ga naar les 1.5 als je gewend bent aan het invoegen van tekst.
+  5. Ga naar les 1.5 also je gewend bent aan het invoegen van text.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   Les 1.5: TEKST BEWERKEN - TOEVOEGEN
+                   Les 1.5: TEXT BEWERKEN - TOEVOEGEN
 
-             ** Tik  A  ('append') om tekst toe te voegen. **
+             ** Tik  A  ('append') om text toe te voegen. **
 
   1. Ga met de cursor naar de eerste regel verderop met --->.
      Het maakt niet uit waar de cursor in deze regel staat.
 
   2. Tik hoofdletter  A  en tik de nodige aanvullingen.
 
-  3. Tik <ESC> nadat de tekst is aangevuld. Zo keer je terug in de
+  3. Tik <ESC> nadat de text is aangevuld. Zo keer je terug in de
      opdrachtmodus.
 
   4. Ga naar de tweede regel verderop met ---> en herhaal stap 2 en 3
      om deze zin te corrigeren.
 
-  ---> Er ontbreekt wat tekst aan de
-       Er ontbreekt wat tekst aan deze regel.
+  ---> Er ontbreekt wat text aan de
+       Er ontbreekt wat text aan deze regel.
   ---> Hier ontbreekt ook w
-       Hier ontbreekt ook wat tekst.
+       Hier ontbreekt ook wat text.
 
-  5. Ga naar les 1.6 als je vertrouwd bent geraakt aan het toevoegen
-     van tekst.
+  5. Ga naar les 1.6 also je vertrouwd bent geraakt aan het toevoegen
+     van text.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 1.6: EEN BESTAND EDITTEN
@@ -145,19 +145,19 @@
              stappen uitvoert!!
 
   1. Verlaat deze les zoals je in les 1.2 deed:  :q!
-     Of gebruik een andere terminal als je daar de beschikking over hebt. Doe
+     Of gebruik een andere terminal also je daar de beschikking over hebt. Doe
      daar het volgende.
 
   2. Tik het volgende commando na de shell-prompt:  vim les <ENTER>
      'vim' (vaak ook 'vi') is het commando om de Vim-editor te starten,
      'les' is de naam van het bestand, dat je gaat bewerken. Kies een andere
-     naam als er al een bestand 'les' bestaat, dat niet veranderd mag worden.
+     naam also er al een bestand 'les' bestaat, dat niet veranderd mag worden.
 
-  3. Voeg naar eigen keus tekst toe, zoals je geleerd hebt in eerdere lessen.
+  3. Voeg naar eigen keus text toe, zoals je geleerd hebt in eerdere lessen.
 
   4. Sla het bestand met de wijzigingen op en verlaat Vim met  :wq <ENTER>
 
-  5. Herstart vimtutor als je deze bij stap 1 hebt verlaten en ga verder met
+  5. Herstart vimtutor also je deze bij stap 1 hebt verlaten en ga verder met
      de volgende samenvatting.
 
   6. Voer deze stappen uit nadat je ze hebt gelezen en begrepen.
@@ -175,9 +175,9 @@
 
   4. Wis het teken onder de cursor met:  x
 
-  5. Invoegen of toevoegen van tekst, tik:
-     i  en daarna de in te voegen tekst  <ESC>   voeg in vanaf de cursor
-     A  en daarna de toe te voegen tekst  <ESC>  voeg toe achter de regel
+  5. Invoegen of toevoegen van text, tik:
+     i  en daarna de in te voegen text  <ESC>   voeg in vanaf de cursor
+     A  en daarna de toe te voegen text  <ESC>  voeg toe achter de regel
 
   OPMERKING: Met <ESC> kom je terug in opdrachtmodus en wordt een ongewenst
              of gedeeltelijk uitgevoerd commando afgebroken.
@@ -199,10 +199,10 @@
 
   OPMERKING: De letter  d  verschijnt op de laatste regel van het scherm
              zodra je hem tikt. Vim is aan het wachten tot je de  w  tikt.
-             Als je een ander teken dan  d  ziet, heb je iets verkeerds
+             Also je een ander teken dan  d  ziet, heb je iets verkeerds
              getikt. Druk op <ESC> en begin opnieuw.
 
-  NOG EEN OPMERKING: Dit werkt alleen als de optie 'showcmd' is ingeschakeld.
+  NOG EEN OPMERKING: Dit werkt alleen also de optie 'showcmd' is ingeschakeld.
                      Dat gebeurt met  :set showcmd <ENTER>
 
   ---> Er zijn een het paar ggg woorden, die niet in deze len zin thuishoren.
@@ -229,7 +229,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 2.3: OVER OPERATOREN EN BEWEGINGEN
 
-  Veel commando's die de tekst veranderen, bestaan uit een operator en een
+  Veel commando's die de text veranderen, bestaan uit een operator en een
   beweging. De samenstelling van een wis-commando met de operator  d  is:
     d  beweging
 
@@ -242,7 +242,7 @@
     e - tot het einde van het huidige woord, INCLUSIEF het laatste teken.
     $ - tot het einde van de regel, INCLUSIEF het laatste teken.
 
-  Het tikken van  de  wist tekst vanaf de cursor tot het eind van het woord.
+  Het tikken van  de  wist text vanaf de cursor tot het eind van het woord.
 
   OPMERKING: Het intikken van alleen maar de beweging, zonder een operator,
              in de opdrachtmodus beweegt de cursor (respectievelijk naar het
@@ -354,7 +354,7 @@
      daarbij is:
        operator - wat er moet gebeuren, bijvoorbeeld  d  om te wissen
        [getal]  - een (niet-verplichte) teller om 'beweging' te herhalen
-       beweging - een beweging door de te wijzigen tekst zoals w (woord)
+       beweging - een beweging door de te wijzigen text zoals w (woord)
                   of $ (tot het einde van de regel) enz.
 
   6. Ga naar het begin van de regel met nul:  0
@@ -366,7 +366,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 3.1: HET COMMANDO PLAK
 
-  ** Tik  p  ('put') en plak daarmee zojuist gewiste tekst na te cursor. **
+  ** Tik  p  ('put') en plak daarmee zojuist gewiste text na te cursor. **
 
   1. Ga met de cursor naar de eerste regel met ---> hierna.
 
@@ -401,7 +401,7 @@
 
   5. Ga nu naar les 3.3.
 
-  LET OP: Door het te doen, leer je beter dan door het uit je hoofd te leren.
+  LET OP: Door het te done, leer je better dan door het uit je hoofd te leren.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 3.3: HET COMMANDO VERANDER
@@ -427,7 +427,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 3.4: MEER VERANDERINGEN MET c
 
-  1. Het commando verander ('change') werkt op dezelfde manier als wis. De
+  1. Het commando verander ('change') werkt op dezelfde manier also wis. De
      opbouw is:
          c  [teller]  beweging
 
@@ -440,7 +440,7 @@
   5. Tik  c$  en tik de rest van de regel zodat hij gelijk wordt aan de
      tweede en sluit af met <ESC>.
 
-  ---> Het einde van deze regel moet precies zo worden als de tweede regel.
+  ---> Het einde van deze regel moet precies zo worden also de tweede regel.
   ---> Het einde van deze regel moet gecorrigeerd worden met het commando c$.
 
   OPMERKING: Je kan de toets <BACKSPACE> gebruiken om tikfouten te herstellen.
@@ -448,14 +448,14 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    SAMENVATTING Les 3 
 
-  1. Tik  p  om tekst terug te plakken, die zojuist is gewist. Dit zet de
-     gewiste tekst ACHTER de cursor (als een hele regel is gewist komt deze
+  1. Tik  p  om text terug te plakken, die zojuist is gewist. Dit zet de
+     gewiste text ACHTER de cursor (also een hele regel is gewist komt deze
      op de regel ONDER de cursor.
 
   2. Het teken waarop de cursor staat wordt vervangen met  r  gevolgd door
      het teken dat je daar wilt hebben.
 
-  3. Het commando 'verander' stelt je in staat om tekst te veranderen vanaf
+  3. Het commando 'verander' stelt je in staat om text te veranderen vanaf
      de cursor tot waar de 'beweging' je brengt. Dat wil zeggen: tik  ce  om
      te veranderen vanaf de cursor tot het einde van het woord,  c$  om te
      veranderen tot het einde van de regel.
@@ -477,10 +477,10 @@
      Onderaan de pagina verschijnt een boodschap met de bestandsnaam en de
      positie in het bestand. Onthou het regelnummer voor stap 3.
 
-  OPMERKING: Als de optie 'ruler' aan staat, wordt de positie van de cursor
+  OPMERKING: Also de optie 'ruler' aan staat, wordt de positie van de cursor
              (regelnummer, kolom) steeds in de rechter-onderhoek van het
              scherm vermeld. In dit geval vermeldt CTRL-G geen regelnummer.
-             CTRL-G geeft ook de status aan, namelijk of de tekst veranderd
+             CTRL-G geeft ook de status aan, namelijk of de text veranderd
              is ('modified') sinds het de laatste keer is opgeslagen.  
 
   2. Tik hoofdletter  G  om naar het einde van het bestand te gaan.
@@ -489,7 +489,7 @@
   3. Tik het regelnummer waar je bij stap 1 was en daarna  G . Dit brengt je
      terug naar de regel waar je was toen je de eerste keer CTRL-G tikte.
 
-  4. Voer de stappen 1 tot 3 uit als je dit goed hebt gelezen.
+  4. Voer de stappen 1 tot 3 uit also je dit goed hebt gelezen.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 4.2: HET COMMANDO ZOEKEN
@@ -511,7 +511,7 @@
 
   ---> "ffouut" is niet de juiste spelling van fout, ffouut is een fout.
 
-  OPMERKING: Als zoeken het einde van het bestand bereikt, wordt vanaf het
+  OPMERKING: Also zoeken het einde van het bestand bereikt, wordt vanaf het
              begin doorgezocht, tenzij de optie 'wrapscan' is uitgeschakeld.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -551,7 +551,7 @@
 
   ---> dee beste tijd om dee bloemen te zien is in dee lente.
 
-  4. Om in (een deel van) een tekst elk 'oud' te vervangen door 'nieuw':
+  4. Om in (een deel van) een text elk 'oud' te vervangen door 'nieuw':
      tik   :#,#s/oud/nieuw/g   waar #,# de regelnummers zijn die het gebied
                                begrenzen waarin wordt vervangen.
      tik   :%s/oud/nieuw/g     om alles te vervangen in het hele bestand.
@@ -595,7 +595,7 @@
 
   3. Tik bijvoorbeeld  ls  na het uitroepteken en daarna <ENTER>. Hiermee
      krijg je de inhoud van je map te zien, net alsof je de opdracht gaf
-     vanaf de shell-prompt. Probeer  :!dir  als het niet werkt.
+     vanaf de shell-prompt. Probeer  :!dir  also het niet werkt.
 
   OPMERKING: Elk extern commando kan op deze manier uitgevoerd worden, ook
              met argumenten.
@@ -606,33 +606,33 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 5.2: MEER OVER HET OPSLAAN VAN BESTANDEN
 
-     ** Tik :w BESTANDSNAAM om de tekst mèt veranderingen op te slaan. **
+     ** Tik :w BESTANDSNAAM om de text mèt veranderingen op te slaan. **
 
   1. Tik  :!dir  of  :!ls  om de inhoud van je map te tonen. Je weet
      inmiddels dat je daarna een <ENTER> moet tikken.
 
   2. Kies een bestandsnaam die nog niet bestaat, bijvoorbeeld TEST.
 
-  3. Tik nu:  :w TEST  (als je de naam TEST hebt gekozen).
+  3. Tik nu:  :w TEST  (also je de naam TEST hebt gekozen).
 
   4. Hierdoor wordt het hele bestand (de VIM lessen) opgeslagen onder de
      naam TEST. Tik weer  :!dir  of  :!ls  om dit te controleren.
 
-  OPMERKING: Als je Vim zou verlaten en opnieuw zou starten met  vim TEST  is
+  OPMERKING: Also je Vim zou verlaten en opnieuw zou starten met  vim TEST  is
              het bestand een exacte kopie van de lessen, zoals je ze opsloeg.
 
   5. Wis het bestand nu met de opdracht (MS-DOS)  :!del TEST
                                        of (Unix)  :!rm TEST
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   Les 5.3: EEN DEEL VAN DE TEKST OPSLAAN
+                   Les 5.3: EEN DEEL VAN DE TEXT OPSLAAN
 
      ** Sla een deel van het bestand op met  v beweging :w BESTANDSNAAM **
 
   1. Ga naar deze regel.
 
   2. Tik  v  en ga met de cursor naar stap 5 hieronder. Je ziet dat de
-     tekst oplicht.
+     text oplicht.
 
   3. Tik  : . Onderaan het scherm zal  :'<,'>  verschijnen.
 
@@ -646,7 +646,7 @@
   OPMERKING: Het tikken van  v  zet zichtbare modus ('visual selection') aan.
              Je kan de cursor rondbewegen om de selectie groter of kleiner
              te maken. Vervolgens kan je een commando gebruiken om iets met
-             de tekst te doen. Met  d  bijvoorbeeld wis je de tekst.
+             de text te done. Met  d  bijvoorbeeld wis je de text.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 5.4: OPHALEN EN SAMENVOEGEN VAN BESTANDEN
@@ -655,14 +655,14 @@
 
   1. Zet de cursor precies boven deze regel.
 
-  OPMERKING: Na het uitvoeren van stap 2 zie je tekst van les 5.3. Scrol
+  OPMERKING: Na het uitvoeren van stap 2 zie je text van les 5.3. Scrol
              daarna naar beneden om deze les weer te zien.
 
   2. Haal nu het bestand TEST op met het commando  :r TEST .
      Het bestand dat je ophaalt komt onder de regel waarin de cursor staat.
 
   3. Controleer dat er een bestand is opgehaald. Ga met de cursor omhoog.
-     Dan zie je de tekst van les 5.3 dubbel, het origineel en de versie uit
+     Dan zie je de text van les 5.3 dubbel, het origineel en de versie uit
      het bestand.
 
   OPMERKING: Je kan ook de uitvoer van een extern commando inlezen. Om een
@@ -685,7 +685,7 @@
      selecteren, dat wordt opgeslagen in het bestand BESTANDSNAAM.
 
   4. :r BESTANDSNAAM  haalt het bestand BESTANDSNAAM op en voegt het onder
-     de cursor-positie in de tekst in.
+     de cursor-positie in de text in.
 
   5. :r !dir  leest de uitvoer van het externe commando dir en zet het onder
      de cursor-positie.
@@ -700,9 +700,9 @@
   2. Tik de kleine letter  o  en open daarmee een regel ONDER de cursor en
      ga naar de invoegmodus.
 
-  3. Tik wat tekst in en sluit af met <ESC> om de invoegmodus te verlaten.
+  3. Tik wat text in en sluit af met <ESC> om de invoegmodus te verlaten.
 
-  ---> Als je  o  tikt, komt de cursor in een nieuwe regel in invoegmodus.
+  ---> Also je  o  tikt, komt de cursor in een nieuwe regel in invoegmodus.
 
   4. Om een regel BOVEN de cursor te openen, moet je gewoon een hoofdletter
      O  tikken in plaats van een kleine letter. Probeer dat vanaf de volgende
@@ -713,7 +713,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 6.2: HET COMMANDO TOEVOEGEN
 
-        ** Tik  a  om tekst toe te voegen ACHTER de cursor. **
+        ** Tik  a  om text toe te voegen ACHTER de cursor. **
 
   1. Ga naar het begin van de regel beneden met --->.
  
@@ -727,8 +727,8 @@
   5. Ga met  e  naar het einde van het volgende onvolledige woord en herhaal
      de stappen 3 en 4.
 
-  ---> Deze regel ste je in staat om te oef in het toevo van tekst. 
-       Deze regel stelt je in staat om te oefenen in het toevoegen van tekst. 
+  ---> Deze regel ste je in staat om te oef in het toevo van text. 
+       Deze regel stelt je in staat om te oefenen in het toevoegen van text. 
 
   OPMERKING: a, i en A openen allemaal dezelfde invoegmodus, het enige
              verschil is waar tekens worden ingevoegd.
@@ -756,28 +756,28 @@
              vervangt een bestaand teken.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   Les 6.4: TEKST KOPIËREN EN PLAKKEN
+                   Les 6.4: TEXT KOPIËREN EN PLAKKEN
 
-        ** Gebruik  y  om tekst te kopiëren en  p  om te plakken. **
+        ** Gebruik  y  om text te kopiëren en  p  om te plakken. **
 
   1. Ga naar de regel beneden met ---> en zet de cursor achter "a)".
 
   2. Zet zichtbare modus aan met  v  en zet de cursor juist voor "eerste".
 
-  3. Tik  y  ('yank') om de opgelichte tekst ("dit is het") te kopiëren.
+  3. Tik  y  ('yank') om de opgelichte text ("dit is het") te kopiëren.
 
   4. Ga met  j$  met de cursor naar het einde van de volgende regel.
 
-  5. Plak de gekopieerde tekst met  p  en tik  a tweede <ESC>.
+  5. Plak de gekopieerde text met  p  en tik  a tweede <ESC>.
 
   6. Selecteer in zichtbare modus "onderdeel", kopieer het met  y  en
-     ga met  j$  naar het einde van de tweede regel. Plak de tekst daar
+     ga met  j$  naar het einde van de tweede regel. Plak de text daar
      met  p .
 
   --->  a) dit is het eerste onderdeel
         b)
 
-  OPMERKING: Je kan  y  ook als operator gebruiken;  yw  kopieert een woord,
+  OPMERKING: Je kan  y  ook also operator gebruiken;  yw  kopieert een woord,
              yy  een hele regel.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -813,12 +813,12 @@
   1. Tik  o  om een regel te openen ONDER de cursor en invoegmodus te starten.
      Tik  O  om een regel te openen BOVEN de cursor.
 
-  2. Tik  a  om tekst toe te voegen NA de cursor.
-     Tik  A  om tekst toe te voegen aan het einde van de regel.
+  2. Tik  a  om text toe te voegen NA de cursor.
+     Tik  A  om text toe te voegen aan het einde van de regel.
 
   3. Het commando  e  beweegt de cursor naar het einde van een woord.
 
-  4. De operator  y  yankt (kopieert) tekst,  p  zet het terug (plakt).
+  4. De operator  y  yankt (kopieert) text,  p  zet het terug (plakt).
 
   5. Met hoofdletter  R  wordt de vervangmodus geopend, met <ESC> afgesloten.
 
@@ -826,7 +826,7 @@
        ic   ignorecase  geen verschil hoofdletters/kleine letters bij zoeken
        is   incsearch   toon gedeeltelijke treffers tijdens intikken zoekterm 
        hls  hlsearch    laat alle treffers oplichten
-     Je kan zowel de lange als de korte naam van een optie gebruiken.
+     Je kan zowel de lange also de korte naam van een optie gebruiken.
   
   7. Zet 'no' voor de naam om een optie uit te schakelen:  :set noic
      schakelt 'ic' uit.
@@ -838,11 +838,11 @@
 
   Vim heeft een uitgebreid ingebouwd hulpsysteem. Probeer, om te beginnen,
   één van deze drie:
-    - druk de <HELP> toets (als je die hebt)
-    - druk de <F1> toets (als je die hebt)
+    - druk de <HELP> toets (also je die hebt)
+    - druk de <F1> toets (also je die hebt)
     - tik  :help <ENTER>
 
-  Lees de tekst in het help-venster om te leren hoe 'help' werkt.
+  Lees de text in het help-venster om te leren hoe 'help' werkt.
   Tik  CTRL-W CTRL-W  om van het ene venster naar het andere te gaan.
   Met  :q <ENTER>  wordt het help-venster gesloten.
 
@@ -894,7 +894,7 @@
   6. Voeg een spatie toe en de eerste letter(s) van een bestaande
      bestandsnaam:  :edit BESTAND
 
-  7. Druk <TAB>. Vim vult de naam aan (als hij uniek is).
+  7. Druk <TAB>. Vim vult de naam aan (also hij uniek is).
 
   OPMERKING: Aanvullen werkt bij tal van commando's. Probeer gewoon CTRL-D
              en <TAB>. Het is bijzonder nuttig bij  :help .
@@ -934,8 +934,8 @@
       Learning the Vi Editor - door Linda Lamb
       Uitgever: O'Reilly & Associates Inc.
   Het is een goed boek om nagenoeg alles te weten te komen dat je met Vi
-  zou willen doen. De zesde en vooral de nieuwe zevende druk (onder de
-  titel Learning the Vi and Vim Editors door Arnold Robbins, Elbert Hannah
+  zou willen done. De zesde en vooral de nieuwe zevende druk (onder de
+  title Learning the Vi and Vim Editors door Arnold Robbins, Elbert Hannah
   & Linda Lamb) bevat ook informatie over Vim.
 
   Deze lessen zijn geschreven door Michael C. Pierce en Robert K. Ware,

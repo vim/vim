@@ -21,7 +21,7 @@ func Test_checkpath1()
 	      \ '    Xdir1/dir2/baz.a -->',
 	      \ '      "foo.a"  (Already listed)'], res)
 
-  enew
+  new
   call delete("./Xbase.a")
   call delete("Xdir1", "rf")
   set path&
@@ -55,7 +55,7 @@ func Test_checkpath2()
 	      \ '    Xdir1/dir2/baz.b -->',
 	      \ '      foo  (Already listed)'], res)
 
-  enew
+  new
   call delete("./Xbase.b")
   call delete("Xdir1", "rf")
   set path&
@@ -95,7 +95,7 @@ func Test_checkpath3()
 	      \ '    Xdir1/dir2/baz.c -->',
 	      \ '      foo.c  (Already listed)'], res)
 
-  enew
+  new
   call delete("./Xbase.c")
   call delete("Xdir1", "rf")
   set path&

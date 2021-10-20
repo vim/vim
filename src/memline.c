@@ -4714,7 +4714,7 @@ findswapname(
 
     /*
      * If we start editing a new file, e.g. "test.doc", which resides on an
-     * MSDOS compatible filesystem, it is possible that the file
+     * MS-DOS compatible filesystem, it is possible that the file
      * "test.doc.swp" which we create will be exactly the same file. To avoid
      * this problem we temporarily create "test.doc".  Don't do this when the
      * check below for a 8.3 file name is used.

@@ -9,7 +9,7 @@ if exists("b:current_syntax")
    finish
 endif
 
-" This syntac file is a first attempt. It is far from perfect...
+" This syntax file is a first attempt. It is far from perfect...
 
 " Uses java.vim, and adds a few special things for JavaCC Parser files.
 " Those files usually have the extension  *.jj

@@ -161,10 +161,10 @@ fun! s:VimEnter(dirname)
   " Ingo Karkat  : E488 also in Vim 8.1.1602
   let curwin       = winnr()
   let s:vimentered = 1
-  windo call s:LocalBrowse(expand("%:p"))
+  window call s:LocalBrowse(expand("%:p"))
   exe curwin."wincmd w"
  else
-  " the following complicated expression comes courtesy of lacygoill; largely does the same thing as the windo and 
+  " the following complicated expression comes courtesy of lacygoill; largely does the same thing as the window and 
   " wincmd which are commented out, but avoids some side effects. Allows popup terminal before VimEnter.
   let s:vimentered = 1
   call range(1, winnr('$'))->map({_, v -> win_execute(win_getid(v), 'call expand("%:p")->s:LocalBrowse()')})

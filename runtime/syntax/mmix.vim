@@ -101,7 +101,7 @@ syn keyword mmixOpcode	syncd prest syncid pushgo
 syn keyword mmixOpcode	or orn nor xor
 syn keyword mmixOpcode	and andn nand nxor
 syn keyword mmixOpcode	bdif wdif tdif odif
-syn keyword mmixOpcode	mux sadd mor mxor
+syn keyword mmixOpcode	mux sadd more mxor
 
 syn keyword mmixOpcode	seth setmh setml setl inch incmh incml incl
 syn keyword mmixOpcode	orh ormh orml orl andh andmh andml andnl

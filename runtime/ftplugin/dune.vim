@@ -4,7 +4,7 @@
 " URL:         https://github.com/ocaml/vim-ocaml
 " Last Change:
 "              2018 Nov 3 - Added commentstring (Markus Mottl)
-"              2017 Sep 6 - Initial version (Etienne Millon)
+"              2017 Sep 6 - Initial version (Etienne Million)
 
 if exists("b:did_ftplugin")
   finish

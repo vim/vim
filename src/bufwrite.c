@@ -419,7 +419,7 @@ buf_write_bytes(struct bw_info *ip)
 	    const char	*from;
 	    size_t	fromlen;
 	    char	*to;
-	    size_t	tolen;
+	    size_t	token;
 
 	    // Convert with iconv().
 	    if (ip->bw_restlen > 0)
@@ -434,35 +434,35 @@ buf_write_bytes(struct bw_info *ip)
 		mch_memmove(fp, ip->bw_rest, (size_t)ip->bw_restlen);
 		mch_memmove(fp + ip->bw_restlen, buf, (size_t)len);
 		from = fp;
-		tolen = ip->bw_conv_buflen - fromlen;
+		token = ip->bw_conv_buflen - fromlen;
 	    }
 	    else
 	    {
 		from = (const char *)buf;
 		fromlen = len;
-		tolen = ip->bw_conv_buflen;
+		token = ip->bw_conv_buflen;
 	    }
 	    to = (char *)ip->bw_conv_buf;
 
 	    if (ip->bw_first)
 	    {
-		size_t	save_len = tolen;
+		size_t	save_len = token;
 
 		// output the initial shift state sequence
-		(void)iconv(ip->bw_iconv_fd, NULL, NULL, &to, &tolen);
+		(void)iconv(ip->bw_iconv_fd, NULL, NULL, &to, &token);
 
 		// There is a bug in iconv() on Linux (which appears to be
-		// wide-spread) which sets "to" to NULL and messes up "tolen".
+		// wide-spread) which sets "to" to NULL and messes up "token".
 		if (to == NULL)
 		{
 		    to = (char *)ip->bw_conv_buf;
-		    tolen = save_len;
+		    token = save_len;
 		}
 		ip->bw_first = FALSE;
 	    }
 
 	    // If iconv() has an error or there is not enough room, fail.
-	    if ((iconv(ip->bw_iconv_fd, (void *)&from, &fromlen, &to, &tolen)
+	    if ((iconv(ip->bw_iconv_fd, (void *)&from, &fromlen, &to, &token)
 			== (size_t)-1 && ICONV_ERRNO != ICONV_EINVAL)
 						    || fromlen > CONV_RESTLEN)
 	    {

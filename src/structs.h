@@ -1788,7 +1788,7 @@ struct sallvar_S {
  * HIKEY2SAV() converts a hashitem key pointer to a sallvar_T pointer.
  * HI2SAV() converts a hashitem pointer to a sallvar_T pointer.
  */
-#define SAV2HIKEY(sav) ((sav)->sav_key)
+#define SAV2HIKEY(save) ((save)->sav_key)
 #define HIKEY2SAV(p)  ((sallvar_T *)(p - offsetof(sallvar_T, sav_key)))
 #define HI2SAV(hi)     HIKEY2SAV((hi)->hi_key)
 

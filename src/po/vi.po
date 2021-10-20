@@ -51,7 +51,7 @@ msgid "%d buffers wiped out"
 msgstr "%d bộ đệm được làm sạch"
 
 msgid "E84: No modified buffer found"
-msgstr "E84: Không tìm thấy bộ đệm có thay đổi"
+msgstr "E84: Không tìm thấy bộ đệm có they đổi"
 
 #. back where we started, didn't find anything.
 msgid "E85: There is no listed buffer"
@@ -70,7 +70,7 @@ msgstr "E88: Đây là bộ đệm đầu tiên"
 #, c-format
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr ""
-"E89: Thay đổi trong bộ đệm %ld chưa được ghi lại (thêm ! để thoát ra bằng "
+"E89: They đổi trong bộ đệm %ld chưa được ghi lại (thêm ! để thoát ra bằng "
 "mọi giá)"
 
 msgid "E90: Cannot unload last buffer"
@@ -99,7 +99,7 @@ msgid "E95: Buffer with this name already exists"
 msgstr "E95: Đã có bộ đệm với tên như vậy"
 
 msgid " [Modified]"
-msgstr " [Đã thay đổi]"
+msgstr " [Đã they đổi]"
 
 msgid "[Not edited]"
 msgstr "[Chưa soạn thảo]"
@@ -268,7 +268,7 @@ msgid " (insert) Scroll (^E/^Y)"
 msgstr " (chèn) Cuộn (^E/^Y)"
 
 msgid " (replace) Scroll (^E/^Y)"
-msgstr " (thay thế) Cuộn (^E/^Y)"
+msgstr " (they thế) Cuộn (^E/^Y)"
 
 #, c-format
 msgid "Scanning: %s"
@@ -414,7 +414,7 @@ msgstr "E461: Tên biến không cho phép: %s"
 
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
-msgstr "E122: Hàm số %s đã có, hãy thêm ! để thay thế nó."
+msgstr "E122: Hàm số %s đã có, hãy thêm ! để they thế nó."
 
 #, c-format
 msgid "E123: Undefined function: %s"
@@ -516,14 +516,14 @@ msgstr "Ghi nhớ như"
 
 #, c-format
 msgid "Save changes to \"%.*s\"?"
-msgstr "Ghi nhớ thay đổi vào \"%.*s\"?"
+msgstr "Ghi nhớ they đổi vào \"%.*s\"?"
 
 msgid "Untitled"
 msgstr "Chưa đặt tên"
 
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162: Thay đổi chưa được ghi nhớ trong bộ đệm \"%s\""
+msgstr "E162: They đổi chưa được ghi nhớ trong bộ đệm \"%s\""
 
 msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
 msgstr ""
@@ -669,7 +669,7 @@ msgstr "Ngôn ngữ %shiện thời: \"%s\""
 
 #, c-format
 msgid "E197: Cannot set language to \"%s\""
-msgstr "E197: Không thể thay đổi ngôn ngữ thành \"%s\""
+msgstr "E197: Không thể they đổi ngôn ngữ thành \"%s\""
 
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
@@ -698,10 +698,10 @@ msgid "%ld lines filtered"
 msgstr "Đã lọc %ld dòng"
 
 msgid "E135: *Filter* Autocommands must not change current buffer"
-msgstr "E135: Các lệnh tự động *Filter* không được thay đổi bộ đệm hiện thời"
+msgstr "E135: Các lệnh tự động *Filter* không được they đổi bộ đệm hiện thời"
 
 msgid "[No write since last change]\n"
-msgstr "[Thay đổi chưa được ghi nhớ]\n"
+msgstr "[They đổi chưa được ghi nhớ]\n"
 
 #, c-format
 msgid "%sviminfo: %s in line: "
@@ -801,17 +801,17 @@ msgstr "E146: Không thể phân cách biểu thức chính quy bằng chữ cá
 
 #, c-format
 msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
-msgstr "thay thế bằng %s? (y/n/a/q/l/^E/^Y)"
+msgstr "they thế bằng %s? (y/n/a/q/l/^E/^Y)"
 
 msgid "(Interrupted) "
 msgstr "(bị dừng)"
 
 msgid "1 substitution"
-msgstr "1 thay thế"
+msgstr "1 they thế"
 
 #, c-format
 msgid "%ld substitutions"
-msgstr "%ld thay thế"
+msgstr "%ld they thế"
 
 msgid " on 1 line"
 msgstr " trên 1 dòng"
@@ -836,7 +836,7 @@ msgid ""
 "$"
 msgstr ""
 "\n"
-"# Chuỗi thay thế cuối cùng:\n"
+"# Chuỗi they thế cuối cùng:\n"
 "$"
 
 msgid "E478: Don't panic!"
@@ -944,7 +944,7 @@ msgid "E493: Backwards range given"
 msgstr "E493: Đưa ra phạm vi ngược lại"
 
 msgid "Backwards range given, OK to swap"
-msgstr "Đưa ra phạm vi ngược lại, thay đổi vị trí hai giới hạn"
+msgstr "Đưa ra phạm vi ngược lại, they đổi vị trí hai giới hạn"
 
 msgid "E494: Use w or w>>"
 msgstr "E494: Hãy sử dụng w hoặc w>>"
@@ -970,7 +970,7 @@ msgid "E173: %ld more files to edit"
 msgstr "E173: %ld tập tin nữa chưa soạn thảo."
 
 msgid "E174: Command already exists: add ! to replace it"
-msgstr "E174: Đã có câu lệnh: Thêm ! để thay thế"
+msgstr "E174: Đã có câu lệnh: Thêm ! để they thế"
 
 msgid ""
 "\n"
@@ -1085,20 +1085,20 @@ msgid "E192: Recursive use of :normal too deep"
 msgstr "E192: Sử dụng đệ quy lệnh :normal quá sâu"
 
 msgid "E194: No alternate file name to substitute for '#'"
-msgstr "E194: Không có tên tập tin tương đương để thay thế '#'"
+msgstr "E194: Không có tên tập tin tương đương để they thế '#'"
 
 msgid "E495: no autocommand file name to substitute for \"<afile>\""
-msgstr "E495: Không có tên tập tin câu lệnh tự động để thay thế \"<afile>\""
+msgstr "E495: Không có tên tập tin câu lệnh tự động để they thế \"<afile>\""
 
 msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
 msgstr ""
-"E496: Không có số thứ tự bộ đệm câu lệnh tự động để thay thế \"<abuf>\""
+"E496: Không có số thứ tự bộ đệm câu lệnh tự động để they thế \"<abuf>\""
 
 msgid "E497: no autocommand match name to substitute for \"<amatch>\""
-msgstr "E497: Không có tên tương ứng câu lệnh tự động để thay thế \"<amatch>\""
+msgstr "E497: Không có tên tương ứng câu lệnh tự động để they thế \"<amatch>\""
 
 msgid "E498: no :source file name to substitute for \"<sfile>\""
-msgstr "E498: không có tên tập tin :source để thay thế \"<sfile>\""
+msgstr "E498: không có tên tập tin :source để they thế \"<sfile>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -1270,7 +1270,7 @@ msgstr ""
 "E200: Câu lệnh tự động *ReadPre làm cho tập tin trở thành không thể đọc"
 
 msgid "E201: *ReadPre autocommands must not change current buffer"
-msgstr "E201: Câu lệnh tự động *ReadPre không được thay đổi bộ đệm hoạt động"
+msgstr "E201: Câu lệnh tự động *ReadPre không được they đổi bộ đệm hoạt động"
 
 msgid "Vim: Reading from stdin...\n"
 msgstr "Vim: Đọc từ đầu vào tiêu chuẩn stdin...\n"
@@ -1309,7 +1309,7 @@ msgstr "[KHÔNG được chuyển đổi]"
 msgid "[converted]"
 msgstr "[đã chuyển bảng mã]"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[đã mã hóa]"
 
 msgid "[CONVERSION ERROR]"
@@ -1335,16 +1335,16 @@ msgid "E203: Autocommands deleted or unloaded buffer to be written"
 msgstr "E203: Câu lệnh tự động đã xóa hoặc bỏ nạp bộ đệm cần ghi nhớ"
 
 msgid "E204: Autocommand changed number of lines in unexpected way"
-msgstr "E204: Câu lệnh tự động đã thay đổ số dòng theo cách không mong muốn"
+msgstr "E204: Câu lệnh tự động đã they đổ số dòng theo cách không mong muốn"
 
 msgid "NetBeans disallows writes of unmodified buffers"
-msgstr "NetBeans không cho phép ghi nhớ bộ đệm chưa có thay đổi nào"
+msgstr "NetBeans không cho phép ghi nhớ bộ đệm chưa có they đổi nào"
 
 msgid "Partial writes disallowed for NetBeans buffers"
 msgstr "Ghi nhớ một phần bộ đệm NetBeans không được cho phép"
 
 msgid "is not a file or writable device"
-msgstr "không phải là một tập tin thay một thiết bị có thể ghi nhớ"
+msgstr "không phải là một tập tin they một thiết bị có thể ghi nhớ"
 
 msgid "is read-only (add ! to override)"
 msgstr "là tập tin chỉ đọc (thêm ! để ghi nhớ bằng mọi giá)"
@@ -1419,7 +1419,7 @@ msgstr "E205: Chế độ vá lỗi (patch): không thể ghi nhớ tập tin g�
 
 msgid "E206: patchmode: can't touch empty original file"
 msgstr ""
-"E206: Chế độ vá lỗi (patch): không thể thay đổi tham số của tập tin gốc "
+"E206: Chế độ vá lỗi (patch): không thể they đổi tham số của tập tin gốc "
 "trống rỗng"
 
 msgid "E207: Can't delete backup file"
@@ -1478,7 +1478,7 @@ msgstr "[Dòng cuối cùng không đầy đủ]"
 #. must give this prompt
 #. don't use emsg() here, don't want to flush the buffers
 msgid "WARNING: The file has been changed since reading it!!!"
-msgstr "CẢNH BÁO: Tập tin đã thay đổi so với thời điểm đọc!!!"
+msgstr "CẢNH BÁO: Tập tin đã they đổi so với thời điểm đọc!!!"
 
 msgid "Do you really want to write to it"
 msgstr "Bạn có chắc muốn ghi nhớ vào tập tin này"
@@ -1507,18 +1507,18 @@ msgid ""
 "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
 "well"
 msgstr ""
-"W12: Cảnh báo: Tập tin \"%s\" và bộ đệm Vim đã thay đổi không phụ thuộc vào "
+"W12: Cảnh báo: Tập tin \"%s\" và bộ đệm Vim đã they đổi không phụ thuộc vào "
 "nhau"
 
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
 msgstr ""
-"W11: Cảnh báo: Tập tin \"%s\" đã thay đổi sau khi việc soạn thảo bắt đầu"
+"W11: Cảnh báo: Tập tin \"%s\" đã they đổi sau khi việc soạn thảo bắt đầu"
 
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr ""
-"W16: Cảnh báo: chế độ truy cập tới tập tin \"%s\" đã thay đổi sau khi bắt "
+"W16: Cảnh báo: chế độ truy cập tới tập tin \"%s\" đã they đổi sau khi bắt "
 "đầu soạn thảo"
 
 #, c-format
@@ -1713,7 +1713,7 @@ msgid "Input _Methods"
 msgstr "Phương pháp _nhập liệu"
 
 msgid "VIM - Search and Replace..."
-msgstr "VIM - Tìm kiếm và thay thế..."
+msgstr "VIM - Tìm kiếm và they thế..."
 
 msgid "VIM - Search..."
 msgstr "VIM - Tìm kiếm..."
@@ -1722,7 +1722,7 @@ msgid "Find what:"
 msgstr "Tìm kiếm gì:"
 
 msgid "Replace with:"
-msgstr "Thay thế bởi:"
+msgstr "They thế bởi:"
 
 #. whole word only button
 msgid "Match whole word only"
@@ -1746,10 +1746,10 @@ msgid "Find Next"
 msgstr "Tìm tiếp"
 
 msgid "Replace"
-msgstr "Thay thế"
+msgstr "They thế"
 
 msgid "Replace All"
-msgstr "Thay thế tất cả"
+msgstr "They thế tất cả"
 
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Nhận được yêu cầu \"chết\" (dừng) từ trình quản lý màn hình\n"
@@ -1761,7 +1761,7 @@ msgid "Font Selection"
 msgstr "Chọn phông chữ"
 
 msgid "Used CUT_BUFFER0 instead of empty selection"
-msgstr "Sử dụng CUT_BUFFER0 thay cho lựa chọn trống rỗng"
+msgstr "Sử dụng CUT_BUFFER0 they cho lựa chọn trống rỗng"
 
 msgid "Filter"
 msgstr "Đầu lọc"
@@ -1796,7 +1796,7 @@ msgid "Find string (use '\\\\' to find  a '\\')"
 msgstr "Tìm kiếm chuỗi (hãy sử dụng '\\\\' để tìm kiếm dấu '\\')"
 
 msgid "Find & Replace (use '\\\\' to find  a '\\')"
-msgstr "Tìm kiếm và Thay thế (hãy sử dụng '\\\\' để tìm kiếm dấu '\\')"
+msgstr "Tìm kiếm và They thế (hãy sử dụng '\\\\' để tìm kiếm dấu '\\')"
 
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
@@ -2066,7 +2066,7 @@ msgid "cannot delete line"
 msgstr "không xóa được dòng"
 
 msgid "cannot replace line"
-msgstr "không thay thế được dòng"
+msgstr "không they thế được dòng"
 
 msgid "cannot insert line"
 msgstr "không chèn được dòng"
@@ -2334,7 +2334,7 @@ msgstr "-register\t\tĐăng ký gvim này cho OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tBỏ đăng ký gvim này cho OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tSử dụng giao diện đồ họa GUI (giống \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2364,10 +2364,10 @@ msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
 msgstr "-Z\t\t\tChế độ hạn chế (giống \"rvim\")"
 
 msgid "-m\t\t\tModifications (writing files) not allowed"
-msgstr "-m\t\t\tKhông có khả năng ghi nhớ thay đổi (ghi nhớ tập tin)"
+msgstr "-m\t\t\tKhông có khả năng ghi nhớ they đổi (ghi nhớ tập tin)"
 
 msgid "-M\t\t\tModifications in text not allowed"
-msgstr "-M\t\t\tKhông có khả năng thay đổi văn bản"
+msgstr "-M\t\t\tKhông có khả năng they đổi văn bản"
 
 msgid "-b\t\t\tBinary mode"
 msgstr "-b\t\t\tChế độ nhị phân (binary)"
@@ -2418,10 +2418,10 @@ msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminal>\tĐặt loại terminal thành <terminal>"
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
-msgstr "-u <vimrc>\t\tSử dụng <vimrc> thay thế cho mọi .vimrc"
+msgstr "-u <vimrc>\t\tSử dụng <vimrc> they thế cho mọi .vimrc"
 
 msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
-msgstr "-U <gvimrc>\t\tSử dụng <gvimrc> thay thế cho mọi .gvimrc"
+msgstr "-U <gvimrc>\t\tSử dụng <gvimrc> they thế cho mọi .gvimrc"
 
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tKhông nạp bất kỳ script môđun nào"
@@ -2497,7 +2497,7 @@ msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <tên>\tGửi lên (hoặc trở thành) máy chủ Vim với <tên>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
-msgstr "-i <viminfo>\t\tSử dụng tập tin <viminfo> thay cho .viminfo"
+msgstr "-i <viminfo>\t\tSử dụng tập tin <viminfo> they cho .viminfo"
 
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h hoặc --help\tHiển thị Trợ giúp (thông tin này) và thoát"
@@ -2526,7 +2526,7 @@ msgstr ""
 "\n"
 "Tham số cho gvim (phiên bản Athena):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <màn hình>\tChạy Vim trong <màn hình> đã chỉ ra"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -2599,7 +2599,7 @@ msgstr ""
 "\n"
 "Tham số cho gvim (phiên bản GTK+):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr ""
 "-display <màn hình>\tChạy Vim trên <màn hình> chỉ ra (cũng như: --display)"
 
@@ -2777,7 +2777,7 @@ msgid ""
 "Maybe no changes were made or Vim did not update the swap file."
 msgstr ""
 "\n"
-"Chưa có thay đổi nào hoặc Vim không thể cập nhật tập tin trao đổi (swap)"
+"Chưa có they đổi nào hoặc Vim không thể cập nhật tập tin trao đổi (swap)"
 
 msgid " cannot be used with this version of Vim.\n"
 msgstr " không thể sử dụng trong phiên bản Vim này.\n"
@@ -2811,7 +2811,7 @@ msgid "Original file \"%s\""
 msgstr "Tập tin gốc \"%s\""
 
 msgid "E308: Warning: Original file may have been changed"
-msgstr "E308: Cảnh báo: Tập tin gốc có thể đã bị thay đổi"
+msgstr "E308: Cảnh báo: Tập tin gốc có thể đã bị they đổi"
 
 #, c-format
 msgid "E309: Unable to read block 1 from %s"
@@ -2915,7 +2915,7 @@ msgid ""
 "          modified: "
 msgstr ""
 "\n"
-"           thay đổi: "
+"           they đổi: "
 
 msgid "YES"
 msgstr "CÓ"
@@ -3052,7 +3052,7 @@ msgid ""
 msgstr ""
 "\n"
 "(1) Rất có thể một chương trình khác đang soạn thảo tập tin.\n"
-"    Nếu như vậy, hãy cẩn thận khi thay đổi, làm sao để không thu\n"
+"    Nếu như vậy, hãy cẩn thận khi they đổi, làm sao để không thu\n"
 "    được hai phương án khác nhau của cùng một tập tin.\n"
 
 msgid "    Quit, or continue with caution.\n"
@@ -3074,7 +3074,7 @@ msgid ""
 "    to recover the changes (see \":help recovery\").\n"
 msgstr ""
 "\"\n"
-"    để phục hồi những thay đổi (hãy xem \":help recovery\").\n"
+"    để phục hồi những they đổi (hãy xem \":help recovery\").\n"
 
 msgid "    If you did this already, delete the swap file \""
 msgstr ""
@@ -3247,7 +3247,7 @@ msgstr ""
 "(console)"
 
 msgid "W10: Warning: Changing a readonly file"
-msgstr "W10: Cảnh báo: Thay đổi một tập tin chỉ có quyền đọc"
+msgstr "W10: Cảnh báo: They đổi một tập tin chỉ có quyền đọc"
 
 msgid "1 more line"
 msgstr "Thêm 1 dòng"
@@ -3349,7 +3349,7 @@ msgstr "E345: Không tìm thấy tập tin \"%s\" trong đường dẫn"
 
 #, c-format
 msgid "E346: No more directory \"%s\" found in cdpath"
-msgstr "E346: Trong đường dẫn thay đổi thư mục không còn có thư mục \"%s\" nữa"
+msgstr "E346: Trong đường dẫn they đổi thư mục không còn có thư mục \"%s\" nữa"
 
 #, c-format
 msgid "E347: No more file \"%s\" found in path"
@@ -3398,13 +3398,13 @@ msgstr ""
 "'foldmethod'"
 
 msgid "E664: changelist is empty"
-msgstr "E664: danh sách những thay đổi trống rỗng"
+msgstr "E664: danh sách những they đổi trống rỗng"
 
 msgid "E662: At start of changelist"
-msgstr "E662: Ở đầu danh sách những thay đổi"
+msgstr "E662: Ở đầu danh sách những they đổi"
 
 msgid "E663: At end of changelist"
-msgstr "E663: Ở cuối danh sách những thay đổi"
+msgstr "E663: Ở cuối danh sách những they đổi"
 
 msgid "Type  :quit<Enter>  to exit Vim"
 msgstr "Gõ :quit<Enter>  để thoát khỏi Vim"
@@ -3441,11 +3441,11 @@ msgid "cannot yank; delete anyway"
 msgstr "sao chép không thành công; đã xóa"
 
 msgid "1 line changed"
-msgstr "1 dòng đã thay đổi"
+msgstr "1 dòng đã they đổi"
 
 #, c-format
 msgid "%ld lines changed"
-msgstr "%ld đã thay đổi"
+msgstr "%ld đã they đổi"
 
 #, c-format
 msgid "freeing %ld lines"
@@ -3524,7 +3524,7 @@ msgid ""
 "\tLast set from "
 msgstr ""
 "\n"
-"\tLần cuối cùng tùy chọn thay đổi vào "
+"\tLần cuối cùng tùy chọn they đổi vào "
 
 msgid "E521: Number required after ="
 msgstr "E521: Sau dấu = cần đưa ra một số"
@@ -3540,7 +3540,7 @@ msgid "E529: Cannot set 'term' to empty string"
 msgstr "E529: Giá trị của tùy chọn 'term' không thể là một chuỗi trống rỗng"
 
 msgid "E530: Cannot change term in GUI"
-msgstr "E530: Không thể thay đổi terminal trong giao diện đồ họa GUI"
+msgstr "E530: Không thể they đổi terminal trong giao diện đồ họa GUI"
 
 msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: Hãy sử dụng \":gui\" để chạy giao diện đồ họa GUI"
@@ -3549,7 +3549,7 @@ msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: giá trị của tùy chọn 'backupext' và 'patchmode' bằng nhau"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
-msgstr "E617: Không thể thay đổi trong giao diện đồ họa GTK+ 2"
+msgstr "E617: Không thể they đổi trong giao diện đồ họa GTK+ 2"
 
 msgid "E524: Missing colon"
 msgstr "E524: Thiếu dấu hai chấm"
@@ -3687,7 +3687,7 @@ msgid "Vim exiting with %d\n"
 msgstr "Thoát Vim với mã %d\n"
 
 msgid "cannot change console mode ?!\n"
-msgstr "không thay đổi được chế độ kênh giao tác (console)?!\n"
+msgstr "không they đổi được chế độ kênh giao tác (console)?!\n"
 
 msgid "mch_get_shellsize: not a console??\n"
 msgstr "mch_get_shellsize: không phải là kênh giao tác (console)??\n"
@@ -4040,10 +4040,10 @@ msgid "+--%3ld lines folded "
 msgstr "+--%3ld dòng được gấp"
 
 msgid " VREPLACE"
-msgstr " THAY THẾ ẢO"
+msgstr " THEY THẾ ẢO"
 
 msgid " REPLACE"
-msgstr " THAY THẾ"
+msgstr " THEY THẾ"
 
 msgid " REVERSE"
 msgstr " NGƯỢC LẠI"
@@ -4055,10 +4055,10 @@ msgid " (insert)"
 msgstr " (chèn)"
 
 msgid " (replace)"
-msgstr " (thay thế)"
+msgstr " (they thế)"
 
 msgid " (vreplace)"
-msgstr " (thay thế ảo)"
+msgstr " (they thế ảo)"
 
 msgid " Hebrew"
 msgstr " Do thái"
@@ -4471,11 +4471,11 @@ msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: số thứ tự dòng không đúng"
 
 msgid "1 change"
-msgstr "duy nhất 1 thay đổi"
+msgstr "duy nhất 1 they đổi"
 
 #, c-format
 msgid "%ld changes"
-msgstr "%ld thay đổi"
+msgstr "%ld they đổi"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: danh sách hủy thao tác (undo) bị hỏng"
@@ -4568,7 +4568,7 @@ msgstr ""
 "Bao gồm các bản vá lỗi: "
 
 msgid "Modified by "
-msgstr "Với các thay đổi bởi "
+msgstr "Với các they đổi bởi "
 
 msgid ""
 "\n"
@@ -4805,7 +4805,7 @@ msgid "Already only one window"
 msgstr "Chỉ có một cửa sổ"
 
 msgid "E445: Other window contains changes"
-msgstr "E445: Cửa sổ khác có thay đổi chưa được ghi nhớ"
+msgstr "E445: Cửa sổ khác có they đổi chưa được ghi nhớ"
 
 msgid "E446: No file name under cursor"
 msgstr "E446: Không có tên tập tin tại vị trí con trỏ"
@@ -4956,7 +4956,7 @@ msgid "E20: Mark not set"
 msgstr "E20: Dấu hiệu không được xác định"
 
 msgid "E21: Cannot make changes, 'modifiable' is off"
-msgstr "E21: Không thể thay đổi, vì tùy chọn 'modifiable' bị tắt"
+msgstr "E21: Không thể they đổi, vì tùy chọn 'modifiable' bị tắt"
 
 msgid "E22: Scripts nested too deep"
 msgstr "E22: Các script lồng vào nhau quá sâu"
@@ -5006,7 +5006,7 @@ msgid "E32: No file name"
 msgstr "E32: Không có tên tập tin"
 
 msgid "E33: No previous substitute regular expression"
-msgstr "E33: Không có biểu thức chính quy trước để thay thế"
+msgstr "E33: Không có biểu thức chính quy trước để they thế"
 
 msgid "E34: No previous command"
 msgstr "E34: Không có câu lệnh trước"
@@ -5040,7 +5040,7 @@ msgid "E485: Can't read file %s"
 msgstr "E485: Không đọc được tập tin %s"
 
 msgid "E37: No write since last change (add ! to override)"
-msgstr "E37: Thay đổi chưa được ghi nhớ (thêm ! để bỏ qua ghi nhớ)"
+msgstr "E37: They đổi chưa được ghi nhớ (thêm ! để bỏ qua ghi nhớ)"
 
 msgid "E38: Null argument"
 msgstr "E38: Tham sô bằng 0"
@@ -5085,7 +5085,7 @@ msgstr "E45: Tùy chọn 'readonly' được bật (Hãy thêm ! để lờ đi)
 
 #, c-format
 msgid "E46: Cannot set read-only variable \"%s\""
-msgstr "E46: Không thay đổi được biến chỉ đọc \"%s\""
+msgstr "E46: Không they đổi được biến chỉ đọc \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Lỗi khi đọc tập tin lỗi"
@@ -5154,4 +5154,4 @@ msgid "E449: Invalid expression received"
 msgstr "E449: Nhận được một biểu thức không cho phép"
 
 msgid "E463: Region is guarded, cannot modify"
-msgstr "E463: Không thể thay đổi vùng đã được bảo vệ"
+msgstr "E463: Không thể they đổi vùng đã được bảo vệ"

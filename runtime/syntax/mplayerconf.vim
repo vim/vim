@@ -59,7 +59,7 @@ syn keyword mplayerconfOption   hardframedrop nomouseinput bandwidth dumpstream
                                 \ fbmodeconfig forcexv fs fsmode-dontuse fstype
                                 \ geometry guiwid hue jpeg monitor-dotclock
                                 \ monitor-hfreq monitor-vfreq monitoraspect
-                                \ nograbpointer nokeepaspect noxv ontop panscan
+                                \ nograbpointer nokeepaspect noxv on top panscan
                                 \ rootwin saturation screenw stop-xscreensaver
                                 \ vm vsync wid xineramascreen z zrbw zrcrop
                                 \ zrdev zrhelp zrnorm zrquality zrvdec zrxdoff

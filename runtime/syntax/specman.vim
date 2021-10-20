@@ -108,7 +108,7 @@ syn region  specmanString start=+"+  end=+"+
 
 
 "**********************************************************************
-" I took this section from c.vim but I didnt succeded to make it work
+" I took this section from c.vim but I didn't succeeded to make it work
 " ANY one who dare jumping to this deep watter is more than welocome!
 "**********************************************************************
 ""catch errors caused by wrong parenthesis and brackets

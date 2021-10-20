@@ -38,7 +38,7 @@ fun! netrwSettings#NetrwSettings()
   endif
 
   above wincmd s
-  enew
+  new
   setlocal noswapfile bh=wipe
   set ft=vim
   file Netrw\ Settings

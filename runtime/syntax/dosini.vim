@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language:               Configuration File (ini file) for MSDOS/MS Windows
+" Language:               Configuration File (ini file) for MS-DOS/MS Windows
 " Version:                2.2
 " Original Author:        Sean M. McKee <mckee@misslink.net>
 " Previous Maintainer:    Nima Talebi <nima@it.net.au>

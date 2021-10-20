@@ -107,7 +107,7 @@ syn keyword mupadFunction	match	map	mapcoeffs	maprat	matrix	max	min
 syn keyword mupadFunction	mod	modp	mods	monomials	multcoeffs	new
 syn keyword mupadFunction	newDomain	_next	nextprime	nops
 syn keyword mupadFunction	norm	normal	nterms	nthcoeff	nthmonomial	nthterm
-syn keyword mupadFunction	null	numer	ode	op	operator	package
+syn keyword mupadFunction	null	number	ode	op	operator	package
 syn keyword mupadFunction	pade	partfrac	patchlevel	pdivide
 syn keyword mupadFunction	piecewise	plot	plotfunc2d	plotfunc3d
 syn keyword mupadFunction	poly	poly2list	polylog	powermod	print
@@ -172,7 +172,7 @@ syn keyword mupadIdentifier	LineColorFunction	FillColorFunction
 syn keyword mupadIdentifier	Matrix2d	Matrix3d
 syn keyword mupadIdentifier	MeshList	MeshListType	MeshListNormals
 syn keyword mupadIdentifier	MagneticQuantumNumber	MomentumQuantumNumber	PrincipalQuantumNumber
-syn keyword mupadIdentifier	Name	Normal	NormalX	NormalY	NormalZ
+syn keyword mupadIdentifier	Name	Normal	NormalX	normally	NormalZ
 syn keyword mupadIdentifier	ParameterName	ParameterBegin	ParameterEnd	ParameterRange
 syn keyword mupadIdentifier	Points2d	Points3d	Radius	RadiusFunction
 syn keyword mupadIdentifier	Position	PositionX	PositionY	PositionZ

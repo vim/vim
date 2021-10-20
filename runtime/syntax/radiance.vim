@@ -42,7 +42,7 @@ syn keyword radianceMatType contained mirror mist prism1 prism2
 syn keyword radianceMatType contained metal plastic trans
 syn keyword radianceMatType contained metal2 plastic2 trans2
 syn keyword radianceMatType contained metfunc plasfunc transfunc
-syn keyword radianceMatType contained metdata plasdata transdata
+syn keyword radianceMatType contained metadata plasdata transdata
 syn keyword radianceMatType contained dielectric interface glass
 syn keyword radianceMatType contained BRTDfunc antimatter
 " Pattern modifier types
@@ -91,7 +91,7 @@ syn region radianceID start="\<trans2\>"     end="\<\k*\>" contains=radianceMatT
 syn region radianceID start="\<metfunc\>"    end="\<\k*\>" contains=radianceMatType
 syn region radianceID start="\<plasfunc\>"   end="\<\k*\>" contains=radianceMatType
 syn region radianceID start="\<transfunc\>"  end="\<\k*\>" contains=radianceMatType
-syn region radianceID start="\<metdata\>"    end="\<\k*\>" contains=radianceMatType
+syn region radianceID start="\<metadata\>"    end="\<\k*\>" contains=radianceMatType
 syn region radianceID start="\<plasdata\>"   end="\<\k*\>" contains=radianceMatType
 syn region radianceID start="\<transdata\>"  end="\<\k*\>" contains=radianceMatType
 syn region radianceID start="\<dielectric\>" end="\<\k*\>" contains=radianceMatType

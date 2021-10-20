@@ -73,7 +73,7 @@ an 50.10.440 &Syntax.AB.Assembly.PIC :cal SetSyn("pic")<CR>
 an 50.10.450 &Syntax.AB.Assembly.Turbo :cal SetSyn("tasm")<CR>
 an 50.10.460 &Syntax.AB.Assembly.VAX\ Macro\ Assembly :cal SetSyn("vmasm")<CR>
 an 50.10.470 &Syntax.AB.Assembly.Z-80 :cal SetSyn("z8a")<CR>
-an 50.10.480 &Syntax.AB.Assembly.xa\ 6502\ cross\ assember :cal SetSyn("a65")<CR>
+an 50.10.480 &Syntax.AB.Assembly.xa\ 6502\ cross\ assembler :cal SetSyn("a65")<CR>
 an 50.10.490 &Syntax.AB.ASN\.1 :cal SetSyn("asn")<CR>
 an 50.10.500 &Syntax.AB.Asterisk\ config :cal SetSyn("asterisk")<CR>
 an 50.10.510 &Syntax.AB.Asterisk\ voicemail\ config :cal SetSyn("asteriskvm")<CR>
@@ -485,7 +485,7 @@ an 50.130.170 &Syntax.S-Sm.Scheme :cal SetSyn("scheme")<CR>
 an 50.130.180 &Syntax.S-Sm.Scilab :cal SetSyn("scilab")<CR>
 an 50.130.190 &Syntax.S-Sm.Screen\ RC :cal SetSyn("screen")<CR>
 an 50.130.200 &Syntax.S-Sm.SCSS :cal SetSyn("scss")<CR>
-an 50.130.210 &Syntax.S-Sm.SDC\ Synopsys\ Design\ Constraints :cal SetSyn("sdc")<CR>
+an 50.130.210 &Syntax.S-Sm.SDC\ Synopsis\ Design\ Constraints :cal SetSyn("sdc")<CR>
 an 50.130.220 &Syntax.S-Sm.SDL :cal SetSyn("sdl")<CR>
 an 50.130.230 &Syntax.S-Sm.Sed :cal SetSyn("sed")<CR>
 an 50.130.240 &Syntax.S-Sm.Sendmail\.cf :cal SetSyn("sm")<CR>

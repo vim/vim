@@ -187,11 +187,11 @@ POZNÁMKA: Písmena dw se zobrazí na posledním řádku obrazovky jakmile je
 
   Formát mazacího příkazu  d  je následující:
 
-	 [číslo]   d   objekt     NEBO     d   [číslo]   objekt
+	 [číslo]   d   object     NEBO     d   [číslo]   object
   Kde:
     číslo - udává kolikrát se příkaz vykoná (volitelné, výchozí=1).
     d - je příkaz mazání.
-    objekt - udává na čem se příkaz vykonává (vypsané níže).
+    object - udává na čem se příkaz vykonává (vypsané níže).
 
   Krátký výpis objektů:
     w - od kurzoru do konce slova, včetně mezer.
@@ -262,11 +262,11 @@ POZNÁMKA:  Stlačením klávesy objektu v Normálním módu se kurzor přesune 
 
   4. Formát příkazu v Normálním módu je:
 
-       [číslo]   příkaz   objekt    NEBO    příkaz     [číslo]   objekt
+       [číslo]   příkaz   object    NEBO    příkaz     [číslo]   object
      kde:
        číslo - udává počet opakování příkazu
        příkaz - udává co je třeba vykonat, například  d  maže
-       objekt - udává rozsah příkazu, například  w  (slovo),
+       object - udává rozsah příkazu, například  w  (slovo),
 		$ (do konce řádku), atd.
 
   5. Pro vrácení předešlé činnosti, napiš:	u (malé u)
@@ -291,7 +291,7 @@ POZNÁMKA:  Stlačením klávesy objektu v Normálním módu se kurzor přesune 
 
      d) Také se dokážeš vzdělávat?
      b) Fialky jsou modré,
-     c) Inteligence se učí,
+     c) Intelligence se učí,
      a) Růže jsou červené,
 
 
@@ -350,7 +350,7 @@ Všimni si, že  cw  nejen nahrazuje slovo, ale také přemístí do vkládání
 
   1. Příkaz pro úpravu pracuje stejně jako pro mazání. Formát je:
 
-       [číslo]   c   objekt	 NEBO	   c	[číslo]   objekt
+       [číslo]   c   object	 NEBO	   c	[číslo]   object
 
   2. Objekty jsou také shodné, jako např.: w (slovo), $ (konec řádku), atd.
 
@@ -375,13 +375,13 @@ Všimni si, že  cw  nejen nahrazuje slovo, ale také přemístí do vkládání
   2. Pro nahrazení znaku pod kurzorem, napiš  r  a potom znak, kterým
      chceš původní znak nahradit.
 
-  3. Příkaz na upravování umožňuje změnit specifikovaný objekt od kurzoru
+  3. Příkaz na upravování umožňuje změnit specifikovaný object od kurzoru
      do konce objektu. Například: Napiš  cw  ,čímž změníš text od pozice
      kurzoru do konce slova,  c$  změní text do konce řádku.
 
   4. Formát pro nahrazování je:
 
-	 [číslo]   c   objekt      NEBO     c   [číslo]   objekt
+	 [číslo]   c   object      NEBO     c   [číslo]   object
 
 Nyní přejdi na následující lekci.
 

@@ -3,7 +3,7 @@
 ===============================================================================
 
      Vim es un editor muy potente que dispone de muchos mandatos, demasiados
-     para ser explicados en un tutor como éste. Este tutor está diseñado
+     para set explicados en un tutor como éste. Este tutor está diseñado
      para describir suficientes mandatos para que usted sea capaz de
      aprender fácilmente a usar Vim como un editor de propósito general.
 
@@ -76,7 +76,7 @@ Nota: Las teclas de movimiento del cursor también funcionan. Pero usando
   1. Mueva el cursor a la línea de abajo señalada con --->.
 
   2. Para corregir los errores, mueva el cursor hasta que esté bajo el
-     carácter que va a ser borrado.
+     carácter que va a set borrado.
 
   3. Pulse la tecla  x	para borrar el carácter sobrante.
 
@@ -99,7 +99,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
   1. Mueva el cursor a la primera línea de abajo señalada con --->.
 
   2. Para que la primera línea sea igual a la segunda, mueva el cursor bajo el
-     primer carácter que sigue al texto que ha de ser insertado.
+     primer carácter que sigue al texto que ha de set insertado.
 
   3. Pulse  i  y escriba los caracteres a añadir.
 
@@ -241,7 +241,7 @@ NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
   4. Ahora corrija todos los errores de la línea usando el mandato  x.
   5. Pulse ahora  U  mayúscula para devolver la línea a su estado original.
   6. Pulse ahora  u  unas pocas veces para deshacer lo hecho por  U  y los
-     mandatos previos.
+     mandatos previous.
   7. Ahora pulse CTRL-R (mantenga pulsada la tecla CTRL y pulse R) unas
      pocas veces para volver a ejecutar los mandatos (deshacer lo deshecho).
 
@@ -341,7 +341,7 @@ NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		      Lección 3.4: MÁS CAMBIOS USANDO c
 
-   ** El mandato change se utiliza con los mismos objetos que delete. **
+   ** El mandato change se utilize con los mismos objetos que delete. **
 
   1. El mandato change funciona de la misma forma que delete. El formato es:
 
@@ -358,7 +358,7 @@ NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
      y pulse <ESC>.
 
 ---> El final de esta línea necesita alguna ayuda para que sea como la segunda.
----> El final de esta línea necesita ser corregido usando el mandato  c$.
+---> El final de esta línea necesita set corregido usando el mandato  c$.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    RESUMEN DE LA LECCIÓN 3
@@ -512,7 +512,7 @@ Nota: ¡Esto es muy útil en la detección de errores en un programa con
      le mostrará una lista de su directorio, igual que si estuviera en el
      símbolo del sistema. Si  ls  no funciona utilice	!:dir	.
 
---->Nota: De esta manera es posible ejecutar cualquier mandato externo.
+--->Nota: De esta manera es possible ejecutar cualquier mandato externo.
 
 --->Nota: Todos los mandatos   :   deben finalizarse pulsando <INTRO>.
 

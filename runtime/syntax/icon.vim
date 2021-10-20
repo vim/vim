@@ -21,7 +21,7 @@ syn keyword  iconFunction   pos proc pull push put read reads
 syn keyword  iconFunction   real remove rename repl reverse right rtod
 syn keyword  iconFunction   runerr save seek seq set sin sort
 syn keyword  iconFunction   sortf sqrt stop string system tab table
-syn keyword  iconFunction   tan trim type upto variable where write writes
+syn keyword  iconFunction   tan trim type up to variable where write writes
 
 " Keywords
 syn match iconKeyword "&allocated"

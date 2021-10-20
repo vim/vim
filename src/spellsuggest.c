@@ -19,7 +19,7 @@
  * Use this to adjust the score after finding suggestions, based on the
  * suggested word sounding like the bad word.  This is much faster than doing
  * it for every possible suggestion.
- * Disadvantage: When "the" is typed as "hte" it sounds quite different ("@"
+ * Disadvantage: When "the" is typed as "the" it sounds quite different ("@"
  * vs "ht") and goes down in the list.
  * Used when 'spellsuggest' is set to "best".
  */
@@ -3309,8 +3309,8 @@ badword:
 		    goodscore = 0;
 
 		// Add a small penalty for changing the first letter from
-		// lower to upper case.  Helps for "tath" -> "Kath", which is
-		// less common than "tath" -> "path".  Don't do it when the
+		// lower to upper case.  Helps for "that" -> "Kath", which is
+		// less common than "that" -> "path".  Don't do it when the
 		// letter is the same, that has already been counted.
 		gc = PTR2CHAR(p);
 		if (SPELL_ISUPPER(gc))

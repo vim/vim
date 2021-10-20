@@ -43,7 +43,7 @@ syn match asmOpcode "xor\.[lbw]"
 syn keyword asmOpcode andc band bcc bclr bcs beq bf bge bgt
 syn keyword asmOpcode bhi bhs biand bild bior bist bixor bmi
 syn keyword asmOpcode bne bnot bnp bor bpl bpt bra brn bset
-syn keyword asmOpcode bsr btst bst bt bvc bvs bxor cmp daa
+syn keyword asmOpcode bsr btst bst bt bvc bvs bxor cmp data
 syn keyword asmOpcode das eepmov eepmovw inc jmp jsr ldc movfpe
 syn keyword asmOpcode movtpe mov nop orc rte rts sleep stc
 syn keyword asmOpcode sub trapa xorc

@@ -50,7 +50,7 @@ Allgemeiner betrachtet, wird \fBVim\fP folgendermaßen gestartet:
 .PP
   vim [Optionen] [Dateiliste]
 .PP
-Bei einer fehlenden Dateiliste startet der Editor mit einem leeren
+Bei einer fehlenden Dateiliste started der Editor mit einem leeren
 Puffer. Andernfalls werden nach den folgenden vier Möglichkeiten eine oder
 mehrere Dateien bearbeitet:
 .TP  12
@@ -72,12 +72,12 @@ einem »Tag« ab, einer Art Sprungmarke. {Tag} wird in der Tag\-Datei
 nachgeschlagen, die zugehörige Datei wird zur aktuellen und der zugehörige
 Befehl wird ausgeführt. Dies wird meistens für Programme in der Sprache »C«
 benutzt, wobei {Tag} ein Funktionsname sein könnte. Die Wirkung dieses
-Befehls ist, dass die Datei, die die Funktion enthält, als aktuelle im
-Editor geöffnet und angezeigt wird und der Cursor auf dem Beginn der
-Funktion positioniert wird. Siehe »:help tag\-commands«.
+Befehls ist, dass die Datei, die die Function enthält, also aktuelle im
+Editor geöffnet und angezeigt wird und der Cursor auf dem Begin der
+Function positioniert wird. Siehe »:help tag\-commands«.
 .TP 
 \-q [Fehlerdatei]
-Startet im QuickFix\-Modus. Die Datei [Fehlerdatei] wird gelesen und der
+Started im QuickFix\-Modus. Die Datei [Fehlerdatei] wird gelesen und der
 erste Fehler wird angezeigt. Falls [Fehlerdatei] ausgelassen wird, wird der
 Dateiname aus der Option 'errorfile' verwendet (bei AmigaOS ist dies
 vorgabemäßig »AztecC.Err«, sowie „errors.err« bei anderen). Weitere Fehler
@@ -87,14 +87,14 @@ können mit dem »:cn«\-Befehl angesprungen werden. Siehe „:help quickfix«.
 starten (die ausführbare Datei kann dieselbe sein).
 .TP  10
 vim
-der »normale« Weg, alles ist standardmäßig
+der »normal« Weg, alles ist standardmäßig
 .TP 
 ex
-Startet im Ex\-Modus. Mit dem Befehl »:vi« gelangt man in den normalen
+Started im Ex\-Modus. Mit dem Befehl »:vi« gelangt man in den normalen
 Modus. Funktioniert auch mit dem Argument »\-e«.
 .TP 
 view
-Startet im Nur\-Lesen\-Modus. Die Datei wird vor dem Überschreiben
+Started im Nur\-Lesen\-Modus. Die Datei wird vor dem Überschreiben
 geschützt. Dasselbe wird mit dem Parameter »\-R« erreicht.
 .TP 
 gvim gview
@@ -126,7 +126,7 @@ gesetzt. Siehe »:help search\-pattern«.
 +{Befehl}
 .TP 
 \-c {Befehl}
-{Befehl} wird nach dem Lesen der ersten Datei ausgeführt. Als {Befehl} wird
+{Befehl} wird nach dem Lesen der ersten Datei ausgeführt. Also {Befehl} wird
 ein Ex\-Befehl erwartet. Sind in {Befehl} Leerzeichen vorhanden, muss alles
 in Anführungszeichen gesetzt werden (hängt von der verwendeten Shell
 ab). Beispiel: vim "+set si" main.c
@@ -137,7 +137,7 @@ Anmerkung: Sie können bis zu 10 »+«\- oder „\-c«\-Befehle verwenden.
 {Datei} wird nach dem Lesen der ersten Datei ausgeführt. Dies entspricht »\-c
 "source {Datei}"«. {Datei} darf nicht mit einem Bindestrich (\-)
 anfangen. Wenn kein Dateiname angegeben wird, wird »Session.vim« verwendet
-(Funktioniert nur, wenn »\-S« als letzter Parameter steht).
+(Funktioniert nur, wenn »\-S« also letzter Parameter steht).
 .TP 
 \-\-cmd {Befehl}
 Wie »\-c«, aber dieser Befehl wird vor allen VimRC\-Dateien ausgeführt. Sie
@@ -145,7 +145,7 @@ können unabhängig von den »\-c«\-Befehlen bis zu 10 dieser Befehle verwenden
 .TP 
 \-A
 Falls \fBVim\fP mit Unterstützung für das Schreiben von rechts nach links und
-arabischer Tastaturbelegung compiliert wurde (ARABIC), startet dieser
+arabischer Tastaturbelegung compiliert wurde (ARABIC), started dieser
 Parameter den Modus fürs Arabische (:set arabic). Anderenfalls beendet sich
 \fBVim\fP mit einer Fehlermeldung.
 .TP 
@@ -158,12 +158,12 @@ Kompatibel: Setzt die Option 'compatible'. Das macht \fBVim\fP im Verhalten
 sehr ähnlich zu Vi, selbst wenn eine VimRC\-Datei existiert.
 .TP 
 \-d
-Startet im diff\-Modus. Es sollten zwei, drei oder vier Dateinamen als
+Started im diff\-Modus. Es sollten zwei, drei oder vier Dateinamen also
 Parameter übergeben werden. \fBVim\fP öffnet sie alle und zeigt die
 Unterschiede an. Arbeitet wie vimdiff(1).
 .TP 
 \-d {Gerät}
-Öffnet das {Gerät}, um es als Terminal zu nutzen. Nur für AmigaOS. Beispiel:
+Öffnet das {Gerät}, um es also Terminal zu nutzen. Nur für AmigaOS. Beispiel:
 "\-d con:20/30/600/150".
 .TP 
 D
@@ -171,26 +171,26 @@ Debug\-Modus: \fBVim\fP geht in den Debug\-Modus, wenn der erste Befehl in einem
 Skript ausgeführt wird.
 .TP 
 \-e
-Startet \fBVim\fP im Ex\-Modus, als würde als ausführbare Datei »ex« aufgerufen.
+Started \fBVim\fP im Ex\-Modus, also würde also ausführbare Datei »ex« aufgerufen.
 .TP 
 \-E
-Startet \fBVim\fP im erweiterten Ex\-Modus, als würde die ausführbare Datei als
+Started \fBVim\fP im erweiterten Ex\-Modus, also würde die ausführbare Datei also
 »exim« aufgerufen.
 .TP 
 \-f
-Vordergrund: Bei der GUI\-Version erzeugt \fBVim\fP keinen neuen Prozess und
+Vordergrund: Bei der GUI\-Version erzeugt \fBVim\fP keinen neuen Process und
 löst sich nicht von der Shell, in der er aufgerufen wurde. Bei AmigaOS wird
 kein neues Fenster geöffnet. Dieser Parameter wird benutzt, damit das
 aufrufende Programm auf das Beenden des Bearbeitungssitzung wartet (z.B.:
 mail). Bei AmigaOS funktionieren die Befehle »:sh« und „:!« nicht.
 .TP 
 \-\-nofork
-Vordergrund: Bei der GUI\-Version erzeugt \fBVim\fP keinen neuen Prozess und
+Vordergrund: Bei der GUI\-Version erzeugt \fBVim\fP keinen neuen Process und
 löst sich nicht von der Shell, in der er aufgerufen wurde.
 .TP 
 \-F
 Wenn \fBVim\fP mit FKMAP\-Unterstützung für das Schreiben von rechts nach links
-und Farsi\-Tastatur\-Belegung kompiliert wurde, startet Vim im Farsi\-Modus,
+und Farsi\-Tastatur\-Belegung kompiliert wurde, started Vim im Farsi\-Modus,
 d.h. die Optionen 'fkmap' und 'rightleft' werden gesetzt. Andernfalls bricht
 \fBVim\fP mit einer Fehlermeldung ab.
 .TP 
@@ -244,7 +244,7 @@ Einstellung nützlich sein. Kann auch mit »set uc=0« erreicht werden; kann
 mit »set uc=200« aufgehoben werden.
 .TP 
 \-nb
-\fBVim\fP fungiert als Server für NetBeans. Details siehe Dokumentation.
+\fBVim\fP fungiert also Server für NetBeans. Details siehe Dokumentation.
 .TP 
 \-o[N]
 Öffnet [N] Fenster übereinander. Wenn keine Zahl angegeben wird, öffne ein
@@ -276,13 +276,13 @@ verwendet und hat denselben Dateinamen wie die Text\-Datei + ».swp«. Siehe
 „:help recovery«.
 .TP 
 \-s
-Der stille Modus: Nur wenn die ausführbare Datei als »ex« aufgerufen wird
+Der stille Modus: Nur wenn die ausführbare Datei also »ex« aufgerufen wird
 oder vor »\-s« die Option „\-e« gegeben wird.
 .TP 
 \-s {Eingabeskript}
-Die Datei {Eingabeskript} wird gelesen und ausgeführt, als würden Sie die
+Die Datei {Eingabeskript} wird gelesen und ausgeführt, also würden Sie die
 Zeichen in ihr tippen. Dasselbe kann mit dem Befehl »:source!
-{Eingabeskript}« erreicht werden. Wird das Ende der Datei vor dem Beenden
+{Eingabeskript}« erreicht werden. Wird das End der Datei vor dem Beenden
 des Editors erreicht, werden weitere Zeichen von der Tastatur gelesen.
 .TP 
 \-T {Terminal}
@@ -310,8 +310,8 @@ eingelesen werden, und über das Lesen und Schreiben einer VimInfo\-Datei. Die
 optionale Zahl N ist der Wert für 'verbose'. Vorgabe ist 10.
 .TP 
 \-v
-Startet \fBVim\fP im Vi\-Modus, so als würde die ausführbare Datei mit »vi«
-aufgerufen. Dies wirkt sich nur aus, wenn die ausführbare Datei als »ex«
+Started \fBVim\fP im Vi\-Modus, so also würde die ausführbare Datei mit »vi«
+aufgerufen. Dies wirkt sich nur aus, wenn die ausführbare Datei also »ex«
 aufgerufen wird.
 .TP 
 \-w {Ausgabeskript}
@@ -334,16 +334,16 @@ Startzeit, aber der Fenstertitel und die Zwischenablage werden nicht
 verwendet.
 .TP 
 \-y
-Startet \fBVim\fP im einfachen Modus, als würde die ausführbare Datei mit
+Started \fBVim\fP im einfachen Modus, also würde die ausführbare Datei mit
 »evim« oder »eview« aufgerufen. \fBVim\fP verhält sich dann wie ein Editor zum
 Klicken und Tippen.
 .TP 
 \-Z
-Eingeschränkter Modus: Funktioniert, als würde der Name der ausführbaren
+Eingeschränkter Modus: Funktioniert, also würde der Name der ausführbaren
 Datei mit »r« beginnen.
 .TP 
 \-\-
-Markiert das Ende der Optionen. Argumente, die folgen, werden als Dateinamen
+Markiert das End der Optionen. Argumente, die folgen, werden also Dateinamen
 behandelt. Dies kann benutzt werden, um einen Dateinamen mit »\-« am Anfang
 zu verwenden.
 .TP 
@@ -355,7 +355,7 @@ Gibt eine Hilfe\-Nachricht aus und beendet, wie »\-h«.
 .TP 
 \-\-literal
 Nimmt die Dateinamen so wie sie sind und vervollständigt sie nicht nach
-Metazeichen (*,?). Dies wirkt sich nicht unter Unix aus, wo die Shell die
+Metazeichen (*,?). Dies wirkt sich nicht under Unix aus, wo die Shell die
 Metazeichen expandiert.
 .TP 
 \-\-noplugin
@@ -388,7 +388,7 @@ Wie »\-\-remote\-wait«, aber ohne Warnung, wenn kein Server gefunden wird.
 Listet die Namen aller gefundenen Vim\-Server auf.
 .TP 
 \-\-servername {Name}
-Benutzt {Name} als Server\-Namen. Wird für den gegenwärtigen Vim benutzt,
+Benutzt {Name} also Server\-Namen. Wird für den gegenwärtigen Vim benutzt,
 außer es wird mit dem Argument »\-\-remote« benutzt, dann ist es der Name des
 zu kontaktierenden Servers.
 .TP 
@@ -460,7 +460,7 @@ Für die neuesten Informationen lesen Sie die Vim\-Homepage:
 <URL:http://www.vim.org/>
 .SH "SIEHE AUCH"
 vimtutor(1)
-.SH AUTOR
+.SH AUTHOR
 \fBVim\fP wurde größtenteils von Bram Moolenaar erstellt, mit viel Hilfe von
 anderen Leuten. Siehe »:help credits« in \fBVim.\fP
 .br
@@ -468,9 +468,9 @@ anderen Leuten. Siehe »:help credits« in \fBVim.\fP
 G.R. (Fred) Walter geschrieben wurde. Es ist jedoch kaum etwas vom
 ursprünglichen Code übrig geblieben.
 .SH FEHLER
-Die sind möglich. Siehe »:help todo« für eine Liste bekannter Probleme.
+Die sind möglich. Siehe »:help todo« für eine Liste bekannter Problem.
 .PP
-Beachten Sie, dass gewisse Dinge, die manche Leute als Fehler betrachten
+Beachten Sie, dass gewisse Dinge, die manche Leute also Fehler betrachten
 mögen, in Wirklichkeit durch zu getreue Nachbildung des Vi\-Verhaltens
 verursacht werden. Und falls Sie denken, dass andere Dinge Fehler sind,
 »weil Vi es anders tut«, sollten Sie einen genaueren Blick auf die Datei

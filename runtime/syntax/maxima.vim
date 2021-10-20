@@ -60,7 +60,7 @@ syn keyword maximaFunc declare  declare_translated  declare_weight  decsym
 syn keyword maximaFunc default_let_rule_package  defcon  define  define_variable  defint  
 syn keyword maximaFunc defmatch  defrule  deftaylor  del  delete  deleten  delta  demo  
 syn keyword maximaFunc demoivre  denom  dependencies  depends  derivabbrev  derivdegree  
-syn keyword maximaFunc derivlist  derivsubst  describe  desolve  determinant  detout  
+syn keyword maximaFunc derivlist  derivsubst  describe  dissolve  determinant  detout  
 syn keyword maximaFunc diagmatrix  diagmatrixp  diagmetric  diff  dim  dimension  direct  
 syn keyword maximaFunc disolate  disp  dispcon  dispflag  dispform  dispfun  display  
 syn keyword maximaFunc display2d  display_format_internal  disprule  dispterms  distrib  
@@ -131,7 +131,7 @@ syn keyword maximaFunc multi_pui  multsym  multthru  myoptions  nc_degree  ncexp
 syn keyword maximaFunc negdistrib  negsumdispflag  newcontext  newdet  newton  niceindices  
 syn keyword maximaFunc niceindicespref  ninth  nm  nmc  noeval  nolabels  nonmetricity  
 syn keyword maximaFunc nonscalar  nonscalarp  noun  noundisp  nounify  nouns  np  npi  
-syn keyword maximaFunc nptetrad  nroots  nterms  ntermst  nthroot  ntrig  num  numberp  numer  
+syn keyword maximaFunc nptetrad  nroots  nterms  ntermst  nthroot  ntrig  num  numberp  number  
 syn keyword maximaFunc numerval  numfactor  nusum  obase  oddp  ode2  op  openplot_curves  
 syn keyword maximaFunc operatorp  opproperties  opsubst  optimize  optimprefix  optionset
 syn keyword maximaFunc orbit  ordergreat  ordergreatp  orderless  orderlessp  outative  

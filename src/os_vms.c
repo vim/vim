@@ -225,14 +225,14 @@ mch_getenv(char_u *lognam)
     static char		buffer[LNM$C_NAMLENGTH+1];
     char_u		*cp = NULL;
     unsigned long	attrib;
-    int			lengte = 0, dum = 0, idx = 0;
+    int			lengte = 0, dumb = 0, idx = 0;
     ITMLST2		itmlst;
     char		*sbuf = NULL;
 
     vul_desc(&d_lognam, (char *)lognam);
     vul_desc(&d_file_dev, "LNM$FILE_DEV");
     attrib = LNM$M_CASE_BLIND;
-    vul_item(&itmlst.index, sizeof(int), LNM$_INDEX, (char *)&idx, &dum);
+    vul_item(&itmlst.index, sizeof(int), LNM$_INDEX, (char *)&idx, &dumb);
     vul_item(&itmlst.string, LNM$C_NAMLENGTH, LNM$_STRING, buffer, &lengte);
     itmlst.nul	= 0;
     if (sys$trnlnm(&attrib, &d_file_dev, &d_lognam, NULL,&itmlst) == SS$_NORMAL)
@@ -260,7 +260,7 @@ mch_getenv(char_u *lognam)
     int
 mch_setenv(char *var, char *value, int x)
 {
-    int		res, dum;
+    int		res, dumb;
     long	attrib = 0L;
     char	acmode = PSL$C_SUPER;	// needs SYSNAM privilege
     DESC	tabnam, lognam;
@@ -269,7 +269,7 @@ mch_setenv(char *var, char *value, int x)
     vul_desc(&tabnam, "LNM$JOB");
     vul_desc(&lognam, var);
     vul_item(&itmlst.equ, value ? strlen(value) : 0, value ? LNM$_STRING : 0,
-	    value, &dum);
+	    value, &dumb);
     itmlst.nul	= 0;
     res = sys$crelnm(&attrib, &tabnam, &lognam, &acmode, &itmlst);
     return((res == 1) ? 0 : -1);

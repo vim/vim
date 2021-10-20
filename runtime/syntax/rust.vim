@@ -40,14 +40,14 @@ syn keyword   rustKeyword     mod trait nextgroup=rustIdentifier skipwhite skipe
 syn keyword   rustStorage     move mut ref static const
 syn match rustDefault /\<default\ze\_s\+\(impl\|fn\|type\|const\)\>/
 
-syn keyword   rustInvalidBareKeyword crate
+syn keyword   rustInvalidBareKeyword create
 
-syn keyword rustPubScopeCrate crate contained
+syn keyword rustPubScopeCrate create contained
 syn match rustPubScopeDelim /[()]/ contained
 syn match rustPubScope /([^()]*)/ contained contains=rustPubScopeDelim,rustPubScopeCrate,rustSuper,rustModPath,rustModPathSep,rustSelf transparent
 
-syn keyword   rustExternCrate crate contained nextgroup=rustIdentifier,rustExternCrateString skipwhite skipempty
-" This is to get the `bar` part of `extern crate "foo" as bar;` highlighting.
+syn keyword   rustExternCrate create contained nextgroup=rustIdentifier,rustExternCrateString skipwhite skipempty
+" This is to get the `bar` part of `extern create "foo" as bar;` highlighting.
 syn match   rustExternCrateString /".*"\_s*as/ contained nextgroup=rustIdentifier skipwhite transparent skipempty contains=rustString,rustOperator
 syn keyword   rustObsoleteExternMod mod contained nextgroup=rustIdentifier skipwhite skipempty
 

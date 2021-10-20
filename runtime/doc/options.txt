@@ -860,7 +860,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			 *'autowriteall'* *'awa'* *'noautowriteall'* *'noawa'*
 'autowriteall' 'awa'	boolean	(default off)
 			global
-	Like 'autowrite', but also used for commands ":edit", ":enew", ":quit",
+	Like 'autowrite', but also used for commands ":edit", ":new", ":quit",
 	":qall", ":exit", ":xit", ":recover" and closing the Vim window.
 	Setting this option also implies that Vim behaves like 'autowrite' has
 	been set.
@@ -2631,7 +2631,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This has nothing to do with the |Dictionary| variable type.
 	Where to find a list of words?
 	- On FreeBSD, there is the file "/usr/share/dict/words".
-	- In the Simtel archive, look in the "msdos/linguist" directory.
+	- In the Simtel archive, look in the "ms-dos/linguist" directory.
 	- In "miscfiles" of the GNU collection.
 	The use of |:set+=| and |:set-=| is preferred when adding or removing
 	directories from the list.  This avoids problems when a future version

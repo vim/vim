@@ -1286,7 +1286,7 @@ enddef
 
 def Test_windo_missing_endif()
   var lines =<< trim END
-      windo if 1
+      window if 1
   END
   CheckDefExecFailure(lines, 'E171:', 1)
 enddef

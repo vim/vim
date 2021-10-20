@@ -81,7 +81,7 @@ syn keyword antElement display striplinecomments style subant substitution suppo
 syn keyword antElement display syspropertyset tabstospaces tag taglet tailfilter tar tarfileset target
 syn keyword antElement display targetfile targetfilelist targetfileset taskdef tempfile test testlet text title
 syn keyword antElement display to token tokenfilter touch transaction translate triggers trim tstamp type
-syn keyword antElement display typedef unjar untar unwar unzip uptodate url user vbc vssadd vsscheckin
+syn keyword antElement display typedef unjar untar unwar unzip up-to-date url user vbc vssadd vsscheckin
 syn keyword antElement display vsscheckout vsscp vsscreate vssget vsshistory vsslabel waitfor war wasclasspath
 syn keyword antElement display webapp webinf weblogic weblogictoplink websphere whichresource wlclasspath
 syn keyword antElement display wljspc wsdltodotnet xmlcatalog xmlproperty xmlvalidate xslt zip zipfileset

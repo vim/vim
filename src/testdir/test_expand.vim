@@ -69,7 +69,7 @@ func Test_expandcmd()
   call setline('.', 'Vim!@#')
   call assert_equal('e Vim', expandcmd('e <cword>'))
   call assert_equal('e Vim!@#', expandcmd('e <cWORD>'))
-  enew!
+  new!
   edit Xfile.java
   call assert_equal('e Xfile.py', expandcmd('e %:r.py'))
   call assert_equal('make abc.java', expandcmd('make abc.%:e'))
@@ -79,7 +79,7 @@ func Test_expandcmd()
 
   call assert_fails('call expandcmd("make <afile>")', 'E495:')
   call assert_fails('call expandcmd("make <afile>")', 'E495:')
-  enew
+  new
   call assert_fails('call expandcmd("make %")', 'E499:')
   let $FOO="blue\tsky"
   call setline(1, "$FOO")

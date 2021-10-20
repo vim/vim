@@ -32,7 +32,7 @@
 # define HAVE_DIRFD
 #endif
 
-static char_u *next_fenc(char_u **pp, int *alloced);
+static char_u *next_fenc(char_u **pp, int *allocated);
 #ifdef FEAT_EVAL
 static char_u *readfile_charconvert(char_u *fname, char_u *fenc, int *fdp);
 #endif
@@ -2767,16 +2767,16 @@ set_forced_fenc(exarg_T *eap)
  * "pp" points to fenc_next.  It's advanced to the next item.
  * When there are no more items, an empty string is returned and *pp is set to
  * NULL.
- * When *pp is not set to NULL, the result is in allocated memory and "alloced"
+ * When *pp is not set to NULL, the result is in allocated memory and "allocated"
  * is set to TRUE.
  */
     static char_u *
-next_fenc(char_u **pp, int *alloced)
+next_fenc(char_u **pp, int *allocated)
 {
     char_u	*p;
     char_u	*r;
 
-    *alloced = FALSE;
+    *allocated = FALSE;
     if (**pp == NUL)
     {
 	*pp = NULL;
@@ -2800,7 +2800,7 @@ next_fenc(char_u **pp, int *alloced)
 	}
     }
     if (r != NULL)
-	*alloced = TRUE;
+	*allocated = TRUE;
     else
     {
 	// out of memory
@@ -3485,7 +3485,7 @@ shorten_filenames(char_u **fnames, int count)
 
 /*
  * Add extension to file name - change path/fo.o.h to path/fo.o.h.ext or
- * fo_o_h.ext for MSDOS or when shortname option set.
+ * fo_o_h.ext for MS-DOS or when shortname option set.
  *
  * Assumed that fname is a valid name found in the filesystem we assure that
  * the return value is a different name and ends in 'ext'.
@@ -3555,9 +3555,9 @@ buf_modname(
 
     /*
      * search backwards until we hit a '/', '\' or ':' replacing all '.'
-     * by '_' for MSDOS or when shortname option set and ext starts with a dot.
+     * by '_' for MS-DOS or when shortname option set and ext starts with a dot.
      * Then truncate what is after the '/', '\' or ':' to 8 characters for
-     * MSDOS and 26 characters for AMIGA, a lot more for UNIX.
+     * MS-DOS and 26 characters for AMIGA, a lot more for UNIX.
      */
     for (ptr = retval + fnamelen; ptr > retval; MB_PTR_BACK(retval, ptr))
     {

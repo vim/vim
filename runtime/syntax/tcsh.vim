@@ -43,7 +43,7 @@ syn match tcshCommands	'\v[a-zA-Z0-9\\./_$:-]+' contains=tcshSpecial,tcshUsrVar,
 
 " Builtin commands except those treated specially. Currently (un)set(env),
 " (un)alias, if, while, else, bindkey
-syn keyword tcshBuiltin nextgroup=tcshStatementEnd alloc bg break breaksw builtins bye case cd chdir complete continue default dirs echo echotc end endif endsw eval exec exit fg filetest foreach getspath getxvers glob goto hashstat history hup inlib jobs kill limit log login logout ls ls-F migrate newgrp nice nohup notify onintr popd printenv pushd rehash repeat rootnode sched setpath setspath settc setty setxvers shift source stop suspend switch telltc termname time umask uncomplete unhash universe unlimit ver wait warp watchlog where which
+syn keyword tcshBuiltin nextgroup=tcshStatementEnd alloc bg break breaksw builtins bye case cd chdir complete continue default dirs echo echotc end endif endsw eval exec exit fg file test foreach getspath getxvers glob goto hashstat history hup inlib jobs kill limit log login logout ls ls-F migrate newgrp nice nohup notify onintr popd printenv pushd rehash repeat rootnode sched setpath setspath settc setty setxvers shift source stop suspend switch telltc termname time umask incomplete unhash universe unlimit ver wait warp watchlog where which
 
 " StatementEnd is anything after a built-in / command till the lexical end of a
 " statement (;, |, ||, |&, && or end of line)

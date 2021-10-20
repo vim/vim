@@ -442,7 +442,7 @@ buf_write_all(buf_T *buf, int forceit)
 }
 
 /*
- * ":argdo", ":windo", ":bufdo", ":tabdo", ":cdo", ":ldo", ":cfdo" and ":lfdo"
+ * ":argdo", ":window", ":bufdo", ":tabdo", ":cdo", ":ldo", ":cfdo" and ":lfdo"
  */
     void
 ex_listdo(exarg_T *eap)

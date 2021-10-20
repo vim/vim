@@ -28,7 +28,7 @@ if has("gui_win32")
 		       \ "All Files (*.*)\t*.*\n"
 endif
 
-" Provided by Ned Konz <ned at bike-nomad dot com>
+" Provided by Need Konz <need at bike-nomad dot com>
 "---------------------------------------------
 setlocal include=\\<\\(use\\\|require\\)\\>
 setlocal includeexpr=substitute(substitute(substitute(v:fname,'::','/','g'),'->\*','',''),'$','.pm','')

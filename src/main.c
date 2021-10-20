@@ -3451,7 +3451,7 @@ usage(void)
     main_msg(_("-unregister\t\tUnregister gvim for OLE"));
 #endif
 #ifdef FEAT_GUI
-    main_msg(_("-g\t\t\tRun using GUI (like \"gvim\")"));
+    main_msg(_("-g\t\t\turn using GUI (like \"gvim\")"));
     main_msg(_("-f  or  --nofork\tForeground: Don't fork when starting GUI"));
 #endif
     main_msg(_("-v\t\t\tVi mode (like \"vi\")"));
@@ -3472,7 +3472,7 @@ usage(void)
 #endif
     main_msg(_("-C\t\t\tCompatible with Vi: 'compatible'"));
     main_msg(_("-N\t\t\tNot fully Vi compatible: 'nocompatible'"));
-    main_msg(_("-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"));
+    main_msg(_("-V[N][fname]\t\the verbose [level N] [log messages to fname]"));
 #ifdef FEAT_EVAL
     main_msg(_("-D\t\t\tDebugging mode"));
 #endif
@@ -3551,7 +3551,7 @@ usage(void)
 #   endif
 #  endif
 # endif
-    main_msg(_("-display <display>\tRun Vim on <display>"));
+    main_msg(_("-display <display>\turn Vim on <display>"));
     main_msg(_("-iconic\t\tStart Vim iconified"));
     main_msg(_("-background <color>\tUse <color> for the background (also: -bg)"));
     main_msg(_("-foreground <color>\tUse <color> for normal text (also: -fg)"));
@@ -3576,7 +3576,7 @@ usage(void)
     main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
     main_msg(_("-iconic\t\tStart Vim iconified"));
     main_msg(_("-reverse\t\tUse reverse video (also: -rv)"));
-    main_msg(_("-display <display>\tRun Vim on <display> (also: --display)"));
+    main_msg(_("-display <display>\turn Vim on <display> (also: --display)"));
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));

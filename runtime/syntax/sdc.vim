@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language:     SDC - Synopsys Design Constraints
+" Language:     SDC - Synopsis Design Constraints
 " Maintainer:   Maurizio Tranchero - maurizio.tranchero@gmail.com
 " Last Change:  Thu Mar  25 17:35:16 CET 2009
 " Credits:      based on TCL Vim syntax file

@@ -191,7 +191,7 @@ msgid "[Preview]"
 msgstr "[Esikatselu]"
 
 # sijainti tiedostossa -indikaattoreja:
-# 4 merkkiä sais riittää
+# 4 merkkiä says riittää
 msgid "All"
 msgstr "Kaik"
 
@@ -296,7 +296,7 @@ msgstr "Anna sama avain uudestaan: "
 msgid "Keys don't match!"
 msgstr "Avaimet eivät täsmää!"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[salattu]"
 
 #, c-format
@@ -656,7 +656,7 @@ msgstr "E704: Funcrefin muuttujanimen pitää alkaa suuraakkosella: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: Muuttujanimi on sama kuin olemassaolevan funktion: %s"
+msgstr "E705: Muuttujanimi on sama kuin olemassaolevan function: %s"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -1283,7 +1283,7 @@ msgid "End of sourced file"
 msgstr "Ladatun tiedoston loppu"
 
 msgid "End of function"
-msgstr "Funktion loppu"
+msgstr "Function loppu"
 
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Käyttäjän määrittelemän komennon monimerkityksinen käyttö"
@@ -1439,7 +1439,7 @@ msgid "E466: :winpos requires two number arguments"
 msgstr "E466: :winpos vaatii kaksi lukuargumenttia"
 
 msgid "E930: Cannot use :redir inside execute()"
-msgstr "E930: Komentoa :redir ei voi käyttää funktion execute() sisällä"
+msgstr "E930: Komentoa :redir ei voi käyttää function execute() sisällä"
 
 msgid "Save Redirection"
 msgstr "Tallenna uudelleenosoitus"
@@ -1448,7 +1448,7 @@ msgid "Save View"
 msgstr "Tallenna näkymä"
 
 msgid "Save Session"
-msgstr "Tallenna sessio"
+msgstr "Tallenna session"
 
 msgid "Save Setup"
 msgstr "Tallenna asetukset"
@@ -1607,7 +1607,7 @@ msgid "E602: :endtry without :try"
 msgstr "E602: :endtry ilman komentoa :try"
 
 msgid "E193: :endfunction not inside a function"
-msgstr "E193: :endfunction funktion ulkopuolella"
+msgstr "E193: :endfunction function ulkopuolella"
 
 msgid "E788: Not allowed to edit another buffer now"
 msgstr "E788: Puskuria ei voi muokata nyt"
@@ -2420,7 +2420,7 @@ msgstr "E619: tiedosto %s ei ole tuettu PostScript-resurssitiedosto"
 
 #, c-format
 msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: resurssitiedoston %s versio on väärä"
+msgstr "E621: resurssitiedoston %s version on väärä"
 
 msgid "E673: Incompatible multi-byte encoding and character set."
 msgstr "E673: Tukematon monitvauinen merkistökoodaus ja merkistö."
@@ -2568,7 +2568,7 @@ msgstr ""
 "\n"
 "       a: Etsi sijotukset tähän symboliin\n"
 "       c: Etsi tätä funktiota kutsuvat funktiot\n"
-"       d: Etsi tämän funktion kutsumat funktiot\n"
+"       d: Etsi tämän function kutsumat funktiot\n"
 "       e: Etsi tämä egrep-lauseke\n"
 "       f: Etsi tämä tiedosto\n"
 "       g: Etsi tämä määritys\n"
@@ -2871,7 +2871,7 @@ msgid "Vim: Error: Failure to start gvim from NetBeans\n"
 msgstr "Vim: Virhe: Gvimin käynnistys NetBeansistä ei onnistu\n"
 
 msgid "Vim: Error: This version of Vim does not run in a Cygwin terminal\n"
-msgstr "Vim: Virhe: Tämä versio Vimistä ei toimi Cygwinin terminaalissa\n"
+msgstr "Vim: Virhe: Tämä version Vimistä ei toimi Cygwinin terminaalissa\n"
 
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: Varoitus: Tuloste ei mene terminaalille\n"
@@ -2953,7 +2953,7 @@ msgstr "-register\t\trekisteröi gvim OLEa varten"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tPoista gvim OLE-rekisteristä"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tAvaa GUI (kuten gvimillä)"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -3001,7 +3001,7 @@ msgstr "-C\t\t\tVi-yhteensopivuustila: compatible"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tEi Vi-yhteensopivuutta: nocompatible"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr ""
 "-V[N][tnimi]\t\tMonisanainen tuloste [Taso N] [kirjoita tuloste tnimeen] "
 
@@ -3015,7 +3015,7 @@ msgid "-r\t\t\tList swap files and exit"
 msgstr "-r\t\t\tLuetteloi swap-tiedostot ja poistu"
 
 msgid "-r (with file name)\tRecover crashed session"
-msgstr "-r (tiedostonimi)\tPalauta kaatunut sessio"
+msgstr "-r (tiedostonimi)\tPalauta kaatunut session"
 
 msgid "-L\t\t\tSame as -r"
 msgstr "-L\t\t\tkuten -r"
@@ -3076,7 +3076,7 @@ msgid "-c <command>\t\tExecute <command> after loading the first file"
 msgstr "-c <komento>\t\tSuorita <komento> ensimmäisen tiedoston latauduttua"
 
 msgid "-S <session>\t\tSource file <session> after loading the first file"
-msgstr "-S <sessio>\t\tLataa <sessio> ensimmäisen tiedoston latauduttua"
+msgstr "-S <session>\t\tLataa <session> ensimmäisen tiedoston latauduttua"
 
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr "-s <skripti>\tLue normaalitilan komentoja <skripti>-tiedostosta"
@@ -3174,7 +3174,7 @@ msgstr ""
 "\n"
 "Gvimin (Athena-version) tuntemat argumentit:\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <näyttö>\tSuorita Vim <näytössä>"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3225,7 +3225,7 @@ msgstr ""
 "\n"
 "Gvimin (GTK+-version) tuntemat argumentit:\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <näyttö>\tSuorita Vim näytöllä <näyttö> (myös: --display)"
 
 # X-ikkunointijärjestelmässä saman sovelluksen saman luokan ikkunat
@@ -4376,7 +4376,7 @@ msgstr "Amigados 2.04 tai uudempi tarvitaan\n"
 
 #, c-format
 msgid "Need %s version %ld\n"
-msgstr "Tarvitaan %s versio %ld\n"
+msgstr "Tarvitaan %s version %ld\n"
 
 msgid "Cannot open NIL:\n"
 msgstr "Ei voi avata NILiä:\n"
@@ -5309,7 +5309,7 @@ msgstr "E754: Enintään 8 aluetta tuetaan"
 
 #, c-format
 msgid "E755: Invalid region in %s"
-msgstr "E755: Virheellinen alue kohteelle %s"
+msgstr "E755: Virheellinen value kohteelle %s"
 
 msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Varoitus: sekä yhdyssanamuodostus että NOBREAK käytössä"
@@ -5909,7 +5909,7 @@ msgstr "E117: Tuntematon funktio: %s"
 
 #, c-format
 msgid "E933: Function was deleted: %s"
-msgstr "E933: Funktion nimi poistettu: %s"
+msgstr "E933: Function nimi poistettu: %s"
 
 #, c-format
 msgid "E119: Not enough arguments for function: %s"
@@ -5924,15 +5924,15 @@ msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: dict-funktio ilman sanakirjaa: %s"
 
 msgid "E129: Function name required"
-msgstr "E129: Funktion nimi puuttuu"
+msgstr "E129: Function nimi puuttuu"
 
 #, c-format
 msgid "E128: Function name must start with a capital or \"s:\": %s"
-msgstr "E128: Funktion nimen pitää alkaa suuraakkosella tai merkeillä ’s:’: %s"
+msgstr "E128: Function nimen pitää alkaa suuraakkosella tai merkeillä ’s:’: %s"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
-msgstr "E884: Funktion nimessä ei saa olla kaksoispistettä: %s"
+msgstr "E884: Function nimessä ei saa olla kaksoispistettä: %s"
 
 #, c-format
 msgid "E123: Undefined function: %s"
@@ -5958,7 +5958,7 @@ msgstr "W22: Ylimääräistä tekstiä :endfunction jälkeen: %s"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
-msgstr "E707: Funktion nimi on ristiriidassa muuttujan kanssa: %s"
+msgstr "E707: Function nimi on ristiriidassa muuttujan kanssa: %s"
 
 #, c-format
 msgid "E127: Cannot redefine function %s: It is in use"
@@ -5966,14 +5966,14 @@ msgstr "E127: Funktiota %s ei voi määritellä uudestaan, koska se on käytöss
 
 #, c-format
 msgid "E746: Function name does not match script file name: %s"
-msgstr "E746: Funktion nimi ei ole sama kuin skriptin tiedostonnimi: %s"
+msgstr "E746: Function nimi ei ole sama kuin skriptin tiedostonnimi: %s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
 msgstr "E131: Funktiota %s ei voi poistaa"
 
 msgid "E133: :return not inside a function"
-msgstr "E133: :return ei ole funktion sisällä"
+msgstr "E133: :return ei ole function sisällä"
 
 #, c-format
 msgid "E107: Missing parentheses: %s"
@@ -6197,7 +6197,7 @@ msgid "VIM - Vi IMproved"
 msgstr "VIM - Vi IMproved"
 
 msgid "version "
-msgstr "versio "
+msgstr "version "
 
 msgid "by Bram Moolenaar et al."
 msgstr "tekijät Bram Moolenaar et al."
@@ -6683,7 +6683,7 @@ msgid "E449: Invalid expression received"
 msgstr "E449: Virheellinen ilmaus saatu"
 
 msgid "E463: Region is guarded, cannot modify"
-msgstr "E463: Alue on suojattu, muuttaminen ei onnistu"
+msgstr "E463: Value on suojattu, muuttaminen ei onnistu"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: NetBeans ei tue muutoksia kirjoitussuojattuihin tiedostoihin"

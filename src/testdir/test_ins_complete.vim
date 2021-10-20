@@ -14,7 +14,7 @@ func Test_ins_complete()
   set ff=unix
   call writefile(["test11\t36Gepeto\t/Tag/",
 	      \ "asd\ttest11file\t36G",
-	      \ "Makefile\tto\trun"], 'Xtestfile')
+	      \ "Makefile\tto\turn"], 'Xtestfile')
   call writefile(['', 'start of testfile',
 	      \ 'ru',
 	      \ 'run1',
@@ -24,7 +24,7 @@ func Test_ins_complete()
 	      \ 'end of testfile'], 'Xtestdata')
   set ff&
 
-  enew!
+  new!
   edit Xtestdata
   new
   call append(0, ['#include "Xtestfile"', ''])
@@ -78,7 +78,7 @@ func Test_ins_complete()
   set cpt=u nohid
   " checks unloaded buffer expansion
   only
-  exe "normal oEN\<C-N>"
+  exe "normal one\<C-N>"
   call assert_equal('ENDTEST', getline('.'))
   " checks adding mode abortion
   exe "normal ounl\<C-N>\<C-X>\<C-X>\<C-P>"
@@ -554,7 +554,7 @@ func Test_ins_compl_tag_sft()
   [CODE]
   call writefile(code, 'Xfoo')
 
-  enew
+  new
   set showfulltag
   exe "normal isec\<C-X>\<C-]>\<C-N>\<CR>"
   call assert_equal('int second() {}', getline(1))

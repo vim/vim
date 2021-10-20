@@ -45,7 +45,7 @@ if !exists("dtd_no_tag_errors")
     syn region dtdError contained start=+<!+lc=2 end=+>+
 endif
 
-" if this is a html like comment hightlight also
+" if this is a html like comment highlight also
 " the opening <! and the closing > as Comment.
 syn region dtdComment		start=+<![ \t]*--+ end=+-->+ contains=dtdTodo,@Spell
 

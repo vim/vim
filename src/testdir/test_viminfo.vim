@@ -635,7 +635,7 @@ func Test_viminfo_file_marks()
   call test_settime(35)
   edit again
   call test_settime(40)
-  edit fourty
+  edit forty
   wviminfo Xviminfo
 
   sp Xviminfo
@@ -708,7 +708,7 @@ func Test_viminfo_file_mark_unloaded_buf()
   edit! Xfile1
   call setpos("'u", [0, 3, 1, 0])
   call setpos("'v", [0, 5, 1, 0])
-  enew
+  new
   wviminfo Xviminfo
   %bwipe
   edit Xfile1
@@ -863,7 +863,7 @@ endfunc
 
 " Test for saving and restoring last substitute string in viminfo
 func Test_viminfo_lastsub()
-  enew
+  new
   call append(0, "blue blue blue")
   call cursor(1, 1)
   s/blue/green/
@@ -872,7 +872,7 @@ func Test_viminfo_lastsub()
   rviminfo! Xviminfo
   &
   call assert_equal("green yellow green", getline(1))
-  enew!
+  new!
   call delete('Xviminfo')
 endfunc
 
@@ -973,7 +973,7 @@ func XTest_viminfo_marks_merge()
   let save_viminfo = &viminfo
   set viminfo&vim
   set viminfo^=%
-  enew
+  new
   %argdelete
   %bwipe
 

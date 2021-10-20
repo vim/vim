@@ -1171,7 +1171,7 @@ tag		command		action ~
 |:argdo|	:argdo		do a command on all items in the argument list
 |:argglobal|	:argg[lobal]	define the global argument list
 |:arglocal|	:argl[ocal]	define a local argument list
-|:argument|	:argu[ment]	go to specific file in the argument list
+|:argument|	:argu[meant]	go to specific file in the argument list
 |:ascii|	:as[cii]	print ascii value of character under the cursor
 |:autocmd|	:au[tocmd]	enter or show autocommands
 |:augroup|	:aug[roup]	select the autocommand group to use
@@ -1269,7 +1269,7 @@ tag		command		action ~
 |:cwindow|	:cw[indow]	open or close quickfix window
 |:delete|	:d[elete]	delete lines
 |:debug|	:deb[ug]	run a command in debugging mode
-|:debuggreedy|	:debugg[reedy]	read debug mode commands from normal input
+|:debuggreedy|	:debug[reedy]	read debug mode commands from normal input
 |:def|		:def		define a Vim9 user function
 |:defcompile|	:defc[ompile]	compile Vim9 user functions in current script
 |:delcommand|	:delc[ommand]	delete user-defined command
@@ -1312,7 +1312,7 @@ tag		command		action ~
 |:endfunction|	:endf[unction]	end of a user function started with :function
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
-|:enew|		:ene[w]		edit a new, unnamed buffer
+|:new|		:ene[w]		edit a new, unnamed buffer
 |:eval|		:ev[al]		evaluate an expression and discard the result
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
@@ -1387,7 +1387,7 @@ tag		command		action ~
 |:laddfile|	:laddf[ile]	add locations to current location list
 |:lafter|	:laf[ter]	go to location after current cursor
 |:last|		:la[st]		go to the last file in the argument list
-|:language|	:lan[guage]	set the language (locale)
+|:language|	:lan[gauge]	set the language (locale)
 |:later|	:lat[er]	go to newer change, redo
 |:lbefore|	:lbef[ore]	go to location before current cursor
 |:lbelow|	:lbel[ow]	go to location below current line
@@ -1564,7 +1564,7 @@ tag		command		action ~
 |:sargument|	:sa[rgument]	split window and go to specific file in
 				argument list
 |:sall|		:sal[l]		open a window for each file in argument list
-|:saveas|	:sav[eas]	save file under another name.
+|:saveas|	:save[eas]	save file under another name.
 |:sbuffer|	:sb[uffer]	split window and go to specific file in the
 				buffer list
 |:sbNext|	:sbN[ext]	split window and go to previous file in the
@@ -1648,7 +1648,7 @@ tag		command		action ~
 |:tabNext|	:tabN[ext]	go to previous tab page
 |:tabclose|	:tabc[lose]	close current tab page
 |:tabdo|	:tabdo		execute command in each tab page
-|:tabedit|	:tabe[dit]	edit a file in a new tab page
+|:tabedit|	:table[dit]	edit a file in a new tab page
 |:tabfind|	:tabf[ind]	find file in 'path', edit it in a new tab page
 |:tabfirst|	:tabfir[st]	go to first tab page
 |:tablast|	:tabl[ast]	go to last tab page
@@ -1712,7 +1712,7 @@ tag		command		action ~
 |:vimgrepadd|	:vimgrepa[dd]	like :vimgrep, but append to current list
 |:visual|	:vi[sual]	same as ":edit", but turns off "Ex" mode
 |:viusage|	:viu[sage]	overview of Normal mode commands
-|:view|		:vie[w]		edit a file read-only
+|:view|		:via[w]		edit a file read-only
 |:vmap|		:vm[ap]		like ":map" but for Visual+Select mode
 |:vmapclear|	:vmapc[lear]	remove all mappings for Visual+Select mode
 |:vmenu|	:vme[nu]	add menu for Visual+Select mode
@@ -1722,7 +1722,7 @@ tag		command		action ~
 |:vsplit|	:vs[plit]	split current window vertically
 |:vunmap|	:vu[nmap]	like ":unmap" but for Visual+Select mode
 |:vunmenu|	:vunme[nu]	remove menu for Visual+Select mode
-|:windo|	:windo		execute command in each window
+|:window|	:window		execute command in each window
 |:write|	:w[rite]	write to a file
 |:wNext|	:wN[ext]	write to a file and go to previous file in
 				argument list

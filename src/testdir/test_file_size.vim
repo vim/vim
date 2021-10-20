@@ -25,14 +25,14 @@ func Test_File_Size()
   let res = substitute(res, "\r", "", "")
   call assert_equal('3678979763 14888896 Xtest', res)
 
-  enew!
+  new!
   call delete('Xtest')
   set fileformat& undolevels&
 endfunc
 
 " Test for writing and reading a file of over 100 Kbyte
 func Test_File_Read_Write()
-  enew!
+  new!
 
   " Create a file with the following contents
   " 1 line: "This is the start"
@@ -47,14 +47,14 @@ func Test_File_Read_Write()
   call append(6004, "This is the end")
 
   write! Xtest
-  enew!
+  new!
   edit! Xtest
 
   call assert_equal("This is the start", getline(1))
   call assert_equal("This is the middle", getline(3003))
   call assert_equal("This is the end", getline(6005))
 
-  enew!
+  new!
   call delete("Xtest")
 endfunc
 

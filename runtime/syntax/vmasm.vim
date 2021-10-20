@@ -131,7 +131,7 @@ syn match vmasmPreCond		"\.iff\=\>"
 syn match vmasmPreCond		"\.if_false\>"
 syn match vmasmPreCond		"\.iftf\=\>"
 syn match vmasmPreCond		"\.if_true\(_false\)\=\>"
-syn match vmasmPreCond		"\.iif\>"
+syn match vmasmPreCond		"\.if\>"
 
 " Loop control
 syn match vmasmRepeat		"\.irpc\=\>"

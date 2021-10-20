@@ -128,7 +128,7 @@ the first file where "x_cnt" was not found.
 file only if it was changed.  If no "x_cnt" was changed to "x_counter" nothing
 happens.
 
-There is also the ":windo" command, which executes its argument in all
+There is also the ":window" command, which executes its argument in all
 windows.  And ":bufdo" executes its argument on all buffers.  Be careful with
 this, because you might have more files in the buffer list than you think.
 Check this with the ":buffers" command (or ":ls").

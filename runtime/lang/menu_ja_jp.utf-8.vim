@@ -38,10 +38,10 @@ menutrans &File				ファイル(&F)
 menutrans &Open\.\.\.<Tab>:e		開く(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	分割して開く(&L)\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	タブページで開く<Tab>:tabnew
-menutrans &New<Tab>:enew		新規作成(&N)<Tab>:enew
+menutrans &New<Tab>:new		新規作成(&N)<Tab>:new
 menutrans &Close<Tab>:close		閉じる(&C)<Tab>:close
 menutrans &Save<Tab>:w			保存(&S)<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	名前を付けて保存(&A)\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save	名前を付けて保存(&A)\.\.\.<Tab>:save
 menutrans Split\ &Diff\ with\.\.\.	差分表示(&D)\.\.\.
 menutrans Split\ Patched\ &By\.\.\.	パッチ結果を表示(&B)\.\.\.
 menutrans &Print			印刷(&P)
@@ -183,14 +183,14 @@ menutrans &Folding			折畳み(&F)
 " open close folds
 menutrans &Enable/Disable\ folds<Tab>zi	有効/無効切替(&E)<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	カーソル行を表示(&V)<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx	カーソル行だけを表示(&W)<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx	カーソル行だけを表示(&W)<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm	折畳みを閉じる(&L)<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM	全折畳みを閉じる(&C)<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr	折畳みを開く(&P)<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	全折畳みを開く(&O)<Tab>zR
 " fold method
 menutrans Fold\ Met&hod			折畳み方法(&H)
-menutrans M&anual			手動(&A)
+menutrans M&annual			手動(&A)
 menutrans I&ndent			インデント(&N)
 menutrans E&xpression			式評価(&X)
 menutrans S&yntax			シンタックス(&Y)

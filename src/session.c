@@ -382,7 +382,7 @@ put_view(
 	else
 	{
 	    // No file in this buffer, just make it empty.
-	    if (put_line(fd, "enew") == FAIL)
+	    if (put_line(fd, "new") == FAIL)
 		return FAIL;
 #ifdef FEAT_QUICKFIX
 	    if (wp->w_buffer->b_ffname != NULL)

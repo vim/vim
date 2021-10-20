@@ -4702,7 +4702,7 @@ my_iconv_open(char_u *to, char_u *from)
 #define ICONV_TESTLEN 400
     char_u	tobuf[ICONV_TESTLEN];
     char	*p;
-    size_t	tolen;
+    size_t	token;
     static int	iconv_ok = -1;
 
     if (iconv_ok == FALSE)
@@ -4726,8 +4726,8 @@ my_iconv_open(char_u *to, char_u *from)
 	 * stops for no apparent reason after about 8160 characters.
 	 */
 	p = (char *)tobuf;
-	tolen = ICONV_TESTLEN;
-	(void)iconv(fd, NULL, NULL, &p, &tolen);
+	token = ICONV_TESTLEN;
+	(void)iconv(fd, NULL, NULL, &p, &token);
 	if (p == NULL)
 	{
 	    iconv_ok = FALSE;
@@ -4759,7 +4759,7 @@ iconv_string(
     const char	*from;
     size_t	fromlen;
     char	*to;
-    size_t	tolen;
+    size_t	token;
     size_t	len = 0;
     size_t	done = 0;
     char_u	*result = NULL;
@@ -4785,10 +4785,10 @@ iconv_string(
 	}
 
 	to = (char *)result + done;
-	tolen = len - done - 2;
+	token = len - done - 2;
 	// Avoid a warning for systems with a wrong iconv() prototype by
 	// casting the second argument to void *.
-	if (iconv(vcp->vc_fd, (void *)&from, &fromlen, &to, &tolen)
+	if (iconv(vcp->vc_fd, (void *)&from, &fromlen, &to, &token)
 								!= (size_t)-1)
 	{
 	    // Finished, append a NUL.

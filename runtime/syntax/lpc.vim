@@ -135,7 +135,7 @@ syn keyword     lpc_efuns       contained heart_beats
 syn keyword     lpc_efuns       contained id_matrix implode in_edit in_input inherit_list inherits input_to interactive intp
 syn keyword     lpc_efuns       contained keys
 syn keyword     lpc_efuns       contained link living livings load_object localtime log log10 lookat_rotate lower_case lpc_info
-syn keyword     lpc_efuns       contained malloc_check malloc_debug malloc_status map map_array map_delete map_mapping mapp master match_path max_eval_cost member_array memory_info memory_summary message mkdir moncontrol move_object mud_status
+syn keyword     lpc_efuns       contained malloc_check malloc_debug malloc_status map map_array map_delete map_mapping map master match_path max_eval_cost member_array memory_info memory_summary message mkdir moncontrol move_object mud_status
 syn keyword     lpc_efuns       contained named_livings network_stats next_bit next_inventory notify_fail nullp
 syn keyword     lpc_efuns       contained objectp objects oldcrypt opcprof origin
 syn keyword     lpc_efuns       contained parse_add_rule parse_add_synonym parse_command parse_dump parse_init parse_my_rules parse_refresh parse_remove parse_sentence pluralize pointerp pow present previous_object printf process_string process_value program_info
@@ -177,7 +177,7 @@ syn keyword     lpcConstant     MUD_NAME F__THIS_OBJECT
 " Copy : Some of the following seems to be copied from c.vim but not quite
 " the same in details because the syntax for C and LPC is different.
 "
-" Color scheme : this syntax file had been thouroughly tested to work well
+" Color scheme : this syntax file had been thoroughly tested to work well
 " for all of the dark-backgrounded color schemes Vim has provided officially,
 " and it should be quite Ok for all of the bright-backgrounded color schemes,
 " of course it works best for the color scheme that I am using, download it

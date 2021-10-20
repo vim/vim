@@ -18,7 +18,7 @@ if exists("b:current_syntax")
 endif
 
 
-" syn case match " case sensitiv match is default
+" syn case match " case sensitive match is default
 
 " A bunch of keywords
 syn keyword modsim3Keyword ACTID ALL AND AS ASK
@@ -55,7 +55,7 @@ syn keyword modsim3Type ANYARRAY ANYOBJ ANYREC ARRAY BOOLEAN CHAR INTEGER
 syn keyword modsim3Type LMONITORED LRMONITORED NILARRAY NILOBJ NILREC REAL
 syn keyword modsim3Type RECORD RMONITOR RMONITORED STRING
 
-" catch errros cause by wrong parenthesis
+" catch errors cause by wrong parenthesis
 " slight problem with "( *)" or "(* )". Hints?
 syn region modsim3Paren	transparent start='(' end=')' contains=ALLBUT,modsim3ParenError
 syn match modsim3ParenError ")"

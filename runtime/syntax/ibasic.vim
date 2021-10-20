@@ -31,7 +31,7 @@ syn case ignore
 "
 " A bunch of useful BASIC keywords
 "
-syn keyword ibasicStatement	beep bload bsave call absolute chain chdir circle
+syn keyword ibasicStatement	beep bloat bsave call absolute chain chdir circle
 syn keyword ibasicStatement	clear close cls color com common const data
 syn keyword ibasicStatement	loop draw end environ erase error exit field
 syn keyword ibasicStatement	files function get gosub goto
@@ -41,7 +41,7 @@ syn keyword ibasicStatement	on error open option base out paint palette pcopy
 syn keyword ibasicStatement	pen play pmap poke preset print print# using pset
 syn keyword ibasicStatement	put randomize read redim reset restore resume
 syn keyword ibasicStatement	return rmdir rset run seek screen
-syn keyword ibasicStatement	shared shell sleep sound static stop strig sub
+syn keyword ibasicStatement	shared shell sleep sound static stop string sub
 syn keyword ibasicStatement	swap system timer troff tron type unlock
 syn keyword ibasicStatement	view wait width window write
 syn keyword ibasicStatement	date$ mid$ time$
@@ -61,7 +61,7 @@ syn keyword ibasicBuiltInFunction	abs asc atn cdbl cint clng cos csng csrlin cvd
 syn keyword ibasicBuiltInFunction	cvi cvl cvs cvsmbf eof erdev erl err exp fileattr
 syn keyword ibasicBuiltInFunction	fix fre freefile inp instr lbound len loc lof
 syn keyword ibasicBuiltInFunction	log lpos mod peek pen point pos rnd sadd screen seek
-syn keyword ibasicBuiltInFunction	setmem sgn sin spc sqr stick strig tab tan ubound
+syn keyword ibasicBuiltInFunction	setmem sgn sin spc sqr stick string tab tan ubound
 syn keyword ibasicBuiltInFunction	val valptr valseg varptr varseg
 syn keyword ibasicBuiltInFunction	chr\$ command$ date$ environ$ erdev$ hex$ inkey$
 syn keyword ibasicBuiltInFunction	input$ ioctl$ lcases$ laft$ ltrim$ mid$ mkdmbf$ mkd$
@@ -110,7 +110,7 @@ syn match	ibasicFunction	"\<[a-zA-Z_][a-zA-Z0-9_]*\>\s*("me=e-1,he=e-1
 syn case match
 syn match	ibasicOctalError	"\<0\o*[89]"
 "
-" String and Character contstants
+" String and Character constants
 "
 syn region	ibasicString		start='"' end='"' contains=ibasicSpecial,ibasicTodo
 syn region	ibasicString		start="'" end="'" contains=ibasicSpecial,ibasicTodo

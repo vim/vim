@@ -150,7 +150,7 @@ end of window 2
 	      \ '. line 11 ZYXWVUTSRQPONMLKJIHGREDCBA9876543210 11',
 	      \ '. line 11 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ 11',
 	      \ ''],  getline(1, '$'))
-  enew!
+  new!
 
   " ****** tests using two different buffers *****
   wincmd t | wincmd j | close
@@ -221,7 +221,7 @@ end of window 2
 	      \ '. line 11 ZYXWVUTSRQPONMLKJIHGREDCBA9876543210 11',
 	      \ '. line 11 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ 11',
 	      \ ''],  getline(1, '$'))
-  enew!
+  new!
 
   " Test 'syncbind'
   wincmd t | set noscrollbind | normal ggL
@@ -266,7 +266,7 @@ end of window 2
 	      \ '. line 15 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ 15',
 	      \ '. line 12 ZYXWVUTSRQPONMLKJIHGREDCBA9876543210 12',
 	      \ ],  getline(1, '$'))
-  enew!
+  new!
 
   new | only!
   set scrollbind& scrollopt& scrolloff& wrap& equalalways& splitbelow&

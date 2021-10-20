@@ -3,7 +3,7 @@
 " Tests for "r<Tab>" with 'smarttab' and 'expandtab' set/not set.
 " Also test that dv_ works correctly
 func Test_smarttab()
-  enew!
+  new!
   set smarttab expandtab ts=8 sw=4
   " make sure that backspace works, no matter what termcap is used
   exe "set t_kD=\<C-V>x7f t_kb=\<C-V>x08"
@@ -41,7 +41,7 @@ func Test_smarttab()
   exe "normal /Second line/\<CR>"
   exe "normal fwdv_"
   call assert_equal('  with whitespace', getline('.'))
-  enew!
+  new!
   set expandtab& smartindent& copyindent& ts& sw& sts&
 endfunc
 

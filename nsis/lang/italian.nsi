@@ -25,7 +25,7 @@ LangString ^UninstallCaption ${LANG_ITALIAN} \
 #    "Cartella d'installazione (il nome deve finire con $\"vim$\")"
 
 LangString str_show_readme          ${LANG_ITALIAN} \
-    "Visualizza README al termine dell'installazione"
+    "Visualizza README al determine dell'installazione"
 
 # Install types:
 LangString str_type_typical         ${LANG_ITALIAN} \
@@ -61,7 +61,7 @@ LangString str_section_batch        ${LANG_ITALIAN} \
     "Crea file .bat"
 LangString str_desc_batch           ${LANG_ITALIAN} \
     "Crea file .bat per varianti di Vim nella directory \
-     di Windows, per utilizzo da riga di comando."
+     di Windows, per utilizzo da riga di commando."
 
 LangString str_group_icons          ${LANG_ITALIAN} \
     "Crea icone per Vim"
@@ -224,7 +224,7 @@ LangString str_msg_install_fail  ${LANG_ITALIAN} \
     "Installazione non riuscita. Miglior fortuna alla prossima!"
 
 LangString str_msg_rm_exe_fail   ${LANG_ITALIAN} \
-    "Alcuni file in $0 non sono stati cancellati!$\r$\n\
+    "Alcuni file in $0 non sono statuses cancellati!$\r$\n\
      Dovreste cancellarli voi stessi."
 
 #LangString str_msg_rm_root_fail  ${LANG_ITALIAN} \
@@ -254,7 +254,7 @@ LangString str_msg_compat_title    ${LANG_ITALIAN} \
 LangString str_msg_compat_desc     ${LANG_ITALIAN} \
     "&Compatibilità e funzionalità ulteriori"
 LangString str_msg_compat_vi       ${LANG_ITALIAN} \
-    "Compatibile con Vi"
+    "Compatible con Vi"
 LangString str_msg_compat_vim      ${LANG_ITALIAN} \
     "Vim originale"
 LangString str_msg_compat_defaults ${LANG_ITALIAN} \
@@ -276,8 +276,8 @@ LangString str_msg_mouse_title   ${LANG_ITALIAN} \
 LangString str_msg_mouse_desc    ${LANG_ITALIAN} \
     "&Comportamento dei pulsanti destro e sinistro"
 LangString str_msg_mouse_default ${LANG_ITALIAN} \
-    "Destro: popup menu, Sinistro: modalità visuale (Default)"
+    "Destro: popup menu, Sinistro: modalità visual (Default)"
 LangString str_msg_mouse_windows ${LANG_ITALIAN} \
     "Destro: popup menu, Sinistro: seleziona modalità (Windows)"
 LangString str_msg_mouse_unix    ${LANG_ITALIAN} \
-    "Destro: estende selezione, Sinistro: modalità visuale (Unix)"
+    "Destro: estende selezione, Sinistro: modalità visual (Unix)"

@@ -31,12 +31,12 @@ menutrans &About		&Névjegy
 menutrans &File				&Fájl
 menutrans &Open\.\.\.<Tab>:e		Meg&nyitás\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Megnyitás\ új\ a&blakba\.\.\.<Tab>:sp
-menutrans &New<Tab>:enew		Új\ dok&umentum<Tab>:enew
+menutrans &New<Tab>:new		Új\ dok&umentum<Tab>:new
 menutrans &Close<Tab>:close		Be&zárás<Tab>:close
 menutrans &Save<Tab>:w			&Mentés<Tab>:w
 menutrans Split\ &Diff\ with\.\.\.	Össze&hasonlítás\.\.\.
 menutrans Split\ Patched\ &By\.\.\.	Összehasonlítás\ &patch\ -el\.\.\.
-menutrans Save\ &As\.\.\.<Tab>:sav	Menté&s\ másként\.\.\.<Tab>:w
+menutrans Save\ &As\.\.\.<Tab>:save	Menté&s\ másként\.\.\.<Tab>:w
 menutrans &Print			Nyomt&atás
 menutrans Sa&ve-Exit<Tab>:wqa		Mentés\ és\ k&ilépés<Tab>:wqa
 menutrans E&xit<Tab>:qa			&Kilépés<Tab>:qa
@@ -122,13 +122,13 @@ menutrans &Set\ Compiler		Fordító\ &megadása
 " Tools.Folding
 menutrans &Enable/Disable\ folds<Tab>zi	Behajtások\ BE&/KI<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	&Aktuális\ sor\ látszik<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx	&Csak\ aktuális\ sor\ látszik<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx	&Csak\ aktuális\ sor\ látszik<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm	Következő\ szint\ be&zárása<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM	Összes\ hajtás\ &bezárása<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr	Következő\ szint\ ki&nyitása<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	Összes\ hajtás\ &kinyitása<Tab>zR
 menutrans Fold\ Met&hod			Behajtások\ &létrehozása
-menutrans M&anual			&Kézi
+menutrans M&annual			&Kézi
 menutrans I&ndent			Be&húzás
 menutrans E&xpression			Ki&fejezés
 menutrans S&yntax			&Szintaxis

@@ -321,7 +321,7 @@ msgid "E506: Can't write to backup file (add ! to override)"
 msgstr "E506: Ne eblas skribi restaŭrkopion (aldonu ! por transpasi)"
 
 msgid "E507: Close error for backup file (add ! to override)"
-msgstr "E507: Eraro dum fermo de restaŭrkopio (aldonu ! transpasi)"
+msgstr "E507: Eraro dumb fermo de restaŭrkopio (aldonu ! transpasi)"
 
 msgid "E508: Can't read file for backup (add ! to override)"
 msgstr "E508: Ne eblas legi restaŭrkopion (aldonu ! por transpasi)"
@@ -345,7 +345,7 @@ msgid "E212: Can't open file for writing"
 msgstr "E212: Ne eblas malfermi la dosieron por skribi"
 
 msgid "E949: File changed while writing"
-msgstr "E949: Dosiero ŝanĝiĝis dum skribo"
+msgstr "E949: Dosiero ŝanĝiĝis dumb skribo"
 
 msgid "E512: Close failed"
 msgstr "E512: Fermo malsukcesis"
@@ -446,7 +446,7 @@ msgstr "E906: ne estas malfermita kanalo"
 
 #, c-format
 msgid "E630: %s(): write while not connected"
-msgstr "E630: %s(): konservo dum nekonektita"
+msgstr "E630: %s(): konservo dumb nekonektita"
 
 #, c-format
 msgid "E631: %s(): write failed"
@@ -537,7 +537,7 @@ msgstr "Tajpu la ŝlosilon denove: "
 msgid "Keys don't match!"
 msgstr "Ŝlosiloj ne kongruas!"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[ĉifrita]"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
@@ -607,7 +607,7 @@ msgid "E97: Cannot create diffs"
 msgstr "E97: Ne eblas krei dosierdiferencojn"
 
 msgid "E960: Problem creating the internal diff"
-msgstr "E960: Problemo dum kreado de la interna dosierdiferencilo"
+msgstr "E960: Problemo dumb kreado de la interna dosierdiferencilo"
 
 msgid "Patch file"
 msgstr "Flika dosiero"
@@ -850,7 +850,7 @@ msgid "E990: Missing end marker '%s'"
 msgstr "E990: Mankas fina markilo '%s'"
 
 msgid "E985: .= is not supported with script version 2"
-msgstr "E985: .= ne estas subtenata kun versio 2 de vim-skripto"
+msgstr "E985: .= ne estas subtenata kun version 2 de vim-skripto"
 
 msgid "E687: Less targets than List items"
 msgstr "E687: Malpli da celoj ol Listeroj"
@@ -1135,12 +1135,12 @@ msgstr "E666: kompililo nesubtenata: %s"
 #, c-format
 msgid "W20: Required python version 2.x not supported, ignoring file: %s"
 msgstr ""
-"W20: versio de Pitono 2.x bezonata sed nesubtenata, ignoro de dosiero: %s"
+"W20: version de Pitono 2.x bezonata sed nesubtenata, ignoro de dosiero: %s"
 
 #, c-format
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
 msgstr ""
-"W21: versio de Pitono 3.x bezonata sed nesubtenata, ignoro de dosiero: %s"
+"W21: version de Pitono 3.x bezonata sed nesubtenata, ignoro de dosiero: %s"
 
 #, c-format
 msgid "Current %slanguage: \"%s\""
@@ -1200,7 +1200,7 @@ msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
 msgstr "E943: Tabulo de komandoj estas ĝisdatigenda, lanĉu 'make cmdidx'"
 
 msgid "E319: Sorry, the command is not available in this version"
-msgstr "E319: Bedaŭrinde, tiu komando ne haveblas en tiu versio"
+msgstr "E319: Bedaŭrinde, tiu komando ne haveblas en tiu version"
 
 #, c-format
 msgid "%d more file to edit.  Quit anyway?"
@@ -1333,7 +1333,7 @@ msgid "Untitled"
 msgstr "Sen titolo"
 
 msgid "E196: No digraphs in this version"
-msgstr "E196: Neniu duliteraĵo en tiu versio"
+msgstr "E196: Neniu duliteraĵo en tiu version"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
 msgstr "E608: Ne eblas lanĉi (:throw) escepton kun prefikso 'Vim'"
@@ -1530,15 +1530,15 @@ msgstr "[Nekompleta lasta linio]"
 
 #, c-format
 msgid "E208: Error writing to \"%s\""
-msgstr "E208: Eraro dum skribo de \"%s\""
+msgstr "E208: Eraro dumb skribo de \"%s\""
 
 #, c-format
 msgid "E209: Error closing \"%s\""
-msgstr "E209: Eraro dum fermo de \"%s\""
+msgstr "E209: Eraro dumb fermo de \"%s\""
 
 #, c-format
 msgid "E210: Error reading \"%s\""
-msgstr "E210: Eraro dum lego de \"%s\""
+msgstr "E210: Eraro dumb lego de \"%s\""
 
 msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: Aŭtokomando FileChangedShell forviŝis bufron"
@@ -2014,7 +2014,7 @@ msgid "Printing aborted"
 msgstr "Presado ĉesigita"
 
 msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Eraro dum skribo de PostSkripta eliga dosiero"
+msgstr "E455: Eraro dumb skribo de PostSkripta eliga dosiero"
 
 #, c-format
 msgid "E624: Can't open file \"%s\""
@@ -2077,7 +2077,7 @@ msgid "Print job sent."
 msgstr "Laboro de presado sendita."
 
 msgid "E679: recursive loop loading syncolor.vim"
-msgstr "E679: rekursia buklo dum ŝargo de syncolor.vim"
+msgstr "E679: rekursia buklo dumb ŝargo de syncolor.vim"
 
 #, c-format
 msgid "E411: highlight group not found: %s"
@@ -2191,7 +2191,7 @@ msgstr "Aldonis datumbazon de cscope %s"
 
 #, c-format
 msgid "E262: error reading cscope connection %d"
-msgstr "E262: eraro dum legado de konekto de cscope %d"
+msgstr "E262: eraro dumb legado de konekto de cscope %d"
 
 msgid "E561: unknown cscope search type"
 msgstr "E561: nekonata tipo de serĉo de cscope"
@@ -2330,7 +2330,7 @@ msgid "invalid expression"
 msgstr "nevalida esprimo"
 
 msgid "expressions disabled at compile time"
-msgstr "esprimoj malŝaltitaj dum kompilado"
+msgstr "esprimoj malŝaltitaj dumb kompilado"
 
 msgid "hidden option"
 msgstr "kaŝita opcio"
@@ -2357,7 +2357,7 @@ msgid "string cannot contain newlines"
 msgstr "ĉeno ne rajtas enhavi liniavancojn"
 
 msgid "error converting Scheme values to Vim"
-msgstr "eraro dum konverto de Scheme-valoro al Vim"
+msgstr "eraro dumb konverto de Scheme-valoro al Vim"
 
 msgid "Vim error: ~a"
 msgstr "Eraro de Vim: ~a"
@@ -2629,7 +2629,7 @@ msgstr "kongruo %d"
 
 #, c-format
 msgid "E491: json decode error at '%s'"
-msgstr "E491: eraro dum json-malkodado: '%s'"
+msgstr "E491: eraro dumb json-malkodado: '%s'"
 
 #, c-format
 msgid "E938: Duplicate key in JSON: \"%s\""
@@ -2705,7 +2705,7 @@ msgid "netbeans is not supported with this GUI\n"
 msgstr "netbeans ne estas subtenata kun tiu grafika interfaco\n"
 
 msgid "'-nb' cannot be used: not enabled at compile time\n"
-msgstr "'-nb' ne uzeblas: malŝaltita dum kompilado\n"
+msgstr "'-nb' ne uzeblas: malŝaltita dumb kompilado\n"
 
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Tiu Vim ne estis kompilita kun la kompara eblo."
@@ -2723,7 +2723,7 @@ msgid "Vim: Error: Failure to start gvim from NetBeans\n"
 msgstr "Vim: Eraro: malsukcesis lanĉi gvim el NetBeans\n"
 
 msgid "Vim: Error: This version of Vim does not run in a Cygwin terminal\n"
-msgstr "Vim: Eraro: Tiu versio de Vim ne ruliĝas en terminalo Cygwin\n"
+msgstr "Vim: Eraro: Tiu version de Vim ne ruliĝas en terminalo Cygwin\n"
 
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: Averto: Eligo ne estas al terminalo\n"
@@ -2805,7 +2805,7 @@ msgstr "-register\t\tRegistri tiun gvim al OLE"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tMalregistri gvim de OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tRuli per grafika interfaco (kiel \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2853,7 +2853,7 @@ msgstr "-C\t\t\tKongrua kun Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tNe tute kongrua kun Vi: 'nocompatible'"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr ""
 "-V[N][dosiernomo]\tEsti babilema [nivelo N] [konservi mesaĝojn al dosiernomo]"
 
@@ -3000,30 +3000,30 @@ msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h  aŭ  --help\tAfiŝi Helpon (tiun mesaĝon) kaj eliri"
 
 msgid "--version\t\tPrint version information and exit"
-msgstr "--version\t\tAfiŝi informon de versio kaj eliri"
+msgstr "--version\t\tAfiŝi informon de version kaj eliri"
 
 msgid ""
 "\n"
 "Arguments recognised by gvim (Motif version):\n"
 msgstr ""
 "\n"
-"Argumentoj agnoskitaj de gvim (versio Motif):\n"
+"Argumentoj agnoskitaj de gvim (version Motif):\n"
 
 msgid ""
 "\n"
 "Arguments recognised by gvim (neXtaw version):\n"
 msgstr ""
 "\n"
-"Argumentoj agnoskitaj de gvim (versio neXtaw):\n"
+"Argumentoj agnoskitaj de gvim (version neXtaw):\n"
 
 msgid ""
 "\n"
 "Arguments recognised by gvim (Athena version):\n"
 msgstr ""
 "\n"
-"Argumentoj agnoskitaj de gvim (versio Athena):\n"
+"Argumentoj agnoskitaj de gvim (version Athena):\n"
 
-msgid "-display <display>\tRun Vim on <display>"
+msgid "-display <display>\turn Vim on <display>"
 msgstr "-display <ekrano>\tLanĉi Vim sur <ekrano>"
 
 msgid "-iconic\t\tStart Vim iconified"
@@ -3073,9 +3073,9 @@ msgid ""
 "Arguments recognised by gvim (GTK+ version):\n"
 msgstr ""
 "\n"
-"Argumentoj agnoskitaj de gvim (versio GTK+):\n"
+"Argumentoj agnoskitaj de gvim (version GTK+):\n"
 
-msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgid "-display <display>\turn Vim on <display> (also: --display)"
 msgstr "-display <ekrano>\tLanĉi Vim sur tiu <ekrano> (ankaŭ: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
@@ -3187,13 +3187,13 @@ msgid "E293: block was not locked"
 msgstr "E293: bloko ne estis ŝlosita"
 
 msgid "E294: Seek error in swap file read"
-msgstr "E294: Eraro de enpoziciigo dum lego de permutodosiero .swp"
+msgstr "E294: Eraro de enpoziciigo dumb lego de permutodosiero .swp"
 
 msgid "E295: Read error in swap file"
 msgstr "E295: Eraro de lego en permutodosiero .swp"
 
 msgid "E296: Seek error in swap file write"
-msgstr "E296: Eraro de enpoziciigo dum skribo de permutodosiero .swp"
+msgstr "E296: Eraro de enpoziciigo dumb skribo de permutodosiero .swp"
 
 msgid "E297: Write error in swap file"
 msgstr "E297: Skriberaro en permutodosiero .swp"
@@ -3211,7 +3211,7 @@ msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Ĉu ne akiris blokon n-ro 2?"
 
 msgid "E843: Error while updating swap file crypt"
-msgstr "E843: Eraro dum ĝisdatigo de ĉifrada permutodosiero .swp"
+msgstr "E843: Eraro dumb ĝisdatigo de ĉifrada permutodosiero .swp"
 
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Ve, perdis la permutodosieron .swp!!!"
@@ -3249,7 +3249,7 @@ msgstr ""
 "Eble neniu ŝanĝo estis farita aŭ Vim ne ĝisdatigis la permutodosieron .swp."
 
 msgid " cannot be used with this version of Vim.\n"
-msgstr " ne uzeblas per tiu versio de vim.\n"
+msgstr " ne uzeblas per tiu version de vim.\n"
 
 msgid "Use Vim version 3.0.\n"
 msgstr "Uzu version 3.0 de Vim\n"
@@ -3274,7 +3274,7 @@ msgstr ""
 #, c-format
 msgid ""
 "E833: %s is encrypted and this version of Vim does not support encryption"
-msgstr "E833: %s estas ĉifrita kaj tiu versio de Vim ne subtenas ĉifradon"
+msgstr "E833: %s estas ĉifrita kaj tiu version de Vim ne subtenas ĉifradon"
 
 msgid " has been damaged (page size is smaller than minimum value).\n"
 msgstr " difektiĝis (paĝa grando pli malgranda ol minimuma valoro).\n"
@@ -3361,7 +3361,7 @@ msgstr "E311: Restaŭro interrompita"
 
 msgid ""
 "E312: Errors detected while recovering; look for lines starting with ???"
-msgstr "E312: Eraroj dum restaŭro; rigardu liniojn komencantajn per ???"
+msgstr "E312: Eraroj dumb restaŭro; rigardu liniojn komencantajn per ???"
 
 msgid "See \":help E312\" for more information."
 msgstr "Vidu \":help E312\" por pliaj informoj."
@@ -3421,7 +3421,7 @@ msgid "             dated: "
 msgstr "              dato: "
 
 msgid "         [from Vim version 3.0]"
-msgstr "         [de Vim versio 3.0]"
+msgstr "         [de Vim version 3.0]"
 
 msgid "         [does not look like a Vim swap file]"
 msgstr "         [ne aspektas kiel permutodosiero .swp de Vim]"
@@ -3474,7 +3474,7 @@ msgid ""
 "         [not usable with this version of Vim]"
 msgstr ""
 "\n"
-"         [ne uzebla per tiu versio de Vim]"
+"         [ne uzebla per tiu version de Vim]"
 
 msgid ""
 "\n"
@@ -3560,7 +3560,7 @@ msgstr ""
 "Trovis permutodosieron .swp kun la nomo \""
 
 msgid "While opening file \""
-msgstr "Dum malfermo de dosiero \""
+msgstr "Dumb malfermo de dosiero \""
 
 msgid "      CANNOT BE FOUND"
 msgstr "      NETROVITA"
@@ -3698,7 +3698,7 @@ msgstr "E337: Menuo ne trovita - kontrolu nomojn de menuoj"
 
 #, c-format
 msgid "Error detected while processing %s:"
-msgstr "Eraro okazis dum traktado de %s:"
+msgstr "Eraro okazis dumb traktado de %s:"
 
 #, c-format
 msgid "line %4ld:"
@@ -3787,7 +3787,7 @@ msgid "Beep!"
 msgstr "Bip!"
 
 msgid "E677: Error writing temp file"
-msgstr "E677: Eraro dum skribo de provizora dosiero"
+msgstr "E677: Eraro dumb skribo de provizora dosiero"
 
 msgid "ERROR: "
 msgstr "ERARO: "
@@ -4126,7 +4126,7 @@ msgstr "Bezonas version 2.04 de Amigados aŭ pli novan\n"
 
 #, c-format
 msgid "Need %s version %ld\n"
-msgstr "Bezonas %s-on de versio %ld\n"
+msgstr "Bezonas %s-on de version %ld\n"
 
 msgid "Cannot open NIL:\n"
 msgstr "Ne eblas malfermi NIL:\n"
@@ -4215,7 +4215,7 @@ msgid "Testing the X display failed"
 msgstr "Testo de la vidigo X malsukcesis"
 
 msgid "Opening the X display timed out"
-msgstr "Tempolimo okazis dum malfermo de vidigo X"
+msgstr "Tempolimo okazis dumb malfermo de vidigo X"
 
 msgid ""
 "\n"
@@ -4590,14 +4590,14 @@ msgid "E867: (NFA) Unknown operator '\\%%%c'"
 msgstr "E867: (NFA) Nekonata operatoro '\\%%%c'"
 
 msgid "E868: Error building NFA with equivalence class!"
-msgstr "E868: Eraro dum prekomputado de NFA kun ekvivalentoklaso!"
+msgstr "E868: Eraro dumb prekomputado de NFA kun ekvivalentoklaso!"
 
 #, c-format
 msgid "E869: (NFA) Unknown operator '\\@%c'"
 msgstr "E869: (NFA) Nekonata operatoro '\\@%c'"
 
 msgid "E870: (NFA regexp) Error reading repetition limits"
-msgstr "E870: (NFS-regulesprimo) Eraro dum legado de limoj de ripeto"
+msgstr "E870: (NFS-regulesprimo) Eraro dumb legado de limoj de ripeto"
 
 msgid "E871: (NFA regexp) Can't have a multi follow a multi"
 msgstr ""
@@ -4625,7 +4625,7 @@ msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
 "left on stack"
 msgstr ""
-"E875: (NFA-regulesprimo) (dum konverto de postmeto al NFA), restas tro da "
+"E875: (NFA-regulesprimo) (dumb konverto de postmeto al NFA), restas tro da "
 "statoj en la staplo"
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
@@ -4982,7 +4982,7 @@ msgid "E771: Old spell file, needs to be updated"
 msgstr "E771: Malnova literuma dosiero, ĝisdatigo bezonata"
 
 msgid "E772: Spell file is for newer version of Vim"
-msgstr "E772: Literuma dosiero estas por pli nova versio de Vim"
+msgstr "E772: Literuma dosiero estas por pli nova version de Vim"
 
 msgid "E770: Unsupported section in spell file"
 msgstr "E770: Nesubtenata sekcio en literuma dosiero"
@@ -4997,7 +4997,7 @@ msgstr "E779: Malnova dosiero .sug, bezonas ĝisdatigon: %s"
 
 #, c-format
 msgid "E780: .sug file is for newer version of Vim: %s"
-msgstr "E780: Dosiero .sug estas por pli nova versio de Vim: %s"
+msgstr "E780: Dosiero .sug estas por pli nova version de Vim: %s"
 
 #, c-format
 msgid "E781: .sug file doesn't match .spl file: %s"
@@ -5005,7 +5005,7 @@ msgstr "E781: Dosiero .sug ne kongruas kun dosiero .spl: %s"
 
 #, c-format
 msgid "E782: error while reading .sug file: %s"
-msgstr "E782: eraro dum legado de dosiero .sug: %s"
+msgstr "E782: eraro dumb legado de dosiero .sug: %s"
 
 #, c-format
 msgid "Reading affix file %s..."
@@ -5013,7 +5013,7 @@ msgstr "Legado de afiksa dosiero %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
-msgstr "Malsukceso dum konverto de vorto en %s linio %d: %s"
+msgstr "Malsukceso dumb konverto de vorto en %s linio %d: %s"
 
 #, c-format
 msgid "Conversion in %s not supported: from %s to %s"
@@ -5173,7 +5173,7 @@ msgstr "Legado de dosiero de vortoj %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %ld: %s"
-msgstr "Malsukceso dum konverto de vorto en %s linio %ld: %s"
+msgstr "Malsukceso dumb konverto de vorto en %s linio %ld: %s"
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %ld: %s"
@@ -5786,7 +5786,7 @@ msgid "new shell started\n"
 msgstr "nova ŝelo lanĉita\n"
 
 msgid "Vim: Error reading input, exiting...\n"
-msgstr "Vim: Eraro dum legado de eniro, elironta...\n"
+msgstr "Vim: Eraro dumb legado de eniro, elironta...\n"
 
 msgid "E881: Line count changed unexpectedly"
 msgstr "E881: Nombro de linioj ŝanĝiĝis neatendite"
@@ -6144,28 +6144,28 @@ msgid ""
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 "\n"
-"Grafika/konzola versio por MS-Vindozo 64-bitoj"
+"Grafika/konzola version por MS-Vindozo 64-bitoj"
 
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
 msgstr ""
 "\n"
-"Grafika/konzola versio por MS-Vindozo 32-bitoj"
+"Grafika/konzola version por MS-Vindozo 32-bitoj"
 
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
-"Grafika versio por MS-Vindozo 64-bitoj"
+"Grafika version por MS-Vindozo 64-bitoj"
 
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
-"Grafika versio por MS-Vindozo 32-bitoj"
+"Grafika version por MS-Vindozo 32-bitoj"
 
 msgid " with OLE support"
 msgstr " kun subteno de OLE"
@@ -6175,35 +6175,35 @@ msgid ""
 "MS-Windows 64-bit console version"
 msgstr ""
 "\n"
-"Konzola versio por MS-Vindozo 64-bitoj"
+"Konzola version por MS-Vindozo 64-bitoj"
 
 msgid ""
 "\n"
 "MS-Windows 32-bit console version"
 msgstr ""
 "\n"
-"Konzola versio por MS-Vindozo 32-bitoj"
+"Konzola version por MS-Vindozo 32-bitoj"
 
 msgid ""
 "\n"
 "macOS version"
 msgstr ""
 "\n"
-"Versio makOS"
+"Version makOS"
 
 msgid ""
 "\n"
 "macOS version w/o darwin feat."
 msgstr ""
 "\n"
-"Versio makOS sen ebloj de darwin."
+"Version makOS sen ebloj de darwin."
 
 msgid ""
 "\n"
 "OpenVMS version"
 msgstr ""
 "\n"
-"Versio OpenVMS"
+"Version OpenVMS"
 
 msgid ""
 "\n"
@@ -6237,35 +6237,35 @@ msgid ""
 "Huge version "
 msgstr ""
 "\n"
-"Grandega versio "
+"Grandega version "
 
 msgid ""
 "\n"
 "Big version "
 msgstr ""
 "\n"
-"Granda versio "
+"Granda version "
 
 msgid ""
 "\n"
 "Normal version "
 msgstr ""
 "\n"
-"Normala versio "
+"Normala version "
 
 msgid ""
 "\n"
 "Small version "
 msgstr ""
 "\n"
-"Malgranda versio "
+"Malgranda version "
 
 msgid ""
 "\n"
 "Tiny version "
 msgstr ""
 "\n"
-"Malgrandega versio "
+"Malgrandega version "
 
 msgid "without GUI."
 msgstr "sen grafika interfaco."
@@ -6364,7 +6364,7 @@ msgid "VIM - Vi IMproved"
 msgstr "VIM - Vi plibonigita"
 
 msgid "version "
-msgstr "versio "
+msgstr "version "
 
 # DP: vidu http://www.thefreedictionary.com/et+al.
 msgid "by Bram Moolenaar et al."
@@ -6390,7 +6390,7 @@ msgstr "tajpu  :help<Enenklavo>  aŭ  <F1> por aliri la helpon  "
 
 # DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
 msgid "type  :help version8<Enter>   for version info"
-msgstr "tajpu  :help version8<Enenklavo>  por informo de versio"
+msgstr "tajpu  :help version8<Enenklavo>  por informo de version"
 
 msgid "Running in Vi compatible mode"
 msgstr "Ruliĝas en reĝimo kongrua kun Vi"
@@ -6906,7 +6906,7 @@ msgid "E441: There is no preview window"
 msgstr "E441: Ne estas antaŭvida fenestro"
 
 msgid "E242: Can't split a window while closing another"
-msgstr "E242: Ne eblas dividi fenestron dum fermo de alia"
+msgstr "E242: Ne eblas dividi fenestron dumb fermo de alia"
 
 msgid "E442: Can't split topleft and botright at the same time"
 msgstr "E442: Ne eblas dividi supralivan kaj subdekstran samtempe"
@@ -6960,7 +6960,7 @@ msgid "Edits the selected file(s) with Vim"
 msgstr "Redakti la apartigita(j)n dosiero(j)n per Vim"
 
 msgid "Error creating process: Check if gvim is in your path!"
-msgstr "Eraro dum kreo de procezo: Kontrolu ĉu gvim estas en via serĉvojo!"
+msgstr "Eraro dumb kreo de procezo: Kontrolu ĉu gvim estas en via serĉvojo!"
 
 msgid "gvimext.dll error"
 msgstr "Eraro de gvimext.dll"
@@ -7116,16 +7116,16 @@ msgid "E477: No ! allowed"
 msgstr "E477: Neniu ! permesebla"
 
 msgid "E25: GUI cannot be used: Not enabled at compile time"
-msgstr "E25: Grafika interfaco ne uzeblas: Malŝaltita dum kompilado"
+msgstr "E25: Grafika interfaco ne uzeblas: Malŝaltita dumb kompilado"
 
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
-msgstr "E26: La hebrea ne uzeblas: Malŝaltita dum kompilado\n"
+msgstr "E26: La hebrea ne uzeblas: Malŝaltita dumb kompilado\n"
 
 msgid "E27: Farsi support has been removed\n"
 msgstr "E27: Persa reĝimo estis forigata\n"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
-msgstr "E800: La araba ne uzeblas: Malŝaltita dum kompilado\n"
+msgstr "E800: La araba ne uzeblas: Malŝaltita dumb kompilado\n"
 
 #, c-format
 msgid "E28: No such highlight group name: %s"
@@ -7333,7 +7333,7 @@ msgid "E857: Dictionary key \"%s\" required"
 msgstr "E857: Ŝlosilo \"%s\" de vortaro bezonata"
 
 msgid "E47: Error while reading errorfile"
-msgstr "E47: Eraro dum legado de erardosiero"
+msgstr "E47: Eraro dumb legado de erardosiero"
 
 msgid "E48: Not allowed in sandbox"
 msgstr "E48: Nepermesebla en sabloludejo"
@@ -7360,7 +7360,7 @@ msgid "E255: Couldn't read in sign data!"
 msgstr "E255: Ne eblis legi datumojn de simboloj!"
 
 msgid "E72: Close error on swap file"
-msgstr "E72: Eraro dum malfermo de permutodosiero .swp"
+msgstr "E72: Eraro dumb malfermo de permutodosiero .swp"
 
 msgid "E73: tag stack empty"
 msgstr "E73: malplena stako de etikedo"
@@ -7393,7 +7393,7 @@ msgid "E592: 'winwidth' cannot be smaller than 'winminwidth'"
 msgstr "E592: 'winwidth' ne rajtas esti malpli ol 'winminwidth'"
 
 msgid "E80: Error while writing"
-msgstr "E80: Eraro dum skribado"
+msgstr "E80: Eraro dumb skribado"
 
 msgid "E939: Positive count required"
 msgstr "E939: Pozitiva kvantoro bezonata"
@@ -7641,7 +7641,7 @@ msgid "cannot set attribute %s"
 msgstr "ne eblas agordi atributon %s"
 
 msgid "hashtab changed during iteration"
-msgstr "hakettabelo ŝanĝiĝis dum iteracio"
+msgstr "hakettabelo ŝanĝiĝis dumb iteracio"
 
 #, c-format
 msgid "expected sequence element of size 2, but got sequence of size %d"
@@ -7706,7 +7706,7 @@ msgid "internal error: unknown option type"
 msgstr "interna eraro: nekonata tipo de opcio"
 
 msgid "problem while switching windows"
-msgstr "problemo dum salto al fenestroj"
+msgstr "problemo dumb salto al fenestroj"
 
 #, c-format
 msgid "unable to unset global option %s"

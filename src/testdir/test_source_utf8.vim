@@ -45,14 +45,14 @@ func Test_source_ctrl_v()
         \ "map __5 asd\<C-V>\<C-V>\<C-V>",
         \ ], 'Xtestfile')
   source Xtestfile
-  enew!
+  new!
   exe "normal __1\<Esc>\<Esc>__2\<Esc>__3\<Esc>\<Esc>__4\<Esc>__5\<Esc>"
   exe "%s/\<C-J>/0/g"
   call assert_equal(['sd',
         \ "map __2 asd\<Esc>secondsd\<Esc>sd0map __5 asd0fifth"],
         \ getline(1, 2))
 
-  enew!
+  new!
   call delete('Xtestfile')
   unmap __1
   unmap __2

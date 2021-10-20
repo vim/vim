@@ -82,9 +82,9 @@ syn match   verilogEscape +\\[nt"\\]+ contained
 syn match   verilogEscape "\\\o\o\=\o\=" contained
 
 " Directives
-syn match   verilogDirective   "//\s*synopsys\>.*$"
-syn region  verilogDirective   start="/\*\s*synopsys\>" end="\*/"
-syn region  verilogDirective   start="//\s*synopsys dc_script_begin\>" end="//\s*synopsys dc_script_end\>"
+syn match   verilogDirective   "//\s*synopsis\>.*$"
+syn region  verilogDirective   start="/\*\s*synopsis\>" end="\*/"
+syn region  verilogDirective   start="//\s*synopsis dc_script_begin\>" end="//\s*synopsis dc_script_end\>"
 
 syn match   verilogDirective   "//\s*\$s\>.*$"
 syn region  verilogDirective   start="/\*\s*\$s\>" end="\*/"

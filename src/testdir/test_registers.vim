@@ -16,7 +16,7 @@ func Test_aaa_empty_reg_test()
 endfunc
 
 func Test_yank_shows_register()
-    enew
+    new
     set report=0
     call setline(1, ['foo', 'bar'])
     " Line-wise
@@ -138,13 +138,13 @@ func Test_register_one()
 
   " n
   call setline(1, ["Ynext"])
-  normal gg$"adn
+  normal gg$"and
   call assert_equal("Ynex", @a)
   call assert_equal("Ynex", @1)
 
   " N
   call setline(1, ["prevY"])
-  normal gg0"adN
+  normal gg0"and
   call assert_equal("prev", @a)
   call assert_equal("prev", @1)
 
@@ -227,11 +227,11 @@ func Test_last_used_exec_reg()
   call feedkeys("v@:", 'xt')
   call assert_equal("\nregister\nregister\n", @r)
 
-  enew!
+  new!
 endfunc
 
 func Test_get_register()
-  enew
+  new
   edit Xfile1
   edit Xfile2
   call assert_equal('Xfile2', getreg('%'))
@@ -273,7 +273,7 @@ func Test_get_register()
 
   call assert_fails('let r = getreg("=", [])', 'E745:')
   call assert_fails('let r = getreg("=", 1, [])', 'E745:')
-  enew!
+  new!
 
   " Using a register in operator-pending mode should fail
   call assert_beeps('norm! c"')
@@ -348,7 +348,7 @@ func Test_set_register()
   call setreg('@', '2')
   call assert_equal('2', @")
 
-  enew!
+  new!
 endfunc
 
 " Test for clipboard registers (* and +)
@@ -440,7 +440,7 @@ endfunc
 
 " Test for getting register info
 func Test_get_reginfo()
-  enew
+  new
   call setline(1, ['foo', 'bar'])
 
   exe 'norm! "zyy'
@@ -484,7 +484,7 @@ endfunc
 
 " Test for restoring register with dict from getreginfo
 func Test_set_register_dict()
-  enew!
+  new!
 
   call setreg('"', #{ regcontents: ['one', 'two'],
         \ regtype: 'V', points_to: 'z' })
@@ -527,7 +527,7 @@ func Test_set_register_dict()
 endfunc
 
 func Test_v_register()
-  enew
+  new
   call setline(1, 'nothing')
 
   func s:Put()

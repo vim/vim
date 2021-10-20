@@ -1815,7 +1815,7 @@ Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
 -   Add regex for 'paragraphs' and 'sections': 'parare' and 'sectre'.  Combine
-    the two into a regex for searching. (Ned Konz)
+    the two into a regex for searching. (Need Konz)
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
 
 Bug: findfile("any", "file:///tmp;") does not work.
@@ -2409,7 +2409,7 @@ still delete them.  Also convert all buffer file names?
 "gqip" in Insert mode has an off-by-one error, causing it to reflow text.
 (Raul Coronado, 2009 Nov 2)
 
-MS-Windows: editing the first, empty buffer, 'ffs' set to "unix,dos", ":enew"
+MS-Windows: editing the first, empty buffer, 'ffs' set to "unix,dos", ":new"
 doesn't set 'ff' to "unix".  (Ben Fritz, 2008 Dec 5) Reusing the old buffer
 probably causes this.
 
@@ -2573,7 +2573,7 @@ Fail to edit file after failed register access.  Error flag remains set?
 Patch for redo register. (Ben Schmidt, 2007 Oct 19)
 Await response to question to make the register writable.
 
-Problem with 'ts' set to 9 and 'showbreak' to ">>>". (Matthew Winn, 2007 Oct
+Problem with 'ts' set to 9 and 'showbreak' to ">>>". (Matthew Win, 2007 Oct
 1)
 
 In the swapfile dialog, add a H(elp) option that gives more info about what
@@ -3622,7 +3622,7 @@ Macintosh:
     'magic' in history.  (Margo)
 9   optwin.vim: Restoring a mapping for <Space> or <CR> is not correct for
     ":noremap".  Add "mapcmd({string}, {mode})?  Use code from ":mkexrc".
-9   term_console is used before it is set (msdos, Amiga).
+9   term_console is used before it is set (ms-dos, Amiga).
 9   Get out-of-memory for ":g/^/,$s//@/" on 1000 lines, this is not handled
     correctly.  Get many error messages while redrawing the screen, which
     cause another redraw, etc.
@@ -5422,7 +5422,7 @@ Searching:
     to find out how much time has passed.  Or use SIGALRM.  Where to show the
     number?
 7   Support for approximate-regexps to find similar words (agrep
-    http://www.tgries.de/agrep/ tre: http://laurikari.net/tre/index.html).
+    http://www.tgries.de/agrep/ tree: http://laurikari.net/tree/index.html).
 8   Add an item for a big character range, so that one can search for a
     chinese character: \z[234-1234]  or \z[XX-YY] or \z[0x23-0x234].
 7   Add an item stack to allow matching ().  One side is "push X on
@@ -6255,7 +6255,7 @@ From Elvis:
 
 From xvi:
 -   CTRL-_ : swap 8th bit of character.
--   Add egrep-like regex type, like xvi (Ned Konz) or Perl (Emmanuel Mogenet)
+-   Add egrep-like regex type, like xvi (Need Konz) or Perl (Emmanuel Mogenet)
 
 
 From vile:

@@ -87,7 +87,7 @@ quand elle est utilisée avec \-r, \-p or \-i.
 Regroupe les octets (deux chiffres hexadécimaux ou huit chiffres binaires)
 par groupe de
 .RI < octets >
-\, séparés par des espaces blancs. Spécifiez
+\, séparés par des escapes blancs. Spécifiez
 .I \-g 0
 pour supprimer le regroupement.
 .RI < octets >
@@ -121,7 +121,7 @@ Si l'écriture n'a pas lieu sur la sortie standard, xxd écrit dans le fichier
 qu'il produit sans le tronquer. Utilisez la combinaison
 .I \-r \-p
 pour lire de l'hexadécimal brut sans information sur le numéro des lignes et
-sans format de colonnes particulier. Des espaces blancs et coupures de lignes
+sans format de colonnes particulier. Des escapes blancs et coupures de lignes
 supplémentaires sont autorisés à n'importe quel endroit.
 .TP
 .I \-seek décalage
@@ -151,11 +151,11 @@ Affiche la version de xxd.
 .SH MISE EN GARDE
 .I xxd \-r
 effectue des opérations internes un peu obscures lors de l'évaluation
-des informations sur les numéros de lignes. Si le fichier de sortie est
-adressable, alors les numéros de lignes au début de chaque ligne d'hexadécimal
+des information sur les numéros de lignes. Si le fichier de sortie est
+addressable, alors les numéros de lignes au début de chaque ligne d'hexadécimal
 peuvent être désordonnées, des lignes peuvent manquer ou se chevaucher. Dans
 ces cas, xxd utilisera lseek(2) pour déterminer la prochaine position. Si le
-fichier n'est pas adressable, seuls les vides sont autorisés, et ils seront
+fichier n'est pas addressable, seuls les vides sont autorisés, et ils seront
 comblés par des octets nuls.
 .PP
 .I xxd \-r
@@ -169,7 +169,7 @@ données hexadécimales (voir l'option \-c). Cela signifie également que les
 modifications dans la colonne ASCII (ou EBCDIC) sont toujours ignorées. La
 conversion inverse de données hexadécimales brutes (postscript) avec xxd \-r
 \-p ne dépend pas d'un nombre correct de colonnes. Dans ce cas, tout ce qui
-ressemble à une paire de chiffres hexadécimaux est interprété.
+resemble à une paire de chiffres hexadécimaux est interprété.
 .PP
 Remarquez la différence entre
 .br
@@ -209,7 +209,7 @@ donnees_hexa' < fichier\fR
 Toutefois, cette situation est peu fréquente et l'utilisation de '+' est
 rarement requise. L'auteur préfère surveiller les effets de xxd avec strace(1)
 ou truss(1) quand \-s est employé.
-.SH EXEMPLES
+.SH EXAMPLES
 Afficher la totalité du
 .B fichier
 sauf les trois premières lignes (0x30 octets en hexadécimal).
@@ -330,7 +330,7 @@ pour récupérer une ligne convertie. Placez le curseur sur la ligne et tapez :
 .br
 \fI!!xxd \-r\fR
 .PP
-Lire des caractères depuis une connexion série :
+Lire des caractères depuis une connection série :
 .br
 \fI% xxd \-c1 < /dev/term/b &\fR
 .br

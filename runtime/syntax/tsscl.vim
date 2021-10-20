@@ -60,7 +60,7 @@ syn match  tssclComment     "#.*$"
 "  !       Logical NOT
 "
 " algebraic operators:
-"  ^ or ** Exponentation
+"  ^ or ** Exponentiation
 "  *       Multiplication
 "  /       Division
 "  %       Remainder
@@ -120,9 +120,9 @@ syn match  tssclContChar  "-$"
 
 " C library functoins
 " Bessel functions (jn, yn)
-" Error and complementary error fuctions (erf, erfc)
+" Error and complementary error functions (erf, erfc)
 " Exponential functions (exp)
-" Logrithm (log, log10)
+" Logarithm (log, log10)
 " Power (pow)
 " Square root (sqrt)
 " Floor (floor)
@@ -136,7 +136,7 @@ syn match  tssclContChar  "-$"
 " Trigometric functions in degrees (sind, cosd, tand, asind, acosd, atand,
 "    atan2d)
 "
-" local varialbles: cl_arg1, cl_arg2, etc. (cl_arg is an array of arguments)
+" local variables: cl_arg1, cl_arg2, etc. (cl_arg is an array of arguments)
 " cl_args is the number of arguments
 "
 "

@@ -1,8 +1,8 @@
 ==============================================================================
-=  B o n v e n o n   al   la   I n s t r u i l o  de  V I M  -  Versio 1.7   =
+=  B o n v e n o n   al   la   I n s t r u i l o  de  V I M  -  Version 1.7   =
 ==============================================================================
 
-   Vim estas tre potenca redaktilo, kiu havas multajn komandojn, tro da ili
+   Vim estas tree potenca redaktilo, kiu havas multajn komandojn, tro da ili
    por ĉion klarigi en instruilo kiel ĉi tiu. Ĉi tiu instruilo estas
    fasonita por priskribi sufiĉajn komandojn, por ke vi kapablu uzi Vim
    kun sufiĉa facileco.
@@ -340,12 +340,12 @@ RIMARKO: Premo de nur la movo en Normala reĝimo sen operatoro movos
   4. Ĉi-foje, riparu ĉiujn erarojn en la linio kaj ĝia originala stato.
   5. Nun tajpu majusklan  U  por igi la linion al ĝia antaŭa stato.
   6. Nun tajpu  u  kelkfoje por malfari la  U  kaj antaŭajn komandojn.
-  7. Nun tajpu CTRL-R (premante la CTRL klavon dum vi premas R) kelkfoje
+  7. Nun tajpu CTRL-R (premante la CTRL klavon dumb vi premas R) kelkfoje
      por refari la komandojn (malfari la malfarojn).
 
 ---> Koorektii la erarojn sur tiuu ĉi liniio kaj remettu illlin per malfaro.
 
-  8. Tiuj estas tre utilaj komandoj.  Nun moviĝu al la leciono 2 RESUMO.
+  8. Tiuj estas tree utilaj komandoj.  Nun moviĝu al la leciono 2 RESUMO.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -459,7 +459,7 @@ RIMARKO: Memoru, ke vi devus lerni per uzo, kaj ne per memorado.
 ---> La fino de ĉi tiu linio bezonas helpon por igi ĝin same kiel la dua.
 ---> La fino de ĉi tiu linio bezonas korektojn per uzo de la komando  c$
 
-RIMARKO:  Vi povas uzi la klavon Retropaŝo por korekti erarojn dum vi tajpas.
+RIMARKO:  Vi povas uzi la klavon Retropaŝo por korekti erarojn dumb vi tajpas.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -649,7 +649,7 @@ RIMARKO: Ĉiuj  :  komandoj devas finiĝi per tajpo de <Enenklavo>
      dosierujon.
 
 RIMARKO: Se vi volus eliri el Vim kaj restartigi ĝin denove per  vim TESTO,
-         la dosiero estus precize same kiel kopio de la instruilo kiam vi
+         la dosiero estus precise same kiel kopio de la instruilo kiam vi
          konservis ĝin.
 
   5. Nun forviŝu la dosieron tajpante (VINDOZO):    :!del TESTO
@@ -698,7 +698,7 @@ RIMARKO: Post plenumo de paŝo 2, vi vidos tekston el la leciono 5.3.  Tiam
      La dosiero, kion vi akiras, estas metita sub la linio de la kursoro.
 
   3. Por kontroli, ĉu la dosiero akiriĝis, retromovu la kursoron kaj rimarku,
-     ke estas nun du kopioj de la leciono 5.3, la originala kaj la versio mem
+     ke estas nun du kopioj de la leciono 5.3, la originala kaj la version mem
      de la dosiero.
 
 RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
@@ -749,7 +749,7 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
   4. Por malfermi linion SUPER la kursoro, nur tajpu majusklan  O  ,
      anstataŭ minusklan  o.  Provu tion per la suba linio.
 
----> Malfermu linion SUPER tiu tajpante O dum la kursoro estas sur tiu linio.
+---> Malfermu linion SUPER tiu tajpante O dumb la kursoro estas sur tiu linio.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -870,8 +870,8 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu serĉa komando, uzu  \c
      <ESK> estas premita.
 
   6. Tajpo de ":set xxx" ŝaltas la opcion "xxx".  Iuj opcioj estas:
-        'ic' 'ignorecase'     ignori usklecon dum serĉo
-        'is' 'incsearch'      montru partan kongruon dum serĉo
+        'ic' 'ignorecase'     ignori usklecon dumb serĉo
+        'is' 'incsearch'      montru partan kongruon dumb serĉo
         'hls' 'hlsearch'      emfazas ĉiujn kongruajn frazojn
      Vi povas uzi aŭ la longan, aŭ la mallongan nomon de opcio.
 

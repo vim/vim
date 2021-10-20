@@ -204,7 +204,7 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 		2. WinEnter for the new window
 		3. BufLeave for the current buffer
 		4. BufEnter for the new buffer
-		This behaves like a ":split" first, and then an ":enew"
+		This behaves like a ":split" first, and then an ":new"
 		command.
 
 :[N]new [++opt] [+cmd] {file}
@@ -741,8 +741,8 @@ can also get to them with the buffer list commands, like ":bnext".
 ==============================================================================
 8. Do a command in all buffers or windows			*list-repeat*
 
-							*:windo*
-:[range]windo {cmd}	Execute {cmd} in each window or if [range] is given
+							*:window*
+:[range]window {cmd}	Execute {cmd} in each window or if [range] is given
 			only in windows for which the window number lies in
 			the [range].  It works like doing this: >
 				CTRL-W t
@@ -786,12 +786,12 @@ can also get to them with the buffer list commands, like ":bnext".
 			'eventignore'.  This considerably speeds up editing
 			each buffer.
 
-			Also see |:tabdo|, |:argdo|, |:windo|, |:cdo|, |:ldo|,
+			Also see |:tabdo|, |:argdo|, |:window|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
 Examples: >
 
-	:windo set nolist foldcolumn=0 | normal! zn
+	:window set nolist foldcolumn=0 | normal! zn
 
 This resets the 'list' option and disables folding in all windows. >
 

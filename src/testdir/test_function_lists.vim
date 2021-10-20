@@ -17,7 +17,7 @@ func Test_function_lists()
 
   " Create a file of the functions in evalfunc.c:global_functions[].
 
-  enew!
+  new!
   read ../evalfunc.c
   1,/^static funcentry_T global_functions\[\] =$/d
   call search('^};$')
@@ -40,7 +40,7 @@ func Test_function_lists()
   " Create a file of the functions in evalfunc.c:global_functions[] that are
   " not obsolete, sorted in ASCII order.
 
-  enew!
+  new!
   read ../evalfunc.c
   1,/^static funcentry_T global_functions\[\] =$/d
   call search('^};$')
@@ -54,7 +54,7 @@ func Test_function_lists()
 
   " Verify that the ":help functions" list is complete and in ASCII order.
 
-  enew!
+  new!
   if filereadable('../../doc/eval.txt')
     " unpacked MS-Windows zip archive
     read ../../doc/eval.txt
@@ -79,7 +79,7 @@ func Test_function_lists()
 
   " Verify that the ":help function-list" list is complete.
 
-  enew!
+  new!
   if filereadable('../../doc/usr_41.txt')
     " unpacked MS-Windows zip archive
     read ../../doc/usr_41.txt
@@ -107,7 +107,7 @@ func Test_function_lists()
   call delete("Xsorted_current_global_functions")
   call delete("Xfunctions")
   call delete("Xfunction-list")
-  enew!
+  new!
 
 endfunc
 

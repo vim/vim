@@ -144,7 +144,7 @@ func Test_bdelete_cmd()
   edit Xfile1
   let bnr = bufnr()
   set nobuflisted
-  enew
+  new
   call assert_fails('bdelete ' .. bnr, 'E516:')
 
   " Deleting more than one buffer
@@ -262,7 +262,7 @@ func Test_goto_buf_with_confirm()
   CheckNotGui
   CheckFeature dialog_con
   new Xfile
-  enew
+  new
   call setline(1, 'test')
   call assert_fails('b Xfile', 'E37:')
   call feedkeys('c', 'L')

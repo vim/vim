@@ -10,7 +10,7 @@ let b:keymap_name= "thaana"
 
 " THAANA NORMAL LETTERS
 loadkeymap
-h	<char-0x0780> "letter haa
+h	<char-0x0780> "letter has
 S	<char-0x0781> "shaviani
 n	<char-0x0782> "noonu
 r	<char-0x0783> "raa
@@ -37,8 +37,8 @@ c	<char-0x0797> "chaviani
 
 "THAANA DOTTED LETTERS
 X	<char-0x0798> "TTAA   (thaa mathee thin thiki)
-H	<char-0x0799> "HHAA   (haa thiree ehthiki)
-K	<char-0x079A> "KHAA   (haa mathee ehthiki)
+H	<char-0x0799> "HHAA   (has thiree ehthiki)
+K	<char-0x079A> "KHAA   (has mathee ehthiki)
 J	<char-0x079B> "THAALU (dhaa mathee ehthiki)
 R	<char-0x079C> "ZAA    (raa mathee ehthiki)
 C	<char-0x079D> "SHEENU (seenu mathee thinthiki)
@@ -67,7 +67,7 @@ q	<char-0x07B0> "sukun
 "OTHER THAANA RELATED
 F	<char-0xFDF2> "arabic ligature allah isolated form
 ?	<char-0x061F> "arabic question mark 
-"~	<char-0xFDFD> "arabic -bismillah ahrahman araheem- not in phonetic keyboard, thats why commented 
+"~	<char-0xFDFD> "arabic -bismillah ahrahman araheem- not in phonetic keyboard, that's why commented 
 [	<char-0x005D> "english open bracket is thaana closing bracket 
 ]	<char-0x005B> "english close bracket = thaana open bracket
 {	<char-0x007B> "braces reversed

@@ -22,13 +22,13 @@ menut &Find\.\.\.	Find\.\.\.
 " -SEP1-
 menut &Credits	Anerkendelser
 menut Co&pying	Kopiering
-menut &Sponsor/Register	Sponsorer/registrer
+menut &Sponsor/Register	Sponsorer/register
 menut O&rphans	Forældreløse\ børn
 " -SEP2-
 menut &Version	Version
 menut &About	Om
 
-let g:menutrans_help_dialog = "Indtast en kommando eller ord for at finde hjælp om:\n\nStart med i_ for kommandoer til inputtilstand (f.eks.: i_CTRL-X)\nStart med c_ for kommandoer til redigering af kommandolinje (f.eks.: c_<Del>)\nStart med ' for et tilvalgsnavn (f.eks.: 'shiftwidth')"
+let g:menutrans_help_dialog = "Indtast en kommando eller ord for at find hjælp om:\n\nStart med i_ for kommandoer til inputtilstand (f.eks.: i_CTRL-X)\nStart med c_ for kommandoer til redigering af kommandolinje (f.eks.: c_<Del>)\nStart med ' for et tilvalgsnavn (f.eks.: 'shiftwidth')"
 
 " File menu
 menut &File	Fil
@@ -36,11 +36,11 @@ menut &File	Fil
 menut &Open\.\.\.<Tab>:e	Åbn\.\.\.<Tab>:e
 menut Sp&lit-Open\.\.\.<Tab>:sp	Opdel-åbn\.\.\.<Tab>:sp
 menut Open\ Tab\.\.\.<Tab>:tabnew	Åbn\ faneblad\.\.\.<Tab>:tabnew
-menut &New<Tab>:enew	Ny<Tab>:enew
+menut &New<Tab>:new	Ny<Tab>:new
 menut &Close<Tab>:close	Luk<Tab>:close
 " -SEP1-
 menut &Save<Tab>:w	Gem<Tab>:w
-menut Save\ &As\.\.\.<Tab>:sav	Gem\ som\.\.\.<Tab>:sav
+menut Save\ &As\.\.\.<Tab>:save	Gem\ some\.\.\.<Tab>:save
 " -SEP2-
 menut Split\ &Diff\ with\.\.\.	Opdel\ diff\ med\.\.\.
 menut Split\ Patched\ &By\.\.\.	Opdel\ patchet\ af\.\.\.
@@ -109,7 +109,7 @@ menut F&ile\ Settings	Filindstillinger
 
 " Boolean options
 menut Toggle\ Line\ &Numbering<Tab>:set\ nu!	Linjenummerering\ til/fra<Tab>:set\ nu!
-menut Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Relativ\ linjenummerering\ til/fra<Tab>:set\ rnu!
+menut Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Relative\ linjenummerering\ til/fra<Tab>:set\ rnu!
 menut Toggle\ &List\ Mode<Tab>:set\ list!	Listetilstand\ til/fra<Tab>:set\ list!
 menut Toggle\ Line\ &Wrapping<Tab>:set\ wrap!	Linjeombrydning\ til/fra<Tab>:set\ wrap!
 menut Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	Ombrydning\ ved\ ord\ til/fra<Tab>:set\ lbr!
@@ -209,7 +209,7 @@ menut &Folding	Foldning
 " open close folds
 menut &Enable/Disable\ folds<Tab>zi	Aktivér/deaktivér\ sammenfoldninger<Tab>zi
 menut &View\ Cursor\ Line<Tab>zv	Vis\ markørlinje<Tab>zv
-menut Vie&w\ Cursor\ Line\ only<Tab>zMzx	Vis\ kun\ markørlinje<Tab>zMzx
+menut Via&w\ Cursor\ Line\ only<Tab>zMzx	Vis\ kun\ markørlinje<Tab>zMzx
 menut C&lose\ more\ folds<Tab>zm	Luk\ flere\ sammenfoldninger<Tab>zm
 menut &Close\ all\ folds<Tab>zM	Luk\ alle\ sammenfoldninger<Tab>zM
 menut O&pen\ more\ folds<Tab>zr	Åbn\ flere\ sammenfoldninger<Tab>zr
@@ -217,10 +217,10 @@ menut &Open\ all\ folds<Tab>zR	Åbn\ alle\ sammenfoldninger<Tab>zR
 " fold method
 " -SEP1-
 menut Fold\ Met&hod	Sammenfoldningsmetode
-menut M&anual	Manuelt
+menut M&annual	Manuelt
 menut I&ndent	Indryk
 menut E&xpression	Udtryk
-menut S&yntax	Syntaks
+menut S&yntax	Syntax
 menut &Diff	Diff
 menut Ma&rker	Markør
 " create and delete folds
@@ -270,7 +270,7 @@ menut &Previous	Forrige
 menut [No\ File]	[Ingen\ fil]
 
 " Syntax menu
-menut &Syntax	Syntaks
+menut &Syntax	Syntax
 
 menut &Show\ File\ Types\ in\ menu	Vis\ filtyper\ i\ menu
 menut Set\ '&syntax'\ only	Sæt\ kun\ 'syntax'
@@ -304,7 +304,7 @@ menut &Bottom<Tab>^WJ	Nederst<Tab>^WJ
 menut &Left\ side<Tab>^WH	Venstre\ side<Tab>^WH
 menut &Right\ side<Tab>^WL	Højre\ side<Tab>^WL
 menut Rotate\ &Up<Tab>^WR	Roter\ op<Tab>^WR
-menut Rotate\ &Down<Tab>^Wr	Roter\ ned<Tab>^Wr
+menut Rotate\ &Down<Tab>^Wr	Roter\ need<Tab>^Wr
 " -SEP3-
 menut &Equal\ Size<Tab>^W=	Samme\ størrelse<Tab>^W=
 menut &Max\ Height<Tab>^W_	Maks\.\ højde<Tab>^W_
@@ -350,9 +350,9 @@ if has("toolbar")
     tmenu ToolBar.FindNext	Find næste
     tmenu ToolBar.FindPrev	Find forrige
   endif
-  tmenu ToolBar.LoadSesn	Vælg en session som skal indlæses
+  tmenu ToolBar.LoadSesn	Vælg en session some skal indlæses
   tmenu ToolBar.SaveSesn	Gem nuværende session
-  tmenu ToolBar.RunScript	Vælg et Vim-script som skal køres
+  tmenu ToolBar.RunScript	Vælg et Vim-script some skal køres
   tmenu ToolBar.Make		Make nuværende projekt (:make)
   tmenu ToolBar.RunCtags	Build tags i nuværende mappetræ (!ctags -R .)
   tmenu ToolBar.TagJump		Hop til tag under markør
@@ -449,7 +449,7 @@ menut Sorting\ Method					Sorteringsmetode
 menut Name<tab>s       Navn
 menut Time<tab>s       Tidspunkt
 menut Size<tab>s       Størrelse
-menut Exten<tab>s      Endelse
+menut Extent<tab>s      Endelse
 menut Rename\ File/Directory<tab>R	Omdøb\ fil/mappe<tab>R
 menut Set\ Current\ Directory<tab>c	Sæt\ nuværende\ mappe<tab>c
 

@@ -26,7 +26,7 @@ endfunc
 
 func Test_pyxdo()
   pyx import sys
-  enew
+  new
   pyxdo return sys.version.split("\n")[0]
   call assert_match(s:py3pattern, split(getline('.'))[0])
 endfunc

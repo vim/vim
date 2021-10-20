@@ -313,7 +313,7 @@ syn keyword gnuplotKeyword	macros
 " set mapping
 syn keyword gnuplotKeyword	mapping cartesian spherical cylindrical
 " set mouse
-syn keyword gnuplotKeyword	mouse doubleclick nodoubleclick zoomcoordinates
+syn keyword gnuplotKeyword	mouse double-click nodoubleclick zoomcoordinates
 syn keyword gnuplotKeyword	nozoomcoordinates ruler noruler at polardistance
 syn keyword gnuplotKeyword	nopolardistance deg tan format clipboardformat
 syn keyword gnuplotKeyword	mouseformat labels nolabels zoomjump nozoomjump

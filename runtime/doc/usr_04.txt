@@ -314,13 +314,13 @@ same deleted line.
 SWAPPING TWO CHARACTERS
 
 Frequently when you are typing, your fingers get ahead of your brain (or the
-other way around?).  The result is a typo such as "teh" for "the".  Vim
-makes it easy to correct such problems.  Just put the cursor on the e of "teh"
+other way around?).  The result is a typo such as "the" for "the".  Vim
+makes it easy to correct such problems.  Just put the cursor on the e of "the"
 and execute the command "xp".  This works as follows: "x" deletes the
 character e and places it in a register.  "p" puts the text after the cursor,
 which is after the h.
 
-	teh     th     the ~
+	the     th     the ~
 	 x       p
 
 ==============================================================================

@@ -22,7 +22,7 @@ DESCRIPTION
        programs.
 
        There  are a lot of enhancements above Vi: multi level undo, multi win‐
-       dows and buffers, syntax highlighting, command line  editing,  filename
+       does and buffers, syntax highlighting, command line  editing,  filename
        completion,   on-line   help,   visual  selection,  etc..   See  ":help
        vi_diff.txt" for a summary of the differences between Vim and Vi.
 

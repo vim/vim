@@ -24,7 +24,7 @@ syn sync lines=200
 "some general stuff
 "syn match texinfoError     "\S" contained TODO
 syn match texinfoIdent	    "\k\+"		  contained "IDENTifier
-syn match texinfoAssignment "\k\+\s*=\s*\k\+\s*$" contained "assigment statement ( var = val )
+syn match texinfoAssignment "\k\+\s*=\s*\k\+\s*$" contained "assignment statement ( var = val )
 syn match texinfoSinglePar  "\k\+\s*$"		  contained "single parameter (used for several @-commands)
 syn match texinfoIndexPar   "\k\k\s*$"		  contained "param. used for different *index commands (+ @documentlanguage command)
 
@@ -291,7 +291,7 @@ syn region texinfoMltlnAtCmd  matchgroup=texinfoAtCmd start="^@ifinfo"		end="^@e
 syn region texinfoMltlnAtCmd  matchgroup=texinfoAtCmd start="^@ifnothtml"	end="^@end ifnothtml\s*$" contains=ALL
 syn region texinfoMltlnAtCmd  matchgroup=texinfoAtCmd start="^@ifnotinfo"	end="^@end ifnotinfo\s*$" contains=ALL
 syn region texinfoMltlnAtCmd  matchgroup=texinfoAtCmd start="^@ifnottex"	end="^@end ifnottex\s*$"  contains=ALL
-syn region texinfoMltlnAtCmd  matchgroup=texinfoAtCmd start="^@ifset"		end="^@end ifset\s*$"	  contains=ALL
+syn region texinfoMltlnAtCmd  matchgroup=texinfoAtCmd start="^@if set"		end="^@end if set\s*$"	  contains=ALL
 syn region texinfoMltlnAtCmd  matchgroup=texinfoAtCmd start="^@iftex"		end="^@end iftex\s*$"	  contains=ALL
 syn region texinfoPrmAtCmd    matchgroup=texinfoAtCmd start="^@set " skip="\\$" end="$" contains=texinfoSpecialChar oneline
 syn region texinfoTexCmd			      start="\$\$"		end="\$\$" contained

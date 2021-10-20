@@ -1516,7 +1516,7 @@ do_set(
 	    }
 
 	    /*
-	     * allow '=' and ':' for historical reasons (MSDOS command.com
+	     * allow '=' and ':' for historical reasons (MS-DOS command.com
 	     * allows only one '=' character per "set" command line. grrr. (jw)
 	     */
 	    if (nextchar == '?'

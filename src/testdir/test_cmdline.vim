@@ -836,8 +836,8 @@ func Test_cmdline_complete_various()
   " completion for vim9 and legacy commands
   call feedkeys(":vim9 call strle\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"vim9 call strlen(", @:)
-  call feedkeys(":legac call strle\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"legac call strlen(", @:)
+  call feedkeys(":legacy call strle\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"legacy call strlen(", @:)
 
   " completion for the :disassemble command
   call feedkeys(":disas deb\<C-A>\<C-B>\"\<CR>", 'xt')
@@ -1285,15 +1285,15 @@ func Test_buffers_lastused()
   " check that buffers are sorted by time when wildmode has lastused
   call test_settime(1550020000)	  " middle
   edit bufa
-  enew
+  new
   call test_settime(1550030000)	  " newest
   edit bufb
-  enew
+  new
   call test_settime(1550010000)	  " oldest
   edit bufc
-  enew
+  new
   call test_settime(0)
-  enew
+  new
 
   call assert_equal(['bufa', 'bufb', 'bufc'],
 	\ getcompletion('', 'buffer'))
@@ -1308,7 +1308,7 @@ func Test_buffers_lastused()
   call assert_equal('b bufa', X)
   call feedkeys(":b \<tab>\<tab>\<tab>" .. cap .. "\<esc>", 'xt')
   call assert_equal('b bufc', X)
-  enew
+  new
 
   edit other
   call feedkeys(":b \<tab>" .. cap .. "\<esc>", 'xt')
@@ -1317,7 +1317,7 @@ func Test_buffers_lastused()
   call assert_equal('b bufa', X)
   call feedkeys(":b \<tab>\<tab>\<tab>" .. cap .. "\<esc>", 'xt')
   call assert_equal('b bufc', X)
-  enew
+  new
 
   let &wildmode = save_wildmode
 
@@ -1869,7 +1869,7 @@ func Test_recalling_cmdline()
   \  {'name': 'input',  'enter': ":call input('')\<CR>", 'exit': "\<CR>"},
   "\ TODO: {'name': 'debug', ...}
   \]
-  let keypairs = [
+  let key pairs = [
   \  {'older': "\<Up>",     'newer': "\<Down>",     'prefixmatch': v:true},
   \  {'older': "\<S-Up>",   'newer': "\<S-Down>",   'prefixmatch': v:false},
   \  {'older': "\<PageUp>", 'newer': "\<PageDown>", 'prefixmatch': v:false},
@@ -1882,7 +1882,7 @@ func Test_recalling_cmdline()
     call histadd(h.name, 'Virgo')
     call histadd(h.name, 'vogue')
     call histadd(h.name, 'emacs')
-    for k in keypairs
+    for k in key pairs
       let g:cmdlines = []
       let keyseqs = h.enter
       \          .. prefix

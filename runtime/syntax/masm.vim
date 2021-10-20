@@ -90,7 +90,7 @@ syn keyword masmDirective	IFB IFDEF IFDIF IFDIFI IFE IFIDN IFIDNI IFNB
 syn keyword masmDirective	IFNDEF INCLUDE INCLUDELIB INSTR INVOKE IRP
 syn keyword masmDirective	IRPC LABEL LOCAL MACRO NAME OPTION ORG PAGE
 syn keyword masmDirective	POPCONTEXT PROC PROTO PUBLIC PURGE PUSHCONTEXT
-syn keyword masmDirective	RECORD REPEAT REPT SEGMENT SIZESTR STRUC
+syn keyword masmDirective	RECORD REPEAT REPT SEGMENT SIZESTR STRUCT
 syn keyword masmDirective	STRUCT SUBSTR SUBTITLE SUBTTL TEXTEQU TITLE
 syn keyword masmDirective	TYPEDEF UNION WHILE
 syn match   masmDirective	"\.8086\>"
@@ -201,7 +201,7 @@ syn keyword masmOpcode		LOCK REP REPE REPNE REPNZ REPZ
 
 " 8086/8088 opcodes
 syn keyword masmOpcode		AAA AAD AAM AAS ADC ADD AND CALL CBW CLC CLD
-syn keyword masmOpcode		CLI CMC CMP CMPS CMPSB CMPSW CWD DAA DAS DEC
+syn keyword masmOpcode		CLI CMC CMP CMPS CMPSB CMPSW CWD DATA DAS DEC
 syn keyword masmOpcode		DIV ESC HLT IDIV IMUL IN INC INT INTO IRET
 syn keyword masmOpcode		JCXZ JMP LAHF LDS LEA LES LODS LODSB LODSW
 syn keyword masmOpcode		LOOP LOOPE LOOPEW LOOPNE LOOPNEW LOOPNZ

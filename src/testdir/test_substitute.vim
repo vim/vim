@@ -4,7 +4,7 @@ source shared.vim
 source check.vim
 
 func Test_multiline_subst()
-  enew!
+  new!
   call append(0, ["1 aa",
 	      \ "bb",
 	      \ "cc",
@@ -40,13 +40,13 @@ func Test_multiline_subst()
   call assert_equal('6 ex7', getline(11))
   call assert_equal('7x7f', getline(12))
   call assert_equal('xxxxx', getline(13))
-  enew!
+  new!
 endfunc
 
 func Test_substitute_variants()
   " Validate that all the 2-/3-letter variants which embed the flags into the
   " command name actually work.
-  enew!
+  new!
   let ln = 'Testing string'
   let variants = [
 	\ { 'cmd': ':s/Test/test/c', 'exp': 'testing string', 'prompt': 'y' },
@@ -409,7 +409,7 @@ func Test_sub_replace_8()
   let cmd = ':s/\(^\|,\)\ze\(,\|Z\)/\1N/gc'
   call feedkeys(cmd . "\<CR>yy", "xt")
   call assert_equal('N,,NZ', getline("$"))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_sub_replace_9()
@@ -419,7 +419,7 @@ func Test_sub_replace_9()
   $put ='xxx'
   call feedkeys(":s/x/X/gc\<CR>yyq", "xt")
   call assert_equal('XXx', getline("$"))
-  enew! | close
+  new! | close
 endfunc
 
 func Test_sub_replace_10()
@@ -465,7 +465,7 @@ endfunc
 
 " Execute a list of :substitute command tests
 func Run_SubCmd_Tests(tests)
-  enew!
+  new!
   for t in a:tests
     let start = line('.') + 1
     let end = start + len(t[2]) - 1
@@ -475,7 +475,7 @@ func Run_SubCmd_Tests(tests)
     exe t[1]
     call assert_equal(t[2], getline(start, end), t[1])
   endfor
-  enew!
+  new!
 endfunc
 
 func Test_sub_cmd_1()
@@ -642,7 +642,7 @@ func Test_sub_cmd_7()
 
   exe "normal oQ\nQ\<Esc>k"
   call assert_fails('s/Q[^\n]Q/\=submatch(0)."foobar"/', 'E486:')
-  enew!
+  new!
 endfunc
 
 func TitleString()
@@ -653,7 +653,7 @@ endfunc
 func Test_sub_cmd_8()
   set titlestring=%{TitleString()}
 
-  enew!
+  new!
   call append(0, ['', 'test_one', 'test_two'])
   call cursor(1,1)
   /^test_one/s/.*/\="foo\nbar"/
@@ -664,7 +664,7 @@ func Test_sub_cmd_8()
   call assert_equal('foo', getline(4))
   call assert_equal('bar', getline(5))
 
-  enew!
+  new!
   set titlestring&
 endfunc
 

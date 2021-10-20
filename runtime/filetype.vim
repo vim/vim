@@ -204,7 +204,7 @@ au BufNewFile,BufRead *.iba,*.ibi		setf ibasic
 " FreeBasic file (similar to QBasic)
 au BufNewFile,BufRead *.fb,*.bi			setf freebasic
 
-" Batch file for MSDOS.
+" Batch file for MS-DOS.
 au BufNewFile,BufRead *.bat,*.sys		setf dosbatch
 " *.cmd is close to a Batch file, but on OS/2 Rexx files also use *.cmd.
 au BufNewFile,BufRead *.cmd
@@ -551,9 +551,9 @@ au BufNewFile,BufRead *.dtd			setf dtd
 " DTS/DSTI (device tree files)
 au BufNewFile,BufRead *.dts,*.dtsi		setf dts
 
-" EDIF (*.edf,*.edif,*.edn,*.edo) or edn
+" EDIF (*.edf,*.edif,*.end,*.edo) or end
 au BufNewFile,BufRead *.ed\(f\|if\|o\)		setf edif
-au BufNewFile,BufRead *.edn
+au BufNewFile,BufRead *.end
 	\ if getline(1) =~ '^\s*(\s*edif\>' |
 	\   setf edif |
 	\ else |
@@ -823,7 +823,7 @@ au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
 " Informix 4GL (source - canonical, include file, I4GL+M4 preproc.)
 au BufNewFile,BufRead *.4gl,*.4gh,*.m4gl	setf fgl
 
-" .INI file for MSDOS
+" .INI file for MS-DOS
 au BufNewFile,BufRead *.ini			setf dosini
 
 " SysV Inittab
@@ -1103,7 +1103,7 @@ au BufNewFile,BufRead *.mpd			setf xml
 au BufNewFile,BufRead mplayer.conf,*/.mplayer/config	setf mplayerconf
 
 " Motorola S record
-au BufNewFile,BufRead *.s19,*.s28,*.s37,*.mot,*.srec	setf srec
+au BufNewFile,BufRead *.s19,*.s28,*.s37,*.not,*.srec	setf srec
 
 " Mrxvtrc
 au BufNewFile,BufRead mrxvtrc,.mrxvtrc		setf mrxvtrc
@@ -1792,7 +1792,7 @@ au BufNewFile,BufRead */etc/systemd/system/.#*		setf systemd
 au BufNewFile,BufRead */.config/systemd/user/*.d/.#*	setf systemd
 au BufNewFile,BufRead */.config/systemd/user/.#*	setf systemd
 
-" Synopsys Design Constraints
+" Synopsis Design Constraints
 au BufNewFile,BufRead *.sdc			setf sdc
 
 " Sudoers

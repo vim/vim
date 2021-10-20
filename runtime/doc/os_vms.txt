@@ -725,7 +725,7 @@ to the login.com or sylogin.com: >
 	$       say "VAX platform"
 	$       vi*m:== mcr vim:VIM.EXE_VAX
 	$ endif
-	$ if f$getsyi("NODE_HWTYPE") .eqs. "ALPH"
+	$ if f$getsyi("NODE_HWTYPE") .eqs. "ALPHA"
 	$ then
 	$       say "ALPHA platform"
 	$       vi*m :== mcr vim:VIM.EXE_AXP
@@ -743,7 +743,7 @@ Solution 2.  Different directories: >
 	$       say "VAX platform"
 	$       define/nolog VIM RF10:[UTIL.VAX_EXE] ! VAX executables
 	$ endif
-	$ if f$getsyi("NODE_HWTYPE") .eqs. "ALPH"
+	$ if f$getsyi("NODE_HWTYPE") .eqs. "ALPHA"
 	$ then
 	$       say "ALPHA platform"
 	$       define/nolog VIM RF10:[UTIL.AXP_EXE] ! AXP executables

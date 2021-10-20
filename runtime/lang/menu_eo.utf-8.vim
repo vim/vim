@@ -24,7 +24,7 @@ menutrans Co&pying				&Permisilo
 menutrans &Sponsor/Register			&Subteni/Registriĝi
 menutrans O&rphans				&Orfoj
 " -sep2-
-menutrans &Version				&Versio
+menutrans &Version				&Version
 menutrans &About				Pri\ &Vim
 
 let g:menutrans_help_dialog = "Tajpu komandon aŭ serĉendan vorton en la helparo.\n\nAldonu i_ por la komandoj de la enmeta reĝimo (ekz: i_CTRL-X)\nAldonu c_ por redakto de la komanda linio (ekz: c_<Del>)\nĈirkaŭi la opciojn per apostrofoj (ekz: 'shiftwidth')"
@@ -34,11 +34,11 @@ menutrans &File				&Dosiero
 menutrans &Open\.\.\.<Tab>:e			&Malfermi\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp		Malfermi\ &divide\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew		Malfermi\ &langeton\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew			&Nova<Tab>:enew
+menutrans &New<Tab>:new			&Nova<Tab>:new
 menutrans &Close<Tab>:close			&Fermi<Tab>:close
 " -SEP1-
 menutrans &Save<Tab>:w				&Konservi<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav		Konservi\ ki&el\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:save		Konservi\ ki&el\.\.\.<Tab>:save
 " -SEP2-
 menutrans Split\ &Diff\ with\.\.\.		Kom&pari\ divide\.\.\.
 menutrans Split\ Patched\ &By\.\.\.		&Testi\ flikaĵon\.\.\.
@@ -153,7 +153,7 @@ menutrans &Folding				&Faldo
 
 menutrans &Enable/Disable\ folds<Tab>zi			&Baskuli\ faldojn<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv			&Vidi\ linion\ de\ kursoro<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		Vidi\ nur\ &kursoran\ linion<Tab>zMzx
+menutrans Via&w\ Cursor\ Line\ only<Tab>zMzx		Vidi\ nur\ &kursoran\ linion<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm			F&ermi\ pli\ da\ faldoj<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM			Fermi\ ĉiu&jn\ faldojn<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr			&Malfermi\ pli\ da\ faldoj<Tab>zr
@@ -161,7 +161,7 @@ menutrans &Open\ all\ folds<Tab>zR			Malfermi\ ĉiuj&n\ faldojn<Tab>zR
 " -SEP1-
 menutrans Fold\ Met&hod					&Metodo\ de\ faldo
 
-menutrans M&anual						&Permana\ metodo
+menutrans M&annual						&Permana\ metodo
 menutrans I&ndent						&Krommarĝeno
 menutrans E&xpression						&Esprimo
 menutrans S&yntax						&Sintakso

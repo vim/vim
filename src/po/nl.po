@@ -355,7 +355,7 @@ msgstr "E684: lijstindex buiten bereik: %ld"
 
 #, c-format
 msgid "E121: Undefined variable: %s"
-msgstr "E121: ongedefinieerde variabele: %s"
+msgstr "E121: ongedefinieerde variable: %s"
 
 msgid "E111: Missing ']'"
 msgstr "E111: ontbrekende ']'"
@@ -369,7 +369,7 @@ msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: argument van %s moet een List of Dictionary zijn"
 
 msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: kan geen leeg trefwoord als Dictionary gebruiken"
+msgstr "E713: kan geen leeg trefwoord also Dictionary gebruiken"
 
 msgid "E714: List required"
 msgstr "E714: List is vereist"
@@ -400,7 +400,7 @@ msgstr "E719: kan [:] niet met een Dictionary gebruiken"
 
 #, c-format
 msgid "E734: Wrong variable type for %s="
-msgstr "E734: onjuist type variabele voor %s="
+msgstr "E734: onjuist type variable voor %s="
 
 #, c-format
 msgid "E130: Unknown function: %s"
@@ -427,7 +427,7 @@ msgid "E689: Can only index a List or Dictionary"
 msgstr "E689: alleen een List of Dictionary kan geÃ¯ndexeerd worden"
 
 msgid "E708: [:] must come last"
-msgstr "E708: [:] moet als laatste staan"
+msgstr "E708: [:] moet also laatste staan"
 
 msgid "E709: [:] requires a List value"
 msgstr "E709: [:] vereist een Listwaarde"
@@ -447,10 +447,10 @@ msgstr "E107: ontbrekende haakjes: %s"
 
 #, c-format
 msgid "E108: No such variable: \"%s\""
-msgstr "E108: onbekende variabele: \"%s\""
+msgstr "E108: onbekende variable: \"%s\""
 
 msgid "E743: variable nested too deep for (un)lock"
-msgstr "E743: variabele is te diep genest om te beveiligen"
+msgstr "E743: variable is te diep genest om te beveiligen"
 
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: ':' ontbreekt na '?'"
@@ -523,7 +523,7 @@ msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: einde van Dictionary '}' ontbreekt: %s"
 
 msgid "E724: variable nested too deep for displaying"
-msgstr "E724: variabele is te diep genest om te tonen"
+msgstr "E724: variable is te diep genest om te tonen"
 
 #, c-format
 msgid "E740: Too many arguments for function %s"
@@ -629,28 +629,28 @@ msgid "E677: Error writing temp file"
 msgstr "E677: opslaan van temp-bestand is mislukt"
 
 msgid "E805: Using a Float as a Number"
-msgstr "E805: een Float wordt als Number gebruikt"
+msgstr "E805: een Float wordt also Number gebruikt"
 
 msgid "E703: Using a Funcref as a Number"
-msgstr "E703: een Funcref wordt als Number gebruikt"
+msgstr "E703: een Funcref wordt also Number gebruikt"
 
 msgid "E745: Using a List as a Number"
-msgstr "E745: List wordt als een Number gebruikt"
+msgstr "E745: List wordt also een Number gebruikt"
 
 msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: Dictionary gebruiken als een Number"
+msgstr "E728: Dictionary gebruiken also een Number"
 
 msgid "E729: using Funcref as a String"
-msgstr "E729: Funcref gebruiken als een String"
+msgstr "E729: Funcref gebruiken also een String"
 
 msgid "E730: using List as a String"
-msgstr "E730: List gebruiken als een String"
+msgstr "E730: List gebruiken also een String"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: Dictionary gebruiken als een String"
+msgstr "E731: Dictionary gebruiken also een String"
 
 msgid "E806: using Float as a String"
-msgstr "E806: Float gebruiken als een String"
+msgstr "E806: Float gebruiken also een String"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -666,7 +666,7 @@ msgstr "E706: variabelesoort past niet bij: %s"
 
 #, c-format
 msgid "E795: Cannot delete variable %s"
-msgstr "E795: kan variabele %s niet verwijderen"
+msgstr "E795: kan variable %s niet verwijderen"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -680,7 +680,7 @@ msgid "E742: Cannot change value of %s"
 msgstr "E742: kan waarde van %s niet veranderen"
 
 msgid "E698: variable nested too deep for making a copy"
-msgstr "E698: variabele te diep genest om een kopie te maken"
+msgstr "E698: variable te diep genest om een kopie te maken"
 
 #, c-format
 msgid "E123: Undefined function: %s"
@@ -699,7 +699,7 @@ msgstr "E126: ontbrekende :endfunction"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
-msgstr "E707: functienaam botst met variabele: %s"
+msgstr "E707: functienaam botst met variable: %s"
 
 #, c-format
 msgid "E127: Cannot redefine function %s: It is in use"
@@ -852,7 +852,7 @@ msgid "Illegal starting char"
 msgstr "Ongeldig startteken"
 
 msgid "Save As"
-msgstr "Opslaan als"
+msgstr "Opslaan also"
 
 msgid "Write partial file?"
 msgstr "Gedeeltelijk bestand opslaan?"
@@ -1012,7 +1012,7 @@ msgstr "E612: teveel margetekens gedefinieerd"
 
 #, c-format
 msgid "E239: Invalid sign text: %s"
-msgstr "E239: ongeldige tekst margeteken: %s"
+msgstr "E239: ongeldige text margeteken: %s"
 
 #, c-format
 msgid "E155: Unknown sign: %s"
@@ -1310,7 +1310,7 @@ msgid "E187: Unknown"
 msgstr "E187: onbekend"
 
 msgid "E465: :winsize requires two number arguments"
-msgstr "E465: :winsize vereist twee getallen als argument"
+msgstr "E465: :winsize vereist twee getallen also argument"
 
 #, c-format
 msgid "Window position: X %d, Y %d"
@@ -1320,7 +1320,7 @@ msgid "E188: Obtaining window position not implemented for this platform"
 msgstr "E188: verkrijgen van vensterpositie is voor dit platform niet geïmplementeerd"
 
 msgid "E466: :winpos requires two number arguments"
-msgstr "E466: :winpos vereist twee getallen als argument"
+msgstr "E466: :winpos vereist twee getallen also argument"
 
 msgid "Save Redirection"
 msgstr "'Redirection' opslaan"
@@ -1385,7 +1385,7 @@ msgid "E196: No digraphs in this version"
 msgstr "E196: deze versie bevat geen 'digraphs'"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
-msgstr "E608: :throw exceptions met 'Vim' als voorvoegsel zijn niet mogelijk"
+msgstr "E608: :throw exceptions met 'Vim' also voorvoegsel zijn niet mogelijk"
 
 #. always scroll up, don't overwrite
 #, c-format
@@ -1602,7 +1602,7 @@ msgstr "[NIET omgezet]"
 msgid "[converted]"
 msgstr "[omgezet]"
 
-msgid "[crypted]"
+msgid "[encrypted]"
 msgstr "[versleuteld]"
 
 #, c-format
@@ -1626,7 +1626,7 @@ msgid "can't read output of 'charconvert'"
 msgstr "uitvoer van 'charconvert' kan niet worden gelezen"
 
 msgid "E821: File is encrypted with unknown method"
-msgstr "E821: bestand is met onbekende methode versleuteld"
+msgstr "E821: bestand is met onbekende method versleuteld"
 
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: geen overeenkomende autocommands voor 'acwrite'-buffer"
@@ -1895,7 +1895,7 @@ msgid "No matching autocommands"
 msgstr "Geen overeenkomstige autocommands"
 
 msgid "E218: autocommand nesting too deep"
-msgstr "E218: hierarchie van aanroepen autocommands te diep"
+msgstr "E218: hierarchy van aanroepen autocommands te diep"
 
 #, c-format
 msgid "%s Autocommands for \"%s\""
@@ -2011,7 +2011,7 @@ msgid "Vim dialog"
 msgstr "Vim-dialoog"
 
 msgid "E232: Cannot create BalloonEval with both message and callback"
-msgstr "E232: aanmaken 'BalloonEval' met zowel een bericht als een 'callback' is niet mogelijk"
+msgstr "E232: aanmaken 'BalloonEval' met zowel een bericht also een 'callback' is niet mogelijk"
 
 msgid "Vim dialog..."
 msgstr "Vim-dialoog..."
@@ -2250,7 +2250,7 @@ msgid "Page %d"
 msgstr "Pagina %d"
 
 msgid "No text to be printed"
-msgstr "Geen tekst om af te drukken"
+msgstr "Geen text om af te drukken"
 
 #, c-format
 msgid "Printing page %d (%d%%)"
@@ -2549,7 +2549,7 @@ msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Python kan niet recursief worden aangeroepen"
 
 msgid "can't delete OutputObject attributes"
-msgstr "attributen van OutputObject kunnen niet worden verwijderd"
+msgstr "attribute van OutputObject kunnen niet worden verwijderd"
 
 msgid "softspace must be an integer"
 msgstr "zachte spatie moet een geheel getal zijn"
@@ -2662,10 +2662,10 @@ msgid "Browse class"
 msgstr "Bekijk klasse"
 
 msgid "Show class in hierarchy"
-msgstr "Toon klasse in hierarchie"
+msgstr "Toon klasse in hierarchy"
 
 msgid "Show class in restricted hierarchy"
-msgstr "Toon klasse in beperkte hierarchie"
+msgstr "Toon klasse in beperkte hierarchy"
 
 msgid "Xref refers to"
 msgstr "Xref verwijst naar"
@@ -2827,7 +2827,7 @@ msgid "[file ..]       edit specified file(s)"
 msgstr "[bestand ..]       bewerk opgegeven bestand(en)"
 
 msgid "-               read text from stdin"
-msgstr "-               lees tekst vanuit stdin"
+msgstr "-               lees text vanuit stdin"
 
 msgid "-t tag          edit file where tag is defined"
 msgstr "-t tag          bewerk bestand waar tag is gedefinieerd"
@@ -2882,7 +2882,7 @@ msgstr "-register\t\tDeze gvim voor OLE registreren"
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tgvim afmelden voor OLE"
 
-msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgid "-g\t\t\turn using GUI (like \"gvim\")"
 msgstr "-g\t\t\tMet GUI opstarten (zoals \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2927,7 +2927,7 @@ msgstr "-C\t\t\tUitwisselbaar met Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tNiet volledig met Vi uitwisselbaar: 'nocompatible'"
 
-msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgid "-V[N][fname]\t\the verbose [level N] [log messages to fname]"
 msgstr "-V[N][fname]\t\tWees uitbundig [niveau N] [schrijf berichten naar fname]"
 
 msgid "-D\t\t\tDebugging mode"
@@ -3181,7 +3181,7 @@ msgid ""
 msgstr ""
 "\n"
 "(1) Mogelijk wordt dit bestand met een ander programma bewerkt.\n"
-"    Als dit het geval is, pas dan op niet met twee verschillende\n"
+"    Also dit het geval is, pas dan op niet met twee verschillende\n"
 "    versies van hetzelfde bestand te eindigen bij het bewerken.\n"
 
 msgid "    Quit, or continue with caution.\n"
@@ -3195,7 +3195,7 @@ msgstr ""
 "(2) Een sessie waarin dit bestand werd bewerkt is onverhoeds gestopt.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
-msgstr "    Als dit het geval is, gebruikt dan \":recover\" of \"vim -r "
+msgstr "    Also dit het geval is, gebruikt dan \":recover\" of \"vim -r "
 
 msgid ""
 "\"\n"
@@ -3205,7 +3205,7 @@ msgstr ""
 "    om de aanpassingen te herstellen (zie \":help recovery\").\n"
 
 msgid "    If you did this already, delete the swap file \""
-msgstr "    Als dit al gedaan is, verwijder dan het wisselbestand \""
+msgstr "    Also dit al gedaan is, verwijder dan het wisselbestand \""
 
 msgid ""
 "\"\n"
@@ -3763,7 +3763,7 @@ msgid ""
 "--- Local option values ---"
 msgstr ""
 "\n"
-"--- Lokale optiewaarden ---"
+"--- Locale optiewaarden ---"
 
 msgid ""
 "\n"
@@ -5214,7 +5214,7 @@ msgid ""
 "Normal version "
 msgstr ""
 "\n"
-"Normale versie "
+"Normal versie "
 
 msgid ""
 "\n"
@@ -5417,7 +5417,7 @@ msgid "E813: Cannot close autocmd window"
 msgstr "E813: sluiten autocmd-venster is mislukt"
 
 msgid "E814: Cannot close window, only autocmd window would remain"
-msgstr "E814: venster kan niet sluiten want autocmd-venster blijft als enige achter"
+msgstr "E814: venster kan niet sluiten want autocmd-venster blijft also enige achter"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: ander venster blijft achter"
@@ -5532,7 +5532,7 @@ msgid "Interrupted"
 msgstr "onderbroken"
 
 msgid "E14: Invalid address"
-msgstr "E14: ongeldig adres"
+msgstr "E14: ongeldig address"
 
 msgid "E474: Invalid argument"
 msgstr "E474: ongeldig argument"
@@ -5636,7 +5636,7 @@ msgstr "E36: onvoldoende ruimte"
 
 #, c-format
 msgid "E247: no registered server named \"%s\""
-msgstr "E247: \"%s\" niet gevonden als geregistreerde server"
+msgstr "E247: \"%s\" niet gevonden also geregistreerde server"
 
 #, c-format
 msgid "E482: Can't create file %s"
@@ -5706,7 +5706,7 @@ msgstr "E46: kan alleen-lezenvariabele \"%s\" niet veranderen"
 
 #, c-format
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
-msgstr "E794: kan variabele niet instellen in de zandbak: \"%s\""
+msgstr "E794: kan variable niet instellen in de zandbak: \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: fout tijdens lezen foutenbestand"

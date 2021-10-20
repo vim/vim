@@ -8,7 +8,7 @@
 " a .vimrc file is found later.  Thus don't use line continuation and use
 " <special> in mappings.
 
-nnoremap <special> <D-n> :confirm enew<CR>
+nnoremap <special> <D-n> :confirm new<CR>
 vmap <special> <D-n> <Esc><D-n>gv
 imap <special> <D-n> <C-O><D-n>
 cmap <special> <D-n> <C-C><D-n>
@@ -20,7 +20,7 @@ imap <special> <D-o> <C-O><D-o>
 cmap <special> <D-o> <C-C><D-o>
 omap <special> <D-o> <Esc><D-o>
 
-nnoremap <silent> <special> <D-w> :if winheight(2) < 0 <Bar> confirm enew <Bar> else <Bar> confirm close <Bar> endif<CR>
+nnoremap <silent> <special> <D-w> :if winheight(2) < 0 <Bar> confirm new <Bar> else <Bar> confirm close <Bar> endif<CR>
 vmap <special> <D-w> <Esc><D-w>gv
 imap <special> <D-w> <C-O><D-w>
 cmap <special> <D-w> <C-C><D-w>
