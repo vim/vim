@@ -2681,7 +2681,6 @@ mch_FullName(
 		    verbose_leave();
 		}
 		l = fchdir(fd);
-		close(fd);
 	    }
 	    else
 #endif
@@ -2689,6 +2688,10 @@ mch_FullName(
 	    if (l != 0)
 		emsg(_(e_prev_dir));
 	}
+#ifdef HAVE_FCHDIR
+	if (fd >= 0)
+	    close(fd);
+#endif
 
 	l = STRLEN(buf);
 	if (l >= len - 1)
