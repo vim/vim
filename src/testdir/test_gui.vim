@@ -145,6 +145,28 @@ func Test_quoteplus()
   let @+ = quoteplus_saved
 endfunc
 
+func Test_gui_read_stdin()
+  CheckUnix
+
+  call writefile(['some', 'lines'], 'Xstdin')
+  let script =<< trim END
+      call writefile(getline(1, '$'), 'XstdinOK')
+      qa!
+  END
+  call writefile(script, 'Xscript')
+
+  " Cannot use --not-a-term here, the "reading from stdin" message would not be
+  " displayed.
+  let vimcmd = substitute(GetVimCommand(), '--not-a-term', '', '')
+
+  call system('cat Xstdin | ' .. vimcmd .. ' -f -g -S Xscript -')
+  call assert_equal(['some', 'lines'], readfile('XstdinOK'))
+
+  call delete('Xstdin')
+  call delete('XstdinOK')
+  call delete('Xscript')
+endfunc
+
 func Test_set_background()
   let background_saved = &background
 
