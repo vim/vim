@@ -160,6 +160,10 @@ EXTERN char e_list_value_does_not_have_enough_items[]
 	INIT(= N_("E711: List value does not have enough items"));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
+EXTERN char e_conflicts_with_value_of_listchars[]
+	INIT(= N_("E834: Conflicts with value of 'listchars'"));
+EXTERN char e_conflicts_with_value_of_fillchars[]
+	INIT(= N_("E835: Conflicts with value of 'fillchars'"));
 EXTERN char e_assert_fails_second_arg[]
 	INIT(= N_("E856: \"assert_fails()\" second argument must be a string or a list with one or two strings"));
 EXTERN char e_using_invalid_value_as_string_str[]
