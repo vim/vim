@@ -2643,7 +2643,7 @@ path_with_url(char_u *fname)
 	return 0;
 
     // check body: alpha or dash
-    for (p = fname; (isalpha(*p) || (*p == '-')); ++p)
+    for (p = fname + 1; (isalpha(*p) || (*p == '-')); ++p)
 	;
 
     // check last char is not a dash
