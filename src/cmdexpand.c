@@ -978,6 +978,7 @@ set_one_cmd_context(
 
     ExpandInit(xp);
     xp->xp_pattern = buff;
+    xp->xp_line = buff;
     xp->xp_context = EXPAND_COMMANDS;	// Default until we get past command
     ea.argt = 0;
 
@@ -2891,7 +2892,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     expand_T	xpc;
     int		filtered = FALSE;
     int		options = WILD_SILENT | WILD_USE_NL | WILD_ADD_SLASH
-								| WILD_NO_BEEP;
+					| WILD_NO_BEEP | WILD_HOME_REPLACE;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
