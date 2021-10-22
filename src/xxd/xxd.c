@@ -252,6 +252,26 @@ error_exit(int ret, char *msg)
   exit(ret);
 }
 
+  static long
+seek_output(FILE *fpo, long relative_offset)
+{
+  if (relative_offset != 0)
+    {
+      if (fflush(fpo) != 0)
+        perror_exit(3);
+#ifdef TRY_SEEK
+      if (fseek(fpo, relative_offset, 1) >= 0)
+        return relative_offset;
+#endif
+      if (relative_offset < 0)
+        error_exit(5, "sorry, cannot seek backwards.");
+      for (long i = 0; i < relative_offset; i++)
+        if (putc(0, fpo) == EOF)
+          perror_exit(3);
+    }
+  return relative_offset;
+}
+
 /*
  * Max. cols binary characters are decoded from the input stream per line.
  * Two adjacent garbage characters after evaluated data delimit valid data.
@@ -271,6 +291,9 @@ huntype(
   long have_off = 0, want_off = 0;
 
   rewind(fpi);
+  if (hextype == HEX_POSTSCRIPT) {
+    seek_output(fpo, base_off);
+  }
 
   while ((c = getc(fpi)) != EOF)
     {
@@ -306,25 +329,11 @@ huntype(
 	  if (n1 < 0)
 	    {
 	      p = 0;
+	      have_off += seek_output(fpo, base_off + want_off - have_off);
 	      continue;
 	    }
 	  want_off = (want_off << 4) | n1;
 	  continue;
-	}
-
-      if (base_off + want_off != have_off)
-	{
-	  if (fflush(fpo) != 0)
-	    perror_exit(3);
-#ifdef TRY_SEEK
-	  if (fseek(fpo, base_off + want_off - have_off, 1) >= 0)
-	    have_off = base_off + want_off;
-#endif
-	  if (base_off + want_off < have_off)
-	    error_exit(5, "sorry, cannot seek backwards.");
-	  for (; have_off < base_off + want_off; have_off++)
-	    if (putc(0, fpo) == EOF)
-	      perror_exit(3);
 	}
 
       if (n2 >= 0 && n1 >= 0)
@@ -332,7 +341,6 @@ huntype(
 	  if (putc((n2 << 4) | n1, fpo) == EOF)
 	    perror_exit(3);
 	  have_off++;
-	  want_off++;
 	  n1 = -1;
 	  if (!hextype && (++p >= cols))
 	    {
