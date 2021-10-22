@@ -252,6 +252,13 @@ die(int ret)
   exit(ret);
 }
 
+  static void
+quit(int ret, char *msg)
+{
+  fprintf(stderr, "%s: %s\n", pname, msg);
+  exit(ret);
+}
+
 /*
  * Max. cols binary characters are decoded from the input stream per line.
  * Two adjacent garbage characters after evaluated data delimit valid data.
@@ -322,10 +329,7 @@ huntype(
 	    have_off = base_off + want_off;
 #endif
 	  if (base_off + want_off < have_off)
-	    {
-	      fprintf(fperr, "%s: sorry, cannot seek backwards.\n", pname);
-	      return 5;
-	    }
+	    quit(5, "sorry, cannot seek backwards.");
 	  for (; have_off < base_off + want_off; have_off++)
 	    if (putc(0, fpo) == EOF)
 	      die(3);
@@ -640,12 +644,7 @@ main(int argc, char *argv[])
   if (octspergrp < 1 || octspergrp > cols)
     octspergrp = cols;
   else if (hextype == HEX_LITTLEENDIAN && (octspergrp & (octspergrp-1)))
-    {
-      fprintf(stderr,
-	      "%s: number of octets per group must be a power of 2 with -e.\n",
-	      pname);
-      exit(1);
-    }
+    quit(1, "number of octets per group must be a power of 2 with -e.");
 
   if (argc > 3)
     exit_with_usage();
@@ -682,10 +681,7 @@ main(int argc, char *argv[])
   if (revert)
     {
       if (hextype && (hextype != HEX_POSTSCRIPT))
-	{
-	  fprintf(stderr, "%s: sorry, cannot revert this type of hexdump\n", pname);
-	  return -1;
-	}
+	quit(-1, "sorry, cannot revert this type of hexdump");
       return huntype(fp, fpo, stderr, cols, hextype,
 		negseek ? -seekoff : seekoff);
     }
@@ -698,10 +694,7 @@ main(int argc, char *argv[])
       else
 	e = fseek(fp, negseek ? -seekoff : seekoff, negseek ? 2 : 0);
       if (e < 0 && negseek)
-	{
-	  fprintf(stderr, "%s: sorry cannot seek.\n", pname);
-	  return 4;
-	}
+	quit(4, "sorry cannot seek.");
       if (e >= 0)
 	seekoff = ftell(fp);
       else
@@ -718,8 +711,7 @@ main(int argc, char *argv[])
 		}
 	      else
 		{
-		  fprintf(stderr, "%s: sorry cannot seek.\n", pname);
-		  return 4;
+		  quit(4, "sorry cannot seek.");
 		}
 	    }
 	}
