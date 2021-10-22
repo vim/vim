@@ -272,6 +272,14 @@ seek_output(FILE *fpo, long relative_offset)
   return relative_offset;
 }
 
+  static int
+parse_hex_digit(int c)
+{
+  return (c >= '0' && c <= '9') ? c - '0' :
+         (c >= 'a' && c <= 'f') ? c - 'a' + 10 :
+         (c >= 'A' && c <= 'F') ? c - 'A' + 10 : -1;
+}
+
 /*
  * Max. cols binary characters are decoded from the input stream per line.
  * Two adjacent garbage characters after evaluated data delimit valid data.
@@ -308,19 +316,9 @@ huntype(
 
       n3 = n2;
       n2 = n1;
-
-      if (c >= '0' && c <= '9')
-	n1 = c - '0';
-      else if (c >= 'a' && c <= 'f')
-	n1 = c - 'a' + 10;
-      else if (c >= 'A' && c <= 'F')
-	n1 = c - 'A' + 10;
-      else
-	{
-	  n1 = -1;
-	  if (ign_garb)
-	    continue;
-	}
+      n1 = parse_hex_digit(c);
+      if ((n1 == -1) && ign_garb)
+        continue;
 
       ign_garb = 0;
 
