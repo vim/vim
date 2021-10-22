@@ -1548,9 +1548,11 @@ deref_func_name(
 	int	    no_autoload)
 {
     dictitem_T	*v;
+    typval_T	*tv = NULL;
     int		cc;
     char_u	*s = NULL;
     hashtab_T	*ht;
+    int		did_type = FALSE;
 
     if (partialp != NULL)
 	*partialp = NULL;
@@ -1562,20 +1564,59 @@ deref_func_name(
     name[*lenp] = cc;
     if (v != NULL)
     {
-	if (v->di_tv.v_type == VAR_FUNC)
+	tv = &v->di_tv;
+    }
+    else if (in_vim9script() || STRNCMP(name, "s:", 2) == 0)
+    {
+	imported_T  *import;
+	char_u	    *p = name;
+	int	    len = *lenp;
+
+	if (STRNCMP(name, "s:", 2) == 0)
 	{
-	    if (v->di_tv.vval.v_string == NULL)
+	    p = name + 2;
+	    len -= 2;
+	}
+	import = find_imported(p, len, NULL);
+
+	// imported variable from another script
+	if (import != NULL)
+	{
+	    if (import->imp_funcname != NULL)
+	    {
+		s = import->imp_funcname;
+		*lenp = (int)STRLEN(s);
+		return s;
+	    }
+	    // TODO: what if (import->imp_flags & IMP_FLAGS_STAR)
+	    {
+		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
+		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
+						    + import->imp_var_vals_idx;
+		tv = sv->sv_tv;
+		if (type != NULL)
+		    *type = sv->sv_type;
+		did_type = TRUE;
+	    }
+	}
+    }
+
+    if (tv != NULL)
+    {
+	if (tv->v_type == VAR_FUNC)
+	{
+	    if (tv->vval.v_string == NULL)
 	    {
 		*lenp = 0;
 		return (char_u *)"";	// just in case
 	    }
-	    s = v->di_tv.vval.v_string;
+	    s = tv->vval.v_string;
 	    *lenp = (int)STRLEN(s);
 	}
 
-	if (v->di_tv.v_type == VAR_PARTIAL)
+	if (tv->v_type == VAR_PARTIAL)
 	{
-	    partial_T *pt = v->di_tv.vval.v_partial;
+	    partial_T *pt = tv->vval.v_partial;
 
 	    if (pt == NULL)
 	    {
@@ -1590,9 +1631,9 @@ deref_func_name(
 
 	if (s != NULL)
 	{
-	    if (type != NULL && ht == get_script_local_ht())
+	    if (!did_type && type != NULL && ht == get_script_local_ht())
 	    {
-		svar_T  *sv = find_typval_in_script(&v->di_tv);
+		svar_T  *sv = find_typval_in_script(tv);
 
 		if (sv != NULL)
 		    *type = sv->sv_type;

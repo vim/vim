@@ -1477,6 +1477,33 @@ def Test_vim9_import_export()
   delete('Xvim9_script')
 enddef
 
+def Test_import_funcref()
+  var lines =<< trim END
+      vim9script
+      export def F(): number
+        return 42
+      enddef
+      export const G = F
+  END
+  writefile(lines, 'Xlib.vim')
+
+  lines =<< trim END
+      vim9script
+      import {G} from './Xlib.vim'
+      const Foo = G()
+      assert_equal(42, Foo)
+
+      def DoTest()
+        const Goo = G()
+        assert_equal(42, Foo)
+      enddef
+      DoTest()
+  END
+  CheckScriptSuccess(lines)
+
+  delete('Xlib.vim')
+enddef
+
 def Test_import_star_fails()
   writefile([], 'Xfoo.vim')
   var lines =<< trim END
