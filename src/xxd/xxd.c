@@ -192,7 +192,7 @@ char osver[] = "";
 /* CodeWarrior is really picky about missing prototypes */
 static void exit_with_usage __P((void));
 static void die __P((int));
-static int huntype __P((FILE *, FILE *, FILE *, int, int, long));
+static int huntype __P((FILE *, FILE *, int, int, long));
 static void xxdline __P((FILE *, char *, int));
 
 #define TRY_SEEK	/* attempt to use lseek, or skip forward by reading */
@@ -270,7 +270,6 @@ quit(int ret, char *msg)
 huntype(
   FILE *fpi,
   FILE *fpo,
-  FILE *fperr,
   int cols,
   int hextype,
   long base_off)
@@ -679,7 +678,7 @@ main(int argc, char *argv[])
     {
       if (hextype && (hextype != HEX_POSTSCRIPT))
 	quit(-1, "sorry, cannot revert this type of hexdump");
-      return huntype(fp, fpo, stderr, cols, hextype,
+      return huntype(fp, fpo, cols, hextype,
 		negseek ? -seekoff : seekoff);
     }
 
