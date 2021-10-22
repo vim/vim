@@ -318,8 +318,7 @@ huntype(
 	  if (fflush(fpo) != 0)
 	    die(3);
 #ifdef TRY_SEEK
-	  c = fseek(fpo, base_off + want_off - have_off, 1);
-	  if (c >= 0)
+	  if (fseek(fpo, base_off + want_off - have_off, 1) >= 0)
 	    have_off = base_off + want_off;
 #endif
 	  if (base_off + want_off < have_off)
@@ -349,12 +348,16 @@ huntype(
       if (n1 < 0 && n2 < 0 && n3 < 0)
 	{
 	  /* already stumbled into garbage, skip line, wait and see */
-	  if (!hextype)
-	    want_off = 0;
-	  while ((c = getc(fpi)) != '\n' && c != EOF)
-	    ;
+	  while (c != '\n' && c != EOF)
+	    c = getc(fpi);
 	  if (c == EOF && ferror(fpi))
 	    die(2);
+	}
+      if (c == '\n')
+	{
+	  if (!hextype)
+	    want_off = 0;
+	  p = cols;
 	  ign_garb = 1;
 	}
     }
