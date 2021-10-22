@@ -280,6 +280,16 @@ parse_hex_digit(int c)
          (c >= 'A' && c <= 'F') ? c - 'A' + 10 : -1;
 }
 
+  static int
+skip_to_eol(FILE *fpi, int c)
+{
+  while (c != '\n' && c != EOF)
+    c = getc(fpi);
+  if (c == EOF && ferror(fpi))
+    perror_exit(2);
+  return c;
+}
+
 /*
  * Max. cols binary characters are decoded from the input stream per line.
  * Two adjacent garbage characters after evaluated data delimit valid data.
@@ -341,20 +351,10 @@ huntype(
 	  have_off++;
 	  n1 = -1;
 	  if (!hextype && (++p >= cols))
-	    {
-	      /* skip the rest of the line as garbage */
-	      n2 = -1;
-	      n3 = -1;
-	    }
+	    c = skip_to_eol(fpi, c);
 	}
-      if (n1 < 0 && n2 < 0 && n3 < 0)
-	{
-	  /* already stumbled into garbage, skip line, wait and see */
-	  while (c != '\n' && c != EOF)
-	    c = getc(fpi);
-	  if (c == EOF && ferror(fpi))
-	    perror_exit(2);
-	}
+      else if (n1 < 0 && n2 < 0 && n3 < 0)
+        c = skip_to_eol(fpi, c);
       if (c == '\n')
 	{
 	  if (!hextype)
