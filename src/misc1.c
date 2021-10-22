@@ -2670,12 +2670,17 @@ trigger_modechanged()
     if (!has_modechanged())
 	return;
 
-    v_event = get_vim_var_dict(VV_EVENT);
-
     tv[0].v_type = VAR_NUMBER;
     tv[0].vval.v_number = 1;	    // get full mode
     tv[1].v_type = VAR_UNKNOWN;
     f_mode(tv, &rettv);
+    if (STRCMP(rettv.vval.v_string, last_mode) == 0)
+    {
+	vim_free(rettv.vval.v_string);
+	return;
+    }
+
+    v_event = get_vim_var_dict(VV_EVENT);
     (void)dict_add_string(v_event, "new_mode", rettv.vval.v_string);
     (void)dict_add_string(v_event, "old_mode", last_mode);
     dict_set_items_ro(v_event);
@@ -2688,9 +2693,9 @@ trigger_modechanged()
     apply_autocmds(EVENT_MODECHANGED, pat, NULL, FALSE, curbuf);
     STRCPY(last_mode, rettv.vval.v_string);
 
-    vim_free(rettv.vval.v_string);
     vim_free(pat);
     dict_free_contents(v_event);
     hash_init(&v_event->dv_hashtab);
+    vim_free(rettv.vval.v_string);
 #endif
 }

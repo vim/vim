@@ -527,6 +527,7 @@ normal_cmd(
 # endif
     }
 #endif
+    trigger_modechanged();
 
     // When not finishing an operator and no register name typed, reset the
     // count.
@@ -1221,6 +1222,7 @@ normal_end:
     c = finish_op;
 #endif
     finish_op = FALSE;
+    trigger_modechanged();
 #ifdef CURSOR_SHAPE
     // Redraw the cursor with another shape, if we were in Operator-pending
     // mode or did a replace command.
@@ -1278,6 +1280,7 @@ normal_end:
 	if (restart_VIsual_select == 1)
 	{
 	    VIsual_select = TRUE;
+	    trigger_modechanged();
 	    showmode();
 	    restart_VIsual_select = 0;
 	}
@@ -1386,7 +1389,6 @@ end_visual_mode_keep_button()
 #endif
 
     VIsual_active = FALSE;
-    trigger_modechanged();
     setmouse();
     mouse_dragging = 0;
 
@@ -1403,6 +1405,7 @@ end_visual_mode_keep_button()
     may_clear_cmdline();
 
     adjust_cursor_eol();
+    trigger_modechanged();
 }
 
 /*
@@ -3439,6 +3442,7 @@ nv_ctrlg(cmdarg_T *cap)
     if (VIsual_active)	// toggle Selection/Visual mode
     {
 	VIsual_select = !VIsual_select;
+	trigger_modechanged();
 	showmode();
     }
     else if (!checkclearop(cap->oap))
@@ -3501,6 +3505,7 @@ nv_ctrlo(cmdarg_T *cap)
     if (VIsual_active && VIsual_select)
     {
 	VIsual_select = FALSE;
+	trigger_modechanged();
 	showmode();
 	restart_VIsual_select = 2;	// restart Select mode later
     }

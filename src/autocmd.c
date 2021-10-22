@@ -1218,6 +1218,23 @@ do_autocmd_event(
 		    return FAIL;
 		}
 
+#ifdef FEAT_EVAL
+		// need to initialize last_mode for the first ModeChanged
+		// autocmd
+		if (event == EVENT_MODECHANGED && !has_modechanged())
+		{
+		    typval_T rettv;
+		    typval_T tv[2];
+
+		    tv[0].v_type = VAR_NUMBER;
+		    tv[0].vval.v_number = 1;
+		    tv[1].v_type = VAR_UNKNOWN;
+		    f_mode(tv, &rettv);
+		    STRCPY(last_mode, rettv.vval.v_string);
+		    vim_free(rettv.vval.v_string);
+		}
+#endif
+
 		if (is_buflocal)
 		{
 		    ap->buflocal_nr = buflocal_nr;
