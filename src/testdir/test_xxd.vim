@@ -213,6 +213,39 @@ func Test_xxd()
   call delete('XXDfile')
 endfunc
 
+func Test_xxd_patch()
+  let cmd = 'silent !' .. s:xxd_cmd .. ' -r Xxxdin Xxxdfile; ' .. s:xxd_cmd .. ' -g1 Xxxdfile > Xxxdout'
+  call writefile(["2: 41 41", "8: 42 42"], 'Xxxdin')
+  call writefile(['::::::::'], 'Xxxdfile')
+  exe cmd
+  call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
+
+  call writefile(["2: 43 43 ", "8: 44 44"], 'Xxxdin')
+  exe cmd
+  call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 44 44                    ::CC::::DD'], readfile('Xxxdout'))
+
+  call writefile(["2: 45 45  ", "8: 46 46"], 'Xxxdin')
+  exe cmd
+  call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
+  
+  call writefile(["2: 41 41", "08: 42 42"], 'Xxxdin')
+  call writefile(['::::::::'], 'Xxxdfile')
+  exe cmd
+  call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
+
+  call writefile(["2: 43 43 ", "09: 44 44"], 'Xxxdin')
+  exe cmd
+  call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 42 44 44                 ::CC::::BDD'], readfile('Xxxdout'))
+
+  call writefile(["2: 45 45  ", "0a: 46 46"], 'Xxxdin')
+  exe cmd
+  call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 42 44 46 46              ::EE::::BDFF'], readfile('Xxxdout'))
+  
+  call delete('Xxxdin')
+  call delete('Xxxdfile')
+  call delete('Xxxdout')
+endfunc
+
 " Various ways with wrong arguments that trigger the usage output.
 func Test_xxd_usage()
   for arg in ['-c', '-g', '-o', '-s', '-l', '-X', 'one two three']
