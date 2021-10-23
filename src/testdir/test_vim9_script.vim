@@ -1495,7 +1495,7 @@ def Test_import_funcref()
 
       def DoTest()
         const Goo = G()
-        assert_equal(42, Foo)
+        assert_equal(42, Goo)
       enddef
       DoTest()
   END
