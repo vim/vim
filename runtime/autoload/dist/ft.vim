@@ -811,6 +811,21 @@ func dist#ft#Redif()
   endwhile
 endfunc
 
+func dist#ft#Dep3patch()
+  if expand('%:t') ==# 'series'
+    return
+  endif
+
+  for ln in getline(1, 100)
+    if ln =~# '^\%(Description\|Subject\|Origin\|Bug\|Forwarded\|Author\|From\|Reviewed-by\|Acked-by\|Last-Updated\|Applied-Upstream\):'
+      setf dep3patch
+      return
+    elseif ln =~# '^---'
+      " end of headers found. stop processing
+      return
+    endif
+  endfor
+endfunc
 
 " Restore 'cpoptions'
 let &cpo = s:cpo_save
