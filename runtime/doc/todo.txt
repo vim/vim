@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Oct 15
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Oct 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,8 +37,6 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Remove s:flaky_tests from runtest.vim, set g:test_is_flaky in each test.
 
 Vim9 - Make everything work:
 - "filter #pat# ls" should work, #pat# is not a comment

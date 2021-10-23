@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.2.  Last change: 2021 Aug 31
+*insert.txt*    For Vim version 8.2.  Last change: 2021 Oct 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -893,7 +893,7 @@ Groß): >
 	    endif
 	endfunc
 
-	if has('patch-8.2.3520')
+	if exists('+thesaurusfunc')
 	    set thesaurusfunc=Thesaur
 	endif
 

@@ -169,6 +169,7 @@ runtime/plugin/vimballPlugin.vim	@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/amiga.vim		@cecamp
+runtime/syntax/arduino.vim		@johshoff
 runtime/syntax/asm.vim			@dkearns
 runtime/syntax/asmh8300.vim		@dkearns
 runtime/syntax/asterisk.vim		@jaunis

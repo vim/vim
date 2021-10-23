@@ -302,6 +302,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'gfs'	options.txt	/*'gfs'*
 'gfw'	options.txt	/*'gfw'*
 'ghr'	options.txt	/*'ghr'*
+'gli'	options.txt	/*'gli'*
 'go'	options.txt	/*'go'*
 'go-!'	options.txt	/*'go-!'*
 'go-A'	options.txt	/*'go-A'*
@@ -339,6 +340,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'guifontset'	options.txt	/*'guifontset'*
 'guifontwide'	options.txt	/*'guifontwide'*
 'guiheadroom'	options.txt	/*'guiheadroom'*
+'guiligatures'	options.txt	/*'guiligatures'*
 'guioptions'	options.txt	/*'guioptions'*
 'guipty'	options.txt	/*'guipty'*
 'guitablabel'	options.txt	/*'guitablabel'*
@@ -1138,6 +1140,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'tgc'	options.txt	/*'tgc'*
 'tgst'	options.txt	/*'tgst'*
 'thesaurus'	options.txt	/*'thesaurus'*
+'thesaurusfunc'	options.txt	/*'thesaurusfunc'*
 'tildeop'	options.txt	/*'tildeop'*
 'timeout'	options.txt	/*'timeout'*
 'timeoutlen'	options.txt	/*'timeoutlen'*
@@ -2077,6 +2080,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :XMLent	insert.txt	/*:XMLent*
 :XMLns	insert.txt	/*:XMLns*
 :[range]	motion.txt	/*:[range]*
+:[vV\x16]	autocmd.txt	/*:[vV\\x16]*
 :\bar	cmdline.txt	/*:\\bar*
 :_!	cmdline.txt	/*:_!*
 :_#	cmdline.txt	/*:_#*
@@ -3992,6 +3996,7 @@ E1233	eval.txt	/*E1233*
 E1237	map.txt	/*E1237*
 E1239	eval.txt	/*E1239*
 E124	eval.txt	/*E124*
+E1243	options.txt	/*E1243*
 E125	eval.txt	/*E125*
 E126	eval.txt	/*E126*
 E127	eval.txt	/*E127*
@@ -5930,6 +5935,8 @@ compl-omni-filetypes	insert.txt	/*compl-omni-filetypes*
 compl-spelling	insert.txt	/*compl-spelling*
 compl-stop	insert.txt	/*compl-stop*
 compl-tag	insert.txt	/*compl-tag*
+compl-thesaurus	insert.txt	/*compl-thesaurus*
+compl-thesaurusfunc	insert.txt	/*compl-thesaurusfunc*
 compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
 complete()	eval.txt	/*complete()*
@@ -9826,6 +9833,7 @@ try-echoerr	eval.txt	/*try-echoerr*
 try-finally	eval.txt	/*try-finally*
 try-nested	eval.txt	/*try-nested*
 try-nesting	eval.txt	/*try-nesting*
+tsrfu'	options.txt	/*tsrfu'*
 tutor	usr_01.txt	/*tutor*
 twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*

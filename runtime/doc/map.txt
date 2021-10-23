@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2021 Sep 12
+*map.txt*       For Vim version 8.2.  Last change: 2021 Oct 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1003,6 +1003,9 @@ mark.
 Also note that the 'clipboard' option is temporarily emptied to avoid
 clobbering the `"*` or `"+` registers, if its value contains the item `unnamed`
 or `unnamedplus`.
+
+The `mode()` function will return the state as it will be after applying the
+operator.
 
 ==============================================================================
 2. Abbreviations			*abbreviations* *Abbreviations*
