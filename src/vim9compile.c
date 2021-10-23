@@ -3702,7 +3702,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ufunc_T	*ufunc;
     evalarg_T	evalarg;
 
-    CLEAR_FIELD(evalarg);
+    init_evalarg(&evalarg);
     evalarg.eval_flags = EVAL_EVALUATE;
     evalarg.eval_cctx = cctx;
 
@@ -3733,11 +3733,13 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
 #endif
 
-    // evalarg.eval_tofree_cmdline may have a copy of the last line and "*arg"
-    // points into it.  Point to the original line to avoid a dangling pointer.
-    if (evalarg.eval_tofree_cmdline != NULL)
+    // The last entry in evalarg.eval_tofree_ga is a copy of the last line and
+    // "*arg" may point into it.  Point into the original line to avoid a
+    // dangling pointer.
+    if (evalarg.eval_using_cmdline)
     {
-	size_t	off = *arg - evalarg.eval_tofree_cmdline;
+	garray_T    *gap = &evalarg.eval_tofree_ga;
+	size_t	    off = *arg - ((char_u **)gap->ga_data)[gap->ga_len - 1];
 
 	*arg = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum]
 									 + off;
@@ -4201,9 +4203,10 @@ skip_expr_cctx(char_u **arg, cctx_T *cctx)
 {
     evalarg_T	evalarg;
 
-    CLEAR_FIELD(evalarg);
+    init_evalarg(&evalarg);
     evalarg.eval_cctx = cctx;
     skip_expr(arg, &evalarg);
+    clear_evalarg(&evalarg, NULL);
 }
 
 /*

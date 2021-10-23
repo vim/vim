@@ -1177,12 +1177,17 @@ lambda_function_body(
 
     if (cmdline != NULL)
     {
+	garray_T *tfgap = &evalarg->eval_tofree_ga;
+
 	// Something comes after the "}".
 	*arg = eap.nextcmd;
 
 	// "arg" points into cmdline, need to keep the line and free it later.
-	vim_free(evalarg->eval_tofree_cmdline);
-	evalarg->eval_tofree_cmdline = cmdline;
+	if (ga_grow(tfgap, 1) == OK)
+	{
+	    ((char_u **)(tfgap->ga_data))[tfgap->ga_len++] = cmdline;
+	    evalarg->eval_using_cmdline = TRUE;
+	}
     }
     else
 	*arg = (char_u *)"";
@@ -4867,7 +4872,7 @@ ex_return(exarg_T *eap)
 	return;
     }
 
-    CLEAR_FIELD(evalarg);
+    init_evalarg(&evalarg);
     evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
 
     if (eap->skip)
