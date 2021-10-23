@@ -1721,6 +1721,16 @@ def Test_hlexists()
   hlexists('')->assert_equal(0)
 enddef
 
+def Test_hlget()
+  CheckDefAndScriptFailure2(['hlget([])'], 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1')
+  hlget('')->assert_equal([])
+enddef
+
+def Test_hlset()
+  CheckDefAndScriptFailure2(['hlset("id")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1')
+  hlset([])->assert_equal(0)
+enddef
+
 def Test_iconv()
   CheckDefAndScriptFailure2(['iconv(1, "from", "to")'], 'E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1')
   CheckDefAndScriptFailure2(['iconv("abc", 10, "to")'], 'E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2')

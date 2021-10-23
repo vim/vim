@@ -4081,3 +4081,457 @@ free_highlight_fonts(void)
 # endif
 }
 #endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Convert each of the highlight attribute bits (bold, standout, underline,
+ * etc.) set in 'hlattr' into a separate boolean item in a Dictionary with
+ * the attribute name as the key.
+ */
+    static dict_T *
+highlight_get_attr_dict(int hlattr)
+{
+    dict_T	*dict;
+    int		i;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return NULL;
+
+    for (i = 0; hl_attr_table[i] != 0; ++i)
+    {
+	if (hlattr & hl_attr_table[i])
+	{
+	    dict_add_bool(dict, hl_name_table[i], VVAL_TRUE);
+	    hlattr &= ~hl_attr_table[i];	// don't want "inverse"
+	}
+    }
+
+    return dict;
+}
+
+/*
+ * Return the attributes of the highlight group at index 'hl_idx' as a
+ * Dictionary. If 'resolve_link' is TRUE, then resolves the highlight group
+ * links recursively.
+ */
+    static dict_T *
+highlight_get_info(int hl_idx, int resolve_link)
+{
+    dict_T	*dict;
+    hl_group_T	*sgp;
+    dict_T	*attr_dict;
+    int		hlgid;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return dict;
+
+    sgp = &HL_TABLE()[hl_idx];
+    // highlight group id is 1-based
+    hlgid = hl_idx + 1;
+
+    if (dict_add_string(dict, "name", sgp->sg_name) == FAIL)
+	goto error;
+    if (dict_add_number(dict, "id", hlgid) == FAIL)
+	goto error;
+
+    if (sgp->sg_link && resolve_link)
+    {
+	// resolve the highlight group link recursively
+	while (sgp->sg_link)
+	{
+	    hlgid = sgp->sg_link;
+	    sgp = &HL_TABLE()[sgp->sg_link - 1];
+	}
+    }
+
+    if (sgp->sg_term != 0)
+    {
+	attr_dict = highlight_get_attr_dict(sgp->sg_term);
+	if (attr_dict != NULL)
+	    if (dict_add_dict(dict, "term", attr_dict) == FAIL)
+		goto error;
+    }
+    if (sgp->sg_start != NULL)
+	if (dict_add_string(dict, "start", sgp->sg_start) == FAIL)
+	    goto error;
+    if (sgp->sg_stop != NULL)
+	if (dict_add_string(dict, "stop", sgp->sg_stop) == FAIL)
+	    goto error;
+    if (sgp->sg_cterm != 0)
+    {
+	attr_dict = highlight_get_attr_dict(sgp->sg_cterm);
+	if (attr_dict != NULL)
+	    if (dict_add_dict(dict, "cterm", attr_dict) == FAIL)
+		goto error;
+    }
+    if (sgp->sg_cterm_fg != 0)
+	if (dict_add_string(dict, "ctermfg",
+		    highlight_color(hlgid, (char_u *)"fg", 'c')) == FAIL)
+	    goto error;
+    if (sgp->sg_cterm_bg != 0)
+	if (dict_add_string(dict, "ctermbg",
+			highlight_color(hlgid, (char_u *)"bg", 'c')) == FAIL)
+	    goto error;
+    if (sgp->sg_cterm_ul != 0)
+	if (dict_add_string(dict, "ctermul",
+			highlight_color(hlgid, (char_u *)"ul", 'c')) == FAIL)
+	    goto error;
+    if (sgp->sg_gui != 0)
+    {
+	attr_dict = highlight_get_attr_dict(sgp->sg_gui);
+	if (attr_dict != NULL)
+	    if (dict_add_dict(dict, "gui", attr_dict) == FAIL)
+		goto error;
+    }
+    if (sgp->sg_gui_fg_name != NULL)
+	if (dict_add_string(dict, "guifg",
+			highlight_color(hlgid, (char_u *)"fg", 'g')) == FAIL)
+	    goto error;
+    if (sgp->sg_gui_bg_name != NULL)
+	if (dict_add_string(dict, "guibg",
+			highlight_color(hlgid, (char_u *)"bg", 'g')) == FAIL)
+	    goto error;
+    if (sgp->sg_gui_sp_name != NULL)
+	if (dict_add_string(dict, "guisp",
+			highlight_color(hlgid, (char_u *)"sp", 'g')) == FAIL)
+	    goto error;
+# ifdef FEAT_GUI
+    if (sgp->sg_font_name != NULL)
+	if (dict_add_string(dict, "font", sgp->sg_font_name) == FAIL)
+	    goto error;
+# endif
+    if (sgp->sg_link)
+    {
+	char_u	*link;
+
+	link = HL_TABLE()[sgp->sg_link - 1].sg_name;
+	if (link != NULL && dict_add_string(dict, "linksto", link) == FAIL)
+	    goto error;
+    }
+    if (dict_len(dict) == 2)
+	// If only 'name' is present, then the highlight group is cleared.
+	dict_add_bool(dict, "cleared", VVAL_TRUE);
+
+    return dict;
+
+error:
+    vim_free(dict);
+    return NULL;
+}
+
+/*
+ * "hlget([name])" function
+ * Return the attributes of a specific highlight group (if specified) or all
+ * the highlight groups.
+ */
+    void
+f_hlget(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*list;
+    dict_T	*dict;
+    int		i;
+    char_u	*hlarg = NULL;
+    int		resolve_link = FALSE;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (check_for_opt_string_arg(argvars, 0) == FAIL
+	    || (argvars[0].v_type != VAR_UNKNOWN
+		&& check_for_opt_bool_arg(argvars, 1) == FAIL))
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	// highlight group name supplied
+	hlarg = tv_get_string_chk(&argvars[0]);
+	if (hlarg == NULL)
+	    return;
+
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    int error = FALSE;
+
+	    resolve_link = tv_get_bool_chk(&argvars[1], &error);
+	    if (error)
+		return;
+	}
+    }
+
+    list = rettv->vval.v_list;
+    for (i = 0; i < highlight_ga.ga_len && !got_int; ++i)
+    {
+	if (hlarg == NULL || STRICMP(hlarg, HL_TABLE()[i].sg_name) == 0)
+	{
+	    dict = highlight_get_info(i, resolve_link);
+	    if (dict != NULL)
+		list_append_dict(list, dict);
+	}
+    }
+}
+
+/*
+ * Returns the string value at 'dict[key]'. Returns NULL, if 'key' is not in
+ * 'dict' or the value is not a string type. If the value is not a string type
+ * or is NULL, then 'error' is set to TRUE.
+ */
+    static char_u *
+hldict_get_string(dict_T *dict, char_u *key, int *error)
+{
+    dictitem_T	*di;
+
+    *error = FALSE;
+    di = dict_find(dict, key, -1);
+    if (di == NULL)
+	return NULL;
+
+    if (di->di_tv.v_type != VAR_STRING || di->di_tv.vval.v_string == NULL)
+    {
+	emsg(_(e_stringreq));
+	*error = TRUE;
+	return NULL;
+    }
+
+    return di->di_tv.vval.v_string;
+}
+
+/*
+ * Convert the highlight attribute Dictionary at 'dict[key]' into a string
+ * value in 'attr_str' of length 'len'. Returns FALSE if 'dict[key]' is not a
+ * Dictionary or is NULL.
+ */
+    static int
+hldict_attr_to_str(
+	dict_T	*dict,
+	char_u	*key,
+	char_u	*attr_str,
+	int	len)
+{
+    dictitem_T	*di;
+    dict_T	*attrdict;
+    int		i;
+
+    attr_str[0] = NUL;
+    di = dict_find(dict, key, -1);
+    if (di == NULL)
+	return TRUE;
+
+    if (di->di_tv.v_type != VAR_DICT || di->di_tv.vval.v_dict == NULL)
+    {
+	emsg(_(e_dictreq));
+	return FALSE;
+    }
+
+    attrdict = di->di_tv.vval.v_dict;
+
+    // If the attribute dict is empty, then return NONE to clear the attributes
+    if (dict_len(attrdict) == 0)
+    {
+	vim_strcat(attr_str, (char_u *)"NONE", len);
+	return TRUE;
+    }
+
+    for (i = 0; i < (int)ARRAY_LENGTH(hl_name_table); i++)
+    {
+	if (dict_get_bool(attrdict, (char_u *)hl_name_table[i],
+		    VVAL_FALSE) == VVAL_TRUE)
+	{
+	    if (attr_str[0] != NUL)
+		vim_strcat(attr_str, (char_u *)",", len);
+	    vim_strcat(attr_str, (char_u *)hl_name_table[i], len);
+	}
+    }
+
+    return TRUE;
+}
+
+/*
+ * Add or update a highlight group using 'dict' items. Returns TRUE if
+ * successfully updated the highlight group.
+ */
+    static int
+hlg_add_or_update(dict_T *dict)
+{
+    char_u	*name;
+    int		error;
+    char_u	term_attr[80];
+    char_u	cterm_attr[80];
+    char_u	gui_attr[80];
+    char_u	*start;
+    char_u	*stop;
+    char_u	*ctermfg;
+    char_u	*ctermbg;
+    char_u	*ctermul;
+    char_u	*guifg;
+    char_u	*guibg;
+    char_u	*guisp;
+# ifdef FEAT_GUI
+    char_u	*font;
+# endif
+
+    name = hldict_get_string(dict, (char_u *)"name", &error);
+    if (name == NULL || error)
+	return FALSE;
+
+    if (dict_find(dict, (char_u *)"linksto", -1) != NULL)
+    {
+	char_u	*linksto;
+
+	// link highlight groups
+	linksto = hldict_get_string(dict, (char_u *)"linksto", &error);
+	if (linksto == NULL || error)
+	    return FALSE;
+
+	vim_snprintf((char *)IObuff, IOSIZE, "link %s %s", name, linksto);
+	do_highlight(IObuff, FALSE, FALSE);
+
+	return TRUE;
+    }
+
+    if (dict_find(dict, (char_u *)"cleared", -1) != NULL)
+    {
+	varnumber_T	cleared;
+
+	// clear a highlight group
+	cleared = dict_get_bool(dict, (char_u *)"cleared", FALSE);
+	if (cleared == TRUE)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "clear %s", name);
+	    do_highlight(IObuff, FALSE, FALSE);
+	}
+
+	return TRUE;
+    }
+
+    start = hldict_get_string(dict, (char_u *)"start", &error);
+    if (error)
+	return FALSE;
+
+    stop = hldict_get_string(dict, (char_u *)"stop", &error);
+    if (error)
+	return FALSE;
+
+    if (!hldict_attr_to_str(dict, (char_u *)"term", term_attr,
+		sizeof(term_attr)))
+	return FALSE;
+
+    if (!hldict_attr_to_str(dict, (char_u *)"cterm", cterm_attr,
+		sizeof(cterm_attr)))
+	return FALSE;
+
+    ctermfg = hldict_get_string(dict, (char_u *)"ctermfg", &error);
+    if (error)
+	return FALSE;
+
+    ctermbg = hldict_get_string(dict, (char_u *)"ctermbg", &error);
+    if (error)
+	return FALSE;
+
+    ctermul = hldict_get_string(dict, (char_u *)"ctermul", &error);
+    if (error)
+	return FALSE;
+
+    if (!hldict_attr_to_str(dict, (char_u *)"gui", gui_attr,
+		sizeof(gui_attr)))
+	return FALSE;
+
+    guifg = hldict_get_string(dict, (char_u *)"guifg", &error);
+    if (error)
+	return FALSE;
+
+    guibg = hldict_get_string(dict, (char_u *)"guibg", &error);
+    if (error)
+	return FALSE;
+
+    guisp = hldict_get_string(dict, (char_u *)"guisp", &error);
+    if (error)
+	return FALSE;
+
+# ifdef FEAT_GUI
+    font = hldict_get_string(dict, (char_u *)"font", &error);
+    if (error)
+	return FALSE;
+# endif
+
+    // If none of the attributes are specified, then do nothing.
+    if (term_attr[0] == NUL && start == NULL && stop == NULL
+	    && cterm_attr[0] == NUL && ctermfg == NULL && ctermbg == NULL
+	    && ctermul == NULL && gui_attr[0] == NUL
+# ifdef FEAT_GUI
+	    && font == NULL
+# endif
+	    && guifg == NULL && guibg == NULL && guisp == NULL
+	    )
+	return TRUE;
+
+    vim_snprintf((char *)IObuff, IOSIZE,
+	    "%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s",
+	    name,
+	    term_attr[0] != NUL ? "term=" : "",
+	    term_attr[0] != NUL ? term_attr : (char_u *)"",
+	    start != NULL ? "start=" : "",
+	    start != NULL ? start : (char_u *)"",
+	    stop != NULL ? "stop=" : "",
+	    stop != NULL ? stop : (char_u *)"",
+	    cterm_attr[0] != NUL ? "cterm=" : "",
+	    cterm_attr[0] != NUL ? cterm_attr : (char_u *)"",
+	    ctermfg != NULL ? "ctermfg=" : "",
+	    ctermfg != NULL ? ctermfg : (char_u *)"",
+	    ctermbg != NULL ? "ctermbg=" : "",
+	    ctermbg != NULL ? ctermbg : (char_u *)"",
+	    ctermul != NULL ? "ctermul=" : "",
+	    ctermul != NULL ? ctermul : (char_u *)"",
+	    gui_attr[0] != NUL ? "gui=" : "",
+	    gui_attr[0] != NUL ? gui_attr : (char_u *)"",
+# ifdef FEAT_GUI
+	    font != NULL ? "font=" : "",
+	    font != NULL ? font : (char_u *)"",
+# else
+	    "", "",
+# endif
+	    guifg != NULL ? "guifg=" : "",
+	    guifg != NULL ? guifg : (char_u *)"",
+	    guibg != NULL ? "guibg=" : "",
+	    guibg != NULL ? guibg : (char_u *)"",
+	    guisp != NULL ? "guisp=" : "",
+	    guisp != NULL ? guisp : (char_u *)""
+		);
+
+    do_highlight(IObuff, FALSE, FALSE);
+
+    return TRUE;
+}
+
+/*
+ * "hlset([{highlight_attr}])" function
+ * Add or modify highlight groups
+ */
+    void
+f_hlset(typval_T *argvars, typval_T *rettv)
+{
+    listitem_T	*li;
+    dict_T	*dict;
+
+    rettv->vval.v_number = -1;
+
+    if (check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
+    FOR_ALL_LIST_ITEMS(argvars->vval.v_list, li)
+    {
+	if (li->li_tv.v_type != VAR_DICT)
+	{
+	    emsg(_(e_dictreq));
+	    return;
+	}
+
+	dict = li->li_tv.vval.v_dict;
+	if (!hlg_add_or_update(dict))
+	    return;
+    }
+
+    rettv->vval.v_number = 0;
+}
+#endif
