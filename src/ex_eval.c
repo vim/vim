@@ -1191,8 +1191,9 @@ ex_while(exarg_T *eap)
 								& CSF_FUNC_DEF;
 
 		// Any variables defined in the previous round are no longer
-		// visible.
-		for (i = cstack->cs_script_var_len[cstack->cs_idx];
+		// visible.  Keep the first one, it is the loop variable that
+		// we reuse every time around.
+		for (i = cstack->cs_script_var_len[cstack->cs_idx] + 1;
 					       i < si->sn_var_vals.ga_len; ++i)
 		{
 		    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
