@@ -1136,9 +1136,6 @@ SYS_DELMENU_FILE = $(DESTDIR)$(SCRIPTLOC)/delmenu.vim
 ### Name of the bugreport file target.
 SYS_BUGR_FILE	= $(DESTDIR)$(SCRIPTLOC)/bugreport.vim
 
-### Name of the rgb.txt file target.
-SYS_RGB_FILE   = $(DESTDIR)$(SCRIPTLOC)/rgb.txt
-
 ### Name of the file type detection file target.
 SYS_FILETYPE_FILE = $(DESTDIR)$(SCRIPTLOC)/filetype.vim
 
@@ -2449,9 +2446,6 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	chmod $(VIMSCRIPTMOD) $(EVIM_FILE)
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/mswin.vim $(MSWIN_FILE)
 	chmod $(VIMSCRIPTMOD) $(MSWIN_FILE)
-# install the rgb.txt file
-	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(SYS_RGB_FILE)
-	chmod $(VIMSCRIPTMOD) $(SYS_RGB_FILE)
 # install the bugreport file
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/bugreport.vim $(SYS_BUGR_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_BUGR_FILE)
@@ -2481,7 +2475,7 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(PRINTSOURCE); $(INSTALL_DATA) *.ps $(DEST_PRINT)
 	cd $(DEST_PRINT); chmod $(FILEMOD) *.ps
 # install the colorscheme files
-	cd $(COLSOURCE); $(INSTALL_DATA_R) *.vim tools README.txt $(DEST_COL)
+	cd $(COLSOURCE); $(INSTALL_DATA_R) *.vim lists tools README.txt $(DEST_COL)
 	cd $(DEST_COL); chmod $(DIRMOD) tools
 	cd $(DEST_COL); chmod $(HELPMOD) *.vim README.txt tools/*.vim
 # install the syntax files
@@ -2894,7 +2888,6 @@ uninstall_runtime:
 	-rm -f $(DEST_MAN_RU)/xxd.1 $(DEST_MAN_RU_U)/xxd.1
 	-rm -f $(DEST_HELP)/*.txt $(DEST_HELP)/tags $(DEST_HELP)/*.pl
 	-rm -f $(DEST_HELP)/*.??x $(DEST_HELP)/tags-??
-	-rm -f $(SYS_RGB_FILE)
 	-rm -f $(SYS_MENU_FILE) $(SYS_SYNMENU_FILE) $(SYS_DELMENU_FILE)
 	-rm -f $(SYS_BUGR_FILE) $(VIM_DEFAULTS_FILE) $(EVIM_FILE) $(MSWIN_FILE)
 	-rm -f $(DEST_SCRIPT)/gvimrc_example.vim $(DEST_SCRIPT)/vimrc_example.vim
@@ -3666,12 +3659,10 @@ Makefile:
 # This rule:
 #		- add resources to already installed vim binary to avoid
 #		  stripping them during install;
-#		- copy rgb.txt to runtime directory;
 #		- update system MIME database with info about vim application.
 #
 install_haiku_extra: $(DEST_BIN)/$(VIMTARGET) objects/os_haiku.rsrc
 	xres -o $(DEST_BIN)/$(VIMTARGET) objects/os_haiku.rsrc
-	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(DEST_RT)
 	mimeset	$(DEST_BIN)/$(VIMTARGET)
 
 # List of g*-links that should be replaced with shell script equivalents.

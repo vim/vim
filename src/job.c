@@ -559,7 +559,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    {
 			if (called_emsg_before == called_emsg)
 			    // may not get the error if the GUI didn't start
-			    semsg(_(e_alloc_color), color_name);
+			    semsg(_(e_cannot_allocate_color_str), color_name);
 			return FAIL;
 		    }
 

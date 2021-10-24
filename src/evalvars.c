@@ -149,6 +149,7 @@ static struct vimvar
     {VV_NAME("argv",		 VAR_LIST), VV_RO},
     {VV_NAME("collate",		 VAR_STRING), VV_RO},
     {VV_NAME("exiting",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("colornames",       VAR_DICT), VV_RO},
 };
 
 // shorthand
@@ -247,6 +248,8 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
+
+    set_vim_var_dict(VV_COLORNAMES, dict_alloc());
 
     // Default for v:register is not 0 but '"'.  This is adjusted once the
     // clipboard has been setup by calling reset_reg_var().

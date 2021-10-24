@@ -1774,9 +1774,6 @@ EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before pare
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 #endif
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
-#endif
 EXTERN char e_chan_or_job_req[]	INIT(= N_("E706: Channel or Job required"));
 EXTERN char e_jobreq[]		INIT(= N_("E693: Job required"));
 

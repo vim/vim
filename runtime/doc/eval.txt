@@ -1840,6 +1840,43 @@ v:collate	The current locale setting for collation order of the runtime
 		command.
 		See |multi-lang|.
 
+                                                                *v:colornames*
+v:colornames    A dictionary that maps color names to hex color strings. These
+		color names can be used with the |highlight-guifg|,
+		|highlight-guibg|, and |highlight-guisp| parameters. Updating
+		an entry in v:colornames has no immediate effect on the syntax
+		highlighting. The highlight commands (probably in a
+		colorscheme script) need to be re-evaluated in order to use
+		the updated color values. For example: >
+
+		    :let v:colornames['fuscia'] = '#cf3ab4'
+		    :let v:colornames['mauve'] = '#915f6d'
+		    :highlight Normal guifg=fuscia guibg=mauve
+<
+		This cannot be used to override the |cterm-colors| but it can
+		be used to override other colors. For example, the X11 colors
+		defined in the `colors/lists/default.vim` (previously defined
+		in |rgb.txt|). When defining new color names in a plugin, the
+		recommended practice is to set a color entry only when it does
+		not already exist. For example: >
+
+		    :call extend(v:colornames, {
+			\ 'fuscia': '#cf3ab4',
+			\ 'mauve': '#915f6d,
+			\ }, 'keep')
+<
+		Using |extend| with the 'keep' option updates each color only
+		if it did not exist in |v:colornames|. Doing so allows the
+		user to choose the precise color value for a common name
+		by setting it in their |.vimrc|.
+
+		It is possible to remove entries from this dictionary but
+		doing so is *NOT* recommended. Doing so is disruptive to
+		other scripts. It is also unlikely to achieve the desired
+		result because the |colorscheme| and |highlight| commands will
+		both automatically load all `colors/lists/default.vim` color
+		scripts.
+
 				*v:completed_item* *completed_item-variable*
 v:completed_item
 		|Dictionary| containing the |complete-items| for the most

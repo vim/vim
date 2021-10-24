@@ -5143,8 +5143,35 @@ guisp={color-name}					*highlight-guisp*
 		"gg"	is the Green value
 		"bb"	is the Blue value
 	All values are hexadecimal, range from "00" to "ff".  Examples: >
-  :highlight Comment guifg=#11f0c3 guibg=#ff00ff
+            :highlight Comment guifg=#11f0c3 guibg=#ff00ff
 <
+	If you are authoring a color scheme and use the same hexademical value
+	repeatedly, you can define a name for it in |v:colornames|. For
+	example: >
+
+	    # provide a default value for this color but allow the user to
+	    # override it.
+	    :call extend(v:colornames, {'alt_turquoise': '#11f0c3'}, 'keep')
+	    :highlight Comment guifg=alt_turquoise guibg=magenta
+<
+	If you are using a color scheme that relies on named colors and you
+	would like to adjust the precise appearance of those colors, you can
+	do so by overriding the values in |v:colornames| prior to loading the
+	scheme: >
+
+	    let v:colornames['alt_turquoise'] = '#22f0d3'
+	    colorscheme alt
+<
+	If you want to develop a color list that can be relied on by others,
+	it is best to prefix your color names. By convention these color lists
+	are placed in the colors/lists directory. You can see an example in
+	'$VIMRUNTIME/colors/lists/csscolors.vim'. This list would be sourced
+	by a color scheme using: >
+
+	    :runtime colors/lists/csscolors.vim
+	    :highlight Comment guifg=css_turquoise
+<
+
 					*highlight-groups* *highlight-default*
 These are the default highlighting groups.  These groups are used by the
 'highlight' option default.  Note that the highlighting depends on the value
