@@ -475,7 +475,7 @@ load_colors(char_u *name)
     buf = alloc(STRLEN(name) + 12);
     if (buf != NULL)
     {
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
 	load_default_colors_lists();
 #endif
 	apply_autocmds(EVENT_COLORSCHEMEPRE, name,
@@ -2286,7 +2286,7 @@ decode_hex_color(char_u *hex)
     return gui_adjust_rgb(color);
 }
 
-#if defined(FEAT_EVAL)
+#ifdef FEAT_EVAL
 // Returns the color currently mapped to the given name or INVALCOLOR if no
 // such name exists in the color table. The convention is to use lowercase for
 // all keys in the v:colornames dictionary. The value can be either a string in
