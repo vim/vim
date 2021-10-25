@@ -6,7 +6,7 @@
 
 " Проверяем язык локали и установки опции 'helplang'
 " Если не русский, то выходим из скрипта.
-if ('ru' !~? v:lang || 'russian' !~? v:lang) && 'ru' !~? &helplang
+if (v:lang !~? 'ru' || v:lang !~? 'russian') && &helplang !~? 'ru' 
   finish
 endif
 
