@@ -255,8 +255,8 @@ endfunc
 
 func Test_xxd_seek_backwards()
   new
-  exe 'r! printf "4:\n2: 42 42" | ' . s:xxd_cmd . ' -r | cat'
-  call assert_match('xxd: sorry, cannot seek backwards\.', join(getline(1, 3)))
+  exe 'r! printf "4: 41 41\n2: 42 42" | ' . s:xxd_cmd . ' -r -c2 2>&1 | cat'
+  call assert_match('AAxxd: sorry, cannot seek backwards\.', join(getline(1, 3)))
   bwipe!
 endfunc
 
