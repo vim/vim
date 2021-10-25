@@ -199,7 +199,6 @@ update_topline(void)
 	check_cursor_lnum();
 	curwin->w_topline = curwin->w_cursor.lnum;
 	curwin->w_botline = curwin->w_topline;
-	curwin->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
 	curwin->w_scbind_pos = 1;
 	return;
     }
