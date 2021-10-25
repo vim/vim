@@ -253,6 +253,20 @@ func Test_xxd_patch()
   call delete('Xxxdout')
 endfunc
 
+func Test_xxd_seek_backwards()
+  new
+  exe 'r! printf "4:\n2: 42 42" | ' . s:xxd_cmd . ' -r | cat'
+  call assert_match('xxd: sorry, cannot seek backwards\.', join(getline(1, 3)))
+  bwipe!
+endfunc
+
+func Test_xxd_ignore_garbage()
+  new
+  exe 'r! printf "\n\r xxxx 0: 42 42" | ' . s:xxd_cmd . ' -r'
+  call assert_match('BB', join(getline(1, 3)))
+  bwipe!
+endfunc
+
 " Various ways with wrong arguments that trigger the usage output.
 func Test_xxd_usage()
   for arg in ['-c', '-g', '-o', '-s', '-l', '-X', 'one two three']
