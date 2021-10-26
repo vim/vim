@@ -790,24 +790,9 @@ gui_mch_is_blink_off(void)
     void
 gui_mch_set_blinking(long waittime, long on, long off)
 {
-#if GTK_CHECK_VERSION(3,0,0)
-    if (waittime == 0 || on == 0 || off == 0)
-    {
-	blink_waittime = 700;
-	blink_ontime = 400;
-	blink_offtime = 250;
-    }
-    else
-    {
-	blink_waittime = waittime;
-	blink_ontime = on;
-	blink_offtime = off;
-    }
-#else
     blink_waittime = waittime;
     blink_ontime = on;
     blink_offtime = off;
-#endif
 }
 
 /*
@@ -1035,10 +1020,6 @@ key_press_event(GtkWidget *widget UNUSED,
     guint	state;
     char_u	*s, *d;
 
-#if GTK_CHECK_VERSION(3,0,0)
-    gui_mch_stop_blink(TRUE);
-#endif
-
     gui.event_time = event->time;
     key_sym = event->keyval;
     state = event->state;
@@ -1195,9 +1176,6 @@ key_release_event(GtkWidget *widget UNUSED,
 		  GdkEventKey *event,
 		  gpointer data UNUSED)
 {
-# if GTK_CHECK_VERSION(3,0,0)
-    gui_mch_start_blink();
-# endif
 # if defined(FEAT_XIM)
     gui.event_time = event->time;
     /*
