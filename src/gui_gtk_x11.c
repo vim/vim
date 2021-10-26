@@ -5907,8 +5907,8 @@ skipitall:
 #if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
     if (!gui.by_signal)
-	gdk_window_invalidate_rect(gtk_widget_get_window(gui.drawarea),
-		&area, FALSE);
+	gtk_widget_queue_draw_area(gui.drawarea, area.x, area.y,
+		area.width, area.height);
 #else
     gdk_gc_set_clip_rectangle(gui.text_gc, NULL);
 #endif
@@ -6388,7 +6388,8 @@ gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg)
 	cairo_destroy(cr);
 
 	if (!gui.by_signal)
-	    gdk_window_invalidate_rect(win, &rect, FALSE);
+	    gtk_widget_queue_draw_area(gui.drawarea,
+		    rect.x, rect.y, rect.width, rect.height);
     }
 #else // !GTK_CHECK_VERSION(3,0,0)
     gdk_gc_set_foreground(gui.text_gc, &color);
@@ -6425,7 +6426,8 @@ gui_gtk_window_clear(GdkWindow *win)
     cairo_destroy(cr);
 
     if (!gui.by_signal)
-	gdk_window_invalidate_rect(win, &rect, FALSE);
+	gtk_widget_queue_draw_area(gui.drawarea,
+		rect.x, rect.y, rect.width, rect.height);
 }
 #else
 # define gui_gtk_window_clear(win)  gdk_window_clear(win)
