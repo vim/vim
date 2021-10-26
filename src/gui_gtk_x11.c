@@ -6041,7 +6041,7 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 # else
     // Give an implementation for older cairo versions if necessary.
 # endif
-    gdk_cairo_rectangle(cr, &rect);
+    cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
     cairo_fill(cr);
 
     cairo_destroy(cr);
@@ -6378,7 +6378,7 @@ gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg)
 	else
 	    set_cairo_source_rgba_from_color(cr, gui.back_pixel);
 # endif
-	gdk_cairo_rectangle(cr, &rect);
+	cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
@@ -6415,7 +6415,7 @@ gui_gtk_window_clear(GdkWindow *win)
     else
 	set_cairo_source_rgba_from_color(cr, gui.back_pixel);
 # endif
-    gdk_cairo_rectangle(cr, &rect);
+    cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
     cairo_fill(cr);
     cairo_destroy(cr);
 
