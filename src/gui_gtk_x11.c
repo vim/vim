@@ -6554,7 +6554,7 @@ gui_mch_insert_lines(int row, int num_lines)
 	    FILL_X(gui.scroll_region_left), FILL_Y(row + num_lines),
 	    FILL_X(gui.scroll_region_left), FILL_Y(row),
 	    gui.char_width * ncols + 1,     gui.char_height * src_nrows);
-    gui_mch_clear_block(
+    gui_clear_block(
 	    row,		 gui.scroll_region_left,
 	    row + num_lines - 1, gui.scroll_region_right);
     gtk_widget_queue_draw_area(gui.drawarea,
