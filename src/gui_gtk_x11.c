@@ -682,13 +682,6 @@ draw_event(GtkWidget *widget UNUSED,
 	}
 	cairo_rectangle_list_destroy(list);
 
-	if (get_real_state() & VISUAL)
-	{
-	    if (gui.cursor_row == gui.row && gui.cursor_col >= gui.col)
-		gui_update_cursor(TRUE, TRUE);
-	}
-
-	cairo_paint(cr);
     }
     gui.by_signal = FALSE;
 
