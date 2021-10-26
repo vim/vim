@@ -534,7 +534,7 @@ func s:GdbOutCallback(channel, text)
   if a:text == '(gdb) ' || a:text == '^done' || a:text[0] == '&'
     return
   endif
-  if a:text =~ '^^error,msg='
+  if a:text =~ '^\^error,msg='
     let text = s:DecodeMessage(a:text[11:])
     if exists('s:evalexpr') && text =~ 'A syntax error in expression, near\|No symbol .* in current context'
       " Silently drop evaluation errors.
@@ -736,9 +736,11 @@ func s:HandleDisasmMsg(msg)
   else
     let value = substitute(a:msg, '^\~\"[ ]*', '', '')
     let value = substitute(value, '^=>[ ]*', '', '')
-    let value = substitute(value, '\\n\"$', '', '')
+    let value = substitute(value, '\\n\"
+$', '', '')
     let value = substitute(value, '\\n\"$', '', '')
-    let value = substitute(value, '', '', '')
+    let value = substitute(value, '
+', '', '')
     let value = substitute(value, '\\t', ' ', 'g')
 
     if value != '' || !empty(s:asm_lines)
