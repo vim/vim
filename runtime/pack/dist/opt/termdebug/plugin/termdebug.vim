@@ -736,9 +736,11 @@ func s:HandleDisasmMsg(msg)
   else
     let value = substitute(a:msg, '^\~\"[ ]*', '', '')
     let value = substitute(value, '^=>[ ]*', '', '')
-    let value = substitute(value, '\\n\"$', '', '')
+    let value = substitute(value, '\\n\"
+$', '', '')
     let value = substitute(value, '\\n\"$', '', '')
-    let value = substitute(value, '', '', '')
+    let value = substitute(value, '
+', '', '')
     let value = substitute(value, '\\t', ' ', 'g')
 
     if value != '' || !empty(s:asm_lines)
@@ -982,6 +984,18 @@ func s:Run(args)
 endfunc
 
 func s:SendEval(expr)
+  " clean up expression that may got in because of range
+  " (newlines and surrounding spaces)
+  if &filetype ==# 'cobol'
+    " extra cleanup for COBOL: _every: expression ends with a period,
+    " a trailing comma is ignored as it commonly separates multiple expr.
+    let expr = substitute(expr, '\..*', '', '')
+    let expr = substitute(expr, '[;\n]', ' ', 'g')
+    let expr = substitute(expr, ',*$', '', '')
+  else
+    let expr = substitute(expr, '\n', ' ', 'g')
+  endif
+  let expr = substitute(expr, '^ *\(.*\) *', '\1', '')
   call s:SendCommand('-data-evaluate-expression "' . a:expr . '"')
   let s:evalexpr = a:expr
 endfunc
