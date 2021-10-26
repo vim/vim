@@ -736,9 +736,11 @@ func s:HandleDisasmMsg(msg)
   else
     let value = substitute(a:msg, '^\~\"[ ]*', '', '')
     let value = substitute(value, '^=>[ ]*', '', '')
-    let value = substitute(value, '\\n\"$', '', '')
+    let value = substitute(value, '\\n\"
+$', '', '')
     let value = substitute(value, '\\n\"$', '', '')
-    let value = substitute(value, '', '', '')
+    let value = substitute(value, '
+', '', '')
     let value = substitute(value, '\\t', ' ', 'g')
 
     if value != '' || !empty(s:asm_lines)
@@ -1058,7 +1060,8 @@ func s:HandleError(msg)
     let s:evalFromBalloonExpr = 0
     return
   endif
-  echoerr substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
+  let msgVal = substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
+  echoerr substitute(msgVal, '\\"', '"', 'g')
 endfunc
 
 func s:GotoSourcewinOrCreateIt()
