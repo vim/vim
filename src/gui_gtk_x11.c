@@ -624,15 +624,6 @@ static gboolean blink_mode = TRUE;
 static gboolean gui_gtk_is_blink_on(void);
 
     static void
-gui_gtk3_redraw(int x, int y, int width, int height)
-{
-    // Range checks are left to gui_redraw_block()
-    gui_redraw_block(Y_2_ROW(y), X_2_COL(x),
-	    Y_2_ROW(y + height - 1), X_2_COL(x + width - 1),
-	    GUI_MON_NOCLEAR);
-}
-
-    static void
 gui_gtk3_update_cursor(cairo_t *cr)
 {
     if (gui.row == gui.cursor_row)
@@ -682,30 +673,11 @@ draw_event(GtkWidget *widget UNUSED,
 	{
 	    int i;
 
-	    // First clear all the blocks and then redraw them.  Just in case
-	    // some blocks overlap.
 	    for (i = 0; i < list->num_rectangles; i++)
 	    {
-		const cairo_rectangle_t rect = list->rectangles[i];
-
-		gui_mch_clear_block(Y_2_ROW((int)rect.y), 0,
-			Y_2_ROW((int)(rect.y + rect.height)) - 1, Columns - 1);
-	    }
-
-	    for (i = 0; i < list->num_rectangles; i++)
-	    {
-		const cairo_rectangle_t rect = list->rectangles[i];
-
-		if (blink_mode)
-		    gui_gtk3_redraw(rect.x, rect.y, rect.width, rect.height);
-		else
-		{
-		    if (get_real_state() & VISUAL)
-			gui_gtk3_redraw(rect.x, rect.y,
-				rect.width, rect.height);
-		    else
-			gui_redraw(rect.x, rect.y, rect.width, rect.height);
-		}
+		const cairo_rectangle_t *rect = &list->rectangles[i];
+		cairo_rectangle(cr, rect->x, rect->y, rect->width, rect->height);
+		cairo_fill(cr);
 	    }
 	}
 	cairo_rectangle_list_destroy(list);
@@ -6624,9 +6596,6 @@ gui_mch_delete_lines(int row, int num_lines)
     gui_clear_block(
 	    gui.scroll_region_bot - num_lines + 1, gui.scroll_region_left,
 	    gui.scroll_region_bot,		   gui.scroll_region_right);
-    gui_gtk3_redraw(
-	    FILL_X(gui.scroll_region_left), FILL_Y(row),
-	    gui.char_width * ncols + 1,     gui.char_height * nrows);
     if (!gui.by_signal)
 	gtk_widget_queue_draw_area(gui.drawarea,
 		FILL_X(gui.scroll_region_left), FILL_Y(row),
@@ -6674,9 +6643,6 @@ gui_mch_insert_lines(int row, int num_lines)
     gui_mch_clear_block(
 	    row,		 gui.scroll_region_left,
 	    row + num_lines - 1, gui.scroll_region_right);
-    gui_gtk3_redraw(
-	    FILL_X(gui.scroll_region_left), FILL_Y(row),
-	    gui.char_width * ncols + 1,     gui.char_height * nrows);
     if (!gui.by_signal)
 	gtk_widget_queue_draw_area(gui.drawarea,
 		FILL_X(gui.scroll_region_left), FILL_Y(row),
