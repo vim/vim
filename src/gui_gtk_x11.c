@@ -618,37 +618,6 @@ visibility_event(GtkWidget *widget UNUSED,
  * Redraw the corresponding portions of the screen.
  */
 #if GTK_CHECK_VERSION(3,0,0)
-static gboolean is_key_pressed = FALSE;
-static gboolean blink_mode = TRUE;
-
-static gboolean gui_gtk_is_blink_on(void);
-
-    static void
-gui_gtk3_update_cursor(cairo_t *cr)
-{
-    if (gui.row == gui.cursor_row)
-    {
-	gui.by_signal = TRUE;
-	if (State & CMDLINE)
-	    gui_update_cursor(TRUE, FALSE);
-	else
-	    gui_update_cursor(TRUE, TRUE);
-	gui.by_signal = FALSE;
-	cairo_paint(cr);
-    }
-}
-
-    static gboolean
-gui_gtk3_should_draw_cursor(void)
-{
-    unsigned int cond = 0;
-    cond |= gui_gtk_is_blink_on();
-    if (gui.cursor_col >= gui.col)
-	cond |= is_key_pressed;
-    cond |= gui.in_focus == FALSE;
-    return  cond;
-}
-
     static gboolean
 draw_event(GtkWidget *widget UNUSED,
 	   cairo_t   *cr,
@@ -663,7 +632,6 @@ draw_event(GtkWidget *widget UNUSED,
 
     cairo_set_source_surface(cr, gui.surface, 0, 0);
 
-    // Draw the window without the cursor.
     gui.by_signal = TRUE;
     {
 	cairo_rectangle_list_t *list = NULL;
@@ -681,13 +649,8 @@ draw_event(GtkWidget *widget UNUSED,
 	    }
 	}
 	cairo_rectangle_list_destroy(list);
-
     }
     gui.by_signal = FALSE;
-
-    // Add the cursor to the window if necessary.
-    if (gui_gtk3_should_draw_cursor() && blink_mode)
-	gui_gtk3_update_cursor(cr);
 
     return FALSE;
 }
@@ -812,14 +775,6 @@ static long_u blink_ontime = 400;
 static long_u blink_offtime = 250;
 static guint blink_timer = 0;
 
-#if GTK_CHECK_VERSION(3,0,0)
-    static gboolean
-gui_gtk_is_blink_on(void)
-{
-    return blink_state == BLINK_ON;
-}
-#endif
-
     int
 gui_mch_is_blinking(void)
 {
@@ -838,16 +793,12 @@ gui_mch_set_blinking(long waittime, long on, long off)
 #if GTK_CHECK_VERSION(3,0,0)
     if (waittime == 0 || on == 0 || off == 0)
     {
-	blink_mode = FALSE;
-
 	blink_waittime = 700;
 	blink_ontime = 400;
 	blink_offtime = 250;
     }
     else
     {
-	blink_mode = TRUE;
-
 	blink_waittime = waittime;
 	blink_ontime = on;
 	blink_offtime = off;
@@ -1085,7 +1036,6 @@ key_press_event(GtkWidget *widget UNUSED,
     char_u	*s, *d;
 
 #if GTK_CHECK_VERSION(3,0,0)
-    is_key_pressed = TRUE;
     gui_mch_stop_blink(TRUE);
 #endif
 
@@ -1246,7 +1196,6 @@ key_release_event(GtkWidget *widget UNUSED,
 		  gpointer data UNUSED)
 {
 # if GTK_CHECK_VERSION(3,0,0)
-    is_key_pressed = FALSE;
     gui_mch_start_blink();
 # endif
 # if defined(FEAT_XIM)
