@@ -632,7 +632,6 @@ draw_event(GtkWidget *widget UNUSED,
 
     cairo_set_source_surface(cr, gui.surface, 0, 0);
 
-    gui.by_signal = TRUE;
     {
 	cairo_rectangle_list_t *list = NULL;
 
@@ -650,7 +649,6 @@ draw_event(GtkWidget *widget UNUSED,
 	}
 	cairo_rectangle_list_destroy(list);
     }
-    gui.by_signal = FALSE;
 
     return FALSE;
 }
@@ -3715,7 +3713,6 @@ gui_mch_init(void)
     gui.drawarea = gtk_drawing_area_new();
 #if GTK_CHECK_VERSION(3,0,0)
     gui.surface = NULL;
-    gui.by_signal = FALSE;
 #endif
 
     // Determine which events we will filter.
@@ -5906,9 +5903,8 @@ skipitall:
 
 #if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea, area.x, area.y,
-		area.width, area.height);
+    gtk_widget_queue_draw_area(gui.drawarea, area.x, area.y,
+	    area.width, area.height);
 #else
     gdk_gc_set_clip_rectangle(gui.text_gc, NULL);
 #endif
@@ -6050,9 +6046,8 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 
     cairo_destroy(cr);
 
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea, rect.x, rect.y,
-		rect.width, rect.height);
+    gtk_widget_queue_draw_area(gui.drawarea, rect.x, rect.y,
+	    rect.width, rect.height);
 #else
     GdkGCValues values;
     GdkGC *invert_gc;
@@ -6387,9 +6382,8 @@ gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	if (!gui.by_signal)
-	    gtk_widget_queue_draw_area(gui.drawarea,
-		    rect.x, rect.y, rect.width, rect.height);
+	gtk_widget_queue_draw_area(gui.drawarea,
+		rect.x, rect.y, rect.width, rect.height);
     }
 #else // !GTK_CHECK_VERSION(3,0,0)
     gdk_gc_set_foreground(gui.text_gc, &color);
@@ -6425,9 +6419,8 @@ gui_gtk_window_clear(GdkWindow *win)
     cairo_fill(cr);
     cairo_destroy(cr);
 
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea,
-		rect.x, rect.y, rect.width, rect.height);
+    gtk_widget_queue_draw_area(gui.drawarea,
+	    rect.x, rect.y, rect.width, rect.height);
 }
 #else
 # define gui_gtk_window_clear(win)  gdk_window_clear(win)
@@ -6518,10 +6511,9 @@ gui_mch_delete_lines(int row, int num_lines)
     gui_clear_block(
 	    gui.scroll_region_bot - num_lines + 1, gui.scroll_region_left,
 	    gui.scroll_region_bot,		   gui.scroll_region_right);
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea,
-		FILL_X(gui.scroll_region_left), FILL_Y(row),
-		gui.char_width * ncols + 1,	gui.char_height * nrows);
+    gtk_widget_queue_draw_area(gui.drawarea,
+	    FILL_X(gui.scroll_region_left), FILL_Y(row),
+	    gui.char_width * ncols + 1,	gui.char_height * nrows);
 #else
     if (gui.visibility == GDK_VISIBILITY_FULLY_OBSCURED)
 	return;			// Can't see the window
@@ -6565,10 +6557,9 @@ gui_mch_insert_lines(int row, int num_lines)
     gui_mch_clear_block(
 	    row,		 gui.scroll_region_left,
 	    row + num_lines - 1, gui.scroll_region_right);
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea,
-		FILL_X(gui.scroll_region_left), FILL_Y(row),
-		gui.char_width * ncols + 1,	gui.char_height * nrows);
+    gtk_widget_queue_draw_area(gui.drawarea,
+	    FILL_X(gui.scroll_region_left), FILL_Y(row),
+	    gui.char_width * ncols + 1,	gui.char_height * nrows);
 #else
     if (gui.visibility == GDK_VISIBILITY_FULLY_OBSCURED)
 	return;			// Can't see the window
@@ -7010,9 +7001,8 @@ gui_mch_drawsign(int row, int col, int typenr)
 	    cairo_surface_destroy(bg_surf);
 	    cairo_destroy(cr);
 
-	    if (!gui.by_signal)
-		gtk_widget_queue_draw_area(gui.drawarea,
-			FILL_X(col), FILL_Y(col), width, height);
+	    gtk_widget_queue_draw_area(gui.drawarea,
+		    FILL_X(col), FILL_Y(col), width, height);
 
 	}
 # else // !GTK_CHECK_VERSION(3,0,0)
