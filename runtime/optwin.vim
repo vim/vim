@@ -652,7 +652,7 @@ if has("gui")
     endif
     call <SID>AddOption("guiheadroom", gettext("room (in pixels) left above/below the window"))
     call append("$", " \tset ghr=" . &ghr)
-    call <SID>AddOption("guiligatures", gettext("list of ASCII characters that can be combined into complesshapes"))
+    call <SID>AddOption("guiligatures", gettext("list of ASCII characters that can be combined into complex shapes"))
     call <SID>OptionG("gli", &gli)
   endif
   if has("directx")
