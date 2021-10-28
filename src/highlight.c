@@ -3786,6 +3786,11 @@ highlight_changed(void)
 
     need_highlight_changed = FALSE;
 
+#ifdef FEAT_TERMINAL
+    term_update_colors_all();
+    term_update_wincolor_all();
+#endif
+
     // Clear all attributes.
     for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)
 	highlight_attr[hlf] = 0;

@@ -123,6 +123,14 @@ typedef struct {
 #endif
 #define COLOR_INVALID(x) ((x) == INVALCOLOR || (x) == CTERMCOLOR)
 
+#ifdef FEAT_TERMINAL
+# include "libvterm/include/vterm.h"
+typedef struct {
+    VTermColor	fg;
+    VTermColor	bg;
+} termcellcolor_T;
+#endif
+
 /*
  * marks: positions in a file
  * (a normal mark is a lnum/col pair, the same as a file position)
@@ -3618,6 +3626,9 @@ struct window_S
 #ifdef FEAT_LINEBREAK
     int		w_nrwidth;	    // width of 'number' and 'relativenumber'
 				    // column being used
+#endif
+#ifdef FEAT_TERMINAL
+    termcellcolor_T w_term_wincolor;	 // cache for term color of 'wincolor'
 #endif
 
     /*
