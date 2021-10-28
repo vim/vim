@@ -43,6 +43,21 @@
 // 700 is needed for mkdtemp().
 #  ifndef _XOPEN_SOURCE
 #   define _XOPEN_SOURCE    700
+
+// On old systems, defining _XOPEN_SOURCE causes _BSD_SOURCE, _SVID_SOURCE
+// and/or // _DEFAULT_SOURCE not to be defined, so do that here.  Those are
+// needed to include nanosecond-resolution timestamps in struct stat.  On new
+// systems, _DEFAULT_SOURCE is needed to avoid warning messages about using
+// deprecated _BSD_SOURCE or _SVID_SOURCE.
+#   ifndef _BSD_SOURCE
+#    define _BSD_SOURCE 1
+#   endif
+#   ifndef _SVID_SOURCE
+#    define _SVID_SOURCE 1
+#   endif
+#   ifndef _DEFAULT_SOURCE
+#    define _DEFAULT_SOURCE 1
+#   endif
 #  endif
 # endif
 
