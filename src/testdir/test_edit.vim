@@ -2034,4 +2034,21 @@ func Test_mode_changes()
   unlet! g:i_to_any
 endfunc
 
+" Test toggling of input method. See :help i_CTRL-^
+func Test_edit_CTRL_hat()
+  CheckFeature xim
+  CheckNotGui " FIXME: why does this test fail when running in the GUI?
+
+  new
+
+  call assert_equal(0, &iminsert)
+  call feedkeys("i\<C-^>", 'xt')
+  call assert_equal(2, &iminsert)
+  call feedkeys("i\<C-^>", 'xt')
+  call assert_equal(0, &iminsert)
+
+  bwipe!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
