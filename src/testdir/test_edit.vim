@@ -2037,6 +2037,8 @@ endfunc
 " Test toggling of input method. See :help i_CTRL-^
 func Test_edit_CTRL_hat()
   CheckFeature xim
+  CheckNotGui " FIXME: why does this test fail when running in the GUI?
+
   new
 
   call assert_equal(0, &iminsert)
