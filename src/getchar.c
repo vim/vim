@@ -39,6 +39,8 @@
  */
 
 #define MINIMAL_SIZE 20			// minimal size for b_str
+#define INT_MAX 2147483647
+#define INT_MIN	-2147483648
 
 static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
 static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
@@ -95,6 +97,7 @@ static void	closescript(void);
 static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
+int safe_add(int a, int b);
 
 /*
  * Free and clear a buffer.
@@ -1008,13 +1011,52 @@ ins_typebuf(
 	 * often.
 	 */
 	newoff = MAXMAPLEN + 4;
-	newlen = typebuf.tb_len + addlen + newoff + 4 * (MAXMAPLEN + 4);
-	if (newlen < 0)		    // string is getting too long
+	//Overflow test
+	int safe_add_result;
+	
+	safe_add_result=safe_add(newoff,newoff); //newoff*2
+	if(safe_add_result==-1)
 	{
-	    emsg(_(e_toocompl));    // also calls flush_buffers
+		emsg(_(e_toocompl));    // also calls flush_buffers
 	    setcursor();
-	    return FAIL;
+		return FAIL;
 	}
+		
+
+	safe_add_result=safe_add(safe_add_result,safe_add_result); //newoff*4
+	if(safe_add_result==-1)
+	{
+		emsg(_(e_toocompl));    // also calls flush_buffers
+	    setcursor();
+		return FAIL;
+	}
+
+	safe_add_result=safe_add(safe_add_result,newoff); //newoff*5
+	if(safe_add_result==-1)
+	{
+		emsg(_(e_toocompl));    // also calls flush_buffers
+	    setcursor();
+		return FAIL;
+	}
+
+	safe_add_result=safe_add(safe_add_result,addlen); //addlen+newoff*5
+	if(safe_add_result==-1)
+	{
+		emsg(_(e_toocompl));    // also calls flush_buffers
+	    setcursor();
+		return FAIL;
+	}
+
+	safe_add_result=safe_add(safe_add_result,typebuf.tb_len); //typebuf.tb_len+addlen+newoff*5
+	if(safe_add_result==-1)
+	{
+		emsg(_(e_toocompl));    // also calls flush_buffers
+	    setcursor();
+		return FAIL;
+	}
+		
+	newlen = typebuf.tb_len + addlen + 5 * newoff;
+
 	s1 = alloc(newlen);
 	if (s1 == NULL)		    // out of memory
 	    return FAIL;
@@ -1093,6 +1135,26 @@ ins_typebuf(
 	typebuf.tb_no_abbr_cnt += addlen;
 
     return OK;
+}
+
+/*
+Safely adds two integers
+
+Returns -1 if the result of a+b results is an overflow
+Returns the sum otherwise
+*/
+int safe_add(int a, int b) 
+{
+    if (a >= 0) {
+        if (b > (INT_MAX - a)) {
+            return -1;
+        }
+    } else {
+        if (b < (INT_MIN - a)) {
+            return -1;
+        }
+    }
+    return a + b;
 }
 
 /*
