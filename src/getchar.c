@@ -39,8 +39,7 @@
  */
 
 #define MINIMAL_SIZE 20			// minimal size for b_str
-#define INT_MAX 2147483647
-#define INT_MIN	-2147483648
+
 
 static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
 static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
@@ -1011,8 +1010,8 @@ ins_typebuf(
 	 * often.
 	 */
 	newoff = MAXMAPLEN + 4;
-	//Overflow test
-	int safe_add_result;
+
+	int safe_add_result=0;
 	
 	safe_add_result=safe_add(newoff,newoff); //newoff*2
 	if(safe_add_result==-1)
@@ -1145,12 +1144,14 @@ Returns the sum otherwise
 */
 int safe_add(int a, int b) 
 {
+	int int_max = 2147483647;
+	int int_min	= -2147483648;
     if (a >= 0) {
-        if (b > (INT_MAX - a)) {
+        if (b > (int_max - a)) {
             return -1;
         }
     } else {
-        if (b < (INT_MIN - a)) {
+        if (b < (int_min - a)) {
             return -1;
         }
     }
