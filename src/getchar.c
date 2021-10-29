@@ -975,7 +975,7 @@ ins_typebuf(
     int		newoff;
     int		val;
     int		nrm;
-	int safe_add_result;
+	int 	safe_add_result;
 
     init_typebuf();
     if (++typebuf.tb_change_cnt == 0)
