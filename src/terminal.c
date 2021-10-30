@@ -2807,19 +2807,19 @@ color2index(VTermColor *color, int fg, int *boldp)
  * Convert Vterm attributes to highlight flags.
  */
     static int
-vtermAttr2hl(VTermScreenCellAttrs cellattrs)
+vtermAttr2hl(VTermScreenCellAttrs *cellattrs)
 {
     int attr = 0;
 
-    if (cellattrs.bold)
+    if (cellattrs->bold)
 	attr |= HL_BOLD;
-    if (cellattrs.underline)
+    if (cellattrs->underline)
 	attr |= HL_UNDERLINE;
-    if (cellattrs.italic)
+    if (cellattrs->italic)
 	attr |= HL_ITALIC;
-    if (cellattrs.strike)
+    if (cellattrs->strike)
 	attr |= HL_STRIKETHROUGH;
-    if (cellattrs.reverse)
+    if (cellattrs->reverse)
 	attr |= HL_INVERSE;
     return attr;
 }
@@ -2850,13 +2850,13 @@ hl2vtermAttr(int attr, cellattr_T *cell)
 cell2attr(
 	term_T			*term,
 	win_T			*wp,
-	VTermScreenCellAttrs	cellattrs,
-	VTermColor		cellfg,
-	VTermColor		cellbg)
+	VTermScreenCellAttrs	*cellattrs,
+	VTermColor		*cellfg,
+	VTermColor		*cellbg)
 {
     int attr = vtermAttr2hl(cellattrs);
-    VTermColor *fg = &cellfg;
-    VTermColor *bg = &cellbg;
+    VTermColor *fg = cellfg;
+    VTermColor *bg = cellbg;
     int is_default_fg = VTERM_COLOR_IS_DEFAULT_FG(fg);
     int is_default_bg = VTERM_COLOR_IS_DEFAULT_BG(bg);
 
@@ -2958,7 +2958,7 @@ term_scroll_up(term_T *term, int start_row, int count)
 	    // Set the color to clear lines with.
 	    vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
 								     &fg, &bg);
-	    clear_attr = cell2attr(term, wp, attr, fg, bg);
+	    clear_attr = cell2attr(term, wp, &attr, &fg, &bg);
 	    win_del_lines(wp, start_row, count, FALSE, FALSE, clear_attr);
 	}
     }
@@ -3603,7 +3603,8 @@ term_line2screenline(
 		// This will only store the lower byte of "c".
 		ScreenLines[off] = c;
 	}
-	ScreenAttrs[off] = cell2attr(term, wp, cell.attrs, cell.fg, cell.bg);
+	ScreenAttrs[off] = cell2attr(term, wp, &cell.attrs, &cell.fg,
+								     &cell.bg);
 
 	++pos->col;
 	++off;
@@ -3863,7 +3864,7 @@ term_get_attr(win_T *wp, linenr_T lnum, int col)
 	else
 	    cellattr = line->sb_cells + col;
     }
-    return cell2attr(term, wp, cellattr->attrs, cellattr->fg, cellattr->bg);
+    return cell2attr(term, wp, &cellattr->attrs, &cellattr->fg, &cellattr->bg);
 }
 
 /*
@@ -4840,8 +4841,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		if (should_break)
 		    break;
 	    }
-	    same_attr = vtermAttr2hl(cell.attrs)
-					       == vtermAttr2hl(prev_cell.attrs)
+	    same_attr = vtermAttr2hl(&cell.attrs)
+					      == vtermAttr2hl(&prev_cell.attrs)
 			&& vterm_color_is_equal(&cell.fg, &prev_cell.fg)
 			&& vterm_color_is_equal(&cell.bg, &prev_cell.bg);
 	    if (same_chars && cell.width == prev_cell.width && same_attr
@@ -4889,7 +4890,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		    }
 		    else
 		    {
-			fprintf(fd, "%d", vtermAttr2hl(cell.attrs));
+			fprintf(fd, "%d", vtermAttr2hl(&cell.attrs));
 			if (vterm_color_is_equal(&cell.fg, &prev_cell.fg))
 			    fputs("&", fd);
 			else
@@ -5450,8 +5451,8 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 			else if (!vterm_color_is_equal(&(cellattr1 + col)->bg,
 						   &(cellattr2 + col)->bg))
 			    textline[col] = 'b';
-			else if (vtermAttr2hl((cellattr1 + col)->attrs)
-				   != vtermAttr2hl(((cellattr2 + col)->attrs)))
+			else if (vtermAttr2hl(&(cellattr1 + col)->attrs)
+				  != vtermAttr2hl(&((cellattr2 + col)->attrs)))
 			    textline[col] = 'a';
 		    }
 		    p1 += len1;
@@ -6130,7 +6131,8 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 				     bg.red, bg.green, bg.blue);
 	dict_add_string(dcell, "bg", rgb);
 
-	dict_add_number(dcell, "attr", cell2attr(term, NULL, attrs, fg, bg));
+	dict_add_number(dcell, "attr",
+				      cell2attr(term, NULL, &attrs, &fg, &bg));
 	dict_add_number(dcell, "width", width);
 
 	++pos.col;
