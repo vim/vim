@@ -39,7 +39,8 @@
  */
 
 #define MINIMAL_SIZE 20			// minimal size for b_str
-
+#define INT_MAX 2147483647
+#define INT_MIN	-2147483648
 
 static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
 static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
@@ -975,7 +976,6 @@ ins_typebuf(
     int		newoff;
     int		val;
     int		nrm;
-	int 	safe_add_result;
 
     init_typebuf();
     if (++typebuf.tb_change_cnt == 0)
@@ -1011,8 +1011,8 @@ ins_typebuf(
 	 * often.
 	 */
 	newoff = MAXMAPLEN + 4;
-
-
+	//Overflow test
+	int safe_add_result;
 	
 	safe_add_result=safe_add(newoff,newoff); //newoff*2
 	if(safe_add_result==-1)
@@ -1021,33 +1021,36 @@ ins_typebuf(
 	    setcursor();
 		return FAIL;
 	}
-		
+	
 
-	safe_add_result=safe_add(safe_add_result,safe_add_result); //newoff*4
+	safe_add_result=safe_add(2*newoff,2*newoff); //newoff*4
 	if(safe_add_result==-1)
 	{
 		emsg(_(e_toocompl));    // also calls flush_buffers
 	    setcursor();
 		return FAIL;
 	}
+	
 
-	safe_add_result=safe_add(safe_add_result,newoff); //newoff*5
+	safe_add_result=safe_add(4*newoff,newoff); //newoff*5
 	if(safe_add_result==-1)
 	{
 		emsg(_(e_toocompl));    // also calls flush_buffers
 	    setcursor();
 		return FAIL;
 	}
+	
 
-	safe_add_result=safe_add(safe_add_result,addlen); //addlen+newoff*5
+	safe_add_result=safe_add(5*newoff,addlen); //addlen+newoff*5
 	if(safe_add_result==-1)
 	{
 		emsg(_(e_toocompl));    // also calls flush_buffers
 	    setcursor();
 		return FAIL;
 	}
+	
 
-	safe_add_result=safe_add(safe_add_result,typebuf.tb_len); //typebuf.tb_len+addlen+newoff*5
+	safe_add_result=safe_add(5*newoff+addlen,typebuf.tb_len); //typebuf.tb_len+addlen+newoff*5
 	if(safe_add_result==-1)
 	{
 		emsg(_(e_toocompl));    // also calls flush_buffers
@@ -1145,18 +1148,16 @@ Returns the sum otherwise
 */
 int safe_add(int a, int b) 
 {
-	int int_max = 2147483647;
-	int int_min	= -2147483648;
     if (a >= 0) {
-        if (b > (int_max - a)) {
+        if (b > (INT_MAX - a)) {
             return -1;
         }
     } else {
-        if (b < (int_min - a)) {
+        if (b < (INT_MIN - a)) {
             return -1;
         }
     }
-    return a + b;
+    return 0;
 }
 
 /*
