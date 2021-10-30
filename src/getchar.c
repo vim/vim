@@ -976,6 +976,7 @@ ins_typebuf(
     int		newoff;
     int		val;
     int		nrm;
+	int 	safe_add_result;
 
     init_typebuf();
     if (++typebuf.tb_change_cnt == 0)
@@ -1012,7 +1013,7 @@ ins_typebuf(
 	 */
 	newoff = MAXMAPLEN + 4;
 	//Overflow test
-	int safe_add_result;
+
 	
 	safe_add_result=safe_add(newoff,newoff); //newoff*2
 	if(safe_add_result==-1)
