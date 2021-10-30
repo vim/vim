@@ -1142,10 +1142,11 @@ ins_typebuf(
 }
 
 /*
-Safely adds two integers
-
+Detects overflow in a sum of two integers
 Returns -1 if the result of a+b results is an overflow
-Returns the sum otherwise
+Returns 0 otherwise
+
+DOES NOT CALCULATE THE SUM
 */
 int safe_add(int a, int b) 
 {
