@@ -39,8 +39,6 @@
  */
 
 #define MINIMAL_SIZE 20			// minimal size for b_str
-#define INT_MAX 2147483647
-#define INT_MIN	-2147483648
 
 static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
 static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
