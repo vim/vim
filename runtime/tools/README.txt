@@ -1,5 +1,8 @@
 Some tools that can be used with Vim:
 
+open-text-files-gvim-windows: batch files to (un)register Gvim as standard
+application to open several text file types in Microsoft Windows.
+
 blink.c:	C program to make the cursor blink in an xterm.
 
 ccfilter*:	C program to filter the output of a few compilers to a common
