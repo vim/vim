@@ -9,6 +9,9 @@ if "%1"=="/u" set unattended=yes
 :: Make sure this is Windows Vista or later
 call :ensure_vista
 
+:: Make sure the script is running as admin
+call :ensure_admin
+
 :: Command line arguments to use when launching gvim from a file association
 set gvim_args=
 
@@ -22,7 +25,7 @@ if not exist "%icon_path%" call :die "vim.ico not found"
 
 :: Register gvim.exe under the "App Paths" key, so it can be found by
 :: ShellExecute, the run command, the start menu, etc.
-set app_paths_key=HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\gvim.exe
+set app_paths_key=HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\gvim.exe
 call :reg add "%app_paths_key%" /d "%gvim_path%" /f
 call :reg add "%app_paths_key%" /v "UseUrl" /t REG_DWORD /d 1 /f
 
@@ -35,7 +38,7 @@ call :add_verbs "%app_key%"
 
 :: Add a capabilities key for gvim, which is registered later on for use in the
 :: "Default Programs" control panel
-set capabilities_key=HKCU\SOFTWARE\Clients\Editor\gvim\Capabilities
+set capabilities_key=HKLM\SOFTWARE\Clients\Editor\gvim\Capabilities
 call :reg add "%capabilities_key%" /v "ApplicationName" /d "gvim" /f
 call :reg add "%capabilities_key%" /v "ApplicationDescription" /d "gvim editor" /f
 
@@ -82,7 +85,7 @@ call :add_type "text/plain" "text" "XML"                 ".xml"
 call :add_type "text/plain" "text" "XML User Interface Language" ".xul"
 
 :: Register "Default Programs" entry
-call :reg add "HKCU\SOFTWARE\RegisteredApplications" /v "gvim" /d "SOFTWARE\Clients\Editor\gvim\Capabilities" /f
+call :reg add "HKLM\SOFTWARE\RegisteredApplications" /v "gvim" /d "SOFTWARE\Clients\Editor\gvim\Capabilities" /f
 
 echo.
 echo Installed successfully^^! You can now configure gvim's file associations in the
@@ -95,103 +98,113 @@ control /name Microsoft.DefaultPrograms
 exit 0
 
 :die
-	if not [%1] == [] echo %~1
-	if [%unattended%] == [yes] exit 1
-	pause
-	exit 1
+if not [%1] == [] echo %~1
+if [%unattended%] == [yes] exit 1
+pause
+exit 1
+
+:ensure_admin
+:: 'openfiles' is just a commmand that is present on all supported Windows
+:: versions, requires admin privileges and has no side effects, see:
+:: https://stackoverflow.com/questions/4051883/batch-script-how-to-check-for-admin-rights
+openfiles >nul 2>&1
+if errorlevel 1 (
+	echo This batch script requires administrator privileges. Right-click on
+	echo mpv-install.bat and select "Run as administrator".
+	call :die
+)
+goto :EOF
 
 :ensure_vista
-	ver | find "XP" >nul
-	if not errorlevel 1 (
-		echo This batch script only works on Windows Vista and later. To create file
-		echo associations on Windows XP, right click on a text file and use "Open with...".
-		call :die
-	)
-	goto :EOF
+ver | find "XP" >nul
+if not errorlevel 1 (
+	echo This batch script only works on Windows Vista and later. To create file
+	echo associations on Windows XP, right click on a text file and use "Open with...".
+	call :die
+)
+goto :EOF
 
 :reg
-	:: Wrap the reg command to check for errors
-	>nul reg %*
-	if errorlevel 1 set error=yes
-	if [%error%] == [yes] echo Error in command: reg %*
-	if [%error%] == [yes] call :die
-	goto :EOF
+:: Wrap the reg command to check for errors
+>nul reg %*
+if errorlevel 1 set error=yes
+if [%error%] == [yes] echo Error in command: reg %*
+if [%error%] == [yes] call :die
+goto :EOF
 
 :reg_set_opt
-	:: Set a value in the registry if it doesn't already exist
-	set key=%~1
-	set value=%~2
-	set data=%~3
+:: Set a value in the registry if it doesn't already exist
+set key=%~1
+set value=%~2
+set data=%~3
 
-	reg query "%key%" /v "%value%" >nul 2>&1
-	if errorlevel 1 call :reg add "%key%" /v "%value%" /d "%data%"
-	goto :EOF
+reg query "%key%" /v "%value%" >nul 2>&1
+if errorlevel 1 call :reg add "%key%" /v "%value%" /d "%data%"
+goto :EOF
 
 :add_verbs
-	set key=%~1
+set key=%~1
 
-	:: Add "open" verb
-	call :reg add "%key%\shell\open" /d "&Open" /f
-	:: Set open command
-	call :reg add "%key%\shell\open\command" /d "\"%gvim_path%\" %gvim_args% -- \"%%%%L" /f
-	:: Set the default verb to "open"
-	call :reg add "%key%\shell" /d "open" /f
+:: Set the default verb to "open"
+call :reg add "%key%\shell" /d "open" /f
+:: Set open command
+call :reg add "%key%\shell\open\command" /d "\"%gvim_path%\" %gvim_args% -- \"%%%%1\"" /f
 
-	goto :EOF
+goto :EOF
 
 :add_progid
-	set prog_id=%~1
-	set friendly_name=%~2
+set prog_id=%~1
+set friendly_name=%~2
 
-	:: Add ProgId, edit flags are FTA_OpenIsSafe | FTA_AlwaysUseDirectInvoke
-	set prog_id_key=%classes_root_key%\%prog_id%
-	call :reg add "%prog_id_key%" /d "%friendly_name%" /f
-	call :reg add "%prog_id_key%" /v "EditFlags" /t REG_DWORD /d 4259840 /f
-	call :reg add "%prog_id_key%" /v "FriendlyTypeName" /d "%friendly_name%" /f
-	call :reg add "%prog_id_key%\DefaultIcon" /d "%icon_path%" /f
-	call :add_verbs "%prog_id_key%"
+:: Add ProgId, edit flags are FTA_OpenIsSafe | FTA_AlwaysUseDirectInvoke
+set prog_id_key=%classes_root_key%\%prog_id%
+call :reg add "%prog_id_key%" /d "%friendly_name%" /f
+call :reg add "%prog_id_key%" /v "EditFlags" /t REG_DWORD /d 4259840 /f
+call :reg add "%prog_id_key%" /v "FriendlyTypeName" /d "%friendly_name%" /f
+call :reg add "%prog_id_key%\DefaultIcon" /d "%icon_path%" /f
+call :add_verbs "%prog_id_key%"
 
-	goto :EOF
+goto :EOF
 
 :update_extension
-	set extension=%~1
-	set prog_id=%~2
-	set mime_type=%~3
-	set perceived_type=%~4
+set extension=%~1
+set prog_id=%~2
+set mime_type=%~3
+set perceived_type=%~4
 
-	:: Add information about the file extension, if not already present
-	set extension_key=%classes_root_key%\%extension%
-	if not [%mime_type%] == [] call :reg_set_opt "%extension_key%" "Content Type" "%mime_type%"
-	if not [%perceived_type%] == [] call :reg_set_opt "%extension_key%" "PerceivedType" "%perceived_type%"
-	call :reg add "%extension_key%\OpenWithProgIds" /v "%prog_id%" /f
+:: Add information about the file extension, if not already present
+set extension_key=%classes_root_key%\%extension%
+if not [%mime_type%] == [] call :reg_set_opt "%extension_key%" "Content Type" "%mime_type%"
+if not [%perceived_type%] == [] call :reg_set_opt "%extension_key%" "PerceivedType" "%perceived_type%"
+call :reg add "%extension_key%\OpenWithProgIds" /v "%prog_id%" /f
 
-	:: Add type to SupportedTypes
-	call :reg add "%supported_types_key%" /v "%extension%" /f
+:: Add type to SupportedTypes
+call :reg add "%supported_types_key%" /v "%extension%" /f
 
-	:: Add type to the Default Programs control panel
-	call :reg add "%file_associations_key%" /v "%extension%" /d "%prog_id%" /f
+:: Add type to the Default Programs control panel
+call :reg add "%file_associations_key%" /v "%extension%" /d "%prog_id%" /f
 
-	goto :EOF
+goto :EOF
 
 :add_type
-	set mime_type=%~1
-	set perceived_type=%~2
-	set friendly_name=%~3
-	set extension=%~4
+set mime_type=%~1
+set perceived_type=%~2
+set friendly_name=%~3
+set extension=%~4
 
-	echo Adding "%extension%" file type
+echo Adding "%extension%" file type
 
-	:: Add ProgId
-	set prog_id=gvim%extension%
-	call :add_progid "%prog_id%" "%friendly_name%"
+:: Add ProgId
+set prog_id=gvim%extension%
+call :add_progid "%prog_id%" "%friendly_name%"
 
-	:: Add extensions
-	:extension_loop
-		call :update_extension "%extension%" "%prog_id%" "%mime_type%" "%perceived_type%"
+:: Add extensions
+:extension_loop
+call :update_extension "%extension%" "%prog_id%" "%mime_type%" "%perceived_type%"
 
-		:: Trailing parameters are additional extensions
-		shift /4
-		set extension=%~4
-		if not [%extension%] == [] goto extension_loop
+:: Trailing parameters are additional extensions
+shift /4
+set extension=%~4
+if not [%extension%] == [] goto extension_loop
 
-	goto :EOF
+goto :EOF

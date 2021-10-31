@@ -6,16 +6,19 @@ path %SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem
 set unattended=no
 if "%1"=="/u" set unattended=yes
 
+:: Make sure the script is running as admin
+call :ensure_admin
+
 :: Delete "App Paths" entry
-reg delete "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\gvim.exe" /f >nul
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\gvim.exe" /f >nul
 
 :: Delete HKCR subkeys
 set classes_root_key=HKCU\SOFTWARE\Classes
 reg delete "%classes_root_key%\Applications\gvim.exe" /f >nul
 
 :: Delete "Default Programs" entry
-reg delete "HKCU\SOFTWARE\RegisteredApplications" /v "gvim" /f >nul
-reg delete "HKCU\SOFTWARE\Clients\Editor\gvim\Capabilities" /f >nul
+reg delete "HKLM\SOFTWARE\RegisteredApplications" /v "gvim" /f >nul
+reg delete "HKLM\SOFTWARE\Clients\Editor\gvim\Capabilities" /f >nul
 
 :: Delete all OpenWithProgIds referencing ProgIds that start with gvim.
 for /f "usebackq eol= delims=" %%k in (`reg query "%classes_root_key%" /f "gvim.*" /s /v /c`) do (
@@ -48,8 +51,20 @@ if [%unattended%] == [yes] exit 0
 pause
 exit 0
 
+:ensure_admin
+:: 'openfiles' is just a commmand that is present on all supported Windows
+:: versions, requires admin privileges and has no side effects, see:
+:: https://stackoverflow.com/questions/4051883/batch-script-how-to-check-for-admin-rights
+openfiles >nul 2>&1
+if errorlevel 1 (
+	echo This batch script requires administrator privileges. Right-click on
+	echo mpv-install.bat and select "Run as administrator".
+	call :die
+)
+goto :EOF
+
 :die
-	if not [%1] == [] echo %~1
-	if [%unattended%] == [yes] exit 1
-	pause
-	exit 1
+if not [%1] == [] echo %~1
+if [%unattended%] == [yes] exit 1
+pause
+exit 1
