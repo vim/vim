@@ -49,11 +49,37 @@ rem 	set perceived_type=%~2
 rem 	set friendly_name=%~3
 rem 	set extension=%~4
 
-call :add_type "text/plain"                        "text" "Text"                        ".txt"
-call :add_type "text/plain"                        "text" "Markdown"                    ".md" ".mkd" ".markdown"
-call :add_type "text/plain"                        "text" "Restructured Text"           ".rst"
-call :add_type "text/plain"                        "text" "INI Configuration"           ".ini"
-call :add_type "text/plain"                        "text" "Information"                 ".info"
+call :add_type "text/plain" "text" "BibTeX"              ".bib"
+call :add_type "text/plain" "text" "BibTeX Style"        ".bst"
+call :add_type "text/plain" "text" "TeX"                 ".tex"      ".latex" ".sty"        ".dtx"      ".ltx"   ".bbl"
+call :add_type "text/plain" "text" "ASCIIdoc"            ".asciidoc" ".adoc"
+call :add_type "text/plain" "text" "Text"                ".txt"
+call :add_type "text/plain" "text" "Markdown"            ".md"       ".mkd"   ".markdown"   ".markdown" ".mdown" ".mkd" ".mkdn" ".mdwn" ".md"
+call :add_type "text/plain" "text" "Restructured Text"   ".rst"
+
+call :add_type "text/plain" "text" "Log"                 ".log"
+call :add_type "text/plain" "text" "Information"         ".info"
+
+rem call :add_type "text/plain" "text" "DOS Batch"           ".bat"      ".sys"   ".cmd"
+rem call :add_type "text/plain" "text" "Visual Basic script" ".vb"       ".vbs"   ".dsm"        ".ctl"
+rem call :add_type "text/plain" "text" "Powershell script"   ".ps1"      ".psd1"  ".psm1"       ".pssc"
+call :add_type "text/plain" "text" "Vim script"          ".vim"      ".vim"   ".vba"        ".exrc"
+
+call :add_type "text/plain" "text" "Patch or Diff"       ".diff"     ".rej"   ".patch"
+
+call :add_type "text/plain" "text" "Config"              ".cfg"
+call :add_type "text/plain" "text" "INI Configuration"   ".ini"
+call :add_type "text/plain" "text" "Git Config"          ".gitconfig"
+call :add_type "text/plain" "text" "Git Config"          ".gitignore"
+call :add_type "text/plain" "text" "Git Config"          ".gitmodules"
+
+call :add_type "text/plain" "text" "HAML"                ".haml"
+call :add_type "text/plain" "text" "TOML"                ".toml"
+call :add_type "text/plain" "text" "YAML"                ".yml"      ".yaml"
+call :add_type "text/plain" "text" "JSON"                ".json"     ".jsonp"
+call :add_type "text/plain" "text" "JSON Patch"          ".json-patch"
+call :add_type "text/plain" "text" "XML"                 ".xml"
+call :add_type "text/plain" "text" "XML User Interface Language" ".xul"
 
 :: Register "Default Programs" entry
 call :reg add "HKCU\SOFTWARE\RegisteredApplications" /v "gvim" /d "SOFTWARE\Clients\Editor\gvim\Capabilities" /f
