@@ -1010,11 +1010,11 @@ ins_typebuf(
 	 */
 	newoff = MAXMAPLEN + 4;
 	
-	int OVERHEAD = 5 * newoff;
+	int overhead = 5 * newoff;
 
 	//Overflow test
-	if (typebuf.tb_len > INT_MAX - OVERHEAD ||
-      addlen > INT_MAX - OVERHEAD - typebuf.tb_len) {
+	if (typebuf.tb_len > INT_MAX - overhead ||
+      addlen > INT_MAX - overhead - typebuf.tb_len) {
       	emsg(_(e_toocompl));    // also calls flush_buffers
 	    setcursor();
 		return FAIL;
