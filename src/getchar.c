@@ -95,7 +95,6 @@ static void	closescript(void);
 static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
-int safe_add(int a, int b);
 
 /*
  * Free and clear a buffer.
@@ -1010,53 +1009,17 @@ ins_typebuf(
 	 * often.
 	 */
 	newoff = MAXMAPLEN + 4;
+	
+	int OVERHEAD = 5 * newoff;
+
 	//Overflow test
-
-	
-	safe_add_result=safe_add(newoff,newoff); //newoff*2
-	if(safe_add_result==-1)
-	{
-		emsg(_(e_toocompl));    // also calls flush_buffers
+	if (typebuf.tb_len > INT_MAX - OVERHEAD ||
+      addlen > INT_MAX - OVERHEAD - typebuf.tb_len) {
+      	emsg(_(e_toocompl));    // also calls flush_buffers
 	    setcursor();
 		return FAIL;
-	}
+  	}
 	
-
-	safe_add_result=safe_add(2*newoff,2*newoff); //newoff*4
-	if(safe_add_result==-1)
-	{
-		emsg(_(e_toocompl));    // also calls flush_buffers
-	    setcursor();
-		return FAIL;
-	}
-	
-
-	safe_add_result=safe_add(4*newoff,newoff); //newoff*5
-	if(safe_add_result==-1)
-	{
-		emsg(_(e_toocompl));    // also calls flush_buffers
-	    setcursor();
-		return FAIL;
-	}
-	
-
-	safe_add_result=safe_add(5*newoff,addlen); //addlen+newoff*5
-	if(safe_add_result==-1)
-	{
-		emsg(_(e_toocompl));    // also calls flush_buffers
-	    setcursor();
-		return FAIL;
-	}
-	
-
-	safe_add_result=safe_add(5*newoff+addlen,typebuf.tb_len); //typebuf.tb_len+addlen+newoff*5
-	if(safe_add_result==-1)
-	{
-		emsg(_(e_toocompl));    // also calls flush_buffers
-	    setcursor();
-		return FAIL;
-	}
-		
 	newlen = typebuf.tb_len + addlen + 5 * newoff;
 
 	s1 = alloc(newlen);
@@ -1139,26 +1102,6 @@ ins_typebuf(
     return OK;
 }
 
-/*
-Detects overflow in a sum of two integers
-Returns -1 if the result of a+b results is an overflow
-Returns 0 otherwise
-
-DOES NOT CALCULATE THE SUM
-*/
-int safe_add(int a, int b) 
-{
-    if (a >= 0) {
-        if (b > (INT_MAX - a)) {
-            return -1;
-        }
-    } else {
-        if (b < (INT_MIN - a)) {
-            return -1;
-        }
-    }
-    return 0;
-}
 
 /*
  * Put character "c" back into the typeahead buffer.
