@@ -494,6 +494,12 @@ func Test_listchars_window_local()
   close
   call assert_equal(['+------+^^one>>two<<%'], ScreenLines(1, virtcol('$')))
 
+  " Closing window with local lcs-multispace should not cause a memory leak
+  setlocal listchars=multispace:---+
+  split
+  call s:CheckListCharsValue('multispace:---+')
+  close
+
   %bw!
   set list& listchars&
 endfunc
