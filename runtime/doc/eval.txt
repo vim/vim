@@ -4965,6 +4965,9 @@ flatten({list} [, {maxdepth}])					*flatten()*
 			:echo flatten([1, [2, [3, 4]], 5], 1)
 <			[1, 2, [3, 4], 5]
 
+		Can also be used as a |method|: >
+			mylist->flatten()
+<
 flattennew({list} [, {maxdepth}])			*flattennew()*
 		Like |flatten()| but first make a copy of {list}.
 
@@ -9454,7 +9457,9 @@ searchcount([{options}])					*searchcount()*
 						|getpos()|
 						(default: cursor's position)
 
-
+		Can also be used as a |method|: >
+			GetSearchOpts()->searchcount()
+<
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
 
@@ -10118,7 +10123,7 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 
 		Can also be used as a |method|, the base is passed as the
 		fourth argument: >
-			GetValue()->settabvar(tab, winnr, name)
+			GetValue()->settabwinvar(tab, winnr, name)
 
 settagstack({nr}, {dict} [, {action}])			*settagstack()*
 		Modify the tag stack of the window {nr} using {dict}.
@@ -10866,9 +10871,11 @@ strptime({format}, {timestring})				*strptime()*
 		  :echo strftime("%c", strptime("%Y%m%d%H%M%S", "19970427115355") + 3600)
 <		  Sun Apr 27 12:53:55 1997
 
+		Can also be used as a |method|: >
+			GetFormat()->strptime(timestring)
+<
 		Not available on all systems.  To check use: >
 			:if exists("*strptime")
-
 
 strridx({haystack}, {needle} [, {start}])			*strridx()*
 		The result is a Number, which gives the byte index in
@@ -11821,7 +11828,9 @@ win_gettype([{nr}])					*win_gettype()*
 		popup window then 'buftype' is "terminal" and win_gettype()
 		returns "popup".
 
-
+		Can also be used as a |method|: >
+			GetWinid()->win_gettype()
+<
 win_gotoid({expr})					*win_gotoid()*
 		Go to window with ID {expr}.  This may also change the current
 		tabpage.

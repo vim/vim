@@ -1955,7 +1955,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    SIGN_FUNC(f_sign_undefine)},
     {"sign_unplace",	1, 2, FEARG_1,	    arg2_string_dict,
 			ret_number_bool,    SIGN_FUNC(f_sign_unplace)},
-    {"sign_unplacelist", 1, 2, FEARG_1,	    arg1_list_any,
+    {"sign_unplacelist", 1, 1, FEARG_1,	    arg1_list_any,
 			ret_list_number,    SIGN_FUNC(f_sign_unplacelist)},
     {"simplify",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_simplify},
