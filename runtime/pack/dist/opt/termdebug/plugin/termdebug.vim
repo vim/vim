@@ -273,7 +273,7 @@ func s:StartDebug_term(dict)
   endif
 
   " Connect gdb to the communication pty, using the GDB/MI interface
-  call term_sendkeys(s:gdbbuf, 'new-ui mi ' . commpty . "\r")
+  call term_sendkeys(s:gdbbuf, 'server new-ui mi ' . commpty . "\r")
 
   " Wait for the response to show up, users may not notice the error and wonder
   " why the debugger doesn't work.
@@ -736,9 +736,11 @@ func s:HandleDisasmMsg(msg)
   else
     let value = substitute(a:msg, '^\~\"[ ]*', '', '')
     let value = substitute(value, '^=>[ ]*', '', '')
-    let value = substitute(value, '\\n\"$', '', '')
+    let value = substitute(value, '\\n\"
+$', '', '')
     let value = substitute(value, '\\n\"$', '', '')
-    let value = substitute(value, '', '', '')
+    let value = substitute(value, '
+', '', '')
     let value = substitute(value, '\\t', ' ', 'g')
 
     if value != '' || !empty(s:asm_lines)
