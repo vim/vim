@@ -2011,12 +2011,18 @@ do_put(
 	    }
 
 	    do {
+#ifdef FEAT_FLOAT
+		double multlen = (double)count * (double)yanklen;
+
+		totlen = count * yanklen;
+		if ((double)totlen != multlen)
+#else
 		long multlen = count * yanklen;
 
+		// this only works when sizeof(int) != sizeof(long)
 		totlen = multlen;
-		if (count != 0 && yanklen != 0
-			&& (totlen != multlen || totlen / count != yanklen
-						 || totlen / yanklen != count))
+		if (totlen != multlen)
+#endif
 		{
 		    emsg(_(e_resulting_text_too_long));
 		    break;
