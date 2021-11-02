@@ -150,6 +150,9 @@ static struct vimvar
     {VV_NAME("collate",		 VAR_STRING), VV_RO},
     {VV_NAME("exiting",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("colornames",       VAR_DICT), VV_RO},
+    {VV_NAME("sizeofint",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("sizeoflong",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("sizeofpointer",	 VAR_NUMBER), VV_RO},
 };
 
 // shorthand
@@ -234,6 +237,9 @@ evalvars_init(void)
     set_vim_var_nr(VV_NUMBERMAX, VARNUM_MAX);
     set_vim_var_nr(VV_NUMBERMIN, VARNUM_MIN);
     set_vim_var_nr(VV_NUMBERSIZE, sizeof(varnumber_T) * 8);
+    set_vim_var_nr(VV_SIZEOFINT, sizeof(int));
+    set_vim_var_nr(VV_SIZEOFLONG, sizeof(long));
+    set_vim_var_nr(VV_SIZEOFPOINTER, sizeof(char *));
 
     set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
     set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);

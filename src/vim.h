@@ -2060,7 +2060,10 @@ typedef int sock_T;
 #define VV_COLLATE      97
 #define VV_EXITING	98
 #define VV_COLORNAMES   99
-#define VV_LEN		100	// number of v: vars
+#define VV_SIZEOFINT	100
+#define VV_SIZEOFLONG	101
+#define VV_SIZEOFPOINTER 102
+#define VV_LEN		103	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL

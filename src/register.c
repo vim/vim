@@ -2014,7 +2014,8 @@ do_put(
 		long multlen = count * yanklen;
 
 		totlen = multlen;
-		if (totlen != multlen)
+		if (totlen != multlen || totlen / count != yanklen
+						  || totlen / yanklen != count)
 		{
 		    emsg(_(e_resulting_text_too_long));
 		    break;
