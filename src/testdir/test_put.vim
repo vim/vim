@@ -149,6 +149,14 @@ func Test_p_with_count_leaves_mark_at_end()
 endfunc
 
 func Test_very_large_count()
+  new
+  " total put-length (42949673 * 100) brings 32 bit int overflow
+  let @" = repeat('x', 100)
+  call assert_fails('norm 42949673p', 'E1240:')
+  bwipe!
+endfunc
+
+func Test_very_large_count_64()
   if v:sizeoflong < 8
     throw 'Skipped: only works with 64 bit long ints'
   endif
