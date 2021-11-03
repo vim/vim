@@ -49,4 +49,6 @@ void set_context_in_highlight_cmd(expand_T *xp, char_u *arg);
 char_u *get_highlight_name(expand_T *xp, int idx);
 char_u *get_highlight_name_ext(expand_T *xp, int idx, int skip_cleared);
 void free_highlight_fonts(void);
+void f_hlget(typval_T *argvars, typval_T *rettv);
+void f_hlset(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

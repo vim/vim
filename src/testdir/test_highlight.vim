@@ -4,6 +4,7 @@ source view_util.vim
 source screendump.vim
 source check.vim
 source script_util.vim
+source vim9.vim
 
 func Test_highlight()
   " basic test if ":highlight" doesn't crash
@@ -968,6 +969,166 @@ func Test_colornames_assignment_and_unassignment()
   call assert_equal(v:colornames['x1'], '#111111')
   unlet v:colornames['x1']
   call assert_fails("echo v:colornames['x1']")
+endfunc
+
+" Test for the hlget() function
+func Test_hlget()
+  let lines =<< trim END
+    call assert_notequal([], filter(hlget(), 'v:val.name == "Visual"'))
+    call assert_equal([], hlget('SomeHLGroup'))
+    highlight MyHLGroup term=standout cterm=reverse ctermfg=10 ctermbg=Black
+    call assert_equal([{'id': hlID('MyHLGroup'), 'ctermfg': '10', 'name': 'MyHLGroup', 'term': {'standout': v:true}, 'ctermbg': '0', 'cterm': {'reverse': v:true}}], hlget('MyHLGroup'))
+    highlight clear MyHLGroup
+    call assert_equal(v:true, hlget('MyHLGroup')[0].cleared)
+    highlight link MyHLGroup IncSearch
+    call assert_equal('IncSearch', hlget('MyHLGroup')[0].linksto)
+    highlight clear MyHLGroup
+    call assert_equal([], hlget(test_null_string()))
+    call assert_equal([], hlget(""))
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  " Test for resolving highlight group links
+  let lines =<< trim END
+    highlight hlgA term=bold
+    VAR hlgAid = hlID('hlgA')
+    highlight link hlgB hlgA
+    VAR hlgBid = hlID('hlgB')
+    highlight link hlgC hlgB
+    VAR hlgCid = hlID('hlgC')
+    call assert_equal('hlgA', hlget('hlgB')[0].linksto)
+    call assert_equal('hlgB', hlget('hlgC')[0].linksto)
+    call assert_equal([{'id': hlgAid, 'name': 'hlgA',
+                      \ 'term': {'bold': v:true}}], hlget('hlgA'))
+    call assert_equal([{'id': hlgBid, 'name': 'hlgB',
+                      \ 'linksto': 'hlgA'}], hlget('hlgB'))
+    call assert_equal([{'id': hlgCid, 'name': 'hlgC',
+                      \ 'linksto': 'hlgB'}], hlget('hlgC'))
+    call assert_equal([{'id': hlgAid, 'name': 'hlgA',
+                      \ 'term': {'bold': v:true}}], hlget('hlgA', v:false))
+    call assert_equal([{'id': hlgBid, 'name': 'hlgB',
+                      \ 'linksto': 'hlgA'}], hlget('hlgB', 0))
+    call assert_equal([{'id': hlgCid, 'name': 'hlgC',
+                      \ 'linksto': 'hlgB'}], hlget('hlgC', v:false))
+    call assert_equal([{'id': hlgAid, 'name': 'hlgA',
+                      \ 'term': {'bold': v:true}}], hlget('hlgA', v:true))
+    call assert_equal([{'id': hlgBid, 'name': 'hlgB',
+                      \ 'term': {'bold': v:true}}], hlget('hlgB', 1))
+    call assert_equal([{'id': hlgCid, 'name': 'hlgC',
+                      \ 'term': {'bold': v:true}}], hlget('hlgC', v:true))
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  call assert_fails('call hlget([])', 'E1174:')
+  call assert_fails('call hlget("abc", "xyz")', 'E1212:')
+endfunc
+
+" Test for the hlset() function
+func Test_hlset()
+  let lines =<< trim END
+    call assert_equal(0, hlset(test_null_list()))
+    call assert_equal(0, hlset([]))
+    call assert_fails('call hlset(["Search"])', 'E715:')
+    call hlset(hlget())
+    call hlset([{'name': 'NewHLGroup', 'cterm': {'reverse': v:true}, 'ctermfg': '10'}])
+    call assert_equal({'reverse': v:true}, hlget('NewHLGroup')[0].cterm)
+    call hlset([{'name': 'NewHLGroup', 'cterm': {'bold': v:true}}])
+    call assert_equal({'bold': v:true}, hlget('NewHLGroup')[0].cterm)
+    call hlset([{'name': 'NewHLGroup', 'cleared': v:true}])
+    call assert_equal(v:true, hlget('NewHLGroup')[0].cleared)
+    call hlset([{'name': 'NewHLGroup', 'linksto': 'Search'}])
+    call assert_false(has_key(hlget('NewHLGroup')[0], 'cleared'))
+    call assert_equal('Search', hlget('NewHLGroup')[0].linksto)
+    call assert_fails("call hlset([{'name': [], 'ctermfg': '10'}])", 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'cleared': []}])",
+          \ 'E745:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'cterm': 'Blue'}])",
+          \ 'E715:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'ctermbg': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'ctermfg': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'ctermul': []}])",
+          \ 'E928:')
+    if has('gui')
+      call assert_fails("call hlset([{'name': 'NewHLGroup', 'font': []}])",
+            \ 'E928:')
+    endif
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'gui': 'Cyan'}])",
+          \ 'E715:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'guibg': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'guifg': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'guisp': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'linksto': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'start': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'stop': []}])",
+          \ 'E928:')
+    call assert_fails("call hlset([{'name': 'NewHLGroup', 'term': 'Cyan'}])",
+          \ 'E715:')
+    call assert_equal('Search', hlget('NewHLGroup')[0].linksto)
+    highlight clear NewHLGroup
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  " Test for clearing the 'term', 'cterm' and 'gui' attributes of a highlight
+  " group.
+  let lines =<< trim END
+    highlight myhlg1 term=bold cterm=italic gui=standout
+    VAR id = hlID('myhlg1')
+    call hlset([{'name': 'myhlg1', 'term': {}}])
+    call assert_equal([{'id': id, 'name': 'myhlg1',
+                \ 'cterm': {'italic': v:true}, 'gui': {'standout': v:true}}],
+                \ hlget('myhlg1'))
+    call hlset([{'name': 'myhlg1', 'cterm': {}}])
+    call assert_equal([{'id': id, 'name': 'myhlg1',
+                \ 'gui': {'standout': v:true}}], hlget('myhlg1'))
+    call hlset([{'name': 'myhlg1', 'gui': {}}])
+    call assert_equal([{'id': id, 'name': 'myhlg1', 'cleared': v:true}],
+                \ hlget('myhlg1'))
+    highlight clear myhlg1
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  " Test for setting all the 'term', 'cterm' and 'gui' attributes of a
+  " highlight group
+  let lines =<< trim END
+    VAR attr = {'bold': v:true, 'underline': v:true, 'undercurl': v:true,
+                \ 'strikethrough': v:true, 'reverse': v:true, 'italic': v:true,
+                \ 'standout': v:true, 'nocombine': v:true}
+    call hlset([{'name': 'myhlg2', 'term': attr, 'cterm': attr, 'gui': attr}])
+    VAR id2 = hlID('myhlg2')
+    VAR output =<< trim END
+      myhlg2         xxx term=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough
+                         cterm=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough
+                         gui=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough
+    END
+    call assert_equal(output, execute('highlight myhlg2')->split("\n"))
+    call assert_equal([{'id': id2, 'name': 'myhlg2', 'gui': attr,
+                      \ 'term': attr, 'cterm': attr}], hlget('myhlg2'))
+  END
+  call CheckLegacyAndVim9Success(lines)
+
+  " Test for clearing some of the 'term', 'cterm' and 'gui' attributes of a
+  " highlight group
+  let lines =<< trim END
+    VAR attr = {'bold': v:false, 'underline': v:true, 'strikethrough': v:true}
+    call hlset([{'name': 'myhlg2', 'term': attr, 'cterm': attr, 'gui': attr}])
+    VAR id2 = hlID('myhlg2')
+    VAR output =<< trim END
+      myhlg2         xxx term=underline,strikethrough cterm=underline,strikethrough
+                         gui=underline,strikethrough
+    END
+    call assert_equal(output, execute('highlight myhlg2')->split("\n"))
+    LET attr = {'underline': v:true, 'strikethrough': v:true}
+    call assert_equal([{'id': id2, 'name': 'myhlg2', 'gui': attr,
+                      \ 'term': attr, 'cterm': attr}], hlget('myhlg2'))
+  END
+  call CheckLegacyAndVim9Success(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
