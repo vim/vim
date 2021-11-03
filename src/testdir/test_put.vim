@@ -149,8 +149,8 @@ func Test_p_with_count_leaves_mark_at_end()
 endfunc
 
 func Test_very_large_count()
-  if v:sizeofint != 8
-    throw 'Skipped: only works with 64 bit ints'
+  if v:sizeoflong < 8
+    throw 'Skipped: only works with 64 bit long ints'
   endif
 
   new
