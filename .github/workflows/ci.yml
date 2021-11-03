@@ -188,6 +188,10 @@ jobs:
           # Append various warning flags to CFLAGS.
           sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
           sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+          if [[ ${CC} = clang ]]; then
+            # Suppress some warnings occurred by newer clang.
+            sed -i -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          fi
 
       - name: Build
         if: (!contains(matrix.extra, 'unittests'))
@@ -296,6 +300,10 @@ jobs:
           sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
           # On macOS, the entity of gcc is clang.
           sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
+          # Suppress some warnings occurred by newer clang.
+          if clang --version | grep -qs 'Apple clang version \(1[3-9]\|[2-9]\)\.'; then
+            sed -i.bak -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          fi
 
       - name: Build
         env:
