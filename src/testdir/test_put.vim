@@ -159,5 +159,14 @@ func Test_very_large_count()
   bwipe!
 endfunc
 
+func Test_put_above_first_line()
+  new
+  let @" = 'text'
+  silent! normal 0o00
+  0put
+  call assert_equal('text', getline(1))
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
