@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Oct 27
+" Last Change:	2021 Oct 17
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -652,6 +652,8 @@ if has("gui")
     endif
     call <SID>AddOption("guiheadroom", gettext("room (in pixels) left above/below the window"))
     call append("$", " \tset ghr=" . &ghr)
+    call <SID>AddOption("guiligatures", gettext("list of ASCII characters that can be combined into complesshapes"))
+    call <SID>OptionG("gli", &gli)
   endif
   if has("directx")
     call <SID>AddOption("renderoptions", gettext("options for text rendering"))
@@ -840,6 +842,9 @@ if has("insert_expand")
   call <SID>AddOption("thesaurus", gettext("list of thesaurus files for keyword completion"))
   call append("$", "\t" .. s:global_or_local)
   call <SID>OptionG("tsr", &tsr)
+  call <SID>AddOption("thesaurusfunc", gettext("function used for thesaurus completion"))
+  call append("$", "\t" .. s:global_or_local)
+  call <SID>OptionG("tsrfu", &tsrfu)
 endif
 call <SID>AddOption("infercase", gettext("adjust case of a keyword completion match"))
 call append("$", "\t" .. s:local_to_buffer)

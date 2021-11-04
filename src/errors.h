@@ -147,6 +147,10 @@ EXTERN char e_no_such_user_defined_command_str[]
 EXTERN char e_no_digraphs_version[]
 	INIT(= N_("E196: No digraphs in this version"));
 #endif
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+EXTERN char e_cannot_allocate_color_str[]
+	INIT(= N_("E254: Cannot allocate color %s"));
+#endif
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
 EXTERN char e_invalid_command[]
@@ -678,3 +682,5 @@ EXTERN char e_no_white_space_allowed_before_separator_str[]
 	INIT(= N_("E1242: No white space allowed before separator: %s"));
 EXTERN char e_ascii_code_not_in_range[]
 	INIT(= N_("E1243: ASCII code not in 32-127 range"));
+EXTERN char e_bad_color_string_str[]
+	INIT(= N_("E1244: Bad color string: %s"));

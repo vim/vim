@@ -1133,6 +1133,26 @@ def Test_pass_legacy_lambda_to_def_func()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_lambda_in_reduce_line_break()
+  # this was using freed memory
+  var lines =<< trim END
+      vim9script
+      const result: dict<number> =
+          ['Bob', 'Sam', 'Cat', 'Bob', 'Cat', 'Cat']
+          ->reduce((acc, val) => {
+              if has_key(acc, val)
+                  acc[val] += 1
+                  return acc
+              else
+                  acc[val] = 1
+                  return acc
+              endif
+          }, {})
+      assert_equal({Bob: 2, Sam: 1, Cat: 3}, result)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 " Default arg and varargs
 def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
   var res = one .. ',' .. two

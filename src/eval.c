@@ -143,7 +143,7 @@ eval_clear(void)
     void
 fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip)
 {
-    CLEAR_FIELD(*evalarg);
+    init_evalarg(evalarg);
     evalarg->eval_flags = skip ? 0 : EVAL_EVALUATE;
     if (eap != NULL)
     {
@@ -2137,8 +2137,7 @@ eval_next_line(evalarg_T *evalarg)
 
     // Advanced to the next line, "arg" no longer points into the previous
     // line.
-    VIM_CLEAR(evalarg->eval_tofree_cmdline);
-
+    evalarg->eval_using_cmdline = FALSE;
     return skipwhite(line);
 }
 
@@ -2157,6 +2156,16 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
     if (getnext)
 	return eval_next_line(evalarg);
     return p;
+}
+
+/*
+ * Initialize "evalarg" for use.
+ */
+    void
+init_evalarg(evalarg_T *evalarg)
+{
+    CLEAR_POINTER(evalarg);
+    ga_init2(&evalarg->eval_tofree_ga, sizeof(char_u *), 20);
 }
 
 /*
@@ -2183,7 +2192,7 @@ clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 	    evalarg->eval_tofree = NULL;
 	}
 
-	VIM_CLEAR(evalarg->eval_tofree_cmdline);
+	ga_clear_strings(&evalarg->eval_tofree_ga);
 	VIM_CLEAR(evalarg->eval_tofree_lambda);
     }
 }
@@ -2298,7 +2307,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (evalarg == NULL)
 	{
-	    CLEAR_FIELD(local_evalarg);
+	    init_evalarg(&local_evalarg);
 	    evalarg_used = &local_evalarg;
 	}
 	orig_flags = evalarg_used->eval_flags;
@@ -2455,7 +2464,7 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (evalarg == NULL)
 	{
-	    CLEAR_FIELD(local_evalarg);
+	    init_evalarg(&local_evalarg);
 	    evalarg_used = &local_evalarg;
 	}
 	orig_flags = evalarg_used->eval_flags;
@@ -2581,7 +2590,7 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (evalarg == NULL)
 	{
-	    CLEAR_FIELD(local_evalarg);
+	    init_evalarg(&local_evalarg);
 	    evalarg_used = &local_evalarg;
 	}
 	orig_flags = evalarg_used->eval_flags;

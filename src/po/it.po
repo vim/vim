@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-29 20:40+0200\n"
-"PO-Revision-Date: 2021-06-14 23:10+0100\n"
+"POT-Creation-Date: 2021-10-22 14:41+0200\n"
+"PO-Revision-Date: 2021-10-22 17:00+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -24,6 +24,29 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "ERROR: "
+msgstr "ERRORE: "
+
+msgid ""
+"\n"
+"[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"
+msgstr ""
+"\n"
+"[byte] totali alloc-rilasc %lu-%lu, in uso %lu, max uso %lu\n"
+
+msgid ""
+"[calls] total re/malloc()'s %lu, total free()'s %lu\n"
+"\n"
+msgstr ""
+"[chiamate] totale re/malloc() %lu, totale free() %lu\n"
+"\n"
+
+msgid "E341: Internal error: lalloc(0, )"
+msgstr "E341: Errore interno: lalloc(0, )"
+
+msgid "E342: Out of memory!  (allocating %lu bytes)"
+msgstr "E342: Non c'è più memoria! (stavo allocando %lu byte)"
 
 msgid "E163: There is only one file to edit"
 msgstr "E163: C'è un solo file da elaborare"
@@ -79,8 +102,8 @@ msgstr "E680: <buffer=%d>: numero buffer non valido"
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Non posso eseguire autocomandi per TUTTI gli eventi"
 
-msgid "No matching autocommands"
-msgstr "Nessun autocomando corrispondente"
+msgid "No matching autocommands: %s"
+msgstr "Nessun autocomando corrispondente: %s"
 
 msgid "E218: autocommand nesting too deep"
 msgstr "E218: nidificazione dell'autocomando troppo estesa"
@@ -178,16 +201,10 @@ msgstr[0] "%d buffer cancellato"
 msgstr[1] "%d buffer cancellati"
 
 msgid "E948: Job still running (add ! to end the job)"
-msgstr "E948: Lavoro ancora in esecuzione (aggiungi! per terminarlo)"
-
-msgid "E37: No write since last change (add ! to override)"
-msgstr "E37: Non salvato dopo modifica (aggiungi ! per eseguire comunque)"
+msgstr "E948: Job ancora in esecuzione (aggiungi! per terminarlo)"
 
 msgid "E948: Job still running"
-msgstr "E948: Lavoro ancora attivo"
-
-msgid "E37: No write since last change"
-msgstr "E37: Non salvato dopo l'ultima modifica"
+msgstr "E948: Job ancora attivo"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Avviso: Superato limite della lista dei nomi di file"
@@ -507,11 +524,11 @@ msgstr "E821: File cifrato con metodo sconosciuto"
 msgid "Warning: Using a weak encryption method; see :help 'cm'"
 msgstr "Avviso: Metodo di cifratura debole in uso; vedere :help 'cm'"
 
-msgid ""
-"Note: Encryption of swapfile not supported, disabling swap- and undofile"
+msgid "Note: Encryption of swapfile not supported, disabling swap file"
 msgstr ""
-"Nota: La cifratura del file di swap non è supportata, swap e undo sono "
-"disabilitati"
+"Nota: La cifratura del file di swap non è supportata, file di swap "
+"disabilitato"
+
 msgid "Enter encryption key: "
 msgstr "Immetti chiave di cifratura: "
 
@@ -997,7 +1014,7 @@ msgid "Save changes to \"%s\"?"
 msgstr "Salvare modifiche a \"%s\"?"
 
 msgid "E947: Job still running in buffer \"%s\""
-msgstr "E947: Lavoro ancora in esecuzione nel buffer \"%s\""
+msgstr "E947: Job ancora in esecuzione nel buffer \"%s\""
 
 msgid "E162: No write since last change for buffer \"%s\""
 msgstr "E162: Buffer \"%s\" non salvato dopo modifica"
@@ -1029,14 +1046,14 @@ msgstr "Sto eseguendo:  %s"
 msgid "E169: Command too recursive"
 msgstr "E169: Comando troppo ricorsivo"
 
-msgid "E605: Exception not caught: %s"
-msgstr "E605: Eccezione non intercettata: %s"
-
 msgid "End of sourced file"
 msgstr "Fine del file di comandi"
 
 msgid "End of function"
 msgstr "Fine funzione"
+
+msgid "E605: Exception not caught: %s"
+msgstr "E605: Eccezione non intercettata: %s"
 
 msgid "E492: Not an editor command"
 msgstr "E492: Non è un comando dell'editor"
@@ -1191,9 +1208,6 @@ msgstr "E500: Il valore è una stringa nulla"
 
 msgid "Untitled"
 msgstr "Senza Nome"
-
-msgid "E196: No digraphs in this version"
-msgstr "E196: Digrammi non supportati in questa versione"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
 msgstr "E608: Impossibile lanciare eccezioni con prefisso 'Vim'"
@@ -1931,26 +1945,8 @@ msgstr "E150: %s non è una directory"
 msgid "E679: recursive loop loading syncolor.vim"
 msgstr "E679: ciclo ricorsivo nel caricamento di syncolor.vim"
 
-msgid "E411: highlight group not found: %s"
-msgstr "E411: gruppo evidenziazione non trovato: %s"
-
-msgid "E412: Not enough arguments: \":highlight link %s\""
-msgstr "E412: Argomenti non sufficienti: \":highlight link %s\""
-
-msgid "E413: Too many arguments: \":highlight link %s\""
-msgstr "E413: Troppi argomenti: \":highlight link %s\""
-
 msgid "E414: group has settings, highlight link ignored"
 msgstr "E414: 'group' ha impostazioni, 'highlight link' ignorato"
-
-msgid "E415: unexpected equal sign: %s"
-msgstr "E415: segno '=' inatteso: %s"
-
-msgid "E416: missing equal sign: %s"
-msgstr "E416: manca segno '=': %s"
-
-msgid "E417: missing argument: %s"
-msgstr "E417: manca argomento: %s"
 
 msgid "E418: Illegal value: %s"
 msgstr "E418: Valore non consentito: %s"
@@ -1969,6 +1965,24 @@ msgstr "E421: Numero o nome di colore non riconosciuto: %s"
 
 msgid "E422: terminal code too long: %s"
 msgstr "E422: codice terminale troppo lungo: %s"
+
+msgid "E411: highlight group not found: %s"
+msgstr "E411: gruppo evidenziazione non trovato: %s"
+
+msgid "E412: Not enough arguments: \":highlight link %s\""
+msgstr "E412: Argomenti non sufficienti: \":highlight link %s\""
+
+msgid "E413: Too many arguments: \":highlight link %s\""
+msgstr "E413: Troppi argomenti: \":highlight link %s\""
+
+msgid "E415: unexpected equal sign: %s"
+msgstr "E415: segno '=' inatteso: %s"
+
+msgid "E416: missing equal sign: %s"
+msgstr "E416: manca segno '=': %s"
+
+msgid "E417: missing argument: %s"
+msgstr "E417: manca argomento: %s"
 
 msgid "E423: Illegal argument: %s"
 msgstr "E423: Argomento non consentito: %s"
@@ -2378,6 +2392,7 @@ msgstr " Completamento Dizionario (^K^N^P)"
 msgid " Thesaurus completion (^T^N^P)"
 msgstr " Completamento Thesaurus (^T^N^P)"
 
+#. CTRL_X_EVAL doesn't use msg.
 msgid " Command-line completion (^V^N^P)"
 msgstr " Completamento riga-di-comando (^V^N^P)"
 
@@ -3581,15 +3596,6 @@ msgstr ""
 "&D Scarta Tutto\n"
 "&Cancella"
 
-msgid "E766: Insufficient arguments for printf()"
-msgstr "E766: Argomenti non sufficienti per printf()"
-
-msgid "E807: Expected Float argument for printf()"
-msgstr "E807: Numero-a-virgola-mobile atteso come argomento per printf()"
-
-msgid "E767: Too many arguments to printf()"
-msgstr "E767: Troppi argomenti per printf()"
-
 msgid "Type number and <Enter> or click with the mouse (q or empty cancels): "
 msgstr ""
 "Inserire un numero e dare <Invio> o fare clic col mouse (q o vuoto per "
@@ -3616,29 +3622,6 @@ msgstr "Beep!"
 
 msgid "E677: Error writing temp file"
 msgstr "E677: Errore in scrittura su file temporaneo"
-
-msgid "ERROR: "
-msgstr "ERRORE: "
-
-msgid ""
-"\n"
-"[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"
-msgstr ""
-"\n"
-"[byte] totali alloc-rilasc %lu-%lu, in uso %lu, max uso %lu\n"
-
-msgid ""
-"[calls] total re/malloc()'s %lu, total free()'s %lu\n"
-"\n"
-msgstr ""
-"[chiamate] totale re/malloc() %lu, totale free() %lu\n"
-"\n"
-
-msgid "E341: Internal error: lalloc(0, )"
-msgstr "E341: Errore interno: lalloc(0, )"
-
-msgid "E342: Out of memory!  (allocating %lu bytes)"
-msgstr "E342: Non c'è più memoria! (stavo allocando %lu byte)"
 
 msgid "Calling shell to execute: \"%s\""
 msgstr "Chiamo la shell per eseguire: \"%s\""
@@ -3863,12 +3846,6 @@ msgstr "E531: Usa \":gui\" per far partire la GUI"
 
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' e 'patchmode' sono uguali"
-
-msgid "E835: Conflicts with value of 'fillchars'"
-msgstr "E835: Conflitto con il valore di 'fillchars'"
-
-msgid "E834: Conflicts with value of 'listchars'"
-msgstr "E834: Conflitto con il valore di 'listchars'"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Non può essere cambiato nella GUI GTK+ 2"
@@ -4239,15 +4216,6 @@ msgstr "E944: Intervallo invertito nella classe di caratteri"
 msgid "E945: Range too large in character class"
 msgstr "E945: Intervallo troppo ampio nella classe di caratteri"
 
-msgid "E53: Unmatched %s%%("
-msgstr "E53: Senza riscontro: %s%%("
-
-msgid "E54: Unmatched %s("
-msgstr "E54: Senza riscontro: %s("
-
-msgid "E55: Unmatched %s)"
-msgstr "E55: Senza riscontro: %s)"
-
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( non consentito qui"
 
@@ -4300,26 +4268,11 @@ msgstr "E678: Carattere non valido dopo %s%%[dxouU]"
 msgid "E71: Invalid character after %s%%"
 msgstr "E71: Carattere non valido dopo %s%%"
 
-msgid "E59: invalid character after %s@"
-msgstr "E59: Carattere non valido dopo %s@"
-
-msgid "E60: Too many complex %s{...}s"
-msgstr "E60: Troppi %s{...}s complessi"
-
 msgid "E61: Nested %s*"
 msgstr "E61: %s* nidificato"
 
 msgid "E62: Nested %s%c"
 msgstr "E62: %s%c nidificato"
-
-msgid "E50: Too many \\z("
-msgstr "E50: Troppe \\z("
-
-msgid "E51: Too many %s("
-msgstr "E51: Troppe %s("
-
-msgid "E52: Unmatched \\z("
-msgstr "E52: Senza riscontro: \\z("
 
 msgid "E339: Pattern too long"
 msgstr "E339: Espressione troppo lunga"
@@ -4960,6 +4913,15 @@ msgstr "Cambiare \"%.*s\" in:"
 msgid " < \"%.*s\""
 msgstr " < \"%.*s\""
 
+msgid "E766: Insufficient arguments for printf()"
+msgstr "E766: Argomenti non sufficienti per printf()"
+
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: Numero-a-virgola-mobile atteso come argomento per printf()"
+
+msgid "E767: Too many arguments to printf()"
+msgstr "E767: Troppi argomenti per printf()"
+
 msgid "E390: Illegal argument: %s"
 msgstr "E390: Argomento non consentito: %s"
 
@@ -5293,11 +5255,11 @@ msgstr "E964: Numero di colonna non valido: %ld"
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Numero di riga non valido: %ld"
 
-msgid "E965: missing property type name"
-msgstr "E965: Nome del tipo di proprietà non disponibile"
-
 msgid "E275: Cannot add text property to unloaded buffer"
 msgstr "E275: Non posso aggiungere proprietà di testo a un buffer scaricato"
+
+msgid "E965: missing property type name"
+msgstr "E965: Nome del tipo di proprietà non disponibile"
 
 msgid "E967: text property info corrupted"
 msgstr "E967: informazione sulle proprietà del testo corrotta"
@@ -5362,7 +5324,7 @@ msgid "E894: Using a Dictionary as a Float"
 msgstr "E894: Uso di un Dizionario come un Numero-a-virgola-mobile"
 
 msgid "E362: Using a boolean value as a Float"
-msgstr "E362: Uso di un valore booleano come un Numero-a-virgola-mobile"
+msgstr "E362: Uso di un valore Booleano come un Numero-a-virgola-mobile"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Uso di un valore speciale come un Numero-a-virgola-mobile"
@@ -5376,16 +5338,16 @@ msgstr "E914: Uso di un Canale come un Numero-a-virgola-mobile"
 msgid "E975: Using a Blob as a Float"
 msgstr "E975: Uso di un Blob come un Numero-a-virgola-mobile"
 
-msgid "E729: using Funcref as a String"
+msgid "E729: Using a Funcref as a String"
 msgstr "E729: Uso di una Funcref come una Stringa"
 
-msgid "E730: using List as a String"
+msgid "E730: Using a List as a String"
 msgstr "E730: Uso di una Lista come una Stringa"
 
-msgid "E731: using Dictionary as a String"
+msgid "E731: Using a Dictionary as a String"
 msgstr "E731: Uso di un Dizionario come una Stringa"
 
-msgid "E976: using Blob as a String"
+msgid "E976: Using a Blob as a String"
 msgstr "E976: Uso di un Blob come una Stringa"
 
 msgid "E977: Can only compare Blob with Blob"
@@ -5597,9 +5559,6 @@ msgstr ""
 
 msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr "E841: Nome riservato, non usabile in un comando definito dall'utente"
-
-msgid "E184: No such user-defined command: %s"
-msgstr "E184: Comando definito dall'utente %s inesistente"
 
 msgid "E122: Function %s already exists, add ! to replace it"
 msgstr "E122: La funzione %s esiste già, aggiungi ! per sostituirla"
@@ -6214,8 +6173,8 @@ msgstr ""
 "E299: Valorizzazione Perl non consentita in ambiente protetto senza il "
 "modulo Safe"
 
-msgid "Edit with &multiple Vims"
-msgstr "Apri con &molti Vim"
+msgid "Edit with Vim using &tabpages"
+msgstr "Apri con Vim usando &tabpages"
 
 msgid "Edit with single &Vim"
 msgstr "Apri con un solo &Vim"
@@ -6242,9 +6201,6 @@ msgstr ""
 
 msgid "gvimext.dll error"
 msgstr "errore gvimext.dll"
-
-msgid "Path length too long!"
-msgstr "Percorso file troppo lungo!"
 
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: \\ dovrebbe essere seguito da /, ? oppure &"
@@ -6293,11 +6249,119 @@ msgstr "E23: Nessun file alternato"
 msgid "E24: No such abbreviation"
 msgstr "E24: Abbreviazione inesistente"
 
+msgid "E25: GUI cannot be used: Not enabled at compile time"
+msgstr "E25: GUI non utilizzabile: Non abilitata in compilazione"
+
+msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
+msgstr "E26: Ebraico non utilizzabile: Non abilitato in compilazione\n"
+
+msgid "E27: Farsi support has been removed\n"
+msgstr "E27: Il supporto per la lingua farsi non è più disponibile\n"
+
+msgid "E28: No such highlight group name: %s"
+msgstr "E28: Nome di gruppo di evidenziazione inesistente: %s"
+
+msgid "E29: No inserted text yet"
+msgstr "E29: Ancora nessun testo inserito"
+
+msgid "E30: No previous command line"
+msgstr "E30: Nessuna riga comandi precedente"
+
+msgid "E31: No such mapping"
+msgstr "E31: Mappatura inesistente"
+
+msgid "E32: No file name"
+msgstr "E32: Manca nome file"
+
+msgid "E33: No previous substitute regular expression"
+msgstr "E33: Nessuna espressione regolare precedente di 'substitute'"
+
+msgid "E34: No previous command"
+msgstr "E34: Nessun comando precedente"
+
+msgid "E35: No previous regular expression"
+msgstr "E35: Nessuna espressione regolare precedente"
+
+msgid "E36: Not enough room"
+msgstr "E36: Manca spazio"
+
+msgid "E37: No write since last change"
+msgstr "E37: Non salvato dopo l'ultima modifica"
+
+msgid "E37: No write since last change (add ! to override)"
+msgstr "E37: Non salvato dopo modifica (aggiungi ! per eseguire comunque)"
+
+msgid "E38: Null argument"
+msgstr "E38: Argomento nullo"
+
+msgid "E39: Number expected"
+msgstr "E39: Atteso un numero"
+
+msgid "E40: Can't open errorfile %s"
+msgstr "E40: Non riesco ad aprire il file errori %s"
+
+msgid "E41: Out of memory!"
+msgstr "E41: Non c'è più memoria!"
+
+msgid "E42: No Errors"
+msgstr "E42: Nessun Errore"
+
+msgid "E43: Damaged match string"
+msgstr "E43: Stringa di confronto danneggiata"
+
+msgid "E44: Corrupted regexp program"
+msgstr "E44: Programma 'regexp' corrotto"
+
+msgid "E45: 'readonly' option is set (add ! to override)"
+msgstr "E45: file in sola-lettura (aggiungi ! per eseguire comunque)"
+
+msgid "E46: Cannot change read-only variable \"%s\""
+msgstr "E46: Non posso cambiare la variabile read-only \"%s\""
+
+msgid "E47: Error while reading errorfile"
+msgstr "E47: Errore leggendo il file errori"
+
+msgid "E48: Not allowed in sandbox"
+msgstr "E48: Non consentito in ambiente protetto"
+
+msgid "E49: Invalid scroll size"
+msgstr "E49: Quantità di scorrimento non valida"
+
+msgid "E50: Too many \\z("
+msgstr "E50: Troppe \\z("
+
+msgid "E51: Too many %s("
+msgstr "E51: Troppe %s("
+
+msgid "E52: Unmatched \\z("
+msgstr "E52: Senza riscontro: \\z("
+
+msgid "E53: Unmatched %s%%("
+msgstr "E53: Senza riscontro: %s%%("
+
+msgid "E54: Unmatched %s("
+msgstr "E54: Senza riscontro: %s("
+
+msgid "E55: Unmatched %s)"
+msgstr "E55: Senza riscontro: %s)"
+
+msgid "E59: invalid character after %s@"
+msgstr "E59: Carattere non valido dopo %s@"
+
+msgid "E60: Too many complex %s{...}s"
+msgstr "E60: Troppi %s{...}s complessi"
+
 msgid "E121: Undefined variable: %s"
 msgstr "E121: Variabile non definita: %s"
 
 msgid "E121: Undefined variable: %c:%s"
 msgstr "E121: Variabile non definita: %c:%s"
+
+msgid "E184: No such user-defined command: %s"
+msgstr "E184: Comando definito dall'utente %s inesistente"
+
+msgid "E196: No digraphs in this version"
+msgstr "E196: Digrammi non supportati in questa versione"
 
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Uso ambiguo di comando definito dall'utente"
@@ -6316,6 +6380,12 @@ msgstr "E711: Il valore della Lista non ha elementi sufficienti"
 
 msgid "E719: Cannot slice a Dictionary"
 msgstr "E719: Non posso suddividere un Dizionario"
+
+msgid "E834: Conflicts with value of 'listchars'"
+msgstr "E834: Conflitto con il valore di 'listchars'"
+
+msgid "E835: Conflicts with value of 'fillchars'"
+msgstr "E835: Conflitto con il valore di 'fillchars'"
 
 msgid ""
 "E856: \"assert_fails()\" second argument must be a string or a list with one "
@@ -6369,9 +6439,16 @@ msgstr "E1011: Nome troppo lungo: %s"
 msgid "E1012: Type mismatch; expected %s but got %s"
 msgstr "E1012: Tipo non corrispondente; atteso %s, ma ottenuto %s"
 
+msgid "E1012: Type mismatch; expected %s but got %s in %s"
+msgstr "E1012: Tipo non corrispondente; atteso %s, ma ottenuto %s in %s"
+
 msgid "E1013: Argument %d: type mismatch, expected %s but got %s"
 msgstr ""
 "E1013: Argomento %d: tipo non corrispondente, atteso %s, ma ottenuto %s"
+
+msgid "E1013: Argument %d: type mismatch, expected %s but got %s in %s"
+msgstr ""
+"E1013: Argomento %d: tipo non corrispondente, atteso %s, ma ottenuto %s in %s"
 
 msgid "E1014: Invalid key: %s"
 msgstr "E1014: Chiave non valida: %s"
@@ -6476,8 +6553,8 @@ msgstr "E1045: Manca \"as\" dopo *"
 msgid "E1046: Missing comma in import"
 msgstr "E1046: Manca virgola in import"
 
-msgid "E1047: Syntax error in import"
-msgstr "E1047: Errore di sintassi in import"
+msgid "E1047: Syntax error in import: %s"
+msgstr "E1047: Errore di sintassi in import: %s"
 
 msgid "E1048: Item not found in script: %s"
 msgstr "E1048: Elemento non trovato nello script: %s"
@@ -6614,6 +6691,9 @@ msgstr ""
 
 msgid "E1097: Line incomplete"
 msgstr "E1097: Riga incompleta"
+
+msgid "E1098: String, List or Blob required"
+msgstr "E1098: Necessaria Stringa, Lista, o Blob"
 
 msgid "E1099: Unknown error while executing %s"
 msgstr "E1099: Errore sconosciuto mentre era in esecuzione %s"
@@ -6786,8 +6866,8 @@ msgstr "E1151: :endfunction senza corrispondenza"
 msgid "E1152: Mismatched enddef"
 msgstr "E1152: :enddef senza corrispondenza"
 
-msgid "E1153: Invalid operation for bool"
-msgstr "E1153: Operazione non valida per un valore Booleano"
+msgid "E1153: Invalid operation for %s"
+msgstr "E1153: Operazione non valida per %s"
 
 msgid "E1154: Divide by zero"
 msgstr "E1154: Divisione per zero"
@@ -6822,6 +6902,10 @@ msgid "E1163: Variable %d: type mismatch, expected %s but got %s"
 msgstr ""
 "E1163: Variabile %d: tipo non corrispondente, atteso %s, ma ottenuto %s"
 
+msgid "E1163: Variable %d: type mismatch, expected %s but got %s in %s"
+msgstr ""
+"E1163: Variabile %d: tipo non corrispondente, atteso %s, ma ottenuto %s in %s"
+
 msgid "E1164: vim9cmd must be followed by a command"
 msgstr "E1164: vim9cmd dev'essere seguito da un comando"
 
@@ -6853,10 +6937,10 @@ msgid "E1173: Text found after enddef: %s"
 msgstr "E1173: Trovato del testo dopo enddef: %s"
 
 msgid "E1174: String required for argument %d"
-msgstr "E1174: Una Stringa richiesta per argomento %d"
+msgstr "E1174: Stringa richiesta per argomento %d"
 
 msgid "E1175: Non-empty string required for argument %d"
-msgstr "E1175: Una Stringa non vuota richiesta come argomento %d"
+msgstr "E1175: Stringa non vuota richiesta come argomento %d"
 
 msgid "E1176: Misplaced command modifier"
 msgstr "E1176: Modificatore di comando fuori posto"
@@ -6922,20 +7006,18 @@ msgid "E1192: Empty function name"
 msgstr "E1192: Nome funzione vuoto"
 
 msgid "E1193: cryptmethod xchacha20 not built into this Vim"
-msgstr "E1193: Metodo di cifratura xchacha20 non disponibile in questa "
-"versione di Vim"
+msgstr ""
+"E1193: Metodo di cifratura xchacha20 non disponibile in questa versione di "
+"Vim"
 
 msgid "E1194: Cannot encrypt header, not enough space"
-msgstr ""
-"E1194: Impossibile cifrare intestazione, non c'è spazio sufficiente"
+msgstr "E1194: Impossibile cifrare intestazione, non c'è spazio sufficiente"
 
 msgid "E1195: Cannot encrypt buffer, not enough space"
-msgstr ""
-"E1195: Impossibile cifrare buffer, non c'è spazio sufficiente"
+msgstr "E1195: Impossibile cifrare buffer, non c'è spazio sufficiente"
 
 msgid "E1196: Cannot decrypt header, not enough space"
-msgstr ""
-"E1196: Impossibile decifrare intestazione, non c'è spazio sufficiente"
+msgstr "E1196: Impossibile decifrare intestazione, non c'è spazio sufficiente"
 
 msgid "E1197: Cannot allocate_buffer for encryption"
 msgstr "E1197: Fallita chiamata ad allocate_buffer per la cifratura"
@@ -6944,8 +7026,7 @@ msgid "E1198: Decryption failed: Header incomplete!"
 msgstr "E1198: Decifrazione fallita: Intestazione incompleta!"
 
 msgid "E1199: Cannot decrypt buffer, not enough space"
-msgstr ""
-"E1199: Impossibile decifrare intestazione, non c'è spazio sufficiente"
+msgstr "E1199: Impossibile decifrare intestazione, non c'è spazio sufficiente"
 
 msgid "E1200: Decryption failed!"
 msgstr "E1200: Decifrazione fallita!"
@@ -6958,6 +7039,128 @@ msgstr "E1202: Nessuno spazio bianco consentito dopo '%s': %s"
 
 msgid "E1203: Dot can only be used on a dictionary: %s"
 msgstr "E1203: Il punto può essere usato solo in un dizionario: %s"
+
+msgid "E1204: No Number allowed after .: '\\%%%c'"
+msgstr "E1204: Nessun Numero consentito dopo .: '\\%%%c'"
+
+msgid "E1205: No white space allowed between option and"
+msgstr "E1205: Nessuno spazio bianco consentito tra l'opzione e"
+
+msgid "E1206: Dictionary required for argument %d"
+msgstr "E1206: Dizionario richiesto per argomento %d"
+
+msgid "E1207: Expression without an effect: %s"
+msgstr "E1207: Expressione che non produce alcun effetto: %s"
+
+msgid "E1208: -complete used without allowing arguments"
+msgstr "E1208: -complete usato senza conetntire alcun argomento"
+
+msgid "E1209: Invalid value for a line number: \"%s\""
+msgstr "E1209: Valore non valido come numero di riga: \"%s\""
+
+msgid "E1210: Number required for argument %d"
+msgstr "E1210: Numero richiesto per argomento %d"
+
+msgid "E1211: List required for argument %d"
+msgstr "E1211: Una Lista richiesta per argomento %d"
+
+msgid "E1212: Bool required for argument %d"
+msgstr "E1212: Valore Booleano richiesto per argomento %d"
+
+msgid "E1213: Redefining imported item \"%s\""
+msgstr "E1213: Ridefinisco elemento importato \"%s\""
+
+msgid "E1214: Digraph must be just two characters: %s"
+msgstr "E1214: Il digramma dev'essere formato da due soli caratteri: %s"
+
+msgid "E1215: Digraph must be one character: %s"
+msgstr "E1215: Il digramma dev'essere formato da un solo carattere: %s"
+
+msgid ""
+"E1216: digraph_setlist() argument must be a list of lists with two items"
+msgstr ""
+"E1216: l'argomento a digraph_setlist() dev'essere una Lista di Liste con due elementi"
+
+msgid "E1217: Channel or Job required for argument %d"
+msgstr "E1217: Canale o Job richiesto per argomento %d"
+
+msgid "E1218: Job required for argument %d"
+msgstr "E1218: Job richiesto per argomento %d"
+
+msgid "E1219: Float or Number required for argument %d"
+msgstr "E1219: Numero-a-virgola-mobile o Numero richiesto per argomento %d"
+
+msgid "E1220: String or Number required for argument %d"
+msgstr "E1220: Stringa o Numero richiesto per argomento %d"
+
+msgid "E1221: String or Blob required for argument %d"
+msgstr "E1221: Stringa o Blob richiesto per argomento %d"
+
+msgid "E1222: String or List required for argument %d"
+msgstr "E1222: Stringa o Lista richiesta per argomento %d"
+
+msgid "E1223: String or Dictionary required for argument %d"
+msgstr "E1223: String o Dizionario richiesto per argomento %d"
+
+msgid "E1224: String, Number or List required for argument %d"
+msgstr "E1224: Stringa, Numero o Lista richiesto per argomento %d"
+
+msgid "E1225: String, List or Dictionary required for argument %d"
+msgstr "E1225: Stringa, Lista o Dizionario richiesto per argomento %d"
+
+msgid "E1226: List or Blob required for argument %d"
+msgstr "E1226: Lista o Blob richiesto per argomento %d"
+
+msgid "E1227: List or Dictionary required for argument %d"
+msgstr "E1227: Lista o Dizionario richiesto per argomento %d"
+
+msgid "E1228: List, Dictionary or Blob required for argument %d"
+msgstr "E1228: Lista, Dizionario o Blob richiesto per argomento %d"
+
+msgid "E1229: Expected dictionary for using key \"%s\", but got %s"
+msgstr "E1229: Atteso Dizionario per usare chiave \"%s\", ma ottenuto %s"
+
+msgid "E1230: Encryption: sodium_mlock() failed"
+msgstr "E1230: CIfratura: sodium_mlock() fallita"
+
+msgid "E1231: Cannot use a bar to separate commands here: %s"
+msgstr "E1231: Non si può usare una barra per separare comandi qui: %s"
+
+msgid "E1232: Argument of exists_compiled() must be a literal string"
+msgstr "E1232: L'argomento di exists_compiled() dev'essere una stringa di caratteri"
+
+msgid "E1233: exists_compiled() can only be used in a :def function"
+msgstr "E1233: exists_compiled() si può usare solo in una funzione :def"
+
+msgid "E1234: legacy must be followed by a command"
+msgstr "E1234: legacy dev'essere seguito da un comando"
+
+msgid "E1235: Function reference is not set"
+msgstr "E1235: Riferimento di funzione non impostato"
+
+msgid "E1236: Cannot use %s itself, it is imported with '*'"
+msgstr "E1236: Non posso usare %s stesso, è importato con '*'"
+
+msgid "E1237: No such user-defined command in current buffer: %s"
+msgstr "E1237: Questo comando utente non c'è nel buffer corrente: %s"
+
+msgid "E1238: Blob required for argument %d"
+msgstr "E1238: Blob richiesto per argomento %d"
+
+msgid "E1239: Invalid value for blob: %d"
+msgstr "E1239: Valore non valido per blob: %d"
+
+msgid "E1240: Resulting text too long"
+msgstr "E1240: Testo risultante troppo lungo"
+
+msgid "E1241: Separator not supported: %s"
+msgstr "E1241: Separatore nod supportato: %s"
+
+msgid "E1242: No white space allowed before separator: %s"
+msgstr "E1242: Nessuno spazio bianco consentito prima del separatore: %s"
+
+msgid "E1243: ASCII code not in 32-127 range"
+msgstr "E1243: codice ASCII non nell'intervallo 32-127"
 
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
@@ -7047,35 +7250,17 @@ msgstr "E364: Chiamata a libreria fallita per \"%s()\""
 msgid "E667: Fsync failed"
 msgstr "E667: Fsync fallito"
 
+msgid "E370: Could not load library %s: %s"
+msgstr "E370: Non riesco a caricare la libreria %s: %s"
+
 msgid "E448: Could not load library function %s"
 msgstr "E448: Non posso caricare la funzione di libreria %s"
 
 msgid "E477: No ! allowed"
 msgstr "E477: ! non consentito"
 
-msgid "E25: GUI cannot be used: Not enabled at compile time"
-msgstr "E25: GUI non utilizzabile: Non abilitata in compilazione"
-
-msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
-msgstr "E26: Ebraico non utilizzabile: Non abilitato in compilazione\n"
-
-msgid "E27: Farsi support has been removed\n"
-msgstr "E27: Il supporto per la lingua farsi non è più disponibile\n"
-
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
 msgstr "E800: Arabo non utilizzabile: Non abilitato in compilazione\n"
-
-msgid "E28: No such highlight group name: %s"
-msgstr "E28: Nome di gruppo di evidenziazione inesistente: %s"
-
-msgid "E29: No inserted text yet"
-msgstr "E29: Ancora nessun testo inserito"
-
-msgid "E30: No previous command line"
-msgstr "E30: Nessuna riga comandi precedente"
-
-msgid "E31: No such mapping"
-msgstr "E31: Mappatura inesistente"
 
 msgid "E479: No match"
 msgstr "E479: Nessuna corrispondenza"
@@ -7083,23 +7268,8 @@ msgstr "E479: Nessuna corrispondenza"
 msgid "E480: No match: %s"
 msgstr "E480: Nessuna corrispondenza: %s"
 
-msgid "E32: No file name"
-msgstr "E32: Manca nome file"
-
-msgid "E33: No previous substitute regular expression"
-msgstr "E33: Nessuna espressione regolare precedente di 'substitute'"
-
-msgid "E34: No previous command"
-msgstr "E34: Nessun comando precedente"
-
-msgid "E35: No previous regular expression"
-msgstr "E35: Nessuna espressione regolare precedente"
-
 msgid "E481: No range allowed"
 msgstr "E481: Nessun intervallo consentito"
-
-msgid "E36: Not enough room"
-msgstr "E36: Manca spazio"
 
 msgid "E247: no registered server named \"%s\""
 msgstr "E247: non esiste server registrato con nome \"%s\""
@@ -7116,20 +7286,8 @@ msgstr "E484: Non riesco ad aprire il file %s"
 msgid "E485: Can't read file %s"
 msgstr "E485: Non riesco a leggere il file %s"
 
-msgid "E38: Null argument"
-msgstr "E38: Argomento nullo"
-
-msgid "E39: Number expected"
-msgstr "E39: Atteso un numero"
-
-msgid "E40: Can't open errorfile %s"
-msgstr "E40: Non riesco ad aprire il file errori %s"
-
 msgid "E233: cannot open display"
 msgstr "E233: non riesco ad aprire lo schermo"
-
-msgid "E41: Out of memory!"
-msgstr "E41: Non c'è più memoria!"
 
 msgid "Pattern not found"
 msgstr "Espressione non trovata"
@@ -7143,20 +7301,8 @@ msgstr "E487: L'argomento dev'essere positivo"
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Non posso tornare alla directory precedente"
 
-msgid "E42: No Errors"
-msgstr "E42: Nessun Errore"
-
 msgid "E776: No location list"
 msgstr "E776: Nessuna lista locazioni"
-
-msgid "E43: Damaged match string"
-msgstr "E43: Stringa di confronto danneggiata"
-
-msgid "E44: Corrupted regexp program"
-msgstr "E44: Programma 'regexp' corrotto"
-
-msgid "E45: 'readonly' option is set (add ! to override)"
-msgstr "E45: file in sola-lettura (aggiungi ! per eseguire comunque)"
 
 msgid "E734: Wrong variable type for %s="
 msgstr "E734: Tipo di variabile errato per %s="
@@ -7167,9 +7313,6 @@ msgstr "E461: Nome di variabile non consentito: %s"
 msgid "E995: Cannot modify existing variable"
 msgstr "E995: Non posso modificare una variabile esistente"
 
-msgid "E46: Cannot change read-only variable \"%s\""
-msgstr "E46: Non posso cambiare la variabile read-only \"%s\""
-
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr ""
 "E794: Non posso impostare la variabile read-only in ambiente protetto: \"%s\""
@@ -7177,8 +7320,14 @@ msgstr ""
 msgid "E928: String required"
 msgstr "E928: Stringa necessaria"
 
+msgid "E889: Number required"
+msgstr "E889: Numero richiesto"
+
+msgid "E839: Bool required"
+msgstr "E839: Valore Boleano richiesto"
+
 msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: Non posso usare una chiave nulla per il Dizionario"
+msgstr "E713: Non posso usare una chiave nulla per Dizionario"
 
 msgid "E715: Dictionary required"
 msgstr "E715: È necessario un Dizionario"
@@ -7235,12 +7384,6 @@ msgstr ""
 msgid "E857: Dictionary key \"%s\" required"
 msgstr "E857: Chiave di Dizionario \"%s\" richiesta"
 
-msgid "E47: Error while reading errorfile"
-msgstr "E47: Errore leggendo il file errori"
-
-msgid "E48: Not allowed in sandbox"
-msgstr "E48: Non consentito in ambiente protetto"
-
 msgid "E523: Not allowed here"
 msgstr "E523: Non consentito qui"
 
@@ -7252,9 +7395,6 @@ msgstr "E565: Non è possibile modificare testo o cambiare finestra"
 
 msgid "E359: Screen mode setting not supported"
 msgstr "E359: Impostazione modalità schermo non supportata"
-
-msgid "E49: Invalid scroll size"
-msgstr "E49: Quantità di scorrimento non valida"
 
 msgid "E91: 'shell' option is empty"
 msgstr "E91: opzione 'shell' non impostata"
@@ -7411,6 +7551,12 @@ msgstr "E940: Non riesco a bloccare o sbloccare la variabile %s"
 
 msgid "E254: Cannot allocate color %s"
 msgstr "E254: Non riesco ad allocare il colore %s"
+
+msgid "E706: Channel or Job required"
+msgstr "E706: Canale o Job richiesto"
+
+msgid "E693: Job required"
+msgstr "E693: Job richiesto"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "raggiunta la CIMA nella ricerca, continuo dal FONDO"
@@ -9168,3 +9314,9 @@ msgstr "nome della libreria dinamica MzScheme"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "nome della libreria dinamica MzScheme GC"
+
+#~ msgid "Edit with &multiple Vims"
+#~ msgstr "Apri con &molti Vim"
+
+#~ msgid "Path length too long!"
+#~ msgstr "Percorso file troppo lungo!"

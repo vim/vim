@@ -149,8 +149,9 @@ func Test_p_with_count_leaves_mark_at_end()
 endfunc
 
 func Test_very_large_count()
-  " FIXME: should actually check if sizeof(int) == sizeof(long)
-  CheckNotMSWindows
+  if v:sizeofint != 8
+    throw 'Skipped: only works with 64 bit ints'
+  endif
 
   new
   let @" = 'x'
