@@ -422,6 +422,7 @@ let s:filename_checks = {
     \ 'robots': ['robots.txt'],
     \ 'rpcgen': ['file.x'],
     \ 'rpl': ['file.rpl'],
+    \ 'rsc': ['file.rsc'],
     \ 'rst': ['file.rst'],
     \ 'rtf': ['file.rtf'],
     \ 'ruby': ['.irbrc', 'irbrc', 'file.rb', 'file.rbw', 'file.gemspec', 'file.ru', 'Gemfile', 'file.builder', 'file.rxml', 'file.rjs', 'file.rant', 'file.rake', 'rakefile', 'Rakefile', 'rantfile', 'Rantfile', 'rakefile-file', 'Rakefile-file', 'Puppetfile'],
