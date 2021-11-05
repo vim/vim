@@ -240,7 +240,6 @@ Command syntax ~
 			++shell		Instead of executing {command}
 					directly, use a shell, like with
 					`:!command` 		*E279*
-					{only works on Unix currently}
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.
