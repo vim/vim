@@ -11,8 +11,6 @@ endif
 
 syn case ignore
 
-set iskeyword=A-Z,a-z
-
 " comments
 syn match     rscComment      /^\s*#.*/
 
