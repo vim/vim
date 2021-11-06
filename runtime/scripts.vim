@@ -190,6 +190,10 @@ if s:line1 =~# "^#!"
   elseif s:name =~# 'fennel\>'
     set ft=fennel
 
+    " rsc (RouterOS script)
+  elseif s:name =~# 'rsc\>'
+    set ft=rsc
+
   endif
   unlet s:name
 
@@ -389,6 +393,10 @@ else
   " YAML
   elseif s:line1 =~# '^%YAML'
     set ft=yaml
+
+  " rsc (RouterOS script)
+  elseif s:line1 =~# '^#.*by RouterOS.*$'
+    set ft=rsc
 
   " CVS diff
   else

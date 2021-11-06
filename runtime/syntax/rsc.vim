@@ -11,6 +11,8 @@ endif
 
 syn case ignore
 
+syn iskeyword @,-
+
 " comments
 syn match     rscComment      /^\s*#.*/
 
@@ -34,7 +36,7 @@ syn match     rscService      "\(set\)\@<=\s\(api-ssl\|api\|dns\|ftp\|http\|http
 " colors various interfaces
 syn match     rscInterface    "bridge\d\+\|ether\d\+\|wlan\d\+\|pppoe-\(out\|in\)\d\+"
 
-syn keyword   rscBoolean      yes no
+syn keyword   rscBoolean      yes no true false
 
 syn keyword   rscConditional  if
 
@@ -47,10 +49,10 @@ syn match     rscOperator     "[\+\-]\(\d\)\@="
 " commands
 syn keyword   rscCommands     beep delay put len typeof pick log time set find environment
 syn keyword   rscCommands     terminal error parse resolve toarray tobool toid toip toip6
-syn keyword   rscCommands     tonum tostr totime add remove enable disable set get print
+syn keyword   rscCommands     tonum tostr totime add remove enable disable where get print
 syn keyword   rscCommands     export edit find append as-value brief detail count-only file
 syn keyword   rscCommands     follow follow-only from interval terse value-list without-paging
-syn keyword   rscCommands     where
+syn keyword   rscCommands     return
 
 " variable types
 syn keyword   rscType         global local
