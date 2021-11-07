@@ -5660,9 +5660,6 @@ msgstr ""
 "\n"
 "--- 터미널 키 ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "$VIMRUNTIME/rgb.txt을 열 수 없습니다"
-
 #, c-format
 msgid "Kill job in \"%s\"?"
 msgstr "\"%s\"의 job을 죽일까요?"

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Oct 16
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Nov 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,10 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+mark ends up on last byte of char. (#9047)
+
+Delete runtime/rgb.txt after a while
 
 Vim9 - Make everything work:
 - "filter #pat# ls" should work, #pat# is not a comment
@@ -271,12 +275,13 @@ Was originally written by Felipe Morales.
 Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
 (#8179)
 
+Remove SPACE_IN_FILENAME ? It is only used for completion.
+
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)  Did patch 8.2.2379 help?
 Also, z= in German on a long word can take a very long time, but CTRL-C to
 interrupt does not work. Where to add ui_breakcheck()?
-
-Remove SPACE_IN_FILENAME ? It is only used for completion.
+New English spell files also have very slow suggestions.
 
 Searching for \%'> does not find anything when using line Visual selection.
 Probably because it's using MAXCOL.  #8238
@@ -4161,6 +4166,9 @@ Printing:
 
 
 Syntax highlighting:
+    Long term goal: faster, better, etc.  Options:
+    - use treesitter, NeoVim uses it
+    - use TextMate, vscode uses it.  #9087
 8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
     Should do the same for ":syn on" and ":syn manual".
 8   Support "containedin" argument for ":syn include", so that the defined

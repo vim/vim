@@ -3997,6 +3997,7 @@ E1237	map.txt	/*E1237*
 E1239	eval.txt	/*E1239*
 E124	eval.txt	/*E124*
 E1243	options.txt	/*E1243*
+E1244	message.txt	/*E1244*
 E125	eval.txt	/*E125*
 E126	eval.txt	/*E126*
 E127	eval.txt	/*E127*
@@ -5035,6 +5036,7 @@ N:	cmdline.txt	/*N:*
 N<Del>	various.txt	/*N<Del>*
 NFA	pattern.txt	/*NFA*
 NL-used-for-Nul	pattern.txt	/*NL-used-for-Nul*
+NOT	eval.txt	/*NOT*
 Neovim	intro.txt	/*Neovim*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
 NetBeans	netbeans.txt	/*NetBeans*
@@ -6791,6 +6793,7 @@ g:ada_with_gnat_project_files	ft_ada.txt	/*g:ada_with_gnat_project_files*
 g:ada_withuse_ordinary	ft_ada.txt	/*g:ada_withuse_ordinary*
 g:clojure_align_multiline_strings	indent.txt	/*g:clojure_align_multiline_strings*
 g:clojure_align_subforms	indent.txt	/*g:clojure_align_subforms*
+g:clojure_discard_macro	syntax.txt	/*g:clojure_discard_macro*
 g:clojure_fold	syntax.txt	/*g:clojure_fold*
 g:clojure_fuzzy_indent	indent.txt	/*g:clojure_fuzzy_indent*
 g:clojure_fuzzy_indent_blacklist	indent.txt	/*g:clojure_fuzzy_indent_blacklist*
@@ -7282,6 +7285,7 @@ hidden-options	options.txt	/*hidden-options*
 hidden-quit	windows.txt	/*hidden-quit*
 highlight-args	syntax.txt	/*highlight-args*
 highlight-changed	version4.txt	/*highlight-changed*
+highlight-clear	syntax.txt	/*highlight-clear*
 highlight-cterm	syntax.txt	/*highlight-cterm*
 highlight-ctermbg	syntax.txt	/*highlight-ctermbg*
 highlight-ctermfg	syntax.txt	/*highlight-ctermfg*
@@ -7375,7 +7379,9 @@ hl-debugBreakpoint	terminal.txt	/*hl-debugBreakpoint*
 hl-debugPC	terminal.txt	/*hl-debugPC*
 hlID()	eval.txt	/*hlID()*
 hlexists()	eval.txt	/*hlexists()*
+hlget()	eval.txt	/*hlget()*
 hlsearch-variable	eval.txt	/*hlsearch-variable*
+hlset()	eval.txt	/*hlset()*
 holy-grail	index.txt	/*holy-grail*
 home	intro.txt	/*home*
 home-replace	editing.txt	/*home-replace*
@@ -8935,6 +8941,7 @@ save-file	editing.txt	/*save-file*
 save-settings	starting.txt	/*save-settings*
 scheme.vim	syntax.txt	/*scheme.vim*
 scp	pi_netrw.txt	/*scp*
+scratch-buffer	windows.txt	/*scratch-buffer*
 screenattr()	eval.txt	/*screenattr()*
 screenchar()	eval.txt	/*screenchar()*
 screenchars()	eval.txt	/*screenchars()*
@@ -9062,6 +9069,9 @@ simulated-command	vi_diff.txt	/*simulated-command*
 sin()	eval.txt	/*sin()*
 single-repeat	repeat.txt	/*single-repeat*
 sinh()	eval.txt	/*sinh()*
+sizeofint-variable	eval.txt	/*sizeofint-variable*
+sizeoflong-variable	eval.txt	/*sizeoflong-variable*
+sizeofpointer-variable	eval.txt	/*sizeofpointer-variable*
 skeleton	autocmd.txt	/*skeleton*
 skip_defaults_vim	starting.txt	/*skip_defaults_vim*
 slice	eval.txt	/*slice*
@@ -9938,6 +9948,7 @@ v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
 v:collate	eval.txt	/*v:collate*
+v:colornames	eval.txt	/*v:colornames*
 v:completed_item	eval.txt	/*v:completed_item*
 v:count	eval.txt	/*v:count*
 v:count1	eval.txt	/*v:count1*
@@ -9993,6 +10004,9 @@ v:scrollstart	eval.txt	/*v:scrollstart*
 v:searchforward	eval.txt	/*v:searchforward*
 v:servername	eval.txt	/*v:servername*
 v:shell_error	eval.txt	/*v:shell_error*
+v:sizeofint	eval.txt	/*v:sizeofint*
+v:sizeoflong	eval.txt	/*v:sizeoflong*
+v:sizeofpointer	eval.txt	/*v:sizeofpointer*
 v:statusmsg	eval.txt	/*v:statusmsg*
 v:swapchoice	eval.txt	/*v:swapchoice*
 v:swapcommand	eval.txt	/*v:swapcommand*

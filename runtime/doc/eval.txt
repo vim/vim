@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Oct 20
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Nov 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1865,7 +1865,7 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 			\ 'mauve': '#915f6d,
 			\ }, 'keep')
 <
-		Using |extend| with the 'keep' option updates each color only
+		Using |extend()| with the 'keep' option updates each color only
 		if it did not exist in |v:colornames|. Doing so allows the
 		user to choose the precise color value for a common name
 		by setting it in their |.vimrc|.
@@ -1873,7 +1873,7 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 		It is possible to remove entries from this dictionary but
 		doing so is *NOT* recommended. Doing so is disruptive to
 		other scripts. It is also unlikely to achieve the desired
-		result because the |colorscheme| and |highlight| commands will
+		result because the |:colorscheme| and |:highlight| commands will
 		both automatically load all `colors/lists/default.vim` color
 		scripts.
 
@@ -2289,6 +2289,21 @@ v:shell_error	Result of the last shell command.  When non-zero, the last
 	:endif
 <		"shell_error" also works, for backwards compatibility, unless
 		|scriptversion| is 3 or higher.
+
+					*v:sizeofint* *sizeofint-variable*
+v:sizeofint	Number of bytes in an int.  Depends on how Vim was compiled.
+		This is only useful for deciding whether a test will give the
+		expected result.
+
+					*v:sizeoflong* *sizeoflong-variable*
+v:sizeoflong	Number of bytes in a long.  Depends on how Vim was compiled.
+		This is only useful for deciding whether a test will give the
+		expected result.
+
+				*v:sizeofpointer* *sizeofpointer-variable*
+v:sizeofpointer	Number of bytes in a pointer.  Depends on how Vim was compiled.
+		This is only useful for deciding whether a test will give the
+		expected result.
 
 					*v:statusmsg* *statusmsg-variable*
 v:statusmsg	Last given status message.  It's allowed to set this variable.
@@ -4967,6 +4982,9 @@ flatten({list} [, {maxdepth}])					*flatten()*
 			:echo flatten([1, [2, [3, 4]], 5], 1)
 <			[1, 2, [3, 4], 5]
 
+		Can also be used as a |method|: >
+			mylist->flatten()
+<
 flattennew({list} [, {maxdepth}])			*flattennew()*
 		Like |flatten()| but first make a copy of {list}.
 
@@ -5644,7 +5662,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		buffer		buffer names
 		behave		:behave suboptions
 		color		color schemes
-		command		Ex command (and arguments)
+		command		Ex command
 		cmdline		|cmdline-completion| result
 		compiler	compilers
 		cscope		|:cscope| suboptions
@@ -7772,6 +7790,7 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 		further down in the text.
 
 		Can also be used as a |method|: >
+			GetText()->match('word')
 			GetList()->match('word')
 <
 				*matchadd()* *E798* *E799* *E801* *E957*
@@ -8008,8 +8027,10 @@ matchlist({expr}, {pat} [, {start} [, {count}]])		*matchlist()*
 <		Results in: ['acd', 'a', '', 'c', 'd', '', '', '', '', '']
 		When there is no match an empty list is returned.
 
+		You can pass in a List, but that is not very useful.
+
 		Can also be used as a |method|: >
-			GetList()->matchlist('word')
+			GetText()->matchlist('word')
 
 matchstr({expr}, {pat} [, {start} [, {count}]])			*matchstr()*
 		Same as |match()|, but return the matched string.  Example: >
@@ -9543,7 +9564,9 @@ searchcount([{options}])					*searchcount()*
 						|getpos()|
 						(default: cursor's position)
 
-
+		Can also be used as a |method|: >
+			GetSearchOpts()->searchcount()
+<
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
 
@@ -10207,7 +10230,7 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 
 		Can also be used as a |method|, the base is passed as the
 		fourth argument: >
-			GetValue()->settabvar(tab, winnr, name)
+			GetValue()->settabwinvar(tab, winnr, name)
 
 settagstack({nr}, {dict} [, {action}])			*settagstack()*
 		Modify the tag stack of the window {nr} using {dict}.
@@ -10464,6 +10487,10 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 <
 sound_clear()						*sound_clear()*
 		Stop playing all sounds.
+
+		On some Linux systems you may need the libcanberra-pulse
+		package, otherwise sound may not stop.
+
 		{only available when compiled with the |+sound| feature}
 
 							*sound_playevent()*
@@ -10515,6 +10542,9 @@ sound_playfile({path} [, {callback}])
 sound_stop({id})					*sound_stop()*
 		Stop playing sound {id}.  {id} must be previously returned by
 		`sound_playevent()` or `sound_playfile()`.
+
+		On some Linux systems you may need the libcanberra-pulse
+		package, otherwise sound may not stop.
 
 		On MS-Windows, this does not work for event sound started by
 		`sound_playevent()`. To stop event sounds, use `sound_clear()`.
@@ -10955,9 +10985,11 @@ strptime({format}, {timestring})				*strptime()*
 		  :echo strftime("%c", strptime("%Y%m%d%H%M%S", "19970427115355") + 3600)
 <		  Sun Apr 27 12:53:55 1997
 
+		Can also be used as a |method|: >
+			GetFormat()->strptime(timestring)
+<
 		Not available on all systems.  To check use: >
 			:if exists("*strptime")
-
 
 strridx({haystack}, {needle} [, {start}])			*strridx()*
 		The result is a Number, which gives the byte index in
@@ -11227,10 +11259,10 @@ synstack({lnum}, {col})					*synstack()*
 		valid positions.
 
 system({expr} [, {input}])				*system()* *E677*
-		Get the output of the shell command {expr} as a string.  See
+		Get the output of the shell command {expr} as a |String|.  See
 		|systemlist()| to get the output as a |List|.
 
-		When {input} is given and is a string this string is written
+		When {input} is given and is a |String| this string is written
 		to a file and passed as stdin to the command.  The string is
 		written as-is, you need to take care of using the correct line
 		separators yourself.
@@ -11910,7 +11942,9 @@ win_gettype([{nr}])					*win_gettype()*
 		popup window then 'buftype' is "terminal" and win_gettype()
 		returns "popup".
 
-
+		Can also be used as a |method|: >
+			GetWinid()->win_gettype()
+<
 win_gotoid({expr})					*win_gotoid()*
 		Go to window with ID {expr}.  This may also change the current
 		tabpage.

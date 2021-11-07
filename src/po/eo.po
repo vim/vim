@@ -5594,9 +5594,6 @@ msgstr ""
 "\n"
 "--- Klavoj de terminalo ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "Ne povas malfermi $VIMRUNTIME/rgb.txt"
-
 #, c-format
 msgid "E181: Invalid attribute: %s"
 msgstr "E181: Nevalida atributo: %s"

@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 8.2.  Last change: 2020 Dec 29
+*tips.txt*      For Vim version 8.2.  Last change: 2021 Nov 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -549,6 +549,7 @@ the current window, try this custom `:HelpCurwin` command:
 	  endif
 	  if !getcompletion(a:subject, 'help')->empty()
 	    execute mods .. ' edit ' .. &helpfile
+	    set buftype=help
 	  endif
 	  return 'help ' .. a:subject
 	endfunction

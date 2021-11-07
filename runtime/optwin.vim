@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Oct 17
+" Last Change:	2021 Oct 28
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -652,7 +652,7 @@ if has("gui")
     endif
     call <SID>AddOption("guiheadroom", gettext("room (in pixels) left above/below the window"))
     call append("$", " \tset ghr=" . &ghr)
-    call <SID>AddOption("guiligatures", gettext("list of ASCII characters that can be combined into complesshapes"))
+    call <SID>AddOption("guiligatures", gettext("list of ASCII characters that can be combined into complex shapes"))
     call <SID>OptionG("gli", &gli)
   endif
   if has("directx")

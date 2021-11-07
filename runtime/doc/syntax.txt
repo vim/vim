@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2021 Aug 16
+*syntax.txt*	For Vim version 8.2.  Last change: 2021 Nov 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1081,33 +1081,47 @@ This works immediately.
 
 CLOJURE							*ft-clojure-syntax*
 
-The default syntax groups can be augmented through the
-*g:clojure_syntax_keywords* and *b:clojure_syntax_keywords* variables. The
-value should be a |Dictionary| of syntax group names to a |List| of custom
-identifiers:
+						*g:clojure_syntax_keywords*
+
+Syntax highlighting of public vars in "clojure.core" is provided by default,
+but additional symbols can be highlighted by adding them to the
+|g:clojure_syntax_keywords| variable.  The value should be a |Dictionary| of
+syntax group names, each containing a |List| of identifiers.
 >
 	let g:clojure_syntax_keywords = {
-	    \ 'clojureMacro': ["defproject", "defcustom"],
-	    \ 'clojureFunc': ["string/join", "string/replace"]
+	    \   'clojureMacro': ["defproject", "defcustom"],
+	    \   'clojureFunc': ["string/join", "string/replace"]
 	    \ }
 <
 Refer to the Clojure syntax script for valid syntax group names.
 
-If the |buffer-variable| *b:clojure_syntax_without_core_keywords* is set, only
-language constants and special forms are matched.
+There is also *b:clojure_syntax_keywords* which is a buffer-local variant of
+this variable intended for use by plugin authors to highlight symbols
+dynamically.
 
-Setting *g:clojure_fold* enables folding Clojure code via the syntax engine.
-Any list, vector, or map that extends over more than one line can be folded
-using the standard Vim |fold-commands|.
+By setting the *b:clojure_syntax_without_core_keywords* variable, vars from
+"clojure.core" will not be highlighted by default.  This is useful for
+namespaces that have set `(:refer-clojure :only [])`
 
-Please note that this option does not work with scripts that redefine the
-bracket syntax regions, such as rainbow-parentheses plugins.
 
-This option is off by default.
+							*g:clojure_fold*
+
+Setting |g:clojure_fold| to `1` will enable the folding of Clojure code.  Any
+list, vector or map that extends over more than one line can be folded using
+the standard Vim |fold-commands|.
+
+
+						*g:clojure_discard_macro*
+
+Set this variable to `1` to enable basic highlighting of Clojure's "discard
+reader macro".
 >
-	" Default
-	let g:clojure_fold = 0
+	#_(defn foo [x]
+	    (println x))
 <
+Note that this option will not correctly highlight stacked discard macros
+(e.g. `#_#_`).
+
 
 COBOL						*cobol.vim* *ft-cobol-syntax*
 
@@ -1672,16 +1686,6 @@ as Fvwm2 configuration files, add the following: >
 
   :au! BufNewFile,BufRead /etc/X11/fvwm2/*  let b:fvwm_version = 2 |
 					 \ set filetype=fvwm
-
-If you'd like Vim to highlight all valid color names, tell it where to
-find the color database (rgb.txt) on your system.  Do this by setting
-"rgb_file" to its location.  Assuming your color database is located
-in /usr/X11/lib/X11/, you should add the line >
-
-	:let rgb_file = "/usr/X11/lib/X11/rgb.txt"
-
-to your .vimrc file.
-
 
 GSP						*gsp.vim* *ft-gsp-syntax*
 
@@ -4830,16 +4834,28 @@ in their own color.
 			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 
-			To customize a color scheme use another name, e.g.
+			You have two options for customizing a color scheme.
+			For changing the appearance of specific colors, you
+			can redefine a color name before loading the scheme.
+			The desert scheme uses the khaki color for the cursor.
+			To use a darker variation of the same color: >
+
+				let v:colornames['khaki'] = '#bdb76b'
+				colorscheme desert
+<
+			For further customization, such as changing
+			|:highlight-link| associations, use another name, e.g.
 			"~/.vim/colors/mine.vim", and use `:runtime` to load
 			the original color scheme: >
 				runtime colors/evening.vim
 				hi Statement ctermfg=Blue guifg=Blue
 
-<			Before the color scheme will be loaded the
-			|ColorSchemePre| autocommand event is triggered.
-			After the color scheme has been loaded the
-			|ColorScheme| autocommand event is triggered.
+<			Before the color scheme will be loaded all default
+			color list scripts (`colors/lists/default.vim`) will
+			be executed and then the |ColorSchemePre| autocommand
+			event is triggered.  After the color scheme has been
+			loaded the |ColorScheme| autocommand event is
+			triggered.
 			For info about writing a color scheme file: >
 				:edit $VIMRUNTIME/colors/README.txt
 
@@ -4863,7 +4879,9 @@ in their own color.
 
 :hi[ghlight] [default] {group-name} {key}={arg} ..
 			Add a highlight group, or change the highlighting for
-			an existing group.
+			an existing group. If a given color name is not
+			receognized, each `colors/lists/default.vim` found on
+			|'runtimepath'| will be loaded.
 			See |highlight-args| for the {key}={arg} arguments.
 			See |:highlight-default| for the optional [default]
 			argument.
