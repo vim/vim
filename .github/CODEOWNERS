@@ -231,6 +231,7 @@ runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/psl.vim			@danielkho
 runtime/syntax/rc.vim			@chrisbra
 runtime/syntax/rpcgen.vim		@cecamp
+runtime/syntax/rsc.vim			@zainin
 runtime/syntax/ruby.vim			@dkearns
 runtime/syntax/sass.vim			@tpope
 runtime/syntax/scss.vim			@tpope
