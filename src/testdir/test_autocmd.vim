@@ -270,6 +270,7 @@ func Test_win_tab_autocmd()
 
   augroup testing
     au WinNew * call add(g:record, 'WinNew')
+    au WinClosed * call add(g:record, 'WinClosed')
     au WinEnter * call add(g:record, 'WinEnter') 
     au WinLeave * call add(g:record, 'WinLeave') 
     au TabNew * call add(g:record, 'TabNew')
@@ -286,8 +287,8 @@ func Test_win_tab_autocmd()
   call assert_equal([
 	\ 'WinLeave', 'WinNew', 'WinEnter',
 	\ 'WinLeave', 'TabLeave', 'WinNew', 'WinEnter', 'TabNew', 'TabEnter',
-	\ 'WinLeave', 'TabLeave', 'TabClosed', 'WinEnter', 'TabEnter',
-	\ 'WinLeave', 'WinEnter'
+	\ 'WinLeave', 'TabLeave', 'WinClosed', 'TabClosed', 'WinEnter', 'TabEnter',
+	\ 'WinLeave', 'WinClosed', 'WinEnter'
 	\ ], g:record)
 
   let g:record = []
@@ -298,13 +299,29 @@ func Test_win_tab_autocmd()
   call assert_equal([
 	\ 'WinLeave', 'TabLeave', 'WinNew', 'WinEnter', 'TabNew', 'TabEnter',
 	\ 'WinLeave', 'TabLeave', 'WinEnter', 'TabEnter',
-	\ 'TabClosed'
+	\ 'WinClosed', 'TabClosed'
 	\ ], g:record)
 
   augroup testing
     au!
   augroup END
   unlet g:record
+endfunc
+
+func Test_WinClosed()
+  " Test that <afile> is set to the closed window's ID.
+  new
+  let winid = win_getid()
+  augroup test-WinClosed
+    autocmd!
+    autocmd WinClosed * let g:afile = str2nr(expand('<afile>'))
+  augroup END
+  close
+  call assert_equal(winid, g:afile)
+
+  autocmd! test-WinClosed
+  augroup! test-WinClosed
+  unlet g:afile
 endfunc
 
 func s:AddAnAutocmd()

@@ -19,6 +19,7 @@ static void win_exchange(long);
 static void win_rotate(int, int);
 static void win_totop(int size, int flags);
 static void win_equal_rec(win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height);
+static void trigger_winclosed(win_T *win);
 static win_T *win_free_mem(win_T *win, int *dirp, tabpage_T *tp);
 static frame_T *win_altframe(win_T *win, tabpage_T *tp);
 static tabpage_T *alt_tabpage(void);
@@ -2566,6 +2567,13 @@ win_close(win_T *win, int free_buf)
     if (popup_win_closed(win) && !win_valid(win))
 	return FAIL;
 #endif
+
+    // Trigger WinClosed just before starting to free window-related resources.
+    trigger_winclosed(win);
+    // autocmd may have freed the window already.
+    if (!win_valid_any_tab(win))
+	return OK;
+
     win_close_buffer(win, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 
     if (only_one_window() && win_valid(win) && win->w_buffer == NULL
@@ -2710,6 +2718,19 @@ win_close(win_T *win, int free_buf)
     return OK;
 }
 
+    static void
+trigger_winclosed(win_T *win)
+{
+    static int recursive = FALSE;
+    if (recursive)
+	return;
+    recursive = TRUE;
+    char_u winid[NUMBUFLEN];
+    vim_snprintf((char *)winid, sizeof(winid), "%i", win->w_id);
+    apply_autocmds(EVENT_WINCLOSED, winid, winid, FALSE, win->w_buffer);
+    recursive = FALSE;
+}
+
 /*
  * Close window "win" in tab page "tp", which is not the current tab page.
  * This may be the last window in that tab page and result in closing the tab,
@@ -2730,6 +2751,12 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     if (win->w_closing || (win->w_buffer != NULL
 					       && win->w_buffer->b_locked > 0))
 	return; // window is already being closed
+
+    // Trigger WinClosed just before starting to free window-related resources.
+    trigger_winclosed(win);
+    // autocmd may have freed the window already.
+    if (!win_valid_any_tab(win))
+	return;
 
     if (win->w_buffer != NULL)
 	// Close the link to the buffer.
