@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:		Markdown
 " Maintainer:		Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:		2019 Dec 05
+" Last Change:		2021 Nov 10
 
 if exists("b:did_ftplugin")
   finish
@@ -31,12 +31,23 @@ function! MarkdownFold() abort
   endif
 
   let nextline = getline(v:lnum + 1)
+
   if (line =~ '^.\+$') && (nextline =~ '^=\+$') && s:NotCodeBlock(v:lnum + 1)
     return ">1"
   endif
 
-  if (line =~ '^.\+$') && (nextline =~ '^-\+$') && s:NotCodeBlock(v:lnum + 1)
+  if (line =~ '^.\+$') && (nextline =~ '^-\+$') && s:NotCodeBlock(v:lnum + 1) && not b:markdown_frontmatter
     return ">2"
+  endif
+
+  if (v:lnum == 1) && (line == '+++' || line == '---')
+    let b:markdown_frontmatter = 1
+    return ">1"
+  endif
+
+  if (line == '+++' || line == '---') && b:markdown_frontmatter
+    unlet b:markdown_frontmatter
+    return '<1'
   endif
 
   return "="
