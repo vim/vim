@@ -2,7 +2,7 @@
 " Language:     Markdown
 " Maintainer:   Tim Pope <vimNOSPAM@tpope.org>
 " Filenames:    *.markdown
-" Last Change:  2020 Jan 14
+" Last Change:  2021 Nov 10
 
 if exists("b:current_syntax")
   finish
@@ -165,5 +165,11 @@ let b:current_syntax = "markdown"
 if main_syntax ==# 'markdown'
   unlet main_syntax
 endif
+
+unlet b:current_syntax
+syntax include @Yaml syntax/yaml.vim
+syntax include @Toml syntax/toml.vim
+syntax region yamlFrontmatter start=/\%^---$/ end=/^---$/ keepend contains=@Yaml
+syntax region tomlFrontmatter start=/\%^+++$/ end=/^+++$/ keepend contains=@Toml
 
 " vim:set sw=2:
