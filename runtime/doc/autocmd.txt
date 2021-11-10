@@ -1282,8 +1282,11 @@ VimSuspend			When the Vim instance is suspended.  Only when
 				CTRL-Z was typed inside Vim, not when the
 				SIGSTOP or SIGTSTP signal was sent to Vim.
 							*WinClosed*
-WinClosed			After closing a window. <afile> is set to the
-				|window-ID| as a string.
+WinClosed			After closing a window.  The pattern is
+				matched against the |window-ID|.  Both
+				<amatch> and <afile> are set to the
+				|window-ID|.  Non-recursive (event cannot
+				trigger itself).
 							*WinEnter*
 WinEnter			After entering another window.  Not done for
 				the first window, when Vim has just started.

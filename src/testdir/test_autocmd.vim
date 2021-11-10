@@ -309,19 +309,42 @@ func Test_win_tab_autocmd()
 endfunc
 
 func Test_WinClosed()
-  " Test that <afile> is set to the closed window's ID.
+  " Test that the pattern is matched against the closed window's ID, and both
+  " <amatch> and <afile> are set to it.
   new
   let winid = win_getid()
+  let g:matched = v:false
   augroup test-WinClosed
     autocmd!
+    execute 'autocmd WinClosed' winid 'let g:matched = v:true'
+    autocmd WinClosed * let g:amatch = str2nr(expand('<amatch>'))
     autocmd WinClosed * let g:afile = str2nr(expand('<afile>'))
   augroup END
   close
+  call assert_true(g:matched)
+  call assert_equal(winid, g:amatch)
   call assert_equal(winid, g:afile)
+
+  " Test that WinClosed is non-recursive.
+  new
+  new
+  call assert_equal(3, winnr('$'))
+  let g:triggered = 0
+  augroup test-WinClosed
+    autocmd!
+    autocmd WinClosed * let g:triggered += 1
+    autocmd WinClosed * 2 wincmd c
+  augroup END
+  close
+  call assert_equal(1, winnr('$'))
+  call assert_equal(1, g:triggered)
 
   autocmd! test-WinClosed
   augroup! test-WinClosed
+  unlet g:matched
+  unlet g:amatch
   unlet g:afile
+  unlet g:triggered
 endfunc
 
 func s:AddAnAutocmd()
