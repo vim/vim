@@ -982,37 +982,46 @@ func s:Run(args)
 endfunc
 
 func s:SendEval(expr)
-  " clean up expression that may got in because of range
-  " (newlines and surrounding spaces)
-  let expr = a:expr
-  if &filetype ==# 'cobol'
-    " extra cleanup for COBOL: _every: expression ends with a period,
-    " a trailing comma is ignored as it commonly separates multiple expr.
-    let expr = substitute(expr, '\..*', '', '')
-    let expr = substitute(expr, '[;\n]', ' ', 'g')
-    let expr = substitute(expr, ',*$', '', '')
-  else
-    let expr = substitute(expr, '\n', ' ', 'g')
-  endif
-  let expr = substitute(expr, '^ *\(.*\) *', '\1', '')
-
-  call s:SendCommand('-data-evaluate-expression "' . expr . '"')
-  let s:evalexpr = expr
+  call s:SendCommand('-data-evaluate-expression "' . a:expr . '"')
+  let s:evalexpr = a:expr
 endfunc
 
-" :Evaluate - evaluate what is under the cursor
+" clean up expression that may got in because of range
+" (newlines and surrounding whitespace)
+func s:CleanupExpr(expr)
+  " replace all embedded newlines/tabs/...
+  let expr = substitute( a:expr, '\s', ' ', 'g')
+  if &filetype ==# 'cobol'
+    " extra cleanup for COBOL: _every: expression ends with a period,
+    " a semicolon nmay be used instead of a space
+    " a trailing comma is ignored as it commonly separates multiple expr
+    let expr = substitute(expr, '\..*', '', '')
+    let expr = substitute(expr, ';', ' ', 'g')
+    let expr = substitute(expr, ',*$', '', '')
+  endif
+  " get rid of surrounding spaces
+  let expr = substitute(expr, '^ *', '', '')
+  let expr = substitute(expr, ' *$', '', '')
+  return expr
+endfunc
+
+" :Evaluate - evaluate what is specified / under the cursor 
 func s:Evaluate(range, arg)
   if a:arg != ''
-    let expr = a:arg
+    " user supplied evaluation
+    let expr = s:CleanupExpr(a:arg)
   elseif a:range == 2
+    " no evaluation but provided but range set
     let pos = getcurpos()
     let reg = getreg('v', 1, 1)
     let regt = getregtype('v')
     normal! gv"vy
-    let expr = @v
+    let expr = s:CleanupExpr(@v)
     call setpos('.', pos)
     call setreg('v', reg, regt)
   else
+    " no evaluation provided: get from C-expression under cursor
+    " TODO: allow filetype specific lookup #9057
     let expr = expand('<cexpr>')
   endif
   let s:ignoreEvalError = 0
@@ -1060,7 +1069,8 @@ func TermDebugBalloonExpr()
   let s:evalFromBalloonExpr = 1
   let s:evalFromBalloonExprResult = ''
   let s:ignoreEvalError = 1
-  call s:SendEval(v:beval_text)
+  let expr = s:CleanupExpr(v:beval_text)
+  call s:SendEval(expr)
   return ''
 endfunc
 
