@@ -1179,7 +1179,7 @@ func s:HandleCursor(msg)
 	  exe 'edit ' . fnameescape(fname)
 	endif
       endif
-      exe lnum
+      exe 'normal! '.lnum.'Gzv'
       exe 'sign unplace ' . s:pc_id
       exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC priority=110 file=' . fname
       if !exists('b:save_signcolumn')
