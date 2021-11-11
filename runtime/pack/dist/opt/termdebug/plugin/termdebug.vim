@@ -997,6 +997,37 @@ func s:SendEval(expr)
   let s:evalexpr = exprLHS
 endfunc
 
+" :Evaluate - evaluate what is specified / under the cursor 
+func s:Evaluate(range, arg)
+  let expr = s:GetEvaluationExpression(a:range, a:arg)
+  let s:ignoreEvalError = 0
+  call s:SendEval(expr)
+endfunc
+
+" get what is specified / under the cursor 
+func s:GetEvaluationExpression(range, arg)
+  if a:arg != ''
+    " user supplied evaluation
+    let expr = s:CleanupExpr(a:arg)
+    " DSW: replace "likely copy + paste" assignment
+    let expr = substitute(expr, '"\([^"]*\)": *', '\1=', 'g')
+  elseif a:range == 2
+    " no evaluation but provided but range set
+    let pos = getcurpos()
+    let reg = getreg('v', 1, 1)
+    let regt = getregtype('v')
+    normal! gv"vy
+    let expr = s:CleanupExpr(@v)
+    call setpos('.', pos)
+    call setreg('v', reg, regt)
+  else
+    " no evaluation provided: get from C-expression under cursor
+    " TODO: allow filetype specific lookup #9057
+    let expr = expand('<cexpr>')
+  endif
+  return expr
+endfunc
+
 " clean up expression that may got in because of range
 " (newlines and surrounding whitespace)
 func s:CleanupExpr(expr)
@@ -1014,29 +1045,6 @@ func s:CleanupExpr(expr)
   let expr = substitute(expr, '^ *', '', '')
   let expr = substitute(expr, ' *$', '', '')
   return expr
-endfunc
-
-" :Evaluate - evaluate what is specified / under the cursor 
-func s:Evaluate(range, arg)
-  if a:arg != ''
-    " user supplied evaluation
-    let expr = s:CleanupExpr(a:arg)
-  elseif a:range == 2
-    " no evaluation but provided but range set
-    let pos = getcurpos()
-    let reg = getreg('v', 1, 1)
-    let regt = getregtype('v')
-    normal! gv"vy
-    let expr = s:CleanupExpr(@v)
-    call setpos('.', pos)
-    call setreg('v', reg, regt)
-  else
-    " no evaluation provided: get from C-expression under cursor
-    " TODO: allow filetype specific lookup #9057
-    let expr = expand('<cexpr>')
-  endif
-  let s:ignoreEvalError = 0
-  call s:SendEval(expr)
 endfunc
 
 let s:ignoreEvalError = 0
