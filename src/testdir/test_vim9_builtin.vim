@@ -3297,6 +3297,7 @@ def Test_sign_placelist()
   CheckDefAndScriptFailure2(['sign_placelist("x")'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1')
   CheckDefAndScriptFailure2(['sign_placelist({"a": 10})'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1211: List required for argument 1')
   CheckDefExecAndScriptFailure(['sign_placelist([{"name": "MySign", "buffer": bufnr(), "lnum": ""}])'], 'E1209: Invalid value for a line number: ""')
+  assert_fails('sign_placelist([{name: "MySign", buffer: "", lnum: 1}])', 'E155:')
 enddef
 
 def Test_sign_undefine()

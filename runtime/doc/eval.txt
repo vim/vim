@@ -6750,7 +6750,7 @@ hlget([{name} [, {resolve}]])				*hlget()*
 
 		Each entry in the returned List is a Dictionary with the
 		following items:
-			cleared	Boolean flag, set to v:true if the highlight
+			cleared	boolean flag, set to v:true if the highlight
 				group attributes are cleared or not yet
 				specified.  See |highlight-clear|.
 			cterm	cterm attributes. See |highlight-cterm|.
@@ -6759,6 +6759,9 @@ hlget([{name} [, {resolve}]])				*hlget()*
 			ctermfg	cterm foreground color.
 				See |highlight-ctermfg|.
 			ctermul	cterm underline color.  See |highlight-ctermul|.
+			default boolean flag, set to v:true if the highlight
+				group link is a default link. See
+				|highlight-default|.
 			font	highlight group font.  See |highlight-font|.
 			gui	gui attributes. See |highlight-gui|.
 			guibg	gui background color.  See |highlight-guibg|.
@@ -6791,6 +6794,13 @@ hlset({list})						*hlset()*
 		attributes of a highlight group. See |hlget()| for the list of
 		supported items in this dictionary.
 
+		In addition to the items described in |hlget()|, the following
+		additional items are supported in the dictionary:
+
+			force		boolean flag to force the creation of
+					a link for an existing highlight group
+					with attributes.
+
 		The highlight group is identified using the 'name' item and
 		the 'id' item (if supplied) is ignored.  If a highlight group
 		with a specified name doesn't exist, then it is created.
@@ -6820,6 +6830,11 @@ hlset({list})						*hlset()*
 			:call hlset([#{name: 'Title', term: {}}])
 			" create the MyHlg group linking it to DiffAdd
 			:call hlset([#{name: 'MyHlg', linksto: 'DiffAdd'}])
+			" remove the MyHlg group link
+			:call hlset([#{name: 'MyHlg', linksto: 'NONE'}])
+			" clear the attributes and a link
+			:call hlset([#{name: 'MyHlg', cleared: v:true,
+					\ linksto: 'NONE'}])
 <
 		Can also be used as a |method|: >
 			GetAttrList()->hlset()
