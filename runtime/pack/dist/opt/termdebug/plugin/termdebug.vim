@@ -493,7 +493,7 @@ func TermDebugSendCommand(cmd)
     let do_continue = 0
     if !s:stopped
       let do_continue = 1
-      call s:SendCommand('-exec-interrupt')
+      Stop
       sleep 10m
     endif
     call term_sendkeys(s:gdbbuf, a:cmd . "\r")
@@ -802,12 +802,15 @@ func s:InstallCommands()
   command Finish call s:SendCommand('-exec-finish')
   command -nargs=* Run call s:Run(<q-args>)
   command -nargs=* Arguments call s:SendCommand('-exec-arguments ' . <q-args>)
-  command Stop call s:SendCommand('-exec-interrupt')
 
-  " using -exec-continue results in CTRL-C in gdb window not working
   if s:way == 'prompt'
+    command Stop call s:PromptInterrupt()
     command Continue call s:SendCommand('continue')
   else
+    command Stop call s:SendCommand('-exec-interrupt')
+    " using -exec-continue results in CTRL-C in gdb window not working,
+    " communicating via commbuf (= use of SendCommand) has the same result
+    "command Continue  call s:SendCommand('-exec-continue')
     command Continue call term_sendkeys(s:gdbbuf, "continue\r")
   endif
 
@@ -930,11 +933,7 @@ func s:SetBreakpoint(at)
   let do_continue = 0
   if !s:stopped
     let do_continue = 1
-    if s:way == 'prompt'
-      call s:PromptInterrupt()
-    else
-      call s:SendCommand('-exec-interrupt')
-    endif
+    Stop
     sleep 10m
   endif
 
@@ -943,7 +942,7 @@ func s:SetBreakpoint(at)
         \ fnameescape(expand('%:p')) . ':' . line('.') : a:at
   call s:SendCommand('-break-insert ' . at)
   if do_continue
-    call s:SendCommand('-exec-continue')
+    Continue
   endif
 endfunc
 
