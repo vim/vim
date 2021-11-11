@@ -180,7 +180,7 @@ func Test_terminal_in_popup_min_size()
 endfunc
 
 " Check a terminal in popup window with different colors
-func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
+func Terminal_in_popup_colored(group_name, highlight_cmds, highlight_opt, popup_cmds, popup_opt)
   CheckRunVimInTerminal
   CheckUnix
 
@@ -189,10 +189,11 @@ func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
 	\ 'func OpenTerm()',
 	\ "  let s:buf = term_start('cat', #{hidden: 1, "
 	\ .. a:highlight_opt .. "})",
-	\ '  let g:winid = popup_create(s:buf, #{ border: []})',
+	\ '  let g:winid = popup_create(s:buf, #{border: [], '
+  \ .. a:popup_opt .. '})',
+  \ ] + a:popup_cmds + [
 	\ 'endfunc',
-	\ a:highlight_cmd,
-	\ ]
+	\ ] + a:highlight_cmds
   call writefile(lines, 'XtermPopup')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call TermWait(buf, 100)
@@ -211,11 +212,139 @@ func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
 endfunc
 
 func Test_terminal_in_popup_colored_Terminal()
-  call Terminal_in_popup_colored("Terminal", "highlight Terminal ctermfg=blue ctermbg=yellow", "")
+  call Terminal_in_popup_colored("Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ ], "", [], "")
 endfunc
 
 func Test_terminal_in_popup_colored_group()
-  call Terminal_in_popup_colored("MyTermCol", "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue", "term_highlight: 'MyTermCol',")
+  call Terminal_in_popup_colored("MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_wincolor()
+  call Terminal_in_popup_colored("MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_colored_popup_highlight()
+  call Terminal_in_popup_colored("MyPopupHlCol", [
+  \ "highlight MyPopupHlCol ctermfg=cyan ctermbg=green",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
+endfunc
+
+func Test_terminal_in_popup_colored_group_over_Terminal()
+  call Terminal_in_popup_colored("MyTermCol_over_Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_wincolor_over_group()
+  call Terminal_in_popup_colored("MyWinCol_over_group", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "term_highlight: 'MyTermCol',", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_colored_transparent_Terminal()
+  call Terminal_in_popup_colored("transparent_Terminal", [
+  \ "highlight Terminal ctermfg=blue",
+  \ ], "", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_transparent_group()
+  call Terminal_in_popup_colored("transparent_MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_transparent_wincolor()
+  call Terminal_in_popup_colored("transparent_MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_colored_transparent_popup_highlight()
+  call Terminal_in_popup_colored("transparent_MyPopupHlCol", [
+  \ "highlight MyPopupHlCol ctermfg=cyan",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_Terminal()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff guibg=#b0a700",
+  \ ], "", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_group()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800 guibg=#6789ff",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_wincolor()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122 guibg=#818100",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_popup_highlight()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_MyPopupHlCol", [
+  \ "set termguicolors",
+  \ "highlight MyPopupHlCol guifg=#00e8f0 guibg=#126521",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_transparent_Terminal()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_transparent_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff",
+  \ ], "", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_transparent_group()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_transparent_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_transparent_wincolor()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_transparent_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_colored_gui_transparent_popup_highlight()
+  CheckFeature termguicolors
+  call Terminal_in_popup_colored("gui_transparent_MyPopupHlCol", [
+  \ "set termguicolors",
+  \ "highlight MyPopupHlCol guifg=#00e8f0",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
 endfunc
 
 func Test_double_popup_terminal()
