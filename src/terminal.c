@@ -302,11 +302,12 @@ set_term_and_win_size(term_T *term, jobopt_T *opt)
 	if (term->tl_cols < cols)
 	    term->tl_cols = cols;
     }
-    if ((opt->jo_set2 & JO2_TERM_ROWS))
+    // Make sure, opt->jo_term_rows is valid
+    if ((opt->jo_set2 & JO2_TERM_ROWS) && opt->jo_term_rows > 0)
 	term->tl_rows = opt->jo_term_rows;
     else if (rows != 0)
 	term->tl_rows = rows;
-    if ((opt->jo_set2 & JO2_TERM_COLS))
+    if ((opt->jo_set2 & JO2_TERM_COLS) && opt->jo_term_cols > 0)
 	term->tl_cols = opt->jo_term_cols;
     else if (cols != 0)
 	term->tl_cols = cols;

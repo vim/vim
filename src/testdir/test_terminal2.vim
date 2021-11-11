@@ -580,5 +580,16 @@ func Test_term_gettty()
   exe buf . 'bwipe'
 endfunc
 
+func Test_term_invalid_rows()
+  " This caused a segfault
+  if has("win32")
+    call assert_fails('call term_start("cmd", #{ term_rows: 10.0})', 'E805')
+  else
+    call assert_fails('call term_start("sh", #{ term_rows: 10.0})', 'E805')
+  endif
+  call StopShellInTerminal(bufnr('%'))
+  bw!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
