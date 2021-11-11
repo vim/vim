@@ -982,8 +982,19 @@ func s:Run(args)
 endfunc
 
 func s:SendEval(expr)
-  call s:SendCommand('-data-evaluate-expression "' . a:expr . '"')
-  let s:evalexpr = a:expr
+  " check for "likely" boolean expressions, in which case we take it as lhs
+  if a:expr =~ "[=!<>]="
+    let exprLHS = a:expr
+  else
+    let exprLHS = substitute(a:expr, ' *=.*', '', '')
+  endif
+  
+  " encoding expression to prevent bad errors
+  let expr = a:expr
+  let expr = substitute(expr, '\\', '\\\\', 'g')
+  let expr = substitute(expr, '"', '\\"', 'g')
+  call s:SendCommand('-data-evaluate-expression "' . expr . '"')
+  let s:evalexpr = exprLHS
 endfunc
 
 " clean up expression that may got in because of range
