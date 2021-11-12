@@ -1098,6 +1098,7 @@ func s:GotoAsmwinOrCreateIt()
     setlocal number
     setlocal noswapfile
     setlocal buftype=nofile
+    setlocal modifiable
 
     let asmbuf = bufnr('Termdebug-asm-listing')
     if asmbuf > 0
