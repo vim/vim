@@ -41,10 +41,12 @@ syn keyword   rscBoolean      yes no true false
 syn keyword   rscConditional  if
 
 " operators
-syn match     rscOperator     " [\+\-\*\<\>\=\!\~\^\&\.\,] "
-syn match     rscOperator     "[\<\>\!]="
-syn match     rscOperator     "\(<<\|>>\)"
-syn match     rscOperator     "[\+\-]\(\d\)\@="
+syn match     rscOperator     " \zs[-+*<>=!~^&.,]\ze "
+syn match     rscOperator     "[<>!]="
+syn match     rscOperator     "<<\|>>"
+syn match     rscOperator     "[+-]\d\@="
+
+syn keyword   rscOperator     and or in
 
 " commands
 syn keyword   rscCommands     beep delay put len typeof pick log time set find environment
