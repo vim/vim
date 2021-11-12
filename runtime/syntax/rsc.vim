@@ -60,14 +60,18 @@ syn keyword   rscType         global local
 " loop keywords
 syn keyword   rscRepeat       do while for foreach
 
-syn match     rscSpecial      "[():\[\]{|}]"
+syn match     rscSpecial      "[():[\]{|}]"
 
-syn region    rscString       start=+L\="+ skip=+\\\\\|\\"+ end=+"+ contains=rscSpecial
+syn match     rscEscape       "\\["\\nrt$?_abfv]" contained display
+syn match     rscEscape       "\\\x\x"            contained display
+
+syn region    rscString       start=+L\="+ skip=+\\\\\|\\"+ end=+"+ contains=rscSpecial,rscEscape
 
 hi link rscComment              Comment
 hi link rscSubMenu              Function
 hi link rscVariable             Identifier
 hi link rscDelimiter            Operator
+hi link rscEscape               Special
 hi link rscService              Type
 hi link rscInterface            Type
 hi link rscBoolean              Boolean
