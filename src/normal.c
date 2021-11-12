@@ -2305,12 +2305,20 @@ nv_gd(
 
     if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0
 	    || find_decl(ptr, len, nchar == 'd', thisblock, SEARCH_START)
-								      == FAIL)
+								       == FAIL)
+    {
 	clearopbeep(oap);
+    }
+    else
+    {
 #ifdef FEAT_FOLDING
-    else if ((fdo_flags & FDO_SEARCH) && KeyTyped && oap->op_type == OP_NOP)
-	foldOpenCursor();
+	if ((fdo_flags & FDO_SEARCH) && KeyTyped && oap->op_type == OP_NOP)
+	    foldOpenCursor();
 #endif
+	// clear any search statistics
+	if (messaging() && !msg_silent && !shortmess(SHM_SEARCHCOUNT))
+	    clear_cmdline = TRUE;
+    }
 }
 
 /*
