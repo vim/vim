@@ -56,6 +56,7 @@
 				// set; when missing disallows editing another
 				// buffer when curbuf_lock is set
 #define EX_NONWHITE_OK 0x2000000  // command can be followed by non-white
+#define EX_KEEPSCRIPT  0x4000000  // keep sctx of where command was invoked
 
 #define EX_FILES (EX_XFILE | EX_EXTRA)	// multiple extra files allowed
 #define EX_FILE1 (EX_FILES | EX_NOSPC)	// 1 file, defaults to current file

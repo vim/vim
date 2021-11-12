@@ -360,7 +360,7 @@ get_user_cmd_flags(expand_T *xp UNUSED, int idx)
 {
     static char *user_cmd_flags[] = {
 	"addr", "bang", "bar", "buffer", "complete",
-	"count", "nargs", "range", "register"
+	"count", "nargs", "range", "register", "keepscript"
     };
 
     if (idx >= (int)ARRAY_LENGTH(user_cmd_flags))
@@ -735,6 +735,8 @@ uc_scan_attr(
 	*flags |= UC_BUFFER;
     else if (STRNICMP(attr, "register", len) == 0)
 	*argt |= EX_REGSTR;
+    else if (STRNICMP(attr, "keepscript", len) == 0)
+	*argt |= EX_KEEPSCRIPT;
     else if (STRNICMP(attr, "bar", len) == 0)
 	*argt |= EX_TRLBAR;
     else
@@ -1764,13 +1766,17 @@ do_ucmd(exarg_T *eap)
 	}
     }
 
-    current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
+    if ((cmd->uc_argt & EX_KEEPSCRIPT) == 0)
+    {
+	current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
 #ifdef FEAT_EVAL
-    current_sctx.sc_sid = cmd->uc_script_ctx.sc_sid;
+	current_sctx.sc_sid = cmd->uc_script_ctx.sc_sid;
 #endif
+    }
     (void)do_cmdline(buf, eap->getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);
-    current_sctx = save_current_sctx;
+    if ((cmd->uc_argt & EX_KEEPSCRIPT) == 0)
+	current_sctx = save_current_sctx;
     vim_free(buf);
     vim_free(split_buf);
 }

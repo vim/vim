@@ -754,7 +754,7 @@ ex_compiler(exarg_T *eap)
 		if (old_cur_comp != NULL)
 		    old_cur_comp = vim_strsave(old_cur_comp);
 		do_cmdline_cmd((char_u *)
-			      "command -nargs=* CompilerSet setlocal <args>");
+		   "command -nargs=* -keepscript CompilerSet setlocal <args>");
 	    }
 	    do_unlet((char_u *)"g:current_compiler", TRUE);
 	    do_unlet((char_u *)"b:current_compiler", TRUE);
