@@ -467,6 +467,10 @@ func Test_terminal_size()
   bwipe!
   call assert_equal([7, 27], size)
 
+  if has('float')
+    call assert_fails("call term_start(cmd, {'term_rows': 10.0})", 'E805:')
+  endif
+
   call delete('Xtext')
 endfunc
 

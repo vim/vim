@@ -4473,7 +4473,8 @@ static VTermStateFallbacks state_fallbacks = {
     static void *
 vterm_malloc(size_t size, void *data UNUSED)
 {
-    return alloc_clear(size);
+    // make sure that the length is not zero
+    return alloc_clear(size == 0 ? 1L : size);
 }
 
     static void

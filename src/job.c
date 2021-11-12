@@ -424,10 +424,14 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    }
 	    else if (STRCMP(hi->hi_key, "term_rows") == 0)
 	    {
+		int error = FALSE;
+
 		if (!(supported2 & JO2_TERM_ROWS))
 		    break;
 		opt->jo_set2 |= JO2_TERM_ROWS;
-		opt->jo_term_rows = tv_get_number(item);
+		opt->jo_term_rows = tv_get_number_chk(item, &error);
+		if (error)
+		    return FAIL;
 	    }
 	    else if (STRCMP(hi->hi_key, "term_cols") == 0)
 	    {
