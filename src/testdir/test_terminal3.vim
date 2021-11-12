@@ -66,6 +66,177 @@ func Test_terminal_invalid_arg()
   call assert_fails('terminal ++xyz', 'E181:')
 endfunc
 
+" Check a terminal with different colors
+func Terminal_colored(group_name, highlight_cmds, highlight_opt, open_cmds)
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let lines = [
+	\ 'call setline(1, range(20))',
+	\ 'func OpenTerm()',
+	\ '  set noruler',
+	\ "  call term_start('cat', #{vertical: 1, " .. a:highlight_opt .. "})",
+	\ ] + a:open_cmds + [
+	\ 'endfunc',
+	\ ] + a:highlight_cmds
+  call writefile(lines, 'XtermStart')
+  let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, ":call OpenTerm()\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "hello\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_colored_' .. a:group_name, {})
+
+  call term_sendkeys(buf, "\<C-D>")
+  call TermWait(buf, 50)
+  call StopVimInTerminal(buf)
+  call delete('XtermStart')
+endfunc
+
+func Test_terminal_colored_Terminal()
+  call Terminal_colored("Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_colored_group()
+  call Terminal_colored("MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_colored_wincolor()
+  call Terminal_colored("MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_colored_group_over_Terminal()
+  call Terminal_colored("MyTermCol_over_Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_colored_wincolor_over_group()
+  call Terminal_colored("MyWinCol_over_group", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "term_highlight: 'MyTermCol',", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_colored_wincolor_split()
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let lines = [
+	\ 'call setline(1, range(20))',
+	\ 'func OpenTerm()',
+	\ '  set noruler',
+	\ "  call term_start('cat', #{vertical: 1, term_highlight: 'MyTermCol'})",
+	\ 'endfunc',
+  \ 'highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue',
+  \ 'highlight MyWinCol ctermfg=red ctermbg=darkyellow',
+  \ 'highlight MyWinCol2 ctermfg=black ctermbg=blue',
+	\ ]
+  call writefile(lines, 'XtermStart')
+  let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, ":call OpenTerm()\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "hello\<CR>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "\<C-W>:split\<CR>")
+  call term_sendkeys(buf, "\<C-W>:set wincolor=MyWinCol\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_wincolor_split_MyWinCol', {})
+
+  call term_sendkeys(buf, "\<C-W>b:2sb\<CR>")
+  call term_sendkeys(buf, "\<C-W>:set wincolor=MyWinCol2\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_wincolor_split_MyWinCol2', {})
+
+  call term_sendkeys(buf, "\<C-D>")
+  call TermWait(buf, 50)
+  call StopVimInTerminal(buf)
+  call delete('XtermStart')
+endfunc
+
+func Test_terminal_colored_transparent_Terminal()
+  call Terminal_colored("transparent_Terminal", [
+  \ "highlight Terminal ctermfg=blue",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_colored_transparent_group()
+  call Terminal_colored("transparent_MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_colored_transparent_wincolor()
+  call Terminal_colored("transparent_MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_colored_gui_Terminal()
+  CheckFeature termguicolors
+  call Terminal_colored("gui_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff guibg=#b0a700",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_colored_gui_group()
+  CheckFeature termguicolors
+  call Terminal_colored("gui_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800 guibg=#6789ff",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_colored_gui_wincolor()
+  CheckFeature termguicolors
+  call Terminal_colored("gui_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122 guibg=#818100",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_colored_gui_transparent_Terminal()
+  CheckFeature termguicolors
+  call Terminal_colored("gui_transparent_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_colored_gui_transparent_group()
+  CheckFeature termguicolors
+  call Terminal_colored("gui_transparent_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_colored_gui_transparent_wincolor()
+  CheckFeature termguicolors
+  call Terminal_colored("gui_transparent_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
 func Test_terminal_in_popup()
   CheckRunVimInTerminal
 
