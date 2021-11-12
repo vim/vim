@@ -14,7 +14,7 @@ syn case ignore
 syn iskeyword @,48-57,-
 
 " comments
-syn match     rscComment      /^\s*#.*/
+syn match     rscComment      /^\s*\zs#.*/
 
 " options submenus: /interface ether1 etc
 syn match     rscSubMenu      "\([a-z]\)\@<!/[a-zA-Z0-9-]*"
