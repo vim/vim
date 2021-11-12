@@ -807,7 +807,9 @@ gui_mch_stop_blink(int may_call_gui_update_cursor)
     if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
     {
 	gui_update_cursor(TRUE, FALSE);
+#if !GTK_CHECK_VERSION(3,0,0)
 	gui_mch_flush();
+#endif
     }
     blink_state = BLINK_NONE;
 }
@@ -827,7 +829,9 @@ blink_cb(gpointer data UNUSED)
 	blink_state = BLINK_ON;
 	blink_timer = timeout_add(blink_ontime, blink_cb, NULL);
     }
+#if !GTK_CHECK_VERSION(3,0,0)
     gui_mch_flush();
+#endif
 
     return FALSE;		// don't happen again
 }
@@ -850,7 +854,9 @@ gui_mch_start_blink(void)
 	blink_timer = timeout_add(blink_waittime, blink_cb, NULL);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
+#if !GTK_CHECK_VERSION(3,0,0)
 	gui_mch_flush();
+#endif
     }
 }
 
