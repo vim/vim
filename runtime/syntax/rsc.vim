@@ -11,7 +11,7 @@ endif
 
 syn case ignore
 
-syn iskeyword @,-
+syn iskeyword @,48-57,-
 
 " comments
 syn match     rscComment      /^\s*#.*/
