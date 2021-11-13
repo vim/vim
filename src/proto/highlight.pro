@@ -16,7 +16,6 @@ void hl_set_fg_color_name(char_u *name);
 guicolor_T color_name2handle(char_u *name);
 guicolor_T decode_hex_color(char_u *hex);
 guicolor_T colorname2rgb(char_u *name);
-void save_colorname_hexstr(int r, int g, int b, char_u *name);
 void load_default_colors_lists(void);
 guicolor_T gui_get_color_cmn(char_u *name);
 guicolor_T gui_get_rgb_color_cmn(int r, int g, int b);

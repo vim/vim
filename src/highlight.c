@@ -2332,39 +2332,6 @@ colorname2rgb(char_u *name)
     return INVALCOLOR;
 }
 
-// Maps the given name to the given color value, overwriting any current
-// mapping. If allocation fails the named color will no longer exist in the
-// table and the user will receive an error message.
-    void
-save_colorname_hexstr(int r, int g, int b, char_u *name)
-{
-    int        result;
-    dict_T     *colornames_table;
-    dictitem_T *existing;
-    char_u     hexstr[8];
-
-    if (vim_snprintf((char *)hexstr, sizeof(hexstr),
-						 "#%02x%02x%02x", r, g, b) < 0)
-    {
-	semsg(_(e_cannot_allocate_color_str), name);
-	return;
-    }
-
-    colornames_table = get_vim_var_dict(VV_COLORNAMES);
-    // The colornames_table dict is safe to use here because it is allocated at
-    // startup in evalvars.c
-    existing = dict_find(colornames_table, name, -1);
-    if (existing != NULL)
-    {
-	dictitem_remove(colornames_table, existing);
-	existing = NULL; // dictitem_remove freed the item
-    }
-
-    result = dict_add_string(colornames_table, (char *)name, hexstr);
-    if (result == FAIL)
-	semsg(_(e_cannot_allocate_color_str), name);
-}
-
 /*
  * Load a default color list. Intended to support legacy color names but allows
  * the user to override the color values. Only loaded once.

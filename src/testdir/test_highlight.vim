@@ -6,6 +6,12 @@ source check.vim
 source script_util.vim
 source vim9.vim
 
+func ClearDict(d)
+  for k in keys(a:d)
+    call remove(a:d, k)
+  endfor
+endfunc
+
 func Test_highlight()
   " basic test if ":highlight" doesn't crash
   highlight
@@ -936,19 +942,30 @@ func Test_highlight_default_colorscheme_restores_links()
 endfunc
 
 func Test_colornames_assignment_and_lookup()
+  CheckAnyOf Feature:gui_running Feature:termguicolors
+
   " Ensure highlight command can find custom color.
   let v:colornames['a redish white'] = '#ffeedd'
   highlight Normal guifg='a redish white'
   highlight clear
+  call ClearDict(v:colornames)
 endfunc
 
 func Test_colornames_default_list()
+  CheckAnyOf Feature:gui_running Feature:termguicolors
+
   " Ensure default lists are loaded automatically and can be used for all gui fields.
+  call assert_equal(0, len(v:colornames))
   highlight Normal guifg='rebecca purple' guibg='rebecca purple' guisp='rebecca purple'
+  call assert_notequal(0, len(v:colornames))
+  echo v:colornames['rebecca purple']
   highlight clear
+  call ClearDict(v:colornames)
 endfunc
 
 func Test_colornames_overwrite_default()
+  CheckAnyOf Feature:gui_running Feature:termguicolors
+
   " Ensure entries in v:colornames can be overwritten.
   " Load default color scheme to trigger default color list loading.
   colorscheme default
@@ -961,6 +978,10 @@ func Test_colornames_overwrite_default()
 endfunc
 
 func Test_colornames_assignment_and_unassignment()
+  " No feature check is needed for this test because the v:colornames dict
+  " always exists with +eval. The feature checks are only required for
+  " commands that do color lookup.
+
   " Ensure we cannot overwrite the v:colornames dict.
   call assert_fails("let v:colornames = {}", 'E46:')
 

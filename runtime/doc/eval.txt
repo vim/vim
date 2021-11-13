@@ -1871,7 +1871,7 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 		by setting it in their |.vimrc|.
 
 		It is possible to remove entries from this dictionary but
-		doing so is *NOT* recommended. Doing so is disruptive to
+		doing so is NOT recommended, because it is disruptive to
 		other scripts. It is also unlikely to achieve the desired
 		result because the |:colorscheme| and |:highlight| commands will
 		both automatically load all `colors/lists/default.vim` color
