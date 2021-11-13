@@ -1046,6 +1046,9 @@ endfunc
 
 " Test for the hlset() function
 func Test_hlset()
+  let save_columns = &columns
+  let &columns = 80
+
   let lines =<< trim END
     call assert_equal(0, hlset(test_null_list()))
     call assert_equal(0, hlset([]))
@@ -1150,6 +1153,8 @@ func Test_hlset()
                       \ 'term': attr, 'cterm': attr}], hlget('myhlg2'))
   END
   call CheckLegacyAndVim9Success(lines)
+
+  let &columns = save_columns
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
