@@ -432,6 +432,11 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_term_rows = tv_get_number_chk(item, &error);
 		if (error)
 		    return FAIL;
+		if (opt->jo_term_rows < 0 || opt->jo_term_rows > 1000)
+		{
+		    semsg(_(e_invargval), "term_rows");
+		    return FAIL;
+		}
 	    }
 	    else if (STRCMP(hi->hi_key, "term_cols") == 0)
 	    {

@@ -871,7 +871,8 @@ term_start({cmd} [, {options}])			*term_start()*
 		   "term_name"	     name to use for the buffer name, instead
 				     of the command name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize'; valid
+				     range is from zero to 1000
 		   "term_cols"	     horizontal size to use for the terminal,
 				     instead of using 'termwinsize'
 		   "vertical"	     split the window vertically; note that
