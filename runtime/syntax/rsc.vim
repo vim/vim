@@ -67,7 +67,7 @@ syn match     rscSpecial      "[():[\]{|}]"
 syn match     rscEscape       "\\["\\nrt$?_abfv]" contained display
 syn match     rscEscape       "\\\x\x"            contained display
 
-syn region    rscString       start=+L\="+ skip=+\\\\\|\\"+ end=+"+ contains=rscSpecial,rscEscape
+syn region    rscString       start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=rscEscape
 
 hi link rscComment              Comment
 hi link rscSubMenu              Function
