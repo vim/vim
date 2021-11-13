@@ -64,10 +64,12 @@ syn keyword   rscRepeat       do while for foreach
 
 syn match     rscSpecial      "[():[\]{|}]"
 
+syn match     rscLineContinuation "\\$"
+
 syn match     rscEscape       "\\["\\nrt$?_abfv]" contained display
 syn match     rscEscape       "\\\x\x"            contained display
 
-syn region    rscString       start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=rscEscape
+syn region    rscString       start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=rscEscape,rscLineContinuation
 
 hi link rscComment              Comment
 hi link rscSubMenu              Function
@@ -84,5 +86,6 @@ hi link rscType                 Type
 hi link rscRepeat               Repeat
 hi link rscSpecial              Delimiter
 hi link rscString               String
+hi link rscLineContinuation     Special
 
 let b:current_syntax = "rsc"
