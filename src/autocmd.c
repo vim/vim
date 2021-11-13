@@ -186,6 +186,7 @@ static struct event_name
     {"VimLeave",	EVENT_VIMLEAVE},
     {"VimLeavePre",	EVENT_VIMLEAVEPRE},
     {"WinNew",		EVENT_WINNEW},
+    {"WinClosed",	EVENT_WINCLOSED},
     {"WinEnter",	EVENT_WINENTER},
     {"WinLeave",	EVENT_WINLEAVE},
     {"VimResized",	EVENT_VIMRESIZED},
@@ -2042,7 +2043,8 @@ apply_autocmds_group(
 		|| event == EVENT_OPTIONSET
 		|| event == EVENT_QUICKFIXCMDPOST
 		|| event == EVENT_DIRCHANGED
-		|| event == EVENT_MODECHANGED)
+		|| event == EVENT_MODECHANGED
+		|| event == EVENT_WINCLOSED)
 	{
 	    fname = vim_strsave(fname);
 	    autocmd_fname_full = TRUE; // don't expand it later
