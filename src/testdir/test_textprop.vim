@@ -5,6 +5,7 @@ source check.vim
 CheckFeature textprop
 
 source screendump.vim
+source vim9.vim
 
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
@@ -1645,6 +1646,154 @@ def Test_prop_bufnr_zero()
   endtry
 enddef
 
+" Tests for the prop_list() function
+func Test_prop_list()
+  let lines =<< trim END
+    new
+    call AddPropTypes()
+    call setline(1, repeat([repeat('a', 60)], 10))
+    call prop_add(1, 4, {'type': 'one', 'id': 5, 'end_col': 6})
+    call prop_add(1, 5, {'type': 'two', 'id': 10, 'end_col': 7})
+    call prop_add(3, 12, {'type': 'one', 'id': 20, 'end_col': 14})
+    call prop_add(3, 13, {'type': 'two', 'id': 10, 'end_col': 15})
+    call prop_add(5, 20, {'type': 'one', 'id': 10, 'end_col': 22})
+    call prop_add(5, 21, {'type': 'two', 'id': 20, 'end_col': 23})
+    call assert_equal([
+          \ {'id': 5, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1},
+          \ {'id': 10, 'col': 5, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1}], prop_list(1))
+    #" text properties between a few lines
+    call assert_equal([
+          \ {'lnum': 3, 'id': 20, 'col': 12, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 3, 'id': 10, 'col': 13, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1},
+          \ {'lnum': 5, 'id': 10, 'col': 20, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 5, 'id': 20, 'col': 21, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1}],
+          \ prop_list(2, {'end_lnum': 5}))
+    #" text properties across all the lines
+    call assert_equal([
+          \ {'lnum': 1, 'id': 5, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 3, 'id': 20, 'col': 12, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 5, 'id': 10, 'col': 20, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1}],
+          \ prop_list(1, {'types': ['one'], 'end_lnum': -1}))
+    #" text properties with the specified identifier
+    call assert_equal([
+          \ {'lnum': 3, 'id': 20, 'col': 12, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 5, 'id': 20, 'col': 21, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1}],
+          \ prop_list(1, {'ids': [20], 'end_lnum': 10}))
+    #" text properties of the specified type and id
+    call assert_equal([
+          \ {'lnum': 1, 'id': 10, 'col': 5, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1},
+          \ {'lnum': 3, 'id': 10, 'col': 13, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1}],
+          \ prop_list(1, {'types': ['two'], 'ids': [10], 'end_lnum': 20}))
+    call assert_equal([], prop_list(1, {'ids': [40, 50], 'end_lnum': 10}))
+    call assert_equal([], prop_list(6, {'end_lnum': 10}))
+    call assert_equal([], prop_list(2, {'end_lnum': 2}))
+    #" error cases
+    call assert_fails("echo prop_list(1, {'end_lnum': -20})", 'E16:')
+    call assert_fails("echo prop_list(4, {'end_lnum': 2})", 'E16:')
+    call assert_fails("echo prop_list(1, {'end_lnum': '$'})", 'E889:')
+    call assert_fails("echo prop_list(1, {'types': ['blue'], 'end_lnum': 10})",
+          \ 'E971:')
+    call assert_fails("echo prop_list(1, {'types': ['one', 'blue'],
+          \ 'end_lnum': 10})", 'E971:')
+    call assert_fails("echo prop_list(1, {'types': ['one', 10],
+          \ 'end_lnum': 10})", 'E928:')
+    call assert_fails("echo prop_list(1, {'types': ['']})", 'E971:')
+    call assert_equal([], prop_list(2, {'types': []}))
+    call assert_equal([], prop_list(2, {'types': test_null_list()}))
+    call assert_fails("call prop_list(1, {'types': {}})", 'E714:')
+    call assert_fails("call prop_list(1, {'types': 'one'})", 'E714:')
+    call assert_equal([], prop_list(2, {'types': ['one'],
+          \ 'ids': test_null_list()}))
+    call assert_equal([], prop_list(2, {'types': ['one'], 'ids': []}))
+    call assert_fails("call prop_list(1, {'types': ['one'], 'ids': {}})",
+          \ 'E714:')
+    call assert_fails("call prop_list(1, {'types': ['one'], 'ids': 10})",
+          \ 'E714:')
+    call assert_fails("call prop_list(1, {'types': ['one'], 'ids': [[]]})",
+          \ 'E745:')
+    call assert_fails("call prop_list(1, {'types': ['one'], 'ids': [10, []]})",
+          \ 'E745:')
 
+    #" get text properties from a non-current buffer
+    wincmd w
+    call assert_equal([
+          \ {'lnum': 1, 'id': 5, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \ 'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 1, 'id': 10, 'col': 5, 'type_bufnr': 0, 'end': 1,
+          \ 'type': 'two', 'length': 2, 'start': 1},
+          \ {'lnum': 3, 'id': 20, 'col': 12, 'type_bufnr': 0, 'end': 1,
+          \ 'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 3, 'id': 10, 'col': 13, 'type_bufnr': 0, 'end': 1,
+          \ 'type': 'two', 'length': 2, 'start': 1}],
+          \ prop_list(1, {'bufnr': winbufnr(1), 'end_lnum': 4}))
+    wincmd w
+
+    #" get text properties after clearing all the properties
+    call prop_clear(1, line('$'))
+    call assert_equal([], prop_list(1, {'end_lnum': 10}))
+
+    call prop_add(2, 4, {'type': 'one', 'id': 5, 'end_col': 6})
+    call prop_add(2, 4, {'type': 'two', 'id': 10, 'end_col': 6})
+    call prop_add(2, 4, {'type': 'three', 'id': 15, 'end_col': 6})
+    #" get text properties with a list of types
+    call assert_equal([
+          \ {'id': 10, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1},
+          \ {'id': 5, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1}],
+          \ prop_list(2, {'types': ['one', 'two']}))
+    call assert_equal([
+          \ {'id': 15, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'three', 'length': 2, 'start': 1},
+          \ {'id': 5, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1}],
+          \ prop_list(2, {'types': ['one', 'three']}))
+    #" get text properties with a list of identifiers
+    call assert_equal([
+          \ {'id': 10, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1},
+          \ {'id': 5, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1}],
+          \ prop_list(2, {'ids': [5, 10, 20]}))
+    call prop_clear(1, line('$'))
+    call assert_equal([], prop_list(2, {'types': ['one', 'two']}))
+    call assert_equal([], prop_list(2, {'ids': [5, 10, 20]}))
+
+    #" get text properties from a hidden buffer
+    edit! Xaaa
+    call setline(1, repeat([repeat('b', 60)], 10))
+    call prop_add(1, 4, {'type': 'one', 'id': 5, 'end_col': 6})
+    call prop_add(4, 8, {'type': 'two', 'id': 10, 'end_col': 10})
+    VAR bnr = bufnr()
+    hide edit Xbbb
+    call assert_equal([
+          \ {'lnum': 1, 'id': 5, 'col': 4, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'one', 'length': 2, 'start': 1},
+          \ {'lnum': 4, 'id': 10, 'col': 8, 'type_bufnr': 0, 'end': 1,
+          \  'type': 'two', 'length': 2, 'start': 1}],
+          \ prop_list(1, {'bufnr': bnr,
+          \ 'types': ['one', 'two'], 'ids': [5, 10], 'end_lnum': -1}))
+    #" get text properties from an unloaded buffer
+    bunload! Xaaa
+    call assert_equal([], prop_list(1, {'bufnr': bnr, 'end_lnum': -1}))
+
+    call DeletePropTypes()
+    :%bw!
+  END
+  call CheckLegacyAndVim9Success(lines)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
