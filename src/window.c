@@ -4796,36 +4796,7 @@ win_enter_ext(win_T *wp, int flags)
     }
 #endif
 
-    if (curwin->w_localdir != NULL || curtab->tp_localdir != NULL)
-    {
-	char_u	*dirname;
-
-	// Window or tab has a local directory: Save current directory as
-	// global directory (unless that was done already) and change to the
-	// local directory.
-	if (globaldir == NULL)
-	{
-	    char_u	cwd[MAXPATHL];
-
-	    if (mch_dirname(cwd, MAXPATHL) == OK)
-		globaldir = vim_strsave(cwd);
-	}
-	if (curwin->w_localdir != NULL)
-	    dirname = curwin->w_localdir;
-	else
-	    dirname = curtab->tp_localdir;
-
-	if (mch_chdir((char *)dirname) == 0)
-	    shorten_fnames(TRUE);
-    }
-    else if (globaldir != NULL)
-    {
-	// Window doesn't have a local directory and we are not in the global
-	// directory: Change to the global directory.
-	vim_ignored = mch_chdir((char *)globaldir);
-	VIM_CLEAR(globaldir);
-	shorten_fnames(TRUE);
-    }
+    fix_current_dir();
 
 #ifdef FEAT_JOB_CHANNEL
     entering_window(curwin);
@@ -4875,6 +4846,44 @@ win_enter_ext(win_T *wp, int flags)
     return did_decrement;
 }
 
+/*
+ * Used after making another window the current one: change directory if
+ * needed.
+ */
+    void
+fix_current_dir(void)
+{
+    if (curwin->w_localdir != NULL || curtab->tp_localdir != NULL)
+    {
+	char_u	*dirname;
+
+	// Window or tab has a local directory: Save current directory as
+	// global directory (unless that was done already) and change to the
+	// local directory.
+	if (globaldir == NULL)
+	{
+	    char_u	cwd[MAXPATHL];
+
+	    if (mch_dirname(cwd, MAXPATHL) == OK)
+		globaldir = vim_strsave(cwd);
+	}
+	if (curwin->w_localdir != NULL)
+	    dirname = curwin->w_localdir;
+	else
+	    dirname = curtab->tp_localdir;
+
+	if (mch_chdir((char *)dirname) == 0)
+	    shorten_fnames(TRUE);
+    }
+    else if (globaldir != NULL)
+    {
+	// Window doesn't have a local directory and we are not in the global
+	// directory: Change to the global directory.
+	vim_ignored = mch_chdir((char *)globaldir);
+	VIM_CLEAR(globaldir);
+	shorten_fnames(TRUE);
+    }
+}
 
 /*
  * Jump to the first open window that contains buffer "buf", if one exists.

@@ -1311,5 +1311,9 @@ restore_win_noblock(
 	// to the first valid window.
 	win_goto(firstwin);
 # endif
+
+    // If called by win_execute() and executing the command changed the
+    // directory, it now has to be restored.
+    fix_current_dir();
 }
 #endif
