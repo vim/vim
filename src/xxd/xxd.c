@@ -253,6 +253,34 @@ error_exit(int ret, char *msg)
 }
 
 /*
+ * If "c" is a hex digit, return the value.
+ * Otherwise return -1.
+ */
+  static int
+parse_hex_digit(int c)
+{
+  return (c >= '0' && c <= '9') ? c - '0'
+	: (c >= 'a' && c <= 'f') ? c - 'a' + 10
+	: (c >= 'A' && c <= 'F') ? c - 'A' + 10
+	: -1;
+}
+
+/*
+ * Ignore text on "fpi" until end-of-line or end-of-file.
+ * Return the '\n' or EOF character.
+ * When an error is encountered exit with an error message.
+ */
+  static int
+skip_to_eol(FILE *fpi, int c)
+{
+  while (c != '\n' && c != EOF)
+    c = getc(fpi);
+  if (c == EOF && ferror(fpi))
+    perror_exit(2);
+  return c;
+}
+
+/*
  * Max. cols binary characters are decoded from the input stream per line.
  * Two adjacent garbage characters after evaluated data delimit valid data.
  * Everything up to the next newline is discarded.
@@ -286,18 +314,9 @@ huntype(
       n3 = n2;
       n2 = n1;
 
-      if (c >= '0' && c <= '9')
-	n1 = c - '0';
-      else if (c >= 'a' && c <= 'f')
-	n1 = c - 'a' + 10;
-      else if (c >= 'A' && c <= 'F')
-	n1 = c - 'A' + 10;
-      else
-	{
-	  n1 = -1;
-	  if (ign_garb)
-	    continue;
-	}
+      n1 = parse_hex_digit(c);
+      if (n1 == -1 && ign_garb)
+	continue;
 
       ign_garb = 0;
 
@@ -317,7 +336,7 @@ huntype(
 	  if (fflush(fpo) != 0)
 	    perror_exit(3);
 #ifdef TRY_SEEK
-	  if (fseek(fpo, base_off + want_off - have_off, 1) >= 0)
+	  if (fseek(fpo, base_off + want_off - have_off, SEEK_CUR) >= 0)
 	    have_off = base_off + want_off;
 #endif
 	  if (base_off + want_off < have_off)
@@ -335,20 +354,13 @@ huntype(
 	  want_off++;
 	  n1 = -1;
 	  if (!hextype && (++p >= cols))
-	    {
-	      /* skip the rest of the line as garbage */
-	      n2 = -1;
-	      n3 = -1;
-	    }
+	    /* skip the rest of the line as garbage */
+	    c = skip_to_eol(fpi, c);
 	}
-      if (n1 < 0 && n2 < 0 && n3 < 0)
-	{
-	  /* already stumbled into garbage, skip line, wait and see */
-	  while (c != '\n' && c != EOF)
-	    c = getc(fpi);
-	  if (c == EOF && ferror(fpi))
-	    perror_exit(2);
-	}
+      else if (n1 < 0 && n2 < 0 && n3 < 0)
+        /* already stumbled into garbage, skip line, wait and see */
+	c = skip_to_eol(fpi, c);
+
       if (c == '\n')
 	{
 	  if (!hextype)
@@ -360,7 +372,7 @@ huntype(
   if (fflush(fpo) != 0)
     perror_exit(3);
 #ifdef TRY_SEEK
-  fseek(fpo, 0L, 2);
+  fseek(fpo, 0L, SEEK_END);
 #endif
   if (fclose(fpo) != 0)
     perror_exit(3);
@@ -682,9 +694,10 @@ main(int argc, char *argv[])
     {
 #ifdef TRY_SEEK
       if (relseek)
-	e = fseek(fp, negseek ? -seekoff : seekoff, 1);
+	e = fseek(fp, negseek ? -seekoff : seekoff, SEEK_CUR);
       else
-	e = fseek(fp, negseek ? -seekoff : seekoff, negseek ? 2 : 0);
+	e = fseek(fp, negseek ? -seekoff : seekoff,
+						negseek ? SEEK_END : SEEK_SET);
       if (e < 0 && negseek)
 	error_exit(4, "sorry cannot seek.");
       if (e >= 0)
