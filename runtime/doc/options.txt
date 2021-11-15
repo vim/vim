@@ -7941,6 +7941,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Number of scrollback lines to keep.  When going over this limit the
 	first 10% of the scrollback lines are deleted.  This is just to reduce
 	the memory usage.  See |Terminal-Normal|.
+	Also used as a limit for text sent to the terminal in one write,
+	multiplied by the number of columns times 3 (average number of bytes
+	per cell).
 
 						*'termwinsize'* *'tws'*
 'termwinsize' 'tws'	string	(default "")
