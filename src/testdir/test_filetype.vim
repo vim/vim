@@ -420,9 +420,9 @@ let s:filename_checks = {
     \ 'rnc': ['file.rnc'],
     \ 'rng': ['file.rng'],
     \ 'robots': ['robots.txt'],
+    \ 'routeros': ['file.rsc'],
     \ 'rpcgen': ['file.x'],
     \ 'rpl': ['file.rpl'],
-    \ 'rsc': ['file.rsc'],
     \ 'rst': ['file.rst'],
     \ 'rtf': ['file.rtf'],
     \ 'ruby': ['.irbrc', 'irbrc', 'file.rb', 'file.rbw', 'file.gemspec', 'file.ru', 'Gemfile', 'file.builder', 'file.rxml', 'file.rjs', 'file.rant', 'file.rake', 'rakefile', 'Rakefile', 'rantfile', 'Rantfile', 'rakefile-file', 'Rakefile-file', 'Puppetfile'],
@@ -661,6 +661,7 @@ let s:script_checks = {
       \ 'yaml': [['%YAML 1.2']],
       \ 'pascal': [['#!/path/instantfpc']],
       \ 'fennel': [['#!/path/fennel']],
+      \ 'routeros': [['#!/path/rsc']],
       \ }
 
 " Various forms of "env" optional arguments.

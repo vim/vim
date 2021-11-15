@@ -1493,8 +1493,8 @@ au BufNewFile,BufRead robots.txt		setf robots
 " Rpcgen
 au BufNewFile,BufRead *.x			setf rpcgen
 
-" rsc (RouterOS script)
-au BufRead,BufNewFile *.rsc			setf rsc
+" MikroTik RouterOS script
+au BufRead,BufNewFile *.rsc			setf routeros
 
 " reStructuredText Documentation Format
 au BufNewFile,BufRead *.rst			setf rst
