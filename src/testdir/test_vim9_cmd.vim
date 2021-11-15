@@ -1570,5 +1570,16 @@ def Test_no_space_after_command()
   CheckDefExecAndScriptFailure(lines, 'E486:', 1)
 enddef
 
+" Test for the 'popuppreview' option
+def Test_popuppreview()
+  set previewpopup=height:10,width:60
+  pedit Xfile
+  var id = popup_findpreview()
+  assert_notequal(id, 0)
+  assert_match('Xfile', popup_getoptions(id).title)
+  popup_clear()
+  set previewpopup&
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
