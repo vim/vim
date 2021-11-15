@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:        MikroTik RouterOS Script
-" Maintainer:      zainin
+" Maintainer:      zainin <z@wintr.dev>
 " Original Author: ndbjorne @ MikroTik forums
 " Last Change:     2021 Nov 14
 

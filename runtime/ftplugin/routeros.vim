@@ -1,6 +1,6 @@
 " Vim filetype plugin file
 " Language:	MikroTik RouterOS Script
-" Maintainer:	zainin
+" Maintainer:	zainin <z@wintr.dev>
 " Last Change:	2021 Nov 14
 
 if exists("b:did_ftplugin")
