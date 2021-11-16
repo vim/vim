@@ -4176,6 +4176,9 @@ highlight_get_info(int hl_idx, int resolve_link)
 	link = HL_TABLE()[sgp->sg_link - 1].sg_name;
 	if (link != NULL && dict_add_string(dict, "linksto", link) == FAIL)
 	    goto error;
+
+	if (sgp->sg_deflink)
+	    dict_add_bool(dict, "default", VVAL_TRUE);
     }
     if (dict_len(dict) == 2)
 	// If only 'name' is present, then the highlight group is cleared.
@@ -4337,25 +4340,19 @@ hlg_add_or_update(dict_T *dict)
 # ifdef FEAT_GUI
     char_u	*font;
 # endif
+    int		forceit = FALSE;
+    int		dodefault = FALSE;
+    int		done = FALSE;
 
     name = hldict_get_string(dict, (char_u *)"name", &error);
     if (name == NULL || error)
 	return FALSE;
 
-    if (dict_find(dict, (char_u *)"linksto", -1) != NULL)
-    {
-	char_u	*linksto;
+    if (dict_get_bool(dict, (char_u *)"force", VVAL_FALSE) == VVAL_TRUE)
+	forceit = TRUE;
 
-	// link highlight groups
-	linksto = hldict_get_string(dict, (char_u *)"linksto", &error);
-	if (linksto == NULL || error)
-	    return FALSE;
-
-	vim_snprintf((char *)IObuff, IOSIZE, "link %s %s", name, linksto);
-	do_highlight(IObuff, FALSE, FALSE);
-
-	return TRUE;
-    }
+    if (dict_get_bool(dict, (char_u *)"default", VVAL_FALSE) == VVAL_TRUE)
+	dodefault = TRUE;
 
     if (dict_find(dict, (char_u *)"cleared", -1) != NULL)
     {
@@ -4366,11 +4363,31 @@ hlg_add_or_update(dict_T *dict)
 	if (cleared == TRUE)
 	{
 	    vim_snprintf((char *)IObuff, IOSIZE, "clear %s", name);
-	    do_highlight(IObuff, FALSE, FALSE);
+	    do_highlight(IObuff, forceit, FALSE);
+	    done = TRUE;
 	}
-
-	return TRUE;
     }
+
+    if (dict_find(dict, (char_u *)"linksto", -1) != NULL)
+    {
+	char_u	*linksto;
+
+	// link highlight groups
+	linksto = hldict_get_string(dict, (char_u *)"linksto", &error);
+	if (linksto == NULL || error)
+	    return FALSE;
+
+	vim_snprintf((char *)IObuff, IOSIZE, "%slink %s %s",
+				dodefault ? "default " : "", name, linksto);
+	do_highlight(IObuff, forceit, FALSE);
+
+	done = TRUE;
+    }
+
+    // If 'cleared' or 'linksto' are specified, then don't process the other
+    // attributes.
+    if (done)
+	return TRUE;
 
     start = hldict_get_string(dict, (char_u *)"start", &error);
     if (error)
@@ -4434,7 +4451,8 @@ hlg_add_or_update(dict_T *dict)
 	return TRUE;
 
     vim_snprintf((char *)IObuff, IOSIZE,
-	    "%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s",
+	    "%s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s",
+	    dodefault ? "default " : "",
 	    name,
 	    term_attr[0] != NUL ? "term=" : "",
 	    term_attr[0] != NUL ? term_attr : (char_u *)"",
@@ -4466,7 +4484,7 @@ hlg_add_or_update(dict_T *dict)
 	    guisp != NULL ? guisp : (char_u *)""
 		);
 
-    do_highlight(IObuff, FALSE, FALSE);
+    do_highlight(IObuff, forceit, FALSE);
 
     return TRUE;
 }

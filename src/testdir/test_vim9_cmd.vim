@@ -1570,8 +1570,8 @@ def Test_no_space_after_command()
   CheckDefExecAndScriptFailure(lines, 'E486:', 1)
 enddef
 
-" Test for the 'popuppreview' option
-def Test_popuppreview()
+" Test for the 'previewpopup' option
+def Test_previewpopup()
   set previewpopup=height:10,width:60
   pedit Xfile
   var id = popup_findpreview()
