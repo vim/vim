@@ -149,12 +149,41 @@ func Test_p_with_count_leaves_mark_at_end()
 endfunc
 
 func Test_very_large_count()
-  if v:sizeofint != 8
-    throw 'Skipped: only works with 64 bit ints'
+  new
+  " total put-length (21474837 * 100) brings 32 bit int overflow
+  let @" = repeat('x', 100)
+  call assert_fails('norm 21474837p', 'E1240:')
+  bwipe!
+endfunc
+
+func Test_very_large_count_64bit()
+  if v:sizeoflong < 8
+    throw 'Skipped: only works with 64 bit long ints'
   endif
 
   new
   let @" = 'x'
+  call assert_fails('norm 44444444444444p', 'E1240:')
+  bwipe!
+endfunc
+
+func Test_very_large_count_block()
+  new
+  " total put-length (21474837 * 100) brings 32 bit int overflow
+  call setline(1, repeat('x', 100))
+  exe "norm \<C-V>99ly"
+  call assert_fails('norm 21474837p', 'E1240:')
+  bwipe!
+endfunc
+
+func Test_very_large_count_block_64bit()
+  if v:sizeoflong < 8
+    throw 'Skipped: only works with 64 bit long ints'
+  endif
+
+  new
+  call setline(1, 'x')
+  exe "norm \<C-V>y"
   call assert_fails('norm 44444444444444p', 'E1240:')
   bwipe!
 endfunc

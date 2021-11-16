@@ -1884,18 +1884,30 @@ do_put(
 		    spaces = 0;
 	    }
 
-	    // insert the new text
+	    // Insert the new text.
+	    // First check for multiplication overflow.
+	    if (yanklen + spaces != 0
+		     && count > ((INT_MAX - (bd.startspaces + bd.endspaces))
+							/ (yanklen + spaces)))
+	    {
+		emsg(_(e_resulting_text_too_long));
+		break;
+	    }
+
 	    totlen = count * (yanklen + spaces) + bd.startspaces + bd.endspaces;
 	    newp = alloc(totlen + oldlen + 1);
 	    if (newp == NULL)
 		break;
+
 	    // copy part up to cursor to new line
 	    ptr = newp;
 	    mch_memmove(ptr, oldp, (size_t)bd.textcol);
 	    ptr += bd.textcol;
+
 	    // may insert some spaces before the new text
 	    vim_memset(ptr, ' ', (size_t)bd.startspaces);
 	    ptr += bd.startspaces;
+
 	    // insert the new text
 	    for (j = 0; j < count; ++j)
 	    {
@@ -1909,9 +1921,11 @@ do_put(
 		    ptr += spaces;
 		}
 	    }
+
 	    // may insert some spaces after the new text
 	    vim_memset(ptr, ' ', (size_t)bd.endspaces);
 	    ptr += bd.endspaces;
+
 	    // move the text after the cursor to the end of the line.
 	    mch_memmove(ptr, oldp + bd.textcol + delcount,
 				(size_t)(oldlen - bd.textcol - delcount + 1));
@@ -2010,26 +2024,20 @@ do_put(
 		}
 	    }
 
-	    do {
-#ifdef FEAT_FLOAT
-		double multlen = (double)count * (double)yanklen;
-
+	    if (count == 0 || yanklen == 0)
+	    {
+		if (VIsual_active)
+		    lnum = end_lnum;
+	    }
+	    else if (count > INT_MAX / yanklen)
+		// multiplication overflow
+		emsg(_(e_resulting_text_too_long));
+	    else
+	    {
 		totlen = count * yanklen;
-		if ((double)totlen != multlen)
-#else
-		long multlen = count * yanklen;
-
-		// this only works when sizeof(int) != sizeof(long)
-		totlen = multlen;
-		if (totlen != multlen)
-#endif
-		{
-		    emsg(_(e_resulting_text_too_long));
-		    break;
-		}
-		else if (totlen > 0)
-		{
+		do {
 		    oldp = ml_get(lnum);
+		    oldlen = (int)STRLEN(oldp);
 		    if (lnum > start_lnum)
 		    {
 			pos_T   pos;
@@ -2040,12 +2048,12 @@ do_put(
 			else
 			    col = MAXCOL;
 		    }
-		    if (VIsual_active && col > (int)STRLEN(oldp))
+		    if (VIsual_active && col > oldlen)
 		    {
 			lnum++;
 			continue;
 		    }
-		    newp = alloc(STRLEN(oldp) + totlen + 1);
+		    newp = alloc(totlen + oldlen + 1);
 		    if (newp == NULL)
 			goto end;	// alloc() gave an error message
 		    mch_memmove(newp, oldp, (size_t)col);
@@ -2064,13 +2072,13 @@ do_put(
 			changed_cline_bef_curs();
 			curwin->w_cursor.col += (colnr_T)(totlen - 1);
 		    }
-		}
-		if (VIsual_active)
-		    lnum++;
-	    } while (VIsual_active && lnum <= end_lnum);
+		    if (VIsual_active)
+			lnum++;
+		} while (VIsual_active && lnum <= end_lnum);
 
-	    if (VIsual_active) // reset lnum to the last visual line
-		lnum--;
+		if (VIsual_active) // reset lnum to the last visual line
+		    lnum--;
+	    }
 
 	    curbuf->b_op_end = curwin->w_cursor;
 	    // For "CTRL-O p" in Insert mode, put cursor after last char
