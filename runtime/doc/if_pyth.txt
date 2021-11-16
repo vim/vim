@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
+*if_pyth.txt*   For Vim version 8.2.  Last change: 2021 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -62,6 +62,11 @@ To see what version of Python you have: >
 	:python print(sys.version)
 
 There is no need to import sys, it's done by default.
+
+							*python-environment*
+Environment variables set in Vim are not always available in Python.  This
+depends on how Vim and Python were build.  Also see
+https://docs.python.org/3/library/os.html#os.environ
 
 Note: Python is very sensitive to the indenting.  Make sure the "class" line
 and "EOF" do not have any indent.

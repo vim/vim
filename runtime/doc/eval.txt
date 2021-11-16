@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Nov 07
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11900,9 +11900,9 @@ wildmenumode()					*wildmenumode()*
 win_execute({id}, {command} [, {silent}])		*win_execute()*
 		Like `execute()` but in the context of window {id}.
 		The window will temporarily be made the current window,
-		without triggering autocommands.  When executing {command}
-		autocommands will be triggered, this may have unexpected side
-		effects.  Use |:noautocmd| if needed.
+		without triggering autocommands or changing directory.  When
+		executing {command} autocommands will be triggered, this may
+		have unexpected side effects.  Use |:noautocmd| if needed.
 		Example: >
 			call win_execute(winid, 'set syntax=python')
 <		Doing the same with `setwinvar()` would not trigger

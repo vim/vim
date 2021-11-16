@@ -2307,6 +2307,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :command-completion-custom	map.txt	/*:command-completion-custom*
 :command-completion-customlist	map.txt	/*:command-completion-customlist*
 :command-count	map.txt	/*:command-count*
+:command-keepscript	map.txt	/*:command-keepscript*
 :command-modifiers	map.txt	/*:command-modifiers*
 :command-nargs	map.txt	/*:command-nargs*
 :command-range	map.txt	/*:command-range*
@@ -5036,7 +5037,6 @@ N:	cmdline.txt	/*N:*
 N<Del>	various.txt	/*N<Del>*
 NFA	pattern.txt	/*NFA*
 NL-used-for-Nul	pattern.txt	/*NL-used-for-Nul*
-NOT	eval.txt	/*NOT*
 Neovim	intro.txt	/*Neovim*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
 NetBeans	netbeans.txt	/*NetBeans*
@@ -5243,6 +5243,7 @@ WORD	motion.txt	/*WORD*
 WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
 WinBar	gui.txt	/*WinBar*
+WinClosed	autocmd.txt	/*WinClosed*
 WinEnter	autocmd.txt	/*WinEnter*
 WinLeave	autocmd.txt	/*WinLeave*
 WinNew	autocmd.txt	/*WinNew*
@@ -7273,7 +7274,6 @@ help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
 help-xterm-window	helphelp.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
-helpfile_name.txt	helphelp.txt	/*helpfile_name.txt*
 helphelp	helphelp.txt	/*helphelp*
 helphelp.txt	helphelp.txt	/*helphelp.txt*
 hex-editing	tips.txt	/*hex-editing*
@@ -8543,6 +8543,7 @@ plugin	usr_05.txt	/*plugin*
 plugin-details	filetype.txt	/*plugin-details*
 plugin-filetype	usr_41.txt	/*plugin-filetype*
 plugin-special	usr_41.txt	/*plugin-special*
+plugin_name.txt	helphelp.txt	/*plugin_name.txt*
 pmbcs-option	print.txt	/*pmbcs-option*
 pmbfn-option	print.txt	/*pmbfn-option*
 popt-option	print.txt	/*popt-option*
@@ -8695,6 +8696,7 @@ python-command	if_pyth.txt	/*python-command*
 python-commands	if_pyth.txt	/*python-commands*
 python-current	if_pyth.txt	/*python-current*
 python-dynamic	if_pyth.txt	/*python-dynamic*
+python-environment	if_pyth.txt	/*python-environment*
 python-error	if_pyth.txt	/*python-error*
 python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2021 Aug 15
+*terminal.txt*	For Vim version 8.2.  Last change: 2021 Nov 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -240,7 +240,7 @@ Command syntax ~
 			++shell		Instead of executing {command}
 					directly, use a shell, like with
 					`:!command` 		*E279*
-					{only works on Unix currently}
+					{only works on Unix and MS-Windows}
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.

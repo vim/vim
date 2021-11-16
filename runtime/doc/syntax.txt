@@ -4880,7 +4880,7 @@ in their own color.
 :hi[ghlight] [default] {group-name} {key}={arg} ..
 			Add a highlight group, or change the highlighting for
 			an existing group. If a given color name is not
-			receognized, each `colors/lists/default.vim` found on
+			recognized, each `colors/lists/default.vim` found on
 			|'runtimepath'| will be loaded.
 			See |highlight-args| for the {key}={arg} arguments.
 			See |:highlight-default| for the optional [default]

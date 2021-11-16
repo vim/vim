@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2021 Oct 26
+" Last Change: 2021 Nov 14
 "
 " WORK IN PROGRESS - Only the basics work
 " Note: On MS-Windows you need a recent version of gdb.  The one included with
@@ -1098,6 +1098,7 @@ func s:GotoAsmwinOrCreateIt()
     setlocal number
     setlocal noswapfile
     setlocal buftype=nofile
+    setlocal modifiable
 
     let asmbuf = bufnr('Termdebug-asm-listing')
     if asmbuf > 0
@@ -1180,6 +1181,7 @@ func s:HandleCursor(msg)
 	endif
       endif
       exe lnum
+      normal! zv
       exe 'sign unplace ' . s:pc_id
       exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC priority=110 file=' . fname
       if !exists('b:save_signcolumn')

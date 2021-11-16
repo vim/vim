@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Nov 04
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -276,6 +276,9 @@ Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
 (#8179)
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
+
+When 'term' starts with "foot" then default t_TI and t_TE to the values used
+for the builtin xterm termcap.
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)  Did patch 8.2.2379 help?
@@ -657,14 +660,6 @@ http://vimawesome.com/?q=tag:color-scheme
 
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
-
-Many users don't like 'thesaurus' to match so many words. (#4667, #1611)
-- when the match with the first word is partial, don't add other words on that
-  line.
-- support other file formats, such as comma separated.  Indicate by a prefix
-  to the file in the 'thesaurus' option.
-- 'threglookexp' option: only match with first word in thesaurus file.
-  (Jakson A. Aquino, 2006 Jun 14)
 
 Some composing characters actually add a cell width to the character they are
 on top off, making the whole thing two characters wide. (#4526)
