@@ -3328,6 +3328,31 @@ func Get_popupmenu_lines()
 	endif
       endfunc
 
+      func OpenOtherPopups()
+	call popup_create([
+		\ 'popup one',
+		\ 'popup one',
+		\ 'popup one',
+		\ 'popup one',
+	      \ ], #{
+		\ line: 'cursor',
+		\ col: 'cursor+3',
+		\ minwidth: 20,
+		\ zindex: 50
+	      \ })
+	call popup_create([
+		\ 'popup two',
+		\ 'popup two',
+		\ 'popup two',
+		\ 'popup two',
+	      \ ], #{
+		\ line: 'cursor+2',
+		\ col: 'cursor-10',
+		\ minwidth: 10,
+		\ zindex: 200
+	      \ })
+      endfunc
+
       " Check that no autocommands are triggered for the info popup
       au WinEnter * if win_gettype() == 'popup' | call setline(2, 'WinEnter') | endif
       au WinLeave * if win_gettype() == 'popup' | call setline(2, 'WinLeave') | endif
@@ -3518,6 +3543,29 @@ func Test_popupmenu_info_too_wide()
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
   call delete('XtestInfoPopupWide')
+endfunc
+
+func Test_popupmenu_masking()
+  " Test that popup windows that are opened while popup menu is open are
+  " properly displayed.
+  CheckScreendump
+  CheckFeature quickfix
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'inoremap <C-A> <Cmd>call OpenOtherPopups()<CR>')
+  call writefile(lines, 'XtestPopupmenuMasking')
+
+  let buf = RunVimInTerminal('-S XtestPopupmenuMasking', #{rows: 14})
+  call TermWait(buf, 25)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>\<C-A>")
+  call VerifyScreenDump(buf, 'Test_popupwin_popupmenu_masking_1', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_popupwin_popupmenu_masking_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupmenuMasking')
 endfunc
 
 func Test_popupwin_recycle_bnr()
