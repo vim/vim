@@ -618,46 +618,6 @@ visibility_event(GtkWidget *widget UNUSED,
  * Redraw the corresponding portions of the screen.
  */
 #if GTK_CHECK_VERSION(3,0,0)
-static gboolean is_key_pressed = FALSE;
-static gboolean blink_mode = TRUE;
-
-static gboolean gui_gtk_is_blink_on(void);
-
-    static void
-gui_gtk3_redraw(int x, int y, int width, int height)
-{
-    // Range checks are left to gui_redraw_block()
-    gui_redraw_block(Y_2_ROW(y), X_2_COL(x),
-	    Y_2_ROW(y + height - 1), X_2_COL(x + width - 1),
-	    GUI_MON_NOCLEAR);
-}
-
-    static void
-gui_gtk3_update_cursor(cairo_t *cr)
-{
-    if (gui.row == gui.cursor_row)
-    {
-	gui.by_signal = TRUE;
-	if (State & CMDLINE)
-	    gui_update_cursor(TRUE, FALSE);
-	else
-	    gui_update_cursor(TRUE, TRUE);
-	gui.by_signal = FALSE;
-	cairo_paint(cr);
-    }
-}
-
-    static gboolean
-gui_gtk3_should_draw_cursor(void)
-{
-    unsigned int cond = 0;
-    cond |= gui_gtk_is_blink_on();
-    if (gui.cursor_col >= gui.col)
-	cond |= is_key_pressed;
-    cond |= gui.in_focus == FALSE;
-    return  cond;
-}
-
     static gboolean
 draw_event(GtkWidget *widget UNUSED,
 	   cairo_t   *cr,
@@ -672,8 +632,6 @@ draw_event(GtkWidget *widget UNUSED,
 
     cairo_set_source_surface(cr, gui.surface, 0, 0);
 
-    // Draw the window without the cursor.
-    gui.by_signal = TRUE;
     {
 	cairo_rectangle_list_t *list = NULL;
 
@@ -682,47 +640,15 @@ draw_event(GtkWidget *widget UNUSED,
 	{
 	    int i;
 
-	    // First clear all the blocks and then redraw them.  Just in case
-	    // some blocks overlap.
 	    for (i = 0; i < list->num_rectangles; i++)
 	    {
-		const cairo_rectangle_t rect = list->rectangles[i];
-
-		gui_mch_clear_block(Y_2_ROW((int)rect.y), 0,
-			Y_2_ROW((int)(rect.y + rect.height)) - 1, Columns - 1);
-	    }
-
-	    for (i = 0; i < list->num_rectangles; i++)
-	    {
-		const cairo_rectangle_t rect = list->rectangles[i];
-
-		if (blink_mode)
-		    gui_gtk3_redraw(rect.x, rect.y, rect.width, rect.height);
-		else
-		{
-		    if (get_real_state() & VISUAL)
-			gui_gtk3_redraw(rect.x, rect.y,
-				rect.width, rect.height);
-		    else
-			gui_redraw(rect.x, rect.y, rect.width, rect.height);
-		}
+		const cairo_rectangle_t *rect = &list->rectangles[i];
+		cairo_rectangle(cr, rect->x, rect->y, rect->width, rect->height);
+		cairo_fill(cr);
 	    }
 	}
 	cairo_rectangle_list_destroy(list);
-
-	if (get_real_state() & VISUAL)
-	{
-	    if (gui.cursor_row == gui.row && gui.cursor_col >= gui.col)
-		gui_update_cursor(TRUE, TRUE);
-	}
-
-	cairo_paint(cr);
     }
-    gui.by_signal = FALSE;
-
-    // Add the cursor to the window if necessary.
-    if (gui_gtk3_should_draw_cursor() && blink_mode)
-	gui_gtk3_update_cursor(cr);
 
     return FALSE;
 }
@@ -847,14 +773,6 @@ static long_u blink_ontime = 400;
 static long_u blink_offtime = 250;
 static guint blink_timer = 0;
 
-#if GTK_CHECK_VERSION(3,0,0)
-    static gboolean
-gui_gtk_is_blink_on(void)
-{
-    return blink_state == BLINK_ON;
-}
-#endif
-
     int
 gui_mch_is_blinking(void)
 {
@@ -870,28 +788,9 @@ gui_mch_is_blink_off(void)
     void
 gui_mch_set_blinking(long waittime, long on, long off)
 {
-#if GTK_CHECK_VERSION(3,0,0)
-    if (waittime == 0 || on == 0 || off == 0)
-    {
-	blink_mode = FALSE;
-
-	blink_waittime = 700;
-	blink_ontime = 400;
-	blink_offtime = 250;
-    }
-    else
-    {
-	blink_mode = TRUE;
-
-	blink_waittime = waittime;
-	blink_ontime = on;
-	blink_offtime = off;
-    }
-#else
     blink_waittime = waittime;
     blink_ontime = on;
     blink_offtime = off;
-#endif
 }
 
 /*
@@ -908,7 +807,9 @@ gui_mch_stop_blink(int may_call_gui_update_cursor)
     if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
     {
 	gui_update_cursor(TRUE, FALSE);
+#if !GTK_CHECK_VERSION(3,0,0)
 	gui_mch_flush();
+#endif
     }
     blink_state = BLINK_NONE;
 }
@@ -928,7 +829,9 @@ blink_cb(gpointer data UNUSED)
 	blink_state = BLINK_ON;
 	blink_timer = timeout_add(blink_ontime, blink_cb, NULL);
     }
+#if !GTK_CHECK_VERSION(3,0,0)
     gui_mch_flush();
+#endif
 
     return FALSE;		// don't happen again
 }
@@ -951,7 +854,9 @@ gui_mch_start_blink(void)
 	blink_timer = timeout_add(blink_waittime, blink_cb, NULL);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
+#if !GTK_CHECK_VERSION(3,0,0)
 	gui_mch_flush();
+#endif
     }
 }
 
@@ -1119,11 +1024,6 @@ key_press_event(GtkWidget *widget UNUSED,
     guint	state;
     char_u	*s, *d;
 
-#if GTK_CHECK_VERSION(3,0,0)
-    is_key_pressed = TRUE;
-    gui_mch_stop_blink(TRUE);
-#endif
-
     gui.event_time = event->time;
     key_sym = event->keyval;
     state = event->state;
@@ -1280,10 +1180,6 @@ key_release_event(GtkWidget *widget UNUSED,
 		  GdkEventKey *event,
 		  gpointer data UNUSED)
 {
-# if GTK_CHECK_VERSION(3,0,0)
-    is_key_pressed = FALSE;
-    gui_mch_start_blink();
-# endif
 # if defined(FEAT_XIM)
     gui.event_time = event->time;
     /*
@@ -3823,7 +3719,6 @@ gui_mch_init(void)
     gui.drawarea = gtk_drawing_area_new();
 #if GTK_CHECK_VERSION(3,0,0)
     gui.surface = NULL;
-    gui.by_signal = FALSE;
 #endif
 
     // Determine which events we will filter.
@@ -6014,9 +5909,8 @@ skipitall:
 
 #if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
-    if (!gui.by_signal)
-	gdk_window_invalidate_rect(gtk_widget_get_window(gui.drawarea),
-		&area, FALSE);
+    gtk_widget_queue_draw_area(gui.drawarea, area.x, area.y,
+	    area.width, area.height);
 #else
     gdk_gc_set_clip_rectangle(gui.text_gc, NULL);
 #endif
@@ -6153,14 +6047,13 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 # else
     // Give an implementation for older cairo versions if necessary.
 # endif
-    gdk_cairo_rectangle(cr, &rect);
+    cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
     cairo_fill(cr);
 
     cairo_destroy(cr);
 
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea, rect.x, rect.y,
-		rect.width, rect.height);
+    gtk_widget_queue_draw_area(gui.drawarea, rect.x, rect.y,
+	    rect.width, rect.height);
 #else
     GdkGCValues values;
     GdkGC *invert_gc;
@@ -6480,23 +6373,23 @@ gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg)
 	    (col2 - col1 + 1) * gui.char_width + (col2 == Columns - 1),
 	    (row2 - row1 + 1) * gui.char_height
 	};
-	GdkWindow * const win = gtk_widget_get_window(gui.drawarea);
 	cairo_t * const cr = cairo_create(gui.surface);
 # if GTK_CHECK_VERSION(3,22,2)
 	set_cairo_source_rgba_from_color(cr, gui.back_pixel);
 # else
+	GdkWindow * const win = gtk_widget_get_window(gui.drawarea);
 	cairo_pattern_t * const pat = gdk_window_get_background_pattern(win);
 	if (pat != NULL)
 	    cairo_set_source(cr, pat);
 	else
 	    set_cairo_source_rgba_from_color(cr, gui.back_pixel);
 # endif
-	gdk_cairo_rectangle(cr, &rect);
+	cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	if (!gui.by_signal)
-	    gdk_window_invalidate_rect(win, &rect, FALSE);
+	gtk_widget_queue_draw_area(gui.drawarea,
+		rect.x, rect.y, rect.width, rect.height);
     }
 #else // !GTK_CHECK_VERSION(3,0,0)
     gdk_gc_set_foreground(gui.text_gc, &color);
@@ -6528,12 +6421,12 @@ gui_gtk_window_clear(GdkWindow *win)
     else
 	set_cairo_source_rgba_from_color(cr, gui.back_pixel);
 # endif
-    gdk_cairo_rectangle(cr, &rect);
+    cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
     cairo_fill(cr);
     cairo_destroy(cr);
 
-    if (!gui.by_signal)
-	gdk_window_invalidate_rect(win, &rect, FALSE);
+    gtk_widget_queue_draw_area(gui.drawarea,
+	    rect.x, rect.y, rect.width, rect.height);
 }
 #else
 # define gui_gtk_window_clear(win)  gdk_window_clear(win)
@@ -6624,13 +6517,9 @@ gui_mch_delete_lines(int row, int num_lines)
     gui_clear_block(
 	    gui.scroll_region_bot - num_lines + 1, gui.scroll_region_left,
 	    gui.scroll_region_bot,		   gui.scroll_region_right);
-    gui_gtk3_redraw(
+    gtk_widget_queue_draw_area(gui.drawarea,
 	    FILL_X(gui.scroll_region_left), FILL_Y(row),
-	    gui.char_width * ncols + 1,     gui.char_height * nrows);
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea,
-		FILL_X(gui.scroll_region_left), FILL_Y(row),
-		gui.char_width * ncols + 1,	gui.char_height * nrows);
+	    gui.char_width * ncols + 1,	gui.char_height * nrows);
 #else
     if (gui.visibility == GDK_VISIBILITY_FULLY_OBSCURED)
 	return;			// Can't see the window
@@ -6671,16 +6560,12 @@ gui_mch_insert_lines(int row, int num_lines)
 	    FILL_X(gui.scroll_region_left), FILL_Y(row + num_lines),
 	    FILL_X(gui.scroll_region_left), FILL_Y(row),
 	    gui.char_width * ncols + 1,     gui.char_height * src_nrows);
-    gui_mch_clear_block(
+    gui_clear_block(
 	    row,		 gui.scroll_region_left,
 	    row + num_lines - 1, gui.scroll_region_right);
-    gui_gtk3_redraw(
+    gtk_widget_queue_draw_area(gui.drawarea,
 	    FILL_X(gui.scroll_region_left), FILL_Y(row),
-	    gui.char_width * ncols + 1,     gui.char_height * nrows);
-    if (!gui.by_signal)
-	gtk_widget_queue_draw_area(gui.drawarea,
-		FILL_X(gui.scroll_region_left), FILL_Y(row),
-		gui.char_width * ncols + 1,	gui.char_height * nrows);
+	    gui.char_width * ncols + 1,	gui.char_height * nrows);
 #else
     if (gui.visibility == GDK_VISIBILITY_FULLY_OBSCURED)
 	return;			// Can't see the window
@@ -7122,9 +7007,8 @@ gui_mch_drawsign(int row, int col, int typenr)
 	    cairo_surface_destroy(bg_surf);
 	    cairo_destroy(cr);
 
-	    if (!gui.by_signal)
-		gtk_widget_queue_draw_area(gui.drawarea,
-			FILL_X(col), FILL_Y(col), width, height);
+	    gtk_widget_queue_draw_area(gui.drawarea,
+		    FILL_X(col), FILL_Y(col), width, height);
 
 	}
 # else // !GTK_CHECK_VERSION(3,0,0)
