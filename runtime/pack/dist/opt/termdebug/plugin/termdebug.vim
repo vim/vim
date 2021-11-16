@@ -762,7 +762,7 @@ func s:CommOutput(chan, msg)
     elseif msg != ''
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
 	call s:HandleCursor(msg)
-      elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
+      elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,' || msg =~ '^=breakpoint-modified,'
 	call s:HandleNewBreakpoint(msg)
       elseif msg =~ '^=breakpoint-deleted,'
 	call s:HandleBreakpointDelete(msg)
