@@ -954,6 +954,7 @@ func s:ClearBreakpoint()
   let bploc = printf('%s:%d', fname, lnum)
   if has_key(s:breakpoint_locations, bploc)
     let idx = 0
+    let nr = 0
     for id in s:breakpoint_locations[bploc]
       if has_key(s:breakpoints, id)
 	" Assume this always works, the reply is simply "^done".
@@ -963,14 +964,22 @@ func s:ClearBreakpoint()
 	endfor
 	unlet s:breakpoints[id]
 	unlet s:breakpoint_locations[bploc][idx]
+        let nr = id
 	break
       else
 	let idx += 1
       endif
     endfor
-    if empty(s:breakpoint_locations[bploc])
-      unlet s:breakpoint_locations[bploc]
+    if nr != 0
+      if empty(s:breakpoint_locations[bploc])
+        unlet s:breakpoint_locations[bploc]
+      endif
+      echomsg 'Breakpoint ' . id . ' cleared from line ' . lnum . '.'
+    else
+      echoerr 'Internal error trying to remove breakpoint at line ' . lnum . '!'
     endif
+  else
+    echomsg 'No breakpoint to remove at line ' . lnum . '.'
   endif
 endfunc
 
@@ -1215,7 +1224,12 @@ endfunction
 " Will update the sign that shows the breakpoint
 func s:HandleNewBreakpoint(msg)
   if a:msg !~ 'fullname='
-    " a watch does not have a file name
+    " a watch or a pending breakpoint does not have a file name
+    if a:msg =~ 'pending='
+      let nr = substitute(a:msg, '.*number=\"\([0-9.]*\)\".*', '\1', '')
+      let target = substitute(a:msg, '.*pending=\"\([^"]*\)\".*', '\1', '')
+      echomsg 'Breakpoint ' . nr . ' (' . target  . ') pending.'
+    endif
     return
   endif
   for msg in s:SplitMsg(a:msg)
@@ -1259,6 +1273,7 @@ func s:HandleNewBreakpoint(msg)
     if bufloaded(fname)
       call s:PlaceSign(id, subid, entry)
     endif
+    echomsg 'Breakpoint ' . nr . ' created, line ' . lnum . '.'
   endfor
 endfunc
 
@@ -1283,6 +1298,7 @@ func s:HandleBreakpointDelete(msg)
       endif
     endfor
     unlet s:breakpoints[id]
+    echomsg 'Breakpoint ' . id . ' cleared.'
   endif
 endfunc
 
