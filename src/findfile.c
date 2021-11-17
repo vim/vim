@@ -1735,11 +1735,11 @@ find_file_in_path_option(
     proc->pr_WindowPtr = (APTR)-1L;
 # endif
 
-    if (len == 0)
-	return NULL;
-
     if (first == TRUE)
     {
+	if (len == 0)
+	    return NULL;
+
 	// copy file name into NameBuff, expanding environment variables
 	save_char = ptr[len];
 	ptr[len] = NUL;
