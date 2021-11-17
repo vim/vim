@@ -111,6 +111,12 @@ if 1
 
   augroup END
 
+  augroup vimHints
+      autocmd! CmdwinEnter *
+        \ echo 'You discovered a command-line window!' .
+        \ ' Quit with ":q" and see ":h command-line-window".'
+  augroup END
+
 endif
 
 " Switch syntax highlighting on when the terminal has colors or when using the
