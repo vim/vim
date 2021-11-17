@@ -2037,7 +2037,15 @@ endfunc
 func Test_recursive_ModeChanged()
   au! ModeChanged * norm 0u
   sil! norm 
-  au!
+  au! ModeChanged
+endfunc
+
+func Test_ModeChanged_starts_visual()
+  " This was triggering ModeChanged before setting VIsual, causing a crash.
+  au! ModeChanged * norm 0u
+  sil! norm 
+
+  au! ModeChanged
 endfunc
 
 " Test toggling of input method. See :help i_CTRL-^
