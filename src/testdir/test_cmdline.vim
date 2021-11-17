@@ -1255,6 +1255,7 @@ func Test_cmdwin_restore()
   CheckScreendump
 
   let lines =<< trim [SCRIPT]
+    augroup vimHints | au! | augroup END
     call setline(1, range(30))
     2split
   [SCRIPT]

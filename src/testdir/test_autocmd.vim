@@ -2458,6 +2458,7 @@ func Test_autocmd_CmdWinEnter()
   CheckFeature cmdwin
 
   let lines =<< trim END
+    augroup vimHints | au! | augroup END
     let b:dummy_var = 'This is a dummy'
     autocmd CmdWinEnter * quit
     let winnr = winnr('$')

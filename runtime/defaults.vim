@@ -111,6 +111,17 @@ if 1
 
   augroup END
 
+  " Quite a few people accidentally type "q:" instead of ":q" and get confused
+  " by the command line window.  Give a hint about how to get out.
+  " If you don't like this you can put this in your vimrc:
+  " ":augroup vimHints | au! | augroup END"
+  augroup vimHints
+    autocmd! CmdwinEnter *
+	  \ echohl Todo | 
+	  \ echo 'You discovered the command-line window! You can close it with ":q".' |
+	  \ echohl None
+  augroup END
+
 endif
 
 " Switch syntax highlighting on when the terminal has colors or when using the
