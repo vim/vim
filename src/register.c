@@ -991,17 +991,18 @@ shift_delete_registers()
     void
 yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 {
-    static int	recursive = FALSE;
-    dict_T	*v_event;
-    list_T	*list;
-    int		n;
-    char_u	buf[NUMBUFLEN + 2];
-    long	reglen = 0;
+    static int	    recursive = FALSE;
+    dict_T	    *v_event;
+    list_T	    *list;
+    int		    n;
+    char_u	    buf[NUMBUFLEN + 2];
+    long	    reglen = 0;
+    save_v_event_T  save_v_event;
 
     if (recursive)
 	return;
 
-    v_event = get_vim_var_dict(VV_EVENT);
+    v_event = get_v_event(&save_v_event);
 
     list = list_alloc();
     if (list == NULL)
@@ -1045,8 +1046,7 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     recursive = FALSE;
 
     // Empty the dictionary, v:event is still valid
-    dict_free_contents(v_event);
-    hash_init(&v_event->dv_hashtab);
+    restore_v_event(v_event, &save_v_event);
 }
 #endif
 

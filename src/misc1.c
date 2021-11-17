@@ -2654,18 +2654,52 @@ path_with_url(char_u *fname)
     return path_is_url(p);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return the dictionary of v:event.
+ * Save and clear the value in case it already has items.
+ */
+    dict_T *
+get_v_event(save_v_event_T *sve)
+{
+    dict_T	*v_event = get_vim_var_dict(VV_EVENT);
+
+    if (v_event->dv_hashtab.ht_used > 0)
+    {
+	// recursive use of v:event, save, make empty and restore later
+	sve->sve_did_save = TRUE;
+	sve->sve_hashtab = v_event->dv_hashtab;
+	hash_init(&v_event->dv_hashtab);
+    }
+    else
+	sve->sve_did_save = FALSE;
+    return v_event;
+}
+
+    void
+restore_v_event(dict_T *v_event, save_v_event_T *sve)
+{
+    dict_free_contents(v_event);
+    if (sve->sve_did_save)
+	v_event->dv_hashtab = sve->sve_hashtab;
+    else
+	hash_init(&v_event->dv_hashtab);
+}
+#endif
+
 /*
  * Fires a ModeChanged autocmd
  */
     void
 trigger_modechanged()
 {
-#if defined(FEAT_EVAL) || defined(PROTO)
+#ifdef FEAT_EVAL
     dict_T	    *v_event;
     typval_T	    rettv;
     typval_T	    tv[2];
     char_u	    *pat_pre;
     char_u	    *pat;
+    save_v_event_T  save_v_event;
 
     if (!has_modechanged())
 	return;
@@ -2680,7 +2714,7 @@ trigger_modechanged()
 	return;
     }
 
-    v_event = get_vim_var_dict(VV_EVENT);
+    v_event = get_v_event(&save_v_event);
     (void)dict_add_string(v_event, "new_mode", rettv.vval.v_string);
     (void)dict_add_string(v_event, "old_mode", last_mode);
     dict_set_items_ro(v_event);
@@ -2694,8 +2728,7 @@ trigger_modechanged()
     STRCPY(last_mode, rettv.vval.v_string);
 
     vim_free(pat);
-    dict_free_contents(v_event);
-    hash_init(&v_event->dv_hashtab);
+    restore_v_event(v_event, &save_v_event);
     vim_free(rettv.vval.v_string);
 #endif
 }

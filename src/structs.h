@@ -4465,3 +4465,8 @@ typedef struct {
 
 #define WHERE_INIT {NULL, 0, 0}
 
+// Struct passed to get_v_event() and restore_v_event().
+typedef struct {
+    int		sve_did_save;
+    hashtab_T	sve_hashtab;
+} save_v_event_T;

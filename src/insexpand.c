@@ -962,7 +962,7 @@ pum_enough_matches(void)
     return (i >= 2);
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Allocate Dict for the completed item.
  * { word, abbr, menu, kind, info }
@@ -993,17 +993,18 @@ trigger_complete_changed_event(int cur)
     dict_T	    *v_event;
     dict_T	    *item;
     static int	    recursive = FALSE;
+    save_v_event_T  save_v_event;
 
     if (recursive)
 	return;
 
-    v_event = get_vim_var_dict(VV_EVENT);
     if (cur < 0)
 	item = dict_alloc();
     else
 	item = ins_compl_dict_alloc(compl_curr_match);
     if (item == NULL)
 	return;
+    v_event = get_v_event(&save_v_event);
     dict_add_dict(v_event, "completed_item", item);
     pum_set_event_info(v_event);
     dict_set_items_ro(v_event);
@@ -1014,8 +1015,7 @@ trigger_complete_changed_event(int cur)
     textwinlock--;
     recursive = FALSE;
 
-    dict_free_contents(v_event);
-    hash_init(&v_event->dv_hashtab);
+    restore_v_event(v_event, &save_v_event);
 }
 #endif
 

@@ -2034,6 +2034,12 @@ func Test_mode_changes()
   unlet! g:i_to_any
 endfunc
 
+func Test_recursive_ModeChanged()
+  au! ModeChanged * norm 0u
+  sil! norm 
+  au!
+endfunc
+
 " Test toggling of input method. See :help i_CTRL-^
 func Test_edit_CTRL_hat()
   CheckFeature xim
