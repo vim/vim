@@ -1619,7 +1619,7 @@ suggest_trie_walk(
 		    // char, e.g., "thes," -> "these".
 		    p = fword + sp->ts_fidx;
 		    MB_PTR_BACK(fword, p);
-		    if (!spell_iswordp(p, curwin) && *preword != NUL)
+		    if (!spell_iswordp(p, curwin) && *preword != NULL)
 		    {
 			p = preword + STRLEN(preword);
 			MB_PTR_BACK(preword, p);
