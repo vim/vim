@@ -6834,7 +6834,15 @@ nfa_regmatch(
 	    case NFA_MARK_GT:
 	    case NFA_MARK_LT:
 	      {
+		size_t	col = rex.input - rex.line;
 		pos_T	*pos = getmark_buf(rex.reg_buf, t->state->val, FALSE);
+
+		// Line may have been freed, get it again.
+		if (REG_MULTI)
+		{
+		    rex.line = reg_getline(rex.lnum);
+		    rex.input = rex.line + col;
+		}
 
 		// Compare the mark position to the match position, if the mark
 		// exists and mark is set in reg_buf.
