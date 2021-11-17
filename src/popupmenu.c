@@ -382,9 +382,9 @@ pum_call_update_screen()
  * "row"/"col" is under the popup menu.
  */
     int
-pum_under_menu(int row, int col)
+pum_under_menu(int row, int col, int only_redrawing)
 {
-    return pum_will_redraw
+    return (!only_redrawing || pum_will_redraw)
 	    && row >= pum_row
 	    && row < pum_row + pum_height
 	    && col >= pum_col - 1

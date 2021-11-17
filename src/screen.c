@@ -2139,7 +2139,7 @@ screen_char(unsigned off, int row, int col)
 
     // Skip if under the popup menu.
     // Popup windows with zindex higher than POPUPMENU_ZINDEX go on top.
-    if (pum_under_menu(row, col)
+    if (pum_under_menu(row, col, TRUE)
 #ifdef FEAT_PROP_POPUP
 	    && screen_zindex <= POPUPMENU_ZINDEX
 #endif

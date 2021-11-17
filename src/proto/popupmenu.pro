@@ -1,7 +1,7 @@
 /* popupmenu.c */
 void pum_display(pumitem_T *array, int size, int selected);
 void pum_call_update_screen(void);
-int pum_under_menu(int row, int col);
+int pum_under_menu(int row, int col, int only_redrawing);
 void pum_redraw(void);
 void pum_position_info_popup(win_T *wp);
 void pum_undisplay(void);

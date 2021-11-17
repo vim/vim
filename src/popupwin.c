@@ -3654,7 +3654,11 @@ may_update_popup_mask(int type)
 	    for (col = wp->w_wincol;
 		 col < wp->w_wincol + width - wp->w_popup_leftoff
 						&& col < screen_Columns; ++col)
-		if (wp->w_popup_mask_cells == NULL
+		if (wp->w_zindex < POPUPMENU_ZINDEX
+			&& pum_visible()
+			&& pum_under_menu(line, col, FALSE))
+		    mask[line * screen_Columns + col] = POPUPMENU_ZINDEX;
+		else if (wp->w_popup_mask_cells == NULL
 				|| !popup_masked(wp, width, height, col, line))
 		    mask[line * screen_Columns + col] = wp->w_zindex;
     }
