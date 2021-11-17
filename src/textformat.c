@@ -956,9 +956,7 @@ format_lines(
     int		need_set_indent = TRUE;	// set indent of next paragraph
     int		force_format = FALSE;
     int		old_State = State;
-#if defined(FEAT_CINDENT) || defined(FEAT_EVAL) || defined(FEAT_LISP)
     int		indent = 0; // amount of indent needed
-#endif
 
     // length of a line to force formatting: 3 * 'tw'
     max_len = comp_textwidth(TRUE) * 3;
