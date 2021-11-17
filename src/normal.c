@@ -3881,8 +3881,10 @@ get_visual_text(
 	    *pp = ml_get_pos(&VIsual);
 	    *lenp = curwin->w_cursor.col - VIsual.col + 1;
 	}
-	if (has_mbyte)
-	    // Correct the length to include the whole last character.
+	if (**pp == NUL)
+	    *lenp = 0;
+	if (has_mbyte && *lenp > 0)
+	    // Correct the length to include all bytes of the last character.
 	    *lenp += (*mb_ptr2len)(*pp + (*lenp - 1)) - 1;
     }
     reset_VIsual_and_resel();
