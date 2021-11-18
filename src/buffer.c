@@ -1899,7 +1899,10 @@ do_autochdir(void)
     if ((starting == 0 || test_autochdir)
 	    && curbuf->b_ffname != NULL
 	    && vim_chdirfile(curbuf->b_ffname, "auto") == OK)
+    {
 	shorten_fnames(TRUE);
+	last_chdir_reason = "autochdir";
+    }
 }
 #endif
 

@@ -832,6 +832,7 @@ EXTERN int	stdout_isatty INIT(= TRUE);	// is stdout a terminal?
 #if defined(FEAT_AUTOCHDIR)
 EXTERN int	test_autochdir INIT(= FALSE);
 #endif
+EXTERN char	*last_chdir_reason INIT(= NULL);
 #if defined(EXITFREE)
 EXTERN int	entered_free_all_mem INIT(= FALSE);
 				// TRUE when in or after free_all_mem()

@@ -7783,8 +7783,9 @@ fix_arg_enc(void)
     if (curwin->w_arg_idx == 0 && curbuf->b_fname == NULL)
     {
 	do_cmdline_cmd((char_u *)":rewind");
-	if (GARGCOUNT == 1 && used_file_full_path)
-	    (void)vim_chdirfile(alist_name(&GARGLIST[0]), "drop");
+	if (GARGCOUNT == 1 && used_file_full_path
+		&& vim_chdirfile(alist_name(&GARGLIST[0]), "drop") == OK)
+	    last_chdir_reason = "drop";
     }
 
     set_alist_count();

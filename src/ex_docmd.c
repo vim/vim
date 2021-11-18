@@ -7390,6 +7390,7 @@ changedir_func(
 
 	if (dir_differs)
 	{
+	    last_chdir_reason = NULL;
 	    if (scope == CDSCOPE_WINDOW)
 		acmd_fname = (char_u *)"window";
 	    else if (scope == CDSCOPE_TABPAGE)
@@ -7453,7 +7454,9 @@ ex_pwd(exarg_T *eap UNUSED)
 	{
 	    char *context = "global";
 
-	    if (curwin->w_localdir != NULL)
+	    if (last_chdir_reason != NULL)
+		context = last_chdir_reason;
+	    else if (curwin->w_localdir != NULL)
 		context = "window";
 	    else if (curtab->tp_localdir != NULL)
 		context = "tabpage";

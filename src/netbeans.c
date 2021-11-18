@@ -2656,7 +2656,10 @@ netbeans_file_opened(buf_T *bufp)
 
     nb_send(buffer, "netbeans_file_opened");
     if (p_acd && vim_chdirfile(bufp->b_ffname, "auto") == OK)
+    {
+	last_chdir_reason = "netbeans";
 	shorten_fnames(TRUE);
+    }
 }
 
 /*
