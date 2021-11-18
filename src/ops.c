@@ -3305,6 +3305,29 @@ op_colon(oparg_T *oap)
     // do_cmdline() does the rest
 }
 
+// callback function for 'operatorfunc'
+static callback_T opfunc_cb;
+
+/*
+ * Process the 'operatorfunc' option value.
+ * Returns OK or FAIL.
+ */
+    int
+set_operatorfunc_option(void)
+{
+    return option_set_callback_func(p_opfunc, &opfunc_cb);
+}
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_operatorfunc_option(void)
+{
+#  ifdef FEAT_EVAL
+    free_callback(&opfunc_cb);
+#  endif
+}
+#endif
+
 /*
  * Handle the "g@" operator: call 'operatorfunc'.
  */
@@ -3317,6 +3340,7 @@ op_function(oparg_T *oap UNUSED)
     int		save_finish_op = finish_op;
     pos_T	orig_start = curbuf->b_op_start;
     pos_T	orig_end = curbuf->b_op_end;
+    typval_T	rettv;
 
     if (*p_opfunc == NUL)
 	emsg(_("E774: 'operatorfunc' is empty"));
@@ -3345,7 +3369,8 @@ op_function(oparg_T *oap UNUSED)
 	// Reset finish_op so that mode() returns the right value.
 	finish_op = FALSE;
 
-	(void)call_func_noret(p_opfunc, 1, argv);
+	if (call_callback(&opfunc_cb, 0, &rettv, 1, argv) != FAIL)
+	    clear_tv(&rettv);
 
 	virtual_op = save_virtual_op;
 	finish_op = save_finish_op;

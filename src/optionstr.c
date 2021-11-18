@@ -2320,10 +2320,18 @@ ambw_end:
 # endif
 #endif
 
+    // 'operatorfunc'
+    else if (varp == &p_opfunc)
+    {
+	if (set_operatorfunc_option() == FAIL)
+	    errmsg = e_invarg;
+    }
+
 #ifdef FEAT_QUICKFIX
+    // 'quickfixtextfunc'
     else if (varp == &p_qftf)
     {
-	if (qf_process_qftf_option() == FALSE)
+	if (qf_process_qftf_option() == FAIL)
 	    errmsg = e_invarg;
     }
 #endif

@@ -10,7 +10,7 @@ void set_init_3(void);
 void set_helplang_default(char_u *lang);
 void set_title_defaults(void);
 void ex_set(exarg_T *eap);
-int do_set(char_u *arg, int opt_flags);
+int do_set(char_u *arg_start, int opt_flags);
 void did_set_option(int opt_idx, int opt_flags, int new_value, int value_checked);
 int string_to_key(char_u *arg, int multi_byte);
 void did_set_title(void);
@@ -78,4 +78,5 @@ char_u *get_showbreak_value(win_T *win);
 dict_T *get_winbuf_options(int bufopt);
 int fill_culopt_flags(char_u *val, win_T *wp);
 int magic_isset(void);
+int option_set_callback_func(char_u *optval, callback_T *optcb);
 /* vim: set ft=c : */

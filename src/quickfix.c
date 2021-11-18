@@ -4437,45 +4437,12 @@ qf_find_buf(qf_info_T *qi)
 
 /*
  * Process the 'quickfixtextfunc' option value.
+ * Returns OK or FAIL.
  */
     int
 qf_process_qftf_option(void)
 {
-    typval_T	*tv;
-    callback_T	cb;
-
-    if (p_qftf == NULL || *p_qftf == NUL)
-    {
-	free_callback(&qftf_cb);
-	return TRUE;
-    }
-
-    if (*p_qftf == '{')
-    {
-	// Lambda expression
-	tv = eval_expr(p_qftf, NULL);
-	if (tv == NULL)
-	    return FALSE;
-    }
-    else
-    {
-	// treat everything else as a function name string
-	tv = alloc_string_tv(vim_strsave(p_qftf));
-	if (tv == NULL)
-	    return FALSE;
-    }
-
-    cb = get_callback(tv);
-    if (cb.cb_name == NULL)
-    {
-	free_tv(tv);
-	return FALSE;
-    }
-
-    free_callback(&qftf_cb);
-    set_callback(&qftf_cb, &cb);
-    free_tv(tv);
-    return TRUE;
+    return option_set_callback_func(p_qftf, &qftf_cb);
 }
 
 /*

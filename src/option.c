@@ -809,6 +809,7 @@ free_all_options(void)
 	    // buffer-local option: free global value
 	    clear_string_option((char_u **)options[i].var);
     }
+    free_operatorfunc_option();
 }
 #endif
 
@@ -7183,4 +7184,50 @@ magic_isset(void)
 	return TRUE;
 #endif
     return p_magic;
+}
+
+/*
+ * Set the callback function value for an option that accepts a function name,
+ * lambda, et al. (e.g. 'operatorfunc', 'tagfunc', etc.)
+ * Returns OK if the option is successfully set to a function, otherwise
+ * returns FAIL.
+ */
+    int
+option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
+{
+#ifdef FEAT_EVAL
+    typval_T	*tv;
+    callback_T	cb;
+
+    if (optval == NULL || *optval == NUL)
+    {
+	free_callback(optcb);
+	return OK;
+    }
+
+    if (*optval == '{'
+	    || (STRNCMP(optval, "function(", 9) == 0)
+	    || (STRNCMP(optval, "funcref(", 8) == 0))
+	// Lambda expression or a funcref
+	tv = eval_expr(optval, NULL);
+    else
+	// treat everything else as a function name string
+	tv = alloc_string_tv(vim_strsave(optval));
+    if (tv == NULL)
+	return FAIL;
+
+    cb = get_callback(tv);
+    if (cb.cb_name == NULL)
+    {
+	free_tv(tv);
+	return FAIL;
+    }
+
+    free_callback(optcb);
+    set_callback(optcb, &cb);
+    free_tv(tv);
+    return OK;
+#else
+    return FAIL;
+#endif
 }
