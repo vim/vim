@@ -1070,9 +1070,32 @@ format_lines(
 	    if (is_end_par || force_format)
 	    {
 		if (need_set_indent)
+		{
+		    int		indent = 0; // amount of indent needed
+
 		    // replace indent in first line with minimal number of
 		    // tabs and spaces, according to current options
-		    (void)set_indent(get_indent(), SIN_CHANGED);
+# ifdef FEAT_LISP
+		    if (curbuf->b_p_lisp)
+			indent = get_lisp_indent();
+		    else
+# endif
+		    {
+#ifdef FEAT_CINDENT
+			if (cindent_on())
+			{
+			    indent =
+# ifdef FEAT_EVAL
+				 *curbuf->b_p_inde != NUL ? get_expr_indent() :
+# endif
+				 get_c_indent();
+			}
+			else
+#endif
+			    indent = get_indent();
+		    }
+		    (void)set_indent(indent, SIN_CHANGED);
+		}
 
 		// put cursor on last non-space
 		State = NORMAL;	// don't go past end-of-line
