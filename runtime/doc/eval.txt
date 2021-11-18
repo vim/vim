@@ -5757,7 +5757,7 @@ getcursorcharpos([{winid}])
 <							*getcwd()*
 getcwd([{winnr} [, {tabnr}]])
 		The result is a String, which is the name of the current
-		working directory.
+		working directory.  'autochdir' is ignored.
 
 		With {winnr} return the local current directory of this window
 		in the current tab page.  {winnr} can be the window number or
@@ -5770,8 +5770,8 @@ getcwd([{winnr} [, {tabnr}]])
 		the working directory of the tabpage.
 		If {winnr} is zero use the current window, if {tabnr} is zero
 		use the current tabpage.
-		Without any arguments, return the working directory of the
-		current window.
+		Without any arguments, return the actual working directory of
+		the current window.
 		Return an empty string if the arguments are invalid.
 
 		Examples: >

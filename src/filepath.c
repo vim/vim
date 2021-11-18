@@ -1102,13 +1102,15 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     else
 	wp = find_tabwin(&argvars[0], &argvars[1], &tp);
 
-    if (wp != NULL && wp->w_localdir != NULL)
+    if (wp != NULL && wp->w_localdir != NULL
+					   && argvars[0].v_type != VAR_UNKNOWN)
 	rettv->vval.v_string = vim_strsave(wp->w_localdir);
-    else if (tp != NULL && tp->tp_localdir != NULL)
+    else if (tp != NULL && tp->tp_localdir != NULL
+					   && argvars[0].v_type != VAR_UNKNOWN)
 	rettv->vval.v_string = vim_strsave(tp->tp_localdir);
     else if (wp != NULL || tp != NULL || global)
     {
-	if (globaldir != NULL)
+	if (globaldir != NULL && argvars[0].v_type != VAR_UNKNOWN)
 	    rettv->vval.v_string = vim_strsave(globaldir);
 	else
 	{
