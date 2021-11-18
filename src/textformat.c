@@ -956,7 +956,6 @@ format_lines(
     int		need_set_indent = TRUE;	// set indent of next paragraph
     int		force_format = FALSE;
     int		old_State = State;
-    int		indent = 0; // amount of indent needed
 
     // length of a line to force formatting: 3 * 'tw'
     max_len = comp_textwidth(TRUE) * 3;
@@ -1072,6 +1071,8 @@ format_lines(
 	    {
 		if (need_set_indent)
 		{
+		    int		indent = 0; // amount of indent needed
+
 		    // replace indent in first line with minimal number of
 		    // tabs and spaces, according to current options
 # ifdef FEAT_LISP
