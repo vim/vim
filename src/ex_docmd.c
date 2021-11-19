@@ -7301,6 +7301,7 @@ post_chdir(cdscope_T scope)
 	VIM_CLEAR(globaldir);
     }
 
+    last_chdir_reason = NULL;
     shorten_fnames(TRUE);
 }
 
@@ -7390,7 +7391,6 @@ changedir_func(
 
 	if (dir_differs)
 	{
-	    last_chdir_reason = NULL;
 	    if (scope == CDSCOPE_WINDOW)
 		acmd_fname = (char_u *)"window";
 	    else if (scope == CDSCOPE_TABPAGE)
