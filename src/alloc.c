@@ -561,6 +561,7 @@ free_all_mem(void)
 # endif
 
     free_termoptions();
+    free_cur_term();
 
     // screenlines (can't display anything now!)
     free_screenlines();

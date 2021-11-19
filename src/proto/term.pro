@@ -5,6 +5,7 @@ void init_term_props(int all);
 void f_terminalprops(typval_T *argvars, typval_T *rettv);
 void set_color_count(int nr);
 int set_termname(char_u *term);
+void free_cur_term(void);
 void getlinecol(long *cp, long *rp);
 int add_termcap_entry(char_u *name, int force);
 int term_is_8bit(char_u *name);

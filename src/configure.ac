@@ -3591,6 +3591,16 @@ AC_TRY_COMPILE([
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_OUTFUNTYPE),
 	AC_MSG_RESULT(no))
 
+AC_MSG_CHECKING([whether del_curterm() can be used])
+AC_TRY_LINK([
+#ifdef HAVE_TERMCAP_H
+# include <termcap.h>
+#endif
+#include <term.h>
+			], [if (cur_term) del_curterm(cur_term);],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_DEL_CURTERM),
+	AC_MSG_RESULT(no))
+
 dnl On some SCO machines sys/select redefines struct timeval
 AC_MSG_CHECKING([whether sys/select.h and sys/time.h may both be included])
 AC_TRY_COMPILE([

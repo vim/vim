@@ -2176,6 +2176,28 @@ set_termname(char_u *term)
     return OK;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+
+# ifdef HAVE_DEL_CURTERM
+#  undef TERMINAL	    // name clash in term.h
+#  include <term.h>	    // declares cur_term
+# endif
+
+/*
+ * If supported, delete "cur_term", which caches terminal related entries.
+ * Avoids that valgrind reports possibly lost memory.
+ */
+    void
+free_cur_term()
+{
+# ifdef HAVE_DEL_CURTERM
+    if (cur_term)
+	del_curterm(cur_term);
+# endif
+}
+
+#endif
+
 #ifdef HAVE_TGETENT
 /*
  * Call tgetent()
