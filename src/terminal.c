@@ -4638,6 +4638,15 @@ term_get_status_text(term_T *term)
 }
 
 /*
+ * Clear the cached value of the status text.
+ */
+    void
+term_clear_status_text(term_T *term)
+{
+    VIM_CLEAR(term->tl_status_text);
+}
+
+/*
  * Mark references in jobs of terminals.
  */
     int

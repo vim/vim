@@ -3453,6 +3453,11 @@ buf_name_changed(buf_T *buf)
     if (buf->b_ml.ml_mfp != NULL)
 	ml_setname(buf);
 
+#ifdef FEAT_TERMINAL
+    if (buf->b_term != NULL)
+	term_clear_status_text(buf->b_term);
+#endif
+
     if (curwin->w_buffer == buf)
 	check_arg_idx(curwin);	// check file name for arg list
 #ifdef FEAT_TITLE

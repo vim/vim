@@ -31,6 +31,7 @@ int term_get_attr(win_T *wp, linenr_T lnum, int col);
 void term_update_colors(term_T *term);
 void term_update_colors_all(void);
 char_u *term_get_status_text(term_T *term);
+void term_clear_status_text(term_T *term);
 int set_ref_in_term(int copyID);
 void f_term_dumpwrite(typval_T *argvars, typval_T *rettv);
 int term_swap_diff(void);
