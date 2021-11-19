@@ -431,7 +431,7 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 
 #include "ascii.h"
 #include "keymap.h"
-#include "term.h"
+#include "termdefs.h"
 #include "macros.h"
 
 #ifdef LATTICE
