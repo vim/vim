@@ -4485,6 +4485,16 @@ open_cmdwin(void)
 
     return cmdwin_result;
 }
+
+/*
+ * Check if the user is in cmdwin or not. Returns true if user is in cmdwin
+ * now, otherwise returns false.
+ */
+    int
+is_in_cmdwin(void)
+{
+    return cmdwin_type != 0 && get_cmdline_type() == NUL;
+}
 #endif // FEAT_CMDWIN
 
 /*
