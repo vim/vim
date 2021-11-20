@@ -2142,9 +2142,8 @@ vim_vsnprintf_typval(
 		    }
 		    if (fmt_spec == 'S')
 		    {
-			if (min_field_width != 0)
-			    min_field_width += STRLEN(str_arg)
-				     - mb_string2cells((char_u *)str_arg, -1);
+			size_t base_width = min_field_width;
+			size_t pad_cell = 0;
 			if (precision)
 			{
 			    char_u  *p1;
@@ -2157,8 +2156,11 @@ vim_vsnprintf_typval(
 				if (i > precision)
 				    break;
 			    }
-			    str_arg_l = precision = p1 - (char_u *)str_arg;
+			    pad_cell = min_field_width - precision;
+			    base_width = str_arg_l = precision = p1 - (char_u *)str_arg;
 			}
+			if (min_field_width != 0)
+			    min_field_width = base_width + pad_cell;
 		    }
 		    break;
 
