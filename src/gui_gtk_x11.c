@@ -5503,7 +5503,6 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
     int		should_need_pango = FALSE;
     int		slen;
     int		is_ligature;
-    int		next_is_ligature;
     int		is_utf8;
     char_u	backup_ch;
 
@@ -5563,8 +5562,16 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 		    // substrings
     byte_sum = 0;
     cs = s;
-    // look ahead, 0=ascii 1=unicode/ligatures
-    needs_pango = ((*cs & 0x80) || gui.ligatures_map[*cs]);
+    // first char decides starting needs_pango mode, 0=ascii 1=utf8/ligatures
+    // even if it is ligature char, two chars or more make ligature
+    // ascii followed by utf8 is going trough pango
+    is_utf8 = (*cs & 0x80);
+    is_ligature = (gui.ligatures_map[*cs] && (len > 1));
+    if (is_ligature)
+	is_ligature = gui.ligatures_map[*(cs + 1)];
+    if ((!is_utf8) && (len > 1))
+	is_utf8 = (*(cs + 1) & 0x80);
+    needs_pango = (is_utf8 || is_ligature);
 
     // split string into ascii and non-ascii (ligatures + utf-8) substrings,
     // print glyphs or use Pango
@@ -5579,9 +5586,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 	    {
 		if ((slen + 1) < (len - byte_sum))
 		{
-		    next_is_ligature = gui.ligatures_map[*(cs + slen + 1)];
-		    if (!next_is_ligature)
-			is_ligature = 0;
+		    is_ligature = gui.ligatures_map[*(cs + slen + 1)];
 		}
 		else
 		{
@@ -5589,6 +5594,10 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 		}
 	    }
 	    is_utf8 = *(cs + slen) & 0x80;
+	    // ascii followed by utf8 could be combining
+	    // if so send it trough pango
+	    if ((!is_utf8) && ((slen + 1) < (len - byte_sum)))
+		is_utf8 = (*(cs + slen + 1) & 0x80);
 	    should_need_pango = (is_ligature || is_utf8);
 	    if (needs_pango != should_need_pango) // mode switch
 		break;
@@ -5598,7 +5607,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 		{
 		    slen++; // ligature char by char
 		}
-		else
+		else if (is_utf8)
 		{
 		    if ((*(cs + slen) & 0xC0) == 0x80)
 		    {
@@ -5631,6 +5640,10 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 			// will catch it
 			slen++;
 		    }
+		}
+		else
+		{
+		    slen++;
 		}
 	    }
 	    else
