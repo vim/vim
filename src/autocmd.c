@@ -845,6 +845,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 
     if (*arg == '|')
     {
+	eap->nextcmd = arg + 1;
 	arg = (char_u *)"";
 	group = AUGROUP_ALL;	// no argument, use all groups
     }
@@ -869,6 +870,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
     pat = skipwhite(pat);
     if (*pat == '|')
     {
+	eap->nextcmd = pat + 1;
 	pat = (char_u *)"";
 	cmd = (char_u *)"";
     }
