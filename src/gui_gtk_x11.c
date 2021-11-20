@@ -5425,7 +5425,8 @@ draw_under(int flags, int row, int col, int cells)
 	cairo_set_source_rgba(cr,
 		gui.spcolor->red, gui.spcolor->green, gui.spcolor->blue,
 		gui.spcolor->alpha);
-	for (i = FILL_X(col); i < FILL_X(col + cells); ++i)
+	cairo_move_to(cr, FILL_X(col) + 1, y - 2 + 0.5);
+	for (i = FILL_X(col) + 1; i < FILL_X(col + cells); ++i)
 	{
 	    offset = val[i % 8];
 	    cairo_line_to(cr, i, y - offset + 0.5);
