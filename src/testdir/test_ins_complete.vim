@@ -381,18 +381,6 @@ func s:ComplInCmdwin_LocalCompletion(A, L, P)
   return 'local'
 endfunc
 
-func s:ComplInCmdwin_GlobalCompletionList(A, L, P)
-  return ['global']
-endfunc
-
-func s:ComplInCmdwin_LocalCompletionList(A, L, P)
-  return ['local']
-endfunc
-
-func s:ComplInCmdwin_CheckCompletion(arg)
-  call assert_equal('local', a:arg)
-endfunc
-
 func Test_compl_in_cmdwin()
   CheckFeature cmdwin
 
@@ -433,6 +421,18 @@ func Test_compl_in_cmdwin()
 
 
   " Argument completion of buffer-local command
+  func s:ComplInCmdwin_GlobalCompletionList(A, L, P)
+    return ['global']
+  endfunc
+
+  func s:ComplInCmdwin_LocalCompletionList(A, L, P)
+    return ['local']
+  endfunc
+
+  func s:ComplInCmdwin_CheckCompletion(arg)
+    call assert_equal('local', a:arg)
+  endfunc
+
   com! -nargs=1 -complete=custom,<SID>ComplInCmdwin_GlobalCompletion
        \ TestCommand call s:ComplInCmdwin_CheckCompletion(<q-args>)
   com! -buffer -nargs=1 -complete=custom,<SID>ComplInCmdwin_LocalCompletion
@@ -443,7 +443,16 @@ func Test_compl_in_cmdwin()
        \ TestCommand call s:ComplInCmdwin_CheckCompletion(<q-args>)
   com! -buffer -nargs=1 -complete=customlist,<SID>ComplInCmdwin_LocalCompletionList
        \ TestCommand call s:ComplInCmdwin_CheckCompletion(<q-args>)
+
   call feedkeys("q:iTestCommand \<Tab>\<CR>", 'tx!')
+
+  func! s:ComplInCmdwin_CheckCompletion(arg)
+    call assert_equal('global', a:arg)
+  endfunc
+  new
+  call feedkeys("q:iTestCommand \<Tab>\<CR>", 'tx!')
+  quit
+
   delfunc s:ComplInCmdwin_GlobalCompletion
   delfunc s:ComplInCmdwin_LocalCompletion
   delfunc s:ComplInCmdwin_GlobalCompletionList
