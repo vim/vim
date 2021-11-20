@@ -1491,7 +1491,7 @@ get_lambda_tv(
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;
-	fp->uf_script_ctx.sc_lnum += SOURCING_LNUM - newlines.ga_len;
+	fp->uf_script_ctx.sc_lnum += SOURCING_LNUM - newlines.ga_len + 1;
 
 	function_using_block_scopes(fp, evalarg->eval_cstack);
 
