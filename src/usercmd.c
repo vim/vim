@@ -141,7 +141,11 @@ find_ucmd(
     /*
      * Look for buffer-local user commands first, then global ones.
      */
-    gap = &curbuf->b_ucmds;
+    gap =
+#ifdef FEAT_CMDWIN
+	is_in_cmdwin() ? &prevwin->w_buffer->b_ucmds :
+#endif
+	&curbuf->b_ucmds;
     for (;;)
     {
 	for (j = 0; j < gap->ga_len; ++j)
@@ -303,7 +307,7 @@ get_user_commands(expand_T *xp UNUSED, int idx)
     // In cmdwin, the alternative buffer should be used.
     buf_T *buf =
 #ifdef FEAT_CMDWIN
-	(cmdwin_type != 0 && get_cmdline_type() == NUL) ? prevwin->w_buffer :
+	is_in_cmdwin() ? prevwin->w_buffer :
 #endif
 	curbuf;
 
@@ -330,10 +334,9 @@ get_user_command_name(int idx, int cmdidx)
 	// In cmdwin, the alternative buffer should be used.
 	buf_T *buf =
 #ifdef FEAT_CMDWIN
-		    (cmdwin_type != 0 && get_cmdline_type() == NUL)
-							  ? prevwin->w_buffer :
+		    is_in_cmdwin() ? prevwin->w_buffer :
 #endif
-	    curbuf;
+		    curbuf;
 
 	if (idx < buf->b_ucmds.ga_len)
 	    return USER_CMD_GA(&buf->b_ucmds, idx)->uc_name;
@@ -420,10 +423,9 @@ uc_list(char_u *name, size_t name_len)
     // In cmdwin, the alternative buffer should be used.
     gap =
 #ifdef FEAT_CMDWIN
-	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
-	&prevwin->w_buffer->b_ucmds :
+	    is_in_cmdwin() ? &prevwin->w_buffer->b_ucmds :
 #endif
-	&curbuf->b_ucmds;
+	    &curbuf->b_ucmds;
     for (;;)
     {
 	for (i = 0; i < gap->ga_len; ++i)

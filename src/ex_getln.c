@@ -4485,6 +4485,15 @@ open_cmdwin(void)
 
     return cmdwin_result;
 }
+
+/*
+ * Return TRUE if in the cmdwin, not editing the command line.
+ */
+    int
+is_in_cmdwin(void)
+{
+    return cmdwin_type != 0 && get_cmdline_type() == NUL;
+}
 #endif // FEAT_CMDWIN
 
 /*

@@ -2074,8 +2074,7 @@ get_user_var_name(expand_T *xp, int idx)
     ht =
 #ifdef FEAT_CMDWIN
 	// In cmdwin, the alternative buffer should be used.
-	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
-	&prevwin->w_buffer->b_vars->dv_hashtab :
+	is_in_cmdwin() ? &prevwin->w_buffer->b_vars->dv_hashtab :
 #endif
 	&curbuf->b_vars->dv_hashtab;
     if (bdone < ht->ht_used)
@@ -2093,8 +2092,7 @@ get_user_var_name(expand_T *xp, int idx)
     ht =
 #ifdef FEAT_CMDWIN
 	// In cmdwin, the alternative window should be used.
-	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
-	&prevwin->w_vars->dv_hashtab :
+	is_in_cmdwin() ? &prevwin->w_vars->dv_hashtab :
 #endif
 	&curwin->w_vars->dv_hashtab;
     if (wdone < ht->ht_used)
