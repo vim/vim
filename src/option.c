@@ -3259,6 +3259,10 @@ set_bool_option(
 	    init_highlight(TRUE, FALSE);
 	}
 # endif
+# ifdef FEAT_TERMINAL
+	term_update_colors_all();
+	term_update_wincolor_all();
+# endif
     }
 #endif
 

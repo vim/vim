@@ -1422,6 +1422,9 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 #ifdef FEAT_SYN_HL
     check_colorcolumn(newp);
 #endif
+#ifdef FEAT_TERMINAL
+    term_update_wincolor(newp);
+#endif
 }
 
 /*
@@ -3683,6 +3686,9 @@ win_init_empty(win_T *wp)
     wp->w_botline = 2;
 #if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
     wp->w_s = &wp->w_buffer->b_s;
+#endif
+#ifdef FEAT_TERMINAL
+    term_reset_wincolor(wp);
 #endif
 }
 

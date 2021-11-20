@@ -122,7 +122,12 @@ typedef enum {
   /**
    * Mask that can be used to extract the default foreground/background bit.
    */
-  VTERM_COLOR_DEFAULT_MASK = 0x06
+  VTERM_COLOR_DEFAULT_MASK = 0x06,
+
+  /**
+   * If set, indicates that the color is invalid.
+   */
+  VTERM_COLOR_INVALID = 0x08
 } VTermColorType;
 
 /**
@@ -154,6 +159,12 @@ typedef enum {
  */
 #define VTERM_COLOR_IS_DEFAULT_BG(col) \
   (!!((col)->type & VTERM_COLOR_DEFAULT_BG))
+
+/**
+ * Returns true if the VTERM_COLOR_INVALID `type` flag is set, indicating
+ * that the given VTermColor instance is an invalid color.
+ */
+#define VTERM_COLOR_IS_INVALID(col) (!!((col)->type & VTERM_COLOR_INVALID))
 
 typedef struct {
   /**
