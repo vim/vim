@@ -741,7 +741,18 @@ def Test_nested_global_function()
       enddef
       defcompile
   END
-  CheckScriptFailure(lines, "E1073:")
+  CheckScriptFailure(lines, "E1073:", 1)
+
+  lines =<< trim END
+      vim9script
+      def Func()
+        echo 'script'
+      enddef
+      def Func()
+        echo 'script'
+      enddef
+  END
+  CheckScriptFailure(lines, "E1073:", 5)
 enddef
 
 def DefListAll()
