@@ -1581,5 +1581,13 @@ def Test_previewpopup()
   set previewpopup&
 enddef
 
+def Test_syntax_enable_clear()
+  syntax clear
+  syntax enable
+  highlight clear String
+  assert_equal(true, hlget('String')->get(0, {})->get('default', false))
+  syntax clear
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

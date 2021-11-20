@@ -3777,7 +3777,7 @@ syn_cmd_on(exarg_T *eap, int syncing UNUSED)
     static void
 syn_cmd_enable(exarg_T *eap, int syncing UNUSED)
 {
-    set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"enable");
+    set_internal_string_var((char_u *)"g:syntax_cmd", (char_u *)"enable");
     syn_cmd_onoff(eap, "syntax");
     do_unlet((char_u *)"g:syntax_cmd", TRUE);
 }
@@ -3792,7 +3792,7 @@ syn_cmd_reset(exarg_T *eap, int syncing UNUSED)
     set_nextcmd(eap, eap->arg);
     if (!eap->skip)
     {
-	set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"reset");
+	set_internal_string_var((char_u *)"g:syntax_cmd", (char_u *)"reset");
 	do_cmdline_cmd((char_u *)"runtime! syntax/syncolor.vim");
 	do_unlet((char_u *)"g:syntax_cmd", TRUE);
     }
