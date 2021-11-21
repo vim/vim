@@ -5604,7 +5604,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 		{
 		    slen++; // ligature char by char
 		}
-		else if (is_utf8)
+		else // is_utf8
 		{
 		    if ((*(cs + slen) & 0xC0) == 0x80)
 		    {
@@ -5637,10 +5637,6 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 			// will catch it
 			slen++;
 		    }
-		}
-		else
-		{
-		    slen++;
 		}
 	    }
 	    else
