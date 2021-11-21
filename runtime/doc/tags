@@ -8421,6 +8421,7 @@ operator-variable	eval.txt	/*operator-variable*
 option-backslash	options.txt	/*option-backslash*
 option-list	quickref.txt	/*option-list*
 option-summary	options.txt	/*option-summary*
+option-value-function	options.txt	/*option-value-function*
 option-window	options.txt	/*option-window*
 option_restore()	todo.txt	/*option_restore()*
 option_save()	todo.txt	/*option_save()*

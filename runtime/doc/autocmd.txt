@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2021 Oct 04
+*autocmd.txt*   For Vim version 8.2.  Last change: 2021 Nov 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -83,7 +83,7 @@ triggered.
 		}
 
 Note: The ":autocmd" command can only be followed by another command when the
-'|' appears before {cmd}.  This works: >
+'|' appears where the pattern is expected.  This works: >
 	:augroup mine | au! BufRead | augroup END
 But this sees "augroup" as part of the defined command: >
 	:augroup mine | au! BufRead * | augroup END

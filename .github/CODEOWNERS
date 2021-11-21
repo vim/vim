@@ -89,6 +89,7 @@ runtime/ftplugin/gitsendemail.vim	@tpope
 runtime/ftplugin/gprof.vim		@dpelle
 runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hgcommit.vim		@k-takata
+runtime/ftplugin/indent.vim		@dkearns
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
 runtime/ftplugin/kconfig.vim		@chrisbra
@@ -207,6 +208,7 @@ runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/indent.vim		@dkearns
 runtime/syntax/kconfig.vim		@chrisbra
 runtime/syntax/less.vim			@genoma
 runtime/syntax/lex.vim			@cecamp

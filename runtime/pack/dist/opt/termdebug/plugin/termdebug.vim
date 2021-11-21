@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2021 Nov 14
+" Last Change: 2021 Nov 21
 "
 " WORK IN PROGRESS - Only the basics work
 " Note: On MS-Windows you need a recent version of gdb.  The one included with
@@ -272,8 +272,9 @@ func s:StartDebug_term(dict)
     call term_sendkeys(s:gdbbuf, 'set args ' . join(proc_args) . "\r")
   endif
 
-  " Connect gdb to the communication pty, using the GDB/MI interface
-  call term_sendkeys(s:gdbbuf, 'new-ui mi ' . commpty . "\r")
+  " Connect gdb to the communication pty, using the GDB/MI interface.
+  " Prefix "server" to avoid adding this to the history.
+  call term_sendkeys(s:gdbbuf, 'server new-ui mi ' . commpty . "\r")
 
   " Wait for the response to show up, users may not notice the error and wonder
   " why the debugger doesn't work.
@@ -493,7 +494,7 @@ func TermDebugSendCommand(cmd)
     let do_continue = 0
     if !s:stopped
       let do_continue = 1
-      call s:SendCommand('-exec-interrupt')
+      Stop
       sleep 10m
     endif
     call term_sendkeys(s:gdbbuf, a:cmd . "\r")
@@ -711,8 +712,8 @@ func s:HandleDisasmMsg(msg)
 
       let lnum = search('^' . s:asm_addr)
       if lnum != 0
-        exe 'sign unplace ' . s:asm_id
-        exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
+	exe 'sign unplace ' . s:asm_id
+	exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
       endif
 
       call win_gotoid(curwinid)
@@ -762,7 +763,7 @@ func s:CommOutput(chan, msg)
     elseif msg != ''
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
 	call s:HandleCursor(msg)
-      elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
+      elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,' || msg =~ '^=breakpoint-modified,'
 	call s:HandleNewBreakpoint(msg)
       elseif msg =~ '^=breakpoint-deleted,'
 	call s:HandleBreakpointDelete(msg)
@@ -773,8 +774,8 @@ func s:CommOutput(chan, msg)
       elseif msg =~ '^\^error,msg='
 	call s:HandleError(msg)
       elseif msg =~ '^disassemble'
-        let s:parsing_disasm_msg = 1
-        let s:asm_lines = []
+	let s:parsing_disasm_msg = 1
+	let s:asm_lines = []
       endif
     endif
   endfor
@@ -802,12 +803,15 @@ func s:InstallCommands()
   command Finish call s:SendCommand('-exec-finish')
   command -nargs=* Run call s:Run(<q-args>)
   command -nargs=* Arguments call s:SendCommand('-exec-arguments ' . <q-args>)
-  command Stop call s:SendCommand('-exec-interrupt')
 
-  " using -exec-continue results in CTRL-C in gdb window not working
   if s:way == 'prompt'
+    command Stop call s:PromptInterrupt()
     command Continue call s:SendCommand('continue')
   else
+    command Stop call s:SendCommand('-exec-interrupt')
+    " using -exec-continue results in CTRL-C in the gdb window not working,
+    " communicating via commbuf (= use of SendCommand) has the same result
+    "command Continue  call s:SendCommand('-exec-continue')
     command Continue call term_sendkeys(s:gdbbuf, "continue\r")
   endif
 
@@ -930,20 +934,16 @@ func s:SetBreakpoint(at)
   let do_continue = 0
   if !s:stopped
     let do_continue = 1
-    if s:way == 'prompt'
-      call s:PromptInterrupt()
-    else
-      call s:SendCommand('-exec-interrupt')
-    endif
+    Stop
     sleep 10m
   endif
 
   " Use the fname:lnum format, older gdb can't handle --source.
   let at = empty(a:at) ?
-        \ fnameescape(expand('%:p')) . ':' . line('.') : a:at
+	\ fnameescape(expand('%:p')) . ':' . line('.') : a:at
   call s:SendCommand('-break-insert ' . at)
   if do_continue
-    call s:SendCommand('-exec-continue')
+    Continue
   endif
 endfunc
 
@@ -954,6 +954,7 @@ func s:ClearBreakpoint()
   let bploc = printf('%s:%d', fname, lnum)
   if has_key(s:breakpoint_locations, bploc)
     let idx = 0
+    let nr = 0
     for id in s:breakpoint_locations[bploc]
       if has_key(s:breakpoints, id)
 	" Assume this always works, the reply is simply "^done".
@@ -963,14 +964,22 @@ func s:ClearBreakpoint()
 	endfor
 	unlet s:breakpoints[id]
 	unlet s:breakpoint_locations[bploc][idx]
+	let nr = id
 	break
       else
 	let idx += 1
       endif
     endfor
-    if empty(s:breakpoint_locations[bploc])
-      unlet s:breakpoint_locations[bploc]
+    if nr != 0
+      if empty(s:breakpoint_locations[bploc])
+	unlet s:breakpoint_locations[bploc]
+      endif
+      echomsg 'Breakpoint ' . id . ' cleared from line ' . lnum . '.'
+    else
+      echoerr 'Internal error trying to remove breakpoint at line ' . lnum . '!'
     endif
+  else
+    echomsg 'No breakpoint to remove at line ' . lnum . '.'
   endif
 endfunc
 
@@ -982,41 +991,71 @@ func s:Run(args)
 endfunc
 
 func s:SendEval(expr)
-  " clean up expression that may got in because of range
-  " (newlines and surrounding spaces)
-  let expr = a:expr
-  if &filetype ==# 'cobol'
-    " extra cleanup for COBOL: _every: expression ends with a period,
-    " a trailing comma is ignored as it commonly separates multiple expr.
-    let expr = substitute(expr, '\..*', '', '')
-    let expr = substitute(expr, '[;\n]', ' ', 'g')
-    let expr = substitute(expr, ',*$', '', '')
+  " check for "likely" boolean expressions, in which case we take it as lhs
+  if a:expr =~ "[=!<>]="
+    let exprLHS = a:expr
   else
-    let expr = substitute(expr, '\n', ' ', 'g')
+    " remove text that is likely an assignment
+    let exprLHS = substitute(a:expr, ' *=.*', '', '')
   endif
-  let expr = substitute(expr, '^ *\(.*\) *', '\1', '')
-
+  
+  " encoding expression to prevent bad errors
+  let expr = a:expr
+  let expr = substitute(expr, '\\', '\\\\', 'g')
+  let expr = substitute(expr, '"', '\\"', 'g')
   call s:SendCommand('-data-evaluate-expression "' . expr . '"')
-  let s:evalexpr = expr
+  let s:evalexpr = exprLHS
 endfunc
 
-" :Evaluate - evaluate what is under the cursor
+" :Evaluate - evaluate what is specified / under the cursor 
 func s:Evaluate(range, arg)
+  let expr = s:GetEvaluationExpression(a:range, a:arg)
+  let s:ignoreEvalError = 0
+  call s:SendEval(expr)
+endfunc
+
+" get what is specified / under the cursor 
+func s:GetEvaluationExpression(range, arg)
   if a:arg != ''
-    let expr = a:arg
+    " user supplied evaluation
+    let expr = s:CleanupExpr(a:arg)
+    " DSW: replace "likely copy + paste" assignment
+    let expr = substitute(expr, '"\([^"]*\)": *', '\1=', 'g')
   elseif a:range == 2
+    " no evaluation but provided but range set
     let pos = getcurpos()
     let reg = getreg('v', 1, 1)
     let regt = getregtype('v')
     normal! gv"vy
-    let expr = @v
+    let expr = s:CleanupExpr(@v)
     call setpos('.', pos)
     call setreg('v', reg, regt)
   else
+    " no evaluation provided: get from C-expression under cursor
+    " TODO: allow filetype specific lookup #9057
     let expr = expand('<cexpr>')
   endif
-  let s:ignoreEvalError = 0
-  call s:SendEval(expr)
+  return expr
+endfunc
+
+" clean up expression that may got in because of range
+" (newlines and surrounding whitespace)
+func s:CleanupExpr(expr)
+  " replace all embedded newlines/tabs/...
+  let expr = substitute( a:expr, '\s', ' ', 'g')
+
+  if &filetype ==# 'cobol'
+    " extra cleanup for COBOL: _every: expression ends with a period,
+    " a semicolon nmay be used instead of a space
+    " a trailing comma is ignored as it commonly separates multiple expr
+    let expr = substitute(expr, '\..*', '', '')
+    let expr = substitute(expr, ';', ' ', 'g')
+    let expr = substitute(expr, ',*$', '', '')
+  endif
+
+  " get rid of surrounding spaces
+  let expr = substitute(expr, '^ *\(.*\) *', '\1', '')
+  return expr
 endfunc
 
 let s:ignoreEvalError = 0
@@ -1060,7 +1099,8 @@ func TermDebugBalloonExpr()
   let s:evalFromBalloonExpr = 1
   let s:evalFromBalloonExprResult = ''
   let s:ignoreEvalError = 1
-  call s:SendEval(v:beval_text)
+  let expr = s:CleanupExpr(v:beval_text)
+  call s:SendEval(expr)
   return ''
 endfunc
 
@@ -1109,7 +1149,7 @@ func s:GotoAsmwinOrCreateIt()
 
     if exists('g:termdebug_disasm_window')
       if g:termdebug_disasm_window > 1
-        exe 'resize ' . g:termdebug_disasm_window
+	exe 'resize ' . g:termdebug_disasm_window
       endif
     endif
   endif
@@ -1118,7 +1158,7 @@ func s:GotoAsmwinOrCreateIt()
     let lnum = search('^' . s:asm_addr)
     if lnum == 0
       if s:stopped
-        call s:SendCommand('disassemble $pc')
+	call s:SendCommand('disassemble $pc')
       endif
     else
       exe 'sign unplace ' . s:asm_id
@@ -1153,15 +1193,15 @@ func s:HandleCursor(msg)
 
       let curwinid = win_getid(winnr())
       if win_gotoid(s:asmwin)
-        let lnum = search('^' . s:asm_addr)
-        if lnum == 0
-          call s:SendCommand('disassemble $pc')
-        else
-          exe 'sign unplace ' . s:asm_id
-          exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
-        endif
+	let lnum = search('^' . s:asm_addr)
+	if lnum == 0
+	  call s:SendCommand('disassemble $pc')
+	else
+	  exe 'sign unplace ' . s:asm_id
+	  exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
+	endif
 
-        call win_gotoid(curwinid)
+	call win_gotoid(curwinid)
       endif
     endif
   endif
@@ -1215,7 +1255,12 @@ endfunction
 " Will update the sign that shows the breakpoint
 func s:HandleNewBreakpoint(msg)
   if a:msg !~ 'fullname='
-    " a watch does not have a file name
+    " a watch or a pending breakpoint does not have a file name
+    if a:msg =~ 'pending='
+      let nr = substitute(a:msg, '.*number=\"\([0-9.]*\)\".*', '\1', '')
+      let target = substitute(a:msg, '.*pending=\"\([^"]*\)\".*', '\1', '')
+      echomsg 'Breakpoint ' . nr . ' (' . target  . ') pending.'
+    endif
     return
   endif
   for msg in s:SplitMsg(a:msg)
@@ -1259,6 +1304,7 @@ func s:HandleNewBreakpoint(msg)
     if bufloaded(fname)
       call s:PlaceSign(id, subid, entry)
     endif
+    echomsg 'Breakpoint ' . nr . ' created at line ' . lnum . '.'
   endfor
 endfunc
 
@@ -1283,6 +1329,7 @@ func s:HandleBreakpointDelete(msg)
       endif
     endfor
     unlet s:breakpoints[id]
+    echomsg 'Breakpoint ' . id . ' cleared.'
   endif
 endfunc
 

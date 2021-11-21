@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2021 Nov 07
+*syntax.txt*	For Vim version 8.2.  Last change: 2021 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5477,7 +5477,7 @@ For Unix you can use the file ~/.vim/after/syntax/syncolor.vim.  Example: >
 	else
 	  highlight comment ctermfg=green guifg=green
 	endif
-
+<
 								*E679*
 Do make sure this syncolor.vim script does not use a "syntax on", set the
 'background' option or uses a "colorscheme" command, because it results in an
@@ -5490,11 +5490,11 @@ depends on the color scheme file.  See |:colorscheme|.
 							*syntax_cmd*
 The "syntax_cmd" variable is set to one of these values when the
 syntax/syncolor.vim files are loaded:
-   "on"		":syntax on" command.  Highlight colors are overruled but
+   "on"		`:syntax on` command.  Highlight colors are overruled but
 		links are kept
-   "enable"	":syntax enable" command.  Only define colors for groups that
-		don't have highlighting yet.  Use ":syntax default".
-   "reset"	":syntax reset" command or loading a color scheme.  Define all
+   "enable"	`:syntax enable` command.  Only define colors for groups that
+		don't have highlighting yet.  Use `:highlight default` .
+   "reset"	`:syntax reset` command or loading a color scheme.  Define all
 		the colors.
    "skip"	Don't define colors.  Used to skip the default settings when a
 		syncolor.vim file earlier in 'runtimepath' has already set
