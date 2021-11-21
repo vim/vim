@@ -145,7 +145,7 @@ else
 endif
 
 if has('mac')
-  " In MacOS, when starting a shell in a terminal, a bash deprecation warning
+  " In macOS, when starting a shell in a terminal, a bash deprecation warning
   " message is displayed. This breaks the terminal test. Disable the warning
   " message.
   let $BASH_SILENCE_DEPRECATION_WARNING = 1

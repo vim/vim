@@ -2149,7 +2149,7 @@ def Test_import_compile_error()
   try
     source Ximport.vim
   catch /E1001/
-    # Error should be fore the Xexported.vim file.
+    # Error should be before the Xexported.vim file.
     assert_match('E1001: Variable not found: notDefined', v:exception)
     assert_match('function <SNR>\d\+_ImpFunc\[1\]..<SNR>\d\+_ExpFunc, line 1', v:throwpoint)
   endtry
@@ -4579,7 +4579,7 @@ def ProfiledNestedProfiled()
   Nested()
 enddef
 
-" Execute this near the end, profiling doesn't stop until Vim exists.
+" Execute this near the end, profiling doesn't stop until Vim exits.
 " This only tests that it works, not the profiling output.
 def Test_xx_profile_with_lambda()
   CheckFeature profile

@@ -50,7 +50,7 @@ func Test_ins_complete()
   " i-add-expands and switches to local
   exe "normal OM\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-X>\<C-X>\<C-P>"
   call assert_equal("Makefile\tto\trun3", getline('.'))
-  " add-expands lines (it would end in an empty line if it didn't ignored
+  " add-expands lines (it would end in an empty line if it didn't ignore
   " itself)
   exe "normal o\<C-X>\<C-L>\<C-X>\<C-L>\<C-P>\<C-P>"
   call assert_equal("Makefile\tto\trun3", getline('.'))

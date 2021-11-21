@@ -950,7 +950,7 @@ func Test_viminfofile_none()
   let &viminfofile = save_vif
 endfunc
 
-" Test for an unwritable and unreadble 'viminfo' file
+" Test for an unwritable and unreadable 'viminfo' file
 func Test_viminfo_perm()
   CheckUnix
   CheckNotRoot
