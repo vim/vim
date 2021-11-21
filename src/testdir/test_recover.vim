@@ -361,7 +361,7 @@ func Test_recover_encrypted_swap_file()
 endfunc
 
 " Test for :recover using a unreadable swap file
-func Test_recover_unreadble_swap_file()
+func Test_recover_unreadable_swap_file()
   CheckUnix
   CheckNotRoot
   new Xfile1

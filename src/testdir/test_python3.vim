@@ -605,7 +605,7 @@ func Test_python3_dict()
   py3 d = vim.bindeval('d')
   call assert_equal(2, py3eval('len(d)'))
 
-  " Deleting an non-existing key
+  " Deleting a non-existing key
   call AssertException(["py3 del d['c']"], "Vim(py3):KeyError: 'c'")
 endfunc
 

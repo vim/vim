@@ -314,8 +314,8 @@ func Test_term_mouse_middle_click_insert_mode()
     call setline(1, ['123456789', '123456789'])
     let @* = 'abc'
 
-    " Middle-click in inesrt mode doesn't move the cursor but inserts the
-    " contents of aregister
+    " Middle-click in insert mode doesn't move the cursor but inserts the
+    " contents of a register
     call cursor(1, 4)
     call feedkeys('i' ..
           \ MouseMiddleClickCode(2, 7) .. MouseMiddleReleaseCode(2, 7) ..
@@ -365,7 +365,7 @@ func Test_term_mouse_switch_win_insert_mode()
   close!
 endfunc
 
-" Test for using the mouse to increaes the height of the cmdline window
+" Test for using the mouse to increase the height of the cmdline window
 func Test_mouse_cmdwin_resize()
   CheckFeature cmdwin
 

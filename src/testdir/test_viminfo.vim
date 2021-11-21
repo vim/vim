@@ -635,12 +635,12 @@ func Test_viminfo_file_marks()
   call test_settime(35)
   edit again
   call test_settime(40)
-  edit fourty
+  edit forty
   wviminfo Xviminfo
 
   sp Xviminfo
   1
-  for name in ['fourty', 'again', 'thirty', 'twenty', 'ten']
+  for name in ['forty', 'again', 'thirty', 'twenty', 'ten']
     /^>
     call assert_equal(name, substitute(getline('.'), '.*/', '', ''))
   endfor
@@ -950,7 +950,7 @@ func Test_viminfofile_none()
   let &viminfofile = save_vif
 endfunc
 
-" Test for an unwritable and unreadble 'viminfo' file
+" Test for an unwritable and unreadable 'viminfo' file
 func Test_viminfo_perm()
   CheckUnix
   CheckNotRoot

@@ -2865,7 +2865,7 @@ func XvimgrepTests(cchar)
   call writefile(['Editor:VIM vim',
 	      \ 'Editor:Emacs EmAcS',
 	      \ 'Editor:Notepad NOTEPAD'], 'Xtestfile1')
-  call writefile(['Linux', 'MacOS', 'MS-Windows'], 'Xtestfile2')
+  call writefile(['Linux', 'macOS', 'MS-Windows'], 'Xtestfile2')
 
   " Error cases
   call assert_fails('Xvimgrep /abc *', 'E682:')
@@ -2879,7 +2879,7 @@ func XvimgrepTests(cchar)
 
   Xexpr ""
   Xvimgrepadd Notepad Xtestfile1
-  Xvimgrepadd MacOS Xtestfile2
+  Xvimgrepadd macOS Xtestfile2
   let l = g:Xgetlist()
   call assert_equal(2, len(l))
   call assert_equal('Editor:Notepad NOTEPAD', l[0].text)
@@ -4126,7 +4126,7 @@ endfunc
 func Test_shorten_fname()
   CheckUnix
   %bwipe
-  " Create a quickfix list with a absolute path filename
+  " Create a quickfix list with an absolute path filename
   let fname = getcwd() . '/test_quickfix.vim'
   call setqflist([], ' ', {'lines':[fname . ":20:Line20"], 'efm':'%f:%l:%m'})
   call assert_equal(fname, bufname('test_quickfix.vim'))
@@ -4135,7 +4135,7 @@ func Test_shorten_fname()
   call assert_equal('test_quickfix.vim', bufname('test_quickfix.vim'))
   cclose
   %bwipe
-  " Create a quickfix list with a absolute path filename
+  " Create a quickfix list with an absolute path filename
   call setqflist([], ' ', {'lines':[fname . ":20:Line20"], 'efm':'%f:%l:%m'})
   call assert_equal(fname, bufname('test_quickfix.vim'))
   " Displaying the quickfix list should simplify the file path

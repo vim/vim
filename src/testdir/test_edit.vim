@@ -422,13 +422,13 @@ func Test_autoindent_remove_indent()
   " leaving insert mode in a new line with indent added by autoindent, should
   " remove the indent.
   call term_sendkeys(buf, "i\<Tab>foo\<CR>\<Esc>")
-  " Need to delay for sometime, otherwise the code in getchar.c will not be
+  " Need to delay for some time, otherwise the code in getchar.c will not be
   " exercised.
   call TermWait(buf, 50)
   " when a line is wrapped and the cursor is at the start of the second line,
   " leaving insert mode, should move the cursor back to the first line.
   call term_sendkeys(buf, "o" .. repeat('x', 20) .. "\<Esc>")
-  " Need to delay for sometime, otherwise the code in getchar.c will not be
+  " Need to delay for some time, otherwise the code in getchar.c will not be
   " exercised.
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":w\n")
@@ -440,7 +440,7 @@ endfunc
 
 func Test_edit_CR()
   " Test for <CR> in insert mode
-  " basically only in quickfix mode ist tested, the rest
+  " basically only in quickfix mode it's tested, the rest
   " has been taken care of by other tests
   CheckFeature quickfix
   botright new
