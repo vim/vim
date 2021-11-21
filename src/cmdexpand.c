@@ -2922,6 +2922,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     {
 	set_one_cmd_context(&xpc, tv_get_string(&argvars[0]));
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	xpc.xp_col = (int)STRLEN(tv_get_string(&argvars[0]));
     }
     else
     {
