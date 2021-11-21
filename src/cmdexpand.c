@@ -2900,6 +2900,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
 	return;
 
+    pat = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_STRING)
     {
 	semsg(_(e_invarg2), "type must be a string");
@@ -2920,12 +2921,13 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     ExpandInit(&xpc);
     if (STRCMP(type, "cmdline") == 0)
     {
-	set_one_cmd_context(&xpc, tv_get_string(&argvars[0]));
+	set_one_cmd_context(&xpc, pat);
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	xpc.xp_col = (int)STRLEN(pat);
     }
     else
     {
-	xpc.xp_pattern = tv_get_string(&argvars[0]);
+	xpc.xp_pattern = pat;
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
 
 	xpc.xp_context = cmdcomplete_str_to_type(type);
