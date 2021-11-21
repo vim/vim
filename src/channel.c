@@ -3156,6 +3156,10 @@ channel_close(channel_T *channel, int invoke_close_cb)
     {
 	ch_part_T	part;
 
+#ifdef FEAT_TERMINAL
+	// let the terminal know it is closing to avoid getting stuck
+	term_channel_closing(channel);
+#endif
 	// Invoke callbacks and flush buffers before the close callback.
 	if (channel->ch_close_cb.cb_name != NULL)
 	    ch_log(channel,

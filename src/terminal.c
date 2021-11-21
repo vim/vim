@@ -99,6 +99,7 @@ struct terminal_S {
     int		tl_vterm_size_changed;
 
     int		tl_normal_mode; // TRUE: Terminal-Normal mode
+    int		tl_channel_closing;
     int		tl_channel_closed;
     int		tl_channel_recently_closed; // still need to handle tl_finish
 
@@ -3459,6 +3460,20 @@ may_close_term_popup(void)
 #endif
 
 /*
+ * Called when a channel is going to be closed, before invoking the close
+ * callback.
+ */
+    void
+term_channel_closing(channel_T *ch)
+{
+    term_T *term;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job == ch->ch_job && !term->tl_channel_closed)
+	    term->tl_channel_closing = TRUE;
+}
+
+/*
  * Called when a channel has been closed.
  * If this was a channel for a terminal window then finish it up.
  */
@@ -6437,6 +6452,9 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (!buf_valid(buf))
 		// If the terminal is closed when the channel is closed the
 		// buffer disappears.
+		break;
+	    if (buf->b_term == NULL || buf->b_term->tl_channel_closing)
+		// came here from a close callback, only wait one time
 		break;
 	}
 

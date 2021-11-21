@@ -2058,5 +2058,22 @@ func Test_terminal_adds_jump()
   bwipe!
 endfunc
 
+func Close_cb(ch, ctx)
+  call term_wait(a:ctx.bufnr)
+  let g:close_done = 'done'
+endfunc
+
+func Test_term_wait_in_close_cb()
+  let g:close_done = ''
+  let ctx = {}
+  let ctx.bufnr = term_start('echo "HELLO WORLD"',
+        \ {'close_cb': {ch -> Close_cb(ch, ctx)}})
+
+  call WaitForAssert({-> assert_equal("done", g:close_done)})
+
+  unlet g:close_done
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
