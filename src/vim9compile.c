@@ -8220,8 +8220,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	for (idx = 0; idx < var_count; ++idx)
 	{
 	    assign_dest_T	dest = dest_local;
-	    int		opt_flags = 0;
-	    int		vimvaridx = -1;
+	    int			opt_flags = 0;
+	    int			vimvaridx = -1;
 	    type_T		*type = &t_any;
 	    type_T		*lhs_type = &t_any;
 	    where_T		where = WHERE_INIT;
@@ -8255,6 +8255,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    }
 	    else
 	    {
+		if (!valid_varname(arg, varlen, FALSE))
+		    goto failed;
 		if (lookup_local(arg, varlen, NULL, cctx) == OK)
 		{
 		    semsg(_(e_variable_already_declared), arg);
