@@ -10,6 +10,7 @@ void restore_visual_mode(void);
 int find_ident_under_cursor(char_u **text, int find_type);
 int find_ident_at_pos(win_T *wp, linenr_T lnum, colnr_T startcol, char_u **text, int *textcol, int find_type);
 void prep_redo(int regname, long num, int cmd1, int cmd2, int cmd3, int cmd4, int cmd5);
+void prep_redo_num2(int regname, long num1, int cmd1, int cmd2, long num2, int cmd3, int cmd4, int cmd5);
 void clearop(oparg_T *oap);
 void clearopbeep(oparg_T *oap);
 void may_clear_cmdline(void);

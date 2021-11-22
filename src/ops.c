@@ -3764,6 +3764,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 			    oap->motion_force, cap->cmdchar, cap->nchar);
 		else if (cap->cmdchar != ':' && cap->cmdchar != K_COMMAND)
 		{
+		    int opchar = get_op_char(oap->op_type);
+		    int extra_opchar = get_extra_op_char(oap->op_type);
 		    int nchar = oap->op_type == OP_REPLACE ? cap->nchar : NUL;
 
 		    // reverse what nv_replace() did
@@ -3771,10 +3773,14 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 			nchar = CAR;
 		    else if (nchar == REPLACE_NL_NCHAR)
 			nchar = NL;
-		    prep_redo(oap->regname, 0L, NUL, 'v',
-					get_op_char(oap->op_type),
-					get_extra_op_char(oap->op_type),
-					nchar);
+
+		    if (opchar == 'g' && extra_opchar == '@')
+			// also repeat the count for 'operatorfunc'
+			prep_redo_num2(oap->regname, 0L, NUL, 'v',
+				     cap->count0, opchar, extra_opchar, nchar);
+		    else
+			prep_redo(oap->regname, 0L, NUL, 'v',
+						  opchar, extra_opchar, nchar);
 		}
 		if (!redo_VIsual_busy)
 		{
