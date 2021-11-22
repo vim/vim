@@ -915,6 +915,14 @@ def Test_expand()
   CheckDefAndScriptFailure2(['expand("a", 2)'], 'E1013: Argument 2: type mismatch, expected bool but got number', 'E1212: Bool required for argument 2')
   CheckDefAndScriptFailure2(['expand("a", true, 2)'], 'E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3')
   expand('')->assert_equal('')
+
+  var caught = false
+  try
+    echo expand("<sfile>")
+  catch /E1245:/
+    caught = true
+  endtry
+  assert_true(caught)
 enddef
 
 def Test_expandcmd()

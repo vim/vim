@@ -684,3 +684,5 @@ EXTERN char e_ascii_code_not_in_range[]
 	INIT(= N_("E1243: ASCII code not in 32-127 range"));
 EXTERN char e_bad_color_string_str[]
 	INIT(= N_("E1244: Bad color string: %s"));
+EXTERN char e_cannot_expand_sfile_in_vim9_function[]
+	INIT(= N_("E1245: Cannot expand <sfile> in a Vim9 function"));

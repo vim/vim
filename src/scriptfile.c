@@ -135,6 +135,20 @@ estack_sfile(estack_arg_T which UNUSED)
 	return vim_strsave(entry->es_name);
     }
 #ifdef FEAT_EVAL
+    // expand('<sfile>') works in a function for backwards compatibility, but
+    // may give an unexpected result.  Disallow it in Vim 9 script.
+    if (which == ESTACK_SFILE && in_vim9script())
+    {
+	int  save_emsg_off = emsg_off;
+
+	if (emsg_off == 1)
+	    // f_expand() silences errors but we do want this one
+	    emsg_off = 0;
+	emsg(_(e_cannot_expand_sfile_in_vim9_function));
+	emsg_off = save_emsg_off;
+	return NULL;
+    }
+
     // Give information about each stack entry up to the root.
     // For a function we compose the call stack, as it was done in the past:
     //   "function One[123]..Two[456]..Three"
