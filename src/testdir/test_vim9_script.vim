@@ -3083,6 +3083,21 @@ def Test_while_loop()
   endwhile
 enddef
 
+def Test_while_loop_in_script()
+  var lines =<< trim END
+      vim9script
+      var result = ''
+      var cnt = 0
+      while cnt < 3
+        var s = 'v' .. cnt
+        result ..= s
+        cnt += 1
+      endwhile
+      assert_equal('v0v1v2', result)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_while_loop_fails()
   CheckDefFailure(['while xxx'], 'E1001:')
   CheckDefFailure(['endwhile'], 'E588:')
