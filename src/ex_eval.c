@@ -887,22 +887,32 @@ report_discard_pending(int pending, void *value)
     }
 }
 
+/*
+ * Return TRUE if "arg" is only a variable, register or option name.
+ */
     int
 cmd_is_name_only(char_u *arg)
 {
     char_u  *p = arg;
-    char_u  *alias;
+    char_u  *alias = NULL;
     int	    name_only = FALSE;
 
-    if (*p == '&')
+    if (*p == '@')
     {
 	++p;
-	if (STRNCMP("l:", p, 2) == 0 || STRNCMP("g:", p, 2) == 0)
-	    p += 2;
+	if (*p != NUL)
+	    ++p;
     }
-    else if (*p == '@')
-	++p;
-    get_name_len(&p, &alias, FALSE, FALSE);
+    else
+    {
+	if (*p == '&')
+	{
+	    ++p;
+	    if (STRNCMP("l:", p, 2) == 0 || STRNCMP("g:", p, 2) == 0)
+		p += 2;
+	}
+	get_name_len(&p, &alias, FALSE, FALSE);
+    }
     name_only = ends_excmd2(arg, skipwhite(p));
     vim_free(alias);
     return name_only;

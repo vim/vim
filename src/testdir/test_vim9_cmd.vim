@@ -556,7 +556,34 @@ def Test_use_register()
       @a = 'echo "text"'
       @a
   END
-  CheckDefAndScriptFailure(lines, 'E1207:')
+  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+
+  lines =<< trim END
+      @/ = 'pattern'
+      @/
+  END
+  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+
+  lines =<< trim END
+      &opfunc = 'nothing'
+      &opfunc
+  END
+  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+  &opfunc = ''
+
+  lines =<< trim END
+      &l:showbreak = 'nothing'
+      &l:showbreak
+  END
+  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+  &l:showbreak = ''
+
+  lines =<< trim END
+      &g:showbreak = 'nothing'
+      &g:showbreak
+  END
+  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+  &g:showbreak = ''
 enddef
 
 def Test_environment_use_linebreak()
