@@ -143,7 +143,7 @@ SRC_ALL =	\
 		src/tag.c \
 		src/term.c \
 		src/terminal.c \
-		src/term.h \
+		src/termdefs.h \
 		src/termlib.c \
 		src/testing.c \
 		src/textformat.c \
