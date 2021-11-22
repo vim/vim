@@ -8,12 +8,8 @@
  */
 
 /*
- * getchar.c
- *
- * functions related with getting a character from the user/mapping/redo/...
- *
- * manipulations with redo buffer and stuff buffer
- * mappings and abbreviations
+ * getchar.c: Code related to getting a character from the user or a script
+ * file, manipulations with redo buffer and stuff buffer.
  */
 
 #include "vim.h"
@@ -2633,7 +2629,7 @@ handle_mapping(
 		keylen = KEYLEN_PART_KEY;
 
 	    // If no termcode matched, try to include the modifier into the
-	    // key.  This for when modifyOtherKeys is working.
+	    // key.  This is for when modifyOtherKeys is working.
 	    if (keylen == 0 && !no_reduce_keys)
 		keylen = check_simplify_modifier(max_mlen + 1);
 

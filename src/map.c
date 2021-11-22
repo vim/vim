@@ -8,7 +8,7 @@
  */
 
 /*
- * map.c: functions for maps and abbreviations
+ * map.c: Code for mappings and abbreviations.
  */
 
 #include "vim.h"
@@ -659,9 +659,9 @@ do_map(
 	// Find an entry in the maphash[] list that matches.
 	// For :unmap we may loop two times: once to try to unmap an entry with
 	// a matching 'from' part, a second time, if the first fails, to unmap
-	// an entry with a matching 'to' part. This was done to allow ":ab foo
-	// bar" to be unmapped by typing ":unab foo", where "foo" will be
-	// replaced by "bar" because of the abbreviation.
+	// an entry with a matching 'to' part. This was done to allow
+	// ":ab foo bar" to be unmapped by typing ":unab foo", where "foo" will
+	// be replaced by "bar" because of the abbreviation.
 	for (round = 0; (round == 0 || maptype == 1) && round <= 1
 					       && !did_it && !got_int; ++round)
 	{
