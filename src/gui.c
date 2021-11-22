@@ -5525,6 +5525,7 @@ gui_wingoto_xy(int x, int y)
 drop_callback(void *cookie)
 {
     char_u	*p = cookie;
+    int		do_shorten = FALSE;
 
     // If Shift held down, change to first file's directory.  If the first
     // item is a directory, change to that directory (and let the explorer
@@ -5534,11 +5535,16 @@ drop_callback(void *cookie)
 	if (mch_isdir(p))
 	{
 	    if (mch_chdir((char *)p) == 0)
-		shorten_fnames(TRUE);
+		do_shorten = TRUE;
 	}
 	else if (vim_chdirfile(p, "drop") == OK)
-	    shorten_fnames(TRUE);
+	    do_shorten = TRUE;
 	vim_free(p);
+	if (do_shorten)
+	{
+	    shorten_fnames(TRUE);
+	    last_chdir_reason = "drop";
+	}
     }
 
     // Update the screen display
@@ -5635,7 +5641,7 @@ gui_handle_drop(
 	}
 	else
 	    handle_drop(count, fnames, (modifiers & MOUSE_CTRL) != 0,
-		    drop_callback, (void *)p);
+						     drop_callback, (void *)p);
     }
 
     entered = FALSE;
