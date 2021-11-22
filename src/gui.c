@@ -1097,6 +1097,31 @@ gui_set_ligatures(void)
     else
 	CLEAR_FIELD(gui.ligatures_map);
 }
+
+/*
+ * Adjust the columns to undraw for when the cursor is on ligatures.
+ */
+    static void
+gui_adjust_undraw_cursor_for_ligatures(int *startcol, int *endcol)
+{
+    int off;
+
+    if (ScreenLines == NULL || *p_guiligatures == NUL)
+	return;
+
+    // expand before the cursor for all the chars in gui.ligatures_map
+    off = LineOffset[gui.cursor_row] + *startcol;
+    if (gui.ligatures_map[ScreenLines[off]])
+	while (*startcol > 0 && gui.ligatures_map[ScreenLines[--off]])
+	    (*startcol)--;
+
+    // expand after the cursor for all the chars in gui.ligatures_map
+    off = LineOffset[gui.cursor_row] + *endcol;
+    if (gui.ligatures_map[ScreenLines[off]])
+	while (*endcol < ((int)screen_Columns - 1)
+				      && gui.ligatures_map[ScreenLines[++off]])
+	   (*endcol)++;
+}
 #endif
 
     static void
@@ -2673,19 +2698,24 @@ gui_outstr_nowrap(
 }
 
 /*
- * Un-draw the cursor.	Actually this just redraws the character at the given
- * position.
+ * Undraw the cursor.  This actually redraws the character at the cursor
+ * position, plus some more characters when needed.
  */
     void
 gui_undraw_cursor(void)
 {
     if (gui.cursor_is_valid)
     {
-	// Redraw the character just before too, if there is one, because with
-	// some fonts and characters there can be a one pixel overlap.
-	gui_redraw_block(gui.cursor_row,
-		      gui.cursor_col > 0 ? gui.cursor_col - 1 : gui.cursor_col,
-		      gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR);
+	// Always redraw the character just before if there is one, because
+	// with some fonts and characters there can be a one pixel overlap.
+	int startcol = gui.cursor_col > 0 ? gui.cursor_col - 1 : gui.cursor_col;
+	int endcol = gui.cursor_col;
+
+#ifdef FEAT_GUI_GTK
+	gui_adjust_undraw_cursor_for_ligatures(&startcol, &endcol);
+#endif
+	gui_redraw_block(gui.cursor_row, startcol,
+				      gui.cursor_row, endcol, GUI_MON_NOCLEAR);
 
 	// Cursor_is_valid is reset when the cursor is undrawn, also reset it
 	// here in case it wasn't needed to undraw it.
