@@ -2674,18 +2674,51 @@ gui_outstr_nowrap(
 
 /*
  * Un-draw the cursor.	Actually this just redraws the character at the given
- * position.
+ * position plus some surrounding characters depending on content
  */
     void
 gui_undraw_cursor(void)
 {
+    int startcol;
+    int endcol;
+#ifdef FEAT_GUI_GTK
+    int off;
+#endif
+
     if (gui.cursor_is_valid)
     {
 	// Redraw the character just before too, if there is one, because with
 	// some fonts and characters there can be a one pixel overlap.
-	gui_redraw_block(gui.cursor_row,
-		      gui.cursor_col > 0 ? gui.cursor_col - 1 : gui.cursor_col,
-		      gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR);
+	startcol = gui.cursor_col > 0 ? gui.cursor_col - 1 : gui.cursor_col;
+	endcol = gui.cursor_col;
+
+#ifdef FEAT_GUI_GTK
+	// GUI_GTK with ligatures may require somewhat wider redraw
+	// Don't try to do it when ScreenLines is not valid
+	if (ScreenLines != NULL)
+	{
+	    // Expand before for all the chars in gui.ligatures_map
+	    off = LineOffset[gui.cursor_row] + startcol;
+	    if (gui.ligatures_map[ScreenLines[off]])
+		while ((startcol > 0)
+			&& (gui.ligatures_map[ScreenLines[--off]]))
+		{
+		    startcol--;
+		}
+	    // Expand after for all the chars in gui.ligatures_map
+	    off = LineOffset[gui.cursor_row] + endcol;
+	    if (gui.ligatures_map[ScreenLines[off]])
+		while ((endcol < ((int)screen_Columns - 1))
+			&& (gui.ligatures_map[ScreenLines[++off]]))
+		{
+		   endcol++;
+		}
+	}
+#endif
+
+	// Actual redraw with startcol and endcol
+	gui_redraw_block(gui.cursor_row, startcol, gui.cursor_row, endcol,
+		GUI_MON_NOCLEAR);
 
 	// Cursor_is_valid is reset when the cursor is undrawn, also reset it
 	// here in case it wasn't needed to undraw it.
