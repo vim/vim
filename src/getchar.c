@@ -13,7 +13,6 @@
  * functions related with getting a character from the user/mapping/redo/...
  *
  * manipulations with redo buffer and stuff buffer
- * mappings and abbreviations
  */
 
 #include "vim.h"
