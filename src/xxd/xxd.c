@@ -811,22 +811,13 @@ main(int argc, char *argv[])
     {
       if (p == 0)
 	{
-	  if (decimal_offset)
-		addrlen = sprintf(l, "%08ld:",
-				  ((unsigned long)(n + seekoff + displayoff)));
-	  else
-		addrlen = sprintf(l, "%08lx:",
+	  addrlen = sprintf(l, decimal_offset ? "%08ld:" : "%08lx:",
 				  ((unsigned long)(n + seekoff + displayoff)));
 	  for (c = addrlen; c < LLEN; l[c++] = ' ');
 	}
-      if (hextype == HEX_NORMAL)
+      if (hextype == HEX_NORMAL || HEX_LITTLEENDIAN)
 	{
-	  l[c = (addrlen + 1 + (grplen * p) / octspergrp)] = hexx[(e >> 4) & 0xf];
-	  l[++c]				  = hexx[ e       & 0xf];
-	}
-      else if (hextype == HEX_LITTLEENDIAN)
-	{
-	  int x = p ^ (octspergrp-1);
+	  int x = (hextype == HEX_LITTLEENDIAN) ? p ^ (octspergrp-1) : p;
 	  l[c = (addrlen + 1 + (grplen * x) / octspergrp)] = hexx[(e >> 4) & 0xf];
 	  l[++c]				  = hexx[ e       & 0xf];
 	}
