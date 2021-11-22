@@ -1827,7 +1827,12 @@ do_lock_var(
 	    // Normal name or expanded name.
 	    di = find_var(lp->ll_name, NULL, TRUE);
 	    if (di == NULL)
+	    {
+		if (in_vim9script())
+		    semsg(_(e_cannot_find_variable_to_unlock_str),
+								  lp->ll_name);
 		ret = FAIL;
+	    }
 	    else if ((di->di_flags & DI_FLAGS_FIX)
 			    && di->di_tv.v_type != VAR_DICT
 			    && di->di_tv.v_type != VAR_LIST)

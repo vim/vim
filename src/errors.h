@@ -686,3 +686,5 @@ EXTERN char e_bad_color_string_str[]
 	INIT(= N_("E1244: Bad color string: %s"));
 EXTERN char e_cannot_expand_sfile_in_vim9_function[]
 	INIT(= N_("E1245: Cannot expand <sfile> in a Vim9 function"));
+EXTERN char e_cannot_find_variable_to_unlock_str[]
+	INIT(= N_("E1246: Cannot find variable to (un)lock: %s"));
