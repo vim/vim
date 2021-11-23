@@ -584,6 +584,13 @@ def Test_use_register()
   END
   CheckDefAndScriptFailure(lines, 'E1207:', 2)
   &g:showbreak = ''
+
+  lines =<< trim END
+      $SomeEnv = 'value'
+      $SomeEnv
+  END
+  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+  $SomeEnv = ''
 enddef
 
 def Test_environment_use_linebreak()

@@ -888,7 +888,8 @@ report_discard_pending(int pending, void *value)
 }
 
 /*
- * Return TRUE if "arg" is only a variable, register or option name.
+ * Return TRUE if "arg" is only a variable, register, environment variable or
+ * option name.
  */
     int
 cmd_is_name_only(char_u *arg)
@@ -911,6 +912,8 @@ cmd_is_name_only(char_u *arg)
 	    if (STRNCMP("l:", p, 2) == 0 || STRNCMP("g:", p, 2) == 0)
 		p += 2;
 	}
+	else if (*p == '$')
+	    ++p;
 	get_name_len(&p, &alias, FALSE, FALSE);
     }
     name_only = ends_excmd2(arg, skipwhite(p));
