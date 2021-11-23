@@ -4130,6 +4130,7 @@ set_vterm_palette(VTerm *vterm, long_u *rgb)
     {
 	VTermColor	color;
 
+	color.type = VTERM_COLOR_RGB;
 	color.red = (unsigned)(rgb[index] >> 16);
 	color.green = (unsigned)(rgb[index] >> 8) & 255;
 	color.blue = (unsigned)rgb[index] & 255;
