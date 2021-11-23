@@ -96,6 +96,7 @@ endfunc
 
 call s:Highlight(1, '', &background)
 hi default debugBreakpoint term=reverse ctermbg=red guibg=red
+hi default debugBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 
 func s:StartDebug(bang, ...)
   " First argument is the command to debug, second core file or process ID.
@@ -763,8 +764,10 @@ func s:CommOutput(chan, msg)
     elseif msg != ''
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
 	call s:HandleCursor(msg)
-      elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,' || msg =~ '^=breakpoint-modified,'
-	call s:HandleNewBreakpoint(msg)
+      elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
+        call s:HandleNewBreakpoint(msg, 0)
+      elseif msg =~ '^=breakpoint-modified,'
+        call s:HandleNewBreakpoint(msg, 1)
       elseif msg =~ '^=breakpoint-deleted,'
 	call s:HandleBreakpointDelete(msg)
       elseif msg =~ '^=thread-group-started'
@@ -1239,11 +1242,16 @@ endfunc
 
 let s:BreakpointSigns = []
 
-func s:CreateBreakpoint(id, subid)
+func s:CreateBreakpoint(id, subid, enabled)
   let nr = printf('%d.%d', a:id, a:subid)
   if index(s:BreakpointSigns, nr) == -1
     call add(s:BreakpointSigns, nr)
-    exe "sign define debugBreakpoint" . nr . " text=" . substitute(nr, '\..*', '', '') . " texthl=debugBreakpoint"
+    if a:enabled == "n"
+      let hiName = "debugBreakpointDisabled"
+    else
+      let hiName = "debugBreakpoint"
+    endif
+    exe "sign define debugBreakpoint" . nr . " text=" . substitute(nr, '\..*', '', '') . " texthl=" . hiName
   endif
 endfunc
 
@@ -1253,7 +1261,7 @@ endfunction
 
 " Handle setting a breakpoint
 " Will update the sign that shows the breakpoint
-func s:HandleNewBreakpoint(msg)
+func s:HandleNewBreakpoint(msg, modifiedFlag)
   if a:msg !~ 'fullname='
     " a watch or a pending breakpoint does not have a file name
     if a:msg =~ 'pending='
@@ -1276,7 +1284,8 @@ func s:HandleNewBreakpoint(msg)
     " If "nr" is 123 it becomes "123.0" and subid is "0".
     " If "nr" is 123.4 it becomes "123.4.0" and subid is "4"; "0" is discarded.
     let [id, subid; _] = map(split(nr . '.0', '\.'), 'v:val + 0')
-    call s:CreateBreakpoint(id, subid)
+    let enabled = substitute(msg, '.*enabled="\([yn]\)".*', '\1', '')
+    call s:CreateBreakpoint(id, subid, enabled)
 
     if has_key(s:breakpoints, id)
       let entries = s:breakpoints[id]
@@ -1303,8 +1312,18 @@ func s:HandleNewBreakpoint(msg)
 
     if bufloaded(fname)
       call s:PlaceSign(id, subid, entry)
+      let posMsg = ' at line ' . lnum . '.'
+    else
+      let posMsg = ' in ' . fname . ' at line ' . lnum . '.'
     endif
-    echomsg 'Breakpoint ' . nr . ' created at line ' . lnum . '.'
+    if !a:modifiedFlag
+      let actionTaken = 'created'
+    elseif enabled == 'n'
+      let actionTaken = 'disabled'
+    else
+      let actionTaken = 'enabled'
+    endif
+    echomsg 'Breakpoint ' . nr . ' ' . actionTaken . posMsg
   endfor
 endfunc
 
