@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2021 Aug 16
+*textprop.txt*  For Vim version 8.2.  Last change: 2021 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -230,13 +230,25 @@ prop_find({props} [, {direction}])
 
 
 prop_list({lnum} [, {props}])				*prop_list()*
-		Return a List with all text properties in line {lnum}.
+		Returns a List with all the text properties in line {lnum}.
 
-		When {props} contains a "bufnr" item, use this buffer instead
-		of the current buffer.
+		The following optional items are supported in {props}:
+		   bufnr	use this buffer instead of the current buffer
+		   end_lnum	return text properties in all the lines
+				between {lnum} and {end_lnum} (inclusive).
+				A negative value is used as an offset from the
+				last buffer line; -1 refers to the last buffer
+				line.
+		   types	List of property type names. Return only text
+				properties that match one of the type names.
+		   ids		List of property identifiers. Return only text
+				properties with one of these identifiers.
 
 		The properties are ordered by starting column and priority.
 		Each property is a Dict with these entries:
+		   lnum		starting line number. Present only when
+				returning text properties between {lnum} and
+				{end_lnum}.
 		   col		starting column
 		   length	length in bytes, one more if line break is
 				included
@@ -252,6 +264,30 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		the current one is a continuation.
 		When "end" is zero the property continues in the next line.
 		The line break after this line is included.
+
+		Returns an empty list on error.
+
+		Examples:
+		   " get text properties placed in line 5
+		   echo prop_list(5)
+		   " get text properties placed in line 20 in buffer 4
+		   echo prop_list(20, {'bufnr': 4})
+		   " get all the text properties between line 1 and 20
+		   echo prop_list(1, {'end_lnum': 20})
+		   " get all the text properties of type 'myprop'
+		   echo prop_list(1, {'types': ['myprop'],
+						\ 'end_lnum': -1})
+		   " get all the text properties of type 'prop1' or 'prop2'
+		   echo prop_list(1, {'types': ['prop1', 'prop2'],
+						\ 'end_lnum': -1})
+		   " get all the text properties with ID 8
+		   echo prop_list(1, {'ids': [8], 'end_lnum': line('$')})
+		   " get all the text properties with ID 10 and 20
+		   echo prop_list(1, {'ids': [10, 20], 'end_lnum': -1})
+		   " get text properties with type 'myprop' and ID 100
+		   " in buffer 4.
+		   echo prop_list(1, {'bufnr': 4, 'types': ['myprop'],
+					\ 'ids': [100], 'end_lnum': -1})
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()

@@ -897,52 +897,259 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Returns TRUE if 'type_or_id' is in the 'types_or_ids' list.
+ */
+    static int
+prop_type_or_id_in_list(int *types_or_ids, int len, int type_or_id)
+{
+    int i;
+
+    for (i = 0; i < len; i++)
+	if (types_or_ids[i] == type_or_id)
+	    return TRUE;
+
+    return FALSE;
+}
+
+/*
+ * Return all the text properties in line 'lnum' in buffer 'buf' in 'retlist'.
+ * If 'prop_types' is not NULL, then return only the text properties with
+ * matching property type in the 'prop_types' array.
+ * If 'prop_ids' is not NULL, then return only the text properties with
+ * an identifier in the 'props_ids' array.
+ * If 'add_lnum' is TRUE, then add the line number also to the text property
+ * dictionary.
+ */
+    static void
+get_props_in_line(
+	buf_T		*buf,
+	linenr_T	lnum,
+	int		*prop_types,
+	int		prop_types_len,
+	int		*prop_ids,
+	int		prop_ids_len,
+	list_T		*retlist,
+	int		add_lnum)
+{
+    char_u	*text = ml_get_buf(buf, lnum, FALSE);
+    size_t	textlen = STRLEN(text) + 1;
+    int		count;
+    int		i;
+    textprop_T	prop;
+
+    count = (int)((buf->b_ml.ml_line_len - textlen) / sizeof(textprop_T));
+    for (i = 0; i < count; ++i)
+    {
+	mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
+		sizeof(textprop_T));
+	if ((prop_types == NULL
+		    || prop_type_or_id_in_list(prop_types, prop_types_len,
+			prop.tp_type))
+		&& (prop_ids == NULL ||
+		    prop_type_or_id_in_list(prop_ids, prop_ids_len,
+			prop.tp_id)))
+	{
+	    dict_T *d = dict_alloc();
+
+	    if (d == NULL)
+		break;
+	    prop_fill_dict(d, &prop, buf);
+	    if (add_lnum)
+		dict_add_number(d, "lnum", lnum);
+	    list_append_dict(retlist, d);
+	}
+    }
+}
+
+/*
+ * Convert a List of property type names into an array of property type
+ * identifiers. Returns a pointer to the allocated array. Returns NULL on
+ * error. 'num_types' is set to the number of returned property types.
+ */
+    static int *
+get_prop_types_from_names(list_T *l, buf_T *buf, int *num_types)
+{
+    int		*prop_types;
+    listitem_T	*li;
+    int		i;
+    char_u	*name;
+    proptype_T	*type;
+
+    *num_types = 0;
+
+    prop_types = ALLOC_MULT(int, list_len(l));
+    if (prop_types == NULL)
+	return NULL;
+
+    i = 0;
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	if (li->li_tv.v_type != VAR_STRING)
+	{
+	    emsg(_(e_stringreq));
+	    goto errret;
+	}
+	name = li->li_tv.vval.v_string;
+	if (name == NULL)
+	    goto errret;
+
+	type = lookup_prop_type(name, buf);
+	if (type == NULL)
+	    goto errret;
+	prop_types[i++] = type->pt_id;
+    }
+
+    *num_types = i;
+    return prop_types;
+
+errret:
+    VIM_CLEAR(prop_types);
+    return NULL;
+}
+
+/*
+ * Convert a List of property identifiers into an array of property
+ * identifiers.  Returns a pointer to the allocated array. Returns NULL on
+ * error. 'num_ids' is set to the number of returned property identifiers.
+ */
+    static int *
+get_prop_ids_from_list(list_T *l, int *num_ids)
+{
+    int		*prop_ids;
+    listitem_T	*li;
+    int		i;
+    int		id;
+    int		error;
+
+    *num_ids = 0;
+
+    prop_ids = ALLOC_MULT(int, list_len(l));
+    if (prop_ids == NULL)
+	return NULL;
+
+    i = 0;
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	error = FALSE;
+	id = tv_get_number_chk(&li->li_tv, &error);
+	if (error)
+	    goto errret;
+
+	prop_ids[i++] = id;
+    }
+
+    *num_ids = i;
+    return prop_ids;
+
+errret:
+    VIM_CLEAR(prop_ids);
+    return NULL;
+}
+
+/*
  * prop_list({lnum} [, {bufnr}])
  */
     void
 f_prop_list(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T lnum;
-    buf_T    *buf = curbuf;
+    linenr_T	lnum;
+    linenr_T	start_lnum;
+    linenr_T	end_lnum;
+    buf_T	*buf = curbuf;
+    int		add_lnum = FALSE;
+    int		*prop_types = NULL;
+    int		prop_types_len = 0;
+    int		*prop_ids = NULL;
+    int		prop_ids_len = 0;
+    list_T	*l;
+    dictitem_T	*di;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
 		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return;
 
-    lnum = tv_get_number(&argvars[0]);
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+    // default: get text properties on current line
+    start_lnum = tv_get_number(&argvars[0]);
+    end_lnum = start_lnum;
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
+	dict_T *d;
+
+	if (argvars[1].v_type != VAR_DICT)
+	{
+	    emsg(_(e_dictreq));
+	    return;
+	}
+	d = argvars[1].vval.v_dict;
+
 	if (get_bufnr_from_arg(&argvars[1], &buf) == FAIL)
 	    return;
-    }
-    if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
-    {
-	emsg(_(e_invalid_range));
-	return;
-    }
 
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	char_u	    *text = ml_get_buf(buf, lnum, FALSE);
-	size_t	    textlen = STRLEN(text) + 1;
-	int	    count = (int)((buf->b_ml.ml_line_len - textlen)
-							 / sizeof(textprop_T));
-	int	    i;
-	textprop_T  prop;
-
-	for (i = 0; i < count; ++i)
+	if (d != NULL && (di = dict_find(d, (char_u *)"end_lnum", -1)) != NULL)
 	{
-	    dict_T *d = dict_alloc();
+	    if (di->di_tv.v_type != VAR_NUMBER)
+	    {
+		emsg(_(e_numberreq));
+		return;
+	    }
+	    end_lnum = tv_get_number(&di->di_tv);
+	    if (end_lnum < 0)
+		// negative end_lnum is used as an offset from the last buffer
+		// line
+		end_lnum = buf->b_ml.ml_line_count + end_lnum + 1;
+	    else if (end_lnum > buf->b_ml.ml_line_count)
+		end_lnum = buf->b_ml.ml_line_count;
+	    add_lnum = TRUE;
+	}
+	if (d != NULL && (di = dict_find(d, (char_u *)"types", -1)) != NULL)
+	{
+	    if (di->di_tv.v_type != VAR_LIST)
+	    {
+		emsg(_(e_listreq));
+		return;
+	    }
 
-	    if (d == NULL)
-		break;
-	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
-							   sizeof(textprop_T));
-	    prop_fill_dict(d, &prop, buf);
-	    list_append_dict(rettv->vval.v_list, d);
+	    l = di->di_tv.vval.v_list;
+	    if (l != NULL && list_len(l) > 0)
+	    {
+		prop_types = get_prop_types_from_names(l, buf, &prop_types_len);
+		if (prop_types == NULL)
+		    return;
+	    }
+	}
+	if (d != NULL && (di = dict_find(d, (char_u *)"ids", -1)) != NULL)
+	{
+	    if (di->di_tv.v_type != VAR_LIST)
+	    {
+		emsg(_(e_listreq));
+		goto errret;
+	    }
+
+	    l = di->di_tv.vval.v_list;
+	    if (l != NULL && list_len(l) > 0)
+	    {
+		prop_ids = get_prop_ids_from_list(l, &prop_ids_len);
+		if (prop_ids == NULL)
+		    goto errret;
+	    }
 	}
     }
+    if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count
+		|| end_lnum < 1 || end_lnum < start_lnum)
+	emsg(_(e_invalid_range));
+    else
+	for (lnum = start_lnum; lnum <= end_lnum; lnum++)
+	    get_props_in_line(buf, lnum, prop_types, prop_types_len,
+		    prop_ids, prop_ids_len,
+		    rettv->vval.v_list, add_lnum);
+
+errret:
+    VIM_CLEAR(prop_types);
+    VIM_CLEAR(prop_ids);
 }
 
 /*
