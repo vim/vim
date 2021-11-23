@@ -833,7 +833,7 @@ main(int argc, char *argv[])
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
       c = addrlen + 3 + (grplen * cols - 1)/octspergrp + p;
-      l[c] =
+      l[c++] =
 #ifdef __MVS__
 	  (e >= 64)
 #else
@@ -843,7 +843,7 @@ main(int argc, char *argv[])
       n++;
       if (++p == cols)
 	{
-	  l[++c] = '\n'; l[++c] = '\0';
+	  l[c] = '\n'; l[++c] = '\0';
 	  xxdline(fpo, l, autoskip ? nonzero : 1);
 	  nonzero = 0;
 	  p = 0;
