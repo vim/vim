@@ -824,7 +824,8 @@ main(int argc, char *argv[])
 	}
       else /* hextype == HEX_BITS */
 	{
-	  for (int i = 7; i >= 0; i--)
+	  int i;
+	  for (i = 7; i >= 0; i--)
 	    l[c++] = (e & (1 << i)) ? '1' : '0';
 	}
       if (e)
