@@ -397,6 +397,12 @@ static int using_gnome = 0;
 #endif
 
 /*
+ * GTK doesn't set the GDK_BUTTON1_MASK state when dragging a touch. We inject
+ * it using "dragging_button_state" when necessary.
+ */
+static guint dragging_button_state = 0;
+
+/*
  * Parse the GUI related command-line arguments.  Any arguments used are
  * deleted from argv, and *argc is decremented accordingly.  This is called
  * when vim is started, whether or not the GUI has been started.
@@ -1585,6 +1591,12 @@ process_motion_notify(int x, int y, GdkModifierType state)
     int_u   vim_modifiers;
     GtkAllocation allocation;
 
+    /*
+     * GTK doesn't set the GDK_BUTTON1_MASK state when dragging a touch. We
+     * inject here it using "dragging_button_state" when necessary.
+     */
+    state |= dragging_button_state;
+
     button = (state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK |
 		       GDK_BUTTON3_MASK | GDK_BUTTON4_MASK |
 		       GDK_BUTTON5_MASK))
@@ -1811,7 +1823,10 @@ button_press_event(GtkWidget *widget,
     {
 	// Keep in sync with gui_x11.c.
 	// Buttons 4-7 are handled in scroll_event()
-	case 1: button = MOUSE_LEFT; break;
+	case 1:
+	    button = MOUSE_LEFT;
+	    dragging_button_state |= GDK_BUTTON1_MASK;
+	    break;
 	case 2: button = MOUSE_MIDDLE; break;
 	case 3: button = MOUSE_RIGHT; break;
 	case 8: button = MOUSE_X1; break;
@@ -1905,6 +1920,14 @@ button_release_event(GtkWidget *widget UNUSED,
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
     gui_send_mouse_event(MOUSE_RELEASE, x, y, FALSE, vim_modifiers);
+
+    switch (event->button)
+    {
+	// Keep in sync with gui_x11.c.
+	case 1:
+	    dragging_button_state &= ~GDK_BUTTON1_MASK;
+	    break;
+    }
 
     return TRUE;
 }
