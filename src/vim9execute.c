@@ -1602,7 +1602,7 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
 		  || ni->isn_type == ISN_RETURN
 		  || ni->isn_type == ISN_RETURN_VOID)
 	{
-	    end_lnum = ni->isn_lnum;
+	    end_lnum = ni->isn_lnum + (ni->isn_type == ISN_DEBUG ? 0 : 1);
 	    break;
 	}
 

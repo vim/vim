@@ -373,6 +373,29 @@ def Test_Debugger_breakadd_expr()
   call delete('Xtest.vim')
 enddef
 
+def Test_Debugger_break_at_return()
+  var lines =<< trim END
+      vim9script
+      def g:GetNum(): number
+        return 1
+          + 2
+          + 3
+      enddef
+      breakadd func GetNum
+  END
+  writefile(lines, 'Xtest.vim')
+
+  # Start Vim in a terminal
+  var buf = RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
+  call TermWait(buf)
+
+  RunDbgCmd(buf, ':call GetNum()',
+     ['line 1: return 1  + 2  + 3'], {match: 'pattern'})
+
+  call StopVimInTerminal(buf)
+  call delete('Xtest.vim')
+enddef
+
 func Test_Backtrace_Through_Source()
   CheckCWD
   let file1 =<< trim END
