@@ -8255,7 +8255,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    }
 	    else
 	    {
-		if (!valid_varname(arg, varlen, FALSE))
+		if (!valid_varname(arg, (int)varlen, FALSE))
 		    goto failed;
 		if (lookup_local(arg, varlen, NULL, cctx) == OK)
 		{
