@@ -153,6 +153,8 @@ static char *(highlight_init_both[]) = {
     "lCursor guibg=fg guifg=bg", // should be different, but what?
 #endif
     "default link QuickFixLine Search",
+    "default link CursorLineSign SignColumn",
+    "default link CursorLineFold FoldColumn",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
     NULL
 };

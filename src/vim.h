@@ -1411,6 +1411,8 @@ typedef enum
     , HLF_LNA	    // LineNrAbove
     , HLF_LNB	    // LineNrBelow
     , HLF_CLN	    // current line number
+    , HLF_CLS	    // current line sign column
+    , HLF_CLF	    // current line fold
     , HLF_R	    // return to continue message and yes/no questions
     , HLF_S	    // status lines
     , HLF_SNC	    // status lines of not-current windows
@@ -1451,7 +1453,7 @@ typedef enum
 // The HL_FLAGS must be in the same order as the HLF_ enums!
 // When changing this also adjust the default for 'highlight'.
 #define HL_FLAGS {'8', '~', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
-		  'n', 'a', 'b', 'N', 'r', 's', 'S', 'c', 't', 'v', 'V', \
+		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
 		  'B', 'P', 'R', 'L', \
 		  '+', '=', 'x', 'X', '*', '#', '_', '!', '.', 'o', 'q', \

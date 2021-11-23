@@ -85,7 +85,7 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
 get_sign_display_info(
 	int		nrcol,
 	win_T		*wp,
-	linenr_T	lnum UNUSED,
+	linenr_T	lnum,
 	sign_attrs_T	*sattr,
 	int		wcr_attr,
 	int		row,
@@ -111,7 +111,12 @@ get_sign_display_info(
 	*n_extrap = number_width(wp) + 1;
     else
     {
-	*char_attrp = hl_combine_attr(wcr_attr, HL_ATTR(HLF_SC));
+	if (wp->w_p_cul
+		&& lnum == wp->w_cursor.lnum
+		&& (wp->w_p_culopt_flags & CULOPT_NBR))
+	    *char_attrp = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLS));
+	else
+	    *char_attrp = hl_combine_attr(wcr_attr, HL_ATTR(HLF_SC));
 	*n_extrap = 2;
     }
 
@@ -176,7 +181,14 @@ get_sign_display_info(
 		    *c_finalp = NUL;
 		    *n_extrap = (int)STRLEN(*pp_extra);
 		}
-		*char_attrp = sattr->sat_texthl;
+
+		if (wp->w_p_cul
+			&& lnum == wp->w_cursor.lnum
+			&& (wp->w_p_culopt_flags & CULOPT_NBR)
+			&& sattr->sat_culhl > 0)
+		    *char_attrp = sattr->sat_culhl;
+		else
+		    *char_attrp = sattr->sat_texthl;
 	    }
     }
 }
@@ -1051,7 +1063,12 @@ win_line(
 			p_extra = p_extra_free;
 			c_extra = NUL;
 			c_final = NUL;
-			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_FC));
+			if (wp->w_p_cul
+				&& lnum == wp->w_cursor.lnum
+				&& (wp->w_p_culopt_flags & CULOPT_NBR))
+			    char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLF));
+			else
+			    char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_FC));
 		    }
 		}
 	    }
