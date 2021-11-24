@@ -53,6 +53,8 @@ The color of the column is set with the SignColumn highlight group
 
 	:highlight SignColumn guibg=darkgrey
 <
+If 'cursorline' is enabled, then the CursorLineSign highlight group is used
+|hl-CursorLineSign|.
 							*sign-identifier*
 Each placed sign is identified by a number called the sign identifier. This
 identifier is used to jump to the sign or to remove the sign. The identifier
@@ -171,6 +173,13 @@ See |sign_getdefined()| for the equivalent Vim script function.
 :sign list {name}
 		Lists one defined sign and its attributes.
 
+	culhl={group}
+		Highlighting group used for the text item when the cursor is
+		on the same line as the sign and 'cursorline' is enabled.
+
+	Example: >
+		:sign define MySign text=>> texthl=Search linehl=DiffText
+<
 
 PLACING SIGNS						*:sign-place* *E158*
 
@@ -393,6 +402,9 @@ sign_define({list})
 		   text		text that is displayed when there is no icon
 				or the GUI is not being used.
 		   texthl	highlight group used for the text item
+		   culhl	highlight group used for the text item when
+				the cursor is on the same line as the sign and
+				'cursorline' is enabled.
 
 		If the sign named {name} already exists, then the attributes
 		of the sign are updated.
@@ -437,6 +449,9 @@ sign_getdefined([{name}])				*sign_getdefined()*
 		   text		text that is displayed when there is no icon
 				or the GUI is not being used.
 		   texthl	highlight group used for the text item
+		   culhl	highlight group used for the text item when
+				the cursor is on the same line as the sign and
+				'cursorline' is enabled.
 
 		Returns an empty List if there are no signs and when {name} is
 		not found.
