@@ -253,6 +253,13 @@ error_exit(int ret, char *msg)
 }
 
   static void
+exit_on_ferror(char c, FILE *fpi)
+{
+  if (c == EOF && ferror(fpi))
+    perror_exit(2);
+}
+
+  static void
 putc_or_die(char c, FILE *fpo)
 {
   if (putc(c, fpo) == EOF)
@@ -298,8 +305,7 @@ skip_to_eol(FILE *fpi, int c)
 {
   while (c != '\n' && c != EOF)
     c = getc(fpi);
-  if (c == EOF && ferror(fpi))
-    perror_exit(2);
+  exit_on_ferror(c, fpi);
   return c;
 }
 
@@ -723,16 +729,10 @@ main(int argc, char *argv[])
 	  long s = seekoff;
 
 	  while (s--)
-	    if (getc(fp) == EOF)
+	    if ((c = getc(fp)) == EOF)
 	    {
-	      if (ferror(fp))
-		{
-		  perror_exit(2);
-		}
-	      else
-		{
-		  error_exit(4, "sorry cannot seek.");
-		}
+	      exit_on_ferror(c, fp);
+	      error_exit(4, "sorry cannot seek.");
 	    }
 	}
     }
@@ -757,8 +757,7 @@ main(int argc, char *argv[])
 	    perror_exit(3);
 	  p++;
 	}
-      if (c == EOF && ferror(fp))
-	perror_exit(2);
+      exit_on_ferror(c, fp);
 
       if (p)
 	fputs_or_die("\n", fpo);
@@ -793,8 +792,7 @@ main(int argc, char *argv[])
 	      p = cols;
 	    }
 	}
-      if (e == EOF && ferror(fp))
-	perror_exit(2);
+      exit_on_ferror(e, fp);
       if (p < cols)
 	putc_or_die('\n', fpo);
       fclose_or_die(fp, fpo);
@@ -855,8 +853,7 @@ main(int argc, char *argv[])
 	  p = 0;
 	}
     }
-  if (e == EOF && ferror(fp))
-    perror_exit(2);
+  exit_on_ferror(e, fp);
   if (p)
     {
       l[c] = '\n';
