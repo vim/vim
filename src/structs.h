@@ -2878,7 +2878,8 @@ struct file_buffer
     char_u	*b_p_ofu;	// 'omnifunc'
 #endif
 #ifdef FEAT_EVAL
-    char_u	*b_p_tfu;	// 'tagfunc'
+    char_u	*b_p_tfu;	// 'tagfunc' option value
+    callback_T	b_tfu_cb;	// 'tagfunc' callback
 #endif
     int		b_p_eol;	// 'endofline'
     int		b_p_fixeol;	// 'fixendofline'
