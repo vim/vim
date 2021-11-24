@@ -1043,7 +1043,7 @@ endfunc
 func s:CleanupExpr(expr)
   " replace all embedded newlines/tabs/...
   let expr = substitute(a:expr, '\n', ' ', 'g')
-  let expr = substitute(expr, '\s+', ' ', 'g')
+  let expr = substitute(expr, '\s\+', ' ', 'g')
 
   if &filetype ==# 'cobol'
     " extra cleanup for COBOL:
@@ -1051,7 +1051,7 @@ func s:CleanupExpr(expr)
     " a trailing comma or period is ignored as it commonly separates/ends multiple expr
     let expr = substitute(expr, ';', ' ', 'g')
     let expr = substitute(expr, '\. *$', '', '')
-    let expr = substitute(expr, ',+ *$', '', '')
+    let expr = substitute(expr, ',\+ *$', '', '')
   endif
 
   " get rid of surrounding spaces
