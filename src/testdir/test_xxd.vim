@@ -263,6 +263,20 @@ func Test_xxd_usage()
   endfor
 endfunc
 
+func Test_xxd_ignore_garbage()
+  new
+  exe 'r! printf "\n\r xxxx 0: 42 42" | ' . s:xxd_cmd . ' -r'
+  call assert_match('BB', join(getline(1, 3)))
+  bwipe!
+endfunc
+
+func Test_xxd_bit_dump()
+  new
+  exe 'r! printf "123456" | ' . s:xxd_cmd . ' -b1'
+  call assert_match('00000000: 00110001 00110010 00110011 00110100 00110101 00110110  123456', join(getline(1, 3)))
+  bwipe!
+endfunc
+
 func Test_xxd_version()
   new
   exe 'r! ' . s:xxd_cmd . ' -v'

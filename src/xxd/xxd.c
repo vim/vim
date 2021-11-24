@@ -809,33 +809,34 @@ main(int argc, char *argv[])
   e = 0;
   while ((length < 0 || n < length) && (e = getc(fp)) != EOF)
     {
+      int x;
+
       if (p == 0)
 	{
 	  addrlen = sprintf(l, decimal_offset ? "%08ld:" : "%08lx:",
 				  ((unsigned long)(n + seekoff + displayoff)));
 	  for (c = addrlen; c < LLEN; l[c++] = ' ');
 	}
+      x = hextype == HEX_LITTLEENDIAN ? p ^ (octspergrp-1) : p;
+      c = addrlen + 1 + (grplen * x) / octspergrp;
       if (hextype == HEX_NORMAL || hextype == HEX_LITTLEENDIAN)
 	{
-	  int x = hextype == HEX_NORMAL ? p : p ^ (octspergrp-1);
-	  l[c = (addrlen + 1 + (grplen * x) / octspergrp)]
-	         = hexx[(e >> 4) & 0xf];
+	  l[c]   = hexx[(e >> 4) & 0xf];
 	  l[++c] = hexx[e & 0xf];
 	}
       else /* hextype == HEX_BITS */
 	{
 	  int i;
-
-	  c = (addrlen + 1 + (grplen * p) / octspergrp) - 1;
 	  for (i = 7; i >= 0; i--)
-	    l[++c] = (e & (1 << i)) ? '1' : '0';
+	    l[c++] = (e & (1 << i)) ? '1' : '0';
 	}
       if (e)
 	nonzero++;
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
-      l[addrlen + 3 + (grplen * cols - 1)/octspergrp + p] =
+      c = addrlen + 3 + (grplen * cols - 1)/octspergrp + p;
+      l[c++] =
 #ifdef __MVS__
 	  (e >= 64)
 #else
@@ -845,7 +846,8 @@ main(int argc, char *argv[])
       n++;
       if (++p == cols)
 	{
-	  l[c = (addrlen + 3 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
+	  l[c] = '\n';
+	  l[++c] = '\0';
 	  xxdline(fpo, l, autoskip ? nonzero : 1);
 	  nonzero = 0;
 	  p = 0;
@@ -855,7 +857,8 @@ main(int argc, char *argv[])
     perror_exit(2);
   if (p)
     {
-      l[c = (addrlen + 3 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
+      l[c] = '\n';
+      l[++c] = '\0';
       xxdline(fpo, l, 1);
     }
   else if (autoskip)
