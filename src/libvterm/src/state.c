@@ -1768,12 +1768,14 @@ static void osc_selection(VTermState *state, VTermStringFragment frag)
 
       if(!frag.len || (state->selection.buflen - bufcur) < 3) {
         if(bufcur) {
-          (*state->selection.callbacks->set)(state->tmp.selection.mask, (VTermStringFragment){
-              .str     = state->selection.buffer,
-              .len     = bufcur,
-              .initial = state->tmp.selection.state == SELECTION_SET_INITIAL,
-              .final   = frag.final,
-            }, state->selection.user);
+	  VTermStringFragment setfrag = {
+	    state->selection.buffer, // str
+	    bufcur, // len
+	    state->tmp.selection.state == SELECTION_SET_INITIAL, // initial
+	    frag.final // final
+	  };
+          (*state->selection.callbacks->set)(state->tmp.selection.mask,
+	      setfrag, state->selection.user);
           state->tmp.selection.state = SELECTION_SET;
         }
 
