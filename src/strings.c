@@ -2143,27 +2143,22 @@ vim_vsnprintf_typval(
 		    }
 		    if (fmt_spec == 'S')
 		    {
-			size_t base_width = min_field_width;
-			size_t pad_cell = 0;
+			char_u	*p1;
+			size_t	i;
+			int	cell;
 
-			if (precision)
-			{
-			    char_u  *p1;
-			    size_t  i = 0;
-
-			    for (p1 = (char_u *)str_arg; *p1;
+			for (i = 0, p1 = (char_u *)str_arg; *p1;
 							  p1 += mb_ptr2len(p1))
-			    {
-				i += (size_t)mb_ptr2cells(p1);
-				if (i > precision)
-				    break;
-			    }
-			    pad_cell = min_field_width - precision;
-			    base_width = str_arg_l = precision =
-							p1 - (char_u *)str_arg;
+			{
+			    cell = mb_ptr2cells(p1);
+			    if (precision_specified && i + cell > precision)
+				break;
+			    i += cell;
 			}
+
+			str_arg_l = p1 - (char_u *)str_arg;
 			if (min_field_width != 0)
-			    min_field_width = base_width + pad_cell;
+			    min_field_width += str_arg_l - i;
 		    }
 		    break;
 
