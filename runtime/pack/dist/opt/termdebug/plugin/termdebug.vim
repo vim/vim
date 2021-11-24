@@ -1042,8 +1042,7 @@ endfunc
 " (newlines and surrounding whitespace)
 func s:CleanupExpr(expr)
   " replace all embedded newlines/tabs/...
-  let expr = substitute(a:expr, '\n', ' ', 'g')
-  let expr = substitute(expr, '\s\+', ' ', 'g')
+  let expr = substitute(a:expr, '\_s\+', ' ', 'g')
 
   if &filetype ==# 'cobol'
     " extra cleanup for COBOL:
