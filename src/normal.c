@@ -630,7 +630,7 @@ getcount:
 		del_from_showcmd(4);	// delete the digit and ~@%
 #endif
 	    }
-	    else if (ca.count0 >= 999999999L)
+	    else if (ca.count0 > 99999999L)
 	    {
 		ca.count0 = 999999999L;
 	    }
