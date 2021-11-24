@@ -6576,7 +6576,7 @@ write_spell_prefcond(FILE *fd, garray_T *gap)
     char_u	*p;
     int		len;
     int		totlen;
-    size_t	x = 1;  // collect return value of fwrite()
+    size_t	x UNUSED = 1;  // collect return value of fwrite()
 
     if (fd != NULL)
 	put_bytes(fd, (long_u)gap->ga_len, 2);	    // <prefcondcnt>
