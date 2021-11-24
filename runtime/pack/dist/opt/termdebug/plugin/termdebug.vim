@@ -1049,8 +1049,7 @@ func s:CleanupExpr(expr)
     " a semicolon nmay be used instead of a space
     " a trailing comma or period is ignored as it commonly separates/ends multiple expr
     let expr = substitute(expr, ';', ' ', 'g')
-    let expr = substitute(expr, '\. *$', '', '')
-    let expr = substitute(expr, ',\+ *$', '', '')
+    let expr = substitute(expr, '[,.]\+ *$', '', '')
   endif
 
   " get rid of surrounding spaces
