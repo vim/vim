@@ -252,6 +252,13 @@ error_exit(int ret, char *msg)
   exit(ret);
 }
 
+  static void
+fputs_or_die(char *s, FILE *fpo)
+{
+  if (fputs(s, fpo) == EOF)
+    perror_exit(3);
+}
+
 /*
  * If "c" is a hex digit, return the value.
  * Otherwise return -1.
@@ -409,15 +416,12 @@ xxdline(FILE *fp, char *l, int nz)
 	  if (nz < 0)
 	    zero_seen--;
 	  if (zero_seen == 2)
-	    if (fputs(z, fp) == EOF)
-	      perror_exit(3);
+	    fputs_or_die(z, fp);
 	  if (zero_seen > 2)
-	    if (fputs("*\n", fp) == EOF)
-	      perror_exit(3);
+	    fputs_or_die("*\n", fp);
 	}
       if (nz >= 0 || zero_seen > 0)
-	if (fputs(l, fp) == EOF)
-	  perror_exit(3);
+	fputs_or_die(l, fp);
       if (nz)
 	zero_seen = 0;
     }
@@ -731,8 +735,7 @@ main(int argc, char *argv[])
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
           if (putc(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo) == EOF)
 	      perror_exit(3);
-	  if (fputs("[] = {\n", fpo) == EOF)
-	    perror_exit(3);
+	  fputs_or_die("[] = {\n", fpo);
 	}
 
       p = 0;
@@ -747,10 +750,9 @@ main(int argc, char *argv[])
       if (c == EOF && ferror(fp))
 	perror_exit(2);
 
-      if (p && fputs("\n", fpo) == EOF)
-	perror_exit(3);
-      if (fputs(&"};\n"[3 * (fp == stdin)], fpo) == EOF)
-	perror_exit(3);
+      if (p)
+	fputs_or_die("\n", fpo);
+      fputs_or_die(&"};\n"[3 * (fp == stdin)], fpo);
 
       if (fp != stdin)
 	{
