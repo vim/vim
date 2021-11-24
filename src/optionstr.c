@@ -2333,6 +2333,15 @@ ambw_end:
     }
 #endif
 
+#ifdef FEAT_EVAL
+    // 'tagfunc'
+    else if (gvarp == &p_tfu)
+    {
+	if (set_tagfunc_option() == FAIL)
+	    errmsg = e_invarg;
+    }
+#endif
+
     // Options that are a list of flags.
     else
     {

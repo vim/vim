@@ -103,10 +103,59 @@ static taggy_T ptag_entry = {NULL, {{0, 0, 0}, 0}, 0, 0, NULL};
 
 #ifdef FEAT_EVAL
 static int  tfu_in_use = FALSE;	    // disallow recursive call of tagfunc
+static callback_T tfu_cb;	    // 'tagfunc' callback function
 #endif
 
 // Used instead of NUL to separate tag fields in the growarrays.
 #define TAG_SEP 0x02
+
+/*
+ * Reads the 'tagfunc' option value and convert that to a callback value.
+ * Invoked when the 'tagfunc' option is set. The option value can be a name of
+ * a function (string), or function(<name>) or funcref(<name>) or a lambda.
+ */
+    int
+set_tagfunc_option()
+{
+#ifdef FEAT_EVAL
+    free_callback(&tfu_cb);
+    free_callback(&curbuf->b_tfu_cb);
+
+    if (*curbuf->b_p_tfu == NUL)
+	return OK;
+
+    if (option_set_callback_func(curbuf->b_p_tfu, &tfu_cb) == FAIL)
+	return FAIL;
+
+    copy_callback(&curbuf->b_tfu_cb, &tfu_cb);
+#endif
+
+    return OK;
+}
+
+# if defined(EXITFREE) || defined(PROTO)
+    void
+free_tagfunc_option(void)
+{
+#  ifdef FEAT_EVAL
+    free_callback(&tfu_cb);
+#  endif
+}
+# endif
+
+/*
+ * Copy the global 'tagfunc' callback function to the buffer-local 'tagfunc'
+ * callback for 'buf'.
+ */
+    void
+buf_set_tfu_callback(buf_T *buf UNUSED)
+{
+#ifdef FEAT_EVAL
+    free_callback(&buf->b_tfu_cb);
+    if (tfu_cb.cb_name != NULL && *tfu_cb.cb_name != NUL)
+	copy_callback(&buf->b_tfu_cb, &tfu_cb);
+#endif
+}
 
 /*
  * Jump to tag; handling of tag commands and tag stack
@@ -1341,7 +1390,7 @@ find_tagfunc_tags(
 		 flags & TAG_REGEXP   ? "r": "");
 
     save_pos = curwin->w_cursor;
-    result = call_vim_function(curbuf->b_p_tfu, 3, args, &rettv);
+    result = call_callback(&curbuf->b_tfu_cb, 0, &rettv, 3, args);
     curwin->w_cursor = save_pos;	// restore the cursor position
     --d->dv_refcount;
 
