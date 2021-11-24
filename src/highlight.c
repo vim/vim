@@ -4284,11 +4284,13 @@ hldict_attr_to_str(
 	dict_T	*dict,
 	char_u	*key,
 	char_u	*attr_str,
-	int	len)
+	size_t	len)
 {
     dictitem_T	*di;
     dict_T	*attrdict;
     int		i;
+    char_u	*p;
+    size_t	sz;
 
     attr_str[0] = NUL;
     di = dict_find(dict, key, -1);
@@ -4310,18 +4312,56 @@ hldict_attr_to_str(
 	return TRUE;
     }
 
+    p = attr_str;
     for (i = 0; i < (int)ARRAY_LENGTH(hl_name_table); i++)
     {
 	if (dict_get_bool(attrdict, (char_u *)hl_name_table[i],
 		    VVAL_FALSE) == VVAL_TRUE)
 	{
-	    if (attr_str[0] != NUL)
-		vim_strcat(attr_str, (char_u *)",", len);
-	    vim_strcat(attr_str, (char_u *)hl_name_table[i], len);
+	    if (p != attr_str && (size_t)(p - attr_str + 2) < len)
+		STRCPY(p, (char_u *)",");
+	    sz = STRLEN(hl_name_table[i]);
+	    if (p - attr_str + sz + 1 < len)
+	    {
+		STRCPY(p, (char_u *)hl_name_table[i]);
+		p += sz;
+	    }
 	}
     }
 
     return TRUE;
+}
+
+// Temporary buffer used to store the command string produced by hlset().
+// IObuff cannot be used for this as the error messages produced by hlset()
+// internally use IObuff.
+#define	HLSETBUFSZ  512
+static char_u hlsetBuf[HLSETBUFSZ + 1];
+
+/*
+ * Add the highlight attribute "attr" of length "attrlen" and "value" at
+ * "dptr", which points into "hlsetBuf".
+ * Returns the updated pointer.
+ */
+    static char_u *
+add_attr_and_value(char_u *dptr, char_u *attr, int attrlen, char_u *value)
+{
+    size_t	vallen;
+
+    // Do nothing if the value is not specified or is empty
+    if (value == NULL || *value == NUL)
+	return dptr;
+
+    vallen = STRLEN(value);
+    if (dptr + attrlen + vallen + 1 < hlsetBuf + HLSETBUFSZ)
+    {
+	STRCPY(dptr, attr);
+	dptr += attrlen;
+	STRCPY(dptr, value);
+	dptr += vallen;
+    }
+
+    return dptr;
 }
 
 /*
@@ -4350,9 +4390,10 @@ hlg_add_or_update(dict_T *dict)
     int		forceit = FALSE;
     int		dodefault = FALSE;
     int		done = FALSE;
+    char_u	*p;
 
     name = hldict_get_string(dict, (char_u *)"name", &error);
-    if (name == NULL || error)
+    if (name == NULL || *name == NUL || error)
 	return FALSE;
 
     if (dict_get_bool(dict, (char_u *)"force", VVAL_FALSE) == VVAL_TRUE)
@@ -4369,8 +4410,8 @@ hlg_add_or_update(dict_T *dict)
 	cleared = dict_get_bool(dict, (char_u *)"cleared", FALSE);
 	if (cleared == TRUE)
 	{
-	    vim_snprintf((char *)IObuff, IOSIZE, "clear %s", name);
-	    do_highlight(IObuff, forceit, FALSE);
+	    vim_snprintf((char *)hlsetBuf, HLSETBUFSZ, "clear %s", name);
+	    do_highlight(hlsetBuf, forceit, FALSE);
 	    done = TRUE;
 	}
     }
@@ -4381,12 +4422,12 @@ hlg_add_or_update(dict_T *dict)
 
 	// link highlight groups
 	linksto = hldict_get_string(dict, (char_u *)"linksto", &error);
-	if (linksto == NULL || error)
+	if (linksto == NULL || *linksto == NUL || error)
 	    return FALSE;
 
-	vim_snprintf((char *)IObuff, IOSIZE, "%slink %s %s",
+	vim_snprintf((char *)hlsetBuf, HLSETBUFSZ, "%slink %s %s",
 				dodefault ? "default " : "", name, linksto);
-	do_highlight(IObuff, forceit, FALSE);
+	do_highlight(hlsetBuf, forceit, FALSE);
 
 	done = TRUE;
     }
@@ -4405,11 +4446,11 @@ hlg_add_or_update(dict_T *dict)
 	return FALSE;
 
     if (!hldict_attr_to_str(dict, (char_u *)"term", term_attr,
-		sizeof(term_attr)))
+							    sizeof(term_attr)))
 	return FALSE;
 
     if (!hldict_attr_to_str(dict, (char_u *)"cterm", cterm_attr,
-		sizeof(cterm_attr)))
+							   sizeof(cterm_attr)))
 	return FALSE;
 
     ctermfg = hldict_get_string(dict, (char_u *)"ctermfg", &error);
@@ -4424,8 +4465,7 @@ hlg_add_or_update(dict_T *dict)
     if (error)
 	return FALSE;
 
-    if (!hldict_attr_to_str(dict, (char_u *)"gui", gui_attr,
-		sizeof(gui_attr)))
+    if (!hldict_attr_to_str(dict, (char_u *)"gui", gui_attr, sizeof(gui_attr)))
 	return FALSE;
 
     guifg = hldict_get_string(dict, (char_u *)"guifg", &error);
@@ -4457,41 +4497,27 @@ hlg_add_or_update(dict_T *dict)
 	    )
 	return TRUE;
 
-    vim_snprintf((char *)IObuff, IOSIZE,
-	    "%s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s %s%s",
-	    dodefault ? "default " : "",
-	    name,
-	    term_attr[0] != NUL ? "term=" : "",
-	    term_attr[0] != NUL ? term_attr : (char_u *)"",
-	    start != NULL ? "start=" : "",
-	    start != NULL ? start : (char_u *)"",
-	    stop != NULL ? "stop=" : "",
-	    stop != NULL ? stop : (char_u *)"",
-	    cterm_attr[0] != NUL ? "cterm=" : "",
-	    cterm_attr[0] != NUL ? cterm_attr : (char_u *)"",
-	    ctermfg != NULL ? "ctermfg=" : "",
-	    ctermfg != NULL ? ctermfg : (char_u *)"",
-	    ctermbg != NULL ? "ctermbg=" : "",
-	    ctermbg != NULL ? ctermbg : (char_u *)"",
-	    ctermul != NULL ? "ctermul=" : "",
-	    ctermul != NULL ? ctermul : (char_u *)"",
-	    gui_attr[0] != NUL ? "gui=" : "",
-	    gui_attr[0] != NUL ? gui_attr : (char_u *)"",
+    hlsetBuf[0] = NUL;
+    p = hlsetBuf;
+    if (dodefault)
+	p = add_attr_and_value(p, (char_u *)"default", 7, (char_u *)" ");
+    p = add_attr_and_value(p, (char_u *)"", 0, name);
+    p = add_attr_and_value(p, (char_u *)" term=", 6, term_attr);
+    p = add_attr_and_value(p, (char_u *)" start=", 7, start);
+    p = add_attr_and_value(p, (char_u *)" stop=", 6, stop);
+    p = add_attr_and_value(p, (char_u *)" cterm=", 7, cterm_attr);
+    p = add_attr_and_value(p, (char_u *)" ctermfg=", 9, ctermfg);
+    p = add_attr_and_value(p, (char_u *)" ctermbg=", 9, ctermbg);
+    p = add_attr_and_value(p, (char_u *)" ctermul=", 9, ctermul);
+    p = add_attr_and_value(p, (char_u *)" gui=", 5, gui_attr);
 # ifdef FEAT_GUI
-	    font != NULL ? "font=" : "",
-	    font != NULL ? font : (char_u *)"",
-# else
-	    "", "",
+    p = add_attr_and_value(p, (char_u *)" font=", 6, font);
 # endif
-	    guifg != NULL ? "guifg=" : "",
-	    guifg != NULL ? guifg : (char_u *)"",
-	    guibg != NULL ? "guibg=" : "",
-	    guibg != NULL ? guibg : (char_u *)"",
-	    guisp != NULL ? "guisp=" : "",
-	    guisp != NULL ? guisp : (char_u *)""
-		);
+    p = add_attr_and_value(p, (char_u *)" guifg=", 7, guifg);
+    p = add_attr_and_value(p, (char_u *)" guibg=", 7, guibg);
+    p = add_attr_and_value(p, (char_u *)" guisp=", 7, guisp);
 
-    do_highlight(IObuff, forceit, FALSE);
+    do_highlight(hlsetBuf, forceit, FALSE);
 
     return TRUE;
 }

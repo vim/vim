@@ -1228,6 +1228,21 @@ func Test_hlset()
     highlight clear hlg10
   END
   call CheckLegacyAndVim9Success(lines)
+
+  " Test for empty values of attributes
+  call hlset([{'name': 'hlg11', 'cterm': {}}])
+  call hlset([{'name': 'hlg11', 'ctermfg': ''}])
+  call hlset([{'name': 'hlg11', 'ctermbg': ''}])
+  call hlset([{'name': 'hlg11', 'ctermul': ''}])
+  call hlset([{'name': 'hlg11', 'font': ''}])
+  call hlset([{'name': 'hlg11', 'gui': {}}])
+  call hlset([{'name': 'hlg11', 'guifg': ''}])
+  call hlset([{'name': 'hlg11', 'guibg': ''}])
+  call hlset([{'name': 'hlg11', 'guisp': ''}])
+  call hlset([{'name': 'hlg11', 'start': ''}])
+  call hlset([{'name': 'hlg11', 'stop': ''}])
+  call hlset([{'name': 'hlg11', 'term': {}}])
+  call assert_true(hlget('hlg11')[0].cleared)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
