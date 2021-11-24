@@ -1040,9 +1040,11 @@ endfunc
 
 " clean up expression that may got in because of range
 " (newlines and surrounding whitespace)
+" As it can also be specified via ex-command for assignments this function
+" may not change the "content" parts (like replacing contained spaces
 func s:CleanupExpr(expr)
   " replace all embedded newlines/tabs/...
-  let expr = substitute(a:expr, '\_s\+', ' ', 'g')
+  let expr = substitute(a:expr, '\_s', ' ', 'g')
 
   if &filetype ==# 'cobol'
     " extra cleanup for COBOL:
