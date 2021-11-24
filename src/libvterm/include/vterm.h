@@ -17,10 +17,11 @@ extern "C" {
 
 // from stdint.h
 typedef unsigned char		uint8_t;
+typedef unsigned short		uint16_t;
 typedef unsigned int		uint32_t;
 
 #define VTERM_VERSION_MAJOR 0
-#define VTERM_VERSION_MINOR 1
+#define VTERM_VERSION_MINOR 2
 
 #define VTERM_CHECK_VERSION \
         vterm_check_version(VTERM_VERSION_MAJOR, VTERM_VERSION_MINOR)
@@ -267,6 +268,14 @@ enum {
   VTERM_N_PROP_MOUSES
 };
 
+typedef enum {
+  VTERM_SELECTION_CLIPBOARD = (1<<0),
+  VTERM_SELECTION_PRIMARY   = (1<<1),
+  VTERM_SELECTION_SECONDARY = (1<<2),
+  VTERM_SELECTION_SELECT    = (1<<3),
+  VTERM_SELECTION_CUT0      = (1<<4), /* also CUT1 .. CUT7 by bitshifting */
+} VTermSelectionMask;
+
 typedef struct {
   const uint32_t *chars;
   int             width;
@@ -375,6 +384,9 @@ typedef struct {
   int (*csi)(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user);
   int (*osc)(int command, VTermStringFragment frag, void *user);
   int (*dcs)(const char *command, size_t commandlen, VTermStringFragment frag, void *user);
+  int (*apc)(VTermStringFragment frag, void *user);
+  int (*pm)(VTermStringFragment frag, void *user);
+  int (*sos)(VTermStringFragment frag, void *user);
   int (*resize)(int rows, int cols, void *user);
 } VTermParserCallbacks;
 
@@ -419,7 +431,15 @@ typedef struct {
   int (*csi)(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user);
   int (*osc)(int command, VTermStringFragment frag, void *user);
   int (*dcs)(const char *command, size_t commandlen, VTermStringFragment frag, void *user);
+  int (*apc)(VTermStringFragment frag, void *user);
+  int (*pm)(VTermStringFragment frag, void *user);
+  int (*sos)(VTermStringFragment frag, void *user);
 } VTermStateFallbacks;
+
+typedef struct {
+  int (*set)(VTermSelectionMask mask, VTermStringFragment frag, void *user);
+  int (*query)(VTermSelectionMask mask, void *user);
+} VTermSelectionCallbacks;
 
 VTermState *vterm_obtain_state(VTerm *vt);
 
@@ -456,6 +476,11 @@ const VTermLineInfo *vterm_state_get_lineinfo(const VTermState *state, int row);
  * to an RGB colour.
  */
 void vterm_state_convert_color_to_rgb(const VTermState *state, VTermColor *col);
+
+void vterm_state_set_selection_callbacks(VTermState *state, const VTermSelectionCallbacks *callbacks, void *user,
+    char *buffer, size_t buflen);
+
+void vterm_state_send_selection(VTermState *state, VTermSelectionMask mask, VTermStringFragment frag);
 
 // ------------
 // Screen layer

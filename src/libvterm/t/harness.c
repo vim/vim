@@ -13,7 +13,8 @@ static size_t inplace_hex2bytes(char *s)
 
   while(*inpos) {
     unsigned int ch;
-    sscanf(inpos, "%2x", &ch);
+    if(sscanf(inpos, "%2x", &ch) < 1)
+      break;
     *outpos = ch;
     outpos += 1; inpos += 2;
   }
@@ -98,7 +99,7 @@ static void term_output(const char *s, size_t len, void *user UNUSED)
 static void printhex(const char *s, size_t len)
 {
   while(len--)
-    printf("%02x", (s++)[0]);
+    printf("%02x", (uint8_t)(s++)[0]);
 }
 
 static int parser_text(const char bytes[], size_t len, void *user UNUSED)
@@ -216,6 +217,57 @@ static int parser_dcs(const char *command, size_t commandlen, VTermStringFragmen
   return 1;
 }
 
+static int parser_apc(VTermStringFragment frag, void *user UNUSED)
+{
+  printf("apc ");
+
+  if(frag.initial)
+    printf("[");
+
+  printhex(frag.str, frag.len);
+
+  if(frag.final)
+    printf("]");
+
+  printf("\n");
+
+  return 1;
+}
+
+static int parser_pm(VTermStringFragment frag, void *user UNUSED)
+{
+  printf("pm ");
+
+  if(frag.initial)
+    printf("[");
+
+  printhex(frag.str, frag.len);
+
+  if(frag.final)
+    printf("]");
+
+  printf("\n");
+
+  return 1;
+}
+
+static int parser_sos(VTermStringFragment frag, void *user UNUSED)
+{
+  printf("sos ");
+
+  if(frag.initial)
+    printf("[");
+
+  printhex(frag.str, frag.len);
+
+  if(frag.final)
+    printf("]");
+
+  printf("\n");
+
+  return 1;
+}
+
 static VTermParserCallbacks parser_cbs = {
   parser_text, // text
   parser_control, // control
@@ -223,6 +275,9 @@ static VTermParserCallbacks parser_cbs = {
   parser_csi, // csi
   parser_osc, // osc
   parser_dcs, // dcs
+  parser_apc, // apc
+  parser_pm, // pm
+  parser_sos, // sos
   NULL // resize
 };
 
@@ -230,7 +285,10 @@ static VTermStateFallbacks fallbacks = {
   parser_control, // control
   parser_csi, // csi
   parser_osc, // osc
-  parser_dcs // dcs
+  parser_dcs, // dcs
+  parser_apc, // dcs
+  parser_pm, // pm
+  parser_sos // sos
 };
 
 /* These callbacks are shared by State and Screen */
@@ -414,6 +472,31 @@ VTermStateCallbacks state_cbs = {
   state_setlineinfo, // setlineinfo
 };
 
+static int selection_set(VTermSelectionMask mask, VTermStringFragment frag, void *user UNUSED)
+{
+  printf("selection-set mask=%04X ", mask);
+  if(frag.initial)
+    printf("[");
+  printhex(frag.str, frag.len);
+  if(frag.final)
+    printf("]");
+  printf("\n");
+
+  return 1;
+}
+
+static int selection_query(VTermSelectionMask mask, void *user UNUSED)
+{
+  printf("selection-query mask=%04X\n", mask);
+
+  return 1;
+}
+
+VTermSelectionCallbacks selection_cbs = {
+  .set   = selection_set,
+  .query = selection_query,
+};
+
 static int want_screen_damage = 0;
 static int want_screen_damage_cells = 0;
 static int screen_damage(VTermRect rect, void *user UNUSED)
@@ -555,6 +638,7 @@ int main(int argc UNUSED, char **argv UNUSED)
       if(!state) {
         state = vterm_obtain_state(vt);
         vterm_state_set_callbacks(state, &state_cbs, NULL);
+        vterm_state_set_selection_callbacks(state, &selection_cbs, NULL, NULL, 1024);
         vterm_state_set_bold_highbright(state, 1);
         vterm_state_reset(state, 1);
       }
@@ -766,6 +850,32 @@ int main(int argc UNUSED, char **argv UNUSED)
         linep++;
       mod = strpe_modifiers(&linep);
       vterm_mouse_button(vt, button, (press == 'd' || press == 'D'), mod);
+    }
+
+    else if(strstartswith(line, "SELECTION ")) {
+      char *linep = line + 10;
+      unsigned int mask;
+      int len;
+      VTermStringFragment frag = { 0 };
+      sscanf(linep, "%x%n", &mask, &len);
+      linep += len;
+      while(linep[0] == ' ')
+        linep++;
+      if(linep[0] == '[') {
+        frag.initial = TRUE;
+        linep++;
+        while(linep[0] == ' ')
+          linep++;
+      }
+      frag.len = inplace_hex2bytes(linep);
+      frag.str = linep;
+      linep += frag.len * 2;
+      while(linep[0] == ' ')
+        linep++;
+      if(linep[0] == ']') {
+        frag.final = TRUE;
+      }
+      vterm_state_send_selection(state, mask, frag);
     }
 
     else if(strstartswith(line, "DAMAGEMERGE ")) {

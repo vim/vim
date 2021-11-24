@@ -170,3 +170,12 @@ PUSH "\e[?1006\$p"
   output "\e[?1006;2\$y"
 PUSH "\e[?1015\$p"
   output "\e[?1015;1\$y"
+
+!Mouse disabled reports nothing
+RESET
+  settermprop 1 true
+  settermprop 2 true
+  settermprop 7 1
+MOUSEMOVE 0,0 0
+MOUSEBTN d 1 0
+MOUSEBTN u 1 0

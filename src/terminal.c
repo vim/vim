@@ -4526,7 +4526,10 @@ static VTermStateFallbacks state_fallbacks = {
   NULL,		// control
   parse_csi,	// csi
   parse_osc,	// osc
-  NULL		// dcs
+  NULL,		// dcs
+  NULL,		// apc
+  NULL,		// pm
+  NULL		// sos
 };
 
 /*

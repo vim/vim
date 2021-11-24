@@ -377,6 +377,7 @@ SRC_ALL =	\
 		src/libvterm/t/30state_pen.test \
 		src/libvterm/t/31state_rep.test \
 		src/libvterm/t/32state_flow.test \
+		src/libvterm/t/40state_selection.test \
 		src/libvterm/t/60screen_ascii.test \
 		src/libvterm/t/61screen_unicode.test \
 		src/libvterm/t/62screen_damage.test \

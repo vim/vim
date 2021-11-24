@@ -154,7 +154,26 @@ struct VTermState
   /* Temporary state for DECRQSS parsing */
   union {
     char decrqss[4];
+    struct {
+      uint16_t mask;
+      enum {
+        SELECTION_INITIAL,
+        SELECTION_SELECTED,
+        SELECTION_QUERY,
+        SELECTION_SET_INITIAL,
+        SELECTION_SET,
+      } state : 8;
+      uint32_t recvpartial;
+      uint32_t sendpartial;
+    } selection;
   } tmp;
+
+  struct {
+    const VTermSelectionCallbacks *callbacks;
+    void *user;
+    char *buffer;
+    size_t buflen;
+  } selection;
 };
 
 struct VTerm
@@ -181,6 +200,9 @@ struct VTerm
       OSC_COMMAND,
       OSC,
       DCS,
+      APC,
+      PM,
+      SOS,
     } state;
 
     unsigned int in_esc : 1;
@@ -248,7 +270,7 @@ void vterm_push_output_bytes(VTerm *vt, const char *bytes, size_t len);
 void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list args);
 void vterm_push_output_sprintf(VTerm *vt, const char *format, ...);
 void vterm_push_output_sprintf_ctrl(VTerm *vt, unsigned char ctrl, const char *fmt, ...);
-void vterm_push_output_sprintf_dcs(VTerm *vt, const char *fmt, ...);
+void vterm_push_output_sprintf_str(VTerm *vt, unsigned char ctrl, int term, const char *fmt, ...);
 
 void vterm_state_free(VTermState *state);
 
