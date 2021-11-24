@@ -253,6 +253,13 @@ error_exit(int ret, char *msg)
 }
 
   static void
+putc_or_die(char c, FILE *fpo)
+{
+  if (putc(c, fpo) == EOF)
+    perror_exit(3);
+}
+
+  static void
 fputs_or_die(char *s, FILE *fpo)
 {
   if (fputs(s, fpo) == EOF)
@@ -349,14 +356,12 @@ huntype(
 	  if (base_off + want_off < have_off)
 	    error_exit(5, "sorry, cannot seek backwards.");
 	  for (; have_off < base_off + want_off; have_off++)
-	    if (putc(0, fpo) == EOF)
-	      perror_exit(3);
+	    putc_or_die(0, fpo);
 	}
 
       if (n2 >= 0 && n1 >= 0)
 	{
-	  if (putc((n2 << 4) | n1, fpo) == EOF)
-	    perror_exit(3);
+	  putc_or_die((n2 << 4) | n1, fpo);
 	  have_off++;
 	  want_off++;
 	  n1 = -1;
@@ -733,8 +738,7 @@ main(int argc, char *argv[])
 	  if (fprintf(fpo, "unsigned char %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
 	    perror_exit(3);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-          if (putc(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo) == EOF)
-	      perror_exit(3);
+	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  fputs_or_die("[] = {\n", fpo);
 	}
 
@@ -759,8 +763,7 @@ main(int argc, char *argv[])
 	  if (fprintf(fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
 	    perror_exit(3);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-        if (putc(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo) == EOF)
-	      perror_exit(3);
+	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  if (fprintf(fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p) < 0)
 	    perror_exit(3);
 	}
@@ -778,22 +781,19 @@ main(int argc, char *argv[])
       e = 0;
       while ((length < 0 || n < length) && (e = getc(fp)) != EOF)
 	{
-	  if (putc(hexx[(e >> 4) & 0xf], fpo) == EOF
-		  || putc(hexx[e & 0xf], fpo) == EOF)
-	    perror_exit(3);
+	  putc_or_die(hexx[(e >> 4) & 0xf], fpo);
+	  putc_or_die(hexx[e & 0xf], fpo);
 	  n++;
 	  if (!--p)
 	    {
-	      if (putc('\n', fpo) == EOF)
-		perror_exit(3);
+	      putc_or_die('\n', fpo);
 	      p = cols;
 	    }
 	}
       if (e == EOF && ferror(fp))
 	perror_exit(2);
       if (p < cols)
-	if (putc('\n', fpo) == EOF)
-	  perror_exit(3);
+	putc_or_die('\n', fpo);
       if (fclose(fp))
 	perror_exit(2);
       if (fclose(fpo))
