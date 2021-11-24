@@ -266,6 +266,15 @@ fputs_or_die(char *s, FILE *fpo)
     perror_exit(3);
 }
 
+  static void
+fclose_or_die(FILE *fpi, FILE *fpo)
+{
+  if (fclose(fpo) != 0)
+    perror_exit(3);
+  if (fclose(fpi) != 0)
+    perror_exit(2);
+}
+
 /*
  * If "c" is a hex digit, return the value.
  * Otherwise return -1.
@@ -386,10 +395,7 @@ huntype(
 #ifdef TRY_SEEK
   fseek(fpo, 0L, SEEK_END);
 #endif
-  if (fclose(fpo) != 0)
-    perror_exit(3);
-  if (fclose(fpi) != 0)
-    perror_exit(2);
+  fclose_or_die(fpi, fpo);
   return 0;
 }
 
@@ -768,10 +774,7 @@ main(int argc, char *argv[])
 	    perror_exit(3);
 	}
 
-      if (fclose(fp))
-	perror_exit(2);
-      if (fclose(fpo))
-	perror_exit(3);
+      fclose_or_die(fp, fpo);
       return 0;
     }
 
@@ -794,10 +797,7 @@ main(int argc, char *argv[])
 	perror_exit(2);
       if (p < cols)
 	putc_or_die('\n', fpo);
-      if (fclose(fp))
-	perror_exit(2);
-      if (fclose(fpo))
-	perror_exit(3);
+      fclose_or_die(fp, fpo);
       return 0;
     }
 
@@ -866,10 +866,7 @@ main(int argc, char *argv[])
   else if (autoskip)
     xxdline(fpo, l, -1);	/* last chance to flush out suppressed lines */
 
-  if (fclose(fp))
-    perror_exit(2);
-  if (fclose(fpo))
-    perror_exit(3);
+  fclose_or_die(fp, fpo);
   return 0;
 }
 
