@@ -307,7 +307,7 @@ foldedCount(win_T *win, linenr_T lnum, foldinfo_T *infop)
     int
 foldmethodIsManual(win_T *wp)
 {
-    return (wp->w_p_fdm[3] == 'u');
+    return (wp->w_p_fdm[0] != NUL && wp->w_p_fdm[3] == 'u');
 }
 
 // foldmethodIsIndent() {{{2
@@ -327,7 +327,7 @@ foldmethodIsIndent(win_T *wp)
     int
 foldmethodIsExpr(win_T *wp)
 {
-    return (wp->w_p_fdm[1] == 'x');
+    return (wp->w_p_fdm[0] != NUL && wp->w_p_fdm[1] == 'x');
 }
 
 // foldmethodIsMarker() {{{2
@@ -337,7 +337,7 @@ foldmethodIsExpr(win_T *wp)
     int
 foldmethodIsMarker(win_T *wp)
 {
-    return (wp->w_p_fdm[2] == 'r');
+    return (wp->w_p_fdm[0] != NUL && wp->w_p_fdm[2] == 'r');
 }
 
 // foldmethodIsSyntax() {{{2
