@@ -4380,7 +4380,14 @@ get_address(
 	    if (!VIM_ISDIGIT(*cmd))	// '+' is '+1', but '+0' is not '+1'
 		n = 1;
 	    else
+	    {
 		n = getdigits(&cmd);
+		if (n == MAXLNUM)
+		{
+		    emsg(_(e_line_number_out_of_range));
+		    goto error;
+		}
+	    }
 
 	    if (addr_type == ADDR_TABS_RELATIVE)
 	    {
@@ -4398,13 +4405,20 @@ get_address(
 		// Relative line addressing, need to adjust for folded lines
 		// now, but only do it after the first address.
 		if (addr_type == ADDR_LINES && (i == '-' || i == '+')
-			&& address_count >= 2)
+							 && address_count >= 2)
 		    (void)hasFolding(lnum, NULL, &lnum);
 #endif
 		if (i == '-')
 		    lnum -= n;
 		else
+		{
+		    if (n >= LONG_MAX - lnum)
+		    {
+			emsg(_(e_line_number_out_of_range));
+			goto error;
+		    }
 		    lnum += n;
+		}
 	    }
 	}
     } while (*cmd == '/' || *cmd == '?');

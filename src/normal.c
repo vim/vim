@@ -630,10 +630,14 @@ getcount:
 		del_from_showcmd(4);	// delete the digit and ~@%
 #endif
 	    }
-	    else
-		ca.count0 = ca.count0 * 10 + (c - '0');
-	    if (ca.count0 < 0)	    // overflow
+	    else if (ca.count0 >= 999999999L)
+	    {
 		ca.count0 = 999999999L;
+	    }
+	    else
+	    {
+		ca.count0 = ca.count0 * 10 + (c - '0');
+	    }
 #ifdef FEAT_EVAL
 	    // Set v:count here, when called from main() and not a stuffed
 	    // command, so that v:count can be used in an expression mapping
@@ -700,11 +704,14 @@ getcount:
 	 * multiplied.
 	 */
 	if (ca.count0)
-	    ca.count0 *= ca.opcount;
+	{
+	    if (ca.opcount >= 999999999L / ca.count0)
+		ca.count0 = 999999999L;
+	    else
+		ca.count0 *= ca.opcount;
+	}
 	else
 	    ca.count0 = ca.opcount;
-	if (ca.count0 < 0)	    // overflow
-	    ca.count0 = 999999999L;
     }
 
     /*
