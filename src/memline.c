@@ -2606,6 +2606,7 @@ ml_get_buf(
     bhdr_T	*hp;
     DATA_BL	*dp;
     static int	recursive = 0;
+    static char_u questions[4];
 
     if (lnum > buf->b_ml.ml_line_count)	// invalid line number
     {
@@ -2618,9 +2619,9 @@ ml_get_buf(
 	    --recursive;
 	}
 errorret:
-	STRCPY(IObuff, "???");
+	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
-	return IObuff;
+	return questions;
     }
     if (lnum <= 0)			// pretend line 0 is line 1
 	lnum = 1;
