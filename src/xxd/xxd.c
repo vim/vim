@@ -253,14 +253,14 @@ error_exit(int ret, char *msg)
 }
 
   static void
-exit_on_ferror(char c, FILE *fpi)
+exit_on_ferror(int c, FILE *fpi)
 {
   if (c == EOF && ferror(fpi))
     perror_exit(2);
 }
 
   static void
-putc_or_die(char c, FILE *fpo)
+putc_or_die(int c, FILE *fpo)
 {
   if (putc(c, fpo) == EOF)
     perror_exit(3);
