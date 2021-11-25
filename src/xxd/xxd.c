@@ -759,17 +759,17 @@ main(int argc, char *argv[])
       while ((length < 0 || p < length) && (c = getc(fp)) != EOF)
 	{
 	  fprintf_or_die(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % cols) ? ", " : &",\n  "[2*!p],  c);
+		(p % cols) ? ", " : (!p ? "  " : ",\n  "),  c);
 	  p++;
 	}
       exit_on_ferror(c, fp);
 
       if (p)
 	fputs_or_die("\n", fpo);
-      fputs_or_die(&"};\n"[3 * (fp == stdin)], fpo);
 
       if (fp != stdin)
 	{
+	  fputs_or_die("};\n", fpo);
 	  fprintf_or_die(fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : "", 0);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
 	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
