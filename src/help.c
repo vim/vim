@@ -422,8 +422,7 @@ find_help_tags(
 		    || (vim_strchr((char_u *)"%_z@", arg[1]) != NULL
 							   && arg[2] != NUL)))
 	{
-	    STRCPY(d, "/\\\\");
-	    STRCPY(d + 3, arg + 1);
+	    vim_snprintf((char *)d, IOSIZE, "/\\\\%s", arg + 1);
 	    // Check for "/\\_$", should be "/\\_\$"
 	    if (d[3] == '_' && d[4] == '$')
 		STRCPY(d + 4, "\\$");
