@@ -288,6 +288,7 @@ EXTERN int	msg_no_more INIT(= FALSE);  // don't use more prompt, truncate
  * Current context is at ga_len - 1.
  */
 EXTERN garray_T	exestack INIT5(0, 0, sizeof(estack_T), 50, NULL);
+#define HAVE_SOURCING_INFO  (exestack.ga_data != NULL && exestack.ga_len > 0)
 // name of error message source
 #define SOURCING_NAME (((estack_T *)exestack.ga_data)[exestack.ga_len - 1].es_name)
 // line number in the message source or zero

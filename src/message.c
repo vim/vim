@@ -446,7 +446,7 @@ reset_last_sourcing(void)
     static int
 other_sourcing_name(void)
 {
-    if (SOURCING_NAME != NULL)
+    if (HAVE_SOURCING_INFO && SOURCING_NAME != NULL)
     {
 	if (last_sourcing_name != NULL)
 	    return STRCMP(SOURCING_NAME, last_sourcing_name) != 0;
@@ -465,7 +465,7 @@ get_emsg_source(void)
 {
     char_u	*Buf, *p;
 
-    if (SOURCING_NAME != NULL && other_sourcing_name())
+    if (HAVE_SOURCING_INFO && SOURCING_NAME != NULL && other_sourcing_name())
     {
 	char_u	    *sname = estack_sfile(ESTACK_NONE);
 	char_u	    *tofree = sname;
