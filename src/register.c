@@ -2004,6 +2004,7 @@ do_put(
 	{
 	    linenr_T	end_lnum = 0; // init for gcc
 	    linenr_T	start_lnum = lnum;
+	    int		first_byte_off = 0;
 
 	    if (VIsual_active)
 	    {
@@ -2065,6 +2066,10 @@ do_put(
 		    }
 		    STRMOVE(ptr, oldp + col);
 		    ml_replace(lnum, newp, FALSE);
+
+		    // compute the byte offset for the last character
+		    first_byte_off = mb_head_off(newp, ptr - 1);
+
 		    // Place cursor on last putted char.
 		    if (lnum == curwin->w_cursor.lnum)
 		    {
@@ -2080,10 +2085,15 @@ do_put(
 		    lnum--;
 	    }
 
+	    // put '] at the first byte of the last character
 	    curbuf->b_op_end = curwin->w_cursor;
+	    curbuf->b_op_end.col -= first_byte_off;
+
 	    // For "CTRL-O p" in Insert mode, put cursor after last char
 	    if (totlen && (restart_edit != 0 || (flags & PUT_CURSEND)))
 		++curwin->w_cursor.col;
+	    else
+		curwin->w_cursor.col -= first_byte_off;
 	    changed_bytes(lnum, col);
 	}
 	else
@@ -2198,12 +2208,14 @@ error:
 		changed_lines(curbuf->b_op_start.lnum, 0,
 					   curbuf->b_op_start.lnum, nr_lines);
 
-	    // put '] mark at last inserted character
+	    // Put the '] mark on the first byte of the last inserted character.
+	    // Correct the length for change in indent.
 	    curbuf->b_op_end.lnum = new_lnum;
-	    // correct length for change in indent
 	    col = (colnr_T)STRLEN(y_array[y_size - 1]) - lendiff;
 	    if (col > 1)
-		curbuf->b_op_end.col = col - 1;
+		curbuf->b_op_end.col = col - 1
+				- mb_head_off(y_array[y_size - 1],
+						y_array[y_size - 1] + col - 1);
 	    else
 		curbuf->b_op_end.col = 0;
 
