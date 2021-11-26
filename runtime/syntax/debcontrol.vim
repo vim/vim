@@ -104,10 +104,10 @@ syn region debcontrolStrictField matchgroup=debcontrolKey start="^Priority: *" e
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^Section: *" end="$" contains=debcontrolSection oneline
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XC-\)\=Package-Type: *" end="$" contains=debcontrolPackageType oneline
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^Homepage: *" end="$" contains=debcontrolHTTPUrl oneline keepend
-syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-\)\=Vcs-\%(Browser\|Arch\|Bzr\|Darcs\|Hg\): *" end="$" contains=debcontrolHTTPUrl oneline keepend
-syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-\)\=Vcs-Svn: *" end="$" contains=debcontrolVcsSvn,debcontrolHTTPUrl oneline keepend
-syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-\)\=Vcs-Cvs: *" end="$" contains=debcontrolVcsCvs oneline keepend
-syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-\)\=Vcs-Git: *" end="$" contains=debcontrolVcsGit oneline keepend
+syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-[-a-zA-Z0-9]\+-\)\=Vcs-\%(Browser\|Arch\|Bzr\|Darcs\|Hg\): *" end="$" contains=debcontrolHTTPUrl oneline keepend
+syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-[-a-zA-Z0-9]\+-\)\=Vcs-Svn: *" end="$" contains=debcontrolVcsSvn,debcontrolHTTPUrl oneline keepend
+syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-[-a-zA-Z0-9]\+-\)\=Vcs-Cvs: *" end="$" contains=debcontrolVcsCvs oneline keepend
+syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(XS-[-a-zA-Z0-9]\+-\)\=Vcs-Git: *" end="$" contains=debcontrolVcsGit oneline keepend
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^Rules-Requires-Root: *" end="$" contains=debcontrolR3 oneline
 syn region debcontrolStrictField matchgroup=debcontrolKey start="^\%(Build-\)\=Essential: *" end="$" contains=debcontrolYesNo oneline
 
