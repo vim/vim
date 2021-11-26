@@ -229,14 +229,28 @@ func s:StartDebug_term(dict)
   endif
   let commpty = job_info(term_getjob(s:commbuf))['tty_out']
 
-  " Open a terminal window to run the debugger.
-  " Add -quiet to avoid the intro message causing a hit-enter prompt.
   let gdb_args = get(a:dict, 'gdb_args', [])
   let proc_args = get(a:dict, 'proc_args', [])
 
-  let cmd = [g:termdebugger, '-quiet', '-tty', pty, '--eval-command', 'echo startupdone\n'] + gdb_args
-  call ch_log('executing "' . join(cmd) . '"')
-  let s:gdbbuf = term_start(cmd, {
+  let gdb_cmd = [g:termdebugger]
+  " Add -quiet to avoid the intro message causing a hit-enter prompt.
+  let gdb_cmd += ['-quiet']
+  " Disable pagination, it causes everything to stop at the gdb
+  let gdb_cmd += ['-iex', 'set pagination off']
+  " Interpret commands while the target is running.  This should usually only
+  " be exec-interrupt, since many commands don't work properly while the
+  " target is running (so execute during startup).
+  let gdb_cmd += ['-iex', 'set mi-async on']
+  " Open a terminal window to run the debugger.
+  let gdb_cmd += ['-tty', pty]
+  " Command executed _after_ startup is done, provides us with the necessary feedback
+  let gdb_cmd += ['-ex', 'echo startupdone\n']
+
+  " Adding arguments requested by the user
+  let gdb_cmd += gdb_args
+
+  call ch_log('executing "' . join(gdb_cmd) . '"')
+  let s:gdbbuf = term_start(gdb_cmd, {
 	\ 'term_finish': 'close',
 	\ })
   if s:gdbbuf == 0
@@ -255,8 +269,8 @@ func s:StartDebug_term(dict)
 
     for lnum in range(1, 200)
       if term_getline(s:gdbbuf, lnum) =~ 'startupdone'
-	let try_count = 9999
-	break
+        let try_count = 9999
+        break
       endif
     endfor
     let try_count += 1
@@ -269,7 +283,7 @@ func s:StartDebug_term(dict)
 
   " Set arguments to be run.
   if len(proc_args)
-    call term_sendkeys(s:gdbbuf, 'set args ' . join(proc_args) . "\r")
+    call term_sendkeys(s:gdbbuf, 'server set args ' . join(proc_args) . "\r")
   endif
 
   " Connect gdb to the communication pty, using the GDB/MI interface.
@@ -289,20 +303,21 @@ func s:StartDebug_term(dict)
       let line1 = term_getline(s:gdbbuf, lnum)
       let line2 = term_getline(s:gdbbuf, lnum + 1)
       if line1 =~ 'new-ui mi '
-	" response can be in the same line or the next line
-	let response = line1 . line2
-	if response =~ 'Undefined command'
-	  echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
-	  call s:CloseBuffers()
-	  return
-	endif
-	if response =~ 'New UI allocated'
-	  " Success!
-	  break
-	endif
+        " response can be in the same line or the next line
+        let response = line1 . line2
+        if response =~ 'Undefined command'
+          echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
+	  " CHECKME: possibly send a "server show version" here
+          call s:CloseBuffers()
+          return
+        endif
+        if response =~ 'New UI allocated'
+          " Success!
+          break
+        endif
       elseif line1 =~ 'Reading symbols from' && line2 !~ 'new-ui mi '
-	" Reading symbols might take a while, try more times
-	let try_count -= 1
+        " Reading symbols might take a while, try more times
+        let try_count -= 1
       endif
     endfor
     if response =~ 'New UI allocated'
@@ -315,17 +330,6 @@ func s:StartDebug_term(dict)
     endif
     sleep 10m
   endwhile
-
-  " Interpret commands while the target is running.  This should usually only be
-  " exec-interrupt, since many commands don't work properly while the target is
-  " running.
-  call s:SendCommand('-gdb-set mi-async on')
-  " Older gdb uses a different command.
-  call s:SendCommand('-gdb-set target-async on')
-
-  " Disable pagination, it causes everything to stop at the gdb
-  " "Type <return> to continue" prompt.
-  call s:SendCommand('set pagination off')
 
   call job_setoptions(term_getjob(s:gdbbuf), {'exit_cb': function('s:EndTermDebug')})
 
@@ -356,14 +360,26 @@ func s:StartDebug_prompt(dict)
     exe (&columns / 2 - 1) . "wincmd |"
   endif
 
-  " Add -quiet to avoid the intro message causing a hit-enter prompt.
   let gdb_args = get(a:dict, 'gdb_args', [])
   let proc_args = get(a:dict, 'proc_args', [])
 
-  let cmd = [g:termdebugger, '-quiet', '--interpreter=mi2'] + gdb_args
-  call ch_log('executing "' . join(cmd) . '"')
+  let gdb_cmd = [g:termdebugger]
+  " Add -quiet to avoid the intro message causing a hit-enter prompt.
+  let gdb_cmd += ['-quiet']
+  " Disable pagination, it causes everything to stop at the gdb, needs to be run early
+  let gdb_cmd += ['-iex', 'set pagination off']
+  " Interpret commands while the target is running.  This should usually only
+  " be exec-interrupt, since many commands don't work properly while the
+  " target is running (so execute during startup).
+  let gdb_cmd += ['-iex', 'set mi-async on']
+  " directly communicate via mi2
+  let gdb_cmd += ['--interpreter=mi2']
 
-  let s:gdbjob = job_start(cmd, {
+  " Adding arguments requested by the user
+  let gdb_cmd += gdb_args
+
+  call ch_log('executing "' . join(gdb_cmd) . '"')
+  let s:gdbjob = job_start(gdb_cmd, {
 	\ 'exit_cb': function('s:EndPromptDebug'),
 	\ 'out_cb': function('s:GdbOutCallback'),
 	\ })
@@ -375,13 +391,6 @@ func s:StartDebug_prompt(dict)
   " Mark the buffer modified so that it's not easy to close.
   set modified
   let s:gdb_channel = job_getchannel(s:gdbjob)  
-
-  " Interpret commands while the target is running.  This should usually only
-  " be exec-interrupt, since many commands don't work properly while the
-  " target is running.
-  call s:SendCommand('-gdb-set mi-async on')
-  " Older gdb uses a different command.
-  call s:SendCommand('-gdb-set target-async on')
 
   let s:ptybuf = 0
   if has('win32')
@@ -416,8 +425,6 @@ func s:StartDebug_prompt(dict)
   endif
   call s:SendCommand('set print pretty on')
   call s:SendCommand('set breakpoint pending on')
-  " Disable pagination, it causes everything to stop at the gdb
-  call s:SendCommand('set pagination off')
 
   " Set arguments to be run
   if len(proc_args)
