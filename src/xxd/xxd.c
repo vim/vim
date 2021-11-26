@@ -252,11 +252,13 @@ error_exit(int ret, char *msg)
   exit(ret);
 }
 
-  static void
-exit_on_ferror(int c, FILE *fpi)
+  static int
+getc_or_die(FILE *fpi)
 {
+  int c = getc(fpi);
   if (c == EOF && ferror(fpi))
     perror_exit(2);
+  return c;
 }
 
   static void
@@ -311,8 +313,7 @@ parse_hex_digit(int c)
 skip_to_eol(FILE *fpi, int c)
 {
   while (c != '\n' && c != EOF)
-    c = getc(fpi);
-  exit_on_ferror(c, fpi);
+    c = getc_or_die(fpi);
   return c;
 }
 
@@ -736,9 +737,8 @@ main(int argc, char *argv[])
 	  long s = seekoff;
 
 	  while (s--)
-	    if ((c = getc(fp)) == EOF)
+	    if ((c = getc_or_die(fp)) == EOF)
 	    {
-	      exit_on_ferror(c, fp);
 	      error_exit(4, "sorry cannot seek.");
 	    }
 	}
@@ -756,20 +756,19 @@ main(int argc, char *argv[])
 
       p = 0;
       c = 0;
-      while ((length < 0 || p < length) && (c = getc(fp)) != EOF)
+      while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
 	{
 	  fprintf_or_die(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % cols) ? ", " : &",\n  "[2*!p],  c);
+		(p % cols) ? ", " : (!p ? "  " : ",\n  "),  c);
 	  p++;
 	}
-      exit_on_ferror(c, fp);
 
       if (p)
 	fputs_or_die("\n", fpo);
-      fputs_or_die(&"};\n"[3 * (fp == stdin)], fpo);
 
       if (fp != stdin)
 	{
+	  fputs_or_die("};\n", fpo);
 	  fprintf_or_die(fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : "", 0);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
 	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
@@ -784,7 +783,7 @@ main(int argc, char *argv[])
     {
       p = cols;
       e = 0;
-      while ((length < 0 || n < length) && (e = getc(fp)) != EOF)
+      while ((length < 0 || n < length) && (e = getc_or_die(fp)) != EOF)
 	{
 	  putc_or_die(hexx[(e >> 4) & 0xf], fpo);
 	  putc_or_die(hexx[e & 0xf], fpo);
@@ -795,7 +794,6 @@ main(int argc, char *argv[])
 	      p = cols;
 	    }
 	}
-      exit_on_ferror(e, fp);
       if (p < cols)
 	putc_or_die('\n', fpo);
       fclose_or_die(fp, fpo);
@@ -810,7 +808,7 @@ main(int argc, char *argv[])
     grplen = 8 * octspergrp + 1;
 
   e = 0;
-  while ((length < 0 || n < length) && (e = getc(fp)) != EOF)
+  while ((length < 0 || n < length) && (e = getc_or_die(fp)) != EOF)
     {
       int x;
 
@@ -856,7 +854,6 @@ main(int argc, char *argv[])
 	  p = 0;
 	}
     }
-  exit_on_ferror(e, fp);
   if (p)
     {
       l[c] = '\n';
