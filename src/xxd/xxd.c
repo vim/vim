@@ -737,10 +737,8 @@ main(int argc, char *argv[])
 	  long s = seekoff;
 
 	  while (s--)
-	    if ((c = getc_or_die(fp)) == EOF)
-	    {
+	    if (getc_or_die(fp) == EOF)
 	      error_exit(4, "sorry cannot seek.");
-	    }
 	}
     }
 
@@ -755,7 +753,6 @@ main(int argc, char *argv[])
 	}
 
       p = 0;
-      c = 0;
       while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
 	{
 	  fprintf_or_die(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
@@ -782,7 +779,6 @@ main(int argc, char *argv[])
   if (hextype == HEX_POSTSCRIPT)
     {
       p = cols;
-      e = 0;
       while ((length < 0 || n < length) && (e = getc_or_die(fp)) != EOF)
 	{
 	  putc_or_die(hexx[(e >> 4) & 0xf], fpo);
@@ -807,7 +803,6 @@ main(int argc, char *argv[])
   else	/* hextype == HEX_BITS */
     grplen = 8 * octspergrp + 1;
 
-  e = 0;
   while ((length < 0 || n < length) && (e = getc_or_die(fp)) != EOF)
     {
       int x;
