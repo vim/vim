@@ -3206,13 +3206,14 @@ set_var(
     void
 set_var_const(
     char_u	*name,
-    type_T	*type,
+    type_T	*type_arg,
     typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
     int		flags_arg,  // ASSIGN_CONST, ASSIGN_FINAL, etc.
     int		var_idx)    // index for ":let [a, b] = list"
 {
     typval_T	*tv = tv_arg;
+    type_T	*type = type_arg;
     typval_T	bool_tv;
     dictitem_T	*di;
     typval_T	*dest_tv = NULL;
@@ -3334,13 +3335,18 @@ set_var_const(
 		if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
 		{
 		    where_T where = WHERE_INIT;
+		    svar_T  *sv = find_typval_in_script(&di->di_tv);
 
-		    // check the type and adjust to bool if needed
-		    where.wt_index = var_idx;
-		    where.wt_variable = TRUE;
-		    if (check_script_var_type(&di->di_tv, tv, name, where)
-								       == FAIL)
-			goto failed;
+		    if (sv != NULL)
+		    {
+			// check the type and adjust to bool if needed
+			where.wt_index = var_idx;
+			where.wt_variable = TRUE;
+			if (check_script_var_type(sv, tv, name, where) == FAIL)
+			    goto failed;
+			if (type == NULL)
+			    type = sv->sv_type;
+		    }
 		}
 
 		if ((flags & ASSIGN_FOR_LOOP) == 0

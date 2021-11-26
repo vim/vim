@@ -999,35 +999,29 @@ find_typval_in_script(typval_T *dest)
  */
     int
 check_script_var_type(
-	typval_T    *dest,
+	svar_T	    *sv,
 	typval_T    *value,
 	char_u	    *name,
 	where_T	    where)
 {
-    svar_T  *sv = find_typval_in_script(dest);
     int	    ret;
 
-    if (sv != NULL)
+    if (sv->sv_const != 0)
     {
-	if (sv->sv_const != 0)
-	{
-	    semsg(_(e_cannot_change_readonly_variable_str), name);
-	    return FAIL;
-	}
-	ret = check_typval_type(sv->sv_type, value, where);
-	if (ret == OK && need_convert_to_bool(sv->sv_type, value))
-	{
-	    int	val = tv2bool(value);
-
-	    clear_tv(value);
-	    value->v_type = VAR_BOOL;
-	    value->v_lock = 0;
-	    value->vval.v_number = val ? VVAL_TRUE : VVAL_FALSE;
-	}
-	return ret;
+	semsg(_(e_cannot_change_readonly_variable_str), name);
+	return FAIL;
     }
+    ret = check_typval_type(sv->sv_type, value, where);
+    if (ret == OK && need_convert_to_bool(sv->sv_type, value))
+    {
+	int	val = tv2bool(value);
 
-    return OK; // not really
+	clear_tv(value);
+	value->v_type = VAR_BOOL;
+	value->v_lock = 0;
+	value->vval.v_number = val ? VVAL_TRUE : VVAL_FALSE;
+    }
+    return ret;
 }
 
 // words that cannot be used as a variable

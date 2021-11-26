@@ -322,6 +322,16 @@ def Test_skipped_assignment()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_assign_keep_type()
+  var lines =<< trim END
+      vim9script
+      var l: list<number> = [123]
+      l = [123]
+      l->add('string')
+  END
+  CheckScriptFailure(lines, 'E1012:', 4)
+enddef
+
 def Test_assign_unpack()
   var lines =<< trim END
     var v1: number
