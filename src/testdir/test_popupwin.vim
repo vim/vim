@@ -574,6 +574,13 @@ func Test_popup_drag()
 	endfunc
 	map <silent> <F5> :call test_setmouse(6, 21)<CR>
 	map <silent> <F6> :call test_setmouse(7, 25)<CR>
+	func ClickAndDrag()
+	  call feedkeys("\<F7>\<LeftMouse>\<LeftRelease>", "xt")
+	  call feedkeys("\<F8>\<LeftMouse>\<F9>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F7> :call test_setmouse(5, 2)<CR>
+	map <silent> <F8> :call test_setmouse(3, 14)<CR>
+	map <silent> <F9> :call test_setmouse(3, 18)<CR>
   END
   call writefile(lines, 'XtestPopupDrag')
   let buf = RunVimInTerminal('-S XtestPopupDrag', #{rows: 10})
@@ -584,6 +591,10 @@ func Test_popup_drag()
 
   call term_sendkeys(buf, ":call Resize()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_drag_03', {})
+
+  " dragging works after click on a status line
+  call term_sendkeys(buf, ":call ClickAndDrag()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_04', {})
 
   " clean up
   call StopVimInTerminal(buf)
