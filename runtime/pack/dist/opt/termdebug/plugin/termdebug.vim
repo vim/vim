@@ -568,7 +568,8 @@ func s:DecodeMessage(quotedText)
   endif
   let result = ''
   let i = 1
-  while a:quotedText[i] != '"' && i < len(a:quotedText)
+  const maxi = len(a:quotedText)
+  while a:quotedText[i] != '"' && i < maxi
     if a:quotedText[i] == '\'
       let i += 1
       if a:quotedText[i] == 'n'
@@ -580,6 +581,30 @@ func s:DecodeMessage(quotedText)
 	let i += 1
 	let result .= "\t"
 	continue
+      elseif a:quotedText[i] == '\'
+        " append a single \
+        let i += 1
+        let result .= '\'
+        continue
+      elseif a:quotedText[i] == '0' && a:quotedText[i+1] == 'x'
+        " hex literal, gdb seems to return two hex digts here  \0x0a
+        " TODO: convert, for now just letting it through with \ but without 0
+        " let i += 2
+        " if i < maxi
+        "   let result .= "\x" --- and extracted number
+        " endif
+        " continue
+        let result .= '\'
+        let i += 1  " skips the 0 in \0x
+      elseif a:quotedText[i] >= '0' && a:quotedText[i] <= '9'
+        " octal literal, gdb seems to return three digits here \001  \254
+        " TODO: convert, for now just letting it through with \
+        " let i += 1
+        " if i < maxi
+        "   let result .= "\" --- and extracted number
+        " endif
+        " continue
+        let result .= '\'
       endif
     endif
     let result .= a:quotedText[i]
