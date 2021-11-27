@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Nov 14
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,9 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-mark ends up on last byte of char. (#9047)
-
-Delete runtime/rgb.txt after a while
+refactor ex_let_one() to subfunctions.
 
 Vim9 - Make everything work:
 - "filter #pat# ls" should work, #pat# is not a comment
@@ -222,8 +220,6 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Include patch #6290: recognize shell directory change.
-
 When using 'cryptmethod' xchaha20 the undo file is not encrypted.
 Need to handle extra bytes.
 
@@ -232,6 +228,8 @@ Fails in line 64 of Ch_communicate, no exception is thrown.
 
 Patch for Template string: #4634
 Have another look at the implementation.
+
+Add expanding <script> which works like <sfile> everywhere. #9189
 
 Rename getdigraphlist -> digraph_getlist() etc.
 

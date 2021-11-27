@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Sep 13
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Nov 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -820,6 +820,10 @@ error.  Example: >
 
 
 For loop ~
+
+The loop variable must not exist yet: >
+	var i = 1
+	for i in [1, 2, 3]   # Error!
 
 Legacy Vim script has some tricks to make a for loop over a list handle
 deleting items at the current or previous item.  In Vim9 script it just uses

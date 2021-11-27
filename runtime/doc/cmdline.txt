@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2021 Aug 06
+*cmdline.txt*   For Vim version 8.2.  Last change: 2021 Nov 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -925,9 +925,11 @@ Note: these are typed literally, they are not special keys!
 							*:<sfile>* *<sfile>*
 	<sfile>    When executing a ":source" command, is replaced with the
 		   file name of the sourced file.  *E498*
-		   When executing a function, is replaced with the call stack,
-		   as with <stack> (this is for backwards compatibility, using
-		   <stack> is preferred).
+		   When executing a legacy function, is replaced with the call
+		   stack, as with <stack> (this is for backwards
+		   compatibility, using <stack> is preferred).
+		   In Vim9 script using <sfile> in a function gives error
+		   *E1245* .
 		   Note that filename-modifiers are useless when <sfile> is
 		   not used inside a script.
 							*:<stack>* *<stack>*

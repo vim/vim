@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2021 Sep 09
+*repeat.txt*    For Vim version 8.2.  Last change: 2021 Nov 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -791,6 +791,10 @@ effect won't be noticed until after leaving debug mode.  For example: >
 won't be very helpful.
 
 There is a separate command-line history for debug mode.
+
+NOTE: In Vim9 script, if a command is written at the script level and
+continues on the next line, not using the old way with a backslash for line
+continuation, only the first line is printed before the debugging prompt.
 
 The line number for a function line is relative to the start of the function.
 If you have trouble figuring out where you are, edit the file that defines

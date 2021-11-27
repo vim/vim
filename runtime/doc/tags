@@ -3999,6 +3999,7 @@ E1239	eval.txt	/*E1239*
 E124	eval.txt	/*E124*
 E1243	options.txt	/*E1243*
 E1244	message.txt	/*E1244*
+E1245	cmdline.txt	/*E1245*
 E125	eval.txt	/*E125*
 E126	eval.txt	/*E126*
 E127	eval.txt	/*E127*
@@ -7321,7 +7322,9 @@ hl-Cursor	syntax.txt	/*hl-Cursor*
 hl-CursorColumn	syntax.txt	/*hl-CursorColumn*
 hl-CursorIM	syntax.txt	/*hl-CursorIM*
 hl-CursorLine	syntax.txt	/*hl-CursorLine*
+hl-CursorLineFold	syntax.txt	/*hl-CursorLineFold*
 hl-CursorLineNr	syntax.txt	/*hl-CursorLineNr*
+hl-CursorLineSign	syntax.txt	/*hl-CursorLineSign*
 hl-DiffAdd	syntax.txt	/*hl-DiffAdd*
 hl-DiffChange	syntax.txt	/*hl-DiffChange*
 hl-DiffDelete	syntax.txt	/*hl-DiffDelete*
