@@ -331,7 +331,7 @@ syn region  vbString		start=+"+  end=+"\|$+
 syn region  vbComment		start="\(^\|\s\)REM\s" end="$" contains=vbTodo
 syn region  vbComment		start="\(^\|\s\)\'"   end="$" contains=vbTodo
 syn match   vbLineNumber	"^\d\+\(\s\|$\)"
-syn match   vbTypeSpecifier  "[a-zA-Z0-9][\$%&!#]"ms=s+1
+syn match   vbTypeSpecifier  "[a-zA-Z0-9][@\$%&!#]"ms=s+1
 syn match   vbTypeSpecifier  "#[a-zA-Z0-9]"me=e-1
 
 " Define the default highlighting.
