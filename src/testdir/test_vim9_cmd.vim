@@ -105,6 +105,23 @@ def Test_edit_wildcards()
   var files = ['file 1', 'file%2', 'file# 3']
   args `=files`
   assert_equal(files, argv())
+
+  filename = 'Xwindo'
+  windo edit `=filename`
+  assert_equal('Xwindo', bufname())
+
+  filename = 'Xtabdo'
+  tabdo edit `=filename`
+  assert_equal('Xtabdo', bufname())
+
+  filename = 'Xargdo'
+  argdo edit `=filename`
+  assert_equal('Xargdo', bufname())
+
+  :%bwipe!
+  filename = 'Xbufdo'
+  bufdo file `=filename`
+  assert_equal('Xbufdo', bufname())
 enddef
 
 def Test_expand_alternate_file()
