@@ -1456,7 +1456,8 @@ op_insert(oparg_T *oap, long count1)
 {
     long		ins_len, pre_textlen = 0;
     char_u		*firstline, *ins_text;
-    colnr_T		ind_pre = 0, ind_post;
+    colnr_T		ind_pre_col = 0, ind_post_col;
+    int			ind_pre_vcol = 0, ind_post_vcol = 0;
     struct block_def	bd;
     int			i;
     pos_T		t1;
@@ -1497,7 +1498,8 @@ op_insert(oparg_T *oap, long count1)
 	// Get the info about the block before entering the text
 	block_prep(oap, &bd, oap->start.lnum, TRUE);
 	// Get indent information
-	ind_pre = (colnr_T)getwhitecols_curline();
+	ind_pre_col = (colnr_T)getwhitecols_curline();
+	ind_pre_vcol = get_indent();
 	firstline = ml_get(oap->start.lnum) + bd.textcol;
 
 	if (oap->op_type == OP_APPEND)
@@ -1563,11 +1565,12 @@ op_insert(oparg_T *oap, long count1)
 
 	// If indent kicked in, the firstline might have changed
 	// but only do that, if the indent actually increased.
-	ind_post = (colnr_T)getwhitecols_curline();
-	if (curbuf->b_op_start.col > ind_pre && ind_post > ind_pre)
+	ind_post_col = (colnr_T)getwhitecols_curline();
+	if (curbuf->b_op_start.col > ind_pre_col && ind_post_col > ind_pre_col)
 	{
-	    bd.textcol += ind_post - ind_pre;
-	    bd.start_vcol += ind_post - ind_pre;
+	    bd.textcol += ind_post_col - ind_pre_col;
+	    ind_post_vcol = get_indent();
+	    bd.start_vcol += ind_post_vcol - ind_pre_vcol;
 	    did_indent = TRUE;
 	}
 
@@ -1612,12 +1615,28 @@ op_insert(oparg_T *oap, long count1)
 	    }
 	}
 
-	/*
-	 * Spaces and tabs in the indent may have changed to other spaces and
-	 * tabs.  Get the starting column again and correct the length.
-	 * Don't do this when "$" used, end-of-line will have changed.
-	 */
+	// Spaces and tabs in the indent may have changed to other spaces and
+	// tabs.  Get the starting column again and correct the length.
+	// Don't do this when "$" used, end-of-line will have changed.
+	//
+	// if indent was added and the inserted text was after the indent,
+	// correct the selection for the new indent.
+	if (did_indent && bd.textcol - ind_post_col > 0)
+	{
+	    oap->start.col += ind_post_col - ind_pre_col;
+	    oap->start_vcol += ind_post_vcol - ind_pre_vcol;
+	    oap->end.col += ind_post_col - ind_pre_col;
+	    oap->end_vcol += ind_post_vcol - ind_pre_vcol;
+	}
 	block_prep(oap, &bd2, oap->start.lnum, TRUE);
+	if (did_indent && bd.textcol - ind_post_col > 0)
+	{
+	    // undo for where "oap" is used below
+	    oap->start.col -= ind_post_col - ind_pre_col;
+	    oap->start_vcol -= ind_post_vcol - ind_pre_vcol;
+	    oap->end.col -= ind_post_col - ind_pre_col;
+	    oap->end_vcol -= ind_post_vcol - ind_pre_vcol;
+	}
 	if (!bd.is_MAX || bd2.textlen < bd.textlen)
 	{
 	    if (oap->op_type == OP_APPEND)
@@ -1627,10 +1646,6 @@ op_insert(oparg_T *oap, long count1)
 		    --bd2.textlen;
 	    }
 	    bd.textcol = bd2.textcol;
-	    if (did_indent && bd.textcol > ind_pre)
-		// If the insert was in the indent then include the indent
-		// change in the new text, otherwise don't.
-		bd.textcol += ind_post - ind_pre;
 	    bd.textlen = bd2.textlen;
 	}
 
