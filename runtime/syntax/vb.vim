@@ -334,6 +334,12 @@ syn match   vbLineLabel		"^\h\w\+:"
 syn match   vbLineNumber	"^\d\+\(:\|\s\|$\)"
 syn match   vbTypeSpecifier  "\<\a\w*[@\$%&!#]"ms=s+1
 syn match   vbTypeSpecifier  "#[a-zA-Z0-9]"me=e-1
+" Conditional Compilation
+syn match  vbPreProc "^#const\>"
+syn region vbPreProc matchgroup=PreProc start="^#if\>"     end="\<then\>" transparent contains=TOP
+syn region vbPreProc matchgroup=PreProc start="^#elseif\>" end="\<then\>" transparent contains=TOP
+syn match  vbPreProc "^#else\>"
+syn match  vbPreProc "^#end\s*if\>"
 
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
@@ -360,7 +366,7 @@ hi def link vbEvents			Special
 hi def link vbTodo			Todo
 hi def link vbTypes			Type
 hi def link vbTypeSpecifier	Type
-
+hi def link vbPreProc		PreProc
 
 let b:current_syntax = "vb"
 
