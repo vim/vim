@@ -1,8 +1,9 @@
 " Vim syntax file
-" Language:	Visual Basic
-" Maintainer:	Tim Chase <vb.vim@tim.thechases.com>
-" Former Maintainer:	Robert M. Cortopassi <cortopar@mindspring.com>
-"	(tried multiple times to contact, but email bounced)
+" Language:     Visual Basic
+" Maintainer:   Doug Kearns <dougkearns@gmail.com>
+" Former Maintainer:    Tim Chase <vb.vim@tim.thechases.com>
+" Former Maintainer:    Robert M. Cortopassi <cortopar@mindspring.com>
+"       (tried multiple times to contact, but email bounced)
 " Last Change:
 "   2021 Nov 26  Incorporated additions from Doug Kearns
 "   2005 May 25  Synched with work by Thomas Barthel
