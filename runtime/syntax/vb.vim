@@ -4,6 +4,7 @@
 " Former Maintainer:	Robert M. Cortopassi <cortopar@mindspring.com>
 "	(tried multiple times to contact, but email bounced)
 " Last Change:
+"   2021 Nov 26  Incorporated additions from Doug Kearns
 "   2005 May 25  Synched with work by Thomas Barthel
 "   2004 May 30  Added a few keywords
 
