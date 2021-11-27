@@ -1627,6 +1627,10 @@ op_insert(oparg_T *oap, long count1)
 		    --bd2.textlen;
 	    }
 	    bd.textcol = bd2.textcol;
+	    if (did_indent && bd.textcol > ind_pre)
+		// If the insert was in the indent then include the indent
+		// change in the new text, otherwise don't.
+		bd.textcol += ind_post - ind_pre;
 	    bd.textlen = bd2.textlen;
 	}
 
