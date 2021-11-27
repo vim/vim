@@ -330,6 +330,7 @@ syn match  vbFloat		"[-+]\=\<\.\d\+\([eE][\-+]\=\d\+\)\="
 syn region  vbString		start=+"+  end=+"\|$+
 syn region  vbComment		start="\(^\|\s\)REM\s" end="$" contains=vbTodo
 syn region  vbComment		start="\(^\|\s\)\'"   end="$" contains=vbTodo
+syn match   vbLineLabel		"^\h\w\+:"
 syn match   vbLineNumber	"^\d\+\(:\|\s\|$\)"
 syn match   vbTypeSpecifier  "\<\a\w*[@\$%&!#]"ms=s+1
 syn match   vbTypeSpecifier  "#[a-zA-Z0-9]"me=e-1
@@ -339,6 +340,7 @@ syn match   vbTypeSpecifier  "#[a-zA-Z0-9]"me=e-1
 
 hi def link vbBoolean		Boolean
 hi def link vbLineNumber		Comment
+hi def link vbLineLabel		Comment
 hi def link vbComment		Comment
 hi def link vbConditional	Conditional
 hi def link vbConst			Constant
