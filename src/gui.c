@@ -4412,6 +4412,8 @@ gui_update_scrollbars(
 					    val, size, max);
 	}
     }
+    // Update the title
+    maketitle();
     prev_curwin = curwin;
     --hold_gui_events;
 }
