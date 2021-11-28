@@ -1289,6 +1289,240 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 }
 
 /*
+ * Set an environment variable, part of ex_let_one().
+ */
+    static char_u *
+ex_let_env(
+    char_u	*arg,
+    typval_T	*tv,
+    int		flags,
+    char_u	*endchars,
+    char_u	*op)
+{
+    char_u	*arg_end = NULL;
+    char_u	*name;
+    int		len;
+
+    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					 && (flags & ASSIGN_FOR_LOOP) == 0)
+    {
+	emsg(_("E996: Cannot lock an environment variable"));
+	return NULL;
+    }
+
+    // Find the end of the name.
+    ++arg;
+    name = arg;
+    len = get_env_len(&arg);
+    if (len == 0)
+	semsg(_(e_invarg2), name - 1);
+    else
+    {
+	if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
+	    semsg(_(e_letwrong), op);
+	else if (endchars != NULL
+			      && vim_strchr(endchars, *skipwhite(arg)) == NULL)
+	    emsg(_(e_unexpected_characters_in_let));
+	else if (!check_secure())
+	{
+	    char_u	*tofree = NULL;
+	    int		c1 = name[len];
+	    char_u	*p;
+
+	    name[len] = NUL;
+	    p = tv_get_string_chk(tv);
+	    if (p != NULL && op != NULL && *op == '.')
+	    {
+		int	mustfree = FALSE;
+		char_u  *s = vim_getenv(name, &mustfree);
+
+		if (s != NULL)
+		{
+		    p = tofree = concat_str(s, p);
+		    if (mustfree)
+			vim_free(s);
+		}
+	    }
+	    if (p != NULL)
+	    {
+		vim_setenv_ext(name, p);
+		arg_end = arg;
+	    }
+	    name[len] = c1;
+	    vim_free(tofree);
+	}
+    }
+    return arg_end;
+}
+
+/*
+ * Set an option, part of ex_let_one().
+ */
+    static char_u *
+ex_let_option(
+    char_u	*arg,
+    typval_T	*tv,
+    int		flags,
+    char_u	*endchars,
+    char_u	*op)
+{
+    char_u	*p;
+    int		opt_flags;
+    char_u	*arg_end = NULL;
+
+    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					 && (flags & ASSIGN_FOR_LOOP) == 0)
+    {
+	emsg(_(e_const_option));
+	return NULL;
+    }
+
+    // Find the end of the name.
+    p = find_option_end(&arg, &opt_flags);
+    if (p == NULL || (endchars != NULL
+			       && vim_strchr(endchars, *skipwhite(p)) == NULL))
+	emsg(_(e_unexpected_characters_in_let));
+    else
+    {
+	int	    c1;
+	long	    n = 0;
+	getoption_T opt_type;
+	long	    numval;
+	char_u	    *stringval = NULL;
+	char_u	    *s = NULL;
+	int	    failed = FALSE;
+
+	c1 = *p;
+	*p = NUL;
+
+	opt_type = get_option_value(arg, &numval, &stringval, opt_flags);
+	if ((opt_type == gov_bool
+		    || opt_type == gov_number
+		    || opt_type == gov_hidden_bool
+		    || opt_type == gov_hidden_number)
+			 && (tv->v_type != VAR_STRING || !in_vim9script()))
+	{
+	    if (opt_type == gov_bool || opt_type == gov_hidden_bool)
+		// bool, possibly hidden
+		n = (long)tv_get_bool(tv);
+	    else
+		// number, possibly hidden
+		n = (long)tv_get_number(tv);
+	}
+
+	// Avoid setting a string option to the text "v:false" or similar.
+	// In Vim9 script also don't convert a number to string.
+	if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
+			 && (!in_vim9script() || tv->v_type != VAR_NUMBER))
+	    s = tv_get_string_chk(tv);
+
+	if (op != NULL && *op != '=')
+	{
+	    if (((opt_type == gov_bool || opt_type == gov_number) && *op == '.')
+		    || (opt_type == gov_string && *op != '.'))
+	    {
+		semsg(_(e_letwrong), op);
+		failed = TRUE;  // don't set the value
+
+	    }
+	    else
+	    {
+		// number, in legacy script also bool
+		if (opt_type == gov_number
+			     || (opt_type == gov_bool && !in_vim9script()))
+		{
+		    switch (*op)
+		    {
+			case '+': n = numval + n; break;
+			case '-': n = numval - n; break;
+			case '*': n = numval * n; break;
+			case '/': n = (long)num_divide(numval, n,
+							       &failed); break;
+			case '%': n = (long)num_modulus(numval, n,
+							       &failed); break;
+		    }
+		    s = NULL;
+		}
+		else if (opt_type == gov_string
+					 && stringval != NULL && s != NULL)
+		{
+		    // string
+		    s = concat_str(stringval, s);
+		    vim_free(stringval);
+		    stringval = s;
+		}
+	    }
+	}
+
+	if (!failed)
+	{
+	    if (opt_type != gov_string || s != NULL)
+	    {
+		set_option_value(arg, n, s, opt_flags);
+		arg_end = p;
+	    }
+	    else
+		emsg(_(e_stringreq));
+	}
+	*p = c1;
+	vim_free(stringval);
+    }
+    return arg_end;
+}
+
+/*
+ * Set a register, part of ex_let_one().
+ */
+    static char_u *
+ex_let_register(
+    char_u	*arg,
+    typval_T	*tv,
+    int		flags,
+    char_u	*endchars,
+    char_u	*op)
+{
+    char_u	*arg_end = NULL;
+
+    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					 && (flags & ASSIGN_FOR_LOOP) == 0)
+    {
+	emsg(_("E996: Cannot lock a register"));
+	return NULL;
+    }
+    ++arg;
+    if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
+	semsg(_(e_letwrong), op);
+    else if (endchars != NULL
+			  && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
+	emsg(_(e_unexpected_characters_in_let));
+    else
+    {
+	char_u	*ptofree = NULL;
+	char_u	*p;
+
+	p = tv_get_string_chk(tv);
+	if (p != NULL && op != NULL && *op == '.')
+	{
+	    char_u  *s = get_reg_contents(*arg == '@'
+						  ? '"' : *arg, GREG_EXPR_SRC);
+
+	    if (s != NULL)
+	    {
+		p = ptofree = concat_str(s, p);
+		vim_free(s);
+	    }
+	}
+	if (p != NULL)
+	{
+	    write_reg_contents(*arg == '@' ? '"' : *arg, p, -1, FALSE);
+	    arg_end = arg + 1;
+	}
+	vim_free(ptofree);
+    }
+    return arg_end;
+}
+
+/*
  * Set one item of ":let var = expr" or ":let [v1, v2] = list" to its value.
  * Returns a pointer to the char just after the var name.
  * Returns NULL if there is an error.
@@ -1303,13 +1537,7 @@ ex_let_one(
     char_u	*op,		// "+", "-", "."  or NULL
     int		var_idx)	// variable index for "let [a, b] = list"
 {
-    int		c1;
-    char_u	*name;
-    char_u	*p;
     char_u	*arg_end = NULL;
-    int		len;
-    int		opt_flags;
-    char_u	*tofree = NULL;
 
     if (in_vim9script() && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
 			&& (flags & (ASSIGN_CONST | ASSIGN_FINAL)) == 0
@@ -1319,207 +1547,32 @@ ex_let_one(
 	return NULL;
     }
 
-    // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
-	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
-					     && (flags & ASSIGN_FOR_LOOP) == 0)
-	{
-	    emsg(_("E996: Cannot lock an environment variable"));
-	    return NULL;
-	}
-
-	// Find the end of the name.
-	++arg;
-	name = arg;
-	len = get_env_len(&arg);
-	if (len == 0)
-	    semsg(_(e_invarg2), name - 1);
-	else
-	{
-	    if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
-		semsg(_(e_letwrong), op);
-	    else if (endchars != NULL
-			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
-		emsg(_(e_unexpected_characters_in_let));
-	    else if (!check_secure())
-	    {
-		c1 = name[len];
-		name[len] = NUL;
-		p = tv_get_string_chk(tv);
-		if (p != NULL && op != NULL && *op == '.')
-		{
-		    int	    mustfree = FALSE;
-		    char_u  *s = vim_getenv(name, &mustfree);
-
-		    if (s != NULL)
-		    {
-			p = tofree = concat_str(s, p);
-			if (mustfree)
-			    vim_free(s);
-		    }
-		}
-		if (p != NULL)
-		{
-		    vim_setenv_ext(name, p);
-		    arg_end = arg;
-		}
-		name[len] = c1;
-		vim_free(tofree);
-	    }
-	}
+	// ":let $VAR = expr": Set environment variable.
+	return ex_let_env(arg, tv, flags, endchars, op);
     }
-
-    // ":let &option = expr": Set option value.
-    // ":let &l:option = expr": Set local option value.
-    // ":let &g:option = expr": Set global option value.
-    // ":for &ts in range(8)": Set option value for for loop
     else if (*arg == '&')
     {
-	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
-					     && (flags & ASSIGN_FOR_LOOP) == 0)
-	{
-	    emsg(_(e_const_option));
-	    return NULL;
-	}
-	// Find the end of the name.
-	p = find_option_end(&arg, &opt_flags);
-	if (p == NULL || (endchars != NULL
-			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
-	    emsg(_(e_unexpected_characters_in_let));
-	else
-	{
-	    long	n = 0;
-	    getoption_T	opt_type;
-	    long	numval;
-	    char_u	*stringval = NULL;
-	    char_u	*s = NULL;
-	    int		failed = FALSE;
-
-	    c1 = *p;
-	    *p = NUL;
-
-	    opt_type = get_option_value(arg, &numval, &stringval, opt_flags);
-	    if ((opt_type == gov_bool
-			|| opt_type == gov_number
-			|| opt_type == gov_hidden_bool
-			|| opt_type == gov_hidden_number)
-			     && (tv->v_type != VAR_STRING || !in_vim9script()))
-	    {
-		if (opt_type == gov_bool || opt_type == gov_hidden_bool)
-		    // bool, possibly hidden
-		    n = (long)tv_get_bool(tv);
-		else
-		    // number, possibly hidden
-		    n = (long)tv_get_number(tv);
-	    }
-
-	    // Avoid setting a string option to the text "v:false" or similar.
-	    // In Vim9 script also don't convert a number to string.
-	    if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
-			     && (!in_vim9script() || tv->v_type != VAR_NUMBER))
-		s = tv_get_string_chk(tv);
-
-	    if (op != NULL && *op != '=')
-	    {
-		if (((opt_type == gov_bool || opt_type == gov_number)
-								 && *op == '.')
-			|| (opt_type == gov_string && *op != '.'))
-		{
-		    semsg(_(e_letwrong), op);
-		    failed = TRUE;  // don't set the value
-
-		}
-		else
-		{
-		    // number, in legacy script also bool
-		    if (opt_type == gov_number
-				 || (opt_type == gov_bool && !in_vim9script()))
-		    {
-			switch (*op)
-			{
-			    case '+': n = numval + n; break;
-			    case '-': n = numval - n; break;
-			    case '*': n = numval * n; break;
-			    case '/': n = (long)num_divide(numval, n,
-							       &failed); break;
-			    case '%': n = (long)num_modulus(numval, n,
-							       &failed); break;
-			}
-			s = NULL;
-		    }
-		    else if (opt_type == gov_string
-					     && stringval != NULL && s != NULL)
-		    {
-			// string
-			s = concat_str(stringval, s);
-			vim_free(stringval);
-			stringval = s;
-		    }
-		}
-	    }
-
-	    if (!failed)
-	    {
-		if (opt_type != gov_string || s != NULL)
-		{
-		    set_option_value(arg, n, s, opt_flags);
-		    arg_end = p;
-		}
-		else
-		    emsg(_(e_stringreq));
-	    }
-	    *p = c1;
-	    vim_free(stringval);
-	}
+	// ":let &option = expr": Set option value.
+	// ":let &l:option = expr": Set local option value.
+	// ":let &g:option = expr": Set global option value.
+	// ":for &ts in range(8)": Set option value for for loop
+	return ex_let_option(arg, tv, flags, endchars, op);
     }
-
-    // ":let @r = expr": Set register contents.
     else if (*arg == '@')
     {
-	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
-					     && (flags & ASSIGN_FOR_LOOP) == 0)
-	{
-	    emsg(_("E996: Cannot lock a register"));
-	    return NULL;
-	}
-	++arg;
-	if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
-	    semsg(_(e_letwrong), op);
-	else if (endchars != NULL
-			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
-	    emsg(_(e_unexpected_characters_in_let));
-	else
-	{
-	    char_u	*ptofree = NULL;
-	    char_u	*s;
-
-	    p = tv_get_string_chk(tv);
-	    if (p != NULL && op != NULL && *op == '.')
-	    {
-		s = get_reg_contents(*arg == '@' ? '"' : *arg, GREG_EXPR_SRC);
-		if (s != NULL)
-		{
-		    p = ptofree = concat_str(s, p);
-		    vim_free(s);
-		}
-	    }
-	    if (p != NULL)
-	    {
-		write_reg_contents(*arg == '@' ? '"' : *arg, p, -1, FALSE);
-		arg_end = arg + 1;
-	    }
-	    vim_free(ptofree);
-	}
+	// ":let @r = expr": Set register contents.
+	return ex_let_register(arg, tv, flags, endchars, op);
     }
-
-    // ":let var = expr": Set internal variable.
-    // ":let var: type = expr": Set internal variable with type.
-    // ":let {expr} = expr": Idem, name made with curly braces
     else if (eval_isnamec1(*arg) || *arg == '{')
     {
 	lval_T	lv;
+	char_u	*p;
 
+	// ":let var = expr": Set internal variable.
+	// ":let var: type = expr": Set internal variable with type.
+	// ":let {expr} = expr": Idem, name made with curly braces
 	p = get_lval(arg, tv, &lv, FALSE, FALSE,
 		(flags & (ASSIGN_NO_DECL | ASSIGN_DECL))
 					   ? GLV_NO_DECL : 0, FNE_CHECK_START);
@@ -1527,7 +1580,9 @@ ex_let_one(
 	{
 	    if (endchars != NULL && vim_strchr(endchars,
 					   *skipwhite(lv.ll_name_end)) == NULL)
+	    {
 		emsg(_(e_unexpected_characters_in_let));
+	    }
 	    else
 	    {
 		set_var_lval(&lv, p, tv, copy, flags, op, var_idx);
@@ -1536,7 +1591,6 @@ ex_let_one(
 	}
 	clear_lval(&lv);
     }
-
     else
 	semsg(_(e_invarg2), arg);
 
