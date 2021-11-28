@@ -523,7 +523,7 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     fp->uf_def_status = UF_NOT_COMPILED;
     fp->uf_refcount = 1;
     fp->uf_varargs = TRUE;
-    fp->uf_flags = FC_CFUNC;
+    fp->uf_flags = FC_CFUNC | FC_LAMBDA;
     fp->uf_calls = 0;
     fp->uf_script_ctx = current_sctx;
     fp->uf_cb = cb;
@@ -1205,6 +1205,7 @@ lambda_function_body(
     set_ufunc_name(ufunc, name);
     if (hash_add(&func_hashtab, UF2HIKEY(ufunc)) == FAIL)
 	goto erret;
+    ufunc->uf_flags = FC_LAMBDA;
     ufunc->uf_refcount = 1;
     ufunc->uf_args = *newargs;
     newargs->ga_data = NULL;
@@ -1399,7 +1400,7 @@ get_lambda_tv(
     if (evaluate)
     {
 	int	    len;
-	int	    flags = 0;
+	int	    flags = FC_LAMBDA;
 	char_u	    *p;
 	char_u	    *line_end;
 	char_u	    *name = get_lambda_name();
@@ -2506,8 +2507,7 @@ call_user_func(
 	return;
     }
 
-    if (STRNCMP(fp->uf_name, "<lambda>", 8) == 0)
-	islambda = TRUE;
+    islambda = fp->uf_flags & FC_LAMBDA;
 
     /*
      * Note about using fc->fixvar[]: This is an array of FIXVAR_CNT variables

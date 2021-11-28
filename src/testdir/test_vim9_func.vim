@@ -586,15 +586,19 @@ def Test_func_with_comments()
 enddef
 
 def Test_nested_function()
-  def Nested(arg: string): string
+  def NestedDef(arg: string): string
     return 'nested ' .. arg
   enddef
-  Nested('function')->assert_equal('nested function')
+  NestedDef(':def')->assert_equal('nested :def')
+
+  func NestedFunc(arg)
+    return 'nested ' .. a:arg
+  endfunc
+  NestedFunc(':func')->assert_equal('nested :func')
 
   CheckDefFailure(['def Nested()', 'enddef', 'Nested(66)'], 'E118:')
   CheckDefFailure(['def Nested(arg: string)', 'enddef', 'Nested()'], 'E119:')
 
-  CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
   CheckDefFailure(['def s:Nested()', 'enddef'], 'E1075:')
   CheckDefFailure(['def b:Nested()', 'enddef'], 'E1075:')
 
@@ -688,6 +692,26 @@ def Test_nested_global_function()
           def g:Inner(): string
               return 'inner'
           enddef
+      enddef
+      defcompile
+      Outer()
+      g:Inner()->assert_equal('inner')
+      delfunc g:Inner
+      Outer()
+      g:Inner()->assert_equal('inner')
+      delfunc g:Inner
+      Outer()
+      g:Inner()->assert_equal('inner')
+      delfunc g:Inner
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Outer()
+          func g:Inner()
+            return 'inner'
+          endfunc
       enddef
       defcompile
       Outer()

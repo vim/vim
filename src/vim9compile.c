@@ -1675,7 +1675,10 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
-    isn->isn_arg.funcref.fr_func = ufunc->uf_dfunc_idx;
+    if (ufunc->uf_def_status == UF_NOT_COMPILED)
+	isn->isn_arg.funcref.fr_func_name = vim_strsave(ufunc->uf_name);
+    else
+	isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
     cctx->ctx_has_closure = 1;
 
     // If the referenced function is a closure, it may use items further up in
@@ -5835,6 +5838,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     fill_exarg_from_cctx(eap, cctx);
 
     eap->forceit = FALSE;
+    // We use the special <Lamba>99 name, but it's not really a lambda.
     lambda_name = vim_strsave(get_lambda_name());
     if (lambda_name == NULL)
 	return NULL;
@@ -9976,15 +9980,10 @@ compile_def_function(
 	switch (ea.cmdidx)
 	{
 	    case CMD_def:
+	    case CMD_function:
 		    ea.arg = p;
 		    line = compile_nested_function(&ea, &cctx);
 		    break;
-
-	    case CMD_function:
-		    // TODO: should we allow this, e.g. to declare a global
-		    // function?
-		    emsg(_(e_cannot_use_function_inside_def));
-		    goto erret;
 
 	    case CMD_return:
 		    line = compile_return(p, check_return_type,
@@ -10442,12 +10441,23 @@ delete_instr(isn_T *isn)
 
 	case ISN_FUNCREF:
 	    {
-		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-					       + isn->isn_arg.funcref.fr_func;
-		ufunc_T *ufunc = dfunc->df_ufunc;
+		if (isn->isn_arg.funcref.fr_func_name == NULL)
+		{
+		    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+					   + isn->isn_arg.funcref.fr_dfunc_idx;
+		    ufunc_T *ufunc = dfunc->df_ufunc;
 
-		if (ufunc != NULL && func_name_refcount(ufunc->uf_name))
-		    func_ptr_unref(ufunc);
+		    if (ufunc != NULL && func_name_refcount(ufunc->uf_name))
+			func_ptr_unref(ufunc);
+		}
+		else
+		{
+		    char_u *name = isn->isn_arg.funcref.fr_func_name;
+
+		    if (name != NULL)
+			func_unref(name);
+		    vim_free(isn->isn_arg.funcref.fr_func_name);
+		}
 	    }
 	    break;
 

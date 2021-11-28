@@ -322,7 +322,8 @@ typedef struct {
 
 // arguments to ISN_FUNCREF
 typedef struct {
-    int		fr_func;	// function index
+    int		fr_dfunc_idx;	// function index for :def function
+    char_u	*fr_func_name;	// function name for legacy function
 } funcref_T;
 
 // arguments to ISN_NEWFUNC

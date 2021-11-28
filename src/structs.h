@@ -1699,6 +1699,7 @@ typedef struct
 #define FC_VIM9	    0x400	// defined in vim9 script file
 #define FC_CFUNC    0x800	// defined as Lua C func
 #define FC_COPY	    0x1000	// copy of another function by copy_func()
+#define FC_LAMBDA   0x2000	// one line "return {expr}"
 
 #define MAX_FUNC_ARGS	20	// maximum number of function arguments
 #define VAR_SHORT_LEN	20	// short variable name length

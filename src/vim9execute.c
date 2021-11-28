@@ -3168,8 +3168,8 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_FUNCREF:
 		{
 		    partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
-		    dfunc_T	*pt_dfunc = ((dfunc_T *)def_functions.ga_data)
-					       + iptr->isn_arg.funcref.fr_func;
+		    ufunc_T	*ufunc;
+		    funcref_T	*funcref = &iptr->isn_arg.funcref;
 
 		    if (pt == NULL)
 			goto theend;
@@ -3178,8 +3178,18 @@ exec_instructions(ectx_T *ectx)
 			vim_free(pt);
 			goto theend;
 		    }
-		    if (fill_partial_and_closure(pt, pt_dfunc->df_ufunc,
-								 ectx) == FAIL)
+		    if (funcref->fr_func_name == NULL)
+		    {
+			dfunc_T	*pt_dfunc = ((dfunc_T *)def_functions.ga_data)
+						       + funcref->fr_dfunc_idx;
+
+			ufunc = pt_dfunc->df_ufunc;
+		    }
+		    else
+		    {
+			ufunc = find_func(funcref->fr_func_name, FALSE, NULL);
+		    }
+		    if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
 			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    ++ectx->ec_stack.ga_len;
@@ -5454,10 +5464,17 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_FUNCREF:
 		{
 		    funcref_T	*funcref = &iptr->isn_arg.funcref;
-		    dfunc_T	*df = ((dfunc_T *)def_functions.ga_data)
-							    + funcref->fr_func;
+		    char_u	*name;
 
-		    smsg("%s%4d FUNCREF %s", pfx, current, df->df_ufunc->uf_name);
+		    if (funcref->fr_func_name == NULL)
+		    {
+			dfunc_T	*df = ((dfunc_T *)def_functions.ga_data)
+						       + funcref->fr_dfunc_idx;
+			name = df->df_ufunc->uf_name;
+		    }
+		    else
+			name = funcref->fr_func_name;
+		    smsg("%s%4d FUNCREF %s", pfx, current, name);
 		}
 		break;
 
