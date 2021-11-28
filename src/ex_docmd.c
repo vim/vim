@@ -2910,7 +2910,14 @@ parse_command_modifiers(
 			    int	    c = 0;
 
 			    if (!checkforcmd_noparen(&p, "filter", 4)
-						|| *p == NUL || ends_excmd(*p))
+				    || *p == NUL
+				    || (ends_excmd(*p)
+#ifdef FEAT_EVAL
+					// in ":filter #pat# cmd" # does not
+					// start a comment
+				     && (!in_vim9script() || VIM_ISWHITE(p[1]))
+#endif
+				     ))
 				break;
 			    if (*p == '!')
 			    {

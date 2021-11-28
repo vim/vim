@@ -714,6 +714,16 @@ def Test_command_modifier_filter()
       assert_match('very specific z3d37dh234 string', Screenline(&lines))
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      edit foobar
+      redir => g:filter_out
+      filter #foobar# ls
+      redir END
+      assert_match('"foobar"', g:filter_out)
+      unlet g:filter_out
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_win_command_modifiers()
