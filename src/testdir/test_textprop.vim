@@ -1615,6 +1615,24 @@ def Test_prop_add_delete_line()
   bwipe!
 enddef
 
+func Test_prop_in_linebreak()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set breakindent linebreak breakat+=]
+    call printf('%s]%s', repeat('x', 50), repeat('x', 70))->setline(1)
+    call prop_type_add('test', #{highlight: 'ErrorMsg'})
+    call prop_add(1, 51, #{length: 1, type: 'test'})
+  END
+  call writefile(lines, 'XscriptPropLinebreak')
+  let buf = RunVimInTerminal('-S XscriptPropLinebreak', #{rows: 10})
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_prop_linebreak', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropLinebreak')
+endfunc
+
 " Buffer number of 0 should be ignored, as if the parameter wasn't passed.
 def Test_prop_bufnr_zero()
   new
