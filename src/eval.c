@@ -4287,12 +4287,18 @@ eval_index_inner(
 			return FAIL;
 		}
 
-		item = dict_find(rettv->vval.v_dict, key, (int)keylen);
+		item = dict_find(rettv->vval.v_dict, key, keylen);
 
-		if (item == NULL && verbose)
-		    semsg(_(e_dictkey), key);
 		if (item == NULL)
+		{
+		    if (verbose)
+		    {
+			if (keylen > 0)
+			    key[keylen] = NUL;
+			semsg(_(e_dictkey), key);
+		    }
 		    return FAIL;
+		}
 
 		copy_tv(&item->di_tv, &tmp);
 		clear_tv(rettv);
