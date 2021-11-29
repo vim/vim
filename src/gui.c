@@ -138,7 +138,7 @@ gui_start(char_u *arg UNUSED)
 	// Back to old term settings
 	//
 	// FIXME: If we got here because a child process failed and flagged to
-	// the parent to resume, and X11 is enabled with FEAT_TITLE, this will
+	// the parent to resume, and X11 is enabled, this will
 	// hit an X11 I/O error and do a longjmp(), leaving recursive
 	// permanently set to 1. This is probably not as big a problem as it
 	// sounds, because gui_mch_init() in both gui_x11.c and gui_gtk_x11.c
@@ -146,9 +146,7 @@ gui_start(char_u *arg UNUSED)
 	// actually hit this case.
 	termcapinit(old_term);
 	settmode(TMODE_RAW);		// restart RAW mode
-#ifdef FEAT_TITLE
 	set_title_defaults();		// set 'title' and 'icon' again
-#endif
 #if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
 	if (msg)
 	    emsg(msg);
@@ -741,10 +739,9 @@ gui_init(void)
      */
     if (gui_mch_open() != FAIL)
     {
-#ifdef FEAT_TITLE
 	maketitle();
 	resettitle();
-#endif
+
 	init_gui_options();
 #ifdef FEAT_ARABIC
 	// Our GUI can't do bidi.
@@ -4413,10 +4410,8 @@ gui_update_scrollbars(
 	}
     }
 
-#ifdef FEAT_TITLE
     // update the title, it may show the scroll position
     maketitle();
-#endif
 
     prev_curwin = curwin;
     --hold_gui_events;
@@ -5558,9 +5553,7 @@ drop_callback(void *cookie)
 # ifdef FEAT_MENU
     gui_update_menus(0);
 # endif
-#ifdef FEAT_TITLE
     maketitle();
-#endif
     setcursor();
     out_flush_cursor(FALSE, FALSE);
 }

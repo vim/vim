@@ -1313,18 +1313,10 @@ static struct vimoption options[] =
 			    (char_u *)&p_hls, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"icon",	    NULL,   P_BOOL|P_VI_DEF,
-#ifdef FEAT_TITLE
 			    (char_u *)&p_icon, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"iconstring",  NULL,   P_STRING|P_VI_DEF|P_MLE,
-#ifdef FEAT_TITLE
 			    (char_u *)&p_iconstring, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"ignorecase",  "ic",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ic, PV_NONE,
@@ -2651,35 +2643,18 @@ static struct vimoption options[] =
 			    (char_u *)&p_tm, PV_NONE,
 			    {(char_u *)1000L, (char_u *)0L} SCTX_INIT},
     {"title",	    NULL,   P_BOOL|P_VI_DEF,
-#ifdef FEAT_TITLE
 			    (char_u *)&p_title, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"titlelen",    NULL,   P_NUM|P_VI_DEF,
-#ifdef FEAT_TITLE
 			    (char_u *)&p_titlelen, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)85L, (char_u *)0L} SCTX_INIT},
     {"titleold",    NULL,   P_STRING|P_VI_DEF|P_GETTEXT|P_SECURE|P_NO_MKRC,
-#ifdef FEAT_TITLE
 			    (char_u *)&p_titleold, PV_NONE,
 			    {(char_u *)N_("Thanks for flying Vim"),
 							       (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"titlestring", NULL,   P_STRING|P_VI_DEF|P_MLE,
-#ifdef FEAT_TITLE
 			    (char_u *)&p_titlestring, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"toolbar",     "tb",   P_STRING|P_ONECOMMA|P_VI_DEF|P_NODUP,
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)

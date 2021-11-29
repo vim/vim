@@ -4818,9 +4818,7 @@ win_enter_ext(win_T *wp, int flags)
 	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
     }
 
-#ifdef FEAT_TITLE
     maketitle();
-#endif
     curwin->w_redr_status = TRUE;
 #ifdef FEAT_TERMINAL
     if (bt_terminal(curwin->w_buffer))

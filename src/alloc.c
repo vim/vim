@@ -421,9 +421,7 @@ free_all_mem(void)
 # endif
     }
 
-# ifdef FEAT_TITLE
     free_titles();
-# endif
 # if defined(FEAT_SEARCHPATH)
     free_findfile();
 # endif

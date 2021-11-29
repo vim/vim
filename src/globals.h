@@ -252,9 +252,7 @@ EXTERN int	no_wait_return INIT(= 0);   // don't wait for return for now
 EXTERN int	need_wait_return INIT(= 0); // need to wait for return later
 EXTERN int	did_wait_return INIT(= FALSE);	// wait_return() was used and
 						// nothing written since then
-#ifdef FEAT_TITLE
 EXTERN int	need_maketitle INIT(= TRUE); // call maketitle() soon
-#endif
 
 EXTERN int	quit_more INIT(= FALSE);    // 'q' hit at "--more--" msg
 #if defined(UNIX) || defined(VMS) || defined(MACOS_X)
@@ -1037,17 +1035,26 @@ EXTERN vimconv_T output_conv;			// type of output conversion
  */
 // length of char in bytes, including following composing chars
 EXTERN int (*mb_ptr2len)(char_u *p) INIT(= latin_ptr2len);
+
 // idem, with limit on string length
 EXTERN int (*mb_ptr2len_len)(char_u *p, int size) INIT(= latin_ptr2len_len);
+
 // byte length of char
 EXTERN int (*mb_char2len)(int c) INIT(= latin_char2len);
-// convert char to bytes, return the length
+
+// Convert char "c" to bytes in "buf", return the length.  "buf" must have room
+// for at least 6 bytes.
 EXTERN int (*mb_char2bytes)(int c, char_u *buf) INIT(= latin_char2bytes);
+
 EXTERN int (*mb_ptr2cells)(char_u *p) INIT(= latin_ptr2cells);
 EXTERN int (*mb_ptr2cells_len)(char_u *p, int size) INIT(= latin_ptr2cells_len);
 EXTERN int (*mb_char2cells)(int c) INIT(= latin_char2cells);
 EXTERN int (*mb_off2cells)(unsigned off, unsigned max_off) INIT(= latin_off2cells);
 EXTERN int (*mb_ptr2char)(char_u *p) INIT(= latin_ptr2char);
+
+// Byte offset from "p" to the start of a character, including any composing
+// characters. "base" must be the start of the string, which must be NUL
+// terminated.
 EXTERN int (*mb_head_off)(char_u *base, char_u *p) INIT(= latin_head_off);
 
 # if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
@@ -1402,7 +1409,7 @@ EXTERN struct subs_expr_S	*substitute_instr INIT(= NULL);
 // table to store parsed 'wildmode'
 EXTERN char_u	wim_flags[4];
 
-#if defined(FEAT_TITLE) && defined(FEAT_STL_OPT)
+#if defined(FEAT_STL_OPT)
 // whether titlestring and iconstring contains statusline syntax
 # define STL_IN_ICON	1
 # define STL_IN_TITLE	2

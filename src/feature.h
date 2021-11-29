@@ -109,6 +109,7 @@
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
  * +modify_fname	modifiers for file name.  E.g., "%:p:h".
  * +comments		'comments' option.
+ * +title		'title' and 'icon' options
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -360,17 +361,9 @@
 #endif
 
 /*
- * +title		'title' and 'icon' options
  * +statusline		'statusline', 'rulerformat' and special format of
  *			'titlestring' and 'iconstring' options.
- * +byte_offset		'%o' in 'statusline' and builtin functions line2byte()
- *			and byte2line().
- *			Note: Required for Macintosh.
  */
-#if defined(FEAT_NORMAL)
-# define FEAT_TITLE
-#endif
-
 #ifdef FEAT_NORMAL
 # define FEAT_STL_OPT
 # ifndef FEAT_CMDL_INFO
@@ -378,6 +371,11 @@
 # endif
 #endif
 
+/*
+ * +byte_offset		'%o' in 'statusline' and builtin functions line2byte()
+ *			and byte2line().
+ *			Note: Required for Macintosh.
+ */
 #ifdef FEAT_NORMAL
 # define FEAT_BYTEOFF
 #endif

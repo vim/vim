@@ -657,10 +657,8 @@ EXTERN int	p_hkmapp;	// 'hkmapp'
 EXTERN int	p_arshape;	// 'arabicshape'
 # endif
 #endif
-#ifdef FEAT_TITLE
 EXTERN int	p_icon;		// 'icon'
 EXTERN char_u	*p_iconstring;	// 'iconstring'
-#endif
 EXTERN int	p_ic;		// 'ignorecase'
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 EXTERN char_u	*p_imak;	// 'imactivatekey'
@@ -986,12 +984,10 @@ EXTERN long	p_tw;		// 'textwidth'
 EXTERN int	p_to;		// 'tildeop'
 EXTERN int	p_timeout;	// 'timeout'
 EXTERN long	p_tm;		// 'timeoutlen'
-#ifdef FEAT_TITLE
 EXTERN int	p_title;	// 'title'
 EXTERN long	p_titlelen;	// 'titlelen'
 EXTERN char_u	*p_titleold;	// 'titleold'
 EXTERN char_u	*p_titlestring;	// 'titlestring'
-#endif
 EXTERN char_u	*p_tsr;		// 'thesaurus'
 EXTERN int	p_ttimeout;	// 'ttimeout'
 EXTERN long	p_ttm;		// 'ttimeoutlen'

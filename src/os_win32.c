@@ -46,7 +46,7 @@
 #endif
 
 #ifndef PROTO
-# if defined(FEAT_TITLE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
 #  include <shellapi.h>
 # endif
 #endif
@@ -2683,7 +2683,6 @@ static ConsoleBuffer g_cbOrig = { 0 };
 static ConsoleBuffer g_cbNonTermcap = { 0 };
 static ConsoleBuffer g_cbTermcap = { 0 };
 
-# ifdef FEAT_TITLE
 char g_szOrigTitle[256] = { 0 };
 HWND g_hWnd = NULL;	// also used in os_mswin.c
 static HICON g_hOrigIconSmall = NULL;
@@ -2692,12 +2691,12 @@ static HICON g_hVimIcon = NULL;
 static BOOL g_fCanChangeIcon = FALSE;
 
 // ICON* are not defined in VC++ 4.0
-#  ifndef ICON_SMALL
-#   define ICON_SMALL 0
-#  endif
-#  ifndef ICON_BIG
-#   define ICON_BIG 1
-#  endif
+# ifndef ICON_SMALL
+#  define ICON_SMALL 0
+# endif
+# ifndef ICON_BIG
+#  define ICON_BIG 1
+# endif
 /*
  * GetConsoleIcon()
  * Description:
@@ -2789,7 +2788,6 @@ SaveConsoleTitleAndIcon(void)
     if (g_hVimIcon != NULL)
 	g_fCanChangeIcon = TRUE;
 }
-# endif
 
 static int g_fWindInitCalled = FALSE;
 static int g_fTermcapMode = FALSE;
@@ -2850,7 +2848,6 @@ mch_init_c(void)
     GetConsoleMode(g_hConIn,  &g_cmodein);
     GetConsoleMode(g_hConOut, &g_cmodeout);
 
-# ifdef FEAT_TITLE
     SaveConsoleTitleAndIcon();
     /*
      * Set both the small and big icons of the console window to Vim's icon.
@@ -2859,7 +2856,6 @@ mch_init_c(void)
      */
     if (g_fCanChangeIcon)
 	SetConsoleIcon(g_hWnd, g_hVimIcon, g_hVimIcon);
-# endif
 
     ui_get_shellsize();
 
@@ -2909,7 +2905,6 @@ mch_exit_c(int r)
 
     if (g_fWindInitCalled)
     {
-# ifdef FEAT_TITLE
 	mch_restore_title(SAVE_RESTORE_BOTH);
 	/*
 	 * Restore both the small and big icons of the console window to
@@ -2918,7 +2913,6 @@ mch_exit_c(int r)
 	 */
 	if (g_fCanChangeIcon && !g_fForceExit)
 	    SetConsoleIcon(g_hWnd, g_hOrigIconSmall, g_hOrigIcon);
-# endif
 
 # ifdef MCH_WRITE_DUMP
 	if (fdDump)
@@ -4757,7 +4751,6 @@ mch_call_shell(
 {
     int		x = 0;
     int		tmode = cur_tmode;
-#ifdef FEAT_TITLE
     WCHAR	szShellTitle[512];
 
     // Change the title to reflect that we are in a subshell.
@@ -4780,7 +4773,6 @@ mch_call_shell(
 	    }
 	}
     }
-#endif
 
     out_flush();
 
@@ -4813,9 +4805,7 @@ mch_call_shell(
 	{
 	    // Use a terminal window to run the command in.
 	    x = mch_call_shell_terminal(cmd, options);
-# ifdef FEAT_TITLE
 	    resettitle();
-# endif
 	    return x;
 	}
     }
@@ -5062,9 +5052,7 @@ mch_call_shell(
 	smsg(_("shell returned %d"), x);
 	msg_putchar('\n');
     }
-#ifdef FEAT_TITLE
     resettitle();
-#endif
 
     signal(SIGINT, SIG_DFL);
 #if defined(__GNUC__) && !defined(__MINGW32__)
@@ -5631,9 +5619,7 @@ termcap_mode_start(void)
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
     }
 
-# ifdef FEAT_TITLE
     resettitle();
-# endif
 
     GetConsoleMode(g_hConIn, &cmodein);
     if (g_fMouseActive)

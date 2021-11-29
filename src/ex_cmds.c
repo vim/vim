@@ -3082,9 +3082,7 @@ do_ecmd(
 	// Even when cursor didn't move we need to recompute topline.
 	changed_line_abv_curs();
 
-#ifdef FEAT_TITLE
 	maketitle();
-#endif
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 	if (WIN_IS_POPUP(curwin) && curwin->w_p_pvw && retval != FAIL)
 	    popup_set_title(curwin);

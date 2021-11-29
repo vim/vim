@@ -979,10 +979,8 @@ ambw_end:
 		errmsg = e_invarg;
 	    else
 	    {
-#ifdef FEAT_TITLE
 		// May show a "+" in the title now.
 		redraw_titles();
-#endif
 		// Add 'fileencoding' to the swap file.
 		ml_setflags(curbuf);
 	    }
@@ -999,9 +997,7 @@ ambw_end:
 	    if (varp == &p_enc)
 	    {
 		errmsg = mb_init();
-#ifdef FEAT_TITLE
 		redraw_titles();
-#endif
 	    }
 	}
 
@@ -1141,9 +1137,7 @@ ambw_end:
 		curbuf->b_p_tx = TRUE;
 	    else
 		curbuf->b_p_tx = FALSE;
-#ifdef FEAT_TITLE
 	    redraw_titles();
-#endif
 	    // update flag in swap file
 	    ml_setflags(curbuf);
 	    // Redraw needed when switching to/from "mac": a CR in the text
@@ -1603,11 +1597,10 @@ ambw_end:
 	fill_breakat_flags();
 #endif
 
-#ifdef FEAT_TITLE
     // 'titlestring' and 'iconstring'
     else if (varp == &p_titlestring || varp == &p_iconstring)
     {
-# ifdef FEAT_STL_OPT
+#ifdef FEAT_STL_OPT
 	int	flagval = (varp == &p_titlestring) ? STL_IN_TITLE : STL_IN_ICON;
 
 	// NULL => statusline syntax
@@ -1615,10 +1608,9 @@ ambw_end:
 	    stl_syntax |= flagval;
 	else
 	    stl_syntax &= ~flagval;
-# endif
+#endif
 	did_set_title();
     }
-#endif
 
 #ifdef FEAT_GUI
     // 'guioptions'
@@ -1805,9 +1797,7 @@ ambw_end:
 		redraw_later(VALID);
 	    }
 	    curbuf->b_help = (curbuf->b_p_bt[0] == 'h');
-#ifdef FEAT_TITLE
 	    redraw_titles();
-#endif
 	}
     }
 

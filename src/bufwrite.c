@@ -1630,9 +1630,7 @@ buf_write(
     if (forceit && overwriting && vim_strchr(p_cpo, CPO_KEEPRO) == NULL)
     {
 	buf->b_p_ro = FALSE;
-#ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    // set window title later
-#endif
 	status_redraw_all();	    // redraw status lines later
     }
 

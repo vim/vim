@@ -610,15 +610,14 @@ showruler(int always)
 	win_redr_ruler(curwin, always, FALSE);
 #endif
 
-#ifdef FEAT_TITLE
     if (need_maketitle
-# ifdef FEAT_STL_OPT
+#ifdef FEAT_STL_OPT
 	    || (p_icon && (stl_syntax & STL_IN_ICON))
 	    || (p_title && (stl_syntax & STL_IN_TITLE))
-# endif
+#endif
        )
 	maketitle();
-#endif
+
     // Redraw the tab pages line if needed.
     if (redraw_tabline)
 	draw_tabline();

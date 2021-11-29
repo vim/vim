@@ -314,9 +314,7 @@ DoRegisterName(Display *dpy, char_u *name)
 	set_vim_var_string(VV_SEND_SERVER, name, -1);
 #endif
 	serverName = vim_strsave(name);
-#ifdef FEAT_TITLE
 	need_maketitle = TRUE;
-#endif
 	return 0;
     }
     return -2;

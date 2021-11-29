@@ -44,9 +44,7 @@ static int	buf_same_ino(buf_T *buf, stat_T *stp);
 #else
 static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
-#ifdef FEAT_TITLE
 static int	value_changed(char_u *str, char_u **last);
-#endif
 static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
@@ -1856,9 +1854,7 @@ enter_buffer(buf_T *buf)
 	buflist_getfpos();
 
     check_arg_idx(curwin);		// check for valid arg_idx
-#ifdef FEAT_TITLE
     maketitle();
-#endif
 	// when autocmds didn't change it
     if (curwin->w_topline == 1 && !curwin->w_topline_was_set)
 	scroll_cursor_halfway(FALSE);	// redisplay at correct position
@@ -3461,9 +3457,7 @@ buf_name_changed(buf_T *buf)
 
     if (curwin->w_buffer == buf)
 	check_arg_idx(curwin);	// check file name for arg list
-#ifdef FEAT_TITLE
     maketitle();		// set window title
-#endif
     status_redraw_all();	// status lines need to be redrawn
     fmarks_check_names(buf);	// check named file marks
     ml_timestamp(buf);		// reset timestamp
@@ -3780,7 +3774,6 @@ col_print(
 	vim_snprintf((char *)buf, buflen, "%d-%d", col, vcol);
 }
 
-#if defined(FEAT_TITLE) || defined(PROTO)
 static char_u *lasttitle = NULL;
 static char_u *lasticon = NULL;
 
@@ -4045,7 +4038,6 @@ free_titles(void)
 }
 # endif
 
-#endif // FEAT_TITLE
 
 #if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE) || defined(PROTO)
 

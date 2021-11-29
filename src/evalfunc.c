@@ -5787,13 +5787,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"title",
-#ifdef FEAT_TITLE
-		1
-#else
-		0
-#endif
-		},
+	{"title", 1},
 	{"toolbar",
 #ifdef FEAT_TOOLBAR
 		1

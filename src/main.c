@@ -668,7 +668,7 @@ vim_main2(void)
 	scroll_region_reset();		// In case Rows changed
     scroll_start();	// may scroll the screen to the right position
 
-#if defined(FEAT_TITLE) && (defined(UNIX) || defined(VMS) || defined(MACOS_X))
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     term_push_title(SAVE_RESTORE_BOTH);
 #endif
 
@@ -1395,10 +1395,8 @@ main_loop(
 	    else if (redraw_cmdline || clear_cmdline)
 		showmode();
 	    redraw_statuslines();
-#ifdef FEAT_TITLE
 	    if (need_maketitle)
 		maketitle();
-#endif
 #ifdef FEAT_VIMINFO
 	    curbuf->b_last_used = vim_time();
 #endif

@@ -1735,9 +1735,7 @@ set_fileformat(
     // This may cause the buffer to become (un)modified.
     check_status(curbuf);
     redraw_tabline = TRUE;
-#ifdef FEAT_TITLE
     need_maketitle = TRUE;	    // set window title later
-#endif
 }
 
 /*

@@ -4540,7 +4540,6 @@ gui_mch_set_shellsize(int width, int height,
     gui_mch_update();
 }
 
-#if defined(FEAT_TITLE) || defined(PROTO)
     void
 gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 {
@@ -4552,7 +4551,6 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
     if (output_conv.vc_type != CONV_NONE)
 	vim_free(title);
 }
-#endif // FEAT_TITLE
 
 #if defined(FEAT_MENU) || defined(PROTO)
     void

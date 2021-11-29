@@ -623,7 +623,6 @@ get_fib(char_u *fname)
     return fib;
 }
 
-#ifdef FEAT_TITLE
 /*
  * set the title of our window
  * icon name is not set
@@ -660,7 +659,6 @@ mch_can_restore_icon(void)
 {
     return FALSE;
 }
-#endif
 
     void
 mch_setmouse(int on UNUSED)
@@ -940,9 +938,7 @@ mch_exit(int r)
 	out_flush();
     }
 
-#ifdef FEAT_TITLE
     mch_restore_title(SAVE_RESTORE_BOTH);    // restore window title
-#endif
 
     ml_close_all(TRUE);		    // remove all memfiles
 
@@ -1442,9 +1438,7 @@ mch_call_shell(
 	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);		// set to raw mode
     }
-#ifdef FEAT_TITLE
     resettitle();
-#endif
     if (term_console)
 	win_resize_on();		// window resize events activated
     return retval;

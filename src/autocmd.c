@@ -2253,10 +2253,8 @@ apply_autocmds_group(
 		|| event == EVENT_VIMLEAVE
 		|| event == EVENT_VIMLEAVEPRE))
     {
-#ifdef FEAT_TITLE
 	if (curbuf->b_changed != save_changed)
 	    need_maketitle = TRUE;
-#endif
 	curbuf->b_changed = save_changed;
     }
 

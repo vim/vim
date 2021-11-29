@@ -4190,8 +4190,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'icon'* *'noicon'*
 'icon'			boolean	(default off, on when title can be restored)
 			global
-			{not available when compiled without the |+title|
-			feature}
 	When on, the icon text of the window will be set to the value of
 	'iconstring' (if it is not empty), or to the name of the file
 	currently being edited.  Only the last part of the name is used.
@@ -4208,8 +4206,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'iconstring'*
 'iconstring'		string	(default "")
 			global
-			{not available when compiled without the |+title|
-			feature}
 	When this option is not empty, it will be used for the icon text of
 	the window.  This happens only when the 'icon' option is on.
 	Only works if the terminal supports setting window icon text
@@ -8141,8 +8137,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'title'* *'notitle'*
 'title'			boolean	(default off, on when title can be restored)
 			global
-			{not available when compiled without the |+title|
-			feature}
 	When on, the title of the window will be set to the value of
 	'titlestring' (if it is not empty), or to:
 		filename [+=-] (path) - VIM
@@ -8176,8 +8170,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'titlelen'*
 'titlelen'		number	(default 85)
 			global
-			{not available when compiled without the |+title|
-			feature}
 	Gives the percentage of 'columns' to use for the length of the window
 	title.  When the title is longer, only the end of the path name is
 	shown.  A '<' character before the path name is used to indicate this.
@@ -8191,8 +8183,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'titleold'*
 'titleold'		string	(default "Thanks for flying Vim")
 			global
-			{only available when compiled with the |+title|
-			feature}
 	This option will be used for the window title when exiting Vim if the
 	original title cannot be restored.  Only happens if 'title' is on or
 	'titlestring' is not empty.
@@ -8201,8 +8191,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'titlestring'*
 'titlestring'		string	(default "")
 			global
-			{not available when compiled without the |+title|
-			feature}
 	When this option is not empty, it will be used for the title of the
 	window.  This happens only when the 'title' option is on.
 	Only works if the terminal supports setting window titles (currently

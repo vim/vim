@@ -770,9 +770,7 @@ ex_argedit(exarg_T *eap)
 
     if (do_arglist(eap->arg, AL_ADD, i, TRUE) == FAIL)
 	return;
-#ifdef FEAT_TITLE
     maketitle();
-#endif
 
     if (curwin->w_arg_idx == 0
 	    && (curbuf->b_ml.ml_flags & ML_EMPTY)
@@ -792,9 +790,7 @@ ex_argadd(exarg_T *eap)
     do_arglist(eap->arg, AL_ADD,
 	       eap->addr_count > 0 ? (int)eap->line2 : curwin->w_arg_idx + 1,
 	       FALSE);
-#ifdef FEAT_TITLE
     maketitle();
-#endif
 }
 
 /*
@@ -853,9 +849,7 @@ ex_argdelete(exarg_T *eap)
     }
     else
 	do_arglist(eap->arg, AL_DEL, 0, FALSE);
-#ifdef FEAT_TITLE
     maketitle();
-#endif
 }
 
 /*

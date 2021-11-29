@@ -118,15 +118,12 @@ static void clip_update(void);
 static void xterm_update(void);
 # endif
 
-# if defined(FEAT_XCLIPBOARD) || defined(FEAT_TITLE)
 Window	    x11_window = 0;
-# endif
 Display	    *x11_display = NULL;
 #endif
 
 static int ignore_sigtstp = FALSE;
 
-#ifdef FEAT_TITLE
 static int get_x11_title(int);
 
 static char_u	*oldtitle = NULL;
@@ -134,7 +131,6 @@ static volatile sig_atomic_t oldtitle_outdated = FALSE;
 static int	unix_did_set_title = FALSE;
 static char_u	*oldicon = NULL;
 static int	did_set_icon = FALSE;
-#endif
 
 static void may_core_dump(void);
 
@@ -170,8 +166,7 @@ static RETSIGTYPE catch_sigusr1 SIGPROTOARG;
 #if defined(SIGPWR)
 static RETSIGTYPE catch_sigpwr SIGPROTOARG;
 #endif
-#if defined(SIGALRM) && defined(FEAT_X11) \
-	&& defined(FEAT_TITLE) && !defined(FEAT_GUI_GTK)
+#if defined(SIGALRM) && defined(FEAT_X11) && !defined(FEAT_GUI_GTK)
 # define SET_SIG_ALARM
 static RETSIGTYPE sig_alarm SIGPROTOARG;
 // volatile because it is used in signal handler sig_alarm().
@@ -1152,11 +1147,10 @@ deathtrap SIGDEFARG(sigarg)
     static void
 after_sigcont(void)
 {
-# ifdef FEAT_TITLE
     // Don't change "oldtitle" in a signal handler, set a flag to obtain it
     // again later.
     oldtitle_outdated = TRUE;
-# endif
+
     settmode(TMODE_RAW);
     need_check_timestamps = TRUE;
     did_check_timestamps = FALSE;
@@ -1579,8 +1573,7 @@ mch_input_isatty(void)
 
 #ifdef FEAT_X11
 
-# if defined(ELAPSED_TIMEVAL) \
-	&& (defined(FEAT_XCLIPBOARD) || defined(FEAT_TITLE))
+# if defined(ELAPSED_TIMEVAL)
 
 /*
  * Give a message about the elapsed time for opening the X window.
@@ -1593,7 +1586,7 @@ xopen_message(long elapsed_msec)
 # endif
 #endif
 
-#if defined(FEAT_X11) && (defined(FEAT_TITLE) || defined(FEAT_XCLIPBOARD))
+#if defined(FEAT_X11)
 /*
  * A few functions shared by X11 title and clipboard code.
  */
@@ -1776,7 +1769,6 @@ test_x11_window(Display *dpy)
 }
 #endif
 
-#ifdef FEAT_TITLE
 
 #ifdef FEAT_X11
 
@@ -2316,7 +2308,6 @@ mch_restore_title(int which)
     }
 }
 
-#endif // FEAT_TITLE
 
 /*
  * Return TRUE if "name" looks like some xterm name.
@@ -3349,10 +3340,8 @@ mch_free_mem(void)
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
     VIM_CLEAR(signal_stack);
 # endif
-# ifdef FEAT_TITLE
     vim_free(oldtitle);
     vim_free(oldicon);
-# endif
 }
 #endif
 
@@ -3403,14 +3392,13 @@ mch_exit(int r)
 #endif
     {
 	settmode(TMODE_COOK);
-#ifdef FEAT_TITLE
 	if (!is_not_a_term())
 	{
 	    // restore xterm title and icon name
 	    mch_restore_title(SAVE_RESTORE_BOTH);
 	    term_pop_title(SAVE_RESTORE_BOTH);
 	}
-#endif
+
 	/*
 	 * When t_ti is not empty but it doesn't cause swapping terminal
 	 * pages, need to output a newline when msg_didout is set.  But when
@@ -4600,9 +4588,7 @@ mch_call_shell_system(
 	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);	// set to raw mode
     }
-# ifdef FEAT_TITLE
     resettitle();
-# endif
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
     restore_clipboard();
 # endif
@@ -5441,9 +5427,7 @@ error:
     if (!did_settmode)
 	if (tmode == TMODE_RAW)
 	    settmode(TMODE_RAW);	// set to raw mode
-# ifdef FEAT_TITLE
     resettitle();
-# endif
     vim_free(argv);
     vim_free(tofree1);
     vim_free(tofree2);
