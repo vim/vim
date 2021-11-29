@@ -6503,52 +6503,43 @@ compile_lhs(
     lhs->lhs_member_type = lhs->lhs_type;
     if (lhs->lhs_has_index)
     {
+	char_u	*after = var_start + lhs->lhs_varlen;
+	char_u	*p;
+
 	// Something follows after the variable: "var[idx]" or "var.key".
-	// TODO: should we also handle "->func()" here?
 	if (is_decl)
 	{
 	    emsg(_(e_cannot_use_index_when_declaring_variable));
 	    return FAIL;
 	}
 
-	if (var_start[lhs->lhs_varlen] == '['
-					  || var_start[lhs->lhs_varlen] == '.')
+	// Now: var_start[lhs->lhs_varlen] is '[' or '.'
+	// Only the last index is used below, if there are others
+	// before it generate code for the expression.  Thus for
+	// "ll[1][2]" the expression is "ll[1]" and "[2]" is the index.
+	for (;;)
 	{
-	    char_u	*after = var_start + lhs->lhs_varlen;
-	    char_u	*p;
-
-	    // Only the last index is used below, if there are others
-	    // before it generate code for the expression.  Thus for
-	    // "ll[1][2]" the expression is "ll[1]" and "[2]" is the index.
-	    for (;;)
+	    p = skip_index(after);
+	    if (*p != '[' && *p != '.')
 	    {
-		p = skip_index(after);
-		if (*p != '[' && *p != '.')
-		{
-		    lhs->lhs_varlen_total = p - var_start;
-		    break;
-		}
-		after = p;
+		lhs->lhs_varlen_total = p - var_start;
+		break;
 	    }
-	    if (after > var_start + lhs->lhs_varlen)
-	    {
-		lhs->lhs_varlen = after - var_start;
-		lhs->lhs_dest = dest_expr;
-		// We don't know the type before evaluating the expression,
-		// use "any" until then.
-		lhs->lhs_type = &t_any;
-	    }
-
-	    if (lhs->lhs_type->tt_member == NULL)
-		lhs->lhs_member_type = &t_any;
-	    else
-		lhs->lhs_member_type = lhs->lhs_type->tt_member;
+	    after = p;
 	}
+	if (after > var_start + lhs->lhs_varlen)
+	{
+	    lhs->lhs_varlen = after - var_start;
+	    lhs->lhs_dest = dest_expr;
+	    // We don't know the type before evaluating the expression,
+	    // use "any" until then.
+	    lhs->lhs_type = &t_any;
+	}
+
+	if (lhs->lhs_type->tt_member == NULL)
+	    lhs->lhs_member_type = &t_any;
 	else
-	{
-	    semsg("Not supported yet: %s", var_start);
-	    return FAIL;
-	}
+	    lhs->lhs_member_type = lhs->lhs_type->tt_member;
     }
     return OK;
 }
