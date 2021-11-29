@@ -512,9 +512,16 @@ func TermDebugSendCommand(cmd)
   endif
 endfunc
 
-" Send a command only when stopped.  Used for :Next and :Step.
-func s:SendCommandIfStopped(cmd)
+" Send a command only when stopped.
+" Commonly used for commands that will resume the program (:Next, :Step, :Finish),
+" which set the first optional command "assume_running".
+func s:SendCommandIfStopped(cmd, ...)
   if s:stopped
+    let assume_running = get(a:, 1, 0)
+    if assume_running
+      let s:stopped = 0
+      call ch_log('assume that program is running after the next command')
+    endif
     call s:SendCommand(a:cmd)
   else
     call ch_log('dropping command, program is running: ' . a:cmd)
@@ -808,9 +815,9 @@ func s:InstallCommands()
 
   command -nargs=? Break call s:SetBreakpoint(<q-args>)
   command Clear call s:ClearBreakpoint()
-  command Step call s:SendCommandIfStopped('-exec-step')
-  command Over call s:SendCommandIfStopped('-exec-next')
-  command Finish call s:SendCommandIfStopped('-exec-finish')
+  command Step call s:SendCommandIfStopped('-exec-step', 1)
+  command Over call s:SendCommandIfStopped('-exec-next', 1)
+  command Finish call s:SendCommandIfStopped('-exec-finish', 1)
   command -nargs=* Run call s:Run(<q-args>)
   command -nargs=* Arguments call s:SendCommand('-exec-arguments ' . <q-args>)
 
