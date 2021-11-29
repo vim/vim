@@ -2402,7 +2402,7 @@ do_one_cmd(
 	    && (!(ea.argt & EX_BUFNAME) || *(p = skipdigits(ea.arg + 1)) == NUL
 							  || VIM_ISWHITE(*p)))
     {
-	n = getdigits(&ea.arg);
+	n = getdigits_quoted(&ea.arg);
 	ea.arg = skipwhite(ea.arg);
 	if (n <= 0 && !ni && (ea.argt & EX_ZEROR) == 0)
 	{
@@ -3950,10 +3950,11 @@ excmd_get_argt(cmdidx_T idx)
  */
     char_u *
 skip_range(
-    char_u	*cmd,
+    char_u	*cmd_start,
     int		skip_star,	// skip "*" used for Visual range
     int		*ctx)		// pointer to xp_context or NULL
 {
+    char_u	*cmd = cmd_start;
     unsigned	delim;
 
     while (vim_strchr((char_u *)" \t0123456789.$%'/?-+,;\\", *cmd) != NULL)
@@ -3967,6 +3968,17 @@ skip_range(
 	}
 	else if (*cmd == '\'')
 	{
+	    char_u *p = cmd;
+
+	    // a quote is only valid at the start or after a separator
+	    while (p > cmd_start)
+	    {
+		--p;
+		if (!VIM_ISWHITE(*p))
+		    break;
+	    }
+	    if (cmd > cmd_start && !VIM_ISWHITE(*p) && *p != ',' && *p != ';')
+		break;
 	    if (*++cmd == NUL && ctx != NULL)
 		*ctx = EXPAND_NOTHING;
 	}

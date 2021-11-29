@@ -677,4 +677,32 @@ func Test_delcommand_buffer()
   call assert_equal(0, exists(':Global'))
 endfunc
 
+def Test_count_with_quotes()
+  command -count GetCount g:nr = <count>
+  execute("GetCount 1'2")
+  assert_equal(12, g:nr)
+  execute("GetCount 1'234'567")
+  assert_equal(1'234'567, g:nr)
+
+  execute("GetCount 1'234'567'890'123'456'789'012")
+  assert_equal(v:sizeoflong == 8 ? 9223372036854775807 : 2147483647, g:nr)
+
+  # TODO: test with negative number once this is supported
+
+  assert_fails("GetCount '12", "E488:")
+  assert_fails("GetCount 12'", "E488:")
+  assert_fails("GetCount 1''2", "E488:")
+
+  assert_fails(":1'2GetCount", 'E492:')
+  new
+  setline(1, 'text')
+  normal ma
+  execute(":1, 'aprint")
+  bwipe!
+
+  unlet g:nr
+  delcommand GetCount
+enddef
+
+
 " vim: shiftwidth=2 sts=2 expandtab
