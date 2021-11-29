@@ -434,6 +434,7 @@ win_line(
 
 #if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
     int		match_conc	= 0;	// cchar for match functions
+    int		on_last_col     = FALSE;
 #endif
 #ifdef FEAT_CONCEAL
     int		syntax_flags	= 0;
@@ -1382,7 +1383,8 @@ win_line(
 		v = (long)(ptr - line);
 		search_attr = update_search_hl(wp, lnum, (colnr_T)v, &line,
 				      &screen_search_hl, &has_match_conc,
-				      &match_conc, did_line_attr, lcs_eol_one);
+				      &match_conc, did_line_attr, lcs_eol_one,
+				      &on_last_col);
 		ptr = line + v;  // "line" may have been changed
 
 		// Do not allow a conceal over EOL otherwise EOL will be missed
@@ -2012,6 +2014,10 @@ win_line(
 			if (n_extra < 0)
 			    n_extra = 0;
 		    }
+		    if (on_last_col)
+			// Do not continue search/match highlighting over the
+			// line break.
+			search_attr = 0;
 
 		    if (c == TAB && n_extra + col > wp->w_width)
 # ifdef FEAT_VARTABS

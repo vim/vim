@@ -703,6 +703,8 @@ prepare_search_hl_line(
  * After end, check for start/end of next match.
  * When another match, have to check for start again.
  * Watch out for matching an empty string!
+ * "on_last_col" is set to TRUE with non-zero search_attr and the next column
+ * is endcol.
  * Return the updated search_attr.
  */
     int
@@ -715,7 +717,8 @@ update_search_hl(
 	int	    *has_match_conc UNUSED,
 	int	    *match_conc UNUSED,
 	int	    did_line_attr,
-	int	    lcs_eol_one)
+	int	    lcs_eol_one,
+	int	    *on_last_col)
 {
     matchitem_T *cur;		    // points to the match list
     match_T	*shl;		    // points to search_hl or a match
@@ -832,7 +835,10 @@ update_search_hl(
 	else
 	    shl = &cur->hl;
 	if (shl->attr_cur != 0)
+	{
 	    search_attr = shl->attr_cur;
+	    *on_last_col = col + 1 >= shl->endcol;
+	}
 	if (shl != search_hl && cur != NULL)
 	    cur = cur->next;
     }
