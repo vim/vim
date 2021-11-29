@@ -881,7 +881,7 @@ ex_let(exarg_T *eap)
 	    else
 		++expr;
 
-	    if (vim9script && (!VIM_ISWHITE(*argend)
+	    if (vim9script && !eap->skip && (!VIM_ISWHITE(*argend)
 						   || !IS_WHITE_OR_NUL(*expr)))
 	    {
 		vim_strncpy(op, expr - len, len);

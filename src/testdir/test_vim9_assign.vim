@@ -1854,6 +1854,12 @@ def Test_unlet()
     'var ll = [1, 2]',
     'unlet ll[0: 1]',
     ], 'E1004:', 2)
+  # command recognized as assignment when skipping, should not give an error
+  CheckScriptSuccess([
+    'vim9script',
+    'for i in []',
+    "  put =''",
+    'endfor'])
 
   CheckDefFailure([
     'var ll = [1, 2]',
