@@ -355,7 +355,8 @@ EXTERN char e_cannot_delete_vim9_script_function_str[]
 	INIT(= N_("E1084: Cannot delete Vim9 script function %s"));
 EXTERN char e_not_callable_type_str[]
 	INIT(= N_("E1085: Not a callable type: %s"));
-// E1086 unused
+EXTERN char e_function_reference_invalid[]
+	INIT(= N_("E1086: Function reference invalid"));
 EXTERN char e_cannot_use_index_when_declaring_variable[]
 	INIT(= N_("E1087: Cannot use an index when declaring a variable"));
 // E1088 unused

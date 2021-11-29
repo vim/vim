@@ -3189,6 +3189,12 @@ exec_instructions(ectx_T *ectx)
 		    {
 			ufunc = find_func(funcref->fr_func_name, FALSE, NULL);
 		    }
+		    if (ufunc == NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_function_reference_invalid));
+			goto theend;
+		    }
 		    if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
 			goto theend;
 		    tv = STACK_TV_BOT(0);
