@@ -638,12 +638,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPF_HIDDEN	0x02	// popup is not displayed
 #define POPF_CURSORLINE	0x04	// popup is highlighting at the cursorline
 #define POPF_ON_CMDLINE	0x08	// popup overlaps command line
-#define POPF_DRAG	0x10	// popup can be moved by dragging
-#define POPF_RESIZE	0x20	// popup can be resized by dragging
-#define POPF_MAPPING	0x40	// mapping keys
-#define POPF_INFO	0x80	// used for info of popup menu
-#define POPF_INFO_MENU	0x100	// align info popup with popup menu
-#define POPF_POSINVERT	0x200	// vertical position can be inverted
+#define POPF_DRAG	0x10	// popup can be moved by dragging border
+#define POPF_DRAGALL	0x20	// popup can be moved by dragging everywhere
+#define POPF_RESIZE	0x40	// popup can be resized by dragging
+#define POPF_MAPPING	0x80	// mapping keys
+#define POPF_INFO	0x100	// used for info of popup menu
+#define POPF_INFO_MENU	0x200	// align info popup with popup menu
+#define POPF_POSINVERT	0x400	// vertical position can be inverted
 
 // flags used in w_popup_handled
 #define POPUP_HANDLED_1	    0x01    // used by mouse_find_win()

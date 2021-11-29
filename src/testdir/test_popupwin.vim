@@ -565,22 +565,31 @@ func Test_popup_drag()
 	      \ line: &lines - 4,
 	      \ })
 	func Dragit()
+	  map <silent> <F3> :call test_setmouse(&lines - 4, &columns / 2)<CR>
+	  map <silent> <F4> :call test_setmouse(&lines - 8, &columns / 2 - 20)<CR>
 	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
 	endfunc
-	map <silent> <F3> :call test_setmouse(&lines - 4, &columns / 2)<CR>
-	map <silent> <F4> :call test_setmouse(&lines - 8, &columns / 2 - 20)<CR>
 	func Resize()
+	  map <silent> <F5> :call test_setmouse(6, 21)<CR>
+	  map <silent> <F6> :call test_setmouse(7, 25)<CR>
 	  call feedkeys("\<F5>\<LeftMouse>\<F6>\<LeftDrag>\<LeftRelease>", "xt")
 	endfunc
-	map <silent> <F5> :call test_setmouse(6, 21)<CR>
-	map <silent> <F6> :call test_setmouse(7, 25)<CR>
 	func ClickAndDrag()
-	  call feedkeys("\<F7>\<LeftMouse>\<LeftRelease>", "xt")
-	  call feedkeys("\<F8>\<LeftMouse>\<F9>\<LeftDrag>\<LeftRelease>", "xt")
+	  map <silent> <F3> :call test_setmouse(5, 2)<CR>
+	  map <silent> <F4> :call test_setmouse(3, 14)<CR>
+	  map <silent> <F5> :call test_setmouse(3, 18)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<LeftRelease>", "xt")
+	  call feedkeys("\<F4>\<LeftMouse>\<F5>\<LeftDrag>\<LeftRelease>", "xt")
 	endfunc
-	map <silent> <F7> :call test_setmouse(5, 2)<CR>
-	map <silent> <F8> :call test_setmouse(3, 14)<CR>
-	map <silent> <F9> :call test_setmouse(3, 18)<CR>
+	func DragAllStart()
+	  call popup_clear()
+	  call popup_create('hello', #{line: 3, col: 5, dragall: 1})
+	endfunc
+	func DragAllDrag()
+	  map <silent> <F3> :call test_setmouse(3, 5)<CR>
+	  map <silent> <F4> :call test_setmouse(5, 36)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
   END
   call writefile(lines, 'XtestPopupDrag')
   let buf = RunVimInTerminal('-S XtestPopupDrag', #{rows: 10})
@@ -595,6 +604,12 @@ func Test_popup_drag()
   " dragging works after click on a status line
   call term_sendkeys(buf, ":call ClickAndDrag()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_drag_04', {})
+
+  " dragging without border
+  call term_sendkeys(buf, ":call DragAllStart()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_05', {})
+  call term_sendkeys(buf, ":call DragAllDrag()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_06', {})
 
   " clean up
   call StopVimInTerminal(buf)

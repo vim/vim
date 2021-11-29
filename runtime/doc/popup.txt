@@ -681,6 +681,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			popup does not have a border. As soon as dragging
 			starts and "pos" is "center" it is changed to
 			"topleft".
+	dragall		TRUE to allow the popup to be dragged from every
+			position.  Makes it very difficult to select text in
+			the popup.
 	resize		TRUE to allow the popup to be resized with the mouse
 			by grabbing at the bottom right corner.  Has no effect
 			if the popup does not have a border.

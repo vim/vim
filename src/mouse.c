@@ -1636,8 +1636,9 @@ retnomove:
 	    {
 		return IN_UNKNOWN;
 	    }
-	    else if ((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
+	    else if (((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
 					      && popup_on_border(wp, row, col))
+				       || (wp->w_popup_flags & POPF_DRAGALL))
 	    {
 		popup_dragwin = wp;
 		popup_start_drag(wp, row, col);

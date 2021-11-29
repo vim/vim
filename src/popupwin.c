@@ -297,7 +297,7 @@ popup_drag(win_T *wp)
 	return;
     }
 
-    if (!(wp->w_popup_flags & POPF_DRAG))
+    if (!(wp->w_popup_flags & (POPF_DRAG | POPF_DRAGALL)))
 	return;
     wp->w_wantline = drag_start_wantline + (mouse_row - drag_start_row);
     if (wp->w_wantline < 1)
@@ -686,6 +686,14 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags |= POPF_DRAG;
 	else
 	    wp->w_popup_flags &= ~POPF_DRAG;
+    }
+    nr = dict_get_bool(dict, (char_u *)"dragall", -1);
+    if (nr != -1)
+    {
+	if (nr)
+	    wp->w_popup_flags |= POPF_DRAGALL;
+	else
+	    wp->w_popup_flags &= ~POPF_DRAGALL;
     }
 
     nr = dict_get_bool(dict, (char_u *)"posinvert", -1);
@@ -2358,7 +2366,7 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
     int	row = mouse_row;
     int	col = mouse_col;
 
-    if ((wp->w_popup_flags & POPF_DRAG)
+    if ((wp->w_popup_flags & (POPF_DRAG | POPF_DRAGALL))
 	    && is_mouse_key(c)
 	    && (wp == popup_dragwin
 			  || wp == mouse_find_win(&row, &col, FIND_POPUP)))
@@ -3078,6 +3086,8 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", (wp->w_popup_flags & POPF_DRAG) != 0);
+	dict_add_number(dict, "dragall",
+				      (wp->w_popup_flags & POPF_DRAGALL) != 0);
 	dict_add_number(dict, "mapping",
 				      (wp->w_popup_flags & POPF_MAPPING) != 0);
 	dict_add_number(dict, "resize", (wp->w_popup_flags & POPF_RESIZE) != 0);
