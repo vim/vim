@@ -891,7 +891,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     typval_T	tv;
     char_u	*key = NULL;
     dictitem_T	*item;
-    char_u	*start = skipwhite(*arg + 1);
+    char_u	*curly_expr = skipwhite(*arg + 1);
     char_u	buf[NUMBUFLEN];
     int		vim9script = in_vim9script();
     int		had_comma;
@@ -903,13 +903,11 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
      * first item.
      * But {} is an empty Dictionary.
      */
-    if (!vim9script && *start != '}')
-    {
-	if (eval1(&start, &tv, NULL) == FAIL)	// recursive!
-	    return FAIL;
-	if (*skipwhite(start) == '}')
-	    return NOTDONE;
-    }
+    if (!vim9script
+	    && *curly_expr != '}'
+	    && eval1(&curly_expr, &tv, NULL) == OK
+	    && *skipwhite(curly_expr) == '}')
+	return NOTDONE;
 
     if (evaluate)
     {

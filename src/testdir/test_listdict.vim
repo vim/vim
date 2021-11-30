@@ -297,6 +297,9 @@ func Test_dict()
   call assert_fails('let d={[] : 10}', 'E730:')
   " undefined variable as value
   call assert_fails("let d={'k' : i}", 'E121:')
+
+  " allow key starting with number at the start, not a curly expression
+  call assert_equal({'1foo': 77}, #{1foo: 77})
 endfunc
 
 " This was allowed in legacy Vim script
