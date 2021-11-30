@@ -3811,6 +3811,36 @@ untrans_function_name(char_u *name)
 }
 
 /*
+ * Call trans_function_name(), except that a lambda is returned as-is.
+ * Returns the name in allocated memory.
+ */
+    char_u *
+save_function_name(
+	char_u	    **name,
+	int	    *is_global,
+	int	    skip,
+	int	    flags,
+	funcdict_T  *fudi)
+{
+    char_u *p = *name;
+    char_u *saved;
+
+    if (STRNCMP(p, "<lambda>", 8) == 0)
+    {
+	p += 8;
+	(void)getdigits(&p);
+	saved = vim_strnsave(*name, p - *name);
+	if (fudi != NULL)
+	    CLEAR_POINTER(fudi);
+    }
+    else
+	saved = trans_function_name(&p, is_global, skip,
+						      flags, fudi, NULL, NULL);
+    *name = p;
+    return saved;
+}
+
+/*
  * List functions.  When "regmatch" is NULL all of then.
  * Otherwise functions matching "regmatch".
  */
@@ -3950,16 +3980,8 @@ define_function(exarg_T *eap, char_u *name_arg)
     }
     else
     {
-	if (STRNCMP(p, "<lambda>", 8) == 0)
-	{
-	    p += 8;
-	    (void)getdigits(&p);
-	    name = vim_strnsave(eap->arg, p - eap->arg);
-	    CLEAR_FIELD(fudi);
-	}
-	else
-	    name = trans_function_name(&p, &is_global, eap->skip,
-					   TFN_NO_AUTOLOAD, &fudi, NULL, NULL);
+	name = save_function_name(&p, &is_global, eap->skip,
+						       TFN_NO_AUTOLOAD, &fudi);
 	paren = (vim_strchr(p, '(') != NULL);
 	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
 	{
