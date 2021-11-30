@@ -206,6 +206,15 @@ def Test_folddo_backtick_expansion()
   folddoclose edit `=name`
   assert_equal('xxx', bufname())
   bwipe!
+
+  var lines =<< trim END
+      g:val = 'value'
+      def Test()
+        folddoopen echo `=g:val`
+      enddef
+      call Test()
+  END
+  CheckScriptFailure(lines, 'E15: Invalid expression: "`=g:val`"')
 enddef
 
 def Test_hardcopy_wildcards()

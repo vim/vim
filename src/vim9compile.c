@@ -7898,8 +7898,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	int error = FALSE;
 	int v;
 
-	// The expression results in a constant.
-	// TODO: how about nesting?
+	// The expression result is a constant.
 	v = tv_get_bool_chk(&ppconst.pp_tv[0], &error);
 	if (error)
 	    return NULL;
@@ -8171,7 +8170,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		item_type = vartype->tt_member;
 	    else if (vartype->tt_member->tt_type == VAR_LIST
 			  && vartype->tt_member->tt_member->tt_type != VAR_ANY)
-		// TODO: should get the type for each lhs
 		item_type = vartype->tt_member->tt_member;
 	}
 
@@ -8224,7 +8222,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
 	    }
 
-	    // TODO: script var not supported?
+	    // Script var is not supported.
 	    if (get_var_dest(name, &dest, CMD_for, &opt_flags,
 					      &vimvaridx, &type, cctx) == FAIL)
 		goto failed;
@@ -8771,21 +8769,21 @@ compile_finally(char_u *arg, cctx_T *cctx)
 #ifdef FEAT_PROFILE
 	if (cctx->ctx_compile_type == CT_PROFILE
 		&& ((isn_T *)instr->ga_data)[this_instr - 1]
-						       .isn_type == ISN_PROF_START)
+						   .isn_type == ISN_PROF_START)
 	{
 	    // jump to the profile start of the "finally"
 	    --this_instr;
 
 	    // jump to the profile end above it
 	    if (this_instr > 0 && ((isn_T *)instr->ga_data)[this_instr - 1]
-							 .isn_type == ISN_PROF_END)
+						     .isn_type == ISN_PROF_END)
 		--this_instr;
 	}
 #endif
 
 	// Fill in the "end" label in jumps at the end of the blocks.
 	compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
-								this_instr, cctx);
+							     this_instr, cctx);
 
 	// If there is no :catch then an exception jumps to :finally.
 	if (isn->isn_arg.try.try_ref->try_catch == 0)
@@ -8800,8 +8798,6 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	}
 	if (generate_instr(cctx, ISN_FINALLY) == NULL)
 	    return NULL;
-
-	// TODO: set index in ts_finally_label jumps
     }
 
     return arg;
@@ -9184,9 +9180,17 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 
     if (eap->cmdidx == CMD_folddoopen || eap->cmdidx == CMD_folddoclosed)
     {
-	// TODO: should only expand when appropriate for the command
-	eap->arg = skiptowhite(eap->arg);
-	has_expr = TRUE;
+	exarg_T nea;
+
+	CLEAR_FIELD(nea);
+	nea.cmd = eap->arg;
+	p = find_ex_command(&nea, NULL, lookup_scriptitem, NULL);
+	if (nea.cmdidx <= CMD_SIZE)
+	{
+	    has_expr = excmd_get_argt(nea.cmdidx) & (EX_XFILE | EX_EXPAND);
+	    if (has_expr)
+		eap->arg = skiptowhite(eap->arg);
+	}
     }
 
     if (has_expr && (p = (char_u *)strstr((char *)eap->arg, "`=")) != NULL)
