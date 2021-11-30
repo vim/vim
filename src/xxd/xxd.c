@@ -92,7 +92,7 @@
 #if __MWERKS__ && !defined(BEBOX)
 # include <unix.h>	/* for fdopen() on MAC */
 #endif
-
+#include <stdarg.h>     /* for va_list, va_start, va_end */
 
 /*  This corrects the problem of missing prototypes for certain functions
  *  in some GNU installations (e.g. SunOS 4.1.x).
@@ -201,8 +201,6 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
 #define HEX_LITTLEENDIAN 4
 
-#define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((int)c) : c)
-
 static char *pname;
 
   static void
@@ -276,10 +274,13 @@ fputs_or_die(char *s, FILE *fpo)
 }
 
   static void
-fprintf_or_die(FILE *fpo, char *format, char *s, char *d)
+fprintf_or_die(FILE *fpo, char *format, ...)
 {
-  if (fprintf(fpo, format, s, d) < 0)
+  va_list args;
+  va_start(args, format);
+  if (vfprintf(fpo, format, args) < 0)
     perror_exit(3);
+  va_end(args);
 }
 
   static void
@@ -747,17 +748,16 @@ main(int argc, char *argv[])
       if (fp != stdin)
 	{
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    argv[1][e] = isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_';
+	    argv[1][e] = !isalnum(c) ? '_' : (capitalize ? toupper((int)c) : c);
 	  pp = isdigit((int)argv[1][0]) ? "__" : "";
-	  fprintf_or_die(fpo, "unsigned char %s%s", pp, argv[1]);
-	  fputs_or_die("[] = {\n", fpo);
+	  fprintf_or_die(fpo, "unsigned char %s%s[] = {\n", pp, argv[1]);
 	}
 
       p = 0;
       while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
 	{
 	  fprintf_or_die(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % cols) ? ", " : (!p ? "  " : ",\n  "),  (char *)c);
+		(p % cols) ? ", " : (!p ? "  " : ",\n  "), c);
 	  p++;
 	}
 
@@ -766,9 +766,7 @@ main(int argc, char *argv[])
 
       if (fp != stdin)
 	{
-	  fputs_or_die("};\n", fpo);
-	  fprintf_or_die(fpo, "unsigned int %s%s", pp, argv[1]);
-	  fprintf_or_die(fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", (char *)p);
+	  fprintf_or_die(fpo, "};\nunsigned int %s%s_%s = %d;\n", pp, argv[1], capitalize ? "LEN" : "len", p);
 	}
 
       fclose_or_die(fp, fpo);
