@@ -2046,7 +2046,7 @@ win_line(
 
 		    c_extra = mb_off > 0 ? MB_FILLER_CHAR : ' ';
 		    c_final = NUL;
-		    if (n_extra > 0)
+		    if (n_extra > 0 && c != TAB)
 			in_linebreak = TRUE;
 		    if (VIM_ISWHITE(c))
 		    {
