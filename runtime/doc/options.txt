@@ -867,7 +867,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that for some commands the 'autowrite' option is not used, see
 	'autowriteall' for that.
 	Some buffers will not be written, specifically when 'buftype' is
-	"nowrite", "nofile", "terminal" or "prompt".
+	"nowrite", "nofile", "terminal" or "prompt", or if 'bufhidden' is
+	"hide".
 
 			 *'autowriteall'* *'awa'* *'noautowriteall'* *'noawa'*
 'autowriteall' 'awa'	boolean	(default off)
