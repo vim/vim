@@ -7785,7 +7785,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 {
     char_u	*p = arg;
     garray_T	*instr = &cctx->ctx_instr;
-    int		instr_count = instr->ga_len;
+    int		instr_count;
     isn_T	*isn;
     scope_T	*scope = cctx->ctx_scope;
     ppconst_T	ppconst;
@@ -7871,19 +7871,15 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	cctx->ctx_skip = SKIP_UNKNOWN;
 #ifdef FEAT_PROFILE
 	if (cctx->ctx_compile_type == CT_PROFILE)
-	{
 	    // the previous block was skipped, need to profile this line
 	    generate_instr(cctx, ISN_PROF_START);
-	    instr_count = instr->ga_len;
-	}
 #endif
 	if (cctx->ctx_compile_type == CT_DEBUG)
-	{
 	    // the previous block was skipped, may want to debug this line
 	    generate_instr_debug(cctx);
-	    instr_count = instr->ga_len;
-	}
     }
+
+    instr_count = instr->ga_len;
     if (compile_expr1(&p, cctx, &ppconst) == FAIL)
     {
 	clear_ppconst(&ppconst);

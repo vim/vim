@@ -2296,6 +2296,38 @@ def Test_debugged()
         res)
 enddef
 
+def s:ElseifConstant()
+  if g:value
+    echo "one"
+  elseif true
+    echo "true"
+  elseif false
+    echo "false"
+  endif
+enddef
+
+def Test_debug_elseif_constant()
+  var res = execute('disass s:ElseifConstant')
+  assert_match('<SNR>\d*_ElseifConstant\_s*' ..
+          'if g:value\_s*' ..
+          '0 LOADG g:value\_s*' ..
+          '1 COND2BOOL\_s*' ..
+          '2 JUMP_IF_FALSE -> 6\_s*' ..
+          'echo "one"\_s*' ..
+          '3 PUSHS "one"\_s*' ..
+          '4 ECHO 1\_s*' ..
+          'elseif true\_s*' ..
+          '5 JUMP -> 8\_s*' ..
+          'echo "true"\_s*' ..
+          '6 PUSHS "true"\_s*' ..
+          '7 ECHO 1\_s*' ..
+          'elseif false\_s*' ..
+          'echo "false"\_s*' ..
+          'endif\_s*' ..
+          '\d RETURN void*',
+        res)
+enddef
+
 def s:DebugElseif()
   var b = false
   if b
