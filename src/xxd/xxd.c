@@ -276,7 +276,7 @@ fputs_or_die(char *s, FILE *fpo)
 }
 
   static void
-fprintf_or_die(FILE *fpo, char *format, char *s, int d)
+fprintf_or_die(FILE *fpo, char *format, char *s, char *d)
 {
   if (fprintf(fpo, format, s, d) < 0)
     perror_exit(3);
@@ -746,9 +746,10 @@ main(int argc, char *argv[])
     {
       if (fp != stdin)
 	{
-	  fprintf_or_die(fpo, "unsigned char %s", isdigit((int)argv[1][0]) ? "__" : "", 0);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
+	    argv[1][e] = isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_';
+	  pp = isdigit((int)argv[1][0]) ? "__" : "";
+	  fprintf_or_die(fpo, "unsigned char %s%s", pp, argv[1]);
 	  fputs_or_die("[] = {\n", fpo);
 	}
 
@@ -756,7 +757,7 @@ main(int argc, char *argv[])
       while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
 	{
 	  fprintf_or_die(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % cols) ? ", " : (!p ? "  " : ",\n  "),  c);
+		(p % cols) ? ", " : (!p ? "  " : ",\n  "),  (char *)c);
 	  p++;
 	}
 
@@ -766,10 +767,8 @@ main(int argc, char *argv[])
       if (fp != stdin)
 	{
 	  fputs_or_die("};\n", fpo);
-	  fprintf_or_die(fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : "", 0);
-	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
-	  fprintf_or_die(fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p);
+	  fprintf_or_die(fpo, "unsigned int %s%s", pp, argv[1]);
+	  fprintf_or_die(fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", (char *)p);
 	}
 
       fclose_or_die(fp, fpo);
