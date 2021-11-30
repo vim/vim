@@ -282,8 +282,7 @@ def Test_condition_types()
       elseif 'text'
       endif
   END
-  CheckDefFailure(lines, 'E1012:', 3)
-  CheckScriptFailure(['vim9script'] + lines, 'E1135:', 4)
+  CheckDefAndScriptFailure(lines, 'E1135:', 3)
 
   lines =<< trim END
       if g:cond
