@@ -144,6 +144,7 @@ typedef struct {
 				      // any "[expr]" or ".name"
     char_u	    *lhs_dest_end;  // end of the destination, including
 				    // "[expr]" or ".name".
+    char_u	    *lhs_end;	    // end including any type
 
     int		    lhs_has_index;  // has "[expr]" or ".name"
 
@@ -6299,6 +6300,7 @@ compile_lhs(
 	--lhs->lhs_dest_end;
     if (is_decl && var_end == var_start + 2 && var_end[-1] == ':')
 	--var_end;
+    lhs->lhs_end = lhs->lhs_dest_end;
 
     // compute the length of the destination without "[expr]" or ".name"
     lhs->lhs_varlen = var_end - var_start;
@@ -6435,7 +6437,7 @@ compile_lhs(
 	}
     }
 
-    // handle "a:name" as a name, not index "name" on "a"
+    // handle "a:name" as a name, not index "name" in "a"
     if (lhs->lhs_varlen > 1 || var_start[lhs->lhs_varlen] != ':')
 	var_end = lhs->lhs_dest_end;
 
@@ -6456,6 +6458,7 @@ compile_lhs(
 	    if (lhs->lhs_type == NULL)
 		return FAIL;
 	    lhs->lhs_has_type = TRUE;
+	    lhs->lhs_end = p;
 	}
 	else if (lhs->lhs_lvar != NULL)
 	    lhs->lhs_type = lhs->lhs_lvar->lv_type;
@@ -6896,13 +6899,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     if (p == NULL)
 	return *arg == '[' ? arg : NULL;
 
-    if (var_count > 0 && is_decl)
-    {
-	// TODO: should we allow this, and figure out type inference from list
-	// members?
-	emsg(_(e_cannot_use_list_for_declaration));
-	return NULL;
-    }
     lhs.lhs_name = NULL;
 
     sp = p;
@@ -7330,7 +7326,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	cctx->ctx_lnum = save_lnum;
 
 	if (var_idx + 1 < var_count)
-	    var_start = skipwhite(lhs.lhs_dest_end + 1);
+	    var_start = skipwhite(lhs.lhs_end + 1);
     }
 
     // For "[var, var] = expr" drop the "expr" value.

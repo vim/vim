@@ -420,12 +420,11 @@ similar to how a function argument can be ignored: >
 To ignore any remaining items: >
 	[a, b; _] = longList
 
-<							*E1092*
 Declaring more than one variable at a time, using the unpack notation, is
-currently not supported: >
-	var [v1, v2] = GetValues()  # Error!
-That is because the type needs to be inferred from the list item type, which
-isn't that easy.
+possible.  Each variable can have a type or infer it from the value: >
+	var [v1: number, v2] = GetValues()
+Use this only when there is a list with values, declaring one variable per
+line is much easier to read and change later.
 
 
 Constants ~

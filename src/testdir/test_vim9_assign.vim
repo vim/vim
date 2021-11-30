@@ -732,7 +732,6 @@ def Test_assignment_list()
   assert_equal(['sdf', 'asdf', 'end'], list3)
 
   CheckDefExecFailure(['var ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
-  CheckDefExecFailure(['var [v1, v2] = [1, 2]'], 'E1092:')
 
   # type becomes list<any>
   var somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
@@ -751,6 +750,60 @@ def Test_assignment_list()
       var fl: list<func(bool, bool, bool)> = [OneArg, TwoArgs]
   END
   CheckDefExecAndScriptFailure(lines, 'E1012:', 5)
+enddef
+
+def Test_list_declaration()
+  var [v1, v2] = [1, 2]
+  v1 += 3
+  assert_equal(4, v1)
+  v2 *= 3
+  assert_equal(6, v2)
+
+  var lines =<< trim END
+      var [v1, v2] = [1]
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 1', 'E688:')
+  lines =<< trim END
+      var testlist = [1]
+      var [v1, v2] = testlist
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 1', 'E688:')
+  lines =<< trim END
+      var [v1, v2] = [1, 2, 3]
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 3', 'E687:')
+  lines =<< trim END
+      var testlist = [1, 2, 3]
+      var [v1, v2] = testlist
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 3', 'E687:')
+
+  var [vnr, vstr] = [123, 'text']
+  vnr += 3
+  assert_equal(126, vnr)
+  vstr ..= 'end'
+  assert_equal('textend', vstr)
+
+  var [vnr2: number, vstr2: string] = [123, 'text']
+  vnr2 += 3
+  assert_equal(126, vnr2)
+  vstr2 ..= 'end'
+  assert_equal('textend', vstr2)
+
+  var [vnr3: number; vlist: list<string>] = [123, 'foo', 'bar']
+  vnr3 += 5
+  assert_equal(128, vnr3)
+  assert_equal(['foo', 'bar'], vlist)
+
+  lines =<< trim END
+      var [vnr2: number, vstr2: number] = [123, 'text']
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1163: Variable 2: type mismatch, expected number but got string', 'E1012: Type mismatch; expected number but got string')
+  lines =<< trim END
+      var testlist = [234, 'text']
+      var [vnr2: number, vstr2: number] = testlist
+  END
+  CheckDefExecAndScriptFailure2(lines, 'E1163: Variable 2: type mismatch, expected number but got string', 'E1012: Type mismatch; expected number but got string')
 enddef
 
 def PartFuncBool(b: bool): string

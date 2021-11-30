@@ -366,8 +366,7 @@ EXTERN char e_cannot_assign_to_argument[]
 	INIT(= N_("E1090: Cannot assign to argument %s"));
 EXTERN char e_function_is_not_compiled_str[]
 	INIT(= N_("E1091: Function is not compiled: %s"));
-EXTERN char e_cannot_use_list_for_declaration[]
-	INIT(= N_("E1092: Cannot use a list for a declaration"));
+// E1092 unused
 EXTERN char e_expected_nr_items_but_got_nr[]
 	INIT(= N_("E1093: Expected %d items but got %d"));
 EXTERN char e_import_can_only_be_used_in_script[]
