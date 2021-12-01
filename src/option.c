@@ -7187,7 +7187,7 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	return OK;
     }
 
-    if (*optval == '{'
+    if (*optval == '{' || (in_vim9script() && *optval == '(')
 	    || (STRNCMP(optval, "function(", 9) == 0)
 	    || (STRNCMP(optval, "funcref(", 8) == 0))
 	// Lambda expression or a funcref
