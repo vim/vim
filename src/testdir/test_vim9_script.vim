@@ -496,8 +496,9 @@ def Test_try_catch_throw()
   endtry
   assert_equal(266, n)
 
+  l = [1, 2, 3] 
   try
-    [n] = [1, 2, 3]
+    [n] = l
   catch /E1093:/
     n = 277
   endtry
@@ -4327,7 +4328,8 @@ def Test_catch_exception_in_callback()
         var x: string
         var y: string
         # this error should be caught with CHECKLEN
-        [x, y] = ['']
+        var sl = ['']
+        [x, y] = sl
       catch
         g:caught = 'yes'
       endtry

@@ -386,6 +386,27 @@ def Test_assign_unpack()
   lines =<< trim END
       var v1: number
       var v2: number
+      [v1, v2] = [1, 2, 3]
+  END
+  CheckDefFailure(lines, 'E1093: Expected 2 items but got 3', 3)
+
+  lines =<< trim END
+      var v1: number
+      var v2: number
+      [v1, v2] = [1]
+  END
+  CheckDefFailure(lines, 'E1093: Expected 2 items but got 1', 3)
+
+  lines =<< trim END
+      var v1: number
+      var v2: number
+      [v1, v2; _] = [1]
+  END
+  CheckDefFailure(lines, 'E1093: Expected 2 items but got 1', 3)
+
+  lines =<< trim END
+      var v1: number
+      var v2: number
       [v1, v2] = 
   END
   CheckDefFailure(lines, 'E1097:', 5)

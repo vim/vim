@@ -471,7 +471,6 @@ def Test_disassemble_list_assign_with_op()
         '\d\+ PUSHNR 4\_s*' ..
         '\d\+ PUSHNR 5\_s*' ..
         '\d\+ NEWLIST size 2\_s*' ..
-        '\d\+ CHECKLEN 2\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ ITEM 0 with op\_s*' ..
         '\d\+ OPNR +\_s*' ..

@@ -6999,6 +6999,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (cctx->ctx_skip != SKIP_YES)
 	{
 	    type_T	*stacktype;
+	    int		needed_list_len;
+	    int		did_check = FALSE;
 
 	    stacktype = stack->ga_len == 0 ? &t_void
 			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
@@ -7010,9 +7012,26 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if (need_type(stacktype, &t_list_any, -1, 0, cctx,
 							 FALSE, FALSE) == FAIL)
 		goto theend;
-	    // TODO: check the length of a constant list here
-	    generate_CHECKLEN(cctx, semicolon ? var_count - 1 : var_count,
-								    semicolon);
+	    // If a constant list was used we can check the length right here.
+	    needed_list_len = semicolon ? var_count - 1 : var_count;
+	    if (instr->ga_len > 0)
+	    {
+		isn_T	*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+
+		if (isn->isn_type == ISN_NEWLIST)
+		{
+		    did_check = TRUE;
+		    if (semicolon ? isn->isn_arg.number < needed_list_len
+			    : isn->isn_arg.number != needed_list_len)
+		    {
+			semsg(_(e_expected_nr_items_but_got_nr),
+					 needed_list_len, isn->isn_arg.number);
+			goto theend;
+		    }
+		}
+	    }
+	    if (!did_check)
+		generate_CHECKLEN(cctx, needed_list_len, semicolon);
 	    if (stacktype->tt_member != NULL)
 		rhs_type = stacktype->tt_member;
 	}
