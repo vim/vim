@@ -1124,17 +1124,11 @@ function scope.  Instead, use a lambda: >
 	  return range(1, 2)->map((_, v) => list[v])
 	enddef
 
-The same is true for commands that are not compiled, such as `:global`.
-For these the backtick expansion can be used.  Example: >
+For commands that are not compiled, such as `:edit`, backtick expansion can be
+used and it can use the local scope.  Example: >
 	def Replace()
-	  var newText = 'blah'
-	  g/pattern/s/^/`=newText`/
-	enddef
-
-Or a script variable can be used: >
-	var newText = 'blah'
-	def Replace()
-	  g/pattern/s/^/\=newText/
+	  var fname = 'blah.txt'
+	  edit `=fname`
 	enddef
 
 Closures defined in a loop will share the same context.  For example: >

@@ -9070,6 +9070,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
     int		has_expr = FALSE;
     char_u	*nextcmd = (char_u *)"";
     char_u	*tofree = NULL;
+    char_u	*cmd_arg = NULL;
 
     if (cctx->ctx_skip == SKIP_YES)
 	goto theend;
@@ -9172,20 +9173,20 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 
 	p = skip_regexp_ex(eap->arg + 1, delim, TRUE, NULL, NULL, NULL);
 	if (*p == delim)
-	{
-	    eap->arg = p + 1;
-	    has_expr = TRUE;
-	}
+	    cmd_arg = p + 1;
     }
 
     if (eap->cmdidx == CMD_folddoopen || eap->cmdidx == CMD_folddoclosed)
+	cmd_arg = eap->arg;
+
+    if (cmd_arg != NULL)
     {
 	exarg_T nea;
 
 	CLEAR_FIELD(nea);
-	nea.cmd = eap->arg;
+	nea.cmd = cmd_arg;
 	p = find_ex_command(&nea, NULL, lookup_scriptitem, NULL);
-	if (nea.cmdidx <= CMD_SIZE)
+	if (nea.cmdidx < CMD_SIZE)
 	{
 	    has_expr = excmd_get_argt(nea.cmdidx) & (EX_XFILE | EX_EXPAND);
 	    if (has_expr)

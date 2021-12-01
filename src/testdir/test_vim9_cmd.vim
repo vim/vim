@@ -183,11 +183,18 @@ def Test_expand_alternate_file()
 enddef
 
 def Test_global_backtick_expansion()
+  var name = 'xxx'
   new
-  setline(1, 'xx')
-  var name = 'foobar'
-  g/^xx/s/.*/`=name`
-  assert_equal('foobar', getline(1))
+  setline(1, ['one', 'two', 'three'])
+  set nomod
+  g/two/edit `=name`
+  assert_equal('xxx', bufname())
+  bwipe!
+
+  new
+  setline(1, ['one', 'two', 'three'])
+  g/two/s/^/`=name`/
+  assert_equal('`=name`two', getline(2))
   bwipe!
 enddef
 
