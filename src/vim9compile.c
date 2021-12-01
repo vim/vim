@@ -7888,6 +7888,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     cctx->ctx_skip = save_skip;
     if (!ends_excmd2(arg, skipwhite(p)))
     {
+	clear_ppconst(&ppconst);
 	semsg(_(e_trailing_arg), p);
 	return NULL;
     }
@@ -7901,7 +7902,10 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	// The expression result is a constant.
 	v = tv_get_bool_chk(&ppconst.pp_tv[0], &error);
 	if (error)
+	{
+	    clear_ppconst(&ppconst);
 	    return NULL;
+	}
 	cctx->ctx_skip = v ? SKIP_NOT : SKIP_YES;
 	clear_ppconst(&ppconst);
 	scope->se_u.se_if.is_if_label = -1;

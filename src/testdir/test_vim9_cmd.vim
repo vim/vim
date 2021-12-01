@@ -301,12 +301,21 @@ def Test_condition_types()
   CheckDefAndScriptFailure(lines, 'E1135:', 3)
 
   lines =<< trim END
+      g:cond = 0
+      if g:cond
+      elseif 'text' garbage
+      endif
+  END
+  CheckDefAndScriptFailure(lines, 'E488:', 3)
+
+  lines =<< trim END
+      g:cond = 0
       if g:cond
       elseif [1]
       endif
   END
-  CheckDefFailure(lines, 'E1012:', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E745:', 3)
+  CheckDefFailure(lines, 'E1012:', 3)
+  CheckScriptFailure(['vim9script'] + lines, 'E745:', 4)
 
   lines =<< trim END
       g:cond = 'text'
