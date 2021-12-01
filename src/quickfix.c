@@ -6122,9 +6122,8 @@ vgr_process_args(
     }
 
     // Parse the list of arguments, wildcards have already been expanded.
-    if (get_arglist_exp(p, &args->fcount, &args->fnames, TRUE) == FAIL)
-	return FAIL;
-    if (args->fcount == 0)
+    if ((get_arglist_exp(p, &args->fcount, &args->fnames, TRUE) == FAIL) ||
+	args->fcount == 0)
     {
 	emsg(_(e_nomatch));
 	return FAIL;
