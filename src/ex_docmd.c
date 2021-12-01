@@ -1977,43 +1977,7 @@ do_one_cmd(
 	 */
 	if (ea.skip)	    // skip this if inside :if
 	    goto doend;
-	if ((*ea.cmd == '|' || (exmode_active && ea.line1 != ea.line2))
-#ifdef FEAT_EVAL
-		&& !vim9script
-#endif
-	   )
-	{
-	    ea.cmdidx = CMD_print;
-	    ea.argt = EX_RANGE+EX_COUNT+EX_TRLBAR;
-	    if ((errormsg = invalid_range(&ea)) == NULL)
-	    {
-		correct_range(&ea);
-		ex_print(&ea);
-	    }
-	}
-	else if (ea.addr_count != 0)
-	{
-	    if (ea.line2 > curbuf->b_ml.ml_line_count)
-	    {
-		// With '-' in 'cpoptions' a line number past the file is an
-		// error, otherwise put it at the end of the file.
-		if (vim_strchr(p_cpo, CPO_MINUS) != NULL)
-		    ea.line2 = -1;
-		else
-		    ea.line2 = curbuf->b_ml.ml_line_count;
-	    }
-
-	    if (ea.line2 < 0)
-		errormsg = _(e_invalid_range);
-	    else
-	    {
-		if (ea.line2 == 0)
-		    curwin->w_cursor.lnum = 1;
-		else
-		    curwin->w_cursor.lnum = ea.line2;
-		beginline(BL_SOL | BL_FIX);
-	    }
-	}
+	errormsg = ex_range_without_command(&ea);
 	goto doend;
     }
 
@@ -2705,6 +2669,55 @@ ex_errmsg(char *msg, char_u *arg)
 {
     vim_snprintf(ex_error_buf, MSG_BUF_LEN, _(msg), arg);
     return ex_error_buf;
+}
+
+/*
+ * Handle a range without a command.
+ * Returns an error message on failure.
+ */
+    char *
+ex_range_without_command(exarg_T *eap)
+{
+    char *errormsg = NULL;
+
+    if ((*eap->cmd == '|' || (exmode_active && eap->line1 != eap->line2))
+#ifdef FEAT_EVAL
+	    && !in_vim9script()
+#endif
+       )
+    {
+	eap->cmdidx = CMD_print;
+	eap->argt = EX_RANGE+EX_COUNT+EX_TRLBAR;
+	if ((errormsg = invalid_range(eap)) == NULL)
+	{
+	    correct_range(eap);
+	    ex_print(eap);
+	}
+    }
+    else if (eap->addr_count != 0)
+    {
+	if (eap->line2 > curbuf->b_ml.ml_line_count)
+	{
+	    // With '-' in 'cpoptions' a line number past the file is an
+	    // error, otherwise put it at the end of the file.
+	    if (vim_strchr(p_cpo, CPO_MINUS) != NULL)
+		eap->line2 = -1;
+	    else
+		eap->line2 = curbuf->b_ml.ml_line_count;
+	}
+
+	if (eap->line2 < 0)
+	    errormsg = _(e_invalid_range);
+	else
+	{
+	    if (eap->line2 == 0)
+		curwin->w_cursor.lnum = 1;
+	    else
+		curwin->w_cursor.lnum = eap->line2;
+	    beginline(BL_SOL | BL_FIX);
+	}
+    }
+    return errormsg;
 }
 
 /*

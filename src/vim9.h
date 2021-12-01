@@ -15,6 +15,7 @@ typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
     ISN_EXECCONCAT, // execute Ex command from isn_arg.number items on stack
     ISN_EXEC_SPLIT, // execute Ex command from isn_arg.string split at NL
+    ISN_EXECRANGE,  // execute EX command that is only a range
     ISN_LEGACY_EVAL, // evaluate expression isn_arg.string with legacy syntax.
     ISN_ECHO,	    // :echo with isn_arg.echo.echo_count items on top of stack
     ISN_EXECUTE,    // :execute with isn_arg.number items on top of stack

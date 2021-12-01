@@ -1774,6 +1774,28 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    // execute Ex command line that is only a range
+	    case ISN_EXECRANGE:
+		{
+		    exarg_T	ea;
+		    char	*error = NULL;
+
+		    CLEAR_FIELD(ea);
+		    ea.cmdidx = CMD_SIZE;
+		    ea.addr_type = ADDR_LINES;
+		    ea.cmd = iptr->isn_arg.string;
+		    parse_cmd_address(&ea, &error, FALSE);
+		    if (error == NULL)
+			error = ex_range_without_command(&ea);
+		    if (error != NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(error);
+			goto on_error;
+		    }
+		}
+		break;
+
 	    // Evaluate an expression with legacy syntax, push it onto the
 	    // stack.
 	    case ISN_LEGACY_EVAL:
@@ -5067,6 +5089,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_EXEC_SPLIT:
 		smsg("%s%4d EXEC_SPLIT %s", pfx, current, iptr->isn_arg.string);
+		break;
+	    case ISN_EXECRANGE:
+		smsg("%s%4d EXECRANGE %s", pfx, current, iptr->isn_arg.string);
 		break;
 	    case ISN_LEGACY_EVAL:
 		smsg("%s%4d EVAL legacy %s", pfx, current,

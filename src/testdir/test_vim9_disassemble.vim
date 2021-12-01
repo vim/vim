@@ -1999,6 +1999,25 @@ def Test_disassemble_execute()
         res)
 enddef
 
+def s:OnlyRange()
+  :$
+  :123
+  :'m
+enddef
+
+def Test_disassemble_range_only()
+  var res = execute('disass s:OnlyRange')
+  assert_match('\<SNR>\d*_OnlyRange\_s*' ..
+        ':$\_s*' ..
+        '\d EXECRANGE $\_s*' ..
+        ':123\_s*' ..
+        '\d EXECRANGE 123\_s*' ..
+        ':''m\_s*' ..
+        '\d EXECRANGE ''m\_s*' ..
+        '\d\+ RETURN void',
+        res)
+enddef
+
 def s:Echomsg()
   echomsg 'some' 'message'
   echoconsole 'nothing'

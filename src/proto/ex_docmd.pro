@@ -7,6 +7,7 @@ int getline_equal(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *co
 void *getline_cookie(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 char_u *getline_peek(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 char *ex_errmsg(char *msg, char_u *arg);
+char *ex_range_without_command(exarg_T *eap);
 int checkforcmd(char_u **pp, char *cmd, int len);
 int checkforcmd_noparen(char_u **pp, char *cmd, int len);
 int parse_command_modifiers(exarg_T *eap, char **errormsg, cmdmod_T *cmod, int skip_only);
@@ -22,7 +23,7 @@ int cmd_exists(char_u *name);
 void f_fullcommand(typval_T *argvars, typval_T *rettv);
 cmdidx_T excmd_get_cmdidx(char_u *cmd, int len);
 long excmd_get_argt(cmdidx_T idx);
-char_u *skip_range(char_u *cmd, int skip_star, int *ctx);
+char_u *skip_range(char_u *cmd_start, int skip_star, int *ctx);
 void ex_ni(exarg_T *eap);
 int expand_filename(exarg_T *eap, char_u **cmdlinep, char **errormsgp);
 void separate_nextcmd(exarg_T *eap);

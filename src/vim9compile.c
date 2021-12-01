@@ -2275,8 +2275,12 @@ generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
     return OK;
 }
 
+/*
+ * Generate an EXEC instruction that takes a string argument.
+ * A copy is made of "line".
+ */
     static int
-generate_EXEC(cctx_T *cctx, isntype_T isntype, char_u *line)
+generate_EXEC_copy(cctx_T *cctx, isntype_T isntype, char_u *line)
 {
     isn_T	*isn;
 
@@ -2284,6 +2288,29 @@ generate_EXEC(cctx_T *cctx, isntype_T isntype, char_u *line)
     if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
     isn->isn_arg.string = vim_strsave(line);
+    return OK;
+}
+
+/*
+ * Generate an EXEC instruction that takes a string argument.
+ * "str" must be allocated, it is consumed.
+ */
+    static int
+generate_EXEC(cctx_T *cctx, isntype_T isntype, char_u *str)
+{
+    isn_T	*isn;
+
+    if (cctx->ctx_skip == SKIP_YES)
+    {
+	vim_free(str);
+	return OK;
+    }
+    if ((isn = generate_instr(cctx, isntype)) == NULL)
+    {
+	vim_free(str);
+	return FAIL;
+    }
+    isn->isn_arg.string = str;
     return OK;
 }
 
@@ -7552,7 +7579,7 @@ compile_lock_unlock(
 	vim_snprintf((char *)buf, len, "%s %s",
 		eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar",
 		p);
-	ret = generate_EXEC(cctx, isn, buf);
+	ret = generate_EXEC_copy(cctx, isn, buf);
 
 	vim_free(buf);
 	*name_end = cc;
@@ -9248,7 +9275,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	generate_EXECCONCAT(cctx, count);
     }
     else
-	generate_EXEC(cctx, ISN_EXEC, line);
+	generate_EXEC_copy(cctx, ISN_EXEC, line);
 
 theend:
     if (*nextcmd != NUL)
@@ -9874,10 +9901,12 @@ compile_def_function(
 		if (ends_excmd2(line, ea.cmd))
 		{
 		    // A range without a command: jump to the line.
-		    // TODO: compile to a more efficient command, possibly
-		    // calling parse_cmd_address().
-		    ea.cmdidx = CMD_SIZE;
-		    line = compile_exec(line, &ea, &cctx);
+		    line = skipwhite(line);
+		    while (*line == ':')
+			++line;
+		    generate_EXEC(&cctx, ISN_EXECRANGE,
+					    vim_strnsave(line, ea.cmd - line));
+		    line = ea.cmd;
 		    goto nextline;
 		}
 	    }
@@ -10350,6 +10379,7 @@ delete_instr(isn_T *isn)
     {
 	case ISN_DEF:
 	case ISN_EXEC:
+	case ISN_EXECRANGE:
 	case ISN_EXEC_SPLIT:
 	case ISN_LEGACY_EVAL:
 	case ISN_LOADAUTO:
