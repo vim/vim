@@ -239,10 +239,18 @@ func Test_tagfunc_callback()
   END
   call CheckScriptSuccess(lines)
 
+  " Using Vim9 lambda expression in legacy context should fail
+  set tagfunc=(a,\ b,\ c)\ =>\ g:MytagFunc2(a,\ b,\ c)
+  new | only
+  let g:MytagFunc3_args = []
+  call assert_fails("tag a17", "E117:")
+  call assert_equal([], g:MytagFunc3_args)
+
   " cleanup
   delfunc MytagFunc1
   delfunc MytagFunc2
   delfunc MytagFunc3
+  set tagfunc&
   %bw!
 endfunc
 
