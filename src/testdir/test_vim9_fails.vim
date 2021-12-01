@@ -8,3 +8,17 @@ def Test_assignment()
     var job2: job = job_start('willfail')
   endif
 enddef
+
+" Unclear why this test causes valgrind to report problems.
+def Test_job_info_return_type()
+  if !has('job')
+    CheckFeature job
+  else
+    var job: job = job_start(&shell)
+    var jobs = job_info()
+    assert_equal('list<job>', typename(jobs))
+    assert_equal('dict<any>', typename(job_info(jobs[0])))
+    job_stop(job)
+  endif
+enddef
+

@@ -1879,17 +1879,7 @@ def Test_job_info()
   endif
 enddef
 
-def Test_job_info_return_type()
-  if !has('job')
-    CheckFeature job
-  else
-    job_start(&shell)
-    var jobs = job_info()
-    assert_equal('list<job>', typename(jobs))
-    assert_equal('dict<any>', typename(job_info(jobs[0])))
-    job_stop(jobs[0])
-  endif
-enddef
+" Test_job_info_return_type() is in test_vim9_fails.vim
 
 def Test_job_setoptions()
   if !has('job')
