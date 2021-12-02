@@ -1651,6 +1651,24 @@ func Test_prop_after_tab()
   call delete('XscriptPropAfterTab')
 endfunc
 
+func Test_prop_after_linebreak()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set linebreak wrap
+      call printf('%s+(%s)', 'x'->repeat(&columns / 2), 'x'->repeat(&columns / 2))->setline(1)
+      call prop_type_add('test', #{highlight: 'ErrorMsg'})
+      call prop_add(1, (&columns / 2) + 2, #{length: 1, type: 'test'})
+  END
+  call writefile(lines, 'XscriptPropAfterLinebreak')
+  let buf = RunVimInTerminal('-S XscriptPropAfterLinebreak', #{rows: 10})
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_prop_after_linebreak', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropAfterLinebreak')
+endfunc
+
 " Buffer number of 0 should be ignored, as if the parameter wasn't passed.
 def Test_prop_bufnr_zero()
   new

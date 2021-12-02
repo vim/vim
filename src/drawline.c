@@ -1453,6 +1453,11 @@ win_line(
 		    }
 		}
 
+# ifdef FEAT_LINEBREAK
+		if (n_extra > 0 && in_linebreak)
+		    // not on the next char yet, don't start another prop
+		    --bcol;
+# endif
 		// Add any text property that starts in this column.
 		while (text_prop_next < text_prop_count
 			   && bcol >= text_props[text_prop_next].tp_col - 1)
