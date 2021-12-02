@@ -2384,6 +2384,21 @@ def Test_global_closure_called_directly()
   delfunc g:Inner
 enddef
 
+def Test_closure_called_from_legacy()
+  var lines =<< trim END
+      vim9script
+      def Func()
+        var outer = 'foo'
+        var F = () => {
+              outer = 'bar'
+            }
+        execute printf('call %s()', string(F))
+      enddef
+      Func()
+  END
+  CheckScriptFailure(lines, 'E1248')
+enddef
+
 def Test_failure_in_called_function()
   # this was using the frame index as the return value
   var lines =<< trim END

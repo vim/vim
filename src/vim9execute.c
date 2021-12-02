@@ -2733,7 +2733,13 @@ exec_instructions(ectx_T *ectx)
 		    if (outer == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			iemsg("LOADOUTER depth more than scope levels");
+			if (ectx->ec_frame_idx == ectx->ec_initial_frame_idx
+						 || ectx->ec_outer_ref == NULL)
+			    // Possibly :def function called from legacy
+			    // context.
+			    emsg(_(e_closure_called_from_invalid_context));
+			else
+			    iemsg("LOADOUTER depth more than scope levels");
 			goto theend;
 		    }
 		    tv = ((typval_T *)outer->out_stack->ga_data)

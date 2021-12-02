@@ -689,3 +689,5 @@ EXTERN char e_cannot_find_variable_to_unlock_str[]
 	INIT(= N_("E1246: Cannot find variable to (un)lock: %s"));
 EXTERN char e_line_number_out_of_range[]
 	INIT(= N_("E1247: Line number out of range"));
+EXTERN char e_closure_called_from_invalid_context[]
+	INIT(= N_("E1248: Closure called from invalid context"));
