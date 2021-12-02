@@ -1089,26 +1089,8 @@ free_yank(long n)
 	long	    i;
 
 	for (i = n; --i >= 0; )
-	{
-#ifdef AMIGA	    // only for very slow machines
-	    if ((i & 1023) == 1023)  // this may take a while
-	    {
-		// This message should never cause a hit-return message.
-		// Overwrite this message with any next message.
-		++no_wait_return;
-		smsg(_("freeing %ld lines"), i + 1);
-		--no_wait_return;
-		msg_didout = FALSE;
-		msg_col = 0;
-	    }
-#endif
 	    vim_free(y_current->y_array[i]);
-	}
 	VIM_CLEAR(y_current->y_array);
-#ifdef AMIGA
-	if (n >= 1000)
-	    msg("");
-#endif
     }
 }
 
