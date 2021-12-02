@@ -316,7 +316,8 @@ EXTERN char e_cannot_index_number[]
 	INIT(= N_("E1062: Cannot index a Number"));
 EXTERN char e_type_mismatch_for_v_variable[]
 	INIT(= N_("E1063: Type mismatch for v: variable"));
-// E1064 unused
+EXTERN char e_yank_register_changed_while_using_it[]
+	INIT(= N_("E1064: Yank register changed while using it"));
 // E1065 unused
 EXTERN char e_cannot_declare_a_register_str[]
 	INIT(= N_("E1066: Cannot declare a register: %s"));
