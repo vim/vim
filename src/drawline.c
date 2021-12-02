@@ -265,13 +265,14 @@ win_line(
     int		c_extra = NUL;		// extra chars, all the same
     int		c_final = NUL;		// final char, mandatory if set
     int		extra_attr = 0;		// attributes when n_extra != 0
-#ifdef FEAT_LINEBREAK
+#if defined(FEAT_LINEBREAK) && defined(FEAT_PROP_POPUP)
     int		in_linebreak = FALSE;	// n_extra set for showing linebreak
 #endif
     static char_u *at_end_str = (char_u *)""; // used for p_extra when
 					// displaying eol at end-of-line
     int		lcs_eol_one = wp->w_lcs_chars.eol; // eol until it's been used
-    int		lcs_prec_todo = wp->w_lcs_chars.prec; // prec until it's been used
+    int		lcs_prec_todo = wp->w_lcs_chars.prec;
+					// prec until it's been used
 
     // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra = 0;
@@ -1717,7 +1718,7 @@ win_line(
 		++p_extra;
 	    }
 	    --n_extra;
-#ifdef FEAT_LINEBREAK
+#if defined(FEAT_LINEBREAK) && defined(FEAT_PROP_POPUP)
 	    if (n_extra <= 0)
 		in_linebreak = FALSE;
 #endif
@@ -2046,8 +2047,10 @@ win_line(
 
 		    c_extra = mb_off > 0 ? MB_FILLER_CHAR : ' ';
 		    c_final = NUL;
+# if defined(FEAT_PROP_POPUP)
 		    if (n_extra > 0 && c != TAB)
 			in_linebreak = TRUE;
+# endif
 		    if (VIM_ISWHITE(c))
 		    {
 # ifdef FEAT_CONCEAL
