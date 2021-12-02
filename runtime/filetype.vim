@@ -1756,6 +1756,9 @@ au BufNewFile,BufRead *.sqlj			setf sqlj
 " SQR
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 
+" Squirrel
+au BufNewFile,BufRead *.nut			setf squirrel
+
 " OpenSSH configuration
 au BufNewFile,BufRead ssh_config,*/.ssh/config		setf sshconfig
 au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf	setf sshconfig
