@@ -3169,6 +3169,29 @@ call_callback(
 }
 
 /*
+ * call the 'callback' function and return the result as a number.
+ * Returns -1 when calling the function fails.  Uses argv[0] to argv[argc - 1]
+ * for the function arguments. argv[argc] should have type VAR_UNKNOWN.
+ */
+    varnumber_T
+call_callback_retnr(
+    callback_T	*callback,
+    int		argcount,	// number of "argvars"
+    typval_T	*argvars)	// vars for arguments, must have "argcount"
+				// PLUS ONE elements!
+{
+    typval_T	rettv;
+    varnumber_T	retval;
+
+    if (call_callback(callback, 0, &rettv, argcount, argvars) == FAIL)
+	return -1;
+
+    retval = tv_get_number_chk(&rettv, NULL);
+    clear_tv(&rettv);
+    return retval;
+}
+
+/*
  * Give an error message for the result of a function.
  * Nothing if "error" is FCERR_NONE.
  */

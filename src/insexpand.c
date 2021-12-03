@@ -2237,6 +2237,113 @@ ins_compl_next_buf(buf_T *buf, int flag)
 }
 
 #ifdef FEAT_COMPL_FUNC
+
+# ifdef FEAT_EVAL
+static callback_T cfu_cb;	    // 'completefunc' callback function
+static callback_T ofu_cb;	    // 'omnifunc' callback function
+static callback_T tsrfu_cb;	    // 'thesaurusfunc' callback function
+# endif
+
+/*
+ * Copy a global callback function to a buffer local callback.
+ */
+    static void
+copy_global_to_buflocal_cb(callback_T *globcb, callback_T *bufcb)
+{
+    free_callback(bufcb);
+    if (globcb->cb_name != NULL && *globcb->cb_name != NUL)
+	copy_callback(bufcb, globcb);
+}
+
+/*
+ * Parse the 'completefunc' option value and set the callback function.
+ * Invoked when the 'completefunc' option is set. The option value can be a
+ * name of a function (string), or function(<name>) or funcref(<name>) or a
+ * lambda expression.
+ */
+    int
+set_completefunc_option(void)
+{
+    int	retval;
+
+    retval = option_set_callback_func(curbuf->b_p_cfu, &cfu_cb);
+    if (retval == OK)
+	set_buflocal_cfu_callback(curbuf);
+
+    return retval;
+}
+
+/*
+ * Copy the global 'completefunc' callback function to the buffer-local
+ * 'completefunc' callback for 'buf'.
+ */
+    void
+set_buflocal_cfu_callback(buf_T *buf UNUSED)
+{
+# ifdef FEAT_EVAL
+    copy_global_to_buflocal_cb(&cfu_cb, &buf->b_cfu_cb);
+# endif
+}
+
+/*
+ * Parse the 'omnifunc' option value and set the callback function.
+ * Invoked when the 'omnifunc' option is set. The option value can be a
+ * name of a function (string), or function(<name>) or funcref(<name>) or a
+ * lambda expression.
+ */
+    int
+set_omnifunc_option(void)
+{
+    int	retval;
+
+    retval = option_set_callback_func(curbuf->b_p_ofu, &ofu_cb);
+    if (retval == OK)
+	set_buflocal_ofu_callback(curbuf);
+
+    return retval;
+}
+
+/*
+ * Copy the global 'omnifunc' callback function to the buffer-local 'omnifunc'
+ * callback for 'buf'.
+ */
+    void
+set_buflocal_ofu_callback(buf_T *buf UNUSED)
+{
+# ifdef FEAT_EVAL
+    copy_global_to_buflocal_cb(&ofu_cb, &buf->b_ofu_cb);
+# endif
+}
+
+/*
+ * Parse the 'thesaurusfunc' option value and set the callback function.
+ * Invoked when the 'thesaurusfunc' option is set. The option value can be a
+ * name of a function (string), or function(<name>) or funcref(<name>) or a
+ * lambda expression.
+ */
+    int
+set_thesaurusfunc_option(void)
+{
+    int	retval;
+
+    if (*curbuf->b_p_tsrfu != NUL)
+    {
+	// buffer-local option set
+	free_callback(&curbuf->b_tsrfu_cb);
+	retval = option_set_callback_func(curbuf->b_p_tsrfu,
+							&curbuf->b_tsrfu_cb);
+    }
+    else
+    {
+	// global option set
+	free_callback(&tsrfu_cb);
+	retval = option_set_callback_func(p_tsrfu, &tsrfu_cb);
+    }
+
+    return retval;
+}
+
+
 /*
  * Get the user-defined completion function name for completion 'type'
  */
@@ -2269,8 +2376,10 @@ expand_by_function(int type, char_u *base)
     typval_T	args[3];
     char_u	*funcname;
     pos_T	pos;
+    callback_T	*cb;
     typval_T	rettv;
     int		save_State = State;
+    int		retval;
 
     funcname = get_complete_funcname(type);
     if (*funcname == NUL)
@@ -2289,8 +2398,16 @@ expand_by_function(int type, char_u *base)
     // Insert mode in another buffer.
     ++textwinlock;
 
+    if (type == CTRL_X_FUNCTION)
+	cb = &curbuf->b_cfu_cb;
+    else if (type == CTRL_X_OMNI)
+	cb = &curbuf->b_ofu_cb;
+    else	// CTRL_X_THESAURUS
+	cb = (*curbuf->b_p_tsrfu != NUL) ? &curbuf->b_tsrfu_cb : &tsrfu_cb;
+    retval = call_callback(cb, 0, &rettv, 2, args);
+
     // Call a function, which returns a list or dict.
-    if (call_vim_function(funcname, 2, args, &rettv) == OK)
+    if (retval == OK)
     {
 	switch (rettv.v_type)
 	{
@@ -3971,6 +4088,7 @@ ins_complete(int c, int enable_pum)
 	    char_u	*funcname;
 	    pos_T	pos;
 	    int		save_State = State;
+	    callback_T	*cb;
 
 	    // Call 'completefunc' or 'omnifunc' and get pattern length as a
 	    // string
@@ -3991,7 +4109,14 @@ ins_complete(int c, int enable_pum)
 	    args[2].v_type = VAR_UNKNOWN;
 	    pos = curwin->w_cursor;
 	    ++textwinlock;
-	    col = call_func_retnr(funcname, 2, args);
+	    if (ctrl_x_mode == CTRL_X_FUNCTION)
+		cb = &curbuf->b_cfu_cb;
+	    else if (ctrl_x_mode == CTRL_X_OMNI)
+		cb = &curbuf->b_ofu_cb;
+	    else	// CTRL_X_THESAURUS
+		cb = (*curbuf->b_p_tsrfu != NUL)
+					? &curbuf->b_tsrfu_cb : &tsrfu_cb;
+	    col = call_callback_retnr(cb, 2, args);
 	    --textwinlock;
 
 	    State = save_State;
@@ -4339,6 +4464,11 @@ quote_meta(char_u *dest, char_u *src, int len)
 free_insexpand_stuff(void)
 {
     VIM_CLEAR(compl_orig_text);
+# ifdef FEAT_EVAL
+    free_callback(&cfu_cb);
+    free_callback(&ofu_cb);
+    free_callback(&tsrfu_cb);
+# endif
 }
 #endif
 

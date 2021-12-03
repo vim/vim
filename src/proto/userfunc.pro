@@ -28,6 +28,7 @@ int builtin_function(char_u *name, int len);
 int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict, typval_T *rettv);
 int get_callback_depth(void);
 int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars);
+varnumber_T call_callback_retnr(callback_T *callback, int argcount, typval_T *argvars);
 void user_func_error(int error, char_u *name);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
 char_u *printable_func_name(ufunc_T *fp);
