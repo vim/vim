@@ -2326,8 +2326,11 @@ free_buf_options(
     clear_string_option(&buf->b_p_cpt);
 #ifdef FEAT_COMPL_FUNC
     clear_string_option(&buf->b_p_cfu);
+    free_callback(&buf->b_cfu_cb);
     clear_string_option(&buf->b_p_ofu);
+    free_callback(&buf->b_ofu_cb);
     clear_string_option(&buf->b_p_tsrfu);
+    free_callback(&buf->b_tsrfu_cb);
 #endif
 #ifdef FEAT_QUICKFIX
     clear_string_option(&buf->b_p_gp);

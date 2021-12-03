@@ -2307,6 +2307,29 @@ ambw_end:
 # endif
 #endif
 
+#ifdef FEAT_COMPL_FUNC
+    // 'completefunc'
+    else if (gvarp == &p_cfu)
+    {
+	if (set_completefunc_option() == FAIL)
+	    errmsg = e_invarg;
+    }
+
+    // 'omnifunc'
+    else if (gvarp == &p_ofu)
+    {
+	if (set_omnifunc_option() == FAIL)
+	    errmsg = e_invarg;
+    }
+
+    // 'thesaurusfunc'
+    else if (gvarp == &p_tsrfu)
+    {
+	if (set_thesaurusfunc_option() == FAIL)
+	    errmsg = e_invarg;
+    }
+#endif
+
     // 'operatorfunc'
     else if (varp == &p_opfunc)
     {
