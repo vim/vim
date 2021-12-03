@@ -2039,6 +2039,28 @@ func Test_modifyOtherKeys_no_mapping()
   set timeoutlen&
 endfunc
 
+" Check that when DEC mouse codes are recognized a special key is handled.
+func Test_ignore_dec_mouse()
+
+  new
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=gnome ttymouse=
+
+  execute "set <xF1>=\<Esc>[1;*P"
+  nnoremap <S-F1> agot it<Esc>
+  call feedkeys("\<Esc>[1;2P", 'Lx!')
+  call assert_equal('got it', getline(1))
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  call test_override('no_query_mouse', 0)
+  bwipe!
+endfunc
+
 func RunTest_mapping_shift(key, func)
   call setline(1, '')
   if a:key == '|'
