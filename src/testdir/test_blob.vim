@@ -675,7 +675,10 @@ func Test_list2blob()
   let b = range(16)->repeat(64)->list2blob()
   call assert_equal(1024, b->len())
   call assert_equal([4, 8, 15], [b[100], b[1000], b[1023]])
+
   call assert_equal(0z, list2blob(test_null_list()))
+  call assert_equal(0z00010203, list2blob(range(4)))
 endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

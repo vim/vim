@@ -526,6 +526,7 @@ f_list2blob(typval_T *argvars, typval_T *rettv)
     if (l == NULL)
 	return;
 
+    CHECK_LIST_MATERIALIZE(l);
     FOR_ALL_LIST_ITEMS(l, li)
     {
 	int		error;
