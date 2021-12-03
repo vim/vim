@@ -62,7 +62,7 @@ func Test_set_termcap()
   endfor
   call assert_true(keys_idx < len(lines))
   " three columns
-  call assert_match('t_.. .*t_.. .*t_.. ', lines[keys_idx + 1])
+  call assert_match('<[^>]*> .*<[^>]*> .*<[^>]*> ', lines[keys_idx + 1])
 
   let more_lines = split(execute('set! termcap'), "\n")
   for i in range(len(more_lines))
