@@ -80,7 +80,7 @@ int check_termcode(int max_offset, char_u *buf, int bufsize, int *buflen);
 void term_get_fg_color(char_u *r, char_u *g, char_u *b);
 void term_get_bg_color(char_u *r, char_u *g, char_u *b);
 char_u *replace_termcodes(char_u *from, char_u **bufp, int flags, int *did_simplify);
-void show_termcodes(void);
+void show_termcodes(int flags);
 int show_one_termcode(char_u *name, char_u *code, int printit);
 void update_tcap(int attr);
 void swap_tcap(void);
