@@ -626,7 +626,7 @@ main(int argc, char *argv[])
 	      argc--;
 	    }
 	}
-      else if (!strcmp(pp, "--"))	/* end of options */
+      else if (!strcmp(argv[1], "--"))	/* end of options */
 	{
 	  argv++;
 	  argc--;
