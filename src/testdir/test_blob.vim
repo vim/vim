@@ -678,4 +678,8 @@ func Test_list2blob()
   call assert_equal(0z, list2blob(test_null_list()))
 endfunc
 
+func Test_list2blob_with_range()
+  call assert_equal(list2blob(range(4)), 0z00010203)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
