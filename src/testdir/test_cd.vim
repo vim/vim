@@ -226,6 +226,8 @@ func Test_cd_unknown_dir()
 endfunc
 
 func Test_getcwd_actual_dir()
+  CheckOption autochdir
+
   let startdir = getcwd()
   call mkdir('Xactual')
   call test_autochdir()
