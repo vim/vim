@@ -111,6 +111,7 @@ endfunc
 " Test for different ways of setting the 'imactivatefunc' and 'imstatusfunc'
 " options
 func Test_imactivatefunc_imstatusfunc_callback()
+  CheckNotMSWindows
   func IMactivatefunc1(active)
     let g:IMactivatefunc_called += 1
   endfunc
