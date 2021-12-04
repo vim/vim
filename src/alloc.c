@@ -440,6 +440,7 @@ free_all_mem(void)
     free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();
+    free_xim_stuff();
     free_cd_dir();
 # ifdef FEAT_SIGNS
     free_signs();

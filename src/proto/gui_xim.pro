@@ -1,4 +1,7 @@
 /* gui_xim.c */
+int set_imactivatefunc_option(void);
+int set_imstatusfunc_option(void);
+void free_xim_stuff(void);
 void im_set_active(int active);
 void xim_set_focus(int focus);
 void im_set_position(int row, int col);

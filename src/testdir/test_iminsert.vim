@@ -2,6 +2,7 @@
 
 source view_util.vim
 source check.vim
+source vim9.vim
 
 let s:imactivatefunc_called = 0
 let s:imstatusfunc_called = 0
@@ -105,6 +106,145 @@ func Test_iminsert_toggle()
   let &iminsert = save_iminsert
   let &imdisable = save_imdisable
   close!
+endfunc
+
+" Test for different ways of setting the 'imactivatefunc' and 'imstatusfunc'
+" options
+func Test_imactivatefunc_imstatusfunc_callback()
+  CheckNotMSWindows
+  func IMactivatefunc1(active)
+    let g:IMactivatefunc_called += 1
+  endfunc
+  func IMstatusfunc1()
+    let g:IMstatusfunc_called += 1
+    return 1
+  endfunc
+  let g:IMactivatefunc_called = 0
+  let g:IMstatusfunc_called = 0
+  set iminsert=2
+
+  " Test for using a function()
+  set imactivatefunc=function('IMactivatefunc1')
+  set imstatusfunc=function('IMstatusfunc1')
+  normal! i
+
+  " Using a funcref variable to set 'completefunc'
+  let Fn1 = function('IMactivatefunc1')
+  let &imactivatefunc = string(Fn1)
+  let Fn2 = function('IMstatusfunc1')
+  let &imstatusfunc = string(Fn2)
+  normal! i
+  call assert_fails('let &imactivatefunc = Fn1', 'E729:')
+  call assert_fails('let &imstatusfunc = Fn2', 'E729:')
+
+  " Test for using a funcref()
+  set imactivatefunc=funcref('IMactivatefunc1')
+  set imstatusfunc=funcref('IMstatusfunc1')
+  normal! i
+
+  " Using a funcref variable to set 'imactivatefunc'
+  let Fn1 = funcref('IMactivatefunc1')
+  let &imactivatefunc = string(Fn1)
+  let Fn2 = funcref('IMstatusfunc1')
+  let &imstatusfunc = string(Fn2)
+  normal! i
+  call assert_fails('let &imactivatefunc = Fn1', 'E729:')
+  call assert_fails('let &imstatusfunc = Fn2', 'E729:')
+
+  " Test for using a lambda function
+  set imactivatefunc={a\ ->\ IMactivatefunc1(a)}
+  set imstatusfunc={\ ->\ IMstatusfunc1()}
+  normal! i
+
+  " Set 'imactivatefunc' and 'imstatusfunc' to a lambda expression
+  let &imactivatefunc = '{a -> IMactivatefunc1(a)}'
+  let &imstatusfunc = '{ -> IMstatusfunc1()}'
+  normal! i
+
+  " Set 'imactivatefunc' 'imstatusfunc' to a variable with a lambda expression
+  let Lambda1 = {a -> IMactivatefunc1(a)}
+  let Lambda2 = { -> IMstatusfunc1()}
+  let &imactivatefunc = string(Lambda1)
+  let &imstatusfunc = string(Lambda2)
+  normal! i
+  call assert_fails('let &imactivatefunc = Lambda1', 'E729:')
+  call assert_fails('let &imstatusfunc = Lambda2', 'E729:')
+
+  " Test for clearing the 'completefunc' option
+  set imactivatefunc='' imstatusfunc=''
+  set imactivatefunc& imstatusfunc&
+
+  call assert_fails("set imactivatefunc=function('abc')", "E700:")
+  call assert_fails("set imstatusfunc=function('abc')", "E700:")
+  call assert_fails("set imactivatefunc=funcref('abc')", "E700:")
+  call assert_fails("set imstatusfunc=funcref('abc')", "E700:")
+
+  call assert_equal(7, g:IMactivatefunc_called)
+  call assert_equal(14, g:IMstatusfunc_called)
+
+  " Vim9 tests
+  let lines =<< trim END
+    vim9script
+
+    # Test for using function()
+    def IMactivatefunc1(active: number): any
+      g:IMactivatefunc_called += 1
+      return 1
+    enddef
+    def IMstatusfunc1(): number
+      g:IMstatusfunc_called += 1
+      return 1
+    enddef
+    g:IMactivatefunc_called = 0
+    g:IMstatusfunc_called = 0
+    set iminsert=2
+    set imactivatefunc=function('IMactivatefunc1')
+    set imstatusfunc=function('IMstatusfunc1')
+    normal! i
+
+    # Test for using a lambda
+    &imactivatefunc = '(a) => IMactivatefunc1(a)'
+    &imstatusfunc = '() => IMstatusfunc1()'
+    normal! i
+
+    # Test for using a variable with a lambda expression
+    var Fn1: func = (active) => {
+           g:IMactivatefunc_called += 1
+           return 1
+        }
+    var Fn2: func = () => {
+           g:IMstatusfunc_called += 1
+           return 1
+        }
+    &imactivatefunc = string(Fn1)
+    &imstatusfunc = string(Fn2)
+    normal! i
+
+    assert_equal(3, g:IMactivatefunc_called)
+    assert_equal(6, g:IMstatusfunc_called)
+
+    set iminsert=0
+    set imactivatefunc=
+    set imstatusfunc=
+  END
+  call CheckScriptSuccess(lines)
+
+  " Using Vim9 lambda expression in legacy context should fail
+  set imactivatefunc=(a)\ =>\ IMactivatefunc1(a)
+  set imstatusfunc=IMstatusfunc1
+  call assert_fails('normal! i', 'E117:')
+  set imactivatefunc=IMactivatefunc1
+  set imstatusfunc=()\ =>\ IMstatusfunc1(a)
+  call assert_fails('normal! i', 'E117:')
+
+  " cleanup
+  delfunc IMactivatefunc1
+  delfunc IMstatusfunc1
+  set iminsert=0
+  set imactivatefunc=
+  set imstatusfunc=
+
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
