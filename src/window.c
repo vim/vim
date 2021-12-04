@@ -4858,6 +4858,11 @@ win_enter_ext(win_T *wp, int flags)
     void
 fix_current_dir(void)
 {
+#ifdef FEAT_AUTOCHDIR
+    if (p_acd)
+	do_autochdir();
+    else
+#endif
     if (curwin->w_localdir != NULL || curtab->tp_localdir != NULL)
     {
 	char_u	*dirname;
