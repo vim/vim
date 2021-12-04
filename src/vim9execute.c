@@ -1785,6 +1785,8 @@ exec_instructions(ectx_T *ectx)
 		    ea.addr_type = ADDR_LINES;
 		    ea.cmd = iptr->isn_arg.string;
 		    parse_cmd_address(&ea, &error, FALSE);
+		    if (ea.cmd == NULL)
+			goto on_error;
 		    if (error == NULL)
 			error = ex_range_without_command(&ea);
 		    if (error != NULL)
