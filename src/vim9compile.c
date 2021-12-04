@@ -9903,15 +9903,15 @@ compile_def_function(
 	 * in "$ENV->func()" the "$" is not a range
 	 */
 	cmd = ea.cmd;
-	if (!(local_cmdmod.cmod_flags & CMOD_LEGACY)
-		&& (*cmd != '$' || starts_with_colon)
+	if ((*cmd != '$' || starts_with_colon)
 		&& (starts_with_colon || !(*cmd == '\''
 		       || (cmd[0] == cmd[1] && (*cmd == '+' || *cmd == '-')))))
 	{
 	    ea.cmd = skip_range(ea.cmd, TRUE, NULL);
 	    if (ea.cmd > cmd)
 	    {
-		if (!starts_with_colon)
+		if (!starts_with_colon
+				   && !(local_cmdmod.cmod_flags & CMOD_LEGACY))
 		{
 		    semsg(_(e_colon_required_before_range_str), cmd);
 		    goto erret;
@@ -9920,11 +9920,8 @@ compile_def_function(
 		if (ends_excmd2(line, ea.cmd))
 		{
 		    // A range without a command: jump to the line.
-		    line = skipwhite(line);
-		    while (*line == ':')
-			++line;
 		    generate_EXEC(&cctx, ISN_EXECRANGE,
-					    vim_strnsave(line, ea.cmd - line));
+					      vim_strnsave(cmd, ea.cmd - cmd));
 		    line = ea.cmd;
 		    goto nextline;
 		}

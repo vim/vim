@@ -1394,6 +1394,7 @@ produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote)
 #ifdef HAVE_SANDBOX
 	{CMOD_SANDBOX, "sandbox"},
 #endif
+	{CMOD_LEGACY, "legacy"},
 	{0, NULL}
     };
 

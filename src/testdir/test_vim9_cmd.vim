@@ -1019,6 +1019,11 @@ def Test_range_after_command_modifier()
   CheckScriptSuccess(['vim9script', 'silent keepjump :1d _'])
   assert_equal('', getline(1))
   bwipe!
+
+  var lines =<< trim END
+      legacy /pat/
+  END
+  CheckDefExecAndScriptFailure(lines, 'E486: Pattern not found: pat')
 enddef
 
 def Test_silent_pattern()
