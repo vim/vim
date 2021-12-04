@@ -2330,6 +2330,23 @@ ambw_end:
     }
 #endif
 
+#if defined(FEAT_EVAL) && \
+     (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
+    // 'imactivatefunc'
+    else if (gvarp == &p_imaf)
+    {
+	if (set_imactivatefunc_option() == FAIL)
+	    errmsg = e_invarg;
+    }
+
+    // 'imstatusfunc'
+    else if (gvarp == &p_imsf)
+    {
+	if (set_imstatusfunc_option() == FAIL)
+	    errmsg = e_invarg;
+    }
+#endif
+
     // 'operatorfunc'
     else if (varp == &p_opfunc)
     {

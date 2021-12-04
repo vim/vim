@@ -67,8 +67,24 @@ xim_log(char *s, ...)
 # define USE_IMSTATUSFUNC (*p_imsf != NUL)
 #endif
 
-#if defined(FEAT_EVAL) && \
-    (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
+#if (defined(FEAT_EVAL) && \
+     (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))) || \
+    defined(PROTO)
+static callback_T imaf_cb;	    // 'imactivatefunc' callback function
+static callback_T imsf_cb;	    // 'imstatusfunc' callback function
+
+    int
+set_imactivatefunc_option(void)
+{
+    return option_set_callback_func(p_imaf, &imaf_cb);
+}
+
+    int
+set_imstatusfunc_option(void)
+{
+    return option_set_callback_func(p_imsf, &imsf_cb);
+}
+
     static void
 call_imactivatefunc(int active)
 {
@@ -77,7 +93,7 @@ call_imactivatefunc(int active)
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = active ? 1 : 0;
     argv[1].v_type = VAR_UNKNOWN;
-    (void)call_func_retnr(p_imaf, 1, argv);
+    (void)call_callback_retnr(&imaf_cb, 1, argv);
 }
 
     static int
@@ -91,11 +107,24 @@ call_imstatusfunc(void)
     // FIXME: :py print 'xxx' is shown duplicate result.
     // Use silent to avoid it.
     ++msg_silent;
-    is_active = call_func_retnr(p_imsf, 0, NULL);
+    is_active = call_callback_retnr(&imsf_cb, 0, NULL);
     --msg_silent;
     return (is_active > 0);
 }
 #endif
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_xim_stuff(void)
+{
+#if defined(FEAT_EVAL) && \
+    (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
+    free_callback(&imaf_cb);
+    free_callback(&imsf_cb);
+# endif
+}
+#endif
+
 
 #if defined(FEAT_XIM) || defined(PROTO)
 
