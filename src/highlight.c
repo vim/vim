@@ -3434,6 +3434,9 @@ syn_add_group(char_u *name)
     char_u	*p;
     char_u	*name_up;
 
+    if (*name == '\0')
+	return 0;
+
     // Check that the name is ASCII letters, digits and underscore.
     for (p = name; *p != NUL; ++p)
     {
