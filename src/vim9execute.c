@@ -5904,12 +5904,12 @@ ex_disassemble(exarg_T *eap)
     int		is_global = FALSE;
     compiletype_T compile_type = CT_NONE;
 
-    if (STRNCMP(arg, "profile", 7) == 0)
+    if (STRNCMP(arg, "profile", 7) == 0 && VIM_ISWHITE(arg[7]))
     {
 	compile_type = CT_PROFILE;
 	arg = skipwhite(arg + 7);
     }
-    else if (STRNCMP(arg, "debug", 5) == 0)
+    else if (STRNCMP(arg, "debug", 5) == 0 && VIM_ISWHITE(arg[5]))
     {
 	compile_type = CT_DEBUG;
 	arg = skipwhite(arg + 5);

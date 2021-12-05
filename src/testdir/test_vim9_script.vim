@@ -3988,6 +3988,41 @@ def Test_vim9_autoload()
   &rtp = save_rtp
 enddef
 
+" test disassembling an auto-loaded function starting with "debug"
+def Test_vim9_autoload_disass()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+     vim9script
+     def debugit#test(): string
+       return 'debug'
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/debugit.vim')
+
+  lines =<< trim END
+     vim9script
+     def profileit#test(): string
+       return 'profile'
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/profileit.vim')
+
+  lines =<< trim END
+    vim9script
+    assert_equal('debug', debugit#test())
+    disass debugit#test
+    assert_equal('profile', profileit#test())
+    disass profileit#test
+  END
+  CheckScriptSuccess(lines)
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 " test using a vim9script that is auto-loaded from an autocmd
 def Test_vim9_aucmd_autoload()
   var lines =<< trim END
