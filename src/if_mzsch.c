@@ -1755,7 +1755,7 @@ get_option(void *data, int argc, Scheme_Object **argv)
     }
 
     rc = get_option_value(BYTE_STRING_VALUE(name), &value, (char_u **)&strval,
-								    opt_flags);
+							NULL, opt_flags);
     curbuf = save_curb;
     curwin = save_curw;
 

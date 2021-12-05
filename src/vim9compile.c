@@ -6112,7 +6112,7 @@ get_var_dest(
 	cc = *p;
 	*p = NUL;
 	opt_type = get_option_value(skip_option_env_lead(name),
-						    &numval, NULL, *opt_flags);
+					    &numval, NULL, NULL, *opt_flags);
 	*p = cc;
 	switch (opt_type)
 	{

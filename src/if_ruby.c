@@ -875,7 +875,7 @@ vim_str2rb_enc_str(const char *s)
     char_u *sval;
     rb_encoding *enc;
 
-    if (get_option_value((char_u *)"enc", &lval, &sval, 0) == gov_string)
+    if (get_option_value((char_u *)"enc", &lval, &sval, NULL, 0) == gov_string)
     {
 	enc = rb_enc_find((char *)sval);
 	vim_free(sval);
@@ -895,7 +895,7 @@ eval_enc_string_protect(const char *str, int *state)
     rb_encoding *enc;
     VALUE v;
 
-    if (get_option_value((char_u *)"enc", &lval, &sval, 0) == gov_string)
+    if (get_option_value((char_u *)"enc", &lval, &sval, NULL, 0) == gov_string)
     {
 	enc = rb_enc_find((char *)sval);
 	vim_free(sval);

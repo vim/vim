@@ -1308,7 +1308,7 @@ tclsetoption(
 
     option = (char_u *)Tcl_GetStringFromObj(objv[objn], NULL);
     ++objn;
-    gov = get_option_value(option, &lval, &sval, 0);
+    gov = get_option_value(option, &lval, &sval, NULL, 0);
     err = TCL_OK;
     switch (gov)
     {

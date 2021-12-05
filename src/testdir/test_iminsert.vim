@@ -130,12 +130,15 @@ func Test_imactivatefunc_imstatusfunc_callback()
 
   " Using a funcref variable to set 'completefunc'
   let Fn1 = function('IMactivatefunc1')
-  let &imactivatefunc = string(Fn1)
+  let &imactivatefunc = Fn1
   let Fn2 = function('IMstatusfunc1')
+  let &imstatusfunc = Fn2
+  normal! i
+
+  " Using a string(funcref variable) to set 'completefunc'
+  let &imactivatefunc = string(Fn1)
   let &imstatusfunc = string(Fn2)
   normal! i
-  call assert_fails('let &imactivatefunc = Fn1', 'E729:')
-  call assert_fails('let &imstatusfunc = Fn2', 'E729:')
 
   " Test for using a funcref()
   set imactivatefunc=funcref('IMactivatefunc1')
@@ -144,12 +147,15 @@ func Test_imactivatefunc_imstatusfunc_callback()
 
   " Using a funcref variable to set 'imactivatefunc'
   let Fn1 = funcref('IMactivatefunc1')
-  let &imactivatefunc = string(Fn1)
+  let &imactivatefunc = Fn1
   let Fn2 = funcref('IMstatusfunc1')
+  let &imstatusfunc = Fn2
+  normal! i
+
+  " Using a string(funcref variable) to set 'imactivatefunc'
+  let &imactivatefunc = string(Fn1)
   let &imstatusfunc = string(Fn2)
   normal! i
-  call assert_fails('let &imactivatefunc = Fn1', 'E729:')
-  call assert_fails('let &imstatusfunc = Fn2', 'E729:')
 
   " Test for using a lambda function
   set imactivatefunc={a\ ->\ IMactivatefunc1(a)}
@@ -157,6 +163,11 @@ func Test_imactivatefunc_imstatusfunc_callback()
   normal! i
 
   " Set 'imactivatefunc' and 'imstatusfunc' to a lambda expression
+  let &imactivatefunc = {a -> IMactivatefunc1(a)}
+  let &imstatusfunc = { -> IMstatusfunc1()}
+  normal! i
+
+  " Set 'imactivatefunc' and 'imstatusfunc' to a string(lambda expression)
   let &imactivatefunc = '{a -> IMactivatefunc1(a)}'
   let &imstatusfunc = '{ -> IMstatusfunc1()}'
   normal! i
@@ -164,11 +175,15 @@ func Test_imactivatefunc_imstatusfunc_callback()
   " Set 'imactivatefunc' 'imstatusfunc' to a variable with a lambda expression
   let Lambda1 = {a -> IMactivatefunc1(a)}
   let Lambda2 = { -> IMstatusfunc1()}
+  let &imactivatefunc = Lambda1
+  let &imstatusfunc = Lambda2
+  normal! i
+
+  " Set 'imactivatefunc' 'imstatusfunc' to a string(variable with a lambda
+  " expression)
   let &imactivatefunc = string(Lambda1)
   let &imstatusfunc = string(Lambda2)
   normal! i
-  call assert_fails('let &imactivatefunc = Lambda1', 'E729:')
-  call assert_fails('let &imstatusfunc = Lambda2', 'E729:')
 
   " Test for clearing the 'completefunc' option
   set imactivatefunc='' imstatusfunc=''
@@ -179,8 +194,8 @@ func Test_imactivatefunc_imstatusfunc_callback()
   call assert_fails("set imactivatefunc=funcref('abc')", "E700:")
   call assert_fails("set imstatusfunc=funcref('abc')", "E700:")
 
-  call assert_equal(7, g:IMactivatefunc_called)
-  call assert_equal(14, g:IMstatusfunc_called)
+  call assert_equal(11, g:IMactivatefunc_called)
+  call assert_equal(22, g:IMstatusfunc_called)
 
   " Vim9 tests
   let lines =<< trim END
@@ -216,12 +231,17 @@ func Test_imactivatefunc_imstatusfunc_callback()
            g:IMstatusfunc_called += 1
            return 1
         }
+    &imactivatefunc = Fn1
+    &imstatusfunc = Fn2
+    normal! i
+
+    # Test for using a string(variable with a lambda expression)
     &imactivatefunc = string(Fn1)
     &imstatusfunc = string(Fn2)
     normal! i
 
-    assert_equal(3, g:IMactivatefunc_called)
-    assert_equal(6, g:IMstatusfunc_called)
+    assert_equal(4, g:IMactivatefunc_called)
+    assert_equal(8, g:IMstatusfunc_called)
 
     set iminsert=0
     set imactivatefunc=

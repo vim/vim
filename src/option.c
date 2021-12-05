@@ -3937,12 +3937,15 @@ findoption(char_u *arg)
  * Hidden Toggle option: gov_hidden_bool.
  * Hidden String option: gov_hidden_string.
  * Unknown option: gov_unknown.
+ *
+ * 'opt_p_flags' (if not NULL) is set to the option flags (P_xxxx).
  */
     getoption_T
 get_option_value(
     char_u	*name,
     long	*numval,
     char_u	**stringval,	    // NULL when only checking existence
+    int		*opt_p_flags,
     int		opt_flags)
 {
     int		opt_idx;
@@ -3982,6 +3985,10 @@ get_option_value(
     }
 
     varp = get_varp_scope(&(options[opt_idx]), opt_flags);
+
+    if (opt_p_flags != NULL)
+	// Return the P_xxxx option flags.
+	*opt_p_flags = options[opt_idx].flags;
 
     if (options[opt_idx].flags & P_STRING)
     {

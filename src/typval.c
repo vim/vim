@@ -1659,7 +1659,7 @@ eval_option(
     c = *option_end;
     *option_end = NUL;
     opt_type = get_option_value(*arg, &numval,
-			       rettv == NULL ? NULL : &stringval, opt_flags);
+			rettv == NULL ? NULL : &stringval, NULL, opt_flags);
 
     if (opt_type == gov_unknown)
     {

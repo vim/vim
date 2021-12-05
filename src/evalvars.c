@@ -1391,11 +1391,14 @@ ex_let_option(
 	char_u	    *stringval = NULL;
 	char_u	    *s = NULL;
 	int	    failed = FALSE;
+	int	    opt_p_flags;
+	char_u	    *tofree = NULL;
 
 	c1 = *p;
 	*p = NUL;
 
-	opt_type = get_option_value(arg, &numval, &stringval, opt_flags);
+	opt_type = get_option_value(arg, &numval, &stringval, &opt_p_flags,
+								opt_flags);
 	if ((opt_type == gov_bool
 		    || opt_type == gov_number
 		    || opt_type == gov_hidden_bool
@@ -1410,9 +1413,20 @@ ex_let_option(
 		n = (long)tv_get_number(tv);
 	}
 
+	if (opt_p_flags & P_FUNC && (tv->v_type == VAR_PARTIAL
+						|| tv->v_type == VAR_FUNC))
+	{
+	    char_u	numbuf[NUMBUFLEN];
+
+	    // If the option can be set to a function reference or a lambda
+	    // and the passed value is a function reference, then convert it to
+	    // the name (string) of the function reference.
+
+	    s = tv2string(tv, &tofree, numbuf, 0);
+	}
 	// Avoid setting a string option to the text "v:false" or similar.
 	// In Vim9 script also don't convert a number to string.
-	if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
+	else if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
 			 && (!in_vim9script() || tv->v_type != VAR_NUMBER))
 	    s = tv_get_string_chk(tv);
 
@@ -1466,6 +1480,7 @@ ex_let_option(
 	}
 	*p = c1;
 	vim_free(stringval);
+	vim_free(tofree);
     }
     return arg_end;
 }
