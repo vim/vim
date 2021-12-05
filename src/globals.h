@@ -1717,14 +1717,10 @@ EXTERN char e_signdata[]	INIT(= N_("E255: Couldn't read in sign data!"));
 #endif
 EXTERN char e_trailing[]	INIT(= N_("E488: Trailing characters"));
 EXTERN char e_trailing_arg[]	INIT(= N_("E488: Trailing characters: %s"));
-EXTERN char e_umark[]		INIT(= N_("E78: Unknown mark"));
-EXTERN char e_wildexpand[]	INIT(= N_("E79: Cannot expand wildcards"));
 EXTERN char e_winheight[]	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
 EXTERN char e_winwidth[]	INIT(= N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
-EXTERN char e_write[]		INIT(= N_("E80: Error while writing"));
 EXTERN char e_zerocount[]	INIT(= N_("E939: Positive count required"));
 #ifdef FEAT_EVAL
-EXTERN char e_usingsid[]	INIT(= N_("E81: Using <SID> not in a script context"));
 EXTERN char e_missing_paren[]	INIT(= N_("E107: Missing parentheses: %s"));
 EXTERN char e_missing_close[]	INIT(= N_("E110: Missing ')'"));
 EXTERN char e_missing_dict_colon[] INIT(= N_("E720: Missing colon in Dictionary: %s"));
@@ -1741,7 +1737,6 @@ EXTERN char e_nbreadonly[]	INIT(= N_("E744: NetBeans does not allow changes in r
 #endif
 EXTERN char e_maxmempat[]	INIT(= N_("E363: pattern uses more memory than 'maxmempattern'"));
 EXTERN char e_emptybuf[]	INIT(= N_("E749: empty buffer"));
-EXTERN char e_nobufnr[]	INIT(= N_("E86: Buffer %ld does not exist"));
 
 EXTERN char e_invalpat[]	INIT(= N_("E682: Invalid search pattern or delimiter"));
 EXTERN char e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"));

@@ -1603,7 +1603,7 @@ write_list(FILE *fd, list_T *list, int binary)
 	    }
 	if (ret == FAIL)
 	{
-	    emsg(_(e_write));
+	    emsg(_(e_error_while_writing));
 	    break;
 	}
     }

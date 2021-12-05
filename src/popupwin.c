@@ -1877,7 +1877,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    buf = buflist_findnr(argvars[0].vval.v_number);
 	    if (buf == NULL)
 	    {
-		semsg(_(e_nobufnr), argvars[0].vval.v_number);
+		semsg(_(e_buffer_nr_does_not_exist), argvars[0].vval.v_number);
 		return NULL;
 	    }
 #ifdef FEAT_TERMINAL

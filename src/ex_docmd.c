@@ -9167,7 +9167,7 @@ eval_vars(
 	case SPEC_SID:
 		if (current_sctx.sc_sid <= 0)
 		{
-		    *errormsg = _(e_usingsid);
+		    *errormsg = _(e_using_sid_not_in_script_context);
 		    return NULL;
 		}
 		sprintf((char *)strbuf, "<SNR>%d_", current_sctx.sc_sid);

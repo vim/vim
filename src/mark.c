@@ -578,7 +578,7 @@ check_mark(pos_T *pos)
 {
     if (pos == NULL)
     {
-	emsg(_(e_umark));
+	emsg(_(e_unknown_mark));
 	return FAIL;
     }
     if (pos->lnum <= 0)

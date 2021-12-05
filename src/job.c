@@ -225,7 +225,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		}
 		if (buflist_findnr(opt->jo_io_buf[part]) == NULL)
 		{
-		    semsg(_(e_nobufnr), (long)opt->jo_io_buf[part]);
+		    semsg(_(e_buffer_nr_does_not_exist),
+						   (long)opt->jo_io_buf[part]);
 		    return FAIL;
 		}
 	    }
@@ -475,7 +476,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_bufnr_buf = buflist_findnr(nr);
 		if (opt->jo_bufnr_buf == NULL)
 		{
-		    semsg(_(e_nobufnr), (long)nr);
+		    semsg(_(e_buffer_nr_does_not_exist), (long)nr);
 		    return FAIL;
 		}
 		if (opt->jo_bufnr_buf->b_nwindows == 0
@@ -1332,7 +1333,8 @@ job_start(
 	{
 	    buf = buflist_findnr(opt.jo_io_buf[PART_IN]);
 	    if (buf == NULL)
-		semsg(_(e_nobufnr), (long)opt.jo_io_buf[PART_IN]);
+		semsg(_(e_buffer_nr_does_not_exist),
+						 (long)opt.jo_io_buf[PART_IN]);
 	}
 	else if (!(opt.jo_set & JO_IN_NAME))
 	{

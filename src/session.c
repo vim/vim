@@ -1331,7 +1331,7 @@ ex_mkrc(exarg_T	*eap)
 	failed |= fclose(fd);
 
 	if (failed)
-	    emsg(_(e_write));
+	    emsg(_(e_error_while_writing));
 #if defined(FEAT_SESSION)
 	else if (eap->cmdidx == CMD_mksession)
 	{

@@ -6021,7 +6021,7 @@ replace_termcodes(
 	    if (STRNICMP(src, "<SID>", 5) == 0)
 	    {
 		if (current_sctx.sc_sid <= 0)
-		    emsg(_(e_usingsid));
+		    emsg(_(e_using_sid_not_in_script_context));
 		else
 		{
 		    src += 5;

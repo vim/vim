@@ -2836,7 +2836,7 @@ write_reg_contents_ex(
 
 	    buf = buflist_findnr(num);
 	    if (buf == NULL)
-		semsg(_(e_nobufnr), (long)num);
+		semsg(_(e_buffer_nr_does_not_exist), (long)num);
 	}
 	else
 	    buf = buflist_findnr(buflist_findpat(str, str + STRLEN(str),

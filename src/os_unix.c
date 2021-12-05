@@ -6797,7 +6797,7 @@ mch_expand_wildcards(
 	    if (!(flags & EW_SILENT))
 #endif
 	    {
-		msg(_(e_wildexpand));
+		msg(_(e_cannot_expand_wildcards));
 		msg_start();		// don't overwrite this message
 	    }
 	}
@@ -6817,7 +6817,7 @@ mch_expand_wildcards(
 	// Something went wrong, perhaps a file name with a special char.
 	if (!(flags & EW_SILENT))
 	{
-	    msg(_(e_wildexpand));
+	    msg(_(e_cannot_expand_wildcards));
 	    msg_start();		// don't overwrite this message
 	}
 	vim_free(tempname);

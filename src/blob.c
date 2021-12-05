@@ -209,7 +209,7 @@ write_blob(FILE *fd, blob_T *blob)
     if (fwrite(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 						  < (size_t)blob->bv_ga.ga_len)
     {
-	emsg(_(e_write));
+	emsg(_(e_error_while_writing));
 	return FAIL;
     }
     return OK;

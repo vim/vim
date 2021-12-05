@@ -5259,7 +5259,7 @@ theend:
     if (fwv != (size_t)1)
 	retval = FAIL;
     if (retval == FAIL)
-	emsg(_(e_write));
+	emsg(_(e_error_while_writing));
 
     return retval;
 }
@@ -5404,7 +5404,7 @@ put_node(
 	    if (fd != NULL)
 		if (putc(np->wn_byte, fd) == EOF) // <byte> or <xbyte>
 		{
-		    emsg(_(e_write));
+		    emsg(_(e_error_while_writing));
 		    return 0;
 		}
 	}
@@ -5815,7 +5815,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
      */
     if (fwrite(VIMSUGMAGIC, VIMSUGMAGICL, (size_t)1, fd) != 1) // <fileID>
     {
-	emsg(_(e_write));
+	emsg(_(e_error_while_writing));
 	goto theend;
     }
     putc(VIMSUGVERSION, fd);				// <versionnr>
@@ -5857,7 +5857,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
 	len = (int)STRLEN(line) + 1;
 	if (fwrite(line, (size_t)len, (size_t)1, fd) == 0)
 	{
-	    emsg(_(e_write));
+	    emsg(_(e_error_while_writing));
 	    goto theend;
 	}
 	spin->si_memtot += len;
@@ -5865,7 +5865,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
 
     // Write another byte to check for errors.
     if (putc(0, fd) == EOF)
-	emsg(_(e_write));
+	emsg(_(e_error_while_writing));
 
     vim_snprintf((char *)IObuff, IOSIZE,
 		 _("Estimated runtime memory use: %d bytes"), spin->si_memtot);

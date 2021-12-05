@@ -3763,7 +3763,7 @@ trans_function_name(
 	    // It's script-local, "s:" or "<SID>"
 	    if (current_sctx.sc_sid <= 0)
 	    {
-		emsg(_(e_usingsid));
+		emsg(_(e_using_sid_not_in_script_context));
 		goto theend;
 	    }
 	    sprintf((char *)sid_buf, "%ld_", (long)current_sctx.sc_sid);
