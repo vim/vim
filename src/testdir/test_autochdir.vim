@@ -43,12 +43,12 @@ func Test_set_filename_other_window()
   finally
     set noacd
     call chdir(cwd)
-    call delete('Xa', 'rf')
-    call delete('Xb', 'rf')
-    call delete('Xc', 'rf')
     bwipe! aaa.txt
     bwipe! bbb.txt
     bwipe! ccc.txt
+    call delete('Xa', 'rf')
+    call delete('Xb', 'rf')
+    call delete('Xc', 'rf')
   endtry
 endfunc
 
