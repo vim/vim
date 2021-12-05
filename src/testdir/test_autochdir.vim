@@ -26,7 +26,6 @@ func Test_set_filename()
 endfunc
 
 func Test_set_filename_other_window()
-  call ch_logfile('logfile', 'w')
   let cwd = getcwd()
   call test_autochdir()
   call mkdir('Xa')
