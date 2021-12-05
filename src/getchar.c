@@ -1010,7 +1010,7 @@ ins_typebuf(
 	if (typebuf.tb_len > 2147483647 - extra)
 	{
 	    // string is getting too long for a 32 bit int
-	    emsg(_(e_toocompl));    // also calls flush_buffers
+	    emsg(_(e_command_too_complex));    // also calls flush_buffers
 	    setcursor();
 	    return FAIL;
 	}

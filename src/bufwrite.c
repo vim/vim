@@ -713,7 +713,7 @@ buf_write(
     // Avoid a crash for a long name.
     if (STRLEN(fname) >= MAXPATHL)
     {
-	emsg(_(e_longname));
+	emsg(_(e_name_too_long));
 	return FAIL;
     }
 

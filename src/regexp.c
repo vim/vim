@@ -74,12 +74,6 @@ toggle_Magic(int x)
 static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
 static char_u e_reverse_range[] = N_("E944: Reverse range in character class");
 static char_u e_large_class[] = N_("E945: Range too large in character class");
-#ifdef FEAT_SYN_HL
-static char_u e_z_not_allowed[] = N_("E66: \\z( not allowed here");
-static char_u e_z1_not_allowed[] = N_("E67: \\z1 - \\z9 not allowed here");
-#endif
-static char_u e_missing_sb[] = N_("E69: Missing ] after %s%%[");
-static char_u e_empty_sb[]  = N_("E70: Empty %s%%[]");
 static char_u e_recursive[]  = N_("E956: Cannot use pattern recursively");
 
 #define NOT_MULTI	0

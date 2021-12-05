@@ -350,7 +350,7 @@ do_tag(
 		    tagstacklen == 0)
 	    {
 		// empty stack
-		emsg(_(e_tagstack));
+		emsg(_(e_tag_stack_empty));
 		goto end_do_tag;
 	    }
 

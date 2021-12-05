@@ -406,7 +406,7 @@ ExpandOne(
 		    // together. Don't really want to wait for this message
 		    // (and possibly have to hit return to continue!).
 		    if (!(options & WILD_SILENT))
-			emsg(_(e_toomany));
+			emsg(_(e_too_many_file_names));
 		    else if (!(options & WILD_NO_BEEP))
 			beep_flush();
 		}

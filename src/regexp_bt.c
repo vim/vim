@@ -1242,7 +1242,7 @@ seen_endbrace(int refnum)
 		break;
 	if (*p == NUL)
 	{
-	    emsg(_("E65: Illegal back reference"));
+	    emsg(_(e_illegal_back_reference));
 	    rc_did_emsg = TRUE;
 	    return FALSE;
 	}
@@ -1347,7 +1347,7 @@ regatom(int *flagp)
       case Magic('U'):
 	p = vim_strchr(classchars, no_Magic(c));
 	if (p == NULL)
-	    EMSG_RET_NULL(_("E63: invalid use of \\_"));
+	    EMSG_RET_NULL(_(e_invalid_use_of_underscore));
 
 	// When '.' is followed by a composing char ignore the dot, so that
 	// the composing char is matched here.
@@ -1402,7 +1402,7 @@ regatom(int *flagp)
       case Magic('{'):
       case Magic('*'):
 	c = no_Magic(c);
-	EMSG3_RET_NULL(_("E64: %s%c follows nothing"),
+	EMSG3_RET_NULL(_(e_str_chr_follows_nothing),
 		(c == '*' ? reg_magic >= MAGIC_ON : reg_magic == MAGIC_ALL), c);
 	// NOTREACHED
 
@@ -1453,7 +1453,7 @@ regatom(int *flagp)
 	    {
 #ifdef FEAT_SYN_HL
 		case '(': if ((reg_do_extmatch & REX_SET) == 0)
-			      EMSG_RET_NULL(_(e_z_not_allowed));
+			      EMSG_RET_NULL(_(e_z_not_allowed_here));
 			  if (one_exactly)
 			      EMSG_ONE_RET_NULL;
 			  ret = reg(REG_ZPAREN, &flags);
@@ -1472,7 +1472,7 @@ regatom(int *flagp)
 		case '7':
 		case '8':
 		case '9': if ((reg_do_extmatch & REX_USE) == 0)
-			      EMSG_RET_NULL(_(e_z1_not_allowed));
+			      EMSG_RET_NULL(_(e_z1_z9_not_allowed_here));
 			  ret = regnode(ZREF + c - '0');
 			  re_has_z = REX_USE;
 			  break;
@@ -1544,7 +1544,7 @@ regatom(int *flagp)
 			      while ((c = getchr()) != ']')
 			      {
 				  if (c == NUL)
-				      EMSG2_RET_NULL(_(e_missing_sb),
+				      EMSG2_RET_NULL(_(e_missing_sb_after_str),
 						      reg_magic == MAGIC_ALL);
 				  br = regnode(BRANCH);
 				  if (ret == NULL)
@@ -1564,7 +1564,7 @@ regatom(int *flagp)
 				      return NULL;
 			      }
 			      if (ret == NULL)
-				  EMSG2_RET_NULL(_(e_empty_sb),
+				  EMSG2_RET_NULL(_(e_empty_str_brackets),
 						      reg_magic == MAGIC_ALL);
 			      lastbranch = regnode(BRANCH);
 			      br = regnode(NOTHING);
@@ -1712,7 +1712,7 @@ regatom(int *flagp)
 			      }
 			  }
 
-			  EMSG2_RET_NULL(_("E71: Invalid character after %s%%"),
+			  EMSG2_RET_NULL(_(e_invalid_character_after_str),
 						      reg_magic == MAGIC_ALL);
 	    }
 	}
@@ -2001,7 +2001,7 @@ collection:
 		regc(NUL);
 		prevchr_len = 1;	// last char was the ']'
 		if (*regparse != ']')
-		    EMSG_RET_NULL(_(e_toomsbra));	// Cannot happen?
+		    EMSG_RET_NULL(_(e_too_many_brackets));  // Cannot happen?
 		skipchr();	    // let's be friends with the lexer again
 		*flagp |= HASWIDTH | SIMPLE;
 		break;
@@ -2215,8 +2215,8 @@ regpiece(int *flagp)
     {
 	// Can't have a multi follow a multi.
 	if (peekchr() == Magic('*'))
-	    EMSG2_RET_NULL(_("E61: Nested %s*"), reg_magic >= MAGIC_ON);
-	EMSG3_RET_NULL(_("E62: Nested %s%c"), reg_magic == MAGIC_ALL,
+	    EMSG2_RET_NULL(_(e_nested_str), reg_magic >= MAGIC_ON);
+	EMSG3_RET_NULL(_(e_nested_str_chr), reg_magic == MAGIC_ALL,
 							  no_Magic(peekchr()));
     }
 

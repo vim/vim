@@ -1586,7 +1586,7 @@ nfa_regatom(void)
 		case '9':
 		    // \z1...\z9
 		    if ((reg_do_extmatch & REX_USE) == 0)
-			EMSG_RET_FAIL(_(e_z1_not_allowed));
+			EMSG_RET_FAIL(_(e_z1_z9_not_allowed_here));
 		    EMIT(NFA_ZREF1 + (no_Magic(c) - '1'));
 		    // No need to set rex.nfa_has_backref, the sub-matches don't
 		    // change when \z1 .. \z9 matches or not.
@@ -1595,7 +1595,7 @@ nfa_regatom(void)
 		case '(':
 		    // \z(
 		    if ((reg_do_extmatch & REX_SET) == 0)
-			EMSG_RET_FAIL(_(e_z_not_allowed));
+			EMSG_RET_FAIL(_(e_z_not_allowed_here));
 		    if (nfa_reg(REG_ZPAREN) == FAIL)
 			return FAIL;	    // cascaded error
 		    re_has_z = REX_SET;
@@ -1677,7 +1677,7 @@ nfa_regatom(void)
 			for (n = 0; (c = peekchr()) != ']'; ++n)
 			{
 			    if (c == NUL)
-				EMSG2_RET_FAIL(_(e_missing_sb),
+				EMSG2_RET_FAIL(_(e_missing_sb_after_str),
 						      reg_magic == MAGIC_ALL);
 			    // recursive call!
 			    if (nfa_regatom() == FAIL)
@@ -1685,7 +1685,7 @@ nfa_regatom(void)
 			}
 			getchr();  // get the ]
 			if (n == 0)
-			    EMSG2_RET_FAIL(_(e_empty_sb),
+			    EMSG2_RET_FAIL(_(e_empty_str_brackets),
 						      reg_magic == MAGIC_ALL);
 			EMIT(NFA_OPT_CHARS);
 			EMIT(n);

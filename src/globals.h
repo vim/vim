@@ -1715,12 +1715,6 @@ EXTERN char e_shellempty[]	INIT(= N_("E91: 'shell' option is empty"));
 #if defined(FEAT_SIGN_ICONS) && !defined(FEAT_GUI_GTK)
 EXTERN char e_signdata[]	INIT(= N_("E255: Couldn't read in sign data!"));
 #endif
-EXTERN char e_swapclose[]	INIT(= N_("E72: Close error on swap file"));
-EXTERN char e_tagstack[]	INIT(= N_("E73: tag stack empty"));
-EXTERN char e_toocompl[]	INIT(= N_("E74: Command too complex"));
-EXTERN char e_longname[]	INIT(= N_("E75: Name too long"));
-EXTERN char e_toomsbra[]	INIT(= N_("E76: Too many ["));
-EXTERN char e_toomany[]	INIT(= N_("E77: Too many file names"));
 EXTERN char e_trailing[]	INIT(= N_("E488: Trailing characters"));
 EXTERN char e_trailing_arg[]	INIT(= N_("E488: Trailing characters: %s"));
 EXTERN char e_umark[]		INIT(= N_("E78: Unknown mark"));

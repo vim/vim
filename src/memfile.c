@@ -242,7 +242,7 @@ mf_close(memfile_T *mfp, int del_file)
     if (mfp->mf_fd >= 0)
     {
 	if (close(mfp->mf_fd) < 0)
-	    emsg(_(e_swapclose));
+	    emsg(_(e_close_error_on_swap_file));
     }
     if (del_file && mfp->mf_fname != NULL)
 	mch_remove(mfp->mf_fname);
@@ -288,7 +288,7 @@ mf_close_file(
     }
 
     if (close(mfp->mf_fd) < 0)			// close the file
-	emsg(_(e_swapclose));
+	emsg(_(e_close_error_on_swap_file));
     mfp->mf_fd = -1;
 
     if (mfp->mf_fname != NULL)

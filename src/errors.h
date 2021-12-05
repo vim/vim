@@ -134,6 +134,40 @@ EXTERN char e_invalid_character_after_str_at[]
 	INIT(= N_("E59: invalid character after %s@"));
 EXTERN char e_too_many_complex_str_curly[]
 	INIT(= N_("E60: Too many complex %s{...}s"));
+EXTERN char e_nested_str[]
+	INIT(= N_("E61: Nested %s*"));
+EXTERN char e_nested_str_chr[]
+	INIT(= N_("E62: Nested %s%c"));
+EXTERN char e_invalid_use_of_underscore[]
+	INIT(= N_("E63: invalid use of \\_"));
+EXTERN char e_str_chr_follows_nothing[]
+	INIT(= N_("E64: %s%c follows nothing"));
+EXTERN char e_illegal_back_reference[]
+	INIT(= N_("E65: Illegal back reference"));
+#ifdef FEAT_SYN_HL
+EXTERN char e_z_not_allowed_here[]
+	INIT(= N_("E66: \\z( not allowed here"));
+EXTERN char e_z1_z9_not_allowed_here[]
+	INIT(= N_("E67: \\z1 - \\z9 not allowed here"));
+#endif
+EXTERN char e_missing_sb_after_str[]
+	INIT(= N_("E69: Missing ] after %s%%["));
+EXTERN char e_empty_str_brackets[]
+	INIT(= N_("E70: Empty %s%%[]"));
+EXTERN char e_invalid_character_after_str[]
+	INIT(= N_("E71: Invalid character after %s%%"));
+EXTERN char e_close_error_on_swap_file[]
+	INIT(= N_("E72: Close error on swap file"));
+EXTERN char e_tag_stack_empty[]
+	INIT(= N_("E73: tag stack empty"));
+EXTERN char e_command_too_complex[]
+	INIT(= N_("E74: Command too complex"));
+EXTERN char e_name_too_long[]
+	INIT(= N_("E75: Name too long"));
+EXTERN char e_too_many_brackets[]
+	INIT(= N_("E76: Too many ["));
+EXTERN char e_too_many_file_names[]
+	INIT(= N_("E77: Too many file names"));
 
 #ifdef FEAT_EVAL
 EXTERN char e_undefined_variable_str[]
