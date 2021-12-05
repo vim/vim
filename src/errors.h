@@ -694,3 +694,5 @@ EXTERN char e_line_number_out_of_range[]
 	INIT(= N_("E1247: Line number out of range"));
 EXTERN char e_closure_called_from_invalid_context[]
 	INIT(= N_("E1248: Closure called from invalid context"));
+EXTERN char e_group_name_missing_for_str[]
+	INIT(= N_("E1249: Group name missing for %s"));

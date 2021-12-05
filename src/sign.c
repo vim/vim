@@ -1295,6 +1295,17 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
     return lnum;
 }
 
+    static int
+check_empty_group(size_t len, char *name)
+{
+    if (len == 0)
+    {
+	semsg(_(e_group_name_missing_for_str), name);
+	return FAIL;
+    }
+    return OK;
+}
+
 /*
  * ":sign define {name} ..." command
  */
@@ -1330,16 +1341,31 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	else if (STRNCMP(arg, "linehl=", 7) == 0)
 	{
 	    arg += 7;
+	    if (check_empty_group(p - arg, "linehl") == FAIL)
+	    {
+		failed = TRUE;
+		break;
+	    }
 	    linehl = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "texthl=", 7) == 0)
 	{
 	    arg += 7;
+	    if (check_empty_group(p - arg, "texthl") == FAIL)
+	    {
+		failed = TRUE;
+		break;
+	    }
 	    texthl = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "culhl=", 6) == 0)
 	{
 	    arg += 6;
+	    if (check_empty_group(p - arg, "culhl") == FAIL)
+	    {
+		failed = TRUE;
+		break;
+	    }
 	    culhl = vim_strnsave(arg, p - arg);
 	}
 	else
