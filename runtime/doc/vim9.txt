@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Nov 22
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -234,9 +234,10 @@ the "name#" prefix is sufficient. >
 	def scriptname#function()   # autoload
 
 When using `:function` or `:def` to specify a nested function inside a `:def`
-function, this nested function is local to the code block it is defined in.
-In a `:def` function it is not possible to define a script-local function.  It
-is possible to define a global function by using the "g:" prefix.
+function and no namespace was given, this nested function is local to the code
+block it is defined in.  In a `:def` function it is not possible to define a
+script-local function.  It is possible to define a global function by using
+the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
 search for the function:
@@ -820,9 +821,15 @@ error.  Example: >
 
 For loop ~
 
-The loop variable must not exist yet: >
+The loop variable must not be declared yet: >
 	var i = 1
 	for i in [1, 2, 3]   # Error!
+
+It is possible to use a global variable though: >
+	g:i = 1
+	for g:i in [1, 2, 3]
+	  echo g:i
+	endfor
 
 Legacy Vim script has some tricks to make a for loop over a list handle
 deleting items at the current or previous item.  In Vim9 script it just uses

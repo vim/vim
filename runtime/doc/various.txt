@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Sep 06
+*various.txt*   For Vim version 8.2.  Last change: 2021 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -369,7 +369,7 @@ N  *+digraphs*		|digraphs| *E196*
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 B  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
-N  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
+T  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
 N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
 -  *+farsi*		Removed: |farsi| language
 N  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|
@@ -423,7 +423,7 @@ N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
-   *+num64*		64-bit Number support |Number|
+T  *+num64*		64-bit Number support |Number|
    			Always enabled since 8.2.0271, use v:numbersize to
 			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
@@ -471,15 +471,15 @@ N  *+textobjects*	|text-objects| selection
 N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function
-N  *+title*		Setting the window 'title' and 'icon'; Always enabled
+T  *+title*		Setting the window 'title' and 'icon'; Always enabled
 N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
 B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
 N  *+viminfo*		|'viminfo'|
-   *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
+T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
-N  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
+T  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|

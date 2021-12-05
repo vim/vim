@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Nov 24
+*options.txt*	For Vim version 8.2.  Last change: 2021 Dec 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,8 @@ achieve special effects.  These options come in three forms:
 			key codes are not shown, because they are generated
 			internally and can't be changed.  Changing the terminal
 			codes in the GUI is not useful either...
+
+:se[t]! termcap		Idem, but don't use multiple columns.
 
 								*E518* *E519*
 :se[t] {option}?	Show value of {option}.
@@ -869,9 +871,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 'autowrite' 'aw'	boolean	(default off)
 			global
 	Write the contents of the file, if it has been modified, on each
-	:next, :rewind, :last, :first, :previous, :stop, :suspend, :tag, :!,
-	:make, CTRL-] and CTRL-^ command; and when a :buffer, CTRL-O, CTRL-I,
-	'{A-Z0-9}, or `{A-Z0-9} command takes one to another file.
+	`:next`, `:rewind`, `:last`, `:first`, `:previous`, `:stop`,
+	`:suspend`, `:tag, `:!`, ``:make`, CTRL-] and CTRL-^ command; and when
+	a :buffer, CTRL-O, CTRL-I, '{A-Z0-9}, or `{A-Z0-9} command takes one
+	to another file.
+	A buffer is not written if it becomes hidden, e.g. when 'bufhidden' is
+	set to "hide" and `:next` is used
 	Note that for some commands the 'autowrite' option is not used, see
 	'autowriteall' for that.
 	Some buffers will not be written, specifically when 'buftype' is

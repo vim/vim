@@ -539,14 +539,6 @@ Options:
 For further discussion of fortran_have_tabs and the method used for the
 detection of source format see |ft-fortran-syntax|.
 
-GPROF							*ft-gprof-plugin*
-
-The gprof filetype plugin defines a mapping <C-]> to jump from a function
-entry in the gprof flat profile or from a function entry in the call graph
-to the details of that function in the call graph.
-
-The mapping can be disabled with: >
-	let g:no_gprof_maps = 1
 
 GIT COMMIT                                              *ft-gitcommit-plugin*
 

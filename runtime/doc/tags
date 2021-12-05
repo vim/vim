@@ -3951,7 +3951,6 @@ E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
 E109	eval.txt	/*E109*
 E1091	vim9.txt	/*E1091*
-E1092	vim9.txt	/*E1092*
 E1094	vim9.txt	/*E1094*
 E11	cmdline.txt	/*E11*
 E110	eval.txt	/*E110*
@@ -5463,6 +5462,7 @@ arglistid()	eval.txt	/*arglistid()*
 argument-list	editing.txt	/*argument-list*
 argv()	eval.txt	/*argv()*
 argv-variable	eval.txt	/*argv-variable*
+arrow_modifiers	term.txt	/*arrow_modifiers*
 as	motion.txt	/*as*
 asin()	eval.txt	/*asin()*
 asm.vim	syntax.txt	/*asm.vim*
@@ -6562,6 +6562,7 @@ format-bullet-list	tips.txt	/*format-bullet-list*
 format-comments	change.txt	/*format-comments*
 format-formatexpr	change.txt	/*format-formatexpr*
 formatting	change.txt	/*formatting*
+forth.vim	syntax.txt	/*forth.vim*
 fortran.vim	syntax.txt	/*fortran.vim*
 friendship	intro.txt	/*friendship*
 frombook	usr_01.txt	/*frombook*
@@ -6615,6 +6616,7 @@ ft-erlang-syntax	syntax.txt	/*ft-erlang-syntax*
 ft-euphoria-syntax	syntax.txt	/*ft-euphoria-syntax*
 ft-flexwiki-syntax	syntax.txt	/*ft-flexwiki-syntax*
 ft-form-syntax	syntax.txt	/*ft-form-syntax*
+ft-forth-syntax	syntax.txt	/*ft-forth-syntax*
 ft-fortran-indent	indent.txt	/*ft-fortran-indent*
 ft-fortran-plugin	filetype.txt	/*ft-fortran-plugin*
 ft-fortran-syntax	syntax.txt	/*ft-fortran-syntax*
@@ -6706,6 +6708,7 @@ ft-sql-omni	insert.txt	/*ft-sql-omni*
 ft-sql-syntax	syntax.txt	/*ft-sql-syntax*
 ft-sqlanywhere-syntax	syntax.txt	/*ft-sqlanywhere-syntax*
 ft-sqlinformix-syntax	syntax.txt	/*ft-sqlinformix-syntax*
+ft-squirrel-syntax	syntax.txt	/*ft-squirrel-syntax*
 ft-syntax-omni	insert.txt	/*ft-syntax-omni*
 ft-tcsh-syntax	syntax.txt	/*ft-tcsh-syntax*
 ft-termcap-syntax	syntax.txt	/*ft-termcap-syntax*
@@ -9242,6 +9245,7 @@ sqlj	ft_sql.txt	/*sqlj*
 sqlserver	ft_sql.txt	/*sqlserver*
 sqlsettype	ft_sql.txt	/*sqlsettype*
 sqrt()	eval.txt	/*sqrt()*
+squirrel.vim	syntax.txt	/*squirrel.vim*
 srand()	eval.txt	/*srand()*
 sscanf	eval.txt	/*sscanf*
 standard-plugin	usr_05.txt	/*standard-plugin*

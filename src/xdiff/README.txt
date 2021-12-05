@@ -13,4 +13,7 @@ COPYING file.
 
 Changes in these files were made to avoid compiler warnings.
 
+The /* */ comments are kept to make syncing to a newer version easier, do not
+change them to // comments!
+
 The first work for including xdiff in Vim was done by Christian Brabandt.

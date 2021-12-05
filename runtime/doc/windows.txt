@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2021 Sep 09
+*windows.txt*   For Vim version 8.2.  Last change: 2021 Nov 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1203,6 +1203,8 @@ list of buffers. |unlisted-buffer|
 		the current buffer remains being edited.  See |:buffer-!| for
 		[!].  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
+		The notation with single quotes does not work here,
+		`:buf 12'345'` uses 12'345 as a buffer name.
 		Also see |+cmd|.
 
 :[N]b[uffer][!] [+cmd] {bufname}				*{bufname}*

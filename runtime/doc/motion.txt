@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.2.  Last change: 2021 Jun 13
+*motion.txt*    For Vim version 8.2.  Last change: 2021 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -386,6 +386,8 @@ w			[count] words forward.  |exclusive| motion.
 
 <C-Right>	or					*<C-Right>* *W*
 W			[count] WORDS forward.  |exclusive| motion.
+			If <C-Right> does not work, check out
+			|arrow_modifiers|.
 
 							*e*
 e			Forward to the end of word [count] |inclusive|.
@@ -400,6 +402,8 @@ b			[count] words backward.  |exclusive| motion.
 
 <C-Left>	or					*<C-Left>* *B*
 B			[count] WORDS backward.  |exclusive| motion.
+			If <C-Left> does not work, check out
+			|arrow_modifiers|.
 
 							*ge*
 ge			Backward to the end of word [count] |inclusive|.

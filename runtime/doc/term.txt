@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2021 Aug 29
+*term.txt*      For Vim version 8.2.  Last change: 2021 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -151,7 +151,7 @@ terminal that tmux is running in): >
         let &t_fe = "\<Esc>[?1004h"
         let &t_fd = "\<Esc>[?1004l"
 
-        " Enable modified arrow keys, see  :help xterm-modifier-keys
+        " Enable modified arrow keys, see  :help arrow_modifiers
         execute "silent! set <xUp>=\<Esc>[@;*A"
         execute "silent! set <xDown>=\<Esc>[@;*B"
         execute "silent! set <xRight>=\<Esc>[@;*C"
@@ -252,7 +252,19 @@ another code.  That is to avoid that the codes obtained from xterm directly
 Another special value is a termcap entry ending in "@;*X".  This is for cursor
 keys, which either use "CSI X" or "CSI 1 ; modifier X".  Thus the "@"
 stands for either "1" if a modifier follows, or nothing.
-							*xterm-scroll-region*
+							*arrow_modifiers*
+Several terminal emulators (alacritty, gnome, konsole, etc.) send special
+codes for keys with modifiers, but these do not have an entry in the
+termcap/terminfo database.  You can make them work by adding a few lines in
+your vimrc.  For example, to make the Control modifier work with arrow keys
+for the gnome terminal: >
+	if &term =~ 'gnome'
+	   execute "set <xUp>=\<Esc>[@;*A"
+	   execute "set <xDown>=\<Esc>[@;*B"
+	   execute "set <xRight>=\<Esc>[@;*C"
+	   execute "set <xLeft>=\<Esc>[@;*D"
+	endif
+<							*xterm-scroll-region*
 The default termcap entry for xterm on Sun and other platforms does not
 contain the entry for scroll regions.  Add ":cs=\E[%i%d;%dr:" to the xterm
 entry in /etc/termcap and everything should work.

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Nov 26
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,13 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-refactor ex_let_one() to subfunctions.
-
 Vim9 - Make everything work:
-- "filter #pat# ls" should work, #pat# is not a comment
-    vim9script
-    edit foobar
-    filter #foobar# ls
 - Check TODO items in vim9compile.c and vim9execute.c
 - use CheckLegacyAndVim9Success(lines) in many more places
 - For builtin functions using tv_get_string*() use check_for_string() to be
@@ -262,6 +256,10 @@ MS-Windows: did path modifier :p:8 stop working?  #8600
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
 Mapping with partial match not executed properly in GTK. (Ingo Karkat, #7082)
+
+Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
+spread out.  Make a section with copy/paste examples of script and pointers to
+more information.
 
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
@@ -1469,10 +1467,6 @@ Patch to avoid redrawing tabline when the popup menu is visible.
 When the CursorMovedI event triggers, and CTRL-X was typed, a script cannot
 restore the mode properly. (Andrew Stewart, 2016 Apr 20)
 Do not trigger the event?
-
-Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
-Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
-https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
 
 Patch to make the behavior of "w" more straightforward, but not Vi compatible.
 With a 'cpo' flag.  (Christian Brabandt, 2016 Feb 8)

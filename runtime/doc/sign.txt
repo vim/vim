@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.2.  Last change: 2021 Mar 07
+*sign.txt*      For Vim version 8.2.  Last change: 2021 Dec 05
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -441,14 +441,16 @@ sign_getdefined([{name}])				*sign_getdefined()*
 		following entries:
 		   icon		full path to the bitmap file of the sign
 		   linehl	highlight group used for the whole line the
-				sign is placed in.
+				sign is placed in; not present if not set
 		   name		name of the sign
 		   text		text that is displayed when there is no icon
 				or the GUI is not being used.
-		   texthl	highlight group used for the text item
+		   texthl	highlight group used for the text item; not
+				present if not set
 		   culhl	highlight group used for the text item when
 				the cursor is on the same line as the sign and
-				'cursorline' is enabled.
+				'cursorline' is enabled; not present if not
+				set
 
 		Returns an empty List if there are no signs and when {name} is
 		not found.
