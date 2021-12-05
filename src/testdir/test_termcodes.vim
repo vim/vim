@@ -2041,6 +2041,10 @@ endfunc
 
 " Check that when DEC mouse codes are recognized a special key is handled.
 func Test_ignore_dec_mouse()
+  silent !infocmp gnome >/dev/null 2>&1
+  if v:shell_error != 0
+    throw 'Skipped: gnome entry missing in the terminfo db'
+  endif
 
   new
   let save_mouse = &mouse
