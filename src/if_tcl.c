@@ -248,6 +248,14 @@ vim_tcl_init(char *arg)
 #endif
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+vim_tcl_finalize(void)
+{
+    Tcl_Finalize();
+}
+#endif
+
 #if defined(DYNAMIC_TCL) || defined(PROTO)
 
 static int stubs_initialized = FALSE;

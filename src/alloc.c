@@ -574,6 +574,9 @@ free_all_mem(void)
 # ifdef FEAT_GUI_GTK
     gui_mch_free_all();
 # endif
+# ifdef FEAT_TCL
+    vim_tcl_finalize();
+# endif
     clear_hl_tables();
 
     vim_free(IObuff);
