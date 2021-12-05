@@ -6877,13 +6877,17 @@ ex_open(exarg_T *eap)
 	regmatch.regprog = vim_regcomp(eap->arg, magic_isset() ? RE_MAGIC : 0);
 	if (regmatch.regprog != NULL)
 	{
+	    // make a copy of the line, when searching for a mark it might be
+	    // flushed
+	    char_u *line = vim_strsave(ml_get_curline());
+
 	    regmatch.rm_ic = p_ic;
-	    p = ml_get_curline();
-	    if (vim_regexec(&regmatch, p, (colnr_T)0))
-		curwin->w_cursor.col = (colnr_T)(regmatch.startp[0] - p);
+	    if (vim_regexec(&regmatch, line, (colnr_T)0))
+		curwin->w_cursor.col = (colnr_T)(regmatch.startp[0] - line);
 	    else
 		emsg(_(e_nomatch));
 	    vim_regfree(regmatch.regprog);
+	    vim_free(line);
 	}
 	// Move to the NUL, ignore any other arguments.
 	eap->arg += STRLEN(eap->arg);
