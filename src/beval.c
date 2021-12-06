@@ -150,18 +150,18 @@ get_beval_info(
     int		row = mouse_row;
     int		col = mouse_col;
 
-# ifdef FEAT_GUI
+# ifdef FEAT_BEVAL_GUI
     if (gui.in_use)
     {
 	row = Y_2_ROW(beval->y);
 	col = X_2_COL(beval->x);
     }
-#endif
+# endif
     if (find_word_under_cursor(row, col, getword,
 		FIND_IDENT + FIND_STRING + FIND_EVAL,
 		winp, lnump, textp, colp, NULL) == OK)
     {
-#ifdef FEAT_VARTABS
+# ifdef FEAT_VARTABS
 	vim_free(beval->vts);
 	beval->vts = tabstop_copy((*winp)->w_buffer->b_p_vts_array);
 	if ((*winp)->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
@@ -170,7 +170,7 @@ get_beval_info(
 		vim_free(*textp);
 	    return FAIL;
 	}
-#endif
+# endif
 	beval->ts = (*winp)->w_buffer->b_p_ts;
 	return OK;
     }
