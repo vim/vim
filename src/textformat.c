@@ -954,6 +954,7 @@ format_lines(
     int		smd_save;
     long	count;
     int		need_set_indent = TRUE;	// set indent of next paragraph
+    linenr_T	first_line = curwin->w_cursor.lnum;
     int		force_format = FALSE;
     int		old_State = State;
 
@@ -1073,8 +1074,13 @@ format_lines(
 		{
 		    int		indent = 0; // amount of indent needed
 
-		    // replace indent in first line with minimal number of
-		    // tabs and spaces, according to current options
+		    // Replace indent in first line of a paragraph with minimal
+		    // number of tabs and spaces, according to current options.
+		    // For the very first formatted line keep the current
+		    // indent.
+		    if (curwin->w_cursor.lnum == first_line)
+			indent = get_indent();
+		    else
 # ifdef FEAT_LISP
 		    if (curbuf->b_p_lisp)
 			indent = get_lisp_indent();
