@@ -56,10 +56,10 @@ static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, long_
 static int put_setnum(FILE *fd, char *cmd, char *name, long *valuep);
 static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int istermoption(struct vimoption *p);
-static char_u *get_varp_scope(struct vimoption *p, int opt_flags);
+static char_u *get_varp_scope(struct vimoption *p, int scope);
 static char_u *get_varp(struct vimoption *);
 static void check_win_options(win_T *win);
-static void option_value2string(struct vimoption *, int opt_flags);
+static void option_value2string(struct vimoption *, int scope);
 static void check_winopt(winopt_T *wop);
 static int wc_use_keyname(char_u *varp, long *wcp);
 static void paste_option_changed(void);
@@ -3937,13 +3937,16 @@ findoption(char_u *arg)
  * Hidden Toggle option: gov_hidden_bool.
  * Hidden String option: gov_hidden_string.
  * Unknown option: gov_unknown.
+ *
+ * "flagsp" (if not NULL) is set to the option flags (P_xxxx).
  */
     getoption_T
 get_option_value(
     char_u	*name,
     long	*numval,
     char_u	**stringval,	    // NULL when only checking existence
-    int		opt_flags)
+    int		*flagsp,
+    int		scope)
 {
     int		opt_idx;
     char_u	*varp;
@@ -3981,7 +3984,11 @@ get_option_value(
 	return gov_unknown;
     }
 
-    varp = get_varp_scope(&(options[opt_idx]), opt_flags);
+    varp = get_varp_scope(&(options[opt_idx]), scope);
+
+    if (flagsp != NULL)
+	// Return the P_xxxx option flags.
+	*flagsp = options[opt_idx].flags;
 
     if (options[opt_idx].flags & P_STRING)
     {
@@ -5179,17 +5186,18 @@ unset_global_local_option(char_u *name, void *from)
 
 /*
  * Get pointer to option variable, depending on local or global scope.
+ * "scope" can be OPT_LOCAL, OPT_GLOBAL or a combination.
  */
     static char_u *
-get_varp_scope(struct vimoption *p, int opt_flags)
+get_varp_scope(struct vimoption *p, int scope)
 {
-    if ((opt_flags & OPT_GLOBAL) && p->indir != PV_NONE)
+    if ((scope & OPT_GLOBAL) && p->indir != PV_NONE)
     {
 	if (p->var == VAR_WIN)
 	    return (char_u *)GLOBAL_WO(get_varp(p));
 	return p->var;
     }
-    if ((opt_flags & OPT_LOCAL) && ((int)p->indir & PV_BOTH))
+    if ((scope & OPT_LOCAL) && ((int)p->indir & PV_BOTH))
     {
 	switch ((int)p->indir)
 	{
@@ -5248,9 +5256,9 @@ get_varp_scope(struct vimoption *p, int opt_flags)
  * scope.
  */
     char_u *
-get_option_varp_scope(int opt_idx, int opt_flags)
+get_option_varp_scope(int opt_idx, int scope)
 {
-    return get_varp_scope(&(options[opt_idx]), opt_flags);
+    return get_varp_scope(&(options[opt_idx]), scope);
 }
 
 /*
@@ -6618,11 +6626,11 @@ ExpandOldSetting(int *num_file, char_u ***file)
     static void
 option_value2string(
     struct vimoption	*opp,
-    int			opt_flags)	// OPT_GLOBAL and/or OPT_LOCAL
+    int			scope)	// OPT_GLOBAL and/or OPT_LOCAL
 {
     char_u	*varp;
 
-    varp = get_varp_scope(opp, opt_flags);
+    varp = get_varp_scope(opp, scope);
 
     if (opp->flags & P_NUM)
     {

@@ -1715,7 +1715,7 @@ get_option(void *data, int argc, Scheme_Object **argv)
     getoption_T	    rc;
     Scheme_Object   *rval = NULL;
     Scheme_Object   *name = NULL;
-    int		    opt_flags = 0;
+    int		    scope = 0;
     buf_T	    *save_curb = curbuf;
     win_T	    *save_curw = curwin;
 
@@ -1736,11 +1736,11 @@ get_option(void *data, int argc, Scheme_Object **argv)
 	}
 
 	if (argv[1] == M_global)
-	    opt_flags = OPT_GLOBAL;
+	    scope = OPT_GLOBAL;
 	else if (SCHEME_VIMBUFFERP(argv[1]))
 	{
 	    curbuf = get_valid_buffer(argv[1]);
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else if (SCHEME_VIMWINDOWP(argv[1]))
 	{
@@ -1748,14 +1748,14 @@ get_option(void *data, int argc, Scheme_Object **argv)
 
 	    curwin = win;
 	    curbuf = win->w_buffer;
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else
 	    scheme_wrong_type(prim->name, "vim-buffer/window", 1, argc, argv);
     }
 
     rc = get_option_value(BYTE_STRING_VALUE(name), &value, (char_u **)&strval,
-								    opt_flags);
+								  NULL, scope);
     curbuf = save_curb;
     curwin = save_curw;
 
@@ -1793,7 +1793,7 @@ get_option(void *data, int argc, Scheme_Object **argv)
 set_option(void *data, int argc, Scheme_Object **argv)
 {
     char_u	*command = NULL;
-    int		opt_flags = 0;
+    int		scope = 0;
     buf_T	*save_curb = curbuf;
     win_T	*save_curw = curwin;
     Vim_Prim	*prim = (Vim_Prim *)data;
@@ -1814,18 +1814,18 @@ set_option(void *data, int argc, Scheme_Object **argv)
 	}
 
 	if (argv[1] == M_global)
-	    opt_flags = OPT_GLOBAL;
+	    scope = OPT_GLOBAL;
 	else if (SCHEME_VIMBUFFERP(argv[1]))
 	{
 	    curbuf = get_valid_buffer(argv[1]);
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else if (SCHEME_VIMWINDOWP(argv[1]))
 	{
 	    win_T *win = get_valid_window(argv[1]);
 	    curwin = win;
 	    curbuf = win->w_buffer;
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else
 	    scheme_wrong_type(prim->name, "vim-buffer/window", 1, argc, argv);
@@ -1834,7 +1834,7 @@ set_option(void *data, int argc, Scheme_Object **argv)
     // do_set can modify cmd, make copy
     command = vim_strsave(BYTE_STRING_VALUE(cmd));
     MZ_GC_UNREG();
-    do_set(command, opt_flags);
+    do_set(command, scope);
     vim_free(command);
     update_screen(NOT_VALID);
     curbuf = save_curb;

@@ -885,13 +885,22 @@ func Test_completefunc_callback()
 
   " Using a funcref variable to set 'completefunc'
   let Fn = function('MycompleteFunc1')
+  let &completefunc = Fn
+  new | only
+  call setline(1, 'two')
+  let g:MycompleteFunc1_args = []
+  call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'two']], g:MycompleteFunc1_args)
+  bw!
+
+  " Using string(funcref_variable) to set 'completefunc'
+  let Fn = function('MycompleteFunc1')
   let &completefunc = string(Fn)
   new | only
   call setline(1, 'two')
   let g:MycompleteFunc1_args = []
   call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'two']], g:MycompleteFunc1_args)
-  call assert_fails('let &completefunc = Fn', 'E729:')
   bw!
 
   " Test for using a funcref()
@@ -909,13 +918,22 @@ func Test_completefunc_callback()
 
   " Using a funcref variable to set 'completefunc'
   let Fn = funcref('MycompleteFunc2')
+  let &completefunc = Fn
+  new | only
+  call setline(1, 'four')
+  let g:MycompleteFunc2_args = []
+  call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'four']], g:MycompleteFunc2_args)
+  bw!
+
+  " Using a string(funcref_variable) to set 'completefunc'
+  let Fn = funcref('MycompleteFunc2')
   let &completefunc = string(Fn)
   new | only
   call setline(1, 'four')
   let g:MycompleteFunc2_args = []
   call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'four']], g:MycompleteFunc2_args)
-  call assert_fails('let &completefunc = Fn', 'E729:')
   bw!
 
   " Test for using a lambda function
@@ -932,6 +950,15 @@ func Test_completefunc_callback()
   bw!
 
   " Set 'completefunc' to a lambda expression
+  let &completefunc = {a, b -> MycompleteFunc3(a, b)}
+  new | only
+  call setline(1, 'six')
+  let g:MycompleteFunc3_args = []
+  call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'six']], g:MycompleteFunc3_args)
+  bw!
+
+  " Set 'completefunc' to string(lambda_expression)
   let &completefunc = '{a, b -> MycompleteFunc3(a, b)}'
   new | only
   call setline(1, 'six')
@@ -942,18 +969,27 @@ func Test_completefunc_callback()
 
   " Set 'completefunc' to a variable with a lambda expression
   let Lambda = {a, b -> MycompleteFunc3(a, b)}
+  let &completefunc = Lambda
+  new | only
+  call setline(1, 'seven')
+  let g:MycompleteFunc3_args = []
+  call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'seven']], g:MycompleteFunc3_args)
+  bw!
+
+  " Set 'completefunc' to a string(variable with a lambda expression)
+  let Lambda = {a, b -> MycompleteFunc3(a, b)}
   let &completefunc = string(Lambda)
   new | only
   call setline(1, 'seven')
   let g:MycompleteFunc3_args = []
   call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'seven']], g:MycompleteFunc3_args)
-  call assert_fails('let &completefunc = Lambda', 'E729:')
   bw!
 
   " Test for using a lambda function with incorrect return value
   let Lambda = {s -> strlen(s)}
-  let &completefunc = string(Lambda)
+  let &completefunc = Lambda
   new | only
   call setline(1, 'eight')
   call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
@@ -965,7 +1001,7 @@ func Test_completefunc_callback()
 
   call assert_fails("set completefunc=function('abc')", "E700:")
   call assert_fails("set completefunc=funcref('abc')", "E700:")
-  let &completefunc = "{a -> 'abc'}"
+  let &completefunc = {a -> 'abc'}
   call feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
 
   " Vim9 tests
@@ -990,6 +1026,15 @@ func Test_completefunc_callback()
       add(g:LambdaComplete1_args, [findstart, base])
       return findstart ? 0 : []
     enddef
+    &completefunc = (a, b) => LambdaComplete1(a, b)
+    new | only
+    setline(1, 'two')
+    g:LambdaComplete1_args = []
+    feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
+    assert_equal([[1, ''], [0, 'two']], g:LambdaComplete1_args)
+    bw!
+
+    # Test for using a string(lambda)
     &completefunc = '(a, b) => LambdaComplete1(a, b)'
     new | only
     setline(1, 'two')
@@ -1003,6 +1048,15 @@ func Test_completefunc_callback()
             add(g:LambdaComplete2_args, [findstart, base])
             return findstart ? 0 : []
         }
+    &completefunc = Fn
+    new | only
+    setline(1, 'three')
+    g:LambdaComplete2_args = []
+    feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
+    assert_equal([[1, ''], [0, 'three']], g:LambdaComplete2_args)
+    bw!
+
+    # Test for using a string(variable with a lambda expression)
     &completefunc = string(Fn)
     new | only
     setline(1, 'three')
@@ -1045,13 +1099,22 @@ func Test_omnifunc_callback()
 
   " Using a funcref variable to set 'omnifunc'
   let Fn = function('MyomniFunc1')
+  let &omnifunc = Fn
+  new | only
+  call setline(1, 'two')
+  let g:MyomniFunc1_args = []
+  call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'two']], g:MyomniFunc1_args)
+  bw!
+
+  " Using a string(funcref_variable) to set 'omnifunc'
+  let Fn = function('MyomniFunc1')
   let &omnifunc = string(Fn)
   new | only
   call setline(1, 'two')
   let g:MyomniFunc1_args = []
   call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'two']], g:MyomniFunc1_args)
-  call assert_fails('let &omnifunc = Fn', 'E729:')
   bw!
 
   " Test for using a funcref()
@@ -1069,13 +1132,22 @@ func Test_omnifunc_callback()
 
   " Using a funcref variable to set 'omnifunc'
   let Fn = funcref('MyomniFunc2')
+  let &omnifunc = Fn
+  new | only
+  call setline(1, 'four')
+  let g:MyomniFunc2_args = []
+  call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'four']], g:MyomniFunc2_args)
+  bw!
+
+  " Using a string(funcref_variable) to set 'omnifunc'
+  let Fn = funcref('MyomniFunc2')
   let &omnifunc = string(Fn)
   new | only
   call setline(1, 'four')
   let g:MyomniFunc2_args = []
   call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'four']], g:MyomniFunc2_args)
-  call assert_fails('let &omnifunc = Fn', 'E729:')
   bw!
 
   " Test for using a lambda function
@@ -1092,6 +1164,15 @@ func Test_omnifunc_callback()
   bw!
 
   " Set 'omnifunc' to a lambda expression
+  let &omnifunc = {a, b -> MyomniFunc3(a, b)}
+  new | only
+  call setline(1, 'six')
+  let g:MyomniFunc3_args = []
+  call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'six']], g:MyomniFunc3_args)
+  bw!
+
+  " Set 'omnifunc' to a string(lambda_expression)
   let &omnifunc = '{a, b -> MyomniFunc3(a, b)}'
   new | only
   call setline(1, 'six')
@@ -1102,18 +1183,27 @@ func Test_omnifunc_callback()
 
   " Set 'omnifunc' to a variable with a lambda expression
   let Lambda = {a, b -> MyomniFunc3(a, b)}
+  let &omnifunc = Lambda
+  new | only
+  call setline(1, 'seven')
+  let g:MyomniFunc3_args = []
+  call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'seven']], g:MyomniFunc3_args)
+  bw!
+
+  " Set 'omnifunc' to a string(variable with a lambda expression)
+  let Lambda = {a, b -> MyomniFunc3(a, b)}
   let &omnifunc = string(Lambda)
   new | only
   call setline(1, 'seven')
   let g:MyomniFunc3_args = []
   call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'seven']], g:MyomniFunc3_args)
-  call assert_fails('let &omnifunc = Lambda', 'E729:')
   bw!
 
   " Test for using a lambda function with incorrect return value
   let Lambda = {s -> strlen(s)}
-  let &omnifunc = string(Lambda)
+  let &omnifunc = Lambda
   new | only
   call setline(1, 'eight')
   call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
@@ -1125,7 +1215,7 @@ func Test_omnifunc_callback()
 
   call assert_fails("set omnifunc=function('abc')", "E700:")
   call assert_fails("set omnifunc=funcref('abc')", "E700:")
-  let &omnifunc = "{a -> 'abc'}"
+  let &omnifunc = {a -> 'abc'}
   call feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
 
   " Vim9 tests
@@ -1150,6 +1240,15 @@ func Test_omnifunc_callback()
       add(g:MyomniFunc2_args, [findstart, base])
       return findstart ? 0 : []
     enddef
+    &omnifunc = (a, b) => MyomniFunc2(a, b)
+    new | only
+    setline(1, 'two')
+    g:MyomniFunc2_args = []
+    feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
+    assert_equal([[1, ''], [0, 'two']], g:MyomniFunc2_args)
+    bw!
+
+    # Test for using a string(lambda)
     &omnifunc = '(a, b) => MyomniFunc2(a, b)'
     new | only
     setline(1, 'two')
@@ -1160,6 +1259,15 @@ func Test_omnifunc_callback()
 
     # Test for using a variable with a lambda expression
     var Fn: func = (a, b) => MyomniFunc2(a, b)
+    &omnifunc = Fn
+    new | only
+    setline(1, 'three')
+    g:MyomniFunc2_args = []
+    feedkeys("A\<C-X>\<C-O>\<Esc>", 'x')
+    assert_equal([[1, ''], [0, 'three']], g:MyomniFunc2_args)
+    bw!
+
+    # Test for using a string(variable with a lambda expression)
     &omnifunc = string(Fn)
     new | only
     setline(1, 'three')
@@ -1202,13 +1310,22 @@ func Test_thesaurusfunc_callback()
 
   " Using a funcref variable to set 'thesaurusfunc'
   let Fn = function('MytsrFunc1')
+  let &thesaurusfunc = Fn
+  new | only
+  call setline(1, 'two')
+  let g:MytsrFunc1_args = []
+  call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'two']], g:MytsrFunc1_args)
+  bw!
+
+  " Using a string(funcref_variable) to set 'thesaurusfunc'
+  let Fn = function('MytsrFunc1')
   let &thesaurusfunc = string(Fn)
   new | only
   call setline(1, 'two')
   let g:MytsrFunc1_args = []
   call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'two']], g:MytsrFunc1_args)
-  call assert_fails('let &thesaurusfunc = Fn', 'E729:')
   bw!
 
   " Test for using a funcref()
@@ -1226,13 +1343,22 @@ func Test_thesaurusfunc_callback()
 
   " Using a funcref variable to set 'thesaurusfunc'
   let Fn = funcref('MytsrFunc2')
+  let &thesaurusfunc = Fn
+  new | only
+  call setline(1, 'four')
+  let g:MytsrFunc2_args = []
+  call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'four']], g:MytsrFunc2_args)
+  bw!
+
+  " Using a string(funcref_variable) to set 'thesaurusfunc'
+  let Fn = funcref('MytsrFunc2')
   let &thesaurusfunc = string(Fn)
   new | only
   call setline(1, 'four')
   let g:MytsrFunc2_args = []
   call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'four']], g:MytsrFunc2_args)
-  call assert_fails('let &thesaurusfunc = Fn', 'E729:')
   bw!
 
   " Test for using a lambda function
@@ -1249,6 +1375,15 @@ func Test_thesaurusfunc_callback()
   bw!
 
   " Set 'thesaurusfunc' to a lambda expression
+  let &thesaurusfunc = {a, b -> MytsrFunc3(a, b)}
+  new | only
+  call setline(1, 'six')
+  let g:MytsrFunc3_args = []
+  call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'six']], g:MytsrFunc3_args)
+  bw!
+
+  " Set 'thesaurusfunc' to a string(lambda expression)
   let &thesaurusfunc = '{a, b -> MytsrFunc3(a, b)}'
   new | only
   call setline(1, 'six')
@@ -1259,18 +1394,27 @@ func Test_thesaurusfunc_callback()
 
   " Set 'thesaurusfunc' to a variable with a lambda expression
   let Lambda = {a, b -> MytsrFunc3(a, b)}
+  let &thesaurusfunc = Lambda
+  new | only
+  call setline(1, 'seven')
+  let g:MytsrFunc3_args = []
+  call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
+  call assert_equal([[1, ''], [0, 'seven']], g:MytsrFunc3_args)
+  bw!
+
+  " Set 'thesaurusfunc' to a string(variable with a lambda expression)
+  let Lambda = {a, b -> MytsrFunc3(a, b)}
   let &thesaurusfunc = string(Lambda)
   new | only
   call setline(1, 'seven')
   let g:MytsrFunc3_args = []
   call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
   call assert_equal([[1, ''], [0, 'seven']], g:MytsrFunc3_args)
-  call assert_fails('let &thesaurusfunc = Lambda', 'E729:')
   bw!
 
   " Test for using a lambda function with incorrect return value
   let Lambda = {s -> strlen(s)}
-  let &thesaurusfunc = string(Lambda)
+  let &thesaurusfunc = Lambda
   new | only
   call setline(1, 'eight')
   call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
@@ -1282,7 +1426,7 @@ func Test_thesaurusfunc_callback()
 
   call assert_fails("set thesaurusfunc=function('abc')", "E700:")
   call assert_fails("set thesaurusfunc=funcref('abc')", "E700:")
-  let &thesaurusfunc = "{a -> 'abc'}"
+  let &thesaurusfunc = {a -> 'abc'}
   call feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
 
   " Vim9 tests
@@ -1307,6 +1451,15 @@ func Test_thesaurusfunc_callback()
       add(g:MytsrFunc2_args, [findstart, base])
       return findstart ? 0 : []
     enddef
+    &thesaurusfunc = (a, b) => MytsrFunc2(a, b)
+    new | only
+    setline(1, 'two')
+    g:MytsrFunc2_args = []
+    feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
+    assert_equal([[1, ''], [0, 'two']], g:MytsrFunc2_args)
+    bw!
+
+    # Test for using a string(lambda)
     &thesaurusfunc = '(a, b) => MytsrFunc2(a, b)'
     new | only
     setline(1, 'two')
@@ -1317,6 +1470,15 @@ func Test_thesaurusfunc_callback()
 
     # Test for using a variable with a lambda expression
     var Fn: func = (a, b) => MytsrFunc2(a, b)
+    &thesaurusfunc = Fn
+    new | only
+    setline(1, 'three')
+    g:MytsrFunc2_args = []
+    feedkeys("A\<C-X>\<C-T>\<Esc>", 'x')
+    assert_equal([[1, ''], [0, 'three']], g:MytsrFunc2_args)
+    bw!
+
+    # Test for using a string(variable with a lambda expression)
     &thesaurusfunc = string(Fn)
     new | only
     setline(1, 'three')

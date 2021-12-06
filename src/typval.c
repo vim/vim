@@ -1639,10 +1639,10 @@ eval_option(
     int		c;
     int		working = (**arg == '+');    // has("+option")
     int		ret = OK;
-    int		opt_flags;
+    int		scope;
 
     // Isolate the option name and find its value.
-    option_end = find_option_end(arg, &opt_flags);
+    option_end = find_option_end(arg, &scope);
     if (option_end == NULL)
     {
 	if (rettv != NULL)
@@ -1659,7 +1659,7 @@ eval_option(
     c = *option_end;
     *option_end = NUL;
     opt_type = get_option_value(*arg, &numval,
-			       rettv == NULL ? NULL : &stringval, opt_flags);
+			       rettv == NULL ? NULL : &stringval, NULL, scope);
 
     if (opt_type == gov_unknown)
     {

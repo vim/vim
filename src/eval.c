@@ -6281,23 +6281,23 @@ ex_execute(exarg_T *eap)
  * after the option name.
  */
     char_u *
-find_option_end(char_u **arg, int *opt_flags)
+find_option_end(char_u **arg, int *scope)
 {
     char_u	*p = *arg;
 
     ++p;
     if (*p == 'g' && p[1] == ':')
     {
-	*opt_flags = OPT_GLOBAL;
+	*scope = OPT_GLOBAL;
 	p += 2;
     }
     else if (*p == 'l' && p[1] == ':')
     {
-	*opt_flags = OPT_LOCAL;
+	*scope = OPT_LOCAL;
 	p += 2;
     }
     else
-	*opt_flags = 0;
+	*scope = 0;
 
     if (!ASCII_ISALPHA(*p))
 	return NULL;

@@ -59,6 +59,7 @@
 #define P_NDNAME      0x8000000L // only normal dir name chars allowed
 #define P_RWINONLY   0x10000000L // only redraw current window
 #define P_MLE	     0x20000000L // under control of 'modelineexpr'
+#define P_FUNC	     0x40000000L // accept a function reference or a lambda
 
 // Returned by get_option_value().
 typedef enum {
