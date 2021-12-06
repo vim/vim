@@ -150,7 +150,7 @@ get_beval_info(
     int		row = mouse_row;
     int		col = mouse_col;
 
-# ifdef FEAT_GUI
+# ifdef FEAT_GUI_HAIKU
     if (gui.in_use)
     {
 	row = Y_2_ROW(beval->y);
