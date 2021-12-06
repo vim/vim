@@ -2281,7 +2281,7 @@ func_free(ufunc_T *fp, int force)
  * Free all things that a function contains and free the function itself.
  * When "force" is TRUE we are exiting.
  */
-    static void
+    void
 func_clear_free(ufunc_T *fp, int force)
 {
     func_clear(fp, force);
