@@ -1393,6 +1393,8 @@ ex_let_option(
 	int	    failed = FALSE;
 	int	    opt_p_flags;
 	char_u	    *tofree = NULL;
+	char_u	    numbuf[NUMBUFLEN];
+
 
 	c1 = *p;
 	*p = NUL;
@@ -1416,12 +1418,9 @@ ex_let_option(
 	if (opt_p_flags & P_FUNC && (tv->v_type == VAR_PARTIAL
 						|| tv->v_type == VAR_FUNC))
 	{
-	    char_u	numbuf[NUMBUFLEN];
-
 	    // If the option can be set to a function reference or a lambda
 	    // and the passed value is a function reference, then convert it to
 	    // the name (string) of the function reference.
-
 	    s = tv2string(tv, &tofree, numbuf, 0);
 	}
 	// Avoid setting a string option to the text "v:false" or similar.
