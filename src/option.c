@@ -7210,7 +7210,7 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	return FAIL;
 
     cb = get_callback(tv);
-    if (cb.cb_name == NULL)
+    if (cb.cb_name == NULL || *cb.cb_name == NUL)
     {
 	free_tv(tv);
 	return FAIL;

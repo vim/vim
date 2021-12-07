@@ -2329,14 +2329,12 @@ set_thesaurusfunc_option(void)
     if (*curbuf->b_p_tsrfu != NUL)
     {
 	// buffer-local option set
-	free_callback(&curbuf->b_tsrfu_cb);
 	retval = option_set_callback_func(curbuf->b_p_tsrfu,
 							&curbuf->b_tsrfu_cb);
     }
     else
     {
 	// global option set
-	free_callback(&tsrfu_cb);
 	retval = option_set_callback_func(p_tsrfu, &tsrfu_cb);
     }
 
@@ -2393,7 +2391,7 @@ expand_by_function(int type, char_u *base)
     callback_T	*cb;
     typval_T	rettv;
     int		save_State = State;
-    int		retval;
+    int		retval = FAIL;
 
     funcname = get_complete_funcname(type);
     if (*funcname == NUL)
@@ -2413,7 +2411,8 @@ expand_by_function(int type, char_u *base)
     ++textwinlock;
 
     cb = get_insert_callback(type);
-    retval = call_callback(cb, 0, &rettv, 2, args);
+    if (cb->cb_name != NULL && *cb->cb_name != NUL)
+	retval = call_callback(cb, 0, &rettv, 2, args);
 
     // Call a function, which returns a list or dict.
     if (retval == OK)
@@ -4093,7 +4092,7 @@ ins_complete(int c, int enable_pum)
 	    // Call user defined function 'completefunc' with "a:findstart"
 	    // set to 1 to obtain the length of text to use for completion.
 	    typval_T	args[3];
-	    int		col;
+	    int		col = -2;
 	    char_u	*funcname;
 	    pos_T	pos;
 	    int		save_State = State;
@@ -4119,7 +4118,8 @@ ins_complete(int c, int enable_pum)
 	    pos = curwin->w_cursor;
 	    ++textwinlock;
 	    cb = get_insert_callback(ctrl_x_mode);
-	    col = call_callback_retnr(cb, 2, args);
+	    if (cb->cb_name != NULL && *cb->cb_name != NUL)
+		col = call_callback_retnr(cb, 2, args);
 	    --textwinlock;
 
 	    State = save_State;
