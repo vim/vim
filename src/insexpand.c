@@ -2329,14 +2329,12 @@ set_thesaurusfunc_option(void)
     if (*curbuf->b_p_tsrfu != NUL)
     {
 	// buffer-local option set
-	free_callback(&curbuf->b_tsrfu_cb);
 	retval = option_set_callback_func(curbuf->b_p_tsrfu,
 							&curbuf->b_tsrfu_cb);
     }
     else
     {
 	// global option set
-	free_callback(&tsrfu_cb);
 	retval = option_set_callback_func(p_tsrfu, &tsrfu_cb);
     }
 

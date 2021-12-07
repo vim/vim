@@ -1578,6 +1578,7 @@ invoke_prompt_interrupt(void)
 {
     typval_T	rettv;
     typval_T	argv[1];
+    int		ret;
 
     if (curbuf->b_prompt_interrupt.cb_name == NULL
 	    || *curbuf->b_prompt_interrupt.cb_name == NUL)
@@ -1585,9 +1586,9 @@ invoke_prompt_interrupt(void)
     argv[0].v_type = VAR_UNKNOWN;
 
     got_int = FALSE; // don't skip executing commands
-    call_callback(&curbuf->b_prompt_interrupt, -1, &rettv, 0, argv);
+    ret = call_callback(&curbuf->b_prompt_interrupt, -1, &rettv, 0, argv);
     clear_tv(&rettv);
-    return TRUE;
+    return ret == FAIL ? FALSE : TRUE;
 }
 
 /*

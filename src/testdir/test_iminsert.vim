@@ -257,6 +257,19 @@ func Test_imactivatefunc_imstatusfunc_callback()
   set imstatusfunc=()\ =>\ IMstatusfunc1(a)
   call assert_fails('normal! i', 'E117:')
 
+  " set 'imactivatefunc' and 'imstatusfunc' to a non-existing function
+  set imactivatefunc=IMactivatefunc1
+  set imstatusfunc=IMstatusfunc1
+  call assert_fails("set imactivatefunc=function('NonExistingFunc')", 'E700:')
+  call assert_fails("set imstatusfunc=function('NonExistingFunc')", 'E700:')
+  call assert_fails("let &imactivatefunc = function('NonExistingFunc')", 'E700:')
+  call assert_fails("let &imstatusfunc = function('NonExistingFunc')", 'E700:')
+  let g:IMactivatefunc_called = 0
+  let g:IMstatusfunc_called = 0
+  normal! i
+  call assert_equal(2, g:IMactivatefunc_called)
+  call assert_equal(2, g:IMstatusfunc_called)
+
   " cleanup
   delfunc IMactivatefunc1
   delfunc IMstatusfunc1

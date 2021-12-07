@@ -3146,6 +3146,7 @@ get_callback_depth(void)
 
 /*
  * Invoke call_func() with a callback.
+ * Returns FAIL if the callback could not be called.
  */
     int
 call_callback(
@@ -3159,6 +3160,8 @@ call_callback(
     funcexe_T	funcexe;
     int		ret;
 
+    if (callback->cb_name == NULL || *callback->cb_name == NUL)
+	return FAIL;
     CLEAR_FIELD(funcexe);
     funcexe.evaluate = TRUE;
     funcexe.partial = callback->cb_partial;
@@ -3170,7 +3173,7 @@ call_callback(
 
 /*
  * call the 'callback' function and return the result as a number.
- * Returns -1 when calling the function fails.  Uses argv[0] to argv[argc - 1]
+ * Returns -2 when calling the function fails.  Uses argv[0] to argv[argc - 1]
  * for the function arguments. argv[argc] should have type VAR_UNKNOWN.
  */
     varnumber_T
@@ -3184,7 +3187,7 @@ call_callback_retnr(
     varnumber_T	retval;
 
     if (call_callback(callback, 0, &rettv, argcount, argvars) == FAIL)
-	return -1;
+	return -2;
 
     retval = tv_get_number_chk(&rettv, NULL);
     clear_tv(&rettv);

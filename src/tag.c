@@ -1361,7 +1361,8 @@ find_tagfunc_tags(
     dict_T	*d;
     taggy_T	*tag = &curwin->w_tagstack[curwin->w_tagstackidx];
 
-    if (*curbuf->b_p_tfu == NUL)
+    if (*curbuf->b_p_tfu == NUL || curbuf->b_tfu_cb.cb_name == NULL
+					   || *curbuf->b_tfu_cb.cb_name == NUL)
 	return FAIL;
 
     args[0].v_type = VAR_STRING;
