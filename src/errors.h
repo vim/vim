@@ -756,3 +756,5 @@ EXTERN char e_line_number_out_of_range[]
 	INIT(= N_("E1247: Line number out of range"));
 EXTERN char e_closure_called_from_invalid_context[]
 	INIT(= N_("E1248: Closure called from invalid context"));
+EXTERN char e_highlight_group_name_too_long[]
+	INIT(= N_("E1249: Highlight group name too long"));

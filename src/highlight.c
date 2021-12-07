@@ -18,6 +18,8 @@
 #define SG_GUI		4	// gui has been set
 #define SG_LINK		8	// link has been set
 
+#define MAX_SYN_NAME	200
+
 /*
  * The "term", "cterm" and "gui" arguments can be any combination of the
  * following names, separated by commas (but no spaces!).
@@ -3328,12 +3330,12 @@ set_hl_attr(
 syn_name2id(char_u *name)
 {
     int		i;
-    char_u	name_u[200];
+    char_u	name_u[MAX_SYN_NAME + 1];
 
     // Avoid using stricmp() too much, it's slow on some systems
     // Avoid alloc()/free(), these are slow too.  ID names over 200 chars
     // don't deserve to be found!
-    vim_strncpy(name_u, name, 199);
+    vim_strncpy(name_u, name, MAX_SYN_NAME);
     vim_strup(name_u);
     for (i = highlight_ga.ga_len; --i >= 0; )
 	if (HL_TABLE()[i].sg_name_u != NULL
@@ -3411,6 +3413,11 @@ syn_check_group(char_u *pp, int len)
     int	    id;
     char_u  *name;
 
+    if (len > MAX_SYN_NAME)
+    {
+	emsg(_(e_highlight_group_name_too_long));
+	return 0;
+    }
     name = vim_strnsave(pp, len);
     if (name == NULL)
 	return 0;
