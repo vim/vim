@@ -2433,8 +2433,10 @@ win_close_buffer(win_T *win, int action, int abort_if_last)
 #endif
 
 #ifdef FEAT_QUICKFIX
-    // When the quickfix/location list window is closed, unlist the buffer.
-    if (win->w_buffer != NULL && bt_quickfix(win->w_buffer))
+    // When a quickfix/location list window is closed and the buffer is
+    // displayed in only one window, then unlist the buffer.
+    if (win->w_buffer != NULL && bt_quickfix(win->w_buffer)
+					&& win->w_buffer->b_nwindows == 1)
 	win->w_buffer->b_p_bl = FALSE;
 #endif
 
