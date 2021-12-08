@@ -1128,6 +1128,21 @@ get_tty_part(term_T *term UNUSED)
 }
 
 /*
+ * Read any vterm output and send it on the channel.
+ */
+    static void
+term_forward_output(term_T *term)
+{
+    VTerm *vterm = term->tl_vterm;
+    char   buf[KEY_BUF_LEN];
+    size_t curlen = vterm_output_read(vterm, buf, KEY_BUF_LEN);
+
+    if (curlen > 0)
+	channel_send(term->tl_job->jv_channel, get_tty_part(term),
+					     (char_u *)buf, (int)curlen, NULL);
+}
+
+/*
  * Write job output "msg[len]" to the vterm.
  */
     static void
@@ -1154,14 +1169,7 @@ term_write_job_output(term_T *term, char_u *msg_arg, size_t len_arg)
 
     // flush vterm buffer when vterm responded to control sequence
     if (prevlen != vterm_output_get_buffer_current(vterm))
-    {
-	char   buf[KEY_BUF_LEN];
-	size_t curlen = vterm_output_read(vterm, buf, KEY_BUF_LEN);
-
-	if (curlen > 0)
-	    channel_send(term->tl_job->jv_channel, get_tty_part(term),
-					     (char_u *)buf, (int)curlen, NULL);
-    }
+	term_forward_output(term);
 
     // this invokes the damage callbacks
     vterm_screen_flush_damage(vterm_obtain_screen(vterm));
@@ -2487,6 +2495,23 @@ term_win_entered()
 	mouse_was_outside = FALSE;
 	enter_mouse_col = mouse_col;
 	enter_mouse_row = mouse_row;
+    }
+}
+
+    void
+term_focus_change(int in_focus)
+{
+    term_T *term = curbuf->b_term;
+
+    if (term != NULL && term->tl_vterm != NULL)
+    {
+	VTermState	*state = vterm_obtain_state(term->tl_vterm);
+
+	if (in_focus)
+	    vterm_state_focus_in(state);
+	else
+	    vterm_state_focus_out(state);
+	term_forward_output(term);
     }
 }
 

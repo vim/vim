@@ -1145,6 +1145,10 @@ ui_focus_change(
 	last_time = time(NULL);
     }
 
+#ifdef FEAT_TERMINAL
+    term_focus_change(in_focus);
+#endif
+
     /*
      * Fire the focus gained/lost autocommand.
      */

@@ -18,6 +18,7 @@ int terminal_is_active(void);
 cursorentry_T *term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg);
 int term_use_loop(void);
 void term_win_entered(void);
+void term_focus_change(int in_focus);
 int terminal_loop(int blocking);
 int may_close_term_popup(void);
 void term_channel_closing(channel_T *ch);

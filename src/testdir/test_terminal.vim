@@ -1124,6 +1124,40 @@ func Test_terminal_response_to_control_sequence()
   unlet g:job
 endfunc
 
+func Test_terminal_focus_events()
+  CheckNotGui
+  CheckUnix
+  CheckRunVimInTerminal
+
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set term=xterm ttymouse=xterm2
+
+  let lines =<< trim END
+      set term=xterm ttymouse=xterm2
+      au FocusLost * echo 'I am lost'
+      au FocusGained * echo 'I am back'
+      " FIXME: sometimes this job hangs, exit after a couple of seconds
+      call timer_start(2000, {id -> execute('qall')})
+  END
+  call writefile(lines, 'XtermFocus')
+  let buf = RunVimInTerminal('-S XtermFocus', #{rows: 6})
+
+  " Send a focus event to ourselves, it should be forwarded to the terminal
+  call feedkeys("\<Esc>[O", "Lx!")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_focus_1', {})
+
+  call feedkeys("\<Esc>[I", "Lx!")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_focus_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtermFocus')
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+endfunc
+
 " Run Vim, start a terminal in that Vim with the kill argument,
 " :qall works.
 func Run_terminal_qall_kill(line1, line2)
