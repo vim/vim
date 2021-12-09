@@ -3730,6 +3730,10 @@ redrawcmdline(void)
     redrawcmdline_ex(TRUE);
 }
 
+/*
+ * When "do_compute_cmdrow" is TRUE the command line is redrawn at the bottom.
+ * If FALSE cmdline_row is used, which should redraw in the same place.
+ */
     void
 redrawcmdline_ex(int do_compute_cmdrow)
 {

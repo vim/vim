@@ -3019,14 +3019,19 @@ redraw_asap(int type)
  * it belongs. If highlighting was changed a redraw is needed.
  * If "call_update_screen" is FALSE don't call update_screen() when at the
  * command line.
+ * If "redraw_message" is TRUE.
  */
     void
-redraw_after_callback(int call_update_screen)
+redraw_after_callback(int call_update_screen, int do_message)
 {
     ++redrawing_for_callback;
 
-    if (State == HITRETURN || State == ASKMORE)
-	; // do nothing
+    if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
+	    || State == EXTERNCMD || State == CONFIRM || exmode_active)
+    {
+	if (do_message)
+	    repeat_message();
+    }
     else if (State & CMDLINE)
     {
 	// Don't redraw when in prompt_for_number().

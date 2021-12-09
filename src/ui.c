@@ -1156,29 +1156,7 @@ ui_focus_change(
 				: EVENT_FOCUSLOST, NULL, NULL, FALSE, curbuf);
 
     if (need_redraw)
-    {
-	// Something was executed, make sure the cursor is put back where it
-	// belongs.
-	need_wait_return = FALSE;
-
-	if (State & CMDLINE)
-	    redrawcmdline();
-	else if (State == HITRETURN || State == SETWSIZE || State == ASKMORE
-		|| State == EXTERNCMD || State == CONFIRM || exmode_active)
-	    repeat_message();
-	else if ((State & NORMAL) || (State & INSERT))
-	{
-	    if (must_redraw != 0)
-		update_screen(0);
-	    setcursor();
-	}
-	cursor_on();	    // redrawing may have switched it off
-	out_flush_cursor(FALSE, TRUE);
-# ifdef FEAT_GUI
-	if (gui.in_use)
-	    gui_update_scrollbars(FALSE);
-# endif
-    }
+	redraw_after_callback(TRUE, TRUE);
 
     // File may have been changed from 'readonly' to 'noreadonly'
     if (need_maketitle)

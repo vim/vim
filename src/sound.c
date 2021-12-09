@@ -173,7 +173,7 @@ invoke_sound_callback(void)
 	delete_sound_callback(scb->scb_callback);
 	vim_free(scb);
     }
-    redraw_after_callback(TRUE);
+    redraw_after_callback(TRUE, FALSE);
 }
 
     static void
@@ -327,7 +327,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		    clear_tv(&rettv);
 
 		    delete_sound_callback(p);
-		    redraw_after_callback(TRUE);
+		    redraw_after_callback(TRUE, FALSE);
 
 		}
 	    break;

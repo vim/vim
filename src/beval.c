@@ -308,7 +308,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    // The 'balloonexpr' evaluation may show something on the screen
 	    // that requires a screen update.
 	    if (must_redraw)
-		redraw_after_callback(FALSE);
+		redraw_after_callback(FALSE, FALSE);
 
 	    recursive = FALSE;
 	    return;

@@ -1260,7 +1260,7 @@ job_check_ended(void)
     if (channel_need_redraw)
     {
 	channel_need_redraw = FALSE;
-	redraw_after_callback(TRUE);
+	redraw_after_callback(TRUE, FALSE);
     }
     return did_end;
 }

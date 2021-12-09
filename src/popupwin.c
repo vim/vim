@@ -3357,7 +3357,7 @@ popup_do_filter(int c)
 
 	// Reset got_int to avoid a function used in the statusline aborts.
 	got_int = FALSE;
-	redraw_after_callback(FALSE);
+	redraw_after_callback(FALSE, FALSE);
 	got_int |= save_got_int;
     }
     recursive = FALSE;

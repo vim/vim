@@ -1258,7 +1258,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 		update_cursor(curbuf->b_term, TRUE);
 	}
 	else
-	    redraw_after_callback(TRUE);
+	    redraw_after_callback(TRUE, FALSE);
     }
 }
 

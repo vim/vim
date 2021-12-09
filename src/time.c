@@ -595,7 +595,7 @@ check_due_timer(void)
     }
 
     if (did_one)
-	redraw_after_callback(need_update_screen);
+	redraw_after_callback(need_update_screen, FALSE);
 
 #ifdef FEAT_BEVAL_TERM
     if (bevalexpr_due_set)

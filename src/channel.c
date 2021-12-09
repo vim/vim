@@ -3205,7 +3205,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	      if (channel_need_redraw)
 	      {
 		  channel_need_redraw = FALSE;
-		  redraw_after_callback(TRUE);
+		  redraw_after_callback(TRUE, FALSE);
 	      }
 
 	      if (!channel->ch_drop_never)
@@ -4687,7 +4687,7 @@ channel_parse_messages(void)
     if (channel_need_redraw)
     {
 	channel_need_redraw = FALSE;
-	redraw_after_callback(TRUE);
+	redraw_after_callback(TRUE, FALSE);
     }
 
     --safe_to_invoke_callback;

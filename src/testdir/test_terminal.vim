@@ -1135,8 +1135,8 @@ func Test_terminal_focus_events()
 
   let lines =<< trim END
       set term=xterm ttymouse=xterm2
-      au FocusLost * echo 'I am lost'
-      au FocusGained * echo 'I am back'
+      au FocusLost * call setline(1, 'I am lost') | set nomod
+      au FocusGained * call setline(1, 'I am back') | set nomod
       " FIXME: sometimes this job hangs, exit after a couple of seconds
       call timer_start(2000, {id -> execute('qall')})
   END
@@ -1151,6 +1151,14 @@ func Test_terminal_focus_events()
   call feedkeys("\<Esc>[I", "Lx!")
   call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_focus_2', {})
+
+  " check that a command line being edited is redrawn in place
+  call term_sendkeys(buf, ":" .. repeat('x', 80))
+  call TermWait(buf)
+  call feedkeys("\<Esc>[O", "Lx!")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_focus_3', {})
+  call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
   call delete('XtermFocus')
