@@ -55,7 +55,8 @@ typedef enum {
     ISN_STORES,	    // pop into script variable isn_arg.loadstore
     ISN_STOREOUTER,  // pop variable into outer scope isn_arg.outer
     ISN_STORESCRIPT, // pop into script variable isn_arg.script
-    ISN_STOREOPT,    // pop into option isn_arg.string
+    ISN_STOREOPT,    // pop into option isn_arg.storeopt
+    ISN_STOREFUNCOPT, // pop into option isn_arg.storeopt
     ISN_STOREENV,    // pop into environment variable isn_arg.string
     ISN_STOREREG,    // pop into register isn_arg.number
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
@@ -291,7 +292,7 @@ typedef struct {
     varnumber_T	stnr_val;
 } storenr_T;
 
-// arguments to ISN_STOREOPT
+// arguments to ISN_STOREOPT and ISN_STOREFUNCOPT
 typedef struct {
     char_u	*so_name;
     int		so_flags;

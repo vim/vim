@@ -316,6 +316,7 @@ def s:ScriptFuncStore()
   w:windowvar = 'wv'
   t:tabpagevar = 'tv'
   &tabstop = 8
+  &opfunc = (t) => len(t)
   $ENVVAR = 'ev'
   @z = 'rv'
 enddef
@@ -343,12 +344,17 @@ def Test_disassemble_store()
         ' STOREW w:windowvar.*' ..
         't:tabpagevar = ''tv''.*' ..
         ' STORET t:tabpagevar.*' ..
-        '&tabstop = 8.*' ..
-        ' STOREOPT &tabstop.*' ..
-        '$ENVVAR = ''ev''.*' ..
-        ' STOREENV $ENVVAR.*' ..
+        '&tabstop = 8\_s*' ..
+        '\d\+ PUSHNR 8\_s*' ..
+        '\d\+ STOREOPT &tabstop\_s*' ..
+        '&opfunc = (t) => len(t)\_s*' ..
+        '\d\+ FUNCREF <lambda>\d\+\_s*' ..
+        '\d\+ STOREFUNCOPT &opfunc\_s*' ..
+        '$ENVVAR = ''ev''\_s*' ..
+        '\d\+ PUSHS "ev"\_s*' ..
+        '\d\+ STOREENV $ENVVAR\_s*' ..
         '@z = ''rv''.*' ..
-        ' STOREREG @z.*',
+        '\d\+ STOREREG @z.*',
         res)
 enddef
 

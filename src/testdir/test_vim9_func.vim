@@ -1202,6 +1202,28 @@ def Test_lambda_in_reduce_line_break()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_set_opfunc_to_lambda()
+  var lines =<< trim END
+    vim9script
+    nnoremap <expr> <F4> <SID>CountSpaces() .. '_'
+    def CountSpaces(type = ''): string
+      if type == ''
+        &operatorfunc = (t) => CountSpaces(t)
+        return 'g@'
+      endif
+      normal! '[V']y
+      g:result = getreg('"')->count(' ')
+      return ''
+    enddef
+    new
+    'a b c d e'->setline(1)
+    feedkeys("\<F4>", 'x')
+    assert_equal(4, g:result)
+    bwipe!
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 " Default arg and varargs
 def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
   var res = one .. ',' .. two

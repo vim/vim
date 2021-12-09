@@ -2336,10 +2336,14 @@ exec_instructions(ectx_T *ectx)
 
 	    // store option
 	    case ISN_STOREOPT:
+	    case ISN_STOREFUNCOPT:
 		{
+		    char_u	*opt_name = iptr->isn_arg.storeopt.so_name;
+		    int		opt_flags = iptr->isn_arg.storeopt.so_flags;
 		    long	n = 0;
 		    char_u	*s = NULL;
 		    char	*msg;
+		    callback_T	cb = {NULL, NULL, 0};
 
 		    --ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(0);
@@ -2349,11 +2353,22 @@ exec_instructions(ectx_T *ectx)
 			if (s == NULL)
 			    s = (char_u *)"";
 		    }
+		    else if (iptr->isn_type == ISN_STOREFUNCOPT)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			cb = get_callback(tv);
+			if (cb.cb_name == NULL || *cb.cb_name == NUL)
+			{
+			    clear_tv(tv);
+			    free_callback(&cb);
+			    goto on_error;
+			}
+			s = cb.cb_name;
+		    }
 		    else
 			// must be VAR_NUMBER, CHECKTYPE makes sure
 			n = tv->vval.v_number;
-		    msg = set_option_value(iptr->isn_arg.storeopt.so_name,
-					n, s, iptr->isn_arg.storeopt.so_flags);
+		    msg = set_option_value(opt_name, n, s, opt_flags);
 		    clear_tv(tv);
 		    if (msg != NULL)
 		    {
@@ -2361,6 +2376,8 @@ exec_instructions(ectx_T *ectx)
 			emsg(_(msg));
 			goto on_error;
 		    }
+		    if (cb.cb_name != NULL)
+			free_callback(&cb);
 		}
 		break;
 
@@ -5335,7 +5352,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		}
 		break;
 	    case ISN_STOREOPT:
-		smsg("%s%4d STOREOPT &%s", pfx, current,
+	    case ISN_STOREFUNCOPT:
+		smsg("%s%4d %s &%s", pfx, current,
+		  iptr->isn_type == ISN_STOREOPT ? "STOREOPT" : "STOREFUNCOPT",
 					       iptr->isn_arg.storeopt.so_name);
 		break;
 	    case ISN_STOREENV:

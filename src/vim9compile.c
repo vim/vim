@@ -118,6 +118,7 @@ typedef struct {
 typedef enum {
     dest_local,
     dest_option,
+    dest_func_option,
     dest_env,
     dest_global,
     dest_buffer,
@@ -1412,15 +1413,19 @@ generate_STORENR(cctx_T *cctx, int idx, varnumber_T value)
 }
 
 /*
- * Generate an ISN_STOREOPT instruction
+ * Generate an ISN_STOREOPT or ISN_STOREFUNCOPT instruction
  */
     static int
-generate_STOREOPT(cctx_T *cctx, char_u *name, int opt_flags)
+generate_STOREOPT(
+	cctx_T	    *cctx,
+	isntype_T   isn_type,
+	char_u	    *name,
+	int	    opt_flags)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_drop(cctx, ISN_STOREOPT, 1)) == NULL)
+    if ((isn = generate_instr_drop(cctx, isn_type, 1)) == NULL)
 	return FAIL;
     isn->isn_arg.storeopt.so_name = vim_strsave(name);
     isn->isn_arg.storeopt.so_flags = opt_flags;
@@ -5980,6 +5985,7 @@ generate_loadvar(
     switch (dest)
     {
 	case dest_option:
+	case dest_func_option:
 	    generate_LOAD(cctx, ISN_LOADOPT, 0, name, type);
 	    break;
 	case dest_global:
@@ -6094,6 +6100,7 @@ get_var_dest(
 	int		cc;
 	long		numval;
 	getoption_T	opt_type;
+	int		opt_p_flags;
 
 	*dest = dest_option;
 	if (cmdidx == CMD_final || cmdidx == CMD_const)
@@ -6112,7 +6119,7 @@ get_var_dest(
 	cc = *p;
 	*p = NUL;
 	opt_type = get_option_value(skip_option_env_lead(name),
-					   &numval, NULL, NULL, *option_scope);
+				   &numval, NULL, &opt_p_flags, *option_scope);
 	*p = cc;
 	switch (opt_type)
 	{
@@ -6121,7 +6128,16 @@ get_var_dest(
 		    return FAIL;
 	    case gov_string:
 	    case gov_hidden_string:
-		    *type = &t_string;
+		    if (opt_p_flags & P_FUNC)
+		    {
+			// might be a Funcref, check the type later
+			*type = &t_any;
+			*dest = dest_func_option;
+		    }
+		    else
+		    {
+			*type = &t_string;
+		    }
 		    break;
 	    case gov_bool:
 	    case gov_hidden_bool:
@@ -6204,8 +6220,11 @@ generate_store_var(
     switch (dest)
     {
 	case dest_option:
-	    return generate_STOREOPT(cctx, skip_option_env_lead(name),
-								    opt_flags);
+	    return generate_STOREOPT(cctx, ISN_STOREOPT,
+					skip_option_env_lead(name), opt_flags);
+	case dest_func_option:
+	    return generate_STOREOPT(cctx, ISN_STOREFUNCOPT,
+					skip_option_env_lead(name), opt_flags);
 	case dest_global:
 	    // include g: with the name, easier to execute that way
 	    return generate_STORE(cctx, vim_strchr(name, AUTOLOAD_CHAR) == NULL
@@ -6468,7 +6487,7 @@ compile_lhs(
     if (lhs->lhs_varlen > 1 || var_start[lhs->lhs_varlen] != ':')
 	var_end = lhs->lhs_dest_end;
 
-    if (lhs->lhs_dest != dest_option)
+    if (lhs->lhs_dest != dest_option && lhs->lhs_dest != dest_func_option)
     {
 	if (is_decl && *var_end == ':')
 	{
@@ -7223,7 +7242,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		emsg(_(e_const_requires_a_value));
 		goto theend;
 	    }
-	    else if (!lhs.lhs_has_type || lhs.lhs_dest == dest_option)
+	    else if (!lhs.lhs_has_type || lhs.lhs_dest == dest_option
+					   || lhs.lhs_dest == dest_func_option)
 	    {
 		emsg(_(e_type_or_initialization_required));
 		goto theend;
@@ -10454,6 +10474,7 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_STOREOPT:
+	case ISN_STOREFUNCOPT:
 	    vim_free(isn->isn_arg.storeopt.so_name);
 	    break;
 
