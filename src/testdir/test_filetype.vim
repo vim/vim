@@ -569,6 +569,7 @@ let s:filename_checks = {
     \ 'yaml': ['file.yaml', 'file.yml'],
     \ 'raml': ['file.raml'],
     \ 'z8a': ['file.z8a'],
+    \ 'zig': ['file.zig'],
     \ 'zimbu': ['file.zu'],
     \ 'zimbutempl': ['file.zut'],
     \ 'zsh': ['.zprofile', '/etc/zprofile', '.zfbfmarks', 'file.zsh', '.zcompdump', '.zlogin', '.zlogout', '.zshenv', '.zshrc', '.zcompdump-file', '.zlog', '.zlog-file', '.zsh', '.zsh-file', 'any/etc/zprofile', 'zlog', 'zlog-file', 'zsh', 'zsh-file'],
