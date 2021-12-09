@@ -75,16 +75,16 @@ jobs:
             libtool-bin \
             libsodium-dev
 
-      - name: Install clang-11
+      - name: Install clang-13
         if: matrix.compiler == 'clang'
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-11 main"
-          sudo apt-get install -y clang-11 llvm-11
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100
-          sudo update-alternatives --set clang /usr/bin/clang-11
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-11 100
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-13 main"
+          sudo apt-get install -y clang-13 llvm-13
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-13 100
+          sudo update-alternatives --set clang /usr/bin/clang-13
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-13 100
 
       - name: Set up environment
         run: |
@@ -188,6 +188,10 @@ jobs:
           # Append various warning flags to CFLAGS.
           sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
           sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+          if [[ ${CC} = clang ]]; then
+            # Suppress some warnings produced by clang 12 and later.
+            sed -i -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          fi
 
       - name: Build
         if: (!contains(matrix.extra, 'unittests'))
@@ -296,6 +300,10 @@ jobs:
           sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
           # On macOS, the entity of gcc is clang.
           sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
+          # Suppress some warnings produced by clang 12 and later.
+          if clang --version | grep -qs 'Apple clang version \(1[3-9]\|[2-9]\)\.'; then
+            sed -i.bak -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          fi
 
       - name: Build
         env:
