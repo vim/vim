@@ -608,6 +608,11 @@ normal_cmd(
 	old_mapped_len = 0;	// do go to Insert mode
     }
 
+    // If the window was made so small that nothing shows, make it at least one
+    // line and one column when typing a command.
+    if (KeyTyped && !KeyStuffed)
+	win_ensure_size();
+
 #ifdef FEAT_CMDL_INFO
     need_flushbuf = add_to_showcmd(c);
 #endif

@@ -5518,6 +5518,18 @@ frame_comp_pos(frame_T *topfrp, int *row, int *col)
 }
 
 /*
+ * Make the current window show at least one line and one column.
+ */
+    void
+win_ensure_size()
+{
+    if (curwin->w_height == 0)
+	win_setheight(1);
+    if (curwin->w_width == 0)
+	win_setwidth(1);
+}
+
+/*
  * Set current window height and take care of repositioning other windows to
  * fit around it.
  */
