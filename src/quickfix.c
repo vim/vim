@@ -6793,13 +6793,18 @@ qf_winid(qf_info_T *qi)
 
 /*
  * Returns the number of the buffer displayed in the quickfix/location list
- * window. If there is no buffer associated with the list, then returns 0.
+ * window. If there is no buffer associated with the list or the buffer is
+ * wiped out, then returns 0.
  */
     static int
 qf_getprop_qfbufnr(qf_info_T *qi, dict_T *retdict)
 {
-    return dict_add_number(retdict, "qfbufnr",
-					(qi == NULL) ? 0 : qi->qf_bufnr);
+    int	bufnum = 0;
+
+    if (qi != NULL && buflist_findnr(qi->qf_bufnr) != NULL)
+	bufnum = qi->qf_bufnr;
+
+    return dict_add_number(retdict, "qfbufnr", bufnum);
 }
 
 /*
