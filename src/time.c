@@ -696,7 +696,8 @@ add_timer_info(typval_T *rettv, timer_T *timer)
     dict_add_number(dict, "remaining", (long)remaining);
 
     dict_add_number(dict, "repeat",
-		    (long)(timer->tr_repeat < 0 ? -1 : timer->tr_repeat + 1));
+	    (long)(timer->tr_repeat < 0 ? -1
+			     : timer->tr_repeat + (timer->tr_firing ? 0 : 1)));
     dict_add_number(dict, "paused", (long)(timer->tr_paused));
 
     di = dictitem_alloc((char_u *)"callback");
