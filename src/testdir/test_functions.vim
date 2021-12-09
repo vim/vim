@@ -2771,5 +2771,10 @@ func Test_builtin_check()
   call assert_fails('call extend(g:, #{bar: { -> "foo" }}, "force")', 'E704:')
 endfunc
 
+func Test_funcref_to_string()
+  let Fn = funcref('g:Test_funcref_to_string')
+  call assert_equal("function('g:Test_funcref_to_string')", string(Fn))
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
