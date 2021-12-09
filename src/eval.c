@@ -5007,7 +5007,7 @@ echo_string_core(
 		if (fname != NULL)
 		{
 		    // When using uf_name prepend "g:" for a global function.
-		    if (pt->pt_name == NULL && fname[0] == '\''
+		    if (pt != NULL && pt->pt_name == NULL && fname[0] == '\''
 						      && vim_isupper(fname[1]))
 		    {
 			ga_concat(&ga, (char_u *)"'g:");
