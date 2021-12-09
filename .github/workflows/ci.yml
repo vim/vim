@@ -255,7 +255,7 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CC: ${{ matrix.compiler }}
+      CC: clang
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
@@ -265,7 +265,6 @@ jobs:
       fail-fast: false
       matrix:
         features: [tiny, huge]
-        compiler: [clang, gcc]
 
     steps:
       - uses: actions/checkout@v2
