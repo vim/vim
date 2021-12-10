@@ -2011,8 +2011,6 @@ find_tags(
 		eof = vim_fgets(lbuf, lbuf_size, fp);
 		if (!eof && search_info.curr_offset != 0)
 		{
-		    // The explicit cast is to work around a bug in gcc 3.4.2
-		    // (repeated below).
 		    search_info.curr_offset = vim_ftell(fp);
 		    if (search_info.curr_offset == search_info.high_offset)
 		    {
@@ -2052,7 +2050,10 @@ find_tags(
 			eof = cs_fgets(lbuf, lbuf_size);
 		    else
 #endif
+		    {
+			search_info.curr_offset = vim_ftell(fp);
 			eof = vim_fgets(lbuf, lbuf_size, fp);
+		    }
 		} while (!eof && vim_isblankline(lbuf));
 
 		if (eof)
@@ -2294,6 +2295,10 @@ parse_line:
 		lbuf = alloc(lbuf_size);
 		if (lbuf == NULL)
 		    goto findtag_end;
+
+		if (state == TS_STEP_FORWARD)
+		    // Seek to the same position to read the same line again
+		    vim_fseek(fp, search_info.curr_offset, SEEK_SET);
 #ifdef FEAT_TAG_BINS
 		// this will try the same thing again, make sure the offset is
 		// different
