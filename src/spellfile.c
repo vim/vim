@@ -303,7 +303,7 @@
     for ((np) = (node); (np) != NULL; (np) = (np)->wn_sibling)
 
 static int set_spell_finish(spelltab_T	*new_st);
-static int write_spell_prefcond(FILE *fd, garray_T *gap);
+static int write_spell_prefcond(FILE *fd, garray_T *gap, size_t *fwv);
 static int read_region_section(FILE *fd, slang_T *slang, int len);
 static int read_charflags_section(FILE *fd);
 static int read_prefcond_section(FILE *fd, slang_T *lp);
@@ -4977,10 +4977,10 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 	putc(SN_PREFCOND, fd);				// <sectionID>
 	putc(SNF_REQUIRED, fd);				// <sectionflags>
 
-	l = write_spell_prefcond(NULL, &spin->si_prefcond);
+	l = write_spell_prefcond(NULL, &spin->si_prefcond, &fwv);
 	put_bytes(fd, (long_u)l, 4);			// <sectionlen>
 
-	write_spell_prefcond(fd, &spin->si_prefcond);
+	write_spell_prefcond(fd, &spin->si_prefcond, &fwv);
     }
 
     // SN_REP: <repcount> <rep> ...
@@ -6570,13 +6570,12 @@ set_spell_finish(spelltab_T *new_st)
  * When "fd" is NULL only count the length of what is written.
  */
     static int
-write_spell_prefcond(FILE *fd, garray_T *gap)
+write_spell_prefcond(FILE *fd, garray_T *gap, size_t *fwv)
 {
     int		i;
     char_u	*p;
     int		len;
     int		totlen;
-    size_t	x UNUSED = 1;  // collect return value of fwrite()
 
     if (fd != NULL)
 	put_bytes(fd, (long_u)gap->ga_len, 2);	    // <prefcondcnt>
@@ -6593,7 +6592,7 @@ write_spell_prefcond(FILE *fd, garray_T *gap)
 	    if (fd != NULL)
 	    {
 		fputc(len, fd);
-		x &= fwrite(p, (size_t)len, (size_t)1, fd);
+		*fwv &= fwrite(p, (size_t)len, (size_t)1, fd);
 	    }
 	    totlen += len;
 	}
