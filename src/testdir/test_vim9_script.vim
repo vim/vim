@@ -4634,6 +4634,29 @@ def Test_xxx_echoerr_line_number()
   CheckDefExecAndScriptFailure(lines, 'some error continued', 1)
 enddef
 
+def Test_debug_with_lambda()
+  CheckRunVimInTerminal
+
+  var lines =<< trim END
+      vim9script
+      def Func()
+        var n = 0
+        echo [0]->filter((_, v) => v == n)
+      enddef
+      breakadd func Func
+      Func()
+  END
+  writefile(lines, 'XdebugFunc')
+  var buf = RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
+  WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+
+  term_sendkeys(buf, "cont\<CR>")
+  WaitForAssert(() => assert_match('\[0\]', term_getline(buf, 5)))
+
+  StopVimInTerminal(buf)
+  delete('XdebugFunc')
+enddef
+
 def ProfiledWithLambda()
   var n = 3
   echo [[1, 2], [3, 4]]->filter((_, l) => l[0] == n)

@@ -3762,12 +3762,15 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	ufunc->uf_ret_type = &t_unknown;
     compile_def_function(ufunc, FALSE, cctx->ctx_compile_type, cctx);
 
+    // When the outer function is compiled for profiling or debugging, the
+    // lambda may be called without profiling or debugging.  Compile it here in
+    // the right context.
+    if (cctx->ctx_compile_type == CT_DEBUG
 #ifdef FEAT_PROFILE
-    // When the outer function is compiled for profiling, the lambda may be
-    // called without profiling.  Compile it here in the right context.
-    if (cctx->ctx_compile_type == CT_PROFILE)
-	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
+	    || cctx->ctx_compile_type == CT_PROFILE
 #endif
+       )
+	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
 
     // The last entry in evalarg.eval_tofree_ga is a copy of the last line and
     // "*arg" may point into it.  Point into the original line to avoid a
