@@ -3291,6 +3291,7 @@ set_var_const(
     int		vim9script = in_vim9script();
     int		var_in_vim9script;
     int		flags = flags_arg;
+    int		free_tv_arg = !copy;  // free tv_arg if not used
 
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
@@ -3545,6 +3546,7 @@ set_var_const(
 	dest_tv->v_lock = 0;
 	init_tv(tv);
     }
+    free_tv_arg = FALSE;
 
     if (vim9script && type != NULL)
     {
@@ -3573,10 +3575,9 @@ set_var_const(
 	// if the reference count is up to one.  That locks only literal
 	// values.
 	item_lock(dest_tv, DICT_MAXNEST, TRUE, TRUE);
-    return;
 
 failed:
-    if (!copy)
+    if (free_tv_arg)
 	clear_tv(tv_arg);
 }
 

@@ -268,6 +268,7 @@ free_all_script_vars(scriptitem_T *si)
     hashitem_T	*hi;
     sallvar_T	*sav;
     sallvar_T	*sav_next;
+    int		idx;
 
     hash_lock(ht);
     todo = (int)ht->ht_used;
@@ -293,6 +294,13 @@ free_all_script_vars(scriptitem_T *si)
     hash_clear(ht);
     hash_init(ht);
 
+    for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+    {
+	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	if (sv->sv_type_allocated)
+	    free_type(sv->sv_type);
+    }
     ga_clear(&si->sn_var_vals);
 
     // existing commands using script variable indexes are no longer valid
@@ -899,7 +907,22 @@ update_vim9_script_var(
     {
 	if (*type == NULL)
 	    *type = typval2type(tv, get_copyID(), &si->sn_type_list, do_member);
-	sv->sv_type = *type;
+	if (sv->sv_type_allocated)
+	    free_type(sv->sv_type);
+	if (*type != NULL && ((*type)->tt_type == VAR_FUNC
+					   || (*type)->tt_type == VAR_PARTIAL))
+	{
+	    // The type probably uses uf_type_list, which is cleared when the
+	    // function is freed, but the script variable may keep the type.
+	    // Make a copy to avoid using freed memory.
+	    sv->sv_type = alloc_type(*type);
+	    sv->sv_type_allocated = TRUE;
+	}
+	else
+	{
+	    sv->sv_type = *type;
+	    sv->sv_type_allocated = FALSE;
+	}
     }
 
     // let ex_export() know the export worked.
