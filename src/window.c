@@ -5353,18 +5353,24 @@ win_free_lsize(win_T *wp)
     void
 shell_new_rows(void)
 {
-    int		h = (int)ROWS_AVAIL;
+    tabpage_T	*tp;
 
     if (firstwin == NULL)	// not initialized yet
 	return;
-    if (h < frame_minheight(topframe, NULL))
-	h = frame_minheight(topframe, NULL);
 
-    // First try setting the heights of windows with 'winfixheight'.  If
-    // that doesn't result in the right height, forget about that option.
-    frame_new_height(topframe, h, FALSE, TRUE);
-    if (!frame_check_height(topframe, h))
-	frame_new_height(topframe, h, FALSE, FALSE);
+    FOR_ALL_TABPAGES(tp)
+    {
+	int		h = (int)ROWS_AVAIL;
+
+	if (h < frame_minheight(tp->tp_topframe, NULL))
+	    h = frame_minheight(tp->tp_topframe, NULL);
+
+	// First try setting the heights of windows with 'winfixheight'.  If
+	// that doesn't result in the right height, forget about that option.
+	frame_new_height(tp->tp_topframe, h, FALSE, TRUE);
+	if (!frame_check_height(tp->tp_topframe, h))
+	    frame_new_height(tp->tp_topframe, h, FALSE, FALSE);
+    }
 
     (void)win_comp_pos();		// recompute w_winrow and w_wincol
     compute_cmdrow();
@@ -5383,14 +5389,19 @@ shell_new_rows(void)
     void
 shell_new_columns(void)
 {
+    tabpage_T	*tp;
+
     if (firstwin == NULL)	// not initialized yet
 	return;
 
-    // First try setting the widths of windows with 'winfixwidth'.  If that
-    // doesn't result in the right width, forget about that option.
-    frame_new_width(topframe, (int)Columns, FALSE, TRUE);
-    if (!frame_check_width(topframe, Columns))
-	frame_new_width(topframe, (int)Columns, FALSE, FALSE);
+    FOR_ALL_TABPAGES(tp)
+    {
+	// First try setting the widths of windows with 'winfixwidth'.  If that
+	// doesn't result in the right width, forget about that option.
+	frame_new_width(tp->tp_topframe, (int)Columns, FALSE, TRUE);
+	if (!frame_check_width(tp->tp_topframe, Columns))
+	    frame_new_width(tp->tp_topframe, (int)Columns, FALSE, FALSE);
+    }
 
     (void)win_comp_pos();		// recompute w_winrow and w_wincol
 #if 0
