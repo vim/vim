@@ -1670,7 +1670,8 @@ do_ucmd(exarg_T *eap)
     size_t	split_len = 0;
     char_u	*split_buf = NULL;
     ucmd_T	*cmd;
-    sctx_T	save_current_sctx = current_sctx;
+    sctx_T	save_current_sctx;
+    int		restore_current_sctx = FALSE;
 
     if (eap->cmdidx == CMD_USER)
 	cmd = USER_CMD(eap->useridx);
@@ -1771,14 +1772,20 @@ do_ucmd(exarg_T *eap)
 
     if ((cmd->uc_argt & EX_KEEPSCRIPT) == 0)
     {
+	restore_current_sctx = TRUE;
+	save_current_sctx = current_sctx;
 	current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
 #ifdef FEAT_EVAL
 	current_sctx.sc_sid = cmd->uc_script_ctx.sc_sid;
 #endif
     }
+
     (void)do_cmdline(buf, eap->getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);
-    if ((cmd->uc_argt & EX_KEEPSCRIPT) == 0)
+
+    // Careful: Do not use "cmd" here, it may have become invalid if a user
+    // command was added.
+    if (restore_current_sctx)
 	current_sctx = save_current_sctx;
     vim_free(buf);
     vim_free(split_buf);

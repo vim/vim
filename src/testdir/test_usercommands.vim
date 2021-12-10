@@ -704,5 +704,24 @@ def Test_count_with_quotes()
   delcommand GetCount
 enddef
 
+func DefCmd(name)
+  if len(a:name) > 30
+    return
+  endif
+  exe 'command ' .. a:name .. ' call DefCmd("' .. a:name .. 'x")'
+  echo a:name
+  exe a:name
+endfunc
+
+func Test_recursive_define()
+  call DefCmd('Command')
+
+  let name = 'Command'
+  while len(name) < 30
+    exe 'delcommand ' .. name
+    let name ..= 'x'
+  endwhile
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
