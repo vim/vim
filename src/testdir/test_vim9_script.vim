@@ -4634,9 +4634,14 @@ def Test_xxx_echoerr_line_number()
   CheckDefExecAndScriptFailure(lines, 'some error continued', 1)
 enddef
 
-def Test_debug_with_lambda()
+func Test_debug_with_lambda()
   CheckRunVimInTerminal
 
+  " call indirectly to avoid compilation error for missing functions
+  call Run_Test_debug_with_lambda()
+endfunc
+
+def Run_Test_debug_with_lambda()
   var lines =<< trim END
       vim9script
       def Func()
