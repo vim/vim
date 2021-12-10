@@ -3216,7 +3216,8 @@ struct tabpage_S
     win_T	    *tp_first_popupwin; // first popup window in this Tab page
 #endif
     long	    tp_old_Rows;    // Rows when Tab page was left
-    long	    tp_old_Columns; // Columns when Tab page was left
+    long	    tp_old_Columns; // Columns when Tab page was left, -1 when
+				    // calling shell_new_columns() postponed
     long	    tp_ch_used;	    // value of 'cmdheight' when frame size
 				    // was set
 #ifdef FEAT_GUI
