@@ -1459,7 +1459,7 @@ endfunc
 def Test_call_funcref()
   g:SomeFunc('abc')->assert_equal(3)
   assert_fails('NotAFunc()', 'E117:', '', 2, 'Test_call_funcref') # comment after call
-  assert_fails('g:NotAFunc()', 'E117:', '', 3, 'Test_call_funcref')
+  assert_fails('g:NotAFunc()', 'E1085:', '', 3, 'Test_call_funcref')
 
   var lines =<< trim END
     vim9script

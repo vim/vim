@@ -1544,6 +1544,7 @@ errret:
  * "partialp".
  * If "type" is not NULL and a Vim9 script-local variable is found look up the
  * type of the variable.
+ * If "found_var" is not NULL and a variable was found set it to TRUE.
  */
     char_u *
 deref_func_name(
@@ -1551,7 +1552,8 @@ deref_func_name(
 	int	    *lenp,
 	partial_T   **partialp,
 	type_T	    **type,
-	int	    no_autoload)
+	int	    no_autoload,
+	int	    *found_var)
 {
     dictitem_T	*v;
     typval_T	*tv = NULL;
@@ -1609,6 +1611,8 @@ deref_func_name(
 
     if (tv != NULL)
     {
+	if (found_var != NULL)
+	    *found_var = TRUE;
 	if (tv->v_type == VAR_FUNC)
 	{
 	    if (tv->vval.v_string == NULL)
@@ -3199,12 +3203,15 @@ call_callback_retnr(
  * Nothing if "error" is FCERR_NONE.
  */
     void
-user_func_error(int error, char_u *name)
+user_func_error(int error, char_u *name, funcexe_T *funcexe)
 {
     switch (error)
     {
 	case FCERR_UNKNOWN:
-		emsg_funcname(e_unknownfunc, name);
+		if (funcexe->fe_found_var)
+		    semsg(_(e_not_callable_type_str), name);
+		else
+		    emsg_funcname(e_unknownfunc, name);
 		break;
 	case FCERR_NOTMETHOD:
 		emsg_funcname(
@@ -3448,7 +3455,7 @@ theend:
      */
     if (!aborting())
     {
-	user_func_error(error, (name != NULL) ? name : funcname);
+	user_func_error(error, (name != NULL) ? name : funcname, funcexe);
     }
 
     // clear the copies made from the partial
@@ -3677,7 +3684,7 @@ trans_function_name(
     {
 	len = (int)STRLEN(lv.ll_exp_name);
 	name = deref_func_name(lv.ll_exp_name, &len, partial, type,
-						     flags & TFN_NO_AUTOLOAD);
+						flags & TFN_NO_AUTOLOAD, NULL);
 	if (name == lv.ll_exp_name)
 	    name = NULL;
     }
@@ -3685,7 +3692,7 @@ trans_function_name(
     {
 	len = (int)(end - *pp);
 	name = deref_func_name(*pp, &len, partial, type,
-						      flags & TFN_NO_AUTOLOAD);
+						flags & TFN_NO_AUTOLOAD, NULL);
 	if (name == *pp)
 	    name = NULL;
     }
@@ -5004,6 +5011,7 @@ ex_call(exarg_T *eap)
     partial_T	*partial = NULL;
     evalarg_T	evalarg;
     type_T	*type = NULL;
+    int		found_var = FALSE;
 
     fill_evalarg_from_eap(&evalarg, eap, eap->skip);
     if (eap->skip)
@@ -5040,7 +5048,7 @@ ex_call(exarg_T *eap)
     // from trans_function_name().
     len = (int)STRLEN(tofree);
     name = deref_func_name(tofree, &len, partial != NULL ? NULL : &partial,
-			in_vim9script() && type == NULL ? &type : NULL, FALSE);
+	    in_vim9script() && type == NULL ? &type : NULL, FALSE, &found_var);
 
     // Skip white space to allow ":call func ()".  Not good, but required for
     // backward compatibility.
@@ -5096,6 +5104,7 @@ ex_call(exarg_T *eap)
 	funcexe.partial = partial;
 	funcexe.selfdict = fudi.fd_dict;
 	funcexe.check_type = type;
+	funcexe.fe_found_var = found_var;
 	rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
 	if (get_func_tv(name, -1, &rettv, &arg, &evalarg, &funcexe) == FAIL)
 	{

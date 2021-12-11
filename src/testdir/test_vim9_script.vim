@@ -1922,6 +1922,15 @@ def Test_script_var_shadows_command()
   CheckDefAndScriptFailure(lines, 'E1207:', 2)
 enddef
 
+def Test_vim9script_call_wrong_type()
+  var lines =<< trim END
+      vim9script
+      var Time = 'localtime'
+      Time()
+  END
+  CheckScriptFailure(lines, 'E1085:')
+enddef
+
 def s:RetSome(): string
   return 'some'
 enddef

@@ -890,7 +890,7 @@ call_ufunc(
 
     if (error != FCERR_NONE)
     {
-	user_func_error(error, ufunc->uf_name);
+	user_func_error(error, ufunc->uf_name, &funcexe);
 	return FAIL;
     }
     if (did_emsg > did_emsg_before)
@@ -2343,7 +2343,8 @@ exec_instructions(ectx_T *ectx)
 		    long	n = 0;
 		    char_u	*s = NULL;
 		    char	*msg;
-		    callback_T	cb = {NULL, NULL, 0};
+		    char_u	numbuf[NUMBUFLEN];
+		    char_u	*tofree = NULL;
 
 		    --ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(0);
@@ -2356,28 +2357,29 @@ exec_instructions(ectx_T *ectx)
 		    else if (iptr->isn_type == ISN_STOREFUNCOPT)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			cb = get_callback(tv);
-			if (cb.cb_name == NULL || *cb.cb_name == NUL)
+			// If the option can be set to a function reference or
+			// a lambda and the passed value is a function
+			// reference, then convert it to the name (string) of
+			// the function reference.
+			s = tv2string(tv, &tofree, numbuf, 0);
+			if (s == NULL || *s == NUL)
 			{
 			    clear_tv(tv);
-			    free_callback(&cb);
 			    goto on_error;
 			}
-			s = cb.cb_name;
 		    }
 		    else
 			// must be VAR_NUMBER, CHECKTYPE makes sure
 			n = tv->vval.v_number;
 		    msg = set_option_value(opt_name, n, s, opt_flags);
 		    clear_tv(tv);
+		    vim_free(tofree);
 		    if (msg != NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(msg));
 			goto on_error;
 		    }
-		    if (cb.cb_name != NULL)
-			free_callback(&cb);
 		}
 		break;
 

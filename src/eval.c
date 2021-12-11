@@ -1988,6 +1988,7 @@ eval_func(
     partial_T	*partial;
     int		ret = OK;
     type_T	*type = NULL;
+    int		found_var = FALSE;
 
     if (!evaluate)
 	check_vars(s, len);
@@ -1995,7 +1996,7 @@ eval_func(
     // If "s" is the name of a variable of type VAR_FUNC
     // use its contents.
     s = deref_func_name(s, &len, &partial,
-				    in_vim9script() ? &type : NULL, !evaluate);
+			in_vim9script() ? &type : NULL, !evaluate, &found_var);
 
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.
@@ -2014,6 +2015,7 @@ eval_func(
 	funcexe.partial = partial;
 	funcexe.basetv = basetv;
 	funcexe.check_type = type;
+	funcexe.fe_found_var = found_var;
 	ret = get_func_tv(s, len, rettv, arg, evalarg, &funcexe);
     }
     vim_free(s);
