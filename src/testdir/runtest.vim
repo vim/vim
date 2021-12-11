@@ -77,6 +77,9 @@ if has('reltime')
   let s:start_time = reltime()
 endif
 
+" Always use forward slashes.
+set shellslash
+
 " Common with all tests on all systems.
 source setup.vim
 
@@ -127,9 +130,6 @@ if has('gui_running') && exists('did_install_default_menus')
   set langmenu=none
   source $VIMRUNTIME/menu.vim
 endif
-
-" Always use forward slashes.
-set shellslash
 
 let s:srcdir = expand('%:p:h:h')
 

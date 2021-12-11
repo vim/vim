@@ -7402,9 +7402,13 @@ changedir_func(
     else
 	prev_dir = pdir;
 
+    // For UNIX ":cd" means: go to home directory.
+    // On other systems too if 'cdhome' is set.
 #if defined(UNIX) || defined(VMS)
-    // for UNIX ":cd" means: go to home directory
     if (*new_dir == NUL)
+#else
+    if (*new_dir == NUL && p_cdh)
+#endif
     {
 	// use NameBuff for home directory name
 # ifdef VMS
@@ -7420,7 +7424,6 @@ changedir_func(
 # endif
 	new_dir = NameBuff;
     }
-#endif
     dir_differs = new_dir == NULL || pdir == NULL
 	|| pathcmp((char *)pdir, (char *)new_dir, -1) != 0;
     if (new_dir == NULL || (dir_differs && vim_chdir(new_dir)))
@@ -7459,8 +7462,8 @@ ex_cd(exarg_T *eap)
 
     new_dir = eap->arg;
 #if !defined(UNIX) && !defined(VMS)
-    // for non-UNIX ":cd" means: print current directory
-    if (*new_dir == NUL)
+    // for non-UNIX ":cd" means: print current directory unless 'cdhome' is set
+    if (*new_dir == NUL && !p_cdh)
 	ex_pwd(NULL);
     else
 #endif

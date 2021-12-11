@@ -1298,11 +1298,12 @@ Changing directory fails when the current buffer is modified, the '.' flag is
 present in 'cpoptions' and "!" is not used in the command.
 
 							*:cd* *E747* *E472*
-:cd[!]			On non-Unix systems: Print the current directory
-			name.  On Unix systems: Change the current directory
-			to the home directory.  Use |:pwd| to print the
-			current directory on all systems.
-			On Unix systems: clear any window-local directory.
+:cd[!]			On non-Unix systems when 'cdhome' is off: Print the
+			current directory name.
+			Otherwise: Change the current directory to the home
+			directory.  Clear any window-local directory.
+			Use |:pwd| to print the current directory on all
+			systems.
 
 :cd[!] {path}		Change the current directory to {path}.
 			If {path} is relative, it is searched for in the
