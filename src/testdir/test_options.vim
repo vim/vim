@@ -1202,8 +1202,11 @@ endfunc
 " Test for the 'cdhome' option
 func Test_opt_cdhome()
   if has('unix') || has('vms')
+    call assert_equal(0, exists('+cdhome'))
     throw 'Skipped: only works on non-Unix'
   endif
+
+  call assert_equal(1, exists('+cdhome'))
 
   set cdhome&
   call assert_equal(0, &cdhome)

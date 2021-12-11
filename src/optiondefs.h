@@ -550,7 +550,11 @@ static struct vimoption options[] =
 			    {(char_u *)"internal,keepascii", (char_u *)0L}
 			    SCTX_INIT},
     {"cdhome",	    "cdh",  P_BOOL|P_VI_DEF|P_VIM|P_SECURE,
+#if !defined(UNIX) && !defined(VMS)
 			    (char_u *)&p_cdh, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
 			    {(char_u *)FALSE, (char_u *)0L}
 			    SCTX_INIT},
     {"cdpath",	    "cd",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE|P_COMMA|P_NODUP,
