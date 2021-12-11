@@ -2782,6 +2782,7 @@ long elapsed(DWORD start_tick);
 #define EVAL_VAR_VERBOSE	1   // may give error message
 #define EVAL_VAR_NOAUTOLOAD	2   // do not use script autoloading
 #define EVAL_VAR_IMPORT		4   // may return special variable for import
+#define EVAL_VAR_NO_FUNC	8   // do not look for a function
 
 // Maximum number of characters that can be fuzzy matched
 #define MAX_FUZZY_MATCHES	256

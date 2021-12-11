@@ -4134,19 +4134,41 @@ define_function(exarg_T *eap, char_u *name_arg)
 				     || (fudi.fd_di->di_tv.v_type != VAR_FUNC
 				 && fudi.fd_di->di_tv.v_type != VAR_PARTIAL)))
 	{
+	    char_u  *name_base = arg;
+	    int	    i;
+
 	    if (*arg == K_SPECIAL)
-		j = 3;
-	    else
-		j = 0;
-	    while (arg[j] != NUL && (j == 0 ? eval_isnamec1(arg[j])
-						      : eval_isnamec(arg[j])))
-		++j;
-	    if (arg[j] != NUL)
+	    {
+		name_base = vim_strchr(arg, '_');
+		if (name_base == NULL)
+		    name_base = arg + 3;
+		else
+		    ++name_base;
+	    }
+	    for (i = 0; name_base[i] != NUL && (i == 0
+					? eval_isnamec1(name_base[i])
+					: eval_isnamec(name_base[i])); ++i)
+		;
+	    if (name_base[i] != NUL)
 		emsg_funcname((char *)e_invarg2, arg);
+
+	    // In Vim9 script a function cannot have the same name as a
+	    // variable.
+	    if (vim9script && *arg == K_SPECIAL
+		     && eval_variable(name_base, STRLEN(name_base), NULL, NULL,
+			 EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT
+						     + EVAL_VAR_NO_FUNC) == OK)
+	    {
+		semsg(_(e_redefining_script_item_str), name_base);
+		goto ret_free;
+	    }
 	}
 	// Disallow using the g: dict.
 	if (fudi.fd_dict != NULL && fudi.fd_dict->dv_scope == VAR_DEF_SCOPE)
+	{
 	    emsg(_("E862: Cannot use g: here"));
+	    goto ret_free;
+	}
     }
 
     // This may get more lines and make the pointers into the first line

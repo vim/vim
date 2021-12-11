@@ -2712,7 +2712,7 @@ eval_variable(
 		type = sv->sv_type;
 	    }
 	}
-	else if (in_vim9script())
+	else if (in_vim9script() && (flags & EVAL_VAR_NO_FUNC) == 0)
 	{
 	    ufunc_T *ufunc = find_func(name, FALSE, NULL);
 

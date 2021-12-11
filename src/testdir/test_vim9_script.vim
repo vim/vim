@@ -1896,6 +1896,17 @@ def Test_script_var_shadows_function()
   CheckScriptFailure(lines, 'E1041:', 5)
 enddef
 
+def Test_function_shadows_script_var()
+  var lines =<< trim END
+      vim9script
+      var Func = 1
+      def Func(): number
+        return 123
+      enddef
+  END
+  CheckScriptFailure(lines, 'E1041:', 3)
+enddef
+
 def Test_script_var_shadows_command()
   var lines =<< trim END
       var undo = 1
@@ -2198,7 +2209,7 @@ def Test_func_overrules_import_fails()
       echo 'local to function'
     enddef
   END
-  CheckScriptFailure(lines, 'E1073:')
+  CheckScriptFailure(lines, 'E1041:')
 
   lines =<< trim END
     vim9script
@@ -2231,7 +2242,7 @@ def Test_func_redefine_fails()
     vim9script
     def Foo(): string
       return 'foo'
-      enddef
+    enddef
     def Func()
       var  Foo = {-> 'lambda'}
     enddef
