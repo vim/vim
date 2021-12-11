@@ -2528,6 +2528,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 
 	        tv.v_type = VAR_STRING;
 	        tv.vval.v_string = vim_strsave(buf);
+
 	        set_vim_var_nr(VV_KEY, idx);
 	        if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
 	        						   || did_emsg)
@@ -2550,6 +2551,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		}
 		else if (!rem)
 		    ga_concat(&ga, tv.vval.v_string);
+
+		vim_free(tv.vval.v_string);
 
 	        ++idx;
 	    }
