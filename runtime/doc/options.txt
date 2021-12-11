@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Dec 03
+*options.txt*	For Vim version 8.2.  Last change: 2021 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -391,7 +391,11 @@ lambda it will be converted to the name, e.g. "<lambda>123".  Examples:
 	" set using a variable with lambda expression
 	let L = {a, b, c -> MyTagFunc(a, b , c)}
 	let &tagfunc = L
-<
+
+In Vim9 script, in a compiled function, you can use a lambda, but a
+closured does not work, because the function will be called without the
+context of where it was defined.
+
 
 Setting the filetype
 
@@ -1489,6 +1493,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			case mapping, the current locale is not effective.
 			This probably only matters for Turkish.
 
+						*'cdhome'* *'cdh'*
+'cdhome' 'cdh'		boolean	(default: off)
+			global
+	When on, |:cd|, |:tcd| and |:lcd| without an argument changes the
+	current working directory to the |$HOME| directory like in Unix.
+	When off, those commands just print the current directory name.
+	On Unix this option has no effect.
+	NOTE: This option is reset when 'compatible' is set.
+
 						*'cdpath'* *'cd'* *E344* *E346*
 'cdpath' 'cd'		string	(default: equivalent to $CDPATH or ",,")
 			global
@@ -1830,6 +1843,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'balloonexpr'	+ ""		text to show in evaluation balloon
 	'breakindent'	+ off		don't indent when wrapping lines
 	'cedit'		- {unchanged}	{set vim default only on resetting 'cp'}
+	'cdhome'	+ off		":cd" don't chdir to home on non-Unix
 	'cindent'	+ off		no C code indentation
 	'compatible'	- {unchanged}	{set vim default only on resetting 'cp'}
 	'copyindent'	+ off		don't copy indent structure
