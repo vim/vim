@@ -2329,9 +2329,14 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 			    && value_check_lock(d->dv_lock, arg_errmsg, TRUE)))
 	    goto theend;
     }
+    else if (argvars[0].v_type == VAR_STRING)
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+    }
     else
     {
-	semsg(_(e_listdictblobarg), func_name);
+	semsg(_(e_listdictblobstrarg), func_name);
 	goto theend;
     }
 
@@ -2479,6 +2484,77 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		}
 		++idx;
 	    }
+	}
+	else if (argvars[0].v_type == VAR_STRING)
+	{
+	    char_u	*p;
+	    typval_T	tv;
+	    garray_T	ga;
+	    char_u	buf[MB_MAXBYTES + 1];
+	    int		len;
+	    int (*ptr2len)(int);
+	    int (*ptr2char)(char_u *);
+
+	    if (enc_utf8)
+	    {
+		ptr2len = utf_char2len;
+		ptr2char = utf_ptr2char;
+	    }
+	    else
+	    {
+		ptr2len = mb_char2len;
+		ptr2char = mb_ptr2char;
+	    }
+
+	    // set_vim_var_nr() doesn't set the type
+	    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+	    ga_init2(&ga, (int)sizeof(char), 80);
+	    for (p = tv_get_string(&argvars[0]); *p != NUL; p += len)
+	    {
+	        typval_T newtv;
+
+		if (has_mbyte)
+		{
+		    len = ptr2len(ptr2char(p));
+		    STRNCPY(buf, p, len);
+		}
+		else
+		{
+		    len = 1;
+		    buf[0] = *p;
+		}
+		buf[len] = NUL;
+
+	        tv.v_type = VAR_STRING;
+	        tv.vval.v_string = vim_strsave(buf);
+	        set_vim_var_nr(VV_KEY, idx);
+	        if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+	        						   || did_emsg)
+	            break;
+		if (did_emsg)
+		{
+		    clear_tv(&newtv);
+		    break;
+		}
+		else if (filtermap != FILTERMAP_FILTER)
+		{
+		    if (newtv.v_type != VAR_STRING)
+		    {
+			clear_tv(&newtv);
+			emsg(_(e_stringreq));
+			break;
+		    }
+		    else
+			ga_concat(&ga, newtv.vval.v_string);
+		}
+		else if (!rem)
+		    ga_concat(&ga, tv.vval.v_string);
+
+	        ++idx;
+	    }
+	    ga_append(&ga, NUL);
+	    rettv->vval.v_string = ga.ga_data;
 	}
 	else // argvars[0].v_type == VAR_LIST
 	{
