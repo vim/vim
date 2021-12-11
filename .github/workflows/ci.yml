@@ -255,7 +255,7 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CC: ${{ matrix.compiler }}
+      CC: clang
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
@@ -264,8 +264,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        features: [tiny, huge]
-        compiler: [clang, gcc]
+        features: [tiny, normal, huge]
 
     steps:
       - uses: actions/checkout@v2
@@ -285,6 +284,8 @@ jobs:
           tiny)
             echo "TEST=testtiny"
             echo "CONFOPT=--disable-gui"
+            ;;
+          normal)
             ;;
           huge)
             echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
