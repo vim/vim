@@ -1395,7 +1395,6 @@ ex_let_option(
 	char_u	    *tofree = NULL;
 	char_u	    numbuf[NUMBUFLEN];
 
-
 	c1 = *p;
 	*p = NUL;
 

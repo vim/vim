@@ -133,15 +133,31 @@ set_tagfunc_option(void)
     return OK;
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE) || defined(PROTO)
     void
 free_tagfunc_option(void)
 {
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     free_callback(&tfu_cb);
-#  endif
-}
 # endif
+}
+#endif
+
+/*
+ * Mark the global 'tagfunc' callback with 'copyID' so that it is not garbage
+ * collected.
+ */
+    int
+set_ref_in_tagfunc(int copyID UNUSED)
+{
+    int	abort = FALSE;
+
+#ifdef FEAT_EVAL
+    abort = set_ref_in_callback(&tfu_cb, copyID);
+#endif
+
+    return abort;
+}
 
 /*
  * Copy the global 'tagfunc' callback function to the buffer-local 'tagfunc'
