@@ -1093,6 +1093,9 @@ EXTERN int	p_write;	// 'write'
 EXTERN int	p_wa;		// 'writeany'
 EXTERN int	p_wb;		// 'writebackup'
 EXTERN long	p_wd;		// 'writedelay'
+#if !defined(UNIX) && !defined(VMS)
+EXTERN int	p_cdh;		// 'cdhome'
+#endif
 
 /*
  * "indir" values for buffer-local options.
