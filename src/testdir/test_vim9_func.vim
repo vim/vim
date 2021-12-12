@@ -1224,6 +1224,25 @@ def Test_set_opfunc_to_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_set_opfunc_to_global_function()
+  var lines =<< trim END
+    vim9script
+    def g:CountSpaces(type = ''): string
+      normal! '[V']y
+      g:result = getreg('"')->count(' ')
+      return ''
+    enddef
+    &operatorfunc = g:CountSpaces
+    new
+    'a b c d e'->setline(1)
+    feedkeys("g@_", 'x')
+    assert_equal(4, g:result)
+    bwipe!
+  END
+  CheckScriptSuccess(lines)
+  &operatorfunc = ''
+enddef
+
 def Test_lambda_type_allocated()
   # Check that unreferencing a partial using a lambda can use the variable type
   # after the lambda has been freed and does not leak memory.
