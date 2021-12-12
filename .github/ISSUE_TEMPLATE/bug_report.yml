@@ -28,16 +28,21 @@ body:
       required: true
   - type: input
     attributes:
-      label: Operating system
+      label: Version of Vim
       description: >
-        Your operating system name, version and desktop environment.
+        Including patch level, use ":version" to see it [e.g. 8.2.1234]
     validations:
       required: true
-  - type: input
+  - type: textarea
     attributes:
-      label: Version of Vim and environment
+      label: Environment
       description: >
-        The exact Vim version [e.g. 8.2.1234], terminal [e.g. GNOME Terminal 3.38.1], value of $TERM, shell [e.g. bash 5.1.8], etc.
+        OS [e.g. Ubuntu 21.10], terminal [e.g. GNOME Terminal 3.38.1], value of $TERM, shell [e.g. bash 5.1.8]; anything that might matter
+      placeholder: |
+        Operating system:
+        Terminal:
+        Value of $TERM:
+        Shell:
     validations:
       required: true
   - type: textarea
