@@ -26,31 +26,25 @@ set_ref_in_buffers(int copyID)
     FOR_ALL_BUFFERS(bp)
     {
 	listener_T *lnr;
-	typval_T tv;
 
 	for (lnr = bp->b_listener; !abort && lnr != NULL; lnr = lnr->lr_next)
-	{
-	    if (lnr->lr_callback.cb_partial != NULL)
-	    {
-		tv.v_type = VAR_PARTIAL;
-		tv.vval.v_partial = lnr->lr_callback.cb_partial;
-		abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
-	    }
-	}
+	    abort = abort || set_ref_in_callback(&lnr->lr_callback, copyID);
 # ifdef FEAT_JOB_CHANNEL
-	if (!abort && bp->b_prompt_callback.cb_partial != NULL)
-	{
-	    tv.v_type = VAR_PARTIAL;
-	    tv.vval.v_partial = bp->b_prompt_callback.cb_partial;
-	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
-	}
-	if (!abort && bp->b_prompt_interrupt.cb_partial != NULL)
-	{
-	    tv.v_type = VAR_PARTIAL;
-	    tv.vval.v_partial = bp->b_prompt_interrupt.cb_partial;
-	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
-	}
+	if (!abort)
+	    abort = abort || set_ref_in_callback(&bp->b_prompt_callback, copyID);
+	if (!abort)
+	    abort = abort || set_ref_in_callback(&bp->b_prompt_interrupt, copyID);
 # endif
+#ifdef FEAT_COMPL_FUNC
+	if (!abort)
+	    abort = abort || set_ref_in_callback(&bp->b_cfu_cb, copyID);
+	if (!abort)
+	    abort = abort || set_ref_in_callback(&bp->b_ofu_cb, copyID);
+	if (!abort)
+	    abort = abort || set_ref_in_callback(&bp->b_tsrfu_cb, copyID);
+#endif
+	if (!abort)
+	    abort = abort || set_ref_in_callback(&bp->b_tfu_cb, copyID);
 	if (abort)
 	    break;
     }

@@ -44,6 +44,7 @@ void set_buflocal_cfu_callback(buf_T *buf);
 int set_omnifunc_option(void);
 void set_buflocal_ofu_callback(buf_T *buf);
 int set_thesaurusfunc_option(void);
+int set_ref_in_insexpand_funcs(int copyID);
 callback_T *get_insert_callback(int type);
 void f_complete(typval_T *argvars, typval_T *rettv);
 void f_complete_add(typval_T *argvars, typval_T *rettv);

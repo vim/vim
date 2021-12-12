@@ -19,5 +19,6 @@ void clear_oparg(oparg_T *oap);
 void cursor_pos_info(dict_T *dict);
 int set_operatorfunc_option(void);
 void free_operatorfunc_option(void);
+int set_ref_in_opfunc(int copyID);
 void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);
 /* vim: set ft=c : */

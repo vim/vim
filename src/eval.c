@@ -4516,6 +4516,18 @@ garbage_collect(int testing)
     // callbacks in buffers
     abort = abort || set_ref_in_buffers(copyID);
 
+    // 'completefunc', 'omnifunc' and 'thesaurusfunc' callbacks
+    abort = abort || set_ref_in_insexpand_funcs(copyID);
+
+    // 'operatorfunc' callback
+    abort = abort || set_ref_in_opfunc(copyID);
+
+    // 'tagfunc' callback
+    abort = abort || set_ref_in_tagfunc(copyID);
+
+    // 'imactivatefunc' and 'imstatusfunc' callbacks
+    abort = abort || set_ref_in_im_funcs(copyID);
+
 #ifdef FEAT_LUA
     abort = abort || set_ref_in_lua(copyID);
 #endif
@@ -4741,6 +4753,22 @@ set_ref_in_list_items(list_T *l, int copyID, ht_stack_T **ht_stack)
     }
 
     return abort;
+}
+
+/*
+ * Mark the partial in callback 'cb' with "copyID".
+ */
+    int
+set_ref_in_callback(callback_T *cb, int copyID)
+{
+    typval_T tv;
+
+    if (cb->cb_name == NULL || *cb->cb_name == NUL || cb->cb_partial == NULL)
+	return FALSE;
+
+    tv.v_type = VAR_PARTIAL;
+    tv.vval.v_partial = cb->cb_partial;
+    return set_ref_in_item(&tv, copyID, NULL, NULL);
 }
 
 /*
