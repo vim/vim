@@ -1388,6 +1388,9 @@ open_line(
     char_u	*p;
     int		saved_char = NUL;	// init for GCC
     pos_T	*pos;
+#ifdef FEAT_CINDENT
+    int		do_cindent;
+#endif
 #ifdef FEAT_SMARTINDENT
     int		do_si = (!p_paste && curbuf->b_p_si
 # ifdef FEAT_CINDENT
@@ -1397,9 +1400,6 @@ open_line(
 					&& *curbuf->b_p_inde == NUL
 # endif
 			);
-#ifdef FEAT_CINDENT
-    int		do_cindent;
-#endif
     int		no_si = FALSE;		// reset did_si afterwards
     int		first_char = NUL;	// init for GCC
 #endif
