@@ -125,6 +125,11 @@ func Test_imactivatefunc_imstatusfunc_callback()
     LET g:IMactivatefunc_called = 0
     LET g:IMstatusfunc_called = 0
 
+    #" Test for using a function name
+    LET &imactivatefunc = 'g:IMactivatefunc1'
+    LET &imstatusfunc = 'g:IMstatusfunc1'
+    normal! i
+
     #" Test for using a function()
     set imactivatefunc=function('g:IMactivatefunc1')
     set imstatusfunc=function('g:IMstatusfunc1')
@@ -215,8 +220,8 @@ func Test_imactivatefunc_imstatusfunc_callback()
     call assert_fails("LET &imstatusfunc = function('NonExistingFunc')", 'E700:')
     normal! i
 
-    call assert_equal(13, g:IMactivatefunc_called)
-    call assert_equal(26, g:IMstatusfunc_called)
+    call assert_equal(14, g:IMactivatefunc_called)
+    call assert_equal(28, g:IMstatusfunc_called)
   END
   call CheckLegacyAndVim9Success(lines)
 
@@ -283,12 +288,12 @@ func Test_imactivatefunc_imstatusfunc_callback()
   call CheckScriptSuccess(lines)
 
   " cleanup
+  set iminsert=0
+  set imactivatefunc&
+  set imstatusfunc&
   delfunc IMactivatefunc1
   delfunc IMstatusfunc1
-  set iminsert=0
-  set imactivatefunc=
-  set imstatusfunc=
-
+  unlet g:IMactivatefunc_called g:IMstatusfunc_called
   %bw!
 endfunc
 
