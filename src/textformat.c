@@ -89,6 +89,7 @@ internal_format(
 	colnr_T	col;
 	colnr_T	end_col;
 	int	wcc;			// counter for whitespace chars
+	int	did_do_comment = FALSE;
 
 	virtcol = get_nolist_virtcol()
 		+ char2cells(c != NUL ? c : gchar_cursor());
@@ -352,9 +353,15 @@ internal_format(
 		+ (fo_white_par ? OPENLINE_KEEPTRAIL : 0)
 		+ (do_comments ? OPENLINE_DO_COM : 0)
 		+ ((flags & INSCHAR_COM_LIST) ? OPENLINE_COM_LIST : 0)
-		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent));
+		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent),
+		&did_do_comment);
 	if (!(flags & INSCHAR_COM_LIST))
 	    old_indent = 0;
+
+	// If a comment leader was inserted, may also do this on a following
+	// line.
+	if (did_do_comment)
+	    no_leader = FALSE;
 
 	replace_offset = 0;
 	if (first_line)

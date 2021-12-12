@@ -5147,7 +5147,8 @@ ins_eol(int c)
 
     AppendToRedobuff(NL_STR);
     i = open_line(FORWARD,
-	    has_format_option(FO_RET_COMS) ? OPENLINE_DO_COM : 0, old_indent);
+	    has_format_option(FO_RET_COMS) ? OPENLINE_DO_COM : 0, old_indent,
+	    NULL);
     old_indent = 0;
 #ifdef FEAT_CINDENT
     can_cindent = TRUE;

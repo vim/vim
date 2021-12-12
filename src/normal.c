@@ -6511,7 +6511,7 @@ n_opencmd(cmdarg_T *cap)
 		       ) == OK
 		&& open_line(cap->cmdchar == 'O' ? BACKWARD : FORWARD,
 			 has_format_option(FO_OPEN_COMS) ? OPENLINE_DO_COM : 0,
-								      0) == OK)
+								0, NULL) == OK)
 	{
 #ifdef FEAT_CONCEAL
 	    if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)
