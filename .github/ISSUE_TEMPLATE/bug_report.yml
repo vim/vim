@@ -35,9 +35,9 @@ body:
       required: true
   - type: input
     attributes:
-      label: Version of Vim
+      label: Version of Vim and environment
       description: >
-        The name of your development environment, version. [e.g. GNOME Terminal (v0.0.0000)]
+        The exact Vim version [e.g. 8.2.1234], terminal [e.g. GNOME Terminal 3.38.1], value of $TERM, shell [e.g. bash 5.1.8], etc.
     validations:
       required: true
   - type: textarea
