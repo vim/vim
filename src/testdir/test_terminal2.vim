@@ -521,7 +521,8 @@ func Test_term_gettitle()
   endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', '-c', 'set title'])
-  if has('autoservername')
+  if has('autoservername') &&
+        \ ((has('x11') && !empty($DISPLAY)) || has('win32'))
     call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d\+$', term_gettitle(term)) })
     call term_sendkeys(term, ":e Xfoo\r")
     call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM\d\+$', term_gettitle(term)) })
