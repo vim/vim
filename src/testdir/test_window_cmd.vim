@@ -1379,13 +1379,17 @@ func Test_window_minimal_size()
 
   if has('timers')
     " check size is fixed in Insert mode
+    func s:CheckSize(timer) abort
+      call win_execute(win_getid(2), 'wincmd _')
+      call assert_equal(0, winheight(0))
+      call feedkeys(" \<Esc>", 't!')
+    endfunc
     new
-    call timer_start(100, {_ -> win_execute(win_getid(2), 'wincmd _')})
-    call timer_start(200, {_ -> assert_equal(0, winheight(0))})
-    call timer_start(300, {_ -> feedkeys(" \<Esc>", 't!')})
+    call timer_start(100, function('s:CheckSize'))
     call feedkeys('a', 'tx!')
     call assert_equal(1, winheight(0))
     bwipe!
+    delfunc s:CheckSize
   endif
 
   set winminwidth& winminheight&
