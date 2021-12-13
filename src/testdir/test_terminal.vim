@@ -1378,7 +1378,7 @@ func Test_terminal_popup_bufload()
 endfunc
 
 func Test_terminal_popup_two_windows()
-  CheckScreendump
+  CheckRunVimInTerminal
   CheckUnix
 
   " use "sh" instead of "&shell" in the hope it will use a short prompt
@@ -1398,7 +1398,9 @@ func Test_terminal_popup_two_windows()
   call WaitForAssert({-> assert_match("echo 'test'", term_getline(buf, 1))})
   call WaitForAssert({-> assert_match("echo 'test'", term_getline(buf, 3))})
 
-  call term_sendkeys(buf, "\<CR>exit\<CR>:q\<CR>")
+  call term_sendkeys(buf, "\<CR>\<CR>exit\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
   call delete('XpopupScript')
 endfunc
