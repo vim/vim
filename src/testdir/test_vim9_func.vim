@@ -2763,25 +2763,28 @@ enddef
 
 func Test_silent_echo()
   CheckScreendump
+  call Run_Test_silent_echo()
+endfunc
 
-  let lines =<< trim END
+def Run_Test_silent_echo()
+  var lines =<< trim END
     vim9script
     def EchoNothing()
       silent echo ''
     enddef
     defcompile
   END
-  call writefile(lines, 'XTest_silent_echo')
+  writefile(lines, 'XTest_silent_echo')
 
-  " Check that the balloon shows up after a mouse move
-  let buf = RunVimInTerminal('-S XTest_silent_echo', {'rows': 6})
-  call term_sendkeys(buf, ":abc")
-  call VerifyScreenDump(buf, 'Test_vim9_silent_echo', {})
+  # Check that the balloon shows up after a mouse move
+  var buf = RunVimInTerminal('-S XTest_silent_echo', {'rows': 6})
+  term_sendkeys(buf, ":abc")
+  VerifyScreenDump(buf, 'Test_vim9_silent_echo', {})
 
-  " clean up
-  call StopVimInTerminal(buf)
-  call delete('XTest_silent_echo')
-endfunc
+  # clean up
+  StopVimInTerminal(buf)
+  delete('XTest_silent_echo')
+enddef
 
 def SilentlyError()
   execute('silent! invalid')
@@ -3163,6 +3166,41 @@ def Test_opfunc()
 
   bwipe!
   nunmap <F3>
+enddef
+
+func Test_opfunc_error()
+  CheckScreendump
+  call Run_Test_opfunc_error()
+endfunc
+
+def Run_Test_opfunc_error()
+  # test that the error from Opfunc() is displayed right away
+  var lines =<< trim END
+      vim9script
+
+      def Opfunc(type: string)
+        try
+          eval [][0]
+        catch /nothing/  # error not caught
+        endtry
+      enddef
+      &operatorfunc = Opfunc
+      nnoremap <expr> l <SID>L()
+      def L(): string
+        return 'l'
+      enddef
+      'x'->repeat(10)->setline(1)
+      feedkeys('g@l', 'n')
+      feedkeys('llll')
+  END
+  call writefile(lines, 'XTest_opfunc_error')
+
+  var buf = RunVimInTerminal('-S XTest_opfunc_error', {rows: 6, wait_for_ruler: 0})
+  VerifyScreenDump(buf, 'Test_opfunc_error', {})
+
+  # clean up
+  StopVimInTerminal(buf)
+  delete('XTest_opfunc_error')
 enddef
 
 " this was crashing on exit

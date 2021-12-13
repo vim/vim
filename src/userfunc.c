@@ -3173,6 +3173,15 @@ call_callback(
     ++callback_depth;
     ret = call_func(callback->cb_name, len, rettv, argcount, argvars, &funcexe);
     --callback_depth;
+
+    // When a :def function was called that uses :try an error would be turned
+    // into an exception.  Need to give the error here.
+    if (need_rethrow && current_exception != NULL)
+    {
+	need_rethrow = FALSE;
+	handle_did_throw();
+    }
+
     return ret;
 }
 
