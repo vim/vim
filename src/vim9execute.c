@@ -876,13 +876,13 @@ call_ufunc(
     if (call_prepare(argcount, argvars, ectx) == FAIL)
 	return FAIL;
     CLEAR_FIELD(funcexe);
-    funcexe.evaluate = TRUE;
-    funcexe.selfdict = selfdict != NULL ? selfdict : dict_stack_get_dict();
+    funcexe.fe_evaluate = TRUE;
+    funcexe.fe_selfdict = selfdict != NULL ? selfdict : dict_stack_get_dict();
 
     // Call the user function.  Result goes in last position on the stack.
     // TODO: add selfdict if there is one
     error = call_user_func_check(ufunc, argcount, argvars,
-				 STACK_TV_BOT(-1), &funcexe, funcexe.selfdict);
+			      STACK_TV_BOT(-1), &funcexe, funcexe.fe_selfdict);
 
     // Clear the arguments.
     for (idx = 0; idx < argcount; ++idx)

@@ -4334,9 +4334,9 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     argvars[0].vval.v_number = term->tl_buffer->b_fnum;
     argvars[1] = item->li_next->li_tv;
     CLEAR_FIELD(funcexe);
-    funcexe.firstline = 1L;
-    funcexe.lastline = 1L;
-    funcexe.evaluate = TRUE;
+    funcexe.fe_firstline = 1L;
+    funcexe.fe_lastline = 1L;
+    funcexe.fe_evaluate = TRUE;
     if (call_func(func, -1, &rettv, 2, argvars, &funcexe) == OK)
     {
 	clear_tv(&rettv);

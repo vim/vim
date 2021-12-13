@@ -2033,8 +2033,8 @@ vim_regsub_both(
 		argv[0].vval.v_list = &matchList.sl_list;
 		matchList.sl_list.lv_len = 0;
 		CLEAR_FIELD(funcexe);
-		funcexe.argv_func = fill_submatch_list;
-		funcexe.evaluate = TRUE;
+		funcexe.fe_argv_func = fill_submatch_list;
+		funcexe.fe_evaluate = TRUE;
 		if (expr->v_type == VAR_FUNC)
 		{
 		    s = expr->vval.v_string;
@@ -2045,7 +2045,7 @@ vim_regsub_both(
 		    partial_T   *partial = expr->vval.v_partial;
 
 		    s = partial_name(partial);
-		    funcexe.partial = partial;
+		    funcexe.fe_partial = partial;
 		    call_func(s, -1, &rettv, 1, argv, &funcexe);
 		}
 		if (matchList.sl_list.lv_len > 0)

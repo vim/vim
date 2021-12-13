@@ -1935,9 +1935,9 @@ item_compare2(const void *s1, const void *s2)
 
     rettv.v_type = VAR_UNKNOWN;		// clear_tv() uses this
     CLEAR_FIELD(funcexe);
-    funcexe.evaluate = TRUE;
-    funcexe.partial = partial;
-    funcexe.selfdict = sortinfo->item_compare_selfdict;
+    funcexe.fe_evaluate = TRUE;
+    funcexe.fe_partial = partial;
+    funcexe.fe_selfdict = sortinfo->item_compare_selfdict;
     res = call_func(func_name, -1, &rettv, 2, argv, &funcexe);
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);
@@ -3203,9 +3203,9 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    vim_memset(&funcexe, 0, sizeof(funcexe));
-    funcexe.evaluate = TRUE;
-    funcexe.partial = partial;
+    CLEAR_FIELD(funcexe);
+    funcexe.fe_evaluate = TRUE;
+    funcexe.fe_partial = partial;
 
     if (argvars[0].v_type == VAR_LIST)
     {

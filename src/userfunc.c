@@ -1696,8 +1696,8 @@ get_func_tv(
      * Get the arguments.
      */
     argp = *arg;
-    while (argcount < MAX_FUNC_ARGS - (funcexe->partial == NULL ? 0
-						  : funcexe->partial->pt_argc))
+    while (argcount < MAX_FUNC_ARGS - (funcexe->fe_partial == NULL ? 0
+					       : funcexe->fe_partial->pt_argc))
     {
 	// skip the '(' or ',' and possibly line breaks
 	argp = skipwhite_and_linebreak(argp + 1, evalarg);
@@ -2500,7 +2500,7 @@ call_user_func(
 	if (do_profiling == PROF_YES)
 	    profile_may_start_func(&profile_info, fp, caller);
 #endif
-	call_def_function(fp, argcount, argvars, funcexe->partial, rettv);
+	call_def_function(fp, argcount, argvars, funcexe->fe_partial, rettv);
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE
 	if (do_profiling == PROF_YES && (fp->uf_profiling
@@ -2575,9 +2575,9 @@ call_user_func(
     if ((fp->uf_flags & FC_NOARGS) == 0)
     {
 	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "firstline",
-					      (varnumber_T)funcexe->firstline);
+					   (varnumber_T)funcexe->fe_firstline);
 	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "lastline",
-					       (varnumber_T)funcexe->lastline);
+					    (varnumber_T)funcexe->fe_lastline);
     }
     for (i = 0; i < argcount || i < fp->uf_args.ga_len; ++i)
     {
@@ -2870,8 +2870,8 @@ call_user_func_check(
 {
     int error;
 
-    if (fp->uf_flags & FC_RANGE && funcexe->doesrange != NULL)
-	*funcexe->doesrange = TRUE;
+    if (fp->uf_flags & FC_RANGE && funcexe->fe_doesrange != NULL)
+	*funcexe->fe_doesrange = TRUE;
     error = check_user_func_argcount(fp, argcount);
     if (error != FCERR_UNKNOWN)
 	return error;
@@ -3126,11 +3126,11 @@ func_call(
 	funcexe_T funcexe;
 
 	CLEAR_FIELD(funcexe);
-	funcexe.firstline = curwin->w_cursor.lnum;
-	funcexe.lastline = curwin->w_cursor.lnum;
-	funcexe.evaluate = TRUE;
-	funcexe.partial = partial;
-	funcexe.selfdict = selfdict;
+	funcexe.fe_firstline = curwin->w_cursor.lnum;
+	funcexe.fe_lastline = curwin->w_cursor.lnum;
+	funcexe.fe_evaluate = TRUE;
+	funcexe.fe_partial = partial;
+	funcexe.fe_selfdict = selfdict;
 	r = call_func(name, -1, rettv, argc, argv, &funcexe);
     }
 
@@ -3168,8 +3168,8 @@ call_callback(
     if (callback->cb_name == NULL || *callback->cb_name == NUL)
 	return FAIL;
     CLEAR_FIELD(funcexe);
-    funcexe.evaluate = TRUE;
-    funcexe.partial = callback->cb_partial;
+    funcexe.fe_evaluate = TRUE;
+    funcexe.fe_partial = callback->cb_partial;
     ++callback_depth;
     ret = call_func(callback->cb_name, len, rettv, argcount, argvars, &funcexe);
     --callback_depth;
@@ -3265,12 +3265,12 @@ call_func(
     char_u	*name = NULL;
     int		argcount = argcount_in;
     typval_T	*argvars = argvars_in;
-    dict_T	*selfdict = funcexe->selfdict;
+    dict_T	*selfdict = funcexe->fe_selfdict;
     typval_T	argv[MAX_FUNC_ARGS + 1]; // used when "partial" or
-					 // "funcexe->basetv" is not NULL
+					 // "funcexe->fe_basetv" is not NULL
     int		argv_clear = 0;
     int		argv_base = 0;
-    partial_T	*partial = funcexe->partial;
+    partial_T	*partial = funcexe->fe_partial;
     type_T	check_type;
 
     // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
@@ -3290,8 +3290,8 @@ call_func(
 	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
     }
 
-    if (funcexe->doesrange != NULL)
-	*funcexe->doesrange = FALSE;
+    if (funcexe->fe_doesrange != NULL)
+	*funcexe->fe_doesrange = FALSE;
 
     if (partial != NULL)
     {
@@ -3316,28 +3316,29 @@ call_func(
 	    argvars = argv;
 	    argcount = partial->pt_argc + argcount_in;
 
-	    if (funcexe->check_type != NULL
-				     && funcexe->check_type->tt_argcount != -1)
+	    if (funcexe->fe_check_type != NULL
+				  && funcexe->fe_check_type->tt_argcount != -1)
 	    {
-		// Now funcexe->check_type is missing the added arguments, make
-		// a copy of the type with the correction.
-		check_type = *funcexe->check_type;
-		funcexe->check_type = &check_type;
+		// Now funcexe->fe_check_type is missing the added arguments,
+		// make a copy of the type with the correction.
+		check_type = *funcexe->fe_check_type;
+		funcexe->fe_check_type = &check_type;
 		check_type.tt_argcount += partial->pt_argc;
 		check_type.tt_min_argcount += partial->pt_argc;
 	    }
 	}
     }
 
-    if (error == FCERR_NONE && funcexe->check_type != NULL && funcexe->evaluate)
+    if (error == FCERR_NONE && funcexe->fe_check_type != NULL
+						       && funcexe->fe_evaluate)
     {
 	// Check that the argument types are OK for the types of the funcref.
-	if (check_argument_types(funcexe->check_type, argvars, argcount,
+	if (check_argument_types(funcexe->fe_check_type, argvars, argcount,
 				     (name != NULL) ? name : funcname) == FAIL)
 	    error = FCERR_OTHER;
     }
 
-    if (error == FCERR_NONE && funcexe->evaluate)
+    if (error == FCERR_NONE && funcexe->fe_evaluate)
     {
 	char_u *rfname = fname;
 	int	is_global = FALSE;
@@ -3398,16 +3399,16 @@ call_func(
 #endif
 	    else if (fp != NULL)
 	    {
-		if (funcexe->argv_func != NULL)
+		if (funcexe->fe_argv_func != NULL)
 		    // postponed filling in the arguments, do it now
-		    argcount = funcexe->argv_func(argcount, argvars, argv_clear,
-							   fp->uf_args.ga_len);
+		    argcount = funcexe->fe_argv_func(argcount, argvars,
+					       argv_clear, fp->uf_args.ga_len);
 
-		if (funcexe->basetv != NULL)
+		if (funcexe->fe_basetv != NULL)
 		{
 		    // Method call: base->Method()
 		    mch_memmove(&argv[1], argvars, sizeof(typval_T) * argcount);
-		    argv[0] = *funcexe->basetv;
+		    argv[0] = *funcexe->fe_basetv;
 		    argcount++;
 		    argvars = argv;
 		    argv_base = 1;
@@ -3417,14 +3418,14 @@ call_func(
 							    funcexe, selfdict);
 	    }
 	}
-	else if (funcexe->basetv != NULL)
+	else if (funcexe->fe_basetv != NULL)
 	{
 	    /*
 	     * expr->method(): Find the method name in the table, call its
 	     * implementation with the base as one of the arguments.
 	     */
 	    error = call_internal_method(fname, argcount, argvars, rettv,
-							      funcexe->basetv);
+							   funcexe->fe_basetv);
 	}
 	else
 	{
@@ -5098,13 +5099,13 @@ ex_call(exarg_T *eap)
 	arg = startarg;
 
 	CLEAR_FIELD(funcexe);
-	funcexe.firstline = eap->line1;
-	funcexe.lastline = eap->line2;
-	funcexe.doesrange = &doesrange;
-	funcexe.evaluate = !eap->skip;
-	funcexe.partial = partial;
-	funcexe.selfdict = fudi.fd_dict;
-	funcexe.check_type = type;
+	funcexe.fe_firstline = eap->line1;
+	funcexe.fe_lastline = eap->line2;
+	funcexe.fe_doesrange = &doesrange;
+	funcexe.fe_evaluate = !eap->skip;
+	funcexe.fe_partial = partial;
+	funcexe.fe_selfdict = fudi.fd_dict;
+	funcexe.fe_check_type = type;
 	funcexe.fe_found_var = found_var;
 	rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
 	if (get_func_tv(name, -1, &rettv, &arg, &evalarg, &funcexe) == FAIL)
