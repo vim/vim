@@ -3176,7 +3176,7 @@ call_callback(
 
     // When a :def function was called that uses :try an error would be turned
     // into an exception.  Need to give the error here.
-    if (need_rethrow && current_exception != NULL)
+    if (need_rethrow && current_exception != NULL && trylevel == 0)
     {
 	need_rethrow = FALSE;
 	handle_did_throw();
