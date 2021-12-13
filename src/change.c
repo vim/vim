@@ -469,11 +469,9 @@ changed_common(
     win_T	*wp;
     tabpage_T	*tp;
     int		i;
-#ifdef FEAT_JUMPLIST
     int		cols;
     pos_T	*p;
     int		add;
-#endif
 
     // mark the buffer as modified
     changed();
@@ -492,7 +490,6 @@ changed_common(
 	curbuf->b_last_change.lnum = lnum;
 	curbuf->b_last_change.col = col;
 
-#ifdef FEAT_JUMPLIST
 	// Create a new entry if a new undo-able change was started or we
 	// don't have an entry yet.
 	if (curbuf->b_new_change || curbuf->b_changelistlen == 0)
@@ -552,7 +549,6 @@ changed_common(
 	// The current window is always after the last change, so that "g,"
 	// takes you back to it.
 	curwin->w_changelistidx = curbuf->b_changelistlen;
-#endif
     }
 
     FOR_ALL_TAB_WINDOWS(tp, wp)

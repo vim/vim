@@ -2763,14 +2763,12 @@ struct file_buffer
     pos_T	b_last_insert;	// where Insert mode was left
     pos_T	b_last_change;	// position of last change: '. mark
 
-#ifdef FEAT_JUMPLIST
     /*
      * the changelist contains old change positions
      */
     pos_T	b_changelist[JUMPLISTSIZE];
     int		b_changelistlen;	// number of active entries
     int		b_new_change;		// set by u_savecommon()
-#endif
 
     /*
      * Character table, only used in charset.c for 'iskeyword'
@@ -3730,7 +3728,6 @@ struct window_S
     pos_T	w_pcmark;	// previous context mark
     pos_T	w_prev_pcmark;	// previous w_pcmark
 
-#ifdef FEAT_JUMPLIST
     /*
      * the jumplist contains old cursor positions
      */
@@ -3739,7 +3736,6 @@ struct window_S
     int		w_jumplistidx;		// current position
 
     int		w_changelistidx;	// current position in b_changelist
-#endif
 
 #ifdef FEAT_SEARCH_EXTRA
     matchitem_T	*w_match_head;		// head of match list

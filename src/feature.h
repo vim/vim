@@ -110,6 +110,7 @@
  * +modify_fname	modifiers for file name.  E.g., "%:p:h".
  * +comments		'comments' option.
  * +title		'title' and 'icon' options
+ * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -125,13 +126,6 @@
 # define MAX_MSG_HIST_LEN 200
 #else
 # define MAX_MSG_HIST_LEN 20
-#endif
-
-/*
- * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
- */
-#ifdef FEAT_SMALL
-# define FEAT_JUMPLIST
 #endif
 
 #if defined(FEAT_SMALL)

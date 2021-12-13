@@ -391,7 +391,7 @@ m  *+hangul_input*	Hangul input support |hangul|
 T  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
-S  *+jumplist*		|jumplist|
+T  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
 B  *+keymap*		|'keymap'|
 N  *+lambda*		|lambda| and |closure|
 B  *+langmap*		|'langmap'|

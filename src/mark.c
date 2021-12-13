@@ -136,10 +136,8 @@ setmark_pos(int c, pos_T *pos, int fnum)
     void
 setpcmark(void)
 {
-#ifdef FEAT_JUMPLIST
     int		i;
     xfmark_T	*fm;
-#endif
 
     // for :global the mark is set only once
     if (global_busy || listcmd_busy || (cmdmod.cmod_flags & CMOD_KEEPJUMPS))
@@ -148,7 +146,6 @@ setpcmark(void)
     curwin->w_prev_pcmark = curwin->w_pcmark;
     curwin->w_pcmark = curwin->w_cursor;
 
-#ifdef FEAT_JUMPLIST
     // If jumplist is full: remove oldest entry
     if (++curwin->w_jumplistlen > JUMPLISTSIZE)
     {
@@ -163,9 +160,8 @@ setpcmark(void)
     fm->fmark.mark = curwin->w_pcmark;
     fm->fmark.fnum = curbuf->b_fnum;
     fm->fname = NULL;
-# ifdef FEAT_VIMINFO
+#ifdef FEAT_VIMINFO
     fm->time_set = vim_time();
-# endif
 #endif
 }
 
@@ -185,7 +181,6 @@ checkpcmark(void)
     curwin->w_prev_pcmark.lnum = 0;		// it has been checked
 }
 
-#if defined(FEAT_JUMPLIST) || defined(PROTO)
 /*
  * move "count" positions in the jump list (count may be negative)
  */
@@ -274,7 +269,6 @@ movechangelist(int count)
     curwin->w_changelistidx = n;
     return curbuf->b_changelist + n;
 }
-#endif
 
 /*
  * Find mark "c" in buffer pointed to by "buf".
@@ -532,9 +526,7 @@ fmarks_check_names(buf_T *buf)
 {
     char_u	*name;
     int		i;
-#ifdef FEAT_JUMPLIST
     win_T	*wp;
-#endif
 
     if (buf->b_ffname == NULL)
 	return;
@@ -546,13 +538,11 @@ fmarks_check_names(buf_T *buf)
     for (i = 0; i < NMARKS + EXTRA_MARKS; ++i)
 	fmarks_check_one(&namedfm[i], name, buf);
 
-#ifdef FEAT_JUMPLIST
     FOR_ALL_WINDOWS(wp)
     {
 	for (i = 0; i < wp->w_jumplistlen; ++i)
 	    fmarks_check_one(&wp->w_jumplist[i], name, buf);
     }
-#endif
 
     vim_free(name);
 }
@@ -626,9 +616,7 @@ clrallmarks(buf_T *buf)
     buf->b_last_cursor.coladd = 0;
     buf->b_last_insert.lnum = 0;	// '^ mark cleared
     buf->b_last_change.lnum = 0;	// '. mark cleared
-#ifdef FEAT_JUMPLIST
     buf->b_changelistlen = 0;
-#endif
 }
 
 /*
@@ -867,7 +855,6 @@ ex_delmarks(exarg_T *eap)
     }
 }
 
-#if defined(FEAT_JUMPLIST) || defined(PROTO)
 /*
  * print the jumplist
  */
@@ -965,7 +952,6 @@ ex_changes(exarg_T *eap UNUSED)
     if (curwin->w_changelistidx == curbuf->b_changelistlen)
 	msg_puts("\n>");
 }
-#endif
 
 #define one_adjust(add) \
     { \
@@ -1071,11 +1057,9 @@ mark_adjust_internal(
 	    one_adjust(&(curbuf->b_last_cursor.lnum));
 
 
-#ifdef FEAT_JUMPLIST
 	// list of change positions
 	for (i = 0; i < curbuf->b_changelistlen; ++i)
 	    one_adjust_nodel(&(curbuf->b_changelist[i].lnum));
-#endif
 
 	// Visual area
 	one_adjust_nodel(&(curbuf->b_visual.vi_start.lnum));
@@ -1109,14 +1093,12 @@ mark_adjust_internal(
      */
     FOR_ALL_TAB_WINDOWS(tab, win)
     {
-#ifdef FEAT_JUMPLIST
 	if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	    // Marks in the jumplist.  When deleting lines, this may create
 	    // duplicate marks in the jumplist, they will be removed later.
 	    for (i = 0; i < win->w_jumplistlen; ++i)
 		if (win->w_jumplist[i].fmark.fnum == fnum)
 		    one_adjust_nodel(&(win->w_jumplist[i].fmark.mark.lnum));
-#endif
 
 	if (win->w_buffer == curbuf)
 	{
@@ -1249,11 +1231,9 @@ mark_col_adjust(
     // last change position
     col_adjust(&(curbuf->b_last_change));
 
-#ifdef FEAT_JUMPLIST
     // list of change positions
     for (i = 0; i < curbuf->b_changelistlen; ++i)
 	col_adjust(&(curbuf->b_changelist[i]));
-#endif
 
     // Visual area
     col_adjust(&(curbuf->b_visual.vi_start));
@@ -1273,12 +1253,10 @@ mark_col_adjust(
      */
     FOR_ALL_WINDOWS(win)
     {
-#ifdef FEAT_JUMPLIST
 	// marks in the jumplist
 	for (i = 0; i < win->w_jumplistlen; ++i)
 	    if (win->w_jumplist[i].fmark.fnum == fnum)
 		col_adjust(&(win->w_jumplist[i].fmark.mark));
-#endif
 
 	if (win->w_buffer == curbuf)
 	{
@@ -1294,7 +1272,6 @@ mark_col_adjust(
     }
 }
 
-#ifdef FEAT_JUMPLIST
 /*
  * When deleting lines, this may create duplicate marks in the
  * jumplist. They will be removed here for the specified window.
@@ -1371,7 +1348,6 @@ free_jumplist(win_T *wp)
     for (i = 0; i < wp->w_jumplistlen; ++i)
 	vim_free(wp->w_jumplist[i].fname);
 }
-#endif // FEAT_JUMPLIST
 
     void
 set_last_cursor(win_T *win)
