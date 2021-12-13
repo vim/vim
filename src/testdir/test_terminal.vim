@@ -1377,6 +1377,32 @@ func Test_terminal_popup_bufload()
   exe 'bwipe! ' .. newbuf
 endfunc
 
+func Test_terminal_popup_two_windows()
+  CheckScreendump
+  CheckUnix
+
+  " use "sh" instead of "&shell" in the hope it will use a short prompt
+  let lines =<< trim END
+      let termbuf = term_start('sh', #{hidden: v:true, term_finish: 'close'})
+      exe 'buffer ' .. termbuf
+
+      let winid = popup_create(termbuf, #{line: 2, minwidth: 30, border: []})
+      sleep 50m
+
+      call term_sendkeys(termbuf, "echo 'test'")
+  END
+  call writefile(lines, 'XpopupScript')
+  let buf = RunVimInTerminal('-S XpopupScript', {})
+
+  " typed text appears both in normal window and in popup
+  call WaitForAssert({-> assert_match("echo 'test'", term_getline(buf, 1))})
+  call WaitForAssert({-> assert_match("echo 'test'", term_getline(buf, 3))})
+
+  call term_sendkeys(buf, "\<CR>exit\<CR>:q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XpopupScript')
+endfunc
+
 func Test_terminal_popup_insert_cmd()
   CheckUnix
 
@@ -1402,6 +1428,7 @@ endfunc
 
 func Test_terminal_dumpwrite_composing()
   CheckRunVimInTerminal
+
   let save_enc = &encoding
   set encoding=utf-8
   call assert_equal(1, winnr('$'))

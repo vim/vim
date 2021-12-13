@@ -3850,8 +3850,22 @@ term_update_window(win_T *wp)
 #endif
 				0);
     }
-    term->tl_dirty_row_start = MAX_ROW;
-    term->tl_dirty_row_end = 0;
+}
+
+/*
+ * Called after updating all windows: may reset dirty rows.
+ */
+    void
+term_did_update_window(win_T *wp)
+{
+    term_T	*term = wp->w_buffer->b_term;
+
+    if (term != NULL && term->tl_vterm != NULL && !term->tl_normal_mode
+						       && wp->w_redr_type == 0)
+    {
+	term->tl_dirty_row_start = MAX_ROW;
+	term->tl_dirty_row_end = 0;
+    }
 }
 
 /*
