@@ -1243,6 +1243,18 @@ def Test_set_opfunc_to_global_function()
   &operatorfunc = ''
 enddef
 
+def Test_use_script_func_name_with_prefix()
+  var lines =<< trim END
+      vim9script
+      func s:Getit()
+        return 'it'
+      endfunc
+      var Fn = s:Getit
+      assert_equal('it', Fn())
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_lambda_type_allocated()
   # Check that unreferencing a partial using a lambda can use the variable type
   # after the lambda has been freed and does not leak memory.

@@ -1885,13 +1885,14 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
     {
 	char_u	*after_script = NULL;
 	long	sid = 0;
-	int	find_script_local = in_vim9script()
-				     && eval_isnamec1(*name) && name[1] != ':';
+	int	find_script_local = in_vim9script() && eval_isnamec1(*name)
+					   && (name[1] != ':' || *name == 's');
 
 	if (find_script_local)
 	{
 	    // Find script-local function before global one.
-	    func = find_func_with_sid(name, current_sctx.sc_sid);
+	    func = find_func_with_sid(name[0] == 's' && name[1] == ':'
+				       ? name + 2 : name, current_sctx.sc_sid);
 	    if (func != NULL)
 		return func;
 	}
