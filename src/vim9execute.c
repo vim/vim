@@ -468,6 +468,31 @@ call_dfunc(
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
 
+// Double linked list of funcstack_T in use.
+static funcstack_T *first_funcstack = NULL;
+
+    static void
+add_funcstack_to_list(funcstack_T *funcstack)
+{
+	// Link in list of funcstacks.
+    if (first_funcstack != NULL)
+	first_funcstack->fs_prev = funcstack;
+    funcstack->fs_next = first_funcstack;
+    funcstack->fs_prev = NULL;
+    first_funcstack = funcstack;
+}
+
+    static void
+remove_funcstack_from_list(funcstack_T *funcstack)
+{
+    if (funcstack->fs_prev == NULL)
+	first_funcstack = funcstack->fs_next;
+    else
+	funcstack->fs_prev->fs_next = funcstack->fs_next;
+    if (funcstack->fs_next != NULL)
+	funcstack->fs_next->fs_prev = funcstack->fs_prev;
+}
+
 /*
  * Used when returning from a function: Check if any closure is still
  * referenced.  If so then move the arguments and variables to a separate piece
@@ -540,6 +565,7 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	// Move them to the called function.
 	if (funcstack == NULL)
 	    return FAIL;
+
 	funcstack->fs_var_offset = argcount + STACK_FRAME_SIZE;
 	funcstack->fs_ga.ga_len = funcstack->fs_var_offset + dfunc->df_varcount;
 	stack = ALLOC_CLEAR_MULT(typval_T, funcstack->fs_ga.ga_len);
@@ -549,6 +575,7 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    vim_free(funcstack);
 	    return FAIL;
 	}
+	add_funcstack_to_list(funcstack);
 
 	// Move or copy the arguments.
 	for (idx = 0; idx < argcount; ++idx)
@@ -571,7 +598,7 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    // local variable, has a reference count for the variable, thus
 	    // will never go down to zero.  When all these refcounts are one
 	    // then the funcstack is unused.  We need to count how many we have
-	    // so we need when to check.
+	    // so we know when to check.
 	    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
 	    {
 		int	    i;
@@ -643,8 +670,31 @@ funcstack_check_refcount(funcstack_T *funcstack)
 	for (i = 0; i < gap->ga_len; ++i)
 	    clear_tv(stack + i);
 	vim_free(stack);
+	remove_funcstack_from_list(funcstack);
 	vim_free(funcstack);
     }
+}
+
+/*
+ * For garbage collecting: set references in all variables referenced by
+ * all funcstacks.
+ */
+    int
+set_ref_in_funcstacks(int copyID)
+{
+    funcstack_T *funcstack;
+
+    for (funcstack = first_funcstack; funcstack != NULL;
+						funcstack = funcstack->fs_next)
+    {
+	typval_T    *stack = funcstack->fs_ga.ga_data;
+	int	    i;
+
+	for (i = 0; i < funcstack->fs_ga.ga_len; ++i)
+	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
+		return TRUE;  // abort
+    }
+    return FALSE;
 }
 
 /*
