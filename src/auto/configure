@@ -4545,9 +4545,42 @@ fi
 
 OS_EXTRA_SRC=""; OS_EXTRA_OBJ=""
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking uname" >&5
+$as_echo_n "checking uname... " >&6; }
+if test "x$vim_cv_uname_output" = "x" ; then
+  vim_cv_uname_output=`(uname) 2>/dev/null`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_uname_output" >&5
+$as_echo "$vim_cv_uname_output" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_uname_output (cached)" >&5
+$as_echo "$vim_cv_uname_output (cached)" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking uname -r" >&5
+$as_echo_n "checking uname -r... " >&6; }
+if test "x$vim_cv_uname_r_output" = "x" ; then
+  vim_cv_uname_r_output=`(uname -r) 2>/dev/null`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_uname_r_output" >&5
+$as_echo "$vim_cv_uname_r_output" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_uname_r_output (cached)" >&5
+$as_echo "$vim_cv_uname_r_output (cached)" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking uname -m" >&5
+$as_echo_n "checking uname -m... " >&6; }
+if test "x$vim_cv_uname_m_output" = "x" ; then
+  vim_cv_uname_m_output=`(uname -m) 2>/dev/null`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_uname_m_output" >&5
+$as_echo "$vim_cv_uname_m_output" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_uname_m_output (cached)" >&5
+$as_echo "$vim_cv_uname_m_output (cached)" >&6; }
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Haiku" >&5
 $as_echo_n "checking for Haiku... " >&6; }
-case `uname` in
+case $vim_cv_uname_output in
     Haiku) HAIKU=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; };;
     *)     HAIKU=no; { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -4556,7 +4589,7 @@ esac
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for QNX" >&5
 $as_echo_n "checking for QNX... " >&6; }
-case `uname` in
+case $vim_cv_uname_output in
     QNX)	OS_EXTRA_SRC=os_qnx.c; OS_EXTRA_OBJ=objects/os_qnx.o
 		test -z "$with_x" && with_x=no
 		QNX=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
@@ -4567,7 +4600,7 @@ esac
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Darwin (Mac OS X)" >&5
 $as_echo_n "checking for Darwin (Mac OS X)... " >&6; }
-if test "`(uname) 2>/dev/null`" = Darwin; then
+if test "$vim_cv_uname_output" = Darwin; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   MACOS_X=yes
@@ -4968,7 +5001,7 @@ esac
 if test "$cf_cv_ebcdic" = "yes"; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for z/OS Unix" >&5
 $as_echo_n "checking for z/OS Unix... " >&6; }
-case `uname` in
+case $vim_cv_uname_output in
     OS/390)	zOSUnix="yes";
 										if test "$CC" = "cc"; then
 		  ccm="$_CC_CCMODE"
@@ -5613,7 +5646,7 @@ $as_echo "yes" >&6; }
     fi
     if test "X$LUA_CFLAGS$LUA_LIBS" != "X" && \
        test "x$MACOS_X" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
-       test "`(uname -m) 2>/dev/null`" = "x86_64"; then
+       test "$vim_cv_uname_m_output" = "x86_64"; then
             LUA_LIBS="-pagezero_size 10000 -image_base 100000000 $LUA_LIBS"
     fi
   fi
@@ -5850,8 +5883,8 @@ $as_echo "not found" >&6; }
 	  fi
 	  if test "$GCC" = yes; then
 	    	    	    MZSCHEME_LIBS="${MZSCHEME_LIBS} -Wl,-rpath -Wl,${path}"
-	  elif test "`(uname) 2>/dev/null`" = SunOS &&
-				   uname -r | grep '^5' >/dev/null; then
+	  elif test "$vim_cv_uname_output" = SunOS &&
+			   echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
 	    MZSCHEME_LIBS="${MZSCHEME_LIBS} -R ${path}"
 	  fi
 	fi
@@ -6492,13 +6525,13 @@ $as_echo "$vi_cv_dll_name_python" >&6; }
 $as_echo_n "checking if -pthread should be used... " >&6; }
 	threadsafe_flag=
 	thread_lib=
-	        if test "`(uname) 2>/dev/null`" != Darwin; then
+	        if test "$vim_cv_uname_output" != Darwin; then
 	  test "$GCC" = yes && threadsafe_flag="-pthread"
-	  if test "`(uname) 2>/dev/null`" = FreeBSD; then
+	  if test "$vim_cv_uname_output" = FreeBSD; then
 	    threadsafe_flag="-D_THREAD_SAFE"
 	    thread_lib="-pthread"
 	  fi
-	  if test "`(uname) 2>/dev/null`" = SunOS; then
+	  if test "$vim_cv_uname_output" = SunOS; then
 	    threadsafe_flag="-pthreads"
 	  fi
 	fi
@@ -6840,13 +6873,13 @@ $as_echo "$vi_cv_dll_name_python3" >&6; }
 $as_echo_n "checking if -pthread should be used... " >&6; }
         threadsafe_flag=
         thread_lib=
-                if test "`(uname) 2>/dev/null`" != Darwin; then
+                if test "$vim_cv_uname_output" != Darwin; then
           test "$GCC" = yes && threadsafe_flag="-pthread"
-          if test "`(uname) 2>/dev/null`" = FreeBSD; then
+          if test "$vim_cv_uname_output" = FreeBSD; then
             threadsafe_flag="-D_THREAD_SAFE"
             thread_lib="-pthread"
           fi
-          if test "`(uname) 2>/dev/null`" = SunOS; then
+          if test "$vim_cv_uname_output" = SunOS; then
             threadsafe_flag="-pthreads"
           fi
         fi
@@ -7470,8 +7503,8 @@ $as_echo_n "checking for Tcl library by myself... " >&6; }
 		  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $try/lib$trylib" >&5
 $as_echo "$try/lib$trylib" >&6; }
 		  TCL_LIBS="-L\"$try\" -ltcl$ver -ldl -lm"
-		  if test "`(uname) 2>/dev/null`" = SunOS &&
-					 uname -r | grep '^5' >/dev/null; then
+		  if test "$vim_cv_uname_output" = SunOS &&
+					 echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
 		    TCL_LIBS="$TCL_LIBS -R $try"
 		  fi
 		  break 3
@@ -8911,8 +8944,8 @@ fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Corrected X libraries to $x_libraries" >&5
 $as_echo "Corrected X libraries to $x_libraries" >&6; }
     X_LIBS="$X_LIBS -L$x_libraries"
-    if test "`(uname) 2>/dev/null`" = SunOS &&
-					 uname -r | grep '^5' >/dev/null; then
+    if test "$vim_cv_uname_output" = SunOS &&
+					 echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
       X_LIBS="$X_LIBS -R $x_libraries"
     fi
   fi
@@ -9736,7 +9769,7 @@ $as_echo "yes" >&6; }
 
                   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FreeBSD" >&5
 $as_echo_n "checking for FreeBSD... " >&6; }
-      if test "`(uname) 2>/dev/null`" = FreeBSD; then
+      if test "$vim_cv_uname_output" = FreeBSD; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
@@ -10220,8 +10253,8 @@ $as_echo "in default path" >&6; }
 	if test -n "$GUI_LIB_LOC"; then
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GUI_LIB_LOC" >&5
 $as_echo "$GUI_LIB_LOC" >&6; }
-	  if test "`(uname) 2>/dev/null`" = SunOS &&
-					 uname -r | grep '^5' >/dev/null; then
+	  if test "$vim_cv_uname_output" = SunOS &&
+					 echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
 	    GUI_LIB_LOC="$GUI_LIB_LOC -R $GUI_LIB_LOC"
 	  fi
 	fi
@@ -10768,7 +10801,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CYGWIN or MSYS environment" >&5
 $as_echo_n "checking for CYGWIN or MSYS environment... " >&6; }
-case `uname` in
+case $vim_cv_uname_output in
     CYGWIN*|MSYS*)    CYGWIN=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
                 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CYGWIN clipboard support" >&5
@@ -11965,7 +11998,7 @@ rm -f core conftest.err conftest.$ac_objext \
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: empty: automatic terminal library selection" >&5
 $as_echo "empty: automatic terminal library selection" >&6; }
-                case "`uname -s 2>/dev/null`" in
+                case "$vim_cv_uname_output" in
 	OSF1|SCO_SV)	tlibs="tinfo ncurses curses termlib termcap";;
 	*)	tlibs="tinfo ncurses termlib termcap curses";;
   esac

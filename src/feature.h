@@ -32,7 +32,7 @@
  * ==============
  *
  * +tiny		almost no features enabled, not even multiple windows
- * +small		few features enabled, as basic as possible
+ * +small		as tiny plus cmdline window
  * +normal		A default selection of features enabled
  * +big			many features enabled, as rich as possible.
  * +huge		all possible features enabled.
@@ -110,6 +110,7 @@
  * +modify_fname	modifiers for file name.  E.g., "%:p:h".
  * +comments		'comments' option.
  * +title		'title' and 'icon' options
+ * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -119,20 +120,9 @@
  */
 
 /*
- * Message history is fixed at 200 message, 20 for the tiny version.
+ * Message history is fixed at 200 messages.
  */
-#ifdef FEAT_SMALL
-# define MAX_MSG_HIST_LEN 200
-#else
-# define MAX_MSG_HIST_LEN 20
-#endif
-
-/*
- * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
- */
-#ifdef FEAT_SMALL
-# define FEAT_JUMPLIST
-#endif
+#define MAX_MSG_HIST_LEN 200
 
 #if defined(FEAT_SMALL)
 # define FEAT_CMDWIN

@@ -7675,7 +7675,8 @@ set_errorlist(
 }
 
 /*
- * Mark the context as in use for all the lists in a quickfix stack.
+ * Mark the quickfix context and callback function as in use for all the lists
+ * in a quickfix stack.
  */
     static int
 mark_quickfix_ctx(qf_info_T *qi, int copyID)
@@ -7683,13 +7684,17 @@ mark_quickfix_ctx(qf_info_T *qi, int copyID)
     int		i;
     int		abort = FALSE;
     typval_T	*ctx;
+    callback_T	*cb;
 
     for (i = 0; i < LISTCOUNT && !abort; ++i)
     {
 	ctx = qi->qf_lists[i].qf_ctx;
 	if (ctx != NULL && ctx->v_type != VAR_NUMBER
 		&& ctx->v_type != VAR_STRING && ctx->v_type != VAR_FLOAT)
-	    abort = set_ref_in_item(ctx, copyID, NULL, NULL);
+	    abort = abort || set_ref_in_item(ctx, copyID, NULL, NULL);
+
+	cb = &qi->qf_lists[i].qftf_cb;
+	abort = abort || set_ref_in_callback(cb, copyID);
     }
 
     return abort;
@@ -7707,6 +7712,10 @@ set_ref_in_quickfix(int copyID)
     win_T	*win;
 
     abort = mark_quickfix_ctx(&ql_info, copyID);
+    if (abort)
+	return abort;
+
+    abort = set_ref_in_callback(&qftf_cb, copyID);
     if (abort)
 	return abort;
 

@@ -29,6 +29,7 @@ int search_for_exact_line(buf_T *buf, pos_T *pos, int dir, char_u *pat);
 int searchc(cmdarg_T *cap, int t_cmd);
 pos_T *findmatch(oparg_T *oap, int initc);
 pos_T *findmatchlimit(oparg_T *oap, int initc, int flags, int maxtravel);
+int check_linecomment(char_u *line);
 void showmatch(int c);
 int current_search(long count, int forward);
 int linewhite(linenr_T lnum);

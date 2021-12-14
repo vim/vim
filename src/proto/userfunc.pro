@@ -4,7 +4,7 @@ hashtab_T *func_tbl_get(void);
 char_u *get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
-char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **type, int no_autoload);
+char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **type, int no_autoload, int *found_var);
 void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);
 char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error);
@@ -30,7 +30,7 @@ int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict
 int get_callback_depth(void);
 int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars);
 varnumber_T call_callback_retnr(callback_T *callback, int argcount, typval_T *argvars);
-void user_func_error(int error, char_u *name);
+void user_func_error(int error, char_u *name, funcexe_T *funcexe);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
 char_u *printable_func_name(ufunc_T *fp);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial, type_T **type);

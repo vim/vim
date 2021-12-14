@@ -4301,12 +4301,10 @@ f_get(typval_T *argvars, typval_T *rettv)
     static void
 f_getchangelist(typval_T *argvars, typval_T *rettv)
 {
-#ifdef FEAT_JUMPLIST
     buf_T	*buf;
     int		i;
     list_T	*l;
     dict_T	*d;
-#endif
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -4314,7 +4312,6 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
 	return;
 
-#ifdef FEAT_JUMPLIST
     if (argvars[0].v_type == VAR_UNKNOWN)
 	buf = curbuf;
     else
@@ -4349,7 +4346,6 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	dict_add_number(d, "col", (long)buf->b_changelist[i].col);
 	dict_add_number(d, "coladd", (long)buf->b_changelist[i].coladd);
     }
-#endif
 }
 
     static void
@@ -4525,12 +4521,10 @@ f_getfontname(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_getjumplist(typval_T *argvars, typval_T *rettv)
 {
-#ifdef FEAT_JUMPLIST
     win_T	*wp;
     int		i;
     list_T	*l;
     dict_T	*d;
-#endif
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -4541,7 +4535,6 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
 	return;
 
-#ifdef FEAT_JUMPLIST
     wp = find_tabwin(&argvars[0], &argvars[1], NULL);
     if (wp == NULL)
 	return;
@@ -4571,7 +4564,6 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	if (wp->w_jumplist[i].fname != NULL)
 	    dict_add_string(d, "filename", wp->w_jumplist[i].fname);
     }
-#endif
 }
 
 /*
@@ -5322,13 +5314,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"jumplist",
-#ifdef FEAT_JUMPLIST
-		1
-#else
-		0
-#endif
-		},
+	{"jumplist", 1},
 	{"keymap",
 #ifdef FEAT_KEYMAP
 		1

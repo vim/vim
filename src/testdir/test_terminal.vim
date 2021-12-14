@@ -1124,7 +1124,8 @@ func Test_terminal_response_to_control_sequence()
   unlet g:job
 endfunc
 
-func Test_terminal_focus_events()
+" Run this first, it fails when run after other tests.
+func Test_aa_terminal_focus_events()
   CheckNotGui
   CheckUnix
   CheckRunVimInTerminal
@@ -1137,8 +1138,6 @@ func Test_terminal_focus_events()
       set term=xterm ttymouse=xterm2
       au FocusLost * call setline(1, 'I am lost') | set nomod
       au FocusGained * call setline(1, 'I am back') | set nomod
-      " FIXME: sometimes this job hangs, exit after a couple of seconds
-      call timer_start(2000, {id -> execute('qall')})
   END
   call writefile(lines, 'XtermFocus')
   let buf = RunVimInTerminal('-S XtermFocus', #{rows: 6})
@@ -1377,6 +1376,34 @@ func Test_terminal_popup_bufload()
   exe 'bwipe! ' .. newbuf
 endfunc
 
+func Test_terminal_popup_two_windows()
+  CheckRunVimInTerminal
+  CheckUnix
+
+  " use "sh" instead of "&shell" in the hope it will use a short prompt
+  let lines =<< trim END
+      let termbuf = term_start('sh', #{hidden: v:true, term_finish: 'close'})
+      exe 'buffer ' .. termbuf
+
+      let winid = popup_create(termbuf, #{line: 2, minwidth: 30, border: []})
+      sleep 50m
+
+      call term_sendkeys(termbuf, "echo 'test'")
+  END
+  call writefile(lines, 'XpopupScript')
+  let buf = RunVimInTerminal('-S XpopupScript', {})
+
+  " typed text appears both in normal window and in popup
+  call WaitForAssert({-> assert_match("echo 'test'", term_getline(buf, 1))})
+  call WaitForAssert({-> assert_match("echo 'test'", term_getline(buf, 3))})
+
+  call term_sendkeys(buf, "\<CR>\<CR>exit\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XpopupScript')
+endfunc
+
 func Test_terminal_popup_insert_cmd()
   CheckUnix
 
@@ -1402,6 +1429,7 @@ endfunc
 
 func Test_terminal_dumpwrite_composing()
   CheckRunVimInTerminal
+
   let save_enc = &encoding
   set encoding=utf-8
   call assert_equal(1, winnr('$'))

@@ -16,7 +16,6 @@
 static void set_vv_searchforward(void);
 static int first_submatch(regmmatch_T *rp);
 #endif
-static int check_linecomment(char_u *line);
 #ifdef FEAT_FIND_ID
 static void show_pat_in_path(char_u *, int,
 					 int, int, FILE *, linenr_T *, long);
@@ -2717,7 +2716,7 @@ findmatchlimit(
  * Return MAXCOL if not, otherwise return the column.
  * TODO: skip strings.
  */
-    static int
+    int
 check_linecomment(char_u *line)
 {
     char_u  *p;

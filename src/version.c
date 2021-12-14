@@ -312,11 +312,7 @@ static char *(features[]) =
 #else
 	"-job",
 #endif
-#ifdef FEAT_JUMPLIST
 	"+jumplist",
-#else
-	"-jumplist",
-#endif
 #ifdef FEAT_KEYMAP
 	"+keymap",
 #else
@@ -753,6 +749,58 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    3807,
+/**/
+    3806,
+/**/
+    3805,
+/**/
+    3804,
+/**/
+    3803,
+/**/
+    3802,
+/**/
+    3801,
+/**/
+    3800,
+/**/
+    3799,
+/**/
+    3798,
+/**/
+    3797,
+/**/
+    3796,
+/**/
+    3795,
+/**/
+    3794,
+/**/
+    3793,
+/**/
+    3792,
+/**/
+    3791,
+/**/
+    3790,
+/**/
+    3789,
+/**/
+    3788,
+/**/
+    3787,
+/**/
+    3786,
+/**/
+    3785,
+/**/
+    3784,
+/**/
+    3783,
+/**/
+    3782,
 /**/
     3781,
 /**/

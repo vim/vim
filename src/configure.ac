@@ -159,8 +159,34 @@ fi
 
 OS_EXTRA_SRC=""; OS_EXTRA_OBJ=""
 
+dnl When cross-compiling set $vim_cv_uname_output, $vim_cv_uname_r_output and
+dnl $vim_cv_uname_m_output to the desired value for the target system
+AC_MSG_CHECKING(uname)
+if test "x$vim_cv_uname_output" = "x" ; then
+  vim_cv_uname_output=`(uname) 2>/dev/null`
+  AC_MSG_RESULT($vim_cv_uname_output)
+else
+  AC_MSG_RESULT([$vim_cv_uname_output (cached)])
+fi
+
+AC_MSG_CHECKING(uname -r)
+if test "x$vim_cv_uname_r_output" = "x" ; then
+  vim_cv_uname_r_output=`(uname -r) 2>/dev/null`
+  AC_MSG_RESULT($vim_cv_uname_r_output)
+else
+  AC_MSG_RESULT([$vim_cv_uname_r_output (cached)])
+fi
+
+AC_MSG_CHECKING(uname -m)
+if test "x$vim_cv_uname_m_output" = "x" ; then
+  vim_cv_uname_m_output=`(uname -m) 2>/dev/null`
+  AC_MSG_RESULT($vim_cv_uname_m_output)
+else
+  AC_MSG_RESULT([$vim_cv_uname_m_output (cached)])
+fi
+
 AC_MSG_CHECKING(for Haiku)
-case `uname` in
+case $vim_cv_uname_output in
     Haiku) HAIKU=yes; AC_MSG_RESULT(yes);;
     *)     HAIKU=no; AC_MSG_RESULT(no);;
 esac
@@ -168,7 +194,7 @@ esac
 dnl If QNX is found, assume we don't want to use Xphoton
 dnl unless it was specifically asked for (--with-x)
 AC_MSG_CHECKING(for QNX)
-case `uname` in
+case $vim_cv_uname_output in
     QNX)	OS_EXTRA_SRC=os_qnx.c; OS_EXTRA_OBJ=objects/os_qnx.o
 		test -z "$with_x" && with_x=no
 		QNX=yes; AC_MSG_RESULT(yes);;
@@ -179,7 +205,7 @@ dnl Check for Darwin and MacOS X
 dnl We do a check for MacOS X in the very beginning because there
 dnl are a lot of other things we need to change besides GUI stuff
 AC_MSG_CHECKING([for Darwin (Mac OS X)])
-if test "`(uname) 2>/dev/null`" = Darwin; then
+if test "$vim_cv_uname_output" = Darwin; then
   AC_MSG_RESULT(yes)
   MACOS_X=yes
   CPPFLAGS="$CPPFLAGS -DMACOS_X"
@@ -395,7 +421,7 @@ AC_SUBST(line_break)
 if test "$cf_cv_ebcdic" = "yes"; then
 dnl If we have EBCDIC we most likely have z/OS Unix, let's test it!
 AC_MSG_CHECKING(for z/OS Unix)
-case `uname` in
+case $vim_cv_uname_output in
     OS/390)	zOSUnix="yes";
 		dnl If using cc the environment variable _CC_CCMODE must be
 		dnl set to "1", so that some compiler extensions are enabled.
@@ -742,7 +768,7 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
     fi
     if test "X$LUA_CFLAGS$LUA_LIBS" != "X" && \
        test "x$MACOS_X" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
-       test "`(uname -m) 2>/dev/null`" = "x86_64"; then
+       test "$vim_cv_uname_m_output" = "x86_64"; then
       dnl OSX/x64 requires these flags. See http://luajit.org/install.html
       LUA_LIBS="-pagezero_size 10000 -image_base 100000000 $LUA_LIBS"
     fi
@@ -910,8 +936,8 @@ if test "$enable_mzschemeinterp" = "yes"; then
 	    dnl Make Vim remember the path to the library.  For when it's not in
 	    dnl $LD_LIBRARY_PATH.
 	    MZSCHEME_LIBS="${MZSCHEME_LIBS} -Wl,-rpath -Wl,${path}"
-	  elif test "`(uname) 2>/dev/null`" = SunOS &&
-				   uname -r | grep '^5' >/dev/null; then
+	  elif test "$vim_cv_uname_output" = SunOS &&
+			   echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
 	    MZSCHEME_LIBS="${MZSCHEME_LIBS} -R ${path}"
 	  fi
 	fi
@@ -1349,13 +1375,13 @@ eof
 	threadsafe_flag=
 	thread_lib=
 	dnl if test "x$MACOS_X" != "xyes"; then
-        if test "`(uname) 2>/dev/null`" != Darwin; then
+        if test "$vim_cv_uname_output" != Darwin; then
 	  test "$GCC" = yes && threadsafe_flag="-pthread"
-	  if test "`(uname) 2>/dev/null`" = FreeBSD; then
+	  if test "$vim_cv_uname_output" = FreeBSD; then
 	    threadsafe_flag="-D_THREAD_SAFE"
 	    thread_lib="-pthread"
 	  fi
-	  if test "`(uname) 2>/dev/null`" = SunOS; then
+	  if test "$vim_cv_uname_output" = SunOS; then
 	    threadsafe_flag="-pthreads"
 	  fi
 	fi
@@ -1567,13 +1593,13 @@ eof
         threadsafe_flag=
         thread_lib=
         dnl if test "x$MACOS_X" != "xyes"; then
-        if test "`(uname) 2>/dev/null`" != Darwin; then
+        if test "$vim_cv_uname_output" != Darwin; then
           test "$GCC" = yes && threadsafe_flag="-pthread"
-          if test "`(uname) 2>/dev/null`" = FreeBSD; then
+          if test "$vim_cv_uname_output" = FreeBSD; then
             threadsafe_flag="-D_THREAD_SAFE"
             thread_lib="-pthread"
           fi
-          if test "`(uname) 2>/dev/null`" = SunOS; then
+          if test "$vim_cv_uname_output" = SunOS; then
             threadsafe_flag="-pthreads"
           fi
         fi
@@ -1880,8 +1906,8 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 		if test -f "$try/lib$trylib" ; then
 		  AC_MSG_RESULT($try/lib$trylib)
 		  TCL_LIBS="-L\"$try\" -ltcl$ver -ldl -lm"
-		  if test "`(uname) 2>/dev/null`" = SunOS &&
-					 uname -r | grep '^5' >/dev/null; then
+		  if test "$vim_cv_uname_output" = SunOS &&
+					 echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
 		    TCL_LIBS="$TCL_LIBS -R $try"
 		  fi
 		  break 3
@@ -2281,8 +2307,8 @@ else
     x_libraries=`echo "$x_includes" | sed s/include/lib/`
     AC_MSG_RESULT(Corrected X libraries to $x_libraries)
     X_LIBS="$X_LIBS -L$x_libraries"
-    if test "`(uname) 2>/dev/null`" = SunOS &&
-					 uname -r | grep '^5' >/dev/null; then
+    if test "$vim_cv_uname_output" = SunOS &&
+					 echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
       X_LIBS="$X_LIBS -R $x_libraries"
     fi
   fi
@@ -2719,7 +2745,7 @@ AC_DEFUN([GNOME_INIT_HOOK],
       dnl On FreeBSD we need -pthread but pkg-config doesn't include it.
       dnl This might not be the right way but it works for me...
       AC_MSG_CHECKING(for FreeBSD)
-      if test "`(uname) 2>/dev/null`" = FreeBSD; then
+      if test "$vim_cv_uname_output" = FreeBSD; then
 	AC_MSG_RESULT(yes, adding -pthread)
 	GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
 	GNOME_LIBS="$GNOME_LIBS -pthread"
@@ -2971,8 +2997,8 @@ if test -z "$SKIP_MOTIF"; then
       else
 	if test -n "$GUI_LIB_LOC"; then
 	  AC_MSG_RESULT($GUI_LIB_LOC)
-	  if test "`(uname) 2>/dev/null`" = SunOS &&
-					 uname -r | grep '^5' >/dev/null; then
+	  if test "$vim_cv_uname_output" = SunOS &&
+					 echo $vim_cv_uname_r_output | grep '^5' >/dev/null; then
 	    GUI_LIB_LOC="$GUI_LIB_LOC -R $GUI_LIB_LOC"
 	  fi
 	fi
@@ -3215,7 +3241,7 @@ fi
 
 dnl Check for Cygwin, which needs an extra source file if not using X11
 AC_MSG_CHECKING(for CYGWIN or MSYS environment)
-case `uname` in
+case $vim_cv_uname_output in
     CYGWIN*|MSYS*)    CYGWIN=yes; AC_MSG_RESULT(yes)
                 AC_MSG_CHECKING(for CYGWIN clipboard support)
                 if test "x$with_x" = "xno" ; then
@@ -3446,7 +3472,7 @@ else
   dnl  Older versions of ncurses have bugs, get a new one!
   dnl  Digital Unix (OSF1) should use curses (Ronald Schild).
   dnl  On SCO Openserver should prefer termlib (Roger Cornelius).
-  case "`uname -s 2>/dev/null`" in
+  case "$vim_cv_uname_output" in
 	OSF1|SCO_SV)	tlibs="tinfo ncurses curses termlib termcap";;
 	*)	tlibs="tinfo ncurses termlib termcap curses";;
   esac

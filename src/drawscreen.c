@@ -342,6 +342,13 @@ update_screen(int type_arg)
     update_popups(win_update);
 #endif
 
+#ifdef FEAT_TERMINAL
+    FOR_ALL_WINDOWS(wp)
+	// If this window contains a terminal, after redrawing all windows, the
+	// dirty row range can be reset.
+	term_did_update_window(wp);
+#endif
+
     after_updating_screen(TRUE);
 
     // Clear or redraw the command line.  Done last, because scrolling may

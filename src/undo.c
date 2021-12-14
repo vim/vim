@@ -240,7 +240,7 @@ u_save_cursor(void)
 
 /*
  * Save the lines between "top" and "bot" for both the "u" and "U" command.
- * "top" may be 0 and bot may be curbuf->b_ml.ml_line_count + 1.
+ * "top" may be 0 and "bot" may be curbuf->b_ml.ml_line_count + 1.
  * Careful: may trigger autocommands that reload the buffer.
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
@@ -497,10 +497,8 @@ u_savecommon(
      */
     if (curbuf->b_u_synced)
     {
-#ifdef FEAT_JUMPLIST
 	// Need to create new entry in b_changelist.
 	curbuf->b_new_change = TRUE;
-#endif
 
 	if (get_undolevel() >= 0)
 	{

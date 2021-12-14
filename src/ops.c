@@ -3341,11 +3341,27 @@ set_operatorfunc_option(void)
     void
 free_operatorfunc_option(void)
 {
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     free_callback(&opfunc_cb);
-#  endif
+# endif
 }
 #endif
+
+/*
+ * Mark the global 'operatorfunc' callback with 'copyID' so that it is not
+ * garbage collected.
+ */
+    int
+set_ref_in_opfunc(int copyID UNUSED)
+{
+    int abort = FALSE;
+
+#ifdef FEAT_EVAL
+    abort = set_ref_in_callback(&opfunc_cb, copyID);
+#endif
+
+    return abort;
+}
 
 /*
  * Handle the "g@" operator: call 'operatorfunc'.

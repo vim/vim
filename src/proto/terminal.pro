@@ -26,6 +26,7 @@ void term_channel_closed(channel_T *ch);
 void term_check_channel_closed_recently(void);
 int term_do_update_window(win_T *wp);
 void term_update_window(win_T *wp);
+void term_did_update_window(win_T *wp);
 int term_is_finished(buf_T *buf);
 int term_show_buffer(buf_T *buf);
 void term_change_in_curbuf(void);

@@ -1536,6 +1536,21 @@ def Test_import_star_fails()
   CheckScriptFailure(lines, 'E1047:')
 
   delete('Xfoo.vim')
+
+  lines =<< trim END
+      vim9script
+      def TheFunc()
+        echo 'the func'
+      enddef
+      export var Ref = TheFunc
+  END
+  writefile([], 'Xthat.vim')
+  lines =<< trim END
+      import * as That from './Xthat.vim'
+      That()
+  END
+  CheckDefAndScriptFailure2(lines, 'E1094:', 'E1236: Cannot use That itself')
+  delete('Xthat.vim')
 enddef
 
 def Test_import_as()
@@ -1896,6 +1911,17 @@ def Test_script_var_shadows_function()
   CheckScriptFailure(lines, 'E1041:', 5)
 enddef
 
+def Test_function_shadows_script_var()
+  var lines =<< trim END
+      vim9script
+      var Func = 1
+      def Func(): number
+        return 123
+      enddef
+  END
+  CheckScriptFailure(lines, 'E1041:', 3)
+enddef
+
 def Test_script_var_shadows_command()
   var lines =<< trim END
       var undo = 1
@@ -1909,6 +1935,15 @@ def Test_script_var_shadows_command()
       undo
   END
   CheckDefAndScriptFailure(lines, 'E1207:', 2)
+enddef
+
+def Test_vim9script_call_wrong_type()
+  var lines =<< trim END
+      vim9script
+      var Time = 'localtime'
+      Time()
+  END
+  CheckScriptFailure(lines, 'E1085:')
 enddef
 
 def s:RetSome(): string
@@ -2198,7 +2233,7 @@ def Test_func_overrules_import_fails()
       echo 'local to function'
     enddef
   END
-  CheckScriptFailure(lines, 'E1073:')
+  CheckScriptFailure(lines, 'E1041:')
 
   lines =<< trim END
     vim9script
@@ -2231,7 +2266,7 @@ def Test_func_redefine_fails()
     vim9script
     def Foo(): string
       return 'foo'
-      enddef
+    enddef
     def Func()
       var  Foo = {-> 'lambda'}
     enddef

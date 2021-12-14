@@ -2341,6 +2341,21 @@ set_thesaurusfunc_option(void)
     return retval;
 }
 
+/*
+ * Mark the global 'completefunc' 'omnifunc' and 'thesaurusfunc' callbacks with
+ * 'copyID' so that they are not garbage collected.
+ */
+    int
+set_ref_in_insexpand_funcs(int copyID)
+{
+    int abort = FALSE;
+
+    abort = set_ref_in_callback(&cfu_cb, copyID);
+    abort = abort || set_ref_in_callback(&ofu_cb, copyID);
+    abort = abort || set_ref_in_callback(&tsrfu_cb, copyID);
+
+    return abort;
+}
 
 /*
  * Get the user-defined completion function name for completion 'type'

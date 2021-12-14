@@ -5593,12 +5593,11 @@ nv_gomark(cmdarg_T *cap)
     static void
 nv_pcmark(cmdarg_T *cap)
 {
-#ifdef FEAT_JUMPLIST
     pos_T	*pos;
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
     linenr_T	lnum = curwin->w_cursor.lnum;
     int		old_KeyTyped = KeyTyped;    // getting file may reset it
-# endif
+#endif
 
     if (!checkclearopq(cap->oap))
     {
@@ -5638,9 +5637,6 @@ nv_pcmark(cmdarg_T *cap)
 	    foldOpenCursor();
 # endif
     }
-#else
-    clearopbeep(cap->oap);
-#endif
 }
 
 /*
@@ -6444,7 +6440,6 @@ nv_g_cmd(cmdarg_T *cap)
 	    do_exmode(TRUE);
 	break;
 
-#ifdef FEAT_JUMPLIST
     case ',':
 	nv_pcmark(cap);
 	break;
@@ -6453,7 +6448,6 @@ nv_g_cmd(cmdarg_T *cap)
 	cap->count1 = -cap->count1;
 	nv_pcmark(cap);
 	break;
-#endif
 
     case 't':
 	if (!checkclearop(oap))
@@ -6511,7 +6505,7 @@ n_opencmd(cmdarg_T *cap)
 		       ) == OK
 		&& open_line(cap->cmdchar == 'O' ? BACKWARD : FORWARD,
 			 has_format_option(FO_OPEN_COMS) ? OPENLINE_DO_COM : 0,
-								      0) == OK)
+								0, NULL) == OK)
 	{
 #ifdef FEAT_CONCEAL
 	    if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)
