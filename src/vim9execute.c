@@ -680,7 +680,9 @@ func_return(ectx_T *ectx)
 	}
     }
 #endif
-    // TODO: when is it safe to delete the function when it is no longer used?
+
+    // No check for uf_refcount being zero, cannot think of a way that would
+    // happen.
     --dfunc->df_ufunc->uf_calls;
 
     // execution context goes one level up
@@ -5623,7 +5625,6 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		}
 		break;
 	    case ISN_CATCH:
-		// TODO
 		smsg("%s%4d CATCH", pfx, current);
 		break;
 	    case ISN_TRYCONT:
@@ -5819,7 +5820,6 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 					     (long)iptr->isn_arg.put.put_lnum);
 		break;
 
-		// TODO: summarize modifiers
 	    case ISN_CMDMOD:
 		{
 		    char_u  *buf;
