@@ -2101,15 +2101,15 @@ term_enter_job_mode()
 /*
  * Get a key from the user with terminal mode mappings.
  * Note: while waiting a terminal may be closed and freed if the channel is
- * closed and ++close was used.
+ * closed and ++close was used.  This may even happen before we get here.
  */
     static int
 term_vgetc()
 {
     int c;
     int save_State = State;
-    int modify_other_keys =
-			  vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
+    int modify_other_keys = curbuf->b_term->tl_vterm == NULL ? FALSE
+			: vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
 
     State = TERMINAL;
     got_int = FALSE;
