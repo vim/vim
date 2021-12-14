@@ -3231,6 +3231,7 @@ def Run_Test_opfunc_error()
   call writefile(lines, 'XTest_opfunc_error')
 
   var buf = RunVimInTerminal('-S XTest_opfunc_error', {rows: 6, wait_for_ruler: 0})
+  WaitForAssert(() => assert_match('Press ENTER', term_getline(buf, 6)))
   VerifyScreenDump(buf, 'Test_opfunc_error', {})
 
   # clean up
