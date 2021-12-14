@@ -2492,19 +2492,12 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	    garray_T	ga;
 	    char_u	buf[MB_MAXBYTES + 1];
 	    int		len;
-	    int (*ptr2len)(int);
-	    int (*ptr2char)(char_u *);
+	    int (*ptr2len)(char_u *p);
 
 	    if (enc_utf8)
-	    {
-		ptr2len = utf_char2len;
-		ptr2char = utf_ptr2char;
-	    }
+		ptr2len = utf_ptr2len;
 	    else
-	    {
-		ptr2len = mb_char2len;
-		ptr2char = mb_ptr2char;
-	    }
+		ptr2len = mb_ptr2len;
 
 	    // set_vim_var_nr() doesn't set the type
 	    set_vim_var_type(VV_KEY, VAR_NUMBER);
@@ -2515,27 +2508,24 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	        typval_T newtv;
 
 		if (has_mbyte)
-		{
-		    len = ptr2len(ptr2char(p));
-		    STRNCPY(buf, p, len);
-		}
+		    len = ptr2len(p);
 		else
-		{
 		    len = 1;
-		    buf[0] = *p;
-		}
+
+		STRNCPY(buf, p, len);
 		buf[len] = NUL;
 
-	        tv.v_type = VAR_STRING;
-	        tv.vval.v_string = vim_strsave(buf);
+		tv.v_type = VAR_STRING;
+		tv.vval.v_string = vim_strsave(buf);
 
-	        set_vim_var_nr(VV_KEY, idx);
-	        if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
-	        						   || did_emsg)
-	            break;
+		set_vim_var_nr(VV_KEY, idx);
+		if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+								   || did_emsg)
+		    break;
 		if (did_emsg)
 		{
 		    clear_tv(&newtv);
+		    clear_tv(&tv);
 		    break;
 		}
 		else if (filtermap != FILTERMAP_FILTER)
@@ -2543,6 +2533,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    if (newtv.v_type != VAR_STRING)
 		    {
 			clear_tv(&newtv);
+			clear_tv(&tv);
 			emsg(_(e_stringreq));
 			break;
 		    }
@@ -2552,7 +2543,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		else if (!rem)
 		    ga_concat(&ga, tv.vval.v_string);
 
-		vim_free(tv.vval.v_string);
+		clear_tv(&newtv);
+		clear_tv(&tv);
 
 	        ++idx;
 	    }
