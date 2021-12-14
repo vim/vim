@@ -6127,6 +6127,7 @@ buf_copy_options(buf_T *buf, int flags)
 		COPY_OPT_SCTX(buf, BV_ISK);
 		did_isk = TRUE;
 		buf->b_p_ts = p_ts;
+		COPY_OPT_SCTX(buf, BV_TS);
 #ifdef FEAT_VARTABS
 		buf->b_p_vts = vim_strsave(p_vts);
 		COPY_OPT_SCTX(buf, BV_VTS);
