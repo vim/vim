@@ -1536,6 +1536,21 @@ def Test_import_star_fails()
   CheckScriptFailure(lines, 'E1047:')
 
   delete('Xfoo.vim')
+
+  lines =<< trim END
+      vim9script
+      def TheFunc()
+        echo 'the func'
+      enddef
+      export var Ref = TheFunc
+  END
+  writefile([], 'Xthat.vim')
+  lines =<< trim END
+      import * as That from './Xthat.vim'
+      That()
+  END
+  CheckDefAndScriptFailure2(lines, 'E1094:', 'E1236: Cannot use That itself')
+  delete('Xthat.vim')
 enddef
 
 def Test_import_as()

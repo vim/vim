@@ -1596,7 +1596,16 @@ deref_func_name(
 		*lenp = (int)STRLEN(s);
 		return s;
 	    }
-	    // TODO: what if (import->imp_flags & IMP_FLAGS_STAR)
+	    if (import->imp_flags & IMP_FLAGS_STAR)
+	    {
+		name[len] = NUL;
+		semsg(_(e_cannot_use_str_itself_it_is_imported_with_star),
+									 name);
+		name[len] = cc;
+		*lenp = 0;
+		return (char_u *)"";	// just in case
+	    }
+	    else
 	    {
 		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
 		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
