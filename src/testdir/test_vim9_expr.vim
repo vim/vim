@@ -646,8 +646,16 @@ def Test_expr4_equal()
       assert_equal(false, function('g:Test_expr4_equal', [123]) == function('g:Test_expr4_is', [123]))
       assert_equal(false, function('g:Test_expr4_equal', [123]) == function('g:Test_expr4_equal', [999]))
 
-      # TODO: this unexpectedly sometimes fails on Appveyor
-      if !has('win32')
+      if true
+        var OneFunc: func
+        var TwoFunc: func
+        OneFunc = function('len')
+        TwoFunc = function('len')
+        assert_equal(true, OneFunc('abc') == TwoFunc('123'))
+      endif
+
+      # check this doesn't fail when skipped
+      if false
         var OneFunc: func
         var TwoFunc: func
         OneFunc = function('len')

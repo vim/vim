@@ -2001,7 +2001,7 @@ eval_func(
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.
     s = vim_strsave(s);
-    if (s == NULL || *s == NUL || (flags & EVAL_CONSTANT))
+    if (s == NULL || (evaluate && (*s == NUL || (flags & EVAL_CONSTANT))))
 	ret = FAIL;
     else
     {
