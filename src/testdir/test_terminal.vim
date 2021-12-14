@@ -1124,7 +1124,8 @@ func Test_terminal_response_to_control_sequence()
   unlet g:job
 endfunc
 
-func Test_terminal_focus_events()
+" Run this first, it fails when run after other tests.
+func Test_aa_terminal_focus_events()
   CheckNotGui
   CheckUnix
   CheckRunVimInTerminal
@@ -1137,8 +1138,6 @@ func Test_terminal_focus_events()
       set term=xterm ttymouse=xterm2
       au FocusLost * call setline(1, 'I am lost') | set nomod
       au FocusGained * call setline(1, 'I am back') | set nomod
-      " FIXME: sometimes this job hangs, exit after a couple of seconds
-      call timer_start(2000, {id -> execute('qall')})
   END
   call writefile(lines, 'XtermFocus')
   let buf = RunVimInTerminal('-S XtermFocus', #{rows: 6})
