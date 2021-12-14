@@ -5925,7 +5925,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    else
 	    {
 		buf->b_p_swf = p_swf;
-		COPY_OPT_SCTX(buf, BV_INF);
+		COPY_OPT_SCTX(buf, BV_SWF);
 	    }
 	    buf->b_p_cpt = vim_strsave(p_cpt);
 	    COPY_OPT_SCTX(buf, BV_CPT);
