@@ -234,7 +234,7 @@ jobs:
         if: contains(matrix.extra, 'asan') && !cancelled()
         run: |
           for f in $(grep -lR '#[[:digit:]]* *0x[[:digit:]a-fA-F]*' "${LOG_DIR}"); do
-            asan_symbolize-11 -l "$f"
+            asan_symbolize-13 -l "$f"
             false # in order to fail a job
           done
 
