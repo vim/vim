@@ -148,9 +148,14 @@ func Test_filter_map_string()
 
   " filter()
   call filter(s, '"b" != v:val')
-  call assert_equal('abc', s)
+  call assert_equal(s, s)
   call assert_equal('ac', filter('abc', '"b" != v:val'))
   call assert_equal('あいうえお', filter('あxいxうxえxお', '"x" != v:val'))
+  call assert_equal('あa😊💕💕b💕', filter('あxax😊x💕💕b💕x', '"x" != v:val'))
+  call assert_equal('xxxx', filter('あxax😊x💕💕b💕x', '"x" == v:val'))
+  let t = "%),:;>?]}’”†‡…‰,‱‼⁇⁈⁉℃℉,、。〉》」,』】〕〗〙〛,！），．：,；？,］｝"
+  let u = "%):;>?]}’”†‡…‰‱‼⁇⁈⁉℃℉、。〉》」』】〕〗〙〛！），．：；？］｝"
+  call assert_equal(u, filter(t, '"," != v:val'))
   call assert_equal('', filter('abc', '0'))
   call assert_equal('ac', filter('abc', { i, x -> "b" != x }))
   call assert_equal('あいうえお', filter('あxいxうxえxお', { i, x -> "x" != x }))
@@ -158,9 +163,10 @@ func Test_filter_map_string()
 
   " map()
   call map(s, 'nr2char(char2nr(v:val) + 2)')
-  call assert_equal('abc', s)
+  call assert_equal(s, s)
   call assert_equal('cde', map('abc', 'nr2char(char2nr(v:val) + 2)'))
   call assert_equal('[あ][i][う][え][お]', map('あiうえお', '"[" .. v:val .. "]"'))
+  call assert_equal('[あ][a][😊][,][‱][‼][⁇][⁈][⁉][💕][b][💕][c][💕]', map('あa😊,‱‼⁇⁈⁉💕b💕c💕', '"[" .. v:val .. "]"'))
   call assert_equal('', map('abc', '""'))
   call assert_equal('cde', map('abc', { i, x -> nr2char(char2nr(x) + 2) }))
   call assert_equal('[あ][i][う][え][お]', map('あiうえお', { i, x -> '[' .. x .. ']' }))
@@ -168,13 +174,17 @@ func Test_filter_map_string()
 
   " mapnew()
   call mapnew(s, 'nr2char(char2nr(v:val) + 2)')
-  call assert_equal('abc', s)
+  call assert_equal(s, s)
   call assert_equal('cde', mapnew('abc', 'nr2char(char2nr(v:val) + 2)'))
   call assert_equal('[あ][i][う][え][お]', mapnew('あiうえお', '"[" .. v:val .. "]"'))
+  call assert_equal('[あ][a][😊][,][‱][‼][⁇][⁈][⁉][💕][b][💕][c][💕]', mapnew('あa😊,‱‼⁇⁈⁉💕b💕c💕', '"[" .. v:val .. "]"'))
   call assert_equal('', mapnew('abc', '""'))
   call assert_equal('cde', mapnew('abc', { i, x -> nr2char(char2nr(x) + 2) }))
   call assert_equal('[あ][i][う][え][お]', mapnew('あiうえお', { i, x -> '[' .. x .. ']' }))
   call assert_equal('', mapnew('abc', { i, x -> '' }))
+
+  " map() and filter()
+  call assert_equal('[あ][⁈][a][😊][⁉][💕][💕][b][💕]', map(filter('あx⁈ax😊x⁉💕💕b💕x', '"x" != v:val'), '"[" .. v:val .. "]"'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
