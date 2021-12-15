@@ -4194,7 +4194,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    // In Vim9 script a function cannot have the same name as a
 	    // variable.
 	    if (vim9script && *arg == K_SPECIAL
-		     && eval_variable(name_base, STRLEN(name_base), NULL, NULL,
+		&& eval_variable(name_base, (int)STRLEN(name_base), NULL, NULL,
 			 EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT
 						     + EVAL_VAR_NO_FUNC) == OK)
 	    {
