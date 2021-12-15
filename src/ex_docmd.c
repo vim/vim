@@ -4633,7 +4633,11 @@ invalid_range(exarg_T *eap)
 #ifdef FEAT_QUICKFIX
 		// No error for value that is too big, will use the last entry.
 		if (eap->line2 <= 0)
+		{
+		    if (eap->addr_count == 0)
+			return _(e_no_errors);
 		    return _(e_invalid_range);
+		}
 #endif
 		break;
 	    case ADDR_QUICKFIX_VALID:
