@@ -1090,18 +1090,19 @@ let s:evalFromBalloonExpr = 0
 
 " Handle the result of data-evaluate-expression
 func s:HandleEvaluate(msg)
-  let value = substitute(a:msg, '.*value="\(.*\)"', '\1', '')
-  let value = substitute(value, '\\"', '"', 'g')
-  let value = substitute(value, '\\\\', '\\', 'g')
-  " multi-byte characters arrive in octal form, replace everthing but NULL values
-  let value = substitute(value, '\\000', s:NullRepl, 'g')
-  let value = substitute(value, '\\\o\o\o', {-> eval('"' .. submatch(0) .. '"')}, 'g')
-  " Note: GDB docs also mention hex encodings - the translations below work
-  "       but we keep them out for performance-reasons until we actually see
-  "       those in mi-returns
-  "let value = substitute(value, '\\0x00', s:NullRep, 'g')
-  "let value = substitute(value, '\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
-  let value = substitute(value, s:NullRepl, '\\000', 'g')
+  let value = a:msg
+    \->substitute('.*value="\(.*\)"', '\1', '')
+    \->substitute('\\"', '"', 'g')
+    \->substitute('\\\\', '\\', 'g')
+    "\ multi-byte characters arrive in octal form, replace everthing but NULL values
+    \->substitute('\\000', s:NullRepl, 'g')
+    \->substitute('\\\o\o\o', {-> eval('"' .. submatch(0) .. '"')}, 'g')
+    "\ Note: GDB docs also mention hex encodings - the translations below work
+    "\       but we keep them out for performance-reasons until we actually see
+    "\       those in mi-returns
+    "\ ->substitute('\\0x00', s:NullRep, 'g')
+    "\ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
+    \->substitute(s:NullRepl, '\\000', 'g')
   if s:evalFromBalloonExpr
     if s:evalFromBalloonExprResult == ''
       let s:evalFromBalloonExprResult = s:evalexpr . ': ' . value
