@@ -648,12 +648,23 @@ func Test_usercmd_with_block()
   call CheckScriptFailure(lines, 'E1026:')
 
   let lines =<< trim END
-      command BarCommand {
+      command HelloThere {
          echo 'hello' | echo 'there'
         }
-      BarCommand
+      HelloThere
   END
-  call CheckScriptFailure(lines, 'E1231:')
+  call CheckScriptSuccess(lines)
+  delcommand HelloThere
+
+  let lines =<< trim END
+      command BadCommand {
+         echo  {
+         'key': 'value',
+          }
+          }
+      BadCommand
+  END
+  call CheckScriptFailure(lines, 'E1128:')
 endfunc
 
 func Test_delcommand_buffer()
