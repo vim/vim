@@ -2136,6 +2136,16 @@ cleanup_function_call(funccall_T *fc)
 }
 
 /*
+ * Return TRUE if "name" is a numbered function, ignoring a "g:" prefix.
+ */
+    static int
+numbered_function(char_u *name)
+{
+    return isdigit(*name)
+	    || (name[0] == 'g' && name[1] == ':' && isdigit(name[2]));
+}
+
+/*
  * There are two kinds of function names:
  * 1. ordinary names, function defined with :function or :def
  * 2. numbered functions and lambdas
@@ -2146,7 +2156,7 @@ cleanup_function_call(funccall_T *fc)
     int
 func_name_refcount(char_u *name)
 {
-    return isdigit(*name) || *name == '<';
+    return numbered_function(name) || *name == '<';
 }
 
 /*
@@ -3956,6 +3966,8 @@ define_function(exarg_T *eap, char_u *name_arg)
     int		flags = 0;
     char_u	*ret_type = NULL;
     ufunc_T	*fp = NULL;
+    int		fp_allocated = FALSE;
+    int		free_fp = FALSE;
     int		overwrite = FALSE;
     dictitem_T	*v;
     funcdict_T	fudi;
@@ -4460,6 +4472,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto erret;
+	fp_allocated = TRUE;
 
 	if (fudi.fd_dict != NULL)
 	{
@@ -4490,21 +4503,6 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    // behave like "dict" was used
 	    flags |= FC_DICT;
 	}
-
-	// insert the new function in the function list
-	set_ufunc_name(fp, name);
-	if (overwrite)
-	{
-	    hi = hash_find(&func_hashtab, name);
-	    hi->hi_key = UF2HIKEY(fp);
-	}
-	else if (hash_add(&func_hashtab, UF2HIKEY(fp)) == FAIL)
-	{
-	    vim_free(fp);
-	    fp = NULL;
-	    goto erret;
-	}
-	fp->uf_refcount = 1;
     }
     fp->uf_args = newargs;
     fp->uf_def_args = default_args;
@@ -4527,7 +4525,8 @@ define_function(exarg_T *eap, char_u *name_arg)
 	if (parse_argument_types(fp, &argtypes, varargs) == FAIL)
 	{
 	    SOURCING_LNUM = lnum_save;
-	    goto errret_2;
+	    free_fp = fp_allocated;
+	    goto erret;
 	}
 	varargs = FALSE;
 
@@ -4535,6 +4534,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	if (parse_return_type(fp, ret_type) == FAIL)
 	{
 	    SOURCING_LNUM = lnum_save;
+	    free_fp = fp_allocated;
 	    goto erret;
 	}
 	SOURCING_LNUM = lnum_save;
@@ -4542,7 +4542,25 @@ define_function(exarg_T *eap, char_u *name_arg)
     else
 	fp->uf_def_status = UF_NOT_COMPILED;
 
+    if (fp_allocated)
+    {
+	// insert the new function in the function list
+	set_ufunc_name(fp, name);
+	if (overwrite)
+	{
+	    hi = hash_find(&func_hashtab, name);
+	    hi->hi_key = UF2HIKEY(fp);
+	}
+	else if (hash_add(&func_hashtab, UF2HIKEY(fp)) == FAIL)
+	{
+	    free_fp = TRUE;
+	    goto erret;
+	}
+	fp->uf_refcount = 1;
+    }
+
     fp->uf_lines = newlines;
+    newlines.ga_data = NULL;
     if ((flags & FC_CLOSURE) != 0)
     {
 	if (register_closure(fp) == FAIL)
@@ -4593,6 +4611,11 @@ errret_2:
     ga_clear_strings(&newlines);
     if (fp != NULL)
 	VIM_CLEAR(fp->uf_arg_types);
+    if (free_fp)
+    {
+	vim_free(fp);
+	fp = NULL;
+    }
 ret_free:
     ga_clear_strings(&argtypes);
     vim_free(line_to_free);
@@ -4813,7 +4836,7 @@ ex_delfunction(exarg_T *eap)
     if (eap->nextcmd != NULL)
 	*p = NUL;
 
-    if (isdigit(*name) && fudi.fd_dict == NULL)
+    if (numbered_function(name) && fudi.fd_dict == NULL)
     {
 	if (!eap->skip)
 	    semsg(_(e_invarg2), eap->arg);
@@ -4881,7 +4904,7 @@ func_unref(char_u *name)
     if (name == NULL || !func_name_refcount(name))
 	return;
     fp = find_func(name, FALSE, NULL);
-    if (fp == NULL && isdigit(*name))
+    if (fp == NULL && numbered_function(name))
     {
 #ifdef EXITFREE
 	if (!entered_free_all_mem)
@@ -4924,7 +4947,7 @@ func_ref(char_u *name)
     fp = find_func(name, FALSE, NULL);
     if (fp != NULL)
 	++fp->uf_refcount;
-    else if (isdigit(*name))
+    else if (numbered_function(name))
 	// Only give an error for a numbered function.
 	// Fail silently, when named or lambda function isn't found.
 	internal_error("func_ref()");
