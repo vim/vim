@@ -2549,6 +2549,20 @@ def Test_expr7_dict_vim9script()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_expr7_dict_in_block()
+  var lines =<< trim END
+      vim9script
+      command MyCommand {
+          echo {
+              k: 0, }
+      }
+      MyCommand
+  END
+  CheckScriptSuccess(lines)
+
+  delcommand MyCommand
+enddef
+
 def Test_expr7_call_2bool()
   var lines =<< trim END
       vim9script

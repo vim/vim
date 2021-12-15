@@ -2305,7 +2305,7 @@ do_one_cmd(
 	    // versions.
 	    if (*p == '\\' && p[1] == '\n')
 		STRMOVE(p, p + 1);
-	    else if (*p == '\n')
+	    else if (*p == '\n' && (ea.argt & EX_TRLBAR))
 	    {
 		ea.nextcmd = p + 1;
 		*p = NUL;

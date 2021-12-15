@@ -36,6 +36,7 @@ colnr_T getvcol_nolist(pos_T *posp);
 void getvvcol(win_T *wp, pos_T *pos, colnr_T *start, colnr_T *cursor, colnr_T *end);
 void getvcols(win_T *wp, pos_T *pos1, pos_T *pos2, colnr_T *left, colnr_T *right);
 char_u *skipwhite(char_u *q);
+char_u *skipwhite_and_nl(char_u *q);
 int getwhitecols_curline(void);
 int getwhitecols(char_u *p);
 char_u *skipdigits(char_u *q);
