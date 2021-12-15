@@ -2009,8 +2009,13 @@ typedef struct {
  * Structure to hold the context of a compiled function, used by closures
  * defined in that function.
  */
-typedef struct funcstack_S
+typedef struct funcstack_S funcstack_T;
+
+struct funcstack_S
 {
+    funcstack_T *fs_next;	// linked list at "first_funcstack"
+    funcstack_T *fs_prev;
+
     garray_T	fs_ga;		// contains the stack, with:
 				// - arguments
 				// - frame
@@ -2021,7 +2026,7 @@ typedef struct funcstack_S
     int		fs_refcount;	// nr of closures referencing this funcstack
     int		fs_min_refcount; // nr of closures on this funcstack
     int		fs_copyID;	// for garray_T collection
-} funcstack_T;
+};
 
 typedef struct outer_S outer_T;
 struct outer_S {

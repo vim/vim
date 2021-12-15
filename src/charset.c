@@ -1459,14 +1459,27 @@ getvcols(
 }
 
 /*
- * skipwhite: skip over ' ' and '\t'.
+ * Skip over ' ' and '\t'.
  */
     char_u *
 skipwhite(char_u *q)
 {
     char_u	*p = q;
 
-    while (VIM_ISWHITE(*p)) // skip to next non-white
+    while (VIM_ISWHITE(*p))
+	++p;
+    return p;
+}
+
+/*
+ * skip over ' ', '\t' and '\n'.
+ */
+    char_u *
+skipwhite_and_nl(char_u *q)
+{
+    char_u	*p = q;
+
+    while (VIM_ISWHITE(*p) || *p == NL)
 	++p;
     return p;
 }

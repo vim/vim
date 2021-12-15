@@ -1903,6 +1903,41 @@ def Test_delfunc()
   delete('XToDelFunc')
 enddef
 
+func Test_free_dict_while_in_funcstack()
+  " relies on the sleep command
+  CheckUnix
+  call Run_Test_free_dict_while_in_funcstack()
+endfunc
+
+def Run_Test_free_dict_while_in_funcstack()
+
+  # this was freeing the TermRun() default argument dictionary while it was
+  # still referenced in a funcstack_T
+  var lines =<< trim END
+      vim9script
+
+      &updatetime = 400
+      def TermRun(_ = {})
+          def Post()
+          enddef
+          def Exec()
+              term_start('sleep 1', {
+                  term_finish: 'close',
+                  exit_cb: (_, _) => Post(),
+              })
+          enddef
+          Exec()
+      enddef
+      nnoremap <F4> <Cmd>call <SID>TermRun()<CR>
+      timer_start(100, (_) => feedkeys("\<F4>"))
+      timer_start(1000, (_) => feedkeys("\<F4>"))
+      sleep 1500m
+  END
+  CheckScriptSuccess(lines)
+  nunmap <F4>
+  set updatetime&
+enddef
+
 def Test_redef_failure()
   writefile(['def Func0(): string',  'return "Func0"', 'enddef'], 'Xdef')
   so Xdef
@@ -3196,6 +3231,7 @@ def Run_Test_opfunc_error()
   call writefile(lines, 'XTest_opfunc_error')
 
   var buf = RunVimInTerminal('-S XTest_opfunc_error', {rows: 6, wait_for_ruler: 0})
+  WaitForAssert(() => assert_match('Press ENTER', term_getline(buf, 6)))
   VerifyScreenDump(buf, 'Test_opfunc_error', {})
 
   # clean up
