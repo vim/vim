@@ -185,6 +185,26 @@ func Test_filter_map_string()
 
   " map() and filter()
   call assert_equal('[あ][⁈][a][😊][⁉][💕][💕][b][💕]', map(filter('あx⁈ax😊x⁉💕💕b💕x', '"x" != v:val'), '"[" .. v:val .. "]"'))
+
+  " patterns-composing(\Z)
+  call assert_equal('ॠॠ', filter('ऊॠॡ,ऊॠॡ', {i,x -> x =~ '\Z' .. nr2char(0x0960) }))
+  call assert_equal('àà', filter('càt,càt', {i,x -> x =~ '\Za' }))
+  call assert_equal('ÅÅ', filter('Åström,Åström', {i,x -> x =~ '\Z' .. nr2char(0xc5) }))
+  call assert_equal('öö', filter('Åström,Åström', {i,x -> x =~ '\Z' .. nr2char(0xf6) }))
+  call assert_equal('ऊ@ॡ', map('ऊॠॡ', {i,x -> x =~ '\Z' .. nr2char(0x0960) ? '@' : x }))
+  call assert_equal('c@t', map('càt', {i,x -> x =~ '\Za' ? '@' : x }))
+  call assert_equal('@ström', map('Åström', {i,x -> x =~ '\Z' .. nr2char(0xc5) ? '@' : x }))
+  call assert_equal('Åstr@m', map('Åström', {i,x -> x =~ '\Z' .. nr2char(0xf6) ? '@' : x }))
+
+  " patterns-composing(\%C)
+  call assert_equal('ॠॠ', filter('ऊॠॡ,ऊॠॡ', {i,x -> x =~ nr2char(0x0960) .. '\%C' }))
+  call assert_equal('àà', filter('càt,càt', {i,x -> x =~ 'a' .. '\%C' }))
+  call assert_equal('ÅÅ', filter('Åström,Åström', {i,x -> x =~ nr2char(0xc5) .. '\%C' }))
+  call assert_equal('öö', filter('Åström,Åström', {i,x -> x =~ nr2char(0xf6) .. '\%C' }))
+  call assert_equal('ऊ@ॡ', map('ऊॠॡ', {i,x -> x =~ nr2char(0x0960) .. '\%C' ? '@' : x }))
+  call assert_equal('c@t', map('càt', {i,x -> x =~ 'a' .. '\%C' ? '@' : x }))
+  call assert_equal('@ström', map('Åström', {i,x -> x =~ nr2char(0xc5) .. '\%C' ? '@' : x }))
+  call assert_equal('Åstr@m', map('Åström', {i,x -> x =~ nr2char(0xf6) .. '\%C' ? '@' : x }))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
