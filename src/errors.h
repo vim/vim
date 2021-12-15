@@ -758,3 +758,5 @@ EXTERN char e_closure_called_from_invalid_context[]
 	INIT(= N_("E1248: Closure called from invalid context"));
 EXTERN char e_highlight_group_name_too_long[]
 	INIT(= N_("E1249: Highlight group name too long"));
+EXTERN char e_argument_of_str_must_be_list_string_dictionary_or_blob[]
+	INIT(= N_("E1250: Argument of %s must be a List, String, Dictionary or Blob"));
