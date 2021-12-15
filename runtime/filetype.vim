@@ -260,7 +260,7 @@ au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 au BufNewFile,BufRead calendar			setf calendar
 
 " C#
-au BufNewFile,BufRead *.cs			setf cs
+au BufNewFile,BufRead *.cs,*.csx		setf cs
 
 " CSDL
 au BufNewFile,BufRead *.csdl			setf csdl
@@ -1742,6 +1742,9 @@ au BufNewFile,BufRead *.speedup,*.spdata,*.spd	setf spup
 
 " Slice
 au BufNewFile,BufRead *.ice			setf slice
+
+" Microsoft Visual Studio Solution
+au BufNewFile,BufRead *.sln			setf solution
 
 " Spice
 au BufNewFile,BufRead *.sp,*.spice		setf spice
