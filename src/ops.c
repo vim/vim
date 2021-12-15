@@ -1162,12 +1162,15 @@ op_replace(oparg_T *oap, int c)
 	    n = gchar_cursor();
 	    if (n != NUL)
 	    {
-		if ((*mb_char2len)(c) > 1 || (*mb_char2len)(n) > 1)
+		int new_byte_len = (*mb_char2len)(c);
+		int old_byte_len = mb_ptr2len(ml_get_cursor());
+
+		if (new_byte_len > 1 || old_byte_len > 1)
 		{
 		    // This is slow, but it handles replacing a single-byte
 		    // with a multi-byte and the other way around.
 		    if (curwin->w_cursor.lnum == oap->end.lnum)
-			oap->end.col += (*mb_char2len)(c) - (*mb_char2len)(n);
+			oap->end.col += new_byte_len - old_byte_len;
 		    replace_character(c);
 		}
 		else
