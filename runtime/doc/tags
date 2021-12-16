@@ -118,6 +118,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'cc'	options.txt	/*'cc'*
 'ccv'	options.txt	/*'ccv'*
 'cd'	options.txt	/*'cd'*
+'cdh'	options.txt	/*'cdh'*
+'cdhome'	options.txt	/*'cdhome'*
 'cdpath'	options.txt	/*'cdpath'*
 'cedit'	options.txt	/*'cedit'*
 'cf'	options.txt	/*'cf'*
@@ -2754,6 +2756,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :map-<unique>	map.txt	/*:map-<unique>*
 :map-alt-keys	map.txt	/*:map-alt-keys*
 :map-arguments	map.txt	/*:map-arguments*
+:map-buffer	map.txt	/*:map-buffer*
 :map-cmd	map.txt	/*:map-cmd*
 :map-commands	map.txt	/*:map-commands*
 :map-expression	map.txt	/*:map-expression*
@@ -2767,6 +2770,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :map-special-chars	map.txt	/*:map-special-chars*
 :map-special-keys	map.txt	/*:map-special-keys*
 :map-undo	map.txt	/*:map-undo*
+:map-unique	map.txt	/*:map-unique*
 :map-verbose	map.txt	/*:map-verbose*
 :map_l	map.txt	/*:map_l*
 :map_l!	map.txt	/*:map_l!*
@@ -7270,6 +7274,7 @@ hasmapto()	eval.txt	/*hasmapto()*
 hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	helphelp.txt	/*help*
+help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-summary	usr_02.txt	/*help-summary*

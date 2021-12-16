@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Oct 16
+*editing.txt*   For Vim version 8.2.  Last change: 2021 Dec 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

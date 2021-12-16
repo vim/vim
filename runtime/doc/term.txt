@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2021 Dec 04
+*term.txt*      For Vim version 8.2.  Last change: 2021 Dec 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -150,6 +150,8 @@ terminal that tmux is running in): >
         " Enable focus event tracking, see  :help xterm-focus-event
         let &t_fe = "\<Esc>[?1004h"
         let &t_fd = "\<Esc>[?1004l"
+	execute "set <FocusGained>=\<Esc>[I"
+        execute "set <FocusLost>=\<Esc>[O"
 
         " Enable modified arrow keys, see  :help arrow_modifiers
         execute "silent! set <xUp>=\<Esc>[@;*A"
@@ -606,6 +608,8 @@ If your terminal does support this but Vim does not recognize the terminal,
 you may have to set the options yourself: >
 	let &t_fe = "\<Esc>[?1004h"
 	let &t_fd = "\<Esc>[?1004l"
+	execute "set <FocusGained>=\<Esc>[I"
+        execute "set <FocusLost>=\<Esc>[O"
 If this causes garbage to show when Vim starts up then it doesn't work.
 
 							*termcap-colors*

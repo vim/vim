@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2021 Nov 20
+*map.txt*       For Vim version 8.2.  Last change: 2021 Dec 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -173,7 +173,7 @@ type "a", then "bar" will get inserted.
 "<unique>" can be used in any order.  They must appear right after the
 command, before any other arguments.
 
-				*:map-local* *:map-<buffer>* *E224* *E225*
+			*:map-local* *:map-<buffer>* *:map-buffer* *E224* *E225*
 If the first argument to one of these commands is "<buffer>" the mapping will
 be effective in the current buffer only.  Example: >
 	:map <buffer>  ,w  /[.,;]<CR>
@@ -232,7 +232,7 @@ Note: ":map <script>" and ":noremap <script>" do the same thing.  The
 "<script>" overrules the command name.  Using ":noremap <script>" is
 preferred, because it's clearer that remapping is (mostly) disabled.
 
-						*:map-<unique>* *E226* *E227*
+				*:map-<unique>* *:map-unique* *E226* *E227*
 If the first argument to one of these commands is "<unique>" and it is used to
 define a new mapping or abbreviation, the command will fail if the mapping or
 abbreviation already exists.  Example: >
@@ -974,28 +974,35 @@ Here is an example that counts the number of spaces with <F4>: >
 	" doubling <F4> works on a line
 	nnoremap <expr> <F4><F4> CountSpaces() .. '_'
 
-	function CountSpaces(type = '') abort
+	function CountSpaces(virtualedit = '', irregular_block = v:false, type = '') abort
 	  if a:type == ''
-	    set opfunc=CountSpaces
+	    let &operatorfunc = function('CountSpaces', [&virtualedit, v:false])
+	    set virtualedit=block
 	    return 'g@'
- 	  endif
+	  endif
 
+	  let cb_save = &clipboard
 	  let sel_save = &selection
 	  let reg_save = getreginfo('"')
-	  let cb_save = &clipboard
 	  let visual_marks_save = [getpos("'<"), getpos("'>")]
 
 	  try
-	    set clipboard= selection=inclusive
-	    let commands = #{line: "'[V']y", char: "`[v`]y", block: "`[\<c-v>`]y"}
-	    silent exe 'noautocmd keepjumps normal! ' .. get(commands, a:type, '')
-	    echom getreg('"')->count(' ')
+	    set clipboard= selection=inclusive virtualedit=
+	    let commands = #{line: "'[V']", char: "`[v`]", block: "`[\<C-V>`]"}->get(a:type, 'v')
+	    if getpos("']")[-1] != 0 || a:irregular_block
+	      let commands ..= 'oO$'
+	      let &operatorfunc = function('CountSpaces', [a:virtualedit, v:true])
+	    endif
+	    let commands ..= 'y'
+	    execute 'silent noautocmd keepjumps normal! ' .. commands
+	    echomsg getreg('"')->count(' ')
 	  finally
 	    call setreg('"', reg_save)
 	    call setpos("'<", visual_marks_save[0])
 	    call setpos("'>", visual_marks_save[1])
 	    let &clipboard = cb_save
 	    let &selection = sel_save
+	    let &virtualedit = a:virtualedit
 	  endtry
 	endfunction
 

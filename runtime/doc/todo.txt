@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 05
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,7 +39,7 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
-- Check TODO items in vim9compile.c and vim9execute.c
+- Check TODO items in  vim9execute.c
 - use CheckLegacyAndVim9Success(lines) in many more places
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
@@ -194,8 +194,6 @@ Terminal emulator window:
 - GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
   (#3327)
 - Allow for specifying the directory, with ++cwd={dir}.
-- With a vertical split only one window is updated. (Linwei, 2018 Jun 2,
-  #2977)
 - When pasting should call vterm_keyboard_start_paste(), e.g. when using
   K_MIDDLEMOUSE, calling insert_reg().
 - Users expect parsing the :term argument like a shell does, also support
@@ -270,6 +268,8 @@ Was originally written by Felipe Morales.
 
 Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
 (#8179)
+
+":filter set termcap" only filters terminal codes, not keys. (#9297)
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
@@ -846,9 +846,7 @@ window for the buffer.
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?
 
-Compiler warnings (geeknik, 2017 Oct 26):
-- signed integer overflow in do_sub() (#2249)
-- signed integer overflow in get_address() (#2248)
+Compiler warning (geeknik, 2017 Oct 26):
 - undefined left shift in get_string_tv() (#2250)
 
 Add Native language protocol server (LSP) support. (Yegappan Lakshmanan, 2018
@@ -3895,7 +3893,7 @@ User Friendlier:
     $HOME/_vimrc, etc.) and add "edit vimrc" to the File menu.
 -   Add a way to save local settings and mappings into a new plugin file.
     ":mkplugin <file>"?
--   Add mappings local to a window: ":map <window> ..."?
+-   Add mappings local to a window: ":map <window> ..."  #9339
 9   Add buffer-local menu.  Should offer a choice between removing the menu or
     disabling it.  Be careful that tear-offs don't disappear (keep one empty
     item?).

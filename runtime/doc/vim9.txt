@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 01
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -567,6 +567,20 @@ characters, e.g.: >
 	     return 'value'
 	   })
 No command can follow the "{", only a comment can be used there.
+
+If the statements include a dictionary, its closing bracket must not be
+written at the start of a line.  Otherwise, it would be parsed as the end of
+the block.  This does not work: >
+	command NewCommand {
+	     let g:mydict = {
+	       'key': 'value',
+	       }  # ERROR: will be recognized as the end of the block
+	   }
+Put the '}' after the last item to avoid this: >
+	command NewCommand {
+	     let g:mydict = {
+	       'key': 'value' }
+	   }
 
 Rationale: The "}" cannot be after a command because it would require parsing
 the commands to find it.  For consistency with that no command can follow the

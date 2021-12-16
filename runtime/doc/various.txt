@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Nov 30
+*various.txt*   For Vim version 8.2.  Last change: 2021 Dec 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -598,7 +598,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			   |:oldfiles|   - filter by file name
 			   |:registers|  - filter by register contents
 					   (does not work multi-line)
-			   |:set|        - filter by variable name
+			   |:set|        - filter by option name
 
 			Only normal messages are filtered, error messages are
 			not.

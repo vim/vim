@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Dec 11
+" Last Change:	2021 Dec 12
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -260,10 +260,8 @@ call <SID>OptionG("sect", &sect)
 call <SID>AddOption("path", gettext("list of directory names used for file searching"))
 call append("$", "\t" .. s:global_or_local)
 call <SID>OptionG("pa", &pa)
-if exists("+cdhome")
-  call <SID>AddOption("cdhome", gettext("change directory to the home directory by :cd"))
-  call <SID>BinOptionG("cdh", &cdh)
-endif
+call <SID>AddOption("cdhome", gettext(":cd without argument goes to the home directory"))
+call <SID>BinOptionG("cdh", &cdh)
 call <SID>AddOption("cdpath", gettext("list of directory names used for :cd"))
 call <SID>OptionG("cd", &cd)
 if exists("+autochdir")

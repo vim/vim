@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.2.  Last change: 2021 Dec 04
+*motion.txt*    For Vim version 8.2.  Last change: 2021 Dec 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
