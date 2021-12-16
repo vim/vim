@@ -2281,11 +2281,12 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     garray_T	type_list;
 
     // map() and filter() return the first argument, also on failure.
-    if (filtermap != FILTERMAP_MAPNEW)
+    if (filtermap != FILTERMAP_MAPNEW && argvars[0].v_type != VAR_STRING)
 	copy_tv(&argvars[0], rettv);
 
     if (in_vim9script()
-	    && (check_for_list_or_dict_or_blob_arg(argvars, 0) == FAIL))
+	    && (check_for_list_or_dict_or_blob_or_string_arg(argvars, 0)
+								== FAIL))
 	return;
 
     if (filtermap == FILTERMAP_MAP && in_vim9script())

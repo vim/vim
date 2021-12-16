@@ -832,6 +832,28 @@ check_for_list_or_dict_or_blob_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a list or dict or a
+ * blob or a string.
+ */
+    int
+check_for_list_or_dict_or_blob_or_string_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_DICT
+	    && args[idx].v_type != VAR_BLOB
+	    && args[idx].v_type != VAR_STRING)
+    {
+	if (idx >= 0)
+	    semsg(_(e_list_dict_blob_or_string_required_for_argument_nr),
+								idx + 1);
+	else
+	    emsg(_(e_listreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is an optional buffer
  * number or a dict.
  */

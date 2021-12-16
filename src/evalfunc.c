@@ -449,6 +449,22 @@ arg_list_or_dict_or_blob(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a list of 'any' or a dict of 'any' or a blob or a string.
+ */
+    static int
+arg_list_or_dict_or_blob_or_string(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+		     || type->tt_type == VAR_LIST
+		     || type->tt_type == VAR_DICT
+		     || type->tt_type == VAR_BLOB
+		     || type->tt_type == VAR_STRING)
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
  * Check "type" is a job.
  */
     static int
@@ -797,7 +813,7 @@ static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_numb
 static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
-static argcheck_T arg2_mapfilter[] = {arg_list_or_dict_or_blob, NULL};
+static argcheck_T arg2_mapfilter[] = {arg_list_or_dict_or_blob_or_string, NULL};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg119_printf[] = {arg_string_or_nr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};

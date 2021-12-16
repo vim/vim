@@ -42,6 +42,7 @@ int check_for_string_or_list_or_dict_arg(typval_T *args, int idx);
 int check_for_list_or_blob_arg(typval_T *args, int idx);
 int check_for_list_or_dict_arg(typval_T *args, int idx);
 int check_for_list_or_dict_or_blob_arg(typval_T *args, int idx);
+int check_for_list_or_dict_or_blob_or_string_arg(typval_T *args, int idx);
 int check_for_opt_buffer_or_dict_arg(typval_T *args, int idx);
 char_u *tv_get_string(typval_T *varp);
 char_u *tv_get_string_strict(typval_T *varp);
