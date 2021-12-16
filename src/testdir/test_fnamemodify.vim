@@ -93,6 +93,7 @@ func Test_fnamemodify_er()
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e'))
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e:e'))
 
+  call assert_equal('', fnamemodify('', ':p:t'))
   call assert_equal('', fnamemodify(test_null_string(), test_null_string()))
 endfunc
 
