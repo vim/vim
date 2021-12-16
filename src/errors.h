@@ -760,3 +760,5 @@ EXTERN char e_highlight_group_name_too_long[]
 	INIT(= N_("E1249: Highlight group name too long"));
 EXTERN char e_argument_of_str_must_be_list_string_dictionary_or_blob[]
 	INIT(= N_("E1250: Argument of %s must be a List, String, Dictionary or Blob"));
+EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
+	INIT(= N_("E1228: List, Dictionary, Blob or String required for argument %d"));
