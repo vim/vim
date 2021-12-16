@@ -147,6 +147,8 @@
 #
 #	Static Code Analysis: ANALYZE=yes (works with VS2012 or later)
 #
+#	Address Sanitizer: ASAN=yes (works with VS2019 or later)
+#
 # You can combine any of these interfaces
 #
 # Example: To build the non-debug, GUI version with Perl interface:
@@ -660,6 +662,12 @@ CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
 # Windows SDK 7.1 (VC10)
 !if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)
 CFLAGS = $(CFLAGS) /analyze
+!endif
+
+# Address Sanitizer (ASAN) generally available starting with VS2019 version
+# 16.9
+!if ("$(ASAN)" == "yes") && ($(MSVC_MAJOR) >= 14)
+CFLAGS = $(CFLAGS) /fsanitize=address
 !endif
 
 !ifdef NODEBUG
