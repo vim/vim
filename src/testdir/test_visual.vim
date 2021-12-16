@@ -234,10 +234,6 @@ func Test_virtual_replace()
   call assert_equal("\txaaaa", getline(1))
   set softtabstop&
 
-  call setline(1, "xã̳x")
-  normal gg0lvrb
-  call assert_equal("xbx", getline(1))
-
   enew!
   set noai bs&vim
   if exists('save_t_kD')
@@ -668,6 +664,11 @@ func Test_characterwise_visual_mode()
   call setline(1, "a")
   normal v$rx
   call assert_equal(['x'], getline(1, '$'))
+
+  " replace a character with composing characters
+  call setline(1, "xã̳x")
+  normal gg0lvrb
+  call assert_equal("xbx", getline(1))
 
   bwipe!
 endfunc
