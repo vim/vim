@@ -1281,12 +1281,26 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
 generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 {
     isn_T	*isn;
+    char_u	*funcname;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_type(cctx, ISN_PUSHFUNC, type)) == NULL)
 	return FAIL;
-    isn->isn_arg.string = name == NULL ? NULL : vim_strsave(name);
+    if (name == NULL)
+	funcname = NULL;
+    else if (*name == K_SPECIAL)  // script-local
+	funcname = vim_strsave(name);
+    else
+    {
+	funcname = alloc(STRLEN(name) + 3);
+	if (funcname != NULL)
+	{
+	    STRCPY(funcname, "g:");
+	    STRCPY(funcname + 2, name);
+	}
+    }
 
+    isn->isn_arg.string = funcname;
     return OK;
 }
 

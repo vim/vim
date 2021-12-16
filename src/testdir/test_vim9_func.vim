@@ -1232,11 +1232,23 @@ def Test_set_opfunc_to_global_function()
       g:result = getreg('"')->count(' ')
       return ''
     enddef
+    # global function works at script level
     &operatorfunc = g:CountSpaces
     new
     'a b c d e'->setline(1)
     feedkeys("g@_", 'x')
     assert_equal(4, g:result)
+
+    &operatorfunc = ''
+    g:result = 0
+    # global function works in :def function
+    def Func()
+      &operatorfunc = g:CountSpaces
+    enddef
+    Func()
+    feedkeys("g@_", 'x')
+    assert_equal(4, g:result)
+
     bwipe!
   END
   CheckScriptSuccess(lines)

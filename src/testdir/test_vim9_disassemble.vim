@@ -2413,7 +2413,7 @@ def Test_disassemble_dict_stack()
   assert_match('<SNR>\d*_UseMember\_s*' ..
           'var d = {func: Legacy}\_s*' ..
           '\d PUSHS "func"\_s*' ..
-          '\d PUSHFUNC "Legacy"\_s*' ..
+          '\d PUSHFUNC "g:Legacy"\_s*' ..
           '\d NEWDICT size 1\_s*' ..
           '\d STORE $0\_s*' ..
 
