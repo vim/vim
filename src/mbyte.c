@@ -3847,6 +3847,11 @@ dbcs_screen_head_off(char_u *base, char_u *p)
     return (q == p) ? 0 : 1;
 }
 
+/*
+ * Return offset from "p" to the start of a character, including composing
+ * characters.  "base" must be the start of the string, which must be NUL
+ * terminated.
+ */
     int
 utf_head_off(char_u *base, char_u *p)
 {
@@ -4107,6 +4112,7 @@ mb_off_next(char_u *base, char_u *p)
 /*
  * Return the offset from "p" to the last byte of the character it points
  * into.  Can start anywhere in a stream of bytes.
+ * Composing characters are not included.
  */
     int
 mb_tail_off(char_u *base, char_u *p)

@@ -2677,7 +2677,7 @@ handle_mapping(
 		if (mp == NULL)
 		{
 		    *keylenp = keylen;
-		    return map_result_get;    // got character, break for loop
+		    return map_result_get;    // get character from typeahead
 		}
 	}
 
@@ -3060,7 +3060,7 @@ vgetorpeek(int advance)
 						      typebuf.tb_off];
 			    del_typebuf(1, 0);
 			}
-			break;
+			break;  // got character, break the for loop
 		    }
 
 		    // not enough characters, get more

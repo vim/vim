@@ -18,7 +18,7 @@
  * The last three are enabled when compiled as debug mode and individually
  * disabled by commenting them out.
  * The log files can get quite big!
- * Do disable all of this when compiling Vim for debugging, undefine DEBUG in
+ * To disable all of this when compiling Vim for debugging, undefine DEBUG in
  * regexp.c
  */
 #ifdef DEBUG
