@@ -3244,7 +3244,7 @@ def Run_Test_opfunc_error()
 
   var buf = RunVimInTerminal('-S XTest_opfunc_error', {rows: 6, wait_for_ruler: 0})
   WaitForAssert(() => assert_match('Press ENTER', term_getline(buf, 6)))
-  VerifyScreenDump(buf, 'Test_opfunc_error', {})
+  WaitForAssert(() => assert_match('E684: list index out of range: 0', term_getline(buf, 5)))
 
   # clean up
   StopVimInTerminal(buf)
