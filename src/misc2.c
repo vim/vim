@@ -1780,7 +1780,7 @@ call_shell(char_u *cmd, int opt)
 
     if (*p_sh == NUL)
     {
-	emsg(_(e_shellempty));
+	emsg(_(e_shell_option_is_empty));
 	retval = -1;
     }
     else

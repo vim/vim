@@ -198,7 +198,7 @@ do_window(
 		    if (Prenum == 0)
 			emsg(_(e_no_alternate_file));
 		    else
-			semsg(_("E92: Buffer %ld not found"), Prenum);
+			semsg(_(e_buffer_nr_not_found), Prenum);
 		    break;
 		}
 

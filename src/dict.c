@@ -1349,7 +1349,7 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     dictitem_T	*di;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
-	semsg(_(e_toomanyarg), "remove()");
+	semsg(_(e_too_many_arguments_for_function_str), "remove()");
     else if ((d = argvars[0].vval.v_dict) != NULL
 	    && !value_check_lock(d->dv_lock, arg_errmsg, TRUE))
     {

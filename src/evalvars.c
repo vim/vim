@@ -1858,7 +1858,7 @@ do_unlet(char_u *name, int forceit)
     }
     if (forceit)
 	return OK;
-    semsg(_("E108: No such variable: \"%s\""), name);
+    semsg(_(e_no_such_variable_str), name);
     return FAIL;
 }
 

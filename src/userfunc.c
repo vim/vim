@@ -1780,7 +1780,7 @@ get_func_tv(
 	if (argcount == MAX_FUNC_ARGS)
 	    emsg_funcname(N_("E740: Too many arguments for function %s"), name);
 	else
-	    emsg_funcname(N_("E116: Invalid arguments for function %s"), name);
+	    emsg_funcname(N_(e_invalid_arguments_for_function_str), name);
     }
 
     while (--argcount >= 0)
@@ -3240,7 +3240,7 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 		if (funcexe->fe_found_var)
 		    semsg(_(e_not_callable_type_str), name);
 		else
-		    emsg_funcname(e_unknownfunc, name);
+		    emsg_funcname(e_unknown_function_str, name);
 		break;
 	case FCERR_NOTMETHOD:
 		emsg_funcname(
@@ -3250,14 +3250,16 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 		emsg_funcname(N_(e_func_deleted), name);
 		break;
 	case FCERR_TOOMANY:
-		emsg_funcname((char *)e_toomanyarg, name);
+		emsg_funcname((char *)e_too_many_arguments_for_function_str,
+									 name);
 		break;
 	case FCERR_TOOFEW:
-		emsg_funcname((char *)e_toofewarg, name);
+		emsg_funcname((char *)e_not_enough_arguments_for_function_str,
+									 name);
 		break;
 	case FCERR_SCRIPT:
 		emsg_funcname(
-		    N_("E120: Using <SID> not in a script context: %s"), name);
+		    N_(e_using_sid_not_in_script_context_str), name);
 		break;
 	case FCERR_DICT:
 		emsg_funcname(
@@ -5098,7 +5100,7 @@ ex_call(exarg_T *eap)
     startarg = skipwhite(arg);
     if (*startarg != '(')
     {
-	semsg(_(e_missing_paren), eap->arg);
+	semsg(_(e_missing_parenthesis_str), eap->arg);
 	goto end;
     }
     if (in_vim9script() && startarg > arg)

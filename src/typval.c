@@ -1668,7 +1668,7 @@ eval_option(
     if (option_end == NULL)
     {
 	if (rettv != NULL)
-	    semsg(_("E112: Option name missing: %s"), *arg);
+	    semsg(_(e_option_name_missing_str), *arg);
 	return FAIL;
     }
 
@@ -1686,7 +1686,7 @@ eval_option(
     if (opt_type == gov_unknown)
     {
 	if (rettv != NULL)
-	    semsg(_(e_unknown_option), *arg);
+	    semsg(_(e_unknown_option_str), *arg);
 	ret = FAIL;
     }
     else if (rettv != NULL)
@@ -1887,7 +1887,7 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate)
 
     if (*p != '"')
     {
-	semsg(_("E114: Missing quote: %s"), *arg);
+	semsg(_(e_missing_double_quote_str), *arg);
 	return FAIL;
     }
 
@@ -2027,7 +2027,7 @@ eval_lit_string(char_u **arg, typval_T *rettv, int evaluate)
 
     if (*p != '\'')
     {
-	semsg(_("E115: Missing quote: %s"), *arg);
+	semsg(_(e_missing_single_quote_str), *arg);
 	return FAIL;
     }
 

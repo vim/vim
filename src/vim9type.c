@@ -618,12 +618,12 @@ check_argument_types(
 	return OK;  // just in case
     if (argcount < type->tt_min_argcount - varargs)
     {
-	semsg(_(e_toofewarg), name);
+	semsg(_(e_not_enough_arguments_for_function_str), name);
 	return FAIL;
     }
     if (!varargs && type->tt_argcount >= 0 && argcount > type->tt_argcount)
     {
-	semsg(_(e_toomanyarg), name);
+	semsg(_(e_too_many_arguments_for_function_str), name);
 	return FAIL;
     }
     if (type->tt_args == NULL)
@@ -893,7 +893,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		    if (*p != ')')
 		    {
 			if (give_error)
-			    emsg(_(e_missing_close));
+			    emsg(_(e_missing_closing_paren));
 			return NULL;
 		    }
 		    *arg = p + 1;

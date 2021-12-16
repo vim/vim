@@ -196,13 +196,77 @@ EXTERN char e_no_write_since_last_change_for_buffer_nr_add_bang_to_override[]
 	INIT(= N_("E89: No write since last change for buffer %d (add ! to override)"));
 EXTERN char e_cannot_unload_last_buffer[]
 	INIT(= N_("E90: Cannot unload last buffer"));
-
+EXTERN char e_shell_option_is_empty[]
+	INIT(= N_("E91: 'shell' option is empty"));
+EXTERN char e_buffer_nr_not_found[]
+	INIT(= N_("E92: Buffer %d not found"));
+EXTERN char e_more_than_one_match_for_str[]
+	INIT(= N_("E93: More than one match for %s"));
+EXTERN char e_no_matching_buffer_for_str[]
+	INIT(= N_("E94: No matching buffer for %s"));
+EXTERN char e_buffer_with_this_name_already_exists[]
+	INIT(= N_("E95: Buffer with this name already exists"));
+#if defined(FEAT_DIFF)
+EXTERN char e_cannot_diff_more_than_nr_buffers[]
+	INIT(= N_("E96: Cannot diff more than %d buffers"));
+EXTERN char e_cannot_create_diffs[]
+	INIT(= N_("E97: Cannot create diffs"));
+EXTERN char e_cannot_read_diff_output[]
+	INIT(= N_("E98: Cannot read diff output"));
+EXTERN char e_current_buffer_is_not_in_diff_mode[]
+	INIT(= N_("E99: Current buffer is not in diff mode"));
+EXTERN char e_no_other_buffer_in_diff_mode[]
+	INIT(= N_("E100: No other buffer in diff mode"));
+EXTERN char e_more_than_two_buffers_in_diff_mode_dont_know_which_one_to_use[]
+	INIT(= N_("E101: More than two buffers in diff mode, don't know which one to use"));
+EXTERN char e_cant_find_buffer_str[]
+	INIT(= N_("E102: Can't find buffer \"%s\""));
+EXTERN char e_buffer_str_is_not_in_diff_mode[]
+	INIT(= N_("E103: Buffer \"%s\" is not in diff mode"));
+#endif
+EXTERN char e_escape_not_allowed_in_digraph[]
+	INIT(= N_("E104: Escape not allowed in digraph"));
+EXTERN char e_using_loadkeymap_not_in_sourced_file[]
+	INIT(= N_("E105: Using :loadkeymap not in a sourced file"));
+// E106 unused
+EXTERN char e_missing_parenthesis_str[]
+	INIT(= N_("E107: Missing parentheses: %s"));
 #ifdef FEAT_EVAL
+EXTERN char e_no_such_variable_str[]
+	INIT(= N_("E108: No such variable: \"%s\""));
+EXTERN char e_missing_colon_after_questionmark[]
+	INIT(= N_("E109: Missing ':' after '?'"));
+EXTERN char e_missing_closing_paren[]
+	INIT(= N_("E110: Missing ')'"));
+EXTERN char e_missing_closing_square_brace[]
+	INIT(= N_("E111: Missing ']'"));
+#endif
+EXTERN char e_option_name_missing_str[]
+	INIT(= N_("E112: Option name missing: %s"));
+EXTERN char e_unknown_option_str[]
+	INIT(= N_("E113: Unknown option: %s"));
+EXTERN char e_missing_double_quote_str[]
+	INIT(= N_("E114: Missing double quote: %s"));
+EXTERN char e_missing_single_quote_str[]
+	INIT(= N_("E115: Missing single quote: %s"));
+#ifdef FEAT_EVAL
+EXTERN char e_invalid_arguments_for_function_str[]
+	INIT(= N_("E116: Invalid arguments for function %s"));
+EXTERN char e_unknown_function_str[]
+	INIT(= N_("E117: Unknown function: %s"));
+EXTERN char e_too_many_arguments_for_function_str[]
+	INIT(= N_("E118: Too many arguments for function: %s"));
+EXTERN char e_not_enough_arguments_for_function_str[]
+	INIT(= N_("E119: Not enough arguments for function: %s"));
+EXTERN char e_using_sid_not_in_script_context_str[]
+	INIT(= N_("E120: Using <SID> not in a script context: %s"));
 EXTERN char e_undefined_variable_str[]
 	INIT(= N_("E121: Undefined variable: %s"));
 EXTERN char e_undefined_variable_char_str[]
 	INIT(= N_("E121: Undefined variable: %c:%s"));
 #endif
+
+
 EXTERN char e_no_such_user_defined_command_str[]
 	INIT(= N_("E184: No such user-defined command: %s"));
 #ifndef FEAT_DIGRAPHS

@@ -1071,7 +1071,7 @@ get_lval(
 	    if (*p != ']')
 	    {
 		if (!quiet)
-		    emsg(_(e_missbrac));
+		    emsg(_(e_missing_closing_square_brace));
 		clear_tv(&var1);
 		clear_tv(&var2);
 		return NULL;
@@ -2375,7 +2375,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    p = eval_next_non_blank(*arg, evalarg_used, &getnext);
 	    if (*p != ':')
 	    {
-		emsg(_(e_missing_colon));
+		emsg(_(e_missing_colon_after_questionmark));
 		if (evaluate && result)
 		    clear_tv(rettv);
 		evalarg_used->eval_flags = orig_flags;
@@ -3568,7 +3568,7 @@ eval7(
 			++*arg;
 		    else if (ret == OK)
 		    {
-			emsg(_(e_missing_close));
+			emsg(_(e_missing_closing_paren));
 			clear_tv(rettv);
 			ret = FAIL;
 		    }
@@ -3854,7 +3854,7 @@ eval_lambda(
 	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg != ')')
 	{
-	    emsg(_(e_missing_close));
+	    emsg(_(e_missing_closing_paren));
 	    ret = FAIL;
 	}
 	++*arg;
@@ -3868,7 +3868,7 @@ eval_lambda(
 	    if (*skipwhite(*arg) == '(')
 		emsg(_(e_nowhitespace));
 	    else
-		semsg(_(e_missing_paren), "lambda");
+		semsg(_(e_missing_parenthesis_str), "lambda");
 	}
 	clear_tv(rettv);
 	ret = FAIL;
@@ -3923,7 +3923,7 @@ eval_method(
 	if (**arg != '(')
 	{
 	    if (verbose)
-		semsg(_(e_missing_paren), name);
+		semsg(_(e_missing_parenthesis_str), name);
 	    ret = FAIL;
 	}
 	else if (VIM_ISWHITE((*arg)[-1]))
@@ -4061,7 +4061,7 @@ eval_index(
 	if (**arg != ']')
 	{
 	    if (verbose)
-		emsg(_(e_missbrac));
+		emsg(_(e_missing_closing_square_brace));
 	    clear_tv(&var1);
 	    if (range)
 		clear_tv(&var2);

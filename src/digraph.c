@@ -2043,7 +2043,7 @@ check_digraph_chars_valid(int char1, int char2)
     }
     if (char1 == ESC || char2 == ESC)
     {
-	emsg(_("E104: Escape not allowed in digraph"));
+	emsg(_(e_escape_not_allowed_in_digraph));
 	return FALSE;
     }
     return TRUE;
@@ -2622,7 +2622,7 @@ ex_loadkeymap(exarg_T *eap)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_("E105: Using :loadkeymap not in a sourced file"));
+	emsg(_(e_using_loadkeymap_not_in_sourced_file));
 	return;
     }
 

@@ -2008,12 +2008,14 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
     RETURN_OK_IF_SKIP(cctx);
     if (argcount > regular_args && !has_varargs(ufunc))
     {
-	semsg(_(e_toomanyarg), printable_func_name(ufunc));
+	semsg(_(e_too_many_arguments_for_function_str),
+						   printable_func_name(ufunc));
 	return FAIL;
     }
     if (argcount < regular_args - ufunc->uf_def_args.ga_len)
     {
-	semsg(_(e_toofewarg), printable_func_name(ufunc));
+	semsg(_(e_not_enough_arguments_for_function_str),
+						   printable_func_name(ufunc));
 	return FAIL;
     }
 
@@ -2145,12 +2147,12 @@ generate_PCALL(
 
 	    if (argcount < type->tt_min_argcount - varargs)
 	    {
-		semsg(_(e_toofewarg), name);
+		semsg(_(e_not_enough_arguments_for_function_str), name);
 		return FAIL;
 	    }
 	    if (!varargs && argcount > type->tt_argcount)
 	    {
-		semsg(_(e_toomanyarg), name);
+		semsg(_(e_too_many_arguments_for_function_str), name);
 		return FAIL;
 	    }
 	    if (type->tt_args != NULL)
@@ -3444,7 +3446,7 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, int is_searchpair)
 	p = skipwhite(p);
     }
 failret:
-    emsg(_(e_missing_close));
+    emsg(_(e_missing_closing_paren));
     return FAIL;
 }
 
@@ -3580,7 +3582,7 @@ compile_call(
 		res = generate_BCALL(cctx, idx, argcount, argcount_init == 1);
 	}
 	else
-	    semsg(_(e_unknownfunc), namebuf);
+	    semsg(_(e_unknown_function_str), namebuf);
 	goto theend;
     }
 
@@ -3625,7 +3627,7 @@ compile_call(
     if (STRNCMP(namebuf, "g:", 2) == 0 || is_autoload)
 	res = generate_UCALL(cctx, name, argcount);
     else
-	semsg(_(e_unknownfunc), namebuf);
+	semsg(_(e_unknown_function_str), namebuf);
 
 theend:
     vim_free(tofree);
@@ -4354,7 +4356,7 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	++*arg;
     else if (ret == OK)
     {
-	emsg(_(e_missing_close));
+	emsg(_(e_missing_closing_paren));
 	ret = FAIL;
     }
     return ret;
@@ -4471,7 +4473,7 @@ compile_subscript(
 		    if (*skipwhite(*arg) == '(')
 			emsg(_(e_nowhitespace));
 		    else
-			semsg(_(e_missing_paren), *arg);
+			semsg(_(e_missing_parenthesis_str), *arg);
 		    return FAIL;
 		}
 		*arg = skipwhite(*arg + 1);
@@ -4530,7 +4532,7 @@ compile_subscript(
 		    ;
 		if (*p != '(')
 		{
-		    semsg(_(e_missing_paren), *arg);
+		    semsg(_(e_missing_parenthesis_str), *arg);
 		    return FAIL;
 		}
 		if (compile_call(arg, p - *arg, cctx, ppconst, 1) == FAIL)
@@ -4604,7 +4606,7 @@ compile_subscript(
 
 	    if (**arg != ']')
 	    {
-		emsg(_(e_missbrac));
+		emsg(_(e_missing_closing_square_brace));
 		return FAIL;
 	    }
 	    *arg = *arg + 1;
@@ -5636,7 +5638,7 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    p = may_peek_next_line(cctx, *arg, &next);
 	    if (*p != ':')
 	    {
-		emsg(_(e_missing_colon));
+		emsg(_(e_missing_colon_after_questionmark));
 		return FAIL;
 	    }
 	    if (next != NULL)
@@ -6141,7 +6143,7 @@ get_var_dest(
 	switch (opt_type)
 	{
 	    case gov_unknown:
-		    semsg(_(e_unknown_option), name);
+		    semsg(_(e_unknown_option_str), name);
 		    return FAIL;
 	    case gov_string:
 	    case gov_hidden_string:
@@ -6718,7 +6720,7 @@ compile_assign_index(
 	if (r == OK && *skipwhite(p) != ']')
 	{
 	    // this should not happen
-	    emsg(_(e_missbrac));
+	    emsg(_(e_missing_closing_square_brace));
 	    r = FAIL;
 	}
     }
@@ -6762,7 +6764,7 @@ compile_load_lhs(
 	{
 	    // this should not happen
 	    if (res != FAIL)
-		emsg(_(e_missbrac));
+		emsg(_(e_missing_closing_square_brace));
 	    return FAIL;
 	}
 

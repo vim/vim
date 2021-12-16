@@ -906,9 +906,10 @@ call_ufunc(
 	if (error != FCERR_UNKNOWN)
 	{
 	    if (error == FCERR_TOOMANY)
-		semsg(_(e_toomanyarg), ufunc->uf_name);
+		semsg(_(e_too_many_arguments_for_function_str), ufunc->uf_name);
 	    else
-		semsg(_(e_toofewarg), ufunc->uf_name);
+		semsg(_(e_not_enough_arguments_for_function_str),
+							       ufunc->uf_name);
 	    return FAIL;
 	}
 
@@ -1106,7 +1107,7 @@ call_partial(
     if (res == FAIL)
     {
 	if (called_emsg == called_emsg_before)
-	    semsg(_(e_unknownfunc),
+	    semsg(_(e_unknown_function_str),
 				  name == NULL ? (char_u *)"[unknown]" : name);
 	return FAIL;
     }
@@ -1460,12 +1461,12 @@ call_eval_func(
 	v = find_var(name, NULL, FALSE);
 	if (v == NULL)
 	{
-	    semsg(_(e_unknownfunc), name);
+	    semsg(_(e_unknown_function_str), name);
 	    return FAIL;
 	}
 	if (v->di_tv.v_type != VAR_PARTIAL && v->di_tv.v_type != VAR_FUNC)
 	{
-	    semsg(_(e_unknownfunc), name);
+	    semsg(_(e_unknown_function_str), name);
 	    return FAIL;
 	}
 	return call_partial(&v->di_tv, argcount, ectx);

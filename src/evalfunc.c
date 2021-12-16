@@ -2529,9 +2529,9 @@ check_internal_func(int idx, int argcount)
 
     name = internal_func_name(idx);
     if (res == FCERR_TOOMANY)
-	semsg(_(e_toomanyarg), name);
+	semsg(_(e_too_many_arguments_for_function_str), name);
     else
-	semsg(_(e_toofewarg), name);
+	semsg(_(e_not_enough_arguments_for_function_str), name);
     return -1;
 }
 
@@ -4049,7 +4049,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    arg_idx = 0;
 		else if (list->lv_len > MAX_FUNC_ARGS)
 		{
-		    emsg_funcname((char *)e_toomanyarg, s);
+		    emsg_funcname((char *)e_too_many_arguments_for_function_str,
+									    s);
 		    vim_free(name);
 		    goto theend;
 		}
@@ -9012,7 +9013,7 @@ f_setreg(typval_T *argvars, typval_T *rettv)
     {
 	if (yank_type != MAUTO)
 	{
-	    semsg(_(e_toomanyarg), "setreg");
+	    semsg(_(e_too_many_arguments_for_function_str), "setreg");
 	    return;
 	}
 
