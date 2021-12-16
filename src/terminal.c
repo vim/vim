@@ -739,6 +739,23 @@ term_start(
 	    curwin->w_buffer = curbuf;
 	    ++curbuf->b_nwindows;
 	}
+	else if (vgetc_busy
+#ifdef FEAT_TIMERS
+		|| timer_busy
+#endif
+		|| input_busy)
+	{
+	    char_u ignore[4];
+
+	    // When waiting for input need to return and possibly end up in
+	    // terminal_loop() instead.
+	    ignore[0] = K_SPECIAL;
+	    ignore[1] = KS_EXTRA;
+	    ignore[2] = KE_IGNORE;
+	    ignore[3] = NUL;
+	    ins_typebuf(ignore, REMAP_NONE, 0, TRUE, FALSE);
+	    typebuf_was_filled = TRUE;
+	}
     }
     else
     {

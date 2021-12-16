@@ -1596,6 +1596,7 @@ endfunc
 " 4. 0.5 sec later: should be done, clean up
 func Test_terminal_statusline()
   CheckUnix
+  CheckFeature timers
 
   set statusline=x
   terminal
@@ -1609,6 +1610,31 @@ func Test_terminal_statusline()
   exe tbuf . 'bwipe!'
   au! BufLeave
   set statusline=
+endfunc
+
+func CheckTerminalWindowWorks(buf)
+  call WaitForAssert({-> assert_match('!sh \[running\]', term_getline(a:buf, 10))})
+  call term_sendkeys(a:buf, "exit\<CR>")
+  call WaitForAssert({-> assert_match('!sh \[finished\]', term_getline(a:buf, 10))})
+  call term_sendkeys(a:buf, ":q\<CR>")
+  call WaitForAssert({-> assert_match('^\~', term_getline(a:buf, 10))})
+endfunc
+
+func Test_start_terminal_from_timer()
+  CheckUnix
+  CheckFeature timers
+
+  " Open a terminal window from a timer, typed text goes to the terminal
+  call writefile(["call timer_start(100, { -> term_start('sh') })"], 'XtimerTerm')
+  let buf = RunVimInTerminal('-S XtimerTerm', {})
+  call CheckTerminalWindowWorks(buf)
+
+  " do the same in Insert mode
+  call term_sendkeys(buf, ":call timer_start(200, { -> term_start('sh') })\<CR>a")
+  call CheckTerminalWindowWorks(buf)
+
+  call StopVimInTerminal(buf)
+  call delete('XtimerTerm')
 endfunc
 
 func Test_terminal_window_focus()
