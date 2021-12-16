@@ -1,6 +1,8 @@
 " Test 'tagfunc'
 
 source vim9.vim
+source check.vim
+source screendump.vim
 
 func TagFunc(pat, flag, info)
   let g:tagfunc_args = [a:pat, a:flag, a:info]
@@ -341,5 +343,14 @@ func Test_tagfunc_callback()
   set tagfunc&
   %bw!
 endfunc
+
+func Test_set_tagfunc_on_cmdline()
+  CheckScreendump
+
+  let buf = RunVimInTerminal(' +"set tagfunc=s:Func"', #{rows: 6, wait_for_ruler: 0})
+  call VerifyScreenDump(buf, 'Test_set_tagfunc_on_cmdline', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

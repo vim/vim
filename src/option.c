@@ -7199,6 +7199,9 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	return OK;
     }
 
+    if (STRNCMP(optval, "s:", 2) == 0 && !SCRIPT_ID_VALID(current_sctx.sc_sid))
+	return FAIL;
+
     if (*optval == '{' || (in_vim9script() && *optval == '(')
 	    || (STRNCMP(optval, "function(", 9) == 0)
 	    || (STRNCMP(optval, "funcref(", 8) == 0))
