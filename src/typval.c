@@ -18,11 +18,15 @@
 /*
  * Check whether idx as a array index is valid.
  */
-    static void
+    static int
 check_idx(int idx, char *where)
 {
     if (idx < 0)
+    {
 	internal_error(where);
+	return FAIL;
+    }
+    return OK;
 }
 
 /*
@@ -367,7 +371,8 @@ tv_get_float(typval_T *varp)
     int
 check_for_string_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_string_arg()");
+    if (check_idx(idx, "check_for_string_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_STRING)
     {
@@ -410,7 +415,8 @@ check_for_opt_string_arg(typval_T *args, int idx)
     int
 check_for_number_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_number_arg()");
+    if (check_idx(idx, "check_for_number_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_NUMBER)
     {
@@ -437,7 +443,8 @@ check_for_opt_number_arg(typval_T *args, int idx)
     int
 check_for_float_or_nr_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_float_or_nr_arg()");
+    if (check_idx(idx, "check_for_float_or_nr_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_FLOAT && args[idx].v_type != VAR_NUMBER)
     {
@@ -454,7 +461,8 @@ check_for_float_or_nr_arg(typval_T *args, int idx)
     int
 check_for_bool_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_bool_arg()");
+    if (check_idx(idx, "check_for_bool_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_BOOL
 	    && !(args[idx].v_type == VAR_NUMBER
@@ -486,7 +494,8 @@ check_for_opt_bool_arg(typval_T *args, int idx)
     int
 check_for_blob_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_blob_arg()");
+    if (check_idx(idx, "check_for_blob_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_BLOB)
     {
@@ -503,7 +512,8 @@ check_for_blob_arg(typval_T *args, int idx)
     int
 check_for_list_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_list_arg()");
+    if (check_idx(idx, "check_for_list_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_LIST)
     {
@@ -530,7 +540,8 @@ check_for_opt_list_arg(typval_T *args, int idx)
     int
 check_for_dict_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_dict_arg()");
+    if (check_idx(idx, "check_for_dict_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_DICT)
     {
@@ -557,7 +568,8 @@ check_for_opt_dict_arg(typval_T *args, int idx)
     int
 check_for_chan_or_job_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_chan_or_job_arg()");
+    if (check_idx(idx, "check_for_chan_or_job_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_CHANNEL && args[idx].v_type != VAR_JOB)
     {
@@ -585,7 +597,8 @@ check_for_opt_chan_or_job_arg(typval_T *args, int idx)
     int
 check_for_job_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_job_arg()");
+    if (check_idx(idx, "check_for_job_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_JOB)
     {
@@ -613,7 +626,8 @@ check_for_opt_job_arg(typval_T *args, int idx)
     int
 check_for_string_or_number_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_string_or_number_arg()");
+    if (check_idx(idx, "check_for_string_or_number_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_NUMBER)
     {
@@ -680,7 +694,8 @@ check_for_opt_lnum_arg(typval_T *args, int idx)
     int
 check_for_string_or_blob_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_string_or_blob_arg()");
+    if (check_idx(idx, "check_for_string_or_blob_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_BLOB)
     {
@@ -697,7 +712,8 @@ check_for_string_or_blob_arg(typval_T *args, int idx)
     int
 check_for_string_or_list_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_string_or_list_arg()");
+    if (check_idx(idx, "check_for_string_or_list_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_LIST)
     {
@@ -724,7 +740,8 @@ check_for_opt_string_or_list_arg(typval_T *args, int idx)
     int
 check_for_string_or_dict_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_string_or_dict_arg()");
+    if (check_idx(idx, "check_for_string_or_dict_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_STRING && args[idx].v_type != VAR_DICT)
     {
@@ -742,7 +759,8 @@ check_for_string_or_dict_arg(typval_T *args, int idx)
     int
 check_for_string_or_number_or_list_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_string_or_number_or_list_arg()");
+    if (check_idx(idx, "check_for_string_or_number_or_list_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_NUMBER
@@ -773,7 +791,8 @@ check_for_opt_string_or_number_or_list_arg(typval_T *args, int idx)
     int
 check_for_string_or_list_or_dict_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_string_or_list_or_dict_arg()");
+    if (check_idx(idx, "check_for_string_or_list_or_dict_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_LIST
@@ -792,7 +811,8 @@ check_for_string_or_list_or_dict_arg(typval_T *args, int idx)
     int
 check_for_list_or_blob_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_list_or_blob_arg()");
+    if (check_idx(idx, "check_for_list_or_blob_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_LIST && args[idx].v_type != VAR_BLOB)
     {
@@ -809,7 +829,8 @@ check_for_list_or_blob_arg(typval_T *args, int idx)
     int
 check_for_list_or_dict_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_list_or_dict_arg()");
+    if (check_idx(idx, "check_for_list_or_dict_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_LIST
 	    && args[idx].v_type != VAR_DICT)
@@ -828,7 +849,8 @@ check_for_list_or_dict_arg(typval_T *args, int idx)
     int
 check_for_list_or_dict_or_blob_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_list_or_dict_or_blob_arg()");
+    if (check_idx(idx, "check_for_list_or_dict_or_blob_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_LIST
 	    && args[idx].v_type != VAR_DICT
@@ -848,7 +870,8 @@ check_for_list_or_dict_or_blob_arg(typval_T *args, int idx)
     int
 check_for_list_or_dict_or_blob_or_string_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_list_or_dict_or_blob_or_string_arg()");
+    if (check_idx(idx, "check_for_list_or_dict_or_blob_or_string_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_LIST
 	    && args[idx].v_type != VAR_DICT
@@ -870,7 +893,8 @@ check_for_list_or_dict_or_blob_or_string_arg(typval_T *args, int idx)
     int
 check_for_opt_buffer_or_dict_arg(typval_T *args, int idx)
 {
-    check_idx(idx, "check_for_opt_buffer_or_dict_arg()");
+    if (check_idx(idx, "check_for_opt_buffer_or_dict_arg()") == FAIL)
+	return FAIL;
 
     if (args[idx].v_type != VAR_UNKNOWN
 	    && args[idx].v_type != VAR_STRING
