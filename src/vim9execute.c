@@ -2898,18 +2898,26 @@ exec_instructions(ectx_T *ectx)
 			{
 			    list_T	*l = tv_dest->vval.v_list;
 			    long	n = (long)tv_idx->vval.v_number;
-			    listitem_T	*li = NULL;
 
-			    li = list_find(l, n);
-			    if (li == NULL)
-			    {
-				SOURCING_LNUM = iptr->isn_lnum;
-				semsg(_(e_listidx), n);
+			    if (l != NULL && value_check_lock(
+						      l->lv_lock, NULL, FALSE))
 				status = FAIL;
-			    }
 			    else
-				// TODO: check for list or item locked
-				listitem_remove(l, li);
+			    {
+				listitem_T	*li = list_find(l, n);
+
+				if (li == NULL)
+				{
+				    SOURCING_LNUM = iptr->isn_lnum;
+				    semsg(_(e_listidx), n);
+				    status = FAIL;
+				}
+				else if (value_check_lock(li->li_tv.v_lock,
+								  NULL, FALSE))
+				    status = FAIL;
+				else
+				    listitem_remove(l, li);
+			    }
 			}
 		    }
 		    else

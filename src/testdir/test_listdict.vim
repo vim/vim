@@ -719,6 +719,7 @@ func Test_list_locked_var_unlet()
       call assert_equal(expected[depth][u][1], ps)
     endfor
   endfor
+
   " Deleting a list range should fail if the range is locked
   let l = [1, 2, 3, 4]
   lockvar l[1:2]
@@ -848,6 +849,17 @@ func Test_let_lock_list()
   call assert_fails('let l[1:2] = [0, 1]', 'E741:')
   call assert_equal([1, 2, 3, 4], l)
   unlet l
+
+  let lines =<< trim END
+      def TryUnletListItem(l: list<any>)
+        unlet l[0]
+      enddef
+      let l = [1, 2, 3, 4]
+      lockvar! l
+      call TryUnletListItem(l)
+  END
+  call CheckScriptFailure(lines, 'E741:')
+  unlet g:l
 endfunc
 
 " Locking part of the list
