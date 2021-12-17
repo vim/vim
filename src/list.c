@@ -3338,7 +3338,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	    STRNCPY(buf, p, len);
 	    buf[len] = NUL;
 	    initial.v_type = VAR_STRING;
-	    initial.vval.v_string = vim_strsave(buf);
+	    initial.vval.v_string = buf;
 	    p += len;
 	}
 	else if (argvars[2].v_type != VAR_STRING)
@@ -3356,9 +3356,8 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	    STRNCPY(buf, p, len);
 	    buf[len] = NUL;
 	    argv[1].v_type = VAR_STRING;
-	    argv[1].vval.v_string = vim_strsave(buf);
+	    argv[1].vval.v_string = buf;
 	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
-	    clear_tv(&argv[1]);
 	    if (r == FAIL || called_emsg != called_emsg_start)
 		break;
 	}
