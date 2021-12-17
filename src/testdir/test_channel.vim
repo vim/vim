@@ -1239,10 +1239,15 @@ func Test_out_cb()
     let g:Ch_outobj = ''
     call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
     " For unknown reasons this can be very slow on Mac.
-    if has('mac')
+    " Increase the timeout on every run.
+    if g:run_nr == 1
+      let timeout = 5000
+    elseif g:run_nr == 2
+      let timeout = 10000
+    elseif g:run_nr == 3
       let timeout = 20000
     else
-      let timeout = 5000
+      let timeout = 40000
     endif
     call WaitForAssert({-> assert_equal({'one': 1, 'two': 2, 'three': 3}, g:Ch_outobj)}, timeout)
   finally
