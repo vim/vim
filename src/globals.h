@@ -1680,7 +1680,6 @@ EXTERN char e_loclist[]		INIT(= N_("E776: No location list"));
 EXTERN char e_letwrong[]	INIT(= N_("E734: Wrong variable type for %s="));
 EXTERN char e_illvar[]		INIT(= N_("E461: Illegal variable name: %s"));
 EXTERN char e_cannot_mod[]	INIT(= N_("E995: Cannot modify existing variable"));
-EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
 EXTERN char e_stringreq[]	INIT(= N_("E928: String required"));
 EXTERN char e_numberreq[]	INIT(= N_("E889: Number required"));
 EXTERN char e_boolreq[]		INIT(= N_("E839: Bool required"));

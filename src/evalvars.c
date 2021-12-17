@@ -2314,7 +2314,7 @@ set_vim_var_tv(int idx, typval_T *tv)
     }
     if (sandbox && (vimvars[idx].vv_flags & VV_RO_SBX))
     {
-	semsg(_(e_readonlysbx), vimvars[idx].vv_name);
+	semsg(_(e_cannot_set_variable_in_sandbox_str), vimvars[idx].vv_name);
 	return FAIL;
     }
     clear_tv(&vimvars[idx].vv_di.di_tv);
@@ -3610,13 +3610,20 @@ var_check_ro(int flags, char_u *name, int use_gettext)
 {
     if (flags & DI_FLAGS_RO)
     {
-	semsg(_(e_cannot_change_readonly_variable_str),
+	if (name == NULL)
+	    emsg(_(e_cannot_change_readonly_variable));
+	else
+	    semsg(_(e_cannot_change_readonly_variable_str),
 				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     if ((flags & DI_FLAGS_RO_SBX) && sandbox)
     {
-	semsg(_(e_readonlysbx), use_gettext ? (char_u *)_(name) : name);
+	if (name == NULL)
+	    emsg(_(e_cannot_set_variable_in_sandbox));
+	else
+	    semsg(_(e_cannot_set_variable_in_sandbox_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     return FALSE;
@@ -3647,7 +3654,10 @@ var_check_fixed(int flags, char_u *name, int use_gettext)
 {
     if (flags & DI_FLAGS_FIX)
     {
-	semsg(_("E795: Cannot delete variable %s"),
+	if (name == NULL)
+	    emsg(_(e_cannot_delete_variable));
+	else
+	    semsg(_(e_cannot_delete_variable_str),
 				      use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
@@ -3696,18 +3706,20 @@ value_check_lock(int lock, char_u *name, int use_gettext)
 {
     if (lock & VAR_LOCKED)
     {
-	semsg(_("E741: Value is locked: %s"),
-				name == NULL ? (char_u *)_("Unknown")
-					     : use_gettext ? (char_u *)_(name)
-					     : name);
+	if (name == NULL)
+	    emsg(_(e_value_is_locked));
+	else
+	    semsg(_(e_value_is_locked_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     if (lock & VAR_FIXED)
     {
-	semsg(_("E742: Cannot change value of %s"),
-				name == NULL ? (char_u *)_("Unknown")
-					     : use_gettext ? (char_u *)_(name)
-					     : name);
+	if (name == NULL)
+	    emsg(_(e_cannot_change_value));
+	else
+	    semsg(_(e_cannot_change_value_of_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     return FALSE;

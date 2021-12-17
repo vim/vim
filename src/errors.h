@@ -105,6 +105,8 @@ EXTERN char e_corrupted_regexp_program[]
 EXTERN char e_readonly_option_is_set_add_bang_to_override[]
 	INIT(= N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
+EXTERN char e_cannot_change_readonly_variable[]
+	INIT(= N_("E46: Cannot change read-only variable"));
 EXTERN char e_cannot_change_readonly_variable_str[]
 	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 #endif
@@ -290,6 +292,22 @@ EXTERN char e_list_value_does_not_have_enough_items[]
 	INIT(= N_("E711: List value does not have enough items"));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
+EXTERN char e_value_is_locked[]
+	INIT(= N_("E741: Value is locked"));
+EXTERN char e_value_is_locked_str[]
+	INIT(= N_("E741: Value is locked: %s"));
+EXTERN char e_cannot_change_value[]
+	INIT(= N_("E742: Cannot change value"));
+EXTERN char e_cannot_change_value_of_str[]
+	INIT(= N_("E742: Cannot change value of %s"));
+EXTERN char e_cannot_set_variable_in_sandbox[]
+	INIT(= N_("E794: Cannot set variable in the sandbox"));
+EXTERN char e_cannot_set_variable_in_sandbox_str[]
+	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
+EXTERN char e_cannot_delete_variable[]
+	INIT(= N_("E795: Cannot delete variable"));
+EXTERN char e_cannot_delete_variable_str[]
+	INIT(= N_("E795: Cannot delete variable %s"));
 #endif
 EXTERN char e_conflicts_with_value_of_listchars[]
 	INIT(= N_("E834: Conflicts with value of 'listchars'"));

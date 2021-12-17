@@ -915,7 +915,6 @@ call_ufunc(
 
 	// The function has been compiled, can call it quickly.  For a function
 	// that was defined later: we can call it directly next time.
-	// TODO: what if the function was deleted and then defined again?
 	if (iptr != NULL)
 	{
 	    delete_instr(iptr);
@@ -933,7 +932,6 @@ call_ufunc(
     funcexe.fe_selfdict = selfdict != NULL ? selfdict : dict_stack_get_dict();
 
     // Call the user function.  Result goes in last position on the stack.
-    // TODO: add selfdict if there is one
     error = call_user_func_check(ufunc, argcount, argvars,
 			      STACK_TV_BOT(-1), &funcexe, funcexe.fe_selfdict);
 
@@ -2862,21 +2860,29 @@ exec_instructions(ectx_T *ectx)
 			    char_u	*key = tv_idx->vval.v_string;
 			    dictitem_T  *di = NULL;
 
-			    if (key == NULL)
-				key = (char_u *)"";
-			    if (d != NULL)
-				di = dict_find(d, key, (int)STRLEN(key));
-			    if (di == NULL)
-			    {
-				// NULL dict is equivalent to empty dict
-				SOURCING_LNUM = iptr->isn_lnum;
-				semsg(_(e_dictkey), key);
+			    if (d != NULL && value_check_lock(
+						      d->dv_lock, NULL, FALSE))
 				status = FAIL;
-			    }
 			    else
 			    {
-				// TODO: check for dict or item locked
-				dictitem_remove(d, di);
+				SOURCING_LNUM = iptr->isn_lnum;
+				if (key == NULL)
+				    key = (char_u *)"";
+				if (d != NULL)
+				    di = dict_find(d, key, (int)STRLEN(key));
+				if (di == NULL)
+				{
+				    // NULL dict is equivalent to empty dict
+				    semsg(_(e_dictkey), key);
+				    status = FAIL;
+				}
+				else if (var_check_fixed(di->di_flags,
+								   NULL, FALSE)
+					|| var_check_ro(di->di_flags,
+								  NULL, FALSE))
+				    status = FAIL;
+				else
+				    dictitem_remove(d, di);
 			    }
 			}
 		    }
