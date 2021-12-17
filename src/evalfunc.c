@@ -465,7 +465,7 @@ arg_list_or_dict_or_blob_or_string(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" is a list of 'any' or a string or a blob or a string.
+ * Check "type" is a list of 'any' or a blob or a string.
  */
     static int
 arg_string_list_or_blob(type_T *type, argcontext_T *context)
