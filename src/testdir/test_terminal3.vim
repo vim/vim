@@ -901,5 +901,25 @@ func Test_terminal_getwinpos()
   only!
 endfunc
 
+func Test_terminal_term_start_error()
+  func s:term_start_error() abort
+    try
+      return term_start([[]])
+    catch
+      return v:exception
+    finally
+      "
+    endtry
+  endfunc
+  autocmd WinEnter * call type(0)
+
+  " Must not crash in s:term_start_error, nor the exception thrown.
+  let result = s:term_start_error()
+  call assert_match('^Vim(return):E730:', result)
+
+  autocmd! WinEnter
+  delfunc s:term_start_error
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
