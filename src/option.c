@@ -7199,17 +7199,39 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	return OK;
     }
 
-    if (STRNCMP(optval, "s:", 2) == 0 && !SCRIPT_ID_VALID(current_sctx.sc_sid))
-	return FAIL;
-
     if (*optval == '{' || (in_vim9script() && *optval == '(')
 	    || (STRNCMP(optval, "function(", 9) == 0)
 	    || (STRNCMP(optval, "funcref(", 8) == 0))
 	// Lambda expression or a funcref
 	tv = eval_expr(optval, NULL);
     else
+    {
 	// treat everything else as a function name string
-	tv = alloc_string_tv(vim_strsave(optval));
+
+	// Function name starting with "s:" are supported only in a vimscript
+	// context.
+	if (STRNCMP(optval, "s:", 2) == 0)
+	{
+	    char	sid_buf[25];
+	    char_u	*funcname;
+
+	    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
+	    {
+		emsg(_(e_using_sid_not_in_script_context));
+		return FAIL;
+	    }
+	    // Expand s: prefix into <SNR>nr_<name>
+	    sprintf(sid_buf, "<SNR>%ld_", (long)current_sctx.sc_sid);
+	    funcname = alloc(STRLEN(sid_buf) + STRLEN(optval + 2) + 1);
+	    if (funcname == NULL)
+		return FAIL;
+	    STRCPY(funcname, sid_buf);
+	    STRCAT(funcname, optval + 2);
+	    tv = alloc_string_tv(funcname);
+	}
+	else
+	    tv = alloc_string_tv(vim_strsave(optval));
+    }
     if (tv == NULL)
 	return FAIL;
 
