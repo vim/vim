@@ -944,19 +944,14 @@ func Test_reduce()
       call assert_equal(0xff, reduce(0zff, LSTART acc, val LMIDDLE acc + val LEND))
       call assert_equal(2 * (2 * 0xaf + 0xbf) + 0xcf, reduce(0zAFBFCF, LSTART acc, val LMIDDLE 2 * acc + val LEND))
 
-      VAR d = {}
-      func F(acc, val)
-        return a:acc .. ',' .. a:val
-      endfunc
-      LET d.func = function('F')
-      call assert_equal('x,y,z', 'xyz'->reduce(get(d, 'func')))
-      call assert_equal('', ''->reduce(get(d, 'func'), ''))
-      call assert_equal('あ,い,う,え,お,😊,💕', 'あいうえお😊💕'->reduce(get(d, 'func')))
-      call assert_equal('😊,あ,い,う,え,お,💕', 'あいうえお💕'->reduce(get(d, 'func'), '😊'))
-      call assert_equal('ऊ,ॠ,ॡ', reduce('ऊॠॡ', get(d, 'func')))
-      call assert_equal('c,à,t', reduce('càt', get(d, 'func')))
-      call assert_equal('Å,s,t,r,ö,m', reduce('Åström', get(d, 'func')))
-      call assert_equal('Å,s,t,r,ö,m', reduce('Åström', get(d, 'func')))
+      call assert_equal('x,y,z', 'xyz'->reduce(LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
+      call assert_equal('', ''->reduce(LSTART acc, val LMIDDLE acc .. ',' .. val LEND, ''))
+      call assert_equal('あ,い,う,え,お,😊,💕', 'あいうえお😊💕'->reduce(LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
+      call assert_equal('😊,あ,い,う,え,お,💕', 'あいうえお💕'->reduce(LSTART acc, val LMIDDLE acc .. ',' .. val LEND, '😊'))
+      call assert_equal('ऊ,ॠ,ॡ', reduce('ऊॠॡ', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
+      call assert_equal('c,à,t', reduce('càt', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
+      call assert_equal('Å,s,t,r,ö,m', reduce('Åström', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
+      call assert_equal('Å,s,t,r,ö,m', reduce('Åström', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
   END
   call CheckLegacyAndVim9Success(lines)
 
