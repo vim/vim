@@ -3248,12 +3248,11 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     partial_T   *partial = NULL;
     funcexe_T	funcexe;
     typval_T	argv[3];
+    int		r;
+    int		called_emsg_start = called_emsg;
 
-    if (argvars[0].v_type != VAR_LIST && argvars[0].v_type != VAR_BLOB)
-    {
-	emsg(_(e_listblobreq));
+    if (check_for_string_or_list_or_blob_arg(argvars, in_vim9script() ? 0 : -1) == FAIL)
 	return;
-    }
 
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
@@ -3278,8 +3277,6 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     {
 	list_T	    *l = argvars[0].vval.v_list;
 	listitem_T  *li = NULL;
-	int	    r;
-	int	    called_emsg_start = called_emsg;
 
 	if (l != NULL)
 	    CHECK_LIST_MATERIALIZE(l);
@@ -3317,6 +3314,48 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 		    break;
 	    }
 	    l->lv_lock = prev_locked;
+	}
+    }
+    else if (argvars[0].v_type == VAR_STRING)
+    {
+	char_u* p = tv_get_string(&argvars[0]);
+	char_u  buf[MB_MAXBYTES + 1];
+	int     len;
+
+	if (argvars[2].v_type == VAR_UNKNOWN)
+	{
+	    if (*p == NUL)
+	    {
+		semsg(_(e_reduceempty), "String");
+		return;
+	    }
+	    len = has_mbyte ? mb_ptr2len(p) : 1;
+	    STRNCPY(buf, p, len);
+	    buf[len] = NUL;
+	    initial.v_type = VAR_STRING;
+	    initial.vval.v_string = vim_strsave(buf);
+	    p += len;
+	}
+	else if (argvars[2].v_type != VAR_STRING)
+	{
+	    emsg(_(e_string_expected));
+	    return;
+	}
+	else
+	    initial = argvars[2];
+	copy_tv(&initial, rettv);
+	for ( ; *p != NUL; p += len)
+	{
+	    argv[0] = *rettv;
+	    len = has_mbyte ? mb_ptr2len(p) : 1;
+	    STRNCPY(buf, p, len);
+	    buf[len] = NUL;
+	    argv[1].v_type = VAR_STRING;
+	    argv[1].vval.v_string = vim_strsave(buf);
+	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
+	    clear_tv(&argv[1]);
+	    if (r == FAIL || called_emsg != called_emsg_start)
+		break;
 	}
     }
     else
