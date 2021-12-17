@@ -1613,10 +1613,15 @@ win_found:
 #endif
 	}
 #if defined(FEAT_GUI)
-	// Hide the scrollbars from the aucmd_win and update.
-	gui_mch_enable_scrollbar(&aucmd_win->w_scrollbars[SBAR_LEFT], FALSE);
-	gui_mch_enable_scrollbar(&aucmd_win->w_scrollbars[SBAR_RIGHT], FALSE);
-	gui_may_update_scrollbars();
+	if (gui.in_use)
+	{
+	    // Hide the scrollbars from the aucmd_win and update.
+	    gui_mch_enable_scrollbar(
+				   &aucmd_win->w_scrollbars[SBAR_LEFT], FALSE);
+	    gui_mch_enable_scrollbar(
+				  &aucmd_win->w_scrollbars[SBAR_RIGHT], FALSE);
+	    gui_may_update_scrollbars();
+	}
 #endif
     }
     else
