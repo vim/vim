@@ -2678,7 +2678,7 @@ def Test_readfile()
 enddef
 
 def Test_reduce()
-  CheckDefAndScriptFailure2(['reduce({a: 10}, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E897: List or Blob required')
+  CheckDefAndScriptFailure2(['reduce({a: 10}, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E9998: String, List or Blob required for argument 1')
   assert_equal(6, [1, 2, 3]->reduce((r, c) => r + c, 0))
   assert_equal(11, 0z0506->reduce((r, c) => r + c, 0))
 enddef
