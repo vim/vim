@@ -2222,16 +2222,35 @@ eval0(
 {
     int		ret;
     char_u	*p;
+    char_u	*expr_end;
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
     int		flags = evalarg == NULL ? 0 : evalarg->eval_flags;
+    int		check_for_end = TRUE;
     int		end_error = FALSE;
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evalarg);
+    expr_end = p;
     p = skipwhite(p);
 
-    if (ret != FAIL)
+    // In Vim9 script a command block is not split at NL characters for
+    // commands using an expression argument.  Skip over a '#' comment to check
+    // for a following NL.  Require white space before the '#'.
+    if (in_vim9script() && p > expr_end)
+	while (*p == '#')
+	{
+	    char_u *nl = vim_strchr(p, NL);
+
+	    if (nl == NULL)
+		break;
+	    p = skipwhite(nl + 1);
+	    if (eap != NULL && *p != NUL)
+		eap->nextcmd = p;
+	    check_for_end = FALSE;
+	}
+
+    if (ret != FAIL && check_for_end)
 	end_error = !ends_excmd2(arg, p);
     if (ret == FAIL || end_error)
     {
@@ -2263,7 +2282,7 @@ eval0(
 	return FAIL;
     }
 
-    if (eap != NULL)
+    if (check_for_end && eap != NULL)
 	set_nextcmd(eap, p);
 
     return ret;
