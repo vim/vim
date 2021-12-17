@@ -560,7 +560,6 @@ This can be useful for a timer, for example: >
 		 echom 'Handler called ' .. count
 	     }, {repeat: 3})
 
-
 The ending "}" must be at the start of a line.  It can be followed by other
 characters, e.g.: >
 	var d = mapnew(dict, (k, v): string => {
@@ -568,17 +567,21 @@ characters, e.g.: >
 	   })
 No command can follow the "{", only a comment can be used there.
 
+							*command-block*
+The block can also be used for defining a user command.  Inside the block Vim9
+syntax will be used.
+
 If the statements include a dictionary, its closing bracket must not be
 written at the start of a line.  Otherwise, it would be parsed as the end of
 the block.  This does not work: >
 	command NewCommand {
-	     let g:mydict = {
+	     g:mydict = {
 	       'key': 'value',
 	       }  # ERROR: will be recognized as the end of the block
 	   }
 Put the '}' after the last item to avoid this: >
 	command NewCommand {
-	     let g:mydict = {
+	     g:mydict = {
 	       'key': 'value' }
 	   }
 

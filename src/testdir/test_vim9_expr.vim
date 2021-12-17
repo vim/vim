@@ -2557,10 +2557,19 @@ def Test_expr7_dict_in_block()
               k: 0, }
       }
       MyCommand
+
+      command YourCommand {
+         g:global = {
+           key: 'value' }
+         }
+      YourCommand
+      assert_equal({key: 'value'}, g:global)
+      unlet g:global
   END
   CheckScriptSuccess(lines)
 
   delcommand MyCommand
+  delcommand YourCommand
 enddef
 
 def Test_expr7_call_2bool()
