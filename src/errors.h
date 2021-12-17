@@ -827,6 +827,6 @@ EXTERN char e_argument_of_str_must_be_list_string_dictionary_or_blob[]
 EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
 	INIT(= N_("E1228: List, Dictionary, Blob or String required for argument %d"));
 EXTERN char e_string_list_or_blob_required_for_argument_nr[]
-	INIT(= N_("E9998 String, List or Blob required for argument %d"));
+	INIT(= N_("E9998: String, List or Blob required for argument %d"));
 EXTERN char e_string_expected[]
 	INIT(= N_("E9999: String expected"));

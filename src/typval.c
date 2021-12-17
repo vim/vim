@@ -672,10 +672,7 @@ check_for_string_or_list_or_blob_arg(typval_T *args, int idx)
 	    && args[idx].v_type != VAR_LIST
 	    && args[idx].v_type != VAR_BLOB)
     {
-	if (idx >= 0)
-	    semsg(_(e_string_list_or_blob_required_for_argument_nr), idx + 1);
-	else
-	    emsg(_(e_string_list_or_blob_required));
+	semsg(_(e_string_list_or_blob_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;

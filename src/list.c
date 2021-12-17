@@ -3251,8 +3251,15 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     int		r;
     int		called_emsg_start = called_emsg;
 
-    if (check_for_string_or_list_or_blob_arg(argvars, in_vim9script() ? 0 : -1) == FAIL)
+    if (in_vim9script() && check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
 	return;
+
+    if (argvars[0].v_type != VAR_STRING
+	    && argvars[0].v_type != VAR_LIST
+	    && argvars[0].v_type != VAR_BLOB)
+    {
+	semsg(_(e_string_list_or_blob_required), "reduce()");
+    }
 
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
