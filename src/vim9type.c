@@ -531,9 +531,31 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
  * Check if the expected and actual types match.
  * Does not allow for assigning "any" to a specific type.
  * When "argidx" > 0 it is included in the error message.
+ * Return OK if types match.
+ * Return FAIL if types do not match.
  */
     int
-check_type(type_T *expected, type_T *actual, int give_msg, where_T where)
+check_type(
+	type_T	*expected,
+	type_T	*actual,
+	int	give_msg,
+	where_T where)
+{
+    int ret = check_type_maybe(expected, actual, give_msg, where);
+
+    return ret == MAYBE ? OK : ret;
+}
+
+/*
+ * As check_type() but return MAYBE when a runtime type check should be used
+ * when compiling.
+ */
+    int
+check_type_maybe(
+	type_T	*expected,
+	type_T	*actual,
+	int	give_msg,
+	where_T where)
 {
     int ret = OK;
 
@@ -568,17 +590,21 @@ check_type(type_T *expected, type_T *actual, int give_msg, where_T where)
 	{
 	    // If the return type is unknown it can be anything, including
 	    // nothing, thus there is no point in checking.
-	    if (expected->tt_member != &t_unknown
-					    && actual->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member,
+	    if (expected->tt_member != &t_unknown)
+	    {
+		if (actual->tt_member != &t_unknown)
+		    ret = check_type(expected->tt_member, actual->tt_member,
 								 FALSE, where);
-	    if (ret == OK && expected->tt_argcount != -1
+		else
+		    ret = MAYBE;
+	    }
+	    if (ret != FAIL && expected->tt_argcount != -1
 		    && actual->tt_min_argcount != -1
 		    && (actual->tt_argcount == -1
 			|| (actual->tt_argcount < expected->tt_min_argcount
 			    || actual->tt_argcount > expected->tt_argcount)))
 		ret = FAIL;
-	    if (ret == OK && expected->tt_args != NULL
+	    if (ret != FAIL && expected->tt_args != NULL
 						    && actual->tt_args != NULL)
 	    {
 		int i;
@@ -593,10 +619,21 @@ check_type(type_T *expected, type_T *actual, int give_msg, where_T where)
 			break;
 		    }
 	    }
+	    if (ret == OK && expected->tt_argcount >= 0
+						  && actual->tt_argcount == -1)
+		// check the argument count at runtime
+		ret = MAYBE;
 	}
 	if (ret == FAIL && give_msg)
 	    type_mismatch_where(expected, actual, where);
     }
+
+    if (ret == OK && expected->tt_type != VAR_UNKNOWN
+	    && expected->tt_type != VAR_ANY
+	    && (actual->tt_type == VAR_UNKNOWN || actual->tt_type == VAR_ANY))
+	// check the type at runtime
+	ret = MAYBE;
+
     return ret;
 }
 

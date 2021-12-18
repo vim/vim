@@ -2146,6 +2146,23 @@ def Test_script_funcref_case()
   CheckScriptFailure(lines, 'E704:')
 enddef
 
+def Test_script_funcref_runtime_type_check()
+  var lines =<< trim END
+      vim9script
+      def FuncWithNumberArg(n: number)
+      enddef
+      def Test()
+        var Ref: func(string) = function(FuncWithNumberArg)
+      enddef
+      defcompile
+  END
+  # OK at compile time
+  CheckScriptSuccess(lines)
+
+  # Type check fails at runtime
+  CheckScriptFailure(lines + ['Test()'], 'E1012: Type mismatch; expected func(string) but got func(number)')
+enddef
+
 def Test_inc_dec()
   var lines =<< trim END
       var nr = 7

@@ -1061,6 +1061,8 @@ need_type_where(
 	int	silent,
 	int	actual_is_const)
 {
+    int ret;
+
     if (expected == &t_bool && actual != &t_bool
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
     {
@@ -1070,13 +1072,14 @@ need_type_where(
 	return OK;
     }
 
-    if (check_type(expected, actual, FALSE, where) == OK)
+    ret = check_type_maybe(expected, actual, FALSE, where);
+    if (ret == OK)
 	return OK;
 
     // If the actual type can be the expected type add a runtime check.
     // If it's a constant a runtime check makes no sense.
-    if ((!actual_is_const || actual == &t_any)
-					    && use_typecheck(actual, expected))
+    if (ret == MAYBE || ((!actual_is_const || actual == &t_any)
+					   && use_typecheck(actual, expected)))
     {
 	generate_TYPECHECK(cctx, expected, offset, where.wt_index);
 	return OK;

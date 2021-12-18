@@ -16,6 +16,7 @@ void type_mismatch(type_T *expected, type_T *actual);
 void arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx);
 void type_mismatch_where(type_T *expected, type_T *actual, where_T where);
 int check_type(type_T *expected, type_T *actual, int give_msg, where_T where);
+int check_type_maybe(type_T *expected, type_T *actual, int give_msg, where_T where);
 int check_argument_types(type_T *type, typval_T *argvars, int argcount, char_u *name);
 char_u *skip_type(char_u *start, int optional);
 type_T *parse_type(char_u **arg, garray_T *type_gap, int give_error);
