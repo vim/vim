@@ -314,6 +314,28 @@ listitem_alloc(void)
 }
 
 /*
+ * Make a typval_T of the first character of "input" and store it in "output".
+ * Return OK or FAIL.
+ */
+    static int
+tv_get_first_char(char_u *input, typval_T *output)
+{
+    char_u	buf[MB_MAXBYTES + 1];
+    int		len;
+
+    if (input == NULL || output == NULL)
+	return FAIL;
+
+    len = has_mbyte ? mb_ptr2len(input) : 1;
+    STRNCPY(buf, input, len);
+    buf[len] = NUL;
+    output->v_type = VAR_STRING;
+    output->vval.v_string = vim_strsave(buf);
+
+    return output->vval.v_string == NULL ? FAIL : OK;
+}
+
+/*
  * Free a list item, unless it was allocated together with the list itself.
  * Does not clear the value.  Does not notify watchers.
  */
@@ -2492,7 +2514,6 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	    char_u	*p;
 	    typval_T	tv;
 	    garray_T	ga;
-	    char_u	buf[MB_MAXBYTES + 1];
 	    int		len;
 
 	    // set_vim_var_nr() doesn't set the type
@@ -2503,16 +2524,9 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	    {
 	        typval_T newtv;
 
-		if (has_mbyte)
-		    len = mb_ptr2len(p);
-		else
-		    len = 1;
-
-		STRNCPY(buf, p, len);
-		buf[len] = NUL;
-
-		tv.v_type = VAR_STRING;
-		tv.vval.v_string = vim_strsave(buf);
+		if (tv_get_first_char(p, &tv) == FAIL)
+		    break;
+		len = STRLEN(tv.vval.v_string);
 
 		set_vim_var_nr(VV_KEY, idx);
 		if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
@@ -3248,12 +3262,17 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     partial_T   *partial = NULL;
     funcexe_T	funcexe;
     typval_T	argv[3];
+    int		r;
+    int		called_emsg_start = called_emsg;
 
-    if (argvars[0].v_type != VAR_LIST && argvars[0].v_type != VAR_BLOB)
-    {
-	emsg(_(e_listblobreq));
+    if (in_vim9script()
+		   && check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
 	return;
-    }
+
+    if (argvars[0].v_type != VAR_STRING
+	    && argvars[0].v_type != VAR_LIST
+	    && argvars[0].v_type != VAR_BLOB)
+	semsg(_(e_string_list_or_blob_required), "reduce()");
 
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
@@ -3278,8 +3297,6 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     {
 	list_T	    *l = argvars[0].vval.v_list;
 	listitem_T  *li = NULL;
-	int	    r;
-	int	    called_emsg_start = called_emsg;
 
 	if (l != NULL)
 	    CHECK_LIST_MATERIALIZE(l);
@@ -3317,6 +3334,43 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 		    break;
 	    }
 	    l->lv_lock = prev_locked;
+	}
+    }
+    else if (argvars[0].v_type == VAR_STRING)
+    {
+	char_u	*p = tv_get_string(&argvars[0]);
+	int     len;
+
+	if (argvars[2].v_type == VAR_UNKNOWN)
+	{
+	    if (*p == NUL)
+	    {
+		semsg(_(e_reduceempty), "String");
+		return;
+	    }
+	    if (tv_get_first_char(p, rettv) == FAIL)
+		return;
+	    p += STRLEN(rettv->vval.v_string);
+	}
+	else if (argvars[2].v_type != VAR_STRING)
+	{
+	    semsg(_(e_string_expected_for_argument_nr), 3);
+	    return;
+	}
+	else
+	    copy_tv(&argvars[2], rettv);
+
+	for ( ; *p != NUL; p += len)
+	{
+	    argv[0] = *rettv;
+	    if (tv_get_first_char(p, &argv[1]) == FAIL)
+		break;
+	    len = STRLEN(argv[1].vval.v_string);
+	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
+	    clear_tv(&argv[0]);
+	    clear_tv(&argv[1]);
+	    if (r == FAIL || called_emsg != called_emsg_start)
+		break;
 	}
     }
     else

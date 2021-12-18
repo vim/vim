@@ -34,6 +34,7 @@ int check_for_opt_lnum_arg(typval_T *args, int idx);
 int check_for_opt_string_or_number_arg(typval_T *args, int idx);
 int check_for_string_or_blob_arg(typval_T *args, int idx);
 int check_for_string_or_list_arg(typval_T *args, int idx);
+int check_for_string_or_list_or_blob_arg(typval_T *args, int idx);
 int check_for_opt_string_or_list_arg(typval_T *args, int idx);
 int check_for_string_or_dict_arg(typval_T *args, int idx);
 int check_for_string_or_number_or_list_arg(typval_T *args, int idx);

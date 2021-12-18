@@ -663,6 +663,23 @@ check_for_string_or_list_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a string, a list or a
+ * blob.
+ */
+    int
+check_for_string_or_list_or_blob_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING
+	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_BLOB)
+    {
+	semsg(_(e_string_list_or_blob_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Check for an optional string or list argument at 'idx'
  */
     int
@@ -697,10 +714,7 @@ check_for_string_or_number_or_list_arg(typval_T *args, int idx)
 	    && args[idx].v_type != VAR_NUMBER
 	    && args[idx].v_type != VAR_LIST)
     {
-	if (idx >= 0)
-	    semsg(_(e_string_number_or_list_required_for_argument_nr), idx + 1);
-	else
-	    emsg(_(e_stringreq));
+	semsg(_(e_string_number_or_list_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -742,10 +756,7 @@ check_for_list_or_blob_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_LIST && args[idx].v_type != VAR_BLOB)
     {
-	if (idx >= 0)
-	    semsg(_(e_list_or_blob_required_for_argument_nr), idx + 1);
-	else
-	    emsg(_(e_listreq));
+	semsg(_(e_list_or_blob_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;

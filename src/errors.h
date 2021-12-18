@@ -843,4 +843,8 @@ EXTERN char e_highlight_group_name_too_long[]
 EXTERN char e_argument_of_str_must_be_list_string_dictionary_or_blob[]
 	INIT(= N_("E1250: Argument of %s must be a List, String, Dictionary or Blob"));
 EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
-	INIT(= N_("E1228: List, Dictionary, Blob or String required for argument %d"));
+	INIT(= N_("E1251: List, Dictionary, Blob or String required for argument %d"));
+EXTERN char e_string_list_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1252: String, List or Blob required for argument %d"));
+EXTERN char e_string_expected_for_argument_nr[]
+	INIT(= N_("E1253: String expected for argument %d"));

@@ -1232,7 +1232,7 @@ def Wrong_dict_key_type(items: list<number>): list<number>
 enddef
 
 def Test_filter()
-  CheckDefAndScriptFailure2(['filter(1.1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1228: List, Dictionary, Blob or String required for argument 1')
+  CheckDefAndScriptFailure2(['filter(1.1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1251: List, Dictionary, Blob or String required for argument 1')
   assert_equal([], filter([1, 2, 3], '0'))
   assert_equal([1, 2, 3], filter([1, 2, 3], '1'))
   assert_equal({b: 20}, filter({a: 10, b: 20}, 'v:val == 20'))
@@ -2028,9 +2028,9 @@ enddef
 
 def Test_map()
   if has('channel')
-    CheckDefAndScriptFailure2(['map(test_null_channel(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1228: List, Dictionary, Blob or String required for argument 1')
+    CheckDefAndScriptFailure2(['map(test_null_channel(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1251: List, Dictionary, Blob or String required for argument 1')
   endif
-  CheckDefAndScriptFailure2(['map(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List, Dictionary, Blob or String required for argument 1')
+  CheckDefAndScriptFailure2(['map(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1')
 enddef
 
 def Test_map_failure()
@@ -2147,9 +2147,9 @@ enddef
 
 def Test_mapnew()
   if has('channel')
-    CheckDefAndScriptFailure2(['mapnew(test_null_job(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1228: List, Dictionary, Blob or String required for argument 1')
+    CheckDefAndScriptFailure2(['mapnew(test_null_job(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1251: List, Dictionary, Blob or String required for argument 1')
   endif
-  CheckDefAndScriptFailure2(['mapnew(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List, Dictionary, Blob or String required for argument 1')
+  CheckDefAndScriptFailure2(['mapnew(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1')
 enddef
 
 def Test_mapset()
@@ -2682,7 +2682,7 @@ def Test_readfile()
 enddef
 
 def Test_reduce()
-  CheckDefAndScriptFailure2(['reduce({a: 10}, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E897: List or Blob required')
+  CheckDefAndScriptFailure2(['reduce({a: 10}, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1252: String, List or Blob required for argument 1')
   assert_equal(6, [1, 2, 3]->reduce((r, c) => r + c, 0))
   assert_equal(11, 0z0506->reduce((r, c) => r + c, 0))
 enddef
