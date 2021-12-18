@@ -2027,7 +2027,9 @@ def Test_luaeval()
 enddef
 
 def Test_map()
-  CheckDefAndScriptFailure2(['map(test_null_channel(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1228: List, Dictionary, Blob or String required for argument 1')
+  if has('channel')
+    CheckDefAndScriptFailure2(['map(test_null_channel(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1228: List, Dictionary, Blob or String required for argument 1')
+  endif
   CheckDefAndScriptFailure2(['map(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List, Dictionary, Blob or String required for argument 1')
 enddef
 
@@ -2144,7 +2146,9 @@ def Test_mapcheck()
 enddef
 
 def Test_mapnew()
-  CheckDefAndScriptFailure2(['mapnew(test_null_job(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1228: List, Dictionary, Blob or String required for argument 1')
+  if has('channel')
+    CheckDefAndScriptFailure2(['mapnew(test_null_job(), "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1228: List, Dictionary, Blob or String required for argument 1')
+  endif
   CheckDefAndScriptFailure2(['mapnew(1, "1")'], 'E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1228: List, Dictionary, Blob or String required for argument 1')
 enddef
 
