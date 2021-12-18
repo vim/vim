@@ -952,6 +952,7 @@ func Test_reduce()
       call assert_equal('c,à,t', reduce('càt', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
       call assert_equal('Å,s,t,r,ö,m', reduce('Åström', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
       call assert_equal('Å,s,t,r,ö,m', reduce('Åström', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
+      call assert_equal(',a,b,c', reduce('abc', LSTART acc, val LMIDDLE acc .. ',' .. val LEND, test_null_string()))
   END
   call CheckLegacyAndVim9Success(lines)
 
@@ -961,6 +962,7 @@ func Test_reduce()
   call assert_fails("call reduce([], { acc, val -> acc + val })", 'E998: Reduce of an empty List with no initial value')
   call assert_fails("call reduce(0z, { acc, val -> acc + val })", 'E998: Reduce of an empty Blob with no initial value')
   call assert_fails("call reduce('', { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
+  call assert_fails("call reduce(test_null_string(), { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
 
   call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E1098:')
   call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E1098:')
