@@ -2274,21 +2274,405 @@ theend:
 }
 
 /*
+ * Implementation of map() and filter() for a Dict.
+ */
+    static void
+filter_map_dict(
+	dict_T		*d,
+	filtermap_T	filtermap,
+	type_T		*argtype,
+	char		*func_name,
+	char_u		*arg_errmsg,
+	typval_T	*expr,
+	typval_T	*rettv)
+{
+    int		prev_lock;
+    dict_T	*d_ret = NULL;
+    hashtab_T	*ht;
+    hashitem_T	*hi;
+    dictitem_T	*di;
+    int		todo;
+    int		rem;
+
+    if (filtermap == FILTERMAP_MAPNEW)
+    {
+	rettv->v_type = VAR_DICT;
+	rettv->vval.v_dict = NULL;
+    }
+    if (d == NULL
+	  || (filtermap == FILTERMAP_FILTER
+			&& value_check_lock(d->dv_lock, arg_errmsg, TRUE)))
+	return;
+
+    prev_lock = d->dv_lock;
+
+    if (filtermap == FILTERMAP_MAPNEW)
+    {
+	if (rettv_dict_alloc(rettv) == FAIL)
+	    return;
+	d_ret = rettv->vval.v_dict;
+    }
+
+    if (filtermap != FILTERMAP_FILTER && d->dv_lock == 0)
+	d->dv_lock = VAR_LOCKED;
+    ht = &d->dv_hashtab;
+    hash_lock(ht);
+    todo = (int)ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    int		r;
+	    typval_T	newtv;
+
+	    --todo;
+	    di = HI2DI(hi);
+	    if (filtermap == FILTERMAP_MAP
+		    && (value_check_lock(di->di_tv.v_lock,
+			    arg_errmsg, TRUE)
+			|| var_check_ro(di->di_flags,
+			    arg_errmsg, TRUE)))
+		break;
+	    set_vim_var_string(VV_KEY, di->di_key, -1);
+	    newtv.v_type = VAR_UNKNOWN;
+	    r = filter_map_one(&di->di_tv, expr, filtermap,
+		    &newtv, &rem);
+	    clear_tv(get_vim_var_tv(VV_KEY));
+	    if (r == FAIL || did_emsg)
+	    {
+		clear_tv(&newtv);
+		break;
+	    }
+	    if (filtermap == FILTERMAP_MAP)
+	    {
+		if (argtype != NULL && check_typval_arg_type(
+			    argtype->tt_member, &newtv,
+			    func_name, 0) == FAIL)
+		{
+		    clear_tv(&newtv);
+		    break;
+		}
+		// map(): replace the dict item value
+		clear_tv(&di->di_tv);
+		newtv.v_lock = 0;
+		di->di_tv = newtv;
+	    }
+	    else if (filtermap == FILTERMAP_MAPNEW)
+	    {
+		// mapnew(): add the item value to the new dict
+		r = dict_add_tv(d_ret, (char *)di->di_key, &newtv);
+		clear_tv(&newtv);
+		if (r == FAIL)
+		    break;
+	    }
+	    else if (filtermap == FILTERMAP_FILTER && rem)
+	    {
+		// filter(false): remove the item from the dict
+		if (var_check_fixed(di->di_flags, arg_errmsg, TRUE)
+			|| var_check_ro(di->di_flags, arg_errmsg, TRUE))
+		    break;
+		dictitem_remove(d, di);
+	    }
+	}
+    }
+    hash_unlock(ht);
+    d->dv_lock = prev_lock;
+}
+
+/*
+ * Implementation of map() and filter() for a Blob.
+ */
+    static void
+filter_map_blob(
+	blob_T		*blob_arg,
+	filtermap_T	filtermap,
+	typval_T	*expr,
+	typval_T	*rettv)
+{
+    blob_T	*b;
+    int		i;
+    typval_T	tv;
+    varnumber_T	val;
+    blob_T	*b_ret;
+    int		idx = 0;
+    int		rem;
+
+    if (filtermap == FILTERMAP_MAPNEW)
+    {
+	rettv->v_type = VAR_BLOB;
+	rettv->vval.v_blob = NULL;
+    }
+    if ((b = blob_arg) == NULL)
+	return;
+
+    b_ret = b;
+    if (filtermap == FILTERMAP_MAPNEW)
+    {
+	if (blob_copy(b, rettv) == FAIL)
+	    return;
+	b_ret = rettv->vval.v_blob;
+    }
+
+    // set_vim_var_nr() doesn't set the type
+    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+    for (i = 0; i < b->bv_ga.ga_len; i++)
+    {
+	typval_T newtv;
+
+	tv.v_type = VAR_NUMBER;
+	val = blob_get(b, i);
+	tv.vval.v_number = val;
+	set_vim_var_nr(VV_KEY, idx);
+	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+		|| did_emsg)
+	    break;
+	if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
+	{
+	    clear_tv(&newtv);
+	    emsg(_(e_invalblob));
+	    break;
+	}
+	if (filtermap != FILTERMAP_FILTER)
+	{
+	    if (newtv.vval.v_number != val)
+		blob_set(b_ret, i, newtv.vval.v_number);
+	}
+	else if (rem)
+	{
+	    char_u *p = (char_u *)blob_arg->bv_ga.ga_data;
+
+	    mch_memmove(p + i, p + i + 1,
+		    (size_t)b->bv_ga.ga_len - i - 1);
+	    --b->bv_ga.ga_len;
+	    --i;
+	}
+	++idx;
+    }
+}
+
+/*
+ * Implementation of map() and filter() for a String.
+ */
+    static void
+filter_map_string(
+	char_u		*str,
+	filtermap_T	filtermap,
+	typval_T	*expr,
+	typval_T	*rettv)
+{
+    char_u	*p;
+    typval_T	tv;
+    garray_T	ga;
+    int		len = 0;
+    int		idx = 0;
+    int		rem;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    // set_vim_var_nr() doesn't set the type
+    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+    ga_init2(&ga, (int)sizeof(char), 80);
+    for (p = str; *p != NUL; p += len)
+    {
+	typval_T newtv;
+
+	if (tv_get_first_char(p, &tv) == FAIL)
+	    break;
+	len = (int)STRLEN(tv.vval.v_string);
+
+	set_vim_var_nr(VV_KEY, idx);
+	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+		|| did_emsg)
+	    break;
+	if (did_emsg)
+	{
+	    clear_tv(&newtv);
+	    clear_tv(&tv);
+	    break;
+	}
+	else if (filtermap != FILTERMAP_FILTER)
+	{
+	    if (newtv.v_type != VAR_STRING)
+	    {
+		clear_tv(&newtv);
+		clear_tv(&tv);
+		emsg(_(e_stringreq));
+		break;
+	    }
+	    else
+		ga_concat(&ga, newtv.vval.v_string);
+	}
+	else if (!rem)
+	    ga_concat(&ga, tv.vval.v_string);
+
+	clear_tv(&newtv);
+	clear_tv(&tv);
+
+	++idx;
+    }
+    ga_append(&ga, NUL);
+    rettv->vval.v_string = ga.ga_data;
+}
+
+/*
+ * Implementation of map() and filter() for a List.
+ */
+    static void
+filter_map_list(
+	list_T		*l,
+	filtermap_T	filtermap,
+	type_T		*argtype,
+	char		*func_name,
+	char_u		*arg_errmsg,
+	typval_T	*expr,
+	typval_T	*rettv)
+{
+    int		prev_lock;
+    list_T	*l_ret = NULL;
+    int		idx = 0;
+    int		rem;
+    listitem_T	*li, *nli;
+
+    if (filtermap == FILTERMAP_MAPNEW)
+    {
+	rettv->v_type = VAR_LIST;
+	rettv->vval.v_list = NULL;
+    }
+    if (l == NULL
+	    || (filtermap == FILTERMAP_FILTER
+		&& value_check_lock(l->lv_lock, arg_errmsg, TRUE)))
+	return;
+
+    prev_lock = l->lv_lock;
+
+    if (filtermap == FILTERMAP_MAPNEW)
+    {
+	if (rettv_list_alloc(rettv) == FAIL)
+	    return;
+	l_ret = rettv->vval.v_list;
+    }
+    // set_vim_var_nr() doesn't set the type
+    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+    if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
+	l->lv_lock = VAR_LOCKED;
+
+    if (l->lv_first == &range_list_item)
+    {
+	varnumber_T	val = l->lv_u.nonmat.lv_start;
+	int		len = l->lv_len;
+	int		stride = l->lv_u.nonmat.lv_stride;
+
+	// List from range(): loop over the numbers
+	if (filtermap != FILTERMAP_MAPNEW)
+	{
+	    l->lv_first = NULL;
+	    l->lv_u.mat.lv_last = NULL;
+	    l->lv_len = 0;
+	    l->lv_u.mat.lv_idx_item = NULL;
+	}
+
+	for (idx = 0; idx < len; ++idx)
+	{
+	    typval_T tv;
+	    typval_T newtv;
+
+	    tv.v_type = VAR_NUMBER;
+	    tv.v_lock = 0;
+	    tv.vval.v_number = val;
+	    set_vim_var_nr(VV_KEY, idx);
+	    if (filter_map_one(&tv, expr, filtermap, &newtv, &rem)
+		    == FAIL)
+		break;
+	    if (did_emsg)
+	    {
+		clear_tv(&newtv);
+		break;
+	    }
+	    if (filtermap != FILTERMAP_FILTER)
+	    {
+		if (filtermap == FILTERMAP_MAP && argtype != NULL
+			&& check_typval_arg_type(
+			    argtype->tt_member, &newtv,
+			    func_name, 0) == FAIL)
+		{
+		    clear_tv(&newtv);
+		    break;
+		}
+		// map(), mapnew(): always append the new value to the
+		// list
+		if (list_append_tv_move(filtermap == FILTERMAP_MAP
+			    ? l : l_ret, &newtv) == FAIL)
+		    break;
+	    }
+	    else if (!rem)
+	    {
+		// filter(): append the list item value when not rem
+		if (list_append_tv_move(l, &tv) == FAIL)
+		    break;
+	    }
+
+	    val += stride;
+	}
+    }
+    else
+    {
+	// Materialized list: loop over the items
+	for (li = l->lv_first; li != NULL; li = nli)
+	{
+	    typval_T newtv;
+
+	    if (filtermap == FILTERMAP_MAP && value_check_lock(
+			li->li_tv.v_lock, arg_errmsg, TRUE))
+		break;
+	    nli = li->li_next;
+	    set_vim_var_nr(VV_KEY, idx);
+	    if (filter_map_one(&li->li_tv, expr, filtermap,
+			&newtv, &rem) == FAIL)
+		break;
+	    if (did_emsg)
+	    {
+		clear_tv(&newtv);
+		break;
+	    }
+	    if (filtermap == FILTERMAP_MAP)
+	    {
+		if (argtype != NULL && check_typval_arg_type(
+			    argtype->tt_member, &newtv, func_name, 0) == FAIL)
+		{
+		    clear_tv(&newtv);
+		    break;
+		}
+		// map(): replace the list item value
+		clear_tv(&li->li_tv);
+		newtv.v_lock = 0;
+		li->li_tv = newtv;
+	    }
+	    else if (filtermap == FILTERMAP_MAPNEW)
+	    {
+		// mapnew(): append the list item value
+		if (list_append_tv_move(l_ret, &newtv) == FAIL)
+		    break;
+	    }
+	    else if (filtermap == FILTERMAP_FILTER && rem)
+		listitem_remove(l, li);
+	    ++idx;
+	}
+    }
+
+    l->lv_lock = prev_lock;
+}
+
+/*
  * Implementation of map() and filter().
  */
     static void
 filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 {
     typval_T	*expr;
-    listitem_T	*li, *nli;
-    list_T	*l = NULL;
-    dictitem_T	*di;
-    hashtab_T	*ht;
-    hashitem_T	*hi;
-    dict_T	*d = NULL;
-    blob_T	*b = NULL;
-    int		rem;
-    int		todo;
     char	*func_name = filtermap == FILTERMAP_MAP ? "map()"
 				  : filtermap == FILTERMAP_MAPNEW ? "mapnew()"
 				  : "filter()";
@@ -2298,7 +2682,6 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 						      ? N_("mapnew() argument")
 						    : N_("filter() argument"));
     int		save_did_emsg;
-    int		idx = 0;
     type_T	*type = NULL;
     garray_T	type_list;
 
@@ -2318,46 +2701,10 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	type = typval2type(argvars, get_copyID(), &type_list, TRUE);
     }
 
-    if (argvars[0].v_type == VAR_BLOB)
-    {
-	if (filtermap == FILTERMAP_MAPNEW)
-	{
-	    rettv->v_type = VAR_BLOB;
-	    rettv->vval.v_blob = NULL;
-	}
-	if ((b = argvars[0].vval.v_blob) == NULL)
-	    goto theend;
-    }
-    else if (argvars[0].v_type == VAR_LIST)
-    {
-	if (filtermap == FILTERMAP_MAPNEW)
-	{
-	    rettv->v_type = VAR_LIST;
-	    rettv->vval.v_list = NULL;
-	}
-	if ((l = argvars[0].vval.v_list) == NULL
-	      || (filtermap == FILTERMAP_FILTER
-			    && value_check_lock(l->lv_lock, arg_errmsg, TRUE)))
-	    goto theend;
-    }
-    else if (argvars[0].v_type == VAR_DICT)
-    {
-	if (filtermap == FILTERMAP_MAPNEW)
-	{
-	    rettv->v_type = VAR_DICT;
-	    rettv->vval.v_dict = NULL;
-	}
-	if ((d = argvars[0].vval.v_dict) == NULL
-	      || (filtermap == FILTERMAP_FILTER
-			    && value_check_lock(d->dv_lock, arg_errmsg, TRUE)))
-	    goto theend;
-    }
-    else if (argvars[0].v_type == VAR_STRING)
-    {
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = NULL;
-    }
-    else
+    if (argvars[0].v_type != VAR_BLOB
+	    && argvars[0].v_type != VAR_LIST
+	    && argvars[0].v_type != VAR_DICT
+	    && argvars[0].v_type != VAR_STRING)
     {
 	semsg(_(e_argument_of_str_must_be_list_string_dictionary_or_blob),
 								    func_name);
@@ -2382,307 +2729,16 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	did_emsg = FALSE;
 
 	if (argvars[0].v_type == VAR_DICT)
-	{
-	    int	    prev_lock = d->dv_lock;
-	    dict_T  *d_ret = NULL;
-
-	    if (filtermap == FILTERMAP_MAPNEW)
-	    {
-		if (rettv_dict_alloc(rettv) == FAIL)
-		    goto theend;
-		d_ret = rettv->vval.v_dict;
-	    }
-
-	    if (filtermap != FILTERMAP_FILTER && d->dv_lock == 0)
-		d->dv_lock = VAR_LOCKED;
-	    ht = &d->dv_hashtab;
-	    hash_lock(ht);
-	    todo = (int)ht->ht_used;
-	    for (hi = ht->ht_array; todo > 0; ++hi)
-	    {
-		if (!HASHITEM_EMPTY(hi))
-		{
-		    int		r;
-		    typval_T	newtv;
-
-		    --todo;
-		    di = HI2DI(hi);
-		    if (filtermap == FILTERMAP_MAP
-					 && (value_check_lock(di->di_tv.v_lock,
-							   arg_errmsg, TRUE)
-				|| var_check_ro(di->di_flags,
-							   arg_errmsg, TRUE)))
-			break;
-		    set_vim_var_string(VV_KEY, di->di_key, -1);
-		    newtv.v_type = VAR_UNKNOWN;
-		    r = filter_map_one(&di->di_tv, expr, filtermap,
-								 &newtv, &rem);
-		    clear_tv(get_vim_var_tv(VV_KEY));
-		    if (r == FAIL || did_emsg)
-		    {
-			clear_tv(&newtv);
-			break;
-		    }
-		    if (filtermap == FILTERMAP_MAP)
-		    {
-			if (type != NULL && check_typval_arg_type(
-				     type->tt_member, &newtv,
-							 func_name, 0) == FAIL)
-			{
-			    clear_tv(&newtv);
-			    break;
-			}
-			// map(): replace the dict item value
-			clear_tv(&di->di_tv);
-			newtv.v_lock = 0;
-			di->di_tv = newtv;
-		    }
-		    else if (filtermap == FILTERMAP_MAPNEW)
-		    {
-			// mapnew(): add the item value to the new dict
-			r = dict_add_tv(d_ret, (char *)di->di_key, &newtv);
-			clear_tv(&newtv);
-			if (r == FAIL)
-			    break;
-		    }
-		    else if (filtermap == FILTERMAP_FILTER && rem)
-		    {
-			// filter(false): remove the item from the dict
-			if (var_check_fixed(di->di_flags, arg_errmsg, TRUE)
-			    || var_check_ro(di->di_flags, arg_errmsg, TRUE))
-			    break;
-			dictitem_remove(d, di);
-		    }
-		}
-	    }
-	    hash_unlock(ht);
-	    d->dv_lock = prev_lock;
-	}
+	    filter_map_dict(argvars[0].vval.v_dict, filtermap, type, func_name,
+		    arg_errmsg, expr, rettv);
 	else if (argvars[0].v_type == VAR_BLOB)
-	{
-	    int		i;
-	    typval_T	tv;
-	    varnumber_T	val;
-	    blob_T	*b_ret = b;
-
-	    if (filtermap == FILTERMAP_MAPNEW)
-	    {
-		if (blob_copy(b, rettv) == FAIL)
-		    goto theend;
-		b_ret = rettv->vval.v_blob;
-	    }
-
-	    // set_vim_var_nr() doesn't set the type
-	    set_vim_var_type(VV_KEY, VAR_NUMBER);
-
-	    for (i = 0; i < b->bv_ga.ga_len; i++)
-	    {
-		typval_T newtv;
-
-		tv.v_type = VAR_NUMBER;
-		val = blob_get(b, i);
-		tv.vval.v_number = val;
-		set_vim_var_nr(VV_KEY, idx);
-		if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
-								   || did_emsg)
-		    break;
-		if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
-		{
-		    clear_tv(&newtv);
-		    emsg(_(e_invalblob));
-		    break;
-		}
-		if (filtermap != FILTERMAP_FILTER)
-		{
-		    if (newtv.vval.v_number != val)
-			blob_set(b_ret, i, newtv.vval.v_number);
-		}
-		else if (rem)
-		{
-		    char_u *p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
-
-		    mch_memmove(p + i, p + i + 1,
-					      (size_t)b->bv_ga.ga_len - i - 1);
-		    --b->bv_ga.ga_len;
-		    --i;
-		}
-		++idx;
-	    }
-	}
+	    filter_map_blob(argvars[0].vval.v_blob, filtermap, expr, rettv);
 	else if (argvars[0].v_type == VAR_STRING)
-	{
-	    char_u	*p;
-	    typval_T	tv;
-	    garray_T	ga;
-	    int		len;
-
-	    // set_vim_var_nr() doesn't set the type
-	    set_vim_var_type(VV_KEY, VAR_NUMBER);
-
-	    ga_init2(&ga, (int)sizeof(char), 80);
-	    for (p = tv_get_string(&argvars[0]); *p != NUL; p += len)
-	    {
-	        typval_T newtv;
-
-		if (tv_get_first_char(p, &tv) == FAIL)
-		    break;
-		len = STRLEN(tv.vval.v_string);
-
-		set_vim_var_nr(VV_KEY, idx);
-		if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
-								   || did_emsg)
-		    break;
-		if (did_emsg)
-		{
-		    clear_tv(&newtv);
-		    clear_tv(&tv);
-		    break;
-		}
-		else if (filtermap != FILTERMAP_FILTER)
-		{
-		    if (newtv.v_type != VAR_STRING)
-		    {
-			clear_tv(&newtv);
-			clear_tv(&tv);
-			emsg(_(e_stringreq));
-			break;
-		    }
-		    else
-			ga_concat(&ga, newtv.vval.v_string);
-		}
-		else if (!rem)
-		    ga_concat(&ga, tv.vval.v_string);
-
-		clear_tv(&newtv);
-		clear_tv(&tv);
-
-	        ++idx;
-	    }
-	    ga_append(&ga, NUL);
-	    rettv->vval.v_string = ga.ga_data;
-	}
+	    filter_map_string(tv_get_string(&argvars[0]), filtermap, expr,
+		    rettv);
 	else // argvars[0].v_type == VAR_LIST
-	{
-	    int	    prev_lock = l->lv_lock;
-	    list_T  *l_ret = NULL;
-
-	    if (filtermap == FILTERMAP_MAPNEW)
-	    {
-		if (rettv_list_alloc(rettv) == FAIL)
-		    goto theend;
-		l_ret = rettv->vval.v_list;
-	    }
-	    // set_vim_var_nr() doesn't set the type
-	    set_vim_var_type(VV_KEY, VAR_NUMBER);
-
-	    if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
-		l->lv_lock = VAR_LOCKED;
-
-	    if (l->lv_first == &range_list_item)
-	    {
-		varnumber_T	val = l->lv_u.nonmat.lv_start;
-		int		len = l->lv_len;
-		int		stride = l->lv_u.nonmat.lv_stride;
-
-		// List from range(): loop over the numbers
-		if (filtermap != FILTERMAP_MAPNEW)
-		{
-		    l->lv_first = NULL;
-		    l->lv_u.mat.lv_last = NULL;
-		    l->lv_len = 0;
-		    l->lv_u.mat.lv_idx_item = NULL;
-		}
-
-		for (idx = 0; idx < len; ++idx)
-		{
-		    typval_T tv;
-		    typval_T newtv;
-
-		    tv.v_type = VAR_NUMBER;
-		    tv.v_lock = 0;
-		    tv.vval.v_number = val;
-		    set_vim_var_nr(VV_KEY, idx);
-		    if (filter_map_one(&tv, expr, filtermap, &newtv, &rem)
-								       == FAIL)
-			break;
-		    if (did_emsg)
-		    {
-			clear_tv(&newtv);
-			break;
-		    }
-		    if (filtermap != FILTERMAP_FILTER)
-		    {
-			if (filtermap == FILTERMAP_MAP && type != NULL
-				      && check_typval_arg_type(
-				     type->tt_member, &newtv,
-							 func_name, 0) == FAIL)
-			{
-			    clear_tv(&newtv);
-			    break;
-			}
-			// map(), mapnew(): always append the new value to the
-			// list
-			if (list_append_tv_move(filtermap == FILTERMAP_MAP
-						  ? l : l_ret, &newtv) == FAIL)
-			    break;
-		    }
-		    else if (!rem)
-		    {
-			// filter(): append the list item value when not rem
-			if (list_append_tv_move(l, &tv) == FAIL)
-			    break;
-		    }
-
-		    val += stride;
-		}
-	    }
-	    else
-	    {
-		// Materialized list: loop over the items
-		for (li = l->lv_first; li != NULL; li = nli)
-		{
-		    typval_T newtv;
-
-		    if (filtermap == FILTERMAP_MAP && value_check_lock(
-					   li->li_tv.v_lock, arg_errmsg, TRUE))
-			break;
-		    nli = li->li_next;
-		    set_vim_var_nr(VV_KEY, idx);
-		    if (filter_map_one(&li->li_tv, expr, filtermap,
-				&newtv, &rem) == FAIL)
-			break;
-		    if (did_emsg)
-		    {
-			clear_tv(&newtv);
-			break;
-		    }
-		    if (filtermap == FILTERMAP_MAP)
-		    {
-			if (type != NULL && check_typval_arg_type(
-				type->tt_member, &newtv, func_name, 0) == FAIL)
-			{
-			    clear_tv(&newtv);
-			    break;
-			}
-			// map(): replace the list item value
-			clear_tv(&li->li_tv);
-			newtv.v_lock = 0;
-			li->li_tv = newtv;
-		    }
-		    else if (filtermap == FILTERMAP_MAPNEW)
-		    {
-			// mapnew(): append the list item value
-			if (list_append_tv_move(l_ret, &newtv) == FAIL)
-			    break;
-		    }
-		    else if (filtermap == FILTERMAP_FILTER && rem)
-			listitem_remove(l, li);
-		    ++idx;
-		}
-	    }
-
-	    l->lv_lock = prev_lock;
-	}
+	    filter_map_list(argvars[0].vval.v_list, filtermap, type, func_name,
+		    arg_errmsg, expr, rettv);
 
 	restore_vimvar(VV_KEY, &save_key);
 	restore_vimvar(VV_VAL, &save_val);
@@ -3252,18 +3308,175 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * reduce() on a List
+ */
+    static void
+reduce_list(
+	typval_T	*argvars,
+	char_u		*func_name,
+	funcexe_T	*funcexe,
+	typval_T	*rettv)
+{
+    list_T	*l = argvars[0].vval.v_list;
+    listitem_T  *li = NULL;
+    typval_T	initial;
+    typval_T	argv[3];
+    int		r;
+    int		called_emsg_start = called_emsg;
+    int		prev_locked;
+
+    if (l != NULL)
+	CHECK_LIST_MATERIALIZE(l);
+    if (argvars[2].v_type == VAR_UNKNOWN)
+    {
+	if (l == NULL || l->lv_first == NULL)
+	{
+	    semsg(_(e_reduceempty), "List");
+	    return;
+	}
+	initial = l->lv_first->li_tv;
+	li = l->lv_first->li_next;
+    }
+    else
+    {
+	initial = argvars[2];
+	if (l != NULL)
+	    li = l->lv_first;
+    }
+    copy_tv(&initial, rettv);
+
+    if (l == NULL)
+	return;
+
+    prev_locked = l->lv_lock;
+
+    l->lv_lock = VAR_FIXED;  // disallow the list changing here
+    for ( ; li != NULL; li = li->li_next)
+    {
+	argv[0] = *rettv;
+	argv[1] = li->li_tv;
+	rettv->v_type = VAR_UNKNOWN;
+	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+	clear_tv(&argv[0]);
+	if (r == FAIL || called_emsg != called_emsg_start)
+	    break;
+    }
+    l->lv_lock = prev_locked;
+}
+
+/*
+ * reduce() on a String
+ */
+    static void
+reduce_string(
+	typval_T	*argvars,
+	char_u		*func_name,
+	funcexe_T	*funcexe,
+	typval_T	*rettv)
+{
+    char_u	*p = tv_get_string(&argvars[0]);
+    int		len;
+    typval_T	argv[3];
+    int		r;
+    int		called_emsg_start = called_emsg;
+
+    if (argvars[2].v_type == VAR_UNKNOWN)
+    {
+	if (*p == NUL)
+	{
+	    semsg(_(e_reduceempty), "String");
+	    return;
+	}
+	if (tv_get_first_char(p, rettv) == FAIL)
+	    return;
+	p += STRLEN(rettv->vval.v_string);
+    }
+    else if (argvars[2].v_type != VAR_STRING)
+    {
+	semsg(_(e_string_expected_for_argument_nr), 3);
+	return;
+    }
+    else
+	copy_tv(&argvars[2], rettv);
+
+    for ( ; *p != NUL; p += len)
+    {
+	argv[0] = *rettv;
+	if (tv_get_first_char(p, &argv[1]) == FAIL)
+	    break;
+	len = (int)STRLEN(argv[1].vval.v_string);
+	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+	clear_tv(&argv[0]);
+	clear_tv(&argv[1]);
+	if (r == FAIL || called_emsg != called_emsg_start)
+	    return;
+    }
+}
+
+/*
+ * reduce() on a Blob
+ */
+    static void
+reduce_blob(
+	typval_T	*argvars,
+	char_u		*func_name,
+	funcexe_T	*funcexe,
+	typval_T	*rettv)
+{
+    blob_T	*b = argvars[0].vval.v_blob;
+    int		called_emsg_start = called_emsg;
+    int		r;
+    typval_T	initial;
+    typval_T	argv[3];
+    int	i;
+
+    if (argvars[2].v_type == VAR_UNKNOWN)
+    {
+	if (b == NULL || b->bv_ga.ga_len == 0)
+	{
+	    semsg(_(e_reduceempty), "Blob");
+	    return;
+	}
+	initial.v_type = VAR_NUMBER;
+	initial.vval.v_number = blob_get(b, 0);
+	i = 1;
+    }
+    else if (argvars[2].v_type != VAR_NUMBER)
+    {
+	emsg(_(e_number_expected));
+	return;
+    }
+    else
+    {
+	initial = argvars[2];
+	i = 0;
+    }
+
+    copy_tv(&initial, rettv);
+    if (b == NULL)
+	return;
+
+    for ( ; i < b->bv_ga.ga_len; i++)
+    {
+	argv[0] = *rettv;
+	argv[1].v_type = VAR_NUMBER;
+	argv[1].vval.v_number = blob_get(b, i);
+	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+	clear_tv(&argv[0]);
+	if (r == FAIL || called_emsg != called_emsg_start)
+	    return;
+    }
+}
+
+/*
  * "reduce(list, { accumulator, element -> value } [, initial])" function
  */
     void
 f_reduce(typval_T *argvars, typval_T *rettv)
 {
-    typval_T	initial;
     char_u	*func_name;
     partial_T   *partial = NULL;
     funcexe_T	funcexe;
-    typval_T	argv[3];
-    int		r;
-    int		called_emsg_start = called_emsg;
 
     if (in_vim9script()
 		   && check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
@@ -3272,7 +3485,10 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type != VAR_STRING
 	    && argvars[0].v_type != VAR_LIST
 	    && argvars[0].v_type != VAR_BLOB)
+    {
 	semsg(_(e_string_list_or_blob_required), "reduce()");
+	return;
+    }
 
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
@@ -3294,125 +3510,11 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     funcexe.fe_partial = partial;
 
     if (argvars[0].v_type == VAR_LIST)
-    {
-	list_T	    *l = argvars[0].vval.v_list;
-	listitem_T  *li = NULL;
-
-	if (l != NULL)
-	    CHECK_LIST_MATERIALIZE(l);
-	if (argvars[2].v_type == VAR_UNKNOWN)
-	{
-	    if (l == NULL || l->lv_first == NULL)
-	    {
-		semsg(_(e_reduceempty), "List");
-		return;
-	    }
-	    initial = l->lv_first->li_tv;
-	    li = l->lv_first->li_next;
-	}
-	else
-	{
-	    initial = argvars[2];
-	    if (l != NULL)
-		li = l->lv_first;
-	}
-	copy_tv(&initial, rettv);
-
-	if (l != NULL)
-	{
-	    int	    prev_locked = l->lv_lock;
-
-	    l->lv_lock = VAR_FIXED;  // disallow the list changing here
-	    for ( ; li != NULL; li = li->li_next)
-	    {
-		argv[0] = *rettv;
-		argv[1] = li->li_tv;
-		rettv->v_type = VAR_UNKNOWN;
-		r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
-		clear_tv(&argv[0]);
-		if (r == FAIL || called_emsg != called_emsg_start)
-		    break;
-	    }
-	    l->lv_lock = prev_locked;
-	}
-    }
+	reduce_list(argvars, func_name, &funcexe, rettv);
     else if (argvars[0].v_type == VAR_STRING)
-    {
-	char_u	*p = tv_get_string(&argvars[0]);
-	int     len;
-
-	if (argvars[2].v_type == VAR_UNKNOWN)
-	{
-	    if (*p == NUL)
-	    {
-		semsg(_(e_reduceempty), "String");
-		return;
-	    }
-	    if (tv_get_first_char(p, rettv) == FAIL)
-		return;
-	    p += STRLEN(rettv->vval.v_string);
-	}
-	else if (argvars[2].v_type != VAR_STRING)
-	{
-	    semsg(_(e_string_expected_for_argument_nr), 3);
-	    return;
-	}
-	else
-	    copy_tv(&argvars[2], rettv);
-
-	for ( ; *p != NUL; p += len)
-	{
-	    argv[0] = *rettv;
-	    if (tv_get_first_char(p, &argv[1]) == FAIL)
-		break;
-	    len = STRLEN(argv[1].vval.v_string);
-	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
-	    clear_tv(&argv[0]);
-	    clear_tv(&argv[1]);
-	    if (r == FAIL || called_emsg != called_emsg_start)
-		break;
-	}
-    }
+	reduce_string(argvars, func_name, &funcexe, rettv);
     else
-    {
-	blob_T	*b = argvars[0].vval.v_blob;
-	int	i;
-
-	if (argvars[2].v_type == VAR_UNKNOWN)
-	{
-	    if (b == NULL || b->bv_ga.ga_len == 0)
-	    {
-		semsg(_(e_reduceempty), "Blob");
-		return;
-	    }
-	    initial.v_type = VAR_NUMBER;
-	    initial.vval.v_number = blob_get(b, 0);
-	    i = 1;
-	}
-	else if (argvars[2].v_type != VAR_NUMBER)
-	{
-	    emsg(_(e_number_expected));
-	    return;
-	}
-	else
-	{
-	    initial = argvars[2];
-	    i = 0;
-	}
-
-	copy_tv(&initial, rettv);
-	if (b != NULL)
-	{
-	    for ( ; i < b->bv_ga.ga_len; i++)
-	    {
-		argv[0] = *rettv;
-		argv[1].v_type = VAR_NUMBER;
-		argv[1].vval.v_number = blob_get(b, i);
-		if (call_func(func_name, -1, rettv, 2, argv, &funcexe) == FAIL)
-		    return;
-	    }
-	}
-    }
+	reduce_blob(argvars, func_name, &funcexe, rettv);
 }
 
 #endif // defined(FEAT_EVAL)
