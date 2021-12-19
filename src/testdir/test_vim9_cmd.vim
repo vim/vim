@@ -1600,7 +1600,7 @@ def Test_var_not_cmd()
   var lines =<< trim END
       g:notexist:cmd
   END
-  CheckDefAndScriptFailure2(lines, 'E488: Trailing characters: :cmd', 'E121: Undefined variable: g:notexist', 1)
+  CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :cmd', 'E121: Undefined variable: g:notexist'], 1)
 
   lines =<< trim END
       g-pat-cmd
@@ -1609,12 +1609,12 @@ def Test_var_not_cmd()
   lines =<< trim END
       g.pat.cmd
   END
-  CheckDefAndScriptFailure2(lines, 'E1001: Variable not found: g', 'E121: Undefined variable: g', 1)
+  CheckDefAndScriptFailure(lines, ['E1001: Variable not found: g', 'E121: Undefined variable: g'], 1)
 
   lines =<< trim END
       s:notexist:repl
   END
-  CheckDefAndScriptFailure2(lines, 'E488: Trailing characters: :repl', 'E121: Undefined variable: s:notexist', 1)
+  CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :repl', 'E121: Undefined variable: s:notexist'], 1)
 
   lines =<< trim END
       s-pat-repl
@@ -1623,7 +1623,7 @@ def Test_var_not_cmd()
   lines =<< trim END
       s.pat.repl
   END
-  CheckDefAndScriptFailure2(lines, 'E1001: Variable not found: s', 'E121: Undefined variable: s', 1)
+  CheckDefAndScriptFailure(lines, ['E1001: Variable not found: s', 'E121: Undefined variable: s'], 1)
 
   lines =<< trim END
       w:notexist->len()

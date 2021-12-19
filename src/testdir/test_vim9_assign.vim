@@ -280,12 +280,12 @@ def Test_assign_concat()
     var s = '-'
     s ..= [1, 2]
   END
-  CheckDefAndScriptFailure2(lines, 'E1105: Cannot convert list to string', 'E734: Wrong variable type for .=', 2)
+  CheckDefAndScriptFailure(lines, ['E1105: Cannot convert list to string', 'E734: Wrong variable type for .='], 2)
   lines =<< trim END
     var s = '-'
     s ..= {a: 2}
   END
-  CheckDefAndScriptFailure2(lines, 'E1105: Cannot convert dict to string', 'E734: Wrong variable type for .=', 2)
+  CheckDefAndScriptFailure(lines, ['E1105: Cannot convert dict to string', 'E734: Wrong variable type for .='], 2)
 enddef
 
 def Test_assign_register()
@@ -493,7 +493,7 @@ def Test_assign_linebreak()
           + 4
           + 5
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1148:', 'E1203:', 2)
+  CheckDefExecAndScriptFailure(lines, ['E1148:', 'E1203:'], 2)
 enddef
 
 def Test_assign_index()
@@ -783,21 +783,21 @@ def Test_list_declaration()
   var lines =<< trim END
       var [v1, v2] = [1]
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 1', 'E688:')
+  CheckDefExecAndScriptFailure(lines, ['E1093: Expected 2 items but got 1', 'E688:'])
   lines =<< trim END
       var testlist = [1]
       var [v1, v2] = testlist
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 1', 'E688:')
+  CheckDefExecAndScriptFailure(lines, ['E1093: Expected 2 items but got 1', 'E688:'])
   lines =<< trim END
       var [v1, v2] = [1, 2, 3]
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 3', 'E687:')
+  CheckDefExecAndScriptFailure(lines, ['E1093: Expected 2 items but got 3', 'E687:'])
   lines =<< trim END
       var testlist = [1, 2, 3]
       var [v1, v2] = testlist
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1093: Expected 2 items but got 3', 'E687:')
+  CheckDefExecAndScriptFailure(lines, ['E1093: Expected 2 items but got 3', 'E687:'])
 
   var [vnr, vstr] = [123, 'text']
   vnr += 3
@@ -819,12 +819,12 @@ def Test_list_declaration()
   lines =<< trim END
       var [vnr2: number, vstr2: number] = [123, 'text']
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1163: Variable 2: type mismatch, expected number but got string', 'E1012: Type mismatch; expected number but got string')
+  CheckDefExecAndScriptFailure(lines, ['E1163: Variable 2: type mismatch, expected number but got string', 'E1012: Type mismatch; expected number but got string'])
   lines =<< trim END
       var testlist = [234, 'text']
       var [vnr2: number, vstr2: number] = testlist
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1163: Variable 2: type mismatch, expected number but got string', 'E1012: Type mismatch; expected number but got string')
+  CheckDefExecAndScriptFailure(lines, ['E1163: Variable 2: type mismatch, expected number but got string', 'E1012: Type mismatch; expected number but got string'])
 enddef
 
 def PartFuncBool(b: bool): string
@@ -989,7 +989,7 @@ def Test_assignment_dict()
     var n: any
     n.key = 5
   END
-  CheckDefExecAndScriptFailure2(lines, 'E1148:', 'E1203: Dot can only be used on a dictionary: n.key = 5', 2)
+  CheckDefExecAndScriptFailure(lines, ['E1148:', 'E1203: Dot can only be used on a dictionary: n.key = 5'], 2)
 enddef
 
 def Test_assignment_local()
@@ -1457,13 +1457,13 @@ def Test_assign_with_op_fails()
       var s = 'abc'
       s[1] += 'x'
   END
-  CheckDefAndScriptFailure2(lines, 'E1141:', 'E689:', 2)
+  CheckDefAndScriptFailure(lines, ['E1141:', 'E689:'], 2)
 
   lines =<< trim END
       var s = 'abc'
       s[1] ..= 'x'
   END
-  CheckDefAndScriptFailure2(lines, 'E1141:', 'E689:', 2)
+  CheckDefAndScriptFailure(lines, ['E1141:', 'E689:'], 2)
 
   lines =<< trim END
       var dd: dict<dict<list<any>>>

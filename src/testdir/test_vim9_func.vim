@@ -491,7 +491,7 @@ def Test_call_varargs()
 enddef
 
 def Test_call_white_space()
-  CheckDefAndScriptFailure2(["call Test ('text')"], 'E476:', 'E1068:')
+  CheckDefAndScriptFailure(["call Test ('text')"], ['E476:', 'E1068:'])
 enddef
 
 def MyDefaultArgs(name = 'string'): string

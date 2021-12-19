@@ -174,7 +174,7 @@ func Test_strwidth()
 
   if has('float')
     call assert_equal(3, strwidth(1.2))
-    call CheckDefAndScriptFailure2(['echo strwidth(1.2)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+    call CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
 
   set ambiwidth&
@@ -241,7 +241,7 @@ func Test_str2nr()
   call assert_fails('call str2nr({->2})', 'E729:')
   if has('float')
     call assert_equal(1, str2nr(1.2))
-    call CheckDefAndScriptFailure2(['echo str2nr(1.2)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+    call CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
   call assert_fails('call str2nr(10, [])', 'E745:')
 endfunc
@@ -503,7 +503,7 @@ func Test_simplify()
   call assert_fails('call simplify({})', 'E731:')
   if has('float')
     call assert_equal('1.2', simplify(1.2))
-    call CheckDefAndScriptFailure2(['echo simplify(1.2)'], 'E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1')
+    call CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
 endfunc
 
