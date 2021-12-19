@@ -5087,7 +5087,8 @@ echo_string_core(
 		    ga_concat(&ga, tv2string(&dtv, &tf, numbuf, copyID));
 		    vim_free(tf);
 		}
-		ga_concat(&ga, (char_u *)")");
+		// terminate with ')' and a NUL
+		ga_concat_len(&ga, (char_u *)")", 2);
 
 		*tofree = ga.ga_data;
 		r = *tofree;

@@ -337,4 +337,11 @@ func Test_quit_long_message()
   call delete('Xtest_quit_message')
 endfunc
 
+" this was missing a terminating NUL
+func Test_echo_string_partial()
+  function CountSpaces()
+  endfunction
+  echomsg function('CountSpaces', [#{aaaaaaaaaaa: v:false, bbbbbbbbbbbb: '', ccccccccccc: ['ab', 'cd']}])
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
