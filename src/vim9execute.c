@@ -3809,71 +3809,67 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_COMPARELIST:
-		{
-		    typval_T	*tv1 = STACK_TV_BOT(-2);
-		    typval_T	*tv2 = STACK_TV_BOT(-1);
-		    list_T	*arg1 = tv1->vval.v_list;
-		    list_T	*arg2 = tv2->vval.v_list;
-		    int		cmp = FALSE;
-		    int		ic = iptr->isn_arg.op.op_ic;
-
-		    switch (iptr->isn_arg.op.op_type)
-		    {
-			case EXPR_EQUAL: cmp =
-				      list_equal(arg1, arg2, ic, FALSE); break;
-			case EXPR_NEQUAL: cmp =
-				     !list_equal(arg1, arg2, ic, FALSE); break;
-			case EXPR_IS: cmp = arg1 == arg2; break;
-			case EXPR_ISNOT: cmp = arg1 != arg2; break;
-			default: cmp = 0; break;
-		    }
-		    --ectx->ec_stack.ga_len;
-		    clear_tv(tv1);
-		    clear_tv(tv2);
-		    tv1->v_type = VAR_BOOL;
-		    tv1->vval.v_number = cmp ? VVAL_TRUE : VVAL_FALSE;
-		}
-		break;
-
+	    case ISN_COMPAREDICT:
+	    case ISN_COMPAREFUNC:
+	    case ISN_COMPARESTRING:
 	    case ISN_COMPAREBLOB:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
-		    blob_T	*arg1 = tv1->vval.v_blob;
-		    blob_T	*arg2 = tv2->vval.v_blob;
-		    int		cmp = FALSE;
+		    exprtype_T	exprtype = iptr->isn_arg.op.op_type;
+		    int		ic = iptr->isn_arg.op.op_ic;
+		    int		res = FALSE;
+		    int		status = OK;
 
-		    switch (iptr->isn_arg.op.op_type)
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    if (iptr->isn_type == ISN_COMPARELIST)
 		    {
-			case EXPR_EQUAL: cmp = blob_equal(arg1, arg2); break;
-			case EXPR_NEQUAL: cmp = !blob_equal(arg1, arg2); break;
-			case EXPR_IS: cmp = arg1 == arg2; break;
-			case EXPR_ISNOT: cmp = arg1 != arg2; break;
-			default: cmp = 0; break;
+			status = typval_compare_list(tv1, tv2,
+							   exprtype, ic, &res);
+		    }
+		    else if (iptr->isn_type == ISN_COMPAREDICT)
+		    {
+			status = typval_compare_dict(tv1, tv2,
+							   exprtype, ic, &res);
+		    }
+		    else if (iptr->isn_type == ISN_COMPAREFUNC)
+		    {
+			status = typval_compare_func(tv1, tv2,
+							   exprtype, ic, &res);
+		    }
+		    else if (iptr->isn_type == ISN_COMPARESTRING)
+		    {
+			status = typval_compare_string(tv1, tv2,
+							   exprtype, ic, &res);
+		    }
+		    else
+		    {
+			status = typval_compare_blob(tv1, tv2, exprtype, &res);
 		    }
 		    --ectx->ec_stack.ga_len;
 		    clear_tv(tv1);
 		    clear_tv(tv2);
 		    tv1->v_type = VAR_BOOL;
-		    tv1->vval.v_number = cmp ? VVAL_TRUE : VVAL_FALSE;
+		    tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
+		    if (status == FAIL)
+			goto theend;
 		}
 		break;
 
-		// TODO: handle separately
-	    case ISN_COMPARESTRING:
-	    case ISN_COMPAREDICT:
-	    case ISN_COMPAREFUNC:
 	    case ISN_COMPAREANY:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
 		    exprtype_T	exprtype = iptr->isn_arg.op.op_type;
 		    int		ic = iptr->isn_arg.op.op_ic;
+		    int		status;
 
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    typval_compare(tv1, tv2, exprtype, ic);
+		    status = typval_compare(tv1, tv2, exprtype, ic);
 		    clear_tv(tv2);
 		    --ectx->ec_stack.ga_len;
+		    if (status == FAIL)
+			goto theend;
 		}
 		break;
 

@@ -1120,157 +1120,74 @@ copy_tv(typval_T *from, typval_T *to)
 }
 
 /*
- * Compare "typ1" and "typ2".  Put the result in "typ1".
+ * Compare "tv1" and "tv2".
+ * Put the result in "tv1".  Caller should clear "tv2".
  */
     int
 typval_compare(
-    typval_T	*typ1,   // first operand
-    typval_T	*typ2,   // second operand
-    exprtype_T	type,    // operator
-    int		ic)      // ignore case
+    typval_T	*tv1,	// first operand
+    typval_T	*tv2,	// second operand
+    exprtype_T	type,   // operator
+    int		ic)     // ignore case
 {
-    int		i;
     varnumber_T	n1, n2;
-    char_u	*s1, *s2;
-    char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
+    int		res = 0;
     int		type_is = type == EXPR_IS || type == EXPR_ISNOT;
 
-    if (type_is && typ1->v_type != typ2->v_type)
+    if (type_is && tv1->v_type != tv2->v_type)
     {
 	// For "is" a different type always means FALSE, for "notis"
 	// it means TRUE.
 	n1 = (type == EXPR_ISNOT);
     }
-    else if (typ1->v_type == VAR_BLOB || typ2->v_type == VAR_BLOB)
+    else if (tv1->v_type == VAR_BLOB || tv2->v_type == VAR_BLOB)
     {
-	if (type_is)
+	if (typval_compare_blob(tv1, tv2, type, &res) == FAIL)
 	{
-	    n1 = (typ1->v_type == typ2->v_type
-			    && typ1->vval.v_blob == typ2->vval.v_blob);
-	    if (type == EXPR_ISNOT)
-		n1 = !n1;
-	}
-	else if (typ1->v_type != typ2->v_type
-		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
-	{
-	    if (typ1->v_type != typ2->v_type)
-		emsg(_("E977: Can only compare Blob with Blob"));
-	    else
-		emsg(_(e_invalblob));
-	    clear_tv(typ1);
+	    clear_tv(tv1);
 	    return FAIL;
 	}
-	else
-	{
-	    // Compare two Blobs for being equal or unequal.
-	    n1 = blob_equal(typ1->vval.v_blob, typ2->vval.v_blob);
-	    if (type == EXPR_NEQUAL)
-		n1 = !n1;
-	}
+	n1 = res;
     }
-    else if (typ1->v_type == VAR_LIST || typ2->v_type == VAR_LIST)
+    else if (tv1->v_type == VAR_LIST || tv2->v_type == VAR_LIST)
     {
-	if (type_is)
+	if (typval_compare_list(tv1, tv2, type, ic, &res) == FAIL)
 	{
-	    n1 = (typ1->v_type == typ2->v_type
-			    && typ1->vval.v_list == typ2->vval.v_list);
-	    if (type == EXPR_ISNOT)
-		n1 = !n1;
-	}
-	else if (typ1->v_type != typ2->v_type
-		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
-	{
-	    if (typ1->v_type != typ2->v_type)
-		emsg(_("E691: Can only compare List with List"));
-	    else
-		emsg(_("E692: Invalid operation for List"));
-	    clear_tv(typ1);
+	    clear_tv(tv1);
 	    return FAIL;
 	}
-	else
-	{
-	    // Compare two Lists for being equal or unequal.
-	    n1 = list_equal(typ1->vval.v_list, typ2->vval.v_list,
-							    ic, FALSE);
-	    if (type == EXPR_NEQUAL)
-		n1 = !n1;
-	}
+	n1 = res;
     }
-
-    else if (typ1->v_type == VAR_DICT || typ2->v_type == VAR_DICT)
+    else if (tv1->v_type == VAR_DICT || tv2->v_type == VAR_DICT)
     {
-	if (type_is)
+	if (typval_compare_dict(tv1, tv2, type, ic, &res) == FAIL)
 	{
-	    n1 = (typ1->v_type == typ2->v_type
-			    && typ1->vval.v_dict == typ2->vval.v_dict);
-	    if (type == EXPR_ISNOT)
-		n1 = !n1;
-	}
-	else if (typ1->v_type != typ2->v_type
-		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
-	{
-	    if (typ1->v_type != typ2->v_type)
-		emsg(_("E735: Can only compare Dictionary with Dictionary"));
-	    else
-		emsg(_("E736: Invalid operation for Dictionary"));
-	    clear_tv(typ1);
+	    clear_tv(tv1);
 	    return FAIL;
 	}
-	else
-	{
-	    // Compare two Dictionaries for being equal or unequal.
-	    n1 = dict_equal(typ1->vval.v_dict, typ2->vval.v_dict,
-							    ic, FALSE);
-	    if (type == EXPR_NEQUAL)
-		n1 = !n1;
-	}
+	n1 = res;
     }
-
-    else if (typ1->v_type == VAR_FUNC || typ2->v_type == VAR_FUNC
-	|| typ1->v_type == VAR_PARTIAL || typ2->v_type == VAR_PARTIAL)
+    else if (tv1->v_type == VAR_FUNC || tv2->v_type == VAR_FUNC
+	|| tv1->v_type == VAR_PARTIAL || tv2->v_type == VAR_PARTIAL)
     {
-	if (type != EXPR_EQUAL && type != EXPR_NEQUAL
-		&& type != EXPR_IS && type != EXPR_ISNOT)
+	if (typval_compare_func(tv1, tv2, type, ic, &res) == FAIL)
 	{
-	    emsg(_("E694: Invalid operation for Funcrefs"));
-	    clear_tv(typ1);
+	    clear_tv(tv1);
 	    return FAIL;
 	}
-	if ((typ1->v_type == VAR_PARTIAL
-					&& typ1->vval.v_partial == NULL)
-		|| (typ2->v_type == VAR_PARTIAL
-					&& typ2->vval.v_partial == NULL))
-	    // When both partials are NULL, then they are equal.
-	    // Otherwise they are not equal.
-	    n1 = (typ1->vval.v_partial == typ2->vval.v_partial);
-	else if (type_is)
-	{
-	    if (typ1->v_type == VAR_FUNC && typ2->v_type == VAR_FUNC)
-		// strings are considered the same if their value is
-		// the same
-		n1 = tv_equal(typ1, typ2, ic, FALSE);
-	    else if (typ1->v_type == VAR_PARTIAL
-					&& typ2->v_type == VAR_PARTIAL)
-		n1 = (typ1->vval.v_partial == typ2->vval.v_partial);
-	    else
-		n1 = FALSE;
-	}
-	else
-	    n1 = tv_equal(typ1, typ2, ic, FALSE);
-	if (type == EXPR_NEQUAL || type == EXPR_ISNOT)
-	    n1 = !n1;
+	n1 = res;
     }
 
 #ifdef FEAT_FLOAT
     // If one of the two variables is a float, compare as a float.
     // When using "=~" or "!~", always compare as string.
-    else if ((typ1->v_type == VAR_FLOAT || typ2->v_type == VAR_FLOAT)
+    else if ((tv1->v_type == VAR_FLOAT || tv2->v_type == VAR_FLOAT)
 	    && type != EXPR_MATCH && type != EXPR_NOMATCH)
     {
 	float_T f1, f2;
 
-	f1 = tv_get_float(typ1);
-	f2 = tv_get_float(typ2);
+	f1 = tv_get_float(tv1);
+	f2 = tv_get_float(tv2);
 	n1 = FALSE;
 	switch (type)
 	{
@@ -1291,11 +1208,11 @@ typval_compare(
 
     // If one of the two variables is a number, compare as a number.
     // When using "=~" or "!~", always compare as string.
-    else if ((typ1->v_type == VAR_NUMBER || typ2->v_type == VAR_NUMBER)
+    else if ((tv1->v_type == VAR_NUMBER || tv2->v_type == VAR_NUMBER)
 	    && type != EXPR_MATCH && type != EXPR_NOMATCH)
     {
-	n1 = tv_get_number(typ1);
-	n2 = tv_get_number(typ2);
+	n1 = tv_get_number(tv1);
+	n2 = tv_get_number(tv2);
 	switch (type)
 	{
 	    case EXPR_IS:
@@ -1311,20 +1228,20 @@ typval_compare(
 	    default:  break;  // avoid gcc warning
 	}
     }
-    else if (in_vim9script() && (typ1->v_type == VAR_BOOL
-				    || typ2->v_type == VAR_BOOL
-				    || (typ1->v_type == VAR_SPECIAL
-					      && typ2->v_type == VAR_SPECIAL)))
+    else if (in_vim9script() && (tv1->v_type == VAR_BOOL
+				    || tv2->v_type == VAR_BOOL
+				    || (tv1->v_type == VAR_SPECIAL
+					      && tv2->v_type == VAR_SPECIAL)))
     {
-	if (typ1->v_type != typ2->v_type)
+	if (tv1->v_type != tv2->v_type)
 	{
 	    semsg(_(e_cannot_compare_str_with_str),
-		       vartype_name(typ1->v_type), vartype_name(typ2->v_type));
-	    clear_tv(typ1);
+		       vartype_name(tv1->v_type), vartype_name(tv2->v_type));
+	    clear_tv(tv1);
 	    return FAIL;
 	}
-	n1 = typ1->vval.v_number;
-	n2 = typ2->vval.v_number;
+	n1 = tv1->vval.v_number;
+	n2 = tv2->vval.v_number;
 	switch (type)
 	{
 	    case EXPR_IS:
@@ -1333,65 +1250,256 @@ typval_compare(
 	    case EXPR_NEQUAL:   n1 = (n1 != n2); break;
 	    default:
 		semsg(_(e_invalid_operation_for_str),
-						   vartype_name(typ1->v_type));
-		clear_tv(typ1);
+						   vartype_name(tv1->v_type));
+		clear_tv(tv1);
 		return FAIL;
 	}
     }
     else
     {
-	if (in_vim9script()
-	      && ((typ1->v_type != VAR_STRING && typ1->v_type != VAR_SPECIAL)
-	       || (typ2->v_type != VAR_STRING && typ2->v_type != VAR_SPECIAL)))
+	if (typval_compare_string(tv1, tv2, type, ic, &res) == FAIL)
 	{
-	    semsg(_(e_cannot_compare_str_with_str),
-		       vartype_name(typ1->v_type), vartype_name(typ2->v_type));
-	    clear_tv(typ1);
+	    clear_tv(tv1);
 	    return FAIL;
 	}
-	s1 = tv_get_string_buf(typ1, buf1);
-	s2 = tv_get_string_buf(typ2, buf2);
-	if (type != EXPR_MATCH && type != EXPR_NOMATCH)
-	    i = ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2);
-	else
-	    i = 0;
-	n1 = FALSE;
-	switch (type)
-	{
-	    case EXPR_IS:
-	    case EXPR_EQUAL:    n1 = (i == 0); break;
-	    case EXPR_ISNOT:
-	    case EXPR_NEQUAL:   n1 = (i != 0); break;
-	    case EXPR_GREATER:  n1 = (i > 0); break;
-	    case EXPR_GEQUAL:   n1 = (i >= 0); break;
-	    case EXPR_SMALLER:  n1 = (i < 0); break;
-	    case EXPR_SEQUAL:   n1 = (i <= 0); break;
-
-	    case EXPR_MATCH:
-	    case EXPR_NOMATCH:
-		    n1 = pattern_match(s2, s1, ic);
-		    if (type == EXPR_NOMATCH)
-			n1 = !n1;
-		    break;
-
-	    default:  break;  // avoid gcc warning
-	}
+	n1 = res;
     }
-    clear_tv(typ1);
+    clear_tv(tv1);
     if (in_vim9script())
     {
-	typ1->v_type = VAR_BOOL;
-	typ1->vval.v_number = n1 ? VVAL_TRUE : VVAL_FALSE;
+	tv1->v_type = VAR_BOOL;
+	tv1->vval.v_number = n1 ? VVAL_TRUE : VVAL_FALSE;
     }
     else
     {
-	typ1->v_type = VAR_NUMBER;
-	typ1->vval.v_number = n1;
+	tv1->v_type = VAR_NUMBER;
+	tv1->vval.v_number = n1;
     }
 
     return OK;
 }
 
+/*
+ * Compare "tv1" to "tv2" as lists acording to "type" and "ic".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_list(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    ic,
+	int	    *res)
+{
+    int	    val = 0;
+
+    if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	val = (tv1->v_type == tv2->v_type
+				      && tv1->vval.v_list == tv2->vval.v_list);
+	if (type == EXPR_ISNOT)
+	    val = !val;
+    }
+    else if (tv1->v_type != tv2->v_type
+	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
+    {
+	if (tv1->v_type != tv2->v_type)
+	    emsg(_("E691: Can only compare List with List"));
+	else
+	    emsg(_("E692: Invalid operation for List"));
+	return FAIL;
+    }
+    else
+    {
+	val = list_equal(tv1->vval.v_list, tv2->vval.v_list,
+							ic, FALSE);
+	if (type == EXPR_NEQUAL)
+	    val = !val;
+    }
+    *res = val;
+    return OK;
+}
+
+/*
+ * Compare "tv1" to "tv2" as blobs acording to "type".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_blob(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    *res)
+{
+    int	    val = 0;
+
+    if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	val = (tv1->v_type == tv2->v_type
+			&& tv1->vval.v_blob == tv2->vval.v_blob);
+	if (type == EXPR_ISNOT)
+	    val = !val;
+    }
+    else if (tv1->v_type != tv2->v_type
+	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
+    {
+	if (tv1->v_type != tv2->v_type)
+	    emsg(_("E977: Can only compare Blob with Blob"));
+	else
+	    emsg(_(e_invalblob));
+	return FAIL;
+    }
+    else
+    {
+	val = blob_equal(tv1->vval.v_blob, tv2->vval.v_blob);
+	if (type == EXPR_NEQUAL)
+	    val = !val;
+    }
+    *res = val;
+    return OK;
+}
+
+/*
+ * Compare "tv1" to "tv2" as dictionaries acording to "type" and "ic".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_dict(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    ic,
+	int	    *res)
+{
+    int	    val;
+
+    if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	val = (tv1->v_type == tv2->v_type
+			&& tv1->vval.v_dict == tv2->vval.v_dict);
+	if (type == EXPR_ISNOT)
+	    val = !val;
+    }
+    else if (tv1->v_type != tv2->v_type
+		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
+    {
+	if (tv1->v_type != tv2->v_type)
+	    emsg(_("E735: Can only compare Dictionary with Dictionary"));
+	else
+	    emsg(_("E736: Invalid operation for Dictionary"));
+	return FAIL;
+    }
+    else
+    {
+	val = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic, FALSE);
+	if (type == EXPR_NEQUAL)
+	    val = !val;
+    }
+    *res = val;
+    return OK;
+}
+
+/*
+ * Compare "tv1" to "tv2" as funcrefs acording to "type" and "ic".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_func(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    ic,
+	int	    *res)
+{
+    int	    val = 0;
+
+    if (type != EXPR_EQUAL && type != EXPR_NEQUAL
+	    && type != EXPR_IS && type != EXPR_ISNOT)
+    {
+	emsg(_("E694: Invalid operation for Funcrefs"));
+	return FAIL;
+    }
+    if ((tv1->v_type == VAR_PARTIAL && tv1->vval.v_partial == NULL)
+	    || (tv2->v_type == VAR_PARTIAL && tv2->vval.v_partial == NULL))
+	// When both partials are NULL, then they are equal.
+	// Otherwise they are not equal.
+	val = (tv1->vval.v_partial == tv2->vval.v_partial);
+    else if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	if (tv1->v_type == VAR_FUNC && tv2->v_type == VAR_FUNC)
+	    // strings are considered the same if their value is
+	    // the same
+	    val = tv_equal(tv1, tv2, ic, FALSE);
+	else if (tv1->v_type == VAR_PARTIAL && tv2->v_type == VAR_PARTIAL)
+	    val = (tv1->vval.v_partial == tv2->vval.v_partial);
+	else
+	    val = FALSE;
+    }
+    else
+	val = tv_equal(tv1, tv2, ic, FALSE);
+    if (type == EXPR_NEQUAL || type == EXPR_ISNOT)
+	val = !val;
+    *res = val;
+    return OK;
+}
+
+/*
+ * Compare "tv1" to "tv2" as strings according to "type" and "ic".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_string(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    ic,
+	int	    *res)
+{
+    int		i = 0;
+    int		val = FALSE;
+    char_u	*s1, *s2;
+    char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
+
+    if (in_vim9script()
+	  && ((tv1->v_type != VAR_STRING && tv1->v_type != VAR_SPECIAL)
+	   || (tv2->v_type != VAR_STRING && tv2->v_type != VAR_SPECIAL)))
+    {
+	semsg(_(e_cannot_compare_str_with_str),
+		   vartype_name(tv1->v_type), vartype_name(tv2->v_type));
+	return FAIL;
+    }
+    s1 = tv_get_string_buf(tv1, buf1);
+    s2 = tv_get_string_buf(tv2, buf2);
+    if (type != EXPR_MATCH && type != EXPR_NOMATCH)
+	i = ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2);
+    switch (type)
+    {
+	case EXPR_IS:
+	case EXPR_EQUAL:    val = (i == 0); break;
+	case EXPR_ISNOT:
+	case EXPR_NEQUAL:   val = (i != 0); break;
+	case EXPR_GREATER:  val = (i > 0); break;
+	case EXPR_GEQUAL:   val = (i >= 0); break;
+	case EXPR_SMALLER:  val = (i < 0); break;
+	case EXPR_SEQUAL:   val = (i <= 0); break;
+
+	case EXPR_MATCH:
+	case EXPR_NOMATCH:
+		val = pattern_match(s2, s1, ic);
+		if (type == EXPR_NOMATCH)
+		    val = !val;
+		break;
+
+	default:  break;  // avoid gcc warning
+    }
+    *res = val;
+    return OK;
+}
 /*
  * Convert any type to a string, never give an error.
  * When "quotes" is TRUE add quotes to a string.
