@@ -240,6 +240,7 @@ blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
 	vim_snprintf((char *)numbuf, NUMBUFLEN, "%02X", (int)blob_get(blob, i));
 	ga_concat(&ga, numbuf);
     }
+    ga_append(&ga, NUL);		// append a NUL at the end
     *tofree = ga.ga_data;
     return *tofree;
 }

@@ -680,5 +680,12 @@ func Test_list2blob()
   call assert_equal(0z00010203, list2blob(range(4)))
 endfunc
 
+" The following used to cause an out-of-bounds memory access
+func Test_blob2string()
+  let v = '0z' .. repeat('01010101.', 444)
+  let v ..= '01'
+  exe 'let b = ' .. v
+  call assert_equal(v, string(b))
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
