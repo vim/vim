@@ -4308,7 +4308,8 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	    type_T	*type;
 
 	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if (need_type(type, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    if (type != &t_float && need_type(type, &t_number,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 
 	    while (p > start && (p[-1] == '-' || p[-1] == '+'))
