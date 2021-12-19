@@ -341,7 +341,7 @@ endfunc
 func Test_echo_string_partial()
   function CountSpaces()
   endfunction
-  echomsg function('CountSpaces', [#{aaaaaaaaaaa: v:false, bbbbbbbbbbbb: '', ccccccccccc: ['ab', 'cd']}])
+  call assert_equal("function('CountSpaces', [{'ccccccccccc': ['ab', 'cd'], 'aaaaaaaaaaa': v:false, 'bbbbbbbbbbbb': ''}])", string(function('CountSpaces', [#{aaaaaaaaaaa: v:false, bbbbbbbbbbbb: '', ccccccccccc: ['ab', 'cd']}])))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
