@@ -286,6 +286,8 @@ EXTERN char e_invalid_command[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+EXTERN char e_cannot_index_a_funcref[]
+	INIT(= N_("E695: Cannot index a Funcref"));
 EXTERN char e_list_value_has_more_items_than_targets[]
 	INIT(= N_("E710: List value has more items than targets"));
 EXTERN char e_list_value_does_not_have_enough_items[]

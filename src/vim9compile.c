@@ -3043,7 +3043,25 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     }
     else
     {
-	emsg(_(e_string_list_dict_or_blob_required));
+	switch (vartype)
+	{
+	    case VAR_FUNC:
+	    case VAR_PARTIAL:
+		emsg(_(e_cannot_index_a_funcref));
+		break;
+	    case VAR_BOOL:
+	    case VAR_SPECIAL:
+	    case VAR_JOB:
+	    case VAR_CHANNEL:
+	    case VAR_INSTR:
+	    case VAR_UNKNOWN:
+	    case VAR_ANY:
+	    case VAR_VOID:
+		emsg(_(e_cannot_index_special_variable));
+		break;
+	    default:
+		emsg(_(e_string_list_dict_or_blob_required));
+	}
 	return FAIL;
     }
     return OK;

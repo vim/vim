@@ -4026,6 +4026,8 @@ eval_index(
 	}
 	else if (evaluate)
 	{
+	    int error = FALSE;
+
 #ifdef FEAT_FLOAT
 	    // allow for indexing with float
 	    if (vim9 && rettv->v_type == VAR_DICT
@@ -4035,7 +4037,11 @@ eval_index(
 		var1.v_type = VAR_STRING;
 	    }
 #endif
-	    if (tv_get_string_chk(&var1) == NULL)
+	    if (vim9 && rettv->v_type == VAR_LIST)
+		tv_get_number_chk(&var1, &error);
+	    else
+		error = tv_get_string_chk(&var1) == NULL;
+	    if (error)
 	    {
 		// not a number or string
 		clear_tv(&var1);
@@ -4118,7 +4124,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_FUNC:
 	case VAR_PARTIAL:
 	    if (verbose)
-		emsg(_("E695: Cannot index a Funcref"));
+		emsg(_(e_cannot_index_a_funcref));
 	    return FAIL;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
