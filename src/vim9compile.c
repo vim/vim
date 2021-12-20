@@ -8333,7 +8333,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
 	    }
 
-	    // Script var is not supported.
 	    if (get_var_dest(name, &dest, CMD_for, &opt_flags,
 					      &vimvaridx, &type, cctx) == FAIL)
 		goto failed;
@@ -8351,17 +8350,18 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    }
 	    else
 	    {
+		// Script var is not supported.
+		if (STRNCMP(name, "s:", 2) == 0)
+		{
+		    emsg(_(e_cannot_use_script_variable_in_for_loop));
+		    goto failed;
+		}
+
 		if (!valid_varname(arg, (int)varlen, FALSE))
 		    goto failed;
 		if (lookup_local(arg, varlen, NULL, cctx) == OK)
 		{
 		    semsg(_(e_variable_already_declared), arg);
-		    goto failed;
-		}
-
-		if (STRNCMP(name, "s:", 2) == 0)
-		{
-		    semsg(_(e_cannot_declare_script_variable_in_function), name);
 		    goto failed;
 		}
 

@@ -2963,7 +2963,7 @@ enddef
 
 def Test_for_loop_script_var()
   # cannot use s:var in a :def function
-  CheckDefFailure(['for s:var in range(3)', 'echo 3'], 'E461:')
+  CheckDefFailure(['for s:var in range(3)', 'echo 3'], 'E1254:')
 
   # can use s:var in Vim9 script, with or without s:
   var lines =<< trim END

@@ -1392,6 +1392,10 @@ def Test_lockvar()
   s:theList[1] = 44
   assert_equal([1, 44, 3], s:theList)
 
+  if 0
+    lockvar whatever
+  endif
+
   var d = {a: 1, b: 2}
   d.a = 3
   d.b = 4

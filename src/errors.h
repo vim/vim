@@ -850,3 +850,5 @@ EXTERN char e_string_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1252: String, List or Blob required for argument %d"));
 EXTERN char e_string_expected_for_argument_nr[]
 	INIT(= N_("E1253: String expected for argument %d"));
+EXTERN char e_cannot_use_script_variable_in_for_loop[]
+	INIT(= N_("E1254: Cannot use script variable in for loop"));
