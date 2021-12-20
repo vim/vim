@@ -1558,6 +1558,23 @@ def Test_redir_to_var()
     redir END
   END
   CheckDefFailure(lines, 'E1141:')
+
+  lines =<< trim END
+      var text: string
+      redir => text
+        echo 'hello'
+        redir > Xfile
+      redir END
+  END
+  CheckDefFailure(lines, 'E1185:')
+
+  lines =<< trim END
+      var text: number
+      redir => text
+        echo 'hello'
+      redir END
+  END
+  CheckDefFailure(lines, 'E1012:')
 enddef
 
 def Test_echo_void()

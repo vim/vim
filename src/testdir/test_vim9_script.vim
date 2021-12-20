@@ -611,15 +611,49 @@ def Test_try_catch_throw()
   # no requirement for spaces before |
   try|echo 0|catch|endtry
 
+  # return in try with finally
+  def ReturnInTry(): number
+    var ret = 4
+    try
+      return ret
+    catch /this/
+      return -1
+    catch /that/
+      return -1
+    finally
+      # changing ret has no effect
+      ret = 7
+    endtry
+    return -2
+  enddef
+  assert_equal(4, ReturnInTry())
+
+  # return in catch with finally
+  def ReturnInCatch(): number
+    var ret = 5
+    try
+      throw 'getout'
+      return -1
+    catch /getout/
+      # ret is evaluated here
+      return ret
+    finally
+      # changing ret later has no effect
+      ret = -3
+    endtry
+    return -2
+  enddef
+  assert_equal(5, ReturnInCatch())
+
   # return in finally after empty catch
   def ReturnInFinally(): number
     try
     finally
-      return 4
+      return 6
     endtry
-    return 2
+    return -1
   enddef
-  assert_equal(4, ReturnInFinally())
+  assert_equal(6, ReturnInFinally())
 
   var lines =<< trim END
       vim9script

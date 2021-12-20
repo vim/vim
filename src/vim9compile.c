@@ -8651,7 +8651,7 @@ compile_endblock(cctx_T *cctx)
 }
 
 /*
- * compile "try"
+ * Compile "try".
  * Creates a new scope for the try-endtry, pointing to the first catch and
  * finally.
  * Creates another scope for the "try" block itself.
@@ -8722,7 +8722,7 @@ compile_try(char_u *arg, cctx_T *cctx)
 }
 
 /*
- * compile "catch {expr}"
+ * Compile "catch {expr}".
  */
     static char_u *
 compile_catch(char_u *arg, cctx_T *cctx UNUSED)
@@ -9477,8 +9477,8 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
     static char_u *
 compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
-    char_u *arg = eap->arg;
-    lhs_T	*lhs = &cctx->ctx_redir_lhs;
+    char_u  *arg = eap->arg;
+    lhs_T   *lhs = &cctx->ctx_redir_lhs;
 
     if (lhs->lhs_name != NULL)
     {
@@ -9533,6 +9533,9 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 
 	if (compile_assign_lhs(arg, lhs, CMD_redir,
 						FALSE, FALSE, 1, cctx) == FAIL)
+	    return NULL;
+	if (need_type(&t_string, lhs->lhs_member_type,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return NULL;
 	generate_instr(cctx, ISN_REDIRSTART);
 	lhs->lhs_append = append;
