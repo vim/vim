@@ -957,6 +957,11 @@ ret_func_any(int argcount UNUSED, type_T **argtypes UNUSED)
     return &t_func_any;
 }
     static type_T *
+ret_func_unknown(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_func_unknown;
+}
+    static type_T *
 ret_channel(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_channel;
@@ -1064,8 +1069,6 @@ ret_maparg(int argcount, type_T **argtypes UNUSED)
 	return &t_dict_any;
     return &t_string;
 }
-
-static type_T *ret_f_function(int argcount, type_T **argtypes);
 
 /*
  * Array with names and number of arguments of all internal functions
@@ -1429,9 +1432,9 @@ static funcentry_T global_functions[] =
     {"fullcommand",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_fullcommand},
     {"funcref",		1, 3, FEARG_1,	    arg3_any_list_dict,
-			ret_func_any,	    f_funcref},
+			ret_func_unknown,   f_funcref},
     {"function",	1, 3, FEARG_1,	    arg3_any_list_dict,
-			ret_f_function,	    f_function},
+			ret_func_unknown,   f_function},
     {"garbagecollect",	0, 1, 0,	    arg1_bool,
 			ret_void,	    f_garbagecollect},
     {"get",		2, 3, FEARG_1,	    arg23_get,
@@ -4168,15 +4171,6 @@ theend:
 f_funcref(typval_T *argvars, typval_T *rettv)
 {
     common_function(argvars, rettv, TRUE);
-}
-
-    static type_T *
-ret_f_function(int argcount, type_T **argtypes)
-{
-    if (argcount == 1 && argtypes[0]->tt_type == VAR_STRING)
-	return &t_func_any;
-    // Need to check the type at runtime, the function may be defined later.
-    return &t_func_unknown;
 }
 
 /*

@@ -1258,7 +1258,7 @@ def Test_filter_missing_argument()
 enddef
 
 def Test_foldclosed()
-  CheckDefAndScriptFailure(['foldclosed(function("min"))'], ['E1013: Argument 1: type mismatch, expected string but got func(...): any', 'E1220: String or Number required for argument 1'])
+  CheckDefAndScriptFailure(['foldclosed(function("min"))'], ['E1013: Argument 1: type mismatch, expected string but got func(...): unknown', 'E1220: String or Number required for argument 1'])
   CheckDefExecAndScriptFailure(['foldclosed("")'], 'E1209: Invalid value for a line number')
   assert_equal(-1, foldclosed(1))
   assert_equal(-1, foldclosed('$'))
@@ -1312,11 +1312,69 @@ enddef
 def Test_funcref()
   CheckDefAndScriptFailure(['funcref("reverse", 2)'], ['E1013: Argument 2: type mismatch, expected list<any> but got number', 'E1211: List required for argument 2'])
   CheckDefAndScriptFailure(['funcref("reverse", [2], [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
+
+  var lines =<< trim END
+      vim9script
+      def UseBool(b: bool)
+      enddef
+      def GetRefOk()
+        var Ref1: func(bool) = funcref(UseBool)
+        var Ref2: func(bool) = funcref('UseBool')
+      enddef
+      def GetRefBad()
+        # only fails at runtime
+        var Ref1: func(number) = funcref(UseBool)
+      enddef
+      defcompile
+      GetRefOk()
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def UseBool(b: bool)
+      enddef
+      def GetRefBad()
+        # only fails at runtime
+        var Ref1: func(number) = funcref(UseBool)
+      enddef
+      GetRefBad()
+  END
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected func(number) but got func(bool)')
 enddef
 
 def Test_function()
   CheckDefAndScriptFailure(['function("reverse", 2)'], ['E1013: Argument 2: type mismatch, expected list<any> but got number', 'E1211: List required for argument 2'])
   CheckDefAndScriptFailure(['function("reverse", [2], [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
+
+  var lines =<< trim END
+      vim9script
+      def UseBool(b: bool)
+      enddef
+      def GetRefOk()
+        var Ref1: func(bool) = function(UseBool)
+        var Ref2: func(bool) = function('UseBool')
+      enddef
+      def GetRefBad()
+        # only fails at runtime
+        var Ref1: func(number) = function(UseBool)
+      enddef
+      defcompile
+      GetRefOk()
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def UseBool(b: bool)
+      enddef
+      def GetRefBad()
+        # only fails at runtime
+        var Ref1: func(number) = function(UseBool)
+      enddef
+      GetRefBad()
+  END
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected func(number) but got func(bool)')
 enddef
 
 def Test_garbagecollect()
