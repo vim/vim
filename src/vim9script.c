@@ -13,7 +13,8 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL)
+// When not generating protos this is included in proto.h
+#ifdef PROTO
 # include "vim9.h"
 #endif
 

@@ -180,8 +180,11 @@ SRC += \
 	userfunc.c \
 	version.c \
 	viminfo.c \
+	vim9cmds.c \
 	vim9compile.c \
 	vim9execute.c \
+	vim9expr.c \
+	vim9instr.c \
 	vim9script.c \
 	vim9type.c \
 	window.c \

@@ -11,6 +11,10 @@
  * vim9.h: types and globals used for Vim9 script.
  */
 
+#ifdef VMS
+# include <float.h>
+#endif
+
 typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
     ISN_EXECCONCAT, // execute Ex command from isn_arg.number items on stack
@@ -502,14 +506,7 @@ struct dfunc_S {
 #define STACK_FRAME_SIZE 6
 
 
-#ifdef DEFINE_VIM9_GLOBALS
-// Functions defined with :def are stored in this growarray.
-// They are never removed, so that they can be found by index.
-// Deleted functions have the df_deleted flag set.
-garray_T def_functions = {0, 0, sizeof(dfunc_T), 50, NULL};
-#else
 extern garray_T def_functions;
-#endif
 
 // Used for "lnum" when a range is to be taken from the stack.
 #define LNUM_VARIABLE_RANGE -999
@@ -531,3 +528,200 @@ extern garray_T def_functions;
 		? (dfunc)->df_instr_debug \
 		: (dfunc)->df_instr)
 #endif
+
+// Structure passed between the compile_expr* functions to keep track of
+// constants that have been parsed but for which no code was produced yet.  If
+// possible expressions on these constants are applied at compile time.  If
+// that is not possible, the code to push the constants needs to be generated
+// before other instructions.
+// Using 50 should be more than enough of 5 levels of ().
+#define PPSIZE 50
+typedef struct {
+    typval_T	pp_tv[PPSIZE];	// stack of ppconst constants
+    int		pp_used;	// active entries in pp_tv[]
+    int		pp_is_const;	// all generated code was constants, used for a
+				// list or dict with constant members
+} ppconst_T;
+
+// values for ctx_skip
+typedef enum {
+    SKIP_NOT,		// condition is a constant, produce code
+    SKIP_YES,		// condition is a constant, do NOT produce code
+    SKIP_UNKNOWN	// condition is not a constant, produce code
+} skip_T;
+
+/*
+ * Chain of jump instructions where the end label needs to be set.
+ */
+typedef struct endlabel_S endlabel_T;
+struct endlabel_S {
+    endlabel_T	*el_next;	    // chain end_label locations
+    int		el_end_label;	    // instruction idx where to set end
+};
+
+/*
+ * info specific for the scope of :if / elseif / else
+ */
+typedef struct {
+    int		is_seen_else;
+    int		is_seen_skip_not;   // a block was unconditionally executed
+    int		is_had_return;	    // every block ends in :return
+    int		is_if_label;	    // instruction idx at IF or ELSEIF
+    endlabel_T	*is_end_label;	    // instructions to set end label
+} ifscope_T;
+
+/*
+ * info specific for the scope of :while
+ */
+typedef struct {
+    int		ws_top_label;	    // instruction idx at WHILE
+    endlabel_T	*ws_end_label;	    // instructions to set end
+} whilescope_T;
+
+/*
+ * info specific for the scope of :for
+ */
+typedef struct {
+    int		fs_top_label;	    // instruction idx at FOR
+    endlabel_T	*fs_end_label;	    // break instructions
+} forscope_T;
+
+/*
+ * info specific for the scope of :try
+ */
+typedef struct {
+    int		ts_try_label;	    // instruction idx at TRY
+    endlabel_T	*ts_end_label;	    // jump to :finally or :endtry
+    int		ts_catch_label;	    // instruction idx of last CATCH
+    int		ts_caught_all;	    // "catch" without argument encountered
+} tryscope_T;
+
+typedef enum {
+    NO_SCOPE,
+    IF_SCOPE,
+    WHILE_SCOPE,
+    FOR_SCOPE,
+    TRY_SCOPE,
+    BLOCK_SCOPE
+} scopetype_T;
+
+/*
+ * Info for one scope, pointed to by "ctx_scope".
+ */
+typedef struct scope_S scope_T;
+struct scope_S {
+    scope_T	*se_outer;	    // scope containing this one
+    scopetype_T se_type;
+    int		se_local_count;	    // ctx_locals.ga_len before scope
+    skip_T	se_skip_save;	    // ctx_skip before the block
+    union {
+	ifscope_T	se_if;
+	whilescope_T	se_while;
+	forscope_T	se_for;
+	tryscope_T	se_try;
+    } se_u;
+};
+
+/*
+ * Entry for "ctx_locals".  Used for arguments and local variables.
+ */
+typedef struct {
+    char_u	*lv_name;
+    type_T	*lv_type;
+    int		lv_idx;		// index of the variable on the stack
+    int		lv_from_outer;	// nesting level, using ctx_outer scope
+    int		lv_const;	// when TRUE cannot be assigned to
+    int		lv_arg;		// when TRUE this is an argument
+} lvar_T;
+
+// Destination for an assignment or ":unlet" with an index.
+typedef enum {
+    dest_local,
+    dest_option,
+    dest_func_option,
+    dest_env,
+    dest_global,
+    dest_buffer,
+    dest_window,
+    dest_tab,
+    dest_vimvar,
+    dest_script,
+    dest_reg,
+    dest_expr,
+} assign_dest_T;
+
+// Used by compile_lhs() to store information about the LHS of an assignment
+// and one argument of ":unlet" with an index.
+typedef struct {
+    assign_dest_T   lhs_dest;	    // type of destination
+
+    char_u	    *lhs_name;	    // allocated name excluding the last
+				    // "[expr]" or ".name".
+    size_t	    lhs_varlen;	    // length of the variable without
+				    // "[expr]" or ".name"
+    char_u	    *lhs_whole;	    // allocated name including the last
+				    // "[expr]" or ".name" for :redir
+    size_t	    lhs_varlen_total; // length of the variable including
+				      // any "[expr]" or ".name"
+    char_u	    *lhs_dest_end;  // end of the destination, including
+				    // "[expr]" or ".name".
+    char_u	    *lhs_end;	    // end including any type
+
+    int		    lhs_has_index;  // has "[expr]" or ".name"
+
+    int		    lhs_new_local;  // create new local variable
+    int		    lhs_opt_flags;  // for when destination is an option
+    int		    lhs_vimvaridx;  // for when destination is a v:var
+
+    lvar_T	    lhs_local_lvar; // used for existing local destination
+    lvar_T	    lhs_arg_lvar;   // used for argument destination
+    lvar_T	    *lhs_lvar;	    // points to destination lvar
+    int		    lhs_scriptvar_sid;
+    int		    lhs_scriptvar_idx;
+
+    int		    lhs_has_type;   // type was specified
+    type_T	    *lhs_type;
+    type_T	    *lhs_member_type;
+
+    int		    lhs_append;	    // used by ISN_REDIREND
+} lhs_T;
+
+/*
+ * Context for compiling lines of Vim script.
+ * Stores info about the local variables and condition stack.
+ */
+struct cctx_S {
+    ufunc_T	*ctx_ufunc;	    // current function
+    int		ctx_lnum;	    // line number in current function
+    char_u	*ctx_line_start;    // start of current line or NULL
+    garray_T	ctx_instr;	    // generated instructions
+
+    int		ctx_prev_lnum;	    // line number below previous command, for
+				    // debugging
+
+    compiletype_T ctx_compile_type;
+
+    garray_T	ctx_locals;	    // currently visible local variables
+
+    int		ctx_has_closure;    // set to one if a closures was created in
+				    // the function
+
+    garray_T	ctx_imports;	    // imported items
+
+    skip_T	ctx_skip;
+    scope_T	*ctx_scope;	    // current scope, NULL at toplevel
+    int		ctx_had_return;	    // last seen statement was "return"
+
+    cctx_T	*ctx_outer;	    // outer scope for lambda or nested
+				    // function
+    int		ctx_outer_used;	    // var in ctx_outer was used
+
+    garray_T	ctx_type_stack;	    // type of each item on the stack
+    garray_T	*ctx_type_list;	    // list of pointers to allocated types
+
+    int		ctx_has_cmdmod;	    // ISN_CMDMOD was generated
+
+    lhs_T	ctx_redir_lhs;	    // LHS for ":redir => var", valid when
+				    // lhs_name is not NULL
+};
+

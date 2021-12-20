@@ -825,8 +825,11 @@ OBJ = \
 	$(OUTDIR)/usercmd.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
+	$(OUTDIR)/vim9cmds.o \
 	$(OUTDIR)/vim9compile.o \
 	$(OUTDIR)/vim9execute.o \
+	$(OUTDIR)/vim9expr.o \
+	$(OUTDIR)/vim9instr.o \
 	$(OUTDIR)/vim9script.o \
 	$(OUTDIR)/vim9type.o \
 	$(OUTDIR)/viminfo.o \
@@ -1203,9 +1206,15 @@ $(OUTDIR)/netbeans.o: netbeans.c $(INCL) version.h
 
 $(OUTDIR)/version.o: version.c $(INCL) version.h
 
+$(OUTDIR)/vim9cmds.o: vim9cmds.c $(INCL) version.h
+
 $(OUTDIR)/vim9compile.o: vim9compile.c $(INCL) version.h
 
 $(OUTDIR)/vim9execute.o: vim9execute.c $(INCL) version.h
+
+$(OUTDIR)/vim9expr.o: vim9expr.c $(INCL) version.h
+
+$(OUTDIR)/vim9instr.o: vim9instr.c $(INCL) version.h
 
 $(OUTDIR)/vim9script.o: vim9script.c $(INCL) version.h
 

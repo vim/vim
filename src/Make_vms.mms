@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2021 Nov 19
+# Last change:  2021 Dec 20
 #
 # This script has been tested on VMS 6.2 to 8.4 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -410,8 +410,11 @@ SRC = \
 	usercmd.c \
 	userfunc.c \
 	version.c \
+	vim9cmds.c \
 	vim9compile.c \
 	vim9execute.c \
+	vim9expr.c \
+	vim9instr.c \
 	vim9script.c \
 	vim9type.c \
 	viminfo.c \
@@ -531,8 +534,11 @@ OBJ = \
 	usercmd.obj \
 	userfunc.obj \
 	version.obj \
+	vim9cmds.obj \
 	vim9compile.obj \
 	vim9execute.obj \
+	vim9expr.obj \
+	vim9instr.obj \
 	vim9script.obj \
 	vim9type.obj \
 	viminfo.obj \
@@ -1112,11 +1118,23 @@ viminfo.obj : viminfo.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
+vim9cmds.obj : vim9cmds.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h version.h
 vim9compile.obj : vim9compile.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
 vim9execute.obj : vim9execute.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h version.h
+vim9expr.obj : vim9expr.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h version.h
+vim9instr.obj : vim9instr.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h

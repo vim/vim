@@ -16,11 +16,11 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-#ifdef VMS
-# include <float.h>
+// When not generating protos this is included in proto.h
+#ifdef PROTO
+# include "vim9.h"
 #endif
 
-#include "vim9.h"
 
 // Structure put on ec_trystack when ISN_TRY is encountered.
 typedef struct {
@@ -5064,7 +5064,7 @@ call_def_function(
     if (ectx.ec_funcrefs.ga_len > 0)
     {
 	handle_closure_in_use(&ectx, FALSE);
-	ga_clear(&ectx.ec_funcrefs);  // TODO: should not be needed?
+	ga_clear(&ectx.ec_funcrefs);
     }
 
     estack_pop();
