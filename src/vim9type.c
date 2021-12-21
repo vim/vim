@@ -567,7 +567,9 @@ check_type_maybe(
     {
 	// tt_type should match, except that a "partial" can be assigned to a
 	// variable with type "func".
+	// And "unknown" (using global variable) needs a runtime type check.
 	if (!(expected->tt_type == actual->tt_type
+		    || actual->tt_type == VAR_UNKNOWN
 		    || (expected->tt_type == VAR_FUNC
 					   && actual->tt_type == VAR_PARTIAL)))
 	{
@@ -582,7 +584,7 @@ check_type_maybe(
 	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
 	{
 	    // "unknown" is used for an empty list or dict
-	    if (actual->tt_member != &t_unknown)
+	    if (actual->tt_member != NULL && actual->tt_member != &t_unknown)
 		ret = check_type(expected->tt_member, actual->tt_member,
 								 FALSE, where);
 	}
@@ -592,7 +594,8 @@ check_type_maybe(
 	    // nothing, thus there is no point in checking.
 	    if (expected->tt_member != &t_unknown)
 	    {
-		if (actual->tt_member != &t_unknown)
+		if (actual->tt_member != NULL
+					    && actual->tt_member != &t_unknown)
 		    ret = check_type(expected->tt_member, actual->tt_member,
 								 FALSE, where);
 		else

@@ -2328,27 +2328,43 @@ def s:ElseifConstant()
   elseif false
     echo "false"
   endif
+  if 0
+    echo "yes"
+  elseif 0
+    echo "no"
+  endif
 enddef
 
 def Test_debug_elseif_constant()
-  var res = execute('disass s:ElseifConstant')
+  var res = execute('disass debug s:ElseifConstant')
   assert_match('<SNR>\d*_ElseifConstant\_s*' ..
           'if g:value\_s*' ..
-          '0 LOADG g:value\_s*' ..
-          '1 COND2BOOL\_s*' ..
-          '2 JUMP_IF_FALSE -> 6\_s*' ..
+          '0 DEBUG line 1-1 varcount 0\_s*' ..
+          '1 LOADG g:value\_s*' ..
+          '2 COND2BOOL\_s*' ..
+          '3 JUMP_IF_FALSE -> 8\_s*' ..
           'echo "one"\_s*' ..
-          '3 PUSHS "one"\_s*' ..
-          '4 ECHO 1\_s*' ..
+          '4 DEBUG line 2-2 varcount 0\_s*' ..
+          '5 PUSHS "one"\_s*' ..
+          '6 ECHO 1\_s*' ..
           'elseif true\_s*' ..
-          '5 JUMP -> 8\_s*' ..
+          '7 JUMP -> 12\_s*' ..
+          '8 DEBUG line 3-3 varcount 0\_s*' ..
           'echo "true"\_s*' ..
-          '6 PUSHS "true"\_s*' ..
-          '7 ECHO 1\_s*' ..
+          '9 DEBUG line 4-4 varcount 0\_s*' ..
+          '10 PUSHS "true"\_s*' ..
+          '11 ECHO 1\_s*' ..
           'elseif false\_s*' ..
           'echo "false"\_s*' ..
           'endif\_s*' ..
-          '\d RETURN void*',
+          'if 0\_s*' ..
+          '12 DEBUG line 8-8 varcount 0\_s*' ..
+          'echo "yes"\_s*' ..
+          'elseif 0\_s*' ..
+          '13 DEBUG line 11-10 varcount 0\_s*' ..
+          'echo "no"\_s*' ..
+          'endif\_s*' ..
+          '14 RETURN void*',
         res)
 enddef
 
