@@ -2088,7 +2088,7 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_TRY:
-	    vim_free(isn->isn_arg.try.try_ref);
+	    vim_free(isn->isn_arg.tryref.try_ref);
 	    break;
 
 	case ISN_CEXPR_CORE:

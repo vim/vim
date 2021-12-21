@@ -1290,8 +1290,8 @@ compile_try(char_u *arg, cctx_T *cctx)
 	try_scope->se_u.se_try.ts_try_label = instr->ga_len;
 	if ((isn = generate_instr(cctx, ISN_TRY)) == NULL)
 	    return NULL;
-	isn->isn_arg.try.try_ref = ALLOC_CLEAR_ONE(tryref_T);
-	if (isn->isn_arg.try.try_ref == NULL)
+	isn->isn_arg.tryref.try_ref = ALLOC_CLEAR_ONE(tryref_T);
+	if (isn->isn_arg.tryref.try_ref == NULL)
 	    return NULL;
     }
 
@@ -1352,8 +1352,8 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 
 	// End :try or :catch scope: set value in ISN_TRY instruction
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-	if (isn->isn_arg.try.try_ref->try_catch == 0)
-	    isn->isn_arg.try.try_ref->try_catch = instr->ga_len;
+	if (isn->isn_arg.tryref.try_ref->try_catch == 0)
+	    isn->isn_arg.tryref.try_ref->try_catch = instr->ga_len;
 	if (scope->se_u.se_try.ts_catch_label != 0)
 	{
 	    // Previous catch without match jumps here
@@ -1452,7 +1452,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
     {
 	// End :catch or :finally scope: set value in ISN_TRY instruction
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-	if (isn->isn_arg.try.try_ref->try_finally != 0)
+	if (isn->isn_arg.tryref.try_ref->try_finally != 0)
 	{
 	    emsg(_(e_finally_dup));
 	    return NULL;
@@ -1479,9 +1479,9 @@ compile_finally(char_u *arg, cctx_T *cctx)
 							     this_instr, cctx);
 
 	// If there is no :catch then an exception jumps to :finally.
-	if (isn->isn_arg.try.try_ref->try_catch == 0)
-	    isn->isn_arg.try.try_ref->try_catch = this_instr;
-	isn->isn_arg.try.try_ref->try_finally = this_instr;
+	if (isn->isn_arg.tryref.try_ref->try_catch == 0)
+	    isn->isn_arg.tryref.try_ref->try_catch = this_instr;
+	isn->isn_arg.tryref.try_ref->try_finally = this_instr;
 	if (scope->se_u.se_try.ts_catch_label != 0)
 	{
 	    // Previous catch without match jumps here
@@ -1528,8 +1528,8 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     try_isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
     if (cctx->ctx_skip != SKIP_YES)
     {
-	if (try_isn->isn_arg.try.try_ref->try_catch == 0
-				      && try_isn->isn_arg.try.try_ref->try_finally == 0)
+	if (try_isn->isn_arg.tryref.try_ref->try_catch == 0
+			  && try_isn->isn_arg.tryref.try_ref->try_finally == 0)
 	{
 	    emsg(_(e_missing_catch_or_finally));
 	    return NULL;
@@ -1564,7 +1564,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     {
 	// End :catch or :finally scope: set instruction index in ISN_TRY
 	// instruction
-	try_isn->isn_arg.try.try_ref->try_endtry = instr->ga_len;
+	try_isn->isn_arg.tryref.try_ref->try_endtry = instr->ga_len;
 	if (cctx->ctx_skip != SKIP_YES
 				   && generate_instr(cctx, ISN_ENDTRY) == NULL)
 	    return NULL;

@@ -112,7 +112,7 @@ typedef enum {
     // loop
     ISN_FOR,	    // get next item from a list, uses isn_arg.forloop
 
-    ISN_TRY,	    // add entry to ec_trystack, uses isn_arg.try
+    ISN_TRY,	    // add entry to ec_trystack, uses isn_arg.tryref
     ISN_THROW,	    // pop value of stack, store in v:exception
     ISN_PUSHEXC,    // push v:exception
     ISN_CATCH,	    // drop v:exception
@@ -429,7 +429,7 @@ struct isn_S {
 	jump_T		    jump;
 	jumparg_T	    jumparg;
 	forloop_T	    forloop;
-	try_T		    try;
+	try_T		    tryref;
 	trycont_T	    trycont;
 	cbfunc_T	    bfunc;
 	cdfunc_T	    dfunc;
