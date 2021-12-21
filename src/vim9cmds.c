@@ -843,8 +843,11 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	// If we know the type of "var" and it is a not a supported type we can
 	// give an error now.
 	vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (vartype->tt_type != VAR_LIST && vartype->tt_type != VAR_STRING
-		&& vartype->tt_type != VAR_BLOB && vartype->tt_type != VAR_ANY)
+	if (vartype->tt_type != VAR_LIST
+		&& vartype->tt_type != VAR_STRING
+		&& vartype->tt_type != VAR_BLOB
+		&& vartype->tt_type != VAR_ANY
+		&& vartype->tt_type != VAR_UNKNOWN)
 	{
 	    semsg(_(e_for_loop_on_str_not_supported),
 					       vartype_name(vartype->tt_type));

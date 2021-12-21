@@ -168,9 +168,10 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
     static int
 check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
 {
-    if (!((type1 == VAR_NUMBER || type1 == VAR_FLOAT || type1 == VAR_ANY)
+    if (!((type1 == VAR_NUMBER || type1 == VAR_FLOAT
+				   || type1 == VAR_ANY || type1 == VAR_UNKNOWN)
 	    && (type2 == VAR_NUMBER || type2 == VAR_FLOAT
-							 || type2 == VAR_ANY)))
+				 || type2 == VAR_ANY || type2 == VAR_UNKNOWN)))
     {
 	if (*op == '+')
 	    emsg(_(e_wrong_argument_type_for_plus));
@@ -204,7 +205,9 @@ generate_add_instr(
 
     if (vartype != VAR_LIST && vartype != VAR_BLOB
 	    && type1->tt_type != VAR_ANY
+	    && type1->tt_type != VAR_UNKNOWN
 	    && type2->tt_type != VAR_ANY
+	    && type2->tt_type != VAR_UNKNOWN
 	    && check_number_or_float(
 			type1->tt_type, type2->tt_type, (char_u *)"+") == FAIL)
 	return FAIL;
@@ -293,8 +296,10 @@ generate_two_op(cctx_T *cctx, char_u *op)
 		  break;
 
 	case '%': if ((type1->tt_type != VAR_ANY
+			      && type1->tt_type != VAR_UNKNOWN
 					       && type1->tt_type != VAR_NUMBER)
 			  || (type2->tt_type != VAR_ANY
+			      && type2->tt_type != VAR_UNKNOWN
 					      && type2->tt_type != VAR_NUMBER))
 		  {
 		      emsg(_(e_percent_requires_number_arguments));
@@ -1528,7 +1533,7 @@ generate_PCALL(
 
     RETURN_OK_IF_SKIP(cctx);
 
-    if (type->tt_type == VAR_ANY)
+    if (type->tt_type == VAR_ANY || type->tt_type == VAR_UNKNOWN)
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
     {
@@ -1620,7 +1625,7 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
 
     // check for dict type
     type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (type->tt_type != VAR_DICT && type != &t_any)
+    if (type->tt_type != VAR_DICT && type != &t_any && type != &t_unknown)
     {
 	char *tofree;
 

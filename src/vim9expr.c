@@ -90,7 +90,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     vartype = (*typep)->tt_type;
     idxtype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
     // If the index is a string, the variable must be a Dict.
-    if (*typep == &t_any && idxtype == &t_string)
+    if ((*typep == &t_any || *typep == &t_unknown) && idxtype == &t_string)
 	vartype = VAR_DICT;
     if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
     {
@@ -156,7 +156,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 		return FAIL;
 	}
     }
-    else if (vartype == VAR_LIST || *typep == &t_any)
+    else if (vartype == VAR_LIST || *typep == &t_any || *typep == &t_unknown)
     {
 	if (is_slice)
 	{
@@ -415,7 +415,7 @@ compile_load(
 		// Global, Buffer-local, Window-local and Tabpage-local
 		// variables can be defined later, thus we don't check if it
 		// exists, give an error at runtime.
-		res = generate_LOAD(cctx, isn_type, 0, name, &t_any);
+		res = generate_LOAD(cctx, isn_type, 0, name, &t_unknown);
 	    }
 	}
     }
@@ -1428,7 +1428,10 @@ bool_on_stack(cctx_T *cctx)
     if (type == &t_bool)
 	return OK;
 
-    if (type == &t_any || type == &t_number || type == &t_number_bool)
+    if (type == &t_any
+	    || type == &t_unknown
+	    || type == &t_number
+	    || type == &t_number_bool)
 	// Number 0 and 1 are OK to use as a bool.  "any" could also be a bool.
 	// This requires a runtime type check.
 	return generate_COND2BOOL(cctx);
@@ -2155,9 +2158,10 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	generate_ppconst(cctx, ppconst);
 	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (check_type(want_type, actual, FALSE, where) == FAIL)
+	if (check_type_maybe(want_type, actual, FALSE, where) != OK)
 	{
-	    if (need_type(actual, want_type, -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    if (need_type(actual, want_type, -1, 0, cctx, FALSE, FALSE)
+								       == FAIL)
 		return FAIL;
 	}
     }

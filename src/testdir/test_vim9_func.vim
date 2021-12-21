@@ -547,6 +547,39 @@ def Test_call_default_args()
       defcompile
   END
   CheckScriptFailure(lines, 'E1001: Variable not found: b')
+
+  # using script variable requires matching type or type cast
+  lines =<< trim END
+      vim9script
+      var a: any
+      def Func(arg: string = a)
+        echo arg
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got any')
+
+  lines =<< trim END
+      vim9script
+      var a: any
+      def Func(arg: string = <string>a)
+        echo arg
+      enddef
+      a = 'works'
+      Func()
+  END
+  CheckScriptSuccess(lines)
+
+  # using global variable does not require type cast
+  lines =<< trim END
+      vim9script
+      def Func(arg: string = g:str)
+        echo arg
+      enddef
+      g:str = 'works'
+      Func()
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def FuncWithComment(  # comment

@@ -404,9 +404,16 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 
 
 // Commonly used types.
+// "unknown" is used for when the type is really unknown, e.g. global
+// variables.  Also for when a function may or may not return something.
 EXTERN type_T t_unknown INIT6(VAR_UNKNOWN, 0, 0, TTFLAG_STATIC, NULL, NULL);
+
+// "any" is used for when the type is mixed.  Excludes "void".
 EXTERN type_T t_any INIT6(VAR_ANY, 0, 0, TTFLAG_STATIC, NULL, NULL);
+
+// "void" is used for a function not returning anything.
 EXTERN type_T t_void INIT6(VAR_VOID, 0, 0, TTFLAG_STATIC, NULL, NULL);
+
 EXTERN type_T t_bool INIT6(VAR_BOOL, 0, 0, TTFLAG_STATIC, NULL, NULL);
 EXTERN type_T t_special INIT6(VAR_SPECIAL, 0, 0, TTFLAG_STATIC, NULL, NULL);
 EXTERN type_T t_number INIT6(VAR_NUMBER, 0, 0, TTFLAG_STATIC, NULL, NULL);
