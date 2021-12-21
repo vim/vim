@@ -2941,6 +2941,9 @@ static struct vimoption options[] =
     {"writedelay",  "wd",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_wd, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
+    {"xtermcodes",  NULL,   P_BOOL|P_VI_DEF,
+			    (char_u *)&p_xtermcodes, PV_NONE,
+			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
 
 // terminal output codes
 #define p_term(sss, vvv)   {sss, NULL, P_STRING|P_VI_DEF|P_RALL|P_SECURE, \

@@ -485,6 +485,7 @@ EXTERN int	p_deco;		// 'delcombine'
 #ifdef FEAT_EVAL
 EXTERN char_u	*p_ccv;		// 'charconvert'
 #endif
+EXTERN int	p_cdh;		// 'cdhome'
 EXTERN char_u	*p_cino;	// 'cinoptions'
 #ifdef FEAT_CMDWIN
 EXTERN char_u	*p_cedit;	// 'cedit'
@@ -1094,7 +1095,7 @@ EXTERN int	p_write;	// 'write'
 EXTERN int	p_wa;		// 'writeany'
 EXTERN int	p_wb;		// 'writebackup'
 EXTERN long	p_wd;		// 'writedelay'
-EXTERN int	p_cdh;		// 'cdhome'
+EXTERN int	p_xtermcodes;	// 'xtermcodes'
 
 /*
  * "indir" values for buffer-local options.

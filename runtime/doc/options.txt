@@ -9206,4 +9206,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen.  When non-zero, characters are sent to the terminal one by
 	one.  For debugging purposes.
 
+					   *'xtermcodes'* *'noxtermcodes'*
+'xtermcodes'		boolean	(default on)
+			global
+	When detecting xterm patchlevel 141 or higher with the termresponse
+	mechanism and this option is set, Vim will request the actual termimal
+	key codes and number of colors from the terminal.  This takes care of
+	various configuration options of the terminal that cannot be obtained
+	from the termlib/terminfo entry, see |xterm-codes|.
+	A side effect may be that t_Co changes and Vim will redraw the
+	display.
+
+
  vim:tw=78:ts=8:noet:ft=help:norl:

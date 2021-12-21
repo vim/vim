@@ -562,14 +562,22 @@ endif
 call <SID>Header(gettext("terminal"))
 call <SID>AddOption("term", gettext("name of the used terminal"))
 call <SID>OptionG("term", &term)
+
 call <SID>AddOption("ttytype", gettext("alias for 'term'"))
 call <SID>OptionG("tty", &tty)
+
 call <SID>AddOption("ttybuiltin", gettext("check built-in termcaps first"))
 call <SID>BinOptionG("tbi", &tbi)
+
 call <SID>AddOption("ttyfast", gettext("terminal connection is fast"))
 call <SID>BinOptionG("tf", &tf)
+
+call <SID>AddOption("xtermcodes", gettext("request terminal key codes when an xterm is detected"))
+call <SID>BinOptionG("xtermcodes", &xtermcodes)
+
 call <SID>AddOption("weirdinvert", gettext("terminal that requires extra redrawing"))
 call <SID>BinOptionG("wiv", &wiv)
+
 call <SID>AddOption("esckeys", gettext("recognize keys that start with <Esc> in Insert mode"))
 call <SID>BinOptionG("ek", &ek)
 call <SID>AddOption("scrolljump", gettext("minimal number of lines to scroll at a time"))

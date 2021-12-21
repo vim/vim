@@ -4694,7 +4694,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
 	// If xterm version >= 141 try to get termcap codes.  For other
 	// terminals the request should be ignored.
-	if (version >= 141)
+	if (version >= 141 && p_xtermcodes)
 	{
 	    LOG_TR(("Enable checking for XT codes"));
 	    check_for_codes = TRUE;
@@ -6446,8 +6446,7 @@ got_code_from_term(char_u *code, int len)
 	    if (name[0] == 'C' && name[1] == 'o')
 	    {
 		// Color count is not a key code.
-		i = atoi((char *)str);
-		may_adjust_color_count(i);
+		may_adjust_color_count(atoi((char *)str));
 	    }
 	    else
 	    {
