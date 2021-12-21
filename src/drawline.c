@@ -377,6 +377,7 @@ win_line(
 #ifdef FEAT_SIGNS
     int		sign_present = FALSE;
     sign_attrs_T sattr;
+    int		num_attr = 0;		// attribute for the number column
 #endif
 #ifdef FEAT_ARABIC
     int		prev_c = 0;		// previous Arabic character
@@ -699,6 +700,8 @@ win_line(
 
 #ifdef FEAT_SIGNS
     sign_present = buf_get_signattrs(wp, lnum, &sattr);
+    if (sign_present)
+	num_attr = sattr.sat_numhl;
 #endif
 
 #ifdef LINE_ATTR
@@ -1206,6 +1209,10 @@ win_line(
 			  char_attr = hl_combine_attr(wcr_attr,
 							     HL_ATTR(HLF_LNB));
 		    }
+#ifdef FEAT_SIGNS
+		    if (num_attr)
+			char_attr = num_attr;
+#endif
 		}
 	    }
 

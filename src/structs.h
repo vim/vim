@@ -854,6 +854,7 @@ typedef struct sign_attrs_S {
     int		sat_texthl;
     int		sat_linehl;
     int		sat_culhl;
+    int		sat_numhl;
     int		sat_priority;
 } sign_attrs_T;
 
