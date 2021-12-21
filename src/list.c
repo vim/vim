@@ -1987,18 +1987,229 @@ item_compare2(const void *s1, const void *s2)
 }
 
 /*
+ * sort() List "l"
+ */
+    static void
+do_sort(list_T *l, sortinfo_T *info)
+{
+    long	len;
+    sortItem_T	*ptrs;
+    long	i = 0;
+    listitem_T	*li;
+
+    len = list_len(l);
+
+    // Make an array with each entry pointing to an item in the List.
+    ptrs = ALLOC_MULT(sortItem_T, len);
+    if (ptrs == NULL)
+	return;
+
+    // sort(): ptrs will be the list to sort
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	ptrs[i].item = li;
+	ptrs[i].idx = i;
+	++i;
+    }
+
+    info->item_compare_func_err = FALSE;
+    info->item_compare_keep_zero = FALSE;
+    // test the compare function
+    if ((info->item_compare_func != NULL
+		|| info->item_compare_partial != NULL)
+	    && item_compare2((void *)&ptrs[0], (void *)&ptrs[1])
+	    == ITEM_COMPARE_FAIL)
+	emsg(_("E702: Sort compare function failed"));
+    else
+    {
+	// Sort the array with item pointers.
+	qsort((void *)ptrs, (size_t)len, sizeof(sortItem_T),
+		info->item_compare_func == NULL
+		&& info->item_compare_partial == NULL
+		? item_compare : item_compare2);
+
+	if (!info->item_compare_func_err)
+	{
+	    // Clear the List and append the items in sorted order.
+	    l->lv_first = l->lv_u.mat.lv_last
+		= l->lv_u.mat.lv_idx_item = NULL;
+	    l->lv_len = 0;
+	    for (i = 0; i < len; ++i)
+		list_append(l, ptrs[i].item);
+	}
+    }
+
+    vim_free(ptrs);
+}
+
+/*
+ * uniq() List "l"
+ */
+    static void
+do_uniq(list_T *l, sortinfo_T *info)
+{
+    long	len;
+    sortItem_T	*ptrs;
+    long	i = 0;
+    listitem_T	*li;
+    int	(*item_compare_func_ptr)(const void *, const void *);
+
+    len = list_len(l);
+
+    // Make an array with each entry pointing to an item in the List.
+    ptrs = ALLOC_MULT(sortItem_T, len);
+    if (ptrs == NULL)
+	return;
+
+    // f_uniq(): ptrs will be a stack of items to remove
+    info->item_compare_func_err = FALSE;
+    info->item_compare_keep_zero = TRUE;
+    item_compare_func_ptr = info->item_compare_func != NULL
+	|| info->item_compare_partial != NULL
+	? item_compare2 : item_compare;
+
+    for (li = l->lv_first; li != NULL && li->li_next != NULL;
+	    li = li->li_next)
+    {
+	if (item_compare_func_ptr((void *)&li, (void *)&li->li_next)
+		== 0)
+	    ptrs[i++].item = li;
+	if (info->item_compare_func_err)
+	{
+	    emsg(_("E882: Uniq compare function failed"));
+	    break;
+	}
+    }
+
+    if (!info->item_compare_func_err)
+    {
+	while (--i >= 0)
+	{
+	    li = ptrs[i].item->li_next;
+	    ptrs[i].item->li_next = li->li_next;
+	    if (li->li_next != NULL)
+		li->li_next->li_prev = ptrs[i].item;
+	    else
+		l->lv_u.mat.lv_last = ptrs[i].item;
+	    list_fix_watch(l, li);
+	    listitem_free(l, li);
+	    l->lv_len--;
+	}
+    }
+
+    vim_free(ptrs);
+}
+
+/*
+ * Parse the optional arguments to sort() and uniq() and return the values in
+ * 'info'.
+ */
+    static int
+parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
+{
+    info->item_compare_ic = FALSE;
+    info->item_compare_lc = FALSE;
+    info->item_compare_numeric = FALSE;
+    info->item_compare_numbers = FALSE;
+#ifdef FEAT_FLOAT
+    info->item_compare_float = FALSE;
+#endif
+    info->item_compare_func = NULL;
+    info->item_compare_partial = NULL;
+    info->item_compare_selfdict = NULL;
+
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	return OK;
+
+    // optional second argument: {func}
+    if (argvars[1].v_type == VAR_FUNC)
+	info->item_compare_func = argvars[1].vval.v_string;
+    else if (argvars[1].v_type == VAR_PARTIAL)
+	info->item_compare_partial = argvars[1].vval.v_partial;
+    else
+    {
+	int	    error = FALSE;
+	int	    nr = 0;
+
+	if (argvars[1].v_type == VAR_NUMBER)
+	{
+	    nr = tv_get_number_chk(&argvars[1], &error);
+	    if (error)
+		return FAIL;
+	    if (nr == 1)
+		info->item_compare_ic = TRUE;
+	}
+	if (nr != 1)
+	{
+	    if (argvars[1].v_type != VAR_NUMBER)
+		info->item_compare_func = tv_get_string(&argvars[1]);
+	    else if (nr != 0)
+	    {
+		emsg(_(e_invarg));
+		return FAIL;
+	    }
+	}
+	if (info->item_compare_func != NULL)
+	{
+	    if (*info->item_compare_func == NUL)
+	    {
+		// empty string means default sort
+		info->item_compare_func = NULL;
+	    }
+	    else if (STRCMP(info->item_compare_func, "n") == 0)
+	    {
+		info->item_compare_func = NULL;
+		info->item_compare_numeric = TRUE;
+	    }
+	    else if (STRCMP(info->item_compare_func, "N") == 0)
+	    {
+		info->item_compare_func = NULL;
+		info->item_compare_numbers = TRUE;
+	    }
+#ifdef FEAT_FLOAT
+	    else if (STRCMP(info->item_compare_func, "f") == 0)
+	    {
+		info->item_compare_func = NULL;
+		info->item_compare_float = TRUE;
+	    }
+#endif
+	    else if (STRCMP(info->item_compare_func, "i") == 0)
+	    {
+		info->item_compare_func = NULL;
+		info->item_compare_ic = TRUE;
+	    }
+	    else if (STRCMP(info->item_compare_func, "l") == 0)
+	    {
+		info->item_compare_func = NULL;
+		info->item_compare_lc = TRUE;
+	    }
+	}
+    }
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	// optional third argument: {dict}
+	if (argvars[2].v_type != VAR_DICT)
+	{
+	    emsg(_(e_dictreq));
+	    return FAIL;
+	}
+	info->item_compare_selfdict = argvars[2].vval.v_dict;
+    }
+
+    return OK;
+}
+
+/*
  * "sort()" or "uniq()" function
  */
     static void
 do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 {
     list_T	*l;
-    listitem_T	*li;
-    sortItem_T	*ptrs;
     sortinfo_T	*old_sortinfo;
     sortinfo_T	info;
     long	len;
-    long	i;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -2006,204 +2217,39 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 		    && check_for_opt_dict_arg(argvars, 2) == FAIL)))
 	return;
 
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	semsg(_(e_listarg), sort ? "sort()" : "uniq()");
+	return;
+    }
+
     // Pointer to current info struct used in compare function. Save and
     // restore the current one for nested calls.
     old_sortinfo = sortinfo;
     sortinfo = &info;
 
-    if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_listarg), sort ? "sort()" : "uniq()");
+    l = argvars[0].vval.v_list;
+    if (l != NULL && value_check_lock(l->lv_lock,
+		(char_u *)(sort ? N_("sort() argument") : N_("uniq() argument")),
+		TRUE))
+	goto theend;
+    rettv_list_set(rettv, l);
+    if (l == NULL)
+	goto theend;
+    CHECK_LIST_MATERIALIZE(l);
+
+    len = list_len(l);
+    if (len <= 1)
+	goto theend;	// short list sorts pretty quickly
+
+    if (parse_sort_uniq_args(argvars, &info) == FAIL)
+	goto theend;
+
+    if (sort)
+	do_sort(l, &info);
     else
-    {
-	l = argvars[0].vval.v_list;
-	if (l != NULL && value_check_lock(l->lv_lock,
-	     (char_u *)(sort ? N_("sort() argument") : N_("uniq() argument")),
-									TRUE))
-	    goto theend;
-	rettv_list_set(rettv, l);
-	if (l == NULL)
-	    goto theend;
-	CHECK_LIST_MATERIALIZE(l);
+	do_uniq(l, &info);
 
-	len = list_len(l);
-	if (len <= 1)
-	    goto theend;	// short list sorts pretty quickly
-
-	info.item_compare_ic = FALSE;
-	info.item_compare_lc = FALSE;
-	info.item_compare_numeric = FALSE;
-	info.item_compare_numbers = FALSE;
-#ifdef FEAT_FLOAT
-	info.item_compare_float = FALSE;
-#endif
-	info.item_compare_func = NULL;
-	info.item_compare_partial = NULL;
-	info.item_compare_selfdict = NULL;
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    // optional second argument: {func}
-	    if (argvars[1].v_type == VAR_FUNC)
-		info.item_compare_func = argvars[1].vval.v_string;
-	    else if (argvars[1].v_type == VAR_PARTIAL)
-		info.item_compare_partial = argvars[1].vval.v_partial;
-	    else
-	    {
-		int	    error = FALSE;
-		int	    nr = 0;
-
-		if (argvars[1].v_type == VAR_NUMBER)
-		{
-		    nr = tv_get_number_chk(&argvars[1], &error);
-		    if (error)
-			goto theend;	// type error; errmsg already given
-		    if (nr == 1)
-			info.item_compare_ic = TRUE;
-		}
-		if (nr != 1)
-		{
-		    if (argvars[1].v_type != VAR_NUMBER)
-			info.item_compare_func = tv_get_string(&argvars[1]);
-		    else if (nr != 0)
-		    {
-			emsg(_(e_invarg));
-			goto theend;
-		    }
-		}
-		if (info.item_compare_func != NULL)
-		{
-		    if (*info.item_compare_func == NUL)
-		    {
-			// empty string means default sort
-			info.item_compare_func = NULL;
-		    }
-		    else if (STRCMP(info.item_compare_func, "n") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_numeric = TRUE;
-		    }
-		    else if (STRCMP(info.item_compare_func, "N") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_numbers = TRUE;
-		    }
-#ifdef FEAT_FLOAT
-		    else if (STRCMP(info.item_compare_func, "f") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_float = TRUE;
-		    }
-#endif
-		    else if (STRCMP(info.item_compare_func, "i") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_ic = TRUE;
-		    }
-		    else if (STRCMP(info.item_compare_func, "l") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_lc = TRUE;
-		    }
-		}
-	    }
-
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		// optional third argument: {dict}
-		if (argvars[2].v_type != VAR_DICT)
-		{
-		    emsg(_(e_dictreq));
-		    goto theend;
-		}
-		info.item_compare_selfdict = argvars[2].vval.v_dict;
-	    }
-	}
-
-	// Make an array with each entry pointing to an item in the List.
-	ptrs = ALLOC_MULT(sortItem_T, len);
-	if (ptrs == NULL)
-	    goto theend;
-
-	i = 0;
-	if (sort)
-	{
-	    // sort(): ptrs will be the list to sort
-	    FOR_ALL_LIST_ITEMS(l, li)
-	    {
-		ptrs[i].item = li;
-		ptrs[i].idx = i;
-		++i;
-	    }
-
-	    info.item_compare_func_err = FALSE;
-	    info.item_compare_keep_zero = FALSE;
-	    // test the compare function
-	    if ((info.item_compare_func != NULL
-					 || info.item_compare_partial != NULL)
-		    && item_compare2((void *)&ptrs[0], (void *)&ptrs[1])
-							 == ITEM_COMPARE_FAIL)
-		emsg(_("E702: Sort compare function failed"));
-	    else
-	    {
-		// Sort the array with item pointers.
-		qsort((void *)ptrs, (size_t)len, sizeof(sortItem_T),
-		    info.item_compare_func == NULL
-					  && info.item_compare_partial == NULL
-					       ? item_compare : item_compare2);
-
-		if (!info.item_compare_func_err)
-		{
-		    // Clear the List and append the items in sorted order.
-		    l->lv_first = l->lv_u.mat.lv_last
-					      = l->lv_u.mat.lv_idx_item = NULL;
-		    l->lv_len = 0;
-		    for (i = 0; i < len; ++i)
-			list_append(l, ptrs[i].item);
-		}
-	    }
-	}
-	else
-	{
-	    int	(*item_compare_func_ptr)(const void *, const void *);
-
-	    // f_uniq(): ptrs will be a stack of items to remove
-	    info.item_compare_func_err = FALSE;
-	    info.item_compare_keep_zero = TRUE;
-	    item_compare_func_ptr = info.item_compare_func != NULL
-					  || info.item_compare_partial != NULL
-					       ? item_compare2 : item_compare;
-
-	    for (li = l->lv_first; li != NULL && li->li_next != NULL;
-							     li = li->li_next)
-	    {
-		if (item_compare_func_ptr((void *)&li, (void *)&li->li_next)
-									 == 0)
-		    ptrs[i++].item = li;
-		if (info.item_compare_func_err)
-		{
-		    emsg(_("E882: Uniq compare function failed"));
-		    break;
-		}
-	    }
-
-	    if (!info.item_compare_func_err)
-	    {
-		while (--i >= 0)
-		{
-		    li = ptrs[i].item->li_next;
-		    ptrs[i].item->li_next = li->li_next;
-		    if (li->li_next != NULL)
-			li->li_next->li_prev = ptrs[i].item;
-		    else
-			l->lv_u.mat.lv_last = ptrs[i].item;
-		    list_fix_watch(l, li);
-		    listitem_free(l, li);
-		    l->lv_len--;
-		}
-	    }
-	}
-
-	vim_free(ptrs);
-    }
 theend:
     sortinfo = old_sortinfo;
 }
@@ -2835,6 +2881,105 @@ f_add(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Count the number of times "needle" occurs in string "haystack". Case is
+ * ignored if "ic" is TRUE.
+ */
+    static long
+count_string(char_u *haystack, char_u *needle, int ic)
+{
+    long	n = 0;
+    char_u	*p = haystack;
+    char_u	*next;
+
+    if (p == NULL || needle == NULL || *needle == NUL)
+	return 0;
+
+    if (ic)
+    {
+	size_t len = STRLEN(needle);
+
+	while (*p != NUL)
+	{
+	    if (MB_STRNICMP(p, needle, len) == 0)
+	    {
+		++n;
+		p += len;
+	    }
+	    else
+		MB_PTR_ADV(p);
+	}
+    }
+    else
+	while ((next = (char_u *)strstr((char *)p, (char *)needle)) != NULL)
+	{
+	    ++n;
+	    p = next + STRLEN(needle);
+	}
+
+    return n;
+}
+
+/*
+ * Count the number of times item "needle" occurs in List "l" starting at index
+ * "idx". Case is ignored if "ic" is TRUE.
+ */
+    static long
+count_list(list_T *l, typval_T *needle, long idx, int ic)
+{
+    long	n = 0;
+    listitem_T	*li;
+
+    if (l == NULL)
+	return 0;
+
+    CHECK_LIST_MATERIALIZE(l);
+
+    if (list_len(l) == 0)
+	return 0;
+
+    li = list_find(l, idx);
+    if (li == NULL)
+    {
+	semsg(_(e_listidx), idx);
+	return 0;
+    }
+
+    for ( ; li != NULL; li = li->li_next)
+	if (tv_equal(&li->li_tv, needle, ic, FALSE))
+	    ++n;
+
+    return n;
+}
+
+/*
+ * Count the number of times item "needle" occurs in Dict "d". Case is ignored
+ * if "ic" is TRUE.
+ */
+    static long
+count_dict(dict_T *d, typval_T *needle, int ic)
+{
+    int		todo;
+    hashitem_T	*hi;
+    long	n = 0;
+
+    if (d == NULL)
+	return 0;
+
+    todo = (int)d->dv_hashtab.ht_used;
+    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    if (tv_equal(&HI2DI(hi)->di_tv, needle, ic, FALSE))
+		++n;
+	}
+    }
+
+    return n;
+}
+
+/*
  * "count()" function
  */
     void
@@ -2854,99 +2999,172 @@ f_count(typval_T *argvars, typval_T *rettv)
     if (argvars[2].v_type != VAR_UNKNOWN)
 	ic = (int)tv_get_bool_chk(&argvars[2], &error);
 
-    if (argvars[0].v_type == VAR_STRING)
+    if (!error && argvars[0].v_type == VAR_STRING)
+	n = count_string(argvars[0].vval.v_string,
+					tv_get_string_chk(&argvars[1]), ic);
+    else if (!error && argvars[0].v_type == VAR_LIST)
     {
-	char_u *expr = tv_get_string_chk(&argvars[1]);
-	char_u *p = argvars[0].vval.v_string;
-	char_u *next;
+	long idx = 0;
 
-	if (!error && expr != NULL && *expr != NUL && p != NULL)
-	{
-	    if (ic)
-	    {
-		size_t len = STRLEN(expr);
-
-		while (*p != NUL)
-		{
-		    if (MB_STRNICMP(p, expr, len) == 0)
-		    {
-			++n;
-			p += len;
-		    }
-		    else
-			MB_PTR_ADV(p);
-		}
-	    }
-	    else
-		while ((next = (char_u *)strstr((char *)p, (char *)expr))
-								       != NULL)
-		{
-		    ++n;
-		    p = next + STRLEN(expr);
-		}
-	}
-
+	if (argvars[2].v_type != VAR_UNKNOWN
+		&& argvars[3].v_type != VAR_UNKNOWN)
+	    idx = (long)tv_get_number_chk(&argvars[3], &error);
+	if (!error)
+	    n = count_list(argvars[0].vval.v_list, &argvars[1], idx, ic);
     }
-    else if (argvars[0].v_type == VAR_LIST)
+    else if (!error && argvars[0].v_type == VAR_DICT)
     {
-	listitem_T	*li;
-	list_T		*l;
-	long		idx;
-
-	if ((l = argvars[0].vval.v_list) != NULL)
-	{
-	    CHECK_LIST_MATERIALIZE(l);
-	    li = l->lv_first;
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		if (argvars[3].v_type != VAR_UNKNOWN)
-		{
-		    idx = (long)tv_get_number_chk(&argvars[3], &error);
-		    if (!error)
-		    {
-			li = list_find(l, idx);
-			if (li == NULL)
-			    semsg(_(e_listidx), idx);
-		    }
-		}
-		if (error)
-		    li = NULL;
-	    }
-
-	    for ( ; li != NULL; li = li->li_next)
-		if (tv_equal(&li->li_tv, &argvars[1], ic, FALSE))
-		    ++n;
-	}
-    }
-    else if (argvars[0].v_type == VAR_DICT)
-    {
-	int		todo;
-	dict_T		*d;
-	hashitem_T	*hi;
-
-	if ((d = argvars[0].vval.v_dict) != NULL)
-	{
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		if (argvars[3].v_type != VAR_UNKNOWN)
-		    emsg(_(e_invarg));
-	    }
-
-	    todo = error ? 0 : (int)d->dv_hashtab.ht_used;
-	    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
-	    {
-		if (!HASHITEM_EMPTY(hi))
-		{
-		    --todo;
-		    if (tv_equal(&HI2DI(hi)->di_tv, &argvars[1], ic, FALSE))
-			++n;
-		}
-	    }
-	}
+	if (argvars[2].v_type != VAR_UNKNOWN
+		&& argvars[3].v_type != VAR_UNKNOWN)
+	    emsg(_(e_invarg));
+	else
+	    n = count_dict(argvars[0].vval.v_dict, &argvars[1], ic);
     }
     else
 	semsg(_(e_listdictarg), "count()");
     rettv->vval.v_number = n;
+}
+
+/*
+ * extend() a List. Append List argvars[1] to List argvars[0] before index
+ * argvars[3] and return the resulting list in "rettv".  "is_new" is TRUE for
+ * extendnew().
+ */
+    static void
+extend_list(
+	typval_T	*argvars,
+	type_T		*type,
+	char		*func_name,
+	char_u		*arg_errmsg,
+	int		is_new,
+	typval_T	*rettv)
+{
+    list_T	*l1, *l2;
+    listitem_T	*item;
+    long	before;
+    int		error = FALSE;
+
+    l1 = argvars[0].vval.v_list;
+    if (l1 == NULL)
+    {
+	emsg(_(e_cannot_extend_null_list));
+	return;
+    }
+    l2 = argvars[1].vval.v_list;
+    if ((is_new || !value_check_lock(l1->lv_lock, arg_errmsg, TRUE))
+	    && l2 != NULL)
+    {
+	if (is_new)
+	{
+	    l1 = list_copy(l1, FALSE, get_copyID());
+	    if (l1 == NULL)
+		return;
+	}
+
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    before = (long)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		return;		// type error; errmsg already given
+
+	    if (before == l1->lv_len)
+		item = NULL;
+	    else
+	    {
+		item = list_find(l1, before);
+		if (item == NULL)
+		{
+		    semsg(_(e_listidx), before);
+		    return;
+		}
+	    }
+	}
+	else
+	    item = NULL;
+	if (type != NULL && check_typval_arg_type(
+		    type, &argvars[1], func_name, 2) == FAIL)
+	    return;
+	list_extend(l1, l2, item);
+
+	if (is_new)
+	{
+	    rettv->v_type = VAR_LIST;
+	    rettv->vval.v_list = l1;
+	    rettv->v_lock = FALSE;
+	}
+	else
+	    copy_tv(&argvars[0], rettv);
+    }
+}
+
+/*
+ * extend() a Dict. Append Dict argvars[1] to Dict argvars[0] and return the
+ * resulting Dict in "rettv".  "is_new" is TRUE for extendnew().
+ */
+    static void
+extend_dict(
+	typval_T	*argvars,
+	type_T		*type,
+	char		*func_name,
+	char_u		*arg_errmsg,
+	int		is_new,
+	typval_T	*rettv)
+{
+    dict_T	*d1, *d2;
+    char_u	*action;
+    int	i;
+
+    d1 = argvars[0].vval.v_dict;
+    if (d1 == NULL)
+    {
+	emsg(_(e_cannot_extend_null_dict));
+	return;
+    }
+    d2 = argvars[1].vval.v_dict;
+    if ((is_new || !value_check_lock(d1->dv_lock, arg_errmsg, TRUE))
+	    && d2 != NULL)
+    {
+	if (is_new)
+	{
+	    d1 = dict_copy(d1, FALSE, get_copyID());
+	    if (d1 == NULL)
+		return;
+	}
+
+	// Check the third argument.
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    static char *(av[]) = {"keep", "force", "error"};
+
+	    action = tv_get_string_chk(&argvars[2]);
+	    if (action == NULL)
+		return;
+	    for (i = 0; i < 3; ++i)
+		if (STRCMP(action, av[i]) == 0)
+		    break;
+	    if (i == 3)
+	    {
+		semsg(_(e_invarg2), action);
+		return;
+	    }
+	}
+	else
+	    action = (char_u *)"force";
+
+	if (type != NULL && check_typval_arg_type(type, &argvars[1],
+		    func_name, 2) == FAIL)
+	    return;
+	dict_extend(d1, d2, action, func_name);
+
+	if (is_new)
+	{
+	    rettv->v_type = VAR_DICT;
+	    rettv->vval.v_dict = d1;
+	    rettv->v_lock = FALSE;
+	}
+	else
+	    copy_tv(&argvars[0], rettv);
+    }
 }
 
 /*
@@ -2967,126 +3185,12 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
     }
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
-    {
-	list_T		*l1, *l2;
-	listitem_T	*item;
-	long		before;
-	int		error = FALSE;
-
-	l1 = argvars[0].vval.v_list;
-	if (l1 == NULL)
-	{
-	    emsg(_(e_cannot_extend_null_list));
-	    goto theend;
-	}
-	l2 = argvars[1].vval.v_list;
-	if ((is_new || !value_check_lock(l1->lv_lock, arg_errmsg, TRUE))
-								 && l2 != NULL)
-	{
-	    if (is_new)
-	    {
-		l1 = list_copy(l1, FALSE, get_copyID());
-		if (l1 == NULL)
-		    goto theend;
-	    }
-
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		before = (long)tv_get_number_chk(&argvars[2], &error);
-		if (error)
-		    goto theend;	// type error; errmsg already given
-
-		if (before == l1->lv_len)
-		    item = NULL;
-		else
-		{
-		    item = list_find(l1, before);
-		    if (item == NULL)
-		    {
-			semsg(_(e_listidx), before);
-			goto theend;
-		    }
-		}
-	    }
-	    else
-		item = NULL;
-	    if (type != NULL && check_typval_arg_type(
-				      type, &argvars[1], func_name, 2) == FAIL)
-		goto theend;
-	    list_extend(l1, l2, item);
-
-	    if (is_new)
-	    {
-		rettv->v_type = VAR_LIST;
-		rettv->vval.v_list = l1;
-		rettv->v_lock = FALSE;
-	    }
-	    else
-		copy_tv(&argvars[0], rettv);
-	}
-    }
+	extend_list(argvars, type, func_name, arg_errmsg, is_new, rettv);
     else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
-    {
-	dict_T	*d1, *d2;
-	char_u	*action;
-	int	i;
-
-	d1 = argvars[0].vval.v_dict;
-	if (d1 == NULL)
-	{
-	    emsg(_(e_cannot_extend_null_dict));
-	    goto theend;
-	}
-	d2 = argvars[1].vval.v_dict;
-	if ((is_new || !value_check_lock(d1->dv_lock, arg_errmsg, TRUE))
-								 && d2 != NULL)
-	{
-	    if (is_new)
-	    {
-		d1 = dict_copy(d1, FALSE, get_copyID());
-		if (d1 == NULL)
-		    goto theend;
-	    }
-
-	    // Check the third argument.
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		static char *(av[]) = {"keep", "force", "error"};
-
-		action = tv_get_string_chk(&argvars[2]);
-		if (action == NULL)
-		    goto theend;	// type error; errmsg already given
-		for (i = 0; i < 3; ++i)
-		    if (STRCMP(action, av[i]) == 0)
-			break;
-		if (i == 3)
-		{
-		    semsg(_(e_invarg2), action);
-		    goto theend;
-		}
-	    }
-	    else
-		action = (char_u *)"force";
-
-	    if (type != NULL && check_typval_arg_type(type, &argvars[1],
-							 func_name, 2) == FAIL)
-		goto theend;
-	    dict_extend(d1, d2, action, func_name);
-
-	    if (is_new)
-	    {
-		rettv->v_type = VAR_DICT;
-		rettv->vval.v_dict = d1;
-		rettv->v_lock = FALSE;
-	    }
-	    else
-		copy_tv(&argvars[0], rettv);
-	}
-    }
+	extend_dict(argvars, type, func_name, arg_errmsg, is_new, rettv);
     else
 	semsg(_(e_listdictarg), func_name);
 
-theend:
     if (type != NULL)
 	clear_type_list(&type_list);
 }
@@ -3308,7 +3412,9 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * reduce() on a List
+ * reduce() List argvars[0] using the function 'funcname' with arguments in
+ * 'funcexe' starting with the initial value argvars[2] and return the result
+ * in 'rettv'.
  */
     static void
 reduce_list(
@@ -3365,7 +3471,9 @@ reduce_list(
 }
 
 /*
- * reduce() on a String
+ * reduce() String argvars[0] using the function 'funcname' with arguments in
+ * 'funcexe' starting with the initial value argvars[2] and return the result
+ * in 'rettv'.
  */
     static void
 reduce_string(
@@ -3414,7 +3522,9 @@ reduce_string(
 }
 
 /*
- * reduce() on a Blob
+ * reduce() Blob argvars[0] using the function 'funcname' with arguments in
+ * 'funcexe' starting with the initial value argvars[2] and return the result
+ * in 'rettv'.
  */
     static void
 reduce_blob(
@@ -3470,6 +3580,8 @@ reduce_blob(
 
 /*
  * "reduce(list, { accumulator, element -> value } [, initial])" function
+ * "reduce(blob, { accumulator, element -> value } [, initial])"
+ * "reduce(string, { accumulator, element -> value } [, initial])"
  */
     void
 f_reduce(typval_T *argvars, typval_T *rettv)
