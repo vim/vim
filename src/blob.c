@@ -417,6 +417,7 @@ blob_add(typval_T *argvars, typval_T *rettv)
 {
     blob_T	*b = argvars[0].vval.v_blob;
     int		error = FALSE;
+    varnumber_T n;
 
     if (b == NULL)
     {
@@ -428,7 +429,7 @@ blob_add(typval_T *argvars, typval_T *rettv)
     if (value_check_lock(b->bv_lock, (char_u *)N_("add() argument"), TRUE))
 	return;
 
-    varnumber_T n = tv_get_number_chk(&argvars[1], &error);
+    n = tv_get_number_chk(&argvars[1], &error);
     if (error)
 	return;
 
