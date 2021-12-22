@@ -872,3 +872,11 @@ void bar(int i)
     printf("%d\n", i);
 }
 
+#ifdef ISSUE2
+void foo(void)
+{
+    printf("foo()\n");
+    bar(1);
+}
+#endif
+
