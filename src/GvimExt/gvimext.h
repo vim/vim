@@ -130,7 +130,7 @@ protected:
 	    int idHWnd);
 
     STDMETHODIMP InvokeSingleGvim(HWND hParent,
-	    LPCSTR pszWorkingDir,
+	    LPCWSTR workingDir,
 	    LPCSTR pszCmd,
 	    LPCSTR pszParam,
 	    int iShowCmd,

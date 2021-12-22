@@ -776,8 +776,12 @@ STDMETHODIMP CShellExt::InvokeCommand(LPCMINVOKECOMMANDINFO lpcmi)
 		    // development.
 		    return E_FAIL;
 	    }
+
+            LPCMINVOKECOMMANDINFOEX lpcmiex = (LPCMINVOKECOMMANDINFOEX)lpcmi;
+            LPCWSTR currentDirectory = lpcmi->cbSize == sizeof(CMINVOKECOMMANDINFOEX) ? lpcmiex->lpDirectoryW : NULL;
+
 	    hr = InvokeSingleGvim(lpcmi->hwnd,
-		    lpcmi->lpDirectory,
+		    currentDirectory,
 		    lpcmi->lpVerb,
 		    lpcmi->lpParameters,
 		    lpcmi->nShow,
@@ -884,7 +888,7 @@ searchpath(char *name)
 
 
 STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
-				   LPCSTR  /* pszWorkingDir */,
+				   LPCWSTR  workingDir,
 				   LPCSTR  /* pszCmd */,
 				   LPCSTR  /* pszParam */,
 				   int  /* iShowCmd */,
@@ -944,7 +948,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 		FALSE,		// Set handle inheritance to FALSE.
 		0,		// No creation flags.
 		NULL,		// Use parent's environment block.
-		NULL,		// Use parent's starting directory.
+		workingDir,  // Use parent's starting directory.
 		&si,		// Pointer to STARTUPINFO structure.
 		&pi)		// Pointer to PROCESS_INFORMATION structure.
        )
