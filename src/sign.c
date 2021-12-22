@@ -33,6 +33,7 @@ struct sign
     int		sn_line_hl;	// highlight ID for line
     int		sn_text_hl;	// highlight ID for text
     int		sn_cul_hl;	// highlight ID for text on current line when 'cursorline' is set
+    int		sn_num_hl;	// highlight ID for line number
 };
 
 static sign_T	*first_sign = NULL;
@@ -520,6 +521,8 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 		sattr->sat_linehl = syn_id2attr(sp->sn_line_hl);
 	    if (sp->sn_cul_hl > 0)
 		sattr->sat_culhl = syn_id2attr(sp->sn_cul_hl);
+	    if (sp->sn_num_hl > 0)
+		sattr->sat_numhl = syn_id2attr(sp->sn_num_hl);
 	    sattr->sat_priority = sign->se_priority;
 
 	    // If there is another sign next with the same priority, may
@@ -545,6 +548,8 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 			sattr->sat_linehl = syn_id2attr(next_sp->sn_line_hl);
 		    if (sp->sn_cul_hl <= 0 && next_sp->sn_cul_hl > 0)
 			sattr->sat_culhl = syn_id2attr(next_sp->sn_cul_hl);
+		    if (sp->sn_num_hl <= 0 && next_sp->sn_num_hl > 0)
+			sattr->sat_numhl = syn_id2attr(next_sp->sn_num_hl);
 		}
 	    }
 	    return TRUE;
@@ -1041,7 +1046,8 @@ sign_define_by_name(
 	char_u	*linehl,
 	char_u	*text,
 	char_u	*texthl,
-	char_u	*culhl)
+	char_u	*culhl,
+	char_u	*numhl)
 {
     sign_T	*sp_prev;
     sign_T	*sp;
@@ -1099,6 +1105,14 @@ sign_define_by_name(
 	    sp->sn_cul_hl = 0;
 	else
 	    sp->sn_cul_hl = syn_check_group(culhl, (int)STRLEN(culhl));
+    }
+
+    if (numhl != NULL)
+    {
+	if (*numhl == NUL)
+	    sp->sn_num_hl = 0;
+	else
+	    sp->sn_num_hl = syn_check_group(numhl, (int)STRLEN(numhl));
     }
 
     return OK;
@@ -1323,6 +1337,7 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
     char_u	*linehl = NULL;
     char_u	*texthl = NULL;
     char_u	*culhl = NULL;
+    char_u	*numhl = NULL;
     int		failed = FALSE;
 
     // set values for a defined sign.
@@ -1357,6 +1372,11 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	    arg += 6;
 	    culhl = vim_strnsave(arg, p - arg);
 	}
+	else if (STRNCMP(arg, "numhl=", 6) == 0)
+	{
+	    arg += 6;
+	    numhl = vim_strnsave(arg, p - arg);
+	}
 	else
 	{
 	    semsg(_(e_invarg2), arg);
@@ -1366,13 +1386,14 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
     }
 
     if (!failed)
-	sign_define_by_name(sign_name, icon, linehl, text, texthl, culhl);
+	sign_define_by_name(sign_name, icon, linehl, text, texthl, culhl, numhl);
 
     vim_free(icon);
     vim_free(text);
     vim_free(linehl);
     vim_free(texthl);
     vim_free(culhl);
+    vim_free(numhl);
 }
 
 /*
@@ -1750,6 +1771,13 @@ sign_getinfo(sign_T *sp, dict_T *retdict)
 	    p = (char_u *)"NONE";
 	dict_add_string(retdict, "culhl", (char_u *)p);
     }
+    if (sp->sn_num_hl > 0)
+    {
+	p = get_highlight_name_ext(NULL, sp->sn_num_hl - 1, FALSE);
+	if (p == NULL)
+	    p = (char_u *)"NONE";
+	dict_add_string(retdict, "numhl", (char_u *)p);
+    }
 }
 
 /*
@@ -1930,6 +1958,15 @@ sign_list_defined(sign_T *sp)
 	else
 	    msg_puts((char *)p);
     }
+    if (sp->sn_num_hl > 0)
+    {
+	msg_puts(" numhl=");
+	p = get_highlight_name_ext(NULL, sp->sn_num_hl - 1, FALSE);
+	if (p == NULL)
+	    msg_puts("NONE");
+	else
+	    msg_puts((char *)p);
+    }
 }
 
 /*
@@ -2051,7 +2088,7 @@ get_sign_name(expand_T *xp UNUSED, int idx)
 	{
 	    char *define_arg[] =
 	    {
-		"icon=", "linehl=", "text=", "texthl=", NULL
+		"culhl=", "icon=", "linehl=", "numhl=", "text=", "texthl=", NULL
 	    };
 	    return (char_u *)define_arg[idx];
 	}
@@ -2176,7 +2213,9 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 	{
 	    case SIGNCMD_DEFINE:
 		if (STRNCMP(last, "texthl", 6) == 0
-			|| STRNCMP(last, "linehl", 6) == 0)
+			|| STRNCMP(last, "linehl", 6) == 0
+			|| STRNCMP(last, "culhl", 5) == 0
+			|| STRNCMP(last, "numhl", 5) == 0)
 		    xp->xp_context = EXPAND_HIGHLIGHT;
 		else if (STRNCMP(last, "icon", 4) == 0)
 		    xp->xp_context = EXPAND_FILES;
@@ -2221,6 +2260,7 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
     char_u	*text = NULL;
     char_u	*texthl = NULL;
     char_u	*culhl = NULL;
+    char_u	*numhl = NULL;
     int		retval = -1;
 
     if (name_arg == NULL)
@@ -2240,9 +2280,10 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
 	text = dict_get_string(dict, (char_u *)"text", TRUE);
 	texthl = dict_get_string(dict, (char_u *)"texthl", TRUE);
 	culhl = dict_get_string(dict, (char_u *)"culhl", TRUE);
+	numhl = dict_get_string(dict, (char_u *)"numhl", TRUE);
     }
 
-    if (sign_define_by_name(name, icon, linehl, text, texthl, culhl) == OK)
+    if (sign_define_by_name(name, icon, linehl, text, texthl, culhl, numhl) == OK)
 	retval = 0;
 
 cleanup:
@@ -2252,6 +2293,7 @@ cleanup:
     vim_free(text);
     vim_free(texthl);
     vim_free(culhl);
+    vim_free(numhl);
 
     return retval;
 }
