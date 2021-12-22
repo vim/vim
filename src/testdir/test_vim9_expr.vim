@@ -675,6 +675,36 @@ def Test_expr4_equal()
   CheckDefExecAndScriptFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)
   CheckDefExecAndScriptFailure(["var x: any = 99", 'echo x == true'], ['E1138', 'E1072:'], 2)
   CheckDefExecAndScriptFailure(["var x: any = 'a'", 'echo x == 99'], ['E1030:', 'E1072:'], 2)
+
+  lines =<< trim END
+      vim9script
+      var n: any = 2
+      def Compare()
+        eval n == '3'
+        g:notReached = false
+      enddef
+      g:notReached = true
+      Compare()
+  END
+  CheckScriptFailure(lines, 'E1030: Using a String as a Number: "3"')
+  assert_true(g:notReached)
+
+  if has('float')
+    lines =<< trim END
+        vim9script
+        var n: any = 2.2
+        def Compare()
+          eval n == '3'
+          g:notReached = false
+        enddef
+        g:notReached = true
+        Compare()
+    END
+    CheckScriptFailure(lines, 'E892: Using a String as a Float')
+    assert_true(g:notReached)
+  endif
+
+  unlet g:notReached
 enddef
 
 def Test_expr4_wrong_type()

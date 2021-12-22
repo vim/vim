@@ -297,8 +297,8 @@ tv_get_bool_chk(typval_T *varp, int *denote)
 }
 
 #if defined(FEAT_FLOAT) || defined(PROTO)
-    float_T
-tv_get_float(typval_T *varp)
+    static float_T
+tv_get_float_chk(typval_T *varp, int *error)
 {
     switch (varp->v_type)
     {
@@ -347,7 +347,15 @@ tv_get_float(typval_T *varp)
 	    internal_error_no_abort("tv_get_float(UNKNOWN)");
 	    break;
     }
+    if (error != NULL)
+	*error = TRUE;
     return 0;
+}
+
+    float_T
+tv_get_float(typval_T *varp)
+{
+    return tv_get_float_chk(varp, NULL);
 }
 #endif
 
@@ -1185,9 +1193,16 @@ typval_compare(
 	    && type != EXPR_MATCH && type != EXPR_NOMATCH)
     {
 	float_T f1, f2;
+	int	error = FALSE;
 
-	f1 = tv_get_float(tv1);
-	f2 = tv_get_float(tv2);
+	f1 = tv_get_float_chk(tv1, &error);
+	if (!error)
+	    f2 = tv_get_float_chk(tv2, &error);
+	if (error)
+	{
+	    clear_tv(tv1);
+	    return FAIL;
+	}
 	n1 = FALSE;
 	switch (type)
 	{
@@ -1211,8 +1226,16 @@ typval_compare(
     else if ((tv1->v_type == VAR_NUMBER || tv2->v_type == VAR_NUMBER)
 	    && type != EXPR_MATCH && type != EXPR_NOMATCH)
     {
-	n1 = tv_get_number(tv1);
-	n2 = tv_get_number(tv2);
+	int error = FALSE;
+
+	n1 = tv_get_number_chk(tv1, &error);
+	if (!error)
+	    n2 = tv_get_number_chk(tv2, &error);
+	if (error)
+	{
+	    clear_tv(tv1);
+	    return FAIL;
+	}
 	switch (type)
 	{
 	    case EXPR_IS:
