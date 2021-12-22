@@ -3,7 +3,7 @@
 " Use a different file name for each run.
 let s:sequence = 1
 
-" Check that "lines" inside a ":def" function has no error.
+" Check that "lines" inside a ":def" function has no error when called.
 func CheckDefSuccess(lines)
   let cwd = getcwd()
   let fname = 'XdefSuccess' .. s:sequence
@@ -14,6 +14,19 @@ func CheckDefSuccess(lines)
     call Func()
   finally
     call chdir(cwd)
+    call delete(fname)
+    delfunc! Func
+  endtry
+endfunc
+
+" Check that "lines" inside a ":def" function has no error when compiled.
+func CheckDefCompileSuccess(lines)
+  let fname = 'XdefSuccess' .. s:sequence
+  let s:sequence += 1
+  call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], fname)
+  try
+    exe 'so ' .. fname
+  finally
     call delete(fname)
     delfunc! Func
   endtry

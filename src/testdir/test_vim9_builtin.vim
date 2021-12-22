@@ -1110,6 +1110,11 @@ def Test_finddir()
   CheckDefAndScriptFailure(['finddir("a", [])'], ['E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 2'])
   CheckDefAndScriptFailure(['finddir("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
   finddir('abc', '')->assert_equal('')
+
+  CheckDefFailure(['var s: list<string> = finddir("foo")'], 'E1012: Type mismatch; expected list<string> but got string')
+  CheckDefFailure(['var s: list<string> = finddir("foo", "path")'], 'E1012: Type mismatch; expected list<string> but got string')
+  # with third argument only runtime type checking
+  CheckDefCompileSuccess(['var s: list<string> = finddir("foo", "path", 1)'])
 enddef
 
 def Test_findfile()
@@ -4036,6 +4041,8 @@ enddef
 def Test_uniq()
   CheckDefAndScriptFailure(['uniq("a")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1'])
   CheckDefAndScriptFailure(['uniq([1], "", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
+
+  CheckDefFailure(['var l: list<number> = uniq(["a", "b"])'], 'E1012: Type mismatch; expected list<number> but got list<string>')
 enddef
 
 def Test_values()

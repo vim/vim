@@ -1033,6 +1033,15 @@ ret_first_cont(int argcount, type_T **argtypes)
     }
     return &t_any;
 }
+// for finddir()
+    static type_T *
+ret_finddir(int argcount, type_T **argtypes UNUSED)
+{
+    if (argcount < 3)
+	return &t_string;
+    // Depending on the count would be a string or a list of strings.
+    return &t_any;
+}
 
 /*
  * Used for getqflist(): returns list if there is no argument, dict if there is
@@ -1431,7 +1440,7 @@ static funcentry_T global_functions[] =
     {"filter",		2, 2, FEARG_1,	    arg2_mapfilter,
 			ret_first_arg,	    f_filter},
     {"finddir",		1, 3, FEARG_1,	    arg3_string_string_number,
-			ret_any,	    f_finddir},
+			ret_finddir,	    f_finddir},
     {"findfile",	1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_any,	    f_findfile},
     {"flatten",		1, 2, FEARG_1,	    arg2_list_any_number,
@@ -2291,7 +2300,7 @@ static funcentry_T global_functions[] =
     {"undotree",	0, 0, 0,	    NULL,
 			ret_dict_any,	    f_undotree},
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
-			ret_list_any,	    f_uniq},
+			ret_first_arg,	    f_uniq},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_any,	    f_values},
     {"virtcol",		1, 1, FEARG_1,	    arg1_string_or_list_any,
