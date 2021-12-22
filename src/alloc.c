@@ -867,3 +867,8 @@ append_ga_line(garray_T *gap)
 }
 #endif
 
+void bar(int i)
+{
+    printf("%d\n", i);
+}
+
