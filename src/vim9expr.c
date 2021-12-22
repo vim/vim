@@ -415,7 +415,7 @@ compile_load(
 		// Global, Buffer-local, Window-local and Tabpage-local
 		// variables can be defined later, thus we don't check if it
 		// exists, give an error at runtime.
-		res = generate_LOAD(cctx, isn_type, 0, name, &t_unknown);
+		res = generate_LOAD(cctx, isn_type, 0, name, &t_any);
 	    }
 	}
     }
@@ -2846,6 +2846,7 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    type_T	**typep;
 
 	    generate_ppconst(cctx, ppconst);
+	    ppconst->pp_is_const = FALSE;
 
 	    // If the types differ, the result has a more generic type.
 	    typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;

@@ -366,8 +366,11 @@ use_typecheck(type_T *actual, type_T *expected)
 	    || (actual->tt_type == VAR_FUNC
 		&& (expected->tt_type == VAR_FUNC
 					   || expected->tt_type == VAR_PARTIAL)
-		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)
-		&& ((actual->tt_member == &t_void)
+		&& (actual->tt_member == &t_any
+		    || actual->tt_member == &t_unknown
+		    || actual->tt_argcount < 0)
+		&& (actual->tt_member == &t_unknown ||
+		    (actual->tt_member == &t_void)
 					 == (expected->tt_member == &t_void))))
 	return TRUE;
     if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
@@ -412,8 +415,7 @@ need_type_where(
 
     // If the actual type can be the expected type add a runtime check.
     // If it's a constant a runtime check makes no sense.
-    if (ret == MAYBE || ((!actual_is_const || actual == &t_any)
-					   && use_typecheck(actual, expected)))
+    if (!actual_is_const && ret == MAYBE && use_typecheck(actual, expected))
     {
 	generate_TYPECHECK(cctx, expected, offset, where.wt_index);
 	return OK;
@@ -2547,8 +2549,8 @@ compile_def_function(
 		did_set_arg_type = TRUE;
 		ufunc->uf_arg_types[arg_idx] = val_type;
 	    }
-	    else if (check_type(ufunc->uf_arg_types[arg_idx], val_type,
-							  TRUE, where) == FAIL)
+	    else if (need_type_where(val_type, ufunc->uf_arg_types[arg_idx],
+				       -1, where, &cctx, FALSE, FALSE) == FAIL)
 		goto erret;
 
 	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)

@@ -477,7 +477,19 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     ga_init2(&type_list, sizeof(type_T *), 10);
     actual_type = typval2type(actual_tv, get_copyID(), &type_list, TRUE);
     if (actual_type != NULL)
-	res = check_type(expected, actual_type, TRUE, where);
+    {
+	res = check_type_maybe(expected, actual_type, TRUE, where);
+	if (res == MAYBE && !(actual_type->tt_type == VAR_FUNC
+				      && actual_type->tt_member == &t_unknown))
+	{
+	    // If a type check is needed that means assigning "any" or
+	    // "unknown" to a more specific type, which fails here.
+	    // Execpt when it looks like a lambda, since they have an
+	    // incomplete type.
+	    type_mismatch_where(expected, actual_type, where);
+	    res = FAIL;
+	}
+    }
     clear_type_list(&type_list);
     return res;
 }
@@ -567,9 +579,11 @@ check_type_maybe(
     {
 	// tt_type should match, except that a "partial" can be assigned to a
 	// variable with type "func".
-	// And "unknown" (using global variable) needs a runtime type check.
+	// And "unknown" (using global variable) and "any" need a runtime type
+	// check.
 	if (!(expected->tt_type == actual->tt_type
 		    || actual->tt_type == VAR_UNKNOWN
+		    || actual->tt_type == VAR_ANY
 		    || (expected->tt_type == VAR_FUNC
 					   && actual->tt_type == VAR_PARTIAL)))
 	{
@@ -585,10 +599,10 @@ check_type_maybe(
 	{
 	    // "unknown" is used for an empty list or dict
 	    if (actual->tt_member != NULL && actual->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member,
+		ret = check_type_maybe(expected->tt_member, actual->tt_member,
 								 FALSE, where);
 	}
-	else if (expected->tt_type == VAR_FUNC)
+	else if (expected->tt_type == VAR_FUNC && actual != &t_any)
 	{
 	    // If the return type is unknown it can be anything, including
 	    // nothing, thus there is no point in checking.
@@ -596,8 +610,8 @@ check_type_maybe(
 	    {
 		if (actual->tt_member != NULL
 					    && actual->tt_member != &t_unknown)
-		    ret = check_type(expected->tt_member, actual->tt_member,
-								 FALSE, where);
+		    ret = check_type_maybe(expected->tt_member,
+					      actual->tt_member, FALSE, where);
 		else
 		    ret = MAYBE;
 	    }
