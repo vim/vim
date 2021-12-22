@@ -222,11 +222,12 @@ dict_free_items(int copyID)
 dictitem_alloc(char_u *key)
 {
     dictitem_T *di;
+    size_t len = STRLEN(key);
 
-    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(key) + 1);
+    di = alloc(offsetof(dictitem_T, di_key) + len + 1);
     if (di != NULL)
     {
-	STRCPY(di->di_key, key);
+	mch_memmove(di->di_key, key, len + 1);
 	di->di_flags = DI_FLAGS_ALLOC;
 	di->di_tv.v_lock = 0;
 	di->di_tv.v_type = VAR_UNKNOWN;
