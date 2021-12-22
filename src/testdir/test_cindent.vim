@@ -996,6 +996,15 @@ func Test_cindent_1()
     22222222222222222;
   }
   }
+  inline namespace {
+    111111111111111111;
+  }
+  inline /* test */ namespace {
+    111111111111111111;
+  }
+  inline/* test */namespace {
+    111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -1017,6 +1026,9 @@ func Test_cindent_1()
   }
   namespace111111111
   {
+    111111111111111111;
+  }
+  inlinenamespace {
     111111111111111111;
   }
 
@@ -1961,6 +1973,15 @@ func Test_cindent_1()
   		22222222222222222;
   	}
   }
+  inline namespace {
+  	111111111111111111;
+  }
+  inline /* test */ namespace {
+  	111111111111111111;
+  }
+  inline/* test */namespace {
+  	111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -1982,6 +2003,9 @@ func Test_cindent_1()
   }
   namespace111111111
   {
+  	111111111111111111;
+  }
+  inlinenamespace {
   	111111111111111111;
   }
 
@@ -4358,6 +4382,15 @@ func Test_cindent_47()
     22222222222222222;
   }
   }
+  inline namespace {
+    111111111111111111;
+  }
+  inline /* test */ namespace {
+    111111111111111111;
+  }
+  inline/* test */namespace {
+    111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -4379,6 +4412,9 @@ func Test_cindent_47()
   }
   namespace111111111
   {
+    111111111111111111;
+  }
+  inlinenamespace {
     111111111111111111;
   }
   NAMESPACEEND
@@ -4449,6 +4485,15 @@ func Test_cindent_47()
   22222222222222222;
   }
   }
+  inline namespace {
+  111111111111111111;
+  }
+  inline /* test */ namespace {
+  111111111111111111;
+  }
+  inline/* test */namespace {
+  111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -4470,6 +4515,9 @@ func Test_cindent_47()
   }
   namespace111111111
   {
+  	111111111111111111;
+  }
+  inlinenamespace {
   	111111111111111111;
   }
   NAMESPACEEND
