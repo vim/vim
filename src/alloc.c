@@ -867,8 +867,16 @@ append_ga_line(garray_T *gap)
 }
 #endif
 
-void bar(int i)
+void bar(int i
+#ifdef ISSUE1
+	 , int j
+#endif
+	 )
 {
+#ifdef ISSUE1
+    printf("%d %d\n", i, j);
+#else
     printf("%d\n", i);
+#endif
 }
 
