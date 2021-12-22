@@ -4492,3 +4492,11 @@ typedef struct {
     int		sve_did_save;
     hashtab_T	sve_hashtab;
 } save_v_event_T;
+
+// Enum used by filter(), map() and mapnew()
+typedef enum {
+    FILTERMAP_FILTER,
+    FILTERMAP_MAP,
+    FILTERMAP_MAPNEW
+} filtermap_T;
+

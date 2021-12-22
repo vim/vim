@@ -783,6 +783,32 @@ func Test_dict_lock_map()
   call CheckScriptFailure(lines, 'E741:')
 endfunc
 
+" Lock one item in a list
+func Test_list_item_lock_map()
+  let lines =<< trim END
+      VAR l = [99, 100, 101]
+      lockvar l[1]
+      call assert_fails("echo map(l, 'v:val + 200')", 'E741:')
+      call assert_equal([299, 100, 101], l)
+  END
+  " This won't work in a :def function
+  call CheckTransLegacySuccess(lines)
+  call CheckTransVim9Success(lines)
+endfunc
+
+" Lock one item in a dict
+func Test_dict_item_lock_map()
+  let lines =<< trim END
+      VAR d = {'a': 99, 'b': 100, 'c': 101}
+      lockvar d.b
+      call assert_fails("echo map(d, 'v:val + 200')", 'E741:')
+      call assert_equal({'a': 299, 'b': 100, 'c': 101}, d)
+  END
+  " This won't work in a :def function
+  call CheckTransLegacySuccess(lines)
+  call CheckTransVim9Success(lines)
+endfunc
+
 " No extend() after lock on dict item
 func Test_dict_lock_extend()
   let d = {'a': 99, 'b': 100}

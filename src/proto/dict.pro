@@ -39,10 +39,13 @@ int eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal);
 void dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name);
 dictitem_T *dict_lookup(hashitem_T *hi);
 int dict_equal(dict_T *d1, dict_T *d2, int ic, int recursive);
+long dict_count(dict_T *d, typval_T *needle, int ic);
+void dict_extend_func(typval_T *argvars, type_T *type, char *func_name, char_u *arg_errmsg, int is_new, typval_T *rettv);
+void dict_filter_map(dict_T *d, filtermap_T filtermap, type_T *argtype, char *func_name, char_u *arg_errmsg, typval_T *expr, typval_T *rettv);
+void dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
 void f_items(typval_T *argvars, typval_T *rettv);
 void f_keys(typval_T *argvars, typval_T *rettv);
 void f_values(typval_T *argvars, typval_T *rettv);
 void dict_set_items_ro(dict_T *di);
 void f_has_key(typval_T *argvars, typval_T *rettv);
-void dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
 /* vim: set ft=c : */
