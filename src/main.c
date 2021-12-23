@@ -835,7 +835,7 @@ vim_main2(void)
 #if defined(FEAT_GUI)
     // When tab pages were created, may need to update the tab pages line and
     // scrollbars.  This is skipped while creating them.
-    if (first_tabpage->tp_next != NULL)
+    if (gui.in_use && first_tabpage->tp_next != NULL)
     {
 	out_flush();
 	gui_init_which_components(NULL);
