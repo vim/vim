@@ -1,10 +1,10 @@
-*matchit.txt*	Extended "%" matching
+*matchit.txt*   Extended "%" matching
 
 For instructions on installing this file, type
 	`:help matchit-install`
 inside Vim.
 
-For Vim version 8.1.  Last change:  2021 Nov 13
+For Vim version 8.2.  Last change:  2021 Dec 23
 
 
 		  VIM REFERENCE MANUAL    by Benji Fisher et al
@@ -147,6 +147,9 @@ To use the matchit plugin add this line to your |vimrc|: >
 	packadd! matchit
 
 The script should start working the next time you start Vim.
+
+To use the matchit plugin after Vim has started, execute this command: >
+       packadd matchit
 
 (Earlier versions of the script did nothing unless a |buffer-variable| named
 |b:match_words| was defined.  Even earlier versions contained autocommands
@@ -376,8 +379,8 @@ The back reference '\'.d refers to the same thing as '\'.b:match_table[d] in
 5. Known Bugs and Limitations				*matchit-bugs*
 
 Repository: https://github.com/chrisbra/matchit/
-Bugs can be reported at the repository (alternatively you can send me a mail).
-The latest development snapshot can also be downloaded there.
+Bugs can be reported at the repository and the latest development snapshot can
+also be downloaded there.
 
 Just because I know about a bug does not mean that it is on my todo list.  I
 try to respond to reports of bugs that cause real problems.  If it does not
