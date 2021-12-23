@@ -4717,7 +4717,7 @@ f_getreg(typval_T *argvars, typval_T *rettv)
     if (error)
 	return;
 
-    regname = (strregname == NULL ? '"' : *strregname);
+    regname = *strregname;
     if (regname == 0)
 	regname = '"';
 
