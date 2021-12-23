@@ -762,7 +762,7 @@ ex_next(exarg_T *eap)
  * ":argdedupe"
  */
     void
-ex_argdedupe(exarg_T *eap)
+ex_argdedupe(exarg_T *eap UNUSED)
 {
     int i;
     int j;
