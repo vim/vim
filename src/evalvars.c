@@ -4450,7 +4450,18 @@ get_callback(typval_T *arg)
 	    r = FAIL;
 	else if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	{
-	    // Note that we don't make a copy of the string.
+	    if (arg->v_type == VAR_STRING)
+	    {
+		char_u *name;
+
+		name = get_scriptlocal_funcname(arg->vval.v_string);
+		if (name != NULL)
+		{
+		    vim_free(arg->vval.v_string);
+		    arg->vval.v_string = name;
+		}
+	    }
+
 	    res.cb_name = arg->vval.v_string;
 	    func_ref(res.cb_name);
 	}

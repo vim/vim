@@ -3876,6 +3876,46 @@ untrans_function_name(char_u *name)
 }
 
 /*
+ * If the 'funcname' starts with "s:" or "<SID>", then expands it to the
+ * current script ID and returns the expanded function name. The caller should
+ * free the returned name. If not called from a script context or the function
+ * name doesn't start with these prefixes, then returns NULL.
+ * This doesn't check whether the script-local function exists or not.
+ */
+    char_u *
+get_scriptlocal_funcname(char_u *funcname)
+{
+    char	sid_buf[25];
+    int		off;
+    char_u	*newname;
+
+    if (funcname == NULL)
+	return NULL;
+
+    if (STRNCMP(funcname, "s:", 2) != 0
+		&& STRNCMP(funcname, "<SID>", 5) != 0)
+	// The function name is not a script-local function name
+	return NULL;
+
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
+    {
+	emsg(_(e_using_sid_not_in_script_context));
+	return NULL;
+    }
+    // Expand s: prefix into <SNR>nr_<name>
+    vim_snprintf(sid_buf, sizeof(sid_buf), "<SNR>%ld_",
+	    (long)current_sctx.sc_sid);
+    off = *funcname == 's' ? 2 : 5;
+    newname = alloc(STRLEN(sid_buf) + STRLEN(funcname + off) + 1);
+    if (newname == NULL)
+	return NULL;
+    STRCPY(newname, sid_buf);
+    STRCAT(newname, funcname + off);
+
+    return newname;
+}
+
+/*
  * Call trans_function_name(), except that a lambda is returned as-is.
  * Returns the name in allocated memory.
  */
