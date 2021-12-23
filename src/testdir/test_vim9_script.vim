@@ -4731,6 +4731,46 @@ def Run_Test_debug_with_lambda()
   delete('XdebugFunc')
 enddef
 
+func Test_debug_running_out_of_lines()
+  CheckRunVimInTerminal
+
+  " call indirectly to avoid compilation error for missing functions
+  call Run_Test_debug_running_out_of_lines()
+endfunc
+
+def Run_Test_debug_running_out_of_lines()
+  var lines =<< trim END
+      vim9script
+      def Crash()
+          #
+          #
+          #
+          #
+          #
+          #
+          #
+          if true
+              #
+          endif
+      enddef
+      breakadd func Crash
+      Crash()
+  END
+  writefile(lines, 'XdebugFunc')
+  var buf = RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
+  WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+
+  term_sendkeys(buf, "next\<CR>")
+  TermWait(buf)
+  WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+
+  term_sendkeys(buf, "cont\<CR>")
+  TermWait(buf)
+
+  StopVimInTerminal(buf)
+  delete('XdebugFunc')
+enddef
+
 def ProfiledWithLambda()
   var n = 3
   echo [[1, 2], [3, 4]]->filter((_, l) => l[0] == n)

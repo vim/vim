@@ -1660,7 +1660,8 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     if (end_lnum > iptr->isn_lnum)
     {
 	ga_init2(&ga, sizeof(char_u *), 10);
-	for (lnum = iptr->isn_lnum; lnum < end_lnum; ++lnum)
+	for (lnum = iptr->isn_lnum; lnum < end_lnum
+				     && lnum <= ufunc->uf_lines.ga_len; ++lnum)
 	{
 	    char_u *p = ((char_u **)ufunc->uf_lines.ga_data)[lnum - 1];
 
