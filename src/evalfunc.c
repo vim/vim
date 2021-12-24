@@ -4675,8 +4675,8 @@ f_getpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Common between getreg() and getregtype(): get the register name from the
- * first argument.
+ * Common between getreg(), getreginfo() and getregtype(): get the register
+ * name from the first argument.
  * Returns zero on error.
  */
     static int
@@ -7821,7 +7821,6 @@ range_list_materialize(list_T *list)
     static void
 f_getreginfo(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*strregname;
     int		regname;
     char_u	buf[NUMBUFLEN + 2];
     long	reglen = 0;
@@ -7831,22 +7830,11 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	strregname = tv_get_string_chk(&argvars[0]);
-	if (strregname == NULL)
-	    return;
-	if (in_vim9script() && STRLEN(strregname) > 1)
-	{
-	    semsg(_(e_register_name_must_be_one_char_str), strregname);
-	    return;
-	}
-    }
-    else
-	strregname = get_vim_var_str(VV_REG);
+    regname = getreg_get_regname(argvars);
+    if (regname == 0)
+	return;
 
-    regname = (strregname == NULL ? '"' : *strregname);
-    if (regname == 0 || regname == '@')
+    if (regname == '@')
 	regname = '"';
 
     if (rettv_dict_alloc(rettv) == FAIL)
