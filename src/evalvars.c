@@ -45,118 +45,119 @@ static struct vimvar
 {
     char	*vv_name;	// name of variable, without v:
     dictitem16_T vv_di;		// value and name for key (max 16 chars!)
+    type_T	*vv_type;	// type or NULL
     char	vv_flags;	// VV_COMPAT, VV_RO, VV_RO_SBX
 } vimvars[VV_LEN] =
 {
     // The order here must match the VV_ defines in vim.h!
     // Initializing a union does not work, leave tv.vval empty to get zero's.
-    {VV_NAME("count",		 VAR_NUMBER), VV_COMPAT+VV_RO},
-    {VV_NAME("count1",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("prevcount",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("errmsg",		 VAR_STRING), VV_COMPAT},
-    {VV_NAME("warningmsg",	 VAR_STRING), 0},
-    {VV_NAME("statusmsg",	 VAR_STRING), 0},
-    {VV_NAME("shell_error",	 VAR_NUMBER), VV_COMPAT+VV_RO},
-    {VV_NAME("this_session",	 VAR_STRING), VV_COMPAT},
-    {VV_NAME("version",		 VAR_NUMBER), VV_COMPAT+VV_RO},
-    {VV_NAME("lnum",		 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("termresponse",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname",		 VAR_STRING), VV_RO},
-    {VV_NAME("lang",		 VAR_STRING), VV_RO},
-    {VV_NAME("lc_time",		 VAR_STRING), VV_RO},
-    {VV_NAME("ctype",		 VAR_STRING), VV_RO},
-    {VV_NAME("charconvert_from", VAR_STRING), VV_RO},
-    {VV_NAME("charconvert_to",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_in",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_out",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_new",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_diff",	 VAR_STRING), VV_RO},
-    {VV_NAME("cmdarg",		 VAR_STRING), VV_RO},
-    {VV_NAME("foldstart",	 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("foldend",		 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("folddashes",	 VAR_STRING), VV_RO_SBX},
-    {VV_NAME("foldlevel",	 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("progname",	 VAR_STRING), VV_RO},
-    {VV_NAME("servername",	 VAR_STRING), VV_RO},
-    {VV_NAME("dying",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("exception",	 VAR_STRING), VV_RO},
-    {VV_NAME("throwpoint",	 VAR_STRING), VV_RO},
-    {VV_NAME("register",	 VAR_STRING), VV_RO},
-    {VV_NAME("cmdbang",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("insertmode",	 VAR_STRING), VV_RO},
-    {VV_NAME("val",		 VAR_UNKNOWN), VV_RO},
-    {VV_NAME("key",		 VAR_UNKNOWN), VV_RO},
-    {VV_NAME("profiling",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("fcs_reason",	 VAR_STRING), VV_RO},
-    {VV_NAME("fcs_choice",	 VAR_STRING), 0},
-    {VV_NAME("beval_bufnr",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_winnr",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_winid",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_lnum",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_col",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_text",	 VAR_STRING), VV_RO},
-    {VV_NAME("scrollstart",	 VAR_STRING), 0},
-    {VV_NAME("swapname",	 VAR_STRING), VV_RO},
-    {VV_NAME("swapchoice",	 VAR_STRING), 0},
-    {VV_NAME("swapcommand",	 VAR_STRING), VV_RO},
-    {VV_NAME("char",		 VAR_STRING), 0},
-    {VV_NAME("mouse_win",	 VAR_NUMBER), 0},
-    {VV_NAME("mouse_winid",	 VAR_NUMBER), 0},
-    {VV_NAME("mouse_lnum",	 VAR_NUMBER), 0},
-    {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
-    {VV_NAME("operator",	 VAR_STRING), VV_RO},
-    {VV_NAME("searchforward",	 VAR_NUMBER), 0},
-    {VV_NAME("hlsearch",	 VAR_NUMBER), 0},
-    {VV_NAME("oldfiles",	 VAR_LIST), 0},
-    {VV_NAME("windowid",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("progpath",	 VAR_STRING), VV_RO},
-    {VV_NAME("completed_item",	 VAR_DICT), VV_RO},
-    {VV_NAME("option_new",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_old",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_oldlocal",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_oldglobal", VAR_STRING), VV_RO},
-    {VV_NAME("option_command",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_type",	 VAR_STRING), VV_RO},
-    {VV_NAME("errors",		 VAR_LIST), 0},
-    {VV_NAME("false",		 VAR_BOOL), VV_RO},
-    {VV_NAME("true",		 VAR_BOOL), VV_RO},
-    {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
-    {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
-    {VV_NAME("numbermax",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("numbermin",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("numbersize",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("testing",		 VAR_NUMBER), 0},
-    {VV_NAME("t_number",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_string",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_func",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_list",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_dict",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_float",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_bool",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_none",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_job",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_channel",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_blob",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("termrfgresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termrbgresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termstyleresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termblinkresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("event",		 VAR_DICT), VV_RO},
-    {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("argv",		 VAR_LIST), VV_RO},
-    {VV_NAME("collate",		 VAR_STRING), VV_RO},
-    {VV_NAME("exiting",		 VAR_SPECIAL), VV_RO},
-    {VV_NAME("colornames",       VAR_DICT), VV_RO},
-    {VV_NAME("sizeofint",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("sizeoflong",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("sizeofpointer",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("count",		 VAR_NUMBER), NULL, VV_COMPAT+VV_RO},
+    {VV_NAME("count1",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("prevcount",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("errmsg",		 VAR_STRING), NULL, VV_COMPAT},
+    {VV_NAME("warningmsg",	 VAR_STRING), NULL, 0},
+    {VV_NAME("statusmsg",	 VAR_STRING), NULL, 0},
+    {VV_NAME("shell_error",	 VAR_NUMBER), NULL, VV_COMPAT+VV_RO},
+    {VV_NAME("this_session",	 VAR_STRING), NULL, VV_COMPAT},
+    {VV_NAME("version",		 VAR_NUMBER), NULL, VV_COMPAT+VV_RO},
+    {VV_NAME("lnum",		 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("termresponse",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("lang",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("lc_time",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("ctype",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("charconvert_from", VAR_STRING), NULL, VV_RO},
+    {VV_NAME("charconvert_to",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_in",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_out",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_new",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_diff",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("cmdarg",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("foldstart",	 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("foldend",		 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("folddashes",	 VAR_STRING), NULL, VV_RO_SBX},
+    {VV_NAME("foldlevel",	 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("progname",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("servername",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("dying",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("exception",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("throwpoint",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("register",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("cmdbang",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("insertmode",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("val",		 VAR_UNKNOWN), NULL, VV_RO},
+    {VV_NAME("key",		 VAR_UNKNOWN), NULL, VV_RO},
+    {VV_NAME("profiling",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("fcs_reason",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fcs_choice",	 VAR_STRING), NULL, 0},
+    {VV_NAME("beval_bufnr",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_winnr",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_winid",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_lnum",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_col",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_text",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("scrollstart",	 VAR_STRING), NULL, 0},
+    {VV_NAME("swapname",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("swapchoice",	 VAR_STRING), NULL, 0},
+    {VV_NAME("swapcommand",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("char",		 VAR_STRING), NULL, 0},
+    {VV_NAME("mouse_win",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("mouse_winid",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("mouse_lnum",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("mouse_col",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("operator",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("searchforward",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("hlsearch",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("oldfiles",	 VAR_LIST), &t_list_string, 0},
+    {VV_NAME("windowid",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("progpath",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("completed_item",	 VAR_DICT), &t_dict_string, VV_RO},
+    {VV_NAME("option_new",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_old",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_oldlocal",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_oldglobal", VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_command",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_type",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("errors",		 VAR_LIST), &t_list_string, 0},
+    {VV_NAME("false",		 VAR_BOOL), NULL, VV_RO},
+    {VV_NAME("true",		 VAR_BOOL), NULL, VV_RO},
+    {VV_NAME("none",		 VAR_SPECIAL), NULL, VV_RO},
+    {VV_NAME("null",		 VAR_SPECIAL), NULL, VV_RO},
+    {VV_NAME("numbermax",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("numbermin",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("numbersize",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("vim_did_enter",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("testing",		 VAR_NUMBER), NULL, 0},
+    {VV_NAME("t_number",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_string",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_func",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_list",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_dict",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_float",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_bool",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_none",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_job",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_channel",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_blob",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("termrfgresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termrbgresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termu7resp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termstyleresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termblinkresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("event",		 VAR_DICT), NULL, VV_RO},
+    {VV_NAME("versionlong",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("echospace",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("argv",		 VAR_LIST), &t_list_string, VV_RO},
+    {VV_NAME("collate",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("exiting",		 VAR_SPECIAL), NULL, VV_RO},
+    {VV_NAME("colornames",       VAR_DICT), &t_dict_string, VV_RO},
+    {VV_NAME("sizeofint",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("sizeoflong",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("sizeofpointer",	 VAR_NUMBER), NULL, VV_RO},
 };
 
 // shorthand
-#define vv_type		vv_di.di_tv.v_type
+#define vv_tv_type	vv_di.di_tv.v_type
 #define vv_nr		vv_di.di_tv.vval.v_number
 #define vv_float	vv_di.di_tv.vval.v_float
 #define vv_str		vv_di.di_tv.vval.v_string
@@ -214,7 +215,7 @@ evalvars_init(void)
 	    p->vv_di.di_flags = DI_FLAGS_FIX;
 
 	// add to v: scope dict, unless the value is not always available
-	if (p->vv_type != VAR_UNKNOWN)
+	if (p->vv_tv_type != VAR_UNKNOWN)
 	    hash_add(&vimvarht, p->vv_di.di_key);
 	if (p->vv_flags & VV_COMPAT)
 	    // add to compat scope dict
@@ -510,7 +511,7 @@ prepare_vimvar(int idx, typval_T *save_tv)
 {
     *save_tv = vimvars[idx].vv_tv;
     vimvars[idx].vv_str = NULL;  // don't free it now
-    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+    if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
 	hash_add(&vimvarht, vimvars[idx].vv_di.di_key);
 }
 
@@ -525,7 +526,7 @@ restore_vimvar(int idx, typval_T *save_tv)
     hashitem_T	*hi;
 
     vimvars[idx].vv_tv = *save_tv;
-    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+    if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
     {
 	hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
 	if (HASHITEM_EMPTY(hi))
@@ -2265,7 +2266,7 @@ find_vim_var(char_u *name, int *di_flags)
     void
 set_vim_var_type(int idx, vartype_T type)
 {
-    vimvars[idx].vv_type = type;
+    vimvars[idx].vv_tv_type = type;
 }
 
 /*
@@ -2293,6 +2294,14 @@ get_vim_var_tv(int idx)
     return &vimvars[idx].vv_tv;
 }
 
+    type_T *
+get_vim_var_type(int idx, garray_T *type_list)
+{
+    if (vimvars[idx].vv_type != NULL)
+	return vimvars[idx].vv_type;
+    return typval2type_vimvar(&vimvars[idx].vv_tv, type_list);
+}
+
 /*
  * Set v: variable to "tv".  Only accepts the same type.
  * Takes over the value of "tv".
@@ -2300,7 +2309,7 @@ get_vim_var_tv(int idx)
     int
 set_vim_var_tv(int idx, typval_T *tv)
 {
-    if (vimvars[idx].vv_type != tv->v_type)
+    if (vimvars[idx].vv_tv_type != tv->v_type)
     {
 	emsg(_(e_type_mismatch_for_v_variable));
 	clear_tv(tv);
@@ -2430,7 +2439,7 @@ set_vim_var_string(
     int		len)	    // length of "val" to use or -1 (whole string)
 {
     clear_tv(&vimvars[idx].vv_di.di_tv);
-    vimvars[idx].vv_type = VAR_STRING;
+    vimvars[idx].vv_tv_type = VAR_STRING;
     if (val == NULL)
 	vimvars[idx].vv_str = NULL;
     else if (len == -1)
@@ -2446,7 +2455,7 @@ set_vim_var_string(
 set_vim_var_list(int idx, list_T *val)
 {
     clear_tv(&vimvars[idx].vv_di.di_tv);
-    vimvars[idx].vv_type = VAR_LIST;
+    vimvars[idx].vv_tv_type = VAR_LIST;
     vimvars[idx].vv_list = val;
     if (val != NULL)
 	++val->lv_refcount;
@@ -2459,7 +2468,7 @@ set_vim_var_list(int idx, list_T *val)
 set_vim_var_dict(int idx, dict_T *val)
 {
     clear_tv(&vimvars[idx].vv_di.di_tv);
-    vimvars[idx].vv_type = VAR_DICT;
+    vimvars[idx].vv_tv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
     if (val != NULL)
     {
@@ -3925,7 +3934,7 @@ assert_error(garray_T *gap)
 {
     struct vimvar   *vp = &vimvars[VV_ERRORS];
 
-    if (vp->vv_type != VAR_LIST || vimvars[VV_ERRORS].vv_list == NULL)
+    if (vp->vv_tv_type != VAR_LIST || vimvars[VV_ERRORS].vv_list == NULL)
 	// Make sure v:errors is a list.
 	set_vim_var_list(VV_ERRORS, list_alloc());
     list_append_string(vimvars[VV_ERRORS].vv_list, gap->ga_data, gap->ga_len);

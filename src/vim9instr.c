@@ -946,8 +946,7 @@ generate_LOADV(
 	    semsg(_(e_variable_not_found_str), name);
 	return FAIL;
     }
-    type = typval2type_vimvar(get_vim_var_tv(vidx), cctx->ctx_type_list);
-
+    type = get_vim_var_type(vidx, cctx->ctx_type_list);
     return generate_LOAD(cctx, ISN_LOADV, vidx, NULL, type);
 }
 

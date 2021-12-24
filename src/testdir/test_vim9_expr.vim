@@ -1821,8 +1821,21 @@ def Test_expr7_string()
 enddef
 
 def Test_expr7_vimvar()
+  v:errors = []
+  var errs: list<string> = v:errors
+  CheckDefFailure(['var errs: list<number> = v:errors'], 'E1012:')
+
   var old: list<string> = v:oldfiles
-  var compl: dict<any> = v:completed_item
+  CheckDefFailure(['var old: list<number> = v:oldfiles'], 'E1012:')
+
+  var compl: dict<string> = v:completed_item
+  CheckDefFailure(['var compl: dict<number> = v:completed_item'], 'E1012:')
+
+  var args: list<string> = v:argv
+  CheckDefFailure(['var args: list<number> = v:argv'], 'E1012:')
+
+  var colors: dict<string> = v:colornames
+  CheckDefFailure(['var colors: dict<number> = v:colornames'], 'E1012:')
 
   CheckDefFailure(["var old: list<number> = v:oldfiles"], 'E1012: Type mismatch; expected list<number> but got list<string>', 1)
   CheckScriptFailure(['vim9script', 'v:oldfiles = ["foo"]', "var old: list<number> = v:oldfiles"], 'E1012: Type mismatch; expected list<number> but got list<string>', 3)
