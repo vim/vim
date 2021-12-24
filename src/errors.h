@@ -603,10 +603,8 @@ EXTERN char e_cannot_extend_null_list[]
 EXTERN char e_using_string_as_bool_str[]
 	INIT(= N_("E1135: Using a String as a Bool: \"%s\""));
 #endif
-EXTERN char e_cmd_mapping_must_end_with_cr[]
-	INIT(=N_("E1135: <Cmd> mapping must end with <CR>"));
 EXTERN char e_cmd_mapping_must_end_with_cr_before_second_cmd[]
-	INIT(=N_("E1136: <Cmd> mapping must end with <CR> before second <Cmd>"));
+	INIT(= N_("E1136: <Cmd> mapping must end with <CR> before second <Cmd>"));
 EXTERN char e_cmd_maping_must_not_include_str_key[]
 	INIT(= N_("E1137: <Cmd> mapping must not include %s key"));
 EXTERN char e_using_bool_as_number[]
@@ -852,3 +850,5 @@ EXTERN char e_string_expected_for_argument_nr[]
 	INIT(= N_("E1253: String expected for argument %d"));
 EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
+EXTERN char e_cmd_mapping_must_end_with_cr[]
+	INIT(= N_("E1255: <Cmd> mapping must end with <CR>"));
