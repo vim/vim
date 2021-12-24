@@ -759,6 +759,33 @@ ex_next(exarg_T *eap)
 }
 
 /*
+ * ":argdedupe"
+ */
+    void
+ex_argdedupe(exarg_T *eap UNUSED)
+{
+    int i;
+    int j;
+
+    for (i = 0; i < ARGCOUNT; ++i)
+	for (j = i + 1; j < ARGCOUNT; ++j)
+	    if (fnamecmp(ARGLIST[i].ae_fname, ARGLIST[j].ae_fname) == 0)
+	    {
+		vim_free(ARGLIST[j].ae_fname);
+		mch_memmove(ARGLIST + j, ARGLIST + j + 1,
+					(ARGCOUNT - j - 1) * sizeof(aentry_T));
+		--ARGCOUNT;
+
+		if (curwin->w_arg_idx == j)
+		    curwin->w_arg_idx = i;
+		else if (curwin->w_arg_idx > j)
+		    --curwin->w_arg_idx;
+
+		--j;
+	    }
+}
+
+/*
  * ":argedit"
  */
     void

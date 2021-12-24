@@ -18,6 +18,7 @@ void ex_last(exarg_T *eap);
 void ex_argument(exarg_T *eap);
 void do_argfile(exarg_T *eap, int argn);
 void ex_next(exarg_T *eap);
+void ex_argdedupe(exarg_T *eap);
 void ex_argedit(exarg_T *eap);
 void ex_argadd(exarg_T *eap);
 void ex_argdelete(exarg_T *eap);
