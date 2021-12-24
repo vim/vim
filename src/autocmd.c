@@ -967,7 +967,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
     last_group = AUGROUP_ERROR;		// for listing the group name
     if (*arg == '*' || *arg == NUL || *arg == '|')
     {
-	if (!forceit && *cmd != NUL)
+	if (*cmd != NUL)
 	    emsg(_(e_cannot_define_autocommands_for_all_events));
 	else
 	    for (event = (event_T)0; (int)event < NUM_EVENTS;
