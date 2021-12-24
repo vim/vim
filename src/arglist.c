@@ -910,6 +910,7 @@ do_arg_all(
     tabpage_T	*old_curtab, *last_curtab;
     win_T	*new_curwin = NULL;
     tabpage_T	*new_curtab = NULL;
+    int		prev_arglist_locked = arglist_locked;
 
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -936,6 +937,7 @@ do_arg_all(
     // watch out for its size to be changed.
     alist = curwin->w_alist;
     ++alist->al_refcount;
+    arglist_locked = TRUE;
 
     old_curwin = curwin;
     old_curtab = curtab;
@@ -1155,6 +1157,7 @@ do_arg_all(
 
     // Remove the "lock" on the argument list.
     alist_unlink(alist);
+    arglist_locked = prev_arglist_locked;
 
     --autocmd_no_enter;
 
