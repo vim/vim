@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 15
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -169,8 +169,8 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 
 `:def` has no options like `:function` does: "range", "abort", "dict" or
 "closure".  A `:def` function always aborts on an error (unless `:silent!` was
-used for the command or inside a `:try` block), does not get a range passed
-cannot be a "dict" function, and can always be a closure.
+used for the command or the error was caught a `:try` block), does not get a
+range passed cannot be a "dict" function, and can always be a closure.
 						*vim9-no-dict-function*
 Later classes will be added, which replaces the "dict function" mechanism.
 For now you will need to pass the dictionary explicitly: >
@@ -509,7 +509,7 @@ The function must already have been defined. >
 
 When using `function()` the resulting type is "func", a function with any
 number of arguments and any return type (including void).  The function can be
-defined later.
+defined later if the argument is in quotes.
 
 
 Lambda using => instead of -> ~

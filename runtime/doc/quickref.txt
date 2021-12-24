@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2021 Oct 17
+*quickref.txt*  For Vim version 8.2.  Last change: 2021 Dec 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1010,6 +1010,7 @@ Short explanation of each option:		*option-list*
 'writeany'	  'wa'	    write to file with no need for "!" override
 'writebackup'	  'wb'	    make a backup before overwriting a file
 'writedelay'	  'wd'	    delay this many msec for each char (for debug)
+'xtermcodes'		    request terminal codes from an xterm
 ------------------------------------------------------------------------------
 *Q_ur*		Undo/Redo commands
 

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Dec 15
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2367,7 +2367,9 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
 		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
 		patch level (since this was introduced in patch 95, it's
-		always 95 or bigger).  Pc is always zero.
+		always 95 or higher).  Pc is always zero.
+		If Pv is 141 or higher then Vim will try to request terminal
+		codes.  This only works with xterm |xterm-codes|.
 		{only when compiled with |+termresponse| feature}
 
 						*v:termblinkresp*
@@ -6190,8 +6192,9 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		The result is a String, which is the contents of register
 		{regname}.  Example: >
 			:let cliptext = getreg('*')
-<		When {regname} was not set the result is an empty string.
-		The {regname} argument is a string.
+<		When register {regname} was not set the result is an empty
+		string.
+		The {regname} argument must be a string.
 
 		getreg('=') returns the last evaluated value of the expression
 		register.  (For use in maps.)

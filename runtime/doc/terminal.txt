@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2021 Nov 13
+*terminal.txt*	For Vim version 8.2.  Last change: 2021 Dec 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1428,6 +1428,8 @@ GDB command						*termdebug-customizing*
 To change the name of the gdb command, set the "g:termdebugger" variable before
 invoking `:Termdebug`: >
 	let g:termdebugger = "mygdb"
+If the command needs an argument use a List: >
+	let g:termdebugger = ['rr', 'replay', '--']
 <							*gdb-version*
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
 interface.  The "new-ui" command  requires gdb version 7.12 or later.  if you

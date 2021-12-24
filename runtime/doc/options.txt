@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Dec 11
+*options.txt*	For Vim version 8.2.  Last change: 2021 Dec 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -385,7 +385,7 @@ lambda it will be converted to the name, e.g. "<lambda>123".  Examples:
 	set opfunc={a\ ->\ MyOpFunc(a)}
 	" set using a funcref variable
 	let Fn = function('MyTagFunc')
-	let &tagfunc = string(Fn)
+	let &tagfunc = Fn
 	" set using a lambda expression
 	let &tagfunc = {t -> MyTagFunc(t)}
 	" set using a variable with lambda expression
@@ -9210,7 +9210,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'xtermcodes'		boolean	(default on)
 			global
 	When detecting xterm patchlevel 141 or higher with the termresponse
-	mechanism and this option is set, Vim will request the actual termimal
+	mechanism and this option is set, Vim will request the actual terminal
 	key codes and number of colors from the terminal.  This takes care of
 	various configuration options of the terminal that cannot be obtained
 	from the termlib/terminfo entry, see |xterm-codes|.

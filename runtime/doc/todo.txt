@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 15
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,9 +38,14 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+type of v: vars should be more specific
+    v:completed_item  is dict<string>, not dict<any>
+
+E1135 is used twice
+
+"z=" in German can take a very long time, CTRL-C should interrupt it.
+
 Vim9 - Make everything work:
-- Check TODO items in  vim9execute.c
-- use CheckLegacyAndVim9Success(lines) in many more places
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
@@ -48,8 +53,6 @@ Vim9 - Make everything work:
     map() could check that the return type of the function argument matches
     the type of the list or dict member. (#8092)
     Same for other functions, such as searchpair().
-- Test try/catch and throw better, also nested.
-  Test that return inside try/finally jumps to finally and then returns.
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
   defined.
@@ -89,6 +92,9 @@ Further Vim9 improvements, possibly after launch:
     has(featureName), len(someString)
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
+Update list of features to vote on:
+- multiple cursors
+- built-in LSP support
 
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
@@ -131,8 +137,6 @@ Text properties:
   where property fits in.
   Or Should we let the textprop highlight overrule other (e.g. diff) highlight
   if the priority is above a certain value?  (#7392)
-- Popup attached to text property stays visible when text is no longer
-  visible. (#7736)
 - Popup attached to text property stays visible when text is deleted with
   "cc". (#7737)  "C" works OK.  "dd" also files in a buffer with a single
   line.
@@ -248,6 +252,8 @@ Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 ":set &shellpipe" and ":set &shellredir" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
+
+Patch to add :argdedupe. (Nir Lichtman, #6235)
 
 MS-Windows: did path modifier :p:8 stop working?  #8600
 
@@ -414,8 +420,6 @@ Athena is OK.
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
-
-Patch to add :argdedupe. (Nir Lichtman, #6235)
 
 When editing a file with ":edit" the output of :swapname is relative, while
 editing it with "vim file" it is absolute. (#355)

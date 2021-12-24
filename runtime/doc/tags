@@ -751,6 +751,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'nowriteany'	options.txt	/*'nowriteany'*
 'nowritebackup'	options.txt	/*'nowritebackup'*
 'nows'	options.txt	/*'nows'*
+'noxtermcodes'	options.txt	/*'noxtermcodes'*
 'nrformats'	options.txt	/*'nrformats'*
 'nu'	options.txt	/*'nu'*
 'number'	options.txt	/*'number'*
@@ -1262,6 +1263,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'writedelay'	options.txt	/*'writedelay'*
 'ws'	options.txt	/*'ws'*
 'ww'	options.txt	/*'ww'*
+'xtermcodes'	options.txt	/*'xtermcodes'*
 '{	motion.txt	/*'{*
 '}	motion.txt	/*'}*
 (	motion.txt	/*(*
@@ -5912,6 +5914,7 @@ collate-variable	eval.txt	/*collate-variable*
 color-xterm	syntax.txt	/*color-xterm*
 coloring	syntax.txt	/*coloring*
 colortest.vim	syntax.txt	/*colortest.vim*
+command-block	vim9.txt	/*command-block*
 command-line-functions	usr_41.txt	/*command-line-functions*
 command-line-window	cmdline.txt	/*command-line-window*
 command-mode	intro.txt	/*command-mode*

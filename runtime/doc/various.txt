@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Dec 13
+*various.txt*   For Vim version 8.2.  Last change: 2021 Dec 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -549,14 +549,17 @@ N  *+X11*		Unix only: can restore window title |X11|
 			name can be omitted.
 :redi[r] @">>		Append messages to the unnamed register.
 
-:redi[r] => {var}	Redirect messages to a variable.  If the variable
-			doesn't exist, then it is created.  If the variable
-			exists, then it is initialized to an empty string.
+:redi[r] => {var}	Redirect messages to a variable.
+			In legacy script: If the variable doesn't exist, then
+			it is created.  If the variable exists, then it is
+			initialized to an empty string.  After the redirection
+			starts, if the variable is removed or locked or the
+			variable type is changed, then further command output
+			messages will cause errors.
+			In Vim9 script: the variable must have been declared
+			as a string.
 			The variable will remain empty until redirection ends.
-			Only string variables can be used.  After the
-			redirection starts, if the variable is removed or
-			locked or the variable type is changed, then further
-			command output messages will cause errors.
+			Only string variables can be used.
 			To get the output of one command the |execute()|
 			function can be used instead of redirection.
 
