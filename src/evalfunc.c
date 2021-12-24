@@ -4675,16 +4675,42 @@ f_getpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Common between getreg() and getregtype(): get the register name from the
+ * first argument.
+ * Returns zero on error.
+ */
+    static int
+getreg_get_regname(typval_T *argvars)
+{
+    char_u  *strregname;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	strregname = tv_get_string_chk(&argvars[0]);
+	if (strregname != NULL && in_vim9script() && STRLEN(strregname) > 1)
+	{
+	    semsg(_(e_register_name_must_be_one_char_str), strregname);
+	    strregname = NULL;
+	}
+	if (strregname == NULL)	    // type error; errmsg already given
+	    return 0;
+    }
+    else
+	// Default to v:register
+	strregname = get_vim_var_str(VV_REG);
+
+    return *strregname == 0 ? '"' : *strregname;
+}
+
+/*
  * "getreg()" function
  */
     static void
 f_getreg(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*strregname;
     int		regname;
     int		arg2 = FALSE;
     int		return_list = FALSE;
-    int		error = FALSE;
 
     if (in_vim9script()
 	    && (check_for_opt_string_arg(argvars, 0) == FAIL
@@ -4694,32 +4720,21 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 			    && check_for_opt_bool_arg(argvars, 2) == FAIL)))))
 	return;
 
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	strregname = tv_get_string_chk(&argvars[0]);
-	if (strregname == NULL)
-	    error = TRUE;
-	else if (in_vim9script() && STRLEN(strregname) > 1)
-	{
-	    semsg(_(e_register_name_must_be_one_char_str), strregname);
-	    error = TRUE;
-	}
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    arg2 = (int)tv_get_bool_chk(&argvars[1], &error);
-	    if (!error && argvars[2].v_type != VAR_UNKNOWN)
-		return_list = (int)tv_get_bool_chk(&argvars[2], &error);
-	}
-    }
-    else
-	strregname = get_vim_var_str(VV_REG);
-
-    if (error)
+    regname = getreg_get_regname(argvars);
+    if (regname == 0)
 	return;
 
-    regname = (strregname == NULL ? '"' : *strregname);
-    if (regname == 0)
-	regname = '"';
+    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_UNKNOWN)
+    {
+	int		error = FALSE;
+
+	arg2 = (int)tv_get_bool_chk(&argvars[1], &error);
+
+	if (!error && argvars[2].v_type != VAR_UNKNOWN)
+	    return_list = (int)tv_get_bool_chk(&argvars[2], &error);
+	if (error)
+	    return;
+    }
 
     if (return_list)
     {
@@ -4745,36 +4760,20 @@ f_getreg(typval_T *argvars, typval_T *rettv)
     static void
 f_getregtype(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*strregname;
     int		regname;
     char_u	buf[NUMBUFLEN + 2];
     long	reglen = 0;
 
+    // on error return an empty string
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
     if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	strregname = tv_get_string_chk(&argvars[0]);
-	if (strregname != NULL && in_vim9script() && STRLEN(strregname) > 1)
-	{
-	    semsg(_(e_register_name_must_be_one_char_str), strregname);
-	    strregname = NULL;
-	}
-	if (strregname == NULL)	    // type error; errmsg already given
-	{
-	    rettv->v_type = VAR_STRING;
-	    rettv->vval.v_string = NULL;
-	    return;
-	}
-    }
-    else
-	// Default to v:register
-	strregname = get_vim_var_str(VV_REG);
-
-    regname = (strregname == NULL ? '"' : *strregname);
+    regname = getreg_get_regname(argvars);
     if (regname == 0)
-	regname = '"';
+	return;
 
     buf[0] = NUL;
     buf[1] = NUL;
