@@ -646,9 +646,9 @@ func Test_function_outside_script()
     qall
   END
   call writefile(cleanup, 'Xverify.vim')
-  call RunVim([], [], "-c \"echo function('s:abc')\" -S Xverify.vim -c q")
+  call RunVim([], [], "-c \"echo function('s:abc')\" -S Xverify.vim")
   call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
-  call RunVim([], [], "-c \"echo funcref('s:abc')\" -S Xverify.vim -c q")
+  call RunVim([], [], "-c \"echo funcref('s:abc')\" -S Xverify.vim")
   call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
   call delete('Xtest.out')
   call delete('Xverify.vim')
