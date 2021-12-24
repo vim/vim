@@ -4050,22 +4050,11 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	list_T	*list = NULL;
 
 	if (STRNCMP(s, "s:", 2) == 0 || STRNCMP(s, "<SID>", 5) == 0)
-	{
-	    char	sid_buf[25];
-	    int		off = *s == 's' ? 2 : 5;
-
 	    // Expand s: and <SID> into <SNR>nr_, so that the function can
 	    // also be called from another script. Using trans_function_name()
 	    // would also work, but some plugins depend on the name being
 	    // printable text.
-	    sprintf(sid_buf, "<SNR>%ld_", (long)current_sctx.sc_sid);
-	    name = alloc(STRLEN(sid_buf) + STRLEN(s + off) + 1);
-	    if (name != NULL)
-	    {
-		STRCPY(name, sid_buf);
-		STRCAT(name, s + off);
-	    }
-	}
+	    name = get_scriptlocal_funcname(s);
 	else
 	    name = vim_strsave(s);
 

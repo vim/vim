@@ -639,6 +639,21 @@ func Test_funcref()
   call assert_fails('echo test_null_function()->funcref()', 'E475: Invalid argument: NULL')
 endfunc
 
+" Test for calling function() and funcref() outside of a Vim script context.
+func Test_function_outside_script()
+  let cleanup =<< trim END
+    call writefile([execute('messages')], 'Xtest.out')
+    qall
+  END
+  call writefile(cleanup, 'Xverify.vim')
+  call RunVim([], [], "-c \"echo function('s:abc')\" -S Xverify.vim")
+  call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
+  call RunVim([], [], "-c \"echo funcref('s:abc')\" -S Xverify.vim")
+  call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
+  call delete('Xtest.out')
+  call delete('Xverify.vim')
+endfunc
+
 func Test_setmatches()
   let lines =<< trim END
       hi def link 1 Comment
