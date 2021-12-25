@@ -2280,7 +2280,7 @@ filter_map_one(
 
 	// filter(): when expr is zero remove the item
 	if (in_vim9script())
-	    *remp = !tv2bool(newtv);
+	    *remp = !tv_get_bool_chk(newtv, &error);
 	else
 	    *remp = (tv_get_number_chk(newtv, &error) == 0);
 	clear_tv(newtv);

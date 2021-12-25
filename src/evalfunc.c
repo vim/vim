@@ -486,6 +486,52 @@ arg_list_or_dict_or_blob_or_string(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check second argument of filter(): func must return a bool.
+ */
+    static int
+arg_filter_func(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_FUNC
+	    && !(type->tt_member->tt_type == VAR_BOOL
+		|| type->tt_member->tt_type == VAR_NUMBER
+		|| type->tt_member->tt_type == VAR_ANY))
+    {
+	arg_type_mismatch(&t_func_bool, type, context->arg_idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check second argument of map().
+ */
+    static int
+arg_map_func(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_FUNC
+	    && type->tt_member != &t_any
+	    && type->tt_member != &t_unknown)
+    {
+	type_T *expected = NULL;
+
+	if (context->arg_types[0]->tt_type == VAR_LIST
+		|| context->arg_types[0]->tt_type == VAR_DICT)
+	    expected = context->arg_types[0]->tt_member;
+	else if (context->arg_types[0]->tt_type == VAR_STRING
+		|| context->arg_types[0]->tt_type == VAR_BLOB)
+	    expected = &t_number;
+	if (expected != NULL)
+	{
+	    type_T t_func_exp = {VAR_FUNC, -1, 0, TTFLAG_STATIC,
+							       expected, NULL};
+
+	    return check_arg_type(&t_func_exp, type, context);
+	}
+    }
+    return OK;
+}
+
+/*
  * Check "type" is a list of 'any' or a blob or a string.
  */
     static int
@@ -859,7 +905,9 @@ static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_numb
 static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
-static argcheck_T arg2_mapfilter[] = {arg_list_or_dict_or_blob_or_string, NULL};
+static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string, arg_filter_func};
+static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string, arg_map_func};
+static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, NULL};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg119_printf[] = {arg_string_or_nr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
@@ -1437,7 +1485,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_filereadable},
     {"filewritable",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_filewritable},
-    {"filter",		2, 2, FEARG_1,	    arg2_mapfilter,
+    {"filter",		2, 2, FEARG_1,	    arg2_filter,
 			ret_first_arg,	    f_filter},
     {"finddir",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_finddir,	    f_finddir},
@@ -1703,13 +1751,13 @@ static funcentry_T global_functions[] =
 		NULL
 #endif
 			},
-    {"map",		2, 2, FEARG_1,	    arg2_mapfilter,
+    {"map",		2, 2, FEARG_1,	    arg2_map,
 			ret_first_cont,	    f_map},
     {"maparg",		1, 4, FEARG_1,	    arg14_maparg,
 			ret_maparg,	    f_maparg},
     {"mapcheck",	1, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_string,	    f_mapcheck},
-    {"mapnew",		2, 2, FEARG_1,	    arg2_mapfilter,
+    {"mapnew",		2, 2, FEARG_1,	    arg2_mapnew,
 			ret_first_cont,	    f_mapnew},
     {"mapset",		3, 3, FEARG_1,	    arg3_string_bool_dict,
 			ret_void,	    f_mapset},

@@ -2048,7 +2048,7 @@ def Test_vim9script_funcref_other_script()
       return idx % 2 == 1
     enddef
     export def FastFilter(): list<number>
-      return range(10)->filter('FilterFunc')
+      return range(10)->filter('FilterFunc(v:key, v:val)')
     enddef
     export def FastFilterDirect(): list<number>
       return range(10)->filter(FilterFunc)
