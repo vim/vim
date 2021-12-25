@@ -253,7 +253,7 @@ syn match  shTestSingleQuote	contained	'\\.'	nextgroup=shTestSingleQuote
 syn match  shTestSingleQuote	contained	"'[^']*'"
 if exists("b:is_kornshell") || exists("b:is_bash")
  syn region  shDblBrace matchgroup=Delimiter start="\[\["	skip=+\%(\\\\\)*\\$+ end="\]\]"	contains=@shTestList,shAstQuote,shNoQuote,shComment
- syn region  shDblParen matchgroup=Delimiter start="(("	skip=+\%(\\\\\)*\\$+ end="))"	contains=@shTestList,shComment
+ syn region  shDblParen matchgroup=Delimiter start="(("	skip=+\%(\\\\\)*\\$+ end="))"	contains=@shTestList,shComment,shDblParen
 endif
 
 " Character Class In Range: {{{1
