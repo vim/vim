@@ -517,8 +517,9 @@ arg_map_func(type_T *type, argcontext_T *context)
 	if (context->arg_types[0]->tt_type == VAR_LIST
 		|| context->arg_types[0]->tt_type == VAR_DICT)
 	    expected = context->arg_types[0]->tt_member;
-	else if (context->arg_types[0]->tt_type == VAR_STRING
-		|| context->arg_types[0]->tt_type == VAR_BLOB)
+	else if (context->arg_types[0]->tt_type == VAR_STRING)
+	    expected = &t_string;
+	else if (context->arg_types[0]->tt_type == VAR_BLOB)
 	    expected = &t_number;
 	if (expected != NULL)
 	{
