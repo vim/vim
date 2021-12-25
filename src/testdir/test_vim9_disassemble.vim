@@ -1802,6 +1802,24 @@ def Test_disassemble_return_bool()
   assert_equal(true, InvertBool())
 enddef
 
+def AutoInit()
+  var t: number
+  t = 1
+  t = 0
+enddef
+
+def Test_disassemble_auto_init()
+  var instr = execute('disassemble AutoInit')
+  assert_match('AutoInit\_s*' ..
+        'var t: number\_s*' ..
+        't = 1\_s*' ..
+        '\d STORE 1 in $0\_s*' ..
+        't = 0\_s*' ..
+        '\d STORE 0 in $0\_s*' ..
+        '\d\+ RETURN void',
+        instr)
+enddef
+
 def Test_disassemble_compare()
   var cases = [
         ['true == isFalse', 'COMPAREBOOL =='],
