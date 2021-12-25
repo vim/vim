@@ -2858,7 +2858,8 @@ f_call(typval_T *argvars, typval_T *rettv)
     dict_T	*selfdict = NULL;
 
     if (in_vim9script()
-	    && (check_for_list_arg(argvars, 1) == FAIL
+	    && (check_for_string_or_func_arg(argvars, 0) == FAIL
+		|| check_for_list_arg(argvars, 1) == FAIL
 		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
 	return;
 

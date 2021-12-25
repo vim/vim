@@ -852,3 +852,5 @@ EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
 EXTERN char e_cmd_mapping_must_end_with_cr[]
 	INIT(= N_("E1255: <Cmd> mapping must end with <CR>"));
+EXTERN char e_string_or_function_required_for_argument_nr[]
+	INIT(= N_("E1256: String or function required for argument %d"));

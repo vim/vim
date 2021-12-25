@@ -757,6 +757,23 @@ check_for_string_or_list_or_dict_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a string
+ * or a function reference.
+ */
+    int
+check_for_string_or_func_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_PARTIAL
+	    && args[idx].v_type != VAR_FUNC
+	    && args[idx].v_type != VAR_STRING)
+    {
+	semsg(_(e_string_or_function_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a list or a blob.
  */
     int
