@@ -571,6 +571,7 @@ endif
 " Arithmetic Parenthesized Expressions: {{{1
 "syn region shParen matchgroup=shArithRegion start='[^$]\zs(\%(\ze[^(]\|$\)' end=')' contains=@shArithParenList
 syn region shParen matchgroup=shArithRegion start='\$\@!(\%(\ze[^(]\|$\)' end=')' contains=@shArithParenList
+syn region shParen matchgroup=shArithRegion start='\$\@!(' end=')' contains=@shArithParenList contained containedin=@shArithParenList
 
 " Additional sh Keywords: {{{1
 " ===================
