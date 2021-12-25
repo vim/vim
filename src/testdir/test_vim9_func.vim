@@ -647,6 +647,21 @@ def Test_nested_function()
   END
   CheckDefFailure(lines, 'E1117:')
 
+  lines =<< trim END
+      vim9script
+      def Outer()
+        def Inner()
+          g:result = 'ok'
+        enddef
+        Inner()
+      enddef
+      Outer()
+      Inner()
+  END
+  CheckScriptFailure(lines, 'E117: Unknown function: Inner')
+  assert_equal('ok', g:result)
+  unlet g:result
+
   # nested function inside conditional
   lines =<< trim END
       vim9script
