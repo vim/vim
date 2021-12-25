@@ -1773,6 +1773,7 @@ enddef
 def ReturnBool(): bool
   var one = 1
   var zero = 0
+  var none: number
   var name: bool = one && zero || one
   return name
 enddef
@@ -1783,19 +1784,19 @@ def Test_disassemble_return_bool()
         'var one = 1\_s*' ..
         '0 STORE 1 in $0\_s*' ..
         'var zero = 0\_s*' ..
-        '1 STORE 0 in $1\_s*' ..
+        'var none: number\_s*' ..
         'var name: bool = one && zero || one\_s*' ..
-        '2 LOAD $0\_s*' ..
-        '3 COND2BOOL\_s*' ..
-        '4 JUMP_IF_COND_FALSE -> 7\_s*' ..
-        '5 LOAD $1\_s*' ..
-        '6 COND2BOOL\_s*' ..
-        '7 JUMP_IF_COND_TRUE -> 10\_s*' ..
-        '8 LOAD $0\_s*' ..
-        '9 COND2BOOL\_s*' ..
-        '10 STORE $2\_s*' ..
+        '1 LOAD $0\_s*' ..
+        '2 COND2BOOL\_s*' ..
+        '3 JUMP_IF_COND_FALSE -> 6\_s*' ..
+        '4 LOAD $1\_s*' ..
+        '5 COND2BOOL\_s*' ..
+        '6 JUMP_IF_COND_TRUE -> 9\_s*' ..
+        '7 LOAD $0\_s*' ..
+        '8 COND2BOOL\_s*' ..
+        '9 STORE $3\_s*' ..
         'return name\_s*' ..
-        '\d\+ LOAD $2\_s*' ..   
+        '\d\+ LOAD $3\_s*' ..   
         '\d\+ RETURN',
         instr)
   assert_equal(true, InvertBool())

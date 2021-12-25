@@ -1963,6 +1963,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     {
 	int	instr_count = -1;
 	int	save_lnum;
+	int	skip_store = FALSE;
 
 	if (var_start[0] == '_' && !eval_isnamec(var_start[1]))
 	{
@@ -2186,7 +2187,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    case VAR_VOID:
 		    case VAR_INSTR:
 		    case VAR_SPECIAL:  // cannot happen
-			generate_PUSHNR(cctx, 0);
+			// This is skipped for local variables, they are
+			// always initialized to zero.
+			if (lhs.lhs_dest == dest_local)
+			    skip_store = TRUE;
+			else
+			    generate_PUSHNR(cctx, 0);
 			break;
 		}
 	    }
@@ -2278,7 +2284,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// type of "val" is used.
 		generate_SETTYPE(cctx, lhs.lhs_type);
 
-	    if (generate_store_lhs(cctx, &lhs, instr_count) == FAIL)
+	    if (!skip_store && generate_store_lhs(cctx, &lhs,
+						 instr_count, is_decl) == FAIL)
 	    {
 		cctx->ctx_lnum = save_lnum;
 		goto theend;

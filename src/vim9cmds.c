@@ -2092,7 +2092,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 						      &t_string, cctx) == FAIL)
 		    return NULL;
 	    }
-	    else if (generate_store_lhs(cctx, lhs, -1) == FAIL)
+	    else if (generate_store_lhs(cctx, lhs, -1, FALSE) == FAIL)
 		return NULL;
 
 	    VIM_CLEAR(lhs->lhs_name);

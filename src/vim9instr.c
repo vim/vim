@@ -1886,7 +1886,7 @@ generate_store_var(
 }
 
     int
-generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count)
+generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
 {
     if (lhs->lhs_dest != dest_local)
 	return generate_store_var(cctx, lhs->lhs_dest,
@@ -1899,8 +1899,9 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count)
 	garray_T	*instr = &cctx->ctx_instr;
 	isn_T		*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
 
-	// optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE into
-	// ISN_STORENR
+	// Optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE into
+	// ISN_STORENR.
+	// And "var = 0" does not need any instruction.
 	if (lhs->lhs_lvar->lv_from_outer == 0
 		&& instr->ga_len == instr_count + 1
 		&& isn->isn_type == ISN_PUSHNR)
@@ -1908,9 +1909,16 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count)
 	    varnumber_T val = isn->isn_arg.number;
 	    garray_T    *stack = &cctx->ctx_type_stack;
 
-	    isn->isn_type = ISN_STORENR;
-	    isn->isn_arg.storenr.stnr_idx = lhs->lhs_lvar->lv_idx;
-	    isn->isn_arg.storenr.stnr_val = val;
+	    if (val == 0 && is_decl)
+	    {
+		--instr->ga_len;
+	    }
+	    else
+	    {
+		isn->isn_type = ISN_STORENR;
+		isn->isn_arg.storenr.stnr_idx = lhs->lhs_lvar->lv_idx;
+		isn->isn_arg.storenr.stnr_val = val;
+	    }
 	    if (stack->ga_len > 0)
 		--stack->ga_len;
 	}
