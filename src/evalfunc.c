@@ -3998,7 +3998,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     int		is_global = FALSE;
 
     if (in_vim9script()
-	    && (check_for_opt_list_arg(argvars, 1) == FAIL
+	    && (check_for_string_or_func_arg(argvars, 0) == FAIL
+		|| check_for_opt_list_arg(argvars, 1) == FAIL
 		|| (argvars[1].v_type != VAR_UNKNOWN
 		    && check_for_opt_dict_arg(argvars, 2) == FAIL)))
 	return;

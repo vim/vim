@@ -1352,6 +1352,8 @@ def Test_funcref()
 enddef
 
 def Test_function()
+  CheckDefExecAndScriptFailure(['function(123)'], 'E1256: String or function required for argument 1')
+
   CheckDefAndScriptFailure(['function("reverse", 2)'], ['E1013: Argument 2: type mismatch, expected list<any> but got number', 'E1211: List required for argument 2'])
   CheckDefAndScriptFailure(['function("reverse", [2], [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
 
