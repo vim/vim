@@ -258,6 +258,15 @@ func Test_set_balloonexpr()
   setl balloonexpr&
   call assert_equal('', &balloonexpr)
   delfunc MyBalloonExpr
+
+  " Using a script-local function
+  func s:NewBalloonExpr()
+  endfunc
+  set balloonexpr=s:NewBalloonExpr()
+  call assert_equal(expand('<SID>') .. 'NewBalloonExpr()', &balloonexpr)
+  set balloonexpr=<SID>NewBalloonExpr()
+  call assert_equal(expand('<SID>') .. 'NewBalloonExpr()', &balloonexpr)
+  delfunc s:NewBalloonExpr
   bwipe!
 
   " Multiline support
