@@ -1,17 +1,14 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 22
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
-
-THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 Vim9 script commands and expressions.			*Vim9* *vim9*
 
 Most expression help is in |eval.txt|.  This file is about the new syntax and
 features in Vim9 script.
 
-THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 
 1.  What is Vim9 script?		|Vim9-script|
@@ -26,8 +23,6 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 ==============================================================================
 
 1. What is Vim9 script?					*Vim9-script*
-
-THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 Vim script has been growing over time, while preserving backwards
 compatibility.  That means bad choices from the past often can't be changed
@@ -75,8 +70,6 @@ rewrite old scripts, they keep working as before.  You may want to use a few
 ==============================================================================
 
 2. Differences from legacy Vim script			*vim9-differences*
-
-THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 Overview ~
 
@@ -354,7 +347,9 @@ And with autocommands: >
 Although using a :def function probably works better.
 
 Declaring a variable with a type but without an initializer will initialize to
-zero, false or empty.
+false (for bool), empty (for string, list, dict, etc.) or zero (for number,
+any, etc.).  This matters especially when using the "any" type, the value will
+default to the number zero.
 
 In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
@@ -1067,8 +1062,6 @@ Using ++var or --var in an expression is not supported yet.
 
 3. New style functions					*fast-functions*
 
-THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
-
 							*:def*
 :def[!] {name}([arguments])[: {return-type}]
 			Define a new function by the name {name}.  The body of
@@ -1183,8 +1176,6 @@ for each closure call a function to define it: >
 ==============================================================================
 
 4. Types					*vim9-types*
-
-THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 The following builtin types are supported:
 	bool
@@ -1365,8 +1356,6 @@ Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 
 5. Namespace, Import and Export
 					*vim9script* *vim9-export* *vim9-import*
-
-THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 A Vim9 script can be written to be imported.  This means that everything in
 the script is local, unless exported.  Those exported items, and only those
@@ -1682,7 +1671,8 @@ Specific items from TypeScript we avoid:
 - TypeScript can use an expression like "99 || 'yes'" in a condition, but
   cannot assign the value to a boolean.  That is inconsistent and can be
   annoying.  Vim recognizes an expression with && or || and allows using the
-  result as a bool.  TODO: to be reconsidered
+  result as a bool.  The |falsy-operator| was added for the mechanism to use a
+  default value.
 - TypeScript considers an empty string as Falsy, but an empty list or dict as
   Truthy.  That is inconsistent.  In Vim an empty list and dict are also
   Falsy.
