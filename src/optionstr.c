@@ -2310,6 +2310,7 @@ ambw_end:
 # endif
 # ifdef FEAT_FOLDING
 	    varp == &curwin->w_p_fde ||
+	    varp == &curwin->w_p_fdt ||
 # endif
 	    gvarp == &p_fex ||
 # ifdef FEAT_FIND_ID
@@ -2343,6 +2344,8 @@ ambw_end:
 # ifdef FEAT_FOLDING
 	if(varp == &curwin->w_p_fde)	// 'foldexpr'
 	    p_opt = &curwin->w_p_fde;
+	if(varp == &curwin->w_p_fdt)	// 'foldtext'
+	    p_opt = &curwin->w_p_fdt;
 # endif
 	if (gvarp == &p_fex)	// 'formatexpr'
 	    p_opt = &curbuf->b_p_fex;
