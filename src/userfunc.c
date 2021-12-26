@@ -29,10 +29,8 @@ static funccall_T *current_funccal = NULL;
 // item in it is still being used.
 static funccall_T *previous_funccal = NULL;
 
-static char *e_funcexts = N_("E122: Function %s already exists, add ! to replace it");
 static char *e_funcdict = N_("E717: Dictionary entry already exists");
 static char *e_funcref = N_("E718: Funcref required");
-static char *e_nofunc = N_("E130: Unknown function: %s");
 
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 static void func_clear(ufunc_T *fp, int force);
@@ -83,7 +81,7 @@ one_function_arg(
 		    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))))
     {
 	if (!skip)
-	    semsg(_("E125: Illegal argument: %s"), arg);
+	    semsg(_(e_illegal_argument_str), arg);
 	return arg;
     }
 
@@ -743,7 +741,7 @@ get_function_body(
 	    else if (eap->cmdidx == CMD_def)
 		emsg(_(e_missing_enddef));
 	    else
-		emsg(_("E126: Missing :endfunction"));
+		emsg(_(e_missing_endfunction));
 	    goto theend;
 	}
 
@@ -1785,7 +1783,7 @@ get_func_tv(
 	if (argcount == MAX_FUNC_ARGS)
 	    emsg_funcname(N_("E740: Too many arguments for function %s"), name);
 	else
-	    emsg_funcname(N_(e_invalid_arguments_for_function_str), name);
+	    emsg_funcname(e_invalid_arguments_for_function_str, name);
     }
 
     while (--argcount >= 0)
@@ -2341,7 +2339,7 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
     if (fp != NULL)
     {
 	// TODO: handle ! to overwrite
-	semsg(_(e_funcexts), global);
+	semsg(_(e_function_str_already_exists_add_excl_to_replace), global);
 	return FAIL;
     }
 
@@ -2421,7 +2419,7 @@ funcdepth_increment(void)
 {
     if (funcdepth >= p_mfd)
     {
-	emsg(_("E132: Function call depth is higher than 'maxfuncdepth'"));
+	emsg(_(e_function_call_depth_is_higher_than_macfuncdepth));
 	return FAIL;
     }
     ++funcdepth;
@@ -3252,7 +3250,7 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 			N_("E276: Cannot use function as a method: %s"), name);
 		break;
 	case FCERR_DELETED:
-		emsg_funcname(N_(e_func_deleted), name);
+		emsg_funcname(e_func_deleted, name);
 		break;
 	case FCERR_TOOMANY:
 		emsg_funcname((char *)e_too_many_arguments_for_function_str,
@@ -3264,7 +3262,7 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 		break;
 	case FCERR_SCRIPT:
 		emsg_funcname(
-		    N_(e_using_sid_not_in_script_context_str), name);
+		    e_using_sid_not_in_script_context_str, name);
 		break;
 	case FCERR_DICT:
 		emsg_funcname(
@@ -3627,7 +3625,6 @@ trans_function_name(
     int		extra = 0;
     lval_T	lv;
     int		vim9script;
-    static char *e_function_name = N_("E129: Function name required");
 
     if (fdp != NULL)
 	CLEAR_POINTER(fdp);
@@ -3655,7 +3652,7 @@ trans_function_name(
     if (end == start)
     {
 	if (!skip)
-	    emsg(_(e_function_name));
+	    emsg(_(e_function_name_required));
 	goto theend;
     }
     if (end == NULL || (lv.ll_tv != NULL && (lead > 2 || lv.ll_range)))
@@ -3775,7 +3772,7 @@ trans_function_name(
     if (len <= 0)
     {
 	if (!skip)
-	    emsg(_(e_function_name));
+	    emsg(_(e_function_name_required));
 	goto theend;
     }
 
@@ -3823,8 +3820,7 @@ trans_function_name(
     else if (!(flags & TFN_INT) && (builtin_function(lv.ll_name, len)
 				   || (in_vim9script() && *lv.ll_name == '_')))
     {
-	semsg(_("E128: Function name must start with a capital or \"s:\": %s"),
-								       start);
+	semsg(_(e_function_name_must_start_with_capital_or_s_str), start);
 	goto theend;
     }
     if (!skip && !(flags & TFN_QUIET) && !(flags & TFN_NO_DEREF))
@@ -4171,7 +4167,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 		}
 	    }
 	    else
-		emsg_funcname(N_("E123: Undefined function: %s"), eap->arg);
+		emsg_funcname(e_undefined_function_str, eap->arg);
 	}
 	goto ret_free;
     }
@@ -4184,7 +4180,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
     {
 	if (!eap->skip)
 	{
-	    semsg(_("E124: Missing '(': %s"), eap->arg);
+	    semsg(_(e_missing_paren_str), eap->arg);
 	    goto ret_free;
 	}
 	// attempt to continue by skipping some text
@@ -4357,7 +4353,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	    if (fudi.fd_dict != NULL && fudi.fd_newkey == NULL)
 		emsg(_(e_funcdict));
 	    else if (name != NULL && find_func(name, is_global, NULL) != NULL)
-		emsg_funcname(e_funcexts, name);
+		emsg_funcname(e_function_str_already_exists_add_excl_to_replace, name);
 	}
 
 	if (!eap->skip && did_emsg)
@@ -4415,14 +4411,13 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 		if (vim9script)
 		    emsg_funcname(e_name_already_defined_str, name);
 		else
-		    emsg_funcname(e_funcexts, name);
+		    emsg_funcname(e_function_str_already_exists_add_excl_to_replace, name);
 		goto erret;
 	    }
 	    if (fp->uf_calls > 0)
 	    {
 		emsg_funcname(
-			N_("E127: Cannot redefine function %s: It is in use"),
-									name);
+			    e_cannot_redefine_function_str_it_is_in_use, name);
 		goto erret;
 	    }
 	    if (fp->uf_refcount > 1)
@@ -4900,12 +4895,12 @@ ex_delfunction(exarg_T *eap)
 	if (fp == NULL)
 	{
 	    if (!eap->forceit)
-		semsg(_(e_nofunc), eap->arg);
+		semsg(_(e_unknown_function_str), eap->arg);
 	    return;
 	}
 	if (fp->uf_calls > 0)
 	{
-	    semsg(_("E131: Cannot delete function %s: It is in use"), eap->arg);
+	    semsg(_(e_cannot_delete_function_str_it_is_in_use), eap->arg);
 	    return;
 	}
 	if (fp->uf_flags & FC_VIM9)
@@ -5037,7 +5032,7 @@ ex_return(exarg_T *eap)
 
     if (current_funccal == NULL)
     {
-	emsg(_("E133: :return not inside a function"));
+	emsg(_(e_return_not_inside_function));
 	return;
     }
 

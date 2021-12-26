@@ -1174,7 +1174,7 @@ viminfo_error(char *errnum, char *message, char_u *line)
     emsg((char *)IObuff);
     if (++viminfo_errcnt >= 10)
     {
-	emsg(_("E136: viminfo: Too many errors, skipping rest of file"));
+	emsg(_(e_viminfo_too_many_errors_skipping_rest_of_file));
 	return TRUE;
     }
     return FALSE;
@@ -3106,7 +3106,7 @@ write_viminfo(char_u *file, int forceit)
 	    int	tt = msg_didany;
 
 	    // avoid a wait_return for this message, it's annoying
-	    semsg(_("E137: Viminfo file is not writable: %s"), fname);
+	    semsg(_(e_viminfo_file_is_not_writable_str), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);
 	    goto end;
@@ -3262,7 +3262,7 @@ write_viminfo(char_u *file, int forceit)
     // Check if the new viminfo file can be written to.
     if (fp_out == NULL)
     {
-	semsg(_("E138: Can't write viminfo file %s!"),
+	semsg(_(e_cant_write_viminfo_file_str),
 		       (fp_in == NULL || tempname == NULL) ? fname : tempname);
 	if (fp_in != NULL)
 	    fclose(fp_in);

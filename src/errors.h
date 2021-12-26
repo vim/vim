@@ -266,8 +266,42 @@ EXTERN char e_undefined_variable_str[]
 	INIT(= N_("E121: Undefined variable: %s"));
 EXTERN char e_undefined_variable_char_str[]
 	INIT(= N_("E121: Undefined variable: %c:%s"));
+EXTERN char e_function_str_already_exists_add_excl_to_replace[]
+	INIT(= N_("E122: Function %s already exists, add ! to replace it"));
+EXTERN char e_undefined_function_str[]
+	INIT(= N_("E123: Undefined function: %s"));
+EXTERN char e_missing_paren_str[]
+	INIT(= N_("E124: Missing '(': %s"));
+EXTERN char e_illegal_argument_str[]
+	INIT(= N_("E125: Illegal argument: %s"));
+EXTERN char e_missing_endfunction[]
+	INIT(= N_("E126: Missing :endfunction"));
+EXTERN char e_cannot_redefine_function_str_it_is_in_use[]
+	INIT(= N_("E127: Cannot redefine function %s: It is in use"));
+EXTERN char e_function_name_must_start_with_capital_or_s_str[]
+	INIT(= N_("E128: Function name must start with a capital or \"s:\": %s"));
+EXTERN char e_function_name_required[]
+	INIT(= N_("E129: Function name required"));
+// E130 unused
+EXTERN char e_cannot_delete_function_str_it_is_in_use[]
+	INIT(= N_("E131: Cannot delete function %s: It is in use"));
+EXTERN char e_function_call_depth_is_higher_than_macfuncdepth[]
+	INIT(= N_("E132: Function call depth is higher than 'maxfuncdepth'"));
+EXTERN char e_return_not_inside_function[]
+	INIT(= N_("E133: :return not inside a function"));
 #endif
-
+EXTERN char e_cannot_move_range_of_lines_into_itself[]
+	INIT(= N_("E134: Cannot move a range of lines into itself"));
+EXTERN char e_filter_autocommands_must_not_change_current_buffer[]
+	INIT(= N_("E135: *Filter* Autocommands must not change current buffer"));
+#if defined(FEAT_VIMINFO)
+EXTERN char e_viminfo_too_many_errors_skipping_rest_of_file[]
+	INIT(= N_("E136: viminfo: Too many errors, skipping rest of file"));
+EXTERN char e_viminfo_file_is_not_writable_str[]
+	INIT(= N_("E137: Viminfo file is not writable: %s"));
+EXTERN char e_cant_write_viminfo_file_str[]
+	INIT(= N_("E138: Can't write viminfo file %s!"));
+#endif
 
 EXTERN char e_no_such_user_defined_command_str[]
 	INIT(= N_("E184: No such user-defined command: %s"));
