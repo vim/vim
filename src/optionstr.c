@@ -2026,14 +2026,6 @@ ambw_end:
 		newFoldLevel();
 	}
     }
-# ifdef FEAT_EVAL
-    // 'foldexpr'
-    else if (varp == &curwin->w_p_fde)
-    {
-	if (foldmethodIsExpr(curwin))
-	    foldUpdateAll(curwin);
-    }
-# endif
     // 'foldmarker'
     else if (gvarp == &curwin->w_allbuf_opt.wo_fmr)
     {
@@ -2305,6 +2297,89 @@ ambw_end:
 	    popup_close_info();
     }
 # endif
+#endif
+
+#ifdef FEAT_EVAL
+    // '*expr' options
+    else if (
+# ifdef FEAT_BEVAL
+	    varp == &p_bexpr ||
+# endif
+# ifdef FEAT_DIFF
+	    varp == &p_dex ||
+# endif
+# ifdef FEAT_FOLDING
+	    varp == &curwin->w_p_fde ||
+# endif
+	    gvarp == &p_fex ||
+# ifdef FEAT_FIND_ID
+	    gvarp == &p_inex ||
+# endif
+# ifdef FEAT_CINDENT
+	    gvarp == &p_inde ||
+# endif
+# ifdef FEAT_DIFF
+	    varp == &p_pex ||
+# endif
+# ifdef FEAT_POSTSCRIPT
+	    varp == &p_pexpr ||
+# endif
+	    FALSE
+	    )
+    {
+	char_u	**p_opt = NULL;
+	char_u	*name;
+
+	// If the option value starts with <SID> or s:, then replace that with
+	// the script identifier.
+# ifdef FEAT_BEVAL
+	if (varp == &p_bexpr)		// 'balloonexpr'
+	    p_opt = (opt_flags & OPT_LOCAL) ? &curbuf->b_p_bexpr : &p_bexpr;
+# endif
+# ifdef FEAT_DIFF
+	if (varp == &p_dex)	// 'diffexpr'
+	    p_opt = &p_dex;
+# endif
+# ifdef FEAT_FOLDING
+	if(varp == &curwin->w_p_fde)	// 'foldexpr'
+	    p_opt = &curwin->w_p_fde;
+# endif
+	if (gvarp == &p_fex)	// 'formatexpr'
+	    p_opt = &curbuf->b_p_fex;
+# ifdef FEAT_FIND_ID
+	if (gvarp == &p_inex)	// 'includeexpr'
+	    p_opt = &curbuf->b_p_inex;
+# endif
+# ifdef FEAT_CINDENT
+	if (gvarp == &p_inde)	// 'indentexpr'
+	    p_opt = &curbuf->b_p_inde;
+# endif
+# ifdef FEAT_DIFF
+	if (varp == &p_pex)	// 'patchexpr'
+	    p_opt = &p_pex;
+# endif
+# ifdef FEAT_POSTSCRIPT
+	if (varp == &p_pexpr)	// 'printexpr'
+	    p_opt = &p_pexpr;
+# endif
+
+	if (p_opt != NULL)
+	{
+	    name = get_scriptlocal_funcname(*p_opt);
+	    if (name != NULL)
+	    {
+		if (new_value_alloced)
+		    free_string_option(*p_opt);
+		*p_opt = name;
+		new_value_alloced = TRUE;
+	    }
+	}
+
+# ifdef FEAT_FOLDING
+	if (varp == &curwin->w_p_fde && foldmethodIsExpr(curwin))
+	    foldUpdateAll(curwin);
+# endif
+    }
 #endif
 
 #ifdef FEAT_COMPL_FUNC
