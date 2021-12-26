@@ -905,8 +905,6 @@ string_filter_map(
 	set_vim_var_nr(VV_KEY, idx);
 	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
 		|| did_emsg)
-	    break;
-	if (did_emsg)
 	{
 	    clear_tv(&newtv);
 	    clear_tv(&tv);
