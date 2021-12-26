@@ -2133,8 +2133,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Commas can be added for readability.
 	To avoid problems with flags that are added in the future, use the
 	"+=" and "-=" feature of ":set" |add-option-flags|.
+
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+
+	NOTE: In a |Vim9| script, when `vim9script` is encountered, the value
+	is saved, 'cpoptions' is set to the Vim default, and the saved value
+	is restored at the end of the script.  Changes to the value of
+	'cpoptions' will be applied to the saved value, but keep in mind that
+	removing a flag that is not present when 'cpoptions' is changed has no
+	effect.  In the |.vimrc| file the value is not restored, thus using
+	`vim9script` in the |.vimrc| file results in using the Vim default.
+
 	NOTE: This option is set to the POSIX default value at startup when
 	the Vi default value would be used and the $VIM_POSIX environment
 	variable exists |posix|.  This means Vim tries to behave like the

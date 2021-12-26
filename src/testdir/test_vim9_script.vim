@@ -4270,18 +4270,64 @@ def Test_restoring_cpo()
   delete('Xclose')
   delete('Xdone')
 
-  writefile(['vim9script'], 'XanotherScript')
+  writefile(['vim9script', 'g:cpoval = &cpo'], 'XanotherScript')
   set cpo=aABceFsMny>
   edit XanotherScript
   so %
   assert_equal('aABceFsMny>', &cpo)
+  assert_equal('aABceFs', g:cpoval)
   :1del
+  setline(1, 'let g:cpoval = &cpo')
   w
   so %
   assert_equal('aABceFsMny>', &cpo)
+  assert_equal('aABceFsMny>', g:cpoval)
 
   delete('XanotherScript')
   set cpo&vim
+  unlet g:cpoval
+
+  if has('unix')
+    # 'cpo' is not restored in main vimrc
+    var save_HOME = $HOME
+    $HOME = getcwd() .. '/Xhome'
+    mkdir('Xhome')
+    var lines =<< trim END
+        vim9script
+        writefile(['before: ' .. &cpo], 'Xresult')
+        set cpo+=M
+        writefile(['after: ' .. &cpo], 'Xresult', 'a')
+    END
+    writefile(lines, 'Xhome/.vimrc')
+
+    lines =<< trim END
+        call writefile(['later: ' .. &cpo], 'Xresult', 'a')
+    END
+    writefile(lines, 'Xlegacy')
+
+    lines =<< trim END
+        vim9script
+        call writefile(['vim9: ' .. &cpo], 'Xresult', 'a')
+        qa
+    END
+    writefile(lines, 'Xvim9')
+
+    var cmd = GetVimCommand() .. " -S Xlegacy -S Xvim9"
+    cmd = substitute(cmd, '-u NONE', '', '')
+    exe "silent !" .. cmd
+
+    assert_equal([
+        'before: aABceFs',
+        'after: aABceFsM',
+        'later: aABceFsM',
+        'vim9: aABceFs'], readfile('Xresult'))
+
+    $HOME = save_HOME
+    delete('Xhome', 'rf')
+    delete('Xlegacy')
+    delete('Xvim9')
+    delete('Xresult')
+  endif
 enddef
 
 " Use :function so we can use Check commands

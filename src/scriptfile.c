@@ -1372,6 +1372,9 @@ do_source(
 	if (ret_sid != NULL)
 	    *ret_sid = current_sctx.sc_sid;
 
+	// Remember the "is_vimrc" flag for when the file is sourced again.
+	si->sn_is_vimrc = is_vimrc;
+
 	// Used to check script variable index is still valid.
 	si->sn_script_seq = current_sctx.sc_seq;
     }
@@ -1471,9 +1474,11 @@ do_source(
 
 #ifdef FEAT_EVAL
 almosttheend:
+    // If "sn_save_cpo" is set that means we encountered "vim9script": restore
+    // 'cpoptions', unless in the main .vimrc file.
     // Get "si" again, "script_items" may have been reallocated.
     si = SCRIPT_ITEM(current_sctx.sc_sid);
-    if (si->sn_save_cpo != NULL)
+    if (si->sn_save_cpo != NULL && si->sn_is_vimrc == DOSO_NONE)
     {
 	if (STRCMP(p_cpo, CPO_VIM) != 0)
 	{
@@ -1503,8 +1508,8 @@ almosttheend:
 		}
 	}
 	set_option_value((char_u *)"cpo", 0L, si->sn_save_cpo, OPT_NO_REDRAW);
-	VIM_CLEAR(si->sn_save_cpo);
     }
+    VIM_CLEAR(si->sn_save_cpo);
 
     restore_funccal();
 # ifdef FEAT_PROFILE
