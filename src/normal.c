@@ -6122,14 +6122,9 @@ nv_g_cmd(cmdarg_T *cap)
 
     case 'M':
 	{
-	    char_u  *ptr = ml_get_curline();
-
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = FALSE;
-	    if (has_mbyte)
-		i = mb_string2cells(ptr, (int)STRLEN(ptr));
-	    else
-		i = (int)STRLEN(ptr);
+	    i = linetabsize(ml_get_curline());
 	    if (cap->count0 > 0 && cap->count0 <= 100)
 		coladvance((colnr_T)(i * cap->count0 / 100));
 	    else
