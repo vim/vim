@@ -397,6 +397,7 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 
 " Dockerfile; Podman uses the same syntax with name Containerfile
+" Also see Dockerfile.* below.
 au BufNewFile,BufRead Containerfile,Dockerfile,*.Dockerfile	setf dockerfile
 
 " WildPackets EtherPeek Decoder
@@ -2237,6 +2238,9 @@ au BufNewFile,BufRead crontab,crontab.*,*/etc/cron.d/*		call s:StarSetf('crontab
 
 " dnsmasq(8) configuration
 au BufNewFile,BufRead */etc/dnsmasq.d/*		call s:StarSetf('dnsmasq')
+
+" Dockerfile
+au BufNewFile,BufRead Dockerfile.*		call s:StarSetf('dockerfile')
 
 " Dracula
 au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
