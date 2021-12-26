@@ -1669,6 +1669,26 @@ def Test_error_in_nested_function()
   assert_fails('FuncWithForwardCall()', 'E1096:', '', 1, 'FuncWithForwardCall')
 enddef
 
+def Test_nested_functin_with_nextcmd()
+  var lines =<< trim END
+      vim9script
+      # Define an outer function
+      def FirstFunction()
+        # Define an inner function
+        def SecondFunction()
+          # the function has a body, a double free is detected.
+          AAAAA
+
+         # enddef followed by | or } followed by # one or more characters
+         enddef|BBBB
+      enddef
+
+      # Compile all functions
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E476: Invalid command: AAAAA')
+enddef
+
 def Test_return_type_wrong()
   CheckScriptFailure([
         'def Func(): number',
