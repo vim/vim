@@ -3007,6 +3007,10 @@ def Test_search()
   CheckDefAndScriptFailure(['search("a", 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   CheckDefAndScriptFailure(['search("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
   CheckDefAndScriptFailure(['search("a", "b", 3, "d")'], ['E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4'])
+  new
+  setline(1, "match this")
+  CheckDefAndScriptFailure(['search("a", "", 9, 0, [0])'], ['E1013: Argument 5: type mismatch, expected func(...): any but got list<number>', 'E730: Using a List as a String'])
+  bwipe!
 enddef
 
 def Test_searchcount()
@@ -3058,9 +3062,12 @@ def Test_searchpair()
       vim9script
       setline(1, '()')
       normal gg
+      func RetList()
+        return [0]
+      endfunc
       def Fail()
         try
-          searchpairpos('(', '', ')', 'nW', '[0]->map("")')
+          searchpairpos('(', '', ')', 'nW', 'RetList()')
         catch
           g:caught = 'yes'
         endtry
@@ -3077,12 +3084,35 @@ def Test_searchpair()
   END
   CheckDefAndScriptFailure(lines, ['E1001: Variable not found: f', 'E475: Invalid argument: d'])
 
-  CheckDefAndScriptFailure(['searchpair(1, "b", "c")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  CheckDefAndScriptFailure(['searchpair("a", 2, "c")'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
-  CheckDefAndScriptFailure(['searchpair("a", "b", 3)'], ['E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3'])
-  CheckDefAndScriptFailure(['searchpair("a", "b", "c", 4)'], ['E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4'])
-  CheckDefAndScriptFailure(['searchpair("a", "b", "c", "r", "1", "f")'], ['E1013: Argument 6: type mismatch, expected number but got string', 'E1210: Number required for argument 6'])
-  CheckDefAndScriptFailure(['searchpair("a", "b", "c", "r", "1", 3, "g")'], ['E1013: Argument 7: type mismatch, expected number but got string', 'E1210: Number required for argument 7'])
+  var errors = ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1']
+  CheckDefAndScriptFailure(['searchpair(1, "b", "c")'], errors)
+  CheckDefAndScriptFailure(['searchpairpos(1, "b", "c")'], errors)
+
+  errors = ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2']
+  CheckDefAndScriptFailure(['searchpair("a", 2, "c")'], errors)
+  CheckDefAndScriptFailure(['searchpairpos("a", 2, "c")'], errors)
+
+  errors = ['E1013: Argument 3: type mismatch, expected string but got number', 'E1174: String required for argument 3']
+  CheckDefAndScriptFailure(['searchpair("a", "b", 3)'], errors)
+  CheckDefAndScriptFailure(['searchpairpos("a", "b", 3)'], errors)
+
+  errors = ['E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4']
+  CheckDefAndScriptFailure(['searchpair("a", "b", "c", 4)'], errors)
+
+  new
+  setline(1, "match this")
+  errors = ['E1013: Argument 5: type mismatch, expected func(...): any but got list<number>', 'E730: Using a List as a String']
+  CheckDefAndScriptFailure(['searchpair("a", "b", "c", "r", [0])'], errors)
+  CheckDefAndScriptFailure(['searchpairpos("a", "b", "c", "r", [0])'], errors)
+  bwipe!
+
+  errors = ['E1013: Argument 6: type mismatch, expected number but got string', 'E1210: Number required for argument 6']
+  CheckDefAndScriptFailure(['searchpair("a", "b", "c", "r", "1", "f")'], errors)
+  CheckDefAndScriptFailure(['searchpairpos("a", "b", "c", "r", "1", "f")'], errors)
+
+  errors = ['E1013: Argument 7: type mismatch, expected number but got string', 'E1210: Number required for argument 7']
+  CheckDefAndScriptFailure(['searchpair("a", "b", "c", "r", "1", 3, "g")'], errors)
+  CheckDefAndScriptFailure(['searchpairpos("a", "b", "c", "r", "1", 3, "g")'], errors)
 enddef
 
 def Test_searchpos()
@@ -3090,6 +3120,10 @@ def Test_searchpos()
   CheckDefAndScriptFailure(['searchpos("a", 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   CheckDefAndScriptFailure(['searchpos("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
   CheckDefAndScriptFailure(['searchpos("a", "b", 3, "d")'], ['E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4'])
+  new
+  setline(1, "match this")
+  CheckDefAndScriptFailure(['searchpos("a", "", 9, 0, [0])'], ['E1013: Argument 5: type mismatch, expected func(...): any but got list<number>', 'E730: Using a List as a String'])
+  bwipe!
 enddef
 
 def Test_server2client()
