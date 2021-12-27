@@ -147,7 +147,7 @@ MultiByteToWideChar_alloc(UINT cp, DWORD flags,
 	LPWSTR *out, int *outlen)
 {
     *outlen = MultiByteToWideChar(cp, flags, in, inlen, 0, 0);
-    // Add one one word to avoid a zero-length alloc().
+    // Add one word to avoid a zero-length alloc().
     *out = ALLOC_MULT(WCHAR, *outlen + 1);
     if (*out != NULL)
     {
@@ -167,7 +167,7 @@ WideCharToMultiByte_alloc(UINT cp, DWORD flags,
 	LPCSTR def, LPBOOL useddef)
 {
     *outlen = WideCharToMultiByte(cp, flags, in, inlen, NULL, 0, def, useddef);
-    // Add one one byte to avoid a zero-length alloc().
+    // Add one byte to avoid a zero-length alloc().
     *out = alloc(*outlen + 1);
     if (*out != NULL)
     {

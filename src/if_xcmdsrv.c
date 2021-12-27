@@ -345,7 +345,7 @@ serverChangeRegisteredWindow(
     DeleteAnyLingerer(dpy, newwin);
     if (serverName != NULL)
     {
-	// Reinsert name if we was already registered
+	// Reinsert name if it was already registered
 	(void)LookupName(dpy, serverName, /*delete=*/TRUE, NULL);
 	sprintf((char *)propInfo, "%x %.*s",
 		(int_u)newwin, MAX_NAME_LENGTH, serverName);

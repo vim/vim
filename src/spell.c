@@ -1501,7 +1501,7 @@ spell_move_to(
 
 /*
  * For spell checking: concatenate the start of the following line "line" into
- * "buf", blanking-out special characters.  Copy less then "maxlen" bytes.
+ * "buf", blanking-out special characters.  Copy less than "maxlen" bytes.
  * Keep the blanks at the start of the next line, this is used in win_line()
  * to skip those bytes if the word was OK.
  */
@@ -3260,7 +3260,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 	    for (; (s = smp[n].sm_lead)[0] == c; ++n)
 	    {
 		// Quickly skip entries that don't match the word.  Most
-		// entries are less then three chars, optimize for that.
+		// entries are less than three chars, optimize for that.
 		k = smp[n].sm_leadlen;
 		if (k > 1)
 		{
@@ -3551,7 +3551,7 @@ spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res)
 							 && ws[0] != NUL; ++n)
 	    {
 		// Quickly skip entries that don't match the word.  Most
-		// entries are less then three chars, optimize for that.
+		// entries are less than three chars, optimize for that.
 		if (c != ws[0])
 		    continue;
 		k = smp[n].sm_leadlen;
@@ -4033,7 +4033,7 @@ spell_dump_compl(
 			arridx[depth] = idxs[n];
 			curi[depth] = 1;
 
-			// Check if this characters matches with the pattern.
+			// Check if this character matches with the pattern.
 			// If not skip the whole tree below it.
 			// Always ignore case here, dump_word() will check
 			// proper case later.  This isn't exactly right when

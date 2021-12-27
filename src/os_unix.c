@@ -3165,7 +3165,7 @@ executable_file(char_u *name)
     // Therefore, this check does not have any sense - let keep us to the
     // conventions instead:
     // *.COM and *.EXE files are the executables - the rest are not. This is
-    // not ideal but better then it was.
+    // not ideal but better than it was.
     int vms_executable = 0;
     if (S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0)
     {

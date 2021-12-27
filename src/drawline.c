@@ -2258,7 +2258,7 @@ win_line(
 
 			// Make sure, the highlighting for the tab char will be
 			// correctly set further below (effectively reverts the
-			// FIX_FOR_BOGSUCOLS macro
+			// FIX_FOR_BOGSUCOLS macro).
 			if (n_extra == tab_len + vc_saved && wp->w_p_list
 						&& wp->w_lcs_chars.tab1)
 			    tab_len += vc_saved;
@@ -2938,7 +2938,7 @@ win_line(
 #if defined(FEAT_RIGHTLEFT)
 	    if (has_mbyte && wp->w_p_rl && (*mb_char2cells)(mb_c) > 1)
 	    {
-		// A double-wide character is: put first halve in left cell.
+		// A double-wide character is: put first half in left cell.
 		--off;
 		--col;
 	    }

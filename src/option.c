@@ -1774,7 +1774,7 @@ do_set(
 			    else if ((char_u **)varp == &p_fencs && enc_utf8)
 				newval = fencs_utf8_default;
 
-			    // expand environment variables and ~ (since the
+			    // expand environment variables and ~ since the
 			    // default value was already expanded, only
 			    // required when an environment variable was set
 			    // later
@@ -3139,7 +3139,7 @@ set_bool_option(
 		}
 	    }
 
-	    // Arabic requires a utf-8 encoding, inform the user if its not
+	    // Arabic requires a utf-8 encoding, inform the user if it's not
 	    // set.
 	    if (STRCMP(p_enc, "utf-8") != 0)
 	    {

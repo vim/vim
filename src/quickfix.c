@@ -4537,7 +4537,7 @@ qf_buf_add_line(
     int		len;
     buf_T	*errbuf;
 
-    // If the 'quickfixtextfunc' function returned an non-empty custom string
+    // If the 'quickfixtextfunc' function returned a non-empty custom string
     // for this entry, then use it.
     if (qftf_str != NULL && *qftf_str != NUL)
 	vim_strncpy(IObuff, qftf_str, IOSIZE - 1);

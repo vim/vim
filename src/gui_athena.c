@@ -216,7 +216,7 @@ gui_athena_scroll_cb_scroll(
     else if (value < 0)
 	value = 0;
 
-    // Update the bottom scrollbar an extra time (why is this needed??
+    // Update the bottom scrollbar an extra time (why is this needed??)
     if (sb->wp == NULL)		// Bottom scrollbar
 	gui_mch_set_scrollbar_thumb(sb, value, sb->size, sb->max);
 

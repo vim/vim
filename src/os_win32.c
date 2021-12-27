@@ -2187,7 +2187,7 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	}
     }
 
-    // Prepend single "." to pathext, it's means no extension added.
+    // Prepend single "." to pathext, it means no extension added.
     if (pathext == NULL)
 	pathext = (char_u *)".";
     else if (noext == TRUE)
@@ -7750,7 +7750,7 @@ fix_arg_enc(void)
 	// Now expand wildcards in the arguments.
 	// Temporarily add '(' and ')' to 'isfname'.  These are valid
 	// filename characters but are excluded from 'isfname' to make
-	// "gf" work on a file name in parenthesis (e.g.: see vim.h).
+	// "gf" work on a file name in parentheses (e.g.: see vim.h).
 	// Also, unset wildignore to not be influenced by this option.
 	// The arguments specified in command-line should be kept even if
 	// encoding options were changed.

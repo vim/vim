@@ -371,7 +371,7 @@ plines_win_nofill(
 	return 1;
 
 #ifdef FEAT_FOLDING
-    // A folded lines is handled just like an empty line.
+    // Folded lines are handled just like an empty line.
     // NOTE: Caller must handle lines that are MAYBE folded.
     if (lineFolded(wp, lnum) == TRUE)
 	return 1;

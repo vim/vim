@@ -1035,7 +1035,7 @@ get_function_body(
 
 	if (heredoc_concat_len > 0)
 	{
-	    // For a :def function "python << EOF" concatenats all the lines,
+	    // For a :def function "python << EOF" concatenates all the lines,
 	    // to be used for the instruction later.
 	    ga_concat(&heredoc_ga, theline);
 	    ga_concat(&heredoc_ga, (char_u *)"\n");

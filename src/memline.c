@@ -4718,7 +4718,7 @@ findswapname(
      * MSDOS compatible filesystem, it is possible that the file
      * "test.doc.swp" which we create will be exactly the same file. To avoid
      * this problem we temporarily create "test.doc".  Don't do this when the
-     * check below for a 8.3 file name is used.
+     * check below for an 8.3 file name is used.
      */
     if (!(buf->b_p_sn || buf->b_shortname) && buf_fname != NULL
 					     && mch_getperm(buf_fname) < 0)

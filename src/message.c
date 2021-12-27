@@ -1363,7 +1363,7 @@ hit_return_msg(void)
 {
     int		save_p_more = p_more;
 
-    p_more = FALSE;	// don't want see this message when scrolling back
+    p_more = FALSE;	// don't want to see this message when scrolling back
     if (msg_didout)	// start on a new line
 	msg_putchar('\n');
     if (got_int)

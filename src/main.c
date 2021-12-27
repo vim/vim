@@ -247,7 +247,7 @@ main
 		mch_dirname(start_dir, MAXPATHL);
 	    // Temporarily add '(' and ')' to 'isfname'.  These are valid
 	    // filename characters but are excluded from 'isfname' to make
-	    // "gf" work on a file name in parenthesis (e.g.: see vim.h).
+	    // "gf" work on a file name in parentheses (e.g.: see vim.h).
 	    do_cmdline_cmd((char_u *)":set isf+=(,)");
 	    alist_expand(NULL, 0);
 	    do_cmdline_cmd((char_u *)":set isf&");

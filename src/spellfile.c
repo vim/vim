@@ -4920,7 +4920,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
     //
     // The table with character flags and the table for case folding.
     // This makes sure the same characters are recognized as word characters
-    // when generating an when using a spell file.
+    // when generating and when using a spell file.
     // Skip this for ASCII, the table may conflict with the one used for
     // 'encoding'.
     // Also skip this for an .add.spl file, the main spell file must contain
@@ -5720,7 +5720,7 @@ sug_filltable(
 	    ++wordnr;
 
 	    // Remove extra NUL entries, we no longer need them. We don't
-	    // bother freeing the nodes, the won't be reused anyway.
+	    // bother freeing the nodes, they won't be reused anyway.
 	    while (p->wn_sibling != NULL && p->wn_sibling->wn_byte == NUL)
 		p->wn_sibling = p->wn_sibling->wn_sibling;
 

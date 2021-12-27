@@ -4460,7 +4460,7 @@ static int orig_topfill = 0;
 #endif
 #if defined(CHECK_DOUBLE_CLICK) || defined(PROTO)
 /*
- * Checking for double clicks ourselves.
+ * Checking for double-clicks ourselves.
  * "orig_topline" is used to avoid detecting a double-click when the window
  * contents scrolled (e.g., when 'scrolloff' is non-zero).
  */

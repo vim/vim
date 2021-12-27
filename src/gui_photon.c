@@ -487,7 +487,7 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 		    if (key->key_cap >= Pk_KP_Enter && key->key_cap <= Pk_KP_9
 			    && (key->key_mods & Pk_KM_Num_Lock))
 		    {
-			// FIXME: For now, just map the key to a ascii value
+			// FIXME: For now, just map the key to an ascii value
 			// (see <photon/PkKeyDef.h>)
 			ch = key->key_cap - 0xf080;
 		    }

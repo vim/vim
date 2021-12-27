@@ -582,7 +582,7 @@ add_menu_path(
 		goto erret;
 	    }
 
-	    // Not already there, so lets add it
+	    // Not already there, so let's add it
 	    menu = ALLOC_CLEAR_ONE(vimmenu_T);
 	    if (menu == NULL)
 		goto erret;
@@ -997,7 +997,7 @@ remove_menu(
 	// Recalculate modes for menu based on the new updated children
 	menu->modes &= ~modes;
 #if defined(FEAT_GUI_MSWIN) & defined(FEAT_TEAROFF)
-	if ((s_tearoffs) && (menu->children != NULL)) // there's a tear bar..
+	if ((s_tearoffs) && (menu->children != NULL)) // there's a tear bar.
 	    child = menu->children->next; // don't count tearoff bar
 	else
 #endif
@@ -1018,7 +1018,7 @@ remove_menu(
 	{
 	    // The menu item is no longer valid in ANY mode, so delete it
 #if defined(FEAT_GUI_MSWIN) & defined(FEAT_TEAROFF)
-	    if (s_tearoffs && menu->children != NULL) // there's a tear bar..
+	    if (s_tearoffs && menu->children != NULL) // there's a tear bar.
 		free_menu(&menu->children);
 #endif
 	    *menup = menu;

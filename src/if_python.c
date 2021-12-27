@@ -674,7 +674,7 @@ python_runtime_link_init(char *libname, int verbose)
 
 # if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     // Can't have Python and Python3 loaded at the same time.
-    // It cause a crash, because RTLD_GLOBAL is needed for
+    // It causes a crash, because RTLD_GLOBAL is needed for
     // standard C extension libraries of one or both python versions.
     if (python3_loaded())
     {
@@ -1461,7 +1461,7 @@ LineToString(const char *str)
     PyInt len = strlen(str);
     char *p;
 
-    // Allocate an Python string object, with uninitialised contents. We
+    // Allocate a Python string object, with uninitialised contents. We
     // must do it this way, so that we can modify the string in place
     // later. See the Python source, Objects/stringobject.c for details.
     result = PyString_FromStringAndSize(NULL, len);
