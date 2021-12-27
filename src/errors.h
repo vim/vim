@@ -357,6 +357,10 @@ EXTERN char e_using_invalid_value_as_string_str[]
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
 #endif
+EXTERN char_u e_invalid_column_number_nr[]
+	INIT(= N_("E964: Invalid column number: %ld"));
+EXTERN char_u e_invalid_line_number_nr[]
+	INIT(= N_("E966: Invalid line number: %ld"));
 EXTERN char e_command_not_supported_in_vim9_script_missing_var_str[]
 	INIT(= N_("E1100: Command not supported in Vim9 script (missing :var?): %s"));
 #ifdef FEAT_EVAL

@@ -48,8 +48,6 @@ static hashtab_T *global_proptypes = NULL;
 static int proptype_id = 0;
 
 static char_u e_type_not_exist[] = N_("E971: Property type %s does not exist");
-static char_u e_invalid_col[] = N_("E964: Invalid column number: %ld");
-static char_u e_invalid_lnum[] = N_("E966: Invalid line number: %ld");
 
 /*
  * Find a property type by name, return the hashitem.
@@ -169,7 +167,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     start_col = tv_get_number(&argvars[1]);
     if (start_col < 1)
     {
-	semsg(_(e_invalid_col), (long)start_col);
+	semsg(_(e_invalid_column_number_nr), (long)start_col);
 	return;
     }
     if (argvars[2].v_type != VAR_DICT)
@@ -213,12 +211,12 @@ prop_add_one(
 
     if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
     {
-	semsg(_(e_invalid_lnum), (long)start_lnum);
+	semsg(_(e_invalid_line_number_nr), (long)start_lnum);
 	return FAIL;
     }
     if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
     {
-	semsg(_(e_invalid_lnum), (long)end_lnum);
+	semsg(_(e_invalid_line_number_nr), (long)end_lnum);
 	return FAIL;
     }
 
@@ -243,7 +241,7 @@ prop_add_one(
 	    col = 1;
 	if (col - 1 > (colnr_T)textlen)
 	{
-	    semsg(_(e_invalid_col), (long)start_col);
+	    semsg(_(e_invalid_column_number_nr), (long)start_col);
 	    return FAIL;
 	}
 

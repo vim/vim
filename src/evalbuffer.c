@@ -151,6 +151,8 @@ set_buffer_lines(
     if (buf == NULL || (!is_curbuf && buf->b_ml.ml_mfp == NULL) || lnum < 1)
     {
 	rettv->vval.v_number = 1;	// FAIL
+	if (in_vim9script() && lnum < 1)
+	    semsg(_(e_invalid_line_number_nr), lnum_arg);
 	return;
     }
 

@@ -5359,8 +5359,9 @@ var2fpos(
     name = tv_get_string_chk(varp);
     if (name == NULL)
 	return NULL;
-    if (name[0] == '.')				// cursor
+    if (name[0] == '.' && (!in_vim9script() || name[1] == NUL))
     {
+	// cursor
 	pos = curwin->w_cursor;
 	if (charcol)
 	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
@@ -5376,8 +5377,10 @@ var2fpos(
 	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
 	return &pos;
     }
-    if (name[0] == '\'')			// mark
+    if (name[0] == '\'' && (!in_vim9script()
+					|| (name[1] != NUL && name[2] == NUL)))
     {
+	// mark
 	pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
 	    return NULL;

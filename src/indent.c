@@ -2130,7 +2130,11 @@ f_indent(typval_T *argvars, typval_T *rettv)
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
 	rettv->vval.v_number = get_indent_lnum(lnum);
     else
+    {
+	if (in_vim9script())
+	    semsg(_(e_invalid_line_number_nr), lnum);
 	rettv->vval.v_number = -1;
+    }
 }
 
 /*
@@ -2154,6 +2158,8 @@ f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
 	rettv->vval.v_number = get_lisp_indent();
 	curwin->w_cursor = pos;
     }
+    else if (in_vim9script())
+	semsg(_(e_invalid_line_number_nr), lnum);
     else
 #endif
 	rettv->vval.v_number = -1;
