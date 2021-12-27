@@ -3437,7 +3437,12 @@ ins_compl_delete(void)
     void
 ins_compl_insert(int in_compl_func)
 {
-    ins_bytes(compl_shown_match->cp_str + ins_compl_len());
+    int compl_len = ins_compl_len();
+
+    // Make sure we don't go over the end of the string, this can happen with
+    // illegal bytes.
+    if (compl_len < (int)STRLEN(compl_shown_match->cp_str))
+	ins_bytes(compl_shown_match->cp_str + compl_len);
     if (compl_shown_match->cp_flags & CP_ORIGINAL_TEXT)
 	compl_used_match = FALSE;
     else
