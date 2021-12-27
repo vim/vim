@@ -1253,6 +1253,12 @@ def Test_filter()
   assert_equal([], filter([1, 2, 3], '0'))
   assert_equal([1, 2, 3], filter([1, 2, 3], '1'))
   assert_equal({b: 20}, filter({a: 10, b: 20}, 'v:val == 20'))
+
+  def GetFiltered(): list<number>
+    var Odd: func = (_, v) => v % 2
+    return range(3)->filter(Odd)
+  enddef
+  assert_equal([1], GetFiltered())
 enddef
 
 def Test_filter_wrong_dict_key_type()

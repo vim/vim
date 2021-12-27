@@ -494,6 +494,7 @@ arg_filter_func(type_T *type, argcontext_T *context)
     if (type->tt_type == VAR_FUNC
 	    && !(type->tt_member->tt_type == VAR_BOOL
 		|| type->tt_member->tt_type == VAR_NUMBER
+		|| type->tt_member->tt_type == VAR_UNKNOWN
 		|| type->tt_member->tt_type == VAR_ANY))
     {
 	arg_type_mismatch(&t_func_bool, type, context->arg_idx + 1);
