@@ -1,9 +1,9 @@
-" Vim completion script
-" Language:     C
-" Maintainer:   Bram Moolenaar <Bram@vim.org>
-" Last Change:  2021 Apr 25
-
 vim9script noclear
+
+# Vim completion script
+# Language:     C
+# Maintainer:   Bram Moolenaar <Bram@vim.org>
+# Last Change:  2021 Dec 27
 
 var prepended: string
 var grepCache: dict<list<dict<any>>>
@@ -83,12 +83,12 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
     var e: number = base->charidx(match(base, '\.\|->\|\[', s))
     if e < 0
       if s == 0 || base[s - 1] != ']'
-        add(items, base[s :])
+        items->add(base[s :])
       endif
       break
     endif
     if s == 0 || base[s - 1] != ']'
-      add(items, base[s : e - 1])
+      items->add(base[s : e - 1])
     endif
     if base[e] == '.'
       # skip over '.'
@@ -113,7 +113,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
         ++e
       endwhile
       ++e
-      add(items, base[s : e - 1])
+      items->add(base[s : e - 1])
       ++arrays
       s = e
     endif
@@ -124,7 +124,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
   # 2. in tags file(s) (like with ":tag")
   # 3. in current file (like with "gD")
   var res: list<dict<any>>
-  if searchdecl(items[0], 0, 1) == 0
+  if items[0]->searchdecl(false, true) == 0
     # Found, now figure out the type.
     # TODO: join previous line if it makes sense
     var line: string = getline('.')
@@ -158,7 +158,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
       if match(line, '\<' .. match .. '\s*\[') > 0
         match ..= '['
       else
-        res = line[: col - 1]->Nextitem([''], 0, 1)
+        res = line[: col - 1]->Nextitem([''], 0, true)
         if len(res) > 0
           # There are members, thus add "." or "->".
           if match(line, '\*[ \t(]*' .. match .. '\>') > 0
@@ -178,7 +178,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
       res = [{match: match, tagline: tagline, kind: kind, info: line}]
     else
       # Completing "var.", "var.something", etc.
-      res = line[: col - 1]->Nextitem(items[1 :], 0, 1)
+      res = line[: col - 1]->Nextitem(items[1 :], 0, true)
     endif
   endif
 
@@ -201,7 +201,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
               || !v['static']
               || bufnr('%') == bufnr(v['filename']))
 
-    res = extendnew(res, tags->map((_, v: dict<any>): dict<any> => Tag2item(v)))
+    res = extendnew(res, tags->map((_, v: dict<any>) => Tag2item(v)))
   endif
 
   if len(res) == 0
@@ -212,12 +212,12 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
                 v->has_key('kind') ? v.kind != 'm' : true)
 
     res = []
-    for i in len(diclist)->range()
+    for i: number in len(diclist)->range()
       # New ctags has the "typeref" field.  Patched version has "typename".
       if diclist[i]->has_key('typename')
-        res = extendnew(res, StructMembers(diclist[i]['typename'], items[1 :], 1))
+        res = extendnew(res, diclist[i]['typename']->StructMembers(items[1 :], true))
       elseif diclist[i]->has_key('typeref')
-        res = extendnew(res, StructMembers(diclist[i]['typeref'], items[1 :], 1))
+        res = extendnew(res, diclist[i]['typeref']->StructMembers(items[1 :], true))
       endif
 
       # For a variable use the command, which must be a search pattern that
@@ -226,18 +226,18 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
         var line: string = diclist[i]['cmd']
         if line[: 1] == '/^'
           var col: number = line->charidx(match(line, '\<' .. items[0] .. '\>'))
-          res = extendnew(res, line[2 : col - 1]->Nextitem(items[1 :], 0, 1))
+          res = extendnew(res, line[2 : col - 1]->Nextitem(items[1 :], 0, true))
         endif
       endif
     endfor
   endif
 
-  if len(res) == 0 && searchdecl(items[0], 1) == 0
+  if len(res) == 0 && items[0]->searchdecl(true) == 0
     # Found, now figure out the type.
     # TODO: join previous line if it makes sense
     var line: string = getline('.')
     var col: number = charcol('.')
-    res = line[: col - 1]->Nextitem(items[1 :], 0, 1)
+    res = line[: col - 1]->Nextitem(items[1 :], 0, true)
   endif
 
   # If the last item(s) are [...] they need to be added to the matches.
@@ -266,7 +266,7 @@ def GetAddition( #{{{1
   endif
 
   # Check if the item has members.
-  if SearchMembers(memarg, [''], 0)->len() > 0
+  if SearchMembers(memarg, [''], false)->len() > 0
     # If there is a '*' before the name use "->".
     if match(line, '\*[ \t(]*' .. match .. '\>') > 0
       return '->'
@@ -309,15 +309,16 @@ enddef
 def Dict2info(dict: dict<any>): string #{{{1
 # Use all the items in dictionary for the "info" entry.
   var info: string = ''
-  for k in keys(dict)->sort()
+  for k: string in dict->keys()->sort()
     info  ..= k .. repeat(' ', 10 - strlen(k))
     if k == 'cmd'
-      info ..= matchstr(dict['cmd'], '/^\s*\zs.*\ze$/')
+      info ..= dict['cmd']
+        ->matchstr('/^\s*\zs.*\ze$/')
         ->substitute('\\\(.\)', '\1', 'g')
     else
       var dictk: any = dict[k]
       if typename(dictk) != 'string'
-        info ..= string(dictk)
+        info ..= dictk->string()
       else
         info ..= dictk
       endif
@@ -343,13 +344,13 @@ def ParseTagline(line: string): dict<any> #{{{1
         d['cmd'] ..= '  ' .. l[n]
       endwhile
     endif
-    for i in range(n + 1, len(l) - 1)
+    for i: number in range(n + 1, len(l) - 1)
       if l[i] == 'file:'
         d['static'] = 1
       elseif l[i] !~ ':'
         d['kind'] = l[i]
       else
-        d[matchstr(l[i], '[^:]*')] = matchstr(l[i], ':\zs.*')
+        d[l[i]->matchstr('[^:]*')] = l[i]->matchstr(':\zs.*')
       endif
     endfor
   endif
@@ -381,7 +382,7 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
   elseif add == '('
     res['kind'] = 'f'
   else
-    var s: string = matchstr(line, '\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
+    var s: string = line->matchstr('\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
     if s != ''
       res['kind'] = s
     endif
@@ -393,9 +394,9 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
   endif
 
   # Isolate the command after the tag and filename.
-  var s: string = matchstr(line, '[^\t]*\t[^\t]*\t\zs\(/^.*$/\|[^\t]*\)\ze\(;"\t\|\t\|$\)')
+  var s: string = line->matchstr('[^\t]*\t[^\t]*\t\zs\(/^.*$/\|[^\t]*\)\ze\(;"\t\|\t\|$\)')
   if s != ''
-    res['menu'] = s->Tagcmd2extra(val['match'], matchstr(line, '[^\t]*\t\zs[^\t]*\ze\t'))
+    res['menu'] = s->Tagcmd2extra(val['match'], line->matchstr('[^\t]*\t\zs[^\t]*\ze\t'))
   endif
   return res
 enddef
@@ -409,7 +410,8 @@ def Tagcmd2extra( #{{{1
   var x: string
   if cmd =~ '^/^'
     # The command is a search command, useful to see what it is.
-    x = matchstr(cmd, '^/^\s*\zs.*\ze$/')
+    x = cmd
+      ->matchstr('^/^\s*\zs.*\ze$/')
       ->substitute('\<' .. name .. '\>', '@@', '')
       ->substitute('\\\(.\)', '\1', 'g')
       .. ' - ' .. fname
@@ -427,7 +429,7 @@ def Nextitem( #{{{1
   lead: string,
   items: list<string>,
   depth: number,
-  all: number
+  all: bool
 ): list<dict<string>>
 # Find composing type in "lead" and match items[0] with it.
 # Repeat this recursively for items[1], if it's there.
@@ -439,7 +441,7 @@ def Nextitem( #{{{1
 
   # Try to recognize the type of the variable.  This is rough guessing...
   var res: list<dict<string>>
-  for tidx in len(tokens)->range()
+  for tidx: number in len(tokens)->range()
 
     # Skip tokens starting with a non-ID character.
     if tokens[tidx] !~ '^\h'
@@ -458,23 +460,23 @@ def Nextitem( #{{{1
     endif
 
     # TODO: add more reserved words
-    if index(['int', 'short', 'char', 'float',
-      'double', 'static', 'unsigned', 'extern'], tokens[tidx]) >= 0
+    if ['int', 'short', 'char', 'float',
+        'double', 'static', 'unsigned', 'extern']->index(tokens[tidx]) >= 0
       continue
     endif
 
     # Use the tags file to find out if this is a typedef.
     var diclist: list<dict<any>> = taglist('^' .. tokens[tidx] .. '$')
-    for tagidx in len(diclist)->range()
+    for tagidx: number in len(diclist)->range()
       var item: dict<any> = diclist[tagidx]
 
       # New ctags has the "typeref" field.  Patched version has "typename".
       if item->has_key('typeref')
-        res = extendnew(res, StructMembers(item['typeref'], items, all))
+        res = extendnew(res, item['typeref']->StructMembers(items, all))
         continue
       endif
       if item->has_key('typename')
-        res = extendnew(res, StructMembers(item['typename'], items, all))
+        res = extendnew(res, item['typename']->StructMembers(items, all))
         continue
       endif
 
@@ -501,7 +503,7 @@ def Nextitem( #{{{1
             || cmdtokens[0] == 'class'
             var name: string = ''
             # Use the first identifier after the "struct" or "union"
-            for ti in (len(cmdtokens) - 1)->range()
+            for ti: number in (len(cmdtokens) - 1)->range()
               if cmdtokens[ti] =~ '^\w'
                 name = cmdtokens[ti]
                 break
@@ -512,7 +514,7 @@ def Nextitem( #{{{1
             endif
           elseif depth < 10
             # Could be "typedef other_T some_T".
-            res = extendnew(res, Nextitem(cmdtokens[0], items, depth + 1, all))
+            res = extendnew(res, cmdtokens[0]->Nextitem(items, depth + 1, all))
           endif
         endif
       endif
@@ -528,18 +530,17 @@ enddef
 def StructMembers( #{{{1
   atypename: string,
   items: list<string>,
-  all: number
+  all: bool
 ): list<dict<string>>
 
 # Search for members of structure "typename" in tags files.
 # Return a list with resulting matches.
 # Each match is a dictionary with "match" and "tagline" entries.
-# When "all" is non-zero find all, otherwise just return 1 if there is any
-# member.
+# When "all" is true find all, otherwise just return 1 if there is any member.
 
   # Todo: What about local structures?
   var fnames: string = tagfiles()
-    ->map((_, v: string): string => escape(v, ' \#%'))
+    ->map((_, v: string) => escape(v, ' \#%'))
     ->join()
   if fnames == ''
     return []
@@ -549,7 +550,7 @@ def StructMembers( #{{{1
   var qflist: list<dict<any>>
   var cached: number = 0
   var n: string
-  if all == 0
+  if !all
     n = '1'  # stop at first found match
     if grepCache->has_key(typename)
       qflist = grepCache[typename]
@@ -560,8 +561,9 @@ def StructMembers( #{{{1
   endif
   if !cached
     while 1
-      exe 'silent! keepj noautocmd ' .. n .. 'vimgrep '
-        .. '/\t' .. typename .. '\(\t\|$\)/j ' .. fnames
+      execute 'silent! keepjumps noautocmd '
+        .. n .. 'vimgrep ' .. '/\t' .. typename .. '\(\t\|$\)/j '
+        .. fnames
 
       qflist = getqflist()
       if len(qflist) > 0 || match(typename, '::') < 0
@@ -571,7 +573,7 @@ def StructMembers( #{{{1
       typename = typename->substitute(':[^:]*::', ':', '')
     endwhile
 
-    if all == 0
+    if !all
       # Store the result to be able to use it again later.
       grepCache[typename] = qflist
     endif
@@ -593,16 +595,16 @@ def StructMembers( #{{{1
   endwhile
   # Put matching members in matches[].
   var matches: list<dict<string>>
-  for l in qflist
-    var memb: string = matchstr(l['text'], '[^\t]*')
+  for l: dict<any> in qflist
+    var memb: string = l['text']->matchstr('[^\t]*')
     if memb =~ '^' .. target
       # Skip matches local to another file.
       if match(l['text'], "\tfile:") < 0
-        || bufnr('%') == matchstr(l['text'], '\t\zs[^\t]*')->bufnr()
+        || bufnr('%') == l['text']->matchstr('\t\zs[^\t]*')->bufnr()
         var item: dict<string> = {match: memb, tagline: l['text']}
 
         # Add the kind of item.
-        var s: string = matchstr(l['text'], '\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
+        var s: string = l['text']->matchstr('\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
         if s != ''
           item['kind'] = s
           if s == 'f'
@@ -610,7 +612,7 @@ def StructMembers( #{{{1
           endif
         endif
 
-        add(matches, item)
+        matches->add(item)
       endif
     endif
   endfor
@@ -640,14 +642,13 @@ enddef
 def SearchMembers( #{{{1
   matches: list<dict<any>>,
   items: list<string>,
-  all: number
+  all: bool
 ): list<dict<string>>
 
 # For matching members, find matches for following items.
-# When "all"  is non-zero  find all,  otherwise just  return 1  if there  is any
-# member.
+# When "all" is true find all, otherwise just return 1 if there is any member.
   var res: list<dict<string>>
-  for i in len(matches)->range()
+  for i: number in len(matches)->range()
     var typename: string = ''
     var line: string
     if matches[i]->has_key('dict')
@@ -667,7 +668,7 @@ def SearchMembers( #{{{1
       endif
       if e > 0
         # Use typename field
-        typename = matchstr(line, '[^\t]*', eb)
+        typename = line->matchstr('[^\t]*', eb)
       endif
     endif
 
@@ -675,17 +676,17 @@ def SearchMembers( #{{{1
       res = extendnew(res, StructMembers(typename, items, all))
     else
       # Use the search command (the declaration itself).
-      var sb: number = match(line, '\t\zs/^')
+      var sb: number = line->match('\t\zs/^')
       var s: number = charidx(line, sb)
       if s > 0
         var e: number = line
           ->charidx(match(line, '\<' .. matches[i]['match'] .. '\>', sb))
         if e > 0
-          res = extendnew(res, Nextitem(line[s : e - 1], items, 0, all))
+          res = extendnew(res, line[s : e - 1]->Nextitem(items, 0, all))
         endif
       endif
     endif
-    if all == 0 && len(res) > 0
+    if !all && len(res) > 0
       break
     endif
   endfor
