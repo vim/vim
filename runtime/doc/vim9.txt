@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 26
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -81,7 +81,7 @@ script and `:def` functions; details are below:
 	echo "hello "
 	     .. yourName
 	     .. ", how are you?"
-- White space is required in many places.
+- White space is required in many places to improve readability.
 - Assign values without `:let`, declare variables with `:var`: >
 	var count = 0
 	count += 3
@@ -94,8 +94,8 @@ script and `:def` functions; details are below:
 	def CallMe(count: number, message: string): bool
 - Call functions without `:call`: >
 	writefile(['done'], 'file.txt')
-- You cannot use `:xit`, `:t`, `:k`, `:append`, `:change`, `:insert`, `:open`,
-  and `:s` or `:d` with only flags.
+- You cannot use old Ex commands `:xit`, `:t`, `:k`, `:append`, `:change`,
+  `:insert`, `:open`, and `:s` or `:d` with only flags.
 - You cannot use curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
@@ -353,7 +353,7 @@ default to the number zero.
 
 In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
-variables, because they are not really declared.  They can also be deleted
+variables, because they are not really declared.  Those can also be deleted
 with `:unlet`.
 
 `:lockvar` does not work on local variables.  Use `:const` and `:final`
@@ -597,7 +597,7 @@ Also when confused with the start of a command block: >
 
 
 Automatic line continuation ~
-
+						*vim9-line-continuation*
 In many cases it is obvious that an expression continues on the next line.  In
 those cases there is no need to prefix the line with a backslash (see
 |line-continuation|).  For example, when a list spans multiple lines: >
@@ -775,7 +775,7 @@ No curly braces expansion ~
 
 
 Dictionary literals ~
-
+						*vim9-literal-dict*
 Traditionally Vim has supported dictionary literals with a {} syntax: >
 	let dict = {'key': value}
 
@@ -865,7 +865,7 @@ first if needed.
 
 
 Conditions and expressions ~
-
+							*vim9-boolean*
 Conditions and expressions are mostly working like they do in other languages.
 Some values are different from legacy Vim script:
 	value		legacy Vim script	Vim9 script ~
@@ -917,8 +917,8 @@ always converted to string: >
 	'hello ' .. 123  == 'hello 123'
 	'hello ' .. v:true  == 'hello true'
 
-Simple types are string, float, special and bool.  For other types |string()|
-can be used.
+Simple types are Number, Float, Special and Bool.  For other types |string()|
+should be used.
 							*false* *true* *null*
 In Vim9 script one can use "true" for v:true, "false" for v:false and "null"
 for v:null.  When converting a boolean to a string "false" and "true" are

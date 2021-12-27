@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Dec 24
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -97,8 +97,8 @@ Conversion from a String to a Number only happens in legacy Vim script, not in
 Vim9 script.  It is done by converting the first digits to a number.
 Hexadecimal "0xf9", Octal "017" or "0o17", and Binary "0b10"
 numbers are recognized
-NOTE: when using |scriptversion-4| octal with a leading "0" is not recognized.
-The 0o notation requires patch 8.2.0886.
+NOTE: when using |Vim9| script or |scriptversion-4| octal with a leading "0"
+is not recognized.  The 0o notation requires patch 8.2.0886.
 If the String doesn't start with digits, the result is zero.
 Examples:
 	String "456"	-->	Number 456 ~
@@ -523,12 +523,16 @@ String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
 Number will be converted to the String '4'.  The empty string can also be used
 as a key.
+
+In |Vim9| script literaly keys can be used if the key consists of alphanumeric
+characters, underscore and dash, see |vim9-literal-dict|.
 						*literal-Dict* *#{}*
-To avoid having to put quotes around every key the #{} form can be used.  This
-does require the key to consist only of ASCII letters, digits, '-' and '_'.
-Example: >
+To avoid having to put quotes around every key the #{} form can be used in
+legacy script.  This does require the key to consist only of ASCII letters,
+digits, '-' and '_'.  Example: >
 	:let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
 Note that 333 here is the string "333".  Empty keys are not possible with #{}.
+In |Vim9| script the #{} form cannot be used.
 
 A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
@@ -825,7 +829,7 @@ My_Var_6		session file
 MY_VAR_6		viminfo file
 
 
-It's possible to form a variable name with curly braces, see
+In legacy script it is possible to form a variable name with curly braces, see
 |curly-braces-names|.
 
 ==============================================================================
@@ -873,23 +877,26 @@ Expression syntax summary, from least to most significant:
 	expr7 %	 expr7 ...	number modulo
 
 |expr7|	expr8
-	! expr7			logical NOT
-	- expr7			unary minus
-	+ expr7			unary plus
+	<type>expr8		type check and conversion (|Vim9| only)
 
 |expr8|	expr9
-	expr8[expr1]		byte of a String or item of a |List|
-	expr8[expr1 : expr1]	substring of a String or sublist of a |List|
-	expr8.name		entry in a |Dictionary|
-	expr8(expr1, ...)	function call with |Funcref| variable
-	expr8->name(expr1, ...)	|method| call
+	! expr8			logical NOT
+	- expr8			unary minus
+	+ expr8			unary plus
 
-|expr9|	number			number constant
+|expr9|	expr10
+	expr9[expr1]		byte of a String or item of a |List|
+	expr9[expr1 : expr1]	substring of a String or sublist of a |List|
+	expr9.name		entry in a |Dictionary|
+	expr9(expr1, ...)	function call with |Funcref| variable
+	expr9->name(expr1, ...)	|method| call
+
+|expr10|  number		number constant
 	"string"		string constant, backslash is special
 	'string'		string constant, ' is doubled
 	[expr1, ...]		|List|
 	{expr1: expr1, ...}	|Dictionary|
-	#{key: expr1, ...}	|Dictionary|
+	#{key: expr1, ...}	legacy |Dictionary|
 	&option			option value
 	(expr1)			nested expression
 	variable		internal variable
@@ -898,7 +905,8 @@ Expression syntax summary, from least to most significant:
 	@r			contents of register 'r'
 	function(expr1, ...)	function call
 	func{ti}on(expr1, ...)	function call with curly braces
-	{args -> expr1}		lambda expression
+	{args -> expr1}		legacy lambda expression
+	(args) => expr1		Vim9 lambda expression
 
 
 "..." indicates that the operations in this level can be concatenated.
@@ -916,9 +924,14 @@ The falsy operator:   expr2 ?? expr1
 
 Trinary operator ~
 
-The expression before the '?' is evaluated to a number.  If it evaluates to
-|TRUE|, the result is the value of the expression between the '?' and ':',
-otherwise the result is the value of the expression after the ':'.
+In legacy script the expression before the '?' is evaluated to a number.  If
+it evaluates to |TRUE|, the result is the value of the expression between the
+'?' and ':', otherwise the result is the value of the expression after the
+':'.
+
+In |Vim9| script the first expression must evaluate to a boolean, see
+|vim9-boolean|.
+
 Example: >
 	:echo lnum == 1 ? "top" : lnum
 
@@ -952,7 +965,8 @@ value for an expression that may result in zero or empty: >
 These are similar, but not equal: >
 	expr2 ?? expr1
 	expr2 ? expr2 : expr1
-In the second line "expr2" is evaluated twice.
+In the second line "expr2" is evaluated twice.  And in |Vim9| script the type
+of expr2 before "?" must be a boolean.
 
 
 expr2 and expr3						*expr2* *expr3*
@@ -961,9 +975,14 @@ expr2 and expr3						*expr2* *expr3*
 expr3 || expr3 ..	logical OR		*expr-barbar*
 expr4 && expr4 ..	logical AND		*expr-&&*
 
-The "||" and "&&" operators take one argument on each side.  The arguments
-are (converted to) Numbers.  The result is:
+The "||" and "&&" operators take one argument on each side.
 
+In legacy script the arguments are (converted to) Numbers.
+
+In |Vim9| script the values must be boolean, see |vim9-boolean|.  Use "!!" to
+convert any type to a boolean.
+
+The result is:
     input			 output ~
 n1	n2		n1 || n2	n1 && n2 ~
 |FALSE|	|FALSE|		|FALSE|		|FALSE|
@@ -999,8 +1018,9 @@ expr4							*expr4*
 
 expr5 {cmp} expr5
 
-Compare two expr5 expressions, resulting in a 0 if it evaluates to false, or 1
-if it evaluates to true.
+Compare two expr5 expressions.  In legacy script the result is a 0 if it
+evaluates to false, or 1 if it evaluates to true.  In |Vim9| script the result
+is |true| or |false|.
 
 			*expr-==*  *expr-!=*  *expr->*	 *expr->=*
 			*expr-<*   *expr-<=*  *expr-=~*  *expr-!~*
@@ -1026,6 +1046,7 @@ Examples:
 "abc" ==# "Abc"	  evaluates to 0
 "abc" ==? "Abc"	  evaluates to 1
 "abc" == "Abc"	  evaluates to 1 if 'ignorecase' is set, 0 otherwise
+NOTE: In |Vim9| script 'ignorecase' is not used.
 
 							*E691* *E692*
 A |List| can only be compared with a |List| and only "equal", "not equal",
@@ -1064,14 +1085,17 @@ a different type means the values are different: >
 	0
 "is#"/"isnot#" and "is?"/"isnot?" can be used to match and ignore case.
 
-When comparing a String with a Number, the String is converted to a Number,
-and the comparison is done on Numbers.  This means that: >
+In legacy script, when comparing a String with a Number, the String is
+converted to a Number, and the comparison is done on Numbers.  This means
+that: >
 	echo 0 == 'x'
 	1
 because 'x' converted to a Number is zero.  However: >
 	echo [0] == ['x']
 	0
 Inside a List or Dictionary this conversion is not used.
+
+In |Vim9| script the types must match.
 
 When comparing two Strings, this is done with strcmp() or stricmp().  This
 results in the mathematical difference (comparing byte values), not
@@ -1110,29 +1134,36 @@ result is a new list with the two lists Concatenated.
 
 For String concatenation ".." is preferred, since "." is ambiguous, it is also
 used for |Dict| member access and floating point numbers.
-When |vimscript-version| is 2 or higher, using "." is not allowed.
+In |Vim9| script and when |vimscript-version| is 2 or higher, using "." is not
+allowed.
+
+In |Vim9| script the arguments of ".." are converted to String for simple
+types: Number, Float, Special and Bool.  For other types |string()| should be
+used.
 
 expr7 * expr7  Number multiplication				*expr-star*
 expr7 / expr7  Number division					*expr-/*
 expr7 % expr7  Number modulo					*expr-%*
 
-For all, except "." and "..", Strings are converted to Numbers.
+In legacy script, for all operators except "." and "..", Strings are converted
+to Numbers.
+
 For bitwise operators see |and()|, |or()| and |xor()|.
 
-Note the difference between "+" and ".":
+Note the difference between "+" and ".." in legacy script:
 	"123" + "456" = 579
-	"123" . "456" = "123456"
+	"123" .. "456" = "123456"
 
-Since '.' has the same precedence as '+' and '-', you need to read: >
-	1 . 90 + 90.0
+Since '..' has the same precedence as '+' and '-', you need to read: >
+	1 .. 90 + 90.0
 As: >
-	(1 . 90) + 90.0
-That works, since the String "190" is automatically converted to the Number
-190, which can be added to the Float 90.0.  However: >
-	1 . 90 * 90.0
+	(1 .. 90) + 90.0
+That works in legacy script, since the String "190" is automatically converted
+to the Number 190, which can be added to the Float 90.0.  However: >
+	1 .. 90 * 90.0
 Should be read as: >
-	1 . (90 * 90.0)
-Since '.' has lower precedence than '*'.  This does NOT work, since this
+	1 .. (90 * 90.0)
+Since '..' has lower precedence than '*'.  This does NOT work, since this
 attempts to concatenate a Float and a String.
 
 When dividing a Number by zero the result depends on the value:
@@ -1150,20 +1181,35 @@ When the righthand side of '%' is zero, the result is 0.
 
 None of these work for |Funcref|s.
 
-. and % do not work for Float. *E804*
+".", ".." and "%" do not work for Float. *E804*
 
 
 expr7							*expr7*
 -----
-! expr7			logical NOT		*expr-!*
-- expr7			unary minus		*expr-unary--*
-+ expr7			unary plus		*expr-unary-+*
+<type>expr8
+
+This is only available in |Vim9| script, see |type-casting|.
+
+
+expr8							*expr8*
+-----
+! expr8			logical NOT		*expr-!*
+- expr8			unary minus		*expr-unary--*
++ expr8			unary plus		*expr-unary-+*
 
 For '!' |TRUE| becomes |FALSE|, |FALSE| becomes |TRUE| (one).
 For '-' the sign of the number is changed.
 For '+' the number is unchanged.  Note: "++" has no effect.
 
-A String will be converted to a Number first.
+In legacy script a String will be converted to a Number first.  Note that if
+the string does not start with a digit you likely don't get what you expect.
+
+In |Vim9| script an error is given when "-" or "+" is used and the type is not
+a number.
+
+In |Vim9| script "!" can be used for any type and the result is always a
+boolean.  Use "!!" to convert any type to a boolean, according to whether the
+value is |falsy|.
 
 These three can be repeated and mixed.  Examples:
 	!-1	    == 0
@@ -1171,30 +1217,30 @@ These three can be repeated and mixed.  Examples:
 	--9	    == 9
 
 
-expr8							*expr8*
+expr9							*expr9*
 -----
-This expression is either |expr9| or a sequence of the alternatives below,
+This expression is either |expr10| or a sequence of the alternatives below,
 in any order.  E.g., these are all possible:
-	expr8[expr1].name
-	expr8.name[expr1]
-	expr8(expr1, ...)[expr1].name
-	expr8->(expr1, ...)[expr1]
+	expr9[expr1].name
+	expr9.name[expr1]
+	expr9(expr1, ...)[expr1].name
+	expr9->(expr1, ...)[expr1]
 Evaluation is always from left to right.
 
-expr8[expr1]		item of String or |List|	*expr-[]* *E111*
+expr9[expr1]		item of String or |List|	*expr-[]* *E111*
 							*E909* *subscript*
 In legacy Vim script:
-If expr8 is a Number or String this results in a String that contains the
-expr1'th single byte from expr8.  expr8 is used as a String (a number is
+If expr9 is a Number or String this results in a String that contains the
+expr1'th single byte from expr9.  expr9 is used as a String (a number is
 automatically converted to a String), expr1 as a Number.  This doesn't
 recognize multibyte encodings, see `byteidx()` for an alternative, or use
 `split()` to turn the string into a list of characters.  Example, to get the
 byte under the cursor: >
 	:let c = getline(".")[col(".") - 1]
 
-In Vim9 script:
-If expr8 is a String this results in a String that contains the expr1'th
-single character (including any composing characters) from expr8.  To use byte
+In |Vim9| script:
+If expr9 is a String this results in a String that contains the expr1'th
+single character (including any composing characters) from expr9.  To use byte
 indexes use |strpart()|.
 
 Index zero gives the first byte or character.  Careful: text column numbers
@@ -1205,7 +1251,7 @@ String.  A negative index always results in an empty string (reason: backward
 compatibility).  Use [-1:] to get the last byte or character.
 In Vim9 script a negative index is used like with a list: count from the end.
 
-If expr8 is a |List| then it results the item at index expr1.  See |list-index|
+If expr9 is a |List| then it results the item at index expr1.  See |list-index|
 for possible index values.  If the index is out of range this results in an
 error.  Example: >
 	:let item = mylist[-1]		" get last item
@@ -1215,14 +1261,14 @@ Generally, if a |List| index is equal to or higher than the length of the
 error.
 
 
-expr8[expr1a : expr1b]	substring or sublist		*expr-[:]*
+expr9[expr1a : expr1b]	substring or sublist		*expr-[:]*
 
-If expr8 is a String this results in the substring with the bytes or
-characters from expr1a to and including expr1b.  expr8 is used as a String,
+If expr9 is a String this results in the substring with the bytes or
+characters from expr1a to and including expr1b.  expr9 is used as a String,
 expr1a and expr1b are used as a Number.
 
 In legacy Vim script the indexes are byte indexes.  This doesn't recognize
-multibyte encodings, see |byteidx()| for computing the indexes.  If expr8 is
+multibyte encodings, see |byteidx()| for computing the indexes.  If expr9 is
 a Number it is first converted to a String.
 
 In Vim9 script the indexes are character indexes and include composing
@@ -1249,20 +1295,20 @@ Examples: >
 	:let s = s[:-3]			" remove last two bytes
 <
 							*slice*
-If expr8 is a |List| this results in a new |List| with the items indicated by
+If expr9 is a |List| this results in a new |List| with the items indicated by
 the indexes expr1a and expr1b.  This works like with a String, as explained
 just above. Also see |sublist| below.  Examples: >
 	:let l = mylist[:3]		" first four items
 	:let l = mylist[4:4]		" List with one item
 	:let l = mylist[:]		" shallow copy of a List
 
-If expr8 is a |Blob| this results in a new |Blob| with the bytes in the
+If expr9 is a |Blob| this results in a new |Blob| with the bytes in the
 indexes expr1a and expr1b, inclusive.  Examples: >
 	:let b = 0zDEADBEEF
 	:let bs = b[1:2]		" 0zADBE
 	:let bs = b[:]			" copy of 0zDEADBEEF
 
-Using expr8[expr1] or expr8[expr1a : expr1b] on a |Funcref| results in an
+Using expr9[expr1] or expr9[expr1a : expr1b] on a |Funcref| results in an
 error.
 
 Watch out for confusion between a namespace and a variable followed by a colon
@@ -1271,11 +1317,11 @@ for a sublist: >
 	mylist[s:]     " uses namespace s:, error!
 
 
-expr8.name		entry in a |Dictionary|		*expr-entry*
+expr9.name		entry in a |Dictionary|		*expr-entry*
 
-If expr8 is a |Dictionary| and it is followed by a dot, then the following
+If expr9 is a |Dictionary| and it is followed by a dot, then the following
 name will be used as a key in the |Dictionary|.  This is just like:
-expr8[name].
+expr9[name].
 
 The name must consist of alphanumeric characters, just like a variable name,
 but it may start with a number.  Curly braces cannot be used.
@@ -1292,17 +1338,17 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr8(expr1, ...)	|Funcref| function call
+expr9(expr1, ...)	|Funcref| function call
 
-When expr8 is a |Funcref| type variable, invoke the function it refers to.
+When expr9 is a |Funcref| type variable, invoke the function it refers to.
 
 
-expr8->name([args])	method call			*method* *->*
-expr8->{lambda}([args])
+expr9->name([args])	method call			*method* *->*
+expr9->{lambda}([args])
 							*E276*
 For methods that are also available as global functions this is the same as: >
-	name(expr8 [, args])
-There can also be methods specifically for the type of "expr8".
+	name(expr9 [, args])
+There can also be methods specifically for the type of "expr9".
 
 This allows for chaining, passing the value that one method returns to the
 next method: >
@@ -1311,7 +1357,7 @@ next method: >
 Example of using a lambda: >
 	GetPercentage()->{x -> x * 100}()->printf('%d%%')
 <
-When using -> the |expr7| operators will be applied first, thus: >
+When using -> the |expr8| operators will be applied first, thus: >
 	-1.234->string()
 Is equivalent to: >
 	(-1.234)->string()
@@ -1331,7 +1377,7 @@ When using the lambda form there must be no white space between the } and the
 (.
 
 
-							*expr9*
+							*expr10*
 number
 ------
 number			number constant			*expr-number*
@@ -1535,7 +1581,8 @@ See below |functions|.
 
 lambda expression				*expr-lambda* *lambda*
 -----------------
-{args -> expr1}		lambda expression
+{args -> expr1}		legacy lambda expression
+(args) => expr1		|Vim9| lambda expression
 
 A lambda expression creates a new unnamed function which returns the result of
 evaluating |expr1|.  Lambda expressions differ from |user-functions| in
@@ -1553,7 +1600,8 @@ The arguments are optional.  Example: >
 	:echo F('ignored')
 <	error function
 
-Note that in Vim9 script another kind of lambda can be used: |vim9-lambda|.
+The |Vim9| lambda does not only use a different syntax, it also adds type
+checking and can be split over multiple lines, see |vim9-lambda|.
 
 							*closure*
 Lambda expressions can access outer scope variables and arguments.  This is
@@ -1610,27 +1658,31 @@ See also: |numbered-function|
 3. Internal variable				*internal-variables* *E461*
 
 An internal variable name can be made up of letters, digits and '_'.  But it
-cannot start with a digit.  It's also possible to use curly braces, see
-|curly-braces-names|.
+cannot start with a digit.  In legacy script it also possible to use curly
+braces, see |curly-braces-names|.
 
-An internal variable is created with the ":let" command |:let|.
-An internal variable is explicitly destroyed with the ":unlet" command
-|:unlet|.
+In legacy script ann internal variable is created with the ":let" command
+|:let|.  An internal variable is explicitly destroyed with the ":unlet"
+command |:unlet|.
 Using a name that is not an internal variable or refers to a variable that has
 been destroyed results in an error.
+
+In |Vim9| script `:let` is not used and variables work differently, see |:var|.
 
 						*variable-scope*
 There are several name spaces for variables.  Which one is to be used is
 specified by what is prepended:
 
-		(nothing) In a function: local to a function; otherwise: global
+		(nothing) In a function: local to the function;
+			  in a legacy script: global;
+			  in a |Vim9|  script: local to the script
 |buffer-variable|    b:	  Local to the current buffer.
 |window-variable|    w:	  Local to the current window.
 |tabpage-variable|   t:	  Local to the current tab page.
 |global-variable|    g:	  Global.
-|local-variable|     l:	  Local to a function.
+|local-variable|     l:	  Local to a function (only in a legacy function)
 |script-variable|    s:	  Local to a |:source|'ed Vim script.
-|function-argument|  a:	  Function argument (only inside a function).
+|function-argument|  a:	  Function argument (only in a legacy function).
 |vim-variable|       v:	  Global, predefined by Vim.
 
 The scope name by itself can be used as a |Dictionary|.  For example, to
@@ -1639,8 +1691,8 @@ delete all script-local variables: >
 	:    unlet s:[k]
 	:endfor
 
-Note: in Vim9 script this is different, see |vim9-scopes|.
-
+Note: in Vim9 script variables can also be local to a block of commands, see
+|vim9-scopes|.
 						*buffer-variable* *b:var* *b:*
 A variable name that is preceded with "b:" is local to the current buffer.
 Thus you can have several "b:foo" variables, one for each buffer.
@@ -1982,6 +2034,7 @@ v:false		A Number with value zero. Used to put "false" in JSON.  See
 <			v:false ~
 		That is so that eval() can parse the string back to the same
 		value.  Read-only.
+		In |Vim9| script "false" can be used which has a boolean type.
 
 					*v:fcs_reason* *fcs_reason-variable*
 v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
@@ -2145,6 +2198,7 @@ v:null		An empty String. Used to put "null" in JSON.  See
 <			v:null ~
 		That is so that eval() can parse the string back to the same
 		value.  Read-only.
+		In |Vim9| script "null" can be used without "v:".
 
 					*v:numbermax* *numbermax-variable*
 v:numbermax	Maximum value of a number.
@@ -2429,6 +2483,7 @@ v:true		A Number with value one. Used to put "true" in JSON.  See
 <			v:true ~
 		That is so that eval() can parse the string back to the same
 		value.  Read-only.
+		In |Vim9| script "true" can be used which has a boolean type.
 						*v:val* *val-variable*
 v:val		Value of the current item of a |List| or |Dictionary|.  Only
 		valid while evaluating the expression used with |map()| and
@@ -4923,6 +4978,9 @@ filter({expr1}, {expr2})				*filter()*
 <		If you do not use "val" you can leave it out: >
 			call filter(myList, {idx -> idx % 2 == 1})
 <
+		In |Vim9| script the result must be true, false, zero or one.
+		Other values will result in a type error.
+
 		For a |List| and a |Dictionary| the operation is done
 		in-place.  If you want it to remain unmodified make a copy
 		first: >
@@ -12579,17 +12637,21 @@ builtin functions.  To prevent from using the same name in different scripts
 avoid obvious, short names.  A good habit is to start the function name with
 the name of the script, e.g., "HTMLcolor()".
 
-It's also possible to use curly braces, see |curly-braces-names|.  And the
-|autoload| facility is useful to define a function only when it's called.
+In legacy script it is also possible to use curly braces, see
+|curly-braces-names|.
+The |autoload| facility is useful to define a function only when it's called.
 
 							*local-function*
-A function local to a script must start with "s:".  A local script function
-can only be called from within the script and from functions, user commands
-and autocommands defined in the script.  It is also possible to call the
-function from a mapping defined in the script, but then |<SID>| must be used
-instead of "s:" when the mapping is expanded outside of the script.
+A function local to a legacy script must start with "s:".  A local script
+function can only be called from within the script and from functions, user
+commands and autocommands defined in the script.  It is also possible to call
+the function from a mapping defined in the script, but then |<SID>| must be
+used instead of "s:" when the mapping is expanded outside of the script.
 There are only script-local functions, no buffer-local or window-local
 functions.
+
+In |Vim9| script functions are local to the script by default, prefix "g:" to
+define a global function.
 
 					*:fu* *:function* *E128* *E129* *E123*
 :fu[nction]		List all functions and their arguments.
@@ -12852,7 +12914,11 @@ This function can then be called with: >
 		Call a function.  The name of the function and its arguments
 		are as specified with `:function`.  Up to 20 arguments can be
 		used.  The returned value is discarded.
-		Without a range and for functions that accept a range, the
+		In |Vim9| script using `:call` is optional, these two lines do
+		the same thing: >
+			call SomeFunc(arg)
+			SomeFunc(arg)
+<		Without a range and for functions that accept a range, the
 		function is called once.  When a range is given the cursor is
 		positioned at the start of the first line before executing the
 		function.
@@ -12997,6 +13063,8 @@ variable.  This is a regular variable name with one or more expressions
 wrapped in braces {} like this: >
 	my_{adjective}_variable
 
+This only works in legacy Vim script, not in |Vim9| script.
+
 When Vim encounters this, it evaluates the expression inside the braces, puts
 that in place of the expression, and re-interprets the whole as a variable
 name.  So in the above example, if the variable "adjective" was set to
@@ -13038,8 +13106,8 @@ This does NOT work: >
 ==============================================================================
 7. Commands						*expression-commands*
 
-Note: in Vim9 script `:let` is used for variable declaration, not assignment.
-An assignment leaves out the `:let` command.  |vim9-declaration|
+Note: in |Vim9| script `:let` is not used.  `:var` is used for variable
+declarations and assignments do not use a command.  |vim9-declaration|
 
 :let {var-name} = {expr1}				*:let* *E18*
 			Set internal variable {var-name} to the result of the
@@ -13457,25 +13525,34 @@ text...
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between ":for" and ":endfor" for
 			each item in {object}.  {object} can be a |List| or
-			a |Blob|.  Variable {var} is set to the value of each
-			item.  When an error is detected for a command inside
-			the loop, execution continues after the "endfor".
+			a |Blob|.
+
+			Variable {var} is set to the value of each item.
+			In |Vim9| script the loop variable must not have been
+			declared yet, unless when it is a
+			global/window/tab/buffer variable.
+
+			When an error is detected for a command inside the
+			loop, execution continues after the "endfor".
 			Changing {object} inside the loop affects what items
 			are used.  Make a copy if this is unwanted: >
 				:for item in copy(mylist)
 <
-			When {object} is a |List| and not making a copy, Vim
-			stores a reference to the next item in the |List|
-			before executing the commands with the current item.
-			Thus the current item can be removed without effect.
-			Removing any later item means it will not be found.
-			Thus the following example works (an inefficient way
-			to make a |List| empty): >
+			When {object} is a |List| and not making a copy, in
+			legacy script Vim stores a reference to the next item
+			in the |List| before executing the commands with the
+			current item.  Thus the current item can be removed
+			without effect.  Removing any later item means it will
+			not be found.  Thus the following example works (an
+			inefficient way to make a |List| empty): >
 				for item in mylist
 				   call remove(mylist, 0)
 				endfor
 <			Note that reordering the |List| (e.g., with sort() or
 			reverse()) may have unexpected effects.
+			In |Vim9| script the index is used.  If an item before
+			the current one is deleted the next item will be
+			skipped.
 
 			When {object} is a |Blob|, Vim always makes a copy to
 			iterate over.  Unlike with |List|, modifying the
