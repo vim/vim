@@ -3524,6 +3524,17 @@ def Test_sort_argument()
   CheckDefAndScriptFailure(['sort([1], "", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
 enddef
 
+def Test_sort_compare_func_fails()
+  var lines =<< trim END
+    vim9script
+    echo ['a', 'b', 'c']->sort((a: number, b: number) => 0)
+  END
+  writefile(lines, 'Xbadsort')
+  assert_fails('source Xbadsort', ['E1013:', 'E702:'])
+
+  delete('Xbadsort')
+enddef
+
 def Test_spellbadword()
   CheckDefAndScriptFailure(['spellbadword(100)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   spellbadword('good')->assert_equal(['', ''])

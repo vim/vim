@@ -1919,6 +1919,7 @@ item_compare2(const void *s1, const void *s2)
     char_u	*func_name;
     partial_T	*partial = sortinfo->item_compare_partial;
     funcexe_T	funcexe;
+    int		did_emsg_before = did_emsg;
 
     // shortcut after failure in previous call; compare all items equal
     if (sortinfo->item_compare_func_err)
@@ -1946,7 +1947,7 @@ item_compare2(const void *s1, const void *s2)
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);
 
-    if (res == FAIL)
+    if (res == FAIL || did_emsg > did_emsg_before)
 	res = ITEM_COMPARE_FAIL;
     else
     {
