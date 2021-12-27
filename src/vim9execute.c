@@ -544,7 +544,7 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    int refcount = pt->pt_refcount;
 	    int i;
 
-	    // A Reference in a local variables doesn't count, it gets
+	    // A Reference in a local variable doesn't count, it gets
 	    // unreferenced on return.
 	    for (i = 0; i < dfunc->df_varcount; ++i)
 	    {

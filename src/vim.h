@@ -1012,7 +1012,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define DOBUF_UNLOAD	2	// unload specified buffer(s)
 #define DOBUF_DEL	3	// delete specified buffer(s) from buflist
 #define DOBUF_WIPE	4	// delete specified buffer(s) really
-#define DOBUF_WIPE_REUSE 5	// like DOBUF_WIPE an keep number for reuse
+#define DOBUF_WIPE_REUSE 5	// like DOBUF_WIPE and keep number for reuse
 
 // Values for start argument for do_buffer()
 #define DOBUF_CURRENT	0	// "count" buffer from current buffer

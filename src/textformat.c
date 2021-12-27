@@ -527,7 +527,7 @@ same_leader(
     // If first leader has 'f' flag, the lines can be joined only if the
     // second line does not have a leader.
     // If first leader has 'e' flag, the lines can never be joined.
-    // If fist leader has 's' flag, the lines can only be joined if there is
+    // If first leader has 's' flag, the lines can only be joined if there is
     // some text after it and the second line has the 'm' flag.
     if (leader1_flags != NULL)
     {

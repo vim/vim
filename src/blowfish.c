@@ -651,7 +651,7 @@ crypt_blowfish_init(
     state->method_state = bfs;
 
     // "blowfish" uses a 64 byte buffer, causing it to repeat 8 byte groups 8
-    // times.  "blowfish2" uses a 8 byte buffer to avoid repeating.
+    // times.  "blowfish2" uses an 8 byte buffer to avoid repeating.
     bfs->cfb_len = state->method_nr == CRYPT_M_BF ? BF_MAX_CFB_LEN : BF_BLOCK;
 
     if (blowfish_self_test() == FAIL)

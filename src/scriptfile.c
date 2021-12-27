@@ -1307,7 +1307,7 @@ do_source(
 
     current_sctx.sc_lnum = 0;
 
-    // Check if this script was sourced before to finds its SID.
+    // Check if this script was sourced before to find its SID.
     // Always use a new sequence number.
     current_sctx.sc_seq = ++last_current_SID_seq;
     if (sid > 0)

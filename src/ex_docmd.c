@@ -3744,7 +3744,7 @@ find_ex_command(
 		break;
 	    }
 
-	// Not not recognize ":*" as the star command unless '*' is in
+	// Do not recognize ":*" as the star command unless '*' is in
 	// 'cpoptions'.
 	if (eap->cmdidx == CMD_star && vim_strchr(p_cpo, CPO_STAR) == NULL)
 	    p = eap->cmd;
@@ -6977,7 +6977,7 @@ do_exedit(
 		|| eap->cmdidx == CMD_tabedit
 		|| eap->cmdidx == CMD_vnew) && *eap->arg == NUL)
     {
-	// ":new" or ":tabnew" without argument: edit an new empty buffer
+	// ":new" or ":tabnew" without argument: edit a new empty buffer
 	setpcmark();
 	(void)do_ecmd(0, NULL, NULL, eap, ECMD_ONE,
 		      ECMD_HIDE + (eap->forceit ? ECMD_FORCEIT : 0),

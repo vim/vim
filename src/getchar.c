@@ -76,7 +76,7 @@ static int	KeyNoremap = 0;	    // remapping flags
 
 // typebuf.tb_buf has three parts: room in front (for result of mappings), the
 // middle for typeahead and room for new characters (which needs to be 3 *
-// MAXMAPLEN) for the Amiga).
+// MAXMAPLEN for the Amiga).
 #define TYPELEN_INIT	(5 * (MAXMAPLEN + 3))
 static char_u	typebuf_init[TYPELEN_INIT];	// initial typebuf.tb_buf
 static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
@@ -941,7 +941,7 @@ noremap_keys(void)
  *
  * If noremap is REMAP_YES, new string can be mapped again.
  * If noremap is REMAP_NONE, new string cannot be mapped again.
- * If noremap is REMAP_SKIP, fist char of new string cannot be mapped again,
+ * If noremap is REMAP_SKIP, first char of new string cannot be mapped again,
  * but abbreviations are allowed.
  * If noremap is REMAP_SCRIPT, new string cannot be mapped again, except for
  *			script-local mappings.
@@ -3457,7 +3457,7 @@ vgetorpeek(int advance)
 inchar(
     char_u	*buf,
     int		maxlen,
-    long	wait_time)	    // milli seconds
+    long	wait_time)	    // milliseconds
 {
     int		len = 0;	    // init for GCC
     int		retesc = FALSE;	    // return ESC with gotint

@@ -1591,7 +1591,7 @@ term_job_running_check(term_T *term, int check_job_status)
     {
 	job_T *job = term->tl_job;
 
-	// Careful: Checking the job status may invoked callbacks, which close
+	// Careful: Checking the job status may invoke callbacks, which close
 	// the buffer and terminate "term".  However, "job" will not be freed
 	// yet.
 	if (check_job_status)

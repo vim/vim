@@ -236,7 +236,7 @@ lalloc(size_t size, int message)
     // if some blocks are released call malloc again.
     for (;;)
     {
-	// Handle three kind of systems:
+	// Handle three kinds of systems:
 	// 1. No check for available memory: Just return.
 	// 2. Slow check for available memory: call mch_avail_mem() after
 	//    allocating KEEP_ROOM amount of memory.

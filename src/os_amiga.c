@@ -153,7 +153,7 @@ mch_write(char_u *p, int len)
 mch_inchar(
     char_u  *buf,
     int	    maxlen,
-    long    time,		// milli seconds
+    long    time,		// milliseconds
     int	    tb_change_cnt)
 {
     int	    len;

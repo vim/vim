@@ -1823,7 +1823,7 @@ enter_buffer(buf_T *buf)
     if (curbuf->b_ml.ml_mfp == NULL)	// need to load the file
     {
 	// If there is no filetype, allow for detecting one.  Esp. useful for
-	// ":ball" used in a autocommand.  If there already is a filetype we
+	// ":ball" used in an autocommand.  If there already is a filetype we
 	// might prefer to keep it.
 	if (*curbuf->b_p_ft == NUL)
 	    did_filetype = FALSE;
@@ -5031,7 +5031,7 @@ build_stl_str_hl(
 	sp->userhl = 0;
     }
 
-    // When inside update_screen we do not want redrawing a stausline, ruler,
+    // When inside update_screen we do not want redrawing a statusline, ruler,
     // title, etc. to trigger another redraw, it may cause an endless loop.
     if (updating_screen)
     {

@@ -948,7 +948,7 @@ func Test_Backtrace_DefFunction()
 
   call RunDbgCmd(buf, 'step', ['line 1: SourceAnotherFile()'])
   call RunDbgCmd(buf, 'step', ['line 1: source Xtest2.vim'])
-  " Repeated line, because we fist are in the compiled function before the
+  " Repeated line, because we first are in the compiled function before the
   " EXEC and then in do_cmdline() before the :source command.
   call RunDbgCmd(buf, 'step', ['line 1: source Xtest2.vim'])
   call RunDbgCmd(buf, 'step', ['line 1: vim9script'])

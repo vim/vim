@@ -1555,7 +1555,7 @@ make_windows(
 
     if (vertical)
     {
-	// Each windows needs at least 'winminwidth' lines and a separator
+	// Each window needs at least 'winminwidth' lines and a separator
 	// column.
 	maxcount = (curwin->w_width + curwin->w_vsep_width
 					     - (p_wiw - p_wmw)) / (p_wmw + 1);
@@ -2109,7 +2109,7 @@ win_equal_rec(
 	    room = height - m;
 	    if (room < 0)
 	    {
-		// The room is less then 'winheight', use all space for the
+		// The room is less than 'winheight', use all space for the
 		// current window.
 		next_curwin_size = p_wh + room;
 		room = 0;

@@ -71,7 +71,7 @@
 #define HAVE_PUTENV		// at least Bcc 5.2 and MSC have it
 
 #if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-# define NO_CONSOLE		// don't included console-only code
+# define NO_CONSOLE		// don't include console-only code
 #endif
 
 // toupper() is not really broken, but it's very slow.	Probably because of

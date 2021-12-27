@@ -766,7 +766,7 @@ py3_runtime_link_init(char *libname, int verbose)
 
 # if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON)
     // Can't have Python and Python3 loaded at the same time.
-    // It cause a crash, because RTLD_GLOBAL is needed for
+    // It causes a crash, because RTLD_GLOBAL is needed for
     // standard C extension libraries of one or both python versions.
     if (python_loaded())
     {

@@ -693,11 +693,11 @@ diff_redraw(
     if (wp_other != NULL && curwin->w_p_scb)
     {
 	if (used_max_fill_curwin)
-	    // The current window was set to used the maximum number of filler
+	    // The current window was set to use the maximum number of filler
 	    // lines, may need to reduce them.
 	    diff_set_topline(wp_other, curwin);
 	else if (used_max_fill_other)
-	    // The other window was set to used the maximum number of filler
+	    // The other window was set to use the maximum number of filler
 	    // lines, may need to reduce them.
 	    diff_set_topline(curwin, wp_other);
     }
@@ -1595,7 +1595,7 @@ ex_diffoff(exarg_T *eap)
 	diff_clear(curtab);
     }
 
-    // Remove "hor" from from 'scrollopt' if there are no diff windows left.
+    // Remove "hor" from 'scrollopt' if there are no diff windows left.
     if (!diffwin && vim_strchr(p_sbo, 'h') != NULL)
 	do_cmdline_cmd((char_u *)"set sbo-=hor");
 }

@@ -171,7 +171,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // itself must be escaped to get a literal '\'.
     fish_like = fish_like_shell();
 
-    // PowerShell uses it's own version for quoting single quotes
+    // PowerShell uses its own version for quoting single quotes
     shname = gettail(p_sh);
     powershell = strstr((char *)shname, "pwsh") != NULL;
 # ifdef MSWIN
