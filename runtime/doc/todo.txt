@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 24
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,37 +38,17 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-type of v: vars should be more specific
-    v:completed_item  is dict<string>, not dict<any>
-
-E1135 is used twice
-
-"z=" in German can take a very long time, CTRL-C should interrupt it.
-
-Vim9 - Make everything work:
-- For builtin functions using tv_get_string*() use check_for_string() to be
-  more strict about the argument type (not a bool).
-    done: balloon_()
-- Check many more builtin function arguments at compile time.
-    map() could check that the return type of the function argument matches
-    the type of the list or dict member. (#8092)
-    Same for other functions, such as searchpair().
-- Test that a function defined inside a :def function is local to that
-  function, g: functions can be defined and script-local functions cannot be
-  defined.
-- Unexpected error message when using "var x: any | x.key = 9", because "x" is
-  given the type number.  Can we use VAR_ANY?
-- Check performance with callgrind and kcachegrind.
-
 Once Vim9 is stable:
 - Add the "vim9script" feature, can use has('vim9script')
+    Remove TODO in vim9.txt
 - Change the help to prefer Vim9 syntax where appropriate
-- Add all the error numbers in a good place in documentation.
 - In the generic eval docs, point out the Vim9 syntax where it differs.
+- Add all the error numbers in a good place in documentation.
 - Use Vim9 for runtime files.
     PR #7497 for autoload/ccomplete.vim
 
 Further Vim9 improvements, possibly after launch:
+- Check performance with callgrind and kcachegrind.
 - better implementation for partial and tests for that.
 - Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
@@ -78,10 +58,9 @@ Further Vim9 improvements, possibly after launch:
   evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- Handle command that is only a range more efficient than calling ISN_EXEC
 - implement :type, "import type"
-- implement enum,  "import enum".
-- implement class and interface: See |vim9-classes|
+- implement :enum,  "import enum".
+- implement :class and :interface: See |vim9-classes|
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
 - Inline call to map() and filter(), better type checking.
@@ -252,8 +231,6 @@ Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 ":set &shellpipe" and ":set &shellredir" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
-
-Patch to add :argdedupe. (Nir Lichtman, #6235)
 
 MS-Windows: did path modifier :p:8 stop working?  #8600
 

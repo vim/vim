@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2021 Dec 04
+*cmdline.txt*   For Vim version 8.2.  Last change: 2021 Dec 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -705,6 +705,15 @@ Some Ex commands accept a line range in front of them.  This is noted as
 
 The basics are explained in section |10.3| of the user manual.
 
+In |Vim9| script a range needs to be prefixed with a colon to avoid ambiguity
+with continuation lines.  For example, "+" can be used for a range but is also
+a continuation of an expression: >
+	var result = start
+	+ print
+If the "+" is a range then it must be prefixed with a colon: >
+	var result = start
+	:+ print
+<
 						*:,* *:;*
 When separated with ';' the cursor position will be set to that line
 before interpreting the next line specifier.  This doesn't happen for ','.

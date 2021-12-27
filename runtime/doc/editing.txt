@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Dec 11
+*editing.txt*   For Vim version 8.2.  Last change: 2021 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1147,6 +1147,9 @@ The names can be in upper- or lowercase.
 			made.
 			When 'hidden' is set and there are more windows, the
 			current buffer becomes hidden, after writing the file.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 							*:exi* *:exit*
 :[range]exi[t][!] [++opt] [file]

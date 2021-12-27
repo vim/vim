@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 8.2.  Last change: 2019 May 05
+*remote.txt*    For Vim version 8.2.  Last change: 2021 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
