@@ -1669,7 +1669,7 @@ def Test_error_in_nested_function()
   assert_fails('FuncWithForwardCall()', 'E1096:', '', 1, 'FuncWithForwardCall')
 enddef
 
-def Test_nested_functin_with_nextcmd()
+def Test_nested_function_with_nextcmd()
   var lines =<< trim END
       vim9script
       # Define an outer function
@@ -1687,6 +1687,24 @@ def Test_nested_functin_with_nextcmd()
       defcompile
   END
   CheckScriptFailure(lines, 'E476: Invalid command: AAAAA')
+enddef
+
+def Test_nested_function_with_args_split()
+  var lines =<< trim END
+      vim9script
+      def FirstFunction()
+        def SecondFunction(
+        )
+        # had a double free if the right parenthesis of the nested function is
+        # on the next line
+         
+        enddef|BBBB
+      enddef
+      # Compile all functions
+      defcompile
+  END
+  # FIXME: this should fail on the BBBB
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_return_type_wrong()

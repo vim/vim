@@ -219,6 +219,8 @@ get_function_args(
 	    if (theline == NULL)
 		break;
 	    vim_free(*line_to_free);
+	    if (*eap->cmdlinep == *line_to_free)
+		*eap->cmdlinep = theline;
 	    *line_to_free = theline;
 	    whitep = (char_u *)" ";
 	    p = skipwhite(theline);
