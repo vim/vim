@@ -709,11 +709,14 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 	pos_T	curpos = wp->w_cursor;
 	char_u	cwd[MAXPATHL];
 	int	cwd_status;
+#ifdef FEAT_AUTOCHDIR
 	char_u	autocwd[MAXPATHL];
 	int	apply_acd = FALSE;
+#endif
 
 	cwd_status = mch_dirname(cwd, MAXPATHL);
 
+#ifdef FEAT_AUTOCHDIR
 	// If 'acd' is set, check we are using that directory.  If yes, then
 	// apply 'acd' afterwards, otherwise restore the current directory.
 	if (cwd_status == OK && p_acd)
@@ -722,6 +725,7 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 	    apply_acd = mch_dirname(autocwd, MAXPATHL) == OK
 						  && STRCMP(cwd, autocwd) == 0;
 	}
+#endif
 
 	if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE) == OK)
 	{
@@ -729,9 +733,12 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 	    execute_common(argvars, rettv, 1);
 	}
 	restore_win_noblock(save_curwin, save_curtab, TRUE);
+#ifdef FEAT_AUTOCHDIR
 	if (apply_acd)
 	    do_autochdir();
-	else if (cwd_status == OK)
+	else
+#endif
+	    if (cwd_status == OK)
 	    mch_chdir((char *)cwd);
 
 	// Update the status line if the cursor moved.
