@@ -1146,7 +1146,8 @@ lambda_function_body(
     ga_init2(&newlines, (int)sizeof(char_u *), 10);
     if (get_function_body(&eap, &newlines, NULL, &line_to_free) == FAIL)
     {
-	vim_free(cmdline);
+	if (cmdline != line_to_free)
+	    vim_free(cmdline);
 	goto erret;
     }
 
