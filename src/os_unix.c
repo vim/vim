@@ -6411,7 +6411,7 @@ select_eintr:
 	if (ret == -1 && errno == EINTR)
 	{
 	    // Check whether the EINTR is caused by SIGTSTP
-	    if (got_tstp)
+	    if (got_tstp && !in_mch_suspend)
 	    {
 		exarg_T ea;
 		ea.forceit = TRUE;
