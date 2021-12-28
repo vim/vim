@@ -1279,8 +1279,8 @@ VimResume			When the Vim instance is resumed after being
 	:autocmd VimResume * checktime
 <							*VimSuspend*
 VimSuspend			When the Vim instance is suspended.  Only when
-				CTRL-Z was typed inside Vim, not when the
-				SIGSTOP or SIGTSTP signal was sent to Vim.
+				CTRL-Z was typed inside Vim, or when the SIGTSTP
+				signal was sent to Vim, but not for SIGSTOP.
 							*WinClosed*
 WinClosed			After closing a window.  The pattern is
 				matched against the |window-ID|.  Both
