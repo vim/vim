@@ -7393,12 +7393,6 @@ changedir_func(
 	pdir = vim_strsave(NameBuff);
     else
 	pdir = NULL;
-    if (scope == CDSCOPE_WINDOW)
-	curwin->w_prevdir = pdir;
-    else if (scope == CDSCOPE_TABPAGE)
-	curtab->tp_prevdir = pdir;
-    else
-	prev_dir = pdir;
 
     // For UNIX ":cd" means: go to home directory.
     // On other systems too if 'cdhome' is set.
@@ -7430,6 +7424,13 @@ changedir_func(
     {
 	char_u  *acmd_fname;
 
+	if (scope == CDSCOPE_WINDOW)
+		curwin->w_prevdir = pdir;
+	else if (scope == CDSCOPE_TABPAGE)
+		curtab->tp_prevdir = pdir;
+	else
+		prev_dir = pdir;
+
 	post_chdir(scope);
 
 	if (dir_differs)
@@ -7444,8 +7445,8 @@ changedir_func(
 								curbuf);
 	}
 	retval = TRUE;
+	vim_free(tofree);
     }
-    vim_free(tofree);
 
     return retval;
 }
