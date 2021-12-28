@@ -183,7 +183,8 @@ def Test_append()
   CheckDefAndScriptFailure(['append([1], "x")'], ['E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1'])
   CheckDefExecAndScriptFailure(['append("", "x")'], 'E1209: Invalid value for a line number')
   CheckDefExecAndScriptFailure(['append(".a", "x")'], 'E1209: Invalid value for a line number')
-  CheckDefExecAndScriptFailure(['append("''aa", "x")'], 'E1209: Invalid value for a line number')
+  # only get one error
+  assert_fails('append("''aa", "x")', ['E1209: Invalid value for a line number: "''aa"', 'E1209:'])
   CheckDefExecAndScriptFailure(['append(-1, "x")'], 'E966: Invalid line number: -1')
   bwipe!
 enddef
@@ -203,6 +204,8 @@ def Test_appendbufline()
   CheckDefAndScriptFailure(['appendbufline([1], 1, "x")'], ['E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1'])
   CheckDefAndScriptFailure(['appendbufline(1, [1], "x")'], ['E1013: Argument 2: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 2'])
   CheckDefExecAndScriptFailure(['appendbufline(' .. bnum .. ', -1, "x")'], 'E966: Invalid line number: -1')
+  CheckDefExecAndScriptFailure(['appendbufline(' .. bnum .. ', "$a", "x")'], 'E1030: Using a String as a Number: "$a"')
+  assert_fails('appendbufline(' .. bnum .. ', "$a", "x")', ['E1030: Using a String as a Number: "$a"', 'E1030:'])
   CheckDefAndScriptFailure(['appendbufline(1, 1, {"a": 10})'], ['E1013: Argument 3: type mismatch, expected string but got dict<number>', 'E1224: String, Number or List required for argument 3'])
   bnum->bufwinid()->win_gotoid()
   appendbufline('', 0, 'numbers')
@@ -768,6 +771,10 @@ def Test_deletebufline()
   setline(1, ['one', 'two'])
   deletebufline('', 1)
   getline(1, '$')->assert_equal(['two'])
+
+  assert_fails('deletebufline("", "$a", "$b")', ['E1030: Using a String as a Number: "$a"', 'E1030: Using a String as a Number: "$a"'])
+  assert_fails('deletebufline("", "$", "$b")', ['E1030: Using a String as a Number: "$b"', 'E1030: Using a String as a Number: "$b"'])
+
   bwipe!
 enddef
 
@@ -1459,7 +1466,10 @@ def Test_getbufline()
   getbufline(-1, '$', '$')->assert_equal([])
   getbufline(-1, 1, '$')->assert_equal([])
 
+  assert_fails('getbufline("", "$a", "$b")', ['E1030: Using a String as a Number: "$a"', 'E1030: Using a String as a Number: "$a"'])
+  assert_fails('getbufline("", "$", "$b")', ['E1030: Using a String as a Number: "$b"', 'E1030: Using a String as a Number: "$b"'])
   bwipe!
+
   CheckDefAndScriptFailure(['getbufline([], 2)'], ['E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1220: String or Number required for argument 1'])
   CheckDefAndScriptFailure(['getbufline("a", [])'], ['E1013: Argument 2: type mismatch, expected string but got list<unknown>', 'E1220: String or Number required for argument 2'])
   CheckDefAndScriptFailure(['getbufline("a", 2, 0z10)'], ['E1013: Argument 3: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 3'])
@@ -3311,6 +3321,7 @@ def Test_setline()
   CheckDefAndScriptFailure(['setline([1], "x")'], ['E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1220: String or Number required for argument 1'])
   CheckDefExecAndScriptFailure(['setline("", "x")'], 'E1209: Invalid value for a line number')
   CheckDefExecAndScriptFailure(['setline(-1, "x")'], 'E966: Invalid line number: -1')
+  assert_fails('setline(".a", "x")', ['E1209:', 'E1209:'])
   bw!
 enddef
 
