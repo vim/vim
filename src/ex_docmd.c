@@ -1467,7 +1467,7 @@ get_loop_line(int c, void *cookie, int indent, getline_opt_T options)
 
 	// First time inside the ":while"/":for": get line normally.
 	if (cp->getline == NULL)
-	    line = getcmdline(c, 0L, indent, options);
+	    line = getcmdline(c, 0L, indent, 0);
 	else
 	    line = cp->getline(c, cp->cookie, indent, options);
 	if (line != NULL && store_loop_line(cp->lines_gap, line) == OK)

@@ -180,7 +180,7 @@ get_function_line(
     char_u *theline;
 
     if (eap->getline == NULL)
-	theline = getcmdline(':', 0L, indent, getline_options);
+	theline = getcmdline(':', 0L, indent, 0);
     else
 	theline = eap->getline(':', eap->cookie, indent, getline_options);
     if (theline != NULL)
