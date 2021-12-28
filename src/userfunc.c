@@ -174,8 +174,8 @@ one_function_arg(
 get_function_line(
 	exarg_T		*eap,
 	char_u		**line_to_free,
-	getline_opt_T	getline_options,
-	int		indent)
+	int		indent,
+	getline_opt_T	getline_options)
 {
     char_u *theline;
 
@@ -242,7 +242,8 @@ get_function_args(
 			 && (*p == NUL || (VIM_ISWHITE(*whitep) && *p == '#')))
 	{
 	    // End of the line, get the next one.
-	    char_u *theline = get_function_line(eap, line_to_free, 0, TRUE);
+	    char_u *theline = get_function_line(eap, line_to_free, 0,
+							  GETLINE_CONCAT_CONT);
 
 	    if (theline == NULL)
 		break;
