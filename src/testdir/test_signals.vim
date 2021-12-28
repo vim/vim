@@ -144,6 +144,7 @@ func Test_signal_TSTP()
 
   " We resume after the suspend
   exe 'silent !kill -s CONT ' .. pid_vim
+  exe 'silent !sleep 0.006'
 
   call StopVimInTerminal(buf)
 
