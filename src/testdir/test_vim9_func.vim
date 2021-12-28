@@ -1686,7 +1686,7 @@ def Test_nested_function_with_nextcmd()
       # Compile all functions
       defcompile
   END
-  CheckScriptFailure(lines, 'E476: Invalid command: AAAAA')
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: BBBB')
 enddef
 
 def Test_nested_function_with_args_split()
@@ -1703,8 +1703,17 @@ def Test_nested_function_with_args_split()
       # Compile all functions
       defcompile
   END
-  # FIXME: this should fail on the BBBB
-  CheckScriptSuccess(lines)
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: BBBB')
+
+  lines =<< trim END
+      vim9script
+      def FirstFunction()
+        func SecondFunction()
+        endfunc|BBBB
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after endfunction: BBBB')
 enddef
 
 def Test_return_type_wrong()

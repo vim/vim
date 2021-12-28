@@ -879,10 +879,16 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, char_u **line_to_free)
     }
 
     ufunc = define_function(eap, lambda_name, line_to_free);
-
     if (ufunc == NULL)
     {
 	r = eap->skip ? OK : FAIL;
+	goto theend;
+    }
+    if (eap->nextcmd != NULL)
+    {
+	semsg(_(e_text_found_after_str_str),
+	      eap->cmdidx == CMD_def ? "enddef" : "endfunction", eap->nextcmd);
+	r = FAIL;
 	goto theend;
     }
 
