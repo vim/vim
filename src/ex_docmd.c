@@ -7419,7 +7419,10 @@ changedir_func(
     dir_differs = new_dir == NULL || pdir == NULL
 	|| pathcmp((char *)pdir, (char *)new_dir, -1) != 0;
     if (new_dir == NULL || (dir_differs && vim_chdir(new_dir)))
+    {
 	emsg(_(e_failed));
+	vim_free(pdir);
+	}
     else
     {
 	char_u  *acmd_fname;
