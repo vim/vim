@@ -66,8 +66,6 @@ cin_is_cinword(char_u *line)
 }
 #endif
 
-#if defined(FEAT_CINDENT) || defined(FEAT_SYN_HL)
-
 /*
  * Skip to the end of a "string" and a 'c' character.
  * If there is no string or character, return argument unmodified.
@@ -138,6 +136,21 @@ skip_string(char_u *p)
 }
 
 /*
+ * Return TRUE if "line[col]" is inside a C string.
+ */
+    int
+is_pos_in_string(char_u *line, colnr_T col)
+{
+    char_u *p;
+
+    for (p = line; *p && (colnr_T)(p - line) < col; ++p)
+	p = skip_string(p);
+    return !((colnr_T)(p - line) <= col);
+}
+
+#if defined(FEAT_CINDENT) || defined(FEAT_SYN_HL)
+
+/*
  * Find the start of a comment, not knowing if we are in a comment right now.
  * Search starts at w_cursor.lnum and goes backwards.
  * Return NULL when not inside a comment.
@@ -152,8 +165,6 @@ ind_find_start_comment(void)	    // XXX
 find_start_comment(int ind_maxcomment)	// XXX
 {
     pos_T	*pos;
-    char_u	*line;
-    char_u	*p;
     int		cur_maxcomment = ind_maxcomment;
 
     for (;;)
@@ -164,10 +175,7 @@ find_start_comment(int ind_maxcomment)	// XXX
 
 	// Check if the comment start we found is inside a string.
 	// If it is then restrict the search to below this line and try again.
-	line = ml_get(pos->lnum);
-	for (p = line; *p && (colnr_T)(p - line) < pos->col; ++p)
-	    p = skip_string(p);
-	if ((colnr_T)(p - line) <= pos->col)
+	if (!is_pos_in_string(ml_get(pos->lnum), pos->col))
 	    break;
 	cur_maxcomment = curwin->w_cursor.lnum - pos->lnum - 1;
 	if (cur_maxcomment <= 0)
@@ -188,8 +196,6 @@ find_start_comment(int ind_maxcomment)	// XXX
 find_start_rawstring(int ind_maxcomment)	// XXX
 {
     pos_T	*pos;
-    char_u	*line;
-    char_u	*p;
     int		cur_maxcomment = ind_maxcomment;
 
     for (;;)
@@ -200,10 +206,7 @@ find_start_rawstring(int ind_maxcomment)	// XXX
 
 	// Check if the raw string start we found is inside a string.
 	// If it is then restrict the search to below this line and try again.
-	line = ml_get(pos->lnum);
-	for (p = line; *p && (colnr_T)(p - line) < pos->col; ++p)
-	    p = skip_string(p);
-	if ((colnr_T)(p - line) <= pos->col)
+	if (!is_pos_in_string(ml_get(pos->lnum), pos->col))
 	    break;
 	cur_maxcomment = curwin->w_cursor.lnum - pos->lnum - 1;
 	if (cur_maxcomment <= 0)
