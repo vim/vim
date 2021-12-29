@@ -3310,7 +3310,10 @@ xdiff_out(
 	return -1;
 
     if (ga_grow(&dout->dout_ga, 1) == FAIL)
+    {
+	vim_free(p);
 	return -1;
+    }
 
     p->lnum_orig  = start_a + 1;
     p->count_orig = count_a;
