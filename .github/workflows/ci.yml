@@ -92,6 +92,7 @@ jobs:
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-13 100
           sudo update-alternatives --set clang /usr/bin/clang-13
           sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-13 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-13 100
 
       - name: Set up environment
         run: |
@@ -119,7 +120,6 @@ jobs:
             ;;
           esac
 
-          CFLAGS=""
           if ${{ matrix.coverage == true }}; then
             CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
@@ -241,7 +241,7 @@ jobs:
         if: contains(matrix.extra, 'asan') && !cancelled()
         run: |
           for f in $(grep -lR '#[[:digit:]]* *0x[[:digit:]a-fA-F]*' "${LOG_DIR}"); do
-            asan_symbolize-13 -l "$f"
+            asan_symbolize -l "$f"
             false # in order to fail a job
           done
 
