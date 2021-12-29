@@ -40,6 +40,7 @@ int before_quit_autocmds(win_T *wp, int quit_all, int forceit);
 void ex_quit(exarg_T *eap);
 void tabpage_close(int forceit);
 void tabpage_close_other(tabpage_T *tp, int forceit);
+void ex_stop(exarg_T *eap);
 void handle_drop(int filec, char_u **filev, int split, void (*callback)(void *), void *cookie);
 void handle_any_postponed_drop(void);
 void ex_splitview(exarg_T *eap);
