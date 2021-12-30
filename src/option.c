@@ -3962,6 +3962,9 @@ get_option_value(
 	    char_u key_name[2];
 	    char_u *p;
 
+	    if (flagsp != NULL)
+		*flagsp = 0;  // terminal option has no flags
+
 	    // check for a terminal option
 	    if (key < 0)
 	    {

@@ -824,10 +824,13 @@ semsg(const char *s, ...)
 iemsg(char *s)
 {
     if (!emsg_not_now())
+    {
 	emsg_core((char_u *)s);
 #ifdef ABORT_ON_INTERNAL_ERROR
-    abort();
+	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
+	abort();
 #endif
+    }
 }
 
 #ifndef PROTO  // manual proto with __attribute__

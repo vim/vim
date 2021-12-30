@@ -2714,7 +2714,6 @@ findmatchlimit(
 /*
  * Check if line[] contains a / / comment.
  * Return MAXCOL if not, otherwise return the column.
- * TODO: skip strings.
  */
     int
 check_linecomment(char_u *line)
@@ -2746,7 +2745,8 @@ check_linecomment(char_u *line)
 			in_str = TRUE;
 		}
 		else if (!in_str && ((p - line) < 2
-				    || (*(p - 1) != '\\' && *(p - 2) != '#')))
+				    || (*(p - 1) != '\\' && *(p - 2) != '#'))
+			       && !is_pos_in_string(line, (colnr_T)(p - line)))
 		    break;	// found!
 		++p;
 	    }
@@ -2758,9 +2758,11 @@ check_linecomment(char_u *line)
 #endif
     while ((p = vim_strchr(p, '/')) != NULL)
     {
-	// accept a double /, unless it's preceded with * and followed by *,
-	// because * / / * is an end and start of a C comment
-	if (p[1] == '/' && (p == line || p[-1] != '*' || p[2] != '*'))
+	// Accept a double /, unless it's preceded with * and followed by *,
+	// because * / / * is an end and start of a C comment.
+	// Only accept the position if it is not inside a string.
+	if (p[1] == '/' && (p == line || p[-1] != '*' || p[2] != '*')
+			       && !is_pos_in_string(line, (colnr_T)(p - line)))
 	    break;
 	++p;
     }

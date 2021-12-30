@@ -73,35 +73,40 @@
 # if RUBY_VERSION >= 19
 // Ruby 1.9 defines a number of static functions which use rb_num2long and
 // rb_int2big
-#  define rb_num2long rb_num2long_stub
-#  define rb_int2big rb_int2big_stub
+#  define rb_num2long	rb_num2long_stub
+#  define rb_int2big	rb_int2big_stub
 
 #  if RUBY_VERSION >= 30 || VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 // Ruby 1.9 defines a number of static functions which use rb_fix2int and
 // rb_num2int if VIM_SIZEOF_INT < VIM_SIZEOF_LONG (64bit)
-#   define rb_fix2int rb_fix2int_stub
-#   define rb_num2int rb_num2int_stub
+#   define rb_fix2int	rb_fix2int_stub
+#   define rb_num2int	rb_num2int_stub
 #  endif
 # endif
 
 # if RUBY_VERSION == 21
 // Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
 // rb_gc_writebarrier_unprotect_promoted if USE_RGENGC
-#  define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
+#  define rb_gc_writebarrier_unprotect_promoted	rb_gc_writebarrier_unprotect_promoted_stub
 # endif
 
 # if RUBY_VERSION >= 22
-#  define rb_gc_writebarrier_unprotect rb_gc_writebarrier_unprotect_stub
+#  define rb_gc_writebarrier_unprotect	rb_gc_writebarrier_unprotect_stub
 # endif
 
 # if RUBY_VERSION >= 26
-#  define rb_ary_detransient rb_ary_detransient_stub
+#  define rb_ary_detransient	rb_ary_detransient_stub
 # endif
 
 # if RUBY_VERSION >= 30
-#  define rb_check_type rb_check_type_stub
-#  define rb_num2uint rb_num2uint_stub
-#  define ruby_malloc_size_overflow ruby_malloc_size_overflow_stub
+#  define rb_check_type			rb_check_type_stub
+#  define rb_num2uint			rb_num2uint_stub
+#  define ruby_malloc_size_overflow	ruby_malloc_size_overflow_stub
+# endif
+
+# if RUBY_VERSION >= 31
+#  define rb_debug_rstring_null_ptr	rb_debug_rstring_null_ptr_stub
+#  define rb_unexpected_type		rb_unexpected_type_stub
 # endif
 
 #endif  // ifdef DYNAMIC_RUBY
@@ -171,6 +176,14 @@
 
 #ifdef HAVE_DUP
 # undef HAVE_DUP
+#endif
+
+// Avoid redefining TRUE/FALSE in vterm.h.
+#ifdef TRUE
+# undef TRUE
+#endif
+#ifdef FALSE
+# undef FALSE
 #endif
 
 #include "vim.h"
@@ -411,6 +424,9 @@ static VALUE (*dll_rb_data_typed_object_alloc) (VALUE, void*, const rb_data_type
 # else
 static VALUE (*dll_rb_data_object_alloc) (VALUE, void*, RUBY_DATA_FUNC, RUBY_DATA_FUNC);
 # endif
+# if RUBY_VERSION >= 31
+static void (*dll_rb_debug_rstring_null_ptr) (const char*);
+# endif
 static VALUE (*dll_rb_define_class_under) (VALUE, const char*, VALUE);
 static void (*dll_rb_define_const) (VALUE,const char*,VALUE);
 static void (*dll_rb_define_global_function) (const char*,VALUE(*)(),int);
@@ -484,6 +500,9 @@ static void (*dll_NtInitialize) (int*, char***);
 #  if RUBY_VERSION >= 18
 static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 #  endif
+# endif
+# if RUBY_VERSION >= 31
+static void (*dll_rb_unexpected_type) (VALUE, int) ATTRIBUTE_NORETURN;
 # endif
 # if RUBY_VERSION >= 18
 static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
@@ -629,6 +648,18 @@ ruby_malloc_size_overflow_stub(size_t x, size_t y)
     dll_ruby_malloc_size_overflow(x, y);
 }
 #  endif
+#  if RUBY_VERSION >= 31
+    void
+rb_debug_rstring_null_ptr_stub(const char *func)
+{
+    dll_rb_debug_rstring_null_ptr(func);
+}
+    void
+rb_unexpected_type_stub(VALUE self, int t)
+{
+    dll_rb_unexpected_type(self, t);
+}
+#  endif
 # endif // ifndef PROTO
 
 static HINSTANCE hinstRuby = NULL; // Instance of ruby.dll
@@ -671,6 +702,9 @@ static struct
 #  endif
 # else
     {"rb_data_object_alloc", (RUBY_PROC*)&dll_rb_data_object_alloc},
+# endif
+# if RUBY_VERSION >= 31
+    {"rb_debug_rstring_null_ptr", (RUBY_PROC*)&dll_rb_debug_rstring_null_ptr},
 # endif
     {"rb_define_class_under", (RUBY_PROC*)&dll_rb_define_class_under},
     {"rb_define_const", (RUBY_PROC*)&dll_rb_define_const},
@@ -744,6 +778,9 @@ static struct
 #  if RUBY_VERSION >= 18
     {"rb_w32_snprintf", (RUBY_PROC*)&dll_rb_w32_snprintf},
 #  endif
+# endif
+# if RUBY_VERSION >= 31
+    {"rb_unexpected_type", (RUBY_PROC*)&dll_rb_unexpected_type},
 # endif
 # if RUBY_VERSION >= 18
     {"rb_string_value_ptr", (RUBY_PROC*)&dll_rb_string_value_ptr},

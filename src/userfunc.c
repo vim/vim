@@ -166,6 +166,35 @@ one_function_arg(
 }
 
 /*
+ * Handle line continuation in function arguments or body.
+ * Get a next line, store it in "eap" if appropriate and use "line_to_free" to
+ * handle freeing the line later.
+ */
+    static char_u *
+get_function_line(
+	exarg_T		*eap,
+	char_u		**line_to_free,
+	int		indent,
+	getline_opt_T	getline_options)
+{
+    char_u *theline;
+
+    if (eap->getline == NULL)
+	theline = getcmdline(':', 0L, indent, 0);
+    else
+	theline = eap->getline(':', eap->cookie, indent, getline_options);
+    if (theline != NULL)
+    {
+	if (*eap->cmdlinep == *line_to_free)
+	    *eap->cmdlinep = theline;
+	vim_free(*line_to_free);
+	*line_to_free = theline;
+    }
+
+    return theline;
+}
+
+/*
  * Get function arguments.
  * "argp" should point to just after the "(", possibly to white space.
  * "argp" is advanced just after "endchar".
@@ -212,14 +241,12 @@ get_function_args(
 	while (eap != NULL && eap->getline != NULL
 			 && (*p == NUL || (VIM_ISWHITE(*whitep) && *p == '#')))
 	{
-	    char_u *theline;
-
 	    // End of the line, get the next one.
-	    theline = eap->getline(':', eap->cookie, 0, TRUE);
+	    char_u *theline = get_function_line(eap, line_to_free, 0,
+							  GETLINE_CONCAT_CONT);
+
 	    if (theline == NULL)
 		break;
-	    vim_free(*line_to_free);
-	    *line_to_free = theline;
 	    whitep = (char_u *)" ";
 	    p = skipwhite(theline);
 	}
@@ -718,15 +745,8 @@ get_function_body(
 	}
 	else
 	{
-	    if (eap->getline == NULL)
-		theline = getcmdline(':', 0L, indent, getline_options);
-	    else
-		theline = eap->getline(':', eap->cookie, indent,
+	    theline = get_function_line(eap, line_to_free, indent,
 							      getline_options);
-	    if (*eap->cmdlinep == *line_to_free)
-		*eap->cmdlinep = theline;
-	    vim_free(*line_to_free);
-	    *line_to_free = theline;
 	}
 	if (KeyTyped)
 	    lines_left = Rows - 1;
@@ -825,7 +845,7 @@ get_function_body(
 			SOURCING_LNUM = sourcing_lnum_top
 							+ newlines->ga_len + 1;
 			if (eap->cmdidx == CMD_def)
-			    semsg(_(e_text_found_after_enddef_str), p);
+			    semsg(_(e_text_found_after_str_str), "enddef", p);
 			else
 			    give_warning2((char_u *)
 				   _("W22: Text found after :endfunction: %s"),
@@ -1127,7 +1147,8 @@ lambda_function_body(
     ga_init2(&newlines, (int)sizeof(char_u *), 10);
     if (get_function_body(&eap, &newlines, NULL, &line_to_free) == FAIL)
     {
-	vim_free(cmdline);
+	if (cmdline != line_to_free)
+	    vim_free(cmdline);
 	goto erret;
     }
 
@@ -3305,6 +3326,7 @@ call_func(
     int		argv_base = 0;
     partial_T	*partial = funcexe->fe_partial;
     type_T	check_type;
+    type_T	*check_type_args[MAX_FUNC_ARGS];
 
     // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
     // even when call_func() returns FAIL.
@@ -3356,6 +3378,11 @@ call_func(
 		// make a copy of the type with the correction.
 		check_type = *funcexe->fe_check_type;
 		funcexe->fe_check_type = &check_type;
+		check_type.tt_args = check_type_args;
+		CLEAR_FIELD(check_type_args);
+		for (i = 0; i < check_type.tt_argcount; ++i)
+		    check_type_args[i + partial->pt_argc] =
+							 check_type.tt_args[i];
 		check_type.tt_argcount += partial->pt_argc;
 		check_type.tt_min_argcount += partial->pt_argc;
 	    }

@@ -1189,22 +1189,30 @@ func Test_diff_followwrap()
 endfunc
 
 func Test_diff_maintains_change_mark()
-  enew!
-  call setline(1, ['a', 'b', 'c', 'd'])
-  diffthis
-  new
-  call setline(1, ['a', 'b', 'c', 'e'])
-  " Set '[ and '] marks
-  2,3yank
-  call assert_equal([2, 3], [line("'["), line("']")])
-  " Verify they aren't affected by the implicit diff
-  diffthis
-  call assert_equal([2, 3], [line("'["), line("']")])
-  " Verify they aren't affected by an explicit diff
-  diffupdate
-  call assert_equal([2, 3], [line("'["), line("']")])
-  bwipe!
-  bwipe!
+  func DiffMaintainsChangeMark()
+    enew!
+    call setline(1, ['a', 'b', 'c', 'd'])
+    diffthis
+    new
+    call setline(1, ['a', 'b', 'c', 'e'])
+    " Set '[ and '] marks
+    2,3yank
+    call assert_equal([2, 3], [line("'["), line("']")])
+    " Verify they aren't affected by the implicit diff
+    diffthis
+    call assert_equal([2, 3], [line("'["), line("']")])
+    " Verify they aren't affected by an explicit diff
+    diffupdate
+    call assert_equal([2, 3], [line("'["), line("']")])
+    bwipe!
+    bwipe!
+  endfunc
+
+  set diffopt-=internal
+  call DiffMaintainsChangeMark()
+  set diffopt+=internal
+  call DiffMaintainsChangeMark()
+  set diffopt&
 endfunc
 
 " Test for 'patchexpr'
@@ -1415,6 +1423,43 @@ func Test_diff_modify_chunks()
   call assert_equal(['', '', '', '', '', '', '', '', ''], hl)
 
   %bw!
+endfunc
+
+func Test_diff_binary()
+  CheckScreendump
+
+  let content =<< trim END
+    call setline(1, ['a', 'b', "c\n", 'd', 'e', 'f', 'g'])
+    vnew
+    call setline(1, ['A', 'b', 'c', 'd', 'E', 'f', 'g'])
+    windo diffthis
+    wincmd p
+    norm! gg0
+    redraw!
+  END
+  call writefile(content, 'Xtest_diff_bin')
+  let buf = RunVimInTerminal('-S Xtest_diff_bin', {})
+
+  " Test using internal diff
+  call VerifyScreenDump(buf, 'Test_diff_bin_01', {})
+
+  " Test using internal diff and case folding
+  call term_sendkeys(buf, ":set diffopt+=icase\<cr>")
+  call term_sendkeys(buf, "\<C-l>")
+  call VerifyScreenDump(buf, 'Test_diff_bin_02', {})
+  " Test using external diff
+  call term_sendkeys(buf, ":set diffopt=filler\<cr>")
+  call term_sendkeys(buf, "\<C-l>")
+  call VerifyScreenDump(buf, 'Test_diff_bin_03', {})
+  " Test using external diff and case folding
+  call term_sendkeys(buf, ":set diffopt=filler,icase\<cr>")
+  call term_sendkeys(buf, "\<C-l>")
+  call VerifyScreenDump(buf, 'Test_diff_bin_04', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_bin')
+  set diffopt&vim
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

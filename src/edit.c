@@ -3980,6 +3980,9 @@ ins_bs(
     int		in_indent;
     int		oldState;
     int		cpc[MAX_MCO];	    // composing characters
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+    int		call_fix_indent = FALSE;
+#endif
 
     /*
      * can't delete anything in an empty file
@@ -4161,7 +4164,13 @@ ins_bs(
 	    save_col = curwin->w_cursor.col;
 	    beginline(BL_WHITE);
 	    if (curwin->w_cursor.col < save_col)
+	    {
 		mincol = curwin->w_cursor.col;
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+		// should now fix the indent to match with the previous line
+		call_fix_indent = TRUE;
+#endif
+	    }
 	    curwin->w_cursor.col = save_col;
 	}
 
@@ -4333,6 +4342,12 @@ ins_bs(
 #endif
     if (curwin->w_cursor.col <= 1)
 	did_ai = FALSE;
+
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+    if (call_fix_indent)
+	fix_indent();
+#endif
+
     /*
      * It's a little strange to put backspaces into the redo
      * buffer, but it makes auto-indent a lot easier to deal

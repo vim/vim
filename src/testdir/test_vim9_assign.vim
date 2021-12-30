@@ -847,6 +847,36 @@ def Test_assignment_partial()
       Ref()
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      var nres: any
+      var sres: any
+      def Func(n: number, s = '')
+        nres = n
+        sres = s
+      enddef
+
+      var n: number
+      var Ref = function(Func, [n])
+      Ref('x')
+      assert_equal(0, nres)
+      assert_equal('x', sres)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      def Func(n: number, s = '')
+      enddef
+
+      var n: number
+      var Ref = function(Func, [n])
+      Ref(0)
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected string but got number')
 enddef
 
 def Test_assignment_list_any_index()

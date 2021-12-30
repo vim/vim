@@ -777,9 +777,14 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 		int	orig_len;
 		char_u	cbuf[MB_MAXBYTES + 1];
 
-		// xdiff doesn't support ignoring case, fold-case the text.
-		c = PTR2CHAR(s);
-		c = MB_CASEFOLD(c);
+		if (*s == NL)
+		    c = NUL;
+		else
+		{
+		    // xdiff doesn't support ignoring case, fold-case the text.
+		    c = PTR2CHAR(s);
+		    c = MB_CASEFOLD(c);
+		}
 		orig_len = mb_ptr2len(s);
 		if (mb_char2bytes(c, cbuf) != orig_len)
 		    // TODO: handle byte length difference
@@ -791,7 +796,10 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 		len += orig_len;
 	    }
 	    else
-		ptr[len++] = *s++;
+	    {
+		ptr[len++] = *s == NL ? NUL : *s;
+		s++;
+	    }
 	}
 	ptr[len++] = NL;
     }
@@ -1628,7 +1636,7 @@ diff_read(
     long	off;
     int		i;
     int		notset = TRUE;	    // block "*dp" not set yet
-    diffhunk_T	*hunk;
+    diffhunk_T	*hunk = NULL;	    // init to avoid gcc warning
 
     enum {
 	DIFF_ED,
@@ -1654,10 +1662,7 @@ diff_read(
     {
 	hunk = ALLOC_ONE(diffhunk_T);
 	if (hunk == NULL)
-	{
-	    emsg(_("E98: Cannot read diff output"));
 	    return;
-	}
     }
 
     for (;;)
@@ -3302,7 +3307,10 @@ xdiff_out(
 	return -1;
 
     if (ga_grow(&dout->dout_ga, 1) == FAIL)
+    {
+	vim_free(p);
 	return -1;
+    }
 
     p->lnum_orig  = start_a + 1;
     p->count_orig = count_a;
