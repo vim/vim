@@ -369,19 +369,22 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 		    if (type == NULL)
 			return NULL;
 		    *type = *ufunc->uf_func_type;
-		    type->tt_argcount -= tv->vval.v_partial->pt_argc;
-		    type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
-		    if (type->tt_argcount == 0)
-			type->tt_args = NULL;
-		    else
+		    if (type->tt_argcount >= 0)
 		    {
-			int i;
+			type->tt_argcount -= tv->vval.v_partial->pt_argc;
+			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+			if (type->tt_argcount == 0)
+			    type->tt_args = NULL;
+			else
+			{
+			    int i;
 
-			func_type_add_arg_types(type, type->tt_argcount,
+			    func_type_add_arg_types(type, type->tt_argcount,
 								     type_gap);
-			for (i = 0; i < type->tt_argcount; ++i)
-			    type->tt_args[i] = ufunc->uf_func_type->tt_args[
+			    for (i = 0; i < type->tt_argcount; ++i)
+				type->tt_args[i] = ufunc->uf_func_type->tt_args[
 					      i + tv->vval.v_partial->pt_argc];
+			}
 		    }
 		    return type;
 		}
