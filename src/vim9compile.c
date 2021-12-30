@@ -889,6 +889,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, char_u **line_to_free)
 	semsg(_(e_text_found_after_str_str),
 	      eap->cmdidx == CMD_def ? "enddef" : "endfunction", eap->nextcmd);
 	r = FAIL;
+	func_ptr_unref(ufunc);
 	goto theend;
     }
 

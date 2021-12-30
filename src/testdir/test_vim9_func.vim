@@ -1493,9 +1493,20 @@ def Test_call_varargs_only()
 enddef
 
 def Test_using_var_as_arg()
-  writefile(['def Func(x: number)',  'var x = 234', 'enddef', 'defcompile'], 'Xdef')
-  assert_fails('so Xdef', 'E1006:', '', 1, 'Func')
-  delete('Xdef')
+  var lines =<< trim END
+      def Func(x: number)
+        var x = 234
+      enddef
+  END
+  CheckDefFailure(lines, 'E1006:')
+
+  lines =<< trim END
+      def Func(Ref: number)
+        def Ref()
+        enddef
+      enddef
+  END
+  CheckDefFailure(lines, 'E1073:')
 enddef
 
 def DictArg(arg: dict<string>)
