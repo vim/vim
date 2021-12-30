@@ -1636,7 +1636,7 @@ diff_read(
     long	off;
     int		i;
     int		notset = TRUE;	    // block "*dp" not set yet
-    diffhunk_T	*hunk;
+    diffhunk_T	*hunk = NULL;	    // init to avoid gcc warning
 
     enum {
 	DIFF_ED,
@@ -1662,10 +1662,7 @@ diff_read(
     {
 	hunk = ALLOC_ONE(diffhunk_T);
 	if (hunk == NULL)
-	{
-	    emsg(_("E98: Cannot read diff output"));
 	    return;
-	}
     }
 
     for (;;)
