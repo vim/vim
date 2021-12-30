@@ -7411,9 +7411,9 @@ changedir_func(
 # endif
 	new_dir = NameBuff;
     }
-    dir_differs = new_dir == NULL || pdir == NULL
+    dir_differs = pdir == NULL
 	|| pathcmp((char *)pdir, (char *)new_dir, -1) != 0;
-    if (new_dir == NULL || (dir_differs && vim_chdir(new_dir)))
+    if (dir_differs && vim_chdir(new_dir))
     {
 	emsg(_(e_failed));
 	vim_free(pdir);
