@@ -3326,6 +3326,7 @@ call_func(
     int		argv_base = 0;
     partial_T	*partial = funcexe->fe_partial;
     type_T	check_type;
+    type_T	*check_type_args[MAX_FUNC_ARGS];
 
     // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
     // even when call_func() returns FAIL.
@@ -3377,6 +3378,11 @@ call_func(
 		// make a copy of the type with the correction.
 		check_type = *funcexe->fe_check_type;
 		funcexe->fe_check_type = &check_type;
+		check_type.tt_args = check_type_args;
+		CLEAR_FIELD(check_type_args);
+		for (i = 0; i < check_type.tt_argcount; ++i)
+		    check_type_args[i + partial->pt_argc] =
+							 check_type.tt_args[i];
 		check_type.tt_argcount += partial->pt_argc;
 		check_type.tt_min_argcount += partial->pt_argc;
 	    }
