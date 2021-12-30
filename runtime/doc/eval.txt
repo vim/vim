@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Dec 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1724,9 +1724,9 @@ It is deleted when the tab page is closed. {not available when compiled
 without the |+windows| feature}
 
 						*global-variable* *g:var* *g:*
-Inside functions global variables are accessed with "g:".  Omitting this will
-access a variable local to a function.  But "g:" can also be used in any other
-place if you like.
+Inside functions and in |Vim9| script global variables are accessed with "g:".
+Omitting this will access a variable local to a function or script.  "g:"
+can also be used in any other place if you like.
 
 						*local-variable* *l:var* *l:*
 Inside functions local variables are accessed without prepending anything.
@@ -1736,8 +1736,10 @@ refers to "v:count".  Using "l:count" you can have a local variable with the
 same name.
 
 						*script-variable* *s:var*
-In a Vim script variables starting with "s:" can be used.  They cannot be
-accessed from outside of the scripts, thus are local to the script.
+In a legacy Vim script variables starting with "s:" can be used.  They cannot
+be accessed from outside of the scripts, thus are local to the script.
+In |Vim9| script the "s:" prefix can be omitted, variables are script-local by
+default.
 
 They can be used in:
 - commands executed while the script is sourced

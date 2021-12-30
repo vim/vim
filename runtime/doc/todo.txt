@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 27
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,11 +41,8 @@ browser use: https://github.com/vim/vim/issues/1234
 Once Vim9 is stable:
 - Add the "vim9script" feature, can use has('vim9script')
     Remove TODO in vim9.txt
-- Change the help to prefer Vim9 syntax where appropriate
-- In the generic eval docs, point out the Vim9 syntax where it differs.
 - Add all the error numbers in a good place in documentation.
 - Use Vim9 for runtime files.
-    PR #7497 for autoload/ccomplete.vim
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.
