@@ -4847,7 +4847,6 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
 		sprintf((char *)buf + 1, "%ld", reglen + 1);
 		break;
     }
-    rettv->v_type = VAR_STRING;
     rettv->vval.v_string = vim_strsave(buf);
 }
 
