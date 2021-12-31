@@ -853,8 +853,8 @@ def Test_assignment_partial()
 
       var nres: any
       var sres: any
-      def Func(n: number, s = '')
-        nres = n
+      def Func(nr: number, s = '')
+        nres = nr
         sres = s
       enddef
 
@@ -869,7 +869,7 @@ def Test_assignment_partial()
   lines =<< trim END
       vim9script
 
-      def Func(n: number, s = '')
+      def Func(nr: number, s = '')
       enddef
 
       var n: number

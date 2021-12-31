@@ -2393,6 +2393,34 @@ may_compile_assignment(exarg_T *eap, char_u **line, cctx_T *cctx)
     return NOTDONE;
 }
 
+/*
+ * Check if arguments of "ufunc" shadow variables in "cctx".
+ * Return OK or FAIL.
+ */
+    static int
+check_args_shadowing(ufunc_T *ufunc, cctx_T *cctx)
+{
+    int	    i;
+    char_u  *arg;
+    int	    r = OK;
+
+    // Make sure arguments are not found when compiling a second time.
+    ufunc->uf_args_visible = 0;
+
+    // Check for arguments shadowing variables from the context.
+    for (i = 0; i < ufunc->uf_args.ga_len; ++i)
+    {
+	arg = ((char_u **)(ufunc->uf_args.ga_data))[i];
+	if (check_defined(arg, STRLEN(arg), cctx, TRUE) == FAIL)
+	{
+	    r = FAIL;
+	    break;
+	}
+    }
+    ufunc->uf_args_visible = ufunc->uf_args.ga_len;
+    return r;
+}
+
 
 /*
  * Add a function to the list of :def functions.
@@ -2524,6 +2552,9 @@ compile_def_function(
     if (do_estack_push)
 	estack_push_ufunc(ufunc, 1);
     estack_compiling = TRUE;
+
+    if (check_args_shadowing(ufunc, &cctx) == FAIL)
+	goto erret;
 
     if (ufunc->uf_def_args.ga_len > 0)
     {
