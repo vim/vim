@@ -72,6 +72,11 @@
 # define CYGWIN
 #endif
 
+#if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__)
+// Needed for fdopen().
+#define _XOPEN_SOURCE 700
+#endif
+
 #include <stdio.h>
 #ifdef VAXC
 # include <file.h>
