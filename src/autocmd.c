@@ -515,9 +515,9 @@ au_del_group(char_u *name)
 
     i = au_find_group(name);
     if (i == AUGROUP_ERROR)	// the group doesn't exist
-	semsg(_("E367: No such group: \"%s\""), name);
+	semsg(_(e_no_such_group_str), name);
     else if (i == current_augroup)
-	emsg(_("E936: Cannot delete the current group"));
+	emsg(_(e_cannot_delete_current_group));
     else
     {
 	event_T	event;
@@ -1205,8 +1205,7 @@ do_autocmd_event(
 		if (is_buflocal && (buflocal_nr == 0
 				      || buflist_findnr(buflocal_nr) == NULL))
 		{
-		    semsg(_("E680: <buffer=%d>: invalid buffer number "),
-								 buflocal_nr);
+		    semsg(_(e_buffer_nr_invalid_buffer_number), buflocal_nr);
 		    return FAIL;
 		}
 

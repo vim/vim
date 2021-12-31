@@ -399,7 +399,7 @@ blob_set_range(blob_T *dest, long n1, long n2, typval_T *src)
 
     if (n2 - n1 + 1 != blob_len(src->vval.v_blob))
     {
-	emsg(_("E972: Blob value does not have the right number of bytes"));
+	emsg(_(e_blob_value_does_not_have_right_number_of_bytes));
 	return FAIL;
     }
 

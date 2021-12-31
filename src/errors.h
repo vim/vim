@@ -495,10 +495,22 @@ EXTERN char e_cannot_start_the_GUI[]
 	INIT(= N_("E229: Cannot start the GUI"));
 
 
+EXTERN char e_window_layout_changed_unexpectedly[]
+	INIT(= N_("E249: window layout changed unexpectedly"));
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_cannot_allocate_color_str[]
 	INIT(= N_("E254: Cannot allocate color %s"));
 #endif
+
+EXTERN char e_internal_error_lalloc_zero[]
+	INIT(= N_("E341: Internal error: lalloc(0, )"));
+EXTERN char e_out_of_memory_allocating_nr_bytes[]
+	INIT(= N_("E342: Out of memory!  (allocating %lu bytes)"));
+EXTERN char e_no_such_group_str[]
+	INIT(= N_("E367: No such group: \"%s\""));
+EXTERN char e_cannot_write_buftype_option_is_set[]
+	INIT(= N_("E382: Cannot write, 'buftype' option is set"));
+
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
 EXTERN char e_invalid_command[]
@@ -506,8 +518,62 @@ EXTERN char e_invalid_command[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+
+	// E502
+EXTERN char e_is_a_directory[]
+	INIT(= N_("is a directory"));
+	// E503
+EXTERN char e_is_not_file_or_writable_device[]
+	INIT(= N_("is not a file or writable device"));
+
+	// E504
+EXTERN char e_is_read_only_cannot_override_W_in_cpoptions[]
+	INIT(= N_("is read-only (cannot override: \"W\" in 'cpoptions')"));
+	// E505
+EXTERN char e_is_read_only_add_bang_to_override[]
+	INIT(= N_("is read-only (add ! to override)"));
+EXTERN char e_canot_write_to_backup_file_add_bang_to_override[]
+	INIT(= N_("E506: Can't write to backup file (add ! to override)"));
+EXTERN char e_close_error_for_backup_file_add_bang_to_write_anyway[]
+	INIT(= N_("E507: Close error for backup file (add ! to write anyway)"));
+EXTERN char e_cant_read_file_for_backup_add_bang_to_write_anyway[]
+	INIT(= N_("E508: Can't read file for backup (add ! to write anyway)"));
+EXTERN char e_cannot_create_backup_file_add_bang_to_write_anyway[]
+	INIT(= N_("E509: Cannot create backup file (add ! to override)"));
+EXTERN char e_cant_make_backup_file_add_bang_to_write_anyway[]
+	INIT(= N_("E510: Can't make backup file (add ! to write anyway)"));
+EXTERN char e_close_failed[]
+	INIT(= N_("E512: Close failed"));
+EXTERN char e_write_error_conversion_failed_make_fenc_empty_to_override[]
+	INIT(= N_("E513: write error, conversion failed (make 'fenc' empty to override)"));
+EXTERN char e_write_error_conversion_failed_in_line_nr_make_fenc_empty_to_override[]
+	INIT(= N_("E513: write error, conversion failed in line %ld (make 'fenc' empty to override)"));
+EXTERN char e_write_error_file_system_full[]
+	INIT(= N_("E514: write error (file system full?)"));
+EXTERN char e_no_buffers_were_unloaded[]
+	INIT(= N_("E515: No buffers were unloaded"));
+EXTERN char e_no_buffers_were_deleted[]
+	INIT(= N_("E516: No buffers were deleted"));
+EXTERN char e_no_buffers_were_wiped_out[]
+	INIT(= N_("E517: No buffers were wiped out"));
+
+EXTERN char e_no_argument_to_delete[]
+	INIT(= N_("E610: No argument to delete"));
+#ifdef FEAT_NETBEANS_INTG
+	// E656
+EXTERN char e_netbeans_disallows_writes_of_unmodified_buffers[]
+	INIT(= N_("NetBeans disallows writes of unmodified buffers"));
+	// E657
+EXTERN char e_partial_writes_disallowed_for_netbeans_buffers[]
+	INIT(= N_("Partial writes disallowed for NetBeans buffers"));
+#endif
+EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
+	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
+EXTERN char e_buffer_nr_invalid_buffer_number[]
+	INIT(= N_("E680: <buffer=%d>: invalid buffer number"));
 EXTERN char e_cannot_index_a_funcref[]
 	INIT(= N_("E695: Cannot index a Funcref"));
+
 EXTERN char e_list_value_has_more_items_than_targets[]
 	INIT(= N_("E710: List value has more items than targets"));
 EXTERN char e_list_value_does_not_have_enough_items[]
@@ -528,25 +594,59 @@ EXTERN char e_cannot_set_variable_in_sandbox_str[]
 	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
 EXTERN char e_cannot_delete_variable[]
 	INIT(= N_("E795: Cannot delete variable"));
+	// E796
+EXTERN char e_writing_to_device_disabled_with_opendevice_option[]
+	INIT(= N_("writing to device disabled with 'opendevice' option"));
 EXTERN char e_cannot_delete_variable_str[]
 	INIT(= N_("E795: Cannot delete variable %s"));
 #endif
+
+EXTERN char e_blowfish_big_little_endian_use_wrong[]
+	INIT(= N_("E817: Blowfish big/little endian use wrong"));
+EXTERN char e_sha256_test_failed[]
+	INIT(= N_("E818: sha256 test failed"));
+EXTERN char e_blowfish_test_failed[]
+	INIT(= N_("E819: Blowfish test failed"));
+EXTERN char e_sizeof_uint32_isnot_four[]
+	INIT(= N_("E820: sizeof(uint32_t) != 4"));
+EXTERN char e_bf_key_init_called_with_empty_password[]
+	INIT(= N_("E831: bf_key_init() called with empty password"));
 EXTERN char e_conflicts_with_value_of_listchars[]
 	INIT(= N_("E834: Conflicts with value of 'listchars'"));
 EXTERN char e_conflicts_with_value_of_fillchars[]
 	INIT(= N_("E835: Conflicts with value of 'fillchars'"));
+EXTERN char e_autocommands_caused_command_to_abort[]
+	INIT(= N_("E855: Autocommands caused command to abort"));
 #ifdef FEAT_EVAL
 EXTERN char e_assert_fails_second_arg[]
 	INIT(= N_("E856: \"assert_fails()\" second argument must be a string or a list with one or two strings"));
+
 EXTERN char e_using_invalid_value_as_string_str[]
 	INIT(= N_("E908: using an invalid value as a String: %s"));
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
 #endif
+EXTERN char e_buffer_cannot_be_registered[]
+	INIT(= N_("E931: Buffer cannot be registered"));
+EXTERN char e_cannot_delete_current_group[]
+	INIT(= N_("E936: Cannot delete the current group"));
+EXTERN char e_attempt_to_delete_buffer_that_is_in_use_str[]
+	INIT(= N_("E937: Attempt to delete a buffer that is in use: %s"));
+#ifdef FEAT_TERMINAL
+EXTERN char e_job_still_running[]
+	INIT(= N_("E948: Job still running"));
+EXTERN char e_job_still_running_add_bang_to_end_the_job[]
+	INIT(= N_("E948: Job still running (add ! to end the job)"));
+EXTERN char e_file_changed_while_writing[]
+	INIT(= N_("E949: File changed while writing"));
+#endif
 EXTERN char_u e_invalid_column_number_nr[]
 	INIT(= N_("E964: Invalid column number: %ld"));
 EXTERN char_u e_invalid_line_number_nr[]
 	INIT(= N_("E966: Invalid line number: %ld"));
+EXTERN char e_blob_value_does_not_have_right_number_of_bytes[]
+	INIT(= N_("E972: Blob value does not have the right number of bytes"));
+
 EXTERN char e_command_not_supported_in_vim9_script_missing_var_str[]
 	INIT(= N_("E1100: Command not supported in Vim9 script (missing :var?): %s"));
 #ifdef FEAT_EVAL

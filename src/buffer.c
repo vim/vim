@@ -63,7 +63,6 @@ static void	clear_wininfo(buf_T *buf);
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
 #endif
-static char *e_auabort = N_("E855: Autocommands caused command to abort");
 
 // Number of times free_buffer() was called.
 static int	buf_free_count = 0;
@@ -427,7 +426,7 @@ buf_hashtab_add(buf_T *buf)
 {
     sprintf((char *)buf->b_key, "%x", buf->b_fnum);
     if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
-	emsg(_("E931: Buffer cannot be registered"));
+	emsg(_(e_buffer_cannot_be_registered));
 }
 
     static void
@@ -461,8 +460,7 @@ can_unload_buffer(buf_T *buf)
 	    }
     }
     if (!can_unload)
-	semsg(_("E937: Attempt to delete a buffer that is in use: %s"),
-								 buf->b_fname);
+	semsg(_(e_attempt_to_delete_buffer_that_is_in_use_str), buf->b_fname);
     return can_unload;
 }
 
@@ -594,7 +592,7 @@ close_buffer(
 	{
 	    // Autocommands deleted the buffer.
 aucmd_abort:
-	    emsg(_(e_auabort));
+	    emsg(_(e_autocommands_caused_command_to_abort));
 	    return FALSE;
 	}
 	--buf->b_locked;
@@ -1660,11 +1658,11 @@ do_bufdel(
 	if (deleted == 0)
 	{
 	    if (command == DOBUF_UNLOAD)
-		STRCPY(IObuff, _("E515: No buffers were unloaded"));
+		STRCPY(IObuff, _(e_no_buffers_were_unloaded));
 	    else if (command == DOBUF_DEL)
-		STRCPY(IObuff, _("E516: No buffers were deleted"));
+		STRCPY(IObuff, _(e_no_buffers_were_deleted));
 	    else
-		STRCPY(IObuff, _("E517: No buffers were wiped out"));
+		STRCPY(IObuff, _(e_no_buffers_were_wiped_out));
 	    errormsg = (char *)IObuff;
 	}
 	else if (deleted >= p_report)
@@ -1905,7 +1903,7 @@ no_write_message(void)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(curbuf->b_term))
-	emsg(_("E948: Job still running (add ! to end the job)"));
+	emsg(_(e_job_still_running_add_bang_to_end_the_job));
     else
 #endif
 	emsg(_(e_no_write_since_last_change_add_bang_to_override));
@@ -1916,7 +1914,7 @@ no_write_message_nobang(buf_T *buf UNUSED)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(buf->b_term))
-	emsg(_("E948: Job still running"));
+	emsg(_(e_job_still_running));
     else
 #endif
 	emsg(_(e_no_write_since_last_change));
@@ -5661,7 +5659,7 @@ bt_dontwrite_msg(buf_T *buf)
 {
     if (bt_dontwrite(buf))
     {
-	emsg(_("E382: Cannot write, 'buftype' option is set"));
+	emsg(_(e_cannot_write_buftype_option_is_set));
 	return TRUE;
     }
     return FALSE;

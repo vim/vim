@@ -839,7 +839,7 @@ ex_argdelete(exarg_T *eap)
 	{
 	    if (curwin->w_arg_idx >= ARGCOUNT)
 	    {
-		emsg(_("E610: No argument to delete"));
+		emsg(_(e_no_argument_to_delete));
 		return;
 	    }
 	    eap->line1 = eap->line2 = curwin->w_arg_idx + 1;
@@ -1129,7 +1129,7 @@ do_arg_all(
 			else if (wpnext->w_frame->fr_parent
 						 != curwin->w_frame->fr_parent)
 			{
-			    emsg(_("E249: window layout changed unexpectedly"));
+			    emsg(_(e_window_layout_changed_unexpectedly));
 			    i = count;
 			    break;
 			}
