@@ -3359,7 +3359,11 @@ ex_append(exarg_T *eap)
 
 	did_undo = TRUE;
 	ml_append(lnum, theline, (colnr_T)0, FALSE);
-	appended_lines_mark(lnum + (empty ? 1 : 0), 1L);
+	if (empty)
+	    // there are no marks below the inserted lines
+	    appended_lines(lnum, 1L);
+	else
+	    appended_lines_mark(lnum, 1L);
 
 	vim_free(theline);
 	++lnum;
