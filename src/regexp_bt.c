@@ -1392,7 +1392,8 @@ regatom(int *flagp)
       case Magic(')'):
 	if (one_exactly)
 	    EMSG_ONE_RET_NULL;
-	IEMSG_RET_NULL(_(e_internal));	// Supposed to be caught earlier.
+	// Supposed to be caught earlier.
+	IEMSG_RET_NULL(_(e_internal_error_in_regexp));
 	// NOTREACHED
 
       case Magic('='):
