@@ -815,7 +815,7 @@ ex_breakdel(exarg_T *eap)
     }
 
     if (todel < 0)
-	semsg(_("E161: Breakpoint not found: %s"), eap->arg);
+	semsg(_(e_breakpoint_not_found_str), eap->arg);
     else
     {
 	while (gap->ga_len > 0)

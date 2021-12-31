@@ -1140,7 +1140,7 @@ sign_undefine_by_name(char_u *name, int give_error)
     if (sp == NULL)
     {
 	if (give_error)
-	    semsg(_("E155: Unknown sign: %s"), name);
+	    semsg(_(e_unknown_sign_str), name);
 	return FAIL;
     }
     sign_undefine(sp, sp_prev);
@@ -1160,7 +1160,7 @@ sign_list_by_name(char_u *name)
     if (sp != NULL)
 	sign_list_defined(sp);
     else
-	semsg(_("E155: Unknown sign: %s"), name);
+	semsg(_(e_unknown_sign_str), name);
 }
 
     static void
@@ -1200,7 +1200,7 @@ sign_place(
 	    break;
     if (sp == NULL)
     {
-	semsg(_("E155: Unknown sign: %s"), sign_name);
+	semsg(_(e_unknown_sign_str), sign_name);
 	return FAIL;
     }
     if (*sign_id == 0)
@@ -1277,7 +1277,7 @@ sign_unplace_at_cursor(char_u *groupname)
     if (id > 0)
 	sign_unplace(id, groupname, curwin->w_buffer, curwin->w_cursor.lnum);
     else
-	emsg(_("E159: Missing sign number"));
+	emsg(_(e_missing_sign_number));
 }
 
 /*
@@ -1290,7 +1290,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
     if ((lnum = buf_findsign(buf, sign_id, sign_group)) <= 0)
     {
-	semsg(_("E157: Invalid sign ID: %d"), sign_id);
+	semsg(_(e_invalid_sign_id_nr), sign_id);
 	return -1;
     }
 
@@ -1643,7 +1643,7 @@ parse_sign_cmd_args(
 
     if (filename != NULL && *buf == NULL)
     {
-	semsg(_("E158: Invalid buffer name: %s"), filename);
+	semsg(_(e_invalid_buffer_name_str), filename);
 	return FAIL;
     }
 
@@ -1673,7 +1673,7 @@ ex_sign(exarg_T *eap)
     idx = sign_cmd_idx(arg, p);
     if (idx == SIGNCMD_LAST)
     {
-	semsg(_("E160: Unknown sign command: %s"), arg);
+	semsg(_(e_unknown_sign_command_str), arg);
 	return;
     }
     arg = skipwhite(p);
@@ -1688,7 +1688,7 @@ ex_sign(exarg_T *eap)
 		sign_list_defined(sp);
 	}
 	else if (*arg == NUL)
-	    emsg(_("E156: Missing sign name"));
+	    emsg(_(e_missing_sign_name));
 	else
 	{
 	    char_u	*name;

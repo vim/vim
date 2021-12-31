@@ -302,6 +302,54 @@ EXTERN char e_viminfo_file_is_not_writable_str[]
 EXTERN char e_cant_write_viminfo_file_str[]
 	INIT(= N_("E138: Can't write viminfo file %s!"));
 #endif
+EXTERN char e_file_is_loaded_in_another_buffer[]
+	INIT(= N_("E139: File is loaded in another buffer"));
+EXTERN char e_use_bang_to_write_partial_buffer[]
+	INIT(= N_("E140: Use ! to write partial buffer"));
+EXTERN char e_no_file_name_for_buffer_nr[]
+	INIT(= N_("E141: No file name for buffer %ld"));
+EXTERN char e_file_not_written_writing_is_disabled_by_write_option[]
+	INIT(= N_("E142: File not written: Writing is disabled by 'write' option"));
+EXTERN char e_autocommands_unexpectedly_deleted_new_buffer_str[]
+	INIT(= N_("E143: Autocommands unexpectedly deleted new buffer %s"));
+EXTERN char e_non_numeric_argument_to_z[]
+	INIT(= N_("E144: non-numeric argument to :z"));
+EXTERN char e_shell_commands_and_some_functionality_not_allowed_in_rvim[]
+	INIT(= N_("E145: Shell commands and some functionality not allowed in rvim"));
+EXTERN char e_regular_expressions_cant_be_delimited_by_letters[]
+	INIT(= N_("E146: Regular expressions can't be delimited by letters"));
+EXTERN char e_cannot_do_global_recursive_with_range[]
+	INIT(= N_("E147: Cannot do :global recursive with a range"));
+EXTERN char e_regular_expression_missing_from_global[]
+	INIT(= N_("E148: Regular expression missing from :global"));
+EXTERN char e_sorry_no_help_for_str[]
+	INIT(= N_("E149: Sorry, no help for %s"));
+EXTERN char e_not_a_directory_str[]
+	INIT(= N_("E150: Not a directory: %s"));
+EXTERN char e_no_match_str[]
+	INIT(= N_("E151: No match: %s"));
+EXTERN char e_cannot_open_str_for_writing[]
+	INIT(= N_("E152: Cannot open %s for writing"));
+EXTERN char e_unable_to_open_str_for_reading[]
+	INIT(= N_("E153: Unable to open %s for reading"));
+EXTERN char e_duplicate_tag_str_in_file_str_str[]
+	INIT(= N_("E154: Duplicate tag \"%s\" in file %s/%s"));
+EXTERN char e_unknown_sign_str[]
+	INIT(= N_("E155: Unknown sign: %s"));
+EXTERN char e_missing_sign_name[]
+	INIT(= N_("E156: Missing sign name"));
+EXTERN char e_invalid_sign_id_nr[]
+	INIT(= N_("E157: Invalid sign ID: %d"));
+EXTERN char e_invalid_buffer_name_str[]
+	INIT(= N_("E158: Invalid buffer name: %s"));
+EXTERN char e_missing_sign_number[]
+	INIT(= N_("E159: Missing sign number"));
+EXTERN char e_unknown_sign_command_str[]
+	INIT(= N_("E160: Unknown sign command: %s"));
+#ifdef FEAT_EVAL
+EXTERN char e_breakpoint_not_found_str[]
+	INIT(= N_("E161: Breakpoint not found: %s"));
+#endif
 
 EXTERN char e_no_such_user_defined_command_str[]
 	INIT(= N_("E184: No such user-defined command: %s"));

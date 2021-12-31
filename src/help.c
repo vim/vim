@@ -107,7 +107,7 @@ ex_help(exarg_T *eap)
 	    semsg(_("E661: Sorry, no '%s' help for %s"), lang, arg);
 	else
 #endif
-	    semsg(_("E149: Sorry, no help for %s"), arg);
+	    semsg(_(e_sorry_no_help_for_str), arg);
 	if (n != FAIL)
 	    FreeWild(num_matches, matches);
 	return;
@@ -982,7 +982,7 @@ helptags_one(
 	    || filecount == 0)
     {
 	if (!got_int)
-	    semsg(_("E151: No match: %s"), NameBuff);
+	    semsg(_(e_no_match_str), NameBuff);
 	return;
     }
 
@@ -995,7 +995,7 @@ helptags_one(
     if (fd_tags == NULL)
     {
 	if (!ignore_writeerr)
-	    semsg(_("E152: Cannot open %s for writing"), NameBuff);
+	    semsg(_(e_cannot_open_str_for_writing), NameBuff);
 	FreeWild(filecount, files);
 	return;
     }
@@ -1028,7 +1028,7 @@ helptags_one(
 	fd = mch_fopen((char *)files[fi], "r");
 	if (fd == NULL)
 	{
-	    semsg(_("E153: Unable to open %s for reading"), files[fi]);
+	    semsg(_(e_unable_to_open_str_for_reading), files[fi]);
 	    continue;
 	}
 	fname = files[fi] + dirlen + 1;
@@ -1136,7 +1136,7 @@ helptags_one(
 		{
 		    *p2 = NUL;
 		    vim_snprintf((char *)NameBuff, MAXPATHL,
-			    _("E154: Duplicate tag \"%s\" in file %s/%s"),
+			    _(e_duplicate_tag_str_in_file_str_str),
 				     ((char_u **)ga.ga_data)[i], dir, p2 + 1);
 		    emsg((char *)NameBuff);
 		    *p2 = '\t';
@@ -1316,7 +1316,7 @@ ex_helptags(exarg_T *eap)
 	dirname = ExpandOne(&xpc, eap->arg, NULL,
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
 	if (dirname == NULL || !mch_isdir(dirname))
-	    semsg(_("E150: Not a directory: %s"), eap->arg);
+	    semsg(_(e_not_a_directory_str), eap->arg);
 	else
 	    do_helptags(dirname, add_help_tags, FALSE);
 	vim_free(dirname);
