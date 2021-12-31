@@ -727,9 +727,9 @@ readfile(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (fd < 0)
-		emsg(_("E200: *ReadPre autocommands made the file unreadable"));
+		emsg(_(e_readpre_autocommands_made_file_unreadable));
 	    else
-		emsg(_("E201: *ReadPre autocommands must not change current buffer"));
+		emsg(_(e_readpre_autocommands_must_not_change_current_buffer));
 	    curbuf->b_p_ro = TRUE;	// must use "w!" now
 	    return FAIL;
 	}
@@ -1053,7 +1053,7 @@ retry:
 		    if (fd < 0)
 		    {
 			// Re-opening the original file failed!
-			emsg(_("E202: Conversion made file unreadable!"));
+			emsg(_(e_conversion_mad_file_unreadable));
 			error = TRUE;
 			goto failed;
 		    }
@@ -3873,17 +3873,17 @@ vim_rename(char_u *from, char_u *to)
     while ((n = read_eintr(fd_in, buffer, WRITEBUFSIZE)) > 0)
 	if (write_eintr(fd_out, buffer, n) != n)
 	{
-	    errmsg = _("E208: Error writing to \"%s\"");
+	    errmsg = _(e_error_writing_to_str);
 	    break;
 	}
 
     vim_free(buffer);
     close(fd_in);
     if (close(fd_out) < 0)
-	errmsg = _("E209: Error closing \"%s\"");
+	errmsg = _(e_error_closing_str);
     if (n < 0)
     {
-	errmsg = _("E210: Error reading \"%s\"");
+	errmsg = _(e_error_reading_str);
 	to = from;
     }
 #ifndef UNIX	    // for Unix mch_open() already set the permission
@@ -4172,7 +4172,7 @@ buf_check_timestamp(
 		{
 		    // Only give the message once.
 		    if (prev_b_mtime != -1)
-			mesg = _("E211: File \"%s\" no longer available");
+			mesg = _(e_file_str_no_longer_available);
 		}
 		else
 		{
@@ -5613,9 +5613,9 @@ file_pat_to_reg_pat(
     if (nested != 0)
     {
 	if (nested < 0)
-	    emsg(_("E219: Missing {."));
+	    emsg(_(e_missing_open_curly));
 	else
-	    emsg(_("E220: Missing }."));
+	    emsg(_(e_missing_close_curly));
 	VIM_CLEAR(reg_pat);
     }
     return reg_pat;

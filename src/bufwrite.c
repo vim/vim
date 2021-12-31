@@ -932,7 +932,7 @@ buf_write(
 #ifdef FEAT_EVAL
 	    if (!aborting())
 #endif
-		emsg(_("E203: Autocommands deleted or unloaded buffer to be written"));
+		emsg(_(e_autocommands_deleted_or_unloaded_buffer_to_be_written));
 	    return FAIL;
 	}
 
@@ -953,7 +953,7 @@ buf_write(
 		{
 		    --no_wait_return;
 		    msg_scroll = msg_save;
-		    emsg(_("E204: Autocommand changed number of lines in unexpected way"));
+		    emsg(_(e_autocommands_changed_number_of_lines_in_unexpected_way));
 		    return FAIL;
 		}
 	    }
@@ -1746,7 +1746,7 @@ buf_write(
 		wfname = vim_tempname('w', FALSE);
 		if (wfname == NULL)	// Can't write without a tempfile!
 		{
-		    errmsg = (char_u *)_("E214: Can't find temp file for writing");
+		    errmsg = (char_u *)_(e_cant_find_temp_file_for_writing);
 		    goto restore_backup;
 		}
 	    }
@@ -1764,7 +1764,7 @@ buf_write(
     {
 	if (!forceit)
 	{
-	    errmsg = (char_u *)_("E213: Cannot convert (add ! to write without conversion)");
+	    errmsg = (char_u *)_(e_cannot_convert_add_bang_to_write_without_conversion);
 	    goto restore_backup;
 	}
 	notconverted = TRUE;
@@ -1826,7 +1826,7 @@ buf_write(
 		    else
 #endif
 		    {
-			errmsg = (char_u *)_("E212: Can't open file for writing");
+			errmsg = (char_u *)_(e_cant_open_file_for_writing);
 			if (forceit && vim_strchr(p_cpo, CPO_FWRITE) == NULL
 								  && perm >= 0)
 			{
@@ -2454,7 +2454,7 @@ restore_backup:
 	    // If the original file does not exist yet
 	    // the current backup file becomes the original file
 	    if (org == NULL)
-		emsg(_("E205: Patchmode: can't save original file"));
+		emsg(_(e_patchmode_cant_save_original_file));
 	    else if (mch_stat(org, &st) < 0)
 	    {
 		vim_rename(backup, (char_u *)org);
@@ -2474,7 +2474,7 @@ restore_backup:
 		    || (empty_fd = mch_open(org,
 				      O_CREAT | O_EXTRA | O_EXCL | O_NOFOLLOW,
 					perm < 0 ? 0666 : (perm & 0777))) < 0)
-	      emsg(_("E206: patchmode: can't touch empty original file"));
+	      emsg(_(e_patchmode_cant_touch_empty_original_file));
 	    else
 	      close(empty_fd);
 	}
@@ -2489,7 +2489,7 @@ restore_backup:
     // conversion error.
     if (!p_bk && backup != NULL && !write_info.bw_conv_error
 	    && mch_remove(backup) != 0)
-	emsg(_("E207: Can't delete backup file"));
+	emsg(_(e_cant_delete_backup_file));
 
     goto nofail;
 

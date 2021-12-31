@@ -687,7 +687,7 @@ find_end_event(
     {
 	if (arg[1] && !VIM_ISWHITE(arg[1]))
 	{
-	    semsg(_("E215: Illegal character after *: %s"), arg);
+	    semsg(_(e_illegal_character_after_star_str), arg);
 	    return NULL;
 	}
 	pat = arg + 1;
@@ -699,9 +699,9 @@ find_end_event(
 	    if ((int)event_name2nr(pat, &p) >= NUM_EVENTS)
 	    {
 		if (have_group)
-		    semsg(_("E216: No such event: %s"), pat);
+		    semsg(_(e_no_such_event_str), pat);
 		else
-		    semsg(_("E216: No such group or event: %s"), pat);
+		    semsg(_(e_no_such_group_or_event_str), pat);
 		return NULL;
 	    }
 	}
@@ -1329,7 +1329,7 @@ do_doautocmd(
 
     if (*arg == '*')
     {
-	emsg(_("E217: Can't execute autocommands for ALL events"));
+	emsg(_(e_cant_execute_autocommands_for_all_events));
 	return FAIL;
     }
 
@@ -1942,7 +1942,7 @@ apply_autocmds_group(
      */
     if (nesting == 10)
     {
-	emsg(_("E218: autocommand nesting too deep"));
+	emsg(_(e_autocommand_nesting_too_deep));
 	goto BYPASS_AU;
     }
 

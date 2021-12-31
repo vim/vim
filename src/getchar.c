@@ -208,7 +208,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	// buffer has already been read
     {
-	iemsg(_("E222: Add to read buffer"));
+	iemsg(_(e_add_to_internal_buffer_that_was_already_read_from));
 	return;
     }
     else if (buf->bh_index != 0)
@@ -2758,7 +2758,7 @@ handle_mapping(
 	 */
 	if (++*mapdepth >= p_mmd)
 	{
-	    emsg(_("E223: recursive mapping"));
+	    emsg(_(e_recursive_mapping));
 	    if (State & CMDLINE)
 		redrawcmdline();
 	    else

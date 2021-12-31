@@ -412,12 +412,89 @@ EXTERN char e_str_exists_add_bang_to_override[]
 	INIT(= N_("E189: \"%s\" exists (add ! to override)"));
 EXTERN char e_cannot_open_str_for_writing_2[]
 	INIT(= N_("E190: Cannot open \"%s\" for writing"));
-
-
+EXTERN char e_argument_must_be_letter_or_forward_backward_quote[]
+	INIT(= N_("E191: Argument must be a letter or forward/backward quote"));
+EXTERN char e_recursive_use_of_normal_too_deep[]
+	INIT(= N_("E192: Recursive use of :normal too deep"));
+EXTERN char e_str_not_inside_function[]
+	INIT(= N_("E193: %s not inside a function"));
+EXTERN char e_no_alternate_file_name_to_substitute_for_hash[]
+	INIT(= N_("E194: No alternate file name to substitute for '#'"));
+EXTERN char e_cannot_open_viminfo_file_for_reading[]
+	INIT(= N_("E195: Cannot open viminfo file for reading"));
 #ifndef FEAT_DIGRAPHS
 EXTERN char e_no_digraphs_version[]
 	INIT(= N_("E196: No digraphs in this version"));
 #endif
+EXTERN char e_cannot_set_language_to_str[]
+	INIT(= N_("E197: Cannot set language to \"%s\""));
+// E198 unused
+EXTERN char e_active_window_or_buffer_deleted[]
+	INIT(= N_("E199: Active window or buffer deleted"));
+EXTERN char e_readpre_autocommands_made_file_unreadable[]
+	INIT(= N_("E200: *ReadPre autocommands made the file unreadable"));
+EXTERN char e_readpre_autocommands_must_not_change_current_buffer[]
+	INIT(= N_("E201: *ReadPre autocommands must not change current buffer"));
+EXTERN char e_conversion_mad_file_unreadable[]
+	INIT(= N_("E202: Conversion made file unreadable!"));
+EXTERN char e_autocommands_deleted_or_unloaded_buffer_to_be_written[]
+	INIT(= N_("E203: Autocommands deleted or unloaded buffer to be written"));
+EXTERN char e_autocommands_changed_number_of_lines_in_unexpected_way[]
+	INIT(= N_("E204: Autocommand changed number of lines in unexpected way"));
+EXTERN char e_patchmode_cant_save_original_file[]
+	INIT(= N_("E205: Patchmode: can't save original file"));
+EXTERN char e_patchmode_cant_touch_empty_original_file[]
+	INIT(= N_("E206: patchmode: can't touch empty original file"));
+EXTERN char e_cant_delete_backup_file[]
+	INIT(= N_("E207: Can't delete backup file"));
+EXTERN char e_error_writing_to_str[]
+	INIT(= N_("E208: Error writing to \"%s\""));
+EXTERN char e_error_closing_str[]
+	INIT(= N_("E209: Error closing \"%s\""));
+EXTERN char e_error_reading_str[]
+	INIT(= N_("E210: Error reading \"%s\""));
+EXTERN char e_file_str_no_longer_available[]
+	INIT(= N_("E211: File \"%s\" no longer available"));
+EXTERN char e_cant_open_file_for_writing[]
+	INIT(= N_("E212: Can't open file for writing"));
+EXTERN char e_cannot_convert_add_bang_to_write_without_conversion[]
+	INIT(= N_("E213: Cannot convert (add ! to write without conversion)"));
+EXTERN char e_cant_find_temp_file_for_writing[]
+	INIT(= N_("E214: Can't find temp file for writing"));
+EXTERN char e_illegal_character_after_star_str[]
+	INIT(= N_("E215: Illegal character after *: %s"));
+EXTERN char e_no_such_event_str[]
+	INIT(= N_("E216: No such event: %s"));
+EXTERN char e_no_such_group_or_event_str[]
+	INIT(= N_("E216: No such group or event: %s"));
+EXTERN char e_cant_execute_autocommands_for_all_events[]
+	INIT(= N_("E217: Can't execute autocommands for ALL events"));
+EXTERN char e_autocommand_nesting_too_deep[]
+	INIT(= N_("E218: autocommand nesting too deep"));
+EXTERN char e_missing_open_curly[]
+	INIT(= N_("E219: Missing {."));
+EXTERN char e_missing_close_curly[]
+	INIT(= N_("E220: Missing }."));
+EXTERN char e_marker_cannot_start_with_lower_case_letter[]
+	INIT(= N_("E221: Marker cannot start with lower case letter"));
+EXTERN char e_add_to_internal_buffer_that_was_already_read_from[]
+	INIT(= N_("E222: Add to internal buffer that was already read from"));
+EXTERN char e_recursive_mapping[]
+	INIT(= N_("E223: recursive mapping"));
+EXTERN char e_global_abbreviation_already_exists_for_str[]
+	INIT(= N_("E224: global abbreviation already exists for %s"));
+EXTERN char e_global_mapping_already_exists_for_str[]
+	INIT(= N_("E225: global mapping already exists for %s"));
+EXTERN char e_abbreviation_already_exists_for_str[]
+	INIT(= N_("E226: abbreviation already exists for %s"));
+EXTERN char e_mapping_already_exists_for_str[]
+	INIT(= N_("E227: mapping already exists for %s"));
+EXTERN char e_makemap_illegal_mode[]
+	INIT(= N_("E228: makemap: Illegal mode"));
+EXTERN char e_cannot_start_the_GUI[]
+	INIT(= N_("E229: Cannot start the GUI"));
+
+
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_cannot_allocate_color_str[]
 	INIT(= N_("E254: Cannot allocate color %s"));

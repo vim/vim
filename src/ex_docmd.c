@@ -8335,7 +8335,7 @@ ex_mark(exarg_T *eap)
 	curwin->w_cursor.lnum = eap->line2;
 	beginline(BL_WHITE | BL_FIX);
 	if (setmark(*eap->arg) == FAIL)	// set mark
-	    emsg(_("E191: Argument must be a letter or forward/backward quote"));
+	    emsg(_(e_argument_must_be_letter_or_forward_backward_quote));
 	curwin->w_cursor = pos;		// restore curwin->w_cursor
     }
 }
@@ -8426,7 +8426,7 @@ ex_normal(exarg_T *eap)
     }
     if (ex_normal_busy >= p_mmd)
     {
-	emsg(_("E192: Recursive use of :normal too deep"));
+	emsg(_(e_recursive_use_of_normal_too_deep));
 	return;
     }
 
@@ -9062,7 +9062,7 @@ eval_vars(
 		    buf = buflist_findnr(i);
 		    if (buf == NULL)
 		    {
-			*errormsg = _("E194: No alternate file name to substitute for '#'");
+			*errormsg = _(e_no_alternate_file_name_to_substitute_for_hash);
 			return NULL;
 		    }
 		    if (lnump != NULL)

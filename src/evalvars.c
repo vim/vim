@@ -626,7 +626,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	*p = NUL;
 	if (!script_get && vim_islower(*marker))
 	{
-	    emsg(_("E221: Marker cannot start with lower case letter"));
+	    emsg(_(e_marker_cannot_start_with_lower_case_letter));
 	    return NULL;
 	}
     }

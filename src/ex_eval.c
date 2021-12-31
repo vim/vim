@@ -2516,15 +2516,15 @@ rewind_conditionals(
 }
 
 /*
- * ":endfunction" when not after a ":function"
+ * ":endfunction" or ":enddef" when not after a ":function"
  */
     void
 ex_endfunction(exarg_T *eap)
 {
     if (eap->cmdidx == CMD_enddef)
-	emsg(_("E193: :enddef not inside a function"));
+	semsg(_(e_str_not_inside_function), ":enddef");
     else
-	emsg(_("E193: :endfunction not inside a function"));
+	semsg(_(e_str_not_inside_function), ":endfunction");
 }
 
 /*
