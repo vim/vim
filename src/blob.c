@@ -614,7 +614,7 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 	    return;		// type error; errmsg already given
 	if (before < 0 || before > len)
 	{
-	    semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
 	    return;
 	}
     }
@@ -623,7 +623,7 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 	return;
     if (val < 0 || val > 255)
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	return;
     }
 

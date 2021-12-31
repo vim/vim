@@ -4200,7 +4200,7 @@ check_cedit(void)
     {
 	n = string_to_key(p_cedit, FALSE);
 	if (vim_isprintc(n))
-	    return e_invarg;
+	    return e_invalid_argument;
 	cedit_key = n;
     }
     return NULL;

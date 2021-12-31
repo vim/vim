@@ -787,9 +787,9 @@ ex_delmarks(exarg_T *eap)
 	// clear all marks
 	clrallmarks(curbuf);
     else if (eap->forceit)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else if (*eap->arg == NUL)
-	emsg(_(e_argreq));
+	emsg(_(e_argument_required));
     else
     {
 	// clear specified marks only
@@ -809,7 +809,7 @@ ex_delmarks(exarg_T *eap)
 				    : ASCII_ISUPPER(p[2])))
 			    || to < from)
 		    {
-			semsg(_(e_invarg2), p);
+			semsg(_(e_invalid_argument_str), p);
 			return;
 		    }
 		    p += 2;
@@ -848,7 +848,7 @@ ex_delmarks(exarg_T *eap)
 		    case '<': curbuf->b_visual.vi_start.lnum = 0; break;
 		    case '>': curbuf->b_visual.vi_end.lnum   = 0; break;
 		    case ' ': break;
-		    default:  semsg(_(e_invarg2), p);
+		    default:  semsg(_(e_invalid_argument_str), p);
 			      return;
 		}
 	}

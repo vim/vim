@@ -1375,7 +1375,7 @@ find_special_key(
 	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
 	    if (l == 0)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return 0;
 	    }
 	    bp += l + 5;
@@ -1413,7 +1413,7 @@ find_special_key(
 								  &n, 0, TRUE);
 		if (l == 0)
 		{
-		    emsg(_(e_invarg));
+		    emsg(_(e_invalid_argument));
 		    return 0;
 		}
 		key = (int)n;

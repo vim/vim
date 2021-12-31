@@ -850,7 +850,7 @@ ex_argdelete(exarg_T *eap)
 	n = eap->line2 - eap->line1 + 1;
 	if (*eap->arg != NUL)
 	    // Can't have both a range and an argument.
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else if (n <= 0)
 	{
 	    // Don't give an error for ":%argdel" if the list is empty.

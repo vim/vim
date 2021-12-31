@@ -4378,7 +4378,7 @@ did_set_spell_option(int is_spellfile)
 	l = (int)STRLEN(curwin->w_s->b_p_spf);
 	if (l > 0 && (l < 4
 			|| STRCMP(curwin->w_s->b_p_spf + l - 4, ".add") != 0))
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
     }
 
     if (errmsg == NULL)
@@ -4416,7 +4416,7 @@ compile_cap_prog(synblock_T *synblock)
 	    if (synblock->b_cap_prog == NULL)
 	    {
 		synblock->b_cap_prog = rp; // restore the previous program
-		return e_invarg;
+		return e_invalid_argument;
 	    }
 	}
     }

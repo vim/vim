@@ -480,7 +480,7 @@ ex_sort(exarg_T *eap)
 	}
 	else
 	{
-	    semsg(_(e_invarg2), p);
+	    semsg(_(e_invalid_argument_str), p);
 	    goto sortend;
 	}
     }
@@ -488,7 +488,7 @@ ex_sort(exarg_T *eap)
     // Can only have one of 'n', 'b', 'o' and 'x'.
     if (format_found > 1)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	goto sortend;
     }
 
@@ -664,7 +664,7 @@ sortend:
     vim_free(sortbuf2);
     vim_regfree(regmatch.regprog);
     if (got_int)
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
 }
 
 /*
@@ -1811,7 +1811,7 @@ ex_file(exarg_T *eap)
 		|| eap->line2 > 0
 		|| eap->addr_count > 1))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1909,7 +1909,7 @@ do_write(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_saveas)
 	{
-	    emsg(_(e_argreq));
+	    emsg(_(e_argument_required));
 	    goto theend;
 	}
 	other = FALSE;
@@ -4776,7 +4776,7 @@ outofmem:
     else if (!global_busy)
     {
 	if (got_int)		// interrupted
-	    emsg(_(e_interr));
+	    emsg(_(e_interrupted));
 	else if (got_match)	// did find something but nothing substituted
 	    msg("");
 	else if (subflags.do_error)	// nothing found
@@ -4845,7 +4845,7 @@ do_sub_msg(
     }
     if (got_int)
     {
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
 	return TRUE;
     }
     return FALSE;
@@ -4992,7 +4992,7 @@ ex_global(exarg_T *eap)
 	 * pass 2: execute the command for each line that has been marked
 	 */
 	if (got_int)
-	    msg(_(e_interr));
+	    msg(_(e_interrupted));
 	else if (ndone == 0)
 	{
 	    if (type == 'v')

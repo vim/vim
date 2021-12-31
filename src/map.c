@@ -916,7 +916,7 @@ map_clear(
     local = (STRCMP(arg, "<buffer>") == 0);
     if (!local && *arg != NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -2753,7 +2753,7 @@ do_exmap(exarg_T *eap, int isabbrev)
     switch (do_map((*cmdp == 'n') ? 2 : (*cmdp == 'u'),
 						    eap->arg, mode, isabbrev))
     {
-	case 1: emsg(_(e_invarg));
+	case 1: emsg(_(e_invalid_argument));
 		break;
 	case 2: emsg((isabbrev ? _(e_no_such_abbreviation)
 						      : _(e_no_such_mapping)));

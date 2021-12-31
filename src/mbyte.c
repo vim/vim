@@ -530,7 +530,7 @@ codepage_invalid:
 	// Windows: accept only valid codepage numbers, check below.
 	if (p_enc[6] != 'c' || p_enc[7] != 'p'
 			      || (enc_dbcs_new = atoi((char *)p_enc + 8)) == 0)
-	    return e_invarg;
+	    return e_invalid_argument;
 #else
 	// Unix: accept any "2byte-" name, assume current locale.
 	enc_dbcs_new = DBCS_2BYTE;
@@ -563,7 +563,7 @@ codepage_invalid:
 	}
     }
     else    // Don't know what encoding this is, reject it.
-	return e_invarg;
+	return e_invalid_argument;
 
     if (enc_dbcs_new != 0)
     {

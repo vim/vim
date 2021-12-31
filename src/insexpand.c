@@ -2746,7 +2746,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
     {
 	startcol = (int)tv_get_number_chk(&argvars[0], NULL);

@@ -1325,7 +1325,7 @@ do_set(
 		}
 		if (arg[len] != '>')
 		{
-		    errmsg = e_invarg;
+		    errmsg = e_invalid_argument;
 		    goto skip;
 		}
 		arg[len] = NUL;			    // put NUL after name
@@ -1577,7 +1577,7 @@ do_set(
 		{
 		    if (nextchar == '=' || nextchar == ':')
 		    {
-			errmsg = e_invarg;
+			errmsg = e_invalid_argument;
 			goto skip;
 		    }
 
@@ -1627,7 +1627,7 @@ do_set(
 		    if (vim_strchr((char_u *)"=:&<", nextchar) == NULL
 							       || prefix != 1)
 		    {
-			errmsg = e_invarg;
+			errmsg = e_invalid_argument;
 			goto skip;
 		    }
 
@@ -1669,7 +1669,7 @@ do_set(
 			    value = string_to_key(arg, FALSE);
 			    if (value == 0 && (long *)varp != &p_wcm)
 			    {
-				errmsg = e_invarg;
+				errmsg = e_invalid_argument;
 				goto skip;
 			    }
 			}
@@ -3471,7 +3471,7 @@ set_num_option(
 	}
 	else if (curwin->w_p_fdc > 12)
 	{
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
 	    curwin->w_p_fdc = 12;
 	}
     }
@@ -3508,7 +3508,7 @@ set_num_option(
     {
 	if (curbuf->b_p_iminsert < 0 || curbuf->b_p_iminsert > B_IMODE_LAST)
 	{
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
 	    curbuf->b_p_iminsert = B_IMODE_NONE;
 	}
 	p_iminsert = curbuf->b_p_iminsert;
@@ -3525,7 +3525,7 @@ set_num_option(
     else if (pp == &p_imst)
     {
 	if (p_imst != IM_ON_THE_SPOT && p_imst != IM_OVER_THE_SPOT)
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
     }
 #endif
 
@@ -3541,7 +3541,7 @@ set_num_option(
     {
 	if (curbuf->b_p_imsearch < -1 || curbuf->b_p_imsearch > B_IMODE_LAST)
 	{
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
 	    curbuf->b_p_imsearch = B_IMODE_NONE;
 	}
 	p_imsearch = curbuf->b_p_imsearch;
@@ -3601,7 +3601,7 @@ set_num_option(
 	}
 	else if (curwin->w_p_cole > 3)
 	{
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
 	    curwin->w_p_cole = 3;
 	}
     }
@@ -3616,7 +3616,7 @@ set_num_option(
     else if (pp == &p_pyx)
     {
 	if (p_pyx != 0 && p_pyx != 2 && p_pyx != 3)
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
     }
 #endif
 
@@ -3647,7 +3647,7 @@ set_num_option(
 	}
 	if (curwin->w_p_nuw > 20)
 	{
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
 	    curwin->w_p_nuw = 20;
 	}
 	curwin->w_nrwidth_line_count = 0; // trigger a redraw
@@ -3759,12 +3759,12 @@ set_num_option(
     }
     else if (p_hi > 10000)
     {
-	errmsg = e_invarg;
+	errmsg = e_invalid_argument;
 	p_hi = 10000;
     }
     if (p_re < 0 || p_re > 2)
     {
-	errmsg = e_invarg;
+	errmsg = e_invalid_argument;
 	p_re = 0;
     }
     if (p_report < 0)

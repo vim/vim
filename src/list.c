@@ -1658,7 +1658,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -2128,7 +2128,7 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
 		info->item_compare_func = tv_get_string(&argvars[1]);
 	    else if (nr != 0)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return FAIL;
 	    }
 	}
@@ -2670,7 +2670,7 @@ f_count(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN
 		&& argvars[3].v_type != VAR_UNKNOWN)
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else
 	    n = dict_count(argvars[0].vval.v_dict, &argvars[1], ic);
     }

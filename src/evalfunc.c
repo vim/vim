@@ -3188,7 +3188,7 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 
 	if (list2fpos(argvars, &pos, NULL, &curswant, charcol) == FAIL)
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return;
 	}
 	line = pos.lnum;
@@ -3207,7 +3207,7 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
     {
 	line = tv_get_lnum(argvars);
 	if (line < 0)
-	    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
 	col = (long)tv_get_number_chk(&argvars[1], NULL);
 	if (charcol)
 	    col = buf_charidx_to_byteidx(curbuf, line, col) + 1;
@@ -3216,7 +3216,7 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
     }
     else
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
     if (line < 0 || col < 0 || coladd < 0)
@@ -3265,7 +3265,7 @@ f_debugbreak(typval_T *argvars, typval_T *rettv)
 
     pid = (int)tv_get_number(&argvars[0]);
     if (pid == 0)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
     {
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, pid);
@@ -4094,7 +4094,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     }
     if (s == NULL)
     {
-	semsg(_(e_invarg2), "NULL");
+	semsg(_(e_invalid_argument_str), "NULL");
 	return;
     }
 
@@ -4109,7 +4109,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 
     if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s))
 					 || (is_funcref && trans_name == NULL))
-	semsg(_(e_invarg2), use_string ? tv_get_string(&argvars[0]) : s);
+	semsg(_(e_invalid_argument_str), use_string ? tv_get_string(&argvars[0]) : s);
     // Don't check an autoload name for existence here.
     else if (trans_name != NULL && (is_funcref
 			 ? find_func(trans_name, is_global, NULL) == NULL
@@ -4402,7 +4402,7 @@ f_get(typval_T *argvars, typval_T *rettv)
 		}
 	    }
 	    else
-		semsg(_(e_invarg2), what);
+		semsg(_(e_invalid_argument_str), what);
 
 	    // When {what} == "dict" and pt->pt_dict == NULL, evaluate the
 	    // third argument
@@ -4887,7 +4887,7 @@ f_gettext(typval_T *argvars, typval_T *rettv)
 	    || argvars[0].vval.v_string == NULL
 	    || *argvars[0].vval.v_string == NUL)
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[0]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
     }
     else
     {
@@ -6697,7 +6697,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	if (*end != NUL)
 	{
 	    semsg(_(lv.ll_name == lv.ll_name_end
-					   ? e_invarg2 : e_trailing_arg), end);
+					   ? e_invalid_argument_str : e_trailing_arg), end);
 	}
 	else
 	{
@@ -7760,7 +7760,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
     return;
 
 theend:
-    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
+    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
     rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = -1;
 }
@@ -8085,7 +8085,7 @@ get_search_arg(typval_T *varp, int *flagsp)
 			     }
 			  if (mask == 0)
 			  {
-			      semsg(_(e_invarg2), flags);
+			      semsg(_(e_invalid_argument_str), flags);
 			      dir = 0;
 			  }
 			  else
@@ -8175,7 +8175,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     if (((flags & (SP_REPEAT | SP_RETCOUNT)) != 0)
 	    || ((flags & SP_NOMOVE) && (flags & SP_SETPCMARK)))
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	goto theend;
     }
 
@@ -8519,7 +8519,7 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
     if ((flags & (SP_END | SP_SUBPAT)) != 0
 	    || ((flags & SP_NOMOVE) && (flags & SP_SETPCMARK)))
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[3]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[3]));
 	goto theend;
     }
 
@@ -8541,7 +8541,7 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 	    lnum_stop = (long)tv_get_number_chk(&argvars[5], NULL);
 	    if (lnum_stop < 0)
 	    {
-		semsg(_(e_invarg2), tv_get_string(&argvars[5]));
+		semsg(_(e_invalid_argument_str), tv_get_string(&argvars[5]));
 		goto theend;
 	    }
 #ifdef FEAT_RELTIME
@@ -8550,7 +8550,7 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 		time_limit = (long)tv_get_number_chk(&argvars[6], NULL);
 		if (time_limit < 0)
 		{
-		    semsg(_(e_invarg2), tv_get_string(&argvars[6]));
+		    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[6]));
 		    goto theend;
 		}
 	    }
@@ -8851,7 +8851,7 @@ set_position(typval_T *argvars, typval_T *rettv, int charpos)
 		    rettv->vval.v_number = 0;
 	    }
 	    else
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 	}
     }
 }
@@ -8966,7 +8966,7 @@ f_setfperm(typval_T *argvars, typval_T *rettv)
 	return;
     if (STRLEN(mode_str) != 9)
     {
-	semsg(_(e_invarg2), mode_str);
+	semsg(_(e_invalid_argument_str), mode_str);
 	return;
     }
 
@@ -9085,7 +9085,7 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 
 	    if (ret == FAIL || *++stropt != NUL)
 	    {
-		semsg(_(e_invargval), "value");
+		semsg(_(e_invalid_value_for_argument_str), "value");
 		return;
 	    }
 	}

@@ -1547,7 +1547,7 @@ gui_mch_get_font(
     if (get_logfont(&lf, name, NULL, giveErrorIfMissing) == OK)
 	font = get_font_handle(&lf);
     if (font == NOFONT && giveErrorIfMissing)
-	semsg(_(e_font), name);
+	semsg(_(e_unknown_font_str), name);
     return font;
 }
 

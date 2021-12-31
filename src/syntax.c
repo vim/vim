@@ -4923,7 +4923,7 @@ error:
     if (rest != NULL)
 	set_nextcmd(eap, rest);
     else
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 
     redraw_curbuf_later(SOME_VALID);
     syn_stack_free_all(curwin->w_s);		// Need to recompute all syntax.
@@ -5032,7 +5032,7 @@ syn_cmd_match(
     vim_free(syn_opt_arg.next_list);
 
     if (rest == NULL && called_emsg == orig_called_emsg)
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 }
 
 /*
@@ -5298,7 +5298,7 @@ syn_cmd_region(
 	if (not_enough)
 	    semsg(_("E399: Not enough arguments: syntax region %s"), arg);
 	else if (illegal || rest == NULL)
-	    semsg(_(e_invarg2), arg);
+	    semsg(_(e_invalid_argument_str), arg);
     }
 }
 
@@ -5607,7 +5607,7 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
 	    clstr_list = NULL;
 	    if (get_id_list(&rest, opt_len, &clstr_list, eap->skip) == FAIL)
 	    {
-		semsg(_(e_invarg2), rest);
+		semsg(_(e_invalid_argument_str), rest);
 		break;
 	    }
 	    if (scl_id >= 0)
@@ -5628,7 +5628,7 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
     if (!got_clstr)
 	emsg(_("E400: No cluster specified"));
     if (rest == NULL || !ends_excmd2(eap->cmd, rest))
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 }
 
 /*
@@ -6632,7 +6632,7 @@ ex_syntime(exarg_T *eap)
     else if (STRCMP(eap->arg, "report") == 0)
 	syntime_report();
     else
-	semsg(_(e_invarg2), eap->arg);
+	semsg(_(e_invalid_argument_str), eap->arg);
 }
 
     static void

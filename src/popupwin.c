@@ -407,7 +407,7 @@ get_pos_entry(dict_T *d, int give_error)
 	    return poppos_entries[nr].pp_val;
 
     if (give_error)
-	semsg(_(e_invarg2), str);
+	semsg(_(e_invalid_argument_str), str);
     return POPPOS_NONE;
 }
 
@@ -468,7 +468,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	    if (nr <= 0)
 		nr = find_prop_type_id(str, NULL);
 	    if (nr <= 0)
-		semsg(_(e_invarg2), str);
+		semsg(_(e_invalid_argument_str), str);
 	    else
 		wp->w_popup_prop_type = nr;
 	}
@@ -497,7 +497,7 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	else if (STRCMP(s, "expr") == 0)
 	    flags = FIND_IDENT | FIND_STRING | FIND_EVAL;
 	else if (STRCMP(s, "any") != 0)
-	    semsg(_(e_invarg2), s);
+	    semsg(_(e_invalid_argument_str), s);
 	if (flags != 0)
 	{
 	    if (mousemoved)
@@ -546,7 +546,7 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	}
     }
     else
-	semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+	semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
 }
 
     static void
@@ -559,7 +559,7 @@ check_highlight(dict_T *dict, char *name, char_u **pval)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_STRING)
-	    semsg(_(e_invargval), name);
+	    semsg(_(e_invalid_value_for_argument_str), name);
 	else
 	{
 	    str = tv_get_string(&di->di_tv);
@@ -735,7 +735,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	else
 	    ok = FALSE;
 	if (!ok)
-	    semsg(_(e_invargNval), "close", tv_get_string(&di->di_tv));
+	    semsg(_(e_invalid_value_for_argument_str_str), "close", tv_get_string(&di->di_tv));
     }
 
     str = dict_get_string(dict, (char_u *)"highlight", FALSE);
@@ -861,7 +861,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    VIM_CLEAR(wp->w_popup_mask_cells);
 	}
 	else
-	    semsg(_(e_invargval), "mask");
+	    semsg(_(e_invalid_value_for_argument_str), "mask");
     }
 
 #if defined(FEAT_TIMERS)
@@ -2645,7 +2645,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp != NULL)
     {
 	if (argvars[1].v_type != VAR_STRING && argvars[1].v_type != VAR_LIST)
-	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	else
 	{
 	    popup_set_buffer_text(wp->w_buffer, argvars[1]);

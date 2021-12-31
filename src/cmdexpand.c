@@ -2903,7 +2903,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     pat = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_STRING)
     {
-	semsg(_(e_invarg2), "type must be a string");
+	semsg(_(e_invalid_argument_str), "type must be a string");
 	return;
     }
     type = tv_get_string(&argvars[1]);
@@ -2933,7 +2933,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	xpc.xp_context = cmdcomplete_str_to_type(type);
 	if (xpc.xp_context == EXPAND_NOTHING)
 	{
-	    semsg(_(e_invarg2), type);
+	    semsg(_(e_invalid_argument_str), type);
 	    return;
 	}
 

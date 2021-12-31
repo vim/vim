@@ -1305,12 +1305,12 @@ check_clipboard_option(void)
 	    p += 8;
 	    new_exclude_prog = vim_regcomp(p, RE_MAGIC);
 	    if (new_exclude_prog == NULL)
-		errmsg = e_invarg;
+		errmsg = e_invalid_argument;
 	    break;
 	}
 	else
 	{
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
 	    break;
 	}
 	if (*p == ',')

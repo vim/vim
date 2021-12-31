@@ -1051,7 +1051,7 @@ ex_messages(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 

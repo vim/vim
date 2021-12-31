@@ -1016,7 +1016,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 
     if (scope == NULL || scope->se_type != FOR_SCOPE)
     {
-	emsg(_(e_for));
+	emsg(_(e_endfor_without_for));
 	return NULL;
     }
     forscope = &scope->se_u.se_for;
@@ -1109,7 +1109,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	return NULL;
     if (scope == NULL || scope->se_type != WHILE_SCOPE)
     {
-	emsg(_(e_while));
+	emsg(_(e_endwhile_without_while));
 	return NULL;
     }
     cctx->ctx_scope = scope->se_outer;
@@ -1328,7 +1328,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
     // Error if not in a :try scope
     if (scope == NULL || scope->se_type != TRY_SCOPE)
     {
-	emsg(_(e_catch));
+	emsg(_(e_catch_without_try));
 	return NULL;
     }
 
@@ -1447,7 +1447,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
     // Error if not in a :try scope
     if (scope == NULL || scope->se_type != TRY_SCOPE)
     {
-	emsg(_(e_finally));
+	emsg(_(e_finally_without_try));
 	return NULL;
     }
 
@@ -1457,7 +1457,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
 	if (isn->isn_arg.tryref.try_ref->try_finally != 0)
 	{
-	    emsg(_(e_finally_dup));
+	    emsg(_(e_multiple_finally));
 	    return NULL;
 	}
 
@@ -1518,7 +1518,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     if (scope == NULL || scope->se_type != TRY_SCOPE)
     {
 	if (scope == NULL)
-	    emsg(_(e_no_endtry));
+	    emsg(_(e_endtry_without_try));
 	else if (scope->se_type == WHILE_SCOPE)
 	    emsg(_(e_missing_endwhile));
 	else if (scope->se_type == FOR_SCOPE)

@@ -44,7 +44,7 @@ tabstop_set(char_u *var, int **array)
 		if (cp != end)
 		    emsg(_(e_positive));
 		else
-		    semsg(_(e_invarg2), cp);
+		    semsg(_(e_invalid_argument_str), cp);
 		return FAIL;
 	    }
 	}
@@ -56,7 +56,7 @@ tabstop_set(char_u *var, int **array)
 	    ++valcount;
 	    continue;
 	}
-	semsg(_(e_invarg2), var);
+	semsg(_(e_invalid_argument_str), var);
 	return FAIL;
     }
 
@@ -73,7 +73,7 @@ tabstop_set(char_u *var, int **array)
 	// Catch negative values, overflow and ridiculous big values.
 	if (n < 0 || n > 9999)
 	{
-	    semsg(_(e_invarg2), cp);
+	    semsg(_(e_invalid_argument_str), cp);
 	    vim_free(*array);
 	    *array = NULL;
 	    return FAIL;
@@ -1627,7 +1627,7 @@ ex_retab(exarg_T *eap)
     }
     if (new_ts < 0 || new_ts > 9999)
     {
-	semsg(_(e_invarg2), eap->arg);
+	semsg(_(e_invalid_argument_str), eap->arg);
 	return;
     }
     if (new_ts == 0)
@@ -1736,7 +1736,7 @@ ex_retab(exarg_T *eap)
 	line_breakcheck();
     }
     if (got_int)
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
 
 #ifdef FEAT_VARTABS
     // If a single value was given then it can be considered equal to
@@ -2095,6 +2095,9 @@ fixthisline(int (*get_the_indent)(void))
     }
 }
 
+/*
+ * Fix indent for 'lisp' and 'cindent'.
+ */
     void
 fix_indent(void)
 {

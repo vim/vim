@@ -5071,7 +5071,7 @@ gui_mch_get_font(char_u *name, int report_error)
     if (font == NULL)
     {
 	if (report_error)
-	    semsg(_((char *)e_font), name);
+	    semsg(_((char *)e_unknown_font_str), name);
 	return NULL;
     }
 

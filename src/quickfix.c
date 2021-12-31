@@ -7653,7 +7653,7 @@ set_errorlist(
     // A dict argument cannot be specified with a non-empty list argument
     if (list->lv_len != 0 && what != NULL)
     {
-	semsg(_(e_invarg2),
+	semsg(_(e_invalid_argument_str),
 			 _("cannot have both a list and a \"what\" argument"));
 	return FAIL;
     }
@@ -7780,7 +7780,7 @@ cbuffer_process_args(
 
     if (buf == NULL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return FAIL;
     }
 

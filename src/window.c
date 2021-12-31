@@ -6990,7 +6990,7 @@ check_colorcolumn(win_T *wp)
 	    col = (*s == '-') ? -1 : 1;
 	    ++s;
 	    if (!VIM_ISDIGIT(*s))
-		return e_invarg;
+		return e_invalid_argument;
 	    col = col * getdigits(&s);
 	    if (wp->w_buffer->b_p_tw == 0)
 		goto skip;  // 'textwidth' not set, skip this item
@@ -7001,15 +7001,15 @@ check_colorcolumn(win_T *wp)
 	else if (VIM_ISDIGIT(*s))
 	    col = getdigits(&s);
 	else
-	    return e_invarg;
+	    return e_invalid_argument;
 	color_cols[count++] = col - 1;  // 1-based to 0-based
 skip:
 	if (*s == NUL)
 	    break;
 	if (*s != ',')
-	    return e_invarg;
+	    return e_invalid_argument;
 	if (*++s == NUL)
-	    return e_invarg;  // illegal trailing comma as in "set cc=80,"
+	    return e_invalid_argument;  // illegal trailing comma as in "set cc=80,"
     }
 
     vim_free(wp->w_p_cc_cols);

@@ -842,7 +842,7 @@ f_delete(typval_T *argvars, typval_T *rettv)
     name = tv_get_string(&argvars[0]);
     if (name == NULL || *name == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -2267,7 +2267,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	semsg(_(e_invarg2),
+	semsg(_(e_invalid_argument_str),
 		_("writefile() first argument must be a List or a Blob"));
 	return;
     }

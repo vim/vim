@@ -1482,7 +1482,7 @@ buf_write(
 			    ui_breakcheck();
 			    if (got_int)
 			    {
-				errmsg = (char_u *)_(e_interr);
+				errmsg = (char_u *)_(e_interrupted);
 				break;
 			    }
 			}
@@ -1649,7 +1649,7 @@ buf_write(
 	ml_preserve(buf, FALSE);
 	if (got_int)
 	{
-	    errmsg = (char_u *)_(e_interr);
+	    errmsg = (char_u *)_(e_interrupted);
 	    goto restore_backup;
 	}
     }
@@ -2295,7 +2295,7 @@ restore_backup:
 		}
 	    }
 	    else if (got_int)
-		errmsg = (char_u *)_(e_interr);
+		errmsg = (char_u *)_(e_interrupted);
 	    else
 		errmsg = (char_u *)_(e_write_error_file_system_full);
 	}
@@ -2315,7 +2315,7 @@ restore_backup:
 		// know we got the message.
 		if (got_int)
 		{
-		    msg(_(e_interr));
+		    msg(_(e_interrupted));
 		    out_flush();
 		}
 		if ((fd = mch_open((char *)backup, O_RDONLY | O_EXTRA, 0)) >= 0)

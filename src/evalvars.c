@@ -792,7 +792,7 @@ ex_let(exarg_T *eap)
     {
 	// ":let" without "=": list variables
 	if (*arg == '[')
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else if (expr[0] == '.' && expr[1] == '=')
 	    emsg(_("E985: .= is not supported with script version >= 2"));
 	else if (!ends_excmd2(eap->cmd, arg))
@@ -1049,7 +1049,7 @@ skip_var_list(
 	    if (s == p)
 	    {
 		if (!silent)
-		    semsg(_(e_invarg2), p);
+		    semsg(_(e_invalid_argument_str), p);
 		return NULL;
 	    }
 	    ++*var_count;
@@ -1069,7 +1069,7 @@ skip_var_list(
 	    else if (*p != ',')
 	    {
 		if (!silent)
-		    semsg(_(e_invarg2), p);
+		    semsg(_(e_invalid_argument_str), p);
 		return NULL;
 	    }
 	}
@@ -1220,7 +1220,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		if (len < 0 && !aborting())
 		{
 		    emsg_severe = TRUE;
-		    semsg(_(e_invarg2), arg);
+		    semsg(_(e_invalid_argument_str), arg);
 		    break;
 		}
 		error = TRUE;
@@ -1316,7 +1316,7 @@ ex_let_env(
     name = arg;
     len = get_env_len(&arg);
     if (len == 0)
-	semsg(_(e_invarg2), name - 1);
+	semsg(_(e_invalid_argument_str), name - 1);
     else
     {
 	if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
@@ -1606,7 +1606,7 @@ ex_let_one(
 	clear_lval(&lv);
     }
     else
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 
     return arg_end;
 }
@@ -1668,7 +1668,7 @@ ex_unletlock(
 	    ++arg;
 	    if (get_env_len(&arg) == 0)
 	    {
-		semsg(_(e_invarg2), arg - 1);
+		semsg(_(e_invalid_argument_str), arg - 1);
 		return;
 	    }
 	    if (!error && !eap->skip
@@ -4016,7 +4016,7 @@ var_redir_start(char_u *name, int append)
     // Catch a bad name early.
     if (!eval_isnamec1(*name))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return FAIL;
     }
 
@@ -4044,7 +4044,7 @@ var_redir_start(char_u *name, int append)
 	    // Trailing characters are present after the variable name
 	    semsg(_(e_trailing_arg), redir_endp);
 	else
-	    semsg(_(e_invarg2), name);
+	    semsg(_(e_invalid_argument_str), name);
 	redir_endp = NULL;  // don't store a value, only cleanup
 	var_redir_stop();
 	return FAIL;

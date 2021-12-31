@@ -4915,19 +4915,19 @@ set_chars_option(win_T *wp, char_u **varp)
 		    s = p + len + 1;
 		    c1 = get_encoded_char_adv(&s);
 		    if (char2cells(c1) > 1)
-			return e_invarg;
+			return e_invalid_argument;
 		    if (tab[i].cp == &lcs_chars.tab2)
 		    {
 			if (*s == NUL)
-			    return e_invarg;
+			    return e_invalid_argument;
 			c2 = get_encoded_char_adv(&s);
 			if (char2cells(c2) > 1)
-			    return e_invarg;
+			    return e_invalid_argument;
 			if (!(*s == ',' || *s == NUL))
 			{
 			    c3 = get_encoded_char_adv(&s);
 			    if (char2cells(c3) > 1)
-				return e_invarg;
+				return e_invalid_argument;
 			}
 		    }
 
@@ -4969,12 +4969,12 @@ set_chars_option(win_T *wp, char_u **varp)
 			{
 			    c1 = get_encoded_char_adv(&s);
 			    if (char2cells(c1) > 1)
-				return e_invarg;
+				return e_invalid_argument;
 			    ++multispace_len;
 			}
 			if (multispace_len == 0)
 			    // lcs-multispace cannot be an empty string
-			    return e_invarg;
+			    return e_invalid_argument;
 			p = s;
 		    }
 		    else
@@ -4991,7 +4991,7 @@ set_chars_option(win_T *wp, char_u **varp)
 		    }
 		}
 		else
-		    return e_invarg;
+		    return e_invalid_argument;
 	    }
 
 	    if (*p == ',')

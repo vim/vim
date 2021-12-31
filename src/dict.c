@@ -720,7 +720,7 @@ dict_get_number_check(dict_T *d, char_u *key)
 	return 0;
     if (di->di_tv.v_type != VAR_NUMBER)
     {
-	semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+	semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
 	return 0;
     }
     return tv_get_number(&di->di_tv);
@@ -1257,7 +1257,7 @@ dict_extend_func(
 		    break;
 	    if (i == 3)
 	    {
-		semsg(_(e_invarg2), action);
+		semsg(_(e_invalid_argument_str), action);
 		return;
 	    }
 	}

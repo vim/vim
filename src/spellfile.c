@@ -5963,7 +5963,7 @@ mkspell(
     }
 
     if (incount <= 0)
-	emsg(_(e_invarg));	// need at least output and input names
+	emsg(_(e_invalid_argument));	// need at least output and input names
     else if (vim_strchr(gettail(wfname), '_') != NULL)
 	emsg(_("E751: Output file name must not have region name"));
     else if (incount > MAXREGIONS)

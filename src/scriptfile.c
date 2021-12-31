@@ -965,7 +965,7 @@ ExpandPackAddDir(
 cmd_source(char_u *fname, exarg_T *eap)
 {
     if (*fname == NUL)
-	emsg(_(e_argreq));
+	emsg(_(e_argument_required));
 
     else if (eap != NULL && eap->forceit)
 	// ":source!": read Normal mode commands
@@ -1441,7 +1441,7 @@ do_source(
 #endif
 
     if (got_int)
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
     ESTACK_CHECK_NOW
     estack_pop();
     if (p_verbose > 1)
@@ -1549,7 +1549,7 @@ ex_scriptnames(exarg_T *eap)
     {
 	// :script {scriptId}: edit the script
 	if (!SCRIPT_ID_VALID(eap->line2))
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else
 	{
 	    eap->arg = SCRIPT_ITEM(eap->line2)->sn_name;
@@ -1961,7 +1961,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
 
     nr = getdigits(&eap->arg);
     if (nr == 0 || *eap->arg != NUL)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else if (nr > SCRIPT_VERSION_MAX)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else

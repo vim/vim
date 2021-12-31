@@ -459,7 +459,7 @@ term_start(
 	    && argvar->vval.v_list != NULL
 	    && argvar->vval.v_list->lv_first == &range_list_item))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return NULL;
     }
 
@@ -872,7 +872,7 @@ ex_terminal(exarg_T *eap)
 		tty_type = 'c';
 	    else
 	    {
-		semsg(e_invargval, "type");
+		semsg(e_invalid_value_for_argument_str, "type");
 		goto theend;
 	    }
 	    opt.jo_set2 |= JO2_TTY_TYPE;
@@ -4241,7 +4241,7 @@ init_vterm_ansi_colors(VTerm *vterm)
 		|| var->di_tv.vval.v_list == NULL
 		|| var->di_tv.vval.v_list->lv_first == &range_list_item
 		|| set_ansi_colors_list(vterm, var->di_tv.vval.v_list) == FAIL))
-	semsg(_(e_invarg2), "g:terminal_ansi_colors");
+	semsg(_(e_invalid_argument_str), "g:terminal_ansi_colors");
 }
 #endif
 
@@ -5368,7 +5368,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     if (fname1 == NULL || (do_diff && fname2 == NULL))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
     fd1 = mch_fopen((char *)fname1, READBIN);
@@ -5414,7 +5414,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	// With "bufnr" argument: enter the window with this buffer and make it
 	// empty.
 	if (wp == NULL)
-	    semsg(_(e_invarg2), "bufnr");
+	    semsg(_(e_invalid_argument_str), "bufnr");
 	else
 	{
 	    buf = curbuf;
@@ -6093,7 +6093,7 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 		p = buf->b_term->tl_job->jv_tty_in;
 	    break;
 	default:
-	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	    return;
     }
     if (p != NULL)
@@ -6351,7 +6351,7 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     if (set_ansi_colors_list(term->tl_vterm, argvars[1].vval.v_list) == FAIL)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 }
 #endif
 
@@ -6689,7 +6689,7 @@ conpty_term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	goto failed;
     }
 
@@ -7037,7 +7037,7 @@ winpty_term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	goto failed;
     }
 

@@ -191,7 +191,7 @@ cause_errthrow(
      * interrupt exception is catchable by the innermost try conditional and
      * not replaced by an interrupt message error exception.
      */
-    if (mesg == (char_u *)_(e_interr))
+    if (mesg == (char_u *)_(e_interrupted))
     {
 	*ignore = TRUE;
 	return TRUE;
@@ -1387,12 +1387,12 @@ ex_endwhile(exarg_T *eap)
 
     if (eap->cmdidx == CMD_endwhile)
     {
-	err = e_while;
+	err = e_endwhile_without_while;
 	csf = CSF_WHILE;
     }
     else
     {
-	err = e_for;
+	err = e_endfor_without_for;
 	csf = CSF_FOR;
     }
 
@@ -1415,7 +1415,7 @@ ex_endwhile(exarg_T *eap)
 	    if (!(fl & CSF_TRY))
 		eap->errmsg = _(e_missing_endif);
 	    else if (fl & CSF_FINALLY)
-		eap->errmsg = _(e_endtry);
+		eap->errmsg = _(e_missing_endtry);
 	    // Try to find the matching ":while" and report what's missing.
 	    for (idx = cstack->cs_idx; idx > 0; --idx)
 	    {
@@ -1513,7 +1513,7 @@ ex_throw(exarg_T *eap)
 	value = eval_to_string_skip(arg, eap, eap->skip);
     else
     {
-	emsg(_(e_argreq));
+	emsg(_(e_argument_required));
 	value = NULL;
     }
 
@@ -1706,7 +1706,7 @@ ex_catch(exarg_T *eap)
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
-	eap->errmsg = _(e_catch);
+	eap->errmsg = _(e_catch_without_try);
 	give_up = TRUE;
     }
     else
@@ -1802,7 +1802,7 @@ ex_catch(exarg_T *eap)
 		    *end = save_char;
 		p_cpo = save_cpo;
 		if (regmatch.regprog == NULL)
-		    semsg(_(e_invarg2), pat);
+		    semsg(_(e_invalid_argument_str), pat);
 		else
 		{
 		    /*
@@ -1870,7 +1870,7 @@ ex_finally(exarg_T *eap)
 	return;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_finally);
+	eap->errmsg = _(e_finally_without_try);
     else
     {
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
@@ -1890,7 +1890,7 @@ ex_finally(exarg_T *eap)
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a multiple ":finally" and ignore it.
-	    eap->errmsg = _(e_finally_dup);
+	    eap->errmsg = _(e_multiple_finally);
 	    return;
 	}
 	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
@@ -2002,7 +2002,7 @@ ex_endtry(exarg_T *eap)
 	return;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_no_endtry);
+	eap->errmsg = _(e_endtry_without_try);
     else
     {
 	/*

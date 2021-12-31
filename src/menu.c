@@ -273,7 +273,7 @@ ex_menu(
     menu_path = arg;
     if (*menu_path == '.')
     {
-	semsg(_(e_invarg2), menu_path);
+	semsg(_(e_invalid_argument_str), menu_path);
 	goto theend;
     }
 
@@ -2508,7 +2508,7 @@ ex_emenu(exarg_T *eap)
 	    case 't': mode_idx = MENU_INDEX_TERMINAL; break;
 	    case 'i': mode_idx = MENU_INDEX_INSERT; break;
 	    case 'c': mode_idx = MENU_INDEX_CMDLINE; break;
-	    default: semsg(_(e_invarg2), arg);
+	    default: semsg(_(e_invalid_argument_str), arg);
 		     return;
 	}
 	arg = skipwhite(arg + 2);
@@ -2698,7 +2698,7 @@ ex_menutranslate(exarg_T *eap UNUSED)
 	if (arg == to || ends_excmd2(eap->arg, from)
 		      || ends_excmd2(eap->arg, to)
 		      || !ends_excmd2(eap->arg, skipwhite(arg)))
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else
 	{
 	    if (ga_grow(&menutrans_ga, 1) == OK)

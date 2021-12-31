@@ -928,7 +928,7 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 
         if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
         {
-            emsg(_(e_invarg));
+            emsg(_(e_invalid_argument));
             return;
         }
 
@@ -1149,7 +1149,7 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_DICT
 	    || (dict = argvars[0].vval.v_dict) == NULL)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
     {
 	if (dict_find(dict, (char_u *)"lnum", -1) != NULL)

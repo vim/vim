@@ -745,7 +745,7 @@ op_delete(oparg_T *oap)
 	    msg_silent = msg_silent_save;
 	    if (n != 'y')
 	    {
-		emsg(_(e_abort));
+		emsg(_(e_command_aborted));
 		return FAIL;
 	    }
 	}

@@ -580,7 +580,7 @@ do_augroup(char_u *arg, int del_group)
     if (del_group)
     {
 	if (*arg == NUL)
-	    emsg(_(e_argreq));
+	    emsg(_(e_argument_required));
 	else
 	    au_del_group(arg);
     }

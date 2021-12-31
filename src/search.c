@@ -1120,7 +1120,7 @@ searchit(
     if (!found)		    // did not find it
     {
 	if (got_int)
-	    emsg(_(e_interr));
+	    emsg(_(e_interrupted));
 	else if ((options & SEARCH_MSG) == SEARCH_MSG)
 	{
 	    if (p_ws)
@@ -3990,7 +3990,7 @@ exit_matched:
     else if (!found && action != ACTION_EXPAND)
     {
 	if (got_int || ins_compl_interrupted())
-	    emsg(_(e_interr));
+	    emsg(_(e_interrupted));
 	else if (type == FIND_DEFINE)
 	    emsg(_("E388: Couldn't find definition"));
 	else
@@ -4152,12 +4152,12 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		semsg(_(e_invarg2), "pos");
+		semsg(_(e_invalid_argument_str), "pos");
 		return;
 	    }
 	    if (list_len(di->di_tv.vval.v_list) != 3)
 	    {
-		semsg(_(e_invarg2), "List format should be [lnum, col, off]");
+		semsg(_(e_invalid_argument_str), "List format should be [lnum, col, off]");
 		return;
 	    }
 	    li = list_find(di->di_tv.vval.v_list, 0L);
@@ -4813,7 +4813,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     if (argvars[1].v_type != VAR_STRING
 	    || argvars[1].vval.v_string == NULL)
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	return;
     }
 
@@ -4837,7 +4837,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		    || di->di_tv.vval.v_string == NULL
 		    || *di->di_tv.vval.v_string == NUL)
 	    {
-		semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+		semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
 		return;
 	    }
 	    key = tv_get_string(&di->di_tv);
@@ -4847,7 +4847,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	    cb = get_callback(&di->di_tv);
 	    if (cb.cb_name == NULL)
 	    {
-		semsg(_(e_invargval), "text_cb");
+		semsg(_(e_invalid_value_for_argument_str), "text_cb");
 		return;
 	    }
 	}

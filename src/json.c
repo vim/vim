@@ -933,7 +933,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		top_item->jd_key = tv_get_string_buf_chk(cur_item, key_buf);
 		if (top_item->jd_key == NULL)
 		{
-		    emsg(_(e_invarg));
+		    emsg(_(e_invalid_argument));
 		    retval = FAIL;
 		    goto theend;
 		}
@@ -1164,7 +1164,7 @@ f_js_decode(typval_T *argvars, typval_T *rettv)
     reader.js_fill = NULL;
     reader.js_used = 0;
     if (json_decode_all(&reader, rettv, JSON_JS) != OK)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 }
 
 /*

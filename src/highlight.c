@@ -1579,7 +1579,7 @@ do_highlight(
 		linep = vim_strchr(linep, '\'');
 		if (linep == NULL)
 		{
-		    semsg(_(e_invarg2), key_start);
+		    semsg(_(e_invalid_argument_str), key_start);
 		    error = TRUE;
 		    break;
 		}

@@ -10,6 +10,9 @@
  * Definition of error messages, sorted on error number.
  */
 
+EXTERN char e_interrupted[]
+	INIT(= N_("Interrupted"));
+
 EXTERN char e_backslash_should_be_followed_by[]
 	INIT(= N_("E10: \\ should be followed by /, ? or &"));
 #ifdef FEAT_CMDWIN
@@ -494,7 +497,19 @@ EXTERN char e_makemap_illegal_mode[]
 EXTERN char e_cannot_start_the_GUI[]
 	INIT(= N_("E229: Cannot start the GUI"));
 
-
+#if defined(FEAT_GUI) && defined(FEAT_XFONTSET)
+EXTERN char e_unknown_fontset_str[]
+	INIT(= N_("E234: Unknown fontset: %s"));
+#endif
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
+EXTERN char e_unknown_font_str[]
+	INIT(= N_("E235: Unknown font: %s"));
+#endif
+#if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
+EXTERN char e_font_str_is_not_fixed_width[]
+	INIT(= N_("E236: Font \"%s\" is not fixed-width"));
+#endif
 EXTERN char e_window_layout_changed_unexpectedly[]
 	INIT(= N_("E249: window layout changed unexpectedly"));
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -513,6 +528,22 @@ EXTERN char e_cannot_write_buftype_option_is_set[]
 
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
+EXTERN char e_command_aborted[]
+	INIT(= N_("E470: Command aborted"));
+EXTERN char e_argument_required[]
+	INIT(= N_("E471: Argument required"));
+EXTERN char e_command_failed[]
+	INIT(= N_("E472: Command failed"));
+EXTERN char e_internal_error_in_regexp[]
+	INIT(= N_("E473: Internal error in regexp"));
+EXTERN char e_invalid_argument[]
+	INIT(= N_("E474: Invalid argument"));
+EXTERN char e_invalid_argument_str[]
+	INIT(= N_("E475: Invalid argument: %s"));
+EXTERN char e_invalid_value_for_argument_str[]
+	INIT(= N_("E475: Invalid value for argument %s"));
+EXTERN char e_invalid_value_for_argument_str_str[]
+	INIT(= N_("E475: Invalid value for argument %s: %s"));
 EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
 #ifdef FEAT_EVAL
@@ -556,6 +587,22 @@ EXTERN char e_no_buffers_were_deleted[]
 	INIT(= N_("E516: No buffers were deleted"));
 EXTERN char e_no_buffers_were_wiped_out[]
 	INIT(= N_("E517: No buffers were wiped out"));
+#ifdef FEAT_EVAL
+EXTERN char e_endwhile_without_while[]
+	INIT(= N_("E588: :endwhile without :while"));
+EXTERN char e_endfor_without_for[]
+	INIT(= N_("E588: :endfor without :for"));
+EXTERN char e_missing_endtry[]
+	INIT(= N_("E600: Missing :endtry"));
+EXTERN char e_endtry_without_try[]
+	INIT(= N_("E602: :endtry without :try"));
+EXTERN char e_catch_without_try[]
+	INIT(= N_("E603: :catch without :try"));
+EXTERN char e_finally_without_try[]
+	INIT(= N_("E606: :finally without :try"));
+EXTERN char e_multiple_finally[]
+	INIT(= N_("E607: multiple :finally"));
+#endif
 
 EXTERN char e_no_argument_to_delete[]
 	INIT(= N_("E610: No argument to delete"));
