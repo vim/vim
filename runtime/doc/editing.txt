@@ -1770,7 +1770,7 @@ There are three different types of searching:
 	/u/user_x/work/include
 	/u/user_x/include
 
-<   Note: If your 'path' setting includes an non-existing directory, Vim will
+<   Note: If your 'path' setting includes a non-existing directory, Vim will
    skip the non-existing directory, but continues searching in the parent of
    the non-existing directory if upwards searching is used.  E.g. when
    searching "../include" and that doesn't exist, and upward searching is

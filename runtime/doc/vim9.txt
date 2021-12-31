@@ -391,8 +391,8 @@ later.  Example: >
 	  endif
 	enddef
 
-If you would do it like this you get an error at compile time that
-"PluginFunc" does not exist, even when "g:loaded_plugin" does not exist: >
+If you do it like this, you get an error at compile time that "PluginFunc"
+does not exist, even when "g:loaded_plugin" does not exist: >
 	def CallPluginFunc()
 	  if exists('g:loaded_plugin')
 	    PluginFunc()   # Error - function not found
