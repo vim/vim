@@ -139,7 +139,6 @@ func Test_append_cmd_empty_buf()
     bbbbb
     .
     endfunc
-
     call timer_start(10, 'Timer')
   END
   call writefile(lines, 'Xtest_append_cmd_empty_buf')
@@ -189,7 +188,6 @@ func Test_insert_cmd_empty_buf()
     bbbbb
     .
     endfunc
-
     call timer_start(10, 'Timer')
   END
   call writefile(lines, 'Xtest_insert_cmd_empty_buf')
