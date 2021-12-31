@@ -1413,7 +1413,7 @@ ex_endwhile(exarg_T *eap)
 	if (!(fl & (CSF_WHILE | CSF_FOR)))
 	{
 	    if (!(fl & CSF_TRY))
-		eap->errmsg = _(e_endif);
+		eap->errmsg = _(e_missing_endif);
 	    else if (fl & CSF_FINALLY)
 		eap->errmsg = _(e_endtry);
 	    // Try to find the matching ":while" and report what's missing.
@@ -2484,10 +2484,10 @@ cleanup_conditionals(
 get_end_emsg(cstack_T *cstack)
 {
     if (cstack->cs_flags[cstack->cs_idx] & CSF_WHILE)
-	return _(e_endwhile);
+	return _(e_missing_endwhile);
     if (cstack->cs_flags[cstack->cs_idx] & CSF_FOR)
-	return _(e_endfor);
-    return _(e_endif);
+	return _(e_missing_endfor);
+    return _(e_missing_endif);
 }
 
 

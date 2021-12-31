@@ -638,7 +638,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	    marker = dot;
 	else
 	{
-	    emsg(_("E172: Missing marker"));
+	    emsg(_(e_missing_marker));
 	    return NULL;
 	}
     }

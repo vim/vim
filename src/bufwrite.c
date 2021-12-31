@@ -1821,7 +1821,8 @@ buf_write(
 			    || (mch_lstat((char *)fname, &st) == 0
 				&& (st.st_dev != st_old.st_dev
 				    || st.st_ino != st_old.st_ino)))
-			errmsg = (char_u *)_("E166: Can't open linked file for writing");
+			errmsg =
+			      (char_u *)_(e_cant_open_linked_file_for_writing);
 		    else
 #endif
 		    {

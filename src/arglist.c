@@ -673,11 +673,11 @@ do_argfile(exarg_T *eap, int argn)
     if (argn < 0 || argn >= ARGCOUNT)
     {
 	if (ARGCOUNT <= 1)
-	    emsg(_("E163: There is only one file to edit"));
+	    emsg(_(e_there_is_only_one_file_to_edit));
 	else if (argn < 0)
-	    emsg(_("E164: Cannot go before first file"));
+	    emsg(_(e_cannot_go_before_first_file));
 	else
-	    emsg(_("E165: Cannot go beyond last file"));
+	    emsg(_(e_cannot_go_beyond_last_file));
     }
     else
     {

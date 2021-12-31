@@ -1919,7 +1919,7 @@ ex_scriptencoding(exarg_T *eap)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_("E167: :scriptencoding used outside of a sourced file"));
+	emsg(_(e_scriptencoding_used_outside_of_sourced_file));
 	return;
     }
 
@@ -1983,7 +1983,7 @@ ex_finish(exarg_T *eap)
     if (getline_equal(eap->getline, eap->cookie, getsourceline))
 	do_finish(eap, FALSE);
     else
-	emsg(_("E168: :finish used outside of a sourced file"));
+	emsg(_(e_finish_used_outside_of_sourced_file));
 }
 
 /*

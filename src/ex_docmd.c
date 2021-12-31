@@ -677,7 +677,7 @@ do_cmdline(
 #endif
 	    )
     {
-	emsg(_("E169: Command too recursive"));
+	emsg(_(e_command_too_recursive));
 #ifdef FEAT_EVAL
 	// When converting to an exception, we do not include the command name
 	// since this is not an error of the specific command.
@@ -1214,11 +1214,11 @@ do_cmdline(
 	    if (cstack.cs_flags[cstack.cs_idx] & CSF_TRY)
 		emsg(_(e_endtry));
 	    else if (cstack.cs_flags[cstack.cs_idx] & CSF_WHILE)
-		emsg(_(e_endwhile));
+		emsg(_(e_missing_endwhile));
 	    else if (cstack.cs_flags[cstack.cs_idx] & CSF_FOR)
-		emsg(_(e_endfor));
+		emsg(_(e_missing_endfor));
 	    else
-		emsg(_(e_endif));
+		emsg(_(e_missing_endif));
 	}
 
 	/*
@@ -5561,8 +5561,8 @@ check_more(
 		return FAIL;
 	    }
 #endif
-	    semsg(NGETTEXT("E173: %d more file to edit",
-			"E173: %d more files to edit", n), n);
+	    semsg(NGETTEXT(e_nr_more_file_to_edit,
+			   e_nr_more_files_to_edit , n), n);
 	    quitmore = 2;	    // next try to quit is allowed
 	}
 	return FAIL;
@@ -5609,7 +5609,7 @@ ex_colorscheme(exarg_T *eap)
 #endif
     }
     else if (load_colors(eap->arg) == FAIL)
-	semsg(_("E185: Cannot find color scheme '%s'"), eap->arg);
+	semsg(_(e_cannot_find_color_scheme_str), eap->arg);
 
 #ifdef FEAT_VTP
     else if (has_vtp_working())
@@ -7377,7 +7377,7 @@ changedir_func(
 	pdir = get_prevdir(scope);
 	if (pdir == NULL)
 	{
-	    emsg(_("E186: No previous directory"));
+	    emsg(_(e_no_previous_directory));
 	    return FALSE;
 	}
 	new_dir = pdir;
@@ -7510,7 +7510,7 @@ ex_pwd(exarg_T *eap UNUSED)
 	    msg((char *)NameBuff);
     }
     else
-	emsg(_("E187: Unknown"));
+	emsg(_(e_directory_unknown));
 }
 
 /*
@@ -7716,7 +7716,7 @@ ex_winpos(exarg_T *eap)
 	}
 	else
 # endif
-	    emsg(_("E188: Obtaining window position not implemented for this platform"));
+	    emsg(_(e_obtaining_window_position_not_implemented_for_this_platform));
     }
     else
     {
@@ -8303,12 +8303,12 @@ open_exfile(
 #endif
     if (!forceit && *mode != 'a' && vim_fexists(fname))
     {
-	semsg(_("E189: \"%s\" exists (add ! to override)"), fname);
+	semsg(_(e_str_exists_add_bang_to_override), fname);
 	return NULL;
     }
 
     if ((fd = mch_fopen((char *)fname, mode)) == NULL)
-	semsg(_("E190: Cannot open \"%s\" for writing"), fname);
+	semsg(_(e_cannot_open_str_for_writing_2), fname);
 
     return fd;
 }

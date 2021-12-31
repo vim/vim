@@ -266,7 +266,7 @@ EXTERN char e_undefined_variable_str[]
 	INIT(= N_("E121: Undefined variable: %s"));
 EXTERN char e_undefined_variable_char_str[]
 	INIT(= N_("E121: Undefined variable: %c:%s"));
-EXTERN char e_function_str_already_exists_add_excl_to_replace[]
+EXTERN char e_function_str_already_exists_add_bang_to_replace[]
 	INIT(= N_("E122: Function %s already exists, add ! to replace it"));
 EXTERN char e_undefined_function_str[]
 	INIT(= N_("E123: Undefined function: %s"));
@@ -328,7 +328,7 @@ EXTERN char e_not_a_directory_str[]
 	INIT(= N_("E150: Not a directory: %s"));
 EXTERN char e_no_match_str[]
 	INIT(= N_("E151: No match: %s"));
-EXTERN char e_cannot_open_str_for_writing[]
+EXTERN char e_cannot_open_str_for_writing_1[]
 	INIT(= N_("E152: Cannot open %s for writing"));
 EXTERN char e_unable_to_open_str_for_reading[]
 	INIT(= N_("E153: Unable to open %s for reading"));
@@ -350,9 +350,70 @@ EXTERN char e_unknown_sign_command_str[]
 EXTERN char e_breakpoint_not_found_str[]
 	INIT(= N_("E161: Breakpoint not found: %s"));
 #endif
-
+EXTERN char e_no_write_since_last_change_for_buffer_str[]
+	INIT(= N_("E162: No write since last change for buffer \"%s\""));
+EXTERN char e_there_is_only_one_file_to_edit[]
+	INIT(= N_("E163: There is only one file to edit"));
+EXTERN char e_cannot_go_before_first_file[]
+	INIT(= N_("E164: Cannot go before first file"));
+EXTERN char e_cannot_go_beyond_last_file[]
+	INIT(= N_("E165: Cannot go beyond last file"));
+EXTERN char e_cant_open_linked_file_for_writing[]
+	INIT(= N_("E166: Can't open linked file for writing"));
+EXTERN char e_scriptencoding_used_outside_of_sourced_file[]
+	INIT(= N_("E167: :scriptencoding used outside of a sourced file"));
+EXTERN char e_finish_used_outside_of_sourced_file[]
+	INIT(= N_("E168: :finish used outside of a sourced file"));
+EXTERN char e_command_too_recursive[]
+	INIT(= N_("E169: Command too recursive"));
+EXTERN char e_missing_endwhile[]
+	INIT(= N_("E170: Missing :endwhile"));
+EXTERN char e_missing_endfor[]
+	INIT(= N_("E170: Missing :endfor"));
+EXTERN char e_missing_endif[]
+	INIT(= N_("E171: Missing :endif"));
+EXTERN char e_missing_marker[]
+	INIT(= N_("E172: Missing marker"));
+EXTERN char e_nr_more_file_to_edit[]
+	INIT(= N_("E173: %d more file to edit"));
+EXTERN char e_nr_more_files_to_edit[]
+	INIT(= N_("E173: %d more files to edit"));
+EXTERN char e_command_already_exists_add_bang_to_replace_it_str[]
+	INIT(= N_("E174: Command already exists: add ! to replace it: %s"));
+EXTERN char e_no_attribute_specified[]
+	INIT(= N_("E175: No attribute specified"));
+EXTERN char e_invalid_number_of_arguments[]
+	INIT(= N_("E176: Invalid number of arguments"));
+EXTERN char e_count_cannot_be_specified_twice[]
+	INIT(= N_("E177: Count cannot be specified twice"));
+EXTERN char e_invalid_default_value_for_count[]
+	INIT(= N_("E178: Invalid default value for count"));
+EXTERN char e_argument_required_for_str[]
+	INIT(= N_("E179: argument required for %s"));
+EXTERN char e_invalid_complete_value_str[]
+	INIT(= N_("E180: Invalid complete value: %s"));
+EXTERN char e_invalid_attribute_str[]
+	INIT(= N_("E181: Invalid attribute: %s"));
+EXTERN char e_invalid_command_name[]
+	INIT(= N_("E182: Invalid command name"));
+EXTERN char e_user_defined_commands_must_start_with_an_uppercase_letter[]
+	INIT(= N_("E183: User defined commands must start with an uppercase letter"));
 EXTERN char e_no_such_user_defined_command_str[]
 	INIT(= N_("E184: No such user-defined command: %s"));
+EXTERN char e_cannot_find_color_scheme_str[]
+	INIT(= N_("E185: Cannot find color scheme '%s'"));
+EXTERN char e_no_previous_directory[]
+	INIT(= N_("E186: No previous directory"));
+EXTERN char e_directory_unknown[]
+	INIT(= N_("E187: Directory unknown"));
+EXTERN char e_obtaining_window_position_not_implemented_for_this_platform[]
+	INIT(= N_("E188: Obtaining window position not implemented for this platform"));
+EXTERN char e_str_exists_add_bang_to_override[]
+	INIT(= N_("E189: \"%s\" exists (add ! to override)"));
+EXTERN char e_cannot_open_str_for_writing_2[]
+	INIT(= N_("E190: Cannot open \"%s\" for writing"));
+
+
 #ifndef FEAT_DIGRAPHS
 EXTERN char e_no_digraphs_version[]
 	INIT(= N_("E196: No digraphs in this version"));

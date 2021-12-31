@@ -995,7 +995,7 @@ helptags_one(
     if (fd_tags == NULL)
     {
 	if (!ignore_writeerr)
-	    semsg(_(e_cannot_open_str_for_writing), NameBuff);
+	    semsg(_(e_cannot_open_str_for_writing_1), NameBuff);
 	FreeWild(filecount, files);
 	return;
     }

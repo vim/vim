@@ -367,7 +367,7 @@ check_changed_any(
 								  buf->b_fname)
 		    :
 #endif
-		semsg(_("E162: No write since last change for buffer \"%s\""),
+		semsg(_(e_no_write_since_last_change_for_buffer_str),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname))
 	{
 	    save = no_wait_return;

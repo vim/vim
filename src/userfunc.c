@@ -2360,7 +2360,7 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
     if (fp != NULL)
     {
 	// TODO: handle ! to overwrite
-	semsg(_(e_function_str_already_exists_add_excl_to_replace), global);
+	semsg(_(e_function_str_already_exists_add_bang_to_replace), global);
 	return FAIL;
     }
 
@@ -4380,7 +4380,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	    if (fudi.fd_dict != NULL && fudi.fd_newkey == NULL)
 		emsg(_(e_funcdict));
 	    else if (name != NULL && find_func(name, is_global, NULL) != NULL)
-		emsg_funcname(e_function_str_already_exists_add_excl_to_replace, name);
+		emsg_funcname(e_function_str_already_exists_add_bang_to_replace, name);
 	}
 
 	if (!eap->skip && did_emsg)
@@ -4438,7 +4438,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 		if (vim9script)
 		    emsg_funcname(e_name_already_defined_str, name);
 		else
-		    emsg_funcname(e_function_str_already_exists_add_excl_to_replace, name);
+		    emsg_funcname(e_function_str_already_exists_add_bang_to_replace, name);
 		goto erret;
 	    }
 	    if (fp->uf_calls > 0)

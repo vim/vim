@@ -1520,11 +1520,11 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	if (scope == NULL)
 	    emsg(_(e_no_endtry));
 	else if (scope->se_type == WHILE_SCOPE)
-	    emsg(_(e_endwhile));
+	    emsg(_(e_missing_endwhile));
 	else if (scope->se_type == FOR_SCOPE)
-	    emsg(_(e_endfor));
+	    emsg(_(e_missing_endfor));
 	else
-	    emsg(_(e_endif));
+	    emsg(_(e_missing_endif));
 	return NULL;
     }
 

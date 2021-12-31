@@ -678,7 +678,7 @@ parse_compl_arg(
 
     if (command_complete[i].expand == 0)
     {
-	semsg(_("E180: Invalid complete value: %s"), value);
+	semsg(_(e_invalid_complete_value_str), value);
 	return FAIL;
     }
 
@@ -726,7 +726,7 @@ uc_scan_attr(
 
     if (len == 0)
     {
-	emsg(_("E175: No attribute specified"));
+	emsg(_(e_no_attribute_specified));
 	return FAIL;
     }
 
@@ -781,7 +781,7 @@ uc_scan_attr(
 	    else
 	    {
 wrong_nargs:
-		emsg(_("E176: Invalid number of arguments"));
+		emsg(_(e_invalid_number_of_arguments));
 		return FAIL;
 	    }
 	}
@@ -796,7 +796,7 @@ wrong_nargs:
 		if (*def >= 0)
 		{
 two_count:
-		    emsg(_("E177: Count cannot be specified twice"));
+		    emsg(_(e_count_cannot_be_specified_twice));
 		    return FAIL;
 		}
 
@@ -806,7 +806,7 @@ two_count:
 		if (p != val + vallen || vallen == 0)
 		{
 invalid_count:
-		    emsg(_("E178: Invalid default value for count"));
+		    emsg(_(e_invalid_default_value_for_count));
 		    return FAIL;
 		}
 	    }
@@ -840,7 +840,7 @@ invalid_count:
 	{
 	    if (val == NULL)
 	    {
-		emsg(_("E179: argument required for -complete"));
+		semsg(_(e_argument_required_for_str), "-complete");
 		return FAIL;
 	    }
 
@@ -853,7 +853,7 @@ invalid_count:
 	    *argt |= EX_RANGE;
 	    if (val == NULL)
 	    {
-		emsg(_("E179: argument required for -addr"));
+		semsg(_(e_argument_required_for_str), "-addr");
 		return FAIL;
 	    }
 	    if (parse_addr_type_arg(val, (int)vallen, addr_type_arg) == FAIL)
@@ -865,7 +865,7 @@ invalid_count:
 	{
 	    char_u ch = attr[len];
 	    attr[len] = '\0';
-	    semsg(_("E181: Invalid attribute: %s"), attr);
+	    semsg(_(e_invalid_attribute_str), attr);
 	    attr[len] = ch;
 	    return FAIL;
 	}
@@ -945,7 +945,7 @@ uc_add_command(
 #endif
 		    )
 	    {
-		semsg(_("E174: Command already exists: add ! to replace it: %s"),
+		semsg(_(e_command_already_exists_add_bang_to_replace_it_str),
 									 name);
 		goto fail;
 	    }
@@ -1085,7 +1085,7 @@ ex_command(exarg_T *eap)
 	    ++p;
     if (!ends_excmd2(eap->arg, p) && !VIM_ISWHITE(*p))
     {
-	emsg(_("E182: Invalid command name"));
+	emsg(_(e_invalid_command_name));
 	return;
     }
     end = p;
@@ -1097,7 +1097,7 @@ ex_command(exarg_T *eap)
     if (!has_attr && ends_excmd2(eap->arg, p))
 	uc_list(name, end - name);
     else if (!ASCII_ISUPPER(*name))
-	emsg(_("E183: User defined commands must start with an uppercase letter"));
+	emsg(_(e_user_defined_commands_must_start_with_an_uppercase_letter));
     else if ((name_len == 1 && *name == 'X')
 	  || (name_len <= 4
 		  && STRNCMP(name, "Next", name_len > 4 ? 4 : name_len) == 0))

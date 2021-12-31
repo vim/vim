@@ -3109,11 +3109,11 @@ nextline:
     if (cctx.ctx_scope != NULL)
     {
 	if (cctx.ctx_scope->se_type == IF_SCOPE)
-	    emsg(_(e_endif));
+	    emsg(_(e_missing_endif));
 	else if (cctx.ctx_scope->se_type == WHILE_SCOPE)
-	    emsg(_(e_endwhile));
+	    emsg(_(e_missing_endwhile));
 	else if (cctx.ctx_scope->se_type == FOR_SCOPE)
-	    emsg(_(e_endfor));
+	    emsg(_(e_missing_endfor));
 	else
 	    emsg(_(e_missing_rcurly));
 	goto erret;
