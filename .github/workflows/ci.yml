@@ -383,13 +383,15 @@ jobs:
       COL_GREEN: "\x1b[32m"
       COL_YELLOW: "\x1b[33m"
       COL_RESET: "\x1b[m"
+      LOG_DIR: ${{ github.workspace }}\logs
+      ASAN_OPTIONS: print_stacktrace=1:log_path=${{ github.workspace }}\logs\asan
 
     strategy:
       fail-fast: false
       matrix:
-        toolchain: [msvc, mingw]
-        arch: [x64, x86]
-        features: [HUGE, NORMAL]
+        toolchain: [msvc]
+        arch: [x64]
+        features: [HUGE]
         include:
           - arch: x64
             vcarch: amd64
@@ -500,7 +502,7 @@ jobs:
           if "${{ matrix.features }}"=="HUGE" (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
-              GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
+              GUI=yes IME=yes ICONV=yes VIMDLL=yes ASAN=yes ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
