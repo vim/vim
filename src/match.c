@@ -949,7 +949,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 	*win = find_win_by_nr_or_id(&di->di_tv);
 	if (*win == NULL)
 	{
-	    emsg(_(e_invalwindow));
+	    emsg(_(e_invalid_window_number));
 	    return FAIL;
 	}
     }
@@ -1259,7 +1259,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), "matchaddpos()");
+	semsg(_(e_argument_of_str_must_be_list), "matchaddpos()");
 	return;
     }
     l = argvars[1].vval.v_list;

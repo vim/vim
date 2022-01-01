@@ -3071,7 +3071,7 @@ get_optional_window(typval_T *argvars, int idx)
 	win = find_win_by_nr_or_id(&argvars[idx]);
 	if (win == NULL)
 	{
-	    emsg(_(e_invalwindow));
+	    emsg(_(e_invalid_window_number));
 	    return NULL;
 	}
     }
@@ -6570,7 +6570,7 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
     {
-	semsg(_(e_listarg), "inputlist()");
+	semsg(_(e_argument_of_str_must_be_list), "inputlist()");
 	return;
     }
 

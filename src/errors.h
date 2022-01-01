@@ -528,7 +528,15 @@ EXTERN char e_cannot_allocate_color_str[]
 EXTERN char e_couldnt_read_in_sign_data[]
 	INIT(= N_("E255: Couldn't read in sign data"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_no_white_space_allowed_before_parenthesis[]
+	INIT(= N_("E274: No white space allowed before parenthesis"));
+#endif
 
+#ifdef FEAT_MENU
+EXTERN char e_menu_only_exists_in_another_mode[]
+	INIT(= N_("E328: Menu only exists in another mode"));
+#endif
 EXTERN char e_internal_error_lalloc_zero[]
 	INIT(= N_("E341: Internal error: lalloc(0, )"));
 EXTERN char e_out_of_memory_allocating_nr_bytes[]
@@ -668,6 +676,16 @@ EXTERN char e_not_allowed_to_change_text_or_change_window[]
 EXTERN char e_not_allowed_to_change_text_here[]
 	INIT(= N_("E578: Not allowed to change text here"));
 #ifdef FEAT_EVAL
+EXTERN char e_endif_without_if[]
+	INIT(= N_("E580: :endif without :if"));
+EXTERN char e_else_without_if[]
+	INIT(= N_("E581: :else without :if"));
+EXTERN char e_elseif_without_if[]
+	INIT(= N_("E582: :elseif without :if"));
+EXTERN char e_continue_without_while_or_for[]
+	INIT(= N_("E586: :continue without :while or :for"));
+EXTERN char e_break_without_while_or_for[]
+	INIT(= N_("E587: :break without :while or :for"));
 EXTERN char e_endwhile_without_while[]
 	INIT(= N_("E588: :endwhile without :while"));
 EXTERN char e_endfor_without_for[]
@@ -716,11 +734,17 @@ EXTERN char e_list_index_out_of_range_nr[]
 EXTERN char e_internal_error_str[]
 	INIT(= N_("E685: Internal error: %s"));
 #ifdef FEAT_EVAL
+EXTERN char e_argument_of_str_must_be_list[]
+	INIT(= N_("E686: Argument of %s must be a List"));
+EXTERN char e_missing_in_after_for[]
+	INIT(= N_("E690: Missing \"in\" after :for"));
+// E693 unused
 EXTERN char e_cannot_index_a_funcref[]
 	INIT(= N_("E695: Cannot index a Funcref"));
 EXTERN char e_missing_end_of_list_rsb_str[]
 	INIT(= N_("E697: Missing end of List ']': %s"));
 
+// E706 unused
 EXTERN char e_list_value_has_more_items_than_targets[]
 	INIT(= N_("E710: List value has more items than targets"));
 EXTERN char e_list_value_does_not_have_enough_items[]
@@ -864,6 +888,10 @@ EXTERN char e_attempt_to_delete_buffer_that_is_in_use_str[]
 	INIT(= N_("E937: Attempt to delete a buffer that is in use: %s"));
 EXTERN char e_positive_count_required[]
 	INIT(= N_("E939: Positive count required"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_lock_or_unlock_variable_str[]
+	INIT(= N_("E940: Cannot lock or unlock variable %s"));
+#endif
 #ifdef FEAT_TERMINAL
 EXTERN char e_job_still_running[]
 	INIT(= N_("E948: Job still running"));
@@ -874,6 +902,8 @@ EXTERN char e_file_changed_while_writing[]
 	INIT(= N_("E949: File changed while writing"));
 EXTERN char e_autocommand_caused_recursive_behavior[]
 	INIT(= N_("E952: Autocommand caused recursive behavior"));
+EXTERN char e_invalid_window_number[]
+	INIT(= N_("E957: Invalid window number"));
 EXTERN char_u e_invalid_column_number_nr[]
 	INIT(= N_("E964: Invalid column number: %ld"));
 EXTERN char_u e_invalid_line_number_nr[]

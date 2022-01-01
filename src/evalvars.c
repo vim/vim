@@ -1889,7 +1889,7 @@ do_lock_var(
 	*name_end = NUL;
 	if (*lp->ll_name == '$')
 	{
-	    semsg(_(e_lock_unlock), lp->ll_name);
+	    semsg(_(e_cannot_lock_or_unlock_variable_str), lp->ll_name);
 	    ret = FAIL;
 	}
 	else
@@ -1909,7 +1909,7 @@ do_lock_var(
 	    {
 		// For historic reasons this error is not given for a list or
 		// dict.  E.g., the b: dict could be locked/unlocked.
-		semsg(_(e_lock_unlock), lp->ll_name);
+		semsg(_(e_cannot_lock_or_unlock_variable_str), lp->ll_name);
 		ret = FAIL;
 	    }
 	    else

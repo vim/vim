@@ -1316,7 +1316,7 @@ ex_continue(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_continue);
+	eap->errmsg = _(e_continue_without_while_or_for);
     else
     {
 	// Try to find the matching ":while".  This might stop at a try
@@ -1354,7 +1354,7 @@ ex_break(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_break);
+	eap->errmsg = _(e_break_without_while_or_for);
     else
     {
 	// Inactivate conditionals until the matching ":while" or a try

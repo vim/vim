@@ -1600,36 +1600,15 @@ EXTERN int netbeansSuppressNoLines INIT(= 0); // skip "No lines in buffer"
 #endif
 
 /*
- * Some error messages that can be shared are included here.
- * They should be moved to errors.h.
+ * Some messages that can be shared are included here.
  */
-#ifdef FEAT_MENU
-EXTERN char e_menuothermode[]	INIT(= N_("E328: Menu only exists in another mode"));
-#endif
-EXTERN char e_invalwindow[]	INIT(= N_("E957: Invalid window number"));
-EXTERN char e_listarg[]		INIT(= N_("E686: Argument of %s must be a List"));
-#ifdef FEAT_EVAL
-EXTERN char e_missing_in[]	INIT(= N_("E690: Missing \"in\" after :for"));
-EXTERN char e_else_without_if[] INIT(= N_("E581: :else without :if"));
-EXTERN char e_elseif_without_if[] INIT(= N_("E582: :elseif without :if"));
-EXTERN char e_endif_without_if[] INIT(= N_("E580: :endif without :if"));
-EXTERN char e_continue[]	INIT(= N_("E586: :continue without :while or :for"));
-EXTERN char e_break[]		INIT(= N_("E587: :break without :while or :for"));
-EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before parenthesis"));
+EXTERN char top_bot_msg[]   INIT(= N_("search hit TOP, continuing at BOTTOM"));
+EXTERN char bot_top_msg[]   INIT(= N_("search hit BOTTOM, continuing at TOP"));
 
-EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
-#endif
-
-EXTERN char e_chan_or_job_req[]	INIT(= N_("E706: Channel or Job required"));
-EXTERN char e_jobreq[]		INIT(= N_("E693: Job required"));
-
-EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));
-EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));
-
-EXTERN char line_msg[]		INIT(= N_(" line "));
+EXTERN char line_msg[]	    INIT(= N_(" line "));
 
 #ifdef FEAT_CRYPT
-EXTERN char need_key_msg[] INIT(= N_("Need encryption key for \"%s\""));
+EXTERN char need_key_msg[]  INIT(= N_("Need encryption key for \"%s\""));
 #endif
 
 /*

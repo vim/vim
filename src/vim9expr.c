@@ -1659,7 +1659,7 @@ compile_subscript(
 		if (**arg != '(')
 		{
 		    if (*skipwhite(*arg) == '(')
-			emsg(_(e_nowhitespace));
+			emsg(_(e_no_white_space_allowed_before_parenthesis));
 		    else
 			semsg(_(e_missing_parenthesis_str), *arg);
 		    return FAIL;

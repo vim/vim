@@ -992,7 +992,7 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), "flatten()");
+	semsg(_(e_argument_of_str_must_be_list), "flatten()");
 	return;
     }
 
@@ -2202,7 +2202,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), sort ? "sort()" : "uniq()");
+	semsg(_(e_argument_of_str_must_be_list), sort ? "sort()" : "uniq()");
 	return;
     }
 

@@ -4807,7 +4807,8 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     // validate and get the arguments
     if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
     {
-	semsg(_(e_listarg), retmatchpos ? "matchfuzzypos()" : "matchfuzzy()");
+	semsg(_(e_argument_of_str_must_be_list),
+			     retmatchpos ? "matchfuzzypos()" : "matchfuzzy()");
 	return;
     }
     if (argvars[1].v_type != VAR_STRING

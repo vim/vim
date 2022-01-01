@@ -916,7 +916,7 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 	    || !win_valid(wp) || !win_valid(targetwin)
 	    || win_valid_popup(wp) || win_valid_popup(targetwin))
     {
-        emsg(_(e_invalwindow));
+        emsg(_(e_invalid_window_number));
 	rettv->vval.v_number = -1;
 	return;
     }
