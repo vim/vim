@@ -7,6 +7,23 @@ source vim9.vim
 source shared.vim
 source screendump.vim
 
+def Test_vim9script_feature()
+  # example from the help, here the feature is always present
+  var lines =<< trim END
+      " old style comment
+      if !has('vim9script')
+        " legacy commands would go here
+        finish
+      endif
+      vim9script
+      # Vim9 script commands go here
+      g:didit = true
+  END
+  CheckScriptSuccess(lines)
+  assert_equal(true, g:didit)
+  unlet g:didit
+enddef
+
 def Test_range_only()
   new
   setline(1, ['blah', 'Blah'])

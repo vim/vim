@@ -391,8 +391,8 @@ later.  Example: >
 	  endif
 	enddef
 
-If you would do it like this you get an error at compile time that
-"PluginFunc" does not exist, even when "g:loaded_plugin" does not exist: >
+If you do it like this, you get an error at compile time that "PluginFunc"
+does not exist, even when "g:loaded_plugin" does not exist: >
 	def CallPluginFunc()
 	  if exists('g:loaded_plugin')
 	    PluginFunc()   # Error - function not found
@@ -1410,9 +1410,6 @@ This can only work in two ways:
    skipped and `vim9script` is then the first command actually executed.
 2. The "if" statement evaluates to true, the commands up to `endif` are
    executed and `finish` bails out before reaching `vim9script`.
-
-TODO: The "vim9script" feature does not exist yet, it will only be added once
-the Vim9 script syntax has been fully implemented.
 
 
 Export ~

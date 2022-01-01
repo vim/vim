@@ -5929,6 +5929,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"vim9script", 1},
 	{"vimscript-1", 1},
 	{"vimscript-2", 1},
 	{"vimscript-3", 1},
