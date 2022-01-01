@@ -935,7 +935,7 @@ ex_terminal(exarg_T *eap)
 	vim_snprintf((char *)newcmd, cmdlen, "%s %s %s", p_sh, p_shcf, cmd);
 	cmd = newcmd;
 # else
-	emsg(_("E279: Sorry, ++shell is not supported on this system"));
+	emsg(_(e_sorry_plusplusshell_not_supported_on_this_system));
 	goto theend;
 # endif
 #endif

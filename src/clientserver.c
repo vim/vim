@@ -929,7 +929,7 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
 						       &r, FALSE, timeout) < 0)
 # endif
-	    emsg(_("E277: Unable to read a server reply"));
+	    emsg(_(e_unable_to_read_server_reply));
     }
 #endif
     rettv->v_type = VAR_STRING;

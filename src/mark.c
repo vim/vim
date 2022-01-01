@@ -732,7 +732,7 @@ show_one_mark(
 	    if (arg == NULL)
 		msg(_("No marks set"));
 	    else
-		semsg(_("E283: No marks matching \"%s\""), arg);
+		semsg(_(e_no_marks_matching_str), arg);
 	}
     }
     // don't output anything if 'q' typed at --more-- prompt

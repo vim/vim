@@ -592,11 +592,117 @@ EXTERN char e_unable_to_send_to_client[]
 EXTERN char e_no_matches_found_for_cscope_query_str_of_str[]
 	INIT(= N_("E259: no matches found for cscope query %s of %s"));
 #endif
-
+#ifdef FEAT_EVAL
+EXTERN char e_missing_name_after_method[]
+	INIT(= N_("E260: Missing name after ->"));
+#endif
+#ifdef FEAT_CSCOPE
+EXTERN char e_cscope_connection_str_not_founc[]
+	INIT(= N_("E261: cscope connection %s not found"));
+EXTERN char e_error_reading_cscope_connection_nr[]
+	INIT(= N_("E262: error reading cscope connection %d"));
+#endif
+#ifdef DYNAMIC_PYTHON
+EXTERN char e_sorry_this_command_is_disabled_python_library_could_not_be_found[]
+	INIT(= N_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+#endif
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+EXTERN char e_python_error_initialising_io_object[]
+	INIT(= N_("E264: Python: Error initialising I/O objects"));
+#endif
+#ifdef FEAT_RUBY
+EXTERN char e_dollar_must_be_an_instance_of_string[]
+	INIT(= N_("E265: $_ must be an instance of String"));
+#endif
+#ifdef DYNAMIC_RUBY
+EXTERN char e_sorry_this_command_is_disabled_the_ruby_library_could_not_be_loaded[]
+	INIT(= N_("E266: Sorry, this command is disabled, the Ruby library could not be loaded."));
+#endif
+#ifdef FEAT_RUBY
+EXTERN char e_unexpected_return[]
+	INIT(= N_("E267: unexpected return"));
+EXTERN char e_unexpected_next[]
+	INIT(= N_("E268: unexpected next"));
+EXTERN char e_unexpected_break[]
+	INIT(= N_("E269: unexpected break"));
+EXTERN char e_unexpected_redo[]
+	INIT(= N_("E270: unexpected redo"));
+EXTERN char e_retry_outside_of_rescue_clause[]
+	INIT(= N_("E271: retry outside of rescue clause"));
+EXTERN char e_unhandled_exception[]
+	INIT(= N_("E272: unhandled exception"));
+EXTERN char e_unknown_longjmp_status_nr[]
+	INIT(= N_("E273: unknown longjmp status %d"));
+#endif
 #ifdef FEAT_EVAL
 EXTERN char e_no_white_space_allowed_before_parenthesis[]
 	INIT(= N_("E274: No white space allowed before parenthesis"));
 #endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_add_text_property_to_unloaded_buffer[]
+	INIT(= N_("E275: Cannot add text property to unloaded buffer"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_function_as_method_str[]
+	INIT(= N_("E276: Cannot use function as a method: %s"));
+#endif
+#ifdef FEAT_CLIENTSERVER
+EXTERN char e_unable_to_read_server_reply[]
+	INIT(= N_("E277: Unable to read a server reply"));
+#endif
+#ifdef FEAT_TERMINAL
+EXTERN char e_sorry_plusplusshell_not_supported_on_this_system[]
+	INIT(= N_("E279: Sorry, ++shell is not supported on this system"));
+#endif
+#ifdef FEAT_TCL
+EXTERN char e_tcl_fatal_error_reflist_corrupt_please_report_this[]
+	INIT(= N_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
+#endif
+// E281 unused
+EXTERN char e_cannot_read_from_str_2[]
+	INIT(= N_("E282: Cannot read from \"%s\""));
+EXTERN char e_no_marks_matching_str[]
+	INIT(= N_("E283: No marks matching \"%s\""));
+#ifdef FEAT_XIM
+EXTERN char e_cannot_set_ic_values[]
+	INIT(= N_("E284: Cannot set IC values"));
+# if defined(FEAT_GUI_X11)
+EXTERN char e_failed_to_create_input_context[]
+	INIT(= N_("E285: Failed to create input context"));
+# endif
+EXTERN char e_failed_to_open_input_method[]
+	INIT(= N_("E286: Failed to open input method"));
+EXTERN char e_warning_could_not_set_destroy_callback_to_im[]
+	INIT(= N_("E287: Warning: Could not set destroy callback to IM"));
+EXTERN char e_input_method_doesnt_support_any_style[]
+	INIT(= N_("E288: input method doesn't support any style"));
+EXTERN char e_input_method_doesnt_support_my_preedit_type[]
+	INIT(= N_("E289: input method doesn't support my preedit type"));
+#endif
+#ifdef FEAT_SEARCH_EXTRA
+EXTERN char e_list_or_number_required[]
+	INIT(= N_("E290: List or number required"));
+#endif
+// E291 unused
+EXTERN char e_invalid_count_for_del_bytes_nr[]
+	INIT(= N_("E292: Invalid count for del_bytes(): %ld"));
+EXTERN char e_block_was_not_locked[]
+	INIT(= N_("E293: block was not locked"));
+EXTERN char e_seek_error_in_swap_file_read[]
+	INIT(= N_("E294: Seek error in swap file read"));
+EXTERN char e_read_error_in_swap_file[]
+	INIT(= N_("E295: Read error in swap file"));
+EXTERN char e_seek_error_in_swap_file_write[]
+	INIT(= N_("E296: Seek error in swap file write"));
+EXTERN char e_write_error_in_swap_file[]
+	INIT(= N_("E297: Write error in swap file"));
+EXTERN char e_didnt_get_block_nr_zero[]
+	INIT(= N_("E298: Didn't get block nr 0?"));
+EXTERN char e_didnt_get_block_nr_one[]
+	INIT(= N_("E298: Didn't get block nr 1?"));
+EXTERN char e_didnt_get_block_nr_two[]
+	INIT(= N_("E298: Didn't get block nr 2?"));
+// E299 unused
 
 #ifdef FEAT_MENU
 EXTERN char e_menu_only_exists_in_another_mode[]

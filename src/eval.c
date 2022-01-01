@@ -3936,7 +3936,7 @@ eval_method(
     if (len <= 0)
     {
 	if (verbose)
-	    emsg(_("E260: Missing name after ->"));
+	    emsg(_(e_missing_name_after_method));
 	ret = FAIL;
     }
     else

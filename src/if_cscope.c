@@ -636,7 +636,7 @@ cs_cnt_connections(void)
 cs_reading_emsg(
     int idx)	// connection index
 {
-    semsg(_("E262: error reading cscope connection %d"), idx);
+    semsg(_(e_error_reading_cscope_connection_nr), idx);
 }
 
 #define	CSREAD_BUFSIZE	2048
@@ -1497,7 +1497,7 @@ cs_kill(exarg_T *eap UNUSED)
     if ((i != -1) && (i >= csinfo_size || i < -1 || csinfo[i].fname == NULL))
     {
 	if (p_csverbose)
-	    (void)semsg(_("E261: cscope connection %s not found"), stok);
+	    (void)semsg(_(e_cscope_connection_str_not_founc), stok);
     }
     else
     {

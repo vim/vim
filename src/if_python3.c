@@ -1071,7 +1071,7 @@ Python3_Init(void)
 #ifdef DYNAMIC_PYTHON3
 	if (!python3_enabled(TRUE))
 	{
-	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_python_library_could_not_be_found));
 	    goto fail;
 	}
 #endif

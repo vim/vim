@@ -327,7 +327,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 0)
     {
-	iemsg(_("E298: Didn't get block nr 0?"));
+	iemsg(_(e_didnt_get_block_nr_zero));
 	goto error;
     }
     b0p = (ZERO_BL *)(hp->bh_data);
@@ -377,7 +377,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 1)
     {
-	iemsg(_("E298: Didn't get block nr 1?"));
+	iemsg(_(e_didnt_get_block_nr_one));
 	goto error;
     }
     pp = (PTR_BL *)(hp->bh_data);
@@ -395,7 +395,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 2)
     {
-	iemsg(_("E298: Didn't get block nr 2?"));
+	iemsg(_(e_didnt_get_block_nr_two));
 	goto error;
     }
 

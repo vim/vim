@@ -3268,7 +3268,7 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 		break;
 	case FCERR_NOTMETHOD:
 		emsg_funcname(
-			N_("E276: Cannot use function as a method: %s"), name);
+			N_(e_cannot_use_function_as_method_str), name);
 		break;
 	case FCERR_DELETED:
 		emsg_funcname(e_function_was_deleted_str, name);

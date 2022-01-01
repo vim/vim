@@ -222,7 +222,7 @@ prop_add_one(
 
     if (buf->b_ml.ml_mfp == NULL)
     {
-	emsg(_("E275: Cannot add text property to unloaded buffer"));
+	emsg(_(e_cannot_add_text_property_to_unloaded_buffer));
 	return FAIL;
     }
 

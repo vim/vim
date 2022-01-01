@@ -165,7 +165,7 @@ match_add(
 	    }
 	    else
 	    {
-		emsg(_("E290: List or number required"));
+		emsg(_(e_list_or_number_required));
 		goto fail;
 	    }
 	    if (toplnum == 0 || lnum < toplnum)
