@@ -709,7 +709,7 @@ check_connection(void)
     make_connection();
     if (X_DISPLAY == NULL)
     {
-	emsg(_("E240: No connection to the X server"));
+	emsg(_(e_no_connection_to_x_server));
 	return FAIL;
     }
     return OK;
@@ -759,7 +759,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	    vim_free(r);
 	}
 	else
-	    semsg(_("E241: Unable to send to %s"), server_name);
+	    semsg(_(e_unable_to_send_to_str), server_name);
 	return;
     }
 
@@ -1016,7 +1016,7 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (serverSendReply(server, reply) < 0)
     {
-	emsg(_("E258: Unable to send to client"));
+	emsg(_(e_unable_to_send_to_client));
 	return;
     }
     rettv->vval.v_number = 0;

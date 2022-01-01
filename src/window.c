@@ -774,7 +774,7 @@ check_split_disallowed()
 {
     if (split_disallowed > 0)
     {
-	emsg(_("E242: Can't split a window while closing another"));
+	emsg(_(e_cant_split_window_while_closing_another));
 	return FAIL;
     }
     if (curwin->w_buffer->b_locked_split)

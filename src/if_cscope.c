@@ -308,7 +308,7 @@ ex_cstag(exarg_T *eap)
 
     if (!ret)
     {
-	(void)emsg(_("E257: cstag: tag not found"));
+	(void)emsg(_(e_cstag_tag_not_founc));
 #if defined(FEAT_QUICKFIX)
 	g_do_tagpreview = 0;
 #endif
@@ -1160,7 +1160,8 @@ cs_find_common(
     if (totmatches == 0)
     {
 	if (verbose)
-	    (void)semsg(_("E259: no matches found for cscope query %s of %s"), opt, pat);
+	    (void)semsg(_(e_no_matches_found_for_cscope_query_str_of_str),
+								     opt, pat);
 	vim_free(nummatches);
 	return FALSE;
     }

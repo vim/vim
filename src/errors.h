@@ -494,32 +494,85 @@ EXTERN char e_mapping_already_exists_for_str[]
 	INIT(= N_("E227: mapping already exists for %s"));
 EXTERN char e_makemap_illegal_mode[]
 	INIT(= N_("E228: makemap: Illegal mode"));
+#ifdef FEAT_GUI
 EXTERN char e_cannot_start_the_GUI[]
 	INIT(= N_("E229: Cannot start the GUI"));
-
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
+EXTERN char e_cannot_read_from_str[]
+	INIT(= N_("E230: Cannot read from \"%s\""));
+EXTERN char e_guifontwide_invalid[]
+	INIT(= N_("E231: 'guifontwide' invalid"));
+EXTERN char e_cannot_create_ballooneval_with_both_message_and_callback[]
+	INIT(= N_("E232: Cannot create BalloonEval with both message and callback"));
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 EXTERN char e_cannot_open_display[]
 	INIT(= N_("E233: cannot open display"));
-#endif
-#if defined(FEAT_GUI) && defined(FEAT_XFONTSET)
+# endif
+# if defined(FEAT_XFONTSET)
 EXTERN char e_unknown_fontset_str[]
 	INIT(= N_("E234: Unknown fontset: %s"));
-#endif
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+# endif
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
 EXTERN char e_unknown_font_str[]
 	INIT(= N_("E235: Unknown font: %s"));
-#endif
-#if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
+# endif
+# if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
 EXTERN char e_font_str_is_not_fixed_width[]
 	INIT(= N_("E236: Font \"%s\" is not fixed-width"));
+# endif
 #endif
+#ifdef MSWIN
+EXTERN char e_printer_selection_failed[]
+	INIT(= N_("E237: Printer selection failed"));
+EXTERN char e_print_error_str[]
+	INIT(= N_("E238: Print error: %s"));
+#endif
+EXTERN char e_invalid_sign_text_str[]
+	INIT(= N_("E239: Invalid sign text: %s"));
+#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+EXTERN char e_no_connection_to_x_server[]
+	INIT(= N_("E240: No connection to the X server"));
+#endif
+#ifdef FEAT_CLIENTSERVER
+EXTERN char e_unable_to_send_to_str[]
+	INIT(= N_("E241: Unable to send to %s"));
+#endif
+EXTERN char e_cant_split_window_while_closing_another[]
+	INIT(= N_("E242: Can't split a window while closing another"));
+#if defined(FEAT_GUI_MSWIN) && !defined(FEAT_OLE)
+EXTERN char e_argument_not_supported_str_use_ole_version[]
+	INIT(= N_("E243: Argument not supported: \"-%s\"; Use the OLE version."));
+#endif
+#ifdef MSWIN
+EXTERN char e_illegal_str_name_str_in_font_name_str[]
+	INIT(= N_("E244: Illegal %s name \"%s\" in font name \"%s\""));
+EXTERN char e_illegal_char_nr_in_font_name_str[]
+	INIT(= N_("E245: Illegal char '%c' in font name \"%s\""));
+#endif
+EXTERN char e_filechangedshell_autocommand_deleted_buffer[]
+	INIT(= N_("E246: FileChangedShell autocommand deleted buffer"));
 #ifdef FEAT_CLIENTSERVER
 EXTERN char e_no_registered_server_named_str[]
 	INIT(= N_("E247: no registered server named \"%s\""));
+EXTERN char e_failed_to_send_command_to_destination_program[]
+	INIT(= N_("E248: Failed to send command to the destination program"));
 #endif
 EXTERN char e_window_layout_changed_unexpectedly[]
 	INIT(= N_("E249: window layout changed unexpectedly"));
+#ifdef FEAT_XFONTSET
+EXTERN char e_fonts_for_the_following_charsets_are_missing_in_fontset[]
+	INIT(= N_("E250: Fonts for the following charsets are missing in fontset %s:"));
+#endif
+#ifdef FEAT_CLIENTSERVER
+EXTERN char e_vim_instance_registry_property_is_badly_formed_deleted[]
+	INIT(= N_("E251: VIM instance registry property is badly formed.  Deleted!"));
+#endif
+#ifdef FEAT_GUI_X11
+EXTERN char e_fontsent_name_str_font_str_is_not_fixed_width[]
+	INIT(= N_("E252: Fontset name: %s - Font '%s' is not fixed-width"));
+EXTERN char e_fontset_name_str[]
+	INIT(= N_("E253: Fontset name: %s"));
+#endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_cannot_allocate_color_str[]
 	INIT(= N_("E254: Cannot allocate color %s"));
@@ -528,6 +581,18 @@ EXTERN char e_cannot_allocate_color_str[]
 EXTERN char e_couldnt_read_in_sign_data[]
 	INIT(= N_("E255: Couldn't read in sign data"));
 #endif
+// E256 unused
+EXTERN char e_cstag_tag_not_founc[]
+	INIT(= N_("E257: cstag: tag not found"));
+#ifdef FEAT_CLIENTSERVER
+EXTERN char e_unable_to_send_to_client[]
+	INIT(= N_("E258: Unable to send to client"));
+#endif
+#ifdef FEAT_CSCOPE
+EXTERN char e_no_matches_found_for_cscope_query_str_of_str[]
+	INIT(= N_("E259: no matches found for cscope query %s of %s"));
+#endif
+
 #ifdef FEAT_EVAL
 EXTERN char e_no_white_space_allowed_before_parenthesis[]
 	INIT(= N_("E274: No white space allowed before parenthesis"));

@@ -2062,7 +2062,7 @@ gui_mch_get_fontset(
 
 	if (giveErrorIfMissing)
 	{
-	    semsg(_("E250: Fonts for the following charsets are missing in fontset %s:"), name);
+	    semsg(_(e_fonts_for_the_following_charsets_are_missing_in_fontset), name);
 	    for (i = 0; i < num_missing; i++)
 		semsg("%s", missing[i]);
 	}
@@ -2104,8 +2104,8 @@ check_fontset_sanity(XFontSet fs)
     {
 	if (xfs[i]->max_bounds.width != xfs[i]->min_bounds.width)
 	{
-	    semsg(_("E252: Fontset name: %s"), base_name);
-	    semsg(_("Font '%s' is not fixed-width"), font_name[i]);
+	    semsg(_(e_fontsent_name_str_font_str_is_not_fixed_width),
+		    base_name, font_name[i]);
 	    return FAIL;
 	}
     }
@@ -2124,7 +2124,7 @@ check_fontset_sanity(XFontSet fs)
 	if (	   xfs[i]->max_bounds.width != 2 * min_width
 		&& xfs[i]->max_bounds.width != min_width)
 	{
-	    semsg(_("E253: Fontset name: %s"), base_name);
+	    semsg(_(e_fontset_name_str), base_name);
 	    semsg(_("Font0: %s"), font_name[min_font_idx]);
 	    semsg(_("Font%d: %s"), i, font_name[i]);
 	    semsg(_("Font%d width is not twice that of font0"), i);

@@ -4982,8 +4982,7 @@ ole_error(char *arg)
 
     // Can't use emsg() here, we have not finished initialisation yet.
     vim_snprintf(buf, IOSIZE,
-	    _("E243: Argument not supported: \"-%s\"; Use the OLE version."),
-	    arg);
+			 _(e_argument_not_supported_str_use_ole_version), arg);
     mch_errmsg(buf);
 }
 #endif
@@ -8682,7 +8681,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	iemsg(_("E232: Cannot create BalloonEval with both message and callback"));
+	iemsg(_(e_cannot_create_ballooneval_with_both_message_and_callback));
 	return NULL;
     }
 

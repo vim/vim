@@ -1019,7 +1019,7 @@ sign_define_init_text(sign_T *sp, char_u *text)
     // Currently sign text must be one or two display cells
     if (s != endp || cells < 1 || cells > 2)
     {
-	semsg(_("E239: Invalid sign text: %s"), text);
+	semsg(_(e_invalid_sign_text_str), text);
 	return FAIL;
     }
 

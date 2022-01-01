@@ -3326,7 +3326,7 @@ ex_viminfo(
     {
 	if (read_viminfo(eap->arg, VIF_WANT_INFO | VIF_WANT_MARKS
 				  | (eap->forceit ? VIF_FORCEIT : 0)) == FAIL)
-	    emsg(_("E195: Cannot open viminfo file for reading"));
+	    emsg(_(e_cannot_open_viminfo_file_for_reading));
     }
     else
 	write_viminfo(eap->arg, eap->forceit);

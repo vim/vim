@@ -1399,7 +1399,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 
     if (prt_dlg.hDC == NULL)
     {
-	emsg(_("E237: Printer selection failed"));
+	emsg(_(e_printer_selection_failed));
 	mch_print_cleanup();
 	return FALSE;
     }
@@ -1519,7 +1519,7 @@ init_fail_dlg:
 			  FORMAT_MESSAGE_FROM_SYSTEM |
 			  FORMAT_MESSAGE_IGNORE_INSERTS,
 			  NULL, err, 0, (LPTSTR)(&buf), 0, NULL);
-	    semsg(_("E238: Print error: %s"),
+	    semsg(_(e_print_error_str),
 				  buf == NULL ? (char_u *)_("Unknown") : buf);
 	    LocalFree((LPVOID)(buf));
 	}
@@ -2961,7 +2961,9 @@ get_logfont(
 		    if (cp->name == NULL && verbose)
 		    {
 			char_u *s = utf16_to_enc(p, NULL);
-			semsg(_("E244: Illegal charset name \"%s\" in font name \"%s\""), s, name);
+
+			semsg(_(e_illegal_str_name_str_in_font_name_str),
+							   "charset", s, name);
 			vim_free(s);
 			break;
 		    }
@@ -2981,7 +2983,8 @@ get_logfont(
 		    if (qp->name == NULL && verbose)
 		    {
 			char_u *s = utf16_to_enc(p, NULL);
-			semsg(_("E244: Illegal quality name \"%s\" in font name \"%s\""), s, name);
+			semsg(_(e_illegal_str_name_str_in_font_name_str),
+							   "quality", s, name);
 			vim_free(s);
 			break;
 		    }
@@ -2989,7 +2992,7 @@ get_logfont(
 		}
 	    default:
 		if (verbose)
-		    semsg(_("E245: Illegal char '%c' in font name \"%s\""), p[-1], name);
+		    semsg(_(e_illegal_char_nr_in_font_name_str), p[-1], name);
 		goto theend;
 	}
 	while (*p == L':')

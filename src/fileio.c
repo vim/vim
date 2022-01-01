@@ -4155,7 +4155,7 @@ buf_check_timestamp(
 	    if (n)
 	    {
 		if (!bufref_valid(&bufref))
-		    emsg(_("E246: FileChangedShell autocommand deleted buffer"));
+		    emsg(_(e_filechangedshell_autocommand_deleted_buffer));
 #ifdef FEAT_EVAL
 		s = get_vim_var_str(VV_FCS_CHOICE);
 		if (STRCMP(s, "reload") == 0 && *reason != 'd')
