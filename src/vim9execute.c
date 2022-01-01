@@ -3911,12 +3911,14 @@ exec_instructions(ectx_T *ectx)
 		    list_T	*l = tv1->vval.v_list;
 
 		    // add an item to a list
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (l == NULL)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_cannot_add_to_null_list));
 			goto on_error;
 		    }
+		    if (value_check_lock(l->lv_lock, NULL, FALSE))
+			goto on_error;
 		    if (list_append_tv(l, tv2) == FAIL)
 			goto theend;
 		    clear_tv(tv2);
