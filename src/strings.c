@@ -916,7 +916,7 @@ string_filter_map(
 	    {
 		clear_tv(&newtv);
 		clear_tv(&tv);
-		emsg(_(e_stringreq));
+		emsg(_(e_string_required));
 		break;
 	    }
 	    else
@@ -956,7 +956,7 @@ string_reduce(
     {
 	if (*p == NUL)
 	{
-	    semsg(_(e_reduceempty), "String");
+	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "String");
 	    return;
 	}
 	if (copy_first_char_to_tv(p, rettv) == FAIL)
