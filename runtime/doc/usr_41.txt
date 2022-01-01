@@ -547,7 +547,7 @@ Example: >
 	    break
 	  endif
 	  sleep 50m
-	  --counter
+	  ++counter
 	endwhile
 
 The `sleep` command makes Vim take a nap.  The "50m" specifies fifty
