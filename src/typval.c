@@ -939,7 +939,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 #ifdef FEAT_FLOAT
 	    if (strict)
 	    {
-		emsg(_(e_float_as_string));
+		emsg(_(e_using_float_as_string));
 		break;
 	    }
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%g", varp->vval.v_float);
