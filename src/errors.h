@@ -549,6 +549,7 @@ EXTERN char e_invalid_command[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+#endif
 
 	// E502
 EXTERN char e_is_a_directory[]
@@ -618,6 +619,7 @@ EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
 	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
 EXTERN char e_buffer_nr_invalid_buffer_number[]
 	INIT(= N_("E680: <buffer=%d>: invalid buffer number"));
+#ifdef FEAT_EVAL
 EXTERN char e_cannot_index_a_funcref[]
 	INIT(= N_("E695: Cannot index a Funcref"));
 
@@ -684,9 +686,9 @@ EXTERN char e_job_still_running[]
 	INIT(= N_("E948: Job still running"));
 EXTERN char e_job_still_running_add_bang_to_end_the_job[]
 	INIT(= N_("E948: Job still running (add ! to end the job)"));
+#endif
 EXTERN char e_file_changed_while_writing[]
 	INIT(= N_("E949: File changed while writing"));
-#endif
 EXTERN char_u e_invalid_column_number_nr[]
 	INIT(= N_("E964: Invalid column number: %ld"));
 EXTERN char_u e_invalid_line_number_nr[]
