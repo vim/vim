@@ -2161,6 +2161,9 @@ v:lnum		Line number for the 'foldexpr' |fold-expr|, 'formatexpr' and
 		expressions is being evaluated.  Read-only when in the
 		|sandbox|.
 
+						*v:maxcol* *maxcol-variable*
+v:maxcol	Maximum line length.
+
 					*v:mouse_win* *mouse_win-variable*
 v:mouse_win	Window number for a mouse click obtained with |getchar()|.
 		First window has number 1, like with |winnr()|.  The value is
