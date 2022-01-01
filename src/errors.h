@@ -690,11 +690,13 @@ EXTERN char e_endwhile_without_while[]
 	INIT(= N_("E588: :endwhile without :while"));
 EXTERN char e_endfor_without_for[]
 	INIT(= N_("E588: :endfor without :for"));
+#endif
 EXTERN char e_winheight_cannot_be_smaller_than_winminheight[]
 	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
 EXTERN char e_winwidth_cannot_be_smaller_than_winminwidth[]
 	INIT(= N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
 
+#ifdef FEAT_EVAL
 EXTERN char e_missing_endtry[]
 	INIT(= N_("E600: Missing :endtry"));
 EXTERN char e_endtry_without_try[]
