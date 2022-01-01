@@ -956,6 +956,8 @@ def Test_expandcmd()
 
   assert_equal("yes", expandcmd("`={a: 'yes'}['a']`"))
   expandcmd('')->assert_equal('')
+
+  CheckDefAndScriptFailure(['expandcmd([1])'], ['E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1174: String required for argument 1'])
 enddef
 
 def Test_extend_arg_types()
