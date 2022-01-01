@@ -3239,6 +3239,9 @@ vgetorpeek(int advance)
 		    if (pending_exmode_active)
 			exmode_active = EXMODE_NORMAL;
 
+		    // no chars to block abbreviation for
+		    typebuf.tb_no_abbr_cnt = 0;
+
 		    break;
 		}
 

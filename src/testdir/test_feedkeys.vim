@@ -13,4 +13,14 @@ func Test_feedkeys_x_with_empty_string()
   quit!
 endfunc
 
+func Test_feedkeys_with_abbreviation()
+  new
+  inoreabbrev trigger value
+  call feedkeys("atrigger ", 'x')
+  call feedkeys("atrigger ", 'x')
+  call assert_equal('value value ', getline(1))
+  bwipe!
+  iunabbrev trigger
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
