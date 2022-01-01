@@ -384,7 +384,7 @@ jobs:
       COL_YELLOW: "\x1b[33m"
       COL_RESET: "\x1b[m"
       LOG_DIR: ${{ github.workspace }}\logs
-      ASAN_OPTIONS: print_stacktrace=1:log_path=${{ github.workspace }}\logs\asan
+      ASAN_OPTIONS: print_stacktrace=1:log_path=asan
 
     strategy:
       fail-fast: false
