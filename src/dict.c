@@ -962,7 +962,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    if (*skipwhite(*arg) == ':')
 		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
-		semsg(_(e_missing_dict_colon), *arg);
+		semsg(_(e_missing_colon_in_dictionary), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -1002,7 +1002,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key_in_dicitonary), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -1042,7 +1042,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    if (**arg == ',')
 		semsg(_(e_no_white_space_allowed_before_str_str), ",", *arg);
 	    else
-		semsg(_(e_missing_dict_comma), *arg);
+		semsg(_(e_missing_comma_in_dictionary), *arg);
 	    goto failret;
 	}
     }

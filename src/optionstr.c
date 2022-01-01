@@ -677,7 +677,7 @@ did_set_string_option(
 		|| sandbox != 0
 #endif
 		) && (get_option_flags(opt_idx) & P_SECURE))
-	errmsg = e_secure;
+	errmsg = e_not_allowed_here;
 
     // Check for a "normal" directory or file name in some options.  Disallow a
     // path separator (slash and/or backslash), wildcards and characters that

@@ -700,7 +700,7 @@ buf_write(
     {
 	// This can happen during startup when there is a stray "w" in the
 	// vimrc file.
-	emsg(_(e_emptybuf));
+	emsg(_(e_empty_buffer));
 	return FAIL;
     }
 

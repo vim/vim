@@ -524,11 +524,22 @@ EXTERN char e_window_layout_changed_unexpectedly[]
 EXTERN char e_cannot_allocate_color_str[]
 	INIT(= N_("E254: Cannot allocate color %s"));
 #endif
+#if defined(FEAT_SIGN_ICONS) && !defined(FEAT_GUI_GTK)
+EXTERN char e_couldnt_read_in_sign_data[]
+	INIT(= N_("E255: Couldn't read in sign data"));
+#endif
 
 EXTERN char e_internal_error_lalloc_zero[]
 	INIT(= N_("E341: Internal error: lalloc(0, )"));
 EXTERN char e_out_of_memory_allocating_nr_bytes[]
 	INIT(= N_("E342: Out of memory!  (allocating %lu bytes)"));
+#if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
+	|| defined(UNIX) || defined(VMS)
+EXTERN char e_screen_mode_setting_not_supported[]
+	INIT(= N_("E359: Screen mode setting not supported"));
+#endif
+EXTERN char e_pattern_uses_more_memory_than_maxmempattern[]
+	INIT(= N_("E363: pattern uses more memory than 'maxmempattern'"));
 #ifdef FEAT_LIBCALL
 EXTERN char e_library_call_failed_for_str[]
 	INIT(= N_("E364: Library call failed for \"%s()\""));
@@ -546,6 +557,10 @@ EXTERN char e_cannot_write_buftype_option_is_set[]
 EXTERN char e_could_not_load_library_function_str[]
 	INIT(= N_("E448: Could not load library function %s"));
 #endif
+#ifdef FEAT_CLIENTSERVER
+EXTERN char e_invalid_expression_received[]
+	INIT(= N_("E449: Invalid expression received"));
+#endif
 #if defined(UNIX) || defined(FEAT_SESSION)
 EXTERN char e_cannot_go_back_to_previous_directory[]
 	INIT(= N_("E459: Cannot go back to previous directory"));
@@ -553,6 +568,10 @@ EXTERN char e_cannot_go_back_to_previous_directory[]
 #ifdef FEAT_EVAL
 EXTERN char e_illegal_variable_name_str[]
 	INIT(= N_("E461: Illegal variable name: %s"));
+#endif
+#ifdef FEAT_NETBEANS_INTG
+EXTERN char e_region_is_guarded_cannot_modify[]
+	INIT(= N_("E463: Region is guarded, cannot modify"));
 #endif
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
@@ -600,6 +619,10 @@ EXTERN char e_no_match_str_2[]
 	INIT(= N_("E480: No match: %s"));
 EXTERN char e_no_range_allowed[]
 	INIT(= N_("E481: No range allowed"));
+EXTERN char e_trailing_characters[]
+	INIT(= N_("E488: Trailing characters"));
+EXTERN char e_trailing_characters_str[]
+	INIT(= N_("E488: Trailing characters: %s"));
 
 	// E502
 EXTERN char e_is_a_directory[]
@@ -638,11 +661,22 @@ EXTERN char e_no_buffers_were_deleted[]
 	INIT(= N_("E516: No buffers were deleted"));
 EXTERN char e_no_buffers_were_wiped_out[]
 	INIT(= N_("E517: No buffers were wiped out"));
+EXTERN char e_not_allowed_here[]
+	INIT(= N_("E523: Not allowed here"));
+EXTERN char e_not_allowed_to_change_text_or_change_window[]
+	INIT(= N_("E565: Not allowed to change text or change window"));
+EXTERN char e_not_allowed_to_change_text_here[]
+	INIT(= N_("E578: Not allowed to change text here"));
 #ifdef FEAT_EVAL
 EXTERN char e_endwhile_without_while[]
 	INIT(= N_("E588: :endwhile without :while"));
 EXTERN char e_endfor_without_for[]
 	INIT(= N_("E588: :endfor without :for"));
+EXTERN char e_winheight_cannot_be_smaller_than_winminheight[]
+	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
+EXTERN char e_winwidth_cannot_be_smaller_than_winminwidth[]
+	INIT(= N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
+
 EXTERN char e_missing_endtry[]
 	INIT(= N_("E600: Missing :endtry"));
 EXTERN char e_endtry_without_try[]
@@ -673,6 +707,8 @@ EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
 	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
 EXTERN char e_buffer_nr_invalid_buffer_number[]
 	INIT(= N_("E680: <buffer=%d>: invalid buffer number"));
+EXTERN char e_invalid_search_pattern_or_delimiter[]
+	INIT(= N_("E682: Invalid search pattern or delimiter"));
 #ifdef FEAT_EVAL
 EXTERN char e_list_index_out_of_range_nr[]
 	INIT(= N_("E684: list index out of range: %ld"));
@@ -701,6 +737,14 @@ EXTERN char e_key_not_present_in_dictionary[]
 	INIT(= N_("E716: Key not present in Dictionary: \"%s\""));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
+EXTERN char e_missing_colon_in_dictionary[]
+	INIT(= N_("E720: Missing colon in Dictionary: %s"));
+EXTERN char e_duplicate_key_in_dicitonary[]
+	INIT(= N_("E721: Duplicate key in Dictionary: \"%s\""));
+EXTERN char e_missing_comma_in_dictionary[]
+	INIT(= N_("E722: Missing comma in Dictionary: %s"));
+EXTERN char e_missing_dict_end[]
+	INIT(= N_("E723: Missing end of Dictionary '}': %s"));
 EXTERN char e_wrong_variable_type_for_str_equal[]
 	INIT(= N_("E734: Wrong variable type for %s="));
 EXTERN char e_value_is_locked[]
@@ -712,9 +756,19 @@ EXTERN char e_cannot_change_value[]
 EXTERN char e_cannot_change_value_of_str[]
 	INIT(= N_("E742: Cannot change value of %s"));
 #endif
+#ifdef FEAT_NETBEANS_INTG
+EXTERN char e_netbeans_does_not_allow_changes_in_read_only_files[]
+	INIT(= N_("E744: NetBeans does not allow changes in read-only files"));
+#endif
+EXTERN char e_empty_buffer[]
+	INIT(= N_("E749: empty buffer"));
 #ifdef FEAT_SPELL
 EXTERN char e_spell_checking_is_not_possible[]
 	INIT(= N_("E756: Spell checking is not possible"));
+#endif
+#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC)
+EXTERN char e_option_str_is_not_set[]
+	INIT(= N_("E764: Option '%s' is not set"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char e_no_location_list[]
@@ -742,6 +796,12 @@ EXTERN char e_arabic_cannot_be_used_not_enabled_at_compile_time[]
 EXTERN char e_cannot_use_percent_with_float[]
 	INIT(= N_("E804: Cannot use '%' with Float"));
 #endif
+#ifdef FEAT_FLOAT
+EXTERN char e_using_float_as_string[]
+	INIT(= N_("E806: using Float as a String"));
+#endif
+EXTERN char e_cannot_close_autocmd_or_popup_window[]
+	INIT(= N_("E813: Cannot close autocmd or popup window"));
 EXTERN char e_blowfish_big_little_endian_use_wrong[]
 	INIT(= N_("E817: Blowfish big/little endian use wrong"));
 EXTERN char e_sha256_test_failed[]
@@ -757,6 +817,10 @@ EXTERN char e_conflicts_with_value_of_listchars[]
 EXTERN char e_conflicts_with_value_of_fillchars[]
 	INIT(= N_("E835: Conflicts with value of 'fillchars'"));
 // E839 unused
+#ifndef FEAT_CLIPBOARD
+EXTERN char e_invalid_register_name[]
+	INIT(= N_("E850: Invalid register name"));
+#endif
 EXTERN char e_autocommands_caused_command_to_abort[]
 	INIT(= N_("E855: Autocommands caused command to abort"));
 #ifdef FEAT_EVAL
@@ -781,6 +845,10 @@ EXTERN char e_using_invalid_value_as_string_str[]
 	INIT(= N_("E908: using an invalid value as a String: %s"));
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
+#endif
+EXTERN char e_directory_not_found_in_str_str[]
+	INIT(= N_("E919: Directory not found in '%s': \"%s\""));
+#ifdef FEAT_EVAL
 EXTERN char e_string_required[]
 	INIT(= N_("E928: String required"));
 #endif
@@ -794,6 +862,8 @@ EXTERN char e_cannot_delete_current_group[]
 	INIT(= N_("E936: Cannot delete the current group"));
 EXTERN char e_attempt_to_delete_buffer_that_is_in_use_str[]
 	INIT(= N_("E937: Attempt to delete a buffer that is in use: %s"));
+EXTERN char e_positive_count_required[]
+	INIT(= N_("E939: Positive count required"));
 #ifdef FEAT_TERMINAL
 EXTERN char e_job_still_running[]
 	INIT(= N_("E948: Job still running"));
@@ -802,6 +872,8 @@ EXTERN char e_job_still_running_add_bang_to_end_the_job[]
 #endif
 EXTERN char e_file_changed_while_writing[]
 	INIT(= N_("E949: File changed while writing"));
+EXTERN char e_autocommand_caused_recursive_behavior[]
+	INIT(= N_("E952: Autocommand caused recursive behavior"));
 EXTERN char_u e_invalid_column_number_nr[]
 	INIT(= N_("E964: Invalid column number: %ld"));
 EXTERN char_u e_invalid_line_number_nr[]

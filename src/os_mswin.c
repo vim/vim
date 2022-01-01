@@ -2037,7 +2037,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	    if (res == NULL)
 	    {
-		char	*err = _(e_invexprmsg);
+		char	*err = _(e_invalid_expression_received);
 		size_t	len = STRLEN(str) + STRLEN(err) + 5;
 
 		res = alloc(len);

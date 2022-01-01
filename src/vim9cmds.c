@@ -408,7 +408,7 @@ compile_if(char_u *arg, cctx_T *cctx)
     }
     if (!ends_excmd2(arg, skipwhite(p)))
     {
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 	return NULL;
     }
     if (cctx->ctx_skip == SKIP_YES)
@@ -578,7 +578,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     if (!ends_excmd2(arg, skipwhite(p)))
     {
 	clear_ppconst(&ppconst);
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 	return NULL;
     }
     if (scope->se_skip_save == SKIP_YES)
@@ -1075,7 +1075,7 @@ compile_while(char_u *arg, cctx_T *cctx)
 
     if (!ends_excmd2(arg, skipwhite(p)))
     {
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 	return NULL;
     }
 
@@ -2021,7 +2021,7 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 				       || GA_GROW_FAILS(&cctx->ctx_instr, 1))
 	    {
 		if (trailing_error)
-		    semsg(_(e_trailing_arg), cmd);
+		    semsg(_(e_trailing_characters_str), cmd);
 		clear_instr_ga(&cctx->ctx_instr);
 		cctx->ctx_instr = save_ga;
 		return NULL;

@@ -517,7 +517,7 @@ compile_string(isn_T *isn, cctx_T *cctx)
 				       || GA_GROW_FAILS(&cctx->ctx_instr, 1))
     {
 	if (trailing_error)
-	    semsg(_(e_trailing_arg), s);
+	    semsg(_(e_trailing_characters_str), s);
 	clear_instr_ga(&cctx->ctx_instr);
 	cctx->ctx_instr = save_ga;
 	++cctx->ctx_type_stack.ga_len;
@@ -1090,7 +1090,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key_in_dicitonary), key);
 		goto failret;
 	    }
 	    item = dictitem_alloc(key);
@@ -1108,7 +1108,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (*skipwhite(*arg) == ':')
 		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
-		semsg(_(e_missing_dict_colon), *arg);
+		semsg(_(e_missing_colon_in_dictionary), *arg);
 	    return FAIL;
 	}
 	whitep = *arg + 1;
@@ -1140,7 +1140,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    break;
 	if (**arg != ',')
 	{
-	    semsg(_(e_missing_dict_comma), *arg);
+	    semsg(_(e_missing_comma_in_dictionary), *arg);
 	    goto failret;
 	}
 	if (IS_WHITE_OR_NUL(*whitep))
@@ -1711,7 +1711,7 @@ compile_subscript(
 		p = *arg;
 		if (!eval_isnamec1(*p))
 		{
-		    semsg(_(e_trailing_arg), pstart);
+		    semsg(_(e_trailing_characters_str), pstart);
 		    return FAIL;
 		}
 		if (ASCII_ISALPHA(*p) && p[1] == ':')

@@ -925,7 +925,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		if (cur_item->v_type == VAR_FLOAT)
 		{
 		    // cannot use a float as a key
-		    emsg(_(e_float_as_string));
+		    emsg(_(e_using_float_as_string));
 		    retval = FAIL;
 		    goto theend;
 		}
@@ -1096,7 +1096,7 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     json_skip_white(reader);
     if (reader->js_buf[reader->js_used] != NUL)
     {
-	semsg(_(e_trailing_arg), reader->js_buf + reader->js_used);
+	semsg(_(e_trailing_characters_str), reader->js_buf + reader->js_used);
 	return FAIL;
     }
     return OK;

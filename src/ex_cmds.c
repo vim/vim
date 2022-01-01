@@ -3931,7 +3931,7 @@ ex_substitute(exarg_T *eap)
 	i = getdigits(&cmd);
 	if (i <= 0 && !eap->skip && subflags.do_error)
 	{
-	    emsg(_(e_zerocount));
+	    emsg(_(e_positive_count_required));
 	    return;
 	}
 	eap->line1 = eap->line2;
@@ -3949,7 +3949,7 @@ ex_substitute(exarg_T *eap)
 	set_nextcmd(eap, cmd);
 	if (eap->nextcmd == NULL)
 	{
-	    semsg(_(e_trailing_arg), cmd);
+	    semsg(_(e_trailing_characters_str), cmd);
 	    return;
 	}
     }

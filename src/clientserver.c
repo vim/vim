@@ -119,7 +119,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 	{
 	    if (ret == NULL)
 	    {
-		char	*err = _(e_invexprmsg);
+		char	*err = _(e_invalid_expression_received);
 		size_t	len = STRLEN(cmd) + STRLEN(err) + 5;
 		char_u	*msg;
 

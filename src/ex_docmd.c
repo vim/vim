@@ -522,7 +522,7 @@ do_exmode(
 		   || changedtick != CHANGEDTICK(curbuf)) && !ex_no_reprint)
 	{
 	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
-		emsg(_(e_emptybuf));
+		emsg(_(e_empty_buffer));
 	    else
 	    {
 		if (ex_pressedreturn)
@@ -541,7 +541,7 @@ do_exmode(
 	else if (ex_pressedreturn && !ex_no_reprint)	// must be at EOF
 	{
 	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
-		emsg(_(e_emptybuf));
+		emsg(_(e_empty_buffer));
 	    else
 		emsg(_("E501: At end-of-file"));
 	}
@@ -2326,7 +2326,7 @@ do_one_cmd(
 	// check these explicitly for a more specific error message
 	if (*ea.arg == '*' || *ea.arg == '+')
 	{
-	    errormsg = _(e_invalidreg);
+	    errormsg = _(e_invalid_register_name);
 	    goto doend;
 	}
 #endif
@@ -2362,7 +2362,7 @@ do_one_cmd(
 	ea.arg = skipwhite(ea.arg);
 	if (n <= 0 && !ni && (ea.argt & EX_ZEROR) == 0)
 	{
-	    errormsg = _(e_zerocount);
+	    errormsg = _(e_positive_count_required);
 	    goto doend;
 	}
 	if (ea.addr_type != ADDR_LINES)	// e.g. :buffer 2, :sleep 3
@@ -2393,7 +2393,7 @@ do_one_cmd(
 	    && *ea.arg != '"' && (*ea.arg != '|' || (ea.argt & EX_TRLBAR) == 0))
     {
 	// no arguments allowed but there is something
-	errormsg = ex_errmsg(e_trailing_arg, ea.arg);
+	errormsg = ex_errmsg(e_trailing_characters_str, ea.arg);
 	goto doend;
     }
 
@@ -5353,7 +5353,7 @@ ex_buffer(exarg_T *eap)
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (*eap->arg)
-	eap->errmsg = ex_errmsg(e_trailing_arg, eap->arg);
+	eap->errmsg = ex_errmsg(e_trailing_characters_str, eap->arg);
     else
     {
 	if (eap->addr_count == 0)	// default is current buffer
@@ -5860,7 +5860,7 @@ ex_win_close(
     // Never close the autocommand window.
     if (win == aucmd_win)
     {
-	emsg(_(e_autocmd_close));
+	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return;
     }
 
@@ -6286,7 +6286,7 @@ ex_exit(exarg_T *eap)
 ex_print(exarg_T *eap)
 {
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
-	emsg(_(e_emptybuf));
+	emsg(_(e_empty_buffer));
     else
     {
 	for ( ;!got_int; ui_breakcheck())
@@ -6771,7 +6771,7 @@ ex_mode(exarg_T *eap)
     if (*eap->arg == NUL)
 	shell_resized();
     else
-	emsg(_(e_screenmode));
+	emsg(_(e_screen_mode_setting_not_supported));
 }
 
 /*
@@ -8327,7 +8327,7 @@ ex_mark(exarg_T *eap)
     if (*eap->arg == NUL)		// No argument?
 	emsg(_(e_argument_required));
     else if (eap->arg[1] != NUL)	// more than one character?
-	semsg(_(e_trailing_arg), eap->arg);
+	semsg(_(e_trailing_characters_str), eap->arg);
     else
     {
 	pos = curwin->w_cursor;		// save curwin->w_cursor
@@ -8420,7 +8420,7 @@ ex_normal(exarg_T *eap)
 
     if (ex_normal_lock > 0)
     {
-	emsg(_(e_secure));
+	emsg(_(e_not_allowed_here));
 	return;
     }
     if (ex_normal_busy >= p_mmd)
@@ -8698,7 +8698,7 @@ ex_findpat(exarg_T *eap)
 
 	    // Check for trailing illegal characters
 	    if (!ends_excmd2(eap->arg, p))
-		eap->errmsg = ex_errmsg(e_trailing_arg, p);
+		eap->errmsg = ex_errmsg(e_trailing_characters_str, p);
 	    else
 		set_nextcmd(eap, p);
 	}

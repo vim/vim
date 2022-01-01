@@ -1403,7 +1403,7 @@ ex_match(exarg_T *eap)
 	    if (*end != NUL && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		vim_free(g);
-		eap->errmsg = ex_errmsg(e_trailing_arg, end);
+		eap->errmsg = ex_errmsg(e_trailing_characters_str, end);
 		return;
 	    }
 	    if (*end != *p)

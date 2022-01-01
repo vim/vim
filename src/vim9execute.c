@@ -3148,7 +3148,7 @@ exec_instructions(ectx_T *ectx)
 			if (item != NULL)
 			{
 			    SOURCING_LNUM = iptr->isn_lnum;
-			    semsg(_(e_duplicate_key), key);
+			    semsg(_(e_duplicate_key_in_dicitonary), key);
 			    dict_unref(dict);
 			    goto on_error;
 			}

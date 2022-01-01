@@ -6214,7 +6214,7 @@ spell_add_word(
 
 	if (*curwin->w_s->b_p_spf == NUL)
 	{
-	    semsg(_(e_notset), "spellfile");
+	    semsg(_(e_option_str_is_not_set), "spellfile");
 	    return;
 	}
 	fnamebuf = alloc(MAXPATHL);

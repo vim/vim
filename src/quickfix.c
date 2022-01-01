@@ -3629,7 +3629,7 @@ qf_list(exarg_T *eap)
     }
     if (!get_list_range(&arg, &idx1, &idx2) || *arg != NUL)
     {
-	semsg(_(e_trailing_arg), arg);
+	semsg(_(e_trailing_characters_str), arg);
 	return;
     }
     qfl = qf_get_curlist(qi);
@@ -6106,7 +6106,7 @@ vgr_process_args(
     p = skip_vimgrep_pat(eap->arg, &args->spat, &args->flags);
     if (p == NULL)
     {
-	emsg(_(e_invalpat));
+	emsg(_(e_invalid_search_pattern_or_delimiter));
 	return FAIL;
     }
 
@@ -8399,7 +8399,7 @@ set_qf_ll_list(
     if (list_arg->v_type != VAR_LIST)
 	emsg(_(e_list_required));
     else if (recursive != 0)
-	emsg(_(e_au_recursive));
+	emsg(_(e_autocommand_caused_recursive_behavior));
     else
     {
 	list_T  *l = list_arg->vval.v_list;

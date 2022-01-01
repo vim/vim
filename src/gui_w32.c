@@ -8393,7 +8393,7 @@ gui_mch_register_sign(char_u *signfile)
     {
 	if (sign.hImage)
 	    close_signicon_image(&sign);
-	emsg(_(e_signdata));
+	emsg(_(e_couldnt_read_in_sign_data));
     }
     return (void *)psign;
 

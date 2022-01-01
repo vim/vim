@@ -1630,7 +1630,7 @@ parse_sign_cmd_args(
 	    filename = arg;
 	    *buf = buflist_findnr((int)getdigits(&arg));
 	    if (*skipwhite(arg) != NUL)
-		semsg(_(e_trailing_arg), arg);
+		semsg(_(e_trailing_characters_str), arg);
 	    break;
 	}
 	else

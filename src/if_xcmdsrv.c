@@ -1323,7 +1323,7 @@ server_parse_message(
 			    ga_concat(&reply, res);
 			else
 			{
-			    ga_concat(&reply, (char_u *)_(e_invexprmsg));
+			    ga_concat(&reply, (char_u *)_(e_invalid_expression_received));
 			    ga_append(&reply, 0);
 			    ga_concat(&reply, (char_u *)"-c 1");
 			}

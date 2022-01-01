@@ -4660,7 +4660,7 @@ skip_add:
 
 		if ((long)(newsize >> 10) >= p_mmp)
 		{
-		    emsg(_(e_maxmempat));
+		    emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 		    --depth;
 		    return NULL;
 		}
@@ -5002,7 +5002,7 @@ addstate_here(
 
 	    if ((long)(newsize >> 10) >= p_mmp)
 	    {
-		emsg(_(e_maxmempat));
+		emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 		return NULL;
 	    }
 	    newl = alloc(newsize);

@@ -856,7 +856,7 @@ get_lval(
 	if (unlet && !VIM_ISWHITE(*p) && !ends_excmd(*p)
 						    && *p != '[' && *p != '.')
 	{
-	    semsg(_(e_trailing_arg), p);
+	    semsg(_(e_trailing_characters_str), p);
 	    return NULL;
 	}
 
@@ -2269,7 +2269,7 @@ eval0(
 		&& (!in_vim9script() || !vim9_bad_comment(p)))
 	{
 	    if (end_error)
-		semsg(_(e_trailing_arg), p);
+		semsg(_(e_trailing_characters_str), p);
 	    else
 		semsg(_(e_invalid_expression_str), arg);
 	}
@@ -4129,7 +4129,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
 	    if (verbose)
-		emsg(_(e_float_as_string));
+		emsg(_(e_using_float_as_string));
 	    return FAIL;
 #endif
 	case VAR_BOOL:

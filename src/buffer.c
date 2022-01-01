@@ -1608,7 +1608,7 @@ do_bufdel(
 	if (addr_count == 2)
 	{
 	    if (*arg)		// both range and argument is not allowed
-		return ex_errmsg(e_trailing_arg, arg);
+		return ex_errmsg(e_trailing_characters_str, arg);
 	    bnr = start_bnr;
 	}
 	else	// addr_count == 1

@@ -2496,7 +2496,7 @@ win_close(win_T *win, int free_buf)
 	return FAIL; // window is already being closed
     if (win_unlisted(win))
     {
-	emsg(_(e_autocmd_close));
+	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())

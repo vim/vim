@@ -333,7 +333,7 @@ undo_allowed(void)
     // caller of getcmdline() may get confused.
     if (textwinlock != 0 || textlock != 0)
     {
-	emsg(_(e_textlock));
+	emsg(_(e_not_allowed_to_change_text_here));
 	return FALSE;
     }
 
@@ -438,12 +438,12 @@ u_savecommon(
 	{
 	    if (netbeans_is_guarded(top, bot))
 	    {
-		emsg(_(e_guarded));
+		emsg(_(e_region_is_guarded_cannot_modify));
 		return FAIL;
 	    }
 	    if (curbuf->b_p_ro)
 	    {
-		emsg(_(e_nbreadonly));
+		emsg(_(e_netbeans_does_not_allow_changes_in_read_only_files));
 		return FAIL;
 	    }
 	}

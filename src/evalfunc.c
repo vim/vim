@@ -3496,7 +3496,7 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = 0;
     }
     else if (*s != NUL)
-	semsg(_(e_trailing_arg), s);
+	semsg(_(e_trailing_characters_str), s);
 }
 
 /*
@@ -6698,7 +6698,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	if (*end != NUL)
 	{
 	    semsg(_(lv.ll_name == lv.ll_name_end
-					   ? e_invalid_argument_str : e_trailing_arg), end);
+					   ? e_invalid_argument_str : e_trailing_characters_str), end);
 	}
 	else
 	{

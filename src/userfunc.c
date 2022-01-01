@@ -1127,7 +1127,7 @@ lambda_function_body(
 
     if (!ends_excmd2(*arg, skipwhite(*arg + 1)))
     {
-	semsg(_(e_trailing_arg), *arg + 1);
+	semsg(_(e_trailing_characters_str), *arg + 1);
 	return FAIL;
     }
 
@@ -4148,7 +4148,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
     {
 	if (!ends_excmd(*skipwhite(p)))
 	{
-	    semsg(_(e_trailing_arg), p);
+	    semsg(_(e_trailing_characters_str), p);
 	    goto ret_free;
 	}
 	set_nextcmd(eap, p);
@@ -4364,7 +4364,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 				     && (vim9script || eap->cmdidx == CMD_def))
 	    && !eap->skip
 	    && !did_emsg)
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 
     /*
      * Read the body of the function, until "}", ":endfunction" or ":enddef" is
@@ -4899,7 +4899,7 @@ ex_delfunction(exarg_T *eap)
     if (!ends_excmd(*skipwhite(p)))
     {
 	vim_free(name);
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 	return;
     }
     set_nextcmd(eap, p);
@@ -5262,7 +5262,7 @@ ex_call(exarg_T *eap)
 	    if (!failed && !aborting())
 	    {
 		emsg_severe = TRUE;
-		semsg(_(e_trailing_arg), arg);
+		semsg(_(e_trailing_characters_str), arg);
 	    }
 	}
 	else

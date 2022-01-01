@@ -175,7 +175,7 @@ edit(
     if (textwinlock != 0 || textlock != 0
 			  || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_textwinlock));
+	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode

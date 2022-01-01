@@ -4355,7 +4355,7 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
     funcname = get_complete_funcname(ctrl_x_mode);
     if (*funcname == NUL)
     {
-	semsg(_(e_notset), ctrl_x_mode == CTRL_X_FUNCTION
+	semsg(_(e_option_str_is_not_set), ctrl_x_mode == CTRL_X_FUNCTION
 		? "completefunc" : "omnifunc");
 	return FAIL;
     }

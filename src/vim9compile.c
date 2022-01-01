@@ -2639,7 +2639,7 @@ compile_def_function(
 		&& !(*line == '#' && (line == cctx.ctx_line_start
 						    || VIM_ISWHITE(line[-1]))))
 	{
-	    semsg(_(e_trailing_arg), line);
+	    semsg(_(e_trailing_characters_str), line);
 	    goto erret;
 	}
 	else if (line != NULL && vim9_bad_comment(skipwhite(line)))
