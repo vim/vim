@@ -845,7 +845,7 @@ ruby_runtime_link_init(char *libname, int verbose)
     if (!hinstRuby)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname, load_dll_error());
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
 
@@ -857,7 +857,7 @@ ruby_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstRuby);
 	    hinstRuby = NULL;
 	    if (verbose)
-		semsg(_(e_loadfunc), ruby_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), ruby_funcname_table[i].name);
 	    return FAIL;
 	}
     }

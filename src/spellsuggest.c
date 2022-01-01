@@ -481,7 +481,7 @@ spell_suggest(int count)
 
     if (*curwin->w_s->b_p_spl == NUL)
     {
-	emsg(_(e_no_spell));
+	emsg(_(e_spell_checking_is_not_possible));
 	return;
     }
 
@@ -935,7 +935,7 @@ spell_suggest_file(suginfo_T *su, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return;
     }
 

@@ -4872,7 +4872,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (argvars[2].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	d = argvars[2].vval.v_dict;
@@ -4894,7 +4894,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (*fname == NUL || (fd = mch_fopen((char *)fname, WRITEBIN)) == NULL)
     {
-	semsg(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_cant_create_file_str), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	return;
     }
 
@@ -5374,7 +5374,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	semsg(_(e_notread), fname1);
+	semsg(_(e_cant_read_file_str), fname1);
 	return;
     }
     if (do_diff)
@@ -5383,7 +5383,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    semsg(_(e_notread), fname2);
+	    semsg(_(e_cant_read_file_str), fname2);
 	    return;
 	}
     }
@@ -6346,7 +6346,7 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
@@ -6639,7 +6639,7 @@ dyn_conpty_init(int verbose)
 						conpty_entry[i].name)) == NULL)
 	{
 	    if (verbose)
-		semsg(_(e_loadfunc), conpty_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), conpty_entry[i].name);
 	    hKerneldll = NULL;
 	    return FAIL;
 	}
@@ -6836,7 +6836,7 @@ conpty_term_and_job_init(
 	ch_log(channel, "Opening output file %s", fname);
 	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
 	if (term->tl_out_fd == NULL)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
     }
 
     return OK;
@@ -6979,7 +6979,7 @@ dyn_winpty_init(int verbose)
     if (!hWinPtyDLL)
     {
 	if (verbose)
-	    semsg(_(e_loadlib),
+	    semsg(_(e_could_not_load_library_str_str),
 		    (*p_winptydll != NUL ? p_winptydll : (char_u *)WINPTY_DLL),
 		    GetWin32Error());
 	return FAIL;
@@ -6991,7 +6991,7 @@ dyn_winpty_init(int verbose)
 					      winpty_entry[i].name)) == NULL)
 	{
 	    if (verbose)
-		semsg(_(e_loadfunc), winpty_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), winpty_entry[i].name);
 	    hWinPtyDLL = NULL;
 	    return FAIL;
 	}
@@ -7172,7 +7172,7 @@ winpty_term_and_job_init(
 	ch_log(channel, "Opening output file %s", fname);
 	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
 	if (term->tl_out_fd == NULL)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
     }
 
     return OK;

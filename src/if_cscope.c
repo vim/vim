@@ -1176,7 +1176,7 @@ cs_find_common(
 
 	f = mch_fopen((char *)tmp, "w");
 	if (f == NULL)
-	    semsg(_(e_notopen), tmp);
+	    semsg(_(e_cant_open_file_str), tmp);
 	else
 	{
 	    cs_file_results(f, nummatches);

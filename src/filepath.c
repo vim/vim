@@ -1599,7 +1599,7 @@ readdirex_dict_arg(typval_T *tv, int *cmp)
 
     if (tv->v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FAIL;
     }
 
@@ -1607,7 +1607,7 @@ readdirex_dict_arg(typval_T *tv, int *cmp)
 	compare = dict_get_string(tv->vval.v_dict, (char_u *)"sort", FALSE);
     else
     {
-	semsg(_(e_no_dict_key), "sort");
+	semsg(_(e_dictionary_key_str_required), "sort");
 	return FAIL;
     }
 
@@ -1766,7 +1766,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
-	semsg(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_cant_open_file_str), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	return;
     }
 
@@ -1774,7 +1774,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     {
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
-	    semsg(_(e_notread), fname);
+	    semsg(_(e_cant_read_file_str), fname);
 	    // An empty blob is returned on error.
 	    blob_free(rettv->vval.v_blob);
 	    rettv->vval.v_blob = NULL;
@@ -2299,7 +2299,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     if (*fname == NUL || (fd = mch_fopen((char *)fname,
 				      append ? APPENDBIN : WRITEBIN)) == NULL)
     {
-	semsg(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_cant_create_file_str), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	ret = -1;
     }
     else if (blob)

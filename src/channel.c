@@ -161,7 +161,7 @@ ch_logfile(char_u *fname, char_u *opt)
 	file = fopen((char *)fname, *opt == 'w' ? "w" : "a");
 	if (file == NULL)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    return;
 	}
 	vim_free(log_name);

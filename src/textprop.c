@@ -132,7 +132,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
 
     if (arg->v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FAIL;
     }
     if (arg->vval.v_dict == NULL)
@@ -172,7 +172,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     }
     if (argvars[2].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -328,7 +328,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].vval.v_list == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
@@ -350,7 +350,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	if (li->li_tv.v_type != VAR_LIST || li->li_tv.vval.v_list == NULL)
 	{
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	    return;
 	}
 
@@ -732,7 +732,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     dict = argvars[0].vval.v_dict;
@@ -984,7 +984,7 @@ get_prop_types_from_names(list_T *l, buf_T *buf, int *num_types)
     {
 	if (li->li_tv.v_type != VAR_STRING)
 	{
-	    emsg(_(e_stringreq));
+	    emsg(_(e_string_required));
 	    goto errret;
 	}
 	name = li->li_tv.vval.v_string;
@@ -1079,7 +1079,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 
 	if (argvars[1].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	d = argvars[1].vval.v_dict;
@@ -1091,7 +1091,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_NUMBER)
 	    {
-		emsg(_(e_numberreq));
+		emsg(_(e_number_required));
 		return;
 	    }
 	    end_lnum = tv_get_number(&di->di_tv);
@@ -1107,7 +1107,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		emsg(_(e_listreq));
+		emsg(_(e_list_required));
 		return;
 	    }
 
@@ -1123,7 +1123,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		emsg(_(e_listreq));
+		emsg(_(e_list_required));
 		goto errret;
 	    }
 

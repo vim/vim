@@ -873,7 +873,7 @@ siemsg(const char *s, ...)
     void
 internal_error(char *where)
 {
-    siemsg(_(e_intern2), where);
+    siemsg(_(e_internal_error_str), where);
 }
 
 /*
@@ -883,7 +883,7 @@ internal_error(char *where)
     void
 internal_error_no_abort(char *where)
 {
-     semsg(_(e_intern2), where);
+     semsg(_(e_internal_error_str), where);
 }
 
 // emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes.
@@ -3625,7 +3625,7 @@ verbose_open(void)
 	verbose_fd = mch_fopen((char *)p_vfile, "a");
 	if (verbose_fd == NULL)
 	{
-	    semsg(_(e_notopen), p_vfile);
+	    semsg(_(e_cant_open_file_str), p_vfile);
 	    return FAIL;
 	}
     }

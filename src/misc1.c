@@ -1262,7 +1262,7 @@ init_homedir(void)
 	    if (!mch_chdir((char *)var) && mch_dirname(IObuff, IOSIZE) == OK)
 		var = IObuff;
 	    if (mch_chdir((char *)NameBuff) != 0)
-		emsg(_(e_prev_dir));
+		emsg(_(e_cannot_go_back_to_previous_directory));
 	}
 #endif
 	homedir = vim_strsave(var);
@@ -2280,7 +2280,7 @@ get_cmd_output(
     // get a name for the temp file
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
-	emsg(_(e_notmp));
+	emsg(_(e_cant_get_temp_file_name));
 	return NULL;
     }
 
@@ -2311,7 +2311,7 @@ get_cmd_output(
 
     if (fd == NULL)
     {
-	semsg(_(e_notopen), tempname);
+	semsg(_(e_cant_open_file_str), tempname);
 	goto done;
     }
 
@@ -2331,7 +2331,7 @@ get_cmd_output(
 #endif
     if (i != len)
     {
-	semsg(_(e_notread), tempname);
+	semsg(_(e_cant_read_file_str), tempname);
 	VIM_CLEAR(buffer);
     }
     else if (ret_len == NULL)
@@ -2385,14 +2385,14 @@ get_cmd_output_as_rettv(
 	 */
 	if ((infile = vim_tempname('i', TRUE)) == NULL)
 	{
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	    goto errret;
 	}
 
 	fd = mch_fopen((char *)infile, WRITEBIN);
 	if (fd == NULL)
 	{
-	    semsg(_(e_notopen), infile);
+	    semsg(_(e_cant_open_file_str), infile);
 	    goto errret;
 	}
 	if (argvars[1].v_type == VAR_NUMBER)

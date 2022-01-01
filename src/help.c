@@ -982,7 +982,7 @@ helptags_one(
 	    || filecount == 0)
     {
 	if (!got_int)
-	    semsg(_(e_no_match_str), NameBuff);
+	    semsg(_(e_no_match_str_1), NameBuff);
 	return;
     }
 

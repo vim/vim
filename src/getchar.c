@@ -1467,7 +1467,7 @@ openscript(
     expand_env(name, NameBuff, MAXPATHL);
     if ((scriptin[curscript] = mch_fopen((char *)NameBuff, READBIN)) == NULL)
     {
-	semsg(_(e_notopen), name);
+	semsg(_(e_cant_open_file_str), name);
 	if (curscript)
 	    --curscript;
 	return;

@@ -3271,7 +3271,7 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 			N_("E276: Cannot use function as a method: %s"), name);
 		break;
 	case FCERR_DELETED:
-		emsg_funcname(e_func_deleted, name);
+		emsg_funcname(e_function_was_deleted_str, name);
 		break;
 	case FCERR_TOOMANY:
 		emsg_funcname((char *)e_too_many_arguments_for_function_str,
@@ -4127,7 +4127,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	    if (!aborting())
 	    {
 		if (!eap->skip && fudi.fd_newkey != NULL)
-		    semsg(_(e_dictkey), fudi.fd_newkey);
+		    semsg(_(e_key_not_present_in_dictionary), fudi.fd_newkey);
 		vim_free(fudi.fd_newkey);
 		return NULL;
 	    }
@@ -4224,7 +4224,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
     // In Vim9 script only global functions can be redefined.
     if (vim9script && eap->forceit && !is_global)
     {
-	emsg(_(e_nobang));
+	emsg(_(e_no_bang_allowed));
 	goto ret_free;
     }
 
@@ -5145,7 +5145,7 @@ ex_call(exarg_T *eap)
     if (fudi.fd_newkey != NULL)
     {
 	// Still need to give an error message for missing key.
-	semsg(_(e_dictkey), fudi.fd_newkey);
+	semsg(_(e_key_not_present_in_dictionary), fudi.fd_newkey);
 	vim_free(fudi.fd_newkey);
     }
     if (tofree == NULL)

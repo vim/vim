@@ -1137,7 +1137,7 @@ do_filter(
 	if ((do_in && (itmp = vim_tempname('i', FALSE)) == NULL)
 		|| (do_out && (otmp = vim_tempname('o', FALSE)) == NULL))
 	{
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	    goto filterend;
 	}
 
@@ -1154,7 +1154,7 @@ do_filter(
 #if defined(FEAT_EVAL)
 	if (!aborting())
 #endif
-	    (void)semsg(_(e_notcreate), itmp);	// will call wait_return
+	    (void)semsg(_(e_cant_create_file_str), itmp);	// will call wait_return
 	goto filterend;
     }
     if (curbuf != old_curbuf)
@@ -1229,7 +1229,7 @@ do_filter(
 #endif
 		{
 		    msg_putchar('\n');
-		    semsg(_(e_notread), otmp);
+		    semsg(_(e_cant_read_file_str), otmp);
 		}
 		goto error;
 	    }
@@ -4780,7 +4780,7 @@ outofmem:
 	else if (got_match)	// did find something but nothing substituted
 	    msg("");
 	else if (subflags.do_error)	// nothing found
-	    semsg(_(e_patnotf2), get_search_pat());
+	    semsg(_(e_pattern_not_found_str), get_search_pat());
     }
 
 #ifdef FEAT_FOLDING

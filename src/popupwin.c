@@ -86,7 +86,7 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_LIST)
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	else
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
@@ -755,7 +755,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_LIST || di->di_tv.vval.v_list == NULL)
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	else
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
@@ -787,7 +787,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_LIST)
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	else
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
@@ -1010,7 +1010,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	dict = li->li_tv.vval.v_dict;
@@ -1033,7 +1033,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		emsg(_(e_listreq));
+		emsg(_(e_list_required));
 		return;
 	    }
 	    plist = di->di_tv.vval.v_list;
@@ -1043,7 +1043,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 		{
 		    if (pli->li_tv.v_type != VAR_DICT)
 		    {
-			emsg(_(e_dictreq));
+			emsg(_(e_dictionary_required));
 			return;
 		    }
 		    dict = pli->li_tv.vval.v_dict;
@@ -1898,7 +1898,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	}
 	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return NULL;
 	}
 	d = argvars[1].vval.v_dict;
@@ -2800,7 +2800,7 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     dict = argvars[1].vval.v_dict;
@@ -2835,7 +2835,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     dict = argvars[1].vval.v_dict;

@@ -42,7 +42,7 @@ tabstop_set(char_u *var, int **array)
 	    if (strtol((char *)cp, (char **)&end, 10) <= 0)
 	    {
 		if (cp != end)
-		    emsg(_(e_positive));
+		    emsg(_(e_argument_must_be_positive));
 		else
 		    semsg(_(e_invalid_argument_str), cp);
 		return FAIL;
@@ -1622,7 +1622,7 @@ ex_retab(exarg_T *eap)
     new_ts = getdigits(&ptr);
     if (new_ts < 0 && *eap->arg == '-')
     {
-	emsg(_(e_positive));
+	emsg(_(e_argument_must_be_positive));
 	return;
     }
     if (new_ts < 0 || new_ts > 9999)

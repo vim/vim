@@ -955,7 +955,7 @@ ex_let_vars(
     // ":let [v1, v2] = list" or ":for [v1, v2] in listlist"
     if (tv->v_type != VAR_LIST || (l = tv->vval.v_list) == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return FAIL;
     }
 
@@ -1320,7 +1320,7 @@ ex_let_env(
     else
     {
 	if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
-	    semsg(_(e_letwrong), op);
+	    semsg(_(e_wrong_variable_type_for_str_equal), op);
 	else if (endchars != NULL
 			      && vim_strchr(endchars, *skipwhite(arg)) == NULL)
 	    emsg(_(e_unexpected_characters_in_let));
@@ -1374,7 +1374,7 @@ ex_let_option(
     if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					 && (flags & ASSIGN_FOR_LOOP) == 0)
     {
-	emsg(_(e_const_option));
+	emsg(_(e_cannot_lock_an_option));
 	return NULL;
     }
 
@@ -1434,7 +1434,7 @@ ex_let_option(
 	    if (((opt_type == gov_bool || opt_type == gov_number) && *op == '.')
 		    || (opt_type == gov_string && *op != '.'))
 	    {
-		semsg(_(e_letwrong), op);
+		semsg(_(e_wrong_variable_type_for_str_equal), op);
 		failed = TRUE;  // don't set the value
 
 	    }
@@ -1475,7 +1475,7 @@ ex_let_option(
 		arg_end = p;
 	    }
 	    else
-		emsg(_(e_stringreq));
+		emsg(_(e_string_required));
 	}
 	*p = c1;
 	vim_free(stringval);
@@ -1505,7 +1505,7 @@ ex_let_register(
     }
     ++arg;
     if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
-	semsg(_(e_letwrong), op);
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
     else if (endchars != NULL
 			  && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
 	emsg(_(e_unexpected_characters_in_let));
@@ -3309,7 +3309,7 @@ set_var_const(
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
     {
-	semsg(_(e_illvar), name);
+	semsg(_(e_illegal_variable_name_str), name);
 	goto failed;
     }
     is_script_local = ht == get_script_local_ht();
@@ -3403,7 +3403,7 @@ set_var_const(
 		if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
 		{
-		    emsg(_(e_cannot_mod));
+		    emsg(_(e_cannot_modify_existing_variable));
 		    goto failed;
 		}
 
@@ -3518,7 +3518,7 @@ set_var_const(
 	    // Can't add "v:" or "a:" variable.
 	    if (ht == &vimvarht || ht == get_funccal_args_ht())
 	    {
-		semsg(_(e_illvar), name);
+		semsg(_(e_illegal_variable_name_str), name);
 		goto failed;
 	    }
 
@@ -3748,7 +3748,7 @@ valid_varname(char_u *varname, int len, int autoload)
 	if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
 					 && !(autoload && *p == AUTOLOAD_CHAR))
 	{
-	    semsg(_(e_illvar), varname);
+	    semsg(_(e_illegal_variable_name_str), varname);
 	    return FALSE;
 	}
     return TRUE;

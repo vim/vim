@@ -215,7 +215,7 @@ tcl_runtime_link_init(char *libname, int verbose)
     if (!(hTclLib = load_dll(libname)))
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname, load_dll_error());
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
     for (i = 0; tcl_funcname_table[i].ptr; ++i)
@@ -226,7 +226,7 @@ tcl_runtime_link_init(char *libname, int verbose)
 	    close_dll(hTclLib);
 	    hTclLib = NULL;
 	    if (verbose)
-		semsg(_(e_loadfunc), tcl_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), tcl_funcname_table[i].name);
 	    return FAIL;
 	}
     }

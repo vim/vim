@@ -2094,7 +2094,7 @@ command_line_scan(mparm_T *parmp)
 #ifdef FEAT_ARABIC
 		set_option_value((char_u *)"arabic", 1L, NULL, 0);
 #else
-		mch_errmsg(_(e_noarabic));
+		mch_errmsg(_(e_arabic_cannot_be_used_not_enabled_at_compile_time));
 		mch_exit(2);
 #endif
 		break;

@@ -2202,7 +2202,7 @@ qf_cmd_get_stack(exarg_T *eap, int print_emsg)
 	if (qi == NULL)
 	{
 	    if (print_emsg)
-		emsg(_(e_loclist));
+		emsg(_(e_no_location_list));
 	    return NULL;
 	}
     }
@@ -3819,7 +3819,7 @@ qf_history(exarg_T *eap)
     {
 	if (qi == NULL)
 	{
-	    emsg(_(e_loclist));
+	    emsg(_(e_no_location_list));
 	    return;
 	}
 
@@ -4891,7 +4891,7 @@ get_mef_name(void)
     {
 	name = vim_tempname('e', FALSE);
 	if (name == NULL)
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	return name;
     }
 
@@ -6125,7 +6125,7 @@ vgr_process_args(
     if ((get_arglist_exp(p, &args->fcount, &args->fnames, TRUE) == FAIL) ||
 	args->fcount == 0)
     {
-	emsg(_(e_nomatch));
+	emsg(_(e_no_match));
 	return FAIL;
     }
 
@@ -6394,7 +6394,7 @@ ex_vimgrep(exarg_T *eap)
 		    first_match_buf, target_dir);
     }
     else
-	semsg(_(e_nomatch2), args.spat);
+	semsg(_(e_no_match_str_2), args.spat);
 
     decr_quickfix_busy();
 
@@ -8293,7 +8293,7 @@ ex_helpgrep(exarg_T *eap)
     if (!qf_list_empty(qf_get_curlist(qi)))
 	qf_jump(qi, 0, 0, FALSE);
     else
-	semsg(_(e_nomatch2), eap->arg);
+	semsg(_(e_no_match_str_2), eap->arg);
 
     decr_quickfix_busy();
 
@@ -8336,7 +8336,7 @@ get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
 			qf_get_properties(wp, d, rettv->vval.v_dict);
 		}
 		else
-		    emsg(_(e_dictreq));
+		    emsg(_(e_dictionary_required));
 	    }
     }
 }
@@ -8397,7 +8397,7 @@ set_qf_ll_list(
 
 # ifdef FEAT_QUICKFIX
     if (list_arg->v_type != VAR_LIST)
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
     else if (recursive != 0)
 	emsg(_(e_au_recursive));
     else
@@ -8420,7 +8420,7 @@ set_qf_ll_list(
 	else if (action_arg->v_type == VAR_UNKNOWN)
 	    action = ' ';
 	else
-	    emsg(_(e_stringreq));
+	    emsg(_(e_string_required));
 
 	if (action_arg->v_type != VAR_UNKNOWN
 		&& what_arg->v_type != VAR_UNKNOWN)
@@ -8429,7 +8429,7 @@ set_qf_ll_list(
 		what = what_arg->vval.v_dict;
 	    else
 	    {
-		emsg(_(e_dictreq));
+		emsg(_(e_dictionary_required));
 		valid_dict = FALSE;
 	    }
 	}

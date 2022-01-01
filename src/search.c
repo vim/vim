@@ -1124,7 +1124,7 @@ searchit(
 	else if ((options & SEARCH_MSG) == SEARCH_MSG)
 	{
 	    if (p_ws)
-		semsg(_(e_patnotf2), mr_pattern);
+		semsg(_(e_pattern_not_found_str), mr_pattern);
 	    else if (lnum == 0)
 		semsg(_("E384: search hit TOP without match for: %s"),
 								  mr_pattern);
@@ -4121,7 +4121,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 
 	if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	dict = argvars[0].vval.v_dict;
@@ -4824,7 +4824,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 
 	if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 

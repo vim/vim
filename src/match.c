@@ -936,7 +936,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 
     if (tv->v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FAIL;
     }
 
@@ -1070,7 +1070,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
     win = get_optional_window(argvars, 1);

@@ -2314,7 +2314,7 @@ sign_define_multiple(list_T *l, list_T *retlist)
 	if (li->li_tv.v_type == VAR_DICT)
 	    retval = sign_define_from_dict(NULL, li->li_tv.vval.v_dict);
 	else
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	list_append_number(retlist, retval);
     }
 }
@@ -2351,7 +2351,7 @@ f_sign_define(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -2414,7 +2414,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 	    if (argvars[1].v_type != VAR_DICT ||
 				((dict = argvars[1].vval.v_dict) == NULL))
 	    {
-		emsg(_(e_dictreq));
+		emsg(_(e_dictionary_required));
 		return;
 	    }
 	    if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
@@ -2644,7 +2644,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 	    && (argvars[4].v_type != VAR_DICT
 		|| ((dict = argvars[4].vval.v_dict) == NULL)))
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -2669,7 +2669,7 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
@@ -2681,7 +2681,7 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
 	    sign_id = sign_place_from_dict(NULL, NULL, NULL, NULL,
 						li->li_tv.vval.v_dict);
 	else
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	list_append_number(rettv->vval.v_list, sign_id);
     }
 }
@@ -2874,7 +2874,7 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[1].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	dict = argvars[1].vval.v_dict;
@@ -2900,7 +2900,7 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
@@ -2910,7 +2910,7 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
 	if (li->li_tv.v_type == VAR_DICT)
 	    retval = sign_unplace_from_dict(NULL, li->li_tv.vval.v_dict);
 	else
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	list_append_number(rettv->vval.v_list, retval);
     }
 }

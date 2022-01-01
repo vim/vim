@@ -716,7 +716,7 @@ dyn_libintl_init(void)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadlib), GETTEXT_DLL, GetWin32Error());
+	    semsg(_(e_could_not_load_library_str_str), GETTEXT_DLL, GetWin32Error());
 	    verbose_leave();
 	}
 	return 0;
@@ -731,7 +731,7 @@ dyn_libintl_init(void)
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		semsg(_(e_loadfunc), libintl_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), libintl_entry[i].name);
 		verbose_leave();
 	    }
 	    return 0;
@@ -5311,7 +5311,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5329,7 +5329,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (ofd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5347,7 +5347,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (efd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }

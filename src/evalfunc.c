@@ -2935,7 +2935,7 @@ f_call(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
     if (argvars[1].vval.v_list == NULL)
@@ -2957,7 +2957,7 @@ f_call(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[2].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	selfdict = argvars[2].vval.v_dict;
@@ -4411,7 +4411,7 @@ f_get(typval_T *argvars, typval_T *rettv)
 	}
     }
     else
-	semsg(_(e_listdictblobarg), "get()");
+	semsg(_(e_argument_of_str_must_be_list_dictionary_or_blob), "get()");
 
     if (tv == NULL)
     {
@@ -6458,7 +6458,7 @@ f_index(typval_T *argvars, typval_T *rettv)
     }
     else if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listblobreq));
+	emsg(_(e_list_or_blob_required));
 	return;
     }
 
@@ -6718,7 +6718,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	    else if (lv.ll_range)
 		emsg(_("E786: Range not allowed"));
 	    else if (lv.ll_newkey != NULL)
-		semsg(_(e_dictkey), lv.ll_newkey);
+		semsg(_(e_key_not_present_in_dictionary), lv.ll_newkey);
 	    else if (lv.ll_list != NULL)
 		// List item.
 		rettv->vval.v_number = tv_islocked(&lv.ll_li->li_tv);
@@ -7311,7 +7311,7 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 	}
     }
     else
-	semsg(_(e_listdictarg), domax ? "max()" : "min()");
+	semsg(_(e_argument_of_str_must_be_list_or_dictionary), domax ? "max()" : "min()");
 
     rettv->vval.v_number = n;
 }
@@ -8877,7 +8877,7 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -9221,7 +9221,7 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
     // second argument: dict with items to set in the tag stack
     if (argvars[1].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     d = argvars[1].vval.v_dict;
@@ -9249,7 +9249,7 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	emsg(_(e_stringreq));
+	emsg(_(e_string_required));
 	return;
     }
 
@@ -9365,7 +9365,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (*curwin->w_s->b_p_spl == NUL)
     {
-	emsg(_(e_no_spell));
+	emsg(_(e_spell_checking_is_not_possible));
 	curwin->w_p_spell = wo_spell_save;
 	return;
     }
@@ -9455,7 +9455,7 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (*curwin->w_s->b_p_spl == NUL)
     {
-	emsg(_(e_no_spell));
+	emsg(_(e_spell_checking_is_not_possible));
 	curwin->w_p_spell = wo_spell_save;
 	return;
     }

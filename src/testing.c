@@ -433,7 +433,7 @@ assert_equalfile(typval_T *argvars)
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_notread, fname1);
+	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname1);
     }
     else
     {
@@ -441,7 +441,7 @@ assert_equalfile(typval_T *argvars)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_notread, fname2);
+	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname2);
 	}
 	else
 	{

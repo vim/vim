@@ -983,7 +983,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 
     // ":source" read ex commands
     else if (do_source(fname, FALSE, DOSO_NONE, NULL) == FAIL)
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 }
 
 /*

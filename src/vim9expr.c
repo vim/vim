@@ -855,7 +855,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	if (may_get_next_line(whitep, &p, cctx) == FAIL)
 	{
-	    semsg(_(e_list_end), *arg);
+	    semsg(_(e_missing_end_of_list_rsb_str), *arg);
 	    return FAIL;
 	}
 	if (*p == ',')

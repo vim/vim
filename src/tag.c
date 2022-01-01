@@ -4358,7 +4358,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     {
 	if (di->di_tv.v_type != VAR_LIST)
 	{
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	    return FAIL;
 	}
 	l = di->di_tv.vval.v_list;

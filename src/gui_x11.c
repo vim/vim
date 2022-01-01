@@ -1218,7 +1218,7 @@ gui_mch_init_check(void)
     if (app_context == NULL || gui.dpy == NULL)
     {
 	gui.dying = TRUE;
-	emsg(_(e_opendisp));
+	emsg(_(e_cannot_open_display));
 	return FAIL;
     }
     return OK;

@@ -892,7 +892,7 @@ mch_libcall(
 
     if (!fRunTimeLinkSuccess)
     {
-	semsg(_(e_libcall), funcname);
+	semsg(_(e_library_call_failed_for_str), funcname);
 	return FAIL;
     }
 
@@ -2388,7 +2388,7 @@ serverSendToVim(
     if (target == 0)
     {
 	if (!silent)
-	    semsg(_(e_noserver), name);
+	    semsg(_(e_no_registered_server_named_str), name);
 	return -1;
     }
 

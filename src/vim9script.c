@@ -127,7 +127,7 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_k:
 		if (eap->addr_count > 0)
 		{
-		    emsg(_(e_norange));
+		    emsg(_(e_no_range_allowed));
 		    return FAIL;
 		}
 		// FALLTHROUGH

@@ -2625,7 +2625,7 @@ mch_print_init(
 	prt_ps_file_name = vim_tempname('p', TRUE);
 	if (prt_ps_file_name == NULL)
 	{
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	    return FAIL;
 	}
 	prt_ps_fd = mch_fopen((char *)prt_ps_file_name, WRITEBIN);

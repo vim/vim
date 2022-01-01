@@ -1388,7 +1388,7 @@ typval_compare_blob(
 	if (tv1->v_type != tv2->v_type)
 	    emsg(_("E977: Can only compare Blob with Blob"));
 	else
-	    emsg(_(e_invalblob));
+	    emsg(_(e_invalid_operation_for_blob));
 	return FAIL;
     }
     else

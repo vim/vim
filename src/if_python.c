@@ -690,7 +690,7 @@ python_runtime_link_init(char *libname, int verbose)
     if (!hinstPython)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname, load_dll_error());
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
 
@@ -702,7 +702,7 @@ python_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPython);
 	    hinstPython = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), python_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), python_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -719,7 +719,7 @@ python_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPython);
 	hinstPython = 0;
 	if (verbose)
-	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_could_not_load_library_function_str), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 

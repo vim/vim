@@ -757,7 +757,7 @@ generate_GETITEM(cctx_T *cctx, int index, int with_op)
     if (type->tt_type != VAR_LIST)
     {
 	// cannot happen, caller has checked the type
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return FAIL;
     }
     item_type = type->tt_member;

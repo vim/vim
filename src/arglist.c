@@ -460,7 +460,7 @@ do_arglist(
 	    vim_regfree(regmatch.regprog);
 	    vim_free(p);
 	    if (!didone)
-		semsg(_(e_nomatch2), ((char_u **)new_ga.ga_data)[i]);
+		semsg(_(e_no_match_str_2), ((char_u **)new_ga.ga_data)[i]);
 	}
 	ga_clear(&new_ga);
     }
@@ -471,7 +471,7 @@ do_arglist(
 	ga_clear(&new_ga);
 	if (i == FAIL || exp_count == 0)
 	{
-	    emsg(_(e_nomatch));
+	    emsg(_(e_no_match));
 	    return FAIL;
 	}
 

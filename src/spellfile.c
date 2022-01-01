@@ -365,11 +365,11 @@ spell_load_file(
     if (fd == NULL)
     {
 	if (!silent)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	else if (p_verbose > 2)
 	{
 	    verbose_enter();
-	    smsg((const char *)e_notopen, fname);
+	    smsg((const char *)e_cant_open_file_str, fname);
 	    verbose_leave();
 	}
 	goto endFAIL;
@@ -2226,7 +2226,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return NULL;
     }
 
@@ -3520,7 +3520,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -4104,7 +4104,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -4873,7 +4873,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -5802,7 +5802,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return;
     }
 
@@ -6316,7 +6316,7 @@ spell_add_word(
 	}
 
 	if (fd == NULL)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	else
 	{
 	    if (what == SPELL_ADD_BAD)

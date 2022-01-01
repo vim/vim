@@ -271,7 +271,7 @@ call_dfunc(
     if (dfunc->df_deleted)
     {
 	// don't use ufunc->uf_name, it may have been freed
-	emsg_funcname(e_func_deleted,
+	emsg_funcname(e_function_was_deleted_str,
 		dfunc->df_name == NULL ? (char_u *)"unknown" : dfunc->df_name);
 	return FAIL;
     }
@@ -2578,7 +2578,7 @@ exec_instructions(ectx_T *ectx)
 			    lidx = list->lv_len + lidx;
 			if (lidx < 0 || lidx > list->lv_len)
 			{
-			    semsg(_(e_listidx), lidx);
+			    semsg(_(e_list_index_out_of_range_nr), lidx);
 			    goto on_error;
 			}
 			if (lidx < list->lv_len)
@@ -2659,7 +2659,7 @@ exec_instructions(ectx_T *ectx)
 			// Can add one byte at the end.
 			if (lidx < 0 || lidx > len)
 			{
-			    semsg(_(e_blobidx), lidx);
+			    semsg(_(e_blob_index_out_of_range_nr), lidx);
 			    goto on_error;
 			}
 			if (value_check_lock(blob->bv_lock,
@@ -2879,7 +2879,7 @@ exec_instructions(ectx_T *ectx)
 				if (di == NULL)
 				{
 				    // NULL dict is equivalent to empty dict
-				    semsg(_(e_dictkey), key);
+				    semsg(_(e_key_not_present_in_dictionary), key);
 				    status = FAIL;
 				}
 				else if (var_check_fixed(di->di_flags,
@@ -2915,7 +2915,7 @@ exec_instructions(ectx_T *ectx)
 				if (li == NULL)
 				{
 				    SOURCING_LNUM = iptr->isn_lnum;
-				    semsg(_(e_listidx), n);
+				    semsg(_(e_list_index_out_of_range_nr), n);
 				    status = FAIL;
 				}
 				else if (value_check_lock(li->li_tv.v_lock,
@@ -2991,7 +2991,7 @@ exec_instructions(ectx_T *ectx)
 					&& tv_idx2->v_type != VAR_SPECIAL
 					&& n2 < n1)
 				{
-				    semsg(_(e_listidx), n2);
+				    semsg(_(e_list_index_out_of_range_nr), n2);
 				    status = FAIL;
 				}
 				if (status != FAIL
@@ -4022,7 +4022,7 @@ exec_instructions(ectx_T *ectx)
 			    case EXPR_SUB:  f1 = f1 - f2; break;
 			    case EXPR_ADD:  f1 = f1 + f2; break;
 			    default: SOURCING_LNUM = iptr->isn_lnum;
-				     emsg(_(e_modulus));
+				     emsg(_(e_cannot_use_percent_with_float));
 				     goto on_error;
 			}
 			clear_tv(tv1);
@@ -4249,7 +4249,7 @@ exec_instructions(ectx_T *ectx)
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_dictkey), key);
+			semsg(_(e_key_not_present_in_dictionary), key);
 
 			// If :silent! is used we will continue, make sure the
 			// stack contents makes sense and the dict stack is
@@ -4283,7 +4283,7 @@ exec_instructions(ectx_T *ectx)
 		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_dictreq));
+			emsg(_(e_dictionary_required));
 			goto on_error;
 		    }
 		    dict = tv->vval.v_dict;
@@ -4292,7 +4292,7 @@ exec_instructions(ectx_T *ectx)
 								       == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_dictkey), iptr->isn_arg.string);
+			semsg(_(e_key_not_present_in_dictionary), iptr->isn_arg.string);
 			goto on_error;
 		    }
 		    // Put the dict used on the dict stack, it might be used by

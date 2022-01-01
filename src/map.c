@@ -2362,7 +2362,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[2].v_type != VAR_DICT)
     {
-	emsg(_(e_dictkey));
+	emsg(_(e_key_not_present_in_dictionary));
 	return;
     }
     d = argvars[2].vval.v_dict;

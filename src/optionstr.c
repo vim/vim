@@ -380,7 +380,7 @@ set_string_option_direct(
 	idx = findoption(name);
 	if (idx < 0)	// not found (should not happen)
 	{
-	    semsg(_(e_intern2), "set_string_option_direct()");
+	    semsg(_(e_internal_error_str), "set_string_option_direct()");
 	    siemsg(_("For option %s"), name);
 	    return;
 	}

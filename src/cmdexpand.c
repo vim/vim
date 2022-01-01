@@ -366,13 +366,13 @@ ExpandOne(
 	    // are wildcards, the real problem is that there was no match,
 	    // causing the pattern to be added, which has illegal characters.
 	    if (!(options & WILD_SILENT) && (options & WILD_LIST_NOTFOUND))
-		semsg(_(e_nomatch2), str);
+		semsg(_(e_no_match_str_2), str);
 #endif
 	}
 	else if (xp->xp_numfiles == 0)
 	{
 	    if (!(options & WILD_SILENT))
-		semsg(_(e_nomatch2), str);
+		semsg(_(e_no_match_str_2), str);
 	}
 	else
 	{

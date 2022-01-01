@@ -1414,7 +1414,7 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     di = dict_find(d, key, -1);
     if (di == NULL)
     {
-	semsg(_(e_dictkey), key);
+	semsg(_(e_key_not_present_in_dictionary), key);
 	return;
     }
 
@@ -1449,7 +1449,7 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -1572,7 +1572,7 @@ f_has_key(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     if (argvars[0].vval.v_dict == NULL)

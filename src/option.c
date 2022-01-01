@@ -3326,7 +3326,7 @@ set_num_option(
 
     if (curbuf->b_p_sw < 0)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 #ifdef FEAT_VARTABS
 	// Use the first 'vartabstop' value, or 'tabstop' if vts isn't in use.
 	curbuf->b_p_sw = tabstop_count(curbuf->b_p_vts_array) > 0
@@ -3345,7 +3345,7 @@ set_num_option(
 	// 'winheight' and 'helpheight'
 	if (p_wh < 1)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_wh = 1;
 	}
 	if (p_wmh > p_wh)
@@ -3355,7 +3355,7 @@ set_num_option(
 	}
 	if (p_hh < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_hh = 0;
 	}
 
@@ -3373,7 +3373,7 @@ set_num_option(
 	// 'winminheight'
 	if (p_wmh < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_wmh = 0;
 	}
 	if (p_wmh > p_wh)
@@ -3388,7 +3388,7 @@ set_num_option(
 	// 'winwidth'
 	if (p_wiw < 1)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_wiw = 1;
 	}
 	if (p_wmw > p_wiw)
@@ -3406,7 +3406,7 @@ set_num_option(
 	// 'winminwidth'
 	if (p_wmw < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_wmw = 0;
 	}
 	if (p_wmw > p_wiw)
@@ -3466,7 +3466,7 @@ set_num_option(
     {
 	if (curwin->w_p_fdc < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    curwin->w_p_fdc = 0;
 	}
 	else if (curwin->w_p_fdc > 12)
@@ -3552,7 +3552,7 @@ set_num_option(
     {
 	if (p_titlelen < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_titlelen = 85;
 	}
 	if (starting != NO_SCREEN && old_value != p_titlelen)
@@ -3564,7 +3564,7 @@ set_num_option(
     {
 	if (p_ch < 1)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_ch = 1;
 	}
 	if (p_ch > Rows - min_rows() + 1)
@@ -3585,7 +3585,7 @@ set_num_option(
     {
 	if (p_uc < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    p_uc = 100;
 	}
 	if (p_uc && !old_value)
@@ -3596,7 +3596,7 @@ set_num_option(
     {
 	if (curwin->w_p_cole < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    curwin->w_p_cole = 0;
 	}
 	else if (curwin->w_p_cole > 3)
@@ -3642,7 +3642,7 @@ set_num_option(
     {
 	if (curwin->w_p_nuw < 1)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    curwin->w_p_nuw = 1;
 	}
 	if (curwin->w_p_nuw > 20)
@@ -3658,7 +3658,7 @@ set_num_option(
     {
 	if (curbuf->b_p_tw < 0)
 	{
-	    errmsg = e_positive;
+	    errmsg = e_argument_must_be_positive;
 	    curbuf->b_p_tw = 0;
 	}
 #ifdef FEAT_SYN_HL
@@ -3726,12 +3726,12 @@ set_num_option(
 
     if (curbuf->b_p_ts <= 0)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	curbuf->b_p_ts = 8;
     }
     if (p_tm < 0)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_tm = 0;
     }
     if ((curwin->w_p_scr <= 0
@@ -3754,7 +3754,7 @@ set_num_option(
     }
     if (p_hi < 0)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_hi = 0;
     }
     else if (p_hi > 10000)
@@ -3769,7 +3769,7 @@ set_num_option(
     }
     if (p_report < 0)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_report = 1;
     }
     if ((p_sj < -100 || p_sj >= Rows) && full_screen)
@@ -3784,29 +3784,29 @@ set_num_option(
     }
     if (p_so < 0 && full_screen)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_so = 0;
     }
     if (p_siso < 0 && full_screen)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_siso = 0;
     }
 #ifdef FEAT_CMDWIN
     if (p_cwh < 1)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_cwh = 1;
     }
 #endif
     if (p_ut < 0)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_ut = 2000;
     }
     if (p_ss < 0)
     {
-	errmsg = e_positive;
+	errmsg = e_argument_must_be_positive;
 	p_ss = 0;
     }
 

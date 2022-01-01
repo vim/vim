@@ -4796,7 +4796,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
     curwin->w_s->b_syn_topgrp = sgl_id;
     if (source ? do_source(eap->arg, FALSE, DOSO_NONE, NULL) == FAIL
 				: source_runtime(eap->arg, DIP_ALL) == FAIL)
-	semsg(_(e_notopen), eap->arg);
+	semsg(_(e_cant_open_file_str), eap->arg);
     curwin->w_s->b_syn_topgrp = prev_toplvl_grp;
     current_syn_inc_tag = prev_syn_inc_tag;
 }

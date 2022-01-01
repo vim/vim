@@ -1319,7 +1319,7 @@ ex_diffpatch(exarg_T *eap)
     if (dirbuf[0] != NUL)
     {
 	if (mch_chdir((char *)dirbuf) != 0)
-	    emsg(_(e_prev_dir));
+	    emsg(_(e_cannot_go_back_to_previous_directory));
 	shorten_fnames(TRUE);
     }
 #endif

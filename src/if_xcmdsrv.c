@@ -425,7 +425,7 @@ serverSendToVim(
     if (w == None)
     {
 	if (!silent)
-	    semsg(_(e_noserver), name);
+	    semsg(_(e_no_registered_server_named_str), name);
 	return -1;
     }
     else if (loosename != NULL)
