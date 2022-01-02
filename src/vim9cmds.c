@@ -803,14 +803,13 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 	return NULL;
 
-    // Remove the already generated ISN_DEBUG, it is written below the ISN_FOR
-    // instruction.
+    // Find the already generated ISN_DEBUG to get the line number for the
+    // instruction written below the ISN_FOR instruction.
     if (cctx->ctx_compile_type == CT_DEBUG && instr->ga_len > 0
 	    && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
 							.isn_type == ISN_DEBUG)
     {
-	--instr->ga_len;
-	prev_lnum = ((isn_T *)instr->ga_data)[instr->ga_len]
+	prev_lnum = ((isn_T *)instr->ga_data)[instr->ga_len - 1]
 						 .isn_arg.debug.dbg_break_lnum;
     }
 
@@ -874,6 +873,22 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
 	// "for_end" is set when ":endfor" is found
 	scope->se_u.se_for.fs_top_label = current_instr_idx(cctx);
+
+	if (cctx->ctx_compile_type == CT_DEBUG)
+	{
+	    int		save_prev_lnum = cctx->ctx_prev_lnum;
+	    isn_T	*isn;
+
+	    // Add ISN_DEBUG here, before deciding to end the loop.  There will
+	    // be another ISN_DEBUG before the next instruction.
+	    // Use the prev_lnum from the ISN_DEBUG instruction removed above.
+	    // Increment the variable count so that the loop variable can be
+	    // inspected.
+	    cctx->ctx_prev_lnum = prev_lnum;
+	    isn = generate_instr_debug(cctx);
+	    ++isn->isn_arg.debug.dbg_var_names_len;
+	    cctx->ctx_prev_lnum = save_prev_lnum;
+	}
 
 	generate_FOR(cctx, loop_lvar->lv_idx);
 
@@ -979,17 +994,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    arg = skipwhite(p);
 	    vim_free(name);
 	}
-
-	if (cctx->ctx_compile_type == CT_DEBUG)
-	{
-	    int save_prev_lnum = cctx->ctx_prev_lnum;
-
-	    // Add ISN_DEBUG here, so that the loop variables can be inspected.
-	    // Use the prev_lnum from the ISN_DEBUG instruction removed above.
-	    cctx->ctx_prev_lnum = prev_lnum;
-	    generate_instr_debug(cctx);
-	    cctx->ctx_prev_lnum = save_prev_lnum;
-	}
     }
 
     return arg_end;
@@ -1029,7 +1033,9 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 	generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
 
 	// Fill in the "end" label in the FOR statement so it can jump here.
-	isn = ((isn_T *)instr->ga_data) + forscope->fs_top_label;
+	// In debug mode an ISN_DEBUG was inserted.
+	isn = ((isn_T *)instr->ga_data) + forscope->fs_top_label
+				+ (cctx->ctx_compile_type == CT_DEBUG ? 1 : 0);
 	isn->isn_arg.forloop.for_end = instr->ga_len;
 
 	// Fill in the "end" label any BREAK statements
