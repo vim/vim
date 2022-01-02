@@ -1893,7 +1893,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		    && !(argvars[0].v_type == VAR_LIST
 			&& argvars[0].vval.v_list != NULL))
 	{
-	    emsg(_("E450: buffer number, text or a list required"));
+	    emsg(_(e_buffer_number_text_or_list_required));
 	    return NULL;
 	}
 	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)

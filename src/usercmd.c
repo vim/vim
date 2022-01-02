@@ -689,7 +689,7 @@ parse_compl_arg(
     if (arg != NULL)
 # endif
     {
-	emsg(_("E468: Completion argument only allowed for custom completion"));
+	emsg(_(e_completion_argument_only_allowed_for_custom_completion));
 	return FAIL;
     }
 
@@ -697,7 +697,7 @@ parse_compl_arg(
     if ((*complp == EXPAND_USER_DEFINED || *complp == EXPAND_USER_LIST)
 							       && arg == NULL)
     {
-	emsg(_("E467: Custom completion requires a function argument"));
+	emsg(_(e_custom_completion_requires_function_argument));
 	return FAIL;
     }
 

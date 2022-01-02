@@ -1063,7 +1063,7 @@ skip_var_list(
 	    {
 		if (*semicolon == 1)
 		{
-		    emsg(_("E452: Double ; in list of variables"));
+		    emsg(_(e_double_semicolon_in_list_of_variables));
 		    return NULL;
 		}
 		*semicolon = 1;

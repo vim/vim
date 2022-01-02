@@ -1463,7 +1463,7 @@ gui_mch_init(void)
     }
 
     if (gui.color_approx)
-	emsg(_("Vim E458: Cannot allocate colormap entry, some colors may be incorrect"));
+	emsg(_(e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect));
 
 #ifdef FEAT_BEVAL_GUI
     gui_init_tooltip_font();

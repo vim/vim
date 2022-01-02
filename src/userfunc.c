@@ -1415,7 +1415,7 @@ get_lambda_tv(
 	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg != '}')
 	{
-	    semsg(_("E451: Expected }: %s"), *arg);
+	    semsg(_(e_expected_right_curly_str), *arg);
 	    goto errret;
 	}
 	++*arg;
@@ -4001,7 +4001,7 @@ list_functions(regmatch_T *regmatch)
 		list_func_head(fp, FALSE);
 		if (changed != func_hashtab.ht_changed)
 		{
-		    emsg(_("E454: function list was modified"));
+		    emsg(_(e_function_list_was_modified));
 		    return;
 		}
 	    }

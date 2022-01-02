@@ -1053,7 +1053,7 @@ highlight_set_cterm_color(
 		color = cterm_normal_ul_color - 1;
 	    else
 	    {
-		emsg(_("E453: UL color unknown"));
+		emsg(_(e_ul_color_unknown));
 		return FALSE;
 	    }
 	}

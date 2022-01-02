@@ -543,7 +543,7 @@ do_exmode(
 	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
 		emsg(_(e_empty_buffer));
 	    else
-		emsg(_("E501: At end-of-file"));
+		emsg(_(e_at_end_of_file));
 	}
     }
 
@@ -2015,7 +2015,7 @@ do_one_cmd(
     {
 	if (!ea.skip)
 	{
-	    STRCPY(IObuff, _("E492: Not an editor command"));
+	    STRCPY(IObuff, _(e_not_an_editor_command));
 	    if (!sourcing)
 	    {
 		// If the modifier was parsed OK the error must be in the
@@ -2152,7 +2152,7 @@ do_one_cmd(
 	    {
 		if (sourcing || exmode_active)
 		{
-		    errormsg = _("E493: Backwards range given");
+		    errormsg = _(e_backwards_range_given);
 		    goto doend;
 		}
 		if (ask_yesno((char_u *)
@@ -2225,7 +2225,7 @@ do_one_cmd(
 	{
 	    if (*++ea.arg != '>')		// typed wrong
 	    {
-		errormsg = _("E494: Use w or w>>");
+		errormsg = _(e_use_w_or_w_gt_gt);
 		goto doend;
 	    }
 	    ea.arg = skipwhite(ea.arg + 1);
@@ -7644,7 +7644,7 @@ ex_winsize(exarg_T *eap)
     if (*p != NUL && *arg == NUL)
 	set_shellsize(w, h, TRUE);
     else
-	emsg(_("E465: :winsize requires two number arguments"));
+	emsg(_(e_winsize_requires_two_number_arguments));
 }
 
     static void
@@ -7725,7 +7725,7 @@ ex_winpos(exarg_T *eap)
 	y = getdigits(&arg);
 	if (*p == NUL || *arg != NUL)
 	{
-	    emsg(_("E466: :winpos requires two number arguments"));
+	    emsg(_(e_winpos_requires_two_number_arguments));
 	    return;
 	}
 # ifdef FEAT_GUI
@@ -9104,7 +9104,7 @@ eval_vars(
 		}
 		if (result == NULL)
 		{
-		    *errormsg = _("E495: no autocommand file name to substitute for \"<afile>\"");
+		    *errormsg = _(e_no_autocommand_file_name_to_substitute_for_afile);
 		    return NULL;
 		}
 		result = shorten_fname1(result);
@@ -9113,7 +9113,7 @@ eval_vars(
 	case SPEC_ABUF:		// buffer number for autocommand
 		if (autocmd_bufnr <= 0)
 		{
-		    *errormsg = _("E496: no autocommand buffer number to substitute for \"<abuf>\"");
+		    *errormsg = _(e_no_autocommand_buffer_name_to_substitute_for_abuf);
 		    return NULL;
 		}
 		sprintf((char *)strbuf, "%d", autocmd_bufnr);
@@ -9124,7 +9124,7 @@ eval_vars(
 		result = autocmd_match;
 		if (result == NULL)
 		{
-		    *errormsg = _("E497: no autocommand match name to substitute for \"<amatch>\"");
+		    *errormsg = _(e_no_autocommand_match_name_to_substitute_for_amatch);
 		    return NULL;
 		}
 		break;
@@ -9136,8 +9136,8 @@ eval_vars(
 		if (result == NULL)
 		{
 		    *errormsg = spec_idx == SPEC_SFILE
-			? _("E498: no :source file name to substitute for \"<sfile>\"")
-			: _("E489: no call stack to substitute for \"<stack>\"");
+			? _(e_no_source_file_name_to_substitute_for_sfile)
+			: _(e_no_call_stack_to_substitute_for_stack);
 		    return NULL;
 		}
 		resultbuf = result;	    // remember allocated string
@@ -9212,9 +9212,9 @@ eval_vars(
     {
 	if (valid != VALID_HEAD + VALID_PATH)
 	    // xgettext:no-c-format
-	    *errormsg = _("E499: Empty file name for '%' or '#', only works with \":p:h\"");
+	    *errormsg = _(e_empty_file_name_for_percent_or_hash_only_works_with_ph);
 	else
-	    *errormsg = _("E500: Evaluates to an empty string");
+	    *errormsg = _(e_evaluates_to_an_empty_string);
 	result = NULL;
     }
     else

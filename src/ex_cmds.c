@@ -1862,7 +1862,7 @@ check_writable(char_u *fname)
 {
     if (mch_nodetype(fname) == NODE_OTHER)
     {
-	semsg(_("E503: \"%s\" is not a file or writable device"), fname);
+	semsg(_(e_str_is_not_file_or_writable_device), fname);
 	return FAIL;
     }
     return OK;
@@ -2357,8 +2357,7 @@ check_readonly(int *forceit, buf_T *buf)
 	if (buf->b_p_ro)
 	    emsg(_(e_readonly_option_is_set_add_bang_to_override));
 	else
-	    semsg(_("E505: \"%s\" is read-only (add ! to override)"),
-		    buf->b_fname);
+	    semsg(_(e_str_is_read_only_add_bang_to_override), buf->b_fname);
 	return TRUE;
     }
 

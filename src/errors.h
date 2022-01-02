@@ -1027,21 +1027,58 @@ EXTERN char e_could_not_load_library_function_str[]
 EXTERN char e_invalid_expression_received[]
 	INIT(= N_("E449: Invalid expression received"));
 #endif
-
+EXTERN char e_buffer_number_text_or_list_required[]
+	INIT(= N_("E450: buffer number, text or a list required"));
+EXTERN char e_expected_right_curly_str[]
+	INIT(= N_("E451: Expected }: %s"));
+#ifdef FEAT_EVAL
+EXTERN char e_double_semicolon_in_list_of_variables[]
+	INIT(= N_("E452: Double ; in list of variables"));
+#endif
+EXTERN char e_ul_color_unknown[]
+	INIT(= N_("E453: UL color unknown"));
+EXTERN char e_function_list_was_modified[]
+	INIT(= N_("E454: function list was modified"));
+#ifdef FEAT_POSTSCRIPT
+EXTERN char e_error_writing_to_postscript_output_file[]
+	INIT(= N_("E455: Error writing to PostScript output file"));
+EXTERN char e_cant_open_file_str_2[]
+	INIT(= N_("E456: Can't open file \"%s\""));
+EXTERN char e_cant_find_postscript_resource_file_str_ps[]
+	INIT(= N_("E456: Can't find PostScript resource file \"%s.ps\""));
+EXTERN char e_cant_read_postscript_resource_file_str[]
+	INIT(= N_("E457: Can't read PostScript resource file \"%s\""));
+#endif
+EXTERN char e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect[]
+	INIT(= N_("E458: Cannot allocate colormap entry, some colors may be incorrect"));
 #if defined(UNIX) || defined(FEAT_SESSION)
 EXTERN char e_cannot_go_back_to_previous_directory[]
 	INIT(= N_("E459: Cannot go back to previous directory"));
 #endif
+EXTERN char e_entries_missing_in_mapset_dict_argument[]
+	INIT(= N_("E460: entries missing in mapset() dict argument"));
 #ifdef FEAT_EVAL
 EXTERN char e_illegal_variable_name_str[]
 	INIT(= N_("E461: Illegal variable name: %s"));
 #endif
+EXTERN char e_could_not_prepare_for_reloading_str[]
+	INIT(= N_("E462: Could not prepare for reloading \"%s\""));
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_region_is_guarded_cannot_modify[]
 	INIT(= N_("E463: Region is guarded, cannot modify"));
 #endif
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
+EXTERN char e_winsize_requires_two_number_arguments[]
+	INIT(= N_("E465: :winsize requires two number arguments"));
+EXTERN char e_winpos_requires_two_number_arguments[]
+	INIT(= N_("E466: :winpos requires two number arguments"));
+EXTERN char e_custom_completion_requires_function_argument[]
+	INIT(= N_("E467: Custom completion requires a function argument"));
+EXTERN char e_completion_argument_only_allowed_for_custom_completion[]
+	INIT(= N_("E468: Completion argument only allowed for custom completion"));
+EXTERN char e_invalid_cscopequickfix_flag_chr_for_chr[]
+	INIT(= N_("E469: invalid cscopequickfix flag %c for %c"));
 EXTERN char e_command_aborted[]
 	INIT(= N_("E470: Command aborted"));
 EXTERN char e_argument_required[]
@@ -1060,12 +1097,20 @@ EXTERN char e_invalid_value_for_argument_str_str[]
 	INIT(= N_("E475: Invalid value for argument %s: %s"));
 EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
-EXTERN char e_no_bang_allowed[]
-	INIT(= N_("E477: No ! allowed"));
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
 #endif
+EXTERN char e_no_bang_allowed[]
+	INIT(= N_("E477: No ! allowed"));
+EXTERN char e_dont_panic[]
+	INIT(= N_("E478: Don't panic!"));
+EXTERN char e_no_match[]
+	INIT(= N_("E479: No match"));
+EXTERN char e_no_match_str_2[]
+	INIT(= N_("E480: No match: %s"));
+EXTERN char e_no_range_allowed[]
+	INIT(= N_("E481: No range allowed"));
 EXTERN char e_cant_create_file_str[]
 	INIT(= N_("E482: Can't create file %s"));
 EXTERN char e_cant_get_temp_file_name[]
@@ -1080,30 +1125,56 @@ EXTERN char e_pattern_not_found_str[]
 	INIT(= N_("E486: Pattern not found: %s"));
 EXTERN char e_argument_must_be_positive[]
 	INIT(= N_("E487: Argument must be positive"));
-EXTERN char e_no_match[]
-	INIT(= N_("E479: No match"));
-EXTERN char e_no_match_str_2[]
-	INIT(= N_("E480: No match: %s"));
-EXTERN char e_no_range_allowed[]
-	INIT(= N_("E481: No range allowed"));
 EXTERN char e_trailing_characters[]
 	INIT(= N_("E488: Trailing characters"));
 EXTERN char e_trailing_characters_str[]
 	INIT(= N_("E488: Trailing characters: %s"));
-
+EXTERN char e_no_call_stack_to_substitute_for_stack[]
+	INIT(= N_("E489: no call stack to substitute for \"<stack>\""));
+#ifdef FEAT_FOLDING
+EXTERN char e_no_fold_found[]
+	INIT(= N_("E490: No fold found"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_json_decode_error_at_str[]
+	INIT(= N_("E491: json decode error at '%s'"));
+#endif
+EXTERN char e_not_an_editor_command[]
+	INIT(= N_("E492: Not an editor command"));
+EXTERN char e_backwards_range_given[]
+	INIT(= N_("E493: Backwards range given"));
+EXTERN char e_use_w_or_w_gt_gt[]
+	INIT(= N_("E494: Use w or w>>"));
+EXTERN char e_no_autocommand_file_name_to_substitute_for_afile[]
+	INIT(= N_("E495: no autocommand file name to substitute for \"<afile>\""));
+EXTERN char e_no_autocommand_buffer_name_to_substitute_for_abuf[]
+	INIT(= N_("E496: no autocommand buffer number to substitute for \"<abuf>\""));
+EXTERN char e_no_autocommand_match_name_to_substitute_for_amatch[]
+	INIT(= N_("E497: no autocommand match name to substitute for \"<amatch>\""));
+EXTERN char e_no_source_file_name_to_substitute_for_sfile[]
+	INIT(= N_("E498: no :source file name to substitute for \"<sfile>\""));
+EXTERN char e_empty_file_name_for_percent_or_hash_only_works_with_ph[]
+	INIT(= N_("E499: Empty file name for '%' or '#', only works with \":p:h\""));
+EXTERN char e_evaluates_to_an_empty_string[]
+	INIT(= N_("E500: Evaluates to an empty string"));
+EXTERN char e_at_end_of_file[]
+	INIT(= N_("E501: At end-of-file"));
 	// E502
 EXTERN char e_is_a_directory[]
 	INIT(= N_("is a directory"));
 	// E503
 EXTERN char e_is_not_file_or_writable_device[]
 	INIT(= N_("is not a file or writable device"));
-
+EXTERN char e_str_is_not_file_or_writable_device[]
+	INIT(= N_("E503: \"%s\" is not a file or writable device"));
 	// E504
 EXTERN char e_is_read_only_cannot_override_W_in_cpoptions[]
 	INIT(= N_("is read-only (cannot override: \"W\" in 'cpoptions')"));
 	// E505
 EXTERN char e_is_read_only_add_bang_to_override[]
 	INIT(= N_("is read-only (add ! to override)"));
+EXTERN char e_str_is_read_only_add_bang_to_override[]
+	INIT(= N_("E505: \"%s\" is read-only (add ! to override)"));
 EXTERN char e_canot_write_to_backup_file_add_bang_to_override[]
 	INIT(= N_("E506: Can't write to backup file (add ! to override)"));
 EXTERN char e_close_error_for_backup_file_add_bang_to_write_anyway[]
@@ -1114,6 +1185,10 @@ EXTERN char e_cannot_create_backup_file_add_bang_to_write_anyway[]
 	INIT(= N_("E509: Cannot create backup file (add ! to override)"));
 EXTERN char e_cant_make_backup_file_add_bang_to_write_anyway[]
 	INIT(= N_("E510: Can't make backup file (add ! to write anyway)"));
+#ifdef FEAT_NETBEANS_INTG
+EXTERN char e_netbeans_already_connected[]
+	INIT(= N_("E511: netbeans already connected"));
+#endif
 EXTERN char e_close_failed[]
 	INIT(= N_("E512: Close failed"));
 EXTERN char e_write_error_conversion_failed_make_fenc_empty_to_override[]
@@ -1128,6 +1203,7 @@ EXTERN char e_no_buffers_were_deleted[]
 	INIT(= N_("E516: No buffers were deleted"));
 EXTERN char e_no_buffers_were_wiped_out[]
 	INIT(= N_("E517: No buffers were wiped out"));
+
 EXTERN char e_not_allowed_here[]
 	INIT(= N_("E523: Not allowed here"));
 EXTERN char e_not_allowed_to_change_text_or_change_window[]
