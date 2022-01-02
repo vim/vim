@@ -320,7 +320,7 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    emsg(_("E894: Using a Dictionary as a Float"));
 	    break;
 	case VAR_BOOL:
-	    emsg(_("E362: Using a boolean value as a Float"));
+	    emsg(_(e_using_boolean_valud_as_float));
 	    break;
 	case VAR_SPECIAL:
 	    emsg(_("E907: Using a special value as a Float"));

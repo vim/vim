@@ -30,8 +30,6 @@
 static char *(spo_name_tab[SPO_COUNT]) =
 	    {"ms=", "me=", "hs=", "he=", "rs=", "re=", "lc="};
 
-static char e_illegal_arg[] = N_("E390: Illegal argument: %s");
-
 /*
  * The patterns that are being searched for are stored in a syn_pattern.
  * A match item consists of one pattern.
@@ -3340,7 +3338,7 @@ syn_cmd_conceal(exarg_T *eap UNUSED, int syncing UNUSED)
     else if (STRNICMP(arg, "off", 3) == 0 && next - arg == 3)
 	curwin->w_s->b_syn_conceal = FALSE;
     else
-	semsg(_(e_illegal_arg), arg);
+	semsg(_(e_illegal_argument_str_2), arg);
 #endif
 }
 
@@ -3370,7 +3368,7 @@ syn_cmd_case(exarg_T *eap, int syncing UNUSED)
     else if (STRNICMP(arg, "ignore", 6) == 0 && next - arg == 6)
 	curwin->w_s->b_syn_ic = TRUE;
     else
-	semsg(_(e_illegal_arg), arg);
+	semsg(_(e_illegal_argument_str_2), arg);
 }
 
 /*
@@ -3404,14 +3402,14 @@ syn_cmd_foldlevel(exarg_T *eap, int syncing UNUSED)
 	curwin->w_s->b_syn_foldlevel = SYNFLD_MINIMUM;
     else
     {
-	semsg(_(e_illegal_arg), arg);
+	semsg(_(e_illegal_argument_str_2), arg);
 	return;
     }
 
     arg = skipwhite(arg_end);
     if (*arg != NUL)
     {
-	semsg(_(e_illegal_arg), arg);
+	semsg(_(e_illegal_argument_str_2), arg);
     }
 }
 
@@ -3446,7 +3444,7 @@ syn_cmd_spell(exarg_T *eap, int syncing UNUSED)
 	curwin->w_s->b_syn_spell = SYNSPL_DEFAULT;
     else
     {
-	semsg(_(e_illegal_arg), arg);
+	semsg(_(e_illegal_argument_str_2), arg);
 	return;
     }
 
@@ -3703,7 +3701,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
 		{
-		    semsg(_("E391: No such syntax cluster: %s"), arg);
+		    semsg(_(e_no_such_syntax_cluster_1), arg);
 		    break;
 		}
 		else
@@ -3913,7 +3911,7 @@ syn_cmd_list(
 	    {
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
-		    semsg(_("E392: No such syntax cluster: %s"), arg);
+		    semsg(_(e_no_such_syntax_cluster_2), arg);
 		else
 		    syn_list_cluster(id - SYNID_CLUSTER);
 	    }
@@ -4600,7 +4598,7 @@ get_syn_options(
 	{
 	    if (!opt->has_cont_list)
 	    {
-		emsg(_("E395: contains argument not accepted here"));
+		emsg(_(e_contains_argument_not_accepted_here));
 		return NULL;
 	    }
 	    if (get_id_list(&arg, 8, &opt->cont_list, skip) == FAIL)
@@ -4653,7 +4651,7 @@ get_syn_options(
 	    {
 		if (opt->sync_idx == NULL)
 		{
-		    emsg(_("E393: group[t]here not accepted here"));
+		    emsg(_(e_groupthere_not_accepted_here));
 		    return NULL;
 		}
 		gname_start = arg;
@@ -4678,7 +4676,7 @@ get_syn_options(
 			}
 		    if (i < 0)
 		    {
-			semsg(_("E394: Didn't find region item for %s"), gname);
+			semsg(_(e_didnt_find_region_item_for_str), gname);
 			vim_free(gname);
 			return NULL;
 		    }
@@ -4751,7 +4749,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
 	rest = get_group_name(arg, &group_name_end);
 	if (rest == NULL)
 	{
-	    emsg(_("E397: Filename required"));
+	    emsg(_(e_filename_required));
 	    return;
 	}
 	sgl_id = syn_check_cluster(arg, (int)(group_name_end - arg));
@@ -5133,7 +5131,7 @@ syn_cmd_region(
 	if (*rest != '=')
 	{
 	    rest = NULL;
-	    semsg(_("E398: Missing '=': %s"), arg);
+	    semsg(_(e_missing_equal_str), arg);
 	    break;
 	}
 	rest = skipwhite(rest + 1);
@@ -5296,7 +5294,7 @@ syn_cmd_region(
 	vim_free(syn_opt_arg.cont_in_list);
 	vim_free(syn_opt_arg.next_list);
 	if (not_enough)
-	    semsg(_("E399: Not enough arguments: syntax region %s"), arg);
+	    semsg(_(e_not_enough_arguments_syntax_region_str), arg);
 	else if (illegal || rest == NULL)
 	    semsg(_(e_invalid_argument_str), arg);
     }
@@ -5626,7 +5624,7 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
     }
 
     if (!got_clstr)
-	emsg(_("E400: No cluster specified"));
+	emsg(_(e_no_cluster_specified));
     if (rest == NULL || !ends_excmd2(eap->cmd, rest))
 	semsg(_(e_invalid_argument_str), arg);
 }
@@ -5661,7 +5659,7 @@ get_syn_pattern(char_u *arg, synpat_T *ci)
     end = skip_regexp(arg + 1, *arg, TRUE);
     if (*end != *arg)			    // end delimiter not found
     {
-	semsg(_("E401: Pattern delimiter not found: %s"), arg);
+	semsg(_(e_pattern_delimiter_not_found_str), arg);
 	return NULL;
     }
     // store the pattern and compiled regexp program
@@ -5739,7 +5737,7 @@ get_syn_pattern(char_u *arg, synpat_T *ci)
 
     if (!ends_excmd2(arg, end) && !VIM_ISWHITE(*end))
     {
-	semsg(_("E402: Garbage after pattern: %s"), arg);
+	semsg(_(e_garbage_after_pattern_str), arg);
 	return NULL;
     }
     return skipwhite(end);
@@ -5833,7 +5831,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 	    }
 	    if (curwin->w_s->b_syn_linecont_pat != NULL)
 	    {
-		emsg(_("E403: syntax sync: line continuations pattern specified twice"));
+		emsg(_(e_syntax_sync_line_continuations_pattern_specified_twice));
 		finished = TRUE;
 		break;
 	    }
@@ -5893,7 +5891,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
     }
     vim_free(key);
     if (illegal)
-	semsg(_("E404: Illegal arguments: %s"), arg_start);
+	semsg(_(e_illegal_arguments_str), arg_start);
     else if (!finished)
     {
 	set_nextcmd(eap, arg_start);
@@ -5944,13 +5942,13 @@ get_id_list(
 	p = skipwhite(*arg + keylen);
 	if (*p != '=')
 	{
-	    semsg(_("E405: Missing equal sign: %s"), *arg);
+	    semsg(_(e_missing_equal_sign_str), *arg);
 	    break;
 	}
 	p = skipwhite(p + 1);
 	if (ends_excmd2(*arg, p))
 	{
-	    semsg(_("E406: Empty argument: %s"), *arg);
+	    semsg(_(e_empty_argument_str), *arg);
 	    break;
 	}
 
@@ -5976,15 +5974,14 @@ get_id_list(
 	    {
 		if (TOUPPER_ASC(**arg) != 'C')
 		{
-		    semsg(_("E407: %s not allowed here"), name + 1);
+		    semsg(_(e_str_not_allowed_here), name + 1);
 		    failed = TRUE;
 		    vim_free(name);
 		    break;
 		}
 		if (count != 0)
 		{
-		    semsg(_("E408: %s must be first in contains list"),
-								     name + 1);
+		    semsg(_(e_str_must_be_first_in_contains_list), name + 1);
 		    failed = TRUE;
 		    vim_free(name);
 		    break;
@@ -6062,7 +6059,7 @@ get_id_list(
 	    vim_free(name);
 	    if (id == 0)
 	    {
-		semsg(_("E409: Unknown group name: %s"), p);
+		semsg(_(e_unknown_group_name_str), p);
 		failed = TRUE;
 		break;
 	    }
@@ -6298,7 +6295,7 @@ ex_syntax(exarg_T *eap)
 	{
 	    if (subcommands[i].name == NULL)
 	    {
-		semsg(_("E410: Invalid :syntax subcommand: %s"), subcmd_name);
+		semsg(_(e_invalid_syntax_subcommand_str), subcmd_name);
 		break;
 	    }
 	    if (STRCMP(subcmd_name, (char_u *)subcommands[i].name) == 0)

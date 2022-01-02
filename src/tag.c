@@ -510,7 +510,7 @@ do_tag(
 		    cur_match = MAXCOL - 1;
 		else if (cur_match < 0)
 		{
-		    emsg(_("E425: Cannot go before first matching tag"));
+		    emsg(_(e_cannot_go_before_first_matching_tag));
 		    skip_msg = TRUE;
 		    cur_match = 0;
 		    cur_fnum = curbuf->b_fnum;
@@ -665,7 +665,7 @@ do_tag(
 	if (num_matches <= 0)
 	{
 	    if (verbose)
-		semsg(_("E426: tag not found: %s"), name);
+		semsg(_(e_tag_not_found_str), name);
 #if defined(FEAT_QUICKFIX)
 	    g_do_tagpreview = 0;
 #endif
@@ -732,9 +732,9 @@ do_tag(
 						      && nofile_fname == NULL)
 		{
 		    if (num_matches == 1)
-			emsg(_("E427: There is only one matching tag"));
+			emsg(_(e_there_is_only_one_matching_tag));
 		    else
-			emsg(_("E428: Cannot go beyond last matching tag"));
+			emsg(_(e_cannot_go_beyond_last_matching_tag));
 		    skip_msg = TRUE;
 		}
 		cur_match = num_matches - 1;
@@ -842,7 +842,7 @@ do_tag(
 		    }
 		    continue;
 		}
-		semsg(_("E429: File \"%s\" does not exist"), nofile_fname);
+		semsg(_(e_file_str_does_not_exist), nofile_fname);
 	    }
 	    else
 	    {
@@ -2166,7 +2166,7 @@ line_read_in:
 				if (fp != NULL)
 				{
 				    if (STRLEN(fullpath_ebuf) > LSIZE)
-					  semsg(_("E430: Tag file path truncated for %s\n"), ebuf);
+					  semsg(_(e_tag_file_path_truncated_for_str), ebuf);
 				    vim_strncpy(tag_fname, fullpath_ebuf,
 								    MAXPATHL);
 				    ++incstack_idx;
@@ -2758,7 +2758,7 @@ parse_line:
 
 	if (line_error)
 	{
-	    semsg(_("E431: Format error in tags file \"%s\""), tag_fname);
+	    semsg(_(e_format_error_in_tags_file_str), tag_fname);
 #ifdef FEAT_CSCOPE
 	    if (!use_cscope)
 #endif
@@ -2786,7 +2786,7 @@ parse_line:
 	tag_file_sorted = NUL;
 	if (sort_error)
 	{
-	    semsg(_("E432: Tags file not sorted: %s"), tag_fname);
+	    semsg(_(e_tags_file_not_sorted_str), tag_fname);
 	    sort_error = FALSE;
 	}
 #endif
@@ -2830,7 +2830,7 @@ parse_line:
     if (!stop_searching)
     {
 	if (!did_open && verbose)	// never opened any tags file
-	    emsg(_("E433: No tags file"));
+	    emsg(_(e_no_tags_file));
 	retval = OK;		// It's OK even when no tag found
     }
 
@@ -3656,7 +3656,7 @@ jumpto_tag(
 		}
 		if (found == 0)
 		{
-		    emsg(_("E434: Can't find tag pattern"));
+		    emsg(_(e_canot_find_tag_pattern));
 		    curwin->w_cursor.lnum = save_lnum;
 		}
 		else
@@ -3667,7 +3667,7 @@ jumpto_tag(
 		     */
 		    if (found == 2 || !save_p_ic)
 		    {
-			msg(_("E435: Couldn't find tag, just guessing!"));
+			msg(_(e_couldnt_find_tag_just_guessing));
 			if (!msg_scrolled && msg_silent == 0)
 			{
 			    out_flush();

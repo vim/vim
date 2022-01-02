@@ -260,7 +260,7 @@ newwindow:
 		    if (wp->w_p_pvw)
 			break;
 		if (wp == NULL)
-		    emsg(_("E441: There is no preview window"));
+		    emsg(_(e_there_is_no_preview_window));
 		else
 		    win_goto(wp);
 		break;
@@ -817,7 +817,7 @@ win_split(int size, int flags)
     flags |= cmdmod.cmod_split;
     if ((flags & WSP_TOP) && (flags & WSP_BOT))
     {
-	emsg(_("E442: Can't split topleft and botright at the same time"));
+	emsg(_(e_cant_split_topleft_and_botright_at_the_same_time));
 	return FAIL;
     }
 
@@ -1721,7 +1721,7 @@ win_rotate(int upwards, int count)
     FOR_ALL_FRAMES(frp, curwin->w_frame->fr_parent->fr_child)
 	if (frp->fr_win == NULL)
 	{
-	    emsg(_("E443: Cannot rotate when another window is split"));
+	    emsg(_(e_cannot_rotate_when_another_window_is_split));
 	    return;
 	}
 
@@ -2487,7 +2487,7 @@ win_close(win_T *win, int free_buf)
 
     if (last_window())
     {
-	emsg(_("E444: Cannot close last window"));
+	emsg(_(e_cannot_close_last_window));
 	return FAIL;
     }
 
@@ -3663,7 +3663,7 @@ close_others(
     }
 
     if (message && !ONE_WINDOW)
-	emsg(_("E445: Other window contains changes"));
+	emsg(_(e_other_window_contains_changes));
 }
 
     static void
@@ -4485,7 +4485,7 @@ win_goto(win_T *wp)
 	return;
     if (popup_is_popup(wp))
     {
-	emsg(_("E366: Not allowed to enter a popup window"));
+	emsg(_(e_not_allowed_to_enter_popup_window));
 	return;
     }
 #endif

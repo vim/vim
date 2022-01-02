@@ -3135,7 +3135,7 @@ mch_print_end(prt_settings_T *psettings)
 
 	// Not printing to a file: use 'printexpr' to print the file.
 	if (eval_printexpr(prt_ps_file_name, psettings->arguments) == FAIL)
-	    emsg(_("E365: Failed to print PostScript file"));
+	    emsg(_(e_failed_to_print_postscript_file));
 	else
 	    prt_message((char_u *)_("Print job sent."));
     }

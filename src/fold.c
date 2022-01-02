@@ -563,9 +563,9 @@ foldManualAllowed(int create)
     if (foldmethodIsManual(curwin) || foldmethodIsMarker(curwin))
 	return TRUE;
     if (create)
-	emsg(_("E350: Cannot create fold with current 'foldmethod'"));
+	emsg(_(e_cannot_create_fold_with_current_foldmethod));
     else
-	emsg(_("E351: Cannot delete fold with current 'foldmethod'"));
+	emsg(_(e_cannot_delete_fold_with_current_foldmethod));
     return FALSE;
 }
 

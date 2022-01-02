@@ -812,27 +812,213 @@ EXTERN char e_no_string_under_cursor[]
 	INIT(= N_("E348: No string under cursor"));
 EXTERN char e_no_identifier_under_cursor[]
 	INIT(= N_("E349: No identifier under cursor"));
-
+EXTERN char e_cannot_create_fold_with_current_foldmethod[]
+	INIT(= N_("E350: Cannot create fold with current 'foldmethod'"));
+EXTERN char e_cannot_delete_fold_with_current_foldmethod[]
+	INIT(= N_("E351: Cannot delete fold with current 'foldmethod'"));
+EXTERN char e_cannot_erase_folds_with_current_foldmethod[]
+	INIT(= N_("E352: Cannot erase folds with current 'foldmethod'"));
+EXTERN char e_nothing_in_register_str[]
+	INIT(= N_("E353: Nothing in register %s"));
+EXTERN char e_invalid_register_name_str[]
+	INIT(= N_("E354: Invalid register name: '%s'"));
+EXTERN char e_unknown_option_str_2[]
+	INIT(= N_("E355: Unknown option: %s"));
+EXTERN char e_get_varp_error[]
+	INIT(= N_("E356: get_varp ERROR"));
+EXTERN char e_langmap_matching_character_missing_for_str[]
+	INIT(= N_("E357: 'langmap': Matching character missing for %s"));
+EXTERN char e_langmap_extra_characters_after_semicolon_str[]
+	INIT(= N_("E358: 'langmap': Extra characters after semicolon: %s"));
 #if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screen_mode_setting_not_supported[]
 	INIT(= N_("E359: Screen mode setting not supported"));
 #endif
+EXTERN char e_cannot_execute_shell_with_f_option[]
+	INIT(= N_("E360: Cannot execute shell with -f option"));
+// E361 unused
+EXTERN char e_using_boolean_valud_as_float[]
+	INIT(= N_("E362: Using a boolean value as a Float"));
 EXTERN char e_pattern_uses_more_memory_than_maxmempattern[]
 	INIT(= N_("E363: pattern uses more memory than 'maxmempattern'"));
 #ifdef FEAT_LIBCALL
 EXTERN char e_library_call_failed_for_str[]
 	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif
+#ifdef FEAT_POSTSCRIPT
+EXTERN char e_failed_to_print_postscript_file[]
+	INIT(= N_("E365: Failed to print PostScript file"));
+#endif
+EXTERN char e_not_allowed_to_enter_popup_window[]
+	INIT(= N_("E366: Not allowed to enter a popup window"));
 EXTERN char e_no_such_group_str[]
 	INIT(= N_("E367: No such group: \"%s\""));
+#ifdef FEAT_LIBCALL
+EXTERN char e_got_sig_str_in_libcall[]
+	INIT(= N_("E368: got SIG%s in libcall()"));
+#endif
+EXTERN char e_invalid_item_in_str_brackets[]
+	INIT(= N_("E369: invalid item in %s%%[]"));
 #ifdef USING_LOAD_LIBRARY
 EXTERN char e_could_not_load_library_str_str[]
 	INIT(= N_("E370: Could not load library %s: %s"));
 #endif
+#ifdef FEAT_GUI_MSWIN
+EXTERN char e_command_not_found[]
+	INIT(= N_("E371: Command not found"));
+#endif
+EXTERN char e_too_many_chr_in_format_string[]
+	INIT(= N_("E372: Too many %%%c in format string"));
+EXTERN char e_unexpected_chr_in_format_str[]
+	INIT(= N_("E373: Unexpected %%%c in format string"));
+EXTERN char e_missing_rsb_in_format_string[]
+	INIT(= N_("E374: Missing ] in format string"));
+EXTERN char e_unsupported_chr_in_format_string[]
+	INIT(= N_("E375: Unsupported %%%c in format string"));
+EXTERN char e_invalid_chr_in_format_string_prefix[]
+	INIT(= N_("E376: Invalid %%%c in format string prefix"));
+EXTERN char e_invalid_chr_in_format_string[]
+	INIT(= N_("E377: Invalid %%%c in format string"));
+EXTERN char e_errorformat_contains_no_pattern[]
+	INIT(= N_("E378: 'errorformat' contains no pattern"));
+EXTERN char e_missing_or_empty_directory_name[]
+	INIT(= N_("E379: Missing or empty directory name"));
+EXTERN char e_at_bottom_of_quickfix_stack[]
+	INIT(= N_("E380: At bottom of quickfix stack"));
+EXTERN char e_at_top_of_quickfix_stack[]
+	INIT(= N_("E381: At top of quickfix stack"));
 EXTERN char e_cannot_write_buftype_option_is_set[]
 	INIT(= N_("E382: Cannot write, 'buftype' option is set"));
-
+EXTERN char e_invalid_search_string_str[]
+	INIT(= N_("E383: Invalid search string: %s"));
+EXTERN char e_search_hit_top_without_match_for_str[]
+	INIT(= N_("E384: search hit TOP without match for: %s"));
+EXTERN char e_search_hit_bottom_without_match_for_str[]
+	INIT(= N_("E385: search hit BOTTOM without match for: %s"));
+EXTERN char e_expected_question_or_slash_after_semicolon[]
+	INIT(= N_("E386: Expected '?' or '/'  after ';'"));
+EXTERN char e_match_is_on_current_line[]
+	INIT(= N_("E387: Match is on current line"));
+EXTERN char e_couldnt_find_definition[]
+	INIT(= N_("E388: Couldn't find definition"));
+EXTERN char e_couldnt_find_pattern[]
+	INIT(= N_("E389: Couldn't find pattern"));
+EXTERN char e_illegal_argument_str_2[]
+	INIT(= N_("E390: Illegal argument: %s"));
+EXTERN char e_no_such_syntax_cluster_1[]
+	INIT(= N_("E391: No such syntax cluster: %s"));
+EXTERN char e_no_such_syntax_cluster_2[]
+	INIT(= N_("E392: No such syntax cluster: %s"));
+EXTERN char e_groupthere_not_accepted_here[]
+	INIT(= N_("E393: group[t]here not accepted here"));
+EXTERN char e_didnt_find_region_item_for_str[]
+	INIT(= N_("E394: Didn't find region item for %s"));
+EXTERN char e_contains_argument_not_accepted_here[]
+	INIT(= N_("E395: contains argument not accepted here"));
+// E396 unused
+EXTERN char e_filename_required[]
+	INIT(= N_("E397: Filename required"));
+EXTERN char e_missing_equal_str[]
+	INIT(= N_("E398: Missing '=': %s"));
+EXTERN char e_not_enough_arguments_syntax_region_str[]
+	INIT(= N_("E399: Not enough arguments: syntax region %s"));
+EXTERN char e_no_cluster_specified[]
+	INIT(= N_("E400: No cluster specified"));
+EXTERN char e_pattern_delimiter_not_found_str[]
+	INIT(= N_("E401: Pattern delimiter not found: %s"));
+EXTERN char e_garbage_after_pattern_str[]
+	INIT(= N_("E402: Garbage after pattern: %s"));
+EXTERN char e_syntax_sync_line_continuations_pattern_specified_twice[]
+	INIT(= N_("E403: syntax sync: line continuations pattern specified twice"));
+EXTERN char e_illegal_arguments_str[]
+	INIT(= N_("E404: Illegal arguments: %s"));
+EXTERN char e_missing_equal_sign_str[]
+	INIT(= N_("E405: Missing equal sign: %s"));
+EXTERN char e_empty_argument_str[]
+	INIT(= N_("E406: Empty argument: %s"));
+EXTERN char e_str_not_allowed_here[]
+	INIT(= N_("E407: %s not allowed here"));
+EXTERN char e_str_must_be_first_in_contains_list[]
+	INIT(= N_("E408: %s must be first in contains list"));
+EXTERN char e_unknown_group_name_str[]
+	INIT(= N_("E409: Unknown group name: %s"));
+EXTERN char e_invalid_syntax_subcommand_str[]
+	INIT(= N_("E410: Invalid :syntax subcommand: %s"));
+EXTERN char e_highlight_group_name_not_found_str[]
+	INIT(= N_("E411: highlight group not found: %s"));
+EXTERN char e_not_enough_arguments_highlight_link_str[]
+	INIT(= N_("E412: Not enough arguments: \":highlight link %s\""));
+EXTERN char e_too_many_arguments_highlight_link_str[]
+	INIT(= N_("E413: Too many arguments: \":highlight link %s\""));
+EXTERN char e_group_has_settings_highlight_link_ignored[]
+	INIT(= N_("E414: group has settings, highlight link ignored"));
+EXTERN char e_unexpected_equal_sign_str[]
+	INIT(= N_("E415: unexpected equal sign: %s"));
+EXTERN char e_missing_equal_sign_str_2[]
+	INIT(= N_("E416: missing equal sign: %s"));
+EXTERN char e_missing_argument_str[]
+	INIT(= N_("E417: missing argument: %s"));
+EXTERN char e_illegal_value_str[]
+	INIT(= N_("E418: Illegal value: %s"));
+EXTERN char e_fg_color_unknown[]
+	INIT(= N_("E419: FG color unknown"));
+EXTERN char e_bg_color_unknown[]
+	INIT(= N_("E420: BG color unknown"));
+EXTERN char e_color_name_or_number_not_recognized[]
+	INIT(= N_("E421: Color name or number not recognized: %s"));
+EXTERN char e_terminal_code_too_long_str[]
+	INIT(= N_("E422: terminal code too long: %s"));
+EXTERN char e_illegal_argument_str_3[]
+	INIT(= N_("E423: Illegal argument: %s"));
+EXTERN char e_too_many_different_highlighting_attributes_in_use[]
+	INIT(= N_("E424: Too many different highlighting attributes in use"));
+EXTERN char e_cannot_go_before_first_matching_tag[]
+	INIT(= N_("E425: Cannot go before first matching tag"));
+EXTERN char e_tag_not_found_str[]
+	INIT(= N_("E426: tag not found: %s"));
+EXTERN char e_there_is_only_one_matching_tag[]
+	INIT(= N_("E427: There is only one matching tag"));
+EXTERN char e_cannot_go_beyond_last_matching_tag[]
+	INIT(= N_("E428: Cannot go beyond last matching tag"));
+EXTERN char e_file_str_does_not_exist[]
+	INIT(= N_("E429: File \"%s\" does not exist"));
+EXTERN char e_tag_file_path_truncated_for_str[]
+	INIT(= N_("E430: Tag file path truncated for %s\n"));
+EXTERN char e_format_error_in_tags_file_str[]
+	INIT(= N_("E431: Format error in tags file \"%s\""));
+EXTERN char e_tags_file_not_sorted_str[]
+	INIT(= N_("E432: Tags file not sorted: %s"));
+EXTERN char e_no_tags_file[]
+	INIT(= N_("E433: No tags file"));
+EXTERN char e_canot_find_tag_pattern[]
+	INIT(= N_("E434: Can't find tag pattern"));
+EXTERN char e_couldnt_find_tag_just_guessing[]
+	INIT(= N_("E435: Couldn't find tag, just guessing!"));
+EXTERN char e_no_str_entry_in_termcap[]
+	INIT(= N_("E436: No \"%s\" entry in termcap"));
+EXTERN char e_terminal_capability_cm_required[]
+	INIT(= N_("E437: terminal capability \"cm\" required"));
+EXTERN char e_u_undo_line_numbers_wrong[]
+	INIT(= N_("E438: u_undo: line numbers wrong"));
+EXTERN char e_undo_list_corrupt[]
+	INIT(= N_("E439: undo list corrupt"));
+EXTERN char e_undo_line_missing[]
+	INIT(= N_("E440: undo line missing"));
+EXTERN char e_there_is_no_preview_window[]
+	INIT(= N_("E441: There is no preview window"));
+EXTERN char e_cant_split_topleft_and_botright_at_the_same_time[]
+	INIT(= N_("E442: Can't split topleft and botright at the same time"));
+EXTERN char e_cannot_rotate_when_another_window_is_split[]
+	INIT(= N_("E443: Cannot rotate when another window is split"));
+EXTERN char e_cannot_close_last_window[]
+	INIT(= N_("E444: Cannot close last window"));
+EXTERN char e_other_window_contains_changes[]
+	INIT(= N_("E445: Other window contains changes"));
+EXTERN char e_no_file_name_under_cursor[]
+	INIT(= N_("E446: No file name under cursor"));
+EXTERN char e_cant_find_file_str_in_path_2[]
+	INIT(= N_("E447: Can't find file \"%s\" in path"));
 #ifdef USING_LOAD_LIBRARY
 EXTERN char e_could_not_load_library_function_str[]
 	INIT(= N_("E448: Could not load library function %s"));
@@ -841,6 +1027,7 @@ EXTERN char e_could_not_load_library_function_str[]
 EXTERN char e_invalid_expression_received[]
 	INIT(= N_("E449: Invalid expression received"));
 #endif
+
 #if defined(UNIX) || defined(FEAT_SESSION)
 EXTERN char e_cannot_go_back_to_previous_directory[]
 	INIT(= N_("E459: Cannot go back to previous directory"));

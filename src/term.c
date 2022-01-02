@@ -2384,7 +2384,7 @@ add_termcap_entry(char_u *name, int force)
 	    emsg(error_msg);
 	else
 #endif
-	    semsg(_("E436: No \"%s\" entry in termcap"), name);
+	    semsg(_(e_no_str_entry_in_termcap), name);
     }
     return FAIL;
 }
@@ -3161,7 +3161,7 @@ ttest(int pairs)
      * MUST have "cm": cursor motion.
      */
     if (*T_CM == NUL)
-	emsg(_("E437: terminal capability \"cm\" required"));
+	emsg(_(e_terminal_capability_cm_required));
 
     /*
      * if "cs" defined, use a scroll region, it's faster.

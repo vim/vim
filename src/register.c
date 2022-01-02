@@ -1691,7 +1691,7 @@ do_put(
 
     if (y_size == 0 || y_array == NULL)
     {
-	semsg(_("E353: Nothing in register %s"),
+	semsg(_(e_nothing_in_register_str),
 		  regname == 0 ? (char_u *)"\"" : transchar(regname));
 	goto end;
     }

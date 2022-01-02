@@ -655,7 +655,7 @@ searchit(
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
     {
 	if ((options & SEARCH_MSG) && !rc_did_emsg)
-	    semsg(_("E383: Invalid search string: %s"), mr_pattern);
+	    semsg(_(e_invalid_search_string_str), mr_pattern);
 	return FAIL;
     }
 
@@ -1126,11 +1126,9 @@ searchit(
 	    if (p_ws)
 		semsg(_(e_pattern_not_found_str), mr_pattern);
 	    else if (lnum == 0)
-		semsg(_("E384: search hit TOP without match for: %s"),
-								  mr_pattern);
+		semsg(_(e_search_hit_top_without_match_for_str), mr_pattern);
 	    else
-		semsg(_("E385: search hit BOTTOM without match for: %s"),
-								  mr_pattern);
+		semsg(_(e_search_hit_bottom_without_match_for_str), mr_pattern);
 	}
 	return FAIL;
     }
@@ -1646,7 +1644,7 @@ do_search(
 	if (dirc != '?' && dirc != '/')
 	{
 	    retval = 0;
-	    emsg(_("E386: Expected '?' or '/'  after ';'"));
+	    emsg(_(e_expected_question_or_slash_after_semicolon));
 	    goto end_do_search;
 	}
 	++pat;
@@ -3832,7 +3830,7 @@ search_line:
 						      && g_do_tagpreview == 0
 #endif
 						      )
-		    emsg(_("E387: Match is on current line"));
+		    emsg(_(e_match_is_on_current_line));
 		else if (action == ACTION_SHOW)
 		{
 		    show_pat_in_path(line, type, did_show, action,
@@ -3992,9 +3990,9 @@ exit_matched:
 	if (got_int || ins_compl_interrupted())
 	    emsg(_(e_interrupted));
 	else if (type == FIND_DEFINE)
-	    emsg(_("E388: Couldn't find definition"));
+	    emsg(_(e_couldnt_find_definition));
 	else
-	    emsg(_("E389: Couldn't find pattern"));
+	    emsg(_(e_couldnt_find_pattern));
     }
     if (action == ACTION_SHOW || action == ACTION_SHOW_ALL)
 	msg_end();

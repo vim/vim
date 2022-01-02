@@ -891,7 +891,7 @@ internal_error_no_abort(char *where)
     void
 emsg_invreg(int name)
 {
-    semsg(_("E354: Invalid register name: '%s'"), transchar(name));
+    semsg(_(e_invalid_register_name_str), transchar(name));
 }
 
 /*

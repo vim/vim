@@ -3080,7 +3080,7 @@ dozet:
 		    deleteFold((linenr_T)1, curbuf->b_ml.ml_line_count,
 								 TRUE, FALSE);
 		else
-		    emsg(_("E352: Cannot erase folds with current 'foldmethod'"));
+		    emsg(_(e_cannot_erase_folds_with_current_foldmethod));
 		break;
 
 		// "zn": fold none: reset 'foldenable'

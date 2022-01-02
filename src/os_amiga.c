@@ -1256,7 +1256,7 @@ mch_call_shell(
     if (close_win)
     {
 	// if Vim opened a window: Executing a shell may cause crashes
-	emsg(_("E360: Cannot execute shell with -f option"));
+	emsg(_(e_cannot_execute_shell_with_f_option));
 	return -1;
     }
 

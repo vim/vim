@@ -4352,7 +4352,7 @@ set_option_value(
 	    return NULL;
 	}
 
-	semsg(_("E355: Unknown option: %s"), name);
+	semsg(_(e_unknown_option_str_2), name);
     }
     else
     {
@@ -5520,7 +5520,7 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
-	default:	iemsg(_("E356: get_varp ERROR"));
+	default:	iemsg(_(e_get_varp_error));
     }
     // always return a valid pointer to avoid a crash!
     return (char_u *)&(curbuf->b_p_wm);

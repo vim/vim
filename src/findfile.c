@@ -2007,7 +2007,7 @@ file_name_in_line(
     if (*ptr == NUL)		// nothing found
     {
 	if (options & FNAME_MESS)
-	    emsg(_("E446: No file name under cursor"));
+	    emsg(_(e_no_file_name_under_cursor));
 	return NULL;
     }
 
@@ -2165,7 +2165,7 @@ find_file_name_in_path(
 	{
 	    c = ptr[len];
 	    ptr[len] = NUL;
-	    semsg(_("E447: Can't find file \"%s\" in path"), ptr);
+	    semsg(_(e_cant_find_file_str_in_path_2), ptr);
 	    ptr[len] = c;
 	}
 

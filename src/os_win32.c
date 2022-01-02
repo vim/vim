@@ -4954,7 +4954,7 @@ mch_call_shell(
 # ifdef VIMDLL
 		if (gui.in_use)
 # endif
-		    emsg(_("E371: Command not found"));
+		    emsg(_(e_command_not_found));
 #endif
 	    }
 

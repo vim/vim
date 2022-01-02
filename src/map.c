@@ -2706,7 +2706,7 @@ langmap_set(void)
 	    }
 	    if (to == NUL)
 	    {
-		semsg(_("E357: 'langmap': Matching character missing for %s"),
+		semsg(_(e_langmap_matching_character_missing_for_str),
 							     transchar(from));
 		return;
 	    }
@@ -2728,7 +2728,7 @@ langmap_set(void)
 		    {
 			if (p[0] != ',')
 			{
-			    semsg(_("E358: 'langmap': Extra characters after semicolon: %s"), p);
+			    semsg(_(e_langmap_extra_characters_after_semicolon_str), p);
 			    return;
 			}
 			++p;
