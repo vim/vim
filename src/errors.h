@@ -703,15 +703,116 @@ EXTERN char e_didnt_get_block_nr_one[]
 EXTERN char e_didnt_get_block_nr_two[]
 	INIT(= N_("E298: Didn't get block nr 2?"));
 // E299 unused
-
+EXTERN char e_swap_file_already_exists_symlink_attack[]
+	INIT(= N_("E300: Swap file already exists (symlink attack?)"));
+EXTERN char e_oops_lost_the_swap_file[]
+	INIT(= N_("E301: Oops, lost the swap file!!!"));
+EXTERN char e_could_not_rename_swap_file[]
+	INIT(= N_("E302: Could not rename swap file"));
+EXTERN char e_unable_to_open_swap_file_for_str_recovery_impossible[]
+	INIT(= N_("E303: Unable to open swap file for \"%s\", recovery impossible"));
+EXTERN char e_ml_upd_block0_didnt_get_block_zero[]
+	INIT(= N_("E304: ml_upd_block0(): Didn't get block 0??"));
+EXTERN char e_no_swap_file_found_for_str[]
+	INIT(= N_("E305: No swap file found for %s"));
+EXTERN char e_cannot_open_str[]
+	INIT(= N_("E306: Cannot open %s"));
+EXTERN char e_str_does_not_look_like_vim_swap_file[]
+	INIT(= N_("E307: %s does not look like a Vim swap file"));
+EXTERN char e_warning_original_file_may_have_been_changed[]
+	INIT(= N_("E308: Warning: Original file may have been changed"));
+EXTERN char e_unable_to_read_block_one_from_str[]
+	INIT(= N_("E309: Unable to read block 1 from %s"));
+EXTERN char e_block_one_id_wrong_str_not_swp_file[]
+	INIT(= N_("E310: Block 1 ID wrong (%s not a .swp file?)"));
+EXTERN char e_recovery_interrupted[]
+	INIT(= N_("E311: Recovery Interrupted"));
+EXTERN char e_errors_detected_while_recovering_look_for_lines_starting_with_questions[]
+	INIT(= N_("E312: Errors detected while recovering; look for lines starting with ???"));
+EXTERN char e_cannot_preserve_there_is_no_swap_file[]
+	INIT(= N_("E313: Cannot preserve, there is no swap file"));
+EXTERN char e_preserve_failed[]
+	INIT(= N_("E314: Preserve failed"));
+EXTERN char e_ml_get_invalid_lnum_nr[]
+	INIT(= N_("E315: ml_get: invalid lnum: %ld"));
+EXTERN char e_ml_get_cannot_find_line_nr_in_buffer_nr_str[]
+	INIT(= N_("E316: ml_get: cannot find line %ld in buffer %d %s"));
+EXTERN char e_pointer_block_id_wrong[]
+	INIT(= N_("E317: pointer block id wrong"));
+EXTERN char e_pointer_block_id_wrong_two[]
+	INIT(= N_("E317: pointer block id wrong 2"));
+EXTERN char e_pointer_block_id_wrong_three[]
+	INIT(= N_("E317: pointer block id wrong 3"));
+EXTERN char e_pointer_block_id_wrong_four[]
+	INIT(= N_("E317: pointer block id wrong 4"));
+EXTERN char e_updated_too_many_blocks[]
+	INIT(= N_("E318: Updated too many blocks?"));
+EXTERN char e_sorry_command_is_not_available_in_this_version[]
+	INIT(= N_("E319: Sorry, the command is not available in this version"));
+EXTERN char e_cannot_find_line_nr[]
+	INIT(= N_("E320: Cannot find line %ld"));
+EXTERN char e_could_not_reload_str[]
+	INIT(= N_("E321: Could not reload \"%s\""));
+EXTERN char e_line_number_out_of_range_nr_past_the_end[]
+	INIT(= N_("E322: line number out of range: %ld past the end"));
+EXTERN char e_line_count_wrong_in_block_nr[]
+	INIT(= N_("E323: line count wrong in block %ld"));
+#ifdef FEAT_POSTSCRIPT
+EXTERN char e_cant_open_postscript_output_file[]
+	INIT(= N_("E324: Can't open PostScript output file"));
+#endif
+EXTERN char e_attention[]
+	INIT(= N_("E325: ATTENTION"));
+EXTERN char e_too_many_swap_files_found[]
+	INIT(= N_("E326: Too many swap files found"));
+EXTERN char_u e_part_of_menu_item_path_is_not_sub_menu[]
+	INIT(= N_("E327: Part of menu-item path is not sub-menu"));
 #ifdef FEAT_MENU
 EXTERN char e_menu_only_exists_in_another_mode[]
 	INIT(= N_("E328: Menu only exists in another mode"));
 #endif
+EXTERN char_u e_no_menu_str[]
+	INIT(= N_("E329: No menu \"%s\""));
+EXTERN char e_menu_path_must_not_loead_to_sub_menu[]
+	INIT(= N_("E330: Menu path must not lead to a sub-menu"));
+EXTERN char e_must_not_add_menu_items_directly_to_menu_bar[]
+	INIT(= N_("E331: Must not add menu items directly to menu bar"));
+EXTERN char e_separator_cannot_be_part_of_menu_path[]
+	INIT(= N_("E332: Separator cannot be part of a menu path"));
+EXTERN char e_menu_path_must_lead_to_menu_item[]
+	INIT(= N_("E333: Menu path must lead to a menu item"));
+EXTERN char e_menu_not_found_str[]
+	INIT(= N_("E334: Menu not found: %s"));
+EXTERN char e_menu_not_defined_for_str_mode[]
+	INIT(= N_("E335: Menu not defined for %s mode"));
+EXTERN char e_menu_path_must_lead_to_sub_menu[]
+	INIT(= N_("E336: Menu path must lead to a sub-menu"));
+EXTERN char e_menu_not_found_check_menu_names[]
+	INIT(= N_("E337: Menu not found - check menu names"));
+EXTERN char e_sorry_no_file_browser_in_console_mode[]
+	INIT(= N_("E338: Sorry, no file browser in console mode"));
+EXTERN char e_pattern_too_long[]
+	INIT(= N_("E339: Pattern too long"));
+// E340 unused
 EXTERN char e_internal_error_lalloc_zero[]
 	INIT(= N_("E341: Internal error: lalloc(0, )"));
 EXTERN char e_out_of_memory_allocating_nr_bytes[]
 	INIT(= N_("E342: Out of memory!  (allocating %lu bytes)"));
+EXTERN char e_invalid_path_number_must_be_at_end_of_path_or_be_followed_by_str[]
+	INIT(= N_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."));
+EXTERN char e_cant_find_directory_str_in_cdpath[]
+	INIT(= N_("E344: Can't find directory \"%s\" in cdpath"));
+EXTERN char e_cant_find_file_str_in_path[]
+	INIT(= N_("E345: Can't find file \"%s\" in path"));
+EXTERN char e_no_more_directory_str_found_in_cdpath[]
+	INIT(= N_("E346: No more directory \"%s\" found in cdpath"));
+EXTERN char e_no_more_file_str_found_in_path[]
+	INIT(= N_("E347: No more file \"%s\" found in path"));
+EXTERN char e_no_string_under_cursor[]
+	INIT(= N_("E348: No string under cursor"));
+EXTERN char e_no_identifier_under_cursor[]
+	INIT(= N_("E349: No identifier under cursor"));
+
 #if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screen_mode_setting_not_supported[]

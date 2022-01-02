@@ -1264,7 +1264,7 @@ mf_do_open(
     if ((flags & O_CREAT) && mch_lstat((char *)mfp->mf_fname, &sb) >= 0)
     {
 	mfp->mf_fd = -1;
-	emsg(_("E300: Swap file already exists (symlink attack?)"));
+	emsg(_(e_swap_file_already_exists_symlink_attack));
     }
     else
 #endif

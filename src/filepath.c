@@ -2464,7 +2464,7 @@ do_browse(
 # endif
     {
 	// TODO: non-GUI file selector here
-	emsg(_("E338: Sorry, no file browser in console mode"));
+	emsg(_(e_sorry_no_file_browser_in_console_mode));
 	fname = NULL;
     }
 

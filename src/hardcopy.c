@@ -2641,7 +2641,7 @@ mch_print_init(
     }
     if (prt_ps_fd == NULL)
     {
-	emsg(_("E324: Can't open PostScript output file"));
+	emsg(_(e_cant_open_postscript_output_file));
 	mch_print_cleanup();
 	return FAIL;
     }

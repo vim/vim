@@ -2517,7 +2517,7 @@ bt_regcomp(char_u *expr, int re_flags)
     {
 	vim_free(r);
 	if (reg_toolong)
-	    EMSG_RET_NULL(_("E339: Pattern too long"));
+	    EMSG_RET_NULL(_(e_pattern_too_long));
 	return NULL;
     }
 

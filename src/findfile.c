@@ -520,7 +520,7 @@ vim_findfile_init(
 		wc_part = (char_u *)errpt;
 		if (*wc_part != NUL && !vim_ispathsep(*wc_part))
 		{
-		    semsg(_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."), PATHSEPSTR);
+		    semsg(_(e_invalid_path_number_must_be_at_end_of_path_or_be_followed_by_str), PATHSEPSTR);
 		    goto error_return;
 		}
 	    }
@@ -1905,19 +1905,19 @@ find_file_in_path_option(
 	if (first == TRUE)
 	{
 	    if (find_what == FINDFILE_DIR)
-		semsg(_("E344: Can't find directory \"%s\" in cdpath"),
+		semsg(_(e_cant_find_directory_str_in_cdpath),
 			ff_file_to_find);
 	    else
-		semsg(_("E345: Can't find file \"%s\" in path"),
+		semsg(_(e_cant_find_file_str_in_path),
 			ff_file_to_find);
 	}
 	else
 	{
 	    if (find_what == FINDFILE_DIR)
-		semsg(_("E346: No more directory \"%s\" found in cdpath"),
+		semsg(_(e_no_more_directory_str_found_in_cdpath),
 			ff_file_to_find);
 	    else
-		semsg(_("E347: No more file \"%s\" found in path"),
+		semsg(_(e_no_more_file_str_found_in_path),
 			ff_file_to_find);
 	}
     }
