@@ -1941,7 +1941,7 @@ nb_do_cmd(
 	    bg = vim_strsave(p);
 	    if (STRLEN(fg) > MAX_COLOR_LENGTH || STRLEN(bg) > MAX_COLOR_LENGTH)
 	    {
-		emsg("E532: highlighting color name too long in defineAnnoType");
+		emsg(e_highlighting_color_name_too_long_in_defineAnnoType);
 		VIM_CLEAR(typeName);
 		parse_error = TRUE;
 	    }

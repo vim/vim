@@ -187,7 +187,6 @@ static buf_T	*load_dummy_buffer(char_u *fname, char_u *dirname_start, char_u *re
 static void	wipe_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static void	unload_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static qf_info_T *ll_get_or_alloc_list(win_T *);
-static char_u	*e_no_more_items = (char_u *)N_("E553: No more items");
 
 // Quickfix window check helper macro
 #define IS_QF_WINDOW(wp) (bt_quickfix(wp->w_buffer) && wp->w_llist_ref == NULL)
@@ -2733,7 +2732,7 @@ get_nth_valid_entry(
     int			qf_idx = qfl->qf_index;
     qfline_T		*prev_qf_ptr;
     int			prev_index;
-    char_u		*err = e_no_more_items;
+    char		*err = e_no_more_items;
 
     while (errornr--)
     {

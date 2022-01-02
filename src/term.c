@@ -2222,13 +2222,13 @@ tgetent_error(char_u *tbuf, char_u *term)
 
 	if (i < 0)
 # ifdef TGETENT_ZERO_ERR
-	    return _("E557: Cannot open termcap file");
+	    return _(e_cannot_open_termcap_file);
 	if (i == 0)
 # endif
 #ifdef TERMINFO
-	    return _("E558: Terminal entry not found in terminfo");
+	    return _(e_terminal_entry_not_found_in_terminfo);
 #else
-	    return _("E559: Terminal entry not found in termcap");
+	    return _(e_terminal_entry_not_found_in_termcap);
 #endif
     }
     return NULL;

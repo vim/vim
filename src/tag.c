@@ -84,8 +84,6 @@ static int add_llist_tags(char_u *tag, int num_matches, char_u **matches);
 #endif
 static void tagstack_clear_entry(taggy_T *item);
 
-static char_u *bottommsg = (char_u *)N_("E555: at bottom of tag stack");
-static char_u *topmsg = (char_u *)N_("E556: at top of tag stack");
 #ifdef FEAT_EVAL
 static char_u *recurmsg = (char_u *)N_("E986: cannot modify the tag stack within tagfunc");
 static char_u *tfu_inv_ret_msg = (char_u *)N_("E987: invalid return value from tagfunc");
@@ -377,7 +375,7 @@ do_tag(
 #endif
 		if ((tagstackidx -= count) < 0)
 		{
-		    emsg(_(bottommsg));
+		    emsg(_(e_at_bottom_of_tag_stack));
 		    if (tagstackidx + count == 0)
 		    {
 			// We did [num]^T from the bottom of the stack
@@ -390,7 +388,7 @@ do_tag(
 		}
 		else if (tagstackidx >= tagstacklen)    // count == 0?
 		{
-		    emsg(_(topmsg));
+		    emsg(_(e_at_top_of_tag_stack));
 		    goto end_do_tag;
 		}
 
@@ -461,12 +459,12 @@ do_tag(
 			 * position.
 			 */
 			tagstackidx = tagstacklen - 1;
-			emsg(_(topmsg));
+			emsg(_(e_at_top_of_tag_stack));
 			save_pos = FALSE;
 		    }
 		    else if (tagstackidx < 0)	// must have been count == 0
 		    {
-			emsg(_(bottommsg));
+			emsg(_(e_at_bottom_of_tag_stack));
 			tagstackidx = 0;
 			goto end_do_tag;
 		    }

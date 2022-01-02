@@ -1406,7 +1406,7 @@ do_set(
 				  && vim_strchr((char_u *)"!&<", *arg) != NULL)
 		    errmsg = e_no_white_space_allowed_between_option_and;
 		else
-		    errmsg = N_("E518: Unknown option");
+		    errmsg = N_(e_unknown_option);
 		goto skip;
 	    }
 
@@ -1419,7 +1419,7 @@ do_set(
 		    if (vim_strchr((char_u *)"=:!&<", nextchar) == NULL
 			    && (!(options[opt_idx].flags & P_BOOL)
 				|| nextchar == '?'))
-			errmsg = N_("E519: Option not supported");
+			errmsg = N_(e_option_not_supported);
 		    goto skip;
 		}
 
@@ -1457,7 +1457,7 @@ do_set(
 	    {
 		if (flags & (P_SECURE | P_NO_ML))
 		{
-		    errmsg = N_("E520: Not allowed in a modeline");
+		    errmsg = N_(e_not_allowed_in_modeline);
 		    goto skip;
 		}
 		if ((flags & P_MLE) && !p_mle)
@@ -1682,13 +1682,13 @@ do_set(
 			    if (i == 0 || (arg[i] != NUL
 						      && !VIM_ISWHITE(arg[i])))
 			    {
-				errmsg = N_("E521: Number required after =");
+				errmsg = N_(e_number_required_after_equal);
 				goto skip;
 			    }
 			}
 			else
 			{
-			    errmsg = N_("E521: Number required after =");
+			    errmsg = N_(e_number_required_after_equal);
 			    goto skip;
 			}
 
@@ -2140,7 +2140,7 @@ do_set(
 			if (nextchar == '&')
 			{
 			    if (add_termcap_entry(key_name, TRUE) == FAIL)
-				errmsg = N_("E522: Not found in termcap");
+				errmsg = N_(e_not_found_in_termcap);
 			}
 			else
 			{
@@ -2950,7 +2950,7 @@ set_bool_option(
 		if (win->w_p_pvw && win != curwin)
 		{
 		    curwin->w_p_pvw = FALSE;
-		    return N_("E590: A preview window already exists");
+		    return N_(e_preview_window_already_exists);
 		}
 	}
     }
@@ -3680,7 +3680,7 @@ set_num_option(
 	if (errbuf != NULL)
 	{
 	    vim_snprintf((char *)errbuf, errbuflen,
-			       _("E593: Need at least %d lines"), min_rows());
+			       _(e_need_at_least_nr_lines), min_rows());
 	    errmsg = errbuf;
 	}
 	Rows = min_rows();
@@ -3690,7 +3690,7 @@ set_num_option(
 	if (errbuf != NULL)
 	{
 	    vim_snprintf((char *)errbuf, errbuflen,
-			    _("E594: Need at least %d columns"), MIN_COLUMNS);
+			    _(e_need_at_least_nr_columns), MIN_COLUMNS);
 	    errmsg = errbuf;
 	}
 	Columns = MIN_COLUMNS;
@@ -4385,7 +4385,7 @@ set_option_value(
 			// There's another character after zeros or the string
 			// is empty.  In both cases, we are trying to set a
 			// num option using a string.
-			semsg(_("E521: Number required: &%s = '%s'"),
+			semsg(_(e_number_required_after_str_equal_str),
 								name, string);
 			return NULL;     // do nothing as we hit an error
 

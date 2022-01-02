@@ -1017,7 +1017,7 @@ ex_if(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E579: :if nesting too deep");
+	eap->errmsg = _(e_if_nesting_too_deep);
     else
     {
 	enter_block(cstack);
@@ -1111,10 +1111,10 @@ ex_else(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = _("E583: multiple :else");
+	    eap->errmsg = _(e_multiple_else);
 	    return;
 	}
-	eap->errmsg = _("E584: :elseif after :else");
+	eap->errmsg = _(e_elseif_after_else);
 	skip = TRUE;
     }
 
@@ -1180,7 +1180,7 @@ ex_while(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E585: :while/:for nesting too deep");
+	eap->errmsg = _(e_while_for_nesting_too_deep);
     else
     {
 	/*
@@ -1465,7 +1465,7 @@ ex_block(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E579: block nesting too deep");
+	eap->errmsg = _(e_block_nesting_too_deep);
     else
     {
 	enter_block(cstack);

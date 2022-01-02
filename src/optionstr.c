@@ -193,8 +193,7 @@ illegal_char(char *errbuf, int c)
 {
     if (errbuf == NULL)
 	return "";
-    sprintf((char *)errbuf, _("E539: Illegal character <%s>"),
-							(char *)transchar(c));
+    sprintf((char *)errbuf, _(e_illegal_character_str), (char *)transchar(c));
     return errbuf;
 }
 
@@ -629,11 +628,11 @@ check_stl_option(char_u *s)
 	    while ((*s != '}' || (reevaluate && s[-1] != '%')) && *s)
 		s++;
 	    if (*s != '}')
-		return N_("E540: Unclosed expression sequence");
+		return N_(e_unclosed_expression_sequence);
 	}
     }
     if (groupdepth != 0)
-	return N_("E542: unbalanced groups");
+	return N_(e_unbalanced_groups);
     return NULL;
 }
 #endif
@@ -693,15 +692,15 @@ did_set_string_option(
     else if (varp == &T_NAME)
     {
 	if (T_NAME[0] == NUL)
-	    errmsg = N_("E529: Cannot set 'term' to empty string");
+	    errmsg = e_cannot_set_term_to_empty_string;
 #ifdef FEAT_GUI
 	else if (gui.in_use)
-	    errmsg = N_("E530: Cannot change term in GUI");
+	    errmsg = e_cannot_change_term_in_GUI;
 	else if (term_is_gui(T_NAME))
-	    errmsg = N_("E531: Use \":gui\" to start the GUI");
+	    errmsg = e_use_gui_to_start_GUI;
 #endif
 	else if (set_termname(T_NAME) == FAIL)
-	    errmsg = N_("E522: Not found in termcap");
+	    errmsg = e_not_found_in_termcap;
 	else
 	{
 	    // Screen colors may have changed.
@@ -749,7 +748,7 @@ did_set_string_option(
     {
 	if (STRCMP(*p_bex == '.' ? p_bex + 1 : p_bex,
 		     *p_pm == '.' ? p_pm + 1 : p_pm) == 0)
-	    errmsg = N_("E589: 'backupext' and 'patchmode' are equal");
+	    errmsg = N_(e_backupext_and_patchmode_are_equal);
     }
 #ifdef FEAT_LINEBREAK
     // 'breakindentopt'
@@ -1296,9 +1295,9 @@ ambw_end:
 		++s;
 	    }
 	    if (*s++ == NUL)
-		errmsg = N_("E524: Missing colon");
+		errmsg = e_missing_colon;
 	    else if (*s == ',' || *s == NUL)
-		errmsg = N_("E525: Zero length string");
+		errmsg = e_zero_length_string;
 	    if (errmsg != NULL)
 		break;
 	    while (*s && *s != ',')
@@ -1395,7 +1394,8 @@ ambw_end:
 		{
 		    if (errbuf != NULL)
 		    {
-			sprintf(errbuf, _("E526: Missing number after <%s>"),
+			sprintf(errbuf,
+				_(e_missing_number_after_angle_str_angle),
 						    transchar_byte(*(s - 1)));
 			errmsg = errbuf;
 		    }
@@ -1409,14 +1409,14 @@ ambw_end:
 	    else if (*s)
 	    {
 		if (errbuf != NULL)
-		    errmsg = N_("E527: Missing comma");
+		    errmsg = e_missing_comma;
 		else
 		    errmsg = "";
 		break;
 	    }
 	}
 	if (*p_viminfo && errmsg == NULL && get_viminfo_parameter('\'') < 0)
-	    errmsg = N_("E528: Must specify a ' value");
+	    errmsg = e_must_specify_a_value;
     }
 #endif // FEAT_VIMINFO
 
@@ -1487,7 +1487,7 @@ ambw_end:
 	for (s = *varp; *s; )
 	{
 	    if (ptr2cells(s) != 1)
-		errmsg = N_("E595: 'showbreak' contains unprintable or wide character");
+		errmsg = N_(e_showbreak_contains_unprintable_or_wide_character);
 	    MB_PTR_ADV(s);
 	}
     }
@@ -1529,7 +1529,7 @@ ambw_end:
 		}
 		else
 # endif
-		    errmsg = N_("E596: Invalid font(s)");
+		    errmsg = N_(e_invalid_fonts);
 	    }
 	}
 	redraw_gui_only = TRUE;
@@ -1538,18 +1538,18 @@ ambw_end:
     else if (varp == &p_guifontset)
     {
 	if (STRCMP(p_guifontset, "*") == 0)
-	    errmsg = N_("E597: can't select fontset");
+	    errmsg = N_(e_cant_select_fontset);
 	else if (gui.in_use && gui_init_font(p_guifontset, TRUE) != OK)
-	    errmsg = N_("E598: Invalid fontset");
+	    errmsg = N_(e_invalid_fontset);
 	redraw_gui_only = TRUE;
     }
 # endif
     else if (varp == &p_guifontwide)
     {
 	if (STRCMP(p_guifontwide, "*") == 0)
-	    errmsg = N_("E533: can't select wide font");
+	    errmsg = e_cant_select_wide_font;
 	else if (gui_get_wide_font() == FAIL)
-	    errmsg = N_("E534: Invalid wide font");
+	    errmsg = e_invalid_wide_font;
 	redraw_gui_only = TRUE;
     }
 #endif
@@ -1860,8 +1860,7 @@ ambw_end:
 		    if (errbuf != NULL)
 		    {
 			sprintf((char *)errbuf,
-				     _("E535: Illegal character after <%c>"),
-				     *--s);
+				       _(e_illegal_character_after_chr), *--s);
 			errmsg = errbuf;
 		    }
 		    else
@@ -2031,7 +2030,7 @@ ambw_end:
     {
 	p = vim_strchr(*varp, ',');
 	if (p == NULL)
-	    errmsg = N_("E536: comma required");
+	    errmsg = e_comma_required;
 	else if (p == *varp || p[1] == NUL)
 	    errmsg = e_invalid_argument;
 	else if (foldmethodIsMarker(curwin))
@@ -2041,7 +2040,7 @@ ambw_end:
     else if (gvarp == &p_cms)
     {
 	if (**varp != NUL && strstr((char *)*varp, "%s") == NULL)
-	    errmsg = N_("E537: 'commentstring' must be empty or contain %s");
+	    errmsg = e_commentstring_must_be_empty_or_contain_str;
     }
     // 'foldopen'
     else if (varp == &p_fdo)

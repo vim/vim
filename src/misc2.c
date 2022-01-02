@@ -2066,9 +2066,9 @@ parse_shape_opt(int what)
 	    commap = vim_strchr(modep, ',');
 
 	    if (colonp == NULL || (commap != NULL && commap < colonp))
-		return N_("E545: Missing colon");
+		return e_missing_colon_2;
 	    if (colonp == modep)
-		return N_("E546: Illegal mode");
+		return e_illegal_mode;
 
 	    /*
 	     * Repeat for all mode's before the colon.
@@ -2094,7 +2094,7 @@ parse_shape_opt(int what)
 				break;
 			if (idx == SHAPE_IDX_COUNT
 				   || (shape_table[idx].used_for & what) == 0)
-			    return N_("E546: Illegal mode");
+			    return e_illegal_mode;
 			if (len == 2 && modep[0] == 'v' && modep[1] == 'e')
 			    found_ve = TRUE;
 		    }
@@ -2133,7 +2133,7 @@ parse_shape_opt(int what)
 			    if (mshape_names[i] == NULL)
 			    {
 				if (!VIM_ISDIGIT(*p))
-				    return N_("E547: Illegal mouseshape");
+				    return e_illegal_mouseshape;
 				if (round == 2)
 				    shape_table[idx].mshape =
 					      getdigits(&p) + MSHAPE_NUMBERED;
@@ -2173,12 +2173,12 @@ parse_shape_opt(int what)
 			{
 			    p += len;
 			    if (!VIM_ISDIGIT(*p))
-				return N_("E548: digit expected");
+				return e_digit_expected;
 			    n = getdigits(&p);
 			    if (len == 3)   // "ver" or "hor"
 			    {
 				if (n == 0)
-				    return N_("E549: Illegal percentage");
+				    return e_illegal_percentage;
 				if (round == 2)
 				{
 				    if (TOLOWER_ASC(i) == 'v')

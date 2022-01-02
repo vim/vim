@@ -1710,7 +1710,7 @@ tclinit(exarg_T *eap)
 #ifdef DYNAMIC_TCL
     if (!tcl_enabled(TRUE))
     {
-	emsg(_("E571: Sorry, this command is disabled: the Tcl library could not be loaded."));
+	emsg(_(e_sorry_this_command_is_disabled_tcl_library_could_not_be_loaded));
 	return FAIL;
     }
 #endif
@@ -1874,7 +1874,7 @@ tclexit(int error)
     {
 	char buf[50];
 
-	sprintf(buf, _("E572: exit code %d"), tclinfo.exitvalue);
+	sprintf(buf, _(e_exit_code_nr), tclinfo.exitvalue);
 	tclerrmsg(buf);
 	if (tclinfo.exitvalue == 0)
 	{

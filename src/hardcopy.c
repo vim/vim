@@ -205,7 +205,7 @@ parse_list_options(
 	colonp = vim_strchr(stringp, ':');
 	if (colonp == NULL)
 	{
-	    ret = N_("E550: Missing colon");
+	    ret = e_missing_colon_3;
 	    break;
 	}
 	commap = vim_strchr(stringp, ',');
@@ -220,7 +220,7 @@ parse_list_options(
 
 	if (idx == table_size)
 	{
-	    ret = N_("E551: Illegal component");
+	    ret = e_illegal_component;
 	    break;
 	}
 	p = colonp + 1;
@@ -230,7 +230,7 @@ parse_list_options(
 	{
 	    if (!VIM_ISDIGIT(*p))
 	    {
-		ret = N_("E552: digit expected");
+		ret = e_digit_expected_2;
 		break;
 	    }
 

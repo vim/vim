@@ -513,7 +513,7 @@ mb_init(void)
 	else if (GetLastError() == ERROR_INVALID_PARAMETER)
 	{
 codepage_invalid:
-	    return N_("E543: Not a valid codepage");
+	    return N_(e_not_valid_codepage);
 	}
     }
 #endif

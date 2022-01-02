@@ -2596,7 +2596,7 @@ keymap_init(void)
 	    if (source_runtime(buf, 0) == FAIL)
 	    {
 		vim_free(buf);
-		return N_("E544: Keymap file not found");
+		return N_(e_keymap_file_not_found);
 	    }
 	}
 	vim_free(buf);

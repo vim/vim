@@ -1611,7 +1611,7 @@ read_viminfo_register(vir_T *virp, int force)
 
     if (!ASCII_ISALNUM(*str) && *str != '-')
     {
-	if (viminfo_error("E577: ", _("Illegal register name"), virp->vir_line))
+	if (viminfo_error("E577: ", _(e_illegal_register_name), virp->vir_line))
 	    return TRUE;	// too many errors, pretend end-of-file
 	do_it = FALSE;
     }
@@ -1891,7 +1891,7 @@ write_viminfo_registers(FILE *fp)
 		type = (char_u *)"BLOCK";
 		break;
 	    default:
-		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
+		semsg(_(e_unknown_register_type_nr), y_ptr->y_type);
 		type = (char_u *)"LINE";
 		break;
 	}
@@ -2272,7 +2272,7 @@ copy_viminfo_marks(
 	{
 	    if (line[0] != '\n' && line[0] != '\r' && line[0] != '#')
 	    {
-		if (viminfo_error("E576: ", _("Missing '>'"), line))
+		if (viminfo_error("E576: ", _(e_nonr_missing_gt), line))
 		    break;	// too many errors, return now
 	    }
 	    eof = vim_fgets(line, LSIZE, virp->vir_fd);
@@ -2876,7 +2876,7 @@ read_viminfo_up_to_marks(
 		    eof = viminfo_readline(virp);
 		break;
 	    default:
-		if (viminfo_error("E575: ", _("Illegal starting char"),
+		if (viminfo_error("E575: ", _(e_illegal_starting_char),
 			    virp->vir_line))
 		    eof = TRUE;
 		else

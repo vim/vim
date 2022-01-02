@@ -720,7 +720,7 @@ serverStrToWin(char_u *str)
 
     sscanf((char *)str, "0x%x", &id);
     if (id == None)
-	semsg(_("E573: Invalid server id used: %s"), str);
+	semsg(_(e_invalid_server_id_used_str), str);
 
     return (Window)id;
 }

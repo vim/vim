@@ -1050,7 +1050,7 @@ read_limits(long *minval, long *maxval)
     if (*regparse == '\\')
 	regparse++;	// Allow either \{...} or \{...\}
     if (*regparse != '}')
-	EMSG2_RET_FAIL(_("E554: Syntax error in %s{...}"),
+	EMSG2_RET_FAIL(_(e_syntax_error_in_str_curlies),
 						       reg_magic == MAGIC_ALL);
 
     /*
