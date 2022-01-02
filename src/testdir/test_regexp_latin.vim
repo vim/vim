@@ -6,7 +6,10 @@ scriptencoding latin1
 source check.vim
 
 func s:equivalence_test()
-  let str = "AÀÁÂÃÄÅ B C D EÈÉÊË F G H IÌÍÎÏ J K L M NÑ OÒÓÔÕÖØ P Q R S T UÙÚÛÜ V W X Yİ Z aàáâãäå b c d eèéêë f g h iìíîï j k l m nñ oòóôõöø p q r s t uùúûü v w x yıÿ z"
+  let str = 'AÀÁÂÃÄÅ B C D EÈÉÊË F G H IÌÍÎÏ J K L M NÑ OÒÓÔÕÖØ P Q R S T UÙÚÛÜ V W X Yİ Z '
+  \      .. 'aàáâãäå b c d eèéêë f g h iìíîï j k l m nñ oòóôõöø p q r s t uùúûü v w x yıÿ z '
+  \      .. "0 1 2 3 4 5 6 7 8 9 "
+  \      .. "` ~ ! ? ; : . , / \\ ' \" | < > [ ] { } ( ) @ # $ % ^ & * _ - + \b \e \f \n \r \t"
   let groups = split(str)
   for group1 in groups
       for c in split(group1, '\zs')
