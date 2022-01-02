@@ -476,9 +476,10 @@ N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
 B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
-N  *+viminfo*		|'viminfo'|
 T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
+T  *+vim9script*	|Vim9| script
+N  *+viminfo*		|'viminfo'|
 T  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|

@@ -10069,6 +10069,7 @@ vertsplit		Compiled with vertically split windows |:vsplit|.
 			(always true)
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
+vim9script		Compiled with |Vim9| script support
 viminfo			Compiled with viminfo support.
 vimscript-1		Compiled Vim script version 1 support
 vimscript-2		Compiled Vim script version 2 support
