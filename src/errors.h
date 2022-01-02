@@ -1261,8 +1261,8 @@ EXTERN char e_not_valid_codepage[]
 #endif
 EXTERN char e_keymap_file_not_found[]
 	INIT(= N_("E544: Keymap file not found"));
-EXTERN char e_missing_colon_2[]
 #ifdef CURSOR_SHAPE
+EXTERN char e_missing_colon_2[]
 	INIT(= N_("E545: Missing colon"));
 EXTERN char e_illegal_mode[]
 	INIT(= N_("E546: Illegal mode"));
