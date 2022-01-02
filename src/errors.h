@@ -602,7 +602,7 @@ EXTERN char e_cscope_connection_str_not_founc[]
 EXTERN char e_error_reading_cscope_connection_nr[]
 	INIT(= N_("E262: error reading cscope connection %d"));
 #endif
-#ifdef DYNAMIC_PYTHON
+#if defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3)
 EXTERN char e_sorry_this_command_is_disabled_python_library_could_not_be_found[]
 	INIT(= N_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 #endif
