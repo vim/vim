@@ -3328,7 +3328,8 @@ eval7t(
     {
 	if (res == OK)
 	{
-	    type_T *actual = typval2type(rettv, get_copyID(), &type_list, TRUE);
+	    type_T *actual = typval2type(rettv, get_copyID(), &type_list,
+							       TVTT_DO_MEMBER);
 
 	    if (!equal_type(want_type, actual, 0))
 	    {

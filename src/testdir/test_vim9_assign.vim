@@ -757,6 +757,10 @@ def Test_assignment_list()
   # type becomes list<any>
   var somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
 
+  # type is list<any> even though initializer is list<number>
+  var anyList: list<any> = [0]
+  assert_equal([0, 'x'], extend(anyList, ['x']))
+
   var lines =<< trim END
     var d = {dd: test_null_list()}
     d.dd[0] = 0
@@ -954,6 +958,10 @@ def Test_assignment_dict()
 
   # type becomes dict<any>
   var somedict = rand() > 0 ? {a: 1, b: 2} : {a: 'a', b: 'b'}
+
+  # type is dict<any> even though initializer is dict<number>
+  var anyDict: dict<any> = {a: 0}
+  assert_equal({a: 0, b: 'x'}, extend(anyDict, {b: 'x'}))
 
   # assignment to script-local dict
   lines =<< trim END

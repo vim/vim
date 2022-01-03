@@ -439,6 +439,8 @@ def Test_return_invalid()
 enddef
 
 def Test_return_list_any()
+  # This used to fail but now the actual list type is checked, and since it has
+  # an item of type string it can be used as list<string>.
   var lines =<< trim END
       vim9script
       def Func(): list<string>
@@ -448,7 +450,8 @@ def Test_return_list_any()
       enddef
       echo Func()
   END
-  CheckScriptFailure(lines, 'E1012:')
+  CheckScriptSuccess(lines)
+
   lines =<< trim END
       vim9script
       def Func(): list<string>
@@ -458,7 +461,7 @@ def Test_return_list_any()
       enddef
       echo Func()
   END
-  CheckScriptFailure(lines, 'E1012:')
+  CheckScriptSuccess(lines)
 enddef
 
 func Increment()

@@ -2143,6 +2143,11 @@ def Test_map()
     CheckDefAndScriptFailure(['map(test_null_channel(), "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1251: List, Dictionary, Blob or String required for argument 1'])
   endif
   CheckDefAndScriptFailure(['map(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+
+  # type of dict remains dict<any> even when type of values changes
+  var d: dict<any> = {a: 0}
+  d->map((k, v) => true)
+  d->map((k, v) => 'x')
 enddef
 
 def Test_map_failure()

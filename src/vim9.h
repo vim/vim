@@ -725,3 +725,7 @@ struct cctx_S {
 				    // lhs_name is not NULL
 };
 
+// flags for typval2type()
+#define TVTT_DO_MEMBER	    1
+#define TVTT_MORE_SPECIFIC  2	// get most specific type for member
+

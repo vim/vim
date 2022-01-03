@@ -2478,7 +2478,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     {
 	// Check that map() does not change the type of the dict.
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list, TRUE);
+	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
     }
 
     if (argvars[0].v_type != VAR_BLOB
@@ -2763,9 +2763,9 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 
     if (!is_new && in_vim9script())
     {
-	// Check that map() does not change the type of the dict.
+	// Check that extend() does not change the type of the dict.
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list, TRUE);
+	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
     }
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)

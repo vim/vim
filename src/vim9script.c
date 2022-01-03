@@ -907,7 +907,8 @@ update_vim9_script_var(
     if (sv != NULL)
     {
 	if (*type == NULL)
-	    *type = typval2type(tv, get_copyID(), &si->sn_type_list, do_member);
+	    *type = typval2type(tv, get_copyID(), &si->sn_type_list,
+					       do_member ? TVTT_DO_MEMBER : 0);
 	if (sv->sv_type_allocated)
 	    free_type(sv->sv_type);
 	if (*type != NULL && ((*type)->tt_type == VAR_FUNC

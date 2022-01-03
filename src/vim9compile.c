@@ -2286,11 +2286,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    && (lhs.lhs_type->tt_type == VAR_DICT
 					  || lhs.lhs_type->tt_type == VAR_LIST)
 		    && lhs.lhs_type->tt_member != NULL
-		    && !(lhs.lhs_type->tt_member == &t_any
-			    && oplen > 0
-			    && rhs_type != NULL
-			    && rhs_type->tt_type == lhs.lhs_type->tt_type
-			    && rhs_type->tt_member != &t_unknown)
 		    && lhs.lhs_type->tt_member != &t_unknown)
 		// Set the type in the list or dict, so that it can be checked,
 		// also in legacy script.  Not for "list<any> = val", then the
