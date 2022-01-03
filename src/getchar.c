@@ -50,6 +50,9 @@ static int	block_redo = FALSE;
 
 static int	KeyNoremap = 0;	    // remapping flags
 
+// number of typed bytes to be ignored by gotchars()
+static int	gotchars_ignore_cnt = 0;
+
 /*
  * Variables used by vgetorpeek() and flush_buffers().
  *
@@ -1102,7 +1105,7 @@ ins_typebuf(
  * the char.
  */
     void
-ins_char_typebuf(int c, int modifier)
+ins_char_typebuf(int c, int modifier, int gotchars_ignore)
 {
     char_u	buf[MB_MAXBYTES + 4];
     int		idx = 0;
@@ -1124,7 +1127,12 @@ ins_char_typebuf(int c, int modifier)
 	idx += 3;
     }
     else
-	buf[(*mb_char2bytes)(c, buf + idx) + idx] = NUL;
+    {
+	idx = (*mb_char2bytes)(c, buf + idx) + idx;
+	buf[idx] = NUL;
+    }
+    if (KeyTyped && gotchars_ignore)
+	gotchars_ignore_cnt += idx;
     (void)ins_typebuf(buf, KeyNoremap, 0, !KeyTyped, cmd_silent);
 }
 
@@ -1259,6 +1267,13 @@ gotchars(char_u *chars, int len)
 
     while (todo--)
     {
+	if (gotchars_ignore_cnt > 0)
+	{
+	    --gotchars_ignore_cnt;
+	    ++s;
+	    continue;
+	}
+
 	buf[buflen++] = *s++;
 
 	// When receiving a special key sequence, store it until we have all
@@ -2272,7 +2287,7 @@ parse_queued_messages(void)
     // If the current window or buffer changed we need to bail out of the
     // waiting loop.  E.g. when a job exit callback closes the terminal window.
     if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
-	ins_char_typebuf(K_IGNORE, 0);
+	ins_char_typebuf(K_IGNORE, 0, FALSE);
 
     --entered;
 }

@@ -197,6 +197,20 @@ func Test_recording_esc_sequence()
   endif
 endfunc
 
+" Replaying a macro that involves typing a printable character in Select mode
+" should not insert the character twice
+func Test_recording_select_mode_printable()
+  new
+  call feedkeys("qqi123456789\<Esc>gH987654321\<Esc>q", 'xt')
+  call assert_equal('987654321', getline(1))
+  call feedkeys('dd', 'xt')
+  call assert_equal('', getline(1))
+  call feedkeys('@q', 'xt')
+  " The first 9 used to be inserted twice when the register is replayed
+  call assert_equal('987654321', getline(1))
+  bwipe!
+endfunc
+
 " Test for executing the last used register (@)
 func Test_last_used_exec_reg()
   " Test for the @: command
