@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+*help.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
 
 			VIM - main help file
 									 k
@@ -136,6 +136,7 @@ Advanced editing ~
 |diff.txt|	working with two to eight versions of the same file
 |autocmd.txt|	automatically executing commands on an event
 |eval.txt|	expression evaluation, conditional commands
+|builtin.txt|	builtin functions
 |channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
 

@@ -716,7 +716,7 @@ dyn_libintl_init(void)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadlib), GETTEXT_DLL, GetWin32Error());
+	    semsg(_(e_could_not_load_library_str_str), GETTEXT_DLL, GetWin32Error());
 	    verbose_leave();
 	}
 	return 0;
@@ -731,7 +731,7 @@ dyn_libintl_init(void)
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		semsg(_(e_loadfunc), libintl_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), libintl_entry[i].name);
 		verbose_leave();
 	    }
 	    return 0;
@@ -2187,7 +2187,7 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	}
     }
 
-    // Prepend single "." to pathext, it's means no extension added.
+    // Prepend single "." to pathext, it means no extension added.
     if (pathext == NULL)
 	pathext = (char_u *)".";
     else if (noext == TRUE)
@@ -4954,7 +4954,7 @@ mch_call_shell(
 # ifdef VIMDLL
 		if (gui.in_use)
 # endif
-		    emsg(_("E371: Command not found"));
+		    emsg(_(e_command_not_found));
 #endif
 	    }
 
@@ -5311,7 +5311,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5329,7 +5329,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (ofd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5347,7 +5347,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (efd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -7750,7 +7750,7 @@ fix_arg_enc(void)
 	// Now expand wildcards in the arguments.
 	// Temporarily add '(' and ')' to 'isfname'.  These are valid
 	// filename characters but are excluded from 'isfname' to make
-	// "gf" work on a file name in parenthesis (e.g.: see vim.h).
+	// "gf" work on a file name in parentheses (e.g.: see vim.h).
 	// Also, unset wildignore to not be influenced by this option.
 	// The arguments specified in command-line should be kept even if
 	// encoding options were changed.

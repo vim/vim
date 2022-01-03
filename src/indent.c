@@ -42,9 +42,9 @@ tabstop_set(char_u *var, int **array)
 	    if (strtol((char *)cp, (char **)&end, 10) <= 0)
 	    {
 		if (cp != end)
-		    emsg(_(e_positive));
+		    emsg(_(e_argument_must_be_positive));
 		else
-		    semsg(_(e_invarg2), cp);
+		    semsg(_(e_invalid_argument_str), cp);
 		return FAIL;
 	    }
 	}
@@ -56,7 +56,7 @@ tabstop_set(char_u *var, int **array)
 	    ++valcount;
 	    continue;
 	}
-	semsg(_(e_invarg2), var);
+	semsg(_(e_invalid_argument_str), var);
 	return FAIL;
     }
 
@@ -73,7 +73,7 @@ tabstop_set(char_u *var, int **array)
 	// Catch negative values, overflow and ridiculous big values.
 	if (n < 0 || n > 9999)
 	{
-	    semsg(_(e_invarg2), cp);
+	    semsg(_(e_invalid_argument_str), cp);
 	    vim_free(*array);
 	    *array = NULL;
 	    return FAIL;
@@ -1622,12 +1622,12 @@ ex_retab(exarg_T *eap)
     new_ts = getdigits(&ptr);
     if (new_ts < 0 && *eap->arg == '-')
     {
-	emsg(_(e_positive));
+	emsg(_(e_argument_must_be_positive));
 	return;
     }
     if (new_ts < 0 || new_ts > 9999)
     {
-	semsg(_(e_invarg2), eap->arg);
+	semsg(_(e_invalid_argument_str), eap->arg);
 	return;
     }
     if (new_ts == 0)
@@ -1736,7 +1736,7 @@ ex_retab(exarg_T *eap)
 	line_breakcheck();
     }
     if (got_int)
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
 
 #ifdef FEAT_VARTABS
     // If a single value was given then it can be considered equal to
@@ -2095,6 +2095,9 @@ fixthisline(int (*get_the_indent)(void))
     }
 }
 
+/*
+ * Fix indent for 'lisp' and 'cindent'.
+ */
     void
 fix_indent(void)
 {
@@ -2130,7 +2133,11 @@ f_indent(typval_T *argvars, typval_T *rettv)
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
 	rettv->vval.v_number = get_indent_lnum(lnum);
     else
+    {
+	if (in_vim9script())
+	    semsg(_(e_invalid_line_number_nr), lnum);
 	rettv->vval.v_number = -1;
+    }
 }
 
 /*
@@ -2154,6 +2161,8 @@ f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
 	rettv->vval.v_number = get_lisp_indent();
 	curwin->w_cursor = pos;
     }
+    else if (in_vim9script())
+	semsg(_(e_invalid_line_number_nr), lnum);
     else
 #endif
 	rettv->vval.v_number = -1;

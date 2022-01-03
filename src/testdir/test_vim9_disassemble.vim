@@ -1773,6 +1773,7 @@ enddef
 def ReturnBool(): bool
   var one = 1
   var zero = 0
+  var none: number
   var name: bool = one && zero || one
   return name
 enddef
@@ -1783,22 +1784,40 @@ def Test_disassemble_return_bool()
         'var one = 1\_s*' ..
         '0 STORE 1 in $0\_s*' ..
         'var zero = 0\_s*' ..
-        '1 STORE 0 in $1\_s*' ..
+        'var none: number\_s*' ..
         'var name: bool = one && zero || one\_s*' ..
-        '2 LOAD $0\_s*' ..
-        '3 COND2BOOL\_s*' ..
-        '4 JUMP_IF_COND_FALSE -> 7\_s*' ..
-        '5 LOAD $1\_s*' ..
-        '6 COND2BOOL\_s*' ..
-        '7 JUMP_IF_COND_TRUE -> 10\_s*' ..
-        '8 LOAD $0\_s*' ..
-        '9 COND2BOOL\_s*' ..
-        '10 STORE $2\_s*' ..
+        '1 LOAD $0\_s*' ..
+        '2 COND2BOOL\_s*' ..
+        '3 JUMP_IF_COND_FALSE -> 6\_s*' ..
+        '4 LOAD $1\_s*' ..
+        '5 COND2BOOL\_s*' ..
+        '6 JUMP_IF_COND_TRUE -> 9\_s*' ..
+        '7 LOAD $0\_s*' ..
+        '8 COND2BOOL\_s*' ..
+        '9 STORE $3\_s*' ..
         'return name\_s*' ..
-        '\d\+ LOAD $2\_s*' ..   
+        '\d\+ LOAD $3\_s*' ..   
         '\d\+ RETURN',
         instr)
   assert_equal(true, InvertBool())
+enddef
+
+def AutoInit()
+  var t: number
+  t = 1
+  t = 0
+enddef
+
+def Test_disassemble_auto_init()
+  var instr = execute('disassemble AutoInit')
+  assert_match('AutoInit\_s*' ..
+        'var t: number\_s*' ..
+        't = 1\_s*' ..
+        '\d STORE 1 in $0\_s*' ..
+        't = 0\_s*' ..
+        '\d STORE 0 in $0\_s*' ..
+        '\d\+ RETURN void',
+        instr)
 enddef
 
 def Test_disassemble_compare()
@@ -2412,6 +2431,43 @@ def Test_debug_elseif()
           'endif\_s*' ..
           '19 DEBUG line 6-6 varcount 1\_s*' ..
           '20 RETURN void*',
+        res)
+enddef
+
+def s:DebugFor()
+  echo "hello"
+  for a in [0]
+    echo a
+  endfor
+enddef
+
+def Test_debug_for()
+  var res = execute('disass debug s:DebugFor')
+  assert_match('<SNR>\d*_DebugFor\_s*' ..
+          'echo "hello"\_s*' ..
+          '0 DEBUG line 1-1 varcount 0\_s*' ..
+          '1 PUSHS "hello"\_s*' ..
+          '2 ECHO 1\_s*' ..
+
+          'for a in \[0\]\_s*' ..
+          '3 DEBUG line 2-2 varcount 0\_s*' ..
+          '4 STORE -1 in $0\_s*' ..
+          '5 PUSHNR 0\_s*' ..
+          '6 NEWLIST size 1\_s*' ..
+          '7 DEBUG line 2-2 varcount 2\_s*' ..
+          '8 FOR $0 -> 15\_s*' ..
+          '9 STORE $1\_s*' ..
+
+          'echo a\_s*' ..
+          '10 DEBUG line 3-3 varcount 2\_s*' ..
+          '11 LOAD $1\_s*' ..
+          '12 ECHO 1\_s*' ..
+
+          'endfor\_s*' ..
+          '13 DEBUG line 4-4 varcount 2\_s*' ..
+          '14 JUMP -> 7\_s*' ..
+          '15 DROP\_s*' ..
+          '16 RETURN void*',
         res)
 enddef
 

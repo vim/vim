@@ -1218,7 +1218,7 @@ gui_mch_init_check(void)
     if (app_context == NULL || gui.dpy == NULL)
     {
 	gui.dying = TRUE;
-	emsg(_(e_opendisp));
+	emsg(_(e_cannot_open_display));
 	return FAIL;
     }
     return OK;
@@ -1463,7 +1463,7 @@ gui_mch_init(void)
     }
 
     if (gui.color_approx)
-	emsg(_("Vim E458: Cannot allocate colormap entry, some colors may be incorrect"));
+	emsg(_(e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect));
 
 #ifdef FEAT_BEVAL_GUI
     gui_init_tooltip_font();
@@ -1887,7 +1887,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
     if (font == NULL)
     {
 	if (giveErrorIfMissing)
-	    semsg(_(e_font), name);
+	    semsg(_(e_unknown_font_str), name);
 	return NOFONT;
     }
 
@@ -1911,7 +1911,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
 
     if (font->max_bounds.width != font->min_bounds.width)
     {
-	semsg(_(e_fontwidth), name);
+	semsg(_(e_font_str_is_not_fixed_width), name);
 	XFreeFont(gui.dpy, font);
 	return NOFONT;
     }
@@ -2062,7 +2062,7 @@ gui_mch_get_fontset(
 
 	if (giveErrorIfMissing)
 	{
-	    semsg(_("E250: Fonts for the following charsets are missing in fontset %s:"), name);
+	    semsg(_(e_fonts_for_the_following_charsets_are_missing_in_fontset), name);
 	    for (i = 0; i < num_missing; i++)
 		semsg("%s", missing[i]);
 	}
@@ -2072,7 +2072,7 @@ gui_mch_get_fontset(
     if (fontset == NULL)
     {
 	if (giveErrorIfMissing)
-	    semsg(_(e_fontset), name);
+	    semsg(_(e_unknown_fontset_str), name);
 	return NOFONTSET;
     }
 
@@ -2104,8 +2104,8 @@ check_fontset_sanity(XFontSet fs)
     {
 	if (xfs[i]->max_bounds.width != xfs[i]->min_bounds.width)
 	{
-	    semsg(_("E252: Fontset name: %s"), base_name);
-	    semsg(_("Font '%s' is not fixed-width"), font_name[i]);
+	    semsg(_(e_fontsent_name_str_font_str_is_not_fixed_width),
+		    base_name, font_name[i]);
 	    return FAIL;
 	}
     }
@@ -2124,7 +2124,7 @@ check_fontset_sanity(XFontSet fs)
 	if (	   xfs[i]->max_bounds.width != 2 * min_width
 		&& xfs[i]->max_bounds.width != min_width)
 	{
-	    semsg(_("E253: Fontset name: %s"), base_name);
+	    semsg(_(e_fontset_name_str), base_name);
 	    semsg(_("Font0: %s"), font_name[min_font_idx]);
 	    semsg(_("Font%d: %s"), i, font_name[i]);
 	    semsg(_("Font%d width is not twice that of font0"), i);
@@ -3229,7 +3229,7 @@ gui_mch_register_sign(char_u *signfile)
 	    //     gui.sign_width = sign->width + 8;
 	}
 	else
-	    emsg(_(e_signdata));
+	    emsg(_(e_couldnt_read_in_sign_data));
     }
 
     return (void *)sign;

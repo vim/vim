@@ -520,7 +520,7 @@ vim_findfile_init(
 		wc_part = (char_u *)errpt;
 		if (*wc_part != NUL && !vim_ispathsep(*wc_part))
 		{
-		    semsg(_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."), PATHSEPSTR);
+		    semsg(_(e_invalid_path_number_must_be_at_end_of_path_or_be_followed_by_str), PATHSEPSTR);
 		    goto error_return;
 		}
 	    }
@@ -749,7 +749,7 @@ vim_findfile(void *search_ctx_arg)
 	// downward search loop
 	for (;;)
 	{
-	    // check if user user wants to stop the search
+	    // check if user wants to stop the search
 	    ui_breakcheck();
 	    if (got_int)
 		break;
@@ -1376,7 +1376,7 @@ ff_check_visited(
     int			url = FALSE;
 #endif
 
-    // For an URL we only compare the name, otherwise we compare the
+    // For a URL we only compare the name, otherwise we compare the
     // device/inode (unix) or the full path name (not Unix).
     if (path_with_url(fname))
     {
@@ -1905,19 +1905,19 @@ find_file_in_path_option(
 	if (first == TRUE)
 	{
 	    if (find_what == FINDFILE_DIR)
-		semsg(_("E344: Can't find directory \"%s\" in cdpath"),
+		semsg(_(e_cant_find_directory_str_in_cdpath),
 			ff_file_to_find);
 	    else
-		semsg(_("E345: Can't find file \"%s\" in path"),
+		semsg(_(e_cant_find_file_str_in_path),
 			ff_file_to_find);
 	}
 	else
 	{
 	    if (find_what == FINDFILE_DIR)
-		semsg(_("E346: No more directory \"%s\" found in cdpath"),
+		semsg(_(e_no_more_directory_str_found_in_cdpath),
 			ff_file_to_find);
 	    else
-		semsg(_("E347: No more file \"%s\" found in path"),
+		semsg(_(e_no_more_file_str_found_in_path),
 			ff_file_to_find);
 	}
     }
@@ -2007,7 +2007,7 @@ file_name_in_line(
     if (*ptr == NUL)		// nothing found
     {
 	if (options & FNAME_MESS)
-	    emsg(_("E446: No file name under cursor"));
+	    emsg(_(e_no_file_name_under_cursor));
 	return NULL;
     }
 
@@ -2165,7 +2165,7 @@ find_file_name_in_path(
 	{
 	    c = ptr[len];
 	    ptr[len] = NUL;
-	    semsg(_("E447: Can't find file \"%s\" in path"), ptr);
+	    semsg(_(e_cant_find_file_str_in_path_2), ptr);
 	    ptr[len] = c;
 	}
 

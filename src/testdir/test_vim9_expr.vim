@@ -2077,7 +2077,7 @@ def Test_expr7_lambda()
             )
       assert_equal([111, 222, 111], ll)
 
-      var dl = [{key: 0}, {key: 22}]->filter(( _, v) => v['key'] )
+      var dl = [{key: 0}, {key: 22}]->filter(( _, v) => !!v['key'] )
       assert_equal([{key: 22}], dl)
 
       dl = [{key: 12}, {['foo']: 34}]
@@ -2236,7 +2236,7 @@ def Test_expr7_new_lambda()
             )
       assert_equal([111, 222, 111], ll)
 
-      var dl = [{key: 0}, {key: 22}]->filter(( _, v) => v['key'] )
+      var dl = [{key: 0}, {key: 22}]->filter(( _, v) => !!v['key'] )
       assert_equal([{key: 22}], dl)
 
       dl = [{key: 12}, {['foo']: 34}]
@@ -2308,7 +2308,7 @@ def Test_expr7_lambda_vim9script()
   lines =<< trim END
       search('"', 'cW', 0, 0, () =>
 	synstack('.', col('.'))
-          ->map((_, v) => synIDattr(v, 'name'))->len())
+          ->mapnew((_, v) => synIDattr(v, 'name'))->len())
   END
   CheckDefAndScriptSuccess(lines)
 enddef

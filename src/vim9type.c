@@ -369,8 +369,23 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 		    if (type == NULL)
 			return NULL;
 		    *type = *ufunc->uf_func_type;
-		    type->tt_argcount -= tv->vval.v_partial->pt_argc;
-		    type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+		    if (type->tt_argcount >= 0)
+		    {
+			type->tt_argcount -= tv->vval.v_partial->pt_argc;
+			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+			if (type->tt_argcount == 0)
+			    type->tt_args = NULL;
+			else
+			{
+			    int i;
+
+			    func_type_add_arg_types(type, type->tt_argcount,
+								     type_gap);
+			    for (i = 0; i < type->tt_argcount; ++i)
+				type->tt_args[i] = ufunc->uf_func_type->tt_args[
+					      i + tv->vval.v_partial->pt_argc];
+			}
+		    }
 		    return type;
 		}
 		return ufunc->uf_func_type;
@@ -463,6 +478,9 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     garray_T	type_list;
     type_T	*actual_type;
     int		res = FAIL;
+
+    if (expected == NULL)
+	return OK;  // didn't expect anything.
 
     // For some values there is no type, assume an error will be given later
     // for an invalid value.

@@ -538,7 +538,7 @@ PythonIO_Init_io(void)
 
     if (PyErr_Occurred())
     {
-	emsg(_("E264: Python: Error initialising I/O objects"));
+	emsg(_(e_python_error_initialising_io_object));
 	return -1;
     }
 

@@ -83,7 +83,7 @@ ex_vim9script(exarg_T *eap UNUSED)
     }
     if (!IS_WHITE_OR_NUL(*eap->arg) && STRCMP(eap->arg, "noclear") != 0)
     {
-	semsg(_(e_invarg2), eap->arg);
+	semsg(_(e_invalid_argument_str), eap->arg);
 	return;
     }
     if (si->sn_state == SN_STATE_RELOAD && IS_WHITE_OR_NUL(*eap->arg))
@@ -127,7 +127,7 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_k:
 		if (eap->addr_count > 0)
 		{
-		    emsg(_(e_norange));
+		    emsg(_(e_no_range_allowed));
 		    return FAIL;
 		}
 		// FALLTHROUGH
@@ -771,7 +771,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     // Check for valid starting character.
     if (!eval_isnamec1(*arg))
     {
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 	return arg + STRLEN(arg);
     }
 

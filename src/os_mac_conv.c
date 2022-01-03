@@ -258,7 +258,7 @@ enc2macroman(
 		kCFStringEncodingMacRoman,
 		0, // no lossy conversion
 		0, // not external representation (since vim
-		   // handles this internally
+		   // handles this internally)
 		to, maxtolen, &l))
     {
 	CFRelease(cfstr);

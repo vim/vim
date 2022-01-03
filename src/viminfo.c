@@ -1174,7 +1174,7 @@ viminfo_error(char *errnum, char *message, char_u *line)
     emsg((char *)IObuff);
     if (++viminfo_errcnt >= 10)
     {
-	emsg(_("E136: viminfo: Too many errors, skipping rest of file"));
+	emsg(_(e_viminfo_too_many_errors_skipping_rest_of_file));
 	return TRUE;
     }
     return FALSE;
@@ -1611,7 +1611,7 @@ read_viminfo_register(vir_T *virp, int force)
 
     if (!ASCII_ISALNUM(*str) && *str != '-')
     {
-	if (viminfo_error("E577: ", _("Illegal register name"), virp->vir_line))
+	if (viminfo_error("E577: ", _(e_illegal_register_name), virp->vir_line))
 	    return TRUE;	// too many errors, pretend end-of-file
 	do_it = FALSE;
     }
@@ -1891,7 +1891,7 @@ write_viminfo_registers(FILE *fp)
 		type = (char_u *)"BLOCK";
 		break;
 	    default:
-		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
+		semsg(_(e_unknown_register_type_nr), y_ptr->y_type);
 		type = (char_u *)"LINE";
 		break;
 	}
@@ -2272,7 +2272,7 @@ copy_viminfo_marks(
 	{
 	    if (line[0] != '\n' && line[0] != '\r' && line[0] != '#')
 	    {
-		if (viminfo_error("E576: ", _("Missing '>'"), line))
+		if (viminfo_error("E576: ", _(e_nonr_missing_gt), line))
 		    break;	// too many errors, return now
 	    }
 	    eof = vim_fgets(line, LSIZE, virp->vir_fd);
@@ -2876,7 +2876,7 @@ read_viminfo_up_to_marks(
 		    eof = viminfo_readline(virp);
 		break;
 	    default:
-		if (viminfo_error("E575: ", _("Illegal starting char"),
+		if (viminfo_error("E575: ", _(e_illegal_starting_char),
 			    virp->vir_line))
 		    eof = TRUE;
 		else
@@ -3106,7 +3106,7 @@ write_viminfo(char_u *file, int forceit)
 	    int	tt = msg_didany;
 
 	    // avoid a wait_return for this message, it's annoying
-	    semsg(_("E137: Viminfo file is not writable: %s"), fname);
+	    semsg(_(e_viminfo_file_is_not_writable_str), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);
 	    goto end;
@@ -3262,7 +3262,7 @@ write_viminfo(char_u *file, int forceit)
     // Check if the new viminfo file can be written to.
     if (fp_out == NULL)
     {
-	semsg(_("E138: Can't write viminfo file %s!"),
+	semsg(_(e_cant_write_viminfo_file_str),
 		       (fp_in == NULL || tempname == NULL) ? fname : tempname);
 	if (fp_in != NULL)
 	    fclose(fp_in);
@@ -3326,7 +3326,7 @@ ex_viminfo(
     {
 	if (read_viminfo(eap->arg, VIF_WANT_INFO | VIF_WANT_MARKS
 				  | (eap->forceit ? VIF_FORCEIT : 0)) == FAIL)
-	    emsg(_("E195: Cannot open viminfo file for reading"));
+	    emsg(_(e_cannot_open_viminfo_file_for_reading));
     }
     else
 	write_viminfo(eap->arg, eap->forceit);

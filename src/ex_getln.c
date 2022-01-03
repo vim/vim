@@ -1554,10 +1554,10 @@ init_ccline(int firstc, int indent)
  */
     char_u *
 getcmdline(
-    int		firstc,
-    long	count,		// only used for incremental search
-    int		indent,		// indent for inside conditionals
-    int		do_concat UNUSED)
+    int		  firstc,
+    long	  count,	// only used for incremental search
+    int		  indent,	// indent for inside conditionals
+    getline_opt_T do_concat UNUSED)
 {
     return getcmdline_int(firstc, count, indent, TRUE);
 }
@@ -2641,8 +2641,8 @@ get_text_locked_msg(void)
 	return e_invalid_in_cmdline_window;
 #endif
     if (textwinlock != 0)
-	return e_textwinlock;
-    return e_textlock;
+	return e_not_allowed_to_change_text_or_change_window;
+    return e_not_allowed_to_change_text_here;
 }
 
 /*
@@ -4200,7 +4200,7 @@ check_cedit(void)
     {
 	n = string_to_key(p_cedit, FALSE);
 	if (vim_isprintc(n))
-	    return e_invarg;
+	    return e_invalid_argument;
 	cedit_key = n;
     }
     return NULL;
@@ -4390,7 +4390,7 @@ open_cmdwin(void)
     if (!win_valid(old_curwin) || !bufref_valid(&old_curbuf))
     {
 	cmdwin_result = Ctrl_C;
-	emsg(_("E199: Active window or buffer deleted"));
+	emsg(_(e_active_window_or_buffer_deleted));
     }
     else
     {

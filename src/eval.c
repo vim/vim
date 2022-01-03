@@ -856,7 +856,7 @@ get_lval(
 	if (unlet && !VIM_ISWHITE(*p) && !ends_excmd(*p)
 						    && *p != '[' && *p != '.')
 	{
-	    semsg(_(e_trailing_arg), p);
+	    semsg(_(e_trailing_characters_str), p);
 	    return NULL;
 	}
 
@@ -869,7 +869,7 @@ get_lval(
 	    if (!aborting() && !quiet)
 	    {
 		emsg_severe = TRUE;
-		semsg(_(e_invarg2), name);
+		semsg(_(e_invalid_argument_str), name);
 		return NULL;
 	    }
 	}
@@ -997,7 +997,7 @@ get_lval(
 	    if (len == 0)
 	    {
 		if (!quiet)
-		    emsg(_(e_emptykey));
+		    emsg(_(e_cannot_use_empty_key_for_dictionary));
 		return NULL;
 	    }
 	    p = key + len;
@@ -1148,7 +1148,7 @@ get_lval(
 		if (lp->ll_dict == get_vimvar_dict()
 			 || &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
 		{
-		    semsg(_(e_illvar), name);
+		    semsg(_(e_illegal_variable_name_str), name);
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -1157,7 +1157,7 @@ get_lval(
 		if (*p == '[' || *p == '.' || unlet)
 		{
 		    if (!quiet)
-			semsg(_(e_dictkey), key);
+			semsg(_(e_key_not_present_in_dictionary), key);
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -1306,7 +1306,7 @@ set_var_lval(
 
 	    if (op != NULL && *op != '=')
 	    {
-		semsg(_(e_letwrong), op);
+		semsg(_(e_wrong_variable_type_for_str_equal), op);
 		return;
 	    }
 	    if (value_check_lock(lp->ll_blob->bv_lock, lp->ll_name, FALSE))
@@ -1335,7 +1335,7 @@ set_var_lval(
 	    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	    {
-		emsg(_(e_cannot_mod));
+		emsg(_(e_cannot_modify_existing_variable));
 		*endp = cc;
 		return;
 	    }
@@ -1401,7 +1401,7 @@ set_var_lval(
 	{
 	    if (op != NULL && *op != '=')
 	    {
-		semsg(_(e_dictkey), lp->ll_newkey);
+		semsg(_(e_key_not_present_in_dictionary), lp->ll_newkey);
 		return;
 	    }
 	    if (dict_wrong_func_name(lp->ll_tv->vval.v_dict, rettv,
@@ -1590,7 +1590,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	}
     }
 
-    semsg(_(e_letwrong), op);
+    semsg(_(e_wrong_variable_type_for_str_equal), op);
     return FAIL;
 }
 
@@ -1632,7 +1632,7 @@ eval_for_line(
 	if (in_vim9script() && *expr == ':' && expr != var_list_end)
 	    semsg(_(e_no_white_space_allowed_before_colon_str), expr);
 	else
-	    emsg(_(e_missing_in));
+	    emsg(_(e_missing_in_after_for));
 	return fi;
     }
 
@@ -2269,7 +2269,7 @@ eval0(
 		&& (!in_vim9script() || !vim9_bad_comment(p)))
 	{
 	    if (end_error)
-		semsg(_(e_trailing_arg), p);
+		semsg(_(e_trailing_characters_str), p);
 	    else
 		semsg(_(e_invalid_expression_str), arg);
 	}
@@ -3248,7 +3248,7 @@ eval6(
 		}
 		else
 		{
-		    emsg(_(e_modulus));
+		    emsg(_(e_cannot_use_percent_with_float));
 		    return FAIL;
 		}
 		rettv->v_type = VAR_FLOAT;
@@ -3888,7 +3888,7 @@ eval_lambda(
 	if (verbose)
 	{
 	    if (*skipwhite(*arg) == '(')
-		emsg(_(e_nowhitespace));
+		emsg(_(e_no_white_space_allowed_before_parenthesis));
 	    else
 		semsg(_(e_missing_parenthesis_str), "lambda");
 	}
@@ -3936,7 +3936,7 @@ eval_method(
     if (len <= 0)
     {
 	if (verbose)
-	    emsg(_("E260: Missing name after ->"));
+	    emsg(_(e_missing_name_after_method));
 	ret = FAIL;
     }
     else
@@ -3951,7 +3951,7 @@ eval_method(
 	else if (VIM_ISWHITE((*arg)[-1]))
 	{
 	    if (verbose)
-		emsg(_(e_nowhitespace));
+		emsg(_(e_no_white_space_allowed_before_parenthesis));
 	    ret = FAIL;
 	}
 	else
@@ -4129,7 +4129,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
 	    if (verbose)
-		emsg(_(e_float_as_string));
+		emsg(_(e_using_float_as_string));
 	    return FAIL;
 #endif
 	case VAR_BOOL:
@@ -4325,7 +4325,7 @@ eval_index_inner(
 		    {
 			if (keylen > 0)
 			    key[keylen] = NUL;
-			semsg(_(e_dictkey), key);
+			semsg(_(e_key_not_present_in_dictionary), key);
 		    }
 		    return FAIL;
 		}
@@ -5359,8 +5359,9 @@ var2fpos(
     name = tv_get_string_chk(varp);
     if (name == NULL)
 	return NULL;
-    if (name[0] == '.')				// cursor
+    if (name[0] == '.' && (!in_vim9script() || name[1] == NUL))
     {
+	// cursor
 	pos = curwin->w_cursor;
 	if (charcol)
 	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
@@ -5376,8 +5377,10 @@ var2fpos(
 	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
 	return &pos;
     }
-    if (name[0] == '\'')			// mark
+    if (name[0] == '\'' && (!in_vim9script()
+					|| (name[1] != NUL && name[2] == NUL)))
     {
+	// mark
 	pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
 	    return NULL;
@@ -5945,7 +5948,7 @@ handle_subscript(
 	    {
 		if (VIM_ISWHITE(**arg))
 		{
-		    emsg(_(e_nowhitespace));
+		    emsg(_(e_no_white_space_allowed_before_parenthesis));
 		    ret = FAIL;
 		}
 		else if ((**arg == '{' && !in_vim9script()) || **arg == '(')

@@ -112,7 +112,7 @@ typedef struct suggest_S
 #define SCORE_THRES3	100	// word count threshold for COMMON3
 
 // When trying changed soundfold words it becomes slow when trying more than
-// two changes.  With less then two changes it's slightly faster but we miss a
+// two changes.  With less than two changes it's slightly faster but we miss a
 // few good suggestions.  In rare cases we need to try three of four changes.
 #define SCORE_SFMAX1	200	// maximum score for first try
 #define SCORE_SFMAX2	300	// maximum score for second try
@@ -481,7 +481,7 @@ spell_suggest(int count)
 
     if (*curwin->w_s->b_p_spl == NUL)
     {
-	emsg(_(e_no_spell));
+	emsg(_(e_spell_checking_is_not_possible));
 	return;
     }
 
@@ -935,7 +935,7 @@ spell_suggest_file(suginfo_T *su, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return;
     }
 

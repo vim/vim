@@ -175,7 +175,7 @@ edit(
     if (textwinlock != 0 || textlock != 0
 			  || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_textwinlock));
+	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
@@ -1657,8 +1657,8 @@ decodeModifyOtherKeys(int c)
  */
 static int  pc_status;
 #define PC_STATUS_UNSET	0	// pc_bytes was not set
-#define PC_STATUS_RIGHT	1	// right halve of double-wide char
-#define PC_STATUS_LEFT	2	// left halve of double-wide char
+#define PC_STATUS_RIGHT	1	// right half of double-wide char
+#define PC_STATUS_LEFT	2	// left half of double-wide char
 #define PC_STATUS_SET	3	// pc_bytes was filled
 static char_u pc_bytes[MB_MAXBYTES + 1]; // saved bytes
 static int  pc_attr;
@@ -3980,6 +3980,9 @@ ins_bs(
     int		in_indent;
     int		oldState;
     int		cpc[MAX_MCO];	    // composing characters
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+    int		call_fix_indent = FALSE;
+#endif
 
     /*
      * can't delete anything in an empty file
@@ -4161,7 +4164,13 @@ ins_bs(
 	    save_col = curwin->w_cursor.col;
 	    beginline(BL_WHITE);
 	    if (curwin->w_cursor.col < save_col)
+	    {
 		mincol = curwin->w_cursor.col;
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+		// should now fix the indent to match with the previous line
+		call_fix_indent = TRUE;
+#endif
+	    }
 	    curwin->w_cursor.col = save_col;
 	}
 
@@ -4333,6 +4342,12 @@ ins_bs(
 #endif
     if (curwin->w_cursor.col <= 1)
 	did_ai = FALSE;
+
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+    if (call_fix_indent)
+	fix_indent();
+#endif
+
     /*
      * It's a little strange to put backspaces into the redo
      * buffer, but it makes auto-indent a lot easier to deal

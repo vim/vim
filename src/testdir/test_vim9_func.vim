@@ -647,6 +647,21 @@ def Test_nested_function()
   END
   CheckDefFailure(lines, 'E1117:')
 
+  lines =<< trim END
+      vim9script
+      def Outer()
+        def Inner()
+          g:result = 'ok'
+        enddef
+        Inner()
+      enddef
+      Outer()
+      Inner()
+  END
+  CheckScriptFailure(lines, 'E117: Unknown function: Inner')
+  assert_equal('ok', g:result)
+  unlet g:result
+
   # nested function inside conditional
   lines =<< trim END
       vim9script
@@ -936,6 +951,7 @@ def Test_call_wrong_args()
   END
   CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 5)
 
+  # argument name declared earlier is found when declaring a function
   lines =<< trim END
     vim9script
     var name = 'piet'
@@ -944,6 +960,17 @@ def Test_call_wrong_args()
     enddef
   END
   CheckScriptFailure(lines, 'E1168:')
+
+  # argument name declared later is only found when compiling
+  lines =<< trim END
+    vim9script
+    def FuncOne(name: string)
+      echo nr
+    enddef
+    var name = 'piet'
+  END
+  CheckScriptSuccess(lines)
+  CheckScriptFailure(lines + ['defcompile'], 'E1168:')
 
   lines =<< trim END
     vim9script
@@ -1478,9 +1505,20 @@ def Test_call_varargs_only()
 enddef
 
 def Test_using_var_as_arg()
-  writefile(['def Func(x: number)',  'var x = 234', 'enddef', 'defcompile'], 'Xdef')
-  assert_fails('so Xdef', 'E1006:', '', 1, 'Func')
-  delete('Xdef')
+  var lines =<< trim END
+      def Func(x: number)
+        var x = 234
+      enddef
+  END
+  CheckDefFailure(lines, 'E1006:')
+
+  lines =<< trim END
+      def Func(Ref: number)
+        def Ref()
+        enddef
+      enddef
+  END
+  CheckDefFailure(lines, 'E1073:')
 enddef
 
 def DictArg(arg: dict<string>)
@@ -1652,6 +1690,53 @@ enddef
 def Test_error_in_nested_function()
   # Error in called function requires unwinding the call stack.
   assert_fails('FuncWithForwardCall()', 'E1096:', '', 1, 'FuncWithForwardCall')
+enddef
+
+def Test_nested_function_with_nextcmd()
+  var lines =<< trim END
+      vim9script
+      # Define an outer function
+      def FirstFunction()
+        # Define an inner function
+        def SecondFunction()
+          # the function has a body, a double free is detected.
+          AAAAA
+
+         # enddef followed by | or } followed by # one or more characters
+         enddef|BBBB
+      enddef
+
+      # Compile all functions
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: BBBB')
+enddef
+
+def Test_nested_function_with_args_split()
+  var lines =<< trim END
+      vim9script
+      def FirstFunction()
+        def SecondFunction(
+        )
+        # had a double free if the right parenthesis of the nested function is
+        # on the next line
+         
+        enddef|BBBB
+      enddef
+      # Compile all functions
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: BBBB')
+
+  lines =<< trim END
+      vim9script
+      def FirstFunction()
+        func SecondFunction()
+        endfunc|BBBB
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after endfunction: BBBB')
 enddef
 
 def Test_return_type_wrong()

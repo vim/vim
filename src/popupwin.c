@@ -86,7 +86,7 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_LIST)
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	else
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
@@ -407,7 +407,7 @@ get_pos_entry(dict_T *d, int give_error)
 	    return poppos_entries[nr].pp_val;
 
     if (give_error)
-	semsg(_(e_invarg2), str);
+	semsg(_(e_invalid_argument_str), str);
     return POPPOS_NONE;
 }
 
@@ -468,7 +468,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	    if (nr <= 0)
 		nr = find_prop_type_id(str, NULL);
 	    if (nr <= 0)
-		semsg(_(e_invarg2), str);
+		semsg(_(e_invalid_argument_str), str);
 	    else
 		wp->w_popup_prop_type = nr;
 	}
@@ -497,7 +497,7 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	else if (STRCMP(s, "expr") == 0)
 	    flags = FIND_IDENT | FIND_STRING | FIND_EVAL;
 	else if (STRCMP(s, "any") != 0)
-	    semsg(_(e_invarg2), s);
+	    semsg(_(e_invalid_argument_str), s);
 	if (flags != 0)
 	{
 	    if (mousemoved)
@@ -546,7 +546,7 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	}
     }
     else
-	semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+	semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
 }
 
     static void
@@ -559,7 +559,7 @@ check_highlight(dict_T *dict, char *name, char_u **pval)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_STRING)
-	    semsg(_(e_invargval), name);
+	    semsg(_(e_invalid_value_for_argument_str), name);
 	else
 	{
 	    str = tv_get_string(&di->di_tv);
@@ -735,7 +735,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	else
 	    ok = FALSE;
 	if (!ok)
-	    semsg(_(e_invargNval), "close", tv_get_string(&di->di_tv));
+	    semsg(_(e_invalid_value_for_argument_str_str), "close", tv_get_string(&di->di_tv));
     }
 
     str = dict_get_string(dict, (char_u *)"highlight", FALSE);
@@ -755,7 +755,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_LIST || di->di_tv.vval.v_list == NULL)
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	else
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
@@ -787,7 +787,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL)
     {
 	if (di->di_tv.v_type != VAR_LIST)
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	else
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
@@ -861,7 +861,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    VIM_CLEAR(wp->w_popup_mask_cells);
 	}
 	else
-	    semsg(_(e_invargval), "mask");
+	    semsg(_(e_invalid_value_for_argument_str), "mask");
     }
 
 #if defined(FEAT_TIMERS)
@@ -1010,7 +1010,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	dict = li->li_tv.vval.v_dict;
@@ -1033,7 +1033,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		emsg(_(e_listreq));
+		emsg(_(e_list_required));
 		return;
 	    }
 	    plist = di->di_tv.vval.v_list;
@@ -1043,7 +1043,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 		{
 		    if (pli->li_tv.v_type != VAR_DICT)
 		    {
-			emsg(_(e_dictreq));
+			emsg(_(e_dictionary_required));
 			return;
 		    }
 		    dict = pli->li_tv.vval.v_dict;
@@ -1893,12 +1893,12 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		    && !(argvars[0].v_type == VAR_LIST
 			&& argvars[0].vval.v_list != NULL))
 	{
-	    emsg(_("E450: buffer number, text or a list required"));
+	    emsg(_(e_buffer_number_text_or_list_required));
 	    return NULL;
 	}
 	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return NULL;
 	}
 	d = argvars[1].vval.v_dict;
@@ -2645,7 +2645,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp != NULL)
     {
 	if (argvars[1].v_type != VAR_STRING && argvars[1].v_type != VAR_LIST)
-	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	else
 	{
 	    popup_set_buffer_text(wp->w_buffer, argvars[1]);
@@ -2800,7 +2800,7 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     dict = argvars[1].vval.v_dict;
@@ -2835,7 +2835,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     dict = argvars[1].vval.v_dict;

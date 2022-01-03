@@ -1547,7 +1547,7 @@ gui_mch_get_font(
     if (get_logfont(&lf, name, NULL, giveErrorIfMissing) == OK)
 	font = get_font_handle(&lf);
     if (font == NOFONT && giveErrorIfMissing)
-	semsg(_(e_font), name);
+	semsg(_(e_unknown_font_str), name);
     return font;
 }
 
@@ -3041,7 +3041,7 @@ get_scroll_flags(void)
     if (!is_window_onscreen(s_hwnd))
 	return SW_INVALIDATE;
 
-    // Check if there is an window (partly) on top of us.
+    // Check if there is a window (partly) on top of us.
     GetWindowRect(s_hwnd, &rcVim);
     for (hwnd = s_hwnd; (hwnd = GetWindow(hwnd, GW_HWNDPREV)) != (HWND)0; )
 	if (IsWindowVisible(hwnd))
@@ -4982,8 +4982,7 @@ ole_error(char *arg)
 
     // Can't use emsg() here, we have not finished initialisation yet.
     vim_snprintf(buf, IOSIZE,
-	    _("E243: Argument not supported: \"-%s\"; Use the OLE version."),
-	    arg);
+			 _(e_argument_not_supported_str_use_ole_version), arg);
     mch_errmsg(buf);
 }
 #endif
@@ -5740,7 +5739,7 @@ GetCompositionString_inUCS2(HIMC hIMC, DWORD GCS, int *lenp)
     if (!pImmGetContext)
 	return NULL; // no imm32.dll
 
-    // Try Unicode; this'll always work on NT regardless of codepage.
+    // Try Unicode; this will always work on NT regardless of codepage.
     ret = pImmGetCompositionStringW(hIMC, GCS, NULL, 0);
     if (ret == 0)
 	return NULL; // empty
@@ -5757,7 +5756,7 @@ GetCompositionString_inUCS2(HIMC hIMC, DWORD GCS, int *lenp)
 	return (short_u *)wbuf;
     }
 
-    // ret < 0; we got an error, so try the ANSI version.  This'll work
+    // ret < 0; we got an error, so try the ANSI version.  This will work
     // on 9x/ME, but only if the codepage happens to be set to whatever
     // we're inputting.
     ret = pImmGetCompositionStringA(hIMC, GCS, NULL, 0);
@@ -7390,8 +7389,8 @@ add_dialog_element(
 
     *p++ = 0;  // advance pointer over nExtraStuff WORD   - 2 more
 
-    return p;	//total = 15+ (strlen(caption)) words
-		//	   = 30 + 2(strlen(caption) bytes reqd
+    return p;	// total = 15 + strlen(caption) words
+		// bytes read = 2 * total
 }
 
 
@@ -8393,7 +8392,7 @@ gui_mch_register_sign(char_u *signfile)
     {
 	if (sign.hImage)
 	    close_signicon_image(&sign);
-	emsg(_(e_signdata));
+	emsg(_(e_couldnt_read_in_sign_data));
     }
     return (void *)psign;
 
@@ -8682,7 +8681,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	iemsg(_("E232: Cannot create BalloonEval with both message and callback"));
+	iemsg(_(e_cannot_create_ballooneval_with_both_message_and_callback));
 	return NULL;
     }
 

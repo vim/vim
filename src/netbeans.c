@@ -1941,7 +1941,7 @@ nb_do_cmd(
 	    bg = vim_strsave(p);
 	    if (STRLEN(fg) > MAX_COLOR_LENGTH || STRLEN(bg) > MAX_COLOR_LENGTH)
 	    {
-		emsg("E532: highlighting color name too long in defineAnnoType");
+		emsg(e_highlighting_color_name_too_long_in_defineAnnoType);
 		VIM_CLEAR(typeName);
 		parse_error = TRUE;
 	    }
@@ -2515,7 +2515,7 @@ netbeans_open(char *params, int doabort)
 
     if (NETBEANS_OPEN)
     {
-	emsg(_("E511: netbeans already connected"));
+	emsg(_(e_netbeans_already_connected));
 	return;
     }
 
@@ -3481,7 +3481,7 @@ print_save_msg(nbbuf_T *buf, off_T nchars)
 	char msgbuf[IOSIZE];
 
 	vim_snprintf(msgbuf, IOSIZE,
-		       _("E505: %s is read-only (add ! to override)"), IObuff);
+		       _(e_is_read_only_add_bang_to_override), IObuff);
 	nbdebug(("    %s\n", msgbuf));
 	emsg(msgbuf);
     }

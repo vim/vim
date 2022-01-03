@@ -128,8 +128,6 @@ static void	nv_drop(cmdarg_T *cap);
 #endif
 static void	nv_cursorhold(cmdarg_T *cap);
 
-static char *e_noident = N_("E349: No identifier under cursor");
-
 /*
  * Function to be called for a Normal or Visual mode command.
  * The argument is a cmdarg_T.
@@ -1645,9 +1643,9 @@ find_ident_at_pos(
 	if ((find_type & FIND_NOERROR) == 0)
 	{
 	    if (find_type & FIND_STRING)
-		emsg(_("E348: No string under cursor"));
+		emsg(_(e_no_string_under_cursor));
 	    else
-		emsg(_(e_noident));
+		emsg(_(e_no_identifier_under_cursor));
 	}
 	return 0;
     }
@@ -3082,7 +3080,7 @@ dozet:
 		    deleteFold((linenr_T)1, curbuf->b_ml.ml_line_count,
 								 TRUE, FALSE);
 		else
-		    emsg(_("E352: Cannot erase folds with current 'foldmethod'"));
+		    emsg(_(e_cannot_erase_folds_with_current_foldmethod));
 		break;
 
 		// "zn": fold none: reset 'foldenable'
@@ -3683,7 +3681,7 @@ nv_ident(cmdarg_T *cap)
 						 || STRCMP(kp, ":help") == 0);
     if (kp_help && *skipwhite(ptr) == NUL)
     {
-	emsg(_(e_noident));	 // found white space only
+	emsg(_(e_no_identifier_under_cursor));	 // found white space only
 	return;
     }
     kp_ex = (*kp == ':');
@@ -3734,7 +3732,8 @@ nv_ident(cmdarg_T *cap)
 		}
 		if (n == 0)
 		{
-		    emsg(_(e_noident));	 // found dashes only
+		    // found dashes only
+		    emsg(_(e_no_identifier_under_cursor));
 		    vim_free(buf);
 		    return;
 		}
@@ -4388,7 +4387,7 @@ nv_search(cmdarg_T *cap)
 
     // When using 'incsearch' the cursor may be moved to set a different search
     // start position.
-    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0, TRUE);
+    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0, 0);
 
     if (cap->searchbuf == NULL)
     {
@@ -6122,14 +6121,9 @@ nv_g_cmd(cmdarg_T *cap)
 
     case 'M':
 	{
-	    char_u  *ptr = ml_get_curline();
-
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = FALSE;
-	    if (has_mbyte)
-		i = mb_string2cells(ptr, (int)STRLEN(ptr));
-	    else
-		i = (int)STRLEN(ptr);
+	    i = linetabsize(ml_get_curline());
 	    if (cap->count0 > 0 && cap->count0 <= 100)
 		coladvance((colnr_T)(i * cap->count0 / 100));
 	    else

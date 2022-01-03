@@ -97,7 +97,7 @@ get_expr_register(void)
 {
     char_u	*new_line;
 
-    new_line = getcmdline('=', 0L, 0, TRUE);
+    new_line = getcmdline('=', 0L, 0, 0);
     if (new_line == NULL)
 	return NUL;
     if (*new_line == NUL)	// use previous line
@@ -1691,7 +1691,7 @@ do_put(
 
     if (y_size == 0 || y_array == NULL)
     {
-	semsg(_("E353: Nothing in register %s"),
+	semsg(_(e_nothing_in_register_str),
 		  regname == 0 ? (char_u *)"\"" : transchar(regname));
 	goto end;
     }

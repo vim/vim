@@ -171,7 +171,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // itself must be escaped to get a literal '\'.
     fish_like = fish_like_shell();
 
-    // PowerShell uses it's own version for quoting single quotes
+    // PowerShell uses its own version for quoting single quotes
     shname = gettail(p_sh);
     powershell = strstr((char *)shname, "pwsh") != NULL;
 # ifdef MSWIN
@@ -905,8 +905,6 @@ string_filter_map(
 	set_vim_var_nr(VV_KEY, idx);
 	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
 		|| did_emsg)
-	    break;
-	if (did_emsg)
 	{
 	    clear_tv(&newtv);
 	    clear_tv(&tv);
@@ -918,7 +916,7 @@ string_filter_map(
 	    {
 		clear_tv(&newtv);
 		clear_tv(&tv);
-		emsg(_(e_stringreq));
+		emsg(_(e_string_required));
 		break;
 	    }
 	    else
@@ -958,7 +956,7 @@ string_reduce(
     {
 	if (*p == NUL)
 	{
-	    semsg(_(e_reduceempty), "String");
+	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "String");
 	    return;
 	}
 	if (copy_first_char_to_tv(p, rettv) == FAIL)
@@ -1063,7 +1061,7 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 					   && argvars[2].v_type != VAR_NUMBER
 					   && argvars[2].v_type != VAR_BOOL))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1165,7 +1163,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	base = (int)tv_get_number(&argvars[1]);
 	if (base != 2 && base != 8 && base != 10 && base != 16)
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return;
 	}
 	if (argvars[2].v_type != VAR_UNKNOWN && tv_get_bool(&argvars[2]))
@@ -1682,7 +1680,7 @@ f_tr(typval_T *argvars, typval_T *rettv)
 	if (STRLEN(fromstr) != STRLEN(tostr))
 	{
 error:
-	    semsg(_(e_invarg2), fromstr);
+	    semsg(_(e_invalid_argument_str), fromstr);
 	    ga_clear(&ga);
 	    return;
 	}
@@ -1790,7 +1788,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_STRING)
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	return;
     }
 
@@ -1808,7 +1806,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
 		return;
 	    if (dir < 0 || dir > 2)
 	    {
-		semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+		semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
 		return;
 	    }
 	}

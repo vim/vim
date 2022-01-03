@@ -48,8 +48,6 @@ static hashtab_T *global_proptypes = NULL;
 static int proptype_id = 0;
 
 static char_u e_type_not_exist[] = N_("E971: Property type %s does not exist");
-static char_u e_invalid_col[] = N_("E964: Invalid column number: %ld");
-static char_u e_invalid_lnum[] = N_("E966: Invalid line number: %ld");
 
 /*
  * Find a property type by name, return the hashitem.
@@ -134,7 +132,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
 
     if (arg->v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FAIL;
     }
     if (arg->vval.v_dict == NULL)
@@ -169,12 +167,12 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     start_col = tv_get_number(&argvars[1]);
     if (start_col < 1)
     {
-	semsg(_(e_invalid_col), (long)start_col);
+	semsg(_(e_invalid_column_number_nr), (long)start_col);
 	return;
     }
     if (argvars[2].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -213,18 +211,18 @@ prop_add_one(
 
     if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
     {
-	semsg(_(e_invalid_lnum), (long)start_lnum);
+	semsg(_(e_invalid_line_number_nr), (long)start_lnum);
 	return FAIL;
     }
     if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
     {
-	semsg(_(e_invalid_lnum), (long)end_lnum);
+	semsg(_(e_invalid_line_number_nr), (long)end_lnum);
 	return FAIL;
     }
 
     if (buf->b_ml.ml_mfp == NULL)
     {
-	emsg(_("E275: Cannot add text property to unloaded buffer"));
+	emsg(_(e_cannot_add_text_property_to_unloaded_buffer));
 	return FAIL;
     }
 
@@ -243,7 +241,7 @@ prop_add_one(
 	    col = 1;
 	if (col - 1 > (colnr_T)textlen)
 	{
-	    semsg(_(e_invalid_col), (long)start_col);
+	    semsg(_(e_invalid_column_number_nr), (long)start_col);
 	    return FAIL;
 	}
 
@@ -330,7 +328,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].vval.v_list == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
@@ -352,7 +350,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	if (li->li_tv.v_type != VAR_LIST || li->li_tv.vval.v_list == NULL)
 	{
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	    return;
 	}
 
@@ -364,7 +362,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	if (error || start_lnum <= 0 || start_col <= 0
 		|| end_lnum <= 0 || end_col <= 0)
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return;
 	}
 	if (prop_add_one(buf, type_name, id, start_lnum, end_lnum,
@@ -407,7 +405,7 @@ prop_add_common(
 	end_lnum = dict_get_number(dict, (char_u *)"end_lnum");
 	if (end_lnum < start_lnum)
 	{
-	    semsg(_(e_invargval), "end_lnum");
+	    semsg(_(e_invalid_value_for_argument_str), "end_lnum");
 	    return;
 	}
     }
@@ -420,7 +418,7 @@ prop_add_common(
 
 	if (length < 0 || end_lnum > start_lnum)
 	{
-	    semsg(_(e_invargval), "length");
+	    semsg(_(e_invalid_value_for_argument_str), "length");
 	    return;
 	}
 	end_col = start_col + length;
@@ -430,7 +428,7 @@ prop_add_common(
 	end_col = dict_get_number(dict, (char_u *)"end_col");
 	if (end_col <= 0)
 	{
-	    semsg(_(e_invargval), "end_col");
+	    semsg(_(e_invalid_value_for_argument_str), "end_col");
 	    return;
 	}
     }
@@ -734,7 +732,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     dict = argvars[0].vval.v_dict;
@@ -752,7 +750,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	    dir = -1;
 	else if (*dir_s != 'f')
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return;
 	}
     }
@@ -986,7 +984,7 @@ get_prop_types_from_names(list_T *l, buf_T *buf, int *num_types)
     {
 	if (li->li_tv.v_type != VAR_STRING)
 	{
-	    emsg(_(e_stringreq));
+	    emsg(_(e_string_required));
 	    goto errret;
 	}
 	name = li->li_tv.vval.v_string;
@@ -1081,7 +1079,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 
 	if (argvars[1].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	d = argvars[1].vval.v_dict;
@@ -1093,7 +1091,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_NUMBER)
 	    {
-		emsg(_(e_numberreq));
+		emsg(_(e_number_required));
 		return;
 	    }
 	    end_lnum = tv_get_number(&di->di_tv);
@@ -1109,7 +1107,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		emsg(_(e_listreq));
+		emsg(_(e_list_required));
 		return;
 	    }
 
@@ -1125,7 +1123,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		emsg(_(e_listreq));
+		emsg(_(e_list_required));
 		goto errret;
 	    }
 
@@ -1181,7 +1179,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1318,7 +1316,7 @@ prop_type_set(typval_T *argvars, int add)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1453,7 +1451,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1494,7 +1492,7 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
     if (rettv_dict_alloc(rettv) == OK)

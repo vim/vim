@@ -970,7 +970,7 @@ set_size(XmEnhancedButtonWidget newtb)
     }
     else
     {
-	// FIXME: We should calculate an drawing offset for the pixmap here to
+	// FIXME: We should calculate a drawing offset for the pixmap here to
 	// adjust it.
     }
 

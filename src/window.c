@@ -260,7 +260,7 @@ newwindow:
 		    if (wp->w_p_pvw)
 			break;
 		if (wp == NULL)
-		    emsg(_("E441: There is no preview window"));
+		    emsg(_(e_there_is_no_preview_window));
 		else
 		    win_goto(wp);
 		break;
@@ -774,7 +774,7 @@ check_split_disallowed()
 {
     if (split_disallowed > 0)
     {
-	emsg(_("E242: Can't split a window while closing another"));
+	emsg(_(e_cant_split_window_while_closing_another));
 	return FAIL;
     }
     if (curwin->w_buffer->b_locked_split)
@@ -817,7 +817,7 @@ win_split(int size, int flags)
     flags |= cmdmod.cmod_split;
     if ((flags & WSP_TOP) && (flags & WSP_BOT))
     {
-	emsg(_("E442: Can't split topleft and botright at the same time"));
+	emsg(_(e_cant_split_topleft_and_botright_at_the_same_time));
 	return FAIL;
     }
 
@@ -1555,7 +1555,7 @@ make_windows(
 
     if (vertical)
     {
-	// Each windows needs at least 'winminwidth' lines and a separator
+	// Each window needs at least 'winminwidth' lines and a separator
 	// column.
 	maxcount = (curwin->w_width + curwin->w_vsep_width
 					     - (p_wiw - p_wmw)) / (p_wmw + 1);
@@ -1721,7 +1721,7 @@ win_rotate(int upwards, int count)
     FOR_ALL_FRAMES(frp, curwin->w_frame->fr_parent->fr_child)
 	if (frp->fr_win == NULL)
 	{
-	    emsg(_("E443: Cannot rotate when another window is split"));
+	    emsg(_(e_cannot_rotate_when_another_window_is_split));
 	    return;
 	}
 
@@ -2109,7 +2109,7 @@ win_equal_rec(
 	    room = height - m;
 	    if (room < 0)
 	    {
-		// The room is less then 'winheight', use all space for the
+		// The room is less than 'winheight', use all space for the
 		// current window.
 		next_curwin_size = p_wh + room;
 		room = 0;
@@ -2487,7 +2487,7 @@ win_close(win_T *win, int free_buf)
 
     if (last_window())
     {
-	emsg(_("E444: Cannot close last window"));
+	emsg(_(e_cannot_close_last_window));
 	return FAIL;
     }
 
@@ -2496,7 +2496,7 @@ win_close(win_T *win, int free_buf)
 	return FAIL; // window is already being closed
     if (win_unlisted(win))
     {
-	emsg(_(e_autocmd_close));
+	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
@@ -3663,7 +3663,7 @@ close_others(
     }
 
     if (message && !ONE_WINDOW)
-	emsg(_("E445: Other window contains changes"));
+	emsg(_(e_other_window_contains_changes));
 }
 
     static void
@@ -4485,7 +4485,7 @@ win_goto(win_T *wp)
 	return;
     if (popup_is_popup(wp))
     {
-	emsg(_("E366: Not allowed to enter a popup window"));
+	emsg(_(e_not_allowed_to_enter_popup_window));
 	return;
     }
 #endif
@@ -6990,7 +6990,7 @@ check_colorcolumn(win_T *wp)
 	    col = (*s == '-') ? -1 : 1;
 	    ++s;
 	    if (!VIM_ISDIGIT(*s))
-		return e_invarg;
+		return e_invalid_argument;
 	    col = col * getdigits(&s);
 	    if (wp->w_buffer->b_p_tw == 0)
 		goto skip;  // 'textwidth' not set, skip this item
@@ -7001,15 +7001,15 @@ check_colorcolumn(win_T *wp)
 	else if (VIM_ISDIGIT(*s))
 	    col = getdigits(&s);
 	else
-	    return e_invarg;
+	    return e_invalid_argument;
 	color_cols[count++] = col - 1;  // 1-based to 0-based
 skip:
 	if (*s == NUL)
 	    break;
 	if (*s != ',')
-	    return e_invarg;
+	    return e_invalid_argument;
 	if (*++s == NUL)
-	    return e_invarg;  // illegal trailing comma as in "set cc=80,"
+	    return e_invalid_argument;  // illegal trailing comma as in "set cc=80,"
     }
 
     vim_free(wp->w_p_cc_cols);

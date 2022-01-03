@@ -662,12 +662,14 @@ CHANNEL_SRC
 NETBEANS_OBJ
 NETBEANS_SRC
 RUBY_LIBS
+RUBY_CFLAGS_EXTRA
 RUBY_CFLAGS
 RUBY_PRO
 RUBY_OBJ
 RUBY_SRC
 vi_cv_path_ruby
 TCL_LIBS
+TCL_CFLAGS_EXTRA
 TCL_CFLAGS
 TCL_PRO
 TCL_OBJ
@@ -675,15 +677,18 @@ TCL_SRC
 vi_cv_path_tcl
 PYTHON3_OBJ
 PYTHON3_SRC
+PYTHON3_CFLAGS_EXTRA
 PYTHON3_CFLAGS
 PYTHON3_LIBS
 vi_cv_path_python3
 PYTHON_OBJ
 PYTHON_SRC
+PYTHON_CFLAGS_EXTRA
 PYTHON_CFLAGS
 PYTHON_LIBS
 vi_cv_path_python
 PERL_LIBS
+PERL_CFLAGS_EXTRA
 PERL_CFLAGS
 PERL_PRO
 PERL_OBJ
@@ -700,6 +705,7 @@ MZSCHEME_PRO
 MZSCHEME_OBJ
 MZSCHEME_SRC
 vi_cv_path_mzscheme
+LUA_CFLAGS_EXTRA
 LUA_CFLAGS
 LUA_LIBS
 LUA_PRO
@@ -5658,6 +5664,7 @@ $as_echo "yes" >&6; }
 
 
 
+
 fi
 
 
@@ -6273,6 +6280,7 @@ fi
 
 
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-pythoninterp argument" >&5
 $as_echo_n "checking --enable-pythoninterp argument... " >&6; }
 # Check whether --enable-pythoninterp was given.
@@ -6623,6 +6631,7 @@ fi
 
 
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-python3interp argument" >&5
 $as_echo_n "checking --enable-python3interp argument... " >&6; }
 # Check whether --enable-python3interp was given.
@@ -6963,6 +6972,7 @@ $as_echo "too old" >&6; }
     as_fn_error $? "could not configure python3" "$LINENO" 5
   fi
 fi
+
 
 
 
@@ -7549,6 +7559,7 @@ fi
 
 
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-rubyinterp argument" >&5
 $as_echo_n "checking --enable-rubyinterp argument... " >&6; }
 # Check whether --enable-rubyinterp was given.
@@ -7706,6 +7717,7 @@ $as_echo "too old; need Ruby version 1.6.0 or later" >&6; }
     as_fn_error $? "could not configure Ruby" "$LINENO" 5
   fi
 fi
+
 
 
 

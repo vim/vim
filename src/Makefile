@@ -1491,13 +1491,14 @@ POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(EXTRA_DEFS)
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CFLAGS) $(POST_DEFS)
 
+ALL_IF_CFLAGS = $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS)
+ALL_IF_CFLAGS_EXTRA = $(LUA_CFLAGS_EXTRA) $(PERL_CFLAGS_EXTRA) $(PYTHON_CFLAGS_EXTRA) $(PYTHON3_CFLAGS_EXTRA) $(RUBY_CFLAGS_EXTRA) $(TCL_CFLAGS_EXTRA)
+
 # Exclude $CFLAGS for osdef.sh, for Mac 10.4 some flags don't work together
 # with "-E".
 OSDEF_CFLAGS = $(PRE_DEFS) $(POST_DEFS)
 
-LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) \
-	      $(RUBY_CFLAGS) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) \
-	      $(PYTHON3_CFLAGS) $(TCL_CFLAGS) $(VTERM_CFLAGS) \
+LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) $(ALL_IF_CFLAGS) $(VTERM_CFLAGS) \
 	      -Dinline= -D__extension__= -Dalloca=alloca
 
 LINT_EXTRA = -D"__attribute__(x)="
@@ -3357,7 +3358,7 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c
 	$(CCC) -o $@ if_xcmdsrv.c
 
 objects/if_lua.o: if_lua.c
-	$(CCC_NF) $(LUA_CFLAGS) $(ALL_CFLAGS) -o $@ if_lua.c
+	$(CCC_NF) $(LUA_CFLAGS) $(ALL_CFLAGS) $(LUA_CFLAGS_EXTRA) -o $@ if_lua.c
 
 objects/if_mzsch.o: if_mzsch.c $(MZSCHEME_EXTRA)
 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
@@ -3366,22 +3367,22 @@ mzscheme_base.c:
 	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
 
 objects/if_perl.o: auto/if_perl.c
-	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) -o $@ auto/if_perl.c
+	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) $(PERL_CFLAGS_EXTRA) -o $@ auto/if_perl.c
 
 objects/if_perlsfio.o: if_perlsfio.c
-	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) -o $@ if_perlsfio.c
+	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) $(PERL_CFLAGS_EXTRA) -o $@ if_perlsfio.c
 
 objects/if_python.o: if_python.c if_py_both.h
-	$(CCC_NF) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) $(ALL_CFLAGS) -o $@ if_python.c
+	$(CCC_NF) $(PYTHON_CFLAGS) $(ALL_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c
 
 objects/if_python3.o: if_python3.c if_py_both.h
-	$(CCC_NF) $(PYTHON3_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) $(ALL_CFLAGS) -o $@ if_python3.c
+	$(CCC_NF) $(PYTHON3_CFLAGS) $(ALL_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) -o $@ if_python3.c
 
 objects/if_ruby.o: if_ruby.c
-	$(CCC_NF) $(RUBY_CFLAGS) $(ALL_CFLAGS) -o $@ if_ruby.c
+	$(CCC_NF) $(RUBY_CFLAGS) $(ALL_CFLAGS) $(RUBY_CFLAGS_EXTRA) -o $@ if_ruby.c
 
 objects/if_tcl.o: if_tcl.c
-	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ if_tcl.c
+	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) $(TCL_CFLAGS_EXTRA) -o $@ if_tcl.c
 
 objects/indent.o: indent.c
 	$(CCC) -o $@ indent.c
@@ -3459,10 +3460,10 @@ objects/ops.o: ops.c
 	$(CCC) -o $@ ops.c
 
 objects/option.o: option.c optiondefs.h
-	$(CCC_NF) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ option.c
+	$(CCC_NF) $(ALL_IF_CFLAGS) $(ALL_CFLAGS) $(ALL_IF_CFLAGS_EXTRA) -o $@ option.c
 
 objects/optionstr.o: optionstr.c
-	$(CCC_NF) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ optionstr.c
+	$(CCC_NF) $(ALL_IF_CFLAGS) $(ALL_CFLAGS) $(ALL_IF_CFLAGS_EXTRA) -o $@ optionstr.c
 
 objects/os_qnx.o: os_qnx.c $(VIM_H_DEPENDENCIES)
 	$(CCC) -o $@ os_qnx.c

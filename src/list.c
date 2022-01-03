@@ -524,7 +524,7 @@ list_find_str(list_T *l, long idx)
     li = list_find(l, idx - 1);
     if (li == NULL)
     {
-	semsg(_(e_listidx), idx);
+	semsg(_(e_list_index_out_of_range_nr), idx);
 	return NULL;
     }
     return tv_get_string(&li->li_tv);
@@ -782,7 +782,7 @@ check_range_index_one(list_T *l, long *n1, int quiet)
 	if (li == NULL)
 	{
 	    if (!quiet)
-		semsg(_(e_listidx), *n1);
+		semsg(_(e_list_index_out_of_range_nr), *n1);
 	    return NULL;
 	}
     }
@@ -810,7 +810,7 @@ check_range_index_two(
 	if (ni == NULL)
 	{
 	    if (!quiet)
-		semsg(_(e_listidx), *n2);
+		semsg(_(e_list_index_out_of_range_nr), *n2);
 	    return FAIL;
 	}
 	*n2 = list_idx_of_item(l, ni);
@@ -822,7 +822,7 @@ check_range_index_two(
     if (*n2 < *n1)
     {
 	if (!quiet)
-	    semsg(_(e_listidx), *n2);
+	    semsg(_(e_list_index_out_of_range_nr), *n2);
 	return FAIL;
     }
     return OK;
@@ -992,7 +992,7 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), "flatten()");
+	semsg(_(e_argument_of_str_must_be_list), "flatten()");
 	return;
     }
 
@@ -1163,7 +1163,7 @@ list_slice_or_index(
 	if (!range)
 	{
 	    if (verbose)
-		semsg(_(e_listidx), (long)n1_arg);
+		semsg(_(e_list_index_out_of_range_nr), (long)n1_arg);
 	    return FAIL;
 	}
 	if (in_vim9script())
@@ -1449,7 +1449,7 @@ f_join(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
     rettv->v_type = VAR_STRING;
@@ -1551,7 +1551,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
     if (**arg != ']')
     {
 	if (do_error)
-	    semsg(_(e_list_end), *arg);
+	    semsg(_(e_missing_end_of_list_rsb_str), *arg);
 failret:
 	if (evaluate)
 	    list_free(l);
@@ -1658,7 +1658,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1725,7 +1725,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 
     if ((item = list_find(l, idx)) == NULL)
     {
-	semsg(_(e_listidx), idx);
+	semsg(_(e_list_index_out_of_range_nr), idx);
 	return;
     }
 
@@ -1745,7 +1745,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 
     if ((item2 = list_find(l, end)) == NULL)
     {
-	semsg(_(e_listidx), end);
+	semsg(_(e_list_index_out_of_range_nr), end);
 	return;
     }
 
@@ -1919,6 +1919,7 @@ item_compare2(const void *s1, const void *s2)
     char_u	*func_name;
     partial_T	*partial = sortinfo->item_compare_partial;
     funcexe_T	funcexe;
+    int		did_emsg_before = did_emsg;
 
     // shortcut after failure in previous call; compare all items equal
     if (sortinfo->item_compare_func_err)
@@ -1946,7 +1947,7 @@ item_compare2(const void *s1, const void *s2)
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);
 
-    if (res == FAIL)
+    if (res == FAIL || did_emsg > did_emsg_before)
 	res = ITEM_COMPARE_FAIL;
     else
     {
@@ -2127,7 +2128,7 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
 		info->item_compare_func = tv_get_string(&argvars[1]);
 	    else if (nr != 0)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return FAIL;
 	    }
 	}
@@ -2173,7 +2174,7 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
 	// optional third argument: {dict}
 	if (argvars[2].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return FAIL;
 	}
 	info->item_compare_selfdict = argvars[2].vval.v_dict;
@@ -2201,7 +2202,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), sort ? "sort()" : "uniq()");
+	semsg(_(e_argument_of_str_must_be_list), sort ? "sort()" : "uniq()");
 	return;
     }
 
@@ -2280,7 +2281,7 @@ filter_map_one(
 
 	// filter(): when expr is zero remove the item
 	if (in_vim9script())
-	    *remp = !tv2bool(newtv);
+	    *remp = !tv_get_bool_chk(newtv, &error);
 	else
 	    *remp = (tv_get_number_chk(newtv, &error) == 0);
 	clear_tv(newtv);
@@ -2597,7 +2598,7 @@ f_add(typval_T *argvars, typval_T *rettv)
     else if (argvars[0].v_type == VAR_BLOB)
 	blob_add(argvars, rettv);
     else
-	emsg(_(e_listblobreq));
+	emsg(_(e_list_or_blob_required));
 }
 
 /*
@@ -2621,7 +2622,7 @@ list_count(list_T *l, typval_T *needle, long idx, int ic)
     li = list_find(l, idx);
     if (li == NULL)
     {
-	semsg(_(e_listidx), idx);
+	semsg(_(e_list_index_out_of_range_nr), idx);
 	return 0;
     }
 
@@ -2669,12 +2670,12 @@ f_count(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN
 		&& argvars[3].v_type != VAR_UNKNOWN)
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else
 	    n = dict_count(argvars[0].vval.v_dict, &argvars[1], ic);
     }
     else
-	semsg(_(e_listdictarg), "count()");
+	semsg(_(e_argument_of_str_must_be_list_or_dictionary), "count()");
     rettv->vval.v_number = n;
 }
 
@@ -2727,7 +2728,7 @@ list_extend_func(
 		item = list_find(l1, before);
 		if (item == NULL)
 		{
-		    semsg(_(e_listidx), before);
+		    semsg(_(e_list_index_out_of_range_nr), before);
 		    return;
 		}
 	    }
@@ -2772,7 +2773,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
     else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
 	dict_extend_func(argvars, type, func_name, arg_errmsg, is_new, rettv);
     else
-	semsg(_(e_listdictarg), func_name);
+	semsg(_(e_argument_of_str_must_be_list_or_dictionary), func_name);
 
     if (type != NULL)
 	clear_type_list(&type_list);
@@ -2832,7 +2833,7 @@ list_insert_func(typval_T *argvars, typval_T *rettv)
 	item = list_find(l, before);
 	if (item == NULL)
 	{
-	    semsg(_(e_listidx), before);
+	    semsg(_(e_list_index_out_of_range_nr), before);
 	    l = NULL;
 	}
     }
@@ -2889,7 +2890,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
     else if (argvars[0].v_type == VAR_LIST)
 	list_remove(argvars, rettv, arg_errmsg);
     else
-	semsg(_(e_listdictblobarg), "remove()");
+	semsg(_(e_argument_of_str_must_be_list_dictionary_or_blob), "remove()");
 }
 
     static void
@@ -2968,7 +2969,7 @@ list_reduce(
     {
 	if (l == NULL || l->lv_first == NULL)
 	{
-	    semsg(_(e_reduceempty), "List");
+	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "List");
 	    return;
 	}
 	initial = l->lv_first->li_tv;

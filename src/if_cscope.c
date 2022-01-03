@@ -76,7 +76,7 @@ static cscmd_T	    cs_cmds[] =
     static void
 cs_usage_msg(csid_e x)
 {
-    (void)semsg(_("E560: Usage: cs[cope] %s"), cs_cmds[(int)x].usage);
+    (void)semsg(_(e_usage_cscope_str), cs_cmds[(int)x].usage);
 }
 
 static enum
@@ -250,7 +250,7 @@ ex_cstag(exarg_T *eap)
 
     if (*eap->arg == NUL)
     {
-	(void)emsg(_("E562: Usage: cstag <ident>"));
+	(void)emsg(_(e_usage_cstag_ident));
 	return;
     }
 
@@ -308,7 +308,7 @@ ex_cstag(exarg_T *eap)
 
     if (!ret)
     {
-	(void)emsg(_("E257: cstag: tag not found"));
+	(void)emsg(_(e_cstag_tag_not_founc));
 #if defined(FEAT_QUICKFIX)
 	g_do_tagpreview = 0;
 #endif
@@ -463,7 +463,7 @@ cs_add(exarg_T *eap UNUSED)
 cs_stat_emsg(char *fname)
 {
     int err = errno;
-    (void)semsg(_("E563: stat(%s) error: %d"), fname, err);
+    (void)semsg(_(e_stat_str_error_nr), fname, err);
 }
 
 
@@ -564,9 +564,8 @@ staterr:
     else
     {
 	if (p_csverbose)
-	    (void)semsg(
-		_("E564: %s is not a directory or a valid cscope database"),
-		fname);
+	    (void)semsg(_(e_str_is_not_directory_or_valid_cscope_database),
+									fname);
 	goto add_err;
     }
 
@@ -636,7 +635,7 @@ cs_cnt_connections(void)
 cs_reading_emsg(
     int idx)	// connection index
 {
-    semsg(_("E262: error reading cscope connection %d"), idx);
+    semsg(_(e_error_reading_cscope_connection_nr), idx);
 }
 
 #define	CSREAD_BUFSIZE	2048
@@ -742,7 +741,7 @@ cs_create_cmd(char *csoption, char *pattern)
 	search = 9;
 	break;
     default :
-	(void)emsg(_("E561: unknown cscope search type"));
+	(void)emsg(_(e_unknown_cscope_search_type));
 	cs_usage_msg(Find);
 	return NULL;
     }
@@ -799,7 +798,7 @@ cs_create_connection(int i)
     to_cs[0] = to_cs[1] = from_cs[0] = from_cs[1] = -1;
     if (pipe(to_cs) < 0 || pipe(from_cs) < 0)
     {
-	(void)emsg(_("E566: Could not create cscope pipes"));
+	(void)emsg(_(e_could_not_create_cscope_pipes));
 err_closing:
 	if (to_cs[0] != -1)
 	    (void)close(to_cs[0]);
@@ -838,7 +837,7 @@ err_closing:
 	if (!(pipe_stdin = CreatePipe(&stdin_rd, &stdin_wr, &sa, 0))
 		|| !(pipe_stdout = CreatePipe(&stdout_rd, &stdout_wr, &sa, 0)))
 	{
-	    (void)emsg(_("E566: Could not create cscope pipes"));
+	    (void)emsg(_(e_could_not_create_cscope_pipes));
 err_closing:
 	    if (pipe_stdin)
 	    {
@@ -1014,7 +1013,7 @@ cs_find(exarg_T *eap)
 
     if (cs_check_for_connections() == FALSE)
     {
-	(void)emsg(_("E567: no cscope connections"));
+	(void)emsg(_(e_no_cscope_connections));
 	return FALSE;
     }
 
@@ -1105,7 +1104,8 @@ cs_find_common(
 	// next symbol must be + or -
 	if (strchr(CSQF_FLAGS, *qfpos) == NULL)
 	{
-	    (void)semsg(_("E469: invalid cscopequickfix flag %c for %c"), *qfpos, *(qfpos - 1));
+	    (void)semsg(_(e_invalid_cscopequickfix_flag_chr_for_chr),
+							 *qfpos, *(qfpos - 1));
 	    return FALSE;
 	}
 
@@ -1160,7 +1160,8 @@ cs_find_common(
     if (totmatches == 0)
     {
 	if (verbose)
-	    (void)semsg(_("E259: no matches found for cscope query %s of %s"), opt, pat);
+	    (void)semsg(_(e_no_matches_found_for_cscope_query_str_of_str),
+								     opt, pat);
 	vim_free(nummatches);
 	return FALSE;
     }
@@ -1176,7 +1177,7 @@ cs_find_common(
 
 	f = mch_fopen((char *)tmp, "w");
 	if (f == NULL)
-	    semsg(_(e_notopen), tmp);
+	    semsg(_(e_cant_open_file_str), tmp);
 	else
 	{
 	    cs_file_results(f, nummatches);
@@ -1354,7 +1355,7 @@ cs_insert_filelist(
 	    )
 	{
 	    if (p_csverbose)
-		(void)emsg(_("E568: duplicate cscope database not added"));
+		(void)emsg(_(e_duplicate_cscope_database_not_added));
 	    return -1;
 	}
 
@@ -1496,7 +1497,7 @@ cs_kill(exarg_T *eap UNUSED)
     if ((i != -1) && (i >= csinfo_size || i < -1 || csinfo[i].fname == NULL))
     {
 	if (p_csverbose)
-	    (void)semsg(_("E261: cscope connection %s not found"), stok);
+	    (void)semsg(_(e_cscope_connection_str_not_founc), stok);
     }
     else
     {
@@ -1663,7 +1664,7 @@ cs_manage_matches(
 	cs_print_tags_priv(mp, cp, cnt);
 	break;
     default:	// should not reach here
-	iemsg(_("E570: fatal error in cs_manage_matches"));
+	iemsg(_(e_fatal_error_in_cs_manage_matches));
 	return NULL;
     }
 

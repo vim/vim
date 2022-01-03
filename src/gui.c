@@ -388,7 +388,7 @@ gui_init_check(void)
     if (result != MAYBE)
     {
 	if (result == FAIL)
-	    emsg(_("E229: Cannot start the GUI"));
+	    emsg(_(e_cannot_start_the_GUI));
 	return result;
     }
 
@@ -490,7 +490,7 @@ gui_init(void)
     static int	recursive = 0;
 
     /*
-     * It's possible to use ":gui" in a .gvimrc file.  The first halve of this
+     * It's possible to use ":gui" in a .gvimrc file.  The first half of this
      * function will then be executed at the first call, the rest by the
      * recursive call.  This allow the shell to be opened halfway reading a
      * gvimrc file.
@@ -547,7 +547,7 @@ gui_init(void)
 	    if (STRCMP(use_gvimrc, "NONE") != 0
 		    && STRCMP(use_gvimrc, "NORC") != 0
 		    && do_source(use_gvimrc, FALSE, DOSO_NONE, NULL) != OK)
-		semsg(_("E230: Cannot read from \"%s\""), use_gvimrc);
+		semsg(_(e_cannot_read_from_str), use_gvimrc);
 	}
 	else
 	{
@@ -686,7 +686,7 @@ gui_init(void)
 	goto error2;
     }
     if (gui_get_wide_font() == FAIL)
-	emsg(_("E231: 'guifontwide' invalid"));
+	emsg(_(e_guifontwide_invalid));
 
     gui.num_cols = Columns;
     gui.num_rows = Rows;
@@ -814,7 +814,7 @@ gui_init(void)
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	if (!im_xim_isvalid_imactivate())
-	    emsg(_("E599: Value of 'imactivatekey' is invalid"));
+	    emsg(_(e_value_of_imactivatekey_is_invalid));
 #endif
 	// When 'cmdheight' was set during startup it may not have taken
 	// effect yet.
@@ -1371,10 +1371,10 @@ gui_update_cursor(
 #ifdef FEAT_RIGHTLEFT
 		if (CURSOR_BAR_RIGHT)
 		{
-		    // gui.col points to the left halve of the character but
-		    // the vertical line needs to be on the right halve.
+		    // gui.col points to the left half of the character but
+		    // the vertical line needs to be on the right half.
 		    // A double-wide horizontal line is also drawn from the
-		    // right halve in gui_mch_draw_part_cursor().
+		    // right half in gui_mch_draw_part_cursor().
 		    col_off = TRUE;
 		    ++gui.col;
 		}
@@ -2188,7 +2188,7 @@ gui_screenchar(
 {
     char_u	buf[MB_MAXBYTES + 1];
 
-    // Don't draw right halve of a double-width UTF-8 char. "cannot happen"
+    // Don't draw right half of a double-width UTF-8 char. "cannot happen"
     if (enc_utf8 && ScreenLines[off] == 0)
 	return OK;
 
@@ -3074,7 +3074,7 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
 gui_inchar(
     char_u  *buf,
     int	    maxlen,
-    long    wtime,		// milli seconds
+    long    wtime,		// milliseconds
     int	    tb_change_cnt)
 {
     return gui_wait_for_chars_buf(buf, maxlen, wtime, tb_change_cnt);
@@ -3277,7 +3277,7 @@ button_set:
      * selection.  But if Visual is active, assume that only the Visual area
      * will be selected.
      * Exception: On the command line, both the selection is used and a mouse
-     * key is send.
+     * key is sent.
      */
     if (!mouse_has(checkfor) || checkfor == MOUSE_COMMAND)
     {
@@ -5376,7 +5376,7 @@ gui_do_findrepl(
 
     // When the screen is being updated we should not change buffers and
     // windows structures, it may cause freed memory to be used.  Also don't
-    // do this recursively (pressing "Find" quickly several times.
+    // do this recursively (pressing "Find" quickly several times).
     if (updating_screen || busy)
 	return FALSE;
 

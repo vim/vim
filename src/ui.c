@@ -1028,22 +1028,27 @@ fill_input_buf(int exit_on_error UNUSED)
 				     len + unconverted, INBUFLEN - inbufcount,
 				       rest == NULL ? &rest : NULL, &restlen);
 	}
-	while (len-- > 0)
+	while (len > 0)
 	{
 	    // If a CTRL-C was typed, remove it from the buffer and set
-	    // got_int.  Also recognize CTRL-C with modifyOtherKeys set, in two
-	    // forms.
+	    // got_int.  Also recognize CTRL-C with modifyOtherKeys set, lower
+	    // and upper case, in two forms.
 	    if (ctrl_c_interrupts && (inbuf[inbufcount] == 3
 			|| (len >= 10 && STRNCMP(inbuf + inbufcount,
 						   "\033[27;5;99~", 10) == 0)
+			|| (len >= 10 && STRNCMP(inbuf + inbufcount,
+						   "\033[27;5;67~", 10) == 0)
 			|| (len >= 7 && STRNCMP(inbuf + inbufcount,
-						       "\033[99;5u", 7) == 0)))
+						       "\033[99;5u", 7) == 0)
+			|| (len >= 7 && STRNCMP(inbuf + inbufcount,
+						       "\033[67;5u", 7) == 0)))
 	    {
 		// remove everything typed before the CTRL-C
-		mch_memmove(inbuf, inbuf + inbufcount, (size_t)(len + 1));
+		mch_memmove(inbuf, inbuf + inbufcount, (size_t)(len));
 		inbufcount = 0;
 		got_int = TRUE;
 	    }
+	    --len;
 	    ++inbufcount;
 	}
     }

@@ -703,7 +703,7 @@ struct cctx_S {
 
     garray_T	ctx_locals;	    // currently visible local variables
 
-    int		ctx_has_closure;    // set to one if a closures was created in
+    int		ctx_has_closure;    // set to one if a closure was created in
 				    // the function
 
     garray_T	ctx_imports;	    // imported items

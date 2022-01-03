@@ -1507,7 +1507,7 @@ gui_mch_early_init_check(int give_message)
     {
 	gui.dying = TRUE;
 	if (give_message)
-	    emsg(_((char *)e_opendisp));
+	    emsg(_((char *)e_cannot_open_display));
 	return FAIL;
     }
     return OK;
@@ -1553,7 +1553,7 @@ gui_mch_init_check(void)
     if (!gtk_init_check(&gui_argc, &gui_argv))
     {
 	gui.dying = TRUE;
-	emsg(_((char *)e_opendisp));
+	emsg(_((char *)e_cannot_open_display));
 	return FAIL;
     }
 
@@ -5071,7 +5071,7 @@ gui_mch_get_font(char_u *name, int report_error)
     if (font == NULL)
     {
 	if (report_error)
-	    semsg(_((char *)e_font), name);
+	    semsg(_((char *)e_unknown_font_str), name);
 	return NULL;
     }
 

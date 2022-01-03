@@ -603,12 +603,11 @@ do_map(
 			    && STRNCMP(mp->m_keys, keys, (size_t)len) == 0)
 		    {
 			if (abbrev)
-			    semsg(_(
-			    "E224: global abbreviation already exists for %s"),
+			    semsg(
+			       _(e_global_abbreviation_already_exists_for_str),
 				    mp->m_keys);
 			else
-			    semsg(_(
-				 "E225: global mapping already exists for %s"),
+			    semsg(_(e_global_mapping_already_exists_for_str),
 				    mp->m_keys);
 			retval = 5;
 			goto theend;
@@ -741,12 +740,11 @@ do_map(
 			    else if (unique)
 			    {
 				if (abbrev)
-				    semsg(_(
-				   "E226: abbreviation already exists for %s"),
+				    semsg(
+				      _(e_abbreviation_already_exists_for_str),
 					    p);
 				else
-				    semsg(_(
-					"E227: mapping already exists for %s"),
+				    semsg(_(e_mapping_already_exists_for_str),
 					    p);
 				retval = 5;
 				goto theend;
@@ -918,7 +916,7 @@ map_clear(
     local = (STRCMP(arg, "<buffer>") == 0);
     if (!local && *arg != NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1855,7 +1853,7 @@ makemap(
 			c1 = 't';
 			break;
 		    default:
-			iemsg(_("E228: makemap: Illegal mode"));
+			iemsg(_(e_makemap_illegal_mode));
 			return FAIL;
 		}
 		do	// do this twice if c2 is set, 3 times with c3
@@ -2364,7 +2362,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[2].v_type != VAR_DICT)
     {
-	emsg(_(e_dictkey));
+	emsg(_(e_key_not_present_in_dictionary));
 	return;
     }
     d = argvars[2].vval.v_dict;
@@ -2376,7 +2374,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     rhs = dict_get_string(d, (char_u *)"rhs", FALSE);
     if (lhs == NULL || lhsraw == NULL || rhs == NULL)
     {
-	emsg(_("E460: entries missing in mapset() dict argument"));
+	emsg(_(e_entries_missing_in_mapset_dict_argument));
 	return;
     }
     orig_rhs = rhs;
@@ -2708,7 +2706,7 @@ langmap_set(void)
 	    }
 	    if (to == NUL)
 	    {
-		semsg(_("E357: 'langmap': Matching character missing for %s"),
+		semsg(_(e_langmap_matching_character_missing_for_str),
 							     transchar(from));
 		return;
 	    }
@@ -2730,7 +2728,7 @@ langmap_set(void)
 		    {
 			if (p[0] != ',')
 			{
-			    semsg(_("E358: 'langmap': Extra characters after semicolon: %s"), p);
+			    semsg(_(e_langmap_extra_characters_after_semicolon_str), p);
 			    return;
 			}
 			++p;
@@ -2755,7 +2753,7 @@ do_exmap(exarg_T *eap, int isabbrev)
     switch (do_map((*cmdp == 'n') ? 2 : (*cmdp == 'u'),
 						    eap->arg, mode, isabbrev))
     {
-	case 1: emsg(_(e_invarg));
+	case 1: emsg(_(e_invalid_argument));
 		break;
 	case 2: emsg((isabbrev ? _(e_no_such_abbreviation)
 						      : _(e_no_such_mapping)));

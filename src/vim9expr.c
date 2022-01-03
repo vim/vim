@@ -517,7 +517,7 @@ compile_string(isn_T *isn, cctx_T *cctx)
 				       || GA_GROW_FAILS(&cctx->ctx_instr, 1))
     {
 	if (trailing_error)
-	    semsg(_(e_trailing_arg), s);
+	    semsg(_(e_trailing_characters_str), s);
 	clear_instr_ga(&cctx->ctx_instr);
 	cctx->ctx_instr = save_ga;
 	++cctx->ctx_type_stack.ga_len;
@@ -855,7 +855,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	if (may_get_next_line(whitep, &p, cctx) == FAIL)
 	{
-	    semsg(_(e_list_end), *arg);
+	    semsg(_(e_missing_end_of_list_rsb_str), *arg);
 	    return FAIL;
 	}
 	if (*p == ',')
@@ -1090,7 +1090,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key_in_dicitonary), key);
 		goto failret;
 	    }
 	    item = dictitem_alloc(key);
@@ -1108,7 +1108,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (*skipwhite(*arg) == ':')
 		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
-		semsg(_(e_missing_dict_colon), *arg);
+		semsg(_(e_missing_colon_in_dictionary), *arg);
 	    return FAIL;
 	}
 	whitep = *arg + 1;
@@ -1140,7 +1140,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    break;
 	if (**arg != ',')
 	{
-	    semsg(_(e_missing_dict_comma), *arg);
+	    semsg(_(e_missing_comma_in_dictionary), *arg);
 	    goto failret;
 	}
 	if (IS_WHITE_OR_NUL(*whitep))
@@ -1659,7 +1659,7 @@ compile_subscript(
 		if (**arg != '(')
 		{
 		    if (*skipwhite(*arg) == '(')
-			emsg(_(e_nowhitespace));
+			emsg(_(e_no_white_space_allowed_before_parenthesis));
 		    else
 			semsg(_(e_missing_parenthesis_str), *arg);
 		    return FAIL;
@@ -1711,7 +1711,7 @@ compile_subscript(
 		p = *arg;
 		if (!eval_isnamec1(*p))
 		{
-		    semsg(_(e_trailing_arg), pstart);
+		    semsg(_(e_trailing_characters_str), pstart);
 		    return FAIL;
 		}
 		if (ASCII_ISALPHA(*p) && p[1] == ':')
@@ -1883,7 +1883,7 @@ compile_subscript(
  *  trailing ->name()	method call
  */
     static int
-compile_expr7(
+compile_expr8(
 	char_u **arg,
 	cctx_T *cctx,
 	ppconst_T *ppconst)
@@ -2119,10 +2119,10 @@ compile_expr7(
 }
 
 /*
- * <type>expr7: runtime type check / conversion
+ * <type>expr8: runtime type check / conversion
  */
     static int
-compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
+compile_expr7(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     type_T *want_type = NULL;
 
@@ -2147,7 +2147,7 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
     }
 
-    if (compile_expr7(arg, cctx, ppconst) == FAIL)
+    if (compile_expr8(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
     if (want_type != NULL)
@@ -2182,7 +2182,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     int		ppconst_used = ppconst->pp_used;
 
     // get the first expression
-    if (compile_expr7t(arg, cctx, ppconst) == FAIL)
+    if (compile_expr7(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
     /*
@@ -2208,7 +2208,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 
 	// get the second expression
-	if (compile_expr7t(arg, cctx, ppconst) == FAIL)
+	if (compile_expr7(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
 
 	if (ppconst->pp_used == ppconst_used + 2

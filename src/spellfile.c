@@ -365,11 +365,11 @@ spell_load_file(
     if (fd == NULL)
     {
 	if (!silent)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	else if (p_verbose > 2)
 	{
 	    verbose_enter();
-	    smsg((const char *)e_notopen, fname);
+	    smsg((const char *)e_cant_open_file_str, fname);
 	    verbose_leave();
 	}
 	goto endFAIL;
@@ -2226,7 +2226,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return NULL;
     }
 
@@ -3520,7 +3520,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -4104,7 +4104,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -4873,7 +4873,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -4920,7 +4920,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
     //
     // The table with character flags and the table for case folding.
     // This makes sure the same characters are recognized as word characters
-    // when generating an when using a spell file.
+    // when generating and when using a spell file.
     // Skip this for ASCII, the table may conflict with the one used for
     // 'encoding'.
     // Also skip this for an .add.spl file, the main spell file must contain
@@ -5720,7 +5720,7 @@ sug_filltable(
 	    ++wordnr;
 
 	    // Remove extra NUL entries, we no longer need them. We don't
-	    // bother freeing the nodes, the won't be reused anyway.
+	    // bother freeing the nodes, they won't be reused anyway.
 	    while (p->wn_sibling != NULL && p->wn_sibling->wn_byte == NUL)
 		p->wn_sibling = p->wn_sibling->wn_sibling;
 
@@ -5802,7 +5802,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return;
     }
 
@@ -5963,7 +5963,7 @@ mkspell(
     }
 
     if (incount <= 0)
-	emsg(_(e_invarg));	// need at least output and input names
+	emsg(_(e_invalid_argument));	// need at least output and input names
     else if (vim_strchr(gettail(wfname), '_') != NULL)
 	emsg(_("E751: Output file name must not have region name"));
     else if (incount > MAXREGIONS)
@@ -6214,7 +6214,7 @@ spell_add_word(
 
 	if (*curwin->w_s->b_p_spf == NUL)
 	{
-	    semsg(_(e_notset), "spellfile");
+	    semsg(_(e_option_str_is_not_set), "spellfile");
 	    return;
 	}
 	fnamebuf = alloc(MAXPATHL);
@@ -6240,7 +6240,7 @@ spell_add_word(
 	    buf = NULL;
 	if (buf != NULL && bufIsChanged(buf))
 	{
-	    emsg(_(e_bufloaded));
+	    emsg(_(e_file_is_loaded_in_another_buffer));
 	    vim_free(fnamebuf);
 	    return;
 	}
@@ -6316,7 +6316,7 @@ spell_add_word(
 	}
 
 	if (fd == NULL)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	else
 	{
 	    if (what == SPELL_ADD_BAD)

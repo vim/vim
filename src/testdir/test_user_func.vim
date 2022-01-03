@@ -428,7 +428,7 @@ endfunc
 
 " Test for deleting a function
 func Test_del_func()
-  call assert_fails('delfunction Xabc', 'E130:')
+  call assert_fails('delfunction Xabc', 'E117:')
   let d = {'a' : 10}
   call assert_fails('delfunc d.a', 'E718:')
   func d.fn()

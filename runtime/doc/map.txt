@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2021 Dec 20
+*map.txt*       For Vim version 8.2.  Last change: 2021 Dec 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -356,7 +356,7 @@ Note:
 - In Select mode, |:map| and |:vmap| command mappings are executed in
   Visual mode.  Use |:smap| to handle Select mode differently.
 
-							*E1135* *E1136*
+							*E1255* *E1136*
 <Cmd> commands must terminate, that is, they must be followed by <CR> in the
 {rhs} of the mapping definition.  |Command-line| mode is never entered.
 

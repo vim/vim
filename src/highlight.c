@@ -656,7 +656,7 @@ highlight_group_link(
 		&& hl_has_settings(from_id - 1, dodefault))
 	{
 	    if (SOURCING_NAME == NULL && !dodefault)
-		emsg(_("E414: group has settings, highlight link ignored"));
+		emsg(_(e_group_has_settings_highlight_link_ignored));
 	}
 	else if (hlgroup->sg_link != to_id
 #ifdef FEAT_EVAL
@@ -781,7 +781,7 @@ highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
 	}
 	if (i < 0)
 	{
-	    semsg(_("E418: Illegal value: %s"), arg);
+	    semsg(_(e_illegal_value_str), arg);
 	    return FALSE;
 	}
 	if (arg[off] == ',')		// another one follows
@@ -1033,7 +1033,7 @@ highlight_set_cterm_color(
 		color = cterm_normal_fg_color - 1;
 	    else
 	    {
-		emsg(_("E419: FG color unknown"));
+		emsg(_(e_fg_color_unknown));
 		return FALSE;
 	    }
 	}
@@ -1043,7 +1043,7 @@ highlight_set_cterm_color(
 		color = cterm_normal_bg_color - 1;
 	    else
 	    {
-		emsg(_("E420: BG color unknown"));
+		emsg(_(e_bg_color_unknown));
 		return FALSE;
 	    }
 	}
@@ -1053,7 +1053,7 @@ highlight_set_cterm_color(
 		color = cterm_normal_ul_color - 1;
 	    else
 	    {
-		emsg(_("E453: UL color unknown"));
+		emsg(_(e_ul_color_unknown));
 		return FALSE;
 	    }
 	}
@@ -1069,8 +1069,7 @@ highlight_set_cterm_color(
 		    break;
 	    if (i < 0)
 	    {
-		semsg(_("E421: Color name or number not recognized: %s"),
-								key_start);
+		semsg(_(e_color_name_or_number_not_recognized), key_start);
 		return FALSE;
 	    }
 
@@ -1323,7 +1322,7 @@ highlight_set_startstop_termcode(int idx, char_u *key, char_u *arg, int init)
 	    // Append it to the already found stuff
 	    if ((int)(STRLEN(buf) + STRLEN(p)) >= 99)
 	    {
-		semsg(_("E422: terminal code too long: %s"), arg);
+		semsg(_(e_terminal_code_too_long_str), arg);
 		return FALSE;
 	    }
 	    STRCAT(buf, p);
@@ -1440,7 +1439,7 @@ do_highlight(
     {
 	id = syn_namen2id(line, (int)(name_end - line));
 	if (id == 0)
-	    semsg(_("E411: highlight group not found: %s"), line);
+	    semsg(_(e_highlight_group_name_not_found_str), line);
 	else
 	    highlight_list_one(id);
 	return;
@@ -1462,15 +1461,13 @@ do_highlight(
 
 	if (ends_excmd2(line, from_start) || ends_excmd2(line, to_start))
 	{
-	    semsg(_("E412: Not enough arguments: \":highlight link %s\""),
-								  from_start);
+	    semsg(_(e_not_enough_arguments_highlight_link_str), from_start);
 	    return;
 	}
 
 	if (!ends_excmd2(line, skipwhite(to_end)))
 	{
-	    semsg(_("E413: Too many arguments: \":highlight link %s\""),
-								   from_start);
+	    semsg(_(e_too_many_arguments_highlight_link_str), from_start);
 	    return;
 	}
 
@@ -1533,7 +1530,7 @@ do_highlight(
 	    key_start = linep;
 	    if (*linep == '=')
 	    {
-		semsg(_("E415: unexpected equal sign: %s"), key_start);
+		semsg(_(e_unexpected_equal_sign_str), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -1565,7 +1562,7 @@ do_highlight(
 	    // Check for the equal sign.
 	    if (*linep != '=')
 	    {
-		semsg(_("E416: missing equal sign: %s"), key_start);
+		semsg(_(e_missing_equal_sign_str_2), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -1579,7 +1576,7 @@ do_highlight(
 		linep = vim_strchr(linep, '\'');
 		if (linep == NULL)
 		{
-		    semsg(_(e_invarg2), key_start);
+		    semsg(_(e_invalid_argument_str), key_start);
 		    error = TRUE;
 		    break;
 		}
@@ -1591,7 +1588,7 @@ do_highlight(
 	    }
 	    if (linep == arg_start)
 	    {
-		semsg(_("E417: missing argument: %s"), key_start);
+		semsg(_(e_missing_argument_str), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -1671,7 +1668,7 @@ do_highlight(
 	    }
 	    else
 	    {
-		semsg(_("E423: Illegal argument: %s"), key_start);
+		semsg(_(e_illegal_argument_str_3), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -2529,7 +2526,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	// When called recursively, we are really out of numbers.
 	if (recursive)
 	{
-	    emsg(_("E424: Too many different highlighting attributes in use"));
+	    emsg(_(e_too_many_different_highlighting_attributes_in_use));
 	    return 0;
 	}
 	recursive = TRUE;
@@ -4273,7 +4270,7 @@ hldict_get_string(dict_T *dict, char_u *key, int *error)
 
     if (di->di_tv.v_type != VAR_STRING || di->di_tv.vval.v_string == NULL)
     {
-	emsg(_(e_stringreq));
+	emsg(_(e_string_required));
 	*error = TRUE;
 	return NULL;
     }
@@ -4306,7 +4303,7 @@ hldict_attr_to_str(
 
     if (di->di_tv.v_type != VAR_DICT || di->di_tv.vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FALSE;
     }
 
@@ -4548,7 +4545,7 @@ f_hlset(typval_T *argvars, typval_T *rettv)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 

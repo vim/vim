@@ -187,7 +187,6 @@ static buf_T	*load_dummy_buffer(char_u *fname, char_u *dirname_start, char_u *re
 static void	wipe_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static void	unload_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static qf_info_T *ll_get_or_alloc_list(win_T *);
-static char_u	*e_no_more_items = (char_u *)N_("E553: No more items");
 
 // Quickfix window check helper macro
 #define IS_QF_WINDOW(wp) (bt_quickfix(wp->w_buffer) && wp->w_llist_ref == NULL)
@@ -268,7 +267,7 @@ efmpat_to_regpat(
     if (efminfo->addr[idx])
     {
 	// Each errorformat pattern can occur only once
-	semsg(_("E372: Too many %%%c in format string"), *efmpat);
+	semsg(_(e_too_many_chr_in_format_string), *efmpat);
 	return NULL;
     }
     if ((idx && idx < 6
@@ -276,7 +275,7 @@ efmpat_to_regpat(
 	    || (idx == 6
 		&& vim_strchr((char_u *)"OPQ", efminfo->prefix) == NULL))
     {
-	semsg(_("E373: Unexpected %%%c in format string"), *efmpat);
+	semsg(_(e_unexpected_chr_in_format_str), *efmpat);
 	return NULL;
     }
     efminfo->addr[idx] = (char_u)++round;
@@ -351,7 +350,7 @@ scanf_fmt_to_regpat(
 		    // skip ;
 		if (efmp == efm + len)
 		{
-		    emsg(_("E374: Missing ] in format string"));
+		    emsg(_(e_missing_rsb_in_format_string));
 		    return NULL;
 		}
 	    }
@@ -364,7 +363,7 @@ scanf_fmt_to_regpat(
     else
     {
 	// TODO: scanf()-like: %*ud, %*3c, %*f, ... ?
-	semsg(_("E375: Unsupported %%%c in format string"), *efmp);
+	semsg(_(e_unsupported_chr_in_format_string), *efmp);
 	return NULL;
     }
 
@@ -385,7 +384,7 @@ efm_analyze_prefix(char_u *efmp, efm_T *efminfo)
 	efminfo->prefix = *efmp;
     else
     {
-	semsg(_("E376: Invalid %%%c in format string prefix"), *efmp);
+	semsg(_(e_invalid_chr_in_format_string_prefix), *efmp);
 	return NULL;
     }
 
@@ -452,7 +451,7 @@ efm_to_regpat(
 	    }
 	    else
 	    {
-		semsg(_("E377: Invalid %%%c in format string"), *efmp);
+		semsg(_(e_invalid_chr_in_format_string), *efmp);
 		return FAIL;
 	    }
 	}
@@ -573,7 +572,7 @@ parse_efm_option(char_u *efm)
     }
 
     if (fmt_first == NULL)	// nothing found
-	emsg(_("E378: 'errorformat' contains no pattern"));
+	emsg(_(e_errorformat_contains_no_pattern));
 
     goto parse_efm_end;
 
@@ -1273,7 +1272,7 @@ qf_parse_dir_pfx(int idx, qffields_T *fields, qf_list_T *qfl)
     {
 	if (*fields->namebuf == NUL)
 	{
-	    emsg(_("E379: Missing or empty directory name"));
+	    emsg(_(e_missing_or_empty_directory_name));
 	    return QF_FAIL;
 	}
 	qfl->qf_directory =
@@ -2202,7 +2201,7 @@ qf_cmd_get_stack(exarg_T *eap, int print_emsg)
 	if (qi == NULL)
 	{
 	    if (print_emsg)
-		emsg(_(e_loclist));
+		emsg(_(e_no_location_list));
 	    return NULL;
 	}
     }
@@ -2733,7 +2732,7 @@ get_nth_valid_entry(
     int			qf_idx = qfl->qf_index;
     qfline_T		*prev_qf_ptr;
     int			prev_index;
-    char_u		*err = e_no_more_items;
+    char		*err = e_no_more_items;
 
     while (errornr--)
     {
@@ -3629,7 +3628,7 @@ qf_list(exarg_T *eap)
     }
     if (!get_list_range(&arg, &idx1, &idx2) || *arg != NUL)
     {
-	semsg(_(e_trailing_arg), arg);
+	semsg(_(e_trailing_characters_str), arg);
 	return;
     }
     qfl = qf_get_curlist(qi);
@@ -3787,7 +3786,7 @@ qf_age(exarg_T *eap)
 	{
 	    if (qi->qf_curlist == 0)
 	    {
-		emsg(_("E380: At bottom of quickfix stack"));
+		emsg(_(e_at_bottom_of_quickfix_stack));
 		break;
 	    }
 	    --qi->qf_curlist;
@@ -3796,7 +3795,7 @@ qf_age(exarg_T *eap)
 	{
 	    if (qi->qf_curlist >= qi->qf_listcount - 1)
 	    {
-		emsg(_("E381: At top of quickfix stack"));
+		emsg(_(e_at_top_of_quickfix_stack));
 		break;
 	    }
 	    ++qi->qf_curlist;
@@ -3819,7 +3818,7 @@ qf_history(exarg_T *eap)
     {
 	if (qi == NULL)
 	{
-	    emsg(_(e_loclist));
+	    emsg(_(e_no_location_list));
 	    return;
 	}
 
@@ -4537,7 +4536,7 @@ qf_buf_add_line(
     int		len;
     buf_T	*errbuf;
 
-    // If the 'quickfixtextfunc' function returned an non-empty custom string
+    // If the 'quickfixtextfunc' function returned a non-empty custom string
     // for this entry, then use it.
     if (qftf_str != NULL && *qftf_str != NUL)
 	vim_strncpy(IObuff, qftf_str, IOSIZE - 1);
@@ -4891,7 +4890,7 @@ get_mef_name(void)
     {
 	name = vim_tempname('e', FALSE);
 	if (name == NULL)
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	return name;
     }
 
@@ -6106,7 +6105,7 @@ vgr_process_args(
     p = skip_vimgrep_pat(eap->arg, &args->spat, &args->flags);
     if (p == NULL)
     {
-	emsg(_(e_invalpat));
+	emsg(_(e_invalid_search_pattern_or_delimiter));
 	return FAIL;
     }
 
@@ -6125,7 +6124,7 @@ vgr_process_args(
     if ((get_arglist_exp(p, &args->fcount, &args->fnames, TRUE) == FAIL) ||
 	args->fcount == 0)
     {
-	emsg(_(e_nomatch));
+	emsg(_(e_no_match));
 	return FAIL;
     }
 
@@ -6394,7 +6393,7 @@ ex_vimgrep(exarg_T *eap)
 		    first_match_buf, target_dir);
     }
     else
-	semsg(_(e_nomatch2), args.spat);
+	semsg(_(e_no_match_str_2), args.spat);
 
     decr_quickfix_busy();
 
@@ -7653,7 +7652,7 @@ set_errorlist(
     // A dict argument cannot be specified with a non-empty list argument
     if (list->lv_len != 0 && what != NULL)
     {
-	semsg(_(e_invarg2),
+	semsg(_(e_invalid_argument_str),
 			 _("cannot have both a list and a \"what\" argument"));
 	return FAIL;
     }
@@ -7780,7 +7779,7 @@ cbuffer_process_args(
 
     if (buf == NULL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return FAIL;
     }
 
@@ -8293,7 +8292,7 @@ ex_helpgrep(exarg_T *eap)
     if (!qf_list_empty(qf_get_curlist(qi)))
 	qf_jump(qi, 0, 0, FALSE);
     else
-	semsg(_(e_nomatch2), eap->arg);
+	semsg(_(e_no_match_str_2), eap->arg);
 
     decr_quickfix_busy();
 
@@ -8336,7 +8335,7 @@ get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
 			qf_get_properties(wp, d, rettv->vval.v_dict);
 		}
 		else
-		    emsg(_(e_dictreq));
+		    emsg(_(e_dictionary_required));
 	    }
     }
 }
@@ -8397,9 +8396,9 @@ set_qf_ll_list(
 
 # ifdef FEAT_QUICKFIX
     if (list_arg->v_type != VAR_LIST)
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
     else if (recursive != 0)
-	emsg(_(e_au_recursive));
+	emsg(_(e_autocommand_caused_recursive_behavior));
     else
     {
 	list_T  *l = list_arg->vval.v_list;
@@ -8420,7 +8419,7 @@ set_qf_ll_list(
 	else if (action_arg->v_type == VAR_UNKNOWN)
 	    action = ' ';
 	else
-	    emsg(_(e_stringreq));
+	    emsg(_(e_string_required));
 
 	if (action_arg->v_type != VAR_UNKNOWN
 		&& what_arg->v_type != VAR_UNKNOWN)
@@ -8429,7 +8428,7 @@ set_qf_ll_list(
 		what = what_arg->vval.v_dict;
 	    else
 	    {
-		emsg(_(e_dictreq));
+		emsg(_(e_dictionary_required));
 		valid_dict = FALSE;
 	    }
 	}

@@ -350,7 +350,7 @@ blob_slice_or_index(
 	}
 	else
 	{
-	    semsg(_(e_blobidx), n1);
+	    semsg(_(e_blob_index_out_of_range_nr), n1);
 	    return FAIL;
 	}
     }
@@ -366,7 +366,7 @@ check_blob_index(long bloblen, varnumber_T n1, int quiet)
     if (n1 < 0 || n1 > bloblen)
     {
 	if (!quiet)
-	    semsg(_(e_blobidx), n1);
+	    semsg(_(e_blob_index_out_of_range_nr), n1);
 	return FAIL;
     }
     return OK;
@@ -381,7 +381,7 @@ check_blob_range(long bloblen, varnumber_T n1, varnumber_T n2, int quiet)
     if (n2 < 0 || n2 >= bloblen || n2 < n1)
     {
 	if (!quiet)
-	    semsg(_(e_blobidx), n2);
+	    semsg(_(e_blob_index_out_of_range_nr), n2);
 	return FAIL;
     }
     return OK;
@@ -399,7 +399,7 @@ blob_set_range(blob_T *dest, long n1, long n2, typval_T *src)
 
     if (n2 - n1 + 1 != blob_len(src->vval.v_blob))
     {
-	emsg(_("E972: Blob value does not have the right number of bytes"));
+	emsg(_(e_blob_value_does_not_have_right_number_of_bytes));
 	return FAIL;
     }
 
@@ -465,7 +465,7 @@ blob_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 	idx = len + idx;
     if (idx < 0 || idx >= len)
     {
-	semsg(_(e_blobidx), idx);
+	semsg(_(e_blob_index_out_of_range_nr), idx);
 	return;
     }
     if (argvars[2].v_type == VAR_UNKNOWN)
@@ -487,7 +487,7 @@ blob_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 	end = len + end;
     if (end >= len || idx > end)
     {
-	semsg(_(e_blobidx), end);
+	semsg(_(e_blob_index_out_of_range_nr), end);
 	return;
     }
     newblob = blob_alloc();
@@ -563,7 +563,7 @@ blob_filter_map(
 	if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
 	{
 	    clear_tv(&newtv);
-	    emsg(_(e_invalblob));
+	    emsg(_(e_invalid_operation_for_blob));
 	    break;
 	}
 	if (filtermap != FILTERMAP_FILTER)
@@ -614,7 +614,7 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 	    return;		// type error; errmsg already given
 	if (before < 0 || before > len)
 	{
-	    semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
 	    return;
 	}
     }
@@ -623,7 +623,7 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 	return;
     if (val < 0 || val > 255)
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	return;
     }
 
@@ -660,7 +660,7 @@ blob_reduce(
     {
 	if (b == NULL || b->bv_ga.ga_len == 0)
 	{
-	    semsg(_(e_reduceempty), "Blob");
+	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "Blob");
 	    return;
 	}
 	initial.v_type = VAR_NUMBER;

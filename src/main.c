@@ -247,7 +247,7 @@ main
 		mch_dirname(start_dir, MAXPATHL);
 	    // Temporarily add '(' and ')' to 'isfname'.  These are valid
 	    // filename characters but are excluded from 'isfname' to make
-	    // "gf" work on a file name in parenthesis (e.g.: see vim.h).
+	    // "gf" work on a file name in parentheses (e.g.: see vim.h).
 	    do_cmdline_cmd((char_u *)":set isf+=(,)");
 	    alist_expand(NULL, 0);
 	    do_cmdline_cmd((char_u *)":set isf&");
@@ -2094,7 +2094,7 @@ command_line_scan(mparm_T *parmp)
 #ifdef FEAT_ARABIC
 		set_option_value((char_u *)"arabic", 1L, NULL, 0);
 #else
-		mch_errmsg(_(e_noarabic));
+		mch_errmsg(_(e_arabic_cannot_be_used_not_enabled_at_compile_time));
 		mch_exit(2);
 #endif
 		break;
@@ -3141,7 +3141,7 @@ source_startup_scripts(mparm_T *parmp)
 	else
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
-		semsg(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
+		semsg(_(e_cannot_read_from_str_2), parmp->use_vimrc);
 	}
     }
     else if (!silent_mode)

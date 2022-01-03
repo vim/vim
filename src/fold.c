@@ -65,8 +65,6 @@ static void foldDelMarker(linenr_T lnum, char_u *marker, int markerlen);
 static void foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot);
 static void parseMarker(win_T *wp);
 
-static char *e_nofold = N_("E490: No fold found");
-
 /*
  * While updating the folds lines between invalid_top and invalid_bot have an
  * undefined fold level.  Only used for the window currently being updated.
@@ -412,7 +410,7 @@ opFoldRange(
 	    (void)hasFolding(lnum, NULL, &lnum_next);
     }
     if (done == DONE_NOTHING)
-	emsg(_(e_nofold));
+	emsg(_(e_no_fold_found));
     // Force a redraw to remove the Visual highlighting.
     if (had_visual)
 	redraw_curbuf_later(INVERTED);
@@ -563,9 +561,9 @@ foldManualAllowed(int create)
     if (foldmethodIsManual(curwin) || foldmethodIsMarker(curwin))
 	return TRUE;
     if (create)
-	emsg(_("E350: Cannot create fold with current 'foldmethod'"));
+	emsg(_(e_cannot_create_fold_with_current_foldmethod));
     else
-	emsg(_("E351: Cannot delete fold with current 'foldmethod'"));
+	emsg(_(e_cannot_delete_fold_with_current_foldmethod));
     return FALSE;
 }
 
@@ -785,7 +783,7 @@ deleteFold(
     }
     if (!did_one)
     {
-	emsg(_(e_nofold));
+	emsg(_(e_no_fold_found));
 	// Force a redraw to remove the Visual highlighting.
 	if (had_visual)
 	    redraw_curbuf_later(INVERTED);
@@ -1235,7 +1233,7 @@ setFoldRepeat(linenr_T lnum, long count, int do_open)
 	{
 	    // Only give an error message when no fold could be opened.
 	    if (n == 0 && !(done & DONE_FOLD))
-		emsg(_(e_nofold));
+		emsg(_(e_no_fold_found));
 	    break;
 	}
     }
@@ -1387,7 +1385,7 @@ setManualFoldWin(
 	done |= DONE_FOLD;
     }
     else if (donep == NULL && wp == curwin)
-	emsg(_(e_nofold));
+	emsg(_(e_no_fold_found));
 
     if (donep != NULL)
 	*donep |= done;
@@ -2513,7 +2511,7 @@ foldUpdateIEMSRecurse(
 	     */
 	    while (!got_int)
 	    {
-		// set concat to 1 if it's allowed to concatenated this fold
+		// set concat to 1 if it's allowed to concatenate this fold
 		// with a previous one that touches it.
 		if (flp->start != 0 || flp->had_end <= MAX_LEVEL)
 		    concat = 0;

@@ -224,7 +224,7 @@ lalloc(size_t size, int message)
     {
 	// Don't hide this message
 	emsg_silent = 0;
-	iemsg(_("E341: Internal error: lalloc(0, )"));
+	iemsg(_(e_internal_error_lalloc_zero));
 	return NULL;
     }
 
@@ -236,7 +236,7 @@ lalloc(size_t size, int message)
     // if some blocks are released call malloc again.
     for (;;)
     {
-	// Handle three kind of systems:
+	// Handle three kinds of systems:
 	// 1. No check for available memory: Just return.
 	// 2. Slow check for available memory: call mch_avail_mem() after
 	//    allocating KEEP_ROOM amount of memory.
@@ -339,7 +339,7 @@ do_outofmem_msg(size_t size)
 	// message fails, e.g. when setting v:errmsg.
 	did_outofmem_msg = TRUE;
 
-	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
+	semsg(_(e_out_of_memory_allocating_nr_bytes), (long_u)size);
 
 	if (starting == NO_SCREEN)
 	    // Not even finished with initializations and already out of

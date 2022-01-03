@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 8.2.  Last change: 2019 May 05
+*remote.txt*    For Vim version 8.2.  Last change: 2021 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -143,7 +143,7 @@ You can not put options there!
 FUNCTIONS
 								*E240* *E573*
 There are a number of Vim functions for scripting the command server.  See
-the description in |eval.txt| or use CTRL-] on the function name to jump to
+the description in |builtin.txt| or use CTRL-] on the function name to jump to
 the full explanation.
 
     synopsis				     explanation ~

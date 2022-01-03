@@ -674,7 +674,7 @@ python_runtime_link_init(char *libname, int verbose)
 
 # if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     // Can't have Python and Python3 loaded at the same time.
-    // It cause a crash, because RTLD_GLOBAL is needed for
+    // It causes a crash, because RTLD_GLOBAL is needed for
     // standard C extension libraries of one or both python versions.
     if (python3_loaded())
     {
@@ -690,7 +690,7 @@ python_runtime_link_init(char *libname, int verbose)
     if (!hinstPython)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname, load_dll_error());
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
 
@@ -702,7 +702,7 @@ python_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPython);
 	    hinstPython = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), python_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), python_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -719,7 +719,7 @@ python_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPython);
 	hinstPython = 0;
 	if (verbose)
-	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_could_not_load_library_function_str), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -919,7 +919,7 @@ Python_Init(void)
 #ifdef DYNAMIC_PYTHON
 	if (!python_enabled(TRUE))
 	{
-	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_python_library_could_not_be_found));
 	    goto fail;
 	}
 #endif
@@ -1461,7 +1461,7 @@ LineToString(const char *str)
     PyInt len = strlen(str);
     char *p;
 
-    // Allocate an Python string object, with uninitialised contents. We
+    // Allocate a Python string object, with uninitialised contents. We
     // must do it this way, so that we can modify the string in place
     // later. See the Python source, Objects/stringobject.c for details.
     result = PyString_FromStringAndSize(NULL, len);

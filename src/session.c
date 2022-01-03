@@ -1298,7 +1298,7 @@ ex_mkrc(exarg_T	*eap)
 			|| ((ssop_flags & SSOP_CURDIR) && globaldir != NULL)))
 		    {
 			if (mch_chdir((char *)dirnow) != 0)
-			    emsg(_(e_prev_dir));
+			    emsg(_(e_cannot_go_back_to_previous_directory));
 			shorten_fnames(TRUE);
 		    }
 		    vim_free(dirnow);

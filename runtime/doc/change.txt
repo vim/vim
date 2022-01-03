@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2021 Jun 23
+*change.txt*    For Vim version 8.2.  Last change: 2021 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -259,6 +259,9 @@ Or use "caw" (see |aw|).
 			line.
 			Adding [!] toggles 'autoindent' for the time this
 			command is executed.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 ==============================================================================
 3. Simple changes					*simple-change*
@@ -1374,6 +1377,9 @@ The next three commands always work on whole lines.
 
 							*:t*
 :t			Synonym for copy.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 :[range]m[ove] {address}			*:m* *:mo* *:move* *E134*
 			Move the lines given by [range] to below the line
@@ -1671,7 +1677,8 @@ r	Automatically insert the current comment leader after hitting
 	<Enter> in Insert mode.
 							*fo-o*
 o	Automatically insert the current comment leader after hitting 'o' or
-	'O' in Normal mode.
+	'O' in Normal mode.  In case comment is unwanted in a specific place
+	use CTRL-U to quickly delete it. |i_CTRL-U|
 							*fo-q*
 q	Allow formatting of comments with "gq".
 	Note that formatting will not change blank lines or lines containing

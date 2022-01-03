@@ -359,7 +359,7 @@ do_in_path(
 	char *basepath = path == p_rtp ? "runtimepath" : "packpath";
 
 	if (flags & DIP_ERR)
-	    semsg(_(e_dirnotf), basepath, name);
+	    semsg(_(e_directory_not_found_in_str_str), basepath, name);
 	else if (p_verbose > 0)
 	{
 	    verbose_enter();
@@ -965,7 +965,7 @@ ExpandPackAddDir(
 cmd_source(char_u *fname, exarg_T *eap)
 {
     if (*fname == NUL)
-	emsg(_(e_argreq));
+	emsg(_(e_argument_required));
 
     else if (eap != NULL && eap->forceit)
 	// ":source!": read Normal mode commands
@@ -983,7 +983,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 
     // ":source" read ex commands
     else if (do_source(fname, FALSE, DOSO_NONE, NULL) == FAIL)
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 }
 
 /*
@@ -1307,7 +1307,7 @@ do_source(
 
     current_sctx.sc_lnum = 0;
 
-    // Check if this script was sourced before to finds its SID.
+    // Check if this script was sourced before to find its SID.
     // Always use a new sequence number.
     current_sctx.sc_seq = ++last_current_SID_seq;
     if (sid > 0)
@@ -1371,6 +1371,9 @@ do_source(
 	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 	if (ret_sid != NULL)
 	    *ret_sid = current_sctx.sc_sid;
+
+	// Remember the "is_vimrc" flag for when the file is sourced again.
+	si->sn_is_vimrc = is_vimrc;
 
 	// Used to check script variable index is still valid.
 	si->sn_script_seq = current_sctx.sc_seq;
@@ -1438,7 +1441,7 @@ do_source(
 #endif
 
     if (got_int)
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
     ESTACK_CHECK_NOW
     estack_pop();
     if (p_verbose > 1)
@@ -1471,9 +1474,11 @@ do_source(
 
 #ifdef FEAT_EVAL
 almosttheend:
+    // If "sn_save_cpo" is set that means we encountered "vim9script": restore
+    // 'cpoptions', unless in the main .vimrc file.
     // Get "si" again, "script_items" may have been reallocated.
     si = SCRIPT_ITEM(current_sctx.sc_sid);
-    if (si->sn_save_cpo != NULL)
+    if (si->sn_save_cpo != NULL && si->sn_is_vimrc == DOSO_NONE)
     {
 	if (STRCMP(p_cpo, CPO_VIM) != 0)
 	{
@@ -1503,8 +1508,8 @@ almosttheend:
 		}
 	}
 	set_option_value((char_u *)"cpo", 0L, si->sn_save_cpo, OPT_NO_REDRAW);
-	VIM_CLEAR(si->sn_save_cpo);
     }
+    VIM_CLEAR(si->sn_save_cpo);
 
     restore_funccal();
 # ifdef FEAT_PROFILE
@@ -1544,7 +1549,7 @@ ex_scriptnames(exarg_T *eap)
     {
 	// :script {scriptId}: edit the script
 	if (!SCRIPT_ID_VALID(eap->line2))
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else
 	{
 	    eap->arg = SCRIPT_ITEM(eap->line2)->sn_name;
@@ -1914,7 +1919,7 @@ ex_scriptencoding(exarg_T *eap)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_("E167: :scriptencoding used outside of a sourced file"));
+	emsg(_(e_scriptencoding_used_outside_of_sourced_file));
 	return;
     }
 
@@ -1956,7 +1961,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
 
     nr = getdigits(&eap->arg);
     if (nr == 0 || *eap->arg != NUL)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else if (nr > SCRIPT_VERSION_MAX)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else
@@ -1978,7 +1983,7 @@ ex_finish(exarg_T *eap)
     if (getline_equal(eap->getline, eap->cookie, getsourceline))
 	do_finish(eap, FALSE);
     else
-	emsg(_("E168: :finish used outside of a sourced file"));
+	emsg(_(e_finish_used_outside_of_sourced_file));
 }
 
 /*

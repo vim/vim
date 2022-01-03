@@ -333,7 +333,7 @@ undo_allowed(void)
     // caller of getcmdline() may get confused.
     if (textwinlock != 0 || textlock != 0)
     {
-	emsg(_(e_textlock));
+	emsg(_(e_not_allowed_to_change_text_here));
 	return FALSE;
     }
 
@@ -438,12 +438,12 @@ u_savecommon(
 	{
 	    if (netbeans_is_guarded(top, bot))
 	    {
-		emsg(_(e_guarded));
+		emsg(_(e_region_is_guarded_cannot_modify));
 		return FAIL;
 	    }
 	    if (curbuf->b_p_ro)
 	    {
-		emsg(_(e_nbreadonly));
+		emsg(_(e_netbeans_does_not_allow_changes_in_read_only_files));
 		return FAIL;
 	    }
 	}
@@ -2713,7 +2713,7 @@ u_undoredo(int undo)
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
 	    unblock_autocmds();
-	    iemsg(_("E438: u_undo: line numbers wrong"));
+	    iemsg(_(e_u_undo_line_numbers_wrong));
 	    changed();		// don't want UNCHANGED now
 	    return;
 	}
@@ -3285,7 +3285,7 @@ u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	iemsg(_("E439: undo list corrupt"));
+	iemsg(_(e_undo_list_corrupt));
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3317,7 +3317,7 @@ u_getbot(void)
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    iemsg(_("E440: undo line missing"));
+	    iemsg(_(e_undo_line_missing));
 	    uep->ue_bot = uep->ue_top + 1;  // assume all lines deleted, will
 					    // get all the old lines back
 					    // without deleting the current

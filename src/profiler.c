@@ -921,7 +921,7 @@ profile_dump(void)
     {
 	fd = mch_fopen((char *)profile_fname, "w");
 	if (fd == NULL)
-	    semsg(_(e_notopen), profile_fname);
+	    semsg(_(e_cant_open_file_str), profile_fname);
 	else
 	{
 	    script_dump_profile(fd);

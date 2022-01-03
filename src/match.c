@@ -69,7 +69,7 @@ match_add(
     }
     if (pat != NULL && (regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
     {
-	semsg(_(e_invarg2), pat);
+	semsg(_(e_invalid_argument_str), pat);
 	return -1;
     }
 
@@ -165,7 +165,7 @@ match_add(
 	    }
 	    else
 	    {
-		emsg(_("E290: List or number required"));
+		emsg(_(e_list_or_number_required));
 		goto fail;
 	    }
 	    if (toplnum == 0 || lnum < toplnum)
@@ -427,7 +427,7 @@ next_search_hl(
     int		called_emsg_before = called_emsg;
 
     // for :{range}s/pat only highlight inside the range
-    if (lnum < search_first_line || lnum > search_last_line)
+    if ((lnum < search_first_line || lnum > search_last_line) && cur == NULL)
     {
 	shl->lnum = 0;
 	return;
@@ -936,7 +936,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 
     if (tv->v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FAIL;
     }
 
@@ -949,7 +949,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 	*win = find_win_by_nr_or_id(&di->di_tv);
 	if (*win == NULL)
 	{
-	    emsg(_(e_invalwindow));
+	    emsg(_(e_invalid_window_number));
 	    return FAIL;
 	}
     }
@@ -1070,7 +1070,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
     win = get_optional_window(argvars, 1);
@@ -1087,7 +1087,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    if (li->li_tv.v_type != VAR_DICT
 		    || (d = li->li_tv.vval.v_dict) == NULL)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return;
 	    }
 	    if (!(dict_find(d, (char_u *)"group", -1) != NULL
@@ -1096,7 +1096,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 			&& dict_find(d, (char_u *)"priority", -1) != NULL
 			&& dict_find(d, (char_u *)"id", -1) != NULL))
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return;
 	    }
 	    li = li->li_next;
@@ -1259,7 +1259,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), "matchaddpos()");
+	semsg(_(e_argument_of_str_must_be_list), "matchaddpos()");
 	return;
     }
     l = argvars[1].vval.v_list;
@@ -1394,7 +1394,7 @@ ex_match(exarg_T *eap)
 	{
 	    // There must be two arguments.
 	    vim_free(g);
-	    semsg(_(e_invarg2), eap->arg);
+	    semsg(_(e_invalid_argument_str), eap->arg);
 	    return;
 	}
 	end = skip_regexp(p + 1, *p, TRUE);
@@ -1403,13 +1403,13 @@ ex_match(exarg_T *eap)
 	    if (*end != NUL && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		vim_free(g);
-		eap->errmsg = ex_errmsg(e_trailing_arg, end);
+		eap->errmsg = ex_errmsg(e_trailing_characters_str, end);
 		return;
 	    }
 	    if (*end != *p)
 	    {
 		vim_free(g);
-		semsg(_(e_invarg2), p);
+		semsg(_(e_invalid_argument_str), p);
 		return;
 	    }
 

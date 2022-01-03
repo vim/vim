@@ -205,7 +205,7 @@ parse_list_options(
 	colonp = vim_strchr(stringp, ':');
 	if (colonp == NULL)
 	{
-	    ret = N_("E550: Missing colon");
+	    ret = e_missing_colon_3;
 	    break;
 	}
 	commap = vim_strchr(stringp, ',');
@@ -220,7 +220,7 @@ parse_list_options(
 
 	if (idx == table_size)
 	{
-	    ret = N_("E551: Illegal component");
+	    ret = e_illegal_component;
 	    break;
 	}
 	p = colonp + 1;
@@ -230,7 +230,7 @@ parse_list_options(
 	{
 	    if (!VIM_ISDIGIT(*p))
 	    {
-		ret = N_("E552: digit expected");
+		ret = e_digit_expected_2;
 		break;
 	    }
 
@@ -1405,7 +1405,7 @@ prt_write_file_raw_len(char_u *buffer, int bytes)
 	    && fwrite(buffer, sizeof(char_u), bytes, prt_ps_fd)
 							     != (size_t)bytes)
     {
-	emsg(_("E455: Error writing to PostScript output file"));
+	emsg(_(e_error_writing_to_postscript_output_file));
 	prt_file_error = TRUE;
     }
 }
@@ -1849,7 +1849,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 					    PRT_FILE_BUFFER_LEN, fd_resource);
     if (ferror(fd_resource))
     {
-	semsg(_("E457: Can't read PostScript resource file \"%s\""),
+	semsg(_(e_cant_read_postscript_resource_file_str),
 		resource->filename);
 	fclose(fd_resource);
 	return FALSE;
@@ -2625,7 +2625,7 @@ mch_print_init(
 	prt_ps_file_name = vim_tempname('p', TRUE);
 	if (prt_ps_file_name == NULL)
 	{
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	    return FAIL;
 	}
 	prt_ps_fd = mch_fopen((char *)prt_ps_file_name, WRITEBIN);
@@ -2641,7 +2641,7 @@ mch_print_init(
     }
     if (prt_ps_fd == NULL)
     {
-	emsg(_("E324: Can't open PostScript output file"));
+	emsg(_(e_cant_open_postscript_output_file));
 	mch_print_cleanup();
 	return FAIL;
     }
@@ -2675,7 +2675,7 @@ prt_add_resource(struct prt_ps_resource_S *resource)
     fd_resource = mch_fopen((char *)resource->filename, READBIN);
     if (fd_resource == NULL)
     {
-	semsg(_("E456: Can't open file \"%s\""), resource->filename);
+	semsg(_(e_cant_open_file_str_2), resource->filename);
 	return FALSE;
     }
     prt_dsc_resources("BeginResource", prt_resource_types[resource->type],
@@ -2689,7 +2689,7 @@ prt_add_resource(struct prt_ps_resource_S *resource)
 			   sizeof(resource_buffer), fd_resource);
 	if (ferror(fd_resource))
 	{
-	    semsg(_("E457: Can't read PostScript resource file \"%s\""),
+	    semsg(_(e_cant_read_postscript_resource_file_str),
 							    resource->filename);
 	    fclose(fd_resource);
 	    return FALSE;
@@ -2805,7 +2805,7 @@ mch_print_begin(prt_settings_T *psettings)
     // Search for external resources VIM supplies
     if (!prt_find_resource("prolog", res_prolog))
     {
-	emsg(_("E456: Can't find PostScript resource file \"prolog.ps\""));
+	semsg(_(e_cant_find_postscript_resource_file_str_ps), "prolog");
 	goto theend;
     }
     if (!prt_open_resource(res_prolog))
@@ -2817,7 +2817,7 @@ mch_print_begin(prt_settings_T *psettings)
 	// Look for required version of multi-byte printing procset
 	if (!prt_find_resource("cidfont", res_cidfont))
 	{
-	    emsg(_("E456: Can't find PostScript resource file \"cidfont.ps\""));
+	    semsg(_(e_cant_find_postscript_resource_file_str_ps), "cidfont");
 	    goto theend;
 	}
 	if (!prt_open_resource(res_cidfont))
@@ -2849,7 +2849,7 @@ mch_print_begin(prt_settings_T *psettings)
 		p_encoding = (char_u *)"latin1";
 		if (!prt_find_resource((char *)p_encoding, res_encoding))
 		{
-		    semsg(_("E456: Can't find PostScript resource file \"%s.ps\""),
+		    semsg(_(e_cant_find_postscript_resource_file_str_ps),
 			    p_encoding);
 		    goto theend;
 		}
@@ -2870,7 +2870,7 @@ mch_print_begin(prt_settings_T *psettings)
 	    // Include ASCII range encoding vector
 	    if (!prt_find_resource(prt_ascii_encoding, res_encoding))
 	    {
-		semsg(_("E456: Can't find PostScript resource file \"%s.ps\""),
+		semsg(_(e_cant_find_postscript_resource_file_str_ps),
 							  prt_ascii_encoding);
 		goto theend;
 	    }
@@ -2899,8 +2899,7 @@ mch_print_begin(prt_settings_T *psettings)
 	// Find user supplied CMap
 	if (!prt_find_resource(prt_cmap, res_cmap))
 	{
-	    semsg(_("E456: Can't find PostScript resource file \"%s.ps\""),
-								    prt_cmap);
+	    semsg(_(e_cant_find_postscript_resource_file_str_ps), prt_cmap);
 	    goto theend;
 	}
 	if (!prt_open_resource(res_cmap))
@@ -3135,7 +3134,7 @@ mch_print_end(prt_settings_T *psettings)
 
 	// Not printing to a file: use 'printexpr' to print the file.
 	if (eval_printexpr(prt_ps_file_name, psettings->arguments) == FAIL)
-	    emsg(_("E365: Failed to print PostScript file"));
+	    emsg(_(e_failed_to_print_postscript_file));
 	else
 	    prt_message((char_u *)_("Print job sent."));
     }

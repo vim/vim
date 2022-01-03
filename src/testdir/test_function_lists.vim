@@ -1,7 +1,7 @@
 " Test to verify that the three function lists,
 "
 "   global_functions[] in src/evalfunc.c
-"   *functions* in runtime/doc/eval.txt
+"   *functions* in runtime/doc/builtin.txt
 "   *function-list* in runtime/doc/usr_41.txt
 "
 " contain the same functions and that the global_functions and ":help
@@ -55,16 +55,15 @@ func Test_function_lists()
   " Verify that the ":help functions" list is complete and in ASCII order.
 
   enew!
-  if filereadable('../../doc/eval.txt')
+  if filereadable('../../doc/builtin.txt')
     " unpacked MS-Windows zip archive
-    read ../../doc/eval.txt
+    read ../../doc/builtin.txt
   else
-    read ../../runtime/doc/eval.txt
+    read ../../runtime/doc/builtin.txt
   endif
-  call search('\*functions\*$')
   call search('^USAGE')
   1,.d
-  call search('\*\K\k*()\*$')
+  call search('^==========')
   .,$d
   v/^\S/d
   %s/(.*//

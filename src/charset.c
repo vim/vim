@@ -1240,10 +1240,15 @@ getvcol(
 	posptr = NULL;  // continue until the NUL
     else
     {
-	// Special check for an empty line, which can happen on exit, when
-	// ml_get_buf() always returns an empty string.
-	if (*ptr == NUL)
-	    pos->col = 0;
+	colnr_T i;
+
+	// In a few cases the position can be beyond the end of the line.
+	for (i = 0; i < pos->col; ++i)
+	    if (ptr[i] == NUL)
+	    {
+		pos->col = i;
+		break;
+	    }
 	posptr = ptr + pos->col;
 	if (has_mbyte)
 	    // always start on the first byte

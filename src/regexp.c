@@ -66,7 +66,7 @@ toggle_Magic(int x)
 #define EMSG2_RET_NULL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG3_RET_NULL(m, c, a) return (semsg((const char *)(m), (c) ? "" : "\\", (a)), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG2_RET_FAIL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, FAIL)
-#define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_("E369: invalid item in %s%%[]"), reg_magic == MAGIC_ALL)
+#define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_(e_invalid_item_in_str_brackets), reg_magic == MAGIC_ALL)
 
 
 #define MAX_LIMIT	(32767L << 16L)
@@ -1050,7 +1050,7 @@ read_limits(long *minval, long *maxval)
     if (*regparse == '\\')
 	regparse++;	// Allow either \{...} or \{...\}
     if (*regparse != '}')
-	EMSG2_RET_FAIL(_("E554: Syntax error in %s{...}"),
+	EMSG2_RET_FAIL(_(e_syntax_error_in_str_curlies),
 						       reg_magic == MAGIC_ALL);
 
     /*
@@ -1310,9 +1310,9 @@ reg_match_visual(void)
     if (lnum < top.lnum || lnum > bot.lnum)
 	return FALSE;
 
+    col = (colnr_T)(rex.input - rex.line);
     if (mode == 'v')
     {
-	col = (colnr_T)(rex.input - rex.line);
 	if ((lnum == top.lnum && col < top.col)
 		|| (lnum == bot.lnum && col >= bot.col + (*p_sel != 'e')))
 	    return FALSE;
@@ -1327,7 +1327,12 @@ reg_match_visual(void)
 	    end = end2;
 	if (top.col == MAXCOL || bot.col == MAXCOL || curswant == MAXCOL)
 	    end = MAXCOL;
-	cols = win_linetabsize(wp, rex.line, (colnr_T)(rex.input - rex.line));
+
+	// getvvcol() flushes rex.line, need to get it again
+	rex.line = reg_getline(rex.lnum);
+	rex.input = rex.line + col;
+
+	cols = win_linetabsize(wp, rex.line, col);
 	if (cols < start || cols > end - (*p_sel == 'e'))
 	    return FALSE;
     }
