@@ -1,6 +1,7 @@
 " Vim syntax file
 " Language: i3 config file
-" Maintainer: Mohamed Boughaba <mohamed dot bgb at gmail dot com>
+" Original Author: Mohamed Boughaba <mohamed dot bgb at gmail dot com>
+" Maintainer: Quentin Hibon
 " Version: 0.4
 " Last Change: 2021 Dec 14
 
