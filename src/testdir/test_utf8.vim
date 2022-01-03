@@ -206,4 +206,34 @@ func Test_print_overlong()
   bwipe!
 endfunc
 
+func Test_recording_with_select_mode_utf8()
+  new
+
+  " No escaping
+  call feedkeys("qacc12345\<Esc>gH哦\<Esc>q", "tx")
+  call assert_equal("哦", getline(1))
+  call assert_equal("cc12345\<Esc>gH哦\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("哦", getline(1))
+
+  " 固 is 0xE5 0x9B 0xBA where 0x9B is CSI
+  call feedkeys("qacc12345\<Esc>gH固\<Esc>q", "tx")
+  call assert_equal("固", getline(1))
+  call assert_equal("cc12345\<Esc>gH固\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("固", getline(1))
+
+  " 债 is 0xE5 0x80 0xBA where 0x80 is K_SPECIAL
+  call feedkeys("qacc12345\<Esc>gH债\<Esc>q", "tx")
+  call assert_equal("债", getline(1))
+  call assert_equal("cc12345\<Esc>gH债\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("债", getline(1))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

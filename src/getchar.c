@@ -1121,7 +1121,7 @@ ins_typebuf(
     int
 ins_char_typebuf(int c, int modifier)
 {
-    char_u	buf[MB_MAXBYTES + 4];
+    char_u	buf[MB_MAXBYTES * 3 + 4];
     int		len = 0;
 
     if (modifier != 0)
@@ -1142,8 +1142,24 @@ ins_char_typebuf(int c, int modifier)
     }
     else
     {
-	len += (*mb_char2bytes)(c, buf + len);
+	char_u *p = buf + len;
+	len += (*mb_char2bytes)(c, p);
 	buf[len] = NUL;
+	// Escape CSI and K_SPECIAL
+	while (*p)
+	{
+	    if (*p == CSI || *p == K_SPECIAL)
+	    {
+		int is_csi = *p == CSI;
+		mch_memmove(p + 3, p + 1, STRLEN(p + 1) + 1);
+		len += 2;
+		*p++ = K_SPECIAL;
+		*p++ = is_csi ? KS_EXTRA : KS_SPECIAL;
+		*p++ = is_csi ? KE_CSI : KE_FILLER;
+	    }
+	    else
+		p++;
+	}
     }
     (void)ins_typebuf(buf, KeyNoremap, 0, !KeyTyped, cmd_silent);
     return len;
