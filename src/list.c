@@ -2758,25 +2758,26 @@ list_extend_func(
 extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 {
     type_T	*type = NULL;
-    garray_T	type_list;
     char	*func_name = is_new ? "extendnew()" : "extend()";
 
-    if (!is_new && in_vim9script())
-    {
-	// Check that extend() does not change the type of the dict.
-	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
-    }
-
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
+    {
+	// Check that extend() does not change the type of the list if it was
+	// declared.
+	if (!is_new && in_vim9script() && argvars[0].vval.v_list != NULL)
+	    type = argvars[0].vval.v_list->lv_type;
 	list_extend_func(argvars, type, func_name, arg_errmsg, is_new, rettv);
+    }
     else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
+    {
+	// Check that extend() does not change the type of the list if it was
+	// declared.
+	if (!is_new && in_vim9script() && argvars[0].vval.v_dict != NULL)
+	    type = argvars[0].vval.v_dict->dv_type;
 	dict_extend_func(argvars, type, func_name, arg_errmsg, is_new, rettv);
+    }
     else
 	semsg(_(e_argument_of_str_must_be_list_or_dictionary), func_name);
-
-    if (type != NULL)
-	clear_type_list(&type_list);
 }
 
 /*

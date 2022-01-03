@@ -974,15 +974,25 @@ def Test_extend_arg_types()
       assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, 'keep'))
       assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, g:string_keep))
 
+      # mix of types is OK without a declaration
+
       var res: list<dict<any>>
       extend(res, mapnew([1, 2], (_, v) => ({})))
       assert_equal([{}, {}], res)
   END
   CheckDefAndScriptSuccess(lines)
 
+  # FIXME: this should not fail when compiled
+  lines =<< trim END
+      vim9script
+      assert_equal([1, 2, "x"], extend([1, 2], ["x"]))
+      assert_equal([1, "b", 1], extend([1], ["b", 1]))
+  END
+  CheckScriptSuccess(lines)
+
   CheckDefAndScriptFailure(['extend("a", 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E712: Argument of extend() must be a List or Dictionary'])
   CheckDefAndScriptFailure(['extend([1, 2], 3)'], ['E1013: Argument 2: type mismatch, expected list<number> but got number', 'E712: Argument of extend() must be a List or Dictionary'])
-  CheckDefAndScriptFailure(['extend([1, 2], ["x"])'], ['E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>'])
+  CheckDefAndScriptFailure(['var ll = [1, 2]', 'extend(ll, ["x"])'], ['E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>'])
   CheckDefFailure(['extend([1, 2], [3], "x")'], 'E1013: Argument 3: type mismatch, expected number but got string')
 
   CheckDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<number> but got number')
@@ -992,7 +1002,7 @@ def Test_extend_arg_types()
   CheckDefFailure(['extend([1], ["b"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
   CheckDefExecFailure(['extend([1], ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any>')
 
-  CheckScriptFailure(['vim9script', 'extend([1], ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any> in extend()')
+  CheckScriptFailure(['vim9script', 'var l = [1]', 'extend(l, ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any> in extend()')
 enddef
 
 func g:ExtendDict(d)
