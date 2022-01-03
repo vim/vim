@@ -1121,7 +1121,7 @@ ins_typebuf(
     int
 ins_char_typebuf(int c, int modifier)
 {
-    char_u	buf[MB_MAXBYTES + 4];
+    char_u	buf[MB_MAXBYTES * 3 + 4];
     int		len = 0;
 
     if (modifier != 0)
@@ -1142,8 +1142,17 @@ ins_char_typebuf(int c, int modifier)
     }
     else
     {
-	len += (*mb_char2bytes)(c, buf + len);
-	buf[len] = NUL;
+	char_u *p = buf + len;
+	int char_len = (*mb_char2bytes)(c, p);
+#ifdef FEAT_GUI
+	int save_gui_in_use = gui.in_use;
+	gui.in_use = FALSE;
+#endif
+	// If the character contains CSI or K_SPECIAL bytes they need escaping
+	len += fix_input_buffer(p, char_len);
+#ifdef FEAT_GUI
+	gui.in_use = save_gui_in_use;
+#endif
     }
     (void)ins_typebuf(buf, KeyNoremap, 0, !KeyTyped, cmd_silent);
     return len;
@@ -3644,7 +3653,6 @@ fix_input_buffer(char_u *buf, int len)
 	    p += 2;
 	    i -= 2;
 	}
-# ifndef MSWIN
 	// When the GUI is not used CSI needs to be escaped.
 	else if (!gui.in_use && p[0] == CSI)
 	{
@@ -3654,7 +3662,6 @@ fix_input_buffer(char_u *buf, int len)
 	    *p = (int)KE_CSI;
 	    len += 2;
 	}
-# endif
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
