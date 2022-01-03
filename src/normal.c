@@ -592,12 +592,19 @@ normal_cmd(
 	    && VIsual_select
 	    && (vim_isprintc(c) || c == NL || c == CAR || c == K_KENTER))
     {
+	int len;
+
 	// Fake a "c"hange command.  When "restart_edit" is set (e.g., because
 	// 'insertmode' is set) fake a "d"elete command, Insert mode will
 	// restart automatically.
 	// Insert the typed character in the typeahead buffer, so that it can
 	// be mapped in Insert mode.  Required for ":lmap" to work.
-	ins_char_typebuf(vgetc_char, vgetc_mod_mask);
+	len = ins_char_typebuf(vgetc_char, vgetc_mod_mask);
+
+	// When recording the character will be recorded again, remove the
+	// previously recording.
+	ungetchars(len);
+
 	if (restart_edit != 0)
 	    c = 'd';
 	else
