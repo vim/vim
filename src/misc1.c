@@ -2447,7 +2447,7 @@ get_cmd_output_as_rettv(
 	    err = TRUE;
 	if (err)
 	{
-	    emsg(_("E677: Error writing temp file"));
+	    emsg(_(e_error_writing_temp_file));
 	    goto errret;
 	}
     }

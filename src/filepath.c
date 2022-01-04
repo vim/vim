@@ -2056,7 +2056,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		{
 		    vim_free(p);
 		    vim_free(remain);
-		    emsg(_("E655: Too many symbolic links (cycle?)"));
+		    emsg(_(e_too_many_symbolic_links_cycle));
 		    rettv->vval.v_string = NULL;
 		    goto fail;
 		}

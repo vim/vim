@@ -964,12 +964,12 @@ ex_let_vars(
     i = list_len(l);
     if (semicolon == 0 && var_count < i)
     {
-	emsg(_("E687: Less targets than List items"));
+	emsg(_(e_less_targets_than_list_items));
 	return FAIL;
     }
     if (var_count - semicolon > i)
     {
-	emsg(_("E688: More targets than List items"));
+	emsg(_(e_more_targets_than_list_items));
 	return FAIL;
     }
 
@@ -1256,7 +1256,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 				case 's': list_script_vars(first); break;
 				case 'l': list_func_vars(first); break;
 				default:
-					  semsg(_("E738: Can't list variables for %s"), name);
+					  semsg(_(e_cant_list_variables_for_str), name);
 			    }
 			}
 			else
@@ -3691,8 +3691,7 @@ var_wrong_func_name(
 	    && !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
 						     ? name[2] : name[0]))
     {
-	semsg(_("E704: Funcref variable name must start with a capital: %s"),
-									name);
+	semsg(_(e_funcref_variable_name_must_start_with_capital_str), name);
 	return TRUE;
     }
     // Don't allow hiding a function.  When "v" is not NULL we might be
@@ -3700,7 +3699,7 @@ var_wrong_func_name(
     // below.
     if (new_var && function_exists(name, FALSE))
     {
-	semsg(_("E705: Variable name conflicts with existing function: %s"),
+	semsg(_(e_variable_name_conflicts_with_existing_function_str),
 								    name);
 	return TRUE;
     }

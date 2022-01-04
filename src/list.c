@@ -1542,7 +1542,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 		    semsg(_(e_no_white_space_allowed_before_str_str),
 								    ",", *arg);
 		else
-		    semsg(_("E696: Missing comma in List: %s"), *arg);
+		    semsg(_(e_missing_comma_in_list_str), *arg);
 	    }
 	    goto failret;
 	}
@@ -2002,7 +2002,7 @@ do_sort(list_T *l, sortinfo_T *info)
 		|| info->item_compare_partial != NULL)
 	    && item_compare2((void *)&ptrs[0], (void *)&ptrs[1])
 	    == ITEM_COMPARE_FAIL)
-	emsg(_("E702: Sort compare function failed"));
+	emsg(_(e_sort_compare_function_failed));
     else
     {
 	// Sort the array with item pointers.

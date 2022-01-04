@@ -761,7 +761,7 @@ ex_compiler(exarg_T *eap)
 
 	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
 	    if (source_runtime(buf, DIP_ALL) == FAIL)
-		semsg(_("E666: compiler not supported: %s"), eap->arg);
+		semsg(_(e_compiler_not_supported_str), eap->arg);
 	    vim_free(buf);
 
 	    do_cmdline_cmd((char_u *)":delcommand CompilerSet");

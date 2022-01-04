@@ -2417,7 +2417,7 @@ mch_print_init(
 	    // Check encoding and character set are compatible
 	    if ((p_mbenc->needs_charset & p_mbchar->has_charset) == 0)
 	    {
-		emsg(_("E673: Incompatible multi-byte encoding and character set."));
+		emsg(_(e_incompatible_multi_byte_encoding_and_character_set));
 		return FALSE;
 	    }
 
@@ -2434,7 +2434,7 @@ mch_print_init(
 	    // Add custom CMap character set name
 	    if (*p_pmcs == NUL)
 	    {
-		emsg(_("E674: printmbcharset cannot be empty with multi-byte encoding."));
+		emsg(_(e_printmbcharset_cannot_be_empty_with_multi_byte_encoding));
 		return FALSE;
 	    }
 	    vim_strncpy((char_u *)prt_cmap, p_pmcs, sizeof(prt_cmap) - 3);
@@ -2452,7 +2452,7 @@ mch_print_init(
 
 	if (!mbfont_opts[OPT_MBFONT_REGULAR].present)
 	{
-	    emsg(_("E675: No default font specified for multi-byte printing."));
+	    emsg(_(e_no_default_font_specified_for_multi_byte_printing));
 	    return FALSE;
 	}
 

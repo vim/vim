@@ -1517,7 +1517,11 @@ EXTERN char e_invalid_buffer_identifier_in_addanno[]
 EXTERN char e_invalid_buffer_identifier_in_getanno[]
 	INIT(= "E652: Invalid buffer identifier in getAnno");
 #endif
-
+// E653 unused
+EXTERN char e_missing_delimiter_after_search_pattern_str[]
+	INIT(= N_("E654: missing delimiter after search pattern: %s"));
+EXTERN char e_too_many_symbolic_links_cycle[]
+	INIT(= N_("E655: Too many symbolic links (cycle?)"));
 #ifdef FEAT_NETBEANS_INTG
 	// E656
 EXTERN char e_netbeans_disallows_writes_of_unmodified_buffers[]
@@ -1527,9 +1531,31 @@ EXTERN char e_partial_writes_disallowed_for_netbeans_buffers[]
 	INIT(= N_("Partial writes disallowed for NetBeans buffers"));
 EXTERN char e_netbeans_connection_lost_for_buffer_nr[]
 	INIT(= N_("E658: NetBeans connection lost for buffer %d"));
+#endif
+#ifdef FEAT_PYTHON
+EXTERN char e_cannot_invoke_python_recursively[]
+	INIT(= N_("E659: Cannot invoke Python recursively"));
+#endif
+#ifdef FEAT_NETBEANS_INTG
 EXTERN char e_cannot_open_netbeans_connection_info_file[]
 	INIT(= "E660: Cannot open NetBeans connection info file");
 #endif
+#ifdef FEAT_MULTI_LANG
+EXTERN char e_sorry_no_str_help_for_str[]
+	INIT(= N_("E661: Sorry, no '%s' help for %s"));
+#endif
+EXTERN char e_at_start_of_changelist[]
+	INIT(= N_("E662: At start of changelist"));
+EXTERN char e_at_end_of_changelist[]
+	INIT(= N_("E663: At end of changelist"));
+EXTERN char e_changelist_is_empty[]
+	INIT(= N_("E664: changelist is empty"));
+#ifdef FEAT_GUI
+EXTERN char e_cannot_start_gui_no_valid_font_found[]
+	INIT(= N_("E665: Cannot start GUI, no valid font found"));
+#endif
+EXTERN char e_compiler_not_supported_str[]
+	INIT(= N_("E666: compiler not supported: %s"));
 #ifdef HAVE_FSYNC
 EXTERN char e_fsync_failed[]
 	INIT(= N_("E667: Fsync failed"));
@@ -1538,12 +1564,38 @@ EXTERN char e_fsync_failed[]
 EXTERN char e_wrong_access_mode_for_netbeans_connection_info_file_str[]
 	INIT(= N_("E668: Wrong access mode for NetBeans connection info file: \"%s\""));
 #endif
+EXTERN char e_unprintable_character_in_group_name[]
+	INIT(= N_("E669: Unprintable character in group name"));
+EXTERN char e_mix_of_help_file_encodings_within_language_str[]
+	INIT(= N_("E670: Mix of help file encodings within a language: %s"));
+#ifdef FEAT_GUI_MSWIN
+EXTERN char e_cannot_find_window_title_str[]
+	INIT(= N_("E671: Cannot find window title \"%s\""));
+EXTERN char e_unable_to_open_window_inside_mdi_application[]
+	INIT(= N_("E672: Unable to open window inside MDI application"));
+#endif
+EXTERN char e_incompatible_multi_byte_encoding_and_character_set[]
+	INIT(= N_("E673: Incompatible multi-byte encoding and character set"));
+EXTERN char e_printmbcharset_cannot_be_empty_with_multi_byte_encoding[]
+	INIT(= N_("E674: printmbcharset cannot be empty with multi-byte encoding."));
+EXTERN char e_no_default_font_specified_for_multi_byte_printing[]
+	INIT(= N_("E675: No default font specified for multi-byte printing."));
 EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
 	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
+EXTERN char e_error_writing_temp_file[]
+	INIT(= N_("E677: Error writing temp file"));
+EXTERN char e_invalid_character_after_str_2[]
+	INIT(= N_("E678: Invalid character after %s%%[dxouU]"));
+EXTERN char e_recursive_loop_loading_syncolor_vim[]
+	INIT(= N_("E679: recursive loop loading syncolor.vim"));
 EXTERN char e_buffer_nr_invalid_buffer_number[]
 	INIT(= N_("E680: <buffer=%d>: invalid buffer number"));
+EXTERN char e_buffer_is_not_loaded[]
+	INIT(= N_("E681: Buffer is not loaded"));
 EXTERN char e_invalid_search_pattern_or_delimiter[]
 	INIT(= N_("E682: Invalid search pattern or delimiter"));
+EXTERN char e_file_name_missing_or_invalid_pattern[]
+	INIT(= N_("E683: File name missing or invalid pattern"));
 #ifdef FEAT_EVAL
 EXTERN char e_list_index_out_of_range_nr[]
 	INIT(= N_("E684: list index out of range: %ld"));
@@ -1553,15 +1605,50 @@ EXTERN char e_internal_error_str[]
 #ifdef FEAT_EVAL
 EXTERN char e_argument_of_str_must_be_list[]
 	INIT(= N_("E686: Argument of %s must be a List"));
+EXTERN char e_less_targets_than_list_items[]
+	INIT(= N_("E687: Less targets than List items"));
+EXTERN char e_more_targets_than_list_items[]
+	INIT(= N_("E688: More targets than List items"));
+EXTERN char e_can_only_index_list_dictionary_or_blob[]
+	INIT(= N_("E689: Can only index a List, Dictionary or Blob"));
 EXTERN char e_missing_in_after_for[]
 	INIT(= N_("E690: Missing \"in\" after :for"));
+EXTERN char e_can_only_compare_list_with_list[]
+	INIT(= N_("E691: Can only compare List with List"));
+EXTERN char e_invalid_operation_for_list[]
+	INIT(= N_("E692: Invalid operation for List"));
 // E693 unused
+EXTERN char e_invalid_operation_for_funcrefs[]
+	INIT(= N_("E694: Invalid operation for Funcrefs"));
 EXTERN char e_cannot_index_a_funcref[]
 	INIT(= N_("E695: Cannot index a Funcref"));
+EXTERN char e_missing_comma_in_list_str[]
+	INIT(= N_("E696: Missing comma in List: %s"));
 EXTERN char e_missing_end_of_list_rsb_str[]
 	INIT(= N_("E697: Missing end of List ']': %s"));
-
+EXTERN char e_variable_nested_too_deep_for_making_copy[]
+	INIT(= N_("E698: variable nested too deep for making a copy"));
+EXTERN char e_too_many_arguments[]
+	INIT(= N_("E699: Too many arguments"));
+EXTERN char e_unknown_function_str_2[]
+	INIT(= N_("E700: Unknown function: %s"));
+EXTERN char e_invalid_type_for_len[]
+	INIT(= N_("E701: Invalid type for len()"));
+EXTERN char e_sort_compare_function_failed[]
+	INIT(= N_("E702: Sort compare function failed"));
+EXTERN char e_using_funcref_as_number[]
+	INIT(= N_("E703: Using a Funcref as a Number"));
+EXTERN char e_funcref_variable_name_must_start_with_capital_str[]
+	INIT(= N_("E704: Funcref variable name must start with a capital: %s"));
+EXTERN char e_variable_name_conflicts_with_existing_function_str[]
+	INIT(= N_("E705: Variable name conflicts with existing function: %s"));
 // E706 unused
+EXTERN char e_function_name_conflicts_with_variable_str[]
+	INIT(= N_("E707: Function name conflicts with variable: %s"));
+EXTERN char e_slice_must_come_last[]
+	INIT(= N_("E708: [:] must come last"));
+EXTERN char e_slice_requires_list_or_blob_value[]
+	INIT(= N_("E709: [:] requires a List or Blob value"));
 EXTERN char e_list_value_has_more_items_than_targets[]
 	INIT(= N_("E710: List value has more items than targets"));
 EXTERN char e_list_value_does_not_have_enough_items[]
@@ -1576,6 +1663,10 @@ EXTERN char e_dictionary_required[]
 	INIT(= N_("E715: Dictionary required"));
 EXTERN char e_key_not_present_in_dictionary[]
 	INIT(= N_("E716: Key not present in Dictionary: \"%s\""));
+EXTERN char e_dictionary_entry_already_exists[]
+	INIT(= N_("E717: Dictionary entry already exists"));
+EXTERN char e_funcref_required[]
+	INIT(= N_("E718: Funcref required"));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
 EXTERN char e_missing_colon_in_dictionary[]
@@ -1586,8 +1677,40 @@ EXTERN char e_missing_comma_in_dictionary[]
 	INIT(= N_("E722: Missing comma in Dictionary: %s"));
 EXTERN char e_missing_dict_end[]
 	INIT(= N_("E723: Missing end of Dictionary '}': %s"));
+EXTERN char e_variable_nested_too_deep_for_displaying[]
+	INIT(= N_("E724: variable nested too deep for displaying"));
+EXTERN char e_calling_dict_function_without_dictionary_str[]
+	INIT(= N_("E725: Calling dict function without Dictionary: %s"));
+EXTERN char e_stride_is_zero[]
+	INIT(= N_("E726: Stride is zero"));
+EXTERN char e_start_past_end[]
+	INIT(= N_("E727: Start past end"));
+EXTERN char e_using_dictionary_as_number[]
+	INIT(= N_("E728: Using a Dictionary as a Number"));
+EXTERN char e_using_funcref_as_string[]
+	INIT(= N_("E729: Using a Funcref as a String"));
+EXTERN char e_using_list_as_string[]
+	INIT(= N_("E730: Using a List as a String"));
+EXTERN char e_using_dictionary_as_string[]
+	INIT(= N_("E731: Using a Dictionary as a String"));
+EXTERN char e_using_endfor_with_while[]
+	INIT(= N_("E732: Using :endfor with :while"));
+EXTERN char e_using_endwhile_with_for[]
+	INIT(= N_("E733: Using :endwhile with :for"));
 EXTERN char e_wrong_variable_type_for_str_equal[]
 	INIT(= N_("E734: Wrong variable type for %s="));
+EXTERN char e_can_only_compare_dictionary_with_dictionary[]
+	INIT(= N_("E735: Can only compare Dictionary with Dictionary"));
+EXTERN char e_invalid_operation_for_dictionary[]
+	INIT(= N_("E736: Invalid operation for Dictionary"));
+EXTERN char e_key_already_exists_str[]
+	INIT(= N_("E737: Key already exists: %s"));
+EXTERN char e_cant_list_variables_for_str[]
+	INIT(= N_("E738: Can't list variables for %s"));
+EXTERN char e_cannot_create_directory_str[]
+	INIT(= N_("E739: Cannot create directory: %s"));
+EXTERN char e_too_many_arguments_for_function_str_2[]
+	INIT(= N_("E740: Too many arguments for function %s"));
 EXTERN char e_value_is_locked[]
 	INIT(= N_("E741: Value is locked"));
 EXTERN char e_value_is_locked_str[]
@@ -1700,6 +1823,8 @@ EXTERN char e_string_required[]
 EXTERN char e_buffer_cannot_be_registered[]
 	INIT(= N_("E931: Buffer cannot be registered"));
 #ifdef FEAT_EVAL
+EXTERN char e_closure_function_should_not_be_at_top_level[]
+	INIT(= N_("E932: Closure function should not be at top level: %s"));
 EXTERN char e_function_was_deleted_str[]
 	INIT(= N_("E933: Function was deleted: %s"));
 #endif

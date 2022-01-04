@@ -958,7 +958,7 @@ get_lval(
 		&& lp->ll_tv->v_type != VAR_BLOB)
 	{
 	    if (!quiet)
-		emsg(_("E689: Can only index a List, Dictionary or Blob"));
+		emsg(_(e_can_only_index_list_dictionary_or_blob));
 	    return NULL;
 	}
 
@@ -972,7 +972,7 @@ get_lval(
 	if (lp->ll_range)
 	{
 	    if (!quiet)
-		emsg(_("E708: [:] must come last"));
+		emsg(_(e_slice_must_come_last));
 	    return NULL;
 	}
 
@@ -1039,7 +1039,7 @@ get_lval(
 						&& rettv->vval.v_blob != NULL))
 		{
 		    if (!quiet)
-			emsg(_("E709: [:] requires a List or Blob value"));
+			emsg(_(e_slice_requires_list_or_blob_value));
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -5010,7 +5010,7 @@ echo_string_core(
 	    // flooding the user with errors.  And stop iterating over lists
 	    // and dicts.
 	    did_echo_string_emsg = TRUE;
-	    emsg(_("E724: variable nested too deep for displaying"));
+	    emsg(_(e_variable_nested_too_deep_for_displaying));
 	}
 	*tofree = NULL;
 	return (char_u *)"{E724}";
@@ -6020,7 +6020,7 @@ item_copy(
 
     if (recurse >= DICT_MAXNEST)
     {
-	emsg(_("E698: variable nested too deep for making a copy"));
+	emsg(_(e_variable_nested_too_deep_for_making_copy));
 	return FAIL;
     }
     ++recurse;

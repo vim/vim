@@ -29,9 +29,6 @@ static funccall_T *current_funccal = NULL;
 // item in it is still being used.
 static funccall_T *previous_funccal = NULL;
 
-static char *e_funcdict = N_("E717: Dictionary entry already exists");
-static char *e_funcref = N_("E718: Funcref required");
-
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 static void func_clear(ufunc_T *fp, int force);
 static int func_free(ufunc_T *fp, int force);
@@ -1802,7 +1799,7 @@ get_func_tv(
     else if (!aborting())
     {
 	if (argcount == MAX_FUNC_ARGS)
-	    emsg_funcname(N_("E740: Too many arguments for function %s"), name);
+	    emsg_funcname(e_too_many_arguments_for_function_str_2, name);
 	else
 	    emsg_funcname(e_invalid_arguments_for_function_str, name);
     }
@@ -3156,7 +3153,7 @@ func_call(
     {
 	if (argc == MAX_FUNC_ARGS - (partial == NULL ? 0 : partial->pt_argc))
 	{
-	    emsg(_("E699: Too many arguments"));
+	    emsg(_(e_too_many_arguments));
 	    break;
 	}
 	// Make a copy of each argument.  This is needed to be able to set
@@ -3274,21 +3271,18 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 		emsg_funcname(e_function_was_deleted_str, name);
 		break;
 	case FCERR_TOOMANY:
-		emsg_funcname((char *)e_too_many_arguments_for_function_str,
-									 name);
+		emsg_funcname(e_too_many_arguments_for_function_str, name);
 		break;
 	case FCERR_TOOFEW:
-		emsg_funcname((char *)e_not_enough_arguments_for_function_str,
-									 name);
+		emsg_funcname(e_not_enough_arguments_for_function_str, name);
 		break;
 	case FCERR_SCRIPT:
 		emsg_funcname(
 		    e_using_sid_not_in_script_context_str, name);
 		break;
 	case FCERR_DICT:
-		emsg_funcname(
-		      N_("E725: Calling dict function without Dictionary: %s"),
-			name);
+		emsg_funcname(e_calling_dict_function_without_dictionary_str,
+									 name);
 		break;
     }
 }
@@ -3725,7 +3719,7 @@ trans_function_name(
 	{
 	    if (!skip && !(flags & TFN_QUIET) && (fdp == NULL
 			     || lv.ll_dict == NULL || fdp->fd_newkey == NULL))
-		emsg(_(e_funcref));
+		emsg(_(e_funcref_required));
 	    else
 		*pp = end;
 	    name = NULL;
@@ -4258,7 +4252,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 					: eval_isnamec(name_base[i])); ++i)
 		;
 	    if (name_base[i] != NUL)
-		emsg_funcname((char *)e_invalid_argument_str, arg);
+		emsg_funcname(e_invalid_argument_str, arg);
 
 	    // In Vim9 script a function cannot have the same name as a
 	    // variable.
@@ -4344,7 +4338,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 		p += 7;
 		if (current_funccal == NULL)
 		{
-		    emsg_funcname(N_("E932: Closure function should not be at top level: %s"),
+		    emsg_funcname(e_closure_function_should_not_be_at_top_level,
 			    name == NULL ? (char_u *)"" : name);
 		    goto erret;
 		}
@@ -4378,7 +4372,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	if (!eap->skip && !eap->forceit)
 	{
 	    if (fudi.fd_dict != NULL && fudi.fd_newkey == NULL)
-		emsg(_(e_funcdict));
+		emsg(_(e_dictionary_entry_already_exists));
 	    else if (name != NULL && find_func(name, is_global, NULL) != NULL)
 		emsg_funcname(e_function_str_already_exists_add_bang_to_replace, name);
 	}
@@ -4409,8 +4403,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	v = find_var(name, &ht, TRUE);
 	if (v != NULL && v->di_tv.v_type == VAR_FUNC)
 	{
-	    emsg_funcname(N_("E707: Function name conflicts with variable: %s"),
-									name);
+	    emsg_funcname(e_function_name_conflicts_with_variable_str, name);
 	    goto erret;
 	}
 
@@ -4481,7 +4474,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	fp = NULL;
 	if (fudi.fd_newkey == NULL && !eap->forceit)
 	{
-	    emsg(_(e_funcdict));
+	    emsg(_(e_dictionary_entry_already_exists));
 	    goto erret;
 	}
 	if (fudi.fd_di == NULL)
@@ -4893,7 +4886,7 @@ ex_delfunction(exarg_T *eap)
     if (name == NULL)
     {
 	if (fudi.fd_dict != NULL && !eap->skip)
-	    emsg(_(e_funcref));
+	    emsg(_(e_funcref_required));
 	return;
     }
     if (!ends_excmd(*skipwhite(p)))

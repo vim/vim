@@ -682,7 +682,7 @@ gui_init(void)
 	    gui_init_font(*p_guifont == NUL ? hl_get_font_name()
 						  : p_guifont, FALSE) == FAIL)
     {
-	emsg(_("E665: Cannot start GUI, no valid font found"));
+	emsg(_(e_cannot_start_gui_no_valid_font_found));
 	goto error2;
     }
     if (gui_get_wide_font() == FAIL)

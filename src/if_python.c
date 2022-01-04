@@ -1024,7 +1024,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 #ifndef PY_CAN_RECURSE
     if (recursive)
     {
-	emsg(_("E659: Cannot invoke Python recursively"));
+	emsg(_(e_cannot_invoke_python_recursively));
 	return;
     }
     ++recursive;

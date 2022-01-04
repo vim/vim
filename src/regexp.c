@@ -552,7 +552,7 @@ skip_regexp_err(
 
     if (*p != delim)
     {
-	semsg(_("E654: missing delimiter after search pattern: %s"), startp);
+	semsg(_(e_missing_delimiter_after_search_pattern_str), startp);
 	return NULL;
     }
     return p;

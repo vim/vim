@@ -1612,8 +1612,8 @@ regatom(int *flagp)
 
 			      if (i < 0 || i > INT_MAX)
 				  EMSG2_RET_NULL(
-					_("E678: Invalid character after %s%%[dxouU]"),
-					reg_magic == MAGIC_ALL);
+					    _(e_invalid_character_after_str_2),
+						       reg_magic == MAGIC_ALL);
 			      if (use_multibytecode(i))
 				  ret = regnode(MULTIBYTECODE);
 			      else

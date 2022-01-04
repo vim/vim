@@ -8273,7 +8273,7 @@ vim_mkdir_emsg(char_u *name, int prot UNUSED)
 {
     if (vim_mkdir(name, prot) != 0)
     {
-	semsg(_("E739: Cannot create directory: %s"), name);
+	semsg(_(e_cannot_create_directory_str), name);
 	return FAIL;
     }
     return OK;

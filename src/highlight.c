@@ -447,7 +447,7 @@ init_highlight(
 	static int	recursive = 0;
 
 	if (recursive >= 5)
-	    emsg(_("E679: recursive loop loading syncolor.vim"));
+	    emsg(_(e_recursive_loop_loading_syncolor_vim));
 	else
 	{
 	    ++recursive;
@@ -3443,7 +3443,7 @@ syn_add_group(char_u *name)
     {
 	if (!vim_isprintc(*p))
 	{
-	    emsg(_("E669: Unprintable character in group name"));
+	    emsg(_(e_unprintable_character_in_group_name));
 	    vim_free(name);
 	    return 0;
 	}

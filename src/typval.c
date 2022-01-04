@@ -196,7 +196,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 #endif
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg(_("E703: Using a Funcref as a Number"));
+	    emsg(_(e_using_funcref_as_number));
 	    break;
 	case VAR_STRING:
 	    if (in_vim9script())
@@ -212,7 +212,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    emsg(_("E745: Using a List as a Number"));
 	    break;
 	case VAR_DICT:
-	    emsg(_("E728: Using a Dictionary as a Number"));
+	    emsg(_(e_using_dictionary_as_number));
 	    break;
 	case VAR_BOOL:
 	case VAR_SPECIAL:
@@ -927,13 +927,13 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg(_("E729: Using a Funcref as a String"));
+	    emsg(_(e_using_funcref_as_string));
 	    break;
 	case VAR_LIST:
-	    emsg(_("E730: Using a List as a String"));
+	    emsg(_(e_using_list_as_string));
 	    break;
 	case VAR_DICT:
-	    emsg(_("E731: Using a Dictionary as a String"));
+	    emsg(_(e_using_dictionary_as_string));
 	    break;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -1345,9 +1345,9 @@ typval_compare_list(
 	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
     {
 	if (tv1->v_type != tv2->v_type)
-	    emsg(_("E691: Can only compare List with List"));
+	    emsg(_(e_can_only_compare_list_with_list));
 	else
-	    emsg(_("E692: Invalid operation for List"));
+	    emsg(_(e_invalid_operation_for_list));
 	return FAIL;
     }
     else
@@ -1427,9 +1427,9 @@ typval_compare_dict(
 		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
     {
 	if (tv1->v_type != tv2->v_type)
-	    emsg(_("E735: Can only compare Dictionary with Dictionary"));
+	    emsg(_(e_can_only_compare_dictionary_with_dictionary));
 	else
-	    emsg(_("E736: Invalid operation for Dictionary"));
+	    emsg(_(e_invalid_operation_for_dictionary));
 	return FAIL;
     }
     else
@@ -1460,7 +1460,7 @@ typval_compare_func(
     if (type != EXPR_EQUAL && type != EXPR_NEQUAL
 	    && type != EXPR_IS && type != EXPR_ISNOT)
     {
-	emsg(_("E694: Invalid operation for Funcrefs"));
+	emsg(_(e_invalid_operation_for_funcrefs));
 	return FAIL;
     }
     if ((tv1->v_type == VAR_PARTIAL && tv1->vval.v_partial == NULL)

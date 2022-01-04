@@ -1116,7 +1116,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	    }
 	    else if (*action == 'e')
 	    {
-		semsg(_("E737: Key already exists: %s"), hi2->hi_key);
+		semsg(_(e_key_already_exists_str), hi2->hi_key);
 		break;
 	    }
 	    else if (*action == 'f' && HI2DI(hi2) != di1)

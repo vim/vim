@@ -1406,9 +1406,9 @@ ex_endwhile(exarg_T *eap)
 	    // If we are in a ":while" or ":for" but used the wrong endloop
 	    // command, do not rewind to the next enclosing ":for"/":while".
 	    if (fl & CSF_WHILE)
-		eap->errmsg = _("E732: Using :endfor with :while");
+		eap->errmsg = _(e_using_endfor_with_while);
 	    else if (fl & CSF_FOR)
-		eap->errmsg = _("E733: Using :endwhile with :for");
+		eap->errmsg = _(e_using_endwhile_with_for);
 	}
 	if (!(fl & (CSF_WHILE | CSF_FOR)))
 	{

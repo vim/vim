@@ -6116,7 +6116,7 @@ vgr_process_args(
     p = skipwhite(p);
     if (*p == NUL)
     {
-	emsg(_("E683: File name missing or invalid pattern"));
+	emsg(_(e_file_name_missing_or_invalid_pattern));
 	return FAIL;
     }
 
@@ -7785,7 +7785,7 @@ cbuffer_process_args(
 
     if (buf->b_ml.ml_mfp == NULL)
     {
-	emsg(_("E681: Buffer is not loaded"));
+	emsg(_(e_buffer_is_not_loaded));
 	return FAIL;
     }
 

@@ -1638,9 +1638,8 @@ nfa_regatom(void)
 			}
 
 			if (nr < 0 || nr > INT_MAX)
-			    EMSG2_RET_FAIL(
-			       _("E678: Invalid character after %s%%[dxouU]"),
-				    reg_magic == MAGIC_ALL);
+			    EMSG2_RET_FAIL(_(e_invalid_character_after_str_2),
+						       reg_magic == MAGIC_ALL);
 			// A NUL is stored in the text as NL
 			// TODO: what if a composing character follows?
 			EMIT(nr == 0 ? 0x0a : nr);

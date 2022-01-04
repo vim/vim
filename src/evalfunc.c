@@ -4113,7 +4113,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     else if (trans_name != NULL && (is_funcref
 			 ? find_func(trans_name, is_global, NULL) == NULL
 			 : !translated_function_exists(trans_name, is_global)))
-	semsg(_("E700: Unknown function: %s"), s);
+	semsg(_(e_unknown_function_str_2), s);
     else
     {
 	int	dict_idx = 0;
@@ -6779,7 +6779,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
-	    emsg(_("E701: Invalid type for len()"));
+	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
 }
@@ -7836,9 +7836,9 @@ f_range(typval_T *argvars, typval_T *rettv)
     if (error)
 	return;		// type error; errmsg already given
     if (stride == 0)
-	emsg(_("E726: Stride is zero"));
+	emsg(_(e_stride_is_zero));
     else if (stride > 0 ? end + 1 < start : end - 1 > start)
-	emsg(_("E727: Start past end"));
+	emsg(_(e_start_past_end));
     else if (rettv_list_alloc(rettv) == OK)
     {
 	list_T *list = rettv->vval.v_list;
