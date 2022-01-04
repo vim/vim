@@ -524,9 +524,9 @@ arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    expected = &t_number;
 	if (expected != NULL)
 	{
-	    type_T t_func_exp = {VAR_FUNC, -1, 0, TTFLAG_STATIC,
-							       expected, NULL};
+	    type_T t_func_exp = {VAR_FUNC, -1, 0, TTFLAG_STATIC, NULL, NULL};
 
+	    t_func_exp.tt_member = expected;
 	    return check_arg_type(&t_func_exp, type, context);
 	}
     }
