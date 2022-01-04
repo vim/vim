@@ -109,8 +109,6 @@ dict_free_contents(dict_T *d)
     hashtab_free_contents(&d->dv_hashtab);
     free_type(d->dv_type);
     d->dv_type = NULL;
-    free_type(d->dv_decl_type);
-    d->dv_decl_type = NULL;
 }
 
 /*

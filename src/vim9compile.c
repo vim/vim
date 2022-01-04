@@ -2279,14 +2279,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// ":const var": lock the value, but not referenced variables
 		generate_LOCKCONST(cctx);
 
-	    if (is_decl
-		    && (lhs.lhs_type->tt_type == VAR_DICT
+	    if ((lhs.lhs_type->tt_type == VAR_DICT
 					  || lhs.lhs_type->tt_type == VAR_LIST)
 		    && lhs.lhs_type->tt_member != NULL
 		    && lhs.lhs_type->tt_member != &t_unknown)
 		// Set the type in the list or dict, so that it can be checked,
-		// also in legacy script.  Not for "list<any> = val", then the
-		// type of "val" is used.
+		// also in legacy script.
 		generate_SETTYPE(cctx, lhs.lhs_type);
 
 	    if (!skip_store && generate_store_lhs(cctx, &lhs,

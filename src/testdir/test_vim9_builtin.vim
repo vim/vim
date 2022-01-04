@@ -979,6 +979,10 @@ def Test_extend_arg_types()
       var res: list<dict<any>>
       extend(res, mapnew([1, 2], (_, v) => ({})))
       assert_equal([{}, {}], res)
+
+      var dany: dict<any> = {a: 0}
+      dany->extend({b: 'x'})
+      assert_equal({a: 0, b: 'x'}, dany)
   END
   CheckDefAndScriptSuccess(lines)
 
@@ -2151,9 +2155,29 @@ def Test_map()
   CheckDefAndScriptFailure(['map(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1'])
 
   # type of dict remains dict<any> even when type of values changes
-  var d: dict<any> = {a: 0}
-  d->map((k, v) => true)
-  d->map((k, v) => 'x')
+  # same for list
+  var lines =<< trim END
+      var d: dict<any> = {a: 0}
+      d->map((k, v) => true)
+      d->map((k, v) => 'x')
+      assert_equal({a: 'x'}, d)
+
+      d = {a: 0}
+      g:gd = d
+      map(g:gd, (k, v) => true)
+      assert_equal({a: true}, g:gd)
+
+      var l: list<any> = [0]
+      l->map((k, v) => true)
+      l->map((k, v) => 'x')
+      assert_equal(['x'], l)
+
+      l = [1]
+      g:gl = l
+      map(g:gl, (k, v) => true)
+      assert_equal([true], g:gl)
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_map_failure()
@@ -2175,6 +2199,13 @@ def Test_map_failure()
   CheckScriptFailure(lines, 'E1013:')
   au! BufReadPost
   delete('Xtmpfile')
+
+  lines =<< trim END
+      var d: dict<number> = {a: 1}
+      g:gd = d
+      map(g:gd, (k, v) => true)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got bool')
 enddef
 
 def Test_map_function_arg()
