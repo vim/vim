@@ -42,6 +42,7 @@ char_u *get_highlight_default(void);
 char_u *get_encoding_default(void);
 int makeset(FILE *fd, int opt_flags, int local_only);
 int makefoldset(FILE *fd);
+int makehelpset(FILE *fd, int foldset);
 void clear_termoptions(void);
 void free_termoptions(void);
 void free_one_termoption(char_u *var);

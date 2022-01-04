@@ -422,12 +422,16 @@ put_view(
     // used and 'sessionoptions' doesn't include "options".
     // Some folding options are always stored when "folds" is included,
     // otherwise the folds would not be restored correctly.
+    // For "help" buffers a set of default options is also stored unless
+    // 'sessionoptions' already includes "options".
     save_curwin = curwin;
     curwin = wp;
     curbuf = curwin->w_buffer;
     if (*flagp & (SSOP_OPTIONS | SSOP_LOCALOPTIONS))
 	f = makeset(fd, OPT_LOCAL,
 			     flagp == &vop_flags || !(*flagp & SSOP_OPTIONS));
+    else if (bt_help(curbuf))
+	f = makehelpset(fd, !!(*flagp & SSOP_FOLDS));
 #ifdef FEAT_FOLDING
     else if (*flagp & SSOP_FOLDS)
 	f = makefoldset(fd);

@@ -4821,6 +4821,69 @@ makefoldset(FILE *fd)
 }
 #endif
 
+/*
+ *  Generate default set commands for "help" buffer.  Used when
+ *  'sessionoptions' or 'viewoptions' does not contain "options".
+ */
+    int
+makehelpset(FILE *fd, int foldset)
+{
+    long	eight = 8;
+    char_u	*help = (char_u *)"help";
+#ifdef FEAT_FOLDING
+    char_u	*manual = (char_u *)"manual";
+#endif
+#ifdef EBCDIC
+    char_u	*isk = (char_u *)"65-255,^*,^|,^\"";
+#else
+    char_u	*isk = (char_u *)"!-~,^*,^|,^\",192-255";
+#endif
+
+    if (put_setstring(fd, "setlocal", "bt", &help, 0) == FAIL
+	    || put_setstring(fd, "setlocal", "isk", &isk, P_COMMA) == FAIL
+	    || put_setnum(fd, "setlocal", "ts", &eight) == FAIL
+	    || put_setbool(fd, "setlocal", "bin", FALSE) == FAIL
+	    || put_setbool(fd, "setlocal", "bl", FALSE) == FAIL
+	    || put_setbool(fd, "setlocal", "list", FALSE) == FAIL
+	    || put_setbool(fd, "setlocal", "ma", FALSE) == FAIL
+	    || put_setbool(fd, "setlocal", "nu", FALSE) == FAIL
+	    || put_setbool(fd, "setlocal", "rnu", FALSE) == FAIL
+	    || put_setbool(fd, "setlocal", "ro", TRUE) == FAIL
+	    || put_setbool(fd, "setlocal", "crb", FALSE) == FAIL
+	    || put_setbool(fd, "setlocal", "scb", FALSE) == FAIL
+#ifdef FEAT_ARABIC
+	    || put_setbool(fd, "setlocal", "arab", FALSE) == FAIL
+#endif
+#ifdef FEAT_DIFF
+	    || put_setbool(fd, "setlocal", "diff", FALSE) == FAIL
+#endif
+#ifdef FEAT_RIGHTLEFT
+	    || put_setbool(fd, "setlocal", "rl", FALSE) == FAIL
+#endif
+#ifdef FEAT_SPELL
+	    || put_setbool(fd, "setlocal", "spell", FALSE) == FAIL
+#endif
+	    )
+	return FAIL;
+
+#ifdef FEAT_FOLDING
+    if (foldset)
+    {
+	if (makefoldset(fd) == FAIL)
+	    return FAIL;
+    }
+    else
+    {
+	if (put_setstring(fd, "setlocal", "fdm", &manual, 0) == FAIL
+	    || put_setbool(fd, "setlocal", "fen", FALSE) == FAIL
+	    )
+	    return FAIL;
+    }
+#endif
+
+    return OK;
+}
+
     static int
 put_setstring(
     FILE	*fd,
