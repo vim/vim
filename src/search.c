@@ -1727,16 +1727,15 @@ search_for_exact_line(
 
 	// when adding lines the matching line may be empty but it is not
 	// ignored because we are interested in the next line -- Acevedo
-	if ((compl_cont_status & CONT_ADDING)
-					   && !(compl_cont_status & CONT_SOL))
+	if (compl_status_adding() && !compl_status_sol())
 	{
 	    if ((p_ic ? MB_STRICMP(p, pat) : STRCMP(p, pat)) == 0)
 		return OK;
 	}
 	else if (*p != NUL)	// ignore empty lines
 	{	// expanding lines or words
-	    if ((p_ic ? MB_STRNICMP(p, pat, compl_length)
-				   : STRNCMP(p, pat, compl_length)) == 0)
+	    if ((p_ic ? MB_STRNICMP(p, pat, ins_compl_len())
+				   : STRNCMP(p, pat, ins_compl_len())) == 0)
 		return OK;
 	}
     }
@@ -3317,7 +3316,7 @@ update_search_stat(
 #if defined(FEAT_FIND_ID) || defined(PROTO)
 /*
  * Find identifiers or defines in included files.
- * If p_ic && (compl_cont_status & CONT_SOL) then ptr must be in lowercase.
+ * If p_ic && compl_status_sol() then ptr must be in lowercase.
  */
     void
 find_pattern_in_path(
@@ -3375,9 +3374,9 @@ find_pattern_in_path(
 	return;
 
     if (type != CHECK_PATH && type != FIND_DEFINE
-	// when CONT_SOL is set compare "ptr" with the beginning of the line
-	// is faster than quote_meta/regcomp/regexec "ptr" -- Acevedo
-	    && !(compl_cont_status & CONT_SOL))
+	    // when CONT_SOL is set compare "ptr" with the beginning of the
+	    // line is faster than quote_meta/regcomp/regexec "ptr" -- Acevedo
+	    && !compl_status_sol())
     {
 	pat = alloc(len + 5);
 	if (pat == NULL)
@@ -3652,7 +3651,7 @@ search_line:
 	     */
 	    if (def_regmatch.regprog == NULL || define_matched)
 	    {
-		if (define_matched || (compl_cont_status & CONT_SOL))
+		if (define_matched || compl_status_sol())
 		{
 		    // compare the first "len" chars from "ptr"
 		    startp = skipwhite(p);
@@ -3725,9 +3724,9 @@ search_line:
 		    break;
 		found = TRUE;
 		aux = p = startp;
-		if (compl_cont_status & CONT_ADDING)
+		if (compl_status_adding())
 		{
-		    p += compl_length;
+		    p += ins_compl_len();
 		    if (vim_iswordp(p))
 			goto exit_matched;
 		    p = find_word_start(p);
@@ -3735,7 +3734,7 @@ search_line:
 		p = find_word_end(p);
 		i = (int)(p - aux);
 
-		if ((compl_cont_status & CONT_ADDING) && i == compl_length)
+		if (compl_status_adding() && i == ins_compl_len())
 		{
 		    // IOSIZE > compl_length, so the STRNCPY works
 		    STRNCPY(IObuff, aux, i);
@@ -3783,7 +3782,7 @@ search_line:
 		    IObuff[i] = NUL;
 		    aux = IObuff;
 
-		    if (i == compl_length)
+		    if (i == ins_compl_len())
 			goto exit_matched;
 		}
 
@@ -3916,7 +3915,7 @@ exit_matched:
 	    // are not at the end of it already
 	    if (def_regmatch.regprog == NULL
 		    && action == ACTION_EXPAND
-		    && !(compl_cont_status & CONT_SOL)
+		    && !compl_status_sol()
 		    && *startp != NUL
 		    && *(p = startp + mb_ptr2len(startp)) != NUL)
 		goto search_line;

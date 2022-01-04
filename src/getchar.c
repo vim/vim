@@ -2453,7 +2453,7 @@ handle_mapping(
 	    && State != ASKMORE
 	    && State != CONFIRM
 	    && !((ctrl_x_mode_not_default() && at_ctrl_x_key())
-		    || ((compl_cont_status & CONT_LOCAL)
+		    || (compl_status_local()
 			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
 #ifdef FEAT_GUI
