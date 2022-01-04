@@ -773,7 +773,7 @@ EXTERN char e_menu_only_exists_in_another_mode[]
 #endif
 EXTERN char_u e_no_menu_str[]
 	INIT(= N_("E329: No menu \"%s\""));
-EXTERN char e_menu_path_must_not_loead_to_sub_menu[]
+EXTERN char e_menu_path_must_not_lead_to_sub_menu[]
 	INIT(= N_("E330: Menu path must not lead to a sub-menu"));
 EXTERN char e_must_not_add_menu_items_directly_to_menu_bar[]
 	INIT(= N_("E331: Must not add menu items directly to menu bar"));
@@ -1388,19 +1388,136 @@ EXTERN char e_value_of_imactivatekey_is_invalid[]
 #ifdef FEAT_EVAL
 EXTERN char e_missing_endtry[]
 	INIT(= N_("E600: Missing :endtry"));
-
+EXTERN char e_try_nesting_too_deep[]
+	INIT(= N_("E601: :try nesting too deep"));
 EXTERN char e_endtry_without_try[]
 	INIT(= N_("E602: :endtry without :try"));
 EXTERN char e_catch_without_try[]
 	INIT(= N_("E603: :catch without :try"));
+EXTERN char e_catch_after_finally[]
+	INIT(= N_("E604: :catch after :finally"));
+EXTERN char e_exception_not_caught_str[]
+	INIT(= N_("E605: Exception not caught: %s"));
 EXTERN char e_finally_without_try[]
 	INIT(= N_("E606: :finally without :try"));
 EXTERN char e_multiple_finally[]
 	INIT(= N_("E607: multiple :finally"));
+EXTERN char e_cannot_throw_exceptions_with_vim_prefix[]
+	INIT(= N_("E608: Cannot :throw exceptions with 'Vim' prefix"));
 #endif
-
+#ifdef FEAT_CSCOPE
+EXTERN char e_cscope_error_str[]
+	INIT(= N_("E609: Cscope error: %s"));
+#endif
 EXTERN char e_no_argument_to_delete[]
 	INIT(= N_("E610: No argument to delete"));
+#ifdef FEAT_EVAL
+EXTERN char e_using_special_as_number[]
+	INIT(= N_("E611: Using a Special as a Number"));
+#endif
+#ifdef FEAT_SIGNS
+EXTERN char e_too_many_signs_defined[]
+	INIT(= N_("E612: Too many signs defined"));
+#endif
+#ifdef FEAT_PRINTER
+EXTERN char e_unknown_printer_font_str[]
+	INIT(= N_("E613: Unknown printer font: %s"));
+#endif
+#ifdef FEAT_BROWSE
+EXTERN char e_vim_selfile_cant_return_to_current_directory[]
+	INIT(= N_("E614: vim_SelFile: can't return to current directory"));
+EXTERN char e_vim_selfile_cant_get_current_directory[]
+	INIT(= N_("E615: vim_SelFile: can't get current directory"));
+EXTERN char e_vim_selfile_cant_get_font_str[]
+	INIT(= N_("E616: vim_SelFile: can't get font %s"));
+#endif
+#ifdef FEAT_GUI_GTK
+EXTERN char e_cannot_be_changed_in_gtk_GUI[]
+	INIT(= N_("E617: Cannot be changed in the GTK GUI"));
+#endif
+#ifdef FEAT_POSTSCRIPT
+EXTERN char e_file_str_is_not_postscript_resource_file[]
+	INIT(= N_("E618: file \"%s\" is not a PostScript resource file"));
+EXTERN char e_file_str_is_not_supported_postscript_resource_file[]
+	INIT(= N_("E619: file \"%s\" is not a supported PostScript resource file"));
+EXTERN char e_unable_to_convert_to_print_encoding_str[]
+	INIT(= N_("E620: Unable to convert to print encoding \"%s\""));
+EXTERN char e_str_resource_file_has_wrong_version[]
+	INIT(= N_("E621: \"%s\" resource file has wrong version"));
+#endif
+#ifdef FEAT_CSCOPE
+EXTERN char e_could_not_fork_for_cscope[]
+	INIT(= N_("E622: Could not fork for cscope"));
+EXTERN char e_could_not_spawn_cscope_process[]
+	INIT(= N_("E623: Could not spawn cscope process"));
+#endif
+EXTERN char e_cant_open_file_str_3[]
+	INIT(= N_("E624: Can't open file \"%s\""));
+#ifdef FEAT_CSCOPE
+EXTERN char e_cannot_open_cscope_database_str[]
+	INIT(= N_("E625: cannot open cscope database: %s"));
+EXTERN char e_cannot_get_cscope_database_information[]
+	INIT(= N_("E626: cannot get cscope database information"));
+#endif
+#ifdef FEAT_NETBEANS_INTG
+EXTERN char e_missing_colon_str[]
+	INIT(= "E627: missing colon: %s");
+EXTERN char e_missing_bang_or_slash_in_str[]
+	INIT(= "E628: missing ! or / in: %s");
+EXTERN char e_bad_return_from_nb_do_cmd[]
+	INIT(= "E629: bad return from nb_do_cmd");
+#endif
+#ifdef FEAT_JOB_CHANNEL
+EXTERN char e_str_write_while_not_connected[]
+	INIT(= N_("E630: %s(): write while not connected"));
+EXTERN char e_str_write_failed[]
+	INIT(= N_("E631: %s(): write failed"));
+#endif
+#ifdef FEAT_NETBEANS_INTG
+EXTERN char e_invalid_buffer_identifier_in_getlength[]
+	INIT(= "E632: invalid buffer identifier in getLength");
+EXTERN char e_invalid_buffer_identifier_in_gettext[]
+	INIT(= "E633: invalid buffer identifier in getText");
+EXTERN char e_invalid_buffer_identifier_in_remove[]
+	INIT(= "E634: invalid buffer identifier in remove");
+EXTERN char e_invalid_buffer_identifier_in_insert[]
+	INIT(= "E635: invalid buffer identifier in insert");
+EXTERN char e_invalid_buffer_identifier_in_create[]
+	INIT(= "E636: invalid buffer identifier in create");
+EXTERN char e_invalid_buffer_identifier_in_startdocumentlisten[]
+	INIT(= "E637: invalid buffer identifier in startDocumentListen");
+EXTERN char e_invalid_buffer_identifier_in_stopdocumentlisten[]
+	INIT(= "E638: invalid buffer identifier in stopDocumentListen");
+EXTERN char e_invalid_buffer_identifier_in_settitle[]
+	INIT(= "E639: invalid buffer identifier in setTitle");
+EXTERN char e_invalid_buffer_identifier_in_initdone[]
+	INIT(= "E640: invalid buffer identifier in initDone");
+EXTERN char e_invalid_buffer_identifier_in_setbuffernumber[]
+	INIT(= "E641: invalid buffer identifier in setBufferNumber");
+EXTERN char e_file_str_not_found_in_setbuffernumber[]
+	INIT(= "E642: File %s not found in setBufferNumber");
+EXTERN char e_invalid_buffer_identifier_in_setfullname[]
+	INIT(= "E643: invalid buffer identifier in setFullName");
+EXTERN char e_invalid_buffer_identifier_in_editfile[]
+	INIT(= "E644: invalid buffer identifier in editFile");
+EXTERN char e_invalid_buffer_identifier_in_setvisible[]
+	INIT(= "E645: invalid buffer identifier in setVisible");
+EXTERN char e_invalid_buffer_identifier_in_setmodified[]
+	INIT(= "E646: invalid buffer identifier in setModified");
+EXTERN char e_invalid_buffer_identifier_in_setdot[]
+	INIT(= "E647: invalid buffer identifier in setDot");
+EXTERN char e_invalid_buffer_identifier_in_close[]
+	INIT(= "E648: invalid buffer identifier in close");
+EXTERN char e_invalid_buffer_identifier_in_close_2[]
+	INIT(= "E649: invalid buffer identifier in close");
+EXTERN char e_invalid_buffer_identifier_in_defineannotype[]
+	INIT(= "E650: invalid buffer identifier in defineAnnoType");
+EXTERN char e_invalid_buffer_identifier_in_addanno[]
+	INIT(= "E651: invalid buffer identifier in addAnno");
+EXTERN char e_invalid_buffer_identifier_in_getanno[]
+	INIT(= "E652: Invalid buffer identifier in getAnno");
+#endif
+
 #ifdef FEAT_NETBEANS_INTG
 	// E656
 EXTERN char e_netbeans_disallows_writes_of_unmodified_buffers[]
@@ -1408,10 +1525,18 @@ EXTERN char e_netbeans_disallows_writes_of_unmodified_buffers[]
 	// E657
 EXTERN char e_partial_writes_disallowed_for_netbeans_buffers[]
 	INIT(= N_("Partial writes disallowed for NetBeans buffers"));
+EXTERN char e_netbeans_connection_lost_for_buffer_nr[]
+	INIT(= N_("E658: NetBeans connection lost for buffer %d"));
+EXTERN char e_cannot_open_netbeans_connection_info_file[]
+	INIT(= "E660: Cannot open NetBeans connection info file");
 #endif
 #ifdef HAVE_FSYNC
 EXTERN char e_fsync_failed[]
 	INIT(= N_("E667: Fsync failed"));
+#endif
+#ifdef FEAT_NETBEANS_INTG
+EXTERN char e_wrong_access_mode_for_netbeans_connection_info_file_str[]
+	INIT(= N_("E668: Wrong access mode for NetBeans connection info file: \"%s\""));
 #endif
 EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
 	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
@@ -1532,6 +1657,10 @@ EXTERN char e_conflicts_with_value_of_listchars[]
 	INIT(= N_("E834: Conflicts with value of 'listchars'"));
 EXTERN char e_conflicts_with_value_of_fillchars[]
 	INIT(= N_("E835: Conflicts with value of 'fillchars'"));
+#ifdef FEAT_NETBEANS_INTG
+EXTERN char e_netbeans_is_not_supported_with_this_GUI[]
+	INIT(= N_("E838: netbeans is not supported with this GUI"));
+#endif
 // E839 unused
 #ifndef FEAT_CLIPBOARD
 EXTERN char e_invalid_register_name[]

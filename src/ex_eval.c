@@ -521,7 +521,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 		&& (((char_u *)value)[3] == NUL || ((char_u *)value)[3] == ':'
 		    || ((char_u *)value)[3] == '('))
 	{
-	    emsg(_("E608: Cannot :throw exceptions with 'Vim' prefix"));
+	    emsg(_(e_cannot_throw_exceptions_with_vim_prefix));
 	    goto fail;
 	}
     }
@@ -1624,7 +1624,7 @@ ex_try(exarg_T *eap)
 	return;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E601: :try nesting too deep");
+	eap->errmsg = _(e_try_nesting_too_deep);
     else
     {
 	enter_block(cstack);
@@ -1727,7 +1727,7 @@ ex_catch(exarg_T *eap)
 	{
 	    // Give up for a ":catch" after ":finally" and ignore it.
 	    // Just parse.
-	    eap->errmsg = _("E604: :catch after :finally");
+	    eap->errmsg = _(e_catch_after_finally);
 	    give_up = TRUE;
 	}
 	else

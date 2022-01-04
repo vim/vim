@@ -1401,7 +1401,7 @@ handle_did_throw()
     {
 	case ET_USER:
 	    vim_snprintf((char *)IObuff, IOSIZE,
-		    _("E605: Exception not caught: %s"),
+		    _(e_exception_not_caught_str),
 		    current_exception->value);
 	    p = (char *)vim_strsave(IObuff);
 	    break;

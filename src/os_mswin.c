@@ -1458,7 +1458,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     CLEAR_FIELD(fLogFont);
     if (get_logfont(&fLogFont, p_pfn, prt_dlg.hDC, TRUE) == FAIL)
     {
-	semsg(_("E613: Unknown printer font: %s"), p_pfn);
+	semsg(_(e_unknown_printer_font_str), p_pfn);
 	mch_print_cleanup();
 	return FALSE;
     }

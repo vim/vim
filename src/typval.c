@@ -221,7 +221,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 		if (varp->v_type == VAR_BOOL)
 		    emsg(_(e_using_bool_as_number));
 		else
-		    emsg(_("E611: Using a Special as a Number"));
+		    emsg(_(e_using_special_as_number));
 		break;
 	    }
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;

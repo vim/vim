@@ -933,7 +933,7 @@ alloc_new_sign(char_u *name)
 	    if (next_sign_typenr == start)
 	    {
 		vim_free(sp);
-		emsg(_("E612: Too many signs defined"));
+		emsg(_(e_too_many_signs_defined));
 		return NULL;
 	    }
 	    lp = first_sign;  // start all over

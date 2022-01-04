@@ -1839,7 +1839,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     fd_resource = mch_fopen((char *)resource->filename, READBIN);
     if (fd_resource == NULL)
     {
-	semsg(_("E624: Can't open file \"%s\""), resource->filename);
+	semsg(_(e_cant_open_file_str_3), resource->filename);
 	return FALSE;
     }
     CLEAR_FIELD(prt_resfile.buffer);
@@ -1866,8 +1866,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_HEADER,
 				       (int)STRLEN(PRT_RESOURCE_HEADER)) != 0)
     {
-	semsg(_("E618: file \"%s\" is not a PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
 
@@ -1883,8 +1883,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_RESOURCE,
 				     (int)STRLEN(PRT_RESOURCE_RESOURCE)) != 0)
     {
-	semsg(_("E619: file \"%s\" is not a supported PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_supported_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
     offset += (int)STRLEN(PRT_RESOURCE_RESOURCE);
@@ -1901,8 +1901,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 	resource->type = PRT_RESOURCE_TYPE_CMAP;
     else
     {
-	semsg(_("E619: file \"%s\" is not a supported PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_supported_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
 
@@ -1943,8 +1943,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 
     if (!seen_title || !seen_version)
     {
-	semsg(_("E619: file \"%s\" is not a supported PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_supported_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
 
@@ -1957,7 +1957,7 @@ prt_check_resource(struct prt_ps_resource_S *resource, char_u *version)
     // Version number m.n should match, the revision number does not matter
     if (STRNCMP(resource->version, version, STRLEN(version)))
     {
-	semsg(_("E621: \"%s\" resource file has wrong version"),
+	semsg(_(e_str_resource_file_has_wrong_version),
 		resource->name);
 	return FALSE;
     }
@@ -2882,12 +2882,12 @@ mch_print_begin(prt_settings_T *psettings)
     }
 
     prt_conv.vc_type = CONV_NONE;
-    if (!(enc_canon_props(p_enc) & enc_canon_props(p_encoding) & ENC_8BIT)) {
+    if (!(enc_canon_props(p_enc) & enc_canon_props(p_encoding) & ENC_8BIT))
+    {
 	// Set up encoding conversion if required
 	if (FAIL == convert_setup(&prt_conv, p_enc, p_encoding))
 	{
-	    semsg(_("E620: Unable to convert to print encoding \"%s\""),
-		    p_encoding);
+	    semsg(_(e_unable_to_convert_to_print_encoding_str), p_encoding);
 	    goto theend;
 	}
 	prt_do_conv = TRUE;

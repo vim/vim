@@ -1003,9 +1003,9 @@ ambw_end:
 #if defined(FEAT_GUI_GTK)
 	if (errmsg == NULL && varp == &p_tenc && gui.in_use)
 	{
-	    // GTK+ 2 uses only a single encoding, and that is UTF-8.
+	    // GTK uses only a single encoding, and that is UTF-8.
 	    if (STRCMP(p_tenc, "utf-8") != 0)
-		errmsg = N_("E617: Cannot be changed in the GTK+ 2 GUI");
+		errmsg = e_cannot_be_changed_in_gtk_GUI;
 	}
 #endif
 

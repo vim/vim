@@ -814,7 +814,7 @@ err_closing:
     switch (csinfo[i].pid = fork())
     {
     case -1:
-	(void)emsg(_("E622: Could not fork for cscope"));
+	(void)emsg(_(e_could_not_fork_for_cscope));
 	goto err_closing;
     case 0:				// child: run cscope.
 	if (dup2(to_cs[0], STDIN_FILENO) == -1)
@@ -971,7 +971,7 @@ err_closing:
     if (!created)
     {
 	PERROR(_("cs_create_connection exec failed"));
-	(void)emsg(_("E623: Could not spawn cscope process"));
+	(void)emsg(_(e_could_not_spawn_cscope_process));
 	goto err_closing;
     }
     // else
@@ -1316,7 +1316,7 @@ cs_insert_filelist(
 	case FILEINFO_READ_FAIL:	// CreateFile() failed
 	    if (p_csverbose)
 	    {
-		char *cant_msg = _("E625: cannot open cscope database: %s");
+		char *cant_msg = _(e_cannot_open_cscope_database_str);
 		char *winmsg = GetWin32Error();
 
 		if (winmsg != NULL)
@@ -1332,7 +1332,7 @@ cs_insert_filelist(
 
 	case FILEINFO_INFO_FAIL:    // GetFileInformationByHandle() failed
 	    if (p_csverbose)
-		(void)emsg(_("E626: cannot get cscope database information"));
+		(void)emsg(_(e_cannot_get_cscope_database_information));
 	    return -1;
     }
 #endif
@@ -2061,7 +2061,7 @@ cs_read_prompt(int i)
     int		epromptlen = (int)strlen(eprompt);
     int		n;
 
-    cs_emsg = _("E609: Cscope error: %s");
+    cs_emsg = _(e_cscope_error_str);
     // compute maximum allowed len for Cscope error message
     maxlen = (int)(IOSIZE - strlen(cs_emsg));
 

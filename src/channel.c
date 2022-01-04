@@ -4051,7 +4051,7 @@ channel_send(
 	if (!channel->ch_error && fun != NULL)
 	{
 	    ch_error(channel, "%s(): write while not connected", fun);
-	    semsg(_("E630: %s(): write while not connected"), fun);
+	    semsg(_(e_str_write_while_not_connected), fun);
 	}
 	channel->ch_error = TRUE;
 	return FAIL;
@@ -4197,7 +4197,7 @@ channel_send(
 	    if (!channel->ch_error && fun != NULL)
 	    {
 		ch_error(channel, "%s(): write failed", fun);
-		semsg(_("E631: %s(): write failed"), fun);
+		semsg(_(e_str_write_failed), fun);
 	    }
 	    channel->ch_error = TRUE;
 	    return FAIL;

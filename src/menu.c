@@ -530,7 +530,7 @@ add_menu_path(
 		if (*next_name == NUL && menu->children != NULL)
 		{
 		    if (!sys_menu)
-			emsg(_(e_menu_path_must_not_loead_to_sub_menu));
+			emsg(_(e_menu_path_must_not_lead_to_sub_menu));
 		    goto erret;
 		}
 		if (*next_name != NUL && menu->children == NULL
