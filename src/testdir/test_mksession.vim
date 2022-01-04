@@ -919,6 +919,7 @@ func Test_mksession_help_noopt()
 
   source Xtest_mks.out
   call assert_equal('help', &buftype)
+  call assert_equal('help', &filetype)
   call assert_false(&modifiable)
   call assert_true(&readonly)
 

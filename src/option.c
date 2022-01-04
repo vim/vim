@@ -4875,11 +4875,18 @@ makehelpset(FILE *fd, int foldset)
     else
     {
 	if (put_setstring(fd, "setlocal", "fdm", &manual, 0) == FAIL
-	    || put_setbool(fd, "setlocal", "fen", FALSE) == FAIL
-	    )
+		|| put_setbool(fd, "setlocal", "fen", FALSE) == FAIL
+		)
 	    return FAIL;
     }
 #endif
+
+    // Setting &filetype last as it triggers an event.
+    if (put_line(fd, "if empty(&ft)") == FAIL
+	    || put_setstring(fd, "  setlocal", "ft", &help, 0) == FAIL
+	    || put_line(fd, "endif") == FAIL
+	    )
+	return FAIL;
 
     return OK;
 }
