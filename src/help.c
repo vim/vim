@@ -836,8 +836,6 @@ fix_help_buffer(void)
 				    continue;
 				t2 = gettail(f2);
 				e2 = vim_strrchr(t2, '.');
-				if (e1 == NULL || e2 == NULL)
-				    continue;
 				if (e1 - f1 != e2 - f2
 					    || fnamencmp(f1, f2, e1 - f1) != 0)
 				    continue;
