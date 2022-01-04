@@ -1192,38 +1192,110 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 }
 
 /*
- * Get the member type of a dict or list from the items on the stack.
- * "stack_top" points just after the last type on the type stack.
+ * Push an entry onto the type stack.  "type" used both for the current type
+ * and the declared type.
+ * Returns FAIL when out of memory.
+ */
+    int
+push_type_stack(cctx_T *cctx, type_T *type)
+{
+    return push_type_stack2(cctx, type, type);
+}
+
+/*
+ * Push an entry onto the type stack.  "type" is the current type, "decl_type"
+ * is the declared type.
+ * Returns FAIL when out of memory.
+ */
+    int
+push_type_stack2(cctx_T *cctx, type_T *type, type_T *decl_type)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type2_T	*typep;
+
+    if (GA_GROW_FAILS(stack, 1))
+	return FAIL;
+    typep = ((type2_T *)stack->ga_data) + stack->ga_len;
+    typep->type_curr = type;
+    typep->type_decl = decl_type;
+    ++stack->ga_len;
+    return OK;
+}
+
+/*
+ * Set the type of the top of the stack to "type".
+ */
+    void
+set_type_on_stack(cctx_T *cctx, type_T *type, int offset)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type2_T	*typep = ((type2_T *)stack->ga_data)
+						  + stack->ga_len - 1 - offset;
+
+    typep->type_curr = type;
+    typep->type_decl = &t_any;
+}
+
+/*
+ * Get the type from the type stack.  If "offset" is zero the one at the top,
+ * if "offset" is one the type above that, etc.
+ * Returns &t_unknown if there is no such stack entry.
+ */
+    type_T *
+get_type_on_stack(cctx_T *cctx, int offset)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    if (offset + 1 > stack->ga_len)
+	return &t_unknown;
+    return (((type2_T *)stack->ga_data) + stack->ga_len - offset - 1)
+								   ->type_curr;
+}
+
+/*
+ * Get the member type of a dict or list from the items on the stack of "cctx".
+ * The declared type is stored in "decl_type".
  * For a list "skip" is 1, for a dict "skip" is 2, keys are skipped.
  * Returns &t_void for an empty list or dict.
  * Otherwise finds the common type of all items.
  */
     type_T *
 get_member_type_from_stack(
-	type_T	    **stack_top,
 	int	    count,
 	int	    skip,
-	garray_T    *type_gap)
+	type_T	    **decl_type,
+	cctx_T	    *cctx)
 {
-    int	    i;
-    type_T  *result;
-    type_T  *type;
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type2_T	*typep = ((type2_T *)stack->ga_data) + stack->ga_len;
+    garray_T    *type_gap = cctx->ctx_type_list;
+    int		i;
+    type_T	*result;
+    type_T	*decl_result;
+    type_T	*type;
 
-    // Use "any" for an empty list or dict.
+    // Use "unknown" for an empty list or dict.
     if (count == 0)
+    {
+	*decl_type = &t_unknown;
 	return &t_unknown;
+    }
 
     // Use the first value type for the list member type, then find the common
     // type from following items.
-    result = *(stack_top -(count * skip) + skip - 1);
+    result = (typep -(count * skip) + skip - 1)->type_curr;
+    decl_result = (typep -(count * skip) + skip - 1)->type_decl;
     for (i = 1; i < count; ++i)
     {
 	if (result == &t_any)
 	    break;  // won't get more common
-	type = *(stack_top -((count - i) * skip) + skip - 1);
+	type = (typep -((count - i) * skip) + skip - 1)->type_curr;
 	common_type(type, result, &result, type_gap);
+	type = (typep -((count - i) * skip) + skip - 1)->type_decl;
+	common_type(type, decl_result, &decl_result, type_gap);
     }
 
+    *decl_type = decl_result;
     return result;
 }
 

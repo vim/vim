@@ -769,7 +769,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     int		var_list = FALSE;
     int		semicolon = FALSE;
     size_t	varlen;
-    garray_T	*stack = &cctx->ctx_type_stack;
     garray_T	*instr = &cctx->ctx_instr;
     scope_T	*scope;
     lvar_T	*loop_lvar;	// loop iteration variable
@@ -841,7 +840,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     {
 	// If we know the type of "var" and it is not a supported type we can
 	// give an error now.
-	vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	vartype = get_type_on_stack(cctx, 0);
 	if (vartype->tt_type != VAR_LIST
 		&& vartype->tt_type != VAR_STRING
 		&& vartype->tt_type != VAR_BLOB
@@ -898,18 +897,19 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    generate_UNPACK(cctx, var_count, semicolon);
 	    arg = skipwhite(arg + 1);	// skip white after '['
 
-	    // the list item is replaced by a number of items
-	    if (GA_GROW_FAILS(stack, var_count - 1))
-	    {
-		drop_scope(cctx);
-		return NULL;
-	    }
-	    --stack->ga_len;
+	    // drop the list item
+	    --cctx->ctx_type_stack.ga_len;
+
+	    // add type of the items
 	    for (idx = 0; idx < var_count; ++idx)
 	    {
-		((type_T **)stack->ga_data)[stack->ga_len] =
-				 (semicolon && idx == 0) ? vartype : item_type;
-		++stack->ga_len;
+		type_T *type = (semicolon && idx == 0) ? vartype : item_type;
+
+		if (push_type_stack(cctx, type) == FAIL)
+		{
+		    drop_scope(cctx);
+		    return NULL;
+		}
 	    }
 	}
 
@@ -1647,7 +1647,6 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
     char_u	*expr_start;
     int		count = 0;
     int		start_ctx_lnum = cctx->ctx_lnum;
-    garray_T	*stack = &cctx->ctx_type_stack;
     type_T	*type;
 
     for (;;)
@@ -1661,7 +1660,7 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 	if (cctx->ctx_skip != SKIP_YES)
 	{
 	    // check for non-void type
-	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    type = get_type_on_stack(cctx, 0);
 	    if (type->tt_type == VAR_VOID)
 	    {
 		semsg(_(e_expression_does_not_result_in_value_str), expr_start);
@@ -2182,7 +2181,6 @@ compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
 compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 {
     char_u	*p = arg;
-    garray_T	*stack = &cctx->ctx_type_stack;
     type_T	*stack_type;
 
     if (*p != NUL && *p != '|' && *p != '\n')
@@ -2211,7 +2209,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    // "check_return_type" with uf_ret_type set to &t_unknown is used
 	    // for an inline function without a specified return type.  Set the
 	    // return type here.
-	    stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    stack_type = get_type_on_stack(cctx, 0);
 	    if ((check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
 				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown
 				|| cctx->ctx_ufunc->uf_ret_type == &t_any))

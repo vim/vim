@@ -639,6 +639,23 @@ def Test_extend_list()
       extend(test_null_list(), ['x'])
   END
   CheckScriptFailure(lines, 'E1134:', 2)
+
+  # using global var has no declared type
+  g:myList = []
+  g:myList->extend([1])
+  g:myList->extend(['x'])
+  assert_equal([1, 'x'], g:myList)
+  unlet g:myList
+
+  # using declared list gives an error
+  lines =<< trim END
+      var l: list<number>
+      g:myList = l
+      g:myList->extend([1])
+      g:myList->extend(['x'])
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 4)
+  unlet g:myList
 enddef
 
 def Test_extend_dict()
@@ -962,6 +979,23 @@ def Test_assignment_dict()
   # type is dict<any> even though initializer is dict<number>
   var anyDict: dict<any> = {a: 0}
   assert_equal({a: 0, b: 'x'}, extend(anyDict, {b: 'x'}))
+
+  # using global var, which has no declared type
+  g:myDict = {}
+  g:myDict->extend({a: 1})
+  g:myDict->extend({b: 'x'})
+  assert_equal({a: 1, b: 'x'}, g:myDict)
+  unlet g:myDict
+
+  # using list with declared type gives an error
+  lines =<< trim END
+      var d: dict<number>
+      g:myDict = d
+      g:myDict->extend({a: 1})
+      g:myDict->extend({b: 'x'})
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>', 4)
+  unlet g:myDict
 
   # assignment to script-local dict
   lines =<< trim END

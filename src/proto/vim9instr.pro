@@ -1,6 +1,7 @@
 /* vim9instr.c */
 isn_T *generate_instr(cctx_T *cctx, isntype_T isn_type);
 isn_T *generate_instr_drop(cctx_T *cctx, isntype_T isn_type, int drop);
+isn_T *generate_instr_type2(cctx_T *cctx, isntype_T isn_type, type_T *type, type_T *decl_type);
 isn_T *generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type);
 isn_T *generate_instr_debug(cctx_T *cctx);
 int may_generate_2STRING(int offset, int tolerant, cctx_T *cctx);

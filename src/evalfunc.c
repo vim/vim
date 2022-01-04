@@ -195,7 +195,7 @@ static void f_xor(typval_T *argvars, typval_T *rettv);
 // Context passed to an arg_ function.
 typedef struct {
     int		arg_count;	// actual argument count
-    type_T	**arg_types;	// list of argument types
+    type2_T	*arg_types;	// list of argument types
     int		arg_idx;	// current argument index (first arg is zero)
     cctx_T	*arg_cctx;
 } argcontext_T;
@@ -203,7 +203,7 @@ typedef struct {
 // A function to check one argument type.  The first argument is the type to
 // check.  If needed, other argument types can be obtained with the context.
 // E.g. if "arg_idx" is 1, then (type - 1) is the first argument type.
-typedef int (*argcheck_T)(type_T *, argcontext_T *);
+typedef int (*argcheck_T)(type_T *, type_T *, argcontext_T *);
 
 /*
  * Call need_type() to check an argument type.
@@ -225,7 +225,7 @@ check_arg_type(
  * Check "type" is a float or a number.
  */
     static int
-arg_float_or_nr(type_T *type, argcontext_T *context)
+arg_float_or_nr(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -240,7 +240,7 @@ arg_float_or_nr(type_T *type, argcontext_T *context)
  * Check "type" is a number.
  */
     static int
-arg_number(type_T *type, argcontext_T *context)
+arg_number(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_number, type, context);
 }
@@ -249,7 +249,7 @@ arg_number(type_T *type, argcontext_T *context)
  * Check "type" is a dict of 'any'.
  */
     static int
-arg_dict_any(type_T *type, argcontext_T *context)
+arg_dict_any(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_dict_any, type, context);
 }
@@ -258,7 +258,7 @@ arg_dict_any(type_T *type, argcontext_T *context)
  * Check "type" is a list of 'any'.
  */
     static int
-arg_list_any(type_T *type, argcontext_T *context)
+arg_list_any(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_list_any, type, context);
 }
@@ -267,7 +267,7 @@ arg_list_any(type_T *type, argcontext_T *context)
  * Check "type" is a list of numbers.
  */
     static int
-arg_list_number(type_T *type, argcontext_T *context)
+arg_list_number(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_list_number, type, context);
 }
@@ -276,7 +276,7 @@ arg_list_number(type_T *type, argcontext_T *context)
  * Check "type" is a list of strings.
  */
     static int
-arg_list_string(type_T *type, argcontext_T *context)
+arg_list_string(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_list_string, type, context);
 }
@@ -285,7 +285,7 @@ arg_list_string(type_T *type, argcontext_T *context)
  * Check "type" is a string.
  */
     static int
-arg_string(type_T *type, argcontext_T *context)
+arg_string(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_string, type, context);
 }
@@ -294,7 +294,7 @@ arg_string(type_T *type, argcontext_T *context)
  * Check "type" is a blob
  */
     static int
-arg_blob(type_T *type, argcontext_T *context)
+arg_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_blob, type, context);
 }
@@ -303,7 +303,7 @@ arg_blob(type_T *type, argcontext_T *context)
  * Check "type" is a bool or number 0 or 1.
  */
     static int
-arg_bool(type_T *type, argcontext_T *context)
+arg_bool(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_bool, type, context);
 }
@@ -312,7 +312,7 @@ arg_bool(type_T *type, argcontext_T *context)
  * Check "type" is a list of 'any' or a blob.
  */
     static int
-arg_list_or_blob(type_T *type, argcontext_T *context)
+arg_list_or_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -327,7 +327,7 @@ arg_list_or_blob(type_T *type, argcontext_T *context)
  * Check "type" is a string or a number
  */
     static int
-arg_string_or_nr(type_T *type, argcontext_T *context)
+arg_string_or_nr(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -342,7 +342,7 @@ arg_string_or_nr(type_T *type, argcontext_T *context)
  * Check "type" is a buffer (string or a number)
  */
     static int
-arg_buffer(type_T *type, argcontext_T *context)
+arg_buffer(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -357,7 +357,7 @@ arg_buffer(type_T *type, argcontext_T *context)
  * Check "type" is a buffer or a dict of any
  */
     static int
-arg_buffer_or_dict_any(type_T *type, argcontext_T *context)
+arg_buffer_or_dict_any(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -373,7 +373,7 @@ arg_buffer_or_dict_any(type_T *type, argcontext_T *context)
  * Check "type" is a line (string or a number)
  */
     static int
-arg_lnum(type_T *type, argcontext_T *context)
+arg_lnum(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -388,7 +388,7 @@ arg_lnum(type_T *type, argcontext_T *context)
  * Check "type" is a string or a list of strings.
  */
     static int
-arg_string_or_list_string(type_T *type, argcontext_T *context)
+arg_string_or_list_string(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -411,7 +411,7 @@ arg_string_or_list_string(type_T *type, argcontext_T *context)
  * Check "type" is a string or a list of 'any'
  */
     static int
-arg_string_or_list_any(type_T *type, argcontext_T *context)
+arg_string_or_list_any(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -426,7 +426,7 @@ arg_string_or_list_any(type_T *type, argcontext_T *context)
  * Check "type" is a string or a blob
  */
     static int
-arg_string_or_blob(type_T *type, argcontext_T *context)
+arg_string_or_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -441,7 +441,7 @@ arg_string_or_blob(type_T *type, argcontext_T *context)
  * Check "type" is a list of 'any' or a dict of 'any'.
  */
     static int
-arg_list_or_dict(type_T *type, argcontext_T *context)
+arg_list_or_dict(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -456,7 +456,7 @@ arg_list_or_dict(type_T *type, argcontext_T *context)
  * Check "type" is a list of 'any' or a dict of 'any' or a blob.
  */
     static int
-arg_list_or_dict_or_blob(type_T *type, argcontext_T *context)
+arg_list_or_dict_or_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -472,7 +472,7 @@ arg_list_or_dict_or_blob(type_T *type, argcontext_T *context)
  * Check "type" is a list of 'any' or a dict of 'any' or a blob or a string.
  */
     static int
-arg_list_or_dict_or_blob_or_string(type_T *type, argcontext_T *context)
+arg_list_or_dict_or_blob_or_string(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -489,7 +489,7 @@ arg_list_or_dict_or_blob_or_string(type_T *type, argcontext_T *context)
  * Check second argument of filter(): func must return a bool.
  */
     static int
-arg_filter_func(type_T *type, argcontext_T *context)
+arg_filter_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_FUNC
 	    && !(type->tt_member->tt_type == VAR_BOOL
@@ -507,7 +507,7 @@ arg_filter_func(type_T *type, argcontext_T *context)
  * Check second argument of map().
  */
     static int
-arg_map_func(type_T *type, argcontext_T *context)
+arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_FUNC
 	    && type->tt_member != &t_any
@@ -515,12 +515,12 @@ arg_map_func(type_T *type, argcontext_T *context)
     {
 	type_T *expected = NULL;
 
-	if (context->arg_types[0]->tt_type == VAR_LIST
-		|| context->arg_types[0]->tt_type == VAR_DICT)
-	    expected = context->arg_types[0]->tt_member;
-	else if (context->arg_types[0]->tt_type == VAR_STRING)
+	if (context->arg_types[0].type_curr->tt_type == VAR_LIST
+		|| context->arg_types[0].type_curr->tt_type == VAR_DICT)
+	    expected = context->arg_types[0].type_curr->tt_member;
+	else if (context->arg_types[0].type_curr->tt_type == VAR_STRING)
 	    expected = &t_string;
-	else if (context->arg_types[0]->tt_type == VAR_BLOB)
+	else if (context->arg_types[0].type_curr->tt_type == VAR_BLOB)
 	    expected = &t_number;
 	if (expected != NULL)
 	{
@@ -539,7 +539,7 @@ arg_map_func(type_T *type, argcontext_T *context)
  * Also accept a number, one and zero are accepted.
  */
     static int
-arg_string_or_func(type_T *type, argcontext_T *context)
+arg_string_or_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -557,7 +557,7 @@ arg_string_or_func(type_T *type, argcontext_T *context)
  * Check "type" is a list of 'any' or a blob or a string.
  */
     static int
-arg_string_list_or_blob(type_T *type, argcontext_T *context)
+arg_string_list_or_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -573,7 +573,7 @@ arg_string_list_or_blob(type_T *type, argcontext_T *context)
  * Check "type" is a job.
  */
     static int
-arg_job(type_T *type, argcontext_T *context)
+arg_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     return check_arg_type(&t_job, type, context);
 }
@@ -582,7 +582,7 @@ arg_job(type_T *type, argcontext_T *context)
  * Check "type" is a channel or a job.
  */
     static int
-arg_chan_or_job(type_T *type, argcontext_T *context)
+arg_chan_or_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -594,13 +594,13 @@ arg_chan_or_job(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" is the same type as the previous argument.
+ * Check "type" can be used as the type_decl of the previous argument.
  * Must not be used for the first argcheck_T entry.
  */
     static int
-arg_same_as_prev(type_T *type, argcontext_T *context)
+arg_same_as_prev(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
-    type_T *prev_type = context->arg_types[context->arg_idx - 1];
+    type_T *prev_type = context->arg_types[context->arg_idx - 1].type_decl;
 
     return check_arg_type(prev_type, type, context);
 }
@@ -611,11 +611,11 @@ arg_same_as_prev(type_T *type, argcontext_T *context)
  * Must not be used for the first argcheck_T entry.
  */
     static int
-arg_same_struct_as_prev(type_T *type, argcontext_T *context)
+arg_same_struct_as_prev(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
-    type_T *prev_type = context->arg_types[context->arg_idx - 1];
+    type_T *prev_type = context->arg_types[context->arg_idx - 1].type_curr;
 
-    if (prev_type->tt_type != context->arg_types[context->arg_idx]->tt_type)
+    if (prev_type->tt_type != context->arg_types[context->arg_idx].type_curr->tt_type)
 	return check_arg_type(prev_type, type, context);
     return OK;
 }
@@ -625,9 +625,9 @@ arg_same_struct_as_prev(type_T *type, argcontext_T *context)
  * Must not be used for the first argcheck_T entry.
  */
     static int
-arg_item_of_prev(type_T *type, argcontext_T *context)
+arg_item_of_prev(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
-    type_T *prev_type = context->arg_types[context->arg_idx - 1];
+    type_T *prev_type = context->arg_types[context->arg_idx - 1].type_curr;
     type_T *expected;
 
     if (prev_type->tt_type == VAR_LIST)
@@ -645,7 +645,7 @@ arg_item_of_prev(type_T *type, argcontext_T *context)
  * Check "type" is a string or a number or a list
  */
     static int
-arg_str_or_nr_or_list(type_T *type, argcontext_T *context)
+arg_str_or_nr_or_list(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -661,7 +661,7 @@ arg_str_or_nr_or_list(type_T *type, argcontext_T *context)
  * Check "type" is a dict of 'any' or a string
  */
     static int
-arg_dict_any_or_string(type_T *type, argcontext_T *context)
+arg_dict_any_or_string(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -677,14 +677,14 @@ arg_dict_any_or_string(type_T *type, argcontext_T *context)
  * any)
  */
     static int
-arg_extend3(type_T *type, argcontext_T *context)
+arg_extend3(type_T *type, type_T *decl_type, argcontext_T *context)
 {
-    type_T *first_type = context->arg_types[context->arg_idx - 2];
+    type_T *first_type = context->arg_types[context->arg_idx - 2].type_curr;
 
     if (first_type->tt_type == VAR_LIST)
-	return arg_number(type, context);
+	return arg_number(type, decl_type, context);
     if (first_type->tt_type == VAR_DICT)
-	return arg_string(type, context);
+	return arg_string(type, decl_type, context);
     return OK;
 }
 
@@ -693,7 +693,7 @@ arg_extend3(type_T *type, argcontext_T *context)
  * funcref)
  */
     static int
-arg_get1(type_T *type, argcontext_T *context)
+arg_get1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -713,7 +713,7 @@ arg_get1(type_T *type, argcontext_T *context)
  * blob or list or dict)
  */
     static int
-arg_len1(type_T *type, argcontext_T *context)
+arg_len1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -733,14 +733,14 @@ arg_len1(type_T *type, argcontext_T *context)
  * any)
  */
     static int
-arg_remove2(type_T *type, argcontext_T *context)
+arg_remove2(type_T *type, type_T *decl_type, argcontext_T *context)
 {
-    type_T *first_type = context->arg_types[context->arg_idx - 1];
+    type_T *first_type = context->arg_types[context->arg_idx - 1].type_curr;
 
     if (first_type->tt_type == VAR_LIST || first_type->tt_type == VAR_BLOB)
-	return arg_number(type, context);
+	return arg_number(type, decl_type, context);
     if (first_type->tt_type == VAR_DICT)
-	return arg_string_or_nr(type, context);
+	return arg_string_or_nr(type, decl_type, context);
     return OK;
 }
 
@@ -749,7 +749,7 @@ arg_remove2(type_T *type, argcontext_T *context)
  * list or any)
  */
     static int
-arg_repeat1(type_T *type, argcontext_T *context)
+arg_repeat1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -767,7 +767,7 @@ arg_repeat1(type_T *type, argcontext_T *context)
  * or any)
  */
     static int
-arg_slice1(type_T *type, argcontext_T *context)
+arg_slice1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -785,7 +785,7 @@ arg_slice1(type_T *type, argcontext_T *context)
  * or any)
  */
     static int
-arg_count1(type_T *type, argcontext_T *context)
+arg_count1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -803,7 +803,7 @@ arg_count1(type_T *type, argcontext_T *context)
  * list or any)
  */
     static int
-arg_cursor1(type_T *type, argcontext_T *context)
+arg_cursor1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -960,152 +960,158 @@ static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_
  * Note that "argtypes" is NULL if "argcount" is zero.
  */
     static type_T *
-ret_void(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_void(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_void;
 }
     static type_T *
-ret_any(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_any(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_any;
 }
     static type_T *
-ret_bool(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_bool(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_bool;
 }
     static type_T *
-ret_number_bool(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_number_bool(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_number_bool;
 }
     static type_T *
-ret_number(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_number(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_number;
 }
     static type_T *
-ret_float(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_float(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_float;
 }
     static type_T *
-ret_string(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_string(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_string;
 }
     static type_T *
-ret_list_any(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_list_any(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_list_any;
 }
     static type_T *
-ret_list_number(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_list_number(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_list_number;
 }
     static type_T *
-ret_list_string(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_list_string(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_list_string;
 }
     static type_T *
-ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_list_dict_any(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_list_dict_any;
 }
     static type_T *
-ret_list_items(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_list_items(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_list_list_any;
 }
 
     static type_T *
-ret_list_string_items(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_list_string_items(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_list_list_string;
 }
     static type_T *
-ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_dict_any(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_dict_any;
 }
     static type_T *
-ret_job_info(int argcount, type_T **argtypes UNUSED)
+ret_job_info(int argcount, type2_T *argtypes UNUSED)
 {
     if (argcount == 0)
 	return &t_list_job;
     return &t_dict_any;
 }
     static type_T *
-ret_dict_number(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_dict_number(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_dict_number;
 }
     static type_T *
-ret_dict_string(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_dict_string(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_dict_string;
 }
     static type_T *
-ret_blob(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_blob(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_blob;
 }
     static type_T *
-ret_func_any(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_func_any(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_func_any;
 }
     static type_T *
-ret_func_unknown(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_func_unknown(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_func_unknown;
 }
     static type_T *
-ret_channel(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_channel(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_channel;
 }
     static type_T *
-ret_job(int argcount UNUSED, type_T **argtypes UNUSED)
+ret_job(int argcount UNUSED, type2_T *argtypes UNUSED)
 {
     return &t_job;
 }
     static type_T *
-ret_first_arg(int argcount, type_T **argtypes)
+ret_first_arg(int argcount, type2_T *argtypes)
 {
     if (argcount > 0)
-	return argtypes[0];
+	return argtypes[0].type_curr;
     return &t_void;
 }
     static type_T *
-ret_repeat(int argcount, type_T **argtypes)
+ret_repeat(int argcount, type2_T *argtypes)
 {
     if (argcount == 0)
 	return &t_any;
-    if (argtypes[0] == &t_number)
+    if (argtypes[0].type_curr == &t_number)
 	return &t_string;
-    return argtypes[0];
+    return argtypes[0].type_curr;
 }
 // for map(): returns first argument but item type may differ
     static type_T *
-ret_first_cont(int argcount, type_T **argtypes)
+ret_first_cont(int argcount, type2_T *argtypes)
 {
     if (argcount > 0)
     {
-	if (argtypes[0]->tt_type == VAR_LIST)
+	if (argtypes[0].type_curr->tt_type == VAR_LIST)
 	    return &t_list_any;
-	if (argtypes[0]->tt_type == VAR_DICT)
+	if (argtypes[0].type_curr->tt_type == VAR_DICT)
 	    return &t_dict_any;
-	if (argtypes[0]->tt_type == VAR_BLOB)
-	    return argtypes[0];
+	if (argtypes[0].type_curr->tt_type == VAR_BLOB)
+	    return argtypes[0].type_curr;
     }
     return &t_any;
 }
+// for getline()
+    static type_T *
+ret_getline(int argcount, type2_T *argtypes UNUSED)
+{
+    return argcount == 1 ? &t_string : &t_list_string;
+}
 // for finddir()
     static type_T *
-ret_finddir(int argcount, type_T **argtypes UNUSED)
+ret_finddir(int argcount, type2_T *argtypes UNUSED)
 {
     if (argcount < 3)
 	return &t_string;
@@ -1118,7 +1124,7 @@ ret_finddir(int argcount, type_T **argtypes UNUSED)
  * one.
  */
     static type_T *
-ret_list_or_dict_0(int argcount, type_T **argtypes UNUSED)
+ret_list_or_dict_0(int argcount, type2_T *argtypes UNUSED)
 {
     if (argcount > 0)
 	return &t_dict_any;
@@ -1130,7 +1136,7 @@ ret_list_or_dict_0(int argcount, type_T **argtypes UNUSED)
  * are two.
  */
     static type_T *
-ret_list_or_dict_1(int argcount, type_T **argtypes UNUSED)
+ret_list_or_dict_1(int argcount, type2_T *argtypes UNUSED)
 {
     if (argcount > 1)
 	return &t_dict_any;
@@ -1138,7 +1144,7 @@ ret_list_or_dict_1(int argcount, type_T **argtypes UNUSED)
 }
 
     static type_T *
-ret_argv(int argcount, type_T **argtypes UNUSED)
+ret_argv(int argcount, type2_T *argtypes UNUSED)
 {
     // argv() returns list of strings
     if (argcount == 0)
@@ -1149,21 +1155,21 @@ ret_argv(int argcount, type_T **argtypes UNUSED)
 }
 
     static type_T *
-ret_remove(int argcount, type_T **argtypes)
+ret_remove(int argcount, type2_T *argtypes)
 {
     if (argcount > 0)
     {
-	if (argtypes[0]->tt_type == VAR_LIST
-		|| argtypes[0]->tt_type == VAR_DICT)
-	    return argtypes[0]->tt_member;
-	if (argtypes[0]->tt_type == VAR_BLOB)
+	if (argtypes[0].type_curr->tt_type == VAR_LIST
+		|| argtypes[0].type_curr->tt_type == VAR_DICT)
+	    return argtypes[0].type_curr->tt_member;
+	if (argtypes[0].type_curr->tt_type == VAR_BLOB)
 	    return &t_number;
     }
     return &t_any;
 }
 
     static type_T *
-ret_getreg(int argcount, type_T **argtypes UNUSED)
+ret_getreg(int argcount, type2_T *argtypes UNUSED)
 {
     // Assume that if the third argument is passed it's non-zero
     if (argcount == 3)
@@ -1172,7 +1178,7 @@ ret_getreg(int argcount, type_T **argtypes UNUSED)
 }
 
     static type_T *
-ret_maparg(int argcount, type_T **argtypes UNUSED)
+ret_maparg(int argcount, type2_T *argtypes UNUSED)
 {
     // Assume that if the fourth argument is passed it's non-zero
     if (argcount == 4)
@@ -1191,7 +1197,7 @@ typedef struct
     char	f_max_argc;	// maximal number of arguments
     char	f_argtype;	// for method: FEARG_ values
     argcheck_T	*f_argcheck;	// list of functions to check argument types
-    type_T	*(*f_retfunc)(int argcount, type_T **argtypes);
+    type_T	*(*f_retfunc)(int argcount, type2_T *argtypes);
 				// return type function
     void	(*f_func)(typval_T *args, typval_T *rvar);
 				// implementation of function
@@ -1599,7 +1605,7 @@ static funcentry_T global_functions[] =
     {"getjumplist",	0, 2, FEARG_1,	    arg2_number,
 			ret_list_any,	    f_getjumplist},
     {"getline",		1, 2, FEARG_1,	    arg2_lnum,
-			ret_f_getline,	    f_getline},
+			ret_getline,	    f_getline},
     {"getloclist",	1, 2, 0,	    arg2_number_dict_any,
 			ret_list_or_dict_1, f_getloclist},
     {"getmarklist",	0, 1, FEARG_1,	    arg1_buffer,
@@ -2576,7 +2582,7 @@ internal_func_name(int idx)
  */
     int
 internal_func_check_arg_types(
-	type_T	**types,
+	type2_T	*types,
 	int	idx,
 	int	argcount,
 	cctx_T	*cctx)
@@ -2595,7 +2601,8 @@ internal_func_check_arg_types(
 	    if (argchecks[i] != NULL)
 	    {
 		context.arg_idx = i;
-		if (argchecks[i](types[i], &context) == FAIL)
+		if (argchecks[i](types[i].type_curr, types[i].type_decl,
+							     &context) == FAIL)
 		    return FAIL;
 	    }
     }
@@ -2621,7 +2628,7 @@ internal_func_get_argcount(int idx, int *argcount, int *min_argcount)
  * "argcount" may be less than the actual count when only getting the type.
  */
     type_T *
-internal_func_ret_type(int idx, int argcount, type_T **argtypes)
+internal_func_ret_type(int idx, int argcount, type2_T *argtypes)
 {
     return global_functions[idx].f_retfunc(argcount, argtypes);
 }

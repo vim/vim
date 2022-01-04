@@ -1422,6 +1422,11 @@ struct type_S {
     type_T	    **tt_args;	    // func argument types, allocated
 };
 
+typedef struct {
+    type_T	*type_curr;	    // current type, value type
+    type_T	*type_decl;	    // declared type or equal to type_current
+} type2_T;
+
 #define TTFLAG_VARARGS	1	    // func args ends with "..."
 #define TTFLAG_OPTARG	2	    // func arg type with "?"
 #define TTFLAG_BOOL_OK	4	    // can be converted to bool
@@ -1507,7 +1512,8 @@ struct listvar_S
 	    int		lv_idx;		// cached index of an item
 	} mat;
     } lv_u;
-    type_T	*lv_type;	// allocated by alloc_type()
+    type_T	*lv_type;	// current type, allocated by alloc_type()
+    type_T	*lv_decl_type;	// declared type, allocated by alloc_type()
     list_T	*lv_copylist;	// copied list used by deepcopy()
     list_T	*lv_used_next;	// next list in used lists list
     list_T	*lv_used_prev;	// previous list in used lists list
@@ -1571,7 +1577,8 @@ struct dictvar_S
     int		dv_refcount;	// reference count
     int		dv_copyID;	// ID used by deepcopy()
     hashtab_T	dv_hashtab;	// hashtab that refers to the items
-    type_T	*dv_type;	// allocated by alloc_type()
+    type_T	*dv_type;	// current type, allocated by alloc_type()
+    type_T	*dv_decl_type;	// declared type, allocated by alloc_type()
     dict_T	*dv_copydict;	// copied dict used by deepcopy()
     dict_T	*dv_used_next;	// next dict in used dicts list
     dict_T	*dv_used_prev;	// previous dict in used dicts list

@@ -109,6 +109,8 @@ dict_free_contents(dict_T *d)
     hashtab_free_contents(&d->dv_hashtab);
     free_type(d->dv_type);
     d->dv_type = NULL;
+    free_type(d->dv_decl_type);
+    d->dv_decl_type = NULL;
 }
 
 /*
@@ -1354,8 +1356,7 @@ dict_filter_map(
 	    if (filtermap == FILTERMAP_MAP)
 	    {
 		if (argtype != NULL && check_typval_arg_type(
-			    argtype->tt_member, &newtv,
-			    func_name, 0) == FAIL)
+			     argtype->tt_member, &newtv, func_name, 0) == FAIL)
 		{
 		    clear_tv(&newtv);
 		    break;

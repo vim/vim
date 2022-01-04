@@ -271,6 +271,7 @@ list_free_list(list_T  *l)
 	l->lv_used_next->lv_used_prev = l->lv_used_prev;
 
     free_type(l->lv_type);
+    free_type(l->lv_decl_type);
     vim_free(l);
 }
 
@@ -1025,6 +1026,8 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 	// The type will change.
 	free_type(l->lv_type);
 	l->lv_type = NULL;
+	free_type(l->lv_decl_type);
+	l->lv_decl_type = NULL;
     }
     else
     {
@@ -1220,6 +1223,7 @@ list_copy(list_T *orig, int deep, int copyID)
     if (copy != NULL)
     {
 	copy->lv_type = alloc_type(orig->lv_type);
+	copy->lv_decl_type = alloc_type(orig->lv_decl_type);
 	if (copyID != 0)
 	{
 	    // Do this before adding the items, because one of the items may
