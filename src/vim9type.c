@@ -1267,7 +1267,7 @@ get_member_type_from_stack(
 	cctx_T	    *cctx)
 {
     garray_T	*stack = &cctx->ctx_type_stack;
-    type2_T	*typep = ((type2_T *)stack->ga_data) + stack->ga_len;
+    type2_T	*typep;
     garray_T    *type_gap = cctx->ctx_type_list;
     int		i;
     type_T	*result;
@@ -1283,6 +1283,7 @@ get_member_type_from_stack(
 
     // Use the first value type for the list member type, then find the common
     // type from following items.
+    typep = ((type2_T *)stack->ga_data) + stack->ga_len;
     result = (typep -(count * skip) + skip - 1)->type_curr;
     decl_result = (typep -(count * skip) + skip - 1)->type_decl;
     for (i = 1; i < count; ++i)
