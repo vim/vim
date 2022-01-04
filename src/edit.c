@@ -1280,7 +1280,7 @@ doESCkey:
 	    // but it is under other ^X modes
 	    if (*curbuf->b_p_cpt == NUL
 		    && (ctrl_x_mode_normal() || ctrl_x_mode_whole_line())
-		    && !(compl_cont_status & CONT_LOCAL))
+		    && !compl_status_local())
 		goto normalchar;
 
 docomplete:
@@ -1289,7 +1289,7 @@ docomplete:
 	    disable_fold_update++;  // don't redraw folds here
 #endif
 	    if (ins_complete(c, TRUE) == FAIL)
-		compl_cont_status = 0;
+		compl_status_clear();
 #ifdef FEAT_FOLDING
 	    disable_fold_update--;
 #endif
