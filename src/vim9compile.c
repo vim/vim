@@ -2781,7 +2781,8 @@ compile_def_function(
 	cmd = ea.cmd;
 	if ((*cmd != '$' || starts_with_colon)
 		&& (starts_with_colon || !(*cmd == '\''
-		       || (cmd[0] == cmd[1] && (*cmd == '+' || *cmd == '-')))))
+		       || (cmd[0] != NUL && cmd[0] == cmd[1]
+					    && (*cmd == '+' || *cmd == '-')))))
 	{
 	    ea.cmd = skip_range(ea.cmd, TRUE, NULL);
 	    if (ea.cmd > cmd)

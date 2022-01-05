@@ -3537,6 +3537,17 @@ def Test_numbered_function_reference()
   unlet g:mydict
 enddef
 
+def Test_go_beyond_end_of_cmd()
+  # this was reading the byte after the end of the line
+  var lines =<< trim END
+    def F()
+      cal
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E476:')
+enddef
+
 if has('python3')
   def Test_python3_heredoc()
     py3 << trim EOF
