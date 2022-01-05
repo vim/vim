@@ -2082,7 +2082,7 @@ do_one_cmd(
 #endif
 	if (restricted != 0 && (ea.argt & EX_RESTRICT))
 	{
-	    errormsg = _("E981: Command not allowed in rvim");
+	    errormsg = _(e_command_not_allowed_in_rvim);
 	    goto doend;
 	}
 	if (!curbuf->b_p_ma && (ea.argt & EX_MODIFY))
@@ -3715,7 +3715,7 @@ find_ex_command(
 
 	    if (command_count != (int)CMD_SIZE)
 	    {
-		iemsg(_("E943: Command table needs to be updated, run 'make cmdidxs'"));
+		iemsg(_(e_command_table_needs_to_be_updated_run_make_cmdidxs));
 		getout(1);
 	    }
 
@@ -8058,7 +8058,7 @@ ex_redir(exarg_T *eap)
 #ifdef FEAT_EVAL
     if (redir_execute)
     {
-	emsg(_("E930: Cannot use :redir inside execute()"));
+	emsg(_(e_cannot_use_redir_inside_execute));
 	return;
     }
 #endif
@@ -9158,7 +9158,7 @@ eval_vars(
 	case SPEC_SFLNUM:	// line in script file
 		if (current_sctx.sc_lnum + SOURCING_LNUM == 0)
 		{
-		    *errormsg = _("E961: no line number to use for \"<sflnum>\"");
+		    *errormsg = _(e_no_line_number_to_use_for_sflnum);
 		    return NULL;
 		}
 		sprintf((char *)strbuf, "%ld",

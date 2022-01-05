@@ -1139,7 +1139,7 @@ diff_file_internal(diffio_T *diffio)
 		&diffio->dio_new.din_mmfile,
 		&param, &emit_cfg, &emit_cb) < 0)
     {
-	emsg(_("E960: Problem creating the internal diff"));
+	emsg(_(e_problem_creating_internal_diff));
 	return FAIL;
     }
     return OK;
@@ -1733,7 +1733,7 @@ diff_read(
 	    }
 	    else
 	    {
-		emsg(_("E959: Invalid diff format."));
+		emsg(_(e_invalid_diff_format));
 		break;
 	    }
 	}

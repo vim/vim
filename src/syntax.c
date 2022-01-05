@@ -4889,8 +4889,8 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 			{
 			    if (p[2] != NUL)
 			    {
-				semsg(_("E890: trailing char after ']': %s]%s"),
-								kw, &p[2]);
+				semsg(_(e_trailing_char_after_rsb_str_str),
+								    kw, &p[2]);
 				goto error;
 			    }
 			    kw = p + 1;		// skip over the "]"

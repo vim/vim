@@ -227,16 +227,16 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E910: Using a Job as a Number"));
+	    emsg(_(e_using_job_as_number));
 	    break;
 #endif
 	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E913: Using a Channel as a Number"));
+	    emsg(_(e_using_channel_as_number));
 	    break;
 #endif
 	case VAR_BLOB:
-	    emsg(_("E974: Using a Blob as a Number"));
+	    emsg(_(e_using_blob_as_number));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -308,35 +308,35 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    return varp->vval.v_float;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg(_("E891: Using a Funcref as a Float"));
+	    emsg(_(e_using_funcref_as_float));
 	    break;
 	case VAR_STRING:
-	    emsg(_("E892: Using a String as a Float"));
+	    emsg(_(e_using_string_as_float));
 	    break;
 	case VAR_LIST:
-	    emsg(_("E893: Using a List as a Float"));
+	    emsg(_(e_using_list_as_float));
 	    break;
 	case VAR_DICT:
-	    emsg(_("E894: Using a Dictionary as a Float"));
+	    emsg(_(e_using_dictionary_as_float));
 	    break;
 	case VAR_BOOL:
 	    emsg(_(e_using_boolean_valud_as_float));
 	    break;
 	case VAR_SPECIAL:
-	    emsg(_("E907: Using a special value as a Float"));
+	    emsg(_(e_using_special_value_as_float));
 	    break;
 	case VAR_JOB:
 # ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E911: Using a Job as a Float"));
+	    emsg(_(e_using_job_as_float));
 	    break;
 # endif
 	case VAR_CHANNEL:
 # ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E914: Using a Channel as a Float"));
+	    emsg(_(e_using_channel_as_float));
 	    break;
 # endif
 	case VAR_BLOB:
-	    emsg(_("E975: Using a Blob as a Float"));
+	    emsg(_(e_using_blob_as_float));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -954,7 +954,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
         case VAR_BLOB:
-	    emsg(_("E976: Using a Blob as a String"));
+	    emsg(_(e_using_blob_as_string));
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
@@ -1386,7 +1386,7 @@ typval_compare_blob(
 	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
     {
 	if (tv1->v_type != tv2->v_type)
-	    emsg(_("E977: Can only compare Blob with Blob"));
+	    emsg(_(e_can_only_compare_blob_with_blob));
 	else
 	    emsg(_(e_invalid_operation_for_blob));
 	return FAIL;
@@ -1922,7 +1922,7 @@ eval_number(
 	    {
 		if (blob != NULL)
 		{
-		    emsg(_("E973: Blob literal should have an even number of hex characters"));
+		    emsg(_(e_blob_literal_should_have_an_even_number_of_hex_characters));
 		    ga_clear(&blob->bv_ga);
 		    VIM_CLEAR(blob);
 		}

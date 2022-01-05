@@ -883,7 +883,7 @@ ex_terminal(exarg_T *eap)
 	{
 	    if (*p)
 		*p = NUL;
-	    semsg(_("E181: Invalid attribute: %s"), cmd);
+	    semsg(_(e_invalid_attribute_str), cmd);
 	    goto theend;
 	}
 # undef OPTARG_HAS
@@ -4862,7 +4862,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     term = buf->b_term;
     if (term->tl_vterm == NULL)
     {
-	emsg(_("E958: Job already finished"));
+	emsg(_(e_job_already_finished));
 	return;
     }
 
@@ -4888,7 +4888,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     if (mch_stat((char *)fname, &st) >= 0)
     {
-	semsg(_("E953: File exists: %s"), fname);
+	semsg(_(e_file_exists_str), fname);
 	return;
     }
 
@@ -5992,7 +5992,7 @@ f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     buf = term_get_buf(argvars, "term_setsize()");
     if (buf == NULL)
     {
-	emsg(_("E955: Not a terminal buffer"));
+	emsg(_(e_not_terminal_buffer));
 	return;
     }
     if (buf->b_term->tl_vterm == NULL)
@@ -6623,7 +6623,7 @@ dyn_conpty_init(int verbose)
     if (!has_conpty_working())
     {
 	if (verbose)
-	    emsg(_("E982: ConPTY is not available"));
+	    emsg(_(e_conpty_is_not_available));
 	return FAIL;
     }
 

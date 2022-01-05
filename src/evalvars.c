@@ -592,7 +592,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 
     if (eap->getline == NULL)
     {
-	emsg(_("E991: cannot use =<< here"));
+	emsg(_(e_cannot_use_heredoc_here));
 	return NULL;
     }
 
@@ -657,7 +657,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	theline = eap->getline(NUL, eap->cookie, 0, FALSE);
 	if (theline == NULL)
 	{
-	    semsg(_("E990: Missing end marker '%s'"), marker);
+	    semsg(_(e_missing_end_marker_str), marker);
 	    break;
 	}
 
@@ -796,7 +796,7 @@ ex_let(exarg_T *eap)
 	if (*arg == '[')
 	    emsg(_(e_invalid_argument));
 	else if (expr[0] == '.' && expr[1] == '=')
-	    emsg(_("E985: .= is not supported with script version >= 2"));
+	    emsg(_(e_dot_equal_not_supported_with_script_version_two));
 	else if (!ends_excmd2(eap->cmd, arg))
 	{
 	    if (vim9script)
@@ -1309,7 +1309,7 @@ ex_let_env(
     if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					 && (flags & ASSIGN_FOR_LOOP) == 0)
     {
-	emsg(_("E996: Cannot lock an environment variable"));
+	emsg(_(e_cannot_lock_environment_variable));
 	return NULL;
     }
 
@@ -1376,7 +1376,7 @@ ex_let_option(
     if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					 && (flags & ASSIGN_FOR_LOOP) == 0)
     {
-	emsg(_(e_cannot_lock_an_option));
+	emsg(_(e_cannot_lock_option));
 	return NULL;
     }
 
@@ -1502,7 +1502,7 @@ ex_let_register(
     if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					 && (flags & ASSIGN_FOR_LOOP) == 0)
     {
-	emsg(_("E996: Cannot lock a register"));
+	emsg(_(e_cannot_lock_register));
 	return NULL;
     }
     ++arg;
@@ -3493,7 +3493,7 @@ set_var_const(
 		}
 		else if (di->di_tv.v_type != tv->v_type)
 		{
-		    semsg(_("E963: setting %s to value with wrong type"), name);
+		    semsg(_(e_setting_str_to_value_with_wrong_type), name);
 		    goto failed;
 		}
 	    }
@@ -4482,7 +4482,7 @@ get_callback(typval_T *arg)
 
 	if (r == FAIL)
 	{
-	    emsg(_("E921: Invalid callback argument"));
+	    emsg(_(e_invalid_callback_argument));
 	    res.cb_name = NULL;
 	}
     }

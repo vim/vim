@@ -4991,7 +4991,7 @@ ole_error(char *arg)
     static char *
 gvim_error(void)
 {
-    char *msg = _("E988: GUI cannot be used. Cannot execute gvim.exe.");
+    char *msg = _(e_gui_cannot_be_used_cannot_execute_gvim_exe);
 
     if (starting)
     {

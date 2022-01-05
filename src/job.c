@@ -1320,7 +1320,7 @@ job_start(
 		&& (!(opt.jo_set & (JO_OUT_NAME << (part - PART_OUT)))
 		    || *opt.jo_io_name[part] == NUL))
 	{
-	    emsg(_("E920: _io file requires _name to be set"));
+	    emsg(_(e_io_file_requires_name_to_be_set));
 	    goto theend;
 	}
 
@@ -1338,7 +1338,7 @@ job_start(
 	}
 	else if (!(opt.jo_set & JO_IN_NAME))
 	{
-	    emsg(_("E915: in_io buffer requires in_buf or in_name to be set"));
+	    emsg(_(e_in_io_buffer_requires_in_buf_or_in_name_to_be_set));
 	}
 	else
 	    buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
@@ -1356,7 +1356,7 @@ job_start(
 	    }
 	    else
 		s = opt.jo_io_name[PART_IN];
-	    semsg(_("E918: buffer must be loaded: %s"), s);
+	    semsg(_(e_buffer_must_be_loaded_str), s);
 	    goto theend;
 	}
 	job->jv_in_buf = buf;
@@ -1781,7 +1781,7 @@ get_job_arg(typval_T *tv)
     job = tv->vval.v_job;
 
     if (job == NULL)
-	emsg(_("E916: not a valid job"));
+	emsg(_(e_not_valid_job));
     return job;
 }
 

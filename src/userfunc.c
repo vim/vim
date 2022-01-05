@@ -339,7 +339,7 @@ get_function_args(
 	    }
 	    else if (any_default)
 	    {
-		emsg(_("E989: Non-default argument follows default argument"));
+		emsg(_(e_non_default_argument_follows_default_argument));
 		goto err_ret;
 	    }
 
@@ -3850,7 +3850,7 @@ trans_function_name(
 
 	if (cp != NULL && cp < end)
 	{
-	    semsg(_("E884: Function name cannot contain a colon: %s"), start);
+	    semsg(_(e_function_name_cannot_contain_colon_str), start);
 	    goto theend;
 	}
     }

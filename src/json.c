@@ -1004,8 +1004,7 @@ item_end:
 			&& dict_find(top_item->jd_tv.vval.v_dict,
 						 top_item->jd_key, -1) != NULL)
 		{
-		    semsg(_("E938: Duplicate key in JSON: \"%s\""),
-							     top_item->jd_key);
+		    semsg(_(e_duplicate_key_in_json_str), top_item->jd_key);
 		    clear_tv(cur_item);
 		    retval = FAIL;
 		    goto theend;

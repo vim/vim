@@ -47,8 +47,6 @@ static hashtab_T *global_proptypes = NULL;
 // The last used text property type ID.
 static int proptype_id = 0;
 
-static char_u e_type_not_exist[] = N_("E971: Property type %s does not exist");
-
 /*
  * Find a property type by name, return the hashitem.
  * Returns NULL if the item can't be found.
@@ -335,7 +333,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     dict = argvars[0].vval.v_dict;
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
-	emsg(_("E965: missing property type name"));
+	emsg(_(e_missing_property_type_name));
 	return;
     }
     type_name = dict_get_string(dict, (char_u *)"type", FALSE);
@@ -395,7 +393,7 @@ prop_add_common(
 
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
-	emsg(_("E965: missing property type name"));
+	emsg(_(e_missing_property_type_name));
 	return;
     }
     type_name = dict_get_string(dict, (char_u *)"type", FALSE);
@@ -473,7 +471,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     proplen = buf->b_ml.ml_line_len - textlen;
     if (proplen % sizeof(textprop_T) != 0)
     {
-	iemsg(_("E967: text property info corrupted"));
+	iemsg(_(e_text_property_info_corrupted));
 	return 0;
     }
     if (proplen > 0)
@@ -796,7 +794,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     both = dict_get_bool(dict, (char_u *)"both", FALSE);
     if (!id_found && type_id == -1)
     {
-	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	emsg(_(e_need_at_least_one_of_id_or_type));
 	return;
     }
     if (both && (!id_found || type_id == -1))
@@ -1219,7 +1217,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     if (id == -1 && type_id == -1)
     {
-	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	emsg(_(e_need_at_least_one_of_id_or_type));
 	return;
     }
     if (both && (id == -1 || type_id == -1))
@@ -1331,7 +1329,7 @@ prop_type_set(typval_T *argvars, int add)
 
 	if (prop != NULL)
 	{
-	    semsg(_("E969: Property type %s already defined"), name);
+	    semsg(_(e_property_type_str_already_defined), name);
 	    return;
 	}
 	prop = alloc_clear(offsetof(proptype_T, pt_name) + STRLEN(name) + 1);
@@ -1375,7 +1373,7 @@ prop_type_set(typval_T *argvars, int add)
 		hl_id = syn_name2id(highlight);
 	    if (hl_id <= 0)
 	    {
-		semsg(_("E970: Unknown highlight group name: '%s'"),
+		semsg(_(e_unknown_highlight_group_name_str),
 			highlight == NULL ? (char_u *)"" : highlight);
 		return;
 	    }

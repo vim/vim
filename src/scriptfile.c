@@ -1950,7 +1950,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_("E984: :scriptversion used outside of a sourced file"));
+	emsg(_(e_scriptversion_used_outside_of_sourced_file));
 	return;
     }
     if (in_vim9script())
@@ -1963,7 +1963,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     if (nr == 0 || *eap->arg != NUL)
 	emsg(_(e_invalid_argument));
     else if (nr > SCRIPT_VERSION_MAX)
-	semsg(_("E999: scriptversion not supported: %d"), nr);
+	semsg(_(e_scriptversion_not_supported_nr), nr);
     else
     {
 	current_sctx.sc_version = nr;

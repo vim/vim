@@ -1462,7 +1462,7 @@ do_set(
 		}
 		if ((flags & P_MLE) && !p_mle)
 		{
-		    errmsg = N_("E992: Not allowed in a modeline when 'modelineexpr' is off");
+		    errmsg = N_(e_not_allowed_in_modeline_when_modelineexpr_is_off);
 		    goto skip;
 		}
 #ifdef FEAT_DIFF
@@ -2822,7 +2822,7 @@ set_bool_option(
 		      && curbuf->b_term != NULL && !term_is_finished(curbuf))))
 	{
 	    curbuf->b_p_ma = FALSE;
-	    return N_("E946: Cannot make a terminal with running job modifiable");
+	    return N_(e_cannot_make_terminal_with_running_job_modifiable);
 	}
 # endif
 	redraw_titles();
@@ -3223,7 +3223,7 @@ set_bool_option(
 	    !has_vtp_working())
 	{
 	    p_tgc = 0;
-	    return N_("E954: 24-bit colors are not supported on this environment");
+	    return N_(e_24_bit_colors_are_not_supported_on_this_environment);
 	}
 	if (is_term_win32())
 	    swap_tcap();

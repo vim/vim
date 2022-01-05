@@ -1224,7 +1224,7 @@ sign_place(
     }
     else
     {
-	semsg(_("E885: Not possible to change sign %s"), sign_name);
+	semsg(_(e_not_possible_to_change_sign_str), sign_name);
 	return FAIL;
     }
 
@@ -1307,7 +1307,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
 	if (buf->b_fname == NULL)
 	{
-	    emsg(_("E934: Cannot jump to a buffer that does not have a name"));
+	    emsg(_(e_cannot_jump_to_buffer_that_does_not_have_name));
 	    return -1;
 	}
 	cmd = alloc(STRLEN(buf->b_fname) + 25);

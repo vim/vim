@@ -13,8 +13,6 @@
  * Common code for if_python.c and if_python3.c.
  */
 
-static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception in vim";
-
 #if PY_VERSION_HEX < 0x02050000
 typedef int Py_ssize_t;  // Python 2.4 and earlier don't have this type.
 #endif
@@ -5697,7 +5695,7 @@ run_cmd(const char *cmd, void *arg UNUSED
     }
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
-	semsg(_(e_py_systemexit), "python");
+	emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	PyErr_Clear();
     }
     else
@@ -5742,7 +5740,7 @@ run_do(const char *cmd, void *arg UNUSED
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
 	PyMem_Free(code);
-	semsg(_(e_py_systemexit), "python");
+	emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	PyErr_Clear();
 	return;
     }
@@ -5843,7 +5841,7 @@ run_eval(const char *cmd, typval_T *rettv
     {
 	if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
 	{
-	    semsg(_(e_py_systemexit), "python");
+	    emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	    PyErr_Clear();
 	}
 	else

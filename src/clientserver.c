@@ -972,7 +972,7 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (server == NULL)
 	return;		// type error; errmsg already given
     if (serverName != NULL)
-	emsg(_("E941: already started a server"));
+	emsg(_(e_already_started_server));
     else
     {
 # ifdef FEAT_X11
@@ -983,7 +983,7 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 # endif
     }
 #else
-    emsg(_("E942: +clientserver feature not available"));
+    emsg(_(e_clientserver_feature_not_available));
 #endif
 }
 

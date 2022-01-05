@@ -84,11 +84,6 @@ static int add_llist_tags(char_u *tag, int num_matches, char_u **matches);
 #endif
 static void tagstack_clear_entry(taggy_T *item);
 
-#ifdef FEAT_EVAL
-static char_u *recurmsg = (char_u *)N_("E986: cannot modify the tag stack within tagfunc");
-static char_u *tfu_inv_ret_msg = (char_u *)N_("E987: invalid return value from tagfunc");
-#endif
-
 static char_u	*tagmatchname = NULL;	// name of last used tag
 
 #if defined(FEAT_QUICKFIX)
@@ -234,7 +229,7 @@ do_tag(
 #ifdef FEAT_EVAL
     if (tfu_in_use)
     {
-	emsg(_(recurmsg));
+	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
 	return FALSE;
     }
 #endif
@@ -1419,7 +1414,7 @@ find_tagfunc_tags(
     if (rettv.v_type != VAR_LIST || !rettv.vval.v_list)
     {
 	clear_tv(&rettv);
-	emsg(_(tfu_inv_ret_msg));
+	emsg(_(e_invalid_return_value_from_tagfunc));
 	return FAIL;
     }
     taglist = rettv.vval.v_list;
@@ -1437,7 +1432,7 @@ find_tagfunc_tags(
 
 	if (item->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(tfu_inv_ret_msg));
+	    emsg(_(e_invalid_return_value_from_tagfunc));
 	    break;
 	}
 
@@ -1489,7 +1484,7 @@ find_tagfunc_tags(
 
 	if (!res_name || !res_fname || !res_cmd)
 	{
-	    emsg(_(tfu_inv_ret_msg));
+	    emsg(_(e_invalid_return_value_from_tagfunc));
 	    break;
 	}
 
@@ -4347,7 +4342,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     // not allowed to alter the tag stack entries from inside tagfunc
     if (tfu_in_use)
     {
-	emsg(_(recurmsg));
+	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
 	return FAIL;
     }
 #endif

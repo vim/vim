@@ -15,8 +15,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
-
 // List heads for garbage collection.
 static list_T		*first_list = NULL;	// list of all lists
 
@@ -1005,7 +1003,7 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 	    return;
 	if (maxdepth < 0)
 	{
-	    emsg(_("E900: maxdepth must be non-negative number"));
+	    emsg(_(e_maxdepth_must_be_non_negative_number));
 	    return;
 	}
     }
@@ -2059,7 +2057,7 @@ do_uniq(list_T *l, sortinfo_T *info)
 	    ptrs[i++].item = li;
 	if (info->item_compare_func_err)
 	{
-	    emsg(_("E882: Uniq compare function failed"));
+	    emsg(_(e_uniq_compare_function_failed));
 	    break;
 	}
     }
@@ -2861,7 +2859,7 @@ f_insert(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_BLOB)
 	blob_insert_func(argvars, rettv);
     else if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_listblobarg), "insert()");
+	semsg(_(e_argument_of_str_must_be_list_or_blob), "insert()");
     else
 	list_insert_func(argvars, rettv);
 }
@@ -2939,7 +2937,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_BLOB)
 	blob_reverse(argvars[0].vval.v_blob, rettv);
     else if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_listblobarg), "reverse()");
+	semsg(_(e_argument_of_str_must_be_list_or_blob), "reverse()");
     else
 	list_reverse(argvars[0].vval.v_list, rettv);
 }

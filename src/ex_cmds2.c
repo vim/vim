@@ -363,8 +363,7 @@ check_changed_any(
 	if (
 #ifdef FEAT_TERMINAL
 		term_job_running(buf->b_term)
-		    ? semsg(_("E947: Job still running in buffer \"%s\""),
-								  buf->b_fname)
+		    ? semsg(_(e_job_still_running_in_buffer_str), buf->b_fname)
 		    :
 #endif
 		semsg(_(e_no_write_since_last_change_for_buffer_str),

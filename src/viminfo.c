@@ -3220,8 +3220,7 @@ write_viminfo(char_u *file, int forceit)
 		{
 		    // They all exist?  Must be something wrong! Don't write
 		    // the viminfo file then.
-		    semsg(_("E929: Too many viminfo temp files, like %s!"),
-								     tempname);
+		    semsg(_(e_too_many_viminfo_temp_files_like_str), tempname);
 		    break;
 		}
 		*wp = next_char;
@@ -3293,7 +3292,7 @@ write_viminfo(char_u *file, int forceit)
 	    if (vim_rename(tempname, fname) == -1)
 	    {
 		++viminfo_errcnt;
-		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
+		semsg(_(e_cant_rename_viminfo_file_to_str), fname);
 	    }
 # ifdef MSWIN
 	    // If the viminfo file was hidden then also hide the new file.

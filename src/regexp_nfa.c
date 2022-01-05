@@ -1597,7 +1597,7 @@ nfa_regatom(void)
 		    break;
 #endif
 		default:
-		    semsg(_(e_nfa_unknown_operator_z_chr), no_Magic(c));
+		    semsg(_(e_nfa_regexp_unknown_operator_z_chr), no_Magic(c));
 		    return FAIL;
 	    }
 	    break;
@@ -1782,7 +1782,7 @@ nfa_regatom(void)
 			    break;
 			}
 		    }
-		    semsg(_(e_nfa_unknown_operator_percent_chr), no_Magic(c));
+		    semsg(_(e_nfa_regexp_unknown_operator_percent_chr), no_Magic(c));
 		    return FAIL;
 	    }
 	    break;
@@ -2266,7 +2266,7 @@ nfa_regpiece(void)
 	    }
 	    if (i == 0)
 	    {
-		semsg(_(e_nfa_unknown_operator_at_chr), op);
+		semsg(_(e_nfa_regexp_unknown_operator_at_chr), op);
 		return FAIL;
 	    }
 	    EMIT(i);
@@ -2295,7 +2295,7 @@ nfa_regpiece(void)
 		greedy = FALSE;
 	    }
 	    if (!read_limits(&minval, &maxval))
-		EMSG_RET_FAIL(_("E870: (NFA regexp) Error reading repetition limits"));
+		EMSG_RET_FAIL(_(e_nfa_regexp_error_reading_repetition_limits));
 
 	    //  <atom>{0,inf}, <atom>{0,} and <atom>{}  are equivalent to
 	    //  <atom>*
@@ -2378,7 +2378,7 @@ nfa_regpiece(void)
 
     if (re_multi_type(peekchr()) != NOT_MULTI)
 	// Can't have a multi follow a multi.
-	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi"));
+	EMSG_RET_FAIL(_(e_nfa_regexp_cant_have_multi_follow_multi));
 
     return OK;
 }
@@ -2525,7 +2525,7 @@ nfa_reg(
     if (paren == REG_PAREN)
     {
 	if (regnpar >= NSUBEXP) // Too many `('
-	    EMSG_RET_FAIL(_("E872: (NFA regexp) Too many '('"));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_too_many_parens));
 	parno = regnpar++;
     }
 #ifdef FEAT_SYN_HL
@@ -2533,7 +2533,7 @@ nfa_reg(
     {
 	// Make a ZOPEN node.
 	if (regnzpar >= NSUBEXP)
-	    EMSG_RET_FAIL(_("E879: (NFA regexp) Too many \\z("));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_too_many_z));
 	parno = regnzpar++;
     }
 #endif
@@ -2563,7 +2563,7 @@ nfa_reg(
 	if (peekchr() == Magic(')'))
 	    EMSG2_RET_FAIL(_(e_unmatched_str_close), reg_magic == MAGIC_ALL);
 	else
-	    EMSG_RET_FAIL(_("E873: (NFA regexp) proper termination error"));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_proper_termination_error));
     }
     /*
      * Here we set the flag allowing back references to this set of
@@ -3126,7 +3126,7 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	fclose(df);
     }
 #endif
-    emsg(_("E874: (NFA) Could not pop the stack!"));
+    emsg(_(e_nfa_regexp_could_not_pop_stack));
 }
 
 /*
@@ -3884,13 +3884,13 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
     if (stackp != stack)
     {
 	vim_free(stack);
-	EMSG_RET_NULL(_("E875: (NFA regexp) (While converting from postfix to NFA), too many states left on stack"));
+	EMSG_RET_NULL(_(e_nfa_regexp_while_converting_from_postfix_to_nfa_too_many_stats_left_on_stack));
     }
 
     if (istate >= nstate)
     {
 	vim_free(stack);
-	EMSG_RET_NULL(_("E876: (NFA regexp) Not enough space to store the whole NFA "));
+	EMSG_RET_NULL(_(e_nfa_regexp_not_enough_space_to_store_whole_nfa));
     }
 
     matchstate = &state_ptr[istate++]; // the match state
@@ -5385,7 +5385,7 @@ recursive_regmatch(
 	    *listids = ALLOC_MULT(int, prog->nstate);
 	    if (*listids == NULL)
 	    {
-		emsg(_("E878: (NFA) Could not allocate memory for branch traversal!"));
+		emsg(_(e_nfa_regexp_could_not_allocate_memory_for_branch_traversal));
 		return 0;
 	    }
 	    *listids_len = prog->nstate;

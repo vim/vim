@@ -1201,7 +1201,7 @@ do_helptags(char_u *dirname, int add_help_tags, int ignore_writeerr)
 						    EW_FILE|EW_SILENT) == FAIL
 	    || filecount == 0)
     {
-	semsg(_("E151: No match: %s"), NameBuff);
+	semsg(_(e_no_match_str_1), NameBuff);
 	return;
     }
 

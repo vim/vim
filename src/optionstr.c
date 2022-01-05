@@ -1026,8 +1026,8 @@ ambw_end:
 		if (convert_setup(&input_conv, p_tenc, p_enc) == FAIL
 			|| convert_setup(&output_conv, p_enc, p_tenc) == FAIL)
 		{
-		    semsg(_("E950: Cannot convert between %s and %s"),
-			    p_tenc, p_enc);
+		    semsg(_(e_cannot_convert_between_str_and_str),
+								p_tenc, p_enc);
 		    errmsg = e_invalid_argument;
 		}
 	    }

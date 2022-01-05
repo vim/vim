@@ -2889,7 +2889,7 @@ get_buf_arg(typval_T *arg)
     buf = tv_get_buf(arg, FALSE);
     --emsg_off;
     if (buf == NULL)
-	semsg(_("E158: Invalid buffer name: %s"), tv_get_string(arg));
+	semsg(_(e_invalid_buffer_name_str), tv_get_string(arg));
     return buf;
 }
 
@@ -3983,7 +3983,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		    add_to_input_buf(keys + idx, 1);
 		}
 #else
-		emsg(_("E980: lowlevel input not supported"));
+		emsg(_(e_lowlevel_input_not_supported));
 #endif
 	    }
 	    else
@@ -4147,7 +4147,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	    {
 		if (argvars[dict_idx].v_type != VAR_DICT)
 		{
-		    emsg(_("E922: expected a dict"));
+		    emsg(_(e_expected_dict));
 		    vim_free(name);
 		    goto theend;
 		}
@@ -4158,7 +4158,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	    {
 		if (argvars[arg_idx].v_type != VAR_LIST)
 		{
-		    emsg(_("E923: Second argument of function() must be a list or a dict"));
+		    emsg(_(e_second_argument_of_function_must_be_list_or_dict));
 		    vim_free(name);
 		    goto theend;
 		}
@@ -9199,7 +9199,6 @@ free_lstval:
     static void
 f_settagstack(typval_T *argvars, typval_T *rettv)
 {
-    static char *e_invact2 = N_("E962: Invalid action: '%s'");
     win_T	*wp;
     dict_T	*d;
     int		action = 'r';
@@ -9242,7 +9241,7 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
 	    action = *actstr;
 	else
 	{
-	    semsg(_(e_invact2), actstr);
+	    semsg(_(e_invalid_action_str_2), actstr);
 	    return;
 	}
     }
@@ -9611,7 +9610,7 @@ f_submatch(typval_T *argvars, typval_T *rettv)
 	return;
     if (no < 0 || no >= NSUBEXP)
     {
-	semsg(_("E935: invalid submatch number: %d"), no);
+	semsg(_(e_invalid_submatch_number_nr), no);
 	return;
     }
     if (argvars[1].v_type != VAR_UNKNOWN)

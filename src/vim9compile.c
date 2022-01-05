@@ -1109,7 +1109,7 @@ get_var_dest(
 	*dest = dest_option;
 	if (cmdidx == CMD_final || cmdidx == CMD_const)
 	{
-	    emsg(_(e_cannot_lock_an_option));
+	    emsg(_(e_cannot_lock_option));
 	    return FAIL;
 	}
 	p = name;

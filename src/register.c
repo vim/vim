@@ -2780,8 +2780,7 @@ write_reg_contents_lst(
 	    s = (char_u *)"";
 	else if (strings[1] != NULL)
 	{
-	    emsg(_("E883: search pattern and expression register may not "
-			"contain two or more lines"));
+	    emsg(_(e_search_pattern_and_expression_register_may_not_contain_two_or_more_lines));
 	    return;
 	}
 	else

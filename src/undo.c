@@ -464,7 +464,7 @@ u_savecommon(
 	{
 	    // This happens when the FileChangedRO autocommand changes the
 	    // file in a way it becomes shorter.
-	    emsg(_("E881: Line count changed unexpectedly"));
+	    emsg(_(e_line_count_changed_unexpectedly));
 	    return FAIL;
 	}
     }
