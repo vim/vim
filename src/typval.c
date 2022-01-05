@@ -191,7 +191,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    emsg(_("E805: Using a Float as a Number"));
+	    emsg(_(e_using_float_as_number));
 	    break;
 #endif
 	case VAR_FUNC:

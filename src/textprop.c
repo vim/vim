@@ -801,7 +801,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     }
     if (both && (!id_found || type_id == -1))
     {
-	emsg(_("E860: Need 'id' and 'type' with 'both'"));
+	emsg(_(e_need_id_and_type_with_both));
 	return;
     }
 
@@ -1224,7 +1224,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
     if (both && (id == -1 || type_id == -1))
     {
-	emsg(_("E860: Need 'id' and 'type' with 'both'"));
+	emsg(_(e_need_id_and_type_with_both));
 	return;
     }
 

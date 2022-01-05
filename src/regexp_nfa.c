@@ -243,11 +243,6 @@ static int nfa_classcodes[] = {
     NFA_UPPER, NFA_NUPPER
 };
 
-static char_u e_nul_found[] = N_("E865: (NFA) Regexp end encountered prematurely");
-static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
-static char_u e_ill_char_class[] = N_("E877: (NFA regexp) Invalid character class: %d");
-static char_u e_value_too_large[] = N_("E951: \\% value too large");
-
 // Variables only used in nfa_regcomp() and descendants.
 static int nfa_re_flags; // re_flags passed to nfa_regcomp()
 static int *post_start;  // holds the postfix form of r.e.
@@ -1377,7 +1372,7 @@ nfa_regatom(void)
     switch (c)
     {
 	case NUL:
-	    EMSG_RET_FAIL(_(e_nul_found));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_end_encountered_prematurely));
 
 	case Magic('^'):
 	    EMIT(NFA_BOL);
@@ -1401,7 +1396,7 @@ nfa_regatom(void)
 	case Magic('_'):
 	    c = no_Magic(getchr());
 	    if (c == NUL)
-		EMSG_RET_FAIL(_(e_nul_found));
+		EMSG_RET_FAIL(_(e_nfa_regexp_end_encountered_prematurely));
 
 	    if (c == '^')	// "\_^" is start-of-line
 	    {
@@ -1461,7 +1456,7 @@ nfa_regatom(void)
 	    {
 		if (extra == NFA_ADD_NL)
 		{
-		    semsg(_(e_ill_char_class), c);
+		    semsg(_(e_nfa_regexp_invalid_character_class_nr), c);
 		    rc_did_emsg = TRUE;
 		    return FAIL;
 		}
@@ -1506,7 +1501,7 @@ nfa_regatom(void)
 	case Magic('|'):
 	case Magic('&'):
 	case Magic(')'):
-	    semsg(_(e_misplaced), no_Magic(c));
+	    semsg(_(e_nfa_regexp_misplaced_chr), no_Magic(c));
 	    return FAIL;
 
 	case Magic('='):
@@ -1516,7 +1511,7 @@ nfa_regatom(void)
 	case Magic('*'):
 	case Magic('{'):
 	    // these should follow an atom, not form an atom
-	    semsg(_(e_misplaced), no_Magic(c));
+	    semsg(_(e_nfa_regexp_misplaced_chr), no_Magic(c));
 	    return FAIL;
 
 	case Magic('~'):
@@ -1602,8 +1597,7 @@ nfa_regatom(void)
 		    break;
 #endif
 		default:
-		    semsg(_("E867: (NFA) Unknown operator '\\z%c'"),
-								 no_Magic(c));
+		    semsg(_(e_nfa_unknown_operator_z_chr), no_Magic(c));
 		    return FAIL;
 	    }
 	    break;
@@ -1725,7 +1719,7 @@ nfa_regatom(void)
 			    if (tmp < n)
 			    {
 				// overflow.
-				emsg(_(e_value_too_large));
+				emsg(_(e_percent_value_too_large));
 				return FAIL;
 			    }
 			    n = tmp;
@@ -1773,7 +1767,7 @@ nfa_regatom(void)
 			    }
 			    if (n >= limit)
 			    {
-				emsg(_(e_value_too_large));
+				emsg(_(e_percent_value_too_large));
 				return FAIL;
 			    }
 			    EMIT((int)n);
@@ -1788,8 +1782,7 @@ nfa_regatom(void)
 			    break;
 			}
 		    }
-		    semsg(_("E867: (NFA) Unknown operator '\\%%%c'"),
-								 no_Magic(c));
+		    semsg(_(e_nfa_unknown_operator_percent_chr), no_Magic(c));
 		    return FAIL;
 	    }
 	    break;
@@ -1947,7 +1940,7 @@ collection:
 			    if (result == FAIL)
 			    {
 				// should never happen
-				EMSG_RET_FAIL(_("E868: Error building NFA with equivalence class!"));
+				EMSG_RET_FAIL(_(e_error_building_nfa_with_equivalence_class));
 			    }
 			    continue;
 			}
@@ -2273,7 +2266,7 @@ nfa_regpiece(void)
 	    }
 	    if (i == 0)
 	    {
-		semsg(_("E869: (NFA) Unknown operator '\\@%c'"), op);
+		semsg(_(e_nfa_unknown_operator_at_chr), op);
 		return FAIL;
 	    }
 	    EMIT(i);
@@ -5125,7 +5118,7 @@ check_char_class(int class, int c)
 
 	default:
 	    // should not be here :P
-	    siemsg(_(e_ill_char_class), class);
+	    siemsg(_(e_nfa_regexp_invalid_character_class_nr), class);
 	    return FAIL;
     }
     return FAIL;

@@ -41,7 +41,6 @@ static char_u *check_for_cryptkey(char_u *cryptkey, char_u *ptr, long *sizep, of
 #endif
 static linenr_T readfile_linenr(linenr_T linecnt, char_u *p, char_u *endp);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
-static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
 #ifdef FEAT_EVAL
 static int readdirex_sort;
@@ -527,7 +526,7 @@ readfile(
 				|| (using_b_fname
 					 && (old_b_fname != curbuf->b_fname)))
 			{
-			    emsg(_(e_auchangedbuf));
+			    emsg(_(e_autocommands_changed_buffer_or_buffer_name));
 			    return FAIL;
 			}
 		    }
@@ -605,7 +604,7 @@ readfile(
 		|| (using_b_ffname && (old_b_ffname != curbuf->b_ffname))
 		|| (using_b_fname && (old_b_fname != curbuf->b_fname))))
 	{
-	    emsg(_(e_auchangedbuf));
+	    emsg(_(e_autocommands_changed_buffer_or_buffer_name));
 	    if (!read_buffer)
 		close(fd);
 	    return FAIL;
@@ -3012,7 +3011,7 @@ set_rw_fname(char_u *fname, char_u *sfname)
     if (curbuf != buf)
     {
 	// We are in another buffer now, don't do the renaming.
-	emsg(_(e_auchangedbuf));
+	emsg(_(e_autocommands_changed_buffer_or_buffer_name));
 	return FAIL;
     }
 

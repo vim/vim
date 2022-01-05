@@ -5850,13 +5850,13 @@ run_eval(const char *cmd, typval_T *rettv
 	{
 	    if (PyErr_Occurred() && !msg_silent)
 		PyErr_PrintEx(0);
-	    emsg(_("E858: Eval did not return a valid python object"));
+	    emsg(_(e_eval_did_not_return_valid_python_object));
 	}
     }
     else
     {
 	if (ConvertFromPyObject(run_ret, rettv) == -1)
-	    emsg(_("E859: Failed to convert returned python object to a Vim value"));
+	    emsg(_(e_failed_to_convert_returned_python_object_to_vim_value));
 	Py_DECREF(run_ret);
     }
     PyErr_Clear();

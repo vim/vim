@@ -1558,7 +1558,7 @@ do_set(
 		    p = find_termcode(key_name);
 		    if (p == NULL)
 		    {
-			errmsg = N_("E846: Key code not set");
+			errmsg = N_(e_key_code_not_set);
 			goto skip;
 		    }
 		    else

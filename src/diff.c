@@ -1096,7 +1096,7 @@ check_external_diff(diffio_T *diffio)
     if (!ok)
     {
 	if (io_error)
-	    emsg(_("E810: Cannot read or write temp files"));
+	    emsg(_(e_cannot_read_or_write_temp_files));
 	emsg(_(e_cannot_create_diffs));
 	diff_a_works = MAYBE;
 #if defined(MSWIN)
@@ -1337,7 +1337,7 @@ ex_diffpatch(exarg_T *eap)
 
     // Only continue if the output file was created.
     if (mch_stat((char *)tmp_new, &st) < 0 || st.st_size == 0)
-	emsg(_("E816: Cannot read patch output"));
+	emsg(_(e_cannot_read_patch_output));
     else
     {
 	if (curbuf->b_fname != NULL)

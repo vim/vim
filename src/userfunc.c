@@ -109,7 +109,7 @@ one_function_arg(
 	    for (i = 0; i < newargs->ga_len; ++i)
 		if (STRCMP(((char_u **)(newargs->ga_data))[i], arg_copy) == 0)
 		{
-		    semsg(_("E853: Duplicate argument name: %s"), arg_copy);
+		    semsg(_(e_duplicate_argument_name_str), arg_copy);
 		    vim_free(arg_copy);
 		    return arg;
 		}
@@ -4268,7 +4268,7 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	// Disallow using the g: dict.
 	if (fudi.fd_dict != NULL && fudi.fd_dict->dv_scope == VAR_DEF_SCOPE)
 	{
-	    emsg(_("E862: Cannot use g: here"));
+	    emsg(_(e_cannot_use_g_here));
 	    goto ret_free;
 	}
     }

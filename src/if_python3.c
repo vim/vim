@@ -771,7 +771,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (python_loaded())
     {
 	if (verbose)
-	    emsg(_("E837: This Vim cannot execute :py3 after using :python"));
+	    emsg(_(e_this_vim_cannot_execute_py3_after_using_python));
 	return FAIL;
     }
 # endif

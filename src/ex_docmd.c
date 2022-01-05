@@ -9051,7 +9051,7 @@ eval_vars(
 			return NULL;
 		    }
 #else
-		    *errormsg = _("E809: #< is not available without the +eval feature");
+		    *errormsg = _(e_hashsmall_is_not_available_without_the_eval_feature);
 		    return NULL;
 #endif
 		}
@@ -9147,7 +9147,7 @@ eval_vars(
 	case SPEC_SLNUM:	// line in file for ":so" command
 		if (SOURCING_NAME == NULL || SOURCING_LNUM == 0)
 		{
-		    *errormsg = _("E842: no line number to use for \"<slnum>\"");
+		    *errormsg = _(e_no_line_number_to_use_for_slnum);
 		    return NULL;
 		}
 		sprintf((char *)strbuf, "%ld", SOURCING_LNUM);

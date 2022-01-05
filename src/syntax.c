@@ -4635,7 +4635,7 @@ get_syn_options(
 #ifdef FEAT_CONCEAL
 	    if (!vim_isprintc_strict(*conceal_char))
 	    {
-		emsg(_("E844: invalid cchar value"));
+		emsg(_(e_invalid_cchar_value));
 		return NULL;
 	    }
 #endif
@@ -4785,7 +4785,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
      */
     if (running_syn_inc_tag >= MAX_SYN_INC_TAG)
     {
-	emsg(_("E847: Too many syntax includes"));
+	emsg(_(e_too_many_syntax_includes));
 	return;
     }
     prev_syn_inc_tag = current_syn_inc_tag;
@@ -5522,7 +5522,7 @@ syn_add_cluster(char_u *name)
     len = curwin->w_s->b_syn_clusters.ga_len;
     if (len >= MAX_CLUSTER_ID)
     {
-	emsg(_("E848: Too many syntax clusters"));
+	emsg(_(e_too_many_syntax_clusters));
 	vim_free(name);
 	return 0;
     }

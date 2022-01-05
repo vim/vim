@@ -1242,7 +1242,7 @@ mzscheme_init(void)
 #ifdef DYNAMIC_MZSCHEME
 	if (disabled || !mzscheme_enabled(TRUE))
 	{
-	    emsg(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_the_mzscheme_libraries_could_not_be_loaded));
 	    return -1;
 	}
 #endif

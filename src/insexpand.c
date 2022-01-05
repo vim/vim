@@ -124,9 +124,6 @@ struct compl_S
 # define CP_FAST	    32	// use fast_breakcheck instead of ui_breakcheck
 
 static char e_hitend[] = N_("Hit end of paragraph");
-# ifdef FEAT_COMPL_FUNC
-static char e_compldel[] = N_("E840: Completion function deleted text");
-# endif
 
 /*
  * All the current matches are stored in a list.
@@ -2670,7 +2667,7 @@ expand_by_function(int type, char_u *base)
     validate_cursor();
     if (!EQUAL_POS(curwin->w_cursor, pos))
     {
-	emsg(_(e_compldel));
+	emsg(_(e_complete_function_deleted_text));
 	goto theend;
     }
 
@@ -4506,7 +4503,7 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
     validate_cursor();
     if (!EQUAL_POS(curwin->w_cursor, pos))
     {
-	emsg(_(e_compldel));
+	emsg(_(e_complete_function_deleted_text));
 	return FAIL;
     }
 

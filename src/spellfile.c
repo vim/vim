@@ -4307,7 +4307,7 @@ getroom(
 	{
 	    if (!spin->si_did_emsg)
 	    {
-		emsg(_("E845: Insufficient memory, word list will be incomplete"));
+		emsg(_(e_insufficient_memory_word_list_will_be_incomplete));
 		spin->si_did_emsg = TRUE;
 	    }
 	    return NULL;

@@ -1934,7 +1934,7 @@ tv_float(typval_T *tvs, int *idxp)
 	else if (tvs[idx].v_type == VAR_NUMBER)
 	    f = (double)tvs[idx].vval.v_number;
 	else
-	    emsg(_("E807: Expected Float argument for printf()"));
+	    emsg(_(e_expected_float_argument_for_printf));
     }
     return f;
 }

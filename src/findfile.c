@@ -206,8 +206,6 @@ static ff_stack_T *ff_create_stack_element(char_u *, int, int);
 static int ff_path_in_stoplist(char_u *, int, char_u **);
 #endif
 
-static char_u e_pathtoolong[] = N_("E854: path too long for completion");
-
 static char_u	*ff_expand_buffer = NULL; // used for expanding filenames
 
 #if 0
@@ -501,7 +499,7 @@ vim_findfile_init(
 	{
 	    if (len + 5 >= MAXPATHL)
 	    {
-		emsg(_(e_pathtoolong));
+		emsg(_(e_path_too_long_for_completion));
 		break;
 	    }
 	    if (STRNCMP(wc_part, "**", 2) == 0)
@@ -551,7 +549,7 @@ vim_findfile_init(
     if (STRLEN(search_ctx->ffsc_start_dir)
 			  + STRLEN(search_ctx->ffsc_fix_path) + 3 >= MAXPATHL)
     {
-	emsg(_(e_pathtoolong));
+	emsg(_(e_path_too_long_for_completion));
 	goto error_return;
     }
     STRCPY(ff_expand_buffer, search_ctx->ffsc_start_dir);

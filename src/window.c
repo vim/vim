@@ -2501,7 +2501,7 @@ win_close(win_T *win, int free_buf)
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
     {
-	emsg(_("E814: Cannot close window, only autocmd window would remain"));
+	emsg(_(e_cannot_close_window_only_autocmd_window_would_remain));
 	return FAIL;
     }
 

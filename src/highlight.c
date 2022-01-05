@@ -3466,7 +3466,7 @@ syn_add_group(char_u *name)
 
     if (highlight_ga.ga_len >= MAX_HL_ID)
     {
-	emsg(_("E849: Too many highlight and syntax groups"));
+	emsg(_(e_too_many_highlight_and_syntax_groups));
 	vim_free(name);
 	return 0;
     }

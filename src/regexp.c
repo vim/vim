@@ -2638,7 +2638,7 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 	}
 	else
 	{
-	    emsg(_("E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be used "));
+	    emsg(_(e_percent_hash_can_only_be_followed_by_zero_one_two_automatic_engine_will_be_used));
 	    regexp_engine = AUTOMATIC_ENGINE;
 	}
     }

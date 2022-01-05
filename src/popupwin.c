@@ -1883,7 +1883,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 #ifdef FEAT_TERMINAL
 	    if (buf->b_term != NULL && popup_terminal_exists())
 	    {
-		emsg(_("E861: Cannot open a second popup with a terminal"));
+		emsg(_(e_cannot_open_second_popup_with_terminal));
 		return NULL;
 	    }
 #endif
@@ -3162,7 +3162,7 @@ error_if_term_popup_window()
     if (WIN_IS_POPUP(curwin) && curbuf->b_term != NULL
 					   && term_job_running(curbuf->b_term))
     {
-	emsg(_("E863: Not allowed for a terminal in a popup window"));
+	emsg(_(e_not_allowed_for_terminal_in_popup_window));
 	return TRUE;
     }
     return FALSE;
