@@ -1092,4 +1092,33 @@ func Test_patch_file()
   filetype off
 endfunc
 
+func Test_git_file()
+  filetype on
+
+  call assert_true(mkdir('Xrepo.git', 'p'))
+
+  call writefile([], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('', &filetype)
+  bwipe!
+
+  call writefile(['0000000000000000000000000000000000000000'], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('git', &filetype)
+  bwipe!
+
+  call writefile(['0000000000000000000000000000000000000000000000000000000000000000'], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('git', &filetype)
+  bwipe!
+
+  call writefile(['ref: refs/heads/master'], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('git', &filetype)
+  bwipe!
+
+  call delete('Xrepo.git', 'rf')
+  filetype off
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
