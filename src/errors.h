@@ -1861,14 +1861,15 @@ EXTERN char e_spellfilemising_autocommand_deleted_buffer[]
 #endif
 EXTERN char e_id_is_reserved_for_match_nr[]
 	INIT(= N_("E798: ID is reserved for \":match\": %d"));
-// E799 unused
+EXTERN char e_invalid_id_nr_must_be_greater_than_or_equal_to_one_1[]
+	INIT(= N_("E799: Invalid ID: %d (must be greater than or equal to 1)"));
 #ifndef FEAT_ARABIC
 EXTERN char e_arabic_cannot_be_used_not_enabled_at_compile_time[]
 	INIT(= N_("E800: Arabic cannot be used: Not enabled at compile time\n"));
 #endif
 EXTERN char e_id_already_taken_nr[]
 	INIT(= N_("E801: ID already taken: %d"));
-EXTERN char e_invalid_id_nr_must_be_greater_than_or_equal_to_one[]
+EXTERN char e_invalid_id_nr_must_be_greater_than_or_equal_to_one_2[]
 	INIT(= N_("E802: Invalid ID: %d (must be greater than or equal to 1)"));
 EXTERN char e_id_not_found_nr[]
 	INIT(= N_("E803: ID not found: %d"));

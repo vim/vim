@@ -45,7 +45,7 @@ match_add(
 	return -1;
     if (id < -1 || id == 0)
     {
-	semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one), id);
+	semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one_1), id);
 	return -1;
     }
     if (id != -1)
@@ -233,7 +233,7 @@ match_delete(win_T *wp, int id, int perr)
     if (id < 1)
     {
 	if (perr == TRUE)
-	    semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one), id);
+	    semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one_2), id);
 	return -1;
     }
     while (cur != NULL && cur->id != id)
