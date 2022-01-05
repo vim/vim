@@ -889,8 +889,9 @@ get_lval(
 	    }
 	    if (*p == ':')
 	    {
-		scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
-		char_u	     *tp = skipwhite(p + 1);
+		garray_T    tmp_type_list;
+		garray_T    *type_list;
+		char_u	    *tp = skipwhite(p + 1);
 
 		if (tp == p + 1 && !quiet)
 		{
@@ -898,11 +899,26 @@ get_lval(
 		    return NULL;
 		}
 
+		if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+		    type_list = &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list;
+		else
+		{
+		    type_list = &tmp_type_list;
+		    ga_init2(type_list, sizeof(type_T), 10);
+		}
+
 		// parse the type after the name
-		lp->ll_type = parse_type(&tp, &si->sn_type_list, !quiet);
+		lp->ll_type = parse_type(&tp, type_list, !quiet);
 		if (lp->ll_type == NULL && !quiet)
 		    return NULL;
 		lp->ll_name_end = tp;
+
+		// drop the type when not in a script
+		if (type_list == &tmp_type_list)
+		{
+		    lp->ll_type = NULL;
+		    clear_type_list(type_list);
+		}
 	    }
 	}
     }

@@ -2,6 +2,7 @@
 
 source check.vim
 source vim9.vim
+source term_util.vim
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
@@ -2279,6 +2280,23 @@ def Test_abort_after_error()
   assert_fails('so Xtestscript', [expected, expected], 3)
 
   delete('Xtestscript')
+enddef
+
+func Test_declare_command_line()
+  CheckRunVimInTerminal
+  call Run_Test_declare_command_line()
+endfunc
+
+def Run_Test_declare_command_line()
+  # On the command line the type is parsed but not used.
+  # To get rid of the script context have to run this in another Vim instance.
+  var buf = RunVimInTerminal('', {'rows': 6})
+  term_sendkeys(buf, ":vim9 var abc: list<list<number>> = [ [1, 2, 3], [4, 5, 6] ]\<CR>")
+  TermWait(buf)
+  term_sendkeys(buf, ":echo abc\<CR>")
+  TermWait(buf)
+  WaitForAssert(() => assert_match('\[\[1, 2, 3\], \[4, 5, 6\]\]', term_getline(buf, 6)))
+  StopVimInTerminal(buf)
 enddef
 
 
