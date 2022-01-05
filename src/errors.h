@@ -1771,10 +1771,12 @@ EXTERN char e_character_in_fol_low_or_upp_is_out_of_range[]
 	INIT(= N_("E762: Character in FOL, LOW or UPP is out of range"));
 EXTERN char e_word_characters_differ_between_spell_files[]
 	INIT(= N_("E763: Word characters differ between spell files"));
+#endif
 #if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC)
 EXTERN char e_option_str_is_not_set[]
 	INIT(= N_("E764: Option '%s' is not set"));
 #endif
+#ifdef FEAT_SPELL
 EXTERN char e_spellfile_does_not_have_nr_entries[]
 	INIT(= N_("E765: 'spellfile' does not have %d entries"));
 #endif
