@@ -45,8 +45,7 @@ match_add(
 	return -1;
     if (id < -1 || id == 0)
     {
-	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"),
-									   id);
+	semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one), id);
 	return -1;
     }
     if (id != -1)
@@ -1216,7 +1215,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     if (id >= 1 && id <= 3)
     {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	semsg(_(e_id_is_reserved_for_match_nr), id);
 	return;
     }
 
@@ -1284,7 +1283,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     // id == 3 is ok because matchaddpos() is supposed to substitute :3match
     if (id == 1 || id == 2)
     {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	semsg(_(e_id_is_reserved_for_match_nr), id);
 	return;
     }
 

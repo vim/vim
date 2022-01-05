@@ -71,11 +71,6 @@ toggle_Magic(int x)
 
 #define MAX_LIMIT	(32767L << 16L)
 
-static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
-static char_u e_reverse_range[] = N_("E944: Reverse range in character class");
-static char_u e_large_class[] = N_("E945: Range too large in character class");
-static char_u e_recursive[]  = N_("E956: Cannot use pattern recursively");
-
 #define NOT_MULTI	0
 #define MULTI_ONE	1
 #define MULTI_MULT	2
@@ -2779,7 +2774,7 @@ vim_regexec_string(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg(_(e_recursive));
+	emsg(_(e_cannot_use_pattern_recursively));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;
@@ -2900,7 +2895,7 @@ vim_regexec_multi(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg(_(e_recursive));
+	emsg(_(e_cannot_use_pattern_recursively));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;

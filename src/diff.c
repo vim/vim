@@ -2682,7 +2682,7 @@ ex_diffgetput(exarg_T *eap)
 	if (idx_other == DB_COUNT)
 	{
 	    if (found_not_ma)
-		emsg(_("E793: No other buffer in diff mode is modifiable"));
+		emsg(_(e_no_other_buffer_in_diff_mode_is_modifiable));
 	    else
 		emsg(_(e_no_other_buffer_in_diff_mode));
 	    return;
@@ -2769,7 +2769,7 @@ ex_diffgetput(exarg_T *eap)
 	change_warning(0);
 	if (diff_buf_idx(curbuf) != idx_to)
 	{
-	    emsg(_("E787: Buffer changed unexpectedly"));
+	    emsg(_(e_buffer_changed_unexpectedly));
 	    goto theend;
 	}
     }

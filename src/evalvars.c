@@ -1968,7 +1968,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 
     if (recurse >= DICT_MAXNEST)
     {
-	emsg(_("E743: variable nested too deep for (un)lock"));
+	emsg(_(e_variable_nested_too_deep_for_unlock));
 	return;
     }
     if (deep == 0)

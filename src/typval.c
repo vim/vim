@@ -209,7 +209,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 					    STR2NR_ALL, &n, NULL, 0, FALSE);
 	    return n;
 	case VAR_LIST:
-	    emsg(_("E745: Using a List as a Number"));
+	    emsg(_(e_using_list_as_number));
 	    break;
 	case VAR_DICT:
 	    emsg(_(e_using_dictionary_as_number));

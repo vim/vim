@@ -512,7 +512,7 @@ add_menu_path(
 	if (*dname == NUL)
 	{
 	    // Only a mnemonic or accelerator is not valid.
-	    emsg(_("E792: Empty menu name"));
+	    emsg(_(e_empty_menu_name));
 	    goto erret;
 	}
 

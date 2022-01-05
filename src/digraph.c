@@ -2661,7 +2661,7 @@ ex_loadkeymap(exarg_T *eap)
 		    || *kp->from == NUL || *kp->to == NUL)
 	    {
 		if (kp->to != NULL && *kp->to == NUL)
-		    emsg(_("E791: Empty keymap entry"));
+		    emsg(_(e_empty_keymap_entry));
 		vim_free(kp->from);
 		vim_free(kp->to);
 	    }

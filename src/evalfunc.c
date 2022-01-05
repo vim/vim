@@ -6715,7 +6715,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 		}
 	    }
 	    else if (lv.ll_range)
-		emsg(_("E786: Range not allowed"));
+		emsg(_(e_range_not_allowed));
 	    else if (lv.ll_newkey != NULL)
 		semsg(_(e_key_not_present_in_dictionary), lv.ll_newkey);
 	    else if (lv.ll_list != NULL)

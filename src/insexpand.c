@@ -2864,7 +2864,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 
     if ((State & INSERT) == 0)
     {
-	emsg(_("E785: complete() can only be used in Insert mode"));
+	emsg(_(e_complete_can_only_be_used_in_insert_mode));
 	return;
     }
 

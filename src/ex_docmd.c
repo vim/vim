@@ -6023,7 +6023,7 @@ ex_tabclose(exarg_T *eap)
     else
 # endif
 	if (first_tabpage->tp_next == NULL)
-	    emsg(_("E784: Cannot close last tab page"));
+	    emsg(_(e_cannot_close_last_tab_page));
 	else
 	{
 	    tab_number = get_tabpage_arg(eap);
@@ -7366,7 +7366,7 @@ changedir_func(
 
     if (vim_strchr(p_cpo, CPO_CHDIR) != NULL && curbufIsChanged() && !forceit)
     {
-	emsg(_("E747: Cannot change directory, buffer is modified (add ! to override)"));
+	emsg(_(e_cannot_change_directory_buffer_is_modified_add_bang_to_override));
 	return FALSE;
     }
 

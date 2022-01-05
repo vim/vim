@@ -1719,24 +1719,128 @@ EXTERN char e_cannot_change_value[]
 	INIT(= N_("E742: Cannot change value"));
 EXTERN char e_cannot_change_value_of_str[]
 	INIT(= N_("E742: Cannot change value of %s"));
+EXTERN char e_variable_nested_too_deep_for_unlock[]
+	INIT(= N_("E743: variable nested too deep for (un)lock"));
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_netbeans_does_not_allow_changes_in_read_only_files[]
 	INIT(= N_("E744: NetBeans does not allow changes in read-only files"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_using_list_as_number[]
+	INIT(= N_("E745: Using a List as a Number"));
+EXTERN char e_function_name_does_not_match_script_file_name_str[]
+	INIT(= N_("E746: Function name does not match script file name: %s"));
+#endif
+EXTERN char e_cannot_change_directory_buffer_is_modified_add_bang_to_override[]
+	INIT(= N_("E747: Cannot change directory, buffer is modified (add ! to override)"));
+EXTERN char e_no_previously_used_register[]
+	INIT(= N_("E748: No previously used register"));
 EXTERN char e_empty_buffer[]
 	INIT(= N_("E749: empty buffer"));
+#ifdef FEAT_PROFILE
+EXTERN char e_first_use_profile_start_fname[]
+	INIT(= N_("E750: First use \":profile start {fname}\""));
+#endif
 #ifdef FEAT_SPELL
+EXTERN char e_output_file_name_must_not_have_region_name[]
+	INIT(= N_("E751: Output file name must not have region name"));
+EXTERN char e_no_previous_spell_replacement[]
+	INIT(= N_("E752: No previous spell replacement"));
+EXTERN char e_not_found_str[]
+	INIT(= N_("E753: Not found: %s"));
+EXTERN char e_only_up_to_nr_regions_supported[]
+	INIT(= N_("E754: Only up to %d regions supported"));
+EXTERN char e_invalid_region_in_str[]
+	INIT(= N_("E755: Invalid region in %s"));
 EXTERN char e_spell_checking_is_not_possible[]
 	INIT(= N_("E756: Spell checking is not possible"));
-#endif
+EXTERN char e_this_does_not_look_like_spell_file[]
+	INIT(= N_("E757: This does not look like a spell file"));
+EXTERN char e_truncated_spell_file[]
+	INIT(= N_("E758: Truncated spell file"));
+EXTERN char e_format_error_in_spell_file[]
+	INIT(= N_("E759: Format error in spell file"));
+EXTERN char e_no_word_count_in_str[]
+	INIT(= N_("E760: No word count in %s"));
+EXTERN char e_format_error_in_affix_file_fol_low_or_upp[]
+	INIT(= N_("E761: Format error in affix file FOL, LOW or UPP"));
+EXTERN char e_character_in_fol_low_or_upp_is_out_of_range[]
+	INIT(= N_("E762: Character in FOL, LOW or UPP is out of range"));
+EXTERN char e_word_characters_differ_between_spell_files[]
+	INIT(= N_("E763: Word characters differ between spell files"));
 #if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC)
 EXTERN char e_option_str_is_not_set[]
 	INIT(= N_("E764: Option '%s' is not set"));
 #endif
+EXTERN char e_spellfile_does_not_have_nr_entries[]
+	INIT(= N_("E765: 'spellfile' does not have %d entries"));
+#endif
+EXTERN char e_insufficient_arguments_for_printf[]
+	INIT(= N_("E766: Insufficient arguments for printf()"));
+EXTERN char e_too_many_arguments_to_printf[]
+	INIT(= N_("E767: Too many arguments for printf()"));
+EXTERN char e_swap_file_exists_str_silent_overrides[]
+	INIT(= N_("E768: Swap file exists: %s (:silent! overrides)"));
+EXTERN char e_missing_rsb_after_str_lsb[]
+	INIT(= N_("E769: Missing ] after %s["));
+#ifdef FEAT_SPELL
+EXTERN char e_unsupported_section_in_spell_file[]
+	INIT(= N_("E770: Unsupported section in spell file"));
+EXTERN char e_old_spell_file_needs_to_be_updated[]
+	INIT(= N_("E771: Old spell file, needs to be updated"));
+EXTERN char e_spell_file_is_for_newer_version_of_vim[]
+	INIT(= N_("E772: Spell file is for newer version of Vim"));
+#endif
+EXTERN char e_symlink_loop_for_str[]
+	INIT(= N_("E773: Symlink loop for \"%s\""));
+EXTERN char e_operatorfunc_is_empty[]
+	INIT(= N_("E774: 'operatorfunc' is empty"));
+#ifndef FEAT_EVAL
+EXTERN char e_eval_feature_not_available[]
+	INIT(= N_("E775: Eval feature not available"));
+#endif
 #ifdef FEAT_QUICKFIX
 EXTERN char e_no_location_list[]
 	INIT(= N_("E776: No location list"));
+#endif
+EXTERN char e_string_or_list_expected[]
+	INIT(= N_("E777: String or List expected"));
+#ifdef FEAT_SPELL
+EXTERN char e_this_does_not_look_like_sug_file_str[]
+	INIT(= N_("E778: This does not look like a .sug file: %s"));
+EXTERN char e_old_sug_file_needs_to_be_updated_str[]
+	INIT(= N_("E779: Old .sug file, needs to be updated: %s"));
+EXTERN char e_sug_file_is_for_newer_version_of_vim_str[]
+	INIT(= N_("E780: .sug file is for newer version of Vim: %s"));
+EXTERN char e_sug_file_doesnt_match_spl_file_str[]
+	INIT(= N_("E781: .sug file doesn't match .spl file: %s"));
+EXTERN char e_error_while_reading_sug_file_str[]
+	INIT(= N_("E782: error while reading .sug file: %s"));
+EXTERN char e_duplicate_char_in_map_entry[]
+	INIT(= N_("E783: duplicate char in MAP entry"));
+#endif
+EXTERN char e_cannot_close_last_tab_page[]
+	INIT(= N_("E784: Cannot close last tab page"));
+EXTERN char e_complete_can_only_be_used_in_insert_mode[]
+	INIT(= N_("E785: complete() can only be used in Insert mode"));
+EXTERN char e_range_not_allowed[]
+	INIT(= N_("E786: Range not allowed"));
+EXTERN char e_buffer_changed_unexpectedly[]
+	INIT(= N_("E787: Buffer changed unexpectedly"));
+EXTERN char e_not_allowed_to_edit_another_buffer_now[]
+	INIT(= N_("E788: Not allowed to edit another buffer now"));
+EXTERN char e_error_missing_rsb_str[]
+	INIT(= N_("E789: Missing ']': %s"));
+EXTERN char e_undojoin_is_not_allowed_after_undo[]
+	INIT(= N_("E790: undojoin is not allowed after undo"));
+EXTERN char e_empty_keymap_entry[]
+	INIT(= N_("E791: Empty keymap entry"));
+EXTERN char e_empty_menu_name[]
+	INIT(= N_("E792: Empty menu name"));
+#ifdef FEAT_DIFF
+EXTERN char e_no_other_buffer_in_diff_mode_is_modifiable[]
+	INIT(= N_("E793: No other buffer in diff mode is modifiable"));
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_set_variable_in_sandbox[]
@@ -1745,21 +1849,30 @@ EXTERN char e_cannot_set_variable_in_sandbox_str[]
 	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
 EXTERN char e_cannot_delete_variable[]
 	INIT(= N_("E795: Cannot delete variable"));
+EXTERN char e_cannot_delete_variable_str[]
+	INIT(= N_("E795: Cannot delete variable %s"));
 	// E796
 EXTERN char e_writing_to_device_disabled_with_opendevice_option[]
 	INIT(= N_("writing to device disabled with 'opendevice' option"));
-EXTERN char e_cannot_delete_variable_str[]
-	INIT(= N_("E795: Cannot delete variable %s"));
 #endif
-
+#ifdef FEAT_SPELL
+EXTERN char e_spellfilemising_autocommand_deleted_buffer[]
+	INIT(= N_("E797: SpellFileMissing autocommand deleted buffer"));
+#endif
+EXTERN char e_id_is_reserved_for_match_nr[]
+	INIT(= N_("E798: ID is reserved for \":match\": %d"));
+EXTERN char e_invalid_id_nr_must_be_greater_than_or_equal_to_one[]
+	INIT(= N_("E799: Invalid ID: %d (must be greater than or equal to 1)"));
 #ifndef FEAT_ARABIC
 EXTERN char e_arabic_cannot_be_used_not_enabled_at_compile_time[]
 	INIT(= N_("E800: Arabic cannot be used: Not enabled at compile time\n"));
 #endif
+
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_percent_with_float[]
 	INIT(= N_("E804: Cannot use '%' with Float"));
 #endif
+
 #ifdef FEAT_FLOAT
 EXTERN char e_using_float_as_string[]
 	INIT(= N_("E806: using Float as a String"));
@@ -1838,6 +1951,11 @@ EXTERN char e_positive_count_required[]
 EXTERN char e_cannot_lock_or_unlock_variable_str[]
 	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 #endif
+EXTERN char e_reverse_range_in_character_class[]
+	INIT(= N_("E944: Reverse range in character class"));
+EXTERN char e_range_too_large_in_character_class[]
+	INIT(= N_("E945: Range too large in character class"));
+
 #ifdef FEAT_TERMINAL
 EXTERN char e_job_still_running[]
 	INIT(= N_("E948: Job still running"));
@@ -1848,6 +1966,8 @@ EXTERN char e_file_changed_while_writing[]
 	INIT(= N_("E949: File changed while writing"));
 EXTERN char e_autocommand_caused_recursive_behavior[]
 	INIT(= N_("E952: Autocommand caused recursive behavior"));
+EXTERN char e_cannot_use_pattern_recursively[]
+	INIT(= N_("E956: Cannot use pattern recursively"));
 EXTERN char e_invalid_window_number[]
 	INIT(= N_("E957: Invalid window number"));
 EXTERN char_u e_invalid_column_number_nr[]

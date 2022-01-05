@@ -4882,7 +4882,7 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 			    break;
 			if (p[1] == NUL)
 			{
-			    semsg(_("E789: Missing ']': %s"), kw);
+			    semsg(_(e_error_missing_rsb_str), kw);
 			    goto error;
 			}
 			if (p[1] == ']')

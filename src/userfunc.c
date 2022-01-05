@@ -4524,7 +4524,8 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 		linenr_T save_lnum = SOURCING_LNUM;
 
 		SOURCING_LNUM = sourcing_lnum_top;
-		semsg(_("E746: Function name does not match script file name: %s"), name);
+		semsg(_(e_function_name_does_not_match_script_file_name_str),
+									 name);
 		SOURCING_LNUM = save_lnum;
 		goto erret;
 	    }

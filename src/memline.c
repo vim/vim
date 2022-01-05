@@ -4415,7 +4415,7 @@ resolve_symlink(char_u *fname, char_u *buf)
 	// Limit symlink depth to 100, catch recursive loops.
 	if (++depth == 100)
 	{
-	    semsg(_("E773: Symlink loop for \"%s\""), fname);
+	    semsg(_(e_symlink_loop_for_str), fname);
 	    return FAIL;
 	}
 

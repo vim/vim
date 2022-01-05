@@ -7978,7 +7978,7 @@ cexpr_core(exarg_T *eap, typval_T *tv)
 	return OK;
     }
 
-    emsg(_("E777: String or List expected"));
+    emsg(_(e_string_or_list_expected));
     return FAIL;
 }
 

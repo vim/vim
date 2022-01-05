@@ -3381,7 +3381,7 @@ op_function(oparg_T *oap UNUSED)
     typval_T	rettv;
 
     if (*p_opfunc == NUL)
-	emsg(_("E774: 'operatorfunc' is empty"));
+	emsg(_(e_operatorfunc_is_empty));
     else
     {
 	// Set '[ and '] marks to text to be operated on.
@@ -3419,7 +3419,7 @@ op_function(oparg_T *oap UNUSED)
 	}
     }
 #else
-    emsg(_("E775: Eval feature not available"));
+    emsg(_(e_eval_feature_not_available));
 #endif
 }
 

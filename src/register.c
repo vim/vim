@@ -575,7 +575,7 @@ do_execreg(
     {
 	if (execreg_lastc == NUL)
 	{
-	    emsg(_("E748: No previously used register"));
+	    emsg(_(e_no_previously_used_register));
 	    return FAIL;
 	}
 	regname = execreg_lastc;

@@ -1782,13 +1782,13 @@ collection:
 				endc = coll_get_char();
 
 			    if (startc > endc)
-				EMSG_RET_NULL(_(e_reverse_range));
+				EMSG_RET_NULL(_(e_reverse_range_in_character_class));
 			    if (has_mbyte && ((*mb_char2len)(startc) > 1
 						 || (*mb_char2len)(endc) > 1))
 			    {
 				// Limit to a range of 256 chars.
 				if (endc > startc + 256)
-				    EMSG_RET_NULL(_(e_large_class));
+				    EMSG_RET_NULL(_(e_range_too_large_in_character_class));
 				while (++startc <= endc)
 				    regmbc(startc);
 			    }
@@ -2008,7 +2008,8 @@ collection:
 		break;
 	    }
 	    else if (reg_strict)
-		EMSG2_RET_NULL(_(e_missingbracket), reg_magic > MAGIC_OFF);
+		EMSG2_RET_NULL(_(e_missing_rsb_after_str_lsb),
+							reg_magic > MAGIC_OFF);
 	}
 	// FALLTHROUGH
 

@@ -1862,7 +1862,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = vim_strnsave(head, tail - head);
 }
 
-static char *e_printf = N_("E766: Insufficient arguments for printf()");
+static char *e_printf = N_(e_insufficient_arguments_for_printf);
 
 /*
  * Get number argument from "idxp" entry in "tvs".  First entry is 1.
@@ -2961,7 +2961,7 @@ vim_vsnprintf_typval(
     }
 
     if (tvs != NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
-	emsg(_("E767: Too many arguments to printf()"));
+	emsg(_(e_too_many_arguments_to_printf));
 
     // Return the number of characters formatted (excluding trailing nul
     // character), that is, the number of characters that would have been

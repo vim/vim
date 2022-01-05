@@ -320,7 +320,7 @@ ex_profile(exarg_T *eap)
 	set_vim_var_nr(VV_PROFILING, 1L);
     }
     else if (do_profiling == PROF_NONE)
-	emsg(_("E750: First use \":profile start {fname}\""));
+	emsg(_(e_first_use_profile_start_fname));
     else if (STRCMP(eap->arg, "pause") == 0)
     {
 	if (do_profiling == PROF_YES)

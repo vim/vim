@@ -478,7 +478,7 @@ find_word(matchinf_T *mip, int mode)
 	    if (endidxcnt == MAXWLEN)
 	    {
 		// Must be a corrupted spell file.
-		emsg(_(e_format));
+		emsg(_(e_format_error_in_spell_file));
 		return;
 	    }
 	    endlen[endidxcnt] = wlen;
@@ -2095,7 +2095,7 @@ did_set_spelllang(win_T *wp)
 		// destroying the buffer we are using...
 		if (!bufref_valid(&bufref))
 		{
-		    ret_msg = N_("E797: SpellFileMissing autocommand deleted buffer");
+		    ret_msg = N_(e_spellfilemising_autocommand_deleted_buffer);
 		    goto theend;
 		}
 	    }
@@ -2881,7 +2881,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 
     if (repl_from == NULL || repl_to == NULL)
     {
-	emsg(_("E752: No previous spell replacement"));
+	emsg(_(e_no_previous_spell_replacement));
 	return;
     }
     addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
@@ -2931,7 +2931,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     vim_free(frompat);
 
     if (sub_nsubs == 0)
-	semsg(_("E753: Not found: %s"), repl_from);
+	semsg(_(e_not_found_str), repl_from);
     else
 	do_sub_msg(FALSE);
 }

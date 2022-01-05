@@ -3180,7 +3180,7 @@ ex_undojoin(exarg_T *eap UNUSED)
 	return;		    // nothing changed before
     if (curbuf->b_u_curhead != NULL)
     {
-	emsg(_("E790: undojoin is not allowed after undo"));
+	emsg(_(e_undojoin_is_not_allowed_after_undo));
 	return;
     }
     if (!curbuf->b_u_synced)

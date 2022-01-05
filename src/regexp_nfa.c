@@ -2019,7 +2019,7 @@ collection:
 
 			startc = oldstartc;
 			if (startc > endc)
-			    EMSG_RET_FAIL(_(e_reverse_range));
+			    EMSG_RET_FAIL(_(e_reverse_range_in_character_class));
 
 			if (endc > startc + 2)
 			{
@@ -2128,7 +2128,7 @@ collection:
 	    } // if exists closing ]
 
 	    if (reg_strict)
-		EMSG_RET_FAIL(_(e_missingbracket));
+		EMSG_RET_FAIL(_(e_missing_rsb_after_str_lsb));
 	    // FALLTHROUGH
 
 	default:
