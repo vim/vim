@@ -1213,6 +1213,7 @@ func Test_diff_maintains_change_mark()
   set diffopt+=internal
   call DiffMaintainsChangeMark()
   set diffopt&
+  delfunction DiffMaintainsChangeMark
 endfunc
 
 " Test for 'patchexpr'
