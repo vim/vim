@@ -565,6 +565,7 @@ find_exported(
     if (idx >= 0)
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
+	*ufunc = NULL;
 	if (!sv->sv_export)
 	{
 	    if (verbose)
@@ -572,7 +573,6 @@ find_exported(
 	    return -1;
 	}
 	*type = sv->sv_type;
-	*ufunc = NULL;
     }
     else
     {
