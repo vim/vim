@@ -162,7 +162,6 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
     hashitem_T	    *hi;
     int		    cc;
     sallvar_T	    *sav;
-    sallvar_T	    *found_sav;
     ufunc_T	    *ufunc;
 
     // Find the list of all script variables with the right name.
@@ -198,7 +197,6 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
     // Go over the variables with this name and find one that was visible
     // from the function.
     ufunc = cctx->ctx_ufunc;
-    found_sav = sav;
     while (sav != NULL)
     {
 	int idx;
@@ -211,8 +209,8 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
 	sav = sav->sav_next;
     }
 
-    // Not found, assume variable at script level was visible.
-    return found_sav;
+    // Not found, variable was not visible.
+    return NULL;
 }
 
 /*

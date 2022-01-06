@@ -933,6 +933,21 @@ def Test_local_function_shadows_global()
       delfunc g:Func
   END
   CheckScriptSuccess(lines)
+
+  # This does not shadow "i" which is visible only inside the for loop
+  lines =<< trim END
+      vim9script
+
+      def Foo(i: number)
+        echo i
+      enddef
+
+      for i in range(3)
+        # Foo() is compiled here
+        Foo(i)
+      endfor
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func TakesOneArg(arg)
