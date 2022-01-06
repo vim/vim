@@ -141,17 +141,17 @@ compile_unlet(
 	//
 	ret = compile_lhs(p, &lhs, CMD_unlet, FALSE, 0, cctx);
 
-	// : unlet an indexed item
-	if (!lhs.lhs_has_index)
+	// Use the info in "lhs" to unlet the item at the index in the
+	// list or dict.
+	if (ret == OK)
 	{
-	    iemsg("called compile_lhs() without an index");
-	    ret = FAIL;
-	}
-	else
-	{
-	    // Use the info in "lhs" to unlet the item at the index in the
-	    // list or dict.
-	    ret = compile_assign_unlet(p, &lhs, FALSE, &t_void, cctx);
+	    if (!lhs.lhs_has_index)
+	    {
+		semsg(_(e_cannot_unlet_imported_item_str), p);
+		ret = FAIL;
+	    }
+	    else
+		ret = compile_assign_unlet(p, &lhs, FALSE, &t_void, cctx);
 	}
 
 	vim_free(lhs.lhs_name);
