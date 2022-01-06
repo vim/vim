@@ -1917,7 +1917,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    tp = find_tabpage(tabnr);
 	    if (tp == NULL)
 	    {
-		semsg(_("E997: Tabpage not found: %d"), tabnr);
+		semsg(_(e_tabpage_not_found_nr), tabnr);
 		return NULL;
 	    }
 	}
@@ -2525,7 +2525,7 @@ find_popup_win(int id)
 
     if (wp != NULL && !WIN_IS_POPUP(wp))
     {
-	semsg(_("E993: window %d is not a popup window"), id);
+	semsg(_(e_window_nr_is_not_popup_window), id);
 	return NULL;
     }
     return wp;
@@ -2671,7 +2671,7 @@ popup_free(win_T *wp)
     static void
 error_for_popup_window(void)
 {
-    emsg(_("E994: Not allowed in a popup window"));
+    emsg(_(e_not_allowed_in_popup_window));
 }
 
     int

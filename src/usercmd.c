@@ -618,7 +618,7 @@ parse_addr_type_arg(
 	for (i = 0; err[i] != NUL && !VIM_ISWHITE(err[i]); i++)
 	    ;
 	err[i] = NUL;
-	semsg(_("E180: Invalid address type value: %s"), err);
+	semsg(_(e_invalid_address_type_value_str), err);
 	return FAIL;
     }
 
