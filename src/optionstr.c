@@ -756,6 +756,9 @@ did_set_string_option(
     {
 	if (briopt_check(curwin) == FAIL)
 	    errmsg = e_invalid_argument;
+	// list setting requires a redraw
+	if (curwin->w_briopt_list)
+	    redraw_all_later(NOT_VALID);
     }
 #endif
 
@@ -2608,6 +2611,14 @@ ambw_end:
 #if defined(FEAT_LUA) || defined(PROTO)
     if (varp == &p_rtp)
 	update_package_paths_in_lua();
+#endif
+
+#if defined(FEAT_LINEBREAK)
+    // Changing Formatlistpattern when briopt includes the list setting:
+    // redraw
+    if ((varp == &p_flp || varp == &(curbuf->b_p_flp))
+	    && curwin->w_briopt_list)
+	redraw_all_later(NOT_VALID);
 #endif
 
     if (curwin->w_curswant != MAXCOL
