@@ -2318,8 +2318,10 @@ EXTERN char e_missing_end_marker_str[]
 	INIT(= N_("E990: Missing end marker '%s'"));
 EXTERN char e_cannot_use_heredoc_here[]
 	INIT(= N_("E991: cannot use =<< here"));
+#endif
 EXTERN char e_not_allowed_in_modeline_when_modelineexpr_is_off[]
 	INIT(= N_("E992: Not allowed in a modeline when 'modelineexpr' is off"));
+#ifdef FEAT_EVAL
 EXTERN char e_window_nr_is_not_popup_window[]
 	INIT(= N_("E993: window %d is not a popup window"));
 EXTERN char e_not_allowed_in_popup_window[]
