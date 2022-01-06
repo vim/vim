@@ -1159,7 +1159,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    XtSetArg(args[n], XtNinternalWidth, 1); n++;
 	    XtSetArg(args[n], XtNborderWidth, 1); n++;
 	    if (menu->image != 0)
+	    {
 		XtSetArg(args[n], XtNbitmap, menu->image); n++;
+	    }
 	}
 	XtSetArg(args[n], XtNhighlightThickness, 0); n++;
 	type = commandWidgetClass;
