@@ -149,6 +149,16 @@ func Test_win_execute_other_tab()
   unlet xyz
 endfunc
 
+func Test_win_execute_visual_redraw()
+  call setline(1, ['a', 'b', 'c'])
+  new
+  wincmd p
+  call feedkeys("G\<C-V>", 'txn')
+  call win_execute(winnr('#')->win_getid(), 'redraw')
+  bwipe!
+  bwipe!
+endfunc
+
 func Test_win_execute_on_startup()
   CheckRunVimInTerminal
 

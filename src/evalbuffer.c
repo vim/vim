@@ -930,31 +930,29 @@ find_win_for_buf(
  */
     void
 switch_to_win_for_buf(
-    buf_T	*buf,
-    win_T	**save_curwinp,
-    tabpage_T	**save_curtabp,
-    bufref_T	*save_curbuf)
+	buf_T	    *buf,
+	switchwin_T *switchwin,
+	bufref_T    *save_curbuf)
 {
     win_T	*wp;
     tabpage_T	*tp;
 
     if (find_win_for_buf(buf, &wp, &tp) == FAIL)
 	switch_buffer(save_curbuf, buf);
-    else if (switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
+    else if (switch_win(switchwin, wp, tp, TRUE) == FAIL)
     {
-	restore_win(*save_curwinp, *save_curtabp, TRUE);
+	restore_win(switchwin, TRUE);
 	switch_buffer(save_curbuf, buf);
     }
 }
 
     void
 restore_win_for_buf(
-    win_T	*save_curwin,
-    tabpage_T	*save_curtab,
-    bufref_T	*save_curbuf)
+	switchwin_T *switchwin,
+	bufref_T    *save_curbuf)
 {
     if (save_curbuf->br_buf == NULL)
-	restore_win(save_curwin, save_curtab, TRUE);
+	restore_win(switchwin, TRUE);
     else
 	restore_buffer(save_curbuf);
 }

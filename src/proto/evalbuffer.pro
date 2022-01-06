@@ -21,6 +21,6 @@ void f_setbufline(typval_T *argvars, typval_T *rettv);
 void f_setline(typval_T *argvars, typval_T *rettv);
 void switch_buffer(bufref_T *save_curbuf, buf_T *buf);
 void restore_buffer(bufref_T *save_curbuf);
-void switch_to_win_for_buf(buf_T *buf, win_T **save_curwinp, tabpage_T **save_curtabp, bufref_T *save_curbuf);
-void restore_win_for_buf(win_T *save_curwin, tabpage_T *save_curtab, bufref_T *save_curbuf);
+void switch_to_win_for_buf(buf_T *buf, switchwin_T *switchwin, bufref_T *save_curbuf);
+void restore_win_for_buf(switchwin_T *switchwin, bufref_T *save_curbuf);
 /* vim: set ft=c : */

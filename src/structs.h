@@ -4507,3 +4507,10 @@ typedef enum {
     FILTERMAP_MAPNEW
 } filtermap_T;
 
+// Structure used by switch_win() to pass values to restore_win()
+typedef struct {
+    win_T	*sw_curwin;
+    tabpage_T	*sw_curtab;
+    int		sw_same_win;	    // VIsual_active was not reset
+    int		sw_visual_active;
+} switchwin_T;

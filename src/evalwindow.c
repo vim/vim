@@ -689,8 +689,7 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     int		id;
     tabpage_T	*tp;
     win_T	*wp;
-    win_T	*save_curwin;
-    tabpage_T	*save_curtab;
+    switchwin_T	switchwin;
 
     // Return an empty string if something fails.
     rettv->v_type = VAR_STRING;
@@ -727,12 +726,12 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 	}
 #endif
 
-	if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE) == OK)
+	if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
 	{
 	    check_cursor();
 	    execute_common(argvars, rettv, 1);
 	}
-	restore_win_noblock(save_curwin, save_curtab, TRUE);
+	restore_win_noblock(&switchwin, TRUE);
 #ifdef FEAT_AUTOCHDIR
 	if (apply_acd)
 	    do_autochdir();
@@ -1247,14 +1246,13 @@ f_winwidth(typval_T *argvars, typval_T *rettv)
  */
     int
 switch_win(
-    win_T	**save_curwin,
-    tabpage_T	**save_curtab,
-    win_T	*win,
-    tabpage_T	*tp,
-    int		no_display)
+	switchwin_T *switchwin,
+	win_T	    *win,
+	tabpage_T   *tp,
+	int	    no_display)
 {
     block_autocmds();
-    return switch_win_noblock(save_curwin, save_curtab, win, tp, no_display);
+    return switch_win_noblock(switchwin, win, tp, no_display);
 }
 
 /*
@@ -1262,16 +1260,25 @@ switch_win(
  */
     int
 switch_win_noblock(
-    win_T	**save_curwin,
-    tabpage_T	**save_curtab,
-    win_T	*win,
-    tabpage_T	*tp,
-    int		no_display)
+	switchwin_T *switchwin,
+	win_T	    *win,
+	tabpage_T   *tp,
+	int	    no_display)
 {
-    *save_curwin = curwin;
+    CLEAR_POINTER(switchwin);
+    switchwin->sw_curwin = curwin;
+    if (win == curwin)
+	switchwin->sw_same_win = TRUE;
+    else
+    {
+	// Disable Visual selection, because redrawing may fail.
+	switchwin->sw_visual_active = VIsual_active;
+	VIsual_active = FALSE;
+    }
+
     if (tp != NULL)
     {
-	*save_curtab = curtab;
+	switchwin->sw_curtab = curtab;
 	if (no_display)
 	{
 	    curtab->tp_firstwin = firstwin;
@@ -1299,11 +1306,10 @@ switch_win_noblock(
  */
     void
 restore_win(
-    win_T	*save_curwin,
-    tabpage_T	*save_curtab,
-    int		no_display)
+	switchwin_T *switchwin,
+	int	    no_display)
 {
-    restore_win_noblock(save_curwin, save_curtab, no_display);
+    restore_win_noblock(switchwin, no_display);
     unblock_autocmds();
 }
 
@@ -1312,28 +1318,31 @@ restore_win(
  */
     void
 restore_win_noblock(
-    win_T	*save_curwin,
-    tabpage_T	*save_curtab,
-    int		no_display)
+	switchwin_T *switchwin,
+	int	    no_display)
 {
-    if (save_curtab != NULL && valid_tabpage(save_curtab))
+    if (switchwin->sw_curtab != NULL && valid_tabpage(switchwin->sw_curtab))
     {
 	if (no_display)
 	{
 	    curtab->tp_firstwin = firstwin;
 	    curtab->tp_lastwin = lastwin;
 	    curtab->tp_topframe = topframe;
-	    curtab = save_curtab;
+	    curtab = switchwin->sw_curtab;
 	    firstwin = curtab->tp_firstwin;
 	    lastwin = curtab->tp_lastwin;
 	    topframe = curtab->tp_topframe;
 	}
 	else
-	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
+	    goto_tabpage_tp(switchwin->sw_curtab, FALSE, FALSE);
     }
-    if (win_valid(save_curwin))
+
+    if (!switchwin->sw_same_win)
+	VIsual_active = switchwin->sw_visual_active;
+
+    if (win_valid(switchwin->sw_curwin))
     {
-	curwin = save_curwin;
+	curwin = switchwin->sw_curwin;
 	curbuf = curwin->w_buffer;
     }
 # ifdef FEAT_PROP_POPUP

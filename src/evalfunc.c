@@ -6864,8 +6864,7 @@ f_line(typval_T *argvars, typval_T *rettv)
     int		id;
     tabpage_T	*tp;
     win_T	*wp;
-    win_T	*save_curwin;
-    tabpage_T	*save_curtab;
+    switchwin_T	switchwin;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -6879,13 +6878,12 @@ f_line(typval_T *argvars, typval_T *rettv)
 	wp = win_id2wp_tp(id, &tp);
 	if (wp != NULL && tp != NULL)
 	{
-	    if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE)
-									 == OK)
+	    if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
 	    {
 		check_cursor();
 		fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 	    }
-	    restore_win_noblock(save_curwin, save_curtab, TRUE);
+	    restore_win_noblock(&switchwin, TRUE);
 	}
     }
     else
