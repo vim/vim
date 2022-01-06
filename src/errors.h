@@ -2500,8 +2500,8 @@ EXTERN char e_white_space_required_after_str_str[]
 	INIT(= N_("E1069: White space required after '%s': %s"));
 EXTERN char e_missing_from[]
 	INIT(= N_("E1070: Missing \"from\""));
-EXTERN char e_invalid_string_after_from[]
-	INIT(= N_("E1071: Invalid string after \"from\""));
+EXTERN char e_invalid_string_for_import_str[]
+	INIT(= N_("E1071: Invalid string for :import: %s"));
 EXTERN char e_cannot_compare_str_with_str[]
 	INIT(= N_("E1072: Cannot compare %s with %s"));
 EXTERN char e_name_already_defined_str[]
@@ -2839,8 +2839,8 @@ EXTERN char e_legacy_must_be_followed_by_command[]
 	INIT(= N_("E1234: legacy must be followed by a command"));
 EXTERN char e_function_reference_is_not_set[]
 	INIT(= N_("E1235: Function reference is not set"));
-EXTERN char e_cannot_use_str_itself_it_is_imported_with_star[]
-	INIT(= N_("E1236: Cannot use %s itself, it is imported with '*'"));
+EXTERN char e_cannot_use_str_itself_it_is_imported[]
+	INIT(= N_("E1236: Cannot use %s itself, it is imported"));
 EXTERN char e_no_such_user_defined_command_in_current_buffer_str[]
 	INIT(= N_("E1237: No such user-defined command in current buffer: %s"));
 EXTERN char e_blob_required_for_argument_nr[]
@@ -2881,3 +2881,11 @@ EXTERN char e_cmd_mapping_must_end_with_cr[]
 	INIT(= N_("E1255: <Cmd> mapping must end with <CR>"));
 EXTERN char e_string_or_function_required_for_argument_nr[]
 	INIT(= N_("E1256: String or function required for argument %d"));
+EXTERN char e_imported_script_must_end_in_dot_vim_str[]
+	INIT(= N_("E1257: Imported script must end in .vim: %s"));
+EXTERN char e_no_dot_after_imported_name_str[]
+	INIT(= N_("E1258: No '.' after imported name: %s"));
+EXTERN char e_missing_name_after_imported_name_str[]
+	INIT(= N_("E1259: Missing name after imported name: %s"));
+EXTERN char e_cannot_unlet_imported_item_str[]
+	INIT(= N_("E1260: Cannot unlet an imported item: %s"));

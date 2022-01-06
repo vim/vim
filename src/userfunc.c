@@ -1608,34 +1608,14 @@ deref_func_name(
 	}
 	import = find_imported(p, len, NULL);
 
-	// imported variable from another script
+	// imported function from another script
 	if (import != NULL)
 	{
-	    if (import->imp_funcname != NULL)
-	    {
-		s = import->imp_funcname;
-		*lenp = (int)STRLEN(s);
-		return s;
-	    }
-	    if (import->imp_flags & IMP_FLAGS_STAR)
-	    {
-		name[len] = NUL;
-		semsg(_(e_cannot_use_str_itself_it_is_imported_with_star),
-									 name);
-		name[len] = cc;
-		*lenp = 0;
-		return (char_u *)"";	// just in case
-	    }
-	    else
-	    {
-		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
-						    + import->imp_var_vals_idx;
-		tv = sv->sv_tv;
-		if (type != NULL)
-		    *type = sv->sv_type;
-		did_type = TRUE;
-	    }
+	    name[len] = NUL;
+	    semsg(_(e_cannot_use_str_itself_it_is_imported), name);
+	    name[len] = cc;
+	    *lenp = 0;
+	    return (char_u *)"";	// just in case
 	}
     }
 
@@ -1673,7 +1653,7 @@ deref_func_name(
 	{
 	    if (!did_type && type != NULL && ht == get_script_local_ht())
 	    {
-		svar_T  *sv = find_typval_in_script(tv);
+		svar_T  *sv = find_typval_in_script(tv, 0);
 
 		if (sv != NULL)
 		    *type = sv->sv_type;
@@ -1905,16 +1885,13 @@ find_func_with_sid(char_u *name, int sid)
  * Return NULL for unknown function.
  */
     ufunc_T *
-find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
+find_func_even_dead(char_u *name, int is_global, cctx_T *cctx UNUSED)
 {
     hashitem_T	*hi;
     ufunc_T	*func;
-    imported_T	*imported;
 
     if (!is_global)
     {
-	char_u	*after_script = NULL;
-	long	sid = 0;
 	int	find_script_local = in_vim9script() && eval_isnamec1(*name)
 					   && (name[1] != ':' || *name == 's');
 
@@ -1925,35 +1902,6 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
 				       ? name + 2 : name, current_sctx.sc_sid);
 	    if (func != NULL)
 		return func;
-	}
-
-	if (name[0] == K_SPECIAL
-		&& name[1] == KS_EXTRA
-		&& name[2] == KE_SNR)
-	{
-	    // Caller changes s: to <SNR>99_name.
-
-	    after_script = name + 3;
-	    sid = getdigits(&after_script);
-	    if (*after_script == '_')
-		++after_script;
-	    else
-		after_script = NULL;
-	}
-	if (find_script_local || after_script != NULL)
-	{
-	    // Find imported function before global one.
-	    if (after_script != NULL && sid != current_sctx.sc_sid)
-		imported = find_imported_in_script(after_script, 0, sid);
-	    else
-		imported = find_imported(after_script == NULL
-					       ? name : after_script, 0, cctx);
-	    if (imported != NULL && imported->imp_funcname != NULL)
-	    {
-		hi = hash_find(&func_hashtab, imported->imp_funcname);
-		if (!HASHITEM_EMPTY(hi))
-		    return HI2UF(hi);
-	    }
 	}
     }
 
@@ -4257,8 +4205,8 @@ define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free)
 	    // In Vim9 script a function cannot have the same name as a
 	    // variable.
 	    if (vim9script && *arg == K_SPECIAL
-		&& eval_variable(name_base, (int)STRLEN(name_base), NULL, NULL,
-			 EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT
+		&& eval_variable(name_base, (int)STRLEN(name_base), 0, NULL,
+		    NULL, EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT
 						     + EVAL_VAR_NO_FUNC) == OK)
 	    {
 		semsg(_(e_redefining_script_item_str), name_base);

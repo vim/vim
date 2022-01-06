@@ -1822,19 +1822,10 @@ struct svar_S {
 
 typedef struct {
     char_u	*imp_name;	    // name imported as (allocated)
-    int		imp_sid;	    // script ID of "from"
-
+    scid_T	imp_sid;	    // script ID of "from"
     int		imp_flags;	    // IMP_FLAGS_ values
-
-    // for a variable
-    type_T	*imp_type;
-    int		imp_var_vals_idx;   // index in sn_var_vals of "from"
-
-    // for a function
-    char_u	*imp_funcname;	    // user func name (NOT allocated)
 } imported_T;
 
-#define IMP_FLAGS_STAR		1   // using "import * as Name"
 #define IMP_FLAGS_RELOAD	2   // script reloaded, OK to redefine
 
 /*
@@ -4264,6 +4255,10 @@ typedef struct lval_S
     char_u	*ll_name_end;	// end of variable name (can be NULL)
     type_T	*ll_type;	// type of variable (can be NULL)
     char_u	*ll_exp_name;	// NULL or expanded name in allocated memory.
+
+    scid_T	ll_sid;		// for an imported item: the script ID it was
+				// imported from; zero otherwise
+
     typval_T	*ll_tv;		// Typeval of item being used.  If "newkey"
 				// isn't NULL it's the Dict to which to add
 				// the item.

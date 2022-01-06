@@ -1160,7 +1160,7 @@ store_var(char_u *name, typval_T *tv)
     if (tv->v_lock)
 	flags |= ASSIGN_CONST;
     save_funccal(&entry);
-    set_var_const(name, NULL, tv, FALSE, flags, 0);
+    set_var_const(name, 0, NULL, tv, FALSE, flags, 0);
     restore_funccal();
 }
 
@@ -2252,7 +2252,7 @@ exec_instructions(ectx_T *ectx)
 		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (eval_variable(name, (int)STRLEN(name),
+		    if (eval_variable(name, (int)STRLEN(name), 0,
 			      STACK_TV_BOT(0), NULL, EVAL_VAR_VERBOSE) == FAIL)
 			goto on_error;
 		    ++ectx->ec_stack.ga_len;

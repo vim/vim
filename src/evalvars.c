@@ -1232,7 +1232,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		arg = skipwhite(arg);
 		if (tofree != NULL)
 		    name = tofree;
-		if (eval_variable(name, len, &tv, NULL,
+		if (eval_variable(name, len, 0, &tv, NULL,
 						     EVAL_VAR_VERBOSE) == FAIL)
 		    error = TRUE;
 		else
@@ -2645,6 +2645,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 eval_variable(
     char_u	*name,
     int		len,		// length of "name"
+    scid_T	sid,		// script ID for imported item or zero
     typval_T	*rettv,		// NULL when only checking existence
     dictitem_T	**dip,		// non-NULL when typval's dict item is needed
     int		flags)		// EVAL_VAR_ flags
@@ -2678,48 +2679,50 @@ eval_variable(
 
     if (tv == NULL && (in_vim9script() || STRNCMP(name, "s:", 2) == 0))
     {
-	imported_T  *import;
+	imported_T  *import = NULL;
 	char_u	    *p = STRNCMP(name, "s:", 2) == 0 ? name + 2 : name;
 
-	import = find_imported(p, 0, NULL);
+	if (sid == 0)
+	    import = find_imported(p, 0, NULL);
 
 	// imported variable from another script
-	if (import != NULL)
+	if (import != NULL || sid != 0)
 	{
-	    if (import->imp_funcname != NULL)
+	    if ((flags & EVAL_VAR_IMPORT) == 0)
 	    {
-		found = TRUE;
-		if (rettv != NULL)
+		if (sid != 0 && SCRIPT_ID_VALID(sid))
 		{
-		    rettv->v_type = VAR_FUNC;
-		    rettv->vval.v_string = vim_strsave(import->imp_funcname);
+		    ht = &SCRIPT_VARS(sid);
+		    if (ht != NULL)
+		    {
+			dictitem_T *v = find_var_in_ht(ht, 0, name,
+						  flags & EVAL_VAR_NOAUTOLOAD);
+
+			if (v != NULL)
+			{
+			    tv = &v->di_tv;
+			    if (dip != NULL)
+				*dip = v;
+			}
+			else
+			    ht = NULL;
+		    }
 		}
-	    }
-	    else if (import->imp_flags & IMP_FLAGS_STAR)
-	    {
-		if ((flags & EVAL_VAR_IMPORT) == 0)
+		else
 		{
 		    if (flags & EVAL_VAR_VERBOSE)
 			emsg(_(e_import_as_name_not_supported_here));
 		    ret = FAIL;
 		}
-		else
-		{
-		    if (rettv != NULL)
-		    {
-			rettv->v_type = VAR_ANY;
-			rettv->vval.v_number = import->imp_sid;
-		    }
-		    found = TRUE;
-		}
 	    }
 	    else
 	    {
-		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
-						    + import->imp_var_vals_idx;
-		tv = sv->sv_tv;
-		type = sv->sv_type;
+		if (rettv != NULL)
+		{
+		    rettv->v_type = VAR_ANY;
+		    rettv->vval.v_number = sid != 0 ? sid : import->imp_sid;
+		}
+		found = TRUE;
 	    }
 	}
 	else if (in_vim9script() && (flags & EVAL_VAR_NO_FUNC) == 0)
@@ -2760,7 +2763,7 @@ eval_variable(
 	    if (ht != NULL && ht == get_script_local_ht()
 		    && tv != &SCRIPT_SV(current_sctx.sc_sid)->sv_var.di_tv)
 	    {
-		svar_T *sv = find_typval_in_script(tv);
+		svar_T *sv = find_typval_in_script(tv, 0);
 
 		if (sv != NULL)
 		    type = sv->sv_type;
@@ -3278,17 +3281,19 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, NULL, tv, copy, ASSIGN_DECL, 0);
+    set_var_const(name, 0, NULL, tv, copy, ASSIGN_DECL, 0);
 }
 
 /*
  * Set variable "name" to value in "tv".
+ * When "sid" is non-zero "name" is in the script with this ID.
  * If the variable already exists and "is_const" is FALSE the value is updated.
  * Otherwise the variable is created.
  */
     void
 set_var_const(
     char_u	*name,
+    scid_T	sid,
     type_T	*type_arg,
     typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
@@ -3301,20 +3306,27 @@ set_var_const(
     dictitem_T	*di;
     typval_T	*dest_tv = NULL;
     char_u	*varname;
-    hashtab_T	*ht;
+    hashtab_T	*ht = NULL;
     int		is_script_local;
     int		vim9script = in_vim9script();
     int		var_in_vim9script;
     int		flags = flags_arg;
     int		free_tv_arg = !copy;  // free tv_arg if not used
 
-    ht = find_var_ht(name, &varname);
+    if (sid != 0)
+    {
+	if (SCRIPT_ID_VALID(sid))
+	    ht = &SCRIPT_VARS(sid);
+	varname = name;
+    }
+    else
+	ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
     {
 	semsg(_(e_illegal_variable_name_str), name);
 	goto failed;
     }
-    is_script_local = ht == get_script_local_ht();
+    is_script_local = ht == get_script_local_ht() || sid != 0;
 
     if (vim9script
 	    && !is_script_local
@@ -3347,33 +3359,14 @@ set_var_const(
 
 	if (import != NULL)
 	{
-	    scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-	    svar_T	    *sv;
-	    where_T	    where = WHERE_INIT;
-
-	    // imported variable from another script
+	    // imported name space cannot be used
 	    if ((flags & ASSIGN_NO_DECL) == 0)
 	    {
 		semsg(_(e_redefining_imported_item_str), name);
 		goto failed;
 	    }
-	    if (import->imp_flags & IMP_FLAGS_STAR)
-	    {
-		semsg(_(e_cannot_use_str_itself_it_is_imported_with_star),
-									 name);
-		goto failed;
-	    }
-	    sv = ((svar_T *)si->sn_var_vals.ga_data) + import->imp_var_vals_idx;
-
-	    where.wt_variable = TRUE;
-	    if (check_typval_type(sv->sv_type, tv, where) == FAIL
-		    || value_check_lock(sv->sv_tv->v_lock, name, FALSE))
-	    {
-		goto failed;
-	    }
-
-	    dest_tv = sv->sv_tv;
-	    clear_tv(dest_tv);
+	    semsg(_(e_cannot_use_str_itself_it_is_imported), name);
+	    goto failed;
 	}
     }
 
@@ -3419,7 +3412,7 @@ set_var_const(
 		if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
 		{
 		    where_T where = WHERE_INIT;
-		    svar_T  *sv = find_typval_in_script(&di->di_tv);
+		    svar_T  *sv = find_typval_in_script(&di->di_tv, sid);
 
 		    if (sv != NULL)
 		    {
@@ -3956,7 +3949,7 @@ var_exists(char_u *var)
     {
 	if (tofree != NULL)
 	    name = tofree;
-	n = (eval_variable(name, len, &tv, NULL,
+	n = (eval_variable(name, len, 0, &tv, NULL,
 				 EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT) == OK);
 	if (n)
 	{

@@ -1432,24 +1432,27 @@ be exported. {not implemented yet: class, interface}
 
 Import ~
 						*:import* *:imp* *E1094*
-The exported items can be imported individually in another Vim9 script: >
-	import EXPORTED_CONST from "thatscript.vim"
-	import MyClass from "myclass.vim"
+The exported items can be imported in another Vim9 script: >
+	import "myscript.vim"
 
-To import multiple items at the same time: >
-	import {someValue, MyClass} from "thatscript.vim"
+This makes each item available as "myscript.item".
 
-In case the name is ambiguous, another name can be specified: >
-	import MyClass as ThatClass from "myclass.vim"
-	import {someValue, MyClass as ThatClass} from "myclass.vim"
-
-To import all exported items under a specific identifier: >
-	import * as That from 'thatscript.vim'
+In case the name is long or ambiguous, another name can be specified: >
+	import "thatscript.vim" as That
 
 Then you can use "That.EXPORTED_CONST", "That.someValue", etc.  You are free
-to choose the name "That", but it is highly recommended to use the name of the
-script file to avoid confusion.  Also avoid command names, because the name
-will shadow them.
+to choose the name "That".  Use something that will be recognized as referring
+to the imported script.  Avoid command names, because the name will shadow
+them.
+
+In case the dot in the name is unwanted, a local reference can be made: >
+	var ThatFunc = That.LongFuncName
+
+This also works for constants: >
+	cost MAXLEN = That.MAX_LEN_OF_NAME
+
+This does not work for variables, you could use a setter function and make a
+local reference for it.
 
 `:import` can also be used in legacy Vim script.  The imported items still
 become script-local, even when the "s:" prefix is not given.
@@ -1470,6 +1473,9 @@ The script name after `import` can be:
 
 Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
+
+It is not allowed to import the same script twice, also when using two
+different "as" names.
 							*:import-cycle*
 The `import` commands are executed when encountered.  If that script (directly
 or indirectly) imports the current script, then items defined after the
@@ -1491,9 +1497,9 @@ actually needed.  A recommended mechanism:
 2. In the autoload script do the actual work.  You can import items from
    other files to split up functionality in appropriate pieces. >
 	vim9script
-	import FilterFunc from "../import/someother.vim"
+	import "../import/someother.vim" as other
 	def searchfor#Stuff(arg: string)
-	  var filtered = FilterFunc(arg)
+	  var filtered = other.FilterFunc(arg)
 	  ...
 <   This goes in .../autoload/searchfor.vim.  "searchfor" in the file name
    must be exactly the same as the prefix for the function name, that is how

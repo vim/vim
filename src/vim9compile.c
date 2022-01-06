@@ -1357,7 +1357,39 @@ compile_lhs(
 		    // existing script-local variables should have a type
 		    lhs->lhs_scriptvar_sid = current_sctx.sc_sid;
 		    if (import != NULL)
+		    {
+			char_u	*dot = vim_strchr(var_start, '.');
+			char_u	*p;
+
+			// for an import the name is what comes after the dot
+			if (dot == NULL)
+			{
+			    semsg(_(e_no_dot_after_imported_name_str),
+								    var_start);
+			    return FAIL;
+			}
+			p = skipwhite(dot + 1);
+			var_end = to_name_end(p, TRUE);
+			if (var_end == p)
+			{
+			    semsg(_(e_missing_name_after_imported_name_str),
+								    var_start);
+			    return FAIL;
+			}
+			vim_free(lhs->lhs_name);
+			lhs->lhs_varlen = var_end - p;
+			lhs->lhs_name = vim_strnsave(p, lhs->lhs_varlen);
+			if (lhs->lhs_name == NULL)
+			    return FAIL;
+			rawname = lhs->lhs_name;
 			lhs->lhs_scriptvar_sid = import->imp_sid;
+			// TODO: where do we check this name is exported?
+
+			// Check if something follows: "exp.var[idx]" or
+			// "exp.var.key".
+			lhs->lhs_has_index = lhs->lhs_dest_end
+							  > skipwhite(var_end);
+		    }
 		    if (SCRIPT_ID_VALID(lhs->lhs_scriptvar_sid))
 		    {
 			// Check writable only when no index follows.

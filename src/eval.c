@@ -56,7 +56,6 @@ static int eval7_leader(typval_T *rettv, int numeric_only, char_u *start_leader,
 
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
-static char_u *eval_next_line(evalarg_T *evalarg);
 
 /*
  * Return "n1" divided by "n2", taking care of dividing by zero.
@@ -922,9 +921,37 @@ get_lval(
 	    }
 	}
     }
+    if (lp->ll_name == NULL)
+	return p;
+
+    if (*p == '.' && in_vim9script())
+    {
+	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name, NULL);
+	if (import != NULL)
+	{
+	    ufunc_T *ufunc;
+	    type_T *type;
+
+	    lp->ll_sid = import->imp_sid;
+	    lp->ll_name = skipwhite(p + 1);
+	    p = find_name_end(lp->ll_name, NULL, NULL, fne_flags);
+	    lp->ll_name_end = p;
+
+	    // check the item is exported
+	    cc = *p;
+	    *p = NUL;
+	    if (find_exported(import->imp_sid, lp->ll_name, &ufunc, &type,
+							     NULL, TRUE) == -1)
+	    {
+		*p = cc;
+		return FAIL;
+	    }
+	    *p = cc;
+	}
+    }
 
     // Without [idx] or .key we are done.
-    if ((*p != '[' && *p != '.') || lp->ll_name == NULL)
+    if ((*p != '[' && *p != '.'))
 	return p;
 
     if (in_vim9script() && lval_root != NULL)
@@ -997,7 +1024,7 @@ get_lval(
 		&& lp->ll_tv == &v->di_tv
 		&& ht != NULL && ht == get_script_local_ht())
 	{
-	    svar_T  *sv = find_typval_in_script(lp->ll_tv);
+	    svar_T  *sv = find_typval_in_script(lp->ll_tv, 0);
 
 	    // Vim9 script local variable: get the type
 	    if (sv != NULL)
@@ -1359,13 +1386,13 @@ set_var_lval(
 	    // handle +=, -=, *=, /=, %= and .=
 	    di = NULL;
 	    if (eval_variable(lp->ll_name, (int)STRLEN(lp->ll_name),
-					     &tv, &di, EVAL_VAR_VERBOSE) == OK)
+				 lp->ll_sid, &tv, &di, EVAL_VAR_VERBOSE) == OK)
 	    {
 		if ((di == NULL
 			 || (!var_check_ro(di->di_flags, lp->ll_name, FALSE)
 			   && !tv_check_lock(&di->di_tv, lp->ll_name, FALSE)))
 			&& tv_op(&tv, rettv, op) == OK)
-		    set_var_const(lp->ll_name, NULL, &tv, FALSE,
+		    set_var_const(lp->ll_name, lp->ll_sid, NULL, &tv, FALSE,
 							    ASSIGN_NO_DECL, 0);
 		clear_tv(&tv);
 	    }
@@ -1375,7 +1402,7 @@ set_var_lval(
 	    if (lp->ll_type != NULL && check_typval_arg_type(lp->ll_type, rettv,
 							      NULL, 0) == FAIL)
 		return;
-	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy,
+	    set_var_const(lp->ll_name, lp->ll_sid, lp->ll_type, rettv, copy,
 							       flags, var_idx);
 	}
 	*endp = cc;
@@ -1389,7 +1416,7 @@ set_var_lval(
 	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	{
-	    emsg(_("E996: Cannot lock a range"));
+	    emsg(_(e_cannot_lock_range));
 	    return;
 	}
 
@@ -1404,7 +1431,7 @@ set_var_lval(
 	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	{
-	    emsg(_("E996: Cannot lock a list or dict"));
+	    emsg(_(e_cannot_lock_list_or_dict));
 	    return;
 	}
 
@@ -2089,7 +2116,7 @@ getline_peek_skip_comments(evalarg_T *evalarg)
  * FALSE.
  * "arg" must point somewhere inside a line, not at the start.
  */
-    static char_u *
+    char_u *
 eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 {
     char_u *p = skipwhite(arg);
@@ -2120,7 +2147,7 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
  * To be called after eval_next_non_blank() sets "getnext" to TRUE.
  * Only called for Vim9 script.
  */
-    static char_u *
+    char_u *
 eval_next_line(evalarg_T *evalarg)
 {
     garray_T	*gap = &evalarg->eval_ga;
@@ -2236,13 +2263,28 @@ eval0(
     exarg_T	*eap,
     evalarg_T	*evalarg)
 {
+    return eval0_retarg(arg, rettv, eap, evalarg, NULL);
+}
+
+/*
+ * Like eval0() but when "retarg" is not NULL store the pointer to after the
+ * expression and don't check what comes after the expression.
+ */
+    int
+eval0_retarg(
+    char_u	*arg,
+    typval_T	*rettv,
+    exarg_T	*eap,
+    evalarg_T	*evalarg,
+    char_u	**retarg)
+{
     int		ret;
     char_u	*p;
     char_u	*expr_end;
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
     int		flags = evalarg == NULL ? 0 : evalarg->eval_flags;
-    int		check_for_end = TRUE;
+    int		check_for_end = retarg == NULL;
     int		end_error = FALSE;
 
     p = skipwhite(arg);
@@ -2253,7 +2295,7 @@ eval0(
     // In Vim9 script a command block is not split at NL characters for
     // commands using an expression argument.  Skip over a '#' comment to check
     // for a following NL.  Require white space before the '#'.
-    if (in_vim9script() && p > expr_end)
+    if (in_vim9script() && p > expr_end && retarg == NULL)
 	while (*p == '#')
 	{
 	    char_u *nl = vim_strchr(p, NL);
@@ -2298,7 +2340,9 @@ eval0(
 	return FAIL;
     }
 
-    if (check_for_end && eap != NULL)
+    if (retarg != NULL)
+	*retarg = p;
+    else if (check_for_end && eap != NULL)
 	set_nextcmd(eap, p);
 
     return ret;
@@ -3669,7 +3713,7 @@ eval7(
 		    ret = OK;
 		}
 		else
-		    ret = eval_variable(s, len, rettv, NULL,
+		    ret = eval_variable(s, len, 0, rettv, NULL,
 					   EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT);
 	    }
 	    else
@@ -5887,7 +5931,7 @@ handle_subscript(
 	    ufunc_T	*ufunc;
 	    type_T	*type;
 
-	    // Found script from "import * as {name}", script item name must
+	    // Found script from "import {name} as name", script item name must
 	    // follow.
 	    if (**arg != '.')
 	    {
@@ -5934,6 +5978,7 @@ handle_subscript(
 		rettv->v_type = VAR_FUNC;
 		rettv->vval.v_string = vim_strsave(ufunc->uf_name);
 	    }
+	    continue;
 	}
 
 	if ((**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC

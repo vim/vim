@@ -2109,13 +2109,13 @@ def Test_unlet()
   writefile(['vim9script', 'export var svar = 1234'], 'XunletExport.vim')
   var lines =<< trim END
     vim9script
-    import svar from './XunletExport.vim'
+    import './XunletExport.vim' as exp
     def UnletSvar()
-      unlet svar
+      unlet exp.svar
     enddef
     defcompile
   END
-  CheckScriptFailure(lines, 'E1081:', 1)
+  CheckScriptFailure(lines, 'E1260:', 1)
   delete('XunletExport.vim')
 
   $ENVVAR = 'foobar'
