@@ -6929,7 +6929,7 @@ nfa_regmatch(
 
 #ifdef DEBUG
 		if (c < 0)
-		    siemsg("INTERNAL: Negative state char: %ld", c);
+		    siemsg("INTERNAL: Negative state char: %ld", (long)c);
 #endif
 		result = (c == curc);
 
