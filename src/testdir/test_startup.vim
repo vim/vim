@@ -821,6 +821,17 @@ func Test_start_with_tabs()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_start_in_minimal_window()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('-c "set nomore"', {'cols': 12, 'rows': 2, 'keep_t_u7': 1})
+  call term_sendkeys(buf, "ahello\<Esc>")
+  call WaitForAssert({-> assert_match('^hello', term_getline(buf, 1))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_v_argv()
   " Can't catch the output of gvim.
   CheckNotGui
