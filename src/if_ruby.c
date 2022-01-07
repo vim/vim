@@ -502,7 +502,11 @@ static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 #  endif
 # endif
 # if RUBY_VERSION >= 31
-static void (*dll_rb_unexpected_type) (VALUE, int) ATTRIBUTE_NORETURN;
+#  ifdef _MSC_VER
+static void (*dll_rb_unexpected_type) (VALUE, int);
+#  else
+NORETURN(static void (*dll_rb_unexpected_type) (VALUE, int));
+#  endif
 # endif
 # if RUBY_VERSION >= 18
 static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
