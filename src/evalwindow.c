@@ -743,6 +743,12 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 	// Update the status line if the cursor moved.
 	if (win_valid(wp) && !EQUAL_POS(curpos, wp->w_cursor))
 	    wp->w_redr_status = TRUE;
+
+	// In case the command moved the cursor or changed the Visual area,
+	// check it is valid.
+	check_cursor();
+	if (VIsual_active)
+	    check_pos(curbuf, &VIsual);
     }
 }
 
