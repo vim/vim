@@ -2881,11 +2881,13 @@ EXTERN char e_cmd_mapping_must_end_with_cr[]
 	INIT(= N_("E1255: <Cmd> mapping must end with <CR>"));
 EXTERN char e_string_or_function_required_for_argument_nr[]
 	INIT(= N_("E1256: String or function required for argument %d"));
-EXTERN char e_imported_script_must_end_in_dot_vim_str[]
-	INIT(= N_("E1257: Imported script must end in .vim: %s"));
+EXTERN char e_imported_script_must_use_as_or_end_in_dot_vim_str[]
+	INIT(= N_("E1257: Imported script must use \"as\" or end in .vim: %s"));
 EXTERN char e_no_dot_after_imported_name_str[]
 	INIT(= N_("E1258: No '.' after imported name: %s"));
 EXTERN char e_missing_name_after_imported_name_str[]
 	INIT(= N_("E1259: Missing name after imported name: %s"));
 EXTERN char e_cannot_unlet_imported_item_str[]
 	INIT(= N_("E1260: Cannot unlet an imported item: %s"));
+EXTERN char e_cannot_import_dot_vim_without_using_as[]
+	INIT(= N_("E1261: Cannot import .vim without using \"as\""));

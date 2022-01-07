@@ -474,10 +474,14 @@ handle_import(
 	    semsg(_(e_trailing_characters_str), expr_end);
 	    goto erret;
 	}
-
-	if (end == NULL)
+	if (end == NULL || end[4] != NUL)
 	{
-	    semsg(_(e_imported_script_must_end_in_dot_vim_str), p);
+	    semsg(_(e_imported_script_must_use_as_or_end_in_dot_vim_str), p);
+	    goto erret;
+	}
+	if (end == p)
+	{
+	    semsg(_(e_cannot_import_dot_vim_without_using_as), p);
 	    goto erret;
 	}
 	as_name = vim_strnsave(p, end - p);

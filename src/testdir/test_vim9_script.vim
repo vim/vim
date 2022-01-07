@@ -1527,7 +1527,7 @@ def Test_import_funcref()
   delete('Xlib.vim')
 enddef
 
-def Test_import_star_fails()
+def Test_import_fails()
   writefile([], 'Xfoo.vim')
   var lines =<< trim END
       import './Xfoo.vim' as foo
@@ -1572,7 +1572,34 @@ def Test_import_star_fails()
       That()
   END
   CheckDefAndScriptFailure(lines, ['E1094:', 'E1236: Cannot use That itself'])
-  delete('Xthat.vim')
+ 
+  mkdir('Xdir')
+
+  writefile(['vim9script'], 'Xdir/.vim')
+  lines =<< trim END
+      vim9script
+      import './Xdir/.vim'
+  END
+  CheckScriptFailure(lines, 'E1261: Cannot import .vim without using "as"')
+  lines =<< trim END
+      vim9script
+      import './Xdir/.vim' as vim
+  END
+  CheckScriptSuccess(lines)
+
+  writefile(['vim9script'], 'Xdir/.vimrc')
+  lines =<< trim END
+      vim9script
+      import './Xdir/.vimrc'
+  END
+  CheckScriptFailure(lines, 'E1257: Imported script must use "as" or end in .vim')
+  lines =<< trim END
+      vim9script
+      import './Xdir/.vimrc' as vimrc
+  END
+  CheckScriptSuccess(lines)
+
+  delete('Xdir', 'rf')
 enddef
 
 func g:Trigger()
