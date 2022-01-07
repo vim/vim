@@ -1573,33 +1573,33 @@ def Test_import_fails()
   END
   CheckDefAndScriptFailure(lines, ['E1094:', 'E1236: Cannot use That itself'])
  
-  mkdir('Xdir')
+  mkdir('Ximport')
 
-  writefile(['vim9script'], 'Xdir/.vim')
+  writefile(['vim9script'], 'Ximport/.vim')
   lines =<< trim END
       vim9script
-      import './Xdir/.vim'
+      import './Ximport/.vim'
   END
   CheckScriptFailure(lines, 'E1261: Cannot import .vim without using "as"')
   lines =<< trim END
       vim9script
-      import './Xdir/.vim' as vim
+      import './Ximport/.vim' as vim
   END
   CheckScriptSuccess(lines)
 
-  writefile(['vim9script'], 'Xdir/.vimrc')
+  writefile(['vim9script'], 'Ximport/.vimrc')
   lines =<< trim END
       vim9script
-      import './Xdir/.vimrc'
+      import './Ximport/.vimrc'
   END
   CheckScriptFailure(lines, 'E1257: Imported script must use "as" or end in .vim')
   lines =<< trim END
       vim9script
-      import './Xdir/.vimrc' as vimrc
+      import './Ximport/.vimrc' as vimrc
   END
   CheckScriptSuccess(lines)
 
-  delete('Xdir', 'rf')
+  delete('Ximport', 'rf')
 enddef
 
 func g:Trigger()
