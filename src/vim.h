@@ -2178,15 +2178,13 @@ typedef struct stat stat_T;
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-# define likely(x)		__builtin_expect((x), 1)
-# define unlikely(x)		__builtin_expect((x), 0)
-# define ATTRIBUTE_COLD		__attribute__((cold))
-# define ATTRIBUTE_NORETURN	__attribute__((noreturn))
+# define likely(x)	__builtin_expect((x), 1)
+# define unlikely(x)	__builtin_expect((x), 0)
+# define ATTRIBUTE_COLD	__attribute__((cold))
 #else
 # define unlikely(x)	(x)
 # define likely(x)	(x)
 # define ATTRIBUTE_COLD
-# define ATTRIBUTE_NORETURN
 #endif
 
 typedef enum {
