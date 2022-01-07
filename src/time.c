@@ -501,8 +501,9 @@ check_due_timer(void)
     int		need_update_screen = FALSE;
     long	current_id = last_timer_id;
 
-    // Don't run any timers while exiting or dealing with an error.
-    if (exiting || aborting())
+    // Don't run any timers while exiting, dealing with an error or at the
+    // debug prompt.
+    if (exiting || aborting() || debug_mode)
 	return next_due;
 
     profile_start(&now);
