@@ -2885,7 +2885,7 @@ nfa_print_state2(FILE *debugf, nfa_state_T *state, garray_T *indent)
 	char_u	save[2];
 
 	STRNCPY(save, &p[last], 2);
-	STRNCPY(&p[last], "+-", 2);
+	memcpy(&p[last], "+-", 2);
 	fprintf(debugf, " %s", p);
 	STRNCPY(&p[last], save, 2);
     }
@@ -4292,6 +4292,23 @@ sub_equal(regsub_T *sub1, regsub_T *sub2)
 
 #ifdef ENABLE_LOG
     static void
+open_debug_log(int result)
+{
+    log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
+    if (log_fd == NULL)
+    {
+	emsg(_(e_log_open_failed));
+	log_fd = stderr;
+    }
+
+    fprintf(log_fd, "****************************\n");
+    fprintf(log_fd, "FINISHED RUNNING nfa_regmatch() recursively\n");
+    fprintf(log_fd, "MATCH = %s\n", result == TRUE ? "OK" : result == MAYBE
+	    ? "MAYBE" : "FALSE");
+    fprintf(log_fd, "****************************\n");
+}
+
+    static void
 report_state(char *action,
 	     regsub_T *sub,
 	     nfa_state_T *state,
@@ -4307,6 +4324,9 @@ report_state(char *action,
     else
 	col = (int)(sub->list.line[0].start - rex.line);
     nfa_set_code(state->c);
+    if (log_fd == NULL)
+	open_debug_log(MAYBE);
+
     fprintf(log_fd, "> %s state %d to list %d. char %d: %s (start col %d)%s\n",
 	    action, abs(state->id), lid, state->c, code, col,
 	    pim_info(pim));
@@ -5430,19 +5450,7 @@ recursive_regmatch(
     nfa_endp = save_nfa_endp;
 
 #ifdef ENABLE_LOG
-    log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
-    if (log_fd != NULL)
-    {
-	fprintf(log_fd, "****************************\n");
-	fprintf(log_fd, "FINISHED RUNNING nfa_regmatch() recursively\n");
-	fprintf(log_fd, "MATCH = %s\n", result == TRUE ? "OK" : "FALSE");
-	fprintf(log_fd, "****************************\n");
-    }
-    else
-    {
-	emsg(_(e_log_open_failed));
-	log_fd = stderr;
-    }
+    open_debug_log(result);
 #endif
 
     return result;
@@ -5775,19 +5783,16 @@ nfa_regmatch(
 
 #ifdef ENABLE_LOG
     log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
-    if (log_fd != NULL)
-    {
-	fprintf(log_fd, "**********************************\n");
-	nfa_set_code(start->c);
-	fprintf(log_fd, " RUNNING nfa_regmatch() starting with state %d, code %s\n",
-	abs(start->id), code);
-	fprintf(log_fd, "**********************************\n");
-    }
-    else
+    if (log_fd == NULL)
     {
 	emsg(_(e_log_open_failed));
 	log_fd = stderr;
     }
+    fprintf(log_fd, "**********************************\n");
+    nfa_set_code(start->c);
+    fprintf(log_fd, " RUNNING nfa_regmatch() starting with state %d, code %s\n",
+    abs(start->id), code);
+    fprintf(log_fd, "**********************************\n");
 #endif
 
     thislist = &list[0];
@@ -6919,7 +6924,7 @@ nfa_regmatch(
 
 #ifdef DEBUG
 		if (c < 0)
-		    siemsg("INTERNAL: Negative state char: %ld", c);
+		    siemsg("INTERNAL: Negative state char: %ld", (long)c);
 #endif
 		result = (c == curc);
 
