@@ -375,7 +375,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		set_function_type(ufunc);
 	    if (ufunc->uf_func_type != NULL)
 	    {
-		if (tv->v_type == VAR_PARTIAL
+		if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
 					    && tv->vval.v_partial->pt_argc > 0)
 		{
 		    type = get_type_ptr(type_gap);
