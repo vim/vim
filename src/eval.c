@@ -3481,6 +3481,7 @@ eval7(
 				      && (evalarg->eval_flags & EVAL_EVALUATE);
     int		len;
     char_u	*s;
+    char_u	*name_start = NULL;
     char_u	*start_leader, *end_leader;
     int		ret = OK;
     char_u	*alias;
@@ -3713,8 +3714,11 @@ eval7(
 		    ret = OK;
 		}
 		else
+		{
+		    name_start = s;
 		    ret = eval_variable(s, len, 0, rettv, NULL,
 					   EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT);
+		}
 	    }
 	    else
 	    {
@@ -3729,7 +3733,7 @@ eval7(
     // Handle following '[', '(' and '.' for expr[expr], expr.name,
     // expr(expr), expr->name(expr)
     if (ret == OK)
-	ret = handle_subscript(arg, rettv, evalarg, TRUE);
+	ret = handle_subscript(arg, name_start, rettv, evalarg, TRUE);
 
     /*
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
@@ -5891,10 +5895,12 @@ eval_isdictc(int c)
  * - method call: var->method()
  *
  * Can all be combined in any order: dict.func(expr)[idx]['func'](expr)->len()
+ * "name_start" points to a variable before the subscript or is NULL.
  */
     int
 handle_subscript(
     char_u	**arg,
+    char_u	*name_start,
     typval_T	*rettv,
     evalarg_T	*evalarg,
     int		verbose)	// give error messages
@@ -5936,7 +5942,8 @@ handle_subscript(
 	    if (**arg != '.')
 	    {
 		if (verbose)
-		    semsg(_(e_expected_str_but_got_str), "'.'", *arg);
+		    semsg(_(e_expected_dot_after_name_str),
+					name_start != NULL ? name_start: *arg);
 		ret = FAIL;
 		break;
 	    }

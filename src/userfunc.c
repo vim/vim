@@ -5170,7 +5170,7 @@ ex_call(exarg_T *eap)
 	    dbg_check_breakpoint(eap);
 
 	// Handle a function returning a Funcref, Dictionary or List.
-	if (handle_subscript(&arg, &rettv,
+	if (handle_subscript(&arg, NULL, &rettv,
 			   eap->skip ? NULL : &EVALARG_EVALUATE, TRUE) == FAIL)
 	{
 	    failed = TRUE;

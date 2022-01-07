@@ -1265,6 +1265,26 @@ def Test_vim9_import_export()
   unlet g:imported_func
   delete('Ximport_lbr.vim')
 
+  var line_break_before_dot =<< trim END
+    vim9script
+    import './Xexport.vim' as expo
+    g:exported = expo
+                  .exported
+  END
+  writefile(line_break_before_dot, 'Ximport_lbr_before_dot.vim')
+  assert_fails('source Ximport_lbr_before_dot.vim', 'E1060:', '', 3)
+  delete('Ximport_lbr_before_dot.vim')
+
+  var line_break_after_dot =<< trim END
+    vim9script
+    import './Xexport.vim' as expo
+    g:exported = expo.
+                  exported
+  END
+  writefile(line_break_after_dot, 'Ximport_lbr_after_dot.vim')
+  assert_fails('source Ximport_lbr_after_dot.vim', 'E1074:', '', 3)
+  delete('Ximport_lbr_after_dot.vim')
+
   var import_star_as_lines =<< trim END
     vim9script
     import './Xexport.vim' as Export
@@ -1333,7 +1353,7 @@ def Test_vim9_import_export()
     g:imported_script = Export exported
   END
   writefile(import_star_as_lines_script_no_dot, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1029:')
+  assert_fails('source Ximport.vim', 'E1060: Expected dot after name: Export exported')
 
   var import_star_as_lines_script_space_after_dot =<< trim END
     vim9script
@@ -1519,7 +1539,7 @@ def Test_import_star_fails()
       import './Xfoo.vim' as foo
       var that = foo
   END
-  CheckScriptFailure(lines, 'E1029: Expected ''.''')
+  CheckScriptFailure(lines, 'E1060: Expected dot after name: foo')
 
   lines =<< trim END
       vim9script
