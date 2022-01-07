@@ -1662,32 +1662,31 @@ def Test_import_in_filetype()
   &rtp = save_rtp
 enddef
 
-" FIXME
-"def Test_use_import_in_mapping()
-"  var lines =<< trim END
-"      vim9script
-"      export def Funcx()
-"        g:result = 42
-"      enddef
-"  END
-"  writefile(lines, 'XsomeExport.vim')
-"  lines =<< trim END
-"      vim9script
-"      import './XsomeExport.vim' as some
-"      var Funcy = some.Funcx
-"      nnoremap <F3> :call <sid>Funcy()<cr>
-"  END
-"  writefile(lines, 'Xmapscript.vim')
-"
-"  source Xmapscript.vim
-"  feedkeys("\<F3>", "xt")
-"  assert_equal(42, g:result)
-"
-"  unlet g:result
-"  delete('XsomeExport.vim')
-"  delete('Xmapscript.vim')
-"  nunmap <F3>
-"enddef
+def Test_use_import_in_mapping()
+  var lines =<< trim END
+      vim9script
+      export def Funcx()
+        g:result = 42
+      enddef
+  END
+  writefile(lines, 'XsomeExport.vim')
+  lines =<< trim END
+      vim9script
+      import './XsomeExport.vim' as some
+      var Funcy = some.Funcx
+      nnoremap <F3> :call <sid>Funcy()<cr>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  feedkeys("\<F3>", "xt")
+  assert_equal(42, g:result)
+
+  unlet g:result
+  delete('XsomeExport.vim')
+  delete('Xmapscript.vim')
+  nunmap <F3>
+enddef
 
 def Test_vim9script_mix()
   var lines =<< trim END

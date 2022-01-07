@@ -1589,7 +1589,7 @@ deref_func_name(
     cc = name[*lenp];
     name[*lenp] = NUL;
 
-    v = find_var(name, &ht, no_autoload);
+    v = find_var_also_in_script(name, &ht, no_autoload);
     name[*lenp] = cc;
     if (v != NULL)
     {

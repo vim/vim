@@ -2690,7 +2690,7 @@ eval_variable(
 	{
 	    if ((flags & EVAL_VAR_IMPORT) == 0)
 	    {
-		if (sid != 0 && SCRIPT_ID_VALID(sid))
+		if (SCRIPT_ID_VALID(sid))
 		{
 		    ht = &SCRIPT_VARS(sid);
 		    if (ht != NULL)
@@ -2875,6 +2875,35 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
     }
 
     return NULL;
+}
+
+/*
+ * Like find_var() but if the name starts with <SNR>99_ then look in the
+ * referenced script (used for a funcref).
+ */
+    dictitem_T *
+find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload)
+{
+    if (STRNCMP(name, "<SNR>", 5) == 0 && isdigit(name[5]))
+    {
+	char_u	    *p = name + 5;
+	int	    sid = getdigits(&p);
+
+	if (SCRIPT_ID_VALID(sid) && *p == '_')
+	{
+	    hashtab_T	*ht = &SCRIPT_VARS(sid);
+
+	    if (ht != NULL)
+	    {
+		dictitem_T *di = find_var_in_ht(ht, 0, p + 1, no_autoload);
+
+		if (di != NULL)
+		    return di;
+	    }
+	}
+    }
+
+    return find_var(name, htp, no_autoload);
 }
 
 /*

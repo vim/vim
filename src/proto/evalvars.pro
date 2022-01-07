@@ -60,6 +60,7 @@ char_u *set_cmdarg(exarg_T *eap, char_u *oldarg);
 int eval_variable(char_u *name, int len, scid_T sid, typval_T *rettv, dictitem_T **dip, int flags);
 void check_vars(char_u *name, int len);
 dictitem_T *find_var(char_u *name, hashtab_T **htp, int no_autoload);
+dictitem_T *find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload);
 dictitem_T *find_var_in_ht(hashtab_T *ht, int htname, char_u *varname, int no_autoload);
 hashtab_T *get_script_local_ht(void);
 int lookup_scriptitem(char_u *name, size_t len, int cmd, cctx_T *dummy);
