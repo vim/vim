@@ -4031,6 +4031,7 @@ typedef struct
     int		save_prevwin_id;    // ID of saved prevwin
     bufref_T	new_curbuf;	    // new curbuf
     char_u	*globaldir;	    // saved value of globaldir
+    int		save_VIsual_active; // saved VIsual_active
 } aco_save_T;
 
 /*

@@ -2812,6 +2812,16 @@ func Test_close_autocmd_tab()
   %bwipe!
 endfunc
 
+func Test_Visual_doautoall_redraw()
+  call setline(1, ['a', 'b'])
+  new 
+  wincmd p
+  call feedkeys("G\<C-V>", 'txn')
+  autocmd User Explode ++once redraw
+  doautoall User Explode
+  %bwipe!
+endfunc
+
 " This was using freed memory.
 func Test_BufNew_arglocal()
   arglocal
