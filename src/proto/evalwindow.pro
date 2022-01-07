@@ -18,6 +18,8 @@ void f_win_getid(typval_T *argvars, typval_T *rettv);
 void f_win_gotoid(typval_T *argvars, typval_T *rettv);
 void f_win_id2tabwin(typval_T *argvars, typval_T *rettv);
 void f_win_id2win(typval_T *argvars, typval_T *rettv);
+void f_win_move_separator(typval_T *argvars, typval_T *rettv);
+void f_win_move_statusline(typval_T *argvars, typval_T *rettv);
 void f_win_screenpos(typval_T *argvars, typval_T *rettv);
 void f_win_splitmove(typval_T *argvars, typval_T *rettv);
 void f_win_gettype(typval_T *argvars, typval_T *rettv);
