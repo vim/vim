@@ -39,6 +39,7 @@ If the result is "1" you have it.
       Stepping through code			|termdebug-stepping|
       Inspecting variables			|termdebug-variables|
       Other commands				|termdebug-commands|
+      Events					|termdebug-events|
       Prompt mode				|termdebug-prompt|
       Communication				|termdebug-communication|
       Customizing				|termdebug-customizing|

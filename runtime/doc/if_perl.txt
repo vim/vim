@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
+*if_perl.txt*   For Vim version 8.2.  Last change: 2022 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -104,7 +104,6 @@ Here are some things you can try: >
   :perl VIM::Msg("hello")
   :perl $line = $curbuf->Get(42)
 <
-							*E299*
 Executing Perl commands in the |sandbox| is limited.  ":perldo" will not be
 possible at all.  ":perl" will be evaluated in the Safe environment, if
 possible.

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.2.  Last change: 2021 Dec 03
+*quickfix.txt*  For Vim version 8.2.  Last change: 2022 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -244,7 +244,7 @@ processing a quickfix or location list command, it will be aborted.
 			[!] is not used.  It works like ":qall!" |:qall|,
 			except that Vim returns a non-zero exit code.
 
-							*:cf* *:cfile*
+							*:cf* *:cfi* *:cfile*
 :cf[ile][!] [errorfile]	Read the error file and jump to the first error.
 			This is done automatically when Vim is started with
 			the -q option.  You can use this command when you

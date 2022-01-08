@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2021 Dec 30
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jan 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -277,7 +277,7 @@ Example: >
 
 	var name = "Peter"
 	echo name
-<	peter ~
+<	Peter ~
 
 Every variable has a type.  Very often, as in this example, the type is
 defined by assigning a value.  This is called type inference.  If you do not
@@ -538,16 +538,16 @@ between the `while` and the `endwhile`:
 
 Example: >
 
+	var counter = 1
 	while counter < 40
-	  do_something()
-	  if skip_flag
+	  if skip_number(counter)
 	    continue
 	  endif
-	  if finished_flag
+	  if last_number(counter)
 	    break
 	  endif
 	  sleep 50m
-	  --counter
+	  ++counter
 	endwhile
 
 The `sleep` command makes Vim take a nap.  The "50m" specifies fifty

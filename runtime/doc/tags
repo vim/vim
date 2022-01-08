@@ -1162,6 +1162,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'ts'	options.txt	/*'ts'*
 'tsl'	options.txt	/*'tsl'*
 'tsr'	options.txt	/*'tsr'*
+'tsrfu'	options.txt	/*'tsrfu'*
 'ttimeout'	options.txt	/*'ttimeout'*
 'ttimeoutlen'	options.txt	/*'ttimeoutlen'*
 'ttm'	options.txt	/*'ttm'*
@@ -1418,6 +1419,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +user_commands	various.txt	/*+user_commands*
 +vartabs	various.txt	/*+vartabs*
 +vertsplit	various.txt	/*+vertsplit*
++vim9script	various.txt	/*+vim9script*
 +viminfo	various.txt	/*+viminfo*
 +virtualedit	various.txt	/*+virtualedit*
 +visual	various.txt	/*+visual*
@@ -2244,6 +2246,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cexpr	quickfix.txt	/*:cexpr*
 :cf	quickfix.txt	/*:cf*
 :cfdo	quickfix.txt	/*:cfdo*
+:cfi	quickfix.txt	/*:cfi*
 :cfile	quickfix.txt	/*:cfile*
 :cfir	quickfix.txt	/*:cfir*
 :cfirst	quickfix.txt	/*:cfirst*
@@ -4013,7 +4016,6 @@ E127	eval.txt	/*E127*
 E128	eval.txt	/*E128*
 E129	eval.txt	/*E129*
 E13	message.txt	/*E13*
-E130	eval.txt	/*E130*
 E131	eval.txt	/*E131*
 E132	eval.txt	/*E132*
 E133	eval.txt	/*E133*
@@ -4153,6 +4155,7 @@ E257	if_cscop.txt	/*E257*
 E258	remote.txt	/*E258*
 E259	if_cscop.txt	/*E259*
 E26	rileft.txt	/*E26*
+E260	eval.txt	/*E260*
 E261	if_cscop.txt	/*E261*
 E262	if_cscop.txt	/*E262*
 E263	if_pyth.txt	/*E263*
@@ -4183,6 +4186,7 @@ E287	mbyte.txt	/*E287*
 E288	mbyte.txt	/*E288*
 E289	mbyte.txt	/*E289*
 E29	change.txt	/*E29*
+E290	builtin.txt	/*E290*
 E292	message.txt	/*E292*
 E293	message.txt	/*E293*
 E294	message.txt	/*E294*
@@ -4190,7 +4194,6 @@ E295	message.txt	/*E295*
 E296	message.txt	/*E296*
 E297	message.txt	/*E297*
 E298	message.txt	/*E298*
-E299	if_perl.txt	/*E299*
 E30	change.txt	/*E30*
 E300	message.txt	/*E300*
 E301	message.txt	/*E301*
@@ -4258,9 +4261,11 @@ E358	options.txt	/*E358*
 E359	term.txt	/*E359*
 E36	windows.txt	/*E36*
 E360	various.txt	/*E360*
+E362	eval.txt	/*E362*
 E363	options.txt	/*E363*
 E364	builtin.txt	/*E364*
 E365	print.txt	/*E365*
+E366	popup.txt	/*E366*
 E367	autocmd.txt	/*E367*
 E368	builtin.txt	/*E368*
 E369	pattern.txt	/*E369*
@@ -4352,8 +4357,11 @@ E447	editing.txt	/*E447*
 E448	various.txt	/*E448*
 E449	builtin.txt	/*E449*
 E45	message.txt	/*E45*
+E450	popup.txt	/*E450*
+E451	eval.txt	/*E451*
 E452	eval.txt	/*E452*
 E453	syntax.txt	/*E453*
+E454	eval.txt	/*E454*
 E455	print.txt	/*E455*
 E456	print.txt	/*E456*
 E457	print.txt	/*E457*
@@ -4391,8 +4399,10 @@ E485	message.txt	/*E485*
 E486	pattern.txt	/*E486*
 E487	options.txt	/*E487*
 E488	message.txt	/*E488*
+E489	cmdline.txt	/*E489*
 E49	message.txt	/*E49*
 E490	fold.txt	/*E490*
+E491	builtin.txt	/*E491*
 E492	message.txt	/*E492*
 E493	cmdline.txt	/*E493*
 E494	editing.txt	/*E494*
@@ -4443,6 +4453,7 @@ E534	options.txt	/*E534*
 E535	options.txt	/*E535*
 E536	options.txt	/*E536*
 E537	options.txt	/*E537*
+E538	builtin.txt	/*E538*
 E539	options.txt	/*E539*
 E54	pattern.txt	/*E54*
 E540	options.txt	/*E540*
@@ -4518,6 +4529,7 @@ E608	eval.txt	/*E608*
 E609	if_cscop.txt	/*E609*
 E61	pattern.txt	/*E61*
 E610	editing.txt	/*E610*
+E611	eval.txt	/*E611*
 E612	sign.txt	/*E612*
 E613	print.txt	/*E613*
 E614	editing.txt	/*E614*
@@ -7010,6 +7022,7 @@ g:tex_subscripts	syntax.txt	/*g:tex_subscripts*
 g:tex_superscripts	syntax.txt	/*g:tex_superscripts*
 g:tex_verbspell	syntax.txt	/*g:tex_verbspell*
 g:var	eval.txt	/*g:var*
+g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
 g:vimsyn_embed	syntax.txt	/*g:vimsyn_embed*
@@ -7937,6 +7950,7 @@ matchstrpos()	builtin.txt	/*matchstrpos()*
 matlab-indent	indent.txt	/*matlab-indent*
 matlab-indenting	indent.txt	/*matlab-indenting*
 max()	builtin.txt	/*max()*
+maxcol-variable	eval.txt	/*maxcol-variable*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*
 mbyte-combining	mbyte.txt	/*mbyte-combining*
@@ -9870,7 +9884,6 @@ try-echoerr	eval.txt	/*try-echoerr*
 try-finally	eval.txt	/*try-finally*
 try-nested	eval.txt	/*try-nested*
 try-nesting	eval.txt	/*try-nesting*
-tsrfu'	options.txt	/*tsrfu'*
 tutor	usr_01.txt	/*tutor*
 twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*
@@ -10005,6 +10018,7 @@ v:key	eval.txt	/*v:key*
 v:lang	eval.txt	/*v:lang*
 v:lc_time	eval.txt	/*v:lc_time*
 v:lnum	eval.txt	/*v:lnum*
+v:maxcol	eval.txt	/*v:maxcol*
 v:mouse_col	eval.txt	/*v:mouse_col*
 v:mouse_lnum	eval.txt	/*v:mouse_lnum*
 v:mouse_win	eval.txt	/*v:mouse_win*

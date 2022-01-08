@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 30
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,15 +38,27 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Autoload import syntax:
+    import autoload "filename"
+    import autoload "filename" as name
+doesn't load the script yet
+  autoload items can be used without the "#dir#file#" prefix, but file.item
+  Add a test_override() item to load the script and compile functions the
+  moment it is encountered, so that types are checked.
+"vim9script autoload" in an autoload script, using "export" will prefix
+  "dir#file#" to the exported item.
+
 Once Vim9 is stable:
-- Add the "vim9script" feature, can use has('vim9script')
-    Remove TODO in vim9.txt
 - Add all the error numbers in a good place in documentation.
+    done until E653
 - Use Vim9 for runtime files.
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.
-- better implementation for partial and tests for that.
+- Better implementation for partial and tests for that.
+- when using "const" mark the variable type as const with TTFLAG_CONST, so
+  that an error is given at compile time when trying to change it.  E.g. for a
+  const list and trying to call add().
 - Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
   'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.

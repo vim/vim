@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2021 Dec 28
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jan 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2435,7 +2435,7 @@ filter({expr1}, {expr2})				*filter()*
 		For each item in {expr1} evaluate {expr2} and when the result
 		is zero or false remove the item from the |List| or
 		|Dictionary|.  Similarly for each byte in a |Blob| and each
-		charactor in a |String|.
+		character in a |String|.
 
 		{expr2} must be a |string| or |Funcref|.
 
@@ -2466,7 +2466,9 @@ filter({expr1}, {expr2})				*filter()*
 			  return a:idx % 2 == 1
 			endfunc
 			call filter(mylist, function('Odd'))
-<		It is shorter when using a |lambda|: >
+<		It is shorter when using a |lambda|.  In |Vim9| syntax: >
+			call filter(myList, (idx, val) => idx * val <= 42)
+<		In legacy script syntax: >
 			call filter(myList, {idx, val -> idx * val <= 42})
 <		If you do not use "val" you can leave it out: >
 			call filter(myList, {idx -> idx % 2 == 1})
@@ -2744,8 +2746,10 @@ funcref({name} [, {arglist}] [, {dict}])
 		function {name} is redefined later.
 
 		Unlike |function()|, {name} must be an existing user function.
-		Also for autoloaded functions. {name} cannot be a builtin
-		function.
+		It only works for an autoloaded function if it has already
+		been loaded (to avoid mistakenly loading the autoload script
+		when only intending to use the function name, use |function()|
+		instead). {name} cannot be a builtin function.
 
 		Can also be used as a |method|: >
 			GetFuncname()->funcref([arg])
@@ -4738,7 +4742,7 @@ js_encode({expr})					*js_encode()*
 		Can also be used as a |method|: >
 			GetObject()->js_encode()
 
-json_decode({string})					*json_decode()*
+json_decode({string})				*json_decode()* *E491*
 		This parses a JSON formatted string and returns the equivalent
 		in Vim values.  See |json_encode()| for the relation between
 		JSON and Vim values.
@@ -5380,7 +5384,7 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 			GetText()->match('word')
 			GetList()->match('word')
 <
-				*matchadd()* *E798* *E799* *E801* *E957*
+				*matchadd()* *E290* *E798* *E799* *E801* *E957*
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		Defines a pattern to be highlighted in the current window (a
 		"match").  It will be highlighted with {group}.  Returns an
@@ -8130,7 +8134,8 @@ sound_playfile({path} [, {callback}])
 <		Can also be used as a |method|: >
 			GetSoundPath()->sound_playfile()
 
-<		{only available when compiled with the |+sound| feature}
+<		There is no error *E538* , but  can listen to 538.nl.
+		{only available when compiled with the |+sound| feature}
 
 
 sound_stop({id})					*sound_stop()*

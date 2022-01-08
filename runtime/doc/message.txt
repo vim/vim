@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.2.  Last change: 2021 Dec 13
+*message.txt*   For Vim version 8.2.  Last change: 2022 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -118,7 +118,8 @@ wiped out a buffer which contains a mark or is referenced in another way.
 							*E95*  >
   Buffer with this name already exists
 
-You cannot have two buffers with the same name.
+You cannot have two buffers with exactly the same name.  This includes the
+path leading to the file.
 
 							*E72*  >
   Close error on swap file
@@ -534,10 +535,10 @@ If you type "gq", it will execute this mapping, which will call "gq" again.
 							*E22*  >
   Scripts nested too deep
 
-Scripts can be read with the "-s" command-line argument and with the ":source"
-command.  The script can then again read another script.  This can continue
-for about 14 levels.  When more nesting is done, Vim assumes that there is a
-recursive loop somewhere and stops with this error message.
+Scripts can be read with the "-s" command-line argument and with the
+`:source!` command.  The script can then again read another script.  This can
+continue for about 14 levels.  When more nesting is done, Vim assumes that
+there is a recursive loop and stops with this error message.
 
 							*E319*  >
   Sorry, the command is not available in this version
@@ -727,6 +728,7 @@ specified.
   Trailing characters
 
 An argument has been added to an Ex command that does not permit one.
+Or the argument has invalid characters and has not been recognized.
 
 							*E477* *E478*  >
   No ! allowed
