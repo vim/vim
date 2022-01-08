@@ -557,6 +557,27 @@ get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx)
     return -1;
 }
 
+    static imported_T *
+find_imported_in_script(char_u *name, size_t len, int sid)
+{
+    scriptitem_T    *si;
+    int		    idx;
+
+    if (!SCRIPT_ID_VALID(sid))
+	return NULL;
+    si = SCRIPT_ITEM(sid);
+    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    {
+	imported_T *import = ((imported_T *)si->sn_imports.ga_data) + idx;
+
+	if (len == 0 ? STRCMP(name, import->imp_name) == 0
+		     : STRLEN(import->imp_name) == len
+				  && STRNCMP(name, import->imp_name, len) == 0)
+	    return import;
+    }
+    return NULL;
+}
+
 /*
  * Find "name" in imported items of the current script or in "cctx" if not
  * NULL.
@@ -581,27 +602,6 @@ find_imported(char_u *name, size_t len, cctx_T *cctx)
 	}
 
     return find_imported_in_script(name, len, current_sctx.sc_sid);
-}
-
-    imported_T *
-find_imported_in_script(char_u *name, size_t len, int sid)
-{
-    scriptitem_T    *si;
-    int		    idx;
-
-    if (!SCRIPT_ID_VALID(sid))
-	return NULL;
-    si = SCRIPT_ITEM(sid);
-    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
-    {
-	imported_T *import = ((imported_T *)si->sn_imports.ga_data) + idx;
-
-	if (len == 0 ? STRCMP(name, import->imp_name) == 0
-		     : STRLEN(import->imp_name) == len
-				  && STRNCMP(name, import->imp_name, len) == 0)
-	    return import;
-    }
-    return NULL;
 }
 
 /*

@@ -43,7 +43,6 @@ tabpage_T *win_find_tabpage(win_T *win);
 win_T *win_vert_neighbor(tabpage_T *tp, win_T *wp, int up, long count);
 win_T *win_horz_neighbor(tabpage_T *tp, win_T *wp, int left, long count);
 void win_enter(win_T *wp, int undo_sync);
-void fix_current_dir(void);
 win_T *buf_jump_open_win(buf_T *buf);
 win_T *buf_jump_open_tab(buf_T *buf);
 void win_free_popup(win_T *win);

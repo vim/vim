@@ -55,6 +55,9 @@ static int	ccheck_abbr(int);
 #ifdef FEAT_SEARCH_EXTRA
 static int	empty_pattern_magic(char_u *pat, size_t len, magic_T magic_val);
 #endif
+#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN)
+static int get_cmdline_type(void);
+#endif
 
 #ifdef FEAT_CMDWIN
 static int	open_cmdwin(void);
@@ -4120,7 +4123,7 @@ f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
  * Only works when the command line is being edited.
  * Returns NUL when something is wrong.
  */
-    int
+    static int
 get_cmdline_type(void)
 {
     cmdline_info_T *p = get_ccline_ptr();

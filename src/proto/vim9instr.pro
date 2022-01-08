@@ -1,7 +1,6 @@
 /* vim9instr.c */
 isn_T *generate_instr(cctx_T *cctx, isntype_T isn_type);
 isn_T *generate_instr_drop(cctx_T *cctx, isntype_T isn_type, int drop);
-isn_T *generate_instr_type2(cctx_T *cctx, isntype_T isn_type, type_T *type, type_T *decl_type);
 isn_T *generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type);
 isn_T *generate_instr_debug(cctx_T *cctx);
 int may_generate_2STRING(int offset, int tolerant, cctx_T *cctx);
@@ -28,9 +27,7 @@ int generate_GETITEM(cctx_T *cctx, int index, int with_op);
 int generate_SLICE(cctx_T *cctx, int count);
 int generate_CHECKLEN(cctx_T *cctx, int min_len, int more_OK);
 int generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name);
-int generate_STOREOUTER(cctx_T *cctx, int idx, int level);
 int generate_STORENR(cctx_T *cctx, int idx, varnumber_T value);
-int generate_STOREOPT(cctx_T *cctx, isntype_T isn_type, char_u *name, int opt_flags);
 int generate_LOAD(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name, type_T *type);
 int generate_LOADOUTER(cctx_T *cctx, int idx, int nesting, type_T *type);
 int generate_LOADV(cctx_T *cctx, char_u *name, int error);
