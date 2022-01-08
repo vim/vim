@@ -189,25 +189,15 @@ def Test_vim9_import_export()
   writefile(import_star_as_lines_dot_space, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1074:', '', 1, 'Func')
 
-  var import_func_duplicated =<< trim END
+  writefile(s:export_script_lines, 'Xexport2.vim')
+  var import_as_duplicated =<< trim END
     vim9script
     import './Xexport.vim' as expo
-    import './Xexport.vim' as expo
-
-    ExportedInc()
+    import './Xexport2.vim' as expo
   END
-  writefile(import_func_duplicated, 'Ximport.vim')
+  writefile(import_as_duplicated, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
-
-  var import_star_as_duplicated =<< trim END
-    vim9script
-    import './Xexport.vim' as Export
-    var some = 'other'
-    import './Xexport.vim' as Export
-    defcompile
-  END
-  writefile(import_star_as_duplicated, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1073:', '', 4, 'Ximport.vim')
+  delete('Xexport2.vim')
 
   var import_star_as_lines_script_no_dot =<< trim END
     vim9script
@@ -429,11 +419,20 @@ def Test_import_fails()
       export var Ref = TheFunc
   END
   writefile([], 'Xthat.vim')
+
   lines =<< trim END
       import './Xthat.vim' as That
       That()
   END
   CheckDefAndScriptFailure(lines, ['E1094:', 'E1236: Cannot use That itself'])
+
+  lines =<< trim END
+      import './Xthat.vim' as one
+      import './Xthat.vim' as two
+  END
+  CheckScriptFailure(lines, 'E1262:')
+
+  delete('Xthat.vim')
  
   mkdir('Ximport')
 
@@ -773,7 +772,14 @@ def Test_vim9_funcref()
       g:result = Xsort.FastSort()
     enddef
     Test()
+  END
+  writefile(lines, 'Xscript.vim')
+  source Xscript.vim
+  assert_equal([4, 3, 2, 1, 0], g:result)
+  unlet g:result
 
+  lines =<< trim END
+    vim9script
     # using a function imported with "as"
     import './Xsort.vim' as anAlias
     assert_equal('yes', anAlias.GetString('yes'))
@@ -790,10 +796,6 @@ def Test_vim9_funcref()
   END
   writefile(lines, 'Xscript.vim')
 
-  source Xscript.vim
-  assert_equal([4, 3, 2, 1, 0], g:result)
-
-  unlet g:result
   delete('Xsort.vim')
   delete('Xscript.vim')
 

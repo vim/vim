@@ -2891,3 +2891,5 @@ EXTERN char e_cannot_unlet_imported_item_str[]
 	INIT(= N_("E1260: Cannot unlet an imported item: %s"));
 EXTERN char e_cannot_import_dot_vim_without_using_as[]
 	INIT(= N_("E1261: Cannot import .vim without using \"as\""));
+EXTERN char e_cannot_import_same_script_twice_str[]
+	INIT(= N_("E1262: Cannot import the same script twice: %s"));
