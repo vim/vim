@@ -2898,7 +2898,11 @@ find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload)
 		dictitem_T *di = find_var_in_ht(ht, 0, p + 1, no_autoload);
 
 		if (di != NULL)
+		{
+		    if (htp != NULL)
+			*htp = ht;
 		    return di;
+		}
 	    }
 	}
     }
