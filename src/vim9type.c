@@ -532,12 +532,6 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 }
 
     void
-type_mismatch(type_T *expected, type_T *actual)
-{
-    arg_type_mismatch(expected, actual, 0);
-}
-
-    void
 arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx)
 {
     where_T	where = WHERE_INIT;

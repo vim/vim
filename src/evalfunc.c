@@ -3529,6 +3529,7 @@ execute_redir_str(char_u *value, int value_len)
     }
 }
 
+#if defined(FEAT_LUA) || defined(PROTO)
 /*
  * Get next line from a string containing NL separated lines.
  * Called by do_cmdline() to get the next line.
@@ -3570,6 +3571,7 @@ execute_cmds_from_string(char_u *str)
     do_cmdline(NULL, get_str_line, (void *)&str,
 	    DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT|DOCMD_KEYTYPED);
 }
+#endif
 
 /*
  * Get next line from a list.

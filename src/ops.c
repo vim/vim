@@ -3350,6 +3350,7 @@ free_operatorfunc_option(void)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Mark the global 'operatorfunc' callback with 'copyID' so that it is not
  * garbage collected.
@@ -3359,12 +3360,11 @@ set_ref_in_opfunc(int copyID UNUSED)
 {
     int abort = FALSE;
 
-#ifdef FEAT_EVAL
     abort = set_ref_in_callback(&opfunc_cb, copyID);
-#endif
 
     return abort;
 }
+#endif
 
 /*
  * Handle the "g@" operator: call 'operatorfunc'.

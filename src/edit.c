@@ -1715,6 +1715,7 @@ edit_putchar(int c, int highlight)
     }
 }
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Set the insert start position for when using a prompt buffer.
  */
@@ -1728,6 +1729,7 @@ set_insstart(linenr_T lnum, int col)
     Insstart_blank_vcol = MAXCOL;
     arrow_used = FALSE;
 }
+#endif
 
 /*
  * Undo the previous edit_putchar().

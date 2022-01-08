@@ -1091,12 +1091,15 @@ state_no_longer_safe(char *reason UNUSED)
     was_safe = FALSE;
 }
 
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE) || defined(PROTO)
     int
 get_was_safe_state(void)
 {
     return was_safe;
 }
+#endif
 
+#if defined(MESSAGE_QUEUE) || defined(PROTO)
 /*
  * Invoked when leaving code that invokes callbacks.  Then trigger
  * SafeStateAgain, if it was safe when starting to wait for a character.
@@ -1137,6 +1140,7 @@ may_trigger_safestateagain(void)
 		  "SafeState: back to waiting, not triggering SafeStateAgain");
 #endif
 }
+#endif
 
 
 /*

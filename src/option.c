@@ -753,6 +753,7 @@ set_number_default(char *name, long val)
 	options[opt_idx].def_val[VI_DEFAULT] = (char_u *)(long_i)val;
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Set all window-local and buffer-local options to the Vim default.
  * local-global options will use the global value.
@@ -784,6 +785,7 @@ set_local_options_default(win_T *wp, int do_buffer)
     curwin = save_curwin;
     curbuf = curwin->w_buffer;
 }
+#endif
 
 #if defined(EXITFREE) || defined(PROTO)
 /*
@@ -5535,6 +5537,7 @@ get_option_var(int opt_idx)
     return options[opt_idx].var;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the full name of the option at 'opt_idx'
  */
@@ -5543,6 +5546,7 @@ get_option_fullname(int opt_idx)
 {
     return (char_u *)options[opt_idx].fullname;
 }
+#endif
 
 /*
  * Get the value of 'equalprg', either the buffer-local one or the global one.

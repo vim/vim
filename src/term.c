@@ -3991,6 +3991,7 @@ cursor_off(void)
     }
 }
 
+#ifdef FEAT_GUI
 /*
  * Check whether the cursor is invisible due to an ongoing cursor-less sleep
  */
@@ -3999,6 +4000,7 @@ cursor_is_sleeping(void)
 {
     return cursor_is_asleep;
 }
+#endif
 
 /*
  * Disable the cursor and mark it disabled by cursor-less sleep

@@ -115,6 +115,7 @@ ex_vim9script(exarg_T *eap UNUSED)
 #endif
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * When in Vim9 script give an error and return FAIL.
  */
@@ -159,6 +160,7 @@ vim9_bad_comment(char_u *p)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Return TRUE if "p" points at a "#" not followed by one '{'.

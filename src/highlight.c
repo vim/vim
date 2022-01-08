@@ -343,6 +343,7 @@ static char *(highlight_init_dark[]) = {
     NULL
 };
 
+#if defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * Returns the number of highlight groups.
  */
@@ -369,6 +370,7 @@ highlight_link_id(int id)
 {
     return HL_TABLE()[id].sg_link;
 }
+#endif
 
     void
 init_highlight(

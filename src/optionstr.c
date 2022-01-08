@@ -454,6 +454,7 @@ set_string_option_direct_in_win(
     unblock_autocmds();
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Like set_string_option_direct(), but for a buffer-local option in "buf".
  * Blocks autocommands to avoid the old curbuf becoming invalid.
@@ -477,6 +478,7 @@ set_string_option_direct_in_buf(
     curwin->w_buffer = curbuf;
     unblock_autocmds();
 }
+#endif
 
 /*
  * Set a string option to a new value, and handle the effects.

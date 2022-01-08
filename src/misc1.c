@@ -1896,7 +1896,6 @@ vim_unsetenv(char_u *var)
     vim_setenv(var, (char_u *)"");
 #endif
 }
-#endif
 
 
 /*
@@ -1914,6 +1913,7 @@ vim_setenv_ext(char_u *name, char_u *val)
 	    && STRICMP(name, "VIMRUNTIME") == 0)
 	didset_vimruntime = FALSE;
 }
+#endif
 
 /*
  * Our portable version of setenv.
@@ -2230,6 +2230,7 @@ fast_breakcheck(void)
     }
 }
 
+# if defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Like line_breakcheck() but check 100 times less often.
  */
@@ -2242,6 +2243,7 @@ veryfast_breakcheck(void)
 	ui_breakcheck();
     }
 }
+#endif
 
 #if defined(VIM_BACKTICK) || defined(FEAT_EVAL) \
 	|| (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \

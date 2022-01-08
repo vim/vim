@@ -319,6 +319,7 @@ get_user_commands(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 
+#ifdef FEAT_EVAL
 /*
  * Get the name of user command "idx".  "cmdidx" can be CMD_USER or
  * CMD_USER_BUF.
@@ -343,6 +344,7 @@ get_user_command_name(int idx, int cmdidx)
     }
     return NULL;
 }
+#endif
 
 /*
  * Function given to ExpandGeneric() to obtain the list of user address type
@@ -394,6 +396,7 @@ get_user_cmd_complete(expand_T *xp UNUSED, int idx)
     return (char_u *)command_complete[idx].name;
 }
 
+#ifdef FEAT_EVAL
     int
 cmdcomplete_str_to_type(char_u *complete_str)
 {
@@ -405,6 +408,7 @@ cmdcomplete_str_to_type(char_u *complete_str)
 
     return EXPAND_NOTHING;
 }
+#endif
 
 /*
  * List user commands starting with "name[name_len]".

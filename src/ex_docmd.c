@@ -3082,6 +3082,7 @@ parse_command_modifiers(
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if "cmod" has anything set.
  */
@@ -3110,6 +3111,7 @@ cmdmod_error(int ignore_silent)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Apply the command modifiers.  Saves current state in "cmdmod", call
@@ -3393,6 +3395,7 @@ append_command(char_u *cmd)
     *d = NUL;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * If "start" points "&opt", "&l:opt", "&g:opt" or "$ENV" return a pointer to
  * the name.  Otherwise just return "start".
@@ -3413,6 +3416,7 @@ skip_option_env_lead(char_u *start)
 	name += 1;
     return name;
 }
+#endif
 
 /*
  * Find an Ex command by its name, either built-in or user.

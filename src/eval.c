@@ -654,49 +654,9 @@ call_vim_function(
 }
 
 /*
- * Call Vim script function "func" and return the result as a number.
- * Returns -1 when calling the function fails.
- * Uses argv[0] to argv[argc - 1] for the function arguments. argv[argc] should
- * have type VAR_UNKNOWN.
- */
-    varnumber_T
-call_func_retnr(
-    char_u      *func,
-    int		argc,
-    typval_T	*argv)
-{
-    typval_T	rettv;
-    varnumber_T	retval;
-
-    if (call_vim_function(func, argc, argv, &rettv) == FAIL)
-	return -1;
-
-    retval = tv_get_number_chk(&rettv, NULL);
-    clear_tv(&rettv);
-    return retval;
-}
-
-/*
- * Call Vim script function like call_func_retnr() and drop the result.
- * Returns FAIL when calling the function fails.
- */
-    int
-call_func_noret(
-    char_u      *func,
-    int		argc,
-    typval_T	*argv)
-{
-    typval_T	rettv;
-
-    if (call_vim_function(func, argc, argv, &rettv) == FAIL)
-	return FAIL;
-    clear_tv(&rettv);
-    return OK;
-}
-
-/*
  * Call Vim script function "func" and return the result as a string.
- * Uses "argv" and "argc" as call_func_retnr().
+ * Uses "argv[0]" to "argv[argc - 1]" for the function arguments. "argv[argc]"
+ * should have type VAR_UNKNOWN.
  * Returns NULL when calling the function fails.
  */
     void *
@@ -718,7 +678,7 @@ call_func_retstr(
 
 /*
  * Call Vim script function "func" and return the result as a List.
- * Uses "argv" and "argc" as call_func_retnr().
+ * Uses "argv" and "argc" as call_func_retstr().
  * Returns NULL when there is something wrong.
  */
     void *
@@ -4783,6 +4743,8 @@ set_ref_in_ht(hashtab_T *ht, int copyID, list_stack_T **list_stack)
     return abort;
 }
 
+#if defined(FEAT_LUA) || defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
+							|| defined(PROTO)
 /*
  * Mark a dict and its items with "copyID".
  * Returns TRUE if setting references failed somehow.
@@ -4797,6 +4759,7 @@ set_ref_in_dict(dict_T *d, int copyID)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Mark a list and its items with "copyID".

@@ -138,6 +138,7 @@ read_buffer(
     return retval;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Ensure buffer "buf" is loaded.  Does not trigger the swap-exists action.
  */
@@ -154,6 +155,7 @@ buffer_ensure_loaded(buf_T *buf)
 	aucmd_restbuf(&aco);
     }
 }
+#endif
 
 /*
  * Open current buffer, that is: open the memfile and read the file into
@@ -5609,6 +5611,7 @@ bt_prompt(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == 'p' && buf->b_p_bt[1] == 'r';
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Return TRUE if "buf" is a buffer for a popup window.
  */
@@ -5618,6 +5621,7 @@ bt_popup(buf_T *buf)
     return buf != NULL && buf->b_p_bt != NULL
 	&& buf->b_p_bt[0] == 'p' && buf->b_p_bt[1] == 'o';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a "nofile", "acwrite", "terminal" or "prompt"
@@ -5632,6 +5636,7 @@ bt_nofilename(buf_T *buf)
 	    || buf->b_p_bt[0] == 'p');
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Return TRUE if "buf" has 'buftype' set to "nofile".
  */
@@ -5640,6 +5645,7 @@ bt_nofile(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a "nowrite", "nofile", "terminal" or "prompt"

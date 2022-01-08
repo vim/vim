@@ -1476,6 +1476,7 @@ skipwhite(char_u *q)
     return p;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * skip over ' ', '\t' and '\n'.
  */
@@ -1488,6 +1489,7 @@ skipwhite_and_nl(char_u *q)
 	++p;
     return p;
 }
+#endif
 
 /*
  * getwhitecols: return the number of whitespace

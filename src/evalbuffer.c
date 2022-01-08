@@ -864,9 +864,7 @@ f_setline(typval_T *argvars, typval_T *rettv)
 }
 #endif  // FEAT_EVAL
 
-#if defined(FEAT_JOB_CHANNEL) \
-	|| defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
-	|| defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
 /*
  * Make "buf" the current buffer.  restore_buffer() MUST be called to undo.
  * No autocommands will be executed.  Use aucmd_prepbuf() if there are any.
