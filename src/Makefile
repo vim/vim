@@ -1874,7 +1874,7 @@ OBJ_COMMON = \
 	$(OS_EXTRA_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
-	$(XDIFF_OBJS)
+	$(XDIFF_OBJS_USED)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \

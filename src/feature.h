@@ -345,8 +345,9 @@
 /*
  * +diff		Displaying diffs in a nice way.
  *			Requires +windows and +autocmd.
+ *			Can be enabled in autoconf already.
  */
-#if defined(FEAT_NORMAL)
+#if defined(FEAT_NORMAL) && !defined(FEAT_DIFF)
 # define FEAT_DIFF
 #endif
 

@@ -567,6 +567,16 @@ else
   AC_MSG_RESULT(yes)
 fi
 
+AC_MSG_CHECKING([diff feature])
+if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  AC_MSG_RESULT([disabled in $features version])
+else
+  AC_MSG_RESULT(enabled)
+  AC_DEFINE(FEAT_DIFF)
+  XDIFF_OBJS_USED="\$(XDIFF_OBJS)"
+  AC_SUBST(XDIFF_OBJS_USED)
+fi
+
 dnl Check for Lua feature.
 AC_MSG_CHECKING(--enable-luainterp argument)
 AC_ARG_ENABLE(luainterp,
