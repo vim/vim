@@ -698,7 +698,20 @@ ins_compl_add_infercase(
 }
 
 /*
- * Add a match to the list of matches.
+ * Add a match to the list of matches. The arguments are:
+ *     str       - text of the match to add
+ *     len       - length of "str". If -1, then the length of "str" is
+ *		   computed.
+ *     fname     - file name to associate with this match.
+ *     cptext    - list of strings to use with this match (for abbr, menu, info
+ *		   and kind)
+ *     user_data - user supplied data (any vim type) for this match
+ *     cdir	 - match direction. If 0, use "compl_direction".
+ *     flags_arg - match flags (cp_flags)
+ *     adup	 - accept this match even if it is already present.
+ * If "cdir" is FORWARD, then the match is added after the current match.
+ * Otherwise, it is added before the current match.
+ *
  * If the given string is already in the list of completions, then return
  * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
  * maybe because alloc() returns NULL, then FAIL is returned.
@@ -789,7 +802,8 @@ ins_compl_add(
 	match->cp_user_data = *user_data;
 #endif
 
-    // Link the new match structure in the list of matches.
+    // Link the new match structure after (FORWARD) or before (BACKWARD) the
+    // current match in the list of matches .
     if (compl_first_match == NULL)
 	match->cp_next = match->cp_prev = NULL;
     else if (dir == FORWARD)
@@ -2704,6 +2718,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     int		flags = fast ? CP_FAST : 0;
     char_u	*(cptext[CPT_COUNT]);
     typval_T	user_data;
+    int		status;
 
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -2735,8 +2750,14 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	CLEAR_FIELD(cptext);
     }
     if (word == NULL || (!empty && *word == NUL))
+    {
+	clear_tv(&user_data);
 	return FAIL;
-    return ins_compl_add(word, -1, NULL, cptext, &user_data, dir, flags, dup);
+    }
+    status = ins_compl_add(word, -1, NULL, cptext, &user_data, dir, flags, dup);
+    if (status != OK)
+	clear_tv(&user_data);
+    return status;
 }
 
 /*
@@ -3157,8 +3178,8 @@ typedef struct
  *   st->dict_f - flag specifying whether "dict" is an exact file name or not
  *
  * Returns INS_COMPL_CPT_OK if the next value is processed successfully.
- * Returns INS_COMPL_CPT_CONT to skip the current value and process the next
- * option value.
+ * Returns INS_COMPL_CPT_CONT to skip the current completion source matching
+ * the "st->e_cpt" option value and process the next matching source.
  * Returns INS_COMPL_CPT_END if all the values in "st->e_cpt" are processed.
  */
     static int
@@ -4521,7 +4542,7 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
 	return FAIL;
     }
 
-    // Reset extended parameters of completion, when start new
+    // Reset extended parameters of completion, when starting new
     // completion.
     compl_opt_refresh_always = FALSE;
     compl_opt_suppress_empty = FALSE;
