@@ -653,6 +653,7 @@ call_vim_function(
     return ret;
 }
 
+#if 0
 /*
  * Call Vim script function "func" and return the result as a number.
  * Returns -1 when calling the function fails.
@@ -693,6 +694,7 @@ call_func_noret(
     clear_tv(&rettv);
     return OK;
 }
+#endif
 
 /*
  * Call Vim script function "func" and return the result as a string.
@@ -4783,6 +4785,8 @@ set_ref_in_ht(hashtab_T *ht, int copyID, list_stack_T **list_stack)
     return abort;
 }
 
+#if defined(FEAT_LUA) || defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
+							|| defined(PROTO)
 /*
  * Mark a dict and its items with "copyID".
  * Returns TRUE if setting references failed somehow.
@@ -4797,6 +4801,7 @@ set_ref_in_dict(dict_T *d, int copyID)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Mark a list and its items with "copyID".

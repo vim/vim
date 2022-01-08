@@ -125,6 +125,7 @@ free_xim_stuff(void)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Mark the global 'imactivatefunc' and 'imstatusfunc' callbacks with 'copyID'
  * so that they are not garbage collected.
@@ -134,14 +135,14 @@ set_ref_in_im_funcs(int copyID UNUSED)
 {
     int abort = FALSE;
 
-#if defined(FEAT_EVAL) && \
-    (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
+# if defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL)
     abort = set_ref_in_callback(&imaf_cb, copyID);
     abort = abort || set_ref_in_callback(&imsf_cb, copyID);
-#endif
+# endif
 
     return abort;
 }
+#endif
 
 
 #if defined(FEAT_XIM) || defined(PROTO)

@@ -531,11 +531,13 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     return res;
 }
 
+#if 0
     void
 type_mismatch(type_T *expected, type_T *actual)
 {
     arg_type_mismatch(expected, actual, 0);
 }
+#endif
 
     void
 arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx)

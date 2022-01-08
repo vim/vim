@@ -1368,6 +1368,7 @@ free_all_marks(void)
 }
 #endif
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
 /*
  * Return a pointer to the named file marks.
  */
@@ -1376,6 +1377,7 @@ get_namedfm(void)
 {
     return namedfm;
 }
+#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

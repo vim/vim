@@ -876,6 +876,7 @@ internal_error(char *where)
     siemsg(_(e_internal_error_str), where);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Like internal_error() but do not call abort(), to avoid tests using
  * test_unknown() and test_void() causing Vim to exit.
@@ -885,6 +886,7 @@ internal_error_no_abort(char *where)
 {
      semsg(_(e_internal_error_str), where);
 }
+#endif
 
 // emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes.
 
@@ -894,6 +896,7 @@ emsg_invreg(int name)
     semsg(_(e_invalid_register_name_str), transchar(name));
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Give an error message which contains %s for "name[len]".
  */
@@ -905,6 +908,7 @@ emsg_namelen(char *msg, char_u *name, int len)
     semsg(msg, copy == NULL ? "NULL" : (char *)copy);
     vim_free(copy);
 }
+#endif
 
 /*
  * Like msg(), but truncate to a single line if p_shm contains 't', or when

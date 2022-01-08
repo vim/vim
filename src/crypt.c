@@ -247,6 +247,7 @@ crypt_get_header_len(int method_nr)
 }
 
 
+#if defined(FEAT_SODIUM) || defined(PROTO)
 /*
  * Get maximum crypt method specific length of the file header in bytes.
  */
@@ -265,6 +266,7 @@ crypt_get_max_header_len()
     }
     return max;
 }
+#endif
 
 /*
  * Set the crypt method for buffer "buf" to "method_nr" using the int value as

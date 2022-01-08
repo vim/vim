@@ -151,6 +151,7 @@ alloc(size_t size)
     return lalloc(size, TRUE);
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * alloc() with an ID for alloc_fail().
  */
@@ -163,6 +164,7 @@ alloc_id(size_t size, alloc_id_T id UNUSED)
 #endif
     return lalloc(size, TRUE);
 }
+#endif
 
 /*
  * Allocate memory and set all bytes to zero.
@@ -178,6 +180,7 @@ alloc_clear(size_t size)
     return p;
 }
 
+#if defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * Same as alloc_clear() but with allocation id for testing
  */
@@ -190,6 +193,7 @@ alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 #endif
     return alloc_clear(size);
 }
+#endif
 
 /*
  * Allocate memory like lalloc() and set all bytes to zero.
@@ -648,6 +652,7 @@ ga_clear_strings(garray_T *gap)
     ga_clear(gap);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Copy a growing array that contains a list of strings.
  */
@@ -682,6 +687,7 @@ ga_copy_strings(garray_T *from, garray_T *to)
     to->ga_len = from->ga_len;
     return OK;
 }
+#endif
 
 /*
  * Initialize a growing array.	Don't forget to set ga_itemsize and

@@ -1540,6 +1540,7 @@ clip_x11_notify_cb(Widget w UNUSED, Atom *sel_atom UNUSED, Atom *target UNUSED)
 /*
  * Property callback to get a timestamp for XtOwnSelection.
  */
+# if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
     static void
 clip_x11_timestamp_cb(
     Widget	w,
@@ -1592,6 +1593,7 @@ x11_setup_selection(Widget w)
     XtAddEventHandler(w, PropertyChangeMask, False,
 	    /*(XtEventHandler)*/clip_x11_timestamp_cb, (XtPointer)NULL);
 }
+# endif
 
     static void
 clip_x11_request_selection_cb(

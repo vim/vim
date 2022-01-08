@@ -1635,8 +1635,6 @@ free_autoload_scriptnames(void)
 }
 # endif
 
-#endif
-
     linenr_T
 get_sourced_lnum(
 	char_u *(*fgetline)(int, void *, int, getline_opt_T),
@@ -1646,6 +1644,7 @@ get_sourced_lnum(
 			? ((source_cookie_T *)cookie)->sourcing_lnum
 			: SOURCING_LNUM;
 }
+#endif
 
     static char_u *
 get_one_sourceline(source_cookie_T *sp)

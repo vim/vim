@@ -263,7 +263,9 @@ ins_ctrl_x(void)
 /*
  * Functions to check the current CTRL-X mode.
  */
+#ifdef FEAT_CINDENT
 int ctrl_x_mode_none(void) { return ctrl_x_mode == 0; }
+#endif
 int ctrl_x_mode_normal(void) { return ctrl_x_mode == CTRL_X_NORMAL; }
 int ctrl_x_mode_scroll(void) { return ctrl_x_mode == CTRL_X_SCROLL; }
 int ctrl_x_mode_whole_line(void) { return ctrl_x_mode == CTRL_X_WHOLE_LINE; }

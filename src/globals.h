@@ -440,7 +440,9 @@ EXTERN type_T t_dict_string INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_string, NULL
 
 #endif
 
+#ifdef FEAT_EVAL
 EXTERN int	did_source_packages INIT(= FALSE);
+#endif
 
 // Magic number used for hashitem "hi_key" value indicating a deleted item.
 // Only the address is used.
@@ -1153,7 +1155,9 @@ EXTERN int	ctrl_c_interrupts INIT(= TRUE);	// CTRL-C sets got_int
 
 EXTERN cmdmod_T	cmdmod;			// Ex command modifiers
 
+#ifdef FEAT_EVAL
 EXTERN int	is_export INIT(= FALSE);    // :export {cmd}
+#endif
 
 EXTERN int	msg_silent INIT(= 0);	// don't print messages
 EXTERN int	emsg_silent INIT(= 0);	// don't print error messages
@@ -1190,7 +1194,9 @@ EXTERN typebuf_T typebuf		// typeahead buffer
 #endif
 		    ;
 EXTERN int	ex_normal_busy INIT(= 0);   // recursiveness of ex_normal()
+#ifdef FEAT_EVAL
 EXTERN int	in_feedkeys INIT(= 0);	    // ex_normal_busy set in feedkeys()
+#endif
 EXTERN int	ex_normal_lock INIT(= 0);   // forbid use of ex_normal()
 
 #ifdef FEAT_EVAL
@@ -1394,8 +1400,10 @@ EXTERN char_u no_lines_msg[]	INIT(= N_("--No lines in buffer--"));
 EXTERN long	sub_nsubs;	// total number of substitutions
 EXTERN linenr_T	sub_nlines;	// total number of lines changed
 
+#ifdef FEAT_EVAL
 // Used when a compiled :substitute has an expression.
 EXTERN struct subs_expr_S	*substitute_instr INIT(= NULL);
+#endif
 
 // table to store parsed 'wildmode'
 EXTERN char_u	wim_flags[4];
@@ -1588,7 +1596,9 @@ EXTERN int netbeansSuppressNoLines INIT(= 0); // skip "No lines in buffer"
 EXTERN char top_bot_msg[]   INIT(= N_("search hit TOP, continuing at BOTTOM"));
 EXTERN char bot_top_msg[]   INIT(= N_("search hit BOTTOM, continuing at TOP"));
 
+#ifdef FEAT_EVAL
 EXTERN char line_msg[]	    INIT(= N_(" line "));
+#endif
 
 #ifdef FEAT_CRYPT
 EXTERN char need_key_msg[]  INIT(= N_("Need encryption key for \"%s\""));

@@ -37,11 +37,13 @@ get_histentry(int hist_type)
     return history[hist_type];
 }
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     void
 set_histentry(int hist_type, histentry_T *entry)
 {
     history[hist_type] = entry;
 }
+#endif
 
     int *
 get_hisidx(int hist_type)
@@ -49,11 +51,13 @@ get_hisidx(int hist_type)
     return &hisidx[hist_type];
 }
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     int *
 get_hisnum(int hist_type)
 {
     return &hisnum[hist_type];
 }
+#endif
 
 /*
  * Translate a history character to the associated type number.

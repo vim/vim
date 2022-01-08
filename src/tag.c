@@ -102,6 +102,7 @@ static callback_T tfu_cb;	    // 'tagfunc' callback function
 // Used instead of NUL to separate tag fields in the growarrays.
 #define TAG_SEP 0x02
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Reads the 'tagfunc' option value and convert that to a callback value.
  * Invoked when the 'tagfunc' option is set. The option value can be a name of
@@ -125,8 +126,9 @@ set_tagfunc_option(void)
 
     return OK;
 }
+#endif
 
-#if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE) || defined(PROTO)
     void
 free_tagfunc_option(void)
 {
@@ -134,8 +136,9 @@ free_tagfunc_option(void)
     free_callback(&tfu_cb);
 # endif
 }
-#endif
+# endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Mark the global 'tagfunc' callback with 'copyID' so that it is not garbage
  * collected.
@@ -145,9 +148,7 @@ set_ref_in_tagfunc(int copyID UNUSED)
 {
     int	abort = FALSE;
 
-#ifdef FEAT_EVAL
     abort = set_ref_in_callback(&tfu_cb, copyID);
-#endif
 
     return abort;
 }
@@ -159,12 +160,11 @@ set_ref_in_tagfunc(int copyID UNUSED)
     void
 set_buflocal_tfu_callback(buf_T *buf UNUSED)
 {
-#ifdef FEAT_EVAL
     free_callback(&buf->b_tfu_cb);
     if (tfu_cb.cb_name != NULL && *tfu_cb.cb_name != NUL)
 	copy_callback(&buf->b_tfu_cb, &tfu_cb);
-#endif
 }
+#endif
 
 /*
  * Jump to tag; handling of tag commands and tag stack

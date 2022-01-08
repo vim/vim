@@ -38,41 +38,53 @@ static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     yankreg_T *
 get_y_regs(void)
 {
     return y_regs;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     yankreg_T *
 get_y_register(int reg)
 {
     return &y_regs[reg];
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
     yankreg_T *
 get_y_current(void)
 {
     return y_current;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_VIMINFO) || defined(PROTO)
     yankreg_T *
 get_y_previous(void)
 {
     return y_previous;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     void
 set_y_current(yankreg_T *yreg)
 {
     y_current = yreg;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_VIMINFO) || defined(PROTO)
     void
 set_y_previous(yankreg_T *yreg)
 {
     y_previous = yreg;
 }
+#endif
 
     void
 reset_y_append(void)
@@ -474,6 +486,7 @@ stuff_yank(int regname, char_u *p)
  */
 static int execreg_lastc = NUL;
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     int
 get_execreg_lastc(void)
 {
@@ -485,6 +498,7 @@ set_execreg_lastc(int lastc)
 {
     execreg_lastc = lastc;
 }
+#endif
 
 /*
  * When executing a register as a series of ex-commands, if the
@@ -2308,6 +2322,7 @@ get_register_name(int num)
     }
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the index of the register "" points to.
  */
@@ -2316,6 +2331,7 @@ get_unname_register()
 {
     return y_previous == NULL ? -1 : y_previous - &y_regs[0];
 }
+#endif
 
 /*
  * ":dis" and ":registers": Display the contents of the yank registers.
