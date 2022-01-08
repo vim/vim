@@ -527,7 +527,7 @@ execreg_line_continuation(char_u **lines, long *idx)
     int		j;
     char_u	*str;
 
-    ga_init2(&ga, (int)sizeof(char_u), 400);
+    ga_init2(&ga, sizeof(char_u), 400);
 
     // search backwards to find the first line of this command.
     // Any line not starting with \ or "\ is the start of the

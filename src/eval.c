@@ -487,7 +487,7 @@ typval2string(typval_T *tv, int convert)
 
     if (convert && tv->v_type == VAR_LIST)
     {
-	ga_init2(&ga, (int)sizeof(char), 80);
+	ga_init2(&ga, sizeof(char), 80);
 	if (tv->vval.v_list != NULL)
 	{
 	    list_join(&ga, tv->vval.v_list, (char_u *)"\n", TRUE, FALSE, 0);

@@ -691,7 +691,7 @@ do_cmdline(
 #ifdef FEAT_EVAL
     CLEAR_FIELD(cstack);
     cstack.cs_idx = -1;
-    ga_init2(&lines_ga, (int)sizeof(wcmd_T), 10);
+    ga_init2(&lines_ga, sizeof(wcmd_T), 10);
 
     real_cookie = getline_cookie(fgetline, cookie);
 

@@ -51,7 +51,7 @@ alist_clear(alist_T *al)
     void
 alist_init(alist_T *al)
 {
-    ga_init2(&al->al_ga, (int)sizeof(aentry_T), 5);
+    ga_init2(&al->al_ga, sizeof(aentry_T), 5);
 }
 
 /*
@@ -275,7 +275,7 @@ do_one_arg(char_u *str)
     static int
 get_arglist(garray_T *gap, char_u *str, int escaped)
 {
-    ga_init2(gap, (int)sizeof(char_u *), 20);
+    ga_init2(gap, sizeof(char_u *), 20);
     while (*str != NUL)
     {
 	if (ga_grow(gap, 1) == FAIL)

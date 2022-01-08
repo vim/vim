@@ -174,7 +174,7 @@ static garray_T dict_stack = GA_EMPTY;
 dict_stack_save(typval_T *tv)
 {
     if (dict_stack.ga_growsize == 0)
-	ga_init2(&dict_stack, (int)sizeof(typval_T), 10);
+	ga_init2(&dict_stack, sizeof(typval_T), 10);
     if (ga_grow(&dict_stack, 1) == FAIL)
 	return FAIL;
     ((typval_T *)dict_stack.ga_data)[dict_stack.ga_len] = *tv;

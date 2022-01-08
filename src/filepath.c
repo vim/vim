@@ -1388,7 +1388,7 @@ f_globpath(typval_T *argvars, typval_T *rettv)
     }
     if (file != NULL && !error)
     {
-	ga_init2(&ga, (int)sizeof(char_u *), 10);
+	ga_init2(&ga, sizeof(char_u *), 10);
 	globpath(tv_get_string(&argvars[0]), file, &ga, flags);
 	if (rettv->v_type == VAR_STRING)
 	    rettv->vval.v_string = ga_concat_strings(&ga, "\n");
@@ -3908,7 +3908,7 @@ gen_expand_wildcards(
     /*
      * The matching file names are stored in a growarray.  Init it empty.
      */
-    ga_init2(&ga, (int)sizeof(char_u *), 30);
+    ga_init2(&ga, sizeof(char_u *), 30);
 
     for (i = 0; i < num_pat; ++i)
     {

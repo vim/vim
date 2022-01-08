@@ -4025,7 +4025,7 @@ clear_redir_lval(void)
     void
 init_redir_ga(void)
 {
-    ga_init2(&redir_ga, (int)sizeof(char), 500);
+    ga_init2(&redir_ga, sizeof(char), 500);
 }
 
 /*

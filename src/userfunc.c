@@ -222,11 +222,11 @@ get_function_args(
     char_u	*whitep = *argp;
 
     if (newargs != NULL)
-	ga_init2(newargs, (int)sizeof(char_u *), 3);
+	ga_init2(newargs, sizeof(char_u *), 3);
     if (argtypes != NULL)
-	ga_init2(argtypes, (int)sizeof(char_u *), 3);
+	ga_init2(argtypes, sizeof(char_u *), 3);
     if (!skip && default_args != NULL)
-	ga_init2(default_args, (int)sizeof(char_u *), 3);
+	ga_init2(default_args, sizeof(char_u *), 3);
 
     if (varargs != NULL)
 	*varargs = FALSE;
@@ -1149,7 +1149,7 @@ lambda_function_body(
 	eap.cookie = evalarg->eval_cookie;
     }
 
-    ga_init2(&newlines, (int)sizeof(char_u *), 10);
+    ga_init2(&newlines, sizeof(char_u *), 10);
     if (get_function_body(&eap, &newlines, NULL,
 					     &evalarg->eval_tofree_ga) == FAIL)
 	goto erret;
@@ -1436,7 +1436,7 @@ get_lambda_tv(
 	if (pt == NULL)
 	    goto errret;
 
-	ga_init2(&newlines, (int)sizeof(char_u *), 1);
+	ga_init2(&newlines, sizeof(char_u *), 1);
 	if (ga_grow(&newlines, 1) == FAIL)
 	    goto errret;
 
@@ -1760,7 +1760,7 @@ get_func_tv(
 	    // Prepare for calling test_garbagecollect_now(), need to know
 	    // what variables are used on the call stack.
 	    if (funcargs.ga_itemsize == 0)
-		ga_init2(&funcargs, (int)sizeof(typval_T *), 50);
+		ga_init2(&funcargs, sizeof(typval_T *), 50);
 	    for (i = 0; i < argcount; ++i)
 		if (ga_grow(&funcargs, 1) == OK)
 		    ((typval_T **)funcargs.ga_data)[funcargs.ga_len++] =
@@ -4173,7 +4173,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	goto ret_free;
     }
 
-    ga_init2(&newlines, (int)sizeof(char_u *), 10);
+    ga_init2(&newlines, sizeof(char_u *), 10);
 
     if (!eap->skip && name_arg == NULL)
     {

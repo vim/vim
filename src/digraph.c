@@ -2632,7 +2632,7 @@ ex_loadkeymap(exarg_T *eap)
     keymap_unload();
 
     curbuf->b_kmap_state = 0;
-    ga_init2(&curbuf->b_kmap_ga, (int)sizeof(kmap_T), 20);
+    ga_init2(&curbuf->b_kmap_ga, sizeof(kmap_T), 20);
 
     // Set 'cpoptions' to "C" to avoid line continuation.
     p_cpo = (char_u *)"C";

@@ -2912,7 +2912,7 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	return;
     vir.vir_fd = fp_in;
     vir.vir_conv.vc_type = CONV_NONE;
-    ga_init2(&vir.vir_barlines, (int)sizeof(char_u *), 100);
+    ga_init2(&vir.vir_barlines, sizeof(char_u *), 100);
     vir.vir_version = -1;
 
     if (fp_in != NULL)

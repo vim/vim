@@ -2430,7 +2430,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     char_u	*short_name;
 
     remove_duplicates(gap);
-    ga_init2(&path_ga, (int)sizeof(char_u *), 1);
+    ga_init2(&path_ga, sizeof(char_u *), 1);
 
     /*
      * We need to prepend a '*' at the beginning of file_pattern so that the
@@ -2611,7 +2611,7 @@ expand_in_path(
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 
-    ga_init2(&path_ga, (int)sizeof(char_u *), 1);
+    ga_init2(&path_ga, sizeof(char_u *), 1);
     expand_path_option(curdir, &path_ga);
     vim_free(curdir);
     if (path_ga.ga_len == 0)

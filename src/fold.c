@@ -647,7 +647,7 @@ foldCreate(linenr_T start, linenr_T end)
     if (ga_grow(gap, 1) == OK)
     {
 	fp = (fold_T *)gap->ga_data + i;
-	ga_init2(&fold_ga, (int)sizeof(fold_T), 10);
+	ga_init2(&fold_ga, sizeof(fold_T), 10);
 
 	// Count number of folds that will be contained in the new fold.
 	for (cont = 0; i + cont < gap->ga_len; ++cont)
@@ -1018,7 +1018,7 @@ foldMoveTo(
     void
 foldInitWin(win_T *new_win)
 {
-    ga_init2(&new_win->w_folds, (int)sizeof(fold_T), 10);
+    ga_init2(&new_win->w_folds, sizeof(fold_T), 10);
 }
 
 // find_wl_entry() {{{2
@@ -2868,7 +2868,7 @@ foldInsert(garray_T *gap, int i)
     if (gap->ga_len > 0 && i < gap->ga_len)
 	mch_memmove(fp + 1, fp, sizeof(fold_T) * (gap->ga_len - i));
     ++gap->ga_len;
-    ga_init2(&fp->fd_nested, (int)sizeof(fold_T), 10);
+    ga_init2(&fp->fd_nested, sizeof(fold_T), 10);
     return OK;
 }
 

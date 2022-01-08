@@ -1299,7 +1299,7 @@ list2string(typval_T *tv, int copyID, int restore_copyID)
 
     if (tv->vval.v_list == NULL)
 	return NULL;
-    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_init2(&ga, sizeof(char), 80);
     ga_append(&ga, '[');
     CHECK_LIST_MATERIALIZE(tv->vval.v_list);
     if (list_join(&ga, tv->vval.v_list, (char_u *)", ",
@@ -1412,7 +1412,7 @@ list_join(
 
     if (l->lv_len < 1)
 	return OK; // nothing to do
-    ga_init2(&join_ga, (int)sizeof(join_T), l->lv_len);
+    ga_init2(&join_ga, sizeof(join_T), l->lv_len);
     retval = list_join_inner(gap, l, sep, echo_style, restore_copyID,
 							    copyID, &join_ga);
 
@@ -1461,7 +1461,7 @@ f_join(typval_T *argvars, typval_T *rettv)
 
     if (sep != NULL)
     {
-	ga_init2(&ga, (int)sizeof(char), 80);
+	ga_init2(&ga, sizeof(char), 80);
 	list_join(&ga, argvars[0].vval.v_list, sep, TRUE, FALSE, 0);
 	ga_append(&ga, NUL);
 	rettv->vval.v_string = (char_u *)ga.ga_data;

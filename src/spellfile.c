@@ -5905,12 +5905,12 @@ mkspell(
     spin.si_ascii = ascii;
     spin.si_followup = TRUE;
     spin.si_rem_accents = TRUE;
-    ga_init2(&spin.si_rep, (int)sizeof(fromto_T), 20);
-    ga_init2(&spin.si_repsal, (int)sizeof(fromto_T), 20);
-    ga_init2(&spin.si_sal, (int)sizeof(fromto_T), 20);
-    ga_init2(&spin.si_map, (int)sizeof(char_u), 100);
-    ga_init2(&spin.si_comppat, (int)sizeof(char_u *), 20);
-    ga_init2(&spin.si_prefcond, (int)sizeof(char_u *), 50);
+    ga_init2(&spin.si_rep, sizeof(fromto_T), 20);
+    ga_init2(&spin.si_repsal, sizeof(fromto_T), 20);
+    ga_init2(&spin.si_sal, sizeof(fromto_T), 20);
+    ga_init2(&spin.si_map, sizeof(char_u), 100);
+    ga_init2(&spin.si_comppat, sizeof(char_u *), 20);
+    ga_init2(&spin.si_prefcond, sizeof(char_u *), 50);
     hash_init(&spin.si_commonwords);
     spin.si_newcompID = 127;	// start compound ID at first maximum
 

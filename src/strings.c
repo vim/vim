@@ -893,7 +893,7 @@ string_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
-    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_init2(&ga, sizeof(char), 80);
     for (p = str; *p != NUL; p += len)
     {
 	typval_T newtv;
@@ -1673,7 +1673,7 @@ f_tr(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
     if (fromstr == NULL || tostr == NULL)
 	    return;		// type error; errmsg already given
-    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_init2(&ga, sizeof(char), 80);
 
     if (!has_mbyte)
 	// not multi-byte: fromstr and tostr must be the same length

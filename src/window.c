@@ -5413,7 +5413,7 @@ win_size_save(garray_T *gap)
 {
     win_T	*wp;
 
-    ga_init2(gap, (int)sizeof(int), 1);
+    ga_init2(gap, sizeof(int), 1);
     if (ga_grow(gap, win_count() * 2 + 1) == OK)
     {
 	// first entry is value of 'lines'

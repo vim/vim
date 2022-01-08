@@ -2306,7 +2306,7 @@ channel_add_block_id(chanpart_T *chanpart, int id)
     garray_T *gap = &chanpart->ch_block_ids;
 
     if (gap->ga_growsize == 0)
-	ga_init2(gap, (int)sizeof(int), 10);
+	ga_init2(gap, sizeof(int), 10);
     if (ga_grow(gap, 1) == OK)
     {
 	((int *)gap->ga_data)[gap->ga_len] = id;

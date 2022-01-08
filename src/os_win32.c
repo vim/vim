@@ -5280,7 +5280,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     ofd[1] = INVALID_HANDLE_VALUE;
     efd[0] = INVALID_HANDLE_VALUE;
     efd[1] = INVALID_HANDLE_VALUE;
-    ga_init2(&ga, (int)sizeof(wchar_t), 500);
+    ga_init2(&ga, sizeof(wchar_t), 500);
 
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)

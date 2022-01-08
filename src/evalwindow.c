@@ -1120,7 +1120,7 @@ f_winrestcmd(typval_T *argvars UNUSED, typval_T *rettv)
     garray_T	ga;
     char_u	buf[50];
 
-    ga_init2(&ga, (int)sizeof(char), 70);
+    ga_init2(&ga, sizeof(char), 70);
 
     // Do this twice to handle some window layouts properly.
     for (i = 0; i < 2; ++i)

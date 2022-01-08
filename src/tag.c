@@ -1752,7 +1752,7 @@ find_tags(
 #endif
     for (mtt = 0; mtt < MT_COUNT; ++mtt)
     {
-	ga_init2(&ga_match[mtt], (int)sizeof(char_u *), 100);
+	ga_init2(&ga_match[mtt], sizeof(char_u *), 100);
 	hash_init(&ht_match[mtt]);
     }
 
@@ -2952,7 +2952,7 @@ get_tagfname(
 	if (first)
 	{
 	    ga_clear_strings(&tag_fnames);
-	    ga_init2(&tag_fnames, (int)sizeof(char_u *), 10);
+	    ga_init2(&tag_fnames, sizeof(char_u *), 10);
 	    do_in_runtimepath((char_u *)
 #ifdef FEAT_MULTI_LANG
 # ifdef VMS

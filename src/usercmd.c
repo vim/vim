@@ -917,7 +917,7 @@ uc_add_command(
     {
 	gap = &curbuf->b_ucmds;
 	if (gap->ga_itemsize == 0)
-	    ga_init2(gap, (int)sizeof(ucmd_T), 4);
+	    ga_init2(gap, sizeof(ucmd_T), 4);
     }
     else
 	gap = &ucmds;

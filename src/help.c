@@ -999,7 +999,7 @@ helptags_one(
 
     // If using the "++t" argument or generating tags for "$VIMRUNTIME/doc"
     // add the "help-tags" tag.
-    ga_init2(&ga, (int)sizeof(char_u *), 100);
+    ga_init2(&ga, sizeof(char_u *), 100);
     if (add_help_tags || fullpathcmp((char_u *)"$VIMRUNTIME/doc",
 						dir, FALSE, TRUE) == FPC_SAME)
     {

@@ -2342,7 +2342,7 @@ expand_shellcmd(
     // Go over all directories in $PATH.  Expand matches in that directory and
     // collect them in "ga".  When "." is not in $PATH also expand for the
     // current directory, to find "subdir/cmd".
-    ga_init2(&ga, (int)sizeof(char *), 10);
+    ga_init2(&ga, sizeof(char *), 10);
     hash_init(&found_ht);
     for (s = path; ; s = e)
     {
@@ -2497,7 +2497,7 @@ ExpandUserDefined(
     if (retstr == NULL)
 	return FAIL;
 
-    ga_init2(&ga, (int)sizeof(char *), 3);
+    ga_init2(&ga, sizeof(char *), 3);
     for (s = retstr; *s != NUL; s = e)
     {
 	e = vim_strchr(s, '\n');
@@ -2543,7 +2543,7 @@ ExpandUserList(
     if (retlist == NULL)
 	return FAIL;
 
-    ga_init2(&ga, (int)sizeof(char *), 3);
+    ga_init2(&ga, sizeof(char *), 3);
     // Loop over the items in the list.
     FOR_ALL_LIST_ITEMS(retlist, li)
     {

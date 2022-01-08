@@ -1296,7 +1296,7 @@ job_start(
 
     job->jv_status = JOB_FAILED;
 #ifndef USE_ARGV
-    ga_init2(&ga, (int)sizeof(char*), 20);
+    ga_init2(&ga, sizeof(char*), 20);
 #endif
 
     if (opt_arg != NULL)
@@ -1435,7 +1435,7 @@ job_start(
     {
 	garray_T    ga;
 
-	ga_init2(&ga, (int)sizeof(char), 200);
+	ga_init2(&ga, sizeof(char), 200);
 	for (i = 0; i < argc; ++i)
 	{
 	    if (i > 0)

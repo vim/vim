@@ -3081,7 +3081,7 @@ ex_undolist(exarg_T *eap UNUSED)
      */
     mark = ++lastmark;
     nomark = ++lastmark;
-    ga_init2(&ga, (int)sizeof(char *), 20);
+    ga_init2(&ga, sizeof(char *), 20);
 
     uhp = curbuf->b_u_oldhead;
     while (uhp != NULL)

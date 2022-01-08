@@ -759,7 +759,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 
     if ((d = tv->vval.v_dict) == NULL)
 	return NULL;
-    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_init2(&ga, sizeof(char), 80);
     ga_append(&ga, '{');
 
     todo = (int)d->dv_hashtab.ht_used;

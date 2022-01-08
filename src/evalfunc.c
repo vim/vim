@@ -3662,7 +3662,7 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
 
     if (redir_execute)
 	save_ga = redir_execute_ga;
-    ga_init2(&redir_execute_ga, (int)sizeof(char), 500);
+    ga_init2(&redir_execute_ga, sizeof(char), 500);
     redir_execute = TRUE;
     redir_off = FALSE;
     if (!echo_output)

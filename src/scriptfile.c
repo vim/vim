@@ -835,7 +835,7 @@ ExpandRTDir(
     *num_file = 0;
     *file = NULL;
     pat_len = (int)STRLEN(pat);
-    ga_init2(&ga, (int)sizeof(char *), 10);
+    ga_init2(&ga, sizeof(char *), 10);
 
     for (i = 0; dirnames[i] != NULL; ++i)
     {
@@ -929,7 +929,7 @@ ExpandPackAddDir(
     *num_file = 0;
     *file = NULL;
     pat_len = (int)STRLEN(pat);
-    ga_init2(&ga, (int)sizeof(char *), 10);
+    ga_init2(&ga, sizeof(char *), 10);
 
     s = alloc(pat_len + 26);
     if (s == NULL)
@@ -1833,7 +1833,7 @@ getsourceline(
 	{
 	    garray_T    ga;
 
-	    ga_init2(&ga, (int)sizeof(char_u), 400);
+	    ga_init2(&ga, sizeof(char_u), 400);
 	    ga_concat(&ga, line);
 	    if (*p == '\\')
 		ga_concat(&ga, p + 1);

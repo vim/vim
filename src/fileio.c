@@ -4774,7 +4774,7 @@ readdir_core(
     struct dirent	*dp;
 # endif
 
-    ga_init2(gap, (int)sizeof(void *), 20);
+    ga_init2(gap, sizeof(void *), 20);
 
 # ifdef FEAT_EVAL
 #  define FREE_ITEM(item)   do { \

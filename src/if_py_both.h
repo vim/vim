@@ -3264,7 +3264,7 @@ FunctionRepr(FunctionObject *self)
     typval_T tv;
     char_u numbuf[NUMBUFLEN];
 
-    ga_init2(&repr_ga, (int)sizeof(char), 70);
+    ga_init2(&repr_ga, sizeof(char), 70);
     ga_concat(&repr_ga, (char_u *)"<vim.Function '");
     if (self->name)
 	ga_concat(&repr_ga, self->name);

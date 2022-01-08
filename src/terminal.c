@@ -6674,8 +6674,8 @@ conpty_term_and_job_init(
     HANDLE	    i_ours = NULL;
     HANDLE	    o_ours = NULL;
 
-    ga_init2(&ga_cmd, (int)sizeof(char*), 20);
-    ga_init2(&ga_env, (int)sizeof(char*), 20);
+    ga_init2(&ga_cmd, sizeof(char*), 20);
+    ga_init2(&ga_env, sizeof(char*), 20);
 
     if (argvar->v_type == VAR_STRING)
     {
@@ -7022,8 +7022,8 @@ winpty_term_and_job_init(
     garray_T	    ga_cmd, ga_env;
     char_u	    *cmd = NULL;
 
-    ga_init2(&ga_cmd, (int)sizeof(char*), 20);
-    ga_init2(&ga_env, (int)sizeof(char*), 20);
+    ga_init2(&ga_cmd, sizeof(char*), 20);
+    ga_init2(&ga_env, sizeof(char*), 20);
 
     if (argvar->v_type == VAR_STRING)
     {
