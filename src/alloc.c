@@ -702,7 +702,7 @@ ga_init(garray_T *gap)
 }
 
     void
-ga_init2(garray_T *gap, int itemsize, int growsize)
+ga_init2(garray_T *gap, size_t itemsize, int growsize)
 {
     ga_init(gap);
     gap->ga_itemsize = itemsize;
@@ -789,7 +789,7 @@ ga_concat_strings(garray_T *gap, char *sep)
  * When out of memory nothing changes and FAIL is returned.
  */
     int
-ga_add_string(garray_T *gap, char_u *p)
+ga_copy_string(garray_T *gap, char_u *p)
 {
     char_u *cp = vim_strsave(p);
 
@@ -802,6 +802,19 @@ ga_add_string(garray_T *gap, char_u *p)
 	return FAIL;
     }
     ((char_u **)(gap->ga_data))[gap->ga_len++] = cp;
+    return OK;
+}
+
+/*
+ * Add string "p" to "gap".
+ * When out of memory "p" is freed and FAIL is returned.
+ */
+    int
+ga_add_string(garray_T *gap, char_u *p)
+{
+    if (ga_grow(gap, 1) == FAIL)
+	return FAIL;
+    ((char_u **)(gap->ga_data))[gap->ga_len++] = p;
     return OK;
 }
 

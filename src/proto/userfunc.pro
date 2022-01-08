@@ -38,7 +38,7 @@ char_u *untrans_function_name(char_u *name);
 char_u *get_scriptlocal_funcname(char_u *funcname);
 char_u *save_function_name(char_u **name, int *is_global, int skip, int flags, funcdict_T *fudi);
 void list_functions(regmatch_T *regmatch);
-ufunc_T *define_function(exarg_T *eap, char_u *name_arg, char_u **line_to_free);
+ufunc_T *define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free);
 void ex_function(exarg_T *eap);
 void ex_defcompile(exarg_T *eap);
 int eval_fname_script(char_u *p);

@@ -1021,7 +1021,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 	char_u	    *line = NULL;
 
 	ga_init2(&ga, sizeof(char_u *), 10);
-	if (ga_add_string(&ga, p) == FAIL)
+	if (ga_copy_string(&ga, p) == FAIL)
 	    return retp;
 
 	// If the argument ends in "}" it must have been concatenated already
@@ -1038,7 +1038,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 		    emsg(_(e_missing_rcurly));
 		    break;
 		}
-		if (ga_add_string(&ga, line) == FAIL)
+		if (ga_copy_string(&ga, line) == FAIL)
 		    break;
 		if (*skipwhite(line) == '}')
 		    break;
