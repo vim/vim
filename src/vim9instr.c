@@ -66,7 +66,7 @@ generate_instr_drop(cctx_T *cctx, isntype_T isn_type, int drop)
  * Generate instruction "isn_type" and put "type" on the type stack,
  * use "decl_type" for the declared type.
  */
-    isn_T *
+    static isn_T *
 generate_instr_type2(
 	cctx_T	    *cctx,
 	isntype_T   isn_type,
@@ -828,7 +828,7 @@ generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name)
 /*
  * Generate an ISN_STOREOUTER instruction.
  */
-    int
+    static int
 generate_STOREOUTER(cctx_T *cctx, int idx, int level)
 {
     isn_T	*isn;
@@ -862,7 +862,7 @@ generate_STORENR(cctx_T *cctx, int idx, varnumber_T value)
 /*
  * Generate an ISN_STOREOPT or ISN_STOREFUNCOPT instruction
  */
-    int
+    static int
 generate_STOREOPT(
 	cctx_T	    *cctx,
 	isntype_T   isn_type,
