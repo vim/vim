@@ -23,6 +23,7 @@ EXTERN char e_command_not_allowed_from_vimrc_in_current_dir_or_tag_search[]
 	INIT(= N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
 EXTERN char e_file_exists[]
 	INIT(= N_("E13: File exists (add ! to override)"));
+// E14 unused
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_expression_str[]
 	INIT(= N_("E15: Invalid expression: \"%s\""));
@@ -135,6 +136,9 @@ EXTERN char e_unmatched_str_open[]
 	INIT(= N_("E54: Unmatched %s("));
 EXTERN char e_unmatched_str_close[]
 	INIT(= N_("E55: Unmatched %s)"));
+// E56 unused
+// E57 unused
+// E58 unused
 EXTERN char e_invalid_character_after_str_at[]
 	INIT(= N_("E59: invalid character after %s@"));
 EXTERN char e_too_many_complex_str_curly[]
@@ -155,6 +159,8 @@ EXTERN char e_z_not_allowed_here[]
 EXTERN char e_z1_z9_not_allowed_here[]
 	INIT(= N_("E67: \\z1 - \\z9 not allowed here"));
 #endif
+EXTERN char e_invalid_character_after_bsl_z[]
+	INIT(= N_("E68: Invalid character after \\z"));
 EXTERN char e_missing_sb_after_str[]
 	INIT(= N_("E69: Missing ] after %s%%["));
 EXTERN char e_empty_str_brackets[]
@@ -652,6 +658,7 @@ EXTERN char e_cannot_use_function_as_method_str[]
 EXTERN char e_unable_to_read_server_reply[]
 	INIT(= N_("E277: Unable to read a server reply"));
 #endif
+// E278 unused
 #ifdef FEAT_TERMINAL
 EXTERN char e_sorry_plusplusshell_not_supported_on_this_system[]
 	INIT(= N_("E279: Sorry, ++shell is not supported on this system"));
@@ -840,7 +847,7 @@ EXTERN char e_screen_mode_setting_not_supported[]
 EXTERN char e_cannot_execute_shell_with_f_option[]
 	INIT(= N_("E360: Cannot execute shell with -f option"));
 // E361 unused
-EXTERN char e_using_boolean_valud_as_float[]
+EXTERN char e_using_boolean_value_as_float[]
 	INIT(= N_("E362: Using a boolean value as a Float"));
 EXTERN char e_pattern_uses_more_memory_than_maxmempattern[]
 	INIT(= N_("E363: pattern uses more memory than 'maxmempattern'"));
@@ -1249,7 +1256,7 @@ EXTERN char e_comma_required[]
 	INIT(= N_("E536: comma required"));
 EXTERN char e_commentstring_must_be_empty_or_contain_str[]
 	INIT(= N_("E537: 'commentstring' must be empty or contain %s"));
-// E538 unused (perhaps 538.nl ?)
+// E538 unused
 EXTERN char e_illegal_character_str[]
 	INIT(= N_("E539: Illegal character <%s>"));
 EXTERN char e_unclosed_expression_sequence[]

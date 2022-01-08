@@ -1489,7 +1489,7 @@ regatom(int *flagp)
 			      return NULL;
 			  break;
 
-		default:  EMSG_RET_NULL(_("E68: Invalid character after \\z"));
+		default:  EMSG_RET_NULL(_(e_invalid_character_after_bsl_z));
 	    }
 	}
 	break;
