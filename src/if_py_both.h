@@ -3789,14 +3789,14 @@ TabPageAttr(TabPageObject *self, char *name)
 TabPageRepr(TabPageObject *self)
 {
     if (self->tab == INVALID_TABPAGE_VALUE)
-	return PyString_FromFormat("<tabpage object (deleted) at %p>", (self));
+	return PyString_FromFormat("<tabpage object (deleted) at %p>", (void *)self);
     else
     {
 	int	t = get_tab_number(self->tab);
 
 	if (t == 0)
 	    return PyString_FromFormat("<tabpage object (unknown) at %p>",
-					(self));
+					(void *)self);
 	else
 	    return PyString_FromFormat("<tabpage %d>", t - 1);
     }
@@ -4125,14 +4125,14 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 WindowRepr(WindowObject *self)
 {
     if (self->win == INVALID_WINDOW_VALUE)
-	return PyString_FromFormat("<window object (deleted) at %p>", (self));
+	return PyString_FromFormat("<window object (deleted) at %p>", (void *)self);
     else
     {
 	int	w = get_win_number(self->win, firstwin);
 
 	if (w == 0)
 	    return PyString_FromFormat("<window object (unknown) at %p>",
-								      (self));
+								      (void *)self);
 	else
 	    return PyString_FromFormat("<window %d>", w - 1);
     }
@@ -5126,7 +5126,7 @@ RangeRepr(RangeObject *self)
 {
     if (self->buf->buf == INVALID_BUFFER_VALUE)
 	return PyString_FromFormat("<range object (for deleted buffer) at %p>",
-				    (self));
+				    (void *)self);
     else
     {
 	char *name = (char *)self->buf->buf->b_fname;
@@ -5378,7 +5378,7 @@ BufferRange(BufferObject *self, PyObject *args)
 BufferRepr(BufferObject *self)
 {
     if (self->buf == INVALID_BUFFER_VALUE)
-	return PyString_FromFormat("<buffer object (deleted) at %p>", self);
+	return PyString_FromFormat("<buffer object (deleted) at %p>", (void *)self);
     else
     {
 	char	*name = (char *)self->buf->b_fname;
