@@ -2853,6 +2853,7 @@ def Test_expr7_environment()
   CheckDefAndScriptSuccess(lines)
 
   CheckDefAndScriptFailure(["var x = $$$"], ['E1002:', 'E15:'], 1)
+  CheckDefAndScriptFailure(["$"], ['E1002:', 'E15:'], 1)
 enddef
 
 def Test_expr7_register()

@@ -1233,7 +1233,7 @@ compile_get_env(char_u **arg, cctx_T *cctx)
     len = get_env_len(arg);
     if (len == 0)
     {
-	semsg(_(e_syntax_error_at_str), start - 1);
+	semsg(_(e_syntax_error_at_str), start);
 	return FAIL;
     }
 
