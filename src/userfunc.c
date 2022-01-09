@@ -1608,7 +1608,7 @@ deref_func_name(
 	    p = name + 2;
 	    len -= 2;
 	}
-	import = find_imported(p, len, NULL);
+	import = find_imported(p, len, FALSE, NULL);
 
 	// imported function from another script
 	if (import != NULL)
@@ -4079,6 +4079,9 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	    else
 		eap->skip = TRUE;
 	}
+
+//	if (is_export)
+//	    name = may_prefix_autoload(name);
     }
 
     // An error in a function call during evaluation of an expression in magic
@@ -4363,7 +4366,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	{
 	    char_u *uname = untrans_function_name(name);
 
-	    import = find_imported(uname == NULL ? name : uname, 0, NULL);
+	    import = find_imported(uname == NULL ? name : uname, 0, FALSE, NULL);
 	}
 
 	if (fp != NULL || import != NULL)

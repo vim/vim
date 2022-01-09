@@ -266,7 +266,7 @@ compile_load_scriptvar(
 	return OK;
     }
 
-    import = end == NULL ? NULL : find_imported(name, 0, cctx);
+    import = end == NULL ? NULL : find_imported(name, 0, FALSE, cctx);
     if (import != NULL)
     {
 	char_u	*p = skipwhite(*end);
@@ -275,6 +275,7 @@ compile_load_scriptvar(
 	ufunc_T	*ufunc;
 	type_T	*type;
 
+	// TODO: if this is an autoload import do something else.
 	// Need to lookup the member.
 	if (*p != '.')
 	{
@@ -474,7 +475,7 @@ compile_load(
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
 		if (script_var_exists(*arg, len, cctx) == OK
-			|| find_imported(name, 0, cctx) != NULL)
+			|| find_imported(name, 0, FALSE, cctx) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
 		// When evaluating an expression and the name starts with an

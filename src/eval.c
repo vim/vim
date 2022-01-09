@@ -886,7 +886,9 @@ get_lval(
 
     if (*p == '.' && in_vim9script())
     {
-	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name, NULL);
+	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name,
+								   TRUE, NULL);
+
 	if (import != NULL)
 	{
 	    ufunc_T *ufunc;

@@ -1827,6 +1827,7 @@ typedef struct {
 } imported_T;
 
 #define IMP_FLAGS_RELOAD	2   // script reloaded, OK to redefine
+#define IMP_FLAGS_AUTOLOAD	4   // script still needs to be loaded
 
 /*
  * Info about an already sourced scripts.
@@ -1863,6 +1864,7 @@ typedef struct
     int		sn_state;	// SN_STATE_ values
     char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
     char	sn_is_vimrc;	// .vimrc file, do not restore 'cpo'
+    char	sn_is_autoload;	// "vim9script autoload"
 
 # ifdef FEAT_PROFILE
     int		sn_prof_on;	// TRUE when script is/was profiled
@@ -1886,7 +1888,8 @@ typedef struct
 } scriptitem_T;
 
 #define SN_STATE_NEW		0   // newly loaded script, nothing done
-#define SN_STATE_RELOAD		1   // script loaded before, nothing done
+#define SN_STATE_NOT_LOADED	1   // script located but not loaded
+#define SN_STATE_RELOAD		2   // script loaded before, nothing done
 #define SN_STATE_HAD_COMMAND	9   // a command was executed
 
 // Struct passed through eval() functions.

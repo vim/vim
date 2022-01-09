@@ -1501,37 +1501,43 @@ result in undefined items.
 
 
 Import in an autoload script ~
-
+							*vim9-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
-actually needed.  A recommended mechanism:
+actually needed.  Using the autoload mechanism is recommended:
 
 1. In the plugin define user commands, functions and/or mappings that refer to
-   an autoload script. >
-	command -nargs=1 SearchForStuff searchfor#Stuff(<f-args>)
+   items imported from an autoload script. >
+	import autoload 'for/search.vim'
+	command -nargs=1 SearchForStuff search.Stuff(<f-args>)
 
 <   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
+   The "SearchForStuff" command is now available to the user.
 
-2. In the autoload script do the actual work.  You can import items from
-   other files to split up functionality in appropriate pieces. >
-	vim9script
-	import "../import/someother.vim" as other
-	def searchfor#Stuff(arg: string)
-	  var filtered = other.FilterFunc(arg)
+   The "autoload" argument to `:import` means that the script is not loaded
+   until one of the items is actually used.  The script will be found under
+   the "autoload" directory in 'runtimepath' instead of the "import"
+   directory.
+
+2. In the autoload script put the bulk of the code. >
+	vim9script autoload
+	export def Stuff(arg: string)
 	  ...
-<   This goes in .../autoload/searchfor.vim.  "searchfor" in the file name
-   must be exactly the same as the prefix for the function name, that is how
-   Vim finds the file.
 
-3. Other functionality, possibly shared between plugins, contains the exported
-   items and any private items. >
-	vim9script
-	var localVar = 'local'
-	export def FilterFunc(arg: string): string
-	   ...
-<   This goes in .../import/someother.vim.
+<   This goes in .../autoload/for/search.vim.
+
+   Adding "autoload" to `:vim9script` has the effect that "for#search#" will
+   be prefixed to every exported item.  The prefix is obtained from the file
+   name, as you would to manually in a legacy autoload script.  Thus the
+   exported function can be found with "for#search#Stuff", but you would
+   normally use `import autoload` and not need to specify the prefix.
+
+   You can split up the functionality and import other scripts from the
+   autoload script as you like.  This way you can share code between plugins.
 
 When compiling a `:def` function and a function in an autoload script is
 encountered, the script is not loaded until the `:def` function is called.
+This also means you get any errors only at runtime, since the argument and
+return types are not known yet.
 
 
 Import in legacy Vim script ~

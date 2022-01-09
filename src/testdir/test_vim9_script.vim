@@ -3032,6 +3032,26 @@ def Test_vim9_autoload()
   writefile(lines, 'Xdir/autoload/Other.vim')
   assert_equal('other', g:Other#getOther())
 
+  # using "vim9script autoload" prefix is not needed
+  lines =<< trim END
+     vim9script autoload
+     g:prefixed_loaded = 'yes'
+     export def Gettest(): string
+       return 'test'
+     enddef
+     export var name = 'name'
+  END
+  writefile(lines, 'Xdir/autoload/prefixed.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'prefixed.vim'
+      assert_false(exists('g:prefixed_loaded'))
+      assert_equal('test', prefixed.Gettest())
+      assert_equal('yes', g:prefixed_loaded)
+  END
+  CheckScriptSuccess(lines)
+
   delete('Xdir', 'rf')
   &rtp = save_rtp
 enddef
