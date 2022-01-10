@@ -541,7 +541,19 @@ get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx)
     ht = &SCRIPT_VARS(sid);
     di = find_var_in_ht(ht, 0, name, TRUE);
     if (di == NULL)
+    {
+	if (si->sn_autoload_prefix != NULL)
+	{
+	    hashitem_T *hi;
+
+	    // A variable exported from an autoload script is in the global
+	    // variables, we can find it in the all_vars table.
+	    hi = hash_find(&si->sn_all_vars.dv_hashtab, name);
+	    if (!HASHITEM_EMPTY(hi))
+		return HI2SAV(hi)->sav_var_vals_idx;
+	}
 	return -2;
+    }
 
     // Now find the svar_T index in sn_var_vals.
     for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
