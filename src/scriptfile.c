@@ -274,7 +274,7 @@ get_new_scriptitem(int *error)
 {
     static scid_T   last_current_SID = 0;
     int		    sid = ++last_current_SID;
-    scriptitem_T    *si;
+    scriptitem_T    *si = NULL;
 
     if (ga_grow(&script_items, (int)(sid - script_items.ga_len)) == FAIL)
     {
@@ -305,8 +305,10 @@ get_new_scriptitem(int *error)
 # endif
     }
 
-    // Used to check script variable index is still valid.
-    si->sn_script_seq = current_sctx.sc_seq;
+    // "si" can't be NULL, check only to avoid a compiler warning
+    if (si != NULL)
+	// Used to check script variable index is still valid.
+	si->sn_script_seq = current_sctx.sc_seq;
 
     return sid;
 }
