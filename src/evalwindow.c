@@ -836,6 +836,56 @@ f_win_id2win(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "win_move_separator()" function
+ */
+    void
+f_win_move_separator(typval_T *argvars, typval_T *rettv)
+{
+    win_T	*wp;
+    int		offset;
+
+    rettv->vval.v_number = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    if (wp == NULL || win_valid_popup(wp))
+	return;
+
+    offset = (int)tv_get_number(&argvars[1]);
+    win_drag_vsep_line(wp, offset);
+    rettv->vval.v_number = TRUE;
+}
+
+/*
+ * "win_move_statusline()" function
+ */
+    void
+f_win_move_statusline(typval_T *argvars, typval_T *rettv)
+{
+    win_T	*wp;
+    int		offset;
+
+    rettv->vval.v_number = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL))
+	return;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    if (wp == NULL || win_valid_popup(wp))
+	return;
+
+    offset = (int)tv_get_number(&argvars[1]);
+    win_drag_status_line(wp, offset);
+    rettv->vval.v_number = TRUE;
+}
+
+/*
  * "win_screenpos()" function
  */
     void
