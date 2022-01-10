@@ -2210,6 +2210,7 @@ may_prefix_autoload(char_u *name)
 	    {
 		vim_snprintf((char *)res, len, "%s%s",
 					     si->sn_autoload_prefix, basename);
+		vim_free(name);
 		return res;
 	    }
 	}
