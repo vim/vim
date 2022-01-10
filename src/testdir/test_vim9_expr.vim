@@ -3147,6 +3147,22 @@ def Test_expr7_method_call()
   CheckDefExecFailure(lines, 'E1013:')
 enddef
 
+def Test_expr7_method_call_linebreak()
+  # this was giving an error when skipping over the expression
+  var lines =<< trim END
+      vim9script
+      def Test()
+        var a: dict<any> = {b: {}}
+        a.b->extend({f1: 1,
+                         f2: 2})
+        echo a
+      enddef
+      defcompile
+      assert_equal('', v:errmsg)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 
 def Test_expr7_not()
   var lines =<< trim END
