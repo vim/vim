@@ -3049,6 +3049,14 @@ def Test_vim9_autoload()
       assert_false(exists('g:prefixed_loaded'))
       assert_equal('test', prefixed.Gettest())
       assert_equal('yes', g:prefixed_loaded)
+      assert_equal('name', prefixed.name)
+  END
+  CheckScriptSuccess(lines)
+
+  # can also get the items by autoload name
+  lines =<< trim END
+      call assert_equal('test', prefixed#Gettest())
+      call assert_equal('name', prefixed#name)
   END
   CheckScriptSuccess(lines)
 

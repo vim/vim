@@ -4080,8 +4080,11 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 		eap->skip = TRUE;
 	}
 
-//	if (is_export)
-//	    name = may_prefix_autoload(name);
+	// For "export def FuncName()" in an autoload script the function name
+	// is stored with the legacy autoload name "dir#script#FuncName" so
+	// that it can also be found in legacy script.
+	if (is_export)
+	    name = may_prefix_autoload(name);
     }
 
     // An error in a function call during evaluation of an expression in magic

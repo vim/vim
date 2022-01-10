@@ -1711,6 +1711,7 @@ free_scriptnames(void)
 #  ifdef FEAT_PROFILE
 	ga_clear(&si->sn_prl_ga);
 #  endif
+	vim_free(si->sn_autoload_prefix);
 	vim_free(si);
     }
     ga_clear(&script_items);
@@ -2142,6 +2143,41 @@ script_name_after_autoload(scriptitem_T *si)
 }
 
 /*
+ * For an autoload script "autoload/dir/script.vim" return the prefix
+ * "dir#script#" in allocated memory.
+ * Returns NULL if anything is wrong.
+ */
+    char_u *
+get_autoload_prefix(scriptitem_T *si)
+{
+    char_u *p = script_name_after_autoload(si);
+    char_u *prefix;
+
+    if (p == NULL)
+	return NULL;
+    prefix = vim_strsave(p);
+    if (prefix == NULL)
+	return NULL;
+
+    // replace all '/' with '#' and locate ".vim" at the end
+    for (p = prefix; *p != NUL; p += mb_ptr2len(p))
+    {
+	if (vim_ispathsep(*p))
+	    *p = '#';
+	else if (STRCMP(p, ".vim") == 0)
+	{
+	    p[0] = '#';
+	    p[1] = NUL;
+	    return prefix;
+	}
+    }
+
+    // did not find ".vim" at the end
+    vim_free(prefix);
+    return NULL;
+}
+
+/*
  * If in a Vim9 autoload script return "name" with the autoload prefix for the
  * script.  If successful "name" is freed, the returned name is allocated.
  * Otherwise it returns "name" unmodified.
@@ -2153,37 +2189,28 @@ may_prefix_autoload(char_u *name)
     {
 	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
-	if (si->sn_is_autoload)
+	if (si->sn_autoload_prefix != NULL)
 	{
-	    char_u *p = script_name_after_autoload(si);
+	    char_u  *basename = name;
+	    size_t  len;
+	    char_u  *res;
 
-	    if (p != NULL)
+	    if (*name == K_SPECIAL)
 	    {
-		char_u *tail = vim_strsave(p);
+		char_u *p = vim_strchr(name, '_');
 
-		if (tail != NULL)
-		{
-		    for (p = tail; *p != NUL; p += mb_ptr2len(p))
-		    {
-			if (vim_ispathsep(*p))
-			    *p = '#';
-			else if (STRCMP(p, ".vim"))
-			{
-			    size_t  len = (p - tail) + STRLEN(name) + 2;
-			    char_u  *res = alloc(len);
+		// skip over "<SNR>99_"
+		if (p != NULL)
+		    basename = p + 1;
+	    }
 
-			    if (res == NULL)
-				break;
-			    *p = NUL;
-			    vim_snprintf((char *)res, len, "%s#%s", tail, name);
-			    vim_free(name);
-			    vim_free(tail);
-			    return res;
-			}
-		    }
-		}
-		// did not find ".vim" at the end
-		vim_free(tail);
+	    len = STRLEN(si->sn_autoload_prefix) + STRLEN(basename) + 2;
+	    res = alloc(len);
+	    if (res != NULL)
+	    {
+		vim_snprintf((char *)res, len, "%s%s",
+					     si->sn_autoload_prefix, basename);
+		return res;
 	    }
 	}
     }

@@ -132,7 +132,8 @@ ex_vim9script(exarg_T *eap UNUSED)
     }
     si->sn_state = SN_STATE_HAD_COMMAND;
 
-    si->sn_is_autoload = found_autoload;
+    // Store the prefix with the script.  It isused to find exported functions.
+    si->sn_autoload_prefix = get_autoload_prefix(si);
 
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     si->sn_version = SCRIPT_VERSION_VIM9;
@@ -663,22 +664,37 @@ find_exported(
     }
     else
     {
+	size_t	len = STRLEN(name);
 	char_u	buffer[200];
 	char_u	*funcname;
 
-	// it could be a user function.
-	if (STRLEN(name) < sizeof(buffer) - 15)
+	// It could be a user function.  Normally this is stored as
+	// "<SNR>99_name".  For an autoload script a function is stored with
+	// the autoload prefix: "dir#script#name".
+	if (script->sn_autoload_prefix != NULL)
+	    len += STRLEN(script->sn_autoload_prefix) + 2;
+	else
+	    len += 15;
+
+	if (len < sizeof(buffer))
 	    funcname = buffer;
 	else
 	{
-	    funcname = alloc(STRLEN(name) + 15);
+	    funcname = alloc(len);
 	    if (funcname == NULL)
 		return -1;
 	}
-	funcname[0] = K_SPECIAL;
-	funcname[1] = KS_EXTRA;
-	funcname[2] = (int)KE_SNR;
-	sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
+	if (script->sn_autoload_prefix != NULL)
+	{
+	    sprintf((char *)funcname, "%s%s", script->sn_autoload_prefix, name);
+	}
+	else
+	{
+	    funcname[0] = K_SPECIAL;
+	    funcname[1] = KS_EXTRA;
+	    funcname[2] = (int)KE_SNR;
+	    sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
+	}
 	*ufunc = find_func(funcname, FALSE, NULL);
 	if (funcname != buffer)
 	    vim_free(funcname);
@@ -782,6 +798,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 update_vim9_script_var(
 	int	    create,
 	dictitem_T  *di,
+	char_u	    *name,
 	int	    flags,
 	typval_T    *tv,
 	type_T	    **type,
@@ -801,7 +818,7 @@ update_vim9_script_var(
 	if (ga_grow(&si->sn_var_vals, 1) == FAIL)
 	    return;
 
-	hi = hash_find(&si->sn_all_vars.dv_hashtab, di->di_key);
+	hi = hash_find(&si->sn_all_vars.dv_hashtab, name);
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    // Variable with this name exists, either in this block or in
@@ -833,7 +850,7 @@ update_vim9_script_var(
 	    // svar_T and create a new sallvar_T.
 	    sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
 	    newsav = (sallvar_T *)alloc_clear(
-				       sizeof(sallvar_T) + STRLEN(di->di_key));
+				       sizeof(sallvar_T) + STRLEN(name));
 	    if (newsav == NULL)
 		return;
 
@@ -843,7 +860,7 @@ update_vim9_script_var(
 	    sv->sv_export = is_export;
 	    newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	    ++si->sn_var_vals.ga_len;
-	    STRCPY(&newsav->sav_key, di->di_key);
+	    STRCPY(&newsav->sav_key, name);
 	    sv->sv_name = newsav->sav_key;
 	    newsav->sav_di = di;
 	    newsav->sav_block_id = si->sn_current_block_id;

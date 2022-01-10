@@ -1864,7 +1864,9 @@ typedef struct
     int		sn_state;	// SN_STATE_ values
     char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
     char	sn_is_vimrc;	// .vimrc file, do not restore 'cpo'
-    char	sn_is_autoload;	// "vim9script autoload"
+
+    // for "vim9script autoload" this is "dir#scriptname#"
+    char_u	*sn_autoload_prefix;
 
 # ifdef FEAT_PROFILE
     int		sn_prof_on;	// TRUE when script is/was profiled

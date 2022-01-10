@@ -3339,10 +3339,12 @@ set_var_const(
     dictitem_T	*di;
     typval_T	*dest_tv = NULL;
     char_u	*varname;
+    char_u	*name_tofree = NULL;
     hashtab_T	*ht = NULL;
     int		is_script_local;
     int		vim9script = in_vim9script();
     int		var_in_vim9script;
+    int		var_in_autoload = FALSE;
     int		flags = flags_arg;
     int		free_tv_arg = !copy;  // free tv_arg if not used
 
@@ -3353,13 +3355,34 @@ set_var_const(
 	varname = name;
     }
     else
-	ht = find_var_ht(name, &varname);
+    {
+	if (in_vim9script() && SCRIPT_ID_VALID(current_sctx.sc_sid)
+		&& SCRIPT_ITEM(current_sctx.sc_sid)->sn_autoload_prefix != NULL
+		&& is_export)
+	{
+	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+	    size_t	 len = STRLEN(name) + STRLEN(si->sn_autoload_prefix) + 1;
+
+	    // In a vim9 autoload script an exported variable is put in the
+	    // global namespace with the autoload prefix.
+	    var_in_autoload = TRUE;
+	    varname = alloc(len);
+	    if (varname == NULL)
+		goto failed;
+	    name_tofree = varname;
+	    vim_snprintf((char *)varname, len, "%s%s",
+						 si->sn_autoload_prefix, name);
+	    ht = &globvarht;
+	}
+	else
+	    ht = find_var_ht(name, &varname);
+    }
     if (ht == NULL || *varname == NUL)
     {
 	semsg(_(e_illegal_variable_name_str), name);
 	goto failed;
     }
-    is_script_local = ht == get_script_local_ht() || sid != 0;
+    is_script_local = ht == get_script_local_ht() || sid != 0 || var_in_autoload;
 
     if (vim9script
 	    && !is_script_local
@@ -3470,9 +3493,10 @@ set_var_const(
 
 		// A Vim9 script-local variable is also present in sn_all_vars
 		// and sn_var_vals.  It may set "type" from "tv".
-		if (var_in_vim9script)
-		    update_vim9_script_var(FALSE, di, flags, tv, &type,
-					 (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
+		if (var_in_vim9script || var_in_autoload)
+		    update_vim9_script_var(FALSE, di,
+			    var_in_autoload ? name : di->di_key, flags,
+			    tv, &type, (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
 	    }
 
 	    // existing variable, need to clear the value
@@ -3550,10 +3574,11 @@ set_var_const(
 		goto failed;
 	    }
 
-	    // Make sure the variable name is valid.  In Vim9 script an autoload
-	    // variable must be prefixed with "g:".
+	    // Make sure the variable name is valid.  In Vim9 script an
+	    // autoload variable must be prefixed with "g:" unless in an
+	    // autoload script.
 	    if (!valid_varname(varname, -1, !vim9script
-					       || STRNCMP(name, "g:", 2) == 0))
+			    || STRNCMP(name, "g:", 2) == 0 || var_in_autoload))
 		goto failed;
 
 	    di = alloc(sizeof(dictitem_T) + STRLEN(varname));
@@ -3571,9 +3596,10 @@ set_var_const(
 
 	    // A Vim9 script-local variable is also added to sn_all_vars and
 	    // sn_var_vals. It may set "type" from "tv".
-	    if (var_in_vim9script)
-		update_vim9_script_var(TRUE, di, flags, tv, &type,
-					 (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
+	    if (var_in_vim9script || var_in_autoload)
+		update_vim9_script_var(TRUE, di,
+			var_in_autoload ? name : di->di_key, flags,
+			      tv, &type, (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
 	}
 
 	dest_tv = &di->di_tv;
@@ -3618,6 +3644,7 @@ set_var_const(
 	item_lock(dest_tv, DICT_MAXNEST, TRUE, TRUE);
 
 failed:
+    vim_free(name_tofree);
     if (free_tv_arg)
 	clear_tv(tv_arg);
 }
