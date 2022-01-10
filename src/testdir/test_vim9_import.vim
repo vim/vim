@@ -332,7 +332,7 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_missing_name_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1259:', '', 3)
+  assert_fails('source Ximport.vim', 'E1259:', '', 1)
 
   var import_assign_wrong_type_lines =<< trim END
     vim9script
