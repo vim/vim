@@ -1,4 +1,5 @@
 " Test import/export of the Vim9 script language.
+" Also the autoload mechanism.
 
 source check.vim
 source term_util.vim
@@ -310,6 +311,28 @@ def Test_vim9_import_export()
   END
   writefile(import_redefining_lines, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1213: Redefining imported item "exported"', '', 3)
+
+  var import_missing_dot_lines =<< trim END
+    vim9script
+    import './Xexport.vim' as expo
+    def Test()
+      expo = 9
+    enddef
+    defcompile
+  END
+  writefile(import_missing_dot_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1258:', '', 1)
+
+  var import_missing_name_lines =<< trim END
+    vim9script
+    import './Xexport.vim' as expo
+    def Test()
+      expo.99 = 9
+    enddef
+    defcompile
+  END
+  writefile(import_missing_name_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1259:', '', 3)
 
   var import_assign_wrong_type_lines =<< trim END
     vim9script
@@ -1065,6 +1088,228 @@ def Test_import_gone_when_sourced_twice()
   delete('XexportScript.vim')
   delete('XscriptImport.vim')
   unlet g:guard
+enddef
+
+" test using an auto-loaded function and variable
+def Test_vim9_autoload()
+  var lines =<< trim END
+     vim9script
+     def some#gettest(): string
+       return 'test'
+     enddef
+     g:some#name = 'name'
+     g:some#dict = {key: 'value'}
+
+     def some#varargs(a1: string, ...l: list<string>): string
+       return a1 .. l[0] .. l[1]
+     enddef
+  END
+
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/some.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  assert_equal('test', g:some#gettest())
+  assert_equal('name', g:some#name)
+  assert_equal('value', g:some#dict.key)
+  g:some#other = 'other'
+  assert_equal('other', g:some#other)
+
+  assert_equal('abc', some#varargs('a', 'b', 'c'))
+
+  # upper case script name works
+  lines =<< trim END
+     vim9script
+     def Other#getOther(): string
+       return 'other'
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/Other.vim')
+  assert_equal('other', g:Other#getOther())
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
+def Test_vim9script_autoload()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  # when using "vim9script autoload" prefix is not needed
+  var lines =<< trim END
+     vim9script autoload
+     g:prefixed_loaded = 'yes'
+
+     export def Gettest(): string
+       return 'test'
+     enddef
+
+     export func GetSome()
+       return 'some'
+     endfunc
+
+     export var name = 'name'
+     export final fname = 'final'
+     export const cname = 'const'
+  END
+  writefile(lines, 'Xdir/autoload/prefixed.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'prefixed.vim'
+      assert_false(exists('g:prefixed_loaded'))
+      assert_equal('test', prefixed.Gettest())
+      assert_equal('yes', g:prefixed_loaded)
+
+      assert_equal('some', prefixed.GetSome())
+      assert_equal('name', prefixed.name)
+      assert_equal('final', prefixed.fname)
+      assert_equal('const', prefixed.cname)
+  END
+  CheckScriptSuccess(lines)
+
+  # can also get the items by autoload name
+  lines =<< trim END
+      call assert_equal('test', prefixed#Gettest())
+      call assert_equal('some', prefixed#GetSome())
+      call assert_equal('name', prefixed#name)
+      call assert_equal('final', prefixed#fname)
+      call assert_equal('const', prefixed#cname)
+  END
+  CheckScriptSuccess(lines)
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
+def Test_vim9script_autoload_fails()
+  var lines =<< trim END
+      vim9script autoload
+      var n = 0
+  END
+  CheckScriptFailure(lines, 'E1263:')
+enddef
+
+def Test_import_autoload_fails()
+  var lines =<< trim END
+      vim9script
+      import autoload autoload 'prefixed.vim'
+  END
+  CheckScriptFailure(lines, 'E121: Undefined variable: autoload')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'doesNotExist.vim'
+  END
+  CheckScriptFailure(lines, 'E1264:')
+enddef
+
+" test disassembling an auto-loaded function starting with "debug"
+def Test_vim9_autoload_disass()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+     vim9script
+     def debugit#test(): string
+       return 'debug'
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/debugit.vim')
+
+  lines =<< trim END
+     vim9script
+     def profileit#test(): string
+       return 'profile'
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/profileit.vim')
+
+  lines =<< trim END
+    vim9script
+    assert_equal('debug', debugit#test())
+    disass debugit#test
+    assert_equal('profile', profileit#test())
+    disass profileit#test
+  END
+  CheckScriptSuccess(lines)
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
+" test using a vim9script that is auto-loaded from an autocmd
+def Test_vim9_aucmd_autoload()
+  var lines =<< trim END
+     vim9script
+     def foo#test()
+         echomsg getreg('"')
+     enddef
+  END
+
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/foo.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  augroup test
+    autocmd TextYankPost * call foo#test()
+  augroup END
+
+  normal Y
+
+  augroup test
+    autocmd!
+  augroup END
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
+" This was causing a crash because suppress_errthrow wasn't reset.
+def Test_vim9_autoload_error()
+  var lines =<< trim END
+      vim9script
+      def crash#func()
+          try
+              for x in List()
+              endfor
+          catch
+          endtry
+          g:ok = true
+      enddef
+      fu List()
+          invalid
+      endfu
+      try
+          alsoinvalid
+      catch /wontmatch/
+      endtry
+  END
+  call mkdir('Xruntime/autoload', 'p')
+  call writefile(lines, 'Xruntime/autoload/crash.vim')
+
+  # run in a separate Vim to avoid the side effects of assert_fails()
+  lines =<< trim END
+    exe 'set rtp^=' .. getcwd() .. '/Xruntime'
+    call crash#func()
+    call writefile(['ok'], 'Xdidit')
+    qall!
+  END
+  writefile(lines, 'Xscript')
+  RunVim([], [], '-S Xscript')
+  assert_equal(['ok'], readfile('Xdidit'))
+
+  delete('Xdidit')
+  delete('Xscript')
+  delete('Xruntime', 'rf')
+
+  lines =<< trim END
+    vim9script
+    var foo#bar = 'asdf'
+  END
+  CheckScriptFailure(lines, 'E461: Illegal variable name: foo#bar', 2)
 enddef
 
 

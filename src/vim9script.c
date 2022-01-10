@@ -260,11 +260,11 @@ ex_export(exarg_T *eap)
     (void)find_ex_command(eap, NULL, lookup_scriptitem, NULL);
     switch (eap->cmdidx)
     {
-	case CMD_let:
 	case CMD_var:
 	case CMD_final:
 	case CMD_const:
 	case CMD_def:
+	case CMD_function:
 	// case CMD_class:
 	    is_export = TRUE;
 	    do_cmdline(eap->cmd, eap->getline, eap->cookie,
