@@ -1184,6 +1184,44 @@ def Test_vim9script_autoload()
   &rtp = save_rtp
 enddef
 
+def Test_autoload_mapping()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script autoload
+
+      g:toggle_loaded = 'yes'
+
+      export def Toggle(): string
+        return ":g:toggle_called = 'yes'\<CR>"
+      enddef
+  END
+  writefile(lines, 'Xdir/autoload/toggle.vim')
+
+  lines =<< trim END
+      vim9script
+
+      import autoload 'toggle.vim'
+
+      nnoremap <silent> <expr> tt toggle.Toggle() 
+  END
+  CheckScriptSuccess(lines)
+  assert_false(exists("g:toggle_loaded"))
+  assert_false(exists("g:toggle_called"))
+
+  feedkeys("tt", 'xt')
+  assert_equal('yes', g:toggle_loaded)
+  assert_equal('yes', g:toggle_called)
+
+  nunmap tt
+  unlet g:toggle_loaded
+  unlet g:toggle_called
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_vim9script_autoload_fails()
   var lines =<< trim END
       vim9script autoload

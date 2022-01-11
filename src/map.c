@@ -260,6 +260,7 @@ map_add(
     {
 	mp->m_script_ctx.sc_sid = sid;
 	mp->m_script_ctx.sc_lnum = lnum;
+	mp->m_script_ctx.sc_version = in_vim9script() ? SCRIPT_VERSION_VIM9 : 0;
     }
     else
     {
@@ -1565,7 +1566,7 @@ check_abbr(
 	    }
 #ifdef FEAT_EVAL
 	    if (mp->m_expr)
-		s = eval_map_expr(mp->m_str, c);
+		s = eval_map_expr(mp, c);
 	    else
 #endif
 		s = mp->m_str;
@@ -1600,7 +1601,7 @@ check_abbr(
  */
     char_u *
 eval_map_expr(
-    char_u	*str,
+    mapblock_T	*mp,
     int		c)	    // NUL or typed character for abbreviation
 {
     char_u	*res;
@@ -1609,10 +1610,12 @@ eval_map_expr(
     pos_T	save_cursor;
     int		save_msg_col;
     int		save_msg_row;
+    scid_T	save_sctx_sid = current_sctx.sc_sid;
+    int		save_sctx_version = current_sctx.sc_version;
 
     // Remove escaping of CSI, because "str" is in a format to be used as
     // typeahead.
-    expr = vim_strsave(str);
+    expr = vim_strsave(mp->m_str);
     if (expr == NULL)
 	return NULL;
     vim_unescape_csi(expr);
@@ -1625,12 +1628,22 @@ eval_map_expr(
     save_cursor = curwin->w_cursor;
     save_msg_col = msg_col;
     save_msg_row = msg_row;
+    if (mp->m_script_ctx.sc_version == SCRIPT_VERSION_VIM9)
+    {
+	current_sctx.sc_sid = mp->m_script_ctx.sc_sid;
+	current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+    }
+
+    // Note: the evaluation may make "mp" invalid.
     p = eval_to_string(expr, FALSE);
+
     --textwinlock;
     --ex_normal_lock;
     curwin->w_cursor = save_cursor;
     msg_col = save_msg_col;
     msg_row = save_msg_row;
+    current_sctx.sc_sid = save_sctx_sid;
+    current_sctx.sc_version = save_sctx_version;
 
     vim_free(expr);
 
