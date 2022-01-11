@@ -707,13 +707,26 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     {
 	pos_T	curpos = wp->w_cursor;
 	char_u	cwd[MAXPATHL];
-	int	cwd_status;
+	int	cwd_status = FAIL;
 #ifdef FEAT_AUTOCHDIR
 	char_u	autocwd[MAXPATHL];
 	int	apply_acd = FALSE;
 #endif
 
-	cwd_status = mch_dirname(cwd, MAXPATHL);
+	// Getting and setting directory can be slow on some systems, only do
+	// this when the current or target window/tab have a local directory or
+	// 'acd' is set.
+	if (curwin != wp
+		&& (curwin->w_localdir != NULL
+		    || wp->w_localdir != NULL
+		    || (curtab != tp
+			&& (curtab->tp_localdir != NULL
+			    || tp->tp_localdir != NULL))
+#ifdef FEAT_AUTOCHDIR
+		    || p_acd
+#endif
+		    ))
+	    cwd_status = mch_dirname(cwd, MAXPATHL);
 
 #ifdef FEAT_AUTOCHDIR
 	// If 'acd' is set, check we are using that directory.  If yes, then
