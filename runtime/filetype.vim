@@ -1214,6 +1214,9 @@ au BufNewFile,BufRead *.xom,*.xin		setf omnimark
 " OPAM
 au BufNewFile,BufRead opam,*.opam,*.opam.template setf opam
 
+" OpenFOAM
+au BufNewFile,BufRead [a-zA-Z0-9]*Dict\(.*\)\=,[a-zA-Z]*Properties\(.*\)\=,*Transport\(.*\),fvSchemes,fvSolution,fvConstrains,fvModels,*/constant/g,*/0\(\.orig\)\=/* call dist#ft#FTfoam()
+
 " OpenROAD
 au BufNewFile,BufRead *.or			setf openroad
 
