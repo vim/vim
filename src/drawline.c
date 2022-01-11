@@ -2043,9 +2043,10 @@ win_line(
 			if (n_extra < 0)
 			    n_extra = 0;
 		    }
-		    if (on_last_col)
+		    if (on_last_col && c != TAB)
 			// Do not continue search/match highlighting over the
-			// line break.
+			// line break, but for TABs the highlighting should
+			// include the complete width of the character
 			search_attr = 0;
 
 		    if (c == TAB && n_extra + col > wp->w_width)
