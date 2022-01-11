@@ -1871,9 +1871,13 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
     static ufunc_T *
 find_func_with_sid(char_u *name, int sid)
 {
-    hashitem_T	*hi;
-    char_u	buffer[200];
+    hashitem_T	    *hi;
+    char_u	    buffer[200];
 
+    if (!SCRIPT_ID_VALID(sid))
+	return NULL;	// not in a script
+
+    // A script-local function is stored as "<SNR>99_name".
     buffer[0] = K_SPECIAL;
     buffer[1] = KS_EXTRA;
     buffer[2] = (int)KE_SNR;
@@ -1882,6 +1886,46 @@ find_func_with_sid(char_u *name, int sid)
     hi = hash_find(&func_hashtab, buffer);
     if (!HASHITEM_EMPTY(hi))
 	return HI2UF(hi);
+    return NULL;
+}
+
+/*
+ * Find a function "name" in script "sid" prefixing the autoload prefix.
+ */
+    static ufunc_T *
+find_func_with_prefix(char_u *name, int sid)
+{
+    hashitem_T	    *hi;
+    char_u	    buffer[200];
+    scriptitem_T    *si;
+
+    if (vim_strchr(name, AUTOLOAD_CHAR) != 0)
+	return NULL;	// already has the prefix
+    if (!SCRIPT_ID_VALID(sid))
+	return NULL;	// not in a script
+    si = SCRIPT_ITEM(sid);
+    if (si->sn_autoload_prefix != NULL)
+    {
+	size_t	len = STRLEN(si->sn_autoload_prefix) + STRLEN(name) + 1;
+	char_u	*auto_name;
+
+	// An exported function in an autoload script is stored as
+	// "dir#path#name".
+	if (len < sizeof(buffer))
+	    auto_name = buffer;
+	else
+	    auto_name = alloc(len);
+	if (auto_name != NULL)
+	{
+	    vim_snprintf((char *)auto_name, len, "%s%s",
+						 si->sn_autoload_prefix, name);
+	    hi = hash_find(&func_hashtab, auto_name);
+	    if (auto_name != buffer)
+		vim_free(auto_name);
+	    if (!HASHITEM_EMPTY(hi))
+		return HI2UF(hi);
+	}
+    }
 
     return NULL;
 }
@@ -1917,7 +1961,9 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx UNUSED)
     if (!HASHITEM_EMPTY(hi))
 	return HI2UF(hi);
 
-    return NULL;
+    // Find autoload function if this is an autoload script.
+    return find_func_with_prefix(name[0] == 's' && name[1] == ':'
+				       ? name + 2 : name, current_sctx.sc_sid);
 }
 
 /*

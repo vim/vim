@@ -1146,8 +1146,8 @@ def Test_vim9script_autoload()
        return 'test'
      enddef
 
-     export func GetSome()
-       return 'some'
+     export func GetMore()
+       return Gettest() .. 'more'
      endfunc
 
      export var name = 'name'
@@ -1163,7 +1163,7 @@ def Test_vim9script_autoload()
       assert_equal('test', prefixed.Gettest())
       assert_equal('yes', g:prefixed_loaded)
 
-      assert_equal('some', prefixed.GetSome())
+      assert_equal('testmore', prefixed.GetMore())
       assert_equal('name', prefixed.name)
       assert_equal('final', prefixed.fname)
       assert_equal('const', prefixed.cname)
@@ -1173,7 +1173,7 @@ def Test_vim9script_autoload()
   # can also get the items by autoload name
   lines =<< trim END
       call assert_equal('test', prefixed#Gettest())
-      call assert_equal('some', prefixed#GetSome())
+      call assert_equal('testmore', prefixed#GetMore())
       call assert_equal('name', prefixed#name)
       call assert_equal('final', prefixed#fname)
       call assert_equal('const', prefixed#cname)
