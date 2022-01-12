@@ -1796,7 +1796,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
 		p < buf + readlen || (readlen <= 0 && (prevlen > 0 || binary));
 		++p)
 	{
-	    if (*p == '\n' || readlen <= 0)
+	    if (readlen <= 0 || *p == '\n')
 	    {
 		listitem_T  *li;
 		char_u	    *s	= NULL;
