@@ -1185,6 +1185,35 @@ def Test_vim9script_autoload()
   END
   CheckScriptSuccess(lines)
 
+  unlet g:prefixed_loaded
+  unlet g:expected_loaded
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
+def Test_vim9script_autoload_call()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+     vim9script autoload
+
+     export def Getother()
+       g:result = 'other'
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/other.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'other.vim'
+      call other.Getother()
+      assert_equal('other', g:result)
+  END
+  CheckScriptSuccess(lines)
+
+  unlet g:result
   delete('Xdir', 'rf')
   &rtp = save_rtp
 enddef

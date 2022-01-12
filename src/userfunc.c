@@ -3744,6 +3744,30 @@ trans_function_name(
 	if (name == lv.ll_exp_name)
 	    name = NULL;
     }
+    else if (lv.ll_sid > 0)
+    {
+	scriptitem_T	*si = SCRIPT_ITEM(lv.ll_sid);
+	int		cc = *lv.ll_name_end;
+
+	// function in another script.  Prefix <SNR>99_ or the autoload prefix.
+	*lv.ll_name_end = NUL;
+	if (si->sn_autoload_prefix != NULL)
+	{
+	    name = concat_str(si->sn_autoload_prefix, lv.ll_name);
+	}
+	else
+	{
+	    sid_buf[0] = K_SPECIAL;
+	    sid_buf[1] = KS_EXTRA;
+	    sid_buf[2] = (int)KE_SNR;
+	    vim_snprintf((char *)sid_buf + 3, sizeof(sid_buf) - 3,
+					    "%ld_", (long)current_sctx.sc_sid);
+	    name = concat_str(sid_buf, lv.ll_name);
+	}
+	*lv.ll_name_end = cc;
+	*pp = end;
+	goto theend;
+    }
     else if (!(flags & TFN_NO_DEREF))
     {
 	len = (int)(end - *pp);
