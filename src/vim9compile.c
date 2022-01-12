@@ -623,10 +623,12 @@ find_imported(char_u *name, size_t len, int load, cctx_T *cctx)
 
     if (ret != NULL && load && ret->imp_flags == IMP_FLAGS_AUTOLOAD)
     {
+	scid_T dummy;
+
 	// script found before but not loaded yet
 	ret->imp_flags = 0;
 	(void)do_source(SCRIPT_ITEM(ret->imp_sid)->sn_name, FALSE,
-							      DOSO_NONE, NULL);
+							    DOSO_NONE, &dummy);
     }
     return ret;
 }

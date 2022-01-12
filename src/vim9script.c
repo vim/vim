@@ -250,6 +250,8 @@ ex_incdec(exarg_T *eap)
     void
 ex_export(exarg_T *eap)
 {
+    int	    prev_did_emsg = did_emsg;
+
     if (!in_vim9script())
     {
 	emsg(_(e_export_can_only_be_used_in_vim9script));
@@ -273,12 +275,14 @@ ex_export(exarg_T *eap)
 	    // The command will reset "is_export" when exporting an item.
 	    if (is_export)
 	    {
-		emsg(_(e_export_with_invalid_argument));
+		if (did_emsg == prev_did_emsg)
+		    emsg(_(e_export_with_invalid_argument));
 		is_export = FALSE;
 	    }
 	    break;
 	default:
-	    emsg(_(e_invalid_command_after_export));
+	    if (did_emsg == prev_did_emsg)
+		emsg(_(e_invalid_command_after_export));
 	    break;
     }
 }
@@ -589,14 +593,17 @@ handle_import(
 		&& check_defined(as_name, STRLEN(as_name), cctx, FALSE) == FAIL)
 	    goto erret;
 
-	imported = new_imported(import_gap);
 	if (imported == NULL)
-	    goto erret;
-	imported->imp_name = as_name;
-	as_name = NULL;
-	imported->imp_sid = sid;
-	if (is_autoload)
-	    imported->imp_flags = IMP_FLAGS_AUTOLOAD;
+	{
+	    imported = new_imported(import_gap);
+	    if (imported == NULL)
+		goto erret;
+	    imported->imp_name = as_name;
+	    as_name = NULL;
+	    imported->imp_sid = sid;
+	    if (is_autoload)
+		imported->imp_flags = IMP_FLAGS_AUTOLOAD;
+	}
     }
 
 erret:

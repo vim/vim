@@ -1140,7 +1140,7 @@ def Test_vim9script_autoload()
   # when using "vim9script autoload" prefix is not needed
   var lines =<< trim END
      vim9script autoload
-     g:prefixed_loaded = 'yes'
+     g:prefixed_loaded += 1
 
      export def Gettest(): string
        return 'test'
@@ -1156,18 +1156,23 @@ def Test_vim9script_autoload()
   END
   writefile(lines, 'Xdir/autoload/prefixed.vim')
 
+  g:prefixed_loaded = 0
+  g:expected_loaded = 0
   lines =<< trim END
       vim9script
       import autoload 'prefixed.vim'
-      assert_false(exists('g:prefixed_loaded'))
+      assert_equal(g:expected_loaded, g:prefixed_loaded)
       assert_equal('test', prefixed.Gettest())
-      assert_equal('yes', g:prefixed_loaded)
+      assert_equal(1, g:prefixed_loaded)
 
       assert_equal('testmore', prefixed.GetMore())
       assert_equal('name', prefixed.name)
       assert_equal('final', prefixed.fname)
       assert_equal('const', prefixed.cname)
   END
+  CheckScriptSuccess(lines)
+  # can source it again, autoload script not loaded again
+  g:expected_loaded = 1
   CheckScriptSuccess(lines)
 
   # can also get the items by autoload name
