@@ -714,7 +714,6 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
 
 /*
  * Generate an ISN_PUSHFUNC instruction with name "name".
- * Consumes "name".
  */
     int
 generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
@@ -727,7 +726,8 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 	return FAIL;
     if (name == NULL)
 	funcname = NULL;
-    else if (*name == K_SPECIAL)  // script-local
+    else if (*name == K_SPECIAL				    // script-local
+	    || vim_strchr(name, AUTOLOAD_CHAR) != NULL)	    // autoload
 	funcname = vim_strsave(name);
     else
     {

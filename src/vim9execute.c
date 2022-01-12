@@ -2227,6 +2227,16 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    di = find_var_in_ht(ht, 0, iptr->isn_arg.string, TRUE);
 
+		    if (di == NULL && ht == get_globvar_ht())
+		    {
+			// may need to load autoload script
+			if (script_autoload(iptr->isn_arg.string, FALSE))
+			    di = find_var_in_ht(ht, 0,
+						   iptr->isn_arg.string, TRUE);
+			if (did_emsg)
+			    goto on_error;
+		    }
+
 		    if (di == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;

@@ -1218,6 +1218,42 @@ def Test_vim9script_autoload_call()
   &rtp = save_rtp
 enddef
 
+def Test_import_autoload_postponed()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script autoload
+
+      g:loaded_postponed = 'true'
+      export var variable = 'bla'
+      export def Function(): string
+        return 'bla'
+      enddef
+  END
+  writefile(lines, 'Xdir/autoload/postponed.vim')
+
+  lines =<< trim END
+      vim9script
+
+      import autoload 'postponed.vim'
+      def Tryit()
+        echo postponed.variable
+        echo postponed.Function()
+      enddef
+      defcompile
+  END
+  CheckScriptSuccess(lines)
+  assert_false(exists('g:loaded_postponed'))
+  CheckScriptSuccess(lines + ['Tryit()'])
+  assert_equal('true', g:loaded_postponed)
+
+  unlet g:loaded_postponed
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_autoload_mapping()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp

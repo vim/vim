@@ -274,6 +274,8 @@ compile_load_scriptvar(
 	int	cc;
 	ufunc_T	*ufunc;
 	type_T	*type;
+	int	done = FALSE;
+	int	res = OK;
 
 	// TODO: if this is an autoload import do something else.
 	// Need to lookup the member.
@@ -296,11 +298,31 @@ compile_load_scriptvar(
 	cc = *p;
 	*p = NUL;
 
-	idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,
+	si = SCRIPT_ITEM(import->imp_sid);
+	if (si->sn_autoload_prefix != NULL
+					&& si->sn_state == SN_STATE_NOT_LOADED)
+	{
+	    char_u  *auto_name = concat_str(si->sn_autoload_prefix, exp_name);
+
+	    // autoload script must be loaded later, access by the autoload
+	    // name.
+	    if (cc == '(')
+		res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
+	    else
+		res = generate_LOAD(cctx, ISN_LOADG, 0, auto_name, &t_any);
+	    vim_free(auto_name);
+	    done = TRUE;
+	}
+	else
+	{
+	    idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,
 								   cctx, TRUE);
+	}
 	*p = cc;
 	p = skipwhite(p);
 	*end = p;
+	if (done)
+	    return res;
 
 	if (idx < 0)
 	{

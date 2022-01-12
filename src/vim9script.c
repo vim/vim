@@ -488,7 +488,16 @@ handle_import(
 	// we need a scriptitem without loading the script
 	sid = find_script_in_rtp(from_name);
 	vim_free(from_name);
-	res = SCRIPT_ID_VALID(sid) ? OK : FAIL;
+	if (SCRIPT_ID_VALID(sid))
+	{
+	    scriptitem_T    *si = SCRIPT_ITEM(sid);
+
+	    if (si->sn_autoload_prefix == NULL)
+		si->sn_autoload_prefix = get_autoload_prefix(si);
+	    res = OK;
+	}
+	else
+	    res = FAIL;
     }
     else
     {
