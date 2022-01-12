@@ -667,7 +667,6 @@ def Test_try_catch_throw()
     finally
       return 6
     endtry
-    return -1
   enddef
   assert_equal(6, ReturnInFinally())
 
@@ -706,6 +705,64 @@ def Test_try_catch_throw()
       endif
   END
   CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_try_ends_in_return()
+  var lines =<< trim END
+      vim9script
+      def Foo(): string
+        try
+          return 'foo'
+        catch
+          return 'caught'
+        endtry
+      enddef
+      assert_equal('foo', Foo())
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Foo(): string
+        try
+          return 'foo'
+        catch
+          return 'caught'
+        endtry
+        echo 'notreached'
+      enddef
+      assert_equal('foo', Foo())
+  END
+  CheckScriptFailure(lines, 'E1095:')
+
+  lines =<< trim END
+      vim9script
+      def Foo(): string
+        try
+          return 'foo'
+        catch /x/
+          return 'caught'
+        endtry
+      enddef
+      assert_equal('foo', Foo())
+  END
+  CheckScriptFailure(lines, 'E1027:')
+
+  lines =<< trim END
+      vim9script
+      def Foo(): string
+        try
+          echo 'foo'
+        catch
+          echo 'caught'
+        finally
+          return 'done'
+        endtry
+      enddef
+      assert_equal('done', Foo())
+  END
+  CheckScriptSuccess(lines)
+
 enddef
 
 def Test_try_in_catch()

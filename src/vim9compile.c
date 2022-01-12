@@ -3041,7 +3041,6 @@ compile_def_function(
 		    break;
 	    case CMD_endtry:
 		    line = compile_endtry(p, &cctx);
-		    cctx.ctx_had_return = FALSE;
 		    break;
 	    case CMD_throw:
 		    line = compile_throw(p, &cctx);

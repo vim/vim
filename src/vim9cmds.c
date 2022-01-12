@@ -1343,6 +1343,8 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	emsg(_(e_catch_unreachable_after_catch_all));
 	return NULL;
     }
+    if (!cctx->ctx_had_return)
+	scope->se_u.se_try.ts_no_return = TRUE;
 
     if (cctx->ctx_skip != SKIP_YES)
     {
@@ -1498,6 +1500,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	    isn->isn_arg.jump.jump_where = this_instr;
 	    scope->se_u.se_try.ts_catch_label = 0;
 	}
+	scope->se_u.se_try.ts_has_finally = TRUE;
 	if (generate_instr(cctx, ISN_FINALLY) == NULL)
 	    return NULL;
     }
@@ -1566,6 +1569,14 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
 	}
     }
+
+    // If there is a finally clause that ends in return then we will return.
+    // If one of the blocks didn't end in "return" or we did not catch all
+    // exceptions reset the had_return flag.
+    if (!(scope->se_u.se_try.ts_has_finally && cctx->ctx_had_return)
+	    && (scope->se_u.se_try.ts_no_return
+		|| !scope->se_u.se_try.ts_caught_all))
+	cctx->ctx_had_return = FALSE;
 
     compile_endblock(cctx);
 
