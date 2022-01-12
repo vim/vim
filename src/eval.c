@@ -906,7 +906,7 @@ get_lval(
 							     NULL, TRUE) == -1)
 	    {
 		*p = cc;
-		return FAIL;
+		return NULL;
 	    }
 	    *p = cc;
 	}
@@ -5903,7 +5903,7 @@ handle_subscript(
 	    type_T	*type;
 
 	    // Found script from "import {name} as name", script item name must
-	    // follow.
+	    // follow.  "rettv->vval.v_number" has the script ID.
 	    if (**arg != '.')
 	    {
 		if (verbose)

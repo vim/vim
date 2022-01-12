@@ -2156,7 +2156,7 @@ get_autoload_prefix(scriptitem_T *si)
 
     if (p == NULL)
 	return NULL;
-    prefix = vim_strsave(p);
+    prefix = strlow_save(p);
     if (prefix == NULL)
 	return NULL;
 

@@ -1203,12 +1203,12 @@ def Test_vim9script_autoload_call()
        g:result = 'other'
      enddef
   END
-  writefile(lines, 'Xdir/autoload/other.vim')
+  writefile(lines, 'Xdir/autoload/another.vim')
 
   lines =<< trim END
       vim9script
-      import autoload 'other.vim'
-      call other.Getother()
+      import autoload 'another.vim'
+      call another.Getother()
       assert_equal('other', g:result)
   END
   CheckScriptSuccess(lines)
