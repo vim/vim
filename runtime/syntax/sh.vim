@@ -291,13 +291,15 @@ syn match shCaseStart	contained skipwhite skipnl "("			nextgroup=shCase,shCaseBa
 syn match shCaseLabel	contained skipwhite	"\%(\\.\|[-a-zA-Z0-9_*.]\)\+"	contains=shCharClass
 if exists("b:is_bash")
  ShFoldIfDoFor syn region	shCase	contained skipwhite skipnl matchgroup=shSnglCase start="\%(\\.\|[^#$()'" \t]\)\{-}\zs)"  end=";;" end=";&" end=";;&" end="esac"me=s-1	contains=@shCaseList	nextgroup=shCaseStart,shCase,shComment
+elseif exists("b:is_kornshell")
+ ShFoldIfDoFor syn region	shCase	contained skipwhite skipnl matchgroup=shSnglCase start="\%(\\.\|[^#$()'" \t]\)\{-}\zs)"  end=";;" end=";&" end="esac"me=s-1	contains=@shCaseList	nextgroup=shCaseStart,shCase,shComment
 else                                                                                                                     
  ShFoldIfDoFor syn region	shCase	contained skipwhite skipnl matchgroup=shSnglCase start="\%(\\.\|[^#$()'" \t]\)\{-}\zs)"  end=";;" end="esac"me=s-1		contains=@shCaseList	nextgroup=shCaseStart,shCase,shComment
 endif
 ShFoldIfDoFor syn region	shCaseEsac	matchgroup=shConditional start="\<case\>" end="\<esac\>"	contains=@shCaseEsacList
 
 syn keyword shCaseIn	contained skipwhite skipnl in			nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
-if exists("b:is_bash")
+if exists("b:is_bash") || exists("b:is_kornshell")
  syn region  shCaseExSingleQuote	matchgroup=shQuote start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
 elseif !exists("g:sh_no_error")
  syn region  shCaseExSingleQuote	matchgroup=Error start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
@@ -368,7 +370,7 @@ endif
 syn match   shNumber	"\<\d\+\>#\="
 syn match   shNumber	"\<-\=\.\=\d\+\>#\="
 syn match   shCtrlSeq	"\\\d\d\d\|\\[abcfnrtv0]"			contained
-if exists("b:is_bash")
+if exists("b:is_bash") || exists("b:is_kornshell")
  syn match   shSpecial	"[^\\]\(\\\\\)*\zs\\\o\o\o\|\\x\x\x\|\\c[^"]\|\\[abefnrtv]"	contained
  syn match   shSpecial	"^\(\\\\\)*\zs\\\o\o\o\|\\x\x\x\|\\c[^"]\|\\[abefnrtv]"	contained
  syn region  shExSingleQuote	matchgroup=shQuote start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial		nextgroup=shSpecialNxt
@@ -454,6 +456,11 @@ else
  syn region shSetList oneline matchgroup=shSet start="\<\(set\|export\|unset\)\>\ze[/a-zA-Z_]\@!" end="\ze[;|#)]\|$"	matchgroup=shSetListDelim end="\ze[}|);&]" matchgroup=NONE end="\ze\s\+[#=]"	contains=@shIdList
 endif
 
+" KornShell namespace: {{{1
+if exists("b:is_kornshell")
+ syn keyword shFunctionKey namespace skipwhite skipnl nextgroup=shFunctionTwo
+endif
+
 " Functions: {{{1
 if !exists("b:is_posix")
  syn keyword shFunctionKey function	skipwhite skipnl nextgroup=shFunctionTwo
@@ -484,6 +491,12 @@ syn match  shDerefSimple	"\${\d}"	nextgroup=@shNoZSList	nextgroup=shSpecialStart
 if exists("b:is_bash") || exists("b:is_kornshell") || exists("b:is_posix")
  syn region shDeref	matchgroup=PreProc start="\${##\=" end="}"	contains=@shDerefList	nextgroup=@shSpecialNoZS,shSpecialStart
  syn region shDeref	matchgroup=PreProc start="\${\$\$" end="}"	contains=@shDerefList	nextgroup=@shSpecialNoZS,shSpecialStart
+endif
+
+" ksh: ${.sh.*} variables: {{{1
+" ========================================
+if exists("b:is_kornshell")
+ syn match  shDerefVar	contained	"[.]*"	nextgroup=@shDerefVarList
 endif
 
 " ksh: ${!var[*]} array index list syntax: {{{1
