@@ -24,6 +24,7 @@ func StopShellInTerminal(buf)
   call term_sendkeys(a:buf, "exit\r")
   let job = term_getjob(a:buf)
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call TermWait(a:buf)
 endfunc
 
 " Wrapper around term_wait() to allow more time for re-runs of flaky tests
@@ -175,6 +176,10 @@ func Run_shell_in_terminal(options)
 
   let string = string({'job': buf->term_getjob()})
   call assert_match("{'job': 'process \\d\\+ run'}", string)
+
+  " On slower systems it may take a bit of time before the shell is ready to
+  " accept keys.  This mainly matters when using term_sendkeys() next.
+  call TermWait(buf)
 
   return buf
 endfunc

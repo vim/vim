@@ -49,7 +49,6 @@ func Test_terminal_termwinsize_option_zero()
   let win = bufwinid(buf)
   call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=7x0
@@ -57,7 +56,6 @@ func Test_terminal_termwinsize_option_zero()
   let win = bufwinid(buf)
   call assert_equal([7, winwidth(win)], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=0x33
@@ -65,7 +63,6 @@ func Test_terminal_termwinsize_option_zero()
   let win = bufwinid(buf)
   call assert_equal([winheight(win), 33], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=
@@ -95,7 +92,6 @@ func Test_terminal_termwinsize_minimum()
   call assert_equal(30, winwidth(win))
 
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=0*0
@@ -103,7 +99,6 @@ func Test_terminal_termwinsize_minimum()
   let win = bufwinid(buf)
   call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=
@@ -287,7 +282,6 @@ func Test_zz1_terminal_in_gui()
   call assert_equal(1, winnr('$'))
   let buf = Run_shell_in_terminal({'term_finish': 'close'})
   call StopShellInTerminal(buf)
-  call TermWait(buf)
 
   " closing window wipes out the terminal buffer a with finished job
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
@@ -572,7 +566,6 @@ func Test_term_gettty()
   call assert_equal('', term_gettty(buf + 1))
 
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 endfunc
 
