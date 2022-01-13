@@ -1288,6 +1288,42 @@ def Test_import_autoload_postponed()
   &rtp = save_rtp
 enddef
 
+def Test_import_autoload_override()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  test_override('autoload', 1)
+
+  var lines =<< trim END
+      vim9script autoload
+
+      g:loaded_override = 'true'
+      export var variable = 'bla'
+      export def Function(): string
+        return 'bla'
+      enddef
+  END
+  writefile(lines, 'Xdir/autoload/override.vim')
+
+  lines =<< trim END
+      vim9script
+
+      import autoload 'override.vim'
+      assert_equal('true', g:loaded_override)
+
+      def Tryit()
+        echo override.doesNotExist
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1048: Item not found in script: doesNotExist', 1)
+
+  test_override('autoload', 0)
+  unlet g:loaded_override
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_autoload_mapping()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp

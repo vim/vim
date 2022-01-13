@@ -496,6 +496,9 @@ handle_import(
 	    if (si->sn_autoload_prefix == NULL)
 		si->sn_autoload_prefix = get_autoload_prefix(si);
 	    res = OK;
+	    if (override_autoload && si->sn_state == SN_STATE_NOT_LOADED)
+		// testing override: load autoload script right away
+		(void)do_source(si->sn_name, FALSE, DOSO_NONE, NULL);
 	}
 	else
 	    res = FAIL;
