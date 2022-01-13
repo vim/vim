@@ -2889,6 +2889,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	    {
 		ht = &globvarht;
 		ret = find_var_in_ht(ht, *name, auto_name, TRUE);
+		vim_free(auto_name);
 		if (ret != NULL)
 		{
 		    if (htp != NULL)
@@ -2896,7 +2897,6 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 		    return ret;
 		}
 	    }
-	    vim_free(auto_name);
 	}
     }
 
