@@ -1375,6 +1375,31 @@ def Test_vim9_aucmd_autoload()
   &rtp = save_rtp
 enddef
 
+" test using a autoloaded file that is case sensitive
+def Test_vim9_autoload_case_sensitive()
+  var lines =<< trim END
+     vim9script autoload
+     export def CaseSensitive(): string
+       return 'done'
+     enddef
+  END
+
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/CaseSensitive.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  lines =<< trim END
+      vim9script
+      import autoload 'CaseSensitive.vim'
+      assert_equal('done', CaseSensitive.CaseSensitive())
+  END
+  CheckScriptSuccess(lines)
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 " This was causing a crash because suppress_errthrow wasn't reset.
 def Test_vim9_autoload_error()
   var lines =<< trim END
