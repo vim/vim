@@ -133,7 +133,8 @@ ex_vim9script(exarg_T *eap UNUSED)
     si->sn_state = SN_STATE_HAD_COMMAND;
 
     // Store the prefix with the script.  It isused to find exported functions.
-    si->sn_autoload_prefix = get_autoload_prefix(si);
+    if (si->sn_autoload_prefix == NULL)
+	si->sn_autoload_prefix = get_autoload_prefix(si);
 
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     si->sn_version = SCRIPT_VERSION_VIM9;
