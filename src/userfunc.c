@@ -1674,12 +1674,10 @@ deref_func_name(
     void
 emsg_funcname(char *ermsg, char_u *name)
 {
-    char_u	*p;
+    char_u	*p = name;
 
-    if (*name == K_SPECIAL)
+    if (name[0] == K_SPECIAL && name[1] != NUL && name[2] != NUL)
 	p = concat_str((char_u *)"<SNR>", name + 3);
-    else
-	p = name;
     semsg(_(ermsg), p);
     if (p != name)
 	vim_free(p);
@@ -4154,6 +4152,8 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	    else
 		eap->skip = TRUE;
 	}
+	if (name == NULL)
+	    goto ret_free;  // out of memory
 
 	// For "export def FuncName()" in an autoload script the function name
 	// is stored with the legacy autoload name "dir#script#FuncName" so
