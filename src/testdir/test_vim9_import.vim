@@ -1006,16 +1006,6 @@ def Test_source_vim9_from_legacy()
     call assert_false(exists('s:exported'))
     call assert_equal('global', global)
     call assert_equal('global', g:global)
-
-    "" imported variable becomes script-local
-    "import exported from './Xvim9_script.vim'
-    "call assert_equal('exported', s:exported)
-    "call assert_false(exists('exported'))
-
-    "" imported function becomes script-local
-    "import GetText from './Xvim9_script.vim'
-    "call assert_equal('text', s:GetText())
-    "call assert_false(exists('*GetText'))
   END
   writefile(legacy_lines, 'Xlegacy_script.vim')
 
@@ -1025,6 +1015,44 @@ def Test_source_vim9_from_legacy()
 
   delete('Xlegacy_script.vim')
   delete('Xvim9_script.vim')
+enddef
+
+def Test_import_vim9_from_legacy()
+  var vim9_lines =<< trim END
+    vim9script
+    var local = 'local'
+    g:global = 'global'
+    export var exported = 'exported'
+    export def GetText(): string
+       return 'text'
+    enddef
+  END
+  writefile(vim9_lines, 'Xvim9_export.vim')
+
+  var legacy_lines =<< trim END
+    import './Xvim9_export.vim' as vim9
+
+    call assert_false(exists('vim9'))
+    call assert_false(exists('local'))
+    call assert_false(exists('s:vim9.local'))
+    call assert_equal('global', global)
+    call assert_equal('global', g:global)
+    call assert_false(exists('exported'))
+    call assert_false(exists('s:exported'))
+    call assert_false(exists('*GetText'))
+
+    " imported symbol is script-local
+    call assert_equal('exported', s:vim9.exported)
+    call assert_equal('text', s:vim9.GetText())
+  END
+  writefile(legacy_lines, 'Xlegacy_script.vim')
+
+  source Xlegacy_script.vim
+  assert_equal('global', g:global)
+  unlet g:global
+
+  delete('Xlegacy_script.vim')
+  delete('Xvim9_export.vim')
 enddef
 
 def Test_cmdline_win()
