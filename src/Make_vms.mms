@@ -908,7 +908,7 @@ highlight.obj : highlight.c vim.h [.auto]config.h feature.h os_unix.h \
 if_cscope.obj : if_cscope.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
- errors.h globals.h if_cscope.h
+ errors.h globals.h
 if_xcmdsrv.obj : if_xcmdsrv.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \

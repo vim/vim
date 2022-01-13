@@ -1670,7 +1670,7 @@ $(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c $(INCL) $(GUI_INCL) version.h
 
 $(OUTDIR)/gui_dwrite.obj:	$(OUTDIR) gui_dwrite.cpp gui_dwrite.h
 
-$(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL) if_cscope.h
+$(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL)
 
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c

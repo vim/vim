@@ -497,7 +497,6 @@ SRC_UNIX =	\
 SRC_DOS_UNIX =	\
 		src/gui_xim.c \
 		src/if_cscope.c \
-		src/if_cscope.h \
 		src/if_lua.c \
 		src/if_mzsch.c \
 		src/if_mzsch.h \
