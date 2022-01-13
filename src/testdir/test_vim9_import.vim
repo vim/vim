@@ -1091,7 +1091,7 @@ def Test_import_gone_when_sourced_twice()
 enddef
 
 " test using an auto-loaded function and variable
-def Test_vim9_autoload()
+def Test_vim9_autoload_full_name()
   var lines =<< trim END
      vim9script
      def some#gettest(): string
@@ -1146,11 +1146,16 @@ def Test_vim9script_autoload()
        return 'test'
      enddef
 
-     export func GetMore()
-       return Gettest() .. 'more'
+     export var name = 'name'
+
+     export func GetFunc()
+       return Gettest() .. 'more' .. s:name
      endfunc
 
-     export var name = 'name'
+     export def GetDef(): string
+       return Gettest() .. 'more' .. name
+     enddef
+
      export final fname = 'final'
      export const cname = 'const'
   END
@@ -1165,7 +1170,8 @@ def Test_vim9script_autoload()
       assert_equal('test', prefixed.Gettest())
       assert_equal(1, g:prefixed_loaded)
 
-      assert_equal('testmore', prefixed.GetMore())
+      assert_equal('testmorename', prefixed.GetFunc())
+      assert_equal('testmorename', prefixed.GetDef())
       assert_equal('name', prefixed.name)
       assert_equal('final', prefixed.fname)
       assert_equal('const', prefixed.cname)
@@ -1178,7 +1184,7 @@ def Test_vim9script_autoload()
   # can also get the items by autoload name
   lines =<< trim END
       call assert_equal('test', prefixed#Gettest())
-      call assert_equal('testmore', prefixed#GetMore())
+      call assert_equal('testmorename', prefixed#GetFunc())
       call assert_equal('name', prefixed#name)
       call assert_equal('final', prefixed#fname)
       call assert_equal('const', prefixed#cname)

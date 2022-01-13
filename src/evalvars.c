@@ -2874,6 +2874,32 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	}
     }
 
+    // When using "vim9script autoload" script-local items are prefixed but can
+    // be used with s:name.
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid)
+					   && name[0] == 's' && name[1] == ':')
+    {
+	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	if (si->sn_autoload_prefix != NULL)
+	{
+	    char_u *auto_name = concat_str(si->sn_autoload_prefix, name + 2);
+
+	    if (auto_name != NULL)
+	    {
+		ht = &globvarht;
+		ret = find_var_in_ht(ht, *name, auto_name, TRUE);
+		if (ret != NULL)
+		{
+		    if (htp != NULL)
+			*htp = ht;
+		    return ret;
+		}
+	    }
+	    vim_free(auto_name);
+	}
+    }
+
     return NULL;
 }
 
@@ -3318,7 +3344,7 @@ set_var(
 }
 
 /*
- * Set variable "name" to value in "tv".
+ * Set variable "name" to value in "tv_arg".
  * When "sid" is non-zero "name" is in the script with this ID.
  * If the variable already exists and "is_const" is FALSE the value is updated.
  * Otherwise the variable is created.
