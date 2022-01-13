@@ -2727,7 +2727,7 @@ eval_variable(
 	}
 	else if (in_vim9script() && (flags & EVAL_VAR_NO_FUNC) == 0)
 	{
-	    ufunc_T *ufunc = find_func(name, FALSE, NULL);
+	    ufunc_T *ufunc = find_func(name, FALSE);
 
 	    // In Vim9 script we can get a function reference by using the
 	    // function name.
@@ -3063,7 +3063,7 @@ lookup_scriptitem(
 		is_global = TRUE;
 		fname = name + 2;
 	    }
-	    if (find_func(fname, is_global, NULL) != NULL)
+	    if (find_func(fname, is_global) != NULL)
 		res = OK;
 	}
     }

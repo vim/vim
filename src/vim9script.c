@@ -132,7 +132,7 @@ ex_vim9script(exarg_T *eap UNUSED)
     }
     si->sn_state = SN_STATE_HAD_COMMAND;
 
-    // Store the prefix with the script.  It isused to find exported functions.
+    // Store the prefix with the script, it is used to find exported functions.
     if (si->sn_autoload_prefix == NULL)
 	si->sn_autoload_prefix = get_autoload_prefix(si);
 
@@ -712,7 +712,7 @@ find_exported(
 	    funcname[2] = (int)KE_SNR;
 	    sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
 	}
-	*ufunc = find_func(funcname, FALSE, NULL);
+	*ufunc = find_func(funcname, FALSE);
 	if (funcname != buffer)
 	    vim_free(funcname);
 

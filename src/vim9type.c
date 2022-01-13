@@ -361,7 +361,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		member_type = internal_func_ret_type(idx, 0, NULL);
 	    }
 	    else
-		ufunc = find_func(name, FALSE, NULL);
+		ufunc = find_func(name, FALSE);
 	}
 	if (ufunc != NULL)
 	{

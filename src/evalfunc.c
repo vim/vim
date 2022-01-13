@@ -4117,7 +4117,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	semsg(_(e_invalid_argument_str), use_string ? tv_get_string(&argvars[0]) : s);
     // Don't check an autoload name for existence here.
     else if (trans_name != NULL && (is_funcref
-			 ? find_func(trans_name, is_global, NULL) == NULL
+			 ? find_func(trans_name, is_global) == NULL
 			 : !translated_function_exists(trans_name, is_global)))
 	semsg(_(e_unknown_function_str_2), s);
     else
@@ -4245,7 +4245,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		}
 		else if (is_funcref)
 		{
-		    pt->pt_func = find_func(trans_name, is_global, NULL);
+		    pt->pt_func = find_func(trans_name, is_global);
 		    func_ptr_ref(pt->pt_func);
 		    vim_free(name);
 		}

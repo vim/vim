@@ -350,7 +350,7 @@ compile_load_scriptvar(
     static int
 generate_funcref(cctx_T *cctx, char_u *name)
 {
-    ufunc_T *ufunc = find_func(name, FALSE, cctx);
+    ufunc_T *ufunc = find_func(name, FALSE);
 
     if (ufunc == NULL)
 	return FAIL;
@@ -418,7 +418,7 @@ compile_load(
 		case 'v': res = generate_LOADV(cctx, name, error);
 			  break;
 		case 's': if (is_expr && ASCII_ISUPPER(*name)
-				       && find_func(name, FALSE, cctx) != NULL)
+				       && find_func(name, FALSE) != NULL)
 			      res = generate_funcref(cctx, name);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
@@ -427,7 +427,7 @@ compile_load(
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
 			      if (is_expr && ASCII_ISUPPER(*name)
-				       && find_func(name, FALSE, cctx) != NULL)
+				       && find_func(name, FALSE) != NULL)
 				  res = generate_funcref(cctx, name);
 			      else
 				  isn_type = ISN_LOADG;
@@ -779,7 +779,7 @@ compile_call(
     {
 	// If we can find the function by name generate the right call.
 	// Skip global functions here, a local funcref takes precedence.
-	ufunc = find_func(name, FALSE, cctx);
+	ufunc = find_func(name, FALSE);
 	if (ufunc != NULL && !func_is_global(ufunc))
 	{
 	    res = generate_CALL(cctx, ufunc, argcount);
