@@ -4152,13 +4152,11 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	    else
 		eap->skip = TRUE;
 	}
-	if (name == NULL)
-	    goto ret_free;  // out of memory
 
 	// For "export def FuncName()" in an autoload script the function name
 	// is stored with the legacy autoload name "dir#script#FuncName" so
 	// that it can also be found in legacy script.
-	if (is_export)
+	if (is_export && name != NULL)
 	    name = may_prefix_autoload(name);
     }
 
