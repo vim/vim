@@ -246,7 +246,7 @@ func Test_cscopeWithCscopeConnections()
     " Test: 'csprg' option
     call assert_equal('cscope', &csprg)
     set csprg=doesnotexist
-    call assert_fails('cscope add Xcscope2.out', 'E609:')
+    call assert_fails('cscope add Xcscope2.out', 'E262:')
     set csprg=cscope
 
     " Test: multiple cscope connections
