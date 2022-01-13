@@ -779,8 +779,6 @@ endfunc
 func Test_terminal_sync_shell_dir()
   CheckUnix
   " The test always use sh (see src/testdir/unix.vim).
-  " However, BSD's sh doesn't seem to play well with OSC 7 escape sequence.
-  CheckNotBSD
 
   set asd
   " , is
@@ -793,7 +791,8 @@ func Test_terminal_sync_shell_dir()
   let tmpfolder_url = fnamemodify(tempname(),':h').'/'.chars_url
   call mkdir(tmpfolder, "p")
   let buf = Run_shell_in_terminal({})
-  call term_sendkeys(buf, "echo -ne $'\\e\]7;file://".tmpfolder_url."\\a'\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "echo $'\\e\]7;file://".tmpfolder_url."\\a'\<CR>")
   "call term_sendkeys(buf, "cd ".tmpfolder."\<CR>")
   call TermWait(buf)
   if has("mac")
