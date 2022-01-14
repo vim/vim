@@ -1433,10 +1433,6 @@ gui_position_components(int total_width UNUSED)
     if (gui.menu_is_active)
 	text_area_y += gui.menu_height;
 #endif
-#if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_MSWIN)
-    if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-	text_area_y = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
-#endif
 
 # if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF))
@@ -1445,7 +1441,7 @@ gui_position_components(int total_width UNUSED)
 #endif
 
 #if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
-	|| defined(FEAT_GUI_HAIKU))
+	|| defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
     {
 # if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_HAIKU)
@@ -1529,11 +1525,7 @@ gui_get_base_height(void)
 # endif
 # ifdef FEAT_TOOLBAR
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-#  if defined(FEAT_GUI_MSWIN) && defined(FEAT_TOOLBAR)
-	base_height += (TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT);
-#  else
 	base_height += gui.toolbar_height;
-#  endif
 # endif
 # if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU))
@@ -4342,13 +4334,7 @@ gui_update_scrollbars(
 #if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_ATHENA) \
 	|| defined(FEAT_GUI_HAIKU))
 	    if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-# if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_HAIKU)
 		y += gui.toolbar_height;
-# else
-#  ifdef FEAT_GUI_MSWIN
-		y += TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
-#  endif
-# endif
 #endif
 
 #if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
