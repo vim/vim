@@ -63,6 +63,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install packages
+        if: matrix.features == 'huge'
         run: |
           sudo apt update && sudo apt install -y \
             autoconf \
