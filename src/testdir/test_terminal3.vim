@@ -779,6 +779,8 @@ endfunc
 func Test_terminal_sync_shell_dir()
   CheckUnix
   " The test always use sh (see src/testdir/unix.vim).
+  " BSD's sh doesn't seem to play well with the OSC 7 escape sequence.
+  CheckNotBSD
 
   set asd
   " , is
