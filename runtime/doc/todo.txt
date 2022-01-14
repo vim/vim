@@ -904,9 +904,6 @@ With 'foldmethod' "indent" and appending an empty line, what follows isn't
 included in the existing fold.  Deleting the empty line and undo fixes it.
 (Oleg Koshovetc, 2018 Jul 15, #3214)
 
-Patch to support "xxd -ps". (Erik Auerswald, 2018 May 1)
-Lacks a test.
-
 Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
 
