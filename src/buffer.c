@@ -4610,15 +4610,7 @@ build_stl_str_hl(
 
 	case STL_VIRTCOL:
 	case STL_VIRTCOL_ALT:
-	    // In list mode virtcol needs to be recomputed
-	    virtcol = wp->w_virtcol;
-	    if (wp->w_p_list && wp->w_lcs_chars.tab1 == NUL)
-	    {
-		wp->w_p_list = FALSE;
-		getvcol(wp, &wp->w_cursor, NULL, &virtcol, NULL);
-		wp->w_p_list = TRUE;
-	    }
-	    ++virtcol;
+	    virtcol = wp->w_virtcol + 1;
 	    // Don't display %V if it's the same as %c.
 	    if (opt == STL_VIRTCOL_ALT
 		    && (virtcol == (colnr_T)(!(State & INSERT) && empty_line
