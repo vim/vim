@@ -42,7 +42,8 @@ OPTIONS
 
        -c cols | -cols cols
               Format  <cols> octets per line. Default 16 (-i: 12, -ps: 30, -b:
-              6). Max 256.
+              6). Max 256.  No maxmimum for -ps. With -ps, 0  results  in  one
+              long line of output.
 
        -C | -capitalize
               Capitalize variable names in C include file  style,  when  using

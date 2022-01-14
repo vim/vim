@@ -320,10 +320,11 @@ func Test_xxd_max_cols()
 endfunc
 
 " -c0 selects the format specific default column value, as if no -c was given
+" except for -ps, where it disables extra newlines
 func Test_xxd_c0_is_def_cols()
   call writefile(["abcdefghijklmnopqrstuvwxyz0123456789"], 'Xxdin')
   for cols in ['-c0', '-c 0', '-cols 0']
-    for fmt in ['', '-b', '-e', '-i', '-p', ]
+    for fmt in ['', '-b', '-e', '-i']
       exe 'r! ' . s:xxd_cmd . ' ' . fmt ' Xxdin > Xxdout1'
       exe 'r! ' . s:xxd_cmd . ' ' . cols . ' ' . fmt ' Xxdin > Xxdout2'
       call assert_equalfile('Xxdout1', 'Xxdout2')
@@ -332,6 +333,29 @@ func Test_xxd_c0_is_def_cols()
   call delete('Xxdin')
   call delete('Xxdout1')
   call delete('Xxdout2')
+endfunc
+
+" all output in a single line for -c0 -ps
+func Test_xxd_plain_one_line()
+  call writefile([
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
+        \ 'Xxdin')
+  for cols in ['-c0', '-c 0', '-cols 0']
+    exe 'r! ' . s:xxd_cmd . ' -ps ' . cols ' Xxdin'
+    " output seems to start in line 2
+    let out = join(getline(2, '$'))
+    bwipe!
+    " newlines in xxd output result in spaces in the string variable out
+    call assert_notmatch(" ", out)
+    " xxd output must be non-empty and comprise only lower case hex digits
+    call assert_match("^[0-9a-f][0-9a-f]*$", out)
+  endfor
+  call delete('Xxdin')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
