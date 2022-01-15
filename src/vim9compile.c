@@ -2008,7 +2008,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			    : isn->isn_arg.number != needed_list_len)
 		    {
 			semsg(_(e_expected_nr_items_but_got_nr),
-					 needed_list_len, isn->isn_arg.number);
+				    needed_list_len, (int)isn->isn_arg.number);
 			goto theend;
 		    }
 		}
