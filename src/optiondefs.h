@@ -156,7 +156,6 @@
 # define PV_VSTS		OPT_BUF(BV_VSTS)
 # define PV_VTS		OPT_BUF(BV_VTS)
 #endif
-#define PV_VE		OPT_BOTH(OPT_BUF(BV_VE))
 
 // Definition of the PV_ values for window-local options.
 // The WV_ values are defined in option.h.
@@ -192,6 +191,7 @@
 #define PV_LCS		OPT_BOTH(OPT_WIN(WV_LCS))
 #define PV_NU		OPT_WIN(WV_NU)
 #define PV_RNU		OPT_WIN(WV_RNU)
+#define PV_VE		OPT_BOTH(OPT_WIN(WV_VE))
 #ifdef FEAT_LINEBREAK
 # define PV_NUW		OPT_WIN(WV_NUW)
 #endif
