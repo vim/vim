@@ -693,7 +693,7 @@ op_delete(oparg_T *oap)
     // register.
     // Note: For the black hole register or select mode '_' don't yank
     // anything.
-    if (oap->regname != '_' && !fake_delete)
+    if (oap->regname != '_' && !(VIsual_select && oap->is_VIsual))
     {
 	if (oap->regname != 0)
 	{
@@ -974,8 +974,6 @@ setmarks:
 	    curbuf->b_op_end = oap->start;
 	curbuf->b_op_start = oap->start;
     }
-
-    fake_delete = FALSE;
 
     return OK;
 }
