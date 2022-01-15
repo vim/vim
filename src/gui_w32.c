@@ -4252,6 +4252,8 @@ static void initialise_toolbar(void);
 static void update_toolbar_size(void);
 static LRESULT CALLBACK toolbar_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static int get_toolbar_bitmap(vimmenu_T *menu);
+#else
+# define update_toolbar_size()
 #endif
 
 #ifdef FEAT_GUI_TABLINE
@@ -4514,6 +4516,8 @@ set_tabline_font(void)
      */
     gui.tabline_height = tm.tmHeight + tm.tmInternalLeading + 7;
 }
+#else
+# define set_tabline_font()
 #endif
 
 /*
@@ -4525,10 +4529,8 @@ _OnSettingChange(UINT n)
     if (n == SPI_SETWHEELSCROLLLINES)
 	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0,
 		&mouse_scroll_lines, 0);
-#if defined(FEAT_GUI_TABLINE) && defined(USE_SYSMENU_FONT)
     if (n == SPI_SETNONCLIENTMETRICS)
 	set_tabline_font();
-#endif
     return 0;
 }
 
@@ -4637,12 +4639,8 @@ _OnDpiChanged(HWND hwnd, UINT xdpi, UINT ydpi, RECT *rc)
     //TRACE("DPI: %d", ydpi);
 
     update_scrollbar_size();
-#ifdef FEAT_TOOLBAR
     update_toolbar_size();
-#endif
-#if defined(FEAT_GUI_TABLINE) && defined(USE_SYSMENU_FONT)
     set_tabline_font();
-#endif
     gui_init_font(*p_guifont == NUL ? hl_get_font_name() : p_guifont, FALSE);
     gui_mswin_get_menu_height(FALSE);
     InvalidateRect(hwnd, NULL, TRUE);
@@ -8251,9 +8249,7 @@ initialise_tabline(void)
 
     gui.tabline_height = TABLINE_HEIGHT;
 
-# ifdef USE_SYSMENU_FONT
     set_tabline_font();
-# endif
 }
 
 /*
