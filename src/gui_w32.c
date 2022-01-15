@@ -384,12 +384,14 @@ typedef enum DPI_AWARENESS {
 #define DEFAULT_DPI	96
 static int		s_dpi = DEFAULT_DPI;
 static BOOL		s_in_dpichanged = FALSE;
+static DPI_AWARENESS	s_process_dpi_aware = DPI_AWARENESS_INVALID;
 
 static UINT (WINAPI *pGetDpiForSystem)(void) = NULL;
 static UINT (WINAPI *pGetDpiForWindow)(HWND hwnd) = NULL;
 static int (WINAPI *pGetSystemMetricsForDpi)(int, UINT) = NULL;
 //static INT (WINAPI *pGetWindowDpiAwarenessContext)(HWND hwnd) = NULL;
 static DPI_AWARENESS_CONTEXT (WINAPI *pSetThreadDpiAwarenessContext)(DPI_AWARENESS_CONTEXT dpiContext) = NULL;
+static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT) = NULL;
 
     static UINT WINAPI
 stubGetDpiForSystem(void)
@@ -3316,7 +3318,7 @@ logfont2name(LOGFONTW lf)
     static void
 update_im_font(void)
 {
-    LOGFONTW	lf_wide;
+    LOGFONTW	lf_wide, lf;
 
     if (p_guifontwide != NULL && *p_guifontwide != NUL
 	    && gui.wide_font != NOFONT
@@ -3324,7 +3326,11 @@ update_im_font(void)
 	norm_logfont = lf_wide;
     else
 	norm_logfont = sub_logfont;
-    im_set_font(&norm_logfont);
+
+    lf = norm_logfont;
+    if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+	lf.lfHeight = lf.lfHeight * 96 / s_dpi;
+    im_set_font(&lf);
 }
 #endif
 
@@ -5322,13 +5328,18 @@ load_dpi_func(void)
     pGetSystemMetricsForDpi = (void*)GetProcAddress(hUser32, "GetSystemMetricsForDpi");
     //pGetWindowDpiAwarenessContext = (void*)GetProcAddress(hUser32, "GetWindowDpiAwarenessContext");
     pSetThreadDpiAwarenessContext = (void*)GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
+    pGetAwarenessFromDpiAwarenessContext = (void*)GetProcAddress(hUser32, "GetAwarenessFromDpiAwarenessContext");
 
-    if (pSetThreadDpiAwarenessContext != NULL &&
-	    pSetThreadDpiAwarenessContext(
-		DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+    if (pSetThreadDpiAwarenessContext != NULL)
     {
-	//TRACE("DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 enabled");
-	return;
+	DPI_AWARENESS_CONTEXT oldctx = pSetThreadDpiAwarenessContext(
+		DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	if (oldctx != NULL)
+	{
+	    TRACE("DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 enabled");
+	    s_process_dpi_aware = pGetAwarenessFromDpiAwarenessContext(oldctx);
+	    return;
+	}
     }
 
 fail:
@@ -5337,6 +5348,7 @@ fail:
     pGetDpiForWindow = NULL;
     pGetSystemMetricsForDpi = stubGetSystemMetricsForDpi;
     pSetThreadDpiAwarenessContext = NULL;
+    pGetAwarenessFromDpiAwarenessContext = NULL;
 }
 
 /*
@@ -5800,7 +5812,10 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 	case IMN_SETOPENSTATUS:
 	    if (pImmGetOpenStatus(hImc))
 	    {
-		pImmSetCompositionFontW(hImc, &norm_logfont);
+		LOGFONTW lf = norm_logfont;
+		if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+		    lf.lfHeight = lf.lfHeight * 96 / s_dpi;
+		pImmSetCompositionFontW(hImc, &lf);
 		im_set_position(gui.row, gui.col);
 
 		// Disable langmap
@@ -5968,6 +5983,11 @@ im_set_position(int row, int col)
 	cfs.ptCurrentPos.x = FILL_X(col);
 	cfs.ptCurrentPos.y = FILL_Y(row);
 	MapWindowPoints(s_textArea, s_hwnd, &cfs.ptCurrentPos, 1);
+	if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+	{
+	    cfs.ptCurrentPos.x = cfs.ptCurrentPos.x * 96 / s_dpi;
+	    cfs.ptCurrentPos.y = cfs.ptCurrentPos.y * 96 / s_dpi;
+	}
 	pImmSetCompositionWindow(hImc, &cfs);
 
 	pImmReleaseContext(s_hwnd, hImc);
