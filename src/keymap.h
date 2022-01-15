@@ -276,6 +276,7 @@ enum key_extra
     , KE_MOUSEMOVE_XY = 101	// KE_MOUSEMOVE with coordinates
     , KE_CANCEL = 102		// return from vgetc()
     , KE_COMMAND = 103		// <Cmd> special key
+    , KE_SCRIPT_COMMAND = 104	// <ScriptCmd> special key
 };
 
 /*
@@ -480,6 +481,7 @@ enum key_extra
 #define K_CURSORHOLD	TERMCAP2KEY(KS_EXTRA, KE_CURSORHOLD)
 
 #define K_COMMAND	TERMCAP2KEY(KS_EXTRA, KE_COMMAND)
+#define K_SCRIPT_COMMAND TERMCAP2KEY(KS_EXTRA, KE_SCRIPT_COMMAND)
 
 // Bits for modifier mask
 // 0x01 cannot be used, because the modifier must be 0x02 or higher

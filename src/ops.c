@@ -3501,6 +3501,14 @@ typedef struct {
     int		rv_arg;		// extra argument
 } redo_VIsual_T;
 
+    static int
+is_ex_cmdchar(cmdarg_T *cap)
+{
+    return cap->cmdchar == ':'
+	|| cap->cmdchar == K_COMMAND
+	|| cap->cmdchar == K_SCRIPT_COMMAND;
+}
+
 /*
  * Handle an operator after Visual mode or when the movement is finished.
  * "gui_yank" is true when yanking text for the clipboard.
@@ -3583,8 +3591,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		&& ((!VIsual_active || oap->motion_force)
 		    // Also redo Operator-pending Visual mode mappings
 		    || (VIsual_active
-			  && (cap->cmdchar == ':' || cap->cmdchar == K_COMMAND)
-						  && oap->op_type != OP_COLON))
+			    && is_ex_cmdchar(cap) && oap->op_type != OP_COLON))
 		&& cap->cmdchar != 'D'
 #ifdef FEAT_FOLDING
 		&& oap->op_type != OP_FOLD
@@ -3608,7 +3615,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    AppendToRedobuffLit(cap->searchbuf, -1);
 		AppendToRedobuff(NL_STR);
 	    }
-	    else if (cap->cmdchar == ':' || cap->cmdchar == K_COMMAND)
+	    else if (is_ex_cmdchar(cap))
 	    {
 		// do_cmdline() has stored the first typed line in
 		// "repeat_cmdline".  When several lines are typed repeating
@@ -3806,7 +3813,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 			    get_op_char(oap->op_type),
 			    get_extra_op_char(oap->op_type),
 			    oap->motion_force, cap->cmdchar, cap->nchar);
-		else if (cap->cmdchar != ':' && cap->cmdchar != K_COMMAND)
+		else if (!is_ex_cmdchar(cap))
 		{
 		    int opchar = get_op_char(oap->op_type);
 		    int extra_opchar = get_extra_op_char(oap->op_type);

@@ -1337,6 +1337,9 @@ def Test_autoload_mapping()
       export def Toggle(): string
         return ":g:toggle_called = 'yes'\<CR>"
       enddef
+      export def Doit()
+        g:doit_called = 'yes'
+      enddef
   END
   writefile(lines, 'Xdir/autoload/toggle.vim')
 
@@ -1346,6 +1349,8 @@ def Test_autoload_mapping()
       import autoload 'toggle.vim'
 
       nnoremap <silent> <expr> tt toggle.Toggle() 
+      nnoremap <silent> xx <ScriptCmd>toggle.Doit()<CR>
+      nnoremap <silent> yy <Cmd>toggle.Doit()<CR>
   END
   CheckScriptSuccess(lines)
   assert_false(exists("g:toggle_loaded"))
@@ -1355,7 +1360,14 @@ def Test_autoload_mapping()
   assert_equal('yes', g:toggle_loaded)
   assert_equal('yes', g:toggle_called)
 
+  feedkeys("xx", 'xt')
+  assert_equal('yes', g:doit_called)
+
+  assert_fails('call feedkeys("yy", "xt")', 'E121: Undefined variable: toggle')
+
   nunmap tt
+  nunmap xx
+  nunmap yy
   unlet g:toggle_loaded
   unlet g:toggle_called
   delete('Xdir', 'rf')

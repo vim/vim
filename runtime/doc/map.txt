@@ -284,6 +284,10 @@ This can be solved by inserting <Ignore> before the character that is
 expression-mapped: >
 	nmap ! f!<Ignore>x
 
+When defining a mapping in a |Vim9| script, the expression will be evaluated
+in the context of that script.  This means that script-local items can be
+accessed in the expression.
+
 Be very careful about side effects!  The expression is evaluated while
 obtaining characters, you may very well make the command dysfunctional.
 For this reason the following is blocked:
@@ -342,9 +346,24 @@ Example of using <Cmd> halfway Insert mode: >
 Unlike <expr> mappings, there are no special restrictions on the <Cmd>
 command: it is executed as if an (unrestricted) |autocommand| was invoked.
 
+						*<ScriptCmd>*
+<ScriptCmd> is like <Cmd> but sets the context to the script the mapping was
+defined in, for the duration of the command execution.  This is especially
+useful for |Vim9| script.  It also works to access an import, which is useful
+in a plugin using an autoload script: >
+	vim9script
+	import autoload 'implementation.vim' as impl
+	nnoremap <silent> <F4> <ScriptCmd>impl.DoTheWork()<CR>
+
+No matter where <F4> is typed, the "impl" import will be found in the script
+context of where the mapping was defined.  And since it's an autoload import,
+the "implementation.vim" script will only be loaded once <F4> is typed, not
+when the mapping is defined.
+
 Note:
-- Because <Cmd> avoids mode-changes it does not trigger |CmdlineEnter| and
-  |CmdlineLeave| events, because no user interaction is expected.
+- Because <Cmd> and <ScriptCmd> avoid mode-changes it does not trigger
+  |CmdlineEnter| and |CmdlineLeave| events, because no user interaction is
+  expected.
 - For the same reason, |keycodes| like <C-R><C-W> are interpreted as plain,
   unmapped keys.
 - The command is not echo'ed, no need for <silent>.
@@ -356,12 +375,13 @@ Note:
   Visual mode.  Use |:smap| to handle Select mode differently.
 
 							*E1255* *E1136*
-<Cmd> commands must terminate, that is, they must be followed by <CR> in the
-{rhs} of the mapping definition.  |Command-line| mode is never entered.
+<Cmd> and <ScriptCmd> commands must terminate, that is, they must be followed
+by <CR> in the {rhs} of the mapping definition.  |Command-line| mode is never
+entered.
 
 							*E1137*
-<Cmd> commands can have only normal characters and cannot contain special
-characters like function keys.
+<Cmd> and <ScriptCmd> commands can have only normal characters and cannot
+contain special characters like function keys.
 
 
 1.3 MAPPING AND MODES					*:map-modes*

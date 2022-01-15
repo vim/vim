@@ -1055,8 +1055,9 @@ doESCkey:
 	case K_IGNORE:	// Something mapped to nothing
 	    break;
 
-	case K_COMMAND:		// <Cmd>command<CR>
-	    do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+	case K_COMMAND:		    // <Cmd>command<CR>
+	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
+	    do_cmdkey_command(c, 0);
 #ifdef FEAT_TERMINAL
 	    if (term_use_loop())
 		// Started a terminal that gets the input, exit Insert mode.

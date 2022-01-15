@@ -83,6 +83,10 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
 static int	last_recorded_len = 0;	// number of last recorded chars
 
+#ifdef FEAT_EVAL
+mapblock_T	*last_used_map = NULL;
+#endif
+
 static int	read_readbuf(buffheader_T *buf, int advance);
 static void	init_typebuf(void);
 static void	may_sync_undo(void);
@@ -2893,6 +2897,7 @@ handle_mapping(
 #ifdef FEAT_EVAL
 	    if (save_m_expr)
 		vim_free(map_str);
+	    last_used_map = mp;
 #endif
 	}
 #ifdef FEAT_EVAL
@@ -3708,7 +3713,7 @@ input_available(void)
  * Function passed to do_cmdline() to get the command after a <Cmd> key from
  * typeahead.
  */
-    char_u *
+    static char_u *
 getcmdkeycmd(
 	int		promptc UNUSED,
 	void		*cookie UNUSED,
@@ -3774,7 +3779,7 @@ getcmdkeycmd(
 	    c1 = NUL;  // end the line
 	else if (c1 == ESC)
 	    aborted = TRUE;
-	else if (c1 == K_COMMAND)
+	else if (c1 == K_COMMAND || c1 == K_SCRIPT_COMMAND)
 	{
 	    // give a nicer error message for this special case
 	    emsg(_(e_cmd_mapping_must_end_with_cr_before_second_cmd));
@@ -3804,3 +3809,35 @@ getcmdkeycmd(
 
     return (char_u *)line_ga.ga_data;
 }
+
+    int
+do_cmdkey_command(int key, int flags)
+{
+    int	    res;
+#ifdef FEAT_EVAL
+    sctx_T  save_current_sctx = {0, 0, 0, 0};
+
+    if (key == K_SCRIPT_COMMAND && last_used_map != NULL)
+    {
+	save_current_sctx = current_sctx;
+	current_sctx = last_used_map->m_script_ctx;
+    }
+#endif
+
+    res = do_cmdline(NULL, getcmdkeycmd, NULL, flags);
+
+#ifdef FEAT_EVAL
+    if (save_current_sctx.sc_sid > 0)
+	current_sctx = save_current_sctx;
+#endif
+
+    return res;
+}
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    void
+reset_last_used_map(void)
+{
+    last_used_map = NULL;
+}
+#endif

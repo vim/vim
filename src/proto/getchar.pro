@@ -52,5 +52,6 @@ void parse_queued_messages(void);
 void vungetc(int c);
 int fix_input_buffer(char_u *buf, int len);
 int input_available(void);
-char_u *getcmdkeycmd(int promptc, void *cookie, int indent, getline_opt_T do_concat);
+int do_cmdkey_command(int key, int flags);
+void reset_last_used_map(void);
 /* vim: set ft=c : */

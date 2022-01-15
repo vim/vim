@@ -1772,11 +1772,11 @@ getcmdline_int(
 	    c = safe_vgetc();
 	} while (c == K_IGNORE || c == K_NOP);
 
-	if (c == K_COMMAND)
+	if (c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	{
 	    int	    clen = ccline.cmdlen;
 
-	    if (do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
+	    if (do_cmdkey_command(c, DOCMD_NOWAIT) == OK)
 	    {
 		if (clen == ccline.cmdlen)
 		    trigger_cmdlinechanged = FALSE;

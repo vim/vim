@@ -373,6 +373,7 @@ static const struct nv_cmd
     {K_CURSORHOLD, nv_cursorhold, NV_KEEPREG,		0},
     {K_PS,	nv_edit,	0,			0},
     {K_COMMAND,	nv_colon,	0,			0},
+    {K_SCRIPT_COMMAND, nv_colon, 0,			0},
 };
 
 // Number of commands in nv_cmds[].
@@ -3429,7 +3430,9 @@ nv_colon(cmdarg_T *cap)
 {
     int	old_p_im;
     int	cmd_result;
-    int	is_cmdkey = cap->cmdchar == K_COMMAND;
+    int	is_cmdkey = cap->cmdchar == K_COMMAND
+					   || cap->cmdchar == K_SCRIPT_COMMAND;
+    int	flags;
 
     if (VIsual_active && !is_cmdkey)
 	nv_operator(cap);
@@ -3459,8 +3462,11 @@ nv_colon(cmdarg_T *cap)
 	old_p_im = p_im;
 
 	// get a command line and execute it
-	cmd_result = do_cmdline(NULL, is_cmdkey ? getcmdkeycmd : getexline, NULL,
-			    cap->oap->op_type != OP_NOP ? DOCMD_KEEPLINE : 0);
+	flags = cap->oap->op_type != OP_NOP ? DOCMD_KEEPLINE : 0;
+	if (is_cmdkey)
+	    cmd_result = do_cmdkey_command(cap->cmdchar, flags);
+	else
+	    cmd_result = do_cmdline(NULL, getexline, NULL, flags);
 
 	// If 'insertmode' changed, enter or exit Insert mode
 	if (p_im != old_p_im)

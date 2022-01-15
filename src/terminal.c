@@ -2229,7 +2229,8 @@ send_keys_to_term(term_T *term, int c, int modmask, int typed)
 	    break;
 
 	case K_COMMAND:
-	    return do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+	case K_SCRIPT_COMMAND:
+	    return do_cmdkey_command(c, 0);
     }
     if (typed)
 	mouse_was_outside = FALSE;
