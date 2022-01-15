@@ -612,6 +612,7 @@ normal_cmd(
 	    c = 'c';
 	msg_nowait = TRUE;	// don't delay going to insert mode
 	old_mapped_len = 0;	// do go to Insert mode
+        fake_delete = TRUE;
     }
 
     // If the window was made so small that nothing shows, make it at least one

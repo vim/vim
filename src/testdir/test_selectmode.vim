@@ -262,7 +262,6 @@ endfunc
 func Test_selectmode_register()
   new
   call setline(1, range(1,100))
-  50
   let save_register = getreg('"')
   exe ":norm! v\<c-g>a"
   call assert_equal(save_register, getreg('"'))
