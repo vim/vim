@@ -1246,6 +1246,13 @@ main_loop(
 	else
 	    previous_got_int = FALSE;
 
+#ifdef FEAT_EVAL
+	// At the toplevel there is no exception handling.  Discard any that
+	// may be hanging around (e.g. from "interrupt" at the debug prompt).
+	if (did_throw && !ex_normal_busy)
+	    discard_current_exception();
+#endif
+
 	if (!exmode_active)
 	    msg_scroll = FALSE;
 	quit_more = FALSE;
