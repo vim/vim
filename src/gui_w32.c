@@ -1526,6 +1526,13 @@ gui_mswin_find_scrollbar(HWND hwnd)
     return NULL;
 }
 
+    static void
+update_scrollbar_size(void)
+{
+    gui.scrollbar_width = pGetSystemMetricsForDpi(SM_CXVSCROLL, s_dpi);
+    gui.scrollbar_height = pGetSystemMetricsForDpi(SM_CYHSCROLL, s_dpi);
+}
+
 /*
  * Get the character size of a font.
  */
@@ -4629,9 +4636,7 @@ _OnDpiChanged(HWND hwnd, UINT xdpi, UINT ydpi, RECT *rc)
     s_in_dpichanged = TRUE;
     //TRACE("DPI: %d", ydpi);
 
-    gui.scrollbar_width = pGetSystemMetricsForDpi(SM_CXVSCROLL, s_dpi);
-    gui.scrollbar_height = pGetSystemMetricsForDpi(SM_CYHSCROLL, s_dpi);
-
+    update_scrollbar_size();
 #ifdef FEAT_TOOLBAR
     update_toolbar_size();
 #endif
@@ -5366,8 +5371,9 @@ gui_mch_init(void)
 
     load_dpi_func();
 
-    gui.scrollbar_width = pGetSystemMetricsForDpi(SM_CXVSCROLL, s_dpi);
-    gui.scrollbar_height = pGetSystemMetricsForDpi(SM_CYHSCROLL, s_dpi);
+    s_dpi = pGetDpiForSystem(s_hwnd);
+    update_scrollbar_size();
+
 #ifdef FEAT_MENU
     gui.menu_height = 0;	// Windows takes care of this
 #endif
@@ -5466,8 +5472,7 @@ gui_mch_init(void)
     if (pGetDpiForWindow != NULL)
     {
 	s_dpi = pGetDpiForWindow(s_hwnd);
-	gui.scrollbar_width = pGetSystemMetricsForDpi(SM_CXVSCROLL, s_dpi);
-	gui.scrollbar_height = pGetSystemMetricsForDpi(SM_CYHSCROLL, s_dpi);
+	update_scrollbar_size();
 	//TRACE("System DPI: %d, DPI: %d", pGetDpiForSystem(), s_dpi);
     }
 
@@ -7155,15 +7160,15 @@ gui_mch_dialog(
 	// Use our own window for the size, unless it's very small.
 	GetWindowRect(s_hwnd, &rect);
 	maxDialogWidth = rect.right - rect.left
-		   - (pGetSystemMetricsForDpi(SM_CXFRAME, dpi) +
-		      pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)) * 2;
+		       - (pGetSystemMetricsForDpi(SM_CXFRAME, dpi) +
+			  pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)) * 2;
 	if (maxDialogWidth < adjust_by_system_dpi(DLG_MIN_MAX_WIDTH))
 	    maxDialogWidth = adjust_by_system_dpi(DLG_MIN_MAX_WIDTH);
 
 	maxDialogHeight = rect.bottom - rect.top
-		   - (pGetSystemMetricsForDpi(SM_CYFRAME, dpi) +
-		      pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)) * 4
-		   - pGetSystemMetricsForDpi(SM_CYCAPTION, dpi);
+		       - (pGetSystemMetricsForDpi(SM_CYFRAME, dpi) +
+			  pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)) * 4
+		       - pGetSystemMetricsForDpi(SM_CYCAPTION, dpi);
 	if (maxDialogHeight < adjust_by_system_dpi(DLG_MIN_MAX_HEIGHT))
 	    maxDialogHeight = adjust_by_system_dpi(DLG_MIN_MAX_HEIGHT);
     }
