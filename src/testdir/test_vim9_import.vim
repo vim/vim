@@ -27,6 +27,10 @@ let s:export_script_lines =<< trim END
     exported += 5
   enddef
   export final theList = [1]
+  export def AddSome(s: string): string
+    return s .. 'some'
+  enddef
+  export var AddRef = AddSome
 END
 
 def Undo_export_script_lines()
@@ -70,6 +74,9 @@ def Test_vim9_import_export()
 
     expo.theList->add(2)
     assert_equal([1, 2], expo.theList)
+
+    assert_equal('andthensome', 'andthen'->expo.AddSome())
+    assert_equal('awesome', 'awe'->expo.AddRef())
   END
   writefile(import_script_lines, 'Ximport.vim')
   source Ximport.vim

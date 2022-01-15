@@ -3949,7 +3949,7 @@ eval_method(
     long	len;
     char_u	*alias;
     typval_T	base = *rettv;
-    int		ret;
+    int		ret = OK;
     int		evaluate = evalarg != NULL
 				      && (evalarg->eval_flags & EVAL_EVALUATE);
 
@@ -3968,22 +3968,87 @@ eval_method(
     }
     else
     {
-	*arg = skipwhite(*arg);
-	if (**arg != '(')
+	if (**arg == '.')
 	{
-	    if (verbose)
-		semsg(_(e_missing_parenthesis_str), name);
-	    ret = FAIL;
+	    int		len2;
+	    char_u	*fname;
+	    int		idx;
+	    imported_T	*import = find_imported(name, len,
+						     TRUE, evalarg->eval_cctx);
+	    type_T	*type;
+
+	    // value->import.func()
+	    if (import != NULL)
+	    {
+		name = NULL;
+		++*arg;
+		fname = *arg;
+		len2 = get_name_len(arg, &alias, evaluate, TRUE);
+		if (len2 <= 0)
+		{
+		    emsg(_(e_missing_name_after_dot));
+		    ret = FAIL;
+		}
+		else
+		{
+		    int	    cc = fname[len2];
+		    ufunc_T *ufunc;
+
+		    fname[len2] = NUL;
+		    idx = find_exported(import->imp_sid, fname, &ufunc, &type,
+						  evalarg->eval_cctx, verbose);
+		    fname[len2] = cc;
+
+		    if (idx >= 0)
+		    {
+			scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
+			svar_T		*sv =
+				     ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+			if (sv->sv_tv->v_type == VAR_FUNC
+					   && sv->sv_tv->vval.v_string != NULL)
+			{
+			    name = sv->sv_tv->vval.v_string;
+			    len = STRLEN(name);
+			}
+			else
+			{
+			    // TODO: how about a partial?
+			    semsg(_(e_not_callable_type_str), fname);
+			    ret = FAIL;
+			}
+		    }
+		    else if (ufunc != NULL)
+		    {
+			name = ufunc->uf_name;
+			len = STRLEN(name);
+		    }
+		    else
+			ret = FAIL;
+		}
+	    }
 	}
-	else if (VIM_ISWHITE((*arg)[-1]))
+
+	if (ret == OK)
 	{
-	    if (verbose)
-		emsg(_(e_no_white_space_allowed_before_parenthesis));
-	    ret = FAIL;
-	}
-	else
-	    ret = eval_func(arg, evalarg, name, len, rettv,
+	    *arg = skipwhite(*arg);
+
+	    if (**arg != '(')
+	    {
+		if (verbose)
+		    semsg(_(e_missing_parenthesis_str), name);
+		ret = FAIL;
+	    }
+	    else if (VIM_ISWHITE((*arg)[-1]))
+	    {
+		if (verbose)
+		    emsg(_(e_no_white_space_allowed_before_parenthesis));
+		ret = FAIL;
+	    }
+	    else
+		ret = eval_func(arg, evalarg, name, len, rettv,
 					  evaluate ? EVAL_EVALUATE : 0, &base);
+	}
     }
 
     // Clear the funcref afterwards, so that deleting it while
