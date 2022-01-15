@@ -587,6 +587,41 @@ def Test_assign_index()
   CheckDefFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<unknown>', 2)
 enddef
 
+def Test_init_in_for_loop()
+  var lines =<< trim END
+      var l: list<number> = []
+      for i in [3, 4]
+        var n: number
+        add(l, n)
+        n = 123
+      endfor
+      assert_equal([0, 0], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var l: list<number> = []
+      for i in [3, 4]
+        var n: number = 0
+        add(l, n)
+        n = 123
+      endfor
+      assert_equal([0, 0], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var l: list<number> = []
+      for i in [3, 4]
+        var n: number = 3
+        add(l, n)
+        n = 123
+      endfor
+      assert_equal([3, 3], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_extend_list()
   var lines =<< trim END
       var l1: list<number>

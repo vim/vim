@@ -63,6 +63,7 @@ int generate_UNPACK(cctx_T *cctx, int var_count, int semicolon);
 int generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod);
 int generate_undo_cmdmods(cctx_T *cctx);
 int generate_store_var(cctx_T *cctx, assign_dest_T dest, int opt_flags, int vimvaridx, int scriptvar_idx, int scriptvar_sid, type_T *type, char_u *name);
+int inside_loop_scope(cctx_T *cctx);
 int generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl);
 void may_generate_prof_end(cctx_T *cctx, int prof_lnum);
 void delete_instr(isn_T *isn);
