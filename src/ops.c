@@ -693,7 +693,7 @@ op_delete(oparg_T *oap)
     // register.
     // Note: For the black hole register or select mode '_' don't yank
     // anything.
-    if (oap->regname != '_' && !VIsual_select) {
+    if (oap->regname != '_' && !VIsual_select)
     {
 	if (oap->regname != 0)
 	{
