@@ -3316,7 +3316,7 @@ logfont2name(LOGFONTW lf)
     static void
 update_im_font(void)
 {
-    LOGFONTW	lf_wide, lf;
+    LOGFONTW	lf_wide;
 
     if (p_guifontwide != NULL && *p_guifontwide != NUL
 	    && gui.wide_font != NOFONT
@@ -3324,9 +3324,7 @@ update_im_font(void)
 	norm_logfont = lf_wide;
     else
 	norm_logfont = sub_logfont;
-    lf = norm_logfont;
-    lf.lfHeight = lf.lfHeight * (int)pGetDpiForSystem() / s_dpi;
-    im_set_font(&lf);
+    im_set_font(&norm_logfont);
 }
 #endif
 
@@ -5802,10 +5800,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 	case IMN_SETOPENSTATUS:
 	    if (pImmGetOpenStatus(hImc))
 	    {
-		LOGFONTW lf = norm_logfont;
-
-		lf.lfHeight = lf.lfHeight * (int)pGetDpiForSystem() / s_dpi;
-		pImmSetCompositionFontW(hImc, &lf);
+		pImmSetCompositionFontW(hImc, &norm_logfont);
 		im_set_position(gui.row, gui.col);
 
 		// Disable langmap
@@ -5973,8 +5968,6 @@ im_set_position(int row, int col)
 	cfs.ptCurrentPos.x = FILL_X(col);
 	cfs.ptCurrentPos.y = FILL_Y(row);
 	MapWindowPoints(s_textArea, s_hwnd, &cfs.ptCurrentPos, 1);
-	cfs.ptCurrentPos.x = cfs.ptCurrentPos.x * (int)pGetDpiForSystem() / s_dpi;
-	cfs.ptCurrentPos.y = cfs.ptCurrentPos.y * (int)pGetDpiForSystem() / s_dpi;
 	pImmSetCompositionWindow(hImc, &cfs);
 
 	pImmReleaseContext(s_hwnd, hImc);
