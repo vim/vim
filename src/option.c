@@ -7058,7 +7058,6 @@ get_bkc_value(buf_T *buf)
     char_u *
 get_flp_value(buf_T *buf)
 {
-    return buf->b_p_flp ? buf->b_p_flp : p_flp;
     if (buf->b_p_flp == NULL || *buf->b_p_flp == NUL)
 	return p_flp;
     return buf->b_p_flp;
