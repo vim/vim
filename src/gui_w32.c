@@ -40,6 +40,8 @@ static void directx_binddc(void);
 
 #ifdef FEAT_MENU
 static int gui_mswin_get_menu_height(int fix_window);
+#else
+# define gui_mswin_get_menu_height(fix_window)	0
 #endif
 
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
@@ -2931,10 +2933,8 @@ _OnSize(
     {
 	gui_resize_shell(cx, cy);
 
-#ifdef FEAT_MENU
 	// Menu bar may wrap differently now
 	gui_mswin_get_menu_height(TRUE);
-#endif
     }
 }
 
@@ -3024,10 +3024,7 @@ gui_mswin_get_valid_dimensions(
 	+ (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
 	   pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
 	+ pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
-#ifdef FEAT_MENU
-	+ gui_mswin_get_menu_height(FALSE)
-#endif
-	;
+	+ gui_mswin_get_menu_height(FALSE);
     *cols = (w - base_width) / gui.char_width;
     *rows = (h - base_height) / gui.char_height;
     *valid_w = base_width + *cols * gui.char_width;
@@ -3505,20 +3502,13 @@ gui_mch_newfont(void)
 	    - (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
 	       pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
 	    - pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
-#ifdef FEAT_MENU
-	    - gui_mswin_get_menu_height(FALSE)
-#endif
-	);
+	    - gui_mswin_get_menu_height(FALSE));
     }
     else
     {
 	// Inside another window, don't use the frame and border.
 	gui_resize_shell(rect.right - rect.left,
-	    rect.bottom - rect.top
-#ifdef FEAT_MENU
-			- gui_mswin_get_menu_height(FALSE)
-#endif
-	);
+	    rect.bottom - rect.top - gui_mswin_get_menu_height(FALSE));
     }
 }
 
@@ -4641,9 +4631,11 @@ _OnDpiChanged(HWND hwnd, UINT xdpi, UINT ydpi, RECT *rc)
     update_scrollbar_size();
     update_toolbar_size();
     set_tabline_font();
+
     gui_init_font(*p_guifont == NUL ? hl_get_font_name() : p_guifont, FALSE);
     gui_mswin_get_menu_height(FALSE);
     InvalidateRect(hwnd, NULL, TRUE);
+
     s_in_dpichanged = FALSE;
     return 0L;
 }
@@ -5369,7 +5361,7 @@ gui_mch_init(void)
 
     load_dpi_func();
 
-    s_dpi = pGetDpiForSystem(s_hwnd);
+    s_dpi = pGetDpiForSystem();
     update_scrollbar_size();
 
 #ifdef FEAT_MENU
@@ -5676,10 +5668,7 @@ gui_mch_set_shellsize(
     win_height = height + (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
 		       pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
 			+ pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
-#ifdef FEAT_MENU
-			+ gui_mswin_get_menu_height(FALSE)
-#endif
-			;
+			+ gui_mswin_get_menu_height(FALSE);
 
     // The following should take care of keeping Vim on the same monitor, no
     // matter if the secondary monitor is left or right of the primary
@@ -5706,10 +5695,8 @@ gui_mch_set_shellsize(
     SetActiveWindow(s_hwnd);
     SetFocus(s_hwnd);
 
-#ifdef FEAT_MENU
     // Menu may wrap differently now
     gui_mswin_get_menu_height(!gui.starting);
-#endif
 }
 
 
@@ -6586,10 +6573,7 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 		- (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
 		   pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
 		- pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
-#ifdef FEAT_MENU
-		- gui_mswin_get_menu_height(FALSE)
-#endif
-		;
+		- gui_mswin_get_menu_height(FALSE);
 }
 
 
