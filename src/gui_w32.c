@@ -3311,12 +3311,12 @@ logfont2name(LOGFONTW lf)
 #ifdef FEAT_MBYTE_IME
 /*
  * Set correct LOGFONTW to IME.  Use 'guifontwide' if available, otherwise use
- * 'guifont'
+ * 'guifont'.
  */
     static void
 update_im_font(void)
 {
-    LOGFONTW	lf_wide;
+    LOGFONTW	lf_wide, lf;
 
     if (p_guifontwide != NULL && *p_guifontwide != NUL
 	    && gui.wide_font != NOFONT
@@ -3324,7 +3324,9 @@ update_im_font(void)
 	norm_logfont = lf_wide;
     else
 	norm_logfont = sub_logfont;
-    im_set_font(&norm_logfont);
+    lf = norm_logfont;
+    lf.lfHeight = lf.lfHeight * (int)pGetDpiForSystem() / s_dpi;
+    im_set_font(&lf);
 }
 #endif
 
@@ -3376,13 +3378,14 @@ gui_mch_wide_font_changed(void)
     int
 gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 {
-    LOGFONTW	lf;
+    LOGFONTW	lf, lfOrig;
     GuiFont	font = NOFONT;
     char_u	*p;
 
     // Load the font
     if (get_logfont(&lf, font_name, NULL, TRUE) == OK)
     {
+	lfOrig = lf;
 	lf.lfHeight = adjust_fontsize_by_dpi(lf.lfHeight);
 	font = get_font_handle(&lf);
     }
@@ -3398,14 +3401,15 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
     sub_logfont = lf;
 #endif
 #ifdef FEAT_MBYTE_IME
-    update_im_font();
+    if (!s_in_dpichanged)
+	update_im_font();
 #endif
     gui_mch_free_font(gui.norm_font);
     gui.norm_font = font;
-    current_font_height = lf.lfHeight;
+    current_font_height = lfOrig.lfHeight;
     GetFontSize(font);
 
-    p = logfont2name(lf);
+    p = logfont2name(lfOrig);
     if (p != NULL)
     {
 	hl_set_font_name(p);
@@ -4633,7 +4637,11 @@ _OnDpiChanged(HWND hwnd, UINT xdpi, UINT ydpi, RECT *rc)
     set_tabline_font();
 
     gui_init_font(*p_guifont == NUL ? hl_get_font_name() : p_guifont, FALSE);
+    gui_get_wide_font();
     gui_mswin_get_menu_height(FALSE);
+#ifdef FEAT_MBYTE_IME
+    im_set_position(gui.row, gui.col);
+#endif
     InvalidateRect(hwnd, NULL, TRUE);
 
     s_in_dpichanged = FALSE;
@@ -5794,7 +5802,10 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 	case IMN_SETOPENSTATUS:
 	    if (pImmGetOpenStatus(hImc))
 	    {
-		pImmSetCompositionFontW(hImc, &norm_logfont);
+		LOGFONTW lf = norm_logfont;
+
+		lf.lfHeight = lf.lfHeight * (int)pGetDpiForSystem() / s_dpi;
+		pImmSetCompositionFontW(hImc, &lf);
 		im_set_position(gui.row, gui.col);
 
 		// Disable langmap
@@ -5962,6 +5973,8 @@ im_set_position(int row, int col)
 	cfs.ptCurrentPos.x = FILL_X(col);
 	cfs.ptCurrentPos.y = FILL_Y(row);
 	MapWindowPoints(s_textArea, s_hwnd, &cfs.ptCurrentPos, 1);
+	cfs.ptCurrentPos.x = cfs.ptCurrentPos.x * (int)pGetDpiForSystem() / s_dpi;
+	cfs.ptCurrentPos.y = cfs.ptCurrentPos.y * (int)pGetDpiForSystem() / s_dpi;
 	pImmSetCompositionWindow(hImc, &cfs);
 
 	pImmReleaseContext(s_hwnd, hImc);
