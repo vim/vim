@@ -16,9 +16,11 @@ func Test_selectmode_basic()
   call assert_equal('y51', getline('.'))
   call setline(1, range(1,100))
   50
+  let save_register = getreg('"')
   exe ":norm! V9jo\<c-g>y"
   call assert_equal('y60', getline('.'))
   call setline(1, range(1,100))
+  call assert_equal(save_register, getreg('"'))
   50
   call feedkeys(":set im\n\<c-o>gHc\<c-o>:set noim\n", 'tx')
   call assert_equal('c51', getline('.'))
