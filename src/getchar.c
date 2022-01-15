@@ -3811,7 +3811,7 @@ getcmdkeycmd(
 }
 
     int
-do_cmdkey_command(int key, int flags)
+do_cmdkey_command(int key UNUSED, int flags)
 {
     int	    res;
 #ifdef FEAT_EVAL
