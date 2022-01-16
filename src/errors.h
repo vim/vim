@@ -1239,6 +1239,7 @@ EXTERN char e_no_autocommand_match_name_to_substitute_for_amatch[]
 EXTERN char e_no_source_file_name_to_substitute_for_sfile[]
 	INIT(= N_("E498: no :source file name to substitute for \"<sfile>\""));
 EXTERN char e_empty_file_name_for_percent_or_hash_only_works_with_ph[]
+	// xgettext:no-c-format
 	INIT(= N_("E499: Empty file name for '%' or '#', only works with \":p:h\""));
 EXTERN char e_evaluates_to_an_empty_string[]
 	INIT(= N_("E500: Evaluates to an empty string"));

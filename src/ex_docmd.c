@@ -9219,7 +9219,6 @@ eval_vars(
     if (resultlen == 0 || valid != VALID_HEAD + VALID_PATH)
     {
 	if (valid != VALID_HEAD + VALID_PATH)
-	    // xgettext:no-c-format
 	    *errormsg = _(e_empty_file_name_for_percent_or_hash_only_works_with_ph);
 	else
 	    *errormsg = _(e_evaluates_to_an_empty_string);
