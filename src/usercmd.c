@@ -123,10 +123,10 @@ static struct
     char_u *
 find_ucmd(
     exarg_T	*eap,
-    char_u	*p,	// end of the command (possibly including count)
-    int		*full,	// set to TRUE for a full match
-    expand_T	*xp,	// used for completion, NULL otherwise
-    int		*complp UNUSED)	// completion flags or NULL
+    char_u	*p,	 // end of the command (possibly including count)
+    int		*full,	 // set to TRUE for a full match
+    expand_T	*xp,	 // used for completion, NULL otherwise
+    int		*complp) // completion flags or NULL
 {
     int		len = (int)(p - eap->cmd);
     int		j, k, matchlen = 0;
