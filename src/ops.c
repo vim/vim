@@ -646,6 +646,18 @@ op_delete(oparg_T *oap)
     if (has_mbyte)
 	mb_adjust_opend(oap);
 
+    if (VIsual_select && oap->is_VIsual)
+    {
+	// Check 'selectregister'
+	int reg;
+	reg = *p_slr == '"' ? 0 : *p_slr;
+	if (reg == 0 || valid_yank_reg(reg, TRUE))
+	{
+	    oap->regname = reg;
+	}
+	//oap->regname = '_';
+    }
+
     /*
      * Imitate the strange Vi behaviour: If the delete spans more than one
      * line and motion_type == MCHAR and the result is a blank line, make the
@@ -688,12 +700,12 @@ op_delete(oparg_T *oap)
 	return OK;
     }
 
-    // Do a yank of whatever we're about to delete.
-    // If a yank register was specified, put the deleted text into that
-    // register.
-    // Note: For the black hole register or select mode '_' don't yank
-    // anything.
-    if (oap->regname != '_' && !(VIsual_select && oap->is_VIsual))
+    /*
+     * Do a yank of whatever we're about to delete.
+     * If a yank register was specified, put the deleted text into that
+     * register.  For the black hole register '_' don't yank anything.
+     */
+    if (oap->regname != '_')
     {
 	if (oap->regname != 0)
 	{
