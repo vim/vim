@@ -3136,6 +3136,14 @@ def Test_expr7_method_call()
       var sorted = [3, 1, 2]
                     -> sort()
       assert_equal([1, 2, 3], sorted)
+
+      def SetNumber(n: number)
+        g:number = n
+      enddef
+      const Setit = SetNumber
+      len('text')->Setit()
+      assert_equal(4, g:number)
+      unlet g:number
   END
   CheckDefAndScriptSuccess(lines)
 

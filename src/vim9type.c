@@ -687,6 +687,7 @@ check_type_maybe(
 
 /*
  * Check that the arguments of "type" match "argvars[argcount]".
+ * "base_tv" is from "expr->Func()".
  * Return OK/FAIL.
  */
     int
@@ -694,19 +695,21 @@ check_argument_types(
 	type_T	    *type,
 	typval_T    *argvars,
 	int	    argcount,
+	typval_T    *base_tv,
 	char_u	    *name)
 {
     int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
     int	    i;
+    int	    totcount = argcount + (base_tv == NULL ? 0 : 1);
 
     if (type->tt_type != VAR_FUNC && type->tt_type != VAR_PARTIAL)
 	return OK;  // just in case
-    if (argcount < type->tt_min_argcount - varargs)
+    if (totcount < type->tt_min_argcount - varargs)
     {
 	semsg(_(e_not_enough_arguments_for_function_str), name);
 	return FAIL;
     }
-    if (!varargs && type->tt_argcount >= 0 && argcount > type->tt_argcount)
+    if (!varargs && type->tt_argcount >= 0 && totcount > type->tt_argcount)
     {
 	semsg(_(e_too_many_arguments_for_function_str), name);
 	return FAIL;
@@ -715,15 +718,25 @@ check_argument_types(
 	return OK;  // cannot check
 
 
-    for (i = 0; i < argcount; ++i)
+    for (i = 0; i < totcount; ++i)
     {
-	type_T	*expected;
+	type_T	    *expected;
+	typval_T    *tv;
 
+	if (base_tv != NULL)
+	{
+	    if (i == 0)
+		tv = base_tv;
+	    else
+		tv = &argvars[i - 1];
+	}
+	else
+	    tv = &argvars[i];
 	if (varargs && i >= type->tt_argcount - 1)
 	    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
 	else
 	    expected = type->tt_args[i];
-	if (check_typval_arg_type(expected, &argvars[i], NULL, i + 1) == FAIL)
+	if (check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)
 	    return FAIL;
     }
     return OK;

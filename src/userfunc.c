@@ -3386,7 +3386,8 @@ call_func(
 						       && funcexe->fe_evaluate)
     {
 	// Check that the argument types are OK for the types of the funcref.
-	if (check_argument_types(funcexe->fe_check_type, argvars, argcount,
+	if (check_argument_types(funcexe->fe_check_type,
+					 argvars, argcount, funcexe->fe_basetv,
 				     (name != NULL) ? name : funcname) == FAIL)
 	    error = FCERR_OTHER;
     }
