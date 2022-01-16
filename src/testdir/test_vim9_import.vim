@@ -1485,6 +1485,15 @@ def Test_vim9_autoload_case_sensitive()
   END
   CheckScriptSuccess(lines)
 
+  if !has('fname_case')
+    lines =<< trim END
+        vim9script
+        import autoload 'CaseSensitive.vim'
+        import autoload 'casesensitive.vim'
+    END
+    CheckScriptFailure(lines, 'E1262:')
+  endif
+
   delete('Xdir', 'rf')
   &rtp = save_rtp
 enddef

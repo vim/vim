@@ -2156,11 +2156,7 @@ get_autoload_prefix(scriptitem_T *si)
 
     if (p == NULL)
 	return NULL;
-#ifdef CASE_INSENSITIVE_FILENAME
-    prefix = strlow_save(p);
-#else
     prefix = vim_strsave(p);
-#endif
     if (prefix == NULL)
 	return NULL;
 
