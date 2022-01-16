@@ -3329,7 +3329,7 @@ update_im_font(void)
 
     lf = norm_logfont;
     if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
-	lf.lfHeight = lf.lfHeight * 96 / s_dpi;
+	lf.lfHeight = lf.lfHeight * DEFAULT_DPI / s_dpi;
     im_set_font(&lf);
 }
 #endif
@@ -5814,7 +5814,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 	    {
 		LOGFONTW lf = norm_logfont;
 		if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
-		    lf.lfHeight = lf.lfHeight * 96 / s_dpi;
+		    lf.lfHeight = lf.lfHeight * DEFAULT_DPI / s_dpi;
 		pImmSetCompositionFontW(hImc, &lf);
 		im_set_position(gui.row, gui.col);
 
@@ -5985,8 +5985,8 @@ im_set_position(int row, int col)
 	MapWindowPoints(s_textArea, s_hwnd, &cfs.ptCurrentPos, 1);
 	if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
 	{
-	    cfs.ptCurrentPos.x = cfs.ptCurrentPos.x * 96 / s_dpi;
-	    cfs.ptCurrentPos.y = cfs.ptCurrentPos.y * 96 / s_dpi;
+	    cfs.ptCurrentPos.x = cfs.ptCurrentPos.x * DEFAULT_DPI / s_dpi;
+	    cfs.ptCurrentPos.y = cfs.ptCurrentPos.y * DEFAULT_DPI / s_dpi;
 	}
 	pImmSetCompositionWindow(hImc, &cfs);
 
