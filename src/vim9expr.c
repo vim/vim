@@ -1583,6 +1583,8 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     return ret;
 }
 
+static int compile_expr8(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst);
+
 /*
  * Compile whatever comes after "name" or "name()".
  * Advances "*arg" only when something was recognized.
@@ -1651,13 +1653,15 @@ compile_subscript(
 	}
 	else if (*p == '-' && p[1] == '>')
 	{
-	    char_u *pstart = p;
+	    char_u  *pstart = p;
+	    int	    alt;
+	    char_u  *paren;
 
+	    // something->method()
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
-	    // something->method()
 	    // Apply the '!', '-' and '+' first:
 	    //   -1.0->func() works like (-1.0)->func()
 	    if (compile_leader(cctx, TRUE, start_leader, end_leader) == FAIL)
@@ -1666,7 +1670,48 @@ compile_subscript(
 	    p += 2;
 	    *arg = skipwhite(p);
 	    // No line break supported right after "->".
+
+	    // Three alternatives handled here:
+	    // 1. "base->name("  only a name, use compile_call()
+	    // 2. "base->(expr)(" evaluate "expr", then use PCALL
+	    // 3. "base->expr("  Same, find the end of "expr" by "("
 	    if (**arg == '(')
+		alt = 2;
+	    else
+	    {
+		// alternative 1 or 3
+		p = *arg;
+		if (!eval_isnamec1(*p))
+		{
+		    semsg(_(e_trailing_characters_str), pstart);
+		    return FAIL;
+		}
+		if (ASCII_ISALPHA(*p) && p[1] == ':')
+		    p += 2;
+		for ( ; eval_isnamec(*p); ++p)
+		    ;
+		if (*p == '(')
+		{
+		    // alternative 1
+		    alt = 1;
+		    if (compile_call(arg, p - *arg, cctx, ppconst, 1) == FAIL)
+			return FAIL;
+		}
+		else
+		{
+		    // Must be alternative 3, find the "(". Only works within
+		    // one line.
+		    alt = 3;
+		    paren = vim_strchr(p, '(');
+		    if (paren == NULL)
+		    {
+			semsg(_(e_missing_parenthesis_str), *arg);
+			return FAIL;
+		    }
+		}
+	    }
+
+	    if (alt != 1)
 	    {
 		int	    argcount = 1;
 		garray_T    *stack = &cctx->ctx_type_stack;
@@ -1676,12 +1721,27 @@ compile_subscript(
 		int	    expr_isn_end;
 		int	    arg_isn_count;
 
-		// Funcref call:  list->(Refs[2])(arg)
-		// or lambda:	  list->((arg) => expr)(arg)
-		//
-		// Fist compile the function expression.
-		if (compile_parenthesis(arg, cctx, ppconst) == FAIL)
-		    return FAIL;
+		if (alt == 2)
+		{
+		    // Funcref call:  list->(Refs[2])(arg)
+		    // or lambda:	  list->((arg) => expr)(arg)
+		    //
+		    // Fist compile the function expression.
+		    if (compile_parenthesis(arg, cctx, ppconst) == FAIL)
+			return FAIL;
+		}
+		else
+		{
+		    *paren = NUL;
+		    if (compile_expr8(arg, cctx, ppconst) == FAIL
+						    || *skipwhite(*arg) != NUL)
+		    {
+			*paren = '(';
+			semsg(_(e_invalid_expression_str), pstart);
+			return FAIL;
+		    }
+		    *paren = '(';
+		}
 
 		// Remember the next instruction index, where the instructions
 		// for arguments are being written.
@@ -1742,27 +1802,7 @@ compile_subscript(
 		if (generate_PCALL(cctx, argcount, p - 2, type, FALSE) == FAIL)
 		    return FAIL;
 	    }
-	    else
-	    {
-		// method call:  list->method()
-		p = *arg;
-		if (!eval_isnamec1(*p))
-		{
-		    semsg(_(e_trailing_characters_str), pstart);
-		    return FAIL;
-		}
-		if (ASCII_ISALPHA(*p) && p[1] == ':')
-		    p += 2;
-		for ( ; eval_isnamec(*p); ++p)
-		    ;
-		if (*p != '(')
-		{
-		    semsg(_(e_missing_parenthesis_str), *arg);
-		    return FAIL;
-		}
-		if (compile_call(arg, p - *arg, cctx, ppconst, 1) == FAIL)
-		    return FAIL;
-	    }
+
 	    if (keeping_dict)
 	    {
 		keeping_dict = FALSE;

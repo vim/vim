@@ -3140,7 +3140,6 @@ def Test_expr7_method_call()
   CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
-      vim9script
       def SetNumber(n: number)
         g:number = n
       enddef
@@ -3166,7 +3165,7 @@ def Test_expr7_method_call()
 
       unlet g:number
   END
-  CheckScriptSuccess(lines)  # TODO: CheckDefAndScriptSuccess()
+  CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
     def RetVoid()
