@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2022 Jan 03
+*map.txt*       For Vim version 8.2.  Last change: 2022 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -270,7 +270,7 @@ input. Example: >
 	endfunc
 	nnoremap <expr> <F3> <SID>OpenPopup()
 
-Also, keep in mind that the expression may be evaluated when looking for
+Keep in mind that the expression may be evaluated when looking for
 typeahead, before the previous command has been executed.  For example: >
 	func StoreColumn()
 	  let g:column = col('.')
@@ -353,7 +353,7 @@ useful for |Vim9| script.  It also works to access an import, which is useful
 in a plugin using an autoload script: >
 	vim9script
 	import autoload 'implementation.vim' as impl
-	nnoremap <silent> <F4> <ScriptCmd>impl.DoTheWork()<CR>
+	nnoremap <F4> <ScriptCmd>impl.DoTheWork()<CR>
 
 No matter where <F4> is typed, the "impl" import will be found in the script
 context of where the mapping was defined.  And since it's an autoload import,

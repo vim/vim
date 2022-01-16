@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 08
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,15 +38,15 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Autoload import syntax:
-    import autoload "filename"
-    import autoload "filename" as name
-doesn't load the script yet
-  autoload items can be used without the "#dir#file#" prefix, but file.item
-  Add a test_override() item to load the script and compile functions the
-  moment it is encountered, so that types are checked.
-"vim9script autoload" in an autoload script, using "export" will prefix
-  "dir#file#" to the exported item.
+TODO in eval_method() for using partial.
+
+TODO in compile_load_scriptvar()
+Try using a variable or function that is not exported
+
+"return Msg()" does not give an error if there is no return value. #9497
+
+eval_map_expr() in getchar.c saves stuff because "mp" can change, this does
+not happen in map.c for an abbreviation.  Test that this fails, fix it.
 
 Once Vim9 is stable:
 - Add all the error numbers in a good place in documentation.
@@ -206,6 +206,8 @@ Terminal emulator window:
 
 When using 'cryptmethod' xchaha20 the undo file is not encrypted.
 Need to handle extra bytes.
+
+Some prompts are not translated: #9495
 
 Test_communicate_ipv6(): is flaky on many systems
 Fails in line 64 of Ch_communicate, no exception is thrown.
@@ -903,9 +905,6 @@ deleting autocmds, not when adding them.
 With 'foldmethod' "indent" and appending an empty line, what follows isn't
 included in the existing fold.  Deleting the empty line and undo fixes it.
 (Oleg Koshovetc, 2018 Jul 15, #3214)
-
-Patch to support "xxd -ps". (Erik Auerswald, 2018 May 1)
-Lacks a test.
 
 Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)

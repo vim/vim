@@ -3649,6 +3649,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <S-xF4>	term.txt	/*<S-xF4>*
 <SID>	map.txt	/*<SID>*
 <SNR>	map.txt	/*<SNR>*
+<ScriptCmd>	map.txt	/*<ScriptCmd>*
 <ScrollWheelDown>	scroll.txt	/*<ScrollWheelDown>*
 <ScrollWheelLeft>	scroll.txt	/*<ScrollWheelLeft>*
 <ScrollWheelRight>	scroll.txt	/*<ScrollWheelRight>*
@@ -10278,6 +10279,7 @@ vim.w	if_lua.txt	/*vim.w*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
 vim9	vim9.txt	/*vim9*
+vim9-autoload	vim9.txt	/*vim9-autoload*
 vim9-boolean	vim9.txt	/*vim9-boolean*
 vim9-classes	vim9.txt	/*vim9-classes*
 vim9-const	vim9.txt	/*vim9-const*
@@ -10435,6 +10437,8 @@ win_gettype()	builtin.txt	/*win_gettype()*
 win_gotoid()	builtin.txt	/*win_gotoid()*
 win_id2tabwin()	builtin.txt	/*win_id2tabwin()*
 win_id2win()	builtin.txt	/*win_id2win()*
+win_move_separator()	builtin.txt	/*win_move_separator()*
+win_move_statusline()	builtin.txt	/*win_move_statusline()*
 win_screenpos()	builtin.txt	/*win_screenpos()*
 win_splitmove()	builtin.txt	/*win_splitmove()*
 winbufnr()	builtin.txt	/*winbufnr()*
@@ -10617,6 +10621,7 @@ zz	scroll.txt	/*zz*
 {Visual}	intro.txt	/*{Visual}*
 {address}	cmdline.txt	/*{address}*
 {arglist}	editing.txt	/*{arglist}*
+{aupat}	autocmd.txt	/*{aupat}*
 {bufname}	windows.txt	/*{bufname}*
 {char1-char2}	intro.txt	/*{char1-char2}*
 {event}	autocmd.txt	/*{event}*
@@ -10626,7 +10631,6 @@ zz	scroll.txt	/*zz*
 {motion}	intro.txt	/*{motion}*
 {move-around}	visual.txt	/*{move-around}*
 {offset}	pattern.txt	/*{offset}*
-{pat}	autocmd.txt	/*{pat}*
 {register}	change.txt	/*{register}*
 {rhs}	map.txt	/*{rhs}*
 {subject}	helphelp.txt	/*{subject}*

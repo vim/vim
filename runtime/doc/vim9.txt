@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 07
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,6 +103,8 @@ script and `:def` functions; details are below:
   `:exe`: >
   	:exe @a
 - Unless mentioned specifically, the highest |scriptversion| is used.
+- When defining an expression mapping, the expression will be evaluated in the
+  context of the script where it was defined.
 
 
 Comments starting with # ~
@@ -1357,9 +1359,11 @@ Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 5. Namespace, Import and Export
 					*vim9script* *vim9-export* *vim9-import*
 
-A Vim9 script can be written to be imported.  This means that everything in
-the script is local, except for items that are exported.  Those exported
-items, and only those items, can then be imported in another script.
+A Vim9 script can be written to be imported.  This means that some items are
+intentionally exported, made available to other scripts.  When the exporting
+script is imported in another script, these exported items can then be used in
+that script.  All the other items remain script-local in the exporting script
+and cannot be accessed by the importing script.
 
 This mechanism exists for writing a script that can be sourced (imported) by
 other scripts, while making sure these other scripts only have access to what
@@ -1367,8 +1371,8 @@ you want them to.  This also avoids using the global namespace, which has a
 risc of name collisions.  For example when you have two plugins with similar
 functionality.
 
-You can cheat by using the global namespace explicitly.  We will assume here
-that you don't do that.
+You can cheat by using the global namespace explicitly.  That should be done
+only for things that really are global.
 
 
 Namespace ~
@@ -1500,7 +1504,7 @@ or indirectly) imports the current script, then items defined after the
 result in undefined items.
 
 
-Import in an autoload script ~
+Importing an autoload script ~
 							*vim9-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
 actually needed.  Using the autoload mechanism is recommended:
@@ -1534,16 +1538,30 @@ actually needed.  Using the autoload mechanism is recommended:
    You can split up the functionality and import other scripts from the
    autoload script as you like.  This way you can share code between plugins.
 
+For defining a mapping that uses the imported autoload script the special key
+|<ScriptCmd>| is useful.  It allows for a command in a mapping to use the
+script context of where the mapping was defined.
+
 When compiling a `:def` function and a function in an autoload script is
 encountered, the script is not loaded until the `:def` function is called.
 This also means you get any errors only at runtime, since the argument and
 return types are not known yet.
 
+For testing the |test_override()| function can be used to have the
+`import autoload` load the script right away, so that the items and types can
+be checked without waiting for them to be actually used: >
+	test_override('autoload', 1)
+Reset it later with: >
+	test_override('autoload', 0)
+Or: >
+	test_override('ALL', 0)
+
 
 Import in legacy Vim script ~
 
 If an `import` statement is used in legacy Vim script, the script-local "s:"
-namespace will be used for the imported item, even when "s:" is not specified.
+namespace will be used for the imported items, even when "s:" is not
+specified.
 
 
 ==============================================================================

@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2021 Dec 27
+*repeat.txt*    For Vim version 8.2.  Last change: 2022 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
