@@ -1411,6 +1411,22 @@ func Test_map_script_cmd_restore()
   unlet g:result
 endfunc
 
+func Test_map_script_cmd_finds_func()
+  let lines =<< trim END
+      vim9script
+      onoremap <F3> <ScriptCmd>Func()<CR>
+      def Func()
+        g:func_called = 'yes'
+      enddef
+  END
+  call CheckScriptSuccess(lines)
+  call feedkeys("y\<F3>\<Esc>", 'xtc')
+  call assert_equal('yes', g:func_called)
+
+  ounmap <F3>
+  unlet g:func_called
+endfunc
+
 " Test for using <script> with a map to remap characters in rhs
 func Test_script_local_remap()
   new
