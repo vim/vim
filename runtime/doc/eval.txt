@@ -2551,6 +2551,15 @@ v:sizeofpointer	Number of bytes in a pointer.  Depends on how Vim was compiled.
 					*v:statusmsg* *statusmsg-variable*
 v:statusmsg	Last given status message.  It's allowed to set this variable.
 
+					*v:stacktrace* *stacktrace-variable*
+v:stacktrace	Contains the stack trace whitch is a list of dictionaries.
+		This dictionary has following member:
+			'funcref'	The funcref of current function.
+			'lnum'		If this function was defined in a script,
+					contains the current line number.
+			'filepath'	If this function was defined in a script,
+					contains the current filepath.
+
 					*v:swapname* *swapname-variable*
 v:swapname	Only valid when executing |SwapExists| autocommands: Name of
 		the swap file found.  Read-only.

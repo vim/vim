@@ -22,6 +22,7 @@ int dict_add_string_len(dict_T *d, char *key, char_u *str, int len);
 int dict_add_list(dict_T *d, char *key, list_T *list);
 int dict_add_tv(dict_T *d, char *key, typval_T *tv);
 int dict_add_callback(dict_T *d, char *key, callback_T *cb);
+int dict_add_func(dict_T *d, char *key, ufunc_T *fp);
 void dict_iterate_start(typval_T *var, dict_iterator_T *iter);
 char_u *dict_iterate_next(dict_iterator_T *iter, typval_T **tv_result);
 int dict_add_dict(dict_T *d, char *key, dict_T *dict);

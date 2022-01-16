@@ -160,7 +160,8 @@ static struct vimvar
     {VV_NAME("python3_version",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_typealias",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_enum",		 VAR_NUMBER), NULL, VV_RO},
-    {VV_NAME("t_enumvalue",	 VAR_NUMBER), NULL, VV_RO}
+    {VV_NAME("t_enumvalue",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("stacktrace",	 VAR_LIST), &t_list_string, VV_RO},
 };
 
 // shorthand
@@ -249,6 +250,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_SIZEOFLONG, sizeof(long));
     set_vim_var_nr(VV_SIZEOFPOINTER, sizeof(char *));
     set_vim_var_nr(VV_MAXCOL, MAXCOL);
+    set_vim_var_list(VV_STACKTRACE, list_alloc());
 
     set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
     set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);
