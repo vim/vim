@@ -655,7 +655,6 @@ op_delete(oparg_T *oap)
 	{
 	    oap->regname = reg;
 	}
-	//oap->regname = '_';
     }
 
     /*
