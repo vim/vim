@@ -6001,7 +6001,6 @@ handle_subscript(
 	    idx = find_exported(rettv->vval.v_number, exp_name, &ufunc, &type,
 						  evalarg->eval_cctx, verbose);
 	    **arg = cc;
-	    *arg = skipwhite(*arg);
 
 	    if (idx < 0 && ufunc == NULL)
 	    {

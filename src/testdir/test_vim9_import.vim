@@ -69,6 +69,7 @@ def Test_vim9_import_export()
 
     g:imported_name = expo.exp_name
     expo.exp_name ..= ' Doe'
+    expo.exp_name = expo.exp_name .. ' Maar'
     g:imported_name_appended = expo.exp_name
     g:exported_later = expo.exported
 
@@ -97,7 +98,7 @@ def Test_vim9_import_export()
   assert_equal('Exported', g:imported_func)
   assert_equal('Exported', g:funcref_result)
   assert_equal('John', g:imported_name)
-  assert_equal('John Doe', g:imported_name_appended)
+  assert_equal('John Doe Maar', g:imported_name_appended)
   assert_false(exists('g:name'))
 
   Undo_export_script_lines()
