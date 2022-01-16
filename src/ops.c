@@ -639,13 +639,6 @@ op_delete(oparg_T *oap)
 	return FAIL;
     }
 
-#ifdef FEAT_CLIPBOARD
-    adjust_clip_reg(&oap->regname);
-#endif
-
-    if (has_mbyte)
-	mb_adjust_opend(oap);
-
     if (VIsual_select && oap->is_VIsual)
     {
 	// Check 'selectregister'
@@ -656,6 +649,13 @@ op_delete(oparg_T *oap)
 	    oap->regname = reg;
 	}
     }
+
+#ifdef FEAT_CLIPBOARD
+    adjust_clip_reg(&oap->regname);
+#endif
+
+    if (has_mbyte)
+	mb_adjust_opend(oap);
 
     /*
      * Imitate the strange Vi behaviour: If the delete spans more than one
