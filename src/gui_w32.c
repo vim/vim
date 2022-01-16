@@ -40,6 +40,8 @@ static void directx_binddc(void);
 
 #ifdef FEAT_MENU
 static int gui_mswin_get_menu_height(int fix_window);
+#else
+# define gui_mswin_get_menu_height(fix_window)	0
 #endif
 
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
@@ -230,6 +232,10 @@ gui_mch_set_rendering_options(char_u *s)
 # define MK_XBUTTON2		0x0040
 #endif
 
+#ifndef WM_DPICHANGED
+# define WM_DPICHANGED		0x02E0
+#endif
+
 #ifdef PROTO
 /*
  * Define a few things for generating prototypes.  This is just to avoid
@@ -314,7 +320,7 @@ static int		s_busy_processing = FALSE;
 static int		destroying = FALSE;	// call DestroyWindow() ourselves
 
 #ifdef MSWIN_FIND_REPLACE
-static UINT		s_findrep_msg = 0;	// set in gui_w[16/32].c
+static UINT		s_findrep_msg = 0;
 static FINDREPLACEW	s_findrep_struct;
 static HWND		s_findrep_hwnd = NULL;
 static int		s_findrep_is_find;	// TRUE for find dialog, FALSE
@@ -357,6 +363,63 @@ static int allow_scrollbar = FALSE;
 #else
 # define MyTranslateMessage(x) TranslateMessage(x)
 #endif
+
+#ifndef _DPI_AWARENESS_CONTEXTS_
+typedef HANDLE DPI_AWARENESS_CONTEXT;
+
+typedef enum DPI_AWARENESS {
+    DPI_AWARENESS_INVALID           = -1,
+    DPI_AWARENESS_UNAWARE           = 0,
+    DPI_AWARENESS_SYSTEM_AWARE      = 1,
+    DPI_AWARENESS_PER_MONITOR_AWARE = 2
+} DPI_AWARENESS;
+
+# define DPI_AWARENESS_CONTEXT_UNAWARE              ((DPI_AWARENESS_CONTEXT)-1)
+# define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         ((DPI_AWARENESS_CONTEXT)-2)
+# define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    ((DPI_AWARENESS_CONTEXT)-3)
+# define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
+# define DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED    ((DPI_AWARENESS_CONTEXT)-5)
+#endif
+
+#define DEFAULT_DPI	96
+static int		s_dpi = DEFAULT_DPI;
+static BOOL		s_in_dpichanged = FALSE;
+static DPI_AWARENESS	s_process_dpi_aware = DPI_AWARENESS_INVALID;
+
+static UINT (WINAPI *pGetDpiForSystem)(void) = NULL;
+static UINT (WINAPI *pGetDpiForWindow)(HWND hwnd) = NULL;
+static int (WINAPI *pGetSystemMetricsForDpi)(int, UINT) = NULL;
+//static INT (WINAPI *pGetWindowDpiAwarenessContext)(HWND hwnd) = NULL;
+static DPI_AWARENESS_CONTEXT (WINAPI *pSetThreadDpiAwarenessContext)(DPI_AWARENESS_CONTEXT dpiContext) = NULL;
+static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT) = NULL;
+
+    static UINT WINAPI
+stubGetDpiForSystem(void)
+{
+    HWND hwnd = GetDesktopWindow();
+    HDC hdc = GetWindowDC(hwnd);
+    UINT dpi = GetDeviceCaps(hdc, LOGPIXELSY);
+    ReleaseDC(hwnd, hdc);
+    return dpi;
+}
+
+    static int WINAPI
+stubGetSystemMetricsForDpi(int nIndex, UINT dpi)
+{
+    return GetSystemMetrics(nIndex);
+}
+
+    static int
+adjust_fontsize_by_dpi(int size)
+{
+    return size * s_dpi / (int)pGetDpiForSystem();
+}
+
+    static int
+adjust_by_system_dpi(int size)
+{
+    return size * (int)pGetDpiForSystem() / DEFAULT_DPI;
+}
 
 #if defined(FEAT_DIRECTX)
     static int
@@ -1348,7 +1411,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 #ifdef FEAT_TOOLBAR
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 	SendMessage(s_toolbarhwnd, WM_SIZE,
-	      (WPARAM)0, (LPARAM)(w + ((long)(TOOLBAR_BUTTON_HEIGHT+8)<<16)));
+	      (WPARAM)0, MAKELPARAM(w, gui.toolbar_height));
 #endif
 #if defined(FEAT_GUI_TABLINE)
     if (showing_tabline)
@@ -1358,7 +1421,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 
 # ifdef FEAT_TOOLBAR
 	if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-	    top = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
+	    top = gui.toolbar_height;
 # endif
 	GetClientRect(s_hwnd, &rect);
 	MoveWindow(s_tabhwnd, 0, top, rect.right, gui.tabline_height, TRUE);
@@ -1414,8 +1477,8 @@ gui_mch_get_scrollbar_xpadding(void)
     GetWindowRect(s_textArea, &rcTxt);
     GetWindowRect(s_hwnd, &rcWnd);
     xpad = rcWnd.right - rcTxt.right - gui.scrollbar_width
-	- GetSystemMetrics(SM_CXFRAME)
-	- GetSystemMetrics(SM_CXPADDEDBORDER);
+	- pGetSystemMetricsForDpi(SM_CXFRAME, s_dpi)
+	- pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi);
     return (xpad < 0) ? 0 : xpad;
 }
 
@@ -1428,8 +1491,8 @@ gui_mch_get_scrollbar_ypadding(void)
     GetWindowRect(s_textArea, &rcTxt);
     GetWindowRect(s_hwnd, &rcWnd);
     ypad = rcWnd.bottom - rcTxt.bottom - gui.scrollbar_height
-	- GetSystemMetrics(SM_CYFRAME)
-	- GetSystemMetrics(SM_CXPADDEDBORDER);
+	- pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi)
+	- pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi);
     return (ypad < 0) ? 0 : ypad;
 }
 
@@ -1465,6 +1528,13 @@ gui_mswin_find_scrollbar(HWND hwnd)
 	    return &wp->w_scrollbars[SBAR_RIGHT];
     }
     return NULL;
+}
+
+    static void
+update_scrollbar_size(void)
+{
+    gui.scrollbar_width = pGetSystemMetricsForDpi(SM_CXVSCROLL, s_dpi);
+    gui.scrollbar_height = pGetSystemMetricsForDpi(SM_CYHSCROLL, s_dpi);
 }
 
 /*
@@ -1545,7 +1615,10 @@ gui_mch_get_font(
     GuiFont	font = NOFONT;
 
     if (get_logfont(&lf, name, NULL, giveErrorIfMissing) == OK)
+    {
+	lf.lfHeight = adjust_fontsize_by_dpi(lf.lfHeight);
 	font = get_font_handle(&lf);
+    }
     if (font == NOFONT && giveErrorIfMissing)
 	semsg(_(e_unknown_font_str), name);
     return font;
@@ -2858,14 +2931,12 @@ _OnSize(
     int cx,
     int cy)
 {
-    if (!IsMinimized(hwnd))
+    if (!IsMinimized(hwnd) && !s_in_dpichanged)
     {
 	gui_resize_shell(cx, cy);
 
-#ifdef FEAT_MENU
 	// Menu bar may wrap differently now
 	gui_mswin_get_menu_height(TRUE);
-#endif
     }
 }
 
@@ -2949,16 +3020,13 @@ gui_mswin_get_valid_dimensions(
     int	    base_width, base_height;
 
     base_width = gui_get_base_width()
-	+ (GetSystemMetrics(SM_CXFRAME) +
-	   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
+	+ (pGetSystemMetricsForDpi(SM_CXFRAME, s_dpi) +
+	   pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2;
     base_height = gui_get_base_height()
-	+ (GetSystemMetrics(SM_CYFRAME) +
-	   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
-	+ GetSystemMetrics(SM_CYCAPTION)
-#ifdef FEAT_MENU
-	+ gui_mswin_get_menu_height(FALSE)
-#endif
-	;
+	+ (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
+	   pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
+	+ pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
+	+ gui_mswin_get_menu_height(FALSE);
     *cols = (w - base_width) / gui.char_width;
     *rows = (h - base_height) / gui.char_height;
     *valid_w = base_width + *cols * gui.char_width;
@@ -3245,12 +3313,12 @@ logfont2name(LOGFONTW lf)
 #ifdef FEAT_MBYTE_IME
 /*
  * Set correct LOGFONTW to IME.  Use 'guifontwide' if available, otherwise use
- * 'guifont'
+ * 'guifont'.
  */
     static void
 update_im_font(void)
 {
-    LOGFONTW	lf_wide;
+    LOGFONTW	lf_wide, lf;
 
     if (p_guifontwide != NULL && *p_guifontwide != NUL
 	    && gui.wide_font != NOFONT
@@ -3258,7 +3326,12 @@ update_im_font(void)
 	norm_logfont = lf_wide;
     else
 	norm_logfont = sub_logfont;
-    im_set_font(&norm_logfont);
+
+    lf = norm_logfont;
+    if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+	// Work around when PerMonitorV2 is not enabled in the process level.
+	lf.lfHeight = lf.lfHeight * DEFAULT_DPI / s_dpi;
+    im_set_font(&lf);
 }
 #endif
 
@@ -3310,13 +3383,17 @@ gui_mch_wide_font_changed(void)
     int
 gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 {
-    LOGFONTW	lf;
+    LOGFONTW	lf, lfOrig;
     GuiFont	font = NOFONT;
     char_u	*p;
 
     // Load the font
     if (get_logfont(&lf, font_name, NULL, TRUE) == OK)
+    {
+	lfOrig = lf;
+	lf.lfHeight = adjust_fontsize_by_dpi(lf.lfHeight);
 	font = get_font_handle(&lf);
+    }
     if (font == NOFONT)
 	return FAIL;
 
@@ -3329,20 +3406,20 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
     sub_logfont = lf;
 #endif
 #ifdef FEAT_MBYTE_IME
-    update_im_font();
+    if (!s_in_dpichanged)
+	update_im_font();
 #endif
     gui_mch_free_font(gui.norm_font);
     gui.norm_font = font;
-    current_font_height = lf.lfHeight;
+    current_font_height = lfOrig.lfHeight;
     GetFontSize(font);
 
-    p = logfont2name(lf);
+    p = logfont2name(lfOrig);
     if (p != NULL)
     {
 	hl_set_font_name(p);
 
 	// When setting 'guifont' to "*" replace it with the actual font name.
-	//
 	if (STRCMP(font_name, "*") == 0 && STRCMP(p_guifont, "*") == 0)
 	{
 	    vim_free(p_guifont);
@@ -3428,26 +3505,19 @@ gui_mch_newfont(void)
     if (win_socket_id == 0)
     {
 	gui_resize_shell(rect.right - rect.left
-	    - (GetSystemMetrics(SM_CXFRAME) +
-	       GetSystemMetrics(SM_CXPADDEDBORDER)) * 2,
+	    - (pGetSystemMetricsForDpi(SM_CXFRAME, s_dpi) +
+	       pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2,
 	    rect.bottom - rect.top
-	    - (GetSystemMetrics(SM_CYFRAME) +
-	       GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
-	    - GetSystemMetrics(SM_CYCAPTION)
-#ifdef FEAT_MENU
-	    - gui_mswin_get_menu_height(FALSE)
-#endif
-	);
+	    - (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
+	       pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
+	    - pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
+	    - gui_mswin_get_menu_height(FALSE));
     }
     else
     {
 	// Inside another window, don't use the frame and border.
 	gui_resize_shell(rect.right - rect.left,
-	    rect.bottom - rect.top
-#ifdef FEAT_MENU
-			- gui_mswin_get_menu_height(FALSE)
-#endif
-	);
+	    rect.bottom - rect.top - gui_mswin_get_menu_height(FALSE));
     }
 }
 
@@ -4101,7 +4171,7 @@ typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 #if defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)
 // Older MSVC compilers don't have LPNMTTDISPINFO[AW] thus we need to define
 // it here if LPNMTTDISPINFO isn't defined.
-// MingW doesn't define LPNMTTDISPINFO but typedefs it.  Thus we need to check
+// MinGW doesn't define LPNMTTDISPINFO but typedefs it.  Thus we need to check
 // _MSC_VER.
 # if !defined(LPNMTTDISPINFO) && defined(_MSC_VER)
 typedef struct tagNMTTDISPINFOA {
@@ -4178,8 +4248,11 @@ static int mouse_scroll_lines = 0;
 static int	s_usenewlook;	    // emulate W95/NT4 non-bold dialogs
 #ifdef FEAT_TOOLBAR
 static void initialise_toolbar(void);
+static void update_toolbar_size(void);
 static LRESULT CALLBACK toolbar_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static int get_toolbar_bitmap(vimmenu_T *menu);
+#else
+# define update_toolbar_size()
 #endif
 
 #ifdef FEAT_GUI_TABLINE
@@ -4419,6 +4492,7 @@ set_tabline_font(void)
     if (gui_w32_get_menu_font(&lfSysmenu) != OK)
 	return;
 
+    lfSysmenu.lfHeight = adjust_fontsize_by_dpi(lfSysmenu.lfHeight);
     font = CreateFontIndirectW(&lfSysmenu);
 
     SendMessage(s_tabhwnd, WM_SETFONT, (WPARAM)font, TRUE);
@@ -4441,6 +4515,8 @@ set_tabline_font(void)
      */
     gui.tabline_height = tm.tmHeight + tm.tmInternalLeading + 7;
 }
+#else
+# define set_tabline_font()
 #endif
 
 /*
@@ -4452,10 +4528,8 @@ _OnSettingChange(UINT n)
     if (n == SPI_SETWHEELSCROLLLINES)
 	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0,
 		&mouse_scroll_lines, 0);
-#if defined(FEAT_GUI_TABLINE) && defined(USE_SYSMENU_FONT)
     if (n == SPI_SETNONCLIENTMETRICS)
 	set_tabline_font();
-#endif
     return 0;
 }
 
@@ -4556,6 +4630,28 @@ _DuringSizing(
     return TRUE;
 }
 
+    static LRESULT
+_OnDpiChanged(HWND hwnd, UINT xdpi, UINT ydpi, RECT *rc)
+{
+    s_dpi = ydpi;
+    s_in_dpichanged = TRUE;
+    //TRACE("DPI: %d", ydpi);
+
+    update_scrollbar_size();
+    update_toolbar_size();
+    set_tabline_font();
+
+    gui_init_font(*p_guifont == NUL ? hl_get_font_name() : p_guifont, FALSE);
+    gui_get_wide_font();
+    gui_mswin_get_menu_height(FALSE);
+#ifdef FEAT_MBYTE_IME
+    im_set_position(gui.row, gui.col);
+#endif
+    InvalidateRect(hwnd, NULL, TRUE);
+
+    s_in_dpichanged = FALSE;
+    return 0L;
+}
 
 
     static LRESULT CALLBACK
@@ -4916,6 +5012,9 @@ _WndProc(
 	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
 	return 1L;
 #endif
+    case WM_DPICHANGED:
+	return _OnDpiChanged(hwnd, (UINT)LOWORD(wParam), (UINT)HIWORD(wParam),
+		(RECT*)lParam);
 
     default:
 #ifdef MSWIN_FIND_REPLACE
@@ -5216,6 +5315,49 @@ gui_mch_prepare(int *argc, char **argv)
 #endif
 }
 
+    static void
+load_dpi_func(void)
+{
+    HMODULE	hUser32;
+
+    hUser32 = GetModuleHandle("user32.dll");
+    if (hUser32 == NULL)
+	goto fail;
+
+    pGetDpiForSystem = (void*)GetProcAddress(hUser32, "GetDpiForSystem");
+    pGetDpiForWindow = (void*)GetProcAddress(hUser32, "GetDpiForWindow");
+    pGetSystemMetricsForDpi = (void*)GetProcAddress(hUser32, "GetSystemMetricsForDpi");
+    //pGetWindowDpiAwarenessContext = (void*)GetProcAddress(hUser32, "GetWindowDpiAwarenessContext");
+    pSetThreadDpiAwarenessContext = (void*)GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
+    pGetAwarenessFromDpiAwarenessContext = (void*)GetProcAddress(hUser32, "GetAwarenessFromDpiAwarenessContext");
+
+    if (pSetThreadDpiAwarenessContext != NULL)
+    {
+	DPI_AWARENESS_CONTEXT oldctx = pSetThreadDpiAwarenessContext(
+		DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	if (oldctx != NULL)
+	{
+	    TRACE("DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 enabled");
+	    s_process_dpi_aware = pGetAwarenessFromDpiAwarenessContext(oldctx);
+#ifdef DEBUG
+	    if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+	    {
+		TRACE("WARNING: PerMonitorV2 is not enabled in the process level for some reasons. IME window may not shown correctly.");
+	    }
+#endif
+	    return;
+	}
+    }
+
+fail:
+    // Disable PerMonitorV2 APIs.
+    pGetDpiForSystem = stubGetDpiForSystem;
+    pGetDpiForWindow = NULL;
+    pGetSystemMetricsForDpi = stubGetSystemMetricsForDpi;
+    pSetThreadDpiAwarenessContext = NULL;
+    pGetAwarenessFromDpiAwarenessContext = NULL;
+}
+
 /*
  * Initialise the GUI.	Create all the windows, set up all the call-backs
  * etc.
@@ -5242,12 +5384,18 @@ gui_mch_init(void)
     s_htearbitmap = LoadBitmap(g_hinst, "IDB_TEAROFF");
 #endif
 
-    gui.scrollbar_width = GetSystemMetrics(SM_CXVSCROLL);
-    gui.scrollbar_height = GetSystemMetrics(SM_CYHSCROLL);
+    load_dpi_func();
+
+    s_dpi = pGetDpiForSystem();
+    update_scrollbar_size();
+
 #ifdef FEAT_MENU
     gui.menu_height = 0;	// Windows takes care of this
 #endif
     gui.border_width = 0;
+#ifdef FEAT_TOOLBAR
+    gui.toolbar_height = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
+#endif
 
     s_brush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
 
@@ -5336,6 +5484,13 @@ gui_mch_init(void)
     if (s_hwnd == NULL)
 	return FAIL;
 
+    if (pGetDpiForWindow != NULL)
+    {
+	s_dpi = pGetDpiForWindow(s_hwnd);
+	update_scrollbar_size();
+	//TRACE("System DPI: %d, DPI: %d", pGetDpiForSystem(), s_dpi);
+    }
+
 #ifdef GLOBAL_IME
     global_ime_init(atom, s_hwnd);
 #endif
@@ -5391,7 +5546,7 @@ gui_mch_init(void)
     DragAcceptFiles(s_hwnd, TRUE);
 
     // Do we need to bother with this?
-    // m_fMouseAvail = GetSystemMetrics(SM_MOUSEPRESENT);
+    // m_fMouseAvail = pGetSystemMetricsForDpi(SM_MOUSEPRESENT, s_dpi);
 
     // Get background/foreground colors from the system
     gui_mch_def_colors();
@@ -5533,15 +5688,12 @@ gui_mch_set_shellsize(
     GetWindowRect(s_hwnd, &window_rect);
 
     // compute the size of the outside of the window
-    win_width = width + (GetSystemMetrics(SM_CXFRAME) +
-			 GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
-    win_height = height + (GetSystemMetrics(SM_CYFRAME) +
-			   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
-			+ GetSystemMetrics(SM_CYCAPTION)
-#ifdef FEAT_MENU
-			+ gui_mswin_get_menu_height(FALSE)
-#endif
-			;
+    win_width = width + (pGetSystemMetricsForDpi(SM_CXFRAME, s_dpi) +
+		     pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2;
+    win_height = height + (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
+		       pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
+			+ pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
+			+ gui_mswin_get_menu_height(FALSE);
 
     // The following should take care of keeping Vim on the same monitor, no
     // matter if the secondary monitor is left or right of the primary
@@ -5568,10 +5720,8 @@ gui_mch_set_shellsize(
     SetActiveWindow(s_hwnd);
     SetFocus(s_hwnd);
 
-#ifdef FEAT_MENU
     // Menu may wrap differently now
     gui_mswin_get_menu_height(!gui.starting);
-#endif
 }
 
 
@@ -5669,7 +5819,11 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 	case IMN_SETOPENSTATUS:
 	    if (pImmGetOpenStatus(hImc))
 	    {
-		pImmSetCompositionFontW(hImc, &norm_logfont);
+		LOGFONTW lf = norm_logfont;
+		if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+		    // Work around when PerMonitorV2 is not enabled in the process level.
+		    lf.lfHeight = lf.lfHeight * DEFAULT_DPI / s_dpi;
+		pImmSetCompositionFontW(hImc, &lf);
 		im_set_position(gui.row, gui.col);
 
 		// Disable langmap
@@ -5837,6 +5991,12 @@ im_set_position(int row, int col)
 	cfs.ptCurrentPos.x = FILL_X(col);
 	cfs.ptCurrentPos.y = FILL_Y(row);
 	MapWindowPoints(s_textArea, s_hwnd, &cfs.ptCurrentPos, 1);
+	if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+	{
+	    // Work around when PerMonitorV2 is not enabled in the process level.
+	    cfs.ptCurrentPos.x = cfs.ptCurrentPos.x * DEFAULT_DPI / s_dpi;
+	    cfs.ptCurrentPos.y = cfs.ptCurrentPos.y * DEFAULT_DPI / s_dpi;
+	}
 	pImmSetCompositionWindow(hImc, &cfs);
 
 	pImmReleaseContext(s_hwnd, hImc);
@@ -6438,20 +6598,17 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
     get_work_area(&workarea_rect);
 
     *screen_w = workarea_rect.right - workarea_rect.left
-		- (GetSystemMetrics(SM_CXFRAME) +
-		   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
+		- (pGetSystemMetricsForDpi(SM_CXFRAME, s_dpi) +
+		   pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2;
 
     // FIXME: dirty trick: Because the gui_get_base_height() doesn't include
     // the menubar for MSwin, we subtract it from the screen height, so that
     // the window size can be made to fit on the screen.
     *screen_h = workarea_rect.bottom - workarea_rect.top
-		- (GetSystemMetrics(SM_CYFRAME) +
-		   GetSystemMetrics(SM_CXPADDEDBORDER)) * 2
-		- GetSystemMetrics(SM_CYCAPTION)
-#ifdef FEAT_MENU
-		- gui_mswin_get_menu_height(FALSE)
-#endif
-		;
+		- (pGetSystemMetricsForDpi(SM_CYFRAME, s_dpi) +
+		   pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, s_dpi)) * 2
+		- pGetSystemMetricsForDpi(SM_CYCAPTION, s_dpi)
+		- gui_mswin_get_menu_height(FALSE);
 }
 
 
@@ -6905,6 +7062,9 @@ gui_mch_dialog(
 # endif
     garray_T	ga;
     int		l;
+    int		dlg_icon_width;
+    int		dlg_icon_height;
+    int		dpi;
 
 # ifndef NO_CONSOLE
     // Don't output anything in silent mode ("ex -s")
@@ -6916,7 +7076,13 @@ gui_mch_dialog(
 # endif
 
     if (s_hwnd == NULL)
+    {
+	load_dpi_func();
+	s_dpi = dpi = pGetDpiForSystem();
 	get_dialog_font_metrics();
+    }
+    else
+	dpi = pGetDpiForSystem();
 
     if ((type < 0) || (type > VIM_LAST_TYPE))
 	type = 0;
@@ -6974,7 +7140,7 @@ gui_mch_dialog(
     else
 # endif
     font = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		      VARIABLE_PITCH , DLG_FONT_NAME);
+		      VARIABLE_PITCH, DLG_FONT_NAME);
     if (s_usenewlook)
     {
 	oldFont = SelectFont(hdc, font);
@@ -7001,8 +7167,8 @@ gui_mch_dialog(
 	// We don't have a window, use the desktop area.
 	get_work_area(&workarea_rect);
 	maxDialogWidth = workarea_rect.right - workarea_rect.left - 100;
-	if (maxDialogWidth > 600)
-	    maxDialogWidth = 600;
+	if (maxDialogWidth > adjust_by_system_dpi(600))
+	    maxDialogWidth = adjust_by_system_dpi(600);
 	// Leave some room for the taskbar.
 	maxDialogHeight = workarea_rect.bottom - workarea_rect.top - 150;
     }
@@ -7011,17 +7177,17 @@ gui_mch_dialog(
 	// Use our own window for the size, unless it's very small.
 	GetWindowRect(s_hwnd, &rect);
 	maxDialogWidth = rect.right - rect.left
-				   - (GetSystemMetrics(SM_CXFRAME) +
-				      GetSystemMetrics(SM_CXPADDEDBORDER)) * 2;
-	if (maxDialogWidth < DLG_MIN_MAX_WIDTH)
-	    maxDialogWidth = DLG_MIN_MAX_WIDTH;
+		       - (pGetSystemMetricsForDpi(SM_CXFRAME, dpi) +
+			  pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)) * 2;
+	if (maxDialogWidth < adjust_by_system_dpi(DLG_MIN_MAX_WIDTH))
+	    maxDialogWidth = adjust_by_system_dpi(DLG_MIN_MAX_WIDTH);
 
 	maxDialogHeight = rect.bottom - rect.top
-				   - (GetSystemMetrics(SM_CYFRAME) +
-				      GetSystemMetrics(SM_CXPADDEDBORDER)) * 4
-				   - GetSystemMetrics(SM_CYCAPTION);
-	if (maxDialogHeight < DLG_MIN_MAX_HEIGHT)
-	    maxDialogHeight = DLG_MIN_MAX_HEIGHT;
+		       - (pGetSystemMetricsForDpi(SM_CYFRAME, dpi) +
+			  pGetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)) * 4
+		       - pGetSystemMetricsForDpi(SM_CYCAPTION, dpi);
+	if (maxDialogHeight < adjust_by_system_dpi(DLG_MIN_MAX_HEIGHT))
+	    maxDialogHeight = adjust_by_system_dpi(DLG_MIN_MAX_HEIGHT);
     }
 
     // Set dlgwidth to width of message.
@@ -7057,7 +7223,8 @@ gui_mch_dialog(
 		if (last_white != NULL)
 		{
 		    // break the line just after a space
-		    ga.ga_len -= (int)(pend - (last_white + 1));
+		    if (pend > last_white)
+			ga.ga_len -= (int)(pend - (last_white + 1));
 		    pend = last_white + 1;
 		    last_white = NULL;
 		}
@@ -7082,12 +7249,15 @@ gui_mch_dialog(
 
     messageWidth += 10;		// roundoff space
 
-    // Add width of icon to dlgwidth, and some space
-    dlgwidth = messageWidth + DLG_ICON_WIDTH + 3 * dlgPaddingX
-					     + GetSystemMetrics(SM_CXVSCROLL);
+    dlg_icon_width = adjust_by_system_dpi(DLG_ICON_WIDTH);
+    dlg_icon_height = adjust_by_system_dpi(DLG_ICON_HEIGHT);
 
-    if (msgheight < DLG_ICON_HEIGHT)
-	msgheight = DLG_ICON_HEIGHT;
+    // Add width of icon to dlgwidth, and some space
+    dlgwidth = messageWidth + dlg_icon_width + 3 * dlgPaddingX
+			     + pGetSystemMetricsForDpi(SM_CXVSCROLL, dpi);
+
+    if (msgheight < dlg_icon_height)
+	msgheight = dlg_icon_height;
 
     /*
      * Check button names.  A long one will make the dialog wider.
@@ -7175,7 +7345,7 @@ gui_mch_dialog(
 	dlgheight = maxDialogHeight;
 	scroll_flag = WS_VSCROLL;
 	// Make sure scrollbar doesn't appear in the middle of the dialog
-	messageWidth = dlgwidth - DLG_ICON_WIDTH - 3 * dlgPaddingX;
+	messageWidth = dlgwidth - dlg_icon_width - 3 * dlgPaddingX;
     }
 
     add_word(PixelToDialogY(dlgheight));
@@ -7272,14 +7442,14 @@ gui_mch_dialog(
     p = add_dialog_element(p, SS_ICON,
 	    PixelToDialogX(dlgPaddingX),
 	    PixelToDialogY(dlgPaddingY),
-	    PixelToDialogX(DLG_ICON_WIDTH),
-	    PixelToDialogY(DLG_ICON_HEIGHT),
+	    PixelToDialogX(dlg_icon_width),
+	    PixelToDialogY(dlg_icon_height),
 	    DLG_NONBUTTON_CONTROL + 0, (WORD)0x0082,
 	    dlg_icons[type]);
 
     // Dialog message
     p = add_dialog_element(p, ES_LEFT|scroll_flag|ES_MULTILINE|ES_READONLY,
-	    PixelToDialogX(2 * dlgPaddingX + DLG_ICON_WIDTH),
+	    PixelToDialogX(2 * dlgPaddingX + dlg_icon_width),
 	    PixelToDialogY(dlgPaddingY),
 	    (WORD)(PixelToDialogX(messageWidth) + 1),
 	    PixelToDialogY(msgheight),
@@ -7573,7 +7743,7 @@ get_dialog_font_metrics(void)
     else
 #endif
 	hfontTools = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, VARIABLE_PITCH , DLG_FONT_NAME);
+				0, 0, 0, 0, VARIABLE_PITCH, DLG_FONT_NAME);
 
     if (hfontTools)
     {
@@ -7679,7 +7849,7 @@ gui_mch_tearoff(
     else
 # endif
     font = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		      VARIABLE_PITCH , DLG_FONT_NAME);
+		      VARIABLE_PITCH, DLG_FONT_NAME);
     if (s_usenewlook)
 	oldFont = SelectFont(hdc, font);
     else
@@ -7978,6 +8148,33 @@ initialise_toolbar(void)
     s_toolbar_wndproc = SubclassWindow(s_toolbarhwnd, toolbar_wndproc);
 
     gui_mch_show_toolbar(vim_strchr(p_go, GO_TOOLBAR) != NULL);
+
+    update_toolbar_size();
+}
+
+    static void
+update_toolbar_size(void)
+{
+    int		w, h;
+    TBMETRICS	tbm = {sizeof(TBMETRICS)};
+
+    tbm.dwMask = TBMF_PAD | TBMF_BUTTONSPACING;
+    SendMessage(s_toolbarhwnd, TB_GETMETRICS, 0, (LPARAM)&tbm);
+    //TRACE("Pad: %d, %d", tbm.cxPad, tbm.cyPad);
+    //TRACE("ButtonSpacing: %d, %d", tbm.cxButtonSpacing, tbm.cyButtonSpacing);
+
+    w = (TOOLBAR_BUTTON_WIDTH + tbm.cxPad) * s_dpi / DEFAULT_DPI;
+    h = (TOOLBAR_BUTTON_HEIGHT + tbm.cyPad) * s_dpi / DEFAULT_DPI;
+    //TRACE("button size: %d, %d", w, h);
+    SendMessage(s_toolbarhwnd, TB_SETBUTTONSIZE, 0, MAKELPARAM(w, h));
+    gui.toolbar_height = h + 6;
+
+    //DWORD s = SendMessage(s_toolbarhwnd, TB_GETBUTTONSIZE, 0, 0);
+    //TRACE("actual button size: %d, %d", LOWORD(s), HIWORD(s));
+
+    // TODO:
+    // Currently, this function only updates the size of toolbar buttons.
+    // It would be nice if the toolbar images are resized based on DPI.
 }
 
     static LRESULT CALLBACK
@@ -8071,9 +8268,7 @@ initialise_tabline(void)
 
     gui.tabline_height = TABLINE_HEIGHT;
 
-# ifdef USE_SYSMENU_FONT
     set_tabline_font();
-# endif
 }
 
 /*
@@ -8090,7 +8285,7 @@ GetTabFromPoint(
     {
 	TCHITTESTINFO htinfo;
 	htinfo.pt = pt;
-	// ignore if a window under cusor is not tabcontrol.
+	// ignore if a window under cursor is not tabcontrol.
 	if (s_tabhwnd == hWnd)
 	{
 	    int idx = TabCtrl_HitTest(s_tabhwnd, &htinfo);
@@ -8136,7 +8331,8 @@ tabline_wndproc(
 	    {
 		pt.x = GET_X_LPARAM(lParam);
 		pt.y = s_pt.y;
-		if (abs(pt.x - s_pt.x) > GetSystemMetrics(SM_CXDRAG))
+		if (abs(pt.x - s_pt.x) >
+			pGetSystemMetricsForDpi(SM_CXDRAG, s_dpi))
 		{
 		    SetCursor(LoadCursor(NULL, IDC_SIZEWE));
 
