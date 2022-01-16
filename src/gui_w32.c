@@ -3329,6 +3329,7 @@ update_im_font(void)
 
     lf = norm_logfont;
     if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+	// Work around when PerMonitorV2 is not enabled in the process level.
 	lf.lfHeight = lf.lfHeight * DEFAULT_DPI / s_dpi;
     im_set_font(&lf);
 }
@@ -5338,6 +5339,12 @@ load_dpi_func(void)
 	{
 	    TRACE("DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 enabled");
 	    s_process_dpi_aware = pGetAwarenessFromDpiAwarenessContext(oldctx);
+#ifdef DEBUG
+	    if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+	    {
+		TRACE("WARNING: PerMonitorV2 is not enabled in the process level for some reasons. IME window may not shown correctly.");
+	    }
+#endif
 	    return;
 	}
     }
@@ -5814,6 +5821,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 	    {
 		LOGFONTW lf = norm_logfont;
 		if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
+		    // Work around when PerMonitorV2 is not enabled in the process level.
 		    lf.lfHeight = lf.lfHeight * DEFAULT_DPI / s_dpi;
 		pImmSetCompositionFontW(hImc, &lf);
 		im_set_position(gui.row, gui.col);
@@ -5985,6 +5993,7 @@ im_set_position(int row, int col)
 	MapWindowPoints(s_textArea, s_hwnd, &cfs.ptCurrentPos, 1);
 	if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
 	{
+	    // Work around when PerMonitorV2 is not enabled in the process level.
 	    cfs.ptCurrentPos.x = cfs.ptCurrentPos.x * DEFAULT_DPI / s_dpi;
 	    cfs.ptCurrentPos.y = cfs.ptCurrentPos.y * DEFAULT_DPI / s_dpi;
 	}
