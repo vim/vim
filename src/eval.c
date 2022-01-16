@@ -3973,8 +3973,8 @@ eval_method(
 	    int		len2;
 	    char_u	*fname;
 	    int		idx;
-	    imported_T	*import = find_imported(name, len,
-						     TRUE, evalarg->eval_cctx);
+	    imported_T	*import = find_imported(name, len, TRUE,
+				  evalarg == NULL ? NULL : evalarg->eval_cctx);
 	    type_T	*type;
 
 	    // value->import.func()
@@ -3986,10 +3986,11 @@ eval_method(
 		len2 = get_name_len(arg, &alias, evaluate, TRUE);
 		if (len2 <= 0)
 		{
-		    emsg(_(e_missing_name_after_dot));
+		    if (verbose)
+			emsg(_(e_missing_name_after_dot));
 		    ret = FAIL;
 		}
-		else
+		else if (evaluate)
 		{
 		    int	    cc = fname[len2];
 		    ufunc_T *ufunc;
@@ -4014,7 +4015,8 @@ eval_method(
 			else
 			{
 			    // TODO: how about a partial?
-			    semsg(_(e_not_callable_type_str), fname);
+			    if (verbose)
+				semsg(_(e_not_callable_type_str), fname);
 			    ret = FAIL;
 			}
 		    }
