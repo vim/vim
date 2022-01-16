@@ -3212,4 +3212,6 @@ EXTERN char e_using_autoload_in_script_not_under_autoload_directory[]
 	INIT(= N_("E1263: Using autoload in a script not under an autoload directory"));
 EXTERN char e_autoload_import_cannot_use_absolute_or_relative_path[]
 	INIT(= N_("E1264: Autoload import cannot use absolute or relative path: %s"));
+EXTERN char e_cannot_use_partial_here[]
+	INIT(= N_("E1265: Cannot use a partial here"));
 #endif

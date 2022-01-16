@@ -3136,16 +3136,37 @@ def Test_expr7_method_call()
       var sorted = [3, 1, 2]
                     -> sort()
       assert_equal([1, 2, 3], sorted)
+  END
+  CheckDefAndScriptSuccess(lines)
 
+  lines =<< trim END
+      vim9script
       def SetNumber(n: number)
         g:number = n
       enddef
       const Setit = SetNumber
       len('text')->Setit()
       assert_equal(4, g:number)
+
+      const SetFuncref = funcref(SetNumber)
+      len('longer')->SetFuncref()
+      assert_equal(6, g:number)
+
+      const SetList = [SetNumber, SetFuncref]
+      len('xx')->SetList[0]()
+      assert_equal(2, g:number)
+      len('xxx')->SetList[1]()
+      assert_equal(3, g:number)
+
+      const SetDict = {key: SetNumber}
+      len('xxxx')->SetDict['key']()
+      assert_equal(4, g:number)
+      len('xxxxx')->SetDict.key()
+      assert_equal(5, g:number)
+
       unlet g:number
   END
-  CheckDefAndScriptSuccess(lines)
+  CheckScriptSuccess(lines)  # TODO: CheckDefAndScriptSuccess()
 
   lines =<< trim END
     def RetVoid()

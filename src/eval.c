@@ -3948,6 +3948,7 @@ eval_method(
     char_u	*name;
     long	len;
     char_u	*alias;
+    char_u	*tofree = NULL;
     typval_T	base = *rettv;
     int		ret = OK;
     int		evaluate = evalarg != NULL
@@ -3968,67 +3969,68 @@ eval_method(
     }
     else
     {
-	if (**arg == '.')
-	{
-	    int		len2;
-	    char_u	*fname;
-	    int		idx;
-	    imported_T	*import = find_imported(name, len, TRUE,
-				  evalarg == NULL ? NULL : evalarg->eval_cctx);
-	    type_T	*type;
+	char_u *paren;
 
-	    // value->import.func()
-	    if (import != NULL)
+	// If there is no "(" immediately following, but there is further on,
+	// it can be "import.Func()", "dict.Func()", "list[nr]", etc.
+	// Does not handle anything where "(" is part of the expression.
+	*arg = skipwhite(*arg);
+
+	if (**arg != '(' && alias == NULL
+				    && (paren = vim_strchr(*arg, '(')) != NULL)
+	{
+	    typval_T ref;
+
+	    *arg = name;
+	    *paren = NUL;
+	    ref.v_type = VAR_UNKNOWN;
+	    if (eval7(arg, &ref, evalarg, FALSE) == FAIL)
 	    {
-		name = NULL;
-		++*arg;
-		fname = *arg;
-		len2 = get_name_len(arg, &alias, evaluate, TRUE);
-		if (len2 <= 0)
+		*arg = name + len;
+		ret = FAIL;
+	    }
+	    else if (*skipwhite(*arg) != NUL)
+	    {
+		if (verbose)
+		    semsg(_(e_trailing_characters_str), *arg);
+		ret = FAIL;
+	    }
+	    else if (ref.v_type == VAR_FUNC && ref.vval.v_string != NULL)
+	    {
+		name = ref.vval.v_string;
+		ref.vval.v_string = NULL;
+		tofree = name;
+		len = STRLEN(name);
+	    }
+	    else if (ref.v_type == VAR_PARTIAL && ref.vval.v_partial != NULL)
+	    {
+		if (ref.vval.v_partial->pt_argc > 0
+					|| ref.vval.v_partial->pt_dict != NULL)
 		{
-		    if (verbose)
-			emsg(_(e_missing_name_after_dot));
+		    emsg(_(e_cannot_use_partial_here));
 		    ret = FAIL;
 		}
-		else if (evaluate)
+		else
 		{
-		    int	    cc = fname[len2];
-		    ufunc_T *ufunc;
-
-		    fname[len2] = NUL;
-		    idx = find_exported(import->imp_sid, fname, &ufunc, &type,
-						  evalarg->eval_cctx, verbose);
-		    fname[len2] = cc;
-
-		    if (idx >= 0)
+		    name = vim_strsave(partial_name(ref.vval.v_partial));
+		    tofree = name;
+		    if (name == NULL)
 		    {
-			scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-			svar_T		*sv =
-				     ((svar_T *)si->sn_var_vals.ga_data) + idx;
-
-			if (sv->sv_tv->v_type == VAR_FUNC
-					   && sv->sv_tv->vval.v_string != NULL)
-			{
-			    name = sv->sv_tv->vval.v_string;
-			    len = STRLEN(name);
-			}
-			else
-			{
-			    // TODO: how about a partial?
-			    if (verbose)
-				semsg(_(e_not_callable_type_str), fname);
-			    ret = FAIL;
-			}
-		    }
-		    else if (ufunc != NULL)
-		    {
-			name = ufunc->uf_name;
-			len = STRLEN(name);
+			ret = FAIL;
+			name = *arg;
 		    }
 		    else
-			ret = FAIL;
+			len = STRLEN(name);
 		}
 	    }
+	    else
+	    {
+		if (verbose)
+		    semsg(_(e_not_callable_type_str), name);
+		ret = FAIL;
+	    }
+		clear_tv(&ref);
+	    *paren = '(';
 	}
 
 	if (ret == OK)
@@ -4057,6 +4059,7 @@ eval_method(
     // evaluating the arguments is possible (see test55).
     if (evaluate)
 	clear_tv(&base);
+    vim_free(tofree);
 
     return ret;
 }
