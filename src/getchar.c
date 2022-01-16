@@ -3797,7 +3797,7 @@ getcmdkeycmd(
 	    }
 	}
 	else
-	    ga_append(&line_ga, (char)c1);
+	    ga_append(&line_ga, c1);
 
 	cmod = 0;
     }
@@ -3815,7 +3815,7 @@ do_cmdkey_command(int key UNUSED, int flags)
 {
     int	    res;
 #ifdef FEAT_EVAL
-    sctx_T  save_current_sctx = {0, 0, 0, 0};
+    sctx_T  save_current_sctx = {-1, 0, 0, 0};
 
     if (key == K_SCRIPT_COMMAND && last_used_map != NULL)
     {
@@ -3827,7 +3827,7 @@ do_cmdkey_command(int key UNUSED, int flags)
     res = do_cmdline(NULL, getcmdkeycmd, NULL, flags);
 
 #ifdef FEAT_EVAL
-    if (save_current_sctx.sc_sid > 0)
+    if (save_current_sctx.sc_sid >= 0)
 	current_sctx = save_current_sctx;
 #endif
 

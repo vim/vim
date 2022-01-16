@@ -2394,6 +2394,9 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			Note that if you manage to call feedkeys() while
 			executing commands, thus calling it recursively, then
 			all typeahead will be consumed by the last call.
+		'c'	Remove any script context when executing, so that
+			legacy script syntax applies, "s:var" does not work,
+			etc.
 		'!'	When used with 'x' will not end Insert mode. Can be
 			used in a test when a timer is set to exit Insert mode
 			a little later.  Useful for testing CursorHoldI.

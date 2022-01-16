@@ -3932,6 +3932,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     char_u	nbuf[NUMBUFLEN];
     int		typed = FALSE;
     int		execute = FALSE;
+    int		context = FALSE;
     int		dangerous = FALSE;
     int		lowlevel = FALSE;
     char_u	*keys_esc;
@@ -3961,6 +3962,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		case 't': typed = TRUE; break;
 		case 'i': insert = TRUE; break;
 		case 'x': execute = TRUE; break;
+		case 'c': context = TRUE; break;
 		case '!': dangerous = TRUE; break;
 		case 'L': lowlevel = TRUE; break;
 	    }
@@ -4007,10 +4009,18 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 
 	    if (execute)
 	    {
-		int save_msg_scroll = msg_scroll;
+		int	save_msg_scroll = msg_scroll;
+		sctx_T	save_sctx;
 
 		// Avoid a 1 second delay when the keys start Insert mode.
 		msg_scroll = FALSE;
+
+		if (context)
+		{
+		    save_sctx = current_sctx;
+		    current_sctx.sc_sid = 0;
+		    current_sctx.sc_version = 0;
+		}
 
 		if (!dangerous)
 		{
@@ -4025,6 +4035,9 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		}
 
 		msg_scroll |= save_msg_scroll;
+
+		if (context)
+		    current_sctx = save_sctx;
 	    }
 	}
     }
