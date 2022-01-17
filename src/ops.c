@@ -536,24 +536,29 @@ block_insert(
 	    if (b_insert)
 	    {
 		off = (*mb_head_off)(oldp, oldp + offset + spaces);
+		spaces -= off;
+		count -= off;
 	    }
 	    else
 	    {
-		off = (*mb_off_next)(oldp, oldp + offset);
-		offset += off;
+		// spaces fill the gap, the character that's at the edge moves
+		// right
+		off = (*mb_head_off)(oldp, oldp + offset);
+		offset -= off;
 	    }
-	    spaces -= off;
-	    count -= off;
 	}
 	if (spaces < 0)  // can happen when the cursor was moved
 	    spaces = 0;
 
-	newp = alloc(STRLEN(oldp) + s_len + count + 1);
+	// Make sure the allocated size matches what is actually copied below.
+	newp = alloc(STRLEN(oldp) + spaces + s_len
+		    + (spaces > 0 && !bdp->is_short ? ts_val - spaces : 0)
+								  + count + 1);
 	if (newp == NULL)
 	    continue;
 
 	// copy up to shifted part
-	mch_memmove(newp, oldp, (size_t)(offset));
+	mch_memmove(newp, oldp, (size_t)offset);
 	oldp += offset;
 
 	// insert pre-padding
@@ -564,14 +569,21 @@ block_insert(
 	mch_memmove(newp + startcol, s, (size_t)s_len);
 	offset += s_len;
 
-	if (spaces && !bdp->is_short)
+	if (spaces > 0 && !bdp->is_short)
 	{
-	    // insert post-padding
-	    vim_memset(newp + offset + spaces, ' ', (size_t)(ts_val - spaces));
-	    // We're splitting a TAB, don't copy it.
-	    oldp++;
-	    // We allowed for that TAB, remember this now
-	    count++;
+	    if (*oldp == TAB)
+	    {
+		// insert post-padding
+		vim_memset(newp + offset + spaces, ' ',
+						    (size_t)(ts_val - spaces));
+		// we're splitting a TAB, don't copy it
+		oldp++;
+		// We allowed for that TAB, remember this now
+		count++;
+	    }
+	    else
+		// Not a TAB, no extra spaces
+		count = spaces;
 	}
 
 	if (spaces > 0)
@@ -1598,7 +1610,7 @@ op_insert(oparg_T *oap, long count1)
 		    oap->start_vcol = t;
 		}
 		else if (oap->op_type == OP_APPEND
-			&& oap->end.col + oap->end.coladd
+			&& oap->start.col + oap->start.coladd
 				>= curbuf->b_op_start_orig.col
 					      + curbuf->b_op_start_orig.coladd)
 		{
