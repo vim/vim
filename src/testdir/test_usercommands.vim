@@ -589,10 +589,10 @@ func Test_command_list()
         \           execute('command DoCmd'))
 
   " Test output in verbose mode.
-  command! DoCmd :
+  command! -nargs=+ -complete=customlist,SomeFunc DoCmd :ls
   call assert_match("^\n"
         \        .. "    Name              Args Address Complete    Definition\n"
-        \        .. "    DoCmd             0                        :\n"
+        \        .. "    DoCmd             +            customlist,SomeFunc :ls\n"
         \        .. "\tLast set from .*/test_usercommands.vim line \\d\\+$",
         \           execute('verbose command DoCmd'))
 
