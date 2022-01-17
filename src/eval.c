@@ -709,7 +709,9 @@ call_vim_function(
 
     // The name might be "import.Func" or "Funcref".
     arg = func;
+    ++emsg_off;
     name = deref_function_name(&arg, &tofree, &EVALARG_EVALUATE, FALSE);
+    --emsg_off;
     if (name == NULL)
 	name = func;
 
