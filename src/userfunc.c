@@ -3119,18 +3119,30 @@ free_all_functions(void)
 
 /*
  * Return TRUE if "name" looks like a builtin function name: starts with a
- * lower case letter and doesn't contain AUTOLOAD_CHAR or ':'.
+ * lower case letter, doesn't contain AUTOLOAD_CHAR or ':', no "." after the
+ * name.
  * "len" is the length of "name", or -1 for NUL terminated.
  */
     int
 builtin_function(char_u *name, int len)
 {
-    char_u *p;
+    int i;
 
     if (!ASCII_ISLOWER(name[0]) || name[1] == ':')
 	return FALSE;
-    p = vim_strchr(name, AUTOLOAD_CHAR);
-    return p == NULL || (len > 0 && p > name + len);
+    for (i = 0; name[i] != NUL && (len < 0 || i < len); ++i)
+    {
+	if (name[i] == AUTOLOAD_CHAR)
+	    return FALSE;
+	if (!eval_isnamec(name[i]))
+	{
+	    // "name.something" is not a builtin function
+	    if (name[i] == '.')
+		return FALSE;
+	    break;
+	}
+    }
+    return TRUE;
 }
 
     int

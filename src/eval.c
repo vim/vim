@@ -626,6 +626,63 @@ eval_expr(char_u *arg, exarg_T *eap)
 }
 
 /*
+ * "*arg" points to what can be a function name in the form of "import.Name" or
+ * "Funcref".  Return the name of the function.  Set "tofree" to something that
+ * was allocated.
+ * If "verbose" is FALSE no errors are given.
+ * Return NULL for any failure.
+ */
+    static char_u *
+deref_function_name(
+	    char_u **arg,
+	    char_u **tofree,
+	    evalarg_T *evalarg,
+	    int verbose)
+{
+    typval_T	ref;
+    char_u	*name = *arg;
+
+    ref.v_type = VAR_UNKNOWN;
+    if (eval7(arg, &ref, evalarg, FALSE) == FAIL)
+	return NULL;
+    if (*skipwhite(*arg) != NUL)
+    {
+	if (verbose)
+	    semsg(_(e_trailing_characters_str), *arg);
+	name = NULL;
+    }
+    else if (ref.v_type == VAR_FUNC && ref.vval.v_string != NULL)
+    {
+	name = ref.vval.v_string;
+	ref.vval.v_string = NULL;
+	*tofree = name;
+    }
+    else if (ref.v_type == VAR_PARTIAL && ref.vval.v_partial != NULL)
+    {
+	if (ref.vval.v_partial->pt_argc > 0
+		|| ref.vval.v_partial->pt_dict != NULL)
+	{
+	    if (verbose)
+		emsg(_(e_cannot_use_partial_here));
+	    name = NULL;
+	}
+	else
+	{
+	    name = vim_strsave(partial_name(ref.vval.v_partial));
+	    *tofree = name;
+	}
+    }
+    else
+    {
+	if (verbose)
+	    semsg(_(e_not_callable_type_str), name);
+	name = NULL;
+    }
+    clear_tv(&ref);
+    return name;
+}
+
+/*
  * Call some Vim script function and return the result in "*rettv".
  * Uses argv[0] to argv[argc - 1] for the function arguments.  argv[argc]
  * should have type VAR_UNKNOWN.
@@ -640,15 +697,27 @@ call_vim_function(
 {
     int		ret;
     funcexe_T	funcexe;
+    char_u	*arg;
+    char_u	*name;
+    char_u	*tofree = NULL;
 
     rettv->v_type = VAR_UNKNOWN;		// clear_tv() uses this
     CLEAR_FIELD(funcexe);
     funcexe.fe_firstline = curwin->w_cursor.lnum;
     funcexe.fe_lastline = curwin->w_cursor.lnum;
     funcexe.fe_evaluate = TRUE;
-    ret = call_func(func, -1, rettv, argc, argv, &funcexe);
+
+    // The name might be "import.Func" or "Funcref".
+    arg = func;
+    name = deref_function_name(&arg, &tofree, &EVALARG_EVALUATE, FALSE);
+    if (name == NULL)
+	name = func;
+
+    ret = call_func(name, -1, rettv, argc, argv, &funcexe);
+
     if (ret == FAIL)
 	clear_tv(rettv);
+    vim_free(tofree);
 
     return ret;
 }
@@ -3979,57 +4048,16 @@ eval_method(
 	if (**arg != '(' && alias == NULL
 				    && (paren = vim_strchr(*arg, '(')) != NULL)
 	{
-	    typval_T ref;
-
 	    *arg = name;
 	    *paren = NUL;
-	    ref.v_type = VAR_UNKNOWN;
-	    if (eval7(arg, &ref, evalarg, FALSE) == FAIL)
+	    name = deref_function_name(arg, &tofree, evalarg, verbose);
+	    if (name == NULL)
 	    {
 		*arg = name + len;
 		ret = FAIL;
 	    }
-	    else if (*skipwhite(*arg) != NUL)
-	    {
-		if (verbose)
-		    semsg(_(e_trailing_characters_str), *arg);
-		ret = FAIL;
-	    }
-	    else if (ref.v_type == VAR_FUNC && ref.vval.v_string != NULL)
-	    {
-		name = ref.vval.v_string;
-		ref.vval.v_string = NULL;
-		tofree = name;
-		len = STRLEN(name);
-	    }
-	    else if (ref.v_type == VAR_PARTIAL && ref.vval.v_partial != NULL)
-	    {
-		if (ref.vval.v_partial->pt_argc > 0
-					|| ref.vval.v_partial->pt_dict != NULL)
-		{
-		    emsg(_(e_cannot_use_partial_here));
-		    ret = FAIL;
-		}
-		else
-		{
-		    name = vim_strsave(partial_name(ref.vval.v_partial));
-		    tofree = name;
-		    if (name == NULL)
-		    {
-			ret = FAIL;
-			name = *arg;
-		    }
-		    else
-			len = STRLEN(name);
-		}
-	    }
 	    else
-	    {
-		if (verbose)
-		    semsg(_(e_not_callable_type_str), name);
-		ret = FAIL;
-	    }
-		clear_tv(&ref);
+		len = STRLEN(name);
 	    *paren = '(';
 	}
 
