@@ -1732,20 +1732,22 @@ compile_subscript(
 		}
 		else
 		{
+		    int fail;
+		    int save_len = cctx->ctx_ufunc->uf_lines.ga_len;
+
 		    *paren = NUL;
-		    if (compile_expr8(arg, cctx, ppconst) == FAIL
-						    || *skipwhite(*arg) != NUL)
+		    // do not look in the next line
+		    cctx->ctx_ufunc->uf_lines.ga_len = 1;
+		    fail = compile_expr8(arg, cctx, ppconst) == FAIL
+						    || *skipwhite(*arg) != NUL;
+		    *paren = '(';
+		    cctx->ctx_ufunc->uf_lines.ga_len = save_len;
+		    if (fail)
 		    {
-			*paren = '(';
 			semsg(_(e_invalid_expression_str), pstart);
 			return FAIL;
 		    }
-		    *paren = '(';
 		}
-
-		// Remember the next instruction index, where the instructions
-		// for arguments are being written.
-		expr_isn_end = cctx->ctx_instr.ga_len;
 
 		// Compile the arguments.
 		if (**arg != '(')
@@ -1756,6 +1758,11 @@ compile_subscript(
 			semsg(_(e_missing_parenthesis_str), *arg);
 		    return FAIL;
 		}
+
+		// Remember the next instruction index, where the instructions
+		// for arguments are being written.
+		expr_isn_end = cctx->ctx_instr.ga_len;
+
 		*arg = skipwhite(*arg + 1);
 		if (compile_arguments(arg, cctx, &argcount, FALSE) == FAIL)
 		    return FAIL;
