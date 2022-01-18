@@ -2196,6 +2196,11 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 
     if (*p != NUL && *p != '|' && *p != '\n')
     {
+	if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID)
+	{
+	    emsg(_(e_returning_value_in_function_without_return_type));
+	    return NULL;
+	}
 	if (legacy)
 	{
 	    int save_flags = cmdmod.cmod_flags;
@@ -2231,13 +2236,6 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    }
 	    else
 	    {
-		if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID
-			&& stack_type->tt_type != VAR_VOID
-			&& stack_type->tt_type != VAR_UNKNOWN)
-		{
-		    emsg(_(e_returning_value_in_function_without_return_type));
-		    return NULL;
-		}
 		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
 						0, cctx, FALSE, FALSE) == FAIL)
 		    return NULL;

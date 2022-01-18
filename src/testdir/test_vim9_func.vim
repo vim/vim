@@ -341,6 +341,20 @@ def Test_return_something()
   ReturnString()->assert_equal('string')
   ReturnNumber()->assert_equal(123)
   assert_fails('ReturnGlobal()', 'E1012: Type mismatch; expected number but got string', '', 1, 'ReturnGlobal')
+
+  var lines =<< trim END
+      vim9script
+
+      def Msg()
+          echomsg 'in Msg()...'
+      enddef
+
+      def Func()
+        return Msg()
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1096:')
 enddef
 
 def Test_check_argument_type()
