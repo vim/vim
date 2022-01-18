@@ -42,6 +42,7 @@
 #	Sound support: SOUND=yes (default is yes)
 #
 #	Sodium support: SODIUM=[Path to Sodium directory]
+#	  DYNAMIC_SODIUM=yes (to load the Sodium DLL dynamically)
 #	 Dynamic built with libsodium
 #	 You need to install the msvc package from
 #	 https://download.libsodium.org/libsodium/releases/
@@ -384,6 +385,9 @@ SOUND = no
 !ifndef SODIUM
 SODIUM = no
 !endif
+!ifndef DYNAMIC_SODIUM
+DYNAMIC_SODIUM = yes
+!endif
 
 !if "$(SODIUM)" != "no"
 ! if "$(CPU)" == "AMD64"
@@ -397,8 +401,13 @@ SODIUM = no
 
 !if "$(SODIUM)" != "no"
 SOD_INC		= /I "$(SODIUM)\include"
+! if "$(DYNAMIC_SODIUM)" == "yes"
+SOD_DEFS	= -DHAVE_SODIUM -DDYNAMIC_SODIUM
+SOD_LIB		=
+! else
 SOD_DEFS	= -DHAVE_SODIUM
 SOD_LIB		= $(SOD_LIB)\libsodium.lib
+! endif
 !endif
 
 !ifndef NETBEANS

@@ -668,7 +668,14 @@ DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
 endif
 
 ifeq ($(SODIUM),yes)
+ ifndef DYNAMIC_SODIUM
+DYNAMIC_SODIUM=yes
+ endif
+ ifeq ($(DYNAMIC_SODIUM),yes)
+DEFINES += -DDYNAMIC_SODIUM
+ else
 SODIUMLIB = -lsodium
+ endif
 endif
 
 # Only allow XPM for a GUI build.
