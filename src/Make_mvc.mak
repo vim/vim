@@ -508,7 +508,8 @@ NETBEANS_LIB	= WSock32.lib Ws2_32.lib
 # gdi32.lib and comdlg32.lib for printing support
 # ole32.lib and uuid.lib are needed for FEAT_SHORTCUT
 CON_LIB = oldnames.lib kernel32.lib advapi32.lib shell32.lib gdi32.lib \
-          comdlg32.lib ole32.lib netapi32.lib uuid.lib /machine:$(CPU)
+	  comdlg32.lib ole32.lib netapi32.lib uuid.lib user32.lib \
+	  /machine:$(CPU)
 !if "$(DELAYLOAD)" == "yes"
 CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 !endif
@@ -910,9 +911,7 @@ GUI_OBJ = \
 	$(OUTDIR)\gui_beval.obj \
 	$(OUTDIR)\gui_w32.obj
 GUI_LIB = \
-	gdi32.lib version.lib $(IME_LIB) \
-	winspool.lib comctl32.lib advapi32.lib shell32.lib netapi32.lib \
-	/machine:$(CPU)
+	version.lib $(IME_LIB) winspool.lib comctl32.lib
 !else
 SUBSYSTEM = console
 CUI_INCL = iscygpty.h
@@ -1320,7 +1319,7 @@ conflags = $(conflags) /map /mapinfo:lines
 !ENDIF
 
 LINKARGS1 = $(linkdebug) $(conflags)
-LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
+LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(LINK_PDB)
 
