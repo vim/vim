@@ -1652,7 +1652,11 @@ ex_scriptnames(exarg_T *eap)
 	{
 	    home_replace(NULL, SCRIPT_ITEM(i)->sn_name,
 						    NameBuff, MAXPATHL, TRUE);
-	    smsg("%3d: %s", i, NameBuff);
+	    vim_snprintf((char *)IObuff, IOSIZE, "%3d: %s", i, NameBuff);
+	    msg_putchar('\n');
+	    msg_outtrans(IObuff);
+	    out_flush();	    // output one line at a time
+	    ui_breakcheck();
 	}
 }
 
