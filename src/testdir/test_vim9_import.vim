@@ -1433,9 +1433,21 @@ def Test_import_autoload_fails()
 
   lines =<< trim END
       vim9script
-      import autoload 'doesNotExist.vim'
+      import autoload './doesNotExist.vim'
   END
   CheckScriptFailure(lines, 'E1264:')
+
+  lines =<< trim END
+      vim9script
+      import autoload '/dir/doesNotExist.vim'
+  END
+  CheckScriptFailure(lines, 'E1264:')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'doesNotExist.vim'
+  END
+  CheckScriptFailure(lines, 'E1053: Could not import "doesNotExist.vim"')
 enddef
 
 " test disassembling an auto-loaded function starting with "debug"

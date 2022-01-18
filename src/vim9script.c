@@ -411,7 +411,7 @@ handle_import(
     int		ret = FAIL;
     char_u	*as_name = NULL;
     typval_T	tv;
-    int		sid = -1;
+    int		sid = -2;
     int		res;
     long	start_lnum = SOURCING_LNUM;
     garray_T	*import_gap;
@@ -519,7 +519,7 @@ handle_import(
 
     if (res == FAIL || sid <= 0)
     {
-	semsg(_(is_autoload && sid <= 0
+	semsg(_(is_autoload && sid == -2
 		    ? e_autoload_import_cannot_use_absolute_or_relative_path
 		    : e_could_not_import_str), tv.vval.v_string);
 	goto erret;
