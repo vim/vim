@@ -69,7 +69,6 @@ ex_vim9script(exarg_T *eap UNUSED)
     int		    sid = current_sctx.sc_sid;
     scriptitem_T    *si;
     int		    found_noclear = FALSE;
-    int		    found_autoload = FALSE;
     char_u	    *p;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
@@ -95,20 +94,6 @@ ex_vim9script(exarg_T *eap UNUSED)
 		return;
 	    }
 	    found_noclear = TRUE;
-	}
-	else if (STRNCMP(p, "autoload", 8) == 0 && IS_WHITE_OR_NUL(p[8]))
-	{
-	    if (found_autoload)
-	    {
-		semsg(_(e_duplicate_argument_str), p);
-		return;
-	    }
-	    found_autoload = TRUE;
-	    if (script_name_after_autoload(si) == NULL)
-	    {
-		emsg(_(e_using_autoload_in_script_not_under_autoload_directory));
-		return;
-	    }
 	}
 	else
 	{

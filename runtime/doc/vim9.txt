@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 15
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1523,17 +1523,18 @@ actually needed.  Using the autoload mechanism is recommended:
    directory.
 
 2. In the autoload script put the bulk of the code. >
-	vim9script autoload
+	vim9script
 	export def Stuff(arg: string)
 	  ...
 
 <   This goes in .../autoload/for/search.vim.
 
-   Adding "autoload" to `:vim9script` has the effect that "for#search#" will
-   be prefixed to every exported item.  The prefix is obtained from the file
-   name, as you would to manually in a legacy autoload script.  Thus the
-   exported function can be found with "for#search#Stuff", but you would
-   normally use `import autoload` and not need to specify the prefix.
+   Putting the "search.vim" script under the "/autoload/for/" directory has
+   the effect that "for#search#" will be prefixed to every exported item.  The
+   prefix is obtained from the file name, as you would to manually in a
+   legacy autoload script.  Thus the exported function can be found with
+   "for#search#Stuff", but you would normally use `import autoload` and not
+   use the prefix.
 
    You can split up the functionality and import other scripts from the
    autoload script as you like.  This way you can share code between plugins.

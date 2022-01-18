@@ -1196,9 +1196,9 @@ def Test_vim9script_autoload()
   var save_rtp = &rtp
   exe 'set rtp^=' .. getcwd() .. '/Xdir'
 
-  # when using "vim9script autoload" prefix is not needed
+  # when the path has "/autoload/" prefix is not needed
   var lines =<< trim END
-     vim9script autoload
+     vim9script
      g:prefixed_loaded += 1
 
      export def Gettest(): string
@@ -1262,7 +1262,7 @@ def Test_vim9script_autoload_call()
   exe 'set rtp^=' .. getcwd() .. '/Xdir'
 
   var lines =<< trim END
-     vim9script autoload
+     vim9script
 
      export def RetArg(arg: string): string
        return arg
@@ -1300,7 +1300,7 @@ def Test_import_autoload_postponed()
   exe 'set rtp^=' .. getcwd() .. '/Xdir'
 
   var lines =<< trim END
-      vim9script autoload
+      vim9script
 
       g:loaded_postponed = 'true'
       export var variable = 'bla'
@@ -1337,7 +1337,7 @@ def Test_import_autoload_override()
   test_override('autoload', 1)
 
   var lines =<< trim END
-      vim9script autoload
+      vim9script
 
       g:loaded_override = 'true'
       export var variable = 'bla'
@@ -1372,7 +1372,7 @@ def Test_autoload_mapping()
   exe 'set rtp^=' .. getcwd() .. '/Xdir'
 
   var lines =<< trim END
-      vim9script autoload
+      vim9script
 
       g:toggle_loaded = 'yes'
 
@@ -1423,7 +1423,13 @@ def Test_vim9script_autoload_fails()
       vim9script autoload
       var n = 0
   END
-  CheckScriptFailure(lines, 'E1263:')
+  CheckScriptFailure(lines, 'E475: Invalid argument: autoload')
+
+  lines =<< trim END
+      vim9script noclear noclear
+      var n = 0
+  END
+  CheckScriptFailure(lines, 'E983: Duplicate argument: noclear')
 enddef
 
 def Test_import_autoload_fails()
@@ -1516,7 +1522,7 @@ enddef
 " test using a autoloaded file that is case sensitive
 def Test_vim9_autoload_case_sensitive()
   var lines =<< trim END
-     vim9script autoload
+     vim9script
      export def CaseSensitive(): string
        return 'done'
      enddef

@@ -365,12 +365,11 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Vim version, or update Vim to a newer version.  See
 			|vimscript-version| for what changed between versions.
 
-:vim9s[cript] [noclear] [autoload]			*:vim9s* *:vim9script*
+:vim9s[cript] [noclear]				*:vim9s* *:vim9script*
 			Marks a script file as containing |Vim9-script|
 			commands.  Also see |vim9-namespace|.
 			Must be the first command in the file.
 			For [noclear] see |vim9-reload|.
-			For [autoload] see |vim9-autoload|.
 			Without the |+eval| feature this changes the syntax
 			for some commands.
 			See |:vim9cmd| for executing one command with Vim9
@@ -378,8 +377,8 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 
 						*:scr* *:scriptnames*
 :scr[iptnames]		List all sourced script names, in the order they were
-			first sourced.  The number is used for the script ID
-			|<SID>|.
+			first encountered.  The number is used for the script
+			ID |<SID>|.
 			For a script that was used with `import autoload` but
 			was not actually sourced yet an "A" is shown after the
 			script ID.
