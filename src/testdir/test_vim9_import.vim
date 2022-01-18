@@ -1256,6 +1256,136 @@ def Test_vim9script_autoload()
   &rtp = save_rtp
 enddef
 
+def Test_import_autoload_not_exported()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  # error when using an item that is not exported from an autoload script
+  var exportLines =<< trim END
+      vim9script
+      var notExported = 123
+      def NotExport()
+        echo 'nop'
+      enddef
+  END
+  writefile(exportLines, 'Xdir/autoload/notExport1.vim')
+
+  var lines =<< trim END
+      vim9script
+      import autoload 'notExport1.vim'
+      echo notExport1.notFound
+  END
+  CheckScriptFailure(lines, 'E1048: Item not found in script: notFound')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport1.vim'
+      echo notExport1.notExported
+  END
+  CheckScriptFailure(lines, 'E1049: Item not exported in script: notExported')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport1.vim'
+      echo notExport1.NotFunc()
+  END
+  CheckScriptFailure(lines, 'E1048: Item not found in script: NotFunc')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport1.vim'
+      echo notExport1.NotExport()
+  END
+  CheckScriptFailure(lines, 'E1049: Item not exported in script: NotExport')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport1.vim'
+      echo 'text'->notExport1.NotFunc()
+  END
+  CheckScriptFailure(lines, 'E1048: Item not found in script: NotFunc')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport1.vim'
+      echo 'text'->notExport1.NotExport()
+  END
+  CheckScriptFailure(lines, 'E1049: Item not exported in script: NotExport')
+
+  # using a :def function we use a different autoload script every time so that
+  # the function is compiled without the script loaded
+  writefile(exportLines, 'Xdir/autoload/notExport2.vim')
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport2.vim'
+      def Testit()
+        echo notExport2.notFound
+      enddef
+      Testit()
+  END
+  CheckScriptFailure(lines, 'E1048: Item not found in script: notExport2#notFound')
+
+  writefile(exportLines, 'Xdir/autoload/notExport3.vim')
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport3.vim'
+      def Testit()
+        echo notExport3.notExported
+      enddef
+      Testit()
+  END
+  # don't get E1049 because it is too complicated to figure out
+  CheckScriptFailure(lines, 'E1048: Item not found in script: notExport3#notExported')
+
+  writefile(exportLines, 'Xdir/autoload/notExport4.vim')
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport4.vim'
+      def Testit()
+        echo notExport4.NotFunc()
+      enddef
+      Testit()
+  END
+  CheckScriptFailure(lines, 'E117: Unknown function: notExport4#NotFunc')
+
+  writefile(exportLines, 'Xdir/autoload/notExport5.vim')
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport5.vim'
+      def Testit()
+        echo notExport5.NotExport()
+      enddef
+      Testit()
+  END
+  CheckScriptFailure(lines, 'E117: Unknown function: notExport5#NotExport')
+
+  writefile(exportLines, 'Xdir/autoload/notExport6.vim')
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport6.vim'
+      def Testit()
+        echo 'text'->notExport6.NotFunc()
+      enddef
+      Testit()
+  END
+  CheckScriptFailure(lines, 'E117: Unknown function: notExport6#NotFunc')
+
+  writefile(exportLines, 'Xdir/autoload/notExport7.vim')
+  lines =<< trim END
+      vim9script
+      import autoload 'notExport7.vim'
+      def Testit()
+        echo 'text'->notExport7.NotExport()
+      enddef
+      Testit()
+  END
+  CheckScriptFailure(lines, 'E117: Unknown function: notExport7#NotExport')
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_vim9script_autoload_call()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp

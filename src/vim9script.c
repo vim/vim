@@ -707,22 +707,36 @@ find_exported(
 	    sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
 	}
 	*ufunc = find_func(funcname, FALSE);
-	if (funcname != buffer)
-	    vim_free(funcname);
 
 	if (*ufunc == NULL)
 	{
 	    if (verbose)
-		semsg(_(e_item_not_found_in_script_str), name);
-	    return -1;
+	    {
+		ufunc_T *alt_ufunc = NULL;
+
+		if (script->sn_autoload_prefix != NULL)
+		{
+		    // try find the function by the script-local name
+		    funcname[0] = K_SPECIAL;
+		    funcname[1] = KS_EXTRA;
+		    funcname[2] = (int)KE_SNR;
+		    sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
+		    alt_ufunc = find_func(funcname, FALSE);
+		}
+		if (alt_ufunc != NULL)
+		    semsg(_(e_item_not_exported_in_script_str), name);
+		else
+		    semsg(_(e_item_not_found_in_script_str), name);
+	    }
 	}
 	else if (((*ufunc)->uf_flags & FC_EXPORT) == 0)
 	{
 	    if (verbose)
 		semsg(_(e_item_not_exported_in_script_str), name);
 	    *ufunc = NULL;
-	    return -1;
 	}
+	if (funcname != buffer)
+	    vim_free(funcname);
     }
 
     return idx;

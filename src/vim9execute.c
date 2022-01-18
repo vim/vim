@@ -2240,33 +2240,19 @@ exec_instructions(ectx_T *ectx)
 						   iptr->isn_arg.string, TRUE);
 			if (did_emsg)
 			    goto on_error;
-			if (di == NULL)
-			{
-			    isn_T   *next = &ectx->ec_instr[ectx->ec_iidx];
-
-			    // When compiling "script.Func()" when "script" is
-			    // an autoload import then this results in
-			    // "LOADG script#Func" because we don't know if it
-			    // is a funcref variable or a function name.  In
-			    // that case a PCALL follows, push the function
-			    // name instead.
-			    if (next->isn_type == ISN_PCALL)
-			    {
-				tv = STACK_TV_BOT(0);
-				tv->v_type = VAR_FUNC;
-				tv->v_lock = 0;
-				tv->vval.v_string =
-					     vim_strsave(iptr->isn_arg.string);
-				++ectx->ec_stack.ga_len;
-				break;
-			    }
-			}
 		    }
 
 		    if (di == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_undefined_variable_char_str),
+			if (vim_strchr(iptr->isn_arg.string,
+							AUTOLOAD_CHAR) != NULL)
+			    // no check if the item exists in the script but
+			    // isn't exported, it is too complicated
+			    semsg(_(e_item_not_found_in_script_str),
+							 iptr->isn_arg.string);
+			else
+			    semsg(_(e_undefined_variable_char_str),
 					     namespace, iptr->isn_arg.string);
 			goto on_error;
 		    }

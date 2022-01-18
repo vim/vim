@@ -21,6 +21,9 @@
 # include "vim9.h"
 #endif
 
+// flag passed from compile_subscript() to compile_load_scriptvar()
+static int paren_follows_after_expr = 0;
+
 /*
  * Generate code for any ppconst entries.
  */
@@ -277,7 +280,6 @@ compile_load_scriptvar(
 	int	done = FALSE;
 	int	res = OK;
 
-	// TODO: if this is an autoload import do something else.
 	// Need to lookup the member.
 	if (*p != '.')
 	{
@@ -306,7 +308,7 @@ compile_load_scriptvar(
 
 	    // autoload script must be loaded later, access by the autoload
 	    // name.
-	    if (cc == '(')
+	    if (cc == '(' || paren_follows_after_expr)
 		res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
 	    else
 		res = generate_LOAD(cctx, ISN_LOADG, 0, auto_name, &t_any);
@@ -1736,12 +1738,19 @@ compile_subscript(
 		    int save_len = cctx->ctx_ufunc->uf_lines.ga_len;
 
 		    *paren = NUL;
+
+		    // instead of using LOADG for "import.Func" use PUSHFUNC
+		    ++paren_follows_after_expr;
+
 		    // do not look in the next line
 		    cctx->ctx_ufunc->uf_lines.ga_len = 1;
+
 		    fail = compile_expr8(arg, cctx, ppconst) == FAIL
 						    || *skipwhite(*arg) != NUL;
 		    *paren = '(';
+		    --paren_follows_after_expr;
 		    cctx->ctx_ufunc->uf_lines.ga_len = save_len;
+
 		    if (fail)
 		    {
 			semsg(_(e_invalid_expression_str), pstart);
