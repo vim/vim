@@ -641,13 +641,7 @@ op_delete(oparg_T *oap)
 
     if (VIsual_select && oap->is_VIsual)
     {
-	// Check 'selectregister'
-	int reg;
-	reg = *p_slr == '"' ? 0 : *p_slr;
-	if (reg == 0 || valid_yank_reg(reg, TRUE))
-	{
-	    oap->regname = reg;
-	}
+        oap->regname = select_regname;
     }
 
 #ifdef FEAT_CLIPBOARD

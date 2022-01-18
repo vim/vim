@@ -6550,11 +6550,35 @@ nv_dot(cmdarg_T *cap)
 }
 
 /*
- * CTRL-R: undo undo
+ * CTRL-R: undo undo or specify register in select mode
  */
     static void
 nv_redo(cmdarg_T *cap)
 {
+    if (VIsual_select && cap->oap->is_VIsual)
+    {
+	// Get register name
+	++no_mapping;
+	++allow_keys;
+	int reg;
+	reg = plain_vgetc();
+	LANGMAP_ADJUST(reg, TRUE);
+
+	--no_mapping;
+	--allow_keys;
+
+	if (reg == '"') {
+	    // Note: unnamed register is 0
+	    reg = 0;
+	}
+
+	if (valid_yank_reg(reg, TRUE))
+	{
+	    select_regname = reg;
+	}
+	return;
+    }
+
     if (!checkclearopq(cap->oap))
     {
 	u_redo((int)cap->count1);
