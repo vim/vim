@@ -14,6 +14,7 @@ let s:python = PythonProg()
 let $PROMPT_COMMAND=''
 
 func Test_terminal_basic()
+  call test_override('vterm_title', 1)
   au TerminalOpen * let b:done = 'yes'
   let buf = Run_shell_in_terminal({})
 
@@ -37,6 +38,7 @@ func Test_terminal_basic()
   call assert_equal("", bufname(buf))
 
   au! TerminalOpen
+  call test_override('ALL', 0)
   unlet g:job
 endfunc
 
