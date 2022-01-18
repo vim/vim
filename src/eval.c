@@ -4050,16 +4050,21 @@ eval_method(
 	if (**arg != '(' && alias == NULL
 				    && (paren = vim_strchr(*arg, '(')) != NULL)
 	{
+	    char_u *deref;
+
 	    *arg = name;
 	    *paren = NUL;
-	    name = deref_function_name(arg, &tofree, evalarg, verbose);
-	    if (name == NULL)
+	    deref = deref_function_name(arg, &tofree, evalarg, verbose);
+	    if (deref == NULL)
 	    {
 		*arg = name + len;
 		ret = FAIL;
 	    }
 	    else
+	    {
+		name = deref;
 		len = STRLEN(name);
+	    }
 	    *paren = '(';
 	}
 

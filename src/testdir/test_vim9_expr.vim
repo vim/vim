@@ -3214,6 +3214,14 @@ def Test_expr8_method_call_import()
   END
   CheckScriptSuccess(lines)
 
+  lines =<< trim END
+      vim9script
+      import './Xsquare.vim'
+
+      echo range(5)->Xsquare.NoSuchFunc()
+  END
+  CheckScriptFailure(lines, 'E1048: Item not found in script: NoSuchFunc')
+
   delete('Xsquare.vim')
 enddef
 
