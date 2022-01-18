@@ -468,7 +468,13 @@ handle_import(
 	    vim_free(from_name);
 	}
     }
-    else if (mch_isFullName(tv.vval.v_string))
+    else if (mch_isFullName(tv.vval.v_string)
+#ifdef BACKSLASH_IN_FILENAME
+	    // On MS-Windows omitting the drive is still handled like an
+	    // absolute path, not using 'runtimepath'.
+	    || *tv.vval.v_string == '/' || *tv.vval.v_string == '\\'
+#endif
+	    )
     {
 	// Absolute path: "/tmp/name.vim"
 	if (is_autoload)
