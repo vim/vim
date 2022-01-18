@@ -2278,6 +2278,7 @@ def Test_maparg()
         nowait: 0,
         expr: 0,
         sid: SID(),
+        scriptversion: 999999,
         rhs: 'bar',
         buffer: 0})
   unmap foo
