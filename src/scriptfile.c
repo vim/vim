@@ -1648,16 +1648,22 @@ ex_scriptnames(exarg_T *eap)
     }
 
     for (i = 1; i <= script_items.ga_len && !got_int; ++i)
-	if (SCRIPT_ITEM(i)->sn_name != NULL)
+    {
+	scriptitem_T *si = SCRIPT_ITEM(i);
+
+	if (si->sn_name != NULL)
 	{
-	    home_replace(NULL, SCRIPT_ITEM(i)->sn_name,
-						    NameBuff, MAXPATHL, TRUE);
-	    vim_snprintf((char *)IObuff, IOSIZE, "%3d: %s", i, NameBuff);
+	    home_replace(NULL, si->sn_name, NameBuff, MAXPATHL, TRUE);
+	    vim_snprintf((char *)IObuff, IOSIZE, "%3d%s: %s",
+		    i,
+		    si->sn_state == SN_STATE_NOT_LOADED ? " A" : "",
+		    NameBuff);
 	    msg_putchar('\n');
 	    msg_outtrans(IObuff);
 	    out_flush();	    // output one line at a time
 	    ui_breakcheck();
 	}
+    }
 }
 
 # if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)

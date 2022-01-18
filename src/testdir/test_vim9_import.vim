@@ -1397,10 +1397,12 @@ def Test_autoload_mapping()
   CheckScriptSuccess(lines)
   assert_false(exists("g:toggle_loaded"))
   assert_false(exists("g:toggle_called"))
+  assert_match('\d A: \f*[/\\]toggle.vim', execute('scriptnames'))
 
   feedkeys("tt", 'xt')
   assert_equal('yes', g:toggle_loaded)
   assert_equal('yes', g:toggle_called)
+  assert_match('\d: \f*[/\\]toggle.vim', execute('scriptnames'))
 
   feedkeys("xx", 'xt')
   assert_equal('yes', g:doit_called)

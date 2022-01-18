@@ -380,6 +380,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 :scr[iptnames]		List all sourced script names, in the order they were
 			first sourced.  The number is used for the script ID
 			|<SID>|.
+			For a script that was used with `import autoload` but
+			was not actually sourced yet an "A" is shown after the
+			script ID.
 			{not available when compiled without the |+eval|
 			feature}
 
