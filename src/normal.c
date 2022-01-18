@@ -1303,6 +1303,7 @@ normal_end:
 	    trigger_modechanged();
 	    showmode();
 	    restart_VIsual_select = 0;
+	    select_regname = 0;
 	}
 	if (restart_edit != 0 && !VIsual_active && old_mapped_len == 0)
 	    (void)edit(restart_edit, FALSE, 1L);
@@ -5997,7 +5998,10 @@ nv_g_cmd(cmdarg_T *cap)
 	     * start Select mode.
 	     */
 	    if (cap->arg)
+	    {
 		VIsual_select = TRUE;
+		select_regname = 0;
+	    }
 	    else
 		may_start_select('c');
 	    setmouse();
@@ -6950,7 +6954,10 @@ unadjust_for_sel(void)
 nv_select(cmdarg_T *cap)
 {
     if (VIsual_active)
+    {
 	VIsual_select = TRUE;
+	select_regname = 0;
+    }
     else if (VIsual_reselect)
     {
 	cap->nchar = 'v';	    // fake "gv" command
