@@ -226,7 +226,7 @@ map_add(
 #endif
 	int	    simplified)
 {
-    mapblock_T	*mp = ALLOC_ONE(mapblock_T);
+    mapblock_T	*mp = ALLOC_CLEAR_ONE(mapblock_T);
 
     if (mp == NULL)
 	return FAIL;
@@ -1515,6 +1515,12 @@ check_abbr(
 	}
 	if (mp != NULL)
 	{
+	    int	noremap;
+	    int silent;
+#ifdef FEAT_EVAL
+	    int expr;
+#endif
+
 	    // Found a match:
 	    // Insert the rest of the abbreviation in typebuf.tb_buf[].
 	    // This goes from end to start.
@@ -1567,8 +1573,14 @@ check_abbr(
 					// insert the last typed char
 		(void)ins_typebuf(tb, 1, 0, TRUE, mp->m_silent);
 	    }
+
+	    // copy values here, calling eval_map_expr() may make "mp" invalid!
+	    noremap = mp->m_noremap;
+	    silent = mp->m_silent;
 #ifdef FEAT_EVAL
-	    if (mp->m_expr)
+	    expr = mp->m_expr;
+
+	    if (expr)
 		s = eval_map_expr(mp, c);
 	    else
 #endif
@@ -1576,11 +1588,11 @@ check_abbr(
 	    if (s != NULL)
 	    {
 					// insert the to string
-		(void)ins_typebuf(s, mp->m_noremap, 0, TRUE, mp->m_silent);
+		(void)ins_typebuf(s, noremap, 0, TRUE, silent);
 					// no abbrev. for these chars
 		typebuf.tb_no_abbr_cnt += (int)STRLEN(s) + j + 1;
 #ifdef FEAT_EVAL
-		if (mp->m_expr)
+		if (expr)
 		    vim_free(s);
 #endif
 	    }
@@ -1590,7 +1602,7 @@ check_abbr(
 	    if (has_mbyte)
 		len = clen;	// Delete characters instead of bytes
 	    while (len-- > 0)		// delete the from string
-		(void)ins_typebuf(tb, 1, 0, TRUE, mp->m_silent);
+		(void)ins_typebuf(tb, 1, 0, TRUE, silent);
 	    return TRUE;
 	}
     }
@@ -1601,6 +1613,7 @@ check_abbr(
 /*
  * Evaluate the RHS of a mapping or abbreviations and take care of escaping
  * special characters.
+ * Careful: after this "mp" will be invalid if the mapping was deleted.
  */
     char_u *
 eval_map_expr(
