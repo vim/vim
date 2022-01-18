@@ -672,6 +672,7 @@ CFLAGS = $(CFLAGS) /fsanitize=address
 !endif
 
 !ifdef NODEBUG
+
 VIM = vim
 ! if "$(OPTIMIZE)" == "SPACE"
 OPTFLAG = /O1
@@ -702,7 +703,9 @@ LIBC = msvcrt.lib
 LIBC = libcmt.lib
 CFLAGS = $(CFLAGS) /Zl /MT
 ! endif
+
 !else  # DEBUG
+
 VIM = vimd
 ! if ("$(CPU)" == "i386") || ("$(CPU)" == "ix86")
 DEBUGINFO = /ZI
@@ -722,6 +725,7 @@ LIBC = $(LIBC) msvcrtd.lib
 LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
 ! endif
+
 !endif # DEBUG
 
 !if "$(CL)" == "/D_USING_V110_SDK71_"
