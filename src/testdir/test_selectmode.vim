@@ -260,41 +260,53 @@ endfunc
 
 " Test for selectmode register overwrite
 func Test_selectmode_register()
-  " Default behavior: use unnamed register
   new
-  call setline(1, range(1,100))
-  let save_register = getreg('"')
+
+  " Default behavior: use unnamed register
+  call setline(1, 'foo')
+  call setreg('"', 'bar')
+  call setreg('a', 'baz')
   exe ":norm! v\<c-g>a"
-  call assert_equal('1', getreg('"'))
+  call assert_equal(getline('.'), 'aoo')
+  call assert_equal('f', getreg('"'))
+  call assert_equal('baz', getreg('a'))
 
   " Disable overwrite registers
-  new
-  call setline(1, range(1,100))
-  let save_register = getreg('"')
+  call setline(1, 'foo')
+  call setreg('"', 'bar')
+  call setreg('a', 'baz')
   exe ":norm! v\<c-g>\<c-r>_a"
-  call assert_equal(save_register, getreg('"'))
+  call assert_equal(getline('.'), 'aoo')
+  call assert_equal('bar', getreg('"'))
+  call assert_equal('baz', getreg('a'))
 
   " Invalid register
-  new
-  call setline(1, range(1,100))
-  let save_register = getreg('"')
+  call setline(1, 'foo')
+  call setreg('"', 'bar')
+  call setreg('a', 'baz')
   exe ":norm! v\<c-g>\<c-r>?a"
-  call assert_equal('1', getreg('"'))
+  call assert_equal(getline('.'), 'aoo')
+  call assert_equal('f', getreg('"'))
+  call assert_equal('baz', getreg('a'))
 
   " Use unnamed register
-  new
-  call setline(1, range(1,100))
-  let save_register = getreg('"')
+  call setline(1, 'foo')
+  call setreg('"', 'bar')
+  call setreg('a', 'baz')
   exe ":norm! v\<c-g>\<c-r>\"a"
-  call assert_equal('1', getreg('"'))
+  call assert_equal(getline('.'), 'aoo')
+  call assert_equal('f', getreg('"'))
+  call assert_equal('baz', getreg('a'))
 
   " Overwrite a register instead
-  new
-  call setline(1, range(1,100))
-  let save_register = getreg('"')
+  " Note: unnamed register is always overwritten
+  call setline(1, 'foo')
+  call setreg('"', 'bar')
+  call setreg('a', 'baz')
   exe ":norm! v\<c-g>\<c-r>aa"
-  call assert_equal(save_register, getreg('"'))
-  call assert_equal('1', getreg('a'))
+  call assert_equal(getline('.'), 'aoo')
+  call assert_equal('f', getreg('"'))
+  call assert_equal('f', getreg('a'))
 
   bw!
 endfunc

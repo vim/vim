@@ -489,6 +489,9 @@ Commands in Select mode:
 - CTRL-O switches to Visual mode for the duration of one command. *v_CTRL-O*
 - CTRL-G switches to Visual mode.
 - CTRL-R {register} selects overwrite register like |i_CTRL-R|.	  *v_CTRL-R*
+  But if you don't specify "_"(blackwhole) register, unnamed register is also
+  overwritten.
+
 
 Otherwise, typed characters are handled as in Visual mode.
 

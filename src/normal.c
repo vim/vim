@@ -6576,10 +6576,7 @@ nv_redo(cmdarg_T *cap)
 	    reg = 0;
 	}
 
-	if (valid_yank_reg(reg, TRUE))
-	{
-	    VIsual_select_reg = reg;
-	}
+        VIsual_select_reg = valid_yank_reg(reg, TRUE) ? reg : 0;
 	return;
     }
 
