@@ -668,6 +668,21 @@ compile_call(
     int		res = FAIL;
     int		is_autoload;
     int		is_searchpair;
+    imported_T	*import;
+
+    if (varlen >= sizeof(namebuf))
+    {
+	semsg(_(e_name_too_long_str), name);
+	return FAIL;
+    }
+    vim_strncpy(namebuf, *arg, varlen);
+
+    import = find_imported(name, varlen, FALSE, cctx);
+    if (import != NULL)
+    {
+	semsg(_(e_cannot_use_str_itself_it_is_imported), namebuf);
+	return FAIL;
+    }
 
     // We can evaluate "has('name')" at compile time.
     // We always evaluate "exists_compiled()" at compile time.
@@ -713,12 +728,6 @@ compile_call(
     if (generate_ppconst(cctx, ppconst) == FAIL)
 	return FAIL;
 
-    if (varlen >= sizeof(namebuf))
-    {
-	semsg(_(e_name_too_long_str), name);
-	return FAIL;
-    }
-    vim_strncpy(namebuf, *arg, varlen);
     name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
     // We handle the "skip" argument of searchpair() and searchpairpos()
