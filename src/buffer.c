@@ -2269,7 +2269,8 @@ free_buf_options(
 #endif
 #ifdef FEAT_CRYPT
 # ifdef FEAT_SODIUM
-    if (buf->b_p_key != NULL && (crypt_get_method_nr(buf) == CRYPT_M_SOD))
+    if ((buf->b_p_key != NULL) && (*buf->b_p_key != NUL) &&
+				(crypt_get_method_nr(buf) == CRYPT_M_SOD))
 	crypt_sodium_munlock(buf->b_p_key, STRLEN(buf->b_p_key));
 # endif
     clear_string_option(&buf->b_p_key);

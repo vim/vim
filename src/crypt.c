@@ -1096,12 +1096,6 @@ crypt_sodium_buffer_decode(
     int
 crypt_sodium_munlock(void *const addr, const size_t len)
 {
-# if DYNAMIC_SODIUM
-    // FIXME:
-    // The free_buf_options() function in buffer.c may call this without
-    // calling crypt_sodium_init().
-    load_sodium();
-# endif
     return sodium_munlock(addr, len);
 }
 
