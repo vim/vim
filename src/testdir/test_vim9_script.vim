@@ -3664,6 +3664,36 @@ def ProfiledNestedProfiled()
   Nested()
 enddef
 
+def Test_ambigous_command_error()
+  var lines =<< trim END
+      vim9script
+      command CmdA echomsg 'CmdA'
+      command CmdB echomsg 'CmdB'
+      Cmd
+  END
+  CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 4)
+
+  lines =<< trim END
+      vim9script
+      def Func()
+        Cmd
+      enddef
+      Func()
+  END
+  CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 1)
+
+  lines =<< trim END
+      vim9script
+      nnoremap <F3> <ScriptCmd>Cmd<CR>
+      feedkeys("\<F3>", 'xt')
+  END
+  CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 3)
+
+  delcommand CmdA
+  delcommand CmdB
+  nunmap <F3>
+enddef
+
 " Execute this near the end, profiling doesn't stop until Vim exits.
 " This only tests that it works, not the profiling output.
 def Test_xx_profile_with_lambda()

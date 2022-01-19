@@ -2878,7 +2878,7 @@ compile_def_function(
 	if (p == NULL)
 	{
 	    if (cctx.ctx_skip != SKIP_YES)
-		emsg(_(e_ambiguous_use_of_user_defined_command));
+		semsg(_(e_ambiguous_use_of_user_defined_command_str), ea.cmd);
 	    goto erret;
 	}
 

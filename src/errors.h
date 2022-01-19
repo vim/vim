@@ -1148,6 +1148,8 @@ EXTERN char e_region_is_guarded_cannot_modify[]
 #endif
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
+EXTERN char e_ambiguous_use_of_user_defined_command_str[]
+	INIT(= N_("E464: Ambiguous use of user-defined command: %s"));
 EXTERN char e_winsize_requires_two_number_arguments[]
 	INIT(= N_("E465: :winsize requires two number arguments"));
 EXTERN char e_winpos_requires_two_number_arguments[]
