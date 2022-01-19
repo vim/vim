@@ -875,6 +875,8 @@ EXTERN int	VIsual_active INIT(= FALSE);
 				// whether Visual mode is active
 EXTERN int	VIsual_select INIT(= FALSE);
 				// whether Select mode is active
+EXTERN int	VIsual_select_reg INIT(= 0);
+				// register name for Select mode
 EXTERN int	restart_VIsual_select INIT(= 0);
 				// restart Select mode when next cmd finished
 EXTERN int	VIsual_reselect;
@@ -1726,5 +1728,3 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 // While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
 // overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.
 EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
-
-EXTERN int select_regname INIT(= 0);

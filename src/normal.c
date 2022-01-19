@@ -1303,7 +1303,7 @@ normal_end:
 	    trigger_modechanged();
 	    showmode();
 	    restart_VIsual_select = 0;
-	    select_regname = 0;
+	    VIsual_select_reg = 0;
 	}
 	if (restart_edit != 0 && !VIsual_active && old_mapped_len == 0)
 	    (void)edit(restart_edit, FALSE, 1L);
@@ -6000,7 +6000,7 @@ nv_g_cmd(cmdarg_T *cap)
 	    if (cap->arg)
 	    {
 		VIsual_select = TRUE;
-		select_regname = 0;
+		VIsual_select_reg = 0;
 	    }
 	    else
 		may_start_select('c');
@@ -6559,7 +6559,7 @@ nv_dot(cmdarg_T *cap)
     static void
 nv_redo(cmdarg_T *cap)
 {
-    if (VIsual_select && cap->oap->is_VIsual)
+    if (VIsual_select && VIsual_active)
     {
 	// Get register name
 	++no_mapping;
@@ -6578,7 +6578,7 @@ nv_redo(cmdarg_T *cap)
 
 	if (valid_yank_reg(reg, TRUE))
 	{
-	    select_regname = reg;
+	    VIsual_select_reg = reg;
 	}
 	return;
     }
@@ -6956,7 +6956,7 @@ nv_select(cmdarg_T *cap)
     if (VIsual_active)
     {
 	VIsual_select = TRUE;
-	select_regname = 0;
+	VIsual_select_reg = 0;
     }
     else if (VIsual_reselect)
     {

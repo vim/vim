@@ -641,7 +641,7 @@ op_delete(oparg_T *oap)
 
     if (VIsual_select && oap->is_VIsual)
     {
-        oap->regname = select_regname;
+        oap->regname = VIsual_select_reg;
     }
 
 #ifdef FEAT_CLIPBOARD
