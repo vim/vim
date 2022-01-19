@@ -849,7 +849,6 @@ EXTERN char_u	*p_sections;	// 'sections'
 EXTERN int	p_secure;	// 'secure'
 EXTERN char_u	*p_sel;		// 'selection'
 EXTERN char_u	*p_slm;		// 'selectmode'
-EXTERN char_u	*p_slr;		// 'selectregister'
 #ifdef FEAT_SESSION
 EXTERN char_u	*p_ssop;	// 'sessionoptions'
 EXTERN unsigned	ssop_flags;

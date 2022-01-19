@@ -2206,9 +2206,6 @@ static struct vimoption options[] =
     {"selectmode",  "slm",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_slm, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
-    {"selectregister",  "slr",  P_STRING|P_VI_DEF,
-			    (char_u *)&p_slr, PV_NONE,
-			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"sessionoptions", "ssop", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_SESSION
 			    (char_u *)&p_ssop, PV_NONE,

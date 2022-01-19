@@ -488,6 +488,7 @@ Commands in Select mode:
 - ESC stops Select mode.
 - CTRL-O switches to Visual mode for the duration of one command. *v_CTRL-O*
 - CTRL-G switches to Visual mode.
+- CTRL-R {register} selects overwrite register like |i_CTRL-R|.	  *v_CTRL-R*
 
 Otherwise, typed characters are handled as in Visual mode.
 
