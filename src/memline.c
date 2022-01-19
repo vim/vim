@@ -436,7 +436,8 @@ ml_set_mfp_crypt(buf_T *buf)
 	}
 #ifdef FEAT_SODIUM
 	else if (method_nr == CRYPT_M_SOD)
-	    randombytes_buf(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN);
+	    crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
+							    MF_SEED_LEN);
  #endif
     }
 }
