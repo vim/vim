@@ -43,10 +43,9 @@
 #
 #	Sodium support: SODIUM=[Path to Sodium directory]
 #	  DYNAMIC_SODIUM=yes (to load the Sodium DLL dynamically)
-#	 Dynamic built with libsodium
-#	 You need to install the msvc package from
-#	 https://download.libsodium.org/libsodium/releases/
-#	 and package the libsodium.dll with Vim
+#	  You need to install the msvc package from
+#	  https://download.libsodium.org/libsodium/releases/
+#	  and package the libsodium.dll with Vim
 #
 #
 #	DLL support (EXPERIMENTAL): VIMDLL=yes (default is no)
