@@ -1300,7 +1300,7 @@ retry:
 		    cryptkey = check_for_cryptkey(cryptkey, ptr, &size,
 						  &filesize, newfile, sfname,
 						  &did_ask_for_key);
-# ifdef CRYPT_NOT_INPLACE
+# if defined(CRYPT_NOT_INPLACE) && defined(FEAT_PERSISTENT_UNDO)
 		    if (curbuf->b_cryptstate != NULL
 				 && !crypt_works_inplace(curbuf->b_cryptstate))
 			// reading undo file requires crypt_decode_inplace()
