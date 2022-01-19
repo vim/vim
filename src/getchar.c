@@ -3836,8 +3836,9 @@ do_cmdkey_command(int key UNUSED, int flags)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
     void
-reset_last_used_map(void)
+reset_last_used_map(mapblock_T *mp)
 {
-    last_used_map = NULL;
+    if (last_used_map == mp)
+	last_used_map = NULL;
 }
 #endif

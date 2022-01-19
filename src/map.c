@@ -86,7 +86,7 @@ map_free(mapblock_T **mpp)
     *mpp = mp->m_next;
     vim_free(mp);
 #ifdef FEAT_EVAL
-    reset_last_used_map();
+    reset_last_used_map(mp);
 #endif
 }
 

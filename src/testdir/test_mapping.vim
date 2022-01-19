@@ -1439,6 +1439,22 @@ func Test_map_script_cmd_finds_func()
   unlet g:func_called
 endfunc
 
+func Test_map_script_cmd_survives_unmap()
+  let lines =<< trim END
+      vim9script
+      var n = 123
+      nnoremap <F4> <ScriptCmd><CR>
+      autocmd CmdlineEnter * silent! nunmap <F4>
+      nnoremap <F3> :<ScriptCmd>eval setbufvar(bufnr(), "result", n)<CR>
+      feedkeys("\<F3>\<CR>", 'xct')
+      assert_equal(123, b:result)
+  END
+  call CheckScriptSuccess(lines)
+
+  nunmap <F3>
+  unlet b:result
+endfunc
+
 " Test for using <script> with a map to remap characters in rhs
 func Test_script_local_remap()
   new

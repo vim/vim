@@ -53,5 +53,5 @@ void vungetc(int c);
 int fix_input_buffer(char_u *buf, int len);
 int input_available(void);
 int do_cmdkey_command(int key, int flags);
-void reset_last_used_map(void);
+void reset_last_used_map(mapblock_T *mp);
 /* vim: set ft=c : */
