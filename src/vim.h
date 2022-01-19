@@ -2632,6 +2632,7 @@ typedef enum {
 #define TFN_READ_ONLY	0x10	// will not change the var
 #define TFN_NO_DECL	0x20	// only used for GLV_NO_DECL
 #define TFN_COMPILING	0x40	// only used for GLV_COMPILING
+#define TFN_NEW_FUNC	0x80	// defining a new function
 
 // Values for get_lval() flags argument:
 #define GLV_QUIET	TFN_QUIET	// no error messages

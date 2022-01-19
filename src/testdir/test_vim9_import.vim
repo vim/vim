@@ -458,6 +458,16 @@ def Test_import_fails()
   CheckDefAndScriptFailure(lines, ['E1094:', 'E1236: Cannot use That itself'])
 
   lines =<< trim END
+      vim9script
+      import './Xthat.vim' as That
+      def Func()
+        echo That()
+      enddef
+      Func()
+  END
+  CheckScriptFailure(lines, 'E1236: Cannot use That itself')
+
+  lines =<< trim END
       import './Xthat.vim' as one
       import './Xthat.vim' as two
   END
@@ -1000,7 +1010,7 @@ def Test_func_overrules_import_fails()
       echo 'local to function'
     enddef
   END
-  CheckScriptFailure(lines, 'E1236:')
+  CheckScriptFailure(lines, 'E1213: Redefining imported item "Func"')
 
   lines =<< trim END
     vim9script

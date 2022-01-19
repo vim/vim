@@ -2072,7 +2072,7 @@ eval_func(
     // If "s" is the name of a variable of type VAR_FUNC
     // use its contents.
     s = deref_func_name(s, &len, &partial,
-			in_vim9script() ? &type : NULL, !evaluate, &found_var);
+		 in_vim9script() ? &type : NULL, !evaluate, FALSE, &found_var);
 
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.

@@ -1567,6 +1567,7 @@ errret:
  * "partialp".
  * If "type" is not NULL and a Vim9 script-local variable is found look up the
  * type of the variable.
+ * If "new_function" is TRUE the name is for a new function.
  * If "found_var" is not NULL and a variable was found set it to TRUE.
  */
     char_u *
@@ -1576,6 +1577,7 @@ deref_func_name(
 	partial_T   **partialp,
 	type_T	    **type,
 	int	    no_autoload,
+	int	    new_function,
 	int	    *found_var)
 {
     dictitem_T	*v;
@@ -1614,7 +1616,10 @@ deref_func_name(
 	if (import != NULL)
 	{
 	    name[len] = NUL;
-	    semsg(_(e_cannot_use_str_itself_it_is_imported), name);
+	    if (new_function)
+		semsg(_(e_redefining_imported_item_str), name);
+	    else
+		semsg(_(e_cannot_use_str_itself_it_is_imported), name);
 	    name[len] = cc;
 	    *lenp = 0;
 	    return (char_u *)"";	// just in case
@@ -3751,7 +3756,7 @@ trans_function_name(
     {
 	len = (int)STRLEN(lv.ll_exp_name);
 	name = deref_func_name(lv.ll_exp_name, &len, partial, type,
-						flags & TFN_NO_AUTOLOAD, NULL);
+			  flags & TFN_NO_AUTOLOAD, flags & TFN_NEW_FUNC, NULL);
 	if (name == lv.ll_exp_name)
 	    name = NULL;
     }
@@ -3783,7 +3788,7 @@ trans_function_name(
     {
 	len = (int)(end - *pp);
 	name = deref_func_name(*pp, &len, partial, type,
-						flags & TFN_NO_AUTOLOAD, NULL);
+			  flags & TFN_NO_AUTOLOAD, flags & TFN_NEW_FUNC, NULL);
 	if (name == *pp)
 	    name = NULL;
     }
@@ -4146,7 +4151,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
     else
     {
 	name = save_function_name(&p, &is_global, eap->skip,
-						       TFN_NO_AUTOLOAD, &fudi);
+					TFN_NO_AUTOLOAD | TFN_NEW_FUNC, &fudi);
 	paren = (vim_strchr(p, '(') != NULL);
 	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
 	{
@@ -5199,7 +5204,8 @@ ex_call(exarg_T *eap)
     // from trans_function_name().
     len = (int)STRLEN(tofree);
     name = deref_func_name(tofree, &len, partial != NULL ? NULL : &partial,
-	    in_vim9script() && type == NULL ? &type : NULL, FALSE, &found_var);
+	    in_vim9script() && type == NULL ? &type : NULL,
+						     FALSE, FALSE, &found_var);
 
     // Skip white space to allow ":call func ()".  Not good, but required for
     // backward compatibility.
