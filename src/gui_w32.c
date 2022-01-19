@@ -368,14 +368,14 @@ static int allow_scrollbar = FALSE;
 typedef HANDLE DPI_AWARENESS_CONTEXT;
 
 typedef enum DPI_AWARENESS {
-    DPI_AWARENESS_INVALID           = -1,
-    DPI_AWARENESS_UNAWARE           = 0,
-    DPI_AWARENESS_SYSTEM_AWARE      = 1,
+    DPI_AWARENESS_INVALID	    = -1,
+    DPI_AWARENESS_UNAWARE	    = 0,
+    DPI_AWARENESS_SYSTEM_AWARE	    = 1,
     DPI_AWARENESS_PER_MONITOR_AWARE = 2
 } DPI_AWARENESS;
 
-# define DPI_AWARENESS_CONTEXT_UNAWARE              ((DPI_AWARENESS_CONTEXT)-1)
-# define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         ((DPI_AWARENESS_CONTEXT)-2)
+# define DPI_AWARENESS_CONTEXT_UNAWARE		    ((DPI_AWARENESS_CONTEXT)-1)
+# define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE	    ((DPI_AWARENESS_CONTEXT)-2)
 # define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    ((DPI_AWARENESS_CONTEXT)-3)
 # define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
 # define DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED    ((DPI_AWARENESS_CONTEXT)-5)
@@ -4275,7 +4275,6 @@ typedef HANDLE HIMC;
 # endif
 
 static HINSTANCE hLibImm = NULL;
-static LONG (WINAPI *pImmGetCompositionStringA)(HIMC, DWORD, LPVOID, DWORD);
 static LONG (WINAPI *pImmGetCompositionStringW)(HIMC, DWORD, LPVOID, DWORD);
 static HIMC (WINAPI *pImmGetContext)(HWND);
 static HIMC (WINAPI *pImmAssociateContext)(HWND, HIMC);
@@ -4289,7 +4288,6 @@ static BOOL (WINAPI *pImmGetConversionStatus)(HIMC, LPDWORD, LPDWORD);
 static BOOL (WINAPI *pImmSetConversionStatus)(HIMC, DWORD, DWORD);
 static void dyn_imm_load(void);
 #else
-# define pImmGetCompositionStringA ImmGetCompositionStringA
 # define pImmGetCompositionStringW ImmGetCompositionStringW
 # define pImmGetContext		  ImmGetContext
 # define pImmAssociateContext	  ImmAssociateContext
@@ -5880,56 +5878,6 @@ _OnImeComposition(HWND hwnd, WPARAM dbcs UNUSED, LPARAM param)
 }
 
 /*
- * get the current composition string, in UCS-2; *lenp is the number of
- * *lenp is the number of Unicode characters.
- */
-    static short_u *
-GetCompositionString_inUCS2(HIMC hIMC, DWORD GCS, int *lenp)
-{
-    LONG	    ret;
-    LPWSTR	    wbuf = NULL;
-    char_u	    *buf;
-
-    if (!pImmGetContext)
-	return NULL; // no imm32.dll
-
-    // Try Unicode; this will always work on NT regardless of codepage.
-    ret = pImmGetCompositionStringW(hIMC, GCS, NULL, 0);
-    if (ret == 0)
-	return NULL; // empty
-
-    if (ret > 0)
-    {
-	// Allocate the requested buffer plus space for the NUL character.
-	wbuf = alloc(ret + sizeof(WCHAR));
-	if (wbuf != NULL)
-	{
-	    pImmGetCompositionStringW(hIMC, GCS, wbuf, ret);
-	    *lenp = ret / sizeof(WCHAR);
-	}
-	return (short_u *)wbuf;
-    }
-
-    // ret < 0; we got an error, so try the ANSI version.  This will work
-    // on 9x/ME, but only if the codepage happens to be set to whatever
-    // we're inputting.
-    ret = pImmGetCompositionStringA(hIMC, GCS, NULL, 0);
-    if (ret <= 0)
-	return NULL; // empty or error
-
-    buf = alloc(ret);
-    if (buf == NULL)
-	return NULL;
-    pImmGetCompositionStringA(hIMC, GCS, buf, ret);
-
-    // convert from codepage to UCS-2
-    MultiByteToWideChar_alloc(GetACP(), 0, (LPCSTR)buf, ret, &wbuf, lenp);
-    vim_free(buf);
-
-    return (short_u *)wbuf;
-}
-
-/*
  * void GetResultStr()
  *
  * This handles WM_IME_COMPOSITION with GCS_RESULTSTR flag on.
@@ -5939,16 +5887,26 @@ GetCompositionString_inUCS2(HIMC hIMC, DWORD GCS, int *lenp)
 GetResultStr(HWND hwnd, int GCS, int *lenp)
 {
     HIMC	hIMC;		// Input context handle.
-    short_u	*buf = NULL;
+    LONG	ret;
+    WCHAR	*buf = NULL;
     char_u	*convbuf = NULL;
 
     if (!pImmGetContext || (hIMC = pImmGetContext(hwnd)) == (HIMC)0)
 	return NULL;
 
-    // Reads in the composition string.
-    buf = GetCompositionString_inUCS2(hIMC, GCS, lenp);
+    // Get the length of the composition string.
+    ret = pImmGetCompositionStringW(hIMC, GCS, NULL, 0);
+    if (ret <= 0)
+	return NULL;
+
+    // Allocate the requested buffer plus space for the NUL character.
+    buf = alloc(ret + sizeof(WCHAR));
     if (buf == NULL)
 	return NULL;
+
+    // Reads in the composition string.
+    pImmGetCompositionStringW(hIMC, GCS, buf, ret);
+    *lenp = ret / sizeof(WCHAR);
 
     convbuf = utf16_to_enc(buf, lenp);
     pImmReleaseContext(hwnd, hIMC);
@@ -8399,8 +8357,6 @@ dyn_imm_load(void)
     if (hLibImm == NULL)
 	return;
 
-    pImmGetCompositionStringA
-	    = (void *)GetProcAddress(hLibImm, "ImmGetCompositionStringA");
     pImmGetCompositionStringW
 	    = (void *)GetProcAddress(hLibImm, "ImmGetCompositionStringW");
     pImmGetContext
@@ -8424,8 +8380,7 @@ dyn_imm_load(void)
     pImmSetConversionStatus
 	    = (void *)GetProcAddress(hLibImm, "ImmSetConversionStatus");
 
-    if (       pImmGetCompositionStringA == NULL
-	    || pImmGetCompositionStringW == NULL
+    if (       pImmGetCompositionStringW == NULL
 	    || pImmGetContext == NULL
 	    || pImmAssociateContext == NULL
 	    || pImmReleaseContext == NULL
