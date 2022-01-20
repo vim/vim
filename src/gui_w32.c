@@ -197,10 +197,6 @@ gui_mch_set_rendering_options(char_u *s)
 # endif
 # include <windowsx.h>
 
-# ifdef GLOBAL_IME
-#  include "glbl_ime.h"
-# endif
-
 #endif // PROTO
 
 #ifdef FEAT_MENU
@@ -358,12 +354,6 @@ static int		s_need_activate = FALSE;
 // problems (e.g., while ":s" is working).
 static int allow_scrollbar = FALSE;
 
-#ifdef GLOBAL_IME
-# define MyTranslateMessage(x) global_ime_TranslateMessage(x)
-#else
-# define MyTranslateMessage(x) TranslateMessage(x)
-#endif
-
 #ifndef _DPI_AWARENESS_CONTEXTS_
 typedef HANDLE DPI_AWARENESS_CONTEXT;
 
@@ -448,9 +438,6 @@ directx_binddc(void)
     }
 }
 #endif
-
-// use of WindowProc depends on Global IME
-static LRESULT WINAPI MyWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 extern int current_font_height;	    // this is in os_mswin.c
 
@@ -561,11 +548,9 @@ static void TrackUserActivity(UINT uMsg);
  *
  * These LOGFONTW used for IME.
  */
-#if defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)
+#ifdef FEAT_MBYTE_IME
 // holds LOGFONTW for 'guifontwide' if available, otherwise 'guifont'
 static LOGFONTW norm_logfont;
-#endif
-#ifdef FEAT_MBYTE_IME
 // holds LOGFONTW for 'guifont' always.
 static LOGFONTW sub_logfont;
 #endif
@@ -1315,18 +1300,8 @@ _TextAreaWndProc(
 	    return TRUE;
 #endif
 	default:
-	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
-}
-
-    static LRESULT WINAPI
-MyWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-#ifdef GLOBAL_IME
-    return global_ime_DefWindowProc(hwnd, message, wParam, lParam);
-#else
-    return DefWindowProcW(hwnd, message, wParam, lParam);
-#endif
 }
 
 /*
@@ -1844,7 +1819,7 @@ outputDeadKey_rePost(MSG originalMsg)
     deadCharExpel.hwnd    = originalMsg.hwnd;
     deadCharExpel.wParam  = VK_SPACE;
 
-    MyTranslateMessage(&deadCharExpel);
+    TranslateMessage(&deadCharExpel);
 
     // re-generate the current character free of the dead char influence
     PostMessage(originalMsg.hwnd, originalMsg.message, originalMsg.wParam,
@@ -1919,7 +1894,7 @@ process_message(void)
 	 *
 	 * - Before doing something special such as regenerating keypresses to
 	 *   expel the dead character as this could trigger an infinite loop if
-	 *   for some reason MyTranslateMessage() do not trigger a call
+	 *   for some reason TranslateMessage() do not trigger a call
 	 *   immediately to _OnChar() (or _OnSysChar()).
 	 */
 	if (dead_key)
@@ -1939,7 +1914,7 @@ process_message(void)
 	    if ((vk == VK_SPACE || vk == VK_BACK || vk == VK_ESCAPE))
 	    {
 		dead_key = 0;
-		MyTranslateMessage(&msg);
+		TranslateMessage(&msg);
 		return;
 	    }
 	    // In modes where we are not typing, dead keys should behave
@@ -2069,10 +2044,10 @@ process_message(void)
 		    add_to_input_buf(string, 1);
 		}
 		else
-		    MyTranslateMessage(&msg);
+		    TranslateMessage(&msg);
 	    }
 	    else
-		MyTranslateMessage(&msg);
+		TranslateMessage(&msg);
 	}
     }
 #ifdef FEAT_MBYTE_IME
@@ -2080,20 +2055,7 @@ process_message(void)
 	_OnImeNotify(msg.hwnd, (DWORD)msg.wParam, (DWORD)msg.lParam);
     else if (msg.message == WM_KEYUP && im_get_status())
 	// added for non-MS IME (Yasuhiro Matsumoto)
-	MyTranslateMessage(&msg);
-#endif
-#if !defined(FEAT_MBYTE_IME) && defined(GLOBAL_IME)
-// GIME_TEST
-    else if (msg.message == WM_IME_STARTCOMPOSITION)
-    {
-	POINT point;
-
-	global_ime_set_font(&norm_logfont);
-	point.x = FILL_X(gui.col);
-	point.y = FILL_Y(gui.row);
-	MapWindowPoints(s_textArea, s_hwnd, &point, 1);
-	global_ime_set_position(&point);
-    }
+	TranslateMessage(&msg);
 #endif
 
 #ifdef FEAT_MENU
@@ -2947,7 +2909,7 @@ _OnSetFocus(
 {
     gui_focus_change(TRUE);
     s_getting_focus = TRUE;
-    (void)MyWindowProc(hwnd, WM_SETFOCUS, (WPARAM)hwndOldFocus, 0);
+    (void)DefWindowProcW(hwnd, WM_SETFOCUS, (WPARAM)hwndOldFocus, 0);
 }
 
     static void
@@ -2957,7 +2919,7 @@ _OnKillFocus(
 {
     gui_focus_change(FALSE);
     s_getting_focus = FALSE;
-    (void)MyWindowProc(hwnd, WM_KILLFOCUS, (WPARAM)hwndNewFocus, 0);
+    (void)DefWindowProcW(hwnd, WM_KILLFOCUS, (WPARAM)hwndNewFocus, 0);
 }
 
 /*
@@ -2971,7 +2933,7 @@ _OnActivateApp(
 {
     // we call gui_focus_change() in _OnSetFocus()
     // gui_focus_change((int)fActivate);
-    return MyWindowProc(hwnd, WM_ACTIVATEAPP, fActivate, (DWORD)dwThreadId);
+    return DefWindowProcW(hwnd, WM_ACTIVATEAPP, fActivate, (DWORD)dwThreadId);
 }
 
     void
@@ -3244,10 +3206,6 @@ gui_mch_exit(int rc UNUSED)
 	destroying = TRUE;	// ignore WM_DESTROY message now
 	DestroyWindow(s_hwnd);
     }
-
-#ifdef GLOBAL_IME
-    global_ime_end();
-#endif
 }
 
     static char_u *
@@ -3399,13 +3357,9 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 
     if (font_name == NULL)
 	font_name = (char_u *)lf.lfFaceName;
-#if defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)
+#ifdef FEAT_MBYTE_IME
     norm_logfont = lf;
-#endif
-#ifdef FEAT_MBYTE_IME
     sub_logfont = lf;
-#endif
-#ifdef FEAT_MBYTE_IME
     if (!s_in_dpichanged)
 	update_im_font();
 #endif
@@ -4550,7 +4504,7 @@ _OnWindowPosChanged(
 	netbeans_frame_moved(x, y);
     }
     // Allow to send WM_SIZE and WM_MOVE
-    FORWARD_WM_WINDOWPOSCHANGED(hwnd, lpwpos, MyWindowProc);
+    FORWARD_WM_WINDOWPOSCHANGED(hwnd, lpwpos, DefWindowProcW);
 }
 #endif
 
@@ -4716,7 +4670,7 @@ _WndProc(
 		    return 0L;
 		}
 	    }
-	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 	}
 	case WM_LBUTTONDBLCLK:
 	{
@@ -4733,7 +4687,7 @@ _WndProc(
 		if (pt.y < rect.top)
 		    send_tabline_menu_event(0, TABLINE_MENU_NEW);
 	    }
-	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 	}
 #endif
 
@@ -4773,7 +4727,7 @@ _WndProc(
 	}
 #ifdef FEAT_MENU
 	else
-	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 #endif
 
     case WM_SYSKEYUP:
@@ -4782,7 +4736,7 @@ _WndProc(
 	// that.  But that caused problems when menu is disabled and using
 	// Alt-Tab-Esc: get into a strange state where no mouse-moved events
 	// are received, mouse pointer remains hidden.
-	return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 #else
 	return 0L;
 #endif
@@ -4923,7 +4877,7 @@ _WndProc(
 # ifdef FEAT_GUI_TABLINE
 		if (gui_mch_showing_tabline()
 				  && ((LPNMHDR)lParam)->hwndFrom == s_tabhwnd)
-		    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+		    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 # endif
 		break;
 	}
@@ -4970,7 +4924,7 @@ _WndProc(
 	    int		x, y;
 	    int		xPos = GET_X_LPARAM(lParam);
 
-	    result = MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    result = DefWindowProcW(hwnd, uMsg, wParam, lParam);
 	    if (result == HTCLIENT)
 	    {
 #ifdef FEAT_GUI_TABLINE
@@ -5002,12 +4956,12 @@ _WndProc(
 #ifdef FEAT_MBYTE_IME
     case WM_IME_NOTIFY:
 	if (!_OnImeNotify(hwnd, (DWORD)wParam, (DWORD)lParam))
-	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 	return 1L;
 
     case WM_IME_COMPOSITION:
 	if (!_OnImeComposition(hwnd, wParam, lParam))
-	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 	return 1L;
 #endif
     case WM_DPICHANGED:
@@ -5019,10 +4973,10 @@ _WndProc(
 	if (uMsg == s_findrep_msg && s_findrep_msg != 0)
 	    _OnFindRepl();
 #endif
-	return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
 
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
 /*
@@ -5366,9 +5320,6 @@ gui_mch_init(void)
     const WCHAR szVimWndClassW[] = VIM_CLASSW;
     const WCHAR szTextAreaClassW[] = L"VimTextArea";
     WNDCLASSW wndclassw;
-#ifdef GLOBAL_IME
-    ATOM	atom;
-#endif
 
     // Return here if the window was already opened (happens when
     // gui_mch_dialog() is called early).
@@ -5412,11 +5363,7 @@ gui_mch_init(void)
 	wndclassw.lpszMenuName = NULL;
 	wndclassw.lpszClassName = szVimWndClassW;
 
-	if ((
-#ifdef GLOBAL_IME
-		    atom =
-#endif
-		    RegisterClassW(&wndclassw)) == 0)
+	if (RegisterClassW(&wndclassw) == 0)
 	    return FAIL;
     }
 
@@ -5489,9 +5436,6 @@ gui_mch_init(void)
 	//TRACE("System DPI: %d, DPI: %d", pGetDpiForSystem(), s_dpi);
     }
 
-#ifdef GLOBAL_IME
-    global_ime_init(atom, s_hwnd);
-#endif
 #if defined(FEAT_MBYTE_IME) && defined(DYNAMIC_IME)
     dyn_imm_load();
 #endif
@@ -6062,42 +6006,6 @@ im_get_status(void)
 
 #endif // FEAT_MBYTE_IME
 
-#if !defined(FEAT_MBYTE_IME) && defined(GLOBAL_IME)
-// Win32 with GLOBAL IME
-
-/*
- * Notify cursor position to IM.
- */
-    void
-im_set_position(int row, int col)
-{
-    // Win32 with GLOBAL IME
-    POINT p;
-
-    p.x = FILL_X(col);
-    p.y = FILL_Y(row);
-    MapWindowPoints(s_textArea, s_hwnd, &p, 1);
-    global_ime_set_position(&p);
-}
-
-/*
- * Set IM status on ("active" is TRUE) or off ("active" is FALSE).
- */
-    void
-im_set_active(int active)
-{
-    global_ime_set_status(active);
-}
-
-/*
- * Get IM status.  When IM is on, return not 0.  Else return 0.
- */
-    int
-im_get_status(void)
-{
-    return global_ime_get_status();
-}
-#endif
 
 /*
  * Convert latin9 text "text[len]" to ucs-2 in "unicodebuf".

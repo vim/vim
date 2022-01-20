@@ -34,7 +34,6 @@
 #	IME support: IME=yes	(default is yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
 #	  is yes)
-#	Global IME support: GIME=yes (requires GUI=yes)
 #
 #	Terminal support: TERMINAL=yes (default is yes if FEATURES is HUGE)
 #	  Will also enable CHANNEL
@@ -898,11 +897,6 @@ IME_LIB = imm32.lib
 ! endif
 !endif
 
-!if "$(GIME)" == "yes"
-CFLAGS = $(CFLAGS) -DGLOBAL_IME
-OBJ = $(OBJ) $(OUTDIR)\dimm_i.obj $(OUTDIR)\glbl_ime.obj
-!endif
-
 !if "$(GUI)" == "yes"
 SUBSYSTEM = windows
 CFLAGS = $(CFLAGS) -DFEAT_GUI_MSWIN
@@ -1475,9 +1469,6 @@ clean: testclean
 	- if exist uninstall.exe del uninstall.exe
 	- if exist if_perl.c del if_perl.c
 	- if exist auto\if_perl.c del auto\if_perl.c
-	- if exist dimm.h del dimm.h
-	- if exist dimm_i.c del dimm_i.c
-	- if exist dimm.tlb del dimm.tlb
 	- if exist dosinst.exe del dosinst.exe
 	cd xxd
 	$(MAKE) /NOLOGO -f Make_mvc.mak clean
@@ -1892,13 +1883,6 @@ $(OUTDIR)/vim.res:	$(OUTDIR) vim.rc vim.manifest version.h gui_w32_rc.h \
 iid_ole.c if_ole.h vim.tlb: if_ole.idl
 	midl /nologo /error none /proxy nul /iid iid_ole.c /tlb vim.tlb \
 		/header if_ole.h if_ole.idl
-
-dimm.h dimm_i.c: dimm.idl
-	midl /nologo /error none /proxy nul dimm.idl
-
-$(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
-
-$(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 
 
 CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
