@@ -6336,7 +6336,7 @@ spell_add_word(
 
 	// If the .add file is edited somewhere, reload it.
 	if (buf != NULL)
-	    buf_reload(buf, buf->b_orig_mode);
+	    buf_reload(buf, buf->b_orig_mode, FALSE);
 
 	redraw_all_later(SOME_VALID);
     }
