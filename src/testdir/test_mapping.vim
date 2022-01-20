@@ -1453,6 +1453,7 @@ func Test_map_script_cmd_survives_unmap()
 
   nunmap <F3>
   unlet b:result
+  autocmd! CmdlineEnter
 endfunc
 
 " Test for using <script> with a map to remap characters in rhs

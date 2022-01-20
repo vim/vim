@@ -2038,7 +2038,7 @@ func Test_TextChangedI_with_setline()
   call assert_equal('', getline(1))
   call assert_equal('', getline(2))
 
-  call test_override('starting', 0)
+  call test_override('char_avail', 0)
   bwipe!
 endfunc
 
