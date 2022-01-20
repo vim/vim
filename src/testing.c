@@ -1053,6 +1053,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    ui_delay_for_testing = val;
 	else if (STRCMP(name, (char_u *)"term_props") == 0)
 	    reset_term_props_on_termresponse = val;
+	else if (STRCMP(name, (char_u *)"vterm_title") == 0)
+	    disable_vterm_title_for_testing = val;
 	else if (STRCMP(name, (char_u *)"uptime") == 0)
 	    override_sysinfo_uptime = val;
 	else if (STRCMP(name, (char_u *)"autoload") == 0)

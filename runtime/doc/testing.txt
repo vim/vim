@@ -208,6 +208,8 @@ test_override({name}, {val})				*test_override()*
 		ui_delay     time in msec to use in ui_delay(); overrules a
 			     wait time of up to 3 seconds for messages
 		uptime 	     overrules sysinfo.uptime
+		vterm_title  setting the window title by a job running in a
+			     terminal window
 		ALL	     clear all overrides ({val} is not used)
 
 		"starting" is to be used when a test should behave like
