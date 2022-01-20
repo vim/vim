@@ -89,7 +89,7 @@ static void	nv_window(cmdarg_T *cap);
 static void	nv_suspend(cmdarg_T *cap);
 static void	nv_g_cmd(cmdarg_T *cap);
 static void	nv_dot(cmdarg_T *cap);
-static void	nv_redo(cmdarg_T *cap);
+static void	nv_redo_or_register(cmdarg_T *cap);
 static void	nv_Undo(cmdarg_T *cap);
 static void	nv_tilde(cmdarg_T *cap);
 static void	nv_operator(cmdarg_T *cap);
@@ -188,7 +188,7 @@ static const struct nv_cmd
     {Ctrl_O,	nv_ctrlo,	0,			0},
     {Ctrl_P,	nv_up,		NV_STS,			FALSE},
     {Ctrl_Q,	nv_visual,	0,			FALSE},
-    {Ctrl_R,	nv_redo,	0,			0},
+    {Ctrl_R,	nv_redo_or_register, 0,			0},
     {Ctrl_S,	nv_ignore,	0,			0},
     {Ctrl_T,	nv_tagpop,	NV_NCW,			0},
     {Ctrl_U,	nv_halfpage,	0,			0},
@@ -1303,6 +1303,7 @@ normal_end:
 	    trigger_modechanged();
 	    showmode();
 	    restart_VIsual_select = 0;
+	    VIsual_select_reg = 0;
 	}
 	if (restart_edit != 0 && !VIsual_active && old_mapped_len == 0)
 	    (void)edit(restart_edit, FALSE, 1L);
@@ -5997,7 +5998,10 @@ nv_g_cmd(cmdarg_T *cap)
 	     * start Select mode.
 	     */
 	    if (cap->arg)
+	    {
 		VIsual_select = TRUE;
+		VIsual_select_reg = 0;
+	    }
 	    else
 		may_start_select('c');
 	    setmouse();
@@ -6550,11 +6554,30 @@ nv_dot(cmdarg_T *cap)
 }
 
 /*
- * CTRL-R: undo undo
+ * CTRL-R: undo undo or specify register in select mode
  */
     static void
-nv_redo(cmdarg_T *cap)
+nv_redo_or_register(cmdarg_T *cap)
 {
+    if (VIsual_select && VIsual_active)
+    {
+	int reg;
+	// Get register name
+	++no_mapping;
+	++allow_keys;
+	reg = plain_vgetc();
+	LANGMAP_ADJUST(reg, TRUE);
+	--no_mapping;
+	--allow_keys;
+
+	if (reg == '"')
+	    // the unnamed register is 0
+	    reg = 0;
+
+        VIsual_select_reg = valid_yank_reg(reg, TRUE) ? reg : 0;
+	return;
+    }
+
     if (!checkclearopq(cap->oap))
     {
 	u_redo((int)cap->count1);
@@ -6926,7 +6949,10 @@ unadjust_for_sel(void)
 nv_select(cmdarg_T *cap)
 {
     if (VIsual_active)
+    {
 	VIsual_select = TRUE;
+	VIsual_select_reg = 0;
+    }
     else if (VIsual_reselect)
     {
 	cap->nchar = 'v';	    // fake "gv" command

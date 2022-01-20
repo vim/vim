@@ -624,6 +624,10 @@ op_delete(oparg_T *oap)
 	return FAIL;
     }
 
+    if (VIsual_select && oap->is_VIsual)
+	// use register given with CTRL_R, defaults to zero
+        oap->regname = VIsual_select_reg;
+
 #ifdef FEAT_CLIPBOARD
     adjust_clip_reg(&oap->regname);
 #endif
