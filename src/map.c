@@ -84,10 +84,10 @@ map_free(mapblock_T **mpp)
     vim_free(mp->m_str);
     vim_free(mp->m_orig_str);
     *mpp = mp->m_next;
-    vim_free(mp);
 #ifdef FEAT_EVAL
     reset_last_used_map(mp);
 #endif
+    vim_free(mp);
 }
 
 /*
