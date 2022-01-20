@@ -6561,10 +6561,10 @@ nv_redo(cmdarg_T *cap)
 {
     if (VIsual_select && VIsual_active)
     {
+	int reg;
 	// Get register name
 	++no_mapping;
 	++allow_keys;
-	int reg;
 	reg = plain_vgetc();
 	LANGMAP_ADJUST(reg, TRUE);
 
