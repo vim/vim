@@ -429,6 +429,19 @@ def Test_import_fails()
       var that = foo
   END
   CheckScriptFailure(lines, 'E1060: Expected dot after name: foo')
+  lines =<< trim END
+      vim9script
+      import './Xfoo.vim' as foo
+      var that: any
+      that += foo
+  END
+  CheckScriptFailure(lines, 'E1060: Expected dot after name: foo')
+  lines =<< trim END
+      vim9script
+      import './Xfoo.vim' as foo
+      foo += 9
+  END
+  CheckScriptFailure(lines, 'E1060: Expected dot after name: foo')
 
   lines =<< trim END
       vim9script

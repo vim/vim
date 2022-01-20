@@ -2966,8 +2966,7 @@ EXTERN char e_argument_name_shadows_existing_variable_str[]
 	INIT(= N_("E1167: Argument name shadows existing variable: %s"));
 EXTERN char e_argument_already_declared_in_script_str[]
 	INIT(= N_("E1168: Argument already declared in the script: %s"));
-EXTERN char e_import_as_name_not_supported_here[]
-	INIT(= N_("E1169: 'import * as {name}' not supported here"));
+// E1169 unused
 EXTERN char e_cannot_use_hash_curly_to_start_comment[]
 	INIT(= N_("E1170: Cannot use #{ to start a comment"));
 EXTERN char e_missing_end_block[]

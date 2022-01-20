@@ -2711,7 +2711,7 @@ eval_variable(
 		else
 		{
 		    if (flags & EVAL_VAR_VERBOSE)
-			emsg(_(e_import_as_name_not_supported_here));
+			semsg(_(e_expected_dot_after_name_str), name);
 		    ret = FAIL;
 		}
 	    }
