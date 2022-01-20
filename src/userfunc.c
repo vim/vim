@@ -4466,7 +4466,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	int		var_conflict = FALSE;
 
 	v = find_var(name, &ht, TRUE);
-	if (v != NULL)
+	if (v != NULL && (in_vim9script() || v->di_tv.v_type == VAR_FUNC))
 	    var_conflict = TRUE;
 
 	if (SCRIPT_ID_VALID(current_sctx.sc_sid))
