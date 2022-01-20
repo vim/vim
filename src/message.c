@@ -181,6 +181,8 @@ msg_attr_keep(
 			    < (int)(Rows - cmdline_row - 1) * Columns + sc_col)
 	set_keep_msg((char_u *)s, 0);
 
+    need_fileinfo = FALSE;
+
     vim_free(buf);
     --entered;
     return retval;
@@ -1420,7 +1422,10 @@ msg_start(void)
     int		did_return = FALSE;
 
     if (!msg_silent)
+    {
 	VIM_CLEAR(keep_msg);
+	need_fileinfo = FALSE;
+    }
 
 #ifdef FEAT_EVAL
     if (need_clr_eos)
@@ -2163,6 +2168,8 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 	msg_puts_printf((char_u *)str, maxlen);
     else
 	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
+
+    need_fileinfo = FALSE;
 }
 
 /*
