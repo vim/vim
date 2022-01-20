@@ -89,7 +89,7 @@ static void	nv_window(cmdarg_T *cap);
 static void	nv_suspend(cmdarg_T *cap);
 static void	nv_g_cmd(cmdarg_T *cap);
 static void	nv_dot(cmdarg_T *cap);
-static void	nv_redo(cmdarg_T *cap);
+static void	nv_redo_or_register(cmdarg_T *cap);
 static void	nv_Undo(cmdarg_T *cap);
 static void	nv_tilde(cmdarg_T *cap);
 static void	nv_operator(cmdarg_T *cap);
@@ -188,7 +188,7 @@ static const struct nv_cmd
     {Ctrl_O,	nv_ctrlo,	0,			0},
     {Ctrl_P,	nv_up,		NV_STS,			FALSE},
     {Ctrl_Q,	nv_visual,	0,			FALSE},
-    {Ctrl_R,	nv_redo,	0,			0},
+    {Ctrl_R,	nv_redo_or_register,	0,			0},
     {Ctrl_S,	nv_ignore,	0,			0},
     {Ctrl_T,	nv_tagpop,	NV_NCW,			0},
     {Ctrl_U,	nv_halfpage,	0,			0},
@@ -6557,7 +6557,7 @@ nv_dot(cmdarg_T *cap)
  * CTRL-R: undo undo or specify register in select mode
  */
     static void
-nv_redo(cmdarg_T *cap)
+nv_redo_or_register(cmdarg_T *cap)
 {
     if (VIsual_select && VIsual_active)
     {
