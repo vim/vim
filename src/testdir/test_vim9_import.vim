@@ -1514,6 +1514,21 @@ def Test_vim9script_autoload_duplicate()
   delete('Xdir', 'rf')
 enddef
 
+def Test_autoload_missing_function_name()
+  mkdir('Xdir/autoload', 'p')
+
+  var lines =<< trim END
+     vim9script
+
+     def loadme#()
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/loadme.vim')
+  assert_fails('source Xdir/autoload/loadme.vim', 'E129:')
+
+  delete('Xdir', 'rf')
+enddef
+
 def Test_import_autoload_postponed()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp
