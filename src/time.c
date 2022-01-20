@@ -93,6 +93,7 @@ get_ctime(time_t thetime, int add_newline)
 	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
     else
     {
+	// xgettext:no-c-format
 	(void)strftime(buf, sizeof(buf) - 1, _("%a %b %d %H:%M:%S %Y"),
 								    curtime);
 # ifdef MSWIN
