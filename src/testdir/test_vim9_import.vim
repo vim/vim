@@ -67,6 +67,11 @@ def Test_vim9_import_export()
     enddef
     g:funcref_result = GetExported()
 
+    def GetName(): string
+      return expo.exp_name .. 'son'
+    enddef
+    g:long_name = GetName()
+
     g:imported_name = expo.exp_name
     expo.exp_name ..= ' Doe'
     expo.exp_name = expo.exp_name .. ' Maar'
@@ -98,6 +103,7 @@ def Test_vim9_import_export()
   assert_equal('Exported', g:imported_func)
   assert_equal('Exported', g:funcref_result)
   assert_equal('John', g:imported_name)
+  assert_equal('Johnson', g:long_name)
   assert_equal('John Doe Maar', g:imported_name_appended)
   assert_false(exists('g:name'))
 
@@ -109,7 +115,7 @@ def Test_vim9_import_export()
   unlet g:exported_i2
   unlet g:exported_later
   unlet g:imported_func
-  unlet g:imported_name g:imported_name_appended
+  unlet g:imported_name g:long_name g:imported_name_appended
   delete('Ximport.vim')
 
   # similar, with line breaks

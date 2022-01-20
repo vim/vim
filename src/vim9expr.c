@@ -321,7 +321,6 @@ compile_load_scriptvar(
 								   cctx, TRUE);
 	}
 	*p = cc;
-	p = skipwhite(p);
 	*end = p;
 	if (done)
 	    return res;
