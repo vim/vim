@@ -2190,7 +2190,7 @@ get_autoload_prefix(scriptitem_T *si)
 
 /*
  * If in a Vim9 autoload script return "name" with the autoload prefix for the
- * script.  If successful "name" is freed, the returned name is allocated.
+ * script.  If successful the returned name is allocated.
  * Otherwise it returns "name" unmodified.
  */
     char_u *
@@ -2221,7 +2221,6 @@ may_prefix_autoload(char_u *name)
 	    {
 		vim_snprintf((char *)res, len, "%s%s",
 					     si->sn_autoload_prefix, basename);
-		vim_free(name);
 		return res;
 	    }
 	}

@@ -1440,6 +1440,80 @@ def Test_vim9script_autoload_call()
   &rtp = save_rtp
 enddef
 
+def Test_vim9script_autoload_duplicate()
+  mkdir('Xdir/autoload', 'p')
+
+  var lines =<< trim END
+     vim9script
+
+     export def Func()
+     enddef
+
+     def Func()
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/dupfunc.vim')
+  assert_fails('source Xdir/autoload/dupfunc.vim', 'E1073:')
+
+  lines =<< trim END
+     vim9script
+
+     def Func()
+     enddef
+
+     export def Func()
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/dup2func.vim')
+  assert_fails('source Xdir/autoload/dup2func.vim', 'E1073:')
+
+  lines =<< trim END
+     vim9script
+
+     def Func()
+     enddef
+
+     export var Func = 'asdf'
+  END
+  writefile(lines, 'Xdir/autoload/dup3func.vim')
+  assert_fails('source Xdir/autoload/dup3func.vim', 'E1041: Redefining script item Func')
+
+  lines =<< trim END
+     vim9script
+
+     export var Func = 'asdf'
+
+     def Func()
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/dup4func.vim')
+  assert_fails('source Xdir/autoload/dup4func.vim', 'E707:')
+
+  lines =<< trim END
+     vim9script
+
+     var Func = 'asdf'
+
+     export def Func()
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/dup5func.vim')
+  assert_fails('source Xdir/autoload/dup5func.vim', 'E707:')
+
+  lines =<< trim END
+     vim9script
+
+     export def Func()
+     enddef
+
+     var Func = 'asdf'
+  END
+  writefile(lines, 'Xdir/autoload/dup6func.vim')
+  assert_fails('source Xdir/autoload/dup6func.vim', 'E1041: Redefining script item Func')
+
+  delete('Xdir', 'rf')
+enddef
+
 def Test_import_autoload_postponed()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp

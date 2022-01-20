@@ -1911,6 +1911,12 @@ find_func_with_prefix(char_u *name, int sid)
     {
 	size_t	len = STRLEN(si->sn_autoload_prefix) + STRLEN(name) + 1;
 	char_u	*auto_name;
+	char_u	*namep;
+
+	// skip a "<SNR>99_" prefix
+	namep = untrans_function_name(name);
+	if (namep == NULL)
+	    namep = name;
 
 	// An exported function in an autoload script is stored as
 	// "dir#path#name".
@@ -1921,7 +1927,7 @@ find_func_with_prefix(char_u *name, int sid)
 	if (auto_name != NULL)
 	{
 	    vim_snprintf((char *)auto_name, len, "%s%s",
-						 si->sn_autoload_prefix, name);
+						si->sn_autoload_prefix, namep);
 	    hi = hash_find(&func_hashtab, auto_name);
 	    if (auto_name != buffer)
 		vim_free(auto_name);
@@ -4175,7 +4181,15 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	// is stored with the legacy autoload name "dir#script#FuncName" so
 	// that it can also be found in legacy script.
 	if (is_export && name != NULL)
-	    name = may_prefix_autoload(name);
+	{
+	    char_u *prefixed = may_prefix_autoload(name);
+
+	    if (prefixed != NULL && prefixed != name)
+	    {
+		vim_free(name);
+		name = prefixed;
+	    }
+	}
     }
 
     // An error in a function call during evaluation of an expression in magic
@@ -4447,20 +4461,53 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
     if (fudi.fd_dict == NULL)
     {
 	hashtab_T	*ht;
+	char_u		*find_name = name;
+	int		var_conflict = FALSE;
 
 	v = find_var(name, &ht, TRUE);
-	if (v != NULL && v->di_tv.v_type == VAR_FUNC)
+	if (v != NULL)
+	    var_conflict = TRUE;
+
+	if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+	{
+	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	    if (si->sn_autoload_prefix != NULL)
+	    {
+		if (is_export)
+		{
+		    find_name = name + STRLEN(si->sn_autoload_prefix);
+		    v = find_var(find_name, &ht, TRUE);
+		    if (v != NULL)
+			var_conflict = TRUE;
+		}
+		else
+		{
+		    char_u *prefixed = may_prefix_autoload(name);
+
+		    if (prefixed != NULL)
+		    {
+			v = find_var(prefixed, &ht, TRUE);
+			if (v != NULL)
+			    var_conflict = TRUE;
+			vim_free(prefixed);
+		    }
+		}
+	    }
+	}
+	if (var_conflict)
 	{
 	    emsg_funcname(e_function_name_conflicts_with_variable_str, name);
 	    goto erret;
 	}
 
-	fp = find_func_even_dead(name, is_global);
+	fp = find_func_even_dead(find_name, is_global);
 	if (vim9script)
 	{
 	    char_u *uname = untrans_function_name(name);
 
-	    import = find_imported(uname == NULL ? name : uname, 0, FALSE, NULL);
+	    import = find_imported(uname == NULL ? name : uname, 0,
+								  FALSE, NULL);
 	}
 
 	if (fp != NULL || import != NULL)
