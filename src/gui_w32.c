@@ -3587,6 +3587,7 @@ gui_mch_browse(
     WCHAR		*initdirp = NULL;
     WCHAR		*filterp;
     char_u		*p, *q;
+    BOOL		ret;
 
     if (dflt == NULL)
 	fileBuf[0] = NUL;
@@ -3655,22 +3656,19 @@ gui_mch_browse(
 	fileStruct.Flags |= OFN_NODEREFERENCELINKS;
 # endif
     if (saving)
-    {
-	if (!GetSaveFileNameW(&fileStruct))
-	    return NULL;
-    }
+	ret = GetSaveFileNameW(&fileStruct);
     else
-    {
-	if (!GetOpenFileNameW(&fileStruct))
-	    return NULL;
-    }
+	ret = GetOpenFileNameW(&fileStruct);
 
     vim_free(filterp);
     vim_free(initdirp);
     vim_free(titlep);
     vim_free(extp);
 
-    // Convert from UCS2 to 'encoding'.
+    if (!ret)
+	return NULL;
+
+    // Convert from UTF-16 to 'encoding'.
     p = utf16_to_enc(fileBuf, NULL);
     if (p == NULL)
 	return NULL;
