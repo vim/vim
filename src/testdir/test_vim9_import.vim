@@ -673,6 +673,45 @@ def Test_use_autoload_import_in_insert_completion()
   &rtp = save_rtp
 enddef
 
+def Test_use_autoload_import_in_fold_expression()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script
+      export def Expr(): string
+        return getline(v:lnum) =~ '^#' ? '>1' : '1'
+      enddef
+      g:fold_loaded = 'yes'
+  END
+  writefile(lines, 'Xdir/autoload/fold.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'fold.vim'
+      &foldexpr = 'fold.Expr()'
+      &foldmethod = 'expr'
+      &debug = 'throw'
+  END
+  new
+  setline(1, ['# one', 'text', '# two', 'text'])
+  g:fold_loaded = 'no'
+  CheckScriptSuccess(lines)
+  assert_equal('no', g:fold_loaded)
+  redraw
+  assert_equal('yes', g:fold_loaded)
+
+  # Check that script context of 'foldexpr' is copied to another buffer.
+  edit! otherfile
+  redraw
+
+  set foldexpr= foldmethod&
+  bwipe!
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_export_fails()
   CheckScriptFailure(['export var some = 123'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')
