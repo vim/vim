@@ -7238,6 +7238,11 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
     free_callback(optcb);
     set_callback(optcb, &cb);
     free_tv(tv);
+
+    // when using Vim9 style "import.funcname" it needs to be expanded to
+    // "import#funcname".
+    expand_autload_callback(optcb);
+
     return OK;
 #else
     return FAIL;

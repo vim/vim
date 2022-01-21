@@ -3262,7 +3262,7 @@ call_callback_retnr(
     typval_T	rettv;
     varnumber_T	retval;
 
-    if (call_callback(callback, 0, &rettv, argcount, argvars) == FAIL)
+    if (call_callback(callback, -1, &rettv, argcount, argvars) == FAIL)
 	return -2;
 
     retval = tv_get_number_chk(&rettv, NULL);

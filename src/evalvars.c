@@ -3382,22 +3382,20 @@ set_var_const(
     }
     else
     {
-	if (in_vim9script() && SCRIPT_ID_VALID(current_sctx.sc_sid)
-		&& SCRIPT_ITEM(current_sctx.sc_sid)->sn_autoload_prefix != NULL
-		&& is_export)
-	{
-	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
-	    size_t	 len = STRLEN(name) + STRLEN(si->sn_autoload_prefix) + 1;
+	scriptitem_T *si;
 
+	if (in_vim9script() && is_export
+		&& SCRIPT_ID_VALID(current_sctx.sc_sid)
+		&& (si = SCRIPT_ITEM(current_sctx.sc_sid))
+						   ->sn_autoload_prefix != NULL)
+	{
 	    // In a vim9 autoload script an exported variable is put in the
 	    // global namespace with the autoload prefix.
 	    var_in_autoload = TRUE;
-	    varname = alloc(len);
+	    varname = concat_str(si->sn_autoload_prefix, name);
 	    if (varname == NULL)
 		goto failed;
 	    name_tofree = varname;
-	    vim_snprintf((char *)varname, len, "%s%s",
-						 si->sn_autoload_prefix, name);
 	    ht = &globvarht;
 	}
 	else
@@ -4627,6 +4625,40 @@ copy_callback(callback_T *dest, callback_T *src)
 	dest->cb_name = vim_strsave(src->cb_name);
 	dest->cb_free_name = TRUE;
 	func_ref(src->cb_name);
+    }
+}
+
+/*
+ * When a callback refers to an autoload import, change the function name to
+ * the "path#name" form.  Uses the current script context.
+ * Only works when the name is allocated.
+ */
+    void
+expand_autload_callback(callback_T *cb)
+{
+    char_u	*p;
+    imported_T	*import;
+
+    if (!in_vim9script() || cb->cb_name == NULL || !cb->cb_free_name)
+	return;
+    p = vim_strchr(cb->cb_name, '.');
+    if (p == NULL)
+	return;
+    import = find_imported(cb->cb_name, p - cb->cb_name, FALSE, NULL);
+    if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
+    {
+	scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
+
+	if (si->sn_autoload_prefix != NULL)
+	{
+	    char_u *name = concat_str(si->sn_autoload_prefix, p + 1);
+
+	    if (name != NULL)
+	    {
+		vim_free(cb->cb_name);
+		cb->cb_name = name;
+	    }
+	}
     }
 }
 

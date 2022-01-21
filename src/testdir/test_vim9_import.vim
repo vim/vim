@@ -609,7 +609,7 @@ def Test_use_import_in_mapping()
   nunmap <F3>
 enddef
 
-def Test_use_import_in_completion()
+def Test_use_import_in_command_completion()
   var lines =<< trim END
       vim9script
       export def Complete(..._): list<string>
@@ -630,6 +630,47 @@ def Test_use_import_in_completion()
 
   delcommand Cmd
   delete('Xscript.vim')
+enddef
+
+def Test_use_autoload_import_in_insert_completion()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script
+      export def ThesaurusFunc(findbase: bool, _): any
+        if findbase
+          return 1
+        endif
+        return [
+          'check',
+          'experiment',
+          'test',
+          'verification'
+          ]
+      enddef
+      g:completion_loaded = 'yes'
+  END
+  writefile(lines, 'Xdir/autoload/completion.vim')
+
+  new
+  lines =<< trim END
+      vim9script
+      g:completion_loaded = 'no'
+      import autoload 'completion.vim'
+      set thesaurusfunc=completion.ThesaurusFunc
+      assert_equal('no', g:completion_loaded)
+      feedkeys("i\<C-X>\<C-T>\<C-N>\<Esc>", 'xt')
+      assert_equal('experiment', getline(1))
+      assert_equal('yes', g:completion_loaded)
+  END
+  CheckScriptSuccess(lines)
+
+  set thesaurusfunc=
+  bwipe!
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
 enddef
 
 def Test_export_fails()
