@@ -4495,6 +4495,12 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 		    }
 		}
 	    }
+	    else if (vim9script && vim_strchr(name, AUTOLOAD_CHAR) != NULL)
+	    {
+		semsg(_(e_using_autoload_name_in_non_autoload_script_str),
+									 name);
+		goto erret;
+	    }
 	}
 	if (var_conflict)
 	{

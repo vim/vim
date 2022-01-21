@@ -3209,7 +3209,8 @@ EXTERN char e_cannot_import_dot_vim_without_using_as[]
 	INIT(= N_("E1261: Cannot import .vim without using \"as\""));
 EXTERN char e_cannot_import_same_script_twice_str[]
 	INIT(= N_("E1262: Cannot import the same script twice: %s"));
-// E1263 unused
+EXTERN char e_using_autoload_name_in_non_autoload_script_str[]
+	INIT(= N_("E1263: Using autoload name in a non-autoload script: %s"));
 EXTERN char e_autoload_import_cannot_use_absolute_or_relative_path[]
 	INIT(= N_("E1264: Autoload import cannot use absolute or relative path: %s"));
 EXTERN char e_cannot_use_partial_here[]

@@ -1622,6 +1622,18 @@ def Test_autoload_missing_function_name()
   delete('Xdir', 'rf')
 enddef
 
+def Test_autoload_name_wring()
+  var lines =<< trim END
+     vim9script
+     def Xscriptname#Func()
+     enddef
+  END
+  writefile(lines, 'Xscriptname.vim')
+  CheckScriptFailure(lines, 'E1263:')
+
+  delete('Xscriptname')
+enddef
+
 def Test_import_autoload_postponed()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp
