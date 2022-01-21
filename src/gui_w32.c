@@ -294,7 +294,7 @@ typedef int HCURSOR;
 # define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #endif
 
-static void _OnPaint( HWND hwnd);
+static void _OnPaint(HWND hwnd);
 static void fill_rect(const RECT *rcp, HBRUSH hbr, COLORREF color);
 static void clear_rect(RECT *rcp);
 
@@ -1010,8 +1010,8 @@ _OnMouseButtonDown(
 	{
 	    if (s_button_pending > -1)
 	    {
-		    _OnMouseEvent(s_button_pending, x, y, FALSE, keyFlags);
-		    s_button_pending = -1;
+		_OnMouseEvent(s_button_pending, x, y, FALSE, keyFlags);
+		s_button_pending = -1;
 	    }
 	    // TRACE("Button down at x %d, y %d\n", x, y);
 	    _OnMouseEvent(button, x, y, repeated_click, keyFlags);
@@ -6783,7 +6783,6 @@ gui_mch_menu_grey(
 
 // define some macros used to make the dialogue creation more readable
 
-#define add_string(s) strcpy((LPSTR)p, s); (LPSTR)p += (strlen((LPSTR)p) + 1)
 #define add_word(x)		*p++ = (x)
 #define add_long(x)		dwp = (DWORD *)p; *dwp++ = (x); p = (WORD *)dwp
 
