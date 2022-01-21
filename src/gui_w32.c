@@ -636,7 +636,7 @@ _OnBlinkTimer(
     KillTimer(NULL, idEvent);
 
     // Eat spurious WM_TIMER messages
-    while (pPeekMessage(&msg, hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
+    while (PeekMessageW(&msg, hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
 	;
 
     if (blink_state == BLINK_ON)
@@ -665,7 +665,7 @@ gui_mswin_rm_blink_timer(void)
     {
 	KillTimer(NULL, blink_timer);
 	// Eat spurious WM_TIMER messages
-	while (pPeekMessage(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
+	while (PeekMessageW(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
 	    ;
 	blink_timer = 0;
     }
@@ -726,7 +726,7 @@ _OnTimer(
     s_timed_out = TRUE;
 
     // Eat spurious WM_TIMER messages
-    while (pPeekMessage(&msg, hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
+    while (PeekMessageW(&msg, hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
 	;
     if (idEvent == s_wait_timer)
 	s_wait_timer = 0;
@@ -1844,7 +1844,7 @@ process_message(void)
     static char_u k10[] = {K_SPECIAL, 'k', ';', 0};
 #endif
 
-    pGetMessage(&msg, NULL, 0, 0);
+    GetMessageW(&msg, NULL, 0, 0);
 
 #ifdef FEAT_OLE
     // Look after OLE Automation commands
@@ -1855,7 +1855,7 @@ process_message(void)
 	{
 	    // Message can't be ours, forward it.  Fixes problem with Ultramon
 	    // 3.0.4
-	    pDispatchMessage(&msg);
+	    DispatchMessageW(&msg);
 	}
 	else
 	{
@@ -1868,7 +1868,7 @@ process_message(void)
 
 #ifdef MSWIN_FIND_REPLACE
     // Don't process messages used by the dialog
-    if (s_findrep_hwnd != NULL && pIsDialogMessage(s_findrep_hwnd, &msg))
+    if (s_findrep_hwnd != NULL && IsDialogMessageW(s_findrep_hwnd, &msg))
     {
 	HandleMouseHide(msg.message, msg.lParam);
 	return;
@@ -2065,7 +2065,7 @@ process_message(void)
     if (vk != VK_F10 || check_map(k10, State, FALSE, TRUE, FALSE,
 							  NULL, NULL) == NULL)
 #endif
-	pDispatchMessage(&msg);
+	DispatchMessageW(&msg);
 }
 
 /*
@@ -2080,7 +2080,7 @@ gui_mch_update(void)
     MSG	    msg;
 
     if (!s_busy_processing)
-	while (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)
+	while (PeekMessageW(&msg, NULL, 0, 0, PM_NOREMOVE)
 						  && !vim_is_input_buf_full())
 	    process_message();
 }
@@ -2095,7 +2095,7 @@ remove_any_timer(void)
 	KillTimer(NULL, s_wait_timer);
 
 	// Eat spurious WM_TIMER messages
-	while (pPeekMessage(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
+	while (PeekMessageW(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
 	    ;
 	s_wait_timer = 0;
     }
@@ -2163,7 +2163,7 @@ gui_mch_wait_for_chars(int wtime)
 	    if (did_add_timer)
 		break;
 # endif
-	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+	    if (PeekMessageW(&msg, NULL, 0, 0, PM_NOREMOVE))
 	    {
 		process_message();
 		break;
