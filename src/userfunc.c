@@ -3693,8 +3693,8 @@ trans_function_name(
     // Note that TFN_ flags use the same values as GLV_ flags.
     end = get_lval(start, NULL, &lv, FALSE, skip, flags | GLV_READ_ONLY,
 					      lead > 2 ? 0 : FNE_CHECK_START);
-    if (end == start
-		   || (end != NULL && end[-1] == AUTOLOAD_CHAR && *end == '('))
+    if (end == start || (in_vim9script() && end != NULL
+				   && end[-1] == AUTOLOAD_CHAR && *end == '('))
     {
 	if (!skip)
 	    emsg(_(e_function_name_required));
