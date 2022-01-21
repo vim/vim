@@ -3356,7 +3356,7 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 	return FAIL;
 
     if (font_name == NULL)
-	font_name = (char_u *)lf.lfFaceName;
+	font_name = (char_u *)"";
 #ifdef FEAT_MBYTE_IME
     norm_logfont = lf;
     sub_logfont = lf;
