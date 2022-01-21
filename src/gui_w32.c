@@ -294,7 +294,7 @@ typedef int HCURSOR;
 # define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #endif
 
-static void _OnPaint( HWND hwnd);
+static void _OnPaint(HWND hwnd);
 static void fill_rect(const RECT *rcp, HBRUSH hbr, COLORREF color);
 static void clear_rect(RECT *rcp);
 
@@ -1010,8 +1010,8 @@ _OnMouseButtonDown(
 	{
 	    if (s_button_pending > -1)
 	    {
-		    _OnMouseEvent(s_button_pending, x, y, FALSE, keyFlags);
-		    s_button_pending = -1;
+		_OnMouseEvent(s_button_pending, x, y, FALSE, keyFlags);
+		s_button_pending = -1;
 	    }
 	    // TRACE("Button down at x %d, y %d\n", x, y);
 	    _OnMouseEvent(button, x, y, repeated_click, keyFlags);
@@ -2754,7 +2754,7 @@ gui_mch_find_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    s_findrep_hwnd = FindTextW((LPFINDREPLACEW) &s_findrep_struct);
+	    s_findrep_hwnd = FindTextW(&s_findrep_struct);
 	}
 
 	set_window_title(s_findrep_hwnd, _("Find string"));
@@ -2778,7 +2778,7 @@ gui_mch_replace_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    s_findrep_hwnd = ReplaceTextW((LPFINDREPLACEW) &s_findrep_struct);
+	    s_findrep_hwnd = ReplaceTextW(&s_findrep_struct);
 	}
 
 	set_window_title(s_findrep_hwnd, _("Find & Replace"));
@@ -2952,7 +2952,7 @@ gui_mch_getmouse(int *x, int *y)
     POINT mp;
 
     (void)GetWindowRect(s_textArea, &rct);
-    (void)GetCursorPos((LPPOINT)&mp);
+    (void)GetCursorPos(&mp);
     *x = (int)(mp.x - rct.left);
     *y = (int)(mp.y - rct.top);
 }
@@ -3356,7 +3356,7 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 	return FAIL;
 
     if (font_name == NULL)
-	font_name = (char_u *)lf.lfFaceName;
+	font_name = (char_u *)"";
 #ifdef FEAT_MBYTE_IME
     norm_logfont = lf;
     sub_logfont = lf;
@@ -3529,7 +3529,7 @@ mch_set_mouse_shape(int shape)
 	    POINT mp;
 
 	    // Set the position to make it redrawn with the new shape.
-	    (void)GetCursorPos((LPPOINT)&mp);
+	    (void)GetCursorPos(&mp);
 	    (void)SetCursorPos(mp.x, mp.y);
 	    ShowCursor(TRUE);
 	}
@@ -6537,7 +6537,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 {
     POINT mp;
 
-    (void)GetCursorPos((LPPOINT)&mp);
+    (void)GetCursorPos(&mp);
     gui_mch_show_popupmenu_at(menu, (int)mp.x, (int)mp.y);
 }
 
@@ -6750,7 +6750,7 @@ gui_mch_menu_grey(
     if (menu->submenu_id == (HMENU)-1)
     {
 	SendMessage(s_toolbarhwnd, TB_ENABLEBUTTON,
-	    (WPARAM)menu->id, (LPARAM) MAKELONG((grey ? FALSE : TRUE), 0) );
+	    (WPARAM)menu->id, (LPARAM) MAKELONG((grey ? FALSE : TRUE), 0));
     }
     else
 # endif
@@ -6783,7 +6783,6 @@ gui_mch_menu_grey(
 
 // define some macros used to make the dialogue creation more readable
 
-#define add_string(s) strcpy((LPSTR)p, s); (LPSTR)p += (strlen((LPSTR)p) + 1)
 #define add_word(x)		*p++ = (x)
 #define add_long(x)		dwp = (DWORD *)p; *dwp++ = (x); p = (WORD *)dwp
 
@@ -7690,7 +7689,7 @@ gui_mch_tearoff(
     if (IsWindow(menu->tearoff_handle))
     {
 	POINT mp;
-	if (GetCursorPos((LPPOINT)&mp))
+	if (GetCursorPos(&mp))
 	{
 	    SetWindowPos(menu->tearoff_handle, NULL, mp.x, mp.y, 0, 0,
 		    SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
