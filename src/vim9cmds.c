@@ -2196,7 +2196,10 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 
     if (*p != NUL && *p != '|' && *p != '\n')
     {
-	if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID)
+	// For a lambda, "return expr" is always used, also when "expr" results
+	// in a void.
+	if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID
+		&& (cctx->ctx_ufunc->uf_flags & FC_LAMBDA) == 0)
 	{
 	    emsg(_(e_returning_value_in_function_without_return_type));
 	    return NULL;
