@@ -759,6 +759,36 @@ def Run_Test_import_in_diffexpr()
   bwipe!
 enddef
 
+def Test_import_in_patchexpr()
+  var lines =<< trim END
+    vim9script
+    export def TPatch()
+      call writefile(['output file'], v:fname_out)
+    enddef
+  END
+  writefile(lines, 'Xpatchexpr')
+
+  lines =<< trim END
+      vim9script
+      import './Xpatchexpr' as patch
+      set patchexpr=patch.TPatch()
+  END
+  CheckScriptSuccess(lines)
+
+  call writefile(['input file'], 'Xinput')
+  call writefile(['diff file'], 'Xdiff')
+  :%bwipe!
+  edit Xinput
+  diffpatch Xdiff
+  call assert_equal('output file', getline(1))
+
+  call delete('Xinput')
+  call delete('Xdiff')
+  call delete('Xpatchexpr')
+  set patchexpr&
+  :%bwipe!
+enddef
+
 def Test_import_in_formatexpr()
   var lines =<< trim END
       vim9script
