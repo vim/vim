@@ -206,14 +206,12 @@ gui_mch_set_rendering_options(char_u *s)
 // Some parameters for dialog boxes.  All in pixels.
 #define DLG_PADDING_X		10
 #define DLG_PADDING_Y		10
-#define DLG_OLD_STYLE_PADDING_X	5
-#define DLG_OLD_STYLE_PADDING_Y	5
 #define DLG_VERT_PADDING_X	4	// For vertical buttons
 #define DLG_VERT_PADDING_Y	4
 #define DLG_ICON_WIDTH		34
 #define DLG_ICON_HEIGHT		34
 #define DLG_MIN_WIDTH		150
-#define DLG_FONT_NAME		"MS Sans Serif"
+#define DLG_FONT_NAME		"MS Shell Dlg"
 #define DLG_FONT_POINT_SIZE	8
 #define DLG_MIN_MAX_WIDTH	400
 #define DLG_MIN_MAX_HEIGHT	400
@@ -4160,7 +4158,6 @@ static int dialog_default_button = -1;
 // Intellimouse support
 static int mouse_scroll_lines = 0;
 
-static int	s_usenewlook;	    // emulate W95/NT4 non-bold dialogs
 #ifdef FEAT_TOOLBAR
 static void initialise_toolbar(void);
 static void update_toolbar_size(void);
@@ -6974,20 +6971,13 @@ gui_mch_dialog(
     }
     else
 # endif
-    font = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		      VARIABLE_PITCH, DLG_FONT_NAME);
-    if (s_usenewlook)
-    {
-	oldFont = SelectFont(hdc, font);
-	dlgPaddingX = DLG_PADDING_X;
-	dlgPaddingY = DLG_PADDING_Y;
-    }
-    else
-    {
-	oldFont = SelectFont(hdc, GetStockObject(SYSTEM_FONT));
-	dlgPaddingX = DLG_OLD_STYLE_PADDING_X;
-	dlgPaddingY = DLG_OLD_STYLE_PADDING_Y;
-    }
+	font = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, VARIABLE_PITCH, DLG_FONT_NAME);
+
+    oldFont = SelectFont(hdc, font);
+    dlgPaddingX = DLG_PADDING_X;
+    dlgPaddingY = DLG_PADDING_Y;
+
     GetTextMetrics(hdc, &fontInfo);
     fontHeight = fontInfo.tmHeight;
 
@@ -7148,10 +7138,7 @@ gui_mch_dialog(
 	dlgwidth = DLG_MIN_WIDTH;	// Don't allow a really thin dialog!
 
     // start to fill in the dlgtemplate information.  addressing by WORDs
-    if (s_usenewlook)
-	lStyle = DS_MODALFRAME | WS_CAPTION |DS_3DLOOK| WS_VISIBLE |DS_SETFONT;
-    else
-	lStyle = DS_MODALFRAME | WS_CAPTION |DS_3DLOOK| WS_VISIBLE;
+    lStyle = DS_MODALFRAME | WS_CAPTION | DS_3DLOOK | WS_VISIBLE | DS_SETFONT;
 
     add_long(lStyle);
     add_long(0);	// (lExtendedStyle)
@@ -7193,26 +7180,23 @@ gui_mch_dialog(
 				   : (LPSTR)("Vim "VIM_VERSION_MEDIUM)), TRUE);
     p += nchar;
 
-    if (s_usenewlook)
-    {
-	// do the font, since DS_3DLOOK doesn't work properly
+    // do the font, since DS_3DLOOK doesn't work properly
 # ifdef USE_SYSMENU_FONT
-	if (use_lfSysmenu)
-	{
-	    // point size
-	    *p++ = -MulDiv(lfSysmenu.lfHeight, 72,
-		    GetDeviceCaps(hdc, LOGPIXELSY));
-	    wcscpy(p, lfSysmenu.lfFaceName);
-	    nchar = (int)wcslen(lfSysmenu.lfFaceName) + 1;
-	}
-	else
-# endif
-	{
-	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
-	}
-	p += nchar;
+    if (use_lfSysmenu)
+    {
+	// point size
+	*p++ = -MulDiv(lfSysmenu.lfHeight, 72,
+		GetDeviceCaps(hdc, LOGPIXELSY));
+	wcscpy(p, lfSysmenu.lfFaceName);
+	nchar = (int)wcslen(lfSysmenu.lfFaceName) + 1;
     }
+    else
+# endif
+    {
+	*p++ = DLG_FONT_POINT_SIZE;		// point size
+	nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
+    }
+    p += nchar;
 
     buttonYpos = msgheight + 2 * dlgPaddingY;
 
@@ -7555,22 +7539,19 @@ tearoff_callback(
 
 
 /*
- * Decide whether to use the "new look" (small, non-bold font) or the "old
- * look" (big, clanky font) for dialogs, and work out a few values for use
- * later accordingly.
+ * Computes the dialog base units based on the current dialog font.
+ * We don't use the GetDialogBaseUnits() API, because we don't use the
+ * (old-style) system font.
  */
     static void
 get_dialog_font_metrics(void)
 {
     HDC		    hdc;
     HFONT	    hfontTools = 0;
-    DWORD	    dlgFontSize;
     SIZE	    size;
 #ifdef USE_SYSMENU_FONT
     LOGFONTW	    lfSysmenu;
 #endif
-
-    s_usenewlook = FALSE;
 
 #ifdef USE_SYSMENU_FONT
     if (gui_w32_get_menu_font(&lfSysmenu) == OK)
@@ -7580,31 +7561,20 @@ get_dialog_font_metrics(void)
 	hfontTools = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, VARIABLE_PITCH, DLG_FONT_NAME);
 
-    if (hfontTools)
-    {
-	hdc = GetDC(s_hwnd);
-	SelectObject(hdc, hfontTools);
-	/*
-	 * GetTextMetrics() doesn't return the right value in
-	 * tmAveCharWidth, so we have to figure out the dialog base units
-	 * ourselves.
-	 */
-	GetTextExtentPoint(hdc,
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-		52, &size);
-	ReleaseDC(s_hwnd, hdc);
+    hdc = GetDC(s_hwnd);
+    SelectObject(hdc, hfontTools);
+    /*
+     * GetTextMetrics() doesn't return the right value in
+     * tmAveCharWidth, so we have to figure out the dialog base units
+     * ourselves.
+     */
+    GetTextExtentPoint(hdc,
+	    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+	    52, &size);
+    ReleaseDC(s_hwnd, hdc);
 
-	s_dlgfntwidth = (WORD)((size.cx / 26 + 1) / 2);
-	s_dlgfntheight = (WORD)size.cy;
-	s_usenewlook = TRUE;
-    }
-
-    if (!s_usenewlook)
-    {
-	dlgFontSize = GetDialogBaseUnits();	// fall back to big old system
-	s_dlgfntwidth = LOWORD(dlgFontSize);
-	s_dlgfntheight = HIWORD(dlgFontSize);
-    }
+    s_dlgfntwidth = (WORD)((size.cx / 26 + 1) / 2);
+    s_dlgfntheight = (WORD)size.cy;
 }
 
 #if defined(FEAT_MENU) && defined(FEAT_TEAROFF)
@@ -7683,12 +7653,10 @@ gui_mch_tearoff(
     }
     else
 # endif
-    font = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		      VARIABLE_PITCH, DLG_FONT_NAME);
-    if (s_usenewlook)
-	oldFont = SelectFont(hdc, font);
-    else
-	oldFont = SelectFont(hdc, GetStockObject(SYSTEM_FONT));
+	font = CreateFont(-DLG_FONT_POINT_SIZE, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, VARIABLE_PITCH, DLG_FONT_NAME);
+
+    oldFont = SelectFont(hdc, font);
 
     // Calculate width of a single space.  Used for padding columns to the
     // right width.
@@ -7745,10 +7713,7 @@ gui_mch_tearoff(
     dlgwidth += 2 * TEAROFF_PADDING_X + TEAROFF_BUTTON_PAD_X;
 
     // start to fill in the dlgtemplate information.  addressing by WORDs
-    if (s_usenewlook)
-	lStyle = DS_MODALFRAME | WS_CAPTION| WS_SYSMENU |DS_SETFONT| WS_VISIBLE;
-    else
-	lStyle = DS_MODALFRAME | WS_CAPTION| WS_SYSMENU | WS_VISIBLE;
+    lStyle = DS_MODALFRAME | WS_CAPTION | WS_SYSMENU | DS_SETFONT | WS_VISIBLE;
 
     lExtendedStyle = WS_EX_TOOLWINDOW|WS_EX_STATICEDGE;
     *p++ = LOWORD(lStyle);
@@ -7778,26 +7743,23 @@ gui_mch_tearoff(
 			    : (LPSTR)("Vim "VIM_VERSION_MEDIUM)), TRUE);
     p += nchar;
 
-    if (s_usenewlook)
-    {
-	// do the font, since DS_3DLOOK doesn't work properly
+    // do the font, since DS_3DLOOK doesn't work properly
 # ifdef USE_SYSMENU_FONT
-	if (use_lfSysmenu)
-	{
-	    // point size
-	    *p++ = -MulDiv(lfSysmenu.lfHeight, 72,
-		    GetDeviceCaps(hdc, LOGPIXELSY));
-	    wcscpy(p, lfSysmenu.lfFaceName);
-	    nchar = (int)wcslen(lfSysmenu.lfFaceName) + 1;
-	}
-	else
-# endif
-	{
-	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
-	}
-	p += nchar;
+    if (use_lfSysmenu)
+    {
+	// point size
+	*p++ = -MulDiv(lfSysmenu.lfHeight, 72,
+		GetDeviceCaps(hdc, LOGPIXELSY));
+	wcscpy(p, lfSysmenu.lfFaceName);
+	nchar = (int)wcslen(lfSysmenu.lfFaceName) + 1;
     }
+    else
+# endif
+    {
+	*p++ = DLG_FONT_POINT_SIZE;		// point size
+	nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
+    }
+    p += nchar;
 
     /*
      * Loop over all the items in the menu.
