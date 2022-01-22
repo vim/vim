@@ -817,6 +817,33 @@ def Test_import_in_includeexpr()
   delete('Xthisfile')
 enddef
 
+def Test_import_in_indentexpr()
+  var lines =<< trim END
+      vim9script
+      export def GetIndent(): number
+        return 5
+      enddef
+  END
+  writefile(lines, 'Xindenter')
+
+  lines =<< trim END
+      vim9script
+      import './Xindenter' as indent
+      set indentexpr=indent.GetIndent()
+      set debug=throw
+  END
+  CheckScriptSuccess(lines)
+
+  new
+  setline(1, 'hello')
+  normal ==
+  assert_equal('     hello', getline(1))
+
+  bwipe!
+  set indentexpr= debug=
+  delete('Xindenter')
+enddef
+
 def Test_export_fails()
   CheckScriptFailure(['export var some = 123'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')
