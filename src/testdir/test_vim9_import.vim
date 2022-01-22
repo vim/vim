@@ -1535,6 +1535,48 @@ def Test_vim9script_autoload_call()
   &rtp = save_rtp
 enddef
 
+def Test_vim9script_noclear_autoload()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script
+      export def Func(): string
+        return 'called'
+      enddef
+      g:double_loaded = 'yes'
+  END
+  writefile(lines, 'Xdir/autoload/double.vim')
+
+  lines =<< trim END
+      vim9script noclear
+      if exists('g:script_loaded')
+        finish
+      endif
+      g:script_loaded = true
+
+      import autoload 'double.vim'
+      nnoremap <F3> <ScriptCmd>g:result = double.Func()<CR>
+  END
+  g:double_loaded = 'no'
+  writefile(lines, 'Xloaddouble')
+  source Xloaddouble
+  assert_equal('no', g:double_loaded)
+  assert_equal(true, g:script_loaded)
+  source Xloaddouble
+  feedkeys("\<F3>", 'xt')
+  assert_equal('called', g:result)
+  assert_equal('yes', g:double_loaded)
+
+  delete('Xloaddouble')
+  unlet g:double_loaded
+  unlet g:script_loaded
+  unlet g:result
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_vim9script_autoload_duplicate()
   mkdir('Xdir/autoload', 'p')
 
