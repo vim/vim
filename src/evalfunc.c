@@ -5104,8 +5104,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"balloon_multiline",
-#if defined(FEAT_BEVAL_GUI) && !defined(FEAT_GUI_MSWIN)
-			// MS-Windows requires runtime check, see below
+#ifdef FEAT_BEVAL_GUI
 		1
 #else
 		0
@@ -6079,10 +6078,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{
 	    // intentionally empty
 	}
-#if defined(FEAT_BEVAL) && defined(FEAT_GUI_MSWIN)
-	else if (STRICMP(name, "balloon_multiline") == 0)
-	    n = multiline_balloon_available();
-#endif
 #ifdef VIMDLL
 	else if (STRICMP(name, "filterpipe") == 0)
 	    n = gui.in_use || gui.starting;
@@ -6261,9 +6256,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 dynamic_feature(char_u *feature)
 {
     return (feature == NULL
-#if defined(FEAT_BEVAL) && defined(FEAT_GUI_MSWIN)
-	    || STRICMP(feature, "balloon_multiline") == 0
-#endif
 #if defined(FEAT_GUI) && defined(FEAT_BROWSE)
 	    || (STRICMP(feature, "browse") == 0 && !gui.in_use)
 #endif
@@ -6716,7 +6708,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	if (*end != NUL)
 	{
 	    semsg(_(lv.ll_name == lv.ll_name_end
-					   ? e_invalid_argument_str : e_trailing_characters_str), end);
+		   ? e_invalid_argument_str : e_trailing_characters_str), end);
 	}
 	else
 	{
