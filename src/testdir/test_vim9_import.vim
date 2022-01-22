@@ -759,6 +759,34 @@ def Run_Test_import_in_diffexpr()
   bwipe!
 enddef
 
+def Test_import_in_formatexpr()
+  var lines =<< trim END
+      vim9script
+      export def MyFormatExpr(): number
+        g:did_format = 'yes'
+        return 0
+      enddef
+  END
+  writefile(lines, 'Xformatter')
+
+  lines =<< trim END
+      vim9script
+      import './Xformatter' as format
+      set formatexpr=format.MyFormatExpr()
+  END
+  CheckScriptSuccess(lines)
+
+  new
+  setline(1, ['a', 'b', 'c'])
+  normal gqG
+  assert_equal('yes', g:did_format)
+
+  bwipe!
+  delete('Xformatter')
+  unlet g:did_format
+  set formatexpr=
+enddef
+
 def Test_export_fails()
   CheckScriptFailure(['export var some = 123'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')
