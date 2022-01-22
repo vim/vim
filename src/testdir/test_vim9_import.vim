@@ -706,7 +706,7 @@ def Test_use_autoload_import_in_fold_expression()
   edit! otherfile
   redraw
 
-  set foldexpr= foldmethod&
+  set foldexpr= foldmethod& debug=
   bwipe!
   delete('Xdir', 'rf')
   &rtp = save_rtp
@@ -1525,6 +1525,8 @@ def Test_vim9script_autoload_call()
 
       call another.Getother()
       assert_equal('other', g:result)
+
+      assert_equal('arg', call('another.RetArg', ['arg']))
   END
   CheckScriptSuccess(lines)
 
