@@ -716,6 +716,49 @@ def Test_use_autoload_import_in_fold_expression()
   &rtp = save_rtp
 enddef
 
+func Test_import_in_diffexpr()
+  CheckExecutable diff
+
+  call Run_Test_import_in_diffexpr()
+endfunc
+
+def Run_Test_import_in_diffexpr()
+  var lines =<< trim END
+      vim9script
+
+      export def DiffExpr()
+        # Prepend some text to check diff type detection
+        writefile(['warning', '  message'], v:fname_out)
+        silent exe '!diff ' .. v:fname_in .. ' '
+                            .. v:fname_new .. '>>' .. v:fname_out
+      enddef
+  END
+  writefile(lines, 'Xdiffexpr')
+
+  lines =<< trim END
+      vim9script
+      import './Xdiffexpr' as diff
+
+      set diffexpr=diff.DiffExpr()
+      set diffopt=foldcolumn:0
+  END
+  CheckScriptSuccess(lines)
+
+  enew!
+  call setline(1, ['one', 'two', 'three'])
+  diffthis
+
+  botright vert new
+  call setline(1, ['one', 'two', 'three.'])
+  diffthis
+  # we only check if this does not cause errors
+  redraw
+
+  diffoff!
+  bwipe!
+  bwipe!
+enddef
+
 def Test_export_fails()
   CheckScriptFailure(['export var some = 123'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')

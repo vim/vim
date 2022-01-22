@@ -415,15 +415,26 @@ eval_diff(
     char_u	*newfile,
     char_u	*outfile)
 {
-    int		err = FALSE;
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
+    typval_T	*tv;
 
     set_vim_var_string(VV_FNAME_IN, origfile, -1);
     set_vim_var_string(VV_FNAME_NEW, newfile, -1);
     set_vim_var_string(VV_FNAME_OUT, outfile, -1);
-    (void)eval_to_bool(p_dex, &err, NULL, FALSE);
+
+    ctx = get_option_sctx("diffexpr");
+    if (ctx != NULL)
+	current_sctx = *ctx;
+
+    // errors are ignored
+    tv = eval_expr(p_dex, NULL);
+    clear_tv(tv);
+
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
     set_vim_var_string(VV_FNAME_NEW, NULL, -1);
     set_vim_var_string(VV_FNAME_OUT, NULL, -1);
+    current_sctx = saved_sctx;
 }
 
     void
