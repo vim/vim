@@ -2094,11 +2094,16 @@ file_name_in_line(
 eval_includeexpr(char_u *ptr, int len)
 {
     char_u	*res;
+    sctx_T	save_sctx = current_sctx;
 
     set_vim_var_string(VV_FNAME, ptr, len);
+    current_sctx = curbuf->b_p_script_ctx[BV_INEX];
+
     res = eval_to_string_safe(curbuf->b_p_inex,
-		was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL), FALSE);
+		 was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL), TRUE);
+
     set_vim_var_string(VV_FNAME, NULL, 0);
+    current_sctx = save_sctx;
     return res;
 }
 # endif

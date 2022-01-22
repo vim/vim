@@ -787,6 +787,36 @@ def Test_import_in_formatexpr()
   set formatexpr=
 enddef
 
+def Test_import_in_includeexpr()
+  writefile(['found it'], 'Xthisfile')
+  new
+
+  var lines =<< trim END
+      vim9script
+      export def DoSub(): string
+        return substitute(v:fname, 'that', 'this', '')
+      enddef
+  END
+  writefile(lines, 'Xinclude.vim')
+
+  lines =<< trim END
+    vim9script
+    import './Xinclude.vim'
+    set includeexpr=Xinclude.DoSub()
+  END
+  CheckScriptSuccess(lines)
+
+  setline(1, ['Xthatfile'])
+  exe "normal \<C-W>f"
+  assert_equal('Xthisfile', expand('%'))
+
+  bwipe!
+  bwipe!
+  set includeexpr=
+  delete('Xinclude')
+  delete('Xthisfile')
+enddef
+
 def Test_export_fails()
   CheckScriptFailure(['export var some = 123'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')
