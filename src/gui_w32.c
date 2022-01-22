@@ -4035,42 +4035,6 @@ static UINT_PTR	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;
 
 
-// cproto fails on missing include files
-# ifndef PROTO
-
-/*
- * excerpts from headers since this may not be presented
- * in the extremely old compilers
- */
-#  include <pshpack1.h>
-
-# endif
-
-typedef struct _DllVersionInfo
-{
-    DWORD cbSize;
-    DWORD dwMajorVersion;
-    DWORD dwMinorVersion;
-    DWORD dwBuildNumber;
-    DWORD dwPlatformID;
-} DLLVERSIONINFO;
-
-# ifndef PROTO
-#  include <poppack.h>
-# endif
-
-typedef struct tagTOOLINFOA_NEW
-{
-    UINT       cbSize;
-    UINT       uFlags;
-    HWND       hwnd;
-    UINT_PTR   uId;
-    RECT       rect;
-    HINSTANCE  hinst;
-    LPSTR      lpszText;
-    LPARAM     lParam;
-} TOOLINFO_NEW;
-
 typedef struct tagNMTTDISPINFO_NEW
 {
     NMHDR      hdr;
@@ -4105,7 +4069,6 @@ typedef struct tagNMTTDISPINFOW_NEW
 } NMTTDISPINFOW_NEW;
 
 
-typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 # ifndef TTM_SETMAXTIPWIDTH
 #  define TTM_SETMAXTIPWIDTH	(WM_USER+24)
 # endif
@@ -8497,89 +8460,13 @@ gui_mch_destroy_sign(void *sign)
  * 5) WM_NOTIFY:TTN_POP destroys created tooltip
  */
 
-/*
- * determine whether installed Common Controls support multiline tooltips
- * (i.e. their version is >= 4.70
- */
-    int
-multiline_balloon_available(void)
-{
-    HINSTANCE hDll;
-    static char comctl_dll[] = "comctl32.dll";
-    static int multiline_tip = MAYBE;
-
-    if (multiline_tip != MAYBE)
-	return multiline_tip;
-
-    hDll = GetModuleHandle(comctl_dll);
-    if (hDll != NULL)
-    {
-	DLLGETVERSIONPROC pGetVer;
-	pGetVer = (DLLGETVERSIONPROC)GetProcAddress(hDll, "DllGetVersion");
-
-	if (pGetVer != NULL)
-	{
-	    DLLVERSIONINFO dvi;
-	    HRESULT hr;
-
-	    ZeroMemory(&dvi, sizeof(dvi));
-	    dvi.cbSize = sizeof(dvi);
-
-	    hr = (*pGetVer)(&dvi);
-
-	    if (SUCCEEDED(hr)
-		    && (dvi.dwMajorVersion > 4
-			|| (dvi.dwMajorVersion == 4
-						&& dvi.dwMinorVersion >= 70)))
-	    {
-		multiline_tip = TRUE;
-		return multiline_tip;
-	    }
-	}
-	else
-	{
-	    // there is chance we have ancient CommCtl 4.70
-	    // which doesn't export DllGetVersion
-	    DWORD dwHandle = 0;
-	    DWORD len = GetFileVersionInfoSize(comctl_dll, &dwHandle);
-	    if (len > 0)
-	    {
-		VS_FIXEDFILEINFO *ver;
-		UINT vlen = 0;
-		void *data = alloc(len);
-
-		if ((data != NULL
-			&& GetFileVersionInfo(comctl_dll, 0, len, data)
-			&& VerQueryValue(data, "\\", (void **)&ver, &vlen)
-			&& vlen
-			&& HIWORD(ver->dwFileVersionMS) > 4)
-			|| ((HIWORD(ver->dwFileVersionMS) == 4
-			    && LOWORD(ver->dwFileVersionMS) >= 70)))
-		{
-		    vim_free(data);
-		    multiline_tip = TRUE;
-		    return multiline_tip;
-		}
-		vim_free(data);
-	    }
-	}
-    }
-    multiline_tip = FALSE;
-    return multiline_tip;
-}
-
     static void
 make_tooltip(BalloonEval *beval, char *text, POINT pt)
 {
-    TOOLINFOW	*pti;
-    int		ToolInfoSize;
+    TOOLINFOW_NEW   *pti;
+    RECT	    rect;
 
-    if (multiline_balloon_available())
-	ToolInfoSize = sizeof(TOOLINFOW_NEW);
-    else
-	ToolInfoSize = sizeof(TOOLINFOW);
-
-    pti = alloc(ToolInfoSize);
+    pti = alloc(sizeof(TOOLINFOW_NEW));
     if (pti == NULL)
 	return;
 
@@ -8591,30 +8478,19 @@ make_tooltip(BalloonEval *beval, char *text, POINT pt)
     SetWindowPos(beval->balloon, HWND_TOPMOST, 0, 0, 0, 0,
 	    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-    pti->cbSize = ToolInfoSize;
+    pti->cbSize = sizeof(TOOLINFOW_NEW);
     pti->uFlags = TTF_SUBCLASS;
     pti->hwnd = beval->target;
     pti->hinst = 0; // Don't use string resources
     pti->uId = ID_BEVAL_TOOLTIP;
 
-    if (multiline_balloon_available())
-    {
-	RECT rect;
-	TOOLINFOW_NEW *ptin = (TOOLINFOW_NEW *)pti;
-	pti->lpszText = LPSTR_TEXTCALLBACKW;
-	beval->tofree = enc_to_utf16((char_u*)text, NULL);
-	ptin->lParam = (LPARAM)beval->tofree;
-	// switch multiline tooltips on
-	if (GetClientRect(s_textArea, &rect))
-	    SendMessageW(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
-		    (LPARAM)rect.right);
-    }
-    else
-    {
-	// do this old way
-	beval->tofree = enc_to_utf16((char_u*)text, NULL);
-	pti->lpszText = (LPWSTR)beval->tofree;
-    }
+    pti->lpszText = LPSTR_TEXTCALLBACKW;
+    beval->tofree = enc_to_utf16((char_u*)text, NULL);
+    pti->lParam = (LPARAM)beval->tofree;
+    // switch multiline tooltips on
+    if (GetClientRect(s_textArea, &rect))
+	SendMessageW(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
+		(LPARAM)rect.right);
 
     // Limit ballooneval bounding rect to CursorPos neighbourhood.
     pti->rect.left = pt.x - 3;
