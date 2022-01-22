@@ -7566,9 +7566,9 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    }
 
 	    // Now delete the selected text. Avoid messages here.
+	    cap->oap->regname = cap->cmdchar == 'P' ? '_' : NUL;
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
-	    cap->oap->regname = NUL;
 	    ++msg_silent;
 	    nv_operator(cap);
 	    do_pending_operator(cap, 0, FALSE);
