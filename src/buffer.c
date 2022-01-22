@@ -4162,7 +4162,7 @@ build_stl_str_hl(
 	tv.vval.v_number = wp->w_id;
 	set_var((char_u *)"g:statusline_winid", &tv, FALSE);
 
-	usefmt = eval_to_string_safe(fmt + 2, use_sandbox);
+	usefmt = eval_to_string_safe(fmt + 2, use_sandbox, FALSE);
 	if (usefmt == NULL)
 	    usefmt = fmt;
 
@@ -4546,7 +4546,7 @@ build_stl_str_hl(
 	    if (curwin != save_curwin)
 		VIsual_active = FALSE;
 
-	    str = eval_to_string_safe(p, use_sandbox);
+	    str = eval_to_string_safe(p, use_sandbox, FALSE);
 
 	    curwin = save_curwin;
 	    curbuf = save_curbuf;

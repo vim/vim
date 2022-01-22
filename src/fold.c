@@ -1923,7 +1923,6 @@ get_foldtext(
     if (*wp->w_p_fdt != NUL)
     {
 	char_u	dashes[MAX_LEVEL + 2];
-	win_T	*save_curwin;
 	int	level;
 	char_u	*p;
 
@@ -1941,23 +1940,27 @@ get_foldtext(
 	set_vim_var_string(VV_FOLDDASHES, dashes, -1);
 	set_vim_var_nr(VV_FOLDLEVEL, (long)level);
 
-	// skip evaluating foldtext on errors
+	// skip evaluating 'foldtext' on errors
 	if (!got_fdt_error)
 	{
-	    save_curwin = curwin;
+	    win_T   *save_curwin = curwin;
+	    sctx_T  saved_sctx = current_sctx;
+
 	    curwin = wp;
 	    curbuf = wp->w_buffer;
+	    current_sctx = wp->w_p_script_ctx[WV_FDT];
 
-	    ++emsg_silent; // handle exceptions, but don't display errors
+	    ++emsg_off; // handle exceptions, but don't display errors
 	    text = eval_to_string_safe(wp->w_p_fdt,
-			 was_set_insecurely((char_u *)"foldtext", OPT_LOCAL));
-	    --emsg_silent;
+		    was_set_insecurely((char_u *)"foldtext", OPT_LOCAL), TRUE);
+	    --emsg_off;
 
 	    if (text == NULL || did_emsg)
 		got_fdt_error = TRUE;
 
 	    curwin = save_curwin;
 	    curbuf = curwin->w_buffer;
+	    current_sctx = saved_sctx;
 	}
 	last_lnum = lnum;
 	last_wp   = wp;

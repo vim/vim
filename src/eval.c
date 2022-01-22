@@ -555,14 +555,16 @@ eval_to_string(
     char_u *
 eval_to_string_safe(
     char_u	*arg,
-    int		use_sandbox)
+    int		use_sandbox,
+    int		keep_script_version)
 {
     char_u	*retval;
     funccal_entry_T funccal_entry;
     int		save_sc_version = current_sctx.sc_version;
     int		save_garbage = may_garbage_collect;
 
-    current_sctx.sc_version = 1;
+    if (!keep_script_version)
+	current_sctx.sc_version = 1;
     save_funccal(&funccal_entry);
     if (use_sandbox)
 	++sandbox;

@@ -683,6 +683,9 @@ def Test_use_autoload_import_in_fold_expression()
       export def Expr(): string
         return getline(v:lnum) =~ '^#' ? '>1' : '1'
       enddef
+      export def Text(): string
+        return 'fold text'
+      enddef
       g:fold_loaded = 'yes'
   END
   writefile(lines, 'Xdir/autoload/fold.vim')
@@ -691,6 +694,7 @@ def Test_use_autoload_import_in_fold_expression()
       vim9script
       import autoload 'fold.vim'
       &foldexpr = 'fold.Expr()'
+      &foldtext = 'fold.Text()'
       &foldmethod = 'expr'
       &debug = 'throw'
   END
@@ -706,7 +710,7 @@ def Test_use_autoload_import_in_fold_expression()
   edit! otherfile
   redraw
 
-  set foldexpr= foldmethod& debug=
+  set foldexpr= foldtext& foldmethod& debug=
   bwipe!
   delete('Xdir', 'rf')
   &rtp = save_rtp

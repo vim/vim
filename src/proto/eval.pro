@@ -14,7 +14,7 @@ int skip_expr_concatenate(char_u **arg, char_u **start, char_u **end, evalarg_T 
 char_u *typval2string(typval_T *tv, int convert);
 char_u *eval_to_string_eap(char_u *arg, int convert, exarg_T *eap);
 char_u *eval_to_string(char_u *arg, int convert);
-char_u *eval_to_string_safe(char_u *arg, int use_sandbox);
+char_u *eval_to_string_safe(char_u *arg, int use_sandbox, int keep_script_version);
 varnumber_T eval_to_number(char_u *expr);
 typval_T *eval_expr(char_u *arg, exarg_T *eap);
 int call_vim_function(char_u *func, int argc, typval_T *argv, typval_T *rettv);
