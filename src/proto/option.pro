@@ -22,6 +22,7 @@ int was_set_insecurely(char_u *opt, int opt_flags);
 void redraw_titles(void);
 int valid_name(char_u *val, char *allowed);
 void set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx);
+sctx_T *get_option_sctx(char *name);
 void set_term_option_sctx_idx(char *name, int opt_idx);
 void check_redraw(long_u flags);
 int findoption(char_u *arg);

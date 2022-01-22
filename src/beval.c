@@ -259,6 +259,8 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 						    : wp->w_buffer->b_p_bexpr;
 	if (*bexpr != NUL)
 	{
+	    sctx_T	save_sctx = current_sctx;
+
 	    // Convert window pointer to number.
 	    for (cw = firstwin; cw != wp; cw = cw->w_next)
 		++winnr;
@@ -284,6 +286,16 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 		++sandbox;
 	    ++textwinlock;
 
+	    if (bexpr == p_bexpr)
+	    {
+		sctx_T *sp = get_option_sctx("balloonexpr");
+
+		if (sp != NULL)
+		    current_sctx = *sp;
+	    }
+	    else
+		current_sctx = curbuf->b_p_script_ctx[BV_BEXPR];
+
 	    vim_free(result);
 	    result = eval_to_string(bexpr, TRUE);
 
@@ -300,6 +312,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    if (use_sandbox)
 		--sandbox;
 	    --textwinlock;
+	    current_sctx = save_sctx;
 
 	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
 	    if (result != NULL && result[0] != NUL)

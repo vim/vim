@@ -2615,6 +2615,21 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
 }
 
 /*
+ * Get the script context of global option "name".
+ *
+ */
+    sctx_T *
+get_option_sctx(char *name)
+{
+    int idx = findoption((char_u *)name);
+
+    if (idx >= 0)
+	return &options[idx].script_ctx;
+    siemsg("no such option: %s", name);
+    return NULL;
+}
+
+/*
  * Set the script_ctx for a termcap option.
  * "name" must be the two character code, e.g. "RV".
  * When "name" is NULL use "opt_idx".
