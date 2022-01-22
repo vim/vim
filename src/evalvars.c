@@ -429,7 +429,7 @@ eval_diff(
 
     // errors are ignored
     tv = eval_expr(p_dex, NULL);
-    clear_tv(tv);
+    free_tv(tv);
 
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
     set_vim_var_string(VV_FNAME_NEW, NULL, -1);
