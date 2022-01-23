@@ -1511,6 +1511,20 @@ update_scrollbar_size(void)
 }
 
 /*
+ * Get the average character size of a font.
+ */
+    static void
+GetAverageFontSize(HDC hdc, SIZE *size)
+{
+    // GetTextMetrics() may not return the right value in tmAveCharWidth
+    // for some fonts.  Do our own average computation.
+    GetTextExtentPoint(hdc,
+	    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+	    52, size);
+    size->cx = (size->cx / 26 + 1) / 2;
+}
+
+/*
  * Get the character size of a font.
  */
     static void
@@ -1523,13 +1537,9 @@ GetFontSize(GuiFont font)
     TEXTMETRIC tm;
 
     GetTextMetrics(hdc, &tm);
-    // GetTextMetrics() may not return the right value in tmAveCharWidth
-    // for some fonts.  Do our own average computation.
-    GetTextExtentPoint(hdc,
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-	    52, &size);
-    gui.char_width = (size.cx / 26 + 1) / 2 + tm.tmOverhang;
+    GetAverageFontSize(hdc, &size);
 
+    gui.char_width = size.cx + tm.tmOverhang;
     gui.char_height = tm.tmHeight + p_linespace;
 
     SelectFont(hdc, hfntOld);
@@ -7563,17 +7573,10 @@ get_dialog_font_metrics(void)
 
     hdc = GetDC(s_hwnd);
     SelectObject(hdc, hfontTools);
-    /*
-     * GetTextMetrics() doesn't return the right value in
-     * tmAveCharWidth, so we have to figure out the dialog base units
-     * ourselves.
-     */
-    GetTextExtentPoint(hdc,
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-	    52, &size);
+    GetAverageFontSize(hdc, &size);
     ReleaseDC(s_hwnd, hdc);
 
-    s_dlgfntwidth = (WORD)((size.cx / 26 + 1) / 2);
+    s_dlgfntwidth = (WORD)size.cx;
     s_dlgfntheight = (WORD)size.cy;
 }
 
