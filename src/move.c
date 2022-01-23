@@ -1768,7 +1768,7 @@ scrolldown(
     for (int todo = line_count; todo > 0; --todo)
     {
 #ifdef FEAT_DIFF
-	if (curwin->w_topfill < diff_check(curwin, curwin->w_topline)
+	if (curwin->w_topfill < diff_check(curwin, curwin->w_topline, NULL)
 		&& curwin->w_topfill < curwin->w_height - 1)
 	{
 	    ++curwin->w_topfill;
@@ -3345,7 +3345,7 @@ do_check_cursorbind(void)
 # ifdef FEAT_DIFF
 	    if (curwin->w_p_diff)
 		curwin->w_cursor.lnum =
-				 diff_get_corresponding_line(old_curbuf, line);
+				 diff_get_corresponding_line(old_curbuf, old_curwin, line);
 	    else
 # endif
 		curwin->w_cursor.lnum = line;
