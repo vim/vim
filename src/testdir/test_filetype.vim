@@ -207,6 +207,7 @@ let s:filename_checks = {
     \ 'gnuplot': ['file.gpi', '.gnuplot'],
     \ 'go': ['file.go'],
     \ 'gomod': ['go.mod'],
+    \ 'gowork': ['go.work'],
     \ 'gp': ['file.gp', '.gprc'],
     \ 'gpg': ['/.gnupg/options', '/.gnupg/gpg.conf', '/usr/any/gnupg/options.skel', 'any/.gnupg/gpg.conf', 'any/.gnupg/options', 'any/usr/any/gnupg/options.skel'],
     \ 'grads': ['file.gs'],

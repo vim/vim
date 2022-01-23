@@ -724,6 +724,7 @@ au BufNewFile,BufRead *.gpi,.gnuplot		setf gnuplot
 " Go (Google)
 au BufNewFile,BufRead *.go			setf go
 au BufNewFile,BufRead Gopkg.lock		setf toml
+au BufRead,BufNewFile go.work			setf gowork
 
 " GrADS scripts
 au BufNewFile,BufRead *.gs			setf grads
