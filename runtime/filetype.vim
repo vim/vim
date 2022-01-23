@@ -749,6 +749,9 @@ au BufNewFile,BufRead *.haml			setf haml
 " Hamster Classic | Playground files
 au BufNewFile,BufRead *.hsm			setf hamster
 
+" Handlebars
+au BufNewFile,BufRead *.hbs			setf handlebars
+
 " Haskell
 au BufNewFile,BufRead *.hs,*.hsc,*.hs-boot,*.hsig setf haskell
 au BufNewFile,BufRead *.lhs			setf lhaskell
