@@ -520,6 +520,7 @@ let s:filename_checks = {
     \ 'teal': ['file.tl'],
     \ 'teraterm': ['file.ttl'],
     \ 'terminfo': ['file.ti'],
+    \ 'terraform': ['file.tf', 'file.tfvars'],
     \ 'tex': ['file.latex', 'file.sty', 'file.dtx', 'file.ltx', 'file.bbl'],
     \ 'texinfo': ['file.texinfo', 'file.texi', 'file.txi'],
     \ 'texmf': ['texmf.cnf'],
