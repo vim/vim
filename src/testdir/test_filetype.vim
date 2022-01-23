@@ -510,6 +510,7 @@ let s:filename_checks = {
     \ 'taskdata': ['pending.data', 'completed.data', 'undo.data'],
     \ 'taskedit': ['file.task'],
     \ 'tcl': ['file.tcl', 'file.tm', 'file.tk', 'file.itcl', 'file.itk', 'file.jacl', '.tclshrc', 'tclsh.rc', '.wishrc'],
+    \ 'teal': ['file.tl'],
     \ 'teraterm': ['file.ttl'],
     \ 'terminfo': ['file.ti'],
     \ 'tex': ['file.latex', 'file.sty', 'file.dtx', 'file.ltx', 'file.bbl'],

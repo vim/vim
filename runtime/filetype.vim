@@ -1878,6 +1878,9 @@ au BufRead,BufNewFile *.task			setf taskedit
 " Tcl (JACL too)
 au BufNewFile,BufRead *.tcl,*.tm,*.tk,*.itcl,*.itk,*.jacl,.tclshrc,.wishrc	setf tcl
 
+" Teal
+au BufRead,BufNewFile *.tl			setf teal
+
 " TealInfo
 au BufNewFile,BufRead *.tli			setf tli
 
