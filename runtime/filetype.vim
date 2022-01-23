@@ -725,6 +725,9 @@ au BufNewFile,BufRead Gopkg.lock		setf toml
 " GrADS scripts
 au BufNewFile,BufRead *.gs			setf grads
 
+" GraphQL
+au BufNewFile,BufRead *.graphql,*.graphqls,*.gql			setf graphql
+
 " Gretl
 au BufNewFile,BufRead *.gretl			setf gretl
 
