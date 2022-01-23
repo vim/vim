@@ -279,6 +279,7 @@ let s:filename_checks = {
     \ 'latte': ['file.latte', 'file.lte'],
     \ 'ld': ['file.ld'],
     \ 'ldif': ['file.ldif'],
+    \ 'ledger': ['file.ldg', 'file.ledger', 'file.journal'],
     \ 'less': ['file.less'],
     \ 'lex': ['file.lex', 'file.l', 'file.lxx', 'file.l++'],
     \ 'lftp': ['lftp.conf', '.lftprc', 'anylftp/rc', 'lftp/rc', 'some-lftp/rc'],
