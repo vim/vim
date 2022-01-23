@@ -15,6 +15,11 @@ endfunc
 func Test_edit_ctrl_v()
   call feedkeys("i\<C-V>76c\<C-V>76\<C-F2>\<C-V>u3c0j\<C-V>u3c0\<M-F3>", 'tx')
   call assert_equal('LcL<C-F2>πjπ<M-F3>', getline(1))
+
+  if has('osx')
+    call feedkeys("o\<C-V>\<D-j>\<C-V>\<D-1>\<C-V>\<D-o>\<C-V>\<D-x>\<C-V>\<D-u>", 'tx')
+    call assert_equal('<D-j><D-1><D-o><D-x><D-u>', getline(2))
+  endif
 endfunc
 
 " Test for built-in functions strchars() and strcharlen()

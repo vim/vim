@@ -1908,6 +1908,10 @@ get_literal(int noReduceKeys)
 	nc = plain_vgetc();
 	if ((nc == ESC || nc == CSI) && !noReduceKeys)
 	    nc = decodeModifyOtherKeys(nc);
+	if ((mod_mask & ~MOD_MASK_SHIFT) != 0)
+	    // A character with non-Shift modifiers should not be
+	    // a valid character for i_CTRL-V_digit.
+	    break;
 
 #ifdef FEAT_CMDL_INFO
 	if (!(State & CMDLINE) && MB_BYTE2LEN_CHECK(nc) == 1)
