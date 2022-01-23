@@ -52,6 +52,7 @@ SRC_ALL =	\
 		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
+		src/linematch.c \
 		src/digraph.c \
 		src/drawline.c \
 		src/drawscreen.c \
@@ -286,6 +287,7 @@ SRC_ALL =	\
 		src/proto/insexpand.pro \
 		src/proto/job.pro \
 		src/proto/json.pro \
+		src/proto/linematch.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
 		src/proto/logfile.pro \
