@@ -2172,6 +2172,9 @@ au BufNewFile,BufRead *.raml			setf raml
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.conf		setf dosini
 
+" YANG
+au BufRead,BufNewFile *.yang			setf yang
+
 " Zimbu
 au BufNewFile,BufRead *.zu			setf zimbu
 " Zimbu Templates
