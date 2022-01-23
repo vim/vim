@@ -194,6 +194,7 @@ let s:filename_checks = {
     \ 'fvwm': ['/.fvwm/file', 'any/.fvwm/file'],
     \ 'gdb': ['.gdbinit', 'gdbinit'],
     \ 'gdresource': ['file.tscn', 'file.tres'],
+    \ 'gdscript': ['file.gd'],
     \ 'gdmo': ['file.mo', 'file.gdmo'],
     \ 'gedcom': ['file.ged', 'lltxxxxx.txt', '/tmp/lltmp', '/tmp/lltmp-file', 'any/tmp/lltmp', 'any/tmp/lltmp-file'],
     \ 'gemtext': ['file.gmi', 'file.gemini'],

@@ -669,6 +669,9 @@ au BufNewFile,BufRead .gdbinit,gdbinit		setf gdb
 " GDMO
 au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 
+" GDscript
+au BufNewFile,BufRead *.gd			setf gdscript
+
 " Godot resource
 au BufRead,BufNewFile *.tscn,*.tres			setf gdresource
 
