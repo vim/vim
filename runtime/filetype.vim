@@ -1917,6 +1917,9 @@ au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 " TF mud client
 au BufNewFile,BufRead *.tf,.tfrc,tfrc		setf tf
 
+" TLA+
+au BufRead,BufNewFile *.tla			setf tla
+
 " tmux configuration
 au BufNewFile,BufRead {.,}tmux*.conf		setf tmux
 
