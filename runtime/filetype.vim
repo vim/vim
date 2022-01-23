@@ -1383,6 +1383,9 @@ au BufNewFile,BufRead *.g			setf pccts
 " PPWizard
 au BufNewFile,BufRead *.it,*.ih			setf ppwiz
 
+" Pug
+au BufRead,BufNewFile *.pug			setf pug
+
 " Puppet
 au BufNewFile,BufRead Puppetfile		setf ruby
 

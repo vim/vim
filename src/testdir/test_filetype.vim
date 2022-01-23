@@ -409,6 +409,7 @@ let s:filename_checks = {
     \ 'ps1xml': ['file.ps1xml'],
     \ 'psf': ['file.psf'],
     \ 'psl': ['file.psl'],
+    \ 'pug': ['file.pug'],
     \ 'puppet': ['file.pp'],
     \ 'pyret': ['file.arr'],
     \ 'pyrex': ['file.pyx', 'file.pxd'],
