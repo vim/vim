@@ -951,6 +951,9 @@ au BufNewFile,BufRead *.ldif			setf ldif
 " Ld loader
 au BufNewFile,BufRead *.ld			setf ld
 
+" Ledger
+au BufRead,BufNewFile *.ldg,*.ledger,*.journal			setf ledger
+
 " Less
 au BufNewFile,BufRead *.less			setf less
 
