@@ -777,6 +777,9 @@ au BufNewFile,BufRead cabal.config		setf cabalconfig
 au BufNewFile,BufRead *.ht			setf haste
 au BufNewFile,BufRead *.htpp			setf hastepreproc
 
+" HCL
+au BufRead,BufNewFile *.hcl			setf hcl
+
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
 
