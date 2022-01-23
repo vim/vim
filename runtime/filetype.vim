@@ -1179,6 +1179,9 @@ au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/etc/nginx/*,*/usr/local/
 " Ninja file
 au BufNewFile,BufRead *.ninja			setf ninja
 
+" Nix
+au BufRead,BufNewFile *.nix			setf nix
+
 " NPM RC file
 au BufNewFile,BufRead npmrc,.npmrc		setf dosini
 
