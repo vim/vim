@@ -868,10 +868,11 @@ sig_tstp SIGDEFARG(sigarg)
 	signal(SIGTSTP, ignore_sigtstp ? SIG_IGN : SIG_DFL);
 	raise(sigarg);
     }
+    else
+	got_tstp = TRUE;
 
     // this is not required on all systems, but it doesn't hurt anybody
     signal(SIGTSTP, (RETSIGTYPE (*)())sig_tstp);
-    got_tstp = TRUE;
     SIGRETURN;
 }
 #endif
