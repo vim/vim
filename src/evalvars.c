@@ -495,12 +495,17 @@ eval_spell_expr(char_u *badword, char_u *expr)
     typval_T	rettv;
     list_T	*list = NULL;
     char_u	*p = skipwhite(expr);
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
 
     // Set "v:val" to the bad word.
     prepare_vimvar(VV_VAL, &save_val);
     set_vim_var_string(VV_VAL, badword, -1);
     if (p_verbose == 0)
 	++emsg_off;
+    ctx = get_option_sctx("spellsuggest");
+    if (ctx != NULL)
+	current_sctx = *ctx;
 
     if (eval1(&p, &rettv, &EVALARG_EVALUATE) == OK)
     {
@@ -514,6 +519,7 @@ eval_spell_expr(char_u *badword, char_u *expr)
 	--emsg_off;
     clear_tv(get_vim_var_tv(VV_VAL));
     restore_vimvar(VV_VAL, &save_val);
+    current_sctx = saved_sctx;
 
     return list;
 }

@@ -936,6 +936,34 @@ def Test_import_in_charconvert()
   set charconvert&
 enddef
 
+func Test_import_in_spellsuggest_expr()
+  CheckFeature spell
+  call Run_Test_import_in_spellsuggest_expr()
+endfunc
+
+def Run_Test_import_in_spellsuggest_expr()
+  var lines =<< trim END
+      vim9script
+      export def MySuggest(): list<any>
+        return [['Fox', 8], ['Fop', 9]]
+      enddef
+  END
+  writefile(lines, 'Xsuggest.vim')
+
+  lines =<< trim END
+      vim9script
+      import './Xsuggest.vim' as sugg
+      set spell spellsuggest=expr:sugg.MySuggest()
+  END
+  CheckScriptSuccess(lines)
+
+  set verbose=1  # report errors
+  call assert_equal(['Fox', 'Fop'], spellsuggest('Fo', 2))
+
+  delete('Xsuggest.vim')
+  set nospell spellsuggest& verbose=0
+enddef
+
 def Test_export_fails()
   CheckScriptFailure(['export var some = 123'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')
