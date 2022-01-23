@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Jan 15
+*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1211,7 +1211,7 @@ TextYankPost			After text has been yanked or deleted in the
 				Not triggered when |quote_| is used nor when
 				called recursively.
 				It is not allowed to change the buffer text,
-				see |textlock|.
+				see |textlock|. *E1064*
 				{only when compiled with the +eval feature}
 
 							*User*

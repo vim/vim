@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.2.  Last change: 2021 Nov 21
+*visual.txt*    For Vim version 8.2.  Last change: 2022 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

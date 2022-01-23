@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 18
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -190,7 +190,7 @@ functions.
 
 Arguments are accessed by name, without "a:", just like any other language.
 There is no "a:" dictionary or "a:000" list.
-						*vim9-variable-arguments*
+					*vim9-variable-arguments* *E1055*
 Variable arguments are defined as the last argument, with a name and have a
 list type, similar to TypeScript.  For example, a list of numbers: >
 	def MyFunc(...itemlist: list<number>)
@@ -227,7 +227,7 @@ the "name#" prefix is sufficient. >
 	def s:ThisFunction()        # script-local
 	def g:ThatFunction()        # global
 	def scriptname#function()   # autoload
-
+<						*E1058* *E1075*
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function and no namespace was given, this nested function is local to the code
 block it is defined in.  In a `:def` function it is not possible to define a
@@ -289,7 +289,8 @@ some point when loaded again.  E.g. when a buffer local option is set: >
 
 
 Variable declarations with :var, :final and :const ~
-						*vim9-declaration* *:var*
+					*vim9-declaration* *:var*
+					*E1017* *E1020* *E1054*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with `:final` or `:const`.  We refer to both as "variables" in this
 section.
@@ -320,7 +321,7 @@ The declaration must be done earlier: >
 	   inner = 0
 	endif
 	echo inner
-
+<							*E1025*
 To intentionally hide a variable from code that follows, a block can be
 used: >
 	{
@@ -347,12 +348,12 @@ And with autocommands: >
 	   }
 
 Although using a :def function probably works better.
-
+						*E1022*
 Declaring a variable with a type but without an initializer will initialize to
 false (for bool), empty (for string, list, dict, etc.) or zero (for number,
 any, etc.).  This matters especially when using the "any" type, the value will
 default to the number zero.
-
+						*E1016* *E1052* *E1066*
 In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  Those can also be deleted
@@ -363,7 +364,7 @@ instead.
 
 The `exists()` and `exists_compiled()` functions do not work on local variables
 or arguments.
-
+						*E1006* *E1041*
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.
 Variables may shadow Ex commands, rename the variable if needed.
@@ -431,7 +432,7 @@ How constants work varies between languages.  Some consider a variable that
 can't be assigned another value a constant.  JavaScript is an example.  Others
 also make the value immutable, thus when a constant uses a list, the list
 cannot be changed.  In Vim9 we can use both.
-
+							*E1021*
 `:const` is used for making both the variable and the value a constant.  Use
 this for composite structures that you want to make sure will not be modified.
 Example: >
@@ -564,7 +565,7 @@ characters, e.g.: >
 	   })
 No command can follow the "{", only a comment can be used there.
 
-							*command-block*
+						*command-block* *E1026*
 The block can also be used for defining a user command.  Inside the block Vim9
 syntax will be used.
 
@@ -684,6 +685,11 @@ This will assign "start" and print a line: >
 	var result = start
 	:+ print
 
+After the range an Ex command must follow.  Without the colon you can call a
+function without `:call`, but after a range you do need it: >
+	MyFunc()
+	:% call MyFunc()
+
 Note that the colon is not required for the |+cmd| argument: >
 	edit +6 fname
 
@@ -732,7 +738,7 @@ Notes:
 
 
 White space ~
-
+					*E1004* *E1068* *E1069* *E1074*
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
 	var name=234	# Error!
 	var name= 234	# Error!
@@ -777,7 +783,7 @@ No curly braces expansion ~
 
 
 Dictionary literals ~
-						*vim9-literal-dict*
+						*vim9-literal-dict* *E1014*
 Traditionally Vim has supported dictionary literals with a {} syntax: >
 	let dict = {'key': value}
 
@@ -867,7 +873,7 @@ first if needed.
 
 
 Conditions and expressions ~
-							*vim9-boolean*
+						*vim9-boolean*
 Conditions and expressions are mostly working like they do in other languages.
 Some values are different from legacy Vim script:
 	value		legacy Vim script	Vim9 script ~
@@ -921,7 +927,7 @@ always converted to string: >
 
 Simple types are Number, Float, Special and Bool.  For other types |string()|
 should be used.
-							*false* *true* *null*
+						*false* *true* *null* *E1034*
 In Vim9 script one can use "true" for v:true, "false" for v:false and "null"
 for v:null.  When converting a boolean to a string "false" and "true" are
 used, not "v:false" and "v:true" like in legacy script.  "v:none" is not
@@ -1064,15 +1070,19 @@ Using ++var or --var in an expression is not supported yet.
 
 3. New style functions					*fast-functions*
 
-							*:def*
+							*:def* *E1028*
 :def[!] {name}([arguments])[: {return-type}]
 			Define a new function by the name {name}.  The body of
 			the function follows in the next lines, until the
-			matching `:enddef`.
-
-			When {return-type} is omitted or is "void" the
-			function is not expected to return anything.
-			
+			matching `:enddef`. *E1073*
+							*E1011*
+			The {name} must be less than 100 bytes long.
+					*E1003* *E1027* *E1056* *E1059*
+			The type of value used with `:return` must match
+			{return-type}.  When {return-type} is omitted or is
+			"void" the function is not expected to return
+			anything.
+							*E1077*	
 			{arguments} is a sequence of zero or more argument
 			declarations.  There are three forms:
 				{name}: {type}
@@ -1096,7 +1106,7 @@ Using ++var or --var in an expression is not supported yet.
 			later in Vim9 script.  They can only be removed by
 			reloading the same script.
 
-							*:enddef*
+							*:enddef* *E1057*
 :enddef			End of a function defined with `:def`. It should be on
 			a line by its own.
 
@@ -1116,7 +1126,7 @@ prefix if they do not exist at the time of compiling.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
-			This is for debugging and testing.
+			This is for debugging and testing. *E1061*
 			Note that for command line completion of {func} you
 			can prepend "s:" to find script-local functions.
 
@@ -1178,7 +1188,8 @@ for each closure call a function to define it: >
 ==============================================================================
 
 4. Types					*vim9-types*
-
+					*E1008* *E1009* *E1010* *E1012*
+					*E1013* *E1029* *E1030*
 The following builtin types are supported:
 	bool
 	number
@@ -1193,17 +1204,19 @@ The following builtin types are supported:
 	func: {type}
 	func({type}, ...)
 	func({type}, ...): {type}
+	void
 
 Not supported yet:
 	tuple<a: {type}, b: {type}, ...>
 
 These types can be used in declarations, but no simple value will actually
-have the "void" type.
+have the "void" type.  Trying to use a void (e.g. a function without a
+return value) results in error *E1031* .
 
 There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating lot of small pieces of
 memory.
-
+							*E1005* *E1007*
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
 				checking for arguments or return value
@@ -1432,7 +1445,7 @@ Exporting an item can be written as: >
 	export def MyFunc() ...
 	export class MyClass ...
 	export interface MyClass ...
-
+<							*E1043* *E1044*
 As this suggests, only constants, variables, `:def` functions and classes can
 be exported. {not implemented yet: class, interface}
 
@@ -1441,19 +1454,23 @@ be exported. {not implemented yet: class, interface}
 
 
 Import ~
-						*:import* *:imp* *E1094*
+					*:import* *:imp* *E1094* *E1047*
+					*E1048* *E1049* *E1053* *E1071*
 The exported items can be imported in another Vim9 script: >
 	import "myscript.vim"
 
 This makes each item available as "myscript.item".
-
+							*:import-as*
 In case the name is long or ambiguous, another name can be specified: >
 	import "thatscript.vim" as that
-
+<							*E1060*
 Then you can use "that.EXPORTED_CONST", "that.someValue", etc.  You are free
 to choose the name "that".  Use something that will be recognized as referring
 to the imported script.  Avoid command names and builtin function names,
-because the name will shadow them.
+because the name will shadow them.  If the name starts with a capital letter
+it can also shadow global user commands and functions.  Also, you cannot use
+the name for something else in the script, such as a function or variable
+name.
 
 In case the dot in the name is undesired, a local reference can be made for a
 function: >
@@ -1465,6 +1482,12 @@ This also works for constants: >
 This does not work for variables, since the value would be copied once and
 when changing the variable the copy will change, not the original variable.
 You will need to use the full name, with the dot.
+
+The full syntax of the command is:
+	import {filename} [as {name}]
+Where {filename} is an expression that must evaluate to a string.  Without the
+"as {name}" part it must end in ".vim".  {name} must consist of letters,
+digits and '_', like |internal-variables|.
 
 `:import` can also be used in legacy Vim script.  The imported items still
 become script-local, even when the "s:" prefix is not given.

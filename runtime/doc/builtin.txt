@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jan 16
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jan 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2882,7 +2882,7 @@ get({dict}, {key} [, {default}])
 		Preferably used as a |method|: >
 			mydict->get(key)
 get({func}, {what})
-		Get an item with from Funcref {func}.  Possible values for
+		Get item {what} from Funcref {func}.  Possible values for
 		{what} are:
 			"name"	The function name
 			"func"	The function
@@ -6396,8 +6396,8 @@ readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		  readdir(dirname, {n -> n =~ '.txt$'})
 <		To skip hidden and backup files: >
 		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
-
-<		The optional {dict} argument allows for further custom
+<								*E857*
+		The optional {dict} argument allows for further custom
 		values. Currently this is used to specify if and how sorting
 		should be performed. The dict can have the following members:
 
@@ -9498,7 +9498,6 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 			call win_execute(winid, 'set syntax=python')
 <		Doing the same with `setwinvar()` would not trigger
 		autocommands and not actually show syntax highlighting.
-
 							*E994*
 		Not all commands are allowed in popup windows.
 		When window {id} does not exist then no error is given and

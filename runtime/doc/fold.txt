@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 8.2.  Last change: 2021 Jul 13
+*fold.txt*      For Vim version 8.2.  Last change: 2022 Jan 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -511,7 +511,10 @@ Note the use of backslashes to avoid some characters to be interpreted by the
     :endfunction
 
 Evaluating 'foldtext' is done in the |sandbox|.  The current window is set to
-the window that displays the line.  Errors are ignored.
+the window that displays the line.  The context is set to the script where the
+option was last set.
+
+Errors are ignored.  For debugging set the 'debug' option to "throw".
 
 The default value is |foldtext()|.  This returns a reasonable text for most
 types of folding.  If you don't like it, you can specify your own 'foldtext'

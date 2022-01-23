@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 Jan 03
+*starting.txt*  For Vim version 8.2.  Last change: 2022 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -268,8 +268,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		started if possible.
 
 							*-e*
--e		Start Vim in Ex mode |Q|.  Only makes a difference when the
-		executable is not called "ex".
+-e		Start Vim in Ex mode, see |Ex-mode|.  Only makes a difference
+		when the executable is not called "ex".
 
 							*-E*
 -E		Start Vim in improved Ex mode |gQ|.  Only makes a difference

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 15
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,19 +38,14 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-TODO in eval_method() for using partial.
-
-TODO in compile_load_scriptvar()
-Try using a variable or function that is not exported
-
-"return Msg()" does not give an error if there is no return value. #9497
-
-eval_map_expr() in getchar.c saves stuff because "mp" can change, this does
-not happen in map.c for an abbreviation.  Test that this fails, fix it.
+Also set the script context for other "expr" options, like for 'foldexpr'?
+    'printexpr'     eval_printexpr()
+    "expr:" part of 'spellsuggest   eval_spell_expr()
 
 Once Vim9 is stable:
 - Add all the error numbers in a good place in documentation.
-    done until E653
+    done until E1083
+- Check code coverage, add more tests if needed.
 - Use Vim9 for runtime files.
 
 Further Vim9 improvements, possibly after launch:
@@ -67,8 +62,8 @@ Further Vim9 improvements, possibly after launch:
   evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- implement :type, "import type"
-- implement :enum,  "import enum".
+- implement :type
+- implement :enum
 - implement :class and :interface: See |vim9-classes|
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
@@ -207,6 +202,9 @@ Terminal emulator window:
 When using 'cryptmethod' xchaha20 the undo file is not encrypted.
 Need to handle extra bytes.
 
+In Select mode the deleted text always goes into the unnamed register.
+Use CTRL-R to specify the register to use. (#9531)
+
 Some prompts are not translated: #9495
 
 Test_communicate_ipv6(): is flaky on many systems
@@ -244,6 +242,8 @@ initialization to figure out the default value from 'shell'.  Add a test for
 this.
 
 MS-Windows: did path modifier :p:8 stop working?  #8600
+
+Add support for "underdouble", "underdot" and "underdash". #9553
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 

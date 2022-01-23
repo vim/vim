@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2022 Jan 11
+*editing.txt*   For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -433,7 +433,7 @@ This also works for most other systems, with the restriction that the
 backticks must be around the whole item.  It is not possible to have text
 directly before the first or just after the last backtick.
 
-							*`=*
+						*`=* *E1083*
 You can have the backticks expanded as a Vim expression, instead of as an
 external command, by putting an equal sign right after the first backtick,
 e.g.: >
@@ -890,7 +890,7 @@ Note: When the 'write' option is off, you are not able to write any file.
 
 							*:w* *:write*
 					*E502* *E503* *E504* *E505*
-					*E512* *E514* *E667* *E796* *E949*
+					*E512* *E514* *E667* *E949*
 :w[rite] [++opt]	Write the whole buffer to the current file.  This is
 			the normal way to save changes to a file.  It fails
 			when the 'readonly' option is set or when there is

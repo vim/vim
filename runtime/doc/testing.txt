@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2022 Jan 13
+*testing.txt*	For Vim version 8.2.  Last change: 2022 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -352,7 +352,7 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce an error or when {error} is not found in the
 		error message.  Also see |assert-return|.
-
+							*E856*
 		When {error} is a string it must be found literally in the
 		first reported error. Most often this will be the error code,
 		including the colon, e.g. "E123:". >

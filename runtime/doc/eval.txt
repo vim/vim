@@ -1,11 +1,11 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Jan 08
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Expression evaluation			*expression* *expr* *E15* *eval*
-
+							*E1002*
 Using expressions is introduced in chapter 41 of the user manual |usr_41.txt|.
 
 Note: Expression evaluation can be disabled at compile time.  If this has been
@@ -53,7 +53,7 @@ Number		A 32 or 64 bit signed number.  |expr-number|
 		Examples:  -123  0x10  0177  0o177 0b1011
 
 Float		A floating point number. |floating-point-format| *Float*
-		{only when compiled with the |+float| feature}
+		{only when compiled with the |+float| feature} *E1076*
 		Examples: 123.456  1.15e-6  -1.1e3
 
 String		A NUL terminated string of 8-bit unsigned characters (bytes).
@@ -1030,7 +1030,7 @@ is |true| or |false|.
 			*expr-==?* *expr-!=?* *expr->?*  *expr->=?*
 			*expr-<?*  *expr-<=?* *expr-=~?* *expr-!~?*
 			*expr-is* *expr-isnot* *expr-is#* *expr-isnot#*
-			*expr-is?* *expr-isnot?*
+			*expr-is?* *expr-isnot?* *E1072*
 		use 'ignorecase'    match case	   ignore case ~
 equal			==		==#		==?
 not equal		!=		!=#		!=?
@@ -1071,7 +1071,7 @@ To compare Funcrefs to see if they refer to the same function, ignoring bound
 Dictionary and arguments, use |get()| to get the function name: >
 	if get(Part1, 'name') == get(Part2, 'name')
 	   " Part1 and Part2 refer to the same function
-
+<							*E1037*
 Using "is" or "isnot" with a |List|, |Dictionary| or |Blob| checks whether
 the expressions are referring to the same |List|, |Dictionary| or |Blob|
 instance.  A copy of a |List| is different from the original |List|.  When
@@ -1123,7 +1123,7 @@ can be matched like an ordinary character.  Examples:
 	"foo\nbar" =~ "\\n"	evaluates to 0
 
 
-expr5 and expr6						*expr5* *expr6*
+expr5 and expr6				*expr5* *expr6* *E1036* *E1051*
 ---------------
 expr6 + expr6   Number addition, |List| or |Blob| concatenation	*expr-+*
 expr6 - expr6   Number subtraction				*expr--*
@@ -1182,7 +1182,7 @@ When the righthand side of '%' is zero, the result is 0.
 
 None of these work for |Funcref|s.
 
-".", ".." and "%" do not work for Float. *E804*
+".", ".." and "%" do not work for Float. *E804* *E1035*
 
 
 expr7							*expr7*
@@ -1229,7 +1229,7 @@ in any order.  E.g., these are all possible:
 Evaluation is always from left to right.
 
 expr9[expr1]		item of String or |List|	*expr-[]* *E111*
-							*E909* *subscript*
+						*E909* *subscript* *E1062*
 In legacy Vim script:
 If expr9 is a Number or String this results in a String that contains the
 expr1'th single byte from expr9.  expr9 is used as a String (a number is
@@ -1364,7 +1364,16 @@ Is equivalent to: >
 	(-1.234)->string()
 And NOT: >
 	-(1.234->string())
-<
+
+What comes after "->" can be a name, a simple expression (not containing any
+parenthesis), or any expression in parenthesis: >
+	base->name(args)
+	base->some.name(args)
+	base->alist[idx](args)
+	base->(getFuncRef())(args)
+Note that in the last call the base is passed to the function resulting from
+"(getFuncRef())", inserted before "args".
+
 							*E274*
 "->name(" must not contain white space.  There can be white space before the
 "->" and after the "(", thus you can split the lines like this: >
@@ -1568,7 +1577,7 @@ The first one probably doesn't echo anything, the second echoes the $shell
 variable (if your shell supports it).
 
 
-internal variable					*expr-variable*
+internal variable				*expr-variable* *E1015*
 -----------------
 variable		internal variable
 See below |internal-variables|.
@@ -1656,7 +1665,7 @@ for a lambda expression, you can find what it is with the following command: >
 See also: |numbered-function|
 
 ==============================================================================
-3. Internal variable				*internal-variables* *E461*
+3. Internal variable			*internal-variables* *E461* *E1001*
 
 An internal variable name can be made up of letters, digits and '_'.  But it
 cannot start with a digit.  In legacy script it is also possible to use curly
@@ -1814,7 +1823,7 @@ variables for each buffer.  Use local buffer variables instead |b:var|.
 
 
 PREDEFINED VIM VARIABLES			*vim-variable* *v:var* *v:*
-								*E963*
+							*E963* *E1063*
 Some variables can be set by the user, but the type cannot be changed.
 
 					*v:argv* *argv-variable*
@@ -2830,7 +2839,7 @@ This function can then be called with: >
   :  echo div
   :endif
 <
-						*:cal* *:call* *E107* *E117*
+						*:cal* *:call* *E107*
 :[range]cal[l] {name}([arguments])
 		Call a function.  The name of the function and its arguments
 		are as specified with `:function`.  Up to 20 arguments can be
@@ -2873,6 +2882,12 @@ This function can then be called with: >
 		dereferenced, but the range will not be used then.  Example: >
 	:4,8call GetDict().method()
 <		Here GetDict() gets the range but method() does not.
+
+								*E117*
+When a function cannot be found the error "E117: Unknown function" will be
+given.  If the function was using an autoload path or an autoload import and
+the script is a |Vim9| script, this may also be caused by the function not
+being exported.
 
 								*E132*
 The recursiveness of user functions is restricted with the |'maxfuncdepth'|
@@ -2973,6 +2988,9 @@ Also note that if you have two script files, and one calls a function in the
 other and vice versa, before the used function is defined, it won't work.
 Avoid using the autoload functionality at the toplevel.
 
+In |Vim9| script you will get error *E1263* if you use a function name with a
+"#" character when not in an autoload script.
+
 Hint: If you distribute a bunch of scripts you can pack them together with the
 |vimball| utility.  Also read the user manual |distribute-script|.
 
@@ -3059,8 +3077,8 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
-			*:let+=* *:let-=* *:letstar=*
-			*:let/=* *:let%=* *:let.=* *:let..=* *E734* *E985*
+			*:let+=* *:let-=* *:letstar=* *:let/=*  *:let%=*
+			*:let.=* *:let..=* *E734* *E985* *E1019*
 :let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
 :let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
 :let {var} *= {expr1}	Like ":let {var} = {var} * {expr1}".
@@ -3263,7 +3281,7 @@ text...
 				*	Funcref
 			This does not work in Vim9 script. |vim9-declaration|
 
-:unl[et][!] {name} ...				*:unlet* *:unl* *E108* *E795*
+:unl[et][!] {name} ...			*:unlet* *:unl* *E108* *E795* *E1081*
 			Remove the internal variable {name}.  Several variable
 			names can be given, they are all removed.  The name
 			may also be a |List| or |Dictionary| item.
@@ -3289,7 +3307,7 @@ text...
 			If the system does not support deleting an environment
 			variable, it is made empty.
 
-						*:cons* *:const*
+						*:cons* *:const* *E1018*
 :cons[t] {var-name} = {expr1}
 :cons[t] [{name1}, {name2}, ...] = {expr1}
 :cons[t] [{name}, ..., ; {lastname}] = {expr1}
@@ -3509,7 +3527,8 @@ text...
 			all nested ":try"s inside the loop.  The outermost
 			":endtry" then jumps to the command after the loop.
 
-:try				*:try* *:endt* *:endtry* *E600* *E601* *E602*
+:try						*:try* *:endt* *:endtry*
+						*E600* *E601* *E602* *E1032*
 :endt[ry]		Change the error handling for the commands between
 			":try" and ":endtry" including everything being
 			executed across ":source" commands, function calls,
@@ -3545,7 +3564,8 @@ text...
 		try | sleep 100 | catch /^Vim:Interrupt$/ | endtry
 		try | edit | catch /^Vim(edit):E\d\+/ | echo "error" | endtry
 <
-					*:cat* *:catch* *E603* *E604* *E605*
+					*:cat* *:catch*
+					*E603* *E604* *E605* *E654* *E1033*
 :cat[ch] /{pattern}/	The following commands until the next |:catch|,
 			|:finally|, or |:endtry| that belongs to the same
 			|:try| as the ":catch" are executed when an exception
@@ -3566,7 +3586,7 @@ text...
 			Another character can be used instead of / around the
 			{pattern}, so long as it does not have a special
 			meaning (e.g., '|' or '"') and doesn't occur inside
-			{pattern}.
+			{pattern}. *E1067*
 			Information about the exception is available in
 			|v:exception|.  Also see |throw-variables|.
 			NOTE: It is not reliable to ":catch" the TEXT of
