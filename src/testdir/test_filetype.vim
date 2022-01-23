@@ -230,6 +230,7 @@ let s:filename_checks = {
     \ 'hb': ['file.hb'],
     \ 'hcl': ['file.hcl'],
     \ 'hercules': ['file.vc', 'file.ev', 'file.sum', 'file.errsum'],
+    \ 'heex': ['file.heex'],
     \ 'hex': ['file.hex', 'file.h32'],
     \ 'hgcommit': ['hg-editor-file.txt'],
     \ 'hog': ['file.hog', 'snort.conf', 'vision.conf'],

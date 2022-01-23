@@ -783,6 +783,9 @@ au BufRead,BufNewFile *.hcl			setf hcl
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
 
+" HEEx
+au BufRead,BufNewFile *.heex			setf heex
+
 " HEX (Intel)
 au BufNewFile,BufRead *.hex,*.h32		setf hex
 
