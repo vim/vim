@@ -789,6 +789,9 @@ au BufRead,BufNewFile *.heex			setf heex
 " HEX (Intel)
 au BufNewFile,BufRead *.hex,*.h32		setf hex
 
+" Hjson
+au BufNewFile,BufRead *.hjson			setf hjson
+
 " Hollywood
 au BufRead,BufNewFile *.hws			setf hollywood
 
