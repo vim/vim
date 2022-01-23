@@ -654,6 +654,9 @@ au BufNewFile,BufRead *.fsl			setf framescript
 " FStab
 au BufNewFile,BufRead fstab,mtab		setf fstab
 
+" Fusion
+au BufRead,BufNewFile *.fusion			setf fusion
+
 " F# or Forth
 au BufNewFile,BufRead *.fs			call dist#ft#FTfs()
 

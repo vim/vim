@@ -190,6 +190,7 @@ let s:filename_checks = {
     \ 'freebasic': ['file.fb'],
     \ 'fsharp': ['file.fs', 'file.fsi', 'file.fsx'],
     \ 'fstab': ['fstab', 'mtab'],
+    \ 'fusion': ['file.fusion'],
     \ 'fvwm': ['/.fvwm/file', 'any/.fvwm/file'],
     \ 'gdb': ['.gdbinit', 'gdbinit'],
     \ 'gdresource': ['file.tscn', 'file.tres'],
