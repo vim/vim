@@ -753,6 +753,9 @@ au BufNewFile,BufRead */etc/group,*/etc/group-,*/etc/group.edit,*/etc/gshadow,*/
 " GTK RC
 au BufNewFile,BufRead .gtkrc,gtkrc		setf gtkrc
 
+" Hack
+au BufRead,BufNewFile *.hack,*.hackpartial			setf hack
+
 " Haml
 au BufNewFile,BufRead *.haml			setf haml
 
