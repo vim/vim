@@ -1364,6 +1364,9 @@ au BufNewFile,BufRead *printcap
 au BufNewFile,BufRead *termcap
 	\ let b:ptcap_type = "term" | setf ptcap
 
+" Prisma
+au BufRead,BufNewFile *.prisma			setf prisma
+
 " PCCTS / ANTLR
 "au BufNewFile,BufRead *.g			setf antlr
 au BufNewFile,BufRead *.g			setf pccts
