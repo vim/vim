@@ -12,6 +12,11 @@ func Test_visual_block_insert()
   bwipeout!
 endfunc
 
+func Test_edit_ctrl_v()
+  call feedkeys("i\<C-V>76c\<C-V>76\<C-F2>\<C-V>u3c0j\<C-V>u3c0\<M-F3>", 'tx')
+  call assert_equal('LcL<C-F2>πjπ<M-F3>', getline(1))
+endfunc
+
 " Test for built-in functions strchars() and strcharlen()
 func Test_strchars()
   let inp = ["a", "あいa", "A\u20dd", "A\u20dd\u20dd", "\u20dd"]

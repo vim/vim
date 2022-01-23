@@ -1986,7 +1986,11 @@ get_literal(int noReduceKeys)
 	--allow_keys;
 #endif
     if (nc)
+    {
 	vungetc(nc);
+	// A character typed with i_CTRL-V_digit cannot have a mod_mask.
+	mod_mask = 0;
+    }
     got_int = FALSE;	    // CTRL-C typed after CTRL-V is not an interrupt
     return cc;
 }
