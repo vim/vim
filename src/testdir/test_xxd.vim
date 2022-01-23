@@ -205,8 +205,19 @@ func Test_xxd()
   exe '%!' . s:xxd_cmd . ' -c 21 -d %'
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
-  " TODO:
-  " -o -offset
+  " Test 16: -o -offset
+  let s:test += 1
+  let expected = [
+        \ '0000000f: 310a 320a 330a 340a 350a 360a 370a 380a  1.2.3.4.5.6.7.8.',
+        \ '0000001f: 390a 3130 0a31 310a 3132 0a31 330a 3134  9.10.11.12.13.14',
+        \ '0000002f: 0a31 350a 3136 0a31 370a 3138 0a31 390a  .15.16.17.18.19.',
+        \ '0000003f: 3230 0a32 310a 3232 0a32 330a 3234 0a32  20.21.22.23.24.2',
+        \ '0000004f: 350a 3236 0a32 370a 3238 0a32 390a 3330  5.26.27.28.29.30',
+        \ '0000005f: 0a                                       .']
+  for arg in ['-o 15', '-offset 15', '-o15']
+    exe '%!' . s:xxd_cmd . ' ' . arg . ' %'
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
 
   %d
   bwipe!
@@ -255,7 +266,7 @@ endfunc
 
 " Various ways with wrong arguments that trigger the usage output.
 func Test_xxd_usage()
-  for arg in ['-c', '-g', '-o', '-s', '-l', '-X', 'one two three']
+  for arg in ['-h', '-c', '-g', '-o', '-s', '-l', '-X', 'one two three']
     new
     exe 'r! ' . s:xxd_cmd . ' ' . arg
     call assert_match("Usage:", join(getline(1, 3)))
@@ -282,6 +293,69 @@ func Test_xxd_version()
   exe 'r! ' . s:xxd_cmd . ' -v'
   call assert_match('xxd 20\d\d-\d\d-\d\d by Juergen Weigert et al\.', join(getline(1, 3)))
   bwipe!
+endfunc
+
+" number of columns must be non-negative
+func Test_xxd_min_cols()
+  for cols in ['-c-1', '-c -1', '-cols -1']
+    for fmt in ['', '-b', '-e', '-i', '-p', ]
+      new
+      exe 'r! printf "ignored" | ' . s:xxd_cmd . ' ' . cols . ' ' . fmt
+      call assert_match("invalid number of columns", join(getline(1, '$')))
+      bwipe!
+    endfor
+  endfor
+endfunc
+
+" some hex formats limit columns to 256 (a #define in xxd.c)
+func Test_xxd_max_cols()
+  for cols in ['-c257', '-c 257', '-cols 257']
+    for fmt in ['', '-b', '-e' ]
+      new
+      exe 'r! printf "ignored" | ' . s:xxd_cmd . ' ' . cols . ' ' . fmt
+      call assert_match("invalid number of columns", join(getline(1, '$')))
+      bwipe!
+    endfor
+  endfor
+endfunc
+
+" -c0 selects the format specific default column value, as if no -c was given
+" except for -ps, where it disables extra newlines
+func Test_xxd_c0_is_def_cols()
+  call writefile(["abcdefghijklmnopqrstuvwxyz0123456789"], 'Xxdin')
+  for cols in ['-c0', '-c 0', '-cols 0']
+    for fmt in ['', '-b', '-e', '-i']
+      exe 'r! ' . s:xxd_cmd . ' ' . fmt ' Xxdin > Xxdout1'
+      exe 'r! ' . s:xxd_cmd . ' ' . cols . ' ' . fmt ' Xxdin > Xxdout2'
+      call assert_equalfile('Xxdout1', 'Xxdout2')
+    endfor
+  endfor
+  call delete('Xxdin')
+  call delete('Xxdout1')
+  call delete('Xxdout2')
+endfunc
+
+" all output in a single line for -c0 -ps
+func Test_xxd_plain_one_line()
+  call writefile([
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
+        \ 'Xxdin')
+  for cols in ['-c0', '-c 0', '-cols 0']
+    exe 'r! ' . s:xxd_cmd . ' -ps ' . cols ' Xxdin'
+    " output seems to start in line 2
+    let out = join(getline(2, '$'))
+    bwipe!
+    " newlines in xxd output result in spaces in the string variable out
+    call assert_notmatch(" ", out)
+    " xxd output must be non-empty and comprise only lower case hex digits
+    call assert_match("^[0-9a-f][0-9a-f]*$", out)
+  endfor
+  call delete('Xxdin')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

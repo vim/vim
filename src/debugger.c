@@ -594,7 +594,7 @@ dbg_parsearg(
 	bp->dbg_type = DBG_EXPR;
     else
     {
-	semsg(_(e_invarg2), p);
+	semsg(_(e_invalid_argument_str), p);
 	return FAIL;
     }
     p = skipwhite(p + 4);
@@ -619,7 +619,7 @@ dbg_parsearg(
 	    || (here && *p != NUL)
 	    || (bp->dbg_type == DBG_FUNC && strstr((char *)p, "()") != NULL))
     {
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 	return FAIL;
     }
 
@@ -815,7 +815,7 @@ ex_breakdel(exarg_T *eap)
     }
 
     if (todel < 0)
-	semsg(_("E161: Breakpoint not found: %s"), eap->arg);
+	semsg(_(e_breakpoint_not_found_str), eap->arg);
     else
     {
 	while (gap->ga_len > 0)

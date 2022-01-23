@@ -333,7 +333,7 @@ undo_allowed(void)
     // caller of getcmdline() may get confused.
     if (textwinlock != 0 || textlock != 0)
     {
-	emsg(_(e_textlock));
+	emsg(_(e_not_allowed_to_change_text_here));
 	return FALSE;
     }
 
@@ -438,12 +438,12 @@ u_savecommon(
 	{
 	    if (netbeans_is_guarded(top, bot))
 	    {
-		emsg(_(e_guarded));
+		emsg(_(e_region_is_guarded_cannot_modify));
 		return FAIL;
 	    }
 	    if (curbuf->b_p_ro)
 	    {
-		emsg(_(e_nbreadonly));
+		emsg(_(e_netbeans_does_not_allow_changes_in_read_only_files));
 		return FAIL;
 	    }
 	}
@@ -464,7 +464,7 @@ u_savecommon(
 	{
 	    // This happens when the FileChangedRO autocommand changes the
 	    // file in a way it becomes shorter.
-	    emsg(_("E881: Line count changed unexpectedly"));
+	    emsg(_(e_line_count_changed_unexpectedly));
 	    return FAIL;
 	}
     }
@@ -784,8 +784,6 @@ nomem:
 // extra fields for uhp
 # define UHP_SAVE_NR		1
 
-static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
-
 /*
  * Compute the hash for the current buffer text into hash[UNDO_HASH_SIZE].
  */
@@ -898,7 +896,7 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
     static void
 corruption_error(char *mesg, char_u *file_name)
 {
-    semsg(_("E825: Corrupted undo file (%s): %s"), mesg, file_name);
+    semsg(_(e_corrupted_undo_file_str_str), mesg, file_name);
 }
 
     static void
@@ -1680,7 +1678,7 @@ u_write_undo(
 			    O_CREAT|O_EXTRA|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
     if (fd < 0)
     {
-	semsg(_(e_not_open), file_name);
+	semsg(_(e_cannot_open_undo_file_for_writing_str), file_name);
 	goto theend;
     }
     (void)mch_setperm(file_name, perm);
@@ -1719,7 +1717,7 @@ u_write_undo(
     fp = fdopen(fd, "w");
     if (fp == NULL)
     {
-	semsg(_(e_not_open), file_name);
+	semsg(_(e_cannot_open_undo_file_for_writing_str), file_name);
 	close(fd);
 	mch_remove(file_name);
 	goto theend;
@@ -1792,7 +1790,7 @@ u_write_undo(
 write_error:
     fclose(fp);
     if (!write_ok)
-	semsg(_("E829: write error in undo file: %s"), file_name);
+	semsg(_(e_write_error_in_undo_file_str), file_name);
 
 #if defined(MSWIN)
     // Copy file attributes; for systems where this can only be done after
@@ -1904,7 +1902,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     if (fp == NULL)
     {
 	if (name != NULL || p_verbose > 0)
-	    semsg(_("E822: Cannot open undo file for reading: %s"), file_name);
+	    semsg(_(e_cannot_open_undo_file_for_reading_str), file_name);
 	goto error;
     }
     bi.bi_buf = curbuf;
@@ -1916,7 +1914,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     if (fread(magic_buf, UF_START_MAGIC_LEN, 1, fp) != 1
 		|| memcmp(magic_buf, UF_START_MAGIC, UF_START_MAGIC_LEN) != 0)
     {
-	semsg(_("E823: Not an undo file: %s"), file_name);
+	semsg(_(e_not_an_undo_file_str), file_name);
 	goto error;
     }
     version = get2c(fp);
@@ -1925,14 +1923,13 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
 	{
-	    semsg(_("E832: Non-encrypted file has encrypted undo file: %s"),
-								   file_name);
+	    semsg(_(e_non_encrypted_file_has_encrypted_undo_file), file_name);
 	    goto error;
 	}
 	bi.bi_state = crypt_create_from_file(fp, curbuf->b_p_key);
 	if (bi.bi_state == NULL)
 	{
-	    semsg(_("E826: Undo file decryption failed: %s"), file_name);
+	    semsg(_(e_undo_file_decryption_failed), file_name);
 	    goto error;
 	}
 	if (crypt_whole_undofile(bi.bi_state->method_nr))
@@ -1948,13 +1945,13 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 	    bi.bi_used = 0;
 	}
 #else
-	semsg(_("E827: Undo file is encrypted: %s"), file_name);
+	semsg(_(e_undo_file_is_encrypted_str), file_name);
 	goto error;
 #endif
     }
     else if (version != UF_VERSION)
     {
-	semsg(_("E824: Incompatible undo file: %s"), file_name);
+	semsg(_(e_incompatible_undo_file_str), file_name);
 	goto error;
     }
 
@@ -2522,7 +2519,7 @@ undo_time(
 
 	if (absolute)
 	{
-	    semsg(_("E830: Undo number %ld not found"), step);
+	    semsg(_(e_undo_number_nr_not_found), step);
 	    return;
 	}
 
@@ -2713,7 +2710,7 @@ u_undoredo(int undo)
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
 	    unblock_autocmds();
-	    iemsg(_("E438: u_undo: line numbers wrong"));
+	    iemsg(_(e_u_undo_line_numbers_wrong));
 	    changed();		// don't want UNCHANGED now
 	    return;
 	}
@@ -3084,7 +3081,7 @@ ex_undolist(exarg_T *eap UNUSED)
      */
     mark = ++lastmark;
     nomark = ++lastmark;
-    ga_init2(&ga, (int)sizeof(char *), 20);
+    ga_init2(&ga, sizeof(char *), 20);
 
     uhp = curbuf->b_u_oldhead;
     while (uhp != NULL)
@@ -3180,7 +3177,7 @@ ex_undojoin(exarg_T *eap UNUSED)
 	return;		    // nothing changed before
     if (curbuf->b_u_curhead != NULL)
     {
-	emsg(_("E790: undojoin is not allowed after undo"));
+	emsg(_(e_undojoin_is_not_allowed_after_undo));
 	return;
     }
     if (!curbuf->b_u_synced)
@@ -3285,7 +3282,7 @@ u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	iemsg(_("E439: undo list corrupt"));
+	iemsg(_(e_undo_list_corrupt));
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3317,7 +3314,7 @@ u_getbot(void)
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    iemsg(_("E440: undo line missing"));
+	    iemsg(_(e_undo_line_missing));
 	    uep->ue_bot = uep->ue_top + 1;  // assume all lines deleted, will
 					    // get all the old lines back
 					    // without deleting the current

@@ -433,7 +433,7 @@ assert_equalfile(typval_T *argvars)
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_notread, fname1);
+	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname1);
     }
     else
     {
@@ -441,7 +441,7 @@ assert_equalfile(typval_T *argvars)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_notread, fname2);
+	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname2);
 	}
 	else
 	{
@@ -907,12 +907,12 @@ f_test_alloc_fail(typval_T *argvars, typval_T *rettv UNUSED)
 	    || argvars[1].v_type != VAR_NUMBER
 	    || argvars[1].vval.v_number < 0
 	    || argvars[2].v_type != VAR_NUMBER)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
     {
 	alloc_fail_id = argvars[0].vval.v_number;
 	if (alloc_fail_id >= aid_last)
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	alloc_fail_countdown = argvars[1].vval.v_number;
 	alloc_fail_repeat = argvars[2].vval.v_number;
 	did_outofmem_msg = FALSE;
@@ -967,7 +967,7 @@ f_test_getvalue(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[0].v_type != VAR_STRING)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
     {
 	char_u *name = tv_get_string(&argvars[0]);
@@ -975,7 +975,7 @@ f_test_getvalue(typval_T *argvars, typval_T *rettv)
 	if (STRCMP(name, (char_u *)"need_fileinfo") == 0)
 	    rettv->vval.v_number = need_fileinfo;
 	else
-	    semsg(_(e_invarg2), name);
+	    semsg(_(e_invalid_argument_str), name);
     }
 }
 
@@ -991,12 +991,12 @@ f_test_option_not_set(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     if (argvars[0].v_type != VAR_STRING)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
     {
 	name = tv_get_string(&argvars[0]);
 	if (reset_option_was_set(name) == FAIL)
-	    semsg(_(e_invarg2), name);
+	    semsg(_(e_invalid_argument_str), name);
     }
 }
 
@@ -1017,7 +1017,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_STRING
 	    || (argvars[1].v_type) != VAR_NUMBER)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
     {
 	name = tv_get_string(&argvars[0]);
@@ -1053,8 +1053,12 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    ui_delay_for_testing = val;
 	else if (STRCMP(name, (char_u *)"term_props") == 0)
 	    reset_term_props_on_termresponse = val;
+	else if (STRCMP(name, (char_u *)"vterm_title") == 0)
+	    disable_vterm_title_for_testing = val;
 	else if (STRCMP(name, (char_u *)"uptime") == 0)
 	    override_sysinfo_uptime = val;
+	else if (STRCMP(name, (char_u *)"autoload") == 0)
+	    override_autoload = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
@@ -1072,7 +1076,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    }
 	}
 	else
-	    semsg(_(e_invarg2), name);
+	    semsg(_(e_invalid_argument_str), name);
     }
 }
 
@@ -1113,7 +1117,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    {
 		ufunc_T *fp;
 
-		fp = find_func(argvars[0].vval.v_string, FALSE, NULL);
+		fp = find_func(argvars[0].vval.v_string, FALSE);
 		if (fp != NULL)
 		    retval = fp->uf_refcount;
 	    }
@@ -1171,7 +1175,7 @@ f_test_ignore_error(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     if (argvars[0].v_type != VAR_STRING)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
     else
 	ignore_error_for_testing(tv_get_string(&argvars[0]));
 }
@@ -1264,7 +1268,7 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
 	    || (argvars[1].v_type) != VAR_NUMBER
 	    || (argvars[2].v_type) != VAR_NUMBER)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
     which = tv_get_string(&argvars[0]);
@@ -1279,7 +1283,7 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
 	sb = &gui.bottom_sbar;
     if (sb == NULL)
     {
-	semsg(_(e_invarg2), which);
+	semsg(_(e_invalid_argument_str), which);
 	return;
     }
     gui_drag_scrollbar(sb, value, dragging);
@@ -1300,7 +1304,7 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_NUMBER || (argvars[1].v_type) != VAR_NUMBER)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 

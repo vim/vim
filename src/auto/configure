@@ -714,6 +714,7 @@ LUA_SRC
 vi_cv_path_plain_lua
 vi_cv_path_luajit
 vi_cv_path_lua
+XDIFF_OBJS_USED
 compiledby
 dogvimdiff
 dovimdiff
@@ -5255,6 +5256,12 @@ esac
 
 
 
+if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  has_eval=no
+else
+  has_eval=yes
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-compiledby argument" >&5
 $as_echo_n "checking --with-compiledby argument... " >&6; }
 
@@ -5305,6 +5312,20 @@ else
 $as_echo "yes" >&6; }
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking diff feature" >&5
+$as_echo_n "checking diff feature... " >&6; }
+if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled in $features version" >&5
+$as_echo "disabled in $features version" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: enabled" >&5
+$as_echo "enabled" >&6; }
+  $as_echo "#define FEAT_DIFF 1" >>confdefs.h
+
+  XDIFF_OBJS_USED="\$(XDIFF_OBJS)"
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-luainterp argument" >&5
 $as_echo_n "checking --enable-luainterp argument... " >&6; }
 # Check whether --enable-luainterp was given.
@@ -5318,7 +5339,7 @@ fi
 $as_echo "$enable_luainterp" >&6; }
 
 if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     as_fn_error $? "cannot use Lua with tiny or small features" "$LINENO" 5
   fi
 
@@ -6088,7 +6109,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_perlinterp" >&5
 $as_echo "$enable_perlinterp" >&6; }
 if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     as_fn_error $? "cannot use Perl with tiny or small features" "$LINENO" 5
   fi
 
@@ -6293,7 +6314,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_pythoninterp" >&5
 $as_echo "$enable_pythoninterp" >&6; }
 if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     as_fn_error $? "cannot use Python with tiny or small features" "$LINENO" 5
   fi
 
@@ -6644,7 +6665,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_python3interp" >&5
 $as_echo "$enable_python3interp" >&6; }
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     as_fn_error $? "cannot use Python with tiny or small features" "$LINENO" 5
   fi
 
@@ -7572,7 +7593,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_rubyinterp" >&5
 $as_echo "$enable_rubyinterp" >&6; }
 if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     as_fn_error $? "cannot use Ruby with tiny or small features" "$LINENO" 5
   fi
 
@@ -7750,7 +7771,7 @@ else
 fi
 
 if test "$enable_netbeans" = "yes"; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use NetBeans with tiny or small features" >&5
 $as_echo "cannot use NetBeans with tiny or small features" >&6; }
     enable_netbeans="no"
@@ -7773,7 +7794,7 @@ else
 fi
 
 if test "$enable_channel" = "yes"; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use channels with tiny or small features" >&5
 $as_echo "cannot use channels with tiny or small features" >&6; }
     enable_channel="no"
@@ -8077,7 +8098,7 @@ else
 fi
 
 if test "$enable_terminal" = "yes" || test "$enable_terminal" = "auto" -a "x$features" = "xhuge" ; then
-  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+  if test "$has_eval" = "no"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use terminal emulator with tiny or small features" >&5
 $as_echo "cannot use terminal emulator with tiny or small features" >&6; }
     enable_terminal="no"
@@ -13036,8 +13057,14 @@ $as_echo "Defaulting to no" >&6; }
     enable_canberra="no"
   fi
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_canberra" >&5
+  if test "$enable_canberra" = "yes" -a "$has_eval" = "no"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use sound with tiny or small features" >&5
+$as_echo "cannot use sound with tiny or small features" >&6; }
+    enable_canberra="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_canberra" >&5
 $as_echo "$enable_canberra" >&6; }
+  fi
 fi
 if test "$enable_canberra" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
@@ -13052,7 +13079,7 @@ if test "$enable_canberra" = "yes"; then
 $as_echo_n "checking for libcanberra... " >&6; }
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
-  if `echo "$CFLAGS" | grep -v "$canberra_cflags" >/dev/null`; then
+  if `echo "$CFLAGS" | grep -v "$canberra_cflags" 2>/dev/null`; then
     CFLAGS="$CFLAGS $canberra_cflags"
   fi
   LIBS="$LIBS $canberra_lib"

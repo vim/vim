@@ -339,7 +339,7 @@ ex_language(exarg_T *eap)
 # endif
 	}
 	if (loc == NULL)
-	    semsg(_("E197: Cannot set language to \"%s\""), name);
+	    semsg(_(e_cannot_set_language_to_str), name);
 	else
 	{
 # ifdef HAVE_NL_MSG_CAT_CNTR

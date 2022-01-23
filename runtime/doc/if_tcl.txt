@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 8.2.  Last change: 2021 May 27
+*if_tcl.txt*    For Vim version 8.2.  Last change: 2022 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -16,9 +16,9 @@ The Tcl Interface to Vim				*tcl* *Tcl* *TCL*
 8. Examples				|tcl-examples|
 9. Dynamic loading			|tcl-dynamic|
 
-*E280*
 {only available when Vim was compiled with the |+tcl| feature}
 
+							*E280*
 WARNING: There are probably still some bugs.  Please send bug reports,
 comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 

@@ -1611,7 +1611,7 @@ read_viminfo_register(vir_T *virp, int force)
 
     if (!ASCII_ISALNUM(*str) && *str != '-')
     {
-	if (viminfo_error("E577: ", _("Illegal register name"), virp->vir_line))
+	if (viminfo_error("E577: ", _(e_illegal_register_name), virp->vir_line))
 	    return TRUE;	// too many errors, pretend end-of-file
 	do_it = FALSE;
     }
@@ -1891,7 +1891,7 @@ write_viminfo_registers(FILE *fp)
 		type = (char_u *)"BLOCK";
 		break;
 	    default:
-		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
+		semsg(_(e_unknown_register_type_nr), y_ptr->y_type);
 		type = (char_u *)"LINE";
 		break;
 	}
@@ -2272,7 +2272,7 @@ copy_viminfo_marks(
 	{
 	    if (line[0] != '\n' && line[0] != '\r' && line[0] != '#')
 	    {
-		if (viminfo_error("E576: ", _("Missing '>'"), line))
+		if (viminfo_error("E576: ", _(e_nonr_missing_gt), line))
 		    break;	// too many errors, return now
 	    }
 	    eof = vim_fgets(line, LSIZE, virp->vir_fd);
@@ -2730,7 +2730,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
     {
 	// Continuation line of an unrecognized item.
 	if (writing)
-	    ga_add_string(&virp->vir_barlines, virp->vir_line);
+	    ga_copy_string(&virp->vir_barlines, virp->vir_line);
     }
     else
     {
@@ -2769,7 +2769,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 	    default:
 		// copy unrecognized line (for future use)
 		if (writing)
-		    ga_add_string(&virp->vir_barlines, virp->vir_line);
+		    ga_copy_string(&virp->vir_barlines, virp->vir_line);
 	}
 	for (i = 0; i < values.ga_len; ++i)
 	{
@@ -2876,7 +2876,7 @@ read_viminfo_up_to_marks(
 		    eof = viminfo_readline(virp);
 		break;
 	    default:
-		if (viminfo_error("E575: ", _("Illegal starting char"),
+		if (viminfo_error("E575: ", _(e_illegal_starting_char),
 			    virp->vir_line))
 		    eof = TRUE;
 		else
@@ -2912,7 +2912,7 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	return;
     vir.vir_fd = fp_in;
     vir.vir_conv.vc_type = CONV_NONE;
-    ga_init2(&vir.vir_barlines, (int)sizeof(char_u *), 100);
+    ga_init2(&vir.vir_barlines, sizeof(char_u *), 100);
     vir.vir_version = -1;
 
     if (fp_in != NULL)
@@ -3220,8 +3220,7 @@ write_viminfo(char_u *file, int forceit)
 		{
 		    // They all exist?  Must be something wrong! Don't write
 		    // the viminfo file then.
-		    semsg(_("E929: Too many viminfo temp files, like %s!"),
-								     tempname);
+		    semsg(_(e_too_many_viminfo_temp_files_like_str), tempname);
 		    break;
 		}
 		*wp = next_char;
@@ -3293,7 +3292,7 @@ write_viminfo(char_u *file, int forceit)
 	    if (vim_rename(tempname, fname) == -1)
 	    {
 		++viminfo_errcnt;
-		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
+		semsg(_(e_cant_rename_viminfo_file_to_str), fname);
 	    }
 # ifdef MSWIN
 	    // If the viminfo file was hidden then also hide the new file.
@@ -3326,7 +3325,7 @@ ex_viminfo(
     {
 	if (read_viminfo(eap->arg, VIF_WANT_INFO | VIF_WANT_MARKS
 				  | (eap->forceit ? VIF_FORCEIT : 0)) == FAIL)
-	    emsg(_("E195: Cannot open viminfo file for reading"));
+	    emsg(_(e_cannot_open_viminfo_file_for_reading));
     }
     else
 	write_viminfo(eap->arg, eap->forceit);

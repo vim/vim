@@ -181,6 +181,8 @@ msg_attr_keep(
 			    < (int)(Rows - cmdline_row - 1) * Columns + sc_col)
 	set_keep_msg((char_u *)s, 0);
 
+    need_fileinfo = FALSE;
+
     vim_free(buf);
     --entered;
     return retval;
@@ -587,7 +589,7 @@ ignore_error_for_testing(char_u *error)
     if (STRCMP("RESET", error) == 0)
 	ga_clear_strings(&ignore_error_list);
     else
-	ga_add_string(&ignore_error_list, error);
+	ga_copy_string(&ignore_error_list, error);
 }
 
     static int
@@ -826,7 +828,7 @@ iemsg(char *s)
     if (!emsg_not_now())
     {
 	emsg_core((char_u *)s);
-#ifdef ABORT_ON_INTERNAL_ERROR
+#if defined(ABORT_ON_INTERNAL_ERROR) && defined(FEAT_EVAL)
 	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
 	abort();
 #endif
@@ -873,9 +875,10 @@ siemsg(const char *s, ...)
     void
 internal_error(char *where)
 {
-    siemsg(_(e_intern2), where);
+    siemsg(_(e_internal_error_str), where);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Like internal_error() but do not call abort(), to avoid tests using
  * test_unknown() and test_void() causing Vim to exit.
@@ -883,17 +886,19 @@ internal_error(char *where)
     void
 internal_error_no_abort(char *where)
 {
-     semsg(_(e_intern2), where);
+     semsg(_(e_internal_error_str), where);
 }
+#endif
 
 // emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes.
 
     void
 emsg_invreg(int name)
 {
-    semsg(_("E354: Invalid register name: '%s'"), transchar(name));
+    semsg(_(e_invalid_register_name_str), transchar(name));
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Give an error message which contains %s for "name[len]".
  */
@@ -905,6 +910,7 @@ emsg_namelen(char *msg, char_u *name, int len)
     semsg(msg, copy == NULL ? "NULL" : (char *)copy);
     vim_free(copy);
 }
+#endif
 
 /*
  * Like msg(), but truncate to a single line if p_shm contains 't', or when
@@ -1051,7 +1057,7 @@ ex_messages(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1416,7 +1422,10 @@ msg_start(void)
     int		did_return = FALSE;
 
     if (!msg_silent)
+    {
 	VIM_CLEAR(keep_msg);
+	need_fileinfo = FALSE;
+    }
 
 #ifdef FEAT_EVAL
     if (need_clr_eos)
@@ -2159,6 +2168,8 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 	msg_puts_printf((char_u *)str, maxlen);
     else
 	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
+
+    need_fileinfo = FALSE;
 }
 
 /*
@@ -3625,7 +3636,7 @@ verbose_open(void)
 	verbose_fd = mch_fopen((char *)p_vfile, "a");
 	if (verbose_fd == NULL)
 	{
-	    semsg(_(e_notopen), p_vfile);
+	    semsg(_(e_cant_open_file_str), p_vfile);
 	    return FAIL;
 	}
     }

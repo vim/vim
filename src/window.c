@@ -260,7 +260,7 @@ newwindow:
 		    if (wp->w_p_pvw)
 			break;
 		if (wp == NULL)
-		    emsg(_("E441: There is no preview window"));
+		    emsg(_(e_there_is_no_preview_window));
 		else
 		    win_goto(wp);
 		break;
@@ -774,7 +774,7 @@ check_split_disallowed()
 {
     if (split_disallowed > 0)
     {
-	emsg(_("E242: Can't split a window while closing another"));
+	emsg(_(e_cant_split_window_while_closing_another));
 	return FAIL;
     }
     if (curwin->w_buffer->b_locked_split)
@@ -817,7 +817,7 @@ win_split(int size, int flags)
     flags |= cmdmod.cmod_split;
     if ((flags & WSP_TOP) && (flags & WSP_BOT))
     {
-	emsg(_("E442: Can't split topleft and botright at the same time"));
+	emsg(_(e_cant_split_topleft_and_botright_at_the_same_time));
 	return FAIL;
     }
 
@@ -1691,6 +1691,11 @@ win_exchange(long Prenum)
 
     (void)win_comp_pos();		// recompute window positions
 
+    if (wp->w_buffer != curbuf)
+	reset_VIsual_and_resel();
+    else if (VIsual_active)
+	wp->w_cursor = curwin->w_cursor;
+
     win_enter(wp, TRUE);
     redraw_all_later(NOT_VALID);
 }
@@ -1721,7 +1726,7 @@ win_rotate(int upwards, int count)
     FOR_ALL_FRAMES(frp, curwin->w_frame->fr_parent->fr_child)
 	if (frp->fr_win == NULL)
 	{
-	    emsg(_("E443: Cannot rotate when another window is split"));
+	    emsg(_(e_cannot_rotate_when_another_window_is_split));
 	    return;
 	}
 
@@ -2487,7 +2492,7 @@ win_close(win_T *win, int free_buf)
 
     if (last_window())
     {
-	emsg(_("E444: Cannot close last window"));
+	emsg(_(e_cannot_close_last_window));
 	return FAIL;
     }
 
@@ -2496,12 +2501,12 @@ win_close(win_T *win, int free_buf)
 	return FAIL; // window is already being closed
     if (win_unlisted(win))
     {
-	emsg(_(e_autocmd_close));
+	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
     {
-	emsg(_("E814: Cannot close window, only autocmd window would remain"));
+	emsg(_(e_cannot_close_window_only_autocmd_window_would_remain));
 	return FAIL;
     }
 
@@ -3663,7 +3668,7 @@ close_others(
     }
 
     if (message && !ONE_WINDOW)
-	emsg(_("E445: Other window contains changes"));
+	emsg(_(e_other_window_contains_changes));
 }
 
     static void
@@ -4485,7 +4490,7 @@ win_goto(win_T *wp)
 	return;
     if (popup_is_popup(wp))
     {
-	emsg(_("E366: Not allowed to enter a popup window"));
+	emsg(_(e_not_allowed_to_enter_popup_window));
 	return;
     }
 #endif
@@ -4735,6 +4740,54 @@ win_enter(win_T *wp, int undo_sync)
 }
 
 /*
+ * Used after making another window the current one: change directory if
+ * needed.
+ */
+    static void
+fix_current_dir(void)
+{
+#ifdef FEAT_AUTOCHDIR
+    if (p_acd)
+	do_autochdir();
+    else
+#endif
+    if (curwin->w_localdir != NULL || curtab->tp_localdir != NULL)
+    {
+	char_u	*dirname;
+
+	// Window or tab has a local directory: Save current directory as
+	// global directory (unless that was done already) and change to the
+	// local directory.
+	if (globaldir == NULL)
+	{
+	    char_u	cwd[MAXPATHL];
+
+	    if (mch_dirname(cwd, MAXPATHL) == OK)
+		globaldir = vim_strsave(cwd);
+	}
+	if (curwin->w_localdir != NULL)
+	    dirname = curwin->w_localdir;
+	else
+	    dirname = curtab->tp_localdir;
+
+	if (mch_chdir((char *)dirname) == 0)
+	{
+	    last_chdir_reason = NULL;
+	    shorten_fnames(TRUE);
+	}
+    }
+    else if (globaldir != NULL)
+    {
+	// Window doesn't have a local directory and we are not in the global
+	// directory: Change to the global directory.
+	vim_ignored = mch_chdir((char *)globaldir);
+	VIM_CLEAR(globaldir);
+	last_chdir_reason = NULL;
+	shorten_fnames(TRUE);
+    }
+}
+
+/*
  * Make window "wp" the current window.
  * Can be called with "flags" containing WEE_CURWIN_INVALID, which means that
  * curwin has just been closed and isn't valid.
@@ -4856,54 +4909,6 @@ win_enter_ext(win_T *wp, int flags)
     DO_AUTOCHDIR;
 
     return did_decrement;
-}
-
-/*
- * Used after making another window the current one: change directory if
- * needed.
- */
-    void
-fix_current_dir(void)
-{
-#ifdef FEAT_AUTOCHDIR
-    if (p_acd)
-	do_autochdir();
-    else
-#endif
-    if (curwin->w_localdir != NULL || curtab->tp_localdir != NULL)
-    {
-	char_u	*dirname;
-
-	// Window or tab has a local directory: Save current directory as
-	// global directory (unless that was done already) and change to the
-	// local directory.
-	if (globaldir == NULL)
-	{
-	    char_u	cwd[MAXPATHL];
-
-	    if (mch_dirname(cwd, MAXPATHL) == OK)
-		globaldir = vim_strsave(cwd);
-	}
-	if (curwin->w_localdir != NULL)
-	    dirname = curwin->w_localdir;
-	else
-	    dirname = curtab->tp_localdir;
-
-	if (mch_chdir((char *)dirname) == 0)
-	{
-	    last_chdir_reason = NULL;
-	    shorten_fnames(TRUE);
-	}
-    }
-    else if (globaldir != NULL)
-    {
-	// Window doesn't have a local directory and we are not in the global
-	// directory: Change to the global directory.
-	vim_ignored = mch_chdir((char *)globaldir);
-	VIM_CLEAR(globaldir);
-	last_chdir_reason = NULL;
-	shorten_fnames(TRUE);
-    }
 }
 
 /*
@@ -5332,7 +5337,7 @@ frame_remove(frame_T *frp)
 win_alloc_lines(win_T *wp)
 {
     wp->w_lines_valid = 0;
-    wp->w_lines = ALLOC_CLEAR_MULT(wline_T, Rows );
+    wp->w_lines = ALLOC_CLEAR_MULT(wline_T, Rows);
     if (wp->w_lines == NULL)
 	return FAIL;
     return OK;
@@ -5413,7 +5418,7 @@ win_size_save(garray_T *gap)
 {
     win_T	*wp;
 
-    ga_init2(gap, (int)sizeof(int), 1);
+    ga_init2(gap, sizeof(int), 1);
     if (ga_grow(gap, win_count() * 2 + 1) == OK)
     {
 	// first entry is value of 'lines'
@@ -6990,7 +6995,7 @@ check_colorcolumn(win_T *wp)
 	    col = (*s == '-') ? -1 : 1;
 	    ++s;
 	    if (!VIM_ISDIGIT(*s))
-		return e_invarg;
+		return e_invalid_argument;
 	    col = col * getdigits(&s);
 	    if (wp->w_buffer->b_p_tw == 0)
 		goto skip;  // 'textwidth' not set, skip this item
@@ -7001,15 +7006,15 @@ check_colorcolumn(win_T *wp)
 	else if (VIM_ISDIGIT(*s))
 	    col = getdigits(&s);
 	else
-	    return e_invarg;
+	    return e_invalid_argument;
 	color_cols[count++] = col - 1;  // 1-based to 0-based
 skip:
 	if (*s == NUL)
 	    break;
 	if (*s != ',')
-	    return e_invarg;
+	    return e_invalid_argument;
 	if (*++s == NUL)
-	    return e_invarg;  // illegal trailing comma as in "set cc=80,"
+	    return e_invalid_argument;  // illegal trailing comma as in "set cc=80,"
     }
 
     vim_free(wp->w_p_cc_cols);

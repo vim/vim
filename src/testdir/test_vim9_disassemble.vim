@@ -455,6 +455,7 @@ def Test_disassemble_list_assign()
         '\d\+ CHECKTYPE string stack\[-1\] arg 2\_s*' ..
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
+        '\d\+ SETTYPE list<any>\_s*' ..
         '\d\+ STORE $2\_s*' ..
         '\d\+ RETURN void',
         res)
@@ -2431,6 +2432,43 @@ def Test_debug_elseif()
           'endif\_s*' ..
           '19 DEBUG line 6-6 varcount 1\_s*' ..
           '20 RETURN void*',
+        res)
+enddef
+
+def s:DebugFor()
+  echo "hello"
+  for a in [0]
+    echo a
+  endfor
+enddef
+
+def Test_debug_for()
+  var res = execute('disass debug s:DebugFor')
+  assert_match('<SNR>\d*_DebugFor\_s*' ..
+          'echo "hello"\_s*' ..
+          '0 DEBUG line 1-1 varcount 0\_s*' ..
+          '1 PUSHS "hello"\_s*' ..
+          '2 ECHO 1\_s*' ..
+
+          'for a in \[0\]\_s*' ..
+          '3 DEBUG line 2-2 varcount 0\_s*' ..
+          '4 STORE -1 in $0\_s*' ..
+          '5 PUSHNR 0\_s*' ..
+          '6 NEWLIST size 1\_s*' ..
+          '7 DEBUG line 2-2 varcount 2\_s*' ..
+          '8 FOR $0 -> 15\_s*' ..
+          '9 STORE $1\_s*' ..
+
+          'echo a\_s*' ..
+          '10 DEBUG line 3-3 varcount 2\_s*' ..
+          '11 LOAD $1\_s*' ..
+          '12 ECHO 1\_s*' ..
+
+          'endfor\_s*' ..
+          '13 DEBUG line 4-4 varcount 2\_s*' ..
+          '14 JUMP -> 7\_s*' ..
+          '15 DROP\_s*' ..
+          '16 RETURN void*',
         res)
 enddef
 

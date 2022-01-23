@@ -502,7 +502,11 @@ static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 #  endif
 # endif
 # if RUBY_VERSION >= 31
-static void (*dll_rb_unexpected_type) (VALUE, int) ATTRIBUTE_NORETURN;
+#  ifdef _MSC_VER
+static void (*dll_rb_unexpected_type) (VALUE, int);
+#  else
+NORETURN(static void (*dll_rb_unexpected_type) (VALUE, int));
+#  endif
 # endif
 # if RUBY_VERSION >= 18
 static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
@@ -845,7 +849,7 @@ ruby_runtime_link_init(char *libname, int verbose)
     if (!hinstRuby)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname, load_dll_error());
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
 
@@ -857,7 +861,7 @@ ruby_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstRuby);
 	    hinstRuby = NULL;
 	    if (verbose)
-		semsg(_(e_loadfunc), ruby_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), ruby_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -978,7 +982,7 @@ ex_rubydo(exarg_T *eap)
 	    {
 		if (TYPE(line) != T_STRING)
 		{
-		    emsg(_("E265: $_ must be an instance of String"));
+		    emsg(_(e_dollar_must_be_an_instance_of_string));
 		    return;
 		}
 		ml_replace(i, (char_u *) StringValuePtr(line), 1);
@@ -1077,7 +1081,7 @@ ensure_ruby_initialized(void)
 	}
 	else
 	{
-	    emsg(_("E266: Sorry, this command is disabled, the Ruby library could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_the_ruby_library_could_not_be_loaded));
 	    return 0;
 	}
 #endif
@@ -1112,19 +1116,19 @@ error_print(int state)
     switch (state)
     {
 	case TAG_RETURN:
-	    emsg(_("E267: unexpected return"));
+	    emsg(_(e_unexpected_return));
 	    break;
 	case TAG_NEXT:
-	    emsg(_("E268: unexpected next"));
+	    emsg(_(e_unexpected_next));
 	    break;
 	case TAG_BREAK:
-	    emsg(_("E269: unexpected break"));
+	    emsg(_(e_unexpected_break));
 	    break;
 	case TAG_REDO:
-	    emsg(_("E270: unexpected redo"));
+	    emsg(_(e_unexpected_redo));
 	    break;
 	case TAG_RETRY:
-	    emsg(_("E271: retry outside of rescue clause"));
+	    emsg(_(e_retry_outside_of_rescue_clause));
 	    break;
 	case TAG_RAISE:
 	case TAG_FATAL:
@@ -1137,7 +1141,7 @@ error_print(int state)
 	    einfo = rb_obj_as_string(error);
 	    if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0)
 	    {
-		emsg(_("E272: unhandled exception"));
+		emsg(_(e_unhandled_exception));
 	    }
 	    else
 	    {
@@ -1164,7 +1168,7 @@ error_print(int state)
 #endif
 	    break;
 	default:
-	    vim_snprintf(buff, BUFSIZ, _("E273: unknown longjmp status %d"), state);
+	    vim_snprintf(buff, BUFSIZ, _(e_unknown_longjmp_status_nr), state);
 	    emsg(buff);
 	    break;
     }

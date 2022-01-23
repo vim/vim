@@ -1305,12 +1305,12 @@ check_clipboard_option(void)
 	    p += 8;
 	    new_exclude_prog = vim_regcomp(p, RE_MAGIC);
 	    if (new_exclude_prog == NULL)
-		errmsg = e_invarg;
+		errmsg = e_invalid_argument;
 	    break;
 	}
 	else
 	{
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
 	    break;
 	}
 	if (*p == ',')
@@ -1540,6 +1540,7 @@ clip_x11_notify_cb(Widget w UNUSED, Atom *sel_atom UNUSED, Atom *target UNUSED)
 /*
  * Property callback to get a timestamp for XtOwnSelection.
  */
+# if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
     static void
 clip_x11_timestamp_cb(
     Widget	w,
@@ -1592,6 +1593,7 @@ x11_setup_selection(Widget w)
     XtAddEventHandler(w, PropertyChangeMask, False,
 	    /*(XtEventHandler)*/clip_x11_timestamp_cb, (XtPointer)NULL);
 }
+# endif
 
     static void
 clip_x11_request_selection_cb(

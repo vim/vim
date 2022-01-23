@@ -807,12 +807,6 @@ f_getbufline(typval_T *argvars, typval_T *rettv)
     get_buffer_lines(buf, lnum, end, TRUE, rettv);
 }
 
-    type_T *
-ret_f_getline(int argcount, type_T **argtypes UNUSED)
-{
-    return argcount == 1 ? &t_string : &t_list_string;
-}
-
 /*
  * "getline(lnum, [end])" function
  */
@@ -870,9 +864,7 @@ f_setline(typval_T *argvars, typval_T *rettv)
 }
 #endif  // FEAT_EVAL
 
-#if defined(FEAT_JOB_CHANNEL) \
-	|| defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
-	|| defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
 /*
  * Make "buf" the current buffer.  restore_buffer() MUST be called to undo.
  * No autocommands will be executed.  Use aucmd_prepbuf() if there are any.
@@ -936,31 +928,29 @@ find_win_for_buf(
  */
     void
 switch_to_win_for_buf(
-    buf_T	*buf,
-    win_T	**save_curwinp,
-    tabpage_T	**save_curtabp,
-    bufref_T	*save_curbuf)
+	buf_T	    *buf,
+	switchwin_T *switchwin,
+	bufref_T    *save_curbuf)
 {
     win_T	*wp;
     tabpage_T	*tp;
 
     if (find_win_for_buf(buf, &wp, &tp) == FAIL)
 	switch_buffer(save_curbuf, buf);
-    else if (switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
+    else if (switch_win(switchwin, wp, tp, TRUE) == FAIL)
     {
-	restore_win(*save_curwinp, *save_curtabp, TRUE);
+	restore_win(switchwin, TRUE);
 	switch_buffer(save_curbuf, buf);
     }
 }
 
     void
 restore_win_for_buf(
-    win_T	*save_curwin,
-    tabpage_T	*save_curtab,
-    bufref_T	*save_curbuf)
+	switchwin_T *switchwin,
+	bufref_T    *save_curbuf)
 {
     if (save_curbuf->br_buf == NULL)
-	restore_win(save_curwin, save_curtab, TRUE);
+	restore_win(switchwin, TRUE);
     else
 	restore_buffer(save_curbuf);
 }

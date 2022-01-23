@@ -89,7 +89,7 @@ static void	nv_window(cmdarg_T *cap);
 static void	nv_suspend(cmdarg_T *cap);
 static void	nv_g_cmd(cmdarg_T *cap);
 static void	nv_dot(cmdarg_T *cap);
-static void	nv_redo(cmdarg_T *cap);
+static void	nv_redo_or_register(cmdarg_T *cap);
 static void	nv_Undo(cmdarg_T *cap);
 static void	nv_tilde(cmdarg_T *cap);
 static void	nv_operator(cmdarg_T *cap);
@@ -127,8 +127,6 @@ static void	nv_nbcmd(cmdarg_T *cap);
 static void	nv_drop(cmdarg_T *cap);
 #endif
 static void	nv_cursorhold(cmdarg_T *cap);
-
-static char *e_noident = N_("E349: No identifier under cursor");
 
 /*
  * Function to be called for a Normal or Visual mode command.
@@ -190,7 +188,7 @@ static const struct nv_cmd
     {Ctrl_O,	nv_ctrlo,	0,			0},
     {Ctrl_P,	nv_up,		NV_STS,			FALSE},
     {Ctrl_Q,	nv_visual,	0,			FALSE},
-    {Ctrl_R,	nv_redo,	0,			0},
+    {Ctrl_R,	nv_redo_or_register, 0,			0},
     {Ctrl_S,	nv_ignore,	0,			0},
     {Ctrl_T,	nv_tagpop,	NV_NCW,			0},
     {Ctrl_U,	nv_halfpage,	0,			0},
@@ -375,6 +373,7 @@ static const struct nv_cmd
     {K_CURSORHOLD, nv_cursorhold, NV_KEEPREG,		0},
     {K_PS,	nv_edit,	0,			0},
     {K_COMMAND,	nv_colon,	0,			0},
+    {K_SCRIPT_COMMAND, nv_colon, 0,			0},
 };
 
 // Number of commands in nv_cmds[].
@@ -594,12 +593,19 @@ normal_cmd(
 	    && VIsual_select
 	    && (vim_isprintc(c) || c == NL || c == CAR || c == K_KENTER))
     {
+	int len;
+
 	// Fake a "c"hange command.  When "restart_edit" is set (e.g., because
 	// 'insertmode' is set) fake a "d"elete command, Insert mode will
 	// restart automatically.
 	// Insert the typed character in the typeahead buffer, so that it can
 	// be mapped in Insert mode.  Required for ":lmap" to work.
-	ins_char_typebuf(vgetc_char, vgetc_mod_mask);
+	len = ins_char_typebuf(vgetc_char, vgetc_mod_mask);
+
+	// When recording the character will be recorded again, remove the
+	// previously recording.
+	ungetchars(len);
+
 	if (restart_edit != 0)
 	    c = 'd';
 	else
@@ -1297,6 +1303,7 @@ normal_end:
 	    trigger_modechanged();
 	    showmode();
 	    restart_VIsual_select = 0;
+	    VIsual_select_reg = 0;
 	}
 	if (restart_edit != 0 && !VIsual_active && old_mapped_len == 0)
 	    (void)edit(restart_edit, FALSE, 1L);
@@ -1645,9 +1652,9 @@ find_ident_at_pos(
 	if ((find_type & FIND_NOERROR) == 0)
 	{
 	    if (find_type & FIND_STRING)
-		emsg(_("E348: No string under cursor"));
+		emsg(_(e_no_string_under_cursor));
 	    else
-		emsg(_(e_noident));
+		emsg(_(e_no_identifier_under_cursor));
 	}
 	return 0;
     }
@@ -3082,7 +3089,7 @@ dozet:
 		    deleteFold((linenr_T)1, curbuf->b_ml.ml_line_count,
 								 TRUE, FALSE);
 		else
-		    emsg(_("E352: Cannot erase folds with current 'foldmethod'"));
+		    emsg(_(e_cannot_erase_folds_with_current_foldmethod));
 		break;
 
 		// "zn": fold none: reset 'foldenable'
@@ -3424,7 +3431,9 @@ nv_colon(cmdarg_T *cap)
 {
     int	old_p_im;
     int	cmd_result;
-    int	is_cmdkey = cap->cmdchar == K_COMMAND;
+    int	is_cmdkey = cap->cmdchar == K_COMMAND
+					   || cap->cmdchar == K_SCRIPT_COMMAND;
+    int	flags;
 
     if (VIsual_active && !is_cmdkey)
 	nv_operator(cap);
@@ -3454,8 +3463,11 @@ nv_colon(cmdarg_T *cap)
 	old_p_im = p_im;
 
 	// get a command line and execute it
-	cmd_result = do_cmdline(NULL, is_cmdkey ? getcmdkeycmd : getexline, NULL,
-			    cap->oap->op_type != OP_NOP ? DOCMD_KEEPLINE : 0);
+	flags = cap->oap->op_type != OP_NOP ? DOCMD_KEEPLINE : 0;
+	if (is_cmdkey)
+	    cmd_result = do_cmdkey_command(cap->cmdchar, flags);
+	else
+	    cmd_result = do_cmdline(NULL, getexline, NULL, flags);
 
 	// If 'insertmode' changed, enter or exit Insert mode
 	if (p_im != old_p_im)
@@ -3683,7 +3695,7 @@ nv_ident(cmdarg_T *cap)
 						 || STRCMP(kp, ":help") == 0);
     if (kp_help && *skipwhite(ptr) == NUL)
     {
-	emsg(_(e_noident));	 // found white space only
+	emsg(_(e_no_identifier_under_cursor));	 // found white space only
 	return;
     }
     kp_ex = (*kp == ':');
@@ -3734,7 +3746,8 @@ nv_ident(cmdarg_T *cap)
 		}
 		if (n == 0)
 		{
-		    emsg(_(e_noident));	 // found dashes only
+		    // found dashes only
+		    emsg(_(e_no_identifier_under_cursor));
 		    vim_free(buf);
 		    return;
 		}
@@ -5621,11 +5634,11 @@ nv_pcmark(cmdarg_T *cap)
 	else if (cap->cmdchar == 'g')
 	{
 	    if (curbuf->b_changelistlen == 0)
-		emsg(_("E664: changelist is empty"));
+		emsg(_(e_changelist_is_empty));
 	    else if (cap->count1 < 0)
-		emsg(_("E662: At start of changelist"));
+		emsg(_(e_at_start_of_changelist));
 	    else
-		emsg(_("E663: At end of changelist"));
+		emsg(_(e_at_end_of_changelist));
 	}
 	else
 	    clearopbeep(cap->oap);
@@ -5877,31 +5890,275 @@ nv_suspend(cmdarg_T *cap)
 }
 
 /*
+ * "gv": Reselect the previous Visual area.  If Visual already active,
+ *       exchange previous and current Visual area.
+ */
+    static void
+nv_gv_cmd(cmdarg_T *cap)
+{
+    pos_T	tpos;
+    int		i;
+
+    if (checkclearop(cap->oap))
+	return;
+
+    if (curbuf->b_visual.vi_start.lnum == 0
+	    || curbuf->b_visual.vi_start.lnum > curbuf->b_ml.ml_line_count
+	    || curbuf->b_visual.vi_end.lnum == 0)
+    {
+	beep_flush();
+	return;
+    }
+
+    // set w_cursor to the start of the Visual area, tpos to the end
+    if (VIsual_active)
+    {
+	i = VIsual_mode;
+	VIsual_mode = curbuf->b_visual.vi_mode;
+	curbuf->b_visual.vi_mode = i;
+# ifdef FEAT_EVAL
+	curbuf->b_visual_mode_eval = i;
+# endif
+	i = curwin->w_curswant;
+	curwin->w_curswant = curbuf->b_visual.vi_curswant;
+	curbuf->b_visual.vi_curswant = i;
+
+	tpos = curbuf->b_visual.vi_end;
+	curbuf->b_visual.vi_end = curwin->w_cursor;
+	curwin->w_cursor = curbuf->b_visual.vi_start;
+	curbuf->b_visual.vi_start = VIsual;
+    }
+    else
+    {
+	VIsual_mode = curbuf->b_visual.vi_mode;
+	curwin->w_curswant = curbuf->b_visual.vi_curswant;
+	tpos = curbuf->b_visual.vi_end;
+	curwin->w_cursor = curbuf->b_visual.vi_start;
+    }
+
+    VIsual_active = TRUE;
+    VIsual_reselect = TRUE;
+
+    // Set Visual to the start and w_cursor to the end of the Visual
+    // area.  Make sure they are on an existing character.
+    check_cursor();
+    VIsual = curwin->w_cursor;
+    curwin->w_cursor = tpos;
+    check_cursor();
+    update_topline();
+
+    // When called from normal "g" command: start Select mode when
+    // 'selectmode' contains "cmd".  When called for K_SELECT, always
+    // start Select mode.
+    if (cap->arg)
+    {
+	VIsual_select = TRUE;
+	VIsual_select_reg = 0;
+    }
+    else
+	may_start_select('c');
+    setmouse();
+#ifdef FEAT_CLIPBOARD
+    // Make sure the clipboard gets updated.  Needed because start and
+    // end are still the same, and the selection needs to be owned
+    clip_star.vmode = NUL;
+#endif
+    redraw_curbuf_later(INVERTED);
+    showmode();
+}
+
+/*
+ * "g0", "g^" : Like "0" and "^" but for screen lines.
+ * "gm": middle of "g0" and "g$".
+ */
+    static void
+nv_g_home_m_cmd(cmdarg_T *cap)
+{
+    int		i;
+    int		flag = FALSE;
+
+    if (cap->nchar == '^')
+	flag = TRUE;
+
+    cap->oap->motion_type = MCHAR;
+    cap->oap->inclusive = FALSE;
+    if (curwin->w_p_wrap && curwin->w_width != 0)
+    {
+	int		width1 = curwin->w_width - curwin_col_off();
+	int		width2 = width1 + curwin_col_off2();
+
+	validate_virtcol();
+	i = 0;
+	if (curwin->w_virtcol >= (colnr_T)width1 && width2 > 0)
+	    i = (curwin->w_virtcol - width1) / width2 * width2 + width1;
+    }
+    else
+	i = curwin->w_leftcol;
+    // Go to the middle of the screen line.  When 'number' or
+    // 'relativenumber' is on and lines are wrapping the middle can be more
+    // to the left.
+    if (cap->nchar == 'm')
+	i += (curwin->w_width - curwin_col_off()
+		+ ((curwin->w_p_wrap && i > 0)
+		    ? curwin_col_off2() : 0)) / 2;
+    coladvance((colnr_T)i);
+    if (flag)
+    {
+	do
+	    i = gchar_cursor();
+	while (VIM_ISWHITE(i) && oneright() == OK);
+	curwin->w_valid &= ~VALID_WCOL;
+    }
+    curwin->w_set_curswant = TRUE;
+}
+
+/*
+ * "g_": to the last non-blank character in the line or <count> lines
+ *       downward.
+ */
+    static void
+nv_g_underscore_cmd(cmdarg_T *cap)
+{
+    char_u  *ptr;
+
+    cap->oap->motion_type = MCHAR;
+    cap->oap->inclusive = TRUE;
+    curwin->w_curswant = MAXCOL;
+    if (cursor_down((long)(cap->count1 - 1),
+					cap->oap->op_type == OP_NOP) == FAIL)
+    {
+	clearopbeep(cap->oap);
+	return;
+    }
+
+    ptr = ml_get_curline();
+
+    // In Visual mode we may end up after the line.
+    if (curwin->w_cursor.col > 0 && ptr[curwin->w_cursor.col] == NUL)
+	--curwin->w_cursor.col;
+
+    // Decrease the cursor column until it's on a non-blank.
+    while (curwin->w_cursor.col > 0
+	    && VIM_ISWHITE(ptr[curwin->w_cursor.col]))
+	--curwin->w_cursor.col;
+    curwin->w_set_curswant = TRUE;
+    adjust_for_sel(cap);
+}
+
+/*
+ * "g$" : Like "$" but for screen lines.
+ */
+    static void
+nv_g_dollar_cmd(cmdarg_T *cap)
+{
+    oparg_T	*oap = cap->oap;
+    int		i;
+    int		col_off = curwin_col_off();
+
+    oap->motion_type = MCHAR;
+    oap->inclusive = TRUE;
+    if (curwin->w_p_wrap && curwin->w_width != 0)
+    {
+	curwin->w_curswant = MAXCOL;    // so we stay at the end
+	if (cap->count1 == 1)
+	{
+	    int		width1 = curwin->w_width - col_off;
+	    int		width2 = width1 + curwin_col_off2();
+
+	    validate_virtcol();
+	    i = width1 - 1;
+	    if (curwin->w_virtcol >= (colnr_T)width1)
+		i += ((curwin->w_virtcol - width1) / width2 + 1)
+		    * width2;
+	    coladvance((colnr_T)i);
+
+	    // Make sure we stick in this column.
+	    validate_virtcol();
+	    curwin->w_curswant = curwin->w_virtcol;
+	    curwin->w_set_curswant = FALSE;
+	    if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)
+	    {
+		// Check for landing on a character that got split at
+		// the end of the line.  We do not want to advance to
+		// the next screen line.
+		if (curwin->w_virtcol > (colnr_T)i)
+		    --curwin->w_cursor.col;
+	    }
+	}
+	else if (nv_screengo(oap, FORWARD, cap->count1 - 1) == FAIL)
+	    clearopbeep(oap);
+    }
+    else
+    {
+	if (cap->count1 > 1)
+	    // if it fails, let the cursor still move to the last char
+	    (void)cursor_down(cap->count1 - 1, FALSE);
+
+	i = curwin->w_leftcol + curwin->w_width - col_off - 1;
+	coladvance((colnr_T)i);
+
+	// if the character doesn't fit move one back
+	if (curwin->w_cursor.col > 0
+		&& (*mb_ptr2cells)(ml_get_cursor()) > 1)
+	{
+	    colnr_T vcol;
+
+	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &vcol);
+	    if (vcol >= curwin->w_leftcol + curwin->w_width - col_off)
+		--curwin->w_cursor.col;
+	}
+
+	// Make sure we stick in this column.
+	validate_virtcol();
+	curwin->w_curswant = curwin->w_virtcol;
+	curwin->w_set_curswant = FALSE;
+    }
+}
+
+/*
+ * "gi": start Insert at the last position.
+ */
+    static void
+nv_gi_cmd(cmdarg_T *cap)
+{
+    int		i;
+
+    if (curbuf->b_last_insert.lnum != 0)
+    {
+	curwin->w_cursor = curbuf->b_last_insert;
+	check_cursor_lnum();
+	i = (int)STRLEN(ml_get_curline());
+	if (curwin->w_cursor.col > (colnr_T)i)
+	{
+	    if (virtual_active())
+		curwin->w_cursor.coladd += curwin->w_cursor.col - i;
+	    curwin->w_cursor.col = i;
+	}
+    }
+    cap->cmdchar = 'i';
+    nv_edit(cap);
+}
+
+/*
  * Commands starting with "g".
  */
     static void
 nv_g_cmd(cmdarg_T *cap)
 {
     oparg_T	*oap = cap->oap;
-    pos_T	tpos;
     int		i;
-    int		flag = FALSE;
 
     switch (cap->nchar)
     {
     case Ctrl_A:
     case Ctrl_X:
 #ifdef MEM_PROFILE
-    /*
-     * "g^A": dump log of used memory.
-     */
+    // "g^A": dump log of used memory.
 	if (!VIsual_active && cap->nchar == Ctrl_A)
 	    vim_mem_profile_dump();
 	else
 #endif
-    /*
-     * "g^A/g^X": sequentially increment visually selected region
-     */
+    // "g^A/g^X": sequentially increment visually selected region
 	     if (VIsual_active)
 	{
 	    cap->arg = TRUE;
@@ -5913,9 +6170,7 @@ nv_g_cmd(cmdarg_T *cap)
 	    clearopbeep(oap);
 	break;
 
-    /*
-     * "gR": Enter virtual replace mode.
-     */
+    // "gR": Enter virtual replace mode.
     case 'R':
 	cap->arg = TRUE;
 	nv_Replace(cap);
@@ -5929,88 +6184,21 @@ nv_g_cmd(cmdarg_T *cap)
 	do_cmdline_cmd((char_u *)"%s//~/&");
 	break;
 
-    /*
-     * "gv": Reselect the previous Visual area.  If Visual already active,
-     *	     exchange previous and current Visual area.
-     */
+    // "gv": Reselect the previous Visual area.  If Visual already active,
+    // exchange previous and current Visual area.
     case 'v':
-	if (checkclearop(oap))
-	    break;
-
-	if (	   curbuf->b_visual.vi_start.lnum == 0
-		|| curbuf->b_visual.vi_start.lnum > curbuf->b_ml.ml_line_count
-		|| curbuf->b_visual.vi_end.lnum == 0)
-	    beep_flush();
-	else
-	{
-	    // set w_cursor to the start of the Visual area, tpos to the end
-	    if (VIsual_active)
-	    {
-		i = VIsual_mode;
-		VIsual_mode = curbuf->b_visual.vi_mode;
-		curbuf->b_visual.vi_mode = i;
-# ifdef FEAT_EVAL
-		curbuf->b_visual_mode_eval = i;
-# endif
-		i = curwin->w_curswant;
-		curwin->w_curswant = curbuf->b_visual.vi_curswant;
-		curbuf->b_visual.vi_curswant = i;
-
-		tpos = curbuf->b_visual.vi_end;
-		curbuf->b_visual.vi_end = curwin->w_cursor;
-		curwin->w_cursor = curbuf->b_visual.vi_start;
-		curbuf->b_visual.vi_start = VIsual;
-	    }
-	    else
-	    {
-		VIsual_mode = curbuf->b_visual.vi_mode;
-		curwin->w_curswant = curbuf->b_visual.vi_curswant;
-		tpos = curbuf->b_visual.vi_end;
-		curwin->w_cursor = curbuf->b_visual.vi_start;
-	    }
-
-	    VIsual_active = TRUE;
-	    VIsual_reselect = TRUE;
-
-	    // Set Visual to the start and w_cursor to the end of the Visual
-	    // area.  Make sure they are on an existing character.
-	    check_cursor();
-	    VIsual = curwin->w_cursor;
-	    curwin->w_cursor = tpos;
-	    check_cursor();
-	    update_topline();
-	    /*
-	     * When called from normal "g" command: start Select mode when
-	     * 'selectmode' contains "cmd".  When called for K_SELECT, always
-	     * start Select mode.
-	     */
-	    if (cap->arg)
-		VIsual_select = TRUE;
-	    else
-		may_start_select('c');
-	    setmouse();
-#ifdef FEAT_CLIPBOARD
-	    // Make sure the clipboard gets updated.  Needed because start and
-	    // end are still the same, and the selection needs to be owned
-	    clip_star.vmode = NUL;
-#endif
-	    redraw_curbuf_later(INVERTED);
-	    showmode();
-	}
+	nv_gv_cmd(cap);
 	break;
-    /*
-     * "gV": Don't reselect the previous Visual area after a Select mode
-     *	     mapping of menu.
-     */
+
+    // "gV": Don't reselect the previous Visual area after a Select mode
+    // mapping of menu.
     case 'V':
 	VIsual_reselect = FALSE;
 	break;
 
-    /*
-     * "gh":  start Select mode.
-     * "gH":  start Select line mode.
-     * "g^H": start Select block mode.
-     */
+    // "gh":  start Select mode.
+    // "gH":  start Select line mode.
+    // "g^H": start Select block mode.
     case K_BS:
 	cap->nchar = Ctrl_H;
 	// FALLTHROUGH
@@ -6037,10 +6225,8 @@ nv_g_cmd(cmdarg_T *cap)
 	    clearopbeep(oap);
 	break;
 
-    /*
-     * "gj" and "gk" two new funny movement keys -- up and down
-     * movement based on *screen* line rather than *file* line.
-     */
+    // "gj" and "gk" two new funny movement keys -- up and down
+    // movement based on *screen* line rather than *file* line.
     case 'j':
     case K_DOWN:
 	// with 'nowrap' it works just like the normal "j" command.
@@ -6069,55 +6255,19 @@ nv_g_cmd(cmdarg_T *cap)
 	    clearopbeep(oap);
 	break;
 
-    /*
-     * "gJ": join two lines without inserting a space.
-     */
+    // "gJ": join two lines without inserting a space.
     case 'J':
 	nv_join(cap);
 	break;
 
-    /*
-     * "g0", "g^" and "g$": Like "0", "^" and "$" but for screen lines.
-     * "gm": middle of "g0" and "g$".
-     */
+    // "g0", "g^" : Like "0" and "^" but for screen lines.
+    // "gm": middle of "g0" and "g$".
     case '^':
-	flag = TRUE;
-	// FALLTHROUGH
-
     case '0':
     case 'm':
     case K_HOME:
     case K_KHOME:
-	oap->motion_type = MCHAR;
-	oap->inclusive = FALSE;
-	if (curwin->w_p_wrap && curwin->w_width != 0)
-	{
-	    int		width1 = curwin->w_width - curwin_col_off();
-	    int		width2 = width1 + curwin_col_off2();
-
-	    validate_virtcol();
-	    i = 0;
-	    if (curwin->w_virtcol >= (colnr_T)width1 && width2 > 0)
-		i = (curwin->w_virtcol - width1) / width2 * width2 + width1;
-	}
-	else
-	    i = curwin->w_leftcol;
-	// Go to the middle of the screen line.  When 'number' or
-	// 'relativenumber' is on and lines are wrapping the middle can be more
-	// to the left.
-	if (cap->nchar == 'm')
-	    i += (curwin->w_width - curwin_col_off()
-		    + ((curwin->w_p_wrap && i > 0)
-			? curwin_col_off2() : 0)) / 2;
-	coladvance((colnr_T)i);
-	if (flag)
-	{
-	    do
-		i = gchar_cursor();
-	    while (VIM_ISWHITE(i) && oneright() == OK);
-	    curwin->w_valid &= ~VALID_WCOL;
-	}
-	curwin->w_set_curswant = TRUE;
+	nv_g_home_m_cmd(cap);
 	break;
 
     case 'M':
@@ -6133,104 +6283,20 @@ nv_g_cmd(cmdarg_T *cap)
 	}
 	break;
 
+    // "g_": to the last non-blank character in the line or <count> lines
+    // downward.
     case '_':
-	// "g_": to the last non-blank character in the line or <count> lines
-	// downward.
-	cap->oap->motion_type = MCHAR;
-	cap->oap->inclusive = TRUE;
-	curwin->w_curswant = MAXCOL;
-	if (cursor_down((long)(cap->count1 - 1),
-					 cap->oap->op_type == OP_NOP) == FAIL)
-	    clearopbeep(cap->oap);
-	else
-	{
-	    char_u  *ptr = ml_get_curline();
-
-	    // In Visual mode we may end up after the line.
-	    if (curwin->w_cursor.col > 0 && ptr[curwin->w_cursor.col] == NUL)
-		--curwin->w_cursor.col;
-
-	    // Decrease the cursor column until it's on a non-blank.
-	    while (curwin->w_cursor.col > 0
-				    && VIM_ISWHITE(ptr[curwin->w_cursor.col]))
-		--curwin->w_cursor.col;
-	    curwin->w_set_curswant = TRUE;
-	    adjust_for_sel(cap);
-	}
+	nv_g_underscore_cmd(cap);
 	break;
 
+    // "g$" : Like "$" but for screen lines.
     case '$':
     case K_END:
     case K_KEND:
-	{
-	    int col_off = curwin_col_off();
-
-	    oap->motion_type = MCHAR;
-	    oap->inclusive = TRUE;
-	    if (curwin->w_p_wrap && curwin->w_width != 0)
-	    {
-		curwin->w_curswant = MAXCOL;    // so we stay at the end
-		if (cap->count1 == 1)
-		{
-		    int		width1 = curwin->w_width - col_off;
-		    int		width2 = width1 + curwin_col_off2();
-
-		    validate_virtcol();
-		    i = width1 - 1;
-		    if (curwin->w_virtcol >= (colnr_T)width1)
-			i += ((curwin->w_virtcol - width1) / width2 + 1)
-								     * width2;
-		    coladvance((colnr_T)i);
-
-		    // Make sure we stick in this column.
-		    validate_virtcol();
-		    curwin->w_curswant = curwin->w_virtcol;
-		    curwin->w_set_curswant = FALSE;
-		    if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)
-		    {
-			/*
-			 * Check for landing on a character that got split at
-			 * the end of the line.  We do not want to advance to
-			 * the next screen line.
-			 */
-			if (curwin->w_virtcol > (colnr_T)i)
-			    --curwin->w_cursor.col;
-		    }
-		}
-		else if (nv_screengo(oap, FORWARD, cap->count1 - 1) == FAIL)
-		    clearopbeep(oap);
-	    }
-	    else
-	    {
-		if (cap->count1 > 1)
-		    // if it fails, let the cursor still move to the last char
-		    (void)cursor_down(cap->count1 - 1, FALSE);
-
-		i = curwin->w_leftcol + curwin->w_width - col_off - 1;
-		coladvance((colnr_T)i);
-
-		// if the character doesn't fit move one back
-		if (curwin->w_cursor.col > 0
-				       && (*mb_ptr2cells)(ml_get_cursor()) > 1)
-		{
-		    colnr_T vcol;
-
-		    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &vcol);
-		    if (vcol >= curwin->w_leftcol + curwin->w_width - col_off)
-			--curwin->w_cursor.col;
-		}
-
-		// Make sure we stick in this column.
-		validate_virtcol();
-		curwin->w_curswant = curwin->w_virtcol;
-		curwin->w_set_curswant = FALSE;
-	    }
-	}
+	nv_g_dollar_cmd(cap);
 	break;
 
-    /*
-     * "g*" and "g#", like "*" and "#" but without using "\<" and "\>"
-     */
+    // "g*" and "g#", like "*" and "#" but without using "\<" and "\>"
     case '*':
     case '#':
 #if POUND != '#'
@@ -6241,9 +6307,7 @@ nv_g_cmd(cmdarg_T *cap)
 	nv_ident(cap);
 	break;
 
-    /*
-     * ge and gE: go back to end of word
-     */
+    // ge and gE: go back to end of word
     case 'e':
     case 'E':
 	oap->motion_type = MCHAR;
@@ -6253,36 +6317,17 @@ nv_g_cmd(cmdarg_T *cap)
 	    clearopbeep(oap);
 	break;
 
-    /*
-     * "g CTRL-G": display info about cursor position
-     */
+    // "g CTRL-G": display info about cursor position
     case Ctrl_G:
 	cursor_pos_info(NULL);
 	break;
 
-    /*
-     * "gi": start Insert at the last position.
-     */
+    // "gi": start Insert at the last position.
     case 'i':
-	if (curbuf->b_last_insert.lnum != 0)
-	{
-	    curwin->w_cursor = curbuf->b_last_insert;
-	    check_cursor_lnum();
-	    i = (int)STRLEN(ml_get_curline());
-	    if (curwin->w_cursor.col > (colnr_T)i)
-	    {
-		if (virtual_active())
-		    curwin->w_cursor.coladd += curwin->w_cursor.col - i;
-		curwin->w_cursor.col = i;
-	    }
-	}
-	cap->cmdchar = 'i';
-	nv_edit(cap);
+	nv_gi_cmd(cap);
 	break;
 
-    /*
-     * "gI": Start insert in column 1.
-     */
+    // "gI": Start insert in column 1.
     case 'I':
 	beginline(0);
 	if (!checkclearopq(oap))
@@ -6290,17 +6335,15 @@ nv_g_cmd(cmdarg_T *cap)
 	break;
 
 #ifdef FEAT_SEARCHPATH
-    /*
-     * "gf": goto file, edit file under cursor
-     * "]f" and "[f": can also be used.
-     */
+    // "gf": goto file, edit file under cursor
+    // "]f" and "[f": can also be used.
     case 'f':
     case 'F':
 	nv_gotofile(cap);
 	break;
 #endif
 
-	// "g'm" and "g`m": jump to mark without setting pcmark
+    // "g'm" and "g`m": jump to mark without setting pcmark
     case '\'':
 	cap->arg = TRUE;
 	// FALLTHROUGH
@@ -6308,26 +6351,20 @@ nv_g_cmd(cmdarg_T *cap)
 	nv_gomark(cap);
 	break;
 
-    /*
-     * "gs": Goto sleep.
-     */
+    // "gs": Goto sleep.
     case 's':
 	do_sleep(cap->count1 * 1000L, FALSE);
 	break;
 
-    /*
-     * "ga": Display the ascii value of the character under the
-     * cursor.	It is displayed in decimal, hex, and octal. -- webb
-     */
+    // "ga": Display the ascii value of the character under the
+    // cursor.	It is displayed in decimal, hex, and octal. -- webb
     case 'a':
 	do_ascii(NULL);
 	break;
 
-    /*
-     * "g8": Display the bytes used for the UTF-8 character under the
-     * cursor.	It is displayed in hex.
-     * "8g8" finds illegal byte sequence.
-     */
+    // "g8": Display the bytes used for the UTF-8 character under the
+    // cursor.	It is displayed in hex.
+    // "8g8" finds illegal byte sequence.
     case '8':
 	if (cap->count0 == 8)
 	    utf_find_illegal();
@@ -6340,25 +6377,21 @@ nv_g_cmd(cmdarg_T *cap)
 	show_sb_text();
 	break;
 
-    /*
-     * "gg": Goto the first line in file.  With a count it goes to
-     * that line number like for "G". -- webb
-     */
+    // "gg": Goto the first line in file.  With a count it goes to
+    // that line number like for "G". -- webb
     case 'g':
 	cap->arg = FALSE;
 	nv_goto(cap);
 	break;
 
-    /*
-     *	 Two-character operators:
-     *	 "gq"	    Format text
-     *	 "gw"	    Format text and keep cursor position
-     *	 "g~"	    Toggle the case of the text.
-     *	 "gu"	    Change text to lower case.
-     *	 "gU"	    Change text to upper case.
-     *   "g?"	    rot13 encoding
-     *   "g@"	    call 'operatorfunc'
-     */
+    //	 Two-character operators:
+    //	 "gq"	    Format text
+    //	 "gw"	    Format text and keep cursor position
+    //	 "g~"	    Toggle the case of the text.
+    //	 "gu"	    Change text to lower case.
+    //	 "gU"	    Change text to upper case.
+    //   "g?"	    rot13 encoding
+    //   "g@"	    call 'operatorfunc'
     case 'q':
     case 'w':
 	oap->cursor_start = curwin->w_cursor;
@@ -6371,19 +6404,15 @@ nv_g_cmd(cmdarg_T *cap)
 	nv_operator(cap);
 	break;
 
-    /*
-     * "gd": Find first occurrence of pattern under the cursor in the
-     *	 current function
-     * "gD": idem, but in the current file.
-     */
+    // "gd": Find first occurrence of pattern under the cursor in the
+    //	 current function
+    // "gD": idem, but in the current file.
     case 'd':
     case 'D':
 	nv_gd(oap, cap->nchar, (int)cap->count0);
 	break;
 
-    /*
-     * g<*Mouse> : <C-*mouse>
-     */
+    // g<*Mouse> : <C-*mouse>
     case K_MIDDLEMOUSE:
     case K_MIDDLEDRAG:
     case K_MIDDLERELEASE:
@@ -6407,9 +6436,7 @@ nv_g_cmd(cmdarg_T *cap)
     case K_IGNORE:
 	break;
 
-    /*
-     * "gP" and "gp": same as "P" and "p" but leave cursor just after new text
-     */
+    // "gP" and "gp": same as "P" and "p" but leave cursor just after new text
     case 'p':
     case 'P':
 	nv_put(cap);
@@ -6538,11 +6565,30 @@ nv_dot(cmdarg_T *cap)
 }
 
 /*
- * CTRL-R: undo undo
+ * CTRL-R: undo undo or specify register in select mode
  */
     static void
-nv_redo(cmdarg_T *cap)
+nv_redo_or_register(cmdarg_T *cap)
 {
+    if (VIsual_select && VIsual_active)
+    {
+	int reg;
+	// Get register name
+	++no_mapping;
+	++allow_keys;
+	reg = plain_vgetc();
+	LANGMAP_ADJUST(reg, TRUE);
+	--no_mapping;
+	--allow_keys;
+
+	if (reg == '"')
+	    // the unnamed register is 0
+	    reg = 0;
+
+        VIsual_select_reg = valid_yank_reg(reg, TRUE) ? reg : 0;
+	return;
+    }
+
     if (!checkclearopq(cap->oap))
     {
 	u_redo((int)cap->count1);
@@ -6914,7 +6960,10 @@ unadjust_for_sel(void)
 nv_select(cmdarg_T *cap)
 {
     if (VIsual_active)
+    {
 	VIsual_select = TRUE;
+	VIsual_select_reg = 0;
+    }
     else if (VIsual_reselect)
     {
 	cap->nchar = 'v';	    // fake "gv" command

@@ -1772,11 +1772,11 @@ getcmdline_int(
 	    c = safe_vgetc();
 	} while (c == K_IGNORE || c == K_NOP);
 
-	if (c == K_COMMAND)
+	if (c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	{
 	    int	    clen = ccline.cmdlen;
 
-	    if (do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
+	    if (do_cmdkey_command(c, DOCMD_NOWAIT) == OK)
 	    {
 		if (clen == ccline.cmdlen)
 		    trigger_cmdlinechanged = FALSE;
@@ -2641,8 +2641,8 @@ get_text_locked_msg(void)
 	return e_invalid_in_cmdline_window;
 #endif
     if (textwinlock != 0)
-	return e_textwinlock;
-    return e_textlock;
+	return e_not_allowed_to_change_text_or_change_window;
+    return e_not_allowed_to_change_text_here;
 }
 
 /*
@@ -2664,7 +2664,7 @@ curbuf_locked(void)
 {
     if (curbuf_lock > 0)
     {
-	emsg(_("E788: Not allowed to edit another buffer now"));
+	emsg(_(e_not_allowed_to_edit_another_buffer_now));
 	return TRUE;
     }
     return allbuf_locked();
@@ -2679,7 +2679,7 @@ allbuf_locked(void)
 {
     if (allbuf_lock > 0)
     {
-	emsg(_("E811: Not allowed to change buffer information now"));
+	emsg(_(e_not_allowed_to_change_buffer_information_now));
 	return TRUE;
     }
     return FALSE;
@@ -4095,7 +4095,33 @@ f_setcmdpos(typval_T *argvars, typval_T *rettv)
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
 }
+#endif
 
+#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN)
+/*
+ * Get the current command-line type.
+ * Returns ':' or '/' or '?' or '@' or '>' or '-'
+ * Only works when the command line is being edited.
+ * Returns NUL when something is wrong.
+ */
+    static int
+get_cmdline_type(void)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return NUL;
+    if (p->cmdfirstc == NUL)
+	return
+# ifdef FEAT_EVAL
+	    (p->input_fn) ? '@' :
+# endif
+	    '-';
+    return p->cmdfirstc;
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * "getcmdtype()" function
  */
@@ -4111,30 +4137,6 @@ f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
     }
 }
 
-#endif
-
-#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN) || defined(PROTO)
-/*
- * Get the current command-line type.
- * Returns ':' or '/' or '?' or '@' or '>' or '-'
- * Only works when the command line is being edited.
- * Returns NUL when something is wrong.
- */
-    int
-get_cmdline_type(void)
-{
-    cmdline_info_T *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return NUL;
-    if (p->cmdfirstc == NUL)
-	return
-# ifdef FEAT_EVAL
-	    (p->input_fn) ? '@' :
-# endif
-	    '-';
-    return p->cmdfirstc;
-}
 #endif
 
 /*
@@ -4200,7 +4202,7 @@ check_cedit(void)
     {
 	n = string_to_key(p_cedit, FALSE);
 	if (vim_isprintc(n))
-	    return e_invarg;
+	    return e_invalid_argument;
 	cedit_key = n;
     }
     return NULL;
@@ -4390,7 +4392,7 @@ open_cmdwin(void)
     if (!win_valid(old_curwin) || !bufref_valid(&old_curbuf))
     {
 	cmdwin_result = Ctrl_C;
-	emsg(_("E199: Active window or buffer deleted"));
+	emsg(_(e_active_window_or_buffer_deleted));
     }
     else
     {

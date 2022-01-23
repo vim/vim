@@ -54,6 +54,7 @@
  * 08.06.2013  Little-endian hexdump (-e) and offset (-o) by Vadim Vygonets.
  * 11.01.2019  Add full 64/32 bit range to -o and output by Christer Jensen.
  * 04.02.2020  Add -d for decimal offsets by Aapo Rantalainen
+ * 14.01.2022  Disable extra newlines with -c0 -p by Erik Auerswald.
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -70,6 +71,10 @@
 #endif
 #if !defined(CYGWIN) && defined(__CYGWIN__)
 # define CYGWIN
+#endif
+
+#if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__)
+# define _XOPEN_SOURCE 700   /* for fdopen() */
 #endif
 
 #include <stdio.h>
@@ -131,7 +136,7 @@ extern void perror __P((char *));
 extern long int strtol();
 extern long int ftell();
 
-char version[] = "xxd 2021-10-22 by Juergen Weigert et al.";
+char version[] = "xxd 2022-01-14 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -483,7 +488,7 @@ main(int argc, char *argv[])
 {
   FILE *fp, *fpo;
   int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;
-  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL;
+  int cols = 0, colsgiven = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL;
   int capitalize = 0, decimal_offset = 0;
   int ebcdic = 0;
   int octspergrp = -1;	/* number of octets grouped in output */
@@ -536,11 +541,15 @@ main(int argc, char *argv[])
 	  if (pp[2] && !STRNCMP("apitalize", pp + 2, 9))
 	    capitalize = 1;
 	  else if (pp[2] && STRNCMP("ols", pp + 2, 3))
-	    cols = (int)strtol(pp + 2, NULL, 0);
+	    {
+	      colsgiven = 1;
+	      cols = (int)strtol(pp + 2, NULL, 0);
+	    }
 	  else
 	    {
 	      if (!argv[2])
 		exit_with_usage();
+	      colsgiven = 1;
 	      cols = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
@@ -641,7 +650,7 @@ main(int argc, char *argv[])
       argc--;
     }
 
-  if (!cols)
+  if (!colsgiven || (!cols && hextype != HEX_POSTSCRIPT))
     switch (hextype)
       {
       case HEX_POSTSCRIPT:	cols = 30; break;
@@ -663,7 +672,9 @@ main(int argc, char *argv[])
       default:			octspergrp = 0; break;
       }
 
-  if (cols < 1 || ((hextype == HEX_NORMAL || hextype == HEX_BITS || hextype == HEX_LITTLEENDIAN)
+  if ((hextype == HEX_POSTSCRIPT && cols < 0) ||
+      (hextype != HEX_POSTSCRIPT && cols < 1) ||
+      ((hextype == HEX_NORMAL || hextype == HEX_BITS || hextype == HEX_LITTLEENDIAN)
 							    && (cols > COLS)))
     {
       fprintf(stderr, "%s: invalid number of columns (max. %d).\n", pname, COLS);
@@ -783,13 +794,13 @@ main(int argc, char *argv[])
 	  putc_or_die(hexx[(e >> 4) & 0xf], fpo);
 	  putc_or_die(hexx[e & 0xf], fpo);
 	  n++;
-	  if (!--p)
+	  if (cols > 0 && !--p)
 	    {
 	      putc_or_die('\n', fpo);
 	      p = cols;
 	    }
 	}
-      if (p < cols)
+      if (cols == 0 || p < cols)
 	putc_or_die('\n', fpo);
       fclose_or_die(fp, fpo);
       return 0;

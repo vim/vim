@@ -64,23 +64,29 @@ jobs:
 
       - name: Install packages
         run: |
-          sudo apt update && sudo apt install -y \
-            autoconf \
-            lcov \
+          PKGS=( \
             gettext \
-            libcanberra-dev \
-            libperl-dev \
-            python-dev \
-            python3-dev \
-            liblua5.3-dev \
-            lua5.3 \
-            ruby-dev \
-            tcl-dev \
-            cscope \
             libgtk2.0-dev \
             desktop-file-utils \
             libtool-bin \
-            libsodium-dev
+          )
+          if ${{ matrix.features == 'huge' }}; then
+            PKGS+=( \
+              autoconf \
+              lcov \
+              libcanberra-dev \
+              libperl-dev \
+              python-dev \
+              python3-dev \
+              liblua5.3-dev \
+              lua5.3 \
+              ruby-dev \
+              tcl-dev \
+              cscope \
+              libsodium-dev \
+            )
+          fi
+          sudo apt update && sudo apt install -y "${PKGS[@]}"
 
       - name: Install clang-13
         if: matrix.compiler == 'clang'
@@ -92,6 +98,7 @@ jobs:
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-13 100
           sudo update-alternatives --set clang /usr/bin/clang-13
           sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-13 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-13 100
 
       - name: Set up environment
         run: |
@@ -119,7 +126,6 @@ jobs:
             ;;
           esac
 
-          CFLAGS=""
           if ${{ matrix.coverage == true }}; then
             CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
@@ -218,45 +224,51 @@ jobs:
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
-      #      - name: Coveralls
-      #        if: matrix.coverage && success() && github.event_name != 'pull_request'
-      #        env:
-      #          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      #          COVERALLS_PARALLEL: true
-      #          TRAVIS_JOB_ID: ${{ github.run_id }}
-      #        run: |
-      #          sudo apt-get install -y python3-setuptools python3-wheel
-      #          sudo -H pip3 install pip -U
-      #          # needed for https support for coveralls building cffi only works with gcc, not with clang
-      #          CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
-      #          ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
+      # - name: Coveralls
+      #   if: matrix.coverage && success() && github.event_name != 'pull_request'
+      #   env:
+      #     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      #     COVERALLS_PARALLEL: true
+      #     TRAVIS_JOB_ID: ${{ github.run_id }}
+      #   run: |
+      #     sudo apt-get install -y python3-setuptools python3-wheel
+      #     sudo -H pip3 install pip -U
+      #     # needed for https support for coveralls building cffi only works with gcc, not with clang
+      #     CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
+      #     ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
 
-      - name: Codecov
+      - name: Generate gcov files
         if: matrix.coverage && success()
         run: |
           cd "${SRCDIR}"
-          bash <(curl -s https://codecov.io/bash) -F "${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}"
+          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+
+      - name: Codecov
+        if: matrix.coverage && success()
+        uses: codecov/codecov-action@v2
+        with:
+          flags: ${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
 
       - name: ASan logs
         if: contains(matrix.extra, 'asan') && !cancelled()
         run: |
           for f in $(grep -lR '#[[:digit:]]* *0x[[:digit:]a-fA-F]*' "${LOG_DIR}"); do
-            asan_symbolize-13 -l "$f"
+            asan_symbolize -l "$f"
             false # in order to fail a job
           done
 
-  #  coveralls:
-  #    runs-on: ubuntu-18.04
+  # coveralls:
+  #   runs-on: ubuntu-18.04
   #
-  #    needs: linux
-  #    if: always() && github.event_name != 'pull_request'
+  #   needs: linux
+  #   if: always() && github.event_name != 'pull_request'
   #
-  #    steps:
-  #      - name: Parallel finished
-  #        env:
-  #          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-  #        run: |
-  #          curl -k "https://coveralls.io/webhook?repo_token=${COVERALLS_REPO_TOKEN}" -d "payload[build_num]=${GITHUB_RUN_ID}&payload[status]=done"
+  #   steps:
+  #     - name: Parallel finished
+  #       env:
+  #         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+  #       run: |
+  #         curl -k "https://coveralls.io/webhook?repo_token=${COVERALLS_REPO_TOKEN}" -d "payload[build_num]=${GITHUB_RUN_ID}&payload[status]=done"
 
   macos:
     runs-on: macos-latest
@@ -277,6 +289,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install packages
+        if: matrix.features == 'huge'
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
         run: |

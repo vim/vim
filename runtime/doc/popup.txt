@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2021 Nov 29
+*popup.txt*  For Vim version 8.2.  Last change: 2022 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -54,7 +54,7 @@ A popup window has a window-ID like other windows, but behaves differently.
 The size can be up to the whole Vim window and it overlaps other windows.
 Popup windows can also overlap each other.  The "zindex" property specifies
 what goes on top of what.
-
+							*E366*
 The popup window contains a buffer, and that buffer is always associated with
 the popup window.  The window cannot be in Normal, Visual or Insert mode, it
 does not get keyboard focus.  You can use functions like `setbufline()` to
@@ -262,7 +262,7 @@ popup_close({id} [, {result}])				*popup_close()*
 
 
 popup_create({what}, {options})				*popup_create()*
-		Open a popup window showing {what}, which is either:
+		Open a popup window showing {what}, which is either: *E450*
 		- a buffer number
 		- a string
 		- a list of strings

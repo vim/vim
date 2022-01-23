@@ -2702,7 +2702,7 @@ mch_FullName(
 #endif
 		l = mch_chdir((char *)olddir);
 	    if (l != 0)
-		emsg(_(e_prev_dir));
+		emsg(_(e_cannot_go_back_to_previous_directory));
 	}
 #ifdef HAVE_FCHDIR
 	if (fd >= 0)
@@ -5528,7 +5528,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_in[0] = mch_open((char *)fname, O_RDONLY, 0);
 	if (fd_in[0] < 0)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5546,7 +5546,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_out[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd_out[1] < 0)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5560,7 +5560,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_err[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	if (fd_err[1] < 0)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -6627,7 +6627,7 @@ mch_expand_wildcards(
      */
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
-	emsg(_(e_notmp));
+	emsg(_(e_cant_get_temp_file_name));
 	return FAIL;
     }
 
@@ -6888,7 +6888,7 @@ mch_expand_wildcards(
     if (i != (int)len)
     {
 	// unexpected read error
-	semsg(_(e_notread), tempname);
+	semsg(_(e_cant_read_file_str), tempname);
 	vim_free(tempname);
 	vim_free(buffer);
 	return FAIL;
@@ -7575,7 +7575,7 @@ mch_libcall(
 	    for (i = 0; signal_info[i].sig != -1; i++)
 		if (lc_signal == signal_info[i].sig)
 		    break;
-	    semsg("E368: got SIG%s in libcall()", signal_info[i].name);
+	    semsg(e_got_sig_str_in_libcall, signal_info[i].name);
 	}
 #  endif
 # endif
@@ -7594,7 +7594,7 @@ mch_libcall(
 
     if (!success)
     {
-	semsg(_(e_libcall), funcname);
+	semsg(_(e_library_call_failed_for_str), funcname);
 	return FAIL;
     }
 

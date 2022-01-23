@@ -34,7 +34,6 @@ void f_getcmdline(typval_T *argvars, typval_T *rettv);
 void f_getcmdpos(typval_T *argvars, typval_T *rettv);
 void f_setcmdpos(typval_T *argvars, typval_T *rettv);
 void f_getcmdtype(typval_T *argvars, typval_T *rettv);
-int get_cmdline_type(void);
 int get_cmdline_firstc(void);
 int get_list_range(char_u **str, int *num1, int *num2);
 char *check_cedit(void);

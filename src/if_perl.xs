@@ -773,7 +773,7 @@ perl_runtime_link_init(char *libname, int verbose)
 	    close_dll(hPerlLib);
 	    hPerlLib = NULL;
 	    if (verbose)
-		semsg((const char *)_(e_loadfunc), perl_funcname_table[i].name);
+		semsg((const char *)_(e_could_not_load_library_function_str), perl_funcname_table[i].name);
 	    return FAIL;
 	}
     }

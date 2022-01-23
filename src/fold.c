@@ -65,8 +65,6 @@ static void foldDelMarker(linenr_T lnum, char_u *marker, int markerlen);
 static void foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot);
 static void parseMarker(win_T *wp);
 
-static char *e_nofold = N_("E490: No fold found");
-
 /*
  * While updating the folds lines between invalid_top and invalid_bot have an
  * undefined fold level.  Only used for the window currently being updated.
@@ -412,7 +410,7 @@ opFoldRange(
 	    (void)hasFolding(lnum, NULL, &lnum_next);
     }
     if (done == DONE_NOTHING)
-	emsg(_(e_nofold));
+	emsg(_(e_no_fold_found));
     // Force a redraw to remove the Visual highlighting.
     if (had_visual)
 	redraw_curbuf_later(INVERTED);
@@ -563,9 +561,9 @@ foldManualAllowed(int create)
     if (foldmethodIsManual(curwin) || foldmethodIsMarker(curwin))
 	return TRUE;
     if (create)
-	emsg(_("E350: Cannot create fold with current 'foldmethod'"));
+	emsg(_(e_cannot_create_fold_with_current_foldmethod));
     else
-	emsg(_("E351: Cannot delete fold with current 'foldmethod'"));
+	emsg(_(e_cannot_delete_fold_with_current_foldmethod));
     return FALSE;
 }
 
@@ -649,7 +647,7 @@ foldCreate(linenr_T start, linenr_T end)
     if (ga_grow(gap, 1) == OK)
     {
 	fp = (fold_T *)gap->ga_data + i;
-	ga_init2(&fold_ga, (int)sizeof(fold_T), 10);
+	ga_init2(&fold_ga, sizeof(fold_T), 10);
 
 	// Count number of folds that will be contained in the new fold.
 	for (cont = 0; i + cont < gap->ga_len; ++cont)
@@ -785,7 +783,7 @@ deleteFold(
     }
     if (!did_one)
     {
-	emsg(_(e_nofold));
+	emsg(_(e_no_fold_found));
 	// Force a redraw to remove the Visual highlighting.
 	if (had_visual)
 	    redraw_curbuf_later(INVERTED);
@@ -1020,7 +1018,7 @@ foldMoveTo(
     void
 foldInitWin(win_T *new_win)
 {
-    ga_init2(&new_win->w_folds, (int)sizeof(fold_T), 10);
+    ga_init2(&new_win->w_folds, sizeof(fold_T), 10);
 }
 
 // find_wl_entry() {{{2
@@ -1235,7 +1233,7 @@ setFoldRepeat(linenr_T lnum, long count, int do_open)
 	{
 	    // Only give an error message when no fold could be opened.
 	    if (n == 0 && !(done & DONE_FOLD))
-		emsg(_(e_nofold));
+		emsg(_(e_no_fold_found));
 	    break;
 	}
     }
@@ -1387,7 +1385,7 @@ setManualFoldWin(
 	done |= DONE_FOLD;
     }
     else if (donep == NULL && wp == curwin)
-	emsg(_(e_nofold));
+	emsg(_(e_no_fold_found));
 
     if (donep != NULL)
 	*donep |= done;
@@ -1925,7 +1923,6 @@ get_foldtext(
     if (*wp->w_p_fdt != NUL)
     {
 	char_u	dashes[MAX_LEVEL + 2];
-	win_T	*save_curwin;
 	int	level;
 	char_u	*p;
 
@@ -1943,23 +1940,27 @@ get_foldtext(
 	set_vim_var_string(VV_FOLDDASHES, dashes, -1);
 	set_vim_var_nr(VV_FOLDLEVEL, (long)level);
 
-	// skip evaluating foldtext on errors
+	// skip evaluating 'foldtext' on errors
 	if (!got_fdt_error)
 	{
-	    save_curwin = curwin;
+	    win_T   *save_curwin = curwin;
+	    sctx_T  saved_sctx = current_sctx;
+
 	    curwin = wp;
 	    curbuf = wp->w_buffer;
+	    current_sctx = wp->w_p_script_ctx[WV_FDT];
 
-	    ++emsg_silent; // handle exceptions, but don't display errors
+	    ++emsg_off; // handle exceptions, but don't display errors
 	    text = eval_to_string_safe(wp->w_p_fdt,
-			 was_set_insecurely((char_u *)"foldtext", OPT_LOCAL));
-	    --emsg_silent;
+		    was_set_insecurely((char_u *)"foldtext", OPT_LOCAL), TRUE);
+	    --emsg_off;
 
 	    if (text == NULL || did_emsg)
 		got_fdt_error = TRUE;
 
 	    curwin = save_curwin;
 	    curbuf = curwin->w_buffer;
+	    current_sctx = saved_sctx;
 	}
 	last_lnum = lnum;
 	last_wp   = wp;
@@ -2870,7 +2871,7 @@ foldInsert(garray_T *gap, int i)
     if (gap->ga_len > 0 && i < gap->ga_len)
 	mch_memmove(fp + 1, fp, sizeof(fold_T) * (gap->ga_len - i));
     ++gap->ga_len;
-    ga_init2(&fp->fd_nested, (int)sizeof(fold_T), 10);
+    ga_init2(&fp->fd_nested, sizeof(fold_T), 10);
     return OK;
 }
 
@@ -3309,7 +3310,7 @@ foldlevelExpr(fline_T *flp)
     // KeyTyped may be reset to 0 when calling a function which invokes
     // do_cmdline().  To make 'foldopen' work correctly restore KeyTyped.
     save_keytyped = KeyTyped;
-    n = eval_foldexpr(flp->wp->w_p_fde, &c);
+    n = eval_foldexpr(flp->wp, &c);
     KeyTyped = save_keytyped;
 
     switch (c)

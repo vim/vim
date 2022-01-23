@@ -1717,7 +1717,7 @@ let g:dict_one = #{one: 1}
 let $TESTVAR = 'testvar'
 
 " type casts
-def Test_expr7t()
+def Test_expr7()
   var lines =<< trim END
       var ls: list<string> = ['a', <string>g:string_empty]
       var ln: list<number> = [<number>g:anint, <number>g:thefour]
@@ -1743,7 +1743,7 @@ def Test_expr7t()
 enddef
 
 " test low level expression
-def Test_expr7_number()
+def Test_expr8_number()
   # number constant
   var lines =<< trim END
       assert_equal(0, 0)
@@ -1756,7 +1756,7 @@ def Test_expr7_number()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_float()
+def Test_expr8_float()
   # float constant
   if !has('float')
     MissingFeature 'float'
@@ -1771,7 +1771,7 @@ def Test_expr7_float()
   endif
 enddef
 
-def Test_expr7_blob()
+def Test_expr8_blob()
   # blob constant
   var lines =<< trim END
       assert_equal(g:blob_empty, 0z)
@@ -1803,7 +1803,7 @@ def Test_expr7_blob()
   CheckDefAndScriptFailure(["var x = 0z123"], 'E973:', 1)
 enddef
 
-def Test_expr7_string()
+def Test_expr8_string()
   # string constant
   var lines =<< trim END
       assert_equal(g:string_empty, '')
@@ -1820,7 +1820,7 @@ def Test_expr7_string()
   CheckDefAndScriptFailure(["var x = 'abc"], 'E115:', 1)
 enddef
 
-def Test_expr7_vimvar()
+def Test_expr8_vimvar()
   v:errors = []
   var errs: list<string> = v:errors
   CheckDefFailure(['var errs: list<number> = v:errors'], 'E1012:')
@@ -1845,7 +1845,7 @@ def Test_expr7_vimvar()
   bwipe!
 enddef
 
-def Test_expr7_special()
+def Test_expr8_special()
   # special constant
   var lines =<< trim END
       assert_equal(g:special_true, true)
@@ -1882,7 +1882,7 @@ def Test_expr7_special()
   CheckDefAndScriptFailure(['v:none = 22'], 'E46:', 1)
 enddef
 
-def Test_expr7_list()
+def Test_expr8_list()
   # list
   var lines =<< trim END
       assert_equal(g:list_empty, [])
@@ -1955,7 +1955,7 @@ def Test_expr7_list()
   CheckDefAndScriptFailure(lines + ['echo numbers[a :b]'], 'E1004:', 4)
 enddef
 
-def Test_expr7_list_vim9script()
+def Test_expr8_list_vim9script()
   var lines =<< trim END
       var l = [
 		11,
@@ -2043,7 +2043,7 @@ def LambdaUsingArg(x: number): func
             x == 2
 enddef
 
-def Test_expr7_lambda()
+def Test_expr8_lambda()
   var lines =<< trim END
       var La = () => 'result'
       # comment
@@ -2129,7 +2129,7 @@ def Test_expr7_lambda()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_lambda_block()
+def Test_expr8_lambda_block()
   var lines =<< trim END
       var Func = (s: string): string => {
                       return 'hello ' .. s
@@ -2209,7 +2209,7 @@ def NewLambdaUsingArg(x: number): func
             x == 2
 enddef
 
-def Test_expr7_new_lambda()
+def Test_expr8_new_lambda()
   var lines =<< trim END
       var La = () => 'result'
       assert_equal('result', La())
@@ -2294,7 +2294,7 @@ def Test_expr7_new_lambda()
   CheckDefAndScriptFailure(['var Fx = (a) => [0', ' 1]'], 'E696:', 2)
 enddef
 
-def Test_expr7_lambda_vim9script()
+def Test_expr8_lambda_vim9script()
   var lines =<< trim END
       var v = 10->((a) =>
 	    a
@@ -2313,7 +2313,7 @@ def Test_expr7_lambda_vim9script()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_funcref()
+def Test_expr8_funcref()
   var lines =<< trim END
       def RetNumber(): number
         return 123
@@ -2350,7 +2350,7 @@ enddef
 let g:test_space_dict = {'': 'empty', ' ': 'space'}
 let g:test_hash_dict = #{one: 1, two: 2}
 
-def Test_expr7_dict()
+def Test_expr8_dict()
   # dictionary
   var lines =<< trim END
       assert_equal(g:dict_empty, {})
@@ -2461,7 +2461,7 @@ def Test_expr7_dict()
   CheckDefExecAndScriptFailure(['{}[getftype("file")]'], 'E716: Key not present in Dictionary: ""', 1)
 enddef
 
-def Test_expr7_dict_vim9script()
+def Test_expr8_dict_vim9script()
   var lines =<< trim END
       var d = {
 		['one']:
@@ -2592,7 +2592,7 @@ def Test_expr7_dict_vim9script()
   CheckScriptSuccess(lines)
 enddef
 
-def Test_expr7_dict_in_block()
+def Test_expr8_dict_in_block()
   var lines =<< trim END
       vim9script
       command MyCommand {
@@ -2615,7 +2615,7 @@ def Test_expr7_dict_in_block()
   delcommand YourCommand
 enddef
 
-def Test_expr7_call_2bool()
+def Test_expr8_call_2bool()
   var lines =<< trim END
       vim9script
 
@@ -2663,7 +2663,7 @@ def Test_expr_member()
   CheckDefExecAndScriptFailure(["var d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
 enddef
 
-def Test_expr7_any_index_slice()
+def Test_expr8_any_index_slice()
   var lines =<< trim END
     # getting the one member should clear the list only after getting the item
     assert_equal('bbb', ['aaa', 'bbb', 'ccc'][1])
@@ -2817,7 +2817,7 @@ def SetSomeVar()
   b:someVar = &fdm
 enddef
 
-def Test_expr7_option()
+def Test_expr8_option()
   var lines =<< trim END
       # option
       set ts=11
@@ -2844,7 +2844,7 @@ def Test_expr7_option()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_environment()
+def Test_expr8_environment()
   var lines =<< trim END
       # environment variable
       assert_equal('testvar', $TESTVAR)
@@ -2853,9 +2853,10 @@ def Test_expr7_environment()
   CheckDefAndScriptSuccess(lines)
 
   CheckDefAndScriptFailure(["var x = $$$"], ['E1002:', 'E15:'], 1)
+  CheckDefAndScriptFailure(["$"], ['E1002:', 'E15:'], 1)
 enddef
 
-def Test_expr7_register()
+def Test_expr8_register()
   var lines =<< trim END
       @a = 'register a'
       assert_equal('register a', @a)
@@ -2881,7 +2882,7 @@ def Test_expr7_register()
 enddef
 
 " This is slow when run under valgrind.
-def Test_expr7_namespace()
+def Test_expr8_namespace()
   var lines =<< trim END
       g:some_var = 'some'
       assert_equal('some', get(g:, 'some_var'))
@@ -2910,7 +2911,7 @@ def Test_expr7_namespace()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_namespace_loop_def()
+def Test_expr8_namespace_loop_def()
   var lines =<< trim END
       # check using g: in a for loop more than DO_NOT_FREE_CNT times
       var exists = 0
@@ -2929,8 +2930,8 @@ def Test_expr7_namespace_loop_def()
 enddef
 
 " NOTE: this is known to be slow.  To skip use:
-"   :let $TEST_SKIP_PAT = 'Test_expr7_namespace_loop_script'
-def Test_expr7_namespace_loop_script()
+"   :let $TEST_SKIP_PAT = 'Test_expr8_namespace_loop_script'
+def Test_expr8_namespace_loop_script()
   var lines =<< trim END
       vim9script
       # check using g: in a for loop more than DO_NOT_FREE_CNT times
@@ -2949,7 +2950,7 @@ def Test_expr7_namespace_loop_script()
   CheckScriptSuccess(lines)
 enddef
 
-def Test_expr7_parens()
+def Test_expr8_parens()
   # (expr)
   var lines =<< trim END
       assert_equal(4, (6 * 4) / 6)
@@ -2981,7 +2982,7 @@ def Test_expr7_parens()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_negate_add()
+def Test_expr8_negate_add()
   var lines =<< trim END
       assert_equal(-99, -99)
       assert_equal(-99, - 99)
@@ -3030,7 +3031,7 @@ def LegacyReturn(): string
   legacy return #{key: 'ok'}.key
 enddef
 
-def Test_expr7_legacy_script()
+def Test_expr8_legacy_script()
   var lines =<< trim END
       let s:legacy = 'legacy'
       def GetLocal(): string
@@ -3064,7 +3065,7 @@ def s:Echo4Arg(arg: any): string
   return arg
 enddef
 
-def Test_expr7_call()
+def Test_expr8_call()
   var lines =<< trim END
       assert_equal('yes', 'yes'->Echo())
       assert_equal(true, !range(5)->empty())
@@ -3097,7 +3098,7 @@ def Test_expr7_call()
   delete('Xruntime', 'rf')
 enddef
 
-def Test_expr7_method_call()
+def Test_expr8_method_call()
   var lines =<< trim END
       new
       setline(1, ['first', 'last'])
@@ -3139,6 +3140,34 @@ def Test_expr7_method_call()
   CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
+      def SetNumber(n: number)
+        g:number = n
+      enddef
+      const Setit = SetNumber
+      len('text')->Setit()
+      assert_equal(4, g:number)
+
+      const SetFuncref = funcref(SetNumber)
+      len('longer')->SetFuncref()
+      assert_equal(6, g:number)
+
+      const SetList = [SetNumber, SetFuncref]
+      len('xx')->SetList[0]()
+      assert_equal(2, g:number)
+      len('xxx')->SetList[1]()
+      assert_equal(3, g:number)
+
+      const SetDict = {key: SetNumber}
+      len('xxxx')->SetDict['key']()
+      assert_equal(4, g:number)
+      len('xxxxx')->SetDict.key()
+      assert_equal(5, g:number)
+
+      unlet g:number
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
     def RetVoid()
     enddef
     RetVoid()->byteidx(3)
@@ -3146,8 +3175,58 @@ def Test_expr7_method_call()
   CheckDefExecFailure(lines, 'E1013:')
 enddef
 
+def Test_expr8_method_call_linebreak()
+  # this was giving an error when skipping over the expression
+  var lines =<< trim END
+      vim9script
+      def Test()
+        var a: dict<any> = {b: {}}
+        a.b->extend({f1: 1,
+                         f2: 2})
+        echo a
+      enddef
+      defcompile
+      assert_equal('', v:errmsg)
+  END
+  CheckScriptSuccess(lines)
+enddef
 
-def Test_expr7_not()
+def Test_expr8_method_call_import()
+  var lines =<< trim END
+      vim9script
+      export def Square(items: list<number>): list<number>
+          return map(items, (_, i) => i * i)
+      enddef
+  END
+  call writefile(lines, 'Xsquare.vim')
+
+  lines =<< trim END
+      vim9script
+      import './Xsquare.vim'
+
+      def Test(): list<number>
+        return range(5)
+            ->Xsquare.Square()
+            ->map((_, i) => i * 10)
+      enddef
+
+      assert_equal([0, 10, 40, 90, 160], Test())
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      import './Xsquare.vim'
+
+      echo range(5)->Xsquare.NoSuchFunc()
+  END
+  CheckScriptFailure(lines, 'E1048: Item not found in script: NoSuchFunc')
+
+  delete('Xsquare.vim')
+enddef
+
+
+def Test_expr8_not()
   var lines =<< trim END
       assert_equal(true, !'')
       assert_equal(true, ![])
@@ -3199,7 +3278,7 @@ enddef
 
 let g:anumber = 42
 
-def Test_expr7_negate()
+def Test_expr8_negate()
   var lines =<< trim END
       var nr = 1
       assert_equal(-1, -nr)
@@ -3208,7 +3287,7 @@ def Test_expr7_negate()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-func Test_expr7_fails()
+func Test_expr8_fails()
   call CheckDefFailure(["var x = (12"], "E1097:", 3)
   call CheckScriptFailure(['vim9script', "var x = (12"], 'E110:', 2)
 
@@ -3268,7 +3347,7 @@ func CallMe2(one, two)
   return a:one .. a:two
 endfunc
 
-def Test_expr7_trailing()
+def Test_expr8_trailing()
   var lines =<< trim END
       # user function call
       assert_equal(123, g:CallMe(123))
@@ -3304,7 +3383,7 @@ def Test_expr7_trailing()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_string_subscript()
+def Test_expr8_string_subscript()
   var lines =<< trim END
     var text = 'abcdef'
     assert_equal('f', text[-1])
@@ -3403,7 +3482,7 @@ def Test_expr7_string_subscript()
   CheckDefAndScriptFailure(lines, ['E1012: Type mismatch; expected number but got string', 'E1030: Using a String as a Number: "2"'], 1)
 enddef
 
-def Test_expr7_list_subscript()
+def Test_expr8_list_subscript()
   var lines =<< trim END
       var list = [0, 1, 2, 3, 4]
       assert_equal(0, list[0])
@@ -3446,7 +3525,7 @@ def Test_expr7_list_subscript()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_dict_subscript()
+def Test_expr8_dict_subscript()
   var lines =<< trim END
       var l = [{lnum: 2}, {lnum: 1}]
       var res = l[0].lnum > l[1].lnum
@@ -3467,7 +3546,7 @@ def Test_expr7_dict_subscript()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_blob_subscript()
+def Test_expr8_blob_subscript()
   var lines =<< trim END
       var b = 0z112233
       assert_equal(0x11, b[0])
@@ -3479,7 +3558,7 @@ def Test_expr7_blob_subscript()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr7_subscript_linebreak()
+def Test_expr8_subscript_linebreak()
   var lines =<< trim END
       var range = range(
                     3)
@@ -3522,7 +3601,7 @@ def Test_expr7_subscript_linebreak()
   CheckDefAndScriptFailure(lines, ['E1127:', 'E116:'], 2)
 enddef
 
-func Test_expr7_trailing_fails()
+func Test_expr8_trailing_fails()
   call CheckDefAndScriptFailure(['var l = [2]', 'l->((ll) => add(ll, 8))'], 'E107:', 2)
   call CheckDefAndScriptFailure(['var l = [2]', 'l->((ll) => add(ll, 8)) ()'], 'E274:', 2)
 endfunc

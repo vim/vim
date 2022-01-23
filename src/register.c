@@ -38,41 +38,53 @@ static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     yankreg_T *
 get_y_regs(void)
 {
     return y_regs;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     yankreg_T *
 get_y_register(int reg)
 {
     return &y_regs[reg];
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
     yankreg_T *
 get_y_current(void)
 {
     return y_current;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_VIMINFO) || defined(PROTO)
     yankreg_T *
 get_y_previous(void)
 {
     return y_previous;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     void
 set_y_current(yankreg_T *yreg)
 {
     y_current = yreg;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_VIMINFO) || defined(PROTO)
     void
 set_y_previous(yankreg_T *yreg)
 {
     y_previous = yreg;
 }
+#endif
 
     void
 reset_y_append(void)
@@ -474,6 +486,7 @@ stuff_yank(int regname, char_u *p)
  */
 static int execreg_lastc = NUL;
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     int
 get_execreg_lastc(void)
 {
@@ -485,6 +498,7 @@ set_execreg_lastc(int lastc)
 {
     execreg_lastc = lastc;
 }
+#endif
 
 /*
  * When executing a register as a series of ex-commands, if the
@@ -513,7 +527,7 @@ execreg_line_continuation(char_u **lines, long *idx)
     int		j;
     char_u	*str;
 
-    ga_init2(&ga, (int)sizeof(char_u), 400);
+    ga_init2(&ga, sizeof(char_u), 400);
 
     // search backwards to find the first line of this command.
     // Any line not starting with \ or "\ is the start of the
@@ -575,7 +589,7 @@ do_execreg(
     {
 	if (execreg_lastc == NUL)
 	{
-	    emsg(_("E748: No previously used register"));
+	    emsg(_(e_no_previously_used_register));
 	    return FAIL;
 	}
 	regname = execreg_lastc;
@@ -1691,7 +1705,7 @@ do_put(
 
     if (y_size == 0 || y_array == NULL)
     {
-	semsg(_("E353: Nothing in register %s"),
+	semsg(_(e_nothing_in_register_str),
 		  regname == 0 ? (char_u *)"\"" : transchar(regname));
 	goto end;
     }
@@ -2308,6 +2322,7 @@ get_register_name(int num)
     }
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the index of the register "" points to.
  */
@@ -2316,6 +2331,7 @@ get_unname_register()
 {
     return y_previous == NULL ? -1 : y_previous - &y_regs[0];
 }
+#endif
 
 /*
  * ":dis" and ":registers": Display the contents of the yank registers.
@@ -2780,8 +2796,7 @@ write_reg_contents_lst(
 	    s = (char_u *)"";
 	else if (strings[1] != NULL)
 	{
-	    emsg(_("E883: search pattern and expression register may not "
-			"contain two or more lines"));
+	    emsg(_(e_search_pattern_and_expression_register_may_not_contain_two_or_more_lines));
 	    return;
 	}
 	else

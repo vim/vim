@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2021 Dec 21
+*terminal.txt*	For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,6 +39,7 @@ If the result is "1" you have it.
       Stepping through code			|termdebug-stepping|
       Inspecting variables			|termdebug-variables|
       Other commands				|termdebug-commands|
+      Events					|termdebug-events|
       Prompt mode				|termdebug-prompt|
       Communication				|termdebug-communication|
       Customizing				|termdebug-customizing|
@@ -1177,7 +1178,7 @@ gdb window	A terminal window in which "gdb vim" is executed.  Here you
 program window	A terminal window for the executed program.  When "run" is
 		used in gdb the program I/O will happen in this window, so
 		that it does not interfere with controlling gdb.  The buffer
-		name is "gdb program".
+		name is "debugged program".
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Dec 27
+" Last Change:	2022 Jan 23
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -193,7 +193,8 @@ au BufNewFile,BufRead *.awk,*.gawk		setf awk
 au BufNewFile,BufRead *.mch,*.ref,*.imp		setf b
 
 " BASIC or Visual Basic
-au BufNewFile,BufRead *.bas			call dist#ft#FTVB("basic")
+au BufNewFile,BufRead *.bas			call dist#ft#FTbas()
+au BufNewFile,BufRead *.bi,*.bm			call dist#ft#FTbas()
 
 " Visual Basic Script (close to Visual Basic) or Visual Basic .NET
 au BufNewFile,BufRead *.vb,*.vbs,*.dsm,*.ctl	setf vb
@@ -202,7 +203,7 @@ au BufNewFile,BufRead *.vb,*.vbs,*.dsm,*.ctl	setf vb
 au BufNewFile,BufRead *.iba,*.ibi		setf ibasic
 
 " FreeBasic file (similar to QBasic)
-au BufNewFile,BufRead *.fb,*.bi			setf freebasic
+au BufNewFile,BufRead *.fb			setf freebasic
 
 " Batch file for MSDOS.
 au BufNewFile,BufRead *.bat,*.sys		setf dosbatch
@@ -497,7 +498,7 @@ au BufNewFile,BufRead */debian/patches/*	call dist#ft#Dep3patch()
 " Diff files
 au BufNewFile,BufRead *.diff,*.rej		setf diff
 au BufNewFile,BufRead *.patch
-	\ if getline(1) =~ '^From [0-9a-f]\{40\} Mon Sep 17 00:00:00 2001$' |
+	\ if getline(1) =~# '^From [0-9a-f]\{40,\} Mon Sep 17 00:00:00 2001$' |
 	\   setf gitsendemail |
 	\ else |
 	\   setf diff |
@@ -676,20 +677,19 @@ autocmd BufRead,BufNewFile *.gift		setf gift
 
 " Git
 au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG	setf gitcommit
-au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig	setf gitconfig
+au BufNewFile,BufRead NOTES_EDITMSG,EDIT_DESCRIPTION		setf gitcommit
+au BufNewFile,BufRead *.git/config,.gitconfig,*/etc/gitconfig	setf gitconfig
 au BufNewFile,BufRead */.config/git/config			setf gitconfig
+au BufNewFile,BufRead *.git/config.worktree			setf gitconfig
+au BufNewFile,BufRead *.git/worktrees/*/config.worktree		setf gitconfig
 au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
   au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config		setf gitconfig
 endif
 au BufNewFile,BufRead git-rebase-todo		setf gitrebase
 au BufRead,BufNewFile .gitsendemail.msg.??????	setf gitsendemail
-au BufNewFile,BufRead .msg.[0-9]*
-      \ if getline(1) =~ '^From.*# This line is ignored.$' |
-      \   setf gitsendemail |
-      \ endif
 au BufNewFile,BufRead *.git/*
-      \ if getline(1) =~ '^\x\{40\}\>\|^ref: ' |
+      \ if getline(1) =~# '^\x\{40,\}\>\|^ref: ' |
       \   setf git |
       \ endif
 
@@ -716,7 +716,7 @@ au BufNewFile,BufRead gitolite.conf		setf gitolite
 au BufNewFile,BufRead {,.}gitolite.rc,example.gitolite.rc	setf perl
 
 " Gnuplot scripts
-au BufNewFile,BufRead *.gpi			setf gnuplot
+au BufNewFile,BufRead *.gpi,.gnuplot		setf gnuplot
 
 " Go (Google)
 au BufNewFile,BufRead *.go			setf go
@@ -888,6 +888,9 @@ au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 " JSON
 au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
 
+" JSON5
+au BufNewFile,BufRead *.json5			setf json5
+
 " JSON Patch (RFC 6902)
 au BufNewFile,BufRead *.json-patch			setf json
 
@@ -963,9 +966,9 @@ au BufNewFile,BufRead lilo.conf			setf lilo
 " Lisp (*.el = ELisp, *.cl = Common Lisp)
 " *.jl was removed, it's also used for Julia, better skip than guess wrong.
 if has("fname_case")
-  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.L,.emacs,.sawfishrc setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,*.cl,*.L,.emacs,.sawfishrc setf lisp
 else
-  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,.emacs,.sawfishrc setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,*.cl,.emacs,.sawfishrc setf lisp
 endif
 
 " SBCL implementation of Common Lisp
@@ -1216,6 +1219,9 @@ au BufNewFile,BufRead *.xom,*.xin		setf omnimark
 
 " OPAM
 au BufNewFile,BufRead opam,*.opam,*.opam.template setf opam
+
+" OpenFOAM
+au BufNewFile,BufRead [a-zA-Z0-9]*Dict\(.*\)\=,[a-zA-Z]*Properties\(.*\)\=,*Transport\(.*\),fvSchemes,fvSolution,fvConstrains,fvModels,*/constant/g,*/0\(\.orig\)\=/* call dist#ft#FTfoam()
 
 " OpenROAD
 au BufNewFile,BufRead *.or			setf openroad
@@ -1669,7 +1675,7 @@ au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump setf zsh
 au BufNewFile,BufRead *.zsh			setf zsh
 
 " Scheme
-au BufNewFile,BufRead *.scm,*.ss,*.rkt,*.rktd,*.rktl 	setf scheme
+au BufNewFile,BufRead *.scm,*.ss,*.sld,*.rkt,*.rktd,*.rktl 	setf scheme
 
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen
@@ -1778,8 +1784,8 @@ au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 au BufNewFile,BufRead *.nut			setf squirrel
 
 " OpenSSH configuration
-au BufNewFile,BufRead ssh_config,*/.ssh/config		setf sshconfig
-au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf	setf sshconfig
+au BufNewFile,BufRead ssh_config,*/.ssh/config,*/.ssh/*.conf	setf sshconfig
+au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 
 " OpenSSH server configuration
 au BufNewFile,BufRead sshd_config			setf sshdconfig
@@ -2285,6 +2291,9 @@ au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
 
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf*		call s:StarSetf('lilo')
+
+" Libsensors
+au BufNewFile,BufRead */etc/sensors.d/[^.]*	call s:StarSetf('sensors')
 
 " Logcheck
 au BufNewFile,BufRead */etc/logcheck/*.d*/*	call s:StarSetf('logcheck')

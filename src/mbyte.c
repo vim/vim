@@ -513,7 +513,7 @@ mb_init(void)
 	else if (GetLastError() == ERROR_INVALID_PARAMETER)
 	{
 codepage_invalid:
-	    return N_("E543: Not a valid codepage");
+	    return N_(e_not_valid_codepage);
 	}
     }
 #endif
@@ -530,7 +530,7 @@ codepage_invalid:
 	// Windows: accept only valid codepage numbers, check below.
 	if (p_enc[6] != 'c' || p_enc[7] != 'p'
 			      || (enc_dbcs_new = atoi((char *)p_enc + 8)) == 0)
-	    return e_invarg;
+	    return e_invalid_argument;
 #else
 	// Unix: accept any "2byte-" name, assume current locale.
 	enc_dbcs_new = DBCS_2BYTE;
@@ -563,7 +563,7 @@ codepage_invalid:
 	}
     }
     else    // Don't know what encoding this is, reject it.
-	return e_invarg;
+	return e_invalid_argument;
 
     if (enc_dbcs_new != 0)
     {
@@ -4907,7 +4907,7 @@ iconv_enabled(int verbose)
 	if (verbose && p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadlib),
+	    semsg(_(e_could_not_load_library_str_str),
 		    hIconvDLL == 0 ? DYNAMIC_ICONV_DLL : DYNAMIC_MSVCRT_DLL,
 		    GetWin32Error());
 	    verbose_leave();
@@ -4930,7 +4930,7 @@ iconv_enabled(int verbose)
 	if (verbose && p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadfunc), "for libiconv");
+	    semsg(_(e_could_not_load_library_function_str), "for libiconv");
 	    verbose_leave();
 	}
 	return FALSE;
@@ -5524,7 +5524,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
     l = argvars[0].vval.v_list;

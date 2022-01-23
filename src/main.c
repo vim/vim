@@ -1091,12 +1091,15 @@ state_no_longer_safe(char *reason UNUSED)
     was_safe = FALSE;
 }
 
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE) || defined(PROTO)
     int
 get_was_safe_state(void)
 {
     return was_safe;
 }
+#endif
 
+#if defined(MESSAGE_QUEUE) || defined(PROTO)
 /*
  * Invoked when leaving code that invokes callbacks.  Then trigger
  * SafeStateAgain, if it was safe when starting to wait for a character.
@@ -1137,6 +1140,7 @@ may_trigger_safestateagain(void)
 		  "SafeState: back to waiting, not triggering SafeStateAgain");
 #endif
 }
+#endif
 
 
 /*
@@ -1241,6 +1245,13 @@ main_loop(
 	}
 	else
 	    previous_got_int = FALSE;
+
+#ifdef FEAT_EVAL
+	// At the toplevel there is no exception handling.  Discard any that
+	// may be hanging around (e.g. from "interrupt" at the debug prompt).
+	if (did_throw && !ex_normal_busy)
+	    discard_current_exception();
+#endif
 
 	if (!exmode_active)
 	    msg_scroll = FALSE;
@@ -2000,7 +2011,7 @@ command_line_scan(mparm_T *parmp)
 		{
 		    Columns = 80;	// need to init Columns
 		    info_message = TRUE; // use mch_msg(), not mch_errmsg()
-#if defined(FEAT_GUI) && !defined(ALWAYS_USE_GUI)
+#if defined(FEAT_GUI) && !defined(ALWAYS_USE_GUI) && !defined(VIMDLL)
 		    gui.starting = FALSE; // not starting GUI, will exit
 #endif
 		    list_version();
@@ -2094,7 +2105,7 @@ command_line_scan(mparm_T *parmp)
 #ifdef FEAT_ARABIC
 		set_option_value((char_u *)"arabic", 1L, NULL, 0);
 #else
-		mch_errmsg(_(e_noarabic));
+		mch_errmsg(_(e_arabic_cannot_be_used_not_enabled_at_compile_time));
 		mch_exit(2);
 #endif
 		break;
@@ -3141,7 +3152,7 @@ source_startup_scripts(mparm_T *parmp)
 	else
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
-		semsg(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
+		semsg(_(e_cannot_read_from_str_2), parmp->use_vimrc);
 	}
     }
     else if (!silent_mode)

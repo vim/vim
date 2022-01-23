@@ -320,7 +320,7 @@ ex_profile(exarg_T *eap)
 	set_vim_var_nr(VV_PROFILING, 1L);
     }
     else if (do_profiling == PROF_NONE)
-	emsg(_("E750: First use \":profile start {fname}\""));
+	emsg(_(e_first_use_profile_start_fname));
     else if (STRCMP(eap->arg, "pause") == 0)
     {
 	if (do_profiling == PROF_YES)
@@ -921,7 +921,7 @@ profile_dump(void)
     {
 	fd = mch_fopen((char *)profile_fname, "w");
 	if (fd == NULL)
-	    semsg(_(e_notopen), profile_fname);
+	    semsg(_(e_cant_open_file_str), profile_fname);
 	else
 	{
 	    script_dump_profile(fd);

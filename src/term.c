@@ -2222,13 +2222,13 @@ tgetent_error(char_u *tbuf, char_u *term)
 
 	if (i < 0)
 # ifdef TGETENT_ZERO_ERR
-	    return _("E557: Cannot open termcap file");
+	    return _(e_cannot_open_termcap_file);
 	if (i == 0)
 # endif
 #ifdef TERMINFO
-	    return _("E558: Terminal entry not found in terminfo");
+	    return _(e_terminal_entry_not_found_in_terminfo);
 #else
-	    return _("E559: Terminal entry not found in termcap");
+	    return _(e_terminal_entry_not_found_in_termcap);
 #endif
     }
     return NULL;
@@ -2384,7 +2384,7 @@ add_termcap_entry(char_u *name, int force)
 	    emsg(error_msg);
 	else
 #endif
-	    semsg(_("E436: No \"%s\" entry in termcap"), name);
+	    semsg(_(e_no_str_entry_in_termcap), name);
     }
     return FAIL;
 }
@@ -3161,7 +3161,7 @@ ttest(int pairs)
      * MUST have "cm": cursor motion.
      */
     if (*T_CM == NUL)
-	emsg(_("E437: terminal capability \"cm\" required"));
+	emsg(_(e_terminal_capability_cm_required));
 
     /*
      * if "cs" defined, use a scroll region, it's faster.
@@ -3801,7 +3801,7 @@ check_terminal_behavior(void)
 	line_was_clobbered(1);
     }
 
-    if (xcc_status.tr_progress == STATUS_GET)
+    if (xcc_status.tr_progress == STATUS_GET && Rows > 2)
     {
 	// 2. Check compatibility with xterm.
 	// We move the cursor to (2, 0), print a test sequence and then query
@@ -3991,6 +3991,7 @@ cursor_off(void)
     }
 }
 
+#ifdef FEAT_GUI
 /*
  * Check whether the cursor is invisible due to an ongoing cursor-less sleep
  */
@@ -3999,6 +4000,7 @@ cursor_is_sleeping(void)
 {
     return cursor_is_asleep;
 }
+#endif
 
 /*
  * Disable the cursor and mark it disabled by cursor-less sleep

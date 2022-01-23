@@ -477,7 +477,7 @@ mf_put(
     flags = hp->bh_flags;
 
     if ((flags & BH_LOCKED) == 0)
-	iemsg(_("E293: block was not locked"));
+	iemsg(_(e_block_was_not_locked));
     flags &= ~BH_LOCKED;
     if (dirty)
     {
@@ -945,12 +945,12 @@ mf_read(memfile_T *mfp, bhdr_T *hp)
     size = page_size * hp->bh_page_count;
     if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
     {
-	PERROR(_("E294: Seek error in swap file read"));
+	PERROR(_(e_seek_error_in_swap_file_read));
 	return FAIL;
     }
     if ((unsigned)read_eintr(mfp->mf_fd, hp->bh_data, size) != size)
     {
-	PERROR(_("E295: Read error in swap file"));
+	PERROR(_(e_read_error_in_swap_file));
 	return FAIL;
     }
 
@@ -1021,7 +1021,7 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 	    {
 		if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
 		{
-		    PERROR(_("E296: Seek error in swap file write"));
+		    PERROR(_(e_seek_error_in_swap_file_write));
 		    return FAIL;
 		}
 		if (mf_write_block(mfp,
@@ -1046,7 +1046,7 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 		// successful write or when hitting a key. We keep on trying,
 		// in case some space becomes available.
 		if (!did_swapwrite_msg)
-		    emsg(_("E297: Write error in swap file"));
+		    emsg(_(e_write_error_in_swap_file));
 		did_swapwrite_msg = TRUE;
 		return FAIL;
 	    }
@@ -1264,7 +1264,7 @@ mf_do_open(
     if ((flags & O_CREAT) && mch_lstat((char *)mfp->mf_fname, &sb) >= 0)
     {
 	mfp->mf_fd = -1;
-	emsg(_("E300: Swap file already exists (symlink attack?)"));
+	emsg(_(e_swap_file_already_exists_symlink_attack));
     }
     else
 #endif

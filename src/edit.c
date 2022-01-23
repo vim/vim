@@ -175,7 +175,7 @@ edit(
     if (textwinlock != 0 || textlock != 0
 			  || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_textwinlock));
+	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
@@ -1055,8 +1055,9 @@ doESCkey:
 	case K_IGNORE:	// Something mapped to nothing
 	    break;
 
-	case K_COMMAND:		// <Cmd>command<CR>
-	    do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+	case K_COMMAND:		    // <Cmd>command<CR>
+	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
+	    do_cmdkey_command(c, 0);
 #ifdef FEAT_TERMINAL
 	    if (term_use_loop())
 		// Started a terminal that gets the input, exit Insert mode.
@@ -1280,7 +1281,7 @@ doESCkey:
 	    // but it is under other ^X modes
 	    if (*curbuf->b_p_cpt == NUL
 		    && (ctrl_x_mode_normal() || ctrl_x_mode_whole_line())
-		    && !(compl_cont_status & CONT_LOCAL))
+		    && !compl_status_local())
 		goto normalchar;
 
 docomplete:
@@ -1289,7 +1290,7 @@ docomplete:
 	    disable_fold_update++;  // don't redraw folds here
 #endif
 	    if (ins_complete(c, TRUE) == FAIL)
-		compl_cont_status = 0;
+		compl_status_clear();
 #ifdef FEAT_FOLDING
 	    disable_fold_update--;
 #endif
@@ -1715,6 +1716,7 @@ edit_putchar(int c, int highlight)
     }
 }
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Set the insert start position for when using a prompt buffer.
  */
@@ -1728,6 +1730,7 @@ set_insstart(linenr_T lnum, int col)
     Insstart_blank_vcol = MAXCOL;
     arrow_used = FALSE;
 }
+#endif
 
 /*
  * Undo the previous edit_putchar().

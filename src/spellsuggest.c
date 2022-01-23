@@ -481,7 +481,7 @@ spell_suggest(int count)
 
     if (*curwin->w_s->b_p_spl == NUL)
     {
-	emsg(_(e_no_spell));
+	emsg(_(e_spell_checking_is_not_possible));
 	return;
     }
 
@@ -774,8 +774,8 @@ spell_find_suggest(
 
     // Set the info in "*su".
     CLEAR_POINTER(su);
-    ga_init2(&su->su_ga, (int)sizeof(suggest_T), 10);
-    ga_init2(&su->su_sga, (int)sizeof(suggest_T), 10);
+    ga_init2(&su->su_ga, sizeof(suggest_T), 10);
+    ga_init2(&su->su_sga, sizeof(suggest_T), 10);
     if (*badptr == NUL)
 	return;
     hash_init(&su->su_banned);
@@ -935,7 +935,7 @@ spell_suggest_file(suginfo_T *su, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return;
     }
 
@@ -2943,7 +2943,7 @@ score_combine(suginfo_T *su)
     check_suggestions(su, &su->su_sga);
     (void)cleanup_suggestions(&su->su_sga, su->su_maxscore, su->su_maxcount);
 
-    ga_init2(&ga, (int)sizeof(suginfo_T), 1);
+    ga_init2(&ga, sizeof(suginfo_T), 1);
     if (ga_grow(&ga, su->su_ga.ga_len + su->su_sga.ga_len) == FAIL)
 	return;
 

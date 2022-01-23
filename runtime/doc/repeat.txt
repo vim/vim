@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2021 Dec 27
+*repeat.txt*    For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -354,7 +354,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 <
 
 :scriptv[ersion] {version}		*:scriptv* *:scriptversion*
-								*E999* *E984*
+							*E999* *E984* *E1040*
 			Specify the version of Vim for the lines that follow
 			in the same file.  Only applies at the toplevel of
 			sourced scripts, not inside functions.
@@ -367,8 +367,8 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 
 :vim9s[cript] [noclear]				*:vim9s* *:vim9script*
 			Marks a script file as containing |Vim9-script|
-			commands.  Also see |vim9-namespace|.
-			Must be the first command in the file.
+			commands.  Also see |vim9-namespace|. *E1038*
+			Must be the first command in the file. *E1039*
 			For [noclear] see |vim9-reload|.
 			Without the |+eval| feature this changes the syntax
 			for some commands.
@@ -377,8 +377,11 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 
 						*:scr* *:scriptnames*
 :scr[iptnames]		List all sourced script names, in the order they were
-			first sourced.  The number is used for the script ID
-			|<SID>|.
+			first encountered.  The number is used for the script
+			ID |<SID>|.
+			For a script that was used with `import autoload` but
+			was not actually sourced yet an "A" is shown after the
+			script ID.
 			{not available when compiled without the |+eval|
 			feature}
 

@@ -76,6 +76,7 @@ let s:filename_checks = {
     \ 'ave': ['file.ave'],
     \ 'awk': ['file.awk', 'file.gawk'],
     \ 'b': ['file.mch', 'file.ref', 'file.imp'],
+    \ 'basic': ['file.bas', 'file.bi', 'file.bm'],
     \ 'bzl': ['file.bazel', 'file.bzl', 'WORKSPACE'],
     \ 'bc': ['file.bc'],
     \ 'bdf': ['file.bdf'],
@@ -186,7 +187,7 @@ let s:filename_checks = {
     \ 'fortran': ['file.f', 'file.for', 'file.fortran', 'file.fpp', 'file.ftn', 'file.f77', 'file.f90', 'file.f95', 'file.f03', 'file.f08'],
     \ 'fpcmake': ['file.fpc'],
     \ 'framescript': ['file.fsl'],
-    \ 'freebasic': ['file.fb', 'file.bi'],
+    \ 'freebasic': ['file.fb'],
     \ 'fsharp': ['file.fs', 'file.fsi', 'file.fsx'],
     \ 'fstab': ['fstab', 'mtab'],
     \ 'fvwm': ['/.fvwm/file', 'any/.fvwm/file'],
@@ -195,14 +196,14 @@ let s:filename_checks = {
     \ 'gedcom': ['file.ged', 'lltxxxxx.txt', '/tmp/lltmp', '/tmp/lltmp-file', 'any/tmp/lltmp', 'any/tmp/lltmp-file'],
     \ 'gemtext': ['file.gmi', 'file.gemini'],
     \ 'gift': ['file.gift'],
-    \ 'gitcommit': ['COMMIT_EDITMSG', 'MERGE_MSG', 'TAG_EDITMSG'],
-    \ 'gitconfig': ['file.git/config', '.gitconfig', '.gitmodules', 'file.git/modules//config', '/.config/git/config', '/etc/gitconfig', '/etc/gitconfig.d/file', '/.gitconfig.d/file', 'any/.config/git/config', 'any/.gitconfig.d/file', 'some.git/config', 'some.git/modules/any/config'],
+    \ 'gitcommit': ['COMMIT_EDITMSG', 'MERGE_MSG', 'TAG_EDITMSG', 'NOTES_EDITMSG', 'EDIT_DESCRIPTION'],
+    \ 'gitconfig': ['file.git/config', 'file.git/config.worktree', 'file.git/worktrees/x/config.worktree', '.gitconfig', '.gitmodules', 'file.git/modules//config', '/.config/git/config', '/etc/gitconfig', '/usr/local/etc/gitconfig', '/etc/gitconfig.d/file', '/.gitconfig.d/file', 'any/.config/git/config', 'any/.gitconfig.d/file', 'some.git/config', 'some.git/modules/any/config'],
     \ 'gitolite': ['gitolite.conf', '/gitolite-admin/conf/file', 'any/gitolite-admin/conf/file'],
     \ 'gitrebase': ['git-rebase-todo'],
     \ 'gitsendemail': ['.gitsendemail.msg.xxxxxx'],
     \ 'gkrellmrc': ['gkrellmrc', 'gkrellmrc_x'],
     \ 'gnash': ['gnashrc', '.gnashrc', 'gnashpluginrc', '.gnashpluginrc'],
-    \ 'gnuplot': ['file.gpi'],
+    \ 'gnuplot': ['file.gpi', '.gnuplot'],
     \ 'go': ['file.go'],
     \ 'gomod': ['go.mod'],
     \ 'gp': ['file.gp', '.gprc'],
@@ -264,6 +265,7 @@ let s:filename_checks = {
     \ 'jovial': ['file.jov', 'file.j73', 'file.jovial'],
     \ 'jproperties': ['file.properties', 'file.properties_xx', 'file.properties_xx_xx', 'some.properties_xx_xx_file'],
     \ 'json': ['file.json', 'file.jsonp', 'file.json-patch', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', '.babelrc', '.eslintrc', '.prettierrc', '.firebaserc', 'file.slnf'],
+    \ 'json5': ['file.json5'],
     \ 'jsonc': ['file.jsonc'],
     \ 'jsp': ['file.jsp'],
     \ 'julia': ['file.jl'],
@@ -286,7 +288,7 @@ let s:filename_checks = {
     \ 'lilo': ['lilo.conf', 'lilo.conf-file'],
     \ 'limits': ['/etc/limits', '/etc/anylimits.conf', '/etc/anylimits.d/file.conf', '/etc/limits.conf', '/etc/limits.d/file.conf', '/etc/some-limits.conf', '/etc/some-limits.d/file.conf', 'any/etc/limits', 'any/etc/limits.conf', 'any/etc/limits.d/file.conf', 'any/etc/some-limits.conf', 'any/etc/some-limits.d/file.conf'],
     \ 'liquid': ['file.liquid'],
-    \ 'lisp': ['file.lsp', 'file.lisp', 'file.el', 'file.cl', '.emacs', '.sawfishrc', 'sbclrc', '.sbclrc'],
+    \ 'lisp': ['file.lsp', 'file.lisp', 'file.asd', 'file.el', 'file.cl', '.emacs', '.sawfishrc', 'sbclrc', '.sbclrc'],
     \ 'lite': ['file.lite', 'file.lt'],
     \ 'litestep': ['/LiteStep/any/file.rc', 'any/LiteStep/any/file.rc'],
     \ 'loginaccess': ['/etc/login.access', 'any/etc/login.access'],
@@ -437,7 +439,7 @@ let s:filename_checks = {
     \ 'sather': ['file.sa'],
     \ 'sbt': ['file.sbt'],
     \ 'scala': ['file.scala', 'file.sc'],
-    \ 'scheme': ['file.scm', 'file.ss', 'file.rkt', 'file.rktd', 'file.rktl'],
+    \ 'scheme': ['file.scm', 'file.ss', 'file.sld', 'file.rkt', 'file.rktd', 'file.rktl'],
     \ 'scilab': ['file.sci', 'file.sce'],
     \ 'screen': ['.screenrc', 'screenrc'],
     \ 'sexplib': ['file.sexp'],
@@ -448,7 +450,7 @@ let s:filename_checks = {
     \ 'sdl': ['file.sdl', 'file.pr'],
     \ 'sed': ['file.sed'],
     \ 'svelte': ['file.svelte'],
-    \ 'sensors': ['/etc/sensors.conf', '/etc/sensors3.conf', 'any/etc/sensors.conf', 'any/etc/sensors3.conf'],
+    \ 'sensors': ['/etc/sensors.conf', '/etc/sensors3.conf', '/etc/sensors.d/file', 'any/etc/sensors.conf', 'any/etc/sensors3.conf', 'any/etc/sensors.d/file'],
     \ 'services': ['/etc/services', 'any/etc/services'],
     \ 'setserial': ['/etc/serial.conf', 'any/etc/serial.conf'],
     \ 'sh': ['.bashrc', 'file.bash', '/usr/share/doc/bash-completion/filter.sh','/etc/udev/cdsymlinks.conf', 'any/etc/udev/cdsymlinks.conf'],
@@ -482,7 +484,7 @@ let s:filename_checks = {
     \ 'squid': ['squid.conf'],
     \ 'squirrel': ['file.nut'],
     \ 'srec': ['file.s19', 'file.s28', 'file.s37', 'file.mot', 'file.srec'],
-    \ 'sshconfig': ['ssh_config', '/.ssh/config', '/etc/ssh/ssh_config.d/file.conf', 'any/etc/ssh/ssh_config.d/file.conf', 'any/.ssh/config'],
+    \ 'sshconfig': ['ssh_config', '/.ssh/config', '/etc/ssh/ssh_config.d/file.conf', 'any/etc/ssh/ssh_config.d/file.conf', 'any/.ssh/config', 'any/.ssh/file.conf'],
     \ 'sshdconfig': ['sshd_config', '/etc/ssh/sshd_config.d/file.conf', 'any/etc/ssh/sshd_config.d/file.conf'],
     \ 'st': ['file.st'],
     \ 'stata': ['file.ado', 'file.do', 'file.imata', 'file.mata'],
@@ -654,7 +656,7 @@ let s:script_checks = {
       \                ['#!/path/nodejs'],
       \                ['#!/path/rhino']],
       \ 'bc': [['#!/path/bc']],
-      \ 'sed': [['#!/path/sed']],
+      \ 'sed': [['#!/path/sed'], ['#n'], ['#n comment']],
       \ 'ocaml': [['#!/path/ocaml']],
       \ 'awk': [['#!/path/awk'],
       \         ['#!/path/gawk']],
@@ -1067,7 +1069,169 @@ func Test_dep3patch_file()
   call assert_notequal('dep3patch', &filetype)
   bwipe!
 
-  call delete('debian/patches', 'rf')
+  call delete('debian', 'rf')
+endfunc
+
+func Test_patch_file()
+  filetype on
+
+  call writefile([], 'Xfile.patch')
+  split Xfile.patch
+  call assert_equal('diff', &filetype)
+  bwipe!
+
+  call writefile(['From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001'], 'Xfile.patch')
+  split Xfile.patch
+  call assert_equal('gitsendemail', &filetype)
+  bwipe!
+
+  call writefile(['From 0000000000000000000000000000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001'], 'Xfile.patch')
+  split Xfile.patch
+  call assert_equal('gitsendemail', &filetype)
+  bwipe!
+
+  call delete('Xfile.patch')
+  filetype off
+endfunc
+
+func Test_git_file()
+  filetype on
+
+  call assert_true(mkdir('Xrepo.git', 'p'))
+
+  call writefile([], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('', &filetype)
+  bwipe!
+
+  call writefile(['0000000000000000000000000000000000000000'], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('git', &filetype)
+  bwipe!
+
+  call writefile(['0000000000000000000000000000000000000000000000000000000000000000'], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('git', &filetype)
+  bwipe!
+
+  call writefile(['ref: refs/heads/master'], 'Xrepo.git/HEAD')
+  split Xrepo.git/HEAD
+  call assert_equal('git', &filetype)
+  bwipe!
+
+  call delete('Xrepo.git', 'rf')
+  filetype off
+endfunc
+
+func Test_foam_file()
+  filetype on
+  call assert_true(mkdir('0', 'p'))
+  call assert_true(mkdir('0.orig', 'p'))
+
+  call writefile(['FoamFile {', '    object something;'], 'Xfile1Dict')
+  split Xfile1Dict
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call writefile(['FoamFile {', '    object something;'], 'Xfile1Dict.something')
+  split Xfile1Dict.something
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call writefile(['FoamFile {', '    object something;'], 'XfileProperties')
+  split XfileProperties
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call writefile(['FoamFile {', '    object something;'], 'XfileProperties.something')
+  split XfileProperties.something
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call writefile(['FoamFile {', '    object something;'], 'XfileProperties')
+  split XfileProperties
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call writefile(['FoamFile {', '    object something;'], 'XfileProperties.something')
+  split XfileProperties.something
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call writefile(['FoamFile {', '    object something;'], '0/Xfile')
+  split 0/Xfile
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call writefile(['FoamFile {', '    object something;'], '0.orig/Xfile')
+  split 0.orig/Xfile
+  call assert_equal('foam', &filetype)
+  bwipe!
+
+  call delete('0', 'rf')
+  call delete('0.orig', 'rf')
+  filetype off
+endfunc
+
+func Test_bas_file()
+  filetype on
+
+  call writefile(['looks like BASIC'], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('basic', &filetype)
+  bwipe!
+
+  " Test dist#ft#FTbas()
+
+  let g:filetype_bas = 'freebasic'
+  split Xfile.bas
+  call assert_equal('freebasic', &filetype)
+  bwipe!
+  unlet g:filetype_bas
+
+  " FreeBASIC
+
+  call writefile(["/' FreeBASIC multiline comment '/"], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('freebasic', &filetype)
+  bwipe!
+
+  call writefile(['#define TESTING'], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('freebasic', &filetype)
+  bwipe!
+
+  call writefile(['option byval'], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('freebasic', &filetype)
+  bwipe!
+
+  call writefile(['extern "C"'], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('freebasic', &filetype)
+  bwipe!
+
+  " QB64
+
+  call writefile(['$LET TESTING = 1'], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('qb64', &filetype)
+  bwipe!
+
+  call writefile(['OPTION _EXPLICIT'], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('qb64', &filetype)
+  bwipe!
+
+  " Visual Basic
+
+  call writefile(['Attribute VB_NAME = "Testing"'], 'Xfile.bas')
+  split Xfile.bas
+  call assert_equal('vb', &filetype)
+  bwipe!
+
+  call delete('Xfile.bas')
+  filetype off
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

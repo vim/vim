@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Dec 27
+*editing.txt*   For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -433,7 +433,7 @@ This also works for most other systems, with the restriction that the
 backticks must be around the whole item.  It is not possible to have text
 directly before the first or just after the last backtick.
 
-							*`=*
+						*`=* *E1083*
 You can have the backticks expanded as a Vim expression, instead of as an
 external command, by putting an equal sign right after the first backtick,
 e.g.: >
@@ -890,7 +890,7 @@ Note: When the 'write' option is off, you are not able to write any file.
 
 							*:w* *:write*
 					*E502* *E503* *E504* *E505*
-					*E512* *E514* *E667* *E796* *E949*
+					*E512* *E514* *E667* *E949*
 :w[rite] [++opt]	Write the whole buffer to the current file.  This is
 			the normal way to save changes to a file.  It fails
 			when the 'readonly' option is set or when there is
@@ -1388,7 +1388,8 @@ becomes the current directory for that window.  Windows where the |:lcd|
 command has not been used stick to the global or tab-local current directory.
 When jumping to another window the current directory is changed to the last
 specified local current directory.  If none was specified, the global or
-tab-local current directory is used.
+tab-local current directory is used.  When creating a new window it inherits
+the local directory of the current window.
 
 When a |:tcd| command has been used for a tab page, the specified directory
 becomes the current directory for the current tab page and the current window.
@@ -1770,7 +1771,7 @@ There are three different types of searching:
 	/u/user_x/work/include
 	/u/user_x/include
 
-<   Note: If your 'path' setting includes an non-existing directory, Vim will
+<   Note: If your 'path' setting includes a non-existing directory, Vim will
    skip the non-existing directory, but continues searching in the parent of
    the non-existing directory if upwards searching is used.  E.g. when
    searching "../include" and that doesn't exist, and upward searching is

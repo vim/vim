@@ -174,7 +174,7 @@ static garray_T dict_stack = GA_EMPTY;
 dict_stack_save(typval_T *tv)
 {
     if (dict_stack.ga_growsize == 0)
-	ga_init2(&dict_stack, (int)sizeof(typval_T), 10);
+	ga_init2(&dict_stack, sizeof(typval_T), 10);
     if (ga_grow(&dict_stack, 1) == FAIL)
 	return FAIL;
     ((typval_T *)dict_stack.ga_data)[dict_stack.ga_len] = *tv;
@@ -271,7 +271,7 @@ call_dfunc(
     if (dfunc->df_deleted)
     {
 	// don't use ufunc->uf_name, it may have been freed
-	emsg_funcname(e_func_deleted,
+	emsg_funcname(e_function_was_deleted_str,
 		dfunc->df_name == NULL ? (char_u *)"unknown" : dfunc->df_name);
 	return FAIL;
     }
@@ -1007,7 +1007,7 @@ call_by_name(
 	return call_bfunc(func_idx, argcount, ectx);
     }
 
-    ufunc = find_func(name, FALSE, NULL);
+    ufunc = find_func(name, FALSE);
 
     if (ufunc == NULL)
     {
@@ -1015,7 +1015,7 @@ call_by_name(
 
 	if (script_autoload(name, TRUE))
 	    // loaded a package, search for the function again
-	    ufunc = find_func(name, FALSE, NULL);
+	    ufunc = find_func(name, FALSE);
 
 	if (vim9_aborting(prev_uncaught_emsg))
 	    return FAIL;  // bail out if loading the script caused an error
@@ -1160,7 +1160,7 @@ store_var(char_u *name, typval_T *tv)
     if (tv->v_lock)
 	flags |= ASSIGN_CONST;
     save_funccal(&entry);
-    set_var_const(name, NULL, tv, FALSE, flags, 0);
+    set_var_const(name, 0, NULL, tv, FALSE, flags, 0);
     restore_funccal();
 }
 
@@ -2200,10 +2200,12 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_LOADW:
 	    case ISN_LOADT:
 		{
-		    dictitem_T *di = NULL;
-		    hashtab_T *ht = NULL;
-		    char namespace;
+		    dictitem_T	*di = NULL;
+		    hashtab_T	*ht = NULL;
+		    char	namespace;
 
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+			goto theend;
 		    switch (iptr->isn_type)
 		    {
 			case ISN_LOADG:
@@ -2227,17 +2229,35 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    di = find_var_in_ht(ht, 0, iptr->isn_arg.string, TRUE);
 
+		    if (di == NULL && ht == get_globvar_ht()
+					    && vim_strchr(iptr->isn_arg.string,
+							AUTOLOAD_CHAR) != NULL)
+		    {
+			// Global variable has an autoload name, may still need
+			// to load the script.
+			if (script_autoload(iptr->isn_arg.string, FALSE))
+			    di = find_var_in_ht(ht, 0,
+						   iptr->isn_arg.string, TRUE);
+			if (did_emsg)
+			    goto on_error;
+		    }
+
 		    if (di == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_undefined_variable_char_str),
+			if (vim_strchr(iptr->isn_arg.string,
+							AUTOLOAD_CHAR) != NULL)
+			    // no check if the item exists in the script but
+			    // isn't exported, it is too complicated
+			    semsg(_(e_item_not_found_in_script_str),
+							 iptr->isn_arg.string);
+			else
+			    semsg(_(e_undefined_variable_char_str),
 					     namespace, iptr->isn_arg.string);
 			goto on_error;
 		    }
 		    else
 		    {
-			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
-			    goto theend;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx->ec_stack.ga_len;
 		    }
@@ -2252,7 +2272,7 @@ exec_instructions(ectx_T *ectx)
 		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (eval_variable(name, (int)STRLEN(name),
+		    if (eval_variable(name, (int)STRLEN(name), 0,
 			      STACK_TV_BOT(0), NULL, EVAL_VAR_VERBOSE) == FAIL)
 			goto on_error;
 		    ++ectx->ec_stack.ga_len;
@@ -2578,7 +2598,7 @@ exec_instructions(ectx_T *ectx)
 			    lidx = list->lv_len + lidx;
 			if (lidx < 0 || lidx > list->lv_len)
 			{
-			    semsg(_(e_listidx), lidx);
+			    semsg(_(e_list_index_out_of_range_nr), lidx);
 			    goto on_error;
 			}
 			if (lidx < list->lv_len)
@@ -2659,7 +2679,7 @@ exec_instructions(ectx_T *ectx)
 			// Can add one byte at the end.
 			if (lidx < 0 || lidx > len)
 			{
-			    semsg(_(e_blobidx), lidx);
+			    semsg(_(e_blob_index_out_of_range_nr), lidx);
 			    goto on_error;
 			}
 			if (value_check_lock(blob->bv_lock,
@@ -2879,7 +2899,7 @@ exec_instructions(ectx_T *ectx)
 				if (di == NULL)
 				{
 				    // NULL dict is equivalent to empty dict
-				    semsg(_(e_dictkey), key);
+				    semsg(_(e_key_not_present_in_dictionary), key);
 				    status = FAIL;
 				}
 				else if (var_check_fixed(di->di_flags,
@@ -2915,7 +2935,7 @@ exec_instructions(ectx_T *ectx)
 				if (li == NULL)
 				{
 				    SOURCING_LNUM = iptr->isn_lnum;
-				    semsg(_(e_listidx), n);
+				    semsg(_(e_list_index_out_of_range_nr), n);
 				    status = FAIL;
 				}
 				else if (value_check_lock(li->li_tv.v_lock,
@@ -2991,7 +3011,7 @@ exec_instructions(ectx_T *ectx)
 					&& tv_idx2->v_type != VAR_SPECIAL
 					&& n2 < n1)
 				{
-				    semsg(_(e_listidx), n2);
+				    semsg(_(e_list_index_out_of_range_nr), n2);
 				    status = FAIL;
 				}
 				if (status != FAIL
@@ -3148,7 +3168,7 @@ exec_instructions(ectx_T *ectx)
 			if (item != NULL)
 			{
 			    SOURCING_LNUM = iptr->isn_lnum;
-			    semsg(_(e_duplicate_key), key);
+			    semsg(_(e_duplicate_key_in_dicitonary), key);
 			    dict_unref(dict);
 			    goto on_error;
 			}
@@ -3309,7 +3329,7 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    else
 		    {
-			ufunc = find_func(funcref->fr_func_name, FALSE, NULL);
+			ufunc = find_func(funcref->fr_func_name, FALSE);
 		    }
 		    if (ufunc == NULL)
 		    {
@@ -3344,13 +3364,14 @@ exec_instructions(ectx_T *ectx)
 		    list_functions(NULL);
 		else
 		{
-		    exarg_T ea;
-		    char_u  *line_to_free = NULL;
+		    exarg_T	ea;
+		    garray_T	lines_to_free;
 
 		    CLEAR_FIELD(ea);
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
-		    define_function(&ea, NULL, &line_to_free);
-		    vim_free(line_to_free);
+		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
+		    define_function(&ea, NULL, &lines_to_free);
+		    ga_clear_strings(&lines_to_free);
 		}
 		break;
 
@@ -3911,12 +3932,14 @@ exec_instructions(ectx_T *ectx)
 		    list_T	*l = tv1->vval.v_list;
 
 		    // add an item to a list
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (l == NULL)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_cannot_add_to_null_list));
 			goto on_error;
 		    }
+		    if (value_check_lock(l->lv_lock, NULL, FALSE))
+			goto on_error;
 		    if (list_append_tv(l, tv2) == FAIL)
 			goto theend;
 		    clear_tv(tv2);
@@ -4022,7 +4045,7 @@ exec_instructions(ectx_T *ectx)
 			    case EXPR_SUB:  f1 = f1 - f2; break;
 			    case EXPR_ADD:  f1 = f1 + f2; break;
 			    default: SOURCING_LNUM = iptr->isn_lnum;
-				     emsg(_(e_modulus));
+				     emsg(_(e_cannot_use_percent_with_float));
 				     goto on_error;
 			}
 			clear_tv(tv1);
@@ -4249,7 +4272,7 @@ exec_instructions(ectx_T *ectx)
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_dictkey), key);
+			semsg(_(e_key_not_present_in_dictionary), key);
 
 			// If :silent! is used we will continue, make sure the
 			// stack contents makes sense and the dict stack is
@@ -4283,7 +4306,7 @@ exec_instructions(ectx_T *ectx)
 		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_dictreq));
+			emsg(_(e_dictionary_required));
 			goto on_error;
 		    }
 		    dict = tv->vval.v_dict;
@@ -4292,7 +4315,7 @@ exec_instructions(ectx_T *ectx)
 								       == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_dictkey), iptr->isn_arg.string);
+			semsg(_(e_key_not_present_in_dictionary), iptr->isn_arg.string);
 			goto on_error;
 		    }
 		    // Put the dict used on the dict stack, it might be used by
@@ -6022,18 +6045,18 @@ ex_disassemble(exarg_T *eap)
 		      TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL, NULL);
     if (fname == NULL)
     {
-	semsg(_(e_invarg2), eap->arg);
+	semsg(_(e_invalid_argument_str), eap->arg);
 	return;
     }
 
-    ufunc = find_func(fname, is_global, NULL);
+    ufunc = find_func(fname, is_global);
     if (ufunc == NULL)
     {
 	char_u *p = untrans_function_name(fname);
 
 	if (p != NULL)
 	    // Try again without making it script-local.
-	    ufunc = find_func(p, FALSE, NULL);
+	    ufunc = find_func(p, FALSE);
     }
     vim_free(fname);
     if (ufunc == NULL)

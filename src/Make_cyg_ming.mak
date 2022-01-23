@@ -668,7 +668,14 @@ DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
 endif
 
 ifeq ($(SODIUM),yes)
+ ifndef DYNAMIC_SODIUM
+DYNAMIC_SODIUM=yes
+ endif
+ ifeq ($(DYNAMIC_SODIUM),yes)
+DEFINES += -DDYNAMIC_SODIUM
+ else
 SODIUMLIB = -lsodium
+ endif
 endif
 
 # Only allow XPM for a GUI build.
@@ -1237,7 +1244,7 @@ $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
 $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL) version.h
 	$(CC) -c $(CFLAGS) gui_w32.c -o $@
 
-$(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
+$(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL)
 	$(CC) -c $(CFLAGS) if_cscope.c -o $@
 
 $(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)

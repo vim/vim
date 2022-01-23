@@ -93,6 +93,7 @@ get_ctime(time_t thetime, int add_newline)
 	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
     else
     {
+	// xgettext:no-c-format
 	(void)strftime(buf, sizeof(buf) - 1, _("%a %b %d %H:%M:%S %Y"),
 								    curtime);
 # ifdef MSWIN
@@ -190,7 +191,7 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	if (list2proftime(&argvars[0], &res) == FAIL)
 	{
 	    if (in_vim9script())
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 	    return;
 	}
 	profile_end(&res);
@@ -202,7 +203,7 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		|| list2proftime(&argvars[1], &res) == FAIL)
 	{
 	    if (in_vim9script())
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 	    return;
 	}
 	profile_sub(&res, &start);
@@ -240,7 +241,7 @@ f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
     if (list2proftime(&argvars[0], &tm) == OK)
 	rettv->vval.v_float = profile_float(&tm);
     else if (in_vim9script())
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 #  endif
 }
 # endif
@@ -264,7 +265,7 @@ f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
     if (list2proftime(&argvars[0], &tm) == OK)
 	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
     else if (in_vim9script())
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 # endif
 }
 
@@ -501,8 +502,9 @@ check_due_timer(void)
     int		need_update_screen = FALSE;
     long	current_id = last_timer_id;
 
-    // Don't run any timers while exiting or dealing with an error.
-    if (exiting || aborting())
+    // Don't run any timers while exiting, dealing with an error or at the
+    // debug prompt.
+    if (exiting || aborting() || debug_mode)
 	return next_due;
 
     profile_start(&now);
@@ -842,7 +844,7 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 	if (argvars[2].v_type != VAR_DICT
 				   || (dict = argvars[2].vval.v_dict) == NULL)
 	{
-	    semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
 	    return;
 	}
 	if (dict_find(dict, (char_u *)"repeat", -1) != NULL)

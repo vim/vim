@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 27
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,18 +38,22 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Also set the script context for other "expr" options, like for 'foldexpr'?
+    'printexpr'     eval_printexpr()
+    "expr:" part of 'spellsuggest   eval_spell_expr()
+
 Once Vim9 is stable:
-- Add the "vim9script" feature, can use has('vim9script')
-    Remove TODO in vim9.txt
-- Change the help to prefer Vim9 syntax where appropriate
-- In the generic eval docs, point out the Vim9 syntax where it differs.
 - Add all the error numbers in a good place in documentation.
+    done until E1083
+- Check code coverage, add more tests if needed.
 - Use Vim9 for runtime files.
-    PR #7497 for autoload/ccomplete.vim
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.
-- better implementation for partial and tests for that.
+- Better implementation for partial and tests for that.
+- when using "const" mark the variable type as const with TTFLAG_CONST, so
+  that an error is given at compile time when trying to change it.  E.g. for a
+  const list and trying to call add().
 - Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
   'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
@@ -58,8 +62,8 @@ Further Vim9 improvements, possibly after launch:
   evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- implement :type, "import type"
-- implement :enum,  "import enum".
+- implement :type
+- implement :enum
 - implement :class and :interface: See |vim9-classes|
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
@@ -198,6 +202,11 @@ Terminal emulator window:
 When using 'cryptmethod' xchaha20 the undo file is not encrypted.
 Need to handle extra bytes.
 
+In Select mode the deleted text always goes into the unnamed register.
+Use CTRL-R to specify the register to use. (#9531)
+
+Some prompts are not translated: #9495
+
 Test_communicate_ipv6(): is flaky on many systems
 Fails in line 64 of Ch_communicate, no exception is thrown.
 
@@ -233,6 +242,8 @@ initialization to figure out the default value from 'shell'.  Add a test for
 this.
 
 MS-Windows: did path modifier :p:8 stop working?  #8600
+
+Add support for "underdouble", "underdot" and "underdash". #9553
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
@@ -894,9 +905,6 @@ deleting autocmds, not when adding them.
 With 'foldmethod' "indent" and appending an empty line, what follows isn't
 included in the existing fold.  Deleting the empty line and undo fixes it.
 (Oleg Koshovetc, 2018 Jul 15, #3214)
-
-Patch to support "xxd -ps". (Erik Auerswald, 2018 May 1)
-Lacks a test.
 
 Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)

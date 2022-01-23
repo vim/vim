@@ -78,6 +78,17 @@ enddef
 def Test_add()
   CheckDefAndScriptFailure(['add({}, 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<unknown>', 'E1226: List or Blob required for argument 1'])
   CheckDefFailure(['add([1], "a")'], 'E1012: Type mismatch; expected number but got string')
+
+  var lines =<< trim END
+    vim9script
+    g:thelist = [1]
+    lockvar g:thelist
+    def TryChange()
+      g:thelist->add(2)
+    enddef
+    TryChange()
+  END
+  CheckScriptFailure(lines, 'E741:')
 enddef
 
 def Test_add_blob()
@@ -945,6 +956,8 @@ def Test_expandcmd()
 
   assert_equal("yes", expandcmd("`={a: 'yes'}['a']`"))
   expandcmd('')->assert_equal('')
+
+  CheckDefAndScriptFailure(['expandcmd([1])'], ['E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1174: String required for argument 1'])
 enddef
 
 def Test_extend_arg_types()
@@ -961,25 +974,35 @@ def Test_extend_arg_types()
       assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, 'keep'))
       assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, g:string_keep))
 
+      # mix of types is OK without a declaration
+
       var res: list<dict<any>>
       extend(res, mapnew([1, 2], (_, v) => ({})))
       assert_equal([{}, {}], res)
+
+      var dany: dict<any> = {a: 0}
+      dany->extend({b: 'x'})
+      assert_equal({a: 0, b: 'x'}, dany)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      assert_equal([1, 2, "x"], extend([1, 2], ["x"]))
+      assert_equal([1, "b", 1], extend([1], ["b", 1]))
+
+      assert_equal({a: 1, b: "x"}, extend({a: 1}, {b: "x"}))
   END
   CheckDefAndScriptSuccess(lines)
 
   CheckDefAndScriptFailure(['extend("a", 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E712: Argument of extend() must be a List or Dictionary'])
-  CheckDefAndScriptFailure(['extend([1, 2], 3)'], ['E1013: Argument 2: type mismatch, expected list<number> but got number', 'E712: Argument of extend() must be a List or Dictionary'])
-  CheckDefAndScriptFailure(['extend([1, 2], ["x"])'], ['E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>'])
+  CheckDefAndScriptFailure(['extend([1, 2], 3)'], ['E1013: Argument 2: type mismatch, expected list<any> but got number', 'E712: Argument of extend() must be a List or Dictionary'])
+  CheckDefAndScriptFailure(['var ll = [1, 2]', 'extend(ll, ["x"])'], ['E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>'])
   CheckDefFailure(['extend([1, 2], [3], "x")'], 'E1013: Argument 3: type mismatch, expected number but got string')
 
-  CheckDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<number> but got number')
-  CheckDefFailure(['extend({a: 1}, {b: "x"})'], 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
+  CheckDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<any> but got number')
   CheckDefFailure(['extend({a: 1}, {b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
 
-  CheckDefFailure(['extend([1], ["b"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
-  CheckDefExecFailure(['extend([1], ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any>')
-
-  CheckScriptFailure(['vim9script', 'extend([1], ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any> in extend()')
+  CheckScriptFailure(['vim9script', 'var l = [1]', 'extend(l, ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any> in extend()')
 enddef
 
 func g:ExtendDict(d)
@@ -2130,6 +2153,31 @@ def Test_map()
     CheckDefAndScriptFailure(['map(test_null_channel(), "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1251: List, Dictionary, Blob or String required for argument 1'])
   endif
   CheckDefAndScriptFailure(['map(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+
+  # type of dict remains dict<any> even when type of values changes
+  # same for list
+  var lines =<< trim END
+      var d: dict<any> = {a: 0}
+      d->map((k, v) => true)
+      d->map((k, v) => 'x')
+      assert_equal({a: 'x'}, d)
+
+      d = {a: 0}
+      g:gd = d
+      map(g:gd, (k, v) => true)
+      assert_equal({a: true}, g:gd)
+
+      var l: list<any> = [0]
+      l->map((k, v) => true)
+      l->map((k, v) => 'x')
+      assert_equal(['x'], l)
+
+      l = [1]
+      g:gl = l
+      map(g:gl, (k, v) => true)
+      assert_equal([true], g:gl)
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_map_failure()
@@ -2151,6 +2199,13 @@ def Test_map_failure()
   CheckScriptFailure(lines, 'E1013:')
   au! BufReadPost
   delete('Xtmpfile')
+
+  lines =<< trim END
+      var d: dict<number> = {a: 1}
+      g:gd = d
+      map(g:gd, (k, v) => true)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got bool')
 enddef
 
 def Test_map_function_arg()
@@ -2223,6 +2278,7 @@ def Test_maparg()
         nowait: 0,
         expr: 0,
         sid: SID(),
+        scriptversion: 999999,
         rhs: 'bar',
         buffer: 0})
   unmap foo

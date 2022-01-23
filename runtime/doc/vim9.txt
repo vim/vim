@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,6 +103,8 @@ script and `:def` functions; details are below:
   `:exe`: >
   	:exe @a
 - Unless mentioned specifically, the highest |scriptversion| is used.
+- When defining an expression mapping, the expression will be evaluated in the
+  context of the script where it was defined.
 
 
 Comments starting with # ~
@@ -120,7 +122,7 @@ is the same as in shell scripts and Python programs.
 
 In Vi # is a command to list text with numbers.  In Vim9 script you can use
 `:number` for that. >
-	101 number
+	:101 number
 
 To improve readability there must be a space between a command and the #
 that starts a comment: >
@@ -188,7 +190,7 @@ functions.
 
 Arguments are accessed by name, without "a:", just like any other language.
 There is no "a:" dictionary or "a:000" list.
-						*vim9-variable-arguments*
+					*vim9-variable-arguments* *E1055*
 Variable arguments are defined as the last argument, with a name and have a
 list type, similar to TypeScript.  For example, a list of numbers: >
 	def MyFunc(...itemlist: list<number>)
@@ -225,7 +227,7 @@ the "name#" prefix is sufficient. >
 	def s:ThisFunction()        # script-local
 	def g:ThatFunction()        # global
 	def scriptname#function()   # autoload
-
+<						*E1058* *E1075*
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function and no namespace was given, this nested function is local to the code
 block it is defined in.  In a `:def` function it is not possible to define a
@@ -287,7 +289,8 @@ some point when loaded again.  E.g. when a buffer local option is set: >
 
 
 Variable declarations with :var, :final and :const ~
-						*vim9-declaration* *:var*
+					*vim9-declaration* *:var*
+					*E1017* *E1020* *E1054*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with `:final` or `:const`.  We refer to both as "variables" in this
 section.
@@ -318,7 +321,7 @@ The declaration must be done earlier: >
 	   inner = 0
 	endif
 	echo inner
-
+<							*E1025*
 To intentionally hide a variable from code that follows, a block can be
 used: >
 	{
@@ -345,12 +348,12 @@ And with autocommands: >
 	   }
 
 Although using a :def function probably works better.
-
+						*E1022*
 Declaring a variable with a type but without an initializer will initialize to
 false (for bool), empty (for string, list, dict, etc.) or zero (for number,
 any, etc.).  This matters especially when using the "any" type, the value will
 default to the number zero.
-
+						*E1016* *E1052* *E1066*
 In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  Those can also be deleted
@@ -361,7 +364,7 @@ instead.
 
 The `exists()` and `exists_compiled()` functions do not work on local variables
 or arguments.
-
+						*E1006* *E1041*
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.
 Variables may shadow Ex commands, rename the variable if needed.
@@ -391,8 +394,8 @@ later.  Example: >
 	  endif
 	enddef
 
-If you would do it like this you get an error at compile time that
-"PluginFunc" does not exist, even when "g:loaded_plugin" does not exist: >
+If you do it like this, you get an error at compile time that "PluginFunc"
+does not exist, even when "g:loaded_plugin" does not exist: >
 	def CallPluginFunc()
 	  if exists('g:loaded_plugin')
 	    PluginFunc()   # Error - function not found
@@ -429,7 +432,7 @@ How constants work varies between languages.  Some consider a variable that
 can't be assigned another value a constant.  JavaScript is an example.  Others
 also make the value immutable, thus when a constant uses a list, the list
 cannot be changed.  In Vim9 we can use both.
-
+							*E1021*
 `:const` is used for making both the variable and the value a constant.  Use
 this for composite structures that you want to make sure will not be modified.
 Example: >
@@ -562,7 +565,7 @@ characters, e.g.: >
 	   })
 No command can follow the "{", only a comment can be used there.
 
-							*command-block*
+						*command-block* *E1026*
 The block can also be used for defining a user command.  Inside the block Vim9
 syntax will be used.
 
@@ -682,6 +685,11 @@ This will assign "start" and print a line: >
 	var result = start
 	:+ print
 
+After the range an Ex command must follow.  Without the colon you can call a
+function without `:call`, but after a range you do need it: >
+	MyFunc()
+	:% call MyFunc()
+
 Note that the colon is not required for the |+cmd| argument: >
 	edit +6 fname
 
@@ -730,7 +738,7 @@ Notes:
 
 
 White space ~
-
+					*E1004* *E1068* *E1069* *E1074*
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
 	var name=234	# Error!
 	var name= 234	# Error!
@@ -775,7 +783,7 @@ No curly braces expansion ~
 
 
 Dictionary literals ~
-						*vim9-literal-dict*
+						*vim9-literal-dict* *E1014*
 Traditionally Vim has supported dictionary literals with a {} syntax: >
 	let dict = {'key': value}
 
@@ -865,7 +873,7 @@ first if needed.
 
 
 Conditions and expressions ~
-							*vim9-boolean*
+						*vim9-boolean*
 Conditions and expressions are mostly working like they do in other languages.
 Some values are different from legacy Vim script:
 	value		legacy Vim script	Vim9 script ~
@@ -919,7 +927,7 @@ always converted to string: >
 
 Simple types are Number, Float, Special and Bool.  For other types |string()|
 should be used.
-							*false* *true* *null*
+						*false* *true* *null* *E1034*
 In Vim9 script one can use "true" for v:true, "false" for v:false and "null"
 for v:null.  When converting a boolean to a string "false" and "true" are
 used, not "v:false" and "v:true" like in legacy script.  "v:none" is not
@@ -1062,15 +1070,19 @@ Using ++var or --var in an expression is not supported yet.
 
 3. New style functions					*fast-functions*
 
-							*:def*
+							*:def* *E1028*
 :def[!] {name}([arguments])[: {return-type}]
 			Define a new function by the name {name}.  The body of
 			the function follows in the next lines, until the
-			matching `:enddef`.
-
-			When {return-type} is omitted or is "void" the
-			function is not expected to return anything.
-			
+			matching `:enddef`. *E1073*
+							*E1011*
+			The {name} must be less than 100 bytes long.
+					*E1003* *E1027* *E1056* *E1059*
+			The type of value used with `:return` must match
+			{return-type}.  When {return-type} is omitted or is
+			"void" the function is not expected to return
+			anything.
+							*E1077*	
 			{arguments} is a sequence of zero or more argument
 			declarations.  There are three forms:
 				{name}: {type}
@@ -1094,7 +1106,7 @@ Using ++var or --var in an expression is not supported yet.
 			later in Vim9 script.  They can only be removed by
 			reloading the same script.
 
-							*:enddef*
+							*:enddef* *E1057*
 :enddef			End of a function defined with `:def`. It should be on
 			a line by its own.
 
@@ -1114,7 +1126,7 @@ prefix if they do not exist at the time of compiling.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
-			This is for debugging and testing.
+			This is for debugging and testing. *E1061*
 			Note that for command line completion of {func} you
 			can prepend "s:" to find script-local functions.
 
@@ -1176,7 +1188,8 @@ for each closure call a function to define it: >
 ==============================================================================
 
 4. Types					*vim9-types*
-
+					*E1008* *E1009* *E1010* *E1012*
+					*E1013* *E1029* *E1030*
 The following builtin types are supported:
 	bool
 	number
@@ -1191,17 +1204,19 @@ The following builtin types are supported:
 	func: {type}
 	func({type}, ...)
 	func({type}, ...): {type}
+	void
 
 Not supported yet:
 	tuple<a: {type}, b: {type}, ...>
 
 These types can be used in declarations, but no simple value will actually
-have the "void" type.
+have the "void" type.  Trying to use a void (e.g. a function without a
+return value) results in error *E1031* .
 
 There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating lot of small pieces of
 memory.
-
+							*E1005* *E1007*
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
 				checking for arguments or return value
@@ -1357,12 +1372,20 @@ Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 5. Namespace, Import and Export
 					*vim9script* *vim9-export* *vim9-import*
 
-A Vim9 script can be written to be imported.  This means that everything in
-the script is local, unless exported.  Those exported items, and only those
-items, can then be imported in another script.
+A Vim9 script can be written to be imported.  This means that some items are
+intentionally exported, made available to other scripts.  When the exporting
+script is imported in another script, these exported items can then be used in
+that script.  All the other items remain script-local in the exporting script
+and cannot be accessed by the importing script.
 
-You can cheat by using the global namespace explicitly.  We will assume here
-that you don't do that.
+This mechanism exists for writing a script that can be sourced (imported) by
+other scripts, while making sure these other scripts only have access to what
+you want them to.  This also avoids using the global namespace, which has a
+risc of name collisions.  For example when you have two plugins with similar
+functionality.
+
+You can cheat by using the global namespace explicitly.  That should be done
+only for things that really are global.
 
 
 Namespace ~
@@ -1411,9 +1434,6 @@ This can only work in two ways:
 2. The "if" statement evaluates to true, the commands up to `endif` are
    executed and `finish` bails out before reaching `vim9script`.
 
-TODO: The "vim9script" feature does not exist yet, it will only be added once
-the Vim9 script syntax has been fully implemented.
-
 
 Export ~
 							*:export* *:exp*
@@ -1425,7 +1445,7 @@ Exporting an item can be written as: >
 	export def MyFunc() ...
 	export class MyClass ...
 	export interface MyClass ...
-
+<							*E1043* *E1044*
 As this suggests, only constants, variables, `:def` functions and classes can
 be exported. {not implemented yet: class, interface}
 
@@ -1434,25 +1454,40 @@ be exported. {not implemented yet: class, interface}
 
 
 Import ~
-						*:import* *:imp* *E1094*
-The exported items can be imported individually in another Vim9 script: >
-	import EXPORTED_CONST from "thatscript.vim"
-	import MyClass from "myclass.vim"
+					*:import* *:imp* *E1094* *E1047*
+					*E1048* *E1049* *E1053* *E1071*
+The exported items can be imported in another Vim9 script: >
+	import "myscript.vim"
 
-To import multiple items at the same time: >
-	import {someValue, MyClass} from "thatscript.vim"
+This makes each item available as "myscript.item".
+							*:import-as*
+In case the name is long or ambiguous, another name can be specified: >
+	import "thatscript.vim" as that
+<							*E1060*
+Then you can use "that.EXPORTED_CONST", "that.someValue", etc.  You are free
+to choose the name "that".  Use something that will be recognized as referring
+to the imported script.  Avoid command names and builtin function names,
+because the name will shadow them.  If the name starts with a capital letter
+it can also shadow global user commands and functions.  Also, you cannot use
+the name for something else in the script, such as a function or variable
+name.
 
-In case the name is ambiguous, another name can be specified: >
-	import MyClass as ThatClass from "myclass.vim"
-	import {someValue, MyClass as ThatClass} from "myclass.vim"
+In case the dot in the name is undesired, a local reference can be made for a
+function: >
+	var LongFunc = that.LongFuncName
 
-To import all exported items under a specific identifier: >
-	import * as That from 'thatscript.vim'
+This also works for constants: >
+	const MAXLEN = that.MAX_LEN_OF_NAME
 
-Then you can use "That.EXPORTED_CONST", "That.someValue", etc.  You are free
-to choose the name "That", but it is highly recommended to use the name of the
-script file to avoid confusion.  Also avoid command names, because the name
-will shadow them.
+This does not work for variables, since the value would be copied once and
+when changing the variable the copy will change, not the original variable.
+You will need to use the full name, with the dot.
+
+The full syntax of the command is:
+	import {filename} [as {name}]
+Where {filename} is an expression that must evaluate to a string.  Without the
+"as {name}" part it must end in ".vim".  {name} must consist of letters,
+digits and '_', like |internal-variables|.
 
 `:import` can also be used in legacy Vim script.  The imported items still
 become script-local, even when the "s:" prefix is not given.
@@ -1471,53 +1506,86 @@ The script name after `import` can be:
   longer and unique, to avoid loading the wrong file.
   Note that "after/import" is not used.
 
+If the name does not end in ".vim" then the use of "as name" is required.
+
 Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
-							*:import-cycle*
+
+It is not allowed to import the same script twice, also when using two
+different "as" names.
+
+When using the imported name the dot and the item name must be in the same
+line, there can be no line break: >
+	echo that.
+		name   # Error!
+	echo that
+		.name  # Error!
+<							*:import-cycle*
 The `import` commands are executed when encountered.  If that script (directly
 or indirectly) imports the current script, then items defined after the
 `import` won't be processed yet.  Therefore cyclic imports can exist, but may
 result in undefined items.
 
 
-Import in an autoload script ~
-
+Importing an autoload script ~
+							*vim9-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
-actually needed.  A recommended mechanism:
+actually needed.  Using the autoload mechanism is recommended:
 
 1. In the plugin define user commands, functions and/or mappings that refer to
-   an autoload script. >
-	command -nargs=1 SearchForStuff searchfor#Stuff(<f-args>)
+   items imported from an autoload script. >
+	import autoload 'for/search.vim'
+	command -nargs=1 SearchForStuff search.Stuff(<f-args>)
 
 <   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
+   The "SearchForStuff" command is now available to the user.
 
-2. In the autoload script do the actual work.  You can import items from
-   other files to split up functionality in appropriate pieces. >
+   The "autoload" argument to `:import` means that the script is not loaded
+   until one of the items is actually used.  The script will be found under
+   the "autoload" directory in 'runtimepath' instead of the "import"
+   directory.
+
+2. In the autoload script put the bulk of the code. >
 	vim9script
-	import FilterFunc from "../import/someother.vim"
-	def searchfor#Stuff(arg: string)
-	  var filtered = FilterFunc(arg)
+	export def Stuff(arg: string)
 	  ...
-<   This goes in .../autoload/searchfor.vim.  "searchfor" in the file name
-   must be exactly the same as the prefix for the function name, that is how
-   Vim finds the file.
 
-3. Other functionality, possibly shared between plugins, contains the exported
-   items and any private items. >
-	vim9script
-	var localVar = 'local'
-	export def FilterFunc(arg: string): string
-	   ...
-<   This goes in .../import/someother.vim.
+<   This goes in .../autoload/for/search.vim.
+
+   Putting the "search.vim" script under the "/autoload/for/" directory has
+   the effect that "for#search#" will be prefixed to every exported item.  The
+   prefix is obtained from the file name, as you would to manually in a
+   legacy autoload script.  Thus the exported function can be found with
+   "for#search#Stuff", but you would normally use `import autoload` and not
+   use the prefix.
+
+   You can split up the functionality and import other scripts from the
+   autoload script as you like.  This way you can share code between plugins.
+
+For defining a mapping that uses the imported autoload script the special key
+|<ScriptCmd>| is useful.  It allows for a command in a mapping to use the
+script context of where the mapping was defined.
 
 When compiling a `:def` function and a function in an autoload script is
 encountered, the script is not loaded until the `:def` function is called.
+This also means you get any errors only at runtime, since the argument and
+return types are not known yet.
+
+For testing the |test_override()| function can be used to have the
+`import autoload` load the script right away, so that the items and types can
+be checked without waiting for them to be actually used: >
+	test_override('autoload', 1)
+Reset it later with: >
+	test_override('autoload', 0)
+Or: >
+	test_override('ALL', 0)
 
 
 Import in legacy Vim script ~
 
 If an `import` statement is used in legacy Vim script, the script-local "s:"
-namespace will be used for the imported item, even when "s:" is not specified.
+namespace will be used for the imported items, even when "s:" is not
+specified.
 
 
 ==============================================================================

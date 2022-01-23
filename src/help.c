@@ -60,7 +60,7 @@ ex_help(exarg_T *eap)
 
 	if (eap->forceit && *arg == NUL && !curbuf->b_help)
 	{
-	    emsg(_("E478: Don't panic!"));
+	    emsg(_(e_dont_panic));
 	    return;
 	}
 
@@ -104,10 +104,10 @@ ex_help(exarg_T *eap)
     {
 #ifdef FEAT_MULTI_LANG
 	if (lang != NULL)
-	    semsg(_("E661: Sorry, no '%s' help for %s"), lang, arg);
+	    semsg(_(e_sorry_no_str_help_for_str), lang, arg);
 	else
 #endif
-	    semsg(_("E149: Sorry, no help for %s"), arg);
+	    semsg(_(e_sorry_no_help_for_str), arg);
 	if (n != FAIL)
 	    FreeWild(num_matches, matches);
 	return;
@@ -818,32 +818,29 @@ fix_help_buffer(void)
 			// the same directory.
 			for (i1 = 0; i1 < fcount; ++i1)
 			{
-			    for (i2 = 0; i2 < fcount; ++i2)
+			    f1 = fnames[i1];
+			    t1 = gettail(f1);
+			    e1 = vim_strrchr(t1, '.');
+			    if (fnamecmp(e1, ".txt") != 0
+					       && fnamecmp(e1, fname + 4) != 0)
 			    {
-				if (i1 == i2)
-				    continue;
-				if (fnames[i1] == NULL || fnames[i2] == NULL)
-				    continue;
-				f1 = fnames[i1];
+				// Not .txt and not .abx, remove it.
+				VIM_CLEAR(fnames[i1]);
+				continue;
+			    }
+
+			    for (i2 = i1 + 1; i2 < fcount; ++i2)
+			    {
 				f2 = fnames[i2];
-				t1 = gettail(f1);
+				if (f2 == NULL)
+				    continue;
 				t2 = gettail(f2);
-				e1 = vim_strrchr(t1, '.');
 				e2 = vim_strrchr(t2, '.');
-				if (e1 == NULL || e2 == NULL)
-				    continue;
-				if (fnamecmp(e1, ".txt") != 0
-				    && fnamecmp(e1, fname + 4) != 0)
-				{
-				    // Not .txt and not .abx, remove it.
-				    VIM_CLEAR(fnames[i1]);
-				    continue;
-				}
 				if (e1 - f1 != e2 - f2
 					    || fnamencmp(f1, f2, e1 - f1) != 0)
 				    continue;
 				if (fnamecmp(e1, ".txt") == 0
-				    && fnamecmp(e2, fname + 4) == 0)
+					       && fnamecmp(e2, fname + 4) == 0)
 				    // use .abx instead of .txt
 				    VIM_CLEAR(fnames[i1]);
 			    }
@@ -982,7 +979,7 @@ helptags_one(
 	    || filecount == 0)
     {
 	if (!got_int)
-	    semsg(_("E151: No match: %s"), NameBuff);
+	    semsg(_(e_no_match_str_1), NameBuff);
 	return;
     }
 
@@ -995,14 +992,14 @@ helptags_one(
     if (fd_tags == NULL)
     {
 	if (!ignore_writeerr)
-	    semsg(_("E152: Cannot open %s for writing"), NameBuff);
+	    semsg(_(e_cannot_open_str_for_writing_1), NameBuff);
 	FreeWild(filecount, files);
 	return;
     }
 
     // If using the "++t" argument or generating tags for "$VIMRUNTIME/doc"
     // add the "help-tags" tag.
-    ga_init2(&ga, (int)sizeof(char_u *), 100);
+    ga_init2(&ga, sizeof(char_u *), 100);
     if (add_help_tags || fullpathcmp((char_u *)"$VIMRUNTIME/doc",
 						dir, FALSE, TRUE) == FPC_SAME)
     {
@@ -1028,7 +1025,7 @@ helptags_one(
 	fd = mch_fopen((char *)files[fi], "r");
 	if (fd == NULL)
 	{
-	    semsg(_("E153: Unable to open %s for reading"), files[fi]);
+	    semsg(_(e_unable_to_open_str_for_reading), files[fi]);
 	    continue;
 	}
 	fname = files[fi] + dirlen + 1;
@@ -1061,7 +1058,7 @@ helptags_one(
 		    utf8 = this_utf8;
 		else if (utf8 != this_utf8)
 		{
-		    semsg(_("E670: Mix of help file encodings within a language: %s"), files[fi]);
+		    semsg(_(e_mix_of_help_file_encodings_within_language_str), files[fi]);
 		    mix = !got_int;
 		    got_int = TRUE;
 		}
@@ -1136,7 +1133,7 @@ helptags_one(
 		{
 		    *p2 = NUL;
 		    vim_snprintf((char *)NameBuff, MAXPATHL,
-			    _("E154: Duplicate tag \"%s\" in file %s/%s"),
+			    _(e_duplicate_tag_str_in_file_str_str),
 				     ((char_u **)ga.ga_data)[i], dir, p2 + 1);
 		    emsg((char *)NameBuff);
 		    *p2 = '\t';
@@ -1204,7 +1201,7 @@ do_helptags(char_u *dirname, int add_help_tags, int ignore_writeerr)
 						    EW_FILE|EW_SILENT) == FAIL
 	    || filecount == 0)
     {
-	semsg(_("E151: No match: %s"), NameBuff);
+	semsg(_(e_no_match_str_1), NameBuff);
 	return;
     }
 
@@ -1316,7 +1313,7 @@ ex_helptags(exarg_T *eap)
 	dirname = ExpandOne(&xpc, eap->arg, NULL,
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
 	if (dirname == NULL || !mch_isdir(dirname))
-	    semsg(_("E150: Not a directory: %s"), eap->arg);
+	    semsg(_(e_not_a_directory_str), eap->arg);
 	else
 	    do_helptags(dirname, add_help_tags, FALSE);
 	vim_free(dirname);

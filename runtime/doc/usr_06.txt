@@ -189,7 +189,7 @@ You can specify #rrggbb hex colors and you can define new names for hex
 colors in |v:colornames| like so: >
 
 	let v:colornames['mine_red'] = '#aa0000'
-<
+
 If you are authoring a color scheme for others to use, it is important
 to define these colors only when they do not exist: >
 
@@ -197,7 +197,7 @@ to define these colors only when they do not exist: >
 
 This allows users of the color scheme to override the precise definition of
 that color prior to loading your color scheme. For example, in a |.vimrc|
-file:
+file: >
 
 	runtime colors/lists/css_colors.vim
 	let v:colornames['your_red'] = v:colornames['css_red']

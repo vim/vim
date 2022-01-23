@@ -497,7 +497,6 @@ SRC_UNIX =	\
 SRC_DOS_UNIX =	\
 		src/gui_xim.c \
 		src/if_cscope.c \
-		src/if_cscope.h \
 		src/if_lua.c \
 		src/if_mzsch.c \
 		src/if_mzsch.h \
@@ -550,12 +549,9 @@ SRC_DOS =	\
 		src/msvc2015.bat \
 		src/msys32.bat \
 		src/msys64.bat \
-		src/dimm.idl \
 		src/dlldata.c \
 		src/dosinst.c \
 		src/dosinst.h \
-		src/glbl_ime.cpp \
-		src/glbl_ime.h \
 		src/gui_dwrite.cpp \
 		src/gui_dwrite.h \
 		src/gui_w32.c \

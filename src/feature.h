@@ -345,8 +345,9 @@
 /*
  * +diff		Displaying diffs in a nice way.
  *			Requires +windows and +autocmd.
+ *			Can be enabled in autoconf already.
  */
-#if defined(FEAT_NORMAL)
+#if defined(FEAT_NORMAL) && !defined(FEAT_DIFF)
 # define FEAT_DIFF
 #endif
 
@@ -1257,4 +1258,16 @@
  */
 #if (!defined(FEAT_GUI) || defined(VIMDLL)) && defined(MSWIN)
 # define FEAT_VTP
+#endif
+
+#if defined(DYNAMIC_PERL) \
+	|| defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3) \
+	|| defined(DYNAMIC_RUBY) \
+	|| defined(DYNAMIC_TCL) \
+	|| defined(DYNAMIC_ICONV) \
+	|| defined(DYNAMIC_GETTEXT) \
+	|| defined(DYNAMIC_MZSCHEME) \
+	|| defined(DYNAMIC_LUA) \
+	|| defined(FEAT_TERMINAL)
+# define USING_LOAD_LIBRARY
 #endif

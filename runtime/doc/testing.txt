@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2021 Dec 11
+*testing.txt*	For Vim version 8.2.  Last change: 2022 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -188,24 +188,28 @@ test_override({name}, {val})				*test_override()*
 		to run tests. Only to be used for testing Vim!
 		The override is enabled when {val} is non-zero and removed
 		when {val} is zero.
-		Current supported values for name are:
+		Current supported values for {name} are:
 
-		name	     effect when {val} is non-zero ~
-		redraw       disable the redrawing() function
-		redraw_flag  ignore the RedrawingDisabled flag
+		{name}	     effect when {val} is non-zero ~
+		autoload     `import autoload` will load the script right
+			     away, not postponed until an item is used
 		char_avail   disable the char_avail() function
-		starting     reset the "starting" variable, see below
 		nfa_fail     makes the NFA regexp engine fail to force a
 			     fallback to the old engine
 		no_query_mouse  do not query the mouse position for "dec"
 				terminals
 		no_wait_return	set the "no_wait_return" flag.  Not restored
 				with "ALL".
-		ui_delay     time in msec to use in ui_delay(); overrules a
-			     wait time of up to 3 seconds for messages
+		redraw       disable the redrawing() function
+		redraw_flag  ignore the RedrawingDisabled flag
+		starting     reset the "starting" variable, see below
 		term_props   reset all terminal properties when the version
 			     string is detected
+		ui_delay     time in msec to use in ui_delay(); overrules a
+			     wait time of up to 3 seconds for messages
 		uptime 	     overrules sysinfo.uptime
+		vterm_title  setting the window title by a job running in a
+			     terminal window
 		ALL	     clear all overrides ({val} is not used)
 
 		"starting" is to be used when a test should behave like
@@ -348,7 +352,7 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce an error or when {error} is not found in the
 		error message.  Also see |assert-return|.
-
+							*E856*
 		When {error} is a string it must be found literally in the
 		first reported error. Most often this will be the error code,
 		including the colon, e.g. "E123:". >

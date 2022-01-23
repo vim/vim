@@ -341,6 +341,20 @@ def Test_return_something()
   ReturnString()->assert_equal('string')
   ReturnNumber()->assert_equal(123)
   assert_fails('ReturnGlobal()', 'E1012: Type mismatch; expected number but got string', '', 1, 'ReturnGlobal')
+
+  var lines =<< trim END
+      vim9script
+
+      def Msg()
+          echomsg 'in Msg()...'
+      enddef
+
+      def Func()
+        return Msg()
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1096:')
 enddef
 
 def Test_check_argument_type()
@@ -439,6 +453,8 @@ def Test_return_invalid()
 enddef
 
 def Test_return_list_any()
+  # This used to fail but now the actual list type is checked, and since it has
+  # an item of type string it can be used as list<string>.
   var lines =<< trim END
       vim9script
       def Func(): list<string>
@@ -448,7 +464,8 @@ def Test_return_list_any()
       enddef
       echo Func()
   END
-  CheckScriptFailure(lines, 'E1012:')
+  CheckScriptSuccess(lines)
+
   lines =<< trim END
       vim9script
       def Func(): list<string>
@@ -458,7 +475,7 @@ def Test_return_list_any()
       enddef
       echo Func()
   END
-  CheckScriptFailure(lines, 'E1012:')
+  CheckScriptSuccess(lines)
 enddef
 
 func Increment()
@@ -930,6 +947,21 @@ def Test_local_function_shadows_global()
       delfunc g:Func
   END
   CheckScriptSuccess(lines)
+
+  # This does not shadow "i" which is visible only inside the for loop
+  lines =<< trim END
+      vim9script
+
+      def Foo(i: number)
+        echo i
+      enddef
+
+      for i in range(3)
+        # Foo() is compiled here
+        Foo(i)
+      endfor
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func TakesOneArg(arg)
@@ -951,6 +983,7 @@ def Test_call_wrong_args()
   END
   CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 5)
 
+  # argument name declared earlier is found when declaring a function
   lines =<< trim END
     vim9script
     var name = 'piet'
@@ -959,6 +992,17 @@ def Test_call_wrong_args()
     enddef
   END
   CheckScriptFailure(lines, 'E1168:')
+
+  # argument name declared later is only found when compiling
+  lines =<< trim END
+    vim9script
+    def FuncOne(name: string)
+      echo nr
+    enddef
+    var name = 'piet'
+  END
+  CheckScriptSuccess(lines)
+  CheckScriptFailure(lines + ['defcompile'], 'E1168:')
 
   lines =<< trim END
     vim9script
@@ -1493,9 +1537,20 @@ def Test_call_varargs_only()
 enddef
 
 def Test_using_var_as_arg()
-  writefile(['def Func(x: number)',  'var x = 234', 'enddef', 'defcompile'], 'Xdef')
-  assert_fails('so Xdef', 'E1006:', '', 1, 'Func')
-  delete('Xdef')
+  var lines =<< trim END
+      def Func(x: number)
+        var x = 234
+      enddef
+  END
+  CheckDefFailure(lines, 'E1006:')
+
+  lines =<< trim END
+      def Func(Ref: number)
+        def Ref()
+        enddef
+      enddef
+  END
+  CheckDefFailure(lines, 'E1073:')
 enddef
 
 def DictArg(arg: dict<string>)
@@ -1714,6 +1769,21 @@ def Test_nested_function_with_args_split()
       defcompile
   END
   CheckScriptFailure(lines, 'E1173: Text found after endfunction: BBBB')
+enddef
+
+def Test_error_in_function_args()
+  var lines =<< trim END
+      def FirstFunction()
+        def SecondFunction(J  =
+        # Nois
+        # one
+         
+         enddef|BBBB
+      enddef
+      # Compile all functions
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E488:')
 enddef
 
 def Test_return_type_wrong()
@@ -2007,7 +2077,6 @@ func Test_free_dict_while_in_funcstack()
 endfunc
 
 def Run_Test_free_dict_while_in_funcstack()
-
   # this was freeing the TermRun() default argument dictionary while it was
   # still referenced in a funcstack_T
   var lines =<< trim END
@@ -3509,6 +3578,17 @@ def Test_numbered_function_reference()
   # check that the function still exists
   assert_equal(output, execute('legacy func g:mydict.afunc'))
   unlet g:mydict
+enddef
+
+def Test_go_beyond_end_of_cmd()
+  # this was reading the byte after the end of the line
+  var lines =<< trim END
+    def F()
+      cal
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E476:')
 enddef
 
 if has('python3')

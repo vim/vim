@@ -480,7 +480,7 @@ ex_sort(exarg_T *eap)
 	}
 	else
 	{
-	    semsg(_(e_invarg2), p);
+	    semsg(_(e_invalid_argument_str), p);
 	    goto sortend;
 	}
     }
@@ -488,7 +488,7 @@ ex_sort(exarg_T *eap)
     // Can only have one of 'n', 'b', 'o' and 'x'.
     if (format_found > 1)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	goto sortend;
     }
 
@@ -664,7 +664,7 @@ sortend:
     vim_free(sortbuf2);
     vim_regfree(regmatch.regprog);
     if (got_int)
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
 }
 
 /*
@@ -1137,7 +1137,7 @@ do_filter(
 	if ((do_in && (itmp = vim_tempname('i', FALSE)) == NULL)
 		|| (do_out && (otmp = vim_tempname('o', FALSE)) == NULL))
 	{
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	    goto filterend;
 	}
 
@@ -1154,7 +1154,7 @@ do_filter(
 #if defined(FEAT_EVAL)
 	if (!aborting())
 #endif
-	    (void)semsg(_(e_notcreate), itmp);	// will call wait_return
+	    (void)semsg(_(e_cant_create_file_str), itmp);	// will call wait_return
 	goto filterend;
     }
     if (curbuf != old_curbuf)
@@ -1229,7 +1229,7 @@ do_filter(
 #endif
 		{
 		    msg_putchar('\n');
-		    semsg(_(e_notread), otmp);
+		    semsg(_(e_cant_read_file_str), otmp);
 		}
 		goto error;
 	    }
@@ -1811,7 +1811,7 @@ ex_file(exarg_T *eap)
 		|| eap->line2 > 0
 		|| eap->addr_count > 1))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1862,7 +1862,7 @@ check_writable(char_u *fname)
 {
     if (mch_nodetype(fname) == NODE_OTHER)
     {
-	semsg(_("E503: \"%s\" is not a file or writable device"), fname);
+	semsg(_(e_str_is_not_file_or_writable_device), fname);
 	return FAIL;
     }
     return OK;
@@ -1909,7 +1909,7 @@ do_write(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_saveas)
 	{
-	    emsg(_(e_argreq));
+	    emsg(_(e_argument_required));
 	    goto theend;
 	}
 	other = FALSE;
@@ -1941,7 +1941,7 @@ do_write(exarg_T *eap)
 	{
 	    // Overwriting a file that is loaded in another buffer is not a
 	    // good idea.
-	    emsg(_(e_bufloaded));
+	    emsg(_(e_file_is_loaded_in_another_buffer));
 	    goto theend;
 	}
     }
@@ -1986,7 +1986,7 @@ do_write(exarg_T *eap)
 	    else
 #endif
 	    {
-		emsg(_("E140: Use ! to write partial buffer"));
+		emsg(_(e_use_bang_to_write_partial_buffer));
 		goto theend;
 	    }
 	}
@@ -2194,8 +2194,7 @@ check_overwrite(
 		else
 #endif
 		{
-		    semsg(_("E768: Swap file exists: %s (:silent! overrides)"),
-								    swapname);
+		    semsg(_(e_swap_file_exists_str_silent_overrides), swapname);
 		    vim_free(swapname);
 		    return FAIL;
 		}
@@ -2268,8 +2267,7 @@ do_wqall(exarg_T *eap)
 #endif
 	    if (buf->b_ffname == NULL)
 	    {
-		semsg(_("E141: No file name for buffer %ld"),
-							    (long)buf->b_fnum);
+		semsg(_(e_no_file_name_for_buffer_nr), (long)buf->b_fnum);
 		++error;
 	    }
 	    else if (check_readonly(&eap->forceit, buf)
@@ -2309,7 +2307,7 @@ not_writing(void)
 {
     if (p_write)
 	return FALSE;
-    emsg(_("E142: File not written: Writing is disabled by 'write' option"));
+    emsg(_(e_file_not_written_writing_is_disabled_by_write_option));
     return TRUE;
 }
 
@@ -2358,8 +2356,7 @@ check_readonly(int *forceit, buf_T *buf)
 	if (buf->b_p_ro)
 	    emsg(_(e_readonly_option_is_set_add_bang_to_override));
 	else
-	    semsg(_("E505: \"%s\" is read-only (add ! to override)"),
-		    buf->b_fname);
+	    semsg(_(e_str_is_read_only_add_bang_to_override), buf->b_fname);
 	return TRUE;
     }
 
@@ -3237,8 +3234,8 @@ theend:
     static void
 delbuf_msg(char_u *name)
 {
-    semsg(_("E143: Autocommands unexpectedly deleted new buffer %s"),
-	    name == NULL ? (char_u *)"" : name);
+    semsg(_(e_autocommands_unexpectedly_deleted_new_buffer_str),
+					   name == NULL ? (char_u *)"" : name);
     vim_free(name);
     au_new_curbuf.br_buf = NULL;
     au_new_curbuf.br_buf_free_count = 0;
@@ -3359,7 +3356,11 @@ ex_append(exarg_T *eap)
 
 	did_undo = TRUE;
 	ml_append(lnum, theline, (colnr_T)0, FALSE);
-	appended_lines_mark(lnum + (empty ? 1 : 0), 1L);
+	if (empty)
+	    // there are no marks below the inserted lines
+	    appended_lines(lnum, 1L);
+	else
+	    appended_lines_mark(lnum, 1L);
 
 	vim_free(theline);
 	++lnum;
@@ -3467,7 +3468,7 @@ ex_z(exarg_T *eap)
     {
 	if (!VIM_ISDIGIT(*x))
 	{
-	    emsg(_("E144: non-numeric argument to :z"));
+	    emsg(_(e_non_numeric_argument_to_z));
 	    return;
 	}
 	else
@@ -3577,7 +3578,7 @@ check_restricted(void)
 {
     if (restricted)
     {
-	emsg(_("E145: Shell commands and some functionality not allowed in rvim"));
+	emsg(_(e_shell_commands_and_some_functionality_not_allowed_in_rvim));
 	return TRUE;
     }
     return FALSE;
@@ -3656,7 +3657,7 @@ check_regexp_delim(int c)
 {
     if (isalpha(c))
     {
-	emsg(_("E146: Regular expressions can't be delimited by letters"));
+	emsg(_(e_regular_expressions_cant_be_delimited_by_letters));
 	return FAIL;
     }
     return OK;
@@ -3928,7 +3929,7 @@ ex_substitute(exarg_T *eap)
 	i = getdigits(&cmd);
 	if (i <= 0 && !eap->skip && subflags.do_error)
 	{
-	    emsg(_(e_zerocount));
+	    emsg(_(e_positive_count_required));
 	    return;
 	}
 	eap->line1 = eap->line2;
@@ -3946,7 +3947,7 @@ ex_substitute(exarg_T *eap)
 	set_nextcmd(eap, cmd);
 	if (eap->nextcmd == NULL)
 	{
-	    semsg(_(e_trailing_arg), cmd);
+	    semsg(_(e_trailing_characters_str), cmd);
 	    return;
 	}
     }
@@ -4773,11 +4774,11 @@ outofmem:
     else if (!global_busy)
     {
 	if (got_int)		// interrupted
-	    emsg(_(e_interr));
+	    emsg(_(e_interrupted));
 	else if (got_match)	// did find something but nothing substituted
 	    msg("");
 	else if (subflags.do_error)	// nothing found
-	    semsg(_(e_patnotf2), get_search_pat());
+	    semsg(_(e_pattern_not_found_str), get_search_pat());
     }
 
 #ifdef FEAT_FOLDING
@@ -4842,7 +4843,7 @@ do_sub_msg(
     }
     if (got_int)
     {
-	emsg(_(e_interr));
+	emsg(_(e_interrupted));
 	return TRUE;
     }
     return FALSE;
@@ -4895,7 +4896,7 @@ ex_global(exarg_T *eap)
 				  || eap->line2 != curbuf->b_ml.ml_line_count))
     {
 	// will increment global_busy to break out of the loop
-	emsg(_("E147: Cannot do :global recursive with a range"));
+	emsg(_(e_cannot_do_global_recursive_with_range));
 	return;
     }
 
@@ -4933,7 +4934,7 @@ ex_global(exarg_T *eap)
     }
     else if (*cmd == NUL)
     {
-	emsg(_("E148: Regular expression missing from global"));
+	emsg(_(e_regular_expression_missing_from_global));
 	return;
     }
     else if (check_regexp_delim(*cmd) == FAIL)
@@ -4989,7 +4990,7 @@ ex_global(exarg_T *eap)
 	 * pass 2: execute the command for each line that has been marked
 	 */
 	if (got_int)
-	    msg(_(e_interr));
+	    msg(_(e_interrupted));
 	else if (ndone == 0)
 	{
 	    if (type == 'v')

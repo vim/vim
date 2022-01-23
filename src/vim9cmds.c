@@ -141,17 +141,17 @@ compile_unlet(
 	//
 	ret = compile_lhs(p, &lhs, CMD_unlet, FALSE, 0, cctx);
 
-	// : unlet an indexed item
-	if (!lhs.lhs_has_index)
+	// Use the info in "lhs" to unlet the item at the index in the
+	// list or dict.
+	if (ret == OK)
 	{
-	    iemsg("called compile_lhs() without an index");
-	    ret = FAIL;
-	}
-	else
-	{
-	    // Use the info in "lhs" to unlet the item at the index in the
-	    // list or dict.
-	    ret = compile_assign_unlet(p, &lhs, FALSE, &t_void, cctx);
+	    if (!lhs.lhs_has_index)
+	    {
+		semsg(_(e_cannot_unlet_imported_item_str), p);
+		ret = FAIL;
+	    }
+	    else
+		ret = compile_assign_unlet(p, &lhs, FALSE, &t_void, cctx);
 	}
 
 	vim_free(lhs.lhs_name);
@@ -408,7 +408,7 @@ compile_if(char_u *arg, cctx_T *cctx)
     }
     if (!ends_excmd2(arg, skipwhite(p)))
     {
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 	return NULL;
     }
     if (cctx->ctx_skip == SKIP_YES)
@@ -578,7 +578,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     if (!ends_excmd2(arg, skipwhite(p)))
     {
 	clear_ppconst(&ppconst);
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 	return NULL;
     }
     if (scope->se_skip_save == SKIP_YES)
@@ -769,7 +769,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     int		var_list = FALSE;
     int		semicolon = FALSE;
     size_t	varlen;
-    garray_T	*stack = &cctx->ctx_type_stack;
     garray_T	*instr = &cctx->ctx_instr;
     scope_T	*scope;
     lvar_T	*loop_lvar;	// loop iteration variable
@@ -796,21 +795,20 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	if (*p == ':' && wp != p)
 	    semsg(_(e_no_white_space_allowed_before_colon_str), p);
 	else
-	    emsg(_(e_missing_in));
+	    emsg(_(e_missing_in_after_for));
 	return NULL;
     }
     wp = p + 2;
     if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 	return NULL;
 
-    // Remove the already generated ISN_DEBUG, it is written below the ISN_FOR
-    // instruction.
+    // Find the already generated ISN_DEBUG to get the line number for the
+    // instruction written below the ISN_FOR instruction.
     if (cctx->ctx_compile_type == CT_DEBUG && instr->ga_len > 0
 	    && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
 							.isn_type == ISN_DEBUG)
     {
-	--instr->ga_len;
-	prev_lnum = ((isn_T *)instr->ga_data)[instr->ga_len]
+	prev_lnum = ((isn_T *)instr->ga_data)[instr->ga_len - 1]
 						 .isn_arg.debug.dbg_break_lnum;
     }
 
@@ -842,7 +840,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     {
 	// If we know the type of "var" and it is not a supported type we can
 	// give an error now.
-	vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	vartype = get_type_on_stack(cctx, 0);
 	if (vartype->tt_type != VAR_LIST
 		&& vartype->tt_type != VAR_STRING
 		&& vartype->tt_type != VAR_BLOB
@@ -875,6 +873,22 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	// "for_end" is set when ":endfor" is found
 	scope->se_u.se_for.fs_top_label = current_instr_idx(cctx);
 
+	if (cctx->ctx_compile_type == CT_DEBUG)
+	{
+	    int		save_prev_lnum = cctx->ctx_prev_lnum;
+	    isn_T	*isn;
+
+	    // Add ISN_DEBUG here, before deciding to end the loop.  There will
+	    // be another ISN_DEBUG before the next instruction.
+	    // Use the prev_lnum from the ISN_DEBUG instruction removed above.
+	    // Increment the variable count so that the loop variable can be
+	    // inspected.
+	    cctx->ctx_prev_lnum = prev_lnum;
+	    isn = generate_instr_debug(cctx);
+	    ++isn->isn_arg.debug.dbg_var_names_len;
+	    cctx->ctx_prev_lnum = save_prev_lnum;
+	}
+
 	generate_FOR(cctx, loop_lvar->lv_idx);
 
 	arg = arg_start;
@@ -883,18 +897,19 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    generate_UNPACK(cctx, var_count, semicolon);
 	    arg = skipwhite(arg + 1);	// skip white after '['
 
-	    // the list item is replaced by a number of items
-	    if (GA_GROW_FAILS(stack, var_count - 1))
-	    {
-		drop_scope(cctx);
-		return NULL;
-	    }
-	    --stack->ga_len;
+	    // drop the list item
+	    --cctx->ctx_type_stack.ga_len;
+
+	    // add type of the items
 	    for (idx = 0; idx < var_count; ++idx)
 	    {
-		((type_T **)stack->ga_data)[stack->ga_len] =
-				 (semicolon && idx == 0) ? vartype : item_type;
-		++stack->ga_len;
+		type_T *type = (semicolon && idx == 0) ? vartype : item_type;
+
+		if (push_type_stack(cctx, type) == FAIL)
+		{
+		    drop_scope(cctx);
+		    return NULL;
+		}
 	    }
 	}
 
@@ -979,17 +994,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    arg = skipwhite(p);
 	    vim_free(name);
 	}
-
-	if (cctx->ctx_compile_type == CT_DEBUG)
-	{
-	    int save_prev_lnum = cctx->ctx_prev_lnum;
-
-	    // Add ISN_DEBUG here, so that the loop variables can be inspected.
-	    // Use the prev_lnum from the ISN_DEBUG instruction removed above.
-	    cctx->ctx_prev_lnum = prev_lnum;
-	    generate_instr_debug(cctx);
-	    cctx->ctx_prev_lnum = save_prev_lnum;
-	}
     }
 
     return arg_end;
@@ -1016,7 +1020,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 
     if (scope == NULL || scope->se_type != FOR_SCOPE)
     {
-	emsg(_(e_for));
+	emsg(_(e_endfor_without_for));
 	return NULL;
     }
     forscope = &scope->se_u.se_for;
@@ -1029,7 +1033,9 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 	generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
 
 	// Fill in the "end" label in the FOR statement so it can jump here.
-	isn = ((isn_T *)instr->ga_data) + forscope->fs_top_label;
+	// In debug mode an ISN_DEBUG was inserted.
+	isn = ((isn_T *)instr->ga_data) + forscope->fs_top_label
+				+ (cctx->ctx_compile_type == CT_DEBUG ? 1 : 0);
 	isn->isn_arg.forloop.for_end = instr->ga_len;
 
 	// Fill in the "end" label any BREAK statements
@@ -1075,7 +1081,7 @@ compile_while(char_u *arg, cctx_T *cctx)
 
     if (!ends_excmd2(arg, skipwhite(p)))
     {
-	semsg(_(e_trailing_arg), p);
+	semsg(_(e_trailing_characters_str), p);
 	return NULL;
     }
 
@@ -1109,7 +1115,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	return NULL;
     if (scope == NULL || scope->se_type != WHILE_SCOPE)
     {
-	emsg(_(e_while));
+	emsg(_(e_endwhile_without_while));
 	return NULL;
     }
     cctx->ctx_scope = scope->se_outer;
@@ -1150,7 +1156,7 @@ compile_continue(char_u *arg, cctx_T *cctx)
     {
 	if (scope == NULL)
 	{
-	    emsg(_(e_continue));
+	    emsg(_(e_continue_without_while_or_for));
 	    return NULL;
 	}
 	if (scope->se_type == FOR_SCOPE)
@@ -1192,7 +1198,7 @@ compile_break(char_u *arg, cctx_T *cctx)
     {
 	if (scope == NULL)
 	{
-	    emsg(_(e_break));
+	    emsg(_(e_break_without_while_or_for));
 	    return NULL;
 	}
 	if (scope->se_type == FOR_SCOPE || scope->se_type == WHILE_SCOPE)
@@ -1328,7 +1334,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
     // Error if not in a :try scope
     if (scope == NULL || scope->se_type != TRY_SCOPE)
     {
-	emsg(_(e_catch));
+	emsg(_(e_catch_without_try));
 	return NULL;
     }
 
@@ -1337,6 +1343,8 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	emsg(_(e_catch_unreachable_after_catch_all));
 	return NULL;
     }
+    if (!cctx->ctx_had_return)
+	scope->se_u.se_try.ts_no_return = TRUE;
 
     if (cctx->ctx_skip != SKIP_YES)
     {
@@ -1447,7 +1455,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
     // Error if not in a :try scope
     if (scope == NULL || scope->se_type != TRY_SCOPE)
     {
-	emsg(_(e_finally));
+	emsg(_(e_finally_without_try));
 	return NULL;
     }
 
@@ -1457,7 +1465,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
 	if (isn->isn_arg.tryref.try_ref->try_finally != 0)
 	{
-	    emsg(_(e_finally_dup));
+	    emsg(_(e_multiple_finally));
 	    return NULL;
 	}
 
@@ -1492,6 +1500,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	    isn->isn_arg.jump.jump_where = this_instr;
 	    scope->se_u.se_try.ts_catch_label = 0;
 	}
+	scope->se_u.se_try.ts_has_finally = TRUE;
 	if (generate_instr(cctx, ISN_FINALLY) == NULL)
 	    return NULL;
     }
@@ -1518,13 +1527,13 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     if (scope == NULL || scope->se_type != TRY_SCOPE)
     {
 	if (scope == NULL)
-	    emsg(_(e_no_endtry));
+	    emsg(_(e_endtry_without_try));
 	else if (scope->se_type == WHILE_SCOPE)
-	    emsg(_(e_endwhile));
+	    emsg(_(e_missing_endwhile));
 	else if (scope->se_type == FOR_SCOPE)
-	    emsg(_(e_endfor));
+	    emsg(_(e_missing_endfor));
 	else
-	    emsg(_(e_endif));
+	    emsg(_(e_missing_endif));
 	return NULL;
     }
 
@@ -1560,6 +1569,14 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
 	}
     }
+
+    // If there is a finally clause that ends in return then we will return.
+    // If one of the blocks didn't end in "return" or we did not catch all
+    // exceptions reset the had_return flag.
+    if (!(scope->se_u.se_try.ts_has_finally && cctx->ctx_had_return)
+	    && (scope->se_u.se_try.ts_no_return
+		|| !scope->se_u.se_try.ts_caught_all))
+	cctx->ctx_had_return = FALSE;
 
     compile_endblock(cctx);
 
@@ -1641,7 +1658,6 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
     char_u	*expr_start;
     int		count = 0;
     int		start_ctx_lnum = cctx->ctx_lnum;
-    garray_T	*stack = &cctx->ctx_type_stack;
     type_T	*type;
 
     for (;;)
@@ -1655,7 +1671,7 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 	if (cctx->ctx_skip != SKIP_YES)
 	{
 	    // check for non-void type
-	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    type = get_type_on_stack(cctx, 0);
 	    if (type->tt_type == VAR_VOID)
 	    {
 		semsg(_(e_expression_does_not_result_in_value_str), expr_start);
@@ -2021,7 +2037,7 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 				       || GA_GROW_FAILS(&cctx->ctx_instr, 1))
 	    {
 		if (trailing_error)
-		    semsg(_(e_trailing_arg), cmd);
+		    semsg(_(e_trailing_characters_str), cmd);
 		clear_instr_ga(&cctx->ctx_instr);
 		cctx->ctx_instr = save_ga;
 		return NULL;
@@ -2176,11 +2192,18 @@ compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
 compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 {
     char_u	*p = arg;
-    garray_T	*stack = &cctx->ctx_type_stack;
     type_T	*stack_type;
 
     if (*p != NUL && *p != '|' && *p != '\n')
     {
+	// For a lambda, "return expr" is always used, also when "expr" results
+	// in a void.
+	if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID
+		&& (cctx->ctx_ufunc->uf_flags & FC_LAMBDA) == 0)
+	{
+	    emsg(_(e_returning_value_in_function_without_return_type));
+	    return NULL;
+	}
 	if (legacy)
 	{
 	    int save_flags = cmdmod.cmod_flags;
@@ -2205,7 +2228,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    // "check_return_type" with uf_ret_type set to &t_unknown is used
 	    // for an inline function without a specified return type.  Set the
 	    // return type here.
-	    stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    stack_type = get_type_on_stack(cctx, 0);
 	    if ((check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
 				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown
 				|| cctx->ctx_ufunc->uf_ret_type == &t_any))
@@ -2216,13 +2239,6 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    }
 	    else
 	    {
-		if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID
-			&& stack_type->tt_type != VAR_VOID
-			&& stack_type->tt_type != VAR_UNKNOWN)
-		{
-		    emsg(_(e_returning_value_in_function_without_return_type));
-		    return NULL;
-		}
 		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
 						0, cctx, FALSE, FALSE) == FAIL)
 		    return NULL;

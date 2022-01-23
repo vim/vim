@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Dec 20
+*various.txt*   For Vim version 8.2.  Last change: 2022 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -244,10 +244,10 @@ g8			Print the hex values of the bytes used in the
 			compiler will have set stdin to a non-interactive
 			mode.
 
-							*:!cmd* *:!* *E34*
+							*:!cmd* *:!*
 :!{cmd}			Execute {cmd} with the shell.  See also the 'shell'
 			and 'shelltype' option.
-
+							*E34*
 			Any '!' in {cmd} is replaced with the previous
 			external command (see also 'cpoptions').  But not when
 			there is a backslash before the '!', then that
@@ -476,9 +476,10 @@ N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
 B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
-N  *+viminfo*		|'viminfo'|
 T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
+T  *+vim9script*	|Vim9| script
+N  *+viminfo*		|'viminfo'|
 T  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|
@@ -569,19 +570,19 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] END		End redirecting messages.
 
 							*:filt* *:filter*
-:filt[er][!] {pat} {command}
-:filt[er][!] /{pat}/ {command}
+:filt[er][!] {pattern} {command}
+:filt[er][!] /{pattern}/ {command}
 			Restrict the output of {command} to lines matching
-			with {pat}.  For example, to list only xml files: >
+			with {pattern}.  For example, to list only xml files: >
 				:filter /\.xml$/ oldfiles
 <			If the [!] is given, restrict the output of {command}
-			to lines that do NOT match {pat}.
+			to lines that do NOT match {pattern}.
 
-			{pat} is a Vim search pattern.  Instead of enclosing
+			{pattern} is a Vim search pattern.  Instead of enclosing
 			it in / any non-ID character (see |'isident'|) can be
-			used, so long as it does not appear in {pat}.  Without
-			the enclosing character the pattern cannot include the
-			bar character. 'ignorecase' is not used.
+			used, so long as it does not appear in {pattern}.
+			Without the enclosing character the pattern cannot
+			include the bar character. 'ignorecase' is not used.
 
 			The pattern is matched against the relevant part of
 			the output, not necessarily the whole line. Only some

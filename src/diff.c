@@ -1096,7 +1096,7 @@ check_external_diff(diffio_T *diffio)
     if (!ok)
     {
 	if (io_error)
-	    emsg(_("E810: Cannot read or write temp files"));
+	    emsg(_(e_cannot_read_or_write_temp_files));
 	emsg(_(e_cannot_create_diffs));
 	diff_a_works = MAYBE;
 #if defined(MSWIN)
@@ -1139,7 +1139,7 @@ diff_file_internal(diffio_T *diffio)
 		&diffio->dio_new.din_mmfile,
 		&param, &emit_cfg, &emit_cb) < 0)
     {
-	emsg(_("E960: Problem creating the internal diff"));
+	emsg(_(e_problem_creating_internal_diff));
 	return FAIL;
     }
     return OK;
@@ -1319,7 +1319,7 @@ ex_diffpatch(exarg_T *eap)
     if (dirbuf[0] != NUL)
     {
 	if (mch_chdir((char *)dirbuf) != 0)
-	    emsg(_(e_prev_dir));
+	    emsg(_(e_cannot_go_back_to_previous_directory));
 	shorten_fnames(TRUE);
     }
 #endif
@@ -1337,7 +1337,7 @@ ex_diffpatch(exarg_T *eap)
 
     // Only continue if the output file was created.
     if (mch_stat((char *)tmp_new, &st) < 0 || st.st_size == 0)
-	emsg(_("E816: Cannot read patch output"));
+	emsg(_(e_cannot_read_patch_output));
     else
     {
 	if (curbuf->b_fname != NULL)
@@ -1733,7 +1733,7 @@ diff_read(
 	    }
 	    else
 	    {
-		emsg(_("E959: Invalid diff format."));
+		emsg(_(e_invalid_diff_format));
 		break;
 	    }
 	}
@@ -2682,7 +2682,7 @@ ex_diffgetput(exarg_T *eap)
 	if (idx_other == DB_COUNT)
 	{
 	    if (found_not_ma)
-		emsg(_("E793: No other buffer in diff mode is modifiable"));
+		emsg(_(e_no_other_buffer_in_diff_mode_is_modifiable));
 	    else
 		emsg(_(e_no_other_buffer_in_diff_mode));
 	    return;
@@ -2769,7 +2769,7 @@ ex_diffgetput(exarg_T *eap)
 	change_warning(0);
 	if (diff_buf_idx(curbuf) != idx_to)
 	{
-	    emsg(_("E787: Buffer changed unexpectedly"));
+	    emsg(_(e_buffer_changed_unexpectedly));
 	    goto theend;
 	}
     }

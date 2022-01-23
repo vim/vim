@@ -771,7 +771,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (python_loaded())
     {
 	if (verbose)
-	    emsg(_("E837: This Vim cannot execute :py3 after using :python"));
+	    emsg(_(e_this_vim_cannot_execute_py3_after_using_python));
 	return FAIL;
     }
 # endif
@@ -797,7 +797,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (!hinstPy3)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname, load_dll_error());
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
 
@@ -809,7 +809,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPy3);
 	    hinstPy3 = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), py3_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), py3_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -844,7 +844,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPy3);
 	hinstPy3 = 0;
 	if (verbose)
-	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_could_not_load_library_function_str), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -1071,7 +1071,7 @@ Python3_Init(void)
 #ifdef DYNAMIC_PYTHON3
 	if (!python3_enabled(TRUE))
 	{
-	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_python_library_could_not_be_found));
 	    goto fail;
 	}
 #endif

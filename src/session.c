@@ -348,16 +348,32 @@ put_view(
     // Edit the file.  Skip this when ":next" already did it.
     if (add_edit && (!did_next || wp->w_arg_idx_invalid))
     {
+	if (bt_help(wp->w_buffer))
+	{
+	    char *curtag = "";
+
+	    // A help buffer needs some options to be set.
+	    // First, create a new empty buffer with "buftype=help".
+	    // Then ":help" will re-use both the buffer and the window and set
+	    // the options, even when "options" is not in 'sessionoptions'.
+	    if (0 < wp->w_tagstackidx
+		    && wp->w_tagstackidx <= wp->w_tagstacklen)
+		curtag = (char *)wp->w_tagstack[wp->w_tagstackidx - 1].tagname;
+
+	    if (put_line(fd, "enew | setl bt=help") == FAIL
+		    || fprintf(fd, "help %s", curtag) < 0
+		    || put_eol(fd) == FAIL)
+		return FAIL;
+	}
 # ifdef FEAT_TERMINAL
-	if (bt_terminal(wp->w_buffer))
+	else if (bt_terminal(wp->w_buffer))
 	{
 	    if (term_write_session(fd, wp, terminal_bufs) == FAIL)
 		return FAIL;
 	}
-	else
 # endif
 	// Load the file.
-	if (wp->w_buffer->b_ffname != NULL
+	else if (wp->w_buffer->b_ffname != NULL
 # ifdef FEAT_QUICKFIX
 		&& !bt_nofilename(wp->w_buffer)
 # endif
@@ -674,6 +690,28 @@ makeopens(
     if (put_line(fd, "set shortmess=aoO") == FAIL)
 	goto fail;
 
+    // Put all buffers into the buffer list.
+    // Do it very early to preserve buffer order after loading session (which
+    // can be disrupted by prior `edit` or `tabedit` calls).
+    FOR_ALL_BUFFERS(buf)
+    {
+	if (!(only_save_windows && buf->b_nwindows == 0)
+		&& !(buf->b_help && !(ssop_flags & SSOP_HELP))
+#ifdef FEAT_TERMINAL
+		// Skip terminal buffers: finished ones are not useful, others
+		// will be resurrected and result in a new buffer.
+		&& !bt_terminal(buf)
+#endif
+		&& buf->b_fname != NULL
+		&& buf->b_p_bl)
+	{
+	    if (fprintf(fd, "badd +%ld ", buf->b_wininfo == NULL ? 1L
+					   : buf->b_wininfo->wi_fpos.lnum) < 0
+		    || ses_fname(fd, buf, &ssop_flags, TRUE) == FAIL)
+		goto fail;
+	}
+    }
+
     // the global argument list
     if (ses_arglist(fd, "argglobal", &global_alist.al_ga,
 			    !(ssop_flags & SSOP_CURDIR), &ssop_flags) == FAIL)
@@ -725,7 +763,11 @@ makeopens(
 	// Similar to ses_win_rec() below, populate the tab pages first so
 	// later local options won't be copied to the new tabs.
 	FOR_ALL_TABPAGES(tp)
-	    if (tp->tp_next != NULL && put_line(fd, "tabnew") == FAIL)
+	    // Use `bufhidden=wipe` to remove empty "placeholder" buffers once
+	    // they are not needed. This prevents creating extra buffers (see
+	    // cause of patch 8.1.0829)
+	    if (tp->tp_next != NULL
+		  && put_line(fd, "tabnew +setlocal\\ bufhidden=wipe") == FAIL)
 		goto fail;
 	if (first_tabpage->tp_next != NULL && put_line(fd, "tabrewind") == FAIL)
 	    goto fail;
@@ -902,29 +944,6 @@ makeopens(
     }
     if (restore_stal && put_line(fd, "set stal=1") == FAIL)
 	goto fail;
-
-    // Now put the remaining buffers into the buffer list.
-    // This is near the end, so that when 'hidden' is set we don't create extra
-    // buffers.  If the buffer was already created with another command the
-    // ":badd" will have no effect.
-    FOR_ALL_BUFFERS(buf)
-    {
-	if (!(only_save_windows && buf->b_nwindows == 0)
-		&& !(buf->b_help && !(ssop_flags & SSOP_HELP))
-#ifdef FEAT_TERMINAL
-		// Skip terminal buffers: finished ones are not useful, others
-		// will be resurrected and result in a new buffer.
-		&& !bt_terminal(buf)
-#endif
-		&& buf->b_fname != NULL
-		&& buf->b_p_bl)
-	{
-	    if (fprintf(fd, "badd +%ld ", buf->b_wininfo == NULL ? 1L
-					   : buf->b_wininfo->wi_fpos.lnum) < 0
-		    || ses_fname(fd, buf, &ssop_flags, TRUE) == FAIL)
-		goto fail;
-	}
-    }
 
     // Wipe out an empty unnamed buffer we started in.
     if (put_line(fd, "if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0")
@@ -1298,7 +1317,7 @@ ex_mkrc(exarg_T	*eap)
 			|| ((ssop_flags & SSOP_CURDIR) && globaldir != NULL)))
 		    {
 			if (mch_chdir((char *)dirnow) != 0)
-			    emsg(_(e_prev_dir));
+			    emsg(_(e_cannot_go_back_to_previous_directory));
 			shorten_fnames(TRUE);
 		    }
 		    vim_free(dirnow);

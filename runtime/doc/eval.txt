@@ -1,11 +1,11 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Expression evaluation			*expression* *expr* *E15* *eval*
-
+							*E1002*
 Using expressions is introduced in chapter 41 of the user manual |usr_41.txt|.
 
 Note: Expression evaluation can be disabled at compile time.  If this has been
@@ -13,9 +13,9 @@ done, the features in this document are not available.  See |+eval| and
 |no-eval-feature|.
 
 This file is mainly about the backwards compatible (legacy) Vim script.  For
-specifics of Vim9 script, which executes much faster, supports type checking
-and much more, see |vim9.txt|.  Where the syntax or semantics differ a remark
-is given.
+specifics of Vim9 script, which can execute much faster, supports type
+checking and much more, see |vim9.txt|.  Where the syntax or semantics differ
+a remark is given.
 
 1.  Variables			|variables|
     1.1 Variable types
@@ -53,7 +53,7 @@ Number		A 32 or 64 bit signed number.  |expr-number|
 		Examples:  -123  0x10  0177  0o177 0b1011
 
 Float		A floating point number. |floating-point-format| *Float*
-		{only when compiled with the |+float| feature}
+		{only when compiled with the |+float| feature} *E1076*
 		Examples: 123.456  1.15e-6  -1.1e3
 
 String		A NUL terminated string of 8-bit unsigned characters (bytes).
@@ -162,8 +162,8 @@ non-empty String, then the value is considered to be TRUE.
 Note that " " and "0" are also non-empty strings, thus considered to be TRUE.
 A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
-		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
-		*E974* *E975* *E976*
+		*E611* *E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910*
+		*E913* *E974* *E975* *E976*
 |List|, |Dictionary|, |Funcref|, |Job|, |Channel| and |Blob| types are not
 automatically converted.
 
@@ -172,7 +172,7 @@ When mixing Number and Float the Number is converted to Float.  Otherwise
 there is no automatic conversion of Float.  You can use str2float() for String
 to Float, printf() for Float to String and float2nr() for Float to Number.
 
-			*E891* *E892* *E893* *E894* *E907* *E911* *E914*
+			*E362* *E891* *E892* *E893* *E894* *E907* *E911* *E914*
 When expecting a Float a Number can also be used, but nothing else.
 
 						*no-type-checking*
@@ -1030,7 +1030,7 @@ is |true| or |false|.
 			*expr-==?* *expr-!=?* *expr->?*  *expr->=?*
 			*expr-<?*  *expr-<=?* *expr-=~?* *expr-!~?*
 			*expr-is* *expr-isnot* *expr-is#* *expr-isnot#*
-			*expr-is?* *expr-isnot?*
+			*expr-is?* *expr-isnot?* *E1072*
 		use 'ignorecase'    match case	   ignore case ~
 equal			==		==#		==?
 not equal		!=		!=#		!=?
@@ -1071,7 +1071,7 @@ To compare Funcrefs to see if they refer to the same function, ignoring bound
 Dictionary and arguments, use |get()| to get the function name: >
 	if get(Part1, 'name') == get(Part2, 'name')
 	   " Part1 and Part2 refer to the same function
-
+<							*E1037*
 Using "is" or "isnot" with a |List|, |Dictionary| or |Blob| checks whether
 the expressions are referring to the same |List|, |Dictionary| or |Blob|
 instance.  A copy of a |List| is different from the original |List|.  When
@@ -1123,7 +1123,7 @@ can be matched like an ordinary character.  Examples:
 	"foo\nbar" =~ "\\n"	evaluates to 0
 
 
-expr5 and expr6						*expr5* *expr6*
+expr5 and expr6				*expr5* *expr6* *E1036* *E1051*
 ---------------
 expr6 + expr6   Number addition, |List| or |Blob| concatenation	*expr-+*
 expr6 - expr6   Number subtraction				*expr--*
@@ -1182,7 +1182,7 @@ When the righthand side of '%' is zero, the result is 0.
 
 None of these work for |Funcref|s.
 
-".", ".." and "%" do not work for Float. *E804*
+".", ".." and "%" do not work for Float. *E804* *E1035*
 
 
 expr7							*expr7*
@@ -1229,7 +1229,7 @@ in any order.  E.g., these are all possible:
 Evaluation is always from left to right.
 
 expr9[expr1]		item of String or |List|	*expr-[]* *E111*
-							*E909* *subscript*
+						*E909* *subscript* *E1062*
 In legacy Vim script:
 If expr9 is a Number or String this results in a String that contains the
 expr1'th single byte from expr9.  expr9 is used as a String (a number is
@@ -1346,7 +1346,7 @@ When expr9 is a |Funcref| type variable, invoke the function it refers to.
 
 expr9->name([args])	method call			*method* *->*
 expr9->{lambda}([args])
-							*E276*
+							*E260* *E276*
 For methods that are also available as global functions this is the same as: >
 	name(expr9 [, args])
 There can also be methods specifically for the type of "expr9".
@@ -1364,7 +1364,16 @@ Is equivalent to: >
 	(-1.234)->string()
 And NOT: >
 	-(1.234->string())
-<
+
+What comes after "->" can be a name, a simple expression (not containing any
+parenthesis), or any expression in parenthesis: >
+	base->name(args)
+	base->some.name(args)
+	base->alist[idx](args)
+	base->(getFuncRef())(args)
+Note that in the last call the base is passed to the function resulting from
+"(getFuncRef())", inserted before "args".
+
 							*E274*
 "->name(" must not contain white space.  There can be white space before the
 "->" and after the "(", thus you can split the lines like this: >
@@ -1568,7 +1577,7 @@ The first one probably doesn't echo anything, the second echoes the $shell
 variable (if your shell supports it).
 
 
-internal variable					*expr-variable*
+internal variable				*expr-variable* *E1015*
 -----------------
 variable		internal variable
 See below |internal-variables|.
@@ -1582,7 +1591,7 @@ See below |functions|.
 
 lambda expression				*expr-lambda* *lambda*
 -----------------
-{args -> expr1}		legacy lambda expression
+{args -> expr1}		legacy lambda expression 		*E451*
 (args) => expr1		|Vim9| lambda expression
 
 A lambda expression creates a new unnamed function which returns the result of
@@ -1656,13 +1665,13 @@ for a lambda expression, you can find what it is with the following command: >
 See also: |numbered-function|
 
 ==============================================================================
-3. Internal variable				*internal-variables* *E461*
+3. Internal variable			*internal-variables* *E461* *E1001*
 
 An internal variable name can be made up of letters, digits and '_'.  But it
-cannot start with a digit.  In legacy script it also possible to use curly
+cannot start with a digit.  In legacy script it is also possible to use curly
 braces, see |curly-braces-names|.
 
-In legacy script ann internal variable is created with the ":let" command
+In legacy script an internal variable is created with the ":let" command
 |:let|.  An internal variable is explicitly destroyed with the ":unlet"
 command |:unlet|.
 Using a name that is not an internal variable or refers to a variable that has
@@ -1724,9 +1733,9 @@ It is deleted when the tab page is closed. {not available when compiled
 without the |+windows| feature}
 
 						*global-variable* *g:var* *g:*
-Inside functions global variables are accessed with "g:".  Omitting this will
-access a variable local to a function.  But "g:" can also be used in any other
-place if you like.
+Inside functions and in |Vim9| script global variables are accessed with "g:".
+Omitting this will access a variable local to a function or script.  "g:"
+can also be used in any other place if you like.
 
 						*local-variable* *l:var* *l:*
 Inside functions local variables are accessed without prepending anything.
@@ -1736,8 +1745,10 @@ refers to "v:count".  Using "l:count" you can have a local variable with the
 same name.
 
 						*script-variable* *s:var*
-In a Vim script variables starting with "s:" can be used.  They cannot be
-accessed from outside of the scripts, thus are local to the script.
+In a legacy Vim script variables starting with "s:" can be used.  They cannot
+be accessed from outside of the scripts, thus are local to the script.
+In |Vim9| script the "s:" prefix can be omitted, variables are script-local by
+default.
 
 They can be used in:
 - commands executed while the script is sourced
@@ -1812,7 +1823,7 @@ variables for each buffer.  Use local buffer variables instead |b:var|.
 
 
 PREDEFINED VIM VARIABLES			*vim-variable* *v:var* *v:*
-								*E963*
+							*E963* *E1063*
 Some variables can be set by the user, but the type cannot be changed.
 
 					*v:argv* *argv-variable*
@@ -2158,6 +2169,10 @@ v:lnum		Line number for the 'foldexpr' |fold-expr|, 'formatexpr' and
 		and 'guitabtooltip'.  Only valid while one of these
 		expressions is being evaluated.  Read-only when in the
 		|sandbox|.
+
+						*v:maxcol* *maxcol-variable*
+v:maxcol	Maximum line length.  Depending on where it is used it can be
+		screen columns, characters or bytes.
 
 					*v:mouse_win* *mouse_win-variable*
 v:mouse_win	Window number for a mouse click obtained with |getchar()|.
@@ -2568,7 +2583,7 @@ functions.
 In |Vim9| script functions are local to the script by default, prefix "g:" to
 define a global function.
 
-					*:fu* *:function* *E128* *E129* *E123*
+				*:fu* *:function* *E128* *E129* *E123* *E454*
 :fu[nction]		List all functions and their arguments.
 
 :fu[nction] {name}	List function {name}.
@@ -2694,7 +2709,7 @@ See |:verbose-cmd| for more information.
 			command, use line breaks instead of |:bar|: >
 				:exe "func Foo()\necho 'foo'\nendfunc"
 <
-				*:delf* *:delfunction* *E130* *E131* *E933*
+				*:delf* *:delfunction* *E131* *E933*
 :delf[unction][!] {name}
 			Delete function {name}.
 			{name} can also be a |Dictionary| entry that is a
@@ -2824,7 +2839,7 @@ This function can then be called with: >
   :  echo div
   :endif
 <
-						*:cal* *:call* *E107* *E117*
+						*:cal* *:call* *E107*
 :[range]cal[l] {name}([arguments])
 		Call a function.  The name of the function and its arguments
 		are as specified with `:function`.  Up to 20 arguments can be
@@ -2867,6 +2882,12 @@ This function can then be called with: >
 		dereferenced, but the range will not be used then.  Example: >
 	:4,8call GetDict().method()
 <		Here GetDict() gets the range but method() does not.
+
+								*E117*
+When a function cannot be found the error "E117: Unknown function" will be
+given.  If the function was using an autoload path or an autoload import and
+the script is a |Vim9| script, this may also be caused by the function not
+being exported.
 
 								*E132*
 The recursiveness of user functions is restricted with the |'maxfuncdepth'|
@@ -2967,6 +2988,9 @@ Also note that if you have two script files, and one calls a function in the
 other and vice versa, before the used function is defined, it won't work.
 Avoid using the autoload functionality at the toplevel.
 
+In |Vim9| script you will get error *E1263* if you use a function name with a
+"#" character when not in an autoload script.
+
 Hint: If you distribute a bunch of scripts you can pack them together with the
 |vimball| utility.  Also read the user manual |distribute-script|.
 
@@ -3053,8 +3077,8 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
-			*:let+=* *:let-=* *:letstar=*
-			*:let/=* *:let%=* *:let.=* *:let..=* *E734* *E985*
+			*:let+=* *:let-=* *:letstar=* *:let/=*  *:let%=*
+			*:let.=* *:let..=* *E734* *E985* *E1019*
 :let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
 :let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
 :let {var} *= {expr1}	Like ":let {var} = {var} * {expr1}".
@@ -3257,7 +3281,7 @@ text...
 				*	Funcref
 			This does not work in Vim9 script. |vim9-declaration|
 
-:unl[et][!] {name} ...				*:unlet* *:unl* *E108* *E795*
+:unl[et][!] {name} ...			*:unlet* *:unl* *E108* *E795* *E1081*
 			Remove the internal variable {name}.  Several variable
 			names can be given, they are all removed.  The name
 			may also be a |List| or |Dictionary| item.
@@ -3283,7 +3307,7 @@ text...
 			If the system does not support deleting an environment
 			variable, it is made empty.
 
-						*:cons* *:const*
+						*:cons* *:const* *E1018*
 :cons[t] {var-name} = {expr1}
 :cons[t] [{name1}, {name2}, ...] = {expr1}
 :cons[t] [{name}, ..., ; {lastname}] = {expr1}
@@ -3503,7 +3527,8 @@ text...
 			all nested ":try"s inside the loop.  The outermost
 			":endtry" then jumps to the command after the loop.
 
-:try				*:try* *:endt* *:endtry* *E600* *E601* *E602*
+:try						*:try* *:endt* *:endtry*
+						*E600* *E601* *E602* *E1032*
 :endt[ry]		Change the error handling for the commands between
 			":try" and ":endtry" including everything being
 			executed across ":source" commands, function calls,
@@ -3539,7 +3564,8 @@ text...
 		try | sleep 100 | catch /^Vim:Interrupt$/ | endtry
 		try | edit | catch /^Vim(edit):E\d\+/ | echo "error" | endtry
 <
-					*:cat* *:catch* *E603* *E604* *E605*
+					*:cat* *:catch*
+					*E603* *E604* *E605* *E654* *E1033*
 :cat[ch] /{pattern}/	The following commands until the next |:catch|,
 			|:finally|, or |:endtry| that belongs to the same
 			|:try| as the ":catch" are executed when an exception
@@ -3560,7 +3586,7 @@ text...
 			Another character can be used instead of / around the
 			{pattern}, so long as it does not have a special
 			meaning (e.g., '|' or '"') and doesn't occur inside
-			{pattern}.
+			{pattern}. *E1067*
 			Information about the exception is available in
 			|v:exception|.  Also see |throw-variables|.
 			NOTE: It is not reliable to ":catch" the TEXT of
@@ -4941,7 +4967,7 @@ When the |+eval| feature is available the command is skipped because of the
 silently ignored, and the command is executed.
 
 ==============================================================================
-12. The sandbox					*eval-sandbox* *sandbox* *E48*
+12. The sandbox					*eval-sandbox* *sandbox*
 
 The 'foldexpr', 'formatexpr', 'includeexpr', 'indentexpr', 'statusline' and
 'foldtext' options may be evaluated in a sandbox.  This means that you are
@@ -4949,7 +4975,7 @@ protected from these expressions having nasty side effects.  This gives some
 safety for when these options are set from a modeline.  It is also used when
 the command from a tags file is executed and for CTRL-R = in the command line.
 The sandbox is also used for the |:sandbox| command.
-
+								*E48*
 These items are not allowed in the sandbox:
 	- changing the buffer text
 	- defining or changing mapping, autocommands, user commands

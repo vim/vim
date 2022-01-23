@@ -119,7 +119,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 	{
 	    if (ret == NULL)
 	    {
-		char	*err = _(e_invexprmsg);
+		char	*err = _(e_invalid_expression_received);
 		size_t	len = STRLEN(cmd) + STRLEN(err) + 5;
 		char_u	*msg;
 
@@ -709,7 +709,7 @@ check_connection(void)
     make_connection();
     if (X_DISPLAY == NULL)
     {
-	emsg(_("E240: No connection to the X server"));
+	emsg(_(e_no_connection_to_x_server));
 	return FAIL;
     }
     return OK;
@@ -759,7 +759,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	    vim_free(r);
 	}
 	else
-	    semsg(_("E241: Unable to send to %s"), server_name);
+	    semsg(_(e_unable_to_send_to_str), server_name);
 	return;
     }
 
@@ -929,7 +929,7 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
 						       &r, FALSE, timeout) < 0)
 # endif
-	    emsg(_("E277: Unable to read a server reply"));
+	    emsg(_(e_unable_to_read_server_reply));
     }
 #endif
     rettv->v_type = VAR_STRING;
@@ -972,7 +972,7 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (server == NULL)
 	return;		// type error; errmsg already given
     if (serverName != NULL)
-	emsg(_("E941: already started a server"));
+	emsg(_(e_already_started_server));
     else
     {
 # ifdef FEAT_X11
@@ -983,7 +983,7 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 # endif
     }
 #else
-    emsg(_("E942: +clientserver feature not available"));
+    emsg(_(e_clientserver_feature_not_available));
 #endif
 }
 
@@ -1016,7 +1016,7 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (serverSendReply(server, reply) < 0)
     {
-	emsg(_("E258: Unable to send to client"));
+	emsg(_(e_unable_to_send_to_client));
 	return;
     }
     rettv->vval.v_number = 0;

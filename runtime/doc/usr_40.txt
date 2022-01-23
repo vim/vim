@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 8.2.  Last change: 2020 Sep 02
+*usr_40.txt*	For Vim version 8.2.  Last change: 2022 Jan 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -20,7 +20,7 @@ Table of contents: |usr_toc.txt|
 ==============================================================================
 *40.1*	Key mapping
 
-A simple mapping was explained in section |05.3|.  The principle is that one
+A simple mapping was explained in section |05.4|.  The principle is that one
 sequence of key strokes is translated into another sequence of key strokes.
 This is a simple, yet powerful mechanism.
    The simplest form is that one key is mapped to a sequence of keys.  Since

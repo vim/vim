@@ -1074,7 +1074,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define DOCMD_KEYTYPED	0x08	// don't reset KeyTyped
 #define DOCMD_EXCRESET	0x10	// reset exception environment (for debugging)
 #define DOCMD_KEEPLINE  0x20	// keep typed line for repeating with "."
-#define DOCMD_RANGEOK	0240	// can use a range without ":" in Vim9 script
+#define DOCMD_RANGEOK	0x40	// can use a range without ":" in Vim9 script
 
 // flags for beginline()
 #define BL_WHITE	1	// cursor on first non-white in the line
@@ -2067,7 +2067,8 @@ typedef int sock_T;
 #define VV_SIZEOFINT	100
 #define VV_SIZEOFLONG	101
 #define VV_SIZEOFPOINTER 102
-#define VV_LEN		103	// number of v: vars
+#define VV_MAXCOL	103
+#define VV_LEN		104	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2177,15 +2178,13 @@ typedef struct stat stat_T;
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-# define likely(x)		__builtin_expect((x), 1)
-# define unlikely(x)		__builtin_expect((x), 0)
-# define ATTRIBUTE_COLD		__attribute__((cold))
-# define ATTRIBUTE_NORETURN	__attribute__((noreturn))
+# define likely(x)	__builtin_expect((x), 1)
+# define unlikely(x)	__builtin_expect((x), 0)
+# define ATTRIBUTE_COLD	__attribute__((cold))
 #else
 # define unlikely(x)	(x)
 # define likely(x)	(x)
 # define ATTRIBUTE_COLD
-# define ATTRIBUTE_NORETURN
 #endif
 
 typedef enum {
@@ -2253,17 +2252,15 @@ typedef enum {
 #endif
 
 # if defined(FEAT_EVAL) \
-	&& (!defined(FEAT_GUI_MSWIN) \
-	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
+	&& (!defined(FEAT_GUI_MSWIN) || !defined(FEAT_MBYTE_IME))
 // Whether IME is supported by im_get_status() defined in mbyte.c.
-// For Win32 GUI it's in gui_w32.c when FEAT_MBYTE_IME or GLOBAL_IME is defined.
+// For Win32 GUI it's in gui_w32.c when FEAT_MBYTE_IME is defined.
 # define IME_WITHOUT_XIM
 #endif
 
 #if defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
-	|| (defined(FEAT_GUI_MSWIN) \
-	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
+	|| (defined(FEAT_GUI_MSWIN) && defined(FEAT_MBYTE_IME))
 // im_set_active() is available
 # define HAVE_INPUT_METHOD
 #endif
@@ -2633,6 +2630,7 @@ typedef enum {
 #define TFN_READ_ONLY	0x10	// will not change the var
 #define TFN_NO_DECL	0x20	// only used for GLV_NO_DECL
 #define TFN_COMPILING	0x40	// only used for GLV_COMPILING
+#define TFN_NEW_FUNC	0x80	// defining a new function
 
 // Values for get_lval() flags argument:
 #define GLV_QUIET	TFN_QUIET	// no error messages

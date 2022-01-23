@@ -343,6 +343,7 @@ static char *(highlight_init_dark[]) = {
     NULL
 };
 
+#if defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * Returns the number of highlight groups.
  */
@@ -369,6 +370,7 @@ highlight_link_id(int id)
 {
     return HL_TABLE()[id].sg_link;
 }
+#endif
 
     void
 init_highlight(
@@ -447,7 +449,7 @@ init_highlight(
 	static int	recursive = 0;
 
 	if (recursive >= 5)
-	    emsg(_("E679: recursive loop loading syncolor.vim"));
+	    emsg(_(e_recursive_loop_loading_syncolor_vim));
 	else
 	{
 	    ++recursive;
@@ -457,6 +459,21 @@ init_highlight(
     }
 #endif
 }
+
+#if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+/*
+ * Load a default color list. Intended to support legacy color names but allows
+ * the user to override the color values. Only loaded once.
+ */
+    static void
+load_default_colors_lists()
+{
+    // Lacking a default color list isn't the end of the world but it is likely
+    // an inconvenience so users should know when it is missing.
+    if (source_runtime((char_u *)"colors/lists/default.vim", DIP_ALL) != OK)
+	msg("failed to load colors/lists/default.vim");
+}
+#endif
 
 /*
  * Load color file "name".
@@ -656,7 +673,7 @@ highlight_group_link(
 		&& hl_has_settings(from_id - 1, dodefault))
 	{
 	    if (SOURCING_NAME == NULL && !dodefault)
-		emsg(_("E414: group has settings, highlight link ignored"));
+		emsg(_(e_group_has_settings_highlight_link_ignored));
 	}
 	else if (hlgroup->sg_link != to_id
 #ifdef FEAT_EVAL
@@ -781,7 +798,7 @@ highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
 	}
 	if (i < 0)
 	{
-	    semsg(_("E418: Illegal value: %s"), arg);
+	    semsg(_(e_illegal_value_str), arg);
 	    return FALSE;
 	}
 	if (arg[off] == ',')		// another one follows
@@ -1033,7 +1050,7 @@ highlight_set_cterm_color(
 		color = cterm_normal_fg_color - 1;
 	    else
 	    {
-		emsg(_("E419: FG color unknown"));
+		emsg(_(e_fg_color_unknown));
 		return FALSE;
 	    }
 	}
@@ -1043,7 +1060,7 @@ highlight_set_cterm_color(
 		color = cterm_normal_bg_color - 1;
 	    else
 	    {
-		emsg(_("E420: BG color unknown"));
+		emsg(_(e_bg_color_unknown));
 		return FALSE;
 	    }
 	}
@@ -1053,7 +1070,7 @@ highlight_set_cterm_color(
 		color = cterm_normal_ul_color - 1;
 	    else
 	    {
-		emsg(_("E453: UL color unknown"));
+		emsg(_(e_ul_color_unknown));
 		return FALSE;
 	    }
 	}
@@ -1069,8 +1086,7 @@ highlight_set_cterm_color(
 		    break;
 	    if (i < 0)
 	    {
-		semsg(_("E421: Color name or number not recognized: %s"),
-								key_start);
+		semsg(_(e_color_name_or_number_not_recognized), key_start);
 		return FALSE;
 	    }
 
@@ -1323,7 +1339,7 @@ highlight_set_startstop_termcode(int idx, char_u *key, char_u *arg, int init)
 	    // Append it to the already found stuff
 	    if ((int)(STRLEN(buf) + STRLEN(p)) >= 99)
 	    {
-		semsg(_("E422: terminal code too long: %s"), arg);
+		semsg(_(e_terminal_code_too_long_str), arg);
 		return FALSE;
 	    }
 	    STRCAT(buf, p);
@@ -1440,7 +1456,7 @@ do_highlight(
     {
 	id = syn_namen2id(line, (int)(name_end - line));
 	if (id == 0)
-	    semsg(_("E411: highlight group not found: %s"), line);
+	    semsg(_(e_highlight_group_name_not_found_str), line);
 	else
 	    highlight_list_one(id);
 	return;
@@ -1462,15 +1478,13 @@ do_highlight(
 
 	if (ends_excmd2(line, from_start) || ends_excmd2(line, to_start))
 	{
-	    semsg(_("E412: Not enough arguments: \":highlight link %s\""),
-								  from_start);
+	    semsg(_(e_not_enough_arguments_highlight_link_str), from_start);
 	    return;
 	}
 
 	if (!ends_excmd2(line, skipwhite(to_end)))
 	{
-	    semsg(_("E413: Too many arguments: \":highlight link %s\""),
-								   from_start);
+	    semsg(_(e_too_many_arguments_highlight_link_str), from_start);
 	    return;
 	}
 
@@ -1533,7 +1547,7 @@ do_highlight(
 	    key_start = linep;
 	    if (*linep == '=')
 	    {
-		semsg(_("E415: unexpected equal sign: %s"), key_start);
+		semsg(_(e_unexpected_equal_sign_str), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -1565,7 +1579,7 @@ do_highlight(
 	    // Check for the equal sign.
 	    if (*linep != '=')
 	    {
-		semsg(_("E416: missing equal sign: %s"), key_start);
+		semsg(_(e_missing_equal_sign_str_2), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -1579,7 +1593,7 @@ do_highlight(
 		linep = vim_strchr(linep, '\'');
 		if (linep == NULL)
 		{
-		    semsg(_(e_invarg2), key_start);
+		    semsg(_(e_invalid_argument_str), key_start);
 		    error = TRUE;
 		    break;
 		}
@@ -1591,7 +1605,7 @@ do_highlight(
 	    }
 	    if (linep == arg_start)
 	    {
-		semsg(_("E417: missing argument: %s"), key_start);
+		semsg(_(e_missing_argument_str), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -1671,7 +1685,7 @@ do_highlight(
 	    }
 	    else
 	    {
-		semsg(_("E423: Illegal argument: %s"), key_start);
+		semsg(_(e_illegal_argument_str_3), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -2273,7 +2287,7 @@ hex_digit(int c)
     return 0x1ffffff;
 }
 
-    guicolor_T
+    static guicolor_T
 decode_hex_color(char_u *hex)
 {
     guicolor_T color;
@@ -2295,7 +2309,7 @@ decode_hex_color(char_u *hex)
 // such name exists in the color table. The convention is to use lowercase for
 // all keys in the v:colornames dictionary. The value can be either a string in
 // the form #rrggbb or a number, either of which is converted to a guicolor_T.
-    guicolor_T
+    static guicolor_T
 colorname2rgb(char_u *name)
 {
     dict_T      *colornames_table = get_vim_var_dict(VV_COLORNAMES);
@@ -2336,18 +2350,6 @@ colorname2rgb(char_u *name)
     return INVALCOLOR;
 }
 
-/*
- * Load a default color list. Intended to support legacy color names but allows
- * the user to override the color values. Only loaded once.
- */
-    void
-load_default_colors_lists()
-{
-    // Lacking a default color list isn't the end of the world but it is likely
-    // an inconvenience so users should know when it is missing.
-    if (source_runtime((char_u *)"colors/lists/default.vim", DIP_ALL) != OK)
-	msg("failed to load colors/lists/default.vim");
-}
 #endif
 
     guicolor_T
@@ -2529,7 +2531,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	// When called recursively, we are really out of numbers.
 	if (recursive)
 	{
-	    emsg(_("E424: Too many different highlighting attributes in use"));
+	    emsg(_(e_too_many_different_highlighting_attributes_in_use));
 	    return 0;
 	}
 	recursive = TRUE;
@@ -3446,7 +3448,7 @@ syn_add_group(char_u *name)
     {
 	if (!vim_isprintc(*p))
 	{
-	    emsg(_("E669: Unprintable character in group name"));
+	    emsg(_(e_unprintable_character_in_group_name));
 	    vim_free(name);
 	    return 0;
 	}
@@ -3469,7 +3471,7 @@ syn_add_group(char_u *name)
 
     if (highlight_ga.ga_len >= MAX_HL_ID)
     {
-	emsg(_("E849: Too many highlight and syntax groups"));
+	emsg(_(e_too_many_highlight_and_syntax_groups));
 	vim_free(name);
 	return 0;
     }
@@ -4273,7 +4275,7 @@ hldict_get_string(dict_T *dict, char_u *key, int *error)
 
     if (di->di_tv.v_type != VAR_STRING || di->di_tv.vval.v_string == NULL)
     {
-	emsg(_(e_stringreq));
+	emsg(_(e_string_required));
 	*error = TRUE;
 	return NULL;
     }
@@ -4306,7 +4308,7 @@ hldict_attr_to_str(
 
     if (di->di_tv.v_type != VAR_DICT || di->di_tv.vval.v_dict == NULL)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FALSE;
     }
 
@@ -4548,7 +4550,7 @@ f_hlset(typval_T *argvars, typval_T *rettv)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 

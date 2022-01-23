@@ -241,7 +241,7 @@ gui_do_fork(void)
     pid = fork();
     if (pid < 0)	    // Fork error
     {
-	emsg(_("E851: Failed to create a new process for the GUI"));
+	emsg(_(e_failed_to_create_new_process_for_GUI));
 	return;
     }
     else if (pid > 0)	    // Parent
@@ -265,7 +265,7 @@ gui_do_fork(void)
 # else
 		waitpid(pid, &exit_status, 0);
 # endif
-		emsg(_("E852: The child process failed to start the GUI"));
+		emsg(_(e_the_child_process_failed_to_start_GUI));
 		return;
 	    }
 	    else if (status == GUI_CHILD_IO_ERROR)
@@ -388,7 +388,7 @@ gui_init_check(void)
     if (result != MAYBE)
     {
 	if (result == FAIL)
-	    emsg(_("E229: Cannot start the GUI"));
+	    emsg(_(e_cannot_start_the_GUI));
 	return result;
     }
 
@@ -547,7 +547,7 @@ gui_init(void)
 	    if (STRCMP(use_gvimrc, "NONE") != 0
 		    && STRCMP(use_gvimrc, "NORC") != 0
 		    && do_source(use_gvimrc, FALSE, DOSO_NONE, NULL) != OK)
-		semsg(_("E230: Cannot read from \"%s\""), use_gvimrc);
+		semsg(_(e_cannot_read_from_str), use_gvimrc);
 	}
 	else
 	{
@@ -682,11 +682,11 @@ gui_init(void)
 	    gui_init_font(*p_guifont == NUL ? hl_get_font_name()
 						  : p_guifont, FALSE) == FAIL)
     {
-	emsg(_("E665: Cannot start GUI, no valid font found"));
+	emsg(_(e_cannot_start_gui_no_valid_font_found));
 	goto error2;
     }
     if (gui_get_wide_font() == FAIL)
-	emsg(_("E231: 'guifontwide' invalid"));
+	emsg(_(e_guifontwide_invalid));
 
     gui.num_cols = Columns;
     gui.num_rows = Rows;
@@ -814,7 +814,7 @@ gui_init(void)
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	if (!im_xim_isvalid_imactivate())
-	    emsg(_("E599: Value of 'imactivatekey' is invalid"));
+	    emsg(_(e_value_of_imactivatekey_is_invalid));
 #endif
 	// When 'cmdheight' was set during startup it may not have taken
 	// effect yet.
@@ -1433,10 +1433,6 @@ gui_position_components(int total_width UNUSED)
     if (gui.menu_is_active)
 	text_area_y += gui.menu_height;
 #endif
-#if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_MSWIN)
-    if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-	text_area_y = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
-#endif
 
 # if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF))
@@ -1445,7 +1441,7 @@ gui_position_components(int total_width UNUSED)
 #endif
 
 #if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
-	|| defined(FEAT_GUI_HAIKU))
+	|| defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
     {
 # if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_HAIKU)
@@ -1529,11 +1525,7 @@ gui_get_base_height(void)
 # endif
 # ifdef FEAT_TOOLBAR
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-#  if defined(FEAT_GUI_MSWIN) && defined(FEAT_TOOLBAR)
-	base_height += (TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT);
-#  else
 	base_height += gui.toolbar_height;
-#  endif
 # endif
 # if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU))
@@ -4342,13 +4334,7 @@ gui_update_scrollbars(
 #if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_ATHENA) \
 	|| defined(FEAT_GUI_HAIKU))
 	    if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-# if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_HAIKU)
 		y += gui.toolbar_height;
-# else
-#  ifdef FEAT_GUI_MSWIN
-		y += TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
-#  endif
-# endif
 #endif
 
 #if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)

@@ -151,6 +151,7 @@ alloc(size_t size)
     return lalloc(size, TRUE);
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * alloc() with an ID for alloc_fail().
  */
@@ -163,6 +164,7 @@ alloc_id(size_t size, alloc_id_T id UNUSED)
 #endif
     return lalloc(size, TRUE);
 }
+#endif
 
 /*
  * Allocate memory and set all bytes to zero.
@@ -178,6 +180,7 @@ alloc_clear(size_t size)
     return p;
 }
 
+#if defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * Same as alloc_clear() but with allocation id for testing
  */
@@ -190,6 +193,7 @@ alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 #endif
     return alloc_clear(size);
 }
+#endif
 
 /*
  * Allocate memory like lalloc() and set all bytes to zero.
@@ -224,7 +228,7 @@ lalloc(size_t size, int message)
     {
 	// Don't hide this message
 	emsg_silent = 0;
-	iemsg(_("E341: Internal error: lalloc(0, )"));
+	iemsg(_(e_internal_error_lalloc_zero));
 	return NULL;
     }
 
@@ -339,7 +343,7 @@ do_outofmem_msg(size_t size)
 	// message fails, e.g. when setting v:errmsg.
 	did_outofmem_msg = TRUE;
 
-	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
+	semsg(_(e_out_of_memory_allocating_nr_bytes), (long_u)size);
 
 	if (starting == NO_SCREEN)
 	    // Not even finished with initializations and already out of
@@ -648,6 +652,7 @@ ga_clear_strings(garray_T *gap)
     ga_clear(gap);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Copy a growing array that contains a list of strings.
  */
@@ -682,6 +687,7 @@ ga_copy_strings(garray_T *from, garray_T *to)
     to->ga_len = from->ga_len;
     return OK;
 }
+#endif
 
 /*
  * Initialize a growing array.	Don't forget to set ga_itemsize and
@@ -696,7 +702,7 @@ ga_init(garray_T *gap)
 }
 
     void
-ga_init2(garray_T *gap, int itemsize, int growsize)
+ga_init2(garray_T *gap, size_t itemsize, int growsize)
 {
     ga_init(gap);
     gap->ga_itemsize = itemsize;
@@ -783,7 +789,7 @@ ga_concat_strings(garray_T *gap, char *sep)
  * When out of memory nothing changes and FAIL is returned.
  */
     int
-ga_add_string(garray_T *gap, char_u *p)
+ga_copy_string(garray_T *gap, char_u *p)
 {
     char_u *cp = vim_strsave(p);
 
@@ -796,6 +802,19 @@ ga_add_string(garray_T *gap, char_u *p)
 	return FAIL;
     }
     ((char_u **)(gap->ga_data))[gap->ga_len++] = cp;
+    return OK;
+}
+
+/*
+ * Add string "p" to "gap".
+ * When out of memory "p" is freed and FAIL is returned.
+ */
+    int
+ga_add_string(garray_T *gap, char_u *p)
+{
+    if (ga_grow(gap, 1) == FAIL)
+	return FAIL;
+    ((char_u **)(gap->ga_data))[gap->ga_len++] = p;
     return OK;
 }
 

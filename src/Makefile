@@ -1874,7 +1874,7 @@ OBJ_COMMON = \
 	$(OS_EXTRA_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
-	$(XDIFF_OBJS)
+	$(XDIFF_OBJS_USED)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \
@@ -3922,7 +3922,7 @@ objects/highlight.o: highlight.c vim.h protodef.h auto/config.h feature.h \
 objects/if_cscope.o: if_cscope.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h if_cscope.h
+ proto.h globals.h errors.h
 objects/if_xcmdsrv.o: if_xcmdsrv.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

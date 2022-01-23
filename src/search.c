@@ -655,7 +655,7 @@ searchit(
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
     {
 	if ((options & SEARCH_MSG) && !rc_did_emsg)
-	    semsg(_("E383: Invalid search string: %s"), mr_pattern);
+	    semsg(_(e_invalid_search_string_str), mr_pattern);
 	return FAIL;
     }
 
@@ -1120,17 +1120,15 @@ searchit(
     if (!found)		    // did not find it
     {
 	if (got_int)
-	    emsg(_(e_interr));
+	    emsg(_(e_interrupted));
 	else if ((options & SEARCH_MSG) == SEARCH_MSG)
 	{
 	    if (p_ws)
-		semsg(_(e_patnotf2), mr_pattern);
+		semsg(_(e_pattern_not_found_str), mr_pattern);
 	    else if (lnum == 0)
-		semsg(_("E384: search hit TOP without match for: %s"),
-								  mr_pattern);
+		semsg(_(e_search_hit_top_without_match_for_str), mr_pattern);
 	    else
-		semsg(_("E385: search hit BOTTOM without match for: %s"),
-								  mr_pattern);
+		semsg(_(e_search_hit_bottom_without_match_for_str), mr_pattern);
 	}
 	return FAIL;
     }
@@ -1646,7 +1644,7 @@ do_search(
 	if (dirc != '?' && dirc != '/')
 	{
 	    retval = 0;
-	    emsg(_("E386: Expected '?' or '/'  after ';'"));
+	    emsg(_(e_expected_question_or_slash_after_semicolon));
 	    goto end_do_search;
 	}
 	++pat;
@@ -1729,16 +1727,15 @@ search_for_exact_line(
 
 	// when adding lines the matching line may be empty but it is not
 	// ignored because we are interested in the next line -- Acevedo
-	if ((compl_cont_status & CONT_ADDING)
-					   && !(compl_cont_status & CONT_SOL))
+	if (compl_status_adding() && !compl_status_sol())
 	{
 	    if ((p_ic ? MB_STRICMP(p, pat) : STRCMP(p, pat)) == 0)
 		return OK;
 	}
 	else if (*p != NUL)	// ignore empty lines
 	{	// expanding lines or words
-	    if ((p_ic ? MB_STRNICMP(p, pat, compl_length)
-				   : STRNCMP(p, pat, compl_length)) == 0)
+	    if ((p_ic ? MB_STRNICMP(p, pat, ins_compl_len())
+				   : STRNCMP(p, pat, ins_compl_len())) == 0)
 		return OK;
 	}
     }
@@ -3319,7 +3316,7 @@ update_search_stat(
 #if defined(FEAT_FIND_ID) || defined(PROTO)
 /*
  * Find identifiers or defines in included files.
- * If p_ic && (compl_cont_status & CONT_SOL) then ptr must be in lowercase.
+ * If p_ic && compl_status_sol() then ptr must be in lowercase.
  */
     void
 find_pattern_in_path(
@@ -3377,9 +3374,9 @@ find_pattern_in_path(
 	return;
 
     if (type != CHECK_PATH && type != FIND_DEFINE
-	// when CONT_SOL is set compare "ptr" with the beginning of the line
-	// is faster than quote_meta/regcomp/regexec "ptr" -- Acevedo
-	    && !(compl_cont_status & CONT_SOL))
+	    // when CONT_SOL is set compare "ptr" with the beginning of the
+	    // line is faster than quote_meta/regcomp/regexec "ptr" -- Acevedo
+	    && !compl_status_sol())
     {
 	pat = alloc(len + 5);
 	if (pat == NULL)
@@ -3654,7 +3651,7 @@ search_line:
 	     */
 	    if (def_regmatch.regprog == NULL || define_matched)
 	    {
-		if (define_matched || (compl_cont_status & CONT_SOL))
+		if (define_matched || compl_status_sol())
 		{
 		    // compare the first "len" chars from "ptr"
 		    startp = skipwhite(p);
@@ -3727,9 +3724,9 @@ search_line:
 		    break;
 		found = TRUE;
 		aux = p = startp;
-		if (compl_cont_status & CONT_ADDING)
+		if (compl_status_adding())
 		{
-		    p += compl_length;
+		    p += ins_compl_len();
 		    if (vim_iswordp(p))
 			goto exit_matched;
 		    p = find_word_start(p);
@@ -3737,7 +3734,7 @@ search_line:
 		p = find_word_end(p);
 		i = (int)(p - aux);
 
-		if ((compl_cont_status & CONT_ADDING) && i == compl_length)
+		if (compl_status_adding() && i == ins_compl_len())
 		{
 		    // IOSIZE > compl_length, so the STRNCPY works
 		    STRNCPY(IObuff, aux, i);
@@ -3785,7 +3782,7 @@ search_line:
 		    IObuff[i] = NUL;
 		    aux = IObuff;
 
-		    if (i == compl_length)
+		    if (i == ins_compl_len())
 			goto exit_matched;
 		}
 
@@ -3832,7 +3829,7 @@ search_line:
 						      && g_do_tagpreview == 0
 #endif
 						      )
-		    emsg(_("E387: Match is on current line"));
+		    emsg(_(e_match_is_on_current_line));
 		else if (action == ACTION_SHOW)
 		{
 		    show_pat_in_path(line, type, did_show, action,
@@ -3918,7 +3915,7 @@ exit_matched:
 	    // are not at the end of it already
 	    if (def_regmatch.regprog == NULL
 		    && action == ACTION_EXPAND
-		    && !(compl_cont_status & CONT_SOL)
+		    && !compl_status_sol()
 		    && *startp != NUL
 		    && *(p = startp + mb_ptr2len(startp)) != NUL)
 		goto search_line;
@@ -3990,11 +3987,11 @@ exit_matched:
     else if (!found && action != ACTION_EXPAND)
     {
 	if (got_int || ins_compl_interrupted())
-	    emsg(_(e_interr));
+	    emsg(_(e_interrupted));
 	else if (type == FIND_DEFINE)
-	    emsg(_("E388: Couldn't find definition"));
+	    emsg(_(e_couldnt_find_definition));
 	else
-	    emsg(_("E389: Couldn't find pattern"));
+	    emsg(_(e_couldnt_find_pattern));
     }
     if (action == ACTION_SHOW || action == ACTION_SHOW_ALL)
 	msg_end();
@@ -4121,7 +4118,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 
 	if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	dict = argvars[0].vval.v_dict;
@@ -4152,12 +4149,12 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 	{
 	    if (di->di_tv.v_type != VAR_LIST)
 	    {
-		semsg(_(e_invarg2), "pos");
+		semsg(_(e_invalid_argument_str), "pos");
 		return;
 	    }
 	    if (list_len(di->di_tv.vval.v_list) != 3)
 	    {
-		semsg(_(e_invarg2), "List format should be [lnum, col, off]");
+		semsg(_(e_invalid_argument_str), "List format should be [lnum, col, off]");
 		return;
 	    }
 	    li = list_find(di->di_tv.vval.v_list, 0L);
@@ -4807,13 +4804,14 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     // validate and get the arguments
     if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
     {
-	semsg(_(e_listarg), retmatchpos ? "matchfuzzypos()" : "matchfuzzy()");
+	semsg(_(e_argument_of_str_must_be_list),
+			     retmatchpos ? "matchfuzzypos()" : "matchfuzzy()");
 	return;
     }
     if (argvars[1].v_type != VAR_STRING
 	    || argvars[1].vval.v_string == NULL)
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	return;
     }
 
@@ -4824,7 +4822,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 
 	if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 
@@ -4837,7 +4835,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		    || di->di_tv.vval.v_string == NULL
 		    || *di->di_tv.vval.v_string == NUL)
 	    {
-		semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+		semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
 		return;
 	    }
 	    key = tv_get_string(&di->di_tv);
@@ -4847,7 +4845,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	    cb = get_callback(&di->di_tv);
 	    if (cb.cb_name == NULL)
 	    {
-		semsg(_(e_invargval), "text_cb");
+		semsg(_(e_invalid_value_for_argument_str), "text_cb");
 		return;
 	    }
 	}

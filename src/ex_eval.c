@@ -191,7 +191,7 @@ cause_errthrow(
      * interrupt exception is catchable by the innermost try conditional and
      * not replaced by an interrupt message error exception.
      */
-    if (mesg == (char_u *)_(e_interr))
+    if (mesg == (char_u *)_(e_interrupted))
     {
 	*ignore = TRUE;
 	return TRUE;
@@ -521,7 +521,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 		&& (((char_u *)value)[3] == NUL || ((char_u *)value)[3] == ':'
 		    || ((char_u *)value)[3] == '('))
 	{
-	    emsg(_("E608: Cannot :throw exceptions with 'Vim' prefix"));
+	    emsg(_(e_cannot_throw_exceptions_with_vim_prefix));
 	    goto fail;
 	}
     }
@@ -1017,7 +1017,7 @@ ex_if(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E579: :if nesting too deep");
+	eap->errmsg = _(e_if_nesting_too_deep);
     else
     {
 	enter_block(cstack);
@@ -1111,10 +1111,10 @@ ex_else(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = _("E583: multiple :else");
+	    eap->errmsg = _(e_multiple_else);
 	    return;
 	}
-	eap->errmsg = _("E584: :elseif after :else");
+	eap->errmsg = _(e_elseif_after_else);
 	skip = TRUE;
     }
 
@@ -1180,7 +1180,7 @@ ex_while(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E585: :while/:for nesting too deep");
+	eap->errmsg = _(e_while_for_nesting_too_deep);
     else
     {
 	/*
@@ -1316,7 +1316,7 @@ ex_continue(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_continue);
+	eap->errmsg = _(e_continue_without_while_or_for);
     else
     {
 	// Try to find the matching ":while".  This might stop at a try
@@ -1354,7 +1354,7 @@ ex_break(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_break);
+	eap->errmsg = _(e_break_without_while_or_for);
     else
     {
 	// Inactivate conditionals until the matching ":while" or a try
@@ -1387,12 +1387,12 @@ ex_endwhile(exarg_T *eap)
 
     if (eap->cmdidx == CMD_endwhile)
     {
-	err = e_while;
+	err = e_endwhile_without_while;
 	csf = CSF_WHILE;
     }
     else
     {
-	err = e_for;
+	err = e_endfor_without_for;
 	csf = CSF_FOR;
     }
 
@@ -1406,16 +1406,16 @@ ex_endwhile(exarg_T *eap)
 	    // If we are in a ":while" or ":for" but used the wrong endloop
 	    // command, do not rewind to the next enclosing ":for"/":while".
 	    if (fl & CSF_WHILE)
-		eap->errmsg = _("E732: Using :endfor with :while");
+		eap->errmsg = _(e_using_endfor_with_while);
 	    else if (fl & CSF_FOR)
-		eap->errmsg = _("E733: Using :endwhile with :for");
+		eap->errmsg = _(e_using_endwhile_with_for);
 	}
 	if (!(fl & (CSF_WHILE | CSF_FOR)))
 	{
 	    if (!(fl & CSF_TRY))
-		eap->errmsg = _(e_endif);
+		eap->errmsg = _(e_missing_endif);
 	    else if (fl & CSF_FINALLY)
-		eap->errmsg = _(e_endtry);
+		eap->errmsg = _(e_missing_endtry);
 	    // Try to find the matching ":while" and report what's missing.
 	    for (idx = cstack->cs_idx; idx > 0; --idx)
 	    {
@@ -1465,7 +1465,7 @@ ex_block(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E579: block nesting too deep");
+	eap->errmsg = _(e_block_nesting_too_deep);
     else
     {
 	enter_block(cstack);
@@ -1513,7 +1513,7 @@ ex_throw(exarg_T *eap)
 	value = eval_to_string_skip(arg, eap, eap->skip);
     else
     {
-	emsg(_(e_argreq));
+	emsg(_(e_argument_required));
 	value = NULL;
     }
 
@@ -1624,7 +1624,7 @@ ex_try(exarg_T *eap)
 	return;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = _("E601: :try nesting too deep");
+	eap->errmsg = _(e_try_nesting_too_deep);
     else
     {
 	enter_block(cstack);
@@ -1706,7 +1706,7 @@ ex_catch(exarg_T *eap)
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
-	eap->errmsg = _(e_catch);
+	eap->errmsg = _(e_catch_without_try);
 	give_up = TRUE;
     }
     else
@@ -1727,7 +1727,7 @@ ex_catch(exarg_T *eap)
 	{
 	    // Give up for a ":catch" after ":finally" and ignore it.
 	    // Just parse.
-	    eap->errmsg = _("E604: :catch after :finally");
+	    eap->errmsg = _(e_catch_after_finally);
 	    give_up = TRUE;
 	}
 	else
@@ -1770,7 +1770,7 @@ ex_catch(exarg_T *eap)
 	    if (end != NULL && *end != NUL
 				      && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
-		semsg(_(e_trailing_arg), end);
+		semsg(_(e_trailing_characters_str), end);
 		return;
 	    }
 
@@ -1802,7 +1802,7 @@ ex_catch(exarg_T *eap)
 		    *end = save_char;
 		p_cpo = save_cpo;
 		if (regmatch.regprog == NULL)
-		    semsg(_(e_invarg2), pat);
+		    semsg(_(e_invalid_argument_str), pat);
 		else
 		{
 		    /*
@@ -1870,7 +1870,7 @@ ex_finally(exarg_T *eap)
 	return;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_finally);
+	eap->errmsg = _(e_finally_without_try);
     else
     {
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
@@ -1890,7 +1890,7 @@ ex_finally(exarg_T *eap)
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a multiple ":finally" and ignore it.
-	    eap->errmsg = _(e_finally_dup);
+	    eap->errmsg = _(e_multiple_finally);
 	    return;
 	}
 	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
@@ -2002,7 +2002,7 @@ ex_endtry(exarg_T *eap)
 	return;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = _(e_no_endtry);
+	eap->errmsg = _(e_endtry_without_try);
     else
     {
 	/*
@@ -2484,10 +2484,10 @@ cleanup_conditionals(
 get_end_emsg(cstack_T *cstack)
 {
     if (cstack->cs_flags[cstack->cs_idx] & CSF_WHILE)
-	return _(e_endwhile);
+	return _(e_missing_endwhile);
     if (cstack->cs_flags[cstack->cs_idx] & CSF_FOR)
-	return _(e_endfor);
-    return _(e_endif);
+	return _(e_missing_endfor);
+    return _(e_missing_endif);
 }
 
 
@@ -2516,15 +2516,15 @@ rewind_conditionals(
 }
 
 /*
- * ":endfunction" when not after a ":function"
+ * ":endfunction" or ":enddef" when not after a ":function"
  */
     void
 ex_endfunction(exarg_T *eap)
 {
     if (eap->cmdidx == CMD_enddef)
-	emsg(_("E193: :enddef not inside a function"));
+	semsg(_(e_str_not_inside_function), ":enddef");
     else
-	emsg(_("E193: :endfunction not inside a function"));
+	semsg(_(e_str_not_inside_function), ":endfunction");
 }
 
 /*

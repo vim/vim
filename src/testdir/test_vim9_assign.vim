@@ -2,6 +2,7 @@
 
 source check.vim
 source vim9.vim
+source term_util.vim
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
@@ -586,6 +587,41 @@ def Test_assign_index()
   CheckDefFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<unknown>', 2)
 enddef
 
+def Test_init_in_for_loop()
+  var lines =<< trim END
+      var l: list<number> = []
+      for i in [3, 4]
+        var n: number
+        add(l, n)
+        n = 123
+      endfor
+      assert_equal([0, 0], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var l: list<number> = []
+      for i in [3, 4]
+        var n: number = 0
+        add(l, n)
+        n = 123
+      endfor
+      assert_equal([0, 0], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var l: list<number> = []
+      for i in [3, 4]
+        var n: number = 3
+        add(l, n)
+        n = 123
+      endfor
+      assert_equal([3, 3], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_extend_list()
   var lines =<< trim END
       var l1: list<number>
@@ -639,6 +675,23 @@ def Test_extend_list()
       extend(test_null_list(), ['x'])
   END
   CheckScriptFailure(lines, 'E1134:', 2)
+
+  # using global var has no declared type
+  g:myList = []
+  g:myList->extend([1])
+  g:myList->extend(['x'])
+  assert_equal([1, 'x'], g:myList)
+  unlet g:myList
+
+  # using declared list gives an error
+  lines =<< trim END
+      var l: list<number>
+      g:myList = l
+      g:myList->extend([1])
+      g:myList->extend(['x'])
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 4)
+  unlet g:myList
 enddef
 
 def Test_extend_dict()
@@ -757,6 +810,10 @@ def Test_assignment_list()
   # type becomes list<any>
   var somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
 
+  # type is list<any> even though initializer is list<number>
+  var anyList: list<any> = [0]
+  assert_equal([0, 'x'], extend(anyList, ['x']))
+
   var lines =<< trim END
     var d = {dd: test_null_list()}
     d.dd[0] = 0
@@ -853,8 +910,8 @@ def Test_assignment_partial()
 
       var nres: any
       var sres: any
-      def Func(n: number, s = '')
-        nres = n
+      def Func(nr: number, s = '')
+        nres = nr
         sres = s
       enddef
 
@@ -869,7 +926,7 @@ def Test_assignment_partial()
   lines =<< trim END
       vim9script
 
-      def Func(n: number, s = '')
+      def Func(nr: number, s = '')
       enddef
 
       var n: number
@@ -954,6 +1011,27 @@ def Test_assignment_dict()
 
   # type becomes dict<any>
   var somedict = rand() > 0 ? {a: 1, b: 2} : {a: 'a', b: 'b'}
+
+  # type is dict<any> even though initializer is dict<number>
+  var anyDict: dict<any> = {a: 0}
+  assert_equal({a: 0, b: 'x'}, extend(anyDict, {b: 'x'}))
+
+  # using global var, which has no declared type
+  g:myDict = {}
+  g:myDict->extend({a: 1})
+  g:myDict->extend({b: 'x'})
+  assert_equal({a: 1, b: 'x'}, g:myDict)
+  unlet g:myDict
+
+  # using list with declared type gives an error
+  lines =<< trim END
+      var d: dict<number>
+      g:myDict = d
+      g:myDict->extend({a: 1})
+      g:myDict->extend({b: 'x'})
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>', 4)
+  unlet g:myDict
 
   # assignment to script-local dict
   lines =<< trim END
@@ -2066,13 +2144,13 @@ def Test_unlet()
   writefile(['vim9script', 'export var svar = 1234'], 'XunletExport.vim')
   var lines =<< trim END
     vim9script
-    import svar from './XunletExport.vim'
+    import './XunletExport.vim' as exp
     def UnletSvar()
-      unlet svar
+      unlet exp.svar
     enddef
     defcompile
   END
-  CheckScriptFailure(lines, 'E1081:', 1)
+  CheckScriptFailure(lines, 'E1260:', 1)
   delete('XunletExport.vim')
 
   $ENVVAR = 'foobar'
@@ -2237,6 +2315,23 @@ def Test_abort_after_error()
   assert_fails('so Xtestscript', [expected, expected], 3)
 
   delete('Xtestscript')
+enddef
+
+func Test_declare_command_line()
+  CheckRunVimInTerminal
+  call Run_Test_declare_command_line()
+endfunc
+
+def Run_Test_declare_command_line()
+  # On the command line the type is parsed but not used.
+  # To get rid of the script context have to run this in another Vim instance.
+  var buf = RunVimInTerminal('', {'rows': 6})
+  term_sendkeys(buf, ":vim9 var abc: list<list<number>> = [ [1, 2, 3], [4, 5, 6] ]\<CR>")
+  TermWait(buf)
+  term_sendkeys(buf, ":echo abc\<CR>")
+  TermWait(buf)
+  WaitForAssert(() => assert_match('\[\[1, 2, 3\], \[4, 5, 6\]\]', term_getline(buf, 6)))
+  StopVimInTerminal(buf)
 enddef
 
 

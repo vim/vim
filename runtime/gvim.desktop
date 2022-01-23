@@ -4,6 +4,7 @@
 # Translators: This is the Application Name used in the GVim desktop file
 Name[de]=GVim
 Name[eo]=GVim
+Name[fi]=GVim
 Name[fr]=GVim
 Name[it]=GVim
 Name[ru]=GVim
@@ -13,6 +14,7 @@ Name=GVim
 # Translators: This is the Generic Application Name used in the Vim desktop file
 GenericName[de]=Texteditor
 GenericName[eo]=Tekstoredaktilo
+GenericName[fi]=Tekstinmuokkain
 GenericName[fr]=Éditeur de texte
 GenericName[it]=Editor di testi
 GenericName[ja]=テキストエディタ
@@ -23,6 +25,7 @@ GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
 Comment[de]=Textdateien bearbeiten
 Comment[eo]=Redakti tekstajn dosierojn
+Comment[fi]=Muokkaa tekstitiedostoja
 Comment[fr]=Éditer des fichiers texte
 Comment[it]=Edita file di testo
 Comment[ja]=テキストファイルを編集します
@@ -54,7 +57,6 @@ Comment[es]=Edita archivos de texto
 Comment[et]=Redigeeri tekstifaile
 Comment[eu]=Editatu testu-fitxategiak
 Comment[fa]=ویرایش پرونده‌های متنی
-Comment[fi]=Muokkaa tekstitiedostoja
 Comment[ga]=Eagar comhad Téacs
 Comment[gu]=લખાણ ફાઇલોમાં ફેરફાર કરો
 Comment[he]=ערוך קבצי טקסט
@@ -103,6 +105,7 @@ Type=Application
 # Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
 Keywords[de]=Text;Editor;
 Keywords[eo]=Teksto;redaktilo;
+Keywords[fi]=Teksti;muokkain;editori;
 Keywords[fr]=Texte;éditeur;
 Keywords[it]=Testo;editor;
 Keywords[ja]=テキスト;エディタ;

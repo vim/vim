@@ -342,12 +342,12 @@ PowerShell Execution Policy settings.
 See |option-backslash| about including spaces in 'shellcmdflag' when using
 multiple flags.
 
-The 'shellpipe' and 'shellredir' option values re-encode the UTF-16le output
+The 'shellpipe' and 'shellredir' option values re-encode the UTF-16LE output
 from PowerShell Desktop to your currently configured console codepage.  The
 output can be forced into a different encoding by changing "default" to one of
 the following:
 
-	unicode		 - UTF-16le (default output from PowerShell 5.1)
+	unicode		 - UTF-16LE (default output from PowerShell 5.1)
 	bigendianunicode - UTF-16
 	utf8		 - UTF-8
 	utf7		 - UTF-7 (no BOM)
@@ -356,7 +356,7 @@ the following:
 	default		 - System's active code page (typically ANSI)
 	oem		 - System's current OEM code page
 
-Note The abovce multi-byte Unicode encodings include a leading BOM unless
+Note The above multi-byte Unicode encodings include a leading BOM unless
 otherwise indicated.
 
 By default PowerShell Core's output is UTF-8 encoded without a BOM.  If you
@@ -365,10 +365,10 @@ want to force the output of PowerShell Core into a different encoding then set
 encoding is one of the following:
 
 	ascii		 - 7-bit ASCII character set
-	bigendianunicode - UTF-16be
-	bigendianutf32	 - UTF-32be
+	bigendianunicode - UTF-16BE
+	bigendianutf32	 - UTF-32BE
 	oem		 - System's current OEM code page
-	unicode		 - UTF-16le
+	unicode		 - UTF-16LE
 	utf7		 - UTF-7
 	utf8		 - UTF-8
 	utf8BOM		 - UTF-8, with BOM

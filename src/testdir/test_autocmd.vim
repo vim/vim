@@ -2038,7 +2038,7 @@ func Test_TextChangedI_with_setline()
   call assert_equal('', getline(1))
   call assert_equal('', getline(2))
 
-  call test_override('starting', 0)
+  call test_override('char_avail', 0)
   bwipe!
 endfunc
 
@@ -2809,6 +2809,16 @@ func Test_close_autocmd_tab()
     au!
   augroup END
   augroup! aucmd_win_test
+  %bwipe!
+endfunc
+
+func Test_Visual_doautoall_redraw()
+  call setline(1, ['a', 'b'])
+  new 
+  wincmd p
+  call feedkeys("G\<C-V>", 'txn')
+  autocmd User Explode ++once redraw
+  doautoall User Explode
   %bwipe!
 endfunc
 

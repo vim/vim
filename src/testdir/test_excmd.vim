@@ -1,6 +1,8 @@
 " Tests for various Ex commands.
 
 source check.vim
+source shared.vim
+source term_util.vim
 
 func Test_ex_delete()
   new
@@ -128,6 +130,27 @@ func Test_append_cmd()
   close!
 endfunc
 
+func Test_append_cmd_empty_buf()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+    func Timer(timer)
+      append
+    aaaaa
+    bbbbb
+    .
+    endfunc
+    call timer_start(10, 'Timer')
+  END
+  call writefile(lines, 'Xtest_append_cmd_empty_buf')
+  let buf = RunVimInTerminal('-S Xtest_append_cmd_empty_buf', {'rows': 6})
+  call WaitForAssert({-> assert_equal('bbbbb', term_getline(buf, 2))})
+  call WaitForAssert({-> assert_equal('aaaaa', term_getline(buf, 1))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_append_cmd_empty_buf')
+endfunc
+
 " Test for the :insert command
 func Test_insert_cmd()
   new
@@ -154,6 +177,27 @@ func Test_insert_cmd()
   call assert_true(&autoindent)
   set autoindent&
   close!
+endfunc
+
+func Test_insert_cmd_empty_buf()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+    func Timer(timer)
+      insert
+    aaaaa
+    bbbbb
+    .
+    endfunc
+    call timer_start(10, 'Timer')
+  END
+  call writefile(lines, 'Xtest_insert_cmd_empty_buf')
+  let buf = RunVimInTerminal('-S Xtest_insert_cmd_empty_buf', {'rows': 6})
+  call WaitForAssert({-> assert_equal('bbbbb', term_getline(buf, 2))})
+  call WaitForAssert({-> assert_equal('aaaaa', term_getline(buf, 1))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_insert_cmd_empty_buf')
 endfunc
 
 " Test for the :change command
@@ -660,9 +704,14 @@ func Test_address_line_overflow()
     throw 'Skipped: only works with 64 bit long ints'
   endif
   new
-  call setline(1, 'text')
+  call setline(1, range(100))
   call assert_fails('|.44444444444444444444444', 'E1247:')
   call assert_fails('|.9223372036854775806', 'E1247:')
+
+  $
+  yank 77777777777777777777
+  call assert_equal("99\n", @")
+
   bwipe!
 endfunc
 
