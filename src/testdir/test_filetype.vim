@@ -398,6 +398,7 @@ let s:filename_checks = {
     \ 'ppd': ['file.ppd'],
     \ 'ppwiz': ['file.it', 'file.ih'],
     \ 'privoxy': ['file.action'],
+    \ 'prisma': ['file.prisma'],
     \ 'proc': ['file.pc'],
     \ 'procmail': ['.procmail', '.procmailrc'],
     \ 'prolog': ['file.pdb'],
