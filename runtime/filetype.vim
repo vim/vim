@@ -1451,6 +1451,9 @@ au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc  setf python
 au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 
+" QL
+au BufRead,BufNewFile *.ql,*.qll		setf ql
+
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
 
