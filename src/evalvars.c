@@ -391,13 +391,21 @@ eval_charconvert(
 eval_printexpr(char_u *fname, char_u *args)
 {
     int		err = FALSE;
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
 
     set_vim_var_string(VV_FNAME_IN, fname, -1);
     set_vim_var_string(VV_CMDARG, args, -1);
+    ctx = get_option_sctx("printexpr");
+    if (ctx != NULL)
+	current_sctx = *ctx;
+
     if (eval_to_bool(p_pexpr, &err, NULL, FALSE))
 	err = TRUE;
+
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
     set_vim_var_string(VV_CMDARG, NULL, -1);
+    current_sctx = saved_sctx;
 
     if (err)
     {
