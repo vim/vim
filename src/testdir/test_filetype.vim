@@ -1191,6 +1191,10 @@ func Test_foam_file()
 
   call delete('0', 'rf')
   call delete('0.orig', 'rf')
+  call delete('Xfile1Dict')
+  call delete('Xfile1Dict.something')
+  call delete('XfileProperties')
+  call delete('XfileProperties.something')
   filetype off
 endfunc
 
