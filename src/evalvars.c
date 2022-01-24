@@ -4680,27 +4680,44 @@ copy_callback(callback_T *dest, callback_T *src)
     void
 expand_autload_callback(callback_T *cb)
 {
+    char_u	*name;
     char_u	*p;
     imported_T	*import;
 
-    if (!in_vim9script() || cb->cb_name == NULL || !cb->cb_free_name)
+    if (!in_vim9script() || cb->cb_name == NULL
+	    || (!cb->cb_free_name
+	       && (cb->cb_partial == NULL || cb->cb_partial->pt_name == NULL)))
 	return;
-    p = vim_strchr(cb->cb_name, '.');
+    if (cb->cb_partial != NULL)
+	name = cb->cb_partial->pt_name;
+    else
+	name = cb->cb_name;
+    p = vim_strchr(name, '.');
     if (p == NULL)
 	return;
-    import = find_imported(cb->cb_name, p - cb->cb_name, FALSE, NULL);
+    import = find_imported(name, p - name, FALSE, NULL);
     if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
     {
 	scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
 
 	if (si->sn_autoload_prefix != NULL)
 	{
-	    char_u *name = concat_str(si->sn_autoload_prefix, p + 1);
+	    char_u *newname = concat_str(si->sn_autoload_prefix, p + 1);
 
-	    if (name != NULL)
+	    if (newname != NULL)
 	    {
-		vim_free(cb->cb_name);
-		cb->cb_name = name;
+		if (cb->cb_partial != NULL)
+		{
+		    if (cb->cb_name == cb->cb_partial->pt_name)
+			cb->cb_name = newname;
+		    vim_free(cb->cb_partial->pt_name);
+		    cb->cb_partial->pt_name = newname;
+		}
+		else
+		{
+		    vim_free(cb->cb_name);
+		    cb->cb_name = newname;
+		}
 	    }
 	}
     }

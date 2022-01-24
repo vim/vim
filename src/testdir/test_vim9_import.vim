@@ -673,6 +673,39 @@ def Test_use_autoload_import_in_insert_completion()
   &rtp = save_rtp
 enddef
 
+def Test_use_autoload_import_partial_in_opfunc()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script
+      export def Opfunc(..._)
+        g:opfunc_called = 'yes'
+      enddef
+  END
+  writefile(lines, 'Xdir/autoload/opfunc.vim')
+
+  new
+  lines =<< trim END
+      vim9script
+      import autoload 'opfunc.vim'
+      nnoremap <expr> <F3> TheFunc()
+      def TheFunc(): string
+        &operatorfunc = function('opfunc.Opfunc', [0])
+        return 'g@'
+      enddef
+      feedkeys("\<F3>l", 'xt')
+      assert_equal('yes', g:opfunc_called)
+  END
+  CheckScriptSuccess(lines)
+
+  set opfunc=
+  bwipe!
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_use_autoload_import_in_fold_expression()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp
