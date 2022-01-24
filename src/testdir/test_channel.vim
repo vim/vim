@@ -1237,7 +1237,7 @@ func Test_out_cb()
 
     " Receive a json object split in pieces
     let g:Ch_outobj = ''
-    call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
+    call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"two\": 2,| \"three\": 3|}]\n")
     " For unknown reasons this can be very slow on Mac.
     " Increase the timeout on every run.
     if g:run_nr == 1
