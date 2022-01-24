@@ -757,6 +757,7 @@ def Run_Test_import_in_diffexpr()
   diffoff!
   bwipe!
   bwipe!
+  delete('Xdiffexpr')
 enddef
 
 def Test_import_in_patchexpr()
@@ -843,7 +844,7 @@ def Test_import_in_includeexpr()
   bwipe!
   bwipe!
   set includeexpr=
-  delete('Xinclude')
+  delete('Xinclude.vim')
   delete('Xthisfile')
 enddef
 
@@ -1927,7 +1928,7 @@ def Test_autoload_name_wring()
   writefile(lines, 'Xscriptname.vim')
   CheckScriptFailure(lines, 'E1263:')
 
-  delete('Xscriptname')
+  delete('Xscriptname.vim')
 enddef
 
 def Test_import_autoload_postponed()
