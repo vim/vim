@@ -2718,6 +2718,8 @@ EXTERN char e_invalid_command_after_export[]
 	INIT(= N_("E1043: Invalid command after :export"));
 EXTERN char e_export_with_invalid_argument[]
 	INIT(= N_("E1044: Export with invalid argument"));
+// E1045 not used
+// E1046 not used
 EXTERN char e_syntax_error_in_import_str[]
 	INIT(= N_("E1047: Syntax error in import: %s"));
 EXTERN char e_item_not_found_in_script_str[]
@@ -2786,6 +2788,7 @@ EXTERN char e_missing_argument_type_for_str[]
 // E1080 unused
 EXTERN char e_cannot_unlet_str[]
 	INIT(= N_("E1081: Cannot unlet %s"));
+// E1082 unused
 EXTERN char e_missing_backtick[]
 	INIT(= N_("E1083: Missing backtick"));
 EXTERN char e_cannot_delete_vim9_script_function_str[]
@@ -2906,6 +2909,7 @@ EXTERN char e_for_argument_must_be_sequence_of_lists[]
 	INIT(= N_("E1140: :for argument must be a sequence of lists"));
 EXTERN char e_indexable_type_required[]
 	INIT(= N_("E1141: Indexable type required"));
+// E1142 unused
 EXTERN char e_empty_expression_str[]
 	INIT(= N_("E1143: Empty expression: \"%s\""));
 EXTERN char e_command_str_not_followed_by_white_space_str[]
@@ -2966,7 +2970,8 @@ EXTERN char e_argument_name_shadows_existing_variable_str[]
 	INIT(= N_("E1167: Argument name shadows existing variable: %s"));
 EXTERN char e_argument_already_declared_in_script_str[]
 	INIT(= N_("E1168: Argument already declared in the script: %s"));
-// E1169 unused
+EXTERN char e_expression_too_recursive_str[]
+	INIT(= N_("E1169: Expression too recursive: %s"));
 EXTERN char e_cannot_use_hash_curly_to_start_comment[]
 	INIT(= N_("E1170: Cannot use #{ to start a comment"));
 EXTERN char e_missing_end_block[]
