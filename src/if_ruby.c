@@ -32,11 +32,6 @@
 # define RUBYEXTERN extern
 #endif
 
-// suggested by Ariya Mizutani
-#if (_MSC_VER == 1200)
-# undef _WIN32_WINNT
-#endif
-
 #ifdef DYNAMIC_RUBY
 /*
  * This is tricky.  In ruby.h there is (inline) function rb_class_of()

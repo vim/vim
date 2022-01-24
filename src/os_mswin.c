@@ -429,23 +429,15 @@ slash_adjust(char_u *p)
     }
 }
 
-// Use 64-bit stat functions if available.
-#ifdef HAVE_STAT64
-# undef stat
-# undef _stat
-# undef _wstat
-# undef _fstat
-# define stat _stat64
-# define _stat _stat64
-# define _wstat _wstat64
-# define _fstat _fstat64
-#endif
-
-#if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
-# define OPEN_OH_ARGTYPE intptr_t
-#else
-# define OPEN_OH_ARGTYPE long
-#endif
+// Use 64-bit stat functions.
+#undef stat
+#undef _stat
+#undef _wstat
+#undef _fstat
+#define stat _stat64
+#define _stat _stat64
+#define _wstat _wstat64
+#define _fstat _fstat64
 
     static int
 wstat_symlink_aware(const WCHAR *name, stat_T *stp)
@@ -487,7 +479,7 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
 	{
 	    int	    fd;
 
-	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
+	    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
 	    n = _fstat(fd, (struct _stat *)stp);
 	    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
 		stp->st_mode = (stp->st_mode & ~S_IFREG) | S_IFDIR;
@@ -881,7 +873,7 @@ mch_libcall(
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 	    if (GetExceptionCode() == EXCEPTION_STACK_OVERFLOW)
-		RESETSTKOFLW();
+		_resetstkoflw();
 	    fRunTimeLinkSuccess = 0;
 	}
 # endif
@@ -1043,14 +1035,7 @@ swap_me(COLORREF colorref)
     return colorref;
 }
 
-// Attempt to make this work for old and new compilers
-# if !defined(_WIN64) && (!defined(_MSC_VER) || _MSC_VER < 1300)
-#  define PDP_RETVAL BOOL
-# else
-#  define PDP_RETVAL INT_PTR
-# endif
-
-    static PDP_RETVAL CALLBACK
+    static INT_PTR CALLBACK
 PrintDlgProc(
 	HWND hDlg,
 	UINT message,

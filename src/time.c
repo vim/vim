@@ -1022,14 +1022,6 @@ get8ctime(FILE *fd)
     return n;
 }
 
-#ifdef _MSC_VER
-# if (_MSC_VER <= 1200)
-// This line is required for VC6 without the service pack.  Also see the
-// matching #pragma below.
- #  pragma optimize("", off)
-# endif
-#endif
-
 /*
  * Write time_T to file "fd" in 8 bytes.
  * Returns FAIL when the write failed.
@@ -1068,21 +1060,15 @@ time_to_bytes(time_T the_time, char_u *buf)
 	    buf[bi++] = 0;
 	else
 	{
-#if defined(SIZEOF_TIME_T) && SIZEOF_TIME_T > 4
+# if defined(SIZEOF_TIME_T) && SIZEOF_TIME_T > 4
 	    c = (int)(wtime >> (i * 8));
-#else
+# else
 	    c = (int)((long_u)wtime >> (i * 8));
-#endif
+# endif
 	    buf[bi++] = c;
 	}
     }
 }
-
-#ifdef _MSC_VER
-# if (_MSC_VER <= 1200)
- #  pragma optimize("", on)
-# endif
-#endif
 
 #endif
 

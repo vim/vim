@@ -47,13 +47,8 @@
 
 #define FEAT_SHORTCUT		// resolve shortcuts
 
-#if (!defined(_MSC_VER) || _MSC_VER > 1020)
-/*
- * Access Control List (actually security info).
- * MSVC has acl stuff only in 5.0, not in 4.2, don't know about 4.3.
- */
-# define HAVE_ACL
-#endif
+// Access Control List (actually security info).
+#define HAVE_ACL
 
 #define USE_FNAME_CASE		// adjust case of file names
 #if !defined(FEAT_CLIPBOARD)
@@ -134,17 +129,11 @@
 # define IO_REPARSE_TAG_SYMLINK		0xA000000C
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
     // Support for __try / __except.  All versions of MSVC are
     // expected to have this.  Any other compilers that support it?
 # define HAVE_TRY_EXCEPT 1
 # include <malloc.h>		// for _resetstkoflw()
-# if defined(_MSC_VER) && (_MSC_VER >= 1300)
-#  define RESETSTKOFLW _resetstkoflw
-# else
-#  define RESETSTKOFLW myresetstkoflw
-#  define MYRESETSTKOFLW
-# endif
 #endif
 
 /*
@@ -154,14 +143,8 @@
 
 #ifdef _DEBUG
 
-# if defined(_MSC_VER)	&&  (_MSC_VER >= 1000)
-   // Use the new debugging tools in Visual C++ 4.x
-#  include <crtdbg.h>
-#  define ASSERT(f) _ASSERT(f)
-# else
-#  include <assert.h>
-#  define ASSERT(f) assert(f)
-# endif
+# include <crtdbg.h>
+# define ASSERT(f) _ASSERT(f)
 
 # define TRACE			Trace
 # define TRACE0(sz)		Trace(_T("%s"), _T(sz))
