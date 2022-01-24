@@ -1518,7 +1518,10 @@ aucmd_prepbuf(
 	p_acd = FALSE;
 #endif
 
+	// no redrawing and don't set the window title
+	++RedrawingDisabled;
 	(void)win_split_ins(0, WSP_TOP, aucmd_win, 0);
+	--RedrawingDisabled;
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
