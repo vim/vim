@@ -2050,7 +2050,7 @@ delete_instr(isn_T *isn)
 	case ISN_NEWFUNC:
 	    {
 		char_u  *lambda = isn->isn_arg.newfunc.nf_lambda;
-		ufunc_T *ufunc = find_func_even_dead(lambda, TRUE);
+		ufunc_T *ufunc = find_func_even_dead(lambda, FFED_IS_GLOBAL);
 
 		if (ufunc != NULL)
 		{

@@ -965,6 +965,37 @@ def Run_Test_import_in_spellsuggest_expr()
   set nospell spellsuggest& verbose=0
 enddef
 
+def Test_export_shadows_global_function()
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script
+      export def Shadow(): string
+        return 'Shadow()'
+      enddef
+  END
+  writefile(lines, 'Xdir/autoload/shadow.vim')
+
+  lines =<< trim END
+      vim9script
+
+      def g:Shadow(): string
+        return 'global'
+      enddef
+
+      import autoload 'shadow.vim'
+      assert_equal('Shadow()', shadow.Shadow())
+  END
+  CheckScriptSuccess(lines)
+
+  delfunc g:Shadow
+  bwipe!
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_export_fails()
   CheckScriptFailure(['export var some = 123'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')

@@ -2798,4 +2798,8 @@ long elapsed(DWORD start_tick);
 #define VSE_SHELL	1	// escape for a shell command
 #define VSE_BUFFER	2	// escape for a ":buffer" command
 
+// Flags used by find_func_even_dead()
+#define FFED_IS_GLOBAL	1	// "g:" was used
+#define FFED_NO_GLOBAL	2	// only check for script-local functions
+
 #endif // VIM__H

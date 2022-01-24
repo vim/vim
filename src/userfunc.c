@@ -1941,16 +1941,18 @@ find_func_with_prefix(char_u *name, int sid)
 
 /*
  * Find a function by name, return pointer to it in ufuncs.
- * When "is_global" is true don't find script-local or imported functions.
+ * When "flags" has FFED_IS_GLOBAL don't find script-local or imported
+ * functions.
+ * When "flags" has "FFED_NO_GLOBAL" don't find global functions.
  * Return NULL for unknown function.
  */
     ufunc_T *
-find_func_even_dead(char_u *name, int is_global)
+find_func_even_dead(char_u *name, int flags)
 {
     hashitem_T	*hi;
     ufunc_T	*func;
 
-    if (!is_global)
+    if ((flags & FFED_IS_GLOBAL) == 0)
     {
 	int	find_script_local = in_vim9script() && eval_isnamec1(*name)
 					   && (name[1] != ':' || *name == 's');
@@ -1965,10 +1967,13 @@ find_func_even_dead(char_u *name, int is_global)
 	}
     }
 
-    hi = hash_find(&func_hashtab,
+    if ((flags & FFED_NO_GLOBAL) == 0)
+    {
+	hi = hash_find(&func_hashtab,
 				STRNCMP(name, "g:", 2) == 0 ? name + 2 : name);
-    if (!HASHITEM_EMPTY(hi))
-	return HI2UF(hi);
+	if (!HASHITEM_EMPTY(hi))
+	    return HI2UF(hi);
+    }
 
     // Find autoload function if this is an autoload script.
     return find_func_with_prefix(name[0] == 's' && name[1] == ':'
@@ -1983,7 +1988,7 @@ find_func_even_dead(char_u *name, int is_global)
     ufunc_T *
 find_func(char_u *name, int is_global)
 {
-    ufunc_T	*fp = find_func_even_dead(name, is_global);
+    ufunc_T	*fp = find_func_even_dead(name, is_global ? FFED_IS_GLOBAL : 0);
 
     if (fp != NULL && (fp->uf_flags & FC_DEAD) == 0)
 	return fp;
@@ -2354,7 +2359,7 @@ func_clear_free(ufunc_T *fp, int force)
     int
 copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 {
-    ufunc_T *ufunc = find_func_even_dead(lambda, TRUE);
+    ufunc_T *ufunc = find_func_even_dead(lambda, FFED_IS_GLOBAL);
     ufunc_T *fp = NULL;
 
     if (ufunc == NULL)
@@ -4464,6 +4469,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	hashtab_T	*ht;
 	char_u		*find_name = name;
 	int		var_conflict = FALSE;
+	int		ffed_flags = is_global ? FFED_IS_GLOBAL : 0;
 
 	v = find_var(name, &ht, TRUE);
 	if (v != NULL && (in_vim9script() || v->di_tv.v_type == VAR_FUNC))
@@ -4481,6 +4487,9 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 		    v = find_var(find_name, &ht, TRUE);
 		    if (v != NULL)
 			var_conflict = TRUE;
+		    // Only check if the function already exists in the script,
+		    // global functions can be shadowed.
+		    ffed_flags |= FFED_NO_GLOBAL;
 		}
 		else
 		{
@@ -4508,7 +4517,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	    goto erret;
 	}
 
-	fp = find_func_even_dead(find_name, is_global);
+	fp = find_func_even_dead(find_name, ffed_flags);
 	if (vim9script)
 	{
 	    char_u *uname = untrans_function_name(name);
