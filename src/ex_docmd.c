@@ -1716,12 +1716,6 @@ comment_start(char_u *p, int starts_with_colon UNUSED)
  *
  * This function may be called recursively!
  */
-#if (_MSC_VER == 1200)
-/*
- * Avoid optimisation bug in VC++ version 6.0
- */
- #pragma optimize( "g", off )
-#endif
     static char_u *
 do_one_cmd(
     char_u	**cmdlinep,
@@ -2648,9 +2642,6 @@ doend:
 
     return ea.nextcmd;
 }
-#if (_MSC_VER == 1200)
- #pragma optimize( "", on )
-#endif
 
 static char ex_error_buf[MSG_BUF_LEN];
 

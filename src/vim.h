@@ -356,7 +356,7 @@ typedef		 __int64	long_i;
   // that change size between 32-bit and 64-bit platforms.  For any such type,
   // __w64 should appear only on the 32-bit definition of the typedef.
   // Define __w64 as an empty token for everything but MSVC 7.x or later.
-# if !defined(_MSC_VER)	|| (_MSC_VER < 1300)
+# ifndef _MSC_VER
 #  define __w64
 # endif
 typedef unsigned long __w64	long_u;
@@ -383,7 +383,7 @@ typedef		 long __w64     long_i;
  * We assume that when fseeko() is available then ftello() is too.
  * Note that Windows has different function names.
  */
-#if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+#ifdef MSWIN
 typedef __int64 off_T;
 # ifdef __MINGW32__
 #  define vim_lseek lseek64
@@ -2162,9 +2162,8 @@ typedef struct
 typedef int Clipboard_T;	// This is required for the prototypes.
 #endif
 
-// Use 64-bit stat structure if available.
-#if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
-# define HAVE_STAT64
+// Use 64-bit stat structure on MS-Windows.
+#ifdef MSWIN
 typedef struct _stat64 stat_T;
 #else
 typedef struct stat stat_T;

@@ -166,9 +166,9 @@
 #   define mch_access(n, p)	access((n), (p))
 # endif
 
-// Use 64-bit fstat function if available.
+// Use 64-bit fstat function on MS-Windows.
 // NOTE: This condition is the same as for the stat_T type.
-# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+# ifdef MSWIN
 #  define mch_fstat(n, p)	_fstat64((n), (p))
 # else
 #  define mch_fstat(n, p)	fstat((n), (p))

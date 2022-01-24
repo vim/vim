@@ -629,8 +629,7 @@
     && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| defined(FEAT_GUI_HAIKU) \
-	|| (defined(FEAT_GUI_MSWIN) \
-	    && (!defined(_MSC_VER) || _MSC_VER > 1020)))
+	|| defined(FEAT_GUI_MSWIN))
 # define FEAT_GUI_TABLINE
 #endif
 
