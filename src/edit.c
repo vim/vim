@@ -1909,6 +1909,11 @@ get_literal(int noReduceKeys)
 	if ((nc == ESC || nc == CSI) && !noReduceKeys)
 	    nc = decodeModifyOtherKeys(nc);
 
+	if ((mod_mask & ~MOD_MASK_SHIFT) != 0)
+	    // A character with non-Shift modifiers should not be a valid
+	    // character for i_CTRL-V_digit.
+	    break;
+
 #ifdef FEAT_CMDL_INFO
 	if (!(State & CMDLINE) && MB_BYTE2LEN_CHECK(nc) == 1)
 	    add_to_showcmd(nc);
@@ -1986,7 +1991,11 @@ get_literal(int noReduceKeys)
 	--allow_keys;
 #endif
     if (nc)
+    {
 	vungetc(nc);
+	// A character typed with i_CTRL-V_digit cannot have modifiers.
+	mod_mask = 0;
+    }
     got_int = FALSE;	    // CTRL-C typed after CTRL-V is not an interrupt
     return cc;
 }
