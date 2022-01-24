@@ -3554,8 +3554,14 @@ eval7(
     }
 
     // Limit recursion to 1000 levels.  At least at 10000 we run out of stack
-    // and crash.
-    if (recurse == 1000)
+    // and crash.  With MSVC the stack is smaller.
+    if (recurse ==
+#ifdef _MSC_VER
+		    300
+#else
+		    1000
+#endif
+		    )
     {
 	semsg(_(e_expression_too_recursive_str), *arg);
 	return FAIL;
