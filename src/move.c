@@ -1262,12 +1262,15 @@ textpos2screenpos(
 	if (col >= wp->w_width)
 	    col = -1;
 	if (col >= 0 && row + rowoff <= wp->w_height)
+	{
 	    coloff = col - scol + wp->w_wincol + 1;
+	    row += W_WINROW(wp);
+	}
 	else
 	    // character is left, right or below of the window
 	    row = rowoff = scol = ccol = ecol = 0;
     }
-    *rowp = W_WINROW(wp) + row + rowoff;
+    *rowp = row + rowoff;
     *scolp = scol + coloff;
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;
