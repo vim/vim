@@ -4452,7 +4452,8 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 		    break;
 
 		case PASTE_EX:
-		    if (gap != NULL && ga_grow(gap, idx) == OK)
+		    // add one for the NUL that is going to be appended
+		    if (gap != NULL && ga_grow(gap, idx + 1) == OK)
 		    {
 			mch_memmove((char *)gap->ga_data + gap->ga_len,
 							     buf, (size_t)idx);

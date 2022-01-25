@@ -90,6 +90,9 @@ func Test_paste_ex_mode()
   unlet! foo
   call feedkeys("Qlet foo=\"\<Esc>[200~foo\<CR>bar\<Esc>[201~\"\<CR>vi\<CR>", 'xt')
   call assert_equal("foo\rbar", foo)
+
+  " pasting more than 40 bytes
+  exe "norm Q\<PasteStart>0000000000000000000000000000000000000000000000000000000000000000000000\<C-C>"
 endfunc
 
 func Test_paste_onechar()
