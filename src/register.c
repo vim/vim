@@ -1474,7 +1474,7 @@ yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
     {
 	int s = bd->textlen + bd->endspaces;
 
-	while (VIM_ISWHITE(*(bd->textstart + s - 1)) && s > 0)
+	while (s > 0 && VIM_ISWHITE(*(bd->textstart + s - 1)))
 	{
 	    s = s - (*mb_head_off)(bd->textstart, bd->textstart + s - 1) - 1;
 	    pnew--;
