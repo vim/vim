@@ -2690,13 +2690,6 @@ static HICON g_hOrigIcon = NULL;
 static HICON g_hVimIcon = NULL;
 static BOOL g_fCanChangeIcon = FALSE;
 
-// ICON* are not defined in VC++ 4.0
-# ifndef ICON_SMALL
-#  define ICON_SMALL 0
-# endif
-# ifndef ICON_BIG
-#  define ICON_BIG 1
-# endif
 /*
  * GetConsoleIcon()
  * Description:
