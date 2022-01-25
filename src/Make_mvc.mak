@@ -305,10 +305,6 @@ MSVCRT_NAME = msvcr$(MSVCRT_VER)
 MSVCRT_NAME = vcruntime$(MSVCRT_VER)
 !endif
 
-!if $(MSVC_MAJOR) == 6
-CPU = ix86
-!endif
-
 ### Set the default $(WINVER) to make it work with VC++7.0 (VS.NET)
 !ifndef WINVER
 WINVER = 0x0501
@@ -707,8 +703,8 @@ RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
 ! else
-LIBC = libcmt.lib
 CFLAGS = $(CFLAGS) /Zl /MT
+LIBC = libcmt.lib
 ! endif
 
 !else  # DEBUG
@@ -719,18 +715,14 @@ DEBUGINFO = /ZI
 ! endif
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
 RCFLAGS = $(rcflags) $(rcvars) -D_DEBUG -DDEBUG
-# The /fixed:no is needed for Quantify. Assume not 4.? as unsupported in VC4.0.
-! if $(MSVC_MAJOR) == 4
-LIBC =
-! else
+# The /fixed:no is needed for Quantify.
 LIBC = /fixed:no
-! endif
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MDd
 LIBC = $(LIBC) msvcrtd.lib
 ! else
-LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
+LIBC = $(LIBC) libcmtd.lib
 ! endif
 
 !endif # DEBUG
@@ -799,7 +791,7 @@ OBJ = \
 	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\help.obj \
 	$(OUTDIR)\highlight.obj \
-	$(OBJDIR)\if_cscope.obj \
+	$(OUTDIR)\if_cscope.obj \
 	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
