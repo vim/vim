@@ -118,7 +118,7 @@ struct qf_info_S
 static qf_info_T ql_info;	// global quickfix list
 static int_u last_qf_id = 0;	// Last used quickfix list id
 
-#define FMT_PATTERNS 11		// maximum number of % recognized
+#define FMT_PATTERNS 13		// maximum number of % recognized
 
 /*
  * Structure used to hold the info of one part of 'errorformat'
@@ -233,7 +233,9 @@ static struct fmtpattern
 	{'f', ".\\+"},	    // only used when at end
 	{'n', "\\d\\+"},
 	{'l', "\\d\\+"},
+	{'e', "\\d\\+"},
 	{'c', "\\d\\+"},
+	{'k', "\\d\\+"},
 	{'t', "."},
 	{'m', ".\\+"},
 	{'r', ".*"},
@@ -265,9 +267,9 @@ efmpat_to_regpat(
 	semsg(_(e_too_many_chr_in_format_string), *efmpat);
 	return NULL;
     }
-    if ((idx && idx < 6
+    if ((idx && idx < 8
 		&& vim_strchr((char_u *)"DXOPQ", efminfo->prefix) != NULL)
-	    || (idx == 6
+	    || (idx == 8
 		&& vim_strchr((char_u *)"OPQ", efminfo->prefix) == NULL))
     {
 	semsg(_(e_unexpected_chr_in_format_str), *efmpat);
@@ -948,7 +950,7 @@ qf_parse_fmt_n(regmatch_T *rmp, int midx, qffields_T *fields)
 }
 
 /*
- * Parse the match for line number (%l') pattern in regmatch.
+ * Parse the match for line number ('%l') pattern in regmatch.
  * Return the matched value in "fields->lnum".
  */
     static int
@@ -957,6 +959,19 @@ qf_parse_fmt_l(regmatch_T *rmp, int midx, qffields_T *fields)
     if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
     fields->lnum = atol((char *)rmp->startp[midx]);
+    return QF_OK;
+}
+
+/*
+ * Parse the match for end line number ('%e') pattern in regmatch.
+ * Return the matched value in "fields->end_lnum".
+ */
+    static int
+qf_parse_fmt_e(regmatch_T *rmp, int midx, qffields_T *fields)
+{
+    if (rmp->startp[midx] == NULL)
+	return QF_FAIL;
+    fields->end_lnum = atol((char *)rmp->startp[midx]);
     return QF_OK;
 }
 
@@ -970,6 +985,19 @@ qf_parse_fmt_c(regmatch_T *rmp, int midx, qffields_T *fields)
     if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
     fields->col = (int)atol((char *)rmp->startp[midx]);
+    return QF_OK;
+}
+
+/*
+ * Parse the match for end column number ('%k') pattern in regmatch.
+ * Return the matched value in "fields->end_col".
+ */
+    static int
+qf_parse_fmt_k(regmatch_T *rmp, int midx, qffields_T *fields)
+{
+    if (rmp->startp[midx] == NULL)
+	return QF_FAIL;
+    fields->end_col = (int)atol((char *)rmp->startp[midx]);
     return QF_OK;
 }
 
@@ -1138,7 +1166,9 @@ static int (*qf_parse_fmt[FMT_PATTERNS])(regmatch_T *, int, qffields_T *) =
     NULL,
     qf_parse_fmt_n,
     qf_parse_fmt_l,
+    qf_parse_fmt_e,
     qf_parse_fmt_c,
+    qf_parse_fmt_k,
     qf_parse_fmt_t,
     qf_parse_fmt_m,
     NULL,
@@ -1186,14 +1216,14 @@ qf_parse_match(
 	midx = (int)fmt_ptr->addr[i];
 	if (i == 0 && midx > 0)				// %f
 	    status = qf_parse_fmt_f(regmatch, midx, fields, idx);
-	else if (i == 5)
+	else if (i == 7)
 	{
 	    if (fmt_ptr->flags == '+' && !qf_multiscan)	// %+
 		status = copy_nonerror_line(linebuf, linelen, fields);
 	    else if (midx > 0)				// %m
 		status = qf_parse_fmt_m(regmatch, midx, fields);
 	}
-	else if (i == 6 && midx > 0)			// %r
+	else if (i == 8 && midx > 0)			// %r
 	    status = qf_parse_fmt_r(regmatch, midx, tail);
 	else if (midx > 0)				// others
 	    status = (qf_parse_fmt[i])(regmatch, midx, fields);
@@ -1363,11 +1393,15 @@ qf_parse_multiline_pfx(
 
 	if (!qfprev->qf_lnum)
 	    qfprev->qf_lnum = fields->lnum;
+	if (!qfprev->qf_end_lnum)
+	    qfprev->qf_end_lnum = fields->end_lnum;
 	if (!qfprev->qf_col)
 	{
 	    qfprev->qf_col = fields->col;
 	    qfprev->qf_viscol = fields->use_viscol;
 	}
+	if (!qfprev->qf_end_col)
+	    qfprev->qf_end_col = fields->end_col;
 	if (!qfprev->qf_fnum)
 	    qfprev->qf_fnum = qf_get_fnum(qfl,
 		    qfl->qf_directory,
