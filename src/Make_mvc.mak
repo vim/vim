@@ -703,8 +703,8 @@ RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
 ! else
-LIBC = libcmt.lib
 CFLAGS = $(CFLAGS) /Zl /MT
+LIBC = libcmt.lib
 ! endif
 
 !else  # DEBUG
@@ -721,8 +721,8 @@ LIBC = /fixed:no
 CFLAGS = $(CFLAGS) /MDd
 LIBC = $(LIBC) msvcrtd.lib
 ! else
-LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
+LIBC = $(LIBC) libcmtd.lib
 ! endif
 
 !endif # DEBUG
@@ -791,7 +791,7 @@ OBJ = \
 	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\help.obj \
 	$(OUTDIR)\highlight.obj \
-	$(OBJDIR)\if_cscope.obj \
+	$(OUTDIR)\if_cscope.obj \
 	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
