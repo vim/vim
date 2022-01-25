@@ -1328,5 +1328,16 @@ func Test_visual_exchange_windows()
   bwipe!
 endfunc
 
+" this was leaving the end of the Visual area beyond the end of a line
+func Test_visual_ex_copy_line()
+  new
+  call setline(1, ["aaa", "bbbbbbbbbxbb"])
+  /x
+  exe "normal ggvjfxO"
+  t0
+  normal gNU
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
