@@ -1513,7 +1513,7 @@ init_ccline(int firstc, int indent)
     ccline.cmdindent = (firstc > 0 ? indent : 0);
 
     // alloc initial ccline.cmdbuff
-    alloc_cmdbuff(exmode_active ? 250 : indent + 1);
+    alloc_cmdbuff(indent + 50);
     if (ccline.cmdbuff == NULL)
 	return FAIL;
     ccline.cmdlen = ccline.cmdpos = 0;
