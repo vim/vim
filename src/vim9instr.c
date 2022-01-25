@@ -744,6 +744,23 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 }
 
 /*
+ * Generate an ISN_AUTOLOAD instruction.
+ */
+    int
+generate_AUTOLOAD(cctx_T *cctx, char_u *name, type_T *type)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr_type(cctx, ISN_AUTOLOAD, type)) == NULL)
+	return FAIL;
+    isn->isn_arg.string = vim_strsave(name);
+    if (isn->isn_arg.string == NULL)
+	return FAIL;
+    return OK;
+}
+
+/*
  * Generate an ISN_GETITEM instruction with "index".
  * "with_op" is TRUE for "+=" and other operators, the stack has the current
  * value below the list with values.
@@ -1929,6 +1946,7 @@ delete_instr(isn_T *isn)
 {
     switch (isn->isn_type)
     {
+	case ISN_AUTOLOAD:
 	case ISN_DEF:
 	case ISN_EXEC:
 	case ISN_EXECRANGE:

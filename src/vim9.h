@@ -92,6 +92,8 @@ typedef enum {
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 
+    ISN_AUTOLOAD,	// get item from autoload import, function or variable
+
     // function call
     ISN_BCALL,	    // call builtin function isn_arg.bfunc
     ISN_DCALL,	    // call def function isn_arg.dfunc

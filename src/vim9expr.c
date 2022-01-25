@@ -307,11 +307,12 @@ compile_load_scriptvar(
 	    char_u  *auto_name = concat_str(si->sn_autoload_prefix, exp_name);
 
 	    // autoload script must be loaded later, access by the autoload
-	    // name.
+	    // name.  If a '(' follows it must be a function.  Otherwise we
+	    // don't know, it can be "script.Func".
 	    if (cc == '(' || paren_follows_after_expr)
 		res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
 	    else
-		res = generate_LOAD(cctx, ISN_LOADG, 0, auto_name, &t_any);
+		res = generate_AUTOLOAD(cctx, auto_name, &t_any);
 	    vim_free(auto_name);
 	    done = TRUE;
 	}

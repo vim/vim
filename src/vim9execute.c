@@ -2260,6 +2260,77 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 }
 
 /*
+ * Load instruction for w:/b:/g:/t: variable.
+ * "isn_type" is used instead of "iptr->isn_type".
+ */
+    static int
+load_namespace_var(ectx_T *ectx, isntype_T isn_type, isn_T *iptr)
+{
+    dictitem_T	*di = NULL;
+    hashtab_T	*ht = NULL;
+    char	namespace;
+
+    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+	return NOTDONE;
+    switch (isn_type)
+    {
+	case ISN_LOADG:
+	    ht = get_globvar_ht();
+	    namespace = 'g';
+	    break;
+	case ISN_LOADB:
+	    ht = &curbuf->b_vars->dv_hashtab;
+	    namespace = 'b';
+	    break;
+	case ISN_LOADW:
+	    ht = &curwin->w_vars->dv_hashtab;
+	    namespace = 'w';
+	    break;
+	case ISN_LOADT:
+	    ht = &curtab->tp_vars->dv_hashtab;
+	    namespace = 't';
+	    break;
+	default:  // Cannot reach here
+	    return NOTDONE;
+    }
+    di = find_var_in_ht(ht, 0, iptr->isn_arg.string, TRUE);
+
+    if (di == NULL && ht == get_globvar_ht()
+			    && vim_strchr(iptr->isn_arg.string,
+					AUTOLOAD_CHAR) != NULL)
+    {
+	// Global variable has an autoload name, may still need
+	// to load the script.
+	if (script_autoload(iptr->isn_arg.string, FALSE))
+	    di = find_var_in_ht(ht, 0,
+				   iptr->isn_arg.string, TRUE);
+	if (did_emsg)
+	    return FAIL;
+    }
+
+    if (di == NULL)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	if (vim_strchr(iptr->isn_arg.string,
+					AUTOLOAD_CHAR) != NULL)
+	    // no check if the item exists in the script but
+	    // isn't exported, it is too complicated
+	    semsg(_(e_item_not_found_in_script_str),
+					 iptr->isn_arg.string);
+	else
+	    semsg(_(e_undefined_variable_char_str),
+			     namespace, iptr->isn_arg.string);
+	return FAIL;
+    }
+    else
+    {
+	copy_tv(&di->di_tv, STACK_TV_BOT(0));
+	++ectx->ec_stack.ga_len;
+    }
+    return OK;
+}
+
+/*
  * Execute instructions in execution context "ectx".
  * Return OK or FAIL;
  */
@@ -2772,68 +2843,14 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_LOADW:
 	    case ISN_LOADT:
 		{
-		    dictitem_T	*di = NULL;
-		    hashtab_T	*ht = NULL;
-		    char	namespace;
+		    int res = load_namespace_var(ectx, iptr->isn_type, iptr);
 
-		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+		    if (res == NOTDONE)
 			goto theend;
-		    switch (iptr->isn_type)
-		    {
-			case ISN_LOADG:
-			    ht = get_globvar_ht();
-			    namespace = 'g';
-			    break;
-			case ISN_LOADB:
-			    ht = &curbuf->b_vars->dv_hashtab;
-			    namespace = 'b';
-			    break;
-			case ISN_LOADW:
-			    ht = &curwin->w_vars->dv_hashtab;
-			    namespace = 'w';
-			    break;
-			case ISN_LOADT:
-			    ht = &curtab->tp_vars->dv_hashtab;
-			    namespace = 't';
-			    break;
-			default:  // Cannot reach here
-			    goto theend;
-		    }
-		    di = find_var_in_ht(ht, 0, iptr->isn_arg.string, TRUE);
-
-		    if (di == NULL && ht == get_globvar_ht()
-					    && vim_strchr(iptr->isn_arg.string,
-							AUTOLOAD_CHAR) != NULL)
-		    {
-			// Global variable has an autoload name, may still need
-			// to load the script.
-			if (script_autoload(iptr->isn_arg.string, FALSE))
-			    di = find_var_in_ht(ht, 0,
-						   iptr->isn_arg.string, TRUE);
-			if (did_emsg)
-			    goto on_error;
-		    }
-
-		    if (di == NULL)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			if (vim_strchr(iptr->isn_arg.string,
-							AUTOLOAD_CHAR) != NULL)
-			    // no check if the item exists in the script but
-			    // isn't exported, it is too complicated
-			    semsg(_(e_item_not_found_in_script_str),
-							 iptr->isn_arg.string);
-			else
-			    semsg(_(e_undefined_variable_char_str),
-					     namespace, iptr->isn_arg.string);
+		    if (res == FAIL)
 			goto on_error;
-		    }
-		    else
-		    {
-			copy_tv(&di->di_tv, STACK_TV_BOT(0));
-			++ectx->ec_stack.ga_len;
-		    }
 		}
+
 		break;
 
 	    // load autoload variable
@@ -3261,6 +3278,33 @@ exec_instructions(ectx_T *ectx)
 			tv->vval.v_string = vim_strsave(
 				iptr->isn_arg.string == NULL
 					? (char_u *)"" : iptr->isn_arg.string);
+		}
+		break;
+
+	    case ISN_AUTOLOAD:
+		{
+		    char_u  *name = iptr->isn_arg.string;
+
+		    (void)script_autoload(name, FALSE);
+		    if (find_func(name, TRUE))
+		    {
+			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+			    goto theend;
+			tv = STACK_TV_BOT(0);
+			tv->v_lock = 0;
+			++ectx->ec_stack.ga_len;
+			tv->v_type = VAR_FUNC;
+			tv->vval.v_string = vim_strsave(name);
+		    }
+		    else
+		    {
+			int res = load_namespace_var(ectx, ISN_LOADG, iptr);
+
+			if (res == NOTDONE)
+			    goto theend;
+			if (res == FAIL)
+			    goto on_error;
+		    }
 		}
 		break;
 
@@ -5595,6 +5639,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_PUSHEXC:
 		smsg("%s%4d PUSH v:exception", pfx, current);
+		break;
+	    case ISN_AUTOLOAD:
+		smsg("%s%4d AUTOLOAD %s", pfx, current, iptr->isn_arg.string);
 		break;
 	    case ISN_UNLET:
 		smsg("%s%4d UNLET%s %s", pfx, current,

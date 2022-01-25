@@ -23,6 +23,7 @@ int generate_PUSHCHANNEL(cctx_T *cctx, channel_T *channel);
 int generate_PUSHJOB(cctx_T *cctx, job_T *job);
 int generate_PUSHBLOB(cctx_T *cctx, blob_T *blob);
 int generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type);
+int generate_AUTOLOAD(cctx_T *cctx, char_u *name, type_T *type);
 int generate_GETITEM(cctx_T *cctx, int index, int with_op);
 int generate_SLICE(cctx_T *cctx, int count);
 int generate_CHECKLEN(cctx_T *cctx, int min_len, int more_OK);

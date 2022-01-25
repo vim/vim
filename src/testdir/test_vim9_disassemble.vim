@@ -1,6 +1,7 @@
 " Test the :disassemble command, and compilation as a side effect
 
 source check.vim
+source vim9.vim
 
 func NotCompiled()
   echo "not"
@@ -286,21 +287,35 @@ def s:ScriptFuncPush()
 enddef
 
 def Test_disassemble_push()
-  var res = execute('disass s:ScriptFuncPush')
-  assert_match('<SNR>\d*_ScriptFuncPush.*' ..
-        'localbool = true.*' ..
-        ' PUSH true.*' ..
-        'localspec = v:none.*' ..
-        ' PUSH v:none.*' ..
-        'localblob = 0z1234.*' ..
-        ' PUSHBLOB 0z1234.*',
-        res)
-  if has('float')
-    assert_match('<SNR>\d*_ScriptFuncPush.*' ..
-          'localfloat = 1.234.*' ..
-          ' PUSHF 1.234.*',
-          res)
-  endif
+  mkdir('Xdir/autoload', 'p')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  var lines =<< trim END
+      vim9script
+  END
+  writefile(lines, 'Xdir/autoload/autoscript.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'autoscript.vim'
+
+      def s:AutoloadFunc()
+        &operatorfunc = autoscript.Opfunc
+      enddef
+
+      var res = execute('disass s:AutoloadFunc')
+      assert_match('<SNR>\d*_AutoloadFunc.*' ..
+            '&operatorfunc = autoscript.Opfunc\_s*' ..
+            '0 AUTOLOAD autoscript#Opfunc\_s*' ..
+            '1 STOREFUNCOPT &operatorfunc\_s*' ..
+            '2 RETURN void',
+            res)
+  END
+  CheckScriptSuccess(lines)
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
 enddef
 
 def s:ScriptFuncStore()
