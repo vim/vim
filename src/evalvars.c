@@ -2060,10 +2060,18 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 		    l->lv_lock |= VAR_LOCKED;
 		else
 		    l->lv_lock &= ~VAR_LOCKED;
-		if ((deep < 0 || deep > 1) && l->lv_first != &range_list_item)
-		    // recursive: lock/unlock the items the List contains
-		    FOR_ALL_LIST_ITEMS(l, li)
-			item_lock(&li->li_tv, deep - 1, lock, check_refcount);
+		if (deep < 0 || deep > 1)
+		{
+		    if (l->lv_first == &range_list_item)
+			l->lv_lock |= VAR_ITEMS_LOCKED;
+		    else
+		    {
+			// recursive: lock/unlock the items the List contains
+			CHECK_LIST_MATERIALIZE(l);
+			FOR_ALL_LIST_ITEMS(l, li) item_lock(&li->li_tv,
+					       deep - 1, lock, check_refcount);
+		    }
+		}
 	    }
 	    break;
 	case VAR_DICT:

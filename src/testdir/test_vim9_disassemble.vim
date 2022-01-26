@@ -625,7 +625,7 @@ def Test_disassemble_locl_local()
         '\d STORE $0\_s*' ..
         'lockvar d.a\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d LOCKUNLOCK lockvar d.a\_s*',
+        '\d LOCKUNLOCK lockvar 2 d.a\_s*',
         res)
 enddef
 

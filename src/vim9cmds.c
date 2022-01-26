@@ -178,7 +178,7 @@ compile_lock_unlock(
     lval_T  *lvp,
     char_u  *name_end,
     exarg_T *eap,
-    int	    deep UNUSED,
+    int	    deep,
     void    *coookie)
 {
     cctx_T	*cctx = coookie;
@@ -223,8 +223,9 @@ compile_lock_unlock(
 	ret = FAIL;
     else
     {
-	vim_snprintf((char *)buf, len, "%s %s",
+	vim_snprintf((char *)buf, len, "%s %d %s",
 		eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar",
+		deep,
 		p);
 	ret = generate_EXEC_copy(cctx, isn, buf);
 
@@ -241,7 +242,23 @@ compile_lock_unlock(
     char_u *
 compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
 {
-    ex_unletlock(eap, arg, 0, GLV_NO_AUTOLOAD | GLV_COMPILING,
+    int	    deep = 0;
+    char_u  *p = arg;
+
+    if (eap->cmdidx != CMD_unlet)
+    {
+	if (eap->forceit)
+	    deep = -1;
+	else if (vim_isdigit(*p))
+	{
+	    deep = getdigits(&p);
+	    p = skipwhite(p);
+	}
+	else
+	    deep = 2;
+    }
+
+    ex_unletlock(eap, p, deep, GLV_NO_AUTOLOAD | GLV_COMPILING,
 	    eap->cmdidx == CMD_unlet ? compile_unlet : compile_lock_unlock,
 	    cctx);
     return eap->nextcmd == NULL ? (char_u *)"" : eap->nextcmd;

@@ -1754,7 +1754,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	{
 	    listitem_T *li = list_find(list, lidx);
 
-	    if (error_if_locked(li->li_tv.v_lock, e_cannot_change_list_item))
+	    if (error_if_locked(li->li_tv.v_lock,
+					     e_cannot_change_locked_list_item))
 		return FAIL;
 	    // overwrite existing list item
 	    clear_tv(&li->li_tv);
@@ -1762,7 +1763,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	}
 	else
 	{
-	    if (error_if_locked(list->lv_lock, e_cannot_change_list))
+	    if (error_if_locked(list->lv_lock, e_cannot_change_locked_list))
 		return FAIL;
 	    // append to list, only fails when out of memory
 	    if (list_append_tv(list, tv) == FAIL)
