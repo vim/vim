@@ -1275,6 +1275,7 @@ enddef
 
 def Test_filter()
   CheckDefAndScriptFailure(['filter(1.1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+  CheckDefAndScriptFailure(['filter([1, 2], 4)'], ['E1256: String or function required for argument 2', 'E1024: Using a Number as a String'])
 
   var lines =<< trim END
     def F(i: number, v: any): string
@@ -2153,6 +2154,7 @@ def Test_map()
     CheckDefAndScriptFailure(['map(test_null_channel(), "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1251: List, Dictionary, Blob or String required for argument 1'])
   endif
   CheckDefAndScriptFailure(['map(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+  CheckDefAndScriptFailure(['map([1, 2], 4)'], ['E1256: String or function required for argument 2', 'E1024: Using a Number as a String'])
 
   # type of dict remains dict<any> even when type of values changes
   # same for list

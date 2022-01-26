@@ -291,7 +291,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
     }
     else
     {
-	s = tv_get_string_buf_chk(expr, buf);
+	s = tv_get_string_buf_chk_strict(expr, buf, TRUE);
 	if (s == NULL)
 	    return FAIL;
 	s = skipwhite(s);

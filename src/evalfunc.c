@@ -491,13 +491,26 @@ arg_list_or_dict_or_blob_or_string(type_T *type, type_T *decl_type UNUSED, argco
     static int
 arg_filter_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
-    if (type->tt_type == VAR_FUNC
-	    && !(type->tt_member->tt_type == VAR_BOOL
+    if (type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_PARTIAL
+	    || type == &t_unknown
+	    || type == &t_any)
+	return OK;
+
+    if (type->tt_type == VAR_FUNC)
+    {
+	if (!(type->tt_member->tt_type == VAR_BOOL
 		|| type->tt_member->tt_type == VAR_NUMBER
 		|| type->tt_member->tt_type == VAR_UNKNOWN
 		|| type->tt_member->tt_type == VAR_ANY))
+	{
+	    arg_type_mismatch(&t_func_bool, type, context->arg_idx + 1);
+	    return FAIL;
+	}
+    }
+    else
     {
-	arg_type_mismatch(&t_func_bool, type, context->arg_idx + 1);
+	semsg(_(e_string_or_function_required_for_argument_nr), 2);
 	return FAIL;
     }
     return OK;
@@ -509,26 +522,39 @@ arg_filter_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
     static int
 arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
-    if (type->tt_type == VAR_FUNC
-	    && type->tt_member != &t_any
-	    && type->tt_member != &t_unknown)
+    if (type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_PARTIAL
+	    || type == &t_unknown
+	    || type == &t_any)
+	return OK;
+
+    if (type->tt_type == VAR_FUNC)
     {
-	type_T *expected = NULL;
-
-	if (context->arg_types[0].type_curr->tt_type == VAR_LIST
-		|| context->arg_types[0].type_curr->tt_type == VAR_DICT)
-	    expected = context->arg_types[0].type_curr->tt_member;
-	else if (context->arg_types[0].type_curr->tt_type == VAR_STRING)
-	    expected = &t_string;
-	else if (context->arg_types[0].type_curr->tt_type == VAR_BLOB)
-	    expected = &t_number;
-	if (expected != NULL)
+	if (type->tt_member != &t_any
+	    && type->tt_member != &t_unknown)
 	{
-	    type_T t_func_exp = {VAR_FUNC, -1, 0, TTFLAG_STATIC, NULL, NULL};
+	    type_T *expected = NULL;
 
-	    t_func_exp.tt_member = expected;
-	    return check_arg_type(&t_func_exp, type, context);
+	    if (context->arg_types[0].type_curr->tt_type == VAR_LIST
+		    || context->arg_types[0].type_curr->tt_type == VAR_DICT)
+		expected = context->arg_types[0].type_curr->tt_member;
+	    else if (context->arg_types[0].type_curr->tt_type == VAR_STRING)
+		expected = &t_string;
+	    else if (context->arg_types[0].type_curr->tt_type == VAR_BLOB)
+		expected = &t_number;
+	    if (expected != NULL)
+	    {
+		type_T t_func_exp = {VAR_FUNC, -1, 0, TTFLAG_STATIC, NULL, NULL};
+
+		t_func_exp.tt_member = expected;
+		return check_arg_type(&t_func_exp, type, context);
+	    }
 	}
+    }
+    else
+    {
+	semsg(_(e_string_or_function_required_for_argument_nr), 2);
+	return FAIL;
     }
     return OK;
 }
