@@ -352,15 +352,8 @@ typedef		 __int64	long_i;
 # define SCANF_DECIMAL_LONG_U   "%llu"
 # define PRINTF_HEX_LONG_U      "0x%llx"
 #else
-  // Microsoft-specific. The __w64 keyword should be specified on any typedefs
-  // that change size between 32-bit and 64-bit platforms.  For any such type,
-  // __w64 should appear only on the 32-bit definition of the typedef.
-  // Define __w64 as an empty token for everything but MSVC 7.x or later.
-# ifndef _MSC_VER
-#  define __w64
-# endif
-typedef unsigned long __w64	long_u;
-typedef		 long __w64     long_i;
+typedef unsigned long		long_u;
+typedef		 long		long_i;
 # define SCANF_HEX_LONG_U       "%lx"
 # define SCANF_DECIMAL_LONG_U   "%lu"
 # define PRINTF_HEX_LONG_U      "0x%lx"

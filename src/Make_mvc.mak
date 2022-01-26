@@ -274,17 +274,15 @@ MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
 MSVCRT_VER = ($(MSVCVER) / 100 * 10 - 50)
 !endif
 
-# Calculate MSVC_FULL for Visual C++ 8 and up.
-!if $(MSVC_MAJOR) >= 8
-! if [echo MSVC_FULL=_MSC_FULL_VER> msvcfullver.c && $(CC) /EP msvcfullver.c > msvcfullver.~ 2> nul]
-!  message *** ERROR
-!  message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
-!  message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
-!  error Make aborted.
-! else
-!  include msvcfullver.~
-!  if [del msvcfullver.c msvcfullver.~]
-!  endif
+# Calculate MSVC_FULL.
+!if [echo MSVC_FULL=_MSC_FULL_VER> msvcfullver.c && $(CC) /EP msvcfullver.c > msvcfullver.~ 2> nul]
+! message *** ERROR
+! message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
+! message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
+! error Make aborted.
+!else
+! include msvcfullver.~
+! if [del msvcfullver.c msvcfullver.~]
 ! endif
 !endif
 
@@ -309,9 +307,6 @@ MSVCRT_NAME = vcruntime$(MSVCRT_VER)
 !ifndef WINVER
 WINVER = 0x0501
 !endif
-
-# Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
-WP64CHECK = /Wp64
 
 # Use multiprocess build
 USE_MP = yes
@@ -495,16 +490,6 @@ CHANNEL_DEFS	= $(CHANNEL_DEFS) -DHAVE_INET_NTOP
 NETBEANS_LIB	= WSock32.lib Ws2_32.lib
 !endif
 
-# Set which version of the CRT to use
-!if defined(USE_MSVCRT)
-# CVARS = $(cvarsdll)
-# !elseif defined(MULTITHREADED)
-# CVARS = $(cvarsmt)
-!else
-# CVARS = $(cvars)
-# CVARS = $(cvarsmt)
-!endif
-
 # need advapi32.lib for GetUserName()
 # need shell32.lib for ExtractIcon()
 # need netapi32.lib for NetUserEnum()
@@ -522,7 +507,7 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 #VIMRCLOC = somewhere
 #VIMRUNTIMEDIR = somewhere
 
-CFLAGS = -c /W3 /GF /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
+CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
 		$(CSCOPE_DEFS) $(TERM_DEFS) $(SOUND_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) $(SOD_DEFS) $(SOD_INC) \
 		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
@@ -556,68 +541,50 @@ CPUNR = sse2
 !endif
 
 # Convert processor ID to MVC-compatible number
-!if $(MSVC_MAJOR) < 8
-! if "$(CPUNR)" == "i586"
-CPUARG = /G5
-! elseif "$(CPUNR)" == "i686"
-CPUARG = /G6
-! elseif "$(CPUNR)" == "sse"
-CPUARG = /G6 /arch:SSE
-! elseif "$(CPUNR)" == "sse2"
-CPUARG = /G7 /arch:SSE2
-! elseif "$(CPUNR)" == "avx" || "$(CPUNR)" == "avx2"
-!  message AVX/AVX2 Instruction Sets are not supported by Visual C++ v$(MSVC_MAJOR)
-!  message Falling back to SSE2
-CPUARG = /G7 /arch:SSE2
-! elseif "$(CPUNR)" == "any"
-CPUARG =
-! endif
-!else
 # IA32/SSE/SSE2 are only supported on x86
-! if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && ("$(CPUNR)" == "i586" || "$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
+!if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && ("$(CPUNR)" == "i586" || "$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
 # VC<11 generates fp87 code by default
-!  if $(MSVC_MAJOR) < 11
+! if $(MSVC_MAJOR) < 11
 CPUARG =
 # VC>=11 needs explicit instructions to generate fp87 code
-!  else
+! else
 CPUARG = /arch:IA32
-!  endif
-! elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse"
+! endif
+!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse"
 CPUARG = /arch:SSE
-! elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse2"
+!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse2"
 CPUARG = /arch:SSE2
-! elseif "$(CPUNR)" == "avx"
+!elseif "$(CPUNR)" == "avx"
 # AVX is only supported by VC 10 and up
-!  if $(MSVC_MAJOR) < 10
-!   message AVX Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
-!   if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
-!    message Falling back to SSE2
+! if $(MSVC_MAJOR) < 10
+!  message AVX Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
+!  if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
+!   message Falling back to SSE2
 CPUARG = /arch:SSE2
-!   else
-CPUARG =
-!   endif
 !  else
-CPUARG = /arch:AVX
-!  endif
-! elseif "$(CPUNR)" == "avx2"
-# AVX is only supported by VC 10 and up
-!  if $(MSVC_MAJOR) < 10
-!   message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
-!   if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
-!    message Falling back to SSE2
-CPUARG = /arch:SSE2
-!   else
 CPUARG =
-!   endif
+!  endif
+! else
+CPUARG = /arch:AVX
+! endif
+!elseif "$(CPUNR)" == "avx2"
+# AVX is only supported by VC 10 and up
+! if $(MSVC_MAJOR) < 10
+!  message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
+!  if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
+!   message Falling back to SSE2
+CPUARG = /arch:SSE2
+!  else
+CPUARG =
+!  endif
 # AVX2 is only supported by VC 12U2 and up
 # 180030501 is the full version number for Visual Studio 2013/VC 12 Update 2
-!  elseif $(MSVC_FULL) < 180030501
-!   message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)-$(MSVC_FULL)
-!   message Falling back to AVX
+! elseif $(MSVC_FULL) < 180030501
+!  message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)-$(MSVC_FULL)
+!  message Falling back to AVX
 CPUARG = /arch:AVX
-!  else
+! else
 CPUARG = /arch:AVX2
-!  endif
 ! endif
 !endif
 
@@ -685,20 +652,13 @@ OPTFLAG = /O2
 OPTFLAG = /Ox
 ! endif
 
-! if $(MSVC_MAJOR) >= 8
 # Use link time code generation if not worried about size
-!  if "$(OPTIMIZE)" != "SPACE"
+! if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
-!  endif
-! endif
-
-# (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
-! if ($(MSVC_MAJOR) == 7) || ($(MSVC_MAJOR) == 8)
-CFLAGS = $(CFLAGS) $(WP64CHECK)
 ! endif
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
-RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
+RCFLAGS = -DNDEBUG
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
@@ -714,7 +674,7 @@ VIM = vimd
 DEBUGINFO = /ZI
 ! endif
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
-RCFLAGS = $(rcflags) $(rcvars) -D_DEBUG -DDEBUG
+RCFLAGS = -D_DEBUG -DDEBUG
 # The /fixed:no is needed for Quantify.
 LIBC = /fixed:no
 ! ifdef USE_MSVCRT
@@ -731,11 +691,9 @@ LIBC = $(LIBC) libcmtd.lib
 RCFLAGS = $(RCFLAGS) /D_USING_V110_SDK71_
 !endif
 
-!if $(MSVC_MAJOR) >= 8
 # Visual Studio 2005 has 'deprecated' many of the standard CRT functions
 CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
-!endif
 
 !include Make_all.mak
 !include testdir\Make_all.mak
@@ -1323,10 +1281,8 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) \
 
 # Report link time code generation progress if used.
 !ifdef NODEBUG
-! if $(MSVC_MAJOR) >= 8
-!  if "$(OPTIMIZE)" != "SPACE"
+! if "$(OPTIMIZE)" != "SPACE"
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
-!  endif
 ! endif
 !endif
 
