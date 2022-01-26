@@ -7,7 +7,7 @@ cd %APPVEYOR_BUILD_FOLDER%
 cd src
 
 echo "Building MSVC 64bit console Version"
-nmake -f Make_mvc2.mak CPU=AMD64 ^
+nmake -f Make_mvc.mak CPU=AMD64 ^
     OLE=no GUI=no IME=yes ICONV=yes DEBUG=no ^
     FEATURES=%FEATURE%
 if not exist vim.exe (
