@@ -121,6 +121,24 @@ test_gui_mouse_event({button}, {row}, {col}, {multiclick}, {modifiers})
 		|feedkeys()| to have them processed, e.g.: >
 			call feedkeys("y", 'Lx!')
 
+						*test_gui_tabline_event()*
+test_gui_tabline_event({tabnr})
+		Add an event that simulates a click on the tabline to select
+		tabpage {tabnr} to the input buffer.
+		Returns TRUE if the event is successfully added, FALSE if
+		already in the tabpage {tabnr} or the cmdline window is open.
+		After injecting the event you probably should call
+		|feedkeys()| to have them processed, e.g.: >
+			call feedkeys("y", 'Lx!')
+
+						*test_gui_tabmenu_event()*
+test_gui_tabmenu_event({tabnr}, {event})
+		Add an event that simulates selecting a tabline menu entry for
+		tabpage {tabnr} to the input buffer. {event} is 1 for the
+		first menu entry, 2 for the second entry and so on.
+		After injecting the event you probably should call
+		|feedkeys()| to have them processed, e.g.: >
+			call feedkeys("y", 'Lx!')
 
 test_ignore_error({expr})			 *test_ignore_error()*
 		Ignore any error containing {expr}.  A normal message is given

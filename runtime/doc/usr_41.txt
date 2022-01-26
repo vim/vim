@@ -1118,6 +1118,8 @@ Testing:				    *test-functions*
 	test_getvalue()		get value of an internal variable
 	test_gui_drop_files()	drop file(s) in a window
 	test_gui_mouse_event()	add a GUI mouse event to the input buffer
+	test_gui_tabline_event() add a GUI tabline event to the input buffer
+	test_gui_tabmenu_event() add a GUI tabmenu event to the input buffer
 	test_ignore_error()	ignore a specific error message
 	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel

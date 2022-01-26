@@ -1340,6 +1340,40 @@ f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 }
 
     void
+f_test_gui_tabline_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_GUI
+    int	tabnr;
+
+    if (check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    tabnr = tv_get_number(&argvars[0]);
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = send_tabline_event(tabnr);
+# endif
+}
+
+    void
+f_test_gui_tabmenu_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_GUI
+    int	tabnr;
+    int	event;
+
+    if (check_for_number_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL)
+	return;
+
+    tabnr = tv_get_number(&argvars[0]);
+    event = tv_get_number(&argvars[1]);
+
+    send_tabline_menu_event(tabnr, event);
+# endif
+}
+
+    void
 f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
 {
     if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
