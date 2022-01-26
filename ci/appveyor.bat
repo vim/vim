@@ -5,8 +5,6 @@ setlocal ENABLEDELAYEDEXPANSION
 cd %APPVEYOR_BUILD_FOLDER%
 
 cd src
-:: Filter out the progress bar from the build log
-sed -e "s/@<<$/@<< | sed -e 's#.*\\\\r.*##'/" Make_mvc.mak > Make_mvc2.mak
 
 echo "Building MSVC 64bit console Version"
 nmake -f Make_mvc2.mak CPU=AMD64 ^
@@ -21,13 +19,13 @@ if not exist vim.exe (
 :: GUI needs to be last, so that testing works
 echo "Building MSVC 64bit GUI Version"
 if "%FEATURE%" == "HUGE" (
-    nmake -f Make_mvc2.mak CPU=AMD64 ^
+    nmake -f Make_mvc.mak CPU=AMD64 ^
         OLE=no GUI=yes IME=yes ICONV=yes DEBUG=no POSTSCRIPT=yes ^
         PYTHON_VER=27 DYNAMIC_PYTHON=yes PYTHON=C:\Python27-x64 ^
         PYTHON3_VER=35 DYNAMIC_PYTHON3=yes PYTHON3=C:\Python35-x64 ^
         FEATURES=%FEATURE%
 ) ELSE (
-    nmake -f Make_mvc2.mak CPU=AMD64 ^
+    nmake -f Make_mvc.mak CPU=AMD64 ^
         OLE=no GUI=yes IME=yes ICONV=yes DEBUG=no ^
         FEATURES=%FEATURE%
 )
