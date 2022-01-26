@@ -658,7 +658,7 @@ OPTFLAG = $(OPTFLAG) /GL
 ! endif
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
-RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
+RCFLAGS = -DNDEBUG
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
@@ -674,7 +674,7 @@ VIM = vimd
 DEBUGINFO = /ZI
 ! endif
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
-RCFLAGS = $(rcflags) $(rcvars) -D_DEBUG -DDEBUG
+RCFLAGS = -D_DEBUG -DDEBUG
 # The /fixed:no is needed for Quantify.
 LIBC = /fixed:no
 ! ifdef USE_MSVCRT
