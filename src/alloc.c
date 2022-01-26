@@ -705,7 +705,7 @@ ga_init(garray_T *gap)
 ga_init2(garray_T *gap, size_t itemsize, int growsize)
 {
     ga_init(gap);
-    gap->ga_itemsize = itemsize;
+    gap->ga_itemsize = (int)itemsize;
     gap->ga_growsize = growsize;
 }
 

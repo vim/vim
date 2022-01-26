@@ -4089,7 +4089,7 @@ eval_method(
 	    else
 	    {
 		name = deref;
-		len = STRLEN(name);
+		len = (long)STRLEN(name);
 	    }
 	    *paren = '(';
 	}
