@@ -223,10 +223,12 @@ compile_lock_unlock(
 	ret = FAIL;
     else
     {
-	vim_snprintf((char *)buf, len, "%s %d %s",
-		eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar",
-		deep,
-		p);
+	char *cmd = eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar";
+
+	if (deep < 0)
+	    vim_snprintf((char *)buf, len, "%s! %s", cmd, p);
+	else
+	    vim_snprintf((char *)buf, len, "%s %d %s", cmd, deep, p);
 	ret = generate_EXEC_copy(cctx, isn, buf);
 
 	vim_free(buf);

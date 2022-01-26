@@ -1425,6 +1425,17 @@ def Test_lockvar()
   assert_equal([0, 1, 2], g:therange)
   unlet g:therange
 
+  # use exclamation mark for locking deeper
+  g:nestedlist = [1, [2, 3], 4]
+  lockvar! g:nestedlist
+  try
+    g:nestedlist[1][0] = 9
+  catch /E1119:/
+    caught = true
+  endtry
+  assert_true(caught)
+  unlet g:nestedlist
+
   var d = {a: 1, b: 2}
   d.a = 3
   d.b = 4
