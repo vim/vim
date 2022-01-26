@@ -587,7 +587,7 @@ handle_import(
     {
 	imported_T  *imported;
 
-	imported = find_imported(as_name, FALSE, STRLEN(as_name), cctx);
+	imported = find_imported(as_name, STRLEN(as_name), FALSE, cctx);
 	if (imported != NULL && imported->imp_sid != sid)
 	{
 	    semsg(_(e_name_already_defined_str), as_name);
