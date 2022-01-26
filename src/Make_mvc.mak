@@ -1279,10 +1279,16 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(LINK_PDB)
 
-# Report link time code generation progress if used.
+# Enable link time code generation if needed.
 !ifdef NODEBUG
 ! if "$(OPTIMIZE)" != "SPACE"
+!  if "$(CI)" == "true" || "$(CI)" == "True"
+# Enable link time code generation, but do not show the progress.
+LINKARGS1 = $(LINKARGS1) /LTCG
+!  else
+# Report link time code generation progress.
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
+!  endif
 ! endif
 !endif
 

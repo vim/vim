@@ -472,17 +472,15 @@ jobs:
         run: |
           call "%VCVARSALL%" ${{ matrix.vcarch }}
           cd src
-          :: Filter out the progress bar from the build log
-          sed -e "s/@<<$/@<< | sed -e 's#.*\\\\r.*##'/" Make_mvc.mak > Make_mvc2.mak
           if "${{ matrix.features }}"=="HUGE" (
-            nmake -nologo -f Make_mvc2.mak ^
+            nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
               GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
           ) else (
-            nmake -nologo -f Make_mvc2.mak ^
+            nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
               GUI=yes IME=yes ICONV=yes VIMDLL=yes
           )
