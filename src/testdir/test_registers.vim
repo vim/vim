@@ -739,6 +739,15 @@ func Test_record_in_insert_mode()
   bwipe!
 endfunc
 
+func Test_record_in_select_mode()
+  new
+  call setline(1, 'text')
+  sil norm q00
+  sil norm q
+  call assert_equal('0ext', getline(1))
+  bwipe!
+endfunc
+
 " Make sure that y_append is correctly reset
 " and the previous register is working as expected
 func Test_register_y_append_reset()
