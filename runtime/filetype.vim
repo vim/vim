@@ -1946,7 +1946,23 @@ au BufNewFile,BufRead texmf.cnf			setf texmf
 au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 
 " TF mud client
-au BufNewFile,BufRead *.tf,.tfrc,tfrc		setf tf
+au BufNewFile,BufRead .tfrc,tfrc		setf tf
+
+" Determine if file is TF mud client or terraform
+au BufNewFile,BufReadPost *.tf call TinyFugueOrTerraform()
+
+func! TinyFugueOrTerraform()
+    let numberOfLines = line('$')
+    for i in range(1, numberOfLines)
+        let currentLine = trim(getline(i))
+        let firstCharacter = currentLine[0]
+        if firstCharacter !=? ";" && firstCharacter !=? "/" && firstCharacter !=? ""
+            setf terraform
+            return
+        endif
+    endfor
+    setf tf
+endfunc
 
 " TLA+
 au BufRead,BufNewFile *.tla			setf tla
