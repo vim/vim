@@ -7504,7 +7504,9 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		dir;
     int		flags = 0;
     int		save_unnamed = FALSE;
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     yankreg_T	*old_y_current, *old_y_previous;
+#endif
 
     if (cap->oap->op_type != OP_NOP)
     {
