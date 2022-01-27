@@ -110,6 +110,7 @@ free_buff(buffheader_T *buf)
 	vim_free(p);
     }
     buf->bh_first.b_next = NULL;
+    buf->bh_curr = NULL;
 }
 
 /*
