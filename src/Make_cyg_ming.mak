@@ -1147,6 +1147,13 @@ endif
 cmdidxs: ex_cmds.h
 	vim --clean -X --not-a-term -u create_cmdidxs.vim
 
+# Run vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.  If this fails because you don't have Vim yet, first build and
+# install Vim without changes.
+nvcmdidxs: nv_cmdidxs.h
+	vim --clean -X --not-a-term -u create_nvcmdidxs.vim
+
 ###########################################################################
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \

@@ -1441,6 +1441,13 @@ clean: testclean
 cmdidxs: ex_cmds.h
 	vim --clean -X --not-a-term -u create_cmdidxs.vim
 
+# Run vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.  If this fails because you don't have Vim yet, first build and
+# install Vim without changes.
+nvcmdidxs: nv_cmdidxs.h
+	vim --clean -X --not-a-term -u create_nvcmdidxs.vim
+
 test:
 	cd testdir
 	$(MAKE) /NOLOGO -f Make_dos.mak

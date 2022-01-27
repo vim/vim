@@ -1737,6 +1737,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_inputsecret},
     {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
+    {"internal_get_nv_cmdchar",	1, 1, FEARG_1,    arg1_number,
+			ret_number,	    f_internal_get_nv_cmdchar},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
     {"invert",		1, 1, FEARG_1,	    arg1_number,

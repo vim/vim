@@ -19,7 +19,6 @@ static int	VIsual_mode_orig = NUL;		// saved Visual mode
 #ifdef FEAT_EVAL
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
-static int	nv_compare(const void *s1, const void *s2);
 static void	unshift_special(cmdarg_T *cap);
 #ifdef FEAT_CMDL_INFO
 static void	del_from_showcmd(int);
@@ -159,7 +158,8 @@ typedef void (*nv_func_T)(cmdarg_T *cap);
 
 /*
  * This table contains one entry for every Normal or Visual mode command.
- * The order doesn't matter, init_normal_cmds() will create a sorted index.
+ * The order doesn't matter, this will be sorted by the create_nvcmdidx.vim
+ * script to generate the nv_cmd_idx[] lookup table.
  * It is faster when all keys from zero to '~' are present.
  */
 static const struct nv_cmd
@@ -379,54 +379,38 @@ static const struct nv_cmd
 // Number of commands in nv_cmds[].
 #define NV_CMDS_SIZE ARRAY_LENGTH(nv_cmds)
 
-#ifndef PROTO  // cproto doesn't like this
-// Sorted index of commands in nv_cmds[].
-static short nv_cmd_idx[NV_CMDS_SIZE];
-#endif
-
-// The highest index for which
-// nv_cmds[idx].cmd_char == nv_cmd_idx[nv_cmds[idx].cmd_char]
-static int nv_max_linear;
+#include "nv_cmdidxs.h"
 
 /*
- * Compare functions for qsort() below, that checks the command character
- * through the index in nv_cmd_idx[].
- */
-    static int
-nv_compare(const void *s1, const void *s2)
-{
-    int		c1, c2;
-
-    // The commands are sorted on absolute value.
-    c1 = nv_cmds[*(const short *)s1].cmd_char;
-    c2 = nv_cmds[*(const short *)s2].cmd_char;
-    if (c1 < 0)
-	c1 = -c1;
-    if (c2 < 0)
-	c2 = -c2;
-    return c1 - c2;
-}
-
-/*
- * Initialize the nv_cmd_idx[] table.
+ * Return the command character for the given command index. This function is
+ * used to auto-generate nv_cmd_idx[].
  */
     void
-init_normal_cmds(void)
+f_internal_get_nv_cmdchar(typval_T *argvars, typval_T *rettv)
 {
-    int		i;
+    int	idx;
+    int	cmd_char;
 
-    // Fill the index table with a one to one relation.
-    for (i = 0; i < (int)NV_CMDS_SIZE; ++i)
-	nv_cmd_idx[i] = i;
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = -1;
 
-    // Sort the commands by the command character.
-    qsort((void *)&nv_cmd_idx, (size_t)NV_CMDS_SIZE, sizeof(short), nv_compare);
+    if (check_for_number_arg(argvars, 0) == FAIL)
+	return;
 
-    // Find the first entry that can't be indexed by the command character.
-    for (i = 0; i < (int)NV_CMDS_SIZE; ++i)
-	if (i != nv_cmds[nv_cmd_idx[i]].cmd_char)
-	    break;
-    nv_max_linear = i - 1;
+    idx = tv_get_number(&argvars[0]);
+    if (idx < 0 || idx >= (int)NV_CMDS_SIZE)
+	return;
+
+    cmd_char = nv_cmds[idx].cmd_char;
+
+    // We use the absolute value of the character.  Special keys have a
+    // negative value, but are sorted on their absolute value.
+    if (cmd_char < 0)
+	cmd_char = -cmd_char;
+
+    rettv->vval.v_number = cmd_char;
+
+    return;
 }
 
 /*
