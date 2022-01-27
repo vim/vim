@@ -7568,12 +7568,14 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 		reg1 = get_register(regname, TRUE);
 	    }
 
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
 	    // Now delete the selected text. Avoid messages here.
 	    if (save_unnamed)
 	    {
 		old_y_current = get_y_current();
 		old_y_previous = get_y_previous();
 	    }
+#endif
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
 	    cap->oap->regname = NUL;
@@ -7582,11 +7584,14 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    do_pending_operator(cap, 0, FALSE);
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
+
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
 	    if (save_unnamed)
 	    {
 		set_y_current(old_y_current);
 		set_y_previous(old_y_previous);
 	    }
+#endif
 
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;
