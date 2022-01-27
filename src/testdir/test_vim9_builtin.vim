@@ -4132,6 +4132,8 @@ enddef
 def Test_timer_start()
   CheckDefAndScriptFailure(['timer_start("a", "1")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   CheckDefAndScriptFailure(['timer_start(1, "1", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
+  CheckDefExecAndScriptFailure(['timer_start(100, 0)'], 'E921:')
+  CheckDefExecAndScriptFailure(['timer_start(100, "")'], 'E921:')
 enddef
 
 def Test_timer_stop()
