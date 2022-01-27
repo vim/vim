@@ -7552,9 +7552,9 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // Need to save and restore the registers that the delete
 	    // overwrites if the old contents is being put.
 	    was_visual = TRUE;
-	    save_unnamed = cap->cmdchar == 'P';
 	    regname = cap->oap->regname;
 #ifdef FEAT_CLIPBOARD
+	    save_unnamed = cap->cmdchar == 'P';
 	    adjust_clip_reg(&regname);
 #endif
 	   if (regname == 0 || regname == '"'
