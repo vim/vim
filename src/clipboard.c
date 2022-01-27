@@ -1488,7 +1488,7 @@ clip_x11_convert_selection_cb(
 	// create NUL terminated string which XmbTextListToTextProperty wants
 	mch_memmove(string_nt, string, (size_t)*length);
 	string_nt[*length] = NUL;
-	conv_result = XmbTextListToTextProperty(X_DISPLAY, (char **)&string_nt,
+	conv_result = XmbTextListToTextProperty(X_DISPLAY, &string_nt,
 					   1, XCompoundTextStyle, &text_prop);
 	if (conv_result != Success)
 	{

@@ -164,7 +164,7 @@ msg_attr_keep(
 #ifdef FEAT_JOB_CHANNEL
     if (emsg_to_channel_log)
 	// Write message in the channel log.
-	ch_log(NULL, "ERROR: %s", (char *)s);
+	ch_log(NULL, "ERROR: %s", s);
 #endif
 
     // Truncate the message if needed.
@@ -905,7 +905,7 @@ emsg_invreg(int name)
     void
 emsg_namelen(char *msg, char_u *name, int len)
 {
-    char_u *copy = vim_strnsave((char_u *)name, len);
+    char_u *copy = vim_strnsave(name, len);
 
     semsg(msg, copy == NULL ? "NULL" : (char *)copy);
     vim_free(copy);
@@ -3701,7 +3701,7 @@ give_warning2(char_u *message, char_u *a1, int hl)
     {
 	// Very early in initialisation and already something wrong, just give
 	// the raw message so the user at least gets a hint.
-	give_warning((char_u *)message, hl);
+	give_warning(message, hl);
     }
     else
     {

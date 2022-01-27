@@ -1842,7 +1842,7 @@ do_put(
 	    for (ptr = oldp; vcol < col && *ptr; )
 	    {
 		// Count a tab for what it's worth (if list mode not on)
-		incr = lbr_chartabsize_adv(oldp, &ptr, (colnr_T)vcol);
+		incr = lbr_chartabsize_adv(oldp, &ptr, vcol);
 		vcol += incr;
 	    }
 	    bd.textcol = (colnr_T)(ptr - oldp);

@@ -2637,7 +2637,7 @@ foldUpdateIEMSRecurse(
 			// to stop just above startlnum.
 			fp->fd_len = startlnum - fp->fd_top;
 			foldMarkAdjustRecurse(&fp->fd_nested,
-				(linenr_T)fp->fd_len, (linenr_T)MAXLNUM,
+				fp->fd_len, (linenr_T)MAXLNUM,
 						       (linenr_T)MAXLNUM, 0L);
 			fold_changed = TRUE;
 		    }

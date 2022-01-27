@@ -334,8 +334,7 @@ shift_block(oparg_T *oap, int amount)
 	for ( ; VIM_ISWHITE(*bd.textstart); )
 	{
 	    // TODO: is passing bd.textstart for start of the line OK?
-	    incr = lbr_chartabsize_adv(bd.textstart, &bd.textstart,
-						    (colnr_T)(bd.start_vcol));
+	    incr = lbr_chartabsize_adv(bd.textstart, &bd.textstart, bd.start_vcol);
 	    total += incr;
 	    bd.start_vcol += incr;
 	}
@@ -460,7 +459,7 @@ shift_block(oparg_T *oap, int amount)
     }
     // replace the line
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
-    changed_bytes(curwin->w_cursor.lnum, (colnr_T)bd.textcol);
+    changed_bytes(curwin->w_cursor.lnum, bd.textcol);
     State = oldstate;
     curwin->w_cursor.col = oldcol;
 #ifdef FEAT_RIGHTLEFT
@@ -2133,7 +2132,7 @@ do_join(
 	// what is added if it is inside these spaces.
 	spaces_removed = (curr - curr_start) - spaces[t];
 
-	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, (linenr_T)-t,
+	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, -t,
 			 (long)(cend - newp - spaces_removed), spaces_removed);
 #ifdef FEAT_PROP_POPUP
 	prepend_joined_props(newp + sumsize + 1, propcount, &props_remaining,
@@ -2243,7 +2242,7 @@ block_prep(
     while (bdp->start_vcol < oap->start_vcol && *pstart)
     {
 	// Count a tab for what it's worth (if list mode not on)
-	incr = lbr_chartabsize(line, pstart, (colnr_T)bdp->start_vcol);
+	incr = lbr_chartabsize(line, pstart, bdp->start_vcol);
 	bdp->start_vcol += incr;
 	if (VIM_ISWHITE(*pstart))
 	{
@@ -2306,7 +2305,7 @@ block_prep(
 	    {
 		// Count a tab for what it's worth (if list mode not on)
 		prev_pend = pend;
-		incr = lbr_chartabsize_adv(line, &pend, (colnr_T)bdp->end_vcol);
+		incr = lbr_chartabsize_adv(line, &pend, bdp->end_vcol);
 		bdp->end_vcol += incr;
 	    }
 	    if (bdp->end_vcol <= oap->end_vcol
@@ -2866,13 +2865,13 @@ do_addsub(
 	    buf2[i] = '\0';
 	}
 	else if (pre == 0)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu", (uvarnumber_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu", n);
 	else if (pre == '0')
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo", (uvarnumber_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo", n);
 	else if (pre && hexupper)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", (uvarnumber_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", n);
 	else
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", (uvarnumber_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", n);
 	length -= (int)STRLEN(buf2);
 
 	/*
@@ -3191,21 +3190,21 @@ cursor_pos_info(dict_T *dict)
 			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
-			    (varnumber_T)word_count_cursor,
-			    (varnumber_T)word_count,
-			    (varnumber_T)byte_count_cursor,
-			    (varnumber_T)byte_count);
+			    word_count_cursor,
+			    word_count,
+			    byte_count_cursor,
+			    byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
-			    (varnumber_T)word_count_cursor,
-			    (varnumber_T)word_count,
-			    (varnumber_T)char_count_cursor,
-			    (varnumber_T)char_count,
-			    (varnumber_T)byte_count_cursor,
-			    (varnumber_T)byte_count);
+			    word_count_cursor,
+			    word_count,
+			    char_count_cursor,
+			    char_count,
+			    byte_count_cursor,
+			    byte_count);
 	    }
 	    else
 	    {
@@ -3223,17 +3222,17 @@ cursor_pos_info(dict_T *dict)
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
-			(varnumber_T)word_count_cursor, (varnumber_T)word_count,
-			(varnumber_T)byte_count_cursor, (varnumber_T)byte_count);
+			word_count_cursor, word_count,
+			byte_count_cursor, byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			_("Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte %lld of %lld"),
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
-			(varnumber_T)word_count_cursor, (varnumber_T)word_count,
-			(varnumber_T)char_count_cursor, (varnumber_T)char_count,
-			(varnumber_T)byte_count_cursor, (varnumber_T)byte_count);
+			word_count_cursor, word_count,
+			char_count_cursor, char_count,
+			byte_count_cursor, byte_count);
 	    }
 	}
 
@@ -3243,7 +3242,7 @@ cursor_pos_info(dict_T *dict)
 	    size_t len = STRLEN(IObuff);
 
 	    vim_snprintf((char *)IObuff + len, IOSIZE - len,
-				 _("(+%lld for BOM)"), (varnumber_T)bom_count);
+				 _("(+%lld for BOM)"), bom_count);
 	}
 	if (dict == NULL)
 	{

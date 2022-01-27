@@ -3618,7 +3618,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	}
 
 	// Store the word in the hashtable to be able to find duplicates.
-	dw = (char_u *)getroom_save(spin, w);
+	dw = getroom_save(spin, w);
 	if (dw == NULL)
 	{
 	    retval = FAIL;

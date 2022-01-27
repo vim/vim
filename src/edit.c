@@ -523,7 +523,7 @@ edit(
 
 	    if (
 #ifdef FEAT_VARTABS
-		(int)curwin->w_wcol < mincol - tabstop_at(
+		curwin->w_wcol < mincol - tabstop_at(
 					  get_nolist_virtcol(), curbuf->b_p_ts,
 							 curbuf->b_p_vts_array)
 #else
@@ -2134,7 +2134,7 @@ insertchar(
 	return;
 
     // Check whether this character should end a comment.
-    if (did_ai && (int)c == end_comment_pending)
+    if (did_ai && c == end_comment_pending)
     {
 	char_u  *line;
 	char_u	lead_end[COM_MAX_LEN];	    // end-comment string
@@ -2907,7 +2907,7 @@ stuff_inserted(
     // may want to stuff the command character, to start Insert mode
     if (c != NUL)
 	stuffcharReadbuff(c);
-    if ((esc_ptr = (char_u *)vim_strrchr(ptr, ESC)) != NULL)
+    if ((esc_ptr = vim_strrchr(ptr, ESC)) != NULL)
 	*esc_ptr = NUL;	    // remove the ESC
 
     // when the last char is either "0" or "^" it will be quoted if no ESC

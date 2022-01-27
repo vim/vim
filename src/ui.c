@@ -1106,8 +1106,8 @@ check_col(int col)
 {
     if (col < 0)
 	return 0;
-    if (col >= (int)screen_Columns)
-	return (int)screen_Columns - 1;
+    if (col >= screen_Columns)
+	return screen_Columns - 1;
     return col;
 }
 
@@ -1119,8 +1119,8 @@ check_row(int row)
 {
     if (row < 0)
 	return 0;
-    if (row >= (int)screen_Rows)
-	return (int)screen_Rows - 1;
+    if (row >= screen_Rows)
+	return screen_Rows - 1;
     return row;
 }
 

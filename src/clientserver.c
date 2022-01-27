@@ -34,7 +34,7 @@ server_to_input_buf(char_u *str)
     //  The last but one parameter of replace_termcodes() is TRUE so that the
     //  <lt> sequence is recognised - needed for a real backslash.
     p_cpo = (char_u *)"Bk";
-    str = replace_termcodes((char_u *)str, &ptr, REPTERM_DO_LT, NULL);
+    str = replace_termcodes(str, &ptr, REPTERM_DO_LT, NULL);
     p_cpo = cpo_save;
 
     if (*ptr != NUL)	// trailing CTRL-V results in nothing
@@ -55,7 +55,7 @@ server_to_input_buf(char_u *str)
 	// buffer.
 	typebuf_was_filled = TRUE;
     }
-    vim_free((char_u *)ptr);
+    vim_free(ptr);
 }
 
 /*

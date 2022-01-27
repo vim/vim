@@ -816,7 +816,7 @@ channel_connect(
 	    ch_log(channel,
 		      "Waiting for connection (waiting %d msec)...", waitnow);
 
-	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
+	    ret = select(sd + 1, &rfds, &wfds, NULL, &tv);
 	    if (ret < 0)
 	    {
 		SOCK_ERRNO;

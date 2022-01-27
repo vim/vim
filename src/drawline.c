@@ -1357,7 +1357,7 @@ win_line(
 #endif
 		)
 	{
-	    screen_line(screen_row, wp->w_wincol, col, -(int)wp->w_width,
+	    screen_line(screen_row, wp->w_wincol, col, -wp->w_width,
 							    screen_line_flags);
 	    // Pretend we have finished updating the window.  Except when
 	    // 'cursorcolumn' is set.
@@ -2846,7 +2846,7 @@ win_line(
 #endif
 
 	    screen_line(screen_row, wp->w_wincol, col,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 	    row++;
 
 	    // Update w_cline_height and w_cline_folded if the cursor line was
@@ -3147,11 +3147,11 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    screen_line(screen_row, wp->w_wincol, col - boguscols,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 	    boguscols = 0;
 #else
 	    screen_line(screen_row, wp->w_wincol, col,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 #endif
 	    ++row;
 	    ++screen_row;
