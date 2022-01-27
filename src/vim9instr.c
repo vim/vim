@@ -1331,10 +1331,10 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     if (push_type_stack(cctx, type) == FAIL)
 	return FAIL;
 
-    if (maptype != NULL && maptype[0].type_curr->tt_member != NULL
-				  && maptype[0].type_curr->tt_member != &t_any)
+    if (maptype != NULL && maptype[0].type_decl->tt_member != NULL
+				  && maptype[0].type_decl->tt_member != &t_any)
 	// Check that map() didn't change the item types.
-	generate_TYPECHECK(cctx, maptype[0].type_curr, -1, 1);
+	generate_TYPECHECK(cctx, maptype[0].type_decl, -1, 1);
 
     return OK;
 }

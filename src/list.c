@@ -580,15 +580,14 @@ list_append(list_T *l, listitem_T *item)
     {
 	// empty list
 	l->lv_first = item;
-	l->lv_u.mat.lv_last = item;
 	item->li_prev = NULL;
     }
     else
     {
 	l->lv_u.mat.lv_last->li_next = item;
 	item->li_prev = l->lv_u.mat.lv_last;
-	l->lv_u.mat.lv_last = item;
     }
+    l->lv_u.mat.lv_last = item;
     ++l->lv_len;
     item->li_next = NULL;
 }
@@ -2362,8 +2361,7 @@ list_filter_map(
 	    tv.v_lock = 0;
 	    tv.vval.v_number = val;
 	    set_vim_var_nr(VV_KEY, idx);
-	    if (filter_map_one(&tv, expr, filtermap, &newtv, &rem)
-		    == FAIL)
+	    if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL)
 		break;
 	    if (did_emsg)
 	    {
@@ -2461,7 +2459,6 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 						    : N_("filter() argument"));
     int		save_did_emsg;
     type_T	*type = NULL;
-    garray_T	type_list;
 
     // map() and filter() return the first argument, also on failure.
     if (filtermap != FILTERMAP_MAPNEW && argvars[0].v_type != VAR_STRING)
@@ -2474,9 +2471,13 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 
     if (filtermap == FILTERMAP_MAP && in_vim9script())
     {
-	// Check that map() does not change the type of the dict.
-	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
+	// Check that map() does not change the declared type of the list or
+	// dict.
+	if (argvars[0].v_type == VAR_DICT && argvars[0].vval.v_dict != NULL)
+	    type = argvars[0].vval.v_dict->dv_type;
+	else if (argvars[0].v_type == VAR_LIST
+					     && argvars[0].vval.v_list != NULL)
+	    type = argvars[0].vval.v_list->lv_type;
     }
 
     if (argvars[0].v_type != VAR_BLOB
@@ -2489,10 +2490,10 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	goto theend;
     }
 
-    expr = &argvars[1];
     // On type errors, the preceding call has already displayed an error
     // message.  Avoid a misleading error message for an empty string that
     // was not passed as argument.
+    expr = &argvars[1];
     if (expr->v_type != VAR_UNKNOWN)
     {
 	typval_T	save_val;
@@ -2525,8 +2526,6 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     }
 
 theend:
-    if (type != NULL)
-	clear_type_list(&type_list);
 }
 
 /*

@@ -530,21 +530,30 @@ arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 
     if (type->tt_type == VAR_FUNC)
     {
-	if (type->tt_member != &t_any
-	    && type->tt_member != &t_unknown)
+	if (type->tt_member != &t_any && type->tt_member != &t_unknown)
 	{
 	    type_T *expected = NULL;
 
 	    if (context->arg_types[0].type_curr->tt_type == VAR_LIST
 		    || context->arg_types[0].type_curr->tt_type == VAR_DICT)
-		expected = context->arg_types[0].type_curr->tt_member;
+	    {
+		// Use the declared type, so that an error is given if a
+		// declared list changes type, but not if a constant list
+		// changes type.
+		if (context->arg_types[0].type_decl->tt_type == VAR_LIST
+			|| context->arg_types[0].type_decl->tt_type == VAR_DICT)
+		    expected = context->arg_types[0].type_decl->tt_member;
+		else
+		    expected = context->arg_types[0].type_curr->tt_member;
+	    }
 	    else if (context->arg_types[0].type_curr->tt_type == VAR_STRING)
 		expected = &t_string;
 	    else if (context->arg_types[0].type_curr->tt_type == VAR_BLOB)
 		expected = &t_number;
 	    if (expected != NULL)
 	    {
-		type_T t_func_exp = {VAR_FUNC, -1, 0, TTFLAG_STATIC, NULL, NULL};
+		type_T t_func_exp = {VAR_FUNC, -1, 0, TTFLAG_STATIC,
+								   NULL, NULL};
 
 		t_func_exp.tt_member = expected;
 		return check_arg_type(&t_func_exp, type, context);

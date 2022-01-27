@@ -2230,13 +2230,18 @@ def Test_map_function_arg()
   END
   CheckDefExecAndScriptFailure(lines, 'E1190: 2 arguments too few')
 
+  # declared list cannot change type
   lines =<< trim END
     def Map(i: number, v: number): string
       return 'bad'
     enddef
-    echo map([1, 2, 3], Map)
+    var ll: list<number> = [1, 2, 3]
+    echo map(ll, Map)
   END
   CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(...): number but got func(number, number): string', 'E1012: Type mismatch; expected number but got string in map()'])
+
+  # not declared list can change type
+  echo [1, 2, 3]->map((..._) => 'x')
 enddef
 
 def Test_map_item_type()
