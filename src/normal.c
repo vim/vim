@@ -7503,6 +7503,8 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		was_visual = FALSE;
     int		dir;
     int		flags = 0;
+    int		save_unnamed = FALSE;
+    yankreg_T	*old_y_current, *old_y_previous;
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7548,6 +7550,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // Need to save and restore the registers that the delete
 	    // overwrites if the old contents is being put.
 	    was_visual = TRUE;
+	    save_unnamed = cap->cmdchar == 'P';
 	    regname = cap->oap->regname;
 #ifdef FEAT_CLIPBOARD
 	    adjust_clip_reg(&regname);
@@ -7566,7 +7569,11 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    }
 
 	    // Now delete the selected text. Avoid messages here.
-	    cap->oap->regname = cap->cmdchar == 'P' ? '_' : NUL;
+	    if (save_unnamed)
+	    {
+		old_y_current = get_y_current();
+		old_y_previous = get_y_previous();
+	    }
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
 	    ++msg_silent;
@@ -7574,6 +7581,11 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    do_pending_operator(cap, 0, FALSE);
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
+	    if (save_unnamed)
+	    {
+		set_y_current(old_y_current);
+		set_y_previous(old_y_previous);
+	    }
 
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;

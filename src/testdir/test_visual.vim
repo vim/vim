@@ -1335,7 +1335,6 @@ func Test_visual_exchange_windows()
   bwipe!
 endfunc
 
-<<<<<<< HEAD
 " this was leaving the end of the Visual area beyond the end of a line
 func Test_visual_ex_copy_line()
   new
