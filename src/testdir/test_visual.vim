@@ -1368,14 +1368,18 @@ func Test_visual_paste()
   " v_p overwrites unnamed register.
   call setline(1, ['xxxx'])
   call setreg('"', 'foo')
+  call setreg('-', 'bar')
   normal 1Gvp
   call assert_equal(@", 'x')
+  call assert_equal(@-, 'x')
 
   " v_P does not overwrite unnamed register.
   call setline(1, ['xxxx'])
   call setreg('"', 'foo')
+  call setreg('-', 'bar')
   normal 1GvP
   call assert_equal(@", 'foo')
+  call assert_equal(@-, 'x')
 
   bwipe!
 endfunc
