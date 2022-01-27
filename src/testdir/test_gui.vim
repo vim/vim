@@ -1266,4 +1266,57 @@ func Test_gui_drop_files()
   cunmap <buffer> <F4>
 endfunc
 
+" Test for generating a GUI tabline event to select a tab page
+func Test_gui_tabline_event()
+  %bw!
+  edit Xfile1
+  tabedit Xfile2
+  tabedit Xfile3
+
+  tabfirst
+  call assert_equal(v:true, test_gui_tabline_event(2))
+  call feedkeys("y", "Lx!")
+  call assert_equal(2, tabpagenr())
+  call assert_equal(v:true, test_gui_tabline_event(3))
+  call feedkeys("y", "Lx!")
+  call assert_equal(3, tabpagenr())
+  call assert_equal(v:false, test_gui_tabline_event(3))
+
+  " From the cmdline window, tabline event should not be handled
+  call feedkeys("q::let t = test_gui_tabline_event(2)\<CR>:q\<CR>", 'x!')
+  call assert_equal(v:false, t)
+
+  %bw!
+endfunc
+
+" Test for generating a GUI tabline menu event to execute an action
+func Test_gui_tabmenu_event()
+  %bw!
+
+  " Try to close the last tab page
+  call test_gui_tabmenu_event(1, 1)
+  call feedkeys("y", "Lx!")
+
+  edit Xfile1
+  tabedit Xfile2
+  call test_gui_tabmenu_event(1, 1)
+  call feedkeys("y", "Lx!")
+  call assert_equal(1, tabpagenr('$'))
+  call assert_equal('Xfile2', bufname())
+
+  call test_gui_tabmenu_event(1, 2)
+  call feedkeys("y", "Lx!")
+  call assert_equal(2, tabpagenr('$'))
+
+  " If tabnr is 0, then the current tabpage should be used.
+  call test_gui_tabmenu_event(0, 2)
+  call feedkeys("y", "Lx!")
+  call assert_equal(3, tabpagenr('$'))
+  call test_gui_tabmenu_event(0, 1)
+  call feedkeys("y", "Lx!")
+  call assert_equal(2, tabpagenr('$'))
+
+  %bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

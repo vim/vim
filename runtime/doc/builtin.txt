@@ -645,6 +645,9 @@ test_gui_drop_files({list}, {row}, {col}, {mods})
 				none	drop a list of files in a window
 test_gui_mouse_event({button}, {row}, {col}, {repeated}, {mods})
 				none	add a mouse event to the input buffer
+test_gui_tabline_event({tabnr}) Bool	add a tabline event to the input buffer
+test_gui_tabmenu_event({tabnr}, {event})
+				none	add a tabmenu event to the input buffer
 test_ignore_error({expr})	none	ignore a specific error
 test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
