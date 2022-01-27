@@ -1110,6 +1110,7 @@ Testing:				    *test-functions*
 	assert_nobeep()		assert that a command does not cause a beep
 	assert_fails()		assert that a command fails
 	assert_report()		report a test failure
+	internal_get_nv_cmdchar()  normal/visual command character at an index
 	test_alloc_fail()	make memory allocation fail
 	test_autochdir()	enable 'autochdir' during startup
 	test_override()		test with Vim internal overrides

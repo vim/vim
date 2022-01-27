@@ -292,6 +292,7 @@ inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
 inputsecret({prompt} [, {text}]) String	like input() but hiding the text
 insert({object}, {item} [, {idx}]) List	insert {item} in {object} [before {idx}]
+internal_get_nv_cmdchar({idx})	Number	command character at this index
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
 isdirectory({directory})	Number	|TRUE| if {directory} is a directory
@@ -4622,6 +4623,11 @@ insert({object}, {item} [, {idx}])			*insert()*
 
 		Can also be used as a |method|: >
 			mylist->insert(item)
+<
+						*internal_get_nv_cmdchar()*
+internal_get_nv_cmdchar({idx})
+		Return the normal/visual mode command character at the
+		specified index. To be used only during the Vim build process.
 
 interrupt()						*interrupt()*
 		Interrupt script execution.  It works more or less like the

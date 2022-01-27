@@ -1,5 +1,5 @@
 /* normal.c */
-void init_normal_cmds(void);
+void f_internal_get_nv_cmdchar(typval_T *argvars, typval_T *rettv);
 void normal_cmd(oparg_T *oap, int toplevel);
 void check_visual_highlight(void);
 void end_visual_mode(void);

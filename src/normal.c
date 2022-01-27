@@ -19,7 +19,6 @@ static int	VIsual_mode_orig = NUL;		// saved Visual mode
 #ifdef FEAT_EVAL
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
-static int	nv_compare(const void *s1, const void *s2);
 static void	unshift_special(cmdarg_T *cap);
 #ifdef FEAT_CMDL_INFO
 static void	del_from_showcmd(int);
@@ -128,6 +127,34 @@ static void	nv_drop(cmdarg_T *cap);
 #endif
 static void	nv_cursorhold(cmdarg_T *cap);
 
+#ifdef FEAT_GUI
+#define NV_VER_SCROLLBAR	nv_ver_scrollbar
+#define NV_HOR_SCROLLBAR	nv_hor_scrollbar
+#else
+#define NV_VER_SCROLLBAR nv_error
+#define NV_HOR_SCROLLBAR nv_error
+#endif
+
+#ifdef FEAT_GUI_TABLINE
+#define NV_TABLINE	nv_tabline
+#define NV_TABMENU	nv_tabmenu
+#else
+#define NV_TABLINE	nv_error
+#define NV_TABMENU	nv_error
+#endif
+
+#ifdef FEAT_NETBEANS_INTG
+#define NV_NBCMD	nv_nbcmd
+#else
+#define NV_NBCMD	nv_error
+#endif
+
+#ifdef FEAT_DND
+#define NV_DROP		nv_drop
+#else
+#define NV_DROP		nv_error
+#endif
+
 /*
  * Function to be called for a Normal or Visual mode command.
  * The argument is a cmdarg_T.
@@ -159,8 +186,12 @@ typedef void (*nv_func_T)(cmdarg_T *cap);
 
 /*
  * This table contains one entry for every Normal or Visual mode command.
- * The order doesn't matter, init_normal_cmds() will create a sorted index.
+ * The order doesn't matter, this will be sorted by the create_nvcmdidx.vim
+ * script to generate the nv_cmd_idx[] lookup table.
  * It is faster when all keys from zero to '~' are present.
+ *
+ * When adding a new normal/visual mode command to the nv_cmds table,
+ * run "make nvcmdidxs" to re-generate the nv_cmdidxs.h file.
  */
 static const struct nv_cmd
 {
@@ -356,20 +387,12 @@ static const struct nv_cmd
     {K_F1,	nv_help,	NV_NCW,			0},
     {K_XF1,	nv_help,	NV_NCW,			0},
     {K_SELECT,	nv_select,	0,			0},
-#ifdef FEAT_GUI
-    {K_VER_SCROLLBAR, nv_ver_scrollbar, 0,		0},
-    {K_HOR_SCROLLBAR, nv_hor_scrollbar, 0,		0},
-#endif
-#ifdef FEAT_GUI_TABLINE
-    {K_TABLINE, nv_tabline,	0,			0},
-    {K_TABMENU, nv_tabmenu,	0,			0},
-#endif
-#ifdef FEAT_NETBEANS_INTG
-    {K_F21,	nv_nbcmd,	NV_NCH_ALW,		0},
-#endif
-#ifdef FEAT_DND
-    {K_DROP,	nv_drop,	NV_STS,			0},
-#endif
+    {K_VER_SCROLLBAR, NV_VER_SCROLLBAR, 0,		0},
+    {K_HOR_SCROLLBAR, NV_HOR_SCROLLBAR, 0,		0},
+    {K_TABLINE, NV_TABLINE,	0,			0},
+    {K_TABMENU, NV_TABMENU,	0,			0},
+    {K_F21,	NV_NBCMD,	NV_NCH_ALW,		0},
+    {K_DROP,	NV_DROP,	NV_STS,			0},
     {K_CURSORHOLD, nv_cursorhold, NV_KEEPREG,		0},
     {K_PS,	nv_edit,	0,			0},
     {K_COMMAND,	nv_colon,	0,			0},
@@ -379,55 +402,41 @@ static const struct nv_cmd
 // Number of commands in nv_cmds[].
 #define NV_CMDS_SIZE ARRAY_LENGTH(nv_cmds)
 
-#ifndef PROTO  // cproto doesn't like this
-// Sorted index of commands in nv_cmds[].
-static short nv_cmd_idx[NV_CMDS_SIZE];
-#endif
+#include "nv_cmdidxs.h"
 
-// The highest index for which
-// nv_cmds[idx].cmd_char == nv_cmd_idx[nv_cmds[idx].cmd_char]
-static int nv_max_linear;
-
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Compare functions for qsort() below, that checks the command character
- * through the index in nv_cmd_idx[].
- */
-    static int
-nv_compare(const void *s1, const void *s2)
-{
-    int		c1, c2;
-
-    // The commands are sorted on absolute value.
-    c1 = nv_cmds[*(const short *)s1].cmd_char;
-    c2 = nv_cmds[*(const short *)s2].cmd_char;
-    if (c1 < 0)
-	c1 = -c1;
-    if (c2 < 0)
-	c2 = -c2;
-    return c1 - c2;
-}
-
-/*
- * Initialize the nv_cmd_idx[] table.
+ * Return the command character for the given command index. This function is
+ * used to auto-generate nv_cmd_idx[].
  */
     void
-init_normal_cmds(void)
+f_internal_get_nv_cmdchar(typval_T *argvars, typval_T *rettv)
 {
-    int		i;
+    int	idx;
+    int	cmd_char;
 
-    // Fill the index table with a one to one relation.
-    for (i = 0; i < (int)NV_CMDS_SIZE; ++i)
-	nv_cmd_idx[i] = i;
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = -1;
 
-    // Sort the commands by the command character.
-    qsort((void *)&nv_cmd_idx, (size_t)NV_CMDS_SIZE, sizeof(short), nv_compare);
+    if (check_for_number_arg(argvars, 0) == FAIL)
+	return;
 
-    // Find the first entry that can't be indexed by the command character.
-    for (i = 0; i < (int)NV_CMDS_SIZE; ++i)
-	if (i != nv_cmds[nv_cmd_idx[i]].cmd_char)
-	    break;
-    nv_max_linear = i - 1;
+    idx = tv_get_number(&argvars[0]);
+    if (idx < 0 || idx >= (int)NV_CMDS_SIZE)
+	return;
+
+    cmd_char = nv_cmds[idx].cmd_char;
+
+    // We use the absolute value of the character.  Special keys have a
+    // negative value, but are sorted on their absolute value.
+    if (cmd_char < 0)
+	cmd_char = -cmd_char;
+
+    rettv->vval.v_number = cmd_char;
+
+    return;
 }
+#endif
 
 /*
  * Search for a command in the commands table.
