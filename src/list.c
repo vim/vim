@@ -2487,7 +2487,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     {
 	semsg(_(e_argument_of_str_must_be_list_string_dictionary_or_blob),
 								    func_name);
-	goto theend;
+	return;
     }
 
     // On type errors, the preceding call has already displayed an error
@@ -2524,8 +2524,6 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 
 	did_emsg |= save_did_emsg;
     }
-
-theend:
 }
 
 /*
