@@ -2663,6 +2663,12 @@ func Test_range()
   call assert_fails('let x=range(1, 4, [])', 'E745:')
 endfunc
 
+func Test_garbagecollect_now_fails()
+  let v:testing = 0
+  call assert_fails('call test_garbagecollect_now()', 'E1142:')
+  let v:testing = 1
+endfunc
+
 func Test_echoraw()
   CheckScreendump
 

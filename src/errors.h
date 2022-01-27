@@ -2909,7 +2909,8 @@ EXTERN char e_for_argument_must_be_sequence_of_lists[]
 	INIT(= N_("E1140: :for argument must be a sequence of lists"));
 EXTERN char e_indexable_type_required[]
 	INIT(= N_("E1141: Indexable type required"));
-// E1142 unused
+EXTERN char e_calling_test_garbagecollect_now_while_v_testing_is_not_set[]
+	INIT(= N_("E1142: Calling test_garbagecollect_now() while v:testing is not set"));
 EXTERN char e_empty_expression_str[]
 	INIT(= N_("E1143: Empty expression: \"%s\""));
 EXTERN char e_command_str_not_followed_by_white_space_str[]
