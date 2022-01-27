@@ -13,7 +13,7 @@
 // Structure containing all the GUI information
 gui_T gui;
 
-#if !defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
 static void set_guifontwide(char_u *font_name);
 #endif
 static void gui_check_pos(void);
@@ -924,7 +924,7 @@ gui_init_font(char_u *font_list, int fontset UNUSED)
 		// longer be used!
 		if (gui_mch_init_font(font_name, FALSE) == OK)
 		{
-#if !defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
 		    // If it's a Unicode font, try setting 'guifontwide' to a
 		    // similar double-width font.
 		    if ((p_guifontwide == NULL || *p_guifontwide == NUL)
@@ -966,7 +966,7 @@ gui_init_font(char_u *font_list, int fontset UNUSED)
     return ret;
 }
 
-#ifndef FEAT_GUI_GTK
+#if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
 /*
  * Try setting 'guifontwide' to a font twice as wide as "name".
  */
@@ -1013,7 +1013,7 @@ set_guifontwide(char_u *name)
 	}
     }
 }
-#endif // !FEAT_GUI_GTK
+#endif // defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
 
 /*
  * Get the font for 'guifontwide'.
