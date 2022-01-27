@@ -7503,8 +7503,8 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		was_visual = FALSE;
     int		dir;
     int		flags = 0;
+#ifdef FEAT_CLIPBOARD
     int		save_unnamed = FALSE;
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     yankreg_T	*old_y_current, *old_y_previous;
 #endif
 
@@ -7570,7 +7570,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 		reg1 = get_register(regname, TRUE);
 	    }
 
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
+#ifdef FEAT_CLIPBOARD
 	    // Now delete the selected text. Avoid messages here.
 	    if (save_unnamed)
 	    {
@@ -7587,7 +7587,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
 
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
+#ifdef FEAT_CLIPBOARD
 	    if (save_unnamed)
 	    {
 		set_y_current(old_y_current);
