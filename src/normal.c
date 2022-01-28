@@ -381,6 +381,7 @@ static const struct nv_cmd
 
 #include "nv_cmdidxs.h"
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the command character for the given command index. This function is
  * used to auto-generate nv_cmd_idx[].
@@ -412,6 +413,7 @@ f_internal_get_nv_cmdchar(typval_T *argvars, typval_T *rettv)
 
     return;
 }
+#endif
 
 /*
  * Search for a command in the commands table.
