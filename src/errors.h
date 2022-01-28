@@ -747,7 +747,10 @@ EXTERN char e_didnt_get_block_nr_one[]
 	INIT(= N_("E298: Didn't get block nr 1?"));
 EXTERN char e_didnt_get_block_nr_two[]
 	INIT(= N_("E298: Didn't get block nr 2?"));
-// E299 unused
+#ifdef FEAT_PERL
+EXTERN char e_perl_evaluation_forbidden_in_sandbox_without_safe_module[]
+	INIT(= N_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
+#endif
 EXTERN char e_swap_file_already_exists_symlink_attack[]
 	INIT(= N_("E300: Swap file already exists (symlink attack?)"));
 EXTERN char e_oops_lost_the_swap_file[]

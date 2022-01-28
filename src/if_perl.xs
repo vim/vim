@@ -1030,7 +1030,6 @@ VIM_init(void)
 #ifdef DYNAMIC_PERL
 static char *e_noperl = N_("Sorry, this command is disabled: the Perl library could not be loaded.");
 #endif
-static char *e_perlsandbox = N_("E299: Perl evaluation forbidden in sandbox without the Safe module");
 
 /*
  * ":perl"
@@ -1084,7 +1083,7 @@ ex_perl(exarg_T *eap)
 	safe = perl_get_sv("VIM::safe", FALSE);
 # ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	if (safe == NULL || !SvTRUE(safe))
-	    emsg(_(e_perlsandbox));
+	    emsg(_(e_perl_evaluation_forbidden_in_sandbox_without_safe_module));
 	else
 # endif
 	{
@@ -1361,7 +1360,7 @@ do_perleval(char_u *str, typval_T *rettv)
 	    safe = get_sv("VIM::safe", FALSE);
 # ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	    if (safe == NULL || !SvTRUE(safe))
-		emsg(_(e_perlsandbox));
+		emsg(_(e_perl_evaluation_forbidden_in_sandbox_without_safe_module));
 	    else
 # endif
 	    {
