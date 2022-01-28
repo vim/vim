@@ -1417,6 +1417,7 @@ clean: testclean
 	- if exist $(GVIM).exe del $(GVIM).exe
 	- if exist $(GVIM).map del $(GVIM).map
 	- if exist $(VIMDLLBASE).dll del $(VIMDLLBASE).dll
+	- if exist $(VIMDLLBASE).ilk del $(VIMDLLBASE).ilk
 	- if exist $(VIMDLLBASE).lib del $(VIMDLLBASE).lib
 	- if exist $(VIMDLLBASE).exp del $(VIMDLLBASE).exp
 	- if exist $(VIMDLLBASE).pdb del $(VIMDLLBASE).pdb
