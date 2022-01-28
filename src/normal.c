@@ -1054,9 +1054,10 @@ normal_cmd(
 	// be mapped in Insert mode.  Required for ":lmap" to work.
 	len = ins_char_typebuf(vgetc_char, vgetc_mod_mask);
 
-	// When recording the character will be recorded again, remove the
-	// previously recording.
-	ungetchars(len);
+	// When recording and gotchars() was called the character will be
+	// recorded again, remove the previous recording.
+	if (KeyTyped)
+	    ungetchars(len);
 
 	if (restart_edit != 0)
 	    c = 'd';
