@@ -6,6 +6,7 @@
 " Script should be run every time a new normal/visual mode command is added to
 " the nv_cmds[] table in src/normal.c.
 
+language collate C
 let nv_cmdtbl = []
 
 " Generate the table of normal/visual mode command characters and their
