@@ -2085,6 +2085,8 @@ typedef int sock_T;
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
+#define TABSTOP_MAX 9999
+
 #ifdef FEAT_CLIPBOARD
 
 // VIM_ATOM_NAME is the older Vim-specific selection type for X11.  Still
