@@ -252,7 +252,7 @@ NODEBUG = 1
 MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
-link = link
+LINK = link
 
 # Check VC version.
 !if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
@@ -1260,24 +1260,28 @@ LINK_PDB = /PDB:$(VIM).pdb -debug
 # CFLAGS with /Fo$(OUTDIR)/
 CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
 
-# Add /opt:ref to remove unreferenced functions and data even when /DEBUG is
-# added.
-conflags = /nologo /opt:ref
-
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
-!IF "$(MAP)" == "yes"
-# "/map" is for debugging
-conflags = $(conflags) /map
-!ELSEIF "$(MAP)" == "lines"
-# "/mapinfo:lines" is for debugging, only works for VC6 and later
-conflags = $(conflags) /map /mapinfo:lines
-!ENDIF
-
-LINKARGS1 = $(linkdebug) $(conflags)
+LINKARGS1 = /nologo
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(LINK_PDB)
+
+!ifdef NODEBUG
+# Add /opt:ref to remove unreferenced functions and data even when /DEBUG is
+# added.
+LINKARGS1 = $(LINKARGS1) /opt:ref
+!else
+LINKARGS1 = $(LINKARGS1) /opt:noref /opt:noicf
+!endif
+
+!if "$(MAP)" == "yes"
+# "/map" is for debugging
+LINKARGS1 = $(LINKARGS1) /map
+!elseif "$(MAP)" == "lines"
+# "/mapinfo:lines" is for debugging, only works for VC6 and later
+LINKARGS1 = $(LINKARGS1) /map /mapinfo:lines
+!endif
 
 # Enable link time code generation if needed.
 !ifdef NODEBUG
@@ -1317,7 +1321,7 @@ all:	$(MAIN_TARGET) \
 	GvimExt/gvimext.dll
 
 # To get around the command line limit: Make use of nmake's response files to
-# capture the arguments for $(link) in a file  using the @<<ARGS<< syntax.
+# capture the arguments for $(LINK) in a file  using the @<<ARGS<< syntax.
 
 !if "$(VIMDLL)" == "yes"
 
@@ -1326,7 +1330,7 @@ $(VIMDLLBASE).dll: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ
 		$(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) @<<
+	$(LINK) @<<
 $(LINKARGS1) /dll -out:$(VIMDLLBASE).dll $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ)
 $(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ)
 $(TCL_OBJ) $(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ)
@@ -1334,11 +1338,11 @@ $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 <<
 
 $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
-	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe $(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
+	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe $(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
 	if exist $(GVIM).exe.manifest mt.exe -nologo -manifest $(GVIM).exe.manifest -updateresource:$(GVIM).exe;1
 
 $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
-	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe $(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
+	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe $(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
 !else
@@ -1348,7 +1352,7 @@ $(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE
 		$(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) @<<
+	$(LINK) @<<
 $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(VIM).exe $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ)
 $(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ)
 $(TCL_OBJ) $(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ)
@@ -1413,6 +1417,7 @@ clean: testclean
 	- if exist $(GVIM).exe del $(GVIM).exe
 	- if exist $(GVIM).map del $(GVIM).map
 	- if exist $(VIMDLLBASE).dll del $(VIMDLLBASE).dll
+	- if exist $(VIMDLLBASE).ilk del $(VIMDLLBASE).ilk
 	- if exist $(VIMDLLBASE).lib del $(VIMDLLBASE).lib
 	- if exist $(VIMDLLBASE).exp del $(VIMDLLBASE).exp
 	- if exist $(VIMDLLBASE).pdb del $(VIMDLLBASE).pdb
@@ -1895,7 +1900,7 @@ $(PATHDEF_SRC): Make_mvc.mak
 	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(E_CFLAGS)"; >> $(PATHDEF_SRC)
-	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(E_LINKARGS2)"; >> $(PATHDEF_SRC)
+	@echo char_u *all_lflags = (char_u *)"$(LINK:\=\\) $(LINKARGS1:\=\\) $(E_LINKARGS2)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
 
