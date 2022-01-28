@@ -1185,7 +1185,7 @@ do_filter(
 
     if (do_out)
     {
-	if (u_save((linenr_T)(line2), (linenr_T)(line2 + 1)) == FAIL)
+	if (u_save(line2, (linenr_T)(line2 + 1)) == FAIL)
 	{
 	    vim_free(cmd_buf);
 	    goto error;

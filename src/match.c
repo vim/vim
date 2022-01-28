@@ -1036,7 +1036,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	{
 	    char_u buf[MB_MAXBYTES + 1];
 
-	    buf[(*mb_char2bytes)((int)cur->conceal_char, buf)] = NUL;
+	    buf[(*mb_char2bytes)(cur->conceal_char, buf)] = NUL;
 	    dict_add_string(dict, "conceal", (char_u *)&buf);
 	}
 #  endif
@@ -1309,7 +1309,7 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
 	id = (int)tv_get_number(&argvars[0]);
 	if (id >= 1 && id <= 3)
 	{
-	    if ((m = (matchitem_T *)get_match(curwin, id)) != NULL)
+	    if ((m = get_match(curwin, id)) != NULL)
 	    {
 		list_append_string(rettv->vval.v_list,
 						syn_id2name(m->hlg_id), -1);

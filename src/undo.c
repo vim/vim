@@ -1142,7 +1142,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
     }
     else
 #endif
-    if (fread(buffer, (size_t)size, 1, bi->bi_fp) != 1)
+    if (fread(buffer, size, 1, bi->bi_fp) != 1)
 	retval = FAIL;
 
     if (retval == FAIL)
@@ -3710,10 +3710,10 @@ f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 
 	dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
 	dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
-	dict_add_number(dict, "save_last", (long)curbuf->b_u_save_nr_last);
+	dict_add_number(dict, "save_last", curbuf->b_u_save_nr_last);
 	dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
 	dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
-	dict_add_number(dict, "save_cur", (long)curbuf->b_u_save_nr_cur);
+	dict_add_number(dict, "save_cur", curbuf->b_u_save_nr_cur);
 
 	list = list_alloc();
 	if (list != NULL)

@@ -3799,7 +3799,7 @@ expand_tag_fname(char_u *fname, char_u *tag_fname, int expand)
     {
 	ExpandInit(&xpc);
 	xpc.xp_context = EXPAND_FILES;
-	expanded_fname = ExpandOne(&xpc, (char_u *)fname, NULL,
+	expanded_fname = ExpandOne(&xpc, fname, NULL,
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
 	if (expanded_fname != NULL)
 	    fname = expanded_fname;

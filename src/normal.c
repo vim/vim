@@ -5211,7 +5211,7 @@ nv_replace(cmdarg_T *cap)
 		colnr_T  start = (colnr_T)(curwin->w_cursor.col - cap->count1);
 
 		netbeans_removed(curbuf, curwin->w_cursor.lnum, start,
-							   (long)cap->count1);
+							   cap->count1);
 		netbeans_inserted(curbuf, curwin->w_cursor.lnum, start,
 					       &ptr[start], (int)cap->count1);
 	    }

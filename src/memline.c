@@ -551,7 +551,7 @@ ml_set_crypt_key(
 		mf_put(mfp, hp, FALSE, FALSE);	// release previous block
 
 	    // get the block (pointer or data)
-	    if ((hp = mf_get(mfp, (blocknr_T)bnum, page_count)) == NULL)
+	    if ((hp = mf_get(mfp, bnum, page_count)) == NULL)
 	    {
 		if (bnum == 1)
 		    break;
@@ -1511,7 +1511,7 @@ ml_recover(int checkext)
 	/*
 	 * get block
 	 */
-	if ((hp = mf_get(mfp, (blocknr_T)bnum, page_count)) == NULL)
+	if ((hp = mf_get(mfp, bnum, page_count)) == NULL)
 	{
 	    if (bnum == 1)
 	    {
@@ -3672,7 +3672,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
-	netbeans_removed(buf, lnum, 0, (long)line_size);
+	netbeans_removed(buf, lnum, 0, line_size);
 #endif
 #ifdef FEAT_PROP_POPUP
     // If there are text properties, make a copy, so that we can update
