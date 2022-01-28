@@ -4661,8 +4661,8 @@ nv_bracket_block(cmdarg_T *cap, pos_T *old_pos)
 		    }
 		    // found start/end of other method: go to match
 		    else if ((pos = findmatchlimit(cap->oap, findc,
-				    (cap->cmdchar == '[') ? FM_BACKWARD : FM_FORWARD,
-				    0)) == NULL)
+			      (cap->cmdchar == '[') ? FM_BACKWARD : FM_FORWARD,
+								   0)) == NULL)
 			n = 0;
 		    else
 			curwin->w_cursor = *pos;
@@ -7505,6 +7505,8 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		was_visual = FALSE;
     int		dir;
     int		flags = 0;
+    int		save_unnamed = FALSE;
+    yankreg_T	*old_y_current, *old_y_previous;
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7551,6 +7553,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // overwrites if the old contents is being put.
 	    was_visual = TRUE;
 	    regname = cap->oap->regname;
+	    save_unnamed = cap->cmdchar == 'P';
 #ifdef FEAT_CLIPBOARD
 	    adjust_clip_reg(&regname);
 #endif
@@ -7568,6 +7571,11 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    }
 
 	    // Now delete the selected text. Avoid messages here.
+	    if (save_unnamed)
+	    {
+		old_y_current = get_y_current();
+		old_y_previous = get_y_previous();
+	    }
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
 	    cap->oap->regname = NUL;
@@ -7576,6 +7584,12 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    do_pending_operator(cap, 0, FALSE);
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
+
+	    if (save_unnamed)
+	    {
+		set_y_current(old_y_current);
+		set_y_previous(old_y_previous);
+	    }
 
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;
