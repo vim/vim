@@ -1345,7 +1345,7 @@ f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_test_gui_tabline_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-# ifdef FEAT_GUI
+# ifdef FEAT_GUI_TABLINE
     int	tabnr;
 
     if (check_for_number_arg(argvars, 0) == FAIL)
@@ -1361,7 +1361,7 @@ f_test_gui_tabline_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_test_gui_tabmenu_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-# ifdef FEAT_GUI
+# ifdef FEAT_GUI_TABLINE
     int	tabnr;
     int	event;
 
