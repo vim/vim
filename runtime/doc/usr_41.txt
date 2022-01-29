@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jan 01
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jan 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2505,7 +2505,7 @@ When the user does ":setfiletype xyz" the effect of the previous filetype
 should be undone.  Set the b:undo_ftplugin variable to the commands that will
 undo the settings in your filetype plugin.  Example: >
 
-	b:undo_ftplugin = "setlocal fo< com< tw< commentstring<"
+	let b:undo_ftplugin = "setlocal fo< com< tw< commentstring<"
 		\ .. "| unlet b:match_ignorecase b:match_words b:match_skip"
 
 Using ":setlocal" with "<" after the option name resets the option to its

@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.2.  Last change: 2022 Jan 19
+*message.txt*   For Vim version 8.2.  Last change: 2022 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -82,7 +82,6 @@ LIST OF MESSAGES
   Add to read buffer ~
   makemap: Illegal mode ~
   Cannot create BalloonEval with both message and callback ~
-  Hangul automata ERROR ~
   block was not locked ~
   Didn't get block nr {N}? ~
   ml_upd_block0(): Didn't get block 0?? ~
@@ -92,12 +91,12 @@ LIST OF MESSAGES
   u_undo: line numbers wrong ~
   undo list corrupt ~
   undo line missing ~
-  ml_get: cannot find line {N} ~
-  cannot find line {N} ~
+  ml_get: cannot find line {N} in buffer {nr} {name} ~
   line number out of range: {N} past the end ~
   line count wrong in block {N} ~
-  Internal error ~
+  Internal error: lalloc(0, ) ~
   Internal error: {function} ~
+  Internal error in regexp ~
   fatal error in cs_manage_matches ~
   Invalid count for del_bytes(): {N} ~
 
@@ -728,6 +727,7 @@ specified.
 
 							*E488* 
   Trailing characters ~
+  Trailing characters: {text} ~
 
 An argument has been added to an Ex command that does not permit one.
 Or the argument has invalid characters and has not been recognized.
@@ -798,7 +798,7 @@ This is an (incomplete) overview of various messages that Vim gives:
 			*hit-enter* *press-enter* *hit-return*
 			*press-return* *hit-enter-prompt*
 
-  Press ENTER or type command to continue
+  Press ENTER or type command to continue ~
 
 This message is given when there is something on the screen for you to read,
 and the screen is about to be redrawn:

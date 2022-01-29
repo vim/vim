@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 23
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -82,7 +82,7 @@ script and `:def` functions; details are below:
 	     .. yourName
 	     .. ", how are you?"
 - White space is required in many places to improve readability.
-- Assign values without `:let`, declare variables with `:var`: >
+- Assign values without `:let` *E1126* , declare variables with `:var`: >
 	var count = 0
 	count += 3
 - Constants can be declared with `:final` and `:const`: >
@@ -139,7 +139,7 @@ arguments).
 
 
 Vim9 functions ~
-
+							*E1099*
 A function defined with `:def` is compiled.  Execution is many times faster,
 often 10 to 100 times.
 
@@ -183,11 +183,11 @@ You can call a legacy dict function though: >
 	  var d = {func: Legacy, value: 'text'}
 	  d.func()
 	enddef
-
+<							*E1096*
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy
 functions.
-
+							*E1106*
 Arguments are accessed by name, without "a:", just like any other language.
 There is no "a:" dictionary or "a:000" list.
 					*vim9-variable-arguments* *E1055*
@@ -238,9 +238,6 @@ When referring to a function and no "s:" or "g:" prefix is used, Vim will
 search for the function:
 - in the function scope, in block scopes
 - in the script scope, possibly imported
-- in the list of global functions
-However, it is recommended to always use "g:" to refer to a global function
-for clarity.
 
 Since a script-local function reference can be used without "s:" the name must
 start with an upper case letter even when using the "s:" prefix.  In legacy
@@ -255,7 +252,7 @@ it is being compiled (to figure out the return type).
 The result is that functions and variables without a namespace can usually be
 found in the script, either defined there or imported.  Global functions and
 variables could be defined anywhere (good luck finding out where!).
-
+							*E1102*
 Global functions can still be defined and deleted at nearly any time.  In
 Vim9 script script-local functions are defined once when the script is sourced
 and cannot be deleted or replaced.
@@ -289,8 +286,8 @@ some point when loaded again.  E.g. when a buffer local option is set: >
 
 
 Variable declarations with :var, :final and :const ~
-					*vim9-declaration* *:var*
-					*E1017* *E1020* *E1054*
+				*vim9-declaration* *:var*
+				*E1017* *E1020* *E1054* *E1087* *E1108* *E1124*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with `:final` or `:const`.  We refer to both as "variables" in this
 section.
@@ -321,7 +318,7 @@ The declaration must be done earlier: >
 	   inner = 0
 	endif
 	echo inner
-<							*E1025*
+<							*E1025* *E1128*
 To intentionally hide a variable from code that follows, a block can be
 used: >
 	{
@@ -348,7 +345,7 @@ And with autocommands: >
 	   }
 
 Although using a :def function probably works better.
-						*E1022*
+				*E1022* *E1103* *E1130* *E1131* *E1133* *E1134*
 Declaring a variable with a type but without an initializer will initialize to
 false (for bool), empty (for string, list, dict, etc.) or zero (for number,
 any, etc.).  This matters especially when using the "any" type, the value will
@@ -440,7 +437,7 @@ Example: >
 	myList = [3, 4]		# Error!
 	myList[0] = 9		# Error!
 	myList->add(3)		# Error!
-<							*:final*
+<							*:final* *E1125*
 `:final` is used for making only the variable a constant, the value can be
 changed.  This is well known from Java.  Example: >
 	final myList = [1, 2]
@@ -600,7 +597,7 @@ Also when confused with the start of a command block: >
 
 
 Automatic line continuation ~
-						*vim9-line-continuation*
+					*vim9-line-continuation* *E1097*
 In many cases it is obvious that an expression continues on the next line.  In
 those cases there is no need to prefix the line with a backslash (see
 |line-continuation|).  For example, when a list spans multiple lines: >
@@ -708,6 +705,7 @@ second line is seen as a separate command: >
 Now "exit_cb: Func})" is actually a valid command: save any changes to the
 file "_cb: Func})" and exit.  To avoid this kind of mistake in Vim9 script
 there must be white space between most command names and the argument.
+*E1144*
 
 However, the argument of a command that is a command won't be recognized.  For
 example, after "windo echo expr" a line break inside "expr" will not be seen.
@@ -738,7 +736,7 @@ Notes:
 
 
 White space ~
-					*E1004* *E1068* *E1069* *E1074*
+				*E1004* *E1068* *E1069* *E1074* *E1127*
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
 	var name=234	# Error!
 	var name= 234	# Error!
@@ -803,7 +801,7 @@ use another character, use a single or double quoted string: >
 	var dict = {'key with space': value}
 	var dict = {"key\twith\ttabs": value}
 	var dict = {'': value}  		# empty key
-
+<							*E1139*
 In case the key needs to be an expression, square brackets can be used, just
 like in JavaScript: >
 	var dict = {["key" .. nr]: value}
@@ -816,7 +814,7 @@ error.  A number can be given with and without the []: >
 
 
 No :xit, :t, :k, :append, :change or :insert ~
-
+							*E1100*
 These commands are too easily confused with local variable names.
 Instead of `:x` or `:xit` you can use `:exit`.
 Instead of `:t` you can use `:copy`.
@@ -1082,7 +1080,7 @@ Using ++var or --var in an expression is not supported yet.
 			{return-type}.  When {return-type} is omitted or is
 			"void" the function is not expected to return
 			anything.
-							*E1077*	
+							*E1077* *E1123*
 			{arguments} is a sequence of zero or more argument
 			declarations.  There are three forms:
 				{name}: {type}
@@ -1100,7 +1098,7 @@ Using ++var or --var in an expression is not supported yet.
 
 			It is possible to nest `:def` inside another `:def` or
 			`:function` up to about 50 levels deep.
-
+							*E1117*
 			[!] is used as with `:function`.  Note that
 			script-local functions cannot be deleted or redefined
 			later in Vim9 script.  They can only be removed by
@@ -1288,7 +1286,7 @@ expected to always be the same.  For example, when declaring a list: >
 At compile time Vim doesn't know the type of "g:two" and the expression type
 becomes list<any>.  An instruction is generated to check the list type before
 doing the assignment, which is a bit inefficient.
-							*type-casting*
+						*type-casting* *E1104*
 To avoid this, use a type cast: >
 	var l: list<number> = [1, <number>g:two]
 The compiled code will then only check that "g:two" is a number and give an
@@ -1333,6 +1331,14 @@ Results in:
 For script-local variables in Vim9 script the type is checked, also when the
 variable was declared in a legacy function.
 
+When a type has been declared this is attached to a list or string.  When
+later some expression attempts to change the type an error will be given: >
+	var ll: list<number> = [1, 2, 3]
+	ll->extend('x')  # Error, 'x' is not a number
+
+If the type is inferred then the type is allowed to change: >
+	[1, 2, 3]->extend('x')  # result: [1, 2, 3, 'x']
+
 
 Stricter type checking ~
 							*type-checking*
@@ -1347,7 +1353,7 @@ before, if the value used matches the expected type.  There will sometimes be
 an error, thus breaking backwards compatibility.  For example:
 - Using a number other than 0 or 1 where a boolean is expected.  *E1023*
 - Using a string value when setting a number option.
-- Using a number where a string is expected.   *E1024*
+- Using a number where a string is expected.   *E1024* *E1105*
 
 One consequence is that the item type of a list or dict given to |map()| must
 not change.  This will give an error in Vim9 script: >
@@ -1398,7 +1404,7 @@ global namespace.  If a file starts with: >
 	var myvar = 'yes'
 Then "myvar" will only exist in this file.  While without `vim9script` it would
 be available as `g:myvar` from any other script and function.
-
+							*E1101*
 The variables at the file level are very much like the script-local "s:"
 variables in legacy Vim script, but the "s:" is omitted.  And they cannot be
 deleted.
@@ -1466,11 +1472,11 @@ In case the name is long or ambiguous, another name can be specified: >
 <							*E1060*
 Then you can use "that.EXPORTED_CONST", "that.someValue", etc.  You are free
 to choose the name "that".  Use something that will be recognized as referring
-to the imported script.  Avoid command names and builtin function names,
-because the name will shadow them.  If the name starts with a capital letter
-it can also shadow global user commands and functions.  Also, you cannot use
-the name for something else in the script, such as a function or variable
-name.
+to the imported script.  Avoid command names, command modifiers and builtin
+function names, because the name will shadow them.
+If the name starts with a capital letter it can also shadow global user
+commands and functions.  Also, you cannot use the name for something else in
+the script, such as a function or variable name.
 
 In case the dot in the name is undesired, a local reference can be made for a
 function: >
@@ -1747,6 +1753,9 @@ Specific items from TypeScript we avoid:
 - TypeScript has various "Readonly" types, which have limited usefulness,
   since a type cast can remove the immutable nature.  Vim locks the value,
   which is more flexible, but is only checked at runtime.
+- TypeScript has a complicated "import" statement that does not match how the
+  Vim import mechanism works.  A much simpler mechanism is used instead, which
+  matches that the imported script is only sourced once.
 
 
 Declarations ~

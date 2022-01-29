@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2022 Jan 22
+*options.txt*	For Vim version 8.2.  Last change: 2022 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1558,8 +1558,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	preferred, because it is much faster.
 	'charconvert' is not used when reading stdin |--|, because there is no
 	file to convert from.  You will have to save the text in a file first.
-	The expression must return zero or an empty string for success,
-	non-zero for failure.
+	The expression must return zero, false or an empty string for success,
+	non-zero or true for failure.
 	The possible encoding names encountered are in 'encoding'.
 	Additionally, names given in 'fileencodings' and 'fileencoding' are
 	used.
@@ -1583,9 +1583,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that v:fname_in and v:fname_out will never be the same.
 	Note that v:charconvert_from and v:charconvert_to may be different
 	from 'encoding'.  Vim internally uses UTF-8 instead of UCS-2 or UCS-4.
+
 	Encryption is not done by Vim when using 'charconvert'.  If you want
 	to encrypt the file after conversion, 'charconvert' should take care
 	of this.
+
+	If the 'charconvert' expression starts with s: or |<SID>|, then it is
+	replaced with the script ID (|local-function|). Example: >
+		set charconvert=s:MyConvert()
+		set charconvert=<SID>SomeConvert()
+<	Otherwise the expression is evaluated in the context of the script
+	where the option was set, thus script-local items are available.
+
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -7777,10 +7786,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tabstop' 'ts'		number	(default 8)
 			local to buffer
 	Number of spaces that a <Tab> in the file counts for.  Also see
-	|:retab| command, and 'softtabstop' option.
+	the |:retab| command, and the 'softtabstop' option.
 
 	Note: Setting 'tabstop' to any other value than 8 can make your file
-	appear wrong in many places (e.g., when printing it).
+	appear wrong in many places, e.g., when printing it.
+	The value must be more than 0 and less than 10000.
 
 	There are four main ways to use tabs in Vim:
 	1. Always keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to 4

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 22
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,13 +38,22 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Also set the script context for other "expr" options, like for 'foldexpr'?
-    'printexpr'     eval_printexpr()
-    "expr:" part of 'spellsuggest   eval_spell_expr()
+Only find a global function from Vim9 script when using "g:" ?  #9637
+
+Disallow defining a script#Func() in Vim9 script.
+
+Cannot use command modifier for "import 'name.vim' as vim9"
+
+When making a copy of a list or dict, do not keep the type? #9644
+    With deepcopy() all, with copy() this still fails:
+    var l: list<list<number>> = [[1], [2]]
+    l->copy()[0][0] = 'x'
+
+Remove EBCDIC support?
 
 Once Vim9 is stable:
 - Add all the error numbers in a good place in documentation.
-    done until E1083
+    done until E1145
 - Check code coverage, add more tests if needed.
 - Use Vim9 for runtime files.
 
@@ -62,6 +71,8 @@ Further Vim9 improvements, possibly after launch:
   evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
+- Implement "import lazy" - like autoload but with a relative or absolute
+  path. #9595
 - implement :type
 - implement :enum
 - implement :class and :interface: See |vim9-classes|
@@ -78,6 +89,7 @@ Further Vim9 improvements, possibly after launch:
 Update list of features to vote on:
 - multiple cursors
 - built-in LSP support
+- start first line halfway
 
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
@@ -234,6 +246,8 @@ TODO: be able to run all parts of test_alot with valgrind separately
 Memory leak in test_alot with pyeval() (allocating partial)
 Memory leak in test_alot with expand()
 Memory leaks in test_channel? (or is it because of fork())
+
+PR to support %e and %k in 'errorformat'. #9624
 
 Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 

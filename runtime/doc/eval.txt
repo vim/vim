@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Jan 21
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Jan 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,7 +44,8 @@ Profiling is documented at |profiling|.
 1. Variables						*variables*
 
 1.1 Variable types ~
-						*E712* *E896* *E897* *E899*
+					*E712* *E896* *E897* *E899* *E1098*
+					*E1107* *E1135* *E1138*
 There are ten types of variables:
 
 							*Number* *Integer*
@@ -180,7 +181,7 @@ You will not get an error if you try to change the type of a variable.
 
 
 1.2 Function references ~
-						*Funcref* *E695* *E718*
+					*Funcref* *E695* *E718* *E1086*
 A Funcref variable is obtained with the |function()| function, the |funcref()|
 function or created with the lambda expression |expr-lambda|.  It can be used
 in an expression in the place of a function name, before the parenthesis
@@ -835,7 +836,7 @@ In legacy script it is possible to form a variable name with curly braces, see
 
 ==============================================================================
 2. Expression syntax					*expression-syntax*
-
+							*E1143*
 Expression syntax summary, from least to most significant:
 
 |expr1|	expr2
@@ -915,6 +916,9 @@ Example: >
 	&nu || &list && &shell == "csh"
 
 All expressions within one level are parsed from left to right.
+
+Expression nesting is limited to 1000 levels deep (300 when build with MSVC)
+to avoid running out of stack and crashing. *E1169*
 
 
 expr1				*expr1* *trinary* *falsy-operator* *??* *E109*
@@ -1339,7 +1343,7 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr9(expr1, ...)	|Funcref| function call
+expr9(expr1, ...)	|Funcref| function call  	*E1085*
 
 When expr9 is a |Funcref| type variable, invoke the function it refers to.
 
@@ -1577,7 +1581,7 @@ The first one probably doesn't echo anything, the second echoes the $shell
 variable (if your shell supports it).
 
 
-internal variable				*expr-variable* *E1015*
+internal variable			*expr-variable* *E1015* *E1089*
 -----------------
 variable		internal variable
 See below |internal-variables|.
@@ -2709,7 +2713,7 @@ See |:verbose-cmd| for more information.
 			command, use line breaks instead of |:bar|: >
 				:exe "func Foo()\necho 'foo'\nendfunc"
 <
-				*:delf* *:delfunction* *E131* *E933*
+				*:delf* *:delfunction* *E131* *E933* *E1084*
 :delf[unction][!] {name}
 			Delete function {name}.
 			{name} can also be a |Dictionary| entry that is a
@@ -2726,8 +2730,11 @@ See |:verbose-cmd| for more information.
 			If "[expr]" is not given, the number 0 is returned.
 			When a function ends without an explicit ":return",
 			the number 0 is returned.
-			Note that there is no check for unreachable lines,
-			thus there is no warning if commands follow ":return".
+			In a :def function *E1095* is given if unreachable
+			code follows after the `:return`.
+			In legacy script there is no check for unreachable
+			lines, thus there is no warning if commands follow
+			`:return`.
 
 			If the ":return" is used after a |:try| but before the
 			matching |:finally| (if present), the commands
@@ -2746,7 +2753,7 @@ may optionally be following.  In the function the extra arguments can be used
 as "a:1", "a:2", etc.  "a:0" is set to the number of extra arguments (which
 can be 0).  "a:000" is set to a |List| that contains these arguments.  Note
 that "a:1" is the same as "a:000[0]".
-								*E742*
+							*E742* *E1090*
 The a: scope and the variables in it cannot be changed, they are fixed.
 However, if a composite type is used, such as |List| or |Dictionary| , you can
 change their contents.  Thus you can pass a |List| to a function and have the
@@ -3054,7 +3061,7 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			from the {expr}.  If {var-name} didn't exist yet, it
 			is created.
 
-:let {var-name}[{idx}] = {expr1}			*E689*
+:let {var-name}[{idx}] = {expr1}			*E689* *E1141*
 			Set a list item to the result of the expression
 			{expr1}.  {var-name} must refer to a list and {idx}
 			must be a valid index in that list.  For nested list
@@ -3161,7 +3168,7 @@ declarations and assignments do not use a command.  |vim9-declaration|
 :let &g:{option-name} -= {expr1}
 			Like above, but only set the global value of an option
 			(if there is one).  Works like |:setglobal|.
-
+								*E1093*
 :let [{name1}, {name2}, ...] = {expr1}		*:let-unpack* *E687* *E688*
 			{expr1} must evaluate to a |List|.  The first item in
 			the list is assigned to {name1}, the second item to
@@ -3202,7 +3209,7 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			|List| item.
 
 						*:let=<<* *:let-heredoc*
-						*E990* *E991* *E172* *E221*
+					*E990* *E991* *E172* *E221* *E1145*
 :let {var-name} =<< [trim] {endmarker}
 text...
 text...
@@ -3355,7 +3362,7 @@ text...
 				:lockvar v
 				:let v = 'asdf'	  " fails!
 				:unlet v	  " works
-<							*E741* *E940*
+<			*E741* *E940* *E1118* *E1119* *E1120* *E1121* *E1122*
 			If you try to change a locked variable you get an
 			error message: "E741: Value is locked: {name}".
 			If you try to lock or unlock a built-in variable you
@@ -3498,7 +3505,7 @@ text...
 			|Blob| does not affect the iteration.
 
 :for [{var1}, {var2}, ...] in {listlist}
-:endfo[r]
+:endfo[r]							*E1140*
 			Like ":for" above, but each item in {listlist} must be
 			a list, of which each item is assigned to {var1},
 			{var2}, etc.  Example: >
@@ -3601,7 +3608,7 @@ text...
 			|:break|, |:finish|, or |:return|, or by an error or
 			interrupt or exception (see |:throw|).
 
-							*:th* *:throw* *E608*
+						*:th* *:throw* *E608* *E1129*
 :th[row] {expr1}	The {expr1} is evaluated and thrown as an exception.
 			If the ":throw" is used after a |:try| but before the
 			first corresponding |:catch|, commands are skipped
