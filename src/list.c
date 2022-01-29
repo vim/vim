@@ -2902,7 +2902,7 @@ list_reverse(list_T *l, typval_T *rettv)
 	if (l->lv_first == &range_list_item)
 	{
 	    varnumber_T new_start = l->lv_u.nonmat.lv_start
-		+ (l->lv_len - 1) * l->lv_u.nonmat.lv_stride;
+		+ ((varnumber_T)l->lv_len - 1) * l->lv_u.nonmat.lv_stride;
 	    l->lv_u.nonmat.lv_end = new_start
 		- (l->lv_u.nonmat.lv_end - l->lv_u.nonmat.lv_start);
 	    l->lv_u.nonmat.lv_start = new_start;

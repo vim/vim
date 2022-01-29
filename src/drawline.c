@@ -2800,7 +2800,7 @@ win_line(
 	    if (((wp->w_p_cuc
 		      && (int)wp->w_virtcol >= VCOL_HLC - eol_hl_off
 		      && (int)wp->w_virtcol <
-					wp->w_width * (row - startrow + 1) + v
+				   (long)wp->w_width * (row - startrow + 1) + v
 		      && lnum != wp->w_cursor.lnum)
 		    || draw_color_col
 		    || win_attr != 0)

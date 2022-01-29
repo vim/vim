@@ -2769,9 +2769,9 @@ mch_print_begin(prt_settings_T *psettings)
 	// derive the bbox from that point.  We have the expected cpl chars
 	// across the media and lpp lines down the media.
 	bbox[1] = (int)(top - (psettings->lines_per_page + prt_header_height())
-							    * prt_line_height);
-	bbox[2] = (int)(left + psettings->chars_per_line * prt_char_width
-									+ 0.5);
+						    * (double)prt_line_height);
+	bbox[2] = (int)(left + psettings->chars_per_line
+					       * (double)prt_char_width + 0.5);
 	bbox[3] = (int)(top + 0.5);
     }
     else
@@ -2782,8 +2782,8 @@ mch_print_begin(prt_settings_T *psettings)
 	bbox[1] = (int)bottom;
 	bbox[2] = (int)(left + ((psettings->lines_per_page
 			      + prt_header_height()) * prt_line_height) + 0.5);
-	bbox[3] = (int)(bottom + psettings->chars_per_line * prt_char_width
-									+ 0.5);
+	bbox[3] = (int)(bottom + psettings->chars_per_line
+					       * (double)prt_char_width + 0.5);
     }
     prt_dsc_ints("BoundingBox", 4, bbox);
     // The media width and height does not change with landscape printing!
@@ -2797,7 +2797,7 @@ mch_print_begin(prt_settings_T *psettings)
     if (prt_out_mbyte)
     {
 	prt_dsc_font_resource((prt_use_courier ? NULL
-				 : "DocumentNeededResources"), &prt_ps_mb_font);
+				: "DocumentNeededResources"), &prt_ps_mb_font);
 	if (!prt_custom_cmap)
 	    prt_dsc_resources(NULL, "cmap", prt_cmap);
     }

@@ -249,7 +249,7 @@ mf_close(memfile_T *mfp, int del_file)
 					    // free entries in used list
     for (hp = mfp->mf_used_first; hp != NULL; hp = nextp)
     {
-	total_mem_used -= hp->bh_page_count * mfp->mf_page_size;
+	total_mem_used -= (long_u)hp->bh_page_count * mfp->mf_page_size;
 	nextp = hp->bh_next;
 	mf_free_bhdr(hp);
     }
@@ -359,7 +359,7 @@ mf_new(memfile_T *mfp, int negative, int page_count)
 	}
 	else if (hp == NULL)	    // need to allocate memory for this block
 	{
-	    if ((p = alloc(mfp->mf_page_size * page_count)) == NULL)
+	    if ((p = alloc((size_t)mfp->mf_page_size * page_count)) == NULL)
 		return NULL;
 	    hp = mf_rem_free(mfp);
 	    hp->bh_data = p;
@@ -718,7 +718,7 @@ mf_ins_used(memfile_T *mfp, bhdr_T *hp)
     else
 	hp->bh_next->bh_prev = hp;
     mfp->mf_used_count += hp->bh_page_count;
-    total_mem_used += hp->bh_page_count * mfp->mf_page_size;
+    total_mem_used += (long_u)hp->bh_page_count * mfp->mf_page_size;
 }
 
 /*
@@ -736,7 +736,7 @@ mf_rem_used(memfile_T *mfp, bhdr_T *hp)
     else
 	hp->bh_prev->bh_next = hp->bh_next;
     mfp->mf_used_count -= hp->bh_page_count;
-    total_mem_used -= hp->bh_page_count * mfp->mf_page_size;
+    total_mem_used -= (long_u)hp->bh_page_count * mfp->mf_page_size;
 }
 
 /*
@@ -814,7 +814,8 @@ mf_release(memfile_T *mfp, int page_count)
     if (hp->bh_page_count != page_count)
     {
 	vim_free(hp->bh_data);
-	if ((hp->bh_data = alloc(mfp->mf_page_size * page_count)) == NULL)
+	if ((hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count))
+								       == NULL)
 	{
 	    vim_free(hp);
 	    return NULL;
@@ -881,7 +882,8 @@ mf_alloc_bhdr(memfile_T *mfp, int page_count)
 
     if ((hp = ALLOC_ONE(bhdr_T)) != NULL)
     {
-	if ((hp->bh_data = alloc(mfp->mf_page_size * page_count)) == NULL)
+	if ((hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count))
+								       == NULL)
 	{
 	    vim_free(hp);	    // not enough memory
 	    return NULL;
