@@ -5,7 +5,7 @@ source check.vim
 CheckFeature textprop
 
 source screendump.vim
-source vim9.vim
+import './vim9.vim' as v9
 
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
@@ -429,10 +429,10 @@ enddef
 
 def Test_prop_remove_vim9()
   new
-  AddPropTypes()
-  SetupPropsInFirstLine()
+  g:AddPropTypes()
+  g:SetupPropsInFirstLine()
   assert_equal(1, prop_remove({type: 'three', id: 13, both: true, all: true}))
-  DeletePropTypes()
+  g:DeletePropTypes()
   bwipe!
 enddef
 
@@ -1704,7 +1704,7 @@ enddef
 func Test_prop_list()
   let lines =<< trim END
     new
-    call AddPropTypes()
+    call g:AddPropTypes()
     call setline(1, repeat([repeat('a', 60)], 10))
     call prop_add(1, 4, {'type': 'one', 'id': 5, 'end_col': 6})
     call prop_add(1, 5, {'type': 'two', 'id': 10, 'end_col': 7})
@@ -1844,10 +1844,10 @@ func Test_prop_list()
     bunload! Xaaa
     call assert_equal([], prop_list(1, {'bufnr': bnr, 'end_lnum': -1}))
 
-    call DeletePropTypes()
+    call g:DeletePropTypes()
     :%bw!
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

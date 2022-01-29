@@ -3830,14 +3830,7 @@ f_exists(typval_T *argvars, typval_T *rettv)
     }
     else if (*p == '*')			// internal or user defined function
     {
-	int save_version = current_sctx.sc_version;
-
-	// Vim9 script assumes a function is script-local, but here we want to
-	// find any matching function.
-	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
-	    current_sctx.sc_version = SCRIPT_VERSION_MAX;
 	n = function_exists(p + 1, FALSE);
-	current_sctx.sc_version = save_version;
     }
     else if (*p == '?')			// internal function only
     {

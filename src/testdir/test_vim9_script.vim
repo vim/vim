@@ -2,7 +2,7 @@
 
 source check.vim
 source term_util.vim
-source vim9.vim
+import './vim9.vim' as v9
 source screendump.vim
 source shared.vim
 
@@ -18,7 +18,7 @@ def Test_vim9script_feature()
       # Vim9 script commands go here
       g:didit = true
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
   assert_equal(true, g:didit)
   unlet g:didit
 enddef
@@ -35,20 +35,20 @@ def Test_range_only()
   setline(1, ['one', 'two', 'three'])
   :2
   print
-  assert_equal('two', Screenline(&lines))
+  assert_equal('two', g:Screenline(&lines))
   :3
   list
-  assert_equal('three$', Screenline(&lines))
+  assert_equal('three$', g:Screenline(&lines))
 
   # missing command does not print the line
   var lines =<< trim END
     vim9script
     :1|
-    assert_equal('three$', Screenline(&lines))
+    assert_equal('three$', g:Screenline(&lines))
     :|
-    assert_equal('three$', Screenline(&lines))
+    assert_equal('three$', g:Screenline(&lines))
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   bwipe!
 
@@ -64,7 +64,7 @@ let g:anumber = 123
 
 def Test_delfunction()
   # Check function is defined in script namespace
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'func CheckMe()',
       '  return 123',
@@ -73,13 +73,13 @@ def Test_delfunction()
       ])
 
   # Check function in script namespace cannot be deleted
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'func DeleteMe1()',
       'endfunc',
       'delfunction DeleteMe1',
       ], 'E1084:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'func DeleteMe2()',
       'endfunc',
@@ -88,13 +88,13 @@ def Test_delfunction()
       'enddef',
       'DoThat()',
       ], 'E1084:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'def DeleteMe3()',
       'enddef',
       'delfunction DeleteMe3',
       ], 'E1084:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'def DeleteMe4()',
       'enddef',
@@ -118,7 +118,7 @@ def Test_delfunction()
       delfunc g:Global
       assert_false(exists('*g:Global'))
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   # Check that global function can be replaced by a :def function and deleted
   lines =<< trim END
@@ -134,7 +134,7 @@ def Test_delfunction()
       delfunc g:Global
       assert_false(exists('*g:Global'))
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   # Check that global :def function can be replaced by a function and deleted
   lines =<< trim END
@@ -150,32 +150,32 @@ def Test_delfunction()
       delfunc g:Global
       assert_false(exists('*g:Global'))
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_wrong_type()
-  CheckDefFailure(['var name: list<nothing>'], 'E1010:')
-  CheckDefFailure(['var name: list<list<nothing>>'], 'E1010:')
-  CheckDefFailure(['var name: dict<nothing>'], 'E1010:')
-  CheckDefFailure(['var name: dict<dict<nothing>>'], 'E1010:')
+  v9.CheckDefFailure(['var name: list<nothing>'], 'E1010:')
+  v9.CheckDefFailure(['var name: list<list<nothing>>'], 'E1010:')
+  v9.CheckDefFailure(['var name: dict<nothing>'], 'E1010:')
+  v9.CheckDefFailure(['var name: dict<dict<nothing>>'], 'E1010:')
 
-  CheckDefFailure(['var name: dict<number'], 'E1009:')
-  CheckDefFailure(['var name: dict<list<number>'], 'E1009:')
+  v9.CheckDefFailure(['var name: dict<number'], 'E1009:')
+  v9.CheckDefFailure(['var name: dict<list<number>'], 'E1009:')
 
-  CheckDefFailure(['var name: ally'], 'E1010:')
-  CheckDefFailure(['var name: bram'], 'E1010:')
-  CheckDefFailure(['var name: cathy'], 'E1010:')
-  CheckDefFailure(['var name: dom'], 'E1010:')
-  CheckDefFailure(['var name: freddy'], 'E1010:')
-  CheckDefFailure(['var name: john'], 'E1010:')
-  CheckDefFailure(['var name: larry'], 'E1010:')
-  CheckDefFailure(['var name: ned'], 'E1010:')
-  CheckDefFailure(['var name: pam'], 'E1010:')
-  CheckDefFailure(['var name: sam'], 'E1010:')
-  CheckDefFailure(['var name: vim'], 'E1010:')
+  v9.CheckDefFailure(['var name: ally'], 'E1010:')
+  v9.CheckDefFailure(['var name: bram'], 'E1010:')
+  v9.CheckDefFailure(['var name: cathy'], 'E1010:')
+  v9.CheckDefFailure(['var name: dom'], 'E1010:')
+  v9.CheckDefFailure(['var name: freddy'], 'E1010:')
+  v9.CheckDefFailure(['var name: john'], 'E1010:')
+  v9.CheckDefFailure(['var name: larry'], 'E1010:')
+  v9.CheckDefFailure(['var name: ned'], 'E1010:')
+  v9.CheckDefFailure(['var name: pam'], 'E1010:')
+  v9.CheckDefFailure(['var name: sam'], 'E1010:')
+  v9.CheckDefFailure(['var name: vim'], 'E1010:')
 
-  CheckDefFailure(['var Ref: number', 'Ref()'], 'E1085:')
-  CheckDefFailure(['var Ref: string', 'var res = Ref()'], 'E1085:')
+  v9.CheckDefFailure(['var Ref: number', 'Ref()'], 'E1085:')
+  v9.CheckDefFailure(['var Ref: string', 'var res = Ref()'], 'E1085:')
 enddef
 
 def Test_script_wrong_type()
@@ -184,15 +184,15 @@ def Test_script_wrong_type()
       var s:dict: dict<string>
       s:dict['a'] = ['x']
   END
-  CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got list<string>', 3)
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got list<string>', 3)
 enddef
 
 def Test_const()
-  CheckDefFailure(['final name = 234', 'name = 99'], 'E1018:')
-  CheckDefFailure(['final one = 234', 'var one = 99'], 'E1017:')
-  CheckDefFailure(['final list = [1, 2]', 'var list = [3, 4]'], 'E1017:')
-  CheckDefFailure(['final two'], 'E1125:')
-  CheckDefFailure(['final &option'], 'E996:')
+  v9.CheckDefFailure(['final name = 234', 'name = 99'], 'E1018:')
+  v9.CheckDefFailure(['final one = 234', 'var one = 99'], 'E1017:')
+  v9.CheckDefFailure(['final list = [1, 2]', 'var list = [3, 4]'], 'E1017:')
+  v9.CheckDefFailure(['final two'], 'E1125:')
+  v9.CheckDefFailure(['final &option'], 'E996:')
 
   var lines =<< trim END
     final list = [1, 2, 3]
@@ -217,7 +217,7 @@ def Test_const()
     cd['six'] = 66
     constdict->assert_equal({one: 1, two: {five: 55, six: 66}, three: 3})
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_const_bang()
@@ -225,43 +225,43 @@ def Test_const_bang()
       const var = 234
       var = 99
   END
-  CheckDefExecFailure(lines, 'E1018:', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E46:', 3)
+  v9.CheckDefExecFailure(lines, 'E1018:', 2)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E46:', 3)
 
   lines =<< trim END
       const ll = [2, 3, 4]
       ll[0] = 99
   END
-  CheckDefExecFailure(lines, 'E1119:', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
+  v9.CheckDefExecFailure(lines, 'E1119:', 2)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
 
   lines =<< trim END
       const ll = [2, 3, 4]
       ll[3] = 99
   END
-  CheckDefExecFailure(lines, 'E1118:', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E684:', 3)
+  v9.CheckDefExecFailure(lines, 'E1118:', 2)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E684:', 3)
 
   lines =<< trim END
       const dd = {one: 1, two: 2}
       dd["one"] = 99
   END
-  CheckDefExecFailure(lines, 'E1121:', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
+  v9.CheckDefExecFailure(lines, 'E1121:', 2)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
 
   lines =<< trim END
       const dd = {one: 1, two: 2}
       dd["three"] = 99
   END
-  CheckDefExecFailure(lines, 'E1120:')
-  CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
+  v9.CheckDefExecFailure(lines, 'E1120:')
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
 enddef
 
 def Test_range_no_colon()
-  CheckDefFailure(['%s/a/b/'], 'E1050:')
-  CheckDefFailure(['+ s/a/b/'], 'E1050:')
-  CheckDefFailure(['- s/a/b/'], 'E1050:')
-  CheckDefFailure(['. s/a/b/'], 'E1050:')
+  v9.CheckDefFailure(['%s/a/b/'], 'E1050:')
+  v9.CheckDefFailure(['+ s/a/b/'], 'E1050:')
+  v9.CheckDefFailure(['- s/a/b/'], 'E1050:')
+  v9.CheckDefFailure(['. s/a/b/'], 'E1050:')
 enddef
 
 
@@ -278,9 +278,9 @@ def Test_block()
 enddef
 
 def Test_block_failure()
-  CheckDefFailure(['{', 'var inner = 1', '}', 'echo inner'], 'E1001:')
-  CheckDefFailure(['}'], 'E1025:')
-  CheckDefFailure(['{', 'echo 1'], 'E1026:')
+  v9.CheckDefFailure(['{', 'var inner = 1', '}', 'echo inner'], 'E1001:')
+  v9.CheckDefFailure(['}'], 'E1025:')
+  v9.CheckDefFailure(['{', 'echo 1'], 'E1026:')
 enddef
 
 def Test_block_local_vars()
@@ -322,7 +322,7 @@ def Test_block_local_vars()
   # need to execute this with a separate Vim instance to avoid the current
   # context gets garbage collected.
   writefile(lines, 'Xscript')
-  RunVim([], [], '-S Xscript')
+  g:RunVim([], [], '-S Xscript')
   assert_equal(['ok'], readfile('Xdidit'))
 
   delete('Xscript')
@@ -345,11 +345,11 @@ def Test_block_local_vars_with_func()
       # "foo" and "bar"
       assert_equal(['foo', 'bar'], Func())
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " legacy func for command that's defined later
-func InvokeSomeCommand()
+func s:InvokeSomeCommand()
   SomeCommand
 endfunc
 
@@ -557,7 +557,7 @@ def Test_try_catch_throw()
   assert_equal(333, n)
 
   try
-    l = DeletedFunc()
+    l = g:DeletedFunc()
   catch /E933:/
     n = 344
   endtry
@@ -679,7 +679,7 @@ def Test_try_catch_throw()
         g:caught = v:exception
       endtry
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
   assert_match('E1219: Float or Number required for argument 1', g:caught)
   unlet g:caught
 
@@ -690,7 +690,7 @@ def Test_try_catch_throw()
         echo 'something'
       endtry
   END
-  CheckScriptFailure(lines, 'E1032:')
+  v9.CheckScriptFailure(lines, 'E1032:')
 
   # skipping try-finally-endtry when try-finally-endtry is used in another block
   lines =<< trim END
@@ -704,7 +704,7 @@ def Test_try_catch_throw()
         endtry
       endif
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_try_ends_in_return()
@@ -719,7 +719,7 @@ def Test_try_ends_in_return()
       enddef
       assert_equal('foo', Foo())
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
@@ -733,7 +733,7 @@ def Test_try_ends_in_return()
       enddef
       assert_equal('foo', Foo())
   END
-  CheckScriptFailure(lines, 'E1095:')
+  v9.CheckScriptFailure(lines, 'E1095:')
 
   lines =<< trim END
       vim9script
@@ -746,7 +746,7 @@ def Test_try_ends_in_return()
       enddef
       assert_equal('foo', Foo())
   END
-  CheckScriptFailure(lines, 'E1027:')
+  v9.CheckScriptFailure(lines, 'E1027:')
 
   lines =<< trim END
       vim9script
@@ -761,7 +761,7 @@ def Test_try_ends_in_return()
       enddef
       assert_equal('done', Foo())
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
 enddef
 
@@ -799,11 +799,11 @@ def Test_error_in_catch()
         eval [][0]
       endtry
   END
-  CheckDefExecFailure(lines, 'E684:', 4)
+  v9.CheckDefExecFailure(lines, 'E684:', 4)
 enddef
 
 " :while at the very start of a function that :continue jumps to
-def TryContinueFunc()
+def s:TryContinueFunc()
  while g:Count < 2
    g:sequence ..= 't'
     try
@@ -867,7 +867,7 @@ def Test_cnext_works_in_catch()
       qall
   END
   writefile(lines, 'XCatchCnext')
-  RunVim([], [], '--clean -S XCatchCnext')
+  g:RunVim([], [], '--clean -S XCatchCnext')
   assert_equal(['1'], readfile('Xresult'))
 
   delete('Xfile1')
@@ -901,19 +901,19 @@ enddef
 defcompile
 delfunc DeletedFunc
 
-def ThrowFromDef()
+def s:ThrowFromDef()
   throw "getout" # comment
 enddef
 
-func CatchInFunc()
+func s:CatchInFunc()
   try
-    call ThrowFromDef()
+    call s:ThrowFromDef()
   catch
     let g:thrown_func = v:exception
   endtry
 endfunc
 
-def CatchInDef()
+def s:CatchInDef()
   try
     ThrowFromDef()
   catch
@@ -921,7 +921,7 @@ def CatchInDef()
   endtry
 enddef
 
-def ReturnFinally(): string
+def s:ReturnFinally(): string
   try
     return 'intry'
   finall
@@ -984,7 +984,7 @@ def Test_try_catch_nested()
   assert_equal(['1', '2', '3', '4'], l)
 enddef
 
-def TryOne(): number
+def s:TryOne(): number
   try
     return 0
   catch
@@ -992,7 +992,7 @@ def TryOne(): number
   return 0
 enddef
 
-def TryTwo(n: number): string
+def s:TryTwo(n: number): string
   try
     var x = {}
   catch
@@ -1023,19 +1023,19 @@ def Test_try_catch_match()
 enddef
 
 def Test_try_catch_fails()
-  CheckDefFailure(['catch'], 'E603:')
-  CheckDefFailure(['try', 'echo 0', 'catch', 'catch'], 'E1033:')
-  CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067:')
-  CheckDefFailure(['finally'], 'E606:')
-  CheckDefFailure(['try', 'echo 0', 'finally', 'echo 1', 'finally'], 'E607:')
-  CheckDefFailure(['endtry'], 'E602:')
-  CheckDefFailure(['while 1', 'endtry'], 'E170:')
-  CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
-  CheckDefFailure(['if 1', 'endtry'], 'E171:')
-  CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
+  v9.CheckDefFailure(['catch'], 'E603:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'catch'], 'E1033:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067:')
+  v9.CheckDefFailure(['finally'], 'E606:')
+  v9.CheckDefFailure(['try', 'echo 0', 'finally', 'echo 1', 'finally'], 'E607:')
+  v9.CheckDefFailure(['endtry'], 'E602:')
+  v9.CheckDefFailure(['while 1', 'endtry'], 'E170:')
+  v9.CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
+  v9.CheckDefFailure(['if 1', 'endtry'], 'E171:')
+  v9.CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
 
-  CheckDefFailure(['throw'], 'E1143:')
-  CheckDefFailure(['throw xxx'], 'E1001:')
+  v9.CheckDefFailure(['throw'], 'E1143:')
+  v9.CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
 def Try_catch_skipped()
@@ -1070,7 +1070,7 @@ def Test_throw_vimscript()
         assert_equal('onetwo', v:exception)
       endtry
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
     vim9script
@@ -1086,7 +1086,7 @@ def Test_throw_vimscript()
     endtry
     assert_equal('caught', result)
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_error_in_nested_function()
@@ -1103,7 +1103,7 @@ def Test_error_in_nested_function()
       Func()
   END
   g:test_var = 0
-  CheckScriptFailure(lines, 'E684:')
+  v9.CheckScriptFailure(lines, 'E684:')
   assert_equal(0, g:test_var)
 enddef
 
@@ -1116,7 +1116,7 @@ def Test_abort_after_error()
       g:gotthere = true
   END
   g:gotthere = false
-  CheckScriptFailure(lines, 'E121:')
+  v9.CheckScriptFailure(lines, 'E121:')
   assert_false(g:gotthere)
   unlet g:gotthere
 enddef
@@ -1131,7 +1131,7 @@ def Test_cexpr_vimscript()
                    ' line 19'
       assert_equal(19, getqflist()[0].lnum)
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
   set errorformat&
 enddef
 
@@ -1146,7 +1146,7 @@ def Test_statusline_syntax()
       redrawstatus
       set laststatus statusline= 
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_list_vimscript()
@@ -1162,7 +1162,7 @@ def Test_list_vimscript()
             ]
       assert_equal(['one', 'two', 'three'], mylist)
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   # check all lines from heredoc are kept
   lines =<< trim END
@@ -1179,7 +1179,7 @@ def Test_list_vimscript()
     [{
       a: 0}]->string()->assert_equal("[{'a': 0}]")
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 if has('channel')
@@ -1210,21 +1210,21 @@ def Test_vim9script_mix()
   END
   g:feature = 'eval'
   g:legacy = -1
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
   assert_equal(1, g:legacy)
 
   g:feature = 'noteval'
   g:legacy = -1
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
   assert_equal(0, g:legacy)
 enddef
 
 def Test_vim9script_fails()
-  CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
-  CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
+  v9.CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
+  v9.CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
 
-  CheckScriptFailure(['vim9script', 'var str: string', 'str = 1234'], 'E1012:')
-  CheckScriptFailure(['vim9script', 'const str = "asdf"', 'str = "xxx"'], 'E46:')
+  v9.CheckScriptFailure(['vim9script', 'var str: string', 'str = 1234'], 'E1012:')
+  v9.CheckScriptFailure(['vim9script', 'const str = "asdf"', 'str = "xxx"'], 'E46:')
 
   assert_fails('vim9script', 'E1038:')
 enddef
@@ -1237,7 +1237,7 @@ def Test_script_var_shadows_function()
       enddef
       var Func = 1
   END
-  CheckScriptFailure(lines, 'E1041:', 5)
+  v9.CheckScriptFailure(lines, 'E1041:', 5)
 enddef
 
 def Test_function_shadows_script_var()
@@ -1248,7 +1248,7 @@ def Test_function_shadows_script_var()
         return 123
       enddef
   END
-  CheckScriptFailure(lines, 'E1041:', 3)
+  v9.CheckScriptFailure(lines, 'E1041:', 3)
 enddef
 
 def Test_script_var_shadows_command()
@@ -1257,13 +1257,13 @@ def Test_script_var_shadows_command()
       undo = 2
       assert_equal(2, undo)
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
       var undo = 1
       undo
   END
-  CheckDefAndScriptFailure(lines, 'E1207:', 2)
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
 enddef
 
 def Test_vim9script_call_wrong_type()
@@ -1272,7 +1272,7 @@ def Test_vim9script_call_wrong_type()
       var Time = 'localtime'
       Time()
   END
-  CheckScriptFailure(lines, 'E1085:')
+  v9.CheckScriptFailure(lines, 'E1085:')
 enddef
 
 def Test_vim9script_reload_delfunc()
@@ -1371,7 +1371,7 @@ def Test_func_redefine_fails()
       echo 'two'
     enddef
   END
-  CheckScriptFailure(lines, 'E1073:')
+  v9.CheckScriptFailure(lines, 'E1073:')
 
   lines =<< trim END
     vim9script
@@ -1383,7 +1383,7 @@ def Test_func_redefine_fails()
     enddef
     defcompile
   END
-  CheckScriptFailure(lines, 'E1073:')
+  v9.CheckScriptFailure(lines, 'E1073:')
 enddef
 
 def Test_fixed_size_list()
@@ -1396,26 +1396,26 @@ def Test_fixed_size_list()
 enddef
 
 def Test_no_insert_xit()
-  CheckDefExecFailure(['a = 1'], 'E1100:')
-  CheckDefExecFailure(['c = 1'], 'E1100:')
-  CheckDefExecFailure(['i = 1'], 'E1100:')
-  CheckDefExecFailure(['t = 1'], 'E1100:')
-  CheckDefExecFailure(['x = 1'], 'E1100:')
+  v9.CheckDefExecFailure(['a = 1'], 'E1100:')
+  v9.CheckDefExecFailure(['c = 1'], 'E1100:')
+  v9.CheckDefExecFailure(['i = 1'], 'E1100:')
+  v9.CheckDefExecFailure(['t = 1'], 'E1100:')
+  v9.CheckDefExecFailure(['x = 1'], 'E1100:')
 
-  CheckScriptFailure(['vim9script', 'a = 1'], 'E488:')
-  CheckScriptFailure(['vim9script', 'a'], 'E1100:')
-  CheckScriptFailure(['vim9script', 'c = 1'], 'E488:')
-  CheckScriptFailure(['vim9script', 'c'], 'E1100:')
-  CheckScriptFailure(['vim9script', 'i = 1'], 'E488:')
-  CheckScriptFailure(['vim9script', 'i'], 'E1100:')
-  CheckScriptFailure(['vim9script', 'o = 1'], 'E1100:')
-  CheckScriptFailure(['vim9script', 'o'], 'E1100:')
-  CheckScriptFailure(['vim9script', 't'], 'E1100:')
-  CheckScriptFailure(['vim9script', 't = 1'], 'E1100:')
-  CheckScriptFailure(['vim9script', 'x = 1'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'a = 1'], 'E488:')
+  v9.CheckScriptFailure(['vim9script', 'a'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'c = 1'], 'E488:')
+  v9.CheckScriptFailure(['vim9script', 'c'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'i = 1'], 'E488:')
+  v9.CheckScriptFailure(['vim9script', 'i'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'o = 1'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'o'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 't'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 't = 1'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'x = 1'], 'E1100:')
 enddef
 
-def IfElse(what: number): string
+def s:IfElse(what: number): string
   var res = ''
   if what == 1
     res = "one"
@@ -1434,18 +1434,18 @@ def Test_if_elseif_else()
 enddef
 
 def Test_if_elseif_else_fails()
-  CheckDefFailure(['elseif true'], 'E582:')
-  CheckDefFailure(['else'], 'E581:')
-  CheckDefFailure(['endif'], 'E580:')
-  CheckDefFailure(['if g:abool', 'elseif xxx'], 'E1001:')
-  CheckDefFailure(['if true', 'echo 1'], 'E171:')
+  v9.CheckDefFailure(['elseif true'], 'E582:')
+  v9.CheckDefFailure(['else'], 'E581:')
+  v9.CheckDefFailure(['endif'], 'E580:')
+  v9.CheckDefFailure(['if g:abool', 'elseif xxx'], 'E1001:')
+  v9.CheckDefFailure(['if true', 'echo 1'], 'E171:')
 
   var lines =<< trim END
       var s = ''
       if s = ''
       endif
   END
-  CheckDefFailure(lines, 'E488:')
+  v9.CheckDefFailure(lines, 'E488:')
 
   lines =<< trim END
       var s = ''
@@ -1453,7 +1453,7 @@ def Test_if_elseif_else_fails()
       elseif s = ''
       endif
   END
-  CheckDefFailure(lines, 'E488:')
+  v9.CheckDefFailure(lines, 'E488:')
 enddef
 
 let g:bool_true = v:true
@@ -1590,13 +1590,13 @@ def Test_if_const_expr()
 enddef
 
 def Test_if_const_expr_fails()
-  CheckDefFailure(['if "aaa" == "bbb'], 'E114:')
-  CheckDefFailure(["if 'aaa' == 'bbb"], 'E115:')
-  CheckDefFailure(["if has('aaa'"], 'E110:')
-  CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
+  v9.CheckDefFailure(['if "aaa" == "bbb'], 'E114:')
+  v9.CheckDefFailure(["if 'aaa' == 'bbb"], 'E115:')
+  v9.CheckDefFailure(["if has('aaa'"], 'E110:')
+  v9.CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
 enddef
 
-def RunNested(i: number): number
+def s:RunNested(i: number): number
   var x: number = 0
   if i % 2
     if 1
@@ -1645,14 +1645,14 @@ def Test_execute_cmd()
 
   var n = true
   execute 'echomsg' (n ? '"true"' : '"no"')
-  assert_match('^true$', Screenline(&lines))
+  assert_match('^true$', g:Screenline(&lines))
 
   echomsg [1, 2, 3] {a: 1, b: 2}
-  assert_match('^\[1, 2, 3\] {''a'': 1, ''b'': 2}$', Screenline(&lines))
+  assert_match('^\[1, 2, 3\] {''a'': 1, ''b'': 2}$', g:Screenline(&lines))
 
-  CheckDefFailure(['execute xxx'], 'E1001:', 1)
-  CheckDefExecFailure(['execute "tabnext " .. 8'], 'E475:', 1)
-  CheckDefFailure(['execute "cmd"# comment'], 'E488:', 1)
+  v9.CheckDefFailure(['execute xxx'], 'E1001:', 1)
+  v9.CheckDefExecFailure(['execute "tabnext " .. 8'], 'E475:', 1)
+  v9.CheckDefFailure(['execute "cmd"# comment'], 'E488:', 1)
 enddef
 
 def Test_execute_cmd_vimscript()
@@ -1665,34 +1665,34 @@ def Test_execute_cmd_vimscript()
       assert_equal(28, g:someVar)
       unlet g:someVar
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_echo_cmd()
   echo 'some' # comment
   echon 'thing'
-  assert_match('^something$', Screenline(&lines))
+  assert_match('^something$', g:Screenline(&lines))
 
   echo "some" # comment
   echon "thing"
-  assert_match('^something$', Screenline(&lines))
+  assert_match('^something$', g:Screenline(&lines))
 
   var str1 = 'some'
   var str2 = 'more'
   echo str1 str2
-  assert_match('^some more$', Screenline(&lines))
+  assert_match('^some more$', g:Screenline(&lines))
 
-  CheckDefFailure(['echo "xxx"# comment'], 'E488:')
+  v9.CheckDefFailure(['echo "xxx"# comment'], 'E488:')
 enddef
 
 def Test_echomsg_cmd()
   echomsg 'some' 'more' # comment
-  assert_match('^some more$', Screenline(&lines))
+  assert_match('^some more$', g:Screenline(&lines))
   echo 'clear'
   :1messages
-  assert_match('^some more$', Screenline(&lines))
+  assert_match('^some more$', g:Screenline(&lines))
 
-  CheckDefFailure(['echomsg "xxx"# comment'], 'E488:')
+  v9.CheckDefFailure(['echomsg "xxx"# comment'], 'E488:')
 enddef
 
 def Test_echomsg_cmd_vimscript()
@@ -1702,9 +1702,9 @@ def Test_echomsg_cmd_vimscript()
       echomsg 'here'
                 .. ' is ' ..
                    'a message'
-      assert_match('^here is a message$', Screenline(&lines))
+      assert_match('^here is a message$', g:Screenline(&lines))
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_echoerr_cmd()
@@ -1728,7 +1728,7 @@ def Test_echoerr_cmd_vimscript()
         assert_match('this is wrong', v:exception)
       endtry
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_echoconsole_cmd()
@@ -1786,7 +1786,7 @@ def Test_for_skipped_block()
     endif
     assert_equal([3, 4], result)
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 
   # test skipped blocks at inside of function
   lines =<< trim END
@@ -1820,7 +1820,7 @@ def Test_for_skipped_block()
     enddef
     DefFalse()
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_for_loop()
@@ -1931,7 +1931,7 @@ def Test_for_loop()
       endfor
       assert_equal(['x', 'x', 'x'], reslist)
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_for_loop_with_closure()
@@ -1945,7 +1945,7 @@ def Test_for_loop_with_closure()
         assert_equal(4, flist[i]())
       endfor
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
       var flist: list<func>
@@ -1959,29 +1959,29 @@ def Test_for_loop_with_closure()
         assert_equal(4, flist[i]())
       endfor
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_for_loop_fails()
-  CheckDefAndScriptFailure(['for '], ['E1097:', 'E690:'])
-  CheckDefAndScriptFailure(['for x'], ['E1097:', 'E690:'])
-  CheckDefAndScriptFailure(['for x in'], ['E1097:', 'E15:'])
-  CheckDefAndScriptFailure(['for # in range(5)'], 'E690:')
-  CheckDefAndScriptFailure(['for i In range(5)'], 'E690:')
-  CheckDefAndScriptFailure(['var x = 5', 'for x in range(5)', 'endfor'], ['E1017:', 'E1041:'])
-  CheckScriptFailure(['vim9script', 'var x = 5', 'for x in range(5)', '# comment', 'endfor'], 'E1041:', 3)
-  CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
+  v9.CheckDefAndScriptFailure(['for '], ['E1097:', 'E690:'])
+  v9.CheckDefAndScriptFailure(['for x'], ['E1097:', 'E690:'])
+  v9.CheckDefAndScriptFailure(['for x in'], ['E1097:', 'E15:'])
+  v9.CheckDefAndScriptFailure(['for # in range(5)'], 'E690:')
+  v9.CheckDefAndScriptFailure(['for i In range(5)'], 'E690:')
+  v9.CheckDefAndScriptFailure(['var x = 5', 'for x in range(5)', 'endfor'], ['E1017:', 'E1041:'])
+  v9.CheckScriptFailure(['vim9script', 'var x = 5', 'for x in range(5)', '# comment', 'endfor'], 'E1041:', 3)
+  v9.CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
   delfunc! g:Func
-  CheckDefFailure(['for i in xxx'], 'E1001:')
-  CheckDefFailure(['endfor'], 'E588:')
-  CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
+  v9.CheckDefFailure(['for i in xxx'], 'E1001:')
+  v9.CheckDefFailure(['endfor'], 'E588:')
+  v9.CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
 
   # wrong type detected at compile time
-  CheckDefFailure(['for i in {a: 1}', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
+  v9.CheckDefFailure(['for i in {a: 1}', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
 
   # wrong type detected at runtime
   g:adict = {a: 1}
-  CheckDefExecFailure(['for i in g:adict', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
+  v9.CheckDefExecFailure(['for i in g:adict', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
   unlet g:adict
 
   var lines =<< trim END
@@ -1990,20 +1990,20 @@ def Test_for_loop_fails()
         e = {a: 0, b: ''}
       endfor
   END
-  CheckDefAndScriptFailure(lines, ['E1018:', 'E46:'], 3)
+  v9.CheckDefAndScriptFailure(lines, ['E1018:', 'E46:'], 3)
 
   lines =<< trim END
       for nr: number in ['foo']
       endfor
   END
-  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
 
   lines =<< trim END
       for n : number in [1, 2]
         echo n
       endfor
   END
-  CheckDefAndScriptFailure(lines, 'E1059:', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1059:', 1)
 
   lines =<< trim END
       var d: dict<number> = {a: 1, b: 2}
@@ -2011,7 +2011,7 @@ def Test_for_loop_fails()
         echo k v
       endfor
   END
-  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected job but got string', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected job but got string', 2)
 
   lines =<< trim END
       var i = 0
@@ -2019,7 +2019,7 @@ def Test_for_loop_fails()
         echo i
       endfor
   END
-  CheckDefExecAndScriptFailure(lines, ['E1017:', 'E1041:'])
+  v9.CheckDefExecAndScriptFailure(lines, ['E1017:', 'E1041:'])
 
   lines =<< trim END
       var l = [0]
@@ -2027,7 +2027,7 @@ def Test_for_loop_fails()
         echo l[0]
       endfor
   END
-  CheckDefExecAndScriptFailure(lines, ['E461:', 'E1017:'])
+  v9.CheckDefExecAndScriptFailure(lines, ['E461:', 'E1017:'])
 
   lines =<< trim END
       var d = {x: 0}
@@ -2035,12 +2035,12 @@ def Test_for_loop_fails()
         echo d.x
       endfor
   END
-  CheckDefExecAndScriptFailure(lines, ['E461:', 'E1017:'])
+  v9.CheckDefExecAndScriptFailure(lines, ['E461:', 'E1017:'])
 enddef
 
 def Test_for_loop_script_var()
   # cannot use s:var in a :def function
-  CheckDefFailure(['for s:var in range(3)', 'echo 3'], 'E1254:')
+  v9.CheckDefFailure(['for s:var in range(3)', 'echo 3'], 'E1254:')
 
   # can use s:var in Vim9 script, with or without s:
   var lines =<< trim END
@@ -2107,28 +2107,28 @@ def Test_for_loop_unpack()
       endfor
       assert_equal([2, 5], res)
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
       for [v1, v2] in [[1, 2, 3], [3, 4]]
         echo v1 v2
       endfor
   END
-  CheckDefExecFailure(lines, 'E710:', 1)
+  v9.CheckDefExecFailure(lines, 'E710:', 1)
 
   lines =<< trim END
       for [v1, v2] in [[1], [3, 4]]
         echo v1 v2
       endfor
   END
-  CheckDefExecFailure(lines, 'E711:', 1)
+  v9.CheckDefExecFailure(lines, 'E711:', 1)
 
   lines =<< trim END
       for [v1, v1] in [[1, 2], [3, 4]]
         echo v1
       endfor
   END
-  CheckDefExecFailure(lines, 'E1017:', 1)
+  v9.CheckDefExecFailure(lines, 'E1017:', 1)
 enddef
 
 def Test_for_loop_with_try_continue()
@@ -2148,7 +2148,7 @@ def Test_for_loop_with_try_continue()
       assert_equal(3, looped)
       assert_equal(3, cleanup)
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_while_skipped_block()
@@ -2187,7 +2187,7 @@ def Test_while_skipped_block()
     endif
     assert_equal([3, 4], result)
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 
   # test skipped blocks at inside of function
   lines =<< trim END
@@ -2231,7 +2231,7 @@ def Test_while_skipped_block()
     enddef
     DefFalse()
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_while_loop()
@@ -2266,24 +2266,24 @@ def Test_while_loop_in_script()
       endwhile
       assert_equal('v0v1v2', result)
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_while_loop_fails()
-  CheckDefFailure(['while xxx'], 'E1001:')
-  CheckDefFailure(['endwhile'], 'E588:')
-  CheckDefFailure(['continue'], 'E586:')
-  CheckDefFailure(['if true', 'continue'], 'E586:')
-  CheckDefFailure(['break'], 'E587:')
-  CheckDefFailure(['if true', 'break'], 'E587:')
-  CheckDefFailure(['while 1', 'echo 3'], 'E170:')
+  v9.CheckDefFailure(['while xxx'], 'E1001:')
+  v9.CheckDefFailure(['endwhile'], 'E588:')
+  v9.CheckDefFailure(['continue'], 'E586:')
+  v9.CheckDefFailure(['if true', 'continue'], 'E586:')
+  v9.CheckDefFailure(['break'], 'E587:')
+  v9.CheckDefFailure(['if true', 'break'], 'E587:')
+  v9.CheckDefFailure(['while 1', 'echo 3'], 'E170:')
 
   var lines =<< trim END
       var s = ''
       while s = ''
       endwhile
   END
-  CheckDefFailure(lines, 'E488:')
+  v9.CheckDefFailure(lines, 'E488:')
 enddef
 
 def Test_interrupt_loop()
@@ -2342,7 +2342,7 @@ def Test_automatic_line_continuation()
 enddef
 
 def Test_vim9_comment()
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       '# something',
       '#something',
@@ -2350,126 +2350,126 @@ def Test_vim9_comment()
       ])
 
   split Xfile
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'edit #something',
       ])
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'edit #{something',
       ])
   close
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       ':# something',
       ], 'E488:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       '# something',
       ], 'E488:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       ':# something',
       ], 'E488:')
 
   { # block start
   } # block end
-  CheckDefFailure([
+  v9.CheckDefFailure([
       '{# comment',
       ], 'E488:')
-  CheckDefFailure([
+  v9.CheckDefFailure([
       '{',
       '}# comment',
       ], 'E488:')
 
   echo "yes" # comment
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'echo "yes"# comment',
       ], 'E488:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'echo "yes" # something',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'echo "yes"# something',
       ], 'E121:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'echo# something',
       ], 'E1144:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'echo "yes" # something',
       ], 'E121:')
 
   exe "echo" # comment
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'exe "echo"# comment',
       ], 'E488:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'exe "echo" # something',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'exe "echo"# something',
       ], 'E121:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'exe# something',
       ], 'E1144:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'exe "echo" # something',
       ], 'E121:')
 
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'try# comment',
       '  echo "yes"',
       'catch',
       'endtry',
       ], 'E1144:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'try# comment',
       'echo "yes"',
       ], 'E1144:')
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'try',
       '  throw#comment',
       'catch',
       'endtry',
       ], 'E1144:')
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'try',
       '  throw "yes"#comment',
       'catch',
       'endtry',
       ], 'E488:')
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'try',
       '  echo "yes"',
       'catch# comment',
       'endtry',
       ], 'E1144:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'try',
       '  echo "yes"',
       'catch# comment',
       'endtry',
       ], 'E1144:')
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'try',
       '  echo "yes"',
       'catch /pat/# comment',
       'endtry',
       ], 'E488:')
-  CheckDefFailure([
+  v9.CheckDefFailure([
       'try',
       'echo "yes"',
       'catch',
       'endtry# comment',
       ], 'E1144:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'try',
       '  echo "yes"',
@@ -2477,192 +2477,192 @@ def Test_vim9_comment()
       'endtry# comment',
       ], 'E1144:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'hi # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'hi# comment',
       ], 'E1144:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'hi Search # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'hi Search# comment',
       ], 'E416:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'hi link This Search # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'hi link This That# comment',
       ], 'E413:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'hi clear This # comment',
       'hi clear # comment',
       ])
   # not tested, because it doesn't give an error but a warning:
   # hi clear This# comment',
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'hi clear# comment',
       ], 'E416:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'hi Group term=bold',
       'match Group /todo/ # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'hi Group term=bold',
       'match Group /todo/# comment',
       ], 'E488:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'match # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'match# comment',
       ], 'E1144:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'match none # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'match none# comment',
       ], 'E475:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'menutrans clear # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'menutrans clear# comment text',
       ], 'E474:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax clear # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax clear# comment text',
       ], 'E28:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax keyword Word some',
       'syntax clear Word # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax keyword Word some',
       'syntax clear Word# comment text',
       ], 'E28:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax list # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax list# comment text',
       ], 'E28:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax match Word /pat/ oneline # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax match Word /pat/ oneline# comment',
       ], 'E475:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax keyword Word word # comm[ent',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax keyword Word word# comm[ent',
       ], 'E789:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax match Word /pat/ # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax match Word /pat/# comment',
       ], 'E402:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax match Word /pat/ contains=Something # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax match Word /pat/ contains=Something# comment',
       ], 'E475:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax match Word /pat/ contains= # comment',
       ], 'E406:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax match Word /pat/ contains=# comment',
       ], 'E475:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax region Word start=/pat/ end=/pat/ # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax region Word start=/pat/ end=/pat/# comment',
       ], 'E402:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax sync # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax sync# comment',
       ], 'E404:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax sync ccomment # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax sync ccomment# comment',
       ], 'E404:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'syntax cluster Some contains=Word # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'syntax cluster Some contains=Word# comment',
       ], 'E475:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'command Echo echo # comment',
       'command Echo # comment',
       'delcommand Echo',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'command Echo echo# comment',
       'Echo',
@@ -2670,18 +2670,18 @@ def Test_vim9_comment()
   delcommand Echo
 
   var curdir = getcwd()
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'command Echo cd " comment',
       'Echo',
       'delcommand Echo',
       ])
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'command Echo cd # comment',
       'Echo',
       'delcommand Echo',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'command Echo cd " comment',
       'Echo',
@@ -2689,86 +2689,88 @@ def Test_vim9_comment()
   delcommand Echo
   chdir(curdir)
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'command Echo# comment',
       ], 'E182:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'command Echo echo',
       'command Echo# comment',
       ], 'E182:')
   delcommand Echo
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'function # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'function " comment',
       ], 'E129:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'function# comment',
       ], 'E1144:')
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
-      'function CheckScriptSuccess # comment',
+      'import "./vim9.vim" as v9',
+      'function v9.CheckScriptSuccess # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
-      'function CheckScriptSuccess# comment',
-      ], 'E488:')
+      'import "./vim9.vim" as v9',
+      'function v9.CheckScriptSuccess# comment',
+      ], 'E1048: Item not found in script: CheckScriptSuccess#')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'func g:DeleteMeA()',
       'endfunc',
       'delfunction g:DeleteMeA # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'func g:DeleteMeB()',
       'endfunc',
       'delfunction g:DeleteMeB# comment',
       ], 'E488:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'call execute("ls") # comment',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'call execute("ls")# comment',
       ], 'E488:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'def Test() " comment',
       'enddef',
       ], 'E488:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'def Test() " comment',
       'enddef',
       ], 'E488:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'func Test() " comment',
       'endfunc',
       'delfunc Test',
       ])
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'func Test() " comment',
       'endfunc',
       ])
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'def Test() # comment',
       'enddef',
       ])
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'func Test() # comment',
       'endfunc',
       ], 'E488:')
@@ -2783,7 +2785,7 @@ def Test_vim9_comment()
       #\ comment
       \ end='bar'
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
@@ -2792,17 +2794,17 @@ def Test_vim9_comment()
       "\ comment
       \ end='bar'
   END
-  CheckScriptFailure(lines, 'E399:')
+  v9.CheckScriptFailure(lines, 'E399:')
 enddef
 
 def Test_vim9_comment_gui()
   CheckCanRunGui
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'gui#comment'
       ], 'E1144:')
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'gui -f#comment'
       ], 'E194:')
@@ -2828,7 +2830,7 @@ def Test_vim9_comment_not_compiled()
   au! TabEnter
   unlet g:entered
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'g:var = 123',
       'b:var = 456',
@@ -2837,53 +2839,53 @@ def Test_vim9_comment_not_compiled()
       'unlet g:var w:var # something',
       ])
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'let var = 123',
       ], 'E1126: Cannot use :let in Vim9 script')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'var g:var = 123',
       ], 'E1016: Cannot declare a global variable:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'var b:var = 123',
       ], 'E1016: Cannot declare a buffer variable:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'var w:var = 123',
       ], 'E1016: Cannot declare a window variable:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'var t:var = 123',
       ], 'E1016: Cannot declare a tab variable:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'var v:version = 123',
       ], 'E1016: Cannot declare a v: variable:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'var $VARIABLE = "text"',
       ], 'E1016: Cannot declare an environment variable:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'g:var = 123',
       'unlet g:var# comment1',
       ], 'E108:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'let g:var = 123',
       'unlet g:var # something',
       ], 'E488:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'if 1 # comment2',
       '  echo "yes"',
@@ -2892,14 +2894,14 @@ def Test_vim9_comment_not_compiled()
       'endif',
       ])
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'if 1# comment3',
       '  echo "yes"',
       'endif',
       ], 'E488:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'if 0 # comment4',
       '  echo "yes"',
@@ -2908,17 +2910,17 @@ def Test_vim9_comment_not_compiled()
       'endif',
       ], 'E488:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'var v = 1 # comment5',
       ])
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'var v = 1# comment6',
       ], 'E488:')
 
-  CheckScriptSuccess([
+  v9.CheckScriptSuccess([
       'vim9script',
       'new'
       'setline(1, ["# define pat", "last"])',
@@ -2927,7 +2929,7 @@ def Test_vim9_comment_not_compiled()
       'bwipe!',
       ])
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'new'
       'setline(1, ["# define pat", "last"])',
@@ -2936,7 +2938,7 @@ def Test_vim9_comment_not_compiled()
       'bwipe!',
       ], 'E488:')
 
-  CheckScriptFailure([
+  v9.CheckScriptFailure([
       'vim9script',
       'func! SomeFunc()',
       ], 'E477:')
@@ -3005,7 +3007,7 @@ def Test_declare_script_in_func()
       endtry
       assert_match('E741: Value is locked: local', error)
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
         
 
@@ -3065,7 +3067,7 @@ def Test_script_var_in_autocmd()
     call assert_equal(2, s:counter)
     au! CursorHold
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_error_in_autoload_script()
@@ -3102,7 +3104,7 @@ def Test_error_in_autoload_script()
 
       Legacy()
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   &rtp = save_rtp
   delete(dir, 'rf')
@@ -3111,7 +3113,7 @@ enddef
 def Test_invalid_sid()
   assert_fails('func <SNR>1234_func', 'E123:')
 
-  if RunVim([], ['wq! Xdidit'], '+"func <SNR>1_func"')
+  if g:RunVim([], ['wq! Xdidit'], '+"func <SNR>1_func"')
     assert_equal([], readfile('Xdidit'))
   endif
   delete('Xdidit')
@@ -3120,7 +3122,7 @@ enddef
 def Test_restoring_cpo()
   writefile(['vim9script', 'set nocp'], 'Xsourced')
   writefile(['call writefile(["done"], "Xdone")', 'quit!'], 'Xclose')
-  if RunVim([], [], '-u NONE +"set cpo+=a" -S Xsourced -S Xclose')
+  if g:RunVim([], [], '-u NONE +"set cpo+=a" -S Xsourced -S Xclose')
     assert_equal(['done'], readfile('Xdone'))
   endif
   delete('Xsourced')
@@ -3169,7 +3171,7 @@ def Test_restoring_cpo()
     END
     writefile(lines, 'Xvim9')
 
-    var cmd = GetVimCommand() .. " -S Xlegacy -S Xvim9"
+    var cmd = g:GetVimCommand() .. " -S Xlegacy -S Xvim9"
     cmd = substitute(cmd, '-u NONE', '', '')
     exe "silent !" .. cmd
 
@@ -3208,13 +3210,13 @@ func Test_no_redraw_when_restoring_cpo()
       setline(1, 'some text')
   END
   call writefile(lines, 'XTest_redraw_cpo')
-  let buf = RunVimInTerminal('-S XTest_redraw_cpo', {'rows': 6})
+  let buf = g:RunVimInTerminal('-S XTest_redraw_cpo', {'rows': 6})
   call term_sendkeys(buf, "V:")
   call VerifyScreenDump(buf, 'Test_vim9_no_redraw', {})
 
   " clean up
   call term_sendkeys(buf, "\<Esc>u")
-  call StopVimInTerminal(buf)
+  call g:StopVimInTerminal(buf)
   call delete('XTest_redraw_cpo')
   call delete('Xdir', 'rf')
 endfunc
@@ -3225,7 +3227,7 @@ def Test_unset_any_variable()
     var name: any
     assert_equal(0, name)
   END
-  CheckDefAndScriptSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 func Test_define_func_at_command_line()
@@ -3245,13 +3247,13 @@ def Run_Test_define_func_at_command_line()
   END
   writefile([''], 'Xdidcmd')
   writefile(lines, 'XcallFunc')
-  var buf = RunVimInTerminal('-S XcallFunc', {rows: 6})
+  var buf = g:RunVimInTerminal('-S XcallFunc', {rows: 6})
   # define Afunc() on the command line
   term_sendkeys(buf, ":def Afunc()\<CR>Bfunc()\<CR>enddef\<CR>")
   term_sendkeys(buf, ":call CheckAndQuit()\<CR>")
-  WaitForAssert(() => assert_equal(['errors: []'], readfile('Xdidcmd')))
+  g:WaitForAssert(() => assert_equal(['errors: []'], readfile('Xdidcmd')))
 
-  call StopVimInTerminal(buf)
+  call g:StopVimInTerminal(buf)
   delete('XcallFunc')
   delete('Xdidcmd')
 enddef
@@ -3267,7 +3269,7 @@ def Test_script_var_scope()
         echo one
       endif
   END
-  CheckScriptFailure(lines, 'E121:', 7)
+  v9.CheckScriptFailure(lines, 'E121:', 7)
 
   lines =<< trim END
       vim9script
@@ -3282,7 +3284,7 @@ def Test_script_var_scope()
         echo one
       endif
   END
-  CheckScriptFailure(lines, 'E121:', 10)
+  v9.CheckScriptFailure(lines, 'E121:', 10)
 
   lines =<< trim END
       vim9script
@@ -3293,7 +3295,7 @@ def Test_script_var_scope()
       endwhile
       echo one
   END
-  CheckScriptFailure(lines, 'E121:', 7)
+  v9.CheckScriptFailure(lines, 'E121:', 7)
 
   lines =<< trim END
       vim9script
@@ -3303,7 +3305,7 @@ def Test_script_var_scope()
       endfor
       echo one
   END
-  CheckScriptFailure(lines, 'E121:', 6)
+  v9.CheckScriptFailure(lines, 'E121:', 6)
 
   lines =<< trim END
       vim9script
@@ -3314,7 +3316,7 @@ def Test_script_var_scope()
       assert_false(exists('one'))
       assert_false(exists('s:one'))
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
@@ -3324,7 +3326,7 @@ def Test_script_var_scope()
       }
       echo one
   END
-  CheckScriptFailure(lines, 'E121:', 6)
+  v9.CheckScriptFailure(lines, 'E121:', 6)
 enddef
 
 def Test_catch_exception_in_callback()
@@ -3344,7 +3346,7 @@ def Test_catch_exception_in_callback()
     popup_menu('popup', {callback: Callback})
     feedkeys("\r", 'xt')
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   unlet g:caught
 enddef
@@ -3396,12 +3398,12 @@ def Test_white_space_after_command()
   var lines =<< trim END
     exit_cb: Func})
   END
-  CheckDefAndScriptFailure(lines, 'E1144:', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1144:', 1)
 
   lines =<< trim END
     e#
   END
-  CheckDefAndScriptFailure(lines, 'E1144:', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1144:', 1)
 enddef
 
 def Test_script_var_gone_when_sourced_twice()
@@ -3438,32 +3440,32 @@ def Test_unsupported_commands()
   var lines =<< trim END
       ka
   END
-  CheckDefFailure(lines, 'E476:')
-  CheckScriptFailure(['vim9script'] + lines, 'E492:')
+  v9.CheckDefFailure(lines, 'E476:')
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E492:')
 
   lines =<< trim END
       :1ka
   END
-  CheckDefFailure(lines, 'E476:')
-  CheckScriptFailure(['vim9script'] + lines, 'E492:')
+  v9.CheckDefFailure(lines, 'E476:')
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E492:')
 
   lines =<< trim END
     t
   END
-  CheckDefFailure(lines, 'E1100:')
-  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+  v9.CheckDefFailure(lines, 'E1100:')
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1100:')
 
   lines =<< trim END
     x
   END
-  CheckDefFailure(lines, 'E1100:')
-  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+  v9.CheckDefFailure(lines, 'E1100:')
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1100:')
 
   lines =<< trim END
     xit
   END
-  CheckDefFailure(lines, 'E1100:')
-  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+  v9.CheckDefFailure(lines, 'E1100:')
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1100:')
 enddef
 
 def Test_mapping_line_number()
@@ -3485,7 +3487,7 @@ def Test_mapping_line_number()
               .. 'c'
       enddef
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
   var res = execute('verbose nmap <F3>')
   assert_match('No mapping found', res)
 
@@ -3503,7 +3505,7 @@ def Test_option_set()
       set foldlevel  =11
       call assert_equal(11, &foldlevel)
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   set foldlevel
   set foldlevel=12
@@ -3516,22 +3518,22 @@ def Test_option_set()
   lines =<< trim END
       set foldlevel =1
   END
-  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: =1')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: =1')
 
   lines =<< trim END
       set foldlevel +=1
   END
-  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: +=1')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: +=1')
 
   lines =<< trim END
       set foldlevel ^=1
   END
-  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: ^=1')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: ^=1')
 
   lines =<< trim END
       set foldlevel -=1
   END
-  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: -=1')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: -=1')
 
   set foldlevel&
 enddef
@@ -3542,7 +3544,7 @@ def Test_option_modifier()
       set hlsearch &  hlsearch  !
       call assert_equal(1, &hlsearch)
   END
-  CheckScriptSuccess(lines)
+  v9.CheckScriptSuccess(lines)
 
   set hlsearch
   set hlsearch!
@@ -3555,12 +3557,12 @@ def Test_option_modifier()
   lines =<< trim END
       set hlsearch &
   END
-  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: &')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: &')
 
   lines =<< trim END
       set hlsearch   !
   END
-  CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: !')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1205: No white space allowed between option and: !')
 
   set hlsearch&
 enddef
@@ -3572,7 +3574,7 @@ def Test_xxx_echoerr_line_number()
          .. ' error'
          .. ' continued'
   END
-  CheckDefExecAndScriptFailure(lines, 'some error continued', 1)
+  v9.CheckDefExecAndScriptFailure(lines, 'some error continued', 1)
 enddef
 
 func Test_debug_with_lambda()
@@ -3593,13 +3595,13 @@ def Run_Test_debug_with_lambda()
       Func()
   END
   writefile(lines, 'XdebugFunc')
-  var buf = RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
-  WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
 
   term_sendkeys(buf, "cont\<CR>")
-  WaitForAssert(() => assert_match('\[0\]', term_getline(buf, 5)))
+  g:WaitForAssert(() => assert_match('\[0\]', term_getline(buf, 5)))
 
-  StopVimInTerminal(buf)
+  g:StopVimInTerminal(buf)
   delete('XdebugFunc')
 enddef
 
@@ -3629,26 +3631,26 @@ def Run_Test_debug_running_out_of_lines()
       Crash()
   END
   writefile(lines, 'XdebugFunc')
-  var buf = RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
-  WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
 
   term_sendkeys(buf, "next\<CR>")
-  TermWait(buf)
-  WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  g:TermWait(buf)
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
 
   term_sendkeys(buf, "cont\<CR>")
-  TermWait(buf)
+  g:TermWait(buf)
 
-  StopVimInTerminal(buf)
+  g:StopVimInTerminal(buf)
   delete('XdebugFunc')
 enddef
 
-def ProfiledWithLambda()
+def s:ProfiledWithLambda()
   var n = 3
   echo [[1, 2], [3, 4]]->filter((_, l) => l[0] == n)
 enddef
 
-def ProfiledNested()
+def s:ProfiledNested()
   var x = 0
   def Nested(): any
       return x
@@ -3671,7 +3673,7 @@ def Test_ambigous_command_error()
       command CmdB echomsg 'CmdB'
       Cmd
   END
-  CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 4)
+  v9.CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 4)
 
   lines =<< trim END
       vim9script
@@ -3680,14 +3682,14 @@ def Test_ambigous_command_error()
       enddef
       Func()
   END
-  CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 1)
+  v9.CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 1)
 
   lines =<< trim END
       vim9script
       nnoremap <F3> <ScriptCmd>Cmd<CR>
       feedkeys("\<F3>", 'xt')
   END
-  CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 3)
+  v9.CheckScriptFailure(lines, 'E464: Ambiguous use of user-defined command: Cmd', 3)
 
   delcommand CmdA
   delcommand CmdB
@@ -3709,7 +3711,7 @@ def Test_xx_profile_with_lambda()
   # Also profile the nested function.  Use a different function, although the
   # contents is the same, to make sure it was not already compiled.
   profile func *
-  ProfiledNestedProfiled()
+  g:ProfiledNestedProfiled()
 
   profdel func *
   profile pause

@@ -254,12 +254,6 @@ compile_load_scriptvar(
 	return FAIL;
     si = SCRIPT_ITEM(current_sctx.sc_sid);
     idx = get_script_item_idx(current_sctx.sc_sid, name, 0, cctx);
-    if (idx == -1 || si->sn_version != SCRIPT_VERSION_VIM9)
-    {
-	// variable is not in sn_var_vals: old style script.
-	return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
-								       &t_any);
-    }
     if (idx >= 0)
     {
 	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
@@ -343,6 +337,11 @@ compile_load_scriptvar(
 		type);
 	return OK;
     }
+
+    if (idx == -1 || si->sn_version != SCRIPT_VERSION_VIM9)
+	// variable is not in sn_var_vals: old style script.
+	return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
+								       &t_any);
 
     if (error)
 	semsg(_(e_item_not_found_str), name);
@@ -667,6 +666,7 @@ compile_call(
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
+    int		has_g_namespace;
     int		is_searchpair;
     imported_T	*import;
 
@@ -783,6 +783,8 @@ compile_call(
 	goto theend;
     }
 
+    has_g_namespace = STRNCMP(namebuf, "g:", 2) == 0;
+
     // An argument or local variable can be a function reference, this
     // overrules a function name.
     if (lookup_local(namebuf, varlen, NULL, cctx) == FAIL
@@ -791,10 +793,20 @@ compile_call(
 	// If we can find the function by name generate the right call.
 	// Skip global functions here, a local funcref takes precedence.
 	ufunc = find_func(name, FALSE);
-	if (ufunc != NULL && !func_is_global(ufunc))
+	if (ufunc != NULL)
 	{
-	    res = generate_CALL(cctx, ufunc, argcount);
-	    goto theend;
+	    if (!func_is_global(ufunc))
+	    {
+		res = generate_CALL(cctx, ufunc, argcount);
+		goto theend;
+	    }
+	    if (!has_g_namespace
+			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL)
+	    {
+		// A function name without g: prefix must be found locally.
+		semsg(_(e_unknown_function_str), namebuf);
+		goto theend;
+	    }
 	}
     }
 
@@ -802,7 +814,7 @@ compile_call(
     // Not for g:Func(), we don't know if it is a variable or not.
     // Not for eome#Func(), it will be loaded later.
     p = namebuf;
-    if (STRNCMP(namebuf, "g:", 2) != 0 && !is_autoload
+    if (!has_g_namespace && !is_autoload
 	    && compile_load(&p, namebuf + varlen, cctx, FALSE, FALSE) == OK)
     {
 	type_T	    *type = get_type_on_stack(cctx, 0);
@@ -820,7 +832,7 @@ compile_call(
 
     // A global function may be defined only later.  Need to figure out at
     // runtime.  Also handles a FuncRef at runtime.
-    if (STRNCMP(namebuf, "g:", 2) == 0 || is_autoload)
+    if (has_g_namespace || is_autoload)
 	res = generate_UCALL(cctx, name, argcount);
     else
 	semsg(_(e_unknown_function_str), namebuf);

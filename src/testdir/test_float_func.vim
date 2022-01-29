@@ -2,7 +2,7 @@
 
 source check.vim
 CheckFeature float
-source vim9.vim
+import './vim9.vim' as v9
 
 func Test_abs()
   call assert_equal('1.23', string(abs(1.23)))
@@ -246,7 +246,7 @@ func Test_str2float()
   call assert_equal('123456.7', string(str2float("123'456.7'89", 1)))
 
   call assert_equal(1.2, str2float(1.2, 0))
-  call CheckDefAndScriptFailure(['str2float(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
+  call v9.CheckDefAndScriptFailure(['str2float(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   call assert_fails("call str2float([])", 'E730:')
   call assert_fails("call str2float({})", 'E731:')
   call assert_fails("call str2float(function('string'))", 'E729:')

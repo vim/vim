@@ -3,7 +3,7 @@
 source shared.vim
 source check.vim
 source view_util.vim
-source vim9.vim
+import './vim9.vim' as v9
 
 func Setup_NewWindow()
   10new
@@ -626,7 +626,7 @@ func Test_opfunc_callback()
     normal! g@l
     call assert_equal([23, 'char'], g:OpFunc1Args)
   END
-  call CheckTransLegacySuccess(lines)
+  call v9.CheckTransLegacySuccess(lines)
 
   " Test for using a script-local function name
   func s:OpFunc3(type)
@@ -693,7 +693,7 @@ func Test_opfunc_callback()
     assert_equal(['char'], g:LocalOpFuncArgs)
     bw!
   END
-  call CheckScriptSuccess(lines)
+  call v9.CheckScriptSuccess(lines)
 
   " setting 'opfunc' to a script local function outside of a script context
   " should fail

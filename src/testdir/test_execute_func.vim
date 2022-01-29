@@ -2,7 +2,7 @@
 
 source view_util.vim
 source check.vim
-source vim9.vim
+import './vim9.vim' as v9
 source term_util.vim
 
 func NestedEval()
@@ -41,7 +41,7 @@ func Test_execute_string()
   if has('float')
     call assert_fails('call execute(3.4)', 'E492:')
     call assert_equal("\nx", execute("echo \"x\"", 3.4))
-    call CheckDefExecAndScriptFailure(['execute("echo \"x\"", 3.4)'], ['E1013: Argument 2: type mismatch, expected string but got float', 'E1174:'])
+    call v9.CheckDefExecAndScriptFailure(['execute("echo \"x\"", 3.4)'], ['E1013: Argument 2: type mismatch, expected string but got float', 'E1174:'])
   endif
 endfunc
 

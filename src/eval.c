@@ -963,7 +963,7 @@ get_lval(
     if (lp->ll_name == NULL)
 	return p;
 
-    if (*p == '.' && in_vim9script())
+    if (*p == '.')
     {
 	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name,
 								   TRUE, NULL);

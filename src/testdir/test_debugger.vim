@@ -360,16 +360,16 @@ def Test_Debugger_breakadd_expr()
   writefile(lines, 'Xtest.vim')
 
   # Start Vim in a terminal
-  var buf = RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
-  call TermWait(buf)
+  var buf = g:RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
+  call g:TermWait(buf)
 
   # Despite the failure the functions are defined
-  RunDbgCmd(buf, ':function g:EarlyFunc',
+  g:RunDbgCmd(buf, ':function g:EarlyFunc',
      ['function EarlyFunc()', 'endfunction'], {match: 'pattern'})
-  RunDbgCmd(buf, ':function g:LaterFunc',
+  g:RunDbgCmd(buf, ':function g:LaterFunc',
      ['function LaterFunc()', 'endfunction'], {match: 'pattern'})
 
-  call StopVimInTerminal(buf)
+  call g:StopVimInTerminal(buf)
   call delete('Xtest.vim')
 enddef
 
@@ -386,13 +386,13 @@ def Test_Debugger_break_at_return()
   writefile(lines, 'Xtest.vim')
 
   # Start Vim in a terminal
-  var buf = RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
-  call TermWait(buf)
+  var buf = g:RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
+  call g:TermWait(buf)
 
-  RunDbgCmd(buf, ':call GetNum()',
+  g:RunDbgCmd(buf, ':call GetNum()',
      ['line 1: return 1  + 2  + 3'], {match: 'pattern'})
 
-  call StopVimInTerminal(buf)
+  call g:StopVimInTerminal(buf)
   call delete('Xtest.vim')
 enddef
 

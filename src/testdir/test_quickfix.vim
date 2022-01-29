@@ -1,7 +1,7 @@
 " Test for the quickfix feature.
 
 source check.vim
-source vim9.vim
+import './vim9.vim' as v9
 CheckFeature quickfix
 
 source screendump.vim
@@ -5347,7 +5347,7 @@ func Test_qftextfunc_callback()
     cclose
 
     #" Test for using a lambda function with set
-    VAR optval = "LSTART a LMIDDLE Tqfexpr(a) LEND"
+    VAR optval = "LSTART a LMIDDLE g:Tqfexpr(a) LEND"
     LET optval = substitute(optval, ' ', '\\ ', 'g')
     exe "set qftf=" .. optval
     cexpr "F6:6:6:L6"
@@ -5356,21 +5356,21 @@ func Test_qftextfunc_callback()
     cclose
 
     #" Set 'quickfixtextfunc' to a lambda expression
-    LET &qftf = LSTART a LMIDDLE Tqfexpr(a) LEND
+    LET &qftf = LSTART a LMIDDLE g:Tqfexpr(a) LEND
     cexpr "F7:7:7:L7"
     copen
     call assert_equal('F7-L7C7-L7', getline(1))
     cclose
 
     #" Set 'quickfixtextfunc' to string(lambda_expression)
-    LET &qftf = "LSTART a LMIDDLE Tqfexpr(a) LEND"
+    LET &qftf = "LSTART a LMIDDLE g:Tqfexpr(a) LEND"
     cexpr "F8:8:8:L8"
     copen
     call assert_equal('F8-L8C8-L8', getline(1))
     cclose
 
     #" Set 'quickfixtextfunc' to a variable with a lambda expression
-    VAR Lambda = LSTART a LMIDDLE Tqfexpr(a) LEND
+    VAR Lambda = LSTART a LMIDDLE g:Tqfexpr(a) LEND
     LET &qftf = Lambda
     cexpr "F9:9:9:L9"
     copen
@@ -5378,14 +5378,14 @@ func Test_qftextfunc_callback()
     cclose
 
     #" Set 'quickfixtextfunc' to a string(variable with a lambda expression)
-    LET Lambda = LSTART a LMIDDLE Tqfexpr(a) LEND
+    LET Lambda = LSTART a LMIDDLE g:Tqfexpr(a) LEND
     LET &qftf = string(Lambda)
     cexpr "F9:9:9:L9"
     copen
     call assert_equal('F9-L9C9-L9', getline(1))
     cclose
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for using a script-local function name
   func s:TqfFunc2(info)

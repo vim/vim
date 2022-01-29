@@ -3789,7 +3789,7 @@ trans_function_name(
 	    sid_buf[1] = KS_EXTRA;
 	    sid_buf[2] = (int)KE_SNR;
 	    vim_snprintf((char *)sid_buf + 3, sizeof(sid_buf) - 3,
-					    "%ld_", (long)current_sctx.sc_sid);
+						      "%ld_", (long)lv.ll_sid);
 	    name = concat_str(sid_buf, lv.ll_name);
 	}
 	*lv.ll_name_end = cc;

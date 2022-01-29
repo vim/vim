@@ -4,7 +4,7 @@ source shared.vim
 source check.vim
 source screendump.vim
 source term_util.vim
-source vim9.vim
+import './vim9.vim' as v9
 
 func Test_abbreviation()
   " abbreviation with 0x80 should work
@@ -1415,7 +1415,7 @@ func Test_map_script_cmd_restore()
       vim9script
       nnoremap <F3> <ScriptCmd>eval 1 + 2<CR>
   END
-  call CheckScriptSuccess(lines)
+  call v9.CheckScriptSuccess(lines)
   call feedkeys("\<F3>:let g:result = 3+4\<CR>", 'xtc')
   call assert_equal(7, g:result)
 
@@ -1431,7 +1431,7 @@ func Test_map_script_cmd_finds_func()
         g:func_called = 'yes'
       enddef
   END
-  call CheckScriptSuccess(lines)
+  call v9.CheckScriptSuccess(lines)
   call feedkeys("y\<F3>\<Esc>", 'xtc')
   call assert_equal('yes', g:func_called)
 
@@ -1449,7 +1449,7 @@ func Test_map_script_cmd_survives_unmap()
       feedkeys("\<F3>\<CR>", 'xct')
       assert_equal(123, b:result)
   END
-  call CheckScriptSuccess(lines)
+  call v9.CheckScriptSuccess(lines)
 
   nunmap <F3>
   unlet b:result

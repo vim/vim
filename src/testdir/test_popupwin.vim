@@ -2801,7 +2801,7 @@ def Popupwin_close_prevwin()
   assert_equal(2, winnr())
   var buf = term_start(&shell, {hidden: 1})
   popup_create(buf, {})
-  TermWait(buf, 100)
+  g:TermWait(buf, 100)
   popup_clear(true)
   assert_equal(2, winnr())
 

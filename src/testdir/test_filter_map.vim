@@ -1,6 +1,6 @@
 " Test filter() and map()
 
-source vim9.vim
+import './vim9.vim' as v9
 
 " list with expression string
 func Test_filter_map_list_expr_string()
@@ -166,7 +166,7 @@ func Test_filter_map_string()
     call assert_equal('', filter('', "v:val == 'a'"))
     call assert_equal('', filter(test_null_string(), "v:val == 'a'"))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " map()
   let lines =<< trim END
@@ -185,7 +185,7 @@ func Test_filter_map_string()
     call assert_fails('echo map("abc", "10")', 'E928:')
     call assert_fails('echo map("abc", "a10")', 'E121:')
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " mapnew()
   let lines =<< trim END
@@ -202,7 +202,7 @@ func Test_filter_map_string()
     call assert_equal('', mapnew('', "v:val == 'a'"))
     call assert_equal('', mapnew(test_null_string(), "v:val == 'a'"))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   let lines =<< trim END
     #" map() and filter()
@@ -228,7 +228,7 @@ func Test_filter_map_string()
     call assert_equal('@ström', map('Åström', LSTART i, x LMIDDLE x =~ nr2char(0xc5) .. '\%C' ? '@' : x LEND))
     call assert_equal('Åstr@m', map('Åström', LSTART i, x LMIDDLE x =~ nr2char(0xf6) .. '\%C' ? '@' : x LEND))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
