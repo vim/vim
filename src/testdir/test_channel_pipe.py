@@ -5,6 +5,7 @@
 # This requires Python 2.6 or later.
 
 from __future__ import print_function
+import os
 import sys
 import time
 
@@ -26,6 +27,13 @@ if __name__ == "__main__":
             sys.stdout.flush()
             if sys.argv[1].startswith("quit"):
                 sys.exit(0)
+
+    if os.getenv('CI'):
+        try:
+            import thread_util
+            thread_util.set_high_priority()
+        except Exception:
+            pass
 
     while True:
         typed = sys.stdin.readline()
