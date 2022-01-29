@@ -3687,6 +3687,7 @@ ex_substitute(exarg_T *eap)
     int		save_do_all;		// remember user specified 'g' flag
     int		save_do_ask;		// remember user specified 'c' flag
     char_u	*pat = NULL, *sub = NULL;	// init for GCC
+    char_u	*sub_copy = NULL;
     int		delimiter;
     int		sublen;
     int		got_quit = FALSE;
@@ -3980,11 +3981,20 @@ ex_substitute(exarg_T *eap)
     sub_firstline = NULL;
 
     /*
-     * ~ in the substitute pattern is replaced with the old pattern.
-     * We do it here once to avoid it to be replaced over and over again.
-     * But don't do it when it starts with "\=", then it's an expression.
+     * If the substitute pattern starts with "\=" then it's an expression.
+     * Make a copy, a recursive function may free it.
+     * Otherwise, '~' in the substitute pattern is replaced with the old
+     * pattern.  We do it here once to avoid it to be replaced over and over
+     * again.
      */
-    if (!(sub[0] == '\\' && sub[1] == '='))
+    if (sub[0] == '\\' && sub[1] == '=')
+    {
+	sub = vim_strsave(sub);
+	if (sub == NULL)
+	    return;
+	sub_copy = sub;
+    }
+    else
 	sub = regtilde(sub, magic_isset());
 
     /*
@@ -4790,6 +4800,7 @@ outofmem:
 #endif
 
     vim_regfree(regmatch.regprog);
+    vim_free(sub_copy);
 
     // Restore the flag values, they can be used for ":&&".
     subflags.do_all = save_do_all;
