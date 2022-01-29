@@ -4632,7 +4632,7 @@ garbage_collect(int testing)
 	// Don't make it bigger though.
 	if (exestack.ga_len + n < exestack.ga_maxlen)
 	{
-	    new_len = exestack.ga_itemsize * (exestack.ga_len + n);
+	    new_len = (size_t)exestack.ga_itemsize * (exestack.ga_len + n);
 	    pp = vim_realloc(exestack.ga_data, new_len);
 	    if (pp == NULL)
 		return FAIL;

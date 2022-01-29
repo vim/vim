@@ -4738,7 +4738,7 @@ replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep)
 	    while ((pos = (char_u *)strstr((char *)pos + 2, "$*")) != NULL)
 		++i;
 	    len = (int)STRLEN(p);
-	    new_cmdline = alloc(STRLEN(program) + i * (len - 2) + 1);
+	    new_cmdline = alloc(STRLEN(program) + (size_t)i * (len - 2) + 1);
 	    if (new_cmdline == NULL)
 		return NULL;			// out of memory
 	    ptr = new_cmdline;

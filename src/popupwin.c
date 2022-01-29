@@ -3427,7 +3427,7 @@ popup_update_mask(win_T *wp, int width, int height)
 	return;  // cache is still valid
 
     vim_free(wp->w_popup_mask_cells);
-    wp->w_popup_mask_cells = alloc_clear(width * height);
+    wp->w_popup_mask_cells = alloc_clear((size_t)width * height);
     if (wp->w_popup_mask_cells == NULL)
 	return;
     cells = wp->w_popup_mask_cells;
@@ -3639,7 +3639,7 @@ may_update_popup_mask(int type)
 	mask = popup_mask;
     else
 	mask = popup_mask_next;
-    vim_memset(mask, 0, screen_Rows * screen_Columns * sizeof(short));
+    vim_memset(mask, 0, (size_t)screen_Rows * screen_Columns * sizeof(short));
 
     // Find the window with the lowest zindex that hasn't been handled yet,
     // so that the window with a higher zindex overwrites the value in
@@ -4008,7 +4008,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    linenr_T	linecount = wp->w_buffer->b_ml.ml_line_count;
 	    int		height = wp->w_height;
 
-	    sb_thumb_height = (height * height + linecount / 2) / linecount;
+	    sb_thumb_height = ((linenr_T)height * height + linecount / 2) / linecount;
 	    if (wp->w_topline > 1 && sb_thumb_height == height)
 		--sb_thumb_height;  // scrolled, no full thumb
 	    if (sb_thumb_height == 0)

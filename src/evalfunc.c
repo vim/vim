@@ -7325,7 +7325,7 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 		if ((l->lv_u.nonmat.lv_stride > 0) ^ domax)
 		    n = l->lv_u.nonmat.lv_start;
 		else
-		    n = l->lv_u.nonmat.lv_start + (l->lv_len - 1)
+		    n = l->lv_u.nonmat.lv_start + ((varnumber_T)l->lv_len - 1)
 						    * l->lv_u.nonmat.lv_stride;
 	    }
 	    else

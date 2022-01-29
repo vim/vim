@@ -737,11 +737,11 @@ ga_grow_inner(garray_T *gap, int n)
     if (n < gap->ga_len / 2)
 	n = gap->ga_len / 2;
 
-    new_len = gap->ga_itemsize * (gap->ga_len + n);
+    new_len = (size_t)gap->ga_itemsize * (gap->ga_len + n);
     pp = vim_realloc(gap->ga_data, new_len);
     if (pp == NULL)
 	return FAIL;
-    old_len = gap->ga_itemsize * gap->ga_maxlen;
+    old_len = (size_t)gap->ga_itemsize * gap->ga_maxlen;
     vim_memset(pp + old_len, 0, new_len - old_len);
     gap->ga_maxlen = gap->ga_len + n;
     gap->ga_data = pp;
