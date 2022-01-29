@@ -6187,7 +6187,9 @@ win_drag_vsep_line(win_T *dragwin, int offset)
     if (offset <= 0)		// No room at all, quit.
 	return;
     if (fr == NULL)
-	return;			// Safety check, should not happen.
+	// This can happen when calling win_move_separator() on the rightmost
+	// window.  Just don't do anything.
+	return;			
 
     // grow frame fr by offset lines
     frame_new_width(fr, fr->fr_width + offset, left, FALSE);
