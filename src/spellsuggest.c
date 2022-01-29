@@ -1205,7 +1205,7 @@ suggest_try_change(suginfo_T *su)
 
 // Check the maximum score, if we go over it we won't try this change.
 #define TRY_DEEPER(su, stack, depth, add) \
-		(stack[depth].ts_score + (add) < su->su_maxscore)
+	   (depth < MAXWLEN && stack[depth].ts_score + (add) < su->su_maxscore)
 
 /*
  * Try finding suggestions by adding/removing/swapping letters.
@@ -1277,6 +1277,9 @@ suggest_trie_walk(
     char_u	changename[MAXWLEN][80];
 #endif
     int		breakcheckcount = 1000;
+#ifdef FEAT_RELTIME
+    proftime_T	time_limit;
+#endif
     int		compound_ok;
 
     // Go through the whole case-fold tree, try changes at each node.
@@ -1321,6 +1324,11 @@ suggest_trie_walk(
 	    sp->ts_state = STATE_START;
 	}
     }
+#ifdef FEAT_RELTIME
+    // The loop may take an indefinite amount of time. Break out after five
+    // sectonds. TODO: add an option for the time limit.
+    profile_setlimit(5000, &time_limit);
+#endif
 
     // Loop to find all suggestions.  At each round we either:
     // - For the current state try one operation, advance "ts_curi",
@@ -1355,7 +1363,8 @@ suggest_trie_walk(
 
 		// At end of a prefix or at start of prefixtree: check for
 		// following word.
-		if (byts[arridx] == 0 || n == (int)STATE_NOPREFIX)
+		if (depth < MAXWLEN
+			    && (byts[arridx] == 0 || n == (int)STATE_NOPREFIX))
 		{
 		    // Set su->su_badflags to the caps type at this position.
 		    // Use the caps type until here for the prefix itself.
@@ -2649,6 +2658,10 @@ suggest_trie_walk(
 	    {
 		ui_breakcheck();
 		breakcheckcount = 1000;
+#ifdef FEAT_RELTIME
+		if (profile_passed_limit(&time_limit))
+		    got_int = TRUE;
+#endif
 	    }
 	}
     }
