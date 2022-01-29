@@ -675,7 +675,7 @@ cs_check_for_tags(void)
     static int
 cs_cnt_connections(void)
 {
-    short i;
+    int i;
     short cnt = 0;
 
     for (i = 0; i < csinfo_size; i++)
@@ -1358,7 +1358,8 @@ cs_insert_filelist(
     char *flags,
     stat_T *sb UNUSED)
 {
-    short	i, j;
+    short	i;
+    int		j;
 #ifndef UNIX
     BY_HANDLE_FILE_INFORMATION bhfi;
 
@@ -1522,7 +1523,7 @@ cs_lookup_cmd(exarg_T *eap)
 cs_kill(exarg_T *eap UNUSED)
 {
     char *stok;
-    short i;
+    int i;
 
     if ((stok = strtok((char *)NULL, (const char *)" ")) == NULL)
     {
@@ -2456,7 +2457,7 @@ cs_resolve_file(int i, char *name)
     static int
 cs_show(exarg_T *eap UNUSED)
 {
-    short i;
+    int i;
     if (cs_cnt_connections() == 0)
 	msg_puts(_("no cscope connections\n"));
     else
