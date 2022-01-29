@@ -427,7 +427,7 @@ peek_console_input(
     DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, -1, lpEvents);
+    return read_console_input(hInput, lpBuffer, (DWORD)-1, lpEvents);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -439,7 +439,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -5537,7 +5537,7 @@ mch_signal_job(job_T *job, char_u *how)
 	{
 	    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
 		job->jv_channel->ch_killing = TRUE;
-	    return TerminateJobObject(job->jv_job_object, -1) ? OK : FAIL;
+	    return TerminateJobObject(job->jv_job_object, (UINT)-1) ? OK : FAIL;
 	}
 	return terminate_all(job->jv_proc_info.hProcess, -1) ? OK : FAIL;
     }
@@ -6270,7 +6270,7 @@ write_chars(
 	    cchwritten = 1;
     }
 
-    if (cchwritten == length)
+    if (cchwritten == (DWORD)length)
     {
 	written = cbToWrite;
 	g_coord.X += (SHORT)cells;
