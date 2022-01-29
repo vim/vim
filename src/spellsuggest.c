@@ -197,6 +197,8 @@ typedef struct trystate_S
 #define PFD_PREFIXTREE	0xfe	// walking through the prefix tree
 #define PFD_NOTSPECIAL	0xfd	// highest value that's not special
 
+static long spell_suggest_timeout = 5000;
+
 static void spell_find_suggest(char_u *badptr, int badlen, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive);
 #ifdef FEAT_EVAL
 static void spell_suggest_expr(suginfo_T *su, char_u *expr);
@@ -429,7 +431,10 @@ spell_check_sps(void)
 	else if (STRCMP(buf, "double") == 0)
 	    f = SPS_DOUBLE;
 	else if (STRNCMP(buf, "expr:", 5) != 0
-		&& STRNCMP(buf, "file:", 5) != 0)
+		&& STRNCMP(buf, "file:", 5) != 0
+		&& (STRNCMP(buf, "timeout:", 8) != 0
+		    || (!VIM_ISDIGIT(buf[8])
+				  && !(buf[8] == '-' && VIM_ISDIGIT(buf[9])))))
 	    f = -1;
 
 	if (f == -1 || (sps_flags != 0 && f != 0))
@@ -842,6 +847,7 @@ spell_find_suggest(
     sps_copy = vim_strsave(p_sps);
     if (sps_copy == NULL)
 	return;
+    spell_suggest_timeout = 5000;
 
     // Loop over the items in 'spellsuggest'.
     for (p = sps_copy; *p != NUL; )
@@ -864,6 +870,9 @@ spell_find_suggest(
 	else if (STRNCMP(buf, "file:", 5) == 0)
 	    // Use list of suggestions in a file.
 	    spell_suggest_file(su, buf + 5);
+	else if (STRNCMP(buf, "timeout:", 8) == 0)
+	    // Limit the time searching for suggestions.
+	    spell_suggest_timeout = atol((char *)buf + 8);
 	else if (!did_intern)
 	{
 	    // Use internal method once.
@@ -1325,9 +1334,10 @@ suggest_trie_walk(
 	}
     }
 #ifdef FEAT_RELTIME
-    // The loop may take an indefinite amount of time. Break out after five
-    // sectonds. TODO: add an option for the time limit.
-    profile_setlimit(5000, &time_limit);
+    // The loop may take an indefinite amount of time. Break out after some
+    // time.
+    if (spell_suggest_timeout > 0)
+	profile_setlimit(spell_suggest_timeout, &time_limit);
 #endif
 
     // Loop to find all suggestions.  At each round we either:
@@ -2659,7 +2669,8 @@ suggest_trie_walk(
 		ui_breakcheck();
 		breakcheckcount = 1000;
 #ifdef FEAT_RELTIME
-		if (profile_passed_limit(&time_limit))
+		if (spell_suggest_timeout > 0
+					  && profile_passed_limit(&time_limit))
 		    got_int = TRUE;
 #endif
 	    }

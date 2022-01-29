@@ -446,6 +446,16 @@ func Test_spellsuggest_expr_errors()
   delfunc MySuggest3
 endfunc
 
+func Test_spellsuggest_timeout()
+  set spellsuggest=timeout:30
+  set spellsuggest=timeout:-123
+  set spellsuggest=timeout:999999
+  call assert_fails('set spellsuggest=timeout', 'E474:')
+  call assert_fails('set spellsuggest=timeout:x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:-x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:--9', 'E474:')
+endfunc
+
 func Test_spellinfo()
   new
   let runtime = substitute($VIMRUNTIME, '\\', '/', 'g')
