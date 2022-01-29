@@ -1446,6 +1446,16 @@ clean: testclean
 cmdidxs: ex_cmds.h
 	vim --clean -X --not-a-term -u create_cmdidxs.vim
 
+# Run vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.  If this fails because you don't have Vim yet:
+#   - change nv_cmds[] in normal.c to add the new normal/visual mode command.
+#   - build Vim
+#   - run "make nvcmdidxs" using the new Vim to generate nv_cmdidxs.h
+#   - rebuild Vim to use the newly generated nv_cmdidxs.h file.
+nvcmdidxs: normal.c
+	.\$(VIM) --clean -X --not-a-term -u create_nvcmdidxs.vim
+
 test:
 	cd testdir
 	$(MAKE) /NOLOGO -f Make_dos.mak
@@ -1709,7 +1719,7 @@ $(OUTDIR)/netbeans.obj:	$(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL) version.h
 
 $(OUTDIR)/channel.obj:	$(OUTDIR) channel.c $(INCL)
 
-$(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL)
+$(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL) nv_cmdidxs.h
 
 $(OUTDIR)/option.obj:	$(OUTDIR) option.c  $(INCL) optiondefs.h
 

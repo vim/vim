@@ -1147,6 +1147,16 @@ endif
 cmdidxs: ex_cmds.h
 	vim --clean -X --not-a-term -u create_cmdidxs.vim
 
+# Run vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.  If this fails because you don't have Vim yet:
+#   - change nv_cmds[] in normal.c to add the new normal/visual mode command.
+#   - build Vim
+#   - run "make nvcmdidxs" using the new Vim to generate nv_cmdidxs.h
+#   - rebuild Vim to use the newly generated nv_cmdidxs.h file.
+nvcmdidxs: normal.c
+	./$(TARGET) --clean -X --not-a-term -u create_nvcmdidxs.vim
+
 ###########################################################################
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
@@ -1208,6 +1218,8 @@ $(OUTDIR)/ex_docmd.o: ex_docmd.c $(INCL) ex_cmdidxs.h
 $(OUTDIR)/hardcopy.o: hardcopy.c $(INCL) version.h
 
 $(OUTDIR)/misc1.o: misc1.c $(INCL) version.h
+
+$(OUTDIR)/normal.o: normal.c $(INCL) nv_cmdidxs.h
 
 $(OUTDIR)/netbeans.o: netbeans.c $(INCL) version.h
 

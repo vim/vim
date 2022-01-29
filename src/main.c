@@ -901,9 +901,6 @@ common_init(mparm_T *paramp)
     qnx_init();		// PhAttach() for clipboard, (and gui)
 #endif
 
-    // Init the table of Normal mode commands.
-    init_normal_cmds();
-
     /*
      * Allocate space for the generic buffers (needed for set_init_1() and
      * emsg()).
