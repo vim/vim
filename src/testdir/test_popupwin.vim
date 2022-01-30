@@ -2263,7 +2263,7 @@ func Test_popup_scrollbar()
 	    \ wrap: true,
 	    \ scrollbar: true,
 	    \ mapping: false,
-	    \ filter: Popup_filter,
+	    \ filter: g:Popup_filter,
 	    \ })
     enddef
 
@@ -2328,7 +2328,7 @@ func Test_popup_scrollbar()
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_10', {})
 
   " check size with non-wrapping lines
-  call term_sendkeys(buf, ":call PopupScroll()\<CR>")
+  call term_sendkeys(buf, ":call g:PopupScroll()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_11', {})
 
   " check size with wrapping lines

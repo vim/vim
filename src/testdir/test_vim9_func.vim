@@ -340,7 +340,7 @@ enddef
 def Test_return_something()
   g:ReturnString()->assert_equal('string')
   g:ReturnNumber()->assert_equal(123)
-  assert_fails('ReturnGlobal()', 'E1012: Type mismatch; expected number but got string', '', 1, 'ReturnGlobal')
+  assert_fails('g:ReturnGlobal()', 'E1012: Type mismatch; expected number but got string', '', 1, 'ReturnGlobal')
 
   var lines =<< trim END
       vim9script
@@ -943,7 +943,7 @@ def Test_local_function_shadows_global()
       def g:Func(): string
         return 'global'
       enddef
-      assert_equal('global', Func())
+      assert_equal('global', g:Func())
       delfunc g:Func
   END
   v9.CheckScriptSuccess(lines)
@@ -1498,14 +1498,14 @@ enddef
 
 def Test_func_type_varargs()
   var RefDefArg: func(?string)
-  RefDefArg = FuncOneDefArg
+  RefDefArg = g:FuncOneDefArg
   RefDefArg()
   s:value->assert_equal('text')
   RefDefArg('some')
   s:value->assert_equal('some')
 
   var RefDef2Arg: func(?number, ?string): string
-  RefDef2Arg = FuncTwoDefArg
+  RefDef2Arg = g:FuncTwoDefArg
   RefDef2Arg()->assert_equal('123text')
   RefDef2Arg(99)->assert_equal('99text')
   RefDef2Arg(77, 'some')->assert_equal('77some')
@@ -1514,7 +1514,7 @@ def Test_func_type_varargs()
   v9.CheckDefFailure(['var RefWrong: func(?string, string)'], 'E1007:')
 
   var RefVarargs: func(...list<string>): string
-  RefVarargs = FuncVarargs
+  RefVarargs = g:FuncVarargs
   RefVarargs()->assert_equal('')
   RefVarargs('one')->assert_equal('one')
   RefVarargs('one', 'two')->assert_equal('one,two')
@@ -1721,7 +1721,7 @@ enddef
 
 def Test_error_in_nested_function()
   # Error in called function requires unwinding the call stack.
-  assert_fails('FuncWithForwardCall()', 'E1096:', '', 1, 'FuncWithForwardCall')
+  assert_fails('g:FuncWithForwardCall()', 'E1096:', '', 1, 'FuncWithForwardCall')
 enddef
 
 def Test_nested_function_with_nextcmd()
@@ -2199,7 +2199,7 @@ def Test_func_type()
   s:funcResult->assert_equal(22)
 
   s:funcResult = 0
-  Ref2 = FuncOneArgRetNumber
+  Ref2 = g:FuncOneArgRetNumber
   Ref2(13)->assert_equal(13)
   s:funcResult->assert_equal(13)
 enddef
@@ -2232,11 +2232,11 @@ def Test_func_type_part()
   RefVoid = g:FuncNoArgNoRet
   RefVoid = g:FuncOneArgNoRet
   v9.CheckDefFailure(['var RefVoid: func: void', 'RefVoid = g:FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...) but got func(): number')
-  v9.CheckDefFailure(['var RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...) but got func(): string')
+  v9.CheckDefFailure(['var RefVoid: func: void', 'RefVoid = g:FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...) but got func(): string')
 
   var RefAny: func(): any
   RefAny = g:FuncNoArgRetNumber
-  RefAny = FuncNoArgRetString
+  RefAny = g:FuncNoArgRetString
   v9.CheckDefFailure(['var RefAny: func(): any', 'RefAny = g:FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func()')
   v9.CheckDefFailure(['var RefAny: func(): any', 'RefAny = g:FuncOneArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func(number)')
 
@@ -2244,12 +2244,12 @@ def Test_func_type_part()
 
   var RefNr: func: number
   RefNr = g:FuncNoArgRetNumber
-  RefNr = FuncOneArgRetNumber
+  RefNr = g:FuncOneArgRetNumber
   v9.CheckDefFailure(['var RefNr: func: number', 'RefNr = g:FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): number but got func()')
-  v9.CheckDefFailure(['var RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...): number but got func(): string')
+  v9.CheckDefFailure(['var RefNr: func: number', 'RefNr = g:FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...): number but got func(): string')
 
   var RefStr: func: string
-  RefStr = FuncNoArgRetString
+  RefStr = g:FuncNoArgRetString
   RefStr = FuncOneArgRetString
   v9.CheckDefFailure(['var RefStr: func: string', 'RefStr = g:FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): string but got func()')
   v9.CheckDefFailure(['var RefStr: func: string', 'RefStr = g:FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...): string but got func(): number')
@@ -2260,7 +2260,7 @@ def Test_func_type_fails()
 
   v9.CheckDefFailure(['var Ref1: func()', 'Ref1 = g:FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(): number')
   v9.CheckDefFailure(['var Ref1: func()', 'Ref1 = g:FuncOneArgNoRet'], 'E1012: Type mismatch; expected func() but got func(number)')
-  v9.CheckDefFailure(['var Ref1: func()', 'Ref1 = FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
+  v9.CheckDefFailure(['var Ref1: func()', 'Ref1 = g:FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
   v9.CheckDefFailure(['var Ref1: func(bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(bool) but got func(bool, number)')
   v9.CheckDefFailure(['var Ref1: func(?bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(?bool) but got func(bool, number)')
   v9.CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(...bool) but got func(bool, number)')
@@ -3355,7 +3355,7 @@ def Test_skip_cmds_with_silent()
 enddef
 
 def Test_opfunc()
-  nnoremap <F3> <cmd>set opfunc=Opfunc<cr>g@
+  nnoremap <F3> <cmd>set opfunc=g:Opfunc<cr>g@
   def g:Opfunc(_: any): string
     setline(1, 'ASDF')
     return ''

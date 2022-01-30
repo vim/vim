@@ -75,7 +75,7 @@ def Test_assignment()
 
   # lower case name is OK for a list
   var lambdaLines =<< trim END
-      var lambdaList: list<func> = [Test_syntax]
+      var lambdaList: list<func> = [g:Test_syntax]
       lambdaList[0] = () => "lambda"
   END
   v9.CheckDefAndScriptSuccess(lambdaLines)
@@ -890,7 +890,7 @@ enddef
 
 def Test_assignment_partial()
   var lines =<< trim END
-      var Partial: func(): string = function(PartFuncBool, [true])
+      var Partial: func(): string = function(g:PartFuncBool, [true])
       assert_equal('done', Partial())
   END
   v9.CheckDefAndScriptSuccess(lines)
@@ -1393,7 +1393,7 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['var name: dict <number>'], 'E1068:')
   v9.CheckDefFailure(['var name: dict<number'], 'E1009:')
 
-  assert_fails('s/^/\=Mess()/n', 'E794:')
+  assert_fails('s/^/\=g:Mess()/n', 'E794:')
   v9.CheckDefFailure(['var name: dict<number'], 'E1009:')
 
   v9.CheckDefFailure(['w:foo: number = 10'],

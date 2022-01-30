@@ -1324,7 +1324,7 @@ def Test_gdefault_not_used()
   bwipe!
 enddef
 
-def g:SomeComplFunc(findstart: number, base: string): any
+def s:SomeComplFunc(findstart: number, base: string): any
   if findstart
     return 0
   else

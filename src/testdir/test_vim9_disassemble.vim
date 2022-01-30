@@ -887,7 +887,7 @@ def Test_disassemble_call_default()
 enddef
 
 
-def HasEval()
+def s:HasEval()
   if has("eval")
     echo "yes"
   else
@@ -895,7 +895,7 @@ def HasEval()
   endif
 enddef
 
-def HasNothing()
+def s:HasNothing()
   if has("nothing")
     echo "yes"
   else
@@ -903,7 +903,7 @@ def HasNothing()
   endif
 enddef
 
-def HasSomething()
+def s:HasSomething()
   if has("nothing")
     echo "nothing"
   elseif has("something")
@@ -915,7 +915,7 @@ def HasSomething()
   endif
 enddef
 
-def HasGuiRunning()
+def s:HasGuiRunning()
   if has("gui_running")
     echo "yes"
   else
@@ -2487,7 +2487,7 @@ def Test_debug_for()
         res)
 enddef
 
-func Legacy() dict
+func s:Legacy() dict
   echo 'legacy'
 endfunc
 
@@ -2501,7 +2501,7 @@ def Test_disassemble_dict_stack()
   assert_match('<SNR>\d*_UseMember\_s*' ..
           'var d = {func: Legacy}\_s*' ..
           '\d PUSHS "func"\_s*' ..
-          '\d PUSHFUNC "g:Legacy"\_s*' ..
+          '\d PUSHFUNC "<80><fd>R\d\+_Legacy"\_s*' ..
           '\d NEWDICT size 1\_s*' ..
           '\d STORE $0\_s*' ..
 

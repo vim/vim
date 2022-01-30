@@ -1303,7 +1303,7 @@ def Test_filter()
 enddef
 
 def Test_filter_wrong_dict_key_type()
-  assert_fails('Wrong_dict_key_type([1, v:null, 3])', 'E1013:')
+  assert_fails('g:Wrong_dict_key_type([1, v:null, 3])', 'E1013:')
 enddef
 
 def Test_filter_return_type()

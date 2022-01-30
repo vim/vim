@@ -2779,17 +2779,20 @@ eval_variable(
 	}
 	else if (in_vim9script() && (flags & EVAL_VAR_NO_FUNC) == 0)
 	{
+	    int	    has_g_prefix = STRNCMP(name, "g:", 2) == 0;
 	    ufunc_T *ufunc = find_func(name, FALSE);
 
 	    // In Vim9 script we can get a function reference by using the
-	    // function name.
-	    if (ufunc != NULL)
+	    // function name.  For a global non-autoload function "g:" is
+	    // required.
+	    if (ufunc != NULL && (has_g_prefix
+					    || !func_requires_g_prefix(ufunc)))
 	    {
 		found = TRUE;
 		if (rettv != NULL)
 		{
 		    rettv->v_type = VAR_FUNC;
-		    if (STRNCMP(name, "g:", 2) == 0)
+		    if (has_g_prefix)
 			// Keep the "g:", otherwise script-local may be
 			// assumed.
 			rettv->vval.v_string = vim_strsave(name);

@@ -1422,7 +1422,7 @@ func Test_completefunc_callback()
     call assert_fails("set completefunc=funcref('abc')", "E700:")
 
     #" set 'completefunc' to a non-existing function
-    set completefunc=CompleteFunc2
+    set completefunc=g:CompleteFunc2
     call setline(1, 'five')
     call assert_fails("set completefunc=function('NonExistingFunc')", 'E700:')
     call assert_fails("LET &completefunc = function('NonExistingFunc')", 'E700:')
@@ -1679,7 +1679,7 @@ func Test_omnifunc_callback()
     call assert_fails("set omnifunc=funcref('abc')", "E700:")
 
     #" set 'omnifunc' to a non-existing function
-    set omnifunc=OmniFunc2
+    set omnifunc=g:OmniFunc2
     call setline(1, 'nine')
     call assert_fails("set omnifunc=function('NonExistingFunc')", 'E700:')
     call assert_fails("LET &omnifunc = function('NonExistingFunc')", 'E700:')
@@ -1936,7 +1936,7 @@ func Test_thesaurusfunc_callback()
     call assert_fails("set thesaurusfunc=funcref('abc')", "E700:")
 
     #" set 'thesaurusfunc' to a non-existing function
-    set thesaurusfunc=TsrFunc2
+    set thesaurusfunc=g:TsrFunc2
     call setline(1, 'ten')
     call assert_fails("set thesaurusfunc=function('NonExistingFunc')", 'E700:')
     call assert_fails("LET &thesaurusfunc = function('NonExistingFunc')", 'E700:')

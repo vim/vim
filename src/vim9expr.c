@@ -349,11 +349,12 @@ compile_load_scriptvar(
 }
 
     static int
-generate_funcref(cctx_T *cctx, char_u *name)
+generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
 {
     ufunc_T *ufunc = find_func(name, FALSE);
 
-    if (ufunc == NULL)
+    // Reject a global non-autoload function found without the "g:" prefix.
+    if (ufunc == NULL || (!has_g_prefix && func_requires_g_prefix(ufunc)))
 	return FAIL;
 
     // Need to compile any default values to get the argument types.
@@ -420,7 +421,7 @@ compile_load(
 			  break;
 		case 's': if (is_expr && ASCII_ISUPPER(*name)
 				       && find_func(name, FALSE) != NULL)
-			      res = generate_funcref(cctx, name);
+			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
 							    NULL, &end, error);
@@ -429,7 +430,7 @@ compile_load(
 			  {
 			      if (is_expr && ASCII_ISUPPER(*name)
 				       && find_func(name, FALSE) != NULL)
-				  res = generate_funcref(cctx, name);
+				  res = generate_funcref(cctx, name, TRUE);
 			      else
 				  isn_type = ISN_LOADG;
 			  }
@@ -505,7 +506,7 @@ compile_load(
 		// uppercase letter it can be a user defined function.
 		// generate_funcref() will fail if the function can't be found.
 		if (res == FAIL && is_expr && ASCII_ISUPPER(*name))
-		    res = generate_funcref(cctx, name);
+		    res = generate_funcref(cctx, name, FALSE);
 	    }
 	}
 	if (gen_load)
@@ -812,7 +813,7 @@ compile_call(
 
     // If the name is a variable, load it and use PCALL.
     // Not for g:Func(), we don't know if it is a variable or not.
-    // Not for eome#Func(), it will be loaded later.
+    // Not for some#Func(), it will be loaded later.
     p = namebuf;
     if (!has_g_namespace && !is_autoload
 	    && compile_load(&p, namebuf + varlen, cctx, FALSE, FALSE) == OK)

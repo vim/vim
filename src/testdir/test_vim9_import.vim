@@ -2018,7 +2018,7 @@ def Test_autoload_missing_function_name()
   delete('Xdir', 'rf')
 enddef
 
-def Test_autoload_name_wring()
+def Test_autoload_name_wrong()
   var lines =<< trim END
      vim9script
      def Xscriptname#Func()

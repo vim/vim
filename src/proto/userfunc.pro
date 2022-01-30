@@ -11,6 +11,7 @@ char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *e
 ufunc_T *find_func_even_dead(char_u *name, int flags);
 ufunc_T *find_func(char_u *name, int is_global);
 int func_is_global(ufunc_T *ufunc);
+int func_requires_g_prefix(ufunc_T *ufunc);
 int func_name_refcount(char_u *name);
 void func_clear_free(ufunc_T *fp, int force);
 int copy_func(char_u *lambda, char_u *global, ectx_T *ectx);
