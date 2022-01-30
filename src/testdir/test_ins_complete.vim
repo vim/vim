@@ -148,7 +148,7 @@ func Test_omni_autoload()
 
   let lines =<< trim END
       vim9script
-      def omni#func(findstart: bool, base: string): any
+      export def Func(findstart: bool, base: string): any
           if findstart
               return 1
           else
@@ -162,7 +162,7 @@ func Test_omni_autoload()
   call writefile(lines, dir .. '/omni.vim')
 
   new
-  setlocal omnifunc=omni#func
+  setlocal omnifunc=omni#Func
   call feedkeys("i\<C-X>\<C-O>\<Esc>", 'xt')
 
   bwipe!
