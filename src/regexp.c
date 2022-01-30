@@ -1267,8 +1267,8 @@ reg_match_visual(void)
     colnr_T	cols;
     colnr_T	curswant;
 
-    // Check if the buffer is the current buffer.
-    if (rex.reg_buf != curbuf || VIsual.lnum == 0)
+    // Check if the buffer is the current buffer and not using a string.
+    if (rex.reg_buf != curbuf || VIsual.lnum == 0 || rex.reg_maxline == 0)
 	return FALSE;
 
     if (VIsual_active)

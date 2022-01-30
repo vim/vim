@@ -1,6 +1,7 @@
 " Tests for :help
 
 source check.vim
+import './vim9.vim' as v9
 
 func Test_help_restore_snapshot()
   help
@@ -166,6 +167,16 @@ func Test_help_long_argument()
   catch
     call assert_match("E149:", v:exception)
   endtry
+endfunc
+
+func Test_help_using_visual_match()
+  let lines =<< trim END
+      call setline(1, ' ')
+      /^
+      exe "normal \<C-V>\<C-V>"
+      h5\%V]
+  END
+  call v9.CheckScriptFailure(lines, 'E149:')
 endfunc
 
 
