@@ -937,11 +937,9 @@ static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_num
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg4_list_number_number_number[] = {arg_list_string, arg_number, arg_number, arg_number};
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NULL, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
-static argcheck_T arg5_number[] = {arg_number, arg_number, arg_number, arg_number, arg_number};
 /* Function specific argument types (not covered by the above) */
 static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, NULL, arg_number, arg_string};
 static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, arg_float_or_nr, arg_string};
@@ -2337,14 +2335,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_garbagecollect_soon},
     {"test_getvalue",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_test_getvalue},
-    {"test_gui_drop_files",	4, 4, 0,    arg4_list_number_number_number,
-			ret_void,	    f_test_gui_drop_files},
-    {"test_gui_mouse_event",	5, 5, 0,    arg5_number,
-			ret_void,	    f_test_gui_mouse_event},
-    {"test_gui_tabline_event",	1, 1, 0,    arg1_number,
-			ret_bool,	    f_test_gui_tabline_event},
-    {"test_gui_tabmenu_event",	2, 2, 0,    arg2_number,
-			ret_void,	    f_test_gui_tabmenu_event},
+    {"test_gui_event",	2, 2, FEARG_1,	    arg2_string_dict,
+			ret_bool,	    f_test_gui_event},
     {"test_ignore_error", 1, 1, FEARG_1,    arg1_string,
 			ret_void,	    f_test_ignore_error},
     {"test_null_blob",	0, 0, 0,	    NULL,

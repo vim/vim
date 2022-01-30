@@ -1315,78 +1315,9 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
     mouse_col = (time_t)tv_get_number(&argvars[1]) - 1;
 }
 
-    void
-f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
 # ifdef FEAT_GUI
-    int		button;
-    int		row;
-    int		col;
-    int		repeated_click;
-    int_u	mods;
-
-    if (check_for_number_arg(argvars, 0) == FAIL
-	    || check_for_number_arg(argvars, 1) == FAIL
-	    || check_for_number_arg(argvars, 2) == FAIL
-	    || check_for_number_arg(argvars, 3) == FAIL
-	    || check_for_number_arg(argvars, 4) == FAIL)
-	return;
-
-    button = tv_get_number(&argvars[0]);
-    row = tv_get_number(&argvars[1]);
-    col = tv_get_number(&argvars[2]);
-    repeated_click = tv_get_number(&argvars[3]);
-    mods = tv_get_number(&argvars[4]);
-
-    gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1), repeated_click, mods);
-# endif
-}
-
-    void
-f_test_gui_tabline_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-# ifdef FEAT_GUI_TABLINE
-    int	tabnr;
-
-    if (check_for_number_arg(argvars, 0) == FAIL)
-	return;
-
-    tabnr = tv_get_number(&argvars[0]);
-
-    rettv->v_type = VAR_BOOL;
-    rettv->vval.v_number = send_tabline_event(tabnr);
-# endif
-}
-
-    void
-f_test_gui_tabmenu_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-# ifdef FEAT_GUI_TABLINE
-    int	tabnr;
-    int	event;
-
-    if (check_for_number_arg(argvars, 0) == FAIL
-	    || check_for_number_arg(argvars, 1) == FAIL)
-	return;
-
-    tabnr = tv_get_number(&argvars[0]);
-    event = tv_get_number(&argvars[1]);
-
-    send_tabline_menu_event(tabnr, event);
-# endif
-}
-
-    void
-f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
-	return;
-
-    time_for_testing = (time_t)tv_get_number(&argvars[0]);
-}
-
-    void
-f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+    static int
+test_gui_drop_files(dict_T *args UNUSED)
 {
 #if defined(HAVE_DROP_FILE)
     int		row;
@@ -1394,26 +1325,29 @@ f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int_u	mods;
     char_u	**fnames;
     int		count = 0;
+    typval_T	t;
     list_T	*l;
     listitem_T	*li;
 
-    if (check_for_list_arg(argvars, 0) == FAIL
-	    || check_for_number_arg(argvars, 1) == FAIL
-	    || check_for_number_arg(argvars, 2) == FAIL
-	    || check_for_number_arg(argvars, 3) == FAIL)
-	return;
+    if (dict_find(args, (char_u *)"files", -1) == NULL
+	    || dict_find(args, (char_u *)"row", -1) == NULL
+	    || dict_find(args, (char_u *)"col", -1) == NULL
+	    || dict_find(args, (char_u *)"modifiers", -1) == NULL)
+	return FALSE;
 
-    row = tv_get_number(&argvars[1]);
-    col = tv_get_number(&argvars[2]);
-    mods = tv_get_number(&argvars[3]);
+    if (dict_get_tv(args, (char_u *)"files", &t) == FAIL)
+	return FALSE;
+    row = (int)dict_get_number(args, (char_u *)"row");
+    col = (int)dict_get_number(args, (char_u *)"col");
+    mods = (int)dict_get_number(args, (char_u *)"modifiers");
 
-    l = argvars[0].vval.v_list;
+    l = t.vval.v_list;
     if (list_len(l) == 0)
-	return;
+	return FALSE;
 
     fnames = ALLOC_MULT(char_u *, list_len(l));
     if (fnames == NULL)
-	return;
+	return FALSE;
 
     FOR_ALL_LIST_ITEMS(l, li)
     {
@@ -1427,7 +1361,7 @@ f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    while (--count >= 0)
 		vim_free(fnames[count]);
 	    vim_free(fnames);
-	    return;
+	    return FALSE;
 	}
 	count++;
     }
@@ -1437,6 +1371,112 @@ f_test_gui_drop_files(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     else
 	vim_free(fnames);
 # endif
+
+    return TRUE;
+}
+
+    static int
+test_gui_mouse_event(dict_T *args UNUSED)
+{
+    int		button;
+    int		row;
+    int		col;
+    int		repeated_click;
+    int_u	mods;
+
+    if (dict_find(args, (char_u *)"button", -1) == NULL
+	    || dict_find(args, (char_u *)"row", -1) == NULL
+	    || dict_find(args, (char_u *)"col", -1) == NULL
+	    || dict_find(args, (char_u *)"multiclick", -1) == NULL
+	    || dict_find(args, (char_u *)"modifiers", -1) == NULL)
+	return FALSE;
+
+    button = (int)dict_get_number(args, (char_u *)"button");
+    row = (int)dict_get_number(args, (char_u *)"row");
+    col = (int)dict_get_number(args, (char_u *)"col");
+    repeated_click = (int)dict_get_number(args, (char_u *)"multiclick");
+    mods = (int)dict_get_number(args, (char_u *)"modifiers");
+
+    gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
+							repeated_click, mods);
+    return TRUE;
+}
+
+    static int
+test_gui_tabline_event(dict_T *args UNUSED)
+{
+# ifdef FEAT_GUI_TABLINE
+    int		tabnr;
+
+    if (dict_find(args, (char_u *)"tabnr", -1) == NULL)
+	return FALSE;
+
+    tabnr = (int)dict_get_number(args, (char_u *)"tabnr");
+
+    return send_tabline_event(tabnr);
+# else
+    return FALSE;
+# endif
+}
+
+    static int
+test_gui_tabmenu_event(dict_T *args UNUSED)
+{
+# ifdef FEAT_GUI_TABLINE
+    int	tabnr;
+    int	item;
+
+    if (dict_find(args, (char_u *)"tabnr", -1) == NULL
+	    || dict_find(args, (char_u *)"item", -1) == NULL)
+	return FALSE;
+
+    tabnr = (int)dict_get_number(args, (char_u *)"tabnr");
+    item = (int)dict_get_number(args, (char_u *)"item");
+
+    send_tabline_menu_event(tabnr, item);
+# endif
+    return TRUE;
+}
+# endif
+
+    void
+f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_GUI
+    char_u	*event;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = FALSE;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_dict_arg(argvars, 1) == FAIL
+	    || argvars[1].vval.v_dict == NULL)
+	return;
+
+    event = tv_get_string(&argvars[0]);
+    if (STRCMP(event, "dropfiles") == 0)
+	rettv->vval.v_number = test_gui_drop_files(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "mouse") == 0)
+	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "tabline") == 0)
+	rettv->vval.v_number = test_gui_tabline_event(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "tabmenu") == 0)
+	rettv->vval.v_number = test_gui_tabmenu_event(argvars[1].vval.v_dict);
+    else
+    {
+	semsg(_(e_invalid_argument_str), event);
+	return;
+    }
+# endif
+}
+
+    void
+f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    time_for_testing = (time_t)tv_get_number(&argvars[0]);
 }
 
 #endif // defined(FEAT_EVAL)

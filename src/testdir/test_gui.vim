@@ -897,33 +897,45 @@ func Test_gui_mouse_event()
 
   " place the cursor using left click in normal mode
   call cursor(1, 1)
-  call test_gui_mouse_event(0, 2, 4, 0, 0)
-  call test_gui_mouse_event(3, 2, 4, 0, 0)
+  let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  eval 'mouse'->test_gui_event(args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 2, 4, 0], getpos('.'))
 
   " select and yank a word
   let @" = ''
-  call test_gui_mouse_event(0, 1, 9, 0, 0)
-  call test_gui_mouse_event(0, 1, 9, 1, 0)
-  call test_gui_mouse_event(3, 1, 9, 0, 0)
+  let args = #{button: 0, row: 1, col: 9, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.multiclick = 1
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  let args.multiclick = 0
+  call test_gui_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('three', @")
 
   " create visual selection using right click
   let @" = ''
-  call test_gui_mouse_event(0, 2, 6, 0, 0)
-  call test_gui_mouse_event(3, 2, 6, 0, 0)
-  call test_gui_mouse_event(2, 2, 13, 0, 0)
-  call test_gui_mouse_event(3, 2, 13, 0, 0)
+  let args = #{button: 0, row: 2, col: 6, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  let args = #{button: 2, row: 2, col: 13, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('five six', @")
 
   " paste using middle mouse button
   let @* = 'abc '
   call feedkeys('""', 'Lx!')
-  call test_gui_mouse_event(1, 1, 9, 0, 0)
-  call test_gui_mouse_event(3, 1, 9, 0, 0)
+  let args = #{button: 1, row: 1, col: 9, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
 
@@ -931,17 +943,22 @@ func Test_gui_mouse_event()
   let @" = ''
   call cursor(1, 1)
   call feedkeys('v', 'Lx!')
-  call test_gui_mouse_event(2, 1, 17, 0, 0)
-  call test_gui_mouse_event(3, 1, 17, 0, 0)
+  let args = #{button: 2, row: 1, col: 17, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('one two abc three', @")
 
   " extend visual selection using mouse drag
   let @" = ''
   call cursor(1, 1)
-  call test_gui_mouse_event(0, 2, 1, 0, 0)
-  call test_gui_mouse_event(0x43, 2, 9, 0, 0)
-  call test_gui_mouse_event(0x3, 2, 9, 0, 0)
+  let args = #{button: 0, row: 2, col: 1, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args = #{button: 0x43, row: 2, col: 9, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 0x3
+  call test_gui_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('four five', @")
 
@@ -949,33 +966,42 @@ func Test_gui_mouse_event()
   let @" = ''
   call cursor(1, 1)
   redraw!
-  call test_gui_mouse_event(0, 1, 4, 0, 0)
-  call test_gui_mouse_event(0x700, 1, 9, 0, 0)
-  call test_gui_mouse_event(0x700, 1, 13, 0, 0)
-  call test_gui_mouse_event(0x3, 1, 13, 0, 0)
+  let args = #{button: 0, row: 1, col: 4, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 0x700
+  let args.col = 9
+  call test_gui_event('mouse', args)
+  let args.col = 13
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal(' two abc t', @")
 
   " Using mouse in insert mode
   call cursor(1, 1)
   call feedkeys('i', 't')
-  call test_gui_mouse_event(0, 2, 11, 0, 0)
-  call test_gui_mouse_event(3, 2, 11, 0, 0)
+  let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
   call feedkeys("po\<Esc>", 'Lx!')
   call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
 
   %d _
   call setline(1, range(1, 100))
   " scroll up
-  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
-  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
-  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
+  let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  call test_gui_event('mouse', args)
+  call test_gui_event('mouse', args)
   call feedkeys("H", 'Lx!')
   call assert_equal(10, line('.'))
 
   " scroll down
-  call test_gui_mouse_event(0x100, 2, 1, 0, 0)
-  call test_gui_mouse_event(0x100, 2, 1, 0, 0)
+  let args = #{button: 0x100, row: 2, col: 1, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  call test_gui_event('mouse', args)
   call feedkeys("H", 'Lx!')
   call assert_equal(4, line('.'))
 
@@ -983,15 +1009,20 @@ func Test_gui_mouse_event()
   set nowrap
   call setline(1, range(10)->join('')->repeat(10))
   " scroll left
-  call test_gui_mouse_event(0x500, 1, 5, 0, 0)
-  call test_gui_mouse_event(0x500, 1, 10, 0, 0)
-  call test_gui_mouse_event(0x500, 1, 15, 0, 0)
+  let args = #{button: 0x500, row: 1, col: 5, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.col = 10
+  call test_gui_event('mouse', args)
+  let args.col = 15
+  call test_gui_event('mouse', args)
   call feedkeys('g0', 'Lx!')
   call assert_equal(19, col('.'))
 
   " scroll right
-  call test_gui_mouse_event(0x600, 1, 15, 0, 0)
-  call test_gui_mouse_event(0x600, 1, 10, 0, 0)
+  let args = #{button: 0x600, row: 1, col: 15, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.col = 10
+  call test_gui_event('mouse', args)
   call feedkeys('g0', 'Lx!')
   call assert_equal(7, col('.'))
   set wrap&
@@ -1021,35 +1052,53 @@ func Test_gui_mouse_event()
   " 0x300- X2)
   for button in [0, 1, 2, 0x300, 0x400]
     " Single click
-    call test_gui_mouse_event(button, 2, 5, 0, 0)
-    call test_gui_mouse_event(3, 2, 5, 0, 0)
+    let args = #{button: button, row: 2, col: 5, multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
 
     " Double/Triple click is supported by only the Left/Middle/Right mouse
     " buttons
     if button <= 2
       " Double Click
-      call test_gui_mouse_event(button, 2, 5, 0, 0)
-      call test_gui_mouse_event(button, 2, 5, 1, 0)
-      call test_gui_mouse_event(3, 2, 5, 0, 0)
+      let args.button = button
+      call test_gui_event('mouse', args)
+      let args.multiclick = 1
+      call test_gui_event('mouse', args)
+      let args.button = 3
+      let args.multiclick = 0
+      call test_gui_event('mouse', args)
 
       " Triple Click
-      call test_gui_mouse_event(button, 2, 5, 0, 0)
-      call test_gui_mouse_event(button, 2, 5, 1, 0)
-      call test_gui_mouse_event(button, 2, 5, 1, 0)
-      call test_gui_mouse_event(3, 2, 5, 0, 0)
+      let args.button = button
+      call test_gui_event('mouse', args)
+      let args.multiclick = 1
+      call test_gui_event('mouse', args)
+      call test_gui_event('mouse', args)
+      let args.button = 3
+      let args.multiclick = 0
+      call test_gui_event('mouse', args)
     endif
 
     " Shift click
-    call test_gui_mouse_event(button, 3, 7, 0, 4)
-    call test_gui_mouse_event(3, 3, 7, 0, 4)
+    let args = #{button: button, row: 3, col: 7, multiclick: 0, modifiers: 4}
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
 
     " Alt click
-    call test_gui_mouse_event(button, 3, 7, 0, 8)
-    call test_gui_mouse_event(3, 3, 7, 0, 8)
+    let args.button = button
+    let args.modifiers = 8
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
 
     " Ctrl click
-    call test_gui_mouse_event(button, 3, 7, 0, 16)
-    call test_gui_mouse_event(3, 3, 7, 0, 16)
+    let args.button = button
+    let args.modifiers = 16
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
 
     call feedkeys("\<Esc>", 'Lx!')
   endfor
@@ -1079,9 +1128,13 @@ func Test_gui_mouse_event()
   redraw!
   " Double click should select the word and copy it to clipboard
   let @* = ''
-  call test_gui_mouse_event(0, 2, 11, 0, 0)
-  call test_gui_mouse_event(0, 2, 11, 1, 0)
-  call test_gui_mouse_event(3, 2, 11, 0, 0)
+  let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.multiclick = 1
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  let args.multiclick = 0
+  call test_gui_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 1, 1, 0], getpos('.'))
   call assert_equal('sixteen', @*)
@@ -1089,28 +1142,44 @@ func Test_gui_mouse_event()
   call cursor(1, 6)
   redraw!
   let @* = ''
-  call test_gui_mouse_event(2, 1, 11, 0, 0)
-  call test_gui_mouse_event(3, 1, 11, 0, 0)
+  let args = #{button: 2, row: 1, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 1, 6, 0], getpos('.'))
   call assert_equal('wo thr', @*)
   " Middle click should paste the clipboard contents
   call cursor(2, 1)
   redraw!
-  call test_gui_mouse_event(1, 1, 11, 0, 0)
-  call test_gui_mouse_event(3, 1, 11, 0, 0)
+  let args = #{button: 1, row: 1, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 2, 7, 0], getpos('.'))
   call assert_equal('wo thrfour five sixteen', getline(2))
   set mouse&
   let &guioptions = save_guioptions
 
-  " Test invalid parameters for test_gui_mouse_event()
-  call assert_fails('call test_gui_mouse_event("", 1, 2, 3, 4)', 'E1210:')
-  call assert_fails('call test_gui_mouse_event(0, "", 2, 3, 4)', 'E1210:')
-  call assert_fails('call test_gui_mouse_event(0, 1, "", 3, 4)', 'E1210:')
-  call assert_fails('call test_gui_mouse_event(0, 1, 2, "", 4)', 'E1210:')
-  call assert_fails('call test_gui_mouse_event(0, 1, 2, 3, "")', 'E1210:')
+  " Test invalid parameters for test_gui_event()
+  let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, col: 4, multiclick: 0, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, row: 2, multiclick: 0, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, row: 2, col: 4, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, row: 2, col: 4, multiclick: 0}
+  call assert_false(test_gui_event('mouse', args))
+
+  " Error cases for test_gui_event()
+  call assert_fails("call test_gui_event('a1b2c3', args)", 'E475:')
+  call assert_fails("call test_gui_event([], args)", 'E1174:')
+  call assert_fails("call test_gui_event('abc', [])", 'E1206:')
+  call assert_fails("call test_gui_event(test_null_string(), {})", 'E475:')
+  call assert_false(test_gui_event('mouse', test_null_dict()))
 
   bw!
   call test_override('no_query_mouse', 0)
@@ -1178,43 +1247,49 @@ func DropFilesInCmdLine()
   CheckFeature drop_file
 
   call feedkeys(":\"", 'L')
-  call test_gui_drop_files(['a.c', 'b.c'], &lines, 1, 0)
+  let d = #{files: ['a.c', 'b.c'], row: &lines, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call feedkeys("\<CR>", 'L')
 endfunc
 
 func Test_gui_drop_files()
   CheckFeature drop_file
 
-  call assert_fails('call test_gui_drop_files(1, 1, 1, 0)', 'E1211:')
-  call assert_fails('call test_gui_drop_files(["x"], "", 1, 0)', 'E1210:')
-  call assert_fails('call test_gui_drop_files(["x"], 1, "", 0)', 'E1210:')
-  call assert_fails('call test_gui_drop_files(["x"], 1, 1, "")', 'E1210:')
+  call assert_false(test_gui_event("dropfiles", {}))
+  let d = #{row: 1, col: 1, modifiers: 0}
+  call assert_false(test_gui_event("dropfiles", d))
 
   %bw!
   %argdelete
-  call test_gui_drop_files([], 1, 1, 0)
+  let d = #{files: [], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call assert_equal([], argv())
-  call test_gui_drop_files([1, 2], 1, 1, 0)
+  let d = #{files: [1, 2], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call assert_equal([], argv())
 
-  call test_gui_drop_files(['a.c', 'b.c'], 1, 1, 0)
+  let d = #{files: ['a.c', 'b.c'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call assert_equal(['a.c', 'b.c'], argv())
   %bw!
   %argdelete
-  call test_gui_drop_files([], 1, 1, 0)
+  let d = #{files: [], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call assert_equal([], argv())
   %bw!
   " if the buffer in the window is modified, then the file should be opened in
   " a new window
   set modified
-  call test_gui_drop_files(['x.c', 'y.c'], 1, 1, 0)
+  let d = #{files: ['x.c', 'y.c'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call assert_equal(['x.c', 'y.c'], argv())
   call assert_equal(2, winnr('$'))
   call assert_equal('x.c', bufname(winbufnr(1)))
   %bw!
   %argdelete
   " if Ctrl is pressed, then the file should be opened in a new window
-  call test_gui_drop_files(['s.py', 't.py'], 1, 1, 0x10)
+  let d = #{files: ['s.py', 't.py'], row: 1, col: 1, modifiers: 0x10}
+  eval 'dropfiles'->test_gui_event(d)
   call assert_equal(['s.py', 't.py'], argv())
   call assert_equal(2, winnr('$'))
   call assert_equal('s.py', bufname(winbufnr(1)))
@@ -1222,7 +1297,8 @@ func Test_gui_drop_files()
   %argdelete
   " drop the files in a non-current window
   belowright new
-  call test_gui_drop_files(['a.py', 'b.py'], 1, 1, 0)
+  let d = #{files: ['a.py', 'b.py'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call assert_equal(['a.py', 'b.py'], argv())
   call assert_equal(2, winnr('$'))
   call assert_equal(1, winnr())
@@ -1234,24 +1310,29 @@ func Test_gui_drop_files()
   call mkdir('Xdir1')
   call writefile([], 'Xdir1/Xfile1')
   call writefile([], 'Xdir1/Xfile2')
-  call test_gui_drop_files(['Xdir1/Xfile1', 'Xdir1/Xfile2'], 1, 1, 0x4)
+  let d = #{files: ['Xdir1/Xfile1', 'Xdir1/Xfile2'], row: 1, col: 1,
+        \ modifiers: 0x4}
+  call test_gui_event('dropfiles', d)
   call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
   call assert_equal('Xfile1', @%)
   call chdir(save_cwd)
   " pressing shift when dropping directory and files should change directory
-  call test_gui_drop_files(['Xdir1', 'Xdir1/Xfile2'], 1, 1, 0x4)
+  let d = #{files: ['Xdir1', 'Xdir1/Xfile2'], row: 1, col: 1, modifiers: 0x4}
+  call test_gui_event('dropfiles', d)
   call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
   call assert_equal('Xdir1', fnamemodify(@%, ':t'))
   call chdir(save_cwd)
   %bw!
   %argdelete
   " dropping a directory should edit it
-  call test_gui_drop_files(['Xdir1'], 1, 1, 0)
+  let d = #{files: ['Xdir1'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
   call assert_equal('Xdir1', @%)
   %bw!
   %argdelete
   " dropping only a directory name with Shift should ignore it
-  call test_gui_drop_files(['Xdir1'], 1, 1, 0x4)
+  let d = #{files: ['Xdir1'], row: 1, col: 1, modifiers: 0x4}
+  call test_gui_event('dropfiles', d)
   call assert_equal('', @%)
   %bw!
   %argdelete
@@ -1274,16 +1355,16 @@ func Test_gui_tabline_event()
   tabedit Xfile3
 
   tabfirst
-  call assert_equal(v:true, test_gui_tabline_event(2))
+  call assert_equal(v:true, test_gui_event('tabline', #{tabnr: 2}))
   call feedkeys("y", "Lx!")
   call assert_equal(2, tabpagenr())
-  call assert_equal(v:true, test_gui_tabline_event(3))
+  call assert_equal(v:true, test_gui_event('tabline', #{tabnr: 3}))
   call feedkeys("y", "Lx!")
   call assert_equal(3, tabpagenr())
-  call assert_equal(v:false, test_gui_tabline_event(3))
+  call assert_equal(v:false, 'tabline'->test_gui_event(#{tabnr: 3}))
 
   " From the cmdline window, tabline event should not be handled
-  call feedkeys("q::let t = test_gui_tabline_event(2)\<CR>:q\<CR>", 'x!')
+  call feedkeys("q::let t = test_gui_event('tabline', #{tabnr: 2})\<CR>:q\<CR>", 'x!')
   call assert_equal(v:false, t)
 
   %bw!
@@ -1294,25 +1375,25 @@ func Test_gui_tabmenu_event()
   %bw!
 
   " Try to close the last tab page
-  call test_gui_tabmenu_event(1, 1)
+  call test_gui_event('tabmenu', #{tabnr: 1, item: 1})
   call feedkeys("y", "Lx!")
 
   edit Xfile1
   tabedit Xfile2
-  call test_gui_tabmenu_event(1, 1)
+  call test_gui_event('tabmenu', #{tabnr: 1, item: 1})
   call feedkeys("y", "Lx!")
   call assert_equal(1, tabpagenr('$'))
   call assert_equal('Xfile2', bufname())
 
-  call test_gui_tabmenu_event(1, 2)
+  eval 'tabmenu'->test_gui_event(#{tabnr: 1, item: 2})
   call feedkeys("y", "Lx!")
   call assert_equal(2, tabpagenr('$'))
 
   " If tabnr is 0, then the current tabpage should be used.
-  call test_gui_tabmenu_event(0, 2)
+  call test_gui_event('tabmenu', #{tabnr: 0, item: 2})
   call feedkeys("y", "Lx!")
   call assert_equal(3, tabpagenr('$'))
-  call test_gui_tabmenu_event(0, 1)
+  call test_gui_event('tabmenu', #{tabnr: 0, item: 1})
   call feedkeys("y", "Lx!")
   call assert_equal(2, tabpagenr('$'))
 
