@@ -4104,7 +4104,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 {
     int		j;
     int		c;
-    int		saved_did_emsg;
+    int		saved_did_emsg = FALSE;
     char_u	*name = name_arg;
     int		is_global = FALSE;
     char_u	*p;
