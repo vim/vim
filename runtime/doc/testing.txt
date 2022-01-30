@@ -85,10 +85,12 @@ test_getvalue({name})					*test_getvalue()*
 						*test_gui_event()*
 test_gui_event({event}, {args})
 		Generate a GUI {event} with arguments {args} for testing Vim
-		functionality.
+		functionality. This function works only when the GUI is
+		running.
 
 		{event} is a String and the supported values are:
 		    "dropfiles"	drop one or more files in a window.
+		    "findrepl"  search and replace text
 		    "mouse"	mouse button click event.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
@@ -107,12 +109,27 @@ test_gui_event({event}, {args})
 				   0x10	Ctrl
 		  The files are added to the |argument-list| and the first
 		  file in {files} is edited in the window.  See |drag-n-drop|
-		  for more information.  This function only works when the GUI
-		  is running and the |drop_file| feature is present.
+		  for more information.  This event works only when the
+		  |drop_file| feature is present.
+
+		"findrepl":
+		  Perform a search and replace of text.  The supported items
+		  in {args} are:
+		    find_text:	string to find.
+		    repl_text:	replacement string
+		    flags:	flags controlling the find/replace. Supported
+				values are:
+				    1	search next string (find dialog)
+				    2	search next string (replace dialog)
+				    3	replace string once
+				    4	replace all matches
+				    8	match whole words only
+				   16	match case
+		    forward:	set to 1 for forward search.
 
 		"mouse":
-		  Inject a mouse button click event.  This function only works
-		  when the GUI is running. The supported items in {args} are:
+		  Inject a mouse button click event.  The supported items in
+		  {args} are:
 		    button:	mouse button.  The supported values are:
 				    0	right mouse button
 				    1	middle mouse button
