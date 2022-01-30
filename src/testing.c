@@ -1319,7 +1319,7 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
     static int
 test_gui_drop_files(dict_T *args UNUSED)
 {
-#if defined(HAVE_DROP_FILE)
+#  if defined(HAVE_DROP_FILE)
     int		row;
     int		col;
     int_u	mods;
@@ -1335,16 +1335,15 @@ test_gui_drop_files(dict_T *args UNUSED)
 	    || dict_find(args, (char_u *)"modifiers", -1) == NULL)
 	return FALSE;
 
-    if (dict_get_tv(args, (char_u *)"files", &t) == FAIL)
-	return FALSE;
+    (void)dict_get_tv(args, (char_u *)"files", &t);
     row = (int)dict_get_number(args, (char_u *)"row");
     col = (int)dict_get_number(args, (char_u *)"col");
     mods = (int)dict_get_number(args, (char_u *)"modifiers");
 
-    l = t.vval.v_list;
-    if (list_len(l) == 0)
+    if (t.v_type != VAR_LIST || list_len(t.vval.v_list) == 0)
 	return FALSE;
 
+    l = t.vval.v_list;
     fnames = ALLOC_MULT(char_u *, list_len(l));
     if (fnames == NULL)
 	return FALSE;
@@ -1352,7 +1351,8 @@ test_gui_drop_files(dict_T *args UNUSED)
     FOR_ALL_LIST_ITEMS(l, li)
     {
 	// ignore non-string items
-	if (li->li_tv.v_type != VAR_STRING)
+	if (li->li_tv.v_type != VAR_STRING
+		|| li->li_tv.vval.v_string == NULL)
 	    continue;
 
 	fnames[count] = vim_strsave(li->li_tv.vval.v_string);
@@ -1370,13 +1370,40 @@ test_gui_drop_files(dict_T *args UNUSED)
 	gui_handle_drop(TEXT_X(col - 1), TEXT_Y(row - 1), mods, fnames, count);
     else
 	vim_free(fnames);
-# endif
+#  endif
 
     return TRUE;
 }
 
     static int
-test_gui_mouse_event(dict_T *args UNUSED)
+test_gui_find_repl(dict_T *args)
+{
+    int		flags;
+    char_u	*find_text;
+    char_u	*repl_text;
+    int		forward;
+    int		retval;
+
+    if (dict_find(args, (char_u *)"find_text", -1) == NULL
+	    || dict_find(args, (char_u *)"repl_text", -1) == NULL
+	    || dict_find(args, (char_u *)"flags", -1) == NULL
+	    || dict_find(args, (char_u *)"forward", -1) == NULL)
+	return FALSE;
+
+    find_text = dict_get_string(args, (char_u *)"find_text", TRUE);
+    repl_text = dict_get_string(args, (char_u *)"repl_text", TRUE);
+    flags = (int)dict_get_number(args, (char_u *)"flags");
+    forward = (int)dict_get_number(args, (char_u *)"forward");
+
+    retval = gui_do_findrepl(flags, find_text, repl_text, forward);
+    vim_free(find_text);
+    vim_free(repl_text);
+
+    return retval;
+}
+
+    static int
+test_gui_mouse_event(dict_T *args)
 {
     int		button;
     int		row;
@@ -1405,7 +1432,7 @@ test_gui_mouse_event(dict_T *args UNUSED)
     static int
 test_gui_tabline_event(dict_T *args UNUSED)
 {
-# ifdef FEAT_GUI_TABLINE
+#  ifdef FEAT_GUI_TABLINE
     int		tabnr;
 
     if (dict_find(args, (char_u *)"tabnr", -1) == NULL)
@@ -1414,15 +1441,15 @@ test_gui_tabline_event(dict_T *args UNUSED)
     tabnr = (int)dict_get_number(args, (char_u *)"tabnr");
 
     return send_tabline_event(tabnr);
-# else
+#  else
     return FALSE;
-# endif
+#  endif
 }
 
     static int
 test_gui_tabmenu_event(dict_T *args UNUSED)
 {
-# ifdef FEAT_GUI_TABLINE
+#  ifdef FEAT_GUI_TABLINE
     int	tabnr;
     int	item;
 
@@ -1434,7 +1461,7 @@ test_gui_tabmenu_event(dict_T *args UNUSED)
     item = (int)dict_get_number(args, (char_u *)"item");
 
     send_tabline_menu_event(tabnr, item);
-# endif
+#  endif
     return TRUE;
 }
 # endif
@@ -1456,6 +1483,8 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     event = tv_get_string(&argvars[0]);
     if (STRCMP(event, "dropfiles") == 0)
 	rettv->vval.v_number = test_gui_drop_files(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "findrepl") == 0)
+	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
     else if (STRCMP(event, "mouse") == 0)
 	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "tabline") == 0)

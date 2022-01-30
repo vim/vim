@@ -1255,10 +1255,6 @@ endfunc
 func Test_gui_drop_files()
   CheckFeature drop_file
 
-  call assert_false(test_gui_event("dropfiles", {}))
-  let d = #{row: 1, col: 1, modifiers: 0}
-  call assert_false(test_gui_event("dropfiles", d))
-
   %bw!
   %argdelete
   let d = #{files: [], row: 1, col: 1, modifiers: 0}
@@ -1345,6 +1341,15 @@ func Test_gui_drop_files()
   call feedkeys('k', 'Lx!')
   call assert_equal('"a.c b.c', @:)
   cunmap <buffer> <F4>
+
+  " Invalid arguments
+  call assert_false(test_gui_event("dropfiles", {}))
+  let d = #{row: 1, col: 1, modifiers: 0}
+  call assert_false(test_gui_event("dropfiles", d))
+  let d = #{files: test_null_list(), row: 1, col: 1, modifiers: 0}
+  call assert_false(test_gui_event("dropfiles", d))
+  let d = #{files: [test_null_string()], row: 1, col: 1, modifiers: 0}
+  call assert_true(test_gui_event("dropfiles", d))
 endfunc
 
 " Test for generating a GUI tabline event to select a tab page
@@ -1366,6 +1371,10 @@ func Test_gui_tabline_event()
   " From the cmdline window, tabline event should not be handled
   call feedkeys("q::let t = test_gui_event('tabline', #{tabnr: 2})\<CR>:q\<CR>", 'x!')
   call assert_equal(v:false, t)
+
+  " Invalid arguments
+  call assert_false(test_gui_event('tabline', {}))
+  call assert_false(test_gui_event('tabline', #{abc: 1}))
 
   %bw!
 endfunc
@@ -1397,7 +1406,61 @@ func Test_gui_tabmenu_event()
   call feedkeys("y", "Lx!")
   call assert_equal(2, tabpagenr('$'))
 
+  " Invalid arguments
+  call assert_false(test_gui_event('tabmenu', {}))
+  call assert_false(test_gui_event('tabmenu', #{tabnr: 1}))
+  call assert_false(test_gui_event('tabmenu', #{item: 1}))
+  call assert_false(test_gui_event('tabmenu', #{abc: 1}))
+
   %bw!
+endfunc
+
+" Test for find/replace text dialog event
+func Test_gui_findrepl()
+  new
+  call setline(1, ['one two one', 'Twoo One two oneo'])
+
+  " Replace all instances of a string with another
+  let args = #{find_text: 'one', repl_text: 'ONE', flags: 0x4, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE two ONE', 'Twoo ONE two ONEo'], getline(1, '$'))
+
+  " Replace all instances of a whole string with another
+  call cursor(1, 1)
+  let args = #{find_text: 'two', repl_text: 'TWO', flags: 0xC, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE TWO ONE', 'Twoo ONE TWO ONEo'], getline(1, '$'))
+
+  " Find next occurance of a string (in a find dialog)
+  call cursor(1, 11)
+  let args = #{find_text: 'TWO', repl_text: '', flags: 0x11, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal([2, 10], [line('.'), col('.')])
+
+  " Find previous occurances of a string (in a find dialog)
+  call cursor(1, 11)
+  let args = #{find_text: 'TWO', repl_text: '', flags: 0x11, forward: 0}
+  call test_gui_event('findrepl', args)
+  call assert_equal([1, 5], [line('.'), col('.')])
+
+  " Find next occurance of a string (in a replace dialog)
+  call cursor(1, 1)
+  let args = #{find_text: 'Twoo', repl_text: '', flags: 0x2, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  " Replace only the next occurance of a string (once)
+  call cursor(1, 5)
+  let args = #{find_text: 'TWO', repl_text: 'two', flags: 0x3, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE two ONE', 'Twoo ONE TWO ONEo'], getline(1, '$'))
+
+  " Replace all instances of a whole string with another matching case
+  call cursor(1, 1)
+  let args = #{find_text: 'TWO', repl_text: 'two', flags: 0x1C, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE two ONE', 'Twoo ONE two ONEo'], getline(1, '$'))
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
