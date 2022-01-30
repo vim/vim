@@ -1614,13 +1614,13 @@ enddef
 def Test_vim9_autoload_full_name()
   var lines =<< trim END
      vim9script
-     def some#gettest(): string
+     export def Gettest(): string
        return 'test'
      enddef
      g:some#name = 'name'
      g:some#dict = {key: 'value'}
 
-     def some#varargs(a1: string, ...l: list<string>): string
+     export def Varargs(a1: string, ...l: list<string>): string
        return a1 .. l[0] .. l[1]
      enddef
   END
@@ -1630,23 +1630,23 @@ def Test_vim9_autoload_full_name()
   var save_rtp = &rtp
   exe 'set rtp^=' .. getcwd() .. '/Xdir'
 
-  assert_equal('test', g:some#gettest())
+  assert_equal('test', g:some#Gettest())
   assert_equal('name', g:some#name)
   assert_equal('value', g:some#dict.key)
   g:some#other = 'other'
   assert_equal('other', g:some#other)
 
-  assert_equal('abc', some#varargs('a', 'b', 'c'))
+  assert_equal('abc', some#Varargs('a', 'b', 'c'))
 
   # upper case script name works
   lines =<< trim END
      vim9script
-     def Other#getOther(): string
+     export def GetOther(): string
        return 'other'
      enddef
   END
   writefile(lines, 'Xdir/autoload/Other.vim')
-  assert_equal('other', g:Other#getOther())
+  assert_equal('other', g:Other#GetOther())
 
   delete('Xdir', 'rf')
   &rtp = save_rtp
@@ -2020,14 +2020,23 @@ enddef
 
 def Test_autoload_name_wrong()
   var lines =<< trim END
-     vim9script
      def Xscriptname#Func()
      enddef
   END
   writefile(lines, 'Xscriptname.vim')
-  v9.CheckScriptFailure(lines, 'E1263:')
-
+  v9.CheckScriptFailure(lines, 'E746:')
   delete('Xscriptname.vim')
+
+  mkdir('Xdir/autoload', 'p')
+  lines =<< trim END
+     vim9script
+     def somescript#Func()
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/somescript.vim')
+  assert_fails('source Xdir/autoload/somescript.vim', 'E1263:')
+
+  delete('Xdir', 'rf')
 enddef
 
 def Test_import_autoload_postponed()
@@ -2202,7 +2211,7 @@ def Test_vim9_autoload_disass()
 
   var lines =<< trim END
      vim9script
-     def debugit#test(): string
+     export def Test(): string
        return 'debug'
      enddef
   END
@@ -2210,7 +2219,7 @@ def Test_vim9_autoload_disass()
 
   lines =<< trim END
      vim9script
-     def profileit#test(): string
+     export def Test(): string
        return 'profile'
      enddef
   END
@@ -2218,10 +2227,10 @@ def Test_vim9_autoload_disass()
 
   lines =<< trim END
     vim9script
-    assert_equal('debug', debugit#test())
-    disass debugit#test
-    assert_equal('profile', profileit#test())
-    disass profileit#test
+    assert_equal('debug', debugit#Test())
+    disass debugit#Test
+    assert_equal('profile', profileit#Test())
+    disass profileit#Test
   END
   v9.CheckScriptSuccess(lines)
 
@@ -2233,7 +2242,7 @@ enddef
 def Test_vim9_aucmd_autoload()
   var lines =<< trim END
      vim9script
-     def foo#test()
+     export def Test()
          echomsg getreg('"')
      enddef
   END
@@ -2243,7 +2252,7 @@ def Test_vim9_aucmd_autoload()
   var save_rtp = &rtp
   exe 'set rtp^=' .. getcwd() .. '/Xdir'
   augroup test
-    autocmd TextYankPost * call foo#test()
+    autocmd TextYankPost * call foo#Test()
   augroup END
 
   normal Y

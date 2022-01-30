@@ -46,7 +46,7 @@ def TestCompilingErrorInTry()
 
   var lines =<< trim END
       vim9script
-      def script#OnlyCompiled()
+      export def OnlyCompiled()
         g:runtime = 'yes'
         invalid
       enddef
@@ -114,7 +114,7 @@ def Test_autoload_name_mismatch()
 
   var lines =<< trim END
       vim9script
-      def scriptX#Function()
+      export def NoFunction()
         # comment
         g:runtime = 'yes'
       enddef
@@ -126,7 +126,7 @@ def Test_autoload_name_mismatch()
   lines =<< trim END
       call script#Function()
   END
-  v9.CheckScriptFailure(lines, 'E746:', 2)
+  v9.CheckScriptFailure(lines, 'E117:', 1)
 
   &rtp = save_rtp
   delete(dir, 'rf')

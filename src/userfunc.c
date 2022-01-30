@@ -4232,6 +4232,11 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 		name = prefixed;
 	    }
 	}
+	else if (vim9script && vim_strchr(name, AUTOLOAD_CHAR) != NULL)
+	{
+	    emsg(_(e_cannot_use_name_with_hash_in_vim9_script_use_export_instead));
+	    goto ret_free;
+	}
     }
 
     // An error in a function call during evaluation of an expression in magic
@@ -4539,12 +4544,6 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 			vim_free(prefixed);
 		    }
 		}
-	    }
-	    else if (vim9script && vim_strchr(name, AUTOLOAD_CHAR) != NULL)
-	    {
-		semsg(_(e_using_autoload_name_in_non_autoload_script_str),
-									 name);
-		goto erret;
 	    }
 	}
 	if (var_conflict)

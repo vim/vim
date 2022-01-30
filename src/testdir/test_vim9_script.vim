@@ -3078,7 +3078,7 @@ def Test_error_in_autoload_script()
 
   var lines =<< trim END
       vim9script noclear
-      def script#autoloaded()
+      export def Autoloaded()
       enddef
       def Broken()
         var x: any = ''
@@ -3091,7 +3091,7 @@ def Test_error_in_autoload_script()
   lines =<< trim END
       vim9script
       def CallAutoloaded()
-        script#autoloaded()
+        script#Autoloaded()
       enddef
 
       function Legacy()
@@ -3196,7 +3196,7 @@ func Test_no_redraw_when_restoring_cpo()
 
   let lines =<< trim END
     vim9script
-    def script#func()
+    export def Func()
     enddef
   END
   call mkdir('Xdir/autoload', 'p')
@@ -3206,7 +3206,7 @@ func Test_no_redraw_when_restoring_cpo()
       vim9script
       set cpo+=M
       exe 'set rtp^=' .. getcwd() .. '/Xdir'
-      au CmdlineEnter : ++once timer_start(0, (_) => script#func())
+      au CmdlineEnter : ++once timer_start(0, (_) => script#Func())
       setline(1, 'some text')
   END
   call writefile(lines, 'XTest_redraw_cpo')
