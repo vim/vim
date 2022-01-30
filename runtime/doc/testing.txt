@@ -82,64 +82,78 @@ test_getvalue({name})					*test_getvalue()*
 		Can also be used as a |method|: >
 			GetName()->test_getvalue()
 <
-						*test_gui_drop_files()*
-test_gui_drop_files({list}, {row}, {col}, {mods})
-		Drop one or more files in {list} in the window at {row}, {col}.
-		This function only works when the GUI is running and the
-		|drop_file| feature is present.
+						*test_gui_event()*
+test_gui_event({event}, {args})
+		Generate a GUI {event} with arguments {args} for testing Vim
+		functionality.
 
-		The supported values for {mods} are:
-			0x4	Shift
-			0x8	Alt
-			0x10	Ctrl
-		The files are added to the |argument-list| and the first file
-		in {list} is edited in the window.  See |drag-n-drop| for more
-		information.
+		{event} is a String and the supported values are:
+		    "dropfiles"	drop one or more files in a window.
+		    "mouse"	mouse button click event.
+		    "tabline"	select a tab page by mouse click.
+		    "tabmenu"	select a tabline menu entry.
 
-						*test_gui_mouse_event()*
-test_gui_mouse_event({button}, {row}, {col}, {multiclick}, {modifiers})
-		Inject a mouse button click event.  This function only works
-		when the GUI is running.
-		The supported values for {button} are:
-			0	right mouse button
-			1	middle mouse button
-			2	left mouse button
-			3	mouse button release
-			4	scroll wheel down
-			5	scroll wheel up
-			6	scroll wheel left
-			7	scroll wheel right
-		{row} and {col} specify the location of the mouse click. The
-		first row of the Vim window is 1 and the last row is 'lines'.
-		The maximum value of {col} is 'columns'.
-		To inject a multiclick event, set {multiclick} to 1.
-		The supported values for {modifiers} are:
-			4	shift is pressed
-			8	alt is pressed
-			16	ctrl is pressed
-		After injecting the mouse event you probably should call
+		{args} is a Dict and contains the arguments for the event.
+
+		"dropfiles":
+		  Drop one or more files in a specified window.  The supported
+		  items in {args} are:
+		    files:	List of file names
+		    row:	window row number
+		    col:	window column number
+		    modifiers:	key modifiers. The supported values are:
+				    0x4	Shift
+				    0x8	Alt
+				   0x10	Ctrl
+		  The files are added to the |argument-list| and the first
+		  file in {files} is edited in the window.  See |drag-n-drop|
+		  for more information.  This function only works when the GUI
+		  is running and the |drop_file| feature is present.
+
+		"mouse":
+		  Inject a mouse button click event.  This function only works
+		  when the GUI is running. The supported items in {args} are:
+		    button:	mouse button.  The supported values are:
+				    0	right mouse button
+				    1	middle mouse button
+				    2	left mouse button
+				    3	mouse button release
+				    4	scroll wheel down
+				    5	scroll wheel up
+				    6	scroll wheel left
+				    7	scroll wheel right
+		    row:	mouse click row number.  The first row of the
+				Vim window is 1 and the last row is 'lines'.
+		    col:	mouse click column number.  The maximum value
+				of {col} is 'columns'.
+		    multiclick:	set to 1 to inject a multiclick mouse event.
+		    modifiers:	key modifiers.  The supported values are:
+				    4	shift is pressed
+				    8	alt is pressed
+				   16	ctrl is pressed
+
+		"tabline":
+		  Inject a mouse click event on the tabline to select a
+		  tabpage. The supported items in {args} are:
+		    tabnr:	tab page number
+
+		"tabmenu":
+		  Inject an event to select a tabline menu entry. The
+		  supported items in {args} are:
+		    tabnr:	tab page number
+		    item: 	tab page menu item number. 1 for the first
+				menu item, 2 for the second item and so on.
+
+		After injecting the GUI events you probably should call
 		|feedkeys()| to have them processed, e.g.: >
 			call feedkeys("y", 'Lx!')
-
-						*test_gui_tabline_event()*
-test_gui_tabline_event({tabnr})
-		Add an event that simulates a click on the tabline to select
-		tabpage {tabnr} to the input buffer.
+<
 		Returns TRUE if the event is successfully added, FALSE if
-		already in the tabpage {tabnr} or the cmdline window is open.
-		After injecting the event you probably should call
-		|feedkeys()| to have them processed, e.g.: >
-			call feedkeys("y", 'Lx!')
+		there is a failure.
 
-						*test_gui_tabmenu_event()*
-test_gui_tabmenu_event({tabnr}, {event})
-		Add an event that simulates selecting a tabline menu entry for
-		tabpage {tabnr} to the input buffer. {event} is 1 for the
-		first menu entry, 2 for the second entry and so on.
-		After injecting the event you probably should call
-		|feedkeys()| to have them processed, e.g.: >
-			call feedkeys("y", 'Lx!')
-
+		Can also be used as a |method|: >
+			GetEvent()->test_gui_event({args})
+<
 test_ignore_error({expr})			 *test_ignore_error()*
 		Ignore any error containing {expr}.  A normal message is given
 		instead.

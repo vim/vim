@@ -4069,21 +4069,10 @@ def Test_test_getvalue()
   v9.CheckDefAndScriptFailure(['test_getvalue(1.1)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
 enddef
 
-def Test_test_gui_drop_files()
+def Test_test_gui_event()
   CheckGui
-  v9.CheckDefAndScriptFailure(['test_gui_drop_files("a", 1, 1, 0)'], ['E1013: Argument 1: type mismatch, expected list<string> but got string', 'E1211: List required for argument 1'])
-  v9.CheckDefAndScriptFailure(['test_gui_drop_files(["x"], "", 1, 0)'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
-  v9.CheckDefAndScriptFailure(['test_gui_drop_files(["x"], 1, "", 0)'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
-  v9.CheckDefAndScriptFailure(['test_gui_drop_files(["x"], 1, 1, "")'], ['E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4'])
-enddef
-
-def Test_test_gui_mouse_event()
-  CheckGui
-  v9.CheckDefAndScriptFailure(['test_gui_mouse_event(1.1, 1, 1, 1, 1)'], ['E1013: Argument 1: type mismatch, expected number but got float', 'E1210: Number required for argument 1'])
-  v9.CheckDefAndScriptFailure(['test_gui_mouse_event(1, "1", 1, 1, 1)'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
-  v9.CheckDefAndScriptFailure(['test_gui_mouse_event(1, 1, "1", 1, 1)'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
-  v9.CheckDefAndScriptFailure(['test_gui_mouse_event(1, 1, 1, "1", 1)'], ['E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4'])
-  v9.CheckDefAndScriptFailure(['test_gui_mouse_event(1, 1, 1, 1, "1")'], ['E1013: Argument 5: type mismatch, expected number but got string', 'E1210: Number required for argument 5'])
+  v9.CheckDefAndScriptFailure(['test_gui_event([], {})'], ['E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['test_gui_event("abc", 1)'], ['E1013: Argument 2: type mismatch, expected dict<any> but got number', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_test_ignore_error()
