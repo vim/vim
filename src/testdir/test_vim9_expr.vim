@@ -1472,7 +1472,8 @@ func Test_expr5_fails()
 endfunc
 
 func Test_expr5_fails_channel()
-  g:CheckFeature channel
+  CheckFeature channel
+
   call v9.CheckDefAndScriptFailure(["var x = 'a' .. test_null_job()"], ['E1105:', 'E908:'], 1)
   call v9.CheckDefAndScriptFailure(["var x = 'a' .. test_null_channel()"], ['E1105:', 'E908:'], 1)
 endfunc
@@ -1689,7 +1690,7 @@ func Test_expr6_fails()
 endfunc
 
 func Test_expr6_float_fails()
-  g:CheckFeature float
+  CheckFeature float
   call v9.CheckDefAndScriptFailure(["var x = 1.0 % 2"], ['E1035:', 'E804:'], 1)
 endfunc
 
