@@ -4,13 +4,13 @@ vim9script noclear
 # Language:     C
 # Maintainer:   Bram Moolenaar <Bram@vim.org>
 #		Rewritten in Vim9 script by github user lacygoill
-# Last Change:  2021 Dec 27
+# Last Change:  2022 Jan 31
 
 var prepended: string
 var grepCache: dict<list<dict<any>>>
 
 # This function is used for the 'omnifunc' option.
-def ccomplete#Complete(findstart: bool, abase: string): any # {{{1
+export def Complete(findstart: bool, abase: string): any # {{{1
   if findstart
     # Locate the start of the item, including ".", "->" and "[...]".
     var line: string = getline('.')
@@ -202,7 +202,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any # {{{1
               || !v['static']
               || bufnr('%') == bufnr(v['filename']))
 
-    res = extendnew(res, tags->map((_, v: dict<any>) => Tag2item(v)))
+    res = res->extend(tags->map((_, v: dict<any>) => Tag2item(v)))
   endif
 
   if len(res) == 0
@@ -216,9 +216,9 @@ def ccomplete#Complete(findstart: bool, abase: string): any # {{{1
     for i: number in len(diclist)->range()
       # New ctags has the "typeref" field.  Patched version has "typename".
       if diclist[i]->has_key('typename')
-        res = extendnew(res, diclist[i]['typename']->StructMembers(items[1 :], true))
+        res = res->extend(diclist[i]['typename']->StructMembers(items[1 :], true))
       elseif diclist[i]->has_key('typeref')
-        res = extendnew(res, diclist[i]['typeref']->StructMembers(items[1 :], true))
+        res = res->extend(diclist[i]['typeref']->StructMembers(items[1 :], true))
       endif
 
       # For a variable use the command, which must be a search pattern that
@@ -227,7 +227,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any # {{{1
         var line: string = diclist[i]['cmd']
         if line[: 1] == '/^'
           var col: number = line->charidx(match(line, '\<' .. items[0] .. '\>'))
-          res = extendnew(res, line[2 : col - 1]->Nextitem(items[1 :], 0, true))
+          res = res->extend(line[2 : col - 1]->Nextitem(items[1 :], 0, true))
         endif
       endif
     endfor
@@ -256,11 +256,10 @@ def ccomplete#Complete(findstart: bool, abase: string): any # {{{1
 enddef
 
 def GetAddition( # {{{1
-  line: string,
-  match: string,
-  memarg: list<dict<any>>,
-  bracket: bool
-): string
+    line: string,
+    match: string,
+    memarg: list<dict<any>>,
+    bracket: bool): string
   # Guess if the item is an array.
   if bracket && match(line, match .. '\s*\[') > 0
     return '['
@@ -403,10 +402,9 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> # {{{1
 enddef
 
 def Tagcmd2extra( # {{{1
-  cmd: string,
-  name: string,
-  fname: string
-): string
+    cmd: string,
+    name: string,
+    fname: string): string
 # Turn a command from a tag line to something that is useful in the menu
   var x: string
   if cmd =~ '^/^'
@@ -427,11 +425,10 @@ def Tagcmd2extra( # {{{1
 enddef
 
 def Nextitem( # {{{1
-  lead: string,
-  items: list<string>,
-  depth: number,
-  all: bool
-): list<dict<string>>
+    lead: string,
+    items: list<string>,
+    depth: number,
+    all: bool): list<dict<string>>
 # Find composing type in "lead" and match items[0] with it.
 # Repeat this recursively for items[1], if it's there.
 # When resolving typedefs "depth" is used to avoid infinite recursion.
@@ -473,11 +470,11 @@ def Nextitem( # {{{1
 
       # New ctags has the "typeref" field.  Patched version has "typename".
       if item->has_key('typeref')
-        res = extendnew(res, item['typeref']->StructMembers(items, all))
+        res = res->extend(item['typeref']->StructMembers(items, all))
         continue
       endif
       if item->has_key('typename')
-        res = extendnew(res, item['typename']->StructMembers(items, all))
+        res = res->extend(item['typename']->StructMembers(items, all))
         continue
       endif
 
@@ -511,11 +508,11 @@ def Nextitem( # {{{1
               endif
             endfor
             if name != ''
-              res = extendnew(res, StructMembers(cmdtokens[0] .. ':' .. name, items, all))
+              res = res->extend(StructMembers(cmdtokens[0] .. ':' .. name, items, all))
             endif
           elseif depth < 10
             # Could be "typedef other_T some_T".
-            res = extendnew(res, cmdtokens[0]->Nextitem(items, depth + 1, all))
+            res = res->extend(cmdtokens[0]->Nextitem(items, depth + 1, all))
           endif
         endif
       endif
@@ -529,10 +526,9 @@ def Nextitem( # {{{1
 enddef
 
 def StructMembers( # {{{1
-  atypename: string,
-  items: list<string>,
-  all: bool
-): list<dict<string>>
+    atypename: string,
+    items: list<string>,
+    all: bool): list<dict<string>>
 
 # Search for members of structure "typename" in tags files.
 # Return a list with resulting matches.
@@ -641,10 +637,9 @@ def StructMembers( # {{{1
 enddef
 
 def SearchMembers( # {{{1
-  matches: list<dict<any>>,
-  items: list<string>,
-  all: bool
-): list<dict<string>>
+    matches: list<dict<any>>,
+    items: list<string>,
+    all: bool): list<dict<string>>
 
 # For matching members, find matches for following items.
 # When "all" is true find all, otherwise just return 1 if there is any member.
@@ -674,7 +669,7 @@ def SearchMembers( # {{{1
     endif
 
     if typename != ''
-      res = extendnew(res, StructMembers(typename, items, all))
+      res = res->extend(StructMembers(typename, items, all))
     else
       # Use the search command (the declaration itself).
       var sb: number = line->match('\t\zs/^')
@@ -683,7 +678,7 @@ def SearchMembers( # {{{1
         var e: number = line
           ->charidx(match(line, '\<' .. matches[i]['match'] .. '\>', sb))
         if e > 0
-          res = extendnew(res, line[s : e - 1]->Nextitem(items, 0, all))
+          res = res->extend(line[s : e - 1]->Nextitem(items, 0, all))
         endif
       endif
     endif

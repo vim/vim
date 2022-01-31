@@ -7779,7 +7779,6 @@ interactive-functions	usr_41.txt	/*interactive-functions*
 interfaces-5.2	version5.txt	/*interfaces-5.2*
 internal-variables	eval.txt	/*internal-variables*
 internal-wordlist	spell.txt	/*internal-wordlist*
-internal_get_nv_cmdchar()	builtin.txt	/*internal_get_nv_cmdchar()*
 internet	intro.txt	/*internet*
 interrupt()	builtin.txt	/*interrupt()*
 intro	intro.txt	/*intro*
@@ -9919,10 +9918,7 @@ test_feedinput()	testing.txt	/*test_feedinput()*
 test_garbagecollect_now()	testing.txt	/*test_garbagecollect_now()*
 test_garbagecollect_soon()	testing.txt	/*test_garbagecollect_soon()*
 test_getvalue()	testing.txt	/*test_getvalue()*
-test_gui_drop_files()	testing.txt	/*test_gui_drop_files()*
-test_gui_mouse_event()	testing.txt	/*test_gui_mouse_event()*
-test_gui_tabline_event()	testing.txt	/*test_gui_tabline_event()*
-test_gui_tabmenu_event()	testing.txt	/*test_gui_tabmenu_event()*
+test_gui_event()	testing.txt	/*test_gui_event()*
 test_ignore_error()	testing.txt	/*test_ignore_error()*
 test_null_blob()	testing.txt	/*test_null_blob()*
 test_null_channel()	testing.txt	/*test_null_channel()*

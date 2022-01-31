@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 29
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,18 +38,15 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Only find a global function from Vim9 script when using "g:" ?  #9637
-
-Disallow defining a script#Func() in Vim9 script.
-
 Cannot use command modifier for "import 'name.vim' as vim9"
+
+range() returns list<number>, but it's OK if map() changes the type.
+#9665  Change internal_func_ret_type() to return current and declared type?
 
 When making a copy of a list or dict, do not keep the type? #9644
     With deepcopy() all, with copy() this still fails:
     var l: list<list<number>> = [[1], [2]]
     l->copy()[0][0] = 'x'
-
-Remove EBCDIC support?
 
 Once Vim9 is stable:
 - Add all the error numbers in a good place in documentation.
