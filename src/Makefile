@@ -2142,18 +2142,17 @@ autoconf:
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim --clean -X --not-a-term -u create_cmdidxs.vim
+	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
 
 # Run vim script to generate the normal/visual mode command lookup table.
 # This only needs to be run when a new normal/visual mode command has been
 # added.  If this fails because you don't have Vim yet:
-#   - change nv_cmds[] in normal.c to add the new normal/visual mode command.
-#   - build Vim
-#   - run "make nvcmdidxs" using the new Vim to generate nv_cmdidxs.h
-#   - rebuild Vim to use the newly generated nv_cmdidxs.h file.
-nvcmdidxs: normal.c
-	./$(VIMTARGET) --clean -X --not-a-term -u create_nvcmdidxs.vim
-
+#   - change nv_cmds[] in nv_cmds.h to add the new normal/visual mode command.
+#   - run "make nvcmdidxs" to generate nv_cmdidxs.h
+nvcmdidxs: auto/config.mk nv_cmds.h
+	$(CC) -I$(srcdir) $(ALL_CFLAGS) create_nvcmdidxs.c -o create_nvcmdidxs
+	vim --clean -N -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	-rm -f create_nvcmdidxs
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
@@ -4012,7 +4011,7 @@ objects/move.o: move.c vim.h protodef.h auto/config.h feature.h os_unix.h \
 objects/normal.o: normal.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h nv_cmdidxs.h
+ proto.h globals.h errors.h nv_cmdidxs.h nv_cmds.h
 objects/ops.o: ops.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

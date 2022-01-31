@@ -114,6 +114,7 @@ SRC_ALL =	\
 		src/netbeans.c \
 		src/normal.c \
 		src/nv_cmdidxs.h \
+		src/nv_cmds.h \
 		src/ops.c \
 		src/option.c \
 		src/option.h \
@@ -444,6 +445,7 @@ SRC_UNIX =	\
 		src/configure \
 		src/configure.ac \
 		src/create_cmdidxs.vim \
+		src/create_nvcmdidxs.c \
 		src/create_nvcmdidxs.vim \
 		src/gui_at_fs.c \
 		src/gui_at_sb.c \
