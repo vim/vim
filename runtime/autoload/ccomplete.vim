@@ -3,13 +3,14 @@ vim9script noclear
 # Vim completion script
 # Language:     C
 # Maintainer:   Bram Moolenaar <Bram@vim.org>
+#		Rewritten in Vim9 script by github user lacygoill
 # Last Change:  2021 Dec 27
 
 var prepended: string
 var grepCache: dict<list<dict<any>>>
 
 # This function is used for the 'omnifunc' option.
-def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
+def ccomplete#Complete(findstart: bool, abase: string): any # {{{1
   if findstart
     # Locate the start of the item, including ".", "->" and "[...]".
     var line: string = getline('.')
@@ -254,7 +255,7 @@ def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
   return res->map((_, v: dict<any>): dict<string> => Tagline2item(v, brackets))
 enddef
 
-def GetAddition( #{{{1
+def GetAddition( # {{{1
   line: string,
   match: string,
   memarg: list<dict<any>>,
@@ -277,7 +278,7 @@ def GetAddition( #{{{1
   return ''
 enddef
 
-def Tag2item(val: dict<any>): dict<any> #{{{1
+def Tag2item(val: dict<any>): dict<any> # {{{1
 # Turn the tag info "val" into an item for completion.
 # "val" is is an item in the list returned by taglist().
 # If it is a variable we may add "." or "->".  Don't do it for other types,
@@ -306,7 +307,7 @@ def Tag2item(val: dict<any>): dict<any> #{{{1
   return res
 enddef
 
-def Dict2info(dict: dict<any>): string #{{{1
+def Dict2info(dict: dict<any>): string # {{{1
 # Use all the items in dictionary for the "info" entry.
   var info: string = ''
   for k: string in dict->keys()->sort()
@@ -328,7 +329,7 @@ def Dict2info(dict: dict<any>): string #{{{1
   return info
 enddef
 
-def ParseTagline(line: string): dict<any> #{{{1
+def ParseTagline(line: string): dict<any> # {{{1
 # Parse a tag line and return a dictionary with items like taglist()
   var l: list<string> = split(line, "\t")
   var d: dict<any>
@@ -358,7 +359,7 @@ def ParseTagline(line: string): dict<any> #{{{1
   return d
 enddef
 
-def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
+def Tagline2item(val: dict<any>, brackets: string): dict<string> # {{{1
 # Turn a match item "val" into an item for completion.
 # "val['match']" is the matching item.
 # "val['tagline']" is the tagline in which the last part was found.
@@ -401,7 +402,7 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
   return res
 enddef
 
-def Tagcmd2extra( #{{{1
+def Tagcmd2extra( # {{{1
   cmd: string,
   name: string,
   fname: string
@@ -425,7 +426,7 @@ def Tagcmd2extra( #{{{1
   return x
 enddef
 
-def Nextitem( #{{{1
+def Nextitem( # {{{1
   lead: string,
   items: list<string>,
   depth: number,
@@ -527,7 +528,7 @@ def Nextitem( #{{{1
   return res
 enddef
 
-def StructMembers( #{{{1
+def StructMembers( # {{{1
   atypename: string,
   items: list<string>,
   all: bool
@@ -639,7 +640,7 @@ def StructMembers( #{{{1
   return []
 enddef
 
-def SearchMembers( #{{{1
+def SearchMembers( # {{{1
   matches: list<dict<any>>,
   items: list<string>,
   all: bool
