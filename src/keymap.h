@@ -150,9 +150,7 @@
  */
 enum key_extra
 {
-    KE_NAME = 3		// name of this terminal entry
-
-    , KE_S_UP = 4		// shift-up
+      KE_S_UP = 4		// shift-up
     , KE_S_DOWN = 5		// shift-down
 
     , KE_S_F1 = 6		// shifted function keys
@@ -253,7 +251,8 @@ enum key_extra
     , KE_CSI = 81		// CSI typed directly
     , KE_SNR = 82		// <SNR>
     , KE_PLUG = 83		// <Plug>
-    , KE_CMDWIN = 84		// open command-line window from Command-line Mode
+    , KE_CMDWIN = 84		// open command-line window from Command-line
+				// Mode
 
     , KE_C_LEFT = 85		// control-left
     , KE_C_RIGHT = 86		// control-right
