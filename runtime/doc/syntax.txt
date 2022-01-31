@@ -1536,6 +1536,14 @@ The enhanced mode also takes advantage of additional color features for a dark
 gvim display.  Here, statements are colored LightYellow instead of Yellow, and
 conditionals are LightBlue for better distinction.
 
+Both Visual Basic and FORM use the extension ".frm".  To detect which one
+should be used, Vim checks for the string "VB_Name" in the first five lines of
+the file.  If it is found, filetype will be "vb", otherwise "form".
+
+If the automatic detection doesn't work for you or you only edit, for
+example, FORM files, use this in your startup vimrc: >
+   :let filetype_frm = "form"
+
 
 FORTH						*forth.vim* *ft-forth-syntax*
 
