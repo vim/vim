@@ -2709,7 +2709,7 @@ ex_range_without_command(exarg_T *eap)
 /*
  * Check for an Ex command with optional tail.
  * If there is a match advance "pp" to the argument and return TRUE.
- * If "noparen" is TRUE do not recognize the command followed by "(".
+ * If "noparen" is TRUE do not recognize the command followed by "(" or ".".
  */
     static int
 checkforcmd_opt(
@@ -2723,8 +2723,8 @@ checkforcmd_opt(
     for (i = 0; cmd[i] != NUL; ++i)
 	if (((char_u *)cmd)[i] != (*pp)[i])
 	    break;
-    if (i >= len && !isalpha((*pp)[i])
-			   && (*pp)[i] != '_' && (!noparen || (*pp)[i] != '('))
+    if (i >= len && !isalpha((*pp)[i]) && (*pp)[i] != '_'
+			 && (!noparen || ((*pp)[i] != '(' && (*pp)[i] != '.')))
     {
 	*pp = skipwhite(*pp + i);
 	return TRUE;
@@ -2746,7 +2746,7 @@ checkforcmd(
 }
 
 /*
- * Check for an Ex command with optional tail, not followed by "(".
+ * Check for an Ex command with optional tail, not followed by "(" or ".".
  * If there is a match advance "pp" to the argument and return TRUE.
  */
     int

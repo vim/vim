@@ -142,6 +142,14 @@ def Test_vim9_import_export()
   unlet g:imported_func
   delete('Ximport_lbr.vim')
 
+  var import_shadows_cmdmod_lines =<< trim END
+      vim9script
+      import './Xexport.vim' as vim9
+      vim9.exp_name = 'Shadow'
+      assert_equal('Shadow', vim9.exp_name)
+  END
+  v9.CheckScriptSuccess(import_shadows_cmdmod_lines)
+
   var line_break_before_dot =<< trim END
     vim9script
     import './Xexport.vim' as expo
@@ -365,7 +373,6 @@ def Test_vim9_import_export()
   assert_fails('source Ximport.vim', 'E46: Cannot change read-only variable "CONST"', '', 3)
 
   delete('Ximport.vim')
-  delete('Ximport3.vim')
   delete('Xexport.vim')
 
   # Check that in a Vim9 script 'cpo' is set to the Vim default.
