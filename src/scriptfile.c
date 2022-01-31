@@ -2294,7 +2294,7 @@ script_autoload(
 
 	// Try loading the package from $VIMRUNTIME/autoload/<name>.vim
 	// Use "ret_sid" to avoid loading the same script again.
-	if (source_in_path(p_rtp, scriptname, 0, &ret_sid) == OK)
+	if (source_in_path(p_rtp, scriptname, DIP_START, &ret_sid) == OK)
 	    ret = TRUE;
     }
 
