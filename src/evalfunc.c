@@ -933,7 +933,6 @@ static argcheck_T arg3_string_any_string[] = {arg_string, NULL, arg_string};
 static argcheck_T arg3_string_bool_bool[] = {arg_string, arg_bool, arg_bool};
 static argcheck_T arg3_string_bool_dict[] = {arg_string, arg_bool, arg_dict_any};
 static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool};
-static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
@@ -2359,14 +2358,6 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_override},
     {"test_refcount",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_test_refcount},
-    {"test_scrollbar",	3, 3, FEARG_2,	    arg3_string_number_number,
-			ret_void,
-#ifdef FEAT_GUI
-	f_test_scrollbar
-#else
-	NULL
-#endif
-			},
     {"test_setmouse",	2, 2, 0,	    arg2_number,
 			ret_void,	    f_test_setmouse},
     {"test_settime",	1, 1, FEARG_1,	    arg1_number,
