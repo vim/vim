@@ -1186,7 +1186,11 @@ RUBY_MSVCRT_NAME = $(MSVCRT_NAME)
 !   if "$(CPU)" == "i386"
 RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 !   else # CPU
+!    if EXIST($(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw-ucrt)
+RUBY_INSTALL_NAME = x64-ucrt-ruby$(RUBY_API_VER)
+!    else
 RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
+!    endif
 !   endif # CPU
 !  endif # RUBY_INSTALL_NAME
 
