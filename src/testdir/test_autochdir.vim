@@ -51,6 +51,26 @@ func Test_set_filename_other_window()
   endtry
 endfunc
 
+func Test_acd_win_execute()
+  let cwd = getcwd()
+  set acd
+  call test_autochdir()
+
+  call mkdir('Xfile')
+  let winid = win_getid()
+  new Xfile/file
+  call assert_match('testdir.Xfile$', getcwd())
+  cd ..
+  call assert_match('testdir$', getcwd())
+  call win_execute(winid, 'echo')
+  call assert_match('testdir$', getcwd())
+
+  bwipe!
+  set noacd
+  call chdir(cwd)
+  call delete('Xfile', 'rf')
+endfunc
+
 func Test_verbose_pwd()
   let cwd = getcwd()
   call test_autochdir()

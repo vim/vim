@@ -99,7 +99,7 @@ get_float_arg(typval_T *argvars, float_T *f)
 	*f = (float_T)argvars[0].vval.v_number;
 	return OK;
     }
-    emsg(_("E808: Number or Float required"));
+    emsg(_(e_number_or_float_required));
     return FAIL;
 }
 

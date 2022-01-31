@@ -515,9 +515,9 @@ au_del_group(char_u *name)
 
     i = au_find_group(name);
     if (i == AUGROUP_ERROR)	// the group doesn't exist
-	semsg(_("E367: No such group: \"%s\""), name);
+	semsg(_(e_no_such_group_str), name);
     else if (i == current_augroup)
-	emsg(_("E936: Cannot delete the current group"));
+	emsg(_(e_cannot_delete_current_group));
     else
     {
 	event_T	event;
@@ -580,7 +580,7 @@ do_augroup(char_u *arg, int del_group)
     if (del_group)
     {
 	if (*arg == NUL)
-	    emsg(_(e_argreq));
+	    emsg(_(e_argument_required));
 	else
 	    au_del_group(arg);
     }
@@ -687,7 +687,7 @@ find_end_event(
     {
 	if (arg[1] && !VIM_ISWHITE(arg[1]))
 	{
-	    semsg(_("E215: Illegal character after *: %s"), arg);
+	    semsg(_(e_illegal_character_after_star_str), arg);
 	    return NULL;
 	}
 	pat = arg + 1;
@@ -699,9 +699,9 @@ find_end_event(
 	    if ((int)event_name2nr(pat, &p) >= NUM_EVENTS)
 	    {
 		if (have_group)
-		    semsg(_("E216: No such event: %s"), pat);
+		    semsg(_(e_no_such_event_str), pat);
 		else
-		    semsg(_("E216: No such group or event: %s"), pat);
+		    semsg(_(e_no_such_group_or_event_str), pat);
 		return NULL;
 	    }
 	}
@@ -911,7 +911,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		if (STRNCMP(cmd, "++once", 6) == 0 && VIM_ISWHITE(cmd[6]))
 		{
 		    if (once)
-			semsg(_(e_duparg2), "++once");
+			semsg(_(e_duplicate_argument_str), "++once");
 		    once = TRUE;
 		    cmd = skipwhite(cmd + 6);
 		}
@@ -920,7 +920,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		if ((STRNCMP(cmd, "++nested", 8) == 0 && VIM_ISWHITE(cmd[8])))
 		{
 		    if (nested)
-			semsg(_(e_duparg2), "++nested");
+			semsg(_(e_duplicate_argument_str), "++nested");
 		    nested = TRUE;
 		    cmd = skipwhite(cmd + 8);
 		}
@@ -929,7 +929,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		if (STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
 		{
 		    if (nested)
-			semsg(_(e_duparg2), "nested");
+			semsg(_(e_duplicate_argument_str), "nested");
 		    nested = TRUE;
 		    cmd = skipwhite(cmd + 6);
 		}
@@ -1205,8 +1205,7 @@ do_autocmd_event(
 		if (is_buflocal && (buflocal_nr == 0
 				      || buflist_findnr(buflocal_nr) == NULL))
 		{
-		    semsg(_("E680: <buffer=%d>: invalid buffer number "),
-								 buflocal_nr);
+		    semsg(_(e_buffer_nr_invalid_buffer_number), buflocal_nr);
 		    return FAIL;
 		}
 
@@ -1329,7 +1328,7 @@ do_doautocmd(
 
     if (*arg == '*')
     {
-	emsg(_("E217: Can't execute autocommands for ALL events"));
+	emsg(_(e_cant_execute_autocommands_for_all_events));
 	return FAIL;
     }
 
@@ -1425,8 +1424,6 @@ ex_doautoall(exarg_T *eap)
 	if (call_do_modelines && did_aucmd)
 	    do_modelines(0);
     }
-
-    check_cursor();	    // just in case lines got deleted
 }
 
 /*
@@ -1521,7 +1518,10 @@ aucmd_prepbuf(
 	p_acd = FALSE;
 #endif
 
+	// no redrawing and don't set the window title
+	++RedrawingDisabled;
 	(void)win_split_ins(0, WSP_TOP, aucmd_win, 0);
+	--RedrawingDisabled;
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
@@ -1533,6 +1533,10 @@ aucmd_prepbuf(
     curbuf = buf;
     aco->new_curwin_id = curwin->w_id;
     set_bufref(&aco->new_curbuf, curbuf);
+
+    // disable the Visual area, the position may be invalid in another buffer
+    aco->save_VIsual_active = VIsual_active;
+    VIsual_active = FALSE;
 }
 
 /*
@@ -1657,6 +1661,11 @@ win_found:
 	    check_cursor();
 	}
     }
+
+    check_cursor();	    // just in case lines got deleted
+    VIsual_active = aco->save_VIsual_active;
+    if (VIsual_active)
+	check_pos(curbuf, &VIsual);
 }
 
 static int	autocmd_nested = FALSE;
@@ -1942,7 +1951,7 @@ apply_autocmds_group(
      */
     if (nesting == 10)
     {
-	emsg(_("E218: autocommand nesting too deep"));
+	emsg(_(e_autocommand_nesting_too_deep));
 	goto BYPASS_AU;
     }
 

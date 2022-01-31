@@ -157,6 +157,11 @@ static void handle_resize(void);
 #if defined(SIGWINCH)
 static RETSIGTYPE sig_winch SIGPROTOARG;
 #endif
+#if defined(SIGTSTP)
+static RETSIGTYPE sig_tstp SIGPROTOARG;
+// volatile because it is used in signal handler sig_tstp() and sigcont_handler().
+static volatile sig_atomic_t in_mch_suspend = FALSE;
+#endif
 #if defined(SIGINT)
 static RETSIGTYPE catch_sigint SIGPROTOARG;
 #endif
@@ -197,6 +202,8 @@ static int save_patterns(int num_pat, char_u **pat, int *num_file, char_u ***fil
 
 // volatile because it is used in signal handler sig_winch().
 static volatile sig_atomic_t do_resize = FALSE;
+// volatile because it is used in signal handler sig_tstp().
+static volatile sig_atomic_t got_tstp = FALSE;
 static char_u	*extra_shell_arg = NULL;
 static int	show_shell_mess = TRUE;
 // volatile because it is used in signal handler deathtrap().
@@ -851,6 +858,25 @@ sig_winch SIGDEFARG(sigarg)
 }
 #endif
 
+#if defined(SIGTSTP)
+    static RETSIGTYPE
+sig_tstp SIGDEFARG(sigarg)
+{
+    // Second time we get called we actually need to suspend
+    if (in_mch_suspend)
+    {
+	signal(SIGTSTP, ignore_sigtstp ? SIG_IGN : SIG_DFL);
+	raise(sigarg);
+    }
+    else
+	got_tstp = TRUE;
+
+    // this is not required on all systems, but it doesn't hurt anybody
+    signal(SIGTSTP, (RETSIGTYPE (*)())sig_tstp);
+    SIGRETURN;
+}
+#endif
+
 #if defined(SIGINT)
     static RETSIGTYPE
 catch_sigint SIGDEFARG(sigarg)
@@ -1158,7 +1184,6 @@ after_sigcont(void)
 
 #if defined(SIGCONT)
 static RETSIGTYPE sigcont_handler SIGPROTOARG;
-static volatile sig_atomic_t in_mch_suspend = FALSE;
 
 /*
  * With multi-threading, suspending might not work immediately.  Catch the
@@ -1353,7 +1378,14 @@ set_signals(void)
 
 #ifdef SIGTSTP
     // See mch_init() for the conditions under which we ignore SIGTSTP.
-    signal(SIGTSTP, ignore_sigtstp ? SIG_IGN : SIG_DFL);
+    // In the GUI default TSTP processing is OK.
+    // Checking both gui.in_use and gui.starting because gui.in_use is not set
+    // at this point (set after menus are displayed), but gui.starting is set.
+    signal(SIGTSTP, ignore_sigtstp ? SIG_IGN
+# ifdef FEAT_GUI
+				: gui.in_use || gui.starting ? SIG_DFL
+# endif
+				    : (RETSIGTYPE (*)())sig_tstp);
 #endif
 #if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
@@ -2678,7 +2710,7 @@ mch_FullName(
 #endif
 		l = mch_chdir((char *)olddir);
 	    if (l != 0)
-		emsg(_(e_prev_dir));
+		emsg(_(e_cannot_go_back_to_previous_directory));
 	}
 #ifdef HAVE_FCHDIR
 	if (fd >= 0)
@@ -3165,7 +3197,7 @@ executable_file(char_u *name)
     // Therefore, this check does not have any sense - let keep us to the
     // conventions instead:
     // *.COM and *.EXE files are the executables - the rest are not. This is
-    // not ideal but better then it was.
+    // not ideal but better than it was.
     int vms_executable = 0;
     if (S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0)
     {
@@ -5504,7 +5536,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_in[0] = mch_open((char *)fname, O_RDONLY, 0);
 	if (fd_in[0] < 0)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5522,7 +5554,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_out[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd_out[1] < 0)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5536,7 +5568,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_err[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	if (fd_err[1] < 0)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5634,7 +5666,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;
 
-		    vim_setenv((char_u*)hi->hi_key, tv_get_string(item));
+		    vim_setenv(hi->hi_key, tv_get_string(item));
 		    --todo;
 		}
 	}
@@ -6386,6 +6418,16 @@ select_eintr:
 # ifdef EINTR
 	if (ret == -1 && errno == EINTR)
 	{
+	    // Check whether the EINTR is caused by SIGTSTP
+	    if (got_tstp && !in_mch_suspend)
+	    {
+		exarg_T ea;
+
+		ea.forceit = TRUE;
+		ex_stop(&ea);
+		got_tstp = FALSE;
+	    }
+
 	    // Check whether window has been resized, EINTR may be caused by
 	    // SIGWINCH.
 	    if (do_resize)
@@ -6594,7 +6636,7 @@ mch_expand_wildcards(
      */
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
-	emsg(_(e_notmp));
+	emsg(_(e_cant_get_temp_file_name));
 	return FAIL;
     }
 
@@ -6855,7 +6897,7 @@ mch_expand_wildcards(
     if (i != (int)len)
     {
 	// unexpected read error
-	semsg(_(e_notread), tempname);
+	semsg(_(e_cant_read_file_str), tempname);
 	vim_free(tempname);
 	vim_free(buffer);
 	return FAIL;
@@ -7176,7 +7218,7 @@ gpm_open(void)
 	    // we are going to suspend or starting an external process
 	    // so we shouldn't  have problem with this
 # ifdef SIGTSTP
-	    signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
+	    signal(SIGTSTP, restricted ? SIG_IGN : (RETSIGTYPE (*)())sig_tstp);
 # endif
 	    return 1; // succeed
 	}
@@ -7445,7 +7487,7 @@ mch_libcall(
     if (hinstLib == NULL)
     {
 	// "dlerr" must be used before dlclose()
-	dlerr = (char *)dlerror();
+	dlerr = dlerror();
 	if (dlerr != NULL)
 	    semsg(_("dlerror = \"%s\""), dlerr);
     }
@@ -7480,7 +7522,7 @@ mch_libcall(
 	    {
 # if defined(USE_DLOPEN)
 		*(void **)(&ProcAdd) = dlsym(hinstLib, (const char *)funcname);
-		dlerr = (char *)dlerror();
+		dlerr = dlerror();
 # else
 		if (shl_findsym(&hinstLib, (const char *)funcname,
 					TYPE_PROCEDURE, (void *)&ProcAdd) < 0)
@@ -7502,7 +7544,7 @@ mch_libcall(
 	    {
 # if defined(USE_DLOPEN)
 		*(void **)(&ProcAddI) = dlsym(hinstLib, (const char *)funcname);
-		dlerr = (char *)dlerror();
+		dlerr = dlerror();
 # else
 		if (shl_findsym(&hinstLib, (const char *)funcname,
 				       TYPE_PROCEDURE, (void *)&ProcAddI) < 0)
@@ -7542,7 +7584,7 @@ mch_libcall(
 	    for (i = 0; signal_info[i].sig != -1; i++)
 		if (lc_signal == signal_info[i].sig)
 		    break;
-	    semsg("E368: got SIG%s in libcall()", signal_info[i].name);
+	    semsg(e_got_sig_str_in_libcall, signal_info[i].name);
 	}
 #  endif
 # endif
@@ -7561,7 +7603,7 @@ mch_libcall(
 
     if (!success)
     {
-	semsg(_(e_libcall), funcname);
+	semsg(_(e_library_call_failed_for_str), funcname);
 	return FAIL;
     }
 

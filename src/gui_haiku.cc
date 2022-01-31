@@ -3847,7 +3847,7 @@ gui_mch_get_font(
 
     if (name == 0 && be_fixed_font == 0) {
 	if (giveErrorIfMissing)
-			semsg(_(e_font), name);
+	    semsg(_(e_unknown_font_str), name);
 	return NOFONT;
     }
 
@@ -3914,7 +3914,7 @@ gui_mch_get_font(
 
     if (count_font_styles(family) <= 0) {
 	if (giveErrorIfMissing)
-			semsg(_(e_font), font->name);
+	    semsg(_(e_unknown_font_str), font->name);
 	delete font;
 	return NOFONT;
     }

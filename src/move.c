@@ -1152,7 +1152,7 @@ curs_columns(
 	}
 	else if (extra == 1)
 	{
-	    // less then 'scrolloff' lines above, decrease skipcol
+	    // less than 'scrolloff' lines above, decrease skipcol
 	    extra = (curwin->w_skipcol + so * width - curwin->w_virtcol
 				     + width - 1) / width;
 	    if (extra > 0)
@@ -1164,7 +1164,7 @@ curs_columns(
 	}
 	else if (extra == 2)
 	{
-	    // less then 'scrolloff' lines below, increase skipcol
+	    // less than 'scrolloff' lines below, increase skipcol
 	    endcol = (n - curwin->w_height + 1) * width;
 	    while (endcol > curwin->w_virtcol)
 		endcol -= width;
@@ -1262,12 +1262,15 @@ textpos2screenpos(
 	if (col >= wp->w_width)
 	    col = -1;
 	if (col >= 0 && row + rowoff <= wp->w_height)
+	{
 	    coloff = col - scol + wp->w_wincol + 1;
+	    row += W_WINROW(wp);
+	}
 	else
 	    // character is left, right or below of the window
 	    row = rowoff = scol = ccol = ecol = 0;
     }
-    *rowp = W_WINROW(wp) + row + rowoff;
+    *rowp = row + rowoff;
     *scolp = scol + coloff;
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;

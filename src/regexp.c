@@ -66,15 +66,10 @@ toggle_Magic(int x)
 #define EMSG2_RET_NULL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG3_RET_NULL(m, c, a) return (semsg((const char *)(m), (c) ? "" : "\\", (a)), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG2_RET_FAIL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, FAIL)
-#define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_("E369: invalid item in %s%%[]"), reg_magic == MAGIC_ALL)
+#define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_(e_invalid_item_in_str_brackets), reg_magic == MAGIC_ALL)
 
 
 #define MAX_LIMIT	(32767L << 16L)
-
-static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
-static char_u e_reverse_range[] = N_("E944: Reverse range in character class");
-static char_u e_large_class[] = N_("E945: Range too large in character class");
-static char_u e_recursive[]  = N_("E956: Cannot use pattern recursively");
 
 #define NOT_MULTI	0
 #define MULTI_ONE	1
@@ -552,7 +547,7 @@ skip_regexp_err(
 
     if (*p != delim)
     {
-	semsg(_("E654: missing delimiter after search pattern: %s"), startp);
+	semsg(_(e_missing_delimiter_after_search_pattern_str), startp);
 	return NULL;
     }
     return p;
@@ -1050,7 +1045,7 @@ read_limits(long *minval, long *maxval)
     if (*regparse == '\\')
 	regparse++;	// Allow either \{...} or \{...\}
     if (*regparse != '}')
-	EMSG2_RET_FAIL(_("E554: Syntax error in %s{...}"),
+	EMSG2_RET_FAIL(_(e_syntax_error_in_str_curlies),
 						       reg_magic == MAGIC_ALL);
 
     /*
@@ -1272,8 +1267,8 @@ reg_match_visual(void)
     colnr_T	cols;
     colnr_T	curswant;
 
-    // Check if the buffer is the current buffer.
-    if (rex.reg_buf != curbuf || VIsual.lnum == 0)
+    // Check if the buffer is the current buffer and not using a string.
+    if (rex.reg_buf != curbuf || VIsual.lnum == 0 || !REG_MULTI)
 	return FALSE;
 
     if (VIsual_active)
@@ -1310,9 +1305,9 @@ reg_match_visual(void)
     if (lnum < top.lnum || lnum > bot.lnum)
 	return FALSE;
 
+    col = (colnr_T)(rex.input - rex.line);
     if (mode == 'v')
     {
-	col = (colnr_T)(rex.input - rex.line);
 	if ((lnum == top.lnum && col < top.col)
 		|| (lnum == bot.lnum && col >= bot.col + (*p_sel != 'e')))
 	    return FALSE;
@@ -1327,7 +1322,12 @@ reg_match_visual(void)
 	    end = end2;
 	if (top.col == MAXCOL || bot.col == MAXCOL || curswant == MAXCOL)
 	    end = MAXCOL;
-	cols = win_linetabsize(wp, rex.line, (colnr_T)(rex.input - rex.line));
+
+	// getvvcol() flushes rex.line, need to get it again
+	rex.line = reg_getline(rex.lnum);
+	rex.input = rex.line + col;
+
+	cols = win_linetabsize(wp, rex.line, col);
 	if (cols < start || cols > end - (*p_sel == 'e'))
 	    return FALSE;
     }
@@ -1495,7 +1495,7 @@ re_mult_next(char *what)
 {
     if (re_multi_type(peekchr()) == MULTI_MULT)
     {
-       semsg(_("E888: (NFA regexp) cannot repeat %s"), what);
+       semsg(_(e_nfa_regexp_cannot_repeat_str), what);
        rc_did_emsg = TRUE;
        return FAIL;
     }
@@ -2638,7 +2638,7 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 	}
 	else
 	{
-	    emsg(_("E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be used "));
+	    emsg(_(e_percent_hash_can_only_be_followed_by_zero_one_two_automatic_engine_will_be_used));
 	    regexp_engine = AUTOMATIC_ENGINE;
 	}
     }
@@ -2774,7 +2774,7 @@ vim_regexec_string(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg(_(e_recursive));
+	emsg(_(e_cannot_use_pattern_recursively));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;
@@ -2895,7 +2895,7 @@ vim_regexec_multi(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg(_(e_recursive));
+	emsg(_(e_cannot_use_pattern_recursively));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;

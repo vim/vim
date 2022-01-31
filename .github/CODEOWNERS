@@ -9,6 +9,7 @@
 # So if a pull request only touches javascript files, only these owners
 # will be requested to review.
 
+runtime/autoload/freebasic.vim		@dkearns
 runtime/autoload/getscript.vim		@cecamp
 runtime/autoload/netrw.vim		@cecamp
 runtime/autoload/netrwFileHandlers.vim	@cecamp
@@ -111,6 +112,7 @@ runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
 runtime/ftplugin/ps1.vim		@heaths
 runtime/ftplugin/ps1xml.vim		@heaths
+runtime/ftplugin/qb64.vim		@dkearns
 runtime/ftplugin/routeros.vim		@zainin
 runtime/ftplugin/ruby.vim		@tpope @dkearns
 runtime/ftplugin/sass.vim		@tpope
@@ -126,6 +128,7 @@ runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/zsh.vim		@chrisbra
+runtime/indent/basic.vim		@dkearns
 runtime/indent/bst.vim			@tpope
 runtime/indent/cdl.vim			@dkearns
 runtime/indent/clojure.vim		@axvr
@@ -140,6 +143,7 @@ runtime/indent/elm.vim			@andys8
 runtime/indent/eruby.vim		@tpope @dkearns
 runtime/indent/eterm.vim		@dkearns
 runtime/indent/framescript.vim		@dkearns
+runtime/indent/freebasic.vim		@dkearns
 runtime/indent/gitconfig.vim		@tpope
 runtime/indent/haml.vim			@tpope
 runtime/indent/idlang.vim		@dkearns
@@ -154,6 +158,7 @@ runtime/indent/occam.vim		@dkearns
 runtime/indent/postscr.vim		@dkearns
 runtime/indent/prolog.vim		@dkearns
 runtime/indent/ps1.vim			@heaths
+runtime/indent/qb64.vim			@dkearns
 runtime/indent/readline.vim		@dkearns
 runtime/indent/ruby.vim			@AndrewRadev @dkearns
 runtime/indent/sass.vim			@tpope
@@ -239,6 +244,7 @@ runtime/syntax/prolog.vim		@XVilka
 runtime/syntax/ps1.vim			@heaths
 runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/psl.vim			@danielkho
+runtime/syntax/qb64.vim			@dkearns
 runtime/syntax/rc.vim			@chrisbra
 runtime/syntax/routeros.vim		@zainin
 runtime/syntax/rpcgen.vim		@cecamp

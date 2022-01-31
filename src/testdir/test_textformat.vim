@@ -223,6 +223,74 @@ func Test_format_c_comment()
   END
   call assert_equal(expected, getline(1, '$'))
 
+  %del
+  let text =<< trim END
+      #if 0           // This is another long end of
+                      // line comment that
+                      // wraps.
+  END
+  call setline(1, text)
+  normal gq2j
+  let expected =<< trim END
+      #if 0           // This is another long
+                      // end of line comment
+                      // that wraps.
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  " Using "o" repeats the line comment, "O" does not.
+  %del
+  let text =<< trim END
+      nop;
+      val = val;      // This is a comment
+  END
+  call setline(1, text)
+  normal 2Go
+  let expected =<< trim END
+      nop;
+      val = val;      // This is a comment
+                      //
+  END
+  call assert_equal(expected, getline(1, '$'))
+  normal 2GO
+  let expected =<< trim END
+      nop;
+
+      val = val;      // This is a comment
+                      //
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  " Using "o" does not repeat a comment in a string
+  %del
+  let text =<< trim END
+      nop;
+      val = " // This is not a comment";
+  END
+  call setline(1, text)
+  normal 2Gox
+  let expected =<< trim END
+      nop;
+      val = " // This is not a comment";
+      x
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  " Using CTRL-U after "o" fixes the indent
+  %del
+  let text =<< trim END
+      {
+         val = val;      // This is a comment
+  END
+  call setline(1, text)
+  exe "normal! 2Go\<C-U>x\<Esc>"
+  let expected =<< trim END
+      {
+         val = val;      // This is a comment
+         x
+  END
+  call assert_equal(expected, getline(1, '$'))
+
   bwipe!
 endfunc
 

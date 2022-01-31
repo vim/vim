@@ -1392,7 +1392,8 @@ regatom(int *flagp)
       case Magic(')'):
 	if (one_exactly)
 	    EMSG_ONE_RET_NULL;
-	IEMSG_RET_NULL(_(e_internal));	// Supposed to be caught earlier.
+	// Supposed to be caught earlier.
+	IEMSG_RET_NULL(_(e_internal_error_in_regexp));
 	// NOTREACHED
 
       case Magic('='):
@@ -1488,7 +1489,7 @@ regatom(int *flagp)
 			      return NULL;
 			  break;
 
-		default:  EMSG_RET_NULL(_("E68: Invalid character after \\z"));
+		default:  EMSG_RET_NULL(_(e_invalid_character_after_bsl_z));
 	    }
 	}
 	break;
@@ -1611,8 +1612,8 @@ regatom(int *flagp)
 
 			      if (i < 0 || i > INT_MAX)
 				  EMSG2_RET_NULL(
-					_("E678: Invalid character after %s%%[dxouU]"),
-					reg_magic == MAGIC_ALL);
+					    _(e_invalid_character_after_str_2),
+						       reg_magic == MAGIC_ALL);
 			      if (use_multibytecode(i))
 				  ret = regnode(MULTIBYTECODE);
 			      else
@@ -1781,13 +1782,13 @@ collection:
 				endc = coll_get_char();
 
 			    if (startc > endc)
-				EMSG_RET_NULL(_(e_reverse_range));
+				EMSG_RET_NULL(_(e_reverse_range_in_character_class));
 			    if (has_mbyte && ((*mb_char2len)(startc) > 1
 						 || (*mb_char2len)(endc) > 1))
 			    {
 				// Limit to a range of 256 chars.
 				if (endc > startc + 256)
-				    EMSG_RET_NULL(_(e_large_class));
+				    EMSG_RET_NULL(_(e_range_too_large_in_character_class));
 				while (++startc <= endc)
 				    regmbc(startc);
 			    }
@@ -2007,7 +2008,8 @@ collection:
 		break;
 	    }
 	    else if (reg_strict)
-		EMSG2_RET_NULL(_(e_missingbracket), reg_magic > MAGIC_OFF);
+		EMSG2_RET_NULL(_(e_missing_rsb_after_str_lsb),
+							reg_magic > MAGIC_OFF);
 	}
 	// FALLTHROUGH
 
@@ -2450,7 +2452,7 @@ reg(
 	if (curchr == Magic(')'))
 	    EMSG2_RET_NULL(_(e_unmatched_str_close), reg_magic == MAGIC_ALL);
 	else
-	    EMSG_RET_NULL(_(e_trailing));	// "Can't happen".
+	    EMSG_RET_NULL(_(e_trailing_characters));	// "Can't happen".
 	// NOTREACHED
     }
     // Here we set the flag allowing back references to this set of
@@ -2516,7 +2518,7 @@ bt_regcomp(char_u *expr, int re_flags)
     {
 	vim_free(r);
 	if (reg_toolong)
-	    EMSG_RET_NULL(_("E339: Pattern too long"));
+	    EMSG_RET_NULL(_(e_pattern_too_long));
 	return NULL;
     }
 
@@ -3138,7 +3140,7 @@ regstack_push(regstate_T state, char_u *scan)
 
     if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
     {
-	emsg(_(e_maxmempat));
+	emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 	return NULL;
     }
     if (ga_grow(&regstack, sizeof(regitem_T)) == FAIL)
@@ -4212,7 +4214,7 @@ regmatch(
 		    // a regstar_T on the regstack.
 		    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 		    {
-			emsg(_(e_maxmempat));
+			emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 			status = RA_FAIL;
 		    }
 		    else if (ga_grow(&regstack, sizeof(regstar_T)) == FAIL)
@@ -4257,7 +4259,7 @@ regmatch(
 	    // Need a bit of room to store extra positions.
 	    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 	    {
-		emsg(_(e_maxmempat));
+		emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 		status = RA_FAIL;
 	    }
 	    else if (ga_grow(&regstack, sizeof(regbehind_T)) == FAIL)

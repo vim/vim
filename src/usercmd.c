@@ -123,10 +123,10 @@ static struct
     char_u *
 find_ucmd(
     exarg_T	*eap,
-    char_u	*p,	// end of the command (possibly including count)
-    int		*full,	// set to TRUE for a full match
-    expand_T	*xp,	// used for completion, NULL otherwise
-    int		*complp UNUSED)	// completion flags or NULL
+    char_u	*p,	 // end of the command (possibly including count)
+    int		*full,	 // set to TRUE for a full match
+    expand_T	*xp,	 // used for completion, NULL otherwise
+    int		*complp) // completion flags or NULL
 {
     int		len = (int)(p - eap->cmd);
     int		j, k, matchlen = 0;
@@ -319,6 +319,7 @@ get_user_commands(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 
+#ifdef FEAT_EVAL
 /*
  * Get the name of user command "idx".  "cmdidx" can be CMD_USER or
  * CMD_USER_BUF.
@@ -343,6 +344,7 @@ get_user_command_name(int idx, int cmdidx)
     }
     return NULL;
 }
+#endif
 
 /*
  * Function given to ExpandGeneric() to obtain the list of user address type
@@ -394,6 +396,7 @@ get_user_cmd_complete(expand_T *xp UNUSED, int idx)
     return (char_u *)command_complete[idx].name;
 }
 
+#ifdef FEAT_EVAL
     int
 cmdcomplete_str_to_type(char_u *complete_str)
 {
@@ -405,6 +408,7 @@ cmdcomplete_str_to_type(char_u *complete_str)
 
     return EXPAND_NOTHING;
 }
+#endif
 
 /*
  * List user commands starting with "name[name_len]".
@@ -544,6 +548,15 @@ uc_list(char_u *name, size_t name_len)
 		{
 		    STRCPY(IObuff + len, command_complete[j].name);
 		    len += (int)STRLEN(IObuff + len);
+#ifdef FEAT_EVAL
+		    if (p_verbose > 0 && cmd->uc_compl_arg != NULL
+					    && STRLEN(cmd->uc_compl_arg) < 200)
+		    {
+			IObuff[len] = ',';
+			STRCPY(IObuff + len + 1, cmd->uc_compl_arg);
+			len += (int)STRLEN(IObuff + len);
+		    }
+#endif
 		    break;
 		}
 
@@ -618,7 +631,7 @@ parse_addr_type_arg(
 	for (i = 0; err[i] != NUL && !VIM_ISWHITE(err[i]); i++)
 	    ;
 	err[i] = NUL;
-	semsg(_("E180: Invalid address type value: %s"), err);
+	semsg(_(e_invalid_address_type_value_str), err);
 	return FAIL;
     }
 
@@ -678,7 +691,7 @@ parse_compl_arg(
 
     if (command_complete[i].expand == 0)
     {
-	semsg(_("E180: Invalid complete value: %s"), value);
+	semsg(_(e_invalid_complete_value_str), value);
 	return FAIL;
     }
 
@@ -689,7 +702,7 @@ parse_compl_arg(
     if (arg != NULL)
 # endif
     {
-	emsg(_("E468: Completion argument only allowed for custom completion"));
+	emsg(_(e_completion_argument_only_allowed_for_custom_completion));
 	return FAIL;
     }
 
@@ -697,7 +710,7 @@ parse_compl_arg(
     if ((*complp == EXPAND_USER_DEFINED || *complp == EXPAND_USER_LIST)
 							       && arg == NULL)
     {
-	emsg(_("E467: Custom completion requires a function argument"));
+	emsg(_(e_custom_completion_requires_function_argument));
 	return FAIL;
     }
 
@@ -726,7 +739,7 @@ uc_scan_attr(
 
     if (len == 0)
     {
-	emsg(_("E175: No attribute specified"));
+	emsg(_(e_no_attribute_specified));
 	return FAIL;
     }
 
@@ -781,7 +794,7 @@ uc_scan_attr(
 	    else
 	    {
 wrong_nargs:
-		emsg(_("E176: Invalid number of arguments"));
+		emsg(_(e_invalid_number_of_arguments));
 		return FAIL;
 	    }
 	}
@@ -796,7 +809,7 @@ wrong_nargs:
 		if (*def >= 0)
 		{
 two_count:
-		    emsg(_("E177: Count cannot be specified twice"));
+		    emsg(_(e_count_cannot_be_specified_twice));
 		    return FAIL;
 		}
 
@@ -806,7 +819,7 @@ two_count:
 		if (p != val + vallen || vallen == 0)
 		{
 invalid_count:
-		    emsg(_("E178: Invalid default value for count"));
+		    emsg(_(e_invalid_default_value_for_count));
 		    return FAIL;
 		}
 	    }
@@ -840,7 +853,7 @@ invalid_count:
 	{
 	    if (val == NULL)
 	    {
-		emsg(_("E179: argument required for -complete"));
+		semsg(_(e_argument_required_for_str), "-complete");
 		return FAIL;
 	    }
 
@@ -853,7 +866,7 @@ invalid_count:
 	    *argt |= EX_RANGE;
 	    if (val == NULL)
 	    {
-		emsg(_("E179: argument required for -addr"));
+		semsg(_(e_argument_required_for_str), "-addr");
 		return FAIL;
 	    }
 	    if (parse_addr_type_arg(val, (int)vallen, addr_type_arg) == FAIL)
@@ -865,7 +878,7 @@ invalid_count:
 	{
 	    char_u ch = attr[len];
 	    attr[len] = '\0';
-	    semsg(_("E181: Invalid attribute: %s"), attr);
+	    semsg(_(e_invalid_attribute_str), attr);
 	    attr[len] = ch;
 	    return FAIL;
 	}
@@ -913,7 +926,7 @@ uc_add_command(
     {
 	gap = &curbuf->b_ucmds;
 	if (gap->ga_itemsize == 0)
-	    ga_init2(gap, (int)sizeof(ucmd_T), 4);
+	    ga_init2(gap, sizeof(ucmd_T), 4);
     }
     else
 	gap = &ucmds;
@@ -945,7 +958,7 @@ uc_add_command(
 #endif
 		    )
 	    {
-		semsg(_("E174: Command already exists: add ! to replace it: %s"),
+		semsg(_(e_command_already_exists_add_bang_to_replace_it_str),
 									 name);
 		goto fail;
 	    }
@@ -1017,7 +1030,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 	char_u	    *line = NULL;
 
 	ga_init2(&ga, sizeof(char_u *), 10);
-	if (ga_add_string(&ga, p) == FAIL)
+	if (ga_copy_string(&ga, p) == FAIL)
 	    return retp;
 
 	// If the argument ends in "}" it must have been concatenated already
@@ -1034,7 +1047,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 		    emsg(_(e_missing_rcurly));
 		    break;
 		}
-		if (ga_add_string(&ga, line) == FAIL)
+		if (ga_copy_string(&ga, line) == FAIL)
 		    break;
 		if (*skipwhite(line) == '}')
 		    break;
@@ -1085,7 +1098,7 @@ ex_command(exarg_T *eap)
 	    ++p;
     if (!ends_excmd2(eap->arg, p) && !VIM_ISWHITE(*p))
     {
-	emsg(_("E182: Invalid command name"));
+	emsg(_(e_invalid_command_name));
 	return;
     }
     end = p;
@@ -1097,11 +1110,11 @@ ex_command(exarg_T *eap)
     if (!has_attr && ends_excmd2(eap->arg, p))
 	uc_list(name, end - name);
     else if (!ASCII_ISUPPER(*name))
-	emsg(_("E183: User defined commands must start with an uppercase letter"));
+	emsg(_(e_user_defined_commands_must_start_with_an_uppercase_letter));
     else if ((name_len == 1 && *name == 'X')
 	  || (name_len <= 4
 		  && STRNCMP(name, "Next", name_len > 4 ? 4 : name_len) == 0))
-	emsg(_("E841: Reserved name, cannot be used for user defined command"));
+	emsg(_(e_reserved_name_cannot_be_used_for_user_defined_command));
     else if (compl > 0 && (argt & EX_EXTRA) == 0)
     {
 	// Some plugins rely on silently ignoring the mistake, only make this

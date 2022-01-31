@@ -7,7 +7,7 @@
  */
 
 // Before Including the MacOS specific files,
-// lets set the OPAQUE_TOOLBOX_STRUCTS to 0 so we
+// let's set the OPAQUE_TOOLBOX_STRUCTS to 0 so we
 // can access the internal structures.
 // (Until fully Carbon compliant)
 // TODO: Can we remove this? (Dany)

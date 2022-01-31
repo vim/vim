@@ -4,7 +4,7 @@ source shared.vim
 source check.vim
 source term_util.vim
 source screendump.vim
-source vim9.vim
+import './vim9.vim' as v9
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -174,7 +174,7 @@ func Test_strwidth()
 
   if has('float')
     call assert_equal(3, strwidth(1.2))
-    call CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
+    call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
 
   set ambiwidth&
@@ -241,7 +241,7 @@ func Test_str2nr()
   call assert_fails('call str2nr({->2})', 'E729:')
   if has('float')
     call assert_equal(1, str2nr(1.2))
-    call CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
+    call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
   call assert_fails('call str2nr(10, [])', 'E745:')
 endfunc
@@ -503,7 +503,7 @@ func Test_simplify()
   call assert_fails('call simplify({})', 'E731:')
   if has('float')
     call assert_equal('1.2', simplify(1.2))
-    call CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
+    call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
 endfunc
 
@@ -1630,6 +1630,32 @@ func Test_setbufvar_options()
   bwipe!
 endfunc
 
+func Test_setbufvar_keep_window_title()
+  CheckRunVimInTerminal
+  if !has('title') || empty(&t_ts)
+    throw "Skipped: can't get/set title"
+  endif
+
+  let lines =<< trim END
+      set title
+      edit Xa.txt
+      let g:buf = bufadd('Xb.txt')
+      inoremap <F2> <C-R>=setbufvar(g:buf, '&autoindent', 1) ?? ''<CR>
+  END
+  call writefile(lines, 'Xsetbufvar')
+  let buf = RunVimInTerminal('-S Xsetbufvar', {})
+  call WaitForAssert({-> assert_match('Xa.txt', term_gettitle(buf))}, 1000)
+
+  call term_sendkeys(buf, "i\<F2>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>")
+  call TermWait(buf)
+  call assert_match('Xa.txt', term_gettitle(buf))
+
+  call StopVimInTerminal(buf)
+  call delete('Xsetbufvar')
+endfunc
+
 func Test_redo_in_nested_functions()
   nnoremap g. :set opfunc=Operator<CR>g@
   function Operator( type, ... )
@@ -2239,7 +2265,7 @@ func Test_call()
       let Time = 'localtime'
       call Time()
   END
-  call CheckScriptFailure(lines, 'E1085:')
+  call v9.CheckScriptFailure(lines, 'E1085:')
 endfunc
 
 func Test_char2nr()
@@ -2308,7 +2334,6 @@ endfunc
 
 func Test_state()
   CheckRunVimInTerminal
-  let g:test_is_flaky = 1
 
   let getstate = ":echo 'state: ' .. g:state .. '; mode: ' .. g:mode\<CR>"
 
@@ -2638,6 +2663,12 @@ func Test_range()
   call assert_fails('let x=range(1, 4, [])', 'E745:')
 endfunc
 
+func Test_garbagecollect_now_fails()
+  let v:testing = 0
+  call assert_fails('call test_garbagecollect_now()', 'E1142:')
+  let v:testing = 1
+endfunc
+
 func Test_echoraw()
   CheckScreendump
 
@@ -2769,7 +2800,7 @@ func Test_builtin_check()
     vim9script
     var s:trim = (x) => " " .. x
   END
-  call CheckScriptFailure(lines, 'E704:')
+  call v9.CheckScriptFailure(lines, 'E704:')
 
   call assert_fails('call extend(g:, #{foo: { -> "foo" }})', 'E704:')
   let g:bar = 123

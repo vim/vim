@@ -427,7 +427,7 @@ peek_console_input(
     DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, -1, lpEvents);
+    return read_console_input(hInput, lpBuffer, (DWORD)-1, lpEvents);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -439,7 +439,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -716,7 +716,7 @@ dyn_libintl_init(void)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadlib), GETTEXT_DLL, GetWin32Error());
+	    semsg(_(e_could_not_load_library_str_str), GETTEXT_DLL, GetWin32Error());
 	    verbose_leave();
 	}
 	return 0;
@@ -731,7 +731,7 @@ dyn_libintl_init(void)
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		semsg(_(e_loadfunc), libintl_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), libintl_entry[i].name);
 		verbose_leave();
 	    }
 	    return 0;
@@ -2187,7 +2187,7 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	}
     }
 
-    // Prepend single "." to pathext, it's means no extension added.
+    // Prepend single "." to pathext, it means no extension added.
     if (pathext == NULL)
 	pathext = (char_u *)".";
     else if (noext == TRUE)
@@ -2690,13 +2690,6 @@ static HICON g_hOrigIcon = NULL;
 static HICON g_hVimIcon = NULL;
 static BOOL g_fCanChangeIcon = FALSE;
 
-// ICON* are not defined in VC++ 4.0
-# ifndef ICON_SMALL
-#  define ICON_SMALL 0
-# endif
-# ifndef ICON_BIG
-#  define ICON_BIG 1
-# endif
 /*
  * GetConsoleIcon()
  * Description:
@@ -4123,10 +4116,10 @@ mch_system_classic(char *cmd, int options)
 	{
 	    MSG	msg;
 
-	    if (pPeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
+	    if (PeekMessageW(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
 	    {
 		TranslateMessage(&msg);
-		pDispatchMessage(&msg);
+		DispatchMessageW(&msg);
 		delay = 1;
 		continue;
 	    }
@@ -4445,10 +4438,10 @@ mch_system_piped(char *cmd, int options)
     {
 	MSG	msg;
 
-	if (pPeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
+	if (PeekMessageW(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
 	{
 	    TranslateMessage(&msg);
-	    pDispatchMessage(&msg);
+	    DispatchMessageW(&msg);
 	}
 
 	// write pipe information in the window
@@ -4954,7 +4947,7 @@ mch_call_shell(
 # ifdef VIMDLL
 		if (gui.in_use)
 # endif
-		    emsg(_("E371: Command not found"));
+		    emsg(_(e_command_not_found));
 #endif
 	    }
 
@@ -5280,7 +5273,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     ofd[1] = INVALID_HANDLE_VALUE;
     efd[0] = INVALID_HANDLE_VALUE;
     efd[1] = INVALID_HANDLE_VALUE;
-    ga_init2(&ga, (int)sizeof(wchar_t), 500);
+    ga_init2(&ga, sizeof(wchar_t), 500);
 
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)
@@ -5311,7 +5304,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5329,7 +5322,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (ofd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5347,7 +5340,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (efd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5544,7 +5537,7 @@ mch_signal_job(job_T *job, char_u *how)
 	{
 	    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
 		job->jv_channel->ch_killing = TRUE;
-	    return TerminateJobObject(job->jv_job_object, -1) ? OK : FAIL;
+	    return TerminateJobObject(job->jv_job_object, (UINT)-1) ? OK : FAIL;
 	}
 	return terminate_all(job->jv_proc_info.hProcess, -1) ? OK : FAIL;
     }
@@ -6277,7 +6270,7 @@ write_chars(
 	    cchwritten = 1;
     }
 
-    if (cchwritten == length)
+    if (cchwritten == (DWORD)length)
     {
 	written = cbToWrite;
 	g_coord.X += (SHORT)cells;
@@ -7464,88 +7457,6 @@ mch_copy_file_attribute(char_u *from, char_u *to)
     return 0;
 }
 
-#if defined(MYRESETSTKOFLW) || defined(PROTO)
-/*
- * Recreate a destroyed stack guard page in win32.
- * Written by Benjamin Peterson.
- */
-
-// These magic numbers are from the MS header files
-# define MIN_STACK_WINNT 2
-
-/*
- * This function does the same thing as _resetstkoflw(), which is only
- * available in DevStudio .net and later.
- * Returns 0 for failure, 1 for success.
- */
-    int
-myresetstkoflw(void)
-{
-    BYTE	*pStackPtr;
-    BYTE	*pGuardPage;
-    BYTE	*pStackBase;
-    BYTE	*pLowestPossiblePage;
-    MEMORY_BASIC_INFORMATION mbi;
-    SYSTEM_INFO si;
-    DWORD	nPageSize;
-    DWORD	dummy;
-
-    // We need to know the system page size.
-    GetSystemInfo(&si);
-    nPageSize = si.dwPageSize;
-
-    // ...and the current stack pointer
-    pStackPtr = (BYTE*)_alloca(1);
-
-    // ...and the base of the stack.
-    if (VirtualQuery(pStackPtr, &mbi, sizeof mbi) == 0)
-	return 0;
-    pStackBase = (BYTE*)mbi.AllocationBase;
-
-    // ...and the page that's min_stack_req pages away from stack base; this is
-    // the lowest page we could use.
-    pLowestPossiblePage = pStackBase + MIN_STACK_WINNT * nPageSize;
-
-    {
-	// We want the first committed page in the stack Start at the stack
-	// base and move forward through memory until we find a committed block.
-	BYTE *pBlock = pStackBase;
-
-	for (;;)
-	{
-	    if (VirtualQuery(pBlock, &mbi, sizeof mbi) == 0)
-		return 0;
-
-	    pBlock += mbi.RegionSize;
-
-	    if (mbi.State & MEM_COMMIT)
-		break;
-	}
-
-	// mbi now describes the first committed block in the stack.
-	if (mbi.Protect & PAGE_GUARD)
-	    return 1;
-
-	// decide where the guard page should start
-	if ((long_u)(mbi.BaseAddress) < (long_u)pLowestPossiblePage)
-	    pGuardPage = pLowestPossiblePage;
-	else
-	    pGuardPage = (BYTE*)mbi.BaseAddress;
-
-	// allocate the guard page
-	if (!VirtualAlloc(pGuardPage, nPageSize, MEM_COMMIT, PAGE_READWRITE))
-	    return 0;
-
-	// apply the guard attribute to the page
-	if (!VirtualProtect(pGuardPage, nPageSize, PAGE_READWRITE | PAGE_GUARD,
-								      &dummy))
-	    return 0;
-    }
-
-    return 1;
-}
-#endif
-
 
 /*
  * The command line arguments in UTF-16
@@ -7750,7 +7661,7 @@ fix_arg_enc(void)
 	// Now expand wildcards in the arguments.
 	// Temporarily add '(' and ')' to 'isfname'.  These are valid
 	// filename characters but are excluded from 'isfname' to make
-	// "gf" work on a file name in parenthesis (e.g.: see vim.h).
+	// "gf" work on a file name in parentheses (e.g.: see vim.h).
 	// Also, unset wildignore to not be influenced by this option.
 	// The arguments specified in command-line should be kept even if
 	// encoding options were changed.

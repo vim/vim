@@ -4,7 +4,7 @@ source view_util.vim
 source screendump.vim
 source check.vim
 source script_util.vim
-source vim9.vim
+import './vim9.vim' as v9
 
 func ClearDict(d)
   for k in keys(a:d)
@@ -922,17 +922,20 @@ func Test_highlight_default_colorscheme_restores_links()
   let hlTestHiPre = HighlightArgs('TestHi')
 
   " Test colorscheme
+  call assert_equal("\ndefault", execute('colorscheme'))
   hi clear
   if exists('syntax_on')
     syntax reset
   endif
   let g:colors_name = 'test'
+  call assert_equal("\ntest", execute('colorscheme'))
   hi link TestLink ErrorMsg
   hi TestHi ctermbg=green
 
   " Restore default highlighting
   colorscheme default
   " 'default' should work no matter if highlight group was cleared
+  call assert_equal("\ndefault", execute('colorscheme'))
   hi def link TestLink Identifier
   hi def TestHi ctermbg=red
   let hlTestLinkPost = HighlightArgs('TestLink')
@@ -1008,7 +1011,7 @@ func Test_hlget()
     call assert_equal([], hlget(test_null_string()))
     call assert_equal([], hlget(""))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for resolving highlight group links
   let lines =<< trim END
@@ -1039,7 +1042,7 @@ func Test_hlget()
     call assert_equal([{'id': hlgCid, 'name': 'hlgC',
                       \ 'term': {'bold': v:true}}], hlget('hlgC', v:true))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   call assert_fails('call hlget([])', 'E1174:')
   call assert_fails('call hlget("abc", "xyz")', 'E1212:')
@@ -1095,7 +1098,7 @@ func Test_hlset()
     call assert_equal('Search', hlget('NewHLGroup')[0].linksto)
     highlight clear NewHLGroup
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for clearing the 'term', 'cterm' and 'gui' attributes of a highlight
   " group.
@@ -1114,7 +1117,7 @@ func Test_hlset()
                 \ hlget('myhlg1'))
     highlight clear myhlg1
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for setting all the 'term', 'cterm' and 'gui' attributes of a
   " highlight group
@@ -1131,7 +1134,7 @@ func Test_hlset()
     call assert_equal([{'id': id2, 'name': 'myhlg2', 'gui': attr,
                       \ 'term': attr, 'cterm': attr}], hlget('myhlg2'))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for clearing some of the 'term', 'cterm' and 'gui' attributes of a
   " highlight group
@@ -1147,7 +1150,7 @@ func Test_hlset()
     call assert_equal([{'id': id2, 'name': 'myhlg2', 'gui': attr,
                       \ 'term': attr, 'cterm': attr}], hlget('myhlg2'))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for clearing the attributes and link of a highlight group
   let lines =<< trim END
@@ -1159,7 +1162,7 @@ func Test_hlset()
                       \ hlget('myhlg3'))
     highlight clear hlg3
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for setting default attributes for a highlight group
   let lines =<< trim END
@@ -1184,7 +1187,7 @@ func Test_hlset()
                     \ hlget('hlg6'))
     highlight clear hlg6
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for setting default links for a highlight group
   let lines =<< trim END
@@ -1214,7 +1217,7 @@ func Test_hlset()
                     \ 'linksto': 'ErrorMsg'}], hlget('hlg9dup'))
     highlight clear hlg9
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for force creating a link to a highlight group
   let lines =<< trim END
@@ -1228,7 +1231,7 @@ func Test_hlset()
                     \ 'linksto': 'Search'}], hlget('hlg10'))
     highlight clear hlg10
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for empty values of attributes
   call hlset([{'name': 'hlg11', 'cterm': {}}])

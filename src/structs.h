@@ -1422,6 +1422,11 @@ struct type_S {
     type_T	    **tt_args;	    // func argument types, allocated
 };
 
+typedef struct {
+    type_T	*type_curr;	    // current type, value type
+    type_T	*type_decl;	    // declared type or equal to type_current
+} type2_T;
+
 #define TTFLAG_VARARGS	1	    // func args ends with "..."
 #define TTFLAG_OPTARG	2	    // func arg type with "?"
 #define TTFLAG_BOOL_OK	4	    // can be converted to bool
@@ -1459,8 +1464,9 @@ typedef struct
 			// allowed to mask existing functions
 
 // Values for "v_lock".
-#define VAR_LOCKED	1	// locked with lock(), can use unlock()
-#define VAR_FIXED	2	// locked forever
+#define VAR_LOCKED	    1	// locked with lock(), can use unlock()
+#define VAR_FIXED	    2	// locked forever
+#define VAR_ITEMS_LOCKED    4	// items of non-materialized list locked
 
 /*
  * Structure to hold an item of a list: an internal variable without a name.
@@ -1492,7 +1498,8 @@ struct listwatch_S
  */
 struct listvar_S
 {
-    listitem_T	*lv_first;	// first item, NULL if none
+    listitem_T	*lv_first;	// first item, NULL if none, &range_list_item
+				// for a non-materialized list
     listwatch_T	*lv_watch;	// first watcher, NULL if none
     union {
 	struct {	// used for non-materialized range list:
@@ -1507,7 +1514,7 @@ struct listvar_S
 	    int		lv_idx;		// cached index of an item
 	} mat;
     } lv_u;
-    type_T	*lv_type;	// allocated by alloc_type()
+    type_T	*lv_type;	// current type, allocated by alloc_type()
     list_T	*lv_copylist;	// copied list used by deepcopy()
     list_T	*lv_used_next;	// next list in used lists list
     list_T	*lv_used_prev;	// previous list in used lists list
@@ -1571,7 +1578,7 @@ struct dictvar_S
     int		dv_refcount;	// reference count
     int		dv_copyID;	// ID used by deepcopy()
     hashtab_T	dv_hashtab;	// hashtab that refers to the items
-    type_T	*dv_type;	// allocated by alloc_type()
+    type_T	*dv_type;	// current type, allocated by alloc_type()
     dict_T	*dv_copydict;	// copied dict used by deepcopy()
     dict_T	*dv_used_next;	// next dict in used dicts list
     dict_T	*dv_used_prev;	// previous dict in used dicts list
@@ -1817,20 +1824,12 @@ struct svar_S {
 
 typedef struct {
     char_u	*imp_name;	    // name imported as (allocated)
-    int		imp_sid;	    // script ID of "from"
-
+    scid_T	imp_sid;	    // script ID of "from"
     int		imp_flags;	    // IMP_FLAGS_ values
-
-    // for a variable
-    type_T	*imp_type;
-    int		imp_var_vals_idx;   // index in sn_var_vals of "from"
-
-    // for a function
-    char_u	*imp_funcname;	    // user func name (NOT allocated)
 } imported_T;
 
-#define IMP_FLAGS_STAR		1   // using "import * as Name"
 #define IMP_FLAGS_RELOAD	2   // script reloaded, OK to redefine
+#define IMP_FLAGS_AUTOLOAD	4   // script still needs to be loaded
 
 /*
  * Info about an already sourced scripts.
@@ -1868,6 +1867,9 @@ typedef struct
     char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
     char	sn_is_vimrc;	// .vimrc file, do not restore 'cpo'
 
+    // for "vim9script autoload" this is "dir#scriptname#"
+    char_u	*sn_autoload_prefix;
+
 # ifdef FEAT_PROFILE
     int		sn_prof_on;	// TRUE when script is/was profiled
     int		sn_pr_force;	// forceit: profile functions in this script
@@ -1890,7 +1892,8 @@ typedef struct
 } scriptitem_T;
 
 #define SN_STATE_NEW		0   // newly loaded script, nothing done
-#define SN_STATE_RELOAD		1   // script loaded before, nothing done
+#define SN_STATE_NOT_LOADED	1   // script located but not loaded
+#define SN_STATE_RELOAD		2   // script loaded before, nothing done
 #define SN_STATE_HAD_COMMAND	9   // a command was executed
 
 // Struct passed through eval() functions.
@@ -3694,6 +3697,8 @@ struct window_S
      */
     winopt_T	w_onebuf_opt;
     winopt_T	w_allbuf_opt;
+    // transform a pointer to a "onebuf" option into a "allbuf" option
+#define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
 
     // A few options have local flags for P_INSECURE.
 #ifdef FEAT_STL_OPT
@@ -3716,9 +3721,6 @@ struct window_S
     int		w_briopt_sbr;	    // sbr in 'briopt'
     int		w_briopt_list;      // additional indent for lists
 #endif
-
-    // transform a pointer to a "onebuf" option into a "allbuf" option
-#define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
 
     long	w_scbind_pos;
 
@@ -4035,6 +4037,7 @@ typedef struct
     int		save_prevwin_id;    // ID of saved prevwin
     bufref_T	new_curbuf;	    // new curbuf
     char_u	*globaldir;	    // saved value of globaldir
+    int		save_VIsual_active; // saved VIsual_active
 } aco_save_T;
 
 /*
@@ -4259,6 +4262,10 @@ typedef struct lval_S
     char_u	*ll_name_end;	// end of variable name (can be NULL)
     type_T	*ll_type;	// type of variable (can be NULL)
     char_u	*ll_exp_name;	// NULL or expanded name in allocated memory.
+
+    scid_T	ll_sid;		// for an imported item: the script ID it was
+				// imported from; zero otherwise
+
     typval_T	*ll_tv;		// Typeval of item being used.  If "newkey"
 				// isn't NULL it's the Dict to which to add
 				// the item.
@@ -4502,3 +4509,10 @@ typedef enum {
     FILTERMAP_MAPNEW
 } filtermap_T;
 
+// Structure used by switch_win() to pass values to restore_win()
+typedef struct {
+    win_T	*sw_curwin;
+    tabpage_T	*sw_curtab;
+    int		sw_same_win;	    // VIsual_active was not reset
+    int		sw_visual_active;
+} switchwin_T;

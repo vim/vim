@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2021 Nov 29
+*windows.txt*   For Vim version 8.2.  Last change: 2022 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -146,7 +146,7 @@ highlight group (|hl-EndOfBuffer|) can be used to change the highlighting of
 the filler characters.
 
 ==============================================================================
-3. Opening and closing a window				*opening-window* *E36*
+3. Opening and closing a window				*opening-window*
 
 CTRL-W s						*CTRL-W_s*
 CTRL-W S						*CTRL-W_S*
@@ -246,6 +246,10 @@ CTRL-W :	Does the same as typing |:| - enter a command line.  Useful in a
 
 Note that the 'splitbelow' and 'splitright' options influence where a new
 window will appear.
+								*E36*
+Creating a window will fail if there is not enough room.  Every window needs
+at least one screen line and column, sometimes more.   Options 'winminheight'
+and 'winminwidth' are relevant.
 
 						*:vert* *:vertical*
 :vert[ical] {cmd}

@@ -462,12 +462,13 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	p = NameBuff;
 	len = (int)STRLEN(p);
 
-	if (bt_help(wp->w_buffer)
+	if ((bt_help(wp->w_buffer)
 #ifdef FEAT_QUICKFIX
-		|| wp->w_p_pvw
+		    || wp->w_p_pvw
 #endif
-		|| bufIsChanged(wp->w_buffer)
-		|| wp->w_buffer->b_p_ro)
+		    || bufIsChanged(wp->w_buffer)
+		    || wp->w_buffer->b_p_ro)
+		&& len < MAXPATHL - 1)
 	    *(p + len++) = ' ';
 	if (bt_help(wp->w_buffer))
 	{
@@ -537,7 +538,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
 
 	if (get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)
-		&& (int)(this_ru_col - len) > (int)(STRLEN(NameBuff) + 1))
+		&& (this_ru_col - len) > (int)(STRLEN(NameBuff) + 1))
 	    screen_puts(NameBuff, row, (int)(this_ru_col - STRLEN(NameBuff)
 						   - 1 + wp->w_wincol), attr);
 
@@ -796,7 +797,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	i = redraw_cmdline;
 	screen_fill(row, row + 1,
 		this_ru_col + off + (int)STRLEN(buffer),
-		(int)(off + width),
+		(off + width),
 		fillchar, fillchar, attr);
 	// don't redraw the cmdline because of showing the ruler
 	redraw_cmdline = i;
@@ -1037,8 +1038,7 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp->w_winrow, wp->w_wincol, (int)wp->w_width,
-							  (int)wp->w_width, 0);
+    screen_line(wp->w_winrow, wp->w_wincol, wp->w_width, wp->w_width, 0);
 }
 #endif
 
@@ -1371,8 +1371,7 @@ fold_line(
     }
 #endif
 
-    screen_line(row + W_WINROW(wp), wp->w_wincol, (int)wp->w_width,
-						     (int)wp->w_width, 0);
+    screen_line(row + W_WINROW(wp), wp->w_wincol, wp->w_width, wp->w_width, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
@@ -1814,10 +1813,11 @@ win_update(win_T *wp)
 	    // When topline didn't change, find first entry in w_lines[] that
 	    // needs updating.
 
-	    // try to find wp->w_topline in wp->w_lines[].wl_lnum
+	    // Try to find wp->w_topline in wp->w_lines[].wl_lnum.  The check
+	    // for "Rows" is in case "wl_size" is incorrect somehow.
 	    j = -1;
 	    row = 0;
-	    for (i = 0; i < wp->w_lines_valid; i++)
+	    for (i = 0; i < wp->w_lines_valid && i < Rows; i++)
 	    {
 		if (wp->w_lines[i].wl_valid
 			&& wp->w_lines[i].wl_lnum == wp->w_topline)
@@ -1847,6 +1847,8 @@ win_update(win_T *wp)
 		// ... but don't delete new filler lines.
 		row -= wp->w_topfill;
 #endif
+		if (row > Rows)  // just in case
+		    row = Rows;
 		if (row > 0)
 		{
 		    check_for_delay(FALSE);
@@ -2538,6 +2540,11 @@ win_update(win_T *wp)
 	    eof = TRUE;
 	    break;
 	}
+
+	// Safety check: if any of the wl_size values is wrong we might go over
+	// the end of w_lines[].
+	if (idx >= Rows)
+	    break;
     }
 
     // End of loop over all window lines.

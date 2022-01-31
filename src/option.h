@@ -486,7 +486,9 @@ EXTERN int	p_deco;		// 'delcombine'
 EXTERN char_u	*p_ccv;		// 'charconvert'
 #endif
 EXTERN int	p_cdh;		// 'cdhome'
+#ifdef FEAT_CINDENT
 EXTERN char_u	*p_cino;	// 'cinoptions'
+#endif
 #ifdef FEAT_CMDWIN
 EXTERN char_u	*p_cedit;	// 'cedit'
 EXTERN long	p_cwh;		// 'cmdwinheight'
@@ -730,13 +732,6 @@ EXTERN char_u	*p_mef;		// 'makeef'
 EXTERN char_u	*p_mp;		// 'makeprg'
 #endif
 EXTERN char_u	*p_mps;		// 'matchpairs'
-#ifdef FEAT_SIGNS
-EXTERN char_u  *p_scl;		// signcolumn
-#endif
-#ifdef FEAT_SYN_HL
-EXTERN char_u   *p_cc;		// 'colorcolumn'
-EXTERN int      p_cc_cols[256]; // array for 'colorcolumn' columns
-#endif
 EXTERN long	p_mat;		// 'matchtime'
 EXTERN long	p_mco;		// 'maxcombine'
 #ifdef FEAT_EVAL
@@ -840,7 +835,9 @@ EXTERN int	p_ru;		// 'ruler'
 EXTERN char_u	*p_ruf;		// 'rulerformat'
 #endif
 EXTERN char_u	*p_pp;		// 'packpath'
+#ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_qftf;	// 'quickfixtextfunc'
+#endif
 EXTERN char_u	*p_rtp;		// 'runtimepath'
 EXTERN long	p_sj;		// 'scrolljump'
 #if defined(MSWIN) && defined(FEAT_GUI)
@@ -949,7 +946,9 @@ EXTERN unsigned	swb_flags;
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
 #define SWB_USELAST		0x020
+#ifdef FEAT_SYN_HL
 EXTERN char_u	*p_syn;		// 'syntax'
+#endif
 EXTERN long	p_ts;		// 'tabstop'
 EXTERN int	p_tbs;		// 'tagbsearch'
 EXTERN char_u	*p_tc;		// 'tagcase'
@@ -1026,8 +1025,8 @@ EXTERN unsigned ttym_flags;
 # define TTYM_URXVT		0x40
 # define TTYM_SGR		0x80
 #endif
-EXTERN char_u	*p_udir;	// 'undodir'
 #ifdef FEAT_PERSISTENT_UNDO
+EXTERN char_u	*p_udir;	// 'undodir'
 EXTERN int	p_udf;		// 'undofile'
 #endif
 EXTERN long	p_ul;		// 'undolevels'
@@ -1236,7 +1235,6 @@ enum
     , BV_VSTS
     , BV_VTS
 #endif
-    , BV_VE
     , BV_COUNT	    // must be the last one
 };
 
@@ -1288,6 +1286,7 @@ enum
 #endif
     , WV_NU
     , WV_RNU
+    , WV_VE
 #ifdef FEAT_LINEBREAK
     , WV_NUW
 #endif

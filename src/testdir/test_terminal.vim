@@ -14,6 +14,7 @@ let s:python = PythonProg()
 let $PROMPT_COMMAND=''
 
 func Test_terminal_basic()
+  call test_override('vterm_title', 1)
   au TerminalOpen * let b:done = 'yes'
   let buf = Run_shell_in_terminal({})
 
@@ -26,7 +27,6 @@ func Test_terminal_basic()
   call assert_fails('set modifiable', 'E946:')
 
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   call assert_equal('n', mode())
   call assert_match('%aF[^\n]*finished]', execute('ls'))
   call assert_match('%aF[^\n]*finished]', execute('ls F'))
@@ -38,6 +38,7 @@ func Test_terminal_basic()
   call assert_equal("", bufname(buf))
 
   au! TerminalOpen
+  call test_override('ALL', 0)
   unlet g:job
 endfunc
 
@@ -48,7 +49,6 @@ func Test_terminal_no_name()
   call assert_equal("", bufname(buf))
   call assert_match('\[No Name\]', execute('file'))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
 endfunc
 
 func Test_terminal_TerminalWinOpen()
@@ -71,7 +71,6 @@ endfunc
 func Test_terminal_make_change()
   let buf = Run_shell_in_terminal({})
   call StopShellInTerminal(buf)
-  call TermWait(buf)
 
   setlocal modifiable
   exe "normal Axxx\<Esc>"
@@ -109,7 +108,6 @@ endfunc
 
 func Test_terminal_split_quit()
   let buf = Run_shell_in_terminal({})
-  call TermWait(buf)
   split
   quit!
   call TermWait(buf)
@@ -363,7 +361,6 @@ func Test_terminal_scrollback()
   call assert_inrange(91, 100, lines)
 
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
   set termwinscroll&
   call delete('Xtext')
@@ -751,7 +748,6 @@ func Test_terminal_noblock()
 
   let g:job = term_getjob(buf)
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   unlet g:job
   bwipe
 endfunc
@@ -934,7 +930,6 @@ func TerminalTmap(remap)
 
   call term_sendkeys(buf, "\r")
   call StopShellInTerminal(buf)
-  call TermWait(buf)
 
   tunmap 123
   tunmap 456
@@ -952,7 +947,6 @@ func Test_terminal_wall()
   let buf = Run_shell_in_terminal({})
   wall
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
   unlet g:job
 endfunc
@@ -961,7 +955,6 @@ func Test_terminal_wqall()
   let buf = Run_shell_in_terminal({})
   call assert_fails('wqall', 'E948:')
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
   unlet g:job
 endfunc
@@ -2001,7 +1994,6 @@ func Test_terminal_ansicolors_default()
   let buf = Run_shell_in_terminal({})
   call assert_equal(colors, term_getansicolors(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   call assert_equal([], term_getansicolors(buf))
 
   exe buf . 'bwipe'
@@ -2026,7 +2018,6 @@ func Test_terminal_ansicolors_global()
   let buf = Run_shell_in_terminal({})
   call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
 
   exe buf . 'bwipe'
   unlet g:terminal_ansi_colors
@@ -2060,7 +2051,6 @@ func Test_terminal_ansicolors_func()
   call assert_fails('call term_setansicolors(buf, {})', 'E714:')
 
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   call assert_equal(0, term_setansicolors(buf, []))
   exe buf . 'bwipe'
 endfunc

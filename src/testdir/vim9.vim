@@ -1,10 +1,12 @@
-" Utility functions for testing vim9 script
+vim9script
 
-" Use a different file name for each run.
-let s:sequence = 1
+# Utility functions for testing vim9 script
 
-" Check that "lines" inside a ":def" function has no error when called.
-func CheckDefSuccess(lines)
+# Use a different file name for each run.
+var sequence = 1
+
+# Check that "lines" inside a ":def" function has no error when called.
+export func CheckDefSuccess(lines)
   let cwd = getcwd()
   let fname = 'XdefSuccess' .. s:sequence
   let s:sequence += 1
@@ -19,8 +21,8 @@ func CheckDefSuccess(lines)
   endtry
 endfunc
 
-" Check that "lines" inside a ":def" function has no error when compiled.
-func CheckDefCompileSuccess(lines)
+# Check that "lines" inside a ":def" function has no error when compiled.
+export func CheckDefCompileSuccess(lines)
   let fname = 'XdefSuccess' .. s:sequence
   let s:sequence += 1
   call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], fname)
@@ -32,11 +34,11 @@ func CheckDefCompileSuccess(lines)
   endtry
 endfunc
 
-" Check that "lines" inside ":def" results in an "error" message.
-" If "lnum" is given check that the error is reported for this line.
-" Add a line before and after to make it less likely that the line number is
-" accidentally correct.
-func CheckDefFailure(lines, error, lnum = -3)
+# Check that "lines" inside ":def" results in an "error" message.
+# If "lnum" is given check that the error is reported for this line.
+# Add a line before and after to make it less likely that the line number is
+# accidentally correct.
+export func CheckDefFailure(lines, error, lnum = -3)
   let cwd = getcwd()
   let fname = 'XdefFailure' .. s:sequence
   let s:sequence += 1
@@ -50,11 +52,11 @@ func CheckDefFailure(lines, error, lnum = -3)
   endtry
 endfunc
 
-" Check that "lines" inside ":def" results in an "error" message when executed.
-" If "lnum" is given check that the error is reported for this line.
-" Add a line before and after to make it less likely that the line number is
-" accidentally correct.
-func CheckDefExecFailure(lines, error, lnum = -3)
+# Check that "lines" inside ":def" results in an "error" message when executed.
+# If "lnum" is given check that the error is reported for this line.
+# Add a line before and after to make it less likely that the line number is
+# accidentally correct.
+export func CheckDefExecFailure(lines, error, lnum = -3)
   let cwd = getcwd()
   let fname = 'XdefExecFailure' .. s:sequence
   let s:sequence += 1
@@ -69,7 +71,7 @@ func CheckDefExecFailure(lines, error, lnum = -3)
   endtry
 endfunc
 
-def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
+export def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
   var cwd = getcwd()
   var fname = 'XScriptFailure' .. s:sequence
   s:sequence += 1
@@ -82,7 +84,7 @@ def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
   endtry
 enddef
 
-def CheckScriptFailureList(lines: list<string>, errors: list<string>, lnum = -3)
+export def CheckScriptFailureList(lines: list<string>, errors: list<string>, lnum = -3)
   var cwd = getcwd()
   var fname = 'XScriptFailure' .. s:sequence
   s:sequence += 1
@@ -95,7 +97,7 @@ def CheckScriptFailureList(lines: list<string>, errors: list<string>, lnum = -3)
   endtry
 enddef
 
-def CheckScriptSuccess(lines: list<string>)
+export def CheckScriptSuccess(lines: list<string>)
   var cwd = getcwd()
   var fname = 'XScriptSuccess' .. s:sequence
   s:sequence += 1
@@ -108,17 +110,17 @@ def CheckScriptSuccess(lines: list<string>)
   endtry
 enddef
 
-def CheckDefAndScriptSuccess(lines: list<string>)
+export def CheckDefAndScriptSuccess(lines: list<string>)
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
 enddef
 
-" Check that a command fails when used in a :def function and when used in
-" Vim9 script.
-" When "error" is a string, both with the same error.
-" When "error" is a list, the :def function fails with "error[0]" , the script
-" fails with "error[1]".
-def CheckDefAndScriptFailure(lines: list<string>, error: any, lnum = -3)
+# Check that a command fails when used in a :def function and when used in
+# Vim9 script.
+# When "error" is a string, both with the same error.
+# When "error" is a list, the :def function fails with "error[0]" , the script
+# fails with "error[1]".
+export def CheckDefAndScriptFailure(lines: list<string>, error: any, lnum = -3)
   var errorDef: string
   var errorScript: string
   if type(error) == v:t_string
@@ -135,12 +137,12 @@ def CheckDefAndScriptFailure(lines: list<string>, error: any, lnum = -3)
   CheckScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
 enddef
 
-" Check that a command fails when executed in a :def function and when used in
-" Vim9 script.
-" When "error" is a string, both with the same error.
-" When "error" is a list, the :def function fails with "error[0]" , the script
-" fails with "error[1]".
-def CheckDefExecAndScriptFailure(lines: list<string>, error: any, lnum = -3)
+# Check that a command fails when executed in a :def function and when used in
+# Vim9 script.
+# When "error" is a string, both with the same error.
+# When "error" is a list, the :def function fails with "error[0]" , the script
+# fails with "error[1]".
+export def CheckDefExecAndScriptFailure(lines: list<string>, error: any, lnum = -3)
   var errorDef: string
   var errorScript: string
   if type(error) == v:t_string
@@ -158,8 +160,8 @@ def CheckDefExecAndScriptFailure(lines: list<string>, error: any, lnum = -3)
 enddef
 
 
-" Check that "lines" inside a legacy function has no error.
-func CheckLegacySuccess(lines)
+# Check that "lines" inside a legacy function has no error.
+export func CheckLegacySuccess(lines)
   let cwd = getcwd()
   let fname = 'XlegacySuccess' .. s:sequence
   let s:sequence += 1
@@ -174,8 +176,8 @@ func CheckLegacySuccess(lines)
   endtry
 endfunc
 
-" Check that "lines" inside a legacy function results in the expected error
-func CheckLegacyFailure(lines, error)
+# Check that "lines" inside a legacy function results in the expected error
+export func CheckLegacyFailure(lines, error)
   let cwd = getcwd()
   let fname = 'XlegacyFails' .. s:sequence
   let s:sequence += 1
@@ -189,9 +191,9 @@ func CheckLegacyFailure(lines, error)
   endtry
 endfunc
 
-" Execute "lines" in a legacy function, translated as in
-" CheckLegacyAndVim9Success()
-def CheckTransLegacySuccess(lines: list<string>)
+# Execute "lines" in a legacy function, translated as in
+# CheckLegacyAndVim9Success()
+export def CheckTransLegacySuccess(lines: list<string>)
   var legacylines = lines->mapnew((_, v) =>
   				v->substitute('\<VAR\>', 'let', 'g')
 		           	 ->substitute('\<LET\>', 'let', 'g')
@@ -204,7 +206,7 @@ def CheckTransLegacySuccess(lines: list<string>)
   CheckLegacySuccess(legacylines)
 enddef
 
-def Vim9Trans(lines: list<string>): list<string>
+export def Vim9Trans(lines: list<string>): list<string>
   return lines->mapnew((_, v) =>
 	    v->substitute('\<VAR\>', 'var', 'g')
 	    ->substitute('\<LET ', '', 'g')
@@ -215,36 +217,36 @@ def Vim9Trans(lines: list<string>): list<string>
 	    ->substitute('\<FALSE\>', 'false', 'g'))
 enddef
 
-" Execute "lines" in a :def function, translated as in
-" CheckLegacyAndVim9Success()
-def CheckTransDefSuccess(lines: list<string>)
+# Execute "lines" in a :def function, translated as in
+# CheckLegacyAndVim9Success()
+export def CheckTransDefSuccess(lines: list<string>)
   CheckDefSuccess(Vim9Trans(lines))
 enddef
 
-" Execute "lines" in a Vim9 script, translated as in
-" CheckLegacyAndVim9Success()
-def CheckTransVim9Success(lines: list<string>)
+# Execute "lines" in a Vim9 script, translated as in
+# CheckLegacyAndVim9Success()
+export def CheckTransVim9Success(lines: list<string>)
   CheckScriptSuccess(['vim9script'] + Vim9Trans(lines))
 enddef
 
-" Execute "lines" in a legacy function, :def function and Vim9 script.
-" Use 'VAR' for a declaration.
-" Use 'LET' for an assignment
-" Use ' #"' for a comment
-" Use LSTART arg LMIDDLE expr LEND for lambda
-" Use 'TRUE' for 1 in legacy, true in Vim9
-" Use 'FALSE' for 0 in legacy, false in Vim9
-def CheckLegacyAndVim9Success(lines: list<string>)
+# Execute "lines" in a legacy function, :def function and Vim9 script.
+# Use 'VAR' for a declaration.
+# Use 'LET' for an assignment
+# Use ' #"' for a comment
+# Use LSTART arg LMIDDLE expr LEND for lambda
+# Use 'TRUE' for 1 in legacy, true in Vim9
+# Use 'FALSE' for 0 in legacy, false in Vim9
+export def CheckLegacyAndVim9Success(lines: list<string>)
   CheckTransLegacySuccess(lines)
   CheckTransDefSuccess(lines)
   CheckTransVim9Success(lines)
 enddef
 
-" Execute "lines" in a legacy function, :def function and Vim9 script.
-" Use 'VAR' for a declaration.
-" Use 'LET' for an assignment
-" Use ' #"' for a comment
-def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
+# Execute "lines" in a legacy function, :def function and Vim9 script.
+# Use 'VAR' for a declaration.
+# Use 'LET' for an assignment
+# Use ' #"' for a comment
+export def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
   var legacyError: string
   var defError: string
   var scriptError: string

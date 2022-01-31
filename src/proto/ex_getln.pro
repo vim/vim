@@ -1,6 +1,6 @@
 /* ex_getln.c */
 void cmdline_init(void);
-char_u *getcmdline(int firstc, long count, int indent, int do_concat);
+char_u *getcmdline(int firstc, long count, int indent, getline_opt_T do_concat);
 char_u *getcmdline_prompt(int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg);
 int check_opt_wim(void);
 int text_and_win_locked(void);
@@ -34,7 +34,6 @@ void f_getcmdline(typval_T *argvars, typval_T *rettv);
 void f_getcmdpos(typval_T *argvars, typval_T *rettv);
 void f_setcmdpos(typval_T *argvars, typval_T *rettv);
 void f_getcmdtype(typval_T *argvars, typval_T *rettv);
-int get_cmdline_type(void);
 int get_cmdline_firstc(void);
 int get_list_range(char_u **str, int *num1, int *num2);
 char *check_cedit(void);

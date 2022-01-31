@@ -161,7 +161,7 @@ ch_logfile(char_u *fname, char_u *opt)
 	file = fopen((char *)fname, *opt == 'w' ? "w" : "a");
 	if (file == NULL)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    return;
 	}
 	vim_free(log_name);
@@ -707,8 +707,6 @@ channel_gui_unregister(channel_T *channel)
 
 #endif  // FEAT_GUI
 
-static char *e_cannot_connect = N_("E902: Cannot connect to port");
-
 /*
  * For Unix we need to call connect() again after connect() failed.
  * On Win32 one time is sufficient.
@@ -737,7 +735,7 @@ channel_connect(
 	if (sd == -1)
 	{
 	    ch_error(channel, "in socket() in channel_connect().");
-	    PERROR(_("E898: socket() in channel_connect()"));
+	    PERROR(_(e_socket_in_channel_connect));
 	    return -1;
 	}
 
@@ -778,7 +776,7 @@ channel_connect(
 	{
 	    ch_error(channel,
 		      "channel_connect: Connect failed with errno %d", errno);
-	    PERROR(_(e_cannot_connect));
+	    PERROR(_(e_cannot_connect_to_port));
 	    sock_close(sd);
 	    return -1;
 	}
@@ -818,13 +816,13 @@ channel_connect(
 	    ch_log(channel,
 		      "Waiting for connection (waiting %d msec)...", waitnow);
 
-	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
+	    ret = select(sd + 1, &rfds, &wfds, NULL, &tv);
 	    if (ret < 0)
 	    {
 		SOCK_ERRNO;
 		ch_error(channel,
 		      "channel_connect: Connect failed with errno %d", errno);
-		PERROR(_(e_cannot_connect));
+		PERROR(_(e_cannot_connect_to_port));
 		sock_close(sd);
 		return -1;
 	    }
@@ -863,7 +861,7 @@ channel_connect(
 		    ch_error(channel,
 			    "channel_connect: Connect failed with errno %d",
 			    so_error);
-		    PERROR(_(e_cannot_connect));
+		    PERROR(_(e_cannot_connect_to_port));
 		    sock_close(sd);
 		    return -1;
 		}
@@ -982,8 +980,7 @@ channel_open(
     if ((err = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
     {
 	ch_error(channel, "in getaddrinfo() in channel_open()");
-	semsg(_("E901: getaddrinfo() in channel_open(): %s"),
-							   gai_strerror(err));
+	semsg(_(e_getaddrinfo_in_channel_open_str), gai_strerror(err));
 	channel_free(channel);
 	return NULL;
     }
@@ -1047,7 +1044,7 @@ channel_open(
     if ((host = gethostbyname(hostname)) == NULL)
     {
 	ch_error(channel, "in gethostbyname() in channel_open()");
-	PERROR(_("E901: gethostbyname() in channel_open()"));
+	PERROR(_(e_gethostbyname_in_channel_open));
 	channel_free(channel);
 	return NULL;
     }
@@ -1318,7 +1315,7 @@ channel_open_func(typval_T *argvars)
     if (argvars[1].v_type != VAR_UNKNOWN
 	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return NULL;
     }
 
@@ -1330,7 +1327,7 @@ channel_open_func(typval_T *argvars)
 	p = vim_strchr(address + 1, ']');
 	if (p == NULL || *++p != ':')
 	{
-	    semsg(_(e_invarg2), address);
+	    semsg(_(e_invalid_argument_str), address);
 	    return NULL;
 	}
     }
@@ -1339,14 +1336,14 @@ channel_open_func(typval_T *argvars)
 	p = vim_strchr(address, ':');
 	if (p == NULL)
 	{
-	    semsg(_(e_invarg2), address);
+	    semsg(_(e_invalid_argument_str), address);
 	    return NULL;
 	}
     }
     port = strtol((char *)(p + 1), &rest, 10);
     if (*address == NUL || port <= 0 || port >= 65536 || *rest != NUL)
     {
-	semsg(_(e_invarg2), address);
+	semsg(_(e_invalid_argument_str), address);
 	return NULL;
     }
     if (is_ipv6)
@@ -1367,7 +1364,7 @@ channel_open_func(typval_T *argvars)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	goto theend;
     }
 
@@ -2309,7 +2306,7 @@ channel_add_block_id(chanpart_T *chanpart, int id)
     garray_T *gap = &chanpart->ch_block_ids;
 
     if (gap->ga_growsize == 0)
-	ga_init2(gap, (int)sizeof(int), 10);
+	ga_init2(gap, sizeof(int), 10);
     if (ga_grow(gap, 1) == OK)
     {
 	((int *)gap->ga_data)[gap->ga_len] = id;
@@ -2480,7 +2477,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     {
 	ch_error(channel, "received command with non-string argument");
 	if (p_verbose > 2)
-	    emsg(_("E903: received command with non-string argument"));
+	    emsg(_(e_received_command_with_non_string_argument));
 	return;
     }
     arg = argv[1].vval.v_string;
@@ -2537,13 +2534,13 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	{
 	    ch_error(channel, "last argument for expr/call must be a number");
 	    if (p_verbose > 2)
-		emsg(_("E904: last argument for expr/call must be a number"));
+		emsg(_(e_last_argument_for_expr_call_must_be_number));
 	}
 	else if (is_call && argv[2].v_type != VAR_LIST)
 	{
 	    ch_error(channel, "third argument for call must be a list");
 	    if (p_verbose > 2)
-		emsg(_("E904: third argument for call must be a list"));
+		emsg(_(e_third_argument_for_call_must_be_list));
 	}
 	else
 	{
@@ -2600,7 +2597,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     else if (p_verbose > 2)
     {
 	ch_error(channel, "Received unknown command: %s", (char *)cmd);
-	semsg(_("E905: received unknown command: %s"), cmd);
+	semsg(_(e_received_unknown_command_str), cmd);
     }
 }
 
@@ -3833,7 +3830,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
     }
     else
     {
-	semsg(_(e_invarg2), tv_get_string(tv));
+	semsg(_(e_invalid_argument_str), tv_get_string(tv));
 	return NULL;
     }
     if (channel != NULL && reading)
@@ -3843,7 +3840,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
     if (check_open && (channel == NULL || (!channel_is_open(channel)
 					     && !(reading && has_readahead))))
     {
-	emsg(_("E906: not an open channel"));
+	emsg(_(e_not_an_open_channel));
 	return NULL;
     }
     return channel;
@@ -4051,7 +4048,7 @@ channel_send(
 	if (!channel->ch_error && fun != NULL)
 	{
 	    ch_error(channel, "%s(): write while not connected", fun);
-	    semsg(_("E630: %s(): write while not connected"), fun);
+	    semsg(_(e_str_write_while_not_connected), fun);
 	}
 	channel->ch_error = TRUE;
 	return FAIL;
@@ -4197,7 +4194,7 @@ channel_send(
 	    if (!channel->ch_error && fun != NULL)
 	    {
 		ch_error(channel, "%s(): write failed", fun);
-		semsg(_("E631: %s(): write failed"), fun);
+		semsg(_(e_str_write_failed), fun);
 	    }
 	    channel->ch_error = TRUE;
 	    return FAIL;
@@ -4245,7 +4242,7 @@ send_common(
     {
 	if (eval)
 	{
-	    semsg(_("E917: Cannot use a callback with %s()"), fun);
+	    semsg(_(e_cannot_use_callback_with_str), fun);
 	    return NULL;
 	}
 	channel_set_req_callback(channel, *part_read, &opt->jo_callback, id);
@@ -4290,7 +4287,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     ch_mode = channel_get_mode(channel, part_send);
     if (ch_mode == MODE_RAW || ch_mode == MODE_NL)
     {
-	emsg(_("E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"));
+	emsg(_(e_cannot_use_evalexpr_sendexpr_with_raw_or_nl_channel));
 	return;
     }
 

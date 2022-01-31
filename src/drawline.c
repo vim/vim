@@ -1357,7 +1357,7 @@ win_line(
 #endif
 		)
 	{
-	    screen_line(screen_row, wp->w_wincol, col, -(int)wp->w_width,
+	    screen_line(screen_row, wp->w_wincol, col, -wp->w_width,
 							    screen_line_flags);
 	    // Pretend we have finished updating the window.  Except when
 	    // 'cursorcolumn' is set.
@@ -2043,9 +2043,10 @@ win_line(
 			if (n_extra < 0)
 			    n_extra = 0;
 		    }
-		    if (on_last_col)
+		    if (on_last_col && c != TAB)
 			// Do not continue search/match highlighting over the
-			// line break.
+			// line break, but for TABs the highlighting should
+			// include the complete width of the character
 			search_attr = 0;
 
 		    if (c == TAB && n_extra + col > wp->w_width)
@@ -2258,7 +2259,7 @@ win_line(
 
 			// Make sure, the highlighting for the tab char will be
 			// correctly set further below (effectively reverts the
-			// FIX_FOR_BOGSUCOLS macro
+			// FIX_FOR_BOGSUCOLS macro).
 			if (n_extra == tab_len + vc_saved && wp->w_p_list
 						&& wp->w_lcs_chars.tab1)
 			    tab_len += vc_saved;
@@ -2799,7 +2800,7 @@ win_line(
 	    if (((wp->w_p_cuc
 		      && (int)wp->w_virtcol >= VCOL_HLC - eol_hl_off
 		      && (int)wp->w_virtcol <
-					wp->w_width * (row - startrow + 1) + v
+				   (long)wp->w_width * (row - startrow + 1) + v
 		      && lnum != wp->w_cursor.lnum)
 		    || draw_color_col
 		    || win_attr != 0)
@@ -2845,7 +2846,7 @@ win_line(
 #endif
 
 	    screen_line(screen_row, wp->w_wincol, col,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 	    row++;
 
 	    // Update w_cline_height and w_cline_folded if the cursor line was
@@ -2938,7 +2939,7 @@ win_line(
 #if defined(FEAT_RIGHTLEFT)
 	    if (has_mbyte && wp->w_p_rl && (*mb_char2cells)(mb_c) > 1)
 	    {
-		// A double-wide character is: put first halve in left cell.
+		// A double-wide character is: put first half in left cell.
 		--off;
 		--col;
 	    }
@@ -3146,11 +3147,11 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    screen_line(screen_row, wp->w_wincol, col - boguscols,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 	    boguscols = 0;
 #else
 	    screen_line(screen_row, wp->w_wincol, col,
-					  (int)wp->w_width, screen_line_flags);
+					  wp->w_width, screen_line_flags);
 #endif
 	    ++row;
 	    ++screen_row;

@@ -38,17 +38,21 @@ static void	copy_yank_reg(yankreg_T *reg);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     yankreg_T *
 get_y_regs(void)
 {
     return y_regs;
 }
+#endif
 
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     yankreg_T *
 get_y_register(int reg)
 {
     return &y_regs[reg];
 }
+#endif
 
     yankreg_T *
 get_y_current(void)
@@ -97,7 +101,7 @@ get_expr_register(void)
 {
     char_u	*new_line;
 
-    new_line = getcmdline('=', 0L, 0, TRUE);
+    new_line = getcmdline('=', 0L, 0, 0);
     if (new_line == NULL)
 	return NUL;
     if (*new_line == NUL)	// use previous line
@@ -474,6 +478,7 @@ stuff_yank(int regname, char_u *p)
  */
 static int execreg_lastc = NUL;
 
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     int
 get_execreg_lastc(void)
 {
@@ -485,6 +490,7 @@ set_execreg_lastc(int lastc)
 {
     execreg_lastc = lastc;
 }
+#endif
 
 /*
  * When executing a register as a series of ex-commands, if the
@@ -513,7 +519,7 @@ execreg_line_continuation(char_u **lines, long *idx)
     int		j;
     char_u	*str;
 
-    ga_init2(&ga, (int)sizeof(char_u), 400);
+    ga_init2(&ga, sizeof(char_u), 400);
 
     // search backwards to find the first line of this command.
     // Any line not starting with \ or "\ is the start of the
@@ -575,7 +581,7 @@ do_execreg(
     {
 	if (execreg_lastc == NUL)
 	{
-	    emsg(_("E748: No previously used register"));
+	    emsg(_(e_no_previously_used_register));
 	    return FAIL;
 	}
 	regname = execreg_lastc;
@@ -1460,7 +1466,7 @@ yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
     {
 	int s = bd->textlen + bd->endspaces;
 
-	while (VIM_ISWHITE(*(bd->textstart + s - 1)) && s > 0)
+	while (s > 0 && VIM_ISWHITE(*(bd->textstart + s - 1)))
 	{
 	    s = s - (*mb_head_off)(bd->textstart, bd->textstart + s - 1) - 1;
 	    pnew--;
@@ -1691,7 +1697,7 @@ do_put(
 
     if (y_size == 0 || y_array == NULL)
     {
-	semsg(_("E353: Nothing in register %s"),
+	semsg(_(e_nothing_in_register_str),
 		  regname == 0 ? (char_u *)"\"" : transchar(regname));
 	goto end;
     }
@@ -1828,7 +1834,7 @@ do_put(
 	    for (ptr = oldp; vcol < col && *ptr; )
 	    {
 		// Count a tab for what it's worth (if list mode not on)
-		incr = lbr_chartabsize_adv(oldp, &ptr, (colnr_T)vcol);
+		incr = lbr_chartabsize_adv(oldp, &ptr, vcol);
 		vcol += incr;
 	    }
 	    bd.textcol = (colnr_T)(ptr - oldp);
@@ -2308,6 +2314,7 @@ get_register_name(int num)
     }
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the index of the register "" points to.
  */
@@ -2316,6 +2323,7 @@ get_unname_register()
 {
     return y_previous == NULL ? -1 : y_previous - &y_regs[0];
 }
+#endif
 
 /*
  * ":dis" and ":registers": Display the contents of the yank registers.
@@ -2780,8 +2788,7 @@ write_reg_contents_lst(
 	    s = (char_u *)"";
 	else if (strings[1] != NULL)
 	{
-	    emsg(_("E883: search pattern and expression register may not "
-			"contain two or more lines"));
+	    emsg(_(e_search_pattern_and_expression_register_may_not_contain_two_or_more_lines));
 	    return;
 	}
 	else

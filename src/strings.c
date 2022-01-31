@@ -171,7 +171,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     // itself must be escaped to get a literal '\'.
     fish_like = fish_like_shell();
 
-    // PowerShell uses it's own version for quoting single quotes
+    // PowerShell uses its own version for quoting single quotes
     shname = gettail(p_sh);
     powershell = strstr((char *)shname, "pwsh") != NULL;
 # ifdef MSWIN
@@ -893,7 +893,7 @@ string_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
-    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_init2(&ga, sizeof(char), 80);
     for (p = str; *p != NUL; p += len)
     {
 	typval_T newtv;
@@ -916,7 +916,7 @@ string_filter_map(
 	    {
 		clear_tv(&newtv);
 		clear_tv(&tv);
-		emsg(_(e_stringreq));
+		emsg(_(e_string_required));
 		break;
 	    }
 	    else
@@ -956,7 +956,7 @@ string_reduce(
     {
 	if (*p == NUL)
 	{
-	    semsg(_(e_reduceempty), "String");
+	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "String");
 	    return;
 	}
 	if (copy_first_char_to_tv(p, rettv) == FAIL)
@@ -1061,7 +1061,7 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 					   && argvars[2].v_type != VAR_NUMBER
 					   && argvars[2].v_type != VAR_BOOL))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1163,7 +1163,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	base = (int)tv_get_number(&argvars[1]);
 	if (base != 2 && base != 8 && base != 10 && base != 16)
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return;
 	}
 	if (argvars[2].v_type != VAR_UNKNOWN && tv_get_bool(&argvars[2]))
@@ -1673,14 +1673,14 @@ f_tr(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
     if (fromstr == NULL || tostr == NULL)
 	    return;		// type error; errmsg already given
-    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_init2(&ga, sizeof(char), 80);
 
     if (!has_mbyte)
 	// not multi-byte: fromstr and tostr must be the same length
 	if (STRLEN(fromstr) != STRLEN(tostr))
 	{
 error:
-	    semsg(_(e_invarg2), fromstr);
+	    semsg(_(e_invalid_argument_str), fromstr);
 	    ga_clear(&ga);
 	    return;
 	}
@@ -1788,7 +1788,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_STRING)
     {
-	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	return;
     }
 
@@ -1806,7 +1806,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
 		return;
 	    if (dir < 0 || dir > 2)
 	    {
-		semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+		semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
 		return;
 	    }
 	}
@@ -1862,7 +1862,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = vim_strnsave(head, tail - head);
 }
 
-static char *e_printf = N_("E766: Insufficient arguments for printf()");
+static char *e_printf = N_(e_insufficient_arguments_for_printf);
 
 /*
  * Get number argument from "idxp" entry in "tvs".  First entry is 1.
@@ -1934,7 +1934,7 @@ tv_float(typval_T *tvs, int *idxp)
 	else if (tvs[idx].v_type == VAR_NUMBER)
 	    f = (double)tvs[idx].vval.v_number;
 	else
-	    emsg(_("E807: Expected Float argument for printf()"));
+	    emsg(_(e_expected_float_argument_for_printf));
     }
     return f;
 }
@@ -2961,7 +2961,7 @@ vim_vsnprintf_typval(
     }
 
     if (tvs != NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
-	emsg(_("E767: Too many arguments to printf()"));
+	emsg(_(e_too_many_arguments_to_printf));
 
     // Return the number of characters formatted (excluding trailing nul
     // character), that is, the number of characters that would have been

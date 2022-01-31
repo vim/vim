@@ -1,6 +1,6 @@
 " Test filter() and map()
 
-source vim9.vim
+import './vim9.vim' as v9
 
 " list with expression string
 func Test_filter_map_list_expr_string()
@@ -151,7 +151,7 @@ func Test_filter_map_string()
   let lines =<< trim END
     VAR s = "abc"
     call filter(s, '"b" != v:val')
-    call assert_equal(s, s)
+    call assert_equal('abc', s)
     call assert_equal('ac', filter('abc', '"b" != v:val'))
     call assert_equal('あいうえお', filter('あxいxうxえxお', '"x" != v:val'))
     call assert_equal('あa😊💕💕b💕', filter('あxax😊x💕💕b💕x', '"x" != v:val'))
@@ -166,13 +166,13 @@ func Test_filter_map_string()
     call assert_equal('', filter('', "v:val == 'a'"))
     call assert_equal('', filter(test_null_string(), "v:val == 'a'"))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " map()
   let lines =<< trim END
     VAR s = "abc"
     call map(s, 'nr2char(char2nr(v:val) + 2)')
-    call assert_equal(s, s)
+    call assert_equal('abc', s)
     call assert_equal('cde', map('abc', 'nr2char(char2nr(v:val) + 2)'))
     call assert_equal('[あ][i][う][え][お]', map('あiうえお', '"[" .. v:val .. "]"'))
     call assert_equal('[あ][a][😊][,][‱][‼][⁇][⁈][⁉][💕][b][💕][c][💕]', map('あa😊,‱‼⁇⁈⁉💕b💕c💕', '"[" .. v:val .. "]"'))
@@ -185,13 +185,13 @@ func Test_filter_map_string()
     call assert_fails('echo map("abc", "10")', 'E928:')
     call assert_fails('echo map("abc", "a10")', 'E121:')
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " mapnew()
   let lines =<< trim END
     VAR s = "abc"
     call mapnew(s, 'nr2char(char2nr(v:val) + 2)')
-    call assert_equal(s, s)
+    call assert_equal('abc', s)
     call assert_equal('cde', mapnew('abc', 'nr2char(char2nr(v:val) + 2)'))
     call assert_equal('[あ][i][う][え][お]', mapnew('あiうえお', '"[" .. v:val .. "]"'))
     call assert_equal('[あ][a][😊][,][‱][‼][⁇][⁈][⁉][💕][b][💕][c][💕]', mapnew('あa😊,‱‼⁇⁈⁉💕b💕c💕', '"[" .. v:val .. "]"'))
@@ -202,7 +202,7 @@ func Test_filter_map_string()
     call assert_equal('', mapnew('', "v:val == 'a'"))
     call assert_equal('', mapnew(test_null_string(), "v:val == 'a'"))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   let lines =<< trim END
     #" map() and filter()
@@ -228,7 +228,7 @@ func Test_filter_map_string()
     call assert_equal('@ström', map('Åström', LSTART i, x LMIDDLE x =~ nr2char(0xc5) .. '\%C' ? '@' : x LEND))
     call assert_equal('Åstr@m', map('Åström', LSTART i, x LMIDDLE x =~ nr2char(0xf6) .. '\%C' ? '@' : x LEND))
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

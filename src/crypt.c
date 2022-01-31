@@ -159,6 +159,108 @@ typedef struct {
     crypto_secretstream_xchacha20poly1305_state
 		    state;
 } sodium_state_T;
+
+
+# ifdef DYNAMIC_SODIUM
+#  define sodium_init	    load_sodium
+#  define sodium_free	    dll_sodium_free
+#  define sodium_malloc	    dll_sodium_malloc
+#  define sodium_memzero    dll_sodium_memzero
+#  define sodium_mlock	    dll_sodium_mlock
+#  define sodium_munlock    dll_sodium_munlock
+#  define crypto_secretstream_xchacha20poly1305_init_push \
+    dll_crypto_secretstream_xchacha20poly1305_init_push
+#  define crypto_secretstream_xchacha20poly1305_push \
+    dll_crypto_secretstream_xchacha20poly1305_push
+#  define crypto_secretstream_xchacha20poly1305_init_pull \
+    dll_crypto_secretstream_xchacha20poly1305_init_pull
+#  define crypto_secretstream_xchacha20poly1305_pull \
+    dll_crypto_secretstream_xchacha20poly1305_pull
+#  define crypto_pwhash	    dll_crypto_pwhash
+#  define randombytes_buf   dll_randombytes_buf
+
+static int (*dll_sodium_init)(void) = NULL;
+static void (*dll_sodium_free)(void *) = NULL;
+static void *(*dll_sodium_malloc)(const size_t) = NULL;
+static void (*dll_sodium_memzero)(void * const, const size_t) = NULL;
+static int (*dll_sodium_mlock)(void * const, const size_t) = NULL;
+static int (*dll_sodium_munlock)(void * const, const size_t) = NULL;
+static int (*dll_crypto_secretstream_xchacha20poly1305_init_push)
+   (crypto_secretstream_xchacha20poly1305_state *state,
+    unsigned char [],
+    const unsigned char []) = NULL;
+static int (*dll_crypto_secretstream_xchacha20poly1305_push)
+   (crypto_secretstream_xchacha20poly1305_state *state,
+    unsigned char *c, unsigned long long *clen_p,
+    const unsigned char *m, unsigned long long mlen,
+    const unsigned char *ad, unsigned long long adlen, unsigned char tag)
+    = NULL;
+static int (*dll_crypto_secretstream_xchacha20poly1305_init_pull)
+   (crypto_secretstream_xchacha20poly1305_state *state,
+    const unsigned char [],
+    const unsigned char []) = NULL;
+static int (*dll_crypto_secretstream_xchacha20poly1305_pull)
+   (crypto_secretstream_xchacha20poly1305_state *state,
+    unsigned char *m, unsigned long long *mlen_p, unsigned char *tag_p,
+    const unsigned char *c, unsigned long long clen,
+    const unsigned char *ad, unsigned long long adlen) = NULL;
+static int (*dll_crypto_pwhash)(unsigned char * const out,
+    unsigned long long outlen,
+    const char * const passwd, unsigned long long passwdlen,
+    const unsigned char * const salt,
+    unsigned long long opslimit, size_t memlimit, int alg)
+    = NULL;
+static void (*dll_randombytes_buf)(void * const buf, const size_t size);
+
+static struct {
+    const char *name;
+    FARPROC *ptr;
+} sodium_funcname_table[] = {
+    {"sodium_init", (FARPROC*)&dll_sodium_init},
+    {"sodium_free", (FARPROC*)&dll_sodium_free},
+    {"sodium_malloc", (FARPROC*)&dll_sodium_malloc},
+    {"sodium_memzero", (FARPROC*)&dll_sodium_memzero},
+    {"sodium_mlock", (FARPROC*)&dll_sodium_mlock},
+    {"sodium_munlock", (FARPROC*)&dll_sodium_munlock},
+    {"crypto_secretstream_xchacha20poly1305_init_push", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_init_push},
+    {"crypto_secretstream_xchacha20poly1305_push", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_push},
+    {"crypto_secretstream_xchacha20poly1305_init_pull", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_init_pull},
+    {"crypto_secretstream_xchacha20poly1305_pull", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_pull},
+    {"crypto_pwhash", (FARPROC*)&dll_crypto_pwhash},
+    {"randombytes_buf", (FARPROC*)&dll_randombytes_buf},
+    {NULL, NULL}
+};
+
+    static int
+load_sodium(void)
+{
+    static HANDLE hsodium = NULL;
+    int i;
+
+    if (hsodium != NULL)
+	return 0;
+
+    hsodium = vimLoadLib("libsodium.dll");
+    if (hsodium == NULL)
+    {
+	// TODO: Show error message.
+	return -1;
+    }
+
+    for (i = 0; sodium_funcname_table[i].ptr; ++i)
+    {
+	if ((*sodium_funcname_table[i].ptr = GetProcAddress(hsodium,
+			sodium_funcname_table[i].name)) == NULL)
+	{
+	    FreeLibrary(hsodium);
+	    hsodium = NULL;
+	    // TODO: Show error message.
+	    return -1;
+	}
+    }
+    return dll_sodium_init();
+}
+# endif
 #endif
 
 #define CRYPT_MAGIC_LEN	12	// cannot change
@@ -200,7 +302,7 @@ crypt_method_nr_from_magic(char *ptr, int len)
 
     i = (int)STRLEN(crypt_magic_head);
     if (len >= i && memcmp(ptr, crypt_magic_head, i) == 0)
-	emsg(_("E821: File is encrypted with unknown method"));
+	emsg(_(e_file_is_encrypted_with_unknown_method));
 
     return -1;
 }
@@ -247,6 +349,7 @@ crypt_get_header_len(int method_nr)
 }
 
 
+#if defined(FEAT_SODIUM) || defined(PROTO)
 /*
  * Get maximum crypt method specific length of the file header in bytes.
  */
@@ -265,6 +368,7 @@ crypt_get_max_header_len()
     }
     return max;
 }
+#endif
 
 /*
  * Set the crypt method for buffer "buf" to "method_nr" using the int value as
@@ -987,5 +1091,19 @@ crypt_sodium_buffer_decode(
     return -1;
 # endif
 }
+
+# if defined(FEAT_SODIUM) || defined(PROTO)
+    int
+crypt_sodium_munlock(void *const addr, const size_t len)
+{
+    return sodium_munlock(addr, len);
+}
+
+    void
+crypt_sodium_randombytes_buf(void *const buf, const size_t size)
+{
+    randombytes_buf(buf, size);
+}
+# endif
 
 #endif // FEAT_CRYPT

@@ -360,16 +360,16 @@ def Test_Debugger_breakadd_expr()
   writefile(lines, 'Xtest.vim')
 
   # Start Vim in a terminal
-  var buf = RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
-  call TermWait(buf)
+  var buf = g:RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
+  call g:TermWait(buf)
 
   # Despite the failure the functions are defined
-  RunDbgCmd(buf, ':function g:EarlyFunc',
+  g:RunDbgCmd(buf, ':function g:EarlyFunc',
      ['function EarlyFunc()', 'endfunction'], {match: 'pattern'})
-  RunDbgCmd(buf, ':function g:LaterFunc',
+  g:RunDbgCmd(buf, ':function g:LaterFunc',
      ['function LaterFunc()', 'endfunction'], {match: 'pattern'})
 
-  call StopVimInTerminal(buf)
+  call g:StopVimInTerminal(buf)
   call delete('Xtest.vim')
 enddef
 
@@ -386,13 +386,13 @@ def Test_Debugger_break_at_return()
   writefile(lines, 'Xtest.vim')
 
   # Start Vim in a terminal
-  var buf = RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
-  call TermWait(buf)
+  var buf = g:RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
+  call g:TermWait(buf)
 
-  RunDbgCmd(buf, ':call GetNum()',
+  g:RunDbgCmd(buf, ':call GetNum()',
      ['line 1: return 1  + 2  + 3'], {match: 'pattern'})
 
-  call StopVimInTerminal(buf)
+  call g:StopVimInTerminal(buf)
   call delete('Xtest.vim')
 enddef
 
@@ -891,7 +891,7 @@ func Test_Backtrace_DefFunction()
   CheckCWD
   let file1 =<< trim END
     vim9script
-    import File2Function from './Xtest2.vim'
+    import './Xtest2.vim' as imp
 
     def SourceAnotherFile()
       source Xtest2.vim
@@ -899,7 +899,7 @@ func Test_Backtrace_DefFunction()
 
     def CallAFunction()
       SourceAnotherFile()
-      File2Function()
+      imp.File2Function()
     enddef
 
     def g:GlobalFunction()
@@ -948,7 +948,7 @@ func Test_Backtrace_DefFunction()
 
   call RunDbgCmd(buf, 'step', ['line 1: SourceAnotherFile()'])
   call RunDbgCmd(buf, 'step', ['line 1: source Xtest2.vim'])
-  " Repeated line, because we fist are in the compiled function before the
+  " Repeated line, because we first are in the compiled function before the
   " EXEC and then in do_cmdline() before the :source command.
   call RunDbgCmd(buf, 'step', ['line 1: source Xtest2.vim'])
   call RunDbgCmd(buf, 'step', ['line 1: vim9script'])
@@ -1120,18 +1120,21 @@ func Test_debug_def_function()
   call RunDbgCmd(buf, 'echo text', ['asdf'])
   call RunDbgCmd(buf, 'echo nr', ['42'])
   call RunDbgCmd(buf, 'echo items', ['[1, 2, 3]'])
-  call RunDbgCmd(buf, 'step', ['asdf42', 'function FuncWithArgs', 'line 2: for it in items'])
-  call RunDbgCmd(buf, 'echo it', ['1'])
+  call RunDbgCmd(buf, 'step', ['asdf42', 'function FuncWithArgs', 'line 2:   for it in items'])
+  call RunDbgCmd(buf, 'step', ['function FuncWithArgs', 'line 2: for it in items'])
+  call RunDbgCmd(buf, 'echo it', ['0'])
   call RunDbgCmd(buf, 'step', ['line 3: echo it'])
+  call RunDbgCmd(buf, 'echo it', ['1'])
   call RunDbgCmd(buf, 'step', ['1', 'function FuncWithArgs', 'line 4: endfor'])
   call RunDbgCmd(buf, 'step', ['line 2: for it in items'])
-  call RunDbgCmd(buf, 'echo it', ['2'])
+  call RunDbgCmd(buf, 'echo it', ['1'])
   call RunDbgCmd(buf, 'step', ['line 3: echo it'])
   call RunDbgCmd(buf, 'step', ['2', 'function FuncWithArgs', 'line 4: endfor'])
   call RunDbgCmd(buf, 'step', ['line 2: for it in items'])
-  call RunDbgCmd(buf, 'echo it', ['3'])
+  call RunDbgCmd(buf, 'echo it', ['2'])
   call RunDbgCmd(buf, 'step', ['line 3: echo it'])
   call RunDbgCmd(buf, 'step', ['3', 'function FuncWithArgs', 'line 4: endfor'])
+  call RunDbgCmd(buf, 'step', ['line 2: for it in items'])
   call RunDbgCmd(buf, 'step', ['line 5: echo "done"'])
   call RunDbgCmd(buf, 'cont')
 
@@ -1149,11 +1152,13 @@ func Test_debug_def_function()
   call RunDbgCmd(buf, 'cont')
 
   call RunDbgCmd(buf, ':breakadd func 2 FuncForLoop')
-  call RunDbgCmd(buf, ':call FuncForLoop()', ['function FuncForLoop', 'line 2: for i in [11, 22, 33]'])
-  call RunDbgCmd(buf, 'echo i', ['11'])
+  call RunDbgCmd(buf, ':call FuncForLoop()', ['function FuncForLoop', 'line 2:   for i in [11, 22, 33]'])
+  call RunDbgCmd(buf, 'step', ['line 2: for i in [11, 22, 33]'])
   call RunDbgCmd(buf, 'next', ['function FuncForLoop', 'line 3: eval i + 2'])
+  call RunDbgCmd(buf, 'echo i', ['11'])
   call RunDbgCmd(buf, 'next', ['function FuncForLoop', 'line 4: endfor'])
   call RunDbgCmd(buf, 'next', ['function FuncForLoop', 'line 2: for i in [11, 22, 33]'])
+  call RunDbgCmd(buf, 'next', ['line 3: eval i + 2'])
   call RunDbgCmd(buf, 'echo i', ['22'])
 
   call RunDbgCmd(buf, 'breakdel *')

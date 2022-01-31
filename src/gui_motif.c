@@ -2768,7 +2768,7 @@ gui_mch_dialog(
     // Create the dialog message.
     // Since LessTif is apparently having problems with the creation of
     // properly localized string, we use LtoR here. The symptom is that the
-    // string sill not show properly in multiple lines as it does in native
+    // string is not shown properly in multiple lines as it does in native
     // Motif.
     label = XmStringCreateLtoR((char *)message, STRING_TAG);
     if (label == NULL)

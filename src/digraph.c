@@ -2596,7 +2596,7 @@ keymap_init(void)
 	    if (source_runtime(buf, 0) == FAIL)
 	    {
 		vim_free(buf);
-		return N_("E544: Keymap file not found");
+		return N_(e_keymap_file_not_found);
 	    }
 	}
 	vim_free(buf);
@@ -2632,7 +2632,7 @@ ex_loadkeymap(exarg_T *eap)
     keymap_unload();
 
     curbuf->b_kmap_state = 0;
-    ga_init2(&curbuf->b_kmap_ga, (int)sizeof(kmap_T), 20);
+    ga_init2(&curbuf->b_kmap_ga, sizeof(kmap_T), 20);
 
     // Set 'cpoptions' to "C" to avoid line continuation.
     p_cpo = (char_u *)"C";
@@ -2661,7 +2661,7 @@ ex_loadkeymap(exarg_T *eap)
 		    || *kp->from == NUL || *kp->to == NUL)
 	    {
 		if (kp->to != NULL && *kp->to == NUL)
-		    emsg(_("E791: Empty keymap entry"));
+		    emsg(_(e_empty_keymap_entry));
 		vim_free(kp->from);
 		vim_free(kp->to);
 	    }

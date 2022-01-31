@@ -216,7 +216,7 @@ gui_athena_scroll_cb_scroll(
     else if (value < 0)
 	value = 0;
 
-    // Update the bottom scrollbar an extra time (why is this needed??
+    // Update the bottom scrollbar an extra time (why is this needed??)
     if (sb->wp == NULL)		// Bottom scrollbar
 	gui_mch_set_scrollbar_thumb(sb, value, sb->size, sb->max);
 
@@ -1159,7 +1159,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    XtSetArg(args[n], XtNinternalWidth, 1); n++;
 	    XtSetArg(args[n], XtNborderWidth, 1); n++;
 	    if (menu->image != 0)
+	    {
 		XtSetArg(args[n], XtNbitmap, menu->image); n++;
+	    }
 	}
 	XtSetArg(args[n], XtNhighlightThickness, 0); n++;
 	type = commandWidgetClass;

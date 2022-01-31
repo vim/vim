@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Dec 24
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,38 +38,31 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-type of v: vars should be more specific
-    v:completed_item  is dict<string>, not dict<any>
+Only find a global function from Vim9 script when using "g:" ?  #9637
 
-E1135 is used twice
+Disallow defining a script#Func() in Vim9 script.
 
-"z=" in German can take a very long time, CTRL-C should interrupt it.
+Cannot use command modifier for "import 'name.vim' as vim9"
 
-Vim9 - Make everything work:
-- For builtin functions using tv_get_string*() use check_for_string() to be
-  more strict about the argument type (not a bool).
-    done: balloon_()
-- Check many more builtin function arguments at compile time.
-    map() could check that the return type of the function argument matches
-    the type of the list or dict member. (#8092)
-    Same for other functions, such as searchpair().
-- Test that a function defined inside a :def function is local to that
-  function, g: functions can be defined and script-local functions cannot be
-  defined.
-- Unexpected error message when using "var x: any | x.key = 9", because "x" is
-  given the type number.  Can we use VAR_ANY?
-- Check performance with callgrind and kcachegrind.
+When making a copy of a list or dict, do not keep the type? #9644
+    With deepcopy() all, with copy() this still fails:
+    var l: list<list<number>> = [[1], [2]]
+    l->copy()[0][0] = 'x'
+
+Remove EBCDIC support?
 
 Once Vim9 is stable:
-- Add the "vim9script" feature, can use has('vim9script')
-- Change the help to prefer Vim9 syntax where appropriate
 - Add all the error numbers in a good place in documentation.
-- In the generic eval docs, point out the Vim9 syntax where it differs.
+    done until E1145
+- Check code coverage, add more tests if needed.
 - Use Vim9 for runtime files.
-    PR #7497 for autoload/ccomplete.vim
 
 Further Vim9 improvements, possibly after launch:
-- better implementation for partial and tests for that.
+- Check performance with callgrind and kcachegrind.
+- Better implementation for partial and tests for that.
+- when using "const" mark the variable type as const with TTFLAG_CONST, so
+  that an error is given at compile time when trying to change it.  E.g. for a
+  const list and trying to call add().
 - Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
   'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
@@ -78,10 +71,11 @@ Further Vim9 improvements, possibly after launch:
   evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- Handle command that is only a range more efficient than calling ISN_EXEC
-- implement :type, "import type"
-- implement enum,  "import enum".
-- implement class and interface: See |vim9-classes|
+- Implement "import lazy" - like autoload but with a relative or absolute
+  path. #9595
+- implement :type
+- implement :enum
+- implement :class and :interface: See |vim9-classes|
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
 - Inline call to map() and filter(), better type checking.
@@ -95,6 +89,7 @@ Further Vim9 improvements, possibly after launch:
 Update list of features to vote on:
 - multiple cursors
 - built-in LSP support
+- start first line halfway
 
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
@@ -219,6 +214,11 @@ Terminal emulator window:
 When using 'cryptmethod' xchaha20 the undo file is not encrypted.
 Need to handle extra bytes.
 
+In Select mode the deleted text always goes into the unnamed register.
+Use CTRL-R to specify the register to use. (#9531)
+
+Some prompts are not translated: #9495
+
 Test_communicate_ipv6(): is flaky on many systems
 Fails in line 64 of Ch_communicate, no exception is thrown.
 
@@ -247,15 +247,17 @@ Memory leak in test_alot with pyeval() (allocating partial)
 Memory leak in test_alot with expand()
 Memory leaks in test_channel? (or is it because of fork())
 
+PR to support %e and %k in 'errorformat'. #9624
+
 Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 
 ":set &shellpipe" and ":set &shellredir" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
 
-Patch to add :argdedupe. (Nir Lichtman, #6235)
-
 MS-Windows: did path modifier :p:8 stop working?  #8600
+
+Add support for "underdouble", "underdot" and "underdash". #9553
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
@@ -917,9 +919,6 @@ deleting autocmds, not when adding them.
 With 'foldmethod' "indent" and appending an empty line, what follows isn't
 included in the existing fold.  Deleting the empty line and undo fixes it.
 (Oleg Koshovetc, 2018 Jul 15, #3214)
-
-Patch to support "xxd -ps". (Erik Auerswald, 2018 May 1)
-Lacks a test.
 
 Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)

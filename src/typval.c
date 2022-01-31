@@ -191,12 +191,12 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    emsg(_("E805: Using a Float as a Number"));
+	    emsg(_(e_using_float_as_number));
 	    break;
 #endif
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg(_("E703: Using a Funcref as a Number"));
+	    emsg(_(e_using_funcref_as_number));
 	    break;
 	case VAR_STRING:
 	    if (in_vim9script())
@@ -209,10 +209,10 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 					    STR2NR_ALL, &n, NULL, 0, FALSE);
 	    return n;
 	case VAR_LIST:
-	    emsg(_("E745: Using a List as a Number"));
+	    emsg(_(e_using_list_as_number));
 	    break;
 	case VAR_DICT:
-	    emsg(_("E728: Using a Dictionary as a Number"));
+	    emsg(_(e_using_dictionary_as_number));
 	    break;
 	case VAR_BOOL:
 	case VAR_SPECIAL:
@@ -221,22 +221,22 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 		if (varp->v_type == VAR_BOOL)
 		    emsg(_(e_using_bool_as_number));
 		else
-		    emsg(_("E611: Using a Special as a Number"));
+		    emsg(_(e_using_special_as_number));
 		break;
 	    }
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E910: Using a Job as a Number"));
+	    emsg(_(e_using_job_as_number));
 	    break;
 #endif
 	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E913: Using a Channel as a Number"));
+	    emsg(_(e_using_channel_as_number));
 	    break;
 #endif
 	case VAR_BLOB:
-	    emsg(_("E974: Using a Blob as a Number"));
+	    emsg(_(e_using_blob_as_number));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -308,35 +308,35 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    return varp->vval.v_float;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg(_("E891: Using a Funcref as a Float"));
+	    emsg(_(e_using_funcref_as_float));
 	    break;
 	case VAR_STRING:
-	    emsg(_("E892: Using a String as a Float"));
+	    emsg(_(e_using_string_as_float));
 	    break;
 	case VAR_LIST:
-	    emsg(_("E893: Using a List as a Float"));
+	    emsg(_(e_using_list_as_float));
 	    break;
 	case VAR_DICT:
-	    emsg(_("E894: Using a Dictionary as a Float"));
+	    emsg(_(e_using_dictionary_as_float));
 	    break;
 	case VAR_BOOL:
-	    emsg(_("E362: Using a boolean value as a Float"));
+	    emsg(_(e_using_boolean_value_as_float));
 	    break;
 	case VAR_SPECIAL:
-	    emsg(_("E907: Using a special value as a Float"));
+	    emsg(_(e_using_special_value_as_float));
 	    break;
 	case VAR_JOB:
 # ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E911: Using a Job as a Float"));
+	    emsg(_(e_using_job_as_float));
 	    break;
 # endif
 	case VAR_CHANNEL:
 # ifdef FEAT_JOB_CHANNEL
-	    emsg(_("E914: Using a Channel as a Float"));
+	    emsg(_(e_using_channel_as_float));
 	    break;
 # endif
 	case VAR_BLOB:
-	    emsg(_("E975: Using a Blob as a Float"));
+	    emsg(_(e_using_blob_as_float));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -528,6 +528,7 @@ check_for_opt_dict_arg(typval_T *args, int idx)
 	    || check_for_dict_arg(args, idx) != FAIL);
 }
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Give an error and return FAIL unless "args[idx]" is a channel or a job.
  */
@@ -576,6 +577,7 @@ check_for_opt_job_arg(typval_T *args, int idx)
     return (args[idx].v_type == VAR_UNKNOWN
 	    || check_for_job_arg(args, idx) != FAIL);
 }
+#endif
 
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or
@@ -642,6 +644,7 @@ check_for_opt_lnum_arg(typval_T *args, int idx)
 	    || check_for_lnum_arg(args, idx));
 }
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or a blob.
  */
@@ -655,6 +658,7 @@ check_for_string_or_blob_arg(typval_T *args, int idx)
     }
     return OK;
 }
+#endif
 
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or a list.
@@ -927,19 +931,19 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg(_("E729: Using a Funcref as a String"));
+	    emsg(_(e_using_funcref_as_string));
 	    break;
 	case VAR_LIST:
-	    emsg(_("E730: Using a List as a String"));
+	    emsg(_(e_using_list_as_string));
 	    break;
 	case VAR_DICT:
-	    emsg(_("E731: Using a Dictionary as a String"));
+	    emsg(_(e_using_dictionary_as_string));
 	    break;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
 	    if (strict)
 	    {
-		emsg(_(e_float_as_string));
+		emsg(_(e_using_float_as_string));
 		break;
 	    }
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%g", varp->vval.v_float);
@@ -954,7 +958,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
         case VAR_BLOB:
-	    emsg(_("E976: Using a Blob as a String"));
+	    emsg(_(e_using_blob_as_string));
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
@@ -1345,9 +1349,9 @@ typval_compare_list(
 	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
     {
 	if (tv1->v_type != tv2->v_type)
-	    emsg(_("E691: Can only compare List with List"));
+	    emsg(_(e_can_only_compare_list_with_list));
 	else
-	    emsg(_("E692: Invalid operation for List"));
+	    emsg(_(e_invalid_operation_for_list));
 	return FAIL;
     }
     else
@@ -1386,9 +1390,9 @@ typval_compare_blob(
 	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
     {
 	if (tv1->v_type != tv2->v_type)
-	    emsg(_("E977: Can only compare Blob with Blob"));
+	    emsg(_(e_can_only_compare_blob_with_blob));
 	else
-	    emsg(_(e_invalblob));
+	    emsg(_(e_invalid_operation_for_blob));
 	return FAIL;
     }
     else
@@ -1427,9 +1431,9 @@ typval_compare_dict(
 		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
     {
 	if (tv1->v_type != tv2->v_type)
-	    emsg(_("E735: Can only compare Dictionary with Dictionary"));
+	    emsg(_(e_can_only_compare_dictionary_with_dictionary));
 	else
-	    emsg(_("E736: Invalid operation for Dictionary"));
+	    emsg(_(e_invalid_operation_for_dictionary));
 	return FAIL;
     }
     else
@@ -1460,7 +1464,7 @@ typval_compare_func(
     if (type != EXPR_EQUAL && type != EXPR_NEQUAL
 	    && type != EXPR_IS && type != EXPR_ISNOT)
     {
-	emsg(_("E694: Invalid operation for Funcrefs"));
+	emsg(_(e_invalid_operation_for_funcrefs));
 	return FAIL;
     }
     if ((tv1->v_type == VAR_PARTIAL && tv1->vval.v_partial == NULL)
@@ -1922,7 +1926,7 @@ eval_number(
 	    {
 		if (blob != NULL)
 		{
-		    emsg(_("E973: Blob literal should have an even number of hex characters"));
+		    emsg(_(e_blob_literal_should_have_an_even_number_of_hex_characters));
 		    ga_clear(&blob->bv_ga);
 		    VIM_CLEAR(blob);
 		}
@@ -2249,9 +2253,10 @@ tv_get_lnum(typval_T *argvars)
     if (lnum <= 0 && argvars[0].v_type != VAR_NUMBER)
     {
 	int	fnum;
-	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
+	pos_T	*fp;
 
 	// no valid number, try using arg like line()
+	fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 	if (fp != NULL)
 	    lnum = fp->lnum;
     }
@@ -2269,6 +2274,7 @@ tv_get_lnum_buf(typval_T *argvars, buf_T *buf)
     if (argvars[0].v_type == VAR_STRING
 	    && argvars[0].vval.v_string != NULL
 	    && argvars[0].vval.v_string[0] == '$'
+	    && argvars[0].vval.v_string[1] == NUL
 	    && buf != NULL)
 	return buf->b_ml.ml_line_count;
     return (linenr_T)tv_get_number_chk(&argvars[0], NULL);

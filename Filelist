@@ -113,6 +113,8 @@ SRC_ALL =	\
 		src/nbdebug.h \
 		src/netbeans.c \
 		src/normal.c \
+		src/nv_cmdidxs.h \
+		src/nv_cmds.h \
 		src/ops.c \
 		src/option.c \
 		src/option.h \
@@ -443,6 +445,8 @@ SRC_UNIX =	\
 		src/configure \
 		src/configure.ac \
 		src/create_cmdidxs.vim \
+		src/create_nvcmdidxs.c \
+		src/create_nvcmdidxs.vim \
 		src/gui_at_fs.c \
 		src/gui_at_sb.c \
 		src/gui_at_sb.h \
@@ -497,7 +501,6 @@ SRC_UNIX =	\
 SRC_DOS_UNIX =	\
 		src/gui_xim.c \
 		src/if_cscope.c \
-		src/if_cscope.h \
 		src/if_lua.c \
 		src/if_mzsch.c \
 		src/if_mzsch.h \
@@ -544,18 +547,14 @@ SRC_DOS =	\
 		tools/rename.bat \
 		src/bigvim.bat \
 		src/bigvim64.bat \
-		src/msvcsetup.bat \
 		src/msvc2008.bat \
 		src/msvc2010.bat \
 		src/msvc2015.bat \
 		src/msys32.bat \
 		src/msys64.bat \
-		src/dimm.idl \
 		src/dlldata.c \
 		src/dosinst.c \
 		src/dosinst.h \
-		src/glbl_ime.cpp \
-		src/glbl_ime.h \
 		src/gui_dwrite.cpp \
 		src/gui_dwrite.h \
 		src/gui_w32.c \

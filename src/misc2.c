@@ -1057,6 +1057,7 @@ static struct key_name_entry
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
     {K_IGNORE,		(char_u *)"Ignore"},
     {K_COMMAND,		(char_u *)"Cmd"},
+    {K_SCRIPT_COMMAND,	(char_u *)"ScriptCmd"},
     {K_FOCUSGAINED,	(char_u *)"FocusGained"},
     {K_FOCUSLOST,	(char_u *)"FocusLost"},
     {0,			NULL}
@@ -1375,7 +1376,7 @@ find_special_key(
 	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
 	    if (l == 0)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return 0;
 	    }
 	    bp += l + 5;
@@ -1413,7 +1414,7 @@ find_special_key(
 								  &n, 0, TRUE);
 		if (l == 0)
 		{
-		    emsg(_(e_invarg));
+		    emsg(_(e_invalid_argument));
 		    return 0;
 		}
 		key = (int)n;
@@ -2066,9 +2067,9 @@ parse_shape_opt(int what)
 	    commap = vim_strchr(modep, ',');
 
 	    if (colonp == NULL || (commap != NULL && commap < colonp))
-		return N_("E545: Missing colon");
+		return e_missing_colon_2;
 	    if (colonp == modep)
-		return N_("E546: Illegal mode");
+		return e_illegal_mode;
 
 	    /*
 	     * Repeat for all mode's before the colon.
@@ -2094,7 +2095,7 @@ parse_shape_opt(int what)
 				break;
 			if (idx == SHAPE_IDX_COUNT
 				   || (shape_table[idx].used_for & what) == 0)
-			    return N_("E546: Illegal mode");
+			    return e_illegal_mode;
 			if (len == 2 && modep[0] == 'v' && modep[1] == 'e')
 			    found_ve = TRUE;
 		    }
@@ -2133,7 +2134,7 @@ parse_shape_opt(int what)
 			    if (mshape_names[i] == NULL)
 			    {
 				if (!VIM_ISDIGIT(*p))
-				    return N_("E547: Illegal mouseshape");
+				    return e_illegal_mouseshape;
 				if (round == 2)
 				    shape_table[idx].mshape =
 					      getdigits(&p) + MSHAPE_NUMBERED;
@@ -2173,12 +2174,12 @@ parse_shape_opt(int what)
 			{
 			    p += len;
 			    if (!VIM_ISDIGIT(*p))
-				return N_("E548: digit expected");
+				return e_digit_expected;
 			    n = getdigits(&p);
 			    if (len == 3)   // "ver" or "hor"
 			    {
 				if (n == 0)
-				    return N_("E549: Illegal percentage");
+				    return e_illegal_percentage;
 				if (round == 2)
 				{
 				    if (TOLOWER_ASC(i) == 'v')
@@ -2424,6 +2425,7 @@ get_user_name(char_u *buf, int len)
     return OK;
 }
 
+#if defined(EXITFREE) || defined(PROTOS)
 /*
  * Free the memory allocated by get_user_name()
  */
@@ -2432,6 +2434,7 @@ free_username(void)
 {
     vim_free(username);
 }
+#endif
 
 #ifndef HAVE_QSORT
 /*
@@ -2899,7 +2902,6 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
     return OK;
 }
 
-# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Build "argv[argc]" from the string "cmd".
  * "argv[argc]" is set to NULL;
@@ -2926,6 +2928,7 @@ build_argv_from_string(char_u *cmd, char ***argv, int *argc)
     return OK;
 }
 
+# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Build "argv[argc]" from the list "l".
  * "argv[argc]" is set to NULL;

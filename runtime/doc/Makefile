@@ -16,6 +16,7 @@ include ../../src/auto/config.mk
 DOCS = \
 	arabic.txt \
 	autocmd.txt \
+	builtin.txt \
 	change.txt \
 	channel.txt \
 	cmdline.txt \
@@ -161,6 +162,7 @@ DOCS = \
 HTMLS = \
 	arabic.html \
 	autocmd.html \
+	builtin.html \
 	change.html \
 	channel.html \
 	cmdline.html \

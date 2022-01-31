@@ -614,9 +614,9 @@ screen_line(
 	    }
 	    // When writing a single-width character over a double-width
 	    // character and at the end of the redrawn text, need to clear out
-	    // the right halve of the old character.
-	    // Also required when writing the right halve of a double-width
-	    // char over the left halve of an existing one.
+	    // the right half of the old character.
+	    // Also required when writing the right half of a double-width
+	    // char over the left half of an existing one.
 	    if (has_mbyte && col + char_cells == endcol
 		    && ((char_cells == 1
 			    && (*mb_off2cells)(off_to, max_off_to) > 1)
@@ -1524,8 +1524,8 @@ screen_puts_len(
 	return;
     off = LineOffset[row] + col;
 
-    // When drawing over the right halve of a double-wide char clear out the
-    // left halve.  Only needed in a terminal.
+    // When drawing over the right half of a double-wide char clear out the
+    // left half.  Only needed in a terminal.
     if (has_mbyte && col > 0 && col < screen_Columns
 #ifdef FEAT_GUI
 	    && !gui.in_use
@@ -1653,9 +1653,9 @@ screen_puts_len(
 #endif
 	    // When at the end of the text and overwriting a two-cell
 	    // character with a one-cell character, need to clear the next
-	    // cell.  Also when overwriting the left halve of a two-cell char
-	    // with the right halve of a two-cell char.  Do this only once
-	    // (mb_off2cells() may return 2 on the right halve).
+	    // cell.  Also when overwriting the left half of a two-cell char
+	    // with the right half of a two-cell char.  Do this only once
+	    // (mb_off2cells() may return 2 on the right half).
 	    if (clear_next_cell)
 		clear_next_cell = FALSE;
 	    else if (has_mbyte
@@ -2376,9 +2376,9 @@ screen_fill(
 #endif
 	   )
 	{
-	    // When drawing over the right halve of a double-wide char clear
-	    // out the left halve.  When drawing over the left halve of a
-	    // double wide-char clear out the right halve.  Only needed in a
+	    // When drawing over the right half of a double-wide char clear
+	    // out the left half.  When drawing over the left half of a
+	    // double wide-char clear out the right half.  Only needed in a
 	    // terminal.
 	    if (start_col > 0 && mb_fix_col(start_col, row) != start_col)
 		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
@@ -4915,19 +4915,19 @@ set_chars_option(win_T *wp, char_u **varp)
 		    s = p + len + 1;
 		    c1 = get_encoded_char_adv(&s);
 		    if (char2cells(c1) > 1)
-			return e_invarg;
+			return e_invalid_argument;
 		    if (tab[i].cp == &lcs_chars.tab2)
 		    {
 			if (*s == NUL)
-			    return e_invarg;
+			    return e_invalid_argument;
 			c2 = get_encoded_char_adv(&s);
 			if (char2cells(c2) > 1)
-			    return e_invarg;
+			    return e_invalid_argument;
 			if (!(*s == ',' || *s == NUL))
 			{
 			    c3 = get_encoded_char_adv(&s);
 			    if (char2cells(c3) > 1)
-				return e_invarg;
+				return e_invalid_argument;
 			}
 		    }
 
@@ -4969,12 +4969,12 @@ set_chars_option(win_T *wp, char_u **varp)
 			{
 			    c1 = get_encoded_char_adv(&s);
 			    if (char2cells(c1) > 1)
-				return e_invarg;
+				return e_invalid_argument;
 			    ++multispace_len;
 			}
 			if (multispace_len == 0)
 			    // lcs-multispace cannot be an empty string
-			    return e_invarg;
+			    return e_invalid_argument;
 			p = s;
 		    }
 		    else
@@ -4991,7 +4991,7 @@ set_chars_option(win_T *wp, char_u **varp)
 		    }
 		}
 		else
-		    return e_invarg;
+		    return e_invalid_argument;
 	    }
 
 	    if (*p == ',')

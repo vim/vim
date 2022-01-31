@@ -720,7 +720,7 @@ dict_get_number_check(dict_T *d, char_u *key)
 	return 0;
     if (di->di_tv.v_type != VAR_NUMBER)
     {
-	semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+	semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
 	return 0;
     }
     return tv_get_number(&di->di_tv);
@@ -759,7 +759,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 
     if ((d = tv->vval.v_dict) == NULL)
 	return NULL;
-    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_init2(&ga, sizeof(char), 80);
     ga_append(&ga, '{');
 
     todo = (int)d->dv_hashtab.ht_used;
@@ -962,7 +962,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    if (*skipwhite(*arg) == ':')
 		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
-		semsg(_(e_missing_dict_colon), *arg);
+		semsg(_(e_missing_colon_in_dictionary), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -1002,7 +1002,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key_in_dicitonary), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -1042,7 +1042,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    if (**arg == ',')
 		semsg(_(e_no_white_space_allowed_before_str_str), ",", *arg);
 	    else
-		semsg(_(e_missing_dict_comma), *arg);
+		semsg(_(e_missing_comma_in_dictionary), *arg);
 	    goto failret;
 	}
     }
@@ -1116,7 +1116,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	    }
 	    else if (*action == 'e')
 	    {
-		semsg(_("E737: Key already exists: %s"), hi2->hi_key);
+		semsg(_(e_key_already_exists_str), hi2->hi_key);
 		break;
 	    }
 	    else if (*action == 'f' && HI2DI(hi2) != di1)
@@ -1257,7 +1257,7 @@ dict_extend_func(
 		    break;
 	    if (i == 3)
 	    {
-		semsg(_(e_invarg2), action);
+		semsg(_(e_invalid_argument_str), action);
 		return;
 	    }
 	}
@@ -1354,8 +1354,7 @@ dict_filter_map(
 	    if (filtermap == FILTERMAP_MAP)
 	    {
 		if (argtype != NULL && check_typval_arg_type(
-			    argtype->tt_member, &newtv,
-			    func_name, 0) == FAIL)
+			     argtype->tt_member, &newtv, func_name, 0) == FAIL)
 		{
 		    clear_tv(&newtv);
 		    break;
@@ -1414,7 +1413,7 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     di = dict_find(d, key, -1);
     if (di == NULL)
     {
-	semsg(_(e_dictkey), key);
+	semsg(_(e_key_not_present_in_dictionary), key);
 	return;
     }
 
@@ -1449,7 +1448,7 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -1572,7 +1571,7 @@ f_has_key(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
     if (argvars[0].vval.v_dict == NULL)

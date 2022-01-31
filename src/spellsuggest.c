@@ -112,7 +112,7 @@ typedef struct suggest_S
 #define SCORE_THRES3	100	// word count threshold for COMMON3
 
 // When trying changed soundfold words it becomes slow when trying more than
-// two changes.  With less then two changes it's slightly faster but we miss a
+// two changes.  With less than two changes it's slightly faster but we miss a
 // few good suggestions.  In rare cases we need to try three of four changes.
 #define SCORE_SFMAX1	200	// maximum score for first try
 #define SCORE_SFMAX2	300	// maximum score for second try
@@ -196,6 +196,8 @@ typedef struct trystate_S
 #define PFD_NOPREFIX	0xff	// not using prefixes
 #define PFD_PREFIXTREE	0xfe	// walking through the prefix tree
 #define PFD_NOTSPECIAL	0xfd	// highest value that's not special
+
+static long spell_suggest_timeout = 5000;
 
 static void spell_find_suggest(char_u *badptr, int badlen, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive);
 #ifdef FEAT_EVAL
@@ -429,7 +431,10 @@ spell_check_sps(void)
 	else if (STRCMP(buf, "double") == 0)
 	    f = SPS_DOUBLE;
 	else if (STRNCMP(buf, "expr:", 5) != 0
-		&& STRNCMP(buf, "file:", 5) != 0)
+		&& STRNCMP(buf, "file:", 5) != 0
+		&& (STRNCMP(buf, "timeout:", 8) != 0
+		    || (!VIM_ISDIGIT(buf[8])
+				  && !(buf[8] == '-' && VIM_ISDIGIT(buf[9])))))
 	    f = -1;
 
 	if (f == -1 || (sps_flags != 0 && f != 0))
@@ -481,7 +486,7 @@ spell_suggest(int count)
 
     if (*curwin->w_s->b_p_spl == NUL)
     {
-	emsg(_(e_no_spell));
+	emsg(_(e_spell_checking_is_not_possible));
 	return;
     }
 
@@ -774,8 +779,8 @@ spell_find_suggest(
 
     // Set the info in "*su".
     CLEAR_POINTER(su);
-    ga_init2(&su->su_ga, (int)sizeof(suggest_T), 10);
-    ga_init2(&su->su_sga, (int)sizeof(suggest_T), 10);
+    ga_init2(&su->su_ga, sizeof(suggest_T), 10);
+    ga_init2(&su->su_sga, sizeof(suggest_T), 10);
     if (*badptr == NUL)
 	return;
     hash_init(&su->su_banned);
@@ -842,6 +847,7 @@ spell_find_suggest(
     sps_copy = vim_strsave(p_sps);
     if (sps_copy == NULL)
 	return;
+    spell_suggest_timeout = 5000;
 
     // Loop over the items in 'spellsuggest'.
     for (p = sps_copy; *p != NUL; )
@@ -864,6 +870,9 @@ spell_find_suggest(
 	else if (STRNCMP(buf, "file:", 5) == 0)
 	    // Use list of suggestions in a file.
 	    spell_suggest_file(su, buf + 5);
+	else if (STRNCMP(buf, "timeout:", 8) == 0)
+	    // Limit the time searching for suggestions.
+	    spell_suggest_timeout = atol((char *)buf + 8);
 	else if (!did_intern)
 	{
 	    // Use internal method once.
@@ -935,7 +944,7 @@ spell_suggest_file(suginfo_T *su, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return;
     }
 
@@ -1205,7 +1214,7 @@ suggest_try_change(suginfo_T *su)
 
 // Check the maximum score, if we go over it we won't try this change.
 #define TRY_DEEPER(su, stack, depth, add) \
-		(stack[depth].ts_score + (add) < su->su_maxscore)
+       (depth < MAXWLEN - 1 && stack[depth].ts_score + (add) < su->su_maxscore)
 
 /*
  * Try finding suggestions by adding/removing/swapping letters.
@@ -1277,6 +1286,9 @@ suggest_trie_walk(
     char_u	changename[MAXWLEN][80];
 #endif
     int		breakcheckcount = 1000;
+#ifdef FEAT_RELTIME
+    proftime_T	time_limit;
+#endif
     int		compound_ok;
 
     // Go through the whole case-fold tree, try changes at each node.
@@ -1321,6 +1333,12 @@ suggest_trie_walk(
 	    sp->ts_state = STATE_START;
 	}
     }
+#ifdef FEAT_RELTIME
+    // The loop may take an indefinite amount of time. Break out after some
+    // time.
+    if (spell_suggest_timeout > 0)
+	profile_setlimit(spell_suggest_timeout, &time_limit);
+#endif
 
     // Loop to find all suggestions.  At each round we either:
     // - For the current state try one operation, advance "ts_curi",
@@ -1355,7 +1373,8 @@ suggest_trie_walk(
 
 		// At end of a prefix or at start of prefixtree: check for
 		// following word.
-		if (byts[arridx] == 0 || n == (int)STATE_NOPREFIX)
+		if (depth < MAXWLEN - 1
+			    && (byts[arridx] == 0 || n == (int)STATE_NOPREFIX))
 		{
 		    // Set su->su_badflags to the caps type at this position.
 		    // Use the caps type until here for the prefix itself.
@@ -2649,6 +2668,11 @@ suggest_trie_walk(
 	    {
 		ui_breakcheck();
 		breakcheckcount = 1000;
+#ifdef FEAT_RELTIME
+		if (spell_suggest_timeout > 0
+					  && profile_passed_limit(&time_limit))
+		    got_int = TRUE;
+#endif
 	    }
 	}
     }
@@ -2943,7 +2967,7 @@ score_combine(suginfo_T *su)
     check_suggestions(su, &su->su_sga);
     (void)cleanup_suggestions(&su->su_sga, su->su_maxscore, su->su_maxcount);
 
-    ga_init2(&ga, (int)sizeof(suginfo_T), 1);
+    ga_init2(&ga, sizeof(suginfo_T), 1);
     if (ga_grow(&ga, su->su_ga.ga_len + su->su_sga.ga_len) == FAIL)
 	return;
 

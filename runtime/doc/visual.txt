@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.2.  Last change: 2021 Nov 21
+*visual.txt*    For Vim version 8.2.  Last change: 2022 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -265,6 +265,7 @@ Additionally the following commands can be used:
 	X	delete (2)					|v_X|
 	Y	yank (2)					|v_Y|
 	p	put						|v_p|
+	P	put without unnamed register overwrite		|v_P|
 	J	join (1)					|v_J|
 	U	make uppercase					|v_U|
 	u	make lowercase					|v_u|
@@ -488,6 +489,11 @@ Commands in Select mode:
 - ESC stops Select mode.
 - CTRL-O switches to Visual mode for the duration of one command. *v_CTRL-O*
 - CTRL-G switches to Visual mode.
+- CTRL-R {register} selects the register to be used for the text that is
+  deleted when typing text.					  *v_CTRL-R*
+  Unless you specify the "_" (black hole) register, the unnamed register is
+  also overwritten.
+
 
 Otherwise, typed characters are handled as in Visual mode.
 

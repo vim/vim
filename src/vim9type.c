@@ -252,10 +252,13 @@ func_type_add_arg_types(
 /*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
- * When "do_member" is TRUE also get the member type, otherwise use "any".
+ * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
+ * "any".
+ * When "flags" has TVTT_MORE_SPECIFIC get the more specific member type if it
+ * is "any".
  */
     static type_T *
-typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
+typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 {
     type_T  *type;
     type_T  *member_type = NULL;
@@ -278,9 +281,13 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 
 	if (l == NULL || (l->lv_first == NULL && l->lv_type == NULL))
 	    return &t_list_empty;
-	if (!do_member)
+	if ((flags & TVTT_DO_MEMBER) == 0)
 	    return &t_list_any;
-	if (l->lv_type != NULL)
+	// If the type is list<any> go through the members, it may end up a
+	// more specific type.
+	if (l->lv_type != NULL && (l->lv_first == NULL
+					   || (flags & TVTT_MORE_SPECIFIC) == 0
+					   || l->lv_type->tt_member != &t_any))
 	    return l->lv_type;
 	if (l->lv_first == &range_list_item)
 	    return &t_list_number;
@@ -290,9 +297,11 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	l->lv_copyID = copyID;
 
 	// Use the common type of all members.
-	member_type = typval2type(&l->lv_first->li_tv, copyID, type_gap, TRUE);
+	member_type = typval2type(&l->lv_first->li_tv, copyID, type_gap,
+							       TVTT_DO_MEMBER);
 	for (li = l->lv_first->li_next; li != NULL; li = li->li_next)
-	    common_type(typval2type(&li->li_tv, copyID, type_gap, TRUE),
+	    common_type(typval2type(&li->li_tv, copyID, type_gap,
+							       TVTT_DO_MEMBER),
 					  member_type, &member_type, type_gap);
 	return get_list_type(member_type, type_gap);
     }
@@ -305,9 +314,13 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 
 	if (d == NULL || (d->dv_hashtab.ht_used == 0 && d->dv_type == NULL))
 	    return &t_dict_empty;
-	if (!do_member)
+	if ((flags & TVTT_DO_MEMBER) == 0)
 	    return &t_dict_any;
-	if (d->dv_type != NULL)
+	// If the type is dict<any> go through the members, it may end up a
+	// more specific type.
+	if (d->dv_type != NULL && (d->dv_hashtab.ht_used == 0
+					   || (flags & TVTT_MORE_SPECIFIC) == 0
+					   || d->dv_type->tt_member != &t_any))
 	    return d->dv_type;
 	if (d->dv_copyID == copyID)
 	    // avoid recursion
@@ -317,9 +330,9 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 	// Use the common type of all values.
 	dict_iterate_start(tv, &iter);
 	dict_iterate_next(&iter, &value);
-	member_type = typval2type(value, copyID, type_gap, TRUE);
+	member_type = typval2type(value, copyID, type_gap, TVTT_DO_MEMBER);
 	while (dict_iterate_next(&iter, &value) != NULL)
-	    common_type(typval2type(value, copyID, type_gap, TRUE),
+	    common_type(typval2type(value, copyID, type_gap, TVTT_DO_MEMBER),
 					  member_type, &member_type, type_gap);
 	return get_dict_type(member_type, type_gap);
     }
@@ -348,7 +361,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 		member_type = internal_func_ret_type(idx, 0, NULL);
 	    }
 	    else
-		ufunc = find_func(name, FALSE, NULL);
+		ufunc = find_func(name, FALSE);
 	}
 	if (ufunc != NULL)
 	{
@@ -362,15 +375,30 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 		set_function_type(ufunc);
 	    if (ufunc->uf_func_type != NULL)
 	    {
-		if (tv->v_type == VAR_PARTIAL
+		if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
 					    && tv->vval.v_partial->pt_argc > 0)
 		{
 		    type = get_type_ptr(type_gap);
 		    if (type == NULL)
 			return NULL;
 		    *type = *ufunc->uf_func_type;
-		    type->tt_argcount -= tv->vval.v_partial->pt_argc;
-		    type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+		    if (type->tt_argcount >= 0)
+		    {
+			type->tt_argcount -= tv->vval.v_partial->pt_argc;
+			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+			if (type->tt_argcount == 0)
+			    type->tt_args = NULL;
+			else
+			{
+			    int i;
+
+			    func_type_add_arg_types(type, type->tt_argcount,
+								     type_gap);
+			    for (i = 0; i < type->tt_argcount; ++i)
+				type->tt_args[i] = ufunc->uf_func_type->tt_args[
+					      i + tv->vval.v_partial->pt_argc];
+			}
+		    }
 		    return type;
 		}
 		return ufunc->uf_func_type;
@@ -409,12 +437,14 @@ need_convert_to_bool(type_T *type, typval_T *tv)
 /*
  * Get a type_T for a typval_T.
  * "type_list" is used to temporarily create types in.
- * When "do_member" is TRUE also get the member type, otherwise use "any".
+ * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
+ * "any".
+ * When "flags" has TVTT_MORE_SPECIFIC get the most specific member type.
  */
     type_T *
-typval2type(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
+typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 {
-    type_T *type = typval2type_int(tv, copyID, type_gap, do_member);
+    type_T *type = typval2type_int(tv, copyID, type_gap, flags);
 
     if (type != NULL && type != &t_bool
 	    && (tv->v_type == VAR_NUMBER
@@ -436,7 +466,7 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
 	return &t_list_string;
     if (tv->v_type == VAR_DICT)  // e.g. for v:completed_item
 	return &t_dict_any;
-    return typval2type(tv, get_copyID(), type_gap, TRUE);
+    return typval2type(tv, get_copyID(), type_gap, TVTT_DO_MEMBER);
 }
 
     int
@@ -464,6 +494,9 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     type_T	*actual_type;
     int		res = FAIL;
 
+    if (expected == NULL)
+	return OK;  // didn't expect anything.
+
     // For some values there is no type, assume an error will be given later
     // for an invalid value.
     if ((actual_tv->v_type == VAR_FUNC && actual_tv->vval.v_string == NULL)
@@ -475,7 +508,11 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     }
 
     ga_init2(&type_list, sizeof(type_T *), 10);
-    actual_type = typval2type(actual_tv, get_copyID(), &type_list, TRUE);
+
+    // When the actual type is list<any> or dict<any> go through the values to
+    // possibly get a more specific type.
+    actual_type = typval2type(actual_tv, get_copyID(), &type_list,
+					  TVTT_DO_MEMBER | TVTT_MORE_SPECIFIC);
     if (actual_type != NULL)
     {
 	res = check_type_maybe(expected, actual_type, TRUE, where);
@@ -492,12 +529,6 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     }
     clear_type_list(&type_list);
     return res;
-}
-
-    void
-type_mismatch(type_T *expected, type_T *actual)
-{
-    arg_type_mismatch(expected, actual, 0);
 }
 
     void
@@ -656,6 +687,7 @@ check_type_maybe(
 
 /*
  * Check that the arguments of "type" match "argvars[argcount]".
+ * "base_tv" is from "expr->Func()".
  * Return OK/FAIL.
  */
     int
@@ -663,19 +695,21 @@ check_argument_types(
 	type_T	    *type,
 	typval_T    *argvars,
 	int	    argcount,
+	typval_T    *base_tv,
 	char_u	    *name)
 {
     int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
     int	    i;
+    int	    totcount = argcount + (base_tv == NULL ? 0 : 1);
 
     if (type->tt_type != VAR_FUNC && type->tt_type != VAR_PARTIAL)
 	return OK;  // just in case
-    if (argcount < type->tt_min_argcount - varargs)
+    if (totcount < type->tt_min_argcount - varargs)
     {
 	semsg(_(e_not_enough_arguments_for_function_str), name);
 	return FAIL;
     }
-    if (!varargs && type->tt_argcount >= 0 && argcount > type->tt_argcount)
+    if (!varargs && type->tt_argcount >= 0 && totcount > type->tt_argcount)
     {
 	semsg(_(e_too_many_arguments_for_function_str), name);
 	return FAIL;
@@ -684,15 +718,25 @@ check_argument_types(
 	return OK;  // cannot check
 
 
-    for (i = 0; i < argcount; ++i)
+    for (i = 0; i < totcount; ++i)
     {
-	type_T	*expected;
+	type_T	    *expected;
+	typval_T    *tv;
 
+	if (base_tv != NULL)
+	{
+	    if (i == 0)
+		tv = base_tv;
+	    else
+		tv = &argvars[i - 1];
+	}
+	else
+	    tv = &argvars[i];
 	if (varargs && i >= type->tt_argcount - 1)
 	    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
 	else
 	    expected = type->tt_args[i];
-	if (check_typval_arg_type(expected, &argvars[i], NULL, i + 1) == FAIL)
+	if (check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)
 	    return FAIL;
     }
     return OK;
@@ -1155,38 +1199,111 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 }
 
 /*
- * Get the member type of a dict or list from the items on the stack.
- * "stack_top" points just after the last type on the type stack.
+ * Push an entry onto the type stack.  "type" used both for the current type
+ * and the declared type.
+ * Returns FAIL when out of memory.
+ */
+    int
+push_type_stack(cctx_T *cctx, type_T *type)
+{
+    return push_type_stack2(cctx, type, type);
+}
+
+/*
+ * Push an entry onto the type stack.  "type" is the current type, "decl_type"
+ * is the declared type.
+ * Returns FAIL when out of memory.
+ */
+    int
+push_type_stack2(cctx_T *cctx, type_T *type, type_T *decl_type)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type2_T	*typep;
+
+    if (GA_GROW_FAILS(stack, 1))
+	return FAIL;
+    typep = ((type2_T *)stack->ga_data) + stack->ga_len;
+    typep->type_curr = type;
+    typep->type_decl = decl_type;
+    ++stack->ga_len;
+    return OK;
+}
+
+/*
+ * Set the type of the top of the stack to "type".
+ */
+    void
+set_type_on_stack(cctx_T *cctx, type_T *type, int offset)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type2_T	*typep = ((type2_T *)stack->ga_data)
+						  + stack->ga_len - 1 - offset;
+
+    typep->type_curr = type;
+    typep->type_decl = &t_any;
+}
+
+/*
+ * Get the type from the type stack.  If "offset" is zero the one at the top,
+ * if "offset" is one the type above that, etc.
+ * Returns &t_unknown if there is no such stack entry.
+ */
+    type_T *
+get_type_on_stack(cctx_T *cctx, int offset)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    if (offset + 1 > stack->ga_len)
+	return &t_unknown;
+    return (((type2_T *)stack->ga_data) + stack->ga_len - offset - 1)
+								   ->type_curr;
+}
+
+/*
+ * Get the member type of a dict or list from the items on the stack of "cctx".
+ * The declared type is stored in "decl_type".
  * For a list "skip" is 1, for a dict "skip" is 2, keys are skipped.
  * Returns &t_void for an empty list or dict.
  * Otherwise finds the common type of all items.
  */
     type_T *
 get_member_type_from_stack(
-	type_T	    **stack_top,
 	int	    count,
 	int	    skip,
-	garray_T    *type_gap)
+	type_T	    **decl_type,
+	cctx_T	    *cctx)
 {
-    int	    i;
-    type_T  *result;
-    type_T  *type;
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type2_T	*typep;
+    garray_T    *type_gap = cctx->ctx_type_list;
+    int		i;
+    type_T	*result;
+    type_T	*decl_result;
+    type_T	*type;
 
-    // Use "any" for an empty list or dict.
+    // Use "unknown" for an empty list or dict.
     if (count == 0)
+    {
+	*decl_type = &t_unknown;
 	return &t_unknown;
+    }
 
     // Use the first value type for the list member type, then find the common
     // type from following items.
-    result = *(stack_top -(count * skip) + skip - 1);
+    typep = ((type2_T *)stack->ga_data) + stack->ga_len;
+    result = (typep -(count * skip) + skip - 1)->type_curr;
+    decl_result = (typep -(count * skip) + skip - 1)->type_decl;
     for (i = 1; i < count; ++i)
     {
 	if (result == &t_any)
 	    break;  // won't get more common
-	type = *(stack_top -((count - i) * skip) + skip - 1);
+	type = (typep -((count - i) * skip) + skip - 1)->type_curr;
 	common_type(type, result, &result, type_gap);
+	type = (typep -((count - i) * skip) + skip - 1)->type_decl;
+	common_type(type, decl_result, &decl_result, type_gap);
     }
 
+    *decl_type = decl_result;
     return result;
 }
 
@@ -1328,7 +1445,7 @@ f_typename(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     ga_init2(&type_list, sizeof(type_T *), 10);
-    type = typval2type(argvars, get_copyID(), &type_list, TRUE);
+    type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
     name = type_name(type, &tofree);
     if (tofree != NULL)
 	rettv->vval.v_string = (char_u *)tofree;

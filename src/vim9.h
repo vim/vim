@@ -92,6 +92,8 @@ typedef enum {
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 
+    ISN_AUTOLOAD,	// get item from autoload import, function or variable
+
     // function call
     ISN_BCALL,	    // call builtin function isn_arg.bfunc
     ISN_DCALL,	    // call def function isn_arg.dfunc
@@ -594,6 +596,8 @@ typedef struct {
     endlabel_T	*ts_end_label;	    // jump to :finally or :endtry
     int		ts_catch_label;	    // instruction idx of last CATCH
     int		ts_caught_all;	    // "catch" without argument encountered
+    int		ts_has_finally;	    // "finally" encountered
+    int		ts_no_return;	    // one of the blocks did not end in return
 } tryscope_T;
 
 typedef enum {
@@ -703,7 +707,7 @@ struct cctx_S {
 
     garray_T	ctx_locals;	    // currently visible local variables
 
-    int		ctx_has_closure;    // set to one if a closures was created in
+    int		ctx_has_closure;    // set to one if a closure was created in
 				    // the function
 
     garray_T	ctx_imports;	    // imported items
@@ -724,4 +728,8 @@ struct cctx_S {
     lhs_T	ctx_redir_lhs;	    // LHS for ":redir => var", valid when
 				    // lhs_name is not NULL
 };
+
+// flags for typval2type()
+#define TVTT_DO_MEMBER	    1
+#define TVTT_MORE_SPECIFIC  2	// get most specific type for member
 

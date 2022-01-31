@@ -668,7 +668,14 @@ DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
 endif
 
 ifeq ($(SODIUM),yes)
+ ifndef DYNAMIC_SODIUM
+DYNAMIC_SODIUM=yes
+ endif
+ ifeq ($(DYNAMIC_SODIUM),yes)
+DEFINES += -DDYNAMIC_SODIUM
+ else
 SODIUMLIB = -lsodium
+ endif
 endif
 
 # Only allow XPM for a GUI build.
@@ -1138,7 +1145,17 @@ endif
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim --clean -X --not-a-term -u create_cmdidxs.vim
+	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
+
+# Run vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.  If this fails because you don't have Vim yet:
+#   - change nv_cmds[] in nv_cmds.h to add the new normal/visual mode command.
+#   - run "make nvcmdidxs" to generate nv_cmdidxs.h
+nvcmdidxs: nv_cmds.h
+	$(CC) $(CFLAGS) -o create_nvcmdidxs.exe create_nvcmdidxs.c $(LIB)
+	vim --clean -N -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	-$(DEL) create_nvcmdidxs.exe
 
 ###########################################################################
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
@@ -1202,6 +1219,8 @@ $(OUTDIR)/hardcopy.o: hardcopy.c $(INCL) version.h
 
 $(OUTDIR)/misc1.o: misc1.c $(INCL) version.h
 
+$(OUTDIR)/normal.o: normal.c $(INCL) nv_cmdidxs.h nv_cmds.h
+
 $(OUTDIR)/netbeans.o: netbeans.c $(INCL) version.h
 
 $(OUTDIR)/version.o: version.c $(INCL) version.h
@@ -1237,7 +1256,7 @@ $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
 $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL) version.h
 	$(CC) -c $(CFLAGS) gui_w32.c -o $@
 
-$(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
+$(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL)
 	$(CC) -c $(CFLAGS) if_cscope.c -o $@
 
 $(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)

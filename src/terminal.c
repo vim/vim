@@ -459,7 +459,7 @@ term_start(
 	    && argvar->vval.v_list != NULL
 	    && argvar->vval.v_list->lv_first == &range_list_item))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return NULL;
     }
 
@@ -872,7 +872,7 @@ ex_terminal(exarg_T *eap)
 		tty_type = 'c';
 	    else
 	    {
-		semsg(e_invargval, "type");
+		semsg(e_invalid_value_for_argument_str, "type");
 		goto theend;
 	    }
 	    opt.jo_set2 |= JO2_TTY_TYPE;
@@ -883,7 +883,7 @@ ex_terminal(exarg_T *eap)
 	{
 	    if (*p)
 		*p = NUL;
-	    semsg(_("E181: Invalid attribute: %s"), cmd);
+	    semsg(_(e_invalid_attribute_str), cmd);
 	    goto theend;
 	}
 # undef OPTARG_HAS
@@ -935,7 +935,7 @@ ex_terminal(exarg_T *eap)
 	vim_snprintf((char *)newcmd, cmdlen, "%s %s %s", p_sh, p_shcf, cmd);
 	cmd = newcmd;
 # else
-	emsg(_("E279: Sorry, ++shell is not supported on this system"));
+	emsg(_(e_sorry_plusplusshell_not_supported_on_this_system));
 	goto theend;
 # endif
 #endif
@@ -1591,7 +1591,7 @@ term_job_running_check(term_T *term, int check_job_status)
     {
 	job_T *job = term->tl_job;
 
-	// Careful: Checking the job status may invoked callbacks, which close
+	// Careful: Checking the job status may invoke callbacks, which close
 	// the buffer and terminate "term".  However, "job" will not be freed
 	// yet.
 	if (check_job_status)
@@ -2229,7 +2229,8 @@ send_keys_to_term(term_T *term, int c, int modmask, int typed)
 	    break;
 
 	case K_COMMAND:
-	    return do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+	case K_SCRIPT_COMMAND:
+	    return do_cmdkey_command(c, 0);
     }
     if (typed)
 	mouse_was_outside = FALSE;
@@ -3087,6 +3088,8 @@ handle_settermprop(
     switch (prop)
     {
 	case VTERM_PROP_TITLE:
+	    if (disable_vterm_title_for_testing)
+		break;
 	    strval = vim_strnsave((char_u *)value->string.str,
 							    value->string.len);
 	    if (strval == NULL)
@@ -4241,7 +4244,7 @@ init_vterm_ansi_colors(VTerm *vterm)
 		|| var->di_tv.vval.v_list == NULL
 		|| var->di_tv.vval.v_list->lv_first == &range_list_item
 		|| set_ansi_colors_list(vterm, var->di_tv.vval.v_list) == FAIL))
-	semsg(_(e_invarg2), "g:terminal_ansi_colors");
+	semsg(_(e_invalid_argument_str), "g:terminal_ansi_colors");
 }
 #endif
 
@@ -4862,7 +4865,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     term = buf->b_term;
     if (term->tl_vterm == NULL)
     {
-	emsg(_("E958: Job already finished"));
+	emsg(_(e_job_already_finished));
 	return;
     }
 
@@ -4872,7 +4875,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (argvars[2].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	d = argvars[2].vval.v_dict;
@@ -4888,13 +4891,13 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     if (mch_stat((char *)fname, &st) >= 0)
     {
-	semsg(_("E953: File exists: %s"), fname);
+	semsg(_(e_file_exists_str), fname);
 	return;
     }
 
     if (*fname == NUL || (fd = mch_fopen((char *)fname, WRITEBIN)) == NULL)
     {
-	semsg(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_cant_create_file_str), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	return;
     }
 
@@ -5368,13 +5371,13 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     if (fname1 == NULL || (do_diff && fname2 == NULL))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	semsg(_(e_notread), fname1);
+	semsg(_(e_cant_read_file_str), fname1);
 	return;
     }
     if (do_diff)
@@ -5383,7 +5386,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    semsg(_(e_notread), fname2);
+	    semsg(_(e_cant_read_file_str), fname2);
 	    return;
 	}
     }
@@ -5414,7 +5417,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	// With "bufnr" argument: enter the window with this buffer and make it
 	// empty.
 	if (wp == NULL)
-	    semsg(_(e_invarg2), "bufnr");
+	    semsg(_(e_invalid_argument_str), "bufnr");
 	else
 	{
 	    buf = curbuf;
@@ -5992,7 +5995,7 @@ f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     buf = term_get_buf(argvars, "term_setsize()");
     if (buf == NULL)
     {
-	emsg(_("E955: Not a terminal buffer"));
+	emsg(_(e_not_terminal_buffer));
 	return;
     }
     if (buf->b_term->tl_vterm == NULL)
@@ -6093,7 +6096,7 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 		p = buf->b_term->tl_job->jv_tty_in;
 	    break;
 	default:
-	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
 	    return;
     }
     if (p != NULL)
@@ -6346,12 +6349,12 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
     if (set_ansi_colors_list(term->tl_vterm, argvars[1].vval.v_list) == FAIL)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 }
 #endif
 
@@ -6623,7 +6626,7 @@ dyn_conpty_init(int verbose)
     if (!has_conpty_working())
     {
 	if (verbose)
-	    emsg(_("E982: ConPTY is not available"));
+	    emsg(_(e_conpty_is_not_available));
 	return FAIL;
     }
 
@@ -6639,7 +6642,7 @@ dyn_conpty_init(int verbose)
 						conpty_entry[i].name)) == NULL)
 	{
 	    if (verbose)
-		semsg(_(e_loadfunc), conpty_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), conpty_entry[i].name);
 	    hKerneldll = NULL;
 	    return FAIL;
 	}
@@ -6674,8 +6677,8 @@ conpty_term_and_job_init(
     HANDLE	    i_ours = NULL;
     HANDLE	    o_ours = NULL;
 
-    ga_init2(&ga_cmd, (int)sizeof(char*), 20);
-    ga_init2(&ga_env, (int)sizeof(char*), 20);
+    ga_init2(&ga_cmd, sizeof(char*), 20);
+    ga_init2(&ga_env, sizeof(char*), 20);
 
     if (argvar->v_type == VAR_STRING)
     {
@@ -6689,7 +6692,7 @@ conpty_term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	goto failed;
     }
 
@@ -6836,7 +6839,7 @@ conpty_term_and_job_init(
 	ch_log(channel, "Opening output file %s", fname);
 	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
 	if (term->tl_out_fd == NULL)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
     }
 
     return OK;
@@ -6979,7 +6982,7 @@ dyn_winpty_init(int verbose)
     if (!hWinPtyDLL)
     {
 	if (verbose)
-	    semsg(_(e_loadlib),
+	    semsg(_(e_could_not_load_library_str_str),
 		    (*p_winptydll != NUL ? p_winptydll : (char_u *)WINPTY_DLL),
 		    GetWin32Error());
 	return FAIL;
@@ -6991,7 +6994,7 @@ dyn_winpty_init(int verbose)
 					      winpty_entry[i].name)) == NULL)
 	{
 	    if (verbose)
-		semsg(_(e_loadfunc), winpty_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), winpty_entry[i].name);
 	    hWinPtyDLL = NULL;
 	    return FAIL;
 	}
@@ -7022,8 +7025,8 @@ winpty_term_and_job_init(
     garray_T	    ga_cmd, ga_env;
     char_u	    *cmd = NULL;
 
-    ga_init2(&ga_cmd, (int)sizeof(char*), 20);
-    ga_init2(&ga_env, (int)sizeof(char*), 20);
+    ga_init2(&ga_cmd, sizeof(char*), 20);
+    ga_init2(&ga_env, sizeof(char*), 20);
 
     if (argvar->v_type == VAR_STRING)
     {
@@ -7037,7 +7040,7 @@ winpty_term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	goto failed;
     }
 
@@ -7172,7 +7175,7 @@ winpty_term_and_job_init(
 	ch_log(channel, "Opening output file %s", fname);
 	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
 	if (term->tl_out_fd == NULL)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
     }
 
     return OK;

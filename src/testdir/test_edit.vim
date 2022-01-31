@@ -733,8 +733,13 @@ func Test_edit_CTRL_N()
     call feedkeys("Ii\<c-n>\<cr>\<esc>", "tnix")
     call feedkeys("ILO\<c-n>\<cr>\<esc>", 'tnix')
     call assert_equal(['INFER', 'loWER', 'infer', 'LOWER', '', ''], getline(1, '$'), e)
-
-    set noignorecase noinfercase complete&
+    set noignorecase noinfercase
+    %d
+    call setline(1, ['one word', 'two word'])
+    exe "normal! Goo\<C-P>\<C-X>\<C-P>"
+    call assert_equal('one word', getline(3))
+    %d
+    set complete&
     bw!
   endfor
 endfunc
@@ -900,6 +905,23 @@ func Test_edit_CTRL_T()
   bw!
 endfunc
 
+" Test thesaurus completion with different encodings
+func Test_thesaurus_complete_with_encoding()
+  call writefile(['angry furious mad enraged'], 'Xthesaurus')
+  set thesaurus=Xthesaurus
+  for e in ['latin1', 'utf-8']
+    exe 'set encoding=' .. e
+    new
+    call setline(1, 'mad')
+    call cursor(1, 1)
+    call feedkeys("A\<c-x>\<c-t>\<cr>\<esc>", 'tnix')
+    call assert_equal(['mad', ''], getline(1, '$'))
+    bw!
+  endfor
+  set thesaurus=
+  call delete('Xthesaurus')
+endfunc
+
 " Test 'thesaurusfunc'
 func MyThesaurus(findstart, base)
   let mythesaurus = [
@@ -1051,14 +1073,16 @@ func Test_edit_DROP()
 endfunc
 
 func Test_edit_CTRL_V()
-  CheckFeature ebcdic
+  CheckNotFeature ebcdic
+
   new
   call setline(1, ['abc'])
   call cursor(2, 1)
+
   " force some redraws
   set showmode showcmd
-  "call test_override_char_avail(1)
-  call test_override('ALL', 1)
+  call test_override('char_avail', 1)
+
   call feedkeys("A\<c-v>\<c-n>\<c-v>\<c-l>\<c-v>\<c-b>\<esc>", 'tnix')
   call assert_equal(["abc\x0e\x0c\x02"], getline(1, '$'))
 
@@ -1071,8 +1095,19 @@ func Test_edit_CTRL_V()
     set norl
   endif
 
-  call test_override('ALL', 0)
   set noshowmode showcmd
+  call test_override('char_avail', 0)
+
+  " No modifiers should be applied to the char typed using i_CTRL-V_digit.
+  call feedkeys(":append\<CR>\<C-V>76c\<C-V>76\<C-F2>\<C-V>u3c0j\<C-V>u3c0\<M-F3>\<CR>.\<CR>", 'tnix')
+  call assert_equal('LcL<C-F2>πjπ<M-F3>', getline(2))
+
+  if has('osx')
+    " A char with a modifier should not be a valid char for i_CTRL-V_digit.
+    call feedkeys("o\<C-V>\<D-j>\<C-V>\<D-1>\<C-V>\<D-o>\<C-V>\<D-x>\<C-V>\<D-u>", 'tnix')
+    call assert_equal('<D-j><D-1><D-o><D-x><D-u>', getline(3))
+  endif
+
   bw!
 endfunc
 
@@ -2078,6 +2113,21 @@ func Test_edit_CTRL_hat()
   call feedkeys("i\<C-^>", 'xt')
   call assert_equal(0, &iminsert)
 
+  bwipe!
+endfunc
+
+" Weird long file name was going over the end of NameBuff
+func Test_edit_overlong_file_name()
+  CheckUnix
+
+  file 0000000000000000000000000000
+  file %%%%%%%%%%%%%%%%%%%%%%%%%%
+  file %%%%%%
+  set readonly
+  set ls=2 
+
+  redraw!
+  set noreadonly ls&
   bwipe!
 endfunc
 

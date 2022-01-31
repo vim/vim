@@ -980,4 +980,21 @@ func Test_substitute_gdefault()
   bw!
 endfunc
 
+" This was using "old_sub" after it was freed.
+func Test_using_old_sub()
+  set compatible maxfuncdepth=10
+  new
+  call setline(1, 'some text.')
+  func Repl()
+    ~
+    s/
+  endfunc
+  silent!  s/\%')/\=Repl()
+
+  delfunc Repl
+  bwipe!
+  set nocompatible
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

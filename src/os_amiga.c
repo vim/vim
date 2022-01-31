@@ -153,7 +153,7 @@ mch_write(char_u *p, int len)
 mch_inchar(
     char_u  *buf,
     int	    maxlen,
-    long    time,		// milli seconds
+    long    time,		// milliseconds
     int	    tb_change_cnt)
 {
     int	    len;
@@ -1256,7 +1256,7 @@ mch_call_shell(
     if (close_win)
     {
 	// if Vim opened a window: Executing a shell may cause crashes
-	emsg(_("E360: Cannot execute shell with -f option"));
+	emsg(_(e_cannot_execute_shell_with_f_option));
 	return -1;
     }
 

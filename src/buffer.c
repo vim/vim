@@ -63,7 +63,6 @@ static void	clear_wininfo(buf_T *buf);
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
 #endif
-static char *e_auabort = N_("E855: Autocommands caused command to abort");
 
 // Number of times free_buffer() was called.
 static int	buf_free_count = 0;
@@ -139,6 +138,7 @@ read_buffer(
     return retval;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Ensure buffer "buf" is loaded.  Does not trigger the swap-exists action.
  */
@@ -155,6 +155,7 @@ buffer_ensure_loaded(buf_T *buf)
 	aucmd_restbuf(&aco);
     }
 }
+#endif
 
 /*
  * Open current buffer, that is: open the memfile and read the file into
@@ -427,7 +428,7 @@ buf_hashtab_add(buf_T *buf)
 {
     sprintf((char *)buf->b_key, "%x", buf->b_fnum);
     if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
-	emsg(_("E931: Buffer cannot be registered"));
+	emsg(_(e_buffer_cannot_be_registered));
 }
 
     static void
@@ -461,8 +462,7 @@ can_unload_buffer(buf_T *buf)
 	    }
     }
     if (!can_unload)
-	semsg(_("E937: Attempt to delete a buffer that is in use: %s"),
-								 buf->b_fname);
+	semsg(_(e_attempt_to_delete_buffer_that_is_in_use_str), buf->b_fname);
     return can_unload;
 }
 
@@ -594,7 +594,7 @@ close_buffer(
 	{
 	    // Autocommands deleted the buffer.
 aucmd_abort:
-	    emsg(_(e_auabort));
+	    emsg(_(e_autocommands_caused_command_to_abort));
 	    return FALSE;
 	}
 	--buf->b_locked;
@@ -1610,7 +1610,7 @@ do_bufdel(
 	if (addr_count == 2)
 	{
 	    if (*arg)		// both range and argument is not allowed
-		return ex_errmsg(e_trailing_arg, arg);
+		return ex_errmsg(e_trailing_characters_str, arg);
 	    bnr = start_bnr;
 	}
 	else	// addr_count == 1
@@ -1624,7 +1624,7 @@ do_bufdel(
 	    // also be deleted, etc.
 	    if (bnr == curbuf->b_fnum)
 		do_current = bnr;
-	    else if (do_buffer_ext(command, DOBUF_FIRST, FORWARD, (int)bnr,
+	    else if (do_buffer_ext(command, DOBUF_FIRST, FORWARD, bnr,
 			  DOBUF_NOPOPUP | (forceit ? DOBUF_FORCEIT : 0)) == OK)
 		++deleted;
 
@@ -1660,11 +1660,11 @@ do_bufdel(
 	if (deleted == 0)
 	{
 	    if (command == DOBUF_UNLOAD)
-		STRCPY(IObuff, _("E515: No buffers were unloaded"));
+		STRCPY(IObuff, _(e_no_buffers_were_unloaded));
 	    else if (command == DOBUF_DEL)
-		STRCPY(IObuff, _("E516: No buffers were deleted"));
+		STRCPY(IObuff, _(e_no_buffers_were_deleted));
 	    else
-		STRCPY(IObuff, _("E517: No buffers were wiped out"));
+		STRCPY(IObuff, _(e_no_buffers_were_wiped_out));
 	    errormsg = (char *)IObuff;
 	}
 	else if (deleted >= p_report)
@@ -1744,7 +1744,11 @@ set_curbuf(buf_T *buf, int action)
 	{
 	    win_T  *previouswin = curwin;
 
-	    if (prevbuf == curbuf)
+	    // Do not sync when in Insert mode and the buffer is open in
+	    // another window, might be a timer doing something in another
+	    // window.
+	    if (prevbuf == curbuf
+			 && ((State & INSERT) == 0 || curbuf->b_nwindows <= 1))
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
@@ -1823,7 +1827,7 @@ enter_buffer(buf_T *buf)
     if (curbuf->b_ml.ml_mfp == NULL)	// need to load the file
     {
 	// If there is no filetype, allow for detecting one.  Esp. useful for
-	// ":ball" used in a autocommand.  If there already is a filetype we
+	// ":ball" used in an autocommand.  If there already is a filetype we
 	// might prefer to keep it.
 	if (*curbuf->b_p_ft == NUL)
 	    did_filetype = FALSE;
@@ -1905,7 +1909,7 @@ no_write_message(void)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(curbuf->b_term))
-	emsg(_("E948: Job still running (add ! to end the job)"));
+	emsg(_(e_job_still_running_add_bang_to_end_the_job));
     else
 #endif
 	emsg(_(e_no_write_since_last_change_add_bang_to_override));
@@ -1916,7 +1920,7 @@ no_write_message_nobang(buf_T *buf UNUSED)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(buf->b_term))
-	emsg(_("E948: Job still running"));
+	emsg(_(e_job_still_running));
     else
 #endif
 	emsg(_(e_no_write_since_last_change));
@@ -2269,8 +2273,9 @@ free_buf_options(
 #endif
 #ifdef FEAT_CRYPT
 # ifdef FEAT_SODIUM
-    if (buf->b_p_key != NULL && (crypt_get_method_nr(buf) == CRYPT_M_SOD))
-	sodium_munlock(buf->b_p_key, STRLEN(buf->b_p_key));
+    if ((buf->b_p_key != NULL) && (*buf->b_p_key != NUL) &&
+				(crypt_get_method_nr(buf) == CRYPT_M_SOD))
+	crypt_sodium_munlock(buf->b_p_key, STRLEN(buf->b_p_key));
 # endif
     clear_string_option(&buf->b_p_key);
 #endif
@@ -3749,7 +3754,7 @@ fileinfo(
     }
     else
     {
-	p = (char *)msg_trunc_attr(buffer, FALSE, 0);
+	p = msg_trunc_attr(buffer, FALSE, 0);
 	if (restart_edit != 0 || (msg_scrolled && !need_wait_return))
 	    // Need to repeat the message after redrawing when:
 	    // - When restart_edit is set (otherwise there will be a delay
@@ -4157,7 +4162,7 @@ build_stl_str_hl(
 	tv.vval.v_number = wp->w_id;
 	set_var((char_u *)"g:statusline_winid", &tv, FALSE);
 
-	usefmt = eval_to_string_safe(fmt + 2, use_sandbox);
+	usefmt = eval_to_string_safe(fmt + 2, use_sandbox, FALSE);
 	if (usefmt == NULL)
 	    usefmt = fmt;
 
@@ -4541,7 +4546,7 @@ build_stl_str_hl(
 	    if (curwin != save_curwin)
 		VIsual_active = FALSE;
 
-	    str = eval_to_string_safe(p, use_sandbox);
+	    str = eval_to_string_safe(p, use_sandbox, FALSE);
 
 	    curwin = save_curwin;
 	    curbuf = save_curbuf;
@@ -4610,15 +4615,7 @@ build_stl_str_hl(
 
 	case STL_VIRTCOL:
 	case STL_VIRTCOL_ALT:
-	    // In list mode virtcol needs to be recomputed
-	    virtcol = wp->w_virtcol;
-	    if (wp->w_p_list && wp->w_lcs_chars.tab1 == NUL)
-	    {
-		wp->w_p_list = FALSE;
-		getvcol(wp, &wp->w_cursor, NULL, &virtcol, NULL);
-		wp->w_p_list = TRUE;
-	    }
-	    ++virtcol;
+	    virtcol = wp->w_virtcol + 1;
 	    // Don't display %V if it's the same as %c.
 	    if (opt == STL_VIRTCOL_ALT
 		    && (virtcol == (colnr_T)(!(State & INSERT) && empty_line
@@ -5031,7 +5028,7 @@ build_stl_str_hl(
 	sp->userhl = 0;
     }
 
-    // When inside update_screen we do not want redrawing a stausline, ruler,
+    // When inside update_screen we do not want redrawing a statusline, ruler,
     // title, etc. to trigger another redraw, it may cause an endless loop.
     if (updating_screen)
     {
@@ -5611,6 +5608,7 @@ bt_prompt(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == 'p' && buf->b_p_bt[1] == 'r';
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Return TRUE if "buf" is a buffer for a popup window.
  */
@@ -5620,6 +5618,7 @@ bt_popup(buf_T *buf)
     return buf != NULL && buf->b_p_bt != NULL
 	&& buf->b_p_bt[0] == 'p' && buf->b_p_bt[1] == 'o';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a "nofile", "acwrite", "terminal" or "prompt"
@@ -5634,6 +5633,7 @@ bt_nofilename(buf_T *buf)
 	    || buf->b_p_bt[0] == 'p');
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Return TRUE if "buf" has 'buftype' set to "nofile".
  */
@@ -5642,6 +5642,7 @@ bt_nofile(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a "nowrite", "nofile", "terminal" or "prompt"
@@ -5661,7 +5662,7 @@ bt_dontwrite_msg(buf_T *buf)
 {
     if (bt_dontwrite(buf))
     {
-	emsg(_("E382: Cannot write, 'buftype' option is set"));
+	emsg(_(e_cannot_write_buftype_option_is_set));
 	return TRUE;
     }
     return FALSE;

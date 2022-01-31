@@ -45,8 +45,7 @@ match_add(
 	return -1;
     if (id < -1 || id == 0)
     {
-	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"),
-									   id);
+	semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one_1), id);
 	return -1;
     }
     if (id != -1)
@@ -56,7 +55,7 @@ match_add(
 	{
 	    if (cur->id == id)
 	    {
-		semsg(_("E801: ID already taken: %d"), id);
+		semsg(_(e_id_already_taken_nr), id);
 		return -1;
 	    }
 	    cur = cur->next;
@@ -69,7 +68,7 @@ match_add(
     }
     if (pat != NULL && (regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
     {
-	semsg(_(e_invarg2), pat);
+	semsg(_(e_invalid_argument_str), pat);
 	return -1;
     }
 
@@ -165,7 +164,7 @@ match_add(
 	    }
 	    else
 	    {
-		emsg(_("E290: List or number required"));
+		emsg(_(e_list_or_number_required));
 		goto fail;
 	    }
 	    if (toplnum == 0 || lnum < toplnum)
@@ -234,8 +233,7 @@ match_delete(win_T *wp, int id, int perr)
     if (id < 1)
     {
 	if (perr == TRUE)
-	    semsg(_("E802: Invalid ID: %d (must be greater than or equal to 1)"),
-									  id);
+	    semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one_2), id);
 	return -1;
     }
     while (cur != NULL && cur->id != id)
@@ -246,7 +244,7 @@ match_delete(win_T *wp, int id, int perr)
     if (cur == NULL)
     {
 	if (perr == TRUE)
-	    semsg(_("E803: ID not found: %d"), id);
+	    semsg(_(e_id_not_found_nr), id);
 	return -1;
     }
     if (cur == prev)
@@ -427,7 +425,7 @@ next_search_hl(
     int		called_emsg_before = called_emsg;
 
     // for :{range}s/pat only highlight inside the range
-    if (lnum < search_first_line || lnum > search_last_line)
+    if ((lnum < search_first_line || lnum > search_last_line) && cur == NULL)
     {
 	shl->lnum = 0;
 	return;
@@ -936,7 +934,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 
     if (tv->v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FAIL;
     }
 
@@ -949,7 +947,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 	*win = find_win_by_nr_or_id(&di->di_tv);
 	if (*win == NULL)
 	{
-	    emsg(_(e_invalwindow));
+	    emsg(_(e_invalid_window_number));
 	    return FAIL;
 	}
     }
@@ -1038,7 +1036,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	{
 	    char_u buf[MB_MAXBYTES + 1];
 
-	    buf[(*mb_char2bytes)((int)cur->conceal_char, buf)] = NUL;
+	    buf[(*mb_char2bytes)(cur->conceal_char, buf)] = NUL;
 	    dict_add_string(dict, "conceal", (char_u *)&buf);
 	}
 #  endif
@@ -1070,7 +1068,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
     win = get_optional_window(argvars, 1);
@@ -1087,7 +1085,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    if (li->li_tv.v_type != VAR_DICT
 		    || (d = li->li_tv.vval.v_dict) == NULL)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return;
 	    }
 	    if (!(dict_find(d, (char_u *)"group", -1) != NULL
@@ -1096,7 +1094,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 			&& dict_find(d, (char_u *)"priority", -1) != NULL
 			&& dict_find(d, (char_u *)"id", -1) != NULL))
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return;
 	    }
 	    li = li->li_next;
@@ -1216,7 +1214,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     if (id >= 1 && id <= 3)
     {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	semsg(_(e_id_is_reserved_for_match_nr), id);
 	return;
     }
 
@@ -1259,7 +1257,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), "matchaddpos()");
+	semsg(_(e_argument_of_str_must_be_list), "matchaddpos()");
 	return;
     }
     l = argvars[1].vval.v_list;
@@ -1284,7 +1282,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     // id == 3 is ok because matchaddpos() is supposed to substitute :3match
     if (id == 1 || id == 2)
     {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	semsg(_(e_id_is_reserved_for_match_nr), id);
 	return;
     }
 
@@ -1311,7 +1309,7 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
 	id = (int)tv_get_number(&argvars[0]);
 	if (id >= 1 && id <= 3)
 	{
-	    if ((m = (matchitem_T *)get_match(curwin, id)) != NULL)
+	    if ((m = get_match(curwin, id)) != NULL)
 	    {
 		list_append_string(rettv->vval.v_list,
 						syn_id2name(m->hlg_id), -1);
@@ -1394,7 +1392,7 @@ ex_match(exarg_T *eap)
 	{
 	    // There must be two arguments.
 	    vim_free(g);
-	    semsg(_(e_invarg2), eap->arg);
+	    semsg(_(e_invalid_argument_str), eap->arg);
 	    return;
 	}
 	end = skip_regexp(p + 1, *p, TRUE);
@@ -1403,13 +1401,13 @@ ex_match(exarg_T *eap)
 	    if (*end != NUL && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		vim_free(g);
-		eap->errmsg = ex_errmsg(e_trailing_arg, end);
+		eap->errmsg = ex_errmsg(e_trailing_characters_str, end);
 		return;
 	    }
 	    if (*end != *p)
 	    {
 		vim_free(g);
-		semsg(_(e_invarg2), p);
+		semsg(_(e_invalid_argument_str), p);
 		return;
 	    }
 

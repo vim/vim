@@ -193,7 +193,8 @@ internal_format(
 		if (curwin->w_cursor.col <= (colnr_T)wantcol)
 		    break;
 	    }
-	    else if ((cc >= 0x100 || !utf_allow_break_before(cc)) && fo_multibyte)
+	    else if ((cc >= 0x100 || !utf_allow_break_before(cc))
+							       && fo_multibyte)
 	    {
 		int ncc;
 		int allow_break;
@@ -527,7 +528,7 @@ same_leader(
     // If first leader has 'f' flag, the lines can be joined only if the
     // second line does not have a leader.
     // If first leader has 'e' flag, the lines can never be joined.
-    // If fist leader has 's' flag, the lines can only be joined if there is
+    // If first leader has 's' flag, the lines can only be joined if there is
     // some text after it and the second line has the 'm' flag.
     if (leader1_flags != NULL)
     {
@@ -902,6 +903,7 @@ fex_format(
 								   OPT_LOCAL);
     int		r;
     char_u	*fex;
+    sctx_T	save_sctx = current_sctx;
 
     // Set v:lnum to the first line number and v:count to the number of lines.
     // Set v:char to the character to be inserted (can be NUL).
@@ -913,6 +915,7 @@ fex_format(
     fex = vim_strsave(curbuf->b_p_fex);
     if (fex == NULL)
 	return 0;
+    current_sctx = curbuf->b_p_script_ctx[BV_FEX];
 
     // Evaluate the function.
     if (use_sandbox)
@@ -923,6 +926,7 @@ fex_format(
 
     set_vim_var_string(VV_CHAR, NULL, -1);
     vim_free(fex);
+    current_sctx = save_sctx;
 
     return r;
 }
@@ -948,7 +952,7 @@ format_lines(
     int		leader_len = 0;		// leader len of current line
     int		next_leader_len;	// leader len of next line
     char_u	*leader_flags = NULL;	// flags for leader of current line
-    char_u	*next_leader_flags;	// flags for leader of next line
+    char_u	*next_leader_flags = NULL; // flags for leader of next line
     int		do_comments;		// format comments
     int		do_comments_list = 0;	// format comments with 'n' or '2'
     int		advance = TRUE;
@@ -1071,7 +1075,15 @@ format_lines(
 		    || !same_leader(curwin->w_cursor.lnum,
 					leader_len, leader_flags,
 					   next_leader_len, next_leader_flags))
+	    {
+		// Special case: If the next line starts with a line comment
+		// and this line has a line comment after some text, the
+		// paragraph doesn't really end.
+		if (next_leader_flags == NULL
+			|| STRNCMP(next_leader_flags, "://", 3) != 0
+			|| check_linecomment(ml_get_curline()) == MAXCOL)
 		is_end_par = TRUE;
+	    }
 
 	    // If we have got to the end of a paragraph, or the line is
 	    // getting long, format it.

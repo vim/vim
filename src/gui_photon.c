@@ -487,7 +487,7 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 		    if (key->key_cap >= Pk_KP_Enter && key->key_cap <= Pk_KP_9
 			    && (key->key_mods & Pk_KM_Num_Lock))
 		    {
-			// FIXME: For now, just map the key to a ascii value
+			// FIXME: For now, just map the key to an ascii value
 			// (see <photon/PkKeyDef.h>)
 			ch = key->key_cap - 0xf080;
 		    }
@@ -2955,7 +2955,7 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
     }
 
     if (report_error)
-	semsg(e_font, vim_font_name);
+	semsg(e_unknown_font_str, vim_font_name);
 
     return FAIL;
 }

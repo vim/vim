@@ -1,6 +1,6 @@
 " Test 'tagfunc'
 
-source vim9.vim
+import './vim9.vim' as v9
 source check.vim
 source screendump.vim
 
@@ -200,7 +200,7 @@ func Test_tagfunc_callback()
     bw!
 
     #" Test for using a lambda function
-    VAR optval = "LSTART a, b, c LMIDDLE TagFunc1(16, a, b, c) LEND"
+    VAR optval = "LSTART a, b, c LMIDDLE g:TagFunc1(16, a, b, c) LEND"
     LET optval = substitute(optval, ' ', '\\ ', 'g')
     exe "set tagfunc=" .. optval
     new
@@ -210,7 +210,7 @@ func Test_tagfunc_callback()
     bw!
 
     #" Set 'tagfunc' to a lambda expression
-    LET &tagfunc = LSTART a, b, c LMIDDLE TagFunc1(17, a, b, c) LEND
+    LET &tagfunc = LSTART a, b, c LMIDDLE g:TagFunc1(17, a, b, c) LEND
     new
     LET g:TagFunc1Args = []
     call assert_fails('tag a18', 'E433:')
@@ -218,7 +218,7 @@ func Test_tagfunc_callback()
     bw!
 
     #" Set 'tagfunc' to a string(lambda expression)
-    LET &tagfunc = 'LSTART a, b, c LMIDDLE TagFunc1(18, a, b, c) LEND'
+    LET &tagfunc = 'LSTART a, b, c LMIDDLE g:TagFunc1(18, a, b, c) LEND'
     new
     LET g:TagFunc1Args = []
     call assert_fails('tag a18', 'E433:')
@@ -226,7 +226,7 @@ func Test_tagfunc_callback()
     bw!
 
     #" Set 'tagfunc' to a variable with a lambda expression
-    VAR Lambda = LSTART a, b, c LMIDDLE TagFunc1(19, a, b, c) LEND
+    VAR Lambda = LSTART a, b, c LMIDDLE g:TagFunc1(19, a, b, c) LEND
     LET &tagfunc = Lambda
     new
     LET g:TagFunc1Args = []
@@ -235,7 +235,7 @@ func Test_tagfunc_callback()
     bw!
 
     #" Set 'tagfunc' to a string(variable with a lambda expression)
-    LET Lambda = LSTART a, b, c LMIDDLE TagFunc1(20, a, b, c) LEND
+    LET Lambda = LSTART a, b, c LMIDDLE g:TagFunc1(20, a, b, c) LEND
     LET &tagfunc = string(Lambda)
     new
     LET g:TagFunc1Args = []
@@ -265,7 +265,7 @@ func Test_tagfunc_callback()
     call assert_equal([], g:TagFunc2Args)
     bw!
   END
-  call CheckLegacyAndVim9Success(lines)
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " Test for using a script-local function name
   func s:TagFunc3(pat, flags, info)
@@ -380,7 +380,7 @@ func Test_tagfunc_callback()
     assert_equal(['a12', '', {}], g:LocalTagFuncArgs)
     bw!
   END
-  call CheckScriptSuccess(lines)
+  call v9.CheckScriptSuccess(lines)
 
   " cleanup
   delfunc TagFunc1

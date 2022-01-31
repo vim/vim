@@ -446,6 +446,16 @@ func Test_spellsuggest_expr_errors()
   delfunc MySuggest3
 endfunc
 
+func Test_spellsuggest_timeout()
+  set spellsuggest=timeout:30
+  set spellsuggest=timeout:-123
+  set spellsuggest=timeout:999999
+  call assert_fails('set spellsuggest=timeout', 'E474:')
+  call assert_fails('set spellsuggest=timeout:x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:-x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:--9', 'E474:')
+endfunc
+
 func Test_spellinfo()
   new
   let runtime = substitute($VIMRUNTIME, '\\', '/', 'g')
@@ -771,6 +781,14 @@ func Test_spell_long_word()
   redraw!
   bwipe!
   set nospell
+endfunc
+
+func Test_spellsuggest_too_deep()
+  " This was incrementing "depth" over MAXWLEN.
+  new
+  norm s000G00ý000000000000
+  sil norm ..vzG................vvzG0     v z=
+  bwipe!
 endfunc
 
 func LoadAffAndDic(aff_contents, dic_contents)

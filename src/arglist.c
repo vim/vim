@@ -51,7 +51,7 @@ alist_clear(alist_T *al)
     void
 alist_init(alist_T *al)
 {
-    ga_init2(&al->al_ga, (int)sizeof(aentry_T), 5);
+    ga_init2(&al->al_ga, sizeof(aentry_T), 5);
 }
 
 /*
@@ -275,7 +275,7 @@ do_one_arg(char_u *str)
     static int
 get_arglist(garray_T *gap, char_u *str, int escaped)
 {
-    ga_init2(gap, (int)sizeof(char_u *), 20);
+    ga_init2(gap, sizeof(char_u *), 20);
     while (*str != NUL)
     {
 	if (ga_grow(gap, 1) == FAIL)
@@ -460,7 +460,7 @@ do_arglist(
 	    vim_regfree(regmatch.regprog);
 	    vim_free(p);
 	    if (!didone)
-		semsg(_(e_nomatch2), ((char_u **)new_ga.ga_data)[i]);
+		semsg(_(e_no_match_str_2), ((char_u **)new_ga.ga_data)[i]);
 	}
 	ga_clear(&new_ga);
     }
@@ -471,7 +471,7 @@ do_arglist(
 	ga_clear(&new_ga);
 	if (i == FAIL || exp_count == 0)
 	{
-	    emsg(_(e_nomatch));
+	    emsg(_(e_no_match));
 	    return FAIL;
 	}
 
@@ -673,11 +673,11 @@ do_argfile(exarg_T *eap, int argn)
     if (argn < 0 || argn >= ARGCOUNT)
     {
 	if (ARGCOUNT <= 1)
-	    emsg(_("E163: There is only one file to edit"));
+	    emsg(_(e_there_is_only_one_file_to_edit));
 	else if (argn < 0)
-	    emsg(_("E164: Cannot go before first file"));
+	    emsg(_(e_cannot_go_before_first_file));
 	else
-	    emsg(_("E165: Cannot go beyond last file"));
+	    emsg(_(e_cannot_go_beyond_last_file));
     }
     else
     {
@@ -839,7 +839,7 @@ ex_argdelete(exarg_T *eap)
 	{
 	    if (curwin->w_arg_idx >= ARGCOUNT)
 	    {
-		emsg(_("E610: No argument to delete"));
+		emsg(_(e_no_argument_to_delete));
 		return;
 	    }
 	    eap->line1 = eap->line2 = curwin->w_arg_idx + 1;
@@ -850,7 +850,7 @@ ex_argdelete(exarg_T *eap)
 	n = eap->line2 - eap->line1 + 1;
 	if (*eap->arg != NUL)
 	    // Can't have both a range and an argument.
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else if (n <= 0)
 	{
 	    // Don't give an error for ":%argdel" if the list is empty.
@@ -1129,7 +1129,7 @@ do_arg_all(
 			else if (wpnext->w_frame->fr_parent
 						 != curwin->w_frame->fr_parent)
 			{
-			    emsg(_("E249: window layout changed unexpectedly"));
+			    emsg(_(e_window_layout_changed_unexpectedly));
 			    i = count;
 			    break;
 			}

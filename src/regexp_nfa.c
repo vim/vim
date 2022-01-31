@@ -243,11 +243,6 @@ static int nfa_classcodes[] = {
     NFA_UPPER, NFA_NUPPER
 };
 
-static char_u e_nul_found[] = N_("E865: (NFA) Regexp end encountered prematurely");
-static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
-static char_u e_ill_char_class[] = N_("E877: (NFA regexp) Invalid character class: %d");
-static char_u e_value_too_large[] = N_("E951: \\% value too large");
-
 // Variables only used in nfa_regcomp() and descendants.
 static int nfa_re_flags; // re_flags passed to nfa_regcomp()
 static int *post_start;  // holds the postfix form of r.e.
@@ -1377,7 +1372,7 @@ nfa_regatom(void)
     switch (c)
     {
 	case NUL:
-	    EMSG_RET_FAIL(_(e_nul_found));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_end_encountered_prematurely));
 
 	case Magic('^'):
 	    EMIT(NFA_BOL);
@@ -1401,7 +1396,7 @@ nfa_regatom(void)
 	case Magic('_'):
 	    c = no_Magic(getchr());
 	    if (c == NUL)
-		EMSG_RET_FAIL(_(e_nul_found));
+		EMSG_RET_FAIL(_(e_nfa_regexp_end_encountered_prematurely));
 
 	    if (c == '^')	// "\_^" is start-of-line
 	    {
@@ -1461,7 +1456,7 @@ nfa_regatom(void)
 	    {
 		if (extra == NFA_ADD_NL)
 		{
-		    semsg(_(e_ill_char_class), c);
+		    semsg(_(e_nfa_regexp_invalid_character_class_nr), c);
 		    rc_did_emsg = TRUE;
 		    return FAIL;
 		}
@@ -1506,7 +1501,7 @@ nfa_regatom(void)
 	case Magic('|'):
 	case Magic('&'):
 	case Magic(')'):
-	    semsg(_(e_misplaced), no_Magic(c));
+	    semsg(_(e_nfa_regexp_misplaced_chr), no_Magic(c));
 	    return FAIL;
 
 	case Magic('='):
@@ -1516,7 +1511,7 @@ nfa_regatom(void)
 	case Magic('*'):
 	case Magic('{'):
 	    // these should follow an atom, not form an atom
-	    semsg(_(e_misplaced), no_Magic(c));
+	    semsg(_(e_nfa_regexp_misplaced_chr), no_Magic(c));
 	    return FAIL;
 
 	case Magic('~'):
@@ -1602,8 +1597,7 @@ nfa_regatom(void)
 		    break;
 #endif
 		default:
-		    semsg(_("E867: (NFA) Unknown operator '\\z%c'"),
-								 no_Magic(c));
+		    semsg(_(e_nfa_regexp_unknown_operator_z_chr), no_Magic(c));
 		    return FAIL;
 	    }
 	    break;
@@ -1638,9 +1632,8 @@ nfa_regatom(void)
 			}
 
 			if (nr < 0 || nr > INT_MAX)
-			    EMSG2_RET_FAIL(
-			       _("E678: Invalid character after %s%%[dxouU]"),
-				    reg_magic == MAGIC_ALL);
+			    EMSG2_RET_FAIL(_(e_invalid_character_after_str_2),
+						       reg_magic == MAGIC_ALL);
 			// A NUL is stored in the text as NL
 			// TODO: what if a composing character follows?
 			EMIT(nr == 0 ? 0x0a : nr);
@@ -1726,7 +1719,7 @@ nfa_regatom(void)
 			    if (tmp < n)
 			    {
 				// overflow.
-				emsg(_(e_value_too_large));
+				emsg(_(e_percent_value_too_large));
 				return FAIL;
 			    }
 			    n = tmp;
@@ -1774,7 +1767,7 @@ nfa_regatom(void)
 			    }
 			    if (n >= limit)
 			    {
-				emsg(_(e_value_too_large));
+				emsg(_(e_percent_value_too_large));
 				return FAIL;
 			    }
 			    EMIT((int)n);
@@ -1789,8 +1782,7 @@ nfa_regatom(void)
 			    break;
 			}
 		    }
-		    semsg(_("E867: (NFA) Unknown operator '\\%%%c'"),
-								 no_Magic(c));
+		    semsg(_(e_nfa_regexp_unknown_operator_percent_chr), no_Magic(c));
 		    return FAIL;
 	    }
 	    break;
@@ -1948,7 +1940,7 @@ collection:
 			    if (result == FAIL)
 			    {
 				// should never happen
-				EMSG_RET_FAIL(_("E868: Error building NFA with equivalence class!"));
+				EMSG_RET_FAIL(_(e_error_building_nfa_with_equivalence_class));
 			    }
 			    continue;
 			}
@@ -2020,7 +2012,7 @@ collection:
 
 			startc = oldstartc;
 			if (startc > endc)
-			    EMSG_RET_FAIL(_(e_reverse_range));
+			    EMSG_RET_FAIL(_(e_reverse_range_in_character_class));
 
 			if (endc > startc + 2)
 			{
@@ -2129,7 +2121,7 @@ collection:
 	    } // if exists closing ]
 
 	    if (reg_strict)
-		EMSG_RET_FAIL(_(e_missingbracket));
+		EMSG_RET_FAIL(_(e_missing_rsb_after_str_lsb));
 	    // FALLTHROUGH
 
 	default:
@@ -2274,7 +2266,7 @@ nfa_regpiece(void)
 	    }
 	    if (i == 0)
 	    {
-		semsg(_("E869: (NFA) Unknown operator '\\@%c'"), op);
+		semsg(_(e_nfa_regexp_unknown_operator_at_chr), op);
 		return FAIL;
 	    }
 	    EMIT(i);
@@ -2303,7 +2295,7 @@ nfa_regpiece(void)
 		greedy = FALSE;
 	    }
 	    if (!read_limits(&minval, &maxval))
-		EMSG_RET_FAIL(_("E870: (NFA regexp) Error reading repetition limits"));
+		EMSG_RET_FAIL(_(e_nfa_regexp_error_reading_repetition_limits));
 
 	    //  <atom>{0,inf}, <atom>{0,} and <atom>{}  are equivalent to
 	    //  <atom>*
@@ -2334,7 +2326,7 @@ nfa_regpiece(void)
 	    // will emit NFA_STAR.
 	    // Bail out if we can use the other engine, but only, when the
 	    // pattern does not need the NFA engine like (e.g. [[:upper:]]\{2,\}
-	    // does not work with with characters > 8 bit with the BT engine)
+	    // does not work with characters > 8 bit with the BT engine)
 	    if ((nfa_re_flags & RE_AUTO)
 				   && (maxval > 500 || maxval > minval + 200)
 				   && (maxval != MAX_LIMIT && minval < 200)
@@ -2386,7 +2378,7 @@ nfa_regpiece(void)
 
     if (re_multi_type(peekchr()) != NOT_MULTI)
 	// Can't have a multi follow a multi.
-	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi"));
+	EMSG_RET_FAIL(_(e_nfa_regexp_cant_have_multi_follow_multi));
 
     return OK;
 }
@@ -2533,7 +2525,7 @@ nfa_reg(
     if (paren == REG_PAREN)
     {
 	if (regnpar >= NSUBEXP) // Too many `('
-	    EMSG_RET_FAIL(_("E872: (NFA regexp) Too many '('"));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_too_many_parens));
 	parno = regnpar++;
     }
 #ifdef FEAT_SYN_HL
@@ -2541,7 +2533,7 @@ nfa_reg(
     {
 	// Make a ZOPEN node.
 	if (regnzpar >= NSUBEXP)
-	    EMSG_RET_FAIL(_("E879: (NFA regexp) Too many \\z("));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_too_many_z));
 	parno = regnzpar++;
     }
 #endif
@@ -2571,7 +2563,7 @@ nfa_reg(
 	if (peekchr() == Magic(')'))
 	    EMSG2_RET_FAIL(_(e_unmatched_str_close), reg_magic == MAGIC_ALL);
 	else
-	    EMSG_RET_FAIL(_("E873: (NFA regexp) proper termination error"));
+	    EMSG_RET_FAIL(_(e_nfa_regexp_proper_termination_error));
     }
     /*
      * Here we set the flag allowing back references to this set of
@@ -2893,7 +2885,7 @@ nfa_print_state2(FILE *debugf, nfa_state_T *state, garray_T *indent)
 	char_u	save[2];
 
 	STRNCPY(save, &p[last], 2);
-	STRNCPY(&p[last], "+-", 2);
+	memcpy(&p[last], "+-", 2);
 	fprintf(debugf, " %s", p);
 	STRNCPY(&p[last], save, 2);
     }
@@ -3134,7 +3126,7 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	fclose(df);
     }
 #endif
-    emsg(_("E874: (NFA) Could not pop the stack!"));
+    emsg(_(e_nfa_regexp_could_not_pop_stack));
 }
 
 /*
@@ -3892,13 +3884,13 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
     if (stackp != stack)
     {
 	vim_free(stack);
-	EMSG_RET_NULL(_("E875: (NFA regexp) (While converting from postfix to NFA), too many states left on stack"));
+	EMSG_RET_NULL(_(e_nfa_regexp_while_converting_from_postfix_to_nfa_too_many_stats_left_on_stack));
     }
 
     if (istate >= nstate)
     {
 	vim_free(stack);
-	EMSG_RET_NULL(_("E876: (NFA regexp) Not enough space to store the whole NFA "));
+	EMSG_RET_NULL(_(e_nfa_regexp_not_enough_space_to_store_whole_nfa));
     }
 
     matchstate = &state_ptr[istate++]; // the match state
@@ -4300,6 +4292,23 @@ sub_equal(regsub_T *sub1, regsub_T *sub2)
 
 #ifdef ENABLE_LOG
     static void
+open_debug_log(int result)
+{
+    log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
+    if (log_fd == NULL)
+    {
+	emsg(_(e_log_open_failed));
+	log_fd = stderr;
+    }
+
+    fprintf(log_fd, "****************************\n");
+    fprintf(log_fd, "FINISHED RUNNING nfa_regmatch() recursively\n");
+    fprintf(log_fd, "MATCH = %s\n", result == TRUE ? "OK" : result == MAYBE
+	    ? "MAYBE" : "FALSE");
+    fprintf(log_fd, "****************************\n");
+}
+
+    static void
 report_state(char *action,
 	     regsub_T *sub,
 	     nfa_state_T *state,
@@ -4315,6 +4324,9 @@ report_state(char *action,
     else
 	col = (int)(sub->list.line[0].start - rex.line);
     nfa_set_code(state->c);
+    if (log_fd == NULL)
+	open_debug_log(MAYBE);
+
     fprintf(log_fd, "> %s state %d to list %d. char %d: %s (start col %d)%s\n",
 	    action, abs(state->id), lid, state->c, code, col,
 	    pim_info(pim));
@@ -4660,7 +4672,7 @@ skip_add:
 
 		if ((long)(newsize >> 10) >= p_mmp)
 		{
-		    emsg(_(e_maxmempat));
+		    emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 		    --depth;
 		    return NULL;
 		}
@@ -4972,7 +4984,7 @@ addstate_here(
 
     // First add the state(s) at the end, so that we know how many there are.
     // Pass the listidx as offset (avoids adding another argument to
-    // addstate().
+    // addstate()).
     r = addstate(l, state, subs, pim, -listidx - ADDSTATE_HERE_OFFSET);
     if (r == NULL)
 	return NULL;
@@ -5002,7 +5014,7 @@ addstate_here(
 
 	    if ((long)(newsize >> 10) >= p_mmp)
 	    {
-		emsg(_(e_maxmempat));
+		emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 		return NULL;
 	    }
 	    newl = alloc(newsize);
@@ -5126,7 +5138,7 @@ check_char_class(int class, int c)
 
 	default:
 	    // should not be here :P
-	    siemsg(_(e_ill_char_class), class);
+	    siemsg(_(e_nfa_regexp_invalid_character_class_nr), class);
 	    return FAIL;
     }
     return FAIL;
@@ -5393,7 +5405,7 @@ recursive_regmatch(
 	    *listids = ALLOC_MULT(int, prog->nstate);
 	    if (*listids == NULL)
 	    {
-		emsg(_("E878: (NFA) Could not allocate memory for branch traversal!"));
+		emsg(_(e_nfa_regexp_could_not_allocate_memory_for_branch_traversal));
 		return 0;
 	    }
 	    *listids_len = prog->nstate;
@@ -5438,19 +5450,7 @@ recursive_regmatch(
     nfa_endp = save_nfa_endp;
 
 #ifdef ENABLE_LOG
-    log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
-    if (log_fd != NULL)
-    {
-	fprintf(log_fd, "****************************\n");
-	fprintf(log_fd, "FINISHED RUNNING nfa_regmatch() recursively\n");
-	fprintf(log_fd, "MATCH = %s\n", result == TRUE ? "OK" : "FALSE");
-	fprintf(log_fd, "****************************\n");
-    }
-    else
-    {
-	emsg(_(e_log_open_failed));
-	log_fd = stderr;
-    }
+    open_debug_log(result);
 #endif
 
     return result;
@@ -5783,19 +5783,16 @@ nfa_regmatch(
 
 #ifdef ENABLE_LOG
     log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
-    if (log_fd != NULL)
-    {
-	fprintf(log_fd, "**********************************\n");
-	nfa_set_code(start->c);
-	fprintf(log_fd, " RUNNING nfa_regmatch() starting with state %d, code %s\n",
-	abs(start->id), code);
-	fprintf(log_fd, "**********************************\n");
-    }
-    else
+    if (log_fd == NULL)
     {
 	emsg(_(e_log_open_failed));
 	log_fd = stderr;
     }
+    fprintf(log_fd, "**********************************\n");
+    nfa_set_code(start->c);
+    fprintf(log_fd, " RUNNING nfa_regmatch() starting with state %d, code %s\n",
+    abs(start->id), code);
+    fprintf(log_fd, "**********************************\n");
 #endif
 
     thislist = &list[0];
@@ -6927,7 +6924,7 @@ nfa_regmatch(
 
 #ifdef DEBUG
 		if (c < 0)
-		    siemsg("INTERNAL: Negative state char: %ld", c);
+		    siemsg("INTERNAL: Negative state char: %ld", (long)c);
 #endif
 		result = (c == curc);
 

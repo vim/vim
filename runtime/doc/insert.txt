@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.2.  Last change: 2021 Oct 24
+*insert.txt*    For Vim version 8.2.  Last change: 2021 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -84,6 +84,8 @@ CTRL-U		Delete all entered characters before the cursor in the current
 		line.  If there are no newly entered characters and
 		'backspace' is not empty, delete all characters before the
 		cursor in the current line.
+		If C-indenting is enabled the indent will be adjusted if the
+		line becomes blank.
 		See |i_backspacing| about joining lines.
 						*i_CTRL-I* *i_<Tab>* *i_Tab*
 <Tab> or CTRL-I Insert a tab.  If the 'expandtab' option is on, the
@@ -848,7 +850,7 @@ space is preferred).  Maximum line length is 510 bytes.
 
 For an example, imagine the 'thesaurus' file has a line like this: >
 	angry furious mad enraged
-<Placing the cursor after the letters "ang" and typing CTRL-X CTRL-T would
+Placing the cursor after the letters "ang" and typing CTRL-X CTRL-T would
 complete the word "angry"; subsequent presses would change the word to
 "furious", "mad" etc.
 
@@ -860,7 +862,7 @@ https://github.com/vim/vim/issues/629#issuecomment-443293282
 Unpack thesaurus_pkg.zip, put the thesaurus.txt file somewhere, e.g.
 ~/.vim/thesaurus/english.txt, and the 'thesaurus' option to this file name.
 
-					
+
 Completing keywords with 'thesaurusfunc'		*compl-thesaurusfunc*
 
 If the 'thesaurusfunc' option is set, then the user specified function is
@@ -1945,6 +1947,9 @@ When 'autoindent' is on, the indent for a new line is obtained from the
 previous line.  When 'smartindent' or 'cindent' is on, the indent for a line
 is automatically adjusted for C programs.
 
+'formatoptions' can be set to copy the comment leader when opening a new
+line.
+
 'textwidth' can be set to the maximum width for a line.  When a line becomes
 too long when appending characters a line break is automatically inserted.
 
@@ -1958,6 +1963,9 @@ too long when appending characters a line break is automatically inserted.
 			inserted after the current line.
 			Adding [!] toggles 'autoindent' for the time this
 			command is executed.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 							*:i* *:in* *:insert*
 :{range}i[nsert][!]	Insert several lines of text above the specified
@@ -1965,6 +1973,9 @@ too long when appending characters a line break is automatically inserted.
 			inserted before the current line.
 			Adding [!] toggles 'autoindent' for the time this
 			command is executed.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 These two commands will keep on asking for lines, until you type a line
 containing only a ".".  Watch out for lines starting with a backslash, see

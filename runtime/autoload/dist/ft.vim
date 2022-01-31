@@ -1,7 +1,7 @@
 " Vim functions for file type detection
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Dec 17
+" Last Change:	2022 Jan 28
 
 " These functions are moved here from runtime/filetype.vim to make startup
 " faster.
@@ -67,13 +67,29 @@ func dist#ft#FTasmsyntax()
   endif
 endfunc
 
-" Check if one of the first five lines contains "VB_Name".  In that case it is
-" probably a Visual Basic file.  Otherwise it's assumed to be "alt" filetype.
-func dist#ft#FTVB(alt)
-  if getline(1).getline(2).getline(3).getline(4).getline(5) =~? 'VB_Name\|Begin VB\.\(Form\|MDIForm\|UserControl\)'
+func dist#ft#FTbas()
+  if exists("g:filetype_bas")
+    exe "setf " . g:filetype_bas
+    return
+  endif
+
+  " most frequent FreeBASIC-specific keywords in distro files
+  let fb_keywords = '\c^\s*\%(extern\|var\|enum\|private\|scope\|union\|byref\|operator\|constructor\|delete\|namespace\|public\|property\|with\|destructor\|using\)\>\%(\s*[:=(]\)\@!'
+  let fb_preproc  = '\c^\s*\%(#\a\+\|option\s\+\%(byval\|dynamic\|escape\|\%(no\)\=gosub\|nokeyword\|private\|static\)\>\)'
+  let fb_comment  = "^\\s*/'"
+  " OPTION EXPLICIT, without the leading underscore, is common to many dialects
+  let qb64_preproc = '\c^\s*\%($\a\+\|option\s\+\%(_explicit\|_\=explicitarray\)\>\)'
+
+  let lines = getline(1, min([line("$"), 100]))
+
+  if match(lines, fb_preproc) > -1 || match(lines, fb_comment) > -1 || match(lines, fb_keywords) > -1
+    setf freebasic
+  elseif match(lines, qb64_preproc) > -1
+    setf qb64
+  elseif match(lines, '\cVB_Name\|Begin VB\.\(Form\|MDIForm\|UserControl\)') > -1
     setf vb
   else
-    exe "setf " . a:alt
+    setf basic
   endif
 endfunc
 
@@ -828,6 +844,38 @@ func dist#ft#Dep3patch()
     endif
   endfor
 endfunc
+
+" This function checks the first 15 lines for appearance of 'FoamFile'
+" and then 'object' in a following line.
+" In that case, it's probably an OpenFOAM file
+func dist#ft#FTfoam()
+    let ffile = 0
+    let lnum = 1
+    while lnum <= 15
+      if getline(lnum) =~# '^FoamFile'
+	let ffile = 1
+      elseif ffile == 1 && getline(lnum) =~# '^\s*object'
+	setf foam
+	return
+      endif
+      let lnum = lnum + 1
+    endwhile
+endfunc
+
+" Determine if a *.tf file is TF mud client or terraform
+func dist#ft#FTtf()
+  let numberOfLines = line('$')
+  for i in range(1, numberOfLines)
+    let currentLine = trim(getline(i))
+    let firstCharacter = currentLine[0]
+    if firstCharacter !=? ";" && firstCharacter !=? "/" && firstCharacter !=? ""
+      setf terraform
+      return
+    endif
+  endfor
+  setf tf
+endfunc
+
 
 " Restore 'cpoptions'
 let &cpo = s:cpo_save

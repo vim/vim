@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Dec 21
+*options.txt*	For Vim version 8.2.  Last change: 2022 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -170,7 +170,7 @@ When a key code is not set, it's like it does not exist.  Trying to get its
 value will result in an error: >
 	:set t_kb=
 	:set t_kb
-	E846: Key code not set: t_kb
+<	E846: Key code not set: t_kb ~
 
 The t_xx options cannot be set from a |modeline| or in the |sandbox|, for
 security reasons.
@@ -369,7 +369,7 @@ value to the local value, it doesn't switch back to using the global value
 This will make the local value of 'path' empty, so that the global value is
 used.  Thus it does the same as: >
 	:setlocal path=
-Note: In the future more global options can be made global-local.  Using
+Note: In the future more global options can be made |global-local|.  Using
 ":setlocal" on a global option might work differently then.
 
 
@@ -877,11 +877,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Write the contents of the file, if it has been modified, on each
 	`:next`, `:rewind`, `:last`, `:first`, `:previous`, `:stop`,
-	`:suspend`, `:tag, `:!`, ``:make`, CTRL-] and CTRL-^ command; and when
-	a :buffer, CTRL-O, CTRL-I, '{A-Z0-9}, or `{A-Z0-9} command takes one
+	`:suspend`, `:tag`, `:!`, `:make`, CTRL-] and CTRL-^ command; and when
+	a `:buffer`, CTRL-O, CTRL-I, '{A-Z0-9}, or `{A-Z0-9} command takes one
 	to another file.
 	A buffer is not written if it becomes hidden, e.g. when 'bufhidden' is
-	set to "hide" and `:next` is used
+	set to "hide" and `:next` is used.
 	Note that for some commands the 'autowrite' option is not used, see
 	'autowriteall' for that.
 	Some buffers will not be written, specifically when 'buftype' is
@@ -1229,7 +1229,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the script ID (|local-function|). Example: >
 		set bexpr=s:MyBalloonExpr()
 		set bexpr=<SID>SomeBalloonExpr()
-<
+<	Otherwise, the expression is evaluated in the context of the script
+	where the option was set, thus script-local items are available.
+
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
 	This option cannot be set in a modeline when 'modelineexpr' is off.
@@ -1370,6 +1372,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    text should normally be narrower. This prevents
 			    text indented almost to the right window border
 			    occupying lot of vertical space when broken.
+			    (default: 20)
 		shift:{n}   After applying 'breakindent', the wrapped line's
 			    beginning will be shifted by the given number of
 			    characters.  It permits dynamic French paragraph
@@ -1555,8 +1558,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	preferred, because it is much faster.
 	'charconvert' is not used when reading stdin |--|, because there is no
 	file to convert from.  You will have to save the text in a file first.
-	The expression must return zero or an empty string for success,
-	non-zero for failure.
+	The expression must return zero, false or an empty string for success,
+	non-zero or true for failure.
 	The possible encoding names encountered are in 'encoding'.
 	Additionally, names given in 'fileencodings' and 'fileencoding' are
 	used.
@@ -1580,9 +1583,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that v:fname_in and v:fname_out will never be the same.
 	Note that v:charconvert_from and v:charconvert_to may be different
 	from 'encoding'.  Vim internally uses UTF-8 instead of UCS-2 or UCS-4.
+
 	Encryption is not done by Vim when using 'charconvert'.  If you want
 	to encrypt the file after conversion, 'charconvert' should take care
 	of this.
+
+	If the 'charconvert' expression starts with s: or |<SID>|, then it is
+	replaced with the script ID (|local-function|). Example: >
+		set charconvert=s:MyConvert()
+		set charconvert=<SID>SomeConvert()
+<	Otherwise the expression is evaluated in the context of the script
+	where the option was set, thus script-local items are available.
+
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -3438,7 +3450,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+folding|
 			or |+eval| features}
 	The expression used for when 'foldmethod' is "expr".  It is evaluated
-	for each line to obtain its fold level.  See |fold-expr|.
+	for each line to obtain its fold level.  The context is set to the
+	script where 'foldexpr' was set, script-local items can be accessed.
+	See |fold-expr| for the usage.
 
 	The expression will be evaluated in the |sandbox| if set from a
 	modeline, see |sandbox-option|.
@@ -3572,7 +3586,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+folding|
 			feature}
 	An expression which is used to specify the text displayed for a closed
-	fold.  See |fold-foldtext|.
+	fold.  The context is set to the script where 'foldexpr' was set,
+	script-local items can be accessed.  See |fold-foldtext| for the
+	usage.
 
 	The expression will be evaluated in the |sandbox| if set from a
 	modeline, see |sandbox-option|.
@@ -3615,7 +3631,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the script ID (|local-function|). Example: >
 		set formatexpr=s:MyFormatExpr()
 		set formatexpr=<SID>SomeFormatExpr()
-<
+<	Otherwise, the expression is evaluated in the context of the script
+	where the option was set, thus script-local items are available.
+
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.  That stops the option from working,
 	since changing the buffer text is not allowed.
@@ -4462,7 +4480,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the script ID (|local-function|). Example: >
 		set includeexpr=s:MyIncludeExpr(v:fname)
 		set includeexpr=<SID>SomeIncludeExpr(v:fname)
-<
+<	Otherwise, the expression is evaluated in the context of the script
+	where the option was set, thus script-local items are available.
+
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
 	This option cannot be set in a modeline when 'modelineexpr' is off.
@@ -4536,11 +4556,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The expression is evaluated with |v:lnum| set to the line number for
 	which the indent is to be computed.  The cursor is also in this line
 	when the expression is evaluated (but it may be moved around).
+
 	If the expression starts with s: or |<SID>|, then it is replaced with
 	the script ID (|local-function|). Example: >
 		set indentexpr=s:MyIndentExpr()
 		set indentexpr=<SID>SomeIndentExpr()
-<
+<	Otherwise, the expression is evaluated in the context of the script
+	where the option was set, thus script-local items are available.
+
 	The expression must return the number of spaces worth of indent.  It
 	can return "-1" to keep the current indent (this means 'autoindent' is
 	used for the indent).
@@ -5684,7 +5707,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    *'opendevice'* *'odev'* *'noopendevice'* *'noodev'*
 'opendevice' 'odev'	boolean	(default off)
 			global
-			{only for MS-Windows}
+			{only for MS-Windows}  *E796*
 	Enable reading and writing from devices.  This may get Vim stuck on a
 	device that can be opened but doesn't actually do the I/O.  Therefore
 	it is off by default.
@@ -6684,6 +6707,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Don't include both "curdir" and "sesdir".
 	When neither "curdir" nor "sesdir" is included, file names are stored
 	with absolute paths.
+	If you leave out "options" many things won't work well after restoring
+	the session.
 	"slash" and "unix" are useful on Windows when sharing session files
 	with Unix.  The Unix version of Vim cannot source dos format scripts,
 	but the Windows version of Vim can source unix format scripts.
@@ -7347,6 +7372,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			suggestions is never more than the value of 'lines'
 			minus two.
 
+	timeout:{millisec}   Limit the time searching for suggestions to
+			{millisec} milli seconds.  Applies to the following
+			methods.  When omitted the limit is 5000. When
+			negative there is no limit.  {only works when built
+			with the +reltime feature}
+
 	file:{filename} Read file {filename}, which must have two columns,
 			separated by a slash.  The first column contains the
 			bad word, the second column the suggested good word.
@@ -7755,10 +7786,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tabstop' 'ts'		number	(default 8)
 			local to buffer
 	Number of spaces that a <Tab> in the file counts for.  Also see
-	|:retab| command, and 'softtabstop' option.
+	the |:retab| command, and the 'softtabstop' option.
 
 	Note: Setting 'tabstop' to any other value than 8 can make your file
-	appear wrong in many places (e.g., when printing it).
+	appear wrong in many places, e.g., when printing it.
+	The value must be more than 0 and less than 10000.
 
 	There are four main ways to use tabs in Vim:
 	1. Always keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to 4
@@ -8126,7 +8158,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	another default.  Backticks cannot be used in this option for security
 	reasons.
 
-						*'thesaurusfunc'* *tsrfu'*
+						*'thesaurusfunc'* *'tsrfu'*
 'thesaurusfunc' 'tsrfu'	string	(default: empty)
 			global or local to buffer |global-local|
 			{not available when compiled without the |+eval|

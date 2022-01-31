@@ -21,6 +21,9 @@
 # include "vim9.h"
 #endif
 
+// flag passed from compile_subscript() to compile_load_scriptvar()
+static int paren_follows_after_expr = 0;
+
 /*
  * Generate code for any ppconst entries.
  */
@@ -77,7 +80,7 @@ clear_ppconst(ppconst_T *ppconst)
     int
 compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 {
-    type_T	**typep;
+    type2_T	*typep;
     garray_T	*stack = &cctx->ctx_type_stack;
     vartype_T	vartype;
     type_T	*idxtype;
@@ -85,12 +88,13 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     // We can index a list, dict and blob.  If we don't know the type
     // we can use the index value type.  If we still don't know use an "ANY"
     // instruction.
-    typep = ((type_T **)stack->ga_data) + stack->ga_len
-						  - (is_slice ? 3 : 2);
-    vartype = (*typep)->tt_type;
-    idxtype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    // TODO: what about the decl type?
+    typep = (((type2_T *)stack->ga_data) + stack->ga_len - (is_slice ? 3 : 2));
+    vartype = typep->type_curr->tt_type;
+    idxtype = (((type2_T *)stack->ga_data) + stack->ga_len - 1)->type_curr;
     // If the index is a string, the variable must be a Dict.
-    if ((*typep == &t_any || *typep == &t_unknown) && idxtype == &t_string)
+    if ((typep->type_curr == &t_any || typep->type_curr == &t_unknown)
+						       && idxtype == &t_string)
 	vartype = VAR_DICT;
     if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
     {
@@ -98,7 +102,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    return FAIL;
 	if (is_slice)
 	{
-	    idxtype = ((type_T **)stack->ga_data)[stack->ga_len - 2];
+	    idxtype = get_type_on_stack(cctx, 1);
 	    if (need_type(idxtype, &t_number, -2, 0, cctx,
 							 FALSE, FALSE) == FAIL)
 		return FAIL;
@@ -112,19 +116,29 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    emsg(_(e_cannot_slice_dictionary));
 	    return FAIL;
 	}
-	if ((*typep)->tt_type == VAR_DICT)
+	if (typep->type_curr->tt_type == VAR_DICT)
 	{
-	    *typep = (*typep)->tt_member;
-	    if (*typep == &t_unknown)
+	    typep->type_curr = typep->type_curr->tt_member;
+	    if (typep->type_curr == &t_unknown)
 		// empty dict was used
-		*typep = &t_any;
+		typep->type_curr = &t_any;
+	    if (typep->type_decl->tt_type == VAR_DICT)
+	    {
+		typep->type_decl = typep->type_decl->tt_member;
+		if (typep->type_decl == &t_unknown)
+		    // empty dict was used
+		    typep->type_decl = &t_any;
+	    }
+	    else
+		typep->type_decl = typep->type_curr;
 	}
 	else
 	{
-	    if (need_type(*typep, &t_dict_any, -2, 0, cctx,
+	    if (need_type(typep->type_curr, &t_dict_any, -2, 0, cctx,
 							 FALSE, FALSE) == FAIL)
 		return FAIL;
-	    *typep = &t_any;
+	    typep->type_curr = &t_any;
+	    typep->type_decl = &t_any;
 	}
 	if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
 	    return FAIL;
@@ -135,7 +149,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     }
     else if (vartype == VAR_STRING)
     {
-	*typep = &t_string;
+	typep->type_curr = &t_string;
+	typep->type_decl = &t_string;
 	if ((is_slice
 		? generate_instr_drop(cctx, ISN_STRSLICE, 2)
 		: generate_instr_drop(cctx, ISN_STRINDEX, 1)) == FAIL)
@@ -145,18 +160,21 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     {
 	if (is_slice)
 	{
-	    *typep = &t_blob;
+	    typep->type_curr = &t_blob;
+	    typep->type_decl = &t_blob;
 	    if (generate_instr_drop(cctx, ISN_BLOBSLICE, 2) == FAIL)
 		return FAIL;
 	}
 	else
 	{
-	    *typep = &t_number;
+	    typep->type_curr = &t_number;
+	    typep->type_decl = &t_number;
 	    if (generate_instr_drop(cctx, ISN_BLOBINDEX, 1) == FAIL)
 		return FAIL;
 	}
     }
-    else if (vartype == VAR_LIST || *typep == &t_any || *typep == &t_unknown)
+    else if (vartype == VAR_LIST || typep->type_curr == &t_any
+					     || typep->type_curr == &t_unknown)
     {
 	if (is_slice)
 	{
@@ -167,12 +185,21 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	}
 	else
 	{
-	    if ((*typep)->tt_type == VAR_LIST)
+	    if (typep->type_curr->tt_type == VAR_LIST)
 	    {
-		*typep = (*typep)->tt_member;
-		if (*typep == &t_unknown)
+		typep->type_curr = typep->type_curr->tt_member;
+		if (typep->type_curr == &t_unknown)
 		    // empty list was used
-		    *typep = &t_any;
+		    typep->type_curr = &t_any;
+		if (typep->type_decl->tt_type == VAR_LIST)
+		{
+		    typep->type_decl = typep->type_decl->tt_member;
+		    if (typep->type_decl == &t_unknown)
+			// empty list was used
+			typep->type_decl = &t_any;
+		}
+		else
+			typep->type_decl = typep->type_curr;
 	    }
 	    if (generate_instr_drop(cctx,
 			vartype == VAR_LIST ?  ISN_LISTINDEX : ISN_ANYINDEX, 1)
@@ -216,7 +243,7 @@ compile_load_scriptvar(
 	cctx_T *cctx,
 	char_u *name,	    // variable NUL terminated
 	char_u *start,	    // start of variable
-	char_u **end,	    // end of variable
+	char_u **end,	    // end of variable, may be NULL
 	int    error)	    // when TRUE may give error
 {
     scriptitem_T    *si;
@@ -227,12 +254,6 @@ compile_load_scriptvar(
 	return FAIL;
     si = SCRIPT_ITEM(current_sctx.sc_sid);
     idx = get_script_item_idx(current_sctx.sc_sid, name, 0, cctx);
-    if (idx == -1 || si->sn_version != SCRIPT_VERSION_VIM9)
-    {
-	// variable is not in sn_var_vals: old style script.
-	return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
-								       &t_any);
-    }
     if (idx >= 0)
     {
 	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
@@ -242,67 +263,85 @@ compile_load_scriptvar(
 	return OK;
     }
 
-    import = find_imported(name, 0, cctx);
+    import = end == NULL ? NULL : find_imported(name, 0, FALSE, cctx);
     if (import != NULL)
     {
-	if (import->imp_flags & IMP_FLAGS_STAR)
+	char_u	*p = skipwhite(*end);
+	char_u	*exp_name;
+	int	cc;
+	ufunc_T	*ufunc;
+	type_T	*type;
+	int	done = FALSE;
+	int	res = OK;
+
+	// Need to lookup the member.
+	if (*p != '.')
 	{
-	    char_u	*p = skipwhite(*end);
-	    char_u	*exp_name;
-	    int		cc;
-	    ufunc_T	*ufunc;
-	    type_T	*type;
+	    semsg(_(e_expected_dot_after_name_str), start);
+	    return FAIL;
+	}
+	++p;
+	if (VIM_ISWHITE(*p))
+	{
+	    emsg(_(e_no_white_space_allowed_after_dot));
+	    return FAIL;
+	}
 
-	    // Used "import * as Name", need to lookup the member.
-	    if (*p != '.')
-	    {
-		semsg(_(e_expected_dot_after_name_str), start);
-		return FAIL;
-	    }
+	// isolate one name
+	exp_name = p;
+	while (eval_isnamec(*p))
 	    ++p;
-	    if (VIM_ISWHITE(*p))
-	    {
-		emsg(_(e_no_white_space_allowed_after_dot));
-		return FAIL;
-	    }
+	cc = *p;
+	*p = NUL;
 
-	    // isolate one name
-	    exp_name = p;
-	    while (eval_isnamec(*p))
-		++p;
-	    cc = *p;
-	    *p = NUL;
+	si = SCRIPT_ITEM(import->imp_sid);
+	if (si->sn_autoload_prefix != NULL
+					&& si->sn_state == SN_STATE_NOT_LOADED)
+	{
+	    char_u  *auto_name = concat_str(si->sn_autoload_prefix, exp_name);
 
+	    // autoload script must be loaded later, access by the autoload
+	    // name.  If a '(' follows it must be a function.  Otherwise we
+	    // don't know, it can be "script.Func".
+	    if (cc == '(' || paren_follows_after_expr)
+		res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
+	    else
+		res = generate_AUTOLOAD(cctx, auto_name, &t_any);
+	    vim_free(auto_name);
+	    done = TRUE;
+	}
+	else
+	{
 	    idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,
 								   cctx, TRUE);
-	    *p = cc;
-	    p = skipwhite(p);
-	    *end = p;
-
-	    if (idx < 0)
-	    {
-		if (*p == '(' && ufunc != NULL)
-		{
-		    generate_PUSHFUNC(cctx, ufunc->uf_name, import->imp_type);
-		    return OK;
-		}
-		return FAIL;
-	    }
-
-	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
-		    import->imp_sid,
-		    idx,
-		    type);
 	}
-	else if (import->imp_funcname != NULL)
-	    generate_PUSHFUNC(cctx, import->imp_funcname, import->imp_type);
-	else
-	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
-		    import->imp_sid,
-		    import->imp_var_vals_idx,
-		    import->imp_type);
+	*p = cc;
+	*end = p;
+	if (done)
+	    return res;
+
+	if (idx < 0)
+	{
+	    if (ufunc != NULL)
+	    {
+		// function call or function reference
+		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL);
+		return OK;
+	    }
+	    return FAIL;
+	}
+
+	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
+		import->imp_sid,
+		idx,
+		type);
 	return OK;
     }
+
+    if (idx == -1 || si->sn_version != SCRIPT_VERSION_VIM9)
+	// variable is not in sn_var_vals: old style script.
+	return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
+								       &t_any);
 
     if (error)
 	semsg(_(e_item_not_found_str), name);
@@ -310,11 +349,12 @@ compile_load_scriptvar(
 }
 
     static int
-generate_funcref(cctx_T *cctx, char_u *name)
+generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
 {
-    ufunc_T *ufunc = find_func(name, FALSE, cctx);
+    ufunc_T *ufunc = find_func(name, FALSE);
 
-    if (ufunc == NULL)
+    // Reject a global non-autoload function found without the "g:" prefix.
+    if (ufunc == NULL || (!has_g_prefix && func_requires_g_prefix(ufunc)))
 	return FAIL;
 
     // Need to compile any default values to get the argument types.
@@ -380,8 +420,8 @@ compile_load(
 		case 'v': res = generate_LOADV(cctx, name, error);
 			  break;
 		case 's': if (is_expr && ASCII_ISUPPER(*name)
-				       && find_func(name, FALSE, cctx) != NULL)
-			      res = generate_funcref(cctx, name);
+				       && find_func(name, FALSE) != NULL)
+			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
 							    NULL, &end, error);
@@ -389,8 +429,8 @@ compile_load(
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
 			      if (is_expr && ASCII_ISUPPER(*name)
-				       && find_func(name, FALSE, cctx) != NULL)
-				  res = generate_funcref(cctx, name);
+				       && find_func(name, FALSE) != NULL)
+				  res = generate_funcref(cctx, name, TRUE);
 			      else
 				  isn_type = ISN_LOADG;
 			  }
@@ -459,14 +499,14 @@ compile_load(
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
 		if (script_var_exists(*arg, len, cctx) == OK
-			|| find_imported(name, 0, cctx) != NULL)
+			|| find_imported(name, 0, FALSE, cctx) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
 		// When evaluating an expression and the name starts with an
 		// uppercase letter it can be a user defined function.
 		// generate_funcref() will fail if the function can't be found.
 		if (res == FAIL && is_expr && ASCII_ISUPPER(*name))
-		    res = generate_funcref(cctx, name);
+		    res = generate_funcref(cctx, name, FALSE);
 	    }
 	}
 	if (gen_load)
@@ -517,7 +557,7 @@ compile_string(isn_T *isn, cctx_T *cctx)
 				       || GA_GROW_FAILS(&cctx->ctx_instr, 1))
     {
 	if (trailing_error)
-	    semsg(_(e_trailing_arg), s);
+	    semsg(_(e_trailing_characters_str), s);
 	clear_instr_ga(&cctx->ctx_instr);
 	cctx->ctx_instr = save_ga;
 	++cctx->ctx_type_stack.ga_len;
@@ -627,7 +667,23 @@ compile_call(
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
+    int		has_g_namespace;
     int		is_searchpair;
+    imported_T	*import;
+
+    if (varlen >= sizeof(namebuf))
+    {
+	semsg(_(e_name_too_long_str), name);
+	return FAIL;
+    }
+    vim_strncpy(namebuf, *arg, varlen);
+
+    import = find_imported(name, varlen, FALSE, cctx);
+    if (import != NULL)
+    {
+	semsg(_(e_cannot_use_str_itself_it_is_imported), namebuf);
+	return FAIL;
+    }
 
     // We can evaluate "has('name')" at compile time.
     // We always evaluate "exists_compiled()" at compile time.
@@ -673,12 +729,6 @@ compile_call(
     if (generate_ppconst(cctx, ppconst) == FAIL)
 	return FAIL;
 
-    if (varlen >= sizeof(namebuf))
-    {
-	semsg(_(e_name_too_long_str), name);
-	return FAIL;
-    }
-    vim_strncpy(namebuf, *arg, varlen);
     name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
     // We handle the "skip" argument of searchpair() and searchpairpos()
@@ -709,9 +759,7 @@ compile_call(
 
 	    if (STRCMP(name, "add") == 0 && argcount == 2)
 	    {
-		garray_T    *stack = &cctx->ctx_type_stack;
-		type_T	    *type = ((type_T **)stack->ga_data)[
-							    stack->ga_len - 2];
+		type_T	    *type = get_type_on_stack(cctx, 1);
 
 		// add() can be compiled to instructions if we know the type
 		if (type->tt_type == VAR_LIST)
@@ -736,6 +784,8 @@ compile_call(
 	goto theend;
     }
 
+    has_g_namespace = STRNCMP(namebuf, "g:", 2) == 0;
+
     // An argument or local variable can be a function reference, this
     // overrules a function name.
     if (lookup_local(namebuf, varlen, NULL, cctx) == FAIL
@@ -743,23 +793,32 @@ compile_call(
     {
 	// If we can find the function by name generate the right call.
 	// Skip global functions here, a local funcref takes precedence.
-	ufunc = find_func(name, FALSE, cctx);
-	if (ufunc != NULL && !func_is_global(ufunc))
+	ufunc = find_func(name, FALSE);
+	if (ufunc != NULL)
 	{
-	    res = generate_CALL(cctx, ufunc, argcount);
-	    goto theend;
+	    if (!func_is_global(ufunc))
+	    {
+		res = generate_CALL(cctx, ufunc, argcount);
+		goto theend;
+	    }
+	    if (!has_g_namespace
+			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL)
+	    {
+		// A function name without g: prefix must be found locally.
+		semsg(_(e_unknown_function_str), namebuf);
+		goto theend;
+	    }
 	}
     }
 
     // If the name is a variable, load it and use PCALL.
     // Not for g:Func(), we don't know if it is a variable or not.
-    // Not for eome#Func(), it will be loaded later.
+    // Not for some#Func(), it will be loaded later.
     p = namebuf;
-    if (STRNCMP(namebuf, "g:", 2) != 0 && !is_autoload
+    if (!has_g_namespace && !is_autoload
 	    && compile_load(&p, namebuf + varlen, cctx, FALSE, FALSE) == OK)
     {
-	garray_T    *stack = &cctx->ctx_type_stack;
-	type_T	    *type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	type_T	    *type = get_type_on_stack(cctx, 0);
 
 	res = generate_PCALL(cctx, argcount, namebuf, type, FALSE);
 	goto theend;
@@ -774,7 +833,7 @@ compile_call(
 
     // A global function may be defined only later.  Need to figure out at
     // runtime.  Also handles a FuncRef at runtime.
-    if (STRNCMP(namebuf, "g:", 2) == 0 || is_autoload)
+    if (has_g_namespace || is_autoload)
 	res = generate_UCALL(cctx, name, argcount);
     else
 	semsg(_(e_unknown_function_str), namebuf);
@@ -855,7 +914,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	if (may_get_next_line(whitep, &p, cctx) == FAIL)
 	{
-	    semsg(_(e_list_end), *arg);
+	    semsg(_(e_missing_end_of_list_rsb_str), *arg);
 	    return FAIL;
 	}
 	if (*p == ',')
@@ -1090,7 +1149,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key_in_dicitonary), key);
 		goto failret;
 	    }
 	    item = dictitem_alloc(key);
@@ -1108,7 +1167,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (*skipwhite(*arg) == ':')
 		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
-		semsg(_(e_missing_dict_colon), *arg);
+		semsg(_(e_missing_colon_in_dictionary), *arg);
 	    return FAIL;
 	}
 	whitep = *arg + 1;
@@ -1140,7 +1199,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    break;
 	if (**arg != ',')
 	{
-	    semsg(_(e_missing_dict_comma), *arg);
+	    semsg(_(e_missing_comma_in_dictionary), *arg);
 	    goto failret;
 	}
 	if (IS_WHITE_OR_NUL(*whitep))
@@ -1221,7 +1280,7 @@ compile_get_env(char_u **arg, cctx_T *cctx)
     len = get_env_len(arg);
     if (len == 0)
     {
-	semsg(_(e_syntax_error_at_str), start - 1);
+	semsg(_(e_syntax_error_at_str), start);
 	return FAIL;
     }
 
@@ -1421,10 +1480,9 @@ skip_expr_cctx(char_u **arg, cctx_T *cctx)
     int
 bool_on_stack(cctx_T *cctx)
 {
-    garray_T	*stack = &cctx->ctx_type_stack;
     type_T	*type;
 
-    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    type = get_type_on_stack(cctx, 0);
     if (type == &t_bool)
 	return OK;
 
@@ -1470,10 +1528,9 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	{
 	    int		negate = *p == '-';
 	    isn_T	*isn;
-	    garray_T    *stack = &cctx->ctx_type_stack;
 	    type_T	*type;
 
-	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    type = get_type_on_stack(cctx, 0);
 	    if (type != &t_float && need_type(type, &t_number,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
@@ -1550,6 +1607,8 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     return ret;
 }
 
+static int compile_expr8(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst);
+
 /*
  * Compile whatever comes after "name" or "name()".
  * Advances "*arg" only when something was recognized.
@@ -1594,7 +1653,6 @@ compile_subscript(
 	// is not a function call.
 	if (**arg == '(')
 	{
-	    garray_T    *stack = &cctx->ctx_type_stack;
 	    type_T	*type;
 	    int		argcount = 0;
 
@@ -1603,7 +1661,7 @@ compile_subscript(
 	    ppconst->pp_is_const = FALSE;
 
 	    // funcref(arg)
-	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    type = get_type_on_stack(cctx, 0);
 
 	    *arg = skipwhite(p + 1);
 	    if (compile_arguments(arg, cctx, &argcount, FALSE) == FAIL)
@@ -1619,13 +1677,15 @@ compile_subscript(
 	}
 	else if (*p == '-' && p[1] == '>')
 	{
-	    char_u *pstart = p;
+	    char_u  *pstart = p;
+	    int	    alt;
+	    char_u  *paren;
 
+	    // something->method()
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
-	    // something->method()
 	    // Apply the '!', '-' and '+' first:
 	    //   -1.0->func() works like (-1.0)->func()
 	    if (compile_leader(cctx, TRUE, start_leader, end_leader) == FAIL)
@@ -1634,7 +1694,48 @@ compile_subscript(
 	    p += 2;
 	    *arg = skipwhite(p);
 	    // No line break supported right after "->".
+
+	    // Three alternatives handled here:
+	    // 1. "base->name("  only a name, use compile_call()
+	    // 2. "base->(expr)(" evaluate "expr", then use PCALL
+	    // 3. "base->expr("  Same, find the end of "expr" by "("
 	    if (**arg == '(')
+		alt = 2;
+	    else
+	    {
+		// alternative 1 or 3
+		p = *arg;
+		if (!eval_isnamec1(*p))
+		{
+		    semsg(_(e_trailing_characters_str), pstart);
+		    return FAIL;
+		}
+		if (ASCII_ISALPHA(*p) && p[1] == ':')
+		    p += 2;
+		for ( ; eval_isnamec(*p); ++p)
+		    ;
+		if (*p == '(')
+		{
+		    // alternative 1
+		    alt = 1;
+		    if (compile_call(arg, p - *arg, cctx, ppconst, 1) == FAIL)
+			return FAIL;
+		}
+		else
+		{
+		    // Must be alternative 3, find the "(". Only works within
+		    // one line.
+		    alt = 3;
+		    paren = vim_strchr(p, '(');
+		    if (paren == NULL)
+		    {
+			semsg(_(e_missing_parenthesis_str), *arg);
+			return FAIL;
+		    }
+		}
+	    }
+
+	    if (alt != 1)
 	    {
 		int	    argcount = 1;
 		garray_T    *stack = &cctx->ctx_type_stack;
@@ -1644,26 +1745,55 @@ compile_subscript(
 		int	    expr_isn_end;
 		int	    arg_isn_count;
 
-		// Funcref call:  list->(Refs[2])(arg)
-		// or lambda:	  list->((arg) => expr)(arg)
-		//
-		// Fist compile the function expression.
-		if (compile_parenthesis(arg, cctx, ppconst) == FAIL)
-		    return FAIL;
+		if (alt == 2)
+		{
+		    // Funcref call:  list->(Refs[2])(arg)
+		    // or lambda:	  list->((arg) => expr)(arg)
+		    //
+		    // Fist compile the function expression.
+		    if (compile_parenthesis(arg, cctx, ppconst) == FAIL)
+			return FAIL;
+		}
+		else
+		{
+		    int fail;
+		    int save_len = cctx->ctx_ufunc->uf_lines.ga_len;
 
-		// Remember the next instruction index, where the instructions
-		// for arguments are being written.
-		expr_isn_end = cctx->ctx_instr.ga_len;
+		    *paren = NUL;
+
+		    // instead of using LOADG for "import.Func" use PUSHFUNC
+		    ++paren_follows_after_expr;
+
+		    // do not look in the next line
+		    cctx->ctx_ufunc->uf_lines.ga_len = 1;
+
+		    fail = compile_expr8(arg, cctx, ppconst) == FAIL
+						    || *skipwhite(*arg) != NUL;
+		    *paren = '(';
+		    --paren_follows_after_expr;
+		    cctx->ctx_ufunc->uf_lines.ga_len = save_len;
+
+		    if (fail)
+		    {
+			semsg(_(e_invalid_expression_str), pstart);
+			return FAIL;
+		    }
+		}
 
 		// Compile the arguments.
 		if (**arg != '(')
 		{
 		    if (*skipwhite(*arg) == '(')
-			emsg(_(e_nowhitespace));
+			emsg(_(e_no_white_space_allowed_before_parenthesis));
 		    else
 			semsg(_(e_missing_parenthesis_str), *arg);
 		    return FAIL;
 		}
+
+		// Remember the next instruction index, where the instructions
+		// for arguments are being written.
+		expr_isn_end = cctx->ctx_instr.ga_len;
+
 		*arg = skipwhite(*arg + 1);
 		if (compile_arguments(arg, cctx, &argcount, FALSE) == FAIL)
 		    return FAIL;
@@ -1672,12 +1802,13 @@ compile_subscript(
 		// instructions of the expression and move the type of the
 		// expression after the argument types.  This is what ISN_PCALL
 		// expects.
-		stack = &cctx->ctx_type_stack;
 		arg_isn_count = cctx->ctx_instr.ga_len - expr_isn_end;
 		if (arg_isn_count > 0)
 		{
 		    int	    expr_isn_count = expr_isn_end - expr_isn_start;
 		    isn_T   *isn = ALLOC_MULT(isn_T, expr_isn_count);
+		    type_T  *decl_type;
+		    type2_T  *typep;
 
 		    if (isn == NULL)
 			return FAIL;
@@ -1693,39 +1824,23 @@ compile_subscript(
 					  isn, sizeof(isn_T) * expr_isn_count);
 		    vim_free(isn);
 
-		    type = ((type_T **)stack->ga_data)[type_idx_start];
-		    mch_memmove(((type_T **)stack->ga_data) + type_idx_start,
-			      ((type_T **)stack->ga_data) + type_idx_start + 1,
-			      sizeof(type_T *)
+		    typep = ((type2_T *)stack->ga_data) + type_idx_start;
+		    type = typep->type_curr;
+		    decl_type = typep->type_decl;
+		    mch_memmove(((type2_T *)stack->ga_data) + type_idx_start,
+			      ((type2_T *)stack->ga_data) + type_idx_start + 1,
+			      sizeof(type2_T)
 				       * (stack->ga_len - type_idx_start - 1));
-		    ((type_T **)stack->ga_data)[stack->ga_len - 1] = type;
+		    typep = ((type2_T *)stack->ga_data) + stack->ga_len - 1;
+		    typep->type_curr = type;
+		    typep->type_decl = decl_type;
 		}
 
-		type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+		type = get_type_on_stack(cctx, 0);
 		if (generate_PCALL(cctx, argcount, p - 2, type, FALSE) == FAIL)
 		    return FAIL;
 	    }
-	    else
-	    {
-		// method call:  list->method()
-		p = *arg;
-		if (!eval_isnamec1(*p))
-		{
-		    semsg(_(e_trailing_arg), pstart);
-		    return FAIL;
-		}
-		if (ASCII_ISALPHA(*p) && p[1] == ':')
-		    p += 2;
-		for ( ; eval_isnamec(*p); ++p)
-		    ;
-		if (*p != '(')
-		{
-		    semsg(_(e_missing_parenthesis_str), *arg);
-		    return FAIL;
-		}
-		if (compile_call(arg, p - *arg, cctx, ppconst, 1) == FAIL)
-		    return FAIL;
-	    }
+
 	    if (keeping_dict)
 	    {
 		keeping_dict = FALSE;
@@ -1883,7 +1998,7 @@ compile_subscript(
  *  trailing ->name()	method call
  */
     static int
-compile_expr7(
+compile_expr8(
 	char_u **arg,
 	cctx_T *cctx,
 	ppconst_T *ppconst)
@@ -2119,10 +2234,10 @@ compile_expr7(
 }
 
 /*
- * <type>expr7: runtime type check / conversion
+ * <type>expr8: runtime type check / conversion
  */
     static int
-compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
+compile_expr7(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     type_T *want_type = NULL;
 
@@ -2147,17 +2262,16 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
     }
 
-    if (compile_expr7(arg, cctx, ppconst) == FAIL)
+    if (compile_expr8(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
     if (want_type != NULL)
     {
-	garray_T    *stack = &cctx->ctx_type_stack;
 	type_T	    *actual;
 	where_T	    where = WHERE_INIT;
 
 	generate_ppconst(cctx, ppconst);
-	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	actual = get_type_on_stack(cctx, 0);
 	if (check_type_maybe(want_type, actual, FALSE, where) != OK)
 	{
 	    if (need_type(actual, want_type, -1, 0, cctx, FALSE, FALSE)
@@ -2182,7 +2296,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     int		ppconst_used = ppconst->pp_used;
 
     // get the first expression
-    if (compile_expr7t(arg, cctx, ppconst) == FAIL)
+    if (compile_expr7(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
     /*
@@ -2208,7 +2322,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 
 	// get the second expression
-	if (compile_expr7t(arg, cctx, ppconst) == FAIL)
+	if (compile_expr7(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
 
 	if (ppconst->pp_used == ppconst_used + 2
@@ -2781,7 +2895,7 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    generate_JUMP(cctx, op_falsy
 				   ? JUMP_AND_KEEP_IF_TRUE : JUMP_IF_FALSE, 0);
 	    if (op_falsy)
-		type1 = ((type_T **)stack->ga_data)[stack->ga_len];
+		type1 = get_type_on_stack(cctx, -1);
 	}
 
 	// evaluate the second expression; any type is accepted
@@ -2797,8 +2911,8 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (!op_falsy)
 	    {
 		// remember the type and drop it
+		type1 = get_type_on_stack(cctx, 0);
 		--stack->ga_len;
-		type1 = ((type_T **)stack->ga_data)[stack->ga_len];
 
 		end_idx = instr->ga_len;
 		generate_JUMP(cctx, JUMP_ALWAYS, 0);
@@ -2849,7 +2963,8 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ppconst->pp_is_const = FALSE;
 
 	    // If the types differ, the result has a more generic type.
-	    typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;
+	    typep = &((((type2_T *)stack->ga_data)
+					      + stack->ga_len - 1)->type_curr);
 	    common_type(type1, *typep, typep, cctx->ctx_type_list);
 
 	    // jump here from JUMP_ALWAYS or JUMP_AND_KEEP_IF_TRUE

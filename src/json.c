@@ -20,8 +20,6 @@
 
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
 
-static char e_json_error[] = N_("E491: json decode error at '%s'");
-
 /*
  * Encode "val" into a JSON format string.
  * The result is added to "gap"
@@ -246,7 +244,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 		    if (i > 0)
 			ga_concat(gap, (char_u *)",");
 		    vim_snprintf((char *)numbuf, NUMBUFLEN, "%d",
-			    (int)blob_get(b, i));
+			    blob_get(b, i));
 		    ga_concat(gap, numbuf);
 		}
 		ga_append(gap, ']');
@@ -740,7 +738,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = json_decode_string(reader, cur_item, *p);
 		    else
 		    {
-			semsg(_(e_json_error), p);
+			semsg(_(e_json_decode_error_at_str), p);
 			retval = FAIL;
 		    }
 		    break;
@@ -748,7 +746,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		case ',': // comma: empty item
 		    if ((options & JSON_JS) == 0)
 		    {
-			semsg(_(e_json_error), p);
+			semsg(_(e_json_decode_error_at_str), p);
 			retval = FAIL;
 			break;
 		    }
@@ -778,7 +776,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			    if (!VIM_ISDIGIT(*sp))
 			    {
-				semsg(_(e_json_error), p);
+				semsg(_(e_json_decode_error_at_str), p);
 				retval = FAIL;
 				break;
 			    }
@@ -810,7 +808,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 				    &nr, NULL, 0, TRUE);
 			    if (len == 0)
 			    {
-				semsg(_(e_json_error), p);
+				semsg(_(e_json_decode_error_at_str), p);
 				retval = FAIL;
 				goto theend;
 			    }
@@ -925,7 +923,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		if (cur_item->v_type == VAR_FLOAT)
 		{
 		    // cannot use a float as a key
-		    emsg(_(e_float_as_string));
+		    emsg(_(e_using_float_as_string));
 		    retval = FAIL;
 		    goto theend;
 		}
@@ -933,7 +931,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		top_item->jd_key = tv_get_string_buf_chk(cur_item, key_buf);
 		if (top_item->jd_key == NULL)
 		{
-		    emsg(_(e_invarg));
+		    emsg(_(e_invalid_argument));
 		    retval = FAIL;
 		    goto theend;
 		}
@@ -971,7 +969,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			semsg(_(e_json_error), p);
+			semsg(_(e_json_decode_error_at_str), p);
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -989,7 +987,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			semsg(_(e_json_error), p);
+			semsg(_(e_json_decode_error_at_str), p);
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -1006,8 +1004,7 @@ item_end:
 			&& dict_find(top_item->jd_tv.vval.v_dict,
 						 top_item->jd_key, -1) != NULL)
 		{
-		    semsg(_("E938: Duplicate key in JSON: \"%s\""),
-							     top_item->jd_key);
+		    semsg(_(e_duplicate_key_in_json_str), top_item->jd_key);
 		    clear_tv(cur_item);
 		    retval = FAIL;
 		    goto theend;
@@ -1044,7 +1041,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			semsg(_(e_json_error), p);
+			semsg(_(e_json_decode_error_at_str), p);
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -1063,7 +1060,7 @@ item_end:
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
     }
-    semsg(_(e_json_error), p);
+    semsg(_(e_json_decode_error_at_str), p);
 
 theend:
     for (i = 0; i < stack.ga_len; i++)
@@ -1090,13 +1087,13 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     if (ret != OK)
     {
 	if (ret == MAYBE)
-	    semsg(_(e_json_error), reader->js_buf);
+	    semsg(_(e_json_decode_error_at_str), reader->js_buf);
 	return FAIL;
     }
     json_skip_white(reader);
     if (reader->js_buf[reader->js_used] != NUL)
     {
-	semsg(_(e_trailing_arg), reader->js_buf + reader->js_used);
+	semsg(_(e_trailing_characters_str), reader->js_buf + reader->js_used);
 	return FAIL;
     }
     return OK;
@@ -1164,7 +1161,7 @@ f_js_decode(typval_T *argvars, typval_T *rettv)
     reader.js_fill = NULL;
     reader.js_used = 0;
     if (json_decode_all(&reader, rettv, JSON_JS) != OK)
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 }
 
 /*

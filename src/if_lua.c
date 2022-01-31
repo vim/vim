@@ -452,7 +452,7 @@ lua_link_init(char *libname, int verbose)
     if (!hinstLua)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname, load_dll_error());
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
     for (reg = luaV_dll; reg->func; reg++)
@@ -462,7 +462,7 @@ lua_link_init(char *libname, int verbose)
 	    close_dll(hinstLua);
 	    hinstLua = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), reg->name);
+		semsg(_(e_could_not_load_library_function_str), reg->name);
 	    return FAIL;
 	}
     }

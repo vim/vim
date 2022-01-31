@@ -125,6 +125,7 @@ free_xim_stuff(void)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Mark the global 'imactivatefunc' and 'imstatusfunc' callbacks with 'copyID'
  * so that they are not garbage collected.
@@ -134,14 +135,14 @@ set_ref_in_im_funcs(int copyID UNUSED)
 {
     int abort = FALSE;
 
-#if defined(FEAT_EVAL) && \
-    (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
+# if defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL)
     abort = set_ref_in_callback(&imaf_cb, copyID);
     abort = abort || set_ref_in_callback(&imsf_cb, copyID);
-#endif
+# endif
 
     return abort;
 }
+#endif
 
 
 #if defined(FEAT_XIM) || defined(PROTO)
@@ -1324,14 +1325,10 @@ xim_set_preedit(void)
 					XNLineSpace, line_space,
 					NULL);
 	if (XSetICValues(xic, XNPreeditAttributes, attr_list, NULL))
-	    emsg(_("E284: Cannot set IC values"));
+	    emsg(_(e_cannot_set_ic_values));
 	XFree(attr_list);
     }
 }
-
-#  if defined(FEAT_GUI_X11)
-static char e_xim[] = N_("E285: Failed to create input context");
-#  endif
 
 #  if defined(FEAT_GUI_X11) || defined(PROTO)
 #   if defined(XtSpecificationRelease) && XtSpecificationRelease >= 6 && !defined(SUN_SYSTEM)
@@ -1483,7 +1480,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    emsg(_("E286: Failed to open input method"));
+	    emsg(_(e_failed_to_open_input_method));
 	    verbose_leave();
 	}
 	return FALSE;
@@ -1496,13 +1493,13 @@ xim_real_init(Window x11_window, Display *x11_display)
 	destroy_cb.callback = xim_destroy_cb;
 	destroy_cb.client_data = NULL;
 	if (XSetIMValues(xim, XNDestroyCallback, &destroy_cb, NULL))
-	    emsg(_("E287: Warning: Could not set destroy callback to IM"));
+	    emsg(_(e_warning_could_not_set_destroy_callback_to_im));
     }
 #  endif
 
     if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL) || !xim_styles)
     {
-	emsg(_("E288: input method doesn't support any style"));
+	emsg(_(e_input_method_doesnt_support_any_style));
 	XCloseIM(xim);
 	return FALSE;
     }
@@ -1561,7 +1558,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    emsg(_("E289: input method doesn't support my preedit type"));
+	    emsg(_(e_input_method_doesnt_support_my_preedit_type));
 	    verbose_leave();
 	}
 	XCloseIM(xim);
@@ -1625,7 +1622,7 @@ xim_real_init(Window x11_window, Display *x11_display)
     else
     {
 	if (!is_not_a_term())
-	    emsg(_(e_xim));
+	    emsg(_(e_failed_to_create_input_context));
 	XCloseIM(xim);
 	return FALSE;
     }

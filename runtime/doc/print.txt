@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.2.  Last change: 2021 Oct 04
+*print.txt*     For Vim version 8.2.  Last change: 2022 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -178,7 +178,9 @@ If the expression starts with s: or |<SID>|, then it is replaced with the
 script ID (|local-function|). Example: >
 		set printexpr=s:MyPrintFile()
 		set printexpr=<SID>SomePrintFile()
-<
+Otherwise, the expression is evaluated in the context of the script where the
+option was set, thus script-local items are available.
+
 This option cannot be set from a |modeline| or in the |sandbox|, for security
 reasons.
 

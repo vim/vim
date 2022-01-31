@@ -84,13 +84,6 @@ static int add_llist_tags(char_u *tag, int num_matches, char_u **matches);
 #endif
 static void tagstack_clear_entry(taggy_T *item);
 
-static char_u *bottommsg = (char_u *)N_("E555: at bottom of tag stack");
-static char_u *topmsg = (char_u *)N_("E556: at top of tag stack");
-#ifdef FEAT_EVAL
-static char_u *recurmsg = (char_u *)N_("E986: cannot modify the tag stack within tagfunc");
-static char_u *tfu_inv_ret_msg = (char_u *)N_("E987: invalid return value from tagfunc");
-#endif
-
 static char_u	*tagmatchname = NULL;	// name of last used tag
 
 #if defined(FEAT_QUICKFIX)
@@ -109,6 +102,7 @@ static callback_T tfu_cb;	    // 'tagfunc' callback function
 // Used instead of NUL to separate tag fields in the growarrays.
 #define TAG_SEP 0x02
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Reads the 'tagfunc' option value and convert that to a callback value.
  * Invoked when the 'tagfunc' option is set. The option value can be a name of
@@ -132,8 +126,9 @@ set_tagfunc_option(void)
 
     return OK;
 }
+#endif
 
-#if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE) || defined(PROTO)
     void
 free_tagfunc_option(void)
 {
@@ -141,8 +136,9 @@ free_tagfunc_option(void)
     free_callback(&tfu_cb);
 # endif
 }
-#endif
+# endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Mark the global 'tagfunc' callback with 'copyID' so that it is not garbage
  * collected.
@@ -152,9 +148,7 @@ set_ref_in_tagfunc(int copyID UNUSED)
 {
     int	abort = FALSE;
 
-#ifdef FEAT_EVAL
     abort = set_ref_in_callback(&tfu_cb, copyID);
-#endif
 
     return abort;
 }
@@ -166,12 +160,11 @@ set_ref_in_tagfunc(int copyID UNUSED)
     void
 set_buflocal_tfu_callback(buf_T *buf UNUSED)
 {
-#ifdef FEAT_EVAL
     free_callback(&buf->b_tfu_cb);
     if (tfu_cb.cb_name != NULL && *tfu_cb.cb_name != NUL)
 	copy_callback(&buf->b_tfu_cb, &tfu_cb);
-#endif
 }
+#endif
 
 /*
  * Jump to tag; handling of tag commands and tag stack
@@ -236,7 +229,7 @@ do_tag(
 #ifdef FEAT_EVAL
     if (tfu_in_use)
     {
-	emsg(_(recurmsg));
+	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
 	return FALSE;
     }
 #endif
@@ -377,7 +370,7 @@ do_tag(
 #endif
 		if ((tagstackidx -= count) < 0)
 		{
-		    emsg(_(bottommsg));
+		    emsg(_(e_at_bottom_of_tag_stack));
 		    if (tagstackidx + count == 0)
 		    {
 			// We did [num]^T from the bottom of the stack
@@ -390,7 +383,7 @@ do_tag(
 		}
 		else if (tagstackidx >= tagstacklen)    // count == 0?
 		{
-		    emsg(_(topmsg));
+		    emsg(_(e_at_top_of_tag_stack));
 		    goto end_do_tag;
 		}
 
@@ -461,12 +454,12 @@ do_tag(
 			 * position.
 			 */
 			tagstackidx = tagstacklen - 1;
-			emsg(_(topmsg));
+			emsg(_(e_at_top_of_tag_stack));
 			save_pos = FALSE;
 		    }
 		    else if (tagstackidx < 0)	// must have been count == 0
 		    {
-			emsg(_(bottommsg));
+			emsg(_(e_at_bottom_of_tag_stack));
 			tagstackidx = 0;
 			goto end_do_tag;
 		    }
@@ -510,7 +503,7 @@ do_tag(
 		    cur_match = MAXCOL - 1;
 		else if (cur_match < 0)
 		{
-		    emsg(_("E425: Cannot go before first matching tag"));
+		    emsg(_(e_cannot_go_before_first_matching_tag));
 		    skip_msg = TRUE;
 		    cur_match = 0;
 		    cur_fnum = curbuf->b_fnum;
@@ -665,7 +658,7 @@ do_tag(
 	if (num_matches <= 0)
 	{
 	    if (verbose)
-		semsg(_("E426: tag not found: %s"), name);
+		semsg(_(e_tag_not_found_str), name);
 #if defined(FEAT_QUICKFIX)
 	    g_do_tagpreview = 0;
 #endif
@@ -732,9 +725,9 @@ do_tag(
 						      && nofile_fname == NULL)
 		{
 		    if (num_matches == 1)
-			emsg(_("E427: There is only one matching tag"));
+			emsg(_(e_there_is_only_one_matching_tag));
 		    else
-			emsg(_("E428: Cannot go beyond last matching tag"));
+			emsg(_(e_cannot_go_beyond_last_matching_tag));
 		    skip_msg = TRUE;
 		}
 		cur_match = num_matches - 1;
@@ -842,7 +835,7 @@ do_tag(
 		    }
 		    continue;
 		}
-		semsg(_("E429: File \"%s\" does not exist"), nofile_fname);
+		semsg(_(e_file_str_does_not_exist), nofile_fname);
 	    }
 	    else
 	    {
@@ -1421,7 +1414,7 @@ find_tagfunc_tags(
     if (rettv.v_type != VAR_LIST || !rettv.vval.v_list)
     {
 	clear_tv(&rettv);
-	emsg(_(tfu_inv_ret_msg));
+	emsg(_(e_invalid_return_value_from_tagfunc));
 	return FAIL;
     }
     taglist = rettv.vval.v_list;
@@ -1439,7 +1432,7 @@ find_tagfunc_tags(
 
 	if (item->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(tfu_inv_ret_msg));
+	    emsg(_(e_invalid_return_value_from_tagfunc));
 	    break;
 	}
 
@@ -1491,7 +1484,7 @@ find_tagfunc_tags(
 
 	if (!res_name || !res_fname || !res_cmd)
 	{
-	    emsg(_(tfu_inv_ret_msg));
+	    emsg(_(e_invalid_return_value_from_tagfunc));
 	    break;
 	}
 
@@ -1759,7 +1752,7 @@ find_tags(
 #endif
     for (mtt = 0; mtt < MT_COUNT; ++mtt)
     {
-	ga_init2(&ga_match[mtt], (int)sizeof(char_u *), 100);
+	ga_init2(&ga_match[mtt], sizeof(char_u *), 100);
 	hash_init(&ht_match[mtt]);
     }
 
@@ -2166,7 +2159,7 @@ line_read_in:
 				if (fp != NULL)
 				{
 				    if (STRLEN(fullpath_ebuf) > LSIZE)
-					  semsg(_("E430: Tag file path truncated for %s\n"), ebuf);
+					  semsg(_(e_tag_file_path_truncated_for_str), ebuf);
 				    vim_strncpy(tag_fname, fullpath_ebuf,
 								    MAXPATHL);
 				    ++incstack_idx;
@@ -2758,7 +2751,7 @@ parse_line:
 
 	if (line_error)
 	{
-	    semsg(_("E431: Format error in tags file \"%s\""), tag_fname);
+	    semsg(_(e_format_error_in_tags_file_str), tag_fname);
 #ifdef FEAT_CSCOPE
 	    if (!use_cscope)
 #endif
@@ -2786,7 +2779,7 @@ parse_line:
 	tag_file_sorted = NUL;
 	if (sort_error)
 	{
-	    semsg(_("E432: Tags file not sorted: %s"), tag_fname);
+	    semsg(_(e_tags_file_not_sorted_str), tag_fname);
 	    sort_error = FALSE;
 	}
 #endif
@@ -2830,7 +2823,7 @@ parse_line:
     if (!stop_searching)
     {
 	if (!did_open && verbose)	// never opened any tags file
-	    emsg(_("E433: No tags file"));
+	    emsg(_(e_no_tags_file));
 	retval = OK;		// It's OK even when no tag found
     }
 
@@ -2959,7 +2952,7 @@ get_tagfname(
 	if (first)
 	{
 	    ga_clear_strings(&tag_fnames);
-	    ga_init2(&tag_fnames, (int)sizeof(char_u *), 10);
+	    ga_init2(&tag_fnames, sizeof(char_u *), 10);
 	    do_in_runtimepath((char_u *)
 #ifdef FEAT_MULTI_LANG
 # ifdef VMS
@@ -3656,7 +3649,7 @@ jumpto_tag(
 		}
 		if (found == 0)
 		{
-		    emsg(_("E434: Can't find tag pattern"));
+		    emsg(_(e_canot_find_tag_pattern));
 		    curwin->w_cursor.lnum = save_lnum;
 		}
 		else
@@ -3667,7 +3660,7 @@ jumpto_tag(
 		     */
 		    if (found == 2 || !save_p_ic)
 		    {
-			msg(_("E435: Couldn't find tag, just guessing!"));
+			msg(_(e_couldnt_find_tag_just_guessing));
 			if (!msg_scrolled && msg_silent == 0)
 			{
 			    out_flush();
@@ -3806,7 +3799,7 @@ expand_tag_fname(char_u *fname, char_u *tag_fname, int expand)
     {
 	ExpandInit(&xpc);
 	xpc.xp_context = EXPAND_FILES;
-	expanded_fname = ExpandOne(&xpc, (char_u *)fname, NULL,
+	expanded_fname = ExpandOne(&xpc, fname, NULL,
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
 	if (expanded_fname != NULL)
 	    fname = expanded_fname;
@@ -4349,7 +4342,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     // not allowed to alter the tag stack entries from inside tagfunc
     if (tfu_in_use)
     {
-	emsg(_(recurmsg));
+	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
 	return FAIL;
     }
 #endif
@@ -4358,7 +4351,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     {
 	if (di->di_tv.v_type != VAR_LIST)
 	{
-	    emsg(_(e_listreq));
+	    emsg(_(e_list_required));
 	    return FAIL;
 	}
 	l = di->di_tv.vval.v_list;

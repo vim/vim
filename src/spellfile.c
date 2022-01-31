@@ -322,11 +322,8 @@ static int set_spell_chartab(char_u *fol, char_u *low, char_u *upp);
 static void set_map_str(slang_T *lp, char_u *map);
 
 
-static char *e_spell_trunc = N_("E758: Truncated spell file");
 static char *e_afftrailing = N_("Trailing text in %s line %d: %s");
 static char *e_affname = N_("Affix name too long in %s line %d: %s");
-static char *e_affform = N_("E761: Format error in affix file FOL, LOW or UPP");
-static char *e_affrange = N_("E762: Character in FOL, LOW or UPP is out of range");
 static char *msg_compressing = N_("Compressing word tree...");
 
 /*
@@ -365,11 +362,11 @@ spell_load_file(
     if (fd == NULL)
     {
 	if (!silent)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	else if (p_verbose > 2)
 	{
 	    verbose_enter();
-	    smsg((const char *)e_notopen, fname);
+	    smsg((const char *)e_cant_open_file_str, fname);
 	    verbose_leave();
 	}
 	goto endFAIL;
@@ -410,18 +407,18 @@ spell_load_file(
 	buf[i] = getc(fd);				// <fileID>
     if (STRNCMP(buf, VIMSPELLMAGIC, VIMSPELLMAGICL) != 0)
     {
-	emsg(_("E757: This does not look like a spell file"));
+	emsg(_(e_this_does_not_look_like_spell_file));
 	goto endFAIL;
     }
     c = getc(fd);					// <versionnr>
     if (c < VIMSPELLVERSION)
     {
-	emsg(_("E771: Old spell file, needs to be updated"));
+	emsg(_(e_old_spell_file_needs_to_be_updated));
 	goto endFAIL;
     }
     else if (c > VIMSPELLVERSION)
     {
-	emsg(_("E772: Spell file is for newer version of Vim"));
+	emsg(_(e_spell_file_is_for_newer_version_of_vim));
 	goto endFAIL;
     }
 
@@ -528,7 +525,7 @@ spell_load_file(
 		// message.  When it's not required skip the contents.
 		if (c & SNF_REQUIRED)
 		{
-		    emsg(_("E770: Unsupported section in spell file"));
+		    emsg(_(e_unsupported_section_in_spell_file));
 		    goto endFAIL;
 		}
 		while (--len >= 0)
@@ -539,13 +536,13 @@ spell_load_file(
 someerror:
 	if (res == SP_FORMERROR)
 	{
-	    emsg(_(e_format));
+	    emsg(_(e_format_error_in_spell_file));
 	    goto endFAIL;
 	}
 	if (res == SP_TRUNCERROR)
 	{
 truncerr:
-	    emsg(_(e_spell_trunc));
+	    emsg(_(e_truncated_spell_file));
 	    goto endFAIL;
 	}
 	if (res == SP_OTHERERROR)
@@ -706,20 +703,20 @@ suggest_load_files(void)
 		buf[i] = getc(fd);			// <fileID>
 	    if (STRNCMP(buf, VIMSUGMAGIC, VIMSUGMAGICL) != 0)
 	    {
-		semsg(_("E778: This does not look like a .sug file: %s"),
+		semsg(_(e_this_does_not_look_like_sug_file_str),
 							     slang->sl_fname);
 		goto nextone;
 	    }
 	    c = getc(fd);				// <versionnr>
 	    if (c < VIMSUGVERSION)
 	    {
-		semsg(_("E779: Old .sug file, needs to be updated: %s"),
+		semsg(_(e_old_sug_file_needs_to_be_updated_str),
 							     slang->sl_fname);
 		goto nextone;
 	    }
 	    else if (c > VIMSUGVERSION)
 	    {
-		semsg(_("E780: .sug file is for newer version of Vim: %s"),
+		semsg(_(e_sug_file_is_for_newer_version_of_vim_str),
 							     slang->sl_fname);
 		goto nextone;
 	    }
@@ -729,7 +726,7 @@ suggest_load_files(void)
 	    timestamp = get8ctime(fd);			// <timestamp>
 	    if (timestamp != slang->sl_sugtime)
 	    {
-		semsg(_("E781: .sug file doesn't match .spl file: %s"),
+		semsg(_(e_sug_file_doesnt_match_spl_file_str),
 							     slang->sl_fname);
 		goto nextone;
 	    }
@@ -742,7 +739,7 @@ suggest_load_files(void)
 							       FALSE, 0) != 0)
 	    {
 someerror:
-		semsg(_("E782: error while reading .sug file: %s"),
+		semsg(_(e_error_while_reading_sug_file_str),
 							     slang->sl_fname);
 		slang_clear_sug(slang);
 		goto nextone;
@@ -2226,7 +2223,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return NULL;
     }
 
@@ -3520,7 +3517,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -3536,7 +3533,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 
     // Read and ignore the first line: word count.
     if (vim_fgets(line, MAXLINELEN, fd) || !vim_isdigit(*skipwhite(line)))
-	semsg(_("E760: No word count in %s"), fname);
+	semsg(_(e_no_word_count_in_str), fname);
 
     /*
      * Read all the lines in the file one by one.
@@ -3621,7 +3618,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	}
 
 	// Store the word in the hashtable to be able to find duplicates.
-	dw = (char_u *)getroom_save(spin, w);
+	dw = getroom_save(spin, w);
 	if (dw == NULL)
 	{
 	    retval = FAIL;
@@ -4104,7 +4101,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -4310,7 +4307,7 @@ getroom(
 	{
 	    if (!spin->si_did_emsg)
 	    {
-		emsg(_("E845: Insufficient memory, word list will be incomplete"));
+		emsg(_(e_insufficient_memory_word_list_will_be_incomplete));
 		spin->si_did_emsg = TRUE;
 	    }
 	    return NULL;
@@ -4873,7 +4870,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return FAIL;
     }
 
@@ -4920,7 +4917,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
     //
     // The table with character flags and the table for case folding.
     // This makes sure the same characters are recognized as word characters
-    // when generating an when using a spell file.
+    // when generating and when using a spell file.
     // Skip this for ASCII, the table may conflict with the one used for
     // 'encoding'.
     // Also skip this for an .add.spl file, the main spell file must contain
@@ -5720,7 +5717,7 @@ sug_filltable(
 	    ++wordnr;
 
 	    // Remove extra NUL entries, we no longer need them. We don't
-	    // bother freeing the nodes, the won't be reused anyway.
+	    // bother freeing the nodes, they won't be reused anyway.
 	    while (p->wn_sibling != NULL && p->wn_sibling->wn_byte == NUL)
 		p->wn_sibling = p->wn_sibling->wn_sibling;
 
@@ -5802,7 +5799,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	semsg(_(e_notopen), fname);
+	semsg(_(e_cant_open_file_str), fname);
 	return;
     }
 
@@ -5908,12 +5905,12 @@ mkspell(
     spin.si_ascii = ascii;
     spin.si_followup = TRUE;
     spin.si_rem_accents = TRUE;
-    ga_init2(&spin.si_rep, (int)sizeof(fromto_T), 20);
-    ga_init2(&spin.si_repsal, (int)sizeof(fromto_T), 20);
-    ga_init2(&spin.si_sal, (int)sizeof(fromto_T), 20);
-    ga_init2(&spin.si_map, (int)sizeof(char_u), 100);
-    ga_init2(&spin.si_comppat, (int)sizeof(char_u *), 20);
-    ga_init2(&spin.si_prefcond, (int)sizeof(char_u *), 50);
+    ga_init2(&spin.si_rep, sizeof(fromto_T), 20);
+    ga_init2(&spin.si_repsal, sizeof(fromto_T), 20);
+    ga_init2(&spin.si_sal, sizeof(fromto_T), 20);
+    ga_init2(&spin.si_map, sizeof(char_u), 100);
+    ga_init2(&spin.si_comppat, sizeof(char_u *), 20);
+    ga_init2(&spin.si_prefcond, sizeof(char_u *), 50);
     hash_init(&spin.si_commonwords);
     spin.si_newcompID = 127;	// start compound ID at first maximum
 
@@ -5963,11 +5960,11 @@ mkspell(
     }
 
     if (incount <= 0)
-	emsg(_(e_invarg));	// need at least output and input names
+	emsg(_(e_invalid_argument));	// need at least output and input names
     else if (vim_strchr(gettail(wfname), '_') != NULL)
-	emsg(_("E751: Output file name must not have region name"));
+	emsg(_(e_output_file_name_must_not_have_region_name));
     else if (incount > MAXREGIONS)
-	semsg(_("E754: Only up to %d regions supported"), MAXREGIONS);
+	semsg(_(e_only_up_to_nr_regions_supported), MAXREGIONS);
     else
     {
 	// Check for overwriting before doing things that may take a lot of
@@ -6001,7 +5998,7 @@ mkspell(
 		if (STRLEN(gettail(innames[i])) < 5
 						|| innames[i][len - 3] != '_')
 		{
-		    semsg(_("E755: Invalid region in %s"), innames[i]);
+		    semsg(_(e_invalid_region_in_str), innames[i]);
 		    goto theend;
 		}
 		spin.si_region_name[i * 2] = TOLOWER_ASC(innames[i][len - 2]);
@@ -6214,7 +6211,7 @@ spell_add_word(
 
 	if (*curwin->w_s->b_p_spf == NUL)
 	{
-	    semsg(_(e_notset), "spellfile");
+	    semsg(_(e_option_str_is_not_set), "spellfile");
 	    return;
 	}
 	fnamebuf = alloc(MAXPATHL);
@@ -6228,7 +6225,7 @@ spell_add_word(
 		break;
 	    if (*spf == NUL)
 	    {
-		semsg(_("E765: 'spellfile' does not have %d entries"), idx);
+		semsg(_(e_spellfile_does_not_have_nr_entries), idx);
 		vim_free(fnamebuf);
 		return;
 	    }
@@ -6240,7 +6237,7 @@ spell_add_word(
 	    buf = NULL;
 	if (buf != NULL && bufIsChanged(buf))
 	{
-	    emsg(_(e_bufloaded));
+	    emsg(_(e_file_is_loaded_in_another_buffer));
 	    vim_free(fnamebuf);
 	    return;
 	}
@@ -6316,7 +6313,7 @@ spell_add_word(
 	}
 
 	if (fd == NULL)
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	else
 	{
 	    if (what == SPELL_ADD_BAD)
@@ -6445,7 +6442,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
     {
 	if (*pl == NUL || *pu == NUL)
 	{
-	    emsg(_(e_affform));
+	    emsg(_(e_format_error_in_affix_file_fol_low_or_upp));
 	    return FAIL;
 	}
 	f = mb_ptr2char_adv(&pf);
@@ -6466,7 +6463,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
 	{
 	    if (f >= 256)
 	    {
-		emsg(_(e_affrange));
+		emsg(_(e_character_in_fol_low_or_upp_is_out_of_range));
 		return FAIL;
 	    }
 	    new_st.st_fold[l] = f;
@@ -6479,7 +6476,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
 	{
 	    if (f >= 256)
 	    {
-		emsg(_(e_affrange));
+		emsg(_(e_character_in_fol_low_or_upp_is_out_of_range));
 		return FAIL;
 	    }
 	    new_st.st_fold[u] = f;
@@ -6490,7 +6487,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
 
     if (*pl != NUL || *pu != NUL)
     {
-	emsg(_(e_affform));
+	emsg(_(e_format_error_in_affix_file_fol_low_or_upp));
 	return FAIL;
     }
 
@@ -6550,7 +6547,7 @@ set_spell_finish(spelltab_T *new_st)
 		    || spelltab.st_fold[i] != new_st->st_fold[i]
 		    || spelltab.st_upper[i] != new_st->st_upper[i])
 	    {
-		emsg(_("E763: Word characters differ between spell files"));
+		emsg(_(e_word_characters_differ_between_spell_files));
 		return FAIL;
 	    }
 	}
@@ -6667,7 +6664,7 @@ set_map_str(slang_T *lp, char_u *map)
 		{
 		    // This should have been checked when generating the .spl
 		    // file.
-		    emsg(_("E783: duplicate char in MAP entry"));
+		    emsg(_(e_duplicate_char_in_map_entry));
 		    vim_free(b);
 		}
 	    }

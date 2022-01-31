@@ -1247,7 +1247,7 @@ del_bytes(
     // If "count" is negative the caller must be doing something wrong.
     if (count < 1)
     {
-	siemsg("E292: Invalid count for del_bytes(): %ld", count);
+	siemsg(e_invalid_count_for_del_bytes_nr, count);
 	return FAIL;
     }
 
@@ -1655,13 +1655,14 @@ open_line(
 	lead_len = get_leader_len(saved_line, &lead_flags,
 							dir == BACKWARD, TRUE);
 #ifdef FEAT_CINDENT
-	if (lead_len == 0 && do_cindent)
+	if (lead_len == 0 && do_cindent && dir == FORWARD)
 	{
+	    // Check for a line comment after code.
 	    comment_start = check_linecomment(saved_line);
 	    if (comment_start != MAXCOL)
 	    {
 		lead_len = get_leader_len(saved_line + comment_start,
-					   &lead_flags, dir == BACKWARD, TRUE);
+						     &lead_flags, FALSE, TRUE);
 		if (lead_len != 0)
 		{
 		    lead_len += comment_start;

@@ -2,7 +2,7 @@
 
 source view_util.vim
 source check.vim
-source vim9.vim
+import './vim9.vim' as v9
 source term_util.vim
 
 func NestedEval()
@@ -41,7 +41,7 @@ func Test_execute_string()
   if has('float')
     call assert_fails('call execute(3.4)', 'E492:')
     call assert_equal("\nx", execute("echo \"x\"", 3.4))
-    call CheckDefExecAndScriptFailure(['execute("echo \"x\"", 3.4)'], ['E1013: Argument 2: type mismatch, expected string but got float', 'E1174:'])
+    call v9.CheckDefExecAndScriptFailure(['execute("echo \"x\"", 3.4)'], ['E1013: Argument 2: type mismatch, expected string but got float', 'E1174:'])
   endif
 endfunc
 
@@ -147,6 +147,31 @@ func Test_win_execute_other_tab()
   call assert_equal(1, xyz)
   tabclose
   unlet xyz
+endfunc
+
+func Test_win_execute_visual_redraw()
+  call setline(1, ['a', 'b', 'c'])
+  new
+  wincmd p
+  " start Visual in current window, redraw in other window with fewer lines
+  call feedkeys("G\<C-V>", 'txn')
+  call win_execute(winnr('#')->win_getid(), 'redraw')
+  call feedkeys("\<Esc>", 'txn')
+  bwipe!
+  bwipe!
+
+  enew
+  new
+  call setline(1, ['a', 'b', 'c'])
+  let winid = win_getid()
+  wincmd p
+  " start Visual in current window, extend it in other window with more lines
+  call feedkeys("\<C-V>", 'txn')
+  call win_execute(winid, 'call feedkeys("G\<C-V>", ''txn'')')
+  redraw
+
+  bwipe!
+  bwipe!
 endfunc
 
 func Test_win_execute_on_startup()

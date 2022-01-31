@@ -1,6 +1,6 @@
 " Tests for user defined commands
 
-source vim9.vim
+import './vim9.vim' as v9
 
 " Test for <mods> in user defined commands
 function Test_cmdmods()
@@ -287,13 +287,13 @@ func Test_CmdErrors()
       vim9script
       com! -complete=file DoCmd :
   END
-  call CheckScriptFailure(lines, 'E1208', 2)
+  call v9.CheckScriptFailure(lines, 'E1208', 2)
 
   let lines =<< trim END
       vim9script
       com! -nargs=0 -complete=file DoCmd :
   END
-  call CheckScriptFailure(lines, 'E1208', 2)
+  call v9.CheckScriptFailure(lines, 'E1208', 2)
 
   com! -nargs=0 DoCmd :
   call assert_fails('DoCmd x', 'E488:')
@@ -589,10 +589,10 @@ func Test_command_list()
         \           execute('command DoCmd'))
 
   " Test output in verbose mode.
-  command! DoCmd :
+  command! -nargs=+ -complete=customlist,SomeFunc DoCmd :ls
   call assert_match("^\n"
         \        .. "    Name              Args Address Complete    Definition\n"
-        \        .. "    DoCmd             0                        :\n"
+        \        .. "    DoCmd             +            customlist,SomeFunc :ls\n"
         \        .. "\tLast set from .*/test_usercommands.vim line \\d\\+$",
         \           execute('verbose command DoCmd'))
 
@@ -645,7 +645,7 @@ func Test_usercmd_with_block()
       command DoesNotEnd {
          echo 'hello'
   END
-  call CheckScriptFailure(lines, 'E1026:')
+  call v9.CheckScriptFailure(lines, 'E1026:')
 
   let lines =<< trim END
       command HelloThere {
@@ -653,7 +653,7 @@ func Test_usercmd_with_block()
         }
       HelloThere
   END
-  call CheckScriptSuccess(lines)
+  call v9.CheckScriptSuccess(lines)
   delcommand HelloThere
 
   let lines =<< trim END
@@ -664,7 +664,7 @@ func Test_usercmd_with_block()
           }
       BadCommand
   END
-  call CheckScriptFailure(lines, 'E1128:')
+  call v9.CheckScriptFailure(lines, 'E1128:')
 endfunc
 
 func Test_delcommand_buffer()

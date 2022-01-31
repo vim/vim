@@ -1476,7 +1476,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     // pum_size being zero.
     if (pum_size <= 0)
     {
-	emsg(e_menuothermode);
+	emsg(e_menu_only_exists_in_another_mode);
 	return;
     }
 
