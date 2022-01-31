@@ -2297,21 +2297,7 @@ get_register_name(int num)
 	return '+';
 #endif
     else
-    {
-#ifdef EBCDIC
-	int i;
-
-	// EBCDIC is really braindead ...
-	i = 'a' + (num - 10);
-	if (i > 'i')
-	    i += 7;
-	if (i > 'r')
-	    i += 8;
-	return i;
-#else
 	return num + 'a' - 10;
-#endif
-    }
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

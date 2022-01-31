@@ -533,22 +533,6 @@ reg_equi_class(int c)
     if (enc_utf8 || STRCMP(p_enc, "latin1") == 0
 					 || STRCMP(p_enc, "iso-8859-15") == 0)
     {
-#ifdef EBCDIC
-	int i;
-
-	// This might be slower than switch/case below.
-	for (i = 0; i < 16; i++)
-	{
-	    if (vim_strchr(EQUIVAL_CLASS_C[i], c) != NULL)
-	    {
-		char *p = EQUIVAL_CLASS_C[i];
-
-		while (*p != 0)
-		    regmbc(*p++);
-		return;
-	    }
-	}
-#else
 	switch (c)
 	{
 	    // Do not use '\300' style, it results in a negative number.
@@ -1012,7 +996,6 @@ reg_equi_class(int c)
 		      regmbc(0x1e95); regmbc(0x2c6c);
 		      return;
 	}
-#endif
     }
     regmbc(c);
 }
@@ -1794,19 +1777,8 @@ collection:
 			    }
 			    else
 			    {
-#ifdef EBCDIC
-				int	alpha_only = FALSE;
-
-				// for alphabetical range skip the gaps
-				// 'i'-'j', 'r'-'s', 'I'-'J' and 'R'-'S'.
-				if (isalpha(startc) && isalpha(endc))
-				    alpha_only = TRUE;
-#endif
 				while (++startc <= endc)
-#ifdef EBCDIC
-				    if (!alpha_only || isalpha(startc))
-#endif
-					regc(startc);
+				    regc(startc);
 			    }
 			    startc = -1;
 			}

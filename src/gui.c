@@ -1835,7 +1835,7 @@ gui_clear_block(
     void
 gui_update_cursor_later(void)
 {
-    OUT_STR(IF_EB("\033|s", ESC_STR "|s"));
+    OUT_STR("\033|s");
 }
 
     void
@@ -1962,12 +1962,7 @@ gui_write(
 	    len -= (int)(++p - s);
 	    s = p;
 	}
-	else if (
-#ifdef EBCDIC
-		CtrlChar(s[0]) != 0	// Ctrl character
-#else
-		s[0] < 0x20		// Ctrl character
-#endif
+	else if (s[0] < 0x20		// Ctrl character
 #ifdef FEAT_SIGN_ICONS
 		&& s[0] != SIGN_BYTE
 # ifdef FEAT_NETBEANS_INTG
@@ -2010,11 +2005,7 @@ gui_write(
 	{
 	    p = s;
 	    while (len > 0 && (
-#ifdef EBCDIC
-			CtrlChar(*p) == 0
-#else
 			*p >= 0x20
-#endif
 #ifdef FEAT_SIGN_ICONS
 			|| *p == SIGN_BYTE
 # ifdef FEAT_NETBEANS_INTG

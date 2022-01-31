@@ -1201,11 +1201,7 @@ get_special_key_name(int c, int modifiers)
 	}
 	if (table_idx < 0 && !vim_isprintc(c) && c < ' ')
 	{
-#ifdef EBCDIC
-	    c = CtrlChar(c);
-#else
 	    c += '@';
-#endif
 	    modifiers |= MOD_MASK_CTRL;
 	}
     }
@@ -1560,16 +1556,7 @@ extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
 	key = TOUPPER_ASC(key);
 
     if (simplify && (modifiers & MOD_MASK_CTRL)
-#ifdef EBCDIC
-	    // TODO: EBCDIC Better use:
-	    // && (Ctrl_chr(key) || key == '?')
-	    // ???
-	    && strchr("?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", key)
-						       != NULL
-#else
-	    && ((key >= '?' && key <= '_') || ASCII_ISALPHA(key))
-#endif
-	    )
+	    && ((key >= '?' && key <= '_') || ASCII_ISALPHA(key)))
     {
 	key = Ctrl_chr(key);
 	modifiers &= ~MOD_MASK_CTRL;

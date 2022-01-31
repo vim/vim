@@ -1,5 +1,4 @@
 /* evalfunc.c */
-void sortFunctions(void);
 char_u *get_function_name(expand_T *xp, int idx);
 char_u *get_expr_name(expand_T *xp, int idx);
 int find_internal_func(char_u *name);

@@ -1796,7 +1796,7 @@ screen_start_highlight(int attr)
 	    char	buf[20];
 
 	    // The GUI handles this internally.
-	    sprintf(buf, IF_EB("\033|%dh", ESC_STR "|%dh"), attr);
+	    sprintf(buf, "\033|%dh", attr);
 	    OUT_STR(buf);
 	}
 	else
@@ -1946,7 +1946,7 @@ screen_stop_highlight(void)
 	    char	buf[20];
 
 	    // use internal GUI code
-	    sprintf(buf, IF_EB("\033|%dH", ESC_STR "|%dH"), screen_attr);
+	    sprintf(buf, "\033|%dH", screen_attr);
 	    OUT_STR(buf);
 	}
 	else

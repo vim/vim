@@ -266,7 +266,7 @@ set_init_1(int clean_arg)
     }
 #endif
 
-#if defined(FEAT_POSTSCRIPT) && (defined(MSWIN) || defined(VMS) || defined(EBCDIC) || defined(MAC) || defined(hpux))
+#if defined(FEAT_POSTSCRIPT) && (defined(MSWIN) || defined(VMS) || defined(MAC) || defined(hpux))
     // Set print encoding on platforms that don't default to latin1
     set_string_default("penc",
 # if defined(MSWIN)
@@ -275,14 +275,10 @@ set_init_1(int clean_arg)
 #  ifdef VMS
 		       (char_u *)"dec-mcs"
 #  else
-#   ifdef EBCDIC
-		       (char_u *)"ebcdic-uk"
-#   else
-#    ifdef MAC
+#   ifdef MAC
 		       (char_u *)"mac-roman"
-#    else // HPUX
+#   else // HPUX
 		       (char_u *)"hp-roman8"
-#    endif
 #   endif
 #  endif
 # endif
@@ -3920,11 +3916,7 @@ findoption(char_u *arg)
     /*
      * Check for name starting with an illegal character.
      */
-#ifdef EBCDIC
-    if (!islower(arg[0]))
-#else
     if (arg[0] < 'a' || arg[0] > 'z')
-#endif
 	return -1;
 
     is_term_opt = (arg[0] == 't' && arg[1] == '_');

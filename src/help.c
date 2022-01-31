@@ -481,11 +481,7 @@ find_help_tags(
 		d += 5;
 		if (*s < ' ')
 		{
-#ifdef EBCDIC
-		    *d++ = CtrlChar(*s);
-#else
 		    *d++ = *s + '@';
-#endif
 		    if (d[-1] == '\\')
 			*d++ = '\\';	// double a backslash
 		}
@@ -651,12 +647,7 @@ prepare_help_buffer(void)
     // Accept all ASCII chars for keywords, except ' ', '*', '"', '|', and
     // latin1 word characters (for translated help files).
     // Only set it when needed, buf_init_chartab() is some work.
-    p =
-#ifdef EBCDIC
-	    (char_u *)"65-255,^*,^|,^\"";
-#else
-	    (char_u *)"!-~,^*,^|,^\",192-255";
-#endif
+    p = (char_u *)"!-~,^*,^|,^\",192-255";
     if (STRCMP(curbuf->b_p_isk, p) != 0)
     {
 	set_string_option_direct((char_u *)"isk", -1, p, OPT_FREE|OPT_LOCAL, 0);

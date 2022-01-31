@@ -61,23 +61,17 @@ do_ascii(exarg_T *eap UNUSED)
 	    cval = NL;	    // NL is stored as CR
 	else
 	    cval = c;
-	if (vim_isprintc_strict(c) && (c < ' '
-#ifndef EBCDIC
-		    || c > '~'
-#endif
-			       ))
+	if (vim_isprintc_strict(c) && (c < ' ' || c > '~'))
 	{
 	    transchar_nonprint(curbuf, buf3, c);
 	    vim_snprintf(buf1, sizeof(buf1), "  <%s>", (char *)buf3);
 	}
 	else
 	    buf1[0] = NUL;
-#ifndef EBCDIC
 	if (c >= 0x80)
 	    vim_snprintf(buf2, sizeof(buf2), "  <M-%s>",
 						 (char *)transchar(c & 0x7f));
 	else
-#endif
 	    buf2[0] = NUL;
 #ifdef FEAT_DIGRAPHS
 	dig = get_digraph_for_char(cval);
@@ -1506,7 +1500,7 @@ do_shell(
 	}
 	else if (term_console)
 	{
-	    OUT_STR(IF_EB("\033[0 q", ESC_STR "[0 q"));	// get window size
+	    OUT_STR("\033[0 q");	// get window size
 	    if (got_int && msg_silent == 0)
 		redraw_later_clear();	// if got_int is TRUE, redraw needed
 	    else

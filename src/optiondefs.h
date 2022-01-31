@@ -1437,11 +1437,7 @@ static struct vimoption options[] =
 #  ifdef VMS
 			    (char_u *)"@,48-57,/,.,-,_,+,,,#,$,%,<,>,[,],:,;,~",
 #  else // UNIX et al.
-#   ifdef EBCDIC
-			    (char_u *)"@,240-249,/,.,-,_,+,,,#,$,%,~,=",
-#   else
 			    (char_u *)"@,48-57,/,.,-,_,+,,,#,$,%,~,=",
-#   endif
 #  endif
 # endif
 #endif
@@ -1452,34 +1448,17 @@ static struct vimoption options[] =
 #if defined(MSWIN)
 			    (char_u *)"@,48-57,_,128-167,224-235",
 #else
-# ifdef EBCDIC
-			    // TODO: EBCDIC Check this! @ == isalpha()
-			    (char_u *)"@,240-249,_,66-73,81-89,98-105,"
-				    "112-120,128,140-142,156,158,172,"
-				    "174,186,191,203-207,219-225,235-239,"
-				    "251-254",
-# else
 			    (char_u *)"@,48-57,_,192-255",
-# endif
 #endif
 				(char_u *)0L} SCTX_INIT},
     {"iskeyword",   "isk",  P_STRING|P_ALLOCED|P_VIM|P_COMMA|P_NODUP,
 			    (char_u *)&p_isk, PV_ISK,
 			    {
-#ifdef EBCDIC
-			     (char_u *)"@,240-249,_",
-			     // TODO: EBCDIC Check this! @ == isalpha()
-			     (char_u *)"@,240-249,_,66-73,81-89,98-105,"
-				    "112-120,128,140-142,156,158,172,"
-				    "174,186,191,203-207,219-225,235-239,"
-				    "251-254",
-#else
 				(char_u *)"@,48-57,_",
-# if defined(MSWIN)
+#if defined(MSWIN)
 				(char_u *)"@,48-57,_,128-167,224-235"
-# else
+#else
 				ISK_LATIN1
-# endif
 #endif
 			    } SCTX_INIT},
     {"isprint",	    "isp",  P_STRING|P_VI_DEF|P_RALL|P_COMMA|P_NODUP,
@@ -1488,12 +1467,7 @@ static struct vimoption options[] =
 #if defined(MSWIN) || defined(VMS)
 			    (char_u *)"@,~-255",
 #else
-# ifdef EBCDIC
-			    // all chars above 63 are printable
-			    (char_u *)"63-255",
-# else
 			    ISP_LATIN1,
-# endif
 #endif
 				(char_u *)0L} SCTX_INIT},
     {"joinspaces",  "js",   P_BOOL|P_VI_DEF|P_VIM,

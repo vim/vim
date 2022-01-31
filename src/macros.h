@@ -77,13 +77,8 @@
 #endif
 
 // toupper() and tolower() for ASCII only and ignore the current locale.
-#ifdef EBCDIC
-# define TOUPPER_ASC(c)	(islower(c) ? toupper(c) : (c))
-# define TOLOWER_ASC(c)	(isupper(c) ? tolower(c) : (c))
-#else
-# define TOUPPER_ASC(c)	(((c) < 'a' || (c) > 'z') ? (c) : (c) - ('a' - 'A'))
-# define TOLOWER_ASC(c)	(((c) < 'A' || (c) > 'Z') ? (c) : (c) + ('a' - 'A'))
-#endif
+#define TOUPPER_ASC(c)	(((c) < 'a' || (c) > 'z') ? (c) : (c) - ('a' - 'A'))
+#define TOLOWER_ASC(c)	(((c) < 'A' || (c) > 'Z') ? (c) : (c) + ('a' - 'A'))
 
 /*
  * MB_ISLOWER() and MB_ISUPPER() are to be used on multi-byte characters.  But
@@ -102,17 +97,10 @@
 
 // Like isalpha() but reject non-ASCII characters.  Can't be used with a
 // special key (negative value).
-#ifdef EBCDIC
-# define ASCII_ISALPHA(c) isalpha(c)
-# define ASCII_ISALNUM(c) isalnum(c)
-# define ASCII_ISLOWER(c) islower(c)
-# define ASCII_ISUPPER(c) isupper(c)
-#else
-# define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
-# define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
-# define ASCII_ISALPHA(c) (ASCII_ISUPPER(c) || ASCII_ISLOWER(c))
-# define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
-#endif
+#define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
+#define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
+#define ASCII_ISALPHA(c) (ASCII_ISUPPER(c) || ASCII_ISLOWER(c))
+#define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
 
 // Returns empty string if it is NULL.
 #define EMPTY_IF_NULL(x) ((x) ? (x) : (char_u *)"")

@@ -2208,16 +2208,7 @@ f_tempname(typval_T *argvars UNUSED, typval_T *rettv)
 	else if (x == '9')
 	    x = 'A';
 	else
-	{
-#ifdef EBCDIC
-	    if (x == 'I')
-		x = 'J';
-	    else if (x == 'R')
-		x = 'S';
-	    else
-#endif
-		++x;
-	}
+	    ++x;
     } while (x == 'I' || x == 'O');
 }
 

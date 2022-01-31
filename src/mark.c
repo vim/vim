@@ -310,12 +310,9 @@ getmark_buf_fnum(
     // to crash.
     if (c < 0)
 	return posp;
-#ifndef EBCDIC
     if (c > '~')			// check for islower()/isupper()
 	;
-    else
-#endif
-	if (c == '\'' || c == '`')	// previous context mark
+    else if (c == '\'' || c == '`')	// previous context mark
     {
 	pos_copy = curwin->w_pcmark;	// need to make a copy because
 	posp = &pos_copy;		//   w_pcmark may be changed soon

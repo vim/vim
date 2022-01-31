@@ -3946,13 +3946,7 @@ in_cinkeys(
 	    try_match_word = FALSE;
 
 	// does it look like a control character?
-	if (*look == '^'
-#ifdef EBCDIC
-		&& (Ctrl_chr(look[1]) != 0)
-#else
-		&& look[1] >= '?' && look[1] <= '_'
-#endif
-		)
+	if (*look == '^' && look[1] >= '?' && look[1] <= '_')
 	{
 	    if (try_match && keytyped == Ctrl_chr(look[1]))
 		return TRUE;

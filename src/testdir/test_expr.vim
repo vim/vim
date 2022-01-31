@@ -245,11 +245,7 @@ func Test_printf_misc()
       call assert_equal('65535', printf('%ld', 0xFFFF))
       call assert_equal('131071', printf('%ld', 0x1FFFF))
 
-      if has('ebcdic')
-        call assert_equal('#', printf('%c', 123))
-      else
-        call assert_equal('{', printf('%c', 123))
-      endif
+      call assert_equal('{', printf('%c', 123))
       call assert_equal('abc', printf('%s', 'abc'))
       call assert_equal('abc', printf('%S', 'abc'))
 

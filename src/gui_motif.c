@@ -1259,10 +1259,6 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     XmString	label;
     vimmenu_T	*parent = menu->parent;
 
-# ifdef EBCDIC
-    menu->mnemonic = 0;
-# endif
-
 # if (XmVersion <= 1002)
     // Don't add Popup menu items when the popup menu isn't used.
     if (menu_is_child_of_popup(menu) && !mouse_model_popup())

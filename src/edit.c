@@ -2052,11 +2052,7 @@ insert_special(
  * stop and defer processing to the "normal" mechanism.
  * '0' and '^' are special, because they can be followed by CTRL-D.
  */
-#ifdef EBCDIC
-# define ISSPECIAL(c)	((c) < ' ' || (c) == '0' || (c) == '^')
-#else
-# define ISSPECIAL(c)	((c) < ' ' || (c) >= DEL || (c) == '0' || (c) == '^')
-#endif
+#define ISSPECIAL(c)	((c) < ' ' || (c) >= DEL || (c) == '0' || (c) == '^')
 
 /*
  * "flags": INSCHAR_FORMAT - force formatting
@@ -2926,9 +2922,8 @@ stuff_inserted(
 	stuffReadbuff(ptr);
 	// a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
 	if (last)
-	    stuffReadbuff((char_u *)(last == '0'
-			? IF_EB("\026\060\064\070", CTRL_V_STR "xf0")
-			: IF_EB("\026^", CTRL_V_STR "^")));
+	    stuffReadbuff(
+		       (char_u *)(last == '0' ? "\026\060\064\070" : "\026^"));
     }
     while (--count > 0);
 
@@ -3316,15 +3311,11 @@ hkmap(int c)
 	    return ' ';  // \"a --> ' '      -- / --
 	else if (c == 252)
 	    return ' ';  // \"u --> ' '      -- / --
-#ifdef EBCDIC
-	else if (islower(c))
-#else
 	// NOTE: islower() does not do the right thing for us on Linux so we
 	// do this the same was as 5.7 and previous, so it works correctly on
 	// all systems.  Specifically, the e.g. Delete and Arrow keys are
 	// munged and won't work if e.g. searching for Hebrew text.
 	else if (c >= 'a' && c <= 'z')
-#endif
 	    return (int)(map[CharOrdLow(c)] + p_aleph);
 	else
 	    return c;
@@ -3346,12 +3337,7 @@ hkmap(int c)
 	    default: {
 			 static char str[] = "zqbcxlsjphmkwonu ydafe rig";
 
-#ifdef EBCDIC
-			 // see note about islower() above
-			 if (!islower(c))
-#else
 			 if (c < 'a' || c > 'z')
-#endif
 			     return c;
 			 c = str[CharOrdLow(c)];
 			 break;
@@ -4224,7 +4210,7 @@ ins_bs(
 	    }
 	    else
 		want_vcol = tabstop_start(want_vcol, get_sts_value(),
-						     curbuf->b_p_vsts_array);
+						       curbuf->b_p_vsts_array);
 #else
 	    if (p_sta && in_indent)
 		ts = (int)get_sw_value(curbuf);

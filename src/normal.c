@@ -4426,13 +4426,7 @@ nv_brackets(cmdarg_T *cap)
     //		      fwd   bwd    fwd	 bwd	 fwd	bwd
     // identifier     "]i"  "[i"   "]I"  "[I"	"]^I"  "[^I"
     // define	      "]d"  "[d"   "]D"  "[D"	"]^D"  "[^D"
-    if (vim_strchr((char_u *)
-# ifdef EBCDIC
-		"iI\005dD\067",
-# else
-		"iI\011dD\004",
-# endif
-		cap->nchar) != NULL)
+    if (vim_strchr((char_u *)"iI\011dD\004", cap->nchar) != NULL)
     {
 	char_u	*ptr;
 	int	len;
@@ -5925,12 +5919,6 @@ nv_g_cmd(cmdarg_T *cap)
     case 'h':
     case 'H':
     case Ctrl_H:
-# ifdef EBCDIC
-	// EBCDIC: 'v'-'h' != '^v'-'^h'
-	if (cap->nchar == Ctrl_H)
-	    cap->cmdchar = Ctrl_V;
-	else
-# endif
 	cap->cmdchar = cap->nchar + ('v' - 'h');
 	cap->arg = TRUE;
 	nv_visual(cap);

@@ -222,20 +222,16 @@
 
 /*
  * +rightleft		Right-to-left editing/typing support.
- *
- * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT)
 # define FEAT_RIGHTLEFT
 #endif
 
 /*
  * +arabic		Arabic keymap and shaping support.
  *			Requires FEAT_RIGHTLEFT
- *
- * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -254,16 +250,8 @@
 
 /*
  * +tag_binary		Can use a binary search for the tags file.
- *
- * Disabled for EBCDIC:
- * On z/OS Unix we have the problem that /bin/sort sorts ASCII instead of
- * EBCDIC.  With this binary search doesn't work, as VIM expects a tag file
- * sorted by character values.  I'm not sure how to fix this. Should we really
- * do a EBCDIC to ASCII conversion for this??
  */
-#if !defined(EBCDIC)
-# define FEAT_TAG_BINS
-#endif
+#define FEAT_TAG_BINS
 
 /*
  * +cscope		Unix only: Cscope support.
@@ -416,10 +404,8 @@
 
 /*
  * +spell		spell checking
- *
- * Disabled for EBCDIC: * Doesn't work (SIGSEGV).
  */
-#if (defined(FEAT_NORMAL) || defined(PROTO)) && !defined(EBCDIC)
+#if (defined(FEAT_NORMAL) || defined(PROTO))
 # define FEAT_SPELL
 #endif
 

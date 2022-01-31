@@ -571,11 +571,7 @@ AppendToRedobuffLit(
 	// Put a string of normal characters in the redo buffer (that's
 	// faster).
 	start = s;
-	while (*s >= ' '
-#ifndef EBCDIC
-		&& *s < DEL	// EBCDIC: all chars above space are normal
-#endif
-		&& (len < 0 || s - str < len))
+	while (*s >= ' ' && *s < DEL && (len < 0 || s - str < len))
 	    ++s;
 
 	// Don't put '0' or '^' as last character, just in case a CTRL-D is
@@ -597,13 +593,9 @@ AppendToRedobuffLit(
 	if (c < ' ' || c == DEL || (*s == NUL && (c == '0' || c == '^')))
 	    add_char_buff(&redobuff, Ctrl_V);
 
-	// CTRL-V '0' must be inserted as CTRL-V 048 (EBCDIC: xf0)
+	// CTRL-V '0' must be inserted as CTRL-V 048
 	if (*s == NUL && c == '0')
-#ifdef EBCDIC
-	    add_buff(&redobuff, (char_u *)"xf0", 3L);
-#else
 	    add_buff(&redobuff, (char_u *)"048", 3L);
-#endif
 	else
 	    add_char_buff(&redobuff, c);
     }
@@ -721,11 +713,7 @@ stuffescaped(char_u *arg, int literally)
 	// stuff K_SPECIAL to get the effect of a special key when "literally"
 	// is TRUE.
 	start = arg;
-	while ((*arg >= ' '
-#ifndef EBCDIC
-		    && *arg < DEL // EBCDIC: chars above space are normal
-#endif
-		    )
+	while ((*arg >= ' ' && *arg < DEL)
 		|| (*arg == K_SPECIAL && !literally))
 	    ++arg;
 	if (arg > start)

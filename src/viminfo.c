@@ -162,7 +162,7 @@ viminfo_writestring(FILE *fd, char_u *p)
     // the string (e.g., variable name).  Add something to the length for the
     // '<', NL and trailing NUL.
     if (len > LSIZE / 2)
-	fprintf(fd, IF_EB("\026%d\n<", CTRL_V_STR "%d\n<"), len + 3);
+	fprintf(fd, "\026%d\n<", len + 3);
 
     while ((c = *p++) != NUL)
     {
@@ -2485,11 +2485,9 @@ read_viminfo_filemark(vir_T *virp, int force)
     // We only get here if line[0] == '\'' or '-'.
     // Illegal mark names are ignored (for future expansion).
     str = virp->vir_line + 1;
-    if (
-#ifndef EBCDIC
-	    *str <= 127 &&
-#endif
-	    ((*virp->vir_line == '\'' && (VIM_ISDIGIT(*str) || isupper(*str)))
+    if (*str <= 127
+	    && ((*virp->vir_line == '\''
+				       && (VIM_ISDIGIT(*str) || isupper(*str)))
 	     || (*virp->vir_line == '-' && *str == '\'')))
     {
 	if (*str == '\'')

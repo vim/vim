@@ -2674,11 +2674,7 @@ do_addsub(
 		    firstdigit = 'a';
 	    }
 	    else
-#ifdef EBCDIC
-		firstdigit = EBCDIC_CHAR_ADD(firstdigit, -Prenum1);
-#else
 		firstdigit -= Prenum1;
-#endif
 	}
 	else
 	{
@@ -2690,11 +2686,7 @@ do_addsub(
 		    firstdigit = 'z';
 	    }
 	    else
-#ifdef EBCDIC
-		firstdigit = EBCDIC_CHAR_ADD(firstdigit, Prenum1);
-#else
 		firstdigit += Prenum1;
-#endif
 	}
 	curwin->w_cursor.col = col;
 	if (!did_change)
