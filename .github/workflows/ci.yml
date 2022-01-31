@@ -530,16 +530,18 @@ jobs:
           call "%VCVARSALL%" ${{ matrix.vcarch }}
           cd src
           echo.
-          echo %COL_GREEN%vim version:%COL_RESET%
+          echo ::group::%COL_GREEN%Vim version:%COL_RESET%
           .\vim --version || exit 1
+          echo ::endgroup::
 
           echo %COL_GREEN%Start testing vim in background.%COL_RESET%
           start cmd /c "cd ..\src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
 
-          echo %COL_GREEN%Test gvim:%COL_RESET%
+          echo ::group::%COL_GREEN%Test gvim:%COL_RESET%
           cd testdir
           nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
           cd ..
+          echo ::endgroup::
 
           echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
           cd ..\src2\testdir
@@ -552,10 +554,11 @@ jobs:
           set timeout=1
           :exitloop
 
-          echo %COL_GREEN%Test results of vim:%COL_RESET%
+          echo ::group::%COL_GREEN%Test results of vim:%COL_RESET%
           if exist messages type messages
           nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
           if "%timeout%"=="1" (
             echo %COL_RED%Timed out.%COL_RESET%
             exit 1
           )
+          echo ::endgroup::
