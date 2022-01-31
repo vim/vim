@@ -1444,17 +1444,17 @@ clean: testclean
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim --clean -X --not-a-term -u create_cmdidxs.vim
+	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
 
 # Run vim script to generate the normal/visual mode command lookup table.
 # This only needs to be run when a new normal/visual mode command has been
 # added.  If this fails because you don't have Vim yet:
-#   - change nv_cmds[] in normal.c to add the new normal/visual mode command.
-#   - build Vim
-#   - run "make nvcmdidxs" using the new Vim to generate nv_cmdidxs.h
-#   - rebuild Vim to use the newly generated nv_cmdidxs.h file.
-nvcmdidxs: normal.c
-	.\$(VIM) --clean -X --not-a-term -u create_nvcmdidxs.vim
+#   - change nv_cmds[] in nv_cmds.h to add the new normal/visual mode command.
+#   - run "make nvcmdidxs" to generate nv_cmdidxs.h
+nvcmdidxs: nv_cmds.h
+	$(CC) /nologo -I. -Iproto -DNDEBUG create_nvcmdidxs.c -link -subsystem:$(SUBSYSTEM_TOOLS)
+	vim --clean -N -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	-del create_nvcmdidxs.exe
 
 test:
 	cd testdir
@@ -1719,7 +1719,7 @@ $(OUTDIR)/netbeans.obj:	$(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL) version.h
 
 $(OUTDIR)/channel.obj:	$(OUTDIR) channel.c $(INCL)
 
-$(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL) nv_cmdidxs.h
+$(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL) nv_cmdidxs.h nv_cmds.h
 
 $(OUTDIR)/option.obj:	$(OUTDIR) option.c  $(INCL) optiondefs.h
 
