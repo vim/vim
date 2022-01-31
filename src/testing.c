@@ -1398,7 +1398,7 @@ test_gui_scrollbar(dict_T *args)
 	    || dict_find(args, (char_u *)"dragging", -1) == NULL)
 	return FALSE;
 
-    which = dict_get_string(args, (char_u *)"which", TRUE);
+    which = dict_get_string(args, (char_u *)"which", FALSE);
     value = (long)dict_get_number(args, (char_u *)"value");
     dragging = (int)dict_get_number(args, (char_u *)"dragging");
 
