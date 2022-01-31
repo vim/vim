@@ -654,8 +654,6 @@ test_null_string()		String	null value for testing
 test_option_not_set({name})	none	reset flag indicating option was set
 test_override({expr}, {val})	none	test with Vim internal overrides
 test_refcount({expr})		Number	get the reference count of {expr}
-test_scrollbar({which}, {value}, {dragging})
-				none	scroll in the GUI for testing
 test_setmouse({row}, {col})	none	set the mouse position for testing
 test_settime({expr})		none	set current time for testing
 test_srand_seed([seed])		none	set seed for testing srand()

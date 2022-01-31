@@ -4089,13 +4089,6 @@ def Test_test_override()
   v9.CheckDefAndScriptFailure(['test_override("a", "x")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
 enddef
 
-def Test_test_scrollbar()
-  CheckGui
-  v9.CheckDefAndScriptFailure(['test_scrollbar(1, 2, 3)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  v9.CheckDefAndScriptFailure(['test_scrollbar("a", "b", 3)'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
-  v9.CheckDefAndScriptFailure(['test_scrollbar("a", 2, "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
-enddef
-
 def Test_test_setmouse()
   v9.CheckDefAndScriptFailure(['test_setmouse("a", 10)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['test_setmouse(10, "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])

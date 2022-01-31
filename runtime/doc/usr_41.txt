@@ -1130,7 +1130,6 @@ Testing:				    *test-functions*
 	test_setmouse()		set the mouse position
 	test_feedinput()	add key sequence to input buffer
 	test_option_not_set()	reset flag indicating option was set
-	test_scrollbar()	simulate scrollbar movement in the GUI
 	test_refcount()		return an expression's reference count
 	test_srand_seed()	set the seed value for srand()
 	test_unknown()		return a value with unknown type

@@ -714,13 +714,15 @@ func Test_scrollbars()
   set guioptions+=rlb
 
   " scroll to move line 11 at top, moves the cursor there
-  eval 10->test_scrollbar('left', 0)
+  let args = #{which: 'left', value: 10, dragging: 0}
+  call test_gui_event('scrollbar', args)
   redraw
   call assert_equal(1, winline())
   call assert_equal(11, line('.'))
 
   " scroll to move line 1 at top, cursor stays in line 11
-  call test_scrollbar('right', 0, 0)
+  let args = #{which: 'right', value: 0, dragging: 0}
+  call test_gui_event('scrollbar', args)
   redraw
   call assert_equal(11, winline())
   call assert_equal(11, line('.'))
@@ -737,7 +739,8 @@ func Test_scrollbars()
   call assert_equal(1, col('.'))
 
   " scroll to character 11, cursor is moved
-  call test_scrollbar('hor', 10, 0)
+  let args = #{which: 'hor', value: 10, dragging: 0}
+  call test_gui_event('scrollbar', args)
   redraw
   call assert_equal(1, wincol())
   set number
@@ -746,6 +749,13 @@ func Test_scrollbars()
   set nonumber
   redraw
   call assert_equal(11, col('.'))
+
+  " Invalid arguments
+  call assert_false(test_gui_event('scrollbar', {}))
+  call assert_false(test_gui_event('scrollbar', #{value: 10, dragging: 0}))
+  call assert_false(test_gui_event('scrollbar', #{which: 'hor', dragging: 0}))
+  call assert_false(test_gui_event('scrollbar', #{which: 'hor', value: 1}))
+  call assert_fails("call test_gui_event('scrollbar', #{which: 'a', value: 1, dragging: 0})", 'E475:')
 
   set guioptions&
   set wrap&
@@ -1346,6 +1356,8 @@ func Test_gui_drop_files()
   call assert_false(test_gui_event("dropfiles", {}))
   let d = #{row: 1, col: 1, modifiers: 0}
   call assert_false(test_gui_event("dropfiles", d))
+  let d = #{files: 1, row: 1, col: 1, modifiers: 0}
+  call assert_false(test_gui_event("dropfiles", d))
   let d = #{files: test_null_list(), row: 1, col: 1, modifiers: 0}
   call assert_false(test_gui_event("dropfiles", d))
   let d = #{files: [test_null_string()], row: 1, col: 1, modifiers: 0}
@@ -1460,6 +1472,18 @@ func Test_gui_findrepl()
   let args = #{find_text: 'TWO', repl_text: 'two', flags: 0x1C, forward: 1}
   call test_gui_event('findrepl', args)
   call assert_equal(['ONE two ONE', 'Twoo ONE two ONEo'], getline(1, '$'))
+
+  " Invalid arguments
+  call assert_false(test_gui_event('findrepl', {}))
+  let args = #{repl_text: 'a', flags: 1, forward: 1}
+  call assert_false(test_gui_event('findrepl', args))
+  let args = #{find_text: 'a', flags: 1, forward: 1}
+  call assert_false(test_gui_event('findrepl', args))
+  let args = #{find_text: 'a', repl_text: 'b', forward: 1}
+  call assert_false(test_gui_event('findrepl', args))
+  let args = #{find_text: 'a', repl_text: 'b', flags: 1}
+  call assert_false(test_gui_event('findrepl', args))
+
   bw!
 endfunc
 
