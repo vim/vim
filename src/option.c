@@ -307,6 +307,13 @@ set_init_1(int clean_arg)
      */
     set_options_default(0);
 
+#ifdef UNIX
+    // Force restricted-mode on for "nologin" or "false" $SHELL
+    p = get_isolated_shell_name();
+    if (fnamecmp(p, "nologin") == 0 || fnamecmp(p, "false") == 0)
+	restricted = TRUE;
+#endif
+
 #ifdef CLEAN_RUNTIMEPATH
     if (clean_arg)
     {

@@ -105,6 +105,12 @@ func Test_restricted_mode()
   if RunVim([], [], '-Z --clean -S Xrestricted')
     call assert_equal([], readfile('Xresult'))
   endif
+  if has('unix')
+    let $SHELL = '/sbin/nologin'
+    if RunVim([], [], '--clean -S Xrestricted')
+      call assert_equal([], readfile('Xresult'))
+    endif
+  endif
 
   call delete('Xrestricted')
   call delete('Xresult')
