@@ -1078,7 +1078,8 @@ generate_NEWLIST(cctx_T *cctx, int count)
 
     // Get the member type and the declared member type from all the items on
     // the stack.
-    member_type = get_member_type_from_stack(count, 1, &decl_member_type, cctx);
+    member_type = get_member_type_from_stack(count, 1,
+						      &decl_member_type, cctx);
     type = get_list_type(member_type, cctx->ctx_type_list);
     decl_type = get_list_type(decl_member_type, cctx->ctx_type_list);
 
@@ -1277,6 +1278,7 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     type2_T	shuffled_argtypes[MAX_FUNC_ARGS];
     type2_T	*maptype = NULL;
     type_T	*type;
+    type_T	*decl_type;
 
     RETURN_OK_IF_SKIP(cctx);
     argoff = check_internal_func(func_idx, argcount);
@@ -1327,8 +1329,8 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
 
     // Drop the argument types and push the return type.
     stack->ga_len -= argcount;
-    type = internal_func_ret_type(func_idx, argcount, argtypes);
-    if (push_type_stack(cctx, type) == FAIL)
+    type = internal_func_ret_type(func_idx, argcount, argtypes, &decl_type);
+    if (push_type_stack2(cctx, type, decl_type) == FAIL)
 	return FAIL;
 
     if (maptype != NULL && maptype[0].type_decl->tt_member != NULL
@@ -1351,7 +1353,9 @@ generate_LISTAPPEND(cctx_T *cctx)
     type_T	*expected;
 
     // Caller already checked that list_type is a list.
-    list_type = get_type_on_stack(cctx, 1);
+    // For checking the item type we use the declared type of the list and the
+    // current type of the added item, adding a string to [1, 2] is OK.
+    list_type = get_decl_type_on_stack(cctx, 1);
     item_type = get_type_on_stack(cctx, 0);
     expected = list_type->tt_member;
     if (need_type(item_type, expected, -1, 0, cctx, FALSE, FALSE) == FAIL)

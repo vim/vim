@@ -25,6 +25,7 @@ int push_type_stack(cctx_T *cctx, type_T *type);
 int push_type_stack2(cctx_T *cctx, type_T *type, type_T *decl_type);
 void set_type_on_stack(cctx_T *cctx, type_T *type, int offset);
 type_T *get_type_on_stack(cctx_T *cctx, int offset);
+type_T *get_decl_type_on_stack(cctx_T *cctx, int offset);
 type_T *get_member_type_from_stack(int count, int skip, type_T **decl_type, cctx_T *cctx);
 char *vartype_name(vartype_T type);
 char *type_name(type_T *type, char **tofree);

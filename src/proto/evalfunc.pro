@@ -6,7 +6,7 @@ int has_internal_func(char_u *name);
 char *internal_func_name(int idx);
 int internal_func_check_arg_types(type2_T *types, int idx, int argcount, cctx_T *cctx);
 void internal_func_get_argcount(int idx, int *argcount, int *min_argcount);
-type_T *internal_func_ret_type(int idx, int argcount, type2_T *argtypes);
+type_T *internal_func_ret_type(int idx, int argcount, type2_T *argtypes, type_T **decl_type);
 int internal_func_is_map(int idx);
 int check_internal_func(int idx, int argcount);
 int call_internal_func(char_u *name, int argcount, typval_T *argvars, typval_T *rettv);

@@ -77,7 +77,12 @@ enddef
 
 def Test_add()
   v9.CheckDefAndScriptFailure(['add({}, 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<unknown>', 'E1226: List or Blob required for argument 1'])
-  v9.CheckDefFailure(['add([1], "a")'], 'E1012: Type mismatch; expected number but got string')
+  v9.CheckDefExecFailure([
+        'var ln: list<number> = [1]',
+        'add(ln, "a")'],
+        'E1012: Type mismatch; expected number but got string')
+  assert_equal([1, 'a'], add([1], 'a'))
+  assert_equal(0z1234, add(0z12, 0x34))
 
   var lines =<< trim END
     vim9script
@@ -2804,6 +2809,9 @@ def Test_range()
   v9.CheckDefAndScriptFailure(['range("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['range(10, "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
   v9.CheckDefAndScriptFailure(['range(10, 20, "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
+
+  # returns a list<number> but it's not declared as such
+  assert_equal(['x', 'x'], range(2)->map((i, v) => 'x'))
 enddef
 
 def Test_readdir()
@@ -2980,6 +2988,10 @@ def Test_remove()
   var d2: any = {1: 'a', 2: 'b', 3: 'c'}
   remove(d2, 2)
   assert_equal({1: 'a', 3: 'c'}, d2)
+
+  # using declared type
+  var x: string = range(2)->extend(['x'])->remove(2)
+  assert_equal('x', x)
 enddef
 
 def Test_remove_return_type()

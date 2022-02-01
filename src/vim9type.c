@@ -357,8 +357,10 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
 	    if (idx >= 0)
 	    {
+		type_T *decl_type;  // unused
+
 		internal_func_get_argcount(idx, &argcount, &min_argcount);
-		member_type = internal_func_ret_type(idx, 0, NULL);
+		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type);
 	    }
 	    else
 		ufunc = find_func(name, FALSE);
@@ -1244,7 +1246,8 @@ set_type_on_stack(cctx_T *cctx, type_T *type, int offset)
 }
 
 /*
- * Get the type from the type stack.  If "offset" is zero the one at the top,
+ * Get the current type from the type stack.  If "offset" is zero the one at
+ * the top,
  * if "offset" is one the type above that, etc.
  * Returns &t_unknown if there is no such stack entry.
  */
@@ -1257,6 +1260,23 @@ get_type_on_stack(cctx_T *cctx, int offset)
 	return &t_unknown;
     return (((type2_T *)stack->ga_data) + stack->ga_len - offset - 1)
 								   ->type_curr;
+}
+
+/*
+ * Get the declared type from the type stack.  If "offset" is zero the one at
+ * the top,
+ * if "offset" is one the type above that, etc.
+ * Returns &t_unknown if there is no such stack entry.
+ */
+    type_T *
+get_decl_type_on_stack(cctx_T *cctx, int offset)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    if (offset + 1 > stack->ga_len)
+	return &t_unknown;
+    return (((type2_T *)stack->ga_data) + stack->ga_len - offset - 1)
+								   ->type_decl;
 }
 
 /*
