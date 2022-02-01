@@ -55,7 +55,7 @@ text
 % START_INDENT
 % INDENT_EXE let g:html_indent_style1 = "inc"
 % INDENT_EXE let g:html_indent_script1 = "zero"
-% INDENT_EXE let g:html_indent_attribute = "auto"
+% INDENT_EXE let g:html_indent_attribute = 1
 % INDENT_EXE call HtmlIndent_CheckUserSettings()
 <html>
     <body>

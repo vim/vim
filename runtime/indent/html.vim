@@ -150,18 +150,11 @@ func HtmlIndent_CheckUserSettings()
     endif
   endif
 
-  let attr_level_opt = {"auto": 1 ,"inc": 2}
-
-  let attr_level = ''
+  let b:hi_attr_indent = 2
   if exists('b:html_indent_attribute')
-    let attr_level = b:html_indent_attribute
+    let b:hi_attr_indent = b:html_indent_attribute
   elseif exists('g:html_indent_attribute')
-    let attr_level = g:html_indent_attribute
-  endif
-  if len(attr_level) > 0
-    let b:hi_attr_indent = get(attr_level_opt, attr_level, attr_level_opt.inc)
-  else
-    let b:hi_attr_indent = attr_level_opt.inc
+    let b:hi_attr_indent = g:html_indent_attribute
   endif
 
 endfunc "}}}
