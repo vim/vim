@@ -312,6 +312,7 @@ set_init_1(int clean_arg)
     p = get_isolated_shell_name();
     if (fnamecmp(p, "nologin") == 0 || fnamecmp(p, "false") == 0)
 	restricted = TRUE;
+    vim_free(p);
 #endif
 
 #ifdef CLEAN_RUNTIMEPATH
