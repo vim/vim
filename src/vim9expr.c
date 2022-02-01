@@ -759,7 +759,7 @@ compile_call(
 
 	    if (STRCMP(name, "add") == 0 && argcount == 2)
 	    {
-		type_T	    *type = get_type_on_stack(cctx, 1);
+		type_T	    *type = get_decl_type_on_stack(cctx, 1);
 
 		// add() can be compiled to instructions if we know the type
 		if (type->tt_type == VAR_LIST)
