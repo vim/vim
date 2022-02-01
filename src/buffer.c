@@ -1706,6 +1706,7 @@ set_curbuf(buf_T *buf, int action)
 #endif
     bufref_T	newbufref;
     bufref_T	prevbufref;
+    int		valid;
 
     setpcmark();
     if ((cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
@@ -1763,13 +1764,19 @@ set_curbuf(buf_T *buf, int action)
     // An autocommand may have deleted "buf", already entered it (e.g., when
     // it did ":bunload") or aborted the script processing.
     // If curwin->w_buffer is null, enter_buffer() will make it valid again
-    if ((buf_valid(buf) && buf != curbuf
+    valid = buf_valid(buf);
+    if ((valid && buf != curbuf
 #ifdef FEAT_EVAL
 		&& !aborting()
 #endif
 	) || curwin->w_buffer == NULL)
     {
-	enter_buffer(buf);
+	// If the buffer is not valid but curwin->w_buffer is NULL we must
+	// enter some buffer.  Using the last one is hopefully OK.
+	if (!valid)
+	    enter_buffer(lastbuf);
+	else
+	    enter_buffer(buf);
 #ifdef FEAT_SYN_HL
 	if (old_tw != curbuf->b_p_tw)
 	    check_colorcolumn(curwin);
@@ -2288,8 +2295,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_vsts);
     vim_free(buf->b_p_vsts_nopaste);
     buf->b_p_vsts_nopaste = NULL;
-    vim_free(buf->b_p_vsts_array);
-    buf->b_p_vsts_array = NULL;
+    VIM_CLEAR(buf->b_p_vsts_array);
     clear_string_option(&buf->b_p_vts);
     VIM_CLEAR(buf->b_p_vts_array);
 #endif
