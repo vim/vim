@@ -105,6 +105,14 @@ func Test_restricted_mode()
   if RunVim([], [], '-Z --clean -S Xrestricted')
     call assert_equal([], readfile('Xresult'))
   endif
+  call delete('Xresult')
+  if has('unix') && RunVimPiped([], [], '--clean -S Xrestricted', 'SHELL=/bin/false ')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xresult')
+  if has('unix') && RunVimPiped([], [], '--clean -S Xrestricted', 'SHELL=/sbin/nologin')
+    call assert_equal([], readfile('Xresult'))
+  endif
 
   call delete('Xrestricted')
   call delete('Xresult')

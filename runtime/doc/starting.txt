@@ -256,6 +256,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Interfaces, such as Python, Ruby and Lua, are also disabled,
 		since they could be used to execute shell commands.  Perl uses
 		the Safe module.
+		For Unix restricted mode is used when the last part of $SHELL
+		is "nologin" or "false".
 		Note that the user may still find a loophole to execute a
 		shell command, it has only been made difficult.
 
