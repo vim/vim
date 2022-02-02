@@ -12,7 +12,7 @@ void dict_free_items(int copyID);
 dictitem_T *dictitem_alloc(char_u *key);
 void dictitem_remove(dict_T *dict, dictitem_T *item);
 void dictitem_free(dictitem_T *item);
-dict_T *dict_copy(dict_T *orig, int deep, int copyID);
+dict_T *dict_copy(dict_T *orig, int deep, int top, int copyID);
 int dict_wrong_func_name(dict_T *d, typval_T *tv, char_u *name);
 int dict_add(dict_T *d, dictitem_T *item);
 int dict_add_number(dict_T *d, char *key, varnumber_T nr);

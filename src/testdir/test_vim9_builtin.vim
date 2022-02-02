@@ -720,6 +720,31 @@ def Test_copy_return_type()
   res->assert_equal(6)
 
   dl = deepcopy([1, 2, 3], true)
+
+  # after a copy() the type can change, but not the item itself
+  var nl: list<number> = [1, 2]
+  assert_equal([1, 2, 'x'], nl->copy()->extend(['x']))
+
+  var lines =<< trim END
+      var nll: list<list<number>> = [[1, 2]]
+      nll->copy()[0]->extend(['x'])
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected list<number> but got list<string> in extend()')
+
+  var nd: dict<number> = {a: 1, b: 2}
+  assert_equal({a: 1, b: 2, c: 'x'}, nd->copy()->extend({c: 'x'}))
+  lines =<< trim END
+      var ndd: dict<dict<number>> = {a: {x: 1, y: 2}}
+      ndd->copy()['a']->extend({z: 'x'})
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string> in extend()')
+
+  # after a deepcopy() the item type can also change
+  var nll: list<list<number>> = [[1, 2]]
+  assert_equal([1, 2, 'x'], nll->deepcopy()[0]->extend(['x']))
+
+  var ndd: dict<dict<number>> = {a: {x: 1, y: 2}}
+  assert_equal({x: 1, y: 2, z: 'x'}, ndd->deepcopy()['a']->extend({z: 'x'}))
 enddef
 
 def Test_count()

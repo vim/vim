@@ -102,6 +102,71 @@ free_type(type_T *type)
     vim_free(type);
 }
 
+/*
+ * Return TRUE if "type" is to be recursed into for setting the type.
+ */
+    static int
+set_tv_type_recurse(type_T *type)
+{
+    return type->tt_member != NULL
+		&& (type->tt_member->tt_type == VAR_DICT
+				       || type->tt_member->tt_type == VAR_LIST)
+		&& type->tt_member->tt_member != NULL
+		&& type->tt_member->tt_member != &t_any
+		&& type->tt_member->tt_member != &t_unknown;
+}
+
+/*
+ * Set the type of "tv" to "type" if it is a list or dict.
+ */
+    void
+set_tv_type(typval_T *tv, type_T *type)
+{
+    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+    {
+	dict_T *d = tv->vval.v_dict;
+
+	if (d->dv_type != type)
+	{
+	    free_type(d->dv_type);
+	    d->dv_type = alloc_type(type);
+	    if (set_tv_type_recurse(type))
+	    {
+		int		todo = (int)d->dv_hashtab.ht_used;
+		hashitem_T	*hi;
+		dictitem_T	*di;
+
+		for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+		{
+		    if (!HASHITEM_EMPTY(hi))
+		    {
+			--todo;
+			di = HI2DI(hi);
+			set_tv_type(&di->di_tv, type->tt_member);
+		    }
+		}
+	    }
+	}
+    }
+    else if (tv->v_type == VAR_LIST && tv->vval.v_list != NULL)
+    {
+	list_T *l = tv->vval.v_list;
+
+	if (l->lv_type != type)
+	{
+	    free_type(l->lv_type);
+	    l->lv_type = alloc_type(type);
+	    if (l->lv_first != &range_list_item && set_tv_type_recurse(type))
+	    {
+		listitem_T	*li;
+
+		FOR_ALL_LIST_ITEMS(l, li)
+		    set_tv_type(&li->li_tv, type->tt_member);
+	    }
+	}
+    }
+}
+
     type_T *
 get_list_type(type_T *member_type, garray_T *type_gap)
 {

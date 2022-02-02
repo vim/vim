@@ -1170,6 +1170,33 @@ ret_first_arg(int argcount,
     return &t_void;
 }
     static type_T *
+ret_copy(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type)
+{
+    if (argcount > 0)
+    {
+	if (argtypes[0].type_decl != NULL)
+	{
+	    if (argtypes[0].type_decl->tt_type == VAR_LIST)
+		*decl_type = &t_list_any;
+	    else if (argtypes[0].type_decl->tt_type == VAR_DICT)
+		*decl_type = &t_dict_any;
+	    else
+		*decl_type = argtypes[0].type_decl;
+	}
+	if (argtypes[0].type_curr != NULL)
+	{
+	    if (argtypes[0].type_curr->tt_type == VAR_LIST)
+		return &t_list_any;
+	    else if (argtypes[0].type_curr->tt_type == VAR_DICT)
+		return &t_dict_any;
+	}
+	return argtypes[0].type_curr;
+    }
+    return &t_void;
+}
+    static type_T *
 ret_extend(int argcount,
 	type2_T *argtypes,
 	type_T	**decl_type)
@@ -1571,7 +1598,7 @@ static funcentry_T global_functions[] =
     {"confirm",		1, 4, FEARG_1,	    arg4_string_string_number_string,
 			ret_number,	    f_confirm},
     {"copy",		1, 1, FEARG_1,	    NULL,
-			ret_first_arg,	    f_copy},
+			ret_copy,	    f_copy},
     {"cos",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_cos)},
     {"cosh",		1, 1, FEARG_1,	    arg1_float_or_nr,
@@ -1591,7 +1618,7 @@ static funcentry_T global_functions[] =
 #endif
 			},
     {"deepcopy",	1, 2, FEARG_1,	    arg12_deepcopy,
-			ret_first_arg,	    f_deepcopy},
+			ret_copy,	    f_deepcopy},
     {"delete",		1, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_delete},
     {"deletebufline",	2, 3, FEARG_1,	    arg3_buffer_lnum_lnum,
@@ -3297,7 +3324,7 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_copy(typval_T *argvars, typval_T *rettv)
 {
-    item_copy(&argvars[0], rettv, FALSE, 0);
+    item_copy(&argvars[0], rettv, FALSE, TRUE, 0);
 }
 
 /*
@@ -3439,7 +3466,7 @@ f_deepcopy(typval_T *argvars, typval_T *rettv)
     else
     {
 	copyID = get_copyID();
-	item_copy(&argvars[0], rettv, TRUE, noref == 0 ? copyID : 0);
+	item_copy(&argvars[0], rettv, TRUE, TRUE, noref == 0 ? copyID : 0);
     }
 }
 

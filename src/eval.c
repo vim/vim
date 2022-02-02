@@ -6160,6 +6160,7 @@ handle_subscript(
 /*
  * Make a copy of an item.
  * Lists and Dictionaries are also copied.  A deep copy if "deep" is set.
+ * "top" is TRUE for the toplevel of copy().
  * For deepcopy() "copyID" is zero for a full copy or the ID for when a
  * reference to an already copied list/dict can be used.
  * Returns FAIL or OK.
@@ -6169,6 +6170,7 @@ item_copy(
     typval_T	*from,
     typval_T	*to,
     int		deep,
+    int		top,
     int		copyID)
 {
     static int	recurse = 0;
@@ -6207,7 +6209,8 @@ item_copy(
 		++to->vval.v_list->lv_refcount;
 	    }
 	    else
-		to->vval.v_list = list_copy(from->vval.v_list, deep, copyID);
+		to->vval.v_list = list_copy(from->vval.v_list,
+							    deep, top, copyID);
 	    if (to->vval.v_list == NULL)
 		ret = FAIL;
 	    break;
@@ -6226,7 +6229,8 @@ item_copy(
 		++to->vval.v_dict->dv_refcount;
 	    }
 	    else
-		to->vval.v_dict = dict_copy(from->vval.v_dict, deep, copyID);
+		to->vval.v_dict = dict_copy(from->vval.v_dict,
+							    deep, top, copyID);
 	    if (to->vval.v_dict == NULL)
 		ret = FAIL;
 	    break;

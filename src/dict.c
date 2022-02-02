@@ -284,11 +284,11 @@ dictitem_free(dictitem_T *item)
 /*
  * Make a copy of dict "d".  Shallow if "deep" is FALSE.
  * The refcount of the new dict is set to 1.
- * See item_copy() for "copyID".
+ * See item_copy() for "top" and "copyID".
  * Returns NULL when out of memory.
  */
     dict_T *
-dict_copy(dict_T *orig, int deep, int copyID)
+dict_copy(dict_T *orig, int deep, int top, int copyID)
 {
     dict_T	*copy;
     dictitem_T	*di;
@@ -306,6 +306,8 @@ dict_copy(dict_T *orig, int deep, int copyID)
 	    orig->dv_copyID = copyID;
 	    orig->dv_copydict = copy;
 	}
+	copy->dv_type = alloc_type(top || deep ? &t_dict_any : orig->dv_type);
+
 	todo = (int)orig->dv_hashtab.ht_used;
 	for (hi = orig->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
 	{
@@ -318,8 +320,8 @@ dict_copy(dict_T *orig, int deep, int copyID)
 		    break;
 		if (deep)
 		{
-		    if (item_copy(&HI2DI(hi)->di_tv, &di->di_tv, deep,
-							      copyID) == FAIL)
+		    if (item_copy(&HI2DI(hi)->di_tv, &di->di_tv,
+						  deep, FALSE, copyID) == FAIL)
 		    {
 			vim_free(di);
 			break;
@@ -1239,7 +1241,7 @@ dict_extend_func(
     {
 	if (is_new)
 	{
-	    d1 = dict_copy(d1, FALSE, get_copyID());
+	    d1 = dict_copy(d1, FALSE, TRUE, get_copyID());
 	    if (d1 == NULL)
 		return;
 	}

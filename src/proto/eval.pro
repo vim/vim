@@ -69,7 +69,7 @@ int eval_isnamec(int c);
 int eval_isnamec1(int c);
 int eval_isdictc(int c);
 int handle_subscript(char_u **arg, char_u *name_start, typval_T *rettv, evalarg_T *evalarg, int verbose);
-int item_copy(typval_T *from, typval_T *to, int deep, int copyID);
+int item_copy(typval_T *from, typval_T *to, int deep, int top, int copyID);
 void echo_one(typval_T *rettv, int with_space, int *atstart, int *needclr);
 void ex_echo(exarg_T *eap);
 void ex_echohl(exarg_T *eap);

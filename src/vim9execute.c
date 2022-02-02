@@ -4412,7 +4412,8 @@ exec_instructions(ectx_T *ectx)
 								       == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_key_not_present_in_dictionary), iptr->isn_arg.string);
+			semsg(_(e_key_not_present_in_dictionary),
+							 iptr->isn_arg.string);
 			goto on_error;
 		    }
 		    // Put the dict used on the dict stack, it might be used by
@@ -4531,21 +4532,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_SETTYPE:
-		{
-		    checktype_T *ct = &iptr->isn_arg.type;
-
-		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
-		    {
-			free_type(tv->vval.v_dict->dv_type);
-			tv->vval.v_dict->dv_type = alloc_type(ct->ct_type);
-		    }
-		    else if (tv->v_type == VAR_LIST && tv->vval.v_list != NULL)
-		    {
-			free_type(tv->vval.v_list->lv_type);
-			tv->vval.v_list->lv_type = alloc_type(ct->ct_type);
-		    }
-		}
+		set_tv_type(STACK_TV_BOT(-1), iptr->isn_arg.type.ct_type);
 		break;
 
 	    case ISN_2BOOL:

@@ -484,7 +484,7 @@ def Test_assign_linebreak()
           ->copy()
           ->copy()
   END
-  v9.CheckDefFailure(lines, 'E1012:', 2)
+  v9.CheckDefExecFailure(lines, 'E1012:', 4)
 
   lines =<< trim END
       var x: any
