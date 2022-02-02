@@ -7358,7 +7358,6 @@ changedir_func(
 {
     char_u	*pdir = NULL;
     int		dir_differs;
-    int		retval = FALSE;
 
     if (new_dir == NULL || allbuf_locked())
 	return FALSE;
@@ -7415,6 +7414,7 @@ changedir_func(
     {
 	emsg(_(e_command_failed));
 	vim_free(pdir);
+	return FALSE;
     }
     else
     {
@@ -7443,10 +7443,8 @@ changedir_func(
 	    apply_autocmds(EVENT_DIRCHANGED, acmd_fname, new_dir, FALSE,
 								curbuf);
 	}
-	retval = TRUE;
+	return TRUE;
     }
-
-    return retval;
 }
 
 /*
