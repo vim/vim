@@ -386,7 +386,7 @@ use_typecheck(type_T *actual, type_T *expected)
  * If "actual_is_const" is TRUE then the type won't change at runtime, do not
  * generate a TYPECHECK.
  */
-    static int
+    int
 need_type_where(
 	type_T	*actual,
 	type_T	*expected,

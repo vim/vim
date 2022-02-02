@@ -990,11 +990,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		if (lhs_type == &t_any)
 		    lhs_type = item_type;
 		else if (item_type != &t_unknown
-			    && (item_type == &t_any
-			      ? need_type(item_type, lhs_type,
-						     -1, 0, cctx, FALSE, FALSE)
-			      : check_type(lhs_type, item_type, TRUE, where))
-			    == FAIL)
+			&& need_type_where(item_type, lhs_type, -1,
+					    where, cctx, FALSE, FALSE) == FAIL)
 		    goto failed;
 		var_lvar = reserve_local(cctx, arg, varlen, TRUE, lhs_type);
 		if (var_lvar == NULL)
@@ -1003,8 +1000,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
 		if (semicolon && idx == var_count - 1)
 		    var_lvar->lv_type = vartype;
-		else
-		    var_lvar->lv_type = item_type;
 		generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
 	    }
 

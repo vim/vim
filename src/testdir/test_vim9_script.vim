@@ -2011,7 +2011,7 @@ def Test_for_loop_fails()
         echo k v
       endfor
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected job but got string', 2)
+  v9.CheckDefExecAndScriptFailure(lines, ['E1013: Argument 1: type mismatch, expected job but got string', 'E1012: Type mismatch; expected job but got string'], 2)
 
   lines =<< trim END
       var i = 0
@@ -2036,6 +2036,22 @@ def Test_for_loop_fails()
       endfor
   END
   v9.CheckDefExecAndScriptFailure(lines, ['E461:', 'E1017:'])
+
+  lines =<< trim END
+      var l: list<dict<any>> = [{a: 1, b: 'x'}]
+      for item: dict<number> in l
+        echo item
+      endfor
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<number> but got dict<any>')
+
+  lines =<< trim END
+      var l: list<dict<any>> = [{n: 1}]
+      for item: dict<number> in l
+        item->extend({s: ''})
+      endfor
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
 enddef
 
 def Test_for_loop_script_var()
