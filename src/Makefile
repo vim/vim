@@ -2053,9 +2053,6 @@ PRO_AUTO = \
 	$(ALL_GUI_PRO) \
 	$(TCL_PRO)
 
-# Resources used for the Mac are in one directory.
-RSRC_DIR = os_mac_rsrc
-
 PRO_MANUAL = os_amiga.pro os_win32.pro \
 	os_mswin.pro winclip.pro os_vms.pro $(PERL_PRO)
 
@@ -2999,11 +2996,6 @@ shadow:	runtime pixmaps
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
 	$(MKDIR_P) $(SHADOWDIR)/xdiff
 	cd $(SHADOWDIR)/xdiff; ln -s ../../xdiff/*.[ch] .
-	if test -d $(RSRC_DIR); then \
-		cd $(SHADOWDIR); \
-		ln -s ../infplist.xml .; \
-		ln -s ../$(RSRC_DIR) ../os_mac.rsr.hqx ../dehqx.py .; \
-	fi
 	$(MKDIR_P) $(SHADOWDIR)/testdir
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
 				 ../../testdir/Make_all.mak \

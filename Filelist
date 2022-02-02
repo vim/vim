@@ -663,10 +663,7 @@ SRC_HAIKU =	\
 # source files for the Mac (also in the extra archive)
 SRC_MAC =	\
 		src/INSTALLmac.txt \
-		src/dehqx.py \
-		src/os_mac_rsrc/*.icns \
 		src/os_mac.h \
-		src/os_mac.rsr.hqx \
 		src/os_mac_conv.c \
 		src/os_macosx.m \
 		src/proto/os_mac_conv.pro \
@@ -704,7 +701,6 @@ SRC_EXTRA =	\
 		$(SRC_QNX) \
 		$(SRC_VMS) \
 		README_os390.txt \
-		src/infplist.xml \
 		src/link.390 \
 		src/os_vms_fix.com \
 		src/toolbar.phi \
