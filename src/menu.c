@@ -677,7 +677,7 @@ add_menu_path(
 		}
 	    }
 
-# if defined(FEAT_GUI_MSWIN) & defined(FEAT_TEAROFF)
+# if defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF)
 	    // When adding a new submenu, may add a tearoff item
 	    if (	addtearoff
 		    && *next_name
