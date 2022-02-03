@@ -1610,7 +1610,7 @@ def Test_redir_to_var()
         redir > Xfile
       redir END
   END
-  v9.CheckDefFailure(lines, 'E1185:')
+  v9.CheckDefFailure(lines, 'E1092:')
 
   lines =<< trim END
       var text: number
