@@ -2173,7 +2173,7 @@ f_indent(typval_T *argvars, typval_T *rettv)
     void
 f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
 {
-#ifdef FEAT_LISP
+# ifdef FEAT_LISP
     pos_T	pos;
     linenr_T	lnum;
 
@@ -2191,7 +2191,7 @@ f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
     else if (in_vim9script())
 	semsg(_(e_invalid_line_number_nr), lnum);
     else
-#endif
+# endif
 	rettv->vval.v_number = -1;
 }
 #endif

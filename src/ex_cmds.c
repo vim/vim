@@ -99,9 +99,9 @@ do_ascii(exarg_T *eap UNUSED)
 	    IObuff[len++] = ' ';
 	IObuff[len++] = '<';
 	if (enc_utf8 && utf_iscomposing(c)
-# ifdef USE_GUI
+#ifdef USE_GUI
 		&& !gui.in_use
-# endif
+#endif
 		)
 	    IObuff[len++] = ' '; // draw composing char on top of a space
 	len += (*mb_char2bytes)(c, IObuff + len);
