@@ -517,7 +517,7 @@ static int	s_getting_focus = FALSE;
 static int	s_x_pending;
 static int	s_y_pending;
 static UINT	s_kFlags_pending;
-static UINT	s_wait_timer = 0;	  // Timer for get char from user
+static UINT_PTR	s_wait_timer = 0;	  // Timer for get char from user
 static int	s_timed_out = FALSE;
 static int	dead_key = 0;		  // 0: no dead key, 1: dead key pressed
 static UINT	surrogate_pending_ch = 0; // 0: no surrogate pending,
@@ -584,7 +584,7 @@ static int		blink_state = BLINK_NONE;
 static long_u		blink_waittime = 700;
 static long_u		blink_ontime = 400;
 static long_u		blink_offtime = 250;
-static UINT		blink_timer = 0;
+static UINT_PTR		blink_timer = 0;
 
     int
 gui_mch_is_blinking(void)
@@ -610,7 +610,7 @@ gui_mch_set_blinking(long wait, long on, long off)
 _OnBlinkTimer(
     HWND hwnd,
     UINT uMsg UNUSED,
-    UINT idEvent,
+    UINT_PTR idEvent,
     DWORD dwTime UNUSED)
 {
     MSG msg;
@@ -629,15 +629,13 @@ _OnBlinkTimer(
     {
 	gui_undraw_cursor();
 	blink_state = BLINK_OFF;
-	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_offtime,
-						    (TIMERPROC)_OnBlinkTimer);
+	blink_timer = SetTimer(NULL, 0, (UINT)blink_offtime, _OnBlinkTimer);
     }
     else
     {
 	gui_update_cursor(TRUE, FALSE);
 	blink_state = BLINK_ON;
-	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_ontime,
-						    (TIMERPROC)_OnBlinkTimer);
+	blink_timer = SetTimer(NULL, 0, (UINT)blink_ontime, _OnBlinkTimer);
     }
     gui_mch_flush();
 }
@@ -684,8 +682,7 @@ gui_mch_start_blink(void)
     // Only switch blinking on if none of the times is zero
     if (blink_waittime && blink_ontime && blink_offtime && gui.in_focus)
     {
-	blink_timer = (UINT)SetTimer(NULL, 0, (UINT)blink_waittime,
-						    (TIMERPROC)_OnBlinkTimer);
+	blink_timer = SetTimer(NULL, 0, (UINT)blink_waittime, _OnBlinkTimer);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
 	gui_mch_flush();
@@ -700,7 +697,7 @@ gui_mch_start_blink(void)
 _OnTimer(
     HWND hwnd,
     UINT uMsg UNUSED,
-    UINT idEvent,
+    UINT_PTR idEvent,
     DWORD dwTime UNUSED)
 {
     MSG msg;
@@ -2117,8 +2114,8 @@ gui_mch_wait_for_chars(int wtime)
 	    return FAIL;
 
 	// When called with "wtime" zero, just want one msec.
-	s_wait_timer = (UINT)SetTimer(NULL, 0, (UINT)(wtime == 0 ? 1 : wtime),
-							 (TIMERPROC)_OnTimer);
+	s_wait_timer = SetTimer(NULL, 0, (UINT)(wtime == 0 ? 1 : wtime),
+								_OnTimer);
     }
 
     allow_scrollbar = TRUE;
@@ -8241,7 +8238,7 @@ delete_tooltip(BalloonEval *beval)
 BevalTimerProc(
     HWND	hwnd UNUSED,
     UINT	uMsg UNUSED,
-    UINT_PTR    idEvent UNUSED,
+    UINT_PTR	idEvent UNUSED,
     DWORD	dwTime)
 {
     POINT	pt;
