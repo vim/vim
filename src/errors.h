@@ -2809,7 +2809,8 @@ EXTERN char e_cannot_assign_to_argument[]
 	INIT(= N_("E1090: Cannot assign to argument %s"));
 EXTERN char e_function_is_not_compiled_str[]
 	INIT(= N_("E1091: Function is not compiled: %s"));
-// E1092 unused
+EXTERN char e_cannot_nest_redir[]
+	INIT(= N_("E1092: Cannot nest :redir"));
 EXTERN char e_expected_nr_items_but_got_nr[]
 	INIT(= N_("E1093: Expected %d items but got %d"));
 EXTERN char e_import_can_only_be_used_in_script[]
@@ -3012,8 +3013,6 @@ EXTERN char e_cannot_use_range_with_assignment_operator_str[]
 #ifdef FEAT_EVAL
 EXTERN char e_blob_not_set[]
 	INIT(= N_("E1184: Blob not set"));
-EXTERN char e_cannot_nest_redir[]
-	INIT(= N_("E1185: Cannot nest :redir"));
 EXTERN char e_missing_redir_end[]
 	INIT(= N_("E1185: Missing :redir END"));
 EXTERN char e_expression_does_not_result_in_value_str[]
