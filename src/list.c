@@ -1216,7 +1216,11 @@ list_copy(list_T *orig, int deep, int top, int copyID)
     copy = list_alloc();
     if (copy != NULL)
     {
-	copy->lv_type = alloc_type(top || deep ? &t_list_any: orig->lv_type);
+	if (orig->lv_type == NULL)
+	    copy->lv_type = NULL;
+	else
+	    copy->lv_type = alloc_type(top || deep
+						 ? &t_list_any: orig->lv_type);
 	if (copyID != 0)
 	{
 	    // Do this before adding the items, because one of the items may

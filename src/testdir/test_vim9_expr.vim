@@ -1495,6 +1495,9 @@ def Test_expr5_list_add()
 
       # result of glob() is "any", runtime type check
       var sl: list<string> = glob('*.txt', false, true) + ['']
+
+      var lln: list<list<number>> = [[1] + [2]]
+      assert_equal([[1, 2]], lln)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
