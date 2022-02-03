@@ -9464,7 +9464,7 @@ list_in_columns(char_u **items, int size, int current)
     // The rightmost column doesn't need a separator.
     // Sacrifice it to fit in one more column if possible.
     ncol = (int) (Columns + 1) / width;
-    nrow = item_count / ncol + (item_count % ncol ? 1 : 0);
+    nrow = item_count / ncol + ((item_count % ncol) ? 1 : 0);
 
     // "i" counts columns then rows.  "idx" counts rows then columns.
     for (i = 0; !got_int && i < nrow * ncol; ++i)

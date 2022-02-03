@@ -372,12 +372,12 @@ repeat:
 	    {
 		if (GetLongPathNameW(wfname, buf, _MAX_PATH))
 		{
-		    char_u *p = utf16_to_enc(buf, NULL);
+		    char_u *q = utf16_to_enc(buf, NULL);
 
-		    if (p != NULL)
+		    if (q != NULL)
 		    {
 			vim_free(*bufp);    // free any allocated file name
-			*bufp = *fnamep = p;
+			*bufp = *fnamep = q;
 		    }
 		}
 		vim_free(wfname);

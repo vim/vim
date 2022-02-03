@@ -2554,17 +2554,17 @@ win_update(win_T *wp)
     // See the version that was fixed.
     if (use_vtp() && get_conpty_fix_type() < 1)
     {
-	int i;
+	int k;
 
-	for (i = 0; i < Rows; ++i)
+	for (k = 0; k < Rows; ++k)
 	    if (enc_utf8)
-		if ((*mb_off2cells)(LineOffset[i] + Columns - 2,
-					   LineOffset[i] + screen_Columns) > 1)
-		    screen_draw_rectangle(i, Columns - 2, 1, 2, FALSE);
+		if ((*mb_off2cells)(LineOffset[k] + Columns - 2,
+					   LineOffset[k] + screen_Columns) > 1)
+		    screen_draw_rectangle(k, Columns - 2, 1, 2, FALSE);
 		else
-		    screen_draw_rectangle(i, Columns - 1, 1, 1, FALSE);
+		    screen_draw_rectangle(k, Columns - 1, 1, 1, FALSE);
 	    else
-		screen_char(LineOffset[i] + Columns - 1, i, Columns - 1);
+		screen_char(LineOffset[k] + Columns - 1, k, Columns - 1);
     }
 #endif
 

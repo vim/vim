@@ -1768,16 +1768,16 @@ vgetc(void)
 		    c == K_TEAROFF)
 		{
 		    char_u	name[200];
-		    int		i;
+		    int		j;
 
 		    // get menu path, it ends with a <CR>
-		    for (i = 0; (c = vgetorpeek(TRUE)) != '\r'; )
+		    for (j = 0; (c = vgetorpeek(TRUE)) != '\r'; )
 		    {
-			name[i] = c;
-			if (i < 199)
-			    ++i;
+			name[j] = c;
+			if (j < 199)
+			    ++j;
 		    }
-		    name[i] = NUL;
+		    name[j] = NUL;
 		    gui_make_tearoff(name);
 		    continue;
 		}

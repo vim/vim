@@ -1993,11 +1993,11 @@ ExpandFromContext(
 #ifdef BACKSLASH_IN_FILENAME
 	if (p_csl[0] != NUL && (options & WILD_IGNORE_COMPLETESLASH) == 0)
 	{
-	    int	    i;
+	    int	    j;
 
-	    for (i = 0; i < *num_file; ++i)
+	    for (j = 0; j < *num_file; ++j)
 	    {
-		char_u	*ptr = (*file)[i];
+		char_u	*ptr = (*file)[j];
 
 		while (*ptr != NUL)
 		{
