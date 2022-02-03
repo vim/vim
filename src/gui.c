@@ -292,11 +292,11 @@ gui_do_fork(void)
     }
     // Child
 
-#ifdef FEAT_GUI_GTK
+# ifdef FEAT_GUI_GTK
     // Call gtk_init_check() here after fork(). See gui_init_check().
     if (gui_mch_init_check() != OK)
 	getout_preserve_modified(1);
-#endif
+# endif
 
 # if defined(HAVE_SETSID) || defined(HAVE_SETPGID)
     /*
@@ -348,11 +348,11 @@ gui_do_fork(void)
 gui_read_child_pipe(int fd)
 {
     long	bytes_read;
-#define READ_BUFFER_SIZE 10
+# define READ_BUFFER_SIZE 10
     char	buffer[READ_BUFFER_SIZE];
 
     bytes_read = read_eintr(fd, buffer, READ_BUFFER_SIZE - 1);
-#undef READ_BUFFER_SIZE
+# undef READ_BUFFER_SIZE
     close(fd);
     if (bytes_read < 0)
 	return GUI_CHILD_IO_ERROR;
@@ -459,7 +459,7 @@ gui_init_check(void)
     gui.scrollbar_width = gui.scrollbar_height = SB_DEFAULT_WIDTH;
     gui.prev_wrap = -1;
 
-# ifdef FEAT_GUI_GTK
+#ifdef FEAT_GUI_GTK
     CLEAR_FIELD(gui.ligatures_map);
 #endif
 
@@ -1435,7 +1435,7 @@ gui_position_components(int total_width UNUSED)
 	text_area_y += gui.menu_height;
 #endif
 
-# if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
+#if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF))
     if (gui_has_tabline())
 	text_area_y += gui.tabline_height;
@@ -1453,7 +1453,7 @@ gui_position_components(int total_width UNUSED)
     }
 #endif
 
-# if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_HAIKU)
+#if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_HAIKU)
     gui_mch_set_tabline_pos(0, text_area_y,
     gui.menu_width, gui.tabline_height);
     if (gui_has_tabline())
@@ -5235,10 +5235,10 @@ gui_update_screen(void)
     {
 	if (has_cursormoved())
 	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 	if (popup_visible)
 	    popup_check_cursor_pos();
-#endif
+# endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{

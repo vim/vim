@@ -1638,9 +1638,9 @@ open_line(
 #ifdef FEAT_CINDENT
     // May do indenting after opening a new line.
     do_cindent = !p_paste && (curbuf->b_p_cin
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		    || *curbuf->b_p_inde != NUL
-#  endif
+# endif
 		)
 	    && in_cinkeys(dir == FORWARD
 		? KEY_OPEN_FORW

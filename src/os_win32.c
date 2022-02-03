@@ -241,11 +241,11 @@ static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
 
-# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-#  define UChar UnicodeChar
-# else
-#  define UChar uChar.UnicodeChar
-# endif
+#if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+# define UChar UnicodeChar
+#else
+# define UChar uChar.UnicodeChar
+#endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
@@ -2077,13 +2077,13 @@ theend:
 	buf[len++] = typeahead[0];
 	mch_memmove(typeahead, typeahead + 1, --typeaheadlen);
     }
-#  ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
     if (len > 0)
     {
 	buf[len] = NUL;
 	ch_log(NULL, "raw key input: \"%s\"", buf);
     }
-#  endif
+# endif
     return len;
 
 #else // FEAT_GUI_MSWIN
@@ -7874,12 +7874,12 @@ vtp_sgr_bulk(
     vtp_sgr_bulks(1, args);
 }
 
-#define FAST256(x) \
+# define FAST256(x) \
     if ((*p-- = "0123456789"[(n = x % 10)]) \
 	    && x >= 10 && (*p-- = "0123456789"[((m = x % 100) - n) / 10]) \
 	    && x >= 100 && (*p-- = "012"[((x & 0xff) - m) / 100]));
 
-#define FAST256CASE(x) \
+# define FAST256CASE(x) \
     case x: \
 	FAST256(newargs[x - 1]);
 
@@ -7888,8 +7888,8 @@ vtp_sgr_bulks(
     int argc,
     int *args)
 {
-#define MAXSGR 16
-#define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
+# define MAXSGR 16
+# define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
     char_u  buf[SGRBUFSIZE];
     char_u  *p;
     int	    in, out;

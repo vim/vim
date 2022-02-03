@@ -189,13 +189,13 @@ hash_lookup(hashtab_T *ht, char_u *key, hash_T hash)
     void
 hash_debug_results(void)
 {
-#ifdef HT_DEBUG
+# ifdef HT_DEBUG
     fprintf(stderr, "\r\n\r\n\r\n\r\n");
     fprintf(stderr, "Number of hashtable lookups: %ld\r\n", hash_count_lookup);
     fprintf(stderr, "Number of perturb loops: %ld\r\n", hash_count_perturb);
     fprintf(stderr, "Percentage of perturb loops: %ld%%\r\n",
 				hash_count_perturb * 100 / hash_count_lookup);
-#endif
+# endif
 }
 #endif
 

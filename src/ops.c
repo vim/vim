@@ -3667,9 +3667,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		curbuf->b_visual.vi_mode = VIsual_mode;
 		restore_visual_mode();
 		curbuf->b_visual.vi_curswant = curwin->w_curswant;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		curbuf->b_visual_mode_eval = VIsual_mode;
-# endif
+#endif
 	    }
 
 	    // In Select mode, a linewise selection is operated upon like a

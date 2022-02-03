@@ -969,9 +969,9 @@ do_arg_all(
     old_curwin = curwin;
     old_curtab = curtab;
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-# endif
+#endif
 
     // Try closing all windows that are not in the argument list.
     // Also close windows that are not full width;
