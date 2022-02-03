@@ -3461,11 +3461,11 @@ def Test_list_any_type_checked()
       enddef
       Foo()
   END
+  # "any" could be "dict<any>", thus OK
   lines[2] = 'var l: list<any>'
-  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<dict<any>> but got list<any>', 2)
-
+  v9.CheckScriptSuccess(lines)
   lines[2] = 'var l: list<any> = []'
-  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<dict<any>> but got list<any>', 2)
+  v9.CheckScriptSuccess(lines)
 
   lines[2] = 'var l: list<any> = [11]'
   v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<dict<any>> but got list<number>', 2)

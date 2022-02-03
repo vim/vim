@@ -344,7 +344,11 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	list_T	    *l = tv->vval.v_list;
 	listitem_T  *li;
 
-	if (l == NULL || (l->lv_first == NULL && l->lv_type == NULL))
+	// An empty list has type list<unknown>, unless the type was specified
+	// and is not list<any>.  This matters when assigning to a variable
+	// with a specific list type.
+	if (l == NULL || (l->lv_first == NULL
+		   && (l->lv_type == NULL || l->lv_type->tt_member == &t_any)))
 	    return &t_list_empty;
 	if ((flags & TVTT_DO_MEMBER) == 0)
 	    return &t_list_any;

@@ -1249,6 +1249,15 @@ def Test_assignment_var_list()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_assignment_empty_list()
+  var lines =<< trim END
+      var l2: list<any> = []
+      var l: list<string>
+      l = l2
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_assignment_vim9script()
   var lines =<< trim END
     vim9script
