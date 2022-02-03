@@ -517,7 +517,7 @@ static int	s_getting_focus = FALSE;
 static int	s_x_pending;
 static int	s_y_pending;
 static UINT	s_kFlags_pending;
-static UINT	s_wait_timer = 0;	  // Timer for get char from user
+static UINT_PTR	s_wait_timer = 0;	  // Timer for get char from user
 static int	s_timed_out = FALSE;
 static int	dead_key = 0;		  // 0: no dead key, 1: dead key pressed
 static UINT	surrogate_pending_ch = 0; // 0: no surrogate pending,
@@ -526,7 +526,7 @@ static UINT	surrogate_pending_ch = 0; // 0: no surrogate pending,
 #ifdef FEAT_BEVAL_GUI
 // balloon-eval WM_NOTIFY_HANDLER
 static void Handle_WM_Notify(HWND hwnd, LPNMHDR pnmh);
-static void TrackUserActivity(UINT uMsg);
+static void track_user_activity(UINT uMsg);
 #endif
 
 /*
@@ -584,7 +584,7 @@ static int		blink_state = BLINK_NONE;
 static long_u		blink_waittime = 700;
 static long_u		blink_ontime = 400;
 static long_u		blink_offtime = 250;
-static UINT		blink_timer = 0;
+static UINT_PTR		blink_timer = 0;
 
     int
 gui_mch_is_blinking(void)
@@ -610,7 +610,7 @@ gui_mch_set_blinking(long wait, long on, long off)
 _OnBlinkTimer(
     HWND hwnd,
     UINT uMsg UNUSED,
-    UINT idEvent,
+    UINT_PTR idEvent,
     DWORD dwTime UNUSED)
 {
     MSG msg;
@@ -629,15 +629,13 @@ _OnBlinkTimer(
     {
 	gui_undraw_cursor();
 	blink_state = BLINK_OFF;
-	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_offtime,
-						    (TIMERPROC)_OnBlinkTimer);
+	blink_timer = SetTimer(NULL, 0, (UINT)blink_offtime, _OnBlinkTimer);
     }
     else
     {
 	gui_update_cursor(TRUE, FALSE);
 	blink_state = BLINK_ON;
-	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_ontime,
-						    (TIMERPROC)_OnBlinkTimer);
+	blink_timer = SetTimer(NULL, 0, (UINT)blink_ontime, _OnBlinkTimer);
     }
     gui_mch_flush();
 }
@@ -684,8 +682,7 @@ gui_mch_start_blink(void)
     // Only switch blinking on if none of the times is zero
     if (blink_waittime && blink_ontime && blink_offtime && gui.in_focus)
     {
-	blink_timer = (UINT)SetTimer(NULL, 0, (UINT)blink_waittime,
-						    (TIMERPROC)_OnBlinkTimer);
+	blink_timer = SetTimer(NULL, 0, (UINT)blink_waittime, _OnBlinkTimer);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
 	gui_mch_flush();
@@ -700,7 +697,7 @@ gui_mch_start_blink(void)
 _OnTimer(
     HWND hwnd,
     UINT uMsg UNUSED,
-    UINT idEvent,
+    UINT_PTR idEvent,
     DWORD dwTime UNUSED)
 {
     MSG msg;
@@ -1257,7 +1254,7 @@ _TextAreaWndProc(
     s_lParam = lParam;
 
 #ifdef FEAT_BEVAL_GUI
-    TrackUserActivity(uMsg);
+    track_user_activity(uMsg);
 #endif
 
     switch (uMsg)
@@ -2117,8 +2114,8 @@ gui_mch_wait_for_chars(int wtime)
 	    return FAIL;
 
 	// When called with "wtime" zero, just want one msec.
-	s_wait_timer = (UINT)SetTimer(NULL, 0, (UINT)(wtime == 0 ? 1 : wtime),
-							 (TIMERPROC)_OnTimer);
+	s_wait_timer = SetTimer(NULL, 0, (UINT)(wtime == 0 ? 1 : wtime),
+								_OnTimer);
     }
 
     allow_scrollbar = TRUE;
@@ -3892,8 +3889,8 @@ _OnScroll(
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
 static BalloonEval  *cur_beval = NULL;
-static UINT_PTR	    BevalTimerId = 0;
-static DWORD	    LastActivity = 0;
+static UINT_PTR	    beval_timer_id = 0;
+static DWORD	    last_user_activity = 0;
 #endif // defined(FEAT_BEVAL_GUI)
 
 
@@ -8238,10 +8235,10 @@ delete_tooltip(BalloonEval *beval)
 }
 
     static VOID CALLBACK
-BevalTimerProc(
+beval_timer_proc(
     HWND	hwnd UNUSED,
     UINT	uMsg UNUSED,
-    UINT_PTR    idEvent UNUSED,
+    UINT_PTR	idEvent UNUSED,
     DWORD	dwTime)
 {
     POINT	pt;
@@ -8259,8 +8256,8 @@ BevalTimerProc(
     if (!PtInRect(&rect, pt))
 	return;
 
-    if (LastActivity > 0
-	    && (dwTime - LastActivity) >= (DWORD)p_bdlay
+    if (last_user_activity > 0
+	    && (dwTime - last_user_activity) >= (DWORD)p_bdlay
 	    && (cur_beval->showState != ShS_PENDING
 		|| abs(cur_beval->x - pt.x) > 3
 		|| abs(cur_beval->y - pt.y) > 3))
@@ -8271,8 +8268,6 @@ BevalTimerProc(
 	cur_beval->x = pt.x;
 	cur_beval->y = pt.y;
 
-	// TRACE0("BevalTimerProc: sending request");
-
 	if (cur_beval->msgCB != NULL)
 	    (*cur_beval->msgCB)(cur_beval, 0);
     }
@@ -8281,20 +8276,16 @@ BevalTimerProc(
     void
 gui_mch_disable_beval_area(BalloonEval *beval UNUSED)
 {
-    // TRACE0("gui_mch_disable_beval_area {{{");
-    KillTimer(s_textArea, BevalTimerId);
-    // TRACE0("gui_mch_disable_beval_area }}}");
+    KillTimer(s_textArea, beval_timer_id);
 }
 
     void
 gui_mch_enable_beval_area(BalloonEval *beval)
 {
-    // TRACE0("gui_mch_enable_beval_area |||");
     if (beval == NULL)
 	return;
-    // TRACE0("gui_mch_enable_beval_area {{{");
-    BevalTimerId = SetTimer(s_textArea, 0, (UINT)(p_bdlay / 2), BevalTimerProc);
-    // TRACE0("gui_mch_enable_beval_area }}}");
+    beval_timer_id = SetTimer(s_textArea, 0, (UINT)(p_bdlay / 2),
+							     beval_timer_proc);
 }
 
     void
@@ -8311,7 +8302,6 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 	return;
     }
 
-    // TRACE0("gui_mch_post_balloon {{{");
     if (beval->showState == ShS_SHOWING)
 	return;
     GetCursorPos(&pt);
@@ -8324,7 +8314,6 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 	beval->showState = ShS_SHOWING;
 	make_tooltip(beval, (char *)mesg, pt);
     }
-    // TRACE0("gui_mch_post_balloon }}}");
 }
 
     BalloonEval *
@@ -8373,14 +8362,10 @@ Handle_WM_Notify(HWND hwnd UNUSED, LPNMHDR pnmh)
 	switch (pnmh->code)
 	{
 	case TTN_SHOW:
-	    // TRACE0("TTN_SHOW {{{");
-	    // TRACE0("TTN_SHOW }}}");
 	    break;
 	case TTN_POP: // Before tooltip disappear
-	    // TRACE0("TTN_POP {{{");
 	    delete_tooltip(cur_beval);
 	    gui_mch_enable_beval_area(cur_beval);
-	    // TRACE0("TTN_POP }}}");
 
 	    cur_beval->showState = ShS_NEUTRAL;
 	    break;
@@ -8405,11 +8390,11 @@ Handle_WM_Notify(HWND hwnd UNUSED, LPNMHDR pnmh)
 }
 
     static void
-TrackUserActivity(UINT uMsg)
+track_user_activity(UINT uMsg)
 {
     if ((uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST)
 	    || (uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST))
-	LastActivity = GetTickCount();
+	last_user_activity = GetTickCount();
 }
 
     void
