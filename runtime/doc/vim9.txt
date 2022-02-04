@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jan 30
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -56,12 +56,12 @@ Vim9 script and legacy Vim script can be mixed.  There is no requirement to
 rewrite old scripts, they keep working as before.  You may want to use a few
 `:def` functions for code that needs to be fast.
 
-:vim9[cmd] {cmd}				*:vim9* *:vim9cmd*
+:vim9[cmd] {cmd}				*:vim9* *:vim9cmd* *E1164*
 		Execute {cmd} using Vim9 script syntax and semantics.
 		Useful when typing a command and in a legacy script or
 		function.
 
-:leg[acy] {cmd}					*:leg* *:legacy*
+:leg[acy] {cmd}					*:leg* *:legacy* *E1189* *E1234*
 		Execute {cmd} using legacy script syntax and semantics.  Only
 		useful in a Vim9 script or a :def function.
 		Note that {cmd} cannot use local variables, since it is parsed
@@ -72,7 +72,7 @@ rewrite old scripts, they keep working as before.  You may want to use a few
 2. Differences from legacy Vim script			*vim9-differences*
 
 Overview ~
-
+							*E1146*
 Brief summary of the differences you will most often encounter when using Vim9
 script and `:def` functions; details are below:
 - Comments start with #, not ": >
@@ -128,7 +128,7 @@ To improve readability there must be a space between a command and the #
 that starts a comment: >
 	var name = value # comment
 	var name = value# error!
-
+<							*E1170*
 Do not start a comment with #{, it looks like the legacy dictionary literal
 and produces an error where this might be confusing.  #{{ or #{{{ are OK,
 these can be used to start a fold.
@@ -153,7 +153,7 @@ Compilation is done when any of these is encountered:
 - `:disassemble` is used for the function.
 - a function that is compiled calls the function or uses it as a function
   reference (so that the argument and return types can be checked)
-							*E1091*
+						*E1091* *E1191*
 If compilation fails it is not tried again on the next call, instead this
 error is given: "E1091: Function is not compiled: {name}".
 Compilation will fail when encountering a user command that has not been
@@ -183,14 +183,14 @@ You can call a legacy dict function though: >
 	  var d = {func: Legacy, value: 'text'}
 	  d.func()
 	enddef
-<							*E1096*
+<						*E1096* *E1174* *E1175*
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy
 functions.
 							*E1106*
 Arguments are accessed by name, without "a:", just like any other language.
 There is no "a:" dictionary or "a:000" list.
-					*vim9-variable-arguments* *E1055*
+			*vim9-variable-arguments* *E1055* *E1160* *E1180*
 Variable arguments are defined as the last argument, with a name and have a
 list type, similar to TypeScript.  For example, a list of numbers: >
 	def MyFunc(...itemlist: list<number>)
@@ -206,7 +206,7 @@ should use its default value.  Example: >
 	enddef
 	MyFunc(v:none, 'LAST')  # first argument uses default value 'one'
 <
-						*vim9-ignored-argument*
+					*vim9-ignored-argument* *E1181*
 The argument "_" (an underscore) can be used to ignore the argument.  This is
 most useful in callbacks where you don't need it, but do need to give an
 argument to match the call.  E.g. when using map() two arguments are passed,
@@ -264,7 +264,7 @@ You can use an autoload function if needed, or call a legacy function and have
 
 
 Reloading a Vim9 script clears functions and variables by default ~
-							*vim9-reload*
+						*vim9-reload* *E1149* *E1150*
 When loading a legacy Vim script a second time nothing is removed, the
 commands will replace existing variables and functions and create new ones.
 
@@ -345,7 +345,8 @@ And with autocommands: >
 	   }
 
 Although using a :def function probably works better.
-				*E1022* *E1103* *E1130* *E1131* *E1133* *E1134*
+				*E1022* *E1103* *E1130* *E1131* *E1133*
+				*E1134* *E1235*
 Declaring a variable with a type but without an initializer will initialize to
 false (for bool), empty (for string, list, dict, etc.) or zero (for number,
 any, etc.).  This matters especially when using the "any" type, the value will
@@ -355,13 +356,13 @@ In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  Those can also be deleted
 with `:unlet`.
-
+							*E1178*
 `:lockvar` does not work on local variables.  Use `:const` and `:final`
 instead.
 
 The `exists()` and `exists_compiled()` functions do not work on local variables
 or arguments.
-						*E1006* *E1041*
+				*E1006* *E1041* *E1167* *E1168* *E1213*
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.
 Variables may shadow Ex commands, rename the variable if needed.
@@ -414,7 +415,7 @@ similar to how a function argument can be ignored: >
 	[a, _, c] = theList
 To ignore any remaining items: >
 	[a, b; _] = longList
-
+<							*E1163*
 Declaring more than one variable at a time, using the unpack notation, is
 possible.  Each variable can have a type or infer it from the value: >
 	var [v1: number, v2] = GetValues()
@@ -456,7 +457,7 @@ The constant only applies to the value itself, not what it refers to. >
 
 
 Omitting :call and :eval ~
-
+							*E1190*
 Functions can be called without `:call`: >
 	writefile(lines, 'file')
 Using `:call` is still possible, but this is discouraged.
@@ -516,7 +517,8 @@ because of the use of argument types.
 To avoid these problems Vim9 script uses a different syntax for a lambda,
 which is similar to JavaScript: >
 	var Lambda = (arg) => expression
-
+	var Lambda = (arg): type => expression
+<							*E1157*
 No line break is allowed in the arguments of a lambda up to and including the
 "=>" (so that Vim can tell the difference between an expression in parentheses
 and lambda arguments).  This is OK: >
@@ -532,7 +534,7 @@ But you can use a backslash to concatenate the lines before parsing: >
 	filter(list, (k,
 		\	v)
 		\	=> v > 0)
-<							*vim9-lambda-arguments*
+<					*vim9-lambda-arguments* *E1172*
 In legacy script a lambda could be called with any number of extra arguments,
 there was no way to warn for not using them.  In Vim9 script the number of
 arguments must match.  If you do want to accept any arguments, or any further
@@ -541,7 +543,7 @@ arguments, use "..._", which makes the function accept
 	var Callback = (..._) => 'anything'
 	echo Callback(1, 2, 3)  # displays "anything"
 
-<							*inline-function*
+<						*inline-function* *E1171*
 Additionally, a lambda can contain statements in {}: >
 	var Lambda = (arg) => {
 		g:was_called = 'yes'
@@ -735,7 +737,7 @@ Notes:
 
 
 White space ~
-				*E1004* *E1068* *E1069* *E1074* *E1127*
+			*E1004* *E1068* *E1069* *E1074* *E1127* *E1202*
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
 	var name=234	# Error!
 	var name= 234	# Error!
@@ -769,7 +771,7 @@ White space is not allowed:
 	Func(
 	      arg	   # OK
 	      )
-
+<							*E1205*
 White space is not allowed in a `:set` command between the option name and a
 following "&", "!", "<", "=", "+=", "-=" or "^=".
 
@@ -777,6 +779,11 @@ following "&", "!", "<", "=", "+=", "-=" or "^=".
 No curly braces expansion ~
 
 |curly-braces-names| cannot be used.
+
+
+Command modifiers are not ignored ~
+								*E1176*
+Using a command modifier for a command that does not use it gives an error.
 
 
 Dictionary literals ~
@@ -837,7 +844,7 @@ error.  Example: >
 
 
 For loop ~
-
+							*E1254*
 The loop variable must not be declared yet: >
 	var i = 1
 	for i in [1, 2, 3]   # Error!
@@ -1103,7 +1110,7 @@ Using ++var or --var in an expression is not supported yet.
 			later in Vim9 script.  They can only be removed by
 			reloading the same script.
 
-							*:enddef* *E1057*
+					*:enddef* *E1057* *E1152* *E1173*
 :enddef			End of a function defined with `:def`. It should be on
 			a line by its own.
 
@@ -1182,6 +1189,67 @@ for each closure call a function to define it: >
 	echo range(5)->map((i, _) => flist[i]())
 	# Result: [0, 1, 2, 3, 4]
 
+In some situations, especially when calling a Vim9 closure from legacy
+context, the evaluation will fail.  *E1248*
+
+
+Converting a function from legacy to Vim9 ~
+					*convert_legacy_function_to_vim9*
+These are the most changes that need to be made to convert a legacy function
+to a Vim9 function:
+
+- Change `func` or `function` to `def`.
+- Change `endfunc` or `endfunction` to `enddef`.
+- Add types to the function arguments.
+- If the function returns something, add the return type.
+- Change comments to start with # instead of ".
+
+  For example, a legacy function: >
+	func MyFunc(text)
+	  " function body
+	endfunc
+<  Becomes: >
+	def MyFunc(text: string): number
+	  # function body
+	enddef
+
+- Remove "a:" used for arguments. E.g.: >
+	return len(a:text)
+<  Becomes: >
+	return len(text)
+
+- Change `let` used to declare a variable to `var`.
+- Remove `let` used to assign a value to a variable.  This is for local
+  variables already declared and b: w: g: and t: variables.
+
+  For example, legacy function: >
+	  let lnum = 1
+	  let lnum += 3
+	  let b:result = 42
+<  Becomes: >
+	  var lnum = 1
+	  lnum += 3
+	  b:result = 42
+
+- Insert white space in expressions where needed.
+- Change "." used for concatenation to "..".
+
+  For example, legacy function: >
+	  echo line(1).line(2)
+<  Becomes: >
+	  echo line(1) .. line(2)
+
+- line continuation does not always require a backslash: >
+  	echo ['one',
+		\ 'two',
+		\ 'three'
+		\ ]
+<  Becomes: >
+	echo ['one',
+		'two',
+		'three'
+		]
+
 ==============================================================================
 
 4. Types					*vim9-types*
@@ -1208,7 +1276,7 @@ Not supported yet:
 
 These types can be used in declarations, but no simple value will actually
 have the "void" type.  Trying to use a void (e.g. a function without a
-return value) results in error *E1031* .
+return value) results in error *E1031*  *E1186* .
 
 There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating lot of small pieces of
@@ -1346,7 +1414,7 @@ automatically converted to a number.  This was convenient for an actual number
 such as "123", but leads to unexpected problems (and no error message) if the
 string doesn't start with a number.  Quite often this leads to hard-to-find
 bugs.
-
+							*E1206* *E1210* *E1212*
 In Vim9 script this has been made stricter.  In most places it works just as
 before, if the value used matches the expected type.  There will sometimes be
 an error, thus breaking backwards compatibility.  For example:
@@ -1368,9 +1436,15 @@ type.  E.g. when a list of mixed types gets changed to a list of strings: >
 	# typename(mylist) == "list<any>"
 	map(mylist, (i, v) => 'item ' .. i)
 	# typename(mylist) == "list<string>", no error
-
+<								*E1158*
 Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 |flattennew()| instead.
+			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
+			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
+			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*
+			 *E1256*
+Types are checked for most builtin functions to make it easier to spot
+mistakes.
 
 ==============================================================================
 
@@ -1459,16 +1533,16 @@ be exported. {not implemented yet: class, interface}
 
 
 Import ~
-					*:import* *:imp* *E1094* *E1047*
-					*E1048* *E1049* *E1053* *E1071*
+					*:import* *:imp* *E1094* *E1047* *E1262*
+					*E1048* *E1049* *E1053* *E1071* *E1236*
 The exported items can be imported in another Vim9 script: >
 	import "myscript.vim"
 
 This makes each item available as "myscript.item".
-							*:import-as*
+						*:import-as* *E1257* *E1261*
 In case the name is long or ambiguous, another name can be specified: >
 	import "thatscript.vim" as that
-<							*E1060*
+<						*E1060* *E1258* *E1259* *E1260*
 Then you can use "that.EXPORTED_CONST", "that.someValue", etc.  You are free
 to choose the name "that".  Use something that will be recognized as referring
 to the imported script.  Avoid command names, command modifiers and builtin
@@ -1526,17 +1600,19 @@ line, there can be no line break: >
 	echo that
 		.name  # Error!
 <							*:import-cycle*
-The `import` commands are executed when encountered.  If that script (directly
-or indirectly) imports the current script, then items defined after the
-`import` won't be processed yet.  Therefore cyclic imports can exist, but may
-result in undefined items.
+The `import` commands are executed when encountered.  If script A imports
+script B, and B (directly or indirectly) imports A, this will be skipped over.
+At this point items in A after "import B" will not have been processed and
+defined yet.  Therefore cyclic imports can exist and not result in an error
+directly, but may result in an error for items in A after "import B" not being
+defined.  This does not apply to autoload imports, see the next section.
 
 
 Importing an autoload script ~
 							*vim9-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
 actually needed.  Using the autoload mechanism is recommended:
-
+							*E1264*
 1. In the plugin define user commands, functions and/or mappings that refer to
    items imported from an autoload script. >
 	import autoload 'for/search.vim'

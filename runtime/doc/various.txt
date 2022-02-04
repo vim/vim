@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2022 Jan 15
+*various.txt*   For Vim version 8.2.  Last change: 2022 Feb 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -424,7 +424,7 @@ m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
 T  *+num64*		64-bit Number support |Number|
-   			Always enabled since 8.2.0271, use v:numbersize to
+			Always enabled since 8.2.0271, use v:numbersize to
 			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
 N  *+packages*		Loading |packages|
@@ -549,7 +549,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			backward compatibility, the ">" after the register
 			name can be omitted.
 :redi[r] @">>		Append messages to the unnamed register.
-
+							*E1092*
 :redi[r] => {var}	Redirect messages to a variable.
 			In legacy script: If the variable doesn't exist, then
 			it is created.  If the variable exists, then it is
@@ -566,7 +566,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 
 :redi[r] =>> {var}	Append messages to an existing variable.  Only string
 			variables can be used.
-
+								 *E1185*
 :redi[r] END		End redirecting messages.
 
 							*:filt* *:filter*
@@ -649,7 +649,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			used.  In this example |:silent| is used to avoid the
 			message about reading the file and |:unsilent| to be
 			able to list the first line of each file. >
-    		:silent argdo unsilent echo expand('%') . ": " . getline(1)
+		:silent argdo unsilent echo expand('%') . ": " . getline(1)
 <
 
 						*:verb* *:verbose*

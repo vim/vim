@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2022 Jan 08
+*windows.txt*   For Vim version 8.2.  Last change: 2022 Feb 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -168,7 +168,7 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 		Note: CTRL-S does not work on all terminals and might block
 		further input, use CTRL-Q to get going again.
 		Also see |++opt| and |+cmd|.
-							*E242*
+							*E242* *E1159*
 		Be careful when splitting a window in an autocommand, it may
 		mess up the window layout if this happens while making other
 		window layout changes.

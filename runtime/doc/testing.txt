@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2022 Jan 23
+*testing.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -65,8 +65,9 @@ test_garbagecollect_now()			 *test_garbagecollect_now()*
 		Like garbagecollect(), but executed right away.  This must
 		only be called directly to avoid any structure to exist
 		internally, and |v:testing| must have been set before calling
-		any function.  This will not work when called from a :def
-		function, because variables on the stack will be freed.
+		any function.   *E1142*
+		This will not work when called from a :def function, because
+		variables on the stack will be freed.
 
 
 test_garbagecollect_soon()			 *test_garbagecollect_soon()*
@@ -92,6 +93,7 @@ test_gui_event({event}, {args})
 		    "dropfiles"	drop one or more files in a window.
 		    "findrepl"  search and replace text
 		    "mouse"	mouse button click event.
+		    "scrollbar" move or drag the scrollbar
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -113,6 +115,7 @@ test_gui_event({event}, {args})
 		  |drop_file| feature is present.
 
 		"findrepl":
+		  {only available when the GUI has a find/replace dialog}
 		  Perform a search and replace of text.  The supported items
 		  in {args} are:
 		    find_text:	string to find.
@@ -148,6 +151,22 @@ test_gui_event({event}, {args})
 				    4	shift is pressed
 				    8	alt is pressed
 				   16	ctrl is pressed
+
+		"scrollbar":
+		  Set or drag the left, right or horizontal scrollbar.  Only
+		  works when the scrollbar actually exists.  The supported
+		  items in {args} are:
+		    which:	scrollbar. The supported values are:
+				    left  Left scrollbar of the current window
+				    right Right scrollbar of the current window
+				    hor   Horizontal scrollbar
+		    value:	amount to scroll.  For the vertical scrollbars
+				the value can be 1 to the line-count of the
+				buffer.  For the horizontal scrollbar the
+				value can be between 1 and the maximum line
+				length, assuming 'wrap' is not set.
+		    dragging:	1 to drag the scrollbar and 0 to click in the
+				scrollbar.
 
 		"tabline":
 		  Inject a mouse click event on the tabline to select a
@@ -282,27 +301,6 @@ test_refcount({expr})					*test_refcount()*
 
 		Can also be used as a |method|: >
 			GetVarname()->test_refcount()
-
-
-test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
-		Pretend using scrollbar {which} to move it to position
-		{value}.  {which} can be:
-			left	Left scrollbar of the current window
-			right	Right scrollbar of the current window
-			hor	Horizontal scrollbar
-
-		For the vertical scrollbars {value} can be 1 to the
-		line-count of the buffer.  For the horizontal scrollbar the
-		{value} can be between 1 and the maximum line length, assuming
-		'wrap' is not set.
-
-		When {dragging} is non-zero it's like dragging the scrollbar,
-		otherwise it's like clicking in the scrollbar.
-		Only works when the {which} scrollbar actually exists,
-		obviously only when using the GUI.
-
-		Can also be used as a |method|: >
-			GetValue()->test_scrollbar('right', 0)
 
 
 test_setmouse({row}, {col})				*test_setmouse()*

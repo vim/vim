@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.2.  Last change: 2020 Oct 14
+*tabpage.txt*   For Vim version 8.2.  Last change: 2022 Feb 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -143,7 +143,9 @@ something else.
 		    :tabclose 3	    " close the third tab page
 		    :tabclose $	    " close the last tab page
 		    :tabclose #     " close the last accessed tab page
-<
+
+When a tab is closed the next tab page will become the current one.
+
 							*:tabo* *:tabonly*
 :tabo[nly][!]	Close all other tab pages.
 		When the 'hidden' option is set, all buffers in closed windows

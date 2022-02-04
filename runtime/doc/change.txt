@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2022 Jan 28
+*change.txt*    For Vim version 8.2.  Last change: 2022 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -782,7 +782,7 @@ This deletes "TESTING" from all lines, but only one per line.
 For compatibility with Vi these two exceptions are allowed:
 "\/{string}/" and "\?{string}?" do the same as "//{string}/r".
 "\&{string}&" does the same as "//{string}/".
-						*pattern-delimiter* *E146*
+				*pattern-delimiter* *E146* *E1241* *E1242*
 Instead of the '/' which surrounds the pattern and replacement string, you can
 use another single-byte character.  This is useful if you want to include a
 '/' in the search pattern or replacement string.  Example: >
@@ -1076,7 +1076,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			in [range] (default: current line |cmdline-ranges|),
 			[into register x].
 
-							*p* *put* *E353*
+						*p* *put* *E353* *E1240*
 ["x]p			Put the text [from register x] after the cursor
 			[count] times.
 

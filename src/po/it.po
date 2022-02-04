@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-16 09:48+0100\n"
-"PO-Revision-Date: 2022-01-16 12:45+0100\n"
+"POT-Creation-Date: 2022-02-01 10:42+0100\n"
+"PO-Revision-Date: 2022-02-01 11:40+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -710,19 +710,19 @@ msgid "See \":help W12\" for more info."
 msgstr "Vedere \":help W12\" per ulteriori informazioni."
 
 msgid "W11: Warning: File \"%s\" has changed since editing started"
-msgstr "W11: Avviso: File \"%s\" modificato dopo l'apertura"
+msgstr "W11: Avviso: File \"%s\" modificato dopo inizio edit"
 
 msgid "See \":help W11\" for more info."
 msgstr "Vedere \":help W11\" per ulteriori informazioni."
 
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
-msgstr "W16: Avviso: Modo File \"%s\" modificato dopo l'apertura"
+msgstr "W16: Avviso: Modo File \"%s\" modificato dopo inizio edit"
 
 msgid "See \":help W16\" for more info."
 msgstr "Vedere \":help W16\" per ulteriori informazioni."
 
 msgid "W13: Warning: File \"%s\" has been created after editing started"
-msgstr "W13: Avviso: Il file \"%s\" risulta creato dopo l'apertura"
+msgstr "W13: Avviso: Il file \"%s\" risulta creato dopo inizio edit"
 
 msgid "Warning"
 msgstr "Avviso"
@@ -3067,6 +3067,7 @@ msgstr "terminato"
 msgid "(Invalid)"
 msgstr "(Non valido)"
 
+#, no-c-format
 msgid "%a %b %d %H:%M:%S %Y"
 msgstr "%a %b %d %H:%M:%S %Y"
 
@@ -3614,11 +3615,6 @@ msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr ""
 "Spiacente, comando non disponibile, non riesco a caricare libreria programmi "
 "Perl."
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: Valorizzazione Perl non consentita in ambiente protetto senza il "
-"modulo Safe"
 
 msgid "Edit with Vim using &tabpages"
 msgstr "Apri con Vim usando &tabpages"
@@ -4267,7 +4263,7 @@ msgid "E211: File \"%s\" no longer available"
 msgstr "E211: Il file \"%s\" non esiste più"
 
 msgid "E212: Can't open file for writing"
-msgstr "E212: Non posso aprire il file in scrittura"
+msgstr "E212: Non riesco ad aprire il file in scrittura"
 
 msgid "E213: Cannot convert (add ! to write without conversion)"
 msgstr ""
@@ -4367,8 +4363,7 @@ msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
 msgstr "E243: Argomento non supportato: \"-%s\"; Usa la versione OLE."
 
 msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
-msgstr ""
-"E244: Nome %s non consentito \"%s\" nel nome di carattere \"%s\""
+msgstr "E244: Nome %s non consentito \"%s\" nel nome di carattere \"%s\""
 
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Carattere non consentito '%c' nel nome di carattere \"%s\""
@@ -4537,8 +4532,13 @@ msgstr "E298: Non riesco a leggere blocco numero 1?"
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Non riesco a leggere blocco numero 2?"
 
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: Valorizzazione Perl non consentita in ambiente protetto senza il "
+"modulo Safe"
+
 msgid "E300: Swap file already exists (symlink attack?)"
-msgstr "E300: Lo swap file esiste già (un link simbolico?)"
+msgstr "E300: Lo swap file esiste già (attacco tramite link simbolico?)"
 
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Ahimè, lo swap file è perduto!!!"
@@ -4548,7 +4548,7 @@ msgstr "E302: Non riesco a rinominare lo swap file"
 
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
-"E303: Non riesco ad aprile lo swap file per \"%s\", recupero impossibile"
+"E303: Non riesco ad aprire lo swap file per \"%s\", recupero impossibile"
 
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block0(): Non riesco a leggere blocco 0??"
@@ -5048,6 +5048,9 @@ msgstr "E463: Regione protetta, impossibile modificare"
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Uso ambiguo di comando definito dall'utente"
 
+msgid "E464: Ambiguous use of user-defined command: %s"
+msgstr "E464: Uso ambiguo di comando definito dall'utente: %s"
+
 msgid "E465: :winsize requires two number arguments"
 msgstr "E465: :winsize richiede due argomenti numerici"
 
@@ -5133,7 +5136,7 @@ msgid "E487: Argument must be positive"
 msgstr "E487: L'argomento dev'essere positivo"
 
 msgid "E488: Trailing characters"
-msgstr "E488: Caratteri in più a fine comando"
+msgstr "E488: Caratteri in più alla fine"
 
 msgid "E488: Trailing characters: %s"
 msgstr "E488: Caratteri in più alla fine: %s"
@@ -5171,6 +5174,7 @@ msgid "E498: no :source file name to substitute for \"<sfile>\""
 msgstr ""
 "E498: nessun nome di file :source trovato da sostituire per \"<sfile>\""
 
+#, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr "E499: Un nome di file nullo per '%' o '#', va bene solo con \":p:h\""
 
@@ -6006,8 +6010,7 @@ msgid "E793: No other buffer in diff mode is modifiable"
 msgstr "E793: Nessun altro buffer è modificabile in modalità 'diff'"
 
 msgid "E794: Cannot set variable in the sandbox"
-msgstr ""
-"E794: Non posso impostare la variabile in ambiente protetto"
+msgstr "E794: Non posso impostare la variabile in ambiente protetto"
 
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr ""
@@ -6043,6 +6046,7 @@ msgstr "E802: ID non valido: %d (dev'essere maggiore o uguale a 1)"
 msgid "E803: ID not found: %d"
 msgstr "E803: ID non trovato: %d"
 
+#, no-c-format
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Non si può usare '%' con un Numero-a-virgola-mobile"
 
@@ -6232,6 +6236,7 @@ msgstr "E862: Non si può usare g: qui"
 msgid "E863: Not allowed for a terminal in a popup window"
 msgstr "E863: Non consentito per un terminale in una finestra dinamica"
 
+#, no-c-format
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used"
@@ -6258,7 +6263,9 @@ msgid "E869: (NFA regexp) Unknown operator '\\@%c'"
 msgstr "E869: (NFA) Operatore sconosciuto '\\@%c'"
 
 msgid "E870: (NFA regexp) Error reading repetition limits"
-msgstr "E870: (Espressione regolare NFA) Errore nella lettura dei limiti di ripetizione"
+msgstr ""
+"E870: (Espressione regolare NFA) Errore nella lettura dei limiti di "
+"ripetizione"
 
 msgid "E871: (NFA regexp) Can't have a multi follow a multi"
 msgstr "E871: (Espressione regolare NFA) Non si può avere multi dopo multi"
@@ -6280,15 +6287,17 @@ msgstr ""
 "troppi stati lasciati sullo stack"
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
-msgstr "E876: (Espressione regolare NFA) Non c'è spazio sufficiente a "
-"immagazzinare l'intero NFA"
+msgstr ""
+"E876: (Espressione regolare NFA) Non c'è spazio sufficiente a immagazzinare "
+"l'intero NFA"
 
 msgid "E877: (NFA regexp) Invalid character class: %d"
 msgstr "E877: (Espressione regolare NFA) Classe di caratteri non valida: %d"
 
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
-msgstr "E878: (Espressione regolare NFA) Non posso allocare memoria per lo "
-"zigzag di ramo!"
+msgstr ""
+"E878: (Espressione regolare NFA) Non posso allocare memoria per lo zigzag di "
+"ramo!"
 
 msgid "E879: (NFA regexp) Too many \\z("
 msgstr "E879: (Espressione regolare NFA) Troppi \\z("
@@ -6531,6 +6540,7 @@ msgstr "E949: File modificato in fase di riscrittura"
 msgid "E950: Cannot convert between %s and %s"
 msgstr "E950: Non si può convertire da %s a %s"
 
+#, no-c-format
 msgid "E951: \\% value too large"
 msgstr "E951: \\% valore troppo grande"
 
@@ -6805,6 +6815,7 @@ msgstr "E1033: Catch non raggiungibile dopo aver richiesto catch-all"
 msgid "E1034: Cannot use reserved name %s"
 msgstr "E1034: Non posso usare il nome riservato %s"
 
+#, no-c-format
 msgid "E1035: % requires number arguments"
 msgstr "E1035: % richiede come argomenti dei numeri"
 
@@ -7034,11 +7045,11 @@ msgstr ""
 msgid "E1117: Cannot use ! with nested :def"
 msgstr "E1117: Non posso usare ! con :def nidificate"
 
-msgid "E1118: Cannot change list"
-msgstr "E1118: Non posso cambiare Lista"
+msgid "E1118: Cannot change locked list"
+msgstr "E1118: Non posso cambiare Lista non modificabile"
 
-msgid "E1119: Cannot change list item"
-msgstr "E1119: Non posso cambiare elemento di Lista"
+msgid "E1119: Cannot change locked list item"
+msgstr "E1119: Non posso cambiare elemento di Lista non modificabile"
 
 msgid "E1120: Cannot change dict"
 msgstr "E1120: Non posso cambiare Dizionario"
@@ -7047,7 +7058,7 @@ msgid "E1121: Cannot change dict item"
 msgstr "E1121: Non posso cambiare elemento di Dizionario"
 
 msgid "E1122: Variable is locked: %s"
-msgstr "E1122: Variabile bloccata: %s"
+msgstr "E1122: Variabile non modificabile: %s"
 
 msgid "E1123: Missing comma before argument: %s"
 msgstr "E1123: Manca virgola prima dell'argomento: %s"
@@ -7108,6 +7119,9 @@ msgstr "E1140: L'argomento di :for dev'essere una sequenza di Liste"
 msgid "E1141: Indexable type required"
 msgstr "E1141: Il tipo dev'essere indicizzabile"
 
+msgid "E1142: Calling test_garbagecollect_now() while v:testing is not set"
+msgstr "E1142: Chiamato test_garbagecollect_now() con v:testing non impostato"
+
 msgid "E1143: Empty expression: \"%s\""
 msgstr "E1143: Espressione vuota: \"%s\""
 
@@ -7155,8 +7169,8 @@ msgstr "E1156: Non si può cambiare la lista degli argomenti ricorsivamente"
 msgid "E1157: Missing return type"
 msgstr "E1157: Manca tipo di valore restituito"
 
-msgid "E1158: Cannot use flatten() in Vim9 script"
-msgstr "E1158: Non si può usare flatten() in uno script Vim9"
+msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
+msgstr "E1158: Non si può usare flatten() in script Vim9, usare flattennew()"
 
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr ""
@@ -7195,8 +7209,8 @@ msgstr "E1167: Il nome dell'argomento nasconde una variabile esistente: %s"
 msgid "E1168: Argument already declared in the script: %s"
 msgstr "E1168: Argomento già dichiarato nello script: %s"
 
-msgid "E1169: 'import * as {name}' not supported here"
-msgstr "E1169: 'import * come {name}' non supportato qui"
+msgid "E1169: Expression too recursive: %s"
+msgstr "E1169: Espressione troppo ricorsiva: %s"
 
 msgid "E1170: Cannot use #{ to start a comment"
 msgstr "E1170: Non si può usare #{ per iniziare un commento"
@@ -7457,8 +7471,9 @@ msgid "E1249: Highlight group name too long"
 msgstr "E1249: Nome gruppo evidenziazione troppo lungo"
 
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
-msgstr "E1250: L'argomento di %s dev'essere una Lista, una Stringa, un "
-"Dizionario o un Blob"
+msgstr ""
+"E1250: L'argomento di %s dev'essere una Lista, una Stringa, un Dizionario o "
+"un Blob"
 
 msgid "E1251: List, Dictionary, Blob or String required for argument %d"
 msgstr "E1251: Lista, Dizionario, Blob o Stringa richiesto per argomento %d"
@@ -7470,8 +7485,7 @@ msgid "E1253: String expected for argument %d"
 msgstr "E1253: Stringa richiesta per argomento %d"
 
 msgid "E1254: Cannot use script variable in for loop"
-msgstr ""
-"E1254: Non si può usare una variabile di script in un ciclo for"
+msgstr "E1254: Non si può usare una variabile di script in un ciclo for"
 
 msgid "E1255: <Cmd> mapping must end with <CR>"
 msgstr "E1255: La mappatura di <Cmd> deve terminare con <CR>"
@@ -7497,12 +7511,16 @@ msgstr "E1261: Non posso importare .vim senza usare \"as\""
 msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: Non posso importare lo stesso script due volte: %s"
 
-msgid "E1263: Using autoload in a script not under an autoload directory"
-msgstr "E1263: Uso di autoload in script non sotto directory autoload"
+msgid "E1263: cannot use name with # in Vim9 script, use export instead"
+msgstr "E1263: non si può usare nome con # in script Vim9, usare invece "
+"export"
 
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
-msgstr "E1264: Import di Autoload non riesce a usare percorso assoluto o "
-"relativo: %s"
+msgstr ""
+"E1264: Import di Autoload non riesce a usare percorso assoluto o relativo: %s"
+
+msgid "E1265: Cannot use a partial here"
+msgstr "E1265: Non posso usare un nome parziale qui"
 
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
@@ -7523,10 +7541,10 @@ msgid "empty keys are not allowed"
 msgstr "chiavi nulle non consentite"
 
 msgid "dictionary is locked"
-msgstr "il Dizionario è bloccato"
+msgstr "il Dizionario è non modificabile"
 
 msgid "list is locked"
-msgstr "la lista è bloccata"
+msgstr "la lista è non modificabile"
 
 msgid "failed to add key '%s' to dictionary"
 msgstr "non riesco ad aggiungere la chiave '%s' al Dizionario"
@@ -7572,12 +7590,13 @@ msgid "failed to change directory"
 msgstr "cambio directory non riuscito"
 
 msgid "expected 3-tuple as imp.find_module() result, but got %s"
-msgstr "atteso terzetto come risultato di imp.find_module(), ottenuto invece %s"
+msgstr ""
+"atteso terzetto come risultato di imp.find_module(), ottenuto invece %s"
 
 msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
 msgstr ""
-"atteso terzetto come risultato di imp.find_module(), ottenuto invece tuple di "
-"dimens. %d"
+"atteso terzetto come risultato di imp.find_module(), ottenuto invece tuple "
+"di dimens. %d"
 
 msgid "internal error: imp.find_module returned tuple with NULL"
 msgstr "errore interno: imp.find_module restituisce tuple con NULL"
@@ -8395,8 +8414,8 @@ msgid "room (in pixels) left above/below the window"
 msgstr "spazio (in pixel) da lasciare sopra/sotto la finestra"
 
 msgid "list of ASCII characters that can be combined into complex shapes"
-msgstr "lista caratteri ASCII che possono combinarsi per generare forme "
-"complesse"
+msgstr ""
+"lista caratteri ASCII che possono combinarsi per generare forme complesse"
 
 msgid "options for text rendering"
 msgstr "opzioni per la renderizzazione del testo"
@@ -9259,5 +9278,4 @@ msgstr "nome della libreria dinamica MzScheme"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "nome della libreria dinamica MzScheme GC"
-
 

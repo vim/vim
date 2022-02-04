@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2021 Jul 24
+*version8.txt*  For Vim version 8.2.  Last change: 2022 Feb 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25971,7 +25971,7 @@ Added functions:
 	|test_getvalue()|
 	|test_null_blob()|
 	|test_refcount()|
-	|test_scrollbar()|
+	test_scrollbar() (later replaced with |test_gui_event()|)
 	|test_setmouse()|
 	|win_execute()|
 	|win_splitmove()|

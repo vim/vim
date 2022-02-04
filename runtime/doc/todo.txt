@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jan 31
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,19 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Cannot use command modifier for "import 'name.vim' as vim9"
-
-range() returns list<number>, but it's OK if map() changes the type.
-#9665  Change internal_func_ret_type() to return current and declared type?
-
-When making a copy of a list or dict, do not keep the type? #9644
-    With deepcopy() all, with copy() this still fails:
-    var l: list<list<number>> = [[1], [2]]
-    l->copy()[0][0] = 'x'
-
 Once Vim9 is stable:
-- Add all the error numbers in a good place in documentation.
-    done until E1145
 - Check code coverage, add more tests if needed.
 - Use Vim9 for runtime files.
 

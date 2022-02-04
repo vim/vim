@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2022 Jan 08
+*cmdline.txt*   For Vim version 8.2.  Last change: 2022 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -730,7 +730,7 @@ If more line specifiers are given than required for the command, the first
 one(s) will be ignored.
 
 Line numbers may be specified with:		*:range* *{address}*
-	{number}	an absolute line number
+	{number}	an absolute line number  *E1247*
 	.		the current line			  *:.*
 	$		the last line in the file		  *:$*
 	%		equal to 1,$ (the entire file)		  *:%*

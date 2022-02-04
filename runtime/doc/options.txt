@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2022 Jan 29
+*options.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -800,6 +800,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	need proper setting-up, so whenever the shell's pwd changes an OSC 7
 	escape sequence will be emitted. For example, on Linux, you can source
 	/etc/profile.d/vte.sh in your shell profile if you use bash or zsh.
+	When the parsing of the OSC sequence fails you get *E1179* .
 
 				*'arabic'* *'arab'* *'noarabic'* *'noarab'*
 'arabic' 'arab'		boolean (default off)
@@ -2476,7 +2477,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			you write the file the encrypted bytes will be
 			different.  The whole undo file is encrypted, not just
 			the pieces of text.
-					*E1193* *E1194* *E1195* *E1196*
+					*E1193* *E1194* *E1195* *E1196* *E1230*
 					*E1197* *E1198* *E1199* *E1200* *E1201*
 	   xchacha20	XChaCha20 Cipher with Poly1305 Message Authentication
 			Code.  Medium strong till strong encryption.
@@ -6722,6 +6723,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It is allowed to give an argument to the command, e.g.  "csh -f".
 	See |option-backslash| about including spaces and backslashes.
 	Environment variables are expanded |:set_env|.
+
+	In |restricted-mode| shell commands will not be possible.  This mode
+	is used if the value of $SHELL ends in "false" or "nologin".
 
 	If the name of the shell contains a space, you need to enclose it in
 	quotes and escape the space.  Example with quotes: >

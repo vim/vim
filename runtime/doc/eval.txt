@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Jan 24
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -181,7 +181,7 @@ You will not get an error if you try to change the type of a variable.
 
 
 1.2 Function references ~
-					*Funcref* *E695* *E718* *E1086*
+				*Funcref* *E695* *E718* *E1086* *E1192*
 A Funcref variable is obtained with the |function()| function, the |funcref()|
 function or created with the lambda expression |expr-lambda|.  It can be used
 in an expression in the place of a function name, before the parenthesis
@@ -765,7 +765,7 @@ length minus one is used: >
 
 
 Blob modification ~
-							*blob-modification*
+					*blob-modification* *E1182* *E1184*
 To change a specific byte of a blob use |:let| this way: >
 	:let blob[4] = 0x44
 
@@ -1018,7 +1018,7 @@ This is valid whether "b" has been defined or not.  The second clause will
 only be evaluated if "b" has been defined.
 
 
-expr4							*expr4*
+expr4							*expr4* *E1153*
 -----
 
 expr5 {cmp} expr5
@@ -1176,6 +1176,7 @@ When dividing a Number by zero the result depends on the value:
 	 >0 / 0  =  0x7fffffff	(like positive infinity)
 	 <0 / 0  = -0x7fffffff	(like negative infinity)
 	(before Vim 7.2 it was always 0x7fffffff)
+In |Vim9| script dividing a number by zero is an error.	*E1154*
 
 When 64-bit Number support is enabled:
 	  0 / 0  = -0x8000000000000000	(like NaN for Float)
@@ -1243,7 +1244,7 @@ recognize multibyte encodings, see `byteidx()` for an alternative, or use
 byte under the cursor: >
 	:let c = getline(".")[col(".") - 1]
 
-In |Vim9| script:
+In |Vim9| script:					*E1147* *E1148*
 If expr9 is a String this results in a String that contains the expr1'th
 single character (including any composing characters) from expr9.  To use byte
 indexes use |strpart()|.
@@ -1323,7 +1324,7 @@ for a sublist: >
 
 
 expr9.name		entry in a |Dictionary|		*expr-entry*
-
+							*E1203* *E1229*
 If expr9 is a |Dictionary| and it is followed by a dot, then the following
 name will be used as a key in the |Dictionary|.  This is just like:
 expr9[name].
@@ -1350,7 +1351,7 @@ When expr9 is a |Funcref| type variable, invoke the function it refers to.
 
 expr9->name([args])	method call			*method* *->*
 expr9->{lambda}([args])
-							*E260* *E276*
+							*E260* *E276* *E1265*
 For methods that are also available as global functions this is the same as: >
 	name(expr9 [, args])
 There can also be methods specifically for the type of "expr9".
@@ -1550,7 +1551,7 @@ When using the '=' register you get the expression itself, not what it
 evaluates to.  Use |eval()| to evaluate it.
 
 
-nesting							*expr-nesting* *E110*
+nesting						*expr-nesting* *E110*
 -------
 (expr1)			nested expression
 
@@ -2694,7 +2695,7 @@ See |:verbose-cmd| for more information.
 			implies that the effect of |:nohlsearch| is undone
 			when the function returns.
 
-				*:endf* *:endfunction* *E126* *E193* *W22*
+			*:endf* *:endfunction* *E126* *E193* *W22* *E1151*
 :endf[unction] [argument]
 			The end of a function definition.  Best is to put it
 			on a line by its own, without [argument].
@@ -3074,7 +3075,7 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			length of the blob, in which case one byte is
 			appended.
 
-							*E711* *E719*
+					*E711* *E719* *E1165* *E1166* *E1183*
 :let {var-name}[{idx1}:{idx2}] = {expr1}		*E708* *E709* *E710*
 			Set a sequence of items in a |List| to the result of
 			the expression {expr1}, which must be a list with the
@@ -3410,7 +3411,7 @@ text...
 			See |deepcopy()|.
 
 
-:unlo[ckvar][!] [depth] {name} ...			*:unlockvar* *:unlo*
+:unlo[ckvar][!] [depth] {name} ...		*:unlockvar* *:unlo* *E1246*
 			Unlock the internal variable {name}.  Does the
 			opposite of |:lockvar|.
 
@@ -3471,7 +3472,7 @@ text...
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between ":for" and ":endfor" for
 			each item in {object}.  {object} can be a |List| or
-			a |Blob|.
+			a |Blob|. *E1177*
 
 			Variable {var} is set to the value of each item.
 			In |Vim9| script the loop variable must not have been
@@ -3725,6 +3726,9 @@ text...
 			the `append()` call appends the List with text to the
 			buffer.  This is similar to `:call` but works with any
 			expression.
+			In |Vim9| script an expression without an effect will
+			result in error *E1207* .  This should help noticing
+			mistakes.
 
 			The command can be shortened to `:ev` or `:eva`, but
 			these are hard to recognize and therefore not to be
@@ -4891,6 +4895,9 @@ When support is taken away this will break older Vim scripts.  To make this
 explicit the |:scriptversion| command can be used.  When a Vim script is not
 compatible with older versions of Vim this will give an explicit error,
 instead of failing in mysterious ways.
+
+When using a legacy function, defined with `:function`, in |Vim9| script then
+scriptversion 4 is used.
 
 							*scriptversion-1*  >
  :scriptversion 1
