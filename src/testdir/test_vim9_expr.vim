@@ -1500,6 +1500,12 @@ def Test_expr5_list_add()
       assert_equal([[1, 2]], lln)
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var ln: list<number> = [0]
+      var lln: list<list<number>> = [ln + []]
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 " test multiply, divide, modulo
