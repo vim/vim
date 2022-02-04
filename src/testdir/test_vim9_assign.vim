@@ -1993,6 +1993,12 @@ def Test_unlet()
   assert_false(exists('s:somevar'))
   unlet! s:somevar
 
+  if 0
+    unlet g:does_not_exist
+  endif
+
+  v9.CheckDefExecFailure(['unlet v:notfound.key'], 'E1001:')
+
   v9.CheckDefExecFailure([
     'var dd = 111',
     'unlet dd',

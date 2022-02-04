@@ -1833,6 +1833,7 @@ def Test_expr8_string()
 
   v9.CheckDefAndScriptFailure(['var x = "abc'], 'E114:', 1)
   v9.CheckDefAndScriptFailure(["var x = 'abc"], 'E115:', 1)
+  v9.CheckDefFailure(["if 0", "echo 'xx", "endif"], 'E115', 2)
 enddef
 
 def Test_expr8_vimvar()

@@ -1449,7 +1449,7 @@ def Test_lockvar()
     ex = v:exception
   endtry
   assert_match('E1121:', ex)
-  unlockvar d.a
+  unlockvar d['a']
   d.a = 7
   assert_equal({a: 7, b: 5}, d)
 

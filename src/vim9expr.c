@@ -2824,8 +2824,10 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     // Ignore all kinds of errors when not producing code.
     if (cctx->ctx_skip == SKIP_YES)
     {
+	int		prev_did_emsg = did_emsg;
+
 	skip_expr_cctx(arg, cctx);
-	return OK;
+	return did_emsg == prev_did_emsg ? OK : FAIL;
     }
 
     // Evaluate the first expression.
