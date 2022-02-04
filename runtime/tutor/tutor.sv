@@ -812,7 +812,7 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 	Förlag: New Riders
   Den första boken som är endast behandlar Vim. Speciellt användbar för
   nybörjare. Det finns många exempel och bilder.
-  Se http://iccf-holland.org/click5.html
+  Se https://iccf-holland.org/vim_books.html
 
   Den här boken är äldre och behandlar mer Vi än Vim, men rekommenderas också:
 	Learning the Vi Editor - av Linda Lamb

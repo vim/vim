@@ -955,7 +955,7 @@ NOTE:  Completion works for many commands.  Just try pressing CTRL-D and
 	Publisher: New Riders
   The first book completely dedicated to Vim.  Especially useful for beginners.
   There are many examples and pictures.
-  See http://iccf-holland.org/click5.html
+  See https://iccf-holland.org/vim_books.html
 
   This book is older and more about Vi than Vim, but also recommended:
 	Learning the Vi Editor - by Linda Lamb
