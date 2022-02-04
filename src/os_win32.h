@@ -11,11 +11,9 @@
  */
 
 #include "os_dos.h"		// common MS-DOS and Win32 stuff
-#ifndef __CYGWIN__
 // cproto fails on missing include files
-# ifndef PROTO
-#  include <direct.h>		// for _mkdir()
-# endif
+#ifndef PROTO
+# include <direct.h>		// for _mkdir()
 #endif
 
 #define BINARY_FILE_IO

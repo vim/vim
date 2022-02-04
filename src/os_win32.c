@@ -241,12 +241,6 @@ static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
 
-#if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-# define UChar UnicodeChar
-#else
-# define UChar uChar.UnicodeChar
-#endif
-
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
 typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
@@ -306,7 +300,7 @@ is_ambiwidth_event(
 		&& ir->Event.KeyEvent.wRepeatCount == 1
 		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
 		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
-		&& ir->Event.KeyEvent.UChar == 0
+		&& ir->Event.KeyEvent.uChar.UnicodeChar == 0
 		&& ir->Event.KeyEvent.dwControlKeyState == 2;
 }
 
@@ -317,7 +311,8 @@ make_ambiwidth_event(
 {
     down->Event.KeyEvent.wVirtualKeyCode = 0;
     down->Event.KeyEvent.wVirtualScanCode = 0;
-    down->Event.KeyEvent.UChar = up->Event.KeyEvent.UChar;
+    down->Event.KeyEvent.uChar.UnicodeChar
+				    = up->Event.KeyEvent.uChar.UnicodeChar;
     down->Event.KeyEvent.dwControlKeyState = 0;
 }
 
@@ -1005,12 +1000,12 @@ win32_kbd_patch_key(
 
     if (s_iIsDead == 2)
     {
-	pker->UChar = (WCHAR) awAnsiCode[1];
+	pker->uChar.UnicodeChar = (WCHAR) awAnsiCode[1];
 	s_iIsDead = 0;
 	return 1;
     }
 
-    if (pker->UChar != 0)
+    if (pker->uChar.UnicodeChar != 0)
 	return 1;
 
     CLEAR_FIELD(abKeystate);
@@ -1033,7 +1028,7 @@ win32_kbd_patch_key(
 			abKeystate, awAnsiCode, 2, 0);
 
     if (s_iIsDead > 0)
-	pker->UChar = (WCHAR) awAnsiCode[0];
+	pker->uChar.UnicodeChar = (WCHAR) awAnsiCode[0];
 
     return s_iIsDead;
 }
@@ -1075,7 +1070,8 @@ decode_key_event(
     }
 
     // special cases
-    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0 && pker->UChar == NUL)
+    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
+					    && pker->uChar.UnicodeChar == NUL)
     {
 	// Ctrl-6 is Ctrl-^
 	if (pker->wVirtualKeyCode == '6')
@@ -1137,7 +1133,7 @@ decode_key_event(
 	*pch = NUL;
     else
     {
-	*pch = (i > 0) ? pker->UChar : NUL;
+	*pch = (i > 0) ? pker->uChar.UnicodeChar : NUL;
 
 	if (pmodifiers != NULL)
 	{
@@ -1683,7 +1679,7 @@ WaitForChar(long msec, int ignore_input)
 # ifdef FEAT_MBYTE_IME
 		// Windows IME sends two '\n's with only one 'ENTER'.  First:
 		// wVirtualKeyCode == 13. second: wVirtualKeyCode == 0
-		if (ir.Event.KeyEvent.UChar == 0
+		if (ir.Event.KeyEvent.uChar.UnicodeChar == 0
 			&& ir.Event.KeyEvent.wVirtualKeyCode == 13)
 		{
 		    read_console_input(g_hConIn, &ir, 1, &cRecords);
