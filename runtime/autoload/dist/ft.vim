@@ -893,4 +893,4 @@ enddef
 
 
 # Uncomment this line to check for compilation errors early
-defcompile
+# defcompile
