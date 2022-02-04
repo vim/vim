@@ -1580,6 +1580,14 @@ def Test_if_const_expr()
     burp
   endif
 
+  if 0
+    if 1
+      echo nothing
+    elseif 1
+      echo still nothing
+    endif
+  endif
+
   # expression with line breaks skipped
   if false
       ('aaa'

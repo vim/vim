@@ -2487,6 +2487,44 @@ def Test_debug_for()
         res)
 enddef
 
+def s:TryCatch()
+  try
+    echo "try"
+  catch /error/
+    echo "caught"
+  endtry
+enddef
+
+def Test_debug_try_catch()
+  var res = execute('disass debug s:TryCatch')
+  assert_match('<SNR>\d*_TryCatch\_s*' ..
+          'try\_s*' ..
+          '0 DEBUG line 1-1 varcount 0\_s*' ..
+          '1 TRY catch -> 7, endtry -> 17\_s*' ..
+          'echo "try"\_s*' ..
+          '2 DEBUG line 2-2 varcount 0\_s*' ..
+          '3 PUSHS "try"\_s*' ..
+          '4 ECHO 1\_s*' ..
+          'catch /error/\_s*' ..
+          '5 DEBUG line 3-3 varcount 0\_s*' ..
+          '6 JUMP -> 17\_s*' ..
+          '7 DEBUG line 4-3 varcount 0\_s*' ..
+          '8 PUSH v:exception\_s*' ..
+          '9 PUSHS "error"\_s*' ..
+          '10 COMPARESTRING =\~\_s*' ..
+          '11 JUMP_IF_FALSE -> 17\_s*' ..
+          '12 CATCH\_s*' ..
+          'echo "caught"\_s*' ..
+          '13 DEBUG line 4-4 varcount 0\_s*' ..
+          '14 PUSHS "caught"\_s*' ..
+          '15 ECHO 1\_s*' ..
+          'endtry\_s*' ..
+          '16 DEBUG line 5-5 varcount 0\_s*' ..
+          '17 ENDTRY\_s*' ..
+          '\d\+ RETURN void',
+        res)
+enddef
+
 func s:Legacy() dict
   echo 'legacy'
 endfunc
