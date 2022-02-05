@@ -1047,7 +1047,8 @@ is_safe_now(void)
     return stuff_empty()
 	&& typebuf.tb_len == 0
 	&& scriptin[curscript] == NULL
-	&& !global_busy;
+	&& !global_busy
+	&& !debug_mode;
 }
 
 /*
