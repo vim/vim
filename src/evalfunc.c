@@ -1050,46 +1050,42 @@ ret_list_any(int argcount UNUSED,
     static type_T *
 ret_list_number(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
-{
-    return &t_list_number;
-}
-    static type_T *
-ret_range(int argcount UNUSED,
-	type2_T *argtypes UNUSED,
 	type_T	**decl_type)
 {
-    // returning a list<number>, but it's not declared as such
     *decl_type = &t_list_any;
     return &t_list_number;
 }
     static type_T *
 ret_list_string(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
+    *decl_type = &t_list_any;
     return &t_list_string;
 }
     static type_T *
 ret_list_dict_any(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
+    *decl_type = &t_list_any;
     return &t_list_dict_any;
 }
     static type_T *
 ret_list_items(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
+    *decl_type = &t_list_any;
     return &t_list_list_any;
 }
 
     static type_T *
 ret_list_string_items(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
+    *decl_type = &t_list_any;
     return &t_list_list_string;
 }
     static type_T *
@@ -1102,10 +1098,13 @@ ret_dict_any(int argcount UNUSED,
     static type_T *
 ret_job_info(int argcount,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
     if (argcount == 0)
+    {
+	*decl_type = &t_list_any;
 	return &t_list_job;
+    }
     return &t_dict_any;
 }
     static type_T *
@@ -1252,7 +1251,10 @@ ret_getline(int argcount,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type UNUSED)
 {
-    return argcount == 1 ? &t_string : &t_list_string;
+    if (argcount == 1)
+	return &t_string;
+    *decl_type = &t_list_any;
+    return &t_list_string;
 }
 // for finddir()
     static type_T *
@@ -1273,10 +1275,11 @@ ret_finddir(int argcount,
     static type_T *
 ret_list_or_dict_0(int argcount,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
     if (argcount > 0)
 	return &t_dict_any;
+    *decl_type = &t_list_any;
     return &t_list_dict_any;
 }
 
@@ -1287,21 +1290,25 @@ ret_list_or_dict_0(int argcount,
     static type_T *
 ret_list_or_dict_1(int argcount,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
     if (argcount > 1)
 	return &t_dict_any;
+    *decl_type = &t_list_any;
     return &t_list_dict_any;
 }
 
     static type_T *
 ret_argv(int argcount,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
     // argv() returns list of strings
     if (argcount == 0)
+    {
+	*decl_type = &t_list_any;
 	return &t_list_string;
+    }
 
     // argv(0) returns a string, but argv(-1] returns a list
     return &t_any;
@@ -1331,11 +1338,14 @@ ret_remove(int argcount,
     static type_T *
 ret_getreg(int argcount,
 	type2_T *argtypes UNUSED,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
     // Assume that if the third argument is passed it's non-zero
     if (argcount == 3)
+    {
+	*decl_type = &t_list_any;
 	return &t_list_string;
+    }
     return &t_string;
 }
 
@@ -1749,7 +1759,7 @@ static funcentry_T global_functions[] =
 			ret_list_string,    f_getcompletion},
     {"getcurpos",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_getcurpos},
-    {"getcursorcharpos",	0, 1, FEARG_1,	    arg1_number,
+    {"getcursorcharpos", 0, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_getcursorcharpos},
     {"getcwd",		0, 2, FEARG_1,	    arg2_number,
 			ret_string,	    f_getcwd},
@@ -2124,7 +2134,7 @@ static funcentry_T global_functions[] =
     {"rand",		0, 1, FEARG_1,	    arg1_list_number,
 			ret_number,	    f_rand},
     {"range",		1, 3, FEARG_1,	    arg3_number,
-			ret_range,	    f_range},
+			ret_list_number,    f_range},
     {"readblob",	1, 1, FEARG_1,	    arg1_string,
 			ret_blob,	    f_readblob},
     {"readdir",		1, 3, FEARG_1,	    arg3_string_any_dict,

@@ -313,6 +313,7 @@ def Test_balloon_split()
 enddef
 
 def Test_blob2list()
+  assert_equal(['x', 'x'], blob2list(0z1234)->map((_, _) => 'x'))
   v9.CheckDefAndScriptFailure(['blob2list(10)'], ['E1013: Argument 1: type mismatch, expected blob but got number', 'E1238: Blob required for argument 1'])
 enddef
 
@@ -1529,6 +1530,8 @@ def Test_getbufline()
   getbufline(-1, '$', '$')->assert_equal([])
   getbufline(-1, 1, '$')->assert_equal([])
 
+  assert_equal([7, 7, 7], getbufline('#', 1, '$')->map((_, _) => 7))
+
   assert_fails('getbufline("", "$a", "$b")', ['E1030: Using a String as a Number: "$a"', 'E1030: Using a String as a Number: "$a"'])
   assert_fails('getbufline("", "$", "$b")', ['E1030: Using a String as a Number: "$b"', 'E1030: Using a String as a Number: "$b"'])
   bwipe!
@@ -1561,6 +1564,8 @@ def Test_getchar()
 enddef
 
 def Test_getcharpos()
+  assert_equal(['x', 'x', 'x', 'x'], getcharpos('.')->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['getcharpos(true)'], ['E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['getcharpos(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefExecAndScriptFailure(['getcharpos("")'], 'E1209: Invalid value for a line number')
@@ -1584,10 +1589,14 @@ def Test_getcompletion()
 enddef
 
 def Test_getcurpos()
+  assert_equal(['x', 'x', 'x', 'x', 'x'], getcurpos()->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['getcurpos("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
 
 def Test_getcursorcharpos()
+  assert_equal(['x', 'x', 'x', 'x', 'x'], getcursorcharpos()->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['getcursorcharpos("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
 
@@ -1664,6 +1673,8 @@ def Test_getline()
       normal 2Gvjv
       assert_equal('there', getline("'<"))
       assert_equal('again', getline("'>"))
+
+      assert_equal([3, 3, 3], getline(1, 3)->map((_, _) => 3))
   END
   v9.CheckDefAndScriptSuccess(lines)
 
@@ -1700,6 +1711,8 @@ def Test_getmatches()
 enddef
 
 def Test_getpos()
+  assert_equal(['x', 'x', 'x', 'x'], getpos('.')->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['getpos(10)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   assert_equal([0, 1, 1, 0], getpos('.'))
   v9.CheckDefExecFailure(['getpos("a")'], 'E1209:')
@@ -1723,6 +1736,8 @@ def Test_getreg()
   var lines = ['aaa', 'bbb', 'ccc']
   setreg('a', lines)
   getreg('a', true, true)->assert_equal(lines)
+  assert_equal([7, 7, 7], getreg('a', true, true)->map((_, _) => 7))
+
   assert_fails('getreg("ab")', 'E1162:')
   v9.CheckDefAndScriptFailure(['getreg(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['getreg(".", 2)'], ['E1013: Argument 2: type mismatch, expected bool but got number', 'E1212: Bool required for argument 2'])
@@ -1786,6 +1801,8 @@ def Test_getwininfo()
 enddef
 
 def Test_getwinpos()
+  assert_equal(['x', 'x'], getwinpos()->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['getwinpos("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
 
@@ -2020,6 +2037,7 @@ def Test_items()
   v9.CheckDefFailure(['[]->items()'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
   assert_equal([['a', 10], ['b', 20]], {'a': 10, 'b': 20}->items())
   assert_equal([], {}->items())
+  assert_equal(['x', 'x'], {'a': 10, 'b': 20}->items()->map((_, _) => 'x'))
 enddef
 
 def Test_job_getchannel()
@@ -2089,6 +2107,8 @@ def Test_json_decode()
 enddef
 
 def Test_keys()
+  assert_equal([7, 7], keys({a: 1, b: 2})->map((_, _) => 7))
+
   v9.CheckDefAndScriptFailure(['keys([])'], ['E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 1'])
   assert_equal(['a'], {a: 'v'}->keys())
   assert_equal([], {}->keys())
@@ -2881,6 +2901,7 @@ def Test_readfile()
   writefile(text, 'Xreadfile')
   var read: list<string> = readfile('Xreadfile')
   assert_equal(text, read)
+  assert_equal([7, 7, 7], readfile('Xreadfile')->map((_, _) => 7))
 
   var lines =<< trim END
       var read: dict<string> = readfile('Xreadfile')
@@ -3089,6 +3110,8 @@ def Test_screenchar()
 enddef
 
 def Test_screenchars()
+  assert_equal(['x'], screenchars(1, 1)->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['screenchars("x", 1)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['screenchars(1, "x")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
 enddef
@@ -3189,6 +3212,8 @@ def Test_searchpair()
   assert_equal(0, searchpair('', '', ''))
   assert_equal([0, 0], searchpairpos('', '', ''))
 
+  assert_equal(['x', 'x'], searchpairpos('', '', '')->map((_, _) => 'x'))
+
   var lines =<< trim END
       vim9script
       setline(1, '()')
@@ -3247,6 +3272,8 @@ def Test_searchpair()
 enddef
 
 def Test_searchpos()
+  assert_equal(['x', 'x'], searchpos('.')->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['searchpos(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['searchpos("a", 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['searchpos("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
@@ -3685,6 +3712,9 @@ def Test_split()
 enddef
 
 def Test_srand()
+  var expected = srand()->len()->range()->map((_, _) => 'x')
+  assert_equal(expected, srand()->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['srand("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   type(srand(100))->assert_equal(v:t_list)
 enddef
@@ -3707,6 +3737,8 @@ def Test_str2float()
 enddef
 
 def Test_str2list()
+  assert_equal(['x', 'x', 'x'], str2list('abc')->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['str2list(10)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['str2list("a", 2)'], ['E1013: Argument 2: type mismatch, expected bool but got number', 'E1212: Bool required for argument 2'])
   assert_equal([97], str2list('a'))
@@ -3914,6 +3946,7 @@ def Test_tabpagebuflist()
   v9.CheckDefAndScriptFailure(['tabpagebuflist("t")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   assert_equal([bufnr('')], tabpagebuflist())
   assert_equal([bufnr('')], tabpagebuflist(1))
+  assert_equal(['x'], tabpagebuflist()->map((_, _) => 'x'))
 enddef
 
 def Test_tabpagenr()
@@ -4293,6 +4326,8 @@ def Test_win_id2win()
 enddef
 
 def Test_win_screenpos()
+  assert_equal(['x', 'x'], win_screenpos(1)->map((_, _) => 'x'))
+
   v9.CheckDefAndScriptFailure(['win_screenpos("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
 
