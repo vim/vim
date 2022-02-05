@@ -745,6 +745,9 @@ def Test_copy_return_type()
 
   var ndd: dict<dict<number>> = {a: {x: 1, y: 2}}
   assert_equal({x: 1, y: 2, z: 'x'}, ndd->deepcopy()['a']->extend({z: 'x'}))
+
+  var ldn: list<dict<number>> = [{a: 0}]->deepcopy()
+  assert_equal([{a: 0}], ldn)
 enddef
 
 def Test_count()

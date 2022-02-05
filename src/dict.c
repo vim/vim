@@ -306,7 +306,10 @@ dict_copy(dict_T *orig, int deep, int top, int copyID)
 	    orig->dv_copyID = copyID;
 	    orig->dv_copydict = copy;
 	}
-	copy->dv_type = alloc_type(top || deep ? &t_dict_any : orig->dv_type);
+	if (orig->dv_type == NULL || top || deep)
+	    copy->dv_type = NULL;
+	else
+	    copy->dv_type = alloc_type(orig->dv_type);
 
 	todo = (int)orig->dv_hashtab.ht_used;
 	for (hi = orig->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
