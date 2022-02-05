@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Feb 04
+# Last Change:	2022 Feb 05
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -722,7 +722,7 @@ export def FTperl(): number
   endif
   var save_cursor = getpos('.')
   call cursor(1, 1)
-  var has_use = search('^use\s\s*\k', 'c', 30)
+  var has_use = search('^use\s\s*\k', 'c', 30) > 0
   call setpos('.', save_cursor)
   if has_use
     setf perl
@@ -755,7 +755,8 @@ export def FTtex()
     var save_cursor = getpos('.')
     call cursor(1, 1)
     var firstNC = search('^\s*[^[:space:]%]', 'c', 1000)
-    if firstNC # Check the next thousand lines for a LaTeX or ConTeXt keyword.
+    if firstNC > 0
+      # Check the next thousand lines for a LaTeX or ConTeXt keyword.
       var lpat = 'documentclass\>\|usepackage\>\|begin{\|newcommand\>\|renewcommand\>'
       var cpat = 'start\a\+\|setup\a\+\|usemodule\|enablemode\|enableregime\|setvariables\|useencoding\|usesymbols\|stelle\a\+\|verwende\a\+\|stel\a\+\|gebruik\a\+\|usa\a\+\|imposta\a\+\|regle\a\+\|utilisemodule\>'
       var kwline = search('^\s*\\\%(' .. lpat .. '\)\|^\s*\\\(' .. cpat .. '\)',
