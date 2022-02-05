@@ -1169,6 +1169,27 @@ ret_first_arg(int argcount,
     return &t_void;
 }
     static type_T *
+ret_slice(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type)
+{
+    if (argcount > 0)
+    {
+	if (argtypes[0].type_decl != NULL)
+	{
+	    switch (argtypes[0].type_decl->tt_type)
+	    {
+		case VAR_STRING: *decl_type = &t_string; break;
+		case VAR_BLOB: *decl_type = &t_blob; break;
+		case VAR_LIST: *decl_type = &t_list_any; break;
+		default: break;
+	    }
+	}
+	return argtypes[0].type_curr;
+    }
+    return &t_void;
+}
+    static type_T *
 ret_copy(int argcount,
 	type2_T *argtypes,
 	type_T	**decl_type)
@@ -2292,7 +2313,7 @@ static funcentry_T global_functions[] =
     {"sinh",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_sinh)},
     {"slice",		2, 3, FEARG_1,	    arg23_slice,
-			ret_first_arg,	    f_slice},
+			ret_slice,	    f_slice},
     {"sort",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_sort},
     {"sound_clear",	0, 0, 0,	    NULL,

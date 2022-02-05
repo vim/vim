@@ -3619,6 +3619,9 @@ def Test_slice()
   assert_equal([], slice(range(6), 1, -5))
   assert_equal([], slice(range(6), 1, -6))
 
+  var lds: list<dict<string>> = [{key: 'value'}]
+  assert_equal(['val'], lds->slice(0, 1)->map((_, v) => 'val'))
+
   assert_equal(0z1122334455, slice(0z001122334455, 1))
   assert_equal(0z112233, slice(0z001122334455, 1, 4))
   assert_equal(0z11223344, slice(0z001122334455, 1, -1))
