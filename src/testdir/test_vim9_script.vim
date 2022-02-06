@@ -1227,6 +1227,7 @@ def Test_vim9script_fails()
   v9.CheckScriptFailure(['vim9script', 'const str = "asdf"', 'str = "xxx"'], 'E46:')
 
   assert_fails('vim9script', 'E1038:')
+  v9.CheckDefFailure(['vim9script'], 'E1038:')
 enddef
 
 def Test_script_var_shadows_function()
