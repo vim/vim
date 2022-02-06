@@ -1040,7 +1040,7 @@ generate_VIM9SCRIPT(
 
     RETURN_OK_IF_SKIP(cctx);
     if (isn_type == ISN_LOADSCRIPT)
-	isn = generate_instr_type(cctx, isn_type, type);
+	isn = generate_instr_type2(cctx, isn_type, type, type);
     else
 	isn = generate_instr_drop(cctx, isn_type, 1);
     if (isn == NULL)
