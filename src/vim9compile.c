@@ -3139,8 +3139,13 @@ compile_def_function(
 		    break;
 
 	    case CMD_vim9script:
-		    emsg(_(e_vim9script_can_only_be_used_in_script));
-		    goto erret;
+		    if (cctx.ctx_skip != SKIP_YES)
+		    {
+			emsg(_(e_vim9script_can_only_be_used_in_script));
+			goto erret;
+		    }
+		    line = (char_u *)"";
+		    break;
 
 	    case CMD_global:
 		    if (check_global_and_subst(ea.cmd, p) == FAIL)

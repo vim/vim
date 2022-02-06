@@ -1228,6 +1228,11 @@ def Test_vim9script_fails()
 
   assert_fails('vim9script', 'E1038:')
   v9.CheckDefFailure(['vim9script'], 'E1038:')
+
+  # no error when skipping
+  if has('nothing')
+    vim9script
+  endif
 enddef
 
 def Test_script_var_shadows_function()
