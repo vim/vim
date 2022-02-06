@@ -182,6 +182,9 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 		     vartype == VAR_LIST ?  ISN_LISTSLICE : ISN_ANYSLICE,
 							    2) == FAIL)
 		return FAIL;
+	    // a copy is made so the member type is no longer declared
+	    if (typep->type_decl->tt_type == VAR_LIST)
+		typep->type_decl = &t_list_any;
 	}
 	else
 	{
