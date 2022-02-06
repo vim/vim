@@ -1694,7 +1694,7 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
 }
 
 /*
- * Store a value in a list or dict variable.
+ * Store a value in a list, dict or blob variable.
  * Returns OK, FAIL or NOTDONE (uncatchable error).
  */
     static int
@@ -5081,12 +5081,16 @@ call_def_function(
 		goto failed_early;
 	    if (partial != NULL)
 	    {
-		if (partial->pt_outer.out_stack == NULL && current_ectx != NULL)
+		if (partial->pt_outer.out_stack == NULL)
 		{
-		    if (current_ectx->ec_outer_ref != NULL
-			    && current_ectx->ec_outer_ref->or_outer != NULL)
-			ectx.ec_outer_ref->or_outer =
+		    if (current_ectx != NULL)
+		    {
+			if (current_ectx->ec_outer_ref != NULL
+			       && current_ectx->ec_outer_ref->or_outer != NULL)
+			    ectx.ec_outer_ref->or_outer =
 					  current_ectx->ec_outer_ref->or_outer;
+		    }
+		    // Should there be an error here?
 		}
 		else
 		{
