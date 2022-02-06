@@ -1886,6 +1886,10 @@ def Test_vim9script_autoload_call()
       assert_equal('other', g:result)
 
       assert_equal('arg', call('another.RetArg', ['arg']))
+
+      verbose function another.Getother
+      # should we disallow this?
+      verbose function another#Getother
   END
   v9.CheckScriptSuccess(lines)
 
