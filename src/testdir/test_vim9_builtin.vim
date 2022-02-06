@@ -2237,6 +2237,11 @@ def Test_map()
       g:gl = l
       map(g:gl, (k, v) => true)
       assert_equal([true], g:gl)
+
+      assert_equal(['x'], [[1, 2]]->map((_, v) => 'x'))
+      assert_equal(['x'], [{a: 0}]->map((_, v) => 'x'))
+      assert_equal({a: 'x'}, {a: [1, 2]}->map((_, v) => 'x'))
+      assert_equal({a: 'x'}, {a: {b: 2}}->map((_, v) => 'x'))
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef

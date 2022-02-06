@@ -1067,7 +1067,6 @@ generate_NEWLIST(cctx_T *cctx, int count)
 {
     isn_T	*isn;
     type_T	*member_type;
-    type_T	*decl_member_type;
     type_T	*type;
     type_T	*decl_type;
 
@@ -1078,10 +1077,9 @@ generate_NEWLIST(cctx_T *cctx, int count)
 
     // Get the member type and the declared member type from all the items on
     // the stack.
-    member_type = get_member_type_from_stack(count, 1,
-						      &decl_member_type, cctx);
+    member_type = get_member_type_from_stack(count, 1, cctx);
     type = get_list_type(member_type, cctx->ctx_type_list);
-    decl_type = get_list_type(decl_member_type, cctx->ctx_type_list);
+    decl_type = get_list_type(&t_any, cctx->ctx_type_list);
 
     // drop the value types
     cctx->ctx_type_stack.ga_len -= count;
@@ -1098,7 +1096,6 @@ generate_NEWDICT(cctx_T *cctx, int count)
 {
     isn_T	*isn;
     type_T	*member_type;
-    type_T	*decl_member_type;
     type_T	*type;
     type_T	*decl_type;
 
@@ -1107,10 +1104,9 @@ generate_NEWDICT(cctx_T *cctx, int count)
 	return FAIL;
     isn->isn_arg.number = count;
 
-    member_type = get_member_type_from_stack(count, 2,
-						      &decl_member_type, cctx);
+    member_type = get_member_type_from_stack(count, 2, cctx);
     type = get_dict_type(member_type, cctx->ctx_type_list);
-    decl_type = get_dict_type(decl_member_type, cctx->ctx_type_list);
+    decl_type = get_dict_type(&t_any, cctx->ctx_type_list);
 
     // drop the key and value types
     cctx->ctx_type_stack.ga_len -= 2 * count;

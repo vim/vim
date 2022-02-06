@@ -1359,7 +1359,6 @@ get_decl_type_on_stack(cctx_T *cctx, int offset)
 get_member_type_from_stack(
 	int	    count,
 	int	    skip,
-	type_T	    **decl_type,
 	cctx_T	    *cctx)
 {
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -1367,32 +1366,24 @@ get_member_type_from_stack(
     garray_T    *type_gap = cctx->ctx_type_list;
     int		i;
     type_T	*result;
-    type_T	*decl_result;
     type_T	*type;
 
     // Use "unknown" for an empty list or dict.
     if (count == 0)
-    {
-	*decl_type = &t_unknown;
 	return &t_unknown;
-    }
 
     // Use the first value type for the list member type, then find the common
     // type from following items.
     typep = ((type2_T *)stack->ga_data) + stack->ga_len;
     result = (typep -(count * skip) + skip - 1)->type_curr;
-    decl_result = (typep -(count * skip) + skip - 1)->type_decl;
     for (i = 1; i < count; ++i)
     {
 	if (result == &t_any)
 	    break;  // won't get more common
 	type = (typep -((count - i) * skip) + skip - 1)->type_curr;
 	common_type(type, result, &result, type_gap);
-	type = (typep -((count - i) * skip) + skip - 1)->type_decl;
-	common_type(type, decl_result, &decl_result, type_gap);
     }
 
-    *decl_type = decl_result;
     return result;
 }
 
