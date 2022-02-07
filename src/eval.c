@@ -629,10 +629,10 @@ eval_expr(char_u *arg, exarg_T *eap)
  */
     static char_u *
 deref_function_name(
-	    char_u **arg,
-	    char_u **tofree,
-	    evalarg_T *evalarg,
-	    int verbose)
+	    char_u	**arg,
+	    char_u	**tofree,
+	    evalarg_T	*evalarg,
+	    int		verbose)
 {
     typval_T	ref;
     char_u	*name = *arg;
@@ -2955,7 +2955,7 @@ eval_addlist(typval_T *tv1, typval_T *tv2)
 
 /*
  * Handle fourth level expression:
- *	+	number addition
+ *	+	number addition, concatenation of list or blob
  *	-	number subtraction
  *	.	string concatenation (if script version is 1)
  *	..	string concatenation

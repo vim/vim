@@ -1420,7 +1420,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	{
 	    semsg(_(e_separator_mismatch_str), p);
 	    vim_free(tofree);
-	    return FAIL;
+	    return NULL;
 	}
 	if (tofree == NULL)
 	    len = (int)(end - (p + 1));
@@ -1430,9 +1430,9 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	vim_free(tofree);
 	p += len + 2 + dropped;
 	if (pat == NULL)
-	    return FAIL;
+	    return NULL;
 	if (generate_PUSHS(cctx, &pat) == FAIL)
-	    return FAIL;
+	    return NULL;
 
 	if (generate_COMPARE(cctx, EXPR_MATCH, FALSE) == FAIL)
 	    return NULL;

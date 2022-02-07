@@ -651,7 +651,7 @@ build_drop_cmd(
     ga_concat(&ga, (char_u *)":");
     if (inicmd != NULL)
     {
-	// Can't use <CR> after "inicmd", because an "startinsert" would cause
+	// Can't use <CR> after "inicmd", because a "startinsert" would cause
 	// the following commands to be inserted as text.  Use a "|",
 	// hopefully "inicmd" does allow this...
 	ga_concat(&ga, inicmd);

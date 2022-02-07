@@ -3461,7 +3461,8 @@ set_var_const(
 	semsg(_(e_illegal_variable_name_str), name);
 	goto failed;
     }
-    is_script_local = ht == get_script_local_ht() || sid != 0 || var_in_autoload;
+    is_script_local = ht == get_script_local_ht() || sid != 0
+							    || var_in_autoload;
 
     if (vim9script
 	    && !is_script_local
