@@ -356,6 +356,11 @@ typedef enum {
 #define WIM_LIST	0x04
 #define WIM_BUFLASTUSED	0x08
 
+// flags for the 'wildoptions' option
+// each defined char should be unique over all values.
+#define WOP_TAGFILE	't'
+#define WOP_PUM		'p'
+
 // arguments for can_bs()
 // each defined char should be unique over all values
 // except for BS_START, that intentionally also matches BS_NOSTOP

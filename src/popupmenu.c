@@ -116,7 +116,10 @@ pum_display(
 	// Remember the essential parts of the window position and size, so we
 	// can decide when to reposition the popup menu.
 	pum_window = curwin;
-	pum_win_row = curwin->w_wrow + W_WINROW(curwin);
+	if (State == CMDLINE)
+	    pum_win_row = cmdline_row;
+	else
+	    pum_win_row = curwin->w_wrow + W_WINROW(curwin);
 	pum_win_height = curwin->w_height;
 	pum_win_col = curwin->w_wincol;
 	pum_win_wcol = curwin->w_wcol;
@@ -215,6 +218,11 @@ pum_display(
 	max_width = pum_base_width;
 
 	// Calculate column
+#ifdef FEAT_WILDMENU
+	if (State == CMDLINE)
+	    cursor_col = cmdline_compl_startcol();
+	else
+#endif
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
 	    cursor_col = curwin->w_wincol + curwin->w_width

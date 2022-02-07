@@ -57,7 +57,7 @@ static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "g
 static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm", "pterm", "urxvt", "sgr", NULL};
 #endif
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", "none", "NONE", NULL};
-static char *(p_wop_values[]) = {"tagfile", NULL};
+static char *(p_wop_values[]) = {"tagfile", "pum", NULL};
 #ifdef FEAT_WAK
 static char *(p_wak_values[]) = {"yes", "menu", "no", NULL};
 #endif

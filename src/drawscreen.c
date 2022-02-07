@@ -3048,6 +3048,10 @@ redraw_after_callback(int call_update_screen, int do_message)
     }
     else if (State & CMDLINE)
     {
+#ifdef FEAT_WILDMENU
+	if (pum_visible())
+	    cmdline_pum_display();
+#endif
 	// Don't redraw when in prompt_for_number().
 	if (cmdline_row > 0)
 	{

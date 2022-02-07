@@ -27,6 +27,16 @@ static int	ExpandUserDefined(expand_T *xp, regmatch_T *regmatch, int *num_file, 
 static int	ExpandUserList(expand_T *xp, int *num_file, char_u ***file);
 #endif
 
+#ifdef FEAT_WILDMENU
+// "compl_match_array" points the currently displayed list of entries in the
+// popup menu.  It is NULL when there is no popup menu.
+static pumitem_T *compl_match_array = NULL;
+static int compl_match_arraysize;
+// First column in cmdline of the matched item for completion.
+static int compl_startcol;
+static int compl_selected;
+#endif
+
     static int
 sort_func_compare(const void *s1, const void *s2)
 {
@@ -245,6 +255,36 @@ nextwild(
     return OK;
 }
 
+#if defined(FEAT_WILDMENU) || defined(PROTO)
+/*
+ * Display the cmdline completion matches in a popup menu
+ */
+void cmdline_pum_display(void)
+{
+    pum_display(compl_match_array, compl_match_arraysize, compl_selected);
+}
+
+int cmdline_pum_active(void)
+{
+    return p_wmnu && pum_visible() && compl_match_array != NULL;
+}
+
+/*
+ * Remove the cmdline completion popup menu
+ */
+void cmdline_pum_remove(void)
+{
+    pum_undisplay();
+    VIM_CLEAR(compl_match_array);
+    update_screen(0);
+}
+
+int cmdline_compl_startcol(void)
+{
+    return compl_startcol;
+}
+#endif
+
 /*
  * Do wildcard expansion on the string 'str'.
  * Chars that should not be expanded must be preceded with a backslash.
@@ -327,7 +367,12 @@ ExpandOne(
 		    findex = -1;
 	    }
 #ifdef FEAT_WILDMENU
-	    if (p_wmnu)
+	    if (compl_match_array)
+	    {
+		compl_selected = findex;
+		cmdline_pum_display();
+	    }
+	    else if (p_wmnu)
 		win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files,
 							findex, cmd_showtail);
 #endif
@@ -338,6 +383,12 @@ ExpandOne(
 	else
 	    return NULL;
     }
+
+    if (mode == WILD_CANCEL)
+	ss = vim_strsave(orig_save ? orig_save : (char_u *)"");
+    else if (mode == WILD_APPLY)
+	ss = vim_strsave(findex == -1 ? (orig_save ?
+		    orig_save : (char_u *)"") : xp->xp_files[findex]);
 
     // free old names
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
@@ -351,7 +402,7 @@ ExpandOne(
     if (mode == WILD_FREE)	// only release file name
 	return NULL;
 
-    if (xp->xp_numfiles == -1)
+    if (xp->xp_numfiles == -1 && mode != WILD_APPLY && mode != WILD_CANCEL)
     {
 	vim_free(orig_save);
 	orig_save = orig;
@@ -552,6 +603,25 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	files_found = xp->xp_files;
 	showtail = cmd_showtail;
     }
+
+#ifdef FEAT_WILDMENU
+    if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
+    {
+	compl_match_arraysize = num_files;
+	compl_match_array = ALLOC_MULT(pumitem_T, compl_match_arraysize);
+	for (i = 0; i < num_files; i++)
+	{
+	    compl_match_array[i].pum_text = L_SHOWFILE(i);
+	    compl_match_array[i].pum_info = NULL;
+	    compl_match_array[i].pum_extra = NULL;
+	    compl_match_array[i].pum_kind = NULL;
+	}
+	compl_startcol = ccline->cmdpos + 1;
+	compl_selected = -1;
+	cmdline_pum_display();
+	return EXPAND_OK;
+    }
+#endif
 
 #ifdef FEAT_WILDMENU
     if (!wildmenu)
@@ -1500,7 +1570,7 @@ set_one_cmd_context(
 	case CMD_tjump:
 	case CMD_stjump:
 	case CMD_ptjump:
-	    if (*p_wop != NUL)
+	    if (vim_strchr(p_wop, WOP_TAGFILE) != NULL)
 		xp->xp_context = EXPAND_TAGS_LISTFILES;
 	    else
 		xp->xp_context = EXPAND_TAGS;
@@ -2639,6 +2709,22 @@ wildmenu_translate_key(
 {
     int c = key;
 
+#ifdef FEAT_WILDMENU
+    if (p_wmnu && cmdline_pum_active())
+    {
+	// When the popup menu is used, Up/Down keys go to the previous and
+	// next items in the menu and Left/Right keys go up/down a directory.
+	if (c == K_UP)
+	    c = K_LEFT;
+	else if (c == K_DOWN)
+	    c = K_RIGHT;
+	else if (c == K_LEFT)
+	    c = K_UP;
+	else if (c == K_RIGHT)
+	    c = K_DOWN;
+    }
+#endif
+
     if (did_wild_list && p_wmnu)
     {
 	if (c == K_LEFT)
@@ -2646,6 +2732,7 @@ wildmenu_translate_key(
 	else if (c == K_RIGHT)
 	    c = Ctrl_N;
     }
+
     // Hitting CR after "emenu Name.": complete submenu
     if (xp->xp_context == EXPAND_MENUNAMES && p_wmnu
 	    && cclp->cmdpos > 1

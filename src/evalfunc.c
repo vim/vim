@@ -10336,7 +10336,7 @@ f_visualmode(typval_T *argvars, typval_T *rettv)
 f_wildmenumode(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_WILDMENU
-    if (wild_menu_showing)
+    if (wild_menu_showing || ((State & CMDLINE) && cmdline_pum_active()))
 	rettv->vval.v_number = 1;
 #endif
 }

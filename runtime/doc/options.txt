@@ -8979,6 +8979,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When 'wildmode' is used, "wildmenu" mode is used where "full" is
 	specified.  "longest" and "list" do not start "wildmenu" mode.
 	You can check the current mode with |wildmenumode()|.
+	When 'wildoptions' contains "pum", then the completion matches are
+	shown in a popup menu.
 	If there are more matches than can fit in the line, a ">" is shown on
 	the right and/or a "<" is shown on the left.  The status line scrolls
 	as needed.
@@ -8994,6 +8996,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 			  dot: move into a submenu.
 	<Up>		- in filename/menu name completion: move up into
 			  parent directory or parent menu.
+
+	When using the popup menu for command line completion, the following
+	keys have special meanings:
+	<Down>		- select next match (like CTRL-N)
+	<Left>		- in filename/menu name completion: move up into
+			  parent directory or parent menu.
+	<Right>		- in filename/menu name completion: move into a
+			  subdirectory or submenu.
+	<Up>		- select previous match (like CTRL-P)
+	CTRL-E		- end completion, go back to what was there before
+			  selecting a match.
+	CTRL-N		- go to the next entry
+	CTRL-P		- go to the previous entry
+	CTRL-Y		- accept the currently selected match and stop
+			  completion.
 
 	This makes the menus accessible from the console |console-menus|.
 
@@ -9057,14 +9074,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not available when compiled without the |+wildignore|
 			feature}
-	A list of words that change how command line completion is done.
-	Currently only one word is allowed:
+	A list of words that change how |cmdline-completion| is done.
+	The following values are supported:
+	  pum		Display the completion matches using the popupmenu
+			in the same style as the |ins-completion-menu|.
 	  tagfile	When using CTRL-D to list matching tags, the kind of
 			tag and the file of the tag is listed.	Only one match
 			is displayed per line.  Often used tag kinds are:
 				d	#define
 				f	function
-	Also see |cmdline-completion|.
 
 						*'winaltkeys'* *'wak'*
 'winaltkeys' 'wak'	string	(default "menu")
