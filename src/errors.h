@@ -3224,3 +3224,7 @@ EXTERN char e_autoload_import_cannot_use_absolute_or_relative_path[]
 EXTERN char e_cannot_use_partial_here[]
 	INIT(= N_("E1265: Cannot use a partial here"));
 #endif
+#if defined(FEAT_PYTHON3) && defined(MSWIN)
+EXTERN char e_critical_error_in_python3_initialization_check_your_installation[]
+	INIT(= N_("E1266: Critical error in python3 initialization, check your python3 installation"));
+#endif

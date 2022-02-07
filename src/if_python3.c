@@ -112,12 +112,18 @@ typedef PyObject PySliceObject_T;
 typedef PySliceObject PySliceObject_T;
 #endif
 
+#ifndef MSWIN
+# define HINSTANCE void *
+#endif
+#if defined(DYNAMIC_PYTHON3) || defined(MSWIN)
+static HINSTANCE hinstPy3 = 0; // Instance of python.dll
+#endif
+
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
 # ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
-#  define HINSTANCE void*
 #  if defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)
 #   define load_dll(n) dlopen((n), RTLD_LAZY)
 #  else
@@ -458,8 +464,6 @@ static PyObject*(*py3__PyObject_GC_New)(PyTypeObject *);
 static void(*py3_PyObject_GC_Del)(void *);
 static void(*py3_PyObject_GC_UnTrack)(void *);
 static int (*py3_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
-
-static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 
 // Imported exception objects
 static PyObject *p3imp_PyExc_AttributeError;
@@ -1032,13 +1036,8 @@ reset_stdin(void)
 {
     FILE *(*py__acrt_iob_func)(unsigned) = NULL;
     FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
-    HINSTANCE hinst;
+    HINSTANCE hinst = hinstPy3;
 
-# ifdef DYNAMIC_PYTHON3
-    hinst = hinstPy3;
-# else
-    hinst = GetModuleHandle(PYTHON3_DLL);
-# endif
     if (hinst == NULL || is_stdin_readable())
 	return;
 
@@ -1061,6 +1060,57 @@ reset_stdin(void)
 }
 #else
 # define reset_stdin()
+#endif
+
+// Python 3.2 or later will abort inside Py_Initialize() when mandatory
+// modules cannot be loaded (e.g. 'pythonthreehome' is wrongly set.).
+// Install a hook to python dll's exit() and recover from it.
+#if defined(MSWIN) && (PY_VERSION_HEX >= 0x030200f0)
+# define HOOK_EXIT
+# include <setjmp.h>
+
+static jmp_buf exit_hook_jump_buf;
+static void *orig_exit = NULL;
+
+/*
+ * Function that replaces exit() while calling Py_Initialize().
+ */
+    static void
+hooked_exit(int ret)
+{
+    // Recover from exit.
+    longjmp(exit_hook_jump_buf, 1);
+}
+
+/*
+ * Install a hook to python dll's exit().
+ */
+    static void
+hook_py_exit(void)
+{
+    HINSTANCE hinst = hinstPy3;
+
+    if (hinst == NULL || orig_exit != NULL)
+	return;
+
+    orig_exit = hook_dll_import_func(hinst, "exit", (void *)hooked_exit);
+}
+
+/*
+ * Remove the hook installed by hook_py_exit().
+ */
+    static void
+restore_py_exit(void)
+{
+    HINSTANCE hinst = hinstPy3;
+
+    if (hinst == NULL)
+	return;
+
+    if (orig_exit != NULL)
+	hook_dll_import_func(hinst, "exit", orig_exit);
+    orig_exit = NULL;
+}
 #endif
 
     static int
@@ -1095,8 +1145,31 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
+#if !defined(DYNAMIC_PYTHON3) && defined(MSWIN)
+	hinstPy3 = GetModuleHandle(PYTHON3_DLL);
+#endif
 	reset_stdin();
-	Py_Initialize();
+
+#ifdef HOOK_EXIT
+	// Catch exit() called in Py_Initialize().
+	hook_py_exit();
+	if (setjmp(exit_hook_jump_buf) == 0)
+#endif
+	{
+	    Py_Initialize();
+#ifdef HOOK_EXIT
+	    restore_py_exit();
+#endif
+	}
+#ifdef HOOK_EXIT
+	else
+	{
+	    // exit() was called in Py_Initialize().
+	    restore_py_exit();
+	    emsg(_(e_critical_error_in_python3_initialization_check_your_installation));
+	    goto fail;
+	}
+#endif
 
 #if PY_VERSION_HEX < 0x03090000
 	// Initialise threads.  This is deprecated since Python 3.9.
