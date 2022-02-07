@@ -97,7 +97,7 @@ def Test_wrong_function_name()
         echo 'foo'
       endfunc
   END
-  v9.CheckScriptFailure(lines, 'E128:')
+  v9.CheckScriptFailure(lines, 'E1267:')
 
   lines =<< trim END
       vim9script
@@ -105,7 +105,7 @@ def Test_wrong_function_name()
         echo 'foo'
       enddef
   END
-  v9.CheckScriptFailure(lines, 'E128:')
+  v9.CheckScriptFailure(lines, 'E1267:')
 enddef
 
 def Test_autoload_name_mismatch()
@@ -685,11 +685,11 @@ def Test_nested_function()
         def _Inner()
           echo 'bad'
         enddef
-        Inner()
+        _Inner()
       enddef
       defcompile
   END
-  v9.CheckScriptFailure(lines, 'E128:')
+  v9.CheckScriptFailure(lines, 'E1267:')
 
   lines =<< trim END
       vim9script
@@ -697,11 +697,27 @@ def Test_nested_function()
         def g:inner()
           echo 'bad'
         enddef
-        Inner()
+        g:inner()
       enddef
       defcompile
   END
-  v9.CheckScriptFailure(lines, 'E128:')
+  v9.CheckScriptFailure(lines, 'E1267:')
+
+  lines =<< trim END
+      vim9script
+      def g:_Func()
+        echo 'bad'
+      enddef
+  END
+  v9.CheckScriptFailure(lines, 'E1267:')
+
+  lines =<< trim END
+      vim9script
+      def s:_Func()
+        echo 'bad'
+      enddef
+  END
+  v9.CheckScriptFailure(lines, 'E1267:')
 
   # nested function inside conditional
   lines =<< trim END
@@ -2772,7 +2788,7 @@ def Test_nested_inline_lambda()
   lines =<< trim END
       vim9script
 
-      def s:func()
+      def s:Func()
         range(10)
           ->mapnew((_, _) => ({
             key: range(10)->mapnew((_, _) => {

@@ -3228,3 +3228,7 @@ EXTERN char e_cannot_use_partial_here[]
 EXTERN char e_critical_error_in_python3_initialization_check_your_installation[]
 	INIT(= N_("E1266: Critical error in python3 initialization, check your python3 installation"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_function_name_must_start_with_capital_str[]
+	INIT(= N_("E1267: Function name must start with a capital: %s"));
+#endif

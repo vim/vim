@@ -3884,15 +3884,6 @@ trans_function_name(
     // In Vim9 script a user function is script-local by default, unless it
     // starts with a lower case character: dict.func().
     vim9script = ASCII_ISUPPER(*start) && in_vim9script();
-    if (vim9script)
-    {
-	char_u *p;
-
-	// SomeScript#func() is a global function.
-	for (p = start; *p != NUL && *p != '('; ++p)
-	    if (*p == AUTOLOAD_CHAR)
-		vim9script = FALSE;
-    }
 
     /*
      * Copy the function name to allocated memory.
@@ -3904,7 +3895,17 @@ trans_function_name(
     else if (lead > 0 || vim9script)
     {
 	if (!vim9script)
+	{
+	    if (in_vim9script() && lead == 2 && !ASCII_ISUPPER(*lv.ll_name))
+	    {
+		semsg(_(in_vim9script()
+			   ? e_function_name_must_start_with_capital_str
+			   : e_function_name_must_start_with_capital_or_s_str),
+									start);
+		goto theend;
+	    }
 	    lead = 3;
+	}
 	if (vim9script || (lv.ll_exp_name != NULL
 					     && eval_fname_sid(lv.ll_exp_name))
 						       || eval_fname_sid(*pp))
@@ -3925,7 +3926,10 @@ trans_function_name(
     else if (!(flags & TFN_INT) && (builtin_function(lv.ll_name, len)
 				   || (in_vim9script() && *lv.ll_name == '_')))
     {
-	semsg(_(e_function_name_must_start_with_capital_or_s_str), start);
+	semsg(_(in_vim9script()
+			   ? e_function_name_must_start_with_capital_str
+			   : e_function_name_must_start_with_capital_or_s_str),
+									start);
 	goto theend;
     }
     if (!skip && !(flags & TFN_QUIET) && !(flags & TFN_NO_DEREF))
