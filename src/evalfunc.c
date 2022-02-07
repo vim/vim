@@ -4454,6 +4454,9 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    pt->pt_name = name;
 		    func_ref(name);
 		}
+
+		if (arg_pt != NULL)
+		    pt->pt_outer = arg_pt->pt_outer;
 	    }
 	    rettv->v_type = VAR_PARTIAL;
 	    rettv->vval.v_partial = pt;

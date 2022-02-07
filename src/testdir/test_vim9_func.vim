@@ -3455,6 +3455,28 @@ def Test_nested_lambda_in_closure()
   delete('XnestedDone')
 enddef
 
+def Test_nested_closure_funcref()
+  var lines =<< trim END
+      vim9script
+      def Func()
+          var n: number
+          def Nested()
+              ++n
+          enddef
+          Nested()
+          g:result_one = n
+          var Ref = function(Nested)
+          Ref()
+          g:result_two = n
+      enddef
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal(1, g:result_one)
+  assert_equal(2, g:result_two)
+  unlet g:result_one g:result_two
+enddef
+
 def Test_check_func_arg_types()
   var lines =<< trim END
       vim9script
