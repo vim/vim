@@ -572,14 +572,18 @@ mch_is_gui_executable(void)
 }
 #endif
 
-#if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) || defined(PROTO)
+#if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) \
+    || defined(FEAT_PYTHON3) || defined(PROTO)
 /*
  * Get related information about 'funcname' which is imported by 'hInst'.
  * If 'info' is 0, return the function address.
  * If 'info' is 1, return the module name which the function is imported from.
+ * If 'info' is 2, hook the function with 'ptr', and return the original
+ * function address.
  */
     static void *
-get_imported_func_info(HINSTANCE hInst, const char *funcname, int info)
+get_imported_func_info(HINSTANCE hInst, const char *funcname, int info,
+	const void *ptr)
 {
     PBYTE			pImage = (PBYTE)hInst;
     PIMAGE_DOS_HEADER		pDOS = (PIMAGE_DOS_HEADER)hInst;
@@ -611,12 +615,23 @@ get_imported_func_info(HINSTANCE hInst, const char *funcname, int info)
 					+ (UINT_PTR)(pINT->u1.AddressOfData));
 	    if (strcmp((char *)pImpName->Name, funcname) == 0)
 	    {
+		void *original;
+		DWORD old, new = PAGE_READWRITE;
+
 		switch (info)
 		{
 		    case 0:
 			return (void *)pIAT->u1.Function;
 		    case 1:
 			return (void *)(pImage + pImpDesc->Name);
+		    case 2:
+			original = (void *)pIAT->u1.Function;
+			VirtualProtect(&pIAT->u1.Function, sizeof(void *),
+				new, &old);
+			pIAT->u1.Function = (UINT_PTR)ptr;
+			VirtualProtect(&pIAT->u1.Function, sizeof(void *),
+				old, &new);
+			return original;
 		    default:
 			return NULL;
 		}
@@ -634,7 +649,7 @@ find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname)
 {
     char    *modulename;
 
-    modulename = (char *)get_imported_func_info(hInst, funcname, 1);
+    modulename = (char *)get_imported_func_info(hInst, funcname, 1, NULL);
     if (modulename != NULL)
 	return GetModuleHandleA(modulename);
     return NULL;
@@ -646,7 +661,17 @@ find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname)
     void *
 get_dll_import_func(HINSTANCE hInst, const char *funcname)
 {
-    return get_imported_func_info(hInst, funcname, 0);
+    return get_imported_func_info(hInst, funcname, 0, NULL);
+}
+
+/*
+ * Hook the function named 'funcname' which is imported by 'hInst' DLL,
+ * and return the original function address.
+ */
+    void *
+hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook)
+{
+    return get_imported_func_info(hInst, funcname, 2, hook);
 }
 #endif
 

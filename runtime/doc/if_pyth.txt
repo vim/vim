@@ -834,6 +834,19 @@ To work around such problems there are these options:
 Raising SystemExit exception in python isn't endorsed way to quit vim, use: >
 	:py vim.command("qall!")
 <
+							*Exxxx*
+This error can occur when python 3 cannot load the required modules.  This
+means that your python 3 is not correctly installed or there are some mistakes
+in your settings.  Please check the following items:
+1. Make sure that python 3 is correctly installed.  Also check the version of
+   python.
+2. Check the 'pythonthreedll' option.
+3. Check the 'pythonthreehome' option.
+4. Check the PATH environment variable if you don't set 'pythonthreedll'.
+   On MS-Windows, you can use where.exe to check which dll will be loaded.
+   E.g. >
+	where.exe python310.dll
+5. Check the PYTHONPATH and PYTHONHOME environment variables.
 
 							*has-python*
 You can test what Python version is available with: >
