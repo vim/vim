@@ -1156,7 +1156,13 @@ def Test_put_command()
   :2put =['a', 'b', 'c']
   assert_equal(['ppp', 'a', 'b', 'c', 'above'], getline(2, 6))
 
+  :0put ='first'
+  assert_equal('first', getline(1))
+  :1put! ='first again'
+  assert_equal('first again', getline(1))
+
   # compute range at runtime
+  :%del
   setline(1, range(1, 8))
   @a = 'aaa'
   :$-2put a

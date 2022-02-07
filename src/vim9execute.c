@@ -4617,7 +4617,12 @@ exec_instructions(ectx_T *ectx)
 			// :put! above cursor
 			dir = BACKWARD;
 		    else if (lnum >= 0)
-			curwin->w_cursor.lnum = iptr->isn_arg.put.put_lnum;
+		    {
+			curwin->w_cursor.lnum = lnum;
+			if (lnum == 0)
+			    // check_cursor() below will move to line 1
+			    dir = BACKWARD;
+		    }
 
 		    if (regname == '=')
 		    {
