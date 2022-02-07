@@ -886,6 +886,11 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     }
     if (check_defined(name_start, name_end - name_start, cctx, FALSE) == FAIL)
 	return NULL;
+    if (!ASCII_ISUPPER(is_global ? name_start[2] : name_start[0]))
+    {
+	semsg(_(e_function_name_must_start_with_capital_or_s_str), name_start);
+	return NULL;
+    }
 
     eap->arg = name_end;
     fill_exarg_from_cctx(eap, cctx);

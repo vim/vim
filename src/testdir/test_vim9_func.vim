@@ -679,6 +679,30 @@ def Test_nested_function()
   assert_equal('ok', g:result)
   unlet g:result
 
+  lines =<< trim END
+      vim9script
+      def Outer()
+        def _Inner()
+          echo 'bad'
+        enddef
+        Inner()
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E128:')
+
+  lines =<< trim END
+      vim9script
+      def Outer()
+        def g:inner()
+          echo 'bad'
+        enddef
+        Inner()
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E128:')
+
   # nested function inside conditional
   lines =<< trim END
       vim9script
@@ -3135,11 +3159,11 @@ func Test_partial_call_fails()
       def Iter(container: any): any
         var idx = -1
         var obj = {state: container}
-        def g:__NextItem__(self: dict<any>): any
+        def g:NextItem__(self: dict<any>): any
           ++idx
           return self.state[idx]
         enddef
-        obj.__next__ = function('g:__NextItem__', [obj])
+        obj.__next__ = function('g:NextItem__', [obj])
         return obj
       enddef
 
