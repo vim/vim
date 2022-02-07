@@ -4456,7 +4456,10 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		}
 
 		if (arg_pt != NULL)
-		    pt->pt_outer = arg_pt->pt_outer;
+		{
+		    pt->pt_outer_partial = arg_pt;
+		    ++arg_pt->pt_refcount;
+		}
 	    }
 	    rettv->v_type = VAR_PARTIAL;
 	    rettv->vval.v_partial = pt;

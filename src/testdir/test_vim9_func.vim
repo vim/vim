@@ -3477,6 +3477,25 @@ def Test_nested_closure_funcref()
   unlet g:result_one g:result_two
 enddef
 
+def Test_nested_closure_in_dict()
+  var lines =<< trim END
+      vim9script
+      def Func(): dict<any>
+        var n: number
+        def Inc(): number
+          ++n
+          return n
+        enddef
+        return {inc: function(Inc)}
+      enddef
+      disas Func
+      var d = Func()
+      assert_equal(1, d.inc())
+      assert_equal(2, d.inc())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_check_func_arg_types()
   var lines =<< trim END
       vim9script

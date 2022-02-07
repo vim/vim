@@ -2051,6 +2051,9 @@ struct partial_S
     // For a compiled closure: the arguments and local variables scope
     outer_T	pt_outer;
 
+    // For a partial of a partial: use pt_outer values of this partial.
+    partial_T	*pt_outer_partial;
+
     funcstack_T	*pt_funcstack;	// copy of stack, used after context
 				// function returns
 

@@ -4526,6 +4526,9 @@ partial_free(partial_T *pt)
     // "out_up" is no longer used, decrement refcount on partial that owns it.
     partial_unref(pt->pt_outer.out_up_partial);
 
+    // Using pt_outer from another partial.
+    partial_unref(pt->pt_outer_partial);
+
     // Decrease the reference count for the context of a closure.  If down
     // to the minimum it may be time to free it.
     if (pt->pt_funcstack != NULL)
