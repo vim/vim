@@ -46,10 +46,6 @@
 
 #include <signal.h>
 
-#ifdef __CYGWIN32__
-# include <sys/termios.h>
-#endif
-
 #ifdef HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
 #endif

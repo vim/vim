@@ -2571,7 +2571,7 @@ scripterror:
 		}
 	    }
 #endif
-#ifdef __CYGWIN32__
+#ifdef __CYGWIN__
 	    /*
 	     * If vim is invoked by non-Cygwin tools, convert away any
 	     * DOS paths, so things like .swp files are created correctly.

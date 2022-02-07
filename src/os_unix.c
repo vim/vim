@@ -6341,7 +6341,7 @@ select_eintr:
 	FD_ZERO(&wfds);
 	FD_ZERO(&efds);
 	FD_SET(fd, &rfds);
-# if !defined(__QNX__) && !defined(__CYGWIN32__)
+# ifndef __QNX__
 	// For QNX select() always returns 1 if this is set.  Why?
 	FD_SET(fd, &efds);
 # endif
