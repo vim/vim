@@ -1869,7 +1869,8 @@ getcmdline_int(
 		if (nextwild(&xpc, wild_type, WILD_NO_BEEP,
 			    firstc != '@') == FAIL)
 		    break;
-		cmdline_pum_remove();
+		cmdline_pum_cleanup(&ccline);
+		xpc.xp_context = EXPAND_NOTHING;
 		goto cmdline_changed;
 	    }
 	}
@@ -2261,7 +2262,10 @@ getcmdline_int(
 		    break;
 #ifdef FEAT_WILDMENU
 		if (cmdline_pum_active())
-		    cmdline_pum_remove();
+		{
+		    cmdline_pum_cleanup(&ccline);
+		    xpc.xp_context = EXPAND_NOTHING;
+		}
 #endif
 		goto cmdline_changed;
 

@@ -2126,6 +2126,12 @@ func Test_wildmenu_pum()
   call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_28', {})
 
+  " Using <C-E> to cancel the popup menu and then pressing <Up> should recall
+  " the cmdline from history
+  call term_sendkeys(buf, "sign xyz\<Esc>:sign \<Tab>\<C-E>\<Up>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_29', {})
+
   call term_sendkeys(buf, "\<C-U>\<CR>")
   call StopVimInTerminal(buf)
   call delete('Xtest')

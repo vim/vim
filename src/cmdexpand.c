@@ -279,6 +279,12 @@ void cmdline_pum_remove(void)
     update_screen(0);
 }
 
+void cmdline_pum_cleanup(cmdline_info_T *cclp)
+{
+    cmdline_pum_remove();
+    wildmenu_cleanup(cclp);
+}
+
 int cmdline_compl_startcol(void)
 {
     return compl_startcol;

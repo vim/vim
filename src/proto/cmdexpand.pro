@@ -6,6 +6,7 @@ void ExpandCleanup(expand_T *xp);
 void cmdline_pum_display(void);
 int cmdline_pum_active(void);
 void cmdline_pum_remove(void);
+void cmdline_pum_cleanup(cmdline_info_T *cclp);
 int cmdline_compl_startcol(void);
 int showmatches(expand_T *xp, int wildmenu);
 char_u *sm_gettail(char_u *s);
