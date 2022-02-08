@@ -55,6 +55,7 @@ func_tbl_get(void)
  * If "argtypes" is not NULL also get the type: "arg: type" (:def function).
  * If "types_optional" is TRUE a missing type is OK, use "any".
  * If "evalarg" is not NULL use it to check for an already declared name.
+ * If "eap" is not NULL use it to check for an already declared name.
  * Return a pointer to after the type.
  * When something is wrong return "arg".
  */
@@ -65,6 +66,7 @@ one_function_arg(
 	garray_T    *argtypes,
 	int	    types_optional,
 	evalarg_T   *evalarg,
+	exarg_T	    *eap,
 	int	    is_vararg,
 	int	    skip)
 {
@@ -87,7 +89,8 @@ one_function_arg(
     // Vim9 script: cannot use script var name for argument. In function: also
     // check local vars and arguments.
     if (!skip && argtypes != NULL && check_defined(arg, p - arg,
-		    evalarg == NULL ? NULL : evalarg->eval_cctx, TRUE) == FAIL)
+			       evalarg == NULL ? NULL : evalarg->eval_cctx,
+			       eap == NULL ? NULL : eap->cstack, TRUE) == FAIL)
 	return arg;
 
     if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
@@ -210,7 +213,7 @@ get_function_args(
     int		*varargs,
     garray_T	*default_args,
     int		skip,
-    exarg_T	*eap,
+    exarg_T	*eap,		// can be NULL
     garray_T	*lines_to_free)
 {
     int		mustend = FALSE;
@@ -279,7 +282,7 @@ get_function_args(
 
 		arg = p;
 		p = one_function_arg(p, newargs, argtypes, types_optional,
-							  evalarg, TRUE, skip);
+						     evalarg, eap, TRUE, skip);
 		if (p == arg)
 		    break;
 		if (*skipwhite(p) == '=')
@@ -295,7 +298,7 @@ get_function_args(
 
 	    arg = p;
 	    p = one_function_arg(p, newargs, argtypes, types_optional,
-							 evalarg, FALSE, skip);
+						    evalarg, eap, FALSE, skip);
 	    if (p == arg)
 		break;
 

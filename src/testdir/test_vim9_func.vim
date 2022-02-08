@@ -1057,6 +1057,43 @@ def Test_call_wrong_args()
   END
   v9.CheckScriptSuccess(lines)
 
+  # with another variable in another block
+  lines =<< trim END
+    vim9script
+    if true
+      var name = 'piet'
+      # define a function so that the variable isn't cleared
+      def GetItem(): string
+        return item
+      enddef
+    endif
+    if true
+      var name = 'peter'
+      def FuncOne(name: string)
+        echo name
+      enddef
+    endif
+  END
+  v9.CheckScriptFailure(lines, 'E1168:')
+
+  # only variable in another block is OK
+  lines =<< trim END
+    vim9script
+    if true
+      var name = 'piet'
+      # define a function so that the variable isn't cleared
+      def GetItem(): string
+        return item
+      enddef
+    endif
+    if true
+      def FuncOne(name: string)
+        echo name
+      enddef
+    endif
+  END
+  v9.CheckScriptSuccess(lines)
+
   # argument name declared later is only found when compiling
   lines =<< trim END
     vim9script

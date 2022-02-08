@@ -600,7 +600,8 @@ handle_import(
 	    goto erret;
 	}
 	else if (imported == NULL
-		&& check_defined(as_name, STRLEN(as_name), cctx, FALSE) == FAIL)
+		&& check_defined(as_name, STRLEN(as_name), cctx, NULL,
+								FALSE) == FAIL)
 	    goto erret;
 
 	if (imported == NULL)

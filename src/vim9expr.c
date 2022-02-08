@@ -501,7 +501,7 @@ compile_load(
 	    {
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
-		if (script_var_exists(*arg, len, cctx) == OK
+		if (script_var_exists(*arg, len, cctx, NULL) == OK
 			|| find_imported(name, 0, FALSE, cctx) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
