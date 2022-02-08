@@ -516,6 +516,12 @@ handle_import(
 	goto erret;
     }
 
+    if (sid == current_sctx.sc_sid)
+    {
+	emsg(_(e_script_cannot_import_itself));
+	goto erret;
+    }
+
     import_gap = gap != NULL ? gap : &SCRIPT_ITEM(import_sid)->sn_imports;
     for (i = 0; i < import_gap->ga_len; ++i)
     {

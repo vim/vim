@@ -500,7 +500,16 @@ def Test_import_fails()
   v9.CheckScriptFailure(lines, 'E1262:')
 
   delete('Xthat.vim')
- 
+
+  lines =<< trim END
+      vim9script
+      export var item = 'hello'
+      import './Xyourself.vim'
+  END
+  writefile(lines, 'Xyourself.vim')
+  assert_fails('source Xyourself.vim', 'E1088:')
+  delete('Xyourself.vim')
+
   mkdir('Ximport')
 
   writefile(['vim9script'], 'Ximport/.vim')

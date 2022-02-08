@@ -2802,7 +2802,8 @@ EXTERN char e_function_reference_invalid[]
 	INIT(= N_("E1086: Function reference invalid"));
 EXTERN char e_cannot_use_index_when_declaring_variable[]
 	INIT(= N_("E1087: Cannot use an index when declaring a variable"));
-// E1088 unused
+EXTERN char e_script_cannot_import_itself[]
+	INIT(= N_("E1088: Script cannot import itself"));
 EXTERN char e_unknown_variable_str[]
 	INIT(= N_("E1089: Unknown variable: %s"));
 EXTERN char e_cannot_assign_to_argument[]
