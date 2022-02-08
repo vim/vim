@@ -1883,7 +1883,8 @@ getcmdline_int(
 		&& c != Ctrl_L)
 	{
 #ifdef FEAT_WILDMENU
-	    cmdline_pum_remove();
+	    if (cmdline_pum_active())
+		cmdline_pum_remove();
 #endif
 	    (void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
 	    did_wild_list = FALSE;
