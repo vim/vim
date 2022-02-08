@@ -975,7 +975,7 @@ get_lval(
 	    cc = *p;
 	    *p = NUL;
 	    if (find_exported(import->imp_sid, lp->ll_name, &ufunc, &type,
-							     NULL, TRUE) == -1)
+						       NULL, NULL, TRUE) == -1)
 	    {
 		*p = cc;
 		return NULL;
@@ -6056,7 +6056,7 @@ handle_subscript(
 	    **arg = NUL;
 
 	    idx = find_exported(rettv->vval.v_number, exp_name, &ufunc, &type,
-						  evalarg->eval_cctx, verbose);
+			    evalarg->eval_cctx, evalarg->eval_cstack, verbose);
 	    **arg = cc;
 
 	    if (idx < 0 && ufunc == NULL)

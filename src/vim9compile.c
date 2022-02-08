@@ -532,7 +532,12 @@ check_item_writable(svar_T *sv, int check_writable, char_u *name)
  * If not found or the variable is not writable returns -2.
  */
     int
-get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx)
+get_script_item_idx(
+	int	    sid,
+	char_u	    *name,
+	int	    check_writable,
+	cctx_T	    *cctx,
+	cstack_T    *cstack)
 {
     hashtab_T	    *ht;
     dictitem_T	    *di;
@@ -544,7 +549,7 @@ get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx)
 	return -1;
     if (sid == current_sctx.sc_sid)
     {
-	sallvar_T *sav = find_script_var(name, 0, cctx, NULL);
+	sallvar_T *sav = find_script_var(name, 0, cctx, cstack);
 
 	if (sav == NULL)
 	    return -2;
@@ -1449,7 +1454,7 @@ compile_lhs(
 			lhs->lhs_scriptvar_idx = get_script_item_idx(
 					       lhs->lhs_scriptvar_sid, rawname,
 			      lhs->lhs_has_index ? ASSIGN_FINAL : ASSIGN_CONST,
-									 cctx);
+								   cctx, NULL);
 			if (lhs->lhs_scriptvar_idx >= 0)
 			{
 			    scriptitem_T *si = SCRIPT_ITEM(

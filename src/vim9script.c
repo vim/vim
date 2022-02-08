@@ -649,6 +649,7 @@ ex_import(exarg_T *eap)
 
 /*
  * Find an exported item in "sid" matching "name".
+ * Either "cctx" or "cstack" is NULL.
  * When it is a variable return the index.
  * When it is a user function return "*ufunc".
  * When not found returns -1 and "*ufunc" is NULL.
@@ -660,6 +661,7 @@ find_exported(
 	ufunc_T	    **ufunc,
 	type_T	    **type,
 	cctx_T	    *cctx,
+	cstack_T    *cstack,
 	int	    verbose)
 {
     int		idx = -1;
@@ -667,7 +669,7 @@ find_exported(
     scriptitem_T *script = SCRIPT_ITEM(sid);
 
     // Find name in "script".
-    idx = get_script_item_idx(sid, name, 0, cctx);
+    idx = get_script_item_idx(sid, name, 0, cctx, cstack);
     if (idx >= 0)
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
