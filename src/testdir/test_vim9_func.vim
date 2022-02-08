@@ -1028,10 +1028,34 @@ def Test_call_wrong_args()
     vim9script
     var name = 'piet'
     def FuncOne(name: string)
-      echo nr
+      echo name
     enddef
   END
   v9.CheckScriptFailure(lines, 'E1168:')
+
+  # same, inside the same block
+  lines =<< trim END
+    vim9script
+    if true
+      var name = 'piet'
+      def FuncOne(name: string)
+        echo name
+      enddef
+    endif
+  END
+  v9.CheckScriptFailure(lines, 'E1168:')
+
+  # variable in other block is OK
+  lines =<< trim END
+    vim9script
+    if true
+      var name = 'piet'
+    endif
+    def FuncOne(name: string)
+      echo name
+    enddef
+  END
+  v9.CheckScriptSuccess(lines)
 
   # argument name declared later is only found when compiling
   lines =<< trim END
