@@ -924,9 +924,18 @@ cmdline_wildchar_complete(
 	// if 'wildmode' contains "list" may still need to list
 	if (xp->xp_numfiles > 1
 		&& !*did_wild_list
-		&& (wim_flags[wim_index] & WIM_LIST))
+		&& ((wim_flags[wim_index] & WIM_LIST)
+#ifdef FEAT_WILDMENU
+		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)
+#endif
+		    ))
 	{
+#ifdef FEAT_WILDMENU
+	    (void)showmatches(xp,
+		    p_wmnu && ((wim_flags[wim_index] & WIM_LIST) == 0));
+#else
 	    (void)showmatches(xp, FALSE);
+#endif
 	    redrawcmd();
 	    *did_wild_list = TRUE;
 	}
@@ -1848,6 +1857,23 @@ getcmdline_int(
 
 #ifdef FEAT_WILDMENU
 	c = wildmenu_translate_key(&ccline, c, &xpc, did_wild_list);
+
+	if (cmdline_pum_active())
+	{
+	    if (c == Ctrl_E || c == Ctrl_Y)
+	    {
+		int	wild_type;
+
+		wild_type = (c == Ctrl_E) ? WILD_CANCEL : WILD_APPLY;
+
+		if (nextwild(&xpc, wild_type, WILD_NO_BEEP,
+							firstc != '@') == FAIL)
+		    break;
+		cmdline_pum_cleanup(&ccline);
+		xpc.xp_context = EXPAND_NOTHING;
+		goto cmdline_changed;
+	    }
+	}
 #endif
 
 	// free expanded names when finished walking through matches
@@ -1856,6 +1882,9 @@ getcmdline_int(
 		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A
 		&& c != Ctrl_L)
 	{
+#ifdef FEAT_WILDMENU
+	    cmdline_pum_remove();
+#endif
 	    (void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
 	    did_wild_list = FALSE;
 #ifdef FEAT_WILDMENU
@@ -1950,10 +1979,19 @@ getcmdline_int(
 	// <S-Tab> goes to last match, in a clumsy way
 	if (c == K_S_TAB && KeyTyped)
 	{
-	    if (nextwild(&xpc, WILD_EXPAND_KEEP, 0, firstc != '@') == OK
-		    && nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
-		    && nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
-		goto cmdline_changed;
+	    if (nextwild(&xpc, WILD_EXPAND_KEEP, 0, firstc != '@') == OK)
+	    {
+#ifdef FEAT_WILDMENU
+		// Trigger the popup menu when wildoptions=pum
+		showmatches(&xpc,
+			p_wmnu && ((wim_flags[wim_index] & WIM_LIST) == 0));
+#else
+		(void)showmatches(&xpc, FALSE);
+#endif
+		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
+			&& nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
+		    goto cmdline_changed;
+	    }
 	}
 
 	if (c == NUL || c == K_ZERO)	    // NUL is stored as NL
@@ -2222,6 +2260,13 @@ getcmdline_int(
 	case Ctrl_A:	    // all matches
 		if (nextwild(&xpc, WILD_ALL, 0, firstc != '@') == FAIL)
 		    break;
+#ifdef FEAT_WILDMENU
+		if (cmdline_pum_active())
+		{
+		    cmdline_pum_cleanup(&ccline);
+		    xpc.xp_context = EXPAND_NOTHING;
+		}
+#endif
 		goto cmdline_changed;
 
 	case Ctrl_L:
