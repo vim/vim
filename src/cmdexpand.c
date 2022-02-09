@@ -622,7 +622,7 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	    compl_match_array[i].pum_extra = NULL;
 	    compl_match_array[i].pum_kind = NULL;
 	}
-	compl_startcol = ccline->cmdpos + 1;
+	compl_startcol = vim_strsize(ccline->cmdbuff) + 1;
 	columns = vim_strsize(xp->xp_pattern);
 	if (showtail)
 	{
