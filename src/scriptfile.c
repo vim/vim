@@ -1658,10 +1658,13 @@ ex_scriptnames(exarg_T *eap)
 		    i,
 		    si->sn_state == SN_STATE_NOT_LOADED ? " A" : "",
 		    NameBuff);
-	    msg_putchar('\n');
-	    msg_outtrans(IObuff);
-	    out_flush();	    // output one line at a time
-	    ui_breakcheck();
+	    if (!message_filtered(IObuff))
+	    {
+		msg_putchar('\n');
+		msg_outtrans(IObuff);
+		out_flush();	    // output one line at a time
+		ui_breakcheck();
+	    }
 	}
     }
 }
