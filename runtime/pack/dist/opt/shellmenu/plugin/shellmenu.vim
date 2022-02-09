@@ -7,7 +7,8 @@
 " Attached is a Vim script file for turning gvim into a shell script editor.
 " It may also be used as an example how to use menus in Vim.
 "
-" Written by: Lennart Schultz <les@dmi.min.dk>
+" Maintainer: Ada(Haowen) Yu <me@yuhaowen.com>
+" Original author: Lennart Schultz <les@dmi.min.dk> (mail unreachable)
 
 imenu Stmts.for	for  in <c-m>do<c-m><c-m>done<esc>ki	<esc>kk0elli
 imenu Stmts.case	case  in<c-m>) ;;<c-m>esac<esc>bki	<esc>k0elli
