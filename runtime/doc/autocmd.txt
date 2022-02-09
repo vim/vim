@@ -326,6 +326,7 @@ Name			triggered by ~
 |FileChangedRO|		before making the first change to a read-only file
 
 |DiffUpdated|		after diffs have been updated
+|DirChangedPre|		before the working directory will change
 |DirChanged|		after the working directory has changed
 
 |ShellCmdPost|		after executing a shell command
@@ -738,6 +739,11 @@ DiffUpdated			After diffs have been updated.  Depending on
 				what kind of diff is being used (internal or
 				external) this can be triggered on every
 				change or when doing |:diffupdate|.
+							*DirChangedPre*
+DirChangedPre			The working directory is going to be changed,
+				as with ||DirChanged|.  The pattern is like
+				with |DirChanged|.  The new directory can be
+				found in v:event.directory.
 							*DirChanged*
 DirChanged			The working directory has changed in response
 				to the |:cd| or |:tcd| or |:lcd| commands, or

@@ -7343,6 +7343,26 @@ post_chdir(cdscope_T scope)
 }
 
 /*
+ * Trigger DirChangedPre for "acmd_fname" with directory "new_dir".
+ */
+    void
+trigger_DirChangedPre(char_u *acmd_fname, char_u *new_dir)
+{
+#ifdef FEAT_EVAL
+    dict_T	    *v_event;
+    save_v_event_T  save_v_event;
+
+    v_event = get_v_event(&save_v_event);
+    (void)dict_add_string(v_event, "directory", new_dir);
+    dict_set_items_ro(v_event);
+#endif
+    apply_autocmds(EVENT_DIRCHANGEDPRE, acmd_fname, new_dir, FALSE, curbuf);
+#ifdef FEAT_EVAL
+    restore_v_event(v_event, &save_v_event);
+#endif
+}
+
+/*
  * Change directory function used by :cd/:tcd/:lcd Ex commands and the
  * chdir() function.
  * scope == CDSCOPE_WINDOW: changes the window-local directory
@@ -7358,7 +7378,7 @@ changedir_func(
 {
     char_u	*pdir = NULL;
     int		dir_differs;
-    char_u	*acmd_fname;
+    char_u	*acmd_fname = NULL;
     char_u	**pp;
 
     if (new_dir == NULL || allbuf_locked())
@@ -7411,12 +7431,23 @@ changedir_func(
 	new_dir = NameBuff;
     }
     dir_differs = pdir == NULL
-	|| pathcmp((char *)pdir, (char *)new_dir, -1) != 0;
-    if (dir_differs && vim_chdir(new_dir))
+			    || pathcmp((char *)pdir, (char *)new_dir, -1) != 0;
+    if (dir_differs)
     {
-	emsg(_(e_command_failed));
-	vim_free(pdir);
-	return FALSE;
+	if (scope == CDSCOPE_WINDOW)
+	    acmd_fname = (char_u *)"window";
+	else if (scope == CDSCOPE_TABPAGE)
+	    acmd_fname = (char_u *)"tabpage";
+	else
+	    acmd_fname = (char_u *)"global";
+	trigger_DirChangedPre(acmd_fname, new_dir);
+
+	if (vim_chdir(new_dir))
+	{
+	    emsg(_(e_command_failed));
+	    vim_free(pdir);
+	    return FALSE;
+	}
     }
 
     if (scope == CDSCOPE_WINDOW)
@@ -7431,16 +7462,7 @@ changedir_func(
     post_chdir(scope);
 
     if (dir_differs)
-    {
-	if (scope == CDSCOPE_WINDOW)
-	    acmd_fname = (char_u *)"window";
-	else if (scope == CDSCOPE_TABPAGE)
-	    acmd_fname = (char_u *)"tabpage";
-	else
-	    acmd_fname = (char_u *)"global";
-	apply_autocmds(EVENT_DIRCHANGED, acmd_fname, new_dir, FALSE,
-							    curbuf);
-    }
+	apply_autocmds(EVENT_DIRCHANGED, acmd_fname, new_dir, FALSE, curbuf);
     return TRUE;
 }
 
