@@ -2680,11 +2680,11 @@ win_line(
 	}
 
 	// At end of the text line or just after the last character.
-	if ((c == NUL
+	if (c == NUL
 #if defined(LINE_ATTR)
 		|| did_line_attr == 1
 #endif
-		) && eol_hl_off == 0)
+		)
 	{
 #ifdef FEAT_SEARCH_EXTRA
 	    // flag to indicate whether prevcol equals startcol of search_hl or
