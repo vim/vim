@@ -57,7 +57,6 @@
 extern int dos2;			// this is in os_amiga.c
 # endif
 # ifdef SASC
-#  include <proto/dos.h>
 #  include <ios1.h>			// for chkufb()
 # endif
 #endif
