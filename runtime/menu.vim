@@ -1201,8 +1201,8 @@ an 50.710 &Syntax.Co&lor\ Test		:sp $VIMRUNTIME/syntax/colortest.vim<Bar>so %<CR
 an 50.720 &Syntax.&Highlight\ Test	:runtime syntax/hitest.vim<CR>
 an 50.730 &Syntax.&Convert\ to\ HTML	:runtime syntax/2html.vim<CR>
 
-" Uncomment this to compile the functions early to find any mistakes
-defcompile
+" Uncomment the next line to compile the functions early to find any mistakes
+" defcompile
 
 endif " !exists("did_install_syntax_menu")
 

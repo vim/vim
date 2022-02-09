@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2022 Jan 28
+*index.txt*     For Vim version 8.2.  Last change: 2022 Feb 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1152,7 +1152,7 @@ tag		command		action ~
 |:&|		:&		repeat last ":substitute"
 |:star|		:*		execute contents of a register
 |:<|		:<		shift lines one 'shiftwidth' left
-|:=|		:=		print the cursor line number
+|:=|		:=		print the last line number
 |:>|		:>		shift lines one 'shiftwidth' right
 |:@|		:@		execute contents of a register
 |:@@|		:@@		repeat the previous ":@"

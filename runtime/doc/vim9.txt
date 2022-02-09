@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -221,12 +221,12 @@ Functions and variables are script-local by default ~
 When using `:function` or `:def` to specify a new function at the script level
 in a Vim9 script, the function is local to the script, as if "s:" was
 prefixed.  Using the "s:" prefix is optional.  To define a global function or
-variable the "g:" prefix must be used.  For functions in an autoload script
-the "name#" prefix is sufficient. >
+variable the "g:" prefix must be used.  For functions in a script that is to
+be imported and in an autoload script "export" needs to be used. >
 	def ThisFunction()          # script-local
 	def s:ThisFunction()        # script-local
 	def g:ThatFunction()        # global
-	def scriptname#function()   # autoload
+	export def Function()       # for import and import autoload
 <						*E1058* *E1075*
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function and no namespace was given, this nested function is local to the code
@@ -280,7 +280,9 @@ You want to use this in scripts that use a `finish` command to bail out at
 some point when loaded again.  E.g. when a buffer local option is set: >
 	vim9script noclear
 	setlocal completefunc=SomeFunc
-	if exists('*g:SomeFunc') | finish | endif
+	if exists('*g:SomeFunc')
+	  finish
+	endif
 	def g:SomeFunc()
 	....
 
@@ -1398,13 +1400,23 @@ Results in:
 For script-local variables in Vim9 script the type is checked, also when the
 variable was declared in a legacy function.
 
-When a type has been declared this is attached to a list or string.  When
+When a type has been declared this is attached to a List or Dictionary.  When
 later some expression attempts to change the type an error will be given: >
 	var ll: list<number> = [1, 2, 3]
 	ll->extend(['x'])  # Error, 'x' is not a number
 
-If the type is inferred then the type is allowed to change: >
+If the type is not declared then it is allowed to change: >
 	[1, 2, 3]->extend(['x'])  # result: [1, 2, 3, 'x']
+
+For a variable declaration an inferred type matters: >
+	var ll = [1, 2, 3]
+	ll->extend(['x'])  # Error, 'x' is not a number
+That is because the declaration looks like a list of numbers, thus is
+equivalent to: >
+	var ll: list<number> = [1, 2, 3]
+If you do want a more permissive list you need to declare the type: >
+	var ll: list<any = [1, 2, 3]
+	ll->extend(['x'])  # OK
 
 
 Stricter type checking ~

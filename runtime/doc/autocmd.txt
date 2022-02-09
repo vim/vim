@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Jan 21
+*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Feb 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -741,7 +741,7 @@ DiffUpdated			After diffs have been updated.  Depending on
 				change or when doing |:diffupdate|.
 							*DirChangedPre*
 DirChangedPre			The working directory is going to be changed,
-				as with ||DirChanged|.  The pattern is like
+				as with |DirChanged|.  The pattern is like
 				with |DirChanged|.  The new directory can be
 				found in v:event.directory.
 							*DirChanged*

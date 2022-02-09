@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 04
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,8 +39,14 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Once Vim9 is stable:
-- Check code coverage, add more tests if needed.
 - Use Vim9 for runtime files.
+- Check code coverage, add more tests if needed.
+	vim9compile.c
+	vim9execute.c
+	vim9expr.c
+	vim9instr.c
+	vim9script.c
+	vim9type.c
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.
@@ -4834,9 +4840,6 @@ Autocommands:
     CursorHoldC     - CursorHold while command-line editing
     WinMoved	    - when windows have been moved around, e.g, ":wincmd J"
     SearchPost	    - After doing a search command (e.g. to do "M")
-    PreDirChanged/PostDirChanged
-		    - Before/after ":cd" has been used (for changing the
-		      window title)
     ShutDown	    - when the system is about to shut down
     InsertCharPost  - user typed a character in Insert mode, after inserting
 		      the char.

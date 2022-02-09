@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.2.  Last change: 2022 Jan 04
+*quickfix.txt*  For Vim version 8.2.  Last change: 2022 Feb 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

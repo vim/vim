@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 8.2 script
 " Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
-" Last Change:	February 01, 2022
-" Version:	8.2-27
+" Last Change:	February 09, 2022
+" Version:	8.2-28
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
 
@@ -66,8 +66,8 @@ syn keyword vimErrSetting contained	bioskey biosk conskey consk autoprint beauti
 
 " AutoCmd Events {{{2
 syn case ignore
-syn keyword vimAutoEvent contained	BufAdd BufDelete BufFilePost BufHidden BufNew BufRead BufReadPost BufUnload BufWinLeave BufWrite BufWritePost CmdlineChanged CmdlineLeave CmdwinEnter ColorScheme ColorSchemePre CompleteChanged CompleteDone CompleteDonePre CursorHold CursorHoldI CursorMoved CursorMovedI DiffUpdated DirChanged EncodingChanged ExitPre FileAppendCmd FileAppendPost FileAppendPre FileChangedRO FileChangedShell FileChangedShellPost FileEncoding FileExplorer FileReadCmd FileReadPost FileReadPre FileType FileWriteCmd FileWritePost FileWritePre FilterReadPost FilterReadPre FilterWritePost FilterWritePre FocusGained FocusLost FuncUndefined GUIEnter GUIFailed InsertChange InsertCharPre InsertEnter InsertLeave InsertLeavePre MenuPopup ModeChanged OptionSet QuickFixCmdPost QuickFixCmdPre QuitPre RemoteReply SafeState SafeStateAgain SessionLoadPost ShellCmdPost ShellFilterPost SigUSR1 SourceCmd SourcePost SourcePre SpellFileMissing StdinReadPost StdinReadPre SwapExists Syntax TabClosed TabEnter TabLeave TabNew TermChanged TerminalOpen TerminalWinOpen TermResponse TextChanged TextChangedI TextChangedP TextYankPost User VimEnter VimLeave VimLeavePre VimResized VimResume VimSuspend WinClosed WinEnter WinLeave WinNew
-syn keyword vimAutoEvent contained	BufCreate BufEnter BufFilePre BufLeave BufNewFile BufReadCmd BufReadPre BufWinEnter BufWipeout BufWriteCmd BufWritePre CmdlineEnter CmdUndefined CmdwinLeave
+syn keyword vimAutoEvent contained	BufAdd BufDelete BufFilePost BufHidden BufNew BufRead BufReadPost BufUnload BufWinLeave BufWrite BufWritePost CmdlineChanged CmdlineLeave CmdwinEnter ColorScheme CompleteChanged CompleteDone CompleteDonePre CursorHold CursorHoldI CursorMoved CursorMovedI DiffUpdated DirChanged DirChangedPre EncodingChanged ExitPre FileAppendCmd FileAppendPost FileAppendPre FileChangedRO FileChangedShell FileChangedShellPost FileEncoding FileExplorer FileReadCmd FileReadPost FileReadPre FileType FileWriteCmd FileWritePost FileWritePre FilterReadPost FilterReadPre FilterWritePost FilterWritePre FocusGained FocusLost FuncUndefined GUIEnter GUIFailed InsertChange InsertCharPre InsertEnter InsertLeave InsertLeavePre MenuPopup ModeChanged OptionSet QuickFixCmdPost QuickFixCmdPre QuitPre RemoteReply SafeState SafeStateAgain SessionLoadPost ShellCmdPost ShellFilterPost SigUSR1 SourceCmd SourcePost SourcePre SpellFileMissing StdinReadPost StdinReadPre SwapExists Syntax TabClosed TabEnter TabLeave TabNew TermChanged TerminalOpen TerminalWinOpen TermResponse TextChanged TextChangedI TextChangedP TextYankPost User VimEnter VimLeave VimLeavePre VimResized VimResume VimSuspend WinClosed WinEnter WinLeave WinNew
+syn keyword vimAutoEvent contained	BufCreate BufEnter BufFilePre BufLeave BufNewFile BufReadCmd BufReadPre BufWinEnter BufWipeout BufWriteCmd BufWritePre CmdlineEnter CmdUndefined CmdwinLeave ColorSchemePre
 
 " Highlight commonly used Groupnames {{{2
 syn keyword vimGroup contained	Comment Constant String Character Number Boolean Float Identifier Function Statement Conditional Repeat Label Operator Keyword Exception PreProc Include Define Macro PreCondit Type StorageClass Structure Typedef Special SpecialChar Tag Delimiter SpecialComment Debug Underlined Ignore Error Todo

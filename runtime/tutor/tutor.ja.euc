@@ -955,7 +955,7 @@ NOTE: 補完は多くのコマンドで動作します。そして CTRL-D と <TAB> 押してみてくだ
 	出版社: New Riders
   最初の本は完全に Vim のために書かれました。とりわけ初心者にはお奨めです。
   多くの例題や図版が掲載されています。
-  次のURLを参照して下さい http://iccf-holland.org/click5.html
+  次のURLを参照して下さい https://iccf-holland.org/click5.html
 
   次は Vim よりも Vi について書かれた古い本ですが推薦します:
 	Learning the Vi Editor - by Linda Lamb

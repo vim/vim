@@ -3948,6 +3948,7 @@ Dictionary-function	eval.txt	/*Dictionary-function*
 DiffUpdated	autocmd.txt	/*DiffUpdated*
 Digraphs	digraph.txt	/*Digraphs*
 DirChanged	autocmd.txt	/*DirChanged*
+DirChangedPre	autocmd.txt	/*DirChangedPre*
 E	motion.txt	/*E*
 E10	message.txt	/*E10*
 E100	diff.txt	/*E100*
@@ -4234,6 +4235,7 @@ E1262	vim9.txt	/*E1262*
 E1263	eval.txt	/*E1263*
 E1264	vim9.txt	/*E1264*
 E1265	eval.txt	/*E1265*
+E1266	if_pyth.txt	/*E1266*
 E127	eval.txt	/*E127*
 E128	eval.txt	/*E128*
 E129	eval.txt	/*E129*

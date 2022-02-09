@@ -791,7 +791,7 @@ Poznámka: Tímto se vyhne¹ stisknutí  i  , posledního znaku, textu na vlo¾ení,
 	Nakladatel: New Riders
   První kniha urèená pro Vim. Obzvlá¹tì vhodná pro zaèáteèníky.
   Obsahuje mno¾ství pøíkladù a obrázkù.
-  viz http://iccf-holland.org/click5.html
+  viz https://iccf-holland.org/click5.html
 
   Tato kniha je star¹í a více vìnovaná Vi ne¾ Vim, ale také doporuèená:
 	Learning the Vi Editor - od Linda Lamb

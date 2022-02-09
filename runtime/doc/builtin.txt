@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Feb 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4670,9 +4670,11 @@ islocked({expr})					*islocked()* *E786*
 			:echo islocked('alist')		" 1
 			:echo islocked('alist[1]')	" 0
 
-<		When {expr} is a variable that does not exist you get an error
-		message.  Use |exists()| to check for existence.
-		In Vim9 script it does not work for local variables.
+<		When {expr} is a variable that does not exist -1 is returned.
+		If {expr} uses a range, list or dict index that is out of
+		range or does not exist you get an error message.  Use
+		|exists()| to check for existence.
+		In Vim9 script it does not work for local function variables.
 
 		Can also be used as a |method|: >
 			GetName()->islocked()
