@@ -891,8 +891,48 @@ mch_mkdir(char_u *name)
     int
 mch_can_exe(char_u *name, char_u **path, int use_path)
 {
-    // TODO
-    return -1;
+    int exe = -1;
+#ifdef __amigaos4__
+    // Load file sections using elf.library or hunk.library.
+    BPTR seg = LoadSeg(name);
+
+    if (seg && GetSegListInfoTags(seg, GSLI_Native, NULL, TAG_DONE) !=
+        GetSegListInfoTags(seg, GSLI_68KHUNK, NULL, TAG_DONE))
+    {
+        // Test if file permissions allow execution.
+        struct ExamineData *exd = ExamineObjectTags(EX_StringNameInput, name);
+
+        exe = (exd && !(exd->Protection & EXDF_NO_EXECUTE)) ? 1 : 0;
+        FreeDosObject(DOS_EXAMINEDATA, exd);
+    }
+    else
+    {
+        exe = 0;
+    }
+
+    UnLoadSeg(seg);
+
+    // Search for executable in path if applicable.
+    if (!exe && use_path)
+    {
+        // Save current working dir.
+        BPTR cwd = GetCurrentDir();
+        struct PathNode *head = DupCmdPathList(NULL);
+
+        // For each entry, recur to check for executable.
+        for(struct PathNode *tail = head; !exe && tail;
+            tail = (struct PathNode *) BADDR(tail->pn_Next))
+        {
+            SetCurrentDir(tail->pn_Lock);
+            exe = mch_can_exe(name, path, 0);
+        }
+
+        // Go back to where we were.
+        FreeCmdPathList(head);
+        SetCurrentDir(cwd);
+    }
+#endif
+    return exe;
 }
 
 /*
