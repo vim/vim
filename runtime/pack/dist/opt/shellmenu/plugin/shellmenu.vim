@@ -7,18 +7,23 @@
 " Attached is a Vim script file for turning gvim into a shell script editor.
 " It may also be used as an example how to use menus in Vim.
 "
-" Maintainer: Ada(Haowen) Yu <me@yuhaowen.com>
+" Maintainer: Ada (Haowen) Yu <me@yuhaowen.com>
 " Original author: Lennart Schultz <les@dmi.min.dk> (mail unreachable)
 
-imenu Stmts.for	for  in <c-m>do<c-m><c-m>done<esc>ki	<esc>kk0elli
-imenu Stmts.case	case  in<c-m>) ;;<c-m>esac<esc>bki	<esc>k0elli
-imenu Stmts.if	if   <c-m>then<c-m><c-m>fi<esc>ki	<esc>kk0elli
-imenu Stmts.if-else	if   <c-m>then<c-m><c-m>else<c-m><c-m>fi<esc>ki	<esc>kki	<esc>kk0elli
-imenu Stmts.elif	elif   <c-m>then<c-m><c-m><esc>ki	<esc>kk0elli
-imenu Stmts.while	while   do<c-m><c-m>done<esc>ki	<esc>kk0elli
+" Make sure the '<' and 'C' flags are not included in 'cpoptions', otherwise
+" <CR> would not be recognized.  See ":help 'cpoptions'".
+let s:cpo_save = &cpo
+set cpo&vim
+
+imenu Stmts.for	for  in <CR>do<CR><CR>done<esc>ki	<esc>kk0elli
+imenu Stmts.case	case  in<CR>) ;;<CR>esac<esc>bki	<esc>k0elli
+imenu Stmts.if	if   <CR>then<CR><CR>fi<esc>ki	<esc>kk0elli
+imenu Stmts.if-else	if   <CR>then<CR><CR>else<CR><CR>fi<esc>ki	<esc>kki	<esc>kk0elli
+imenu Stmts.elif	elif   <CR>then<CR><CR><esc>ki	<esc>kk0elli
+imenu Stmts.while	while   do<CR><CR>done<esc>ki	<esc>kk0elli
 imenu Stmts.break	break 
 imenu Stmts.continue	continue 
-imenu Stmts.function	() {<c-m><c-m>}<esc>ki	<esc>k0i
+imenu Stmts.function	() {<CR><CR>}<esc>ki	<esc>k0i
 imenu Stmts.return	return 
 imenu Stmts.return-true	return 0
 imenu Stmts.return-false	return 1
@@ -93,3 +98,7 @@ imenu Set.Exit\ after\ reading\ and\ executing\ one\ command set -t
 imenu Set.Treat\ unset\ variables\ as\ an\ error\ when\ substituting set -u
 imenu Set.Print\ shell\ input\ lines\ as\ they\ are\ read set -v
 imenu Set.Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed set -x
+
+" Restore the previous value of 'cpoptions'.
+let &cpo = s:cpo_save
+unlet s:cpo_save
