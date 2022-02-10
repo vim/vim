@@ -331,6 +331,7 @@ void cmdline_pum_remove(void)
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
     update_screen(0);
+    redrawcmd();
 }
 
 void cmdline_pum_cleanup(cmdline_info_T *cclp)
