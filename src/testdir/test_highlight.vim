@@ -662,7 +662,6 @@ func Test_colorcolumn()
   call writefile(lines, 'Xtest_colorcolumn')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn', {'rows': 10})
   call term_sendkeys(buf, ":\<CR>")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_colorcolumn_1', {})
 
   " clean up
@@ -680,7 +679,6 @@ func Test_colorcolumn_bri()
   call writefile(lines, 'Xtest_colorcolumn_bri')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn_bri', {'rows': 10,'columns': 40})
   call term_sendkeys(buf, ":set co=40 linebreak bri briopt=shift:2 cc=40,41,43\<CR>")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_colorcolumn_2', {})
 
   " clean up
@@ -698,7 +696,6 @@ func Test_colorcolumn_sbr()
   call writefile(lines, 'Xtest_colorcolumn_srb')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn_srb', {'rows': 10,'columns': 40})
   call term_sendkeys(buf, ":set co=40 showbreak=+++>\\  cc=40,41,43\<CR>")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_colorcolumn_3', {})
 
   " clean up

@@ -1626,7 +1626,6 @@ func Test_prop_in_linebreak()
   END
   call writefile(lines, 'XscriptPropLinebreak')
   let buf = RunVimInTerminal('-S XscriptPropLinebreak', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_prop_linebreak', {})
 
   call StopVimInTerminal(buf)
@@ -1644,7 +1643,6 @@ func Test_prop_after_tab()
   END
   call writefile(lines, 'XscriptPropAfterTab')
   let buf = RunVimInTerminal('-S XscriptPropAfterTab', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_prop_after_tab', {})
 
   call StopVimInTerminal(buf)
@@ -1662,7 +1660,6 @@ func Test_prop_after_linebreak()
   END
   call writefile(lines, 'XscriptPropAfterLinebreak')
   let buf = RunVimInTerminal('-S XscriptPropAfterLinebreak', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_prop_after_linebreak', {})
 
   call StopVimInTerminal(buf)

@@ -1860,6 +1860,9 @@ getcmdline_int(
 
 	if (cmdline_pum_active())
 	{
+	    // Ctrl-Y: Accept the current selection and close the popup menu.
+	    // Ctrl-E: cancel the cmdline popup menu and return the original
+	    // text.
 	    if (c == Ctrl_E || c == Ctrl_Y)
 	    {
 		int	wild_type;
@@ -1869,16 +1872,13 @@ getcmdline_int(
 		if (nextwild(&xpc, wild_type, WILD_NO_BEEP,
 							firstc != '@') == FAIL)
 		    break;
-		cmdline_pum_cleanup(&ccline);
-		xpc.xp_context = EXPAND_NOTHING;
-		goto cmdline_changed;
+		c = Ctrl_E;
 	    }
 	}
 #endif
 
 	// free expanded names when finished walking through matches
-	if (xpc.xp_numfiles != -1
-		&& !(c == p_wc && KeyTyped) && c != p_wcm
+	if (!(c == p_wc && KeyTyped) && c != p_wcm
 		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A
 		&& c != Ctrl_L)
 	{
@@ -1886,7 +1886,8 @@ getcmdline_int(
 	    if (cmdline_pum_active())
 		cmdline_pum_remove();
 #endif
-	    (void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
+	    if (xpc.xp_numfiles != -1)
+		(void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
 	    did_wild_list = FALSE;
 #ifdef FEAT_WILDMENU
 	    if (!p_wmnu || (c != K_UP && c != K_DOWN))
@@ -1982,13 +1983,16 @@ getcmdline_int(
 	{
 	    if (nextwild(&xpc, WILD_EXPAND_KEEP, 0, firstc != '@') == OK)
 	    {
+		if (xpc.xp_numfiles > 1)
+		{
 #ifdef FEAT_WILDMENU
-		// Trigger the popup menu when wildoptions=pum
-		showmatches(&xpc,
-			p_wmnu && ((wim_flags[wim_index] & WIM_LIST) == 0));
+		    // Trigger the popup menu when wildoptions=pum
+		    showmatches(&xpc, p_wmnu
+			    && ((wim_flags[wim_index] & WIM_LIST) == 0));
 #else
-		(void)showmatches(&xpc, FALSE);
+		    (void)showmatches(&xpc, FALSE);
 #endif
+		}
 		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
 			&& nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
 		    goto cmdline_changed;
@@ -2259,15 +2263,16 @@ getcmdline_int(
 		goto cmdline_not_changed;
 
 	case Ctrl_A:	    // all matches
-		if (nextwild(&xpc, WILD_ALL, 0, firstc != '@') == FAIL)
-		    break;
 #ifdef FEAT_WILDMENU
 		if (cmdline_pum_active())
-		{
+		    // As Ctrl-A completes all the matches, close the popup
+		    // menu (if present)
 		    cmdline_pum_cleanup(&ccline);
-		    xpc.xp_context = EXPAND_NOTHING;
-		}
 #endif
+		if (nextwild(&xpc, WILD_ALL, 0, firstc != '@') == FAIL)
+		    break;
+		xpc.xp_context = EXPAND_NOTHING;
+		did_wild_list = FALSE;
 		goto cmdline_changed;
 
 	case Ctrl_L:

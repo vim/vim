@@ -359,7 +359,6 @@ func Test_match_in_linebreak()
   END
   call writefile(lines, 'XscriptMatchLinebreak')
   let buf = RunVimInTerminal('-S XscriptMatchLinebreak', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_match_linebreak', {})
 
   call StopVimInTerminal(buf)
@@ -376,7 +375,6 @@ func Test_match_with_incsearch()
   END
   call writefile(lines, 'XmatchWithIncsearch')
   let buf = RunVimInTerminal('-S XmatchWithIncsearch', #{rows: 6})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_match_with_incsearch_1', {})
 
   call term_sendkeys(buf, ":s/0")
@@ -417,7 +415,6 @@ func Test_match_tab_with_linebreak()
   END
   call writefile(lines, 'XscriptMatchTabLinebreak')
   let buf = RunVimInTerminal('-S XscriptMatchTabLinebreak', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_match_tab_linebreak', {})
 
   call StopVimInTerminal(buf)
