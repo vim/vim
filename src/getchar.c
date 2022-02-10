@@ -2840,6 +2840,7 @@ handle_mapping(
 	    int save_may_garbage_collect = may_garbage_collect;
 	    int was_screen_col = screen_cur_col;
 	    int was_screen_row = screen_cur_row;
+	    int prev_did_emsg = did_emsg;
 
 	    vgetc_busy = 0;
 	    may_garbage_collect = FALSE;
@@ -2851,6 +2852,29 @@ handle_mapping(
 	    // redrawing.  Do put the cursor back where it was.
 	    windgoto(was_screen_row, was_screen_col);
 	    out_flush();
+
+	    // If an error was displayed and the expression returns an empty
+	    // string, generate a <Nop> to allow for a redraw.
+	    if (prev_did_emsg != did_emsg
+				       && (map_str == NULL || *map_str == NUL))
+	    {
+		char_u	buf[4];
+
+		vim_free(map_str);
+		buf[0] = K_SPECIAL;
+		buf[1] = KS_EXTRA;
+		buf[2] = KE_IGNORE;
+		buf[3] = NUL;
+		map_str = vim_strsave(buf);
+		if (State & CMDLINE)
+		{
+		    // redraw the command below the error
+		    msg_didout = TRUE;
+		    if (msg_row < cmdline_row)
+			msg_row = cmdline_row;
+		    redrawcmd();
+		}
+	    }
 
 	    vgetc_busy = save_vgetc_busy;
 	    may_garbage_collect = save_may_garbage_collect;
