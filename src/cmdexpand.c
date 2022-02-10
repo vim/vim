@@ -37,6 +37,8 @@ static int compl_startcol;
 static int compl_selected;
 #endif
 
+#define SHOW_FILE_TEXT(m) (showtail ? sm_gettail(files_found[m]) : files_found[m])
+
     static int
 sort_func_compare(const void *s1, const void *s2)
 {
@@ -256,6 +258,54 @@ nextwild(
 }
 
 #if defined(FEAT_WILDMENU) || defined(PROTO)
+
+/*
+ * Create and display a cmdline completion popup menu with items from
+ * 'files_found'.
+ */
+    static int
+cmdline_pum_create(
+	cmdline_info_T	*ccline,
+	expand_T	*xp,
+	char_u		**files_found,
+	int		num_files,
+	int		showtail)
+{
+    int		i;
+    int		columns;
+
+    // Add all the completion matches
+    compl_match_arraysize = num_files;
+    compl_match_array = ALLOC_MULT(pumitem_T, compl_match_arraysize);
+    for (i = 0; i < num_files; i++)
+    {
+	compl_match_array[i].pum_text = SHOW_FILE_TEXT(i);
+	compl_match_array[i].pum_info = NULL;
+	compl_match_array[i].pum_extra = NULL;
+	compl_match_array[i].pum_kind = NULL;
+    }
+
+    // Compute the popup menu starting column
+    compl_startcol = vim_strsize(ccline->cmdbuff) + 1;
+    columns = vim_strsize(xp->xp_pattern);
+    if (showtail)
+    {
+	columns += vim_strsize(sm_gettail(files_found[0]));
+	columns -= vim_strsize(files_found[0]);
+    }
+    if (columns >= compl_startcol)
+	compl_startcol = 0;
+    else
+	compl_startcol -= columns;
+
+    // no default selection
+    compl_selected = -1;
+
+    cmdline_pum_display();
+
+    return EXPAND_OK;
+}
+
 /*
  * Display the cmdline completion matches in a popup menu
  */
@@ -264,13 +314,17 @@ void cmdline_pum_display(void)
     pum_display(compl_match_array, compl_match_arraysize, compl_selected);
 }
 
+/*
+ * Returns TRUE if the cmdline completion popup menu is being displayed.
+ */
 int cmdline_pum_active(void)
 {
     return p_wmnu && pum_visible() && compl_match_array != NULL;
 }
 
 /*
- * Remove the cmdline completion popup menu
+ * Remove the cmdline completion popup menu (if present), free the list of
+ * items and refresh the screen.
  */
 void cmdline_pum_remove(void)
 {
@@ -285,6 +339,10 @@ void cmdline_pum_cleanup(cmdline_info_T *cclp)
     wildmenu_cleanup(cclp);
 }
 
+/*
+ * Returns the starting column number to use for the cmdline completion popup
+ * menu.
+ */
 int cmdline_compl_startcol(void)
 {
     return compl_startcol;
@@ -581,7 +639,6 @@ ExpandCleanup(expand_T *xp)
 showmatches(expand_T *xp, int wildmenu UNUSED)
 {
     cmdline_info_T	*ccline = get_cmdline_info();
-#define L_SHOWFILE(m) (showtail ? sm_gettail(files_found[m]) : files_found[m])
     int		num_files;
     char_u	**files_found;
     int		i, j, k;
@@ -612,31 +669,8 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 
 #ifdef FEAT_WILDMENU
     if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
-    {
-	compl_match_arraysize = num_files;
-	compl_match_array = ALLOC_MULT(pumitem_T, compl_match_arraysize);
-	for (i = 0; i < num_files; i++)
-	{
-	    compl_match_array[i].pum_text = L_SHOWFILE(i);
-	    compl_match_array[i].pum_info = NULL;
-	    compl_match_array[i].pum_extra = NULL;
-	    compl_match_array[i].pum_kind = NULL;
-	}
-	compl_startcol = vim_strsize(ccline->cmdbuff) + 1;
-	columns = vim_strsize(xp->xp_pattern);
-	if (showtail)
-	{
-	    columns += vim_strsize(sm_gettail(files_found[0]));
-	    columns -= vim_strsize(files_found[0]);
-	}
-	if (columns >= compl_startcol)
-	    compl_startcol = 0;
-	else
-	    compl_startcol -= columns;
-	compl_selected = -1;
-	cmdline_pum_display();
-	return EXPAND_OK;
-    }
+	// cmdline completion popup menu (with wildoptions=pum)
+	return cmdline_pum_create(ccline, xp, files_found, num_files, showtail);
 #endif
 
 #ifdef FEAT_WILDMENU
@@ -674,7 +708,7 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 		j = vim_strsize(NameBuff);
 	    }
 	    else
-		j = vim_strsize(L_SHOWFILE(i));
+		j = vim_strsize(SHOW_FILE_TEXT(i));
 	    if (j > maxlen)
 		maxlen = j;
 	}
@@ -746,7 +780,7 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 			// Expansion was done here, file names are literal.
 			j = mch_isdir(files_found[k]);
 		    if (showtail)
-			p = L_SHOWFILE(k);
+			p = SHOW_FILE_TEXT(k);
 		    else
 		    {
 			home_replace(NULL, files_found[k], NameBuff, MAXPATHL,
@@ -757,7 +791,7 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 		else
 		{
 		    j = FALSE;
-		    p = L_SHOWFILE(k);
+		    p = SHOW_FILE_TEXT(k);
 		}
 		lastlen = msg_outtrans_attr(p, j ? attr : 0);
 	    }
@@ -2726,18 +2760,21 @@ wildmenu_translate_key(
     int c = key;
 
 #ifdef FEAT_WILDMENU
-    if (p_wmnu && cmdline_pum_active())
+    if (cmdline_pum_active())
     {
-	// When the popup menu is used, Up/Down keys go to the previous and
-	// next items in the menu and Left/Right keys go up/down a directory.
-	if (c == K_UP)
-	    c = K_LEFT;
-	else if (c == K_DOWN)
-	    c = K_RIGHT;
-	else if (c == K_LEFT)
-	    c = K_UP;
-	else if (c == K_RIGHT)
-	    c = K_DOWN;
+	// When the popup menu is used for cmdline completion:
+	//   Up	  : go to the previous item in the menu
+	//   Down : go to the next item in the menu
+	//   Left : go to the parent directory
+	//   Right: list the files in the selected directory
+	switch (c)
+	{
+	    case K_UP:	  c = K_LEFT; break;
+	    case K_DOWN:  c = K_RIGHT; break;
+	    case K_LEFT:  c = K_UP; break;
+	    case K_RIGHT: c = K_DOWN; break;
+	    default:	  break;
+	}
     }
 #endif
 

@@ -1137,18 +1137,15 @@ func Test_aa_terminal_focus_events()
 
   " Send a focus event to ourselves, it should be forwarded to the terminal
   call feedkeys("\<Esc>[O", "Lx!")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_focus_1', {})
 
   call feedkeys("\<Esc>[I", "Lx!")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_focus_2', {})
 
   " check that a command line being edited is redrawn in place
   call term_sendkeys(buf, ":" .. repeat('x', 80))
   call TermWait(buf)
   call feedkeys("\<Esc>[O", "Lx!")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_focus_3', {})
   call term_sendkeys(buf, "\<Esc>")
 

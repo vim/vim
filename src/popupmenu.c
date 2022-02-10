@@ -117,6 +117,7 @@ pum_display(
 	// can decide when to reposition the popup menu.
 	pum_window = curwin;
 	if (State == CMDLINE)
+	    // cmdline completion popup menu
 	    pum_win_row = cmdline_row;
 	else
 	    pum_win_row = curwin->w_wrow + W_WINROW(curwin);
@@ -220,6 +221,7 @@ pum_display(
 	// Calculate column
 #ifdef FEAT_WILDMENU
 	if (State == CMDLINE)
+	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else
 #endif
