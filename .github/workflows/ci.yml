@@ -471,7 +471,6 @@ jobs:
               FEATURES=${{ matrix.features }} ^
               GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
-              DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
@@ -493,7 +492,6 @@ jobs:
               FEATURES=${{ matrix.features }} \
               GUI=yes IME=yes ICONV=yes VIMDLL=yes \
               DYNAMIC_LUA=yes LUA=${LUA_DIR} \
-              DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
               STATIC_STDCPLUS=yes
           else
