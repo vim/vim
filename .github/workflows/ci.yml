@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   linux:
-    runs-on: ubuntu-21.04
+    runs-on: ubuntu-18.04
 
     env:
       CC: ${{ matrix.compiler }}
@@ -78,8 +78,6 @@ jobs:
               libperl-dev \
               python-dev \
               python3-dev \
-              liblua5.4-dev \
-              lua5.4 \
               ruby-dev \
               tcl-dev \
               cscope \
@@ -99,6 +97,14 @@ jobs:
           sudo update-alternatives --set clang /usr/bin/clang-13
           sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-13 100
           sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-13 100
+
+# Temp solution to install lua54 until it's possible to upgrade to ubuntu 21.04 or newer
+      - name: Install lua5.4
+        if: matrix.features == 'huge'
+        run: |
+          sudo add-apt-repository ppa:savoury1/backports
+          sudo apt-get update
+          sudo sudo apt-get install -y lua5.4
 
       - name: Set up environment
         run: |
