@@ -2786,6 +2786,7 @@ parse_command_modifiers(
     int	    starts_with_colon = FALSE;
 
     CLEAR_POINTER(cmod);
+    cmod->cmod_flags = sticky_cmdmod_flags;
 
     // Repeat until no more command modifiers are found.
     for (;;)

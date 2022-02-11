@@ -6491,8 +6491,16 @@ ex_execute(exarg_T *eap)
 		did_emsg = save_did_emsg;
 	}
 	else if (eap->cmdidx == CMD_execute)
+	{
+	    int save_sticky_cmdmod_flags = sticky_cmdmod_flags;
+
+	    // "legacy exe cmd" and "vim9cmd exe cmd" applies to "cmd".
+	    sticky_cmdmod_flags = cmdmod.cmod_flags
+						& (CMOD_LEGACY | CMOD_VIM9CMD);
 	    do_cmdline((char_u *)ga.ga_data,
 		       eap->getline, eap->cookie, DOCMD_NOWAIT|DOCMD_VERBOSE);
+	    sticky_cmdmod_flags = save_sticky_cmdmod_flags;
+	}
     }
 
     ga_clear(&ga);

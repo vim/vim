@@ -83,6 +83,31 @@ def Test_vim9cmd()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_cmdmod_execute()
+  # "legacy" applies not only to the "exe" argument but also to the commands
+  var lines =<< trim END
+      vim9script
+
+      b:undo = 'let g:undone = 1 | let g:undtwo = 2'
+      legacy exe b:undo
+      assert_equal(1, g:undone)
+      assert_equal(2, g:undtwo)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # same for "vim9cmd" modifier
+  lines =<< trim END
+      let b:undo = 'g:undone = 11 | g:undtwo = 22'
+      vim9cmd exe b:undo
+      call assert_equal(11, g:undone)
+      call assert_equal(22, g:undtwo)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet b:undo
+  unlet g:undone
+  unlet g:undtwo
+enddef
+
 def Test_edit_wildcards()
   var filename = 'Xtest'
   edit `=filename`
