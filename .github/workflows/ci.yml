@@ -76,7 +76,6 @@ jobs:
               lcov \
               libcanberra-dev \
               libperl-dev \
-              python-dev \
               python3-dev \
               liblua5.3-dev \
               lua5.3 \
@@ -356,9 +355,6 @@ jobs:
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
       LUA_DIR: D:\Lua
-      # Python 2
-      PYTHON_VER: 27
-      PYTHON_VER_DOT: '2.7'
       # Python 3
       PYTHON3_VER: 38
       PYTHON3_VER_DOT: '3.8'
@@ -406,9 +402,7 @@ jobs:
         shell: bash
         run: |
           git config --global core.autocrlf input
-          python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-          echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
