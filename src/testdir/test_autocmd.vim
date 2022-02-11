@@ -1922,11 +1922,11 @@ endfunc
 
 function Test_dirchanged_global()
   call s:Before_test_dirchanged()
-  autocmd test_dirchanged DirChangedPre global call add(s:li, "pre cd " .. v:event.directory)
+  autocmd test_dirchanged DirChangedPre global call add(s:li, expand("<amatch>") .. " pre cd " .. v:event.directory)
   autocmd test_dirchanged DirChanged global call add(s:li, "cd:")
   autocmd test_dirchanged DirChanged global call add(s:li, expand("<afile>"))
   call chdir(s:dir_foo)
-  let expected = ["pre cd " .. s:dir_foo, "cd:", s:dir_foo]
+  let expected = ["global pre cd " .. s:dir_foo, "cd:", s:dir_foo]
   call assert_equal(expected, s:li)
   call chdir(s:dir_foo)
   call assert_equal(expected, s:li)

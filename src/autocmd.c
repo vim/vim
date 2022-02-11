@@ -2061,6 +2061,7 @@ apply_autocmds_group(
 		|| event == EVENT_OPTIONSET
 		|| event == EVENT_QUICKFIXCMDPOST
 		|| event == EVENT_DIRCHANGED
+		|| event == EVENT_DIRCHANGEDPRE
 		|| event == EVENT_MODECHANGED
 		|| event == EVENT_WINCLOSED)
 	{
