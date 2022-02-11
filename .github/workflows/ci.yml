@@ -78,8 +78,8 @@ jobs:
               libperl-dev \
               python-dev \
               python3-dev \
-              liblua5.3-dev \
-              lua5.3 \
+              liblua5.4-dev \
+              lua5.4 \
               ruby-dev \
               tcl-dev \
               cscope \
@@ -352,16 +352,16 @@ jobs:
       # Lua
       LUA_VER: 54
       LUA_VER_DOT: '5.4'
-      LUA_RELEASE: 5.4.0
+      LUA_RELEASE: 5.4.2
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
       LUA_DIR: D:\Lua
       # Python 2
-      PYTHON_VER: 27
-      PYTHON_VER_DOT: '2.7'
+      #PYTHON_VER: 27
+      #PYTHON_VER_DOT: '2.7'
       # Python 3
-      PYTHON3_VER: 38
-      PYTHON3_VER_DOT: '3.8'
+      PYTHON3_VER: 39
+      PYTHON3_VER_DOT: '3.9'
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
