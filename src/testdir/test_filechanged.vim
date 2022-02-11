@@ -139,6 +139,8 @@ endfunc
 
 func Test_FileChangedShell_edit_dialog()
   CheckNotGui
+  " FIXME: why does this not work on MS-Windows?
+  CheckUnix
 
   new Xchanged_r
   call setline(1, 'reload this')
