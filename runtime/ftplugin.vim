@@ -3,7 +3,7 @@ vim9script noclear
 # Vim support file to switch on loading plugins for file types
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last change:	2022 Feb 09
+# Last change:	2022 Feb 11
 
 if exists("g:did_load_ftplugin")
   finish
@@ -21,7 +21,8 @@ endif
 
 def LoadFTPlugin()
   if exists("b:undo_ftplugin")
-    exe b:undo_ftplugin
+    # We assume b:undo_ftplugin is using legacy script syntax
+    legacy exe b:undo_ftplugin
     unlet! b:undo_ftplugin b:did_ftplugin
   endif
 

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jan 28
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Feb 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2511,6 +2511,8 @@ continuation, as mentioned above |use-cpo-save|.
 
 For undoing the effect of an indent script, the b:undo_indent variable should
 be set accordingly.
+
+Both these variables use legacy script syntax, not |Vim9| syntax.
 
 
 FILE NAME

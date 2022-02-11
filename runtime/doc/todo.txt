@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 09
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,9 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Disallow using "s:" in Vim9 script at the script level.
+Disallow a legacy function creating an s: variable in Vim9 script.
 
 Once Vim9 is stable:
 - Use Vim9 for runtime files.

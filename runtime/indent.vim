@@ -1,7 +1,7 @@
 " Vim support file to switch on loading indent files for file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Feb 04
+" Last Change:	2022 Feb 11
 
 if exists("did_indent_on")
   finish
@@ -14,7 +14,7 @@ augroup END
 
 def s:LoadIndent()
   if exists("b:undo_indent")
-    exe b:undo_indent
+    legacy exe b:undo_indent
     unlet! b:undo_indent b:did_indent
   endif
   var s = expand("<amatch>")

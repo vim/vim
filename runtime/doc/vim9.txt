@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 09
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -219,20 +219,18 @@ be given.
 Functions and variables are script-local by default ~
 							*vim9-scopes*
 When using `:function` or `:def` to specify a new function at the script level
-in a Vim9 script, the function is local to the script, as if "s:" was
-prefixed.  Using the "s:" prefix is optional.  To define a global function or
-variable the "g:" prefix must be used.  For functions in a script that is to
-be imported and in an autoload script "export" needs to be used. >
+in a Vim9 script, the function is local to the script.  Like prefixing "s:" in
+legacy script.  To define a global function or variable the "g:" prefix must
+be used.  For functions in a script that is to be imported and in an autoload
+script "export" needs to be used. >
 	def ThisFunction()          # script-local
-	def s:ThisFunction()        # script-local
 	def g:ThatFunction()        # global
 	export def Function()       # for import and import autoload
 <						*E1058* *E1075*
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function and no namespace was given, this nested function is local to the code
-block it is defined in.  In a `:def` function it is not possible to define a
-script-local function.  It is possible to define a global function by using
-the "g:" prefix.
+block it is defined in.  It is not possible to define a script-local function.
+It is possible to define a global function by using the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
 search for the function:
@@ -244,6 +242,13 @@ start with an upper case letter even when using the "s:" prefix.  In legacy
 script "s:funcref" could be used, because it could not be referred to with
 "funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
 that the name interferes with builtin functions.
+							*vim9-s-namespace*
+The use of the "s:" prefix is not supported at the Vim9 script level.  All
+functions and variables without a prefix are script-local.
+In :def functions the use of "s:" is optional.  This is because in legacy
+script the "s:" might be needed.  Disallowing the use of "s:" only in a :def
+function in Vim9 script would be a bit confusing.
+In legacy functions the use of "s:" for script items is required, as before.
 
 In all cases the function must be defined before used.  That is when it is
 called, when `:defcompile` causes it to be compiled, or when code that calls
