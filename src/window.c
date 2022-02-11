@@ -1415,9 +1415,6 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 
     win_init_some(newp, oldp);
 
-#ifdef FEAT_SYN_HL
-    check_colorcolumn(newp);
-#endif
 #ifdef FEAT_TERMINAL
     term_update_wincolor(newp);
 #endif
