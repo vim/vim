@@ -344,7 +344,7 @@ jobs:
           make ${TEST}
 
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     env:
       VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
