@@ -360,8 +360,8 @@ jobs:
       PYTHON_VER: 27
       PYTHON_VER_DOT: '2.7'
       # Python 3
-      PYTHON3_VER: 39
-      PYTHON3_VER_DOT: '3.9'
+      PYTHON3_VER: 310
+      PYTHON3_VER_DOT: '3.10'
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
