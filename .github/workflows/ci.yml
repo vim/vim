@@ -525,6 +525,12 @@ jobs:
       #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
       #    path: ./artifacts
 
+      - name: Copy gcov data files to src2
+        if: env.COVERAGE
+        shell: msys2 {0}
+        run: |
+          find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
+
       - name: Test
         shell: cmd
         timeout-minutes: 20
@@ -572,9 +578,19 @@ jobs:
         run: |
           cd src
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+          cd ../src2
+          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
-      - name: Codecov
+      - name: Codecov (gvim)
         if: env.COVERAGE
         uses: codecov/codecov-action@v2
         with:
+          directory: src
+          flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
+
+      - name: Codecov (vim)
+        if: env.COVERAGE
+        uses: codecov/codecov-action@v2
+        with:
+          directory: src2
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
