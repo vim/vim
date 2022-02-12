@@ -106,6 +106,18 @@ def Test_cmdmod_execute()
   unlet b:undo
   unlet g:undone
   unlet g:undtwo
+
+  # "legacy" does not apply to a loaded script
+  lines =<< trim END
+      vim9script
+      export var exported = 'x'
+  END
+  writefile(lines, 'Xvim9import.vim')
+  lines =<< trim END
+      legacy exe "import './Xvim9import.vim'"
+  END
+  v9.CheckScriptSuccess(lines)
+  delete('Xvim9import.vim')
 enddef
 
 def Test_edit_wildcards()
