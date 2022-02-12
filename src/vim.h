@@ -1739,7 +1739,9 @@ typedef unsigned short disptick_T;	// display tick type
 # define MAXCOL (0x3fffffffL)		// maximum column number, 30 bits
 # define MAXLNUM (0x3fffffffL)		// maximum (invalid) line number
 #else
-# define MAXCOL  INT_MAX		// maximum column number
+  // MAXCOL used to be INT_MAX, but with 64 bit ints that results in running
+  // out of memory when trying to allocate a very long line.
+# define MAXCOL  0x7fffffffL		// maximum column number
 # define MAXLNUM LONG_MAX		// maximum (invalid) line number
 #endif
 
