@@ -1726,7 +1726,7 @@ ex_retab(exarg_T *eap)
 			len = num_spaces + num_tabs;
 			old_len = (long)STRLEN(ptr);
 			new_len = old_len - col + start_col + len + 1;
-			if (new_len >= MAXCOL)
+			if (new_len <= 0 || new_len >= MAXCOL)
 			{
 			    emsg(_(e_resulting_text_too_long));
 			    break;
