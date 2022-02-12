@@ -64,7 +64,7 @@
 # if defined(UNIX) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
-#  if defined(MSWIN) || defined(VMS) || defined(AMIGA)
+#  if defined(VMS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
 #   define FEAT_NORMAL
