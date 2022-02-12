@@ -352,7 +352,7 @@ jobs:
       # Lua
       LUA_VER: 54
       LUA_VER_DOT: '5.4'
-      LUA_RELEASE: 5.4.0
+      LUA_RELEASE: 5.4.2
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
       LUA_DIR: D:\Lua
@@ -360,8 +360,8 @@ jobs:
       PYTHON_VER: 27
       PYTHON_VER_DOT: '2.7'
       # Python 3
-      PYTHON3_VER: 38
-      PYTHON3_VER_DOT: '3.8'
+      PYTHON3_VER: 310
+      PYTHON3_VER_DOT: '3.10'
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
