@@ -2513,6 +2513,7 @@ call_user_func(
 {
     sctx_T	save_current_sctx;
     int		using_sandbox = FALSE;
+    int		save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     funccall_T	*fc;
     int		save_did_emsg;
     int		default_arg_err = FALSE;
@@ -2569,6 +2570,7 @@ call_user_func(
 	if (do_profiling == PROF_YES)
 	    profile_may_start_func(&profile_info, fp, caller);
 #endif
+	sticky_cmdmod_flags = 0;
 	call_def_function(fp, argcount, argvars, funcexe->fe_partial, rettv);
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE
@@ -2578,6 +2580,7 @@ call_user_func(
 #endif
 	current_funccal = fc->caller;
 	free_funccal(fc);
+	sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 	return;
     }
 
@@ -2797,6 +2800,9 @@ call_user_func(
 				 fc->caller == NULL ? NULL : fc->caller->func);
 #endif
 
+    // "legacy" does not apply to commands in the function
+    sticky_cmdmod_flags = 0;
+
     save_current_sctx = current_sctx;
     current_sctx = fp->uf_script_ctx;
     save_did_emsg = did_emsg;
@@ -2889,6 +2895,7 @@ call_user_func(
 #endif
     if (using_sandbox)
 	--sandbox;
+    sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 
     if (p_verbose >= 12 && SOURCING_NAME != NULL)
     {

@@ -118,6 +118,20 @@ def Test_cmdmod_execute()
   END
   v9.CheckScriptSuccess(lines)
   delete('Xvim9import.vim')
+
+  # "legacy" does not aply to a called function
+  lines =<< trim END
+      vim9script
+
+      def g:TheFunc()
+        if exists('something')
+          echo 'yes'
+        endif
+      enddef
+      legacy exe 'call g:TheFunc()'
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:TheFunc
 enddef
 
 def Test_edit_wildcards()
