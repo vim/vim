@@ -342,39 +342,6 @@ MZSCHEME_LIBDIR=-L$(MZSCHEME_DLLS) -L$(MZSCHEME_DLLS)\lib
 
 endif
 
-#	Python interface:
-#	  PYTHON=[Path to Python directory] (Set inside Make_cyg.mak or Make_ming.mak)
-#	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
-#	  PYTHON_VER=[Python version, eg 22, 23, ..., 27] (default is 27)
-ifdef PYTHON
- ifndef DYNAMIC_PYTHON
-DYNAMIC_PYTHON=yes
- endif
-
- ifndef PYTHON_VER
-PYTHON_VER=27
- endif
- ifndef DYNAMIC_PYTHON_DLL
-DYNAMIC_PYTHON_DLL=python$(PYTHON_VER).dll
- endif
- ifdef PYTHON_HOME
-PYTHON_HOME_DEF=-DPYTHON_HOME=\"$(PYTHON_HOME)\"
- endif
-
- ifeq (no,$(DYNAMIC_PYTHON))
-PYTHONLIB=-L$(PYTHON)/libs -lpython$(PYTHON_VER)
- endif
-# my include files are in 'win32inc' on Linux, and 'include' in the standard
-# NT distro (ActiveState)
- ifndef PYTHONINC
-  ifeq ($(CROSS),no)
-PYTHONINC=-I $(PYTHON)/include
-  else
-PYTHONINC=-I $(PYTHON)/win32inc
-  endif
- endif
-endif
-
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)

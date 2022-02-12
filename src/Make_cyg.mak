@@ -24,9 +24,6 @@
 # uncomment 'MZSCHEME' if you want a MzScheme-enabled version
 #MZSCHEME=/cygdrive/d/plt
 
-# uncomment 'PYTHON' if you want a python-enabled version
-#PYTHON=/cygdrive/c/python20
-
 # uncomment 'PYTHON3' if you want a python3-enabled version
 #PYTHON3=/cygdrive/c/python31
 
