@@ -5997,7 +5997,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"sodium",
-#ifdef FEAT_SODIUM
+#if defined(FEAT_SODIUM) && !defined(DYNAMIC_SODIUM)
 		1
 #else
 		0
@@ -6317,6 +6317,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef DYNAMIC_TCL
 	else if (STRICMP(name, "tcl") == 0)
 	    n = tcl_enabled(FALSE);
+#endif
+#ifdef DYNAMIC_SODIUM
+	else if (STRICMP(name, "sodium") == 0)
+	    n = sodium_enabled(FALSE);
 #endif
 #if defined(FEAT_TERMINAL) && defined(MSWIN)
 	else if (STRICMP(name, "terminal") == 0)
