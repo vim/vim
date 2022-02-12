@@ -1,4 +1,5 @@
 /* crypt.c */
+int sodium_enabled(int verbose);
 int crypt_method_nr_from_name(char_u *name);
 int crypt_method_nr_from_magic(char *ptr, int len);
 int crypt_works_inplace(cryptstate_T *state);

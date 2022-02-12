@@ -1371,10 +1371,7 @@ cs_insert_filelist(
 		char *winmsg = GetWin32Error();
 
 		if (winmsg != NULL)
-		{
 		    (void)semsg(cant_msg, winmsg);
-		    LocalFree(winmsg);
-		}
 		else
 		    // subst filename if can't get error text
 		    (void)semsg(cant_msg, fname);

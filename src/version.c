@@ -548,7 +548,11 @@ static char *(features[]) =
 	"-smartindent",
 #endif
 #ifdef FEAT_SODIUM
+# ifdef DYNAMIC_SODIUM
+	"+sodium/dyn",
+# else
 	"+sodium",
+# endif
 #else
 	"-sodium",
 #endif
