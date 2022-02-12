@@ -1750,6 +1750,11 @@ ex_retab(exarg_T *eap)
 	    if (ptr[col] == NUL)
 		break;
 	    vcol += chartabsize(ptr + col, (colnr_T)vcol);
+	    if (vcol >= MAXCOL)
+	    {
+		emsg(_(e_resulting_text_too_long));
+		break;
+	    }
 	    if (has_mbyte)
 		col += (*mb_ptr2len)(ptr + col);
 	    else
