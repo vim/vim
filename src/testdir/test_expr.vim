@@ -612,7 +612,8 @@ func Test_function_with_funcref()
       call assert_equal(4, Ref('text'))
   END
   call v9.CheckTransLegacySuccess(lines)
-  " cannot create s: variable in :def function
+  " skip CheckTransDefSuccess(), cannot assign to script variable
+  call map(lines, {k, v -> v =~ 'legacy' ? v : substitute(v, 's:', '', 'g')})
   call v9.CheckTransVim9Success(lines)
 endfunc
 

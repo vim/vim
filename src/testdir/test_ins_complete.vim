@@ -1514,11 +1514,11 @@ func Test_completefunc_callback()
     bw!
 
     # Test for using a script-local function name
-    def s:LocalCompleteFunc(findstart: number, base: string): any
+    def LocalCompleteFunc(findstart: number, base: string): any
       add(g:LocalCompleteFuncArgs, [findstart, base])
       return findstart ? 0 : []
     enddef
-    &completefunc = s:LocalCompleteFunc
+    &completefunc = LocalCompleteFunc
     new | only
     setline(1, 'three')
     g:LocalCompleteFuncArgs = []
@@ -1771,11 +1771,11 @@ func Test_omnifunc_callback()
     bw!
 
     # Test for using a script-local function name
-    def s:LocalOmniFunc(findstart: number, base: string): any
+    def LocalOmniFunc(findstart: number, base: string): any
       add(g:LocalOmniFuncArgs, [findstart, base])
       return findstart ? 0 : []
     enddef
-    &omnifunc = s:LocalOmniFunc
+    &omnifunc = LocalOmniFunc
     new | only
     setline(1, 'three')
     g:LocalOmniFuncArgs = []
@@ -2064,11 +2064,11 @@ func Test_thesaurusfunc_callback()
     bw!
 
     # Test for using a script-local function name
-    def s:LocalTsrFunc(findstart: number, base: string): any
+    def LocalTsrFunc(findstart: number, base: string): any
       add(g:LocalTsrFuncArgs, [findstart, base])
       return findstart ? 0 : []
     enddef
-    &thesaurusfunc = s:LocalTsrFunc
+    &thesaurusfunc = LocalTsrFunc
     new | only
     setline(1, 'three')
     g:LocalTsrFuncArgs = []
