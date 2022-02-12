@@ -878,6 +878,14 @@ get_lval(
 	return lp->ll_name_end;
     }
 
+    // Cannot use "s:var" at the Vim9 script level.  "s: type" is OK.
+    if (in_vim9script() && at_script_level()
+		  && name[0] == 's' && name[1] == ':' && !VIM_ISWHITE(name[2]))
+    {
+	semsg(_(e_cannot_use_s_colon_in_vim9_script_str), name);
+	return NULL;
+    }
+
     // Find the end of the name.
     p = find_name_end(name, &expr_start, &expr_end, fne_flags);
     lp->ll_name_end = p;
@@ -3730,6 +3738,12 @@ eval7(
 	    if (evaluate && in_vim9script() && len == 1 && *s == '_')
 	    {
 		emsg(_(e_cannot_use_underscore_here));
+		ret = FAIL;
+	    }
+	    else if (evaluate && in_vim9script() && len > 2
+						 && s[0] == 's' && s[1] == ':')
+	    {
+		semsg(_(e_cannot_use_s_colon_in_vim9_script_str), s);
 		ret = FAIL;
 	    }
 	    else if ((in_vim9script() ? **arg : *skipwhite(*arg)) == '(')

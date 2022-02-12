@@ -1124,7 +1124,7 @@ def Test_vim9_reload_noclear()
   lines =<< trim END
     vim9script noclear
     g:loadCount += 1
-    var s:reloaded = 'init'
+    var reloaded = 'init'
     import './XExportReload' as exp
 
     def Again(): string
@@ -1133,13 +1133,13 @@ def Test_vim9_reload_noclear()
 
     exp.TheFunc()
 
-    if exists('s:loaded') | finish | endif
-    var s:loaded = true
+    if exists('loaded') | finish | endif
+    var loaded = true
 
-    var s:notReloaded = 'yes'
-    s:reloaded = 'first'
+    var notReloaded = 'yes'
+    reloaded = 'first'
     def g:Values(): list<string>
-      return [s:reloaded, s:notReloaded, Again(), Once(), exp.exported]
+      return [reloaded, notReloaded, Again(), Once(), exp.exported]
     enddef
 
     def Once(): string

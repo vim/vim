@@ -713,7 +713,7 @@ def Test_nested_function()
 
   lines =<< trim END
       vim9script
-      def s:_Func()
+      def _Func()
         echo 'bad'
       enddef
   END
@@ -930,7 +930,7 @@ def Test_global_local_function()
       def g:Funcy()
         echo 'funcy'
       enddef
-      s:Funcy()
+      Funcy()
   END
   v9.CheckScriptFailure(lines, 'E117:')
 enddef
@@ -1441,10 +1441,10 @@ enddef
 def Test_use_script_func_name_with_prefix()
   var lines =<< trim END
       vim9script
-      func s:Getit()
+      func g:Getit()
         return 'it'
       endfunc
-      var Fn = s:Getit
+      var Fn = g:Getit
       assert_equal('it', Fn())
   END
   v9.CheckScriptSuccess(lines)
@@ -2849,7 +2849,7 @@ def Test_nested_inline_lambda()
   lines =<< trim END
       vim9script
 
-      def s:Func()
+      def Func()
         range(10)
           ->mapnew((_, _) => ({
             key: range(10)->mapnew((_, _) => {
@@ -3168,7 +3168,7 @@ def Test_invalid_function_name()
       vim9script
       def s: list<string>
   END
-  v9.CheckScriptFailure(lines, 'E129:')
+  v9.CheckScriptFailure(lines, 'E1268:')
 
   lines =<< trim END
       vim9script

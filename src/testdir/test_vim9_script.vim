@@ -69,7 +69,10 @@ def Test_delfunction()
       'func CheckMe()',
       '  return 123',
       'endfunc',
-      'assert_equal(123, s:CheckMe())',
+      'func DoTest()',
+      '  call assert_equal(123, s:CheckMe())',
+      'endfunc',
+      'DoTest()',
       ])
 
   # Check function in script namespace cannot be deleted
@@ -178,11 +181,55 @@ def Test_wrong_type()
   v9.CheckDefFailure(['var Ref: string', 'var res = Ref()'], 'E1085:')
 enddef
 
+def Test_script_namespace()
+  # defining a function or variable with s: is not allowed
+  var lines =<< trim END
+      vim9script
+      def s:Function()
+      enddef
+  END
+  v9.CheckScriptFailure(lines, 'E1268:')
+
+  for decl in ['var', 'const', 'final']
+    lines =<< trim END
+        vim9script
+        var s:var = 'var'
+    END
+    v9.CheckScriptFailure([
+        'vim9script',
+        decl .. ' s:var = "var"',
+        ], 'E1268:')
+  endfor
+
+  # Calling a function or using a variable with s: is not allowed at script
+  # level
+  lines =<< trim END
+      vim9script
+      def Function()
+      enddef
+      s:Function()
+  END
+  v9.CheckScriptFailure(lines, 'E1268:')
+  lines =<< trim END
+      vim9script
+      def Function()
+      enddef
+      call s:Function()
+  END
+  v9.CheckScriptFailure(lines, 'E1268:')
+  lines =<< trim END
+      vim9script
+      var var = 'var'
+      echo s:var
+  END
+  v9.CheckScriptFailure(lines, 'E1268:')
+enddef
+
 def Test_script_wrong_type()
   var lines =<< trim END
       vim9script
-      var s:dict: dict<string>
-      s:dict['a'] = ['x']
+      var dict: dict<string>
+      dict['a'] = ['x']
   END
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got list<string>', 3)
 enddef

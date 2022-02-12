@@ -6,6 +6,7 @@ source term_util.vim
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
+let s:newVar = ''
 let g:existing = 'yes'
 let g:inc_counter = 1
 let $SOME_ENV_VAR = 'some'
@@ -124,12 +125,12 @@ def Test_assignment()
   END
   v9.CheckScriptSuccess(lines)
 
-  s:appendToMe ..= 'yyy'
-  assert_equal('xxxyyy', s:appendToMe)
-  s:addToMe += 222
-  assert_equal(333, s:addToMe)
-  s:newVar = 'new'
-  assert_equal('new', s:newVar)
+  appendToMe ..= 'yyy'
+  assert_equal('xxxyyy', appendToMe)
+  addToMe += 222
+  assert_equal(333, addToMe)
+  newVar = 'new'
+  assert_equal('new', newVar)
 
   set ts=7
   var ts: number = &ts
@@ -1195,7 +1196,7 @@ def Test_assignment_default()
   assert_equal(5678, nr)
 enddef
 
-let scriptvar = 'init'
+let s:scriptvar = 'init'
 
 def Test_assignment_var_list()
   var lines =<< trim END
@@ -1243,17 +1244,17 @@ def Test_assignment_var_list()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
-  [g:globalvar, s:scriptvar, b:bufvar] = ['global', 'script', 'buf']
+  [g:globalvar, scriptvar, b:bufvar] = ['global', 'script', 'buf']
   assert_equal('global', g:globalvar)
-  assert_equal('script', s:scriptvar)
+  assert_equal('script', scriptvar)
   assert_equal('buf', b:bufvar)
 
   lines =<< trim END
       vim9script
-      var s:scriptvar = 'init'
-      [g:globalvar, s:scriptvar, w:winvar] = ['global', 'script', 'win']
+      var scriptvar = 'init'
+      [g:globalvar, scriptvar, w:winvar] = ['global', 'script', 'win']
       assert_equal('global', g:globalvar)
-      assert_equal('script', s:scriptvar)
+      assert_equal('script', scriptvar)
       assert_equal('win', w:winvar)
   END
   v9.CheckScriptSuccess(lines)
@@ -1398,7 +1399,7 @@ def Test_assignment_failure()
   v9.CheckDefFailure(["var xnr = xnr + 1"], 'E1001:', 1)
   v9.CheckScriptFailure(['vim9script', 'var xnr = xnr + 4'], 'E121:')
 
-  v9.CheckScriptFailure(['vim9script', 'def Func()', 'var dummy = s:notfound', 'enddef', 'defcompile'], 'E1108:')
+  v9.CheckScriptFailure(['vim9script', 'def Func()', 'var dummy = notfound', 'enddef', 'defcompile'], 'E1001:')
 
   v9.CheckDefFailure(['var name: list<string> = [123]'], 'expected list<string> but got list<number>')
   v9.CheckDefFailure(['var name: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
@@ -1719,9 +1720,9 @@ def Test_var_declaration()
     g:var_uninit = name
     name = 'text'
     g:var_test = name
-    # prefixing s: is optional
-    s:name = 'prefixed'
-    g:var_prefixed = s:name
+    # prefixing s: is not allowed
+    name = 'prefixed'
+    g:var_prefixed = name
 
     const FOO: number = 123
     assert_equal(123, FOO)
@@ -1764,9 +1765,9 @@ def Test_var_declaration()
     var xyz: string  # comment
 
     # type is inferred
-    var s:dict = {['a']: 222}
+    var dict = {['a']: 222}
     def GetDictVal(key: any)
-      g:dict_val = s:dict[key]
+      g:dict_val = dict[key]
     enddef
     GetDictVal('a')
 
@@ -1879,13 +1880,13 @@ def Test_var_declaration_fails()
 enddef
 
 def Test_script_local_in_legacy()
-  # OK to define script-local later when prefixed with s:
+  # OK to define script-local later but before compiling
   var lines =<< trim END
     def SetLater()
-      s:legvar = 'two'
+      legvar = 'two'
     enddef
-    defcompile
     let s:legvar = 'one'
+    defcompile
     call SetLater()
     call assert_equal('two', s:legvar)
   END
@@ -1902,7 +1903,7 @@ def Test_script_local_in_legacy()
   END
   v9.CheckScriptSuccess(lines)
 
-  # Not OK to leave out s: prefix when script-local defined later
+  # Not OK to leave out s: prefix when script-local defined after compiling
   lines =<< trim END
     def SetLaterNoPrefix()
       legvar = 'two'
@@ -1944,15 +1945,15 @@ def Test_var_type_check()
 
   lines =<< trim END
     vim9script
-    var s:l: list<number>
-    s:l = []
+    var l: list<number>
+    l = []
   END
   v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
     vim9script
-    var s:d: dict<number>
-    s:d = {}
+    var d: dict<number>
+    d = {}
   END
   v9.CheckScriptSuccess(lines)
 
@@ -2124,7 +2125,7 @@ def Test_unlet()
    'vim9script',
    'var svar = 123',
    'unlet s:svar',
-   ], 'E1081:')
+   ], 'E1268:')
   v9.CheckScriptFailure([
    'vim9script',
    'var svar = 123',
@@ -2267,14 +2268,14 @@ def Test_script_funcref_case()
 
   lines =<< trim END
       vim9script
-      var s:Len = (s: string): number => len(s) + 2
+      var Len = (s: string): number => len(s) + 2
       assert_equal(6, Len('asdf'))
   END
   v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var s:len = (s: string): number => len(s) + 1
+      var len = (s: string): number => len(s) + 1
   END
   v9.CheckScriptFailure(lines, 'E704:')
 enddef

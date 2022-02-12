@@ -2001,9 +2001,9 @@ def Test_insert()
   v9.CheckDefExecAndScriptFailure(lines, 'E1131:', 1)
 
   assert_equal([1, 2, 3], insert([2, 3], 1))
-  assert_equal([1, 2, 3], insert([2, 3], s:number_one))
+  assert_equal([1, 2, 3], insert([2, 3], number_one))
   assert_equal([1, 2, 3], insert([1, 2], 3, 2))
-  assert_equal([1, 2, 3], insert([1, 2], 3, s:number_two))
+  assert_equal([1, 2, 3], insert([1, 2], 3, number_two))
   assert_equal(['a', 'b', 'c'], insert(['b', 'c'], 'a'))
   assert_equal(0z1234, insert(0z34, 0x12))
 

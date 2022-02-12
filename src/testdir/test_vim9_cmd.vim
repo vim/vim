@@ -1718,7 +1718,12 @@ def Test_var_not_cmd()
   lines =<< trim END
       s:notexist:repl
   END
-  v9.CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :repl', 'E121: Undefined variable: s:notexist'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :repl', 'E1268:'], 1)
+
+  lines =<< trim END
+      notexist:repl
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E476:', 'E492:'], 1)
 
   lines =<< trim END
       s-pat-repl

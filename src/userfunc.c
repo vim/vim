@@ -3010,6 +3010,18 @@ get_current_funccal(void)
 }
 
 /*
+ * Return TRUE when currently at the script level:
+ * - not in a function
+ * - not executing an autocommand
+ * Note that when an autocommand sources a script the result is FALSE;
+ */
+    int
+at_script_level(void)
+{
+    return current_funccal == NULL && autocmd_match == NULL;
+}
+
+/*
  * Mark all functions of script "sid" as deleted.
  */
     void
@@ -4205,6 +4217,12 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
     }
     else
     {
+	if (vim9script && p[0] == 's' && p[1] == ':')
+	{
+	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), p);
+	    return NULL;
+	}
+
 	name = save_function_name(&p, &is_global, eap->skip,
 					TFN_NO_AUTOLOAD | TFN_NEW_FUNC, &fudi);
 	paren = (vim_strchr(p, '(') != NULL);

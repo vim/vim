@@ -2329,7 +2329,7 @@ def Test_expr8_lambda_vim9script()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_expr8_funcref()
+def Test_expr8funcref()
   var lines =<< trim END
       def RetNumber(): number
         return 123
@@ -2344,7 +2344,7 @@ def Test_expr8_funcref()
       func g:GlobalFunc()
         return 'global'
       endfunc
-      func s:ScriptFunc()
+      func ScriptFunc()
         return 'script'
       endfunc
       def Test()
@@ -2353,7 +2353,7 @@ def Test_expr8_funcref()
         Ref = g:GlobalFunc
         assert_equal('global', Ref())
 
-        Ref = s:ScriptFunc
+        Ref = ScriptFunc
         assert_equal('script', Ref())
         Ref = ScriptFunc
         assert_equal('script', Ref())
@@ -3347,7 +3347,7 @@ func Test_expr8_fails()
   call v9.CheckDefAndScriptFailure(["var x = &notexist"], 'E113:', 1)
   call v9.CheckDefAndScriptFailure(["&grepprg = [343]"], ['E1012:', 'E730:'], 1)
 
-  call v9.CheckDefExecAndScriptFailure(["echo s:doesnt_exist"], 'E121:', 1)
+  call v9.CheckDefExecAndScriptFailure(["echo s:doesnt_exist"], ['E121:', 'E1268:'], 1)
   call v9.CheckDefExecAndScriptFailure(["echo g:doesnt_exist"], 'E121:', 1)
 
   call v9.CheckDefAndScriptFailure(["echo a:somevar"], ['E1075:', 'E121:'], 1)

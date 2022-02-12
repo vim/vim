@@ -73,8 +73,8 @@ endfunc
 
 export def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
   var cwd = getcwd()
-  var fname = 'XScriptFailure' .. s:sequence
-  s:sequence += 1
+  var fname = 'XScriptFailure' .. sequence
+  sequence += 1
   writefile(lines, fname)
   try
     assert_fails('so ' .. fname, error, lines, lnum)
@@ -86,8 +86,8 @@ enddef
 
 export def CheckScriptFailureList(lines: list<string>, errors: list<string>, lnum = -3)
   var cwd = getcwd()
-  var fname = 'XScriptFailure' .. s:sequence
-  s:sequence += 1
+  var fname = 'XScriptFailure' .. sequence
+  sequence += 1
   writefile(lines, fname)
   try
     assert_fails('so ' .. fname, errors, lines, lnum)
@@ -99,8 +99,8 @@ enddef
 
 export def CheckScriptSuccess(lines: list<string>)
   var cwd = getcwd()
-  var fname = 'XScriptSuccess' .. s:sequence
-  s:sequence += 1
+  var fname = 'XScriptSuccess' .. sequence
+  sequence += 1
   writefile(lines, fname)
   try
     exe 'so ' .. fname

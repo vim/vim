@@ -1394,7 +1394,7 @@ compile_lhs(
 		    if (is_decl)
 		    {
 			if (script_namespace)
-			    semsg(_(e_cannot_declare_script_variable_in_function),
+			    semsg(_(e_cannot_declare_script_variable_in_function_str),
 								lhs->lhs_name);
 			else
 			    semsg(_(e_variable_already_declared_in_script_str),
