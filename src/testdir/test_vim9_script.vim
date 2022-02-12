@@ -1057,6 +1057,18 @@ def Test_try_catch_skipped()
   assert_match("NEWLIST size 0\n", instr)
 enddef
 
+def Test_throw_line_number()
+  def Func()
+    eval 1 + 1
+    eval 2 + 2
+    throw 'exception'
+  enddef
+  try
+    Func()
+  catch /exception/
+    assert_match('line 3', v:throwpoint)
+  endtry
+enddef
 
 
 def Test_throw_vimscript()

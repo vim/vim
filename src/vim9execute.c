@@ -3826,6 +3826,7 @@ exec_instructions(ectx_T *ectx)
 			}
 		    }
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (throw_exception(tv->vval.v_string, ET_USER, NULL)
 								       == FAIL)
 		    {
