@@ -225,7 +225,7 @@ jobs:
           do_test make ${SHADOWOPT} ${TEST}
 
       # - name: Coveralls
-      #   if: matrix.coverage && success() && github.event_name != 'pull_request'
+      #   if: matrix.coverage && github.event_name != 'pull_request'
       #   env:
       #     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       #     COVERALLS_PARALLEL: true
@@ -238,21 +238,21 @@ jobs:
       #     ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
 
       - name: Generate gcov files
-        if: matrix.coverage && success()
+        if: matrix.coverage
         run: |
           cd "${SRCDIR}"
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
-        if: matrix.coverage && success()
+        if: matrix.coverage
         uses: codecov/codecov-action@v2
         with:
-          flags: ${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
+          flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
 
       - name: ASan logs
         if: contains(matrix.extra, 'asan') && !cancelled()
         run: |
-          for f in $(grep -lR '#[[:digit:]]* *0x[[:digit:]a-fA-F]*' "${LOG_DIR}"); do
+          for f in $(grep -lR '#[[:digit:]]* *0x[[:xdigit:]]*' "${LOG_DIR}"); do
             asan_symbolize -l "$f"
             false # in order to fail a job
           done
@@ -410,6 +410,9 @@ jobs:
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
           echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
+          if ${{ matrix.toolchain == 'mingw' && matrix.arch == 'x64' && matrix.features == 'HUGE' }}; then
+            echo "COVERAGE=yes" >> $GITHUB_ENV
+          fi
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
@@ -501,7 +504,7 @@ jobs:
               DYNAMIC_LUA=yes LUA=${LUA_DIR} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
-              STATIC_STDCPLUS=yes
+              STATIC_STDCPLUS=yes COVERAGE=${COVERAGE}
           else
             mingw32-make -f Make_ming.mak -j2 \
               FEATURES=${{ matrix.features }} \
@@ -521,6 +524,12 @@ jobs:
       #  with:
       #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
       #    path: ./artifacts
+
+      - name: Copy gcov data files to src2
+        if: env.COVERAGE
+        shell: msys2 {0}
+        run: |
+          find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
 
       - name: Test
         shell: cmd
@@ -562,3 +571,26 @@ jobs:
             exit 1
           )
           echo ::endgroup::
+
+      - name: Generate gcov files
+        if: env.COVERAGE
+        shell: msys2 {0}
+        run: |
+          cd src
+          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+          cd ../src2
+          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+
+      - name: Codecov (gvim)
+        if: env.COVERAGE
+        uses: codecov/codecov-action@v2
+        with:
+          directory: src
+          flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
+
+      - name: Codecov (vim)
+        if: env.COVERAGE
+        uses: codecov/codecov-action@v2
+        with:
+          directory: src2
+          flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
