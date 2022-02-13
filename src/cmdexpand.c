@@ -50,6 +50,9 @@ sort_func_compare(const void *s1, const void *s2)
     return STRCMP(p1, p2);
 }
 
+/*
+ * Escape special characters in the cmdline completion matches.
+ */
     static void
 ExpandEscape(
     expand_T	*xp,
