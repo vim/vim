@@ -1328,8 +1328,9 @@ get_lambda_tv(
     int		equal_arrow = **arg == '(';
     int		white_error = FALSE;
     int		called_emsg_start = called_emsg;
+    int		vim9script = in_vim9script();
 
-    if (equal_arrow && !in_vim9script())
+    if (equal_arrow && !vim9script)
 	return NOTDONE;
 
     ga_init(&newargs);
@@ -1360,7 +1361,7 @@ get_lambda_tv(
 					    FALSE, NULL, NULL);
     if (ret == FAIL
 		  || (s = skip_arrow(*arg, equal_arrow, &ret_type,
-		equal_arrow || in_vim9script() ? &white_error : NULL)) == NULL)
+		equal_arrow || vim9script ? &white_error : NULL)) == NULL)
     {
 	if (types_optional)
 	    ga_clear_strings(&argtypes);
@@ -1485,7 +1486,7 @@ get_lambda_tv(
 	if (types_optional)
 	{
 	    if (parse_argument_types(fp, &argtypes,
-					   in_vim9script() && varargs) == FAIL)
+						vim9script && varargs) == FAIL)
 		goto errret;
 	    if (ret_type != NULL)
 	    {
@@ -1514,7 +1515,7 @@ get_lambda_tv(
 	    flags |= FC_SANDBOX;
 	// In legacy script a lambda can be called with more args than
 	// uf_args.ga_len.  In Vim9 script "...name" has to be used.
-	fp->uf_varargs = !in_vim9script() || varargs;
+	fp->uf_varargs = !vim9script || varargs;
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;
@@ -1779,7 +1780,7 @@ get_func_tv(
 	}
 
 	ret = call_func(name, len, rettv, argcount, argvars, funcexe);
-	if (in_vim9script() && did_emsg > did_emsg_before)
+	if (vim9script && did_emsg > did_emsg_before)
 	{
 	    // An error in a builtin function does not return FAIL, but we do
 	    // want to abort further processing if an error was given.
@@ -1800,7 +1801,7 @@ get_func_tv(
     while (--argcount >= 0)
 	clear_tv(&argvars[argcount]);
 
-    if (in_vim9script())
+    if (vim9script)
 	*arg = argp;
     else
 	*arg = skipwhite(argp);
@@ -3714,7 +3715,8 @@ trans_function_name(
     int		extra = 0;
     int		prefix_g = FALSE;
     lval_T	lv;
-    int		vim9script;
+    int		vim9script = in_vim9script();
+    int		vim9_local;
 
     if (fdp != NULL)
 	CLEAR_POINTER(fdp);
@@ -3739,7 +3741,7 @@ trans_function_name(
     // Note that TFN_ flags use the same values as GLV_ flags.
     end = get_lval(start, NULL, &lv, FALSE, skip, flags | GLV_READ_ONLY,
 					      lead > 2 ? 0 : FNE_CHECK_START);
-    if (end == start || (in_vim9script() && end != NULL
+    if (end == start || (vim9script && end != NULL
 				   && end[-1] == AUTOLOAD_CHAR && *end == '('))
     {
 	if (!skip)
@@ -3905,7 +3907,7 @@ trans_function_name(
 
     // In Vim9 script a user function is script-local by default, unless it
     // starts with a lower case character: dict.func().
-    vim9script = ASCII_ISUPPER(*start) && in_vim9script();
+    vim9_local = ASCII_ISUPPER(*start) && vim9script;
 
     /*
      * Copy the function name to allocated memory.
@@ -3914,13 +3916,13 @@ trans_function_name(
      */
     if (skip)
 	lead = 0;	// do nothing
-    else if (lead > 0 || vim9script)
+    else if (lead > 0 || vim9_local)
     {
-	if (!vim9script)
+	if (!vim9_local)
 	{
-	    if (in_vim9script() && lead == 2 && !ASCII_ISUPPER(*lv.ll_name))
+	    if (vim9script && lead == 2 && !ASCII_ISUPPER(*lv.ll_name))
 	    {
-		semsg(_(in_vim9script()
+		semsg(_(vim9script
 			   ? e_function_name_must_start_with_capital_str
 			   : e_function_name_must_start_with_capital_or_s_str),
 									start);
@@ -3928,7 +3930,7 @@ trans_function_name(
 	    }
 	    lead = 3;
 	}
-	if (vim9script || (lv.ll_exp_name != NULL
+	if (vim9_local || (lv.ll_exp_name != NULL
 					     && eval_fname_sid(lv.ll_exp_name))
 						       || eval_fname_sid(*pp))
 	{
@@ -3939,17 +3941,16 @@ trans_function_name(
 		goto theend;
 	    }
 	    sprintf((char *)sid_buf, "%ld_", (long)current_sctx.sc_sid);
-	    if (vim9script)
+	    if (vim9_local)
 		extra = 3 + (int)STRLEN(sid_buf);
 	    else
 		lead += (int)STRLEN(sid_buf);
 	}
     }
     else if (!(flags & TFN_INT) && (builtin_function(lv.ll_name, len)
-				   || (in_vim9script() && *lv.ll_name == '_')))
+				   || (vim9script && *lv.ll_name == '_')))
     {
-	semsg(_(in_vim9script()
-			   ? e_function_name_must_start_with_capital_str
+	semsg(_(vim9script ? e_function_name_must_start_with_capital_str
 			   : e_function_name_must_start_with_capital_or_s_str),
 									start);
 	goto theend;
@@ -3968,12 +3969,12 @@ trans_function_name(
     name = alloc(len + lead + extra + 1);
     if (name != NULL)
     {
-	if (!skip && (lead > 0 || vim9script))
+	if (!skip && (lead > 0 || vim9_local))
 	{
 	    name[0] = K_SPECIAL;
 	    name[1] = KS_EXTRA;
 	    name[2] = (int)KE_SNR;
-	    if (vim9script || lead > 3)	// If it's "<SID>"
+	    if (vim9_local || lead > 3)	// If it's "<SID>"
 		STRCPY(name + 3, sid_buf);
 	}
 	else if (prefix_g)
@@ -4546,7 +4547,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	int		ffed_flags = is_global ? FFED_IS_GLOBAL : 0;
 
 	v = find_var(name, &ht, TRUE);
-	if (v != NULL && (in_vim9script() || v->di_tv.v_type == VAR_FUNC))
+	if (v != NULL && (vim9script || v->di_tv.v_type == VAR_FUNC))
 	    var_conflict = TRUE;
 
 	if (SCRIPT_ID_VALID(current_sctx.sc_sid))
@@ -5299,6 +5300,7 @@ ex_call(exarg_T *eap)
     evalarg_T	evalarg;
     type_T	*type = NULL;
     int		found_var = FALSE;
+    int		vim9script = in_vim9script();
 
     fill_evalarg_from_eap(&evalarg, eap, eap->skip);
     if (eap->skip)
@@ -5315,7 +5317,7 @@ ex_call(exarg_T *eap)
     }
 
     tofree = trans_function_name(&arg, NULL, eap->skip, TFN_INT,
-			      &fudi, &partial, in_vim9script() ? &type : NULL);
+			      &fudi, &partial, vim9script ? &type : NULL);
     if (fudi.fd_newkey != NULL)
     {
 	// Still need to give an error message for missing key.
@@ -5335,7 +5337,7 @@ ex_call(exarg_T *eap)
     // from trans_function_name().
     len = (int)STRLEN(tofree);
     name = deref_func_name(tofree, &len, partial != NULL ? NULL : &partial,
-	    in_vim9script() && type == NULL ? &type : NULL,
+				vim9script && type == NULL ? &type : NULL,
 						     FALSE, FALSE, &found_var);
 
     // Skip white space to allow ":call func ()".  Not good, but required for
@@ -5346,7 +5348,7 @@ ex_call(exarg_T *eap)
 	semsg(_(e_missing_parenthesis_str), eap->arg);
 	goto end;
     }
-    if (in_vim9script() && startarg > arg)
+    if (vim9script && startarg > arg)
     {
 	semsg(_(e_no_white_space_allowed_before_str_str), "(", eap->arg);
 	goto end;
