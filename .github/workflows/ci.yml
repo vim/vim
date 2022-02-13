@@ -512,6 +512,13 @@ jobs:
               STATIC_STDCPLUS=yes
           fi
 
+      - name: Check version
+        shell: cmd
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          call "%VCVARSALL%" ${{ matrix.vcarch }}
+          src\vim --version || exit 1
+
       #- name: Prepare Artifact
       #  shell: cmd
       #  run: |
@@ -531,29 +538,29 @@ jobs:
         run: |
           find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
 
-      - name: Test
+      - name: Test and show the result of testing gVim
         shell: cmd
         timeout-minutes: 20
         run: |
           PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
           call "%VCVARSALL%" ${{ matrix.vcarch }}
-          cd src
-          echo.
-          echo ::group::%COL_GREEN%Vim version:%COL_RESET%
-          .\vim --version || exit 1
-          echo ::endgroup::
 
-          echo %COL_GREEN%Start testing vim in background.%COL_RESET%
-          start cmd /c "cd ..\src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+          echo %COL_GREEN%Start testing Vim in background.%COL_RESET%
+          start cmd /c "cd src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
 
-          echo ::group::%COL_GREEN%Test gvim:%COL_RESET%
-          cd testdir
+          echo %COL_GREEN%Test gVim:%COL_RESET%
+          cd src\testdir
           nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
-          cd ..
-          echo ::endgroup::
 
-          echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
-          cd ..\src2\testdir
+      - name: Show the result of testing Vim
+        shell: cmd
+        timeout-minutes: 20
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          call "%VCVARSALL%" ${{ matrix.vcarch }}
+
+          echo %COL_GREEN%Wait for Vim tests to finish.%COL_RESET%
+          cd src2\testdir
           :: Wait about 10 minutes.
           for /L %%i in (1,1,60) do (
             if exist done.txt goto exitloop
@@ -563,14 +570,15 @@ jobs:
           set timeout=1
           :exitloop
 
-          echo ::group::%COL_GREEN%Test results of vim:%COL_RESET%
+          echo %COL_GREEN%The result of testing Vim:%COL_RESET%
+          cd src2\testdir
           if exist messages type messages
           nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
+
           if "%timeout%"=="1" (
             echo %COL_RED%Timed out.%COL_RESET%
             exit 1
           )
-          echo ::endgroup::
 
       - name: Generate gcov files
         if: env.COVERAGE
@@ -581,14 +589,14 @@ jobs:
           cd ../src2
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
-      - name: Codecov (gvim)
+      - name: Codecov (gVim)
         if: env.COVERAGE
         uses: codecov/codecov-action@v2
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
 
-      - name: Codecov (vim)
+      - name: Codecov (Vim)
         if: env.COVERAGE
         uses: codecov/codecov-action@v2
         with:
