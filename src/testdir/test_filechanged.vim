@@ -10,7 +10,7 @@ func Test_FileChangedShell_reload()
   augroup END
   new Xchanged_r
   call setline(1, 'reload this')
-  write
+  silent write
   " Need to wait until the timestamp would change by at least a second.
   sleep 2
   silent !echo 'extra line' >>Xchanged_r
@@ -63,7 +63,7 @@ func Test_FileChangedShell_reload()
     " reload.
     set undofile
     call setline(2, 'before write')
-    write
+    silent write
     call setline(2, 'after write')
     sleep 2
     silent !echo 'different line' >>Xchanged_r
@@ -97,7 +97,7 @@ func Test_FileChangedShell_edit()
   new Xchanged_r
   call setline(1, 'reload this')
   set fileformat=unix
-  write
+  silent write
 
   " File format changed, reload (content only, no 'ff' etc)
   augroup testreload
@@ -113,7 +113,7 @@ func Test_FileChangedShell_edit()
   call assert_equal("line1\r", getline(1))
   call assert_equal("line2\r", getline(2))
   %s/\r
-  write
+  silent write
 
   " File format changed, reload with 'ff', etc
   augroup testreload
@@ -129,7 +129,7 @@ func Test_FileChangedShell_edit()
   call assert_equal('line1', getline(1))
   call assert_equal('line2', getline(2))
   set fileformat=unix
-  write
+  silent write
 
   au! testreload
   bwipe!
@@ -139,13 +139,11 @@ endfunc
 
 func Test_FileChangedShell_edit_dialog()
   CheckNotGui
-  " FIXME: why does this not work on MS-Windows?
-  CheckUnix
 
   new Xchanged_r
   call setline(1, 'reload this')
   set fileformat=unix
-  write
+  silent write
 
   " File format changed, reload (content only) via prompt
   augroup testreload
@@ -162,7 +160,7 @@ func Test_FileChangedShell_edit_dialog()
   call assert_equal("line1\r", getline(1))
   call assert_equal("line2\r", getline(2))
   %s/\r
-  write
+  silent write
 
   " File format changed, reload (file and options) via prompt
   augroup testreload
@@ -179,7 +177,7 @@ func Test_FileChangedShell_edit_dialog()
   call assert_equal("line1", getline(1))
   call assert_equal("line2", getline(2))
   set fileformat=unix
-  write
+  silent write
 
   au! testreload
   bwipe!
@@ -194,7 +192,7 @@ func Test_file_changed_dialog()
 
   new Xchanged_d
   call setline(1, 'reload this')
-  write
+  silent write
   " Need to wait until the timestamp would change by at least a second.
   sleep 2
   silent !echo 'extra line' >>Xchanged_d
