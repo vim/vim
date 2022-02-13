@@ -967,8 +967,7 @@ get_lval(
 
     if (*p == '.')
     {
-	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name,
-								   TRUE, NULL);
+	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name, TRUE);
 
 	if (import != NULL)
 	{

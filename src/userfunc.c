@@ -1614,7 +1614,7 @@ deref_func_name(
 	    p = name + 2;
 	    len -= 2;
 	}
-	import = find_imported(p, len, FALSE, NULL);
+	import = find_imported(p, len, FALSE);
 
 	// imported function from another script
 	if (import != NULL)
@@ -4591,8 +4591,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	{
 	    char_u *uname = untrans_function_name(name);
 
-	    import = find_imported(uname == NULL ? name : uname, 0,
-								  FALSE, NULL);
+	    import = find_imported(uname == NULL ? name : uname, 0, FALSE);
 	}
 
 	if (fp != NULL || import != NULL)

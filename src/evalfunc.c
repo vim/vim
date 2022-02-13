@@ -3131,7 +3131,7 @@ f_call(typval_T *argvars, typval_T *rettv)
     dot = vim_strchr(func, '.');
     if (dot != NULL)
     {
-	imported_T *import = find_imported(func, dot - func, TRUE, NULL);
+	imported_T *import = find_imported(func, dot - func, TRUE);
 
 	if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
 	{

@@ -266,7 +266,7 @@ compile_load_scriptvar(
 	return OK;
     }
 
-    import = end == NULL ? NULL : find_imported(name, 0, FALSE, cctx);
+    import = end == NULL ? NULL : find_imported(name, 0, FALSE);
     if (import != NULL)
     {
 	char_u	*p = skipwhite(*end);
@@ -502,7 +502,7 @@ compile_load(
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
 		if (script_var_exists(*arg, len, cctx, NULL) == OK
-			|| find_imported(name, 0, FALSE, cctx) != NULL)
+				      || find_imported(name, 0, FALSE) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
 		// When evaluating an expression and the name starts with an
@@ -681,7 +681,7 @@ compile_call(
     }
     vim_strncpy(namebuf, *arg, varlen);
 
-    import = find_imported(name, varlen, FALSE, cctx);
+    import = find_imported(name, varlen, FALSE);
     if (import != NULL)
     {
 	semsg(_(e_cannot_use_str_itself_it_is_imported), namebuf);
