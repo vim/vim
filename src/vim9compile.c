@@ -291,27 +291,7 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
     static int
 item_exists(char_u *name, size_t len, int cmd UNUSED, cctx_T *cctx)
 {
-    int	    is_global;
-    char_u  *p;
-
-    if (variable_exists(name, len, cctx))
-	return TRUE;
-
-    // This is similar to what is in lookup_scriptitem():
-    // Find a function, so that a following "->" works.
-    // Require "(" or "->" to follow, "Cmd" is a user command while "Cmd()" is
-    // a function call.
-    p = skipwhite(name + len);
-
-    if (name[len] == '(' || (p[0] == '-' && p[1] == '>'))
-    {
-	// Do not check for an internal function, since it might also be a
-	// valid command, such as ":split" versus "split()".
-	// Skip "g:" before a function name.
-	is_global = (name[0] == 'g' && name[1] == ':');
-	return find_func(is_global ? name + 2 : name, is_global) != NULL;
-    }
-    return FALSE;
+    return variable_exists(name, len, cctx);
 }
 
 /*
