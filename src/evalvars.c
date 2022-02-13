@@ -3504,6 +3504,12 @@ set_var_const(
 	    semsg(_(e_cannot_use_str_itself_it_is_imported), name);
 	    goto failed;
 	}
+	if (!in_vim9script())
+	{
+	    semsg(_(e_cannot_create_vim9_script_variable_in_function_str),
+									 name);
+	    goto failed;
+	}
     }
 
     if (dest_tv == NULL)

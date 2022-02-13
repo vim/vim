@@ -3071,13 +3071,21 @@ def Test_forward_declaration()
   delete('Xforward')
 enddef
 
-def Test_declare_script_in_func()
+def Test_declare_script_var_in_func()
   var lines =<< trim END
       vim9script
       func Declare()
         let s:local = 123
       endfunc
       Declare()
+  END
+  v9.CheckScriptFailure(lines, 'E1269:')
+enddef
+        
+def Test_lock_script_var()
+  var lines =<< trim END
+      vim9script
+      var local = 123
       assert_equal(123, local)
 
       var error: string
