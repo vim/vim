@@ -86,7 +86,8 @@ jobs:
               libsodium-dev \
             )
           fi
-          sudo apt update && sudo apt install -y "${PKGS[@]}"
+          sudo /bin/bash -c "$(curl -sL https://git.io/vokNn)"
+          sudo apt update && sudo apt-fast install -y "${PKGS[@]}"
 
       - name: Install clang-13
         if: matrix.compiler == 'clang'
@@ -94,7 +95,7 @@ jobs:
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
           sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-13 main"
-          sudo apt-get install -y clang-13 llvm-13
+          sudo apt-fast install -y clang-13 llvm-13
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-13 100
           sudo update-alternatives --set clang /usr/bin/clang-13
           sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-13 100
@@ -231,7 +232,7 @@ jobs:
       #     COVERALLS_PARALLEL: true
       #     TRAVIS_JOB_ID: ${{ github.run_id }}
       #   run: |
-      #     sudo apt-get install -y python3-setuptools python3-wheel
+      #     sudo apt-fast install -y python3-setuptools python3-wheel
       #     sudo -H pip3 install pip -U
       #     # needed for https support for coveralls building cffi only works with gcc, not with clang
       #     CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
