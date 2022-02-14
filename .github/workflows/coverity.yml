@@ -25,7 +25,8 @@ jobs:
 
       - name: Install packages
         run: |
-          sudo apt update && sudo apt install -y \
+          sudo /bin/bash -c "$(curl -sL https://git.io/vokNn)"
+          sudo apt update && sudo apt-fast install -y \
             autoconf \
             gettext \
             libcanberra-dev \
