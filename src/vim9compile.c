@@ -151,8 +151,7 @@ arg_exists(
 /*
  * Lookup a script-local variable in the current script, possibly defined in a
  * block that contains the function "cctx->ctx_ufunc".
- * "cctx" is NULL at the script level.
- * "cstack_T" is NULL in a function.
+ * "cctx" is NULL at the script level, "cstack" is NULL in a function.
  * If "len" is <= 0 "name" must be NUL terminated.
  * Return NULL when not found.
  */
@@ -185,21 +184,16 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
     if (cctx == NULL)
     {
 	// Not in a function scope, find variable with block ID equal to or
-	// smaller than the current block id.  If "cstack" is not NULL go up
-	// the block scopes (more accurate).
+	// smaller than the current block id.  Use "cstack" to go up the block
+	// scopes.
 	while (sav != NULL)
 	{
-	    if (cstack != NULL)
-	    {
-		int idx;
+	    int idx;
 
-		for (idx = cstack->cs_idx; idx >= 0; --idx)
-		    if (cstack->cs_block_id[idx] == sav->sav_block_id)
-			break;
-		if (idx >= 0)
+	    for (idx = cstack->cs_idx; idx >= 0; --idx)
+		if (cstack->cs_block_id[idx] == sav->sav_block_id)
 		    break;
-	    }
-	    else if (sav->sav_block_id <= si->sn_current_block_id)
+	    if (idx >= 0)
 		break;
 	    sav = sav->sav_next;
 	}
@@ -236,8 +230,7 @@ script_is_vim9()
 
 /*
  * Lookup a variable (without s: prefix) in the current script.
- * "cctx" is NULL at the script level.
- * "cstack" is NULL in a function.
+ * "cctx" is NULL at the script level, "cstack" is NULL in a function.
  * Returns OK or FAIL.
  */
     int
@@ -296,7 +289,8 @@ item_exists(char_u *name, size_t len, int cmd UNUSED, cctx_T *cctx)
 
 /*
  * Check if "p[len]" is already defined, either in script "import_sid" or in
- * compilation context "cctx".  "cctx" is NULL at the script level.
+ * compilation context "cctx".
+ * "cctx" is NULL at the script level, "cstack" is NULL in a function.
  * Does not check the global namespace.
  * If "is_arg" is TRUE the error message is for an argument name.
  * Return FAIL and give an error if it defined.
@@ -507,6 +501,7 @@ check_item_writable(svar_T *sv, int check_writable, char_u *name)
 /*
  * Find "name" in script-local items of script "sid".
  * Pass "check_writable" to check_item_writable().
+ * "cctx" is NULL at the script level, "cstack" is NULL in a function.
  * Returns the index in "sn_var_vals" if found.
  * If found but not in "sn_var_vals" returns -1.
  * If not found or the variable is not writable returns -2.
