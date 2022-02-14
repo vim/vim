@@ -571,7 +571,6 @@ redraw_custom_statusline(win_T *wp)
 {
     static int	    entered = FALSE;
     int		    saved_did_emsg = did_emsg;
-    int		    saved_KeyTyped = KeyTyped;
 
     // When called recursively return.  This can happen when the statusline
     // contains an expression that triggers a redraw.
@@ -592,9 +591,6 @@ redraw_custom_statusline(win_T *wp)
     }
     did_emsg |= saved_did_emsg;
     entered = FALSE;
-
-    // A user function may reset KeyTyped, restore it.
-    KeyTyped = saved_KeyTyped;
 }
 #endif
 
