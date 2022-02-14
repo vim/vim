@@ -6617,8 +6617,11 @@ reltimestr({time})				*reltimestr()*
 
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar} [, {timeout}]])
-		Send the {string} to {server}.  The string is sent as an
-		expression and the result is returned after evaluation.
+		Send the {string} to {server}.
+		The {server} argument is a String.  If the value is empty,
+		Vim will instead use the name "GVIM".
+		The {string} value is sent as an expression and the result is
+		returned after evaluation.
 		The result must be a String or a |List|.  A |List| is turned
 		into a String by joining the items with a line break in
 		between (not at the end), like with join(expr, "\n").
@@ -6647,7 +6650,8 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 
 remote_foreground({server})				*remote_foreground()*
 		Move the Vim server with the name {server} to the foreground.
-		The {server} argument is a string.
+		The {server} argument is a String.  If the value is empty,
+		Vim will instead use the name "GVIM".
 		This works like: >
 			remote_expr({server}, "foreground()")
 <		Except that on Win32 systems the client does the work, to work
@@ -6696,9 +6700,12 @@ remote_read({serverid}, [{timeout}])			*remote_read()*
 <
 							*remote_send()* *E241*
 remote_send({server}, {string} [, {idvar}])
-		Send the {string} to {server}.  The string is sent as input
-		keys and the function returns immediately.  At the Vim server
-		the keys are not mapped |:map|.
+		Send the {string} to {server}.
+		The {server} argument is a String.  If the value is empty,
+		Vim will instead use the name "GVIM".
+		The {string} value is sent as input keys and the function
+		returns immediately.  At the Vim server the keys are not 
+		mapped |:map|.
 		If {idvar} is present, it is taken as the name of a variable
 		and a {serverid} for later use with remote_read() is stored
 		there.
