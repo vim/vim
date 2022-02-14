@@ -1695,7 +1695,7 @@ which version of the file you want to keep.
 
 The accuracy of the time check depends on the filesystem.  On Unix it is
 usually sub-second.  With old file sytems and on MS-Windows it is normally one
-second.  Use has('nanotime') check if sub-second time stamp checks are
+second.  Use `has('nanotime')` check if sub-second time stamp checks are
 available.
 
 There is one situation where you get the message while there is nothing wrong:
