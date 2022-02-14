@@ -347,7 +347,6 @@ jobs:
     runs-on: windows-2019
 
     env:
-      VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
       # Interfaces
       # Lua
       LUA_VER: 54
@@ -410,6 +409,7 @@ jobs:
         shell: bash
         run: |
           git config --global core.autocrlf input
+          echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
           python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
           echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
