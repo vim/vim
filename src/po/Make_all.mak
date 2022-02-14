@@ -134,6 +134,7 @@ MOCONVERTED = \
 		ru.cp1251.mo \
 		sk.cp1250.mo \
 		uk.cp1251.mo \
+		zh_CN.mo \
 		zh_CN.cp936.mo \
 
 
