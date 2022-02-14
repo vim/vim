@@ -2791,7 +2791,8 @@ EXTERN char e_missing_argument_type_for_str[]
 // E1080 unused
 EXTERN char e_cannot_unlet_str[]
 	INIT(= N_("E1081: Cannot unlet %s"));
-// E1082 unused
+EXTERN char e_command_modifier_without_command[]
+	INIT(= N_("E1082: Command modifier without command"));
 EXTERN char e_missing_backtick[]
 	INIT(= N_("E1083: Missing backtick"));
 EXTERN char e_cannot_delete_vim9_script_function_str[]

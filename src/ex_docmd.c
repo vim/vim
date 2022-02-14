@@ -2784,6 +2784,7 @@ parse_command_modifiers(
 {
     char_u  *p;
     int	    starts_with_colon = FALSE;
+    int	    vim9script = in_vim9script();
 
     CLEAR_POINTER(cmod);
     cmod->cmod_flags = sticky_cmdmod_flags;
@@ -2819,12 +2820,18 @@ parse_command_modifiers(
 		if (eap->nextcmd != NULL)
 		    ++eap->nextcmd;
 	    }
+	    if (vim9script && has_cmdmod(cmod, FALSE))
+		*errormsg = _(e_command_modifier_without_command);
 	    return FAIL;
 	}
 	if (*eap->cmd == NUL)
 	{
 	    if (!skip_only)
+	    {
 		ex_pressedreturn = TRUE;
+		if (vim9script && has_cmdmod(cmod, FALSE))
+		    *errormsg = _(e_command_modifier_without_command);
+	    }
 	    return FAIL;
 	}
 
@@ -2838,7 +2845,7 @@ parse_command_modifiers(
 	//   verbose[expr] = 2
 	// But not:
 	//   verbose [a, b] = list
-	if (in_vim9script())
+	if (vim9script)
 	{
 	    char_u *s, *n;
 
@@ -2915,7 +2922,7 @@ parse_command_modifiers(
 #ifdef FEAT_EVAL
 					// in ":filter #pat# cmd" # does not
 					// start a comment
-				     && (!in_vim9script() || VIM_ISWHITE(p[1]))
+				     && (!vim9script || VIM_ISWHITE(p[1]))
 #endif
 				     ))
 				break;
@@ -2928,7 +2935,7 @@ parse_command_modifiers(
 			    }
 #ifdef FEAT_EVAL
 			    // Avoid that "filter(arg)" is recognized.
-			    if (in_vim9script() && !VIM_ISWHITE(p[-1]))
+			    if (vim9script && !VIM_ISWHITE(p[-1]))
 				break;
 #endif
 			    if (skip_only)

@@ -2761,13 +2761,7 @@ compile_def_function(
 	cctx.ctx_has_cmdmod = FALSE;
 	if (parse_command_modifiers(&ea, &errormsg, &local_cmdmod, FALSE)
 								       == FAIL)
-	{
-	    if (errormsg != NULL)
-		goto erret;
-	    // empty line or comment
-	    line = (char_u *)"";
-	    continue;
-	}
+	    goto erret;
 	generate_cmdmods(&cctx, &local_cmdmod);
 	undo_cmdmod(&local_cmdmod);
 

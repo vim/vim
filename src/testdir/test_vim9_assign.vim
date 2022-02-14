@@ -350,6 +350,11 @@ def Test_assign_unpack()
     assert_equal(1, v1)
     assert_equal(2, v2)
 
+    var _x: number
+    [_x, v2] = [6, 7]
+    assert_equal(6, _x)
+    assert_equal(7, v2)
+
     var reslist = []
     for text in ['aaa {bbb} ccc', 'ddd {eee} fff']
       var before: string
@@ -1481,6 +1486,7 @@ def Test_assign_dict()
 
   v9.CheckDefFailure(["var d: dict<number> = {a: '', b: true}"], 'E1012: Type mismatch; expected dict<number> but got dict<any>', 1)
   v9.CheckDefFailure(["var d: dict<dict<number>> = {x: {a: '', b: true}}"], 'E1012: Type mismatch; expected dict<dict<number>> but got dict<dict<any>>', 1)
+  v9.CheckDefFailure(["var d = {x: 1}", "d[1 : 2] = {y: 2}"], 'E1165: Cannot use a range with an assignment: d[1 : 2] =', 2)
 enddef
 
 def Test_assign_dict_unknown_type()

@@ -1133,6 +1133,16 @@ def Test_useless_command_modifier()
       silent endtry
   END
   v9.CheckDefAndScriptFailure(lines, 'E1176:', 3)
+
+  lines =<< trim END
+      leftabove
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1082:', 1)
+
+  lines =<< trim END
+      leftabove # comment
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1082:', 1)
 enddef
 
 def Test_eval_command()
