@@ -347,7 +347,6 @@ jobs:
     runs-on: windows-2019
 
     env:
-      VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
       # Interfaces
       # Lua
       LUA_VER: 54
@@ -392,6 +391,10 @@ jobs:
             msystem: MINGW32
             cygreg: registry32
             pyreg: "-32"
+          - toolchain: mingw
+            arch: x64
+            features: HUGE
+            coverage: yes
         exclude:
           - toolchain: msvc
             arch: x64
@@ -406,13 +409,11 @@ jobs:
         shell: bash
         run: |
           git config --global core.autocrlf input
+          echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
           python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
           echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
-          if ${{ matrix.toolchain == 'mingw' && matrix.arch == 'x64' && matrix.features == 'HUGE' }}; then
-            echo "COVERAGE=yes" >> $GITHUB_ENV
-          fi
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
@@ -466,8 +467,7 @@ jobs:
 
       - name: Copy src directory to src2
         shell: cmd
-        run: |
-          xcopy src src2\ /E > nul
+        run: xcopy src src2\ /E > nul
 
       - name: Build (MSVC)
         if: matrix.toolchain == 'msvc'
@@ -504,13 +504,17 @@ jobs:
               DYNAMIC_LUA=yes LUA=${LUA_DIR} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
-              STATIC_STDCPLUS=yes COVERAGE=${COVERAGE}
+              STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else
             mingw32-make -f Make_ming.mak -j2 \
               FEATURES=${{ matrix.features }} \
               GUI=yes IME=yes ICONV=yes VIMDLL=yes \
               STATIC_STDCPLUS=yes
           fi
+
+      - name: Check version
+        shell: cmd
+        run: src\vim --version || exit 1
 
       #- name: Prepare Artifact
       #  shell: cmd
@@ -526,34 +530,33 @@ jobs:
       #    path: ./artifacts
 
       - name: Copy gcov data files to src2
-        if: env.COVERAGE
+        if: matrix.coverage
         shell: msys2 {0}
-        run: |
-          find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
+        run: find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
 
-      - name: Test
+      - name: Test and show the result of testing gVim
         shell: cmd
         timeout-minutes: 20
         run: |
           PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
           call "%VCVARSALL%" ${{ matrix.vcarch }}
-          cd src
-          echo.
-          echo ::group::%COL_GREEN%Vim version:%COL_RESET%
-          .\vim --version || exit 1
-          echo ::endgroup::
 
-          echo %COL_GREEN%Start testing vim in background.%COL_RESET%
-          start cmd /c "cd ..\src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+          echo %COL_GREEN%Start testing Vim in background.%COL_RESET%
+          start cmd /c "cd src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
 
-          echo ::group::%COL_GREEN%Test gvim:%COL_RESET%
-          cd testdir
+          echo %COL_GREEN%Test gVim:%COL_RESET%
+          cd src\testdir
           nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
-          cd ..
-          echo ::endgroup::
 
-          echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
-          cd ..\src2\testdir
+      - name: Show the result of testing Vim
+        shell: cmd
+        timeout-minutes: 20
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          call "%VCVARSALL%" ${{ matrix.vcarch }}
+
+          echo %COL_GREEN%Wait for Vim tests to finish.%COL_RESET%
+          cd src2\testdir
           :: Wait about 10 minutes.
           for /L %%i in (1,1,60) do (
             if exist done.txt goto exitloop
@@ -563,17 +566,18 @@ jobs:
           set timeout=1
           :exitloop
 
-          echo ::group::%COL_GREEN%Test results of vim:%COL_RESET%
+          echo %COL_GREEN%The result of testing Vim:%COL_RESET%
+          cd src2\testdir
           if exist messages type messages
           nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
+
           if "%timeout%"=="1" (
             echo %COL_RED%Timed out.%COL_RESET%
             exit 1
           )
-          echo ::endgroup::
 
       - name: Generate gcov files
-        if: env.COVERAGE
+        if: matrix.coverage
         shell: msys2 {0}
         run: |
           cd src
@@ -581,15 +585,15 @@ jobs:
           cd ../src2
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
-      - name: Codecov (gvim)
-        if: env.COVERAGE
+      - name: Codecov (gVim)
+        if: matrix.coverage
         uses: codecov/codecov-action@v2
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
 
-      - name: Codecov (vim)
-        if: env.COVERAGE
+      - name: Codecov (Vim)
+        if: matrix.coverage
         uses: codecov/codecov-action@v2
         with:
           directory: src2
