@@ -3084,7 +3084,6 @@ parse_command_modifiers(
     return OK;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if "cmod" has anything set.
  */
@@ -3100,6 +3099,7 @@ has_cmdmod(cmdmod_T *cmod, int ignore_silent)
 	    || cmod->cmod_filter_regmatch.regprog != NULL;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * If Vim9 script and "cmdmod" has anything set give an error and return TRUE.
  */
