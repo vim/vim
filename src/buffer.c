@@ -4164,6 +4164,7 @@ build_stl_str_hl(
     stl_hlrec_T *sp;
     int		save_must_redraw = must_redraw;
     int		save_redr_type = curwin->w_redr_type;
+    int		save_KeyTyped = KeyTyped;
 
     if (stl_items == NULL)
     {
@@ -5059,6 +5060,9 @@ build_stl_str_hl(
 	must_redraw = save_must_redraw;
 	curwin->w_redr_type = save_redr_type;
     }
+
+    // A user function may reset KeyTyped, restore it.
+    KeyTyped = save_KeyTyped;
 
     return width;
 }
