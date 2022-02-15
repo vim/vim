@@ -3671,9 +3671,7 @@ fix_input_buffer(char_u *buf, int len)
 	    p += 2;
 	    i -= 2;
 	}
-# ifndef MSWIN
-	// When not on MS-Windows and the GUI is not used CSI needs to be
-	// escaped.
+	// When the GUI is not used CSI needs to be escaped.
 	else if (!gui.in_use && p[0] == CSI)
 	{
 	    mch_memmove(p + 3, p + 1, (size_t)i);
@@ -3682,7 +3680,6 @@ fix_input_buffer(char_u *buf, int len)
 	    *p = (int)KE_CSI;
 	    len += 2;
 	}
-# endif
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
