@@ -1604,7 +1604,7 @@ foldMarkAdjustRecurse(
 		    if (amount == MAXLNUM)
 		    {
 			foldMarkAdjustRecurse(&fp->fd_nested,
-				  line1 - fp->fd_top,
+				  0,
 				  line2 - fp->fd_top,
 				  amount,
 				  amount_after + (fp->fd_top - top));
@@ -1614,7 +1614,7 @@ foldMarkAdjustRecurse(
 		    else
 		    {
 			foldMarkAdjustRecurse(&fp->fd_nested,
-				  line1 - fp->fd_top,
+				  0,
 				  line2 - fp->fd_top,
 				  amount,
 				  amount_after - amount);
