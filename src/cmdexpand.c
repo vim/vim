@@ -1473,16 +1473,21 @@ set_context_by_cmdname(
 		// skip "from" part
 		++arg;
 		arg = skip_regexp(arg, delim, magic_isset());
-	    }
-	    // skip "to" part
-	    while (arg[0] != NUL && arg[0] != delim)
-	    {
-		if (arg[0] == '\\' && arg[1] != NUL)
+
+		if (arg[0] != NUL && arg[0] == delim)
+		{
+		    // skip "to" part
 		    ++arg;
-		++arg;
+		    while (arg[0] != NUL && arg[0] != delim)
+		    {
+			if (arg[0] == '\\' && arg[1] != NUL)
+			    ++arg;
+			++arg;
+		    }
+		    if (arg[0] != NUL)	// skip delimiter
+			++arg;
+		}
 	    }
-	    if (arg[0] != NUL)	// skip delimiter
-		++arg;
 	    while (arg[0] && vim_strchr((char_u *)"|\"#", arg[0]) == NULL)
 		++arg;
 	    if (arg[0] != NUL)
@@ -1508,7 +1513,8 @@ set_context_by_cmdname(
 		    arg = skipwhite(arg + 1);
 
 		    // Check for trailing illegal characters
-		    if (*arg && vim_strchr((char_u *)"|\"\n", *arg) == NULL)
+		    if (*arg == NUL ||
+				vim_strchr((char_u *)"|\"\n", *arg) == NULL)
 			xp->xp_context = EXPAND_NOTHING;
 		    else
 			return arg;
@@ -2408,6 +2414,8 @@ ExpandFromContext(
 	int len = (int)STRLEN(pat) + 20;
 
 	tofree = alloc(len);
+	if (tofree == NULL)
+	    return FAIL;
 	vim_snprintf((char *)tofree, len, "^<SNR>\\d\\+_%s", pat + 3);
 	pat = tofree;
     }
