@@ -3752,6 +3752,8 @@ msg_advance(int col)
  * Other buttons- use your imagination!
  * A '&' in a button name becomes a shortcut, so each '&' should be before a
  * different letter.
+ *
+ * Returns 0 if cancelled, otherwise the nth button (1-indexed).
  */
     int
 do_dialog(

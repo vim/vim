@@ -1254,6 +1254,7 @@ do_source(
 #ifdef FEAT_PROFILE
     proftime_T		    wait_start;
 #endif
+    int			    save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int			    trigger_source_post = FALSE;
     ESTACK_CHECK_DECLARATION
 
@@ -1393,6 +1394,9 @@ do_source(
     if (time_fd != NULL)
 	time_push(&tv_rel, &tv_start);
 #endif
+
+    // "legacy" does not apply to commands in the script
+    sticky_cmdmod_flags = 0;
 
     save_current_sctx = current_sctx;
     current_sctx.sc_version = 1;  // default script version
@@ -1618,6 +1622,7 @@ almosttheend:
 
 theend:
     vim_free(fname_exp);
+    sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 #ifdef FEAT_EVAL
     estack_compiling = save_estack_compiling;
 #endif

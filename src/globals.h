@@ -1156,6 +1156,7 @@ EXTERN int	mapped_ctrl_c INIT(= FALSE); // modes where CTRL-C is mapped
 EXTERN int	ctrl_c_interrupts INIT(= TRUE);	// CTRL-C sets got_int
 
 EXTERN cmdmod_T	cmdmod;			// Ex command modifiers
+EXTERN int	sticky_cmdmod_flags INIT(= 0); // used by :execute
 
 #ifdef FEAT_EVAL
 EXTERN int	is_export INIT(= FALSE);    // :export {cmd}

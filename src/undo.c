@@ -2828,8 +2828,8 @@ u_undoredo(int undo)
 	    if (curbuf->b_op_end.lnum > top + oldsize)
 		curbuf->b_op_end.lnum += newsize - oldsize;
 	}
-
-	changed_lines(top + 1, 0, bot, newsize - oldsize);
+	if (oldsize > 0 || newsize > 0)
+	    changed_lines(top + 1, 0, bot, newsize - oldsize);
 
 	// set '[ and '] mark
 	if (top + 1 < curbuf->b_op_start.lnum)

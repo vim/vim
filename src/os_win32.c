@@ -520,7 +520,7 @@ unescape_shellxquote(char_u *p, char_u *escaped)
  * Load library "name".
  */
     HINSTANCE
-vimLoadLib(char *name)
+vimLoadLib(const char *name)
 {
     HINSTANCE	dll = NULL;
 
@@ -8279,15 +8279,20 @@ resize_console_buf(void)
     char *
 GetWin32Error(void)
 {
+    static char *oldmsg = NULL;
     char *msg = NULL;
+
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
 	    NULL, GetLastError(), 0, (LPSTR)&msg, 0, NULL);
+    if (oldmsg != NULL)
+	LocalFree(oldmsg);
     if (msg != NULL)
     {
 	// remove trailing \r\n
 	char *pcrlf = strstr(msg, "\r\n");
 	if (pcrlf != NULL)
 	    *pcrlf = '\0';
+	oldmsg = msg;
     }
     return msg;
 }

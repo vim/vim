@@ -314,7 +314,7 @@ func CustomComplete(A, L, P)
 endfunc
 
 func CustomCompleteList(A, L, P)
-  return [ "Monday", "Tuesday", "Wednesday", {}]
+  return [ "Monday", "Tuesday", "Wednesday", {}, test_null_string()]
 endfunc
 
 func Test_CmdCompletion()
@@ -383,6 +383,17 @@ func Test_CmdCompletion()
   " custom completion failure with the wrong function
   com! -nargs=? -complete=custom,min DoCmd
   call assert_fails("call feedkeys(':DoCmd \t', 'tx')", 'E118:')
+
+  " custom completion for a pattern with a backslash
+  let g:ArgLead = ''
+  func! CustCompl(A, L, P)
+    let g:ArgLead = a:A
+    return ['one', 'two', 'three']
+  endfunc
+  com! -nargs=? -complete=customlist,CustCompl DoCmd
+  call feedkeys(":DoCmd a\\\t", 'xt')
+  call assert_equal('a\', g:ArgLead)
+  delfunc CustCompl
 
   delcom DoCmd
 endfunc

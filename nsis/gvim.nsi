@@ -348,6 +348,9 @@ Section "$(str_section_exe)" id_section_exe
 !if /FileExists "${VIMSRC}\vim${BIT}.dll"
 	File ${VIMSRC}\vim${BIT}.dll
 !endif
+!if /FileExists "${VIMRT}\libsodium.dll"
+	File ${VIMRT}\libsodium.dll
+!endif
 	File /oname=install.exe ${VIMSRC}\installw32.exe
 	File /oname=uninstall.exe ${VIMSRC}\uninstallw32.exe
 	File ${VIMSRC}\vimrun.exe

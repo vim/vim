@@ -1607,6 +1607,7 @@ ex_retab(exarg_T *eap)
     long	start_col = 0;		// For start of white-space string
     long	start_vcol = 0;		// For start of white-space string
     long	old_len;
+    long	new_len;
     char_u	*ptr;
     char_u	*new_line = (char_u *)1; // init to non-NULL
     int		did_undo;		// called u_save for current line
@@ -1724,7 +1725,13 @@ ex_retab(exarg_T *eap)
 			// len is actual number of white characters used
 			len = num_spaces + num_tabs;
 			old_len = (long)STRLEN(ptr);
-			new_line = alloc(old_len - col + start_col + len + 1);
+			new_len = old_len - col + start_col + len + 1;
+			if (new_len <= 0 || new_len >= MAXCOL)
+			{
+			    emsg(_(e_resulting_text_too_long));
+			    break;
+			}
+			new_line = alloc(new_len);
 			if (new_line == NULL)
 			    break;
 			if (start_col > 0)
@@ -1750,6 +1757,11 @@ ex_retab(exarg_T *eap)
 	    if (ptr[col] == NUL)
 		break;
 	    vcol += chartabsize(ptr + col, (colnr_T)vcol);
+	    if (vcol >= MAXCOL)
+	    {
+		emsg(_(e_resulting_text_too_long));
+		break;
+	    }
 	    if (has_mbyte)
 		col += (*mb_ptr2len)(ptr + col);
 	    else

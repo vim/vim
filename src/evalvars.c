@@ -2735,7 +2735,7 @@ eval_variable(
 	char_u	    *p = STRNCMP(name, "s:", 2) == 0 ? name + 2 : name;
 
 	if (sid == 0)
-	    import = find_imported(p, 0, TRUE, NULL);
+	    import = find_imported(p, 0, TRUE);
 
 	// imported variable from another script
 	if (import != NULL || sid != 0)
@@ -3096,7 +3096,7 @@ lookup_scriptitem(
     res = HASHITEM_EMPTY(hi) ? FAIL : OK;
 
     // if not script-local, then perhaps imported
-    if (res == FAIL && find_imported(p, 0, FALSE, NULL) != NULL)
+    if (res == FAIL && find_imported(p, 0, FALSE) != NULL)
 	res = OK;
     if (p != buffer)
 	vim_free(p);
@@ -3491,7 +3491,7 @@ set_var_const(
 
     if (di == NULL && var_in_vim9script)
     {
-	imported_T  *import = find_imported(varname, 0, FALSE, NULL);
+	imported_T  *import = find_imported(varname, 0, FALSE);
 
 	if (import != NULL)
 	{
@@ -3502,6 +3502,12 @@ set_var_const(
 		goto failed;
 	    }
 	    semsg(_(e_cannot_use_str_itself_it_is_imported), name);
+	    goto failed;
+	}
+	if (!in_vim9script())
+	{
+	    semsg(_(e_cannot_create_vim9_script_variable_in_function_str),
+									 name);
 	    goto failed;
 	}
     }
@@ -4690,7 +4696,7 @@ expand_autload_callback(callback_T *cb)
     p = vim_strchr(name, '.');
     if (p == NULL)
 	return;
-    import = find_imported(name, p - name, FALSE, NULL);
+    import = find_imported(name, p - name, FALSE);
     if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
     {
 	scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);

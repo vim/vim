@@ -387,5 +387,36 @@ func Test_remove_listener_in_callback()
   unlet g:listener_called
 endfunc
 
+func Test_no_change_for_empty_undo()
+  new
+  let text = ['some word here', 'second line']
+  call setline(1, text)
+  let g:entries = []
+  func Listener(bufnr, start, end, added, changes)
+    for change in a:changes
+      call add(g:entries, [change.lnum, change.end, change.added])
+    endfor
+  endfunc
+  let s:ID = listener_add('Listener')
+  let @a = "one line\ntwo line\nthree line"
+  set undolevels&  " start new undo block
+  call feedkeys('fwviw"ap', 'xt')
+  call listener_flush(bufnr())
+  " first change deletes "word", second change inserts the register
+  call assert_equal([[1, 2, 0], [1, 2, 2]], g:entries)
+  let g:entries = []
+
+  set undolevels&  " start new undo block
+  undo
+  call listener_flush(bufnr())
+  call assert_equal([[1, 4, -2]], g:entries)
+  call assert_equal(text, getline(1, 2))
+
+  call listener_remove(s:ID)
+  bwipe!
+  unlet g:entries
+  delfunc Listener
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

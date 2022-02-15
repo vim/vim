@@ -2791,7 +2791,10 @@ EXTERN char e_missing_argument_type_for_str[]
 // E1080 unused
 EXTERN char e_cannot_unlet_str[]
 	INIT(= N_("E1081: Cannot unlet %s"));
-// E1082 unused
+#endif
+EXTERN char e_command_modifier_without_command[]
+	INIT(= N_("E1082: Command modifier without command"));
+#ifdef FEAT_EVAL
 EXTERN char e_missing_backtick[]
 	INIT(= N_("E1083: Missing backtick"));
 EXTERN char e_cannot_delete_vim9_script_function_str[]
@@ -2828,7 +2831,7 @@ EXTERN char e_unknown_error_while_executing_str[]
 	INIT(= N_("E1099: Unknown error while executing %s"));
 EXTERN char e_command_not_supported_in_vim9_script_missing_var_str[]
 	INIT(= N_("E1100: Command not supported in Vim9 script (missing :var?): %s"));
-EXTERN char e_cannot_declare_script_variable_in_function[]
+EXTERN char e_cannot_declare_script_variable_in_function_str[]
 	INIT(= N_("E1101: Cannot declare a script variable in a function: %s"));
 EXTERN char e_lambda_function_not_found_str[]
 	INIT(= N_("E1102: Lambda function not found: %s"));
@@ -3232,4 +3235,8 @@ EXTERN char e_critical_error_in_python3_initialization_check_your_installation[]
 #ifdef FEAT_EVAL
 EXTERN char e_function_name_must_start_with_capital_str[]
 	INIT(= N_("E1267: Function name must start with a capital: %s"));
+EXTERN char e_cannot_use_s_colon_in_vim9_script_str[]
+	INIT(= N_("E1268: Cannot use s: in Vim9 script: %s"));
+EXTERN char e_cannot_create_vim9_script_variable_in_function_str[]
+	INIT(= N_("E1269: Cannot create a Vim9 script variable in a function: %s"));
 #endif

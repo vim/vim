@@ -24,6 +24,7 @@ int call_user_func_check(ufunc_T *fp, int argcount, typval_T *argvars, typval_T 
 void save_funccal(funccal_entry_T *entry);
 void restore_funccal(void);
 funccall_T *get_current_funccal(void);
+int at_script_level(void);
 void delete_script_functions(int sid);
 void free_all_functions(void);
 int builtin_function(char_u *name, int len);

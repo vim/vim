@@ -162,6 +162,22 @@ typedef struct {
 
 
 # ifdef DYNAMIC_SODIUM
+#  ifdef MSWIN
+#   define SODIUM_PROC FARPROC
+#   define load_dll vimLoadLib
+#   define symbol_from_dll GetProcAddress
+#   define close_dll FreeLibrary
+#   define load_dll_error GetWin32Error
+#  else
+#   error Dynamic loading of libsodium is not supported for now.
+//#   define HINSTANCE void*
+//#   define SODIUM_PROC void*
+//#   define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+//#   define symbol_from_dll dlsym
+//#   define close_dll dlclose
+//#   define load_dll_error dlerror
+#  endif
+
 #  define sodium_init	    load_sodium
 #  define sodium_free	    dll_sodium_free
 #  define sodium_malloc	    dll_sodium_malloc
@@ -214,51 +230,70 @@ static void (*dll_randombytes_buf)(void * const buf, const size_t size);
 
 static struct {
     const char *name;
-    FARPROC *ptr;
+    SODIUM_PROC *ptr;
 } sodium_funcname_table[] = {
-    {"sodium_init", (FARPROC*)&dll_sodium_init},
-    {"sodium_free", (FARPROC*)&dll_sodium_free},
-    {"sodium_malloc", (FARPROC*)&dll_sodium_malloc},
-    {"sodium_memzero", (FARPROC*)&dll_sodium_memzero},
-    {"sodium_mlock", (FARPROC*)&dll_sodium_mlock},
-    {"sodium_munlock", (FARPROC*)&dll_sodium_munlock},
-    {"crypto_secretstream_xchacha20poly1305_init_push", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_init_push},
-    {"crypto_secretstream_xchacha20poly1305_push", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_push},
-    {"crypto_secretstream_xchacha20poly1305_init_pull", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_init_pull},
-    {"crypto_secretstream_xchacha20poly1305_pull", (FARPROC*)&dll_crypto_secretstream_xchacha20poly1305_pull},
-    {"crypto_pwhash", (FARPROC*)&dll_crypto_pwhash},
-    {"randombytes_buf", (FARPROC*)&dll_randombytes_buf},
+    {"sodium_init", (SODIUM_PROC*)&dll_sodium_init},
+    {"sodium_free", (SODIUM_PROC*)&dll_sodium_free},
+    {"sodium_malloc", (SODIUM_PROC*)&dll_sodium_malloc},
+    {"sodium_memzero", (SODIUM_PROC*)&dll_sodium_memzero},
+    {"sodium_mlock", (SODIUM_PROC*)&dll_sodium_mlock},
+    {"sodium_munlock", (SODIUM_PROC*)&dll_sodium_munlock},
+    {"crypto_secretstream_xchacha20poly1305_init_push", (SODIUM_PROC*)&dll_crypto_secretstream_xchacha20poly1305_init_push},
+    {"crypto_secretstream_xchacha20poly1305_push", (SODIUM_PROC*)&dll_crypto_secretstream_xchacha20poly1305_push},
+    {"crypto_secretstream_xchacha20poly1305_init_pull", (SODIUM_PROC*)&dll_crypto_secretstream_xchacha20poly1305_init_pull},
+    {"crypto_secretstream_xchacha20poly1305_pull", (SODIUM_PROC*)&dll_crypto_secretstream_xchacha20poly1305_pull},
+    {"crypto_pwhash", (SODIUM_PROC*)&dll_crypto_pwhash},
+    {"randombytes_buf", (SODIUM_PROC*)&dll_randombytes_buf},
     {NULL, NULL}
 };
 
     static int
-load_sodium(void)
+sodium_runtime_link_init(int verbose)
 {
-    static HANDLE hsodium = NULL;
+    static HINSTANCE hsodium = NULL;
+    const char *libname = "libsodium.dll";
     int i;
 
     if (hsodium != NULL)
-	return 0;
+	return OK;
 
-    hsodium = vimLoadLib("libsodium.dll");
+    hsodium = load_dll(libname);
     if (hsodium == NULL)
     {
-	// TODO: Show error message.
-	return -1;
+	if (verbose)
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
+	return FAIL;
     }
 
     for (i = 0; sodium_funcname_table[i].ptr; ++i)
     {
-	if ((*sodium_funcname_table[i].ptr = GetProcAddress(hsodium,
+	if ((*sodium_funcname_table[i].ptr = symbol_from_dll(hsodium,
 			sodium_funcname_table[i].name)) == NULL)
 	{
 	    FreeLibrary(hsodium);
 	    hsodium = NULL;
-	    // TODO: Show error message.
-	    return -1;
+	    if (verbose)
+		semsg(_(e_could_not_load_library_function_str), sodium_funcname_table[i].name);
+	    return FAIL;
 	}
     }
+    return OK;
+}
+
+    static int
+load_sodium(void)
+{
+    if (sodium_runtime_link_init(TRUE) == FAIL)
+	return -1;
     return dll_sodium_init();
+}
+# endif
+
+# if defined(DYNAMIC_SODIUM) || defined(PROTO)
+    int
+sodium_enabled(int verbose)
+{
+    return sodium_runtime_link_init(verbose) == OK;
 }
 # endif
 #endif

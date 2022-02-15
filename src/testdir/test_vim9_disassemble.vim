@@ -300,11 +300,11 @@ def Test_disassemble_push()
       vim9script
       import autoload 'autoscript.vim'
 
-      def s:AutoloadFunc()
+      def AutoloadFunc()
         &operatorfunc = autoscript.Opfunc
       enddef
 
-      var res = execute('disass s:AutoloadFunc')
+      var res = execute('disass AutoloadFunc')
       assert_match('<SNR>\d*_AutoloadFunc.*' ..
             '&operatorfunc = autoscript.Opfunc\_s*' ..
             '0 AUTOLOAD autoscript#Opfunc\_s*' ..

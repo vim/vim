@@ -57,13 +57,13 @@ rewrite old scripts, they keep working as before.  You may want to use a few
 `:def` functions for code that needs to be fast.
 
 :vim9[cmd] {cmd}				*:vim9* *:vim9cmd* *E1164*
-		Execute {cmd} using Vim9 script syntax and semantics.
-		Useful when typing a command and in a legacy script or
-		function.
+		Evaluate and execute {cmd} using Vim9 script syntax and
+		semantics.  Useful when typing a command and in a legacy
+		script or function.
 
 :leg[acy] {cmd}					*:leg* *:legacy* *E1189* *E1234*
-		Execute {cmd} using legacy script syntax and semantics.  Only
-		useful in a Vim9 script or a :def function.
+		Evaluate and execute {cmd} using legacy script syntax and
+		semantics.  Only useful in a Vim9 script or a :def function.
 		Note that {cmd} cannot use local variables, since it is parsed
 		with legacy expression syntax.
 
