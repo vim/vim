@@ -1885,6 +1885,19 @@ def Test_var_declaration_fails()
   v9.CheckDefFailure(['const foo: number'], 'E1021:')
 enddef
 
+def Test_var_declaration_inferred()
+  # check that type is set on the list so that extend() fails
+  var lines =<< trim END
+      vim9script
+      def GetList(): list<number>
+        var l = [1, 2, 3]
+        return l
+      enddef
+      echo GetList()->extend(['x'])
+  END
+  v9.CheckScriptFailure(lines, 'E1013:', 6)
+enddef
+
 def Test_script_local_in_legacy()
   # OK to define script-local later but before compiling
   var lines =<< trim END

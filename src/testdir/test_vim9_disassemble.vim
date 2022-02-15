@@ -427,6 +427,7 @@ def Test_disassemble_store_index()
         '\d PUSHS "dd"\_s*' ..
         '\d NEWDICT size 0\_s*' ..
         '\d NEWDICT size 1\_s*' ..
+        '\d SETTYPE dict<dict<unknown>>\_s*' ..
         '\d STORE $0\_s*' ..
         'd.dd\[0\] = 0\_s*' ..
         '\d PUSHNR 0\_s*' ..
@@ -457,7 +458,6 @@ def Test_disassemble_list_assign()
         '\d STORE $1\_s*' ..
         'var l: list<any>\_s*' ..
         '\d NEWLIST size 0\_s*' ..
-        '\d SETTYPE list<any>\_s*' ..
         '\d STORE $2\_s*' ..
         '\[x, y; l\] = g:stringlist\_s*' ..
         '\d LOADG g:stringlist\_s*' ..
@@ -470,7 +470,6 @@ def Test_disassemble_list_assign()
         '\d\+ CHECKTYPE string stack\[-1\] arg 2\_s*' ..
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
-        '\d\+ SETTYPE list<any>\_s*' ..
         '\d\+ STORE $2\_s*' ..
         '\d\+ RETURN void',
         res)
@@ -615,13 +614,14 @@ def s:LockLocal()
   lockvar d.a
 enddef
 
-def Test_disassemble_locl_local()
+def Test_disassemble_lock_local()
   var res = execute('disass s:LockLocal')
   assert_match('<SNR>\d*_LockLocal\_s*' ..
         'var d = {a: 1}\_s*' ..
         '\d PUSHS "a"\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d NEWDICT size 1\_s*' ..
+        '\d SETTYPE dict<number>\_s*' ..
         '\d STORE $0\_s*' ..
         'lockvar d.a\_s*' ..
         '\d LOAD $0\_s*' ..
@@ -1626,6 +1626,7 @@ def Test_disassemble_list_index()
         '\d PUSHNR 2\_s*' ..
         '\d PUSHNR 3\_s*' ..
         '\d NEWLIST size 3\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
         'var res = l\[1]\_s*' ..
         '\d LOAD $0\_s*' ..
@@ -1650,13 +1651,15 @@ def Test_disassemble_list_slice()
         '\d PUSHNR 2\_s*' ..
         '\d PUSHNR 3\_s*' ..
         '\d NEWLIST size 3\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
         'var res = l\[1 : 8]\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHNR 8\_s*' ..
-        '\d LISTSLICE\_s*' ..
-        '\d STORE $1\_s*',
+        '\d\+ LISTSLICE\_s*' ..
+        '\d\+ SETTYPE list<number>\_s*' ..
+        '\d\+ STORE $1\_s*',
         instr)
   assert_equal([2, 3], ListSlice())
 enddef
@@ -1675,6 +1678,7 @@ def Test_disassemble_dict_member()
         '\d PUSHS "item"\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d NEWDICT size 1\_s*' ..
+        '\d SETTYPE dict<number>\_s*' ..
         '\d STORE $0\_s*' ..
         'var res = d.item\_s*' ..
         '\d\+ LOAD $0\_s*' ..
@@ -2541,6 +2545,7 @@ def Test_disassemble_dict_stack()
           '\d PUSHS "func"\_s*' ..
           '\d PUSHFUNC "<80><fd>R\d\+_Legacy"\_s*' ..
           '\d NEWDICT size 1\_s*' ..
+          '\d SETTYPE dict<func(...): any>\_s*' ..
           '\d STORE $0\_s*' ..
 
           'var v = d.func()\_s*' ..

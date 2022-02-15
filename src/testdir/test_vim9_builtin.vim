@@ -1129,6 +1129,7 @@ def Test_extend_with_error_function()
       def Test()
         var d: dict<any> = {}
         d->extend({A: 10, Func: function('F', [])})
+        d.Func()
       enddef
 
       Test()

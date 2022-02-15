@@ -2002,6 +2002,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	int	instr_count = -1;
 	int	save_lnum;
 	int	skip_store = FALSE;
+	type_T	*inferred_type = NULL;
 
 	if (var_start[0] == '_' && !eval_isnamec(var_start[1]))
 	{
@@ -2126,7 +2127,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			    else if (rhs_type == &t_unknown)
 				lhs.lhs_lvar->lv_type = &t_any;
 			    else
+			    {
 				lhs.lhs_lvar->lv_type = rhs_type;
+				inferred_type = rhs_type;
+			    }
 			}
 		    }
 		    else if (*op == '=')
@@ -2146,7 +2150,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 									 cctx))
 			    use_type = lhs.lhs_member_type;
 			if (need_type_where(rhs_type, use_type, -1, where,
-				    cctx, FALSE, is_const) == FAIL)
+						cctx, FALSE, is_const) == FAIL)
 			    goto theend;
 		    }
 		}
@@ -2315,10 +2319,20 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if ((lhs.lhs_type->tt_type == VAR_DICT
 					  || lhs.lhs_type->tt_type == VAR_LIST)
 		    && lhs.lhs_type->tt_member != NULL
+		    && lhs.lhs_type->tt_member != &t_any
 		    && lhs.lhs_type->tt_member != &t_unknown)
 		// Set the type in the list or dict, so that it can be checked,
 		// also in legacy script.
 		generate_SETTYPE(cctx, lhs.lhs_type);
+	    else if (inferred_type != NULL
+		    && (inferred_type->tt_type == VAR_DICT
+					|| inferred_type->tt_type == VAR_LIST)
+		    && inferred_type->tt_member != NULL
+		    && inferred_type->tt_member != &t_unknown
+		    && inferred_type->tt_member != &t_any)
+		// Set the type in the list or dict, so that it can be checked,
+		// also in legacy script.
+		generate_SETTYPE(cctx, inferred_type);
 
 	    if (!skip_store && generate_store_lhs(cctx, &lhs,
 						 instr_count, is_decl) == FAIL)
