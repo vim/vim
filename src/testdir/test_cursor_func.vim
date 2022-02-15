@@ -1,5 +1,7 @@
 " Tests for cursor() and other functions that get/set the cursor position
 
+source check.vim
+
 func Test_wrong_arguments()
   call assert_fails('call cursor(1. 3)', 'E474:')
   call assert_fails('call cursor(test_null_list())', 'E474:')
@@ -133,10 +135,25 @@ func Test_screenpos()
   bwipe!
   set display&
 
-  call assert_equal({'col': 1, 'row': 1, 'endcol': 1, 'curscol': 1}, screenpos(win_getid(), 1, 1))
+  call assert_equal(#{col: 1, row: 1, endcol: 1, curscol: 1}, screenpos(win_getid(), 1, 1))
   nmenu WinBar.TEST :
-  call assert_equal({'col': 1, 'row': 2, 'endcol': 1, 'curscol': 1}, screenpos(win_getid(), 1, 1))
+  call assert_equal(#{col: 1, row: 2, endcol: 1, curscol: 1}, screenpos(win_getid(), 1, 1))
   nunmenu WinBar.TEST
+endfunc
+
+func Test_screenpos_fold()
+  CheckFeature folding
+
+  enew!
+  call setline(1, range(10))
+  3,5fold
+  redraw
+  call assert_equal(2, screenpos(1, 2, 1).row)
+  call assert_equal(#{col: 1, row: 3, endcol: 1, curscol: 1}, screenpos(1, 3, 1))
+  call assert_equal(3, screenpos(1, 4, 1).row)
+  call assert_equal(3, screenpos(1, 5, 1).row)
+  call assert_equal(4, screenpos(1, 6, 1).row)
+  bwipe!
 endfunc
 
 func Test_screenpos_number()
