@@ -3766,7 +3766,7 @@ enddef
 if has('python3')
   def Test_python3_command()
     py3 import vim
-    py3 vim.command("let g:done = 'yes'")
+    py3 vim.command("g:done = 'yes'")
     assert_equal('yes', g:done)
     unlet g:done
   enddef
