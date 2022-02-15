@@ -2788,7 +2788,8 @@ EXTERN char e_missing_argument_type_for_str[]
 	INIT(= N_("E1077: Missing argument type for %s"));
 // E1078 unused
 // E1079 unused
-// E1080 unused
+EXTERN char e_invalid_assignment[]
+	INIT(= N_("E1080: Invalid assignment"));
 EXTERN char e_cannot_unlet_str[]
 	INIT(= N_("E1081: Cannot unlet %s"));
 #endif

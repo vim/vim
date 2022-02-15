@@ -1359,7 +1359,8 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['var null = 1'], 'E1034:')
   v9.CheckDefFailure(['var this = 1'], 'E1034:')
 
-  v9.CheckDefFailure(['[a; b; c] = g:list'], 'E452:')
+  v9.CheckDefFailure(['[a; b; c] = g:list'], 'E1001:')
+  v9.CheckDefFailure(['var [a; b; c] = g:list'], 'E1080:')
   v9.CheckDefExecFailure(['var a: number',
                        '[a] = test_null_list()'], 'E1093:')
   v9.CheckDefExecFailure(['var a: number',

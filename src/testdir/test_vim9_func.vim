@@ -3762,7 +3762,15 @@ def Test_go_beyond_end_of_cmd()
   v9.CheckScriptFailure(lines, 'E476:')
 enddef
 
+" The following messes up syntax highlight, keep near the end.
 if has('python3')
+  def Test_python3_command()
+    py3 import vim
+    py3 vim.command("let g:done = 'yes'")
+    assert_equal('yes', g:done)
+    unlet g:done
+  enddef
+
   def Test_python3_heredoc()
     py3 << trim EOF
       import vim
@@ -3778,7 +3786,6 @@ if has('python3')
   enddef
 endif
 
-" This messes up syntax highlight, keep near the end.
 if has('lua')
   def Test_lua_heredoc()
     g:d = {}

@@ -2420,7 +2420,7 @@ may_compile_assignment(exarg_T *eap, char_u **line, cctx_T *cctx)
 
     if (*eap->cmd == '[')
     {
-	// [var, var] = expr
+	// might be "[var, var] = expr"
 	*line = compile_assignment(eap->cmd, eap, CMD_SIZE, cctx);
 	if (*line == NULL)
 	    return FAIL;
@@ -2958,7 +2958,10 @@ compile_def_function(
 	    case CMD_decrement:
 		    line = compile_assignment(p, &ea, ea.cmdidx, &cctx);
 		    if (line == p)
+		    {
+			emsg(_(e_invalid_assignment));
 			line = NULL;
+		    }
 		    break;
 
 	    case CMD_unlet:

@@ -1355,6 +1355,13 @@ def Test_command_not_recognized()
   v9.CheckDefFailure(lines, 'E1146:', 1)
 
   lines =<< trim END
+    if 0
+      d.key = 'asdf'
+    endif
+  END
+  v9.CheckDefSuccess(lines)
+
+  lines =<< trim END
     d['key'] = 'asdf'
   END
   v9.CheckDefFailure(lines, 'E1146:', 1)
@@ -1621,6 +1628,11 @@ def Test_substitute_expr()
   s/text/\=['aaa', 'bbb', 'ccc']/
   assert_equal(['some aaa', 'bbb', 'ccc', ' here'], getline(1, '$'))
   bwipe!
+
+  # inside "if 0" substitute is ignored
+  if 0
+    s/a/\=nothing/ and | some more
+  endif
 enddef
 
 def Test_redir_to_var()
@@ -1662,6 +1674,12 @@ def Test_redir_to_var()
     redir => notexist
   END
   v9.CheckDefFailure(lines, 'E1089:')
+
+  lines =<< trim END
+    var text: string
+    redir => text
+  END
+  v9.CheckDefFailure(lines, 'E1185:')
 
   lines =<< trim END
     var ls = 'asdf'
