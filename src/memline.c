@@ -2619,9 +2619,12 @@ ml_get_buf(
 	    siemsg(_(e_ml_get_invalid_lnum_nr), lnum);
 	    --recursive;
 	}
+	ml_flush_line(buf);
+	buf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 errorret:
 	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
+	buf->b_ml.ml_line_lnum = lnum;
 	return questions;
     }
     if (lnum <= 0)			// pretend line 0 is line 1
