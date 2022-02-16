@@ -231,6 +231,9 @@ find_ucmd(
     return p;
 }
 
+/*
+ * Set completion context for :command
+ */
     char_u *
 set_context_in_user_cmd(expand_T *xp, char_u *arg_in)
 {
@@ -290,6 +293,56 @@ set_context_in_user_cmd(expand_T *xp, char_u *arg_in)
 
     // And finally comes a normal command
     return skipwhite(p);
+}
+
+/*
+ * Set the completion context for the argument of a user defined command.
+ */
+    char_u *
+set_context_in_user_cmdarg(
+	char_u		*cmd UNUSED,
+	char_u		*arg,
+	long		argt,
+	int		compl,
+	expand_T	*xp,
+	int		forceit)
+{
+    char_u	*p;
+
+    if (compl == EXPAND_NOTHING)
+	return NULL;
+
+    if (argt & EX_XFILE)
+    {
+	// EX_XFILE: file names are handled before this call
+	xp->xp_context = compl;
+	return NULL;
+    }
+
+#ifdef FEAT_MENU
+    if (compl == EXPAND_MENUS)
+	return set_context_in_menu_cmd(xp, cmd, arg, forceit);
+#endif
+    if (compl == EXPAND_COMMANDS)
+	return arg;
+    if (compl == EXPAND_MAPPINGS)
+	return set_context_in_map_cmd(xp, (char_u *)"map", arg, forceit, FALSE,
+							FALSE, CMD_map);
+    // Find start of last argument.
+    p = arg;
+    while (*p)
+    {
+	if (*p == ' ')
+	    // argument starts after a space
+	    arg = p + 1;
+	else if (*p == '\\' && *(p + 1) != NUL)
+	    ++p; // skip over escaped character
+	MB_PTR_ADV(p);
+    }
+    xp->xp_pattern = arg;
+    xp->xp_context = compl;
+
+    return NULL;
 }
 
     char_u *
