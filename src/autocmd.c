@@ -217,9 +217,9 @@ static AutoPat *last_autopat[NUM_EVENTS] =
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
-#define AUGROUP_DEFAULT    -1	    // default autocmd group
-#define AUGROUP_ERROR	   -2	    // erroneous autocmd group
-#define AUGROUP_ALL	   -3	    // all autocmd groups
+#define AUGROUP_DEFAULT    (-1)	    // default autocmd group
+#define AUGROUP_ERROR	   (-2)	    // erroneous autocmd group
+#define AUGROUP_ALL	   (-3)	    // all autocmd groups
 
 /*
  * struct used to keep status while executing autocommands for an event.

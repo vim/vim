@@ -23,13 +23,13 @@
  * vs "ht") and goes down in the list.
  * Used when 'spellsuggest' is set to "best".
  */
-#define RESCORE(word_score, sound_score) ((3 * word_score + sound_score) / 4)
+#define RESCORE(word_score, sound_score) ((3 * (word_score) + (sound_score)) / 4)
 
 /*
  * Do the opposite: based on a maximum end score and a known sound score,
  * compute the maximum word score that can be used.
  */
-#define MAXSCORE(word_score, sound_score) ((4 * word_score - sound_score) / 3)
+#define MAXSCORE(word_score, sound_score) ((4 * (word_score) - (sound_score)) / 3)
 
 // only used for su_badflags
 #define WF_MIXCAP   0x20	// mix of upper and lower case: macaRONI
@@ -70,7 +70,7 @@ typedef struct suggest_S
 #define SUG(ga, i) (((suggest_T *)(ga).ga_data)[i])
 
 // TRUE if a word appears in the list of banned words.
-#define WAS_BANNED(su, word) (!HASHITEM_EMPTY(hash_find(&su->su_banned, word)))
+#define WAS_BANNED(su, word) (!HASHITEM_EMPTY(hash_find(&(su)->su_banned, word)))
 
 // Number of suggestions kept when cleaning up.  We need to keep more than
 // what is displayed, because when rescore_suggestions() is called the score
@@ -118,7 +118,7 @@ typedef struct suggest_S
 #define SCORE_SFMAX2	300	// maximum score for second try
 #define SCORE_SFMAX3	400	// maximum score for third try
 
-#define SCORE_BIG	SCORE_INS * 3	// big difference
+#define SCORE_BIG	(SCORE_INS * 3)	// big difference
 #define SCORE_MAXMAX	999999		// accept any score
 #define SCORE_LIMITMAX	350		// for spell_edit_score_limit()
 
@@ -1214,7 +1214,7 @@ suggest_try_change(suginfo_T *su)
 
 // Check the maximum score, if we go over it we won't try this change.
 #define TRY_DEEPER(su, stack, depth, add) \
-       (depth < MAXWLEN - 1 && stack[depth].ts_score + (add) < su->su_maxscore)
+       ((depth) < MAXWLEN - 1 && (stack)[depth].ts_score + (add) < (su)->su_maxscore)
 
 /*
  * Try finding suggestions by adding/removing/swapping letters.
@@ -3077,7 +3077,7 @@ typedef struct
 } sftword_T;
 
 static sftword_T dumsft;
-#define HIKEY2SFT(p)  ((sftword_T *)(p - (dumsft.sft_word - (char_u *)&dumsft)))
+#define HIKEY2SFT(p)  ((sftword_T *)((p) - (dumsft.sft_word - (char_u *)&dumsft)))
 #define HI2SFT(hi)     HIKEY2SFT((hi)->hi_key)
 
 /*

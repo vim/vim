@@ -7878,21 +7878,21 @@ init_srand(UINT32_T *x)
 	*x = vim_time();
 }
 
-#define ROTL(x, k) ((x << k) | (x >> (32 - k)))
+#define ROTL(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
 #define SPLITMIX32(x, z) ( \
-    z = (x += 0x9e3779b9), \
-    z = (z ^ (z >> 16)) * 0x85ebca6b, \
-    z = (z ^ (z >> 13)) * 0xc2b2ae35, \
-    z ^ (z >> 16) \
+    (z) = ((x) += 0x9e3779b9), \
+    (z) = ((z) ^ ((z) >> 16)) * 0x85ebca6b, \
+    (z) = ((z) ^ ((z) >> 13)) * 0xc2b2ae35, \
+    (z) ^ ((z) >> 16) \
     )
 #define SHUFFLE_XOSHIRO128STARSTAR(x, y, z, w) \
-    result = ROTL(y * 5, 7) * 9; \
-    t = y << 9; \
-    z ^= x; \
-    w ^= y; \
-    y ^= z, x ^= w; \
-    z ^= t; \
-    w = ROTL(w, 11);
+    result = ROTL((y) * 5, 7) * 9; \
+    t = (y) << 9; \
+    (z) ^= (x); \
+    (w) ^= (y); \
+    (y) ^= (z), (x) ^= (w); \
+    (z) ^= t; \
+    (w) = ROTL(w, 11);
 
 /*
  * "rand()" function

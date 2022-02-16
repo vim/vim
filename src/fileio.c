@@ -4799,7 +4799,7 @@ readdir_core(
 # ifdef FEAT_EVAL
 #  define FREE_ITEM(item)   do { \
 	if (withattr) \
-	    dict_unref((dict_T*)item); \
+	    dict_unref((dict_T*)(item)); \
 	else \
 	    vim_free(item); \
     } while (0)

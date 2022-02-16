@@ -3603,7 +3603,7 @@ inchar(
 	 */
 	if (got_int)
 	{
-#define DUM_LEN MAXMAPLEN * 3 + 3
+#define DUM_LEN (MAXMAPLEN * 3 + 3)
 	    char_u	dum[DUM_LEN + 1];
 
 	    for (;;)

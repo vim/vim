@@ -1112,10 +1112,10 @@ fold_line(
 # define RL_MEMSET(p, v, l) \
     do { \
 	if (wp->w_p_rl) \
-	    for (ri = 0; ri < l; ++ri) \
+	    for (ri = 0; ri < (l); ++ri) \
 	       ScreenAttrs[off + (wp->w_width - (p) - (l)) + ri] = v; \
 	 else \
-	    for (ri = 0; ri < l; ++ri) \
+	    for (ri = 0; ri < (l); ++ri) \
 	       ScreenAttrs[off + (p) + ri] = v; \
     } while (0)
 #else

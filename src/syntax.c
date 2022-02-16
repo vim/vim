@@ -81,7 +81,7 @@ typedef struct syn_pattern
 
 #define SYN_ITEMS(buf)	((synpat_T *)((buf)->b_syn_patterns.ga_data))
 
-#define NONE_IDX	-2	// value of sp_sync_idx for "NONE"
+#define NONE_IDX	(-2)	// value of sp_sync_idx for "NONE"
 
 /*
  * Flags for b_syn_sync_flags:
@@ -207,8 +207,8 @@ typedef struct state_item
 					// pattern
 } stateitem_T;
 
-#define KEYWORD_IDX	-1	    // value of si_idx for keywords
-#define ID_LIST_ALL	(short *)-1 // valid of si_cont_list for containing all
+#define KEYWORD_IDX	(-1)	    // value of si_idx for keywords
+#define ID_LIST_ALL	((short *)-1) // valid of si_cont_list for containing all
 				    // but contained groups
 
 #ifdef FEAT_CONCEAL
