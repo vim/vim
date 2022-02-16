@@ -552,8 +552,9 @@ changed_common(
     {
 	if (wp->w_buffer == curbuf)
 	{
+#ifdef FEAT_FOLDING
 	    linenr_T last = lnume + xtra - 1;  // last line after the change
-
+#endif
 	    // Mark this window to be redrawn later.
 	    if (wp->w_redr_type < VALID)
 		wp->w_redr_type = VALID;
