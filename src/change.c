@@ -552,6 +552,8 @@ changed_common(
     {
 	if (wp->w_buffer == curbuf)
 	{
+	    linenr_T last = lnume + xtra - 1;  // last line after the change
+
 	    // Mark this window to be redrawn later.
 	    if (wp->w_redr_type < VALID)
 		wp->w_redr_type = VALID;
@@ -561,7 +563,7 @@ changed_common(
 #ifdef FEAT_FOLDING
 	    // Update the folds for this window.  Can't postpone this, because
 	    // a following operator might work on the whole fold: ">>dd".
-	    foldUpdate(wp, lnum, lnume + xtra - 1);
+	    foldUpdate(wp, lnum, last);
 
 	    // The change may cause lines above or below the change to become
 	    // included in a fold.  Set lnum/lnume to the first/last line that
@@ -571,8 +573,8 @@ changed_common(
 	    i = hasFoldingWin(wp, lnum, &lnum, NULL, FALSE, NULL);
 	    if (wp->w_cursor.lnum == lnum)
 		wp->w_cline_folded = i;
-	    i = hasFoldingWin(wp, lnume, NULL, &lnume, FALSE, NULL);
-	    if (wp->w_cursor.lnum == lnume)
+	    i = hasFoldingWin(wp, last, NULL, &last, FALSE, NULL);
+	    if (wp->w_cursor.lnum == last)
 		wp->w_cline_folded = i;
 
 	    // If the changed line is in a range of previously folded lines,
