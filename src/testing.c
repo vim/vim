@@ -101,7 +101,7 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
     {
 	same_len = 1;
 	s = p;
-	c = mb_ptr2char_adv(&s);
+	c = mb_cptr2char_adv(&s);
 	clen = s - p;
 	while (*s != NUL && c == mb_ptr2char(s))
 	{
