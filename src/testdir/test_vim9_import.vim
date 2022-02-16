@@ -1185,6 +1185,137 @@ def Test_vim9_reload_noclear()
   delete('XreloadScript.vim')
 enddef
 
+def Test_vim_reload_noclear_arg_count()
+  var lines =<< trim END
+      vim9script noclear
+
+      if !exists('g:didload')
+        def Test(a: string, b: string)
+          echo a b
+        enddef
+        def Call()
+          Test('a', 'b')
+        enddef
+      else
+        # redefine with one argument less
+        def Test(a: string)
+          echo a
+        enddef
+      endif
+      Call()
+      g:didload = 1
+  END
+  lines->writefile('XreloadScript_1.vim')
+  source XreloadScript_1.vim
+  assert_fails('source XreloadScript_1.vim', 'E1106: One argument too many')
+  unlet g:didload
+
+  lines =<< trim END
+      vim9script noclear
+
+      if !exists('g:didload')
+        def Test(a: string, b: string, c: string)
+          echo a b
+        enddef
+        def Call()
+          Test('a', 'b', 'c')
+        enddef
+      else
+        # redefine with one argument less
+        def Test(a: string)
+          echo a
+        enddef
+      endif
+      Call()
+      g:didload = 1
+  END
+  lines->writefile('XreloadScript_2.vim')
+  source XreloadScript_2.vim
+  assert_fails('source XreloadScript_2.vim', 'E1106: 2 arguments too many')
+  unlet g:didload
+
+  lines =<< trim END
+      vim9script noclear
+
+      if !exists('g:didload')
+        def Test(a: string)
+          echo a
+        enddef
+        def Call()
+          Test('a')
+        enddef
+      else
+        # redefine with one argument extra
+        def Test(a: string, b: string)
+          echo a b
+        enddef
+      endif
+      Call()
+      g:didload = 1
+  END
+  lines->writefile('XreloadScript_3.vim')
+  source XreloadScript_3.vim
+  assert_fails('source XreloadScript_3.vim', 'E1190: One argument too few')
+  unlet g:didload
+
+  lines =<< trim END
+      vim9script noclear
+
+      if !exists('g:didload')
+        def Test(a: string)
+          echo a
+        enddef
+        def Call()
+          Test('a')
+        enddef
+      else
+        # redefine with two arguments extra
+        def Test(a: string, b: string, c: string)
+          echo a b
+        enddef
+      endif
+      Call()
+      g:didload = 1
+  END
+  lines->writefile('XreloadScript_4.vim')
+  source XreloadScript_4.vim
+  assert_fails('source XreloadScript_4.vim', 'E1190: 2 arguments too few')
+  unlet g:didload
+
+  delete('XreloadScript_1.vim')
+  delete('XreloadScript_2.vim')
+  delete('XreloadScript_3.vim')
+  delete('XreloadScript_4.vim')
+enddef
+
+def Test_vim9_reload_noclear_error()
+  var lines =<< trim END
+      vim9script noclear
+
+      if !exists('g:didload')
+        def Test(a: string)
+          echo a
+        enddef
+        def Call()
+          Test('a')
+        enddef
+      else
+        # redefine with a compile error
+        def Test(a: string)
+          echo ax
+        enddef
+      endif
+      Call()
+      g:didload = 1
+  END
+  lines->writefile('XreloadScriptErr.vim')
+  source XreloadScriptErr.vim
+  assert_fails('source XreloadScriptErr.vim', 'E1001: Variable not found: ax')
+
+  unlet g:didload
+  delete('XreloadScriptErr.vim')
+enddef
+
 def Test_vim9_reload_import()
   var lines =<< trim END
     vim9script

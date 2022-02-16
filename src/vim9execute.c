@@ -367,6 +367,16 @@ call_dfunc(
 	    semsg(_(e_nr_arguments_too_many), -arg_to_add);
 	return FAIL;
     }
+    else if (arg_to_add > ufunc->uf_def_args.ga_len)
+    {
+	int missing = arg_to_add - ufunc->uf_def_args.ga_len;
+
+	if (missing == 1)
+	    emsg(_(e_one_argument_too_few));
+	else
+	    semsg(_(e_nr_arguments_too_few), missing);
+	return FAIL;
+    }
 
     // Reserve space for:
     // - missing arguments

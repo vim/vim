@@ -3226,6 +3226,14 @@ def Test_partial_call()
   v9.CheckScriptFailure(lines, 'E1235:')
 enddef
 
+def Test_partial_double_nested()
+  var idx = 123
+  var Get = () => idx
+  var Ref = function(Get, [])
+  var RefRef = function(Ref, [])
+  assert_equal(123, RefRef())
+enddef
+
 " Using "idx" from a legacy global function does not work.
 " This caused a crash when called from legacy context.
 func Test_partial_call_fails()
