@@ -404,32 +404,32 @@ win_line(
     // draw_state: items that are drawn in sequence:
 #define WL_START	0		// nothing done yet
 #ifdef FEAT_CMDWIN
-# define WL_CMDLINE	WL_START + 1	// cmdline window column
+# define WL_CMDLINE	(WL_START + 1)	// cmdline window column
 #else
 # define WL_CMDLINE	WL_START
 #endif
 #ifdef FEAT_FOLDING
-# define WL_FOLD	WL_CMDLINE + 1	// 'foldcolumn'
+# define WL_FOLD	(WL_CMDLINE + 1)	// 'foldcolumn'
 #else
 # define WL_FOLD	WL_CMDLINE
 #endif
 #ifdef FEAT_SIGNS
-# define WL_SIGN	WL_FOLD + 1	// column for signs
+# define WL_SIGN	(WL_FOLD + 1)	// column for signs
 #else
 # define WL_SIGN	WL_FOLD		// column for signs
 #endif
-#define WL_NR		WL_SIGN + 1	// line number
+#define WL_NR		(WL_SIGN + 1)	// line number
 #ifdef FEAT_LINEBREAK
-# define WL_BRI		WL_NR + 1	// 'breakindent'
+# define WL_BRI		(WL_NR + 1)	// 'breakindent'
 #else
 # define WL_BRI		WL_NR
 #endif
 #if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
-# define WL_SBR		WL_BRI + 1	// 'showbreak' or 'diff'
+# define WL_SBR		(WL_BRI + 1)	// 'showbreak' or 'diff'
 #else
 # define WL_SBR		WL_BRI
 #endif
-#define WL_LINE		WL_SBR + 1	// text in the line
+#define WL_LINE		(WL_SBR + 1)	// text in the line
     int		draw_state = WL_START;	// what to draw next
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
     int		feedback_col = 0;

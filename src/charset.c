@@ -386,9 +386,9 @@ str_foldcase(
     int		len = orglen;
 
 #define GA_CHAR(i)  ((char_u *)ga.ga_data)[i]
-#define GA_PTR(i)   ((char_u *)ga.ga_data + i)
+#define GA_PTR(i)   ((char_u *)ga.ga_data + (i))
 #define STR_CHAR(i)  (buf == NULL ? GA_CHAR(i) : buf[i])
-#define STR_PTR(i)   (buf == NULL ? GA_PTR(i) : buf + i)
+#define STR_PTR(i)   (buf == NULL ? GA_PTR(i) : buf + (i))
 
     // Copy "str" into "buf" or allocated memory, unmodified.
     if (buf == NULL)
@@ -706,7 +706,7 @@ vim_strnsize(char_u *s, int len)
 
 #ifdef FEAT_VARTABS
 # define RET_WIN_BUF_CHARTABSIZE(wp, buf, p, col) \
-    if (*(p) == TAB && (!(wp)->w_p_list || wp->w_lcs_chars.tab1)) \
+    if (*(p) == TAB && (!(wp)->w_p_list || (wp)->w_lcs_chars.tab1)) \
     { \
 	return tabstop_padding(col, (buf)->b_p_ts, (buf)->b_p_vts_array); \
     } \

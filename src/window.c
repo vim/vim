@@ -64,7 +64,7 @@ static int frame_check_width(frame_T *topfrp, int width);
 
 static win_T *win_alloc(win_T *after, int hidden);
 
-#define NOWIN		(win_T *)-1	// non-existing window
+#define NOWIN		((win_T *)-1)	// non-existing window
 
 #define ROWS_AVAIL (Rows - p_ch - tabline_height())
 

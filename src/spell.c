@@ -67,7 +67,7 @@
 #define REGION_ALL 0xff		// word valid in all regions
 
 // Result values.  Lower number is accepted over higher one.
-#define SP_BANNED	-1
+#define SP_BANNED	(-1)
 #define SP_OK		0
 #define SP_RARE		1
 #define SP_LOCAL	2

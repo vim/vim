@@ -29,7 +29,7 @@ static char *(hl_name_table[]) =
       "italic", "reverse", "inverse", "nocombine", "strikethrough", "NONE"};
 static int hl_attr_table[] =
     {HL_BOLD, HL_STANDOUT, HL_UNDERLINE, HL_UNDERCURL, HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, HL_STRIKETHROUGH, 0};
-#define ATTR_COMBINE(attr_a, attr_b) ((((attr_b) & HL_NOCOMBINE) ? attr_b : (attr_a)) | (attr_b))
+#define ATTR_COMBINE(attr_a, attr_b) ((((attr_b) & HL_NOCOMBINE) ? (attr_b) : (attr_a)) | (attr_b))
 
 /*
  * Structure that stores information about a highlight group.
@@ -2260,7 +2260,7 @@ color_name2handle(char_u *name)
 #  undef RGB
 # endif
 # ifndef RGB
-#  define RGB(r, g, b)	((r<<16) | (g<<8) | (b))
+#  define RGB(r, g, b)	(((r)<<16) | ((g)<<8) | (b))
 # endif
 
 # ifdef VIMDLL
