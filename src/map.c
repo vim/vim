@@ -204,6 +204,7 @@ showmap(
     if (p_verbose > 0)
 	last_set_msg(mp->m_script_ctx);
 #endif
+    msg_clr_eos();
     out_flush();			// show one line at a time
 }
 
