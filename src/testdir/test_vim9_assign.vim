@@ -610,6 +610,12 @@ def Test_assign_index()
     bl[1] = 8
   END
   v9.CheckDefExecAndScriptFailure(lines, ['E1184:', 'E979:'], 2)
+
+  lines =<< trim END
+    g:bl = 'not a blob'
+    g:bl[1 : 2] = 8
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E897:', 'E689:'], 2)
 enddef
 
 def Test_init_in_for_loop()
@@ -1231,6 +1237,7 @@ def Test_script_var_default()
         assert_equal(0z, bl)
         assert_equal({}, d)
       enddef
+      Echo()
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -2070,9 +2077,10 @@ def Test_unlet()
     ], 'E1081:', 2)
 
   # dict unlet
-  var dd = {a: 1, b: 2, c: 3}
+  var dd = {a: 1, b: 2, c: 3, 4: 4}
   unlet dd['a']
   unlet dd.c
+  unlet dd[4]
   assert_equal({b: 2}, dd)
 
   # list unlet
@@ -2180,6 +2188,11 @@ def Test_unlet()
     'var dd = {a: 1}',
     'unlet dd[g:alist]',
     ], 'E1105:', 2)
+
+  v9.CheckDefExecFailure([
+    'g:dd = {"a": 1, 2: 2}'
+    'unlet g:dd[0z11]',
+    ], 'E1029:', 2)
 
   # can compile unlet before variable exists
   g:someDict = {key: 'val'}

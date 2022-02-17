@@ -1876,7 +1876,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 }
 
 /*
- * Store a value in a blob range.
+ * Store a value in a list or blob range.
  */
     static int
 execute_storerange(isn_T *iptr, ectx_T *ectx)
@@ -1893,13 +1893,13 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
     // -2 second index or "none"
     // -1 destination list or blob
     tv = STACK_TV_BOT(-4);
+    SOURCING_LNUM = iptr->isn_lnum;
     if (tv_dest->v_type == VAR_LIST)
     {
 	long	n1;
 	long	n2;
 	int	error = FALSE;
 
-	SOURCING_LNUM = iptr->isn_lnum;
 	n1 = (long)tv_get_number_chk(tv_idx1, &error);
 	if (error)
 	    status = FAIL;
@@ -1973,7 +1973,7 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
     else
     {
 	status = FAIL;
-	emsg(_(e_blob_required));
+	emsg(_(e_list_or_blob_required));
     }
 
     clear_tv(tv_idx1);
@@ -2001,7 +2001,7 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
     if (tv_dest->v_type == VAR_DICT)
     {
 	// unlet a dict item, index must be a string
-	if (tv_idx->v_type != VAR_STRING)
+	if (tv_idx->v_type != VAR_STRING && tv_idx->v_type != VAR_NUMBER)
 	{
 	    SOURCING_LNUM = iptr->isn_lnum;
 	    semsg(_(e_expected_str_but_got_str),
@@ -2012,7 +2012,7 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 	else
 	{
 	    dict_T	*d = tv_dest->vval.v_dict;
-	    char_u	*key = tv_idx->vval.v_string;
+	    char_u	*key;
 	    dictitem_T  *di = NULL;
 
 	    if (d != NULL && value_check_lock(
@@ -2021,8 +2021,16 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 	    else
 	    {
 		SOURCING_LNUM = iptr->isn_lnum;
-		if (key == NULL)
-		    key = (char_u *)"";
+		if (tv_idx->v_type == VAR_STRING)
+		{
+		    key = tv_idx->vval.v_string;
+		    if (key == NULL)
+			key = (char_u *)"";
+		}
+		else
+		{
+		    key = tv_get_string(tv_idx);
+		}
 		if (d != NULL)
 		    di = dict_find(d, key, (int)STRLEN(key));
 		if (di == NULL)
@@ -3173,7 +3181,7 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
-	    // store value in blob range
+	    // store value in list or blob range
 	    case ISN_STORERANGE:
 		if (execute_storerange(iptr, ectx) == FAIL)
 		    goto on_error;
