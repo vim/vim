@@ -1998,12 +1998,12 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
     // Stack contains:
     // -2 index
     // -1 dict or list
+    SOURCING_LNUM = iptr->isn_lnum;
     if (tv_dest->v_type == VAR_DICT)
     {
 	// unlet a dict item, index must be a string
 	if (tv_idx->v_type != VAR_STRING && tv_idx->v_type != VAR_NUMBER)
 	{
-	    SOURCING_LNUM = iptr->isn_lnum;
 	    semsg(_(e_expected_str_but_got_str),
 			vartype_name(VAR_STRING),
 			vartype_name(tv_idx->v_type));
@@ -2020,7 +2020,6 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 		status = FAIL;
 	    else
 	    {
-		SOURCING_LNUM = iptr->isn_lnum;
 		if (tv_idx->v_type == VAR_STRING)
 		{
 		    key = tv_idx->vval.v_string;
@@ -2053,7 +2052,6 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
     else if (tv_dest->v_type == VAR_LIST)
     {
 	// unlet a List item, index must be a number
-	SOURCING_LNUM = iptr->isn_lnum;
 	if (check_for_number(tv_idx) == FAIL)
 	{
 	    status = FAIL;
@@ -2072,7 +2070,6 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 
 		if (li == NULL)
 		{
-		    SOURCING_LNUM = iptr->isn_lnum;
 		    semsg(_(e_list_index_out_of_range_nr), n);
 		    status = FAIL;
 		}
@@ -2133,7 +2130,11 @@ execute_unletrange(isn_T *iptr, ectx_T *ectx)
 
 	    li = list_find_index(l, &n1);
 	    if (li == NULL)
+	    {
+		semsg(_(e_list_index_out_of_range_nr),
+						 (long)tv_idx1->vval.v_number);
 		status = FAIL;
+	    }
 	    else
 	    {
 		if (n1 < 0)
@@ -2143,7 +2144,10 @@ execute_unletrange(isn_T *iptr, ectx_T *ectx)
 		    listitem_T *li2 = list_find(l, n2);
 
 		    if (li2 == NULL)
+		    {
+			semsg(_(e_list_index_out_of_range_nr), n2);
 			status = FAIL;
+		    }
 		    else
 			n2 = list_idx_of_item(l, li2);
 		}
