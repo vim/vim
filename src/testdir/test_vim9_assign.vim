@@ -2104,6 +2104,13 @@ def Test_unlet()
   unlet ll[-2 : -1]
   assert_equal([1, 2], ll)
 
+  g:nrdict = {1: 1, 2: 2}
+  g:idx = 1
+  unlet g:nrdict[g:idx]
+  assert_equal({2: 2}, g:nrdict)
+  unlet g:nrdict
+  unlet g:idx
+
   v9.CheckDefFailure([
     'var ll = [1, 2]',
     'll[1 : 2] = 7',

@@ -1552,6 +1552,28 @@ def Test_lockvar()
   v9.CheckScriptFailure(lines, 'E1119', 4)
 
   lines =<< trim END
+      vim9script
+      var theList = [1, 2, 3]
+      def AddToList()
+        lockvar theList
+        theList += [4]
+      enddef
+      AddToList()
+  END
+  v9.CheckScriptFailure(lines, 'E741', 2)
+
+  lines =<< trim END
+      vim9script
+      var theList = [1, 2, 3]
+      def AddToList()
+        lockvar theList
+        add(theList, 4)
+      enddef
+      AddToList()
+  END
+  v9.CheckScriptFailure(lines, 'E741', 2)
+
+  lines =<< trim END
       var theList = [1, 2, 3]
       lockvar theList
   END

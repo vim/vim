@@ -2331,19 +2331,6 @@ load_namespace_var(ectx_T *ectx, isntype_T isn_type, isn_T *iptr)
     }
     di = find_var_in_ht(ht, 0, iptr->isn_arg.string, TRUE);
 
-    if (di == NULL && ht == get_globvar_ht()
-			    && vim_strchr(iptr->isn_arg.string,
-					AUTOLOAD_CHAR) != NULL)
-    {
-	// Global variable has an autoload name, may still need
-	// to load the script.
-	if (script_autoload(iptr->isn_arg.string, FALSE))
-	    di = find_var_in_ht(ht, 0,
-				   iptr->isn_arg.string, TRUE);
-	if (did_emsg)
-	    return FAIL;
-    }
-
     if (di == NULL)
     {
 	SOURCING_LNUM = iptr->isn_lnum;
@@ -2520,14 +2507,14 @@ exec_instructions(ectx_T *ectx)
 		    ea.cmdidx = CMD_SIZE;
 		    ea.addr_type = ADDR_LINES;
 		    ea.cmd = iptr->isn_arg.string;
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    parse_cmd_address(&ea, &error, FALSE);
 		    if (ea.cmd == NULL)
 			goto on_error;
-		    if (error == NULL)
-			error = ex_range_without_command(&ea);
+		    // error is always NULL when using ADDR_LINES
+		    error = ex_range_without_command(&ea);
 		    if (error != NULL)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(error);
 			goto on_error;
 		    }
@@ -3566,12 +3553,6 @@ exec_instructions(ectx_T *ectx)
 		    {
 			ufunc = find_func(funcref->fr_func_name, FALSE);
 		    }
-		    if (ufunc == NULL)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_function_reference_invalid));
-			goto theend;
-		    }
 		    if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
 			goto theend;
 		    tv = STACK_TV_BOT(0);
@@ -4488,16 +4469,7 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_NEGATENR:
 		tv = STACK_TV_BOT(-1);
-		if (tv->v_type != VAR_NUMBER
-#ifdef FEAT_FLOAT
-			&& tv->v_type != VAR_FLOAT
-#endif
-			)
-		{
-		    SOURCING_LNUM = iptr->isn_lnum;
-		    emsg(_(e_number_expected));
-		    goto on_error;
-		}
+		// CHECKTYPE should have checked the variable type
 #ifdef FEAT_FLOAT
 		if (tv->v_type == VAR_FLOAT)
 		    tv->vval.v_float = -tv->vval.v_float;

@@ -1556,6 +1556,14 @@ def Test_expr6()
   v9.CheckDefExecAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
   v9.CheckDefExecAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
 
+  if has('float')
+    v9.CheckDefExecAndScriptFailure([
+          'g:one = 1.0'
+          'g:two = 2.0'
+          'echo g:one % g:two'
+          ], 'E804', 3)
+  endif
+
   lines =<< trim END
     var n = 0
     eval 1 / n

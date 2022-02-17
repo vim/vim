@@ -52,6 +52,15 @@ def Test_range_only()
 
   bwipe!
 
+  lines =<< trim END
+      set cpo+=-
+      :1,999
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E16:', 2)
+  set cpo&vim
+
+  v9.CheckDefExecAndScriptFailure([":'x"], 'E20:', 1)
+
   # won't generate anything
   if false
     :123
@@ -1726,6 +1735,9 @@ def Test_execute_cmd()
   v9.CheckDefFailure(['execute xxx'], 'E1001:', 1)
   v9.CheckDefExecFailure(['execute "tabnext " .. 8'], 'E475:', 1)
   v9.CheckDefFailure(['execute "cmd"# comment'], 'E488:', 1)
+  if has('channel')
+    v9.CheckDefExecFailure(['execute test_null_channel()'], 'E908:', 1)
+  endif
 enddef
 
 def Test_execute_cmd_vimscript()
