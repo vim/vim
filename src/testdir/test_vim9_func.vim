@@ -910,6 +910,14 @@ def Test_nested_def_list()
   v9.CheckScriptFailure(lines, 'E476:', 1)
 enddef
 
+def Test_global_function_not_found()
+  var lines =<< trim END
+      g:Ref = 123
+      call g:Ref()
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E117:', 'E1085:'], 2)
+enddef
+
 def Test_global_local_function()
   var lines =<< trim END
       vim9script

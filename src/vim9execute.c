@@ -1750,122 +1750,118 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    status = FAIL;
 	}
     }
-    else if (dest_type != tv_dest->v_type)
+
+    if (status == OK)
     {
-	// just in case, should be OK
-	semsg(_(e_expected_str_but_got_str),
-		    vartype_name(dest_type),
-		    vartype_name(tv_dest->v_type));
-	status = FAIL;
-    }
-
-    if (status == OK && dest_type == VAR_LIST)
-    {
-	long	    lidx = (long)tv_idx->vval.v_number;
-	list_T	    *list = tv_dest->vval.v_list;
-
-	if (list == NULL)
+	if (dest_type == VAR_LIST)
 	{
-	    emsg(_(e_list_not_set));
-	    return FAIL;
-	}
-	if (lidx < 0 && list->lv_len + lidx >= 0)
-	    // negative index is relative to the end
-	    lidx = list->lv_len + lidx;
-	if (lidx < 0 || lidx > list->lv_len)
-	{
-	    semsg(_(e_list_index_out_of_range_nr), lidx);
-	    return FAIL;
-	}
-	if (lidx < list->lv_len)
-	{
-	    listitem_T *li = list_find(list, lidx);
+	    long	    lidx = (long)tv_idx->vval.v_number;
+	    list_T	    *list = tv_dest->vval.v_list;
 
-	    if (error_if_locked(li->li_tv.v_lock,
+	    if (list == NULL)
+	    {
+		emsg(_(e_list_not_set));
+		return FAIL;
+	    }
+	    if (lidx < 0 && list->lv_len + lidx >= 0)
+		// negative index is relative to the end
+		lidx = list->lv_len + lidx;
+	    if (lidx < 0 || lidx > list->lv_len)
+	    {
+		semsg(_(e_list_index_out_of_range_nr), lidx);
+		return FAIL;
+	    }
+	    if (lidx < list->lv_len)
+	    {
+		listitem_T *li = list_find(list, lidx);
+
+		if (error_if_locked(li->li_tv.v_lock,
 					     e_cannot_change_locked_list_item))
+		    return FAIL;
+		// overwrite existing list item
+		clear_tv(&li->li_tv);
+		li->li_tv = *tv;
+	    }
+	    else
+	    {
+		if (error_if_locked(list->lv_lock, e_cannot_change_locked_list))
+		    return FAIL;
+		// append to list, only fails when out of memory
+		if (list_append_tv(list, tv) == FAIL)
+		    return NOTDONE;
+		clear_tv(tv);
+	    }
+	}
+	else if (dest_type == VAR_DICT)
+	{
+	    char_u		*key = tv_idx->vval.v_string;
+	    dict_T		*dict = tv_dest->vval.v_dict;
+	    dictitem_T	*di;
+
+	    SOURCING_LNUM = iptr->isn_lnum;
+	    if (dict == NULL)
+	    {
+		emsg(_(e_dictionary_not_set));
 		return FAIL;
-	    // overwrite existing list item
-	    clear_tv(&li->li_tv);
-	    li->li_tv = *tv;
+	    }
+	    if (key == NULL)
+		key = (char_u *)"";
+	    di = dict_find(dict, key, -1);
+	    if (di != NULL)
+	    {
+		if (error_if_locked(di->di_tv.v_lock,
+						    e_cannot_change_dict_item))
+		    return FAIL;
+		// overwrite existing value
+		clear_tv(&di->di_tv);
+		di->di_tv = *tv;
+	    }
+	    else
+	    {
+		if (error_if_locked(dict->dv_lock, e_cannot_change_dict))
+		    return FAIL;
+		// add to dict, only fails when out of memory
+		if (dict_add_tv(dict, (char *)key, tv) == FAIL)
+		    return NOTDONE;
+		clear_tv(tv);
+	    }
+	}
+	else if (dest_type == VAR_BLOB)
+	{
+	    long	    lidx = (long)tv_idx->vval.v_number;
+	    blob_T	    *blob = tv_dest->vval.v_blob;
+	    varnumber_T nr;
+	    int	    error = FALSE;
+	    int	    len;
+
+	    if (blob == NULL)
+	    {
+		emsg(_(e_blob_not_set));
+		return FAIL;
+	    }
+	    len = blob_len(blob);
+	    if (lidx < 0 && len + lidx >= 0)
+		// negative index is relative to the end
+		lidx = len + lidx;
+
+	    // Can add one byte at the end.
+	    if (lidx < 0 || lidx > len)
+	    {
+		semsg(_(e_blob_index_out_of_range_nr), lidx);
+		return FAIL;
+	    }
+	    if (value_check_lock(blob->bv_lock, (char_u *)"blob", FALSE))
+		return FAIL;
+	    nr = tv_get_number_chk(tv, &error);
+	    if (error)
+		return FAIL;
+	    blob_set_append(blob, lidx, nr);
 	}
 	else
 	{
-	    if (error_if_locked(list->lv_lock, e_cannot_change_locked_list))
-		return FAIL;
-	    // append to list, only fails when out of memory
-	    if (list_append_tv(list, tv) == FAIL)
-		return NOTDONE;
-	    clear_tv(tv);
+	    status = FAIL;
+	    semsg(_(e_cannot_index_str), vartype_name(dest_type));
 	}
-    }
-    else if (status == OK && dest_type == VAR_DICT)
-    {
-	char_u		*key = tv_idx->vval.v_string;
-	dict_T		*dict = tv_dest->vval.v_dict;
-	dictitem_T	*di;
-
-	SOURCING_LNUM = iptr->isn_lnum;
-	if (dict == NULL)
-	{
-	    emsg(_(e_dictionary_not_set));
-	    return FAIL;
-	}
-	if (key == NULL)
-	    key = (char_u *)"";
-	di = dict_find(dict, key, -1);
-	if (di != NULL)
-	{
-	    if (error_if_locked(di->di_tv.v_lock, e_cannot_change_dict_item))
-		return FAIL;
-	    // overwrite existing value
-	    clear_tv(&di->di_tv);
-	    di->di_tv = *tv;
-	}
-	else
-	{
-	    if (error_if_locked(dict->dv_lock, e_cannot_change_dict))
-		return FAIL;
-	    // add to dict, only fails when out of memory
-	    if (dict_add_tv(dict, (char *)key, tv) == FAIL)
-		return NOTDONE;
-	    clear_tv(tv);
-	}
-    }
-    else if (status == OK && dest_type == VAR_BLOB)
-    {
-	long	    lidx = (long)tv_idx->vval.v_number;
-	blob_T	    *blob = tv_dest->vval.v_blob;
-	varnumber_T nr;
-	int	    error = FALSE;
-	int	    len;
-
-	if (blob == NULL)
-	{
-	    emsg(_(e_blob_not_set));
-	    return FAIL;
-	}
-	len = blob_len(blob);
-	if (lidx < 0 && len + lidx >= 0)
-	    // negative index is relative to the end
-	    lidx = len + lidx;
-
-	// Can add one byte at the end.
-	if (lidx < 0 || lidx > len)
-	{
-	    semsg(_(e_blob_index_out_of_range_nr), lidx);
-	    return FAIL;
-	}
-	if (value_check_lock(blob->bv_lock, (char_u *)"blob", FALSE))
-	    return FAIL;
-	nr = tv_get_number_chk(tv, &error);
-	if (error)
-	    return FAIL;
-	blob_set_append(blob, lidx, nr);
-    }
-    else
-    {
-	status = FAIL;
-	semsg(_(e_cannot_index_str), vartype_name(dest_type));
     }
 
     clear_tv(tv_idx);
