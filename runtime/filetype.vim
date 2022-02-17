@@ -229,6 +229,9 @@ au BufNewFile,BufRead *.bib			setf bib
 " BibTeX Bibliography Style
 au BufNewFile,BufRead *.bst			setf bst
 
+" Bicep
+au BufNewFile,BufRead *.bicep			setf bicep
+
 " BIND configuration
 " sudoedit uses namedXXXX.conf
 au BufNewFile,BufRead named*.conf,rndc*.conf,rndc*.key	setf named
