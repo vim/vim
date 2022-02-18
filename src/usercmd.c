@@ -303,29 +303,29 @@ set_context_in_user_cmdarg(
 	char_u		*cmd UNUSED,
 	char_u		*arg,
 	long		argt,
-	int		compl,
+	int		context,
 	expand_T	*xp,
 	int		forceit)
 {
     char_u	*p;
 
-    if (compl == EXPAND_NOTHING)
+    if (context == EXPAND_NOTHING)
 	return NULL;
 
     if (argt & EX_XFILE)
     {
 	// EX_XFILE: file names are handled before this call
-	xp->xp_context = compl;
+	xp->xp_context = context;
 	return NULL;
     }
 
 #ifdef FEAT_MENU
-    if (compl == EXPAND_MENUS)
+    if (context == EXPAND_MENUS)
 	return set_context_in_menu_cmd(xp, cmd, arg, forceit);
 #endif
-    if (compl == EXPAND_COMMANDS)
+    if (context == EXPAND_COMMANDS)
 	return arg;
-    if (compl == EXPAND_MAPPINGS)
+    if (context == EXPAND_MAPPINGS)
 	return set_context_in_map_cmd(xp, (char_u *)"map", arg, forceit, FALSE,
 							FALSE, CMD_map);
     // Find start of last argument.
@@ -340,7 +340,7 @@ set_context_in_user_cmdarg(
 	MB_PTR_ADV(p);
     }
     xp->xp_pattern = arg;
-    xp->xp_context = compl;
+    xp->xp_context = context;
 
     return NULL;
 }
