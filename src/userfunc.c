@@ -4024,16 +4024,29 @@ untrans_function_name(char_u *name)
 get_scriptlocal_funcname(char_u *funcname)
 {
     char	sid_buf[25];
-    int		off;
+    int		off = *funcname == 's' ? 2 : 5;
     char_u	*newname;
+    char_u	*p = funcname;
 
     if (funcname == NULL)
 	return NULL;
 
     if (STRNCMP(funcname, "s:", 2) != 0
 		&& STRNCMP(funcname, "<SID>", 5) != 0)
-	// The function name is not a script-local function name
-	return NULL;
+    {
+	ufunc_T	    *ufunc;
+
+	// The function name does not have a script-local prefix.  Try finding
+	// it when in a Vim9 script and there is no "g:" prefix.
+	if (!in_vim9script() || STRNCMP(funcname, "g:", 2) == 0)
+	    return NULL;
+	ufunc = find_func(funcname, FALSE);
+	if (ufunc == NULL || func_is_global(ufunc)
+			      || (p = vim_strchr(ufunc->uf_name, '_')) == NULL)
+	    return NULL;
+	++p;
+	off = 0;
+    }
 
     if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
@@ -4043,12 +4056,11 @@ get_scriptlocal_funcname(char_u *funcname)
     // Expand s: prefix into <SNR>nr_<name>
     vim_snprintf(sid_buf, sizeof(sid_buf), "<SNR>%ld_",
 	    (long)current_sctx.sc_sid);
-    off = *funcname == 's' ? 2 : 5;
-    newname = alloc(STRLEN(sid_buf) + STRLEN(funcname + off) + 1);
+    newname = alloc(STRLEN(sid_buf) + STRLEN(p + off) + 1);
     if (newname == NULL)
 	return NULL;
     STRCPY(newname, sid_buf);
-    STRCAT(newname, funcname + off);
+    STRCAT(newname, p + off);
 
     return newname;
 }
