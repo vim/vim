@@ -3,11 +3,8 @@ vim9script
 # Load the scheme and source this script, like this:
 #    :edit colors/desert.vim | :ru colors/tools/check_colors.vim
 
-var save_cpo = &cpo
-set cpo&vim
-
 def Test_check_colors()
-    var savedview = winsaveview()
+    const savedview = winsaveview()
     cursor(1, 1)
     var err = {}
 
@@ -19,7 +16,7 @@ def Test_check_colors()
     endif
 
     # 2) Check for some well-defined highlighting groups
-    var hi_groups = [
+    const hi_groups = [
         'ColorColumn',
         'Comment',
         'Conceal',
@@ -128,10 +125,10 @@ def Test_check_colors()
 
     # 3) Check, that it does not set background highlighting
     # Doesn't ':hi Normal ctermfg=253 ctermfg=233' also set the background sometimes?
-    var bg_set = '\(set\?\|setl\(ocal\)\?\) .*\(background\|bg\)=\(dark\|light\)'
-    var bg_let = 'let \%([&]\%([lg]:\)\?\)\%(background\|bg\)\s*=\s*\([''"]\?\)\w\+\1'
-    var bg_pat = '\%(' .. bg_set .. '\|' .. bg_let .. '\)'
-    var line = search(bg_pat, 'cnW')
+    const bg_set = '\(set\?\|setl\(ocal\)\?\) .*\(background\|bg\)=\(dark\|light\)'
+    const bg_let = 'let \%([&]\%([lg]:\)\?\)\%(background\|bg\)\s*=\s*\([''"]\?\)\w\+\1'
+    const bg_pat = '\%(' .. bg_set .. '\|' .. bg_let .. '\)'
+    const line = search(bg_pat, 'cnW')
     if search(bg_pat, 'cnW') != 0
         exe ":" .. line
         if search('hi \U\w\+\s\+\S', 'cbnW') != 0
@@ -205,5 +202,3 @@ def Result(err: any)
 enddef
 
 Test_check_colors()
-
-&cpo = save_cpo
