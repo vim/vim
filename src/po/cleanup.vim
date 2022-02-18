@@ -19,6 +19,7 @@ silent g/^msgid"/s//msgid "/
 silent g/^msgstr ""\(\n"\)\@!/?^msgid?,.s/^/#\~ /
 
 silent g/^\n\n\n/.d
+silent! %s/\n\+\%$//
 
 if s:was_diff
   setl diff
