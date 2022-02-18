@@ -48,7 +48,7 @@ func Test_colorscheme()
   call assert_equal("\ntorte", execute('colorscheme'))
 
   let a = substitute(execute('hi Search'), "\n\\s\\+", ' ', 'g')
-  call assert_match("\nSearch         xxx term=reverse ctermfg=0 ctermbg=12 gui=bold guifg=Black guibg=Red", a)
+  call assert_match("\nSearch         xxx term=reverse cterm=reverse ctermfg=196 ctermbg=16 gui=reverse guifg=#ff0000 guibg=#000000", a)
 
   call assert_fails('colorscheme does_not_exist', 'E185:')
 
