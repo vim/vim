@@ -4024,7 +4024,7 @@ untrans_function_name(char_u *name)
 get_scriptlocal_funcname(char_u *funcname)
 {
     char	sid_buf[25];
-    int		off = *funcname == 's' ? 2 : 5;
+    int		off;
     char_u	*newname;
     char_u	*p = funcname;
 
@@ -4047,6 +4047,8 @@ get_scriptlocal_funcname(char_u *funcname)
 	++p;
 	off = 0;
     }
+    else
+	off = *funcname == 's' ? 2 : 5;
 
     if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
