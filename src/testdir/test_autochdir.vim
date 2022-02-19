@@ -113,7 +113,7 @@ endfunc
 func Test_multibyte()
   " using an invalid character should not cause a crash
   set wic
-  call assert_fails('tc û¦*', 'E344:')
+  call assert_fails('tc û¦*', has('win32') ? 'E480:' : 'E344:')
   set nowic
 endfunc
 
