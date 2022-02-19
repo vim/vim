@@ -110,4 +110,12 @@ func Test_verbose_pwd()
   call delete('Xautodir', 'rf')
 endfunc
 
+func Test_multibyte()
+  " using an invalid character should not cause a crash
+  set wic
+  call assert_fails('tc ˚ççç¶*', 'E344:')
+  set nowic
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
