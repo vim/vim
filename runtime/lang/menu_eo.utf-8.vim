@@ -1,6 +1,7 @@
 " Menu Translations:	Esperanto
 " Maintainer:		Dominique PELLE <dominique.pelle@free.fr>
 " Last Change:		2012 May 01
+" Original translations
 " 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

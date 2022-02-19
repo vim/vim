@@ -3,6 +3,7 @@
 " Menu Translations:	Japanese (UTF-8)
 " Last Translator:	MURAOKA Taro  <koron.kaoriya@gmail.com>
 " Last Change:		18-Jul-2018.
+" Original translations
 "
 " Copyright (C) 2001-2018 MURAOKA Taro <koron.kaoriya@gmail.com>,
 "			  vim-jp <http://vim-jp.org/>

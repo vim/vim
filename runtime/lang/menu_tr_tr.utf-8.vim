@@ -1,5 +1,6 @@
 " Menu Translations:	Turkish
 " Maintainer:		Emir SARI <bitigchi@me.com>
+" Original translations
 
 if exists("did_menu_trans")
    finish

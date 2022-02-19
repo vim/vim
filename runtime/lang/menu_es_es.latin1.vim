@@ -3,7 +3,7 @@
 " Last translator:	Omar Campagne Polaino <ocampagne@gmail.com>
 " Version:		7.2.245
 " Last Change:		2012 May 01
-"
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

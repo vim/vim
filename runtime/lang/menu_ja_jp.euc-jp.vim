@@ -3,6 +3,7 @@
 " Menu Translations:	Japanese (EUC-JP)
 " Last Translator:	MURAOKA Taro  <koron.kaoriya@gmail.com>
 " Last Change:		18-Jul-2018.
+" Generated from menu_ja_jp.utf-8.vim, DO NOT EDIT
 "
 " Copyright (C) 2001-2018 MURAOKA Taro <koron.kaoriya@gmail.com>,
 "			  vim-jp <http://vim-jp.org/>

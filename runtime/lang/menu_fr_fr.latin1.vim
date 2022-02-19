@@ -4,6 +4,7 @@
 " Contributors:		David Blanchet <david.blanchet@free.fr>
 " 			Gabriel Dupras <gabrieldupras@gmail.com>
 " Last Change:		2021 Feb 16
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

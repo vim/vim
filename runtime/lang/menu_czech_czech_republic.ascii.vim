@@ -1,7 +1,8 @@
-" Menu Translations:    Czech (latin1 - w/o diacritics)
+" Menu Translations:    Czech (ASCII - without diacritics)
 " Maintainer:           Jiri Sedlak <jiri_sedlak@users.sourceforge.net>
 " Previous maintainer:  Jiri Brezina
 " Based on:             menu.vim (2012-10-21)
+" Generated from menu_cs_cz.utf-8.vim, DO NOT EDIT
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
