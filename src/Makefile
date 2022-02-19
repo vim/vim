@@ -2140,7 +2140,7 @@ autoconf:
 # without changes.
 # This requires a "vim" executable with the +eval feature.
 cmdidxs: ex_cmds.h
-	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
+	vim --clean -X --not-a-term -u create_cmdidxs.vim -c quit
 
 # Run vim script to generate the normal/visual mode command lookup table.
 # This only needs to be run when a new normal/visual mode command has been
@@ -2151,7 +2151,7 @@ cmdidxs: ex_cmds.h
 #   - run "make nvcmdidxs" to generate nv_cmdidxs.h
 nvcmdidxs: auto/config.mk nv_cmds.h
 	$(CC) -I$(srcdir) $(ALL_CFLAGS) create_nvcmdidxs.c -o create_nvcmdidxs
-	vim --clean -N -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	vim --clean -X --not-a-term -u create_nvcmdidxs.vim -c quit
 	-rm -f create_nvcmdidxs
 
 # The normal command to compile a .c file to its .o file.
@@ -2499,8 +2499,8 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(DEST_PRINT); chmod $(FILEMOD) *.ps
 # install the colorscheme files
 	cd $(COLSOURCE); $(INSTALL_DATA_R) *.vim lists tools README.txt $(DEST_COL)
-	cd $(DEST_COL); chmod $(DIRMOD) tools
-	cd $(DEST_COL); chmod $(HELPMOD) *.vim README.txt tools/*.vim
+	cd $(DEST_COL); chmod $(DIRMOD) lists tools
+	cd $(DEST_COL); chmod $(HELPMOD) *.vim README.txt lists/*.vim tools/*.vim
 # install the syntax files
 	cd $(SYNSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_SYN)
 	cd $(DEST_SYN); chmod $(HELPMOD) *.vim README.txt
@@ -2519,7 +2519,7 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(DEST_PLUG); chmod $(HELPMOD) *.vim README.txt
 # install the ftplugin files
 	cd $(FTPLUGSOURCE); $(INSTALL_DATA) *.vim README.txt logtalk.dict $(DEST_FTP)
-	cd $(DEST_FTP); chmod $(HELPMOD) *.vim README.txt
+	cd $(DEST_FTP); chmod $(HELPMOD) *.vim README.txt logtalk.dict
 # install the compiler files
 	cd $(COMPSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_COMP)
 	cd $(DEST_COMP); chmod $(HELPMOD) *.vim README.txt
@@ -3030,7 +3030,7 @@ pixmaps:
 # Update the synmenu.vim file with the latest Syntax menu.
 # This is only needed when runtime/makemenu.vim was changed.
 menu: ./vim ../runtime/makemenu.vim
-	./vim -u ../runtime/makemenu.vim
+	./vim --clean -X --not-a-term -u ../runtime/makemenu.vim
 
 # Start configure from scratch
 scrub scratch:
