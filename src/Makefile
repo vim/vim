@@ -2140,7 +2140,7 @@ autoconf:
 # without changes.
 # This requires a "vim" executable with the +eval feature.
 cmdidxs: ex_cmds.h
-	vim --clean -X --not-a-term -u create_cmdidxs.vim -c quit
+	vim --clean -X --not-a-term -S create_cmdidxs.vim -c quit
 
 # Run vim script to generate the normal/visual mode command lookup table.
 # This only needs to be run when a new normal/visual mode command has been
@@ -2151,7 +2151,7 @@ cmdidxs: ex_cmds.h
 #   - run "make nvcmdidxs" to generate nv_cmdidxs.h
 nvcmdidxs: auto/config.mk nv_cmds.h
 	$(CC) -I$(srcdir) $(ALL_CFLAGS) create_nvcmdidxs.c -o create_nvcmdidxs
-	vim --clean -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	vim --clean -X --not-a-term -S create_nvcmdidxs.vim -c quit
 	-rm -f create_nvcmdidxs
 
 # The normal command to compile a .c file to its .o file.
@@ -3030,7 +3030,7 @@ pixmaps:
 # Update the synmenu.vim file with the latest Syntax menu.
 # This is only needed when runtime/makemenu.vim was changed.
 menu: ./vim ../runtime/makemenu.vim
-	./vim --clean -X --not-a-term -u ../runtime/makemenu.vim
+	./vim --clean -X --not-a-term -S ../runtime/makemenu.vim
 
 # Start configure from scratch
 scrub scratch:
