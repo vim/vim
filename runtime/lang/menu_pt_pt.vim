@@ -1,6 +1,7 @@
 " Menu Translations: Português
 " adaptado de pt_br.
 " Maintainer: Duarte Henriques <duarte_henriques@myrealbox.com>
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

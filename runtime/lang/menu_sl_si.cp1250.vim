@@ -1,8 +1,9 @@
 " Menu Translations:	Slovenian / Slovensko
 " Maintainer:		Mojca Miklavec <mojca.miklavec.lists@gmail.com>
 " Originally By:	Mojca Miklavec <mojca.miklavec.lists@gmail.com>
-" Last Change:		2016 Oct 17
+" Last Change:		2020 Apr 23
 " vim:set foldmethod=marker tabstop=8:
+" Generated from menu_sl_si.utf-8.vim, DO NOT EDIT
 
 " TODO: add/check all '&'s
 
@@ -113,29 +114,29 @@ if has("spell")
     menutrans To\ &Previous\ error<Tab>[s		K\ &prejšnji\ napaki<Tab>[s
     menutrans Suggest\ &Corrections<Tab>z=		Predlagaj\ popravek<Tab>z=
     menutrans &Repeat\ correction<Tab>:spellrepall	Po&novi\ popravke\ na\ vseh\ besedah<Tab>:spellrepall
-    menutrans Set\ language\ to\ "en"			Angleški\ "en"
-    menutrans Set\ language\ to\ "en_au"		Angleški\ "en_au"
-    menutrans Set\ language\ to\ "en_ca"		Angleški\ "en_ca"
-    menutrans Set\ language\ to\ "en_gb"		Angleški\ "en_gb"
-    menutrans Set\ language\ to\ "en_nz"		Angleški\ "en_nz"
-    menutrans Set\ language\ to\ "en_us"		Angleški\ "en_us"
-    menutrans Set\ language\ to\ "sl"			Slovenski\ "sl"
-    menutrans Set\ language\ to\ "de"			Nemški\ "de"
+    menutrans Set\ language\ to\ "en"			Èrkovalnik:\ angleški\ "en"
+    menutrans Set\ language\ to\ "en_au"		Èrkovalnik:\ angleški\ "en_au"
+    menutrans Set\ language\ to\ "en_ca"		Èrkovalnik:\ angleški\ "en_ca"
+    menutrans Set\ language\ to\ "en_gb"		Èrkovalnik:\ angleški\ "en_gb"
+    menutrans Set\ language\ to\ "en_nz"		Èrkovalnik:\ angleški\ "en_nz"
+    menutrans Set\ language\ to\ "en_us"		Èrkovalnik:\ angleški\ "en_us"
+    menutrans Set\ language\ to\ "sl"			Èrkovalnik:\ slovenski\ "sl"
+    menutrans Set\ language\ to\ "de"			Èrkovalnik:\ nemški\ "de"
     menutrans Set\ language\ to\ 			Èrkovalnik:\
     menutrans &Find\ More\ Languages			&Ostali\ jeziki
 endif
 if has("folding")
-  menutrans &Folding					Zvijanje\ kode
+  menutrans &Folding					Zavihek
   " open close folds
-  menutrans &Enable/Disable\ folds<Tab>zi		Omogoèi/onemogoèi\ zvijanje<Tab>zi " Omogoèi/onemogoèi\ zavihke
-  menutrans &View\ Cursor\ Line<Tab>zv			Pokaži\ vrstico\ s\ kazalèkom<Tab>zv " kjer je kazalec
-  menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		Pokaži\ samo\ vrstico\ s\ kazalèkom<Tab>zMzx
-  menutrans C&lose\ more\ folds<Tab>zm			Zvij\ naslednji\ nivo<Tab>zm " Zapri\ veè\ zavihkov
-  menutrans &Close\ all\ folds<Tab>zM			Zvij\ vso\ kodo<Tab>zM " Zapri\ vse\ zavihke
-  menutrans O&pen\ more\ folds<Tab>zr			Razvij\ en\ nivo<Tab>zr " Odpri\ veè\ zavihkov
-  menutrans &Open\ all\ folds<Tab>zR			Razvij\ vso\ kodo<Tab>zR " Odpri\ vse\ zavihke
+  menutrans &Enable/Disable\ folds<Tab>zi		Omogoèi/onemogoèi\ zavihke<Tab>zi
+  menutrans &View\ Cursor\ Line<Tab>zv			Pokaži\ vrstico\ s\ kazalcem<Tab>zv " kjer je kazalec
+  menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		Pokaži\ samo\ vrstico\ s\ kazalcem<Tab>zMzx
+  menutrans C&lose\ more\ folds<Tab>zm			Zapri\ veè\ zavihkov<Tab>zm
+  menutrans &Close\ all\ folds<Tab>zM			Zapri\ vse\ zavihke<Tab>zM
+  menutrans O&pen\ more\ folds<Tab>zr			Odpri\ veè\ zavihkov<Tab>zr
+  menutrans &Open\ all\ folds<Tab>zR			Odpri\ vse\ zavihke<Tab>zR
   " fold method
-  menutrans Fold\ Met&hod				Kriterij\ za\ zvijanje " Ustvarjanje\ zavihkov
+  menutrans Fold\ Met&hod				Ustvarjanje\ zavihkov
   menutrans M&anual					&Roèno
   menutrans I&ndent					Glede\ na\ &poravnavo
   menutrans E&xpression					Z\ &izrazi\ (foldexpr)
@@ -144,17 +145,17 @@ if has("folding")
   menutrans Ma&rker					Z\ &markerji/oznaèbami
   " create and delete folds
   " TODO accelerators
-  menutrans Create\ &Fold<Tab>zf			Ustvari\ zvitek<Tab>zf
-  menutrans &Delete\ Fold<Tab>zd			Izbriši\ zvitek<Tab>zd
-  menutrans Delete\ &All\ Folds<Tab>zD			Izbriši\ vse\ zvitke<Tab>zD
+  menutrans Create\ &Fold<Tab>zf			Ustvari\ zavihek<Tab>zf
+  menutrans &Delete\ Fold<Tab>zd			Izbriši\ zavihek<Tab>zd
+  menutrans Delete\ &All\ Folds<Tab>zD			Izbriši\ vse\ zavihke<Tab>zD
   " moving around in folds
-  menutrans Fold\ column\ &width			Širina\ drevesa\ z\ zvitki
+  menutrans Fold\ column\ &width			Širina\ stolpca\ z\ zavihkom
 endif  " has folding
 
 if has("diff")
   menutrans &Diff					Razlike\ (&Diff)
   menutrans &Update					&Posodobi<Tab>
-  menutrans &Get\ Block					&Sprejmi\ (spremeni\ to\ okno) " XXX: check if translation is OK
+  menutrans &Get\ Block					&Sprejmi\ (spremeni\ to\ okno) " TODO: check if translation is OK
   menutrans &Put\ Block					&Pošlji\ (spremeni\ drugo\ okno)
 endif
 
@@ -251,7 +252,7 @@ menutrans Select\ &Sentence		Izberi\ &stavek
 menutrans Select\ Pa&ragraph		Izberi\ &odstavek
 menutrans Select\ &Line			Izberi\ vrs&tico
 menutrans Select\ &Block		Izberi\ b&lok
-menutrans &Select\ All<Tab>ggVG		Izberi\ &vse<Tab>ggVG
+menutrans Select\ &All			Izberi\ &vse
 " }}} POPUP
 
 " {{{ TOOLBAR
