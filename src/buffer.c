@@ -4170,8 +4170,11 @@ build_stl_str_hl(
     {
 	stl_items = ALLOC_MULT(stl_item_T, stl_items_len);
 	stl_groupitem = ALLOC_MULT(int, stl_items_len);
-	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len);
-	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len);
+
+	// Allocate one more, because the last element is used to indicate the
+	// end of the list.
+	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
+	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
     }
 
 #ifdef FEAT_EVAL
@@ -4251,11 +4254,13 @@ build_stl_str_hl(
 	    if (new_groupitem == NULL)
 		break;
 	    stl_groupitem = new_groupitem;
-	    new_hlrec = vim_realloc(stl_hltab, sizeof(stl_hlrec_T) * new_len);
+	    new_hlrec = vim_realloc(stl_hltab,
+					  sizeof(stl_hlrec_T) * (new_len + 1));
 	    if (new_hlrec == NULL)
 		break;
 	    stl_hltab = new_hlrec;
-	    new_hlrec = vim_realloc(stl_tabtab, sizeof(stl_hlrec_T) * new_len);
+	    new_hlrec = vim_realloc(stl_tabtab,
+					  sizeof(stl_hlrec_T) * (new_len + 1));
 	    if (new_hlrec == NULL)
 		break;
 	    stl_tabtab = new_hlrec;
