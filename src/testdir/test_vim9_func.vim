@@ -3732,12 +3732,12 @@ def Test_too_many_arguments()
   var lines =<< trim END
     echo [0, 1, 2]->map(() => 123)
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1106: 2 arguments too many', 1)
+  v9.CheckDefAndScriptFailure(lines, ['E176:', 'E1106: 2 arguments too many'], 1)
 
   lines =<< trim END
     echo [0, 1, 2]->map((_) => 123)
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1106: One argument too many', 1)
+  v9.CheckDefAndScriptFailure(lines, ['E176', 'E1106: One argument too many'], 1)
 enddef
 
 def Test_closing_brace_at_start_of_line()
