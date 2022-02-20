@@ -566,9 +566,11 @@ arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 		t_func_exp.tt_argcount = -1;
 	    else
 	    {
-		if (context->arg_types[0].type_decl->tt_type == VAR_LIST)
+		if (context->arg_types[0].type_curr->tt_type == VAR_STRING
+			|| context->arg_types[0].type_curr->tt_type == VAR_BLOB
+			|| context->arg_types[0].type_curr->tt_type == VAR_LIST)
 		    args[0] = &t_number;
-		else if (context->arg_types[0].type_decl->tt_type == VAR_DICT)
+		else if (context->arg_types[0].type_curr->tt_type == VAR_DICT)
 		    args[0] = &t_string;
 		if (args[0] != NULL)
 		    args[1] = expected_ret;

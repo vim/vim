@@ -2360,12 +2360,32 @@ def Test_maparg()
   v9.CheckDefAndScriptFailure(['maparg("a", "b", true, 2)'], ['E1013: Argument 4: type mismatch, expected bool but got number', 'E1212: Bool required for argument 4'])
   maparg('')->assert_equal('')
 
+  # value argument type is checked at compile time
   var lines =<< trim END
       var l = [123]
-      l->map((_, v: string) => 0)
+      l->map((i: number, v: string) => 0)
   END
-  v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?number, ?number): number but got func(any, string): number')
+  v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?number, ?number): number but got func(number, string): number')
 
+  lines =<< trim END
+      var d = {a: 123}
+      d->map((i: string, v: string) => 0)
+  END
+  v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?string, ?number): number but got func(string, string): number')
+
+  lines =<< trim END
+    var s = 'abc'
+    s->map((i: number, v: number) => 'x')
+  END
+  v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?number, ?string): string but got func(number, number): string')
+
+  lines =<< trim END
+    var s = 0z1122
+    s->map((i: number, v: string) => 0)
+  END
+  v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?number, ?number): number but got func(number, string): number')
+
+  # index argument type is checked at compile time
   lines =<< trim END
       ['x']->map((i: string, v: string) => 'y')
   END
@@ -2375,6 +2395,16 @@ def Test_maparg()
     {a: 1}->map((i: number, v: number) => 0)
   END
   v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?string, ?any): any but got func(number, number): number')
+
+  lines =<< trim END
+    'abc'->map((i: string, v: string) => 'x')
+  END
+  v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?number, ?string): string but got func(string, string): string')
+
+  lines =<< trim END
+    0z1122->map((i: string, v: number) => 0)
+  END
+  v9.CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected func(?number, ?number): number but got func(string, number): number')
 enddef
 
 def Test_maparg_mapset()
