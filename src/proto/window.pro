@@ -1,4 +1,5 @@
 /* window.c */
+win_T *prevwin_curwin(void);
 void do_window(int nchar, long Prenum, int xchar);
 void get_wincmd_addr_type(char_u *arg, exarg_T *eap);
 int win_split(int size, int flags);
