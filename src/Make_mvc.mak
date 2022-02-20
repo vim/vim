@@ -73,11 +73,6 @@
 #		    510 (5.10.x), etc]
 #	  (default is 524)
 #
-#	Python interface:
-#	  PYTHON=[Path to Python directory]
-#	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
-#	  PYTHON_VER=[Python version, eg 22, 23, ..., 27]  (default is 27)
-#
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory]
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
@@ -190,9 +185,6 @@ OBJDIR = $(OBJDIR)U
 !endif
 !ifdef PERL
 OBJDIR = $(OBJDIR)L
-!endif
-!ifdef PYTHON
-OBJDIR = $(OBJDIR)Y
 !endif
 !ifdef PYTHON3
 OBJDIR = $(OBJDIR)H

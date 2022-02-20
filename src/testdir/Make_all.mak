@@ -219,9 +219,7 @@ NEW_TESTS = \
 	test_profile \
 	test_prompt_buffer \
 	test_put \
-	test_python2 \
 	test_python3 \
-	test_pyx2 \
 	test_pyx3 \
 	test_quickfix \
 	test_quotestar \
@@ -457,9 +455,7 @@ NEW_TESTS_RES = \
 	test_preview.res \
 	test_profile.res \
 	test_prompt_buffer.res \
-	test_python2.res \
 	test_python3.res \
-	test_pyx2.res \
 	test_pyx3.res \
 	test_quickfix.res \
 	test_quotestar.res \

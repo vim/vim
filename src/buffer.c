@@ -908,9 +908,6 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_PERL
     perl_buf_free(buf);
 #endif
-#ifdef FEAT_PYTHON
-    python_buffer_free(buf);
-#endif
 #ifdef FEAT_PYTHON3
     python3_buffer_free(buf);
 #endif

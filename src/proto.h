@@ -231,10 +231,6 @@ void mbyte_im_set_active(int active_arg);
 #  include "if_mzsch.pro"
 # endif
 
-# ifdef FEAT_PYTHON
-#  include "if_python.pro"
-# endif
-
 # ifdef FEAT_PYTHON3
 #  include "if_python3.pro"
 # endif

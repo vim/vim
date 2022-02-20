@@ -76,7 +76,6 @@ jobs:
               lcov \
               libcanberra-dev \
               libperl-dev \
-              python-dev \
               python3-dev \
               liblua5.3-dev \
               lua5.3 \
@@ -122,7 +121,7 @@ jobs:
             ;;
           huge)
             echo "TEST=scripttests test_libvterm"
-            echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
 
@@ -355,9 +354,6 @@ jobs:
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
       LUA_DIR: D:\Lua
-      # Python 2
-      PYTHON_VER: 27
-      PYTHON_VER_DOT: '2.7'
       # Python 3
       PYTHON3_VER: 310
       PYTHON3_VER_DOT: '3.10'
@@ -410,9 +406,7 @@ jobs:
         run: |
           git config --global core.autocrlf input
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
-          python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-          echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
@@ -480,7 +474,6 @@ jobs:
               FEATURES=${{ matrix.features }} ^
               GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
-              DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
@@ -502,7 +495,6 @@ jobs:
               FEATURES=${{ matrix.features }} \
               GUI=yes IME=yes ICONV=yes VIMDLL=yes \
               DYNAMIC_LUA=yes LUA=${LUA_DIR} \
-              DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else
