@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-16 10:46+0900\n"
-"PO-Revision-Date: 2022-01-16 12:43+0900\n"
+"POT-Creation-Date: 2022-02-18 13:52+0900\n"
+"PO-Revision-Date: 2022-02-20 01:53+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: Japanese <https://github.com/vim-jp/lang-ja>\n"
 "Language: ja\n"
@@ -780,10 +780,12 @@ msgstr "警告"
 
 msgid ""
 "&OK\n"
-"&Load File"
+"&Load File\n"
+"Load File &and Options"
 msgstr ""
 "&OK\n"
-"ファイル読込(&L)"
+"ファイル読込(&L)\n"
+"ファイルとオプションを読込(&A)"
 
 msgid "<empty>"
 msgstr "<空>"
@@ -3082,36 +3084,6 @@ msgstr "このバッファに定義された構文要素はありません"
 msgid "'redrawtime' exceeded, syntax highlighting disabled"
 msgstr "'redrawtime' を超過したため、構文ハイライトは無効化されます"
 
-msgid "syntax conceal on"
-msgstr "構文の conceal は現在 on です"
-
-msgid "syntax conceal off"
-msgstr "構文の conceal は現在 off です"
-
-msgid "syntax case ignore"
-msgstr "構文の大文字小文字は現在 ignore です"
-
-msgid "syntax case match"
-msgstr "構文の大文字小文字は現在 match です"
-
-msgid "syntax foldlevel start"
-msgstr "構文の foldlevel は現在 start です"
-
-msgid "syntax foldlevel minimum"
-msgstr "構文の foldlevel は現在 minimum です"
-
-msgid "syntax spell toplevel"
-msgstr "構文の spell は現在 toplevel です"
-
-msgid "syntax spell notoplevel"
-msgstr "構文の spell は現在 notoplevel です"
-
-msgid "syntax spell default"
-msgstr "構文の spell は現在 default です"
-
-msgid "syntax iskeyword "
-msgstr "構文用 iskeyword "
-
 msgid "syntax iskeyword not set"
 msgstr "構文用 iskeyword はセットされていません"
 
@@ -3248,7 +3220,7 @@ msgstr "終了"
 msgid "(Invalid)"
 msgstr "(無効)"
 
-# no-c-format
+#, no-c-format
 msgid "%a %b %d %H:%M:%S %Y"
 msgstr "%Y/%m/%d (%a) %H:%M:%S"
 
@@ -3815,11 +3787,6 @@ msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr ""
 "このコマンドは無効です、ごめんなさい: Perlライブラリをロードできませんでし"
 "た。"
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
-"ています"
 
 msgid "Edit with Vim using &tabpages"
 msgstr "Vimでタブページを使って編集する (&T)"
@@ -4836,6 +4803,11 @@ msgstr "E298: ブロック 1 を取得できません?"
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: ブロック 2 を取得できません?"
 
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
+"ています"
+
 msgid "E300: Swap file already exists (symlink attack?)"
 msgstr "E300: スワップファイルが既に存在します (symlinkによる攻撃?)"
 
@@ -5417,6 +5389,10 @@ msgstr "E463: 領域が保護されているので、変更できません"
 
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: ユーザー定義コマンドのあいまいな使用です"
+
+#, c-format
+msgid "E464: Ambiguous use of user-defined command: %s"
+msgstr "E464: ユーザー定義コマンドのあいまいな使用です: %s"
 
 msgid "E465: :winsize requires two number arguments"
 msgstr "E465: :winsize には2つの数値の引数が必要です"
@@ -6498,6 +6474,7 @@ msgstr "E802: 無効な ID: %d (1 以上でなければなりません)"
 msgid "E803: ID not found: %d"
 msgstr "E803: ID はありません: %d"
 
+#, no-c-format
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: '%' を浮動小数点数と組み合わせては使えません"
 
@@ -6696,6 +6673,7 @@ msgstr "E862: ここでは g: は使えません"
 msgid "E863: Not allowed for a terminal in a popup window"
 msgstr "E863: 端末はポップアップウィンドウでは許されません"
 
+#, no-c-format
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used"
@@ -7019,6 +6997,7 @@ msgstr "E949: 書込み中にファイルが変更されました"
 msgid "E950: Cannot convert between %s and %s"
 msgstr "E950: %s と %s の間で変換できません"
 
+#, no-c-format
 msgid "E951: \\% value too large"
 msgstr "E951: \\% 値が大き過ぎます"
 
@@ -7325,6 +7304,7 @@ msgstr "E1033: 全てをcatchした後のcatchには到達しません"
 msgid "E1034: Cannot use reserved name %s"
 msgstr "E1034: 予約名 %s は使用できません"
 
+#, no-c-format
 msgid "E1035: % requires number arguments"
 msgstr "E1035: % には数値の引数が必要です"
 
@@ -7466,9 +7446,15 @@ msgstr "E1076: このVimは浮動小数点数サポート付きでコンパイ�
 msgid "E1077: Missing argument type for %s"
 msgstr "E1077: %s の引数の型がありません"
 
+msgid "E1080: Invalid assignment"
+msgstr "E1080: 無効な代入です"
+
 #, c-format
 msgid "E1081: Cannot unlet %s"
 msgstr "E1081: %s を unlet できません"
+
+msgid "E1082: Command modifier without command"
+msgstr "E1082: コマンドなしのコマンド修飾子です"
 
 msgid "E1083: Missing backtick"
 msgstr "E1083: バッククォートがありません"
@@ -7487,6 +7473,9 @@ msgstr "E1086: 関数参照が不正です"
 msgid "E1087: Cannot use an index when declaring a variable"
 msgstr "E1087: 変数を宣言する際にインデックスは使用できません"
 
+msgid "E1088: Script cannot import itself"
+msgstr "E1088: スクリプト自身をインポートできません"
+
 #, c-format
 msgid "E1089: Unknown variable: %s"
 msgstr "E1089: 不明な変数: %s"
@@ -7498,6 +7487,9 @@ msgstr "E1090: 引数 %s に対して代入できません"
 #, c-format
 msgid "E1091: Function is not compiled: %s"
 msgstr "E1091: 関数はコンパイルされていません: %s"
+
+msgid "E1092: Cannot nest :redir"
+msgstr "E1092: :redir は入れ子にできません"
 
 #, c-format
 msgid "E1093: Expected %d items but got %d"
@@ -7591,11 +7583,11 @@ msgstr "E1116: \"assert_fails()\" の第5引数は文字列でなければなり
 msgid "E1117: Cannot use ! with nested :def"
 msgstr "E1117: ! を入れ子になった :def と組み合わせては使えません"
 
-msgid "E1118: Cannot change list"
-msgstr "E1118: リストを変更できません"
+msgid "E1118: Cannot change locked list"
+msgstr "E1118: ロックされたリストを変更できません"
 
-msgid "E1119: Cannot change list item"
-msgstr "E1119: リストの要素を変更できません"
+msgid "E1119: Cannot change locked list item"
+msgstr "E1119: ロックされたリストの要素を変更できません"
 
 msgid "E1120: Cannot change dict"
 msgstr "E1120: 辞書を変更できません"
@@ -7669,6 +7661,11 @@ msgstr "E1140: :for の引数はリストのシーケンスでなければなり
 msgid "E1141: Indexable type required"
 msgstr "E1141: インデックス可能な型が必要です"
 
+msgid "E1142: Calling test_garbagecollect_now() while v:testing is not set"
+msgstr ""
+"E1142: v:testing が設定されていない状態で test_garbagecollect_now() を呼んで"
+"います"
+
 #, c-format
 msgid "E1143: Empty expression: \"%s\""
 msgstr "E1143: 空の式です: \"%s\""
@@ -7721,8 +7718,10 @@ msgstr "E1156: 引数リストを再帰的に変更することはできませ�
 msgid "E1157: Missing return type"
 msgstr "E1157: 戻り値の型がありません"
 
-msgid "E1158: Cannot use flatten() in Vim9 script"
-msgstr "E1158: Vim9 スクリプトでは flatten() は使用できません"
+msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
+msgstr ""
+"E1158: Vim9 スクリプトでは flatten() は使用できません、flattennew() を使って"
+"ください"
 
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr "E1159: バッファを閉じている間にウィンドウを分割することはできません"
@@ -7764,8 +7763,9 @@ msgstr "E1167: 引数名が既存の変数を隠しています: %s"
 msgid "E1168: Argument already declared in the script: %s"
 msgstr "E1168: 引数は既にスクリプト内で宣言されています: %s"
 
-msgid "E1169: 'import * as {name}' not supported here"
-msgstr "E1169: 'import * as {name}' はここではサポートされていません"
+#, c-format
+msgid "E1169: Expression too recursive: %s"
+msgstr "E1169: 式の再帰が深すぎます: %s"
 
 msgid "E1170: Cannot use #{ to start a comment"
 msgstr "E1170: コメントの開始に #{ は使用できません"
@@ -7813,18 +7813,12 @@ msgstr "E1180: 可変引数の型はリストでなければなりません: %s"
 msgid "E1181: Cannot use an underscore here"
 msgstr "E1181: ここではアンダースコアは使えません"
 
-msgid "E1182: Blob required"
-msgstr "E1182: Blob型が必要です"
-
 #, c-format
 msgid "E1183: Cannot use a range with an assignment operator: %s"
 msgstr "E1183: 代入演算子で範囲は使用できません: %s"
 
 msgid "E1184: Blob not set"
 msgstr "E1184: Blob は設定されていません"
-
-msgid "E1185: Cannot nest :redir"
-msgstr "E1185: :redir は入れ子にできません"
 
 msgid "E1185: Missing :redir END"
 msgstr "E1185: :redir END がありません"
@@ -8115,13 +8109,37 @@ msgstr "E1261: \"as\" を使わずに .vim をインポートすることはで�
 msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: 同じスクリプトを2回インポートすることはできません: %s"
 
-msgid "E1263: Using autoload in a script not under an autoload directory"
-msgstr "E1263: autoloadディレクトリに無いスクリプトでautoloadを使っています"
+msgid "E1263: cannot use name with # in Vim9 script, use export instead"
+msgstr ""
+"E1263: Vim9 スクリプトでは # 入りの名前は使用できません、代わりに export を使"
+"用してください"
 
 #, c-format
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
 msgstr ""
 "E1264: autoloadインポートで絶対または相対パスを使うことはできません: %s"
+
+msgid "E1265: Cannot use a partial here"
+msgstr "E1265: ここでは部分適用は使えません"
+
+msgid ""
+"E1266: Critical error in python3 initialization, check your python3 "
+"installation"
+msgstr ""
+"E1266: python3初期化中に重大なエラーが起きました。python3のインストール状況を"
+"確認してください"
+
+#, c-format
+msgid "E1267: Function name must start with a capital: %s"
+msgstr "E1267: 関数名は大文字で始まらなければなりません: %s"
+
+#, c-format
+msgid "E1268: Cannot use s: in Vim9 script: %s"
+msgstr "E1268: Vim9 スクリプトでは :s は使用できません: %s"
+
+#, c-format
+msgid "E1269: Cannot create a Vim9 script variable in a function: %s"
+msgstr "E1269: 関数内で Vim9 スクリプト変数は作成できません: %s"
 
 msgid "--No lines in buffer--"
 msgstr "--バッファに行がありません--"

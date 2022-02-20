@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1371,7 +1371,7 @@ And NOT: >
 	-(1.234->string())
 
 What comes after "->" can be a name, a simple expression (not containing any
-parenthesis), or any expression in parenthesis: >
+parenthesis), or any expression in parentheses: >
 	base->name(args)
 	base->some.name(args)
 	base->alist[idx](args)
@@ -2182,7 +2182,8 @@ v:lnum		Line number for the 'foldexpr' |fold-expr|, 'formatexpr' and
 
 						*v:maxcol* *maxcol-variable*
 v:maxcol	Maximum line length.  Depending on where it is used it can be
-		screen columns, characters or bytes.
+		screen columns, characters or bytes.  The value currently is
+		2147483647 on all systems.
 
 					*v:mouse_win* *mouse_win-variable*
 v:mouse_win	Window number for a mouse click obtained with |getchar()|.
@@ -3001,8 +3002,9 @@ Also note that if you have two script files, and one calls a function in the
 other and vice versa, before the used function is defined, it won't work.
 Avoid using the autoload functionality at the toplevel.
 
-In |Vim9| script you will get error *E1263* if you use a function name with a
-"#" character when not in an autoload script.
+In |Vim9| script you will get error *E1263* if you define a function with
+a "#" character in the name.  You should use a name without "#" and use
+`:export`.
 
 Hint: If you distribute a bunch of scripts you can pack them together with the
 |vimball| utility.  Also read the user manual |distribute-script|.

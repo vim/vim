@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 8.2.  Last change: 2021 Apr 05
+*os_win32.txt*  For Vim version 8.2.  Last change: 2022 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -294,7 +294,7 @@ A. When using :! to run an external command, you can run it with "start". For
        /b    no console window will be opened
    You can use only one of these flags at a time.  A second one will be
    treated as the start of the command.
-
+						*windows-asynchronously*
 Q. How do I avoid getting a window for programs that I run asynchronously?
 A. You have two possible solutions depending on what you want:
    1) You may use the /min flag in order to run program in a minimized state
@@ -308,17 +308,17 @@ A. You have two possible solutions depending on what you want:
 
    Example for a console application, run Exuberant ctags: >
         :!start /min ctags -R .
-<  When it has finished you should see file named "tags" in your current
+<   When it has finished you should see file named "tags" in your current
    directory.  You should notice the window title blinking on your taskbar.
    This is more noticeable for commands that take longer.
    Now delete the "tags" file and run this command: >
         :!start /b ctags -R .
-<  You should have the same "tags" file, but this time there will be no
+<   You should have the same "tags" file, but this time there will be no
    blinking on the taskbar.
    Example for a GUI application: >
         :!start /min notepad
         :!start /b notepad
-<  The first command runs notepad minimized and the second one runs it
+<   The first command runs notepad minimized and the second one runs it
    normally.
 
 						*windows-icon*

@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Feb 08
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2082,9 +2082,12 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 			dict.key	|internal-variables|).  Also works
 			list[i]		for |curly-braces-names|, |Dictionary|
 			import.Func	entries, |List| items, imported
-					items,etc.
+					items, etc.
 					Does not work for local variables in a
 					compiled `:def` function.
+					Also works for a function in |Vim9|
+					script, since it can be used as a
+					function reference.
 					Beware that evaluating an index may
 					cause an error message for an invalid
 					expression.  E.g.: >
@@ -2137,7 +2140,8 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 			exists("&shortname")
 			exists("$HOSTNAME")
 			exists("*strftime")
-			exists("*s:MyFunc")
+			exists("*s:MyFunc")	" only for legacy script
+			exists("*MyFunc")
 			exists("bufcount")
 			exists(":Make")
 			exists("#CursorHold")
@@ -4999,12 +5003,12 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		Returns a unique ID that can be passed to |listener_remove()|.
 
 		The {callback} is invoked with five arguments:
-		    a:bufnr	the buffer that was changed
-		    a:start	first changed line number
-		    a:end	first line number below the change
-		    a:added	number of lines added, negative if lines were
+		    bufnr	the buffer that was changed
+		    start	first changed line number
+		    end		first line number below the change
+		    added	number of lines added, negative if lines were
 				deleted
-		    a:changes	a List of items with details about the changes
+		    changes	a List of items with details about the changes
 
 		Example: >
 	    func Listener(bufnr, start, end, added, changes)
@@ -5012,7 +5016,7 @@ listener_add({callback} [, {buf}])			*listener_add()*
 	    endfunc
 	    call listener_add('Listener', bufnr)
 
-<		The List cannot be changed.  Each item in a:changes is a
+<		The List cannot be changed.  Each item in "changes" is a
 		dictionary with these entries:
 		    lnum	the first line number of the change
 		    end		the first line below the change
@@ -5139,7 +5143,7 @@ luaeval({expr} [, {expr}])					*luaeval()*
 
 map({expr1}, {expr2})					*map()*
 		{expr1} must be a |List|, |String|, |Blob| or |Dictionary|.
-		When {expr1} is a |List|| or |Dictionary|, replace each
+		When {expr1} is a |List| or |Dictionary|, replace each
 		item in {expr1} with the result of evaluating {expr2}.
 		For a |Blob| each byte is replaced.
 		For a |String|, each character, including composing
@@ -6617,16 +6621,22 @@ reltimestr({time})				*reltimestr()*
 
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar} [, {timeout}]])
-		Send the {string} to {server}.  The string is sent as an
-		expression and the result is returned after evaluation.
-		The result must be a String or a |List|.  A |List| is turned
-		into a String by joining the items with a line break in
-		between (not at the end), like with join(expr, "\n").
+		Send the {string} to {server}.  The {server} argument is a
+		string, also see |{server}|.
+
+		The string is sent as an expression and the result is returned
+		after evaluation.  The result must be a String or a |List|.  A
+		|List| is turned into a String by joining the items with a
+		line break in between (not at the end), like with join(expr,
+		"\n").
+
 		If {idvar} is present and not empty, it is taken as the name
 		of a variable and a {serverid} for later use with
 		|remote_read()| is stored there.
+
 		If {timeout} is given the read times out after this many
 		seconds.  Otherwise a timeout of 600 seconds is used.
+
 		See also |clientserver| |RemoteReply|.
 		This function is not available in the |sandbox|.
 		{only available when compiled with the |+clientserver| feature}
@@ -6647,7 +6657,7 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 
 remote_foreground({server})				*remote_foreground()*
 		Move the Vim server with the name {server} to the foreground.
-		The {server} argument is a string.
+		The {server} argument is a string, also see |{server}|.
 		This works like: >
 			remote_expr({server}, "foreground()")
 <		Except that on Win32 systems the client does the work, to work
@@ -6696,12 +6706,17 @@ remote_read({serverid}, [{timeout}])			*remote_read()*
 <
 							*remote_send()* *E241*
 remote_send({server}, {string} [, {idvar}])
-		Send the {string} to {server}.  The string is sent as input
-		keys and the function returns immediately.  At the Vim server
-		the keys are not mapped |:map|.
+		Send the {string} to {server}.  The {server} argument is a
+		string, also see |{server}|.
+
+		The string is sent as input keys and the function returns
+		immediately.  At the Vim server the keys are not mapped
+		|:map|.
+
 		If {idvar} is present, it is taken as the name of a variable
 		and a {serverid} for later use with remote_read() is stored
 		there.
+
 		See also |clientserver| |RemoteReply|.
 		This function is not available in the |sandbox|.
 		{only available when compiled with the |+clientserver| feature}
@@ -6916,6 +6931,8 @@ screenpos({winid}, {lnum}, {col})				*screenpos()*
 		as if 'conceallevel' is zero.  You can set the cursor to the
 		right position and use |screencol()| to get the value with
 		|conceal| taken into account.
+		If the position is in a closed fold the screen position of the
+		first character is returned, {col} is not used.
 
 		Can also be used as a |method|: >
 			GetWinid()->screenpos(lnum, col)
@@ -7897,7 +7914,7 @@ sha256({string})						*sha256()*
 shellescape({string} [, {special}])			*shellescape()*
 		Escape {string} for use as a shell command argument.
 		When the 'shell' contains powershell (MS-Windows) or pwsh
-		(MS-Windows, Linux, and MacOS) then it will enclose {string}
+		(MS-Windows, Linux, and macOS) then it will enclose {string}
 		in single quotes and will double up all internal single
 		quotes.
 		On MS-Windows, when 'shellslash' is not set, it will enclose

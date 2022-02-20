@@ -9972,5 +9972,3 @@ msgstr "име MzScheme динамичке библиотеке"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "име MzScheme GC динамичке библиотеке"
-
-

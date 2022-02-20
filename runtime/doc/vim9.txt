@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 11
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -282,13 +282,14 @@ If you do want to keep items, use: >
 	vim9script noclear
 
 You want to use this in scripts that use a `finish` command to bail out at
-some point when loaded again.  E.g. when a buffer local option is set: >
+some point when loaded again.  E.g. when a buffer local option is set to a
+function, the function does not need to be defined more than once: >
 	vim9script noclear
 	setlocal completefunc=SomeFunc
-	if exists('*g:SomeFunc')
+	if exists('*SomeFunc')
 	  finish
 	endif
-	def g:SomeFunc()
+	def SomeFunc()
 	....
 
 
@@ -422,7 +423,7 @@ similar to how a function argument can be ignored: >
 	[a, _, c] = theList
 To ignore any remaining items: >
 	[a, b; _] = longList
-<							*E1163*
+<							*E1163* *E1080*
 Declaring more than one variable at a time, using the unpack notation, is
 possible.  Each variable can have a type or infer it from the value: >
 	var [v1: number, v2] = GetValues()
@@ -837,6 +838,7 @@ Instead of `:k` you can use `:mark`.
 Comparators ~
 
 The 'ignorecase' option is not used for comparators that use strings.
+Thus "=~" works like "=~#".
 
 
 Abort after error ~
@@ -1430,32 +1432,61 @@ In legacy Vim script, where a number was expected, a string would be
 automatically converted to a number.  This was convenient for an actual number
 such as "123", but leads to unexpected problems (and no error message) if the
 string doesn't start with a number.  Quite often this leads to hard-to-find
-bugs.
+bugs. e.g.: >
+	echo 123 == '123'
+<	1 ~
+With an accidental space: >
+	echo 123 == ' 123'
+<	0 ~
 							*E1206* *E1210* *E1212*
 In Vim9 script this has been made stricter.  In most places it works just as
-before, if the value used matches the expected type.  There will sometimes be
+before if the value used matches the expected type.  There will sometimes be
 an error, thus breaking backwards compatibility.  For example:
 - Using a number other than 0 or 1 where a boolean is expected.  *E1023*
 - Using a string value when setting a number option.
 - Using a number where a string is expected.   *E1024* *E1105*
 
 One consequence is that the item type of a list or dict given to |map()| must
-not change.  This will give an error in Vim9 script: >
-	echo map([1, 2, 3], (i, v) => 'item ' .. i)
-	E1012: Type mismatch; expected number but got string
-Instead use |mapnew()|: >
-	echo mapnew([1, 2, 3], (i, v) => 'item ' .. i)
-	['item 0', 'item 1', 'item 2']
+not change, if the type was declared.  This will give an error in Vim9
+script: >
+	var mylist: list<number> = [1, 2, 3]
+	echo map(mylist, (i, v) => 'item ' .. i)
+<	E1012: Type mismatch; expected number but got string in map() ~
 
-If the item type was determined to be "any" it can change to a more specific
-type.  E.g. when a list of mixed types gets changed to a list of strings: >
+Instead use |mapnew()|, it creates a new list: >
+	var mylist: list<number> = [1, 2, 3]
+	echo mapnew(mylist, (i, v) => 'item ' .. i)
+<	['item 0', 'item 1', 'item 2'] ~
+
+If the item type was not declared or determined to be "any" it can change to a
+more specific type.  E.g. when a list of mixed types gets changed to a list of
+strings: >
 	var mylist = [1, 2.0, '3']
 	# typename(mylist) == "list<any>"
 	map(mylist, (i, v) => 'item ' .. i)
 	# typename(mylist) == "list<string>", no error
-<								*E1158*
+
+There is a subtle difference between using a list constant directly and
+through a variable declaraiton.  Because of type inference, when using a list
+constant to initialize a variable, this also sets the declared type: >
+	var mylist = [1, 2, 3]
+	# typename(mylist) == "list<number>"
+	echo map(mylist, (i, v) => 'item ' .. i)  # Error!
+
+When using the list constant directly, the type is not declared and is allowed
+to change: >
+	echo map([1, 2, 3], (i, v) => 'item ' .. i)  # OK
+
+The reasoning behind this is that when a type is declared and the list is
+passed around and changed, the declaration must always hold.  So that you can
+rely on the type to match the declared type.  For a constant this is not
+needed.
+
+								*E1158*
 Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
-|flattennew()| instead.
+|flattennew()| instead.  Since |flatten()| is intended to always change the
+type, it can not be used in Vim9 script.
+
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*

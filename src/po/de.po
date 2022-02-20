@@ -10038,5 +10038,3 @@ msgstr "Name der dynamischen MzScheme Bibliothek"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "Name der dynamischen MzScheme GC Bibliothek"
-
-

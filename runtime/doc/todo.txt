@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 11
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,13 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Disallow using "s:" in Vim9 script at the script level.
-Disallow a legacy function creating an s: variable in Vim9 script.
-
 Once Vim9 is stable:
 - Use Vim9 for runtime files.
 - Check code coverage, add more tests if needed.
-	vim9compile.c
 	vim9execute.c
 	vim9expr.c
 	vim9instr.c
@@ -420,9 +416,6 @@ manager.  Problem with Motif?
 When editing a file with ":edit" the output of :swapname is relative, while
 editing it with "vim file" it is absolute. (#355)
 Which one should it be?
-
-:map output does not clear the reset of the command line.
-(#5623, also see #5962)
 
 Problem with auto-formatting - inserting space and putting cursor before added
 character. (#6154)

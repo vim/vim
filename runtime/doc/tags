@@ -2415,6 +2415,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :dsp	tagsrch.txt	/*:dsp*
 :dsplit	tagsrch.txt	/*:dsplit*
 :e	editing.txt	/*:e*
+:e#	editing.txt	/*:e#*
 :ea	undo.txt	/*:ea*
 :earlier	undo.txt	/*:earlier*
 :ec	eval.txt	/*:ec*
@@ -2432,6 +2433,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :edit	editing.txt	/*:edit*
 :edit!	editing.txt	/*:edit!*
 :edit!_f	editing.txt	/*:edit!_f*
+:edit_#	editing.txt	/*:edit_#*
 :edit_f	editing.txt	/*:edit_f*
 :el	eval.txt	/*:el*
 :else	eval.txt	/*:else*
@@ -4032,6 +4034,7 @@ E1075	vim9.txt	/*E1075*
 E1076	eval.txt	/*E1076*
 E1077	vim9.txt	/*E1077*
 E108	eval.txt	/*E108*
+E1080	vim9.txt	/*E1080*
 E1081	eval.txt	/*E1081*
 E1083	editing.txt	/*E1083*
 E1084	eval.txt	/*E1084*
@@ -10529,6 +10532,7 @@ vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-no-dict-function	vim9.txt	/*vim9-no-dict-function*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
+vim9-s-namespace	vim9.txt	/*vim9-s-namespace*
 vim9-scopes	vim9.txt	/*vim9-scopes*
 vim9-script-intro	usr_46.txt	/*vim9-script-intro*
 vim9-types	vim9.txt	/*vim9-types*
@@ -10686,6 +10690,7 @@ windowid	windows.txt	/*windowid*
 windowid-variable	eval.txt	/*windowid-variable*
 windows	windows.txt	/*windows*
 windows-3.1	os_win32.txt	/*windows-3.1*
+windows-asynchronously	os_win32.txt	/*windows-asynchronously*
 windows-icon	os_win32.txt	/*windows-icon*
 windows-intro	windows.txt	/*windows-intro*
 windows-starting	windows.txt	/*windows-starting*
@@ -10859,6 +10864,7 @@ zz	scroll.txt	/*zz*
 {offset}	pattern.txt	/*{offset}*
 {register}	change.txt	/*{register}*
 {rhs}	map.txt	/*{rhs}*
+{server}	remote.txt	/*{server}*
 {subject}	helphelp.txt	/*{subject}*
 {}	intro.txt	/*{}*
 }	motion.txt	/*}*

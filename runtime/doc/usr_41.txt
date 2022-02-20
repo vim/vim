@@ -162,7 +162,7 @@ and avoid errors.  Such as thinking that the "-0o36" above makes the number
 negative, while it is actually seen as a subtraction.
 
 To actually have the minus sign be used for negation, you can put the second
-expression in parenthesis: >
+expression in parentheses: >
 
 	echo -0x7f (-0o36)
 
