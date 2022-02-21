@@ -570,7 +570,7 @@ arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 			|| context->arg_types[0].type_curr->tt_type == VAR_BLOB
 			|| context->arg_types[0].type_curr->tt_type == VAR_LIST)
 		    args[0] = &t_number;
-		else if (context->arg_types[0].type_curr->tt_type == VAR_DICT)
+		else if (context->arg_types[0].type_decl->tt_type == VAR_DICT)
 		    args[0] = &t_string;
 		if (args[0] != NULL)
 		    args[1] = expected_ret;
@@ -4366,6 +4366,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	    // would also work, but some plugins depend on the name being
 	    // printable text.
 	    name = get_scriptlocal_funcname(s);
+	else if (trans_name != NULL && *trans_name == K_SPECIAL)
+	    name = alloc_printable_func_name(trans_name);
 	else
 	    name = vim_strsave(s);
 

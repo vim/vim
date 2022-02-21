@@ -1958,16 +1958,28 @@ find_func_even_dead(char_u *name, int flags)
 
     if ((flags & FFED_IS_GLOBAL) == 0)
     {
-	int	find_script_local = in_vim9script() && eval_isnamec1(*name)
-					   && (name[1] != ':' || *name == 's');
-
-	if (find_script_local)
+	// Find script-local function before global one.
+	if (in_vim9script() && eval_isnamec1(*name)
+					   && (name[1] != ':' || *name == 's'))
 	{
-	    // Find script-local function before global one.
 	    func = find_func_with_sid(name[0] == 's' && name[1] == ':'
 				       ? name + 2 : name, current_sctx.sc_sid);
 	    if (func != NULL)
 		return func;
+	}
+	if (in_vim9script() && STRNCMP(name, "<SNR>", 5) == 0)
+	{
+	    char_u  *p = name + 5;
+	    long    sid;
+
+	    // printable "<SNR>123_Name" form
+	    sid = getdigits(&p);
+	    if (*p == '_')
+	    {
+		func = find_func_with_sid(p + 1, (int)sid);
+		if (func != NULL)
+		    return func;
+	    }
 	}
     }
 
@@ -4065,6 +4077,23 @@ get_scriptlocal_funcname(char_u *funcname)
     STRCAT(newname, p + off);
 
     return newname;
+}
+
+/*
+ * Return script-local "fname" with the 3-byte sequence replaced by
+ * printable <SNR> in allocated memory.
+ */
+    char_u *
+alloc_printable_func_name(char_u *fname)
+{
+    char_u *n = alloc(STRLEN(fname + 3) + 6);
+
+    if (n != NULL)
+    {
+	STRCPY(n, "<SNR>");
+	STRCPY(n + 5, fname + 3);
+    }
+    return n;
 }
 
 /*

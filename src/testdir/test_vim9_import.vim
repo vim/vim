@@ -423,6 +423,46 @@ def Test_import_funcref()
   delete('Xlib.vim')
 enddef
 
+def Test_import_duplicate_function()
+  # Function Hover() exists in both scripts, partial should refer to the right
+  # one.
+  var lines =<< trim END
+      vim9script
+
+      def Hover(d: dict<any>): string
+        return 'found it'
+      enddef
+
+      export def NewLspServer(): dict<any>
+        var d: dict<any> = {}
+        d->extend({hover: function('Hover', [d])})
+        return d
+      enddef
+
+      NewLspServer()
+  END
+  writefile(lines, 'Xserver.vim')
+
+  lines =<< trim END
+      vim9script
+
+      import './Xserver.vim' as server
+
+      export def Hover()
+      enddef
+
+      def AddServer()
+        var d: dict<any> = server.NewLspServer()
+        assert_equal('found it', d.hover())
+      enddef
+      AddServer()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delete('Xserver.vim')
+enddef
+
+
 def Test_import_fails()
   writefile([], 'Xfoo.vim')
   var lines =<< trim END

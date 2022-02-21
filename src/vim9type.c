@@ -457,7 +457,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		    {
 			type->tt_argcount -= tv->vval.v_partial->pt_argc;
 			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
-			if (type->tt_argcount == 0)
+			if (type->tt_argcount <= 0)
 			    type->tt_args = NULL;
 			else
 			{
