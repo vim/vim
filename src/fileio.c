@@ -759,8 +759,13 @@ readfile(
 		// Also write a message in the GUI window, if there is one.
 		if (gui.in_use && !gui.dying && !gui.starting)
 		{
-		    p = (char_u *)_("Reading from stdin...");
-		    gui_write(p, (int)STRLEN(p));
+		    // make a copy, gui_write() may try to change it
+		    p = vim_strsave((char_u *)_("Reading from stdin..."));
+		    if (p != NULL)
+		    {
+			gui_write(p, (int)STRLEN(p));
+			vim_free(p);
+		    }
 		}
 #endif
 	    }
