@@ -588,7 +588,6 @@ arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 				    ? &t_any : expected_ret;
 	    if (args[0] == NULL)
 		args[0] = &t_unknown;
-	    return check_arg_type(&t_func_exp, type, context);
 
 	    where.wt_index = 2;
 	    return check_type(&t_func_exp, type, TRUE, where);
