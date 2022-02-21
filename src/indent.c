@@ -1338,6 +1338,8 @@ change_indent(
 		new_cursor_col += (*mb_ptr2len)(ptr + new_cursor_col);
 	    else
 		++new_cursor_col;
+	    if (ptr[new_cursor_col] == NUL)
+		break;
 	    vcol += lbr_chartabsize(ptr, ptr + new_cursor_col, (colnr_T)vcol);
 	}
 	vcol = last_vcol;
