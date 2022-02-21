@@ -514,7 +514,11 @@ jobs:
 
       - name: Check version
         shell: cmd
-        run: src\vim --version || exit 1
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          src\vim --version || exit 1
+          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
 
       #- name: Prepare Artifact
       #  shell: cmd
