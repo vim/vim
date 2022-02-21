@@ -4324,7 +4324,6 @@ goto_tabpage(int n)
 	text_locked_msg();
 	return;
     }
-    CHECK_CMDWIN;
 
     // If there is only one it can't work.
     if (first_tabpage->tp_next == NULL)
