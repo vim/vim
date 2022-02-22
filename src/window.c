@@ -2856,6 +2856,10 @@ win_free_all(void)
 {
     int		dummy;
 
+#ifdef FEAT_CMDWIN
+    cmdwin_type = 0;
+#endif
+
     while (first_tabpage->tp_next != NULL)
 	tabpage_close(TRUE);
 
