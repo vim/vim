@@ -83,7 +83,7 @@ export def FTbas()
     setf freebasic
   elseif match(lines, qb64_preproc) > -1
     setf qb64
-  elseif match(lines, s:ft_visual_basic_content) > -1
+  elseif match(lines, ft_visual_basic_content) > -1
     setf vb
   else
     setf basic
@@ -241,7 +241,7 @@ export def FTfrm()
 
   var lines = getline(1, min([line("$"), 5]))
 
-  if match(lines, s:ft_visual_basic_content) > -1
+  if match(lines, ft_visual_basic_content) > -1
     setf vb
   else
     setf form
@@ -434,7 +434,7 @@ export def FTinc()
       setf php
     # Pascal supports // comments but they're vary rarely used for file
     # headers so assume POV-Ray
-    elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? s:ft_pascal_keywords
+    elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? ft_pascal_keywords
       setf pascal
     else
       FTasmsyntax()
@@ -496,7 +496,7 @@ export def FTprogress_pascal()
   var lnum = 1
   while lnum <= 10 && lnum < line('$')
     var line = getline(lnum)
-    if line =~ s:ft_pascal_comments || line =~? s:ft_pascal_keywords
+    if line =~ ft_pascal_comments || line =~? ft_pascal_keywords
       setf pascal
       return
     elseif line !~ '^\s*$' || line =~ '^/\*'
@@ -514,7 +514,7 @@ export def FTpp()
     exe "setf " .. g:filetype_pp
   else
     var line = getline(nextnonblank(1))
-    if line =~ s:ft_pascal_comments || line =~? s:ft_pascal_keywords
+    if line =~ ft_pascal_comments || line =~? ft_pascal_keywords
       setf pascal
     else
       setf puppet
@@ -685,8 +685,8 @@ export def FTRules()
   endtry
   var dir = expand('<amatch>:p:h')
   for line in config_lines
-    if line =~ s:ft_rules_udev_rules_pattern
-      var udev_rules = substitute(line, s:ft_rules_udev_rules_pattern, '\1', "")
+    if line =~ ft_rules_udev_rules_pattern
+      var udev_rules = substitute(line, ft_rules_udev_rules_pattern, '\1', "")
       if dir == udev_rules
 	setf udevrules
       endif
