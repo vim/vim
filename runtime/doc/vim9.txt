@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 18
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -245,9 +245,11 @@ that the name interferes with builtin functions.
 							*vim9-s-namespace*
 The use of the "s:" prefix is not supported at the Vim9 script level.  All
 functions and variables without a prefix are script-local.
-In :def functions the use of "s:" is optional.  This is because in legacy
-script the "s:" might be needed.  Disallowing the use of "s:" only in a :def
-function in Vim9 script would be a bit confusing.
+
+In :def functions the use of "s:" depends on the script: Script-local
+variables and functions in a legacy script do use "s:", while in a Vim9 script
+they do not use "s:".  This matches what you see in the rest of the file.
+
 In legacy functions the use of "s:" for script items is required, as before.
 
 In all cases the function must be defined before used.  That is when it is
@@ -1467,7 +1469,7 @@ strings: >
 	# typename(mylist) == "list<string>", no error
 
 There is a subtle difference between using a list constant directly and
-through a variable declaraiton.  Because of type inference, when using a list
+through a variable declaration.  Because of type inference, when using a list
 constant to initialize a variable, this also sets the declared type: >
 	var mylist = [1, 2, 3]
 	# typename(mylist) == "list<number>"

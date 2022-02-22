@@ -1331,6 +1331,12 @@ compile_lhs(
 		    char_u	*rawname = lhs->lhs_name
 					   + (lhs->lhs_name[1] == ':' ? 2 : 0);
 
+		    if (script_namespace && current_script_is_vim9())
+		    {
+			semsg(_(e_cannot_use_s_colon_in_vim9_script_str),
+								    var_start);
+			return FAIL;
+		    }
 		    if (is_decl)
 		    {
 			if (script_namespace)

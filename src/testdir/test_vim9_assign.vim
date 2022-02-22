@@ -220,7 +220,7 @@ def Test_assignment()
     enddef
     defcompile
   END
-  v9.CheckScriptFailure(lines, 'E1089:')
+  v9.CheckScriptFailure(lines, 'E1268:')
 
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
@@ -2458,6 +2458,49 @@ def Run_Test_declare_command_line()
   g:TermWait(buf)
   g:WaitForAssert(() => assert_match('\[\[1, 2, 3\], \[4, 5, 6\]\]', term_getline(buf, 6)))
   g:StopVimInTerminal(buf)
+enddef
+
+def Test_using_s_var_in_function()
+  var lines =<< trim END
+      vim9script
+      var scriptlevel = 123
+      def SomeFunc()
+        echo s:scriptlevel
+      enddef
+      SomeFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1268:')
+
+  # OK in legacy script
+  lines =<< trim END
+      let s:scriptlevel = 123
+      def s:SomeFunc()
+        echo s:scriptlevel
+      enddef
+      call s:SomeFunc()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var scriptlevel = 123
+      def SomeFunc()
+        s:scriptlevel = 456
+      enddef
+      SomeFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1268:')
+
+  # OK in legacy script
+  lines =<< trim END
+      let s:scriptlevel = 123
+      def s:SomeFunc()
+        s:scriptlevel = 456
+      enddef
+      call s:SomeFunc()
+      call assert_equal(456, s:scriptlevel)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 

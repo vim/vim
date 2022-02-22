@@ -422,8 +422,15 @@ compile_load(
 	    {
 		case 'v': res = generate_LOADV(cctx, name, error);
 			  break;
-		case 's': if (is_expr && ASCII_ISUPPER(*name)
-				       && find_func(name, FALSE) != NULL)
+		case 's': if (current_script_is_vim9())
+			  {
+			      semsg(_(e_cannot_use_s_colon_in_vim9_script_str),
+									 *arg);
+			      vim_free(name);
+			      return FAIL;
+			  }
+			  if (is_expr && ASCII_ISUPPER(*name)
+					     && find_func(name, FALSE) != NULL)
 			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
