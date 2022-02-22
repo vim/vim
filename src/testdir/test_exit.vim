@@ -112,6 +112,7 @@ endfunc
 
 func Test_exit_error_reading_input()
   CheckNotGui
+  CheckNotMSWindows
   " The early exit causes memory not to be freed somehow
   CheckNotAsan
 
