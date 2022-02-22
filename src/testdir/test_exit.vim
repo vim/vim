@@ -112,13 +112,13 @@ endfunc
 
 func Test_exit_error_reading_input()
   CheckNotGui
-  CheckNotMSWindows
   " The early exit causes memory not to be freed somehow
   CheckNotAsan
 
   call writefile([":au VimLeave * call writefile(['l = ' .. v:exiting], 'Xtestout')", ":tabnew", "q:"], 'Xscript', 'b')
 
   if RunVim([], [], '<Xscript')
+    call assert_equal(1, v:shell_error)
     call assert_equal(['l = 1'], readfile('Xtestout'))
   endif
   call delete('Xscript')
