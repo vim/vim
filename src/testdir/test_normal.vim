@@ -3758,4 +3758,68 @@ func Test_normal_count_out_of_range()
   bwipe!
 endfunc
 
+func Test_normal_percent_jump_matchpairs()
+  new
+  call setline(1, "add_post_meta($this->cmr_id, 'intro_paragraph', 'Hello')")
+
+  " Test 1: Default behaviour
+  set matchpairs&vim
+  call cursor(1, 24)
+  " Jumps to the opening parenthesis
+  norm! %
+  call assert_equal([0, 1, 14, 0], getpos('.'))
+  call cursor(1, 18)
+  " Jumps to the opening parenthesis
+  norm! %
+  call assert_equal([0, 1, 14, 0], getpos('.'))
+
+  " Test 2: Match succeeds, even so there is no < on the line
+  " so Vim will still use the parenthesis to jump
+  set matchpairs+=<:>
+  call cursor(1, 24)
+  " jumps to the opening parenthesis
+  norm! %
+  call assert_equal([0, 1, 14, 0], getpos('.'))
+  " Still jumps to the opening parenthesis
+  call cursor(1, 18)
+  norm! %
+  call assert_equal([0, 1, 14, 0], getpos('.'))
+  
+  " Test 3: Add an opening < to the line.
+  " Vim should now jump to the < 
+  norm! I<
+  call cursor(1, 25)
+  " Jumps to the opening paranthesis
+  norm! %
+  call assert_equal([0, 1, 15, 0], getpos('.'))
+  call cursor(1, 19)
+  " Jumps to the beginning of the line
+  norm! %
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+
+  " Test 5: Add {} at the line
+  " Vim should now jump to the { 
+  call setline(1, "add_post_meta({$this->cmr_id}, 'intro_paragraph', 'Hello')")
+  call cursor(1, 37)
+  " Jumps to the opening paranthesis
+  norm! %
+  call assert_equal([0, 1, 14, 0], getpos('.'))
+  call cursor(1, 18)
+  " Jumps to the opening brace
+  norm! %
+  call assert_equal([0, 1, 15, 0], getpos('.'))
+
+  " Test 6: empty matchpairs setting
+  " Vim should not jump and beep
+  set matchpairs=
+  call setline(1, "add_post_meta($this->cmr_id, 'intro_paragraph', 'Hello')")
+  call cursor(1, 24)
+  " beeps
+  call assert_beeps(':norm! %')
+  call assert_equal([0, 1, 24, 0], getpos('.'))
+
+  set matchpairs&vim
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

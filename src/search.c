@@ -2066,6 +2066,32 @@ find_mps_values(
     }
 }
 
+    static pos_T *
+get_next_mps_value(int *initc, int *findc, int *backwards, char_u *linep, pos_T *pos)
+{
+    static pos_T lpos;
+    if (linep[pos->col] == NUL && pos->col)
+	--pos->col;
+    for (;;)
+    {
+	*initc = PTR2CHAR(linep + pos->col);
+	if (*initc == NUL)
+	    return (pos_T *)NULL;
+
+	find_mps_values(initc, findc, backwards, FALSE);
+	if (*findc)
+	{
+	    lpos.lnum = pos->lnum;
+	    lpos.coladd = pos->coladd;
+	    lpos.col  = pos->col + 1;
+	    return &lpos;
+	}
+	pos->col += mb_ptr2len(linep + pos->col);
+    }
+    return (pos_T *)NULL;
+}
+
+
 /*
  * findmatchlimit -- find the matching paren or brace, if it exists within
  * maxtravel lines of the cursor.  A maxtravel of 0 means search until falling
@@ -2095,6 +2121,7 @@ findmatchlimit(
     int		maxtravel)
 {
     static pos_T pos;			// current search position
+    pos_T 	*mps_pos = NULL;	// remembered columns for mps value
     int		findc = 0;		// matching brace
     int		c;
     int		count = 0;		// cumulative number of braces
@@ -2231,19 +2258,7 @@ findmatchlimit(
 		 * If beyond the end of the line, use the last character in
 		 * the line.
 		 */
-		if (linep[pos.col] == NUL && pos.col)
-		    --pos.col;
-		for (;;)
-		{
-		    initc = PTR2CHAR(linep + pos.col);
-		    if (initc == NUL)
-			break;
-
-		    find_mps_values(&initc, &findc, &backwards, FALSE);
-		    if (findc)
-			break;
-		    pos.col += mb_ptr2len(linep + pos.col);
-		}
+		mps_pos = get_next_mps_value(&initc, &findc, &backwards, linep, &pos);
 		if (!findc)
 		{
 		    // no brace in the line, maybe use "  #if" then
@@ -2358,369 +2373,383 @@ findmatchlimit(
     if (lisp && comment_col != MAXCOL && pos.col > (colnr_T)comment_col)
 	lispcomm = TRUE;    // find match inside this comment
 #endif
-    while (!got_int)
+    do // for all values in 'matchpairs'
     {
-	/*
-	 * Go to the next position, forward or backward. We could use
-	 * inc() and dec() here, but that is much slower
-	 */
-	if (backwards)
+	while (!got_int)
 	{
-#ifdef FEAT_LISP
-	    // char to match is inside of comment, don't search outside
-	    if (lispcomm && pos.col < (colnr_T)comment_col)
-		break;
-#endif
-	    if (pos.col == 0)		// at start of line, go to prev. one
+	    /*
+	    * Go to the next position, forward or backward. We could use
+	    * inc() and dec() here, but that is much slower
+	    */
+	    if (backwards)
 	    {
-		if (pos.lnum == 1)	// start of file
-		    break;
-		--pos.lnum;
-
-		if (maxtravel > 0 && ++traveled > maxtravel)
-		    break;
-
-		linep = ml_get(pos.lnum);
-		pos.col = (colnr_T)STRLEN(linep); // pos.col on trailing NUL
-		do_quotes = -1;
-		line_breakcheck();
-
-		// Check if this line contains a single-line comment
-		if (comment_dir
 #ifdef FEAT_LISP
-			|| lisp
+		// char to match is inside of comment, don't search outside
+		if (lispcomm && pos.col < (colnr_T)comment_col)
+		    goto done;
+#endif
+		if (pos.col == 0)		// at start of line, go to prev. one
+		{
+		    if (pos.lnum == 1)	// start of file
+			break;
+		    --pos.lnum;
+
+		    if (maxtravel > 0 && ++traveled > maxtravel)
+			goto done;
+
+		    linep = ml_get(pos.lnum);
+		    pos.col = (colnr_T)STRLEN(linep); // pos.col on trailing NUL
+		    do_quotes = -1;
+		    line_breakcheck();
+
+		    // Check if this line contains a single-line comment
+		    if (comment_dir
+#ifdef FEAT_LISP
+			    || lisp
+#endif
+			    )
+			comment_col = check_linecomment(linep);
+#ifdef FEAT_LISP
+		    // skip comment
+		    if (lisp && comment_col != MAXCOL)
+			pos.col = comment_col;
+#endif
+		}
+		else
+		{
+		    --pos.col;
+		    if (has_mbyte)
+			pos.col -= (*mb_head_off)(linep, linep + pos.col);
+		}
+	    }
+	    else				// forward search
+	    {
+		if (linep[pos.col] == NUL
+			// at end of line, go to next one
+#ifdef FEAT_LISP
+			// don't search for match in comment
+			|| (lisp && comment_col != MAXCOL
+					    && pos.col == (colnr_T)comment_col)
 #endif
 			)
-		    comment_col = check_linecomment(linep);
-#ifdef FEAT_LISP
-		// skip comment
-		if (lisp && comment_col != MAXCOL)
-		    pos.col = comment_col;
-#endif
-	    }
-	    else
-	    {
-		--pos.col;
-		if (has_mbyte)
-		    pos.col -= (*mb_head_off)(linep, linep + pos.col);
-	    }
-	}
-	else				// forward search
-	{
-	    if (linep[pos.col] == NUL
-		    // at end of line, go to next one
-#ifdef FEAT_LISP
-		    // don't search for match in comment
-		    || (lisp && comment_col != MAXCOL
-					   && pos.col == (colnr_T)comment_col)
-#endif
-		    )
-	    {
-		if (pos.lnum == curbuf->b_ml.ml_line_count  // end of file
-#ifdef FEAT_LISP
-			// line is exhausted and comment with it,
-			// don't search for match in code
-			 || lispcomm
-#endif
-			 )
-		    break;
-		++pos.lnum;
-
-		if (maxtravel && traveled++ > maxtravel)
-		    break;
-
-		linep = ml_get(pos.lnum);
-		pos.col = 0;
-		do_quotes = -1;
-		line_breakcheck();
-#ifdef FEAT_LISP
-		if (lisp)   // find comment pos in new line
-		    comment_col = check_linecomment(linep);
-#endif
-	    }
-	    else
-	    {
-		if (has_mbyte)
-		    pos.col += (*mb_ptr2len)(linep + pos.col);
-		else
-		    ++pos.col;
-	    }
-	}
-
-	/*
-	 * If FM_BLOCKSTOP given, stop at a '{' or '}' in column 0.
-	 */
-	if (pos.col == 0 && (flags & FM_BLOCKSTOP) &&
-					 (linep[0] == '{' || linep[0] == '}'))
-	{
-	    if (linep[0] == findc && count == 0)	// match!
-		return &pos;
-	    break;					// out of scope
-	}
-
-	if (comment_dir)
-	{
-	    // Note: comments do not nest, and we ignore quotes in them
-	    // TODO: ignore comment brackets inside strings
-	    if (comment_dir == FORWARD)
-	    {
-		if (linep[pos.col] == '*' && linep[pos.col + 1] == '/')
 		{
-		    pos.col++;
-		    return &pos;
+		    if (pos.lnum == curbuf->b_ml.ml_line_count  // end of file
+#ifdef FEAT_LISP
+			    // line is exhausted and comment with it,
+			    // don't search for match in code
+			    || lispcomm
+#endif
+			    )
+			goto done;
+		    ++pos.lnum;
+
+		    if (maxtravel && traveled++ > maxtravel)
+			goto done;
+
+		    linep = ml_get(pos.lnum);
+		    pos.col = 0;
+		    do_quotes = -1;
+		    line_breakcheck();
+#ifdef FEAT_LISP
+		    if (lisp)   // find comment pos in new line
+			comment_col = check_linecomment(linep);
+#endif
+		}
+		else
+		{
+		    if (has_mbyte)
+			pos.col += (*mb_ptr2len)(linep + pos.col);
+		    else
+			++pos.col;
 		}
 	    }
-	    else    // Searching backwards
+
+	    /*
+	    * If FM_BLOCKSTOP given, stop at a '{' or '}' in column 0.
+	    */
+	    if (pos.col == 0 && (flags & FM_BLOCKSTOP) &&
+					    (linep[0] == '{' || linep[0] == '}'))
+	    {
+		if (linep[0] == findc && count == 0)	// match!
+		    return &pos;
+		break;					// out of scope
+	    }
+
+	    if (comment_dir)
+	    {
+		// Note: comments do not nest, and we ignore quotes in them
+		// TODO: ignore comment brackets inside strings
+		if (comment_dir == FORWARD)
+		{
+		    if (linep[pos.col] == '*' && linep[pos.col + 1] == '/')
+		    {
+			pos.col++;
+			return &pos;
+		    }
+		}
+		else    // Searching backwards
+		{
+		    /*
+		    * A comment may contain / * or / /, it may also start or end
+		    * with / * /.	Ignore a / * after / / and after *.
+		    */
+		    if (pos.col == 0)
+			continue;
+		    else if (raw_string)
+		    {
+			if (linep[pos.col - 1] == 'R'
+			    && linep[pos.col] == '"'
+			    && vim_strchr(linep + pos.col + 1, '(') != NULL)
+			{
+			    // Possible start of raw string. Now that we have the
+			    // delimiter we can check if it ends before where we
+			    // started searching, or before the previously found
+			    // raw string start.
+			    if (!find_rawstring_end(linep, &pos,
+				    count > 0 ? &match_pos : &curwin->w_cursor))
+			    {
+				count++;
+				match_pos = pos;
+				match_pos.col--;
+			    }
+			    linep = ml_get(pos.lnum); // may have been released
+			}
+		    }
+		    else if (  linep[pos.col - 1] == '/'
+			    && linep[pos.col] == '*'
+			    && (pos.col == 1 || linep[pos.col - 2] != '*')
+			    && (int)pos.col < comment_col)
+		    {
+			count++;
+			match_pos = pos;
+			match_pos.col--;
+		    }
+		    else if (linep[pos.col - 1] == '*' && linep[pos.col] == '/')
+		    {
+			if (count > 0)
+			    pos = match_pos;
+			else if (pos.col > 1 && linep[pos.col - 2] == '/'
+						&& (int)pos.col <= comment_col)
+			    pos.col -= 2;
+			else if (ignore_cend)
+			    continue;
+			else
+			    return NULL;
+			return &pos;
+		    }
+		}
+		continue;
+	    }
+
+	    /*
+	    * If smart matching ('cpoptions' does not contain '%'), braces inside
+	    * of quotes are ignored, but only if there is an even number of
+	    * quotes in the line.
+	    */
+	    if (cpo_match)
+		do_quotes = 0;
+	    else if (do_quotes == -1)
 	    {
 		/*
-		 * A comment may contain / * or / /, it may also start or end
-		 * with / * /.	Ignore a / * after / / and after *.
-		 */
-		if (pos.col == 0)
-		    continue;
-		else if (raw_string)
+		* Count the number of quotes in the line, skipping \" and '"'.
+		* Watch out for "\\".
+		*/
+		at_start = do_quotes;
+		for (ptr = linep; *ptr; ++ptr)
 		{
-		    if (linep[pos.col - 1] == 'R'
-			&& linep[pos.col] == '"'
-			&& vim_strchr(linep + pos.col + 1, '(') != NULL)
-		    {
-			// Possible start of raw string. Now that we have the
-			// delimiter we can check if it ends before where we
-			// started searching, or before the previously found
-			// raw string start.
-			if (!find_rawstring_end(linep, &pos,
-				  count > 0 ? &match_pos : &curwin->w_cursor))
-			{
-			    count++;
-			    match_pos = pos;
-			    match_pos.col--;
-			}
-			linep = ml_get(pos.lnum); // may have been released
-		    }
+		    if (ptr == linep + pos.col + backwards)
+			at_start = (do_quotes & 1);
+		    if (*ptr == '"'
+			    && (ptr == linep || ptr[-1] != '\'' || ptr[1] != '\''))
+			++do_quotes;
+		    if (*ptr == '\\' && ptr[1] != NUL)
+			++ptr;
 		}
-		else if (  linep[pos.col - 1] == '/'
-			&& linep[pos.col] == '*'
-			&& (pos.col == 1 || linep[pos.col - 2] != '*')
-			&& (int)pos.col < comment_col)
-		{
-		    count++;
-		    match_pos = pos;
-		    match_pos.col--;
-		}
-		else if (linep[pos.col - 1] == '*' && linep[pos.col] == '/')
-		{
-		    if (count > 0)
-			pos = match_pos;
-		    else if (pos.col > 1 && linep[pos.col - 2] == '/'
-					       && (int)pos.col <= comment_col)
-			pos.col -= 2;
-		    else if (ignore_cend)
-			continue;
-		    else
-			return NULL;
-		    return &pos;
-		}
-	    }
-	    continue;
-	}
+		do_quotes &= 1;	    // result is 1 with even number of quotes
 
-	/*
-	 * If smart matching ('cpoptions' does not contain '%'), braces inside
-	 * of quotes are ignored, but only if there is an even number of
-	 * quotes in the line.
-	 */
-	if (cpo_match)
-	    do_quotes = 0;
-	else if (do_quotes == -1)
-	{
-	    /*
-	     * Count the number of quotes in the line, skipping \" and '"'.
-	     * Watch out for "\\".
-	     */
-	    at_start = do_quotes;
-	    for (ptr = linep; *ptr; ++ptr)
-	    {
-		if (ptr == linep + pos.col + backwards)
-		    at_start = (do_quotes & 1);
-		if (*ptr == '"'
-			&& (ptr == linep || ptr[-1] != '\'' || ptr[1] != '\''))
-		    ++do_quotes;
-		if (*ptr == '\\' && ptr[1] != NUL)
-		    ++ptr;
-	    }
-	    do_quotes &= 1;	    // result is 1 with even number of quotes
-
-	    /*
-	     * If we find an uneven count, check current line and previous
-	     * one for a '\' at the end.
-	     */
-	    if (!do_quotes)
-	    {
-		inquote = FALSE;
-		if (ptr[-1] == '\\')
+		/*
+		* If we find an uneven count, check current line and previous
+		* one for a '\' at the end.
+		*/
+		if (!do_quotes)
 		{
-		    do_quotes = 1;
-		    if (start_in_quotes == MAYBE)
-		    {
-			// Do we need to use at_start here?
-			inquote = TRUE;
-			start_in_quotes = TRUE;
-		    }
-		    else if (backwards)
-			inquote = TRUE;
-		}
-		if (pos.lnum > 1)
-		{
-		    ptr = ml_get(pos.lnum - 1);
-		    if (*ptr && *(ptr + STRLEN(ptr) - 1) == '\\')
+		    inquote = FALSE;
+		    if (ptr[-1] == '\\')
 		    {
 			do_quotes = 1;
 			if (start_in_quotes == MAYBE)
 			{
-			    inquote = at_start;
-			    if (inquote)
-				start_in_quotes = TRUE;
+			    // Do we need to use at_start here?
+			    inquote = TRUE;
+			    start_in_quotes = TRUE;
 			}
-			else if (!backwards)
+			else if (backwards)
 			    inquote = TRUE;
 		    }
+		    if (pos.lnum > 1)
+		    {
+			ptr = ml_get(pos.lnum - 1);
+			if (*ptr && *(ptr + STRLEN(ptr) - 1) == '\\')
+			{
+			    do_quotes = 1;
+			    if (start_in_quotes == MAYBE)
+			    {
+				inquote = at_start;
+				if (inquote)
+				    start_in_quotes = TRUE;
+			    }
+			    else if (!backwards)
+				inquote = TRUE;
+			}
 
-		    // ml_get() only keeps one line, need to get linep again
-		    linep = ml_get(pos.lnum);
+			// ml_get() only keeps one line, need to get linep again
+			linep = ml_get(pos.lnum);
+		    }
 		}
 	    }
-	}
-	if (start_in_quotes == MAYBE)
-	    start_in_quotes = FALSE;
-
-	/*
-	 * If 'smartmatch' is set:
-	 *   Things inside quotes are ignored by setting 'inquote'.  If we
-	 *   find a quote without a preceding '\' invert 'inquote'.  At the
-	 *   end of a line not ending in '\' we reset 'inquote'.
-	 *
-	 *   In lines with an uneven number of quotes (without preceding '\')
-	 *   we do not know which part to ignore. Therefore we only set
-	 *   inquote if the number of quotes in a line is even, unless this
-	 *   line or the previous one ends in a '\'.  Complicated, isn't it?
-	 */
-	c = PTR2CHAR(linep + pos.col);
-	switch (c)
-	{
-	case NUL:
-	    // at end of line without trailing backslash, reset inquote
-	    if (pos.col == 0 || linep[pos.col - 1] != '\\')
-	    {
-		inquote = FALSE;
+	    if (start_in_quotes == MAYBE)
 		start_in_quotes = FALSE;
-	    }
-	    break;
 
-	case '"':
-	    // a quote that is preceded with an odd number of backslashes is
-	    // ignored
-	    if (do_quotes)
+	    /*
+	    * If 'smartmatch' is set:
+	    *   Things inside quotes are ignored by setting 'inquote'.  If we
+	    *   find a quote without a preceding '\' invert 'inquote'.  At the
+	    *   end of a line not ending in '\' we reset 'inquote'.
+	    *
+	    *   In lines with an uneven number of quotes (without preceding '\')
+	    *   we do not know which part to ignore. Therefore we only set
+	    *   inquote if the number of quotes in a line is even, unless this
+	    *   line or the previous one ends in a '\'.  Complicated, isn't it?
+	    */
+	    c = PTR2CHAR(linep + pos.col);
+	    switch (c)
 	    {
-		int col;
-
-		for (col = pos.col - 1; col >= 0; --col)
-		    if (linep[col] != '\\')
-			break;
-		if ((((int)pos.col - 1 - col) & 1) == 0)
+	    case NUL:
+		// at end of line without trailing backslash, reset inquote
+		if (pos.col == 0 || linep[pos.col - 1] != '\\')
 		{
-		    inquote = !inquote;
+		    inquote = FALSE;
 		    start_in_quotes = FALSE;
 		}
-	    }
-	    break;
-
-	/*
-	 * If smart matching ('cpoptions' does not contain '%'):
-	 *   Skip things in single quotes: 'x' or '\x'.  Be careful for single
-	 *   single quotes, eg jon's.  Things like '\233' or '\x3f' are not
-	 *   skipped, there is never a brace in them.
-	 *   Ignore this when finding matches for `'.
-	 */
-	case '\'':
-	    if (!cpo_match && initc != '\'' && findc != '\'')
-	    {
-		if (backwards)
-		{
-		    if (pos.col > 1)
-		    {
-			if (linep[pos.col - 2] == '\'')
-			{
-			    pos.col -= 2;
-			    break;
-			}
-			else if (linep[pos.col - 2] == '\\' &&
-				    pos.col > 2 && linep[pos.col - 3] == '\'')
-			{
-			    pos.col -= 3;
-			    break;
-			}
-		    }
-		}
-		else if (linep[pos.col + 1])	// forward search
-		{
-		    if (linep[pos.col + 1] == '\\' &&
-			    linep[pos.col + 2] && linep[pos.col + 3] == '\'')
-		    {
-			pos.col += 3;
-			break;
-		    }
-		    else if (linep[pos.col + 2] == '\'')
-		    {
-			pos.col += 2;
-			break;
-		    }
-		}
-	    }
-	    // FALLTHROUGH
-
-	default:
-#ifdef FEAT_LISP
-	    /*
-	     * For Lisp skip over backslashed (), {} and [].
-	     * (actually, we skip #\( et al)
-	     */
-	    if (curbuf->b_p_lisp
-		    && vim_strchr((char_u *)"(){}[]", c) != NULL
-		    && pos.col > 1
-		    && check_prevcol(linep, pos.col, '\\', NULL)
-		    && check_prevcol(linep, pos.col - 1, '#', NULL))
 		break;
+
+	    case '"':
+		// a quote that is preceded with an odd number of backslashes is
+		// ignored
+		if (do_quotes)
+		{
+		    int col;
+
+		    for (col = pos.col - 1; col >= 0; --col)
+			if (linep[col] != '\\')
+			    break;
+		    if ((((int)pos.col - 1 - col) & 1) == 0)
+		    {
+			inquote = !inquote;
+			start_in_quotes = FALSE;
+		    }
+		}
+		break;
+
+	    /*
+	    * If smart matching ('cpoptions' does not contain '%'):
+	    *   Skip things in single quotes: 'x' or '\x'.  Be careful for single
+	    *   single quotes, eg jon's.  Things like '\233' or '\x3f' are not
+	    *   skipped, there is never a brace in them.
+	    *   Ignore this when finding matches for `'.
+	    */
+	    case '\'':
+		if (!cpo_match && initc != '\'' && findc != '\'')
+		{
+		    if (backwards)
+		    {
+			if (pos.col > 1)
+			{
+			    if (linep[pos.col - 2] == '\'')
+			    {
+				pos.col -= 2;
+				break;
+			    }
+			    else if (linep[pos.col - 2] == '\\' &&
+					pos.col > 2 && linep[pos.col - 3] == '\'')
+			    {
+				pos.col -= 3;
+				break;
+			    }
+			}
+		    }
+		    else if (linep[pos.col + 1])	// forward search
+		    {
+			if (linep[pos.col + 1] == '\\' &&
+				linep[pos.col + 2] && linep[pos.col + 3] == '\'')
+			{
+			    pos.col += 3;
+			    break;
+			}
+			else if (linep[pos.col + 2] == '\'')
+			{
+			    pos.col += 2;
+			    break;
+			}
+		    }
+		}
+		// FALLTHROUGH
+
+	    default:
+#ifdef FEAT_LISP
+		/*
+		* For Lisp skip over backslashed (), {} and [].
+		* (actually, we skip #\( et al)
+		*/
+		if (curbuf->b_p_lisp
+			&& vim_strchr((char_u *)"(){}[]", c) != NULL
+			&& pos.col > 1
+			&& check_prevcol(linep, pos.col, '\\', NULL)
+			&& check_prevcol(linep, pos.col - 1, '#', NULL))
+		    goto done;
 #endif
 
-	    // Check for match outside of quotes, and inside of
-	    // quotes when the start is also inside of quotes.
-	    if ((!inquote || start_in_quotes == TRUE)
-		    && (c == initc || c == findc))
-	    {
-		int	col, bslcnt = 0;
+		// Check for match outside of quotes, and inside of
+		// quotes when the start is also inside of quotes.
+		if ((!inquote || start_in_quotes == TRUE)
+			&& (c == initc || c == findc))
+		{
+		    int	col, bslcnt = 0;
 
-		if (!cpo_bsl)
-		{
-		    for (col = pos.col; check_prevcol(linep, col, '\\', &col);)
-			bslcnt++;
-		}
-		// Only accept a match when 'M' is in 'cpo' or when escaping
-		// is what we expect.
-		if (cpo_bsl || (bslcnt & 1) == match_escaped)
-		{
-		    if (c == initc)
-			count++;
-		    else
+		    if (!cpo_bsl)
 		    {
-			if (count == 0)
-			    return &pos;
-			count--;
+			for (col = pos.col; check_prevcol(linep, col, '\\', &col);)
+			    bslcnt++;
+		    }
+		    // Only accept a match when 'M' is in 'cpo' or when escaping
+		    // is what we expect.
+		    if (cpo_bsl || (bslcnt & 1) == match_escaped)
+		    {
+			if (c == initc)
+			    count++;
+			else
+			{
+			    if (count == 0)
+				return &pos;
+			    count--;
+			}
 		    }
 		}
 	    }
 	}
-    }
 
+	// not found it, try next matchpair value
+	// but only when did not go into quotes
+	// or mps_pos has been set to NULL
+	if (mps_pos == NULL || inquote)
+	    break;
+
+	pos = curwin->w_cursor;
+	findc = 0;
+	mps_pos = get_next_mps_value(&initc, &findc, &backwards, linep, mps_pos);
+    } while (mps_pos != NULL);
+
+done:
     if (comment_dir == BACKWARD && count > 0)
     {
 	pos = match_pos;
