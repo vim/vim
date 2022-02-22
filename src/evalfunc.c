@@ -603,6 +603,7 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_STRING
 	    || type->tt_type == VAR_PARTIAL
+	    || type->tt_type == VAR_NUMBER  // 1 means ignore case
 	    || type == &t_unknown
 	    || type == &t_any)
 	return OK;
