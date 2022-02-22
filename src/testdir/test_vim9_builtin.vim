@@ -1315,17 +1315,6 @@ def Wrong_dict_key_type(items: list<number>): list<number>
 enddef
 
 def Test_filter()
-  v9.CheckDefAndScriptFailure(['filter(1.1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1251: List, Dictionary, Blob or String required for argument 1'])
-  v9.CheckDefAndScriptFailure(['filter([1, 2], 4)'], ['E1256: String or function required for argument 2', 'E1024: Using a Number as a String'])
-
-  var lines =<< trim END
-    def F(i: number, v: any): string
-      return 'bad'
-    enddef
-    echo filter([1, 2, 3], F)
-  END
-  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(...): bool', 'E1135: Using a String as a Bool:'])
-
   assert_equal([], filter([1, 2, 3], '0'))
   assert_equal([1, 2, 3], filter([1, 2, 3], '1'))
   assert_equal({b: 20}, filter({a: 10, b: 20}, 'v:val == 20'))
@@ -1335,6 +1324,61 @@ def Test_filter()
     return range(3)->filter(Odd)
   enddef
   assert_equal([1], GetFiltered())
+
+  v9.CheckDefAndScriptFailure(['filter(1.1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['filter([1, 2], 4)'], ['E1256: String or function required for argument 2', 'E1024: Using a Number as a String'])
+
+  var lines =<< trim END
+    def F(i: number, v: any): string
+      return 'bad'
+    enddef
+    echo filter([1, 2, 3], F)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?any): bool but got func(number, any): string', 'E1135: Using a String as a Bool:'])
+
+  # check first function argument type
+  lines =<< trim END
+    var l = [1, 2, 3]
+    filter(l, (i: string, v: number) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?number): bool but got func(string, number): bool', 'E1013: Argument 1: type mismatch, expected string but got number'])
+  lines =<< trim END
+    var d = {a: 1}
+    filter(d, (i: number, v: number) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?string, ?number): bool but got func(number, number): bool', 'E1013: Argument 1: type mismatch, expected number but got string'])
+  lines =<< trim END
+    var b = 0z1122
+    filter(b, (i: string, v: number) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?number): bool but got func(string, number): bool', 'E1013: Argument 1: type mismatch, expected string but got number'])
+  lines =<< trim END
+    var s = 'text'
+    filter(s, (i: string, v: string) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?string): bool but got func(string, string): bool', 'E1013: Argument 1: type mismatch, expected string but got number'])
+
+  # check second function argument type
+  lines =<< trim END
+    var l = [1, 2, 3]
+    filter(l, (i: number, v: string) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?number): bool but got func(number, string): bool', 'E1013: Argument 2: type mismatch, expected string but got number'])
+  lines =<< trim END
+    var d = {a: 1}
+    filter(d, (i: string, v: string) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?string, ?number): bool but got func(string, string): bool', 'E1013: Argument 2: type mismatch, expected string but got number'])
+  lines =<< trim END
+    var b = 0z1122
+    filter(b, (i: number, v: string) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?number): bool but got func(number, string): bool', 'E1013: Argument 2: type mismatch, expected string but got number'])
+  lines =<< trim END
+    var s = 'text'
+    filter(s, (i: number, v: number) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?string): bool but got func(number, number): bool', 'E1013: Argument 2: type mismatch, expected number but got string'])
 enddef
 
 def Test_filter_wrong_dict_key_type()
