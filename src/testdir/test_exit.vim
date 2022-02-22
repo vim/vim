@@ -112,6 +112,7 @@ endfunc
 
 func Test_exit_error_reading_input()
   CheckNotGui
+  CheckNotMSWindows
 
   call writefile([":au VimLeave * call writefile(['l = ' .. v:exiting], 'Xtestout')", ":tabnew\<CR>q:"], 'Xscript')
 
