@@ -83,16 +83,26 @@ conceal_cursor_line(win_T *wp)
 
 /*
  * Check if the cursor line needs to be redrawn because of 'concealcursor'.
+ * To be called after changing the state, "was_concealed" is the value of
+ * "conceal_cursor_line()" before the change.
+ * "
  */
     void
-conceal_check_cursor_line(void)
+conceal_check_cursor_line(int was_concealed)
 {
-    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
+    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin) != was_concealed)
     {
+	int wcol = curwin->w_wcol;
+
 	need_cursor_line_redraw = TRUE;
 	// Need to recompute cursor column, e.g., when starting Visual mode
 	// without concealing.
 	curs_columns(TRUE);
+
+	// When concealing now w_wcol will be computed wrong, keep the previous
+	// value, it will be updated in win_line().
+	if (!was_concealed)
+	    curwin->w_wcol = wcol;
     }
 }
 #endif
@@ -604,9 +614,9 @@ screen_line(
 	    }
 	    // When writing a single-width character over a double-width
 	    // character and at the end of the redrawn text, need to clear out
-	    // the right halve of the old character.
-	    // Also required when writing the right halve of a double-width
-	    // char over the left halve of an existing one.
+	    // the right half of the old character.
+	    // Also required when writing the right half of a double-width
+	    // char over the left half of an existing one.
 	    if (has_mbyte && col + char_cells == endcol
 		    && ((char_cells == 1
 			    && (*mb_off2cells)(off_to, max_off_to) > 1)
@@ -1514,8 +1524,8 @@ screen_puts_len(
 	return;
     off = LineOffset[row] + col;
 
-    // When drawing over the right halve of a double-wide char clear out the
-    // left halve.  Only needed in a terminal.
+    // When drawing over the right half of a double-wide char clear out the
+    // left half.  Only needed in a terminal.
     if (has_mbyte && col > 0 && col < screen_Columns
 #ifdef FEAT_GUI
 	    && !gui.in_use
@@ -1643,9 +1653,9 @@ screen_puts_len(
 #endif
 	    // When at the end of the text and overwriting a two-cell
 	    // character with a one-cell character, need to clear the next
-	    // cell.  Also when overwriting the left halve of a two-cell char
-	    // with the right halve of a two-cell char.  Do this only once
-	    // (mb_off2cells() may return 2 on the right halve).
+	    // cell.  Also when overwriting the left half of a two-cell char
+	    // with the right half of a two-cell char.  Do this only once
+	    // (mb_off2cells() may return 2 on the right half).
 	    if (clear_next_cell)
 		clear_next_cell = FALSE;
 	    else if (has_mbyte
@@ -1786,7 +1796,7 @@ screen_start_highlight(int attr)
 	    char	buf[20];
 
 	    // The GUI handles this internally.
-	    sprintf(buf, IF_EB("\033|%dh", ESC_STR "|%dh"), attr);
+	    sprintf(buf, "\033|%dh", attr);
 	    OUT_STR(buf);
 	}
 	else
@@ -1936,7 +1946,7 @@ screen_stop_highlight(void)
 	    char	buf[20];
 
 	    // use internal GUI code
-	    sprintf(buf, IF_EB("\033|%dH", ESC_STR "|%dH"), screen_attr);
+	    sprintf(buf, "\033|%dH", screen_attr);
 	    OUT_STR(buf);
 	}
 	else
@@ -2129,7 +2139,7 @@ screen_char(unsigned off, int row, int col)
 
     // Skip if under the popup menu.
     // Popup windows with zindex higher than POPUPMENU_ZINDEX go on top.
-    if (pum_under_menu(row, col)
+    if (pum_under_menu(row, col, TRUE)
 #ifdef FEAT_PROP_POPUP
 	    && screen_zindex <= POPUPMENU_ZINDEX
 #endif
@@ -2366,9 +2376,9 @@ screen_fill(
 #endif
 	   )
 	{
-	    // When drawing over the right halve of a double-wide char clear
-	    // out the left halve.  When drawing over the left halve of a
-	    // double wide-char clear out the right halve.  Only needed in a
+	    // When drawing over the right half of a double-wide char clear
+	    // out the left half.  When drawing over the left half of a
+	    // double wide-char clear out the right half.  Only needed in a
 	    // terminal.
 	    if (start_col > 0 && mb_fix_col(start_col, row) != start_col)
 		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
@@ -4767,6 +4777,35 @@ screen_screenrow(void)
 #endif
 
 /*
+ * Calls mb_ptr2char_adv(p) and returns the character.
+ * If "p" starts with "\x", "\u" or "\U" the hex or unicode value is used.
+ */
+    static int
+get_encoded_char_adv(char_u **p)
+{
+    char_u *s = *p;
+
+    if (s[0] == '\\' && (s[1] == 'x' || s[1] == 'u' || s[1] == 'U'))
+    {
+	varnumber_T num = 0;
+	int	    bytes;
+	int	    n;
+
+	for (bytes = s[1] == 'x' ? 1 : s[1] == 'u' ? 2 : 4; bytes > 0; --bytes)
+	{
+	    *p += 2;
+	    n = hexhex2nr(*p);
+	    if (n < 0)
+		return 0;
+	    num = num * 256 + n;
+	}
+	*p += 2;
+	return num;
+    }
+    return mb_ptr2char_adv(p);
+}
+
+/*
  * Handle setting 'listchars' or 'fillchars'.
  * Assume monocell characters.
  * Returns error message, NULL if it's OK.
@@ -4777,6 +4816,8 @@ set_chars_option(win_T *wp, char_u **varp)
     int		round, i, len, entries;
     char_u	*p, *s;
     int		c1 = 0, c2 = 0, c3 = 0;
+    char_u	*last_multispace = NULL; // Last occurrence of "multispace:"
+    int		multispace_len = 0;	 // Length of lcs-multispace string
     struct charstab
     {
 	int	*cp;
@@ -4817,14 +4858,14 @@ set_chars_option(win_T *wp, char_u **varp)
     {
 	tab = lcstab;
 	CLEAR_FIELD(lcs_chars);
-	entries = sizeof(lcstab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(lcstab);
 	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
 	    varp = &p_lcs;
     }
     else
     {
 	tab = filltab;
-	entries = sizeof(filltab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(filltab);
     }
 
     // first round: check for valid value, second round: assign values
@@ -4843,6 +4884,13 @@ set_chars_option(win_T *wp, char_u **varp)
 	    {
 		lcs_chars.tab1 = NUL;
 		lcs_chars.tab3 = NUL;
+		if (multispace_len > 0)
+		{
+		    lcs_chars.multispace = ALLOC_MULT(int, multispace_len + 1);
+		    lcs_chars.multispace[multispace_len] = NUL;
+		}
+		else
+		    lcs_chars.multispace = NULL;
 	    }
 	    else
 	    {
@@ -4865,27 +4913,27 @@ set_chars_option(win_T *wp, char_u **varp)
 		{
 		    c2 = c3 = 0;
 		    s = p + len + 1;
-		    c1 = mb_ptr2char_adv(&s);
-		    if (mb_char2cells(c1) > 1)
-			continue;
+		    c1 = get_encoded_char_adv(&s);
+		    if (char2cells(c1) > 1)
+			return e_invalid_argument;
 		    if (tab[i].cp == &lcs_chars.tab2)
 		    {
 			if (*s == NUL)
-			    continue;
-			c2 = mb_ptr2char_adv(&s);
-			if (mb_char2cells(c2) > 1)
-			    continue;
+			    return e_invalid_argument;
+			c2 = get_encoded_char_adv(&s);
+			if (char2cells(c2) > 1)
+			    return e_invalid_argument;
 			if (!(*s == ',' || *s == NUL))
 			{
-			    c3 = mb_ptr2char_adv(&s);
-			    if (mb_char2cells(c3) > 1)
-				continue;
+			    c3 = get_encoded_char_adv(&s);
+			    if (char2cells(c3) > 1)
+				return e_invalid_argument;
 			}
 		    }
 
 		    if (*s == ',' || *s == NUL)
 		    {
-			if (round)
+			if (round > 0)
 			{
 			    if (tab[i].cp == &lcs_chars.tab2)
 			    {
@@ -4904,13 +4952,58 @@ set_chars_option(win_T *wp, char_u **varp)
 	    }
 
 	    if (i == entries)
-		return e_invarg;
+	    {
+		len = (int)STRLEN("multispace");
+		if ((varp == &p_lcs || varp == &wp->w_p_lcs)
+			&& STRNCMP(p, "multispace", len) == 0
+			&& p[len] == ':'
+			&& p[len + 1] != NUL)
+		{
+		    s = p + len + 1;
+		    if (round == 0)
+		    {
+			// Get length of lcs-multispace string in first round
+			last_multispace = p;
+			multispace_len = 0;
+			while (*s != NUL && *s != ',')
+			{
+			    c1 = get_encoded_char_adv(&s);
+			    if (char2cells(c1) > 1)
+				return e_invalid_argument;
+			    ++multispace_len;
+			}
+			if (multispace_len == 0)
+			    // lcs-multispace cannot be an empty string
+			    return e_invalid_argument;
+			p = s;
+		    }
+		    else
+		    {
+			int multispace_pos = 0;
+
+			while (*s != NUL && *s != ',')
+			{
+			    c1 = get_encoded_char_adv(&s);
+			    if (p == last_multispace)
+				lcs_chars.multispace[multispace_pos++] = c1;
+			}
+			p = s;
+		    }
+		}
+		else
+		    return e_invalid_argument;
+	    }
+
 	    if (*p == ',')
 		++p;
 	}
     }
     if (tab == lcstab)
+    {
+	if (wp->w_lcs_chars.multispace != NULL)
+	    vim_free(wp->w_lcs_chars.multispace);
 	wp->w_lcs_chars = lcs_chars;
+    }
 
     return NULL;	// no error
 }

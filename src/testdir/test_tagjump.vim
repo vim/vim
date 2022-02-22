@@ -606,6 +606,16 @@ func Test_tag_line_toolong()
   call assert_equal('Xsomewhere', expand('%'))
   call assert_equal(3, getcurpos()[1])
 
+  " expansion on command line works with long lines when &wildoptions contains
+  " 'tagfile'
+  set wildoptions=tagfile
+  call writefile([
+	\ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa	file	/^pattern$/;"	f'
+	\ ], 'Xtags')
+  call feedkeys(":tag \<Tab>", 'tx')
+  " Should not crash
+  call assert_true(v:true)
+
   call delete('Xtags')
   call delete('Xsomewhere')
   set tags&
@@ -837,15 +847,16 @@ func Test_ltag()
   ltag third
   call assert_equal('Xfoo', bufname(''))
   call assert_equal(3, line('.'))
-  call assert_equal([{'lnum': 3, 'bufnr': bufnr('Xfoo'), 'col': 0,
-        \ 'pattern': '', 'valid': 1, 'vcol': 0, 'nr': 0, 'type': '',
-        \ 'module': '', 'text': 'third'}], getloclist(0))
+  call assert_equal([{'lnum': 3, 'end_lnum': 0, 'bufnr': bufnr('Xfoo'),
+        \ 'col': 0, 'end_col': 0, 'pattern': '', 'valid': 1, 'vcol': 0,
+        \ 'nr': 0, 'type': '', 'module': '', 'text': 'third'}], getloclist(0))
 
   ltag second
   call assert_equal(2, line('.'))
-  call assert_equal([{'lnum': 0, 'bufnr': bufnr('Xfoo'), 'col': 0,
-        \ 'pattern': '^\Vint second() {}\$', 'valid': 1, 'vcol': 0, 'nr': 0,
-        \ 'type': '', 'module': '', 'text': 'second'}], getloclist(0))
+  call assert_equal([{'lnum': 0, 'end_lnum': 0, 'bufnr': bufnr('Xfoo'),
+        \ 'col': 0, 'end_col': 0, 'pattern': '^\Vint second() {}\$',
+        \ 'valid': 1, 'vcol': 0, 'nr': 0, 'type': '', 'module': '',
+        \ 'text': 'second'}], getloclist(0))
 
   call delete('Xtags')
   call delete('Xfoo')

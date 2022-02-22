@@ -894,8 +894,8 @@
   файл "vimrc".
 
   1. Почніть редагування файлу "vimrc" .  Це залежить від вашої системи:
-        :e ~/.vimrc             для Unix
-        :e $VIM/_vimrc          для MS-Windows
+        :e ~/.vimrc          для Unix
+        :e ~/_vimrc          для MS-Windows
 
   2. Тепер прочитайте приклад вмісту "vimrc" :
         :r $VIMRUNTIME/vimrc_example.vim
@@ -965,7 +965,7 @@
         Publisher: New Riders
   Особливо корисна для початківців.
   Там багато прикладів і ілюстрацій.
-  Дивіться http://iccf-holland.org/click5.html
+  Дивіться https://iccf-holland.org/click5.html
 
   Ці уроки були написані Майклом С. Пірсом та Робертом Уаром.
 

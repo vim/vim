@@ -4,9 +4,10 @@ source check.vim
 CheckFeature conceal
 
 source screendump.vim
-CheckScreendump
 
 func Test_conceal_two_windows()
+  CheckScreendump
+
   let code =<< trim [CODE]
     let lines = ["one one one one one", "two |hidden| here", "three |hidden| three"]
     call setline(1, lines)
@@ -59,9 +60,11 @@ func Test_conceal_two_windows()
   " Check that with cursor line is only concealed in Insert mode
   call term_sendkeys(buf, ":set concealcursor=i\r")
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_07n', {})
-  call term_sendkeys(buf, "a")
+  call term_sendkeys(buf, "14|a")
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_07i', {})
-  call term_sendkeys(buf, "\<Esc>/e")
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_07in', {})
+  call term_sendkeys(buf, "/e")
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_07c', {})
   call term_sendkeys(buf, "\<Esc>v")
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_07v', {})
@@ -109,6 +112,8 @@ func Test_conceal_two_windows()
 endfunc
 
 func Test_conceal_with_cursorline()
+  CheckScreendump
+
   " Opens a help window, where 'conceal' is set, switches to the other window
   " where 'cursorline' needs to be updated when the cursor moves.
   let code =<< trim [CODE]
@@ -136,6 +141,8 @@ func Test_conceal_with_cursorline()
 endfunc
 
 func Test_conceal_resize_term()
+  CheckScreendump
+
   let code =<< trim [CODE]
     call setline(1, '`one` `two` `three` `four` `five`, the backticks should be concealed')
     setl cocu=n cole=3
@@ -147,7 +154,6 @@ func Test_conceal_resize_term()
   call VerifyScreenDump(buf, 'Test_conceal_resize_01', {})
 
   call win_execute(buf->win_findbuf()[0], 'wincmd +')
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_conceal_resize_02', {})
 
   " clean up

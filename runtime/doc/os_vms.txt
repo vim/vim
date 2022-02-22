@@ -767,12 +767,12 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 
 Version 8.2
 - make all changes needed for clean compile build of v8.2 on VMS on all platforms
-- fix the call mkdir bug (vicente_polo@yahoo.es) 
+- fix the call mkdir bug (vicente_polo@yahoo.es)
 - test on VSI OpenVMS Alpha and Itanium platforms
 - added LUA support
 - added XPM support - Motif GUI with toolbar on all platforms
-- XPM v3.4.11 libraries for IA64, AXP and VAX are added 
-- start integrating the new test scripts 
+- XPM v3.4.11 libraries for IA64, AXP and VAX are added
+- start integrating the new test scripts
 
 Version 8.1
 - make necessary changes to build v8.1 on VMS

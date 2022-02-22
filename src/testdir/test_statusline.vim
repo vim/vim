@@ -196,7 +196,16 @@ func Test_statusline()
   set virtualedit=all
   norm 10|
   call assert_match('^10,-10\s*$', s:get_statusline())
+  set list
+  call assert_match('^10,-10\s*$', s:get_statusline())
   set virtualedit&
+  exe "norm A\<Tab>\<Tab>a\<Esc>"
+  " In list mode a <Tab> is shown as "^I", which is 2-wide.
+  call assert_match('^9,-9\s*$', s:get_statusline())
+  set list&
+  " Now the second <Tab> ends at the 16th screen column.
+  call assert_match('^17,-17\s*$', s:get_statusline())
+  undo
 
   " %w: Preview window flag, text is "[Preview]".
   " %W: Preview window flag, text is ",PRV".
@@ -250,6 +259,26 @@ func Test_statusline()
   s/^/"/
   call assert_match('^vimLineComment\s*$', s:get_statusline())
   syntax off
+
+  "%{%expr%}: evaluates enxpressions present in result of expr
+  func! Inner_eval()
+    return '%n some other text'
+  endfunc
+  func! Outer_eval()
+    return 'some text %{%Inner_eval()%}'
+  endfunc
+  set statusline=%{%Outer_eval()%}
+  call assert_match('^some text ' . bufnr() . ' some other text\s*$', s:get_statusline())
+  delfunc Inner_eval
+  delfunc Outer_eval
+
+  "%{%expr%}: Doesn't get stuck in recursion
+  func! Recurse_eval()
+    return '%{%Recurse_eval()%}'
+  endfunc
+  set statusline=%{%Recurse_eval()%}
+  call assert_match('^%{%Recurse_eval()%}\s*$', s:get_statusline())
+  delfunc Recurse_eval
 
   "%(: Start of item group.
   set statusline=ab%(cd%q%)de
@@ -452,19 +481,20 @@ func Test_statusline_using_mode()
   CheckScreendump
 
   let lines =<< trim END
-    set laststatus=2
-    let &statusline = '-%{mode()}-'
+    setlocal statusline=-%{mode()}-
+    split
+    setlocal statusline=+%{mode()}+
   END
   call writefile(lines, 'XTest_statusline')
 
-  let buf = RunVimInTerminal('-S XTest_statusline', {'rows': 5, 'cols': 50})
+  let buf = RunVimInTerminal('-S XTest_statusline', {'rows': 7, 'cols': 50})
   call VerifyScreenDump(buf, 'Test_statusline_mode_1', {})
 
   call term_sendkeys(buf, ":")
   call VerifyScreenDump(buf, 'Test_statusline_mode_2', {})
 
   " clean up
-  call term_sendkeys(buf, "\<CR>")
+  call term_sendkeys(buf, "close\<CR>")
   call StopVimInTerminal(buf)
   call delete('XTest_statusline')
 endfunc
@@ -499,6 +529,16 @@ func Test_statusline_mbyte_fillchar()
   call assert_match('^a\+═\+b═a\+━\+b$', s:get_statusline())
   set statusline& fillchars& laststatus&
   %bw!
+endfunc
+
+" Used to write beyond allocated memory.  This assumes MAXPATHL is 4096 bytes.
+func Test_statusline_verylong_filename()
+  let fname = repeat('x', 4090)
+  exe "new " .. fname
+  set buftype=help
+  set previewwindow
+  redraw
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

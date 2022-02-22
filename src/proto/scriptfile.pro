@@ -10,6 +10,7 @@ int do_in_path(char_u *path, char_u *name, int flags, void (*callback)(char_u *f
 int do_in_runtimepath(char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);
 int source_runtime(char_u *name, int flags);
 int source_in_path(char_u *path, char_u *name, int flags, int *ret_sid);
+int find_script_in_rtp(char_u *name);
 void add_pack_start_dirs(void);
 void load_start_packages(void);
 void ex_packloadall(exarg_T *eap);
@@ -36,6 +37,9 @@ void ex_scriptversion(exarg_T *eap);
 void ex_finish(exarg_T *eap);
 void do_finish(exarg_T *eap, int reanimate);
 int source_finished(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
+char_u *script_name_after_autoload(scriptitem_T *si);
+char_u *get_autoload_prefix(scriptitem_T *si);
+char_u *may_prefix_autoload(char_u *name);
 char_u *autoload_name(char_u *name);
 int script_autoload(char_u *name, int reload);
 /* vim: set ft=c : */

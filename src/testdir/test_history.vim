@@ -98,6 +98,22 @@ function Test_History()
   call assert_fails('call histdel(":", "\\%(")', 'E53:')
 endfunction
 
+function Test_history_truncates_long_entry()
+  " History entry short enough to fit on the screen should not be truncated.
+  call histadd(':', 'echo x' .. repeat('y', &columns - 17) .. 'z')
+  let a = execute('history : -1')
+
+  call assert_match("^\n      #  cmd history\n"
+        \        .. "> *\\d\\+  echo x" .. repeat('y', &columns - 17) ..  'z$', a)
+
+  " Long history entry should be truncated to fit on the screen, with, '...'
+  " inserted in the string to indicate the that there is truncation.
+  call histadd(':', 'echo x' .. repeat('y', &columns - 16) .. 'z')
+  let a = execute('history : -1')
+  call assert_match("^\n      #  cmd history\n"
+        \        .. ">  *\\d\\+  echo xy\\+\.\.\.y\\+z$", a)
+endfunction
+
 function Test_Search_history_window()
   new
   call setline(1, ['a', 'b', 'a', 'b'])

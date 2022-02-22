@@ -5,7 +5,6 @@ CheckFeature profile
 
 source shared.vim
 source screendump.vim
-source vim9.vim
 
 func Test_profile_func()
   call RunProfileFunc('func', 'let', 'let')

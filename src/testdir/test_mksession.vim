@@ -131,6 +131,36 @@ func Test_mksession()
   set sessionoptions&
 endfunc
 
+def Test_mksession_skiprtp()
+  mksession! Xtest_mks.out
+  var found_rtp = 0
+  var found_pp = 0
+  for line in readfile('Xtest_mks.out')
+    if line =~ 'set runtimepath'
+      found_rtp += 1
+    endif
+    if line =~ 'set packpath'
+      found_pp += 1
+    endif
+  endfor
+  assert_equal(1, found_rtp)
+  assert_equal(1, found_pp)
+  delete('Xtest_mks.out')
+
+  set sessionoptions+=skiprtp
+  mksession! Xtest_mks.out
+  var found = 0
+  for line in readfile('Xtest_mks.out')
+    if line =~ 'set \(runtimepath\|packpath\)'
+      found = 1
+      break
+    endif
+  endfor
+  assert_equal(0, found)
+  delete('Xtest_mks.out')
+  set sessionoptions&
+enddef
+
 func Test_mksession_winheight()
   new
   set winheight=10
@@ -147,6 +177,20 @@ func Test_mksession_large_winheight()
   set winheight&
   source Xtest_mks_winheight.out
   call delete('Xtest_mks_winheight.out')
+endfunc
+
+func Test_mksession_zero_winheight()
+  set winminheight=0
+  edit SomeFile
+  split
+  wincmd _
+  mksession! Xtest_mks_zero
+  set winminheight&
+  let text = readfile('Xtest_mks_zero')->join()
+  call delete('Xtest_mks_zero')
+  close
+  " check there is no divide by zero
+  call assert_notmatch('/ 0[^0-9]', text)
 endfunc
 
 func Test_mksession_rtp()
@@ -316,6 +360,31 @@ func Test_mksession_buffer_count()
   call delete('Xtest_mks.out')
   %bwipe!
   set hidden&
+endfunc
+
+func Test_mksession_buffer_order()
+  %bwipe!
+  e Xfoo | e Xbar | e Xbaz | e Xqux
+  bufdo write
+  mksession! Xtest_mks.out
+
+  " Verify that loading the session preserves order of buffers
+  %bwipe!
+  source Xtest_mks.out
+
+  let s:buf_info = getbufinfo()
+  call assert_true(s:buf_info[0]['name'] =~# 'Xfoo$')
+  call assert_true(s:buf_info[1]['name'] =~# 'Xbar$')
+  call assert_true(s:buf_info[2]['name'] =~# 'Xbaz$')
+  call assert_true(s:buf_info[3]['name'] =~# 'Xqux$')
+
+  " Clean up.
+  call delete('Xfoo')
+  call delete('Xbar')
+  call delete('Xbaz')
+  call delete('Xqux')
+  call delete('Xtest_mks.out')
+  %bwipe!
 endfunc
 
 if has('extra_search')
@@ -865,6 +934,36 @@ func Test_mksession_foldopt()
   set sessionoptions&
 endfunc
 
+" Test for mksession with "help" but not "options" in 'sessionoptions'
+func Test_mksession_help_noopt()
+  set sessionoptions-=options
+  set sessionoptions+=help
+  help
+  let fname = expand('%')
+  mksession! Xtest_mks.out
+  bwipe
+
+  source Xtest_mks.out
+  call assert_equal('help', &buftype)
+  call assert_equal('help', &filetype)
+  call assert_equal(fname, expand('%'))
+  call assert_false(&modifiable)
+  call assert_true(&readonly)
+
+  helpclose
+  help index
+  let fname = expand('%')
+  mksession! Xtest_mks.out
+  bwipe
+
+  source Xtest_mks.out
+  call assert_equal('help', &buftype)
+  call assert_equal(fname, expand('%'))
+
+  call delete('Xtest_mks.out')
+  set sessionoptions&
+endfunc
+
 " Test for mksession with window position
 func Test_mksession_winpos()
   " Only applicable in GUI Vim
@@ -882,6 +981,24 @@ func Test_mksession_winpos()
   endfor
   call assert_true(found_winpos)
   call delete('Xtest_mks.out')
+  set sessionoptions&
+endfunc
+
+" Test for mksession without options restores winminheight
+func Test_mksession_winminheight()
+  set sessionoptions-=options
+  split
+  mksession! Xtest_mks.out
+  let found_restore = 0
+  let lines = readfile('Xtest_mks.out')
+  for line in lines
+    if line =~ '= s:save_winmin\(width\|height\)'
+      let found_restore += 1
+    endif
+  endfor
+  call assert_equal(2, found_restore)
+  call delete('Xtest_mks.out')
+  close
   set sessionoptions&
 endfunc
 
@@ -957,6 +1074,19 @@ func Test_mkvimrc()
   endfor
 
   call s:ClearMappings()
+
+  " the 'pastetoggle', 'wildchar' and 'wildcharm' option values should be
+  " stored as key names in the vimrc file
+  set pastetoggle=<F5>
+  set wildchar=<F6>
+  set wildcharm=<F7>
+  call assert_fails('mkvimrc Xtestvimrc')
+  mkvimrc! Xtestvimrc
+  call assert_notequal(-1, index(readfile('Xtestvimrc'), 'set pastetoggle=<F5>'))
+  call assert_notequal(-1, index(readfile('Xtestvimrc'), 'set wildchar=<F6>'))
+  call assert_notequal(-1, index(readfile('Xtestvimrc'), 'set wildcharm=<F7>'))
+  set pastetoggle& wildchar& wildcharm&
+
   call delete('Xtestvimrc')
 endfunc
 

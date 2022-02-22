@@ -194,9 +194,8 @@ $VIM/macros/swapmous.vim for an example.		|gui-mouse-mapping|
 
 11. Color names						*haiku-colors*
 
-Vim has a number of color names built-in.  Additional names are read from the
-file $VIMRUNTIME/rgb.txt, if present.  This file is basically the color
-database from X.  Names used from this file are cached for efficiency.
+Vim has a number of color names built-in. Additional names can be defined in
+|v:colornames|. See |:colorscheme| for details.
 
 
 12. GUI Toolbar Images					*haiku-toolbar-images*

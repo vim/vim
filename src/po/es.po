@@ -16,8 +16,9 @@ msgstr ""
 "Last-Translator: Omar Campagne <ocampagne@gmail.com>\n"
 "Language-Team: vim-doc-es http://www.assembla.com/wiki/show/vim-doc-es\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: octect-stream\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: No se pudo asignar memoria para ningún búfer, saliendo..."
@@ -1209,19 +1210,17 @@ msgstr "E319: Lo siento, esa orden no está disponible en esta versión"
 msgid "E172: Only one file name allowed"
 msgstr "E172: Solo se permite un nombre de archivo"
 
-msgid "1 more file to edit.  Quit anyway?"
-msgstr "Un (1) archivo más para editar. ¿Cerrar de todas formas?"
+#, c-format
+msgid "%d more file to edit.  Quit anyway?"
+msgid_plural "%d more files to edit.  Quit anyway?"
+msgstr[0] "Un (%d) archivo más para editar. ¿Cerrar de todas formas?"
+msgstr[1] "Hay %d archivos más para editar. ¿Cerrar de todas formas?"
 
 #, c-format
-msgid "%d more files to edit.  Quit anyway?"
-msgstr "Hay %d archivos más en edición. ¿Cerrar de todas formas?"
-
-msgid "E173: 1 more file to edit"
-msgstr "E173: Un (1) archivo más para editar"
-
-#, c-format
-msgid "E173: %ld more files to edit"
-msgstr "E173: Hay %ld archivos en edición"
+msgid "E173: %d more file to edit"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: Un (%d) archivo más para editar"
+msgstr[1] "E173: Hay %d archivos más para editar"
 
 msgid "E174: Command already exists: add ! to replace it"
 msgstr "E174: Ya existe esa orden. Añada \"!\" para reemplazarla"
@@ -3672,24 +3671,17 @@ msgstr "     MÁS NUEVO que el archivo de intercambio!\n"
 # * other languages.
 msgid ""
 "\n"
-"(1) Another program may be editing the same file.\n"
-"    If this is the case, be careful not to end up with two\n"
-"    different instances of the same file when making changes.\n"
+"(1) Another program may be editing the same file.  If this is the case,\n"
+"    be careful not to end up with two different instances of the same\n"
+"    file when making changes.  Quit, or continue with caution.\n"
 msgstr ""
 "\n"
-"(1) Puede que otro programa esté editando el mismo archivo.\n"
-"    De ser así, tenga cuidado de no acabar con dos\n"
-"    ejemplares diferentes del mismo archivo al hacer cambios.\n"
+"(1) Puede que otro programa esté editando el mismo archivo. De ser así,\n"
+"    tenga cuidado de no acabar con dos ejemplares diferentes del mismo\n"
+"    archivo al hacer cambios. Salga del programa o continúe con precaución.\n"
 
-msgid "    Quit, or continue with caution.\n"
-msgstr "    Salga del programa o continúe con precaución.\n"
-
-msgid ""
-"\n"
-"(2) An edit session for this file crashed.\n"
-msgstr ""
-"\n"
-"(2) Falló una sesión de edición de este archivo.\n"
+msgid "(2) An edit session for this file crashed.\n"
+msgstr "(2) Falló una sesión de edición de este archivo.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    Si es así, use \":recover\" o \"vim -r "
@@ -6345,5 +6337,3 @@ msgstr "La búsqueda ha llegado al PRINCIPIO, continuando desde el FINAL"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "La búsqueda ha llegado al FINAL, continuando desde el PRINCIPIO"
-
-

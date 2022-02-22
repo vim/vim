@@ -27,6 +27,9 @@
 /* Define when termcap.h defines outfuntype */
 #undef HAVE_OUTFUNTYPE
 
+/* Define when del_curterm() is available */
+#undef HAVE_DEL_CURTERM
+
 /* Define when __DATE__ " " __TIME__ can be used */
 #undef HAVE_DATE_TIME
 
@@ -144,6 +147,9 @@
 /* Define if stat() ignores a trailing slash */
 #undef STAT_IGNORES_SLASH
 
+/* Define to nanoseconds field of struct stat */
+#undef ST_MTIM_NSEC
+
 /* Define if tgetstr() has a second argument that is (char *) */
 #undef TGETSTR_CHAR_P
 
@@ -208,6 +214,7 @@
 #undef HAVE_STRPTIME
 #undef HAVE_STRTOL
 #undef HAVE_CANBERRA
+#undef HAVE_SODIUM
 #undef HAVE_ST_BLKSIZE
 #undef HAVE_SYSCONF
 #undef HAVE_SYSCTL

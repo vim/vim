@@ -888,7 +888,7 @@ Uwaga: Aby ignorowaæ wielko¶æ liter dla jednego wyszukiwania: /ignore\c<ENTER>
 
   1. Pocz±tek edycji pliku "vimrc" zale¿y od Twojego systemu:
      :edit ~/.vimrc	     dla Uniksa
-     :edit $VIM/_vimrc       dla MS-Windows
+     :edit ~/_vimrc          dla MS-Windows
   2. Teraz wczytaj przyk³adowy plik "vimrc":
      :read $VIMRUNTIME/vimrc_example.vim
   3. Zapisz plik:
@@ -954,7 +954,7 @@ UWAGA: Uzupe³nianie dzia³a dla wielu poleceñ. Spróbuj wcisn±æ CTRL-D i <TAB>.
 	Wydawca: New Riders
   Pierwsza ksi±¿ka ca³kowicie po¶wiêcona Vimowi. U¿yteczna zw³aszcza dla
   pocz±tkuj±cych. Zawiera wiele przyk³adów i ilustracji.
-  Zobacz http://iccf-holland.org./click5.html
+  Zobacz https://iccf-holland.org./click5.html
 
   Starsza pozycja i bardziej o Vi ni¿ o Vimie, ale tak¿e warta
   polecenia:

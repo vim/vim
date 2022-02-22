@@ -147,6 +147,9 @@ edit(
 #ifdef FEAT_JOB_CHANNEL
     int		cmdchar_todo = cmdchar;
 #endif
+#ifdef FEAT_CONCEAL
+    int		cursor_line_was_concealed;
+#endif
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -162,7 +165,7 @@ edit(
     // Don't allow inserting in the sandbox.
     if (sandbox != 0)
     {
-	emsg(_(e_sandbox));
+	emsg(_(e_not_allowed_in_sandbox));
 	return FALSE;
     }
 #endif
@@ -172,7 +175,7 @@ edit(
     if (textwinlock != 0 || textlock != 0
 			  || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_textwinlock));
+	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
@@ -222,9 +225,9 @@ edit(
     }
 
 #ifdef FEAT_CONCEAL
-    // Check if the cursor line needs redrawing before changing State.  If
-    // 'concealcursor' is "n" it needs to be redrawn without concealing.
-    conceal_check_cursor_line();
+    // Check if the cursor line was concealed before changing State.
+    cursor_line_was_concealed = curwin->w_p_cole > 0
+						&& conceal_cursor_line(curwin);
 #endif
 
     /*
@@ -281,7 +284,14 @@ edit(
     else
 	State = INSERT;
 
+    trigger_modechanged();
     stop_insert_mode = FALSE;
+
+#ifdef FEAT_CONCEAL
+    // Check if the cursor line needs redrawing after changing State.  If
+    // 'concealcursor' is "n" it needs to be redrawn without concealing.
+    conceal_check_cursor_line(cursor_line_was_concealed);
+#endif
 
     /*
      * Need to recompute the cursor position, it might move when the cursor is
@@ -513,7 +523,7 @@ edit(
 
 	    if (
 #ifdef FEAT_VARTABS
-		(int)curwin->w_wcol < mincol - tabstop_at(
+		curwin->w_wcol < mincol - tabstop_at(
 					  get_nolist_virtcol(), curbuf->b_p_ts,
 							 curbuf->b_p_vts_array)
 #else
@@ -588,9 +598,14 @@ edit(
 	    {
 		c = safe_vgetc();
 
-		if (stop_insert_mode)
+		if (stop_insert_mode
+#ifdef FEAT_TERMINAL
+			|| (c == K_IGNORE && term_use_loop())
+#endif
+		   )
 		{
-		    // Insert mode ended, possibly from a callback.
+		    // Insert mode ended, possibly from a callback, or a timer
+		    // must have opened a terminal window.
 		    if (c != K_IGNORE && c != K_NOP)
 			vungetc(c);
 		    count = 0;
@@ -607,6 +622,11 @@ edit(
 	if (p_hkmap && KeyTyped)
 	    c = hkmap(c);		// Hebrew mode mapping
 #endif
+
+	// If the window was made so small that nothing shows, make it at least
+	// one line and one column when typing.
+	if (KeyTyped && !KeyStuffed)
+	    win_ensure_size();
 
 	/*
 	 * Special handling of keys while the popup menu is visible or wanted
@@ -852,7 +872,7 @@ doESCkey:
 	    ins_ctrl_o();
 
 	    // don't move the cursor left when 'virtualedit' has "onemore".
-	    if (ve_flags & VE_ONEMORE)
+	    if (get_ve_flags() & VE_ONEMORE)
 	    {
 		ins_at_eol = FALSE;
 		nomove = TRUE;
@@ -1035,8 +1055,9 @@ doESCkey:
 	case K_IGNORE:	// Something mapped to nothing
 	    break;
 
-	case K_COMMAND:		// <Cmd>command<CR>
-	    do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+	case K_COMMAND:		    // <Cmd>command<CR>
+	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
+	    do_cmdkey_command(c, 0);
 #ifdef FEAT_TERMINAL
 	    if (term_use_loop())
 		// Started a terminal that gets the input, exit Insert mode.
@@ -1047,6 +1068,9 @@ doESCkey:
 	case K_CURSORHOLD:	// Didn't type something for a while.
 	    ins_apply_autocmds(EVENT_CURSORHOLDI);
 	    did_cursorhold = TRUE;
+	    // If CTRL-G U was used apply it to the next typed key.
+	    if (dont_sync_undo == TRUE)
+		dont_sync_undo = MAYBE;
 	    break;
 
 #ifdef FEAT_GUI_MSWIN
@@ -1257,7 +1281,7 @@ doESCkey:
 	    // but it is under other ^X modes
 	    if (*curbuf->b_p_cpt == NUL
 		    && (ctrl_x_mode_normal() || ctrl_x_mode_whole_line())
-		    && !(compl_cont_status & CONT_LOCAL))
+		    && !compl_status_local())
 		goto normalchar;
 
 docomplete:
@@ -1266,7 +1290,7 @@ docomplete:
 	    disable_fold_update++;  // don't redraw folds here
 #endif
 	    if (ins_complete(c, TRUE) == FAIL)
-		compl_cont_status = 0;
+		compl_status_clear();
 #ifdef FEAT_FOLDING
 	    disable_fold_update--;
 #endif
@@ -1464,9 +1488,9 @@ ins_redraw(int ready)	    // not busy with something
 	last_cursormoved = curwin->w_cursor;
     }
 
-    // Trigger TextChangedI if b_changedtick differs.
+    // Trigger TextChangedI if b_changedtick_i differs.
     if (ready && has_textchangedI()
-	    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf)
+	    && curbuf->b_last_changedtick_i != CHANGEDTICK(curbuf)
 	    && !pum_visible())
     {
 	aco_save_T	aco;
@@ -1476,15 +1500,15 @@ ins_redraw(int ready)	    // not busy with something
 	aucmd_prepbuf(&aco, curbuf);
 	apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
 	aucmd_restbuf(&aco);
-	curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
+	curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
 	if (tick != CHANGEDTICK(curbuf))  // see ins_apply_autocmds()
 	    u_save(curwin->w_cursor.lnum,
 					(linenr_T)(curwin->w_cursor.lnum + 1));
     }
 
-    // Trigger TextChangedP if b_changedtick differs. When the popupmenu closes
-    // TextChangedI will need to trigger for backwards compatibility, thus use
-    // different b_last_changedtick* variables.
+    // Trigger TextChangedP if b_changedtick_pum differs. When the popupmenu
+    // closes TextChangedI will need to trigger for backwards compatibility,
+    // thus use different b_last_changedtick* variables.
     if (ready && has_textchangedP()
 	    && curbuf->b_last_changedtick_pum != CHANGEDTICK(curbuf)
 	    && pum_visible())
@@ -1578,7 +1602,7 @@ ins_ctrl_v(void)
  * Note that this doesn't wait for characters, they must be in the typeahead
  * buffer already.
  */
-    int
+    static int
 decodeModifyOtherKeys(int c)
 {
     char_u  *p = typebuf.tb_buf + typebuf.tb_off;
@@ -1634,8 +1658,8 @@ decodeModifyOtherKeys(int c)
  */
 static int  pc_status;
 #define PC_STATUS_UNSET	0	// pc_bytes was not set
-#define PC_STATUS_RIGHT	1	// right halve of double-wide char
-#define PC_STATUS_LEFT	2	// left halve of double-wide char
+#define PC_STATUS_RIGHT	1	// right half of double-wide char
+#define PC_STATUS_LEFT	2	// left half of double-wide char
 #define PC_STATUS_SET	3	// pc_bytes was filled
 static char_u pc_bytes[MB_MAXBYTES + 1]; // saved bytes
 static int  pc_attr;
@@ -1692,6 +1716,7 @@ edit_putchar(int c, int highlight)
     }
 }
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Set the insert start position for when using a prompt buffer.
  */
@@ -1705,6 +1730,7 @@ set_insstart(linenr_T lnum, int col)
     Insstart_blank_vcol = MAXCOL;
     arrow_used = FALSE;
 }
+#endif
 
 /*
  * Undo the previous edit_putchar().
@@ -1883,6 +1909,11 @@ get_literal(int noReduceKeys)
 	if ((nc == ESC || nc == CSI) && !noReduceKeys)
 	    nc = decodeModifyOtherKeys(nc);
 
+	if ((mod_mask & ~MOD_MASK_SHIFT) != 0)
+	    // A character with non-Shift modifiers should not be a valid
+	    // character for i_CTRL-V_digit.
+	    break;
+
 #ifdef FEAT_CMDL_INFO
 	if (!(State & CMDLINE) && MB_BYTE2LEN_CHECK(nc) == 1)
 	    add_to_showcmd(nc);
@@ -1960,7 +1991,11 @@ get_literal(int noReduceKeys)
 	--allow_keys;
 #endif
     if (nc)
+    {
 	vungetc(nc);
+	// A character typed with i_CTRL-V_digit cannot have modifiers.
+	mod_mask = 0;
+    }
     got_int = FALSE;	    // CTRL-C typed after CTRL-V is not an interrupt
     return cc;
 }
@@ -2017,11 +2052,7 @@ insert_special(
  * stop and defer processing to the "normal" mechanism.
  * '0' and '^' are special, because they can be followed by CTRL-D.
  */
-#ifdef EBCDIC
-# define ISSPECIAL(c)	((c) < ' ' || (c) == '0' || (c) == '^')
-#else
-# define ISSPECIAL(c)	((c) < ' ' || (c) >= DEL || (c) == '0' || (c) == '^')
-#endif
+#define ISSPECIAL(c)	((c) < ' ' || (c) >= DEL || (c) == '0' || (c) == '^')
 
 /*
  * "flags": INSCHAR_FORMAT - force formatting
@@ -2099,7 +2130,7 @@ insertchar(
 	return;
 
     // Check whether this character should end a comment.
-    if (did_ai && (int)c == end_comment_pending)
+    if (did_ai && c == end_comment_pending)
     {
 	char_u  *line;
 	char_u	lead_end[COM_MAX_LEN];	    // end-comment string
@@ -2664,7 +2695,7 @@ oneright(void)
 
     // move "l" bytes right, but don't end up on the NUL, unless 'virtualedit'
     // contains "onemore".
-    if (ptr[l] == NUL && (ve_flags & VE_ONEMORE) == 0)
+    if (ptr[l] == NUL && (get_ve_flags() & VE_ONEMORE) == 0)
 	return FAIL;
     curwin->w_cursor.col += l;
 
@@ -2865,14 +2896,14 @@ stuff_inserted(
     ptr = get_last_insert();
     if (ptr == NULL)
     {
-	emsg(_(e_noinstext));
+	emsg(_(e_no_inserted_text_yet));
 	return FAIL;
     }
 
     // may want to stuff the command character, to start Insert mode
     if (c != NUL)
 	stuffcharReadbuff(c);
-    if ((esc_ptr = (char_u *)vim_strrchr(ptr, ESC)) != NULL)
+    if ((esc_ptr = vim_strrchr(ptr, ESC)) != NULL)
 	*esc_ptr = NUL;	    // remove the ESC
 
     // when the last char is either "0" or "^" it will be quoted if no ESC
@@ -2891,9 +2922,8 @@ stuff_inserted(
 	stuffReadbuff(ptr);
 	// a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
 	if (last)
-	    stuffReadbuff((char_u *)(last == '0'
-			? IF_EB("\026\060\064\070", CTRL_V_STR "xf0")
-			: IF_EB("\026^", CTRL_V_STR "^")));
+	    stuffReadbuff(
+		       (char_u *)(last == '0' ? "\026\060\064\070" : "\026^"));
     }
     while (--count > 0);
 
@@ -3281,15 +3311,11 @@ hkmap(int c)
 	    return ' ';  // \"a --> ' '      -- / --
 	else if (c == 252)
 	    return ' ';  // \"u --> ' '      -- / --
-#ifdef EBCDIC
-	else if (islower(c))
-#else
 	// NOTE: islower() does not do the right thing for us on Linux so we
 	// do this the same was as 5.7 and previous, so it works correctly on
 	// all systems.  Specifically, the e.g. Delete and Arrow keys are
 	// munged and won't work if e.g. searching for Hebrew text.
 	else if (c >= 'a' && c <= 'z')
-#endif
 	    return (int)(map[CharOrdLow(c)] + p_aleph);
 	else
 	    return c;
@@ -3311,12 +3337,7 @@ hkmap(int c)
 	    default: {
 			 static char str[] = "zqbcxlsjphmkwonu ydafe rig";
 
-#ifdef EBCDIC
-			 // see note about islower() above
-			 if (!islower(c))
-#else
 			 if (c < 'a' || c > 'z')
-#endif
 			     return c;
 			 c = str[CharOrdLow(c)];
 			 break;
@@ -3572,6 +3593,11 @@ ins_esc(
 {
     int		temp;
     static int	disabled_redraw = FALSE;
+#ifdef FEAT_CONCEAL
+    // Remember if the cursor line was concealed before changing State.
+    int		cursor_line_was_concealed = curwin->w_p_cole > 0
+						&& conceal_cursor_line(curwin);
+#endif
 
 #ifdef FEAT_SPELL
     check_spell_redraw();
@@ -3647,7 +3673,7 @@ ins_esc(
 #endif
 				      )
     {
-	if (curwin->w_cursor.coladd > 0 || ve_flags == VE_ALL)
+	if (curwin->w_cursor.coladd > 0 || get_ve_flags() == VE_ALL)
 	{
 	    oneleft();
 	    if (restart_edit != NUL)
@@ -3672,6 +3698,7 @@ ins_esc(
 #endif
 
     State = NORMAL;
+    trigger_modechanged();
     // need to position cursor again (e.g. when on a TAB )
     changed_cline_bef_curs();
 
@@ -3690,6 +3717,11 @@ ins_esc(
 	// Re-enable modifyOtherKeys.
 	out_str(T_CTI);
     }
+#ifdef FEAT_CONCEAL
+    // Check if the cursor line needs redrawing after changing State.  If
+    // 'concealcursor' is "i" it needs to be redrawn without concealing.
+    conceal_check_cursor_line(cursor_line_was_concealed);
+#endif
 
     // When recording or for CTRL-O, need to display the new mode.
     // Otherwise remove the mode message.
@@ -3802,6 +3834,7 @@ ins_insert(int replaceState)
 	State = INSERT | (State & LANGMAP);
     else
 	State = replaceState | (State & LANGMAP);
+    trigger_modechanged();
     AppendCharToRedobuff(K_INS);
     showmode();
 #ifdef CURSOR_SHAPE
@@ -3945,6 +3978,9 @@ ins_bs(
     int		in_indent;
     int		oldState;
     int		cpc[MAX_MCO];	    // composing characters
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+    int		call_fix_indent = FALSE;
+#endif
 
     /*
      * can't delete anything in an empty file
@@ -4126,7 +4162,13 @@ ins_bs(
 	    save_col = curwin->w_cursor.col;
 	    beginline(BL_WHITE);
 	    if (curwin->w_cursor.col < save_col)
+	    {
 		mincol = curwin->w_cursor.col;
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+		// should now fix the indent to match with the previous line
+		call_fix_indent = TRUE;
+#endif
+	    }
 	    curwin->w_cursor.col = save_col;
 	}
 
@@ -4168,7 +4210,7 @@ ins_bs(
 	    }
 	    else
 		want_vcol = tabstop_start(want_vcol, get_sts_value(),
-						     curbuf->b_p_vsts_array);
+						       curbuf->b_p_vsts_array);
 #else
 	    if (p_sta && in_indent)
 		ts = (int)get_sw_value(curbuf);
@@ -4298,6 +4340,12 @@ ins_bs(
 #endif
     if (curwin->w_cursor.col <= 1)
 	did_ai = FALSE;
+
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+    if (call_fix_indent)
+	fix_indent();
+#endif
+
     /*
      * It's a little strange to put backspaces into the redo
      * buffer, but it makes auto-indent a lot easier to deal
@@ -4390,7 +4438,8 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 		    break;
 
 		case PASTE_EX:
-		    if (gap != NULL && ga_grow(gap, idx) == OK)
+		    // add one for the NUL that is going to be appended
+		    if (gap != NULL && ga_grow(gap, idx + 1) == OK)
 		    {
 			mch_memmove((char *)gap->ga_data + gap->ga_len,
 							     buf, (size_t)idx);
@@ -5117,7 +5166,8 @@ ins_eol(int c)
 
     AppendToRedobuff(NL_STR);
     i = open_line(FORWARD,
-	    has_format_option(FO_RET_COMS) ? OPENLINE_DO_COM : 0, old_indent);
+	    has_format_option(FO_RET_COMS) ? OPENLINE_DO_COM : 0, old_indent,
+	    NULL);
     old_indent = 0;
 #ifdef FEAT_CINDENT
     can_cindent = TRUE;
@@ -5210,7 +5260,7 @@ ins_digraph(void)
 	if (cc != ESC)
 	{
 	    AppendToRedobuff((char_u *)CTRL_V_STR);
-	    c = getdigraph(c, cc, TRUE);
+	    c = digraph_get(c, cc, TRUE);
 #ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
 #endif

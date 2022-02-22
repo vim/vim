@@ -5705,9 +5705,6 @@ msgstr ""
 "\n"
 "--- Teclas do terminal ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "$VIMRUNTIME/rgb.txt não pode ser aberto"
-
 msgid "Terminal"
 msgstr "Terminal"
 

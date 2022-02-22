@@ -1,4 +1,4 @@
-.TH VIM 1 "2006 Apr 11"
+.TH VIM 1 "2021 Jun 13"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -186,7 +186,7 @@ behave mostly like Vi, even though a .vimrc file exists.
 .TP
 \-d
 Start in diff mode.
-There should be two, three or four file name arguments.
+There should between two to eight file name arguments.
 .B Vim
 will open all the files and show differences between them.
 Works like vimdiff(1).
@@ -415,6 +415,10 @@ Restricted mode.  Works like the executable starts with "r".
 Denotes the end of the options.
 Arguments after this will be handled as a file name.
 This can be used to edit a filename that starts with a '\-'.
+.TP
+\-\-clean
+Do not use any personal configuration (vimrc, plugins, etc.).  Useful to see if
+a problem reproduces with a clean Vim setup.
 .TP
 \-\-echo\-wid
 GTK GUI only: Echo the Window ID on stdout.

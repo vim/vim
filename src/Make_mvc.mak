@@ -34,12 +34,18 @@
 #	IME support: IME=yes	(default is yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
 #	  is yes)
-#	Global IME support: GIME=yes (requires GUI=yes)
 #
 #	Terminal support: TERMINAL=yes (default is yes if FEATURES is HUGE)
 #	  Will also enable CHANNEL
 #
 #	Sound support: SOUND=yes (default is yes)
+#
+#	Sodium support: SODIUM=[Path to Sodium directory]
+#	  DYNAMIC_SODIUM=yes (to load the Sodium DLL dynamically)
+#	  You need to install the msvc package from
+#	  https://download.libsodium.org/libsodium/releases/
+#	  and package the libsodium.dll with Vim
+#
 #
 #	DLL support (EXPERIMENTAL): VIMDLL=yes (default is no)
 #	  Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
@@ -139,6 +145,8 @@
 #	  lines: Write a mapfile with line numbers (only for VC6 and later)
 #
 #	Static Code Analysis: ANALYZE=yes (works with VS2012 or later)
+#
+#	Address Sanitizer: ASAN=yes (works with VS2019 or later)
 #
 # You can combine any of these interfaces
 #
@@ -244,7 +252,7 @@ NODEBUG = 1
 MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
-link = link
+LINK = link
 
 # Check VC version.
 !if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
@@ -266,17 +274,15 @@ MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
 MSVCRT_VER = ($(MSVCVER) / 100 * 10 - 50)
 !endif
 
-# Calculate MSVC_FULL for Visual C++ 8 and up.
-!if $(MSVC_MAJOR) >= 8
-! if [echo MSVC_FULL=_MSC_FULL_VER> msvcfullver.c && $(CC) /EP msvcfullver.c > msvcfullver.~ 2> nul]
-!  message *** ERROR
-!  message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
-!  message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
-!  error Make aborted.
-! else
-!  include msvcfullver.~
-!  if [del msvcfullver.c msvcfullver.~]
-!  endif
+# Calculate MSVC_FULL.
+!if [echo MSVC_FULL=_MSC_FULL_VER> msvcfullver.c && $(CC) /EP msvcfullver.c > msvcfullver.~ 2> nul]
+! message *** ERROR
+! message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
+! message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
+! error Make aborted.
+!else
+! include msvcfullver.~
+! if [del msvcfullver.c msvcfullver.~]
 ! endif
 !endif
 
@@ -297,17 +303,10 @@ MSVCRT_NAME = msvcr$(MSVCRT_VER)
 MSVCRT_NAME = vcruntime$(MSVCRT_VER)
 !endif
 
-!if $(MSVC_MAJOR) == 6
-CPU = ix86
-!endif
-
 ### Set the default $(WINVER) to make it work with VC++7.0 (VS.NET)
 !ifndef WINVER
 WINVER = 0x0501
 !endif
-
-# Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
-WP64CHECK = /Wp64
 
 # Use multiprocess build
 USE_MP = yes
@@ -369,6 +368,34 @@ TERM_DEPS = \
 SOUND = yes
 ! else
 SOUND = no
+! endif
+!endif
+
+!ifndef SODIUM
+SODIUM = no
+!endif
+!ifndef DYNAMIC_SODIUM
+DYNAMIC_SODIUM = yes
+!endif
+
+!if "$(SODIUM)" != "no"
+! if "$(CPU)" == "AMD64"
+SOD_LIB		= $(SODIUM)\x64\Release\v140\dynamic
+! elseif "$(CPU)" == "i386"
+SOD_LIB		= $(SODIUM)\Win32\Release\v140\dynamic
+! else
+SODIUM = no
+! endif
+!endif
+
+!if "$(SODIUM)" != "no"
+SOD_INC		= /I "$(SODIUM)\include"
+! if "$(DYNAMIC_SODIUM)" == "yes"
+SOD_DEFS	= -DHAVE_SODIUM -DDYNAMIC_SODIUM
+SOD_LIB		=
+! else
+SOD_DEFS	= -DHAVE_SODIUM
+SOD_LIB		= $(SOD_LIB)\libsodium.lib
 ! endif
 !endif
 
@@ -463,23 +490,14 @@ CHANNEL_DEFS	= $(CHANNEL_DEFS) -DHAVE_INET_NTOP
 NETBEANS_LIB	= WSock32.lib Ws2_32.lib
 !endif
 
-# Set which version of the CRT to use
-!if defined(USE_MSVCRT)
-# CVARS = $(cvarsdll)
-# !elseif defined(MULTITHREADED)
-# CVARS = $(cvarsmt)
-!else
-# CVARS = $(cvars)
-# CVARS = $(cvarsmt)
-!endif
-
 # need advapi32.lib for GetUserName()
 # need shell32.lib for ExtractIcon()
 # need netapi32.lib for NetUserEnum()
 # gdi32.lib and comdlg32.lib for printing support
 # ole32.lib and uuid.lib are needed for FEAT_SHORTCUT
 CON_LIB = oldnames.lib kernel32.lib advapi32.lib shell32.lib gdi32.lib \
-          comdlg32.lib ole32.lib netapi32.lib uuid.lib /machine:$(CPU)
+	  comdlg32.lib ole32.lib netapi32.lib uuid.lib user32.lib \
+	  /machine:$(CPU)
 !if "$(DELAYLOAD)" == "yes"
 CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 !endif
@@ -489,9 +507,9 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 #VIMRCLOC = somewhere
 #VIMRUNTIMEDIR = somewhere
 
-CFLAGS = -c /W3 /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
+CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
 		$(CSCOPE_DEFS) $(TERM_DEFS) $(SOUND_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
-		$(NBDEBUG_DEFS) $(XPM_DEFS) \
+		$(NBDEBUG_DEFS) $(XPM_DEFS) $(SOD_DEFS) $(SOD_INC) \
 		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
 
 #>>>>> end of choices
@@ -523,68 +541,50 @@ CPUNR = sse2
 !endif
 
 # Convert processor ID to MVC-compatible number
-!if $(MSVC_MAJOR) < 8
-! if "$(CPUNR)" == "i586"
-CPUARG = /G5
-! elseif "$(CPUNR)" == "i686"
-CPUARG = /G6
-! elseif "$(CPUNR)" == "sse"
-CPUARG = /G6 /arch:SSE
-! elseif "$(CPUNR)" == "sse2"
-CPUARG = /G7 /arch:SSE2
-! elseif "$(CPUNR)" == "avx" || "$(CPUNR)" == "avx2"
-!  message AVX/AVX2 Instruction Sets are not supported by Visual C++ v$(MSVC_MAJOR)
-!  message Falling back to SSE2
-CPUARG = /G7 /arch:SSE2
-! elseif "$(CPUNR)" == "any"
-CPUARG =
-! endif
-!else
 # IA32/SSE/SSE2 are only supported on x86
-! if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && ("$(CPUNR)" == "i586" || "$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
+!if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && ("$(CPUNR)" == "i586" || "$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
 # VC<11 generates fp87 code by default
-!  if $(MSVC_MAJOR) < 11
+! if $(MSVC_MAJOR) < 11
 CPUARG =
 # VC>=11 needs explicit instructions to generate fp87 code
-!  else
+! else
 CPUARG = /arch:IA32
-!  endif
-! elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse"
+! endif
+!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse"
 CPUARG = /arch:SSE
-! elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse2"
+!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse2"
 CPUARG = /arch:SSE2
-! elseif "$(CPUNR)" == "avx"
+!elseif "$(CPUNR)" == "avx"
 # AVX is only supported by VC 10 and up
-!  if $(MSVC_MAJOR) < 10
-!   message AVX Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
-!   if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
-!    message Falling back to SSE2
+! if $(MSVC_MAJOR) < 10
+!  message AVX Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
+!  if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
+!   message Falling back to SSE2
 CPUARG = /arch:SSE2
-!   else
-CPUARG =
-!   endif
 !  else
-CPUARG = /arch:AVX
-!  endif
-! elseif "$(CPUNR)" == "avx2"
-# AVX is only supported by VC 10 and up
-!  if $(MSVC_MAJOR) < 10
-!   message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
-!   if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
-!    message Falling back to SSE2
-CPUARG = /arch:SSE2
-!   else
 CPUARG =
-!   endif
+!  endif
+! else
+CPUARG = /arch:AVX
+! endif
+!elseif "$(CPUNR)" == "avx2"
+# AVX is only supported by VC 10 and up
+! if $(MSVC_MAJOR) < 10
+!  message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
+!  if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
+!   message Falling back to SSE2
+CPUARG = /arch:SSE2
+!  else
+CPUARG =
+!  endif
 # AVX2 is only supported by VC 12U2 and up
 # 180030501 is the full version number for Visual Studio 2013/VC 12 Update 2
-!  elseif $(MSVC_FULL) < 180030501
-!   message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)-$(MSVC_FULL)
-!   message Falling back to AVX
+! elseif $(MSVC_FULL) < 180030501
+!  message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)-$(MSVC_FULL)
+!  message Falling back to AVX
 CPUARG = /arch:AVX
-!  else
+! else
 CPUARG = /arch:AVX2
-!  endif
 ! endif
 !endif
 
@@ -635,7 +635,14 @@ CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
 CFLAGS = $(CFLAGS) /analyze
 !endif
 
+# Address Sanitizer (ASAN) generally available starting with VS2019 version
+# 16.9
+!if ("$(ASAN)" == "yes") && ($(MSVC_MAJOR) >= 14)
+CFLAGS = $(CFLAGS) /fsanitize=address
+!endif
+
 !ifdef NODEBUG
+
 VIM = vim
 ! if "$(OPTIMIZE)" == "SPACE"
 OPTFLAG = /O1
@@ -645,67 +652,58 @@ OPTFLAG = /O2
 OPTFLAG = /Ox
 ! endif
 
-! if $(MSVC_MAJOR) >= 8
 # Use link time code generation if not worried about size
-!  if "$(OPTIMIZE)" != "SPACE"
+! if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
-!  endif
-! endif
-
-# (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
-! if ($(MSVC_MAJOR) == 7) || ($(MSVC_MAJOR) == 8)
-CFLAGS = $(CFLAGS) $(WP64CHECK)
 ! endif
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
-RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
+RCFLAGS = -DNDEBUG
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
 ! else
-LIBC = libcmt.lib
 CFLAGS = $(CFLAGS) /Zl /MT
+LIBC = libcmt.lib
 ! endif
+
 !else  # DEBUG
+
 VIM = vimd
 ! if ("$(CPU)" == "i386") || ("$(CPU)" == "ix86")
 DEBUGINFO = /ZI
 ! endif
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
-RCFLAGS = $(rcflags) $(rcvars) -D_DEBUG -DDEBUG
-# The /fixed:no is needed for Quantify. Assume not 4.? as unsupported in VC4.0.
-! if $(MSVC_MAJOR) == 4
-LIBC =
-! else
+RCFLAGS = -D_DEBUG -DDEBUG
+# The /fixed:no is needed for Quantify.
 LIBC = /fixed:no
-! endif
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MDd
 LIBC = $(LIBC) msvcrtd.lib
 ! else
-LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
+LIBC = $(LIBC) libcmtd.lib
 ! endif
+
 !endif # DEBUG
 
 !if "$(CL)" == "/D_USING_V110_SDK71_"
 RCFLAGS = $(RCFLAGS) /D_USING_V110_SDK71_
 !endif
 
-!if $(MSVC_MAJOR) >= 8
 # Visual Studio 2005 has 'deprecated' many of the standard CRT functions
 CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
-!endif
 
 !include Make_all.mak
 !include testdir\Make_all.mak
 
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
-	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
+	spell.h structs.h termdefs.h beval.h $(NBDEBUG_INCL)
 
 OBJ = \
+	$(OUTDIR)\alloc.obj \
 	$(OUTDIR)\arabic.obj \
 	$(OUTDIR)\arglist.obj \
 	$(OUTDIR)\autocmd.obj \
@@ -743,6 +741,7 @@ OBJ = \
 	$(OUTDIR)\fileio.obj \
 	$(OUTDIR)\filepath.obj \
 	$(OUTDIR)\findfile.obj \
+	$(OUTDIR)\float.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\gui_xim.obj \
@@ -750,7 +749,7 @@ OBJ = \
 	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\help.obj \
 	$(OUTDIR)\highlight.obj \
-	$(OBJDIR)\if_cscope.obj \
+	$(OUTDIR)\if_cscope.obj \
 	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
@@ -791,6 +790,7 @@ OBJ = \
 	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\spellfile.obj \
 	$(OUTDIR)\spellsuggest.obj \
+	$(OUTDIR)\strings.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
@@ -804,8 +804,11 @@ OBJ = \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\vim9cmds.obj \
 	$(OUTDIR)\vim9compile.obj \
 	$(OUTDIR)\vim9execute.obj \
+	$(OUTDIR)\vim9expr.obj \
+	$(OUTDIR)\vim9instr.obj \
 	$(OUTDIR)\vim9script.obj \
 	$(OUTDIR)\vim9type.obj \
 	$(OUTDIR)\viminfo.obj \
@@ -844,11 +847,6 @@ IME_LIB = imm32.lib
 ! endif
 !endif
 
-!if "$(GIME)" == "yes"
-CFLAGS = $(CFLAGS) -DGLOBAL_IME
-OBJ = $(OBJ) $(OUTDIR)\dimm_i.obj $(OUTDIR)\glbl_ime.obj
-!endif
-
 !if "$(GUI)" == "yes"
 SUBSYSTEM = windows
 CFLAGS = $(CFLAGS) -DFEAT_GUI_MSWIN
@@ -869,9 +867,7 @@ GUI_OBJ = \
 	$(OUTDIR)\gui_beval.obj \
 	$(OUTDIR)\gui_w32.obj
 GUI_LIB = \
-	gdi32.lib version.lib $(IME_LIB) \
-	winspool.lib comctl32.lib advapi32.lib shell32.lib netapi32.lib \
-	/machine:$(CPU)
+	version.lib $(IME_LIB) winspool.lib comctl32.lib
 !else
 SUBSYSTEM = console
 CUI_INCL = iscygpty.h
@@ -1190,7 +1186,11 @@ RUBY_MSVCRT_NAME = $(MSVCRT_NAME)
 !   if "$(CPU)" == "i386"
 RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 !   else # CPU
+!    if EXIST($(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw-ucrt)
+RUBY_INSTALL_NAME = x64-ucrt-ruby$(RUBY_API_VER)
+!    else
 RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
+!    endif
 !   endif # CPU
 !  endif # RUBY_INSTALL_NAME
 
@@ -1264,29 +1264,37 @@ LINK_PDB = /PDB:$(VIM).pdb -debug
 # CFLAGS with /Fo$(OUTDIR)/
 CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
 
-# Add /opt:ref to remove unreferenced functions and data even when /DEBUG is
-# added.
-conflags = /nologo /opt:ref
-
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
-!IF "$(MAP)" == "yes"
-# "/map" is for debugging
-conflags = $(conflags) /map
-!ELSEIF "$(MAP)" == "lines"
-# "/mapinfo:lines" is for debugging, only works for VC6 and later
-conflags = $(conflags) /map /mapinfo:lines
-!ENDIF
-
-LINKARGS1 = $(linkdebug) $(conflags)
-LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
+LINKARGS1 = /nologo
+LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
-		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
+		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(LINK_PDB)
 
-# Report link time code generation progress if used. 
 !ifdef NODEBUG
-! if $(MSVC_MAJOR) >= 8
-!  if "$(OPTIMIZE)" != "SPACE"
+# Add /opt:ref to remove unreferenced functions and data even when /DEBUG is
+# added.
+LINKARGS1 = $(LINKARGS1) /opt:ref
+!else
+LINKARGS1 = $(LINKARGS1) /opt:noref /opt:noicf
+!endif
+
+!if "$(MAP)" == "yes"
+# "/map" is for debugging
+LINKARGS1 = $(LINKARGS1) /map
+!elseif "$(MAP)" == "lines"
+# "/mapinfo:lines" is for debugging, only works for VC6 and later
+LINKARGS1 = $(LINKARGS1) /map /mapinfo:lines
+!endif
+
+# Enable link time code generation if needed.
+!ifdef NODEBUG
+! if "$(OPTIMIZE)" != "SPACE"
+!  if "$(CI)" == "true" || "$(CI)" == "True"
+# Enable link time code generation, but do not show the progress.
+LINKARGS1 = $(LINKARGS1) /LTCG
+!  else
+# Report link time code generation progress.
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 !  endif
 ! endif
@@ -1317,7 +1325,7 @@ all:	$(MAIN_TARGET) \
 	GvimExt/gvimext.dll
 
 # To get around the command line limit: Make use of nmake's response files to
-# capture the arguments for $(link) in a file  using the @<<ARGS<< syntax.
+# capture the arguments for $(LINK) in a file  using the @<<ARGS<< syntax.
 
 !if "$(VIMDLL)" == "yes"
 
@@ -1326,7 +1334,7 @@ $(VIMDLLBASE).dll: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ
 		$(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) @<<
+	$(LINK) @<<
 $(LINKARGS1) /dll -out:$(VIMDLLBASE).dll $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ)
 $(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ)
 $(TCL_OBJ) $(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ)
@@ -1334,11 +1342,11 @@ $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 <<
 
 $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
-	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe $(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
+	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe $(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
 	if exist $(GVIM).exe.manifest mt.exe -nologo -manifest $(GVIM).exe.manifest -updateresource:$(GVIM).exe;1
 
 $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
-	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe $(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
+	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe $(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
 !else
@@ -1348,7 +1356,7 @@ $(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE
 		$(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) @<<
+	$(LINK) @<<
 $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(VIM).exe $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ)
 $(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ)
 $(TCL_OBJ) $(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ)
@@ -1413,6 +1421,7 @@ clean: testclean
 	- if exist $(GVIM).exe del $(GVIM).exe
 	- if exist $(GVIM).map del $(GVIM).map
 	- if exist $(VIMDLLBASE).dll del $(VIMDLLBASE).dll
+	- if exist $(VIMDLLBASE).ilk del $(VIMDLLBASE).ilk
 	- if exist $(VIMDLLBASE).lib del $(VIMDLLBASE).lib
 	- if exist $(VIMDLLBASE).exp del $(VIMDLLBASE).exp
 	- if exist $(VIMDLLBASE).pdb del $(VIMDLLBASE).pdb
@@ -1423,9 +1432,6 @@ clean: testclean
 	- if exist uninstall.exe del uninstall.exe
 	- if exist if_perl.c del if_perl.c
 	- if exist auto\if_perl.c del auto\if_perl.c
-	- if exist dimm.h del dimm.h
-	- if exist dimm_i.c del dimm_i.c
-	- if exist dimm.tlb del dimm.tlb
 	- if exist dosinst.exe del dosinst.exe
 	cd xxd
 	$(MAKE) /NOLOGO -f Make_mvc.mak clean
@@ -1442,7 +1448,17 @@ clean: testclean
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim --clean -X --not-a-term -u create_cmdidxs.vim
+	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
+
+# Run vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.  If this fails because you don't have Vim yet:
+#   - change nv_cmds[] in nv_cmds.h to add the new normal/visual mode command.
+#   - run "make nvcmdidxs" to generate nv_cmdidxs.h
+nvcmdidxs: nv_cmds.h
+	$(CC) /nologo -I. -Iproto -DNDEBUG create_nvcmdidxs.c -link -subsystem:$(SUBSYSTEM_TOOLS)
+	vim --clean -N -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	-del create_nvcmdidxs.exe
 
 test:
 	cd testdir
@@ -1512,6 +1528,8 @@ test_vim9:
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
 .cpp{$(OUTDIR)/}.obj::
 	$(CC) $(CFLAGS_OUTDIR) $<
+
+$(OUTDIR)/alloc.obj:	$(OUTDIR) alloc.c  $(INCL)
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
 
@@ -1599,6 +1617,8 @@ $(OUTDIR)/filepath.obj:	$(OUTDIR) filepath.c  $(INCL)
 
 $(OUTDIR)/findfile.obj:	$(OUTDIR) findfile.c  $(INCL)
 
+$(OUTDIR)/float.obj:	$(OUTDIR) float.c  $(INCL)
+
 $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
 $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
@@ -1625,7 +1645,7 @@ $(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c $(INCL) $(GUI_INCL) version.h
 
 $(OUTDIR)/gui_dwrite.obj:	$(OUTDIR) gui_dwrite.cpp gui_dwrite.h
 
-$(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL) if_cscope.h
+$(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL)
 
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
@@ -1703,7 +1723,7 @@ $(OUTDIR)/netbeans.obj:	$(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL) version.h
 
 $(OUTDIR)/channel.obj:	$(OUTDIR) channel.c $(INCL)
 
-$(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL)
+$(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL) nv_cmdidxs.h nv_cmds.h
 
 $(OUTDIR)/option.obj:	$(OUTDIR) option.c  $(INCL) optiondefs.h
 
@@ -1762,6 +1782,8 @@ $(OUTDIR)/spellfile.obj:	$(OUTDIR) spellfile.c  $(INCL)
 
 $(OUTDIR)/spellsuggest.obj:	$(OUTDIR) spellsuggest.c  $(INCL)
 
+$(OUTDIR)/strings.obj:	$(OUTDIR) strings.c  $(INCL)
+
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
@@ -1790,9 +1812,15 @@ $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/version.obj:	$(OUTDIR) version.c  $(INCL) version.h
 
+$(OUTDIR)/vim9cmds.obj:	$(OUTDIR) vim9cmds.c  $(INCL)
+
 $(OUTDIR)/vim9compile.obj:	$(OUTDIR) vim9compile.c  $(INCL)
 
 $(OUTDIR)/vim9execute.obj:	$(OUTDIR) vim9execute.c  $(INCL)
+
+$(OUTDIR)/vim9expr.obj:	$(OUTDIR) vim9expr.c  $(INCL)
+
+$(OUTDIR)/vim9instr.obj:	$(OUTDIR) vim9instr.c  $(INCL)
 
 $(OUTDIR)/vim9script.obj:	$(OUTDIR) vim9script.c  $(INCL)
 
@@ -1806,11 +1834,11 @@ $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 	$(CC) $(CFLAGS_OUTDIR) $(XPM_INC) xpm_w32.c
 
 !if "$(VIMDLL)" == "yes"
-$(OUTDIR)/vimc.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vimc.res:	$(OUTDIR) vim.rc vim.manifest version.h gui_w32_rc.h \
 				vim.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS:-DFEAT_GUI_MSWIN=) vim.rc
 
-$(OUTDIR)/vimg.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vimg.res:	$(OUTDIR) vim.rc vim.manifest version.h gui_w32_rc.h \
 				vim.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
 
@@ -1819,7 +1847,7 @@ $(OUTDIR)/vimd.res:	$(OUTDIR) vim.rc version.h gui_w32_rc.h \
 				vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) -DRCDLL -DVIMDLLBASE=\"$(VIMDLLBASE)\" vim.rc
 !else
-$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc vim.manifest version.h gui_w32_rc.h \
 				tools.bmp tearoff.bmp vim.ico vim_error.ico \
 				vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
@@ -1828,13 +1856,6 @@ $(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
 iid_ole.c if_ole.h vim.tlb: if_ole.idl
 	midl /nologo /error none /proxy nul /iid iid_ole.c /tlb vim.tlb \
 		/header if_ole.h if_ole.idl
-
-dimm.h dimm_i.c: dimm.idl
-	midl /nologo /error none /proxy nul dimm.idl
-
-$(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
-
-$(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 
 
 CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
@@ -1893,12 +1914,13 @@ $(PATHDEF_SRC): Make_mvc.mak
 	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(E_CFLAGS)"; >> $(PATHDEF_SRC)
-	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(E_LINKARGS2)"; >> $(PATHDEF_SRC)
+	@echo char_u *all_lflags = (char_u *)"$(LINK:\=\\) $(LINKARGS1:\=\\) $(E_LINKARGS2)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
 
 # End Custom Build
 proto.h: \
+	proto/alloc.pro \
 	proto/arabic.pro \
 	proto/arglist.pro \
 	proto/autocmd.pro \
@@ -1935,6 +1957,7 @@ proto.h: \
 	proto/fileio.pro \
 	proto/filepath.pro \
 	proto/findfile.pro \
+	proto/float.pro \
 	proto/getchar.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
@@ -1981,6 +2004,7 @@ proto.h: \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/spellsuggest.pro \
+	proto/strings.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
@@ -1994,8 +2018,11 @@ proto.h: \
 	proto/undo.pro \
 	proto/usercmd.pro \
 	proto/userfunc.pro \
+	proto/vim9cmds.pro \
 	proto/vim9compile.pro \
 	proto/vim9execute.pro \
+	proto/vim9expr.pro \
+	proto/vim9instr.pro \
 	proto/vim9script.pro \
 	proto/vim9type.pro \
 	proto/viminfo.pro \

@@ -199,7 +199,6 @@ update_topline(void)
 	check_cursor_lnum();
 	curwin->w_topline = curwin->w_cursor.lnum;
 	curwin->w_botline = curwin->w_topline;
-	curwin->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
 	curwin->w_scbind_pos = 1;
 	return;
     }
@@ -535,6 +534,10 @@ changed_window_setting_win(win_T *wp)
     void
 set_topline(win_T *wp, linenr_T lnum)
 {
+#ifdef FEAT_DIFF
+    linenr_T prev_topline = wp->w_topline;
+#endif
+
 #ifdef FEAT_FOLDING
     // go to first of folded lines
     (void)hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
@@ -546,7 +549,9 @@ set_topline(win_T *wp, linenr_T lnum)
     wp->w_topline = lnum;
     wp->w_topline_was_set = TRUE;
 #ifdef FEAT_DIFF
-    wp->w_topfill = 0;
+    if (lnum != prev_topline)
+	// Keep the filler lines when the topline didn't change.
+	wp->w_topfill = 0;
 #endif
     wp->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_TOPLINE);
     // Don't set VALID_TOPLINE here, 'scrolloff' needs to be checked.
@@ -993,8 +998,12 @@ curs_columns(
     if (textwidth <= 0)
     {
 	// No room for text, put cursor in last char of window.
+	// If not wrapping, the last non-empty line.
 	curwin->w_wcol = curwin->w_width - 1;
-	curwin->w_wrow = curwin->w_height - 1;
+	if (curwin->w_p_wrap)
+	    curwin->w_wrow = curwin->w_height - 1;
+	else
+	    curwin->w_wrow = curwin->w_height - 1 - curwin->w_empty_rows;
     }
     else if (curwin->w_p_wrap && curwin->w_width != 0)
     {
@@ -1018,7 +1027,7 @@ curs_columns(
 	    // column
 	    sbr = get_showbreak_value(curwin);
 	    if (*sbr && *ml_get_cursor() == NUL
-				    && curwin->w_wcol == (int)vim_strsize(sbr))
+				    && curwin->w_wcol == vim_strsize(sbr))
 		curwin->w_wcol = 0;
 #endif
 	}
@@ -1143,7 +1152,7 @@ curs_columns(
 	}
 	else if (extra == 1)
 	{
-	    // less then 'scrolloff' lines above, decrease skipcol
+	    // less than 'scrolloff' lines above, decrease skipcol
 	    extra = (curwin->w_skipcol + so * width - curwin->w_virtcol
 				     + width - 1) / width;
 	    if (extra > 0)
@@ -1155,7 +1164,7 @@ curs_columns(
 	}
 	else if (extra == 2)
 	{
-	    // less then 'scrolloff' lines below, increase skipcol
+	    // less than 'scrolloff' lines below, increase skipcol
 	    endcol = (n - curwin->w_height + 1) * width;
 	    while (endcol > curwin->w_virtcol)
 		endcol -= width;
@@ -1225,40 +1234,58 @@ textpos2screenpos(
     int		rowoff = 0;
     colnr_T	coloff = 0;
 
-    if (pos->lnum >= wp->w_topline && pos->lnum < wp->w_botline)
+    if (pos->lnum >= wp->w_topline && pos->lnum <= wp->w_botline)
     {
-	colnr_T off;
-	colnr_T col;
-	int     width;
+	colnr_T	    off;
+	colnr_T	    col;
+	int	    width;
+	linenr_T    lnum = pos->lnum;
+#ifdef FEAT_FOLDING
+	int	    is_folded;
 
-	row = plines_m_win(wp, wp->w_topline, pos->lnum - 1) + 1;
-	getvcol(wp, pos, &scol, &ccol, &ecol);
-
-	// similar to what is done in validate_cursor_col()
-	col = scol;
-	off = win_col_off(wp);
-	col += off;
-	width = wp->w_width - off + win_col_off2(wp);
-
-	// long line wrapping, adjust row
-	if (wp->w_p_wrap
-		&& col >= (colnr_T)wp->w_width
-		&& width > 0)
+	is_folded = hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
+#endif
+	row = plines_m_win(wp, wp->w_topline, lnum - 1) + 1;
+#ifdef FEAT_FOLDING
+	if (is_folded)
 	{
-	    // use same formula as what is used in curs_columns()
-	    rowoff = ((col - wp->w_width) / width + 1);
-	    col -= rowoff * width;
+	    row += W_WINROW(wp);
+	    coloff = wp->w_wincol + 1;
 	}
-	col -= wp->w_leftcol;
-	if (col >= wp->w_width)
-	    col = -1;
-	if (col >= 0)
-	    coloff = col - scol + wp->w_wincol + 1;
 	else
-	    // character is left or right of the window
-	    row = scol = ccol = ecol = 0;
+#endif
+	{
+	    getvcol(wp, pos, &scol, &ccol, &ecol);
+
+	    // similar to what is done in validate_cursor_col()
+	    col = scol;
+	    off = win_col_off(wp);
+	    col += off;
+	    width = wp->w_width - off + win_col_off2(wp);
+
+	    // long line wrapping, adjust row
+	    if (wp->w_p_wrap
+		    && col >= (colnr_T)wp->w_width
+		    && width > 0)
+	    {
+		// use same formula as what is used in curs_columns()
+		rowoff = ((col - wp->w_width) / width + 1);
+		col -= rowoff * width;
+	    }
+	    col -= wp->w_leftcol;
+	    if (col >= wp->w_width)
+		col = -1;
+	    if (col >= 0 && row + rowoff <= wp->w_height)
+	    {
+		coloff = col - scol + wp->w_wincol + 1;
+		row += W_WINROW(wp);
+	    }
+	    else
+		// character is left, right or below of the window
+		row = rowoff = scol = ccol = ecol = 0;
+	}
     }
-    *rowp = W_WINROW(wp) + row + rowoff;
+    *rowp = row + rowoff;
     *scolp = scol + coloff;
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;
@@ -1281,6 +1308,12 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
     if (rettv_dict_alloc(rettv) != OK)
 	return;
     dict = rettv->vval.v_dict;
+
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_number_arg(argvars, 2) == FAIL))
+	return;
 
     wp = find_win_by_nr_or_id(&argvars[0]);
     if (wp == NULL)
@@ -2666,7 +2699,6 @@ get_scroll_overlap(lineoff_T *lp, int dir)
 	*lp = loff1;	// 1 line overlap
     else
 	*lp = loff2;	// 2 lines overlap
-    return;
 }
 
 /*

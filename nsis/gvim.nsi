@@ -119,17 +119,18 @@ RequestExecutionLevel highest
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_LICENSEPAGE_CHECKBOX
-!define MUI_FINISHPAGE_RUN                 "$0\gvim.exe"
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_FUNCTION        LaunchApplication
 !define MUI_FINISHPAGE_RUN_TEXT            $(str_show_readme)
-!define MUI_FINISHPAGE_RUN_PARAMETERS      "-R $\"$0\README.txt$\""
 
 # This adds '\Vim' to the user choice automagically.  The actual value is
 # obtained below with CheckOldVim.
 !ifdef WIN64
-InstallDir "$PROGRAMFILES64\Vim"
+  !define DEFAULT_INSTDIR "$PROGRAMFILES64\Vim"
 !else
-InstallDir "$PROGRAMFILES\Vim"
+  !define DEFAULT_INSTDIR "$PROGRAMFILES\Vim"
 !endif
+InstallDir ${DEFAULT_INSTDIR}
 
 # Types of installs we can perform:
 InstType $(str_type_typical)
@@ -300,6 +301,11 @@ Function CheckOldVim
   Exch $0  # put $0 on top of stack, restore $0 to original value
 FunctionEnd
 
+Function LaunchApplication
+   SetOutPath $0
+   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\README.txt"'
+FunctionEnd
+
 ##########################################################
 Section "$(str_section_old_ver)" id_section_old_ver
 	SectionIn 1 2 3 RO
@@ -342,6 +348,9 @@ Section "$(str_section_exe)" id_section_exe
 !if /FileExists "${VIMSRC}\vim${BIT}.dll"
 	File ${VIMSRC}\vim${BIT}.dll
 !endif
+!if /FileExists "${VIMRT}\libsodium.dll"
+	File ${VIMRT}\libsodium.dll
+!endif
 	File /oname=install.exe ${VIMSRC}\installw32.exe
 	File /oname=uninstall.exe ${VIMSRC}\uninstallw32.exe
 	File ${VIMSRC}\vimrun.exe
@@ -351,7 +360,6 @@ Section "$(str_section_exe)" id_section_exe
 	File ..\README.txt
 	File ..\uninstall.txt
 	File ${VIMRT}\*.vim
-	File ${VIMRT}\rgb.txt
 
 	File ${VIMTOOLS}\diff.exe
 	File ${VIMTOOLS}\winpty${BIT}.dll
@@ -361,6 +369,8 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\colors\*.*
 	SetOutPath $0\colors\tools
 	File ${VIMRT}\colors\tools\*.*
+	SetOutPath $0\colors\lists
+	File ${VIMRT}\colors\lists\*.*
 
 	SetOutPath $0\compiler
 	File ${VIMRT}\compiler\*.*
@@ -705,8 +715,13 @@ Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
 !endif
 
-  # Check $VIM
-  ReadEnvStr $INSTDIR "VIM"
+  ${If} $INSTDIR == ${DEFAULT_INSTDIR}
+    # Check $VIM
+    ReadEnvStr $3 "VIM"
+    ${If} $3 != ""
+      StrCpy $INSTDIR $3
+    ${EndIf}
+  ${EndIf}
 
   call CheckOldVim
   Pop $3
@@ -716,18 +731,9 @@ Function .onInit
     SectionSetInstTypes ${id_section_old_ver} 0
     SectionSetText ${id_section_old_ver} ""
   ${Else}
-    ${If} $INSTDIR == ""
+    ${If} $INSTDIR == ${DEFAULT_INSTDIR}
       StrCpy $INSTDIR $3
     ${EndIf}
-  ${EndIf}
-
-  # If did not find a path: use the default dir.
-  ${If} $INSTDIR == ""
-!ifdef WIN64
-    StrCpy $INSTDIR "$PROGRAMFILES64\Vim"
-!else
-    StrCpy $INSTDIR "$PROGRAMFILES\Vim"
-!endif
   ${EndIf}
 
   ${If} ${RunningX64}

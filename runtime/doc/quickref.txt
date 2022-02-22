@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2021 Mar 29
+*quickref.txt*  For Vim version 8.2.  Last change: 2021 Dec 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -635,6 +635,7 @@ Short explanation of each option:		*option-list*
 'buflisted'	  'bl'	    whether the buffer shows up in the buffer list
 'buftype'	  'bt'	    special type of buffer
 'casemap'	  'cmp'     specifies how case of letters is changed
+'cdhome'	  'cdh'	    change directory to the home directory by ":cd"
 'cdpath'	  'cd'	    list of directories searched with ":cd"
 'cedit'			    key used to open the command-line window
 'charconvert'	  'ccv'     expression for character encoding conversion
@@ -732,6 +733,7 @@ Short explanation of each option:		*option-list*
 'guifontset'	  'gfs'     GUI: Names of multibyte fonts to be used
 'guifontwide'	  'gfw'     list of font names for double-wide characters
 'guiheadroom'	  'ghr'     GUI: pixels room for window decorations
+'guiligatures'	  'gli'	    GTK GUI: ASCII characters that can form shapes
 'guioptions'	  'go'	    GUI: Which components and options are used
 'guipty'		    GUI: try to use a pseudo-tty for ":!" commands
 'guitablabel'	  'gtl'     GUI: custom label for a tab page
@@ -948,6 +950,7 @@ Short explanation of each option:		*option-list*
 'textmode'	  'tx'	    obsolete, use 'fileformat'
 'textwidth'	  'tw'	    maximum width of text that is being inserted
 'thesaurus'	  'tsr'     list of thesaurus files for keyword completion
+'thesaurusfunc'	  'tsrfu'   function to be used for thesaurus completion
 'tildeop'	  'top'     tilde command "~" behaves like an operator
 'timeout'	  'to'	    time out on mappings and key codes
 'timeoutlen'	  'tm'	    time out time in milliseconds
@@ -1007,6 +1010,7 @@ Short explanation of each option:		*option-list*
 'writeany'	  'wa'	    write to file with no need for "!" override
 'writebackup'	  'wb'	    make a backup before overwriting a file
 'writedelay'	  'wd'	    delay this many msec for each char (for debug)
+'xtermcodes'		    request terminal codes from an xterm
 ------------------------------------------------------------------------------
 *Q_ur*		Undo/Redo commands
 

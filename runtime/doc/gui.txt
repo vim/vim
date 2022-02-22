@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.2.  Last change: 2020 Sep 28
+*gui.txt*       For Vim version 8.2.  Last change: 2021 Jun 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -411,7 +411,8 @@ Mouse mapping with modifiers does not work for modeless selection.
 3.7 Drag and drop						*drag-n-drop*
 
 You can drag and drop one or more files into the Vim window, where they will
-be opened as if a |:drop| command was used.
+be opened as if a |:drop| command was used.  You can check if this is
+supported with the *drop_file* feature: `has('drop_file')`.
 
 If you hold down Shift while doing this, Vim changes to the first dropped
 file's directory.  If you hold Ctrl Vim will always split a new window for the
@@ -619,6 +620,11 @@ the ":imenu" command.  For inserting text in any mode, you can use the
 expression register: >
 
    :amenu Insert.foobar   "='foobar'<CR>P
+
+The special text <Cmd> begins a "command menu", it executes the command
+directly without changing modes.  Where you might use ":...<CR>" you can
+instead use "<Cmd>...<CR>".  See |<Cmd>| for more info.  Example: >
+	anoremenu File.Next <Cmd>next<CR>
 
 Note that the '<' and 'k' flags in 'cpoptions' also apply here (when
 included they make the <> form and raw key codes not being recognized).

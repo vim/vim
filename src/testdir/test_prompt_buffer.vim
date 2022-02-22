@@ -39,6 +39,10 @@ func WriteScript(name)
 	\ '  set nomodified',
 	\ 'endfunc',
 	\ '',
+	\ 'func SwitchWindows()',
+	\ '  call timer_start(0, {-> execute("wincmd p|wincmd p", "")})',
+	\ 'endfunc',
+	\ '',
 	\ 'call setline(1, "other buffer")',
 	\ 'set nomodified',
 	\ 'new',
@@ -99,6 +103,27 @@ func Test_prompt_editing()
   call delete(scriptName)
 endfunc
 
+func Test_prompt_switch_windows()
+  call CanTestPromptBuffer()
+  let scriptName = 'XpromptSwitchWindows'
+  call WriteScript(scriptName)
+
+  let buf = RunVimInTerminal('-S ' . scriptName, {'rows': 12})
+  call WaitForAssert({-> assert_equal('cmd:', term_getline(buf, 1))})
+  call WaitForAssert({-> assert_match('-- INSERT --', term_getline(buf, 12))})
+
+  call term_sendkeys(buf, "\<C-O>:call SwitchWindows()\<CR>")
+  call term_wait(buf, 50)
+  call WaitForAssert({-> assert_match('-- INSERT --', term_getline(buf, 12))})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call term_wait(buf, 50)
+  call WaitForAssert({-> assert_match('^ *$', term_getline(buf, 12))})
+
+  call StopVimInTerminal(buf)
+  call delete(scriptName)
+endfunc
+
 func Test_prompt_garbage_collect()
   func MyPromptCallback(x, text)
     " NOP
@@ -150,6 +175,8 @@ func Test_prompt_buffer_edit()
   call assert_beeps('normal! S')
   call assert_beeps("normal! \<C-A>")
   call assert_beeps("normal! \<C-X>")
+  call assert_beeps("normal! dp")
+  call assert_beeps("normal! do")
   " pressing CTRL-W in the prompt buffer should trigger the window commands
   call assert_equal(1, winnr())
   exe "normal A\<C-W>\<C-W>"

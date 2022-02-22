@@ -22,7 +22,7 @@ map F "hy2l
 " initialisations:
 " KM	cleanup buffer
 " Y	create tower of desired height
-" NOQ	copy it and inster a T
+" NOQ	copy it and insert a T
 " NO	copy this one
 " S	change last char into a $
 " R	change last char in previous line into a n

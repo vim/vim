@@ -51,7 +51,7 @@ alist_clear(alist_T *al)
     void
 alist_init(alist_T *al)
 {
-    ga_init2(&al->al_ga, (int)sizeof(aentry_T), 5);
+    ga_init2(&al->al_ga, sizeof(aentry_T), 5);
 }
 
 /*
@@ -148,7 +148,7 @@ alist_set(
 	return;
 
     alist_clear(al);
-    if (ga_grow(&al->al_ga, count) == OK)
+    if (GA_GROW_OK(&al->al_ga, count))
     {
 	for (i = 0; i < count; ++i)
 	{
@@ -275,7 +275,7 @@ do_one_arg(char_u *str)
     static int
 get_arglist(garray_T *gap, char_u *str, int escaped)
 {
-    ga_init2(gap, (int)sizeof(char_u *), 20);
+    ga_init2(gap, sizeof(char_u *), 20);
     while (*str != NUL)
     {
 	if (ga_grow(gap, 1) == FAIL)
@@ -355,7 +355,7 @@ alist_add_list(
     int		old_argcount = ARGCOUNT;
 
     if (check_arglist_locked() != FAIL
-	    && ga_grow(&ALIST(curwin)->al_ga, count) == OK)
+	    && GA_GROW_OK(&ALIST(curwin)->al_ga, count))
     {
 	if (after < 0)
 	    after = 0;
@@ -460,7 +460,7 @@ do_arglist(
 	    vim_regfree(regmatch.regprog);
 	    vim_free(p);
 	    if (!didone)
-		semsg(_(e_nomatch2), ((char_u **)new_ga.ga_data)[i]);
+		semsg(_(e_no_match_str_2), ((char_u **)new_ga.ga_data)[i]);
 	}
 	ga_clear(&new_ga);
     }
@@ -471,7 +471,7 @@ do_arglist(
 	ga_clear(&new_ga);
 	if (i == FAIL || exp_count == 0)
 	{
-	    emsg(_(e_nomatch));
+	    emsg(_(e_no_match));
 	    return FAIL;
 	}
 
@@ -599,7 +599,7 @@ ex_args(exarg_T *eap)
 	garray_T	*gap = &curwin->w_alist->al_ga;
 
 	// ":argslocal": make a local copy of the global argument list.
-	if (ga_grow(gap, GARGCOUNT) == OK)
+	if (GA_GROW_OK(gap, GARGCOUNT))
 	    for (i = 0; i < GARGCOUNT; ++i)
 		if (GARGLIST[i].ae_fname != NULL)
 		{
@@ -673,11 +673,11 @@ do_argfile(exarg_T *eap, int argn)
     if (argn < 0 || argn >= ARGCOUNT)
     {
 	if (ARGCOUNT <= 1)
-	    emsg(_("E163: There is only one file to edit"));
+	    emsg(_(e_there_is_only_one_file_to_edit));
 	else if (argn < 0)
-	    emsg(_("E164: Cannot go before first file"));
+	    emsg(_(e_cannot_go_before_first_file));
 	else
-	    emsg(_("E165: Cannot go beyond last file"));
+	    emsg(_(e_cannot_go_beyond_last_file));
     }
     else
     {
@@ -759,6 +759,33 @@ ex_next(exarg_T *eap)
 }
 
 /*
+ * ":argdedupe"
+ */
+    void
+ex_argdedupe(exarg_T *eap UNUSED)
+{
+    int i;
+    int j;
+
+    for (i = 0; i < ARGCOUNT; ++i)
+	for (j = i + 1; j < ARGCOUNT; ++j)
+	    if (fnamecmp(ARGLIST[i].ae_fname, ARGLIST[j].ae_fname) == 0)
+	    {
+		vim_free(ARGLIST[j].ae_fname);
+		mch_memmove(ARGLIST + j, ARGLIST + j + 1,
+					(ARGCOUNT - j - 1) * sizeof(aentry_T));
+		--ARGCOUNT;
+
+		if (curwin->w_arg_idx == j)
+		    curwin->w_arg_idx = i;
+		else if (curwin->w_arg_idx > j)
+		    --curwin->w_arg_idx;
+
+		--j;
+	    }
+}
+
+/*
  * ":argedit"
  */
     void
@@ -770,9 +797,7 @@ ex_argedit(exarg_T *eap)
 
     if (do_arglist(eap->arg, AL_ADD, i, TRUE) == FAIL)
 	return;
-#ifdef FEAT_TITLE
     maketitle();
-#endif
 
     if (curwin->w_arg_idx == 0
 	    && (curbuf->b_ml.ml_flags & ML_EMPTY)
@@ -792,9 +817,7 @@ ex_argadd(exarg_T *eap)
     do_arglist(eap->arg, AL_ADD,
 	       eap->addr_count > 0 ? (int)eap->line2 : curwin->w_arg_idx + 1,
 	       FALSE);
-#ifdef FEAT_TITLE
     maketitle();
-#endif
 }
 
 /*
@@ -816,7 +839,7 @@ ex_argdelete(exarg_T *eap)
 	{
 	    if (curwin->w_arg_idx >= ARGCOUNT)
 	    {
-		emsg(_("E610: No argument to delete"));
+		emsg(_(e_no_argument_to_delete));
 		return;
 	    }
 	    eap->line1 = eap->line2 = curwin->w_arg_idx + 1;
@@ -827,12 +850,12 @@ ex_argdelete(exarg_T *eap)
 	n = eap->line2 - eap->line1 + 1;
 	if (*eap->arg != NUL)
 	    // Can't have both a range and an argument.
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else if (n <= 0)
 	{
 	    // Don't give an error for ":%argdel" if the list is empty.
 	    if (eap->line1 != 1 || eap->line2 != 0)
-		emsg(_(e_invrange));
+		emsg(_(e_invalid_range));
 	}
 	else
 	{
@@ -853,9 +876,7 @@ ex_argdelete(exarg_T *eap)
     }
     else
 	do_arglist(eap->arg, AL_DEL, 0, FALSE);
-#ifdef FEAT_TITLE
     maketitle();
-#endif
 }
 
 /*
@@ -916,11 +937,12 @@ do_arg_all(
     tabpage_T	*old_curtab, *last_curtab;
     win_T	*new_curwin = NULL;
     tabpage_T	*new_curtab = NULL;
+    int		prev_arglist_locked = arglist_locked;
 
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
-	emsg(_(e_cmdwin));
+	emsg(_(e_invalid_in_cmdline_window));
 	return;
     }
 #endif
@@ -942,13 +964,14 @@ do_arg_all(
     // watch out for its size to be changed.
     alist = curwin->w_alist;
     ++alist->al_refcount;
+    arglist_locked = TRUE;
 
     old_curwin = curwin;
     old_curtab = curtab;
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-# endif
+#endif
 
     // Try closing all windows that are not in the argument list.
     // Also close windows that are not full width;
@@ -1106,7 +1129,7 @@ do_arg_all(
 			else if (wpnext->w_frame->fr_parent
 						 != curwin->w_frame->fr_parent)
 			{
-			    emsg(_("E249: window layout changed unexpectedly"));
+			    emsg(_(e_window_layout_changed_unexpectedly));
 			    i = count;
 			    break;
 			}
@@ -1161,6 +1184,7 @@ do_arg_all(
 
     // Remove the "lock" on the argument list.
     alist_unlink(alist);
+    arglist_locked = prev_arglist_locked;
 
     --autocmd_no_enter;
 
@@ -1271,6 +1295,9 @@ f_argc(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_UNKNOWN)
 	// use the current window
 	rettv->vval.v_number = ARGCOUNT;
@@ -1306,6 +1333,12 @@ f_arglistid(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
+	return;
+
     rettv->vval.v_number = -1;
     wp = find_tabwin(&argvars[0], &argvars[1], NULL);
     if (wp != NULL)
@@ -1335,6 +1368,12 @@ f_argv(typval_T *argvars, typval_T *rettv)
     int		idx;
     aentry_T	*arglist = NULL;
     int		argcount = -1;
+
+    if (in_vim9script()
+	    && (check_for_opt_number_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
+	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {

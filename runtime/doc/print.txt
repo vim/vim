@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
+*print.txt*     For Vim version 8.2.  Last change: 2022 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -173,6 +173,13 @@ If evaluating the expression fails or it results in a non-zero number, you get
 an error message.  In that case Vim will delete the file.  In the default
 value for non-MS-Windows a trick is used: Adding "v:shell_error" will result
 in a non-zero number when the system() call fails.
+
+If the expression starts with s: or |<SID>|, then it is replaced with the
+script ID (|local-function|). Example: >
+		set printexpr=s:MyPrintFile()
+		set printexpr=<SID>SomePrintFile()
+Otherwise, the expression is evaluated in the context of the script where the
+option was set, thus script-local items are available.
 
 This option cannot be set from a |modeline| or in the |sandbox|, for security
 reasons.
@@ -717,7 +724,7 @@ There are a couple of points to bear in mind:
 ==============================================================================
 8. Formfeed Characters					*printing-formfeed*
 
-By default Vim does not do any special processing of |formfeed| control
+By default Vim does not do any special processing of formfeed control
 characters.  Setting the 'printoptions' formfeed item will make Vim recognize
 formfeed characters and continue printing the current line at the beginning
 of the first line on a new page.  The use of formfeed characters provides

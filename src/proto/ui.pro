@@ -19,7 +19,7 @@ int vim_is_input_buf_empty(void);
 int vim_free_in_input_buf(void);
 int vim_used_in_input_buf(void);
 char_u *get_input_buf(void);
-void set_input_buf(char_u *p);
+void set_input_buf(char_u *p, int overwrite);
 void add_to_input_buf(char_u *s, int len);
 void add_to_input_buf_csi(char_u *str, int len);
 void trash_input_buf(void);

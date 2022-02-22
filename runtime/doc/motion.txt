@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.2.  Last change: 2021 Mar 28
+*motion.txt*    For Vim version 8.2.  Last change: 2021 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,9 +59,14 @@ or change text.  The following operators are available:
 	|<|	<	shift left
 	|zf|	zf	define a fold
 	|g@|	g@	call function set with the 'operatorfunc' option
-
+						*motion-count-multiplied*
 If the motion includes a count and the operator also had a count before it,
 the two counts are multiplied.  For example: "2d3w" deletes six words.
+						*operator-doubled*
+When doubling the operator it operates on a line.  When using a count, before
+or after the first character, that many lines are operated upon.  Thus `3dd`
+deletes three lines. A count before and after the first character is
+multiplied, thus `2y3y` yanks six lines.
 
 After applying the operator the cursor is mostly left at the start of the text
 that was operated upon.  For example, "yfe" doesn't move the cursor, but "yFe"
@@ -195,9 +200,9 @@ l		or					*l*
 							*$* *<End>* *<kEnd>*
 $  or <End>		To the end of the line.  When a count is given also go
 			[count - 1] lines downward, or as far is possible.
-			|inclusive| motion.  If a count of 2 of larger is
+			|inclusive| motion.  If a count of 2 or larger is
 			given and the cursor is on the last line, that is an
-			error an the cursor doesn't move.
+			error and the cursor doesn't move.
 			In Visual mode the cursor goes to just after the last
 			character in the line.
 			When 'virtualedit' is active, "$" may move the cursor
@@ -381,6 +386,8 @@ w			[count] words forward.  |exclusive| motion.
 
 <C-Right>	or					*<C-Right>* *W*
 W			[count] WORDS forward.  |exclusive| motion.
+			If <C-Right> does not work, check out
+			|arrow_modifiers|.
 
 							*e*
 e			Forward to the end of word [count] |inclusive|.
@@ -395,6 +402,8 @@ b			[count] words backward.  |exclusive| motion.
 
 <C-Left>	or					*<C-Left>* *B*
 B			[count] WORDS backward.  |exclusive| motion.
+			If <C-Left> does not work, check out
+			|arrow_modifiers|.
 
 							*ge*
 ge			Backward to the end of word [count] |inclusive|.
@@ -779,6 +788,9 @@ m<  or  m>		Set the |'<| or |'>| mark.  Useful to change what the
 						*:k*
 :[range]k{a-zA-Z'}	Same as :mark, but the space before the mark name can
 			be omitted.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 						*'* *'a* *`* *`a*
 '{a-z}  `{a-z}		Jump to the mark {a-z} in the current buffer.
@@ -1029,12 +1041,10 @@ commands that start editing a new file.
 							*CTRL-O*
 CTRL-O			Go to [count] Older cursor position in jump list
 			(not a motion command).
-			{not available without the |+jumplist| feature}
 
 <Tab>		or					*CTRL-I* *<Tab>*
 CTRL-I			Go to [count] newer cursor position in jump list
 			(not a motion command).
-			{not available without the |+jumplist| feature}
 
 			NOTE: In the GUI and in a terminal supporting
 			|modifyOtherKeys|, CTRL-I can be mapped separately
@@ -1044,18 +1054,15 @@ CTRL-I			Go to [count] newer cursor position in jump list
 
 							*:ju* *:jumps*
 :ju[mps]		Print the jump list (not a motion command).
-			{not available without the |+jumplist| feature}
 
 							*:cle* *:clearjumps*
 :cle[arjumps]		Clear the jump list of the current window.
-			{not available without the |+jumplist| feature}
 
 							*jumplist*
 Jumps are remembered in a jump list.  With the CTRL-O and CTRL-I command you
 can go to cursor positions before older jumps, and back again.  Thus you can
 move up and down the list.  There is a separate jump list for each window.
 The maximum number of entries is fixed at 100.
-{not available without the |+jumplist| feature}
 
 For example, after three jump commands you have this jump list:
 
@@ -1132,13 +1139,11 @@ g;			Go to [count] older position in change list.
 			positions go to the oldest change.
 			If there is no older change an error message is given.
 			(not a motion command)
-			{not available without the |+jumplist| feature}
 
 							*g,* *E663*
 g,			Go to [count] newer cursor position in change list.
 			Just like |g;| but in the opposite direction.
 			(not a motion command)
-			{not available without the |+jumplist| feature}
 
 When using a count you jump as far back or forward as possible.  Thus you can
 use "999g;" to go to the first change for which the position is still

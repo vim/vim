@@ -19,11 +19,7 @@ func Test_gf_url()
   call search("^second")
   call search("URL")
   call assert_equal("URL://machine.name/tmp/vimtest2b", expand("<cfile>"))
-  if has("ebcdic")
-      set isf=@,240-249,/,.,-,_,+,,,$,:,~,\
-  else
-      set isf=@,48-57,/,.,-,_,+,,,$,~,\
-  endif
+  set isf=@,48-57,/,.,-,_,+,,,$,~,\
   call search("^third")
   call search("name")
   call assert_equal("URL:\\\\machine.name\\vimtest2c", expand("<cfile>"))
@@ -90,11 +86,7 @@ endfunc
 
 " Test for invoking 'gf' on a ${VAR} variable
 func Test_gf()
-  if has("ebcdic")
-    set isfname=@,240-249,/,.,-,_,+,,,$,:,~,{,}
-  else
-    set isfname=@,48-57,/,.,-,_,+,,,$,:,~,{,}
-  endif
+  set isfname=@,48-57,/,.,-,_,+,,,$,:,~,{,}
 
   call writefile(["Test for gf command"], "Xtest1")
   if has("unix")
@@ -215,6 +207,32 @@ func Test_gf_includeexpr()
   call assert_equal('somefile.java', g:Inc_fname)
   close!
   delfunc IncFunc
+endfunc
+
+" Test for using a script-local function for 'includeexpr'
+func Test_includeexpr_scriptlocal_func()
+  func! s:IncludeFunc()
+    let g:IncludeFname = v:fname
+    return ''
+  endfunc
+  set includeexpr=s:IncludeFunc()
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &includeexpr)
+  new | only
+  call setline(1, 'TestFile1')
+  let g:IncludeFname = ''
+  call assert_fails('normal! gf', 'E447:')
+  call assert_equal('TestFile1', g:IncludeFname)
+  bw!
+  set includeexpr=<SID>IncludeFunc()
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &includeexpr)
+  new | only
+  call setline(1, 'TestFile2')
+  let g:IncludeFname = ''
+  call assert_fails('normal! gf', 'E447:')
+  call assert_equal('TestFile2', g:IncludeFname)
+  set includeexpr&
+  delfunc s:IncludeFunc
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

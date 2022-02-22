@@ -320,7 +320,7 @@ ex_profile(exarg_T *eap)
 	set_vim_var_nr(VV_PROFILING, 1L);
     }
     else if (do_profiling == PROF_NONE)
-	emsg(_("E750: First use \":profile start {fname}\""));
+	emsg(_(e_first_use_profile_start_fname));
     else if (STRCMP(eap->arg, "pause") == 0)
     {
 	if (do_profiling == PROF_YES)
@@ -552,6 +552,24 @@ func_do_profile(ufunc_T *fp)
     }
 
     fp->uf_profiling = TRUE;
+}
+
+/*
+ * Save time when starting to invoke another script or function.
+ */
+    static void
+script_prof_save(
+    proftime_T	*tm)	    // place to store wait time
+{
+    scriptitem_T    *si;
+
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+    {
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	if (si->sn_prof_on && si->sn_pr_nest++ == 0)
+	    profile_start(&si->sn_pr_child);
+    }
+    profile_get_wait(tm);
 }
 
 /*
@@ -793,24 +811,6 @@ script_do_profile(scriptitem_T *si)
 }
 
 /*
- * Save time when starting to invoke another script or function.
- */
-    void
-script_prof_save(
-    proftime_T	*tm)	    // place to store wait time
-{
-    scriptitem_T    *si;
-
-    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
-    {
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
-	if (si->sn_prof_on && si->sn_pr_nest++ == 0)
-	    profile_start(&si->sn_pr_child);
-    }
-    profile_get_wait(tm);
-}
-
-/*
  * Count time spent in children after invoking another script or function.
  */
     void
@@ -921,7 +921,7 @@ profile_dump(void)
     {
 	fd = mch_fopen((char *)profile_fname, "w");
 	if (fd == NULL)
-	    semsg(_(e_notopen), profile_fname);
+	    semsg(_(e_cant_open_file_str), profile_fname);
 	else
 	{
 	    script_dump_profile(fd);

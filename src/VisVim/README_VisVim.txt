@@ -213,7 +213,7 @@ Troubleshooting
    Cause:	 You can't delete an item you once added to the add-ins
 		 list box.
    Explanation:  M$ just didn't put a 'delete' button in the dialog box.
-		 Unfortunately there is no DEL key accellerator as well...
+		 Unfortunately there is no DEL key accelerator as well...
    Workaround:	 You can't kill it, but you can knock it out:
 		 1. Uncheck the check box in front of 'Vim Developer Studio
 		    Add-in'.

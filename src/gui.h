@@ -393,7 +393,6 @@ typedef struct Gui
 # endif
 # ifdef USE_GTK3
     cairo_surface_t *surface;       // drawarea surface
-    gboolean	     by_signal;     // cause of draw operation
 # else
     GdkGC	*text_gc;	    // cached GC for normal text
 # endif
@@ -409,6 +408,9 @@ typedef struct Gui
     char_u	*browse_fname;	    // file name from filedlg
 
     guint32	event_time;
+
+    char_u ligatures_map[256];	    // ascii map for characters 0-255, value is
+				    // 1 if in 'guiligatures'
 #endif	// FEAT_GUI_GTK
 
 #if defined(FEAT_GUI_TABLINE) \
@@ -422,7 +424,7 @@ typedef struct Gui
 #endif
 
 #if defined(FEAT_TOOLBAR) \
-	&& (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU))
+	&& (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
     int		toolbar_height;	    // height of the toolbar
 #endif
 

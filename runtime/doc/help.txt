@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+*help.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
 
 			VIM - main help file
 									 k
@@ -88,6 +88,7 @@ Tuning Vim ~
 |usr_43.txt|  Using filetypes
 |usr_44.txt|  Your own syntax highlighted
 |usr_45.txt|  Select your language
+|usr_46.txt|  Write plugins using Vim9 script
 
 Making Vim Run ~
 |usr_90.txt|  Installing Vim
@@ -132,9 +133,10 @@ Advanced editing ~
 |windows.txt|	commands for using multiple windows and buffers
 |tabpage.txt|	commands for using multiple tab pages
 |spell.txt|	spell checking
-|diff.txt|	working with two to four versions of the same file
+|diff.txt|	working with two to eight versions of the same file
 |autocmd.txt|	automatically executing commands on an event
 |eval.txt|	expression evaluation, conditional commands
+|builtin.txt|	builtin functions
 |channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
 
@@ -145,6 +147,7 @@ Special issues ~
 |term.txt|	using different terminals and mice
 |terminal.txt|	Terminal window support
 |popup.txt|	popup window support
+|vim9.txt|	using Vim9 script
 
 Programming language support ~
 |indent.txt|	automatic indenting for C and other languages
@@ -153,6 +156,8 @@ Programming language support ~
 |filetype.txt|	settings done specifically for a type of file
 |quickfix.txt|	commands for a quick edit-compile-fix cycle
 |ft_ada.txt|	Ada (the programming language) support
+|ft_ps1.txt|	Filetype plugin for Windows PowerShell
+|ft_raku.txt|	Filetype plugin for Raku
 |ft_rust.txt|	Filetype plugin for Rust
 |ft_sql.txt|	about the SQL filetype plugin
 

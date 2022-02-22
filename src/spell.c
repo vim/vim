@@ -67,7 +67,7 @@
 #define REGION_ALL 0xff		// word valid in all regions
 
 // Result values.  Lower number is accepted over higher one.
-#define SP_BANNED	-1
+#define SP_BANNED	(-1)
 #define SP_OK		0
 #define SP_RARE		1
 #define SP_LOCAL	2
@@ -249,7 +249,7 @@ spell_check(
     if (*mi.mi_fend != NUL)
 	MB_PTR_ADV(mi.mi_fend);
 
-    (void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
+    (void)spell_casefold(wp, ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
 							     MAXWLEN + 1);
     mi.mi_fwordlen = (int)STRLEN(mi.mi_fword);
 
@@ -478,7 +478,7 @@ find_word(matchinf_T *mip, int mode)
 	    if (endidxcnt == MAXWLEN)
 	    {
 		// Must be a corrupted spell file.
-		emsg(_(e_format));
+		emsg(_(e_format_error_in_spell_file));
 		return;
 	    }
 	    endlen[endidxcnt] = wlen;
@@ -736,7 +736,8 @@ find_word(matchinf_T *mip, int mode)
 		    {
 			// "fword" is only needed for checking syllables.
 			if (ptr == mip->mi_word)
-			    (void)spell_casefold(ptr, wlen, fword, MAXWLEN);
+			    (void)spell_casefold(mip->mi_win,
+						    ptr, wlen, fword, MAXWLEN);
 			else
 			    vim_strncpy(fword, ptr, endlen[endidxcnt]);
 		    }
@@ -1213,7 +1214,7 @@ fold_more(matchinf_T *mip)
     if (*mip->mi_fend != NUL)
 	MB_PTR_ADV(mip->mi_fend);
 
-    (void)spell_casefold(p, (int)(mip->mi_fend - p),
+    (void)spell_casefold(mip->mi_win, p, (int)(mip->mi_fend - p),
 			     mip->mi_fword + mip->mi_fwordlen,
 			     MAXWLEN - mip->mi_fwordlen);
     flen = (int)STRLEN(mip->mi_fword + mip->mi_fwordlen);
@@ -1239,13 +1240,13 @@ spell_valid_case(
 /*
  * Return TRUE if spell checking is not enabled.
  */
-    int
+    static int
 no_spell_checking(win_T *wp)
 {
     if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL
 					 || wp->w_s->b_langp.ga_len == 0)
     {
-	emsg(_(e_no_spell));
+	emsg(_(e_spell_checking_is_not_possible));
 	return TRUE;
     }
     return FALSE;
@@ -1500,7 +1501,7 @@ spell_move_to(
 
 /*
  * For spell checking: concatenate the start of the following line "line" into
- * "buf", blanking-out special characters.  Copy less then "maxlen" bytes.
+ * "buf", blanking-out special characters.  Copy less than "maxlen" bytes.
  * Keep the blanks at the start of the next line, this is used in win_line()
  * to skip those bytes if the word was OK.
  */
@@ -2094,7 +2095,7 @@ did_set_spelllang(win_T *wp)
 		// destroying the buffer we are using...
 		if (!bufref_valid(&bufref))
 		{
-		    ret_msg = N_("E797: SpellFileMissing autocommand deleted buffer");
+		    ret_msg = N_(e_spellfilemising_autocommand_deleted_buffer);
 		    goto theend;
 		}
 	    }
@@ -2136,7 +2137,7 @@ did_set_spelllang(win_T *wp)
 		    if (ga_grow(&ga, 1) == FAIL)
 		    {
 			ga_clear(&ga);
-			ret_msg = e_outofmem;
+			ret_msg = e_out_of_memory;
 			goto theend;
 		    }
 		    LANGP_ENTRY(ga, ga.ga_len)->lp_slang = slang;
@@ -2533,7 +2534,6 @@ close_spellbuf(buf_T *buf)
 
 /*
  * Init the chartab used for spelling for ASCII.
- * EBCDIC is not supported!
  */
     void
 clear_spell_chartab(spelltab_T *sp)
@@ -2737,6 +2737,7 @@ spell_iswordp_w(int *p, win_T *wp)
  */
     int
 spell_casefold(
+    win_T	*wp,
     char_u	*str,
     int		len,
     char_u	*buf,
@@ -2765,7 +2766,21 @@ spell_casefold(
 		return FAIL;
 	    }
 	    c = mb_cptr2char_adv(&p);
-	    outi += mb_char2bytes(SPELL_TOFOLD(c), buf + outi);
+
+	    // Exception: greek capital sigma 0x03A3 folds to 0x03C3, except
+	    // when it is the last character in a word, then it folds to
+	    // 0x03C2.
+	    if (c == 0x03a3 || c == 0x03c2)
+	    {
+		if (p == str + len || !spell_iswordp(p, wp))
+		    c = 0x03c2;
+		else
+		    c = 0x03c3;
+	    }
+	    else
+		c = SPELL_TOFOLD(c);
+
+	    outi += mb_char2bytes(c, buf + outi);
 	}
 	buf[outi] = NUL;
     }
@@ -2865,7 +2880,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 
     if (repl_from == NULL || repl_to == NULL)
     {
-	emsg(_("E752: No previous spell replacement"));
+	emsg(_(e_no_previous_spell_replacement));
 	return;
     }
     addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
@@ -2915,7 +2930,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     vim_free(frompat);
 
     if (sub_nsubs == 0)
-	semsg(_("E753: Not found: %s"), repl_from);
+	semsg(_(e_not_found_str), repl_from);
     else
 	do_sub_msg(FALSE);
 }
@@ -3097,7 +3112,8 @@ spell_soundfold(
 	    word = inword;
 	else
 	{
-	    (void)spell_casefold(inword, (int)STRLEN(inword), fword, MAXWLEN);
+	    (void)spell_casefold(curwin,
+				  inword, (int)STRLEN(inword), fword, MAXWLEN);
 	    word = fword;
 	}
 
@@ -3243,7 +3259,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 	    for (; (s = smp[n].sm_lead)[0] == c; ++n)
 	    {
 		// Quickly skip entries that don't match the word.  Most
-		// entries are less then three chars, optimize for that.
+		// entries are less than three chars, optimize for that.
 		k = smp[n].sm_leadlen;
 		if (k > 1)
 		{
@@ -3534,7 +3550,7 @@ spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res)
 							 && ws[0] != NUL; ++n)
 	    {
 		// Quickly skip entries that don't match the word.  Most
-		// entries are less then three chars, optimize for that.
+		// entries are less than three chars, optimize for that.
 		if (c != ws[0])
 		    continue;
 		k = smp[n].sm_leadlen;
@@ -3813,7 +3829,7 @@ ex_spelldump(exarg_T *eap)
 
     if (no_spell_checking(curwin))
 	return;
-    (void)get_option_value((char_u*)"spl", &dummy, &spl, OPT_LOCAL);
+    (void)get_option_value((char_u*)"spl", &dummy, &spl, NULL, OPT_LOCAL);
 
     // Create a new empty buffer in a new window.
     do_cmdline_cmd((char_u *)"new");
@@ -4016,7 +4032,7 @@ spell_dump_compl(
 			arridx[depth] = idxs[n];
 			curi[depth] = 1;
 
-			// Check if this characters matches with the pattern.
+			// Check if this character matches with the pattern.
 			// If not skip the whole tree below it.
 			// Always ignore case here, dump_word() will check
 			// proper case later.  This isn't exactly right when
@@ -4361,7 +4377,7 @@ did_set_spell_option(int is_spellfile)
 	l = (int)STRLEN(curwin->w_s->b_p_spf);
 	if (l > 0 && (l < 4
 			|| STRCMP(curwin->w_s->b_p_spf + l - 4, ".add") != 0))
-	    errmsg = e_invarg;
+	    errmsg = e_invalid_argument;
     }
 
     if (errmsg == NULL)
@@ -4399,7 +4415,7 @@ compile_cap_prog(synblock_T *synblock)
 	    if (synblock->b_cap_prog == NULL)
 	    {
 		synblock->b_cap_prog = rp; // restore the previous program
-		return e_invarg;
+		return e_invalid_argument;
 	    }
 	}
     }

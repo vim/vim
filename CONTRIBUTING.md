@@ -57,7 +57,7 @@ If you find a problem with one of these files or have a suggestion for
 improvement, please first try to contact the maintainer directly.
 Look in the header of the file for the name and email address.
 
-The maintainer will take care of issues and send updates to Bram for 
+The maintainer will take care of issues and send updates to Bram for
 distribution with Vim.
 
 If the maintainer does not respond, contact the vim-dev maillist.

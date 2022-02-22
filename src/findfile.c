@@ -206,8 +206,6 @@ static ff_stack_T *ff_create_stack_element(char_u *, int, int);
 static int ff_path_in_stoplist(char_u *, int, char_u **);
 #endif
 
-static char_u e_pathtoolong[] = N_("E854: path too long for completion");
-
 static char_u	*ff_expand_buffer = NULL; // used for expanding filenames
 
 #if 0
@@ -491,7 +489,6 @@ vim_findfile_init(
 	 * The octet after a '**' is used as a (binary) counter.
 	 * So '**3' is transposed to '**^C' ('^C' is ASCII value 3)
 	 * or '**76' is transposed to '**N'( 'N' is ASCII value 76).
-	 * For EBCDIC you get different character values.
 	 * If no restrict is given after '**' the default is used.
 	 * Due to this technique the path looks awful if you print it as a
 	 * string.
@@ -501,7 +498,7 @@ vim_findfile_init(
 	{
 	    if (len + 5 >= MAXPATHL)
 	    {
-		emsg(_(e_pathtoolong));
+		emsg(_(e_path_too_long_for_completion));
 		break;
 	    }
 	    if (STRNCMP(wc_part, "**", 2) == 0)
@@ -520,7 +517,7 @@ vim_findfile_init(
 		wc_part = (char_u *)errpt;
 		if (*wc_part != NUL && !vim_ispathsep(*wc_part))
 		{
-		    semsg(_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."), PATHSEPSTR);
+		    semsg(_(e_invalid_path_number_must_be_at_end_of_path_or_be_followed_by_str), PATHSEPSTR);
 		    goto error_return;
 		}
 	    }
@@ -551,7 +548,7 @@ vim_findfile_init(
     if (STRLEN(search_ctx->ffsc_start_dir)
 			  + STRLEN(search_ctx->ffsc_fix_path) + 3 >= MAXPATHL)
     {
-	emsg(_(e_pathtoolong));
+	emsg(_(e_path_too_long_for_completion));
 	goto error_return;
     }
     STRCPY(ff_expand_buffer, search_ctx->ffsc_start_dir);
@@ -578,7 +575,16 @@ vim_findfile_init(
 
 	    if (p > search_ctx->ffsc_fix_path)
 	    {
+		// do not add '..' to the path and start upwards searching
 		len = (int)(p - search_ctx->ffsc_fix_path) - 1;
+		if ((len >= 2
+			&& STRNCMP(search_ctx->ffsc_fix_path, "..", 2) == 0)
+			&& (len == 2
+				   || search_ctx->ffsc_fix_path[2] == PATHSEP))
+		{
+		    vim_free(buf);
+		    goto error_return;
+		}
 		STRNCAT(ff_expand_buffer, search_ctx->ffsc_fix_path, len);
 		add_pathsep(ff_expand_buffer);
 	    }
@@ -740,7 +746,7 @@ vim_findfile(void *search_ctx_arg)
 	// downward search loop
 	for (;;)
 	{
-	    // check if user user wants to stop the search
+	    // check if user wants to stop the search
 	    ui_breakcheck();
 	    if (got_int)
 		break;
@@ -1367,7 +1373,7 @@ ff_check_visited(
     int			url = FALSE;
 #endif
 
-    // For an URL we only compare the name, otherwise we compare the
+    // For a URL we only compare the name, otherwise we compare the
     // device/inode (unix) or the full path name (not Unix).
     if (path_with_url(fname))
     {
@@ -1728,6 +1734,9 @@ find_file_in_path_option(
 
     if (first == TRUE)
     {
+	if (len == 0)
+	    return NULL;
+
 	// copy file name into NameBuff, expanding environment variables
 	save_char = ptr[len];
 	ptr[len] = NUL;
@@ -1893,19 +1902,19 @@ find_file_in_path_option(
 	if (first == TRUE)
 	{
 	    if (find_what == FINDFILE_DIR)
-		semsg(_("E344: Can't find directory \"%s\" in cdpath"),
+		semsg(_(e_cant_find_directory_str_in_cdpath),
 			ff_file_to_find);
 	    else
-		semsg(_("E345: Can't find file \"%s\" in path"),
+		semsg(_(e_cant_find_file_str_in_path),
 			ff_file_to_find);
 	}
 	else
 	{
 	    if (find_what == FINDFILE_DIR)
-		semsg(_("E346: No more directory \"%s\" found in cdpath"),
+		semsg(_(e_no_more_directory_str_found_in_cdpath),
 			ff_file_to_find);
 	    else
-		semsg(_("E347: No more file \"%s\" found in path"),
+		semsg(_(e_no_more_file_str_found_in_path),
 			ff_file_to_find);
 	}
     }
@@ -1995,7 +2004,7 @@ file_name_in_line(
     if (*ptr == NUL)		// nothing found
     {
 	if (options & FNAME_MESS)
-	    emsg(_("E446: No file name under cursor"));
+	    emsg(_(e_no_file_name_under_cursor));
 	return NULL;
     }
 
@@ -2084,11 +2093,16 @@ file_name_in_line(
 eval_includeexpr(char_u *ptr, int len)
 {
     char_u	*res;
+    sctx_T	save_sctx = current_sctx;
 
     set_vim_var_string(VV_FNAME, ptr, len);
+    current_sctx = curbuf->b_p_script_ctx[BV_INEX];
+
     res = eval_to_string_safe(curbuf->b_p_inex,
-		      was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL));
+		 was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL), TRUE);
+
     set_vim_var_string(VV_FNAME, NULL, 0);
+    current_sctx = save_sctx;
     return res;
 }
 # endif
@@ -2109,7 +2123,12 @@ find_file_name_in_path(
     int		c;
 # if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
     char_u	*tofree = NULL;
+# endif
 
+    if (len == 0)
+	return NULL;
+
+# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
     if ((options & FNAME_INCL) && *curbuf->b_p_inex != NUL)
     {
 	tofree = eval_includeexpr(ptr, len);
@@ -2148,7 +2167,7 @@ find_file_name_in_path(
 	{
 	    c = ptr[len];
 	    ptr[len] = NUL;
-	    semsg(_("E447: Can't find file \"%s\" in path"), ptr);
+	    semsg(_(e_cant_find_file_str_in_path_2), ptr);
 	    ptr[len] = c;
 	}
 
@@ -2415,7 +2434,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     char_u	*short_name;
 
     remove_duplicates(gap);
-    ga_init2(&path_ga, (int)sizeof(char_u *), 1);
+    ga_init2(&path_ga, sizeof(char_u *), 1);
 
     /*
      * We need to prepend a '*' at the beginning of file_pattern so that the
@@ -2596,7 +2615,7 @@ expand_in_path(
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 
-    ga_init2(&path_ga, (int)sizeof(char_u *), 1);
+    ga_init2(&path_ga, sizeof(char_u *), 1);
     expand_path_option(curdir, &path_ga);
     vim_free(curdir);
     if (path_ga.ga_len == 0)
@@ -2636,7 +2655,7 @@ simplify_filename(char_u *filename)
 
     p = filename;
 # ifdef BACKSLASH_IN_FILENAME
-    if (p[1] == ':')	    // skip "x:"
+    if (p[0] != NUL && p[1] == ':')	    // skip "x:"
 	p += 2;
 # endif
 
@@ -2848,7 +2867,10 @@ f_simplify(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
 
-    p = tv_get_string(&argvars[0]);
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    p = tv_get_string_strict(&argvars[0]);
     rettv->vval.v_string = vim_strsave(p);
     simplify_filename(rettv->vval.v_string);	// simplify in place
     rettv->v_type = VAR_STRING;

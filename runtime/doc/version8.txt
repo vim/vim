@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2020 Dec 24
+*version8.txt*  For Vim version 8.2.  Last change: 2022 Feb 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,6 +40,10 @@ Patches					|patches-8.2|
 See |vi_diff.txt| for an overview of differences between Vi and Vim 8.0.
 See |version4.txt|, |version5.txt|, |version6.txt| and |version7.txt| for
 differences between other versions.
+
+							*vim-changelog*
+You can find an overview of the most important changes (according to Martin
+Tournoij) on this site: https://www.arp242.net/vimlog/
 
 ==============================================================================
 NEW FEATURES						*new-8*
@@ -12980,7 +12984,7 @@ Files:      src/evalfunc.c, src/testdir/test_cmdline.vim
 Patch 7.4.2113
 Problem:    Test for undo is flaky.
 Solution:   Turn it into a new style test.  Use test_settime() to avoid
-            flakyness.
+            flakiness.
 Files:      src/Makefile, src/undo.c, src/testdir/test61.in,
             src/testdir/test61.ok, src/testdir/test_undo.vim,
             src/testdir/test_undolevels.vim, src/testdir/Make_all.mak,
@@ -15341,7 +15345,7 @@ Solution:   Link winpthread statically. (jmmerz, closes #1255, closes #1256)
 Files:      src/Make_cyg_ming.mak
 
 Patch 8.0.0116
-Problem:    When reading English help and using CTRl-] the language from
+Problem:    When reading English help and using CTRL-] the language from
             'helplang' is used.
 Solution:   Make help tag jumps keep the language. (Tatsuki, test by Hirohito
             Higashi, closes #1249)
@@ -25967,7 +25971,7 @@ Added functions:
 	|test_getvalue()|
 	|test_null_blob()|
 	|test_refcount()|
-	|test_scrollbar()|
+	test_scrollbar() (later replaced with |test_gui_event()|)
 	|test_setmouse()|
 	|win_execute()|
 	|win_splitmove()|
@@ -30906,7 +30910,7 @@ Files:	    src/eval.c, src/testdir/test_assert.vim
 Patch 8.1.0820
 Problem:    Test for sending large data over channel sometimes fails.
 Solution:   Handle that the job may have finished early.  Also fix that file
-            changed test doesn't work in the GUI and reduce flakyness. (Ozaki
+            changed test doesn't work in the GUI and reduce flakiness. (Ozaki
             Kiichi, closes #3861)
 Files:	    src/testdir/test_channel.vim, src/testdir/test_filechanged.vim
 
@@ -35504,7 +35508,7 @@ Files:	    Filelist, src/testdir/Make_all.mak, src/testdir/check.vim,
             src/testdir/test_xxd.vim
 
 Patch 8.1.1545
-Problem:    When the screen is to small there is no message about that.
+Problem:    When the screen is too small there is no message about that.
             (Daniel Hahler)
 Solution:   Do not use :cquit. (closes #4534)
 Files:	    src/testdir/runtest.vim
@@ -39253,7 +39257,7 @@ Files:	    src/option.c
 
 Patch 8.1.2117
 Problem:    CursorLine highlight used while 'cursorline' is off.
-Solution:   Check 'cursorline' is set. (cloes #5017)
+Solution:   Check 'cursorline' is set. (closes #5017)
 Files:	    src/drawline.c, src/testdir/test_cursorline.vim
 
 Patch 8.1.2118
@@ -41104,7 +41108,7 @@ Files:	    src/buffer.c, src/testdir/test_popupwin.vim
 Patch 8.1.2419
 Problem:    With a long file name the hit-enter prompt appears. (J. Lewis
             Muir)
-Solution:   When checking for text to wrap don't do this when outputing a CR.
+Solution:   When checking for text to wrap don't do this when outputting a CR.
 Files:	    src/message.c, src/testdir/test_display.vim,
             src/testdir/dumps/Test_long_file_name_1.dump
 

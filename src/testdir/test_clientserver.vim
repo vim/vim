@@ -13,9 +13,7 @@ source shared.vim
 
 func Check_X11_Connection()
   if has('x11')
-    if empty($DISPLAY)
-      throw 'Skipped: $DISPLAY is not set'
-    endif
+    CheckEnv DISPLAY
     try
       call remote_send('xxx', '')
     catch
@@ -28,6 +26,7 @@ func Check_X11_Connection()
 endfunc
 
 func Test_client_server()
+  let g:test_is_flaky = 1
   let cmd = GetVimCommand()
   if cmd == ''
     throw 'GetVimCommand() failed'

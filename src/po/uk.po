@@ -5923,9 +5923,6 @@ msgstr ""
 "\n"
 "--- Клавіші терміналу ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "Неможливо відкрити $VIMRUNTIME/rgb.txt"
-
 #, c-format
 msgid "Kill job in \"%s\"?"
 msgstr "Зупинити завдання у «%s»?"

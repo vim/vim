@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2021 Feb 13
+*terminal.txt*	For Vim version 8.2.  Last change: 2022 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,6 +39,7 @@ If the result is "1" you have it.
       Stepping through code			|termdebug-stepping|
       Inspecting variables			|termdebug-variables|
       Other commands				|termdebug-commands|
+      Events					|termdebug-events|
       Prompt mode				|termdebug-prompt|
       Communication				|termdebug-communication|
       Customizing				|termdebug-customizing|
@@ -168,9 +169,6 @@ terminal window will start with a white or black background.
 To use a different color the Terminal highlight group can be used, for
 example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
-The highlight needs to be defined before the terminal is created.  Doing it
-later, or setting 'wincolor', will only have effect when the program running
-in the terminal displays text or clears the terminal.
 Instead of Terminal another group can be specified with the "term_highlight"
 option for `term_start()`.
 
@@ -243,7 +241,7 @@ Command syntax ~
 			++shell		Instead of executing {command}
 					directly, use a shell, like with
 					`:!command` 		*E279*
-					{only works on Unix currently}
+					{only works on Unix and MS-Windows}
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.
@@ -752,18 +750,6 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 			GetBufnr()->term_sendkeys(keys)
 
 
-term_setapi({buf}, {expr})				*term_setapi()*
-		Set the function name prefix to be used for the |terminal-api|
-		function in terminal {buf}.  For example: >
-		    :call term_setapi(buf, "Myapi_")
-		    :call term_setapi(buf, "")
-<
-		The default is "Tapi_".  When {expr} is an empty string then
-		no |terminal-api| function can be used for {buf}.
-
-		When used as a method the base is used for {buf}: >
-			GetBufnr()->term_setapi({expr})
-
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.
 		{colors} must be a List of 16 valid color names or hexadecimal
@@ -798,6 +784,20 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 
 <		{only available with GUI enabled and/or the |+termguicolors|
 		feature}
+
+
+term_setapi({buf}, {expr})				*term_setapi()*
+		Set the function name prefix to be used for the |terminal-api|
+		function in terminal {buf}.  For example: >
+		    :call term_setapi(buf, "Myapi_")
+		    :call term_setapi(buf, "")
+<
+		The default is "Tapi_".  When {expr} is an empty string then
+		no |terminal-api| function can be used for {buf}.
+
+		When used as a method the base is used for {buf}: >
+			GetBufnr()->term_setapi({expr})
+
 
 term_setkill({buf}, {how})				*term_setkill()*
 		When exiting Vim or trying to close the terminal window in
@@ -872,7 +872,8 @@ term_start({cmd} [, {options}])			*term_start()*
 		   "term_name"	     name to use for the buffer name, instead
 				     of the command name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize'; valid
+				     range is from zero to 1000
 		   "term_cols"	     horizontal size to use for the terminal,
 				     instead of using 'termwinsize'
 		   "vertical"	     split the window vertically; note that
@@ -1177,7 +1178,7 @@ gdb window	A terminal window in which "gdb vim" is executed.  Here you
 program window	A terminal window for the executed program.  When "run" is
 		used in gdb the program I/O will happen in this window, so
 		that it does not interfere with controlling gdb.  The buffer
-		name is "gdb program".
+		name is "debugged program".
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to
@@ -1352,6 +1353,33 @@ Other commands ~
  *:Asm*	     jump to the window with the disassembly, create it if there
 	     isn't one
 
+Events ~
+							*termdebug-events*
+Four autocommands can be used: >
+	au User TermdebugStartPre  echomsg 'debugging starting'
+	au User TermdebugStartPost echomsg 'debugging started'
+	au User TermdebugStopPre   echomsg 'debugging stopping'
+	au User TermdebugStopPost  echomsg 'debugging stopped'
+<
+						*TermdebugStartPre*
+TermdebugStartPre		Before starting debugging.
+				Not triggered if the debugger is already
+				running or |g:termdebugger| cannot be
+				executed.
+						*TermdebugStartPost*
+TermdebugStartPost		After debugging has initialized.
+				If a "!" bang is passed to `:Termdebug` or
+				`:TermdebugCommand` the event is triggered
+				before running the provided command in gdb.
+						*TermdebugStopPre*
+TermdebugStopPre		Before debugging ends, when gdb is terminated,
+				most likely after issuing a "quit" command in
+				the gdb window.
+						*TermdebugStopPost*
+TermdebugStopPost		After debugging has ended, gdb-related windows
+				are closed, debug buffers wiped out and
+				the state before the debugging was restored.
+
 
 Prompt mode ~
 						*termdebug-prompt*
@@ -1396,11 +1424,13 @@ communication channel.
 
 Customizing ~
 
-GDB command						 *termdebug-customizing*
-
-To change the name of the gdb command, set the "termdebugger" variable before
+GDB command						*termdebug-customizing*
+							*g:termdebugger*
+To change the name of the gdb command, set the "g:termdebugger" variable before
 invoking `:Termdebug`: >
-	let termdebugger = "mygdb"
+	let g:termdebugger = "mygdb"
+If the command needs an argument use a List: >
+	let g:termdebugger = ['rr', 'replay', '--']
 <							*gdb-version*
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
 interface.  The "new-ui" command  requires gdb version 7.12 or later.  if you

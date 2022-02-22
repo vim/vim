@@ -12,7 +12,7 @@ func Create_vim_dict()
   return {'a': 1}
 endfunction
 
-let s:system_error_pat = 'Vim(py3):SystemError: \(<built-in function eval> returned NULL without setting an error\|error return without exception set\)'
+let s:system_error_pat = 'Vim(py3):SystemError: \(<built-in function eval> returned NULL without setting an \(error\|exception\)\|error return without exception set\)'
 
 " This function should be called first. This sets up python functions used by
 " the other tests.
@@ -25,6 +25,7 @@ func Test_AAA_python3_setup()
     py33_type_error_pattern = re.compile('^__call__\(\) takes (\d+) positional argument but (\d+) were given$')
     py37_exception_repr = re.compile(r'([^\(\),])(\)+)$')
     py39_type_error_pattern = re.compile('\w+\.([^(]+\(\) takes)')
+    py310_type_error_pattern = re.compile('takes (\d+) positional argument but (\d+) were given')
 
     def emsg(ei):
       return ei[0].__name__ + ':' + repr(ei[1].args)
@@ -60,6 +61,7 @@ func Test_AAA_python3_setup()
                             msg = msg.replace(newmsg2, oldmsg2)
                         # Python 3.9 reports errors like "vim.command() takes ..." instead of "command() takes ..."
                         msg = py39_type_error_pattern.sub(r'\1', msg)
+                        msg = py310_type_error_pattern.sub(r'takes exactly \1 positional argument (\2 given)', msg)
                 elif sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
                     msg = repr((TypeError, TypeError('expected bytes with no null')))
                 else:
@@ -511,6 +513,8 @@ func Test_python3_window()
   10new
   py3 vim.current.window.height = 5
   call assert_equal(5, winheight(0))
+  py3 vim.current.window.height = 3.2
+  call assert_equal(3, winheight(0))
 
   " Test for setting the window width
   10vnew
@@ -601,7 +605,7 @@ func Test_python3_dict()
   py3 d = vim.bindeval('d')
   call assert_equal(2, py3eval('len(d)'))
 
-  " Deleting an non-existing key
+  " Deleting a non-existing key
   call AssertException(["py3 del d['c']"], "Vim(py3):KeyError: 'c'")
 endfunc
 
@@ -1007,8 +1011,12 @@ func Test_python3_vim_bindeval()
   call assert_equal(v:none, py3eval("vim.bindeval('v:none')"))
 
   " channel/job
-  call assert_equal(v:none, py3eval("vim.bindeval('test_null_channel()')"))
-  call assert_equal(v:none, py3eval("vim.bindeval('test_null_job()')"))
+  if has('channel')
+    call assert_equal(v:none, py3eval("vim.bindeval('test_null_channel()')"))
+  endif
+  if has('job')
+    call assert_equal(v:none, py3eval("vim.bindeval('test_null_job()')"))
+  endif
 endfunc
 
 " threading
@@ -2633,6 +2641,7 @@ func Test_python3_errors()
   py3 cb = vim.current.buffer
 
   py3 << trim EOF
+    import os
     d = vim.Dictionary()
     ned = vim.Dictionary(foo='bar', baz='abcD')
     dl = vim.Dictionary(a=1)

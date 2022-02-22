@@ -1,6 +1,8 @@
 " Tests for various Ex commands.
 
 source check.vim
+source shared.vim
+source term_util.vim
 
 func Test_ex_delete()
   new
@@ -69,6 +71,14 @@ func Test_file_cmd()
   call assert_fails('3file', 'E474:')
   call assert_fails('0,0file', 'E474:')
   call assert_fails('0file abc', 'E474:')
+  if !has('win32')
+    " Change the name of the buffer to the same name
+    new Xfile1
+    file Xfile1
+    call assert_equal('Xfile1', @%)
+    call assert_equal('Xfile1', @#)
+    bw!
+  endif
 endfunc
 
 " Test for the :drop command
@@ -120,6 +130,27 @@ func Test_append_cmd()
   close!
 endfunc
 
+func Test_append_cmd_empty_buf()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+    func Timer(timer)
+      append
+    aaaaa
+    bbbbb
+    .
+    endfunc
+    call timer_start(10, 'Timer')
+  END
+  call writefile(lines, 'Xtest_append_cmd_empty_buf')
+  let buf = RunVimInTerminal('-S Xtest_append_cmd_empty_buf', {'rows': 6})
+  call WaitForAssert({-> assert_equal('bbbbb', term_getline(buf, 2))})
+  call WaitForAssert({-> assert_equal('aaaaa', term_getline(buf, 1))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_append_cmd_empty_buf')
+endfunc
+
 " Test for the :insert command
 func Test_insert_cmd()
   new
@@ -146,6 +177,27 @@ func Test_insert_cmd()
   call assert_true(&autoindent)
   set autoindent&
   close!
+endfunc
+
+func Test_insert_cmd_empty_buf()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+    func Timer(timer)
+      insert
+    aaaaa
+    bbbbb
+    .
+    endfunc
+    call timer_start(10, 'Timer')
+  END
+  call writefile(lines, 'Xtest_insert_cmd_empty_buf')
+  let buf = RunVimInTerminal('-S Xtest_insert_cmd_empty_buf', {'rows': 6})
+  call WaitForAssert({-> assert_equal('bbbbb', term_getline(buf, 2))})
+  call WaitForAssert({-> assert_equal('aaaaa', term_getline(buf, 1))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_insert_cmd_empty_buf')
 endfunc
 
 " Test for the :change command
@@ -317,6 +369,97 @@ func Test_confirm_q_wq()
 
   call delete('Xscript')
   call delete('Xfoo')
+endfunc
+
+func Test_confirm_write_ro()
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  call writefile(['foo'], 'Xconfirm_write_ro')
+  let lines =<< trim END
+    set nobackup ff=unix cmdheight=2
+    edit Xconfirm_write_ro
+    norm Abar
+  END
+  call writefile(lines, 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {'rows': 20})
+
+  " Try to write with 'ro' option.
+  call term_sendkeys(buf, ":set ro | confirm w\n")
+  call WaitForAssert({-> assert_match("^'readonly' option is set for \"Xconfirm_write_ro\"\. *$",
+        \            term_getline(buf, 18))}, 1000)
+  call WaitForAssert({-> assert_match('^Do you wish to write anyway? *$',
+        \            term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'N')
+  call WaitForAssert({-> assert_match('^ *$', term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('.* All$', term_getline(buf, 20))}, 1000)
+  call assert_equal(['foo'], readfile('Xconfirm_write_ro'))
+
+  call term_sendkeys(buf, ":confirm w\n")
+  call WaitForAssert({-> assert_match("^'readonly' option is set for \"Xconfirm_write_ro\"\. *$",
+        \            term_getline(buf, 18))}, 1000)
+  call WaitForAssert({-> assert_match('^Do you wish to write anyway? *$',
+        \            term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'Y')
+  call WaitForAssert({-> assert_match('^"Xconfirm_write_ro" 1L, 7B written$',
+        \            term_getline(buf, 19))}, 1000)
+  call assert_equal(['foobar'], readfile('Xconfirm_write_ro'))
+
+  " Try to write with read-only file permissions.
+  call setfperm('Xconfirm_write_ro', 'r--r--r--')
+  call term_sendkeys(buf, ":set noro | undo | confirm w\n")
+  call WaitForAssert({-> assert_match("^File permissions of \"Xconfirm_write_ro\" are read-only\. *$",
+        \            term_getline(buf, 17))}, 1000)
+  call WaitForAssert({-> assert_match('^It may still be possible to write it\. *$',
+        \            term_getline(buf, 18))}, 1000)
+  call WaitForAssert({-> assert_match('^Do you wish to try? *$', term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'Y')
+  call WaitForAssert({-> assert_match('^"Xconfirm_write_ro" 1L, 4B written$',
+        \            term_getline(buf, 19))}, 1000)
+  call assert_equal(['foo'], readfile('Xconfirm_write_ro'))
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  call delete('Xconfirm_write_ro')
+endfunc
+
+func Test_confirm_write_partial_file()
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  call writefile(['a', 'b', 'c', 'd'], 'Xwrite_partial')
+  call writefile(['set nobackup ff=unix cmdheight=2',
+        \         'edit Xwrite_partial'], 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {'rows': 20})
+
+  call term_sendkeys(buf, ":confirm 2,3w\n")
+  call WaitForAssert({-> assert_match('^Write partial file? *$',
+        \            term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$',
+        \            term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'N')
+  call WaitForAssert({-> assert_match('.* All$', term_getline(buf, 20))}, 1000)
+  call assert_equal(['a', 'b', 'c', 'd'], readfile('Xwrite_partial'))
+  call delete('Xwrite_partial')
+
+  call term_sendkeys(buf, ":confirm 2,3w\n")
+  call WaitForAssert({-> assert_match('^Write partial file? *$',
+        \            term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$',
+        \            term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'Y')
+  call WaitForAssert({-> assert_match('^"Xwrite_partial" \[New\] 2L, 4B written *$',
+        \            term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^Press ENTER or type command to continue *$',
+        \            term_getline(buf, 20))}, 1000)
+  call assert_equal(['b', 'c'], readfile('Xwrite_partial'))
+
+  call StopVimInTerminal(buf)
+  call delete('Xwrite_partial')
+  call delete('Xscript')
 endfunc
 
 " Test for the :print command
@@ -504,7 +647,7 @@ func Sandbox_tests()
   if has('clientserver')
     call assert_fails('let s=remote_expr("gvim", "2+2")', 'E48:')
     if !has('win32')
-      " remote_foreground() doesn't thrown an error message on MS-Windows
+      " remote_foreground() doesn't throw an error message on MS-Windows
       call assert_fails('call remote_foreground("gvim")', 'E48:')
     endif
     call assert_fails('let s=remote_peek("gvim")', 'E48:')
@@ -530,10 +673,47 @@ func Sandbox_tests()
   if has('unix')
     call assert_fails('cd `pwd`', 'E48:')
   endif
+  " some options cannot be changed in a sandbox
+  call assert_fails('set exrc', 'E48:')
+  call assert_fails('set cdpath', 'E48:')
+  if has('xim') && has('gui_gtk')
+    call assert_fails('set imstyle', 'E48:')
+  endif
 endfunc
 
 func Test_sandbox()
   sandbox call Sandbox_tests()
 endfunc
+
+func Test_command_not_implemented_E319()
+  if !has('mzscheme')
+    call assert_fails('mzscheme', 'E319:')
+  endif
+endfunc
+
+func Test_not_break_expression_register()
+  call setreg('=', '1+1')
+  if 0
+    put =1
+  endif
+  call assert_equal('1+1', getreg('=', 1))
+endfunc
+
+func Test_address_line_overflow()
+  if v:sizeoflong < 8
+    throw 'Skipped: only works with 64 bit long ints'
+  endif
+  new
+  call setline(1, range(100))
+  call assert_fails('|.44444444444444444444444', 'E1247:')
+  call assert_fails('|.9223372036854775806', 'E1247:')
+
+  $
+  yank 77777777777777777777
+  call assert_equal("99\n", @")
+
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

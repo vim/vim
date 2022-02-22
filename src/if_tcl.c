@@ -167,11 +167,13 @@ typedef int HANDLE;
 #  define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 #  define symbol_from_dll dlsym
 #  define close_dll dlclose
+#  define load_dll_error dlerror
 # else
 #  define TCL_PROC FARPROC
 #  define load_dll vimLoadLib
 #  define symbol_from_dll GetProcAddress
 #  define close_dll FreeLibrary
+#  define load_dll_error GetWin32Error
 # endif
 
 /*
@@ -213,7 +215,7 @@ tcl_runtime_link_init(char *libname, int verbose)
     if (!(hTclLib = load_dll(libname)))
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname);
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
     for (i = 0; tcl_funcname_table[i].ptr; ++i)
@@ -224,7 +226,7 @@ tcl_runtime_link_init(char *libname, int verbose)
 	    close_dll(hTclLib);
 	    hTclLib = NULL;
 	    if (verbose)
-		semsg(_(e_loadfunc), tcl_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), tcl_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -274,6 +276,17 @@ tcl_enabled(int verbose)
 	}
     }
     return stubs_initialized;
+}
+#endif
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+vim_tcl_finalize(void)
+{
+# ifdef DYNAMIC_TCL
+    if (stubs_initialized)
+# endif
+	Tcl_Finalize();
 }
 #endif
 
@@ -1298,7 +1311,7 @@ tclsetoption(
 
     option = (char_u *)Tcl_GetStringFromObj(objv[objn], NULL);
     ++objn;
-    gov = get_option_value(option, &lval, &sval, 0);
+    gov = get_option_value(option, &lval, &sval, NULL, 0);
     err = TCL_OK;
     switch (gov)
     {
@@ -1531,7 +1544,7 @@ tclsetdelcmd(
 	reflist = reflist->next;
     }
     // This should never happen.  Famous last word?
-    emsg(_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
+    iemsg(_(e_tcl_fatal_error_reflist_corrupt_please_report_this));
     Tcl_SetResult(interp, _("cannot register callback command: buffer/window reference not found"), TCL_STATIC);
     return TCL_ERROR;
 }
@@ -1700,7 +1713,7 @@ tclinit(exarg_T *eap)
 #ifdef DYNAMIC_TCL
     if (!tcl_enabled(TRUE))
     {
-	emsg(_("E571: Sorry, this command is disabled: the Tcl library could not be loaded."));
+	emsg(_(e_sorry_this_command_is_disabled_tcl_library_could_not_be_loaded));
 	return FAIL;
     }
 #endif
@@ -1864,7 +1877,7 @@ tclexit(int error)
     {
 	char buf[50];
 
-	sprintf(buf, _("E572: exit code %d"), tclinfo.exitvalue);
+	sprintf(buf, _(e_exit_code_nr), tclinfo.exitvalue);
 	tclerrmsg(buf);
 	if (tclinfo.exitvalue == 0)
 	{

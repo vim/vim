@@ -397,7 +397,15 @@ func Test_window_width()
   call assert_inrange(ww1, ww1 + 1, ww2)
   call assert_inrange(ww3, ww3 + 1, ww2)
 
-  bw Xa Xb Xc
+  " when the current window width is less than the new 'winwidth', the current
+  " window width should be increased.
+  enew | only
+  split
+  10vnew
+  set winwidth=15
+  call assert_equal(15, winwidth(0))
+
+  %bw!
 endfunc
 
 func Test_equalalways_on_close()
@@ -1349,5 +1357,160 @@ func Test_close_dest_window()
   augroup! T1
   %bw!
 endfunc
+
+func Test_window_minimal_size()
+  set winminwidth=0 winminheight=0
+
+  " check size is fixed vertically
+  new
+  call win_execute(win_getid(2), 'wincmd _')
+  call assert_equal(0, winheight(0))
+  call feedkeys('0', 'tx')
+  call assert_equal(1, winheight(0))
+  bwipe!
+
+  " check size is fixed horizontally
+  vert new
+  call win_execute(win_getid(2), 'wincmd |')
+  call assert_equal(0, winwidth(0))
+  call feedkeys('0', 'tx')
+  call assert_equal(1, winwidth(0))
+  bwipe!
+
+  if has('timers')
+    " check size is fixed in Insert mode
+    func s:CheckSize(timer) abort
+      call win_execute(win_getid(2), 'wincmd _')
+      call assert_equal(0, winheight(0))
+      call feedkeys(" \<Esc>", 't!')
+    endfunc
+    new
+    call timer_start(100, function('s:CheckSize'))
+    call feedkeys('a', 'tx!')
+    call assert_equal(1, winheight(0))
+    bwipe!
+    delfunc s:CheckSize
+  endif
+
+  set winminwidth& winminheight&
+endfunc
+
+func Test_win_move_separator()
+  edit a
+  leftabove vsplit b
+  let w = winwidth(0)
+  " check win_move_separator from left window on left window
+  call assert_equal(1, winnr())
+  for offset in range(5)
+    call assert_true(win_move_separator(0, offset))
+    call assert_equal(w + offset, winwidth(0))
+    call assert_true(0->win_move_separator(-offset))
+    call assert_equal(w, winwidth(0))
+  endfor
+  " check win_move_separator from right window on left window number
+  wincmd l
+  call assert_notequal(1, winnr())
+  for offset in range(5)
+    call assert_true(1->win_move_separator(offset))
+    call assert_equal(w + offset, winwidth(1))
+    call assert_true(win_move_separator(1, -offset))
+    call assert_equal(w, winwidth(1))
+  endfor
+  " check win_move_separator from right window on left window ID
+  let id = win_getid(1)
+  for offset in range(5)
+    call assert_true(win_move_separator(id, offset))
+    call assert_equal(w + offset, winwidth(id))
+    call assert_true(id->win_move_separator(-offset))
+    call assert_equal(w, winwidth(id))
+  endfor
+  " check win_move_separator from right window on right window is no-op
+  let w0 = winwidth(0)
+  call assert_true(win_move_separator(0, 1))
+  call assert_equal(w0, winwidth(0))
+  call assert_true(win_move_separator(0, -1))
+  call assert_equal(w0, winwidth(0))
+  " check that win_move_separator doesn't error with offsets beyond moving
+  " possibility
+  call assert_true(win_move_separator(id, 5000))
+  call assert_true(winwidth(id) > w)
+  call assert_true(win_move_separator(id, -5000))
+  call assert_true(winwidth(id) < w)
+  " check that win_move_separator returns false for an invalid window
+  wincmd =
+  let w = winwidth(0)
+  call assert_false(win_move_separator(-1, 1))
+  call assert_equal(w, winwidth(0))
+  " check that win_move_separator returns false for a popup window
+  let id = popup_create(['hello', 'world'], {})
+  let w = winwidth(id)
+  call assert_false(win_move_separator(id, 1))
+  call assert_equal(w, winwidth(id))
+  call popup_close(id)
+  %bwipe!
+endfunc
+
+func Test_win_move_statusline()
+  edit a
+  leftabove split b
+  let h = winheight(0)
+  " check win_move_statusline from top window on top window
+  call assert_equal(1, winnr())
+  for offset in range(5)
+    call assert_true(win_move_statusline(0, offset))
+    call assert_equal(h + offset, winheight(0))
+    call assert_true(0->win_move_statusline(-offset))
+    call assert_equal(h, winheight(0))
+  endfor
+  " check win_move_statusline from bottom window on top window number
+  wincmd j
+  call assert_notequal(1, winnr())
+  for offset in range(5)
+    call assert_true(1->win_move_statusline(offset))
+    call assert_equal(h + offset, winheight(1))
+    call assert_true(win_move_statusline(1, -offset))
+    call assert_equal(h, winheight(1))
+  endfor
+  " check win_move_statusline from bottom window on bottom window
+  let h0 = winheight(0)
+  for offset in range(5)
+    call assert_true(0->win_move_statusline(-offset))
+    call assert_equal(h0 - offset, winheight(0))
+    call assert_equal(1 + offset, &cmdheight)
+    call assert_true(win_move_statusline(0, offset))
+    call assert_equal(h0, winheight(0))
+    call assert_equal(1, &cmdheight)
+  endfor
+  call assert_true(win_move_statusline(0, 1))
+  call assert_equal(h0, winheight(0))
+  call assert_equal(1, &cmdheight)
+  " check win_move_statusline from bottom window on top window ID
+  let id = win_getid(1)
+  for offset in range(5)
+    call assert_true(win_move_statusline(id, offset))
+    call assert_equal(h + offset, winheight(id))
+    call assert_true(id->win_move_statusline(-offset))
+    call assert_equal(h, winheight(id))
+  endfor
+  " check that win_move_statusline doesn't error with offsets beyond moving
+  " possibility
+  call assert_true(win_move_statusline(id, 5000))
+  call assert_true(winheight(id) > h)
+  call assert_true(win_move_statusline(id, -5000))
+  call assert_true(winheight(id) < h)
+  " check that win_move_statusline returns false for an invalid window
+  wincmd =
+  let h = winheight(0)
+  call assert_false(win_move_statusline(-1, 1))
+  call assert_equal(h, winheight(0))
+  " check that win_move_statusline returns false for a popup window
+  let id = popup_create(['hello', 'world'], {})
+  let h = winheight(id)
+  call assert_false(win_move_statusline(id, 1))
+  call assert_equal(h, winheight(id))
+  call popup_close(id)
+  %bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

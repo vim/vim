@@ -477,7 +477,7 @@ do_mouse(
 		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
 		{
 		    // double click opens new page
-		    end_visual_mode();
+		    end_visual_mode_keep_button();
 		    tabpage_new();
 		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
 		}
@@ -489,7 +489,7 @@ do_mouse(
 
 		    // It's like clicking on the status line of a window.
 		    if (curwin != old_curwin)
-			end_visual_mode();
+			end_visual_mode_keep_button();
 		}
 	    }
 	    else
@@ -1568,7 +1568,7 @@ retnomove:
 #endif
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
-	    end_visual_mode();
+	    end_visual_mode_keep_button();
 	    redraw_curbuf_later(INVERTED);	// delete the inversion
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
@@ -1630,13 +1630,15 @@ retnomove:
 	if (WIN_IS_POPUP(wp))
 	{
 	    on_sep_line = 0;
+	    on_status_line = 0;
 	    in_popup_win = TRUE;
 	    if (which_button == MOUSE_LEFT && popup_close_if_on_X(wp, row, col))
 	    {
 		return IN_UNKNOWN;
 	    }
-	    else if ((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
+	    else if (((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
 					      && popup_on_border(wp, row, col))
+				       || (wp->w_popup_flags & POPF_DRAGALL))
 	    {
 		popup_dragwin = wp;
 		popup_start_drag(wp, row, col);
@@ -1717,7 +1719,7 @@ retnomove:
 #endif
 			&& (flags & MOUSE_MAY_STOP_VIS))))
 	{
-	    end_visual_mode();
+	    end_visual_mode_keep_button();
 	    redraw_curbuf_later(INVERTED);	// delete the inversion
 	}
 #ifdef FEAT_CMDWIN
@@ -1821,7 +1823,7 @@ retnomove:
 	// before moving the cursor for a left click, stop Visual mode
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
-	    end_visual_mode();
+	    end_visual_mode_keep_button();
 	    redraw_curbuf_later(INVERTED);	// delete the inversion
 	}
 
@@ -2098,6 +2100,14 @@ nv_mouse(cmdarg_T *cap)
     (void)do_mouse(cap->oap, cap->cmdchar, BACKWARD, cap->count1, 0);
 }
 
+static int	held_button = MOUSE_RELEASE;
+
+    void
+reset_held_button()
+{
+    held_button = MOUSE_RELEASE;
+}
+
 /*
  * Check if typebuf 'tp' contains a terminal mouse code and returns the
  * modifiers found in typebuf in 'modifiers'.
@@ -2123,7 +2133,6 @@ check_termcode_mouse(
     int		is_release, release_is_ambiguous;
     int		wheel_code = 0;
     int		current_button;
-    static int	held_button = MOUSE_RELEASE;
     static int	orig_num_clicks = 1;
     static int	orig_mouse_code = 0x0;
 # ifdef CHECK_DOUBLE_CLICK

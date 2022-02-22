@@ -89,6 +89,9 @@ void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod)
   if (!(state->mouse_flags & MOUSE_WANT_CLICK))
     return;
 
+  if(!state->mouse_flags)
+    return;
+
   if(button < 4) {
     output_mouse(state, button-1, pressed, mod, state->mouse_col, state->mouse_row);
   }

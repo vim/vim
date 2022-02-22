@@ -2,7 +2,7 @@
 "
 " Maintainer:	Ernest Adrogué <eadrogue@gmx.net>
 " Last Change:	26 Jul 2017
-"
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

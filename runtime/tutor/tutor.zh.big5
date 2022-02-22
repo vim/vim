@@ -778,7 +778,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
   1. ¶}©l½s¿èvimrc¤å¥ó¡A³o¨ú¨M¤_±z©Ò¨Ï¥Îªº¾Þ§@¨t²Î¡J
 
      :edit ~/.vimrc		³o¬OUnix¨t²Î©Ò¨Ï¥Îªº©R¥O
-     :edit $VIM/_vimrc		³o¬OWindows¨t²Î©Ò¨Ï¥Îªº©R¥O
+     :edit ~/_vimrc		³o¬OWindows¨t²Î©Ò¨Ï¥Îªº©R¥O
 
   2. ±µµÛ¾É¤Jvimrc­S¨Ò¤å¥ó¡J
 
@@ -805,7 +805,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 	¥Xª©ªÀ¡JNew Riders
 
   ³o¬O²Ä¤@¥»§¹¥þÁ¿¸Ñvimªº®ÑÄy¡C¹ï¤_ªì¾ÇŽÍ¯S§O¦³¥Î¡C¨ä¤¤ÁÙ¥]§t¦³¤j¶q¹ê¨Ò
-  ©M¹Ï¥Ü¡C±ýª¾¸Ô±¡¡A½Ð³X°Ý http://iccf-holland.org/click5.html
+  ©M¹Ï¥Ü¡C±ýª¾¸Ô±¡¡A½Ð³X°Ý https://iccf-holland.org/click5.html
 
   ¥H¤U³o¥»®Ñ¤ñ¸û¦Ñ¤F¦Ó¥B¤º®e¥D­n¬Ovi¦Ó¤£¬Ovim¡A¦ý¬O¤]­È±o±ÀÂË¡J
 

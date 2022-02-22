@@ -337,4 +337,43 @@ func Test_quit_long_message()
   call delete('Xtest_quit_message')
 endfunc
 
+" this was missing a terminating NUL
+func Test_echo_string_partial()
+  function CountSpaces()
+  endfunction
+  call assert_equal("function('CountSpaces', [{'ccccccccccc': ['ab', 'cd'], 'aaaaaaaaaaa': v:false, 'bbbbbbbbbbbb': ''}])", string(function('CountSpaces', [#{aaaaaaaaaaa: v:false, bbbbbbbbbbbb: '', ccccccccccc: ['ab', 'cd']}])))
+endfunc
+
+" Message output was previously overwritten by the fileinfo display, shown
+" when switching buffers. If a buffer is switched to, then a message if
+" echoed, we should show the message, rather than overwriting it with
+" fileinfo.
+func Test_fileinfo_after_echo()
+  CheckScreendump
+
+  let content =<< trim END
+    file a.txt
+
+    hide edit b.txt
+    call setline(1, "hi")
+    setlocal modified
+
+    hide buffer a.txt
+
+    set updatetime=1
+    autocmd CursorHold * b b.txt | w | echo "'b' written"
+  END
+
+  call writefile(content, 'Xtest_fileinfo_after_echo')
+  let buf = RunVimInTerminal('-S Xtest_fileinfo_after_echo', #{rows: 6})
+  call VerifyScreenDump(buf, 'Test_fileinfo_after_echo', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_fileinfo_after_echo')
+  call delete('b.txt')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

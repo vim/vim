@@ -363,11 +363,10 @@ check_changed_any(
 	if (
 #ifdef FEAT_TERMINAL
 		term_job_running(buf->b_term)
-		    ? semsg(_("E947: Job still running in buffer \"%s\""),
-								  buf->b_fname)
+		    ? semsg(_(e_job_still_running_in_buffer_str), buf->b_fname)
 		    :
 #endif
-		semsg(_("E162: No write since last change for buffer \"%s\""),
+		semsg(_(e_no_write_since_last_change_for_buffer_str),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname))
 	{
 	    save = no_wait_return;
@@ -413,7 +412,7 @@ check_fname(void)
 {
     if (curbuf->b_ffname == NULL)
     {
-	emsg(_(e_noname));
+	emsg(_(e_no_file_name));
 	return FAIL;
     }
     return OK;
@@ -754,14 +753,14 @@ ex_compiler(exarg_T *eap)
 		if (old_cur_comp != NULL)
 		    old_cur_comp = vim_strsave(old_cur_comp);
 		do_cmdline_cmd((char_u *)
-			      "command -nargs=* CompilerSet setlocal <args>");
+		   "command -nargs=* -keepscript CompilerSet setlocal <args>");
 	    }
 	    do_unlet((char_u *)"g:current_compiler", TRUE);
 	    do_unlet((char_u *)"b:current_compiler", TRUE);
 
 	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
 	    if (source_runtime(buf, DIP_ALL) == FAIL)
-		semsg(_("E666: compiler not supported: %s"), eap->arg);
+		semsg(_(e_compiler_not_supported_str), eap->arg);
 	    vim_free(buf);
 
 	    do_cmdline_cmd((char_u *)":delcommand CompilerSet");

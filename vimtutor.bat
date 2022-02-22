@@ -11,7 +11,7 @@
 
 :: Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
 FOR %%d in (. %TMP% %TEMP%) DO (
-    call :test_dir_writable %0 %%d
+    call :test_dir_writable "%~dpf0" %%d
     IF NOT ERRORLEVEL 1 GOTO dir_ok
 )
 

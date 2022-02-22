@@ -2,7 +2,7 @@
 " Language:	man
 " Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2020 Oct 09
+" Last Change: 	2021 Sep 26
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.

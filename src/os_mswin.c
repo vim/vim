@@ -32,7 +32,7 @@
 #endif
 
 #ifndef PROTO
-# if defined(FEAT_TITLE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
 #  include <shellapi.h>
 # endif
 
@@ -265,7 +265,6 @@ mch_input_isatty(void)
 #endif
 }
 
-#ifdef FEAT_TITLE
 /*
  * mch_settitle(): set titlebar of our window
  */
@@ -274,16 +273,16 @@ mch_settitle(
     char_u *title,
     char_u *icon UNUSED)
 {
-# ifdef FEAT_GUI_MSWIN
-#  ifdef VIMDLL
+#ifdef FEAT_GUI_MSWIN
+# ifdef VIMDLL
     if (gui.in_use)
-#  endif
+# endif
     {
 	gui_mch_settitle(title, icon);
 	return;
     }
-# endif
-# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+#endif
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     if (title != NULL)
     {
 	WCHAR	*wp = enc_to_utf16(title, NULL);
@@ -295,7 +294,7 @@ mch_settitle(
 	vim_free(wp);
 	return;
     }
-# endif
+#endif
 }
 
 
@@ -309,12 +308,12 @@ mch_settitle(
     void
 mch_restore_title(int which UNUSED)
 {
-# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-#  ifdef VIMDLL
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# ifdef VIMDLL
     if (!gui.in_use)
-#  endif
-	SetConsoleTitle(g_szOrigTitle);
 # endif
+	SetConsoleTitle(g_szOrigTitle);
+#endif
 }
 
 
@@ -336,7 +335,6 @@ mch_can_restore_icon(void)
 {
     return FALSE;
 }
-#endif // FEAT_TITLE
 
 
 /*
@@ -391,6 +389,8 @@ mch_isFullName(char_u *fname)
     // Another way to check is to use mch_FullName() and see if the result is
     // the same as the name or mch_FullName() fails.  However, this has quite a
     // bit of overhead, so let's not do that.
+    if (*fname == NUL)
+	return FALSE;
     return ((ASCII_ISALPHA(fname[0]) && fname[1] == ':'
 				      && (fname[2] == '/' || fname[2] == '\\'))
 	    || (fname[0] == fname[1] && (fname[0] == '/' || fname[0] == '\\')));
@@ -429,23 +429,15 @@ slash_adjust(char_u *p)
     }
 }
 
-// Use 64-bit stat functions if available.
-#ifdef HAVE_STAT64
-# undef stat
-# undef _stat
-# undef _wstat
-# undef _fstat
-# define stat _stat64
-# define _stat _stat64
-# define _wstat _wstat64
-# define _fstat _fstat64
-#endif
-
-#if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
-# define OPEN_OH_ARGTYPE intptr_t
-#else
-# define OPEN_OH_ARGTYPE long
-#endif
+// Use 64-bit stat functions.
+#undef stat
+#undef _stat
+#undef _wstat
+#undef _fstat
+#define stat _stat64
+#define _stat _stat64
+#define _wstat _wstat64
+#define _fstat _fstat64
 
     static int
 wstat_symlink_aware(const WCHAR *name, stat_T *stp)
@@ -487,7 +479,7 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
 	{
 	    int	    fd;
 
-	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
+	    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
 	    n = _fstat(fd, (struct _stat *)stp);
 	    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
 		stp->st_mode = (stp->st_mode & ~S_IFREG) | S_IFDIR;
@@ -881,7 +873,7 @@ mch_libcall(
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 	    if (GetExceptionCode() == EXCEPTION_STACK_OVERFLOW)
-		RESETSTKOFLW();
+		_resetstkoflw();
 	    fRunTimeLinkSuccess = 0;
 	}
 # endif
@@ -892,7 +884,7 @@ mch_libcall(
 
     if (!fRunTimeLinkSuccess)
     {
-	semsg(_(e_libcall), funcname);
+	semsg(_(e_library_call_failed_for_str), funcname);
 	return FAIL;
     }
 
@@ -937,9 +929,7 @@ Trace(
 #endif //_DEBUG
 
 #if !defined(FEAT_GUI) || defined(VIMDLL) || defined(PROTO)
-# ifdef FEAT_TITLE
 extern HWND g_hWnd;	// This is in os_win32.c.
-# endif
 
 /*
  * Showing the printer dialog is tricky since we have no GUI
@@ -953,14 +943,12 @@ GetConsoleHwnd(void)
     if (s_hwnd != 0)
 	return;
 
-# ifdef FEAT_TITLE
     // Window handle may have been found by init code (Windows NT only)
     if (g_hWnd != 0)
     {
 	s_hwnd = g_hWnd;
 	return;
     }
-# endif
 
     s_hwnd = GetConsoleWindow();
 }
@@ -1047,14 +1035,7 @@ swap_me(COLORREF colorref)
     return colorref;
 }
 
-// Attempt to make this work for old and new compilers
-# if !defined(_WIN64) && (!defined(_MSC_VER) || _MSC_VER < 1300)
-#  define PDP_RETVAL BOOL
-# else
-#  define PDP_RETVAL INT_PTR
-# endif
-
-    static PDP_RETVAL CALLBACK
+    static INT_PTR CALLBACK
 PrintDlgProc(
 	HWND hDlg,
 	UINT message,
@@ -1127,12 +1108,12 @@ AbortProc(HDC hdcPrn UNUSED, int iCode UNUSED)
 {
     MSG msg;
 
-    while (!*bUserAbort && pPeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    while (!*bUserAbort && PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
     {
-	if (!hDlgPrint || !pIsDialogMessage(hDlgPrint, &msg))
+	if (!hDlgPrint || !IsDialogMessageW(hDlgPrint, &msg))
 	{
 	    TranslateMessage(&msg);
-	    pDispatchMessage(&msg);
+	    DispatchMessageW(&msg);
 	}
     }
     return !*bUserAbort;
@@ -1403,7 +1384,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 
     if (prt_dlg.hDC == NULL)
     {
-	emsg(_("E237: Printer selection failed"));
+	emsg(_(e_printer_selection_failed));
 	mch_print_cleanup();
 	return FALSE;
     }
@@ -1462,7 +1443,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     CLEAR_FIELD(fLogFont);
     if (get_logfont(&fLogFont, p_pfn, prt_dlg.hDC, TRUE) == FAIL)
     {
-	semsg(_("E613: Unknown printer font: %s"), p_pfn);
+	semsg(_(e_unknown_printer_font_str), p_pfn);
 	mch_print_cleanup();
 	return FALSE;
     }
@@ -1523,7 +1504,7 @@ init_fail_dlg:
 			  FORMAT_MESSAGE_FROM_SYSTEM |
 			  FORMAT_MESSAGE_IGNORE_INSERTS,
 			  NULL, err, 0, (LPTSTR)(&buf), 0, NULL);
-	    semsg(_("E238: Print error: %s"),
+	    semsg(_(e_print_error_str),
 				  buf == NULL ? (char_u *)_("Unknown") : buf);
 	    LocalFree((LPVOID)(buf));
 	}
@@ -1911,7 +1892,7 @@ HWND message_window = 0;	    // window that's handling messages
 # define VIM_CLASSNAME      "VIM_MESSAGES"
 # define VIM_CLASSNAME_LEN  (sizeof(VIM_CLASSNAME) - 1)
 
-// Communication is via WM_COPYDATA messages. The message type is send in
+// Communication is via WM_COPYDATA messages. The message type is sent in
 // the dwData parameter. Types are defined here.
 # define COPYDATA_KEYS		0
 # define COPYDATA_REPLY		1
@@ -2041,7 +2022,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	    if (res == NULL)
 	    {
-		char	*err = _(e_invexprmsg);
+		char	*err = _(e_invalid_expression_received);
 		size_t	len = STRLEN(str) + STRLEN(err) + 5;
 
 		res = alloc(len);
@@ -2301,9 +2282,7 @@ serverSetName(char_u *name)
     {
 	// Remember the name
 	serverName = ok_name;
-# ifdef FEAT_TITLE
 	need_maketitle = TRUE;	// update Vim window title later
-# endif
 
 	// Update the message window title
 	SetWindowText(message_window, (LPCSTR)ok_name);
@@ -2381,7 +2360,7 @@ serverSendToVim(
 	return sendToLocalVim(cmd, asExpr, result);
 
     // If the server name does not end in a digit then we look for an
-    // alternate name.  e.g. when "name" is GVIM the we may find GVIM2.
+    // alternate name.  e.g. when "name" is GVIM then we may find GVIM2.
     if (STRLEN(name) > 1 && !vim_isdigit(name[STRLEN(name) - 1]))
 	altname_buf_ptr = altname_buf;
     altname_buf[0] = NUL;
@@ -2394,7 +2373,7 @@ serverSendToVim(
     if (target == 0)
     {
 	if (!silent)
-	    semsg(_(e_noserver), name);
+	    semsg(_(e_no_registered_server_named_str), name);
 	return -1;
     }
 
@@ -2582,10 +2561,10 @@ serverProcessPendingMessages(void)
 {
     MSG msg;
 
-    while (pPeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
     {
 	TranslateMessage(&msg);
-	pDispatchMessage(&msg);
+	DispatchMessageW(&msg);
     }
 }
 
@@ -2967,7 +2946,9 @@ get_logfont(
 		    if (cp->name == NULL && verbose)
 		    {
 			char_u *s = utf16_to_enc(p, NULL);
-			semsg(_("E244: Illegal charset name \"%s\" in font name \"%s\""), s, name);
+
+			semsg(_(e_illegal_str_name_str_in_font_name_str),
+							   "charset", s, name);
 			vim_free(s);
 			break;
 		    }
@@ -2987,7 +2968,8 @@ get_logfont(
 		    if (qp->name == NULL && verbose)
 		    {
 			char_u *s = utf16_to_enc(p, NULL);
-			semsg(_("E244: Illegal quality name \"%s\" in font name \"%s\""), s, name);
+			semsg(_(e_illegal_str_name_str_in_font_name_str),
+							   "quality", s, name);
 			vim_free(s);
 			break;
 		    }
@@ -2995,7 +2977,7 @@ get_logfont(
 		}
 	    default:
 		if (verbose)
-		    semsg(_("E245: Illegal char '%c' in font name \"%s\""), p[-1], name);
+		    semsg(_(e_illegal_char_nr_in_font_name_str), p[-1], name);
 		goto theend;
 	}
 	while (*p == L':')

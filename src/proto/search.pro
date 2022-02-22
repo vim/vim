@@ -29,6 +29,7 @@ int search_for_exact_line(buf_T *buf, pos_T *pos, int dir, char_u *pat);
 int searchc(cmdarg_T *cap, int t_cmd);
 pos_T *findmatch(oparg_T *oap, int initc);
 pos_T *findmatchlimit(oparg_T *oap, int initc, int flags, int maxtravel);
+int check_linecomment(char_u *line);
 void showmatch(int c);
 int current_search(long count, int forward);
 int linewhite(linenr_T lnum);
@@ -36,6 +37,7 @@ void find_pattern_in_path(char_u *ptr, int dir, int len, int whole, int skip_com
 spat_T *get_spat(int idx);
 int get_spat_last_idx(void);
 void f_searchcount(typval_T *argvars, typval_T *rettv);
+int fuzzy_match(char_u *str, char_u *pat_arg, int matchseq, int *outScore, int_u *matches, int maxMatches);
 void f_matchfuzzy(typval_T *argvars, typval_T *rettv);
 void f_matchfuzzypos(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

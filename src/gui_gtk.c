@@ -1011,6 +1011,9 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
     {
 	GtkAdjustment *adjustment;
 
+	// ignore events triggered by moving the thumb (happens in GTK 3)
+	++hold_gui_events;
+
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
 
 	gtk_adjustment_set_lower(adjustment, 0.0);
@@ -1022,6 +1025,8 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 	gtk_adjustment_set_step_increment(adjustment, 1.0);
 
 	g_signal_handler_block(G_OBJECT(adjustment), (gulong)sb->handler_id);
+
+	--hold_gui_events;
 
 #if !GTK_CHECK_VERSION(3,18,0)
 	gtk_adjustment_changed(adjustment);
@@ -1050,6 +1055,9 @@ gui_mch_get_scrollbar_xpadding(void)
     xpad = gui.formwin->allocation.width - gui.drawarea->allocation.width
 							 - gui.scrollbar_width;
 #endif
+    if (gui.which_scrollbars[SBAR_LEFT] && gui.which_scrollbars[SBAR_RIGHT])
+	xpad -= gui.scrollbar_width;
+
     return (xpad < 0) ? 0 : xpad;
 }
 
@@ -2234,7 +2242,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	gtk_window_present(GTK_WINDOW(frdp->dialog));
 
 	// For :promptfind dialog, always give keyboard focus to 'what' entry.
-	// For :promptrepl dialog, give it to 'with' entry if 'what' has an
+	// For :promptrepl dialog, give it to 'with' entry if 'what' has a
 	// non-empty entry; otherwise, to 'what' entry.
 	gtk_widget_grab_focus(frdp->what);
 	if (do_replace && entry_get_text_length(GTK_ENTRY(frdp->what)) > 0)

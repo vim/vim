@@ -34,7 +34,7 @@ server_to_input_buf(char_u *str)
     //  The last but one parameter of replace_termcodes() is TRUE so that the
     //  <lt> sequence is recognised - needed for a real backslash.
     p_cpo = (char_u *)"Bk";
-    str = replace_termcodes((char_u *)str, &ptr, REPTERM_DO_LT, NULL);
+    str = replace_termcodes(str, &ptr, REPTERM_DO_LT, NULL);
     p_cpo = cpo_save;
 
     if (*ptr != NUL)	// trailing CTRL-V results in nothing
@@ -55,7 +55,7 @@ server_to_input_buf(char_u *str)
 	// buffer.
 	typebuf_was_filled = TRUE;
     }
-    vim_free((char_u *)ptr);
+    vim_free(ptr);
 }
 
 /*
@@ -119,7 +119,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 	{
 	    if (ret == NULL)
 	    {
-		char	*err = _(e_invexprmsg);
+		char	*err = _(e_invalid_expression_received);
 		size_t	len = STRLEN(cmd) + STRLEN(err) + 5;
 		char_u	*msg;
 
@@ -651,7 +651,7 @@ build_drop_cmd(
     ga_concat(&ga, (char_u *)":");
     if (inicmd != NULL)
     {
-	// Can't use <CR> after "inicmd", because an "startinsert" would cause
+	// Can't use <CR> after "inicmd", because a "startinsert" would cause
 	// the following commands to be inserted as text.  Use a "|",
 	// hopefully "inicmd" does allow this...
 	ga_concat(&ga, inicmd);
@@ -709,7 +709,7 @@ check_connection(void)
     make_connection();
     if (X_DISPLAY == NULL)
     {
-	emsg(_("E240: No connection to the X server"));
+	emsg(_(e_no_connection_to_x_server));
 	return FAIL;
     }
     return OK;
@@ -759,7 +759,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	    vim_free(r);
 	}
 	else
-	    semsg(_("E241: Unable to send to %s"), server_name);
+	    semsg(_(e_unable_to_send_to_str), server_name);
 	return;
     }
 
@@ -793,6 +793,15 @@ f_remote_expr(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_string_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 3) == FAIL)))
+	return;
+
 #ifdef FEAT_CLIENTSERVER
     remote_common(argvars, rettv, TRUE);
 #endif
@@ -805,6 +814,9 @@ f_remote_expr(typval_T *argvars UNUSED, typval_T *rettv)
 f_remote_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_CLIENTSERVER
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
 # ifdef MSWIN
     // On Win32 it's done in this application.
     {
@@ -837,17 +849,18 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 # endif
     char_u	*serverid;
 
+    rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
-    {
-	rettv->vval.v_number = -1;
 	return;
-    }
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
     serverid = tv_get_string_chk(&argvars[0]);
     if (serverid == NULL)
-    {
-	rettv->vval.v_number = -1;
 	return;		// type error; errmsg already given
-    }
 # ifdef MSWIN
     sscanf((const char *)serverid, SCANF_HEX_LONG_U, &n);
     if (n == 0)
@@ -887,8 +900,14 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	*r = NULL;
 
 #ifdef FEAT_CLIENTSERVER
-    char_u	*serverid = tv_get_string_chk(&argvars[0]);
+    char_u	*serverid;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
+
+    serverid = tv_get_string_chk(&argvars[0]);
     if (serverid != NULL && !check_restricted() && !check_secure())
     {
 	int timeout = 0;
@@ -910,7 +929,7 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
 						       &r, FALSE, timeout) < 0)
 # endif
-	    emsg(_("E277: Unable to read a server reply"));
+	    emsg(_(e_unable_to_read_server_reply));
     }
 #endif
     rettv->v_type = VAR_STRING;
@@ -925,6 +944,13 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_string_arg(argvars, 2) == FAIL))
+	return;
+
 #ifdef FEAT_CLIENTSERVER
     remote_common(argvars, rettv, FALSE);
 #endif
@@ -937,12 +963,16 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
 f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_CLIENTSERVER
-    char_u	*server = tv_get_string_chk(&argvars[0]);
+    char_u	*server;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    server = tv_get_string_chk(&argvars[0]);
     if (server == NULL)
 	return;		// type error; errmsg already given
     if (serverName != NULL)
-	emsg(_("E941: already started a server"));
+	emsg(_(e_already_started_server));
     else
     {
 # ifdef FEAT_X11
@@ -953,7 +983,7 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 # endif
     }
 #else
-    emsg(_("E942: +clientserver feature not available"));
+    emsg(_(e_clientserver_feature_not_available));
 #endif
 }
 
@@ -962,14 +992,23 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 {
 #ifdef FEAT_CLIENTSERVER
     char_u	buf[NUMBUFLEN];
-    char_u	*server = tv_get_string_chk(&argvars[0]);
-    char_u	*reply = tv_get_string_buf_chk(&argvars[1], buf);
+    char_u	*server;
+    char_u	*reply;
 
     rettv->vval.v_number = -1;
-    if (server == NULL || reply == NULL)
-	return;
     if (check_restricted() || check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    server = tv_get_string_chk(&argvars[0]);
+    reply = tv_get_string_buf_chk(&argvars[1], buf);
+    if (server == NULL || reply == NULL)
+	return;
+
 # ifdef FEAT_X11
     if (check_connection() == FAIL)
 	return;
@@ -977,7 +1016,7 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (serverSendReply(server, reply) < 0)
     {
-	emsg(_("E258: Unable to send to client"));
+	emsg(_(e_unable_to_send_to_client));
 	return;
     }
     rettv->vval.v_number = 0;

@@ -216,7 +216,7 @@ gui_athena_scroll_cb_scroll(
     else if (value < 0)
 	value = 0;
 
-    // Update the bottom scrollbar an extra time (why is this needed??
+    // Update the bottom scrollbar an extra time (why is this needed??)
     if (sb->wp == NULL)		// Bottom scrollbar
 	gui_mch_set_scrollbar_thumb(sb, value, sb->size, sb->max);
 
@@ -469,7 +469,7 @@ get_toolbar_pixmap(vimmenu_T *menu, Pixmap *sen)
     if (menu->icon_builtin || gui_find_bitmap(menu->name, buf, "xpm") == FAIL)
     {
 	if (menu->iconidx >= 0 && menu->iconidx
-	      < (int)(sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
+	      < (int)ARRAY_LENGTH(built_in_pixmaps))
 	    xpm = built_in_pixmaps[menu->iconidx];
 	else
 	    xpm = tb_blank_xpm;
@@ -1159,7 +1159,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    XtSetArg(args[n], XtNinternalWidth, 1); n++;
 	    XtSetArg(args[n], XtNborderWidth, 1); n++;
 	    if (menu->image != 0)
+	    {
 		XtSetArg(args[n], XtNbitmap, menu->image); n++;
+	    }
 	}
 	XtSetArg(args[n], XtNhighlightThickness, 0); n++;
 	type = commandWidgetClass;
@@ -1892,17 +1894,27 @@ gui_mch_set_scrollbar_pos(
     int
 gui_mch_get_scrollbar_xpadding(void)
 {
-    // TODO: Calculate the padding for adjust scrollbar position when the
-    // Window is maximized.
-    return 0;
+    int xpad;
+    Dimension tw, ww;
+    Position  tx;
+
+    XtVaGetValues(textArea, XtNwidth, &tw, XtNx, &tx, NULL);
+    XtVaGetValues(vimShell, XtNwidth, &ww, NULL);
+    xpad = ww - tw - tx - gui.scrollbar_width;
+    return (xpad < 0) ? 0 : xpad;
 }
 
     int
 gui_mch_get_scrollbar_ypadding(void)
 {
-    // TODO: Calculate the padding for adjust scrollbar position when the
-    // Window is maximized.
-    return 0;
+    int ypad;
+    Dimension th, wh;
+    Position  ty;
+
+    XtVaGetValues(textArea, XtNheight, &th, XtNy, &ty, NULL);
+    XtVaGetValues(vimShell, XtNheight, &wh, NULL);
+    ypad = wh - th - ty - gui.scrollbar_height;
+    return (ypad < 0) ? 0 : ypad;
 }
 
     void

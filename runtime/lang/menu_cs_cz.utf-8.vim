@@ -2,6 +2,7 @@
 " Maintainer:           Jiri Sedlak <jiri_sedlak@users.sourceforge.net>
 " Previous maintainer:  Jiri Brezina
 " Based on:             menu.vim (2012-10-21)
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

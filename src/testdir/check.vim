@@ -14,6 +14,17 @@ func CheckFeature(name)
   endif
 endfunc
 
+" Command to check for the absence of a feature.
+command -nargs=1 CheckNotFeature call CheckNotFeature(<f-args>)
+func CheckNotFeature(name)
+  if !has(a:name, 1)
+    throw 'Checking for non-existent feature ' .. a:name
+  endif
+  if has(a:name)
+    throw 'Skipped: ' .. a:name .. ' feature present'
+  endif
+endfunc
+
 " Command to check for the presence of a working option.
 command -nargs=1 CheckOption call CheckOption(<f-args>)
 func CheckOption(name)
@@ -125,6 +136,14 @@ func CheckCanRunGui()
   endif
 endfunc
 
+" Command to Check for an environment variable
+command -nargs=1 CheckEnv call CheckEnv(<f-args>)
+func CheckEnv(name)
+  if empty(eval('$' .. a:name))
+    throw 'Skipped: Environment variable ' .. a:name .. ' is not set'
+  endif
+endfunc
+
 " Command to check that we are using the GUI
 command CheckGui call CheckGui()
 func CheckGui()
@@ -195,6 +214,14 @@ command CheckNotAsan call CheckNotAsan()
 func CheckNotAsan()
   if execute('version') =~# '-fsanitize=[a-z,]*\<address\>'
     throw 'Skipped: does not work with ASAN'
+  endif
+endfunc
+
+" Command to check for X11 based GUI
+command CheckX11BasedGui call CheckX11BasedGui()
+func CheckX11BasedGui()
+  if !g:x11_based_gui
+    throw 'Skipped: requires X11 based GUI'
   endif
 endfunc
 

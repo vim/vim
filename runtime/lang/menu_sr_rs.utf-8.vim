@@ -2,6 +2,7 @@
 " Maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>
 " Last Change:	Fri, 30 May 2003 10:17:39 Eastern Daylight Time
 " Adapted for VIM 8 by: Иван Пешић on 2017-12-28 12:05+0400
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

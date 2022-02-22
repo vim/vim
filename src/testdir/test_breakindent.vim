@@ -15,6 +15,10 @@ func s:screen_lines(lnum, width) abort
   return ScreenLines([a:lnum, a:lnum + 2], a:width)
 endfunc
 
+func s:screen_lines2(lnums, lnume, width) abort
+  return ScreenLines([a:lnums, a:lnume], a:width)
+endfunc
+
 func s:compare_lines(expect, actual)
   call assert_equal(join(a:expect, "\n"), join(a:actual, "\n"))
 endfunc
@@ -706,6 +710,215 @@ func Test_breakindent20_cpo_n_nextpage()
   call s:compare_lines(expect, lines)
 
   call s:close_windows('set breakindent& briopt& cpo& number&')
+endfunc
+
+func Test_breakindent20_list()
+  call s:test_windows('setl breakindent breakindentopt= linebreak')
+  " default:
+  call setline(1, ['  1.  Congress shall make no law',
+        \ '  2.) Congress shall make no law',
+        \ '  3.] Congress shall make no law'])
+  norm! 1gg
+  redraw!
+  let lines = s:screen_lines2(1, 6, 20)
+  let expect = [
+	\ "  1.  Congress      ",
+	\ "shall make no law   ",
+	\ "  2.) Congress      ",
+	\ "shall make no law   ",
+	\ "  3.] Congress      ",
+	\ "shall make no law   ",
+	\ ]
+  call s:compare_lines(expect, lines)
+  " set mininum indent
+  setl briopt=min:5
+  redraw!
+  let lines = s:screen_lines2(1, 6, 20)
+  let expect = [
+	\ "  1.  Congress      ",
+	\ "  shall make no law ",
+	\ "  2.) Congress      ",
+	\ "  shall make no law ",
+	\ "  3.] Congress      ",
+	\ "  shall make no law ",
+	\ ]
+  call s:compare_lines(expect, lines)
+  " set additional handing indent
+  setl briopt+=list:4
+  redraw!
+  let expect = [
+	\ "  1.  Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ "  2.) Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ "  3.] Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ ]
+  let lines = s:screen_lines2(1, 9, 20)
+  call s:compare_lines(expect, lines)
+
+  " reset linebreak option
+  " Note: it indents by one additional
+  " space, because of the leading space.
+  setl linebreak&vim list listchars=eol:$,space:_
+  redraw!
+  let expect = [
+	\ "__1.__Congress_shall",
+	\ "      _make_no_law$ ",
+	\ "__2.)_Congress_shall",
+	\ "      _make_no_law$ ",
+	\ "__3.]_Congress_shall",
+	\ "      _make_no_law$ ",
+	\ ]
+  let lines = s:screen_lines2(1, 6, 20)
+  call s:compare_lines(expect, lines)
+
+  " check formatlistpat indent
+  setl briopt=min:5,list:-1
+  setl linebreak list&vim listchars&vim
+  let &l:flp = '^\s*\d\+\.\?[\]:)}\t ]\s*'
+  redraw!
+  let expect = [
+	\ "  1.  Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ "  2.) Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ "  3.] Congress      ",
+	\ "      shall make no ",
+	\ "      law           ",
+	\ ]
+  let lines = s:screen_lines2(1, 9, 20)
+  call s:compare_lines(expect, lines)
+  " check formatlistpat indent with different list levels
+  let &l:flp = '^\s*\*\+\s\+'
+  redraw!
+  %delete _
+  call setline(1, ['* Congress shall make no law',
+        \ '*** Congress shall make no law',
+        \ '**** Congress shall make no law'])
+  norm! 1gg
+  let expect = [
+	\ "* Congress shall    ",
+	\ "  make no law       ",
+	\ "*** Congress shall  ",
+	\ "    make no law     ",
+	\ "**** Congress shall ",
+	\ "     make no law    ",
+	\ ]
+  let lines = s:screen_lines2(1, 6, 20)
+  call s:compare_lines(expect, lines)
+
+  " check formatlistpat indent with different list level
+  " showbreak and sbr
+  setl briopt=min:5,sbr,list:-1,shift:2
+  setl showbreak=>
+  redraw!
+  let expect = [
+	\ "* Congress shall    ",
+	\ "> make no law       ",
+	\ "*** Congress shall  ",
+	\ ">   make no law     ",
+	\ "**** Congress shall ",
+	\ ">    make no law    ",
+	\ ]
+  let lines = s:screen_lines2(1, 6, 20)
+  call s:compare_lines(expect, lines)
+  call s:close_windows('set breakindent& briopt& linebreak& list& listchars& showbreak&')
+endfunc
+
+" The following used to crash Vim. This is fixed by 8.2.3391.
+" This is a regression introduced by 8.2.2903.
+func Test_window_resize_with_linebreak()
+  new
+  53vnew
+  set linebreak
+  set showbreak=>>
+  set breakindent
+  set breakindentopt=shift:4
+  call setline(1, "\naaaaaaaaa\n\na\naaaaa\n¯aaaaaaaaaa\naaaaaaaaaaaa\naaa\n\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa - aaaaaaaa\"\naaaaaaaa\n\"a")
+  redraw!
+  call assert_equal(["    >>aa^@\"a: "], ScreenLines(2, 14))
+  vertical resize 52
+  redraw!
+  call assert_equal(["    >>aaa^@\"a:"], ScreenLines(2, 14))
+  %bw!
+endfunc
+
+func Test_no_spurious_match()
+  let s:input = printf('- y %s y %s', repeat('x', 50), repeat('x', 50))
+  call s:test_windows('setl breakindent breakindentopt=list:-1 formatlistpat=^- hls')
+  let @/ = '\%>3v[y]'
+  redraw!
+  call searchcount().total->assert_equal(1)
+  " cleanup
+  set hls&vim
+  let s:input = "\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"
+  bwipeout!
+endfunc
+
+func Test_no_extra_indent()
+  call s:test_windows('setl breakindent breakindentopt=list:-1,min:10')
+  %d
+  let &l:formatlistpat='^\s*\d\+\.\s\+'
+  let text = 'word '
+  let len = text->strcharlen()
+  let line1 = text->repeat((winwidth(0) / len) * 2)
+  let line2 = repeat(' ', 2) .. '1. ' .. line1
+  call setline(1, [line2])
+  redraw!
+  " 1) matches formatlist pattern, so indent
+  let expect = [
+  \ "  1. word word word ",
+  \ "     word word word ",
+  \ "     word word      ",
+  \ "~                   ",
+  \ ]
+  let lines = s:screen_lines2(1, 4, 20)
+  call s:compare_lines(expect, lines)
+  " 2) change formatlist pattern
+  " -> indent adjusted
+  let &l:formatlistpat='^\s*\d\+\.'
+  let expect = [
+  \ "  1. word word word ",
+  \ "    word word word  ",
+  \ "    word word       ",
+  \ "~                   ",
+  \ ]
+  let lines = s:screen_lines2(1, 4, 20)
+  " 3) no local formatlist pattern,
+  " so use global one -> indent
+  let g_flp = &g:flp
+  let &g:formatlistpat='^\s*\d\+\.\s\+'
+  let &l:formatlistpat=''
+  let expect = [
+  \ "  1. word word word ",
+  \ "     word word word ",
+  \ "     word word      ",
+  \ "~                   ",
+  \ ]
+  let lines = s:screen_lines2(1, 4, 20)
+  call s:compare_lines(expect, lines)
+  let &g:flp = g_flp
+  let &l:formatlistpat='^\s*\d\+\.'
+  " 4) add something in front, no additional indent
+  norm! gg0
+  exe ":norm! 5iword \<esc>"
+  redraw!
+  let expect = [
+  \ "word word word word ",
+  \ "word   1. word word ",
+  \ "word word word word ",
+  \ "word word           ",
+  \ "~                   ",
+  \ ]
+  let lines = s:screen_lines2(1, 5, 20)
+  call s:compare_lines(expect, lines)
+  bwipeout!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

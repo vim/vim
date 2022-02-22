@@ -103,7 +103,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	iemsg(_("E232: Cannot create BalloonEval with both message and callback"));
+	iemsg(_(e_cannot_create_ballooneval_with_both_message_and_callback));
 	return NULL;
     }
 
@@ -253,6 +253,9 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(target, gui.mainwin))
     {
+	gtk_widget_add_events(gui.mainwin,
+			      GDK_LEAVE_NOTIFY_MASK);
+
 	g_signal_connect(G_OBJECT(gui.mainwin), "event",
 			 G_CALLBACK(mainwin_event_cb),
 			 beval);
@@ -359,6 +362,12 @@ mainwin_event_cb(GtkWidget *widget UNUSED, GdkEvent *event, gpointer data)
 	    break;
 	case GDK_KEY_RELEASE:
 	    key_event(beval, event->key.keyval, FALSE);
+	    break;
+	case GDK_LEAVE_NOTIFY:
+	    // Ignore LeaveNotify events that are not "normal".
+	    // Apparently we also get it when somebody else grabs focus.
+	    if (event->crossing.mode == GDK_CROSSING_NORMAL)
+		cancelBalloon(beval);
 	    break;
 	default:
 	    break;

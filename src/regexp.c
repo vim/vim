@@ -66,24 +66,10 @@ toggle_Magic(int x)
 #define EMSG2_RET_NULL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG3_RET_NULL(m, c, a) return (semsg((const char *)(m), (c) ? "" : "\\", (a)), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG2_RET_FAIL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, FAIL)
-#define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_("E369: invalid item in %s%%[]"), reg_magic == MAGIC_ALL)
+#define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_(e_invalid_item_in_str_brackets), reg_magic == MAGIC_ALL)
 
 
 #define MAX_LIMIT	(32767L << 16L)
-
-static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
-static char_u e_reverse_range[] = N_("E944: Reverse range in character class");
-static char_u e_large_class[] = N_("E945: Range too large in character class");
-static char_u e_unmatchedpp[] = N_("E53: Unmatched %s%%(");
-static char_u e_unmatchedp[] = N_("E54: Unmatched %s(");
-static char_u e_unmatchedpar[] = N_("E55: Unmatched %s)");
-#ifdef FEAT_SYN_HL
-static char_u e_z_not_allowed[] = N_("E66: \\z( not allowed here");
-static char_u e_z1_not_allowed[] = N_("E67: \\z1 - \\z9 not allowed here");
-#endif
-static char_u e_missing_sb[] = N_("E69: Missing ] after %s%%[");
-static char_u e_empty_sb[]  = N_("E70: Empty %s%%[]");
-static char_u e_recursive[]  = N_("E956: Cannot use pattern recursively");
 
 #define NOT_MULTI	0
 #define MULTI_ONE	1
@@ -202,7 +188,7 @@ get_char_class(char_u **pp)
 
     if ((*pp)[1] == ':')
     {
-	for (i = 0; i < (int)(sizeof(class_names) / sizeof(*class_names)); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(class_names); ++i)
 	    if (STRNCMP(*pp + 2, class_names[i], STRLEN(class_names[i])) == 0)
 	    {
 		*pp += STRLEN(class_names[i]) + 2;
@@ -245,21 +231,11 @@ init_class_tab(void)
 	    class_tab[i] = RI_DIGIT + RI_HEX + RI_WORD;
 	else if (i >= 'a' && i <= 'f')
 	    class_tab[i] = RI_HEX + RI_WORD + RI_HEAD + RI_ALPHA + RI_LOWER;
-#ifdef EBCDIC
-	else if ((i >= 'g' && i <= 'i') || (i >= 'j' && i <= 'r')
-						    || (i >= 's' && i <= 'z'))
-#else
 	else if (i >= 'g' && i <= 'z')
-#endif
 	    class_tab[i] = RI_WORD + RI_HEAD + RI_ALPHA + RI_LOWER;
 	else if (i >= 'A' && i <= 'F')
 	    class_tab[i] = RI_HEX + RI_WORD + RI_HEAD + RI_ALPHA + RI_UPPER;
-#ifdef EBCDIC
-	else if ((i >= 'G' && i <= 'I') || ( i >= 'J' && i <= 'R')
-						    || (i >= 'S' && i <= 'Z'))
-#else
 	else if (i >= 'G' && i <= 'Z')
-#endif
 	    class_tab[i] = RI_WORD + RI_HEAD + RI_ALPHA + RI_UPPER;
 	else if (i == '_')
 	    class_tab[i] = RI_WORD + RI_HEAD;
@@ -271,15 +247,15 @@ init_class_tab(void)
     done = TRUE;
 }
 
-#define ri_digit(c)	(c < 0x100 && (class_tab[c] & RI_DIGIT))
-#define ri_hex(c)	(c < 0x100 && (class_tab[c] & RI_HEX))
-#define ri_octal(c)	(c < 0x100 && (class_tab[c] & RI_OCTAL))
-#define ri_word(c)	(c < 0x100 && (class_tab[c] & RI_WORD))
-#define ri_head(c)	(c < 0x100 && (class_tab[c] & RI_HEAD))
-#define ri_alpha(c)	(c < 0x100 && (class_tab[c] & RI_ALPHA))
-#define ri_lower(c)	(c < 0x100 && (class_tab[c] & RI_LOWER))
-#define ri_upper(c)	(c < 0x100 && (class_tab[c] & RI_UPPER))
-#define ri_white(c)	(c < 0x100 && (class_tab[c] & RI_WHITE))
+#define ri_digit(c)	((c) < 0x100 && (class_tab[c] & RI_DIGIT))
+#define ri_hex(c)	((c) < 0x100 && (class_tab[c] & RI_HEX))
+#define ri_octal(c)	((c) < 0x100 && (class_tab[c] & RI_OCTAL))
+#define ri_word(c)	((c) < 0x100 && (class_tab[c] & RI_WORD))
+#define ri_head(c)	((c) < 0x100 && (class_tab[c] & RI_HEAD))
+#define ri_alpha(c)	((c) < 0x100 && (class_tab[c] & RI_ALPHA))
+#define ri_lower(c)	((c) < 0x100 && (class_tab[c] & RI_LOWER))
+#define ri_upper(c)	((c) < 0x100 && (class_tab[c] & RI_UPPER))
+#define ri_white(c)	((c) < 0x100 && (class_tab[c] & RI_WHITE))
 
 // flags for regflags
 #define RF_ICASE    1	// ignore case
@@ -314,9 +290,6 @@ static int	reg_strict;	// "[abc" is illegal
  * META contains all characters that may be magic, except '^' and '$'.
  */
 
-#ifdef EBCDIC
-static char_u META[] = "%&()*+.123456789<=>?@ACDFHIKLMOPSUVWX[_acdfhiklmnopsuvwxz{|~";
-#else
 // META[] is used often enough to justify turning it into a table.
 static char_u META_flags[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -334,7 +307,6 @@ static char_u META_flags[] = {
 //  p	     s	   u  v  w  x	  z  {	|     ~
     1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1
 };
-#endif
 
 static int	curchr;		// currently parsed character
 // Previous character.  Note: prevchr is sometimes -1 when we are not at the
@@ -422,30 +394,6 @@ get_equi_class(char_u **pp)
     }
     return 0;
 }
-
-#ifdef EBCDIC
-/*
- * Table for equivalence class "c". (IBM-1047)
- */
-static char *EQUIVAL_CLASS_C[16] = {
-    "A\x62\x63\x64\x65\x66\x67",
-    "C\x68",
-    "E\x71\x72\x73\x74",
-    "I\x75\x76\x77\x78",
-    "N\x69",
-    "O\xEB\xEC\xED\xEE\xEF\x80",
-    "U\xFB\xFC\xFD\xFE",
-    "Y\xBA",
-    "a\x42\x43\x44\x45\x46\x47",
-    "c\x48",
-    "e\x51\x52\x53\x54",
-    "i\x55\x56\x57\x58",
-    "n\x49",
-    "o\xCB\xCC\xCD\xCE\xCF\x70",
-    "u\xDB\xDC\xDD\xDE",
-    "y\x8D\xDF",
-};
-#endif
 
 /*
  * Check for a collating element "[.a.]".  "pp" points to the '['.
@@ -561,7 +509,7 @@ skip_regexp_err(
 
     if (*p != delim)
     {
-	semsg(_("E654: missing delimiter after search pattern: %s"), startp);
+	semsg(_(e_missing_delimiter_after_search_pattern_str), startp);
 	return NULL;
     }
     return p;
@@ -802,13 +750,7 @@ peekchr(void)
 
 		if (c == NUL)
 		    curchr = '\\';	// trailing '\'
-		else if (
-#ifdef EBCDIC
-			vim_strchr(META, c)
-#else
-			c <= '~' && META_flags[c]
-#endif
-			)
+		else if (c <= '~' && META_flags[c])
 		{
 		    /*
 		     * META contains everything that may be magic sometimes,
@@ -1059,7 +1001,7 @@ read_limits(long *minval, long *maxval)
     if (*regparse == '\\')
 	regparse++;	// Allow either \{...} or \{...\}
     if (*regparse != '}')
-	EMSG2_RET_FAIL(_("E554: Syntax error in %s{...}"),
+	EMSG2_RET_FAIL(_(e_syntax_error_in_str_curlies),
 						       reg_magic == MAGIC_ALL);
 
     /*
@@ -1132,7 +1074,7 @@ typedef struct {
     // The current match-position is stord in these variables:
     linenr_T	lnum;		// line number, relative to first line
     char_u	*line;		// start of current line
-    char_u	*input;		// current input, points into "regline"
+    char_u	*input;		// current input, points into "line"
 
     int	need_clear_subexpr;	// subexpressions still need to be cleared
 #ifdef FEAT_SYN_HL
@@ -1279,9 +1221,10 @@ reg_match_visual(void)
     colnr_T	start, end;
     colnr_T	start2, end2;
     colnr_T	cols;
+    colnr_T	curswant;
 
-    // Check if the buffer is the current buffer.
-    if (rex.reg_buf != curbuf || VIsual.lnum == 0)
+    // Check if the buffer is the current buffer and not using a string.
+    if (rex.reg_buf != curbuf || VIsual.lnum == 0 || !REG_MULTI)
 	return FALSE;
 
     if (VIsual_active)
@@ -1297,6 +1240,7 @@ reg_match_visual(void)
 	    bot = VIsual;
 	}
 	mode = VIsual_mode;
+	curswant = wp->w_curswant;
     }
     else
     {
@@ -1311,14 +1255,15 @@ reg_match_visual(void)
 	    bot = curbuf->b_visual.vi_start;
 	}
 	mode = curbuf->b_visual.vi_mode;
+	curswant = curbuf->b_visual.vi_curswant;
     }
     lnum = rex.lnum + rex.reg_firstlnum;
     if (lnum < top.lnum || lnum > bot.lnum)
 	return FALSE;
 
+    col = (colnr_T)(rex.input - rex.line);
     if (mode == 'v')
     {
-	col = (colnr_T)(rex.input - rex.line);
 	if ((lnum == top.lnum && col < top.col)
 		|| (lnum == bot.lnum && col >= bot.col + (*p_sel != 'e')))
 	    return FALSE;
@@ -1331,9 +1276,14 @@ reg_match_visual(void)
 	    start = start2;
 	if (end2 > end)
 	    end = end2;
-	if (top.col == MAXCOL || bot.col == MAXCOL)
+	if (top.col == MAXCOL || bot.col == MAXCOL || curswant == MAXCOL)
 	    end = MAXCOL;
-	cols = win_linetabsize(wp, rex.line, (colnr_T)(rex.input - rex.line));
+
+	// getvvcol() flushes rex.line, need to get it again
+	rex.line = reg_getline(rex.lnum);
+	rex.input = rex.line + col;
+
+	cols = win_linetabsize(wp, rex.line, col);
 	if (cols < start || cols > end - (*p_sel == 'e'))
 	    return FALSE;
     }
@@ -1356,7 +1306,7 @@ prog_magic_wrong(void)
 
     if (UCHARAT(((bt_regprog_T *)prog)->program) != REGMAGIC)
     {
-	emsg(_(e_re_corr));
+	emsg(_(e_corrupted_regexp_program));
 	return TRUE;
     }
     return FALSE;
@@ -1501,7 +1451,7 @@ re_mult_next(char *what)
 {
     if (re_multi_type(peekchr()) == MULTI_MULT)
     {
-       semsg(_("E888: (NFA regexp) cannot repeat %s"), what);
+       semsg(_(e_nfa_regexp_cannot_repeat_str), what);
        rc_did_emsg = TRUE;
        return FAIL;
     }
@@ -1979,7 +1929,7 @@ vim_regsub_both(
     // Be paranoid...
     if ((source == NULL && expr == NULL) || dest == NULL)
     {
-	emsg(_(e_null));
+	emsg(_(e_null_argument));
 	return 0;
     }
     if (prog_magic_wrong())
@@ -2039,8 +1989,8 @@ vim_regsub_both(
 		argv[0].vval.v_list = &matchList.sl_list;
 		matchList.sl_list.lv_len = 0;
 		CLEAR_FIELD(funcexe);
-		funcexe.argv_func = fill_submatch_list;
-		funcexe.evaluate = TRUE;
+		funcexe.fe_argv_func = fill_submatch_list;
+		funcexe.fe_evaluate = TRUE;
 		if (expr->v_type == VAR_FUNC)
 		{
 		    s = expr->vval.v_string;
@@ -2051,7 +2001,7 @@ vim_regsub_both(
 		    partial_T   *partial = expr->vval.v_partial;
 
 		    s = partial_name(partial);
-		    funcexe.partial = partial;
+		    funcexe.fe_partial = partial;
 		    call_func(s, -1, &rettv, 1, argv, &funcexe);
 		}
 		if (matchList.sl_list.lv_len > 0)
@@ -2069,6 +2019,9 @@ vim_regsub_both(
 		}
 		clear_tv(&rettv);
 	    }
+	    else if (substitute_instr != NULL)
+		// Execute instructions from ISN_SUBSTITUTE.
+		eval_result = exe_substitute_instr();
 	    else
 		eval_result = eval_to_string(source + 2, TRUE);
 
@@ -2283,7 +2236,7 @@ vim_regsub_both(
 		    else if (*s == NUL) // we hit NUL.
 		    {
 			if (copy)
-			    iemsg(_(e_re_damg));
+			    iemsg(_(e_damaged_match_string));
 			goto exit;
 		    }
 		    else
@@ -2641,7 +2594,7 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 	}
 	else
 	{
-	    emsg(_("E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be used "));
+	    emsg(_(e_percent_hash_can_only_be_followed_by_zero_one_two_automatic_engine_will_be_used));
 	    regexp_engine = AUTOMATIC_ENGINE;
 	}
     }
@@ -2743,8 +2696,7 @@ report_re_switch(char_u *pat)
 }
 #endif
 
-#if (defined(FEAT_X11) && (defined(FEAT_TITLE) || defined(FEAT_XCLIPBOARD))) \
-	|| defined(PROTO)
+#if defined(FEAT_X11) || defined(PROTO)
 /*
  * Return whether "prog" is currently being executed.
  */
@@ -2778,7 +2730,7 @@ vim_regexec_string(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg(_(e_recursive));
+	emsg(_(e_cannot_use_pattern_recursively));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;
@@ -2899,7 +2851,7 @@ vim_regexec_multi(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg(_(e_recursive));
+	emsg(_(e_cannot_use_pattern_recursively));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;

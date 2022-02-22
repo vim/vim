@@ -9,7 +9,7 @@
 SPELLDIR = ..
 FILES    = tet_ID.aff tet_ID.dic
 
-# I don't hava a Tetum locale, use the Dutch one instead.
+# I don't have a Tetum locale, use the Dutch one instead.
 all: $SPELLDIR/tet.latin1.spl $SPELLDIR/tet.utf-8.spl ../README_tet.txt
 
 $SPELLDIR/tet.latin1.spl : $FILES

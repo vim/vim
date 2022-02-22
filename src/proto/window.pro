@@ -1,4 +1,5 @@
 /* window.c */
+win_T *prevwin_curwin(void);
 void do_window(int nchar, long Prenum, int xchar);
 void get_wincmd_addr_type(char_u *arg, exarg_T *eap);
 int win_split(int size, int flags);
@@ -54,6 +55,7 @@ void shell_new_columns(void);
 void win_size_save(garray_T *gap);
 void win_size_restore(garray_T *gap);
 int win_comp_pos(void);
+void win_ensure_size(void);
 void win_setheight(int height);
 void win_setheight_win(int height, win_T *win);
 void win_setwidth(int width);

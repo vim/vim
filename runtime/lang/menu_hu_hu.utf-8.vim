@@ -5,6 +5,7 @@
 "
 " This file was converted from menu_hu_hu.iso_8859-2.vim.  See there for
 " remarks.
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

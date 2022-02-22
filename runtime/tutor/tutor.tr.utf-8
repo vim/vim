@@ -682,7 +682,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
  	 Ders 5.3'ün iki adet kopyası olduğunu görün, özgün sürümü ve kopyası.
 
   NOT: Bu komutu kullanarak bir dış komutun çıktısını da dosyanın içine
-       koyabilirsiniz. Örneğin :r :!ls yazmak ls komutunun vereceği çıktıyı
+       koyabilirsiniz. Örneğin :r !ls yazmak ls komutunun vereceği çıktıyı
        dosyanın içinde hemen imlecin altındaki satıra koyar.
 
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -881,7 +881,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   1. "vimrc" dosyasını düzenlemeye başlayın. İşletim sistemlerine göre:
 
     :e ~/.vimrc		Unix için
-    :e $VIM/_vimrc	Windows için
+    :e ~/_vimrc		Windows için
 
   2. Şimdi örnek "vimrc" dosyası içeriğini okuyun:
 
@@ -956,7 +956,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   Tümüyle Vim için hazırlanmış ilk kitaptır. Özellikle ilk kullanıcılar için
   çok uygundur.
   Kitapta birçok örnek ve resim bulunmaktadır.
-  http://iccf-holland.org/click5.html adresine bakabilirsiniz.
+  https://iccf-holland.org/click5.html adresine bakabilirsiniz.
 
   Bu kitap daha eskidir ve Vim'den daha çok Vi içindir ancak tavsiye edilir:
 

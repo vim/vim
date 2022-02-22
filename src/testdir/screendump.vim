@@ -27,6 +27,9 @@ func VerifyScreenDump(buf, filename, options, ...)
   " Starting a terminal to make a screendump is always considered flaky.
   let g:test_is_flaky = 1
 
+  " wait for the pending updates to be handled.
+  call TermWait(a:buf)
+
   " Redraw to execute the code that updates the screen.  Otherwise we get the
   " text and attributes only from the internal buffer.
   redraw

@@ -223,8 +223,28 @@ func Test_lockvar()
   call add(val, 4)
   call assert_equal([9, 2, 3, 4], val)
   call assert_fails('let val = [4, 5, 6]', 'E1122:')
-endfunc
 
+  let l =<< trim END
+    let d = {}
+    lockvar d
+    func d.fn()
+      return 1
+    endfunc
+  END
+  let @a = l->join("\n")
+  call assert_fails('exe @a', 'E741:')
+
+  let l =<< trim END
+    let d = {}
+    let d.fn = function("min")
+    lockvar d.fn
+    func! d.fn()
+      return 1
+    endfunc
+  END
+  let @a = l->join("\n")
+  call assert_fails('exe @a', 'E741:')
+endfunc
 
 func Test_const_with_index_access()
     let l = [1, 2, 3]

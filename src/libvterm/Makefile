@@ -37,7 +37,7 @@ INCFILES=$(TBLFILES:.tbl=.inc)
 HFILES_INT=$(sort $(wildcard src/*.h)) $(HFILES)
 
 VERSION_MAJOR=0
-VERSION_MINOR=1
+VERSION_MINOR=2
 
 VERSION_CURRENT=0
 VERSION_REVISION=0
@@ -97,7 +97,7 @@ install-inc:
 	install -d $(DESTDIR)$(INCDIR)
 	install -m644 $(HFILES) $(DESTDIR)$(INCDIR)
 	install -d $(DESTDIR)$(LIBDIR)/pkgconfig
-	sed -e "s,@PREFIX@,$(PREFIX)," -e "s,@LIBDIR@,$(LIBDIR)," -e "s,@VERSION@,$(VERSION)," <vterm.pc.in >$(DESTDIR)$(LIBDIR)/pkgconfig/vterm.pc
+	sed -e "s,@INCDIR@,$(INCDIR)," -e "s,@LIBDIR@,$(LIBDIR)," -e "s,@VERSION@,$(VERSION)," <vterm.pc.in >$(DESTDIR)$(LIBDIR)/pkgconfig/vterm.pc
 
 install-lib: $(LIBRARY)
 	install -d $(DESTDIR)$(LIBDIR)

@@ -22,14 +22,16 @@ static int coladvance2(pos_T *pos, int addspaces, int finetune, colnr_T wcol);
     int
 virtual_active(void)
 {
+    unsigned int cur_ve_flags = get_ve_flags();
+
     // While an operator is being executed we return "virtual_op", because
     // VIsual_active has already been reset, thus we can't check for "block"
     // being used.
     if (virtual_op != MAYBE)
 	return virtual_op;
-    return (ve_flags == VE_ALL
-	    || ((ve_flags & VE_BLOCK) && VIsual_active && VIsual_mode == Ctrl_V)
-	    || ((ve_flags & VE_INSERT) && (State & INSERT)));
+    return (cur_ve_flags == VE_ALL
+	    || ((cur_ve_flags & VE_BLOCK) && VIsual_active && VIsual_mode == Ctrl_V)
+	    || ((cur_ve_flags & VE_INSERT) && (State & INSERT)));
 }
 
 /*
@@ -137,7 +139,7 @@ coladvance2(
     one_more = (State & INSERT)
 		    || restart_edit != NUL
 		    || (VIsual_active && *p_sel != 'o')
-		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL);
+		    || ((get_ve_flags() & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
@@ -159,7 +161,8 @@ coladvance2(
 	if (finetune
 		&& curwin->w_p_wrap
 		&& curwin->w_width != 0
-		&& wcol >= (colnr_T)width)
+		&& wcol >= (colnr_T)width
+		&& width > 0)
 	{
 	    csize = linetabsize(line);
 	    if (csize > 0)
@@ -549,9 +552,10 @@ check_cursor_col(void)
     void
 check_cursor_col_win(win_T *win)
 {
-    colnr_T len;
-    colnr_T oldcol = win->w_cursor.col;
-    colnr_T oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
+    colnr_T      len;
+    colnr_T      oldcol = win->w_cursor.col;
+    colnr_T      oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
+    unsigned int cur_ve_flags = get_ve_flags();
 
     len = (colnr_T)STRLEN(ml_get_buf(win->w_buffer, win->w_cursor.lnum, FALSE));
     if (len == 0)
@@ -564,7 +568,7 @@ check_cursor_col_win(win_T *win)
 	// - 'virtualedit' is set
 	if ((State & INSERT) || restart_edit
 		|| (VIsual_active && *p_sel != 'o')
-		|| (ve_flags & VE_ONEMORE)
+		|| (cur_ve_flags & VE_ONEMORE)
 		|| virtual_active())
 	    win->w_cursor.col = len;
 	else
@@ -583,7 +587,7 @@ check_cursor_col_win(win_T *win)
     // line.
     if (oldcol == MAXCOL)
 	win->w_cursor.coladd = 0;
-    else if (ve_flags == VE_ALL)
+    else if (cur_ve_flags == VE_ALL)
     {
 	if (oldcoladd > win->w_cursor.col)
 	{
@@ -690,1064 +694,6 @@ leftcol_changed(void)
     return retval;
 }
 
-/**********************************************************************
- * Various routines dealing with allocation and deallocation of memory.
- */
-
-#if defined(MEM_PROFILE) || defined(PROTO)
-
-# define MEM_SIZES  8200
-static long_u mem_allocs[MEM_SIZES];
-static long_u mem_frees[MEM_SIZES];
-static long_u mem_allocated;
-static long_u mem_freed;
-static long_u mem_peak;
-static long_u num_alloc;
-static long_u num_freed;
-
-    static void
-mem_pre_alloc_s(size_t *sizep)
-{
-    *sizep += sizeof(size_t);
-}
-
-    static void
-mem_pre_alloc_l(size_t *sizep)
-{
-    *sizep += sizeof(size_t);
-}
-
-    static void
-mem_post_alloc(
-    void **pp,
-    size_t size)
-{
-    if (*pp == NULL)
-	return;
-    size -= sizeof(size_t);
-    *(long_u *)*pp = size;
-    if (size <= MEM_SIZES-1)
-	mem_allocs[size-1]++;
-    else
-	mem_allocs[MEM_SIZES-1]++;
-    mem_allocated += size;
-    if (mem_allocated - mem_freed > mem_peak)
-	mem_peak = mem_allocated - mem_freed;
-    num_alloc++;
-    *pp = (void *)((char *)*pp + sizeof(size_t));
-}
-
-    static void
-mem_pre_free(void **pp)
-{
-    long_u size;
-
-    *pp = (void *)((char *)*pp - sizeof(size_t));
-    size = *(size_t *)*pp;
-    if (size <= MEM_SIZES-1)
-	mem_frees[size-1]++;
-    else
-	mem_frees[MEM_SIZES-1]++;
-    mem_freed += size;
-    num_freed++;
-}
-
-/*
- * called on exit via atexit()
- */
-    void
-vim_mem_profile_dump(void)
-{
-    int i, j;
-
-    printf("\r\n");
-    j = 0;
-    for (i = 0; i < MEM_SIZES - 1; i++)
-    {
-	if (mem_allocs[i] || mem_frees[i])
-	{
-	    if (mem_frees[i] > mem_allocs[i])
-		printf("\r\n%s", _("ERROR: "));
-	    printf("[%4d / %4lu-%-4lu] ", i + 1, mem_allocs[i], mem_frees[i]);
-	    j++;
-	    if (j > 3)
-	    {
-		j = 0;
-		printf("\r\n");
-	    }
-	}
-    }
-
-    i = MEM_SIZES - 1;
-    if (mem_allocs[i])
-    {
-	printf("\r\n");
-	if (mem_frees[i] > mem_allocs[i])
-	    puts(_("ERROR: "));
-	printf("[>%d / %4lu-%-4lu]", i, mem_allocs[i], mem_frees[i]);
-    }
-
-    printf(_("\n[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"),
-	    mem_allocated, mem_freed, mem_allocated - mem_freed, mem_peak);
-    printf(_("[calls] total re/malloc()'s %lu, total free()'s %lu\n\n"),
-	    num_alloc, num_freed);
-}
-
-#endif // MEM_PROFILE
-
-#ifdef FEAT_EVAL
-    int
-alloc_does_fail(size_t size)
-{
-    if (alloc_fail_countdown == 0)
-    {
-	if (--alloc_fail_repeat <= 0)
-	    alloc_fail_id = 0;
-	do_outofmem_msg(size);
-	return TRUE;
-    }
-    --alloc_fail_countdown;
-    return FALSE;
-}
-#endif
-
-/*
- * Some memory is reserved for error messages and for being able to
- * call mf_release_all(), which needs some memory for mf_trans_add().
- */
-#define KEEP_ROOM (2 * 8192L)
-#define KEEP_ROOM_KB (KEEP_ROOM / 1024L)
-
-/*
- * The normal way to allocate memory.  This handles an out-of-memory situation
- * as well as possible, still returns NULL when we're completely out.
- */
-    void *
-alloc(size_t size)
-{
-    return lalloc(size, TRUE);
-}
-
-/*
- * alloc() with an ID for alloc_fail().
- */
-    void *
-alloc_id(size_t size, alloc_id_T id UNUSED)
-{
-#ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail(size))
-	return NULL;
-#endif
-    return lalloc(size, TRUE);
-}
-
-/*
- * Allocate memory and set all bytes to zero.
- */
-    void *
-alloc_clear(size_t size)
-{
-    void *p;
-
-    p = lalloc(size, TRUE);
-    if (p != NULL)
-	(void)vim_memset(p, 0, size);
-    return p;
-}
-
-/*
- * Same as alloc_clear() but with allocation id for testing
- */
-    void *
-alloc_clear_id(size_t size, alloc_id_T id UNUSED)
-{
-#ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail(size))
-	return NULL;
-#endif
-    return alloc_clear(size);
-}
-
-/*
- * Allocate memory like lalloc() and set all bytes to zero.
- */
-    void *
-lalloc_clear(size_t size, int message)
-{
-    void *p;
-
-    p = lalloc(size, message);
-    if (p != NULL)
-	(void)vim_memset(p, 0, size);
-    return p;
-}
-
-/*
- * Low level memory allocation function.
- * This is used often, KEEP IT FAST!
- */
-    void *
-lalloc(size_t size, int message)
-{
-    void	*p;		    // pointer to new storage space
-    static int	releasing = FALSE;  // don't do mf_release_all() recursive
-    int		try_again;
-#if defined(HAVE_AVAIL_MEM)
-    static size_t allocated = 0;    // allocated since last avail check
-#endif
-
-    // Safety check for allocating zero bytes
-    if (size == 0)
-    {
-	// Don't hide this message
-	emsg_silent = 0;
-	iemsg(_("E341: Internal error: lalloc(0, )"));
-	return NULL;
-    }
-
-#ifdef MEM_PROFILE
-    mem_pre_alloc_l(&size);
-#endif
-
-    /*
-     * Loop when out of memory: Try to release some memfile blocks and
-     * if some blocks are released call malloc again.
-     */
-    for (;;)
-    {
-	/*
-	 * Handle three kind of systems:
-	 * 1. No check for available memory: Just return.
-	 * 2. Slow check for available memory: call mch_avail_mem() after
-	 *    allocating KEEP_ROOM amount of memory.
-	 * 3. Strict check for available memory: call mch_avail_mem()
-	 */
-	if ((p = malloc(size)) != NULL)
-	{
-#ifndef HAVE_AVAIL_MEM
-	    // 1. No check for available memory: Just return.
-	    goto theend;
-#else
-	    // 2. Slow check for available memory: call mch_avail_mem() after
-	    //    allocating (KEEP_ROOM / 2) amount of memory.
-	    allocated += size;
-	    if (allocated < KEEP_ROOM / 2)
-		goto theend;
-	    allocated = 0;
-
-	    // 3. check for available memory: call mch_avail_mem()
-	    if (mch_avail_mem(TRUE) < KEEP_ROOM_KB && !releasing)
-	    {
-		free(p);	// System is low... no go!
-		p = NULL;
-	    }
-	    else
-		goto theend;
-#endif
-	}
-	/*
-	 * Remember that mf_release_all() is being called to avoid an endless
-	 * loop, because mf_release_all() may call alloc() recursively.
-	 */
-	if (releasing)
-	    break;
-	releasing = TRUE;
-
-	clear_sb_text(TRUE);	      // free any scrollback text
-	try_again = mf_release_all(); // release as many blocks as possible
-
-	releasing = FALSE;
-	if (!try_again)
-	    break;
-    }
-
-    if (message && p == NULL)
-	do_outofmem_msg(size);
-
-theend:
-#ifdef MEM_PROFILE
-    mem_post_alloc(&p, size);
-#endif
-    return p;
-}
-
-/*
- * lalloc() with an ID for alloc_fail().
- */
-#if defined(FEAT_SIGNS) || defined(PROTO)
-    void *
-lalloc_id(size_t size, int message, alloc_id_T id UNUSED)
-{
-#ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail(size))
-	return NULL;
-#endif
-    return (lalloc(size, message));
-}
-#endif
-
-#if defined(MEM_PROFILE) || defined(PROTO)
-/*
- * realloc() with memory profiling.
- */
-    void *
-mem_realloc(void *ptr, size_t size)
-{
-    void *p;
-
-    mem_pre_free(&ptr);
-    mem_pre_alloc_s(&size);
-
-    p = realloc(ptr, size);
-
-    mem_post_alloc(&p, size);
-
-    return p;
-}
-#endif
-
-/*
-* Avoid repeating the error message many times (they take 1 second each).
-* Did_outofmem_msg is reset when a character is read.
-*/
-    void
-do_outofmem_msg(size_t size)
-{
-    if (!did_outofmem_msg)
-    {
-	// Don't hide this message
-	emsg_silent = 0;
-
-	// Must come first to avoid coming back here when printing the error
-	// message fails, e.g. when setting v:errmsg.
-	did_outofmem_msg = TRUE;
-
-	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
-
-	if (starting == NO_SCREEN)
-	    // Not even finished with initializations and already out of
-	    // memory?  Then nothing is going to work, exit.
-	    mch_exit(123);
-    }
-}
-
-#if defined(EXITFREE) || defined(PROTO)
-
-/*
- * Free everything that we allocated.
- * Can be used to detect memory leaks, e.g., with ccmalloc.
- * NOTE: This is tricky!  Things are freed that functions depend on.  Don't be
- * surprised if Vim crashes...
- * Some things can't be freed, esp. things local to a library function.
- */
-    void
-free_all_mem(void)
-{
-    buf_T	*buf, *nextbuf;
-
-    // When we cause a crash here it is caught and Vim tries to exit cleanly.
-    // Don't try freeing everything again.
-    if (entered_free_all_mem)
-	return;
-    entered_free_all_mem = TRUE;
-
-    // Don't want to trigger autocommands from here on.
-    block_autocmds();
-
-    // Close all tabs and windows.  Reset 'equalalways' to avoid redraws.
-    p_ea = FALSE;
-    if (first_tabpage != NULL && first_tabpage->tp_next != NULL)
-	do_cmdline_cmd((char_u *)"tabonly!");
-    if (!ONE_WINDOW)
-	do_cmdline_cmd((char_u *)"only!");
-
-# if defined(FEAT_SPELL)
-    // Free all spell info.
-    spell_free_all();
-# endif
-
-# if defined(FEAT_BEVAL_TERM)
-    ui_remove_balloon();
-# endif
-# ifdef FEAT_PROP_POPUP
-    if (curwin != NULL)
-	close_all_popups(TRUE);
-# endif
-
-    // Clear user commands (before deleting buffers).
-    ex_comclear(NULL);
-
-    // When exiting from mainerr_arg_missing curbuf has not been initialized,
-    // and not much else.
-    if (curbuf != NULL)
-    {
-# ifdef FEAT_MENU
-	// Clear menus.
-	do_cmdline_cmd((char_u *)"aunmenu *");
-#  ifdef FEAT_MULTI_LANG
-	do_cmdline_cmd((char_u *)"menutranslate clear");
-#  endif
-# endif
-	// Clear mappings, abbreviations, breakpoints.
-	do_cmdline_cmd((char_u *)"lmapclear");
-	do_cmdline_cmd((char_u *)"xmapclear");
-	do_cmdline_cmd((char_u *)"mapclear");
-	do_cmdline_cmd((char_u *)"mapclear!");
-	do_cmdline_cmd((char_u *)"abclear");
-# if defined(FEAT_EVAL)
-	do_cmdline_cmd((char_u *)"breakdel *");
-# endif
-# if defined(FEAT_PROFILE)
-	do_cmdline_cmd((char_u *)"profdel *");
-# endif
-# if defined(FEAT_KEYMAP)
-	do_cmdline_cmd((char_u *)"set keymap=");
-# endif
-    }
-
-# ifdef FEAT_TITLE
-    free_titles();
-# endif
-# if defined(FEAT_SEARCHPATH)
-    free_findfile();
-# endif
-
-    // Obviously named calls.
-    free_all_autocmds();
-    clear_termcodes();
-    free_all_marks();
-    alist_clear(&global_alist);
-    free_homedir();
-    free_users();
-    free_search_patterns();
-    free_old_sub();
-    free_last_insert();
-    free_insexpand_stuff();
-    free_prev_shellcmd();
-    free_regexp_stuff();
-    free_tag_stuff();
-    free_cd_dir();
-# ifdef FEAT_SIGNS
-    free_signs();
-# endif
-# ifdef FEAT_EVAL
-    set_expr_line(NULL, NULL);
-# endif
-# ifdef FEAT_DIFF
-    if (curtab != NULL)
-	diff_clear(curtab);
-# endif
-    clear_sb_text(TRUE);	      // free any scrollback text
-
-    // Free some global vars.
-    vim_free(username);
-# ifdef FEAT_CLIPBOARD
-    vim_regfree(clip_exclude_prog);
-# endif
-    vim_free(last_cmdline);
-    vim_free(new_last_cmdline);
-    set_keep_msg(NULL, 0);
-
-    // Clear cmdline history.
-    p_hi = 0;
-    init_history();
-# ifdef FEAT_PROP_POPUP
-    clear_global_prop_types();
-# endif
-
-# ifdef FEAT_QUICKFIX
-    {
-	win_T	    *win;
-	tabpage_T   *tab;
-
-	qf_free_all(NULL);
-	// Free all location lists
-	FOR_ALL_TAB_WINDOWS(tab, win)
-	    qf_free_all(win);
-    }
-# endif
-
-    // Close all script inputs.
-    close_all_scripts();
-
-    if (curwin != NULL)
-	// Destroy all windows.  Must come before freeing buffers.
-	win_free_all();
-
-    // Free all option values.  Must come after closing windows.
-    free_all_options();
-
-    // Free all buffers.  Reset 'autochdir' to avoid accessing things that
-    // were freed already.
-# ifdef FEAT_AUTOCHDIR
-    p_acd = FALSE;
-# endif
-    for (buf = firstbuf; buf != NULL; )
-    {
-	bufref_T    bufref;
-
-	set_bufref(&bufref, buf);
-	nextbuf = buf->b_next;
-	close_buffer(NULL, buf, DOBUF_WIPE, FALSE, FALSE);
-	if (bufref_valid(&bufref))
-	    buf = nextbuf;	// didn't work, try next one
-	else
-	    buf = firstbuf;
-    }
-
-# ifdef FEAT_ARABIC
-    free_arshape_buf();
-# endif
-
-    // Clear registers.
-    clear_registers();
-    ResetRedobuff();
-    ResetRedobuff();
-
-# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-    vim_free(serverDelayedStartName);
-# endif
-
-    // highlight info
-    free_highlight();
-
-    reset_last_sourcing();
-
-    if (first_tabpage != NULL)
-    {
-	free_tabpage(first_tabpage);
-	first_tabpage = NULL;
-    }
-
-# ifdef UNIX
-    // Machine-specific free.
-    mch_free_mem();
-# endif
-
-    // message history
-    for (;;)
-	if (delete_first_msg() == FAIL)
-	    break;
-
-# ifdef FEAT_JOB_CHANNEL
-    channel_free_all();
-# endif
-# ifdef FEAT_TIMERS
-    timer_free_all();
-# endif
-# ifdef FEAT_EVAL
-    // must be after channel_free_all() with unrefs partials
-    eval_clear();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-    // must be after eval_clear() with unrefs jobs
-    job_free_all();
-# endif
-
-    free_termoptions();
-
-    // screenlines (can't display anything now!)
-    free_screenlines();
-
-# if defined(FEAT_SOUND)
-    sound_free();
-# endif
-# if defined(USE_XSMP)
-    xsmp_close();
-# endif
-# ifdef FEAT_GUI_GTK
-    gui_mch_free_all();
-# endif
-    clear_hl_tables();
-
-    vim_free(IObuff);
-    vim_free(NameBuff);
-# ifdef FEAT_QUICKFIX
-    check_quickfix_busy();
-# endif
-}
-#endif
-
-/*
- * Copy "string" into newly allocated memory.
- */
-    char_u *
-vim_strsave(char_u *string)
-{
-    char_u	*p;
-    size_t	len;
-
-    len = STRLEN(string) + 1;
-    p = alloc(len);
-    if (p != NULL)
-	mch_memmove(p, string, len);
-    return p;
-}
-
-/*
- * Copy up to "len" bytes of "string" into newly allocated memory and
- * terminate with a NUL.
- * The allocated memory always has size "len + 1", also when "string" is
- * shorter.
- */
-    char_u *
-vim_strnsave(char_u *string, size_t len)
-{
-    char_u	*p;
-
-    p = alloc(len + 1);
-    if (p != NULL)
-    {
-	STRNCPY(p, string, len);
-	p[len] = NUL;
-    }
-    return p;
-}
-
-/*
- * Copy "p[len]" into allocated memory, ignoring NUL characters.
- * Returns NULL when out of memory.
- */
-    char_u *
-vim_memsave(char_u *p, size_t len)
-{
-    char_u *ret = alloc(len);
-
-    if (ret != NULL)
-	mch_memmove(ret, p, len);
-    return ret;
-}
-
-/*
- * Same as vim_strsave(), but any characters found in esc_chars are preceded
- * by a backslash.
- */
-    char_u *
-vim_strsave_escaped(char_u *string, char_u *esc_chars)
-{
-    return vim_strsave_escaped_ext(string, esc_chars, '\\', FALSE);
-}
-
-/*
- * Same as vim_strsave_escaped(), but when "bsl" is TRUE also escape
- * characters where rem_backslash() would remove the backslash.
- * Escape the characters with "cc".
- */
-    char_u *
-vim_strsave_escaped_ext(
-    char_u	*string,
-    char_u	*esc_chars,
-    int		cc,
-    int		bsl)
-{
-    char_u	*p;
-    char_u	*p2;
-    char_u	*escaped_string;
-    unsigned	length;
-    int		l;
-
-    /*
-     * First count the number of backslashes required.
-     * Then allocate the memory and insert them.
-     */
-    length = 1;				// count the trailing NUL
-    for (p = string; *p; p++)
-    {
-	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-	{
-	    length += l;		// count a multibyte char
-	    p += l - 1;
-	    continue;
-	}
-	if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
-	    ++length;			// count a backslash
-	++length;			// count an ordinary char
-    }
-    escaped_string = alloc(length);
-    if (escaped_string != NULL)
-    {
-	p2 = escaped_string;
-	for (p = string; *p; p++)
-	{
-	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-	    {
-		mch_memmove(p2, p, (size_t)l);
-		p2 += l;
-		p += l - 1;		// skip multibyte char
-		continue;
-	    }
-	    if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
-		*p2++ = cc;
-	    *p2++ = *p;
-	}
-	*p2 = NUL;
-    }
-    return escaped_string;
-}
-
-/*
- * Return TRUE when 'shell' has "csh" in the tail.
- */
-    int
-csh_like_shell(void)
-{
-    return (strstr((char *)gettail(p_sh), "csh") != NULL);
-}
-
-/*
- * Escape "string" for use as a shell argument with system().
- * This uses single quotes, except when we know we need to use double quotes
- * (MS-DOS and MS-Windows without 'shellslash' set).
- * Escape a newline, depending on the 'shell' option.
- * When "do_special" is TRUE also replace "!", "%", "#" and things starting
- * with "<" like "<cfile>".
- * When "do_newline" is FALSE do not escape newline unless it is csh shell.
- * Returns the result in allocated memory, NULL if we have run out.
- */
-    char_u *
-vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
-{
-    unsigned	length;
-    char_u	*p;
-    char_u	*d;
-    char_u	*escaped_string;
-    int		l;
-    int		csh_like;
-
-    // Only csh and similar shells expand '!' within single quotes.  For sh and
-    // the like we must not put a backslash before it, it will be taken
-    // literally.  If do_special is set the '!' will be escaped twice.
-    // Csh also needs to have "\n" escaped twice when do_special is set.
-    csh_like = csh_like_shell();
-
-    // First count the number of extra bytes required.
-    length = (unsigned)STRLEN(string) + 3;  // two quotes and a trailing NUL
-    for (p = string; *p != NUL; MB_PTR_ADV(p))
-    {
-# ifdef MSWIN
-	if (!p_ssl)
-	{
-	    if (*p == '"')
-		++length;		// " -> ""
-	}
-	else
-# endif
-	if (*p == '\'')
-	    length += 3;		// ' => '\''
-	if ((*p == '\n' && (csh_like || do_newline))
-		|| (*p == '!' && (csh_like || do_special)))
-	{
-	    ++length;			// insert backslash
-	    if (csh_like && do_special)
-		++length;		// insert backslash
-	}
-	if (do_special && find_cmdline_var(p, &l) >= 0)
-	{
-	    ++length;			// insert backslash
-	    p += l - 1;
-	}
-    }
-
-    // Allocate memory for the result and fill it.
-    escaped_string = alloc(length);
-    if (escaped_string != NULL)
-    {
-	d = escaped_string;
-
-	// add opening quote
-# ifdef MSWIN
-	if (!p_ssl)
-	    *d++ = '"';
-	else
-# endif
-	    *d++ = '\'';
-
-	for (p = string; *p != NUL; )
-	{
-# ifdef MSWIN
-	    if (!p_ssl)
-	    {
-		if (*p == '"')
-		{
-		    *d++ = '"';
-		    *d++ = '"';
-		    ++p;
-		    continue;
-		}
-	    }
-	    else
-# endif
-	    if (*p == '\'')
-	    {
-		*d++ = '\'';
-		*d++ = '\\';
-		*d++ = '\'';
-		*d++ = '\'';
-		++p;
-		continue;
-	    }
-	    if ((*p == '\n' && (csh_like || do_newline))
-		    || (*p == '!' && (csh_like || do_special)))
-	    {
-		*d++ = '\\';
-		if (csh_like && do_special)
-		    *d++ = '\\';
-		*d++ = *p++;
-		continue;
-	    }
-	    if (do_special && find_cmdline_var(p, &l) >= 0)
-	    {
-		*d++ = '\\';		// insert backslash
-		while (--l >= 0)	// copy the var
-		    *d++ = *p++;
-		continue;
-	    }
-
-	    MB_COPY_CHAR(p, d);
-	}
-
-	// add terminating quote and finish with a NUL
-# ifdef MSWIN
-	if (!p_ssl)
-	    *d++ = '"';
-	else
-# endif
-	    *d++ = '\'';
-	*d = NUL;
-    }
-
-    return escaped_string;
-}
-
-/*
- * Like vim_strsave(), but make all characters uppercase.
- * This uses ASCII lower-to-upper case translation, language independent.
- */
-    char_u *
-vim_strsave_up(char_u *string)
-{
-    char_u *p1;
-
-    p1 = vim_strsave(string);
-    vim_strup(p1);
-    return p1;
-}
-
-/*
- * Like vim_strnsave(), but make all characters uppercase.
- * This uses ASCII lower-to-upper case translation, language independent.
- */
-    char_u *
-vim_strnsave_up(char_u *string, size_t len)
-{
-    char_u *p1;
-
-    p1 = vim_strnsave(string, len);
-    vim_strup(p1);
-    return p1;
-}
-
-/*
- * ASCII lower-to-upper case translation, language independent.
- */
-    void
-vim_strup(
-    char_u	*p)
-{
-    char_u  *p2;
-    int	    c;
-
-    if (p != NULL)
-    {
-	p2 = p;
-	while ((c = *p2) != NUL)
-#ifdef EBCDIC
-	    *p2++ = isalpha(c) ? toupper(c) : c;
-#else
-	    *p2++ = (c < 'a' || c > 'z') ? c : (c - 0x20);
-#endif
-    }
-}
-
-#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
-/*
- * Make string "s" all upper-case and return it in allocated memory.
- * Handles multi-byte characters as well as possible.
- * Returns NULL when out of memory.
- */
-    char_u *
-strup_save(char_u *orig)
-{
-    char_u	*p;
-    char_u	*res;
-
-    res = p = vim_strsave(orig);
-
-    if (res != NULL)
-	while (*p != NUL)
-	{
-	    int		l;
-
-	    if (enc_utf8)
-	    {
-		int	c, uc;
-		int	newl;
-		char_u	*s;
-
-		c = utf_ptr2char(p);
-		l = utf_ptr2len(p);
-		if (c == 0)
-		{
-		    // overlong sequence, use only the first byte
-		    c = *p;
-		    l = 1;
-		}
-		uc = utf_toupper(c);
-
-		// Reallocate string when byte count changes.  This is rare,
-		// thus it's OK to do another malloc()/free().
-		newl = utf_char2len(uc);
-		if (newl != l)
-		{
-		    s = alloc(STRLEN(res) + 1 + newl - l);
-		    if (s == NULL)
-		    {
-			vim_free(res);
-			return NULL;
-		    }
-		    mch_memmove(s, res, p - res);
-		    STRCPY(s + (p - res) + newl, p + l);
-		    p = s + (p - res);
-		    vim_free(res);
-		    res = s;
-		}
-
-		utf_char2bytes(uc, p);
-		p += newl;
-	    }
-	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-		p += l;		// skip multi-byte character
-	    else
-	    {
-		*p = TOUPPER_LOC(*p); // note that toupper() can be a macro
-		p++;
-	    }
-	}
-
-    return res;
-}
-
-/*
- * Make string "s" all lower-case and return it in allocated memory.
- * Handles multi-byte characters as well as possible.
- * Returns NULL when out of memory.
- */
-    char_u *
-strlow_save(char_u *orig)
-{
-    char_u	*p;
-    char_u	*res;
-
-    res = p = vim_strsave(orig);
-
-    if (res != NULL)
-	while (*p != NUL)
-	{
-	    int		l;
-
-	    if (enc_utf8)
-	    {
-		int	c, lc;
-		int	newl;
-		char_u	*s;
-
-		c = utf_ptr2char(p);
-		l = utf_ptr2len(p);
-		if (c == 0)
-		{
-		    // overlong sequence, use only the first byte
-		    c = *p;
-		    l = 1;
-		}
-		lc = utf_tolower(c);
-
-		// Reallocate string when byte count changes.  This is rare,
-		// thus it's OK to do another malloc()/free().
-		newl = utf_char2len(lc);
-		if (newl != l)
-		{
-		    s = alloc(STRLEN(res) + 1 + newl - l);
-		    if (s == NULL)
-		    {
-			vim_free(res);
-			return NULL;
-		    }
-		    mch_memmove(s, res, p - res);
-		    STRCPY(s + (p - res) + newl, p + l);
-		    p = s + (p - res);
-		    vim_free(res);
-		    res = s;
-		}
-
-		utf_char2bytes(lc, p);
-		p += newl;
-	    }
-	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-		p += l;		// skip multi-byte character
-	    else
-	    {
-		*p = TOLOWER_LOC(*p); // note that tolower() can be a macro
-		p++;
-	    }
-	}
-
-    return res;
-}
-#endif
-
-/*
- * delete spaces at the end of a string
- */
-    void
-del_trailing_spaces(char_u *ptr)
-{
-    char_u	*q;
-
-    q = ptr + STRLEN(ptr);
-    while (--q > ptr && VIM_ISWHITE(q[0]) && q[-1] != '\\' && q[-1] != Ctrl_V)
-	*q = NUL;
-}
-
-/*
- * Like strncpy(), but always terminate the result with one NUL.
- * "to" must be "len + 1" long!
- */
-    void
-vim_strncpy(char_u *to, char_u *from, size_t len)
-{
-    STRNCPY(to, from, len);
-    to[len] = NUL;
-}
-
-/*
- * Like strcat(), but make sure the result fits in "tosize" bytes and is
- * always NUL terminated. "from" and "to" may overlap.
- */
-    void
-vim_strcat(char_u *to, char_u *from, size_t tosize)
-{
-    size_t tolen = STRLEN(to);
-    size_t fromlen = STRLEN(from);
-
-    if (tolen + fromlen + 1 > tosize)
-    {
-	mch_memmove(to + tolen, from, tosize - tolen - 1);
-	to[tosize - 1] = NUL;
-    }
-    else
-	mch_memmove(to + tolen, from, fromlen + 1);
-}
-
 /*
  * Isolate one part of a string option where parts are separated with
  * "sep_chars".
@@ -1789,25 +735,6 @@ copy_option_part(
     return len;
 }
 
-/*
- * Replacement for free() that ignores NULL pointers.
- * Also skip free() when exiting for sure, this helps when we caught a deadly
- * signal that was caused by a crash in free().
- * If you want to set NULL after calling this function, you should use
- * VIM_CLEAR() instead.
- */
-    void
-vim_free(void *x)
-{
-    if (x != NULL && !really_exiting)
-    {
-#ifdef MEM_PROFILE
-	mem_pre_free(&x);
-#endif
-	free(x);
-    }
-}
-
 #ifndef HAVE_MEMSET
     void *
 vim_memset(void *ptr, int c, size_t size)
@@ -1820,180 +747,6 @@ vim_memset(void *ptr, int c, size_t size)
 }
 #endif
 
-#if (!defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)) || defined(PROTO)
-/*
- * Compare two strings, ignoring case, using current locale.
- * Doesn't work for multi-byte characters.
- * return 0 for match, < 0 for smaller, > 0 for bigger
- */
-    int
-vim_stricmp(char *s1, char *s2)
-{
-    int		i;
-
-    for (;;)
-    {
-	i = (int)TOLOWER_LOC(*s1) - (int)TOLOWER_LOC(*s2);
-	if (i != 0)
-	    return i;			    // this character different
-	if (*s1 == NUL)
-	    break;			    // strings match until NUL
-	++s1;
-	++s2;
-    }
-    return 0;				    // strings match
-}
-#endif
-
-#if (!defined(HAVE_STRNCASECMP) && !defined(HAVE_STRNICMP)) || defined(PROTO)
-/*
- * Compare two strings, for length "len", ignoring case, using current locale.
- * Doesn't work for multi-byte characters.
- * return 0 for match, < 0 for smaller, > 0 for bigger
- */
-    int
-vim_strnicmp(char *s1, char *s2, size_t len)
-{
-    int		i;
-
-    while (len > 0)
-    {
-	i = (int)TOLOWER_LOC(*s1) - (int)TOLOWER_LOC(*s2);
-	if (i != 0)
-	    return i;			    // this character different
-	if (*s1 == NUL)
-	    break;			    // strings match until NUL
-	++s1;
-	++s2;
-	--len;
-    }
-    return 0;				    // strings match
-}
-#endif
-
-/*
- * Search for first occurrence of "c" in "string".
- * Version of strchr() that handles unsigned char strings with characters from
- * 128 to 255 correctly.  It also doesn't return a pointer to the NUL at the
- * end of the string.
- */
-    char_u  *
-vim_strchr(char_u *string, int c)
-{
-    char_u	*p;
-    int		b;
-
-    p = string;
-    if (enc_utf8 && c >= 0x80)
-    {
-	while (*p != NUL)
-	{
-	    int l = utfc_ptr2len(p);
-
-	    // Avoid matching an illegal byte here.
-	    if (utf_ptr2char(p) == c && l > 1)
-		return p;
-	    p += l;
-	}
-	return NULL;
-    }
-    if (enc_dbcs != 0 && c > 255)
-    {
-	int	n2 = c & 0xff;
-
-	c = ((unsigned)c >> 8) & 0xff;
-	while ((b = *p) != NUL)
-	{
-	    if (b == c && p[1] == n2)
-		return p;
-	    p += (*mb_ptr2len)(p);
-	}
-	return NULL;
-    }
-    if (has_mbyte)
-    {
-	while ((b = *p) != NUL)
-	{
-	    if (b == c)
-		return p;
-	    p += (*mb_ptr2len)(p);
-	}
-	return NULL;
-    }
-    while ((b = *p) != NUL)
-    {
-	if (b == c)
-	    return p;
-	++p;
-    }
-    return NULL;
-}
-
-/*
- * Version of strchr() that only works for bytes and handles unsigned char
- * strings with characters above 128 correctly. It also doesn't return a
- * pointer to the NUL at the end of the string.
- */
-    char_u  *
-vim_strbyte(char_u *string, int c)
-{
-    char_u	*p = string;
-
-    while (*p != NUL)
-    {
-	if (*p == c)
-	    return p;
-	++p;
-    }
-    return NULL;
-}
-
-/*
- * Search for last occurrence of "c" in "string".
- * Version of strrchr() that handles unsigned char strings with characters from
- * 128 to 255 correctly.  It also doesn't return a pointer to the NUL at the
- * end of the string.
- * Return NULL if not found.
- * Does not handle multi-byte char for "c"!
- */
-    char_u  *
-vim_strrchr(char_u *string, int c)
-{
-    char_u	*retval = NULL;
-    char_u	*p = string;
-
-    while (*p)
-    {
-	if (*p == c)
-	    retval = p;
-	MB_PTR_ADV(p);
-    }
-    return retval;
-}
-
-/*
- * Vim's version of strpbrk(), in case it's missing.
- * Don't generate a prototype for this, causes problems when it's not used.
- */
-#ifndef PROTO
-# ifndef HAVE_STRPBRK
-#  ifdef vim_strpbrk
-#   undef vim_strpbrk
-#  endif
-    char_u *
-vim_strpbrk(char_u *s, char_u *charset)
-{
-    while (*s)
-    {
-	if (vim_strchr(charset, *s) != NULL)
-	    return s;
-	MB_PTR_ADV(s);
-    }
-    return NULL;
-}
-# endif
-#endif
-
 /*
  * Vim has its own isspace() function, because on some machines isspace()
  * can't handle characters above 128.
@@ -2003,238 +756,6 @@ vim_isspace(int x)
 {
     return ((x >= 9 && x <= 13) || x == ' ');
 }
-
-/************************************************************************
- * Functions for handling growing arrays.
- */
-
-/*
- * Clear an allocated growing array.
- */
-    void
-ga_clear(garray_T *gap)
-{
-    vim_free(gap->ga_data);
-    ga_init(gap);
-}
-
-/*
- * Clear a growing array that contains a list of strings.
- */
-    void
-ga_clear_strings(garray_T *gap)
-{
-    int		i;
-
-    if (gap->ga_data != NULL)
-	for (i = 0; i < gap->ga_len; ++i)
-	    vim_free(((char_u **)(gap->ga_data))[i]);
-    ga_clear(gap);
-}
-
-/*
- * Copy a growing array that contains a list of strings.
- */
-    int
-ga_copy_strings(garray_T *from, garray_T *to)
-{
-    int		i;
-
-    ga_init2(to, sizeof(char_u *), 1);
-    if (ga_grow(to, from->ga_len) == FAIL)
-	return FAIL;
-
-    for (i = 0; i < from->ga_len; ++i)
-    {
-	char_u *orig = ((char_u **)from->ga_data)[i];
-	char_u *copy;
-
-	if (orig == NULL)
-	    copy = NULL;
-	else
-	{
-	    copy = vim_strsave(orig);
-	    if (copy == NULL)
-	    {
-		to->ga_len = i;
-		ga_clear_strings(to);
-		return FAIL;
-	    }
-	}
-	((char_u **)to->ga_data)[i] = copy;
-    }
-    to->ga_len = from->ga_len;
-    return OK;
-}
-
-/*
- * Initialize a growing array.	Don't forget to set ga_itemsize and
- * ga_growsize!  Or use ga_init2().
- */
-    void
-ga_init(garray_T *gap)
-{
-    gap->ga_data = NULL;
-    gap->ga_maxlen = 0;
-    gap->ga_len = 0;
-}
-
-    void
-ga_init2(garray_T *gap, int itemsize, int growsize)
-{
-    ga_init(gap);
-    gap->ga_itemsize = itemsize;
-    gap->ga_growsize = growsize;
-}
-
-/*
- * Make room in growing array "gap" for at least "n" items.
- * Return FAIL for failure, OK otherwise.
- */
-    int
-ga_grow(garray_T *gap, int n)
-{
-    if (gap->ga_maxlen - gap->ga_len < n)
-	return ga_grow_inner(gap, n);
-    return OK;
-}
-
-    int
-ga_grow_inner(garray_T *gap, int n)
-{
-    size_t	old_len;
-    size_t	new_len;
-    char_u	*pp;
-
-    if (n < gap->ga_growsize)
-	n = gap->ga_growsize;
-
-    // A linear growth is very inefficient when the array grows big.  This
-    // is a compromise between allocating memory that won't be used and too
-    // many copy operations. A factor of 1.5 seems reasonable.
-    if (n < gap->ga_len / 2)
-	n = gap->ga_len / 2;
-
-    new_len = gap->ga_itemsize * (gap->ga_len + n);
-    pp = vim_realloc(gap->ga_data, new_len);
-    if (pp == NULL)
-	return FAIL;
-    old_len = gap->ga_itemsize * gap->ga_maxlen;
-    vim_memset(pp + old_len, 0, new_len - old_len);
-    gap->ga_maxlen = gap->ga_len + n;
-    gap->ga_data = pp;
-    return OK;
-}
-
-#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH) || defined(PROTO)
-/*
- * For a growing array that contains a list of strings: concatenate all the
- * strings with a separating "sep".
- * Returns NULL when out of memory.
- */
-    char_u *
-ga_concat_strings(garray_T *gap, char *sep)
-{
-    int		i;
-    int		len = 0;
-    int		sep_len = (int)STRLEN(sep);
-    char_u	*s;
-    char_u	*p;
-
-    for (i = 0; i < gap->ga_len; ++i)
-	len += (int)STRLEN(((char_u **)(gap->ga_data))[i]) + sep_len;
-
-    s = alloc(len + 1);
-    if (s != NULL)
-    {
-	*s = NUL;
-	p = s;
-	for (i = 0; i < gap->ga_len; ++i)
-	{
-	    if (p != s)
-	    {
-		STRCPY(p, sep);
-		p += sep_len;
-	    }
-	    STRCPY(p, ((char_u **)(gap->ga_data))[i]);
-	    p += STRLEN(p);
-	}
-    }
-    return s;
-}
-#endif
-
-#if defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
-/*
- * Make a copy of string "p" and add it to "gap".
- * When out of memory nothing changes.
- */
-    void
-ga_add_string(garray_T *gap, char_u *p)
-{
-    char_u *cp = vim_strsave(p);
-
-    if (cp != NULL)
-    {
-	if (ga_grow(gap, 1) == OK)
-	    ((char_u **)(gap->ga_data))[gap->ga_len++] = cp;
-	else
-	    vim_free(cp);
-    }
-}
-#endif
-
-/*
- * Concatenate a string to a growarray which contains bytes.
- * When "s" is NULL does not do anything.
- * Note: Does NOT copy the NUL at the end!
- */
-    void
-ga_concat(garray_T *gap, char_u *s)
-{
-    int    len;
-
-    if (s == NULL || *s == NUL)
-	return;
-    len = (int)STRLEN(s);
-    if (ga_grow(gap, len) == OK)
-    {
-	mch_memmove((char *)gap->ga_data + gap->ga_len, s, (size_t)len);
-	gap->ga_len += len;
-    }
-}
-
-/*
- * Append one byte to a growarray which contains bytes.
- */
-    void
-ga_append(garray_T *gap, int c)
-{
-    if (ga_grow(gap, 1) == OK)
-    {
-	*((char *)gap->ga_data + gap->ga_len) = c;
-	++gap->ga_len;
-    }
-}
-
-#if (defined(UNIX) && !defined(USE_SYSTEM)) || defined(MSWIN) \
-	|| defined(PROTO)
-/*
- * Append the text in "gap" below the cursor line and clear "gap".
- */
-    void
-append_ga_line(garray_T *gap)
-{
-    // Remove trailing CR.
-    if (gap->ga_len > 0
-	    && !curbuf->b_p_bin
-	    && ((char_u *)gap->ga_data)[gap->ga_len - 1] == CAR)
-	--gap->ga_len;
-    ga_append(gap, NUL);
-    ml_append(curwin->w_cursor.lnum++, gap->ga_data, 0, FALSE);
-    gap->ga_len = 0;
-}
-#endif
 
 /************************************************************************
  * functions that use lookup tables for various things, generally to do with
@@ -2536,13 +1057,14 @@ static struct key_name_entry
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
     {K_IGNORE,		(char_u *)"Ignore"},
     {K_COMMAND,		(char_u *)"Cmd"},
+    {K_SCRIPT_COMMAND,	(char_u *)"ScriptCmd"},
     {K_FOCUSGAINED,	(char_u *)"FocusGained"},
     {K_FOCUSLOST,	(char_u *)"FocusLost"},
     {0,			NULL}
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
 
-#define KEY_NAMES_TABLE_LEN (sizeof(key_names_table) / sizeof(struct key_name_entry))
+#define KEY_NAMES_TABLE_LEN ARRAY_LENGTH(key_names_table)
 
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
@@ -2679,11 +1201,7 @@ get_special_key_name(int c, int modifiers)
 	}
 	if (table_idx < 0 && !vim_isprintc(c) && c < ' ')
 	{
-#ifdef EBCDIC
-	    c = CtrlChar(c);
-#else
 	    c += '@';
-#endif
 	    modifiers |= MOD_MASK_CTRL;
 	}
     }
@@ -2854,7 +1372,7 @@ find_special_key(
 	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
 	    if (l == 0)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return 0;
 	    }
 	    bp += l + 5;
@@ -2892,7 +1410,7 @@ find_special_key(
 								  &n, 0, TRUE);
 		if (l == 0)
 		{
-		    emsg(_(e_invarg));
+		    emsg(_(e_invalid_argument));
 		    return 0;
 		}
 		key = (int)n;
@@ -3038,16 +1556,7 @@ extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
 	key = TOUPPER_ASC(key);
 
     if (simplify && (modifiers & MOD_MASK_CTRL)
-#ifdef EBCDIC
-	    // TODO: EBCDIC Better use:
-	    // && (Ctrl_chr(key) || key == '?')
-	    // ???
-	    && strchr("?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", key)
-						       != NULL
-#else
-	    && ((key >= '?' && key <= '_') || ASCII_ISALPHA(key))
-#endif
-	    )
+	    && ((key >= '?' && key <= '_') || ASCII_ISALPHA(key)))
     {
 	key = Ctrl_chr(key);
 	modifiers &= ~MOD_MASK_CTRL;
@@ -3214,9 +1723,7 @@ set_fileformat(
     // This may cause the buffer to become (un)modified.
     check_status(curbuf);
     redraw_tabline = TRUE;
-#ifdef FEAT_TITLE
     need_maketitle = TRUE;	    // set window title later
-#endif
 }
 
 /*
@@ -3261,7 +1768,7 @@ call_shell(char_u *cmd, int opt)
 
     if (*p_sh == NUL)
     {
-	emsg(_(e_shellempty));
+	emsg(_(e_shell_option_is_empty));
 	retval = -1;
     }
     else
@@ -3396,7 +1903,6 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd)
 {
     char_u	old_dir[MAXPATHL];
     char_u	new_dir[MAXPATHL];
-    int		res;
 
     if (mch_dirname(old_dir, MAXPATHL) != OK)
 	*old_dir = NUL;
@@ -3406,16 +1912,18 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd)
 
     if (pathcmp((char *)old_dir, (char *)new_dir, -1) == 0)
 	// nothing to do
-	res = OK;
-    else
-    {
-	res = mch_chdir((char *)new_dir) == 0 ? OK : FAIL;
+	return OK;
 
-	if (res == OK && trigger_autocmd != NULL)
-	    apply_autocmds(EVENT_DIRCHANGED, (char_u *)trigger_autocmd,
+    if (trigger_autocmd != NULL)
+	trigger_DirChangedPre((char_u *)trigger_autocmd, new_dir);
+
+    if (mch_chdir((char *)new_dir) != 0)
+	return FAIL;
+
+    if (trigger_autocmd != NULL)
+	apply_autocmds(EVENT_DIRCHANGED, (char_u *)trigger_autocmd,
 						       new_dir, FALSE, curbuf);
-    }
-    return res;
+    return OK;
 }
 #endif
 
@@ -3547,9 +2055,9 @@ parse_shape_opt(int what)
 	    commap = vim_strchr(modep, ',');
 
 	    if (colonp == NULL || (commap != NULL && commap < colonp))
-		return N_("E545: Missing colon");
+		return e_missing_colon_2;
 	    if (colonp == modep)
-		return N_("E546: Illegal mode");
+		return e_illegal_mode;
 
 	    /*
 	     * Repeat for all mode's before the colon.
@@ -3575,7 +2083,7 @@ parse_shape_opt(int what)
 				break;
 			if (idx == SHAPE_IDX_COUNT
 				   || (shape_table[idx].used_for & what) == 0)
-			    return N_("E546: Illegal mode");
+			    return e_illegal_mode;
 			if (len == 2 && modep[0] == 'v' && modep[1] == 'e')
 			    found_ve = TRUE;
 		    }
@@ -3614,7 +2122,7 @@ parse_shape_opt(int what)
 			    if (mshape_names[i] == NULL)
 			    {
 				if (!VIM_ISDIGIT(*p))
-				    return N_("E547: Illegal mouseshape");
+				    return e_illegal_mouseshape;
 				if (round == 2)
 				    shape_table[idx].mshape =
 					      getdigits(&p) + MSHAPE_NUMBERED;
@@ -3654,12 +2162,12 @@ parse_shape_opt(int what)
 			{
 			    p += len;
 			    if (!VIM_ISDIGIT(*p))
-				return N_("E548: digit expected");
+				return e_digit_expected;
 			    n = getdigits(&p);
 			    if (len == 3)   // "ver" or "hor"
 			    {
 				if (n == 0)
-				    return N_("E549: Illegal percentage");
+				    return e_illegal_percentage;
 				if (round == 2)
 				{
 				    if (TOLOWER_ASC(i) == 'v')
@@ -3905,6 +2413,17 @@ get_user_name(char_u *buf, int len)
     return OK;
 }
 
+#if defined(EXITFREE) || defined(PROTOS)
+/*
+ * Free the memory allocated by get_user_name()
+ */
+    void
+free_username(void)
+{
+    vim_free(username);
+}
+#endif
+
 #ifndef HAVE_QSORT
 /*
  * Our own qsort(), for systems that don't have it.
@@ -3945,25 +2464,6 @@ qsort(
     vim_free(buf);
 }
 #endif
-
-/*
- * Sort an array of strings.
- */
-static int sort_compare(const void *s1, const void *s2);
-
-    static int
-sort_compare(const void *s1, const void *s2)
-{
-    return STRCMP(*(char **)s1, *(char **)s2);
-}
-
-    void
-sort_strings(
-    char_u	**files,
-    int		count)
-{
-    qsort((void *)files, (size_t)count, sizeof(char_u *), sort_compare);
-}
 
 /*
  * The putenv() implementation below comes from the "screen" program.
@@ -4276,24 +2776,6 @@ put_bytes(FILE *fd, long_u nr, int len)
 
 #endif
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_SPELL) || defined(PROTO)
-/*
- * Return TRUE if string "s" contains a non-ASCII character (128 or higher).
- * When "s" is NULL FALSE is returned.
- */
-    int
-has_non_ascii(char_u *s)
-{
-    char_u	*p;
-
-    if (s != NULL)
-	for (p = s; *p != NUL; ++p)
-	    if (*p >= 128)
-		return TRUE;
-    return FALSE;
-}
-#endif
-
 #ifndef PROTO  // proto is defined in vim.h
 # ifdef ELAPSED_TIMEVAL
 /*
@@ -4408,7 +2890,6 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
     return OK;
 }
 
-# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Build "argv[argc]" from the string "cmd".
  * "argv[argc]" is set to NULL;
@@ -4435,6 +2916,7 @@ build_argv_from_string(char_u *cmd, char ***argv, int *argc)
     return OK;
 }
 
+# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Build "argv[argc]" from the list "l".
  * "argv[argc]" is set to NULL;
@@ -4460,6 +2942,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 
 	    for (i = 0; i < *argc; ++i)
 		VIM_CLEAR((*argv)[i]);
+	    (*argv)[0] = NULL;
 	    return FAIL;
 	}
 	(*argv)[*argc] = (char *)vim_strsave(s);

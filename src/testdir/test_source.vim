@@ -69,7 +69,7 @@ func Test_source_ignore_shebang()
   call delete('Xfile.vim')
 endfunc
 
-" Test for expanding <sfile> in a autocmd and for <slnum> and <sflnum>
+" Test for expanding <sfile> in an autocmd and for <slnum> and <sflnum>
 func Test_source_autocmd_sfile()
   let code =<< trim [CODE]
     let g:SfileName = ''

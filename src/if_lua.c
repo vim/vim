@@ -10,6 +10,7 @@
  */
 
 #include "vim.h"
+#include "version.h"
 
 #include <lua.h>
 #include <lualib.h>
@@ -105,10 +106,12 @@ static void luaV_call_lua_func_free(void *state);
 # define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 # define symbol_from_dll dlsym
 # define close_dll dlclose
+# define load_dll_error dlerror
 #else
 # define load_dll vimLoadLib
 # define symbol_from_dll GetProcAddress
 # define close_dll FreeLibrary
+# define load_dll_error GetWin32Error
 #endif
 
 // lauxlib
@@ -189,6 +192,7 @@ static void luaV_call_lua_func_free(void *state);
 #define lua_rawget dll_lua_rawget
 #define lua_rawgeti dll_lua_rawgeti
 #define lua_createtable dll_lua_createtable
+#define lua_settable dll_lua_settable
 #if LUA_VERSION_NUM >= 504
  #define lua_newuserdatauv dll_lua_newuserdatauv
 #else
@@ -300,6 +304,7 @@ int (*dll_lua_rawget) (lua_State *L, int idx);
 int (*dll_lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
 #endif
 void (*dll_lua_createtable) (lua_State *L, int narr, int nrec);
+void (*dll_lua_settable) (lua_State *L, int idx);
 #if LUA_VERSION_NUM >= 504
 void *(*dll_lua_newuserdatauv) (lua_State *L, size_t sz, int nuvalue);
 #else
@@ -411,6 +416,7 @@ static const luaV_Reg luaV_dll[] = {
     {"lua_rawget", (luaV_function) &dll_lua_rawget},
     {"lua_rawgeti", (luaV_function) &dll_lua_rawgeti},
     {"lua_createtable", (luaV_function) &dll_lua_createtable},
+    {"lua_settable", (luaV_function) &dll_lua_settable},
 #if LUA_VERSION_NUM >= 504
     {"lua_newuserdatauv", (luaV_function) &dll_lua_newuserdatauv},
 #else
@@ -446,7 +452,7 @@ lua_link_init(char *libname, int verbose)
     if (!hinstLua)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname);
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
     for (reg = luaV_dll; reg->func; reg++)
@@ -456,7 +462,7 @@ lua_link_init(char *libname, int verbose)
 	    close_dll(hinstLua);
 	    hinstLua = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), reg->name);
+		semsg(_(e_could_not_load_library_function_str), reg->name);
 	    return FAIL;
 	}
     }
@@ -1718,11 +1724,12 @@ static const luaL_Reg luaV_Window_mt[] = {
     static int
 luaV_print(lua_State *L)
 {
-    int i, n = lua_gettop(L); // nargs
-    const char *s;
-    size_t l;
-    luaL_Buffer b;
-    luaL_buffinit(L, &b);
+    int		i, n = lua_gettop(L); // nargs
+    const char	*s;
+    size_t	l;
+    garray_T	msg_ga;
+
+    ga_init2(&msg_ga, 1, 128);
     lua_getglobal(L, "tostring");
     for (i = 1; i <= n; i++)
     {
@@ -1732,13 +1739,20 @@ luaV_print(lua_State *L)
 	s = lua_tolstring(L, -1, &l);
 	if (s == NULL)
 	    return luaL_error(L, "cannot convert to string");
-	if (i > 1) luaL_addchar(&b, ' '); // use space instead of tab
-	luaV_addlstring(&b, s, l, 0);
+	if (i > 1)
+	    ga_append(&msg_ga, ' '); // use space instead of tab
+	ga_concat_len(&msg_ga, (char_u *)s, l);
 	lua_pop(L, 1);
     }
-    luaL_pushresult(&b);
+    // Replace any "\n" with "\0"
+    for (i = 0; i < msg_ga.ga_len; i++)
+	if (((char *)msg_ga.ga_data)[i] == '\n')
+	    ((char *)msg_ga.ga_data)[i] = '\0';
+    lua_pushlstring(L, msg_ga.ga_data, msg_ga.ga_len);
     if (!got_int)
 	luaV_msg(L);
+
+    ga_clear(&msg_ga);
     return 0;
 }
 
@@ -1767,10 +1781,138 @@ luaV_debug(lua_State *L)
     }
 }
 
+    static dict_T *
+luaV_get_var_scope(lua_State *L)
+{
+    const char	*scope = luaL_checkstring(L, 1);
+    dict_T	*dict = NULL;
+
+    if (STRICMP((char *)scope, "g") == 0)
+	dict = get_globvar_dict();
+    else if (STRICMP((char *)scope, "v") == 0)
+	dict = get_vimvar_dict();
+    else if (STRICMP((char *)scope, "b") == 0)
+	dict = curbuf->b_vars;
+    else if (STRICMP((char *)scope, "w") == 0)
+	dict = curwin->w_vars;
+    else if (STRICMP((char *)scope, "t") == 0)
+	dict = curtab->tp_vars;
+    else
+    {
+	luaL_error(L, "invalid scope %s", scope);
+	return NULL;
+    }
+
+    return dict;
+}
+
+    static int
+luaV_setvar(lua_State *L)
+{
+    dict_T	*dict;
+    dictitem_T	*di;
+    size_t	len;
+    char	*name;
+    int		del;
+    char	*error = NULL;
+
+    name = (char *)luaL_checklstring(L, 3, &len);
+    del = (lua_gettop(L) < 4) || lua_isnil(L, 4);
+
+    dict = luaV_get_var_scope(L);
+    if (dict == NULL)
+	return 0;
+
+    di = dict_find(dict, (char_u *)name, (int)len);
+    if (di != NULL)
+    {
+	if (di->di_flags & DI_FLAGS_RO)
+	    error = "variable is read-only";
+	else if (di->di_flags & DI_FLAGS_LOCK)
+	    error = "variable is locked";
+	else if (del && di->di_flags & DI_FLAGS_FIX)
+	    error = "variable is fixed";
+	if (error != NULL)
+	    return luaL_error(L, error);
+    }
+    else if (dict->dv_lock)
+	return luaL_error(L, "Dictionary is locked");
+
+    if (del)
+    {
+	// Delete the key
+	if (di == NULL)
+	    // Doesn't exist, nothing to do
+	    return 0;
+	else
+	    // Delete the entry
+	    dictitem_remove(dict, di);
+    }
+    else
+    {
+	// Update the key
+	typval_T	tv;
+
+	// Convert the lua value to a Vim script type in the temporary variable
+	lua_pushvalue(L, 4);
+	if (luaV_totypval(L, -1, &tv) == FAIL)
+	    return luaL_error(L, "Couldn't convert lua value");
+
+	if (di == NULL)
+	{
+	    // Need to create an entry
+	    di = dictitem_alloc((char_u *)name);
+	    if (di == NULL)
+	    {
+		clear_tv(&tv);
+		return 0;
+	    }
+	    // Update the value
+	    copy_tv(&tv, &di->di_tv);
+	    if (dict_add(dict, di) == FAIL)
+	    {
+		dictitem_free(di);
+		clear_tv(&tv);
+		return luaL_error(L, "Couldn't add to dictionary");
+	    }
+	}
+	else
+	{
+	    // Clear the old value
+	    clear_tv(&di->di_tv);
+	    // Update the value
+	    copy_tv(&tv, &di->di_tv);
+	}
+
+	// Clear the temporary variable
+	clear_tv(&tv);
+    }
+
+    return 0;
+}
+
+    static int
+luaV_getvar(lua_State *L)
+{
+    dict_T	*dict = luaV_get_var_scope(L);
+    size_t	len;
+    const char	*name = luaL_checklstring(L, 3, &len);
+    dictitem_T	*di = dict_find(dict, (char_u *)name, (int)len);
+
+    if (di == NULL)
+	return 0;  // nil
+
+    luaV_pushtypval(L, &di->di_tv);
+    return 1;
+}
+
     static int
 luaV_command(lua_State *L)
 {
-    do_cmdline_cmd((char_u *) luaL_checkstring(L, 1));
+    char_u  *s = vim_strsave((char_u *)luaL_checkstring(L, 1));
+
+    execute_cmds_from_string(s);
+    vim_free(s);
     update_screen(VALID);
     return 0;
 }
@@ -1779,6 +1921,7 @@ luaV_command(lua_State *L)
 luaV_eval(lua_State *L)
 {
     typval_T *tv = eval_expr((char_u *) luaL_checkstring(L, 1), NULL);
+
     if (tv == NULL) luaL_error(L, "invalid expression");
     luaV_pushtypval(L, tv);
     free_tv(tv);
@@ -2079,6 +2222,25 @@ free_vim_args:
 	return luaL_error(L, error);
 }
 
+/*
+ * Return the Vim version as a Lua table
+ */
+    static int
+luaV_version(lua_State *L)
+{
+    lua_newtable(L);
+    lua_pushstring(L, "major");
+    lua_pushinteger(L, VIM_VERSION_MAJOR);
+    lua_settable(L, -3);
+    lua_pushstring(L, "minor");
+    lua_pushinteger(L, VIM_VERSION_MINOR);
+    lua_settable(L, -3);
+    lua_pushstring(L, "patch");
+    lua_pushinteger(L, highest_patch());
+    lua_settable(L, -3);
+    return 1;
+}
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -2093,6 +2255,9 @@ static const luaL_Reg luaV_module[] = {
     {"open", luaV_open},
     {"type", luaV_type},
     {"call", luaV_call},
+    {"_getvar", luaV_getvar},
+    {"_setvar", luaV_setvar},
+    {"version", luaV_version},
     {"lua_version", NULL},
     {NULL, NULL}
 };
@@ -2265,6 +2430,25 @@ luaV_pushversion(lua_State *L)
     "  last_vim_paths = cur_vim_paths\n"\
     "end"
 
+#define LUA_VIM_SETUP_VARIABLE_DICTS \
+    "do\n"\
+    "  local function make_dict_accessor(scope)\n"\
+    "    local mt = {}\n"\
+    "    function mt:__newindex(k, v)\n"\
+    "      return vim._setvar(scope, 0, k, v)\n"\
+    "    end\n"\
+    "    function mt:__index(k)\n"\
+    "      return vim._getvar(scope, 0, k)\n"\
+    "    end\n"\
+    "    return setmetatable({}, mt)\n"\
+    "  end\n"\
+    "  vim.g = make_dict_accessor('g')\n"\
+    "  vim.v = make_dict_accessor('v')\n"\
+    "  vim.b = make_dict_accessor('b')\n"\
+    "  vim.w = make_dict_accessor('w')\n"\
+    "  vim.t = make_dict_accessor('t')\n"\
+    "end"
+
     static int
 luaopen_vim(lua_State *L)
 {
@@ -2325,6 +2509,7 @@ luaopen_vim(lua_State *L)
     // custom code
     (void)luaL_dostring(L, LUA_VIM_FN_CODE);
     (void)luaL_dostring(L, LUA_VIM_UPDATE_PACKAGE_PATHS);
+    (void)luaL_dostring(L, LUA_VIM_SETUP_VARIABLE_DICTS);
 
     lua_getglobal(L, "vim");
     lua_getfield(L, -1, "_update_package_paths");

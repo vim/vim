@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Apr 05
+*editing.txt*   For Vim version 8.2.  Last change: 2022 Feb 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -222,7 +222,7 @@ If you want to keep the changed buffer without saving it, switch on the
 			Edit {file} always.  Discard any changes to the
 			current buffer.
 			Also see |++opt| and |+cmd|.
-
+							*:edit_#* *:e#*
 :e[dit] [++opt] [+cmd] #[count]
 			Edit the [count]th buffer (as shown by |:files|).
 			This command does the same as [count] CTRL-^.  But ":e
@@ -389,7 +389,7 @@ as a wildcard when "[" is in the 'isfname' option.  A simple way to avoid this
 is to use "path\[[]abc]", this matches the file "path\[abc]".
 
 					*starstar-wildcard*
-Expanding "**" is possible on Unix, Win32, Mac OS/X and a few other systems.
+Expanding "**" is possible on Unix, Win32, macOS and a few other systems.
 This allows searching a directory tree.  This goes up to 100 directories deep.
 Note there are some commands where this works slightly differently, see
 |file-searching|.
@@ -433,7 +433,7 @@ This also works for most other systems, with the restriction that the
 backticks must be around the whole item.  It is not possible to have text
 directly before the first or just after the last backtick.
 
-							*`=*
+						*`=* *E1083*
 You can have the backticks expanded as a Vim expression, instead of as an
 external command, by putting an equal sign right after the first backtick,
 e.g.: >
@@ -633,7 +633,7 @@ list of the current window.
 			Also see |++opt| and |+cmd|.
 
 :[count]arga[dd] {name} ..			*:arga* *:argadd* *E479*
-:[count]arga[dd]
+:[count]arga[dd]						*E1156*
 			Add the {name}s to the argument list.  When {name} is
 			omitted add the current buffer name to the argument
 			list.
@@ -650,11 +650,18 @@ list of the current window.
 			And after the last one:
 				:+2argadd y	a b c x y
 			There is no check for duplicates, it is possible to
-			add a file to the argument list twice.
-			The currently edited file is not changed.
+			add a file to the argument list twice.  You can use
+			|:argdedupe| to fix it afterwards: >
+				:argadd *.txt | argdedupe
+<			The currently edited file is not changed.
 			Note: you can also use this method: >
 				:args ## x
 <			This will add the "x" item and sort the new list.
+
+:argded[upe]					*:argded* *:argdedupe*
+			Remove duplicate filenames from the argument list.
+			If your current file is a duplicate, your current file
+			will change to the original file index.
 
 :argd[elete] {pattern} ..		*:argd* *:argdelete* *E480* *E610*
 			Delete files from the argument list that match the
@@ -883,7 +890,7 @@ Note: When the 'write' option is off, you are not able to write any file.
 
 							*:w* *:write*
 					*E502* *E503* *E504* *E505*
-					*E512* *E514* *E667* *E796* *E949*
+					*E512* *E514* *E667* *E949*
 :w[rite] [++opt]	Write the whole buffer to the current file.  This is
 			the normal way to save changes to a file.  It fails
 			when the 'readonly' option is set or when there is
@@ -1140,6 +1147,9 @@ The names can be in upper- or lowercase.
 			made.
 			When 'hidden' is set and there are more windows, the
 			current buffer becomes hidden, after writing the file.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 							*:exi* *:exit*
 :[range]exi[t][!] [++opt] [file]
@@ -1225,7 +1235,9 @@ If you want to always use ":confirm", set the 'confirm' option.
 			|:diffsplit|, |:diffpatch|, |:open|, |:pedit|,
 			|:redir|, |:source|, |:update|, |:visual|, |:vsplit|,
 			and |:qall| if 'confirm' is set.
-			{only in Win32, Athena, Motif, GTK and Mac GUI}
+			{only in Win32, Athena, Motif, GTK and Mac GUI, in
+			console `browse edit` works if the FileExplorer
+			autocommand group exists}
 			When ":browse" is not possible you get an error
 			message.  If the |+browse| feature is missing or the
 			{command} doesn't support browsing, the {command} is
@@ -1296,11 +1308,12 @@ Changing directory fails when the current buffer is modified, the '.' flag is
 present in 'cpoptions' and "!" is not used in the command.
 
 							*:cd* *E747* *E472*
-:cd[!]			On non-Unix systems: Print the current directory
-			name.  On Unix systems: Change the current directory
-			to the home directory.  Use |:pwd| to print the
-			current directory on all systems.
-			On Unix systems: clear any window-local directory.
+:cd[!]			On non-Unix systems when 'cdhome' is off: Print the
+			current directory name.
+			Otherwise: Change the current directory to the home
+			directory.  Clear any window-local directory.
+			Use |:pwd| to print the current directory on all
+			systems.
 
 :cd[!] {path}		Change the current directory to {path}.
 			If {path} is relative, it is searched for in the
@@ -1320,19 +1333,19 @@ present in 'cpoptions' and "!" is not used in the command.
 							*:chd* *:chdir*
 :chd[ir][!] [path]	Same as |:cd|.
 
-							*:tcd*
-:tcd[!] {path}		Like |:cd|, but only set the directory for the current
+							*:tc* *:tcd*
+:tc[d][!] {path}	Like |:cd|, but only set the directory for the current
 			tab.  The current window will also use this directory.
 			The current directory is not changed for windows in
 			other tabs and for windows in the current tab that
 			have their own window-local directory.
 
+							*:tcd-*
+:tc[d][!] -		Change to the previous current directory, before the
+			last ":tcd {path}" command.
+
 							*:tch* *:tchdir*
 :tch[dir][!]		Same as |:tcd|.
-
-							*:tcd-*
-:tcd[!] -		Change to the previous current directory, before the
-			last ":tcd {path}" command.
 
 							*:lc* *:lcd*
 :lc[d][!] {path}	Like |:cd|, but only set the current directory when
@@ -1340,12 +1353,12 @@ present in 'cpoptions' and "!" is not used in the command.
 			directory for other windows is not changed, switching
 			to another window will stop using {path}.
 
-							*:lch* *:lchdir*
-:lch[dir][!]		Same as |:lcd|.
-
 							*:lcd-*
 :lcd[!] -		Change to the previous current directory, before the
 			last ":lcd {path}" command.
+
+							*:lch* *:lchdir*
+:lch[dir][!]		Same as |:lcd|.
 
 							*:pw* *:pwd* *E187*
 :pw[d]			Print the current directory name.
@@ -1373,14 +1386,15 @@ change anything for the current directory.
 When a |:lcd| command has been used for a window, the specified directory
 becomes the current directory for that window.  Windows where the |:lcd|
 command has not been used stick to the global or tab-local current directory.
-When jumping to another window the current directory will become the last
+When jumping to another window the current directory is changed to the last
 specified local current directory.  If none was specified, the global or
-tab-local current directory is used.
+tab-local current directory is used.  When creating a new window it inherits
+the local directory of the current window.
 
 When a |:tcd| command has been used for a tab page, the specified directory
 becomes the current directory for the current tab page and the current window.
 The current directory of other tab pages is not affected.  When jumping to
-another tab page, the current directory will become the last specified local
+another tab page, the current directory is changed to the last specified local
 directory for that tab page. If the current tab has no local current directory
 the global current directory is used.
 
@@ -1469,8 +1483,11 @@ be readable again.  If you use a wrong key, it will be a mess.
 :X	Prompt for an encryption key.  The typing is done without showing the
 	actual text, so that someone looking at the display won't see it.
 	The typed key is stored in the 'key' option, which is used to encrypt
-	the file when it is written.  The file will remain unchanged until you
-	write it.  See also |-x|.
+	the file when it is written.
+	The file will remain unchanged until you write it.  Note that commands
+	such as `:xit` and `ZZ` will NOT write the file unless there are other
+	changes.
+	See also |-x|.
 
 The value of the 'key' options is used when text is written.  When the option
 is not empty, the written file will be encrypted, using the value as the
@@ -1633,6 +1650,11 @@ If you don't get warned often enough you can use the following command.
 			if it exists now.
 			Once a file has been checked the timestamp is reset,
 			you will not be warned again.
+			Syntax highlighting, marks, diff status,
+			'fileencoding', 'fileformat' and 'binary' options
+			are not changed.  See |v:fcs_choice| to reload these
+			too (for example, if a code formatting tools has
+			changed the file).
 
 :[N]checkt[ime] {filename}
 :[N]checkt[ime] [N]
@@ -1670,6 +1692,11 @@ differences (the "diff" program can be used for this).
 It is also possible that you modified the file yourself, from another edit
 session or with another command (e.g., a filter command).  Then you will know
 which version of the file you want to keep.
+
+The accuracy of the time check depends on the filesystem.  On Unix it is
+usually sub-second.  With old file sytems and on MS-Windows it is normally one
+second.  Use `has('nanotime')` to check if sub-second time stamp checks are
+available.
 
 There is one situation where you get the message while there is nothing wrong:
 On a Win32 system on the day daylight saving time starts.  There is something
@@ -1748,6 +1775,10 @@ There are three different types of searching:
 	/u/user_x/work/release/include
 	/u/user_x/work/include
 	/u/user_x/include
+
+<   Note: If your 'path' setting includes a non-existing directory, Vim will
+   skip the non-existing directory, and also does not search in the parent of
+   the non-existing directory if upwards searching is used.
 
 3) Combined up/downward search:
    If Vim's current path is /u/user_x/work/release and you do >

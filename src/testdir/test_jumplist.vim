@@ -1,11 +1,7 @@
 " Tests for the jumplist functionality
 
-source check.vim
-
 " Tests for the getjumplist() function
 func Test_getjumplist()
-  CheckFeature jumplist
-
   %bwipe
   clearjumps
   call assert_equal([[], 0], getjumplist())

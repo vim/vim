@@ -5640,9 +5640,6 @@ msgstr ""
 "\n"
 "--- Tecles del terminal ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "No s'ha pogut obrir $VIMRUNTIME/rgb.txt"
-
 msgid "new shell started\n"
 msgstr "s'ha iniciat un nou intèrpret\n"
 

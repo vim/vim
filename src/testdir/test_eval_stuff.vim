@@ -65,9 +65,9 @@ func Test_E963()
 endfunc
 
 func Test_for_invalid()
-  call assert_fails("for x in 99", 'E714:')
-  call assert_fails("for x in function('winnr')", 'E714:')
-  call assert_fails("for x in {'a': 9}", 'E714:')
+  call assert_fails("for x in 99", 'E1098:')
+  call assert_fails("for x in function('winnr')", 'E1098:')
+  call assert_fails("for x in {'a': 9}", 'E1098:')
 
   if 0
     /1/5/2/s/\n
@@ -91,6 +91,13 @@ func Test_readfile_binary()
 
   bwipe!
   call delete('XReadfile_bin')
+endfunc
+
+func Test_readfile_binary_empty()
+  call writefile([], 'Xempty-file')
+  " This used to compare uninitialized memory in Vim <= 8.2.4065
+  call assert_equal([''], readfile('Xempty-file', 'b'))
+  call delete('Xempty-file')
 endfunc
 
 func Test_readfile_bom()
@@ -144,7 +151,7 @@ func Test_string_concatenation()
   if has('float')
     let a = 'A'
     let b = 1.234
-    call assert_fails('echo a .. b', 'E806:')
+    call assert_equal('A1.234', a .. b)
   endif
 endfunc
 
@@ -165,7 +172,7 @@ func Test_string_concat_scriptversion2()
 
   call assert_fails('echo a . b', 'E15:')
   call assert_fails('let a .= b', 'E985:')
-  call assert_fails('let vers = 1.2.3', 'E15:')
+  call assert_fails('let vers = 1.2.3', 'E488:')
 
   if has('float')
     let f = .5
@@ -581,6 +588,11 @@ func Test_curly_assignment()
   unlet s:svar
   unlet s:gvar
   unlet g:gvar
+endfunc
+
+func Test_deep_recursion()
+  " this was running out of stack
+  call assert_fails("exe 'if ' .. repeat('(', 1002)", 'E1169: Expression too recursive: ((')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -120,7 +120,6 @@ MOFILES = \
 		uk.mo \
 		vi.mo \
 		zh_CN.UTF-8.mo \
-		zh_CN.mo \
 		zh_TW.UTF-8.mo \
 		zh_TW.mo \
 
@@ -134,6 +133,7 @@ MOCONVERTED = \
 		ru.cp1251.mo \
 		sk.cp1250.mo \
 		uk.cp1251.mo \
+		zh_CN.mo \
 		zh_CN.cp936.mo \
 
 

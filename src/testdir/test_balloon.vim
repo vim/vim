@@ -10,7 +10,8 @@ CheckScreendump
 
 let s:common_script =<< trim [CODE]
   call setline(1, ["one one one", "two tXo two", "three three three"])
-  set balloonevalterm balloonexpr=MyBalloonExpr() balloondelay=100
+  set balloonevalterm balloonexpr=MyBalloonExpr()..s:trailing balloondelay=100
+  let s:trailing = '<'  " check that script context is set
   func MyBalloonExpr()
     return "line " .. v:beval_lnum .. " column " .. v:beval_col .. ":\n" .. v:beval_text
   endfun

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 8.2.  Last change: 2020 Oct 25
+*version7.txt*  For Vim version 8.2.  Last change: 2021 May 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -9826,7 +9826,7 @@ Solution:   Add AC_SYS_LARGEFILE to configure. (James Vega)
 Files:	    src/configure.in, src/config.h.in, src/auto/configure
 
 Patch 7.2.414
-Problem:    CTRK-K <space> <space> does not produce 0xa0 as expected. (Tony
+Problem:    CTRL-K <space> <space> does not produce 0xa0 as expected. (Tony
 	    Mechelynck)
 Solution:   Remove the Unicode range 0xe000 - 0xefff from digraphs, these are
 	    not valid characters.
@@ -16225,7 +16225,7 @@ Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok,
 Patch 7.3.1018
 Problem:    New regexp engine wastes memory.
 Solution:   Allocate prog with actual number of states, not estimated maximum
-	    number of sates.
+	    number of states.
 Files:	    src/regexp_nfa.c
 
 Patch 7.3.1019

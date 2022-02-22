@@ -1,9 +1,9 @@
 vim9script
 
-func auto9#getsome()
+export func Getsome()
   return 'some'
 endfunc
 
-def auto9#add42(count: number): number
+export def Add42(count: number): number
   return count + 42
 enddef

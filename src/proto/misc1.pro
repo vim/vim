@@ -36,7 +36,6 @@ void vim_setenv(char_u *name, char_u *val);
 char_u *get_env_name(expand_T *xp, int idx);
 char_u *get_users(expand_T *xp, int idx);
 int match_user(char_u *name);
-char_u *concat_str(char_u *str1, char_u *str2);
 void preserve_exit(void);
 void line_breakcheck(void);
 void fast_breakcheck(void);
@@ -48,4 +47,7 @@ int goto_im(void);
 char_u *get_isolated_shell_name(void);
 int path_is_url(char_u *p);
 int path_with_url(char_u *fname);
+dict_T *get_v_event(save_v_event_T *sve);
+void restore_v_event(dict_T *v_event, save_v_event_T *sve);
+void trigger_modechanged(void);
 /* vim: set ft=c : */

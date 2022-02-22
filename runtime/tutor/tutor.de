@@ -886,7 +886,7 @@ Anmerkung: Um die Schreibweise für eine einzige Suche zu ignorieren, benutze \c
 
   1. Starte das Editieren der "vimrc"-Datei, abhängig von deinem System:
 	:e ~/.vimrc		für Unix
-	:e $VIM/_vimrc		für MS-Windows
+	:e ~/_vimrc		für MS-Windows
 
   2. Nun lies den Inhalt der Beispiel-"vimrc"-Datei ein:
 	:r $VIMRUNTIME/vimrc_example.vim
@@ -956,7 +956,7 @@ Anmerkung: Vervollständigung funktioniert für viele Kommandos. Probiere
 	Verlag: New Riders
   Das erste Buch, welches durchgängig Vim gewidmet ist.  Besonders nützlich
   für Anfänger.  Viele Beispiele und Bilder sind enthalten.
-  Siehe http://iccf-holland.org/click5.html
+  Siehe https://iccf-holland.org/click5.html
 
   Folgendes Buch ist älter und mehr über Vi als Vim, aber auch empfehlenswert:
 	Textbearbeitung mit dem Vi-Editor  -  von Linda Lamb und Arnold Robbins
@@ -970,7 +970,7 @@ Anmerkung: Vervollständigung funktioniert für viele Kommandos. Probiere
 	mitp-Verlag, ISBN 3-8266-1425-9
   Trotz der kompakten Darstellung ist es durch viele nützliche Beispiele auch
   für Einsteiger empfehlenswert.  Probekapitel und die Beispielskripte sind
-  online erhältlich.  Siehe http://iccf-holland.org/click5.html
+  online erhältlich.  Siehe https://iccf-holland.org/click5.html
 
   Dieses Tutorial wurde geschrieben von Michael C. Pierce und Robert K. Ware,
   Colorado School of Mines. Es benutzt Ideen, die Charles Smith, Colorado State

@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.2.  Last change: 2019 Nov 02
+*visual.txt*    For Vim version 8.2.  Last change: 2022 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -265,6 +265,7 @@ Additionally the following commands can be used:
 	X	delete (2)					|v_X|
 	Y	yank (2)					|v_Y|
 	p	put						|v_p|
+	P	put without unnamed register overwrite		|v_P|
 	J	join (1)					|v_J|
 	U	make uppercase					|v_U|
 	u	make lowercase					|v_u|
@@ -370,7 +371,8 @@ same amount of text as the last time:
   last line the same number of characters as in the last line the last time.
 The start of the text is the Cursor position.  If the "$" command was used as
 one of the last commands to extend the highlighted text, the repeating will
-be applied up to the rightmost column of the longest line.
+be applied up to the rightmost column of the longest line.  Any count passed
+to the `.` command is not used.
 
 
 ==============================================================================
@@ -429,7 +431,7 @@ abcdefghijklmnopqrstuvwxyz
 
 abcdefghijklmnSTRINGopqrstuvwxyz
 abc	      STRING  defghijklmnopqrstuvwxyz
-abcdef  ghi   STRING	jklmnopqrstuvwxyz
+abcdef  ghi   STRING  	jklmnopqrstuvwxyz
 abcdefghijklmnSTRINGopqrstuvwxyz
 
 2. fo<C-v>3j$ASTRING<ESC>					*v_b_A_example*
@@ -487,6 +489,11 @@ Commands in Select mode:
 - ESC stops Select mode.
 - CTRL-O switches to Visual mode for the duration of one command. *v_CTRL-O*
 - CTRL-G switches to Visual mode.
+- CTRL-R {register} selects the register to be used for the text that is
+  deleted when typing text.					  *v_CTRL-R*
+  Unless you specify the "_" (black hole) register, the unnamed register is
+  also overwritten.
+
 
 Otherwise, typed characters are handled as in Visual mode.
 

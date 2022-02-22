@@ -883,7 +883,7 @@
 
   1. 开始编辑 vimrc 文件，具体命令取决于您所使用的操作系统：
         :edit ~/.vimrc		这是 Unix 系统所使用的命令
-        :edit $VIM/_vimrc	这是 MS-Windows 系统所使用的命令
+        :edit ~/_vimrc		这是 MS-Windows 系统所使用的命令
 
   2. 接着读取 vimrc 示例文件的内容：
         :r $VIMRUNTIME/vimrc_example.vim
@@ -953,7 +953,7 @@
 	出版社：New Riders
   这是第一本完全讲解 Vim 的书籍。它对于初学者特别有用。其中包含有大量实例
   和图示。
-  欲知详情，请访问 http://iccf-holland.org/click5.html
+  欲知详情，请访问 https://iccf-holland.org/click5.html
 
   以下这本书比较老了而且内容更多是关于 Vi 而非 Vim，但是也值得推荐：
 	Learning the Vi Editor - 作者：Linda Lamb

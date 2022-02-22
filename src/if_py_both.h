@@ -13,8 +13,6 @@
  * Common code for if_python.c and if_python3.c.
  */
 
-static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception in vim";
-
 #if PY_VERSION_HEX < 0x02050000
 typedef int Py_ssize_t;  // Python 2.4 and earlier don't have this type.
 #endif
@@ -538,7 +536,7 @@ PythonIO_Init_io(void)
 
     if (PyErr_Occurred())
     {
-	emsg(_("E264: Python: Error initialising I/O objects"));
+	emsg(_(e_python_error_initialising_io_object));
 	return -1;
     }
 
@@ -2043,7 +2041,7 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 	    return NULL;
 
 	VimTryStart();
-	dict_extend(self->dict, tv.vval.v_dict, (char_u *) "force");
+	dict_extend(self->dict, tv.vval.v_dict, (char_u *) "force", NULL);
 	clear_tv(&tv);
 	if (VimTryEnd())
 	    return NULL;
@@ -3266,7 +3264,7 @@ FunctionRepr(FunctionObject *self)
     typval_T tv;
     char_u numbuf[NUMBUFLEN];
 
-    ga_init2(&repr_ga, (int)sizeof(char), 70);
+    ga_init2(&repr_ga, sizeof(char), 70);
     ga_concat(&repr_ga, (char_u *)"<vim.Function '");
     if (self->name)
 	ga_concat(&repr_ga, self->name);
@@ -3531,8 +3529,7 @@ set_option_value_for(
 	int opt_type,
 	void *from)
 {
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
     bufref_T	save_curbuf;
     int		set_ret = 0;
 
@@ -3540,17 +3537,17 @@ set_option_value_for(
     switch (opt_type)
     {
 	case SREQ_WIN:
-	    if (switch_win(&save_curwin, &save_curtab, (win_T *)from,
+	    if (switch_win(&switchwin, (win_T *)from,
 			      win_find_tabpage((win_T *)from), FALSE) == FAIL)
 	    {
-		restore_win(save_curwin, save_curtab, TRUE);
+		restore_win(&switchwin, TRUE);
 		if (VimTryEnd())
 		    return -1;
 		PyErr_SET_VIM(N_("problem while switching windows"));
 		return -1;
 	    }
 	    set_ret = set_option_value_err(key, numval, stringval, opt_flags);
-	    restore_win(save_curwin, save_curtab, TRUE);
+	    restore_win(&switchwin, TRUE);
 	    break;
 	case SREQ_BUF:
 	    switch_buffer(&save_curbuf, (buf_T *)from);
@@ -3792,14 +3789,14 @@ TabPageAttr(TabPageObject *self, char *name)
 TabPageRepr(TabPageObject *self)
 {
     if (self->tab == INVALID_TABPAGE_VALUE)
-	return PyString_FromFormat("<tabpage object (deleted) at %p>", (self));
+	return PyString_FromFormat("<tabpage object (deleted) at %p>", (void *)self);
     else
     {
 	int	t = get_tab_number(self->tab);
 
 	if (t == 0)
 	    return PyString_FromFormat("<tabpage object (unknown) at %p>",
-					(self));
+					(void *)self);
 	else
 	    return PyString_FromFormat("<tabpage %d>", t - 1);
     }
@@ -4128,14 +4125,14 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 WindowRepr(WindowObject *self)
 {
     if (self->win == INVALID_WINDOW_VALUE)
-	return PyString_FromFormat("<window object (deleted) at %p>", (self));
+	return PyString_FromFormat("<window object (deleted) at %p>", (void *)self);
     else
     {
 	int	w = get_win_number(self->win, firstwin);
 
 	if (w == 0)
 	    return PyString_FromFormat("<window object (unknown) at %p>",
-								      (self));
+								      (void *)self);
 	else
 	    return PyString_FromFormat("<window %d>", w - 1);
     }
@@ -4412,8 +4409,7 @@ py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
 SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 {
     bufref_T	save_curbuf = {NULL, 0, 0};
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
 
     // First of all, we check the type of the supplied Python object.
     // There are three cases:
@@ -4423,7 +4419,8 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
     if (line == Py_None || line == NULL)
     {
 	PyErr_Clear();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switchwin.sw_curwin = NULL;
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	VimTryStart();
 
@@ -4433,7 +4430,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    RAISE_DELETE_LINE_FAIL;
 	else
 	{
-	    if (buf == curbuf && (save_curwin != NULL
+	    if (buf == curbuf && (switchwin.sw_curwin != NULL
 					   || save_curbuf.br_buf == NULL))
 		// Using an existing window for the buffer, adjust the cursor
 		// position.
@@ -4444,7 +4441,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 		deleted_lines_mark((linenr_T)n, 1L);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4465,7 +4462,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 
 	// We do not need to free "save" if ml_replace() consumes it.
 	PyErr_Clear();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_savesub((linenr_T)n) == FAIL)
 	{
@@ -4480,7 +4477,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	else
 	    changed_bytes((linenr_T)n, 0);
 
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	// Check that the cursor is not beyond the end of the line now.
 	if (buf == curbuf)
@@ -4519,8 +4516,7 @@ SetBufferLineList(
 	PyInt *len_change)
 {
     bufref_T	save_curbuf = {NULL, 0, 0};
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
 
     // First of all, we check the type of the supplied Python object.
     // There are three cases:
@@ -4534,7 +4530,8 @@ SetBufferLineList(
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switchwin.sw_curwin = NULL;
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_savedel((linenr_T)lo, (long)n) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4548,7 +4545,7 @@ SetBufferLineList(
 		    break;
 		}
 	    }
-	    if (buf == curbuf && (save_curwin != NULL
+	    if (buf == curbuf && (switchwin.sw_curwin != NULL
 					       || save_curbuf.br_buf == NULL))
 		// Using an existing window for the buffer, adjust the cursor
 		// position.
@@ -4559,7 +4556,7 @@ SetBufferLineList(
 		deleted_lines_mark((linenr_T)lo, (long)i);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4607,7 +4604,8 @@ SetBufferLineList(
 	PyErr_Clear();
 
 	// START of region without "return".  Must call restore_buffer()!
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switchwin.sw_curwin = NULL;
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_save((linenr_T)(lo-1), (linenr_T)hi) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4682,14 +4680,14 @@ SetBufferLineList(
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
-	if (buf == curbuf && (save_curwin != NULL
+	if (buf == curbuf && (switchwin.sw_curwin != NULL
 					   || save_curbuf.br_buf == NULL))
 	    // Using an existing window for the buffer, adjust the cursor
 	    // position.
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	// END of region without "return".
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4719,8 +4717,7 @@ SetBufferLineList(
 InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 {
     bufref_T	save_curbuf = {NULL, 0, 0};
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
 
     // First of all, we check the type of the supplied Python object.
     // It must be a string or a list, or the call is in error.
@@ -4733,7 +4730,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4745,7 +4742,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    appended_lines_mark((linenr_T)n, 1L);
 
 	vim_free(str);
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
@@ -4785,7 +4782,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4815,7 +4812,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	// Free the array of lines. All of its contents have now
 	// been freed.
 	PyMem_Free(array);
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	update_screen(VALID);
 
@@ -5129,7 +5126,7 @@ RangeRepr(RangeObject *self)
 {
     if (self->buf->buf == INVALID_BUFFER_VALUE)
 	return PyString_FromFormat("<range object (for deleted buffer) at %p>",
-				    (self));
+				    (void *)self);
     else
     {
 	char *name = (char *)self->buf->buf->b_fname;
@@ -5381,7 +5378,7 @@ BufferRange(BufferObject *self, PyObject *args)
 BufferRepr(BufferObject *self)
 {
     if (self->buf == INVALID_BUFFER_VALUE)
-	return PyString_FromFormat("<buffer object (deleted) at %p>", self);
+	return PyString_FromFormat("<buffer object (deleted) at %p>", (void *)self);
     else
     {
 	char	*name = (char *)self->buf->b_fname;
@@ -5697,7 +5694,7 @@ run_cmd(const char *cmd, void *arg UNUSED
     }
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
-	semsg(_(e_py_systemexit), "python");
+	emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	PyErr_Clear();
     }
     else
@@ -5742,7 +5739,7 @@ run_do(const char *cmd, void *arg UNUSED
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
 	PyMem_Free(code);
-	semsg(_(e_py_systemexit), "python");
+	emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	PyErr_Clear();
 	return;
     }
@@ -5843,20 +5840,20 @@ run_eval(const char *cmd, typval_T *rettv
     {
 	if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
 	{
-	    semsg(_(e_py_systemexit), "python");
+	    emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	    PyErr_Clear();
 	}
 	else
 	{
 	    if (PyErr_Occurred() && !msg_silent)
 		PyErr_PrintEx(0);
-	    emsg(_("E858: Eval did not return a valid python object"));
+	    emsg(_(e_eval_did_not_return_valid_python_object));
 	}
     }
     else
     {
 	if (ConvertFromPyObject(run_ret, rettv) == -1)
-	    emsg(_("E859: Failed to convert returned python object to a Vim value"));
+	    emsg(_(e_failed_to_convert_returned_python_object_to_vim_value));
 	Py_DECREF(run_ret);
     }
     PyErr_Clear();
@@ -6425,6 +6422,7 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_VOID:
 	case VAR_CHANNEL:
 	case VAR_JOB:
+	case VAR_INSTR:
 	    Py_INCREF(Py_None);
 	    return Py_None;
 	case VAR_BOOL:

@@ -160,6 +160,16 @@ func Test_default_arg()
 	\ .. "1    return deepcopy(a:)\n"
 	\ .. "   endfunction",
 	\ execute('func Args2'))
+
+  " Error in default argument expression
+  let l =<< trim END
+    func F1(x = y)
+      return a:x * 2
+    endfunc
+    echo F1()
+  END
+  let @a = l->join("\n")
+  call assert_fails("exe @a", 'E121:')
 endfunc
 
 func s:addFoo(lead)
@@ -405,6 +415,7 @@ func Test_func_def_error()
   let l = join(lines, "\n") . "\n"
   exe l
   call assert_fails('exe l', 'E717:')
+  call assert_fails('call feedkeys(":func d.F1()\<CR>", "xt")', 'E717:')
 
   " Define an autoload function with an incorrect file name
   call writefile(['func foo#Bar()', 'return 1', 'endfunc'], 'Xscript')
@@ -417,9 +428,19 @@ endfunc
 
 " Test for deleting a function
 func Test_del_func()
-  call assert_fails('delfunction Xabc', 'E130:')
+  call assert_fails('delfunction Xabc', 'E117:')
   let d = {'a' : 10}
   call assert_fails('delfunc d.a', 'E718:')
+  func d.fn()
+    return 1
+  endfunc
+
+  " cannot delete the dict function by number
+  let nr = substitute(execute('echo d'), '.*function(''\(\d\+\)'').*', '\1', '')
+  call assert_fails('delfunction g:' .. nr, 'E475: Invalid argument: g:')
+
+  delfunc d.fn
+  call assert_equal({'a' : 10}, d)
 endfunc
 
 " Test for calling return outside of a function
@@ -451,11 +472,12 @@ func Test_func_dict()
     return len(self)
   endfunc
 
-  call assert_equal("{'a': 'b', 'somefunc': function('2')}", string(mydict))
+  call assert_equal("{'a': 'b', 'somefunc': function('3')}", string(mydict))
   call assert_equal(2, mydict.somefunc())
   call assert_match("^\n   function \\d\\\+() dict"
   \              .. "\n1      return len(self)"
   \              .. "\n   endfunction$", execute('func mydict.somefunc'))
+  call assert_fails('call mydict.nonexist()', 'E716:')
 endfunc
 
 func Test_func_range()

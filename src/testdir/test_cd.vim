@@ -1,6 +1,7 @@
 " Test for :cd and chdir()
 
 source shared.vim
+source check.vim
 
 func Test_cd_large_path()
   " This used to crash with a heap write overflow.
@@ -42,6 +43,13 @@ func Test_cd_minus()
   call assert_equal(path_dotdot, getcwd())
   cd -
   call assert_equal(path, getcwd())
+
+  " Test for :cd - after a failed :cd
+  call assert_fails('cd /nonexistent', 'E344:')
+  call assert_equal(path, getcwd())
+  cd -
+  call assert_equal(path_dotdot, getcwd())
+  cd -
 
   " Test for :cd - without a previous directory
   let lines =<< trim [SCRIPT]
@@ -177,6 +185,21 @@ func Test_lcd_split()
   quit!
 endfunc
 
+func Test_cd_from_non_existing_dir()
+  CheckNotMSWindows
+
+  let saveddir = getcwd()
+  call mkdir('Xdeleted_dir')
+  cd Xdeleted_dir
+  call delete(saveddir .. '/Xdeleted_dir', 'd')
+
+  " Expect E187 as the current directory was deleted.
+  call assert_fails('pwd', 'E187:')
+  call assert_equal('', getcwd())
+  cd -
+  call assert_equal(saveddir, getcwd())
+endfunc
+
 func Test_cd_completion()
   call mkdir('XComplDir1', 'p')
   call mkdir('XComplDir2', 'p')
@@ -190,6 +213,44 @@ func Test_cd_completion()
   call delete('XComplDir1', 'd')
   call delete('XComplDir2', 'd')
   call delete('XComplFile')
+endfunc
+
+func Test_cd_unknown_dir()
+  call mkdir('Xa')
+  cd Xa
+  call writefile(['text'], 'Xb.txt')
+  edit Xa/Xb.txt
+  let first_buf = bufnr()
+  cd ..
+  edit
+  call assert_equal(first_buf, bufnr())
+  edit Xa/Xb.txt
+  call assert_notequal(first_buf, bufnr())
+
+  bwipe!
+  exe "bwipe! " .. first_buf
+  call delete('Xa', 'rf')
+endfunc
+
+func Test_getcwd_actual_dir()
+  CheckOption autochdir
+
+  let startdir = getcwd()
+  call mkdir('Xactual')
+  call test_autochdir()
+  set autochdir
+  edit Xactual/file.txt
+  call assert_match('testdir.Xactual$', getcwd())
+  lcd ..
+  call assert_match('testdir$', getcwd())
+  edit
+  call assert_match('testdir.Xactual$', getcwd())
+  call assert_match('testdir$', getcwd(win_getid()))
+
+  set noautochdir
+  bwipe!
+  call chdir(startdir)
+  call delete('Xactual', 'rf')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

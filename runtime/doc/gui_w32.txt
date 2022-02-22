@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.2.  Last change: 2021 Apr 05
+*gui_w32.txt*   For Vim version 8.2.  Last change: 2021 Oct 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -323,20 +323,10 @@ These extra colors are also available:
 Gray, Grey, LightYellow, SeaGreen, Orange, Purple, SlateBlue, Violet,
 
 								*rgb.txt*
-Additionally, colors defined by a "rgb.txt" file can be used.  This file is
-well known from X11.  A few lines from it: >
-
-  255 218 185		   peach puff
-  205 133  63		   peru
-  255 181 197		   pink
-
-This shows the layout of the file:  First the R, G and B value as a decimal
-number, followed by the name of the color.  The four fields are separated by
-spaces.
-
-You can get an rgb.txt file from any X11 distribution.  It is located in a
-directory like "/usr/X11R6/lib/X11/".  For Vim it must be located in the
-$VIMRUNTIME directory.  Thus the file can be found with "$VIMRUNTIME/rgb.txt".
+Additionally, colors defined by a default color list can be used.  For more
+info see |:colorscheme|.  These colors used to be defined in
+$VIMRUNTIME/rgb.txt, now they are in |v:colornames| which is initialized from
+$VIMRUNTIME/colors/lists/default.vim.
 
 ==============================================================================
 						*gui-w32-dialogs* *dialog*

@@ -58,6 +58,7 @@ endfunc
 func Test_sort_numbers()
   call assert_equal([3, 13, 28], sort([13, 28, 3], 'N'))
   call assert_equal(['3', '13', '28'], sort(['13', '28', '3'], 'N'))
+  call assert_equal([3997, 4996], sort([4996, 3997], 'Compare1'))
 endfunc
 
 func Test_sort_float()
@@ -1545,6 +1546,22 @@ func Test_sort_with_marks()
   call assert_equal(3, line("'b"))
   call assert_equal(1, line("'c"))
   close!
+endfunc
+
+" Test for sort() using a dict function
+func Test_sort_using_dict_func()
+  func DictSort(a, b) dict
+    if self.order == 'reverse'
+      return a:b - a:a
+    else
+      return a:a - a:b
+    endif
+  endfunc
+  let d = #{order: ''}
+  call assert_equal([1, 2, 3], sort([2, 1, 3], 'DictSort', d))
+  let d = #{order: 'reverse'}
+  call assert_equal([3, 2, 1], sort([2, 1, 3], 'DictSort', d))
+  delfunc DictSort
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

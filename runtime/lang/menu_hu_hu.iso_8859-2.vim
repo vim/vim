@@ -2,6 +2,7 @@
 " Original Translation:	Zoltán Árpádffy
 " Maintained By:	Kontra Gergely <kgergely@mcl.hu>
 " Last Change:		2020 Apr 23
+" Original translations
 " I'm working on defining (unaccented) hotkeys for everything.
 " I want to remove y and z hotkeys, because on the hungarian keymap they're at
 " a differrent place.

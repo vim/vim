@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2021 Mar 22
+*index.txt*     For Vim version 8.2.  Last change: 2022 Feb 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -168,6 +168,7 @@ commands in CTRL-X submode				*i_CTRL-X_index*
 |i_CTRL-X_CTRL-Y|	CTRL-X CTRL-Y	scroll down
 |i_CTRL-X_CTRL-U|	CTRL-X CTRL-U	complete with 'completefunc'
 |i_CTRL-X_CTRL-V|	CTRL-X CTRL-V	complete like in : command line
+|i_CTRL-X_CTRL-Z|	CTRL-X CTRL-Z	stop completion, keeping the text as-is
 |i_CTRL-X_CTRL-]|	CTRL-X CTRL-]	complete tags
 |i_CTRL-X_s|		CTRL-X s	spelling suggestions
 
@@ -864,6 +865,8 @@ tag		char	      note action in Normal mode	~
 |zm|		zm		   subtract one from 'foldlevel'
 |zn|		zn		   reset 'foldenable'
 |zo|		zo		   open fold
+|zp|		zp		   paste in block-mode without trailing spaces
+|zP|		zP		   paste in block-mode without trailing spaces
 |zr|		zr		   add one to 'foldlevel'
 |zs|		zs		   when 'wrap' off scroll horizontally to
 				   position the cursor at the start (left
@@ -876,6 +879,7 @@ tag		char	      note action in Normal mode	~
 |zv|		zv		   open enough folds to view the cursor line
 |zw|		zw		   permanently mark word as incorrectly spelled
 |zx|		zx		   re-apply 'foldlevel' and do "zv"
+|zy|		zy		   yank without trailing spaces
 |zz|		zz		   redraw, cursor line at center of window
 |z<Left>|	z<Left>		   same as "zh"
 |z<Right>|	z<Right>	   same as "zl"
@@ -933,7 +937,9 @@ tag		command	      note action in Visual mode	~
 				   before the highlighted area
 |v_J|		J		2  join the highlighted lines
 |v_K|		K		   run 'keywordprg' on the highlighted area
-|v_O|		O		   Move horizontally to other corner of area.
+|v_O|		O		   move horizontally to other corner of area
+|v_P|		P		   replace highlighted area with register
+				   contents; unnamed register is unchanged
 		Q		   does not start Ex mode
 |v_R|		R		2  delete the highlighted lines and start
 				   insert
@@ -996,6 +1002,8 @@ tag		command	      note action in Visual mode	~
 |v_i{|		i{		   same as iB
 |v_i}|		i}		   same as iB
 |v_o|		o		   move cursor to other corner of area
+|v_p|		p		   replace highlighted area with register
+				   contents; deleted text in unnamed register
 |v_r|		r		2  replace highlighted area with a character
 |v_s|		s		2  delete highlighted area and start insert
 |v_u|		u		2  make highlighted area lowercase
@@ -1144,7 +1152,7 @@ tag		command		action ~
 |:&|		:&		repeat last ":substitute"
 |:star|		:*		execute contents of a register
 |:<|		:<		shift lines one 'shiftwidth' left
-|:=|		:=		print the cursor line number
+|:=|		:=		print the last line number
 |:>|		:>		shift lines one 'shiftwidth' right
 |:@|		:@		execute contents of a register
 |:@@|		:@@		repeat the previous ":@"
@@ -1162,6 +1170,7 @@ tag		command		action ~
 				be remapped
 |:args|		:ar[gs]		print the argument list
 |:argadd|	:arga[dd]	add items to the argument list
+:argdedupe	:argdedupe	remove duplicates from the argument list
 |:argdelete|	:argd[elete]	delete items from the argument list
 |:argedit|	:arge[dit]	add item to the argument list and edit it
 |:argdo|	:argdo		do a command on all items in the argument list
@@ -1309,6 +1318,7 @@ tag		command		action ~
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
 |:enew|		:ene[w]		edit a new, unnamed buffer
+|:eval|		:ev[al]		evaluate an expression and discard the result
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
 |:exit|		:exi[t]		same as ":xit"
@@ -1396,6 +1406,7 @@ tag		command		action ~
 |:lfdo|		:lfd[o]		execute command in each file in location list
 |:left|		:le[ft]		left align lines
 |:leftabove|	:lefta[bove]	make split window appear left or above
+|:legacy|	:leg[acy]	make following command use legacy script syntax
 |:let|		:let		assign a value to a variable or option
 |:lexpr|	:lex[pr]	read locations from expr and jump to first
 |:lfile|	:lf[ile]	read file with locations and jump to first
@@ -1656,9 +1667,9 @@ tag		command		action ~
 |:tab|		:tab		create new tab when opening new window
 |:tag|		:ta[g]		jump to tag
 |:tags|		:tags		show the contents of the tag stack
-|:tcd|		:tcd		change directory for tab page
+|:tcd|		:tc[d]		change directory for tab page
 |:tchdir|	:tch[dir]	change directory for tab page
-|:tcl|		:tc[l]		execute Tcl command
+|:tcl|		:tcl		execute Tcl command
 |:tcldo|	:tcld[o]	execute Tcl command for each line
 |:tclfile|	:tclf[ile]	execute Tcl script file
 |:tearoff|	:te[aroff]	tear-off a menu

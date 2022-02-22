@@ -61,11 +61,9 @@ func Test_colorscheme()
 endfunc
 
 func Test_getfontname_with_arg()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_athena') || has('gui_motif')
+  if has('gui_athena') || has('gui_motif')
     " Invalid font name. The result should be an empty string.
     call assert_equal('', getfontname('notexist'))
 
@@ -82,20 +80,14 @@ func Test_getfontname_with_arg()
     let fname = 'Bitstream Vera Sans Mono 12'
     call assert_equal(fname, getfontname(fname))
   endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
 endfunc
 
 func Test_getfontname_without_arg()
-  let skipped = ''
+  CheckX11BasedGui
 
   let fname = getfontname()
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_kde')
+  if has('gui_kde')
     " 'expected' is the value specified by SetUp() above.
     call assert_equal('Courier 10 Pitch/8/-1/5/50/0/0/0/0/0', fname)
   elseif has('gui_athena') || has('gui_motif')
@@ -105,10 +97,6 @@ func Test_getfontname_without_arg()
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " 'expected' is DEFAULT_FONT of gui_gtk_x11.c.
     call assert_equal('Monospace 10', fname)
-  endif
-
-  if !empty(skipped)
-    throw skipped
   endif
 endfunc
 
@@ -120,47 +108,63 @@ func Test_getwinpos()
 endfunc
 
 func Test_quoteplus()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_supported . 'quoteplus'
-  else
-    let quoteplus_saved = @+
+  let g:test_is_flaky = 1
 
-    let test_call     = 'Can you hear me?'
-    let test_response = 'Yes, I can.'
-    let vim_exe = GetVimCommand()
-    let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
-          \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
-    " Ignore the "failed to create input context" error.
-    let cmd = 'call test_ignore_error("E285") | '
-	  \ . 'gui -f | '
-	  \ . 'call feedkeys("'
-          \ . '\"+p'
-          \ . ':s/' . test_call . '/' . test_response . '/\<CR>'
-          \ . '\"+yis'
-          \ . ':q!\<CR>", "tx")'
-    let run_vimtest = printf(testee, cmd)
+  let quoteplus_saved = @+
 
-    " Set the quoteplus register to test_call, and another gvim will launched.
-    " Then, it first tries to paste the content of its own quotedplus register
-    " onto it.  Second, it tries to substitute test_response for the pasted
-    " sentence.  If the sentence is identical to test_call, the substitution
-    " should succeed.  Third, it tries to yank the result of the substitution
-    " to its own quoteplus register, and last it quits.  When system()
-    " returns, the content of the quoteplus register should be identical to
-    " test_response if those quoteplus registers are synchronized properly
-    " with/through the X11 clipboard.
-    let @+ = test_call
-    call system(run_vimtest)
-    call assert_equal(test_response, @+)
+  let test_call     = 'Can you hear me?'
+  let test_response = 'Yes, I can.'
+  let vim_exe = GetVimCommand()
+  let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
+        \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
+  " Ignore the "failed to create input context" error.
+  let cmd = 'call test_ignore_error("E285") | '
+        \ . 'gui -f | '
+        \ . 'call feedkeys("'
+        \ . '\"+p'
+        \ . ':s/' . test_call . '/' . test_response . '/\<CR>'
+        \ . '\"+yis'
+        \ . ':q!\<CR>", "tx")'
+  let run_vimtest = printf(testee, cmd)
 
-    let @+ = quoteplus_saved
-  endif
+  " Set the quoteplus register to test_call, and another gvim will launched.
+  " Then, it first tries to paste the content of its own quotedplus register
+  " onto it.  Second, it tries to substitute test_response for the pasted
+  " sentence.  If the sentence is identical to test_call, the substitution
+  " should succeed.  Third, it tries to yank the result of the substitution
+  " to its own quoteplus register, and last it quits.  When system()
+  " returns, the content of the quoteplus register should be identical to
+  " test_response if those quoteplus registers are synchronized properly
+  " with/through the X11 clipboard.
+  let @+ = test_call
+  call system(run_vimtest)
+  call assert_equal(test_response, @+)
 
-  if !empty(skipped)
-    throw skipped
-  endif
+  let @+ = quoteplus_saved
+endfunc
+
+func Test_gui_read_stdin()
+  CheckUnix
+
+  call writefile(['some', 'lines'], 'Xstdin')
+  let script =<< trim END
+      call writefile(getline(1, '$'), 'XstdinOK')
+      qa!
+  END
+  call writefile(script, 'Xscript')
+
+  " Cannot use --not-a-term here, the "reading from stdin" message would not be
+  " displayed.
+  let vimcmd = substitute(GetVimCommand(), '--not-a-term', '', '')
+
+  call system('cat Xstdin | ' .. vimcmd .. ' -f -g -S Xscript -')
+  call assert_equal(['some', 'lines'], readfile('XstdinOK'))
+
+  call delete('Xstdin')
+  call delete('XstdinOK')
+  call delete('Xscript')
 endfunc
 
 func Test_set_background()
@@ -254,6 +258,15 @@ func Test_set_balloonexpr()
   setl balloonexpr&
   call assert_equal('', &balloonexpr)
   delfunc MyBalloonExpr
+
+  " Using a script-local function
+  func s:NewBalloonExpr()
+  endfunc
+  set balloonexpr=s:NewBalloonExpr()
+  call assert_equal(expand('<SID>') .. 'NewBalloonExpr()', &balloonexpr)
+  set balloonexpr=<SID>NewBalloonExpr()
+  call assert_equal(expand('<SID>') .. 'NewBalloonExpr()', &balloonexpr)
+  delfunc s:NewBalloonExpr
   bwipe!
 
   " Multiline support
@@ -332,8 +345,29 @@ func Test_set_guicursor()
   let &guicursor = guicursor_saved
 endfunc
 
+func Test_set_guifont_errors()
+  if has('win32')
+    " Invalid font names are accepted in GTK GUI
+    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+  endif
+
+  " This only works if 'renderoptions' exists and does not work for Windows XP
+  " and older.
+  if exists('+renderoptions') && windowsversion() !~ '^[345]\.'
+    " doing this four times used to cause a crash
+    set renderoptions=type:directx
+    for i in range(5)
+      set guifont=
+    endfor
+    set renderoptions=
+    for i in range(5)
+      set guifont=
+    endfor
+  endif
+endfunc
+
 func Test_set_guifont()
-  let skipped = ''
+  CheckX11BasedGui
 
   let guifont_saved = &guifont
   if has('xfontset')
@@ -342,9 +376,7 @@ func Test_set_guifont()
     set guifontset=
   endif
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_athena') || has('gui_motif')
+  if has('gui_athena') || has('gui_motif')
     " Non-empty font list with invalid font names.
     "
     " This test is twofold: (1) It checks if the command fails as expected
@@ -383,33 +415,10 @@ func Test_set_guifont()
     call assert_equal('Monospace 10', getfontname())
   endif
 
-  if has('win32')
-    " Invalid font names are accepted in GTK GUI
-    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
-  endif
-
-  " This only works if 'renderoptions' exists and does not work for Windows XP
-  " and older. 
-  if exists('+renderoptions') && windowsversion() !~ '^[345]\.'
-    " doing this four times used to cause a crash
-    set renderoptions=type:directx
-    for i in range(5)
-      set guifont=
-    endfor
-    set renderoptions=
-    for i in range(5)
-      set guifont=
-    endfor
-  endif
-
   if has('xfontset')
     let &guifontset = guifontset_saved
   endif
   let &guifont = guifont_saved
-
-  if !empty(skipped)
-    throw skipped
-  endif
 endfunc
 
 func Test_set_guifontset()
@@ -484,12 +493,11 @@ func Test_set_guifontset()
 endfunc
 
 func Test_set_guifontwide()
-  call assert_fails('set guifontwide=*', 'E533:')
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_implemented
-  elseif has('gui_gtk')
+  call assert_fails('set guifontwide=*', 'E533:')
+
+  if has('gui_gtk')
     let guifont_saved = &guifont
     let guifontwide_saved = &guifontwide
 
@@ -560,26 +568,31 @@ func Test_set_guifontwide()
       let &encoding    = encoding_saved
     endif
   endif
+endfunc
 
-  if !empty(skipped)
-    throw skipped
+func Test_set_guiligatures()
+  CheckX11BasedGui
+
+  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+    " Try correct value
+    set guiligatures=<>=ab
+    call assert_equal("<>=ab", &guiligatures)
+    " Try to throw error
+    try
+      set guiligatures=<>=šab
+      call assert_report("'set guiligatures=<>=šab should have failed")
+    catch
+      call assert_exception('E1243:')
+    endtry
   endif
 endfunc
 
 func Test_set_guiheadroom()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_supported . 'guiheadroom'
-  else
-    " Since this script is to be read together with '-U NONE', the default
-    " value must be preserved.
-    call assert_equal(50, &guiheadroom)
-  endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
+  " Since this script is to be read together with '-U NONE', the default
+  " value must be preserved.
+  call assert_equal(50, &guiheadroom)
 endfunc
 
 func Test_set_guioptions()
@@ -701,13 +714,15 @@ func Test_scrollbars()
   set guioptions+=rlb
 
   " scroll to move line 11 at top, moves the cursor there
-  eval 10->test_scrollbar('left', 0)
+  let args = #{which: 'left', value: 10, dragging: 0}
+  call test_gui_event('scrollbar', args)
   redraw
   call assert_equal(1, winline())
   call assert_equal(11, line('.'))
 
   " scroll to move line 1 at top, cursor stays in line 11
-  call test_scrollbar('right', 0, 0)
+  let args = #{which: 'right', value: 0, dragging: 0}
+  call test_gui_event('scrollbar', args)
   redraw
   call assert_equal(11, winline())
   call assert_equal(11, line('.'))
@@ -724,7 +739,8 @@ func Test_scrollbars()
   call assert_equal(1, col('.'))
 
   " scroll to character 11, cursor is moved
-  call test_scrollbar('hor', 10, 0)
+  let args = #{which: 'hor', value: 10, dragging: 0}
+  call test_gui_event('scrollbar', args)
   redraw
   call assert_equal(1, wincol())
   set number
@@ -733,6 +749,13 @@ func Test_scrollbars()
   set nonumber
   redraw
   call assert_equal(11, col('.'))
+
+  " Invalid arguments
+  call assert_false(test_gui_event('scrollbar', {}))
+  call assert_false(test_gui_event('scrollbar', #{value: 10, dragging: 0}))
+  call assert_false(test_gui_event('scrollbar', #{which: 'hor', dragging: 0}))
+  call assert_false(test_gui_event('scrollbar', #{which: 'hor', value: 1}))
+  call assert_fails("call test_gui_event('scrollbar', #{which: 'a', value: 1, dragging: 0})", 'E475:')
 
   set guioptions&
   set wrap&
@@ -873,6 +896,595 @@ func Test_gui_recursive_mapping()
 
   nunmap '
   nunmap <C-W>a
+endfunc
+
+" Test GUI mouse events
+func Test_gui_mouse_event()
+  set mousemodel=extend
+  call test_override('no_query_mouse', 1)
+  new
+  call setline(1, ['one two three', 'four five six'])
+
+  " place the cursor using left click in normal mode
+  call cursor(1, 1)
+  let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  eval 'mouse'->test_gui_event(args)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 2, 4, 0], getpos('.'))
+
+  " select and yank a word
+  let @" = ''
+  let args = #{button: 0, row: 1, col: 9, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.multiclick = 1
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  let args.multiclick = 0
+  call test_gui_event('mouse', args)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('three', @")
+
+  " create visual selection using right click
+  let @" = ''
+  let args = #{button: 0, row: 2, col: 6, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  let args = #{button: 2, row: 2, col: 13, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('five six', @")
+
+  " paste using middle mouse button
+  let @* = 'abc '
+  call feedkeys('""', 'Lx!')
+  let args = #{button: 1, row: 1, col: 9, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
+
+  " extend visual selection using right click in visual mode
+  let @" = ''
+  call cursor(1, 1)
+  call feedkeys('v', 'Lx!')
+  let args = #{button: 2, row: 1, col: 17, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('one two abc three', @")
+
+  " extend visual selection using mouse drag
+  let @" = ''
+  call cursor(1, 1)
+  let args = #{button: 0, row: 2, col: 1, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args = #{button: 0x43, row: 2, col: 9, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 0x3
+  call test_gui_event('mouse', args)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('four five', @")
+
+  " select text by moving the mouse
+  let @" = ''
+  call cursor(1, 1)
+  redraw!
+  let args = #{button: 0, row: 1, col: 4, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 0x700
+  let args.col = 9
+  call test_gui_event('mouse', args)
+  let args.col = 13
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("y", 'Lx!')
+  call assert_equal(' two abc t', @")
+
+  " Using mouse in insert mode
+  call cursor(1, 1)
+  call feedkeys('i', 't')
+  let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("po\<Esc>", 'Lx!')
+  call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
+
+  %d _
+  call setline(1, range(1, 100))
+  " scroll up
+  let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  call test_gui_event('mouse', args)
+  call test_gui_event('mouse', args)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(10, line('.'))
+
+  " scroll down
+  let args = #{button: 0x100, row: 2, col: 1, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  call test_gui_event('mouse', args)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(4, line('.'))
+
+  %d _
+  set nowrap
+  call setline(1, range(10)->join('')->repeat(10))
+  " scroll left
+  let args = #{button: 0x500, row: 1, col: 5, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.col = 10
+  call test_gui_event('mouse', args)
+  let args.col = 15
+  call test_gui_event('mouse', args)
+  call feedkeys('g0', 'Lx!')
+  call assert_equal(19, col('.'))
+
+  " scroll right
+  let args = #{button: 0x600, row: 1, col: 15, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.col = 10
+  call test_gui_event('mouse', args)
+  call feedkeys('g0', 'Lx!')
+  call assert_equal(7, col('.'))
+  set wrap&
+
+  %d _
+  call setline(1, repeat([repeat('a', 60)], 10))
+
+  " record various mouse events
+  let mouseEventNames = [
+        \ 'LeftMouse', 'LeftRelease', '2-LeftMouse', '3-LeftMouse',
+        \ 'S-LeftMouse', 'A-LeftMouse', 'C-LeftMouse', 'MiddleMouse',
+        \ 'MiddleRelease', '2-MiddleMouse', '3-MiddleMouse',
+        \ 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
+        \ 'RightMouse', 'RightRelease', '2-RightMouse',
+        \ '3-RightMouse', 'S-RightMouse', 'A-RightMouse', 'C-RightMouse',
+        \ 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse', 'C-X1Mouse', 'X2Mouse',
+        \ 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'
+        \ ]
+  let mouseEventCodes = map(copy(mouseEventNames), "'<' .. v:val .. '>'")
+  let g:events = []
+  for e in mouseEventCodes
+    exe 'nnoremap ' .. e .. ' <Cmd>call add(g:events, "' ..
+          \ substitute(e, '[<>]', '', 'g') .. '")<CR>'
+  endfor
+
+  " Test various mouse buttons (0 - Left, 1 - Middle, 2 - Right, 0x300 - X1,
+  " 0x300- X2)
+  for button in [0, 1, 2, 0x300, 0x400]
+    " Single click
+    let args = #{button: button, row: 2, col: 5, multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
+
+    " Double/Triple click is supported by only the Left/Middle/Right mouse
+    " buttons
+    if button <= 2
+      " Double Click
+      let args.button = button
+      call test_gui_event('mouse', args)
+      let args.multiclick = 1
+      call test_gui_event('mouse', args)
+      let args.button = 3
+      let args.multiclick = 0
+      call test_gui_event('mouse', args)
+
+      " Triple Click
+      let args.button = button
+      call test_gui_event('mouse', args)
+      let args.multiclick = 1
+      call test_gui_event('mouse', args)
+      call test_gui_event('mouse', args)
+      let args.button = 3
+      let args.multiclick = 0
+      call test_gui_event('mouse', args)
+    endif
+
+    " Shift click
+    let args = #{button: button, row: 3, col: 7, multiclick: 0, modifiers: 4}
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
+
+    " Alt click
+    let args.button = button
+    let args.modifiers = 8
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
+
+    " Ctrl click
+    let args.button = button
+    let args.modifiers = 16
+    call test_gui_event('mouse', args)
+    let args.button = 3
+    call test_gui_event('mouse', args)
+
+    call feedkeys("\<Esc>", 'Lx!')
+  endfor
+
+  call assert_equal(['LeftMouse', 'LeftRelease', 'LeftMouse', '2-LeftMouse',
+        \ 'LeftMouse', '2-LeftMouse', '3-LeftMouse', 'S-LeftMouse',
+        \ 'A-LeftMouse', 'C-LeftMouse', 'MiddleMouse', 'MiddleRelease',
+        \ 'MiddleMouse', '2-MiddleMouse', 'MiddleMouse', '2-MiddleMouse',
+        \ '3-MiddleMouse', 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
+        \ 'RightMouse', 'RightRelease', 'RightMouse', '2-RightMouse',
+        \ 'RightMouse', '2-RightMouse', '3-RightMouse', 'S-RightMouse',
+        \ 'A-RightMouse', 'C-RightMouse', 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse',
+        \ 'C-X1Mouse', 'X2Mouse', 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'],
+        \ g:events)
+
+  for e in mouseEventCodes
+    exe 'nunmap ' .. e
+  endfor
+
+  " modeless selection
+  set mouse=
+  let save_guioptions = &guioptions
+  set guioptions+=A
+  %d _
+  call setline(1, ['one two three', 'four five sixteen'])
+  call cursor(1, 1)
+  redraw!
+  " Double click should select the word and copy it to clipboard
+  let @* = ''
+  let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.multiclick = 1
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  let args.multiclick = 0
+  call test_gui_event('mouse', args)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  call assert_equal('sixteen', @*)
+  " Right click should extend the selection from cursor
+  call cursor(1, 6)
+  redraw!
+  let @* = ''
+  let args = #{button: 2, row: 1, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  call assert_equal('wo thr', @*)
+  " Middle click should paste the clipboard contents
+  call cursor(2, 1)
+  redraw!
+  let args = #{button: 1, row: 1, col: 11, multiclick: 0, modifiers: 0}
+  call test_gui_event('mouse', args)
+  let args.button = 3
+  call test_gui_event('mouse', args)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 2, 7, 0], getpos('.'))
+  call assert_equal('wo thrfour five sixteen', getline(2))
+  set mouse&
+  let &guioptions = save_guioptions
+
+  " Test invalid parameters for test_gui_event()
+  let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, col: 4, multiclick: 0, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, row: 2, multiclick: 0, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, row: 2, col: 4, modifiers: 0}
+  call assert_false(test_gui_event('mouse', args))
+  let args = #{button: 0, row: 2, col: 4, multiclick: 0}
+  call assert_false(test_gui_event('mouse', args))
+
+  " Error cases for test_gui_event()
+  call assert_fails("call test_gui_event('a1b2c3', args)", 'E475:')
+  call assert_fails("call test_gui_event([], args)", 'E1174:')
+  call assert_fails("call test_gui_event('abc', [])", 'E1206:')
+  call assert_fails("call test_gui_event(test_null_string(), {})", 'E475:')
+  call assert_false(test_gui_event('mouse', test_null_dict()))
+
+  bw!
+  call test_override('no_query_mouse', 0)
+  set mousemodel&
+endfunc
+
+" Test for 'guitablabel' and 'guitabtooltip' options
+func TestGuiTabLabel()
+  call add(g:TabLabels, v:lnum + 100)
+  let bufnrlist = tabpagebuflist(v:lnum)
+  return bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
+endfunc
+
+func TestGuiTabToolTip()
+  call add(g:TabToolTips, v:lnum + 200)
+  let bufnrlist = tabpagebuflist(v:lnum)
+  return bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
+endfunc
+
+func Test_gui_tablabel_tooltip()
+  CheckNotFeature gui_athena
+
+  %bw!
+  " Removing the tabline at the end of this test, reduces the window height by
+  " one. Save and restore it after the test.
+  let save_lines = &lines
+  edit one
+  set modified
+  tabnew two
+  set modified
+  tabnew three
+  set modified
+  let g:TabLabels = []
+  set guitablabel=%{TestGuiTabLabel()}
+  call test_override('starting', 1)
+  redrawtabline
+  call test_override('starting', 0)
+  call assert_true(index(g:TabLabels, 101) != -1)
+  call assert_true(index(g:TabLabels, 102) != -1)
+  call assert_true(index(g:TabLabels, 103) != -1)
+  set guitablabel&
+  unlet g:TabLabels
+
+  if has('gui_gtk')
+    " Only on GTK+, the tooltip function is called even if the mouse is not
+    " on the tabline. on Win32 and Motif, the tooltip function is called only
+    " when the mouse pointer is over the tabline.
+    let g:TabToolTips = []
+    set guitabtooltip=%{TestGuiTabToolTip()}
+    call test_override('starting', 1)
+    redrawtabline
+    call test_override('starting', 0)
+    call assert_true(index(g:TabToolTips, 201) != -1)
+    call assert_true(index(g:TabToolTips, 202) != -1)
+    call assert_true(index(g:TabToolTips, 203) != -1)
+    set guitabtooltip&
+    unlet g:TabToolTips
+  endif
+  %bw!
+  let &lines = save_lines
+endfunc
+
+" Test for dropping files into a window in GUI
+func DropFilesInCmdLine()
+  CheckFeature drop_file
+
+  call feedkeys(":\"", 'L')
+  let d = #{files: ['a.c', 'b.c'], row: &lines, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call feedkeys("\<CR>", 'L')
+endfunc
+
+func Test_gui_drop_files()
+  CheckFeature drop_file
+
+  %bw!
+  %argdelete
+  let d = #{files: [], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call assert_equal([], argv())
+  let d = #{files: [1, 2], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call assert_equal([], argv())
+
+  let d = #{files: ['a.c', 'b.c'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call assert_equal(['a.c', 'b.c'], argv())
+  %bw!
+  %argdelete
+  let d = #{files: [], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call assert_equal([], argv())
+  %bw!
+  " if the buffer in the window is modified, then the file should be opened in
+  " a new window
+  set modified
+  let d = #{files: ['x.c', 'y.c'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call assert_equal(['x.c', 'y.c'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal('x.c', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " if Ctrl is pressed, then the file should be opened in a new window
+  let d = #{files: ['s.py', 't.py'], row: 1, col: 1, modifiers: 0x10}
+  eval 'dropfiles'->test_gui_event(d)
+  call assert_equal(['s.py', 't.py'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal('s.py', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " drop the files in a non-current window
+  belowright new
+  let d = #{files: ['a.py', 'b.py'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call assert_equal(['a.py', 'b.py'], argv())
+  call assert_equal(2, winnr('$'))
+  call assert_equal(1, winnr())
+  call assert_equal('a.py', bufname(winbufnr(1)))
+  %bw!
+  %argdelete
+  " pressing shift when dropping files should change directory
+  let save_cwd = getcwd()
+  call mkdir('Xdir1')
+  call writefile([], 'Xdir1/Xfile1')
+  call writefile([], 'Xdir1/Xfile2')
+  let d = #{files: ['Xdir1/Xfile1', 'Xdir1/Xfile2'], row: 1, col: 1,
+        \ modifiers: 0x4}
+  call test_gui_event('dropfiles', d)
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xfile1', @%)
+  call chdir(save_cwd)
+  " pressing shift when dropping directory and files should change directory
+  let d = #{files: ['Xdir1', 'Xdir1/Xfile2'], row: 1, col: 1, modifiers: 0x4}
+  call test_gui_event('dropfiles', d)
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir1', fnamemodify(@%, ':t'))
+  call chdir(save_cwd)
+  %bw!
+  %argdelete
+  " dropping a directory should edit it
+  let d = #{files: ['Xdir1'], row: 1, col: 1, modifiers: 0}
+  call test_gui_event('dropfiles', d)
+  call assert_equal('Xdir1', @%)
+  %bw!
+  %argdelete
+  " dropping only a directory name with Shift should ignore it
+  let d = #{files: ['Xdir1'], row: 1, col: 1, modifiers: 0x4}
+  call test_gui_event('dropfiles', d)
+  call assert_equal('', @%)
+  %bw!
+  %argdelete
+  call delete('Xdir1', 'rf')
+  " drop files in the command line. The GUI drop files adds the file names to
+  " the low level input buffer. So need to use a cmdline map and feedkeys()
+  " with 'Lx!' to process it in this function itself.
+  cnoremap <expr> <buffer> <F4> DropFilesInCmdLine()
+  call feedkeys(":\"\<F4>\<CR>", 'xt')
+  call feedkeys('k', 'Lx!')
+  call assert_equal('"a.c b.c', @:)
+  cunmap <buffer> <F4>
+
+  " Invalid arguments
+  call assert_false(test_gui_event("dropfiles", {}))
+  let d = #{row: 1, col: 1, modifiers: 0}
+  call assert_false(test_gui_event("dropfiles", d))
+  let d = #{files: 1, row: 1, col: 1, modifiers: 0}
+  call assert_false(test_gui_event("dropfiles", d))
+  let d = #{files: test_null_list(), row: 1, col: 1, modifiers: 0}
+  call assert_false(test_gui_event("dropfiles", d))
+  let d = #{files: [test_null_string()], row: 1, col: 1, modifiers: 0}
+  call assert_true(test_gui_event("dropfiles", d))
+endfunc
+
+" Test for generating a GUI tabline event to select a tab page
+func Test_gui_tabline_event()
+  %bw!
+  edit Xfile1
+  tabedit Xfile2
+  tabedit Xfile3
+
+  tabfirst
+  call assert_equal(v:true, test_gui_event('tabline', #{tabnr: 2}))
+  call feedkeys("y", "Lx!")
+  call assert_equal(2, tabpagenr())
+  call assert_equal(v:true, test_gui_event('tabline', #{tabnr: 3}))
+  call feedkeys("y", "Lx!")
+  call assert_equal(3, tabpagenr())
+  call assert_equal(v:false, 'tabline'->test_gui_event(#{tabnr: 3}))
+
+  " From the cmdline window, tabline event should not be handled
+  call feedkeys("q::let t = test_gui_event('tabline', #{tabnr: 2})\<CR>:q\<CR>", 'x!')
+  call assert_equal(v:false, t)
+
+  " Invalid arguments
+  call assert_false(test_gui_event('tabline', {}))
+  call assert_false(test_gui_event('tabline', #{abc: 1}))
+
+  %bw!
+endfunc
+
+" Test for generating a GUI tabline menu event to execute an action
+func Test_gui_tabmenu_event()
+  %bw!
+
+  " Try to close the last tab page
+  call test_gui_event('tabmenu', #{tabnr: 1, item: 1})
+  call feedkeys("y", "Lx!")
+
+  edit Xfile1
+  tabedit Xfile2
+  call test_gui_event('tabmenu', #{tabnr: 1, item: 1})
+  call feedkeys("y", "Lx!")
+  call assert_equal(1, tabpagenr('$'))
+  call assert_equal('Xfile2', bufname())
+
+  eval 'tabmenu'->test_gui_event(#{tabnr: 1, item: 2})
+  call feedkeys("y", "Lx!")
+  call assert_equal(2, tabpagenr('$'))
+
+  " If tabnr is 0, then the current tabpage should be used.
+  call test_gui_event('tabmenu', #{tabnr: 0, item: 2})
+  call feedkeys("y", "Lx!")
+  call assert_equal(3, tabpagenr('$'))
+  call test_gui_event('tabmenu', #{tabnr: 0, item: 1})
+  call feedkeys("y", "Lx!")
+  call assert_equal(2, tabpagenr('$'))
+
+  " Invalid arguments
+  call assert_false(test_gui_event('tabmenu', {}))
+  call assert_false(test_gui_event('tabmenu', #{tabnr: 1}))
+  call assert_false(test_gui_event('tabmenu', #{item: 1}))
+  call assert_false(test_gui_event('tabmenu', #{abc: 1}))
+
+  %bw!
+endfunc
+
+" Test for find/replace text dialog event
+func Test_gui_findrepl()
+  new
+  call setline(1, ['one two one', 'Twoo One two oneo'])
+
+  " Replace all instances of a string with another
+  let args = #{find_text: 'one', repl_text: 'ONE', flags: 0x4, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE two ONE', 'Twoo ONE two ONEo'], getline(1, '$'))
+
+  " Replace all instances of a whole string with another
+  call cursor(1, 1)
+  let args = #{find_text: 'two', repl_text: 'TWO', flags: 0xC, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE TWO ONE', 'Twoo ONE TWO ONEo'], getline(1, '$'))
+
+  " Find next occurance of a string (in a find dialog)
+  call cursor(1, 11)
+  let args = #{find_text: 'TWO', repl_text: '', flags: 0x11, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal([2, 10], [line('.'), col('.')])
+
+  " Find previous occurances of a string (in a find dialog)
+  call cursor(1, 11)
+  let args = #{find_text: 'TWO', repl_text: '', flags: 0x11, forward: 0}
+  call test_gui_event('findrepl', args)
+  call assert_equal([1, 5], [line('.'), col('.')])
+
+  " Find next occurance of a string (in a replace dialog)
+  call cursor(1, 1)
+  let args = #{find_text: 'Twoo', repl_text: '', flags: 0x2, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  " Replace only the next occurance of a string (once)
+  call cursor(1, 5)
+  let args = #{find_text: 'TWO', repl_text: 'two', flags: 0x3, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE two ONE', 'Twoo ONE TWO ONEo'], getline(1, '$'))
+
+  " Replace all instances of a whole string with another matching case
+  call cursor(1, 1)
+  let args = #{find_text: 'TWO', repl_text: 'two', flags: 0x1C, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['ONE two ONE', 'Twoo ONE two ONEo'], getline(1, '$'))
+
+  " Invalid arguments
+  call assert_false(test_gui_event('findrepl', {}))
+  let args = #{repl_text: 'a', flags: 1, forward: 1}
+  call assert_false(test_gui_event('findrepl', args))
+  let args = #{find_text: 'a', flags: 1, forward: 1}
+  call assert_false(test_gui_event('findrepl', args))
+  let args = #{find_text: 'a', repl_text: 'b', forward: 1}
+  call assert_false(test_gui_event('findrepl', args))
+  let args = #{find_text: 'a', repl_text: 'b', flags: 1}
+  call assert_false(test_gui_event('findrepl', args))
+
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

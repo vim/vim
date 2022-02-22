@@ -34,7 +34,7 @@ syn match AspVBSVariableComplex contained "\<\(arr\|ary\|obj\)\u\w*"
 
 
 " Functions and methods that are in VB but will cause errors in an ASP page
-" This is helpfull if your porting VB code to ASP
+" This is helpful if your porting VB code to ASP
 " I removed (Count, Item) because these are common variable names in AspVBScript
 syn keyword AspVBSError contained Val Str CVar CVDate DoEvents GoSub Return GoTo
 syn keyword AspVBSError contained Stop LinkExecute Add Type LinkPoke
@@ -56,7 +56,7 @@ syn match AspVBSError contained "\<Option\s\+\(Base\|Compare\|Private\s\+Module\
 syn match AspVBSError contained "Respon\?ce\.\S*"
 syn match AspVBSError contained "Respose\.\S*"
 " When I looked up the VBScript syntax it mentioned that Property Get/Set/Let
-" statements are illegal, however, I have recived reports that they do work.
+" statements are illegal, however, I have received reports that they do work.
 " So I commented it out for now.
 " syn match AspVBSError contained "\<Property\s\+\(Get\|Let\|Set\)\>"
 
@@ -108,7 +108,7 @@ syn match AspVBSMethods contained "Response\.\w*"
 " Colorize boolean constants:
 syn keyword AspVBSMethods contained true false
 
-" AspVBScript Number Contstants
+" AspVBScript Number Constants
 " Integer number, or floating point number without a dot.
 syn match  AspVBSNumber	contained	"\<\d\+\>"
 " Floating point number, with dot
@@ -116,7 +116,7 @@ syn match  AspVBSNumber	contained	"\<\d\+\.\d*\>"
 " Floating point number, starting with a dot
 syn match  AspVBSNumber	contained	"\.\d\+\>"
 
-" String and Character Contstants
+" String and Character Constants
 " removed (skip=+\\\\\|\\"+) because VB doesn't have backslash escaping in
 " strings (or does it?)
 syn region  AspVBSString	contained	  start=+"+  end=+"+ keepend
@@ -143,7 +143,7 @@ syn cluster AspVBScriptTop contains=AspVBSStatement,AspVBSFunction,AspVBSMethods
 syn region AspVBSFold start="^\s*\(class\)\s\+.*$" end="^\s*end\s\+\(class\)\>.*$" fold contained transparent keepend
 syn region AspVBSFold start="^\s*\(private\|public\)\=\(\s\+default\)\=\s\+\(sub\|function\)\s\+.*$" end="^\s*end\s\+\(function\|sub\)\>.*$" fold contained transparent keepend
 
-" Define AspVBScript delimeters
+" Define AspVBScript delimiters
 " <%= func("string_with_%>_in_it") %> This is illegal in ASP syntax.
 syn region  AspVBScriptInsideHtmlTags keepend matchgroup=Delimiter start=+<%=\=+ end=+%>+ contains=@AspVBScriptTop, AspVBSFold
 syn region  AspVBScriptInsideHtmlTags keepend matchgroup=Delimiter start=+<script\s\+language="\=vbscript"\=[^>]*\s\+runatserver[^>]*>+ end=+</script>+ contains=@AspVBScriptTop

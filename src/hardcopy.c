@@ -205,7 +205,7 @@ parse_list_options(
 	colonp = vim_strchr(stringp, ':');
 	if (colonp == NULL)
 	{
-	    ret = N_("E550: Missing colon");
+	    ret = e_missing_colon_3;
 	    break;
 	}
 	commap = vim_strchr(stringp, ',');
@@ -220,7 +220,7 @@ parse_list_options(
 
 	if (idx == table_size)
 	{
-	    ret = N_("E551: Illegal component");
+	    ret = e_illegal_component;
 	    break;
 	}
 	p = colonp + 1;
@@ -230,7 +230,7 @@ parse_list_options(
 	{
 	    if (!VIM_ISDIGIT(*p))
 	    {
-		ret = N_("E552: digit expected");
+		ret = e_digit_expected_2;
 		break;
 	    }
 
@@ -588,7 +588,7 @@ ex_hardcopy(exarg_T *eap)
      */
     if (mch_print_init(&settings,
 			curbuf->b_fname == NULL
-			    ? (char_u *)buf_spname(curbuf)
+			    ? buf_spname(curbuf)
 			    : curbuf->b_sfname == NULL
 				? curbuf->b_fname
 				: curbuf->b_sfname,
@@ -972,8 +972,6 @@ hardcopy_line(
  * http://www.adobe.com
  */
 
-#define NUM_ELEMENTS(arr)   (sizeof(arr)/sizeof((arr)[0]))
-
 #define PRT_PS_DEFAULT_DPI	    (72)    // Default user space resolution
 #define PRT_PS_DEFAULT_FONTSIZE     (10)
 #define PRT_PS_DEFAULT_BUFFER_SIZE  (80)
@@ -985,7 +983,7 @@ struct prt_mediasize_S
     float	height;
 };
 
-#define PRT_MEDIASIZE_LEN  (sizeof(prt_mediasize) / sizeof(struct prt_mediasize_S))
+#define PRT_MEDIASIZE_LEN  ARRAY_LENGTH(prt_mediasize)
 
 static struct prt_mediasize_S prt_mediasize[] =
 {
@@ -1210,33 +1208,33 @@ struct prt_ps_mbfont_S
 static struct prt_ps_mbfont_S prt_ps_mbfonts[] =
 {
     {
-	NUM_ELEMENTS(j_encodings),
+	ARRAY_LENGTH(j_encodings),
 	j_encodings,
-	NUM_ELEMENTS(j_charsets),
+	ARRAY_LENGTH(j_charsets),
 	j_charsets,
 	"jis_roman",
 	"JIS_X_1983"
     },
     {
-	NUM_ELEMENTS(sc_encodings),
+	ARRAY_LENGTH(sc_encodings),
 	sc_encodings,
-	NUM_ELEMENTS(sc_charsets),
+	ARRAY_LENGTH(sc_charsets),
 	sc_charsets,
 	"gb_roman",
 	"GB_2312-80"
     },
     {
-	NUM_ELEMENTS(tc_encodings),
+	ARRAY_LENGTH(tc_encodings),
 	tc_encodings,
-	NUM_ELEMENTS(tc_charsets),
+	ARRAY_LENGTH(tc_charsets),
 	tc_charsets,
 	"cns_roman",
 	"BIG5"
     },
     {
-	NUM_ELEMENTS(k_encodings),
+	ARRAY_LENGTH(k_encodings),
 	k_encodings,
-	NUM_ELEMENTS(k_charsets),
+	ARRAY_LENGTH(k_charsets),
 	k_charsets,
 	"ks_roman",
 	"KS_X_1992"
@@ -1407,7 +1405,7 @@ prt_write_file_raw_len(char_u *buffer, int bytes)
 	    && fwrite(buffer, sizeof(char_u), bytes, prt_ps_fd)
 							     != (size_t)bytes)
     {
-	emsg(_("E455: Error writing to PostScript output file"));
+	emsg(_(e_error_writing_to_postscript_output_file));
 	prt_file_error = TRUE;
     }
 }
@@ -1421,9 +1419,6 @@ prt_write_file(char_u *buffer)
     static void
 prt_write_file_len(char_u *buffer, int bytes)
 {
-#ifdef EBCDIC
-    ebcdic2ascii(buffer, bytes);
-#endif
     prt_write_file_raw_len(buffer, bytes);
 }
 
@@ -1628,8 +1623,6 @@ prt_flush_buffer(void)
 	    prt_write_string("ul\n");
 	}
 	// Draw the text
-	// Note: we write text out raw - EBCDIC conversion is handled in the
-	// PostScript world via the font encoding vector.
 	if (prt_out_mbyte)
 	    prt_write_string("<");
 	else
@@ -1652,7 +1645,7 @@ prt_flush_buffer(void)
 	    prt_write_string("s\n");
 
 	ga_clear(&prt_ps_buffer);
-	ga_init2(&prt_ps_buffer, (int)sizeof(char), prt_bufsiz);
+	ga_init2(&prt_ps_buffer, sizeof(char), prt_bufsiz);
     }
 }
 
@@ -1793,12 +1786,12 @@ prt_next_dsc(struct prt_dsc_line_S *p_dsc_line)
 	return FALSE;
 
     // Find type of DSC comment
-    for (comment = 0; comment < (int)NUM_ELEMENTS(prt_dsc_table); comment++)
+    for (comment = 0; comment < (int)ARRAY_LENGTH(prt_dsc_table); comment++)
 	if (prt_resfile_strncmp(0, prt_dsc_table[comment].string,
 					    prt_dsc_table[comment].len) == 0)
 	    break;
 
-    if (comment != NUM_ELEMENTS(prt_dsc_table))
+    if (comment != ARRAY_LENGTH(prt_dsc_table))
     {
 	// Return type of comment
 	p_dsc_line->type = prt_dsc_table[comment].type;
@@ -1841,7 +1834,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     fd_resource = mch_fopen((char *)resource->filename, READBIN);
     if (fd_resource == NULL)
     {
-	semsg(_("E624: Can't open file \"%s\""), resource->filename);
+	semsg(_(e_cant_open_file_str_3), resource->filename);
 	return FALSE;
     }
     CLEAR_FIELD(prt_resfile.buffer);
@@ -1851,7 +1844,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 					    PRT_FILE_BUFFER_LEN, fd_resource);
     if (ferror(fd_resource))
     {
-	semsg(_("E457: Can't read PostScript resource file \"%s\""),
+	semsg(_(e_cant_read_postscript_resource_file_str),
 		resource->filename);
 	fclose(fd_resource);
 	return FALSE;
@@ -1868,8 +1861,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_HEADER,
 				       (int)STRLEN(PRT_RESOURCE_HEADER)) != 0)
     {
-	semsg(_("E618: file \"%s\" is not a PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
 
@@ -1885,8 +1878,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_RESOURCE,
 				     (int)STRLEN(PRT_RESOURCE_RESOURCE)) != 0)
     {
-	semsg(_("E619: file \"%s\" is not a supported PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_supported_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
     offset += (int)STRLEN(PRT_RESOURCE_RESOURCE);
@@ -1903,8 +1896,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 	resource->type = PRT_RESOURCE_TYPE_CMAP;
     else
     {
-	semsg(_("E619: file \"%s\" is not a supported PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_supported_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
 
@@ -1933,7 +1926,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 	    break;
 
 	case PRT_DSC_ENDCOMMENTS_TYPE:
-	    // Wont find title or resource after this comment, stop searching
+	    // Won't find title or resource after this comment, stop searching
 	    seen_all = TRUE;
 	    break;
 
@@ -1945,8 +1938,8 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 
     if (!seen_title || !seen_version)
     {
-	semsg(_("E619: file \"%s\" is not a supported PostScript resource file"),
-		resource->filename);
+	semsg(_(e_file_str_is_not_supported_postscript_resource_file),
+							   resource->filename);
 	return FALSE;
     }
 
@@ -1959,7 +1952,7 @@ prt_check_resource(struct prt_ps_resource_S *resource, char_u *version)
     // Version number m.n should match, the revision number does not matter
     if (STRNCMP(resource->version, version, STRLEN(version)))
     {
-	semsg(_("E621: \"%s\" resource file has wrong version"),
+	semsg(_(e_str_resource_file_has_wrong_version),
 		resource->name);
 	return FALSE;
     }
@@ -2385,7 +2378,7 @@ mch_print_init(
 	int cmap_first = 0;
 
 	p_mbenc_first = NULL;
-	for (cmap = 0; cmap < (int)NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
+	for (cmap = 0; cmap < (int)ARRAY_LENGTH(prt_ps_mbfonts); cmap++)
 	    if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
 								    &p_mbenc))
 	    {
@@ -2419,7 +2412,7 @@ mch_print_init(
 	    // Check encoding and character set are compatible
 	    if ((p_mbenc->needs_charset & p_mbchar->has_charset) == 0)
 	    {
-		emsg(_("E673: Incompatible multi-byte encoding and character set."));
+		emsg(_(e_incompatible_multi_byte_encoding_and_character_set));
 		return FALSE;
 	    }
 
@@ -2436,7 +2429,7 @@ mch_print_init(
 	    // Add custom CMap character set name
 	    if (*p_pmcs == NUL)
 	    {
-		emsg(_("E674: printmbcharset cannot be empty with multi-byte encoding."));
+		emsg(_(e_printmbcharset_cannot_be_empty_with_multi_byte_encoding));
 		return FALSE;
 	    }
 	    vim_strncpy((char_u *)prt_cmap, p_pmcs, sizeof(prt_cmap) - 3);
@@ -2454,7 +2447,7 @@ mch_print_init(
 
 	if (!mbfont_opts[OPT_MBFONT_REGULAR].present)
 	{
-	    emsg(_("E675: No default font specified for multi-byte printing."));
+	    emsg(_(e_no_default_font_specified_for_multi_byte_printing));
 	    return FALSE;
 	}
 
@@ -2627,7 +2620,7 @@ mch_print_init(
 	prt_ps_file_name = vim_tempname('p', TRUE);
 	if (prt_ps_file_name == NULL)
 	{
-	    emsg(_(e_notmp));
+	    emsg(_(e_cant_get_temp_file_name));
 	    return FAIL;
 	}
 	prt_ps_fd = mch_fopen((char *)prt_ps_file_name, WRITEBIN);
@@ -2643,7 +2636,7 @@ mch_print_init(
     }
     if (prt_ps_fd == NULL)
     {
-	emsg(_("E324: Can't open PostScript output file"));
+	emsg(_(e_cant_open_postscript_output_file));
 	mch_print_cleanup();
 	return FAIL;
     }
@@ -2651,7 +2644,7 @@ mch_print_init(
     prt_bufsiz = psettings->chars_per_line;
     if (prt_out_mbyte)
 	prt_bufsiz *= 2;
-    ga_init2(&prt_ps_buffer, (int)sizeof(char), prt_bufsiz);
+    ga_init2(&prt_ps_buffer, sizeof(char), prt_bufsiz);
 
     prt_page_num = 0;
 
@@ -2677,7 +2670,7 @@ prt_add_resource(struct prt_ps_resource_S *resource)
     fd_resource = mch_fopen((char *)resource->filename, READBIN);
     if (fd_resource == NULL)
     {
-	semsg(_("E456: Can't open file \"%s\""), resource->filename);
+	semsg(_(e_cant_open_file_str_2), resource->filename);
 	return FALSE;
     }
     prt_dsc_resources("BeginResource", prt_resource_types[resource->type],
@@ -2691,7 +2684,7 @@ prt_add_resource(struct prt_ps_resource_S *resource)
 			   sizeof(resource_buffer), fd_resource);
 	if (ferror(fd_resource))
 	{
-	    semsg(_("E457: Can't read PostScript resource file \"%s\""),
+	    semsg(_(e_cant_read_postscript_resource_file_str),
 							    resource->filename);
 	    fclose(fd_resource);
 	    return FALSE;
@@ -2771,9 +2764,9 @@ mch_print_begin(prt_settings_T *psettings)
 	// derive the bbox from that point.  We have the expected cpl chars
 	// across the media and lpp lines down the media.
 	bbox[1] = (int)(top - (psettings->lines_per_page + prt_header_height())
-							    * prt_line_height);
-	bbox[2] = (int)(left + psettings->chars_per_line * prt_char_width
-									+ 0.5);
+						    * (double)prt_line_height);
+	bbox[2] = (int)(left + psettings->chars_per_line
+					       * (double)prt_char_width + 0.5);
 	bbox[3] = (int)(top + 0.5);
     }
     else
@@ -2784,8 +2777,8 @@ mch_print_begin(prt_settings_T *psettings)
 	bbox[1] = (int)bottom;
 	bbox[2] = (int)(left + ((psettings->lines_per_page
 			      + prt_header_height()) * prt_line_height) + 0.5);
-	bbox[3] = (int)(bottom + psettings->chars_per_line * prt_char_width
-									+ 0.5);
+	bbox[3] = (int)(bottom + psettings->chars_per_line
+					       * (double)prt_char_width + 0.5);
     }
     prt_dsc_ints("BoundingBox", 4, bbox);
     // The media width and height does not change with landscape printing!
@@ -2799,7 +2792,7 @@ mch_print_begin(prt_settings_T *psettings)
     if (prt_out_mbyte)
     {
 	prt_dsc_font_resource((prt_use_courier ? NULL
-				 : "DocumentNeededResources"), &prt_ps_mb_font);
+				: "DocumentNeededResources"), &prt_ps_mb_font);
 	if (!prt_custom_cmap)
 	    prt_dsc_resources(NULL, "cmap", prt_cmap);
     }
@@ -2807,7 +2800,7 @@ mch_print_begin(prt_settings_T *psettings)
     // Search for external resources VIM supplies
     if (!prt_find_resource("prolog", res_prolog))
     {
-	emsg(_("E456: Can't find PostScript resource file \"prolog.ps\""));
+	semsg(_(e_cant_find_postscript_resource_file_str_ps), "prolog");
 	goto theend;
     }
     if (!prt_open_resource(res_prolog))
@@ -2819,7 +2812,7 @@ mch_print_begin(prt_settings_T *psettings)
 	// Look for required version of multi-byte printing procset
 	if (!prt_find_resource("cidfont", res_cidfont))
 	{
-	    emsg(_("E456: Can't find PostScript resource file \"cidfont.ps\""));
+	    semsg(_(e_cant_find_postscript_resource_file_str_ps), "cidfont");
 	    goto theend;
 	}
 	if (!prt_open_resource(res_cidfont))
@@ -2851,7 +2844,7 @@ mch_print_begin(prt_settings_T *psettings)
 		p_encoding = (char_u *)"latin1";
 		if (!prt_find_resource((char *)p_encoding, res_encoding))
 		{
-		    semsg(_("E456: Can't find PostScript resource file \"%s.ps\""),
+		    semsg(_(e_cant_find_postscript_resource_file_str_ps),
 			    p_encoding);
 		    goto theend;
 		}
@@ -2872,7 +2865,7 @@ mch_print_begin(prt_settings_T *psettings)
 	    // Include ASCII range encoding vector
 	    if (!prt_find_resource(prt_ascii_encoding, res_encoding))
 	    {
-		semsg(_("E456: Can't find PostScript resource file \"%s.ps\""),
+		semsg(_(e_cant_find_postscript_resource_file_str_ps),
 							  prt_ascii_encoding);
 		goto theend;
 	    }
@@ -2884,12 +2877,12 @@ mch_print_begin(prt_settings_T *psettings)
     }
 
     prt_conv.vc_type = CONV_NONE;
-    if (!(enc_canon_props(p_enc) & enc_canon_props(p_encoding) & ENC_8BIT)) {
+    if (!(enc_canon_props(p_enc) & enc_canon_props(p_encoding) & ENC_8BIT))
+    {
 	// Set up encoding conversion if required
 	if (FAIL == convert_setup(&prt_conv, p_enc, p_encoding))
 	{
-	    semsg(_("E620: Unable to convert to print encoding \"%s\""),
-		    p_encoding);
+	    semsg(_(e_unable_to_convert_to_print_encoding_str), p_encoding);
 	    goto theend;
 	}
 	prt_do_conv = TRUE;
@@ -2901,8 +2894,7 @@ mch_print_begin(prt_settings_T *psettings)
 	// Find user supplied CMap
 	if (!prt_find_resource(prt_cmap, res_cmap))
 	{
-	    semsg(_("E456: Can't find PostScript resource file \"%s.ps\""),
-								    prt_cmap);
+	    semsg(_(e_cant_find_postscript_resource_file_str_ps), prt_cmap);
 	    goto theend;
 	}
 	if (!prt_open_resource(res_cmap))
@@ -3122,7 +3114,7 @@ mch_print_end(prt_settings_T *psettings)
 
     // Write CTRL-D to close serial communication link if used.
     // NOTHING MUST BE WRITTEN AFTER THIS!
-    prt_write_file((char_u *)IF_EB("\004", "\067"));
+    prt_write_file((char_u *)"\004");
 
     if (!prt_file_error && psettings->outfile == NULL
 					&& !got_int && !psettings->user_abort)
@@ -3137,7 +3129,7 @@ mch_print_end(prt_settings_T *psettings)
 
 	// Not printing to a file: use 'printexpr' to print the file.
 	if (eval_printexpr(prt_ps_file_name, psettings->arguments) == FAIL)
-	    emsg(_("E365: Failed to print PostScript file"));
+	    emsg(_(e_failed_to_print_postscript_file));
 	else
 	    prt_message((char_u *)_("Print job sent."));
     }
@@ -3382,26 +3374,21 @@ mch_print_text_out(char_u *textp, int len UNUSED)
 	{
 	    // Convert non-printing characters to either their escape or octal
 	    // sequence, ensures PS sent over a serial line does not interfere
-	    // with the comms protocol.  Note: For EBCDIC we need to write out
-	    // the escape sequences as ASCII codes!
-	    // Note 2: Char codes < 32 are identical in EBCDIC and ASCII AFAIK!
-	    ga_append(&prt_ps_buffer, IF_EB('\\', 0134));
+	    // with the comms protocol.
+	    ga_append(&prt_ps_buffer, '\\');
 	    switch (ch)
 	    {
-		case BS:   ga_append(&prt_ps_buffer, IF_EB('b', 0142)); break;
-		case TAB:  ga_append(&prt_ps_buffer, IF_EB('t', 0164)); break;
-		case NL:   ga_append(&prt_ps_buffer, IF_EB('n', 0156)); break;
-		case FF:   ga_append(&prt_ps_buffer, IF_EB('f', 0146)); break;
-		case CAR:  ga_append(&prt_ps_buffer, IF_EB('r', 0162)); break;
-		case '(':  ga_append(&prt_ps_buffer, IF_EB('(', 0050)); break;
-		case ')':  ga_append(&prt_ps_buffer, IF_EB(')', 0051)); break;
-		case '\\': ga_append(&prt_ps_buffer, IF_EB('\\', 0134)); break;
+		case BS:   ga_append(&prt_ps_buffer, 'b'); break;
+		case TAB:  ga_append(&prt_ps_buffer, 't'); break;
+		case NL:   ga_append(&prt_ps_buffer, 'n'); break;
+		case FF:   ga_append(&prt_ps_buffer, 'f'); break;
+		case CAR:  ga_append(&prt_ps_buffer, 'r'); break;
+		case '(':  ga_append(&prt_ps_buffer, '('); break;
+		case ')':  ga_append(&prt_ps_buffer, ')'); break;
+		case '\\': ga_append(&prt_ps_buffer, '\\'); break;
 
 		default:
 			   sprintf((char *)ch_buff, "%03o", (unsigned int)ch);
-#ifdef EBCDIC
-			   ebcdic2ascii(ch_buff, 3);
-#endif
 			   ga_append(&prt_ps_buffer, ch_buff[0]);
 			   ga_append(&prt_ps_buffer, ch_buff[1]);
 			   ga_append(&prt_ps_buffer, ch_buff[2]);

@@ -279,7 +279,7 @@ func Test_let_errors()
   let l = [1, 2, 3]
   call assert_fails('let l[:] = 5', 'E709:')
 
-  call assert_fails('let x:lnum=5', ['E121:', 'E488:'])
+  call assert_fails('let x:lnum=5', ['E121:', 'E121:'])
   call assert_fails('let v:=5', 'E461:')
   call assert_fails('let [a]', 'E474:')
   call assert_fails('let [a, b] = [', 'E697:')
@@ -293,7 +293,7 @@ func Test_let_errors()
   let s = "var"
   let var = 1
   call assert_fails('let var += [1,2]', 'E734:')
-  call assert_fails('let {s}.1 = 2', 'E18:')
+  call assert_fails('let {s}.1 = 2', 'E1203:')
   call assert_fails('let a[1] = 5', 'E121:')
   let l = [[1,2]]
   call assert_fails('let l[:][0] = [5]', 'E708:')
@@ -314,6 +314,7 @@ func Test_let_errors()
     let ch = test_null_channel()
     call assert_fails('let ch += 1', 'E734:')
   endif
+  call assert_fails('let name = "a" .. "b",', 'E488: Trailing characters: ,')
 
   " This test works only when the language is English
   if v:lang == "C" || v:lang =~ '^[Ee]n'

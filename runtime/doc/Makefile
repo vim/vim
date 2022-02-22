@@ -16,6 +16,7 @@ include ../../src/auto/config.mk
 DOCS = \
 	arabic.txt \
 	autocmd.txt \
+	builtin.txt \
 	change.txt \
 	channel.txt \
 	cmdline.txt \
@@ -31,6 +32,7 @@ DOCS = \
 	fold.txt \
 	ft_ada.txt \
 	ft_ps1.txt \
+	ft_raku.txt \
 	ft_rust.txt \
 	ft_sql.txt \
 	gui.txt \
@@ -160,6 +162,7 @@ DOCS = \
 HTMLS = \
 	arabic.html \
 	autocmd.html \
+	builtin.html \
 	change.html \
 	channel.html \
 	cmdline.html \
@@ -175,6 +178,7 @@ HTMLS = \
 	fold.html \
 	ft_ada.html \
 	ft_ps1.html \
+	ft_raku.html \
 	ft_rust.html \
 	ft_sql.html \
 	gui.html \

@@ -1,4 +1,4 @@
-*arabic.txt*	For Vim version 8.2.  Last change: 2019 May 05
+*arabic.txt*	For Vim version 8.2.  Last change: 2021 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Nadim Shaikli
@@ -175,6 +175,13 @@ o  Enable Arabic settings [short-cut]
 	 'termbidi', if available, is superior to rightleft support
 	 and its support is preferred due to its level of offerings.
 	 'arabic' when 'termbidi' is enabled only sets the keymap.
+
+	 For vertical window isolation while setting 'termbidi' an LTR
+	 vertical separator like "l" or "𝖨" may be used.  It may also be
+	 hidden by changing its color to the foreground color: >
+		:set fillchars=vert:l
+		:hi VertSplit ctermbg=White
+<	Note that this is a workaround, not a proper solution.
 
    If, on the other hand, you'd like to be verbose and explicit and
    are opting not to use the 'arabic' short-cut command, here's what

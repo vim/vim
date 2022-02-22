@@ -27,7 +27,6 @@ void func_line_start(void *cookie, long lnum);
 void func_line_exec(void *cookie);
 void func_line_end(void *cookie);
 void script_do_profile(scriptitem_T *si);
-void script_prof_save(proftime_T *tm);
 void script_prof_restore(proftime_T *tm);
 void profile_dump(void);
 void script_line_start(void);

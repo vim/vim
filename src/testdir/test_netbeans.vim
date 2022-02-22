@@ -367,6 +367,46 @@ func Nb_basic(port)
   call assert_match('2:insert=\d\+ 26 "\t"', l[-1])
   let g:last += 18
 
+  " Test for changing case of multiple lines using ~
+  normal ggVG~
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 6)')
+  let l = ReadXnetbeans()
+  call assert_match('2:remove=\d\+ 0 8', l[-6])
+  call assert_match('2:insert=\d\+ 0 "FOO BAR2"', l[-5])
+  call assert_match('2:remove=\d\+ 9 8', l[-4])
+  call assert_match('2:insert=\d\+ 9 "BLUE SKy"', l[-3])
+  call assert_match('2:remove=\d\+ 18 9', l[-2])
+  call assert_match('2:insert=\d\+ 18 "\tFOO BAR3"', l[-1])
+  let g:last += 6
+
+  " Test for changing case of a visual block using ~
+  exe "normal ggw\<C-V>$~"
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 2)')
+  let l = ReadXnetbeans()
+  call assert_match('2:remove=\d\+ 4 4', l[-2])
+  call assert_match('2:insert=\d\+ 4 "bar2"', l[-1])
+  let g:last += 2
+
+  " Increment a number using <C-A> in visual mode
+  exe "normal! gg$v6\<C-A>"
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 6)')
+  let l = ReadXnetbeans()
+  call assert_match('2:remove=\d\+ 0 9', l[-4])
+  call assert_match('2:insert=\d\+ 0 "FOO bar8"', l[-3])
+  call assert_match('2:remove=\d\+ 7 1', l[-2])
+  call assert_match('2:insert=\d\+ 7 "8"', l[-1])
+  let g:last += 6
+
+  " Decrement a number using <C-X> in visual mode
+  exe "normal! gg$v3\<C-X>"
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 6)')
+  let l = ReadXnetbeans()
+  call assert_match('2:remove=\d\+ 0 9', l[-4])
+  call assert_match('2:insert=\d\+ 0 "FOO bar5"', l[-3])
+  call assert_match('2:remove=\d\+ 7 1', l[-2])
+  call assert_match('2:insert=\d\+ 7 "5"', l[-1])
+  let g:last += 6
+
   " stopDocumentListen test
   call appendbufline(cmdbufnr, '$', 'stopDocumentListen_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')

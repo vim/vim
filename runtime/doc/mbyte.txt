@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.2.  Last change: 2021 Apr 05
+*mbyte.txt*     For Vim version 8.2.  Last change: 2022 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -862,8 +862,8 @@ Use the RPM or port for your system.
     window specific to the input method.
 
 
-USING XIM			*multibyte-input* *E284* *E286* *E287* *E288*
-				*E285* *E289*
+USING XIM			*multibyte-input* *E284* *E285* *E286* *E287*
+					*E288* *E289*
 
 Note that Display and Input are independent.  It is possible to see your
 language even though you have no input method for it.  But when your Display
@@ -955,31 +955,10 @@ replace mode.
 The options 'iminsert', 'imsearch' and 'imcmdline' can be used to choose
 the different input methods or disable them temporarily.
 
-WHAT IS IME
-    IME is a part of East asian version Windows.  That helps you to input
-    multibyte character.  English and other language version Windows does not
-    have any IME.  (Also there is no need usually.) But there is one that
-    called Microsoft Global IME.  Global IME is a part of Internet Explorer
-    4.0 or above.  You can get more information about Global IME, at below
-    URL.
-
-WHAT IS GLOBAL IME					*global-ime*
-    Global IME makes capability to input Chinese, Japanese, and Korean text
-    into Vim buffer on any language version of Windows 98, Windows 95, and
-    Windows NT 4.0.
-    On Windows 2000 and XP it should work as well (without downloading).  On
-    Windows 2000 Professional, Global IME is built in, and the Input Locales
-    can be added through Control Panel/Regional Options/Input Locales.
-    Please see below URL for detail of Global IME.  You can also find various
-    language version of Global IME at same place.
-
-    - Global IME detailed information.
-	http://search.microsoft.com/results.aspx?q=global+ime
-
-    - Active Input Method Manager (Global IME)
+On Windows 9x and Windows NT 4.0 there was *global-ime* , but this is no
+longer supported.  You can still find documentation for Active Input Method
+Manager (Global IME) here:
 	http://msdn.microsoft.com/en-us/library/aa741221(v=VS.85).aspx
-
-    Support for Global IME is an experimental feature.
 
 NOTE: For IME to work you must make sure the input locales of your language
 are added to your system.  The exact location of this depends on the version
@@ -1132,7 +1111,7 @@ This file explains what characters are available in UTF-8 and CP1255 encodings,
 and what the keymaps are to get those characters:
 
 glyph   encoding	   keymap ~
-Char   utf-8 cp1255  hebrew  hebrewp  name ~
+Char UTF-8 cp1255  hebrew  hebrewp  name ~
 א    0x5d0  0xe0     t	      a     'alef
 ב    0x5d1  0xe1     c	      b     bet
 ג    0x5d2  0xe2     d	      g     gimel
@@ -1185,11 +1164,11 @@ Vowel marks and special punctuation:
 ױ    0x5f1  0xd5     VY      VY   vav-yod
 ײ    0x5f2  0xd6     YY      YY   yod-yod
 
-The following are only available in utf-8
+The following are only available in UTF-8
 
 Cantillation marks:
 glyph
-Char utf-8 hebrew name
+Char UTF-8 hebrew name
 ב֑    0x591   C:   etnahta
 ב֒    0x592   Cs   segol
 ב֓    0x593   CS   shalshelet
@@ -1300,7 +1279,7 @@ ASCII.   On MS-Windows UTF-16 is also used (previously UCS-2), which uses
 internally.
 
 Vim has comprehensive UTF-8 support.  It works well in:
-- xterm with utf-8 support enabled
+- xterm with UTF-8 support enabled
 - Athena, Motif and GTK GUI
 - MS-Windows GUI
 - several other platforms
@@ -1313,13 +1292,13 @@ is no longer relevant in the GTK+ 2 GUI.
 							*bom-bytes*
 When reading a file a BOM (Byte Order Mark) can be used to recognize the
 Unicode encoding:
-	EF BB BF     utf-8
-	FE FF        utf-16 big endian
-	FF FE        utf-16 little endian
-	00 00 FE FF  utf-32 big endian
-	FF FE 00 00  utf-32 little endian
+	EF BB BF     UTF-8
+	FE FF        UTF-16 big endian
+	FF FE        UTF-16 little endian
+	00 00 FE FF  UTF-32 big endian
+	FF FE 00 00  UTF-32 little endian
 
-Utf-8 is the recommended encoding.  Note that it's difficult to tell utf-16
+UTF-8 is the recommended encoding.  Note that it's difficult to tell utf-16
 and utf-32 apart.  Utf-16 is often used on MS-Windows, utf-32 is not
 widespread as file format.
 
@@ -1365,8 +1344,8 @@ Useful commands:
 
 STARTING VIM
 
-If your current locale is in an utf-8 encoding, Vim will automatically start
-in utf-8 mode.
+If your current locale is in an UTF-8 encoding, Vim will automatically start
+in UTF-8 mode.
 
 If you are using another locale: >
 
@@ -1399,10 +1378,10 @@ Motif.  Use the ":hi Menu font={fontname}" command for this. |:highlight|
 TYPING UTF-8						*utf-8-typing*
 
 If you are using X-Windows, you should find an input method that supports
-utf-8.
+UTF-8.
 
-If your system does not provide support for typing utf-8, you can use the
-'keymap' feature.  This allows writing a keymap file, which defines a utf-8
+If your system does not provide support for typing UTF-8, you can use the
+'keymap' feature.  This allows writing a keymap file, which defines a UTF-8
 character as a sequence of ASCII characters.  See |mbyte-keymap|.
 
 Another method is to set the current locale to the language you want to use

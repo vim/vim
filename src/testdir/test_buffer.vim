@@ -381,4 +381,53 @@ func Test_balt()
   call assert_equal('OtherBuffer', bufname())
 endfunc
 
+" Test for buffer match URL(scheme) check
+" scheme is alpha and inner hyphen only.
+func Test_buffer_scheme()
+  CheckMSWindows
+
+  set noshellslash
+  %bwipe!
+  let bufnames = [
+    \ #{id: 'ssb0', name: 'test://xyz/foo/ssb0'    , match: 1},
+    \ #{id: 'ssb1', name: 'test+abc://xyz/foo/ssb1', match: 0},
+    \ #{id: 'ssb2', name: 'test_abc://xyz/foo/ssb2', match: 0},
+    \ #{id: 'ssb3', name: 'test-abc://xyz/foo/ssb3', match: 1},
+    \ #{id: 'ssb4', name: '-test://xyz/foo/ssb4'   , match: 0},
+    \ #{id: 'ssb5', name: 'test-://xyz/foo/ssb5'   , match: 0},
+    \]
+  for buf in bufnames
+    new `=buf.name`
+    if buf.match
+      call assert_equal(buf.name,    getbufinfo(buf.id)[0].name)
+    else
+      " slashes will have become backslashes
+      call assert_notequal(buf.name, getbufinfo(buf.id)[0].name)
+    endif
+    bwipe
+  endfor
+
+  set shellslash&
+endfunc
+
+" Test for the 'maxmem' and 'maxmemtot' options
+func Test_buffer_maxmem()
+  " use 1KB per buffer and 2KB for all the buffers
+  set maxmem=1 maxmemtot=2
+  new
+  let v:errmsg = ''
+  " try opening some files
+  edit test_arglist.vim
+  call assert_equal('test_arglist.vim', bufname())
+  edit test_eval_stuff.vim
+  call assert_equal('test_eval_stuff.vim', bufname())
+  b test_arglist.vim
+  call assert_equal('test_arglist.vim', bufname())
+  b test_eval_stuff.vim
+  call assert_equal('test_eval_stuff.vim', bufname())
+  close
+  call assert_equal('', v:errmsg)
+  set maxmem& maxmemtot&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

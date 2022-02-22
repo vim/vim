@@ -77,13 +77,8 @@
 #endif
 
 // toupper() and tolower() for ASCII only and ignore the current locale.
-#ifdef EBCDIC
-# define TOUPPER_ASC(c)	(islower(c) ? toupper(c) : (c))
-# define TOLOWER_ASC(c)	(isupper(c) ? tolower(c) : (c))
-#else
-# define TOUPPER_ASC(c)	(((c) < 'a' || (c) > 'z') ? (c) : (c) - ('a' - 'A'))
-# define TOLOWER_ASC(c)	(((c) < 'A' || (c) > 'Z') ? (c) : (c) + ('a' - 'A'))
-#endif
+#define TOUPPER_ASC(c)	(((c) < 'a' || (c) > 'z') ? (c) : (c) - ('a' - 'A'))
+#define TOLOWER_ASC(c)	(((c) < 'A' || (c) > 'Z') ? (c) : (c) + ('a' - 'A'))
 
 /*
  * MB_ISLOWER() and MB_ISUPPER() are to be used on multi-byte characters.  But
@@ -102,17 +97,10 @@
 
 // Like isalpha() but reject non-ASCII characters.  Can't be used with a
 // special key (negative value).
-#ifdef EBCDIC
-# define ASCII_ISALPHA(c) isalpha(c)
-# define ASCII_ISALNUM(c) isalnum(c)
-# define ASCII_ISLOWER(c) islower(c)
-# define ASCII_ISUPPER(c) isupper(c)
-#else
-# define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
-# define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
-# define ASCII_ISALPHA(c) (ASCII_ISUPPER(c) || ASCII_ISLOWER(c))
-# define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
-#endif
+#define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
+#define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
+#define ASCII_ISALPHA(c) (ASCII_ISUPPER(c) || ASCII_ISLOWER(c))
+#define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
 
 // Returns empty string if it is NULL.
 #define EMPTY_IF_NULL(x) ((x) ? (x) : (char_u *)"")
@@ -166,9 +154,9 @@
 #   define mch_access(n, p)	access((n), (p))
 # endif
 
-// Use 64-bit fstat function if available.
+// Use 64-bit fstat function on MS-Windows.
 // NOTE: This condition is the same as for the stat_T type.
-# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+# ifdef MSWIN
 #  define mch_fstat(n, p)	_fstat64((n), (p))
 # else
 #  define mch_fstat(n, p)	fstat((n), (p))
@@ -387,8 +375,10 @@
 // Inline the condition for performance.
 #define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
 
-// Inlined version of ga_grow().  Especially useful if "n" is a constant.
-#define GA_GROW(gap, n) (((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK)
+// Inlined version of ga_grow() with optimized condition that it fails.
+#define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
+// Inlined version of ga_grow() with optimized condition that it succeeds.
+#define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK) == OK)
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -396,3 +386,6 @@
 #ifndef MAX
 # define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
+
+// Length of the array.
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))

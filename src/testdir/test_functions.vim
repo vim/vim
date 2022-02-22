@@ -4,6 +4,7 @@ source shared.vim
 source check.vim
 source term_util.vim
 source screendump.vim
+import './vim9.vim' as v9
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -85,13 +86,18 @@ func Test_empty()
 endfunc
 
 func Test_test_void()
-  call assert_fails('echo 1 == test_void()', 'E685:')
+  call assert_fails('echo 1 == test_void()', 'E1031:')
   if has('float')
-    call assert_fails('echo 1.0 == test_void()', 'E685:')
+    call assert_fails('echo 1.0 == test_void()', 'E1031:')
   endif
   call assert_fails('let x = json_encode(test_void())', 'E685:')
   call assert_fails('let x = copy(test_void())', 'E685:')
-  call assert_fails('let x = copy([test_void()])', 'E685:')
+  call assert_fails('let x = copy([test_void()])', 'E1031:')
+endfunc
+
+func Test_islocked()
+  call assert_fails('call islocked(99)', 'E475:')
+  call assert_fails('call islocked("s: x")', 'E488:')
 endfunc
 
 func Test_len()
@@ -141,6 +147,7 @@ func Test_min()
 
   call assert_fails('call min(1)', 'E712:')
   call assert_fails('call min(v:none)', 'E712:')
+  call assert_fails('call min([1, {}])', 'E728:')
 
   " check we only get one error
   call assert_fails('call min([[1], #{}])', ['E745:', 'E745:'])
@@ -163,10 +170,12 @@ func Test_strwidth()
     call assert_fails('call strwidth({->0})', 'E729:')
     call assert_fails('call strwidth([])', 'E730:')
     call assert_fails('call strwidth({})', 'E731:')
-    if has('float')
-      call assert_fails('call strwidth(1.2)', 'E806:')
-    endif
   endfor
+
+  if has('float')
+    call assert_equal(3, strwidth(1.2))
+    call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
+  endif
 
   set ambiwidth&
 endfunc
@@ -231,7 +240,8 @@ func Test_str2nr()
   call assert_fails('call str2nr([])', 'E730:')
   call assert_fails('call str2nr({->2})', 'E729:')
   if has('float')
-    call assert_fails('call str2nr(1.2)', 'E806:')
+    call assert_equal(1, str2nr(1.2))
+    call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
   call assert_fails('call str2nr(10, [])', 'E745:')
 endfunc
@@ -492,7 +502,8 @@ func Test_simplify()
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
   if has('float')
-    call assert_fails('call simplify(1.2)', 'E806:')
+    call assert_equal('1.2', simplify(1.2))
+    call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   endif
 endfunc
 
@@ -715,6 +726,7 @@ func Test_tr()
   call assert_fails("let s=tr('abcd', 'abcd', 'def')", 'E475:')
   call assert_equal('hEllO', tr('hello', 'eo', 'EO'))
   call assert_equal('hello', tr('hello', 'xy', 'ab'))
+  call assert_fails('call tr("abc", "123", "₁₂")', 'E475:')
   set encoding=utf8
 endfunc
 
@@ -734,6 +746,7 @@ func Test_mode()
   set complete=.
 
   inoremap <F2> <C-R>=Save_mode()<CR>
+  xnoremap <F2> <Cmd>call Save_mode()<CR>
 
   normal! 3G
   exe "normal i\<F2>\<Esc>"
@@ -772,6 +785,8 @@ func Test_mode()
   exe "normal iabc\<C-X>\<C-L>\<F2>\<Esc>u"
   call assert_equal('i-ic', g:current_modes)
 
+  exe "normal R\<F2>\<Esc>"
+  call assert_equal('R-R', g:current_modes)
   " R_CTRL-P: Multiple matches
   exe "normal RBa\<C-P>\<F2>\<Esc>u"
   call assert_equal('R-Rc', g:current_modes)
@@ -805,6 +820,42 @@ func Test_mode()
   " R_CTRL-X CTRL-L: No match
   exe "normal Rabc\<C-X>\<C-L>\<F2>\<Esc>u"
   call assert_equal('R-Rc', g:current_modes)
+
+  exe "normal gR\<F2>\<Esc>"
+  call assert_equal('R-Rv', g:current_modes)
+  " gR_CTRL-P: Multiple matches
+  exe "normal gRBa\<C-P>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-P: Single match
+  exe "normal gRBro\<C-P>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-X
+  exe "normal gRBa\<C-X>\<F2>\<Esc>u"
+  call assert_equal('R-Rvx', g:current_modes)
+  " gR_CTRL-X CTRL-P: Multiple matches
+  exe "normal gRBa\<C-X>\<C-P>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-X CTRL-P: Single match
+  exe "normal gRBro\<C-X>\<C-P>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-X CTRL-P + CTRL-P: Single match
+  exe "normal gRBro\<C-X>\<C-P>\<C-P>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-X CTRL-L: Multiple matches
+  exe "normal gR\<C-X>\<C-L>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-X CTRL-L: Single match
+  exe "normal gRBlu\<C-X>\<C-L>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-P: No match
+  exe "normal gRCom\<C-P>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-X CTRL-P: No match
+  exe "normal gRCom\<C-X>\<C-P>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
+  " gR_CTRL-X CTRL-L: No match
+  exe "normal gRabc\<C-X>\<C-L>\<F2>\<Esc>u"
+  call assert_equal('R-Rvc', g:current_modes)
 
   call assert_equal('n', 0->mode())
   call assert_equal('n', 1->mode())
@@ -845,6 +896,14 @@ func Test_mode()
   call assert_equal("\<C-S>", mode(1))
   call feedkeys("\<Esc>", 'xt')
 
+  " v_CTRL-O
+  exe "normal gh\<C-O>\<F2>\<Esc>"
+  call assert_equal("v-vs", g:current_modes)
+  exe "normal gH\<C-O>\<F2>\<Esc>"
+  call assert_equal("V-Vs", g:current_modes)
+  exe "normal g\<C-H>\<C-O>\<F2>\<Esc>"
+  call assert_equal("\<C-V>-\<C-V>s", g:current_modes)
+
   call feedkeys(":echo \<C-R>=Save_mode()\<C-U>\<CR>", 'xt')
   call assert_equal('c-c', g:current_modes)
   call feedkeys("gQecho \<C-R>=Save_mode()\<CR>\<CR>vi\<CR>", 'xt')
@@ -853,9 +912,34 @@ func Test_mode()
   call assert_equal('c-ce', g:current_modes)
   " How to test Ex mode?
 
+  " Test mode in operatorfunc (it used to be Operator-pending).
+  set operatorfunc=OperatorFunc
+  function OperatorFunc(_)
+    call Save_mode()
+  endfunction
+  execute "normal! g@l\<Esc>"
+  call assert_equal('n-n', g:current_modes)
+  execute "normal! i\<C-o>g@l\<Esc>"
+  call assert_equal('n-niI', g:current_modes)
+  execute "normal! R\<C-o>g@l\<Esc>"
+  call assert_equal('n-niR', g:current_modes)
+  execute "normal! gR\<C-o>g@l\<Esc>"
+  call assert_equal('n-niV', g:current_modes)
+
+  if has('terminal')
+    term
+    call feedkeys("\<C-W>N", 'xt')
+    call assert_equal('n', mode())
+    call assert_equal('nt', mode(1))
+    call feedkeys("aexit\<CR>", 'xt')
+  endif
+
   bwipe!
   iunmap <F2>
+  xunmap <F2>
   set complete&
+  set operatorfunc&
+  delfunction OperatorFunc
 endfunc
 
 " Test for append()
@@ -1148,7 +1232,9 @@ func Test_charidx()
   call assert_equal(2, charidx(a, 4))
   call assert_equal(3, charidx(a, 7))
   call assert_equal(-1, charidx(a, 8))
+  call assert_equal(-1, charidx(a, -1))
   call assert_equal(-1, charidx('', 0))
+  call assert_equal(-1, charidx(test_null_string(), 0))
 
   " count composing characters
   call assert_equal(0, charidx(a, 0, 1))
@@ -1301,6 +1387,9 @@ func Test_Executable()
     if catcmd =~ '\<sbin\>' && result =~ '\<bin\>'
       call assert_equal('/' .. substitute(catcmd, '\<sbin\>', 'bin', ''), result)
     else
+      " /bin/cat and /usr/bin/cat may be hard linked, we could get either
+      let result = substitute(result, '/usr/bin/cat', '/bin/cat', '')
+      let catcmd = substitute(catcmd, 'usr/bin/cat', 'bin/cat', '')
       call assert_equal('/' .. catcmd, result)
     endif
     bwipe
@@ -1478,6 +1567,10 @@ func Test_inputlist()
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>q", 'tx')
   call assert_equal(0, c)
 
+  " Cancel after inputting a number
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>5q", 'tx')
+  call assert_equal(0, c)
+
   " Use backspace to delete characters in the prompt
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>1\<BS>3\<BS>2\<cr>", 'tx')
   call assert_equal(2, c)
@@ -1497,6 +1590,7 @@ endfunc
 
 func Test_balloon_show()
   CheckFeature balloon_eval
+
   " This won't do anything but must not crash either.
   call balloon_show('hi!')
   if !has('gui_running')
@@ -1536,6 +1630,32 @@ func Test_setbufvar_options()
   bwipe!
 endfunc
 
+func Test_setbufvar_keep_window_title()
+  CheckRunVimInTerminal
+  if !has('title') || empty(&t_ts)
+    throw "Skipped: can't get/set title"
+  endif
+
+  let lines =<< trim END
+      set title
+      edit Xa.txt
+      let g:buf = bufadd('Xb.txt')
+      inoremap <F2> <C-R>=setbufvar(g:buf, '&autoindent', 1) ?? ''<CR>
+  END
+  call writefile(lines, 'Xsetbufvar')
+  let buf = RunVimInTerminal('-S Xsetbufvar', {})
+  call WaitForAssert({-> assert_match('Xa.txt', term_gettitle(buf))}, 1000)
+
+  call term_sendkeys(buf, "i\<F2>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>")
+  call TermWait(buf)
+  call assert_match('Xa.txt', term_gettitle(buf))
+
+  call StopVimInTerminal(buf)
+  call delete('Xsetbufvar')
+endfunc
+
 func Test_redo_in_nested_functions()
   nnoremap g. :set opfunc=Operator<CR>g@
   function Operator( type, ... )
@@ -1564,31 +1684,6 @@ func Test_redo_in_nested_functions()
   delfunc Apply
 endfunc
 
-func Test_shellescape()
-  let save_shell = &shell
-  set shell=bash
-  call assert_equal("'text'", shellescape('text'))
-  call assert_equal("'te\"xt'", 'te"xt'->shellescape())
-  call assert_equal("'te'\\''xt'", shellescape("te'xt"))
-
-  call assert_equal("'te%xt'", shellescape("te%xt"))
-  call assert_equal("'te\\%xt'", shellescape("te%xt", 1))
-  call assert_equal("'te#xt'", shellescape("te#xt"))
-  call assert_equal("'te\\#xt'", shellescape("te#xt", 1))
-  call assert_equal("'te!xt'", shellescape("te!xt"))
-  call assert_equal("'te\\!xt'", shellescape("te!xt", 1))
-
-  call assert_equal("'te\nxt'", shellescape("te\nxt"))
-  call assert_equal("'te\\\nxt'", shellescape("te\nxt", 1))
-  set shell=tcsh
-  call assert_equal("'te\\!xt'", shellescape("te!xt"))
-  call assert_equal("'te\\\\!xt'", shellescape("te!xt", 1))
-  call assert_equal("'te\\\nxt'", shellescape("te\nxt"))
-  call assert_equal("'te\\\\\nxt'", shellescape("te\nxt", 1))
-
-  let &shell = save_shell
-endfunc
-
 func Test_trim()
   call assert_equal("Testing", trim("  \t\r\r\x0BTesting  \t\n\r\n\t\x0B\x0B"))
   call assert_equal("Testing", "  \t  \r\r\n\n\x0BTesting  \t\n\r\n\t\x0B\x0B"->trim())
@@ -1614,6 +1709,7 @@ func Test_trim()
   call assert_fails('eval trim("  vim  ", " ", [])', 'E745:')
   call assert_fails('eval trim("  vim  ", " ", -1)', 'E475:')
   call assert_fails('eval trim("  vim  ", " ", 3)', 'E475:')
+  call assert_fails('eval trim("  vim  ", 0)', 'E475:')
 
   let chars = join(map(range(1, 0x20) + [0xa0], {n -> n->nr2char()}), '')
   call assert_equal("x", trim(chars . "x" . chars))
@@ -1714,6 +1810,17 @@ endfunc
 func Test_getchar()
   call feedkeys('a', '')
   call assert_equal(char2nr('a'), getchar())
+  call assert_equal(0, getchar(0))
+  call assert_equal(0, getchar(1))
+
+  call feedkeys('a', '')
+  call assert_equal('a', getcharstr())
+  call assert_equal('', getcharstr(0))
+  call assert_equal('', getcharstr(1))
+
+  call feedkeys("\<M-F2>", '')
+  call assert_equal("\<M-F2>", getchar(0))
+  call assert_equal(0, getchar(0))
 
   call setline(1, 'xxxx')
   call test_setmouse(1, 3)
@@ -1835,6 +1942,10 @@ func Test_func_exists_on_reload()
   " But redefining in another script is not OK.
   call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists2')
   call assert_fails('source Xfuncexists2', 'E122:')
+
+  " Defining a new function from the cmdline should fail if the function is
+  " already defined
+  call assert_fails('call feedkeys(":func ExistingFunction()\<CR>", "xt")', 'E122:')
 
   delfunc ExistingFunction
   call assert_equal(0, exists('*ExistingFunction'))
@@ -2147,6 +2258,18 @@ func Test_call()
   eval mydict.len->call([], mydict)->assert_equal(4)
   call assert_fails("call call('Mylen', [], 0)", 'E715:')
   call assert_fails('call foo', 'E107:')
+
+  " These once caused a crash.
+  call call(test_null_function(), [])
+  call call(test_null_partial(), [])
+  call assert_fails('call test_null_function()()', 'E1192:')
+  call assert_fails('call test_null_partial()()', 'E117:')
+
+  let lines =<< trim END
+      let Time = 'localtime'
+      call Time()
+  END
+  call v9.CheckScriptFailure(lines, 'E1085:')
 endfunc
 
 func Test_char2nr()
@@ -2162,6 +2285,8 @@ func Test_charclass()
   call assert_equal(1, charclass('.'))
   call assert_equal(2, charclass('x'))
   call assert_equal(3, charclass("\u203c"))
+  " this used to crash vim
+  call assert_equal(0, "xxx"[-1]->charclass())
 endfunc
 
 func Test_eventhandler()
@@ -2542,6 +2667,12 @@ func Test_range()
   call assert_fails('let x=range(1, 4, [])', 'E745:')
 endfunc
 
+func Test_garbagecollect_now_fails()
+  let v:testing = 0
+  call assert_fails('call test_garbagecollect_now()', 'E1142:')
+  let v:testing = 1
+endfunc
+
 func Test_echoraw()
   CheckScreendump
 
@@ -2623,6 +2754,7 @@ endfunc
 func Test_glob()
   call assert_equal('', glob(test_null_string()))
   call assert_equal('', globpath(test_null_string(), test_null_string()))
+  call assert_fails("let x = globpath(&rtp, 'syntax/c.vim', [])", 'E745:')
 
   call writefile([], 'Xglob1')
   call writefile([], 'XGLOB2')
@@ -2649,5 +2781,41 @@ func Test_browsedir()
   CheckFeature browse
   call assert_fails('call browsedir("open", [])', 'E730:')
 endfunc
+
+func HasDefault(msg = 'msg')
+  return a:msg
+endfunc
+
+func Test_default_arg_value()
+  call assert_equal('msg', HasDefault())
+endfunc
+
+" Test for gettext()
+func Test_gettext()
+  call assert_fails('call gettext(1)', 'E475:')
+endfunc
+
+func Test_builtin_check()
+  call assert_fails('let g:["trim"] = {x -> " " .. x}', 'E704:')
+  call assert_fails('let g:.trim = {x -> " " .. x}', 'E704:')
+  call assert_fails('let l:["trim"] = {x -> " " .. x}', 'E704:')
+  call assert_fails('let l:.trim = {x -> " " .. x}', 'E704:')
+  let lines =<< trim END
+    vim9script
+    var trim = (x) => " " .. x
+  END
+  call v9.CheckScriptFailure(lines, 'E704:')
+
+  call assert_fails('call extend(g:, #{foo: { -> "foo" }})', 'E704:')
+  let g:bar = 123
+  call extend(g:, #{bar: { -> "foo" }}, "keep")
+  call assert_fails('call extend(g:, #{bar: { -> "foo" }}, "force")', 'E704:')
+endfunc
+
+func Test_funcref_to_string()
+  let Fn = funcref('g:Test_funcref_to_string')
+  call assert_equal("function('g:Test_funcref_to_string')", string(Fn))
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

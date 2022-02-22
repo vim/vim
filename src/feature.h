@@ -32,7 +32,7 @@
  * ==============
  *
  * +tiny		almost no features enabled, not even multiple windows
- * +small		few features enabled, as basic as possible
+ * +small		as tiny plus cmdline window
  * +normal		A default selection of features enabled
  * +big			many features enabled, as rich as possible.
  * +huge		all possible features enabled.
@@ -56,7 +56,7 @@
 /*
  * For Unix, Mac and Win32 use +huge by default.  These days CPUs are fast and
  * Memory is cheap.
- * Use +big for older systems: Other MS-Windows and VMS.
+ * Use +big for older systems: VMS and Amiga.
  * Otherwise use +normal
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
@@ -64,7 +64,7 @@
 # if defined(UNIX) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
-#  if defined(MSWIN) || defined(VMS) || defined(AMIGA)
+#  if defined(VMS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
 #   define FEAT_NORMAL
@@ -109,6 +109,8 @@
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
  * +modify_fname	modifiers for file name.  E.g., "%:p:h".
  * +comments		'comments' option.
+ * +title		'title' and 'icon' options
+ * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -118,20 +120,9 @@
  */
 
 /*
- * Message history is fixed at 200 message, 20 for the tiny version.
+ * Message history is fixed at 200 messages.
  */
-#ifdef FEAT_SMALL
-# define MAX_MSG_HIST_LEN 200
-#else
-# define MAX_MSG_HIST_LEN 20
-#endif
-
-/*
- * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
- */
-#ifdef FEAT_SMALL
-# define FEAT_JUMPLIST
-#endif
+#define MAX_MSG_HIST_LEN 200
 
 #if defined(FEAT_SMALL)
 # define FEAT_CMDWIN
@@ -231,20 +222,16 @@
 
 /*
  * +rightleft		Right-to-left editing/typing support.
- *
- * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT)
 # define FEAT_RIGHTLEFT
 #endif
 
 /*
  * +arabic		Arabic keymap and shaping support.
  *			Requires FEAT_RIGHTLEFT
- *
- * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -263,16 +250,8 @@
 
 /*
  * +tag_binary		Can use a binary search for the tags file.
- *
- * Disabled for EBCDIC:
- * On z/OS Unix we have the problem that /bin/sort sorts ASCII instead of
- * EBCDIC.  With this binary search doesn't work, as VIM expects a tag file
- * sorted by character values.  I'm not sure how to fix this. Should we really
- * do a EBCDIC to ASCII conversion for this??
  */
-#if !defined(EBCDIC)
-# define FEAT_TAG_BINS
-#endif
+#define FEAT_TAG_BINS
 
 /*
  * +cscope		Unix only: Cscope support.
@@ -354,23 +333,16 @@
 /*
  * +diff		Displaying diffs in a nice way.
  *			Requires +windows and +autocmd.
+ *			Can be enabled in autoconf already.
  */
-#if defined(FEAT_NORMAL)
+#if defined(FEAT_NORMAL) && !defined(FEAT_DIFF)
 # define FEAT_DIFF
 #endif
 
 /*
- * +title		'title' and 'icon' options
  * +statusline		'statusline', 'rulerformat' and special format of
  *			'titlestring' and 'iconstring' options.
- * +byte_offset		'%o' in 'statusline' and builtin functions line2byte()
- *			and byte2line().
- *			Note: Required for Macintosh.
  */
-#if defined(FEAT_NORMAL)
-# define FEAT_TITLE
-#endif
-
 #ifdef FEAT_NORMAL
 # define FEAT_STL_OPT
 # ifndef FEAT_CMDL_INFO
@@ -378,6 +350,11 @@
 # endif
 #endif
 
+/*
+ * +byte_offset		'%o' in 'statusline' and builtin functions line2byte()
+ *			and byte2line().
+ *			Note: Required for Macintosh.
+ */
 #ifdef FEAT_NORMAL
 # define FEAT_BYTEOFF
 #endif
@@ -427,10 +404,8 @@
 
 /*
  * +spell		spell checking
- *
- * Disabled for EBCDIC: * Doesn't work (SIGSEGV).
  */
-#if (defined(FEAT_NORMAL) || defined(PROTO)) && !defined(EBCDIC)
+#if (defined(FEAT_NORMAL) || defined(PROTO))
 # define FEAT_SPELL
 #endif
 
@@ -593,6 +568,13 @@
 # define FEAT_SOUND_CANBERRA
 #endif
 
+/*
+ * libsodium - add cryptography support
+ */
+#if defined(HAVE_SODIUM) && defined(FEAT_BIG)
+# define FEAT_SODIUM
+#endif
+
 // There are two ways to use XPM.
 #if (defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF)) \
 		|| defined(HAVE_X11_XPM_H)
@@ -633,8 +615,7 @@
     && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| defined(FEAT_GUI_HAIKU) \
-	|| (defined(FEAT_GUI_MSWIN) \
-	    && (!defined(_MSC_VER) || _MSC_VER > 1020)))
+	|| defined(FEAT_GUI_MSWIN))
 # define FEAT_GUI_TABLINE
 #endif
 
@@ -1262,4 +1243,16 @@
  */
 #if (!defined(FEAT_GUI) || defined(VIMDLL)) && defined(MSWIN)
 # define FEAT_VTP
+#endif
+
+#if defined(DYNAMIC_PERL) \
+	|| defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3) \
+	|| defined(DYNAMIC_RUBY) \
+	|| defined(DYNAMIC_TCL) \
+	|| defined(DYNAMIC_ICONV) \
+	|| defined(DYNAMIC_GETTEXT) \
+	|| defined(DYNAMIC_MZSCHEME) \
+	|| defined(DYNAMIC_LUA) \
+	|| defined(FEAT_TERMINAL)
+# define USING_LOAD_LIBRARY
 #endif

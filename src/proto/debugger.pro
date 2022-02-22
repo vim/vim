@@ -6,6 +6,7 @@ void dbg_check_breakpoint(exarg_T *eap);
 int dbg_check_skipped(exarg_T *eap);
 void ex_breakadd(exarg_T *eap);
 void ex_debuggreedy(exarg_T *eap);
+int debug_has_expr_breakpoint(void);
 void ex_breakdel(exarg_T *eap);
 void ex_breaklist(exarg_T *eap);
 linenr_T dbg_find_breakpoint(int file, char_u *fname, linenr_T after);

@@ -324,6 +324,16 @@ func Test_edit_11_indentexpr()
   set cinkeys&vim indentkeys&vim
   set nocindent indentexpr=
   delfu Do_Indent
+
+  " Using a script-local function
+  func s:NewIndentExpr()
+  endfunc
+  set indentexpr=s:NewIndentExpr()
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  set indentexpr=<SID>NewIndentExpr()
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  set indentexpr&
+
   bw!
 endfunc
 
@@ -422,13 +432,13 @@ func Test_autoindent_remove_indent()
   " leaving insert mode in a new line with indent added by autoindent, should
   " remove the indent.
   call term_sendkeys(buf, "i\<Tab>foo\<CR>\<Esc>")
-  " Need to delay for sometime, otherwise the code in getchar.c will not be
+  " Need to delay for some time, otherwise the code in getchar.c will not be
   " exercised.
   call TermWait(buf, 50)
   " when a line is wrapped and the cursor is at the start of the second line,
   " leaving insert mode, should move the cursor back to the first line.
   call term_sendkeys(buf, "o" .. repeat('x', 20) .. "\<Esc>")
-  " Need to delay for sometime, otherwise the code in getchar.c will not be
+  " Need to delay for some time, otherwise the code in getchar.c will not be
   " exercised.
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":w\n")
@@ -440,7 +450,7 @@ endfunc
 
 func Test_edit_CR()
   " Test for <CR> in insert mode
-  " basically only in quickfix mode ist tested, the rest
+  " basically only in quickfix mode it's tested, the rest
   " has been taken care of by other tests
   CheckFeature quickfix
   botright new
@@ -723,8 +733,13 @@ func Test_edit_CTRL_N()
     call feedkeys("Ii\<c-n>\<cr>\<esc>", "tnix")
     call feedkeys("ILO\<c-n>\<cr>\<esc>", 'tnix')
     call assert_equal(['INFER', 'loWER', 'infer', 'LOWER', '', ''], getline(1, '$'), e)
-
-    set noignorecase noinfercase complete&
+    set noignorecase noinfercase
+    %d
+    call setline(1, ['one word', 'two word'])
+    exe "normal! Goo\<C-P>\<C-X>\<C-P>"
+    call assert_equal('one word', getline(3))
+    %d
+    set complete&
     bw!
   endfor
 endfunc
@@ -890,6 +905,73 @@ func Test_edit_CTRL_T()
   bw!
 endfunc
 
+" Test thesaurus completion with different encodings
+func Test_thesaurus_complete_with_encoding()
+  call writefile(['angry furious mad enraged'], 'Xthesaurus')
+  set thesaurus=Xthesaurus
+  for e in ['latin1', 'utf-8']
+    exe 'set encoding=' .. e
+    new
+    call setline(1, 'mad')
+    call cursor(1, 1)
+    call feedkeys("A\<c-x>\<c-t>\<cr>\<esc>", 'tnix')
+    call assert_equal(['mad', ''], getline(1, '$'))
+    bw!
+  endfor
+  set thesaurus=
+  call delete('Xthesaurus')
+endfunc
+
+" Test 'thesaurusfunc'
+func MyThesaurus(findstart, base)
+  let mythesaurus = [
+        \ #{word: "happy",
+        \   synonyms: "cheerful,blissful,flying high,looking good,peppy"},
+        \ #{word: "kind",
+        \   synonyms: "amiable,bleeding-heart,heart in right place"}]
+  if a:findstart
+    " locate the start of the word
+    let line = getline('.')
+    let start = col('.') - 1
+    while start > 0 && line[start - 1] =~ '\a'
+      let start -= 1
+    endwhile
+    return start
+  else
+    " find strings matching with "a:base"
+    let res = []
+    for w in mythesaurus
+      if w.word =~ '^' . a:base
+        call add(res, w.word)
+        call extend(res, split(w.synonyms, ","))
+      endif
+    endfor
+    return res
+  endif
+endfunc
+
+func Test_thesaurus_func()
+  new
+  set thesaurus=notused
+  set thesaurusfunc=NotUsed
+  setlocal thesaurusfunc=MyThesaurus
+  call setline(1, "an ki")
+  call cursor(1, 1)
+  call feedkeys("A\<c-x>\<c-t>\<c-n>\<cr>\<esc>", 'tnix')
+  call assert_equal(['an amiable', ''], getline(1, '$'))
+
+  setlocal thesaurusfunc=NonExistingFunc
+  call assert_fails("normal $a\<C-X>\<C-T>", 'E117:')
+
+  setlocal thesaurusfunc=
+  set thesaurusfunc=NonExistingFunc
+  call assert_fails("normal $a\<C-X>\<C-T>", 'E117:')
+  %bw!
+
+  set thesaurusfunc=
+  set thesaurus=
+endfunc
+
 func Test_edit_CTRL_U()
   " Test 'completefunc'
   new
@@ -991,14 +1073,14 @@ func Test_edit_DROP()
 endfunc
 
 func Test_edit_CTRL_V()
-  CheckFeature ebcdic
   new
   call setline(1, ['abc'])
   call cursor(2, 1)
+
   " force some redraws
   set showmode showcmd
-  "call test_override_char_avail(1)
-  call test_override('ALL', 1)
+  call test_override('char_avail', 1)
+
   call feedkeys("A\<c-v>\<c-n>\<c-v>\<c-l>\<c-v>\<c-b>\<esc>", 'tnix')
   call assert_equal(["abc\x0e\x0c\x02"], getline(1, '$'))
 
@@ -1011,8 +1093,19 @@ func Test_edit_CTRL_V()
     set norl
   endif
 
-  call test_override('ALL', 0)
   set noshowmode showcmd
+  call test_override('char_avail', 0)
+
+  " No modifiers should be applied to the char typed using i_CTRL-V_digit.
+  call feedkeys(":append\<CR>\<C-V>76c\<C-V>76\<C-F2>\<C-V>u3c0j\<C-V>u3c0\<M-F3>\<CR>.\<CR>", 'tnix')
+  call assert_equal('LcL<C-F2>πjπ<M-F3>', getline(2))
+
+  if has('osx')
+    " A char with a modifier should not be a valid char for i_CTRL-V_digit.
+    call feedkeys("o\<C-V>\<D-j>\<C-V>\<D-1>\<C-V>\<D-o>\<C-V>\<D-x>\<C-V>\<D-u>", 'tnix')
+    call assert_equal('<D-j><D-1><D-o><D-x><D-u>', getline(3))
+  endif
+
   bw!
 endfunc
 
@@ -1276,6 +1369,7 @@ func Test_edit_forbidden()
   call assert_fails(':Sandbox', 'E48:')
   delcom Sandbox
   call assert_equal(['a'], getline(1,'$'))
+
   " 2) edit with textlock set
   fu! DoIt()
     call feedkeys("i\<del>\<esc>", 'tnix')
@@ -1295,6 +1389,7 @@ func Test_edit_forbidden()
   catch /^Vim\%((\a\+)\)\=:E117/ " catch E117: unknown function
   endtry
   au! InsertCharPre
+
   " 3) edit when completion is shown
   fun! Complete(findstart, base)
     if a:findstart
@@ -1312,6 +1407,7 @@ func Test_edit_forbidden()
   endtry
   delfu Complete
   set completefunc=
+
   if has("rightleft") && exists("+fkmap")
     " 4) 'R' when 'fkmap' and 'revins' is set.
     set revins fkmap
@@ -1533,11 +1629,7 @@ endfunc
 func Test_edit_special_chars()
   new
 
-  if has("ebcdic")
-    let t = "o\<C-V>193\<C-V>xc2\<C-V>o303 \<C-V>90a\<C-V>xfg\<C-V>o578\<Esc>"
-  else
-    let t = "o\<C-V>65\<C-V>x42\<C-V>o103 \<C-V>33a\<C-V>xfg\<C-V>o78\<Esc>"
-  endif
+  let t = "o\<C-V>65\<C-V>x42\<C-V>o103 \<C-V>33a\<C-V>xfg\<C-V>o78\<Esc>"
 
   exe "normal " . t
   call assert_equal("ABC !a\<C-O>g\<C-G>8", getline(2))
@@ -1870,5 +1962,168 @@ func Test_read_invalid()
   call assert_fails('r`=', 'E484')
   set encoding=utf-8
 endfunc
+
+" Test for the 'revins' option
+func Test_edit_revins()
+  CheckFeature rightleft
+  new
+  set revins
+  exe "normal! ione\ttwo three"
+  call assert_equal("eerht owt\teno", getline(1))
+  call setline(1, "one\ttwo three")
+  normal! gg$bi a
+  call assert_equal("one\ttwo a three", getline(1))
+  exe "normal! $bi\<BS>\<BS>"
+  call assert_equal("one\ttwo a ree", getline(1))
+  exe "normal! 0wi\<C-W>"
+  call assert_equal("one\t a ree", getline(1))
+  exe "normal! 0wi\<C-U>"
+  call assert_equal("one\t ", getline(1))
+  " newline in insert mode starts at the end of the line
+  call setline(1, 'one two three')
+  exe "normal! wi\nfour"
+  call assert_equal(['one two three', 'ruof'], getline(1, '$'))
+  set revins&
+  bw!
+endfunc
+
+" Test for getting the character of the line below after "p"
+func Test_edit_put_CTRL_E()
+  set encoding=latin1
+  new
+  let @" = ''
+  sil! norm orggRx
+  sil! norm pr
+  call assert_equal(['r', 'r'], getline(1, 2))
+  bwipe!
+  set encoding=utf-8
+endfunc
+
+" Test for ModeChanged pattern
+func Test_mode_changes()
+  let g:index = 0
+  let g:mode_seq = ['n', 'i', 'n', 'v', 'V', 'i', 'ix', 'i', 'ic', 'i', 'n', 'no', 'n', 'V', 'v', 's', 'n']
+  func! TestMode()
+    call assert_equal(g:mode_seq[g:index], get(v:event, "old_mode"))
+    call assert_equal(g:mode_seq[g:index + 1], get(v:event, "new_mode"))
+    call assert_equal(mode(1), get(v:event, "new_mode"))
+    let g:index += 1
+  endfunc
+
+  au ModeChanged * :call TestMode()
+  let g:n_to_any = 0
+  au ModeChanged n:* let g:n_to_any += 1
+  call feedkeys("i\<esc>vVca\<CR>\<C-X>\<C-L>\<esc>ggdG", 'tnix')
+
+  let g:V_to_v = 0
+  au ModeChanged V:v let g:V_to_v += 1
+  call feedkeys("Vv\<C-G>\<esc>", 'tnix')
+  call assert_equal(len(filter(g:mode_seq[1:], {idx, val -> val == 'n'})), g:n_to_any)
+  call assert_equal(1, g:V_to_v)
+  call assert_equal(len(g:mode_seq) - 1, g:index)
+
+  let g:n_to_i = 0
+  au ModeChanged n:i let g:n_to_i += 1
+  let g:n_to_niI = 0
+  au ModeChanged i:niI let g:n_to_niI += 1
+  let g:niI_to_i = 0
+  au ModeChanged niI:i let g:niI_to_i += 1
+  let g:nany_to_i = 0
+  au ModeChanged n*:i let g:nany_to_i += 1
+  let g:i_to_n = 0
+  au ModeChanged i:n let g:i_to_n += 1
+  let g:nori_to_any = 0
+  au ModeChanged [ni]:* let g:nori_to_any += 1
+  let g:i_to_any = 0
+  au ModeChanged i:* let g:i_to_any += 1
+  let g:index = 0
+  let g:mode_seq = ['n', 'i', 'niI', 'i', 'n']
+  call feedkeys("a\<C-O>l\<esc>", 'tnix')
+  call assert_equal(len(g:mode_seq) - 1, g:index)
+  call assert_equal(1, g:n_to_i)
+  call assert_equal(1, g:n_to_niI)
+  call assert_equal(1, g:niI_to_i)
+  call assert_equal(2, g:nany_to_i)
+  call assert_equal(1, g:i_to_n)
+  call assert_equal(2, g:i_to_any)
+  call assert_equal(3, g:nori_to_any)
+
+  if has('terminal')
+    let g:mode_seq += ['c', 'n', 't', 'nt', 'c', 'nt', 'n']
+    call feedkeys(":term\<CR>\<C-W>N:bd!\<CR>", 'tnix')
+    call assert_equal(len(g:mode_seq) - 1, g:index)
+    call assert_equal(1, g:n_to_i)
+    call assert_equal(1, g:n_to_niI)
+    call assert_equal(1, g:niI_to_i)
+    call assert_equal(2, g:nany_to_i)
+    call assert_equal(1, g:i_to_n)
+    call assert_equal(2, g:i_to_any)
+    call assert_equal(5, g:nori_to_any)
+  endif
+
+  au! ModeChanged
+  delfunc TestMode
+  unlet! g:mode_seq
+  unlet! g:index
+  unlet! g:n_to_any
+  unlet! g:V_to_v
+  unlet! g:n_to_i
+  unlet! g:n_to_niI
+  unlet! g:niI_to_i
+  unlet! g:nany_to_i
+  unlet! g:i_to_n
+  unlet! g:nori_to_any
+  unlet! g:i_to_any
+endfunc
+
+func Test_recursive_ModeChanged()
+  au! ModeChanged * norm 0u
+  sil! norm 
+  au! ModeChanged
+endfunc
+
+func Test_ModeChanged_starts_visual()
+  " This was triggering ModeChanged before setting VIsual, causing a crash.
+  au! ModeChanged * norm 0u
+  sil! norm 
+
+  au! ModeChanged
+endfunc
+
+" Test toggling of input method. See :help i_CTRL-^
+func Test_edit_CTRL_hat()
+  CheckFeature xim
+
+  " FIXME: test fails with Athena and Motif GUI.
+  "        test also fails when running in the GUI.
+  CheckFeature gui_gtk
+  CheckNotGui
+
+  new
+
+  call assert_equal(0, &iminsert)
+  call feedkeys("i\<C-^>", 'xt')
+  call assert_equal(2, &iminsert)
+  call feedkeys("i\<C-^>", 'xt')
+  call assert_equal(0, &iminsert)
+
+  bwipe!
+endfunc
+
+" Weird long file name was going over the end of NameBuff
+func Test_edit_overlong_file_name()
+  CheckUnix
+
+  file 0000000000000000000000000000
+  file %%%%%%%%%%%%%%%%%%%%%%%%%%
+  file %%%%%%
+  set readonly
+  set ls=2 
+
+  redraw!
+  set noreadonly ls&
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,8 +1,10 @@
 " Menu Translations:	Francais
 " Maintainer:		Adrien Beau <version.francaise@free.fr>
 " First Version:	Francois Thunus <thunus@systran.fr>
-" Last Modification:    David Blanchet <david.blanchet@free.fr>
-" Last Change:		2018 Apr 25
+" Contributors:		David Blanchet <david.blanchet@free.fr>
+" 			Gabriel Dupras <gabrieldupras@gmail.com>
+" Last Change:		2021 Feb 16
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -78,11 +80,12 @@ menutrans Find\ and\ Rep&lace<Tab>:%s		Re&mplacer<Tab>:%s
 menutrans Find\ and\ Rep&lace<Tab>:s		Re&mplacer<Tab>:s
 " -SEP3-
 menutrans Settings\ &Window			Fe&nêtre\ des\ réglages
+menutrans Startup\ &Settings			Réglages\ de\ &lancement
 menutrans &Global\ Settings			Réglages\ globau&x
 
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Surligner\ recherche\ on/off<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		&Ignorer\ casse\ on/off<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Vérifier\ parenth&èses\ on/off<Tab>:set\ sm!
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!		&Surligner\ recherche\ on/off<Tab>:set\ hls!
+menutrans Toggle\ &Ignoring\ case<Tab>:set\ ic!			&Ignorer\ casse\ on/off<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Vérifier\ parenth&èses\ on/off<Tab>:set\ sm!
 
 menutrans &Context\ lines				Lignes\ &autour\ du\ curseur
 
@@ -94,7 +97,7 @@ menutrans Block\ and\ Insert					&Bloc\ et\ insertion
 menutrans Always						&Toujours
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		I&nsertion\ permanente\ on/off<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		&Compatibilité\ Vi\ on/off<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	&Compatibilité\ Vi\ on/off<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.				Chemin\ de\ rec&herche\ des\ fichiers\.\.\.
 menutrans Ta&g\ Files\.\.\.				Fichiers\ d'&étiquettes\.\.\.
 " -SEP1-
@@ -109,12 +112,13 @@ let g:menutrans_tags_dialog = "Entrez les noms des fichiers d'étiquettes.\nSépar
 menutrans F&ile\ Settings			Réglages\ fichie&r
 
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	&Numérotation\ on/off<Tab>:set\ nu!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	&Numérotation\ relative\ on/off<Tab>:set\ nu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Mode\ &listing\ on/off<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		&Retour\ à\ la\ ligne\ on/off<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Retour\ sur\ &mot\ on/off<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		&Tab\.\ en\ espaces\ on/off<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Indentation\ &auto\.\ on/off<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Indent\.\ langage\ &C\ on/off<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!	&Retour\ à\ la\ ligne\ on/off<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ Word<Tab>:set\ lbr!	Retour\ sur\ &mot\ on/off<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!		&Tab\.\ en\ espaces\ on/off<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!	Indentation\ &auto\.\ on/off<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indent\.\ langage\ &C\ on/off<Tab>:set\ cin!
 " -SEP2-
 menutrans &Shiftwidth					Largeur\ des\ in&dentations
 menutrans Soft\ &Tabstop				&Pseudo-tabulations
@@ -126,7 +130,9 @@ let g:menutrans_fileformat_dialog = "Choisissez le format dans lequel écrire le 
 let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Annuler "
 
 menutrans C&olor\ Scheme			&Jeu\ de\ couleurs
+menutrans Show\ C&olor\ Schemes\ in\ Menu	Afficher\ les\ &jeux\ de\ couleurs
 menutrans &Keymap				&Type\ de\ clavier
+menutrans Show\ &Keymaps\ in\ Menu		Afficher\ les\ &types\ de\ clavier
 menutrans None						(aucun)
 menutrans Select\ Fo&nt\.\.\.			Sélectionner\ &police\.\.\.
 
@@ -146,16 +152,17 @@ menutrans To\ &Previous\ error<Tab>[s		À\ l'erreur\ &précédente<Tab>[s
 menutrans Suggest\ &Corrections<Tab>z=		Suggérer\ &correction<Tab>z=
 menutrans &Repeat\ correction<Tab>:spellrepall	&Reporter\ la\ correction<Tab>:spellrepall
 
-an 40.335.205 &Tools.&Spelling.Français\ (fr)	:set spl=fr spell<CR>
-menutrans Set\ language\ to\ "en"		Anglais
-menutrans Set\ language\ to\ "en_au"		Anglais\ (en_au)
-menutrans Set\ language\ to\ "en_ca"		Anglais\ (en_ca)
-menutrans Set\ language\ to\ "en_gb"		Anglais\ (en_gb)
-menutrans Set\ language\ to\ "en_nz"		Anglais\ (en_nz)
-menutrans Set\ language\ to\ "en_us"		Anglais\ (en_us)
+an 40.335.205 &Tools.&Spelling.Dictionnaire\ &français\ (fr)	:set spl=fr spell<CR>
+menutrans Set\ language\ to\ "en"		Dictionnaire\ &anglais\ (en)
+menutrans Set\ language\ to\ "en_au"		Dictionnaire\ anglais\ (en_au)
+menutrans Set\ language\ to\ "en_ca"		Dictionnaire\ anglais\ (en_ca)
+menutrans Set\ language\ to\ "en_gb"		Dictionnaire\ anglais\ (en_gb)
+menutrans Set\ language\ to\ "en_nz"		Dictionnaire\ anglais\ (en_nz)
+menutrans Set\ language\ to\ "en_us"		Dictionnaire\ anglais\ (en_us)
 
 menutrans &Find\ More\ Languages		&Trouver\ d'autres\ langues
 
+let g:menutrans_set_lang_to = "Dictionnaire "
 
 
 menutrans &Folding				&Replis
@@ -211,6 +218,7 @@ menutrans &Convert\ to\ HEX<Tab>:%!xxd		Convertir\ en\ he&xa<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r		Décon&vertir<Tab>:%!xxd\ -r
 
 menutrans Se&T\ Compiler			&Type\ de\ compilateur
+menutrans Show\ Compiler\ Se&ttings\ in\ Menu	&Afficher\ les\ compilateurs
 
 
 menutrans &Buffers			&Tampons
@@ -268,10 +276,15 @@ menutrans &Delete				&Effacer
 " -SEP2-
 menutrans Select\ Blockwise			Sélectionner\ &bloc
 menutrans Select\ &Word				Sélectionner\ &mot
+menutrans Select\ &Sentence			Sélectionner\ &phrase
+menutrans Select\ Pa&ragraph			Sélectionner\ pa&ragraphe
 menutrans Select\ &Line				Sélectionner\ &ligne
 menutrans Select\ &Block			Sélectionner\ &bloc
 menutrans Select\ &All				Sélectionner\ &tout
 
+let g:menutrans_spell_change_ARG_to = 'Remplacer\ "%s"\ par'
+let g:menutrans_spell_add_ARG_to_word_list = 'Ajouter\ "%s"\ au\ dictionnaire'
+let g:menutrans_spell_ignore_ARG = 'Ignorer\ "%s"'
 
 " ToolBar
 
@@ -459,7 +472,7 @@ menutrans XXD\ hex\ dump		Sortie\ hexa\.\ de\ xxd
 menutrans XFree86\ Config		Config\.\ XFree86
 " The End Of The Syntax Menu
 
-menutrans &Show\ filetypes\ in\ menu		&Afficher\ tout\ le\ menu
+menutrans &Show\ file\ types\ in\ menu		&Afficher\ tout\ le\ menu
 " -SEP1-
 menutrans Set\ '&syntax'\ only			Changer\ '&syntax'\ seulement
 menutrans Set\ '&filetype'\ too			Changer\ '&filetype'\ aussi

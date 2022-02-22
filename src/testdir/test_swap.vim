@@ -201,8 +201,8 @@ func Test_swapfile_delete()
   " This test won't work as root because root can successfully run kill(1, 0)
   if !IsRoot()
     " Write the swapfile with a modified PID, now it will be automatically
-    " deleted. Process one should never be Vim.
-    let swapfile_bytes[24:27] = 0z01000000
+    " deleted. Process 0x3fffffff most likely does not exist.
+    let swapfile_bytes[24:27] = 0zffffff3f
     call writefile(swapfile_bytes, swapfile_name)
     let s:swapname = ''
     split XswapfileText
@@ -360,6 +360,7 @@ func Test_swap_prompt_splitwin()
   let buf = RunVimInTerminal('', {'rows': 20})
   call term_sendkeys(buf, ":set nomore\n")
   call term_sendkeys(buf, ":set noruler\n")
+
   call term_sendkeys(buf, ":split Xfile1\n")
   call TermWait(buf)
   call WaitForAssert({-> assert_match('^\[O\]pen Read-Only, (E)dit anyway, (R)ecover, (Q)uit, (A)bort: $', term_getline(buf, 20))})
@@ -371,6 +372,21 @@ func Test_swap_prompt_splitwin()
   call TermWait(buf)
   call WaitForAssert({-> assert_match('^1$', term_getline(buf, 20))})
   call StopVimInTerminal(buf)
+
+  " This caused Vim to crash when typing "q" at the swap file prompt.
+  let buf = RunVimInTerminal('-c "au bufadd * let foo_w = wincol()"', {'rows': 18})
+  call term_sendkeys(buf, ":e Xfile1\<CR>")
+  call WaitForAssert({-> assert_match('More', term_getline(buf, 18))})
+  call term_sendkeys(buf, " ")
+  call WaitForAssert({-> assert_match('^\[O\]pen Read-Only, (E)dit anyway, (R)ecover, (Q)uit, (A)bort:', term_getline(buf, 18))})
+  call term_sendkeys(buf, "q")
+  call TermWait(buf)
+  " check that Vim is still running
+  call term_sendkeys(buf, ":echo 'hello'\<CR>")
+  call WaitForAssert({-> assert_match('^hello', term_getline(buf, 18))})
+  call term_sendkeys(buf, ":%bwipe!\<CR>")
+  call StopVimInTerminal(buf)
+
   %bwipe!
   call delete('Xfile1')
 endfunc
@@ -394,7 +410,7 @@ func Test_swap_symlink()
 
   " Check that this also works when 'directory' ends with '//'
   edit Xtestlink
-  call assert_match('Xtestfile\.swp$', s:swapname())
+  call assert_match('Xswapdir[/\\]%.*testdir%Xtestfile\.swp$', s:swapname())
   bwipe!
 
   set dir&
@@ -481,6 +497,85 @@ func Test_swap_auto_delete()
     autocmd!
   augroup END
   augroup! test_swap_recover_ext
+endfunc
+
+" Test for renaming a buffer when the swap file is deleted out-of-band
+func Test_missing_swap_file()
+  CheckUnix
+  new Xfile2
+  call delete(swapname(''))
+  call assert_fails('file Xfile3', 'E301:')
+  call assert_equal('Xfile3', bufname())
+  call assert_true(bufexists('Xfile2'))
+  call assert_true(bufexists('Xfile3'))
+  %bw!
+endfunc
+
+" Test for :preserve command
+func Test_preserve()
+  new Xfile4
+  setlocal noswapfile
+  call assert_fails('preserve', 'E313:')
+  bw!
+endfunc
+
+" Test for the v:swapchoice variable
+func Test_swapchoice()
+  call writefile(['aaa', 'bbb'], 'Xfile5')
+  edit Xfile5
+  preserve
+  let swapfname = swapname('')
+  let b = readblob(swapfname)
+  bw!
+  call writefile(b, swapfname)
+
+  autocmd! SwapExists
+
+  " Test for v:swapchoice = 'o' (readonly)
+  augroup test_swapchoice
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'o'
+  augroup END
+  edit Xfile5
+  call assert_true(&readonly)
+  call assert_equal(['aaa', 'bbb'], getline(1, '$'))
+  %bw!
+  call assert_true(filereadable(swapfname))
+
+  " Test for v:swapchoice = 'a' (abort)
+  augroup test_swapchoice
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'a'
+  augroup END
+  try
+    edit Xfile5
+  catch /^Vim:Interrupt$/
+  endtry
+  call assert_equal('', @%)
+  call assert_true(bufexists('Xfile5'))
+  %bw!
+  call assert_true(filereadable(swapfname))
+
+  " Test for v:swapchoice = 'd' (delete)
+  augroup test_swapchoice
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'd'
+  augroup END
+  edit Xfile5
+  call assert_equal('Xfile5', @%)
+  %bw!
+  call assert_false(filereadable(swapfname))
+
+  call delete('Xfile5')
+  call delete(swapfname)
+  augroup test_swapchoice
+    autocmd!
+  augroup END
+  augroup! test_swapchoice
+endfunc
+
+func Test_no_swap_file()
+  call assert_equal("\nNo swap file", execute('swapname'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -146,6 +146,16 @@ func Test_vartabs()
   bwipeout!
 endfunc
 
+func Test_retab_invalid_arg()
+  new
+  call setline(1, "\ttext")
+  retab 0
+  call assert_fails("retab -8", 'E487: Argument must be positive')
+  call assert_fails("retab 10000", 'E475:')
+  call assert_fails("retab 720575940379279360", 'E475:')
+  bwipe!
+endfunc
+
 func Test_vartabs_breakindent()
   CheckOption breakindent
   new
@@ -418,5 +428,30 @@ func Test_varsofttabstop()
   iunmap <F2>
   close!
 endfunc
+
+" Setting 'shiftwidth' to a negative value, should set it to either the value
+" of 'tabstop' (if 'vartabstop' is not set) or to the first value in
+" 'vartabstop'
+func Test_shiftwidth_vartabstop()
+  setlocal tabstop=7 vartabstop=
+  call assert_fails('set shiftwidth=-1', 'E487:')
+  call assert_equal(7, &shiftwidth)
+  setlocal tabstop=7 vartabstop=5,7,10
+  call assert_fails('set shiftwidth=-1', 'E487:')
+  call assert_equal(5, &shiftwidth)
+  setlocal shiftwidth& vartabstop& tabstop&
+endfunc
+
+func Test_vartabstop_latin1()
+  let save_encoding = &encoding
+  new
+  set encoding=iso8859-1
+  silent exe "norm :se \<C-A>\<C-C>"
+  set vartabstop=400
+  exe "norm i00\t\<C-D>"
+  bwipe!
+  let &encoding = save_encoding
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

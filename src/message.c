@@ -12,7 +12,6 @@
  */
 
 #define MESSAGE_FILE		// don't include prototype for smsg()
-#define USING_FLOAT_STUFF
 
 #include "vim.h"
 
@@ -165,7 +164,7 @@ msg_attr_keep(
 #ifdef FEAT_JOB_CHANNEL
     if (emsg_to_channel_log)
 	// Write message in the channel log.
-	ch_log(NULL, "ERROR: %s", (char *)s);
+	ch_log(NULL, "ERROR: %s", s);
 #endif
 
     // Truncate the message if needed.
@@ -181,6 +180,8 @@ msg_attr_keep(
     if (keep && retval && vim_strsize((char_u *)s)
 			    < (int)(Rows - cmdline_row - 1) * Columns + sc_col)
 	set_keep_msg((char_u *)s, 0);
+
+    need_fileinfo = FALSE;
 
     vim_free(buf);
     --entered;
@@ -447,7 +448,7 @@ reset_last_sourcing(void)
     static int
 other_sourcing_name(void)
 {
-    if (SOURCING_NAME != NULL)
+    if (HAVE_SOURCING_INFO && SOURCING_NAME != NULL)
     {
 	if (last_sourcing_name != NULL)
 	    return STRCMP(SOURCING_NAME, last_sourcing_name) != 0;
@@ -466,7 +467,7 @@ get_emsg_source(void)
 {
     char_u	*Buf, *p;
 
-    if (SOURCING_NAME != NULL && other_sourcing_name())
+    if (HAVE_SOURCING_INFO && SOURCING_NAME != NULL && other_sourcing_name())
     {
 	char_u	    *sname = estack_sfile(ESTACK_NONE);
 	char_u	    *tofree = sname;
@@ -523,6 +524,12 @@ get_emsg_lnum(void)
 msg_source(int attr)
 {
     char_u	*p;
+    static int	recursive = FALSE;
+
+    // Bail out if something called here causes an error.
+    if (recursive)
+	return;
+    recursive = TRUE;
 
     ++no_wait_return;
     p = get_emsg_source();
@@ -542,13 +549,13 @@ msg_source(int attr)
     // remember the last sourcing name printed, also when it's empty
     if (SOURCING_NAME == NULL || other_sourcing_name())
     {
-	vim_free(last_sourcing_name);
-	if (SOURCING_NAME == NULL)
-	    last_sourcing_name = NULL;
-	else
+	VIM_CLEAR(last_sourcing_name);
+	if (SOURCING_NAME != NULL)
 	    last_sourcing_name = vim_strsave(SOURCING_NAME);
     }
     --no_wait_return;
+
+    recursive = FALSE;
 }
 
 /*
@@ -582,7 +589,7 @@ ignore_error_for_testing(char_u *error)
     if (STRCMP("RESET", error) == 0)
 	ga_clear_strings(&ignore_error_list);
     else
-	ga_add_string(&ignore_error_list, error);
+	ga_copy_string(&ignore_error_list, error);
 }
 
     static int
@@ -685,6 +692,9 @@ emsg_core(char_u *s)
 	 */
 	if (emsg_silent != 0)
 	{
+#ifdef FEAT_EVAL
+	    ++did_emsg_silent;
+#endif
 	    if (emsg_noredir == 0)
 	    {
 		msg_start();
@@ -731,7 +741,7 @@ emsg_core(char_u *s)
 	    flush_buffers(FLUSH_MINIMAL);  // flush internal buffers
 	++did_emsg;			   // flag for DoOneCmd()
 #ifdef FEAT_EVAL
-	did_uncaught_emsg = TRUE;
+	++uncaught_emsg;
 #endif
     }
 
@@ -816,10 +826,13 @@ semsg(const char *s, ...)
 iemsg(char *s)
 {
     if (!emsg_not_now())
+    {
 	emsg_core((char_u *)s);
-#ifdef ABORT_ON_INTERNAL_ERROR
-    abort();
+#if defined(ABORT_ON_INTERNAL_ERROR) && defined(FEAT_EVAL)
+	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
+	abort();
 #endif
+    }
 }
 
 #ifndef PROTO  // manual proto with __attribute__
@@ -862,9 +875,10 @@ siemsg(const char *s, ...)
     void
 internal_error(char *where)
 {
-    siemsg(_(e_intern2), where);
+    siemsg(_(e_internal_error_str), where);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Like internal_error() but do not call abort(), to avoid tests using
  * test_unknown() and test_void() causing Vim to exit.
@@ -872,28 +886,31 @@ internal_error(char *where)
     void
 internal_error_no_abort(char *where)
 {
-     semsg(_(e_intern2), where);
+     semsg(_(e_internal_error_str), where);
 }
+#endif
 
 // emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes.
 
     void
 emsg_invreg(int name)
 {
-    semsg(_("E354: Invalid register name: '%s'"), transchar(name));
+    semsg(_(e_invalid_register_name_str), transchar(name));
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Give an error message which contains %s for "name[len]".
  */
     void
 emsg_namelen(char *msg, char_u *name, int len)
 {
-    char_u *copy = vim_strnsave((char_u *)name, len);
+    char_u *copy = vim_strnsave(name, len);
 
     semsg(msg, copy == NULL ? "NULL" : (char *)copy);
     vim_free(copy);
 }
+#endif
 
 /*
  * Like msg(), but truncate to a single line if p_shm contains 't', or when
@@ -1040,7 +1057,7 @@ ex_messages(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1355,7 +1372,7 @@ hit_return_msg(void)
 {
     int		save_p_more = p_more;
 
-    p_more = FALSE;	// don't want see this message when scrolling back
+    p_more = FALSE;	// don't want to see this message when scrolling back
     if (msg_didout)	// start on a new line
 	msg_putchar('\n');
     if (got_int)
@@ -1405,7 +1422,10 @@ msg_start(void)
     int		did_return = FALSE;
 
     if (!msg_silent)
+    {
 	VIM_CLEAR(keep_msg);
+	need_fileinfo = FALSE;
+    }
 
 #ifdef FEAT_EVAL
     if (need_clr_eos)
@@ -1839,6 +1859,8 @@ msg_prt_line(char_u *s, int list)
     int		attr = 0;
     char_u	*trail = NULL;
     char_u	*lead = NULL;
+    int		in_multispace = FALSE;
+    int		multispace_pos = 0;
     int		l;
     char_u	buf[MB_MAXBYTES + 1];
 
@@ -1910,6 +1932,10 @@ msg_prt_line(char_u *s, int list)
 	{
 	    attr = 0;
 	    c = *s++;
+	    in_multispace = c == ' '
+		&& ((col > 0 && s[-2] == ' ') || *s == ' ');
+	    if (!in_multispace)
+		multispace_pos = 0;
 	    if (c == TAB && (!list || curwin->w_lcs_chars.tab1))
 	    {
 		// tab amount depends on current column
@@ -1961,20 +1987,31 @@ msg_prt_line(char_u *s, int list)
 		// the same in plain text.
 		attr = HL_ATTR(HLF_8);
 	    }
-	    else if (c == ' ' && lead != NULL && s <= lead)
+	    else if (c == ' ')
 	    {
-		c = curwin->w_lcs_chars.lead;
-		attr = HL_ATTR(HLF_8);
-	    }
-	    else if (c == ' ' && trail != NULL && s > trail)
-	    {
-		c = curwin->w_lcs_chars.trail;
-		attr = HL_ATTR(HLF_8);
-	    }
-	    else if (c == ' ' && list && curwin->w_lcs_chars.space != NUL)
-	    {
-		c = curwin->w_lcs_chars.space;
-		attr = HL_ATTR(HLF_8);
+		if (lead != NULL && s <= lead)
+		{
+		    c = curwin->w_lcs_chars.lead;
+		    attr = HL_ATTR(HLF_8);
+		}
+		else if (trail != NULL && s > trail)
+		{
+		    c = curwin->w_lcs_chars.trail;
+		    attr = HL_ATTR(HLF_8);
+		}
+		else if (list && in_multispace
+			&& curwin->w_lcs_chars.multispace != NULL)
+		{
+		    c = curwin->w_lcs_chars.multispace[multispace_pos++];
+		    if (curwin->w_lcs_chars.multispace[multispace_pos] == NUL)
+			multispace_pos = 0;
+		    attr = HL_ATTR(HLF_8);
+		}
+		else if (list && curwin->w_lcs_chars.space != NUL)
+		{
+		    c = curwin->w_lcs_chars.space;
+		    attr = HL_ATTR(HLF_8);
+		}
 	    }
 	}
 
@@ -2131,6 +2168,8 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 	msg_puts_printf((char_u *)str, maxlen);
     else
 	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
+
+    need_fileinfo = FALSE;
 }
 
 /*
@@ -2748,19 +2787,21 @@ msg_puts_printf(char_u *str, int maxlen)
 
     if (*p != NUL && !(silent_mode && p_verbose == 0))
     {
-	int c = -1;
+	char_u *tofree = NULL;
 
 	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
 	{
-	    c = p[maxlen];
-	    p[maxlen] = 0;
+	    tofree = vim_strnsave(p, (size_t)maxlen);
+	    p = tofree;
 	}
-	if (info_message)
-	    mch_msg((char *)p);
-	else
-	    mch_errmsg((char *)p);
-	if (c != -1)
-	    p[maxlen] = c;
+	if (p != NULL)
+	{
+	    if (info_message)
+		mch_msg((char *)p);
+	    else
+		mch_errmsg((char *)p);
+	    vim_free(tofree);
+	}
     }
 
     msg_didout = TRUE;	    // assume that line is not empty
@@ -3595,7 +3636,7 @@ verbose_open(void)
 	verbose_fd = mch_fopen((char *)p_vfile, "a");
 	if (verbose_fd == NULL)
 	{
-	    semsg(_(e_notopen), p_vfile);
+	    semsg(_(e_cant_open_file_str), p_vfile);
 	    return FAIL;
 	}
     }
@@ -3608,6 +3649,12 @@ verbose_open(void)
  */
     void
 give_warning(char_u *message, int hl)
+{
+    give_warning_with_source(message, hl, FALSE);
+}
+
+    void
+give_warning_with_source(char_u *message, int hl, int with_source)
 {
     // Don't do this for ":silent".
     if (msg_silent != 0)
@@ -3624,8 +3671,21 @@ give_warning(char_u *message, int hl)
 	keep_msg_attr = HL_ATTR(HLF_W);
     else
 	keep_msg_attr = 0;
-    if (msg_attr((char *)message, keep_msg_attr) && msg_scrolled == 0)
+
+    if (with_source)
+    {
+	// Do what msg() does, but with a column offset if the warning should
+	// be after the mode message.
+	msg_start();
+	msg_source(HL_ATTR(HLF_W));
+	msg_puts(" ");
+	msg_puts_attr((char *)message, HL_ATTR(HLF_W) | MSG_HIST);
+	msg_clr_eos();
+	(void)msg_end();
+    }
+    else if (msg_attr((char *)message, keep_msg_attr) && msg_scrolled == 0)
 	set_keep_msg(message, keep_msg_attr);
+
     msg_didout = FALSE;	    // overwrite this message
     msg_nowait = TRUE;	    // don't wait for this message
     msg_col = 0;
@@ -3641,7 +3701,7 @@ give_warning2(char_u *message, char_u *a1, int hl)
     {
 	// Very early in initialisation and already something wrong, just give
 	// the raw message so the user at least gets a hint.
-	give_warning((char_u *)message, hl);
+	give_warning(message, hl);
     }
     else
     {
@@ -3692,6 +3752,8 @@ msg_advance(int col)
  * Other buttons- use your imagination!
  * A '&' in a button name becomes a shortcut, so each '&' should be before a
  * different letter.
+ *
+ * Returns 0 if cancelled, otherwise the nth button (1-indexed).
  */
     int
 do_dialog(
@@ -4084,1112 +4146,3 @@ vim_dialog_yesnoallcancel(
 }
 
 #endif // FEAT_GUI_DIALOG || FEAT_CON_DIALOG
-
-#if defined(FEAT_EVAL)
-static char *e_printf = N_("E766: Insufficient arguments for printf()");
-
-/*
- * Get number argument from "idxp" entry in "tvs".  First entry is 1.
- */
-    static varnumber_T
-tv_nr(typval_T *tvs, int *idxp)
-{
-    int		idx = *idxp - 1;
-    varnumber_T	n = 0;
-    int		err = FALSE;
-
-    if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg(_(e_printf));
-    else
-    {
-	++*idxp;
-	n = tv_get_number_chk(&tvs[idx], &err);
-	if (err)
-	    n = 0;
-    }
-    return n;
-}
-
-/*
- * Get string argument from "idxp" entry in "tvs".  First entry is 1.
- * If "tofree" is NULL tv_get_string_chk() is used.  Some types (e.g. List)
- * are not converted to a string.
- * If "tofree" is not NULL echo_string() is used.  All types are converted to
- * a string with the same format as ":echo".  The caller must free "*tofree".
- * Returns NULL for an error.
- */
-    static char *
-tv_str(typval_T *tvs, int *idxp, char_u **tofree)
-{
-    int		    idx = *idxp - 1;
-    char	    *s = NULL;
-    static char_u   numbuf[NUMBUFLEN];
-
-    if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg(_(e_printf));
-    else
-    {
-	++*idxp;
-	if (tofree != NULL)
-	    s = (char *)echo_string(&tvs[idx], tofree, numbuf, get_copyID());
-	else
-	    s = (char *)tv_get_string_chk(&tvs[idx]);
-    }
-    return s;
-}
-
-# ifdef FEAT_FLOAT
-/*
- * Get float argument from "idxp" entry in "tvs".  First entry is 1.
- */
-    static double
-tv_float(typval_T *tvs, int *idxp)
-{
-    int		idx = *idxp - 1;
-    double	f = 0;
-
-    if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg(_(e_printf));
-    else
-    {
-	++*idxp;
-	if (tvs[idx].v_type == VAR_FLOAT)
-	    f = tvs[idx].vval.v_float;
-	else if (tvs[idx].v_type == VAR_NUMBER)
-	    f = (double)tvs[idx].vval.v_number;
-	else
-	    emsg(_("E807: Expected Float argument for printf()"));
-    }
-    return f;
-}
-# endif
-#endif
-
-#ifdef FEAT_FLOAT
-/*
- * Return the representation of infinity for printf() function:
- * "-inf", "inf", "+inf", " inf", "-INF", "INF", "+INF" or " INF".
- */
-    static const char *
-infinity_str(int positive,
-	     char fmt_spec,
-	     int force_sign,
-	     int space_for_positive)
-{
-    static const char *table[] =
-    {
-	"-inf", "inf", "+inf", " inf",
-	"-INF", "INF", "+INF", " INF"
-    };
-    int idx = positive * (1 + force_sign + force_sign * space_for_positive);
-
-    if (ASCII_ISUPPER(fmt_spec))
-	idx += 4;
-    return table[idx];
-}
-#endif
-
-/*
- * This code was included to provide a portable vsnprintf() and snprintf().
- * Some systems may provide their own, but we always use this one for
- * consistency.
- *
- * This code is based on snprintf.c - a portable implementation of snprintf
- * by Mark Martinec <mark.martinec@ijs.si>, Version 2.2, 2000-10-06.
- * Included with permission.  It was heavily modified to fit in Vim.
- * The original code, including useful comments, can be found here:
- *	http://www.ijs.si/software/snprintf/
- *
- * This snprintf() only supports the following conversion specifiers:
- * s, c, d, u, o, x, X, p  (and synonyms: i, D, U, O - see below)
- * with flags: '-', '+', ' ', '0' and '#'.
- * An asterisk is supported for field width as well as precision.
- *
- * Limited support for floating point was added: 'f', 'F', 'e', 'E', 'g', 'G'.
- *
- * Length modifiers 'h' (short int) and 'l' (long int) and 'll' (long long int)
- * are supported.  NOTE: for 'll' the argument is varnumber_T or uvarnumber_T.
- *
- * The locale is not used, the string is used as a byte string.  This is only
- * relevant for double-byte encodings where the second byte may be '%'.
- *
- * It is permitted for "str_m" to be zero, and it is permitted to specify NULL
- * pointer for resulting string argument if "str_m" is zero (as per ISO C99).
- *
- * The return value is the number of characters which would be generated
- * for the given input, excluding the trailing NUL. If this value
- * is greater or equal to "str_m", not all characters from the result
- * have been stored in str, output bytes beyond the ("str_m"-1) -th character
- * are discarded. If "str_m" is greater than zero it is guaranteed
- * the resulting string will be NUL-terminated.
- */
-
-/*
- * When va_list is not supported we only define vim_snprintf().
- *
- * vim_vsnprintf_typval() can be invoked with either "va_list" or a list of
- * "typval_T".  When the latter is not used it must be NULL.
- */
-
-// When generating prototypes all of this is skipped, cproto doesn't
-// understand this.
-#ifndef PROTO
-
-// Like vim_vsnprintf() but append to the string.
-    int
-vim_snprintf_add(char *str, size_t str_m, const char *fmt, ...)
-{
-    va_list	ap;
-    int		str_l;
-    size_t	len = STRLEN(str);
-    size_t	space;
-
-    if (str_m <= len)
-	space = 0;
-    else
-	space = str_m - len;
-    va_start(ap, fmt);
-    str_l = vim_vsnprintf(str + len, space, fmt, ap);
-    va_end(ap);
-    return str_l;
-}
-
-    int
-vim_snprintf(char *str, size_t str_m, const char *fmt, ...)
-{
-    va_list	ap;
-    int		str_l;
-
-    va_start(ap, fmt);
-    str_l = vim_vsnprintf(str, str_m, fmt, ap);
-    va_end(ap);
-    return str_l;
-}
-
-    int
-vim_vsnprintf(
-    char	*str,
-    size_t	str_m,
-    const char	*fmt,
-    va_list	ap)
-{
-    return vim_vsnprintf_typval(str, str_m, fmt, ap, NULL);
-}
-
-    int
-vim_vsnprintf_typval(
-    char	*str,
-    size_t	str_m,
-    const char	*fmt,
-    va_list	ap,
-    typval_T	*tvs)
-{
-    size_t	str_l = 0;
-    const char	*p = fmt;
-    int		arg_idx = 1;
-
-    if (p == NULL)
-	p = "";
-    while (*p != NUL)
-    {
-	if (*p != '%')
-	{
-	    char    *q = strchr(p + 1, '%');
-	    size_t  n = (q == NULL) ? STRLEN(p) : (size_t)(q - p);
-
-	    // Copy up to the next '%' or NUL without any changes.
-	    if (str_l < str_m)
-	    {
-		size_t avail = str_m - str_l;
-
-		mch_memmove(str + str_l, p, n > avail ? avail : n);
-	    }
-	    p += n;
-	    str_l += n;
-	}
-	else
-	{
-	    size_t  min_field_width = 0, precision = 0;
-	    int	    zero_padding = 0, precision_specified = 0, justify_left = 0;
-	    int	    alternate_form = 0, force_sign = 0;
-
-	    // If both the ' ' and '+' flags appear, the ' ' flag should be
-	    // ignored.
-	    int	    space_for_positive = 1;
-
-	    // allowed values: \0, h, l, L
-	    char    length_modifier = '\0';
-
-	    // temporary buffer for simple numeric->string conversion
-# if defined(FEAT_FLOAT)
-#  define TMP_LEN 350	// On my system 1e308 is the biggest number possible.
-			// That sounds reasonable to use as the maximum
-			// printable.
-# else
-#  define TMP_LEN 66
-# endif
-	    char    tmp[TMP_LEN];
-
-	    // string address in case of string argument
-	    const char  *str_arg = NULL;
-
-	    // natural field width of arg without padding and sign
-	    size_t  str_arg_l;
-
-	    // unsigned char argument value - only defined for c conversion.
-	    // N.B. standard explicitly states the char argument for the c
-	    // conversion is unsigned
-	    unsigned char uchar_arg;
-
-	    // number of zeros to be inserted for numeric conversions as
-	    // required by the precision or minimal field width
-	    size_t  number_of_zeros_to_pad = 0;
-
-	    // index into tmp where zero padding is to be inserted
-	    size_t  zero_padding_insertion_ind = 0;
-
-	    // current conversion specifier character
-	    char    fmt_spec = '\0';
-
-	    // buffer for 's' and 'S' specs
-	    char_u  *tofree = NULL;
-
-
-	    p++;  // skip '%'
-
-	    // parse flags
-	    while (*p == '0' || *p == '-' || *p == '+' || *p == ' '
-						   || *p == '#' || *p == '\'')
-	    {
-		switch (*p)
-		{
-		    case '0': zero_padding = 1; break;
-		    case '-': justify_left = 1; break;
-		    case '+': force_sign = 1; space_for_positive = 0; break;
-		    case ' ': force_sign = 1;
-			      // If both the ' ' and '+' flags appear, the ' '
-			      // flag should be ignored
-			      break;
-		    case '#': alternate_form = 1; break;
-		    case '\'': break;
-		}
-		p++;
-	    }
-	    // If the '0' and '-' flags both appear, the '0' flag should be
-	    // ignored.
-
-	    // parse field width
-	    if (*p == '*')
-	    {
-		int j;
-
-		p++;
-		j =
-# if defined(FEAT_EVAL)
-		    tvs != NULL ? tv_nr(tvs, &arg_idx) :
-# endif
-			va_arg(ap, int);
-		if (j >= 0)
-		    min_field_width = j;
-		else
-		{
-		    min_field_width = -j;
-		    justify_left = 1;
-		}
-	    }
-	    else if (VIM_ISDIGIT((int)(*p)))
-	    {
-		// size_t could be wider than unsigned int; make sure we treat
-		// argument like common implementations do
-		unsigned int uj = *p++ - '0';
-
-		while (VIM_ISDIGIT((int)(*p)))
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
-		min_field_width = uj;
-	    }
-
-	    // parse precision
-	    if (*p == '.')
-	    {
-		p++;
-		precision_specified = 1;
-		if (*p == '*')
-		{
-		    int j;
-
-		    j =
-# if defined(FEAT_EVAL)
-			tvs != NULL ? tv_nr(tvs, &arg_idx) :
-# endif
-			    va_arg(ap, int);
-		    p++;
-		    if (j >= 0)
-			precision = j;
-		    else
-		    {
-			precision_specified = 0;
-			precision = 0;
-		    }
-		}
-		else if (VIM_ISDIGIT((int)(*p)))
-		{
-		    // size_t could be wider than unsigned int; make sure we
-		    // treat argument like common implementations do
-		    unsigned int uj = *p++ - '0';
-
-		    while (VIM_ISDIGIT((int)(*p)))
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
-		    precision = uj;
-		}
-	    }
-
-	    // parse 'h', 'l' and 'll' length modifiers
-	    if (*p == 'h' || *p == 'l')
-	    {
-		length_modifier = *p;
-		p++;
-		if (length_modifier == 'l' && *p == 'l')
-		{
-		    // double l = __int64 / varnumber_T
-		    length_modifier = 'L';
-		    p++;
-		}
-	    }
-	    fmt_spec = *p;
-
-	    // common synonyms:
-	    switch (fmt_spec)
-	    {
-		case 'i': fmt_spec = 'd'; break;
-		case 'D': fmt_spec = 'd'; length_modifier = 'l'; break;
-		case 'U': fmt_spec = 'u'; length_modifier = 'l'; break;
-		case 'O': fmt_spec = 'o'; length_modifier = 'l'; break;
-		default: break;
-	    }
-
-# if defined(FEAT_EVAL)
-	    switch (fmt_spec)
-	    {
-		case 'd': case 'u': case 'o': case 'x': case 'X':
-		    if (tvs != NULL && length_modifier == '\0')
-			length_modifier = 'L';
-	    }
-# endif
-
-	    // get parameter value, do initial processing
-	    switch (fmt_spec)
-	    {
-		// '%' and 'c' behave similar to 's' regarding flags and field
-		// widths
-	    case '%':
-	    case 'c':
-	    case 's':
-	    case 'S':
-		str_arg_l = 1;
-		switch (fmt_spec)
-		{
-		case '%':
-		    str_arg = p;
-		    break;
-
-		case 'c':
-		    {
-			int j;
-
-			j =
-# if defined(FEAT_EVAL)
-			    tvs != NULL ? tv_nr(tvs, &arg_idx) :
-# endif
-				va_arg(ap, int);
-			// standard demands unsigned char
-			uchar_arg = (unsigned char)j;
-			str_arg = (char *)&uchar_arg;
-			break;
-		    }
-
-		case 's':
-		case 'S':
-		    str_arg =
-# if defined(FEAT_EVAL)
-				tvs != NULL ? tv_str(tvs, &arg_idx, &tofree) :
-# endif
-				    va_arg(ap, char *);
-		    if (str_arg == NULL)
-		    {
-			str_arg = "[NULL]";
-			str_arg_l = 6;
-		    }
-		    // make sure not to address string beyond the specified
-		    // precision !!!
-		    else if (!precision_specified)
-			str_arg_l = strlen(str_arg);
-		    // truncate string if necessary as requested by precision
-		    else if (precision == 0)
-			str_arg_l = 0;
-		    else
-		    {
-			// Don't put the #if inside memchr(), it can be a
-			// macro.
-			// memchr on HP does not like n > 2^31  !!!
-			char *q = memchr(str_arg, '\0',
-				  precision <= (size_t)0x7fffffffL ? precision
-						       : (size_t)0x7fffffffL);
-			str_arg_l = (q == NULL) ? precision
-						      : (size_t)(q - str_arg);
-		    }
-		    if (fmt_spec == 'S')
-		    {
-			if (min_field_width != 0)
-			    min_field_width += STRLEN(str_arg)
-				     - mb_string2cells((char_u *)str_arg, -1);
-			if (precision)
-			{
-			    char_u  *p1;
-			    size_t  i = 0;
-
-			    for (p1 = (char_u *)str_arg; *p1;
-							  p1 += mb_ptr2len(p1))
-			    {
-				i += (size_t)mb_ptr2cells(p1);
-				if (i > precision)
-				    break;
-			    }
-			    str_arg_l = precision = p1 - (char_u *)str_arg;
-			}
-		    }
-		    break;
-
-		default:
-		    break;
-		}
-		break;
-
-	    case 'd': case 'u':
-	    case 'b': case 'B':
-	    case 'o':
-	    case 'x': case 'X':
-	    case 'p':
-		{
-		    // NOTE: the u, b, o, x, X and p conversion specifiers
-		    // imply the value is unsigned;  d implies a signed
-		    // value
-
-		    // 0 if numeric argument is zero (or if pointer is
-		    // NULL for 'p'), +1 if greater than zero (or nonzero
-		    // for unsigned arguments), -1 if negative (unsigned
-		    // argument is never negative)
-		    int arg_sign = 0;
-
-		    // only set for length modifier h, or for no length
-		    // modifiers
-		    int int_arg = 0;
-		    unsigned int uint_arg = 0;
-
-		    // only set for length modifier l
-		    long int long_arg = 0;
-		    unsigned long int ulong_arg = 0;
-
-		    // only set for length modifier ll
-		    varnumber_T llong_arg = 0;
-		    uvarnumber_T ullong_arg = 0;
-
-		    // only set for b conversion
-		    uvarnumber_T bin_arg = 0;
-
-		    // pointer argument value -only defined for p
-		    // conversion
-		    void *ptr_arg = NULL;
-
-		    if (fmt_spec == 'p')
-		    {
-			length_modifier = '\0';
-			ptr_arg =
-# if defined(FEAT_EVAL)
-				 tvs != NULL ? (void *)tv_str(tvs, &arg_idx,
-									NULL) :
-# endif
-					va_arg(ap, void *);
-			if (ptr_arg != NULL)
-			    arg_sign = 1;
-		    }
-		    else if (fmt_spec == 'b' || fmt_spec == 'B')
-		    {
-			bin_arg =
-# if defined(FEAT_EVAL)
-				    tvs != NULL ?
-					   (uvarnumber_T)tv_nr(tvs, &arg_idx) :
-# endif
-					va_arg(ap, uvarnumber_T);
-			if (bin_arg != 0)
-			    arg_sign = 1;
-		    }
-		    else if (fmt_spec == 'd')
-		    {
-			// signed
-			switch (length_modifier)
-			{
-			case '\0':
-			case 'h':
-			    // char and short arguments are passed as int.
-			    int_arg =
-# if defined(FEAT_EVAL)
-					tvs != NULL ? tv_nr(tvs, &arg_idx) :
-# endif
-					    va_arg(ap, int);
-			    if (int_arg > 0)
-				arg_sign =  1;
-			    else if (int_arg < 0)
-				arg_sign = -1;
-			    break;
-			case 'l':
-			    long_arg =
-# if defined(FEAT_EVAL)
-					tvs != NULL ? tv_nr(tvs, &arg_idx) :
-# endif
-					    va_arg(ap, long int);
-			    if (long_arg > 0)
-				arg_sign =  1;
-			    else if (long_arg < 0)
-				arg_sign = -1;
-			    break;
-			case 'L':
-			    llong_arg =
-# if defined(FEAT_EVAL)
-					tvs != NULL ? tv_nr(tvs, &arg_idx) :
-# endif
-					    va_arg(ap, varnumber_T);
-			    if (llong_arg > 0)
-				arg_sign =  1;
-			    else if (llong_arg < 0)
-				arg_sign = -1;
-			    break;
-			}
-		    }
-		    else
-		    {
-			// unsigned
-			switch (length_modifier)
-			{
-			    case '\0':
-			    case 'h':
-				uint_arg =
-# if defined(FEAT_EVAL)
-					    tvs != NULL ? (unsigned)
-							tv_nr(tvs, &arg_idx) :
-# endif
-						va_arg(ap, unsigned int);
-				if (uint_arg != 0)
-				    arg_sign = 1;
-				break;
-			    case 'l':
-				ulong_arg =
-# if defined(FEAT_EVAL)
-					    tvs != NULL ? (unsigned long)
-							tv_nr(tvs, &arg_idx) :
-# endif
-						va_arg(ap, unsigned long int);
-				if (ulong_arg != 0)
-				    arg_sign = 1;
-				break;
-			    case 'L':
-				ullong_arg =
-# if defined(FEAT_EVAL)
-					    tvs != NULL ? (uvarnumber_T)
-							tv_nr(tvs, &arg_idx) :
-# endif
-						va_arg(ap, uvarnumber_T);
-				if (ullong_arg != 0)
-				    arg_sign = 1;
-				break;
-			}
-		    }
-
-		    str_arg = tmp;
-		    str_arg_l = 0;
-
-		    // NOTE:
-		    //   For d, i, u, o, x, and X conversions, if precision is
-		    //   specified, the '0' flag should be ignored. This is so
-		    //   with Solaris 2.6, Digital UNIX 4.0, HPUX 10, Linux,
-		    //   FreeBSD, NetBSD; but not with Perl.
-		    if (precision_specified)
-			zero_padding = 0;
-		    if (fmt_spec == 'd')
-		    {
-			if (force_sign && arg_sign >= 0)
-			    tmp[str_arg_l++] = space_for_positive ? ' ' : '+';
-			// leave negative numbers for sprintf to handle, to
-			// avoid handling tricky cases like (short int)-32768
-		    }
-		    else if (alternate_form)
-		    {
-			if (arg_sign != 0
-				     && (fmt_spec == 'b' || fmt_spec == 'B'
-				      || fmt_spec == 'x' || fmt_spec == 'X') )
-			{
-			    tmp[str_arg_l++] = '0';
-			    tmp[str_arg_l++] = fmt_spec;
-			}
-			// alternate form should have no effect for p
-			// conversion, but ...
-		    }
-
-		    zero_padding_insertion_ind = str_arg_l;
-		    if (!precision_specified)
-			precision = 1;   // default precision is 1
-		    if (precision == 0 && arg_sign == 0)
-		    {
-			// When zero value is formatted with an explicit
-			// precision 0, the resulting formatted string is
-			// empty (d, i, u, b, B, o, x, X, p).
-		    }
-		    else
-		    {
-			char	f[6];
-			int	f_l = 0;
-
-			// construct a simple format string for sprintf
-			f[f_l++] = '%';
-			if (!length_modifier)
-			    ;
-			else if (length_modifier == 'L')
-			{
-# ifdef MSWIN
-			    f[f_l++] = 'I';
-			    f[f_l++] = '6';
-			    f[f_l++] = '4';
-# else
-			    f[f_l++] = 'l';
-			    f[f_l++] = 'l';
-# endif
-			}
-			else
-			    f[f_l++] = length_modifier;
-			f[f_l++] = fmt_spec;
-			f[f_l++] = '\0';
-
-			if (fmt_spec == 'p')
-			    str_arg_l += sprintf(tmp + str_arg_l, f, ptr_arg);
-			else if (fmt_spec == 'b' || fmt_spec == 'B')
-			{
-			    char	    b[8 * sizeof(uvarnumber_T)];
-			    size_t	    b_l = 0;
-			    uvarnumber_T    bn = bin_arg;
-
-			    do
-			    {
-				b[sizeof(b) - ++b_l] = '0' + (bn & 0x1);
-				bn >>= 1;
-			    }
-			    while (bn != 0);
-
-			    memcpy(tmp + str_arg_l, b + sizeof(b) - b_l, b_l);
-			    str_arg_l += b_l;
-			}
-			else if (fmt_spec == 'd')
-			{
-			    // signed
-			    switch (length_modifier)
-			    {
-			    case '\0': str_arg_l += sprintf(
-						 tmp + str_arg_l, f,
-						 int_arg);
-				       break;
-			    case 'h': str_arg_l += sprintf(
-						 tmp + str_arg_l, f,
-						 (short)int_arg);
-				      break;
-			    case 'l': str_arg_l += sprintf(
-						tmp + str_arg_l, f, long_arg);
-				      break;
-			    case 'L': str_arg_l += sprintf(
-					       tmp + str_arg_l, f, llong_arg);
-				      break;
-			    }
-			}
-			else
-			{
-			    // unsigned
-			    switch (length_modifier)
-			    {
-			    case '\0': str_arg_l += sprintf(
-						tmp + str_arg_l, f,
-						uint_arg);
-				       break;
-			    case 'h': str_arg_l += sprintf(
-						tmp + str_arg_l, f,
-						(unsigned short)uint_arg);
-				      break;
-			    case 'l': str_arg_l += sprintf(
-					       tmp + str_arg_l, f, ulong_arg);
-				      break;
-			    case 'L': str_arg_l += sprintf(
-					      tmp + str_arg_l, f, ullong_arg);
-				      break;
-			    }
-			}
-
-			// include the optional minus sign and possible
-			// "0x" in the region before the zero padding
-			// insertion point
-			if (zero_padding_insertion_ind < str_arg_l
-				&& tmp[zero_padding_insertion_ind] == '-')
-			    zero_padding_insertion_ind++;
-			if (zero_padding_insertion_ind + 1 < str_arg_l
-				&& tmp[zero_padding_insertion_ind]   == '0'
-				&& (tmp[zero_padding_insertion_ind + 1] == 'x'
-				 || tmp[zero_padding_insertion_ind + 1] == 'X'))
-			    zero_padding_insertion_ind += 2;
-		    }
-
-		    {
-			size_t num_of_digits = str_arg_l
-						 - zero_padding_insertion_ind;
-
-			if (alternate_form && fmt_spec == 'o'
-				// unless zero is already the first
-				// character
-				&& !(zero_padding_insertion_ind < str_arg_l
-				    && tmp[zero_padding_insertion_ind] == '0'))
-			{
-			    // assure leading zero for alternate-form
-			    // octal numbers
-			    if (!precision_specified
-					     || precision < num_of_digits + 1)
-			    {
-				// precision is increased to force the
-				// first character to be zero, except if a
-				// zero value is formatted with an
-				// explicit precision of zero
-				precision = num_of_digits + 1;
-			    }
-			}
-			// zero padding to specified precision?
-			if (num_of_digits < precision)
-			    number_of_zeros_to_pad = precision - num_of_digits;
-		    }
-		    // zero padding to specified minimal field width?
-		    if (!justify_left && zero_padding)
-		    {
-			int n = (int)(min_field_width - (str_arg_l
-						    + number_of_zeros_to_pad));
-			if (n > 0)
-			    number_of_zeros_to_pad += n;
-		    }
-		    break;
-		}
-
-# ifdef FEAT_FLOAT
-	    case 'f':
-	    case 'F':
-	    case 'e':
-	    case 'E':
-	    case 'g':
-	    case 'G':
-		{
-		    // Floating point.
-		    double	f;
-		    double	abs_f;
-		    char	format[40];
-		    int		l;
-		    int		remove_trailing_zeroes = FALSE;
-
-		    f =
-#  if defined(FEAT_EVAL)
-			tvs != NULL ? tv_float(tvs, &arg_idx) :
-#  endif
-			    va_arg(ap, double);
-		    abs_f = f < 0 ? -f : f;
-
-		    if (fmt_spec == 'g' || fmt_spec == 'G')
-		    {
-			// Would be nice to use %g directly, but it prints
-			// "1.0" as "1", we don't want that.
-			if ((abs_f >= 0.001 && abs_f < 10000000.0)
-							      || abs_f == 0.0)
-			    fmt_spec = ASCII_ISUPPER(fmt_spec) ? 'F' : 'f';
-			else
-			    fmt_spec = fmt_spec == 'g' ? 'e' : 'E';
-			remove_trailing_zeroes = TRUE;
-		    }
-
-		    if ((fmt_spec == 'f' || fmt_spec == 'F') &&
-#  ifdef VAX
-			    abs_f > 1.0e38
-#  else
-			    abs_f > 1.0e307
-#  endif
-			    )
-		    {
-			// Avoid a buffer overflow
-			STRCPY(tmp, infinity_str(f > 0.0, fmt_spec,
-					      force_sign, space_for_positive));
-			str_arg_l = STRLEN(tmp);
-			zero_padding = 0;
-		    }
-		    else
-		    {
-			if (isnan(f))
-			{
-			    // Not a number: nan or NAN
-			    STRCPY(tmp, ASCII_ISUPPER(fmt_spec) ? "NAN"
-								      : "nan");
-			    str_arg_l = 3;
-			    zero_padding = 0;
-			}
-			else if (isinf(f))
-			{
-			    STRCPY(tmp, infinity_str(f > 0.0, fmt_spec,
-					      force_sign, space_for_positive));
-			    str_arg_l = STRLEN(tmp);
-			    zero_padding = 0;
-			}
-			else
-			{
-			    // Regular float number
-			    format[0] = '%';
-			    l = 1;
-			    if (force_sign)
-				format[l++] = space_for_positive ? ' ' : '+';
-			    if (precision_specified)
-			    {
-				size_t max_prec = TMP_LEN - 10;
-
-				// Make sure we don't get more digits than we
-				// have room for.
-				if ((fmt_spec == 'f' || fmt_spec == 'F')
-								&& abs_f > 1.0)
-				    max_prec -= (size_t)log10(abs_f);
-				if (precision > max_prec)
-				    precision = max_prec;
-				l += sprintf(format + l, ".%d", (int)precision);
-			    }
-			    format[l] = fmt_spec == 'F' ? 'f' : fmt_spec;
-			    format[l + 1] = NUL;
-
-			    str_arg_l = sprintf(tmp, format, f);
-			}
-
-			if (remove_trailing_zeroes)
-			{
-			    int i;
-			    char *tp;
-
-			    // Using %g or %G: remove superfluous zeroes.
-			    if (fmt_spec == 'f' || fmt_spec == 'F')
-				tp = tmp + str_arg_l - 1;
-			    else
-			    {
-				tp = (char *)vim_strchr((char_u *)tmp,
-						 fmt_spec == 'e' ? 'e' : 'E');
-				if (tp != NULL)
-				{
-				    // Remove superfluous '+' and leading
-				    // zeroes from the exponent.
-				    if (tp[1] == '+')
-				    {
-					// Change "1.0e+07" to "1.0e07"
-					STRMOVE(tp + 1, tp + 2);
-					--str_arg_l;
-				    }
-				    i = (tp[1] == '-') ? 2 : 1;
-				    while (tp[i] == '0')
-				    {
-					// Change "1.0e07" to "1.0e7"
-					STRMOVE(tp + i, tp + i + 1);
-					--str_arg_l;
-				    }
-				    --tp;
-				}
-			    }
-
-			    if (tp != NULL && !precision_specified)
-				// Remove trailing zeroes, but keep the one
-				// just after a dot.
-				while (tp > tmp + 2 && *tp == '0'
-							     && tp[-1] != '.')
-				{
-				    STRMOVE(tp, tp + 1);
-				    --tp;
-				    --str_arg_l;
-				}
-			}
-			else
-			{
-			    char *tp;
-
-			    // Be consistent: some printf("%e") use 1.0e+12
-			    // and some 1.0e+012.  Remove one zero in the last
-			    // case.
-			    tp = (char *)vim_strchr((char_u *)tmp,
-						 fmt_spec == 'e' ? 'e' : 'E');
-			    if (tp != NULL && (tp[1] == '+' || tp[1] == '-')
-					  && tp[2] == '0'
-					  && vim_isdigit(tp[3])
-					  && vim_isdigit(tp[4]))
-			    {
-				STRMOVE(tp + 2, tp + 3);
-				--str_arg_l;
-			    }
-			}
-		    }
-		    if (zero_padding && min_field_width > str_arg_l
-					      && (tmp[0] == '-' || force_sign))
-		    {
-			// padding 0's should be inserted after the sign
-			number_of_zeros_to_pad = min_field_width - str_arg_l;
-			zero_padding_insertion_ind = 1;
-		    }
-		    str_arg = tmp;
-		    break;
-		}
-# endif
-
-	    default:
-		// unrecognized conversion specifier, keep format string
-		// as-is
-		zero_padding = 0;  // turn zero padding off for non-numeric
-				   // conversion
-		justify_left = 1;
-		min_field_width = 0;		    // reset flags
-
-		// discard the unrecognized conversion, just keep *
-		// the unrecognized conversion character
-		str_arg = p;
-		str_arg_l = 0;
-		if (*p != NUL)
-		    str_arg_l++;  // include invalid conversion specifier
-				  // unchanged if not at end-of-string
-		break;
-	    }
-
-	    if (*p != NUL)
-		p++;     // step over the just processed conversion specifier
-
-	    // insert padding to the left as requested by min_field_width;
-	    // this does not include the zero padding in case of numerical
-	    // conversions
-	    if (!justify_left)
-	    {
-		// left padding with blank or zero
-		int pn = (int)(min_field_width - (str_arg_l + number_of_zeros_to_pad));
-
-		if (pn > 0)
-		{
-		    if (str_l < str_m)
-		    {
-			size_t avail = str_m - str_l;
-
-			vim_memset(str + str_l, zero_padding ? '0' : ' ',
-					     (size_t)pn > avail ? avail
-								: (size_t)pn);
-		    }
-		    str_l += pn;
-		}
-	    }
-
-	    // zero padding as requested by the precision or by the minimal
-	    // field width for numeric conversions required?
-	    if (number_of_zeros_to_pad == 0)
-	    {
-		// will not copy first part of numeric right now, *
-		// force it to be copied later in its entirety
-		zero_padding_insertion_ind = 0;
-	    }
-	    else
-	    {
-		// insert first part of numerics (sign or '0x') before zero
-		// padding
-		int zn = (int)zero_padding_insertion_ind;
-
-		if (zn > 0)
-		{
-		    if (str_l < str_m)
-		    {
-			size_t avail = str_m - str_l;
-
-			mch_memmove(str + str_l, str_arg,
-					     (size_t)zn > avail ? avail
-								: (size_t)zn);
-		    }
-		    str_l += zn;
-		}
-
-		// insert zero padding as requested by the precision or min
-		// field width
-		zn = (int)number_of_zeros_to_pad;
-		if (zn > 0)
-		{
-		    if (str_l < str_m)
-		    {
-			size_t avail = str_m - str_l;
-
-			vim_memset(str + str_l, '0',
-					     (size_t)zn > avail ? avail
-								: (size_t)zn);
-		    }
-		    str_l += zn;
-		}
-	    }
-
-	    // insert formatted string
-	    // (or as-is conversion specifier for unknown conversions)
-	    {
-		int sn = (int)(str_arg_l - zero_padding_insertion_ind);
-
-		if (sn > 0)
-		{
-		    if (str_l < str_m)
-		    {
-			size_t avail = str_m - str_l;
-
-			mch_memmove(str + str_l,
-				str_arg + zero_padding_insertion_ind,
-				(size_t)sn > avail ? avail : (size_t)sn);
-		    }
-		    str_l += sn;
-		}
-	    }
-
-	    // insert right padding
-	    if (justify_left)
-	    {
-		// right blank padding to the field width
-		int pn = (int)(min_field_width
-				      - (str_arg_l + number_of_zeros_to_pad));
-
-		if (pn > 0)
-		{
-		    if (str_l < str_m)
-		    {
-			size_t avail = str_m - str_l;
-
-			vim_memset(str + str_l, ' ',
-					     (size_t)pn > avail ? avail
-								: (size_t)pn);
-		    }
-		    str_l += pn;
-		}
-	    }
-	    vim_free(tofree);
-	}
-    }
-
-    if (str_m > 0)
-    {
-	// make sure the string is nul-terminated even at the expense of
-	// overwriting the last character (shouldn't happen, but just in case)
-	//
-	str[str_l <= str_m - 1 ? str_l : str_m - 1] = '\0';
-    }
-
-    if (tvs != NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
-	emsg(_("E767: Too many arguments to printf()"));
-
-    // Return the number of characters formatted (excluding trailing nul
-    // character), that is, the number of characters that would have been
-    // written to the buffer if it were large enough.
-    return (int)str_l;
-}
-
-#endif // PROTO

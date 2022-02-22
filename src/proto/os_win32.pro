@@ -1,8 +1,9 @@
 /* os_win32.c */
-HINSTANCE vimLoadLib(char *name);
+HINSTANCE vimLoadLib(const char *name);
 int mch_is_gui_executable(void);
 HINSTANCE find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname);
 void *get_dll_import_func(HINSTANCE hInst, const char *funcname);
+void *hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook);
 int dyn_libintl_init(void);
 void dyn_libintl_end(void);
 void PlatformId(void);
@@ -64,7 +65,6 @@ int mch_access(char *n, int p);
 int mch_open(const char *name, int flags, int mode);
 FILE *mch_fopen(const char *name, const char *mode);
 int mch_copy_file_attribute(char_u *from, char_u *to);
-int myresetstkoflw(void);
 int get_cmd_argsW(char ***argvp);
 void free_cmd_argsW(void);
 void used_file_arg(char *name, int literal, int full_path, int diff_mode);
@@ -83,4 +83,5 @@ int get_conpty_type(void);
 int is_conpty_stable(void);
 int get_conpty_fix_type(void);
 void resize_console_buf(void);
+char * GetWin32Error(void);
 /* vim: set ft=c : */

@@ -64,6 +64,8 @@ function Test_lambda_fails()
   call assert_fails('echo {a, a -> a + a}(1, 2)', 'E853:')
   call assert_fails('echo {a, b -> a + b)}(1, 2)', 'E451:')
   echo assert_fails('echo 10->{a -> a + 2}', 'E107:')
+
+  call assert_fails('eval 0->(', "E110: Missing ')'")
 endfunc
 
 func Test_not_lamda()
@@ -330,6 +332,7 @@ func Test_closure_error()
     let caught_932 = 1
   endtry
   call assert_equal(1, caught_932)
+  call delete('Xscript')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

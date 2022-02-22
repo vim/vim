@@ -4,6 +4,7 @@ source shared.vim
 source check.vim
 source screendump.vim
 source term_util.vim
+import './vim9.vim' as v9
 
 func Test_abbreviation()
   " abbreviation with 0x80 should work
@@ -289,6 +290,7 @@ endfunc
 func Test_map_timeout_with_timer_interrupt()
   CheckFeature job
   CheckFeature timers
+  let g:test_is_flaky = 1
 
   " Confirm the timer invoked in exit_cb of the job doesn't disturb mapped key
   " sequence.
@@ -485,6 +487,11 @@ func Test_list_mappings()
   call assert_equal(['n  ,k            <Nop>'],
         \ execute('nmap ,k')->trim()->split("\n"))
 
+  " map with space at the beginning
+  exe "nmap \<C-V> w <Nop>"
+  call assert_equal(['n  <Space>w      <Nop>'],
+        \ execute("nmap \<C-V> w")->trim()->split("\n"))
+
   nmapclear
 endfunc
 
@@ -533,9 +540,55 @@ func Test_expr_map_restore_cursor()
   END
   call writefile(lines, 'XtestExprMap')
   let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
-  call TermWait(buf)
   call term_sendkeys(buf, "\<C-B>")
   call VerifyScreenDump(buf, 'Test_map_expr_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestExprMap')
+endfunc
+
+func Test_map_listing()
+  CheckScreendump
+
+  let lines =<< trim END
+      nmap a b
+  END
+  call writefile(lines, 'XtestMapList')
+  let buf = RunVimInTerminal('-S XtestMapList', #{rows: 6})
+  call term_sendkeys(buf, ":                      nmap a\<CR>")
+  call VerifyScreenDump(buf, 'Test_map_list_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestMapList')
+endfunc
+
+func Test_expr_map_error()
+  CheckScreendump
+
+  let lines =<< trim END
+      func Func()
+        throw 'test'
+        return ''
+      endfunc
+
+      nnoremap <expr> <F2> Func()
+      cnoremap <expr> <F2> Func()
+
+      call test_override('ui_delay', 10)
+  END
+  call writefile(lines, 'XtestExprMap')
+  let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
+  call term_sendkeys(buf, "\<F2>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_map_expr_2', {})
+
+  call term_sendkeys(buf, ":abc\<F2>")
+  call VerifyScreenDump(buf, 'Test_map_expr_3', {})
+  call term_sendkeys(buf, "\<Esc>0")
+  call VerifyScreenDump(buf, 'Test_map_expr_4', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -697,6 +750,11 @@ func Test_mapcomplete()
   mapclear
 endfunc
 
+func GetAbbrText()
+  unabbr hola
+  return 'hello'
+endfunc
+
 " Test for <expr> in abbreviation
 func Test_expr_abbr()
   new
@@ -712,7 +770,14 @@ func Test_expr_abbr()
   call assert_equal('', getline(1))
   unabbr <expr> hte
 
-  close!
+  " evaluating the expression deletes the abbreviation
+  abbr <expr> hola GetAbbrText()
+  call assert_equal('GetAbbrText()', maparg('hola', 'i', '1'))
+  call feedkeys("ahola \<Esc>", 'xt')
+  call assert_equal('hello ', getline('.'))
+  call assert_equal('', maparg('hola', 'i', '1'))
+
+  bwipe!
 endfunc
 
 " Test for storing mappings in different modes in a vimrc file
@@ -899,7 +964,7 @@ func Test_map_cmdkey()
   call assert_equal(0, x)
 
   noremap <F3> <Cmd>let x = 3
-  call assert_fails('call feedkeys("\<F3>", "xt!")', 'E1135:')
+  call assert_fails('call feedkeys("\<F3>", "xt!")', 'E1255:')
   call assert_equal(0, x)
 
   " works in various modes and sees the correct mode()
@@ -970,7 +1035,6 @@ func Test_map_cmdkey()
     call assert_equal('t', m)
     call assert_equal('t', mode(1))
     call StopShellInTerminal(buf)
-    call TermWait(buf)
     close!
     tunmap <F3>
   endif
@@ -1150,7 +1214,7 @@ func Test_map_cmdkey_visual_mode()
   call feedkeys("v\<F4>", 'xt!')
   call assert_equal(['v', 1, 12], [mode(1), col('v'), col('.')])
 
-  " can invoke an opeartor, ending the visual mode
+  " can invoke an operator, ending the visual mode
   let @a = ''
   call feedkeys("\<F5>", 'xt!')
   call assert_equal('n', mode(1))
@@ -1392,6 +1456,52 @@ func Test_map_cmdkey_redo()
   ounmap i-
 endfunc
 
+func Test_map_script_cmd_restore()
+  let lines =<< trim END
+      vim9script
+      nnoremap <F3> <ScriptCmd>eval 1 + 2<CR>
+  END
+  call v9.CheckScriptSuccess(lines)
+  call feedkeys("\<F3>:let g:result = 3+4\<CR>", 'xtc')
+  call assert_equal(7, g:result)
+
+  nunmap <F3>
+  unlet g:result
+endfunc
+
+func Test_map_script_cmd_finds_func()
+  let lines =<< trim END
+      vim9script
+      onoremap <F3> <ScriptCmd>Func()<CR>
+      def Func()
+        g:func_called = 'yes'
+      enddef
+  END
+  call v9.CheckScriptSuccess(lines)
+  call feedkeys("y\<F3>\<Esc>", 'xtc')
+  call assert_equal('yes', g:func_called)
+
+  ounmap <F3>
+  unlet g:func_called
+endfunc
+
+func Test_map_script_cmd_survives_unmap()
+  let lines =<< trim END
+      vim9script
+      var n = 123
+      nnoremap <F4> <ScriptCmd><CR>
+      autocmd CmdlineEnter * silent! nunmap <F4>
+      nnoremap <F3> :<ScriptCmd>eval setbufvar(bufnr(), "result", n)<CR>
+      feedkeys("\<F3>\<CR>", 'xct')
+      assert_equal(123, b:result)
+  END
+  call v9.CheckScriptSuccess(lines)
+
+  nunmap <F3>
+  unlet b:result
+  autocmd! CmdlineEnter
+endfunc
+
 " Test for using <script> with a map to remap characters in rhs
 func Test_script_local_remap()
   new
@@ -1400,6 +1510,30 @@ func Test_script_local_remap()
   normal iabc
   call assert_equal('stmnore', getline(1))
   bwipe!
+endfunc
+
+func Test_abbreviate_multi_byte()
+  new
+  iabbrev foo bar
+  call feedkeys("ifoo…\<Esc>", 'xt')
+  call assert_equal("bar…", getline(1))
+  iunabbrev foo
+  bwipe!
+endfunc
+
+" Test for abbreviations with 'latin1' encoding
+func Test_abbreviate_latin1_encoding()
+  set encoding=latin1
+  call assert_fails('abbr ab#$c ABC', 'E474:')
+  new
+  iabbr <buffer> #i #include
+  iabbr <buffer> ## #enddef
+  exe "normal i#i\<C-]>"
+  call assert_equal('#include', getline(1))
+  exe "normal 0Di##\<C-]>"
+  call assert_equal('#enddef', getline(1))
+  %bw!
+  set encoding=utf-8
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -318,6 +318,7 @@ enc_alias_table[] =
 {
     {"ansi",		IDX_LATIN_1},
     {"iso-8859-1",	IDX_LATIN_1},
+    {"iso-8859",	IDX_LATIN_1},
     {"latin2",		IDX_ISO_2},
     {"latin3",		IDX_ISO_3},
     {"latin4",		IDX_ISO_4},
@@ -513,7 +514,7 @@ mb_init(void)
 	else if (GetLastError() == ERROR_INVALID_PARAMETER)
 	{
 codepage_invalid:
-	    return N_("E543: Not a valid codepage");
+	    return N_(e_not_valid_codepage);
 	}
     }
 #endif
@@ -530,7 +531,7 @@ codepage_invalid:
 	// Windows: accept only valid codepage numbers, check below.
 	if (p_enc[6] != 'c' || p_enc[7] != 'p'
 			      || (enc_dbcs_new = atoi((char *)p_enc + 8)) == 0)
-	    return e_invarg;
+	    return e_invalid_argument;
 #else
 	// Unix: accept any "2byte-" name, assume current locale.
 	enc_dbcs_new = DBCS_2BYTE;
@@ -563,7 +564,7 @@ codepage_invalid:
 	}
     }
     else    // Don't know what encoding this is, reject it.
-	return e_invarg;
+	return e_invalid_argument;
 
     if (enc_dbcs_new != 0)
     {
@@ -733,8 +734,7 @@ codepage_invalid:
 
     // When using Unicode, set default for 'fileencodings'.
     if (enc_utf8 && !option_was_set((char_u *)"fencs"))
-	set_string_option_direct((char_u *)"fencs", -1,
-		       (char_u *)"ucs-bom,utf-8,default,latin1", OPT_FREE, 0);
+	set_fencs_unicode();
 
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET) && defined(FEAT_GETTEXT)
     // GNU gettext 0.10.37 supports this feature: set the codeset used for
@@ -1390,7 +1390,8 @@ utf_char2cells(int c)
 	{0x26ce, 0x26ce},
 	{0x26d4, 0x26d4},
 	{0x26ea, 0x26ea},
-	{0x26f2, 0x26f5},
+	{0x26f2, 0x26f3},
+	{0x26f5, 0x26f5},
 	{0x26fa, 0x26fa},
 	{0x26fd, 0x26fd},
 	{0x2705, 0x2705},
@@ -1415,8 +1416,7 @@ utf_char2cells(int c)
 	{0x3099, 0x30ff},
 	{0x3105, 0x312f},
 	{0x3131, 0x318e},
-	{0x3190, 0x31ba},
-	{0x31c0, 0x31e3},
+	{0x3190, 0x31e3},
 	{0x31f0, 0x321e},
 	{0x3220, 0x3247},
 	{0x3250, 0x4dbf},
@@ -1432,8 +1432,10 @@ utf_char2cells(int c)
 	{0xff01, 0xff60},
 	{0xffe0, 0xffe6},
 	{0x16fe0, 0x16fe3},
+	{0x16ff0, 0x16ff1},
 	{0x17000, 0x187f7},
-	{0x18800, 0x18af2},
+	{0x18800, 0x18cd5},
+	{0x18d00, 0x18d08},
 	{0x1b000, 0x1b11e},
 	{0x1b150, 0x1b152},
 	{0x1b164, 0x1b167},
@@ -1468,20 +1470,22 @@ utf_char2cells(int c)
 	{0x1f680, 0x1f6c5},
 	{0x1f6cc, 0x1f6cc},
 	{0x1f6d0, 0x1f6d2},
-	{0x1f6d5, 0x1f6d5},
+	{0x1f6d5, 0x1f6d7},
 	{0x1f6eb, 0x1f6ec},
-	{0x1f6f4, 0x1f6fa},
+	{0x1f6f4, 0x1f6fc},
 	{0x1f7e0, 0x1f7eb},
-	{0x1f90d, 0x1f971},
-	{0x1f973, 0x1f976},
-	{0x1f97a, 0x1f9a2},
-	{0x1f9a5, 0x1f9aa},
-	{0x1f9ae, 0x1f9ca},
+	{0x1f90c, 0x1f93a},
+	{0x1f93c, 0x1f945},
+	{0x1f947, 0x1f978},
+	{0x1f97a, 0x1f9cb},
 	{0x1f9cd, 0x1f9ff},
-	{0x1fa70, 0x1fa73},
+	{0x1fa70, 0x1fa74},
 	{0x1fa78, 0x1fa7a},
-	{0x1fa80, 0x1fa82},
-	{0x1fa90, 0x1fa95},
+	{0x1fa80, 0x1fa86},
+	{0x1fa90, 0x1faa8},
+	{0x1fab0, 0x1fab6},
+	{0x1fac0, 0x1fac2},
+	{0x1fad0, 0x1fad6},
 	{0x20000, 0x2fffd},
 	{0x30000, 0x3fffd}
     };
@@ -2351,7 +2355,7 @@ utf_iscomposing(int c)
 	{0x0b3e, 0x0b44},
 	{0x0b47, 0x0b48},
 	{0x0b4b, 0x0b4d},
-	{0x0b56, 0x0b57},
+	{0x0b55, 0x0b57},
 	{0x0b62, 0x0b63},
 	{0x0b82, 0x0b82},
 	{0x0bbe, 0x0bc2},
@@ -2378,7 +2382,7 @@ utf_iscomposing(int c)
 	{0x0d4a, 0x0d4d},
 	{0x0d57, 0x0d57},
 	{0x0d62, 0x0d63},
-	{0x0d82, 0x0d83},
+	{0x0d81, 0x0d83},
 	{0x0dca, 0x0dca},
 	{0x0dcf, 0x0dd4},
 	{0x0dd6, 0x0dd6},
@@ -2425,7 +2429,7 @@ utf_iscomposing(int c)
 	{0x1a55, 0x1a5e},
 	{0x1a60, 0x1a7c},
 	{0x1a7f, 0x1a7f},
-	{0x1ab0, 0x1abe},
+	{0x1ab0, 0x1ac0},
 	{0x1b00, 0x1b04},
 	{0x1b34, 0x1b44},
 	{0x1b6b, 0x1b73},
@@ -2454,6 +2458,7 @@ utf_iscomposing(int c)
 	{0xa806, 0xa806},
 	{0xa80b, 0xa80b},
 	{0xa823, 0xa827},
+	{0xa82c, 0xa82c},
 	{0xa880, 0xa881},
 	{0xa8b4, 0xa8c5},
 	{0xa8e0, 0xa8f1},
@@ -2489,6 +2494,7 @@ utf_iscomposing(int c)
 	{0x10a3f, 0x10a3f},
 	{0x10ae5, 0x10ae6},
 	{0x10d24, 0x10d27},
+	{0x10eab, 0x10eac},
 	{0x10f46, 0x10f50},
 	{0x11000, 0x11002},
 	{0x11038, 0x11046},
@@ -2501,6 +2507,7 @@ utf_iscomposing(int c)
 	{0x11180, 0x11182},
 	{0x111b3, 0x111c0},
 	{0x111c9, 0x111cc},
+	{0x111ce, 0x111cf},
 	{0x1122c, 0x11237},
 	{0x1123e, 0x1123e},
 	{0x112df, 0x112ea},
@@ -2523,6 +2530,11 @@ utf_iscomposing(int c)
 	{0x116ab, 0x116b7},
 	{0x1171d, 0x1172b},
 	{0x1182c, 0x1183a},
+	{0x11930, 0x11935},
+	{0x11937, 0x11938},
+	{0x1193b, 0x1193e},
+	{0x11940, 0x11940},
+	{0x11942, 0x11943},
 	{0x119d1, 0x119d7},
 	{0x119da, 0x119e0},
 	{0x119e4, 0x119e4},
@@ -2550,6 +2562,8 @@ utf_iscomposing(int c)
 	{0x16f4f, 0x16f4f},
 	{0x16f51, 0x16f87},
 	{0x16f8f, 0x16f92},
+	{0x16fe4, 0x16fe4},
+	{0x16ff0, 0x16ff1},
 	{0x1bc9d, 0x1bc9e},
 	{0x1d165, 0x1d169},
 	{0x1d16d, 0x1d172},
@@ -2596,7 +2610,7 @@ utf_printable(int c)
     static struct interval nonprint[] =
     {
 	{0x070f, 0x070f}, {0x180b, 0x180e}, {0x200b, 0x200f}, {0x202a, 0x202e},
-	{0x206a, 0x206f}, {0xd800, 0xdfff}, {0xfeff, 0xfeff}, {0xfff9, 0xfffb},
+	{0x2060, 0x206f}, {0xd800, 0xdfff}, {0xfeff, 0xfeff}, {0xfff9, 0xfffb},
 	{0xfffe, 0xffff}
     };
 
@@ -2651,6 +2665,7 @@ static struct interval emoji_all[] =
     {0x2699, 0x2699},
     {0x269b, 0x269c},
     {0x26a0, 0x26a1},
+    {0x26a7, 0x26a7},
     {0x26aa, 0x26ab},
     {0x26b0, 0x26b1},
     {0x26bd, 0x26be},
@@ -2696,7 +2711,8 @@ static struct interval emoji_all[] =
     {0x3299, 0x3299},
     {0x1f004, 0x1f004},
     {0x1f0cf, 0x1f0cf},
-    {0x1f170, 0x1f189},
+    {0x1f170, 0x1f171},
+    {0x1f17e, 0x1f17f},
     {0x1f18e, 0x1f18e},
     {0x1f191, 0x1f19a},
     {0x1f1e6, 0x1f1ff},
@@ -2736,21 +2752,25 @@ static struct interval emoji_all[] =
     {0x1f5fa, 0x1f64f},
     {0x1f680, 0x1f6c5},
     {0x1f6cb, 0x1f6d2},
+    {0x1f6d5, 0x1f6d7},
     {0x1f6e0, 0x1f6e5},
     {0x1f6e9, 0x1f6e9},
     {0x1f6eb, 0x1f6ec},
     {0x1f6f0, 0x1f6f0},
-    {0x1f6f3, 0x1f6f9},
-    {0x1f910, 0x1f93a},
-    {0x1f93c, 0x1f93e},
-    {0x1f940, 0x1f945},
-    {0x1f947, 0x1f970},
-    {0x1f973, 0x1f976},
-    {0x1f97a, 0x1f97a},
-    {0x1f97c, 0x1f9a2},
-    {0x1f9b0, 0x1f9b9},
-    {0x1f9c0, 0x1f9c2},
-    {0x1f9d0, 0x1f9ff}
+    {0x1f6f3, 0x1f6fc},
+    {0x1f7e0, 0x1f7eb},
+    {0x1f90c, 0x1f93a},
+    {0x1f93c, 0x1f945},
+    {0x1f947, 0x1f978},
+    {0x1f97a, 0x1f9cb},
+    {0x1f9cd, 0x1f9ff},
+    {0x1fa70, 0x1fa74},
+    {0x1fa78, 0x1fa7a},
+    {0x1fa80, 0x1fa86},
+    {0x1fa90, 0x1faa8},
+    {0x1fab0, 0x1fab6},
+    {0x1fac0, 0x1fac2},
+    {0x1fad0, 0x1fad6}
 };
 
 /*
@@ -2850,7 +2870,7 @@ utf_class_buf(int c, buf_T *buf)
     };
 
     int bot = 0;
-    int top = sizeof(classes) / sizeof(struct clinterval) - 1;
+    int top = ARRAY_LENGTH(classes) - 1;
     int mid;
 
     // First quick check for Latin1 characters, use 'iskeyword'.
@@ -3098,6 +3118,8 @@ static convertStruct foldCase[] =
 	{0xa7c4,0xa7c4,-1,-48},
 	{0xa7c5,0xa7c5,-1,-42307},
 	{0xa7c6,0xa7c6,-1,-35384},
+	{0xa7c7,0xa7c9,2,1},
+	{0xa7f5,0xa7f5,-1,1},
 	{0xab70,0xabbf,1,-38864},
 	{0xff21,0xff3a,1,32},
 	{0x10400,0x10427,1,40},
@@ -3322,6 +3344,8 @@ static convertStruct toLower[] =
 	{0xa7c4,0xa7c4,-1,-48},
 	{0xa7c5,0xa7c5,-1,-42307},
 	{0xa7c6,0xa7c6,-1,-35384},
+	{0xa7c7,0xa7c9,2,1},
+	{0xa7f5,0xa7f5,-1,1},
 	{0xff21,0xff3a,1,32},
 	{0x10400,0x10427,1,40},
 	{0x104b0,0x104d3,1,40},
@@ -3510,7 +3534,8 @@ static convertStruct toUpper[] =
 	{0xa794,0xa794,-1,48},
 	{0xa797,0xa7a9,2,-1},
 	{0xa7b5,0xa7bf,2,-1},
-	{0xa7c3,0xa7c3,-1,-1},
+	{0xa7c3,0xa7c8,5,-1},
+	{0xa7ca,0xa7f6,44,-1},
 	{0xab53,0xab53,-1,-928},
 	{0xab70,0xabbf,1,-38864},
 	{0xff41,0xff5a,1,-32},
@@ -3823,6 +3848,11 @@ dbcs_screen_head_off(char_u *base, char_u *p)
     return (q == p) ? 0 : 1;
 }
 
+/*
+ * Return offset from "p" to the start of a character, including composing
+ * characters.  "base" must be the start of the string, which must be NUL
+ * terminated.
+ */
     int
 utf_head_off(char_u *base, char_u *p)
 {
@@ -3948,7 +3978,7 @@ utf_allow_break_before(int cc)
     };
 
     int first = 0;
-    int last  = sizeof(BOL_prohibition_punct)/sizeof(int) - 1;
+    int last  = ARRAY_LENGTH(BOL_prohibition_punct) - 1;
     int mid   = 0;
 
     while (first < last)
@@ -3998,7 +4028,7 @@ utf_allow_break_after(int cc)
     };
 
     int first = 0;
-    int last  = sizeof(EOL_prohibition_punct)/sizeof(int) - 1;
+    int last  = ARRAY_LENGTH(EOL_prohibition_punct) - 1;
     int mid   = 0;
 
     while (first < last)
@@ -4083,6 +4113,7 @@ mb_off_next(char_u *base, char_u *p)
 /*
  * Return the offset from "p" to the last byte of the character it points
  * into.  Can start anywhere in a stream of bytes.
+ * Composing characters are not included.
  */
     int
 mb_tail_off(char_u *base, char_u *p)
@@ -4308,7 +4339,6 @@ mb_charlen(char_u *str)
     return count;
 }
 
-#if (defined(FEAT_SPELL) || defined(FEAT_EVAL)) || defined(PROTO)
 /*
  * Like mb_charlen() but for a string with specified length.
  */
@@ -4323,7 +4353,6 @@ mb_charlen_len(char_u *str, int len)
 
     return count;
 }
-#endif
 
 /*
  * Try to un-escape a multi-byte character.
@@ -4453,10 +4482,15 @@ enc_canonize(char_u *enc)
 
     if (STRCMP(enc, "default") == 0)
     {
+#ifdef MSWIN
+	// Use the system encoding, the default is always utf-8.
+	r = enc_locale();
+#else
 	// Use the default encoding as it's found by set_init_1().
 	r = get_encoding_default();
+#endif
 	if (r == NULL)
-	    r = (char_u *)"latin1";
+	    r = (char_u *)ENC_DFLT;
 	return vim_strsave(r);
     }
 
@@ -4490,7 +4524,7 @@ enc_canonize(char_u *enc)
 	}
 
 	// "iso-8859n" -> "iso-8859-n"
-	if (STRNCMP(p, "iso-8859", 8) == 0 && p[8] != '-')
+	if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
 	{
 	    STRMOVE(p + 9, p + 8);
 	    p[8] = '-';
@@ -4874,8 +4908,9 @@ iconv_enabled(int verbose)
 	if (verbose && p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadlib),
-		    hIconvDLL == 0 ? DYNAMIC_ICONV_DLL : DYNAMIC_MSVCRT_DLL);
+	    semsg(_(e_could_not_load_library_str_str),
+		    hIconvDLL == 0 ? DYNAMIC_ICONV_DLL : DYNAMIC_MSVCRT_DLL,
+		    GetWin32Error());
 	    verbose_leave();
 	}
 	iconv_end();
@@ -4896,7 +4931,7 @@ iconv_enabled(int verbose)
 	if (verbose && p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadfunc), "for libiconv");
+	    semsg(_(e_could_not_load_library_function_str), "for libiconv");
 	    verbose_leave();
 	}
 	return FALSE;
@@ -4933,6 +4968,43 @@ f_getimstatus(typval_T *argvars UNUSED, typval_T *rettv)
 # if defined(HAVE_INPUT_METHOD)
     rettv->vval.v_number = im_get_status();
 # endif
+}
+
+/*
+ * iconv() function
+ */
+    void
+f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    char_u	buf1[NUMBUFLEN];
+    char_u	buf2[NUMBUFLEN];
+    char_u	*from, *to, *str;
+    vimconv_T	vimconv;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL))
+	return;
+
+    str = tv_get_string(&argvars[0]);
+    from = enc_canonize(enc_skip(tv_get_string_buf(&argvars[1], buf1)));
+    to = enc_canonize(enc_skip(tv_get_string_buf(&argvars[2], buf2)));
+    vimconv.vc_type = CONV_NONE;
+    convert_setup(&vimconv, from, to);
+
+    // If the encodings are equal, no conversion needed.
+    if (vimconv.vc_type == CONV_NONE)
+	rettv->vval.v_string = vim_strsave(str);
+    else
+	rettv->vval.v_string = string_convert(&vimconv, str, NULL);
+
+    convert_setup(&vimconv, NULL, NULL);
+    vim_free(from);
+    vim_free(to);
 }
 #endif
 
@@ -5445,10 +5517,15 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     int		    i;
     listitem_T	    **ptrs;
     cw_interval_T   *table;
+    cw_interval_T   *cw_table_save;
+    size_t	    cw_table_size_save;
+
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
     l = argvars[0].vval.v_list;
@@ -5552,15 +5629,48 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     vim_free(ptrs);
-    vim_free(cw_table);
+
+    cw_table_save = cw_table;
+    cw_table_size_save = cw_table_size;
     cw_table = table;
     cw_table_size = l->lv_len;
+
+    // Check that the new value does not conflict with 'fillchars' or
+    // 'listchars'.
+    if (set_chars_option(curwin, &p_fcs) != NULL)
+    {
+	emsg(_(e_conflicts_with_value_of_fillchars));
+	cw_table = cw_table_save;
+	cw_table_size = cw_table_size_save;
+	vim_free(table);
+	return;
+    }
+    else
+    {
+	tabpage_T	*tp;
+	win_T	*wp;
+
+	FOR_ALL_TAB_WINDOWS(tp, wp)
+	{
+	    if (set_chars_option(wp, &wp->w_p_lcs) != NULL)
+	    {
+		emsg((e_conflicts_with_value_of_listchars));
+		cw_table = cw_table_save;
+		cw_table_size = cw_table_size_save;
+		vim_free(table);
+		return;
+	    }
+	}
+    }
+
+    vim_free(cw_table_save);
 }
 
     void
 f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    if (check_for_string_arg(argvars, 0) == FAIL)
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || argvars[0].vval.v_string == NULL)
 	return;
     rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
 }

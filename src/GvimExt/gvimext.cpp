@@ -35,6 +35,15 @@ UINT cbFiles = 0;
  * enough */
 #define BUFSIZE 1100
 
+// The "Edit with Vim" shell extension provides these choices when
+// a new instance of Gvim is selected:
+//   - use tabpages
+//   - enable diff mode
+//   - none of the above
+#define EDIT_WITH_VIM_USE_TABPAGES (2)
+#define EDIT_WITH_VIM_IN_DIFF_MODE (1)
+#define EDIT_WITH_VIM_NO_OPTIONS   (0)
+
 //
 // Get the name of the Gvim executable to use, with the path.
 // When "runtime" is non-zero, we were called to find the runtime directory.
@@ -613,7 +622,7 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
     if (cbFiles > 1)
     {
 	mii.wID = idCmd++;
-	mii.dwTypeData = _("Edit with &multiple Vims");
+	mii.dwTypeData = _("Edit with Vim using &tabpages");
 	mii.cch = lstrlen(mii.dwTypeData);
 	InsertMenuItem(hMenu, indexMenu++, TRUE, &mii);
 
@@ -726,6 +735,7 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 STDMETHODIMP CShellExt::InvokeCommand(LPCMINVOKECOMMANDINFO lpcmi)
 {
     HRESULT hr = E_INVALIDARG;
+    int gvimExtraOptions;
 
     // If HIWORD(lpcmi->lpVerb) then we have been called programmatically
     // and lpVerb is a command that should be invoked.  Otherwise, the shell
@@ -750,29 +760,32 @@ STDMETHODIMP CShellExt::InvokeCommand(LPCMINVOKECOMMANDINFO lpcmi)
 	    switch (idCmd)
 	    {
 		case 0:
-		    hr = InvokeGvim(lpcmi->hwnd,
-			    lpcmi->lpDirectory,
-			    lpcmi->lpVerb,
-			    lpcmi->lpParameters,
-			    lpcmi->nShow);
+		    gvimExtraOptions = EDIT_WITH_VIM_USE_TABPAGES;
 		    break;
 		case 1:
-		    hr = InvokeSingleGvim(lpcmi->hwnd,
-			    lpcmi->lpDirectory,
-			    lpcmi->lpVerb,
-			    lpcmi->lpParameters,
-			    lpcmi->nShow,
-			    0);
+		    gvimExtraOptions = EDIT_WITH_VIM_NO_OPTIONS;
 		    break;
 		case 2:
-		    hr = InvokeSingleGvim(lpcmi->hwnd,
-			    lpcmi->lpDirectory,
-			    lpcmi->lpVerb,
-			    lpcmi->lpParameters,
-			    lpcmi->nShow,
-			    1);
+		    gvimExtraOptions = EDIT_WITH_VIM_IN_DIFF_MODE;
 		    break;
+		default:
+		    // If execution reaches this point we likely have an
+		    // inconsistency between the code that setup the menus
+		    // and this code that determines what the user
+		    // selected.  This should be detected and fixed during 
+		    // development.
+		    return E_FAIL;
 	    }
+
+            LPCMINVOKECOMMANDINFOEX lpcmiex = (LPCMINVOKECOMMANDINFOEX)lpcmi;
+            LPCWSTR currentDirectory = lpcmi->cbSize == sizeof(CMINVOKECOMMANDINFOEX) ? lpcmiex->lpDirectoryW : NULL;
+
+	    hr = InvokeSingleGvim(lpcmi->hwnd,
+		    currentDirectory,
+		    lpcmi->lpVerb,
+		    lpcmi->lpParameters,
+		    lpcmi->nShow,
+		    gvimExtraOptions);
 	}
     }
     return hr;
@@ -873,82 +886,13 @@ searchpath(char *name)
     return (char *)"";
 }
 
-STDMETHODIMP CShellExt::InvokeGvim(HWND hParent,
-				   LPCSTR  /* pszWorkingDir */,
-				   LPCSTR  /* pszCmd */,
-				   LPCSTR  /* pszParam */,
-				   int  /* iShowCmd */)
-{
-    wchar_t m_szFileUserClickedOn[BUFSIZE];
-    wchar_t cmdStrW[BUFSIZE];
-    UINT i;
-
-    for (i = 0; i < cbFiles; i++)
-    {
-	DragQueryFileW((HDROP)medium.hGlobal,
-		i,
-		m_szFileUserClickedOn,
-		sizeof(m_szFileUserClickedOn));
-
-	getGvimInvocationW(cmdStrW);
-	wcscat(cmdStrW, L" \"");
-
-	if ((wcslen(cmdStrW) + wcslen(m_szFileUserClickedOn) + 2) < BUFSIZE)
-	{
-	    wcscat(cmdStrW, m_szFileUserClickedOn);
-	    wcscat(cmdStrW, L"\"");
-
-	    STARTUPINFOW si;
-	    PROCESS_INFORMATION pi;
-
-	    ZeroMemory(&si, sizeof(si));
-	    si.cb = sizeof(si);
-
-	    // Start the child process.
-	    if (!CreateProcessW(NULL,	// No module name (use command line).
-			cmdStrW,	// Command line.
-			NULL,		// Process handle not inheritable.
-			NULL,		// Thread handle not inheritable.
-			FALSE,		// Set handle inheritance to FALSE.
-			0,		// No creation flags.
-			NULL,		// Use parent's environment block.
-			NULL,		// Use parent's starting directory.
-			&si,		// Pointer to STARTUPINFO structure.
-			&pi)		// Pointer to PROCESS_INFORMATION structure.
-	       )
-	    {
-		MessageBox(
-		    hParent,
-		    _("Error creating process: Check if gvim is in your path!"),
-		    _("gvimext.dll error"),
-		    MB_OK);
-	    }
-	    else
-	    {
-		CloseHandle( pi.hProcess );
-		CloseHandle( pi.hThread );
-	    }
-	}
-	else
-	{
-	    MessageBox(
-		hParent,
-		_("Path length too long!"),
-		_("gvimext.dll error"),
-		MB_OK);
-	}
-    }
-
-    return NOERROR;
-}
-
 
 STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
-				   LPCSTR  /* pszWorkingDir */,
+				   LPCWSTR  workingDir,
 				   LPCSTR  /* pszCmd */,
 				   LPCSTR  /* pszParam */,
 				   int  /* iShowCmd */,
-				   int useDiff)
+				   int gvimExtraOptions)
 {
     wchar_t	m_szFileUserClickedOn[BUFSIZE];
     wchar_t	*cmdStrW;
@@ -962,8 +906,10 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	return E_FAIL;
     getGvimInvocationW(cmdStrW);
 
-    if (useDiff)
+    if (gvimExtraOptions == EDIT_WITH_VIM_IN_DIFF_MODE)
 	wcscat(cmdStrW, L" -d");
+    else if (gvimExtraOptions == EDIT_WITH_VIM_USE_TABPAGES)
+	wcscat(cmdStrW, L" -p");
     for (i = 0; i < cbFiles; i++)
     {
 	DragQueryFileW((HDROP)medium.hGlobal,
@@ -1002,7 +948,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 		FALSE,		// Set handle inheritance to FALSE.
 		0,		// No creation flags.
 		NULL,		// Use parent's environment block.
-		NULL,		// Use parent's starting directory.
+		workingDir,  // Use parent's starting directory.
 		&si,		// Pointer to STARTUPINFO structure.
 		&pi)		// Pointer to PROCESS_INFORMATION structure.
        )

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2021 Feb 10
+*starting.txt*  For Vim version 8.2.  Last change: 2022 Feb 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -256,6 +256,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Interfaces, such as Python, Ruby and Lua, are also disabled,
 		since they could be used to execute shell commands.  Perl uses
 		the Safe module.
+		For Unix restricted mode is used when the last part of $SHELL
+		is "nologin" or "false".
 		Note that the user may still find a loophole to execute a
 		shell command, it has only been made difficult.
 
@@ -268,8 +270,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		started if possible.
 
 							*-e*
--e		Start Vim in Ex mode |Q|.  Only makes a difference when the
-		executable is not called "ex".
+-e		Start Vim in Ex mode, see |Ex-mode|.  Only makes a difference
+		when the executable is not called "ex".
 
 							*-E*
 -E		Start Vim in improved Ex mode |gQ|.  Only makes a difference
@@ -560,6 +562,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		":source!".  When the "scriptout" file already exists, new
 		characters are appended.  See also |complex-repeat|.
 		{scriptout} cannot start with a digit.
+		If you want to record what is typed in a human readable for
+		you can use |ch_logfile()|, It adds "raw key input" lines.
 
 							*-W*
 -W {scriptout}	Like -w, but do not append, overwrite an existing file.
@@ -1036,7 +1040,7 @@ giving the mapping.
 
 
 Defaults without a .vimrc file ~
-							*defaults.vim*
+							*defaults.vim* *E1187*
 If Vim is started normally and no user vimrc file is found, the
 $VIMRUNTIME/defaults.vim script is loaded.  This will set 'compatible' off,
 switch on syntax highlighting and a few more things.  See the script for
@@ -1592,7 +1596,7 @@ VIMINFO FILE NAME					*viminfo-file-name*
   file name given is "NONE" (all uppercase), no viminfo file is ever read or
   written.  Also not for the commands below!
 - The 'viminfofile' option can be used like the "-i" argument.  In fact, the
-  value form the "-i" argument is stored in the 'viminfofile' option.
+  value from the "-i" argument is stored in the 'viminfofile' option.
 - For the commands below, another file name can be given, overriding the
   default and the name given with 'viminfo' or "-i" (unless it's NONE).
 

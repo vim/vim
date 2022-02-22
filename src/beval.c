@@ -150,18 +150,18 @@ get_beval_info(
     int		row = mouse_row;
     int		col = mouse_col;
 
-# ifdef FEAT_GUI
+# ifdef FEAT_BEVAL_GUI
     if (gui.in_use)
     {
 	row = Y_2_ROW(beval->y);
 	col = X_2_COL(beval->x);
     }
-#endif
+# endif
     if (find_word_under_cursor(row, col, getword,
 		FIND_IDENT + FIND_STRING + FIND_EVAL,
 		winp, lnump, textp, colp, NULL) == OK)
     {
-#ifdef FEAT_VARTABS
+# ifdef FEAT_VARTABS
 	vim_free(beval->vts);
 	beval->vts = tabstop_copy((*winp)->w_buffer->b_p_vts_array);
 	if ((*winp)->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
@@ -170,7 +170,7 @@ get_beval_info(
 		vim_free(*textp);
 	    return FAIL;
 	}
-#endif
+# endif
 	beval->ts = (*winp)->w_buffer->b_p_ts;
 	return OK;
     }
@@ -259,6 +259,8 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 						    : wp->w_buffer->b_p_bexpr;
 	if (*bexpr != NUL)
 	{
+	    sctx_T	save_sctx = current_sctx;
+
 	    // Convert window pointer to number.
 	    for (cw = firstwin; cw != wp; cw = cw->w_next)
 		++winnr;
@@ -284,6 +286,16 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 		++sandbox;
 	    ++textwinlock;
 
+	    if (bexpr == p_bexpr)
+	    {
+		sctx_T *sp = get_option_sctx("balloonexpr");
+
+		if (sp != NULL)
+		    current_sctx = *sp;
+	    }
+	    else
+		current_sctx = curbuf->b_p_script_ctx[BV_BEXPR];
+
 	    vim_free(result);
 	    result = eval_to_string(bexpr, TRUE);
 
@@ -300,6 +312,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    if (use_sandbox)
 		--sandbox;
 	    --textwinlock;
+	    current_sctx = save_sctx;
 
 	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
 	    if (result != NULL && result[0] != NUL)
@@ -308,7 +321,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    // The 'balloonexpr' evaluation may show something on the screen
 	    // that requires a screen update.
 	    if (must_redraw)
-		redraw_after_callback(FALSE);
+		redraw_after_callback(FALSE, FALSE);
 
 	    recursive = FALSE;
 	    return;

@@ -140,7 +140,7 @@ do_debug(char_u *cmd)
 
 	if (typeahead_saved)
 	{
-	    restore_typeahead(&typeaheadbuf);
+	    restore_typeahead(&typeaheadbuf, TRUE);
 	    ignore_script = save_ignore_script;
 	}
 	ex_normal_busy = save_ex_normal_busy;
@@ -218,7 +218,7 @@ do_debug(char_u *cmd)
 
 	    if (last_cmd != 0)
 	    {
-		// Execute debug command: decided where to break next and
+		// Execute debug command: decide where to break next and
 		// return.
 		switch (last_cmd)
 		{
@@ -440,7 +440,7 @@ dbg_check_breakpoint(exarg_T *eap)
 	    // replace K_SNR with "<SNR>"
 	    if (debug_breakpoint_name[0] == K_SPECIAL
 		    && debug_breakpoint_name[1] == KS_EXTRA
-		    && debug_breakpoint_name[2] == (int)KE_SNR)
+		    && debug_breakpoint_name[2] == KE_SNR)
 		p = (char_u *)"<SNR>";
 	    else
 		p = (char_u *)"";
@@ -518,6 +518,7 @@ static garray_T dbg_breakp = {0, 0, sizeof(struct debuggy), 4, NULL};
 #define BREAKP(idx)		(((struct debuggy *)dbg_breakp.ga_data)[idx])
 #define DEBUGGY(gap, idx)	(((struct debuggy *)gap->ga_data)[idx])
 static int last_breakp = 0;	// nr of last defined breakpoint
+static int has_expr_breakpoint = FALSE;
 
 #ifdef FEAT_PROFILE
 // Profiling uses file and func names similar to breakpoints.
@@ -528,6 +529,23 @@ static garray_T prof_ga = {0, 0, sizeof(struct debuggy), 4, NULL};
 #define DBG_EXPR	3
 
 static linenr_T debuggy_find(int file,char_u *fname, linenr_T after, garray_T *gap, int *fp);
+
+/*
+ * Evaluate the "bp->dbg_name" expression and return the result.
+ * Disables error messages.
+ */
+    static typval_T *
+eval_expr_no_emsg(struct debuggy *bp)
+{
+    typval_T	*tv;
+
+    // Disable error messages, a bad expression would make Vim unusable.
+    ++emsg_off;
+    tv = eval_expr(bp->dbg_name, NULL);
+    --emsg_off;
+
+    return tv;
+}
 
 /*
  * Parse the arguments of ":profile", ":breakadd" or ":breakdel" and put them
@@ -562,7 +580,7 @@ dbg_parsearg(
     {
 	if (curbuf->b_ffname == NULL)
 	{
-	    emsg(_(e_noname));
+	    emsg(_(e_no_file_name));
 	    return FAIL;
 	}
 	bp->dbg_type = DBG_FILE;
@@ -576,7 +594,7 @@ dbg_parsearg(
 	bp->dbg_type = DBG_EXPR;
     else
     {
-	semsg(_(e_invarg2), p);
+	semsg(_(e_invalid_argument_str), p);
 	return FAIL;
     }
     p = skipwhite(p + 4);
@@ -601,19 +619,19 @@ dbg_parsearg(
 	    || (here && *p != NUL)
 	    || (bp->dbg_type == DBG_FUNC && strstr((char *)p, "()") != NULL))
     {
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 	return FAIL;
     }
 
     if (bp->dbg_type == DBG_FUNC)
-	bp->dbg_name = vim_strsave(p);
+	bp->dbg_name = vim_strsave(STRNCMP(p, "g:", 2) == 0 ? p + 2 : p);
     else if (here)
 	bp->dbg_name = vim_strsave(curbuf->b_ffname);
     else if (bp->dbg_type == DBG_EXPR)
     {
 	bp->dbg_name = vim_strsave(p);
 	if (bp->dbg_name != NULL)
-	    bp->dbg_val = eval_expr(bp->dbg_name, NULL);
+	    bp->dbg_val = eval_expr_no_emsg(bp);
     }
     else
     {
@@ -691,6 +709,8 @@ ex_breakadd(exarg_T *eap)
 	    // DBG_EXPR
 	    DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
 	    ++debug_tick;
+	    if (gap == &dbg_breakp)
+		has_expr_breakpoint = TRUE;
 	}
     }
 }
@@ -705,6 +725,29 @@ ex_debuggreedy(exarg_T *eap)
 	debug_greedy = TRUE;
     else
 	debug_greedy = FALSE;
+}
+
+    static void
+update_has_expr_breakpoint()
+{
+    int i;
+
+    has_expr_breakpoint = FALSE;
+    for (i = 0; i < dbg_breakp.ga_len; ++i)
+	if (BREAKP(i).dbg_type == DBG_EXPR)
+	{
+	    has_expr_breakpoint = TRUE;
+	    break;
+	}
+}
+
+/*
+ * Return TRUE if there is any expression breakpoint.
+ */
+    int
+debug_has_expr_breakpoint()
+{
+    return has_expr_breakpoint;
 }
 
 /*
@@ -772,7 +815,7 @@ ex_breakdel(exarg_T *eap)
     }
 
     if (todel < 0)
-	semsg(_("E161: Breakpoint not found: %s"), eap->arg);
+	semsg(_(e_breakpoint_not_found_str), eap->arg);
     else
     {
 	while (gap->ga_len > 0)
@@ -799,6 +842,8 @@ ex_breakdel(exarg_T *eap)
 	// If all breakpoints were removed clear the array.
 	if (gap->ga_len == 0)
 	    ga_clear(gap);
+	if (gap == &dbg_breakp)
+	    update_has_expr_breakpoint();
     }
 }
 
@@ -932,10 +977,7 @@ debuggy_find(
 	    typval_T *tv;
 	    int	      line = FALSE;
 
-	    prev_got_int = got_int;
-	    got_int = FALSE;
-
-	    tv = eval_expr(bp->dbg_name, NULL);
+	    tv = eval_expr_no_emsg(bp);
 	    if (tv != NULL)
 	    {
 		if (bp->dbg_val == NULL)
@@ -956,7 +998,7 @@ debuggy_find(
 			debug_oldval = typval_tostring(bp->dbg_val, TRUE);
 			// Need to evaluate again, typval_compare() overwrites
 			// "tv".
-			v = eval_expr(bp->dbg_name, NULL);
+			v = eval_expr_no_emsg(bp);
 			debug_newval = typval_tostring(v, TRUE);
 			free_tv(bp->dbg_val);
 			bp->dbg_val = v;
@@ -978,8 +1020,6 @@ debuggy_find(
 		lnum = after > 0 ? after : 1;
 		break;
 	    }
-
-	    got_int |= prev_got_int;
 	}
 #endif
     }

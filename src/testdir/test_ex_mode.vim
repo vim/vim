@@ -121,6 +121,19 @@ func Test_open_command()
   close!
 endfunc
 
+func Test_open_command_flush_line()
+  " this was accessing freed memory: the regexp match uses a pointer to the
+  " current line which becomes invalid when searching for the ') mark.
+  new
+  call setline(1, ['one', 'two. three'])
+  s/one/ONE
+  try
+    open /\%')/
+  catch /E479/
+  endtry
+  bwipe!
+endfunc
+
 " Test for :g/pat/visual to run vi commands in Ex mode
 " This used to hang Vim before 8.2.0274.
 func Test_Ex_global()
@@ -154,9 +167,9 @@ func Test_Ex_echo_backslash()
   let bsl = '\\\\'
   let bsl2 = '\\\'
   call assert_fails('call feedkeys("Qecho " .. bsl .. "\nvisual\n", "xt")',
-        \ "E15: Invalid expression: \\\\")
+        \ 'E15: Invalid expression: "\\"')
   call assert_fails('call feedkeys("Qecho " .. bsl2 .. "\nm\nvisual\n", "xt")',
-        \ "E15: Invalid expression: \\\nm")
+        \ "E15: Invalid expression: \"\\\nm\"")
 endfunc
 
 func Test_ex_mode_errors()
@@ -227,5 +240,15 @@ func Test_ex_mode_count_overflow()
   call delete('Xdidexmode')
   call delete('Xexmodescript')
 endfunc
+
+func Test_ex_mode_large_indent()
+  new
+  set ts=500 ai
+  call setline(1, "\t")
+  exe "normal gQi\<CR>."
+  set ts=8 noai
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

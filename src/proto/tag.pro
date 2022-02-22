@@ -1,4 +1,8 @@
 /* tag.c */
+int set_tagfunc_option(void);
+void free_tagfunc_option(void);
+int set_ref_in_tagfunc(int copyID);
+void set_buflocal_tfu_callback(buf_T *buf);
 int do_tag(char_u *tag, int type, int count, int forceit, int verbose);
 void tag_freematch(void);
 void do_tags(exarg_T *eap);

@@ -1,6 +1,7 @@
 " Menu Translations:	Korean
 " Maintainer:		SungHyun Nam <goweol@gmail.com>
 " Last Change:		2012 May 01
+" Generated from menu_ko_kr.utf-8.vim, DO NOT EDIT
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

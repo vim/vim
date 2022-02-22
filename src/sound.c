@@ -173,12 +173,15 @@ invoke_sound_callback(void)
 	delete_sound_callback(scb->scb_callback);
 	vim_free(scb);
     }
-    redraw_after_callback(TRUE);
+    redraw_after_callback(TRUE, FALSE);
 }
 
     static void
 sound_play_common(typval_T *argvars, typval_T *rettv, int playfile)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     if (context == NULL)
 	ca_context_create(&context);
     if (context != NULL)
@@ -243,6 +246,9 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
     if (context != NULL)
 	ca_context_cancel(context, tv_get_number(&argvars[0]));
 }
@@ -321,7 +327,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		    clear_tv(&rettv);
 
 		    delete_sound_callback(p);
-		    redraw_after_callback(TRUE);
+		    redraw_after_callback(TRUE, FALSE);
 
 		}
 	    break;
@@ -351,14 +357,16 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
 {
     WCHAR	    *wp;
 
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     wp = enc_to_utf16(tv_get_string(&argvars[0]), NULL);
     if (wp == NULL)
 	return;
 
-    PlaySoundW(wp, NULL, SND_ASYNC | SND_ALIAS);
+    if (PlaySoundW(wp, NULL, SND_ASYNC | SND_ALIAS))
+	rettv->vval.v_number = ++sound_id;
     free(wp);
-
-    rettv->vval.v_number = ++sound_id;
 }
 
     void
@@ -371,6 +379,9 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     soundcb_T	*soundcb;
     char	buf[32];
     MCIERROR	err;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
 
     esc = vim_strsave_shellescape(tv_get_string(&argvars[0]), FALSE, FALSE);
 
@@ -419,9 +430,13 @@ failure:
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    long    id = tv_get_number(&argvars[0]);
+    long    id;
     char    buf[32];
 
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    id = tv_get_number(&argvars[0]);
     vim_snprintf(buf, sizeof(buf), "stop sound%06ld", id);
     mciSendString(buf, NULL, 0, NULL);
 }

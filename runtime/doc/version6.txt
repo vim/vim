@@ -2696,7 +2696,7 @@ Multi-byte:
   double-wide character.
 - Overstrike mode for the cmdline replaced only the first byte of a multibyte
   character.
-- The cursor in Replace mode (also in the cmdline) was to small on a
+- The cursor in Replace mode (also in the cmdline) was too small on a
   double-wide character.
 - When a multibyte character contained a 0x80 byte, it didn't work (was using
   a CSI byte instead). (Muraoka Taro)
@@ -3546,7 +3546,7 @@ Added Simplified Chinese translation of the tutor. (Mendel L Chan)
 Added Russian keymap for yawerty keyboard.
 
 Added an explanation of using the vimrc file in the tutor.
-Changed tutor.vim to get the right encoding for the Taiwainese tutor.
+Changed tutor.vim to get the right encoding for the Taiwanese tutor.
 
 Added Russian tutor. (Andrey Kiselev)
 Added Polish tutor. (Mikolaj Machowski)
@@ -5465,7 +5465,7 @@ Files:	    src/fileio.c
 Patch 6.0.267
 Problem:    UTF-8: Although 'isprint' says a character is printable,
 	    utf_char2cells() still considers it unprintable.
-Solution:   Use vim_isprintc() for characters upto 0x100. (Yasuhiro Matsumoto)
+Solution:   Use vim_isprintc() for characters up to 0x100. (Yasuhiro Matsumoto)
 Files:	    src/mbyte.c
 
 Patch 6.0.268 (extra) (depends on patch 6.0.255)
@@ -9649,7 +9649,7 @@ Files:	    src/Make_cyg.mak, src/Make_ming.mak
 
 Patch 6.2f.016
 Problem:    "vim --version > ff" on non-Unix systems results in a file with a
-	    missing line break at the end. (Bill McCArthy)
+	    missing line break at the end. (Bill McCarthy)
 Solution:   Add a line break.
 Files:	    src/main.c
 
@@ -12232,7 +12232,7 @@ Files:	    Makefile, src/gvim.exe.mnf, src/vim.rc
 
 Patch 6.2.348
 Problem:    Win32: "vim c:\dir\(test)" doesn't work, because the 'isfname'
-	    default value doesn't contain parenthesis.
+	    default value doesn't contain parentheses.
 Solution:   Temporarily add '(' and ')' to 'isfname' when expanding file name
 	    arguments.
 Files:	    src/main.c
@@ -12864,7 +12864,7 @@ Files:	    src/message.c
 Patch 6.2.444
 Problem:    When adding the 'c' flag to a ":substitute" command it may replace
 	    more times than without the 'c' flag.  Happens for a  match that
-	    starts with "\ze" (Marcel Svitalsk) and when using "\@<=" (Klaus
+	    starts with "\ze" (Marcel Svitalsky) and when using "\@<=" (Klaus
 	    Bosau).
 Solution:   Correct "prev_matchcol" when replacing the line.  Don't replace
 	    the line when the pattern uses look-behind matching.

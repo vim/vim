@@ -1,6 +1,7 @@
 " Tests for multi-line regexps with ":s".
 
 source shared.vim
+source check.vim
 
 func Test_multiline_subst()
   enew!
@@ -451,6 +452,13 @@ func Test_substitute_partial()
    " 20 arguments plus one is too many
    let Replacer = function('SubReplacer20', repeat(['foo'], 20))
    call assert_fails("call substitute('123', '2', Replacer, 'g')", 'E118:')
+endfunc
+
+func Test_substitute_float()
+  CheckFeature float
+
+  call assert_equal('number 1.23', substitute('number ', '$', { -> 1.23 }, ''))
+  vim9 assert_equal('number 1.23', substitute('number ', '$', () => 1.23, ''))
 endfunc
 
 " Tests for *sub-replace-special* and *sub-replace-expression* on :substitute.
@@ -925,5 +933,68 @@ func Test_substitute_multiline_submatch()
   call assert_equal(['', 'line2', 'line3', ''], getline(1, '$'))
   close!
 endfunc
+
+func Test_substitute_skipped_range()
+  new
+  if 0
+    /1/5/2/2/\n
+  endif
+  call assert_equal([0, 1, 1, 0, 1], getcurpos())
+  bwipe!
+endfunc
+
+" Test using the 'gdefault' option (when on, flag 'g' is default on).
+func Test_substitute_gdefault()
+  new
+
+  " First check without 'gdefault'
+  call setline(1, 'foo bar foo')
+  s/foo/FOO/
+  call assert_equal('FOO bar foo', getline(1))
+  call setline(1, 'foo bar foo')
+  s/foo/FOO/g
+  call assert_equal('FOO bar FOO', getline(1))
+  call setline(1, 'foo bar foo')
+  s/foo/FOO/gg
+  call assert_equal('FOO bar foo', getline(1))
+
+  " Then check with 'gdefault'
+  set gdefault
+  call setline(1, 'foo bar foo')
+  s/foo/FOO/
+  call assert_equal('FOO bar FOO', getline(1))
+  call setline(1, 'foo bar foo')
+  s/foo/FOO/g
+  call assert_equal('FOO bar foo', getline(1))
+  call setline(1, 'foo bar foo')
+  s/foo/FOO/gg
+  call assert_equal('FOO bar FOO', getline(1))
+
+  " Setting 'compatible' should reset 'gdefault'
+  call assert_equal(1, &gdefault)
+  set compatible
+  call assert_equal(0, &gdefault)
+  set nocompatible
+  call assert_equal(0, &gdefault)
+
+  bw!
+endfunc
+
+" This was using "old_sub" after it was freed.
+func Test_using_old_sub()
+  set compatible maxfuncdepth=10
+  new
+  call setline(1, 'some text.')
+  func Repl()
+    ~
+    s/
+  endfunc
+  silent!  s/\%')/\=Repl()
+
+  delfunc Repl
+  bwipe!
+  set nocompatible
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

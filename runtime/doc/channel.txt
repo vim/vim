@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2020 Oct 17
+*channel.txt*      For Vim version 8.2.  Last change: 2021 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -101,7 +101,7 @@ Instead of giving a callback with every send call, it can also be specified
 when opening the channel: >
 	call ch_close(channel)
 	let channel = ch_open('localhost:8765', {'callback': "MyHandler"})
-	call ch_sendexpr(channel, 'hello!')
+	call ch_sendexpr(channel, 'hello channel!')
 
 When trying out channels it's useful to see what is going on.  You can tell
 Vim to write lines in log file: >
@@ -132,8 +132,9 @@ When using an IPv6 address, enclose it within square brackets.  E.g.,
 	"raw"  - Use raw messages
 						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
-		not handled otherwise.  It gets two arguments: the channel
-		and the received message. Example: >
+		not handled otherwise (e.g. a JSON message with ID zero).  It
+		gets two arguments: the channel and the received message.
+		Example: >
 	func Handle(channel, msg)
 	  echo 'Received: ' . a:msg
 	endfunc
@@ -536,7 +537,7 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 			GetChannel()->ch_evalraw(rawstring)
 
 ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
-		Get the buffer number that {handle} is using for {what}.
+		Get the buffer number that {handle} is using for String {what}.
 		{handle} can be a Channel or a Job that has a Channel.
 		{what} can be "err" for stderr, "out" for stdout or empty for
 		socket output.
@@ -586,8 +587,8 @@ ch_info({handle})						*ch_info()*
 
 
 ch_log({msg} [, {handle}])					*ch_log()*
-		Write {msg} in the channel log file, if it was opened with
-		|ch_logfile()|.
+		Write String {msg} in the channel log file, if it was opened
+		with |ch_logfile()|.
 		When {handle} is passed the channel number is used for the
 		message.
 		{handle} can be a Channel or a Job that has a Channel.  The
@@ -625,7 +626,7 @@ ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
-		{address} has the form "hostname:port", e.g.,
+		{address} is a String and has the form "hostname:port", e.g.,
 		"localhost:8765".
 
 		When using an IPv6 address, enclose it within square brackets.
@@ -852,7 +853,7 @@ available.
 job_getchannel({job})					 *job_getchannel()*
 		Get the channel handle that {job} is using.
 		To check if the job has no channel: >
-			if string(job_getchannel()) == 'channel fail'
+			if string(job_getchannel(job)) == 'channel fail'
 <
 		Can also be used as a |method|: >
 			GetJob()->job_getchannel()

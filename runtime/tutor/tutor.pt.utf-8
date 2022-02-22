@@ -900,8 +900,8 @@ NOTA:  Se quiser ignorar a diferença entre maiúsculas e minúsculas em apenas
   arquivo "vimrc".
 
   1. Comece a editar o arquivo "vimrc". Isso depende do sistema:
-         :e ~/.vimrc              para Unix
-         :e $VIM/_vimrc           para MS-Windows
+         :e ~/.vimrc           para Unix
+         :e ~/_vimrc           para MS-Windows
 
   2. Agora, leia o conteúdo do arquivo "vimrc" de exemplo:
 	 :r $VIMRUNTIME/vimrc_example.vim
@@ -975,7 +975,7 @@ NOTA:  A completação funciona com muitos comandos. Basta pressionar CTRL-D e
        Editora: New Riders
   Este é o primeiro livro completamente dedicado ao Vim. Especialmente útil
   para iniciantes, com muitos exemplos e ilustrações.
-  Veja http://iccf-holland.org/click5.html
+  Veja https://iccf-holland.org/click5.html
 
   Esse livro é mais antigo e mais sobre o Vi do que sobre o Vim, mas também é
   recomendado:

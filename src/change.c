@@ -146,9 +146,7 @@ changed_internal(void)
     ml_setflags(curbuf);
     check_status(curbuf);
     redraw_tabline = TRUE;
-#ifdef FEAT_TITLE
     need_maketitle = TRUE;	    // set window title later
-#endif
 }
 
 #ifdef FEAT_EVAL
@@ -157,9 +155,8 @@ static long next_listener_id = 0;
 /*
  * Check if the change at "lnum" is above or overlaps with an existing
  * change. If above then flush changes and invoke listeners.
- * Returns TRUE if the change was merged.
  */
-    static int
+    static void
 check_recorded_changes(
 	buf_T		*buf,
 	linenr_T	lnum,
@@ -187,7 +184,6 @@ check_recorded_changes(
 	    }
 	}
     }
-    return FALSE;
 }
 
 /*
@@ -208,8 +204,7 @@ may_record_change(
 
     // If the new change is going to change the line numbers in already listed
     // changes, then flush.
-    if (check_recorded_changes(curbuf, lnum, lnume, xtra))
-	return;
+    check_recorded_changes(curbuf, lnum, lnume, xtra);
 
     if (curbuf->b_recorded_changes == NULL)
     {
@@ -240,6 +235,9 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     callback_T	callback;
     listener_T	*lnr;
     buf_T	*buf = curbuf;
+
+    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 1) == FAIL)
+	return;
 
     callback = get_callback(&argvars[0]);
     if (callback.cb_name == NULL)
@@ -278,6 +276,9 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf = curbuf;
 
+    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	buf = get_buf_arg(&argvars[0]);
@@ -285,6 +286,18 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
 	    return;
     }
     invoke_listeners(buf);
+}
+
+
+    static void
+remove_listener(buf_T *buf, listener_T *lnr, listener_T *prev)
+{
+    if (prev != NULL)
+	prev->lr_next = lnr->lr_next;
+    else
+	buf->b_listener = lnr->lr_next;
+    free_callback(&lnr->lr_callback);
+    vim_free(lnr);
 }
 
 /*
@@ -296,9 +309,13 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
     listener_T	*lnr;
     listener_T	*next;
     listener_T	*prev;
-    int		id = tv_get_number(argvars);
+    int		id;
     buf_T	*buf;
 
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    id = tv_get_number(argvars);
     FOR_ALL_BUFFERS(buf)
     {
 	prev = NULL;
@@ -307,12 +324,13 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
 	    next = lnr->lr_next;
 	    if (lnr->lr_id == id)
 	    {
-		if (prev != NULL)
-		    prev->lr_next = lnr->lr_next;
-		else
-		    buf->b_listener = lnr->lr_next;
-		free_callback(&lnr->lr_callback);
-		vim_free(lnr);
+		if (textwinlock > 0)
+		{
+		    // in invoke_listeners(), clear ID and delete later
+		    lnr->lr_id = 0;
+		    return;
+		}
+		remove_listener(buf, lnr, prev);
 		rettv->vval.v_number = 1;
 		return;
 	    }
@@ -347,6 +365,7 @@ invoke_listeners(buf_T *buf)
     linenr_T	added = 0;
     int		save_updating_screen = updating_screen;
     static int	recursive = FALSE;
+    listener_T	*next;
 
     if (buf->b_recorded_changes == NULL  // nothing changed
 	    || buf->b_listener == NULL   // no listeners
@@ -388,6 +407,18 @@ invoke_listeners(buf_T *buf)
     {
 	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
 	clear_tv(&rettv);
+    }
+
+    // If f_listener_remove() was called may have to remove a listener now.
+    for (lnr = buf->b_listener; lnr != NULL; lnr = next)
+    {
+	listener_T	*prev = NULL;
+
+	next = lnr->lr_next;
+	if (lnr->lr_id == 0)
+	    remove_listener(buf, lnr, prev);
+	else
+	    prev = lnr;
     }
 
     --textwinlock;
@@ -435,11 +466,9 @@ changed_common(
     win_T	*wp;
     tabpage_T	*tp;
     int		i;
-#ifdef FEAT_JUMPLIST
     int		cols;
     pos_T	*p;
     int		add;
-#endif
 
     // mark the buffer as modified
     changed();
@@ -458,7 +487,6 @@ changed_common(
 	curbuf->b_last_change.lnum = lnum;
 	curbuf->b_last_change.col = col;
 
-#ifdef FEAT_JUMPLIST
 	// Create a new entry if a new undo-able change was started or we
 	// don't have an entry yet.
 	if (curbuf->b_new_change || curbuf->b_changelistlen == 0)
@@ -518,13 +546,15 @@ changed_common(
 	// The current window is always after the last change, so that "g,"
 	// takes you back to it.
 	curwin->w_changelistidx = curbuf->b_changelistlen;
-#endif
     }
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
 	if (wp->w_buffer == curbuf)
 	{
+#ifdef FEAT_FOLDING
+	    linenr_T last = lnume + xtra - 1;  // last line after the change
+#endif
 	    // Mark this window to be redrawn later.
 	    if (wp->w_redr_type < VALID)
 		wp->w_redr_type = VALID;
@@ -534,7 +564,7 @@ changed_common(
 #ifdef FEAT_FOLDING
 	    // Update the folds for this window.  Can't postpone this, because
 	    // a following operator might work on the whole fold: ">>dd".
-	    foldUpdate(wp, lnum, lnume + xtra - 1);
+	    foldUpdate(wp, lnum, last);
 
 	    // The change may cause lines above or below the change to become
 	    // included in a fold.  Set lnum/lnume to the first/last line that
@@ -544,8 +574,8 @@ changed_common(
 	    i = hasFoldingWin(wp, lnum, &lnum, NULL, FALSE, NULL);
 	    if (wp->w_cursor.lnum == lnum)
 		wp->w_cline_folded = i;
-	    i = hasFoldingWin(wp, lnume, NULL, &lnume, FALSE, NULL);
-	    if (wp->w_cursor.lnum == lnume)
+	    i = hasFoldingWin(wp, last, NULL, &last, FALSE, NULL);
+	    if (wp->w_cursor.lnum == last)
 		wp->w_cline_folded = i;
 
 	    // If the changed line is in a range of previously folded lines,
@@ -563,9 +593,12 @@ changed_common(
 		changed_cline_bef_curs_win(wp);
 	    if (wp->w_botline >= lnum)
 	    {
-		// Assume that botline doesn't change (inserted lines make
-		// other lines scroll down below botline).
-		approximate_botline_win(wp);
+		if (xtra < 0)
+		    invalidate_botline_win(wp);
+		else
+		    // Assume that botline doesn't change (inserted lines make
+		    // other lines scroll down below botline).
+		    approximate_botline_win(wp);
 	    }
 
 	    // Check if any w_lines[] entries have become invalid.
@@ -758,7 +791,7 @@ deleted_lines_mark(linenr_T lnum, long count)
 /*
  * Marks the area to be redrawn after a change.
  */
-    static void
+    void
 changed_lines_buf(
     buf_T	*buf,
     linenr_T	lnum,	    // first line with change
@@ -853,9 +886,7 @@ unchanged(buf_T *buf, int ff, int always_inc_changedtick)
 	    save_file_ff(buf);
 	check_status(buf);
 	redraw_tabline = TRUE;
-#ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    // set window title later
-#endif
 	++CHANGEDTICK(buf);
     }
     else if (always_inc_changedtick)
@@ -1216,7 +1247,7 @@ del_bytes(
     // If "count" is negative the caller must be doing something wrong.
     if (count < 1)
     {
-	siemsg("E292: Invalid count for del_bytes(): %ld", count);
+	siemsg(e_invalid_count_for_del_bytes_nr, count);
 	return FAIL;
     }
 
@@ -1251,7 +1282,7 @@ del_bytes(
 	// fixpos is TRUE, we don't want to end up positioned at the NUL,
 	// unless "restart_edit" is set or 'virtualedit' contains "onemore".
 	if (col > 0 && fixpos && restart_edit == 0
-					      && (ve_flags & VE_ONEMORE) == 0)
+					      && (get_ve_flags() & VE_ONEMORE) == 0)
 	{
 	    --curwin->w_cursor.col;
 	    curwin->w_cursor.coladd = 0;
@@ -1321,6 +1352,8 @@ del_bytes(
  *
  * "second_line_indent": indent for after ^^D in Insert mode or if flag
  *			  OPENLINE_COM_LIST
+ * "did_do_comment" is set to TRUE when intentionally putting the comment
+ * leader in fromt of the new line.
  *
  * Return OK for success, FAIL for failure
  */
@@ -1328,7 +1361,8 @@ del_bytes(
 open_line(
     int		dir,		// FORWARD or BACKWARD
     int		flags,
-    int		second_line_indent)
+    int		second_line_indent,
+    int		*did_do_comment UNUSED)
 {
     char_u	*saved_line;		// copy of the original line
     char_u	*next_line = NULL;	// copy of the next line
@@ -1343,12 +1377,16 @@ open_line(
     int		retval = FAIL;		// return value
     int		extra_len = 0;		// length of p_extra string
     int		lead_len;		// length of comment leader
+    int		comment_start = 0;	// start index of the comment leader
     char_u	*lead_flags;	// position in 'comments' for comment leader
     char_u	*leader = NULL;		// copy of comment leader
     char_u	*allocated = NULL;	// allocated memory
     char_u	*p;
     int		saved_char = NUL;	// init for GCC
     pos_T	*pos;
+#ifdef FEAT_CINDENT
+    int		do_cindent;
+#endif
 #ifdef FEAT_SMARTINDENT
     int		do_si = (!p_paste && curbuf->b_p_si
 # ifdef FEAT_CINDENT
@@ -1597,12 +1635,44 @@ open_line(
 	did_ai = TRUE;
     }
 
+#ifdef FEAT_CINDENT
+    // May do indenting after opening a new line.
+    do_cindent = !p_paste && (curbuf->b_p_cin
+# ifdef FEAT_EVAL
+		    || *curbuf->b_p_inde != NUL
+# endif
+		)
+	    && in_cinkeys(dir == FORWARD
+		? KEY_OPEN_FORW
+		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum));
+#endif
+
     // Find out if the current line starts with a comment leader.
     // This may then be inserted in front of the new line.
     end_comment_pending = NUL;
     if (flags & OPENLINE_DO_COM)
+    {
 	lead_len = get_leader_len(saved_line, &lead_flags,
 							dir == BACKWARD, TRUE);
+#ifdef FEAT_CINDENT
+	if (lead_len == 0 && do_cindent && dir == FORWARD)
+	{
+	    // Check for a line comment after code.
+	    comment_start = check_linecomment(saved_line);
+	    if (comment_start != MAXCOL)
+	    {
+		lead_len = get_leader_len(saved_line + comment_start,
+						     &lead_flags, FALSE, TRUE);
+		if (lead_len != 0)
+		{
+		    lead_len += comment_start;
+		    if (did_do_comment != NULL)
+			*did_do_comment = TRUE;
+		}
+	    }
+	}
+#endif
+    }
     else
 	lead_len = 0;
     if (lead_len > 0)
@@ -1764,7 +1834,14 @@ open_line(
 		lead_len = 0;
 	    else
 	    {
+		int li;
+
 		vim_strncpy(leader, saved_line, lead_len);
+
+		// TODO: handle multi-byte and double width chars
+		for (li = 0; li < comment_start; ++li)
+		    if (!VIM_ISWHITE(leader[li]))
+			leader[li] = ' ';
 
 		// Replace leader with lead_repl, right or left adjusted
 		if (lead_repl != NULL)
@@ -2212,15 +2289,7 @@ open_line(
 #endif
 #ifdef FEAT_CINDENT
     // May do indenting after opening a new line.
-    if (!p_paste
-	    && (curbuf->b_p_cin
-#  ifdef FEAT_EVAL
-		    || *curbuf->b_p_inde != NUL
-#  endif
-		)
-	    && in_cinkeys(dir == FORWARD
-		? KEY_OPEN_FORW
-		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum)))
+    if (do_cindent)
     {
 	do_c_expr_indent();
 	ai_col = (colnr_T)getwhitecols_curline();

@@ -37,6 +37,7 @@ TEST_VIM9 = \
 	test_vim9_expr \
 	test_vim9_fails \
 	test_vim9_func \
+	test_vim9_import \
 	test_vim9_script
 
 TEST_VIM9_RES = \
@@ -47,6 +48,7 @@ TEST_VIM9_RES = \
 	test_vim9_expr.res \
 	test_vim9_fails.res \
 	test_vim9_func.res \
+	test_vim9_import.res \
 	test_vim9_script.res
 
 # Benchmark scripts.
@@ -162,6 +164,7 @@ NEW_TESTS = \
 	test_increment_dbcs \
 	test_indent \
 	test_ins_complete \
+	test_ins_complete_no_halt \
 	test_interrupt \
 	test_job_fails \
 	test_join \
@@ -242,6 +245,7 @@ NEW_TESTS = \
 	test_selectmode \
 	test_set \
 	test_sha256 \
+	test_shell \
 	test_shift \
 	test_shortpathname \
 	test_signals \
@@ -404,6 +408,7 @@ NEW_TESTS_RES = \
 	test_increment_dbcs.res \
 	test_indent.res \
 	test_ins_complete.res \
+	test_ins_complete_no_halt.res \
 	test_interrupt.res \
 	test_job_fails.res \
 	test_join.res \
@@ -471,6 +476,7 @@ NEW_TESTS_RES = \
 	test_search.res \
 	test_search_stat.res \
 	test_selectmode.res \
+	test_shell.res \
 	test_shortpathname.res \
 	test_signals.res \
 	test_signs.res \

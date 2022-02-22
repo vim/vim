@@ -49,7 +49,6 @@ func Test_terminal_termwinsize_option_zero()
   let win = bufwinid(buf)
   call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=7x0
@@ -57,7 +56,6 @@ func Test_terminal_termwinsize_option_zero()
   let win = bufwinid(buf)
   call assert_equal([7, winwidth(win)], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=0x33
@@ -65,7 +63,6 @@ func Test_terminal_termwinsize_option_zero()
   let win = bufwinid(buf)
   call assert_equal([winheight(win), 33], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=
@@ -95,7 +92,6 @@ func Test_terminal_termwinsize_minimum()
   call assert_equal(30, winwidth(win))
 
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=0*0
@@ -103,7 +99,6 @@ func Test_terminal_termwinsize_minimum()
   let win = bufwinid(buf)
   call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 
   set termwinsize=
@@ -217,6 +212,7 @@ func Test_termwinscroll()
   CheckUnix
   " TODO: Somehow this test sometimes hangs in the GUI
   CheckNotGui
+  let g:test_is_flaky = 1
 
   " Let the terminal output more than 'termwinscroll' lines, some at the start
   " will be dropped.
@@ -286,7 +282,6 @@ func Test_zz1_terminal_in_gui()
   call assert_equal(1, winnr('$'))
   let buf = Run_shell_in_terminal({'term_finish': 'close'})
   call StopShellInTerminal(buf)
-  call TermWait(buf)
 
   " closing window wipes out the terminal buffer a with finished job
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
@@ -412,6 +407,7 @@ func Test_terminal_does_not_truncate_last_newlines()
   if has('conpty')
     throw 'Skipped: fail on ConPTY'
   endif
+  let g:test_is_flaky = 1
   let contents = [
   \   [ 'One', '', 'X' ],
   \   [ 'Two', '', '' ],
@@ -519,15 +515,11 @@ func Test_term_gettitle()
   endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', '-c', 'set title'])
-  if has('autoservername')
-    call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d\+$', term_gettitle(term)) })
-    call term_sendkeys(term, ":e Xfoo\r")
-    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM\d\+$', term_gettitle(term)) })
-  else
-    call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
-    call term_sendkeys(term, ":e Xfoo\r")
-    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM$', term_gettitle(term)) })
-  endif
+  " When Vim is running as a server then the title ends in VIM{number}, thus
+  " optionally match a number after "VIM".
+  call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d*$', term_gettitle(term)) })
+  call term_sendkeys(term, ":e Xfoo\r")
+  call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM\d*$', term_gettitle(term)) })
 
   call term_sendkeys(term, ":set titlestring=foo\r")
   call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
@@ -574,7 +566,6 @@ func Test_term_gettty()
   call assert_equal('', term_gettty(buf + 1))
 
   call StopShellInTerminal(buf)
-  call TermWait(buf)
   exe buf . 'bwipe'
 endfunc
 

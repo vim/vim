@@ -4,7 +4,7 @@ source check.vim
 source term_util.vim
 source shared.vim
 
-function Test_viminfo_read_and_write()
+func Test_viminfo_read_and_write()
   " First clear 'history', so that "hislen" is zero.  Then set it again,
   " simulating Vim starting up.
   set history=0
@@ -12,6 +12,7 @@ function Test_viminfo_read_and_write()
   set history=1000
 
   call histdel(':')
+  let @/=''
   let lines = [
 	\ '# comment line',
 	\ '*encoding=utf-8',
@@ -62,6 +63,7 @@ func Test_global_vars()
   let g:MY_GLOBAL_NULL = test_null
   let test_none = v:none
   let g:MY_GLOBAL_NONE = test_none
+  let g:MY_GLOBAL_FUNCREF = function('min')
 
   set viminfo='100,<50,s10,h,!,nviminfo
   wv! Xviminfo
@@ -76,6 +78,7 @@ func Test_global_vars()
   unlet g:MY_GLOBAL_TRUE
   unlet g:MY_GLOBAL_NULL
   unlet g:MY_GLOBAL_NONE
+  unlet g:MY_GLOBAL_FUNCREF
 
   rv! Xviminfo
   call assert_equal("Vim Editor", g:MY_GLOBAL_STRING)
@@ -88,6 +91,37 @@ func Test_global_vars()
   call assert_equal(test_true, g:MY_GLOBAL_TRUE)
   call assert_equal(test_null, g:MY_GLOBAL_NULL)
   call assert_equal(test_none, g:MY_GLOBAL_NONE)
+  call assert_false(exists("g:MY_GLOBAL_FUNCREF"))
+
+  " When reading global variables from viminfo, if a variable cannot be
+  " modified, then the value should not be changed.
+  unlet g:MY_GLOBAL_STRING
+  unlet g:MY_GLOBAL_NUM
+  unlet g:MY_GLOBAL_FLOAT
+  unlet g:MY_GLOBAL_DICT
+  unlet g:MY_GLOBAL_LIST
+  unlet g:MY_GLOBAL_BLOB
+
+  const g:MY_GLOBAL_STRING = 'New Value'
+  const g:MY_GLOBAL_NUM = 987
+  const g:MY_GLOBAL_FLOAT = 1.16
+  const g:MY_GLOBAL_DICT = {'editor': 'vim'}
+  const g:MY_GLOBAL_LIST = [5, 7, 13]
+  const g:MY_GLOBAL_BLOB = 0zDEADBEEF
+  call assert_fails('rv! Xviminfo', 'E741:')
+  call assert_equal('New Value', g:MY_GLOBAL_STRING)
+  call assert_equal(987, g:MY_GLOBAL_NUM)
+  call assert_equal(1.16, g:MY_GLOBAL_FLOAT)
+  call assert_equal({'editor': 'vim'}, g:MY_GLOBAL_DICT)
+  call assert_equal([5, 7 , 13], g:MY_GLOBAL_LIST)
+  call assert_equal(0zDEADBEEF, g:MY_GLOBAL_BLOB)
+
+  unlet g:MY_GLOBAL_STRING
+  unlet g:MY_GLOBAL_NUM
+  unlet g:MY_GLOBAL_FLOAT
+  unlet g:MY_GLOBAL_DICT
+  unlet g:MY_GLOBAL_LIST
+  unlet g:MY_GLOBAL_BLOB
 
   " Test for invalid values for a blob, list, dict in a viminfo file
   call writefile([
@@ -97,7 +131,7 @@ func Test_global_vars()
         \ "!GLOB_BLOB_4\tBLO\t0z12 ab",
         \ "!GLOB_LIST_1\tLIS\t1 2",
         \ "!GLOB_DICT_1\tDIC\t1 2"], 'Xviminfo')
-  call assert_fails('rv! Xviminfo', 'E15:')
+  call assert_fails('rv! Xviminfo', 'E488:')
   call assert_equal('123', g:GLOB_BLOB_1)
   call assert_equal(1, type(g:GLOB_BLOB_1))
   call assert_equal('012', g:GLOB_BLOB_2)
@@ -199,7 +233,26 @@ func Test_cmdline_history()
   call assert_equal("echo " . long800, histget(':', -2))
   call assert_equal("echo 'one'", histget(':', -3))
 
+  " If the value for the '/' or ':' or '@' field in 'viminfo' is zero, then
+  " the corresponding history entries are not saved.
+  set viminfo='100,/0,:0,@0,<50,s10,h,!,nviminfo
+  call histdel('/')
+  call histdel(':')
+  call histdel('@')
+  call histadd('/', 'foo')
+  call histadd(':', 'bar')
+  call histadd('@', 'baz')
+  wviminfo! Xviminfo
+  call histdel('/')
+  call histdel(':')
+  call histdel('@')
+  rviminfo! Xviminfo
+  call assert_equal('', histget('/'))
+  call assert_equal('', histget(':'))
+  call assert_equal('', histget('@'))
+
   call delete('Xviminfo')
+  set viminfo&vim
 endfunc
 
 func Test_cmdline_history_order()
@@ -315,7 +368,33 @@ func Test_viminfo_registers()
     let len += 1
   endwhile
 
+  " If the maximum number of lines saved for a register ('<' in 'viminfo') is
+  " zero, then register values should not be saved.
+  let @a = 'abc'
+  set viminfo='100,<0,s10,h,!,nviminfo
+  wviminfo Xviminfo
+  let @a = 'xyz'
+  rviminfo! Xviminfo
+  call assert_equal('xyz', @a)
+  " repeat the test with '"' instead of '<'
+  let @b = 'def'
+  set viminfo='100,\"0,s10,h,!,nviminfo
+  wviminfo Xviminfo
+  let @b = 'rst'
+  rviminfo! Xviminfo
+  call assert_equal('rst', @b)
+
+  " If the maximum size of an item ('s' in 'viminfo') is zero, then register
+  " values should not be saved.
+  let @c = '123'
+  set viminfo='100,<20,s0,h,!,nviminfo
+  wviminfo Xviminfo
+  let @c = '456'
+  rviminfo! Xviminfo
+  call assert_equal('456', @c)
+
   call delete('Xviminfo')
+  set viminfo&vim
 endfunc
 
 func Test_viminfo_marks()
@@ -510,6 +589,35 @@ func Test_viminfo_bad_syntax()
   call delete('Xviminfo')
 endfunc
 
+func Test_viminfo_bad_syntax2()
+  let lines = []
+  call add(lines, '|1,4')
+
+  " bad viminfo syntax for history barline
+  call add(lines, '|2') " invalid number of fields in a history barline
+  call add(lines, '|2,9,1,1,"x"') " invalid value for the history type
+  call add(lines, '|2,0,,1,"x"') " no timestamp
+  call add(lines, '|2,0,1,1,10') " non-string text
+
+  " bad viminfo syntax for register barline
+  call add(lines, '|3') " invalid number of fields in a register barline
+  call add(lines, '|3,1,1,1,1,,1,"x"') " missing width field
+  call add(lines, '|3,0,80,1,1,1,1,"x"') " invalid register number
+  call add(lines, '|3,0,10,5,1,1,1,"x"') " invalid register type
+  call add(lines, '|3,0,10,1,20,1,1,"x"') " invalid line count
+  call add(lines, '|3,0,10,1,0,1,1') " zero line count
+
+  " bad viminfo syntax for mark barline
+  call add(lines, '|4') " invalid number of fields in a mark barline
+  call add(lines, '|4,1,1,1,1,1') " invalid value for file name
+  call add(lines, '|4,20,1,1,1,"x"') " invalid value for file name
+  call add(lines, '|4,49,0,1,1,"x"') " invalid value for line number
+
+  call writefile(lines, 'Xviminfo')
+  rviminfo Xviminfo
+  call delete('Xviminfo')
+endfunc
+
 func Test_viminfo_file_marks()
   silent! bwipe test_viminfo.vim
   silent! bwipe Xviminfo
@@ -527,12 +635,12 @@ func Test_viminfo_file_marks()
   call test_settime(35)
   edit again
   call test_settime(40)
-  edit fourty
+  edit forty
   wviminfo Xviminfo
 
   sp Xviminfo
   1
-  for name in ['fourty', 'again', 'thirty', 'twenty', 'ten']
+  for name in ['forty', 'again', 'thirty', 'twenty', 'ten']
     /^>
     call assert_equal(name, substitute(getline('.'), '.*/', '', ''))
   endfor
@@ -664,6 +772,7 @@ func Test_viminfo_bufferlist()
   " If there are arguments, then :rviminfo doesn't read the buffer list.
   " Need to delete all the arguments for :rviminfo to work.
   %argdelete
+  set viminfo&vim
 
   edit Xfile1
   edit Xfile2
@@ -684,9 +793,42 @@ func Test_viminfo_bufferlist()
   call assert_equal('Xfile1', bufname(l[1].bufnr))
   call assert_equal('Xfile2', bufname(l[2].bufnr))
 
+  " The quickfix, terminal, unlisted, unnamed buffers are not stored in the
+  " viminfo file
+  %bw!
+  edit Xfile1
+  new
+  setlocal nobuflisted
+  new
+  copen
+  if has('terminal')
+    terminal
+  endif
+  wviminfo! Xviminfo
+  %bwipe!
+  rviminfo Xviminfo
+  let l = getbufinfo()
+  call assert_equal(2, len(l))
+  call assert_true(bufexists('Xfile1'))
+
+  " If a count is specified for '%', then only that many buffers should be
+  " stored in the viminfo file.
+  %bw!
+  set viminfo&vim
+  new Xbuf1
+  new Xbuf2
+  set viminfo+=%1
+  wviminfo! Xviminfo
+  %bwipe!
+  rviminfo! Xviminfo
+  let l = getbufinfo()
+  call assert_equal(2, len(l))
+  call assert_true(bufexists('Xbuf1'))
+  call assert_false(bufexists('Xbuf2'))
+
   call delete('Xviminfo')
   %bwipe
-  set viminfo-=%
+  set viminfo&vim
 endfunc
 
 " Test for errors in a viminfo file
@@ -747,6 +889,12 @@ func Test_viminfo_registers_old()
 	\ '	Vim',
 	\ '"a  CHAR  0',
 	\ '	red',
+	\ '"c  BLOCK  0',
+	\ '	a',
+	\ '	d',
+	\ '"d  LINE  0',
+	\ '	abc',
+	\ '	def',
 	\ '"m@ CHAR  0',
 	\ "	:echo 'Hello'\<CR>",
 	\ "",
@@ -760,7 +908,12 @@ func Test_viminfo_registers_old()
   silent! normal @t
   rviminfo! Xviminfo
   call assert_equal('red', getreg('a'))
+  call assert_equal("v", getregtype('a'))
   call assert_equal('two', getreg('b'))
+  call assert_equal("a\nd", getreg('c'))
+  call assert_equal("\<C-V>1", getregtype('c'))
+  call assert_equal("abc\ndef\n", getreg('d'))
+  call assert_equal("V", getregtype('d'))
   call assert_equal(":echo 'Hello'\<CR>", getreg('m'))
   call assert_equal('Vim', getreg('"'))
   call assert_equal("\nHello", execute('normal @@'))
@@ -797,7 +950,7 @@ func Test_viminfofile_none()
   let &viminfofile = save_vif
 endfunc
 
-" Test for an unwritable and unreadble 'viminfo' file
+" Test for an unwritable and unreadable 'viminfo' file
 func Test_viminfo_perm()
   CheckUnix
   CheckNotRoot
@@ -811,6 +964,7 @@ func Test_viminfo_perm()
   " Try to write the viminfo to a directory
   call mkdir('Xdir')
   call assert_fails('wviminfo Xdir', 'E137:')
+  call assert_fails('rviminfo Xdir', 'E195:')
   call delete('Xdir', 'rf')
 endfunc
 
@@ -912,6 +1066,230 @@ func Test_viminfo_oldfiles_newfile()
 
   let &viminfo = save_viminfo
   let &viminfofile = save_viminfofile
+endfunc
+
+" When writing CTRL-V or "\n" to a viminfo file, it is converted to CTRL-V
+" CTRL-V and CTRL-V n respectively.
+func Test_viminfo_with_Ctrl_V()
+  silent! exe "normal! /\<C-V>\<C-V>\n"
+  wviminfo Xviminfo
+  call assert_notequal(-1, readfile('Xviminfo')->index("?/\<C-V>\<C-V>"))
+  let @/ = 'abc'
+  rviminfo! Xviminfo
+  call assert_equal("\<C-V>", @/)
+  silent! exe "normal! /\<C-V>\<C-J>\n"
+  wviminfo Xviminfo
+  call assert_notequal(-1, readfile('Xviminfo')->index("?/\<C-V>n"))
+  let @/ = 'abc'
+  rviminfo! Xviminfo
+  call assert_equal("\n", @/)
+  call delete('Xviminfo')
+endfunc
+
+" Test for the 'r' field in 'viminfo' (removal media)
+func Test_viminfo_removable_media()
+  CheckUnix
+  if !isdirectory('/tmp') || getftype('/tmp') != 'dir'
+    return
+  endif
+  let save_viminfo = &viminfo
+  set viminfo+=r/tmp
+  edit /tmp/Xvima1b2c3
+  wviminfo Xviminfo
+  let matches = readfile('Xviminfo')->filter("v:val =~ 'Xvima1b2c3'")
+  call assert_equal(0, matches->len())
+  let &viminfo = save_viminfo
+  call delete('Xviminfo')
+endfunc
+
+" Test for the 'h' flag in 'viminfo'. If 'h' is not present, then the last
+" search pattern read from 'viminfo' should be highlighted with 'hlsearch'.
+" If 'h' is present, then the last search pattern should not be highlighted.
+func Test_viminfo_hlsearch()
+  set viminfo&vim
+
+  new
+  call setline(1, ['one two three'])
+  " save the screen attribute for the Search highlighted text and the normal
+  " text for later comparison
+  set hlsearch
+  let @/ = 'three'
+  redraw!
+  let hiSearch = screenattr(1, 9)
+  let hiNormal = screenattr(1, 1)
+
+  set viminfo-=h
+  let @/='two'
+  wviminfo! Xviminfo
+  let @/='one'
+  rviminfo! Xviminfo
+  redraw!
+  call assert_equal(hiSearch, screenattr(1, 5))
+  call assert_equal(hiSearch, screenattr(1, 6))
+  call assert_equal(hiSearch, screenattr(1, 7))
+
+  set viminfo+=h
+  let @/='two'
+  wviminfo! Xviminfo
+  let @/='one'
+  rviminfo! Xviminfo
+  redraw!
+  call assert_equal(hiNormal, screenattr(1, 5))
+  call assert_equal(hiNormal, screenattr(1, 6))
+  call assert_equal(hiNormal, screenattr(1, 7))
+
+  call delete('Xviminfo')
+  set hlsearch& viminfo&vim
+  bw!
+endfunc
+
+" Test for restoring the magicness of the last search pattern from the viminfo
+" file.
+func Test_viminfo_last_spat_magic()
+  set viminfo&vim
+  new
+  call setline(1, ' one abc a.c')
+
+  " restore 'nomagic'
+  set nomagic
+  exe "normal gg/a.c\<CR>"
+  wviminfo! Xviminfo
+  set magic
+  exe "normal gg/one\<CR>"
+  rviminfo! Xviminfo
+  exe "normal! gg/\<CR>"
+  call assert_equal(10, col('.'))
+
+  " restore 'magic'
+  set magic
+  exe "normal gg/a.c\<CR>"
+  wviminfo! Xviminfo
+  set nomagic
+  exe "normal gg/one\<CR>"
+  rviminfo! Xviminfo
+  exe "normal! gg/\<CR>"
+  call assert_equal(6, col('.'))
+
+  call delete('Xviminfo')
+  set viminfo&vim magic&
+  bw!
+endfunc
+
+" Test for restoring the smartcase of the last search pattern from the viminfo
+" file.
+func Test_viminfo_last_spat_smartcase()
+  new
+  call setline(1, ' one abc Abc')
+  set ignorecase smartcase
+
+  " Searching with * should disable smartcase
+  exe "normal! gg$b*"
+  wviminfo! Xviminfo
+  exe "normal gg/one\<CR>"
+  rviminfo! Xviminfo
+  exe "normal! gg/\<CR>"
+  call assert_equal(6, col('.'))
+
+  call delete('Xviminfo')
+  set ignorecase& smartcase& viminfo&
+  bw!
+endfunc
+
+" Test for restoring the last search pattern with a line or character offset
+" from the viminfo file.
+func Test_viminfo_last_spat_offset()
+  new
+  call setline(1, ['one', 'two', 'three', 'four', 'five'])
+  " line offset
+  exe "normal! /two/+2\<CR>"
+  wviminfo! Xviminfo
+  exe "normal gg/five\<CR>"
+  rviminfo! Xviminfo
+  exe "normal! gg/\<CR>"
+  call assert_equal(4, line('.'))
+  " character offset
+  exe "normal! gg/^th/e+2\<CR>"
+  wviminfo! Xviminfo
+  exe "normal gg/two\<CR>"
+  rviminfo! Xviminfo
+  exe "normal! gg/\<CR>"
+  call assert_equal([3, 4], [line('.'), col('.')])
+  call delete('Xviminfo')
+  bw!
+endfunc
+
+" Test for saving and restoring the last executed register (@ command)
+" from the viminfo file
+func Test_viminfo_last_exec_reg()
+  let g:val = 1
+  let @a = ":let g:val += 1\n"
+  normal! @a
+  wviminfo! Xviminfo
+  let @b = ''
+  normal! @b
+  rviminfo! Xviminfo
+  normal @@
+  call assert_equal(3, g:val)
+  call delete('Xviminfo')
+endfunc
+
+" Test for merging file marks in a viminfo file
+func Test_viminfo_merge_file_marks()
+  for [f, l, t] in [['a.txt', 5, 10], ['b.txt', 10, 20]]
+    call test_settime(t)
+    exe 'edit ' .. f
+    call setline(1, range(1, 20))
+    exe l . 'mark a'
+    wviminfo Xviminfo
+    bw!
+  endfor
+  call test_settime(30)
+  for [f, l] in [['a.txt', 5], ['b.txt', 10]]
+    exe 'edit ' .. f
+    rviminfo! Xviminfo
+    call assert_equal(l, line("'a"))
+    bw!
+  endfor
+  call delete('Xviminfo')
+  call test_settime(0)
+endfunc
+
+" Test for merging file marks from a old viminfo file
+func Test_viminfo_merge_old_filemarks()
+  let lines = []
+  call add(lines, '|1,4')
+  call add(lines, '> ' .. fnamemodify('a.txt', ':p:~'))
+  call add(lines, "\tb\t7\t0\n")
+  call writefile(lines, 'Xviminfo')
+  edit b.txt
+  call setline(1, range(1, 20))
+  12mark b
+  wviminfo Xviminfo
+  bw!
+  edit a.txt
+  rviminfo! Xviminfo
+  call assert_equal(7, line("'b"))
+  edit b.txt
+  rviminfo! Xviminfo
+  call assert_equal(12, line("'b"))
+  call delete('Xviminfo')
+endfunc
+
+" Test for merging the jump list from a old viminfo file
+func Test_viminfo_merge_old_jumplist()
+  let lines = []
+  call add(lines, "-'  10  1  " .. fnamemodify('a.txt', ':p:~'))
+  call add(lines, "-'  20  1  " .. fnamemodify('a.txt', ':p:~'))
+  call add(lines, "-'  30  1  " .. fnamemodify('b.txt', ':p:~'))
+  call add(lines, "-'  40  1  " .. fnamemodify('b.txt', ':p:~'))
+  call writefile(lines, 'Xviminfo')
+  clearjumps
+  rviminfo! Xviminfo
+  let l = getjumplist()[0]
+  call assert_equal([40, 30, 20, 10], [l[0].lnum, l[1].lnum, l[2].lnum,
+        \ l[3].lnum])
+  bw!
+  call delete('Xviminfo')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
