@@ -508,7 +508,6 @@ endfunc
 " Check that [[:upper:]] matches for automatic engine
 func Test_match_char_class_upper()
   new
-  let _engine=&regexpengine
 
   " Test 1: [[:upper:]]\{2,\}
   set regexpengine=0
@@ -549,7 +548,7 @@ func Test_match_char_class_upper()
   call assert_equal(4, searchcount().total, 'TEST 3 lower')
 
   " clean up
-  let &regexpengine=_engine
+  set regexpengine=0
   bwipe!
 endfunc
 
@@ -560,5 +559,14 @@ func Test_match_invalid_byte()
   bwipe!
   call delete('Xinvalid')
 endfunc
+
+func Test_match_too_complicated()
+  set regexpengine=1
+  exe "vsplit \xeb\xdb\x99"
+  silent! buf \&\zs*\zs*0
+  bwipe!
+  set regexpengine=0
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
