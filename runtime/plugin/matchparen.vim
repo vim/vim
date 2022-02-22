@@ -2,7 +2,7 @@ vim9script noclear
 
 # Vim plugin for showing matching parens
 # Maintainer:  Bram Moolenaar <Bram@vim.org>
-# Last Change: 2021 Jul 20
+# Last Change: 2022 Feb 22
 
 # Exit quickly when:
 # - this plugin was already loaded (or disabled)
@@ -36,12 +36,12 @@ endif
 # Commands {{{1
 
 # Define command that will disable and enable the plugin.
-com -bar -complete=custom,Complete -nargs=1 MatchParen Toggle(<q-args>)
+command -bar -complete=custom,Complete -nargs=? MatchParen Toggle(<q-args>)
 
 # Need to install these commands to be backwards compatible.
 if config.compatible
-  com -bar DoMatchParen MatchParen on
-  com -bar NoMatchParen MatchParen off
+  command -bar DoMatchParen MatchParen on
+  command -bar NoMatchParen MatchParen off
 endif
 
 # Autocommands {{{1
@@ -103,10 +103,10 @@ def ParseMatchpairs() #{{{2
   endif
   matchpairs = &matchpairs
   pairs = {}
-  for [opening, closing] in
+  for [opening: string, closing: string] in
       matchpairs
         ->split(',')
-        ->mapnew((_, v: string): list<string> => split(v, ':'))
+        ->map((_, v: string): list<string> => split(v, ':'))
     pairs[opening] = [escape(opening, '[]'), escape(closing, '[]'),  'nW', 'w$']
     pairs[closing] = [escape(opening, '[]'), escape(closing, '[]'), 'bnW', 'w0']
   endfor
@@ -253,7 +253,7 @@ def Toggle(args: string) #{{{2
   if ['on', 'off', 'toggle']->index(args) == -1
     redraw
     echohl ErrorMsg
-    echom 'matchparen: invalid argument'
+    echomsg 'matchparen: invalid argument'
     echohl NONE
     return
   endif
@@ -293,9 +293,18 @@ def InStringOrComment(): bool #{{{2
     return false
   endif
 
-  for synID in synstack('.', col('.'))
-    # We match "escape" and "symbol" for special items, such as
-    # lispEscapeSpecial or lispBarSymbol.
+  # After moving to  the end of a line  with `$`, then onto the  line below with
+  # `k`, `synstack()` might wrongly give an empty stack.  Possible bug:
+  # https://github.com/vim/vim/issues/5252
+  var synstack: list<number> = synstack('.', col('.'))
+  if synstack->empty() && getcurpos()[-1] == v:maxcol
+    # As a workaround, we ask for the syntax a second time.
+    synstack = synstack('.', col('.'))
+  endif
+
+  for synID: number in synstack
+    # We match `escape` and `symbol` for special items, such as
+    # `lispEscapeSpecial` or `lispBarSymbol`.
     if synIDattr(synID, 'name') =~ '\cstring\|character\|singlequote\|escape\|symbol\|comment'
       return true
     endif
@@ -350,4 +359,3 @@ def GetOption(name: string): any #{{{2
          ->get(name, config[name])
   endif
 enddef
-
