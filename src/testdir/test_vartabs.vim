@@ -445,7 +445,7 @@ endfunc
 func Test_vartabstop_latin1()
   let save_encoding = &encoding
   new
-  set encoding=iso8859
+  set encoding=latin1
   silent norm :se 
   set vartabstop=400
   norm i00	
