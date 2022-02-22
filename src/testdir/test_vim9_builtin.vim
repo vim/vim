@@ -427,6 +427,21 @@ def Test_call_call()
   call('reverse', [l])
   l->assert_equal([1, 2, 3])
 
+  var lines =<< trim END
+      vim9script
+      def Outer()
+        def g:Inner()
+          g:done = 'Inner'
+        enddef
+        call(g:Inner, [])
+      enddef
+      Outer()
+      assert_equal('Inner', g:done)
+      unlet g:done
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:Inner
+
   v9.CheckDefExecAndScriptFailure(['call(123, [2])'], 'E1256: String or function required for argument 1')
   v9.CheckDefExecAndScriptFailure(['call(true, [2])'], 'E1256: String or function required for argument 1')
   v9.CheckDefAndScriptFailure(['call("reverse", 2)'], ['E1013: Argument 2: type mismatch, expected list<any> but got number', 'E1211: List required for argument 2'])

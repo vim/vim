@@ -2333,16 +2333,33 @@ load_namespace_var(ectx_T *ectx, isntype_T isn_type, isn_T *iptr)
 
     if (di == NULL)
     {
+	if (isn_type == ISN_LOADG)
+	{
+	    ufunc_T *ufunc = find_func(iptr->isn_arg.string, TRUE);
+
+	    // g:Something could be a function
+	    if (ufunc != NULL)
+	    {
+		typval_T    *tv = STACK_TV_BOT(0);
+
+		++ectx->ec_stack.ga_len;
+		tv->v_type = VAR_FUNC;
+		tv->vval.v_string = alloc(STRLEN(iptr->isn_arg.string) + 3);
+		if (tv->vval.v_string == NULL)
+		    return FAIL;
+		STRCPY(tv->vval.v_string, "g:");
+		STRCPY(tv->vval.v_string + 2, iptr->isn_arg.string);
+		return OK;
+	    }
+	}
 	SOURCING_LNUM = iptr->isn_lnum;
-	if (vim_strchr(iptr->isn_arg.string,
-					AUTOLOAD_CHAR) != NULL)
+	if (vim_strchr(iptr->isn_arg.string, AUTOLOAD_CHAR) != NULL)
 	    // no check if the item exists in the script but
 	    // isn't exported, it is too complicated
-	    semsg(_(e_item_not_found_in_script_str),
-					 iptr->isn_arg.string);
+	    semsg(_(e_item_not_found_in_script_str), iptr->isn_arg.string);
 	else
 	    semsg(_(e_undefined_variable_char_str),
-			     namespace, iptr->isn_arg.string);
+					      namespace, iptr->isn_arg.string);
 	return FAIL;
     }
     else
