@@ -1065,6 +1065,9 @@ read_error_exit(void)
     if (silent_mode)	// Normal way to exit for "ex -s"
 	getout(0);
     STRCPY(IObuff, _("Vim: Error reading input, exiting...\n"));
+#ifdef FEAT_CMDWIN
+    cmdwin_type = 0;
+#endif
     preserve_exit();
 }
 
