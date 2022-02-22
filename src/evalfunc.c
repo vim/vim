@@ -596,6 +596,43 @@ arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check second argument of sort() and uniq(), the "how" argument.
+ */
+    static int
+arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    if (type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_PARTIAL
+	    || type == &t_unknown
+	    || type == &t_any)
+	return OK;
+
+    if (type->tt_type == VAR_FUNC)
+    {
+	type_T *(args[2]);
+	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, args};
+
+	if (context->arg_types[0].type_curr->tt_type == VAR_LIST)
+	    args[0] = context->arg_types[0].type_curr->tt_member;
+	else
+	    args[0] = &t_unknown;
+	if ((type->tt_member != &t_any && type->tt_member != &t_unknown)
+		|| args[0] != &t_unknown)
+	{
+	    where_T where = WHERE_INIT;
+
+	    args[1] = args[0];
+	    where.wt_index = 2;
+	    return check_type(&t_func_exp, type, TRUE, where);
+	}
+
+	return OK;
+    }
+    semsg(_(e_string_or_function_required_for_argument_nr), 2);
+    return FAIL;
+}
+
+/*
  * Check an expression argument, can be a string, funcref or partial.
  * Also accept a bool, a constant resulting from compiling a string argument.
  * Also accept a number, one and zero are accepted.
@@ -1006,7 +1043,7 @@ static argcheck_T arg23_settagstack[] = {arg_number, arg_dict_any, arg_string};
 static argcheck_T arg02_sign_getplaced[] = {arg_buffer, arg_dict_any};
 static argcheck_T arg45_sign_place[] = {arg_number, arg_string, arg_string, arg_buffer, arg_dict_any};
 static argcheck_T arg23_slice[] = {arg_slice1, arg_number, arg_number};
-static argcheck_T arg13_sortuniq[] = {arg_list_any, NULL, arg_dict_any};
+static argcheck_T arg13_sortuniq[] = {arg_list_any, arg_sort_how, arg_dict_any};
 static argcheck_T arg24_strpart[] = {arg_string, arg_number, arg_number, arg_bool};
 static argcheck_T arg12_system[] = {arg_string, arg_str_or_nr_or_list};
 static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, arg_string};

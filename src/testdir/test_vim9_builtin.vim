@@ -3796,19 +3796,41 @@ def Test_sort_argument()
     assert_equal([1, 2, 3, 4, 5, 6, 7, 8], l)
   END
   v9.CheckDefAndScriptSuccess(lines)
-  v9.CheckDefAndScriptFailure(['sort("a")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1'])
-  v9.CheckDefAndScriptFailure(['sort([1], "", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
+
+  lines =<< trim END
+      sort([1, 2, 3], (a: any, b: any) => 1)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_sort_compare_func_fails()
+  v9.CheckDefAndScriptFailure(['sort("a")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1'])
+  v9.CheckDefAndScriptFailure(['sort([1], "", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
+
   var lines =<< trim END
     vim9script
     echo ['a', 'b', 'c']->sort((a: number, b: number) => 0)
   END
   writefile(lines, 'Xbadsort')
   assert_fails('source Xbadsort', ['E1013:', 'E702:'])
-
   delete('Xbadsort')
+
+  lines =<< trim END
+      var l = [1, 2, 3]
+      sort(l, (a: string, b: number) => 1)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?number): number but got func(string, number): number', 'E1013: Argument 1: type mismatch, expected string but got number'])
+
+  lines =<< trim END
+      var l = ['a', 'b', 'c']
+      sort(l, (a: string, b: number) => 1)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?string, ?string): number but got func(string, number): number', 'E1013: Argument 2: type mismatch, expected number but got string'])
+
+  lines =<< trim END
+      sort([1, 2, 3], (a: number, b: number) => true)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?number): number but got func(number, number): bool', 'E1138: Using a Bool as a Number'])
 enddef
 
 def Test_spellbadword()
