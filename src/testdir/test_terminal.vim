@@ -715,7 +715,8 @@ endfunction
 func Test_terminal_noblock()
   let g:test_is_flaky = 1
   let buf = term_start(&shell)
-  let wait_time = 5000
+  " Starting a terminal can be slow, esp. on busy CI machines.
+  let wait_time = 7500
   let letters = 'abcdefghijklmnopqrstuvwxyz'
   if has('bsd') || has('mac') || has('sun')
     " The shell or something else has a problem dealing with more than 1000
