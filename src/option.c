@@ -4479,6 +4479,14 @@ get_encoding_default(void)
     return (char_u *)NULL;
 }
 
+    int
+is_option_allocated(char *name)
+{
+    int idx = findoption((char_u *)name);
+
+    return idx >= 0 && (options[idx].flags & P_ALLOCED);
+}
+
 /*
  * Translate a string like "t_xx", "<t_xx>" or "<S-Tab>" to a key number.
  * When "has_lt" is true there is a '<' before "*arg_arg".

@@ -8235,6 +8235,7 @@ ex_helpgrep(exarg_T *eap)
 {
     regmatch_T	regmatch;
     char_u	*save_cpo;
+    int		save_cpo_allocated;
     qf_info_T	*qi = &ql_info;
     int		new_qi = FALSE;
     char_u	*au_name =  NULL;
@@ -8265,6 +8266,7 @@ ex_helpgrep(exarg_T *eap)
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
+    save_cpo_allocated = is_option_allocated("cpo");
     p_cpo = empty_option;
 
     incr_quickfix_busy();
@@ -8302,7 +8304,8 @@ ex_helpgrep(exarg_T *eap)
 	// changed and restored, need to restore in the complicated way.
 	if (*p_cpo == NUL)
 	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
-	free_string_option(save_cpo);
+	if (save_cpo_allocated)
+	    free_string_option(save_cpo);
     }
 
     if (updated)
