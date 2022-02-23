@@ -2856,6 +2856,10 @@ win_free_all(void)
 {
     int		dummy;
 
+#ifdef FEAT_CMDWIN
+    // avoid an error for switching tabpage with the cmdline window open
+    cmdwin_type = 0;
+#endif
     while (first_tabpage->tp_next != NULL)
 	tabpage_close(TRUE);
 
