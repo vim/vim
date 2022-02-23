@@ -446,11 +446,12 @@ func Test_vartabstop_latin1()
   let save_encoding = &encoding
   new
   set encoding=iso8859-1
-  silent exe "norm :se \<C-A>\<C-C>"
+  set compatible linebreak list revins smarttab
   set vartabstop=400
   exe "norm i00\t\<C-D>"
   bwipe!
   let &encoding = save_encoding
+  set nocompatible linebreak& list& revins& smarttab& vartabstop&
 endfunc
 
 
