@@ -5786,7 +5786,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"mouse_gpm",
-#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_GPM)
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_GPM) && !defined(DYNAMIC_GPM)
 		1
 #else
 		0
@@ -6391,6 +6391,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 #if defined(FEAT_TERMINAL) && defined(MSWIN)
 	else if (STRICMP(name, "terminal") == 0)
 	    n = terminal_enabled();
+#endif
+#ifdef DYNAMIC_GPM
+	else if (STRICMP(name, "mouse_gpm") == 0)
+	    n = gpm_available();
 #endif
     }
 

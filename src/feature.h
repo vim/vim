@@ -952,6 +952,12 @@
  */
 #if defined(FEAT_NORMAL) && defined(HAVE_GPM)
 # define FEAT_MOUSE_GPM
+/*
+ * +mouse_gpm/dyn   Load libgpm dynamically.
+ */
+# ifndef DYNAMIC_GPM
+// #  define DYNAMIC_GPM
+# endif
 #endif
 
 #if defined(FEAT_NORMAL) && defined(HAVE_SYSMOUSE)

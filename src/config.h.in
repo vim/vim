@@ -507,3 +507,6 @@
 
 /* Define if _SC_SIGSTKSZ is available via sysconf() */
 #undef HAVE_SYSCONF_SIGSTKSZ
+
+/* Define if you want to load libgpm dynamically */
+#undef DYNAMIC_GPM

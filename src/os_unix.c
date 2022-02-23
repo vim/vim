@@ -55,7 +55,25 @@ static int selinux_enabled = -1;
 #endif
 
 #ifdef FEAT_MOUSE_GPM
+
 # include <gpm.h>
+
+# ifdef DYNAMIC_GPM
+#  define Gpm_Open     (*dll_Gpm_Open)
+#  define Gpm_Close    (*dll_Gpm_Close)
+#  define Gpm_GetEvent (*dll_Gpm_GetEvent)
+#  define gpm_flag     (dll_gpm_flag != NULL ? *dll_gpm_flag :  0)
+#  define gpm_fd       (dll_gpm_fd   != NULL ? *dll_gpm_fd   : -1)
+
+static int (*dll_Gpm_Open)     (Gpm_Connect *, int);
+static int (*dll_Gpm_Close)    (void);
+static int (*dll_Gpm_GetEvent) (Gpm_Event *);
+static int *dll_gpm_flag;
+static int *dll_gpm_fd;
+
+static void *libgpm_hinst;
+# endif
+
 // <linux/keyboard.h> contains defines conflicting with "keymap.h",
 // I just copied relevant defines here. A cleaner solution would be to put gpm
 // code into separate file and include there linux/keyboard.h
@@ -6446,7 +6464,7 @@ select_eintr:
 	}
 # endif
 # ifdef FEAT_MOUSE_GPM
-	if (ret > 0 && gpm_flag && check_for_gpm != NULL && gpm_fd >= 0)
+	if (ret > 0 && check_for_gpm != NULL && gpm_flag && gpm_fd >= 0)
 	{
 	    if (FD_ISSET(gpm_fd, &efds))
 		gpm_close();
@@ -7172,6 +7190,49 @@ mch_rename(const char *src, const char *dest)
 #endif // !HAVE_RENAME
 
 #if defined(FEAT_MOUSE_GPM) || defined(PROTO)
+# if defined(DYNAMIC_GPM) || defined(PROTO)
+/*
+ * Initialize Gpm's symbols for dynamic linking.
+ * Must be called only if libgpm_hinst is NULL.
+ */
+    static int
+load_libgpm(void)
+{
+    libgpm_hinst = dlopen("libgpm.so", RTLD_LAZY|RTLD_GLOBAL);
+
+    if (libgpm_hinst == NULL)
+    {
+	if (p_verbose > 0)
+	    smsg_attr(HL_ATTR(HLF_W),
+		        _("Could not load gpm library: %s"), dlerror());
+	return FAIL;
+    }
+
+    if (
+	    (dll_Gpm_Open     = dlsym(libgpm_hinst, "Gpm_Open"))     == NULL
+	||  (dll_Gpm_Close    = dlsym(libgpm_hinst, "Gpm_Close"))    == NULL
+	||  (dll_Gpm_GetEvent = dlsym(libgpm_hinst, "Gpm_GetEvent")) == NULL
+	||  (dll_gpm_flag     = dlsym(libgpm_hinst, "gpm_flag"))     == NULL
+	||  (dll_gpm_fd       = dlsym(libgpm_hinst, "gpm_fd"))       == NULL
+      )
+    {
+	semsg(_(e_could_not_load_library_str_str), "gpm", dlerror());
+	dlclose(libgpm_hinst);
+	libgpm_hinst = NULL;
+	dll_gpm_flag = NULL;
+	dll_gpm_fd   = NULL;
+	return FAIL;
+    }
+    return OK;
+}
+
+    int
+gpm_available(void)
+{
+    return libgpm_hinst != NULL || load_libgpm() == OK;
+}
+# endif // DYNAMIC_GPM
+
 /*
  * Initializes connection with gpm (if it isn't already opened)
  * Return 1 if succeeded (or connection already opened), 0 if failed
@@ -7180,6 +7241,11 @@ mch_rename(const char *src, const char *dest)
 gpm_open(void)
 {
     static Gpm_Connect gpm_connect; // Must it be kept till closing ?
+
+#ifdef DYNAMIC_GPM
+    if (!gpm_available())
+	return 0;
+#endif
 
     if (!gpm_flag)
     {

@@ -4096,13 +4096,13 @@ if test "x$GTK_CFLAGS" != "x"; then
   LIBS="$ac_save_LIBS"
 fi
 
-AC_MSG_CHECKING(--disable-gpm argument)
+AC_MSG_CHECKING(--enable-gpm argument)
 AC_ARG_ENABLE(gpm,
-	[  --disable-gpm           Don't use gpm (Linux mouse daemon).], ,
+	[  --enable-gpm=OPTS       Use gpm (Linux mouse daemon). default=yes OPTS=yes/no/dynamic], ,
 	[enable_gpm="yes"])
 
-if test "$enable_gpm" = "yes"; then
-  AC_MSG_RESULT(no)
+if test "$enable_gpm" = "yes" -o "$enable_gpm" = "dynamic"; then
+  AC_MSG_RESULT($enable_gpm)
   dnl Checking if gpm support can be compiled
   AC_CACHE_CHECK([for gpm], vi_cv_have_gpm,
 	[olibs="$LIBS" ; LIBS="-lgpm"]
@@ -4117,11 +4117,15 @@ if test "$enable_gpm" = "yes"; then
 	[LIBS="$olibs"]
     )
   if test $vi_cv_have_gpm = yes; then
-    LIBS="$LIBS -lgpm"
+    if test "$enable_gpm" = "yes"; then
+      LIBS="$LIBS -lgpm"
+    else
+      AC_DEFINE(DYNAMIC_GPM)
+    fi
     AC_DEFINE(HAVE_GPM)
   fi
 else
-  AC_MSG_RESULT(yes)
+  AC_MSG_RESULT(no)
 fi
 
 AC_MSG_CHECKING(--disable-sysmouse argument)

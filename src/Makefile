@@ -526,6 +526,8 @@ CClink = $(CC)
 # though you have gpm libraries and includes.
 # For Debian/Ubuntu gpm support requires the libgpm-dev package.
 #CONF_OPT_GPM = --disable-gpm
+# Use this to enable dynamic loading of the GPM library.
+#CONF_OPT_GPM = --enable-gpm=dynamic
 
 # sysmouse - For mouse support on FreeBSD and DragonFly console via sysmouse
 # Uncomment this when you do not want do include sysmouse support, even
