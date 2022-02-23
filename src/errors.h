@@ -3010,7 +3010,8 @@ EXTERN char e_variable_arguments_type_must_be_list_str[]
 	INIT(= N_("E1180: Variable arguments type must be a list: %s"));
 EXTERN char e_cannot_use_underscore_here[]
 	INIT(= N_("E1181: Cannot use an underscore here"));
-// E1182 unused
+EXTERN char e_cannot_define_dict_func_in_vim9_script_str[]
+	INIT(= N_("E1182: Cannot define a dict function in Vim9 script: %s"));
 EXTERN char e_cannot_use_range_with_assignment_operator_str[]
 	INIT(= N_("E1183: Cannot use a range with an assignment operator: %s"));
 #endif

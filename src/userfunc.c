@@ -4268,10 +4268,21 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
     }
     else
     {
-	if (vim9script && p[0] == 's' && p[1] == ':')
+	if (vim9script)
 	{
-	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), p);
-	    return NULL;
+	    if (p[0] == 's' && p[1] == ':')
+	    {
+		semsg(_(e_cannot_use_s_colon_in_vim9_script_str), p);
+		return NULL;
+	    }
+	    p = to_name_end(p, TRUE);
+	    if (*skipwhite(p) == '.' && vim_strchr(p, '(') != NULL)
+	    {
+		semsg(_(e_cannot_define_dict_func_in_vim9_script_str),
+								     eap->arg);
+		return NULL;
+	    }
+	    p = eap->arg;
 	}
 
 	name = save_function_name(&p, &is_global, eap->skip,

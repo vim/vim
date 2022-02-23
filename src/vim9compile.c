@@ -831,7 +831,11 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     {
 	if (!ends_excmd2(name_start, name_end))
 	{
-	    semsg(_(e_invalid_command_str), eap->cmd);
+	    if (*skipwhite(name_end) == '.')
+		semsg(_(e_cannot_define_dict_func_in_vim9_script_str),
+								     eap->cmd);
+	    else
+		semsg(_(e_invalid_command_str), eap->cmd);
 	    return NULL;
 	}
 

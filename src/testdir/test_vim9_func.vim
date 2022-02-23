@@ -106,6 +106,63 @@ def Test_wrong_function_name()
       enddef
   END
   v9.CheckScriptFailure(lines, 'E1267:')
+
+  lines =<< trim END
+      vim9script
+      var Object = {}
+      function Object.Method()
+      endfunction
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+
+  lines =<< trim END
+      vim9script
+      var Object = {}
+      def Object.Method()
+      enddef
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+
+  lines =<< trim END
+      vim9script
+      g:Object = {}
+      function g:Object.Method()
+      endfunction
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+
+  lines =<< trim END
+      let s:Object = {}
+      def Define()
+        function s:Object.Method()
+        endfunction
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+  delfunc g:Define
+
+  lines =<< trim END
+      let s:Object = {}
+      def Define()
+        def Object.Method()
+        enddef
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+  delfunc g:Define
+
+  lines =<< trim END
+      let g:Object = {}
+      def Define()
+        function g:Object.Method()
+        endfunction
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+  delfunc g:Define
 enddef
 
 def Test_autoload_name_mismatch()
