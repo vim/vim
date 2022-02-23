@@ -552,6 +552,8 @@ check_map_filter_arg2(type_T *type, argcontext_T *context, int is_map)
 	    t_func_exp.tt_member = &t_bool;
 	if (args[0] == NULL)
 	    args[0] = &t_unknown;
+	if (type->tt_argcount == -1)
+	    t_func_exp.tt_argcount = -1;
 
 	where.wt_index = 2;
 	return check_type(&t_func_exp, type, TRUE, where);

@@ -1340,10 +1340,21 @@ def Test_filter()
   enddef
   assert_equal([1], GetFiltered())
 
+  var lines =<< trim END
+      vim9script
+      def Func(): list<string>
+        var MatchWord: func: bool = (_, v) => true
+        var l = ['xxx']
+        return l->filter(MatchWord)
+      enddef
+      assert_equal(['xxx'], Func())
+  END
+  v9.CheckScriptSuccess(lines)
+
   v9.CheckDefAndScriptFailure(['filter(1.1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1251: List, Dictionary, Blob or String required for argument 1'])
   v9.CheckDefAndScriptFailure(['filter([1, 2], 4)'], ['E1256: String or function required for argument 2', 'E1024: Using a Number as a String'])
 
-  var lines =<< trim END
+  lines =<< trim END
     def F(i: number, v: any): string
       return 'bad'
     enddef
