@@ -3812,6 +3812,17 @@ def Test_sort_argument()
       sort([1, 2, 3], (a: any, b: any) => 1)
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def SortedList(): list<number>
+        var Lambda: func: number = (a, b): number => a - b
+        var l = [3, 2, 1]
+        return l->sort(Lambda)
+      enddef
+      SortedList()->assert_equal([1, 2, 3])
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_sort_compare_func_fails()

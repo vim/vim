@@ -624,6 +624,8 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    where_T where = WHERE_INIT;
 
 	    args[1] = args[0];
+	    if (type->tt_argcount == -1)
+		t_func_exp.tt_argcount = -1;
 	    where.wt_index = 2;
 	    return check_type(&t_func_exp, type, TRUE, where);
 	}
