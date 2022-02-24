@@ -6447,12 +6447,70 @@ set_context_in_set_cmd(
     }
 }
 
+/*
+ * Returns TRUE if 'str' either matches 'regmatch' or fuzzy matches 'pat'.
+ *
+ * If 'test_only' is TRUE and 'fuzzy' is FALSE and if 'str' matches the regular
+ * expression 'regmatch', then returns TRUE.  Otherwise returns FALSE.
+ *
+ * If 'test_only' is FALSE and 'fuzzy' is FALSE and if 'str' matches the
+ * regular expression 'regmatch', then stores the match in matches[idx] and
+ * returns TRUE.
+ *
+ * If 'test_only' is TRUE and 'fuzzy' is TRUE and if 'str' fuzzy matches
+ * 'fuzzystr', then returns TRUE. Otherwise returns FALSE.
+ *
+ * If 'test_only' is FALSE and 'fuzzy' is TRUE and if 'str' fuzzy matches
+ * 'fuzzystr', then stores the match details in fuzmatch[idx] and returns TRUE.
+ */
+    static int
+match_str(
+	char_u		*str,
+	regmatch_T	*regmatch,
+	char_u		**matches,
+	int		idx,
+	int		test_only,
+	int		fuzzy,
+	char_u		*fuzzystr,
+	fuzmatch_str_T  *fuzmatch)
+{
+    if (!fuzzy)
+    {
+	if (vim_regexec(regmatch, str, (colnr_T)0))
+	{
+	    if (!test_only)
+		matches[idx] = vim_strsave(str);
+	    return TRUE;
+	}
+    }
+    else
+    {
+	int score;
+
+	score = fuzzy_match_str(str, fuzzystr);
+	if (score != 0)
+	{
+	    if (!test_only)
+	    {
+		fuzmatch[idx].idx = idx;
+		fuzmatch[idx].str = vim_strsave(str);
+		fuzmatch[idx].score = score;
+	    }
+
+	    return TRUE;
+	}
+    }
+
+    return FALSE;
+}
+
     int
 ExpandSettings(
     expand_T	*xp,
     regmatch_T	*regmatch,
-    int		*num_file,
-    char_u	***file)
+    char_u	*fuzzystr,
+    int		*numMatches,
+    char_u	***matches)
 {
     int		num_normal = 0;	    // Nr of matching non-term-code settings
     int		num_term = 0;	    // Nr of matching terminal code settings
@@ -6465,6 +6523,10 @@ ExpandSettings(
     char_u	name_buf[MAX_KEY_NAME_LEN];
     static char *(names[]) = {"all", "termcap"};
     int		ic = regmatch->rm_ic;	// remember the ignore-case flag
+    int		fuzzy;
+    fuzmatch_str_T  *fuzmatch = NULL;
+
+    fuzzy = cmdline_fuzzy_complete(fuzzystr);
 
     // do this loop twice:
     // loop == 0: count the number of matching options
@@ -6475,13 +6537,16 @@ ExpandSettings(
 	if (xp->xp_context != EXPAND_BOOL_SETTINGS)
 	{
 	    for (match = 0; match < (int)ARRAY_LENGTH(names); ++match)
-		if (vim_regexec(regmatch, (char_u *)names[match], (colnr_T)0))
+	    {
+		if (match_str((char_u *)names[match], regmatch, *matches,
+			    count, (loop == 0), fuzzy, fuzzystr, fuzmatch))
 		{
 		    if (loop == 0)
 			num_normal++;
 		    else
-			(*file)[count++] = vim_strsave((char_u *)names[match]);
+			count++;
 		}
+	    }
 	}
 	for (opt_idx = 0; (str = (char_u *)options[opt_idx].fullname) != NULL;
 								    opt_idx++)
@@ -6494,28 +6559,9 @@ ExpandSettings(
 	    is_term_opt = istermoption_idx(opt_idx);
 	    if (is_term_opt && num_normal > 0)
 		continue;
-	    match = FALSE;
-	    if (vim_regexec(regmatch, str, (colnr_T)0)
-		    || (options[opt_idx].shortname != NULL
-			&& vim_regexec(regmatch,
-			   (char_u *)options[opt_idx].shortname, (colnr_T)0)))
-		match = TRUE;
-	    else if (is_term_opt)
-	    {
-		name_buf[0] = '<';
-		name_buf[1] = 't';
-		name_buf[2] = '_';
-		name_buf[3] = str[2];
-		name_buf[4] = str[3];
-		name_buf[5] = '>';
-		name_buf[6] = NUL;
-		if (vim_regexec(regmatch, name_buf, (colnr_T)0))
-		{
-		    match = TRUE;
-		    str = name_buf;
-		}
-	    }
-	    if (match)
+
+	    if (match_str(str, regmatch, *matches, count, (loop == 0),
+						fuzzy, fuzzystr, fuzmatch))
 	    {
 		if (loop == 0)
 		{
@@ -6525,9 +6571,46 @@ ExpandSettings(
 			num_normal++;
 		}
 		else
-		    (*file)[count++] = vim_strsave(str);
+		    count++;
+	    }
+	    else if (!fuzzy && options[opt_idx].shortname != NULL
+			&& vim_regexec(regmatch,
+                             (char_u *)options[opt_idx].shortname, (colnr_T)0))
+	    {
+		// Compare against the abbreviated option name (for regular
+		// expression match). Fuzzy matching (previous if) already
+		// matches against both the expanded and abbreviated names.
+		if (loop == 0)
+		{
+		    if (is_term_opt)
+			num_term++;
+		    else
+			num_normal++;
+		}
+		else
+		    (*matches)[count++] = vim_strsave(str);
+	    }
+	    else if (is_term_opt)
+	    {
+		name_buf[0] = '<';
+		name_buf[1] = 't';
+		name_buf[2] = '_';
+		name_buf[3] = str[2];
+		name_buf[4] = str[3];
+		name_buf[5] = '>';
+		name_buf[6] = NUL;
+
+		if (match_str(name_buf, regmatch, *matches, count, (loop == 0),
+			    fuzzy, fuzzystr, fuzmatch))
+		{
+		    if (loop == 0)
+			num_term++;
+		    else
+			count++;
+		}
 	    }
 	}
+
 	/*
 	 * Check terminal key codes, these are not in the option table
 	 */
@@ -6544,9 +6627,14 @@ ExpandSettings(
 		name_buf[3] = str[1];
 		name_buf[4] = NUL;
 
-		match = FALSE;
-		if (vim_regexec(regmatch, name_buf, (colnr_T)0))
-		    match = TRUE;
+		if (match_str(name_buf, regmatch, *matches, count,
+					(loop == 0), fuzzy, fuzzystr, fuzmatch))
+		{
+		    if (loop == 0)
+			num_term++;
+		    else
+			count++;
+		}
 		else
 		{
 		    name_buf[0] = '<';
@@ -6557,15 +6645,15 @@ ExpandSettings(
 		    name_buf[5] = '>';
 		    name_buf[6] = NUL;
 
-		    if (vim_regexec(regmatch, name_buf, (colnr_T)0))
-			match = TRUE;
-		}
-		if (match)
-		{
-		    if (loop == 0)
-			num_term++;
-		    else
-			(*file)[count++] = vim_strsave(name_buf);
+		    if (match_str(name_buf, regmatch, *matches, count,
+					    (loop == 0), fuzzy, fuzzystr,
+					    fuzmatch))
+		    {
+			if (loop == 0)
+			    num_term++;
+			else
+			    count++;
+		    }
 		}
 	    }
 
@@ -6579,31 +6667,49 @@ ExpandSettings(
 		STRCPY(name_buf + 1, str);
 		STRCAT(name_buf, ">");
 
-		if (vim_regexec(regmatch, name_buf, (colnr_T)0))
+		if (match_str(name_buf, regmatch, *matches, count, (loop == 0),
+			    fuzzy, fuzzystr, fuzmatch))
 		{
 		    if (loop == 0)
 			num_term++;
 		    else
-			(*file)[count++] = vim_strsave(name_buf);
+			count++;
 		}
 	    }
 	}
 	if (loop == 0)
 	{
 	    if (num_normal > 0)
-		*num_file = num_normal;
+		*numMatches = num_normal;
 	    else if (num_term > 0)
-		*num_file = num_term;
+		*numMatches = num_term;
 	    else
 		return OK;
-	    *file = ALLOC_MULT(char_u *, *num_file);
-	    if (*file == NULL)
+	    if (!fuzzy)
 	    {
-		*file = (char_u **)"";
-		return FAIL;
+		*matches = ALLOC_MULT(char_u *, *numMatches);
+		if (*matches == NULL)
+		{
+		    *matches = (char_u **)"";
+		    return FAIL;
+		}
+	    }
+	    else
+	    {
+		fuzmatch = ALLOC_MULT(fuzmatch_str_T, *numMatches);
+		if (fuzmatch == NULL)
+		{
+		    *matches = (char_u **)"";
+		    return FAIL;
+		}
 	    }
 	}
     }
+
+    if (fuzzy &&
+	fuzzymatches_to_strmatches(fuzmatch, matches, count, FALSE) == FAIL)
+	return FAIL;
+
     return OK;
 }
 

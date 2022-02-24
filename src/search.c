@@ -1166,7 +1166,7 @@ searchit(
     return submatch + 1;
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(FEAT_PROTO)
     void
 set_search_direction(int cdir)
 {
@@ -4107,7 +4107,7 @@ get_spat_last_idx(void)
 }
 #endif
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 /*
  * "searchcount()" function
  */
@@ -4230,6 +4230,7 @@ the_end:
     restore_incsearch_state();
 #endif
 }
+#endif
 
 /*
  * Fuzzy string matching
@@ -4611,6 +4612,7 @@ fuzzy_match(
     return numMatches != 0;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 /*
  * Sort the fuzzy matches in the descending order of the match score.
  * For items with same score, retain the order using the index (stable sort)
@@ -4933,5 +4935,131 @@ f_matchfuzzypos(typval_T *argvars, typval_T *rettv)
 {
     do_fuzzymatch(argvars, rettv, TRUE);
 }
-
 #endif
+
+/*
+ * Same as fuzzy_match_item_compare() except for use with a string match
+ */
+    static int
+fuzzy_match_str_compare(const void *s1, const void *s2)
+{
+    int		v1 = ((fuzmatch_str_T *)s1)->score;
+    int		v2 = ((fuzmatch_str_T *)s2)->score;
+    int		idx1 = ((fuzmatch_str_T *)s1)->idx;
+    int		idx2 = ((fuzmatch_str_T *)s2)->idx;
+
+    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+}
+
+/*
+ * Sort fuzzy matches by score
+ */
+    static void
+fuzzy_match_str_sort(fuzmatch_str_T *fm, int sz)
+{
+    // Sort the list by the descending order of the match score
+    qsort((void *)fm, (size_t)sz, sizeof(fuzmatch_str_T),
+	    fuzzy_match_str_compare);
+}
+
+/*
+ * Same as fuzzy_match_item_compare() except for use with a function name
+ * string match. <SNR> functions should be sorted to the end.
+ */
+    static int
+fuzzy_match_func_compare(const void *s1, const void *s2)
+{
+    int		v1 = ((fuzmatch_str_T *)s1)->score;
+    int		v2 = ((fuzmatch_str_T *)s2)->score;
+    int		idx1 = ((fuzmatch_str_T *)s1)->idx;
+    int		idx2 = ((fuzmatch_str_T *)s2)->idx;
+    char_u	*str1 = ((fuzmatch_str_T *)s1)->str;
+    char_u	*str2 = ((fuzmatch_str_T *)s2)->str;
+
+    if (*str1 != '<' && *str2 == '<') return -1;
+    if (*str1 == '<' && *str2 != '<') return 1;
+    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+}
+
+/*
+ * Sort fuzzy matches of function names by score.
+ * <SNR> functions should be sorted to the end.
+ */
+    static void
+fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz)
+{
+    // Sort the list by the descending order of the match score
+    qsort((void *)fm, (size_t)sz, sizeof(fuzmatch_str_T),
+		fuzzy_match_func_compare);
+}
+
+/*
+ * Fuzzy match 'pat' in 'str'. Returns 0 if there is no match. Otherwise,
+ * returns the match score.
+ */
+    int
+fuzzy_match_str(char_u *str, char_u *pat)
+{
+    int		score = 0;
+    int_u	matchpos[256];
+
+    if (str == NULL || pat == NULL)
+	return 0;
+
+    fuzzy_match(str, pat, FALSE, &score, matchpos,
+				sizeof(matchpos) / sizeof(matchpos[0]));
+
+    return score;
+}
+
+/*
+ * Copy a list of fuzzy matches into a string list after sorting the matches by
+ * the fuzzy score. Frees the memory allocated for 'fuzmatch'.
+ * Returns OK on success and FAIL on memory allocation failure.
+ */
+    int
+fuzzymatches_to_strmatches(
+	fuzmatch_str_T	*fuzmatch,
+	char_u		***matches,
+	int		count,
+	int		funcsort)
+{
+    int		i;
+
+    if (count <= 0)
+	return OK;
+
+    *matches = ALLOC_MULT(char_u *, count);
+    if (*matches == NULL)
+    {
+	for (i = 0; i < count; i++)
+	    vim_free(fuzmatch[i].str);
+	vim_free(fuzmatch);
+	return FAIL;
+    }
+
+    // Sort the list by the descending order of the match score
+    if (funcsort)
+	fuzzy_match_func_sort((void *)fuzmatch, (size_t)count);
+    else
+	fuzzy_match_str_sort((void *)fuzmatch, (size_t)count);
+
+    for (i = 0; i < count; i++)
+	(*matches)[i] = fuzmatch[i].str;
+    vim_free(fuzmatch);
+
+    return OK;
+}
+
+/*
+ * Free a list of fuzzy string matches.
+ */
+    void
+fuzmatch_str_free(fuzmatch_str_T *fuzmatch, int count)
+{
+    if (count <= 0 || fuzmatch == NULL)
+	return;
+    while (count--)
+	vim_free(fuzmatch[count].str);
+    vim_free(fuzmatch);
+}

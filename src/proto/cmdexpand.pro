@@ -1,4 +1,5 @@
 /* cmdexpand.c */
+int cmdline_fuzzy_complete(char_u *fuzzystr);
 int nextwild(expand_T *xp, int type, int options, int escape);
 char_u *ExpandOne(expand_T *xp, char_u *str, char_u *orig, int options, int mode);
 void ExpandInit(expand_T *xp);
