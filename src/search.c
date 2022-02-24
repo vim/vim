@@ -5001,7 +5001,7 @@ fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz)
 fuzzy_match_str(char_u *str, char_u *pat)
 {
     int		score = 0;
-    int_u	matchpos[256];
+    int_u	matchpos[MAX_FUZZY_MATCHES];
 
     if (str == NULL || pat == NULL)
 	return 0;
