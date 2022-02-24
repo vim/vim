@@ -206,6 +206,10 @@ export def EuphoriaCheck()
 enddef
 
 export def DtraceCheck()
+  if did_filetype()
+    # Filetype was already detected
+    return
+  endif
   var lines = getline(1, min([line("$"), 100]))
   if match(lines, '^module\>\|^import\>') > -1
     # D files often start with a module and/or import statement.
