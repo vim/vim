@@ -2086,7 +2086,7 @@ check_quickfix_busy(void)
 
 /*
  * Add an entry to the end of the list of errors.
- * Returns QF_OK or QF_FAIL.
+ * Returns QF_OK on success or QF_FAIL on a memory allocation failure.
  */
     static int
 qf_add_entry(
@@ -4051,9 +4051,6 @@ qf_view_result(int split)
 {
     qf_info_T   *qi = &ql_info;
 
-    if (!bt_quickfix(curbuf))
-	return;
-
     if (IS_LL_WINDOW(curwin))
 	qi = GET_LOC_LIST(curwin);
 
@@ -4525,7 +4522,11 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 		win = curwin;
 	    else
 	    {
+		// Find the file window (non-quickfix) with this location list
 		win = qf_find_win_with_loclist(qi);
+		if (win == NULL)
+		    // File window is not found. Find the location list window.
+		    win = qf_find_win(qi);
 		if (win == NULL)
 		    return;
 	    }
@@ -8343,7 +8344,9 @@ ex_helpgrep(exarg_T *eap)
 	    if (new_qi)
 		ll_free_all(&qi);
 	}
-	else if (curwin->w_llist == NULL)
+	else if (curwin->w_llist == NULL && new_qi)
+	    // current window didn't have a location list associated with it
+	    // before. Associate the new location list now.
 	    curwin->w_llist = qi;
     }
 }
