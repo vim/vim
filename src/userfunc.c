@@ -4624,7 +4624,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 		{
 		    char_u *prefixed = may_prefix_autoload(name);
 
-		    if (prefixed != NULL)
+		    if (prefixed != NULL && prefixed != name)
 		    {
 			v = find_var(prefixed, &ht, TRUE);
 			if (v != NULL)
