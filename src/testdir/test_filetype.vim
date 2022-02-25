@@ -863,6 +863,7 @@ func Test_d_file()
   bwipe!
 
   filetype off
+  call delete('Xfile.d')
 endfunc
 
 func Test_dep3patch_file()
