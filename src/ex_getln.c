@@ -4672,7 +4672,7 @@ get_user_input(
 	    {
 		char_u	*xp_name;
 		int	xp_namelen;
-		long	argt;
+		long	argt = 0;
 
 		// input() with a third argument: completion
 		rettv->vval.v_string = NULL;
