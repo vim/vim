@@ -2495,7 +2495,7 @@ command_line_setup_choices(int argc, char **argv)
 	    int vimfiles_dir_choice = (int)vimfiles_dir_none;
 
 	    init_directories_choice();
-	    if (argv[i + 1][0] != '-')
+	    if (argc > (i + 1) && argv[i + 1][0] != '-')
 	    {
 		i++;
 		if (strcmp(argv[i], "vim") == 0)
