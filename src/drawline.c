@@ -330,7 +330,7 @@ win_line(
 #endif
 #ifdef FEAT_SPELL
     int		has_spell = FALSE;	// this buffer has spell checking
-    int		can_spell;
+    int		can_spell = FALSE;
 # define SPWORDLEN 150
     char_u	nextline[SPWORDLEN * 2];// text with start of the next line
     int		nextlinecol = 0;	// column where nextline[] starts
