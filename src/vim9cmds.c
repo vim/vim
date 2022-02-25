@@ -1862,7 +1862,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	    if (*p == '{')
 	    {
 		exarg_T ea;
-		int	flags;  // unused
+		int	flags = 0;  // unused
 		int	start_lnum = SOURCING_LNUM;
 
 		CLEAR_FIELD(ea);
