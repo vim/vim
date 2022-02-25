@@ -6256,6 +6256,8 @@ spell_add_word(
 	    {
 		fpos = fpos_next;
 		fpos_next = ftell(fd);
+		if (fpos_next < 0)
+		    break;  // should never happen
 		if (STRNCMP(word, line, len) == 0
 			&& (line[len] == '/' || line[len] < ' '))
 		{
