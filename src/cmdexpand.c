@@ -2496,7 +2496,10 @@ ExpandFromContext(
     int		ret;
     int		flags;
     char_u	*tofree = NULL;
-    int		fuzzy = cmdline_fuzzy_complete(pat);
+    int		fuzzy = FALSE;
+
+    if (cmdline_fuzzy_complete(pat) && cmdline_fuzzy_completion_supported(xp))
+	fuzzy = TRUE;
 
     flags = map_wildopts_to_ewflags(options);
 
