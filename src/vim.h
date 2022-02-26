@@ -1608,8 +1608,10 @@ typedef UINT32_TYPEDEF UINT32_T;
 // Allocate memory for one type and cast the returned pointer to have the
 // compiler check the types.
 #define ALLOC_ONE(type)  (type *)alloc(sizeof(type))
+#define ALLOC_ONE_ID(type, id)  (type *)alloc_id(sizeof(type), id)
 #define ALLOC_MULT(type, count)  (type *)alloc(sizeof(type) * (count))
 #define ALLOC_CLEAR_ONE(type)  (type *)alloc_clear(sizeof(type))
+#define ALLOC_CLEAR_ONE_ID(type, id)  (type *)alloc_clear_id(sizeof(type), id)
 #define ALLOC_CLEAR_MULT(type, count)  (type *)alloc_clear(sizeof(type) * (count))
 #define LALLOC_CLEAR_ONE(type)  (type *)lalloc_clear(sizeof(type), FALSE)
 #define LALLOC_CLEAR_MULT(type, count)  (type *)lalloc_clear(sizeof(type) * (count), FALSE)
