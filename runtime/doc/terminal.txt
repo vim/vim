@@ -979,8 +979,8 @@ Currently supported commands:
 <		Calls a function defined like this: >
 			function Tapi_Impression(bufnum, arglist)
 			  if len(a:arglist) == 2
-			    echomsg "impression " . a:arglist[0]
-			    echomsg "count " . a:arglist[1]
+			    echomsg "impression " .. a:arglist[0]
+			    echomsg "count " .. a:arglist[1]
 			  endif
 			endfunc
 <		Output from `:echo` may be erased by a redraw, use `:echomsg`

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 22
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -229,8 +229,17 @@ script "export" needs to be used. >
 <						*E1058* *E1075*
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function and no namespace was given, this nested function is local to the code
-block it is defined in.  It is not possible to define a script-local function.
-It is possible to define a global function by using the "g:" prefix.
+block it is defined in.  It cannot be used in `function()` with a string
+argument, pass the function reference itself: >
+	def Outer()
+	  def Inner()
+	    echo 'inner'
+	  enddef
+	  var Fok = function(Inner)     # OK
+	  var Fbad = function('Inner')  # does not work
+
+It is not possible to define a script-local function.  It is possible to
+define a global function by using the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
 search for the function:

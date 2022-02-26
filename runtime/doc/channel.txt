@@ -91,7 +91,7 @@ And you should see the message in Vim. You can move the cursor a word forward:
 
 To handle asynchronous communication a callback needs to be used: >
 	func MyHandler(channel, msg)
-	  echo "from the handler: " . a:msg
+	  echo "from the handler: " .. a:msg
 	endfunc
 	call ch_sendexpr(channel, 'hello!', {'callback': "MyHandler"})
 Vim will not wait for a response.  Now the server can send the response later
@@ -136,7 +136,7 @@ When using an IPv6 address, enclose it within square brackets.  E.g.,
 		gets two arguments: the channel and the received message.
 		Example: >
 	func Handle(channel, msg)
-	  echo 'Received: ' . a:msg
+	  echo 'Received: ' .. a:msg
 	endfunc
 	let channel = ch_open("localhost:8765", {"callback": "Handle"})
 <
@@ -1296,7 +1296,7 @@ prompt. >
 
 	" Function handling output from the shell: Added above the prompt.
 	func GotOutput(channel, msg)
-	  call append(line("$") - 1, "- " . a:msg)
+	  call append(line("$") - 1, "- " .. a:msg)
 	endfunc
 
 	" Function handling the shell exist: close the window.

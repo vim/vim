@@ -153,6 +153,7 @@ DOCS = \
 	version6.txt \
 	version7.txt \
 	version8.txt \
+	version9.txt \
 	vi_diff.txt \
 	vim9.txt \
 	visual.txt \
@@ -298,6 +299,7 @@ HTMLS = \
 	version6.html \
 	version7.html \
 	version8.html \
+	version9.html \
 	vi_diff.html \
 	vimindex.html \
 	vim9.html \

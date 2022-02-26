@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.2.  Last change: 2021 Dec 27
+*help.txt*	For Vim version 8.2.  Last change: 2022 Feb 26
 
 			VIM - main help file
 									 k
@@ -197,6 +197,7 @@ Versions ~
 |version6.txt|	Differences between Vim version 5.7 and 6.x
 |version7.txt|	Differences between Vim version 6.4 and 7.x
 |version8.txt|	Differences between Vim version 7.4 and 8.x
+|version9.txt|	Differences between Vim version 8.2 and 9.0
 						*sys-file-list*
 Remarks about specific systems ~
 |os_390.txt|	OS/390 Unix

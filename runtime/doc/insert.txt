@@ -879,9 +879,9 @@ Groß): >
       endif
       let res = []
       let h = ''
-      for l in systemlist('aiksaurus '.shellescape(a:base))
+      for l in systemlist('aiksaurus ' .. shellescape(a:base))
 	if l[:3] == '=== '
-	  let h = '('.substitute(l[4:], ' =*$', ')', '')
+	  let h = '(' .. substitute(l[4:], ' =*$', ')', '')
 	elseif l ==# 'Alphabetically similar known words are: '
 	  let h = "\U0001f52e"
 	elseif l[0] =~ '\a' || (h ==# "\U0001f52e" && l[0] ==# "\t")
@@ -1266,7 +1266,7 @@ An example that completes the names of the months: >
 	    " find months matching with "a:base"
 	    let res = []
 	    for m in split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec")
-	      if m =~ '^' . a:base
+	      if m =~ '^' .. a:base
 		call add(res, m)
 	      endif
 	    endfor
@@ -1288,7 +1288,7 @@ The same, but now pretending searching for matches is slow: >
 	  else
 	    " find months matching with "a:base"
 	    for m in split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec")
-	      if m =~ '^' . a:base
+	      if m =~ '^' .. a:base
 		call complete_add(m)
 	      endif
 	      sleep 300m	" simulate searching for next match

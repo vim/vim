@@ -1355,6 +1355,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +mouse	various.txt	/*+mouse*
 +mouse_dec	various.txt	/*+mouse_dec*
 +mouse_gpm	various.txt	/*+mouse_gpm*
++mouse_gpm/dyn	various.txt	/*+mouse_gpm\/dyn*
 +mouse_jsbterm	various.txt	/*+mouse_jsbterm*
 +mouse_netterm	various.txt	/*+mouse_netterm*
 +mouse_pterm	various.txt	/*+mouse_pterm*
@@ -5861,6 +5862,7 @@ bug-fixes-5	version5.txt	/*bug-fixes-5*
 bug-fixes-6	version6.txt	/*bug-fixes-6*
 bug-fixes-7	version7.txt	/*bug-fixes-7*
 bug-fixes-8	version8.txt	/*bug-fixes-8*
+bug-fixes-9	version9.txt	/*bug-fixes-9*
 bug-reports	intro.txt	/*bug-reports*
 bugreport.vim	intro.txt	/*bugreport.vim*
 bugs	intro.txt	/*bugs*
@@ -6171,6 +6173,7 @@ compile-changes-5	version5.txt	/*compile-changes-5*
 compile-changes-6	version6.txt	/*compile-changes-6*
 compile-changes-7	version7.txt	/*compile-changes-7*
 compile-changes-8	version8.txt	/*compile-changes-8*
+compile-changes-9	version9.txt	/*compile-changes-9*
 compiler-compaqada	ft_ada.txt	/*compiler-compaqada*
 compiler-decada	ft_ada.txt	/*compiler-decada*
 compiler-gcc	quickfix.txt	/*compiler-gcc*
@@ -7820,6 +7823,7 @@ improvements-5	version5.txt	/*improvements-5*
 improvements-6	version6.txt	/*improvements-6*
 improvements-7	version7.txt	/*improvements-7*
 improvements-8	version8.txt	/*improvements-8*
+improvements-9	version9.txt	/*improvements-9*
 in_bot	channel.txt	/*in_bot*
 in_buf	channel.txt	/*in_buf*
 in_io-buffer	channel.txt	/*in_io-buffer*
@@ -7835,6 +7839,7 @@ incompatible-5	version5.txt	/*incompatible-5*
 incompatible-6	version6.txt	/*incompatible-6*
 incompatible-7	version7.txt	/*incompatible-7*
 incompatible-8	version8.txt	/*incompatible-8*
+incompatible-9	version9.txt	/*incompatible-9*
 indent()	builtin.txt	/*indent()*
 indent-expression	indent.txt	/*indent-expression*
 indent.txt	indent.txt	/*indent.txt*
@@ -8543,6 +8548,7 @@ new-5	version5.txt	/*new-5*
 new-6	version6.txt	/*new-6*
 new-7	version7.txt	/*new-7*
 new-8	version8.txt	/*new-8*
+new-9	version9.txt	/*new-9*
 new-GTK-GUI	version5.txt	/*new-GTK-GUI*
 new-MzScheme	version7.txt	/*new-MzScheme*
 new-Select-mode	version5.txt	/*new-Select-mode*
@@ -8576,6 +8582,7 @@ new-indent-flex	version6.txt	/*new-indent-flex*
 new-items-6	version6.txt	/*new-items-6*
 new-items-7	version7.txt	/*new-items-7*
 new-items-8	version8.txt	/*new-items-8*
+new-items-9	version9.txt	/*new-items-9*
 new-line-continuation	version5.txt	/*new-line-continuation*
 new-location-list	version7.txt	/*new-location-list*
 new-lua	version7.txt	/*new-lua*
@@ -8625,6 +8632,7 @@ new-utf-8	version6.txt	/*new-utf-8*
 new-vertsplit	version6.txt	/*new-vertsplit*
 new-vim-script	version7.txt	/*new-vim-script*
 new-vim-script-8	version8.txt	/*new-vim-script-8*
+new-vim-script-9	version9.txt	/*new-vim-script-9*
 new-vim-server	version6.txt	/*new-vim-server*
 new-vimgrep	version7.txt	/*new-vimgrep*
 new-vimscript-8.2	version8.txt	/*new-vimscript-8.2*
@@ -8743,7 +8751,8 @@ pascal.vim	syntax.txt	/*pascal.vim*
 patches-8	version8.txt	/*patches-8*
 patches-8.1	version8.txt	/*patches-8.1*
 patches-8.2	version8.txt	/*patches-8.2*
-patches-after-8.2	version8.txt	/*patches-after-8.2*
+patches-9	version9.txt	/*patches-9*
+patches-after-8.2	version9.txt	/*patches-after-8.2*
 pathshorten()	builtin.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
@@ -10011,6 +10020,7 @@ terminal.txt	terminal.txt	/*terminal.txt*
 terminalprops()	builtin.txt	/*terminalprops()*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
+ternary	eval.txt	/*ternary*
 test-functions	usr_41.txt	/*test-functions*
 test-functions-details	testing.txt	/*test-functions-details*
 test_alloc_fail()	testing.txt	/*test_alloc_fail()*
@@ -10102,7 +10112,6 @@ tooltips	gui.txt	/*tooltips*
 toupper()	builtin.txt	/*toupper()*
 tr()	builtin.txt	/*tr()*
 trim()	builtin.txt	/*trim()*
-trinary	eval.txt	/*trinary*
 trojan-horse	starting.txt	/*trojan-horse*
 true	vim9.txt	/*true*
 true-variable	eval.txt	/*true-variable*
@@ -10457,6 +10466,7 @@ version-7.4	version7.txt	/*version-7.4*
 version-8.0	version8.txt	/*version-8.0*
 version-8.1	version8.txt	/*version-8.1*
 version-8.2	version8.txt	/*version-8.2*
+version-9.0	version9.txt	/*version-9.0*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -10471,6 +10481,8 @@ version8.0	version8.txt	/*version8.0*
 version8.1	version8.txt	/*version8.1*
 version8.2	version8.txt	/*version8.2*
 version8.txt	version8.txt	/*version8.txt*
+version9.0	version9.txt	/*version9.0*
+version9.txt	version9.txt	/*version9.txt*
 versionlong-variable	eval.txt	/*versionlong-variable*
 vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*
@@ -10486,6 +10498,8 @@ vim-7.4	version7.txt	/*vim-7.4*
 vim-8	version8.txt	/*vim-8*
 vim-8.1	version8.txt	/*vim-8.1*
 vim-8.2	version8.txt	/*vim-8.2*
+vim-9	version9.txt	/*vim-9*
+vim-9.0	version9.txt	/*vim-9.0*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*

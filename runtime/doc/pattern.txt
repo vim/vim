@@ -963,7 +963,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	the cursor moves the display isn't updated for this change.  An update
 	is done when using the |CTRL-L| command (the whole screen is updated).
 	Example, to highlight the column where the cursor currently is: >
-		:exe '/\%' . col(".") . 'c'
+		:exe '/\%' .. col(".") .. 'c'
 <	Alternatively use: >
 		/\%.c
 <	When 'hlsearch' is set and you move the cursor around and make changes

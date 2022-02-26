@@ -267,7 +267,7 @@ g8			Print the hex values of the bytes used in the
 			name does not contain a single quote: >
 				:!ls '%'
 <			This should always work, but it's more typing: >
-				:exe "!ls " . shellescape(expand("%"))
+				:exe "!ls " .. shellescape(expand("%"))
 <			To get a literal "%" or "#" prepend it with a
 			backslash.  For example, to list all files starting
 			with "%": >
@@ -650,7 +650,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			used.  In this example |:silent| is used to avoid the
 			message about reading the file and |:unsilent| to be
 			able to list the first line of each file. >
-		:silent argdo unsilent echo expand('%') . ": " . getline(1)
+		:silent argdo unsilent echo expand('%') .. ": " .. getline(1)
 <
 
 						*:verb* *:verbose*
