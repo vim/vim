@@ -12,7 +12,7 @@ def FuncTwo(arg: number): number
 enddef
 
 " test cond ? expr : expr
-def Test_expr1_trinary()
+def Test_expr1_ternary()
   var lines =<< trim END
       assert_equal('one', true ? 'one' : 'two')
       assert_equal('one', 1 ?
@@ -74,7 +74,7 @@ def Test_expr1_trinary()
   v9.CheckDefAndScriptFailure(lines, ['E1001: Variable not found: FuncOne', 'E121: Undefined variable: FuncTwo'])
 enddef
 
-def Test_expr1_trinary_vimscript()
+def Test_expr1_ternary_vimscript()
   # check line continuation
   var lines =<< trim END
       var name = 1
@@ -170,7 +170,7 @@ def Test_expr1_trinary_vimscript()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-func Test_expr1_trinary_fails()
+func Test_expr1_ternary_fails()
   call v9.CheckDefAndScriptFailure(["var x = 1 ? 'one'"], "Missing ':' after '?'", 1)
 
   let msg = "White space required before and after '?'"
