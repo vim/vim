@@ -547,13 +547,13 @@ parse_efm_option(char_u *efm)
 
     // Get some space to modify the format string into.
     sz = efm_regpat_bufsz(efm);
-    if ((fmtstr = alloc(sz)) == NULL)
+    if ((fmtstr = alloc_id(sz, aid_qf_efm_fmtstr)) == NULL)
 	goto parse_efm_error;
 
     while (efm[0] != NUL)
     {
 	// Allocate a new eformat structure and put it at the end of the list
-	fmt_ptr = ALLOC_CLEAR_ONE(efm_T);
+	fmt_ptr = ALLOC_CLEAR_ONE_ID(efm_T, aid_qf_efm_fmtpart);
 	if (fmt_ptr == NULL)
 	    goto parse_efm_error;
 	if (fmt_first == NULL)	    // first one
@@ -628,7 +628,7 @@ qf_grow_linebuf(qfstate_T *state, int newsz)
     state->linelen = newsz > LINE_MAXLEN ? LINE_MAXLEN - 1 : newsz;
     if (state->growbuf == NULL)
     {
-	state->growbuf = alloc(state->linelen + 1);
+	state->growbuf = alloc_id(state->linelen + 1, aid_qf_linebuf);
 	if (state->growbuf == NULL)
 	    return NULL;
 	state->growbufsiz = state->linelen;
@@ -685,7 +685,7 @@ qf_get_next_str_line(qfstate_T *state)
 }
 
 /*
- * Get the next string from state->p_Li.
+ * Get the next string from the List item state->p_li.
  */
     static int
 qf_get_next_list_line(qfstate_T *state)
@@ -777,7 +777,7 @@ qf_get_next_file_line(qfstate_T *state)
 	if (state->growbuf == NULL)
 	{
 	    state->growbufsiz = 2 * (IOSIZE - 1);
-	    state->growbuf = alloc(state->growbufsiz);
+	    state->growbuf = alloc_id(state->growbufsiz, aid_qf_linebuf);
 	    if (state->growbuf == NULL)
 		return QF_NOMEM;
 	}
@@ -1382,8 +1382,9 @@ qf_parse_multiline_pfx(
 	if (*fields->errmsg && !qfl->qf_multiignore)
 	{
 	    len = (int)STRLEN(qfprev->qf_text);
-	    if ((ptr = alloc(len + STRLEN(fields->errmsg) + 2))
-		    == NULL)
+	    ptr = alloc_id(len + STRLEN(fields->errmsg) + 2,
+						aid_qf_multiline_pfx);
+	    if (ptr == NULL)
 		return QF_FAIL;
 	    STRCPY(ptr, qfprev->qf_text);
 	    vim_free(qfprev->qf_text);
@@ -1859,7 +1860,7 @@ qf_store_title(qf_list_T *qfl, char_u *title)
 
     if (title != NULL)
     {
-	char_u *p = alloc(STRLEN(title) + 2);
+	char_u *p = alloc_id(STRLEN(title) + 2, aid_qf_title);
 
 	qfl->qf_title = p;
 	if (p != NULL)
@@ -2109,7 +2110,7 @@ qf_add_entry(
     qfline_T	*qfp;
     qfline_T	**lastp;	// pointer to qf_last or NULL
 
-    if ((qfp = ALLOC_ONE(qfline_T)) == NULL)
+    if ((qfp = ALLOC_ONE_ID(qfline_T, aid_qf_qfline)) == NULL)
 	return QF_FAIL;
     if (bufnum != 0)
     {
@@ -2189,7 +2190,7 @@ qf_alloc_stack(qfltype_T qfltype)
 {
     qf_info_T *qi;
 
-    qi = ALLOC_CLEAR_ONE(qf_info_T);
+    qi = ALLOC_CLEAR_ONE_ID(qf_info_T, aid_qf_qfinfo);
     if (qi != NULL)
     {
 	qi->qf_refcount++;
@@ -2483,7 +2484,7 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
     struct dir_stack_T  *ds_ptr;
 
     // allocate new stack element and hook it in
-    ds_new = ALLOC_ONE(struct dir_stack_T);
+    ds_new = ALLOC_ONE_ID(struct dir_stack_T, aid_qf_dirstack);
     if (ds_new == NULL)
 	return NULL;
 
@@ -4945,7 +4946,7 @@ get_mef_name(void)
 	else
 	    off += 19;
 
-	name = alloc(STRLEN(p_mef) + 30);
+	name = alloc_id(STRLEN(p_mef) + 30, aid_qf_mef_name);
 	if (name == NULL)
 	    break;
 	STRCPY(name, p_mef);
@@ -4976,7 +4977,7 @@ make_get_fullcmd(char_u *makecmd, char_u *fname)
     len = (unsigned)STRLEN(p_shq) * 2 + (unsigned)STRLEN(makecmd) + 1;
     if (*p_sp != NUL)
 	len += (unsigned)STRLEN(p_sp) + (unsigned)STRLEN(fname) + 3;
-    cmd = alloc(len);
+    cmd = alloc_id(len, aid_qf_makecmd);
     if (cmd == NULL)
 	return NULL;
     sprintf((char *)cmd, "%s%s%s", (char *)p_shq, (char *)makecmd,
@@ -5042,7 +5043,10 @@ ex_make(exarg_T *eap)
 
     cmd = make_get_fullcmd(eap->arg, fname);
     if (cmd == NULL)
+    {
+	vim_free(fname);
 	return;
+    }
 
     // let the shell know if we are redirecting output or not
     do_shell(cmd, *p_sp != NUL ? SHELL_DOOUT : 0);
