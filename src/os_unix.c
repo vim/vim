@@ -887,8 +887,10 @@ sig_tstp SIGDEFARG(sigarg)
     else
 	got_tstp = TRUE;
 
-    // this is not required on all systems, but it doesn't hurt anybody
+#ifndef __ANDROID__
+    // this is not required on all systems
     signal(SIGTSTP, (RETSIGTYPE (*)())sig_tstp);
+#endif
     SIGRETURN;
 }
 #endif
