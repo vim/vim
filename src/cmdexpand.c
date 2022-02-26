@@ -2496,6 +2496,8 @@ ExpandFromContext(
     int		ret;
     int		flags;
     char_u	*tofree = NULL;
+    int		fuzzy = cmdline_fuzzy_complete(pat)
+				     && cmdline_fuzzy_completion_supported(xp);
 
     flags = map_wildopts_to_ewflags(options);
 
@@ -2580,12 +2582,15 @@ ExpandFromContext(
 	pat = tofree;
     }
 
-    regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
-    if (regmatch.regprog == NULL)
-	return FAIL;
+    if (!fuzzy)
+    {
+	regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
+	if (regmatch.regprog == NULL)
+	    return FAIL;
 
-    // set ignore-case according to p_ic, p_scs and pat
-    regmatch.rm_ic = ignorecase(pat);
+	// set ignore-case according to p_ic, p_scs and pat
+	regmatch.rm_ic = ignorecase(pat);
+    }
 
     if (xp->xp_context == EXPAND_SETTINGS
 	    || xp->xp_context == EXPAND_BOOL_SETTINGS)
@@ -2599,7 +2604,8 @@ ExpandFromContext(
     else
 	ret = ExpandOther(pat, xp, &regmatch, matches, numMatches);
 
-    vim_regfree(regmatch.regprog);
+    if (!fuzzy)
+	vim_regfree(regmatch.regprog);
     vim_free(tofree);
 
     return ret;
