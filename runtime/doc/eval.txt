@@ -921,13 +921,13 @@ Expression nesting is limited to 1000 levels deep (300 when build with MSVC)
 to avoid running out of stack and crashing. *E1169*
 
 
-expr1				*expr1* *trinary* *falsy-operator* *??* *E109*
+expr1				*expr1* *ternary* *falsy-operator* *??* *E109*
 -----
 
-The trinary operator: expr2 ? expr1 : expr1
+The ternary operator: expr2 ? expr1 : expr1
 The falsy operator:   expr2 ?? expr1
 
-Trinary operator ~
+Ternary operator ~
 
 In legacy script the expression before the '?' is evaluated to a number.  If
 it evaluates to |TRUE|, the result is the value of the expression between the
