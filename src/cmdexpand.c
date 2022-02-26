@@ -1212,6 +1212,7 @@ set_cmd_index(char_u *cmd, exarg_T *eap, expand_T *xp, int *complp)
 {
     char_u	*p = NULL;
     int		len = 0;
+    int		fuzzy = cmdline_fuzzy_complete(cmd);
 
     // Isolate the command and search for it in the command table.
     // Exceptions:
@@ -1253,7 +1254,9 @@ set_cmd_index(char_u *cmd, exarg_T *eap, expand_T *xp, int *complp)
 
 	eap->cmdidx = excmd_get_cmdidx(cmd, len);
 
-	if (cmd[0] >= 'A' && cmd[0] <= 'Z')
+	// User defined commands support alphanumeric characters.
+	// Also when doing fuzzy expansion, support alphanumeric characters.
+	if ((cmd[0] >= 'A' && cmd[0] <= 'Z') || (fuzzy && *p != NUL))
 	    while (ASCII_ISALNUM(*p) || *p == '*')	// Allow * wild card
 		++p;
     }
@@ -2493,6 +2496,7 @@ ExpandFromContext(
     int		ret;
     int		flags;
     char_u	*tofree = NULL;
+    int		fuzzy = cmdline_fuzzy_complete(pat);
 
     flags = map_wildopts_to_ewflags(options);
 
@@ -2577,12 +2581,15 @@ ExpandFromContext(
 	pat = tofree;
     }
 
-    regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
-    if (regmatch.regprog == NULL)
-	return FAIL;
+    if (!fuzzy)
+    {
+	regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
+	if (regmatch.regprog == NULL)
+	    return FAIL;
 
-    // set ignore-case according to p_ic, p_scs and pat
-    regmatch.rm_ic = ignorecase(pat);
+	// set ignore-case according to p_ic, p_scs and pat
+	regmatch.rm_ic = ignorecase(pat);
+    }
 
     if (xp->xp_context == EXPAND_SETTINGS
 	    || xp->xp_context == EXPAND_BOOL_SETTINGS)
@@ -2596,7 +2603,8 @@ ExpandFromContext(
     else
 	ret = ExpandOther(pat, xp, &regmatch, matches, numMatches);
 
-    vim_regfree(regmatch.regprog);
+    if (!fuzzy)
+	vim_regfree(regmatch.regprog);
     vim_free(tofree);
 
     return ret;
