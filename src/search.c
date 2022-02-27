@@ -5006,7 +5006,7 @@ fuzzy_match_str(char_u *str, char_u *pat)
     if (str == NULL || pat == NULL)
 	return 0;
 
-    fuzzy_match(str, pat, FALSE, &score, matchpos,
+    fuzzy_match(str, pat, TRUE, &score, matchpos,
 				sizeof(matchpos) / sizeof(matchpos[0]));
 
     return score;
