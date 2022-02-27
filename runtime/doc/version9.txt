@@ -8651,7 +8651,7 @@ Files:      runtime/doc/vim9.txt, src/vim9compile.c,
             src/testdir/test_vim9_disassemble.vim
 
 Patch 8.2.1409
-Problem:    Nmpmrc and php.ini filetypes not recognized.
+Problem:    Npmrc and php.ini filetypes not recognized.
 Solution:   Add filetype detection. (Doug Kearns)
 Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
@@ -9053,7 +9053,7 @@ Solution:   Recognize .gawk files. (Doug Kearns)
 Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
 Patch 8.2.1459
-Problem:    Vim9: declaring ascript variable at the script level does not
+Problem:    Vim9: declaring a script variable at the script level does not
             infer the type.
 Solution:   Get the type from the value. (closes #6716)
 Files:      src/evalvars.c, src/testdir/test_vim9_script.vim
@@ -9522,7 +9522,7 @@ Files:      Filelist, runtime/doc/eval.txt, runtime/doc/usr_41.txt,
             src/testdir/emoji_list.vim, src/testdir/test_functions.vim
 
 Patch 8.2.1537
-Problem:    Memory acccess error when using setcellwidths().
+Problem:    Memory access error when using setcellwidths().
 Solution:   Use array and pointers correctly.
 Files:      src/mbyte.c, src/errors.h, src/testdir/test_utf8.vim
 
@@ -9841,7 +9841,7 @@ Solution:   Use tv_get_bool_chk(). (closes #6865)
 Files:      src/evalfunc.c, src/testdir/test_vim9_func.vim
 
 Patch 8.2.1593
-Problem:    Tests do not check the error number properly.0
+Problem:    Tests do not check the error number properly.
 Solution:   Add a colon after the error number. (closes #6869)
 Files:      src/testdir/test_assert.vim, src/testdir/test_autocmd.vim,
             src/testdir/test_backspace_opt.vim, src/testdir/test_channel.vim,
@@ -10198,7 +10198,7 @@ Files:      runtime/optwin.vim
 
 Patch 8.2.1653
 Problem:    Expand('<stack>') does not include the final line number.
-Solution:   Add the line nuber. (closes #6927)
+Solution:   Add the line number. (closes #6927)
 Files:      src/vim.h, src/scriptfile.c, src/proto/scriptfile.pro,
             src/debugger.c, src/ex_docmd.c, src/ex_eval.c, src/message.c,
             src/testing.c, src/testdir/test_expand_func.vim
@@ -10299,7 +10299,7 @@ Files:      src/memline.c, src/option.c
 
 Patch 8.2.1671
 Problem:    Vim9: stray error for missing white space.
-Solution:   Do not skip over white space after member. (closes #6817)
+Solution:   Do not skip over white space after member. (closes #6917)
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1672
@@ -10341,7 +10341,7 @@ Files:      src/syntax.c, src/testdir/test_syntax.vim
 
 Patch 8.2.1679
 Problem:    Vim9: ":*" is not recognized as a range.
-Solution:   Move recognizing "*" into skip_range(). (closes #6838)
+Solution:   Move recognizing "*" into skip_range(). (closes #6938)
 Files:      src/ex_docmd.c, src/proto/ex_docmd.pro, src/cmdexpand.c,
             src/ex_getln.c, src/userfunc.c, src/vim9compile.c,
             src/testdir/test_vim9_cmd.vim
@@ -10352,7 +10352,7 @@ Solution:   Set SOURCING_LNUM. (closes #6936)
 Files:      src/vim9execute.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1681
-Problem:    Vim9: unnessary :call commands in tests.
+Problem:    Vim9: unnecessary :call commands in tests.
 Solution:   Remove the commands. (issue #6936)
 Files:      src/testdir/test_vim9_func.vim, src/testdir/test_vim9_script.vim
 
@@ -10503,12 +10503,12 @@ Solution:   When a function fails still update any closures. (closes #6973)
 Files:      src/vim9execute.c, src/testdir/test_vim9_func.vim
 
 Patch 8.2.1707
-Problem:    Small inconsitency in highlight test.
+Problem:    Small inconsistency in highlight test.
 Solution:   Use one argument for :execute. (Antony Scriven, #6975)
 Files:      src/testdir/test_highlight.vim
 
 Patch 8.2.1708
-Problem:    Vim9: error message for function has unpritable characters.
+Problem:    Vim9: error message for function has unprintable characters.
 Solution:   use printable_func_name(). (closes #6965)
 Files:      src/vim9compile.c, src/testdir/test_vim9_func.vim
 
@@ -10581,7 +10581,7 @@ Files:      src/vim9compile.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.1721
 Problem:    MS-Windows installer doesn't work.
-Solution:   Write "Russian" in ASCII. (closes #6995, see #).
+Solution:   Write "Russian" in ASCII. (closes #6995, see #6985).
 Files:      nsis/lang/russian.nsi
 
 Patch 8.2.1722
@@ -10638,7 +10638,7 @@ Files:      src/globals.h, src/getchar.c, src/evalfunc.c, src/ex_docmd.c,
 
 Patch 8.2.1730
 Problem:    Vim9: cannot use member of unknown type.
-Solution:   When type is unknown us "any". (closes #6997)
+Solution:   When type is unknown use "any". (closes #6997)
 Files:      src/vim9compile.c, src/testdir/test_vim9_assign.vim
 
 Patch 8.2.1731
@@ -10959,7 +10959,7 @@ Files:      src/map.c, src/testdir/test_vim9_func.vim
 
 Patch 8.2.1783 (after 8.2.1781)
 Problem:    Try-catch test fails.
-Solution:   Don't call win_enter(), only call enterering_window().
+Solution:   Don't call win_enter(), only call entering_window().
 Files:      src/autocmd.c, src/window.c, src/proto/window.pro,
             src/testdir/runtest.vim
 
@@ -11130,7 +11130,7 @@ Solution:   Do not skip a local variable with a partial. (closes #7065)
 Files:      src/vim9execute.c, src/testdir/test_vim9_func.vim
 
 Patch 8.2.1813
-Problem:    Vim9: can assign wrong type to script dict. (Christian J.  Robinson)
+Problem:    Vim9: can assign wrong type to script dict. (Christian J. Robinson)
 Solution:   Check the type if known.
 Files:      src/structs.h, src/eval.c, src/vim9script.c,
             src/proto/vim9script.pro, src/proto/evalvars.pro,
@@ -11163,7 +11163,7 @@ Files:      src/os_unix.c
 
 Patch 8.2.1819
 Problem:    Vim9: Memory leak when using a closure.
-Solution:   Compute the mininal refcount in the funcstack.  Reenable disabled
+Solution:   Compute the minimal refcount in the funcstack.  Reenable disabled
             tests.
 Files:      src/vim9execute.c, src/proto/vim9execute.pro, src/structs.h,
             src/eval.c, src/testdir/test_vim9_disassemble.vim,
@@ -11214,7 +11214,7 @@ Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
 Patch 8.2.1828
 Problem:    Build failure without the +eval feature.
-Solution:   Add dummys for ex_block and ex_endblock.
+Solution:   Add dummies for ex_block and ex_endblock.
 Files:      src/ex_docmd.c
 
 Patch 8.2.1829
@@ -11349,14 +11349,14 @@ Solution:   Skip over trailing spaces. (closes #7131)
 Files:      src/eval.c, src/vim9compile.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1852
-Problem:    map() returing zero for NULL list is unexpected.
+Problem:    map() returning zero for NULL list is unexpected.
 Solution:   Return the empty list. (closes #7133)
 Files:      src/list.c, src/testdir/test_filter_map.vim,
             src/testdir/test_blob.vim
 
 Patch 8.2.1853
 Problem:    "to_f" is recognized at "topleft" modifier.
-Solution:   Do not recognize modifer when "_" follows. (closes #7019)
+Solution:   Do not recognize modifier when "_" follows. (closes #7019)
 Files:      src/ex_docmd.c, src/testdir/test_vim9_assign.vim
 
 Patch 8.2.1854
@@ -11534,7 +11534,7 @@ Solution:   Initialize with NULL.
 Files:      src/vim9compile.c, src/evalfunc.c
 
 Patch 8.2.1885
-Problem:    Filetype tests unnessarily creates swap files.
+Problem:    Filetype tests unnecessarily creates swap files.
 Solution:   Disable 'swapfile'. (Ken Takata, closes #7183)
 Files:      src/testdir/test_filetype.vim
 
@@ -11555,7 +11555,7 @@ Solution:   Return an empty list. (closes #7180)
 Files:      src/evalbuffer.c, src/testdir/test_vim9_builtin.vim
 
 Patch 8.2.1889
-Problem:    Vim9: errornous error for missing white space after {}.
+Problem:    Vim9: erroneous error for missing white space after {}.
 Solution:   Don't skip over white space after {}. (issue #7167)
 Files:      src/dict.c, src/testdir/test_vim9_expr.vim
 
@@ -12004,7 +12004,7 @@ Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 Patch 8.2.1965
 Problem:    Vim9: tests fail without the channel feature.
 Solution:   Check if the channel feature is present. (Dominique Pellé,
-            closes 7270)
+            closes #7270)
 Files:      src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1966
@@ -12331,7 +12331,7 @@ Files:      src/globals.h, src/ex_docmd.c, src/vim9execute.c,
             src/testdir/test_vim9_func.vim
 
 Patch 8.2.2022
-Problem:    Vim9: star command recognized errornously.
+Problem:    Vim9: star command recognized erroneously.
 Solution:   Give an error for missing colon. (issue #7335)
 Files:      src/ex_docmd.c, src/testdir/test_vim9_cmd.vim
 
@@ -12514,7 +12514,7 @@ Files:      src/ex_docmd.c, src/proto/ex_docmd.pro, src/vim.h, src/ex_cmds.c,
             src/testdir/test_vim9_cmd.vim
 
 Patch 8.2.2053
-Problem:    Vim9: lamba doesn't accept argument types.
+Problem:    Vim9: lambda doesn't accept argument types.
 Solution:   Optionally accept argument types at the script level.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
@@ -12675,7 +12675,7 @@ Files:      src/vim9compile.c, src/testdir/test_vim9_assign.vim,
             src/testdir/test_vim9_expr.vim
 
 Patch 8.2.2082
-Problem:    Vim9: can still use the depricated #{} dict syntax.
+Problem:    Vim9: can still use the deprecated #{} dict syntax.
 Solution:   Remove support for #{} in Vim9 script. (closes #7406, closes #7405)
 Files:      src/dict.c, src/proto/dict.pro, src/eval.c, src/vim9compile.c,
             src/testdir/test_vim9_assign.vim,
@@ -12766,8 +12766,8 @@ Files:      src/vim9compile.c, src/vim9execute.c,
             src/testdir/test_vim9_func.vim
 
 Patch 8.2.2097
-Problem:    Vim9: using :silent! when calling a function prevents abortng that
-            function.
+Problem:    Vim9: using :silent! when calling a function prevents aborting
+            that function.
 Solution:   Add emsg_silent_def and did_emsg_def.
 Files:      src/globals.h, src/message.c, src/vim9execute.c,
             src/testdir/test_vim9_func.vim
@@ -12845,7 +12845,7 @@ Files:      src/main.c
 
 Patch 8.2.2111
 Problem:    GTK: Menu background is the same color as the main window.
-Solution:   Fix white space around the test in another way. (closes #7437,
+Solution:   Fix white space around the text in another way. (closes #7437,
             closes #7427)
 Files:      src/gui_gtk_x11.c
 
@@ -13096,7 +13096,7 @@ Solution:   Remove the "git checkout HEAD^2" block.
 Files:      .github/workflows/codeql-analysis.yml
 
 Patch 8.2.2156
-Problem:    Github actions run on pusing a tag.
+Problem:    Github actions run on pushing a tag.
 Solution:   Don't run CI on tag push. Omit coveralls on pull-request.
             (Ozaki Kiichi, closes #7489)
 Files:      .github/workflows/ci.yml, .github/workflows/codeql-analysis.yml
@@ -13151,7 +13151,7 @@ Files:      src/vim9compile.c, src/vim9.h, src/vim9execute.c, src/dict.c,
 
 Patch 8.2.2163
 Problem:    Crash when discarded exception is the current exception.
-Solution:   Compare the execption with current_exception. (closes #7499)
+Solution:   Compare the exception with current_exception. (closes #7499)
 Files:      src/ex_eval.c
 
 Patch 8.2.2164
@@ -13365,7 +13365,7 @@ Files:      src/bufwrite.c, src/testdir/test_writefile.vim
 
 Patch 8.2.2200
 Problem:    Vim9: lambda without white space around -> is confusing.
-Solution:   Require white space in a :def funtion. (issue #7503)
+Solution:   Require white space in a :def function. (issue #7503)
 Files:      src/vim9compile.c, src/testdir/test_vim9_expr.vim,
             src/testdir/test_vim9_disassemble.vim
 
@@ -13602,7 +13602,7 @@ Files:      src/testdir/test_clientserver.vim
 
 Patch 8.2.2241
 Problem:    Build with Ruby and clang may fail.
-Solution:   Adjust congigure and sed script. (Ozaki Kiichi, closes #7566)
+Solution:   Adjust configure and sed script. (Ozaki Kiichi, closes #7566)
 Files:      ci/config.mk.clang.sed, src/auto/configure, src/configure.ac
 
 Patch 8.2.2242
@@ -13631,7 +13631,7 @@ Patch 8.2.2246
 Problem:    Cursor keys not recognized at the hit-Enter prompt after executing
             an external command.
 Solution:   Change the codes for the extra cursor keys. (closes #7562)
-            Tune the delays to avoid test flakyness.
+            Tune the delays to avoid test flakiness.
 Files:      runtime/doc/term.txt, src/term.c, src/testdir/test_terminal3.vim
 
 Patch 8.2.2247
@@ -14033,7 +14033,7 @@ Files:      src/vim9.h, src/vim9compile.c, src/vim9execute.c,
             src/testdir/test_vim9_disassemble.vim
 
 Patch 8.2.2315
-Problem:    Vim9: "enddef" as dict key misintepreted as function end.
+Problem:    Vim9: "enddef" as dict key misinterpreted as function end.
 Solution:   Check for following colon. (closes #7640)
 Files:      src/userfunc.c, src/testdir/test_vim9_func.vim
 
@@ -14155,7 +14155,7 @@ Files:      runtime/autoload/dist/ft.vim, runtime/filetype.vim,
 
 Patch 8.2.2335
 Problem:    Vim9: "silent return" does not restore command modifiers.
-Solution:   Resture command modifiers before returning. (closes #7649)
+Solution:   Restore command modifiers before returning. (closes #7649)
 Files:      src/vim9compile.c, src/testdir/test_vim9_disassemble.vim
 
 Patch 8.2.2336
@@ -14197,7 +14197,7 @@ Files:      src/evalfunc.c, src/evalvars.c, src/proto/evalvars.pro,
             src/testdir/test_cmdline.vim
 
 Patch 8.2.2342
-Problem:    "char" functions return the wront column in Insert mode when the
+Problem:    "char" functions return the wrong column in Insert mode when the
             cursor is beyond the end of the line.
 Solution:   Compute the column correctly. (Yegappan Lakshmanan, closes #7669)
 Files:      src/eval.c, src/evalfunc.c, src/testdir/test_cursor_func.vim
@@ -14266,7 +14266,7 @@ Solution:   Adjust the logic to ignore the escape code.
 Files:      src/term.c
 
 Patch 8.2.2353
-Problem:    Spartql files are not detected.
+Problem:    Sparql files are not detected.
 Solution:   Add the sparql filetype.  (closes #7679)
 Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
@@ -14463,7 +14463,7 @@ Files:      src/vim9.h, src/vim9compile.c, src/vim9execute.c,
             src/testdir/test_vim9_func.vim
 
 Patch 8.2.2388
-Problem:    No easy way to get the maximum or mininum number value.
+Problem:    No easy way to get the maximum or minimum number value.
 Solution:   Add v:numbermax and v:numbermin.
 Files:      src/evalvars.c, src/vim.h, src/testdir/test_eval_stuff.vim,
             runtime/doc/eval.txt
@@ -14558,7 +14558,7 @@ Files:      src/vim9compile.c, src/testdir/test_profile.vim,
 Patch 8.2.2404
 Problem:    Vim9: profiling try/catch not correct.
 Solution:   Add profile instructions.  Fix that "entry" did not rethrow an
-            excpetion.
+            exception.
 Files:      src/vim9compile.c, src/vim9execute.c, src/testdir/test_profile.vim
 
 Patch 8.2.2405
@@ -14846,7 +14846,7 @@ Files:      src/optionstr.c, src/testdir/test_options.vim
 
 Patch 8.2.2447
 Problem:    'foldlevel' not applied to folds restored from session.
-Solution:   Set 'foldlevel' after creaiting the folds. (closes #7767)
+Solution:   Set 'foldlevel' after creating the folds. (closes #7767)
 Files:      src/fold.c, src/testdir/test_mksession.vim
 
 Patch 8.2.2448
@@ -15125,7 +15125,7 @@ Solution:   Adjust the computation of w_skipcol. (partly by Ghjuvan Lacambre,
 Files:      src/move.c, src/testdir/test_breakindent.vim
 
 Patch 8.2.2496 (after 8.2.2495)
-Problem:    Insufficien testing for text jumping fix.
+Problem:    Insufficient testing for text jumping fix.
 Solution:   Add another test case.
 Files:      src/testdir/test_breakindent.vim
 
@@ -16946,7 +16946,7 @@ Files:      src/vim9compile.c, src/testdir/test_vim9_func.vim
 Patch 8.2.2810
 Problem:    Vim9: crash when calling a function in a substitute expression.
 Solution:   Set the instructions back to the substitute expression
-            instrunctions. (closes #8148)
+            instructions. (closes #8148)
 Files:      src/vim9execute.c, src/testdir/test_vim9_cmd.vim
 
 Patch 8.2.2811
@@ -17002,16 +17002,16 @@ Files:      src/map.c, src/testdir/test_mapping.vim
 
 Patch 8.2.2820
 Problem:    Session file may divide by zero.
-Solution:   Avoid writing difide by zero. (closes #8162)
+Solution:   Avoid writing divide by zero. (closes #8162)
 Files:      src/session.c, src/testdir/test_mksession.vim
 
 Patch 8.2.2821
-Problem:    MS-Windows: unnessarily loading libraries when registering OLE.
+Problem:    MS-Windows: unnecessarily loading libraries when registering OLE.
 Solution:   Skip loading libraries when invoked with "-register".
 Files:      src/main.c, src/globals.h, src/os_win32.c
 
 Patch 8.2.2822 (after 8.2.2821)
-Problem:    MS-Windows: unnessarily loading libraries when unregistering OLE.
+Problem:    MS-Windows: unnecessarily loading libraries when unregistering OLE.
 Solution:   Also skip loading libraries when invoked with "-unregister".  Run
             Vim for README.txt with user privileges.
 Files:      src/main.c, nsis/gvim.nsi, nsis/README.txt
@@ -17229,7 +17229,7 @@ Solution:   Adjust the expected error message.
 Files:      src/testdir/test_tcl.vim
 
 Patch 8.2.2860
-Problem:    Adding a text property causes the whole window to be redawn.
+Problem:    Adding a text property causes the whole window to be redrawn.
 Solution:   Use changed_lines_buf() to only redraw the affected lines.
 Files:      src/change.c, src/proto/change.pro, src/textprop.c
 
@@ -17240,7 +17240,7 @@ Files:      src/vim9compile.c, src/vim9execute.c, src/vim9.h,
             src/testdir/test_vim9_expr.vim
 
 Patch 8.2.2862
-Problem:    Removing a text property causes the whole window to be redawn.
+Problem:    Removing a text property causes the whole window to be redrawn.
 Solution:   Use changed_lines_buf() to only redraw the affected lines.
 Files:      src/textprop.c
 
@@ -17826,7 +17826,7 @@ Files:      src/testdir/test_recover.vim
 
 Patch 8.2.2961
 Problem:    Keys typed during a :normal command are discarded.
-Solution:   Concatenate saved typeahead and typed kesy. (closes #8340)
+Solution:   Concatenate saved typeahead and typed keys. (closes #8340)
 Files:      src/getchar.c, src/proto/getchar.pro, src/ex_docmd.c,
             src/evalfunc.c, src/debugger.c, src/ui.c, src/proto/ui.pro
 
@@ -18074,7 +18074,7 @@ Files:      src/ex_docmd.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.3005
 Problem:    Vim9: using a void value does not give a proper error message.
-Solution:   Give a clear error message. (clodes #8387)
+Solution:   Give a clear error message. (closes #8387)
 Files:      src/typval.c, src/vim9compile.c, src/vim9.h, src/vim9execute.c,
             src/testdir/test_vim9_expr.vim,
             src/testdir/test_vim9_disassemble.vim
@@ -18155,14 +18155,13 @@ Files:      src/vim9execute.c, src/testdir/test_debugger.vim
 Patch 8.2.3018
 Problem:    Formatting using quickfixtextfunc is lost when updating location
             lists for different buffers.  (Yorick Peterse)
-Solution:   Use the right window for the locaiton list. (Yegappan Lakshmanan,
+Solution:   Use the right window for the location list. (Yegappan Lakshmanan,
             closes #8400, closes #8403)
 Files:      src/quickfix.c, src/testdir/test_quickfix.vim
 
 Patch 8.2.3019
 Problem:    Location list only has the start position.
-Solution:   Make it possible to add an end position. (Shane-XB-Qian,
-            closes #8393)
+Solution:   Make it possible to add an end position. (thinca, closes #8393)
 Files:      runtime/doc/eval.txt, src/quickfix.c,
             src/testdir/dumps/Test_quickfix_cwindow_1.dump,
             src/testdir/dumps/Test_quickfix_cwindow_2.dump,
@@ -18182,7 +18181,7 @@ Files:      src/option.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.3022
 Problem:    Available encryption methods are not strong enough.
-Solution:   Add initial support for xchaha20. (Christian Brabandt,
+Solution:   Add initial support for xchacha20. (Christian Brabandt,
             closes #8394)
 Files:      .github/workflows/ci.yml, runtime/doc/eval.txt,
             runtime/doc/options.txt, runtime/doc/various.txt,
@@ -18342,7 +18341,7 @@ Files:      src/VisVim/README_VisVim.txt, src/evalfunc.c, src/testdir/vim9.vim
 
 Patch 8.2.3046
 Problem:    Amiga MorphOS: Term mode is set using DOS packets.
-Solution:   Use the same way of setting term mdoe on all next gen Amiga-like
+Solution:   Use the same way of setting term mode on all next gen Amiga-like
             systems.  (Ola Söder, closes #8445)
 Files:      src/os_amiga.c
 
@@ -18795,7 +18794,7 @@ Files:      src/drawline.c, src/testdir/test_listchars.vim,
             src/testdir/dumps/Test_listchars_05.dump
 
 Patch 8.2.3122
-Problem:    With 'nowrap' cursor position is unexected in narrow window.
+Problem:    With 'nowrap' cursor position is unexpected in narrow window.
             (Leonid V.  Fedorenchik)
 Solution:   Put cursor on the last non-empty line. (closes #8525)
 Files:      src/move.c, src/testdir/test_listchars.vim,
@@ -18831,7 +18830,7 @@ Solution:   Check the value type. (closes #8529)
 Files:      src/list.c, src/testdir/test_vim9_builtin.vim
 
 Patch 8.2.3128
-Problem:    Vim9: uninitialzed list does not get type checked.
+Problem:    Vim9: uninitialized list does not get type checked.
 Solution:   Set the type when initializing the variable. (closes #8529)
 Files:      src/eval.c, src/evalvars.c, src/vim9script.c,
             src/userfunc.c, src/proto/vim9script.pro,
@@ -19369,7 +19368,7 @@ Files:      src/testdir/test_spellfile.vim
 Patch 8.2.3214
 Problem:    MS-Windows: passing /D does not set the install location.
 Solution:   Adjust how the installer uses $VIM. Update the documentation.
-            (Christian Brabandt, closes #8605)
+            (Christian Brabandt, Ken Takata, closes #8605)
 Files:      nsis/gvim.nsi, runtime/doc/os_win32.txt
 
 Patch 8.2.3215
@@ -19426,7 +19425,7 @@ Solution:   When not in function context check the current block ID.
 Files:      src/vim9compile.c, src/testdir/test_vim9_func.vim
 
 Patch 8.2.3223
-Problem:    Vim: using {} block in autoloade omnifunc fails.
+Problem:    Vim: using {} block in autoloaded omnifunc fails.
 Solution:   Allow using {} block when text is locked. (closes #8631)
 Files:      src/ex_cmds.h, src/testdir/test_ins_complete.vim
 
@@ -19444,7 +19443,7 @@ Files:      src/ex_getln.c
 
 Patch 8.2.3226
 Problem:    New digraph functions use old naming scheme.
-Solution:   Use the digraph_ prefix. (Hirohito Higashi, closes #8580)
+Solution:   Use the digraph_ prefix. (Hirohito Higashi, closes #8642)
 Files:      runtime/doc/digraph.txt, runtime/doc/eval.txt,
             runtime/doc/usr_41.txt, src/digraph.c, src/edit.c, src/errors.h,
             src/evalfunc.c, src/proto/digraph.pro,
@@ -19574,7 +19573,7 @@ Files:      src/if_lua.c, src/misc2.c, src/proto/misc2.pro
 
 Patch 8.2.3245
 Problem:    The crypt key may appear in a swap partition.
-Solution:   When using xchaha20 use sodium_mlock(). (Christian Brabandt,
+Solution:   When using xchacha20 use sodium_mlock(). (Christian Brabandt,
             closes #8657)
 Files:      src/buffer.c, src/crypt.c, src/errors.h, src/fileio.c,
             src/memline.c, src/vim.h
@@ -19642,7 +19641,7 @@ Solution:   Consider /usr/bin/cat and /bin/cat the same.
 Files:      src/testdir/test_functions.vim
 
 Patch 8.2.3257
-Problem:    Calling prop_find() with -1 for ID gives errornous error. (Naohiro
+Problem:    Calling prop_find() with -1 for ID gives erroneous error. (Naohiro
             Ono)
 Solution:   When passing -1 use -2. (closes #8674)
 Files:      src/textprop.c, src/testdir/test_textprop.vim
@@ -19693,7 +19692,7 @@ Files:      src/search.c, src/testdir/test_search.vim
 Patch 8.2.3266
 Problem:    Vim9: assignment with two indexes may check next line.
 Solution:   Limit the number of lines to avoid checking the next line when
-            assiging to a LHS subscript. (closes #8660)
+            assigning to a LHS subscript. (closes #8660)
 Files:      src/vim9compile.c, src/testdir/test_vim9_assign.vim
 
 Patch 8.2.3267
@@ -20997,7 +20996,7 @@ Files:      src/buffer.c, src/getchar.c, src/memline.c, src/move.c,
             src/option.c
 
 Patch 8.2.3491
-Problem:    xpm2 filetype dection is not so good.
+Problem:    xpm2 filetype detection is not so good.
 Solution:   Adjust the check for xpm2. (closes #8914)
 Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
@@ -21050,7 +21049,7 @@ Solution:   Install llvm-11 explicitly. (Christian Brabandt, closes #8993)
 Files:      .github/workflows/ci.yml
 
 Patch 8.2.3501
-Problem:    tmux filetype dection is incomplete
+Problem:    tmux filetype detection is incomplete
 Solution:   Also use tmux for files having text after .conf. (Eric Pruitt,
             closes #8971)
 Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
@@ -21330,7 +21329,7 @@ Files:      src/ex_cmds.c, src/vim.h, src/quickfix.c, src/buffer.c,
             src/testdir/test_quickfix.vim
 
 Patch 8.2.3548
-Problem:    GTK GUI crashen when reading from stdin.
+Problem:    GTK GUI crashes when reading from stdin.
 Solution:   Do not overwrite the NUL after the string. (closes #9028)
 Files:      src/gui_gtk_x11.c, src/testdir/test_gui.vim
 
@@ -22004,7 +22003,7 @@ Solution:   Add a type cast. (Mike Williams, closes #9199)
 Files:      src/vim9compile.c
 
 Patch 8.2.3656
-Problem:    Vim9: no error for an evironment variable by itself.
+Problem:    Vim9: no error for an environment variable by itself.
 Solution:   Give a "without effect" error. (closes #9166)
 Files:      src/ex_eval.c, src/testdir/test_vim9_cmd.vim
 
@@ -22231,7 +22230,7 @@ Files:      src/ex_docmd.c, src/charset.c, src/proto/charset.pro,
 
 Patch 8.2.3695
 Problem:    Confusing error for missing key.
-Solution:   Use the actualy key for the error. (closes #9241)
+Solution:   Use the actual key for the error. (closes #9241)
 Files:      src/eval.c, src/testdir/test_listdict.vim
 
 Patch 8.2.3696
@@ -22962,7 +22961,7 @@ Files:      src/ex_docmd.c, src/charset.c, src/proto/charset.pro,
             src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.3816
-Problem:    Compiler warning for posible loss of data on MS-Windows.
+Problem:    Compiler warning for possible loss of data on MS-Windows.
 Solution:   Add type cast. (Mike Williams, closes #9349)
 Files:      src/userfunc.c
 
@@ -23011,7 +23010,7 @@ Files:      src/testdir/test_visual.vim
 
 Patch 8.2.3824
 Problem:    No ASAN support for MSVC.
-Solution:   Add ASAN support and fix a coupld of uncovered problems. (Yegappan
+Solution:   Add ASAN support and fix a couple of uncovered problems. (Yegappan
             Lakshmanan, closes #9357)
 Files:      src/Make_mvc.mak, src/findfile.c, src/os_mswin.c,
             src/testdir/test_fnamemodify.vim
@@ -23178,7 +23177,7 @@ Files:      src/eval.c, src/testdir/test_messages.vim
 
 Patch 8.2.3851
 Problem:    Vim9: overhead when comparing string, dict or function.
-Solution:   Call the intented compare function directly.  Refactor to avoid
+Solution:   Call the intended compare function directly.  Refactor to avoid
             duplicated code.
 Files:      src/vim9execute.c, src/typval.c, src/proto/typval.pro
 
@@ -23662,7 +23661,7 @@ Solution:   Correct order of function arguments.
 Files:      src/userfunc.c
 
 Patch 8.2.3929
-Problem:    Using unititialized variable.
+Problem:    Using uninitialized variable.
 Solution:   Set the option flags to zero for a terminal option.
 Files:      src/option.c
 
@@ -23985,7 +23984,7 @@ Files:      src/errors.h, src/change.c, src/clientserver.c, src/eval.c,
             src/terminal.c, src/textprop.c, src/userfunc.c
 
 Patch 8.2.3978
-Problem:    Build error when using dynamycally loaded Python 3.
+Problem:    Build error when using dynamically loaded Python 3.
 Solution:   Adjust #ifdef.
 Files:      src/errors.h
 
@@ -24403,7 +24402,7 @@ Files:      src/alloc.c, src/proto/alloc.pro, src/vim9compile.c,
             src/usercmd.c, src/viminfo.c, src/testdir/test_vim9_func.vim
 
 Patch 8.2.4041
-Problem:    Using unitialized pointer.
+Problem:    Using uninitialized pointer.
 Solution:   Store "ht" when variable is in another script.
 Files:      src/evalvars.c
 
@@ -24414,7 +24413,7 @@ Files:      src/vim9execute.c
 
 Patch 8.2.4043
 Problem:    Using int for second argument of ga_init2().
-Solution:   Remove unnessary type cast (int) when using sizeof().
+Solution:   Remove unnecessary type cast (int) when using sizeof().
 Files:      src/arglist.c, src/channel.c, src/cmdexpand.c, src/dict.c,
             src/digraph.c, src/eval.c, src/evalfunc.c, src/evalvars.c,
             src/evalwindow.c, src/ex_docmd.c, src/fileio.c, src/filepath.c,
@@ -24778,8 +24777,8 @@ Solution:   Recognize an imported function name. (closes #9496)
 Files:      src/eval.c, src/testdir/test_vim9_import.vim
 
 Patch 8.2.4103
-Problem:    Vim9: variable declared in for loop not initialzed.
-Solution:   Always initialze the variable. (closes #9535)
+Problem:    Vim9: variable declared in for loop not initialized.
+Solution:   Always initialize the variable. (closes #9535)
 Files:      src/vim9instr.c, src/proto/vim9instr.pro, src/vim9compile.c,
             src/testdir/test_vim9_assign.vim
 
@@ -24812,8 +24811,8 @@ Files:      src/drawscreen.c
 
 Patch 8.2.4109
 Problem:    MS-Windows: high dpi support is outdated.
-Solution:   Improve High DPI support by using PerMonitorV2. (closes #9525,
-            closes #3102)
+Solution:   Improve High DPI support by using PerMonitorV2. (Ken Takata
+            closes #9525, closes #3102)
 Files:      src/gui.c, src/gui.h, src/gui_w32.c, src/vim.manifest
 
 Patch 8.2.4110
@@ -24822,7 +24821,7 @@ Solution:   Check "evalarg" is not NULL.  Skip errors when "verbose" is false.
 Files:      src/eval.c
 
 Patch 8.2.4111
-Problem:    Potential proglem when map is deleted while executing.
+Problem:    Potential problem when map is deleted while executing.
 Solution:   Reset last used map pointer when deleting a mapping.
 Files:      src/map.c
 
@@ -24940,7 +24939,7 @@ Files:      src/vim9script.c, src/testdir/test_vim9_import.vim
 
 Patch 8.2.4133
 Problem:    output of ":scriptnames" goes into the message history, while this
-            des not happen for other commands, such as ":ls".
+            does not happen for other commands, such as ":ls".
 Solution:   Use msg_outtrans() instead of smsg(). (closes #9551)
 Files:      src/scriptfile.c, src/testdir/test_scriptnames.vim
 
@@ -24963,7 +24962,7 @@ Files:      runtime/doc/vim9.txt, runtime/doc/repeat.txt, src/vim9script.c,
 
 Patch 8.2.4137
 Problem:    Vim9: calling import with and without method is inconsistent.
-Solution:   Set a flag that a parenthsis follows to compile_load_scriptvar().
+Solution:   Set a flag that a parenthesis follows to compile_load_scriptvar().
             Add some more tests.  Improve error message.
 Files:      src/vim9expr.c, src/vim9execute.c, src/vim9script.c,
             src/testdir/test_vim9_import.vim
@@ -25142,7 +25141,7 @@ Files:      src/userfunc.c, src/testdir/test_autoload.vim,
             src/testdir/sautest/autoload/foo.vim
 
 Patch 8.2.4169
-Problem:    MS-Windows: unnessary casts and other minor things.
+Problem:    MS-Windows: unnecessary casts and other minor things.
 Solution:   Clean up the MS-Windows code. (Ken Takata, closes #9583)
 Files:      src/gui_w32.c
 
@@ -25571,7 +25570,7 @@ Files:      src/testdir/test_lua.vim
 
 Patch 8.2.4244
 Problem:    MS-Windows: warning from MSVC on debug build.
-Solution:   Adjust "/opt"o options.  Remove unused variables.  Make variables
+Solution:   Adjust "/opt" options.  Remove unused variables.  Make variables
             uppercase for consistency. (Ken Takata, closes #9647)
 Files:      src/Make_mvc.mak
 
@@ -26129,7 +26128,7 @@ Solution:   When deleting the current buffer to not pick a quickfix buffer as
 Files:      src/buffer.c, src/testdir/test_quickfix.vim
 
 Patch 8.2.4328
-Problem:    Command line complete matches cleard when typing character.
+Problem:    Command line complete matches cleared when typing character.
             (Dominique Pellé)
 Solution:   Only remove a popup menu if there is one.
 Files:      src/ex_getln.c, src/testdir/test_cmdline.vim,
@@ -26160,7 +26159,7 @@ Files:      src/userfunc.c, src/vim9compile.c, src/proto/vim9compile.pro,
 
 Patch 8.2.4333
 Problem:    cstack not always passed to where it is needed.
-Solution:   Pass ctack through functions.
+Solution:   Pass cstack through functions.
 Files:      src/eval.c, src/vim9expr.c, src/vim9script.c,
             src/proto/vim9script.pro, src/vim9compile.c,
             src/proto/vim9compile.pro
@@ -26746,7 +26745,7 @@ Files:      src/Makefile, src/installman.sh
 
 Patch 8.2.4422
 Problem:    Autochdir test fails on MS-Windows.
-Solution:   Expecta nother error on MS-Windows.
+Solution:   Expect another error on MS-Windows.
 Files:      src/testdir/test_autochdir.vim
 
 Patch 8.2.4423
