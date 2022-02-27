@@ -8,7 +8,7 @@ int mode_str2flags(char_u *modechars);
 int map_to_exists(char_u *str, char_u *modechars, int abbr);
 int map_to_exists_mode(char_u *rhs, int mode, int abbr);
 char_u *set_context_in_map_cmd(expand_T *xp, char_u *cmd, char_u *arg, int forceit, int isabbrev, int isunmap, cmdidx_T cmdidx);
-int ExpandMappings(regmatch_T *regmatch, int *num_file, char_u ***file);
+int ExpandMappings(char_u *pat, regmatch_T *regmatch, int *num_file, char_u ***file);
 int check_abbr(int c, char_u *ptr, int col, int mincol);
 char_u *eval_map_expr(mapblock_T *mp, int c);
 char_u *vim_strsave_escape_csi(char_u *p);

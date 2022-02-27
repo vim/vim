@@ -1257,9 +1257,10 @@ set_context_in_map_cmd(
  */
     int
 ExpandMappings(
+    char_u	*pat,
     regmatch_T	*regmatch,
-    int		*num_file,
-    char_u	***file)
+    int		*numMatches,
+    char_u	***matches)
 {
     mapblock_T	*mp;
     int		hash;
@@ -1267,11 +1268,17 @@ ExpandMappings(
     int		round;
     char_u	*p;
     int		i;
+    int		fuzzy;
+    int		match;
+    int		score;
+    fuzmatch_str_T  *fuzmatch = NULL;
+
+    fuzzy = cmdline_fuzzy_complete(pat);
 
     validate_maphash();
 
-    *num_file = 0;		    // return values in case of FAIL
-    *file = NULL;
+    *numMatches = 0;		    // return values in case of FAIL
+    *matches = NULL;
 
     // round == 1: Count the matches.
     // round == 2: Build the array to keep the matches.
@@ -1279,6 +1286,7 @@ ExpandMappings(
     {
 	count = 0;
 
+	// First search in map modifier arguments
 	for (i = 0; i < 7; ++i)
 	{
 	    if (i == 0)
@@ -1300,13 +1308,29 @@ ExpandMappings(
 	    else
 		continue;
 
-	    if (vim_regexec(regmatch, p, (colnr_T)0))
+	    if (!fuzzy)
+		match = vim_regexec(regmatch, p, (colnr_T)0);
+	    else
 	    {
-		if (round == 1)
-		    ++count;
-		else
-		    (*file)[count++] = vim_strsave(p);
+		score = fuzzy_match_str(p, pat);
+		match = (score != 0);
 	    }
+
+	    if (!match)
+		continue;
+
+	    if (round == 2)
+	    {
+		if (fuzzy)
+		{
+		    fuzmatch[count].idx = count;
+		    fuzmatch[count].str = vim_strsave(p);
+		    fuzmatch[count].score = score;
+		}
+		else
+		    (*matches)[count] = vim_strsave(p);
+	    }
+	    ++count;
 	}
 
 	for (hash = 0; hash < 256; ++hash)
@@ -1326,14 +1350,31 @@ ExpandMappings(
 		if (mp->m_mode & expand_mapmodes)
 		{
 		    p = translate_mapping(mp->m_keys);
-		    if (p != NULL && vim_regexec(regmatch, p, (colnr_T)0))
+		    if (p != NULL)
 		    {
-			if (round == 1)
-			    ++count;
+			if (!fuzzy)
+			    match = vim_regexec(regmatch, p, (colnr_T)0);
 			else
 			{
-			    (*file)[count++] = p;
-			    p = NULL;
+			    score = fuzzy_match_str(p, pat);
+			    match = (score != 0);
+			}
+
+			if (match)
+			{
+			    if (round == 2)
+			    {
+				if (fuzzy)
+				{
+				    fuzmatch[count].idx = count;
+				    fuzmatch[count].str = p;
+				    fuzmatch[count].score = score;
+				}
+				else
+				    (*matches)[count] = p;
+				p = NULL;
+			    }
+			    ++count;
 			}
 		    }
 		    vim_free(p);
@@ -1346,11 +1387,24 @@ ExpandMappings(
 
 	if (round == 1)
 	{
-	    *file = ALLOC_MULT(char_u *, count);
-	    if (*file == NULL)
-		return FAIL;
+	    if (fuzzy)
+	    {
+		fuzmatch = ALLOC_MULT(fuzmatch_str_T, count);
+		if (fuzmatch == NULL)
+		    return FAIL;
+	    }
+	    else
+	    {
+		*matches = ALLOC_MULT(char_u *, count);
+		if (*matches == NULL)
+		    return FAIL;
+	    }
 	}
     } // for (round)
+
+    if (fuzzy && fuzzymatches_to_strmatches(fuzmatch, matches, count,
+							FALSE) == FAIL)
+	return FAIL;
 
     if (count > 1)
     {
@@ -1359,10 +1413,12 @@ ExpandMappings(
 	char_u	**ptr3;
 
 	// Sort the matches
-	sort_strings(*file, count);
+	// Fuzzy matching already sorts the matches
+	if (!fuzzy)
+	    sort_strings(*matches, count);
 
 	// Remove multiple entries
-	ptr1 = *file;
+	ptr1 = *matches;
 	ptr2 = ptr1 + 1;
 	ptr3 = ptr1 + count;
 
@@ -1378,7 +1434,7 @@ ExpandMappings(
 	}
     }
 
-    *num_file = count;
+    *numMatches = count;
     return (count == 0 ? FAIL : OK);
 }
 
