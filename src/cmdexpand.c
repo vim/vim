@@ -377,9 +377,13 @@ int cmdline_pum_active(void)
  */
 void cmdline_pum_remove(void)
 {
+    int save_p_lz = p_lz;
+
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
+    p_lz = FALSE;  // avoid the popup menu hanging around
     update_screen(0);
+    p_lz = save_p_lz;
     redrawcmd();
 }
 
