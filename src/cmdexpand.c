@@ -3003,7 +3003,7 @@ ExpandUserDefined(
     garray_T	ga;
     int		fuzzy;
     int		match;
-    int		score;
+    int		score = 0;
 
     fuzzy = cmdline_fuzzy_complete(pat);
     *matches = NULL;
