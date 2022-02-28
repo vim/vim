@@ -333,6 +333,8 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	{
 	    twin = (tp == curtab) ? prevwin : tp->tp_prevwin;
 	}
+        else if (STRCMP(arg, "%@") == 0)
+            twin = (tp == curtab) ? prevwin_curwin() : tp->tp_lastwin;
 	else
 	{
 	    long	count;

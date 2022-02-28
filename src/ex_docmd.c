@@ -8870,8 +8870,10 @@ find_cmdline_var(char_u *src, int *usedlen)
     int		len;
     int		i;
     static char *(spec_str[]) = {
+		    "%@",
+#define SPEC_PERCAT 0
 		    "%",
-#define SPEC_PERC   0
+#define SPEC_PERC   (SPEC_PERCAT + 1)
 		    "#",
 #define SPEC_HASH   (SPEC_PERC + 1)
 		    "<cword>",		// cursor word
@@ -8922,6 +8924,7 @@ find_cmdline_var(char_u *src, int *usedlen)
  * change "%"	    to curbuf->b_ffname
  *	  "#"	    to curwin->w_alt_fnum
  *	  "%%"	    to curwin->w_alt_fnum in Vim9 script
+ *	  "%@"	    to prevwin_curwin()->w_buffer->b_ffname
  *	  "<cword>" to word under the cursor
  *	  "<cWORD>" to WORD under the cursor
  *	  "<cexpr>" to C-expression under the cursor
@@ -9106,6 +9109,23 @@ eval_vars(
 		}
 		break;
 
+	case SPEC_PERCAT:
+		// '%@': current file unless in cmdwin, alternate file in
+		// cmdwin
+		{
+		    buf_T	*target_buf = prevwin_curwin()->w_buffer;
+		    if (target_buf->b_fname == NULL)
+		    {
+			result = (char_u *)"";
+			valid = 0;	    // Must have ":p:h" to be valid
+		    }
+		    else
+		    {
+			result = target_buf->b_fname;
+			tilde_file = STRCMP(result, "~") == 0;
+		    }
+		    break;
+		}
 #ifdef FEAT_SEARCHPATH
 	case SPEC_CFILE:	// file name under cursor
 		result = file_name_at_cursor(FNAME_MESS|FNAME_HYP, 1L, NULL);

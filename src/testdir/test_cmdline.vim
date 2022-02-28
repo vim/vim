@@ -1280,6 +1280,84 @@ func Test_getcmdwin_autocmd()
   augroup END
 endfunc
 
+function Test_prevwin_curwin()
+  call assert_equal(bufnr('%'), bufnr('%@'))
+endfunction
+
+function Test_prevwin_curwin_in_cmdwin()
+  CheckFeature cmdwin
+  tabe DummyAnotherTabFile1
+  split DummyAnotherTabFile2
+  wincmd w
+  let another_tabpagenr = tabpagenr()
+  tabprevious
+  e DummyFile
+  let g:curbufname = bufname()
+  let g:curbufname_full = expand('%:p')
+  let g:curbufnr = bufnr('%')
+  let g:curwinnr = winnr()
+  let b:testvar = 'buffer'
+
+  function CommonTest() closure
+    call assert_equal(g:curbufname, bufname('%@'))
+    call assert_equal(g:curbufnr, bufnr('%@'))
+    call assert_equal(g:curwinnr, winnr('%@'))
+    call assert_equal(g:curwinnr, bufwinnr('%@'))
+    call assert_equal(g:curbufnr, getbufinfo('%@')[0].bufnr)
+    call assert_equal(g:curbufname_full, expand('%@:p'))
+    call assert_equal(g:curwinnr, tabpagewinnr(tabpagenr(), '%@'))
+    call assert_equal(2, tabpagewinnr(another_tabpagenr, '%@'))
+  endfunction
+
+  function CmdwinTest()
+    call CommonTest()
+    call assert_equal('buffer', getbufvar('%@', 'testvar'))
+
+    call setbufvar('%@', 'testvar', 'buffer-modified')
+    call assert_equal('buffer-modified', getbufvar(g:curbufnr, 'testvar'))
+
+    call assert_false(bufexists('DummyFile-suffix'))
+    badd %@-suffix
+    call assert_true(bufexists('DummyFile-suffix'))
+  endfunction
+
+  function CmdlineTest()
+    call CommonTest()
+    call assert_equal('cmdwin', getbufvar('%@', 'testvar'))
+
+    call setbufvar('%@', 'testvar', 'cmdwin-modified')
+    call assert_equal('cmdwin-modified', getbufvar(g:curbufnr, 'testvar'))
+
+    call assert_false(bufexists('[Command Line]-suffix'))
+    badd %@-suffix
+    call assert_true(bufexists('[Command Line]-suffix'))
+  endfunction
+
+  let cmd = ''
+  let cmd ..= 'q:'
+  let cmd ..= ":let b:testvar = 'cmdwin'\<CR>"
+  let cmd ..= "\<Cmd>call CmdwinTest()\<CR>"
+
+  " Update specific variables for tests in cmdline
+  let cmd ..= "\<Cmd>let g:curbufname = bufname()\<CR>"
+  let cmd ..= "\<Cmd>let g:curbufnr = bufnr('%')\<CR>"
+  let cmd ..= "\<Cmd>let g:curwinnr = winnr()\<CR>"
+  let cmd ..= "\<Cmd>let g:curbufname_full = expand('%:p')\<CR>"
+
+  let cmd ..= ':'  " Dive into cmdline
+  let cmd ..= "\<Cmd>call CmdlineTest()\<CR>"
+  let cmd ..= "q\<CR>"
+  call feedkeys(cmd, 'x')
+  %bwipeout!
+  unlet g:curbufname
+  unlet g:curbufname_full
+  unlet g:curbufnr
+  unlet g:curwinnr
+  delfunction CommonTest
+  delfunction CmdwinTest
+  delfunction CmdlineTest
+endfunction
+
 func Test_verbosefile()
   set verbosefile=Xlog
   echomsg 'foo'

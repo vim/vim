@@ -2601,13 +2601,21 @@ buflist_findpat(
     char_u	*p;
     int		toggledollar;
 
-    // "%" is current file, "%%" or "#" is alternate file
+    // "%" is current file, "%%" or "#" is alternate file, "%@" is current file
+    // unless in the cmdline window and is alternate file in the cmdline window
     if ((pattern_end == pattern + 1 && (*pattern == '%' || *pattern == '#'))
-	    || (in_vim9script() && pattern_end == pattern + 2
-				    && pattern[0] == '%' && pattern[1] == '%'))
+	    || (pattern_end == pattern + 2 && pattern[0] == '%' &&
+		((in_vim9script() && pattern[1] == '%') || pattern[1] == '@')))
     {
-	if (*pattern == '#' || pattern_end == pattern + 2)
+	if (*pattern == '#')
 	    match = curwin->w_alt_fnum;
+	else if (pattern_end == pattern + 2 && *pattern == '%')
+	{
+	    if (pattern[1] == '%')
+		match = curwin->w_alt_fnum;
+	    else  // pattern[1] == '@'
+		match = prevwin_curwin()->w_buffer->b_fnum;
+	}
 	else
 	    match = curbuf->b_fnum;
 #ifdef FEAT_DIFF
