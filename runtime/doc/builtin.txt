@@ -280,6 +280,8 @@ hlget([{name} [, {resolve}]])	List	get highlight group attributes
 hlset({list})			Number	set highlight group attributes
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
+in_cmdwin()
+				bool		|TRUE| if the current window is |cmdwin|
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
@@ -4455,6 +4457,27 @@ iconv({string}, {from}, {to})				*iconv()*
 		Can also be used as a |method|: >
 			GetText()->iconv('latin1', 'utf-8')
 <
+in_cmdwin()						*in_cmdwin()*
+		Returns TRUE if the current window is |cmdwin|, not editing
+		command-line.
+		Example: >
+			function GetCmdline()
+			  if in_cmdwin()
+			    return getline(".")
+			  else
+			    return getcmdline()
+			  endif
+			endfunction
+
+			function GetCmdpos()
+			  if in_cmdwin()
+			    return col(".")
+			  else
+			    return getcmdpos()
+			  endif
+			endfunction
+<
+
 							*indent()*
 indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 		current buffer.  The indent is counted in spaces, the value
