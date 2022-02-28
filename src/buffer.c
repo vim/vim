@@ -2814,38 +2814,39 @@ ExpandBufnames(
 		    }
 		}
 
-		if (p != NULL)
-		{
-		    if (round == 1)
-			++count;
-		    else
-		    {
-			if (options & WILD_HOME_REPLACE)
-			    p = home_replace_save(buf, p);
-			else
-			    p = vim_strsave(p);
+		if (p == NULL)
+		    continue;
 
-			if (!fuzzy)
-			{
+		if (round == 1)
+		{
+		    ++count;
+		    continue;
+		}
+
+		if (options & WILD_HOME_REPLACE)
+		    p = home_replace_save(buf, p);
+		else
+		    p = vim_strsave(p);
+
+		if (!fuzzy)
+		{
 #ifdef FEAT_VIMINFO
-			    if (matches != NULL)
-			    {
-				matches[count].buf = buf;
-				matches[count].match = p;
-				count++;
-			    }
-			    else
-#endif
-				(*file)[count++] = p;
-			}
-			else
-			{
-			    fuzmatch[count].idx = count;
-			    fuzmatch[count].str = p;
-			    fuzmatch[count].score = score;
-			    count++;
-			}
+		    if (matches != NULL)
+		    {
+			matches[count].buf = buf;
+			matches[count].match = p;
+			count++;
 		    }
+		    else
+#endif
+			(*file)[count++] = p;
+		}
+		else
+		{
+		    fuzmatch[count].idx = count;
+		    fuzmatch[count].str = p;
+		    fuzmatch[count].score = score;
+		    count++;
 		}
 	    }
 	    if (count == 0)	// no match found, break here
