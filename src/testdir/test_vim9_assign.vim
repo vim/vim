@@ -550,6 +550,13 @@ def Test_assign_index()
   bl[-2] = 0x66
   assert_equal(0z77226644, bl)
 
+  lines =<< trim END
+      g:val = '22'
+      var bl = 0z11
+      bl[1] = g:val
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1030: Using a String as a Number: "22"')
+
   # should not read the next line when generating "a.b"
   var a = {}
   a.b = {}
@@ -1233,12 +1240,18 @@ def Test_script_var_default()
   var lines =<< trim END
       vim9script
       var l: list<number>
+      var li = [1, 2]
       var bl: blob
+      var bli = 0z12
       var d: dict<number>
+      var di = {'a': 1, 'b': 2}
       def Echo()
         assert_equal([], l)
+        assert_equal([1, 2], li)
         assert_equal(0z, bl)
+        assert_equal(0z12, bli)
         assert_equal({}, d)
+        assert_equal({'a': 1, 'b': 2}, di)
       enddef
       Echo()
   END
@@ -1501,6 +1514,30 @@ def Test_assign_list()
       assert_equal([1, 2, 3], ul)
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var l = [1, 2]
+      g:idx = 'x'
+      l[g:idx : 1] = [0]
+      echo l
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1030: Using a String as a Number: "x"')
+
+  lines =<< trim END
+      var l = [1, 2]
+      g:idx = 3
+      l[g:idx : 1] = [0]
+      echo l
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E684: list index out of range: 3')
+
+  lines =<< trim END
+      var l = [1, 2]
+      g:idx = 'y'
+      l[1 : g:idx] = [0]
+      echo l
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E1012: Type mismatch; expected number but got string', 'E1030: Using a String as a Number: "y"'])
 
   v9.CheckDefFailure(["var l: list<number> = ['', true]"], 'E1012: Type mismatch; expected list<number> but got list<any>', 1)
   v9.CheckDefFailure(["var l: list<list<number>> = [['', true]]"], 'E1012: Type mismatch; expected list<list<number>> but got list<list<any>>', 1)

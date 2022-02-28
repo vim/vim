@@ -550,6 +550,44 @@ def Test_call_ufunc_count()
   unlet g:counter
 enddef
 
+def Test_call_ufunc_failure()
+  var lines =<< trim END
+      vim9script
+      def Tryit()
+        g:Global(1, 2, 3)
+      enddef
+
+      func g:Global(a, b, c)
+        echo a:a a:b a:c
+      endfunc
+
+      defcompile
+
+      func! g:Global(a, b)
+        echo a:a a:b 
+      endfunc
+      Tryit()
+  END
+  v9.CheckScriptFailure(lines, 'E118: Too many arguments for function: Global')
+  delfunc g:Global
+
+  lines =<< trim END
+      vim9script
+
+      g:Ref = function('len')
+      def Tryit()
+        g:Ref('x')
+      enddef
+
+      defcompile
+
+      g:Ref = function('add')
+      Tryit()
+  END
+  v9.CheckScriptFailure(lines, 'E119: Not enough arguments for function: add')
+  unlet g:Ref
+enddef
+
 def s:MyVarargs(arg: string, ...rest: list<string>): string
   var res = arg
   for s in rest

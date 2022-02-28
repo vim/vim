@@ -2782,6 +2782,23 @@ def Test_expr8_any_index_slice()
 
   v9.CheckDefAndScriptSuccess(lines)
 
+  lines =<< trim END
+      vim9script
+
+      def PosIdx(s: string): string
+        return s[1]
+      enddef
+      def NegIdx(s: string): string
+        return s[-1]
+      enddef
+
+      set enc=latin1
+      assert_equal("\xe4", PosIdx("a\xe4\xe5"))
+      assert_equal("\xe5", NegIdx("a\xe4\xe5"))
+      set enc=utf-8
+  END
+  v9.CheckScriptSuccess(lines)
+
   v9.CheckDefExecAndScriptFailure(['echo g:testblob[2]'], 'E979:', 1)
   v9.CheckDefExecAndScriptFailure(['echo g:testblob[-3]'], 'E979:', 1)
 

@@ -1027,7 +1027,7 @@ call_by_name(
     {
 	int func_idx = find_internal_func(name);
 
-	if (func_idx < 0)
+	if (func_idx < 0)  // Impossible?
 	    return FAIL;
 	if (check_internal_func(func_idx, argcount) < 0)
 	    return FAIL;
@@ -1452,8 +1452,6 @@ get_split_sourceline(
     char_u		*p;
     char_u		*line;
 
-    if (*sp->nextline == NUL)
-	return NULL;
     p = vim_strchr(sp->nextline, '\n');
     if (p == NULL)
     {
@@ -1911,11 +1909,11 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
 	    else
 		n2 = (long)tv_get_number_chk(tv_idx2, &error);
 	    if (error)
-		status = FAIL;
+		status = FAIL; // cannot happen?
 	    else
 	    {
 		listitem_T *li1 = check_range_index_one(
-			tv_dest->vval.v_list, &n1, FALSE);
+					     tv_dest->vval.v_list, &n1, FALSE);
 
 		if (li1 == NULL)
 		    status = FAIL;
