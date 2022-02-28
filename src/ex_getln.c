@@ -4553,6 +4553,15 @@ is_in_cmdwin(void)
 {
     return cmdwin_type != 0 && get_cmdline_type() == NUL;
 }
+
+/*
+ * "in_cmdwin()" function
+ */
+    void
+f_in_cmdwin(typval_T *argvars UNUSED, typval_T *rettv) {
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = is_in_cmdwin() ? VVAL_TRUE : VVAL_FALSE;
+}
 #endif // FEAT_CMDWIN
 
 /*

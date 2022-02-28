@@ -1358,6 +1358,17 @@ function Test_prevwin_curwin_in_cmdwin()
   delfunction CmdlineTest
 endfunction
 
+function Test_in_cmdwin_function()
+  let cmd = ''
+  let cmd ..= "\<Cmd>call assert_false(in_cmdwin())\<CR>"
+  let cmd ..= 'q:'
+  let cmd ..= "\<Cmd>call assert_true(in_cmdwin())\<CR>"
+  let cmd ..= ':'
+  let cmd ..= "\<Cmd>call assert_false(in_cmdwin())\<CR>"
+  let cmd ..= "q\<CR>"
+  call feedkeys(cmd, 'x')
+endfunction
+
 func Test_verbosefile()
   set verbosefile=Xlog
   echomsg 'foo'
