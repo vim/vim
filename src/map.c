@@ -1263,15 +1263,15 @@ ExpandMappings(
     char_u	***matches)
 {
     mapblock_T	*mp;
+    garray_T	ga;
     int		hash;
     int		count;
-    int		round;
     char_u	*p;
     int		i;
     int		fuzzy;
     int		match;
     int		score;
-    fuzmatch_str_T  *fuzmatch = NULL;
+    fuzmatch_str_T  *fuzmatch;
 
     fuzzy = cmdline_fuzzy_complete(pat);
 
@@ -1280,32 +1280,78 @@ ExpandMappings(
     *numMatches = 0;		    // return values in case of FAIL
     *matches = NULL;
 
-    // round == 1: Count the matches.
-    // round == 2: Build the array to keep the matches.
-    for (round = 1; round <= 2; ++round)
-    {
-	count = 0;
+    if (!fuzzy)
+	ga_init2(&ga, sizeof(char *), 3);
+    else
+	ga_init2(&ga, sizeof(fuzmatch_str_T), 3);
 
-	// First search in map modifier arguments
-	for (i = 0; i < 7; ++i)
-	{
-	    if (i == 0)
-		p = (char_u *)"<silent>";
-	    else if (i == 1)
-		p = (char_u *)"<unique>";
+    // First search in map modifier arguments
+    for (i = 0; i < 7; ++i)
+    {
+	if (i == 0)
+	    p = (char_u *)"<silent>";
+	else if (i == 1)
+	    p = (char_u *)"<unique>";
 #ifdef FEAT_EVAL
-	    else if (i == 2)
-		p = (char_u *)"<script>";
-	    else if (i == 3)
-		p = (char_u *)"<expr>";
+	else if (i == 2)
+	    p = (char_u *)"<script>";
+	else if (i == 3)
+	    p = (char_u *)"<expr>";
 #endif
-	    else if (i == 4 && !expand_buffer)
-		p = (char_u *)"<buffer>";
-	    else if (i == 5)
-		p = (char_u *)"<nowait>";
-	    else if (i == 6)
-		p = (char_u *)"<special>";
-	    else
+	else if (i == 4 && !expand_buffer)
+	    p = (char_u *)"<buffer>";
+	else if (i == 5)
+	    p = (char_u *)"<nowait>";
+	else if (i == 6)
+	    p = (char_u *)"<special>";
+	else
+	    continue;
+
+	if (!fuzzy)
+	    match = vim_regexec(regmatch, p, (colnr_T)0);
+	else
+	{
+	    score = fuzzy_match_str(p, pat);
+	    match = (score != 0);
+	}
+
+	if (!match)
+	    continue;
+
+	if (ga_grow(&ga, 1) == FAIL)
+	    break;
+
+	if (fuzzy)
+	{
+	    fuzmatch = &((fuzmatch_str_T *)ga.ga_data)[ga.ga_len];
+	    fuzmatch->idx = ga.ga_len;
+	    fuzmatch->str = vim_strsave(p);
+	    fuzmatch->score = score;
+	}
+	else
+	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strsave(p);
+	++ga.ga_len;
+    }
+
+    for (hash = 0; hash < 256; ++hash)
+    {
+	if (expand_isabbrev)
+	{
+	    if (hash > 0)	// only one abbrev list
+		break; // for (hash)
+	    mp = first_abbr;
+	}
+	else if (expand_buffer)
+	    mp = curbuf->b_maphash[hash];
+	else
+	    mp = maphash[hash];
+	for (; mp; mp = mp->m_next)
+	{
+	    if (!(mp->m_mode & expand_mapmodes))
+		continue;
+
+	    p = translate_mapping(mp->m_keys);
+	    if (p == NULL)
 		continue;
 
 	    if (!fuzzy)
@@ -1317,95 +1363,48 @@ ExpandMappings(
 	    }
 
 	    if (!match)
+	    {
+		vim_free(p);
 		continue;
-
-	    if (round == 2)
-	    {
-		if (fuzzy)
-		{
-		    fuzmatch[count].idx = count;
-		    fuzmatch[count].str = vim_strsave(p);
-		    fuzmatch[count].score = score;
-		}
-		else
-		    (*matches)[count] = vim_strsave(p);
 	    }
-	    ++count;
-	}
 
-	for (hash = 0; hash < 256; ++hash)
-	{
-	    if (expand_isabbrev)
+	    if (ga_grow(&ga, 1) == FAIL)
 	    {
-		if (hash > 0)	// only one abbrev list
-		    break; // for (hash)
-		mp = first_abbr;
+		vim_free(p);
+		break;
 	    }
-	    else if (expand_buffer)
-		mp = curbuf->b_maphash[hash];
-	    else
-		mp = maphash[hash];
-	    for (; mp; mp = mp->m_next)
-	    {
-		if (mp->m_mode & expand_mapmodes)
-		{
-		    p = translate_mapping(mp->m_keys);
-		    if (p != NULL)
-		    {
-			if (!fuzzy)
-			    match = vim_regexec(regmatch, p, (colnr_T)0);
-			else
-			{
-			    score = fuzzy_match_str(p, pat);
-			    match = (score != 0);
-			}
 
-			if (match)
-			{
-			    if (round == 2)
-			    {
-				if (fuzzy)
-				{
-				    fuzmatch[count].idx = count;
-				    fuzmatch[count].str = p;
-				    fuzmatch[count].score = score;
-				}
-				else
-				    (*matches)[count] = p;
-				p = NULL;
-			    }
-			    ++count;
-			}
-		    }
-		    vim_free(p);
-		}
-	    } // for (mp)
-	} // for (hash)
-
-	if (count == 0)			// no match found
-	    break; // for (round)
-
-	if (round == 1)
-	{
 	    if (fuzzy)
 	    {
-		fuzmatch = ALLOC_MULT(fuzmatch_str_T, count);
-		if (fuzmatch == NULL)
-		    return FAIL;
+		fuzmatch = &((fuzmatch_str_T *)ga.ga_data)[ga.ga_len];
+		fuzmatch->idx = ga.ga_len;
+		fuzmatch->str = p;
+		fuzmatch->score = score;
 	    }
 	    else
-	    {
-		*matches = ALLOC_MULT(char_u *, count);
-		if (*matches == NULL)
-		    return FAIL;
-	    }
-	}
-    } // for (round)
+		((char_u **)ga.ga_data)[ga.ga_len] = p;
 
-    if (fuzzy && fuzzymatches_to_strmatches(fuzmatch, matches, count,
-							FALSE) == FAIL)
+	    ++ga.ga_len;
+	} // for (mp)
+    } // for (hash)
+
+    if (ga.ga_len == 0)
 	return FAIL;
 
+    if (!fuzzy)
+    {
+	*matches = ga.ga_data;
+	*numMatches = ga.ga_len;
+    }
+    else
+    {
+	if (fuzzymatches_to_strmatches(ga.ga_data, matches, ga.ga_len,
+							FALSE) == FAIL)
+	    return FAIL;
+	*numMatches = ga.ga_len;
+    }
+
+    count = *numMatches;
     if (count > 1)
     {
 	char_u	**ptr1;
