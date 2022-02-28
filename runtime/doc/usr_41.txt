@@ -980,6 +980,7 @@ Command line:					*command-line-functions*
 	setcmdpos()		set position of the cursor in the command line
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
+	in_cmdwin()			check if the current window is |cmdwin|
 	getcompletion()		list of command-line completion matches
 	fullcommand()		get full command name
 
