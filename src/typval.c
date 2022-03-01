@@ -1394,10 +1394,14 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	switch (tv->v_type)
 	{
 	    case VAR_BLOB: return tv->vval.v_blob == NULL;
+#ifdef FEAT_JOB_CHANNEL
 	    case VAR_CHANNEL: return tv->vval.v_channel == NULL;
+#endif
 	    case VAR_DICT: return tv->vval.v_dict == NULL;
 	    case VAR_FUNC: return tv->vval.v_string == NULL;
+#ifdef FEAT_JOB_CHANNEL
 	    case VAR_JOB: return tv->vval.v_job == NULL;
+#endif
 	    case VAR_LIST: return tv->vval.v_list == NULL;
 	    case VAR_PARTIAL: return tv->vval.v_partial == NULL;
 	    case VAR_STRING: return tv->vval.v_string == NULL;
