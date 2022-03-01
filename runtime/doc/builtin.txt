@@ -4463,6 +4463,7 @@ in_cmdwin()						*in_cmdwin()*
 		Returns TRUE if the current window is |cmdwin|, not editing
 		command-line.
 		Example: >
+			" getcmdlne(), but also works in cmdwin.
 			function GetCmdline()
 			  if in_cmdwin()
 			    return getline(".")
@@ -4471,6 +4472,7 @@ in_cmdwin()						*in_cmdwin()*
 			  endif
 			endfunction
 
+			" getcmdpos(), but also works in cmdwin.
 			function GetCmdpos()
 			  if in_cmdwin()
 			    return col(".")
