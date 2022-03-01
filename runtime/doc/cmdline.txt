@@ -867,6 +867,9 @@ function |expand()|.
 	#<n	(where n is a number > 0) is replaced with old	  *:_#<* *c_#<*
 		file name n.  See |:oldfiles| or |v:oldfiles| to get the
 		number.							*E809*
+	%@  Is replaced with the file name where commands will *:_%@* *:c_%@*
+	 	be executed. (i.e. the current file name unless in |cmdwin|, the
+		alternative file name in |cmdwin|.)
 		{only when compiled with the |+eval| and |+viminfo| features}
 In |Vim9-script| # is used to start a comment, use %% for the alternate file
 name:
@@ -893,7 +896,8 @@ that contain a quote and wildcards): >
 	:!ls "%"
 	:r !spell "%"
 
-To avoid the special meaning of '%' and '#' insert a backslash before it.
+To avoid the special meaning of '%', '#', and '%@' insert a backslash before
+it.
 Detail: The special meaning is always escaped when there is a backslash before
 it, no matter how many backslashes.
 	you type:		result	~
@@ -967,8 +971,9 @@ Note: these are typed literally, they are not special keys!
 							 *filename-modifiers*
 *:_%:* *::8* *::p* *::.* *::~* *::h* *::t* *::r* *::e* *::s* *::gs* *::S*
      *%:8* *%:p* *%:.* *%:~* *%:h* *%:t* *%:r* *%:e* *%:s* *%:gs* *%:S*
-The file name modifiers can be used after "%", "#", "#n", "<cfile>", "<sfile>",
-"<afile>" or "<abuf>".  They are also used with the |fnamemodify()| function.
+The file name modifiers can be used after "%", "#", "#n", "%@", "<cfile>",
+"<sfile>", "<afile>" or "<abuf>".  They are also used with the |fnamemodify()|
+function.
 
 These modifiers can be given, in this order:
 	:p	Make file name a full path.  Must be the first modifier.  Also
@@ -1066,6 +1071,8 @@ name).  This is included for backwards compatibility with version 3.0, the
 	#<		idem, without extension
 	#31		alternate file number 31
 	#31<		idem, without extension
+	%@		file name where commands will be executed
+	%@<		idem, without extension
 	<cword>		word under the cursor
 	<cWORD>		WORD under the cursor (see |WORD|)
 	<cfile>		path name under the cursor
