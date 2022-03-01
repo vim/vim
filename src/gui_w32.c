@@ -3016,7 +3016,7 @@ is_point_onscreen(int x, int y)
 }
 
 /*
- * Check if the whole area of the specified window is on-screen.
+ * Check if the whole client area of the specified window is on-screen.
  *
  * Note about DirectX: Windows 10 1809 or above no longer maintains image of
  * the window portion that is off-screen.  Scrolling by DWriteContext_Scroll()
@@ -3026,16 +3026,23 @@ is_point_onscreen(int x, int y)
 is_window_onscreen(HWND hwnd)
 {
     RECT    rc;
+    POINT   p1, p2;
 
-    GetWindowRect(hwnd, &rc);
+    GetClientRect(hwnd, &rc);
+    p1.x = rc.left;
+    p1.y = rc.top;
+    p2.x = rc.right - 1;
+    p2.y = rc.bottom - 1;
+    ClientToScreen(hwnd, &p1);
+    ClientToScreen(hwnd, &p2);
 
-    if (!is_point_onscreen(rc.left, rc.top))
+    if (!is_point_onscreen(p1.x, p1.y))
 	return FALSE;
-    if (!is_point_onscreen(rc.left, rc.bottom))
+    if (!is_point_onscreen(p1.x, p2.y))
 	return FALSE;
-    if (!is_point_onscreen(rc.right, rc.top))
+    if (!is_point_onscreen(p2.x, p1.y))
 	return FALSE;
-    if (!is_point_onscreen(rc.right, rc.bottom))
+    if (!is_point_onscreen(p2.x, p2.y))
 	return FALSE;
     return TRUE;
 }
