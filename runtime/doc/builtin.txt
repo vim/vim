@@ -1082,7 +1082,7 @@ bufname([{buf}])					*bufname()*
 		"" or "%" can be used for the current buffer, "#" for the
 		alternate buffer, "%@" for the buffer where commands will be
 		executed in (i.e. "%@" for the current buffer unless in
-		|cmdwin|, the alternative buffer in |cmdwin|).
+		|cmdwin|, the alternate buffer in |cmdwin|).
 		A full match is preferred, otherwise a match at the start, end
 		or middle of the buffer name is accepted.  If you only want a
 		full match then put "^" at the start and "$" at the end of the
@@ -9034,7 +9034,7 @@ tabpagewinnr({tabarg} [, {arg}])			*tabpagewinnr()*
 		      is |cmdwin|, the previous window number is returned.
 		    - {tabarg} is not the current tab page, the current number
 		      is returned.
-		`tabapgewinnr(tabarg, "%@")` is equivalent to: >
+		`tabpagewinnr(tabarg, "%@")` is equivalent to: >
 		    function MyTabpageWinnr(tabarg)
 		      if a:tabarg == tabpagenr()
 			return winnr("%@")

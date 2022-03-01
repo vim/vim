@@ -869,7 +869,7 @@ function |expand()|.
 		number.							*E809*
 	%@  Is replaced with the file name where commands will *:_%@* *:c_%@*
 	 	be executed. (i.e. the current file name unless in |cmdwin|, the
-		alternative file name in |cmdwin|.)
+		alternate file name in |cmdwin|.)
 		{only when compiled with the |+eval| and |+viminfo| features}
 In |Vim9-script| # is used to start a comment, use %% for the alternate file
 name:
