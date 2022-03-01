@@ -57,6 +57,7 @@ int tv_check_lock(typval_T *tv, char_u *name, int use_gettext);
 void copy_tv(typval_T *from, typval_T *to);
 int typval_compare(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic);
 int typval_compare_list(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
+int typval_compare_null(typval_T *tv1, typval_T *tv2);
 int typval_compare_blob(typval_T *tv1, typval_T *tv2, exprtype_T type, int *res);
 int typval_compare_dict(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_func(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);

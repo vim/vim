@@ -134,6 +134,7 @@ typedef enum {
     // comparative operations; isn_arg.op.op_type is exprtype_T, op_ic used
     ISN_COMPAREBOOL,
     ISN_COMPARESPECIAL,
+    ISN_COMPARENULL,
     ISN_COMPARENR,
     ISN_COMPAREFLOAT,
     ISN_COMPARESTRING,

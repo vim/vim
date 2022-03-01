@@ -1169,6 +1169,21 @@ typval_compare(
 	// it means TRUE.
 	n1 = (type == EXPR_ISNOT);
     }
+    else if (((tv1->v_type == VAR_SPECIAL && tv1->vval.v_number == VVAL_NULL)
+		|| (tv2->v_type == VAR_SPECIAL
+					   && tv2->vval.v_number == VVAL_NULL))
+	    && tv1->v_type != tv2->v_type
+	    && (type == EXPR_EQUAL || type == EXPR_NEQUAL))
+    {
+	n1 = typval_compare_null(tv1, tv2);
+	if (n1 == MAYBE)
+	{
+	    clear_tv(tv1);
+	    return FAIL;
+	}
+	if (type == EXPR_NEQUAL)
+	    n1 = !n1;
+    }
     else if (tv1->v_type == VAR_BLOB || tv2->v_type == VAR_BLOB)
     {
 	if (typval_compare_blob(tv1, tv2, type, &res) == FAIL)
@@ -1363,6 +1378,35 @@ typval_compare_list(
     }
     *res = val;
     return OK;
+}
+
+/*
+ * Compare v:null/v:none with another type.  Return TRUE if the value is NULL.
+ */
+    int
+typval_compare_null(typval_T *tv1, typval_T *tv2)
+{
+    if ((tv1->v_type == VAR_SPECIAL && tv1->vval.v_number == VVAL_NULL)
+	    || (tv2->v_type == VAR_SPECIAL && tv2->vval.v_number == VVAL_NULL))
+    {
+	typval_T	*tv = tv1->v_type == VAR_SPECIAL ? tv2 : tv1;
+
+	switch (tv->v_type)
+	{
+	    case VAR_BLOB: return tv->vval.v_blob == NULL;
+	    case VAR_CHANNEL: return tv->vval.v_channel == NULL;
+	    case VAR_DICT: return tv->vval.v_dict == NULL;
+	    case VAR_FUNC: return tv->vval.v_string == NULL;
+	    case VAR_JOB: return tv->vval.v_job == NULL;
+	    case VAR_LIST: return tv->vval.v_list == NULL;
+	    case VAR_PARTIAL: return tv->vval.v_partial == NULL;
+	    case VAR_STRING: return tv->vval.v_string == NULL;
+	    default: break;
+	}
+    }
+    semsg(_(e_cannot_compare_str_with_str),
+			 vartype_name(tv1->v_type), vartype_name(tv2->v_type));
+    return MAYBE;
 }
 
 /*

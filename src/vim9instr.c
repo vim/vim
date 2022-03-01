@@ -372,6 +372,24 @@ get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
 	    || ((type1 == VAR_NUMBER || type1 == VAR_FLOAT)
 	      && (type2 == VAR_NUMBER || type2 == VAR_FLOAT)))
 	isntype = ISN_COMPAREANY;
+    else if (type1 == VAR_SPECIAL || type2 == VAR_SPECIAL)
+    {
+	switch (type1 == VAR_SPECIAL ? type2 : type1)
+	{
+	    case VAR_BLOB: break;
+	    case VAR_CHANNEL: break;
+	    case VAR_DICT: break;
+	    case VAR_FUNC: break;
+	    case VAR_JOB: break;
+	    case VAR_LIST: break;
+	    case VAR_PARTIAL: break;
+	    case VAR_STRING: break;
+	    default: semsg(_(e_cannot_compare_str_with_str),
+				   vartype_name(type1), vartype_name(type2));
+		     return ISN_DROP;
+	}
+	isntype = ISN_COMPARENULL;
+    }
 
     if ((exprtype == EXPR_IS || exprtype == EXPR_ISNOT)
 	    && (isntype == ISN_COMPAREBOOL
@@ -388,7 +406,7 @@ get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
 		    && (type1 == VAR_BOOL || type1 == VAR_SPECIAL
 		       || type2 == VAR_BOOL || type2 == VAR_SPECIAL)))
 	    || ((exprtype != EXPR_EQUAL && exprtype != EXPR_NEQUAL
-				 && exprtype != EXPR_IS && exprtype != EXPR_ISNOT
+			       && exprtype != EXPR_IS && exprtype != EXPR_ISNOT
 		    && (type1 == VAR_BLOB || type2 == VAR_BLOB
 			|| type1 == VAR_LIST || type2 == VAR_LIST))))
     {
@@ -2131,6 +2149,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREFUNC:
 	case ISN_COMPARELIST:
 	case ISN_COMPARENR:
+	case ISN_COMPARENULL:
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:

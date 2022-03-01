@@ -3880,6 +3880,25 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    case ISN_COMPARENULL:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    int		res;
+
+		    res = typval_compare_null(tv1, tv2);
+		    if (res == MAYBE)
+			goto on_error;
+		    if (iptr->isn_arg.op.op_type == EXPR_NEQUAL)
+			res = !res;
+		    clear_tv(tv1);
+		    clear_tv(tv2);
+		    --ectx->ec_stack.ga_len;
+		    tv1->v_type = VAR_BOOL;
+		    tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
+		}
+		break;
+
 	    // Operation with two number arguments
 	    case ISN_OPNR:
 	    case ISN_COMPARENR:
@@ -5901,6 +5920,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 	    case ISN_COMPAREBOOL:
 	    case ISN_COMPARESPECIAL:
+	    case ISN_COMPARENULL:
 	    case ISN_COMPARENR:
 	    case ISN_COMPAREFLOAT:
 	    case ISN_COMPARESTRING:
@@ -5936,6 +5956,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			   case ISN_COMPAREBOOL: type = "COMPAREBOOL"; break;
 			   case ISN_COMPARESPECIAL:
 						 type = "COMPARESPECIAL"; break;
+			   case ISN_COMPARENULL: type = "COMPARENULL"; break;
 			   case ISN_COMPARENR: type = "COMPARENR"; break;
 			   case ISN_COMPAREFLOAT: type = "COMPAREFLOAT"; break;
 			   case ISN_COMPARESTRING:

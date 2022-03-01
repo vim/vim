@@ -1846,6 +1846,8 @@ def Test_disassemble_compare()
         ['true != isFalse', 'COMPAREBOOL !='],
         ['v:none == isNull', 'COMPARESPECIAL =='],
         ['v:none != isNull', 'COMPARESPECIAL !='],
+        ['"text" == isNull', 'COMPARENULL =='],
+        ['"text" != isNull', 'COMPARENULL !='],
 
         ['111 == aNumber', 'COMPARENR =='],
         ['111 != aNumber', 'COMPARENR !='],

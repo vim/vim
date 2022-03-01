@@ -712,6 +712,81 @@ def Test_expr4_equal()
   unlet g:notReached
 enddef
 
+def Test_expr4_compare_null()
+  g:null_dict = test_null_dict()
+  g:not_null_list = []
+  var lines =<< trim END
+      assert_true(test_null_blob() == v:null)
+      assert_true(v:null == test_null_blob())
+      assert_false(test_null_blob() != v:null)
+      assert_false(v:null != test_null_blob())
+
+      if has('channel')
+        assert_true(test_null_channel() == v:null)
+        assert_true(v:null == test_null_channel())
+        assert_false(test_null_channel() != v:null)
+        assert_false(v:null != test_null_channel())
+      endif
+
+      assert_true(test_null_dict() == v:null)
+      assert_true(v:null == test_null_dict())
+      assert_false(test_null_dict() != v:null)
+      assert_false(v:null != test_null_dict())
+
+      assert_true(g:null_dict == v:null)
+      assert_true(v:null == g:null_dict)
+      assert_false(g:null_dict != v:null)
+      assert_false(v:null != g:null_dict)
+
+      assert_true(test_null_function() == v:null)
+      assert_true(v:null == test_null_function())
+      assert_false(test_null_function() != v:null)
+      assert_false(v:null != test_null_function())
+
+      if has('job')
+        assert_true(test_null_job() == v:null)
+        assert_true(v:null == test_null_job())
+        assert_false(test_null_job() != v:null)
+        assert_false(v:null != test_null_job())
+      endif
+
+      assert_true(test_null_list() == v:null)
+      assert_true(v:null == test_null_list())
+      assert_false(test_null_list() != v:null)
+      assert_false(v:null != test_null_list())
+
+      assert_false(g:not_null_list == v:null)
+      assert_false(v:null == g:not_null_list)
+      assert_true(g:not_null_list != v:null)
+      assert_true(v:null != g:not_null_list)
+
+      assert_true(test_null_partial() == v:null)
+      assert_true(v:null == test_null_partial())
+      assert_false(test_null_partial() != v:null)
+      assert_false(v:null != test_null_partial())
+
+      assert_true(test_null_string() == v:null)
+      assert_true(v:null == test_null_string())
+      assert_false(test_null_string() != v:null)
+      assert_false(v:null != test_null_string())
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  unlet g:null_dict
+  unlet g:not_null_list
+
+  v9.CheckDefAndScriptFailure(['echo 123 == v:null'], 'E1072: Cannot compare number with special')
+  v9.CheckDefAndScriptFailure(['echo v:null == 123'], 'E1072: Cannot compare special with number')
+  v9.CheckDefAndScriptFailure(['echo 123 != v:null'], 'E1072: Cannot compare number with special')
+  v9.CheckDefAndScriptFailure(['echo v:null != 123'], 'E1072: Cannot compare special with number')
+  v9.CheckDefAndScriptFailure(['echo true == v:null'], 'E1072: Cannot compare bool with special')
+  v9.CheckDefAndScriptFailure(['echo v:null == true'], 'E1072: Cannot compare special with bool')
+  v9.CheckDefAndScriptFailure(['echo true != v:null'], 'E1072: Cannot compare bool with special')
+  v9.CheckDefAndScriptFailure(['echo v:null != true'], 'E1072: Cannot compare special with bool')
+  v9.CheckDefAndScriptFailure(['echo false == v:null'], 'E1072: Cannot compare bool with special')
+
+  v9.CheckDefExecAndScriptFailure(['echo [] == v:none'], ['E1072: Cannot compare list with special', 'E691: Can only compare List with List'])
+enddef
+
 def Test_expr4_wrong_type()
   for op in ['>', '>=', '<', '<=', '=~', '!~']
     v9.CheckDefExecAndScriptFailure([

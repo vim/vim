@@ -2816,29 +2816,33 @@ eval_variable(
 	    }
 
 	    // If a list or dict variable wasn't initialized, do it now.
-	    if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL)
+	    // Not for global variables, they are not declared.
+	    if (ht != &globvarht)
 	    {
-		tv->vval.v_dict = dict_alloc();
-		if (tv->vval.v_dict != NULL)
+		if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL)
 		{
-		    ++tv->vval.v_dict->dv_refcount;
-		    tv->vval.v_dict->dv_type = alloc_type(type);
+		    tv->vval.v_dict = dict_alloc();
+		    if (tv->vval.v_dict != NULL)
+		    {
+			++tv->vval.v_dict->dv_refcount;
+			tv->vval.v_dict->dv_type = alloc_type(type);
+		    }
 		}
-	    }
-	    else if (tv->v_type == VAR_LIST && tv->vval.v_list == NULL)
-	    {
-		tv->vval.v_list = list_alloc();
-		if (tv->vval.v_list != NULL)
+		else if (tv->v_type == VAR_LIST && tv->vval.v_list == NULL)
 		{
-		    ++tv->vval.v_list->lv_refcount;
-		    tv->vval.v_list->lv_type = alloc_type(type);
+		    tv->vval.v_list = list_alloc();
+		    if (tv->vval.v_list != NULL)
+		    {
+			++tv->vval.v_list->lv_refcount;
+			tv->vval.v_list->lv_type = alloc_type(type);
+		    }
 		}
-	    }
-	    else if (tv->v_type == VAR_BLOB && tv->vval.v_blob == NULL)
-	    {
-		tv->vval.v_blob = blob_alloc();
-		if (tv->vval.v_blob != NULL)
-		    ++tv->vval.v_blob->bv_refcount;
+		else if (tv->v_type == VAR_BLOB && tv->vval.v_blob == NULL)
+		{
+		    tv->vval.v_blob = blob_alloc();
+		    if (tv->vval.v_blob != NULL)
+			++tv->vval.v_blob->bv_refcount;
+		}
 	    }
 	    copy_tv(tv, rettv);
 	}
