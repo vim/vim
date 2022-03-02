@@ -1518,8 +1518,11 @@ ex_let_option(
 	{
 	    if (opt_type != gov_string || s != NULL)
 	    {
-		set_option_value(arg, n, s, scope);
+		char *err = set_option_value(arg, n, s, scope);
+
 		arg_end = p;
+		if (err != NULL)
+		    emsg(_(err));
 	    }
 	    else
 		emsg(_(e_string_required));
