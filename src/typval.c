@@ -1403,6 +1403,7 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    case VAR_JOB: return tv->vval.v_job == NULL;
 #endif
 	    case VAR_LIST: return tv->vval.v_list == NULL;
+	    case VAR_NUMBER: return tv->vval.v_number == 0;
 	    case VAR_PARTIAL: return tv->vval.v_partial == NULL;
 	    case VAR_STRING: return tv->vval.v_string == NULL;
 	    default: break;
