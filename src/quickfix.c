@@ -5013,6 +5013,8 @@ ex_make(exarg_T *eap)
     int		res;
     char_u	*au_name = NULL;
     int_u	save_qfid;
+    char_u	*errorformat = p_efm;
+    int		newlist = TRUE;
 
     // Redirect ":grep" to ":vimgrep" if 'grepprg' is "internal".
     if (grep_internal(eap->cmdidx))
@@ -5059,11 +5061,13 @@ ex_make(exarg_T *eap)
 
     incr_quickfix_busy();
 
-    res = qf_init(wp, fname, (eap->cmdidx != CMD_make
-			    && eap->cmdidx != CMD_lmake) ? p_gefm : p_efm,
-					   (eap->cmdidx != CMD_grepadd
-					    && eap->cmdidx != CMD_lgrepadd),
-					   qf_cmdtitle(*eap->cmdlinep), enc);
+    if (eap->cmdidx != CMD_make && eap->cmdidx != CMD_lmake)
+	errorformat = p_gefm;
+    if (eap->cmdidx == CMD_grepadd || eap->cmdidx == CMD_lgrepadd)
+	newlist = FALSE;
+
+    res = qf_init(wp, fname, errorformat, newlist, qf_cmdtitle(*eap->cmdlinep),
+									enc);
     if (wp != NULL)
     {
 	qi = GET_LOC_LIST(wp);
