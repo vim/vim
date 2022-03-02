@@ -6546,9 +6546,16 @@ func Test_type()
     call assert_true(v:true != v:false)
 
     call assert_true(v:null == 0)
+    call assert_false(v:null == 1)
     call assert_false(v:null != 0)
     call assert_true(v:none == 0)
+    call assert_false(v:none == 1)
     call assert_false(v:none != 0)
+    if has('float')
+      call assert_true(v:null == 0.0)
+      call assert_false(v:null == 0.1)
+      call assert_false(v:null != 0.0)
+    endif
 
     call assert_true(v:false is v:false)
     call assert_true(v:true is v:true)
