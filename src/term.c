@@ -197,8 +197,7 @@ static char_u *vim_tgetstr(char *s, char_u **pp);
 static int  detected_8bit = FALSE;	// detected 8-bit terminal
 
 #if (defined(UNIX) || defined(VMS))
-static int focus_mode = FALSE; // xterm's "focus reporting" availability
-static int focus_state = FALSE; // TRUE if the terminal window gains focus
+static int focus_state = MAYBE; // TRUE if the Vim window has focus
 #endif
 
 #ifdef FEAT_TERMRESPONSE
@@ -2047,7 +2046,7 @@ set_termname(char_u *term)
 #endif
 
 #ifdef FEAT_MOUSE_XTERM
-    // focus reporting is supported by xterm compatible terminals and tmux.
+    // Focus reporting is supported by xterm compatible terminals and tmux.
     if (use_xterm_like_mouse(term))
     {
 	char_u name[3];
@@ -2062,10 +2061,12 @@ set_termname(char_u *term)
 	name[1] = KE_FOCUSLOST;
 	add_termcode(name, (char_u *)"\033[O", FALSE);
 
-	focus_mode = TRUE;
-	focus_state = TRUE;
 	need_gather = TRUE;
     }
+#endif
+#if (defined(UNIX) || defined(VMS))
+    // First time after setting 'term' a focus event is always reported.
+    focus_state = MAYBE;
 #endif
 
 #ifdef USE_TERM_CONSOLE
@@ -3633,7 +3634,7 @@ starttermcap(void)
 
 #if defined(UNIX) || defined(VMS)
 	// Enable xterm's focus reporting mode when 'esckeys' is set.
-	if (focus_mode && p_ek && *T_FE != NUL)
+	if (p_ek && *T_FE != NUL)
 	    out_str(T_FE);
 #endif
 
@@ -3691,7 +3692,7 @@ stoptermcap(void)
 
 #if defined(UNIX) || defined(VMS)
 	// Disable xterm's focus reporting mode if 'esckeys' is set.
-	if (focus_mode && p_ek && *T_FD != NUL)
+	if (p_ek && *T_FD != NUL)
 	    out_str(T_FD);
 #endif
 
@@ -5812,11 +5813,10 @@ check_termcode(
 	 * Handle FocusIn/FocusOut event sequences reported by XTerm.
 	 * (CSI I/CSI O)
 	 */
-	if (focus_mode
+	if (key_name[0] == KS_EXTRA
 # ifdef FEAT_GUI
 		&& !gui.in_use
 # endif
-		&& key_name[0] == KS_EXTRA
 	    )
 	{
 	    if (key_name[1] == KE_FOCUSGAINED)
