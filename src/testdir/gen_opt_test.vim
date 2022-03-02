@@ -15,7 +15,6 @@ let script = [
       \ '',
       \ 'let save_columns = &columns',
       \ 'let save_lines = &lines',
-      \ 'let save_term = &term',
       \ 'set t_WS=',
       \ ]
 
@@ -224,7 +223,6 @@ while 1
   endif
 endwhile
 
-call add(script, 'let &term = save_term')
 call add(script, 'let &columns = save_columns')
 call add(script, 'let &lines = save_lines')
 
