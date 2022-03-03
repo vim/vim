@@ -1037,9 +1037,10 @@ win_lbr_chartabsize(
      * May have to add something for 'breakindent' and/or 'showbreak'
      * string at start of line.
      * Set *headp to the size of what we add.
+     * Do not use 'showbreak' at the NUL after the text.
      */
     added = 0;
-    sbr = get_showbreak_value(wp);
+    sbr = c == NUL ? empty_option : get_showbreak_value(wp);
     if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && col != 0)
     {
 	colnr_T sbrlen = 0;
