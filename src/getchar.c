@@ -2424,6 +2424,13 @@ handle_mapping(
     int		keylen = *keylenp;
     int		i;
     int		local_State = get_real_state();
+    int		is_plug_map = FALSE;
+
+    // If typehead starts with <Plug> then remap, even for a "noremap" mapping.
+    if (typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
+	    && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
+	    && typebuf.tb_buf[typebuf.tb_off + 2] == KE_PLUG)
+	is_plug_map = TRUE;
 
     /*
      * Check for a mappable key sequence.
@@ -2441,7 +2448,7 @@ handle_mapping(
     tb_c1 = typebuf.tb_buf[typebuf.tb_off];
     if (no_mapping == 0 && is_maphash_valid()
 	    && (no_zero_mapping == 0 || tb_c1 != '0')
-	    && (typebuf.tb_maplen == 0
+	    && (typebuf.tb_maplen == 0 || is_plug_map
 		|| (p_remap
 		    && (typebuf.tb_noremap[typebuf.tb_off]
 				    & (RM_NONE|RM_ABBR)) == 0))
@@ -2562,7 +2569,7 @@ handle_mapping(
 		    for (n = mlen; --n >= 0; )
 			if (*s++ & (RM_NONE|RM_ABBR))
 			    break;
-		    if (n >= 0)
+		    if (!is_plug_map && n >= 0)
 			continue;
 
 		    if (keylen > typebuf.tb_len)
