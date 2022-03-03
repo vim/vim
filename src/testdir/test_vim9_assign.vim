@@ -2480,23 +2480,6 @@ def Test_abort_after_error()
   delete('Xtestscript')
 enddef
 
-func Test_declare_command_line()
-  CheckRunVimInTerminal
-  call Run_Test_declare_command_line()
-endfunc
-
-def Run_Test_declare_command_line()
-  # On the command line the type is parsed but not used.
-  # To get rid of the script context have to run this in another Vim instance.
-  var buf = g:RunVimInTerminal('', {'rows': 6})
-  term_sendkeys(buf, ":vim9 var abc: list<list<number>> = [ [1, 2, 3], [4, 5, 6] ]\<CR>")
-  g:TermWait(buf)
-  term_sendkeys(buf, ":echo abc\<CR>")
-  g:TermWait(buf)
-  g:WaitForAssert(() => assert_match('\[\[1, 2, 3\], \[4, 5, 6\]\]', term_getline(buf, 6)))
-  g:StopVimInTerminal(buf)
-enddef
-
 def Test_using_s_var_in_function()
   var lines =<< trim END
       vim9script

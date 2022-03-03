@@ -2780,14 +2780,15 @@ EXTERN char e_no_white_space_allowed_after_dot[]
 	INIT(= N_("E1074: No white space allowed after dot"));
 EXTERN char e_namespace_not_supported_str[]
 	INIT(= N_("E1075: Namespace not supported: %s"));
-#ifndef FEAT_FLOAT
+# ifndef FEAT_FLOAT
 EXTERN char e_this_vim_is_not_compiled_with_float_support[]
 	INIT(= N_("E1076: This Vim is not compiled with float support"));
-#endif
+# endif
 EXTERN char e_missing_argument_type_for_str[]
 	INIT(= N_("E1077: Missing argument type for %s"));
 // E1078 unused
-// E1079 unused
+EXTERN char e_cannot_declare_variable_on_command_line[]
+	INIT(= N_("E1079: Cannot declare a variable on the command line"));
 EXTERN char e_invalid_assignment[]
 	INIT(= N_("E1080: Invalid assignment"));
 EXTERN char e_cannot_unlet_str[]
