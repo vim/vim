@@ -1495,8 +1495,9 @@ screen_puts_len(
     int		textlen,
     int		row,
     int		col,
-    int		attr)
+    int		attr_arg)
 {
+    int		attr = attr_arg;
     unsigned	off;
     char_u	*ptr = text;
     int		len = textlen;
@@ -1722,8 +1723,10 @@ screen_puts_len(
 	    if (clear_next_cell)
 	    {
 		// This only happens at the end, display one space next.
+		// Keep the attribute from before.
 		ptr = (char_u *)" ";
 		len = -1;
+		attr = ScreenAttrs[off];
 	    }
 	}
 	else
