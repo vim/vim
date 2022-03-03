@@ -1827,6 +1827,16 @@ ex_catch(exarg_T *eap)
 	    cstack->cs_flags[idx] |= CSF_ACTIVE | CSF_CAUGHT;
 	    did_emsg = got_int = did_throw = FALSE;
 	    catch_exception((except_T *)cstack->cs_exception[idx]);
+
+	    if (cstack->cs_idx >= 0
+			       && (cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
+	    {
+		// Variables declared in the previous block can no longer be
+		// used.
+		leave_block(cstack);
+		enter_block(cstack);
+	    }
+
 	    // It's mandatory that the current exception is stored in the cstack
 	    // so that it can be discarded at the next ":catch", ":finally", or
 	    // ":endtry" or when the catch clause is left by a ":continue",
@@ -1929,6 +1939,15 @@ ex_finally(exarg_T *eap)
 	     * try block or catch clause.
 	     */
 	    cleanup_conditionals(cstack, CSF_TRY, FALSE);
+
+	    if (cstack->cs_idx >= 0
+			       && (cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
+	    {
+		// Variables declared in the previous block can no longer be
+		// used.
+		leave_block(cstack);
+		enter_block(cstack);
+	    }
 
 	    /*
 	     * Make did_emsg, got_int, did_throw pending.  If set, they overrule
