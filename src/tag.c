@@ -1580,6 +1580,7 @@ find_tagfunc_tags(
  * State information used during a tag search
  */
 typedef struct {
+    char_u	*tag_fname;		// name of tag file
     pat_T	orgpat;			// holds unconverted pattern info
 #ifdef FEAT_MULTI_LANG
     char_u	*help_lang_find;	// lang to be found
@@ -1610,6 +1611,7 @@ findtags_state_init(findtags_state_T *st, char_u *pat, int mincount)
 {
     int		mtt;
 
+    st->tag_fname = alloc(MAXPATHL + 1);
     st->orgpat.pat = pat;
     st->orgpat.len = (int)STRLEN(pat);
     st->orgpat.regmatch.regprog = NULL;
@@ -1634,7 +1636,8 @@ findtags_state_init(findtags_state_T *st, char_u *pat, int mincount)
     }
 
     // check for out of memory situation
-    if (st->lbuf == NULL
+    if (st->tag_fname == NULL
+	    || st->lbuf == NULL
 #ifdef FEAT_EMACS_TAGS
 	    || st->ebuf == NULL
 #endif
@@ -1645,7 +1648,7 @@ findtags_state_init(findtags_state_T *st, char_u *pat, int mincount)
 }
 
 /*
- * Search for tags in the 'tag_fname' tags file.
+ * Search for tags matching 'st->orgpat.pat' in the 'st->tag_fname' tags file.
  * Information needed to search for the tags is in the 'st' state structure.
  * The matching tags are returned in 'st'.
  * Returns OK if successfully processed the file and FAIL on memory allocation
@@ -1653,12 +1656,11 @@ findtags_state_init(findtags_state_T *st, char_u *pat, int mincount)
  */
     static int
 find_tags_in_file(
-    char_u		*tag_fname,
     findtags_state_T	*st,
     int			flags,
     char_u		*buf_ffname)
 {
-    FILE       *fp;
+    FILE       *fp = NULL;
     tagptrs_T	tagp;
     int		is_static;		// current tag line is static
     int		is_current;		// file name matches
@@ -1668,7 +1670,7 @@ find_tags_in_file(
     int		i;
 #ifdef FEAT_MULTI_LANG
     int		help_pri = 0;
-    char_u	help_lang[3];		// lang of current tags file
+    char_u	help_lang[3] = "";	// lang of current tags file
 #endif
 #ifdef FEAT_TAG_BINS
     int		tag_file_sorted = NUL;	// !_TAG_FILE_SORTED value
@@ -1770,9 +1772,9 @@ find_tags_in_file(
 	    {
 		// Prefer help tags according to 'helplang'.  Put the
 		// two-letter language name in help_lang[].
-		i = (int)STRLEN(tag_fname);
-		if (i > 3 && tag_fname[i - 3] == '-')
-		    STRCPY(help_lang, tag_fname + i - 2);
+		i = (int)STRLEN(st->tag_fname);
+		if (i > 3 && st->tag_fname[i - 3] == '-')
+		    STRCPY(help_lang, st->tag_fname + i - 2);
 		else
 		    STRCPY(help_lang, "en");
 	    }
@@ -1815,13 +1817,13 @@ find_tags_in_file(
 	}
 #endif
 
-	if ((fp = mch_fopen((char *)tag_fname, "r")) == NULL)
+	if ((fp = mch_fopen((char *)st->tag_fname, "r")) == NULL)
 	    return OK;
 
 	if (p_verbose >= 5)
 	{
 	    verbose_enter();
-	    smsg(_("Searching tags file %s"), tag_fname);
+	    smsg(_("Searching tags file %s"), st->tag_fname);
 	    verbose_leave();
 	}
     }
@@ -1955,7 +1957,7 @@ find_tags_in_file(
 		    --incstack_idx;
 		    fclose(fp);	// end of this file ...
 		    fp = incstack[incstack_idx].fp;
-		    STRCPY(tag_fname, incstack[incstack_idx].etag_fname);
+		    STRCPY(st->tag_fname, incstack[incstack_idx].etag_fname);
 		    vim_free(incstack[incstack_idx].etag_fname);
 		    is_etag = 1;	// (only etags can include)
 		    continue;	// ... continue with parent file
@@ -2024,7 +2026,7 @@ line_read_in:
 		{
 		    // Save current "fp" and "tag_fname" in the stack.
 		    if ((incstack[incstack_idx].etag_fname =
-				vim_strsave(tag_fname)) != NULL)
+				vim_strsave(st->tag_fname)) != NULL)
 		    {
 			char_u *fullpath_ebuf;
 
@@ -2034,7 +2036,7 @@ line_read_in:
 			// Figure out "tag_fname" and "fp" to use for
 			// included file.
 			fullpath_ebuf = expand_tag_fname(st->ebuf,
-				tag_fname, FALSE);
+				st->tag_fname, FALSE);
 			if (fullpath_ebuf != NULL)
 			{
 			    fp = mch_fopen((char *)fullpath_ebuf, "r");
@@ -2042,7 +2044,7 @@ line_read_in:
 			    {
 				if (STRLEN(fullpath_ebuf) > LSIZE)
 				    semsg(_(e_tag_file_path_truncated_for_str), st->ebuf);
-				vim_strncpy(tag_fname, fullpath_ebuf,
+				vim_strncpy(st->tag_fname, fullpath_ebuf,
 					MAXPATHL);
 				++incstack_idx;
 				is_etag = 0; // we can include anything
@@ -2185,7 +2187,11 @@ parse_line:
 	    vim_free(st->lbuf);
 	    st->lbuf = alloc(st->lbuf_size);
 	    if (st->lbuf == NULL)
+	    {
+		if (fp != NULL)
+		    fclose(fp);
 		return FAIL;
+	    }
 
 #ifdef FEAT_TAG_BINS
 	    if (state == TS_STEP_FORWARD)
@@ -2424,7 +2430,7 @@ parse_line:
 #ifdef FEAT_EMACS_TAGS
 			is_etag,
 #endif
-			tagp.fname, tagp.fname_end, tag_fname,
+			tagp.fname, tagp.fname_end, st->tag_fname,
 			buf_ffname);
 #ifdef FEAT_EMACS_TAGS
 		is_static = FALSE;
@@ -2533,7 +2539,7 @@ parse_line:
 	    }
 	    else
 	    {
-		size_t tag_fname_len = STRLEN(tag_fname);
+		size_t tag_fname_len = STRLEN(st->tag_fname);
 #ifdef FEAT_EMACS_TAGS
 		size_t ebuf_len = 0;
 #endif
@@ -2561,7 +2567,7 @@ parse_line:
 		{
 		    p = mfp;
 		    p[0] = mtt + 1;
-		    STRCPY(p + 1, tag_fname);
+		    STRCPY(p + 1, st->tag_fname);
 #ifdef BACKSLASH_IN_FILENAME
 		    // Ignore differences in slashes, avoid adding
 		    // both path/file and path\file.
@@ -2632,7 +2638,7 @@ parse_line:
 
     if (line_error)
     {
-	semsg(_(e_format_error_in_tags_file_str), tag_fname);
+	semsg(_(e_format_error_in_tags_file_str), st->tag_fname);
 #ifdef FEAT_CSCOPE
 	if (!use_cscope)
 #endif
@@ -2660,7 +2666,7 @@ parse_line:
     tag_file_sorted = NUL;
     if (sort_error)
     {
-	semsg(_(e_tags_file_not_sorted_str), tag_fname);
+	semsg(_(e_tags_file_not_sorted_str), st->tag_fname);
 	sort_error = FALSE;
     }
 #endif
@@ -2763,7 +2769,6 @@ find_tags(
     char_u	*buf_ffname)		// name of buffer for priority
 {
     findtags_state_T	st;
-    char_u	*tag_fname;		// name of tag file
     tagname_T	tn;			// info for get_tagfname()
     int		first_file;		// trying first tag file
     int		retval = FAIL;		// return value
@@ -2811,20 +2816,11 @@ find_tags(
 
     help_save = curbuf->b_help;
 
-    /*
-     * Allocate memory for the buffers that are used
-     */
-    tag_fname = alloc(MAXPATHL + 1);
-
-    // check for out of memory situation
-    if (tag_fname == NULL)
-	goto findtag_end;
-
     if (findtags_state_init(&st, pat, mincount) == FAIL)
 	goto findtag_end;
 
 #ifdef FEAT_CSCOPE
-    STRCPY(tag_fname, "from cscope");	// for error messages
+    STRCPY(st.tag_fname, "from cscope");	// for error messages
 #endif
 
     /*
@@ -2918,10 +2914,10 @@ find_tags(
 #ifdef FEAT_CSCOPE
 	    use_cscope ||
 #endif
-		get_tagfname(&tn, first_file, tag_fname) == OK;
+		get_tagfname(&tn, first_file, st.tag_fname) == OK;
 							   first_file = FALSE)
       {
-	  if (find_tags_in_file(tag_fname, &st, flags, buf_ffname) == FAIL)
+	  if (find_tags_in_file(&st, flags, buf_ffname) == FAIL)
 	      goto findtag_end;
 	  if (st.stop_searching
 #ifdef FEAT_CSCOPE
@@ -2963,9 +2959,9 @@ find_tags(
     }
 
 findtag_end:
+    vim_free(st.tag_fname);
     vim_free(st.lbuf);
     vim_regfree(st.orgpat.regmatch.regprog);
-    vim_free(tag_fname);
 #ifdef FEAT_EMACS_TAGS
     vim_free(st.ebuf);
 #endif
