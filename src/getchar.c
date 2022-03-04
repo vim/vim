@@ -2598,7 +2598,7 @@ handle_mapping(
 	}
 
 	// If no partly match found, use the longest full match.
-	if (keylen != KEYLEN_PART_MAP)
+	if (keylen != KEYLEN_PART_MAP && mp_match != NULL)
 	{
 	    mp = mp_match;
 	    keylen = mp_match_len;
@@ -2643,7 +2643,7 @@ handle_mapping(
 	    max_mlen = mlen + 1;
     }
 
-    if ((mp == NULL || max_mlen >= mp_match_len) && keylen != KEYLEN_PART_MAP)
+    if ((mp == NULL || max_mlen > mp_match_len) && keylen != KEYLEN_PART_MAP)
     {
 	int	save_keylen = keylen;
 

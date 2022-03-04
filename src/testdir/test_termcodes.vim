@@ -2098,6 +2098,23 @@ func Test_modifyOtherKeys_mapped()
   set timeoutlen&
 endfunc
 
+func Test_modifyOtherKeys_ambiguous_mapping()
+  new
+  set timeoutlen=10
+  map <C-J> a
+  map <C-J>x <Nop>
+  call setline(1, 'x')
+
+  " CTRL-J b should have trigger the <C-J> mapping and then insert "b"
+  call feedkeys(GetEscCodeCSI27('J', 5) .. "b\<Esc>", 'Lx!')
+  call assert_equal('xb', getline(1))
+
+  unmap <C-J>
+  unmap <C-J>x
+  set timeoutlen&
+  bwipe!
+endfunc
+
 " Whether Shift-Tab sends "ESC [ Z" or "ESC [ 27 ; 2 ; 9 ~" is unpredictable,
 " both should work.
 func Test_modifyOtherKeys_shift_tab()
