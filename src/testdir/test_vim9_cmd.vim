@@ -1834,14 +1834,18 @@ def Test_no_space_after_command()
       g #pat#cmd
   END
   v9.CheckDefAndScriptFailure(lines, 'E1242:', 1)
+
+  new
+  setline(1, 'some pat')
   lines =<< trim END
-      g#pat#cmd
+      g#pat#print
   END
   v9.CheckDefAndScriptSuccess(lines)
   lines =<< trim END
-      g# pat#cmd
+      g# pat#print
   END
   v9.CheckDefAndScriptSuccess(lines)
+  bwipe!
 
   lines =<< trim END
       s /pat/repl
