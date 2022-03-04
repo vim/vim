@@ -921,16 +921,30 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		if ((STRNCMP(cmd, "++nested", 8) == 0 && VIM_ISWHITE(cmd[8])))
 		{
 		    if (nested)
+		    {
 			semsg(_(e_duplicate_argument_str), "++nested");
+			return;
+		    }
 		    nested = TRUE;
 		    cmd = skipwhite(cmd + 8);
 		}
 
-		// Check for the old "nested" flag.
+		// Check for the old "nested" flag in legacy script.
 		if (STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
 		{
+		    if (in_vim9script())
+		    {
+			// If there ever is a :nested command this error should
+			// be removed and "nested" accepted as the start of the
+			// command.
+			emsg(_(e_invalid_command_nested_did_you_mean_plusplus_nested));
+			return;
+		    }
 		    if (nested)
+		    {
 			semsg(_(e_duplicate_argument_str), "nested");
+			return;
+		    }
 		    nested = TRUE;
 		    cmd = skipwhite(cmd + 6);
 		}

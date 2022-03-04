@@ -2116,6 +2116,9 @@ func Test_autocmd_nested()
   close
   bwipe! somefile
 
+  " nested without ++ does not work in Vim9 script
+  call assert_fails('vim9cmd au WinNew * nested echo fails', 'E1078:')
+
   augroup Testing
     au!
   augroup END

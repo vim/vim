@@ -2786,7 +2786,10 @@ EXTERN char e_this_vim_is_not_compiled_with_float_support[]
 # endif
 EXTERN char e_missing_argument_type_for_str[]
 	INIT(= N_("E1077: Missing argument type for %s"));
-// E1078 unused
+#endif
+EXTERN char e_invalid_command_nested_did_you_mean_plusplus_nested[]
+	INIT(= N_("E1078: Invalid command \"nested\", did you mean \"++nested\"?"));
+#ifdef FEAT_EVAL
 EXTERN char e_cannot_declare_variable_on_command_line[]
 	INIT(= N_("E1079: Cannot declare a variable on the command line"));
 EXTERN char e_invalid_assignment[]
