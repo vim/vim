@@ -5001,9 +5001,19 @@ ex_global(exarg_T *eap)
 	else if (ndone == 0)
 	{
 	    if (type == 'v')
-		smsg(_("Pattern found in every line: %s"), pat);
+	    {
+		if (in_vim9script())
+		    semsg(_(e_pattern_found_in_every_line_str), pat);
+		else
+		    smsg(_("Pattern found in every line: %s"), pat);
+	    }
 	    else
-		smsg(_("Pattern not found: %s"), pat);
+	    {
+		if (in_vim9script())
+		    semsg(_(e_pattern_not_found_str), pat);
+		else
+		    smsg(_("Pattern not found: %s"), pat);
+	    }
 	}
 	else
 	{
