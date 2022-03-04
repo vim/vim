@@ -3589,32 +3589,37 @@ def Test_unsupported_commands()
   var lines =<< trim END
       ka
   END
-  v9.CheckDefFailure(lines, 'E476:')
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E492:')
+  v9.CheckDefAndScriptFailure(lines, ['E476:', 'E492:'])
 
   lines =<< trim END
       :1ka
   END
-  v9.CheckDefFailure(lines, 'E476:')
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E492:')
+  v9.CheckDefAndScriptFailure(lines, ['E476:', 'E492:'])
 
   lines =<< trim END
     t
   END
-  v9.CheckDefFailure(lines, 'E1100:')
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+  v9.CheckDefAndScriptFailure(lines, 'E1100:')
 
   lines =<< trim END
     x
   END
-  v9.CheckDefFailure(lines, 'E1100:')
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+  v9.CheckDefAndScriptFailure(lines, 'E1100:')
 
   lines =<< trim END
     xit
   END
-  v9.CheckDefFailure(lines, 'E1100:')
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+  v9.CheckDefAndScriptFailure(lines, 'E1100:')
+
+  lines =<< trim END
+    Print
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E476: Invalid command: Print', 'E492: Not an editor command: Print'])
+
+  lines =<< trim END
+    mode 4
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E476: Invalid command: mode 4', 'E492: Not an editor command: mode 4'])
 enddef
 
 def Test_mapping_line_number()

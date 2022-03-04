@@ -3752,6 +3752,10 @@ find_ex_command(
 		break;
 	    }
 
+	// :Print and :mode are not supported in Vim9 script
+	if (vim9 && (eap->cmdidx == CMD_mode || eap->cmdidx == CMD_Print))
+	    eap->cmdidx = CMD_SIZE;
+
 	// Do not recognize ":*" as the star command unless '*' is in
 	// 'cpoptions'.
 	if (eap->cmdidx == CMD_star && vim_strchr(p_cpo, CPO_STAR) == NULL)
