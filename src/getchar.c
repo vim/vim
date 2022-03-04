@@ -2331,7 +2331,7 @@ at_ctrl_x_key(void)
     int	    c = *p;
 
     if (typebuf.tb_len > 3
-	    && c == K_SPECIAL
+	    && (c == K_SPECIAL || c == CSI)  // CSI is used by the GUI
 	    && p[1] == KS_MODIFIER
 	    && (p[2] & MOD_MASK_CTRL))
 	c = p[3] & 0x1f;

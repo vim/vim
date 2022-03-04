@@ -1294,7 +1294,18 @@ func Test_z1_complete_no_history()
   exe "normal owh\<C-X>\<C-K>"
   exe "normal owh\<C-N>"
   call assert_equal(currmess, execute('messages'))
-  close!
+  bwipe!
+endfunc
+
+" A mapping is not used for the key after CTRL-X.
+func Test_no_mapping_for_ctrl_x_key()
+  new
+  inoremap <C-K> <Cmd>let was_mapped = 'yes'<CR>
+  setlocal dictionary=README.txt
+  call feedkeys("aexam\<C-X>\<C-K> ", 'xt')
+  call assert_equal('example ', getline(1))
+  call assert_false(exists('was_mapped'))
+  bwipe!
 endfunc
 
 " Test for different ways of setting the 'completefunc' option
