@@ -590,11 +590,7 @@ static char *(features[]) =
 #if defined(USE_SYSTEM) && defined(UNIX)
 	"+system()",
 #endif
-#ifdef FEAT_TAG_BINS
 	"+tag_binary",
-#else
-	"-tag_binary",
-#endif
 	"-tag_old_static",
 	"-tag_any_white",
 #ifdef FEAT_TCL

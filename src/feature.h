@@ -249,11 +249,6 @@
 #endif
 
 /*
- * +tag_binary		Can use a binary search for the tags file.
- */
-#define FEAT_TAG_BINS
-
-/*
  * +cscope		Unix only: Cscope support.
  */
 #if defined(UNIX) && defined(FEAT_BIG) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
