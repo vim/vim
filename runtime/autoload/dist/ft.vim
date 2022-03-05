@@ -182,7 +182,7 @@ export def FTent()
       break
     endif
     lnum += 1
-  endw
+  endwhile
   setf dtd
 enddef
 
@@ -482,7 +482,7 @@ export def FTprogress_asm()
       break
     endif
     lnum += 1
-  endw
+  endwhile
   setf progress
 enddef
 
@@ -509,7 +509,7 @@ export def FTprogress_pascal()
       break
     endif
     lnum += 1
-  endw
+  endwhile
   setf progress
 enddef
 
