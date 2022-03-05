@@ -755,15 +755,22 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 ex_var(exarg_T *eap)
 {
     char_u *p = eap->cmd;
+    int	    has_var;
 
     if (!in_vim9script())
     {
 	semsg(_(e_str_cannot_be_used_in_legacy_vim_script), ":var");
 	return;
     }
-    if (current_sctx.sc_sid == 0 && checkforcmd_noparen(&p, "var", 3))
+    has_var = checkforcmd_noparen(&p, "var", 3);
+    if (current_sctx.sc_sid == 0 && has_var)
     {
 	emsg(_(e_cannot_declare_variable_on_command_line));
+	return;
+    }
+    if (eap->arg > eap->cmd && !has_var)
+    {
+	emsg(_(e_must_use_var_instead_of_va));
 	return;
     }
     ex_let(eap);

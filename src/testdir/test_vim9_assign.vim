@@ -1965,6 +1965,11 @@ def Test_var_declaration_fails()
   v9.CheckDefFailure(['var foo.bar = 2'], 'E1087:')
   v9.CheckDefFailure(['var foo[3] = 2'], 'E1087:')
   v9.CheckDefFailure(['const foo: number'], 'E1021:')
+
+  lines =<< trim END
+      va foo = 123
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1065:', 1)
 enddef
 
 def Test_var_declaration_inferred()

@@ -2762,7 +2762,8 @@ EXTERN char e_type_mismatch_for_v_variable[]
 EXTERN char e_yank_register_changed_while_using_it[]
 	INIT(= N_("E1064: Yank register changed while using it"));
 #ifdef FEAT_EVAL
-// E1065 unused
+EXTERN char e_must_use_var_instead_of_va[]
+	INIT(= N_("E1065: Must use :var instead of :va"));
 EXTERN char e_cannot_declare_a_register_str[]
 	INIT(= N_("E1066: Cannot declare a register: %s"));
 EXTERN char e_separator_mismatch_str[]
