@@ -3365,7 +3365,10 @@ endfunc
 def Run_test_reject_declaration()
   var buf = g:RunVimInTerminal('', {'rows': 6})
   term_sendkeys(buf, ":vim9cmd var x: number\<CR>")
-  g:VerifyScreenDump(buf, 'Test_vim9_reject_declaration', {})
+  g:VerifyScreenDump(buf, 'Test_vim9_reject_declaration_1', {})
+  term_sendkeys(buf, ":\<CR>")
+  term_sendkeys(buf, ":vim9cmd g:foo = 123 | echo g:foo\<CR>")
+  g:VerifyScreenDump(buf, 'Test_vim9_reject_declaration_2', {})
 
   # clean up
   g:StopVimInTerminal(buf)
