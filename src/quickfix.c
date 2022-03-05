@@ -8106,8 +8106,7 @@ hgr_search_file(
 
 	// Convert a line if 'encoding' is not utf-8 and
 	// the line contains a non-ASCII character.
-	if (p_vc->vc_type != CONV_NONE
-		&& has_non_ascii(IObuff))
+	if (p_vc->vc_type != CONV_NONE && has_non_ascii(IObuff))
 	{
 	    line = string_convert(p_vc, IObuff, NULL);
 	    if (line == NULL)

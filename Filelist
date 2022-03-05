@@ -198,7 +198,6 @@ SRC_ALL =	\
 		src/testdir/view_util.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test77a.ok \
-		src/testdir/test83-tags? \
 		src/testdir/test77a.com \
 		src/testdir/test_*.vim \
 		src/testdir/python2/*.py \
