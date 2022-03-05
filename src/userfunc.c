@@ -821,6 +821,7 @@ get_function_body(
 	{
 	    int	    c;
 	    char_u  *end;
+	    char_u  *cmd;
 
 	    // skip ':' and blanks
 	    for (p = theline; VIM_ISWHITE(*p) || *p == ':'; ++p)
@@ -828,12 +829,16 @@ get_function_body(
 
 	    // Check for "endfunction", "enddef" or "}".
 	    // When a ":" follows it must be a dict key; "enddef: value,"
+	    cmd = p;
 	    if (nesting_inline[nesting]
 		    ? *p == '}'
 		    : (checkforcmd(&p, nesting_def[nesting]
 						? "enddef" : "endfunction", 4)
 			&& *p != ':'))
 	    {
+		if (!nesting_inline[nesting] && nesting_def[nesting]
+								&& p < cmd + 6)
+		    semsg(_(e_command_cannot_be_shortened_str), "enddef");
 		if (nesting-- == 0)
 		{
 		    char_u *nextcmd = NULL;

@@ -3381,6 +3381,10 @@ def Test_minimal_command_name_length()
        'cat',
        'catc',
        'con',
+       'cont',
+       'conti',
+       'contin',
+       'continu',
        'el',
        'els',
        'elsei',
@@ -3391,8 +3395,16 @@ def Test_minimal_command_name_length()
        'endw',
        'endt',
        'endtr',
+       'exp',
+       'expo',
+       'expor',
        'fina',
        'finall',
+       'imp',
+       'impo',
+       'impor',
+       'retu',
+       'retur',
        'th',
        'thr',
        'thro',
@@ -3403,6 +3415,19 @@ def Test_minimal_command_name_length()
   for name in names
     v9.CheckDefAndScriptFailure([name .. ' '], 'E1065:')
   endfor
+
+  var lines =<< trim END
+      vim9script
+      def SomeFunc()
+      endd
+  END
+  v9.CheckScriptFailure(lines, 'E1065:')
+  lines =<< trim END
+      vim9script
+      def SomeFunc()
+      endde
+  END
+  v9.CheckScriptFailure(lines, 'E1065:')
 enddef
 
 def Test_unset_any_variable()

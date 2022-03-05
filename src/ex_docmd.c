@@ -3753,16 +3753,14 @@ find_ex_command(
 
 	// :Print and :mode are not supported in Vim9 script.
 	// Some commands cannot be shortened in Vim9 script.
-	// ":continue" needs at least ":cont", since ":con" looks weird.
 	if (vim9 && eap->cmdidx != CMD_SIZE)
 	{
 	    if (eap->cmdidx == CMD_mode || eap->cmdidx == CMD_Print)
 		eap->cmdidx = CMD_SIZE;
-	    else if (((cmdnames[eap->cmdidx].cmd_argt & EX_WHOLE)
+	    else if ((cmdnames[eap->cmdidx].cmd_argt & EX_WHOLE)
 			  && len < (int)STRLEN(cmdnames[eap->cmdidx].cmd_name))
-		      || (eap->cmdidx == CMD_continue && len < 4))
 	    {
-		semsg(_(e_command_cannot_be_shortened), eap->cmd);
+		semsg(_(e_command_cannot_be_shortened_str), eap->cmd);
 		eap->cmdidx = CMD_SIZE;
 	    }
 	}
