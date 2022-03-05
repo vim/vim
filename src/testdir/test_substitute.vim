@@ -811,6 +811,10 @@ func Test_sub_vi_compatibility()
   s\&green&
   call assert_equal('amber green yellow white green', getline(1))
   close!
+
+  call assert_fails('vim9cmd s\/white/', 'E1270:')
+  call assert_fails('vim9cmd s\?white?', 'E1270:')
+  call assert_fails('vim9cmd s\&white&', 'E1270:')
 endfunc
 
 " Test for substitute with the new text longer than the original text

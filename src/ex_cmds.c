@@ -3737,6 +3737,11 @@ ex_substitute(exarg_T *eap)
 	 */
 	if (*cmd == '\\')
 	{
+	    if (in_vim9script())
+	    {
+		emsg(_(e_cannot_use_s_backslash_in_vim9_script));
+		return;
+	    }
 	    ++cmd;
 	    if (vim_strchr((char_u *)"/?&", *cmd) == NULL)
 	    {
