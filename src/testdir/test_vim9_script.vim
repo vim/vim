@@ -460,7 +460,7 @@ def Test_try_catch_throw()
     endtry
   catch /wrong/
     add(l, 'caught')
-  fina
+  finally
     add(l, 'finally')
   endtry
   assert_equal(['1', 'caught', 'finally'], l)
@@ -1004,7 +1004,7 @@ enddef
 def s:ReturnFinally(): string
   try
     return 'intry'
-  finall
+  finally
     g:in_finally = 'finally'
   endtry
   return 'end'
@@ -3372,6 +3372,37 @@ def Run_test_reject_declaration()
 
   # clean up
   g:StopVimInTerminal(buf)
+enddef
+
+def Test_minimal_command_name_length()
+  var names = [
+       'cons',
+       'brea',
+       'cat',
+       'catc',
+       'con',
+       'el',
+       'els',
+       'elsei',
+       'endfo',
+       'en',
+       'end',
+       'endi',
+       'endw',
+       'endt',
+       'endtr',
+       'fina',
+       'finall',
+       'th',
+       'thr',
+       'thro',
+       'wh',
+       'whi',
+       'whil',
+      ]
+  for name in names
+    v9.CheckDefAndScriptFailure([name .. ' '], 'E1065:')
+  endfor
 enddef
 
 def Test_unset_any_variable()

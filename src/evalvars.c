@@ -768,11 +768,6 @@ ex_var(exarg_T *eap)
 	emsg(_(e_cannot_declare_variable_on_command_line));
 	return;
     }
-    if (eap->arg > eap->cmd && !has_var)
-    {
-	emsg(_(e_must_use_var_instead_of_va));
-	return;
-    }
     ex_let(eap);
 }
 

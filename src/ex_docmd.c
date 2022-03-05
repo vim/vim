@@ -3745,16 +3745,27 @@ find_ex_command(
 							    (size_t)len) == 0)
 	    {
 #ifdef FEAT_EVAL
-		if (full != NULL
-			   && cmdnames[(int)eap->cmdidx].cmd_name[len] == NUL)
+		if (full != NULL && cmdnames[eap->cmdidx].cmd_name[len] == NUL)
 		    *full = TRUE;
 #endif
 		break;
 	    }
 
-	// :Print and :mode are not supported in Vim9 script
-	if (vim9 && (eap->cmdidx == CMD_mode || eap->cmdidx == CMD_Print))
-	    eap->cmdidx = CMD_SIZE;
+	// :Print and :mode are not supported in Vim9 script.
+	// Some commands cannot be shortened in Vim9 script.
+	// ":continue" needs at least ":cont", since ":con" looks weird.
+	if (vim9 && eap->cmdidx != CMD_SIZE)
+	{
+	    if (eap->cmdidx == CMD_mode || eap->cmdidx == CMD_Print)
+		eap->cmdidx = CMD_SIZE;
+	    else if (((cmdnames[eap->cmdidx].cmd_argt & EX_WHOLE)
+			  && len < (int)STRLEN(cmdnames[eap->cmdidx].cmd_name))
+		      || (eap->cmdidx == CMD_continue && len < 4))
+	    {
+		semsg(_(e_command_cannot_be_shortened), eap->cmd);
+		eap->cmdidx = CMD_SIZE;
+	    }
+	}
 
 	// Do not recognize ":*" as the star command unless '*' is in
 	// 'cpoptions'.
@@ -3775,8 +3786,8 @@ find_ex_command(
 	    eap->cmdidx = CMD_SIZE;
     }
 
-    // ":fina" means ":finally" for backwards compatibility.
-    if (eap->cmdidx == CMD_final && p - eap->cmd == 4)
+    // ":fina" means ":finally" in legacy script, for backwards compatibility.
+    if (eap->cmdidx == CMD_final && p - eap->cmd == 4 && !vim9)
 	eap->cmdidx = CMD_finally;
 
 #ifdef FEAT_EVAL
