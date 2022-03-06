@@ -1194,8 +1194,9 @@ win_line(
 		      if (wp->w_p_cul
 			      && lnum == wp->w_cursor.lnum
 			      && (wp->w_p_culopt_flags & CULOPT_NBR)
-			      && (row == startrow
-				  || wp->w_p_culopt_flags & CULOPT_LINE))
+			      && (row == startrow + filler_lines
+				  || (row > startrow + filler_lines
+				      && wp->w_p_culopt_flags & CULOPT_LINE)))
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
 		      if (wp->w_p_rnu && lnum < wp->w_cursor.lnum
