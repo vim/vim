@@ -549,8 +549,6 @@ func Test_set_guifontwide()
       catch
         call assert_exception('E598:')
       endtry
-      " Set it to an invalid value brutally for preparation.
-      let &guifontset = '-*-notexist-*'
 
       " Case 2-1: Automatic selection
       set guifontwide=
