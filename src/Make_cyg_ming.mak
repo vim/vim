@@ -32,30 +32,31 @@
 # Set to TINY to make minimal version (few features).
 FEATURES=HUGE
 
-# set to yes for a debug build
+# Set to yes for a debug build.
 DEBUG=no
 
-# set to yes to create a mapfile
+# Set to yes to create a mapfile.
 #MAP=yes
 
-# set to yes to measure code coverage
+# Set to yes to measure code coverage.
 COVERAGE=no
 
-# better encryption support using libsodium
+# Better encryption support using libsodium.
+# Set to yes or specify the path to the libsodium directory to enable it.
 #SODIUM=yes
 
-# set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
+# Set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization.
 OPTIMIZE=MAXSPEED
 
-# set to yes to make gvim, no for vim
+# Set to yes to make gvim, no for vim.
 GUI=yes
 
-# set to yes to enable the DLL support (EXPERIMENTAL).
+# Set to yes to enable the DLL support (EXPERIMENTAL).
 # Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
 # "GUI" should be also set to "yes".
 #VIMDLL=yes
 
-# set to no if you do not want to use DirectWrite (DirectX)
+# Set to no if you do not want to use DirectWrite (DirectX).
 # MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
 DIRECTX=yes
 
@@ -524,10 +525,6 @@ CXXFLAGS = -std=gnu++11
 WINDRES_FLAGS =
 EXTRA_LIBS =
 
-ifdef SODIUM
-DEFINES += -DHAVE_SODIUM
-endif
-
 ifdef GETTEXT
 DEFINES += -DHAVE_GETTEXT -DHAVE_LOCALE_H
 GETTEXTINCLUDE = $(GETTEXT)/include
@@ -671,7 +668,11 @@ DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
  endif
 endif
 
-ifeq ($(SODIUM),yes)
+ifdef SODIUM
+DEFINES += -DHAVE_SODIUM
+ ifneq ($(SODIUM),yes)
+CFLAGS += -I $(SODIUM)/include
+ endif
  ifndef DYNAMIC_SODIUM
 DYNAMIC_SODIUM=yes
  endif
