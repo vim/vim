@@ -354,6 +354,8 @@ win_line(
 #if defined(FEAT_DIFF) || defined(FEAT_SIGNS)
     int		filler_lines = 0;	// nr of filler lines to be drawn
     int		filler_todo = 0;	// nr of filler lines still to do + 1
+#else
+# define filler_lines 0
 #endif
 #ifdef FEAT_DIFF
     hlf_T	diff_hlf = (hlf_T)0;	// type of diff highlighting
@@ -1107,10 +1109,7 @@ win_line(
 		// Display the absolute or relative line number. After the
 		// first fill with blanks when the 'n' flag isn't in 'cpo'
 		if ((wp->w_p_nu || wp->w_p_rnu)
-			&& (row == startrow
-#ifdef FEAT_DIFF
-			    + filler_lines
-#endif
+			&& (row == startrow + filler_lines
 			    || vim_strchr(p_cpo, CPO_NUMCOL) == NULL))
 		{
 #ifdef FEAT_SIGNS
@@ -1127,11 +1126,7 @@ win_line(
 #endif
 		    {
 		      // Draw the line number (empty space after wrapping).
-		      if (row == startrow
-#ifdef FEAT_DIFF
-			    + filler_lines
-#endif
-			    )
+		      if (row == startrow + filler_lines)
 		      {
 			long num;
 			char *fmt = "%*ld ";
