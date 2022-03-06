@@ -3400,6 +3400,8 @@ def Test_minimal_command_name_length()
        'expor',
        'fina',
        'finall',
+       'fini',
+       'finis',
        'imp',
        'impo',
        'impor',
