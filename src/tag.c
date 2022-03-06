@@ -1270,7 +1270,6 @@ do_tags(exarg_T *eap UNUSED)
 	msg_puts("\n>");
 }
 
-#ifdef FEAT_TAG_BINS
 /*
  * Compare two strings, for length "len", ignoring case the ASCII way.
  * return 0 for match, < 0 for smaller, > 0 for bigger
@@ -1294,7 +1293,6 @@ tag_strnicmp(char_u *s1, char_u *s2, size_t len)
     }
     return 0;				// strings match
 }
-#endif
 
 /*
  * Structure to hold info about the tag pattern being used.
@@ -1592,9 +1590,7 @@ typedef struct {
     int		did_open;		// did open a tag file
     int		mincount;		// MAXCOL: find all matches
 					// other: minimal number of matches
-#ifdef FEAT_TAG_BINS
     int		linear;			// do a linear search
-#endif
     char_u     *lbuf;			// line buffer
     int		lbuf_size;		// length of lbuf
 #ifdef FEAT_EMACS_TAGS
@@ -1960,10 +1956,8 @@ tags_file_hdr_parse(findtags_state_T *st, vimconv_T *vcp, int *sorted_file)
 	return FALSE;
 
     // Read header line.
-#ifdef FEAT_TAG_BINS
     if (STRNCMP(st->lbuf, "!_TAG_FILE_SORTED\t", 18) == 0)
 	*sorted_file = st->lbuf[18];
-#endif
     if (STRNCMP(st->lbuf, "!_TAG_FILE_ENCODING\t", 20) == 0)
     {
 	// Prepare to convert every line from the specified
@@ -2264,23 +2258,18 @@ find_tags_in_file(
     int		help_pri = 0;
     char_u	help_lang[3] = "";	// lang of current tags file
 #endif
-#ifdef FEAT_TAG_BINS
     int		tag_file_sorted = NUL;	// !_TAG_FILE_SORTED value
     off_T	filesize;
     int		tagcmp;
     off_T	offset;
-#endif
     enum
     {
 	TS_START,		// at start of file
-	TS_LINEAR		// linear searching forward, till EOF
-#ifdef FEAT_TAG_BINS
-	, TS_BINARY,		// binary searching
+	TS_LINEAR,		// linear searching forward, till EOF
+	TS_BINARY,		// binary searching
 	TS_SKIP_BACK,		// skipping backwards
 	TS_STEP_FORWARD		// stepping forwards
-#endif
     } state;			// Current search state
-#ifdef FEAT_TAG_BINS
     struct tag_search_info	// Binary search file offsets
     {
 	off_T	low_offset;	// offset for first char of first line that
@@ -2293,7 +2282,6 @@ find_tags_in_file(
 	int	low_char;	// first char at low_offset
 	int	high_char;	// first char at high_offset
     } search_info;
-#endif
 
     int		cmplen;
     int		match;		// matches
@@ -2305,11 +2293,9 @@ find_tags_in_file(
 
     hash_T	hash = 0;
 
-#ifdef FEAT_TAG_BINS
     int		sort_error = FALSE;		// tags file not sorted
     int		sortic = FALSE;			// tag file sorted in nocase
     int		noic = (flags & TAG_NOIC);
-#endif
     int		line_error = FALSE;		// syntax error
     int		has_re = (flags & TAG_REGEXP);	// regexp used
 #ifdef FEAT_CSCOPE
@@ -2319,11 +2305,9 @@ find_tags_in_file(
 
     vimconv.vc_type = CONV_NONE;
 
-#ifdef FEAT_TAG_BINS
     // This is only to avoid a compiler warning for using search_info
     // uninitialised.
     CLEAR_FIELD(search_info);
-#endif
 
     // A file that doesn't exist is silently ignored.  Only when not a
     // single file is found, an error message is given (further on).
@@ -2359,12 +2343,10 @@ find_tags_in_file(
     // Read and parse the lines in the file one by one
     for (;;)
     {
-#ifdef FEAT_TAG_BINS
 	// check for CTRL-C typed, more often when jumping around
 	if (state == TS_BINARY || state == TS_SKIP_BACK)
 	    line_breakcheck();
 	else
-#endif
 	    fast_breakcheck();
 	if ((flags & TAG_INS_COMP))	// Double brackets for gcc
 	    ins_compl_check_keys(30, FALSE);
@@ -2382,7 +2364,6 @@ find_tags_in_file(
 	}
 	if (st->get_searchpat)
 	    goto line_read_in;
-#ifdef FEAT_TAG_BINS
 	// For binary search: compute the next offset to use.
 	if (state == TS_BINARY)
 	{
@@ -2449,7 +2430,6 @@ find_tags_in_file(
 	 * Not jumping around in the file: Read the next line.
 	 */
 	else
-#endif
 	{
 	    // skip empty and blank lines
 	    do
@@ -2460,9 +2440,7 @@ find_tags_in_file(
 		else
 #endif
 		{
-#ifdef FEAT_TAG_BINS
 		    search_info.curr_offset = vim_ftell(fp);
-#endif
 		    eof = vim_fgets(st->lbuf, st->lbuf_size, fp);
 		}
 	    } while (!eof && vim_isblankline(st->lbuf));
@@ -2525,7 +2503,6 @@ line_read_in:
 
 	    // Headers ends.
 
-#ifdef FEAT_TAG_BINS
 	    /*
 	     * When there is no tag head, or ignoring case, need to do a
 	     * linear search.
@@ -2561,11 +2538,7 @@ line_read_in:
 		st->linear = TRUE;
 		state = TS_LINEAR;
 	    }
-#else
-	    state = TS_LINEAR;
-#endif
 
-#ifdef FEAT_TAG_BINS
 	    // When starting a binary search, get the size of the file and
 	    // compute the first offset.
 	    if (state == TS_BINARY)
@@ -2591,7 +2564,6 @@ line_read_in:
 		}
 		continue;
 	    }
-#endif
 	}
 
 parse_line:
@@ -2615,14 +2587,12 @@ parse_line:
 		return FAIL;
 	    }
 
-#ifdef FEAT_TAG_BINS
 	    if (state == TS_STEP_FORWARD)
 		// Seek to the same position to read the same line again
 		vim_fseek(fp, search_info.curr_offset, SEEK_SET);
 	    // this will try the same thing again, make sure the offset is
 	    // different
 	    search_info.curr_offset = 0;
-#endif
 	    continue;
 	}
 
@@ -2659,7 +2629,6 @@ parse_line:
 	    else if (state == TS_LINEAR && st->orgpat.headlen != cmplen)
 		continue;
 
-#ifdef FEAT_TAG_BINS
 	    if (state == TS_BINARY)
 	    {
 		/*
@@ -2750,7 +2719,6 @@ parse_line:
 		}
 	    }
 	    else
-#endif
 		// skip this match if it can't match
 		if (MB_STRNICMP(tagp.tagname, st->orgpat.head, cmplen) != 0)
 		    continue;
@@ -2874,14 +2842,12 @@ parse_line:
     if (vimconv.vc_type != CONV_NONE)
 	convert_setup(&vimconv, NULL, NULL);
 
-#ifdef FEAT_TAG_BINS
     tag_file_sorted = NUL;
     if (sort_error)
     {
 	semsg(_(e_tags_file_not_sorted_str), st->tag_fname);
 	sort_error = FALSE;
     }
-#endif
 
     /*
      * Stop searching if sufficient tags have been found.
@@ -2983,9 +2949,7 @@ find_tags(
     tagname_T	tn;			// info for get_tagfname()
     int		first_file;		// trying first tag file
     int		retval = FAIL;		// return value
-#ifdef FEAT_TAG_BINS
     int		round;
-#endif
 
     int		save_emsg_off;
 
@@ -2995,10 +2959,8 @@ find_tags(
     char_u	*saved_pat = NULL;		// copy of pat[]
 #endif
 
-#ifdef FEAT_TAG_BINS
     int		findall = (mincount == MAXCOL || mincount == TAG_MANY);
 						// find all matching tags
-#endif
     int		has_re = (flags & TAG_REGEXP);	// regexp used
     int		noic = (flags & TAG_NOIC);
 #ifdef FEAT_CSCOPE
@@ -3101,15 +3063,11 @@ find_tags(
      * When the tag file is case-fold sorted, it is either one or the other.
      * Only ignore case when TAG_NOIC not used or 'ignorecase' set.
      */
-#ifdef FEAT_TAG_BINS
     st.orgpat.regmatch.rm_ic = ((p_ic || !noic)
 			&& (findall || st.orgpat.headlen == 0 || !p_tbs));
     for (round = 1; round <= 2; ++round)
     {
 	st.linear = (st.orgpat.headlen == 0 || !p_tbs || round == 2);
-#else
-	st.orgpat.regmatch.rm_ic = (p_ic || !noic);
-#endif
 
       /*
        * Try tag file names from tags option one by one.
@@ -3139,7 +3097,6 @@ find_tags(
 #endif
 	    tagname_free(&tn);
 
-#ifdef FEAT_TAG_BINS
 	// stop searching when already did a linear search, or when TAG_NOIC
 	// used, and 'ignorecase' not set or already did case-ignore search
 	if (st.stop_searching || st.linear || (!p_ic && noic) ||
@@ -3153,7 +3110,6 @@ find_tags(
 	// try another time while ignoring case
 	st.orgpat.regmatch.rm_ic = TRUE;
     }
-#endif
 
     if (!st.stop_searching)
     {

@@ -4382,7 +4382,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 
     if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s))
 					 || (is_funcref && trans_name == NULL))
-	semsg(_(e_invalid_argument_str), use_string ? tv_get_string(&argvars[0]) : s);
+	semsg(_(e_invalid_argument_str),
+				  use_string ? tv_get_string(&argvars[0]) : s);
     // Don't check an autoload name for existence here.
     else if (trans_name != NULL && (is_funcref
 			 ? find_func(trans_name, is_global) == NULL
@@ -6101,13 +6102,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"tag_binary",
-#ifdef FEAT_TAG_BINS
-		1
-#else
-		0
-#endif
-		},
+	{"tag_binary", 1},	// graduated feature
 	{"tcl",
 #if defined(FEAT_TCL) && !defined(DYNAMIC_TCL)
 		1
