@@ -109,9 +109,6 @@ endfunc
 
 func Test_quoteplus()
   CheckX11BasedGui
-  if has('gui_motif') || has('gui_athena')
-    throw "Skipped: quote plus register doesn't work in Motif/Athena"
-  endif
 
   let g:test_is_flaky = 1
 
@@ -150,9 +147,6 @@ endfunc
 
 func Test_gui_read_stdin()
   CheckUnix
-  if has('gui_motif') || has('gui_athena')
-    throw 'Skipped: reading from stdin fails in Motif/Athena GUI'
-  endif
 
   call writefile(['some', 'lines'], 'Xstdin')
   let script =<< trim END
@@ -779,13 +773,11 @@ func Test_menu()
   close
 
   " Check deleting menu doesn't cause trouble.
-  if !has('gui_athena')
-    aunmenu Help
-    if exists(':tlmenu')
-      tlunmenu Help
-    endif
-    call assert_fails('menu Help', 'E329:')
+  aunmenu Help
+  if exists(':tlmenu')
+    tlunmenu Help
   endif
+  call assert_fails('menu Help', 'E329:')
 endfunc
 
 func Test_set_guipty()
