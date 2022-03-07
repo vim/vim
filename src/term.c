@@ -3380,7 +3380,8 @@ win_new_shellsize(void)
     {
 	// If 'window' uses the whole screen, keep it using that.
 	// Don't change it when set with "-w size" on the command line.
-	if (p_window == old_Rows - 1 || (old_Rows == 0 && p_window == 0))
+	if (p_window == old_Rows - 1
+		    || (old_Rows == 0 && !option_was_set((char_u *)"window")))
 	    p_window = Rows - 1;
 	old_Rows = Rows;
 	shell_new_rows();	// update window sizes
