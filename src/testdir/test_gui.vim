@@ -109,6 +109,9 @@ endfunc
 
 func Test_quoteplus()
   CheckX11BasedGui
+  if has('gui_motif') || has('gui_athena')
+    throw "Skipped: quote plus register doesn't work in Motif/Athena"
+  endif
 
   let g:test_is_flaky = 1
 
@@ -147,6 +150,9 @@ endfunc
 
 func Test_gui_read_stdin()
   CheckUnix
+  if has('gui_motif') || has('gui_athena')
+    throw 'Skipped: reading from stdin fails in Motif/Athena GUI'
+  endif
 
   call writefile(['some', 'lines'], 'Xstdin')
   let script =<< trim END
@@ -773,11 +779,13 @@ func Test_menu()
   close
 
   " Check deleting menu doesn't cause trouble.
-  aunmenu Help
-  if exists(':tlmenu')
-    tlunmenu Help
+  if !has('gui_athena')
+    aunmenu Help
+    if exists(':tlmenu')
+      tlunmenu Help
+    endif
+    call assert_fails('menu Help', 'E329:')
   endif
-  call assert_fails('menu Help', 'E329:')
 endfunc
 
 func Test_set_guipty()
@@ -1364,6 +1372,9 @@ endfunc
 
 " Test for generating a GUI tabline event to select a tab page
 func Test_gui_tabline_event()
+  if has('gui_athena')
+    throw 'Skipped: tabline is not supported in Athena GUI'
+  endif
   %bw!
   edit Xfile1
   tabedit Xfile2
@@ -1391,6 +1402,9 @@ endfunc
 
 " Test for generating a GUI tabline menu event to execute an action
 func Test_gui_tabmenu_event()
+  if has('gui_athena')
+    throw 'Skipped: tabmenu is not supported in Athena GUI'
+  endif
   %bw!
 
   " Try to close the last tab page
@@ -1427,6 +1441,10 @@ endfunc
 
 " Test for find/replace text dialog event
 func Test_gui_findrepl()
+  " Find/Replace dialog is supported only on GTK, Motif and MS-Windows.
+  if !has('gui_gtk') && !has('gui_motif') && !has('gui_win32')
+    return
+  endif
   new
   call setline(1, ['one two one', 'Twoo One two oneo'])
 
