@@ -251,7 +251,7 @@ static struct {
 sodium_runtime_link_init(int verbose)
 {
     static HINSTANCE hsodium = NULL;
-    const char *libname = "libsodium.dll";
+    const char *libname = DYNAMIC_SODIUM_DLL;
     int i;
 
     if (hsodium != NULL)
@@ -270,7 +270,7 @@ sodium_runtime_link_init(int verbose)
 	if ((*sodium_funcname_table[i].ptr = symbol_from_dll(hsodium,
 			sodium_funcname_table[i].name)) == NULL)
 	{
-	    FreeLibrary(hsodium);
+	    close_dll(hsodium);
 	    hsodium = NULL;
 	    if (verbose)
 		semsg(_(e_could_not_load_library_function_str), sodium_funcname_table[i].name);
