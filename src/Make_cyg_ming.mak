@@ -670,14 +670,17 @@ endif
 
 ifdef SODIUM
 DEFINES += -DHAVE_SODIUM
- ifneq ($(SODIUM),yes)
+ ifeq ($(SODIUM),yes)
+SODIUM_DLL = libsodium-23.dll
+ else
+SODIUM_DLL = libsodium.dll
 CFLAGS += -I $(SODIUM)/include
  endif
  ifndef DYNAMIC_SODIUM
 DYNAMIC_SODIUM=yes
  endif
  ifeq ($(DYNAMIC_SODIUM),yes)
-DEFINES += -DDYNAMIC_SODIUM
+DEFINES += -DDYNAMIC_SODIUM -DDYNAMIC_SODIUM_DLL=\"$(SODIUM_DLL)\"
  else
 SODIUMLIB = -lsodium
  endif
