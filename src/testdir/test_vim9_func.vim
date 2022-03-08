@@ -3341,7 +3341,7 @@ def Test_partial_null_function()
   var lines =<< trim END
       var d: dict<func> = {f: null_function}
       var Ref = d.f
-      assert_equal('func', typename(Ref))
+      assert_equal('func(...): unknown', typename(Ref))
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef

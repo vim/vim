@@ -370,7 +370,9 @@ get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
     }
     else if (type1 == VAR_ANY || type2 == VAR_ANY
 	    || ((type1 == VAR_NUMBER || type1 == VAR_FLOAT)
-	      && (type2 == VAR_NUMBER || type2 == VAR_FLOAT)))
+			       && (type2 == VAR_NUMBER || type2 == VAR_FLOAT))
+	    || (type1 == VAR_FUNC && type2 == VAR_PARTIAL)
+	    || (type1 == VAR_PARTIAL && type2 == VAR_FUNC))
 	isntype = ISN_COMPAREANY;
     else if (type1 == VAR_SPECIAL || type2 == VAR_SPECIAL)
     {

@@ -5730,18 +5730,27 @@ func_has_abort(
 make_partial(dict_T *selfdict_in, typval_T *rettv)
 {
     char_u	*fname;
-    ufunc_T	*fp;
+    ufunc_T	*fp = NULL;
     char_u	fname_buf[FLEN_FIXED + 1];
     int		error;
     dict_T	*selfdict = selfdict_in;
 
-    if (rettv->v_type == VAR_PARTIAL && rettv->vval.v_partial->pt_func != NULL)
+    if (rettv->v_type == VAR_PARTIAL  && rettv->vval.v_partial != NULL
+				     && rettv->vval.v_partial->pt_func != NULL)
 	fp = rettv->vval.v_partial->pt_func;
     else
     {
 	fname = rettv->v_type == VAR_FUNC ? rettv->vval.v_string
+					 : rettv->vval.v_partial == NULL ? NULL
 					      : rettv->vval.v_partial->pt_name;
-	if (fname != NULL)
+	if (fname == NULL)
+	{
+	    // There is no point binding a dict to a NULL function, just create
+	    // a function reference.
+	    rettv->v_type = VAR_FUNC;
+	    rettv->vval.v_string = NULL;
+	}
+	else
 	{
 	    char_u	*tofree = NULL;
 
@@ -5752,8 +5761,7 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
 	}
     }
 
-    if ((fp != NULL && (fp->uf_flags & FC_DICT))
-		|| (rettv->v_type == VAR_FUNC && rettv->vval.v_string == NULL))
+    if (fp != NULL && (fp->uf_flags & FC_DICT))
     {
 	partial_T	*pt = ALLOC_CLEAR_ONE(partial_T);
 

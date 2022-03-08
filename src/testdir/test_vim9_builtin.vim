@@ -1687,6 +1687,7 @@ def Test_getenv()
   endif
   $SOMEENVVAR = 'some'
   assert_equal('some', getenv('SOMEENVVAR'))
+  assert_notequal(null, getenv('SOMEENVVAR'))
   unlet $SOMEENVVAR
   getenv('')->assert_equal(v:null)
 enddef
@@ -4398,7 +4399,7 @@ def Test_typename()
   if has('float')
     assert_equal('func([unknown], [unknown]): float', typename(function('pow')))
   endif
-  assert_equal('func', test_null_partial()->typename())
+  assert_equal('func(...): unknown', test_null_partial()->typename())
   assert_equal('list<unknown>', test_null_list()->typename())
   assert_equal('dict<unknown>', test_null_dict()->typename())
   if has('job')

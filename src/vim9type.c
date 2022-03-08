@@ -420,6 +420,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	}
 	else
 	    name = tv->vval.v_string;
+	if (name == NULL && ufunc == NULL)
+	    return &t_func_unknown;
 	if (name != NULL)
 	{
 	    int idx = find_internal_func(name);
