@@ -21,8 +21,8 @@
 #	the first column of a line is removed.
 #	- If you want a version of Vim that is small and starts up quickly,
 #	  you might want to disable the GUI, X11, Perl, Python and Tcl.
-#	- Uncomment the line with --disable-gui if you have Motif, GTK and/or
-#	  Athena but don't want to make gvim (the GUI version of Vim with nice
+#	- Uncomment the line with --disable-gui if you have Motif and/or GTK
+#	  but don't want to make gvim (the GUI version of Vim with nice
 #	  menus and scrollbars, but makes Vim bigger and startup slower).
 #	- Uncomment --disable-darwin if on Mac OS X but you want to compile a
 #	  Unix version.
@@ -329,7 +329,7 @@ CClink = $(CC)
 
 # GUI - For creating Vim with GUI (gvim) (B)
 # Uncomment this line when you don't want to get the GUI version, although you
-# have GTK, Motif and/or Athena.  Also use --without-x if you don't want X11
+# have GTK and/or Motif.  Also use --without-x if you don't want X11
 # at all.
 #CONF_OPT_GUI = --disable-gui
 
@@ -343,12 +343,11 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gnome-check
 #CONF_OPT_GUI = --disable-gtk3-check
 #CONF_OPT_GUI = --disable-motif-check
-#CONF_OPT_GUI = --disable-athena-check
 #CONF_OPT_GUI = --disable-nextaw-check
 
 # Uncomment one of these lines to select a specific GUI to use.
 # When using "yes" or nothing, configure will use the first one found: GTK+,
-# Motif or Athena.
+# or Motif.
 #
 # GTK versions that are known not to work 100% are rejected.
 # Use "--disable-gtktest" to accept them anyway.
@@ -372,7 +371,6 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
-#CONF_OPT_GUI = --enable-gui=athena
 #CONF_OPT_GUI = --enable-gui=nextaw
 
 # Uncomment this line to run an individual test with gvim.
@@ -792,13 +790,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #CC = clcc
 #X_LIBS_DIR = -L/usr/openwin/lib -R/usr/openwin/lib
 #CFLAGS = -O
-
-### (9) Solaris 2.x with cc (SunPro), using Athena.
-###	Only required for compiling gui_at_sb.c.
-###	Symptom: "identifier redeclared: vim_XawScrollbarSetThumb"
-###	Use one of the lines (either Full ANSI or no ANSI at all)
-#CFLAGS = $(CFLAGS) -Xc
-#CFLAGS = $(CFLAGS) -Xs
 
 ### Solaris 2.3 with X11 and specific cc
 #CC=/opt/SUNWspro/bin/cc -O -Xa -v -R/usr/openwin/lib
@@ -1261,8 +1252,8 @@ LINKIT = @echo >/dev/null
 ### 'configure --enable-gui' can enable one of these for you if you did set
 ### a corresponding CONF_OPT_GUI above and have X11.
 ### Override configures choice by uncommenting all the following lines.
-### As they are, the GUI is disabled.  Replace "NONE" with "ATHENA" or "MOTIF"
-### for enabling the Athena or Motif GUI.
+### As they are, the GUI is disabled.  Replace "NONE" with "MOTIF"
+### for enabling the Motif GUI.
 #GUI_SRC	= $(NONE_SRC)
 #GUI_OBJ	= $(NONE_OBJ)
 #GUI_DEFS	= $(NONE_DEFS)
@@ -1312,36 +1303,6 @@ MOTIF_TARGETS	= installglinks
 MOTIF_MAN_TARGETS = yes
 MOTIF_TESTTARGET = gui
 MOTIF_BUNDLE	=
-
-### Athena GUI
-### Use Xaw3d to make the menus look a little bit nicer
-#XAW_LIB = -lXaw3d
-XAW_LIB = -lXaw
-
-### When using Xaw3d, uncomment/comment the following lines to also get the
-### scrollbars from Xaw3d.
-#ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
-#ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-#			objects/gui_beval.o objects/gui_at_fs.o
-#ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO) \
-#		    -Dvim_scrollbarWidgetClass=scrollbarWidgetClass \
-#		    -Dvim_XawScrollbarSetThumb=XawScrollbarSetThumb
-ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c \
-			gui_at_sb.c gui_at_fs.c
-ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/gui_beval.o \
-			objects/gui_at_sb.o objects/gui_at_fs.o
-ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO)
-
-ATHENA_IPATH	= $(GUI_INC_LOC)
-ATHENA_LIBS_DIR = $(GUI_LIB_LOC)
-ATHENA_LIBS1	= $(XAW_LIB)
-ATHENA_LIBS2	= -lXt
-ATHENA_INSTALL  = install_normal install_gui_extra
-ATHENA_TARGETS	= installglinks
-ATHENA_MAN_TARGETS = yes
-ATHENA_TESTTARGET = gui
-ATHENA_BUNDLE	=
 
 ### neXtaw GUI
 NEXTAW_LIB = -lneXtaw
@@ -2240,7 +2201,7 @@ os_vms.pro: os_vms.c
 # must use os_vms_conf.h for auto/config.h
 	mv auto/config.h auto/config.h.save
 	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_ATHENA -UFEAT_GUI_NEXTAW -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
+	$(CPROTO) -DVMS -UFEAT_GUI_NEXTAW -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 	rm auto/config.h
 	mv auto/config.h.save auto/config.h
@@ -2258,7 +2219,7 @@ notags:
 	-rm -f tags
 
 # Note: tags is made for the currently configured version, can't include both
-#	Motif and Athena GUI
+#	Motif and neXtaw GUI
 # You can ignore error messages for missing files.
 tags TAGS: notags
 	$(TAGPRG) $(TAGS_FILES)

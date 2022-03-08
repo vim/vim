@@ -834,7 +834,6 @@ enable_gtk2_check
 enable_gnome_check
 enable_gtk3_check
 enable_motif_check
-enable_athena_check
 enable_nextaw_check
 enable_gtktest
 with_gnome_includes
@@ -1509,12 +1508,11 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/haiku/photon/carbon
+  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/neXtaw/haiku/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
   --enable-motif-check    If auto-select GUI, check for Motif default=yes
-  --enable-athena-check   If auto-select GUI, check for Athena default=yes
   --enable-nextaw-check   If auto-select GUI, check for neXtaw default=yes
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
@@ -1523,7 +1521,7 @@ Optional Features:
   --disable-canberra      Do not use libcanberra.
   --disable-libsodium      Do not use libsodium.
   --disable-acl           No check for ACL support.
-  --disable-gpm           Don't use gpm (Linux mouse daemon).
+  --enable-gpm=OPTS       Use gpm (Linux mouse daemon). default=yes OPTS=yes/no/dynamic
   --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).
   --disable-nls           Don't support NLS (gettext()).
 
@@ -4787,7 +4785,7 @@ rm -f core conftest.err conftest.$ac_objext \
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
             CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
 
-               if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
+               if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
       with_x=no
      fi
   fi
@@ -9274,7 +9272,6 @@ SKIP_GTK2=YES
 SKIP_GTK3=YES
 SKIP_GNOME=YES
 SKIP_MOTIF=YES
-SKIP_ATHENA=YES
 SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
 SKIP_HAIKU=YES
@@ -9336,7 +9333,6 @@ $as_echo "yes/auto - automatic GUI support" >&6; }
 		SKIP_GTK3=
 		SKIP_GNOME=
 		SKIP_MOTIF=
-		SKIP_ATHENA=
 		SKIP_NEXTAW=;;
     gtk2)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: GTK+ 2.x GUI support" >&5
 $as_echo "GTK+ 2.x GUI support" >&6; }
@@ -9351,9 +9347,6 @@ $as_echo "GTK+ 3.x GUI support" >&6; }
     motif)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Motif GUI support" >&5
 $as_echo "Motif GUI support" >&6; }
 		SKIP_MOTIF=;;
-    athena)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Athena GUI support" >&5
-$as_echo "Athena GUI support" >&6; }
-		SKIP_ATHENA=;;
     nextaw)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: neXtaw GUI support" >&5
 $as_echo "neXtaw GUI support" >&6; }
 		SKIP_NEXTAW=;;
@@ -9430,23 +9423,6 @@ fi
 $as_echo "$enable_motif_check" >&6; }
   if test "x$enable_motif_check" = "xno"; then
     SKIP_MOTIF=YES
-  fi
-fi
-
-if test "x$SKIP_ATHENA" != "xYES" -a "$enable_gui_canon" != "athena"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether or not to look for Athena" >&5
-$as_echo_n "checking whether or not to look for Athena... " >&6; }
-  # Check whether --enable-athena-check was given.
-if test "${enable_athena_check+set}" = set; then :
-  enableval=$enable_athena_check;
-else
-  enable_athena_check="yes"
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_athena_check" >&5
-$as_echo "$enable_athena_check" >&6; }
-  if test "x$enable_athena_check" = "xno"; then
-    SKIP_ATHENA=YES
   fi
 fi
 
@@ -9735,7 +9711,6 @@ $as_echo "no" >&6; }
 
     if test "x$GTK_CFLAGS" != "x"; then
       SKIP_GTK3=YES
-      SKIP_ATHENA=YES
       SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
       GUITYPE=GTK
@@ -9995,7 +9970,6 @@ $as_echo "no" >&6; }
     if test "x$GTK_CFLAGS" != "x"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
-      SKIP_ATHENA=YES
       SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
       GUITYPE=GTK
@@ -10302,46 +10276,9 @@ $as_echo "<not found>" >&6; }
 fi
 
 if test -z "$SKIP_MOTIF"; then
-  SKIP_ATHENA=YES
   SKIP_NEXTAW=YES
   GUITYPE=MOTIF
 
-fi
-
-
-GUI_X_LIBS=
-
-if test -z "$SKIP_ATHENA"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if Athena header files can be found" >&5
-$as_echo_n "checking if Athena header files can be found... " >&6; }
-  cflags_save=$CFLAGS
-  CFLAGS="$CFLAGS $X_CFLAGS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <X11/Intrinsic.h>
-#include <X11/Xaw/Paned.h>
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; SKIP_ATHENA=YES
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS=$cflags_save
-fi
-
-if test -z "$SKIP_ATHENA"; then
-  GUITYPE=ATHENA
 fi
 
 if test -z "$SKIP_NEXTAW"; then
@@ -10377,7 +10314,7 @@ if test -z "$SKIP_NEXTAW"; then
   GUITYPE=NEXTAW
 fi
 
-if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
+if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
       if test -n "$GUI_INC_LOC"; then
     GUI_INC_LOC=-I"`echo $GUI_INC_LOC|sed 's%-I%%'`"
   fi
@@ -10636,7 +10573,7 @@ done
 fi
 
 
-if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
+if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
     cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   for ac_header in X11/xpm.h X11/Sunkeysym.h
@@ -10680,7 +10617,7 @@ $as_echo "X GUI selected; xim has been enabled" >&6; }
   fi
 fi
 
-if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
+if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for X11/Xmu/Editres.h" >&5
@@ -13845,8 +13782,8 @@ rm -f core conftest.err conftest.$ac_objext \
   LIBS="$ac_save_LIBS"
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-gpm argument" >&5
-$as_echo_n "checking --disable-gpm argument... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-gpm argument" >&5
+$as_echo_n "checking --enable-gpm argument... " >&6; }
 # Check whether --enable-gpm was given.
 if test "${enable_gpm+set}" = set; then :
   enableval=$enable_gpm;
@@ -13855,9 +13792,9 @@ else
 fi
 
 
-if test "$enable_gpm" = "yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+if test "$enable_gpm" = "yes" -o "$enable_gpm" = "dynamic"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_gpm" >&5
+$as_echo "$enable_gpm" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gpm" >&5
 $as_echo_n "checking for gpm... " >&6; }
 if ${vi_cv_have_gpm+:} false; then :
@@ -13889,13 +13826,18 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_have_gpm" >&5
 $as_echo "$vi_cv_have_gpm" >&6; }
   if test $vi_cv_have_gpm = yes; then
-    LIBS="$LIBS -lgpm"
+    if test "$enable_gpm" = "yes"; then
+      LIBS="$LIBS -lgpm"
+    else
+      $as_echo "#define DYNAMIC_GPM 1" >>confdefs.h
+
+    fi
     $as_echo "#define HAVE_GPM 1" >>confdefs.h
 
   fi
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-sysmouse argument" >&5
