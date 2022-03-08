@@ -5730,7 +5730,6 @@ func_has_abort(
 make_partial(dict_T *selfdict_in, typval_T *rettv)
 {
     char_u	*fname;
-    char_u	*tofree = NULL;
     ufunc_T	*fp;
     char_u	fname_buf[FLEN_FIXED + 1];
     int		error;
@@ -5742,13 +5741,19 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
     {
 	fname = rettv->v_type == VAR_FUNC ? rettv->vval.v_string
 					      : rettv->vval.v_partial->pt_name;
-	// Translate "s:func" to the stored function name.
-	fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
-	fp = find_func(fname, FALSE);
-	vim_free(tofree);
+	if (fname != NULL)
+	{
+	    char_u	*tofree = NULL;
+
+	    // Translate "s:func" to the stored function name.
+	    fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
+	    fp = find_func(fname, FALSE);
+	    vim_free(tofree);
+	}
     }
 
-    if (fp != NULL && (fp->uf_flags & FC_DICT))
+    if ((fp != NULL && (fp->uf_flags & FC_DICT))
+		|| (rettv->v_type == VAR_FUNC && rettv->vval.v_string == NULL))
     {
 	partial_T	*pt = ALLOC_CLEAR_ONE(partial_T);
 

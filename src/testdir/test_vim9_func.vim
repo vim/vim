@@ -3337,6 +3337,15 @@ def Test_partial_double_nested()
   assert_equal(123, RefRef())
 enddef
 
+def Test_partial_null_function()
+  var lines =<< trim END
+      var d: dict<func> = {f: null_function}
+      var Ref = d.f
+      assert_equal('func', typename(Ref))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
 " Using "idx" from a legacy global function does not work.
 " This caused a crash when called from legacy context.
 func Test_partial_call_fails()
