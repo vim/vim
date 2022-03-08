@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Dec 07
+" Last Change:	2022 Mar 09
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -292,6 +292,7 @@ if !exists("c_no_c11")
   syn keyword	cOperator	_Static_assert static_assert
   syn keyword	cStorageClass	_Thread_local thread_local
   syn keyword   cType		char16_t char32_t
+  syn keyword   cType		max_align_t
   " C11 atomics (take down the shield wall!)
   syn keyword	cType		atomic_bool atomic_char atomic_schar atomic_uchar
   syn keyword	Ctype		atomic_short atomic_ushort atomic_int atomic_uint
