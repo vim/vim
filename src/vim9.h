@@ -91,6 +91,7 @@ typedef enum {
     ISN_PUSHJOB,	// push channel isn_arg.job
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
+    ISN_NEWPARTIAL,	// push NULL partial
 
     ISN_AUTOLOAD,	// get item from autoload import, function or variable
 

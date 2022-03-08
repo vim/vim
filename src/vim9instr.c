@@ -570,6 +570,40 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 		generate_PUSHBLOB(cctx, tv->vval.v_blob);
 		tv->vval.v_blob = NULL;
 		break;
+	    case VAR_LIST:
+		if (tv->vval.v_list != NULL)
+		    iemsg("non-empty list constant not supported");
+		generate_NEWLIST(cctx, 0);
+		break;
+	    case VAR_DICT:
+		if (tv->vval.v_dict != NULL)
+		    iemsg("non-empty dict constant not supported");
+		generate_NEWDICT(cctx, 0);
+		break;
+#ifdef FEAT_JOB_CHANNEL
+	    case VAR_JOB:
+		if (tv->vval.v_job != NULL)
+		    iemsg("non-null job constant not supported");
+		generate_PUSHJOB(cctx, NULL);
+		break;
+	    case VAR_CHANNEL:
+		if (tv->vval.v_channel != NULL)
+		    iemsg("non-null channel constant not supported");
+		generate_PUSHCHANNEL(cctx, NULL);
+		break;
+#endif
+	    case VAR_FUNC:
+		if (tv->vval.v_string != NULL)
+		    iemsg("non-null function constant not supported");
+		generate_PUSHFUNC(cctx, NULL, &t_func_unknown);
+		break;
+	    case VAR_PARTIAL:
+		if (tv->vval.v_partial != NULL)
+		    iemsg("non-null partial constant not supported");
+		if (generate_instr_type(cctx, ISN_NEWPARTIAL, &t_func_unknown)
+								       == NULL)
+		    return FAIL;
+		break;
 	    case VAR_STRING:
 		generate_PUSHS(cctx, &tv->vval.v_string);
 		tv->vval.v_string = NULL;
@@ -706,7 +740,7 @@ generate_PUSHJOB(cctx_T *cctx, job_T *job)
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_channel)) == NULL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_job)) == NULL)
 	return FAIL;
     isn->isn_arg.job = job;
 
@@ -2185,6 +2219,7 @@ delete_instr(isn_T *isn)
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
+	case ISN_NEWPARTIAL:
 	case ISN_OPANY:
 	case ISN_OPFLOAT:
 	case ISN_OPNR:

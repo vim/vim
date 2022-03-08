@@ -1062,6 +1062,14 @@ static char *reserved[] = {
     "true",
     "false",
     "null",
+    "null_blob",
+    "null_dict",
+    "null_function",
+    "null_list",
+    "null_partial",
+    "null_string",
+    "null_channel",
+    "null_job",
     "this",
     NULL
 };

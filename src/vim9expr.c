@@ -2107,14 +2107,20 @@ compile_expr8(
 		    break;
 
 	/*
-	 * "null" constant
+	 * "null" or "null_*" constant
 	 */
-	case 'n':   if (STRNCMP(*arg, "null", 4) == 0
-						   && !eval_isnamec((*arg)[4]))
+	case 'n':   if (STRNCMP(*arg, "null", 4) == 0)
 		    {
-			*arg += 4;
-			rettv->v_type = VAR_SPECIAL;
-			rettv->vval.v_number = VVAL_NULL;
+			char_u  *p = *arg + 4;
+			int	len;
+
+			for (len = 0; eval_isnamec(p[len]); ++len)
+			    ;
+			ret = handle_predefined(*arg, len + 4, rettv);
+			if (ret == FAIL)
+			    ret = NOTDONE;
+			else
+			    *arg += len + 4;
 		    }
 		    else
 			ret = NOTDONE;

@@ -999,6 +999,11 @@ ex_let_vars(
     listitem_T	*item;
     typval_T	ltv;
 
+    if (tv->v_type == VAR_VOID)
+    {
+	emsg(_(e_cannot_use_void_value));
+	return FAIL;
+    }
     if (*arg != '[')
     {
 	// ":let var = expr" or ":for var in list"

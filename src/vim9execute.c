@@ -3440,6 +3440,17 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    // create a partial with NULL value
+	    case ISN_NEWPARTIAL:
+		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+		    goto theend;
+		++ectx->ec_stack.ga_len;
+		tv = STACK_TV_BOT(-1);
+		tv->v_type = VAR_PARTIAL;
+		tv->v_lock = 0;
+		tv->vval.v_partial = NULL;
+		break;
+
 	    // call a :def function
 	    case ISN_DCALL:
 		SOURCING_LNUM = iptr->isn_lnum;
@@ -5719,6 +5730,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_NEWDICT:
 		smsg("%s%4d NEWDICT size %lld", pfx, current,
 					    (varnumber_T)(iptr->isn_arg.number));
+		break;
+	    case ISN_NEWPARTIAL:
+		smsg("%s%4d NEWPARTIAL", pfx, current);
 		break;
 
 	    // function call

@@ -415,6 +415,58 @@ def Test_disassemble_store_member()
         res)
 enddef
 
+if has('job')
+  def s:StoreNull()
+    var ss = null_string
+    var bb = null_blob
+    var dd = null_dict
+    var ll = null_list
+    var Ff = null_function
+    var Pp = null_partial
+    var jj = null_job
+    var cc = null_channel
+  enddef
+
+  def Test_disassemble_assign_null()
+    var res = execute('disass s:StoreNull')
+    assert_match('<SNR>\d*_StoreNull\_s*' ..
+          'var ss = null_string\_s*' ..
+          '\d\+ PUSHS "\[NULL\]"\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var bb = null_blob\_s*' ..
+          '\d\+ PUSHBLOB 0z\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var dd = null_dict\_s*' ..
+          '\d\+ NEWDICT size 0\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var ll = null_list\_s*' ..
+          '\d\+ NEWLIST size 0\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var Ff = null_function\_s*' ..
+          '\d\+ PUSHFUNC "\[none\]"\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var Pp = null_partial\_s*' ..
+          '\d\+ NEWPARTIAL\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var jj = null_job\_s*' ..
+          '\d\+ PUSHJOB "no process"\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var cc = null_channel\_s*' ..
+          '\d\+ PUSHCHANNEL 0\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          '\d\+ RETURN void',
+          res)
+  enddef
+endif
+
 def s:ScriptFuncStoreIndex()
   var d = {dd: {}}
   d.dd[0] = 0

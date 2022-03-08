@@ -94,8 +94,20 @@ script and `:def` functions; details are below:
 	def CallMe(count: number, message: string): bool
 - Call functions without `:call`: >
 	writefile(['done'], 'file.txt')
-- You cannot use old Ex commands `:xit`, `:t`, `:k`, `:append`, `:change`,
-  `:insert`, `:open`, and `:s` or `:d` with only flags.
+- You cannot use old Ex commands:
+	`:Print`
+	`:append`
+	`:change`
+	`:d`  directly followed by 'd' or 'p'.
+	`:insert`
+	`:k`
+	`:mode`
+	`:open`
+	`:s`  with only flags
+	`:t`
+  	`:xit`
+- Some commands, especially those used for flow control, cannot be shortened.
+  E.g., `:throw` cannot be written as `:th`. *E839*
 - You cannot use curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
@@ -305,7 +317,7 @@ function, the function does not need to be defined more than once: >
 
 
 Variable declarations with :var, :final and :const ~
-				*vim9-declaration* *:var*
+				*vim9-declaration* *:var* *E1079*
 				*E1017* *E1020* *E1054* *E1087* *E1108* *E1124*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with `:final` or `:const`.  We refer to both as "variables" in this
@@ -375,6 +387,9 @@ In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  Those can also be deleted
 with `:unlet`.
+							*E1065*
+You cannot use `:va` to declare a variable, it must be written with the full
+name `:var`.  Just to make sure it is easy to read.
 							*E1178*
 `:lockvar` does not work on local variables.  Use `:const` and `:final`
 instead.
@@ -952,10 +967,37 @@ always converted to string: >
 Simple types are Number, Float, Special and Bool.  For other types |string()|
 should be used.
 						*false* *true* *null* *E1034*
-In Vim9 script one can use "true" for v:true, "false" for v:false and "null"
-for v:null.  When converting a boolean to a string "false" and "true" are
-used, not "v:false" and "v:true" like in legacy script.  "v:none" is not
-changed, it is only used in JSON and has no equivalent in other languages.
+In Vim9 script one can use the following predefined values: >
+	true
+	false
+	null
+	null_blob
+	null_channel
+	null_dict
+	null_function
+	null_job
+	null_list
+	null_partial
+	null_string
+`true` is the same as `v:true`, `false` the same as `v:false`, `null` the same
+as `v:null`.
+
+While `null` has the type "special", the other "null_" types have the type
+indicated by their name.  Quite often a null value is handled the same as an
+empty value, but not always.  The values can be useful to clear a script-local
+variable, since they cannot be deleted with `:unlet`.  E.g.: >
+	var theJob = job_start(...)
+	# let the job do its work
+	theJob = null_job
+
+The values can also be useful as the default value for an argument: >
+	def MyFunc(b: blob = null_blob)
+	   if b == null_blob
+	      # b argument was not given
+
+When converting a boolean to a string `false` and `true` are used, not
+`v:false` and `v:true` like in legacy script.  `v:none` has no `none`
+replacement, it has no equivalent in other languages.
 
 Indexing a string with [idx] or taking a slice with [idx : idx] uses character
 indexes instead of byte indexes.  Composing characters are included.
