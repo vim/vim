@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Feb 09
+*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -63,7 +63,7 @@ effects.  Be careful not to destroy your text.
 			they were given.
 			See |autocmd-nested| for [++nested].  "nested"
 			(without the ++) can also be used, for backwards
-			compatibility.
+			compatibility, but not in |Vim9| script. *E1078*
 							*autocmd-once*
 			If [++once] is supplied the command is executed once,
 			then removed ("one shot").
@@ -365,6 +365,7 @@ Name			triggered by ~
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
 |InsertLeave|		when leaving Insert mode
+|InsertLeavePre| 	just before leaving Insert mode
 |InsertCharPre|		when a character was typed in Insert mode, before
 			inserting it
 

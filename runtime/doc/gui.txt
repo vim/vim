@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.2.  Last change: 2021 Jun 27
+*gui.txt*       For Vim version 8.2.  Last change: 2022 Mar 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,7 +147,8 @@ task bar with the 'guiheadroom' option.
 						    *:win* *:winsize* *E465*
 :win[size] {width} {height}
 		Set the window height to {width} by {height} characters.
-		Obsolete, use ":set lines=11 columns=22".
+		It is recommended to use `:set lines=11 columns=22` instead,
+		since it's easy to see what the numbers mean.
 		If you get less lines than expected, check the 'guiheadroom'
 		option.
 

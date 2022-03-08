@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Feb 16
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,10 +38,29 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Allow for assigning v:null to job/channel/funcref etc.
+- Check that the declared type is not lost.
+- Check: var d: dict<func> = {a: function('tr'), b: null}
+
+Fix that with s being an empty string, this returns TRUE:
+    echo s is null_string
+
+Make sure null types work to:
+- assign to a variable
+- use as an argument
+- use as default value of optional argument
+- use as return value
+- use in a list/dict constant, type is correct
+- revert comparing with null?
+
+TODO item in eval.c
+
+Really drop the Athena GUI?  And NeXtaw?
+
 Once Vim9 is stable:
 - Use Vim9 for runtime files.
 - Check code coverage, add more tests if needed.
-	vim9execute.c
+	vim9execute.c  line 1900
 	vim9expr.c
 	vim9instr.c
 	vim9script.c
@@ -209,6 +228,13 @@ Use CTRL-R to specify the register to use. (#9531)
 
 Some prompts are not translated: #9495
 
+Improvement in terminal configuration mess: Request the terminfo entry from
+the terminal itself.  The $TERM value then is only relevant for whether this
+feature is supported or not.  Replaces the xterm mechanism to request each
+entry separately. #6609
+Multiplexers (screen, tmux) can request it to the underlaying terminal, and
+pass it on with modifications.
+
 Test_communicate_ipv6(): is flaky on many systems
 Fails in line 64 of Ch_communicate, no exception is thrown.
 
@@ -285,6 +311,9 @@ Probably because it's using MAXCOL.  #8238
 
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558
+
+When using dictionary insert completion with 'ignorecase', the leading capital
+in a word should be preserved.
 
 Add optional argument to virtcol() that specifies "start", "cursor" or "end"
 to tell which value from getvvcol() should be used. (#7964)

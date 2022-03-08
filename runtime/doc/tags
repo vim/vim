@@ -2113,6 +2113,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :abclear	map.txt	/*:abclear*
 :abo	windows.txt	/*:abo*
 :aboveleft	windows.txt	/*:aboveleft*
+:abstract	vim9.txt	/*:abstract*
 :addd	quickfix.txt	/*:addd*
 :al	windows.txt	/*:al*
 :all	windows.txt	/*:all*
@@ -2272,6 +2273,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :chistory	quickfix.txt	/*:chistory*
 :cl	quickfix.txt	/*:cl*
 :cla	quickfix.txt	/*:cla*
+:class	vim9.txt	/*:class*
 :clast	quickfix.txt	/*:clast*
 :cle	motion.txt	/*:cle*
 :clearjumps	motion.txt	/*:clearjumps*
@@ -2444,12 +2446,15 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :emenu	gui.txt	/*:emenu*
 :en	eval.txt	/*:en*
 :end	eval.txt	/*:end*
+:endclass	vim9.txt	/*:endclass*
 :enddef	vim9.txt	/*:enddef*
+:endenum	vim9.txt	/*:endenum*
 :endf	eval.txt	/*:endf*
 :endfo	eval.txt	/*:endfo*
 :endfor	eval.txt	/*:endfor*
 :endfunction	eval.txt	/*:endfunction*
 :endif	eval.txt	/*:endif*
+:endinterface	vim9.txt	/*:endinterface*
 :endt	eval.txt	/*:endt*
 :endtry	eval.txt	/*:endtry*
 :endw	eval.txt	/*:endw*
@@ -2458,6 +2463,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ene!	editing.txt	/*:ene!*
 :enew	editing.txt	/*:enew*
 :enew!	editing.txt	/*:enew!*
+:enum	vim9.txt	/*:enum*
 :eval	eval.txt	/*:eval*
 :ex	editing.txt	/*:ex*
 :exe	eval.txt	/*:exe*
@@ -2584,6 +2590,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :inoreme	gui.txt	/*:inoreme*
 :inoremenu	gui.txt	/*:inoremenu*
 :insert	insert.txt	/*:insert*
+:interface	vim9.txt	/*:interface*
 :intro	starting.txt	/*:intro*
 :is	tagsrch.txt	/*:is*
 :isearch	tagsrch.txt	/*:isearch*
@@ -3216,6 +3223,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :startgreplace	insert.txt	/*:startgreplace*
 :startinsert	insert.txt	/*:startinsert*
 :startreplace	insert.txt	/*:startreplace*
+:static	vim9.txt	/*:static*
 :stj	tagsrch.txt	/*:stj*
 :stjump	tagsrch.txt	/*:stjump*
 :stop	starting.txt	/*:stop*
@@ -3393,6 +3401,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tunma	map.txt	/*:tunma*
 :tunmap	map.txt	/*:tunmap*
 :tunmenu	gui.txt	/*:tunmenu*
+:type	vim9.txt	/*:type*
 :u	undo.txt	/*:u*
 :un	undo.txt	/*:un*
 :una	map.txt	/*:una*
@@ -4022,6 +4031,7 @@ E1061	vim9.txt	/*E1061*
 E1062	eval.txt	/*E1062*
 E1063	eval.txt	/*E1063*
 E1064	autocmd.txt	/*E1064*
+E1065	vim9.txt	/*E1065*
 E1066	vim9.txt	/*E1066*
 E1067	eval.txt	/*E1067*
 E1068	vim9.txt	/*E1068*
@@ -4034,6 +4044,8 @@ E1074	vim9.txt	/*E1074*
 E1075	vim9.txt	/*E1075*
 E1076	eval.txt	/*E1076*
 E1077	vim9.txt	/*E1077*
+E1078	autocmd.txt	/*E1078*
+E1079	vim9.txt	/*E1079*
 E108	eval.txt	/*E108*
 E1080	vim9.txt	/*E1080*
 E1081	eval.txt	/*E1081*
@@ -4241,6 +4253,7 @@ E1264	vim9.txt	/*E1264*
 E1265	eval.txt	/*E1265*
 E1266	if_pyth.txt	/*E1266*
 E127	eval.txt	/*E127*
+E1270	change.txt	/*E1270*
 E128	eval.txt	/*E128*
 E129	eval.txt	/*E129*
 E13	message.txt	/*E13*
@@ -4682,7 +4695,7 @@ E534	options.txt	/*E534*
 E535	options.txt	/*E535*
 E536	options.txt	/*E536*
 E537	options.txt	/*E537*
-E538	builtin.txt	/*E538*
+E538	pattern.txt	/*E538*
 E539	options.txt	/*E539*
 E54	pattern.txt	/*E54*
 E540	options.txt	/*E540*
@@ -5005,6 +5018,7 @@ E835	options.txt	/*E835*
 E836	if_pyth.txt	/*E836*
 E837	if_pyth.txt	/*E837*
 E838	netbeans.txt	/*E838*
+E839	vim9.txt	/*E839*
 E84	windows.txt	/*E84*
 E840	insert.txt	/*E840*
 E841	map.txt	/*E841*
@@ -6164,6 +6178,7 @@ collate-variable	eval.txt	/*collate-variable*
 color-xterm	syntax.txt	/*color-xterm*
 coloring	syntax.txt	/*coloring*
 colortest.vim	syntax.txt	/*colortest.vim*
+command-attributes	map.txt	/*command-attributes*
 command-block	vim9.txt	/*command-block*
 command-line-functions	usr_41.txt	/*command-line-functions*
 command-line-window	cmdline.txt	/*command-line-window*
@@ -7012,7 +7027,7 @@ function-range-example	eval.txt	/*function-range-example*
 function-search-undo	eval.txt	/*function-search-undo*
 function_key	intro.txt	/*function_key*
 functions	eval.txt	/*functions*
-fuzzy-match	pattern.txt	/*fuzzy-match*
+fuzzy-matching	pattern.txt	/*fuzzy-matching*
 fvwm.vim	syntax.txt	/*fvwm.vim*
 fvwm2rc	syntax.txt	/*fvwm2rc*
 fvwmrc	syntax.txt	/*fvwmrc*

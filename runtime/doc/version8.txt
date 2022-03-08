@@ -7916,7 +7916,7 @@ Solution:   Put remainder of message back in the queue.
 Files:      src/channel.c
 
 Patch 7.4.1240
-Problem:    Visual studio tools are noisy.
+Problem:    Visual Studio tools are noisy.
 Solution:   Suppress startup info. (Mike Williams)
 Files:      src/GvimExt/Makefile, src/Make_mvc.mak, src/tee/Make_mvc.mak
 
@@ -20476,7 +20476,7 @@ Files:      src/normal.c, src/misc2.c, src/Makefile,
             src/testdir/test_virtualedit.vim, src/testdir/test_alot.vim
 
 Patch 8.0.0963
-Problem:    Terminal test fails on MacOS. (chdiza)
+Problem:    Terminal test fails on macOS. (chdiza)
 Solution:   Wait for the shell to echo the characters. (closes #1991)
 Files:      src/testdir/test_terminal.vim
 
@@ -31038,7 +31038,7 @@ Files:	    src/ui.c, src/testdir/test_timers.vim, src/gui_gtk_x11.c,
             src/gui_w32.c, src/gui_photon.c, src/gui_x11.c
 
 Patch 8.1.0841
-Problem:    Travis config to get Lua on MacOS is too complicated.
+Problem:    Travis config to get Lua on macOS is too complicated.
 Solution:   Use an addons entry. (Ozaki Kiichi, closes #3876)
 Files:	    .travis.yml
 
@@ -39471,7 +39471,7 @@ Solution:   Add to the list of flaky tests.
 Files:	    src/testdir/runtest.vim
 
 Patch 8.1.2152
-Problem:    Problems navigating tags file on MacOS Catalina.
+Problem:    Problems navigating tags file on macOS Catalina.
 Solution:   Use fseek instead of lseek. (John Lamb, fixes #5061)
 Files:	    src/tag.c
 
@@ -40648,7 +40648,7 @@ Solution:   Allow key codes when fetching argument for CTRL-R. (closes #5266)
 Files:	    src/edit.c, src/ex_getln.c, src/testdir/test_termcodes.vim
 
 Patch 8.1.2347 (after 8.1.2344)
-Problem:    MacOS: build fails.
+Problem:    macOS: build fails.
 Solution:   Don't define _XOPEN_SOURCE for Mac.
 Files:	    src/vim.h
 

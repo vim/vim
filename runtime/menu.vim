@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Feb 23
+" Last Change:	2022 Mar 02
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -583,9 +583,9 @@ def s:XxdConv()
     :%!mc vim:xxd
   else
     s:XxdFind()
-    exe '%!' .. g:xxdprogram
+    exe ':%!' .. g:xxdprogram
   endif
-  if getline(1) =~ "^0000000:"		# only if it worked
+  if getline(1) =~ "^00000000:"		# only if it worked
     set ft=xxd
   endif
   &mod = mod
@@ -597,7 +597,7 @@ def s:XxdBack()
     :%!mc vim:xxd -r
   else
     s:XxdFind()
-    exe '%!' .. g:xxdprogram .. ' -r'
+    exe ':%!' .. g:xxdprogram .. ' -r'
   endif
   set ft=
   doautocmd filetypedetect BufReadPost

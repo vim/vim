@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2021 Dec 21
+*term.txt*      For Vim version 8.2.  Last change: 2022 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -725,12 +725,12 @@ size is wrong you can use the 'lines' and 'columns' options to set the
 correct values.
 
 One command can be used to set the screen size:
-
 						*:mod* *:mode* *E359*
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.
-[mode] was used on MS-DOS, but it doesn't work anymore.
+[mode] was used on MS-DOS, but it doesn't work anymore.  In |Vim9| this
+command is not supported.
 
 ==============================================================================
 4. Slow and fast terminals			*slow-fast-terminal*

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2022 Feb 04
+*change.txt*    For Vim version 8.2.  Last change: 2022 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -778,8 +778,8 @@ matched pattern is deleted.  The separator after {pattern} can also be left
 out then.  Example: >
 	:%s/TESTING
 This deletes "TESTING" from all lines, but only one per line.
-
-For compatibility with Vi these two exceptions are allowed:
+								*E1270*
+For compatibility with Vi these two exceptions are allowed in legacy script:
 "\/{string}/" and "\?{string}?" do the same as "//{string}/r".
 "\&{string}&" does the same as "//{string}/".
 				*pattern-delimiter* *E146* *E1241* *E1242*

@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Feb 23
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5572,7 +5572,7 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		empty list is returned. If length of {str} is greater than
 		256, then returns an empty list.
 
-		Refer to |fuzzy-match| for more information about fuzzy
+		Refer to |fuzzy-matching| for more information about fuzzy
 		matching strings.
 
 		Example: >
@@ -8160,8 +8160,7 @@ sound_playfile({path} [, {callback}])
 <		Can also be used as a |method|: >
 			GetSoundPath()->sound_playfile()
 
-<		There is no error *E538* , but  can listen to 538.nl.
-		{only available when compiled with the |+sound| feature}
+<		{only available when compiled with the |+sound| feature}
 
 
 sound_stop({id})					*sound_stop()*

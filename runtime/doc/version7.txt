@@ -14965,7 +14965,7 @@ Solution:   Adjust autoconf. (lilydjwg)
 Files:	    src/configure.in, src/auto/configure
 
 Patch 7.3.806
-Problem:    Compiler warnings in Perl code when building with Visual studio
+Problem:    Compiler warnings in Perl code when building with Visual Studio
 	    2012. (skeept)
 Solution:   Add type casts. (Christian Brabandt, 2013 Jan 30)
 Files:	    src/if_perl.xs

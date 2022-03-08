@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2021 Nov 17
+" Last change:	2022 Mar 03
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -64,9 +64,10 @@ if has('win32')
   set guioptions-=t
 endif
 
-" Don't use Ex mode, use Q for formatting.
+" Don't use Q for Ex mode, use it for formatting.  Except for Select mode.
 " Revert with ":unmap Q".
 map Q gq
+sunmap Q
 
 " CTRL-U in insert mode deletes a lot.  Use CTRL-G u to first break undo,
 " so that you can undo CTRL-U after inserting a line break.

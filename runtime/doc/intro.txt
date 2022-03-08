@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2021 Sep 29
+*intro.txt*     For Vim version 8.2.  Last change: 2022 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -701,7 +701,8 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 			Use the ":vi" command |:visual| to exit "Ex" mode.
 			Note: In older versions of Vim "Q" formatted text,
 			that is now done with |gq|.  But if you use the
-			|vimrc_example.vim| script "Q" works like "gq".
+			|vimrc_example.vim| script or |defaults.vim|, "Q"
+			works like "gq".  Except for Select mode.
 
 					*gQ*
 gQ			Switch to "Ex" mode like with "Q", but really behave

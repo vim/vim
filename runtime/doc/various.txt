@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2022 Feb 03
+*various.txt*   For Vim version 8.2.  Last change: 2022 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -114,6 +114,7 @@ g8			Print the hex values of the bytes used in the
 :[range]P[rint] [count] [flags]
 			Just as ":print".  Was apparently added to Vi for
 			people that keep the shift key pressed too long...
+			This command is not supported in |Vim9| script.
 			Note: A user command can overrule this command.
 			See |ex-flags| for [flags].
 

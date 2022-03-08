@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Feb 23
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1802,6 +1802,17 @@ An important class that will be provided is "Promise".  Since Vim is single
 threaded, connecting asynchronous operations is a natural way of allowing
 plugins to do their work without blocking the user.  It's a uniform way to
 invoke callbacks and handle timeouts and errors.
+
+Some commands have already been reserved:
+	*:class*
+	*:endclass*
+	*:abstract*
+	*:enum*
+	*:endenum*
+	*:interface*
+	*:endinterface*
+	*:static*
+	*:type*
 
 Some examples: >
 
