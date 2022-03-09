@@ -340,8 +340,33 @@ def Test_null_values()
         var j: job = null_job
         var c: channel = null_channel
       endif
+
+      var d: dict<func> = {a: function('tr'), b: null_function}
   END
   v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_keep_type_after_assigning_null()
+  var lines =<< trim END
+      var b: blob
+      b = null_blob
+      b = 'text'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected blob but got string')
+
+  lines =<< trim END
+      var l: list<number>
+      l = null_list
+      l = ['text']
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>')
+
+  lines =<< trim END
+      var d: dict<string>
+      d = null_dict
+      d = {a: 1, b: 2}
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<string> but got dict<number>')
 enddef
 
 def Test_skipped_assignment()
