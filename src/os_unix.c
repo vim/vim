@@ -887,8 +887,9 @@ sig_tstp SIGDEFARG(sigarg)
     else
 	got_tstp = TRUE;
 
-#ifndef __ANDROID__
-    // this is not required on all systems
+#if !defined(__ANDROID__) && !defined(__OpenBSD__)
+    // This is not required on all systems.  On some systems (at least Android
+    // and OpenBSD) this breaks suspending with CTRL-Z.
     signal(SIGTSTP, (RETSIGTYPE (*)())sig_tstp);
 #endif
     SIGRETURN;
