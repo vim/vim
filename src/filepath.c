@@ -186,7 +186,7 @@ shortpath_for_invalid_fname(
 	    // unless get_short_pathname() did its work in-place.
 	    *fname = *bufp = save_fname;
 	    if (short_fname != save_fname)
-		vim_strncpy(save_fname, short_fname, len);
+		STRNCPY(save_fname, short_fname, len);
 	    save_fname = NULL;
 	}
 

@@ -88,4 +88,9 @@ func Test_ColonEight_MultiByte()
   call delete(dir, 'd')
 endfunc
 
+func Test_ColonEight_notexists()
+  let non_exists='C:\windows\newfile.txt'
+  call assert_equal(non_exists, fnamemodify(non_exists, ':p:8'))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
