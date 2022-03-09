@@ -236,7 +236,8 @@ The "* register reflects the contents of the clipboard.  |quotestar|
 
 When the "unnamed" string is included in the 'clipboard' option, the unnamed
 register is the same.  Thus you can yank to and paste from the clipboard
-without prepending "* to commands.
+without prepending "* to commands. If this doesn't work use the "unnamedplus"
+string as option.
 
 The 'a' flag in 'guioptions' is not included by default.  This means that text
 is only put on the clipboard when an operation is performed on it.  Just
