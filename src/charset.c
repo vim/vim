@@ -558,7 +558,7 @@ transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 	charbuf[1] = c ^ 0x40;		// DEL displayed as ^?
 	charbuf[2] = NUL;
     }
-    else if (enc_utf8 && c >= 0x80)
+    else if (enc_utf8)
     {
 	transchar_hex(charbuf, c);
     }

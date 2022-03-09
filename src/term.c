@@ -6370,7 +6370,7 @@ req_codes_from_term(void)
     static void
 req_more_codes_from_term(void)
 {
-    char	buf[11];
+    char	buf[23];  // extra size to shut up LGTM
     int		old_idx = xt_index_out;
 
     // Don't do anything when going to exit.
