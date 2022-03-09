@@ -887,7 +887,7 @@ sig_tstp SIGDEFARG(sigarg)
     else
 	got_tstp = TRUE;
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__OpenBSD__)
     // this is not required on all systems
     signal(SIGTSTP, (RETSIGTYPE (*)())sig_tstp);
 #endif
