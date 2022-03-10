@@ -98,3 +98,8 @@ src/pixmaps
 
 # other possible files build by tools
 src/cscope.out
+
+# Linter/language servers
+/.cache/clangd/
+/.ccls-cache/
+/compile_commands.json
