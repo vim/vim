@@ -844,6 +844,13 @@ def Test_expr4_compare_none()
   v9.CheckDefAndScriptFailure(['echo [] == v:none'], 'E1072: Cannot compare list with special')
   v9.CheckDefAndScriptFailure(['echo 123 == v:none'], 'E1072: Cannot compare number with special')
   v9.CheckDefAndScriptFailure(['echo 0z00 == v:none'], 'E1072: Cannot compare blob with special')
+
+  lines =<< trim END
+      echo [] == v:none
+
+      eval 0 + 0
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1072:', 1)
 enddef
 
 def Test_expr4_wrong_type()
