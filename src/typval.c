@@ -1583,9 +1583,23 @@ typval_compare_string(
 	i = ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2);
     switch (type)
     {
-	case EXPR_IS:
+	case EXPR_IS:	    if (in_vim9script())
+			    {
+				// Really check it is the same string, not just
+				// the same value.
+				val = tv1->vval.v_string == tv2->vval.v_string;
+				break;
+			    }
+			    // FALLTHROUGH
 	case EXPR_EQUAL:    val = (i == 0); break;
-	case EXPR_ISNOT:
+	case EXPR_ISNOT:    if (in_vim9script())
+			    {
+				// Really check it is not the same string, not
+				// just a different value.
+				val = tv1->vval.v_string != tv2->vval.v_string;
+				break;
+			    }
+			    // FALLTHROUGH
 	case EXPR_NEQUAL:   val = (i != 0); break;
 	case EXPR_GREATER:  val = (i > 0); break;
 	case EXPR_GEQUAL:   val = (i >= 0); break;

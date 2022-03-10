@@ -3313,9 +3313,8 @@ exec_instructions(ectx_T *ectx)
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
-			tv->vval.v_string = vim_strsave(
-				iptr->isn_arg.string == NULL
-					? (char_u *)"" : iptr->isn_arg.string);
+			tv->vval.v_string = iptr->isn_arg.string == NULL
+				    ? NULL : vim_strsave(iptr->isn_arg.string);
 		}
 		break;
 

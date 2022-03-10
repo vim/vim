@@ -801,6 +801,13 @@ def Test_expr4_compare_null()
       assert_false(null_string != null)
       assert_false(v:null != test_null_string())
       assert_false(null != null_string)
+
+      assert_true(null_string is test_null_string())
+      assert_false(null_string is '')
+      assert_false('' is null_string)
+      assert_false(null_string isnot test_null_string())
+      assert_true(null_string isnot '')
+      assert_true('' isnot null_string)
   END
   v9.CheckDefAndScriptSuccess(lines)
   unlet g:null_dict
