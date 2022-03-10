@@ -907,6 +907,28 @@ def Test_continue_in_try_in_while()
   unlet g:sequence
 enddef
 
+def Test_break_in_try_in_for()
+  var lines =<< trim END
+      vim9script
+      def Ls(): list<string>
+        var ls: list<string>
+        for s in ['abc', 'def']
+          for _ in [123, 456]
+            try
+              eval [][0]
+            catch
+              break
+            endtry
+          endfor
+          ls += [s]
+        endfor
+        return ls
+      enddef
+      assert_equal(['abc', 'def'], Ls())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_nocatch_return_in_try()
   # return in try block returns normally
   def ReturnInTry(): string
