@@ -1622,7 +1622,10 @@ lookup_debug_var(char_u *name)
     // Go through the local variable names, from last to first.
     for (idx = debug_var_count - 1; idx >= 0; --idx)
     {
-	if (STRCMP(((char_u **)dfunc->df_var_names.ga_data)[idx], name) == 0)
+	char_u *varname = ((char_u **)dfunc->df_var_names.ga_data)[idx];
+
+	// the variable name may be NULL when not available in this block
+	if (varname != NULL && STRCMP(varname, name) == 0)
 	    return STACK_TV_VAR(idx);
     }
 
