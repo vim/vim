@@ -989,7 +989,12 @@ debuggy_find(
 		}
 		else
 		{
-		    if (typval_compare(tv, bp->dbg_val, EXPR_IS, FALSE) == OK
+		    // Use "==" instead of "is" for strings, that is what we
+		    // always have done.
+		    exprtype_T	type = tv->v_type == VAR_STRING
+							? EXPR_EQUAL : EXPR_IS;
+
+		    if (typval_compare(tv, bp->dbg_val, type, FALSE) == OK
 			    && tv->vval.v_number == FALSE)
 		    {
 			typval_T *v;
