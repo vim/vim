@@ -828,8 +828,22 @@ def Test_expr4_compare_null()
   v9.CheckDefAndScriptFailure(['echo true != v:null'], 'E1072: Cannot compare bool with special')
   v9.CheckDefAndScriptFailure(['echo v:null != true'], 'E1072: Cannot compare special with bool')
   v9.CheckDefAndScriptFailure(['echo false == v:null'], 'E1072: Cannot compare bool with special')
+enddef
 
-  v9.CheckDefExecAndScriptFailure(['echo [] == v:none'], ['E1072: Cannot compare list with special', 'E691: Can only compare List with List'])
+def Test_expr4_compare_none()
+  var lines =<< trim END
+      assert_false('' == v:none)
+      assert_false('text' == v:none)
+      assert_true(v:none == v:none)
+      assert_false(v:none == '')
+      assert_false(v:none == 'text')
+      assert_true(v:none == v:none)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  v9.CheckDefAndScriptFailure(['echo [] == v:none'], 'E1072: Cannot compare list with special')
+  v9.CheckDefAndScriptFailure(['echo 123 == v:none'], 'E1072: Cannot compare number with special')
+  v9.CheckDefAndScriptFailure(['echo 0z00 == v:none'], 'E1072: Cannot compare blob with special')
 enddef
 
 def Test_expr4_wrong_type()

@@ -1799,7 +1799,7 @@ compile_assign_unlet(
 		return FAIL;
 	    }
 	    type = get_type_on_stack(cctx, 0);
-	    if ((dest_type != VAR_BLOB && type != &t_special)
+	    if ((dest_type != VAR_BLOB && type->tt_type != VAR_SPECIAL)
 		    && need_type(type, &t_number,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
