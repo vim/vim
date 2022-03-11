@@ -343,7 +343,6 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gnome-check
 #CONF_OPT_GUI = --disable-gtk3-check
 #CONF_OPT_GUI = --disable-motif-check
-#CONF_OPT_GUI = --disable-nextaw-check
 
 # Uncomment one of these lines to select a specific GUI to use.
 # When using "yes" or nothing, configure will use the first one found: GTK+,
@@ -371,7 +370,6 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
-#CONF_OPT_GUI = --enable-gui=nextaw
 
 # Uncomment this line to run an individual test with gvim.
 #GUI_TESTARG = GUI_FLAG=-g 
@@ -1304,24 +1302,6 @@ MOTIF_MAN_TARGETS = yes
 MOTIF_TESTTARGET = gui
 MOTIF_BUNDLE	=
 
-### neXtaw GUI
-NEXTAW_LIB = -lneXtaw
-
-NEXTAW_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
-NEXTAW_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/gui_beval.o objects/gui_at_fs.o
-NEXTAW_DEFS	= -DFEAT_GUI_ATHENA -DFEAT_GUI_NEXTAW $(NARROW_PROTO)
-
-NEXTAW_IPATH	= $(GUI_INC_LOC)
-NEXTAW_LIBS_DIR = $(GUI_LIB_LOC)
-NEXTAW_LIBS1	= $(NEXTAW_LIB)
-NEXTAW_LIBS2	= -lXt
-NEXTAW_INSTALL  =  install_normal install_gui_extra
-NEXTAW_TARGETS	=  installglinks
-NEXTAW_MAN_TARGETS = yes
-NEXTAW_TESTTARGET = gui
-NEXTAW_BUNDLE	=
-
 ### (J)  Sun OpenWindows 3.2 (SunOS 4.1.x) or earlier that produce these ld
 #	 errors:  ld: Undefined symbol
 #		      _get_wmShellWidgetClass
@@ -2201,7 +2181,7 @@ os_vms.pro: os_vms.c
 # must use os_vms_conf.h for auto/config.h
 	mv auto/config.h auto/config.h.save
 	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_NEXTAW -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
+	$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 	rm auto/config.h
 	mv auto/config.h.save auto/config.h
@@ -2218,8 +2198,7 @@ gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 notags:
 	-rm -f tags
 
-# Note: tags is made for the currently configured version, can't include both
-#	Motif and neXtaw GUI
+# Note: tags is made for the currently configured version.
 # You can ignore error messages for missing files.
 tags TAGS: notags
 	$(TAGPRG) $(TAGS_FILES)

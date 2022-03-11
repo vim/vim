@@ -834,7 +834,6 @@ enable_gtk2_check
 enable_gnome_check
 enable_gtk3_check
 enable_motif_check
-enable_nextaw_check
 enable_gtktest
 with_gnome_includes
 with_gnome_libs
@@ -1508,12 +1507,11 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/neXtaw/haiku/photon/carbon
+  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/haiku/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
   --enable-motif-check    If auto-select GUI, check for Motif default=yes
-  --enable-nextaw-check   If auto-select GUI, check for neXtaw default=yes
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
@@ -9272,7 +9270,6 @@ SKIP_GTK2=YES
 SKIP_GTK3=YES
 SKIP_GNOME=YES
 SKIP_MOTIF=YES
-SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
 SKIP_HAIKU=YES
 GUITYPE=NONE
@@ -9332,8 +9329,7 @@ $as_echo "yes/auto - automatic GUI support" >&6; }
 		SKIP_GTK2=
 		SKIP_GTK3=
 		SKIP_GNOME=
-		SKIP_MOTIF=
-		SKIP_NEXTAW=;;
+		SKIP_MOTIF=;;
     gtk2)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: GTK+ 2.x GUI support" >&5
 $as_echo "GTK+ 2.x GUI support" >&6; }
 		SKIP_GTK2=;;
@@ -9347,9 +9343,6 @@ $as_echo "GTK+ 3.x GUI support" >&6; }
     motif)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Motif GUI support" >&5
 $as_echo "Motif GUI support" >&6; }
 		SKIP_MOTIF=;;
-    nextaw)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: neXtaw GUI support" >&5
-$as_echo "neXtaw GUI support" >&6; }
-		SKIP_NEXTAW=;;
     *)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
 $as_echo "Sorry, $enable_gui GUI is not supported" >&6; } ;;
   esac
@@ -9423,23 +9416,6 @@ fi
 $as_echo "$enable_motif_check" >&6; }
   if test "x$enable_motif_check" = "xno"; then
     SKIP_MOTIF=YES
-  fi
-fi
-
-if test "x$SKIP_NEXTAW" != "xYES" -a "$enable_gui_canon" != "nextaw"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether or not to look for neXtaw" >&5
-$as_echo_n "checking whether or not to look for neXtaw... " >&6; }
-  # Check whether --enable-nextaw-check was given.
-if test "${enable_nextaw_check+set}" = set; then :
-  enableval=$enable_nextaw_check;
-else
-  enable_nextaw_check="yes"
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_nextaw_check" >&5
-$as_echo "$enable_nextaw_check" >&6; };
-  if test "x$enable_nextaw_check" = "xno"; then
-    SKIP_NEXTAW=YES
   fi
 fi
 
@@ -9711,7 +9687,6 @@ $as_echo "no" >&6; }
 
     if test "x$GTK_CFLAGS" != "x"; then
       SKIP_GTK3=YES
-      SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
       GUITYPE=GTK
 
@@ -9970,7 +9945,6 @@ $as_echo "no" >&6; }
     if test "x$GTK_CFLAGS" != "x"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
-      SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
       GUITYPE=GTK
 
@@ -10276,45 +10250,11 @@ $as_echo "<not found>" >&6; }
 fi
 
 if test -z "$SKIP_MOTIF"; then
-  SKIP_NEXTAW=YES
   GUITYPE=MOTIF
 
 fi
 
-if test -z "$SKIP_NEXTAW"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if neXtaw header files can be found" >&5
-$as_echo_n "checking if neXtaw header files can be found... " >&6; }
-  cflags_save=$CFLAGS
-  CFLAGS="$CFLAGS $X_CFLAGS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <X11/Intrinsic.h>
-#include <X11/neXtaw/Paned.h>
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; SKIP_NEXTAW=YES
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS=$cflags_save
-fi
-
-if test -z "$SKIP_NEXTAW"; then
-  GUITYPE=NEXTAW
-fi
-
-if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
+if -z "$SKIP_MOTIF"; then
       if test -n "$GUI_INC_LOC"; then
     GUI_INC_LOC=-I"`echo $GUI_INC_LOC|sed 's%-I%%'`"
   fi
@@ -10573,7 +10513,7 @@ done
 fi
 
 
-if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
+if test -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
     cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   for ac_header in X11/xpm.h X11/Sunkeysym.h
@@ -10617,7 +10557,7 @@ $as_echo "X GUI selected; xim has been enabled" >&6; }
   fi
 fi
 
-if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
+if test -z "$SKIP_MOTIF"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for X11/Xmu/Editres.h" >&5

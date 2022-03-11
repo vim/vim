@@ -2443,7 +2443,7 @@ test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX"
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/neXtaw/haiku/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/haiku/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.
@@ -2455,7 +2455,6 @@ SKIP_GTK2=YES
 SKIP_GTK3=YES
 SKIP_GNOME=YES
 SKIP_MOTIF=YES
-SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
 SKIP_HAIKU=YES
 GUITYPE=NONE
@@ -2500,8 +2499,7 @@ else
 		SKIP_GTK2=
 		SKIP_GTK3=
 		SKIP_GNOME=
-		SKIP_MOTIF=
-		SKIP_NEXTAW=;;
+		SKIP_MOTIF=;;
     gtk2)	AC_MSG_RESULT(GTK+ 2.x GUI support)
 		SKIP_GTK2=;;
     gnome2)	AC_MSG_RESULT(GNOME 2.x GUI support)
@@ -2511,8 +2509,6 @@ else
 		SKIP_GTK3=;;
     motif)	AC_MSG_RESULT(Motif GUI support)
 		SKIP_MOTIF=;;
-    nextaw)	AC_MSG_RESULT(neXtaw GUI support)
-		SKIP_NEXTAW=;;
     *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported]) ;;
   esac
 
@@ -2561,17 +2557,6 @@ if test "x$SKIP_MOTIF" != "xYES" -a "$enable_gui_canon" != "motif"; then
   AC_MSG_RESULT($enable_motif_check)
   if test "x$enable_motif_check" = "xno"; then
     SKIP_MOTIF=YES
-  fi
-fi
-
-if test "x$SKIP_NEXTAW" != "xYES" -a "$enable_gui_canon" != "nextaw"; then
-  AC_MSG_CHECKING(whether or not to look for neXtaw)
-  AC_ARG_ENABLE(nextaw-check,
-	[  --enable-nextaw-check   If auto-select GUI, check for neXtaw [default=yes]],
-	, enable_nextaw_check="yes")
-  AC_MSG_RESULT($enable_nextaw_check);
-  if test "x$enable_nextaw_check" = "xno"; then
-    SKIP_NEXTAW=YES
   fi
 fi
 
@@ -2806,7 +2791,6 @@ if test -z "$SKIP_GTK2"; then
 		GUI_INC_LOC="$GTK_CFLAGS"], )
     if test "x$GTK_CFLAGS" != "x"; then
       SKIP_GTK3=YES
-      SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
@@ -2856,7 +2840,6 @@ if test -z "$SKIP_GTK3"; then
     if test "x$GTK_CFLAGS" != "x"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
-      SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
@@ -3017,28 +3000,11 @@ if test -z "$SKIP_MOTIF"; then
 fi
 
 if test -z "$SKIP_MOTIF"; then
-  SKIP_NEXTAW=YES
   GUITYPE=MOTIF
   AC_SUBST(MOTIF_LIBNAME)
 fi
 
-if test -z "$SKIP_NEXTAW"; then
-  AC_MSG_CHECKING(if neXtaw header files can be found)
-  cflags_save=$CFLAGS
-  CFLAGS="$CFLAGS $X_CFLAGS"
-  AC_TRY_COMPILE([
-#include <X11/Intrinsic.h>
-#include <X11/neXtaw/Paned.h>], ,
-	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no); SKIP_NEXTAW=YES )
-  CFLAGS=$cflags_save
-fi
-
-if test -z "$SKIP_NEXTAW"; then
-  GUITYPE=NEXTAW
-fi
-
-if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
+if -z "$SKIP_MOTIF"; then
   dnl Prepend -I and -L to $GUI_INC_LOC and $GUI_LIB_LOC if not empty
   dnl Avoid adding it when it twice
   if test -n "$GUI_INC_LOC"; then
@@ -3100,7 +3066,7 @@ if test "$enable_xsmp" = "yes"; then
 fi
 
 
-if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
+if test -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
   dnl Check for X11/xpm.h and X11/Sunkeysym.h with the GUI include path
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
@@ -3122,7 +3088,7 @@ if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GT
   fi
 fi
 
-if test -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
+if test -z "$SKIP_MOTIF"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
 dnl Xmu/Editres.h may exist but can only be used after including Intrinsic.h
