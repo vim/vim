@@ -1269,7 +1269,6 @@ nfa_emit_equi_class(int c)
     EMIT2(c);
     return OK;
 #undef EMIT2
-#undef EMIT2
 }
 
 /*
