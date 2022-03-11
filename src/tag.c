@@ -2053,7 +2053,7 @@ findtags_get_next_line(findtags_state_T *st, tagsearch_info_T *sinfo_p)
     {
 	// Adjust the search file offset to the correct position
 	sinfo_p->curr_offset_used = sinfo_p->curr_offset;
-	vim_fseek(st->fp, sinfo_p->curr_offset, SEEK_SET);
+	vim_ignored = vim_fseek(st->fp, sinfo_p->curr_offset, SEEK_SET);
 	eof = vim_fgets(st->lbuf, st->lbuf_size, st->fp);
 	if (!eof && sinfo_p->curr_offset != 0)
 	{
@@ -2061,7 +2061,7 @@ findtags_get_next_line(findtags_state_T *st, tagsearch_info_T *sinfo_p)
 	    if (sinfo_p->curr_offset == sinfo_p->high_offset)
 	    {
 		// oops, gone a bit too far; try from low offset
-		vim_fseek(st->fp, sinfo_p->low_offset, SEEK_SET);
+		vim_ignored = vim_fseek(st->fp, sinfo_p->low_offset, SEEK_SET);
 		sinfo_p->curr_offset = sinfo_p->low_offset;
 	    }
 	    eof = vim_fgets(st->lbuf, st->lbuf_size, st->fp);
@@ -2222,7 +2222,7 @@ findtags_start_state_handler(
 	    // not portable).  Don't use lseek(), it doesn't work
 	    // properly on MacOS Catalina.
 	    filesize = vim_ftell(st->fp);
-	    vim_fseek(st->fp, 0L, SEEK_SET);
+	    vim_ignored = vim_fseek(st->fp, 0L, SEEK_SET);
 
 	    // Calculate the first read offset in the file.  Start
 	    // the search in the middle of the file.
@@ -2852,7 +2852,8 @@ line_read_in:
 
 	    if (st->state == TS_STEP_FORWARD)
 		// Seek to the same position to read the same line again
-		vim_fseek(st->fp, search_info.curr_offset, SEEK_SET);
+		vim_ignored = vim_fseek(st->fp, search_info.curr_offset,
+								     SEEK_SET);
 	    // this will try the same thing again, make sure the offset is
 	    // different
 	    search_info.curr_offset = 0;
@@ -2944,8 +2945,10 @@ findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
     findtags_get_all_tags(st, &margs, buf_ffname);
 
     if (st->fp != NULL)
+    {
 	fclose(st->fp);
-    st->fp = NULL;
+	st->fp = NULL;
+    }
 #ifdef FEAT_EMACS_TAGS
     emacs_tags_incstack_free();
 #endif
