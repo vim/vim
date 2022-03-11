@@ -1663,7 +1663,7 @@ typedef struct
     char_u     *lbuf;			// line buffer
     int		lbuf_size;		// length of lbuf
 #ifdef FEAT_EMACS_TAGS
-    int		is_etag;		// current file is emaces style
+    int		is_etag;		// current file is emacs style
     char_u	*ebuf;			// additional buffer for etag fname
 #endif
     int		match_count;		// number of matches found
@@ -1673,7 +1673,8 @@ typedef struct
 } findtags_state_T;
 
 /*
- * Initialize the state used by find_tags()
+ * Initialize the state used by find_tags().
+ * Returns OK on success and FAIL on memory allocation failure.
  */
     static int
 findtags_state_init(
@@ -1745,7 +1746,7 @@ findtags_state_free(findtags_state_T *st)
 /*
  * Initialize the language and priority used for searching tags in a Vim help
  * file.
- * Returns TRUE to process the help file and FALSE to skip the file.
+ * Returns TRUE to process the help file for tags and FALSE to skip the file.
  */
     static int
 findtags_in_help_init(findtags_state_T *st)
@@ -1762,7 +1763,7 @@ findtags_in_help_init(findtags_state_T *st)
 	// language name in help_lang[].
 	i = (int)STRLEN(st->tag_fname);
 	if (i > 3 && st->tag_fname[i - 3] == '-')
-	    STRCPY(st->help_lang, st->tag_fname + i - 2);
+	    vim_strncpy(st->help_lang, st->tag_fname + i - 2, 2);
 	else
 	    STRCPY(st->help_lang, "en");
     }
@@ -1846,7 +1847,7 @@ static struct
 static int incstack_idx = 0;	// index in incstack
 
 /*
- * Free the include tags file stack.
+ * Free the emacs include tags file stack.
  */
     static void
 emacs_tags_incstack_free(void)
@@ -1863,9 +1864,9 @@ emacs_tags_incstack_free(void)
 /*
  * Emacs tags line with CTRL-L: New file name on next line.
  * The file name is followed by a ','.  Remember etag file name in ebuf.
- * Returns a FILE pointer to the tags file. If another tags file is included,
- * then returns a pointer to the new tags file. The old file pointer is saved
- * in incstack.
+ * The FILE pointer to the tags file is stored in 'st->fp'.  If another tags
+ * file is included, then the FILE pointer to the new tags file is stored in
+ * 'st->fp'. The old file pointer is saved in incstack.
  */
     static void
 emacs_tags_new_filename(findtags_state_T *st)
@@ -1918,8 +1919,6 @@ emacs_tags_new_filename(findtags_state_T *st)
 	st->fp = incstack[incstack_idx].fp;
 	vim_free(incstack[incstack_idx].etag_fname);
     }
-
-    return;
 }
 
 /*
@@ -1927,7 +1926,7 @@ emacs_tags_new_filename(findtags_state_T *st)
  * file, then pop it from the incstack and continue processing the parent tags
  * file. Otherwise, processed all the tags.
  * Returns TRUE if an included tags file is popped and processing should
- * continue with the parent tags file. Otherwise returns FALSE.
+ * continue with the parent tags file. Returns FALSE to stop processing tags.
  */
     static int
 emacs_tags_file_eof(findtags_state_T *st)
@@ -1947,7 +1946,8 @@ emacs_tags_file_eof(findtags_state_T *st)
 
 /*
  * Parse a line from an emacs-style tags file.
- * Returns OK is the line is parsed successfully, otherwise FALSE.
+ * Returns OK if the line is parsed successfully, returns FAIL if the line is
+ * not terminated by a newline.
  */
     static int
 emacs_tags_parse_line(char_u *lbuf, tagptrs_T *tagp)
@@ -2167,8 +2167,8 @@ findtags_start_state_handler(
     int		noic = (st->flags & TAG_NOIC);
     off_T	filesize;
 
-    // The header ends when the line sorts below "!_TAG_".  When
-    // case is folded lower case letters sort before "_".
+    // The header ends when the line sorts below "!_TAG_".  When case is
+    // folded lower case letters sort before "_".
     if (STRNCMP(st->lbuf, "!_TAG_", 6) <= 0
 	    || (st->lbuf[0] == '!' && ASCII_ISLOWER(st->lbuf[1])))
 	return findtags_hdr_parse(st);
@@ -2241,7 +2241,7 @@ findtags_start_state_handler(
 /*
  * Parse a tag line read from a tags file.
  * Returns OK if a tags line is successfully parsed.
- * Returns FAIL if an error is encountered.
+ * Returns FAIL if a format error is encountered.
  */
     static int
 findtags_parse_line(findtags_state_T *st, tagptrs_T *tagpp)
@@ -2747,10 +2747,9 @@ findtags_add_match(
 
 /*
  * Read and get all the tags from file st->tag_fname.
- * Returns OK if all the tags are processed successfully and FAIL is a tag
- * format error is encountered.
+ * Sets 'st->stop_searching' to TRUE to stop searching for additional tags.
  */
-    static int
+    static void
 findtags_get_all_tags(
     findtags_state_T		*st,
     findtags_match_args_T	*margs,
@@ -2846,7 +2845,9 @@ line_read_in:
 	    {
 		if (st->fp != NULL)
 		    fclose(st->fp);
-		break;
+		st->fp = NULL;
+		st->stop_searching = TRUE;
+		return;
 	    }
 
 	    if (st->state == TS_STEP_FORWARD)
@@ -2859,7 +2860,15 @@ line_read_in:
 	}
 
 	if (findtags_parse_line(st, &tagp) == FAIL)
-	    return FAIL;
+	{
+	    semsg(_(e_format_error_in_tags_file_str), st->tag_fname);
+#ifdef FEAT_CSCOPE
+	    if (!use_cscope)
+#endif
+		semsg(_("Before byte %ld"), (long)vim_ftell(st->fp));
+	    st->stop_searching = TRUE;
+	    return;
+	}
 
 	retval = findtags_match_tag(st, &tagp, margs, &search_info);
 	if (retval == TAG_MATCH_NEXT)
@@ -2875,22 +2884,18 @@ line_read_in:
 		break;
 	}
     } // forever
-
-    return OK;
 }
 
 /*
  * Search for tags matching 'st->orgpat.pat' in the 'st->tag_fname' tags file.
  * Information needed to search for the tags is in the 'st' state structure.
- * The matching tags are returned in 'st'.
- * Returns OK if successfully processed the file and FAIL on memory allocation
- * failure.
+ * The matching tags are returned in 'st'. If an error is encountered, then
+ * 'st->stop_searching' is set to TRUE.
  */
-    static int
+    static void
 findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
 {
     findtags_match_args_T margs;
-    int		line_error = FALSE;		// syntax error
 #ifdef FEAT_CSCOPE
     int		use_cscope = FALSE;
 #endif
@@ -2913,13 +2918,13 @@ findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
 	if (curbuf->b_help)
 	{
 	    if (!findtags_in_help_init(st))
-		return OK;
+		return;
 	}
 #endif
 
 	st->fp = mch_fopen((char *)st->tag_fname, "r");
 	if (st->fp == NULL)
-	    return OK;
+	    return;
 
 	if (p_verbose >= 5)
 	{
@@ -2936,22 +2941,11 @@ findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
 #endif
 
     // Read and parse the lines in the file one by one
-    if (findtags_get_all_tags(st, &margs, buf_ffname) == FAIL)
-	line_error = TRUE;
-
-    if (line_error)
-    {
-	semsg(_(e_format_error_in_tags_file_str), st->tag_fname);
-#ifdef FEAT_CSCOPE
-	if (!use_cscope)
-#endif
-	    semsg(_("Before byte %ld"), (long)vim_ftell(st->fp));
-	st->stop_searching = TRUE;
-	line_error = FALSE;
-    }
+    findtags_get_all_tags(st, &margs, buf_ffname);
 
     if (st->fp != NULL)
 	fclose(st->fp);
+    st->fp = NULL;
 #ifdef FEAT_EMACS_TAGS
     emacs_tags_incstack_free();
 #endif
@@ -2964,8 +2958,6 @@ findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
     // Stop searching if sufficient tags have been found.
     if (st->match_count >= st->mincount)
 	st->stop_searching = TRUE;
-
-    return OK;
 }
 
 /*
@@ -3188,8 +3180,7 @@ find_tags(
 		get_tagfname(&tn, first_file, st.tag_fname) == OK;
 							   first_file = FALSE)
       {
-	  if (findtags_in_file(&st, buf_ffname) == FAIL)
-	      goto findtag_end;
+	  findtags_in_file(&st, buf_ffname);
 	  if (st.stop_searching
 #ifdef FEAT_CSCOPE
 		  || use_cscope
