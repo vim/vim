@@ -2215,8 +2215,9 @@ numbered_function(char_u *name)
 
 /*
  * There are two kinds of function names:
- * 1. ordinary names, function defined with :function or :def
- * 2. numbered functions and lambdas
+ * 1. ordinary names, function defined with :function or :def;
+ *    can start with "<SNR>123_" literally or with K_SPECIAL.
+ * 2. Numbered functions and lambdas: "<lambda>123"
  * For the first we only count the name stored in func_hashtab as a reference,
  * using function() does not count as a reference, because the function is
  * looked up by name.
@@ -2224,7 +2225,7 @@ numbered_function(char_u *name)
     int
 func_name_refcount(char_u *name)
 {
-    return numbered_function(name) || *name == '<';
+    return numbered_function(name) || (name[0] == '<' && name[1] == 'l');
 }
 
 /*

@@ -3717,6 +3717,24 @@ def Test_nested_closure_in_dict()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_script_local_other_script()
+  var lines =<< trim END
+      function LegacyJob()
+        let FuncRef = function('s:close_cb')
+      endfunction
+      function s:close_cb(...)
+      endfunction
+  END
+  lines->writefile('Xlegacy.vim')
+  source Xlegacy.vim
+  g:LegacyJob()
+  g:LegacyJob()
+  g:LegacyJob()
+
+  delfunc g:LegacyJob
+  delete('Xlegacy.vim')
+enddef
+
 def Test_check_func_arg_types()
   var lines =<< trim END
       vim9script
