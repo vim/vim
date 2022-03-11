@@ -403,6 +403,9 @@ Section "$(str_section_exe)" id_section_exe
 	SetOutPath $0\autoload\xml
 	File ${VIMRT}\autoload\xml\*.*
 
+	SetOutPath $0\bitmaps
+	File ${VIMSRC}\vim.ico
+
 	SetOutPath $0\syntax
 	File ${VIMRT}\syntax\*.*
 
