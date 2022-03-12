@@ -1182,7 +1182,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 		      // When 'cursorline' is set highlight the line number of
 		      // the current line differently.
-		      // When 'cursorlineopt' has "screenline" only highlight
+		      // When 'cursorlineopt' doesn't have "line" only highlight
 		      // the line number itself.
 		      // TODO: Can we use CursorLine instead of CursorLineNr
 		      // when CursorLineNr isn't set?
