@@ -2092,10 +2092,7 @@ findtags_get_next_line(findtags_state_T *st, tagsearch_info_T *sinfo_p)
 		eof = cs_fgets(st->lbuf, st->lbuf_size);
 	    else
 #endif
-	    {
-		sinfo_p->curr_offset = vim_ftell(st->fp);
 		eof = vim_fgets(st->lbuf, st->lbuf_size, st->fp);
-	    }
 	} while (!eof && vim_isblankline(st->lbuf));
 
 	if (eof)
@@ -2850,7 +2847,7 @@ line_read_in:
 		return;
 	    }
 
-	    if (st->state == TS_STEP_FORWARD)
+	    if (st->state == TS_STEP_FORWARD || st->state == TS_LINEAR)
 		// Seek to the same position to read the same line again
 		vim_ignored = vim_fseek(st->fp, search_info.curr_offset,
 								     SEEK_SET);
