@@ -2643,7 +2643,12 @@ handle_mapping(
 	    max_mlen = mlen + 1;
     }
 
-    if ((mp == NULL || max_mlen > mp_match_len) && keylen != KEYLEN_PART_MAP)
+    // May check for a terminal code when there is no mapping or only a partial
+    // mapping.  Also check if there is a full mapping with <Esc>, unless timed
+    // out, since that is nearly always a partial match with a terminal code.
+    if ((mp == NULL || max_mlen > mp_match_len
+		    || (mp_match_len == 1 && *mp->m_keys == ESC && !*timedout))
+	    && keylen != KEYLEN_PART_MAP)
     {
 	int	save_keylen = keylen;
 

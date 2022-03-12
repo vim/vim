@@ -2331,6 +2331,22 @@ func Test_cmdline_literal()
   set timeoutlen&
 endfunc
 
+func Test_mapping_esc()
+  set timeoutlen=10
+
+  new
+  nnoremap <Up> iHello<Esc>
+  nnoremap <Esc> <Nop>
+
+  call feedkeys(substitute(&t_ku, '\*', '', 'g'), 'Lx!')
+  call assert_equal("Hello", getline(1))
+
+  bwipe!
+  nunmap <Up>
+  nunmap <Esc>
+  set timeoutlen&
+endfunc
+
 " Test for translation of special key codes (<xF1>, <xF2>, etc.)
 func Test_Keycode_Translation()
   let keycodes = [
