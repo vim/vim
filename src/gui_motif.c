@@ -1906,9 +1906,7 @@ gui_mch_set_scrollbar_colors(scrollbar_T *sb)
 	if (gui.scroll_fg_pixel != INVALCOLOR)
 	    XtVaSetValues(sb->id,
 		    XmNforeground, gui.scroll_fg_pixel,
-#if (XmVersion<1002)
 		    XmNbackground, gui.scroll_fg_pixel,
-#endif
 		    NULL);
     }
 
