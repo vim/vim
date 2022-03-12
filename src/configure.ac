@@ -3004,7 +3004,7 @@ if test -z "$SKIP_MOTIF"; then
   AC_SUBST(MOTIF_LIBNAME)
 fi
 
-if -z "$SKIP_MOTIF"; then
+if test -z "$SKIP_MOTIF"; then
   dnl Prepend -I and -L to $GUI_INC_LOC and $GUI_LIB_LOC if not empty
   dnl Avoid adding it when it twice
   if test -n "$GUI_INC_LOC"; then

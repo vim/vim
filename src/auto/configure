@@ -10254,7 +10254,7 @@ if test -z "$SKIP_MOTIF"; then
 
 fi
 
-if -z "$SKIP_MOTIF"; then
+if test -z "$SKIP_MOTIF"; then
       if test -n "$GUI_INC_LOC"; then
     GUI_INC_LOC=-I"`echo $GUI_INC_LOC|sed 's%-I%%'`"
   fi
