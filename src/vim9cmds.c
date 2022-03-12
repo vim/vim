@@ -1767,7 +1767,7 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
 
     if (eap->regname == '=')
     {
-	char_u *p = line + 1;
+	char_u *p = skipwhite(line + 1);
 
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;

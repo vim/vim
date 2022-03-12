@@ -1217,7 +1217,7 @@ def Test_put_command()
   :2put =['a', 'b', 'c']
   assert_equal(['ppp', 'a', 'b', 'c', 'above'], getline(2, 6))
 
-  :0put ='first'
+  :0put =  'first'
   assert_equal('first', getline(1))
   :1put! ='first again'
   assert_equal('first again', getline(1))
