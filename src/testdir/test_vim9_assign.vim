@@ -342,6 +342,22 @@ def Test_null_values()
       endif
 
       var d: dict<func> = {a: function('tr'), b: null_function}
+
+      var bl: list<blob> = [0z12, null_blob]
+      var dnl: list<dict<number>> = [{a: 1}, null_dict]
+      var dsl: list<dict<string>> = [{a: 'x'}, null_dict]
+      var lnl: list<list<number>> = [[1], null_list]
+      var lsl: list<list<string>> = [['x'], null_list]
+      def Len(v: string): number
+        return len(v)
+      enddef
+      var Ffl: list<func(string): number> = [Len, null_function]
+      var Fpl: list<func(string): number> = [Len, null_partial]
+      var sl: list<string> = ['x', null_string]
+      if has('job')
+        var jl: list<job> = [null_job]
+        var cl: list<channel> = [null_channel]
+      endif
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef

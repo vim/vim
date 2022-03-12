@@ -1235,6 +1235,19 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	{
 	    type_T *common;
 
+	    // When one of the types is t_func_unknown return the other one.
+	    // Useful if a list or dict item is null_func.
+	    if (type1 == &t_func_unknown)
+	    {
+		*dest = type2;
+		return;
+	    }
+	    if (type2 == &t_func_unknown)
+	    {
+		*dest = type1;
+		return;
+	    }
+
 	    common_type(type1->tt_member, type2->tt_member, &common, type_gap);
 	    if (type1->tt_argcount == type2->tt_argcount
 						    && type1->tt_argcount >= 0)

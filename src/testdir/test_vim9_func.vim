@@ -3759,6 +3759,114 @@ def Test_check_func_arg_types()
   v9.CheckScriptFailure(lines + ['echo H(G(F2))'], 'E1013:')
 enddef
 
+def Test_call_func_with_null()
+  var lines =<< trim END
+      def Fstring(v: string)
+        assert_equal(null_string, v)
+      enddef
+      Fstring(null_string)
+      def Fblob(v: blob)
+        assert_equal(null_blob, v)
+      enddef
+      Fblob(null_blob)
+      def Flist(v: list<number>)
+        assert_equal(null_list, v)
+      enddef
+      Flist(null_list)
+      def Fdict(v: dict<number>)
+        assert_equal(null_dict, v)
+      enddef
+      Fdict(null_dict)
+      def Ffunc(Fv: func(number): number)
+        assert_equal(null_function, Fv)
+      enddef
+      Ffunc(null_function)
+      if has('channel')
+        def Fchannel(v: channel)
+          assert_equal(null_channel, v)
+        enddef
+        Fchannel(null_channel)
+        def Fjob(v: job)
+          assert_equal(null_job, v)
+        enddef
+        Fjob(null_job)
+      endif
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_null_default_argument()
+  var lines =<< trim END
+      def Fstring(v: string = null_string)
+        assert_equal(null_string, v)
+      enddef
+      Fstring()
+      def Fblob(v: blob = null_blob)
+        assert_equal(null_blob, v)
+      enddef
+      Fblob()
+      def Flist(v: list<number> = null_list)
+        assert_equal(null_list, v)
+      enddef
+      Flist()
+      def Fdict(v: dict<number> = null_dict)
+        assert_equal(null_dict, v)
+      enddef
+      Fdict()
+      def Ffunc(Fv: func(number): number = null_function)
+        assert_equal(null_function, Fv)
+      enddef
+      Ffunc()
+      if has('channel')
+        def Fchannel(v: channel = null_channel)
+          assert_equal(null_channel, v)
+        enddef
+        Fchannel()
+        def Fjob(v: job = null_job)
+          assert_equal(null_job, v)
+        enddef
+        Fjob()
+      endif
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_null_return()
+  var lines =<< trim END
+      def Fstring(): string
+        return null_string
+      enddef
+      assert_equal(null_string, Fstring())
+      def Fblob(): blob
+        return null_blob
+      enddef
+      assert_equal(null_blob, Fblob())
+      def Flist(): list<number>
+        return null_list
+      enddef
+      assert_equal(null_list, Flist())
+      def Fdict(): dict<number>
+        return null_dict
+      enddef
+      assert_equal(null_dict, Fdict())
+      def Ffunc(): func(number): number
+        return null_function
+      enddef
+      assert_equal(null_function, Ffunc())
+      if has('channel')
+        def Fchannel(): channel
+          return null_channel
+        enddef
+        assert_equal(null_channel, Fchannel())
+        def Fjob(): job
+          return null_job
+        enddef
+        assert_equal(null_job, Fjob())
+      endif
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_list_any_type_checked()
   var lines =<< trim END
       vim9script
