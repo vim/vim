@@ -440,11 +440,6 @@ gui_x11_create_widgets(void)
 	menuBar = XmCreateMenuBar(vimForm, "menuBar", al, ac);
 	XtManageChild(menuBar);
 
-	// Remember the default colors, needed for ":hi clear".
-	XtVaGetValues(menuBar,
-	    XmNbackground, &gui.menu_def_bg_pixel,
-	    XmNforeground, &gui.menu_def_fg_pixel,
-	    NULL);
 	gui_motif_menu_colors(menuBar);
     }
 #endif
@@ -1672,12 +1667,10 @@ gui_mch_def_colors(void)
 {
     if (gui.in_use)
     {
-	// Use the values saved when starting up.  These should come from the
-	// window manager or a resources file.
-	gui.menu_fg_pixel = gui.menu_def_fg_pixel;
-	gui.menu_bg_pixel = gui.menu_def_bg_pixel;
-	gui.scroll_fg_pixel = gui.scroll_def_fg_pixel;
-	gui.scroll_bg_pixel = gui.scroll_def_bg_pixel;
+	gui.menu_fg_pixel = gui_get_color((char_u *)gui.rsrc_menu_fg_name);
+	gui.menu_bg_pixel = gui_get_color((char_u *)gui.rsrc_menu_bg_name);
+	gui.scroll_fg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_fg_name);
+	gui.scroll_bg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_bg_name);
 #ifdef FEAT_BEVAL_GUI
 	gui.tooltip_fg_pixel =
 			gui_get_color((char_u *)gui.rsrc_tooltip_fg_name);
@@ -1860,14 +1853,6 @@ gui_mch_create_scrollbar(
     sb->id = XtCreateWidget("scrollBar",
 	    xmScrollBarWidgetClass, textAreaForm, args, n);
 
-    // Remember the default colors, needed for ":hi clear".
-    if (gui.scroll_def_bg_pixel == (guicolor_T)0
-	    && gui.scroll_def_fg_pixel == (guicolor_T)0)
-	XtVaGetValues(sb->id,
-		XmNbackground, &gui.scroll_def_bg_pixel,
-		XmNforeground, &gui.scroll_def_fg_pixel,
-		NULL);
-
     if (sb->id != (Widget)0)
     {
 	gui_mch_set_scrollbar_colors(sb);
@@ -1895,12 +1880,16 @@ gui_mch_set_scrollbar_colors(scrollbar_T *sb)
 	if (gui.scroll_bg_pixel != INVALCOLOR)
 	{
 #if (XmVersion>=1002)
+	    // This should not only set the through color but also adjust
+	    // related colors, such as shadows.
 	    XmChangeColor(sb->id, gui.scroll_bg_pixel);
-#else
+#endif
+
+	    // Set the through color directly, in case XmChangeColor() decided
+	    // to change it.
 	    XtVaSetValues(sb->id,
 		    XmNtroughColor, gui.scroll_bg_pixel,
 		    NULL);
-#endif
 	}
 
 	if (gui.scroll_fg_pixel != INVALCOLOR)
