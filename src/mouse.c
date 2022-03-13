@@ -3065,7 +3065,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     varnumber_T winid = 0;
     varnumber_T winrow = 0;
     varnumber_T wincol = 0;
-    linenr_T	line = 0;
+    linenr_T	lnum = 0;
     varnumber_T column = 0;
 
     if (rettv_dict_alloc(rettv) != OK)
@@ -3099,14 +3099,8 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
 	    {
-		int	count;
-
-		mouse_comp_pos(wp, &row, &col, &line, NULL);
-
-		// limit to text size plus one
-		count = linetabsize(ml_get_buf(wp->w_buffer, line, FALSE));
-		if (col > count)
-		    col = count;
+		if (!mouse_comp_pos(wp, &row, &col, &lnum, NULL))
+		    col = vcol2col(wp, lnum, col);
 		column = col + 1;
 	    }
 	}
@@ -3114,7 +3108,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(d, "winid", winid);
     dict_add_number(d, "winrow", winrow);
     dict_add_number(d, "wincol", wincol);
-    dict_add_number(d, "line", (varnumber_T)line);
+    dict_add_number(d, "line", (varnumber_T)lnum);
     dict_add_number(d, "column", column);
 }
 #endif

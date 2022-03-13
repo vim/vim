@@ -2753,6 +2753,16 @@ endfunc
 func Test_getmousepos()
   enew!
   call setline(1, "\t\t\t1234")
+  call test_setmouse(1, 1)
+  call assert_equal(#{
+        \ screenrow: 1,
+        \ screencol: 1,
+        \ winid: win_getid(),
+        \ winrow: 1,
+        \ wincol: 1,
+        \ line: 1,
+        \ column: 1,
+        \ }, getmousepos())
   call test_setmouse(1, 25)
   call assert_equal(#{
         \ screenrow: 1,
@@ -2761,7 +2771,7 @@ func Test_getmousepos()
         \ winrow: 1,
         \ wincol: 25,
         \ line: 1,
-        \ column: 25,
+        \ column: 4,
         \ }, getmousepos())
   call test_setmouse(1, 50)
   call assert_equal(#{
@@ -2771,7 +2781,7 @@ func Test_getmousepos()
         \ winrow: 1,
         \ wincol: 50,
         \ line: 1,
-        \ column: 29,
+        \ column: 8,
         \ }, getmousepos())
   bwipe!
 endfunc
