@@ -762,6 +762,7 @@ fill_exarg_from_cctx(exarg_T *eap, cctx_T *cctx)
 {
     eap->getline = exarg_getline;
     eap->cookie = cctx;
+    eap->skip = cctx->ctx_skip == SKIP_YES;
 }
 
 /*
@@ -855,7 +856,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	semsg(_(e_namespace_not_supported_str), name_start);
 	return NULL;
     }
-    if (check_defined(name_start, name_end - name_start, cctx,
+    if (cctx->ctx_skip != SKIP_YES
+	    && check_defined(name_start, name_end - name_start, cctx,
 							  NULL, FALSE) == FAIL)
 	return NULL;
     if (!ASCII_ISUPPER(is_global ? name_start[2] : name_start[0]))

@@ -3515,15 +3515,18 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    return OK;
 		}
 		break;
-#ifdef FEAT_JOB_CHANNEL
 	case 8: if (STRNCMP(s, "null_job", 8) == 0)
 		{
+#ifdef FEAT_JOB_CHANNEL
 		    rettv->v_type = VAR_JOB;
 		    rettv->vval.v_job = NULL;
+#else
+		    rettv->v_type = VAR_SPECIAL;
+		    rettv->vval.v_number = VVAL_NULL;
+#endif
 		    return OK;
 		}
 		break;
-#endif
 	case 9:
 		if (STRNCMP(s, "null_", 5) != 0)
 		    break;
@@ -3554,14 +3557,17 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		}
 		break;
 	case 12:
-#ifdef FEAT_JOB_CHANNEL
 		if (STRNCMP(s, "null_channel", 12) == 0)
 		{
+#ifdef FEAT_JOB_CHANNEL
 		    rettv->v_type = VAR_CHANNEL;
 		    rettv->vval.v_channel = NULL;
+#else
+		    rettv->v_type = VAR_SPECIAL;
+		    rettv->vval.v_number = VVAL_NULL;
+#endif
 		    return OK;
 		}
-#endif
 		if (STRNCMP(s, "null_partial", 12) == 0)
 		{
 		    rettv->v_type = VAR_PARTIAL;
