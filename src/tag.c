@@ -1642,34 +1642,34 @@ find_tagfunc_tags(
 typedef struct
 {
     tagsearch_state_T	state;		// tag search state
+    int		stop_searching;		// stop when match found or error
+    pat_T	*orgpat;		// holds unconverted pattern info
+    char_u     *lbuf;			// line buffer
+    int		lbuf_size;		// length of lbuf
     char_u	*tag_fname;		// name of the tag file
     FILE	*fp;			// current tags file pointer
-    pat_T	orgpat;			// holds unconverted pattern info
     int		flags;			// flags used for tag search
     int		tag_file_sorted;	// !_TAG_FILE_SORTED value
     int		get_searchpat;		// used for 'showfulltag'
     int		help_only;		// only search for help tags
+    int		did_open;		// did open a tag file
+    int		mincount;		// MAXCOL: find all matches
+					// other: minimal number of matches
+    int		linear;			// do a linear search
     vimconv_T	vimconv;
+#ifdef FEAT_EMACS_TAGS
+    int		is_etag;		// current file is emacs style
+    char_u	*ebuf;			// additional buffer for etag fname
+#endif
 #ifdef FEAT_MULTI_LANG
     char_u	help_lang[3];		// lang of current tags file
     int		help_pri;		// help language priority
     char_u	*help_lang_find;	// lang to be found
     int		is_txt;			// flag of file extension
 #endif
-    int		did_open;		// did open a tag file
-    int		mincount;		// MAXCOL: find all matches
-					// other: minimal number of matches
-    int		linear;			// do a linear search
-    char_u     *lbuf;			// line buffer
-    int		lbuf_size;		// length of lbuf
-#ifdef FEAT_EMACS_TAGS
-    int		is_etag;		// current file is emacs style
-    char_u	*ebuf;			// additional buffer for etag fname
-#endif
     int		match_count;		// number of matches found
     garray_T	ga_match[MT_COUNT];	// stores matches in sequence
     hashtab_T	ht_match[MT_COUNT];	// stores matches by key
-    int		stop_searching;		// stop when match found or error
 } findtags_state_T;
 
 /*
@@ -1687,9 +1687,10 @@ findtags_state_init(
 
     st->tag_fname = alloc(MAXPATHL + 1);
     st->fp = NULL;
-    st->orgpat.pat = pat;
-    st->orgpat.len = (int)STRLEN(pat);
-    st->orgpat.regmatch.regprog = NULL;
+    st->orgpat = ALLOC_ONE(pat_T);
+    st->orgpat->pat = pat;
+    st->orgpat->len = (int)STRLEN(pat);
+    st->orgpat->regmatch.regprog = NULL;
     st->flags = flags;
     st->tag_file_sorted = NUL;
     st->help_only = (flags & TAG_HELP);
@@ -1736,7 +1737,8 @@ findtags_state_free(findtags_state_T *st)
 {
     vim_free(st->tag_fname);
     vim_free(st->lbuf);
-    vim_regfree(st->orgpat.regmatch.regprog);
+    vim_regfree(st->orgpat->regmatch.regprog);
+    vim_free(st->orgpat);
 #ifdef FEAT_EMACS_TAGS
     vim_free(st->ebuf);
 #endif
@@ -1940,6 +1942,7 @@ emacs_tags_file_eof(findtags_state_T *st)
     st->fp = incstack[incstack_idx].fp;
     STRCPY(st->tag_fname, incstack[incstack_idx].etag_fname);
     vim_free(incstack[incstack_idx].etag_fname);
+    st->is_etag = TRUE;	// (only etags can include)
 
     return TRUE;
 }
@@ -2099,12 +2102,9 @@ findtags_get_next_line(findtags_state_T *st, tagsearch_info_T *sinfo_p)
 	{
 #ifdef FEAT_EMACS_TAGS
 	    if (emacs_tags_file_eof(st) == TRUE)
-	    {
 		// an included tags file. Continue processing the parent
 		// tags file.
-		st->is_etag = TRUE;	// (only etags can include)
 		return TAGS_READ_IGNORE;
-	    }
 #endif
 	    return TAGS_READ_EOF;
 	}
@@ -2193,12 +2193,12 @@ findtags_start_state_handler(
     {
 	st->state = TS_BINARY;
 	*sortic = TRUE;
-	st->orgpat.regmatch.rm_ic = (p_ic || !noic);
+	st->orgpat->regmatch.rm_ic = (p_ic || !noic);
     }
     else
 	st->state = TS_LINEAR;
 
-    if (st->state == TS_BINARY && st->orgpat.regmatch.rm_ic && !*sortic)
+    if (st->state == TS_BINARY && st->orgpat->regmatch.rm_ic && !*sortic)
     {
 	// Binary search won't work for ignoring case, use linear
 	// search.
@@ -2241,14 +2241,21 @@ findtags_start_state_handler(
  * Returns FAIL if a format error is encountered.
  */
     static int
-findtags_parse_line(findtags_state_T *st, tagptrs_T *tagpp)
+findtags_parse_line(
+    findtags_state_T		*st,
+    tagptrs_T			*tagpp,
+    findtags_match_args_T	*margs,
+    tagsearch_info_T		*sinfo_p)
 {
     int		status;
+    int		i;
+    int		cmplen;
+    int		tagcmp;
 
     // Figure out where the different strings are in this line.
     // For "normal" tags: Do a quick check if the tag matches.
     // This speeds up tag searching a lot!
-    if (st->orgpat.headlen
+    if (st->orgpat->headlen
 #ifdef FEAT_EMACS_TAGS
 	    && !st->is_etag
 #endif
@@ -2258,89 +2265,18 @@ findtags_parse_line(findtags_state_T *st, tagptrs_T *tagpp)
 	tagpp->tagname = st->lbuf;
 	tagpp->tagname_end = vim_strchr(st->lbuf, TAB);
 	if (tagpp->tagname_end == NULL)
-	{
 	    // Corrupted tag line.
-	    return FAIL;
-	}
+	    return TAG_MATCH_FAIL;
 
-	// Can be a matching tag, isolate the file name and command.
-	tagpp->fname = tagpp->tagname_end + 1;
-	tagpp->fname_end = vim_strchr(tagpp->fname, TAB);
-	if (tagpp->fname_end == NULL)
-	    status = FAIL;
-	else
-	{
-	    tagpp->command = tagpp->fname_end + 1;
-	    status = OK;
-	}
-    }
-    else
-	status = parse_tag_line(st->lbuf,
-#ifdef FEAT_EMACS_TAGS
-		st->is_etag,
-#endif
-		tagpp);
-
-    if (status == FAIL)
-	return FAIL;
-
-#ifdef FEAT_EMACS_TAGS
-    if (st->is_etag)
-	tagpp->fname = st->ebuf;
-#endif
-
-    return OK;
-}
-
-/*
- * Initialize the structure used for tag matching.
- */
-    static void
-findtags_matchargs_init(findtags_match_args_T *margs, int flags)
-{
-    margs->matchoff = 0;			// match offset
-    margs->match_re = FALSE;			// match with regexp
-    margs->match_no_ic = FALSE;			// matches with case
-    margs->has_re = (flags & TAG_REGEXP);	// regexp used
-    margs->sortic = FALSE;			// tag file sorted in nocase
-    margs->sort_error = FALSE;			// tags file not sorted
-}
-
-/*
- * Compares the tag name in 'tagpp->tagname' with a search pattern in
- * 'st->orgpat.head'.
- * Returns TAG_MATCH_SUCCESS if the tag matches, TAG_MATCH_FAIL if the tag
- * doesn't match, TAG_MATCH_NEXT to look for the next matching tag (used in a
- * binary search) and TAG_MATCH_STOP if all the tags are processed without a
- * match. Uses the values in 'margs' for doing the comparison.
- */
-    static tagmatch_status_T
-findtags_match_tag(
-    findtags_state_T	*st,
-    tagptrs_T		*tagpp,
-    findtags_match_args_T *margs,
-    tagsearch_info_T	*sinfo_p)
-{
-    int		match = FALSE;
-    int		cmplen;
-    int		i;
-    int		tagcmp;
-
-    // Skip this line if the length of the tag is different and
-    // there is no regexp, or the tag is too short.
-    if (st->orgpat.headlen
-#ifdef FEAT_EMACS_TAGS
-	    && !st->is_etag
-#endif
-       )
-    {
+	// Skip this line if the length of the tag is different and
+	// there is no regexp, or the tag is too short.
 	cmplen = (int)(tagpp->tagname_end - tagpp->tagname);
 	if (p_tl != 0 && cmplen > p_tl)	    // adjust for 'taglength'
 	    cmplen = p_tl;
-	if (margs->has_re && st->orgpat.headlen < cmplen)
-	    cmplen = st->orgpat.headlen;
-	else if (st->state == TS_LINEAR && st->orgpat.headlen != cmplen)
-	    return TAG_MATCH_FAIL;
+	if ((st->flags & TAG_REGEXP) && st->orgpat->headlen < cmplen)
+	    cmplen = st->orgpat->headlen;
+	else if (st->state == TS_LINEAR && st->orgpat->headlen != cmplen)
+	    return TAG_MATCH_NEXT;
 
 	if (st->state == TS_BINARY)
 	{
@@ -2353,18 +2289,18 @@ findtags_match_tag(
 
 	    // Compare the current tag with the searched tag.
 	    if (margs->sortic)
-		tagcmp = tag_strnicmp(tagpp->tagname, st->orgpat.head,
+		tagcmp = tag_strnicmp(tagpp->tagname, st->orgpat->head,
 							(size_t)cmplen);
 	    else
-		tagcmp = STRNCMP(tagpp->tagname, st->orgpat.head, cmplen);
+		tagcmp = STRNCMP(tagpp->tagname, st->orgpat->head, cmplen);
 
 	    // A match with a shorter tag means to search forward.
 	    // A match with a longer tag means to search backward.
 	    if (tagcmp == 0)
 	    {
-		if (cmplen < st->orgpat.headlen)
+		if (cmplen < st->orgpat->headlen)
 		    tagcmp = -1;
-		else if (cmplen > st->orgpat.headlen)
+		else if (cmplen > st->orgpat->headlen)
 		    tagcmp = 1;
 	    }
 
@@ -2404,7 +2340,7 @@ findtags_match_tag(
 	}
 	else if (st->state == TS_SKIP_BACK)
 	{
-	    if (MB_STRNICMP(tagpp->tagname, st->orgpat.head, cmplen) != 0)
+	    if (MB_STRNICMP(tagpp->tagname, st->orgpat->head, cmplen) != 0)
 		st->state = TS_STEP_FORWARD;
 	    else
 		// Have to skip back more.  Restore the curr_offset
@@ -2414,7 +2350,7 @@ findtags_match_tag(
 	}
 	else if (st->state == TS_STEP_FORWARD)
 	{
-	    if (MB_STRNICMP(tagpp->tagname, st->orgpat.head, cmplen) != 0)
+	    if (MB_STRNICMP(tagpp->tagname, st->orgpat->head, cmplen) != 0)
 	    {
 		if ((off_T)vim_ftell(st->fp) > sinfo_p->match_offset)
 		    return TAG_MATCH_STOP;	// past last match
@@ -2424,9 +2360,68 @@ findtags_match_tag(
 	}
 	else
 	    // skip this match if it can't match
-	    if (MB_STRNICMP(tagpp->tagname, st->orgpat.head, cmplen) != 0)
-		return TAG_MATCH_FAIL;
+	    if (MB_STRNICMP(tagpp->tagname, st->orgpat->head, cmplen) != 0)
+		return TAG_MATCH_NEXT;
+
+	// Can be a matching tag, isolate the file name and command.
+	tagpp->fname = tagpp->tagname_end + 1;
+	tagpp->fname_end = vim_strchr(tagpp->fname, TAB);
+	if (tagpp->fname_end == NULL)
+	    status = FAIL;
+	else
+	{
+	    tagpp->command = tagpp->fname_end + 1;
+	    status = OK;
+	}
     }
+    else
+	status = parse_tag_line(st->lbuf,
+#ifdef FEAT_EMACS_TAGS
+		st->is_etag,
+#endif
+		tagpp);
+
+    if (status == FAIL)
+	return TAG_MATCH_FAIL;
+
+#ifdef FEAT_EMACS_TAGS
+    if (st->is_etag)
+	tagpp->fname = st->ebuf;
+#endif
+
+    return TAG_MATCH_SUCCESS;
+}
+
+/*
+ * Initialize the structure used for tag matching.
+ */
+    static void
+findtags_matchargs_init(findtags_match_args_T *margs, int flags)
+{
+    margs->matchoff = 0;			// match offset
+    margs->match_re = FALSE;			// match with regexp
+    margs->match_no_ic = FALSE;			// matches with case
+    margs->has_re = (flags & TAG_REGEXP);	// regexp used
+    margs->sortic = FALSE;			// tag file sorted in nocase
+    margs->sort_error = FALSE;			// tags file not sorted
+}
+
+/*
+ * Compares the tag name in 'tagpp->tagname' with a search pattern in
+ * 'st->orgpat.head'.
+ * Returns TAG_MATCH_SUCCESS if the tag matches, TAG_MATCH_FAIL if the tag
+ * doesn't match, TAG_MATCH_NEXT to look for the next matching tag (used in a
+ * binary search) and TAG_MATCH_STOP if all the tags are processed without a
+ * match. Uses the values in 'margs' for doing the comparison.
+ */
+    static tagmatch_status_T
+findtags_match_tag(
+    findtags_state_T	*st,
+    tagptrs_T		*tagpp,
+    findtags_match_args_T *margs)
+{
+    int		match = FALSE;
+    int		cmplen;
 
     // First try matching with the pattern literally (also when it is
     // a regexp).
@@ -2434,41 +2429,41 @@ findtags_match_tag(
     if (p_tl != 0 && cmplen > p_tl)	    // adjust for 'taglength'
 	cmplen = p_tl;
     // if tag length does not match, don't try comparing
-    if (st->orgpat.len != cmplen)
+    if (st->orgpat->len != cmplen)
 	match = FALSE;
     else
     {
-	if (st->orgpat.regmatch.rm_ic)
+	if (st->orgpat->regmatch.rm_ic)
 	{
 	    match =
-		(MB_STRNICMP(tagpp->tagname, st->orgpat.pat, cmplen) == 0);
+		(MB_STRNICMP(tagpp->tagname, st->orgpat->pat, cmplen) == 0);
 	    if (match)
 		margs->match_no_ic =
-		    (STRNCMP(tagpp->tagname, st->orgpat.pat, cmplen) == 0);
+		    (STRNCMP(tagpp->tagname, st->orgpat->pat, cmplen) == 0);
 	}
 	else
-	    match = (STRNCMP(tagpp->tagname, st->orgpat.pat, cmplen) == 0);
+	    match = (STRNCMP(tagpp->tagname, st->orgpat->pat, cmplen) == 0);
     }
 
     // Has a regexp: Also find tags matching regexp.
     margs->match_re = FALSE;
-    if (!match && st->orgpat.regmatch.regprog != NULL)
+    if (!match && st->orgpat->regmatch.regprog != NULL)
     {
 	int	cc;
 
 	cc = *tagpp->tagname_end;
 	*tagpp->tagname_end = NUL;
-	match = vim_regexec(&st->orgpat.regmatch, tagpp->tagname, (colnr_T)0);
+	match = vim_regexec(&st->orgpat->regmatch, tagpp->tagname, (colnr_T)0);
 	if (match)
 	{
-	    margs->matchoff = (int)(st->orgpat.regmatch.startp[0] -
+	    margs->matchoff = (int)(st->orgpat->regmatch.startp[0] -
 							tagpp->tagname);
-	    if (st->orgpat.regmatch.rm_ic)
+	    if (st->orgpat->regmatch.rm_ic)
 	    {
-		st->orgpat.regmatch.rm_ic = FALSE;
-		margs->match_no_ic = vim_regexec(&st->orgpat.regmatch,
+		st->orgpat->regmatch.rm_ic = FALSE;
+		margs->match_no_ic = vim_regexec(&st->orgpat->regmatch,
 			tagpp->tagname, (colnr_T)0);
-		st->orgpat.regmatch.rm_ic = TRUE;
+		st->orgpat->regmatch.rm_ic = TRUE;
 	    }
 	}
 	*tagpp->tagname_end = cc;
@@ -2571,7 +2566,7 @@ findtags_add_match(
 	    else
 		mtt = MT_GL_OTH;
 	}
-	if (st->orgpat.regmatch.rm_ic && !margs->match_no_ic)
+	if (st->orgpat->regmatch.rm_ic && !margs->match_no_ic)
 	    mtt += MT_IC_OFF;
 	if (margs->match_re)
 	    mtt += MT_RE_OFF;
@@ -2857,7 +2852,12 @@ line_read_in:
 	    continue;
 	}
 
-	if (findtags_parse_line(st, &tagp) == FAIL)
+	retval = findtags_parse_line(st, &tagp, margs, &search_info);
+	if (retval == TAG_MATCH_NEXT)
+	    continue;
+	if (retval == TAG_MATCH_STOP)
+	    break;
+	if (retval == TAG_MATCH_FAIL)
 	{
 	    semsg(_(e_format_error_in_tags_file_str), st->tag_fname);
 #ifdef FEAT_CSCOPE
@@ -2868,7 +2868,7 @@ line_read_in:
 	    return;
 	}
 
-	retval = findtags_match_tag(st, &tagp, margs, &search_info);
+	retval = findtags_match_tag(st, &tagp, margs);
 	if (retval == TAG_MATCH_NEXT)
 	    continue;
 	if (retval == TAG_MATCH_STOP)
@@ -2895,7 +2895,7 @@ findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
 {
     findtags_match_args_T margs;
 #ifdef FEAT_CSCOPE
-    int		use_cscope = FALSE;
+    int		use_cscope = (st->flags & TAG_CSCOPE);
 #endif
 
     st->vimconv.vc_type = CONV_NONE;
@@ -2906,7 +2906,6 @@ findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
     // A file that doesn't exist is silently ignored.  Only when not a
     // single file is found, an error message is given (further on).
 #ifdef FEAT_CSCOPE
-    use_cscope = (st->flags & TAG_CSCOPE);
     if (use_cscope)
 	st->fp = NULL;	    // avoid GCC warning
     else
@@ -3111,28 +3110,28 @@ find_tags(
     {
 	// When "@ab" is specified use only the "ab" language, otherwise
 	// search all languages.
-	if (st.orgpat.len > 3 && pat[st.orgpat.len - 3] == '@'
-				&& ASCII_ISALPHA(pat[st.orgpat.len - 2])
-				&& ASCII_ISALPHA(pat[st.orgpat.len - 1]))
+	if (st.orgpat->len > 3 && pat[st.orgpat->len - 3] == '@'
+				&& ASCII_ISALPHA(pat[st.orgpat->len - 2])
+				&& ASCII_ISALPHA(pat[st.orgpat->len - 1]))
 	{
-	    saved_pat = vim_strnsave(pat, st.orgpat.len - 3);
+	    saved_pat = vim_strnsave(pat, st.orgpat->len - 3);
 	    if (saved_pat != NULL)
 	    {
-		st.help_lang_find = &pat[st.orgpat.len - 2];
-		st.orgpat.pat = saved_pat;
-		st.orgpat.len -= 3;
+		st.help_lang_find = &pat[st.orgpat->len - 2];
+		st.orgpat->pat = saved_pat;
+		st.orgpat->len -= 3;
 	    }
 	}
     }
 #endif
-    if (p_tl != 0 && st.orgpat.len > p_tl)	// adjust for 'taglength'
-	st.orgpat.len = p_tl;
+    if (p_tl != 0 && st.orgpat->len > p_tl)	// adjust for 'taglength'
+	st.orgpat->len = p_tl;
 
     save_emsg_off = emsg_off;
     emsg_off = TRUE;  // don't want error for invalid RE here
-    prepare_pats(&st.orgpat, has_re);
+    prepare_pats(st.orgpat, has_re);
     emsg_off = save_emsg_off;
-    if (has_re && st.orgpat.regmatch.regprog == NULL)
+    if (has_re && st.orgpat->regmatch.regprog == NULL)
 	goto findtag_end;
 
 #ifdef FEAT_EVAL
@@ -3164,11 +3163,11 @@ find_tags(
      * When the tag file is case-fold sorted, it is either one or the other.
      * Only ignore case when TAG_NOIC not used or 'ignorecase' set.
      */
-    st.orgpat.regmatch.rm_ic = ((p_ic || !noic)
-			&& (findall || st.orgpat.headlen == 0 || !p_tbs));
+    st.orgpat->regmatch.rm_ic = ((p_ic || !noic)
+			&& (findall || st.orgpat->headlen == 0 || !p_tbs));
     for (round = 1; round <= 2; ++round)
     {
-	st.linear = (st.orgpat.headlen == 0 || !p_tbs || round == 2);
+	st.linear = (st.orgpat->headlen == 0 || !p_tbs || round == 2);
 
       /*
        * Try tag file names from tags option one by one.
@@ -3200,7 +3199,7 @@ find_tags(
 	// stop searching when already did a linear search, or when TAG_NOIC
 	// used, and 'ignorecase' not set or already did case-ignore search
 	if (st.stop_searching || st.linear || (!p_ic && noic) ||
-						st.orgpat.regmatch.rm_ic)
+						st.orgpat->regmatch.rm_ic)
 	    break;
 # ifdef FEAT_CSCOPE
 	if (use_cscope)
@@ -3208,7 +3207,7 @@ find_tags(
 # endif
 
 	// try another time while ignoring case
-	st.orgpat.regmatch.rm_ic = TRUE;
+	st.orgpat->regmatch.rm_ic = TRUE;
     }
 
     if (!st.stop_searching)
