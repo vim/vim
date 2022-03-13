@@ -3099,17 +3099,14 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
 	    {
-		char_u	*p;
 		int	count;
 
 		mouse_comp_pos(wp, &row, &col, &line, NULL);
 
-		// limit to text length plus one
-		p = ml_get_buf(wp->w_buffer, line, FALSE);
-		count = (int)STRLEN(p);
+		// limit to text size plus one
+		count = linetabsize(ml_get_buf(wp->w_buffer, line, FALSE));
 		if (col > count)
 		    col = count;
-
 		column = col + 1;
 	    }
 	}

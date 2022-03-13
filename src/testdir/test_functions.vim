@@ -2750,6 +2750,32 @@ func Test_getcurpos_setpos()
   call assert_equal([0, 0, 0, 0, 0], getcurpos(1999))
 endfunc
 
+func Test_getmousepos()
+  enew!
+  call setline(1, "\t\t\t1234")
+  call test_setmouse(1, 25)
+  call assert_equal(#{
+        \ screenrow: 1,
+        \ screencol: 25,
+        \ winid: win_getid(),
+        \ winrow: 1,
+        \ wincol: 25,
+        \ line: 1,
+        \ column: 25,
+        \ }, getmousepos())
+  call test_setmouse(1, 50)
+  call assert_equal(#{
+        \ screenrow: 1,
+        \ screencol: 50,
+        \ winid: win_getid(),
+        \ winrow: 1,
+        \ wincol: 50,
+        \ line: 1,
+        \ column: 29,
+        \ }, getmousepos())
+  bwipe!
+endfunc
+
 " Test for glob()
 func Test_glob()
   call assert_equal('', glob(test_null_string()))
