@@ -33,8 +33,9 @@ following command: >
 	ctags *.c
 
 "ctags" is a separate program.  Most Unix systems already have it installed.
-If you do not have it yet, you can find Exuberant ctags here:
+If you do not have it yet, you can find Universal/Exuberant ctags at:
 
+	http://ctags.io ~
 	http://ctags.sf.net ~
 
 Now when you are in Vim and you want to go to a function definition, you can
@@ -142,13 +143,13 @@ ONE TAGS FILE
 When Vim has to search many places for tags files, you can hear the disk
 rattling.  It may get a bit slow.  In that case it's better to spend this
 time while generating one big tags file.  You might do this overnight.
-   This requires the Exuberant ctags program, mentioned above.  It offers an
+   This requires the Universal ctags program, mentioned above.  It offers an
 argument to search a whole directory tree: >
 
 	cd ~/proj
 	ctags -R .
 
-The nice thing about this is that Exuberant ctags recognizes various file
+The nice thing about this is that Universal ctags recognizes various file
 types.  Thus this doesn't work just for C and C++ programs, also for Eiffel
 and even Vim scripts.  See the ctags documentation to tune this.
    Now you only need to tell Vim where your big tags file is: >
@@ -232,7 +233,7 @@ A TAGS BROWSER
 Since CTRL-] takes you to the definition of the identifier under the cursor,
 you can use a list of identifier names as a table of contents.  Here is an
 example.
-   First create a list of identifiers (this requires Exuberant ctags): >
+   First create a list of identifiers (this requires Universal ctags): >
 
 	ctags --c-types=f -f functions *.c
 

@@ -22,9 +22,10 @@ line of a file, regardless of the filename suffix, to check if a file is a
 Perl script (see scripts.vim in Vim's syntax directory).  Vim assumes a file
 is POD text if the filename has a .POD suffix.
 
-To use tags with Perl, you need a recent version of Exuberant ctags.  Look
-here:
-	http://ctags.sourceforge.net
+To use tags with Perl, you need Universal/Exuberant Ctags.  Look here:
+
+	Universal Ctags: https://ctags.io
+	Exuberant Ctags: http://ctags.sourceforge.net
 
 Alternatively, you can use the Perl script pltags.pl, which is shipped with
 Vim in the $VIMRUNTIME/tools directory.  This script has currently more
