@@ -1182,8 +1182,8 @@ win_line(
 #ifdef FEAT_SYN_HL
 		      // When 'cursorline' is set highlight the line number of
 		      // the current line differently.
-		      // When 'cursorlineopt' has "screenline" only highlight
-		      // the line number itself.
+		      // When 'cursorlineopt' does not have "line" only
+		      // highlight the line number itself.
 		      // TODO: Can we use CursorLine instead of CursorLineNr
 		      // when CursorLineNr isn't set?
 		      if (wp->w_p_cul
@@ -1191,7 +1191,7 @@ win_line(
 			      && (wp->w_p_culopt_flags & CULOPT_NBR)
 			      && (row == startrow + filler_lines
 				  || (row > startrow + filler_lines
-				      && wp->w_p_culopt_flags & CULOPT_LINE)))
+				     && (wp->w_p_culopt_flags & CULOPT_LINE))))
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
 		      if (wp->w_p_rnu && lnum < wp->w_cursor.lnum
