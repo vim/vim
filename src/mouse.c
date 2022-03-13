@@ -3031,7 +3031,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 }
 
 #if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP) \
-	|| defined(PROTO)
+	|| defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
  * The first column is one.
