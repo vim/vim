@@ -3882,27 +3882,6 @@ def Run_Test_debug_running_out_of_lines()
   delete('XdebugFunc')
 enddef
 
-def s:ProfiledWithLambda()
-  var n = 3
-  echo [[1, 2], [3, 4]]->filter((_, l) => l[0] == n)
-enddef
-
-def s:ProfiledNested()
-  var x = 0
-  def Nested(): any
-      return x
-  enddef
-  Nested()
-enddef
-
-def ProfiledNestedProfiled()
-  var x = 0
-  def Nested(): any
-      return x
-  enddef
-  Nested()
-enddef
-
 def Test_ambigous_command_error()
   var lines =<< trim END
       vim9script
@@ -3935,23 +3914,64 @@ enddef
 
 " Execute this near the end, profiling doesn't stop until Vim exits.
 " This only tests that it works, not the profiling output.
-def Test_xx_profile_with_lambda()
+def Test_profile_with_lambda()
   CheckFeature profile
 
-  profile start Xprofile.log
-  profile func ProfiledWithLambda
-  ProfiledWithLambda()
+  var lines =<< trim END
+      vim9script
 
-  profile func ProfiledNested
-  ProfiledNested()
+      def ProfiledWithLambda()
+        var n = 3
+        echo [[1, 2], [3, 4]]->filter((_, l) => l[0] == n)
+      enddef
 
-  # Also profile the nested function.  Use a different function, although the
-  # contents is the same, to make sure it was not already compiled.
-  profile func *
-  g:ProfiledNestedProfiled()
+      def ProfiledNested()
+        var x = 0
+        def Nested(): any
+            return x
+        enddef
+        Nested()
+      enddef
 
-  profdel func *
-  profile pause
+      def g:ProfiledNestedProfiled()
+        var x = 0
+        def Nested(): any
+            return x
+        enddef
+        Nested()
+      enddef
+
+      def Profile()
+        profile start Xprofile.log
+        profile func ProfiledWithLambda
+        ProfiledWithLambda()
+
+        profile func ProfiledNested
+        ProfiledNested()
+
+        # Also profile the nested function.  Use a different function, although the
+        # contents is the same, to make sure it was not already compiled.
+        profile func *
+        g:ProfiledNestedProfiled()
+
+        profdel func *
+        profile pause
+      enddef
+      Profile()
+      writefile(['done'], 'Xdidprofile')
+  END
+  writefile(lines, 'Xprofile.vim')
+  call system(g:GetVimCommand()
+        .. ' --clean'
+        .. ' -c "so Xprofile.vim"'
+        .. ' -c "qall!"')
+  call assert_equal(0, v:shell_error)
+
+  assert_equal(['done'], readfile('Xdidprofile'))
+  assert_true(filereadable('Xprofile.log'))
+  delete('Xdidprofile')
+  delete('Xprofile.log')
+  delete('Xprofile.vim')
 enddef
 
 " Keep this last, it messes up highlighting.
