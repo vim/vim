@@ -90,6 +90,9 @@ static struct
     {EXPAND_TAGS_LISTFILES, "tag_listfiles"},
     {EXPAND_USER, "user"},
     {EXPAND_USER_VARS, "var"},
+#if defined(FEAT_EVAL)
+    {EXPAND_BREAKPOINT, "breakpoint"},
+#endif
     {0, NULL}
 };
 

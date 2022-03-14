@@ -3230,7 +3230,8 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		arglist		file names in argument list
 		augroup		autocmd groups
 		buffer		buffer names
-		behave		:behave suboptions
+		behave		|:behave| suboptions
+		breakpoint	|:breakadd| and |:breakdel| suboptions
 		color		color schemes
 		command		Ex command
 		cmdline		|cmdline-completion| result
@@ -3247,7 +3248,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		function	function name
 		help		help subjects
 		highlight	highlight groups
-		history		:history suboptions
+		history		|:history| suboptions
 		locale		locale names (as output of locale -a)
 		mapclear	buffer argument
 		mapping		mapping name
