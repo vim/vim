@@ -385,9 +385,9 @@ put_view(
 	    // Note, if a buffer for that file already exists, use :badd to
 	    // edit that buffer, to not lose folding information (:edit resets
 	    // folds in other buffers)
-	    if (fputs("if bufexists(\"", fd) < 0
+	    if (fputs("if bufexists(fnamemodify(\"", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
-		    || fputs("\") | buffer ", fd) < 0
+		    || fputs("\", \":p\")) | buffer ", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
 		    || fputs(" | else | edit ", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
