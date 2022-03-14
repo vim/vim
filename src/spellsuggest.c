@@ -508,7 +508,7 @@ spell_suggest(int count)
 	end_visual_mode();
 	// make sure we don't include the NUL at the end of the line
 	line = ml_get_curline();
-	if (badlen > STRLEN(line) - curwin->w_cursor.col)
+	if (badlen > (int)STRLEN(line) - (int)curwin->w_cursor.col)
 	    badlen = STRLEN(line) - curwin->w_cursor.col;
     }
     // Find the start of the badly spelled word.

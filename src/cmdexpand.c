@@ -1602,6 +1602,71 @@ set_context_in_lang_cmd(expand_T *xp, char_u *arg)
 }
 #endif
 
+#ifdef FEAT_EVAL
+static enum
+{
+    EXP_BREAKPT_ADD,	// expand ":breakadd" sub-commands
+    EXP_BREAKPT_DEL	// expand ":breakdel" sub-commands
+} breakpt_expand_what;
+
+/*
+ * Set the completion context for the :breakadd command. Always returns NULL.
+ */
+    static char_u *
+set_context_in_breakadd_cmd(expand_T *xp, char_u *arg, cmdidx_T cmdidx)
+{
+    char_u *p;
+    char_u *subcmd_start;
+
+    xp->xp_context = EXPAND_BREAKPOINT;
+    xp->xp_pattern = arg;
+
+    if (cmdidx == CMD_breakadd)
+	breakpt_expand_what = EXP_BREAKPT_ADD;
+    else
+	breakpt_expand_what = EXP_BREAKPT_DEL;
+
+    p = skipwhite(arg);
+    if (*p == NUL)
+	return NULL;
+    subcmd_start = p;
+
+    if (STRNCMP("file ", p, 5) == 0 ||
+	    STRNCMP("func ", p, 5) == 0)
+    {
+	// :breakadd file [lnum] <filename>
+	// :breakadd func [lnum] <funcname>
+	p += 4;
+	p = skipwhite(p);
+
+	// skip line number (if specified)
+	if (VIM_ISDIGIT(*p))
+	{
+	    p = skipdigits(p);
+	    if (*p != ' ')
+	    {
+		xp->xp_context = EXPAND_NOTHING;
+		return NULL;
+	    }
+	    p = skipwhite(p);
+	}
+	if (STRNCMP("file", subcmd_start, 4) == 0)
+	    xp->xp_context = EXPAND_FILES;
+	else
+	    xp->xp_context = EXPAND_USER_FUNC;
+	xp->xp_pattern = p;
+    }
+    else if (STRNCMP("expr ", p, 5) == 0)
+    {
+	// :breakadd expr <expression>
+	xp->xp_context = EXPAND_EXPRESSION;
+	xp->xp_pattern = skipwhite(p + 5);
+    }
+
+    return NULL;
+}
+#endif
+
 /*
  * Set the completion context in 'xp' for command 'cmd' with index 'cmdidx'.
  * The argument to the command is 'arg' and the argument flags is 'argt'.
@@ -1957,6 +2022,12 @@ set_context_by_cmdname(
 	    xp->xp_context = EXPAND_ARGLIST;
 	    xp->xp_pattern = arg;
 	    break;
+
+#ifdef FEAT_EVAL
+	case CMD_breakadd:
+	case CMD_breakdel:
+	    return set_context_in_breakadd_cmd(xp, arg, cmdidx);
+#endif
 
 	default:
 	    break;
@@ -2348,6 +2419,31 @@ get_behave_arg(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 
+# ifdef FEAT_EVAL
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * ":breakadd {expr, file, func, here}" command.
+ * ":breakdel {func, file, here}" command.
+ */
+    static char_u *
+get_breakadd_arg(expand_T *xp UNUSED, int idx)
+{
+    char *opts[] = {"expr", "file", "func", "here"};
+
+    if (idx >=0 && idx <= 3)
+    {
+	if (breakpt_expand_what == EXP_BREAKPT_ADD)
+	    return (char_u *)opts[idx];
+	else
+	{
+	    if (idx <= 2)
+		return (char_u *)opts[idx + 1];
+	}
+    }
+    return NULL;
+}
+#endif
+
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":messages {clear}" command.
@@ -2397,42 +2493,45 @@ ExpandOther(
 	{EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE, TRUE},
 	{EXPAND_USER_NARGS, get_user_cmd_nargs, FALSE, TRUE},
 	{EXPAND_USER_COMPLETE, get_user_cmd_complete, FALSE, TRUE},
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	{EXPAND_USER_VARS, get_user_var_name, FALSE, TRUE},
 	{EXPAND_FUNCTIONS, get_function_name, FALSE, TRUE},
 	{EXPAND_USER_FUNC, get_user_func_name, FALSE, TRUE},
 	{EXPAND_DISASSEMBLE, get_disassemble_argument, FALSE, TRUE},
 	{EXPAND_EXPRESSION, get_expr_name, FALSE, TRUE},
-# endif
-# ifdef FEAT_MENU
+#endif
+#ifdef FEAT_MENU
 	{EXPAND_MENUS, get_menu_name, FALSE, TRUE},
 	{EXPAND_MENUNAMES, get_menu_names, FALSE, TRUE},
-# endif
-# ifdef FEAT_SYN_HL
+#endif
+#ifdef FEAT_SYN_HL
 	{EXPAND_SYNTAX, get_syntax_name, TRUE, TRUE},
-# endif
-# ifdef FEAT_PROFILE
+#endif
+#ifdef FEAT_PROFILE
 	{EXPAND_SYNTIME, get_syntime_arg, TRUE, TRUE},
-# endif
+#endif
 	{EXPAND_HIGHLIGHT, get_highlight_name, TRUE, TRUE},
 	{EXPAND_EVENTS, get_event_name, TRUE, FALSE},
 	{EXPAND_AUGROUP, get_augroup_name, TRUE, FALSE},
-# ifdef FEAT_CSCOPE
+#ifdef FEAT_CSCOPE
 	{EXPAND_CSCOPE, get_cscope_name, TRUE, TRUE},
-# endif
-# ifdef FEAT_SIGNS
+#endif
+#ifdef FEAT_SIGNS
 	{EXPAND_SIGN, get_sign_name, TRUE, TRUE},
-# endif
-# ifdef FEAT_PROFILE
+#endif
+#ifdef FEAT_PROFILE
 	{EXPAND_PROFILE, get_profile_name, TRUE, TRUE},
-# endif
-# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+#endif
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	{EXPAND_LANGUAGE, get_lang_arg, TRUE, FALSE},
 	{EXPAND_LOCALES, get_locales, TRUE, FALSE},
-# endif
+#endif
 	{EXPAND_ENV_VARS, get_env_name, TRUE, TRUE},
 	{EXPAND_USER, get_users, TRUE, FALSE},
 	{EXPAND_ARGLIST, get_arglist_name, TRUE, FALSE},
+#ifdef FEAT_EVAL
+	{EXPAND_BREAKPOINT, get_breakadd_arg, TRUE, TRUE},
+#endif
     };
     int	i;
     int ret = FAIL;
