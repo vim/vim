@@ -109,23 +109,69 @@ func Test_paste_visual_mode()
   call feedkeys("0fsve\<Esc>[200~more\<Esc>[201~", 'xt')
   call assert_equal('here are more words', getline(1))
   call assert_equal('some', getreg('-'))
+  normal! u
+  call assert_equal('here are some words', getline(1))
+  normal! 
+  call assert_equal('here are more words', getline(1))
 
   " include last char in the line
   call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
   call assert_equal('here are more noises', getline(1))
   call assert_equal('words', getreg('-'))
+  normal! u
+  call assert_equal('here are more words', getline(1))
+  normal! 
+  call assert_equal('here are more noises', getline(1))
 
   " exclude last char in the line
   call setline(1, 'some words!')
   call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
   call assert_equal('some noises!', getline(1))
   call assert_equal('words', getreg('-'))
+  normal! u
+  call assert_equal('some words!', getline(1))
+  normal! 
+  call assert_equal('some noises!', getline(1))
 
   " multi-line selection
   call setline(1, ['some words', 'and more'])
   call feedkeys("0fwvj0fd\<Esc>[200~letters\<Esc>[201~", 'xt')
   call assert_equal('some letters more', getline(1))
   call assert_equal("words\nand", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  normal! 
+  call assert_equal('some letters more', getline(1))
+
+  " linewise non-last line, cursor at start of line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("0V\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal('lettersand more', getline(1))
+  call assert_equal("some words\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  normal! 
+  call assert_equal('lettersand more', getline(1))
+
+  " linewise non-last line, cursor in the middle of line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("0fwV\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal('lettersand more', getline(1))
+  call assert_equal("some words\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  normal! 
+  call assert_equal('lettersand more', getline(1))
+
+  " linewise last line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("j0V\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal(['some words', 'letters'], getline(1, 2))
+  call assert_equal("and more\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  normal! 
+  call assert_equal(['some words', 'letters'], getline(1, 2))
 
   bwipe!
 endfunc
