@@ -913,6 +913,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	}
     }
 
+    update_has_breakpoint(ufunc);
     compile_type = COMPILE_TYPE(ufunc);
 #ifdef FEAT_PROFILE
     // If the outer function is profiled, also compile the nested function for
@@ -2577,6 +2578,13 @@ compile_def_function(
 	if (add_def_function(ufunc) == FAIL)
 	    return FAIL;
 	new_def_function = TRUE;
+    }
+
+    if ((ufunc->uf_flags & FC_CLOSURE) && outer_cctx == NULL)
+    {
+	semsg(_(e_compiling_closure_without_context_str),
+						   printable_func_name(ufunc));
+	return FAIL;
     }
 
     ufunc->uf_def_status = UF_COMPILING;

@@ -3249,3 +3249,7 @@ EXTERN char e_cannot_create_vim9_script_variable_in_function_str[]
 #endif
 EXTERN char e_cannot_use_s_backslash_in_vim9_script[]
 	INIT(= N_("E1270: Cannot use :s\\/sub/ in Vim9 script"));
+#ifdef FEAT_EVAL
+EXTERN char e_compiling_closure_without_context_str[]
+	INIT(= N_("E1271: compiling closure without context: %s"));
+#endif

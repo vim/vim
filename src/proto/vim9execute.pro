@@ -1,5 +1,6 @@
 /* vim9execute.c */
 void to_string_error(vartype_T vartype);
+void update_has_breakpoint(ufunc_T *ufunc);
 void funcstack_check_refcount(funcstack_T *funcstack);
 int set_ref_in_funcstacks(int copyID);
 char_u *char_from_string(char_u *str, varnumber_T index);

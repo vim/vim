@@ -152,7 +152,7 @@ exe_newlist(int count, ectx_T *ectx)
  * If debug_tick changed check if "ufunc" has a breakpoint and update
  * "uf_has_breakpoint".
  */
-    static void
+    void
 update_has_breakpoint(ufunc_T *ufunc)
 {
     if (ufunc->uf_debug_tick != debug_tick)

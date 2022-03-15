@@ -1007,6 +1007,14 @@ compile_lambda(char_u **arg, cctx_T *cctx)
        )
 	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
 
+    // if the outer function is not compiled for debugging, this one might be
+    if (cctx->ctx_compile_type != CT_DEBUG)
+    {
+	update_has_breakpoint(ufunc);
+	if (COMPILE_TYPE(ufunc) == CT_DEBUG)
+	    compile_def_function(ufunc, FALSE, CT_DEBUG, cctx);
+    }
+
     // The last entry in evalarg.eval_tofree_ga is a copy of the last line and
     // "*arg" may point into it.  Point into the original line to avoid a
     // dangling pointer.
