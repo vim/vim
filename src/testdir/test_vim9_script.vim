@@ -3944,13 +3944,13 @@ def Test_profile_with_lambda()
       def Profile()
         profile start Xprofile.log
         profile func ProfiledWithLambda
-        ProfiledWithLambda()
-
+        # mark ProfiledNested for profiling to avoid E1271
         profile func ProfiledNested
+        ProfiledWithLambda()
         ProfiledNested()
 
-        # Also profile the nested function.  Use a different function, although the
-        # contents is the same, to make sure it was not already compiled.
+        # Also profile the nested function.  Use a different function, although
+        # the contents is the same, to make sure it was not already compiled.
         profile func *
         g:ProfiledNestedProfiled()
 
