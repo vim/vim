@@ -3158,7 +3158,6 @@ func Test_cmdline_complete_breakdel()
   call assert_equal("\"breakdel   here   Xtest", @:)
   call feedkeys(":breakdel here \<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal("\"breakdel here ", @:)
-
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

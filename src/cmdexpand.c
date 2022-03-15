@@ -1606,7 +1606,8 @@ set_context_in_lang_cmd(expand_T *xp, char_u *arg)
 static enum
 {
     EXP_BREAKPT_ADD,	// expand ":breakadd" sub-commands
-    EXP_BREAKPT_DEL	// expand ":breakdel" sub-commands
+    EXP_BREAKPT_DEL,	// expand ":breakdel" sub-commands
+    EXP_PROFDEL		// expand ":profdel" sub-commands
 } breakpt_expand_what;
 
 /*
@@ -1623,16 +1624,17 @@ set_context_in_breakadd_cmd(expand_T *xp, char_u *arg, cmdidx_T cmdidx)
 
     if (cmdidx == CMD_breakadd)
 	breakpt_expand_what = EXP_BREAKPT_ADD;
-    else
+    else if (cmdidx == CMD_breakdel)
 	breakpt_expand_what = EXP_BREAKPT_DEL;
+    else
+	breakpt_expand_what = EXP_PROFDEL;
 
     p = skipwhite(arg);
     if (*p == NUL)
 	return NULL;
     subcmd_start = p;
 
-    if (STRNCMP("file ", p, 5) == 0 ||
-	    STRNCMP("func ", p, 5) == 0)
+    if (STRNCMP("file ", p, 5) == 0 || STRNCMP("func ", p, 5) == 0)
     {
 	// :breakadd file [lnum] <filename>
 	// :breakadd func [lnum] <funcname>
@@ -2025,6 +2027,7 @@ set_context_by_cmdname(
 
 #ifdef FEAT_EVAL
 	case CMD_breakadd:
+	case CMD_profdel:
 	case CMD_breakdel:
 	    return set_context_in_breakadd_cmd(xp, arg, cmdidx);
 #endif
@@ -2432,11 +2435,19 @@ get_breakadd_arg(expand_T *xp UNUSED, int idx)
 
     if (idx >=0 && idx <= 3)
     {
+	// breakadd {expr, file, func, here}
 	if (breakpt_expand_what == EXP_BREAKPT_ADD)
 	    return (char_u *)opts[idx];
+	else if (breakpt_expand_what == EXP_BREAKPT_DEL)
+	{
+	    // breakdel {func, file, here}
+	    if (idx <= 2)
+		return (char_u *)opts[idx + 1];
+	}
 	else
 	{
-	    if (idx <= 2)
+	    // profdel {func, file}
+	    if (idx <= 1)
 		return (char_u *)opts[idx + 1];
 	}
     }
