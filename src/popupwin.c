@@ -3738,7 +3738,7 @@ may_update_popup_mask(int type)
 				{
 				    // compute the position in the buffer line
 				    // from the position in the window
-				    mouse_comp_pos(wp, &line_cp, &col_cp,
+				    (void)mouse_comp_pos(wp, &line_cp, &col_cp,
 							  &lnum, plines_cache);
 				    redrawWinline(wp, lnum);
 				}
