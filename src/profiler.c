@@ -376,7 +376,6 @@ get_profile_name(expand_T *xp UNUSED, int idx)
     {
     case PEXP_SUBCMD:
 	return (char_u *)pexpand_cmds[idx];
-    // case PEXP_FUNC: TODO
     default:
 	return NULL;
     }
@@ -399,14 +398,20 @@ set_context_in_profile_cmd(expand_T *xp, char_u *arg)
     if (*end_subcmd == NUL)
 	return;
 
-    if (end_subcmd - arg == 5 && STRNCMP(arg, "start", 5) == 0)
+    if ((end_subcmd - arg == 5 && STRNCMP(arg, "start", 5) == 0)
+	    || (end_subcmd - arg == 4 && STRNCMP(arg, "file", 4) == 0))
     {
 	xp->xp_context = EXPAND_FILES;
 	xp->xp_pattern = skipwhite(end_subcmd);
 	return;
     }
+    else if (end_subcmd - arg == 4 && STRNCMP(arg, "func", 4) == 0)
+    {
+	xp->xp_context = EXPAND_USER_FUNC;
+	xp->xp_pattern = skipwhite(end_subcmd);
+	return;
+    }
 
-    // TODO: expand function names after "func"
     xp->xp_context = EXPAND_NOTHING;
 }
 
