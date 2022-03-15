@@ -913,8 +913,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	}
     }
 
-    update_has_breakpoint(ufunc);
-    compile_type = COMPILE_TYPE(ufunc);
+    compile_type = get_compile_type(ufunc);
 #ifdef FEAT_PROFILE
     // If the outer function is profiled, also compile the nested function for
     // profiling.
@@ -2473,6 +2472,30 @@ check_args_shadowing(ufunc_T *ufunc, cctx_T *cctx)
     }
     ufunc->uf_args_visible = ufunc->uf_args.ga_len;
     return r;
+}
+
+/*
+ * Get the compilation type that should be used for "ufunc".
+ * Keep in sync with INSTRUCTIONS().
+ */
+    compiletype_T
+get_compile_type(ufunc_T *ufunc)
+{
+    // Update uf_has_breakpoint if needed.
+    update_has_breakpoint(ufunc);
+
+    if (debug_break_level > 0 || may_break_in_function(ufunc))
+	return CT_DEBUG;
+#ifdef FEAT_PROFILE
+    if (do_profiling == PROF_YES)
+    {
+	if (!ufunc->uf_profiling && has_profiling(FALSE, ufunc->uf_name, NULL))
+	    func_do_profile(ufunc);
+	if (ufunc->uf_profiling)
+	    return CT_PROFILE;
+    }
+#endif
+    return CT_NONE;
 }
 
 

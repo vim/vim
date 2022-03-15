@@ -3794,8 +3794,8 @@ eval7(
 			// This is recognized in compile_return().
 			if (ufunc->uf_ret_type->tt_type == VAR_VOID)
 			    ufunc->uf_ret_type = &t_unknown;
-			if (compile_def_function(ufunc,
-				     FALSE, COMPILE_TYPE(ufunc), NULL) == FAIL)
+			if (compile_def_function(ufunc, FALSE,
+					get_compile_type(ufunc), NULL) == FAIL)
 			{
 			    clear_tv(rettv);
 			    ret = FAIL;

@@ -23,6 +23,7 @@ int compile_lhs(char_u *var_start, lhs_T *lhs, int cmdidx, int heredoc, int ople
 int compile_assign_lhs(char_u *var_start, lhs_T *lhs, int cmdidx, int is_decl, int heredoc, int oplen, cctx_T *cctx);
 int compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx);
 int compile_assign_unlet(char_u *var_start, lhs_T *lhs, int is_assign, type_T *rhs_type, cctx_T *cctx);
+compiletype_T get_compile_type(ufunc_T *ufunc);
 int compile_def_function(ufunc_T *ufunc, int check_return_type, compiletype_T compile_type, cctx_T *outer_cctx);
 void set_function_type(ufunc_T *ufunc);
 void unlink_def_function(ufunc_T *ufunc);

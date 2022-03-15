@@ -284,6 +284,7 @@ call_dfunc(
     estack_T	*entry;
     funclocal_T	*floc = NULL;
     int		res = OK;
+    compiletype_T compile_type;
 
     if (dfunc->df_deleted)
     {
@@ -309,14 +310,12 @@ call_dfunc(
     }
 #endif
 
-    // Update uf_has_breakpoint if needed.
-    update_has_breakpoint(ufunc);
-
     // When debugging and using "cont" switches to the not-debugged
     // instructions, may need to still compile them.
-    if (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc)))
+    compile_type = get_compile_type(ufunc);
+    if (func_needs_compiling(ufunc, compile_type))
     {
-	res = compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL);
+	res = compile_def_function(ufunc, FALSE, compile_type, NULL);
 
 	// compile_def_function() may cause def_functions.ga_data to change
 	dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
@@ -926,7 +925,7 @@ call_ufunc(
     int		error;
     int		idx;
     int		did_emsg_before = did_emsg;
-    compiletype_T compile_type = COMPILE_TYPE(ufunc);
+    compiletype_T compile_type = get_compile_type(ufunc);
 
     if (func_needs_compiling(ufunc, compile_type)
 		&& compile_def_function(ufunc, FALSE, compile_type, NULL)
@@ -4993,14 +4992,11 @@ call_def_function(
 #undef STACK_TV_VAR
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame_idx + STACK_FRAME_SIZE + idx)
 
-    // Update uf_has_breakpoint if needed.
-    update_has_breakpoint(ufunc);
-
     if (ufunc->uf_def_status == UF_NOT_COMPILED
 	    || ufunc->uf_def_status == UF_COMPILE_ERROR
-	    || (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
-		&& compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL)
-								      == FAIL))
+	    || (func_needs_compiling(ufunc, get_compile_type(ufunc))
+		&& compile_def_function(ufunc, FALSE,
+				       get_compile_type(ufunc), NULL) == FAIL))
     {
 	if (did_emsg_cumul + did_emsg == did_emsg_before)
 	    semsg(_(e_function_is_not_compiled_str),

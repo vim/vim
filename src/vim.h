@@ -1839,20 +1839,6 @@ typedef enum {
     CT_DEBUG	    // use df_instr_debug, overrules CT_PROFILE
 } compiletype_T;
 
-// Keep in sync with INSTRUCTIONS().
-#ifdef FEAT_PROFILE
-# define COMPILE_TYPE(ufunc) (debug_break_level > 0 \
-	|| may_break_in_function(ufunc) \
-		? CT_DEBUG \
-		: do_profiling == PROF_YES && (ufunc)->uf_profiling \
-			? CT_PROFILE : CT_NONE)
-#else
-# define COMPILE_TYPE(ufunc) debug_break_level > 0 \
-	|| may_break_in_function(ufunc) \
-		? CT_DEBUG \
-		: CT_NONE
-#endif
-
 /*
  * When compiling with 32 bit Perl time_t is 32 bits in the Perl code but 64
  * bits elsewhere.  That causes memory corruption.  Define time_T and use it

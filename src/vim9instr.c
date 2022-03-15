@@ -1207,8 +1207,10 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
     cctx->ctx_has_closure = 1;
 
     // If the referenced function is a closure, it may use items further up in
-    // the nested context, including this one.
-    if (ufunc->uf_flags & FC_CLOSURE)
+    // the nested context, including this one.  But not a function defined at
+    // the script level.
+    if ((ufunc->uf_flags & FC_CLOSURE)
+			       && func_name_refcount(cctx->ctx_ufunc->uf_name))
 	cctx->ctx_ufunc->uf_flags |= FC_CLOSURE;
 
     type = ufunc->uf_func_type == NULL ? &t_func_any : ufunc->uf_func_type;
@@ -1487,6 +1489,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    && ufunc->uf_def_status != UF_COMPILE_ERROR)
     {
 	int		i;
+	compiletype_T	compile_type;
 
 	for (i = 0; i < argcount; ++i)
 	{
@@ -1519,9 +1522,10 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		return FAIL;
 	    }
 	}
-	if (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
+	compile_type = get_compile_type(ufunc);
+	if (func_needs_compiling(ufunc, compile_type)
 		&& compile_def_function(ufunc, ufunc->uf_ret_type == NULL,
-					    COMPILE_TYPE(ufunc), NULL) == FAIL)
+						   compile_type, NULL) == FAIL)
 	    return FAIL;
     }
     if (ufunc->uf_def_status == UF_COMPILE_ERROR)
