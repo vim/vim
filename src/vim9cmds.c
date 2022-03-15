@@ -2258,8 +2258,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    // return type here.
 	    stack_type = get_type_on_stack(cctx, 0);
 	    if ((check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
-				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown
-				|| cctx->ctx_ufunc->uf_ret_type == &t_any))
+				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown))
 		    || (!check_return_type
 				&& cctx->ctx_ufunc->uf_ret_type == &t_unknown))
 	    {
