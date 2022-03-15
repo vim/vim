@@ -1417,12 +1417,9 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    default: break;
 	}
     }
-    if (!in_vim9script())
-	return FALSE;  // backwards compatible
-
-    semsg(_(e_cannot_compare_str_with_str),
-			 vartype_name(tv1->v_type), vartype_name(tv2->v_type));
-    return MAYBE;
+    // although comparing null with number, float or bool is not very usefule
+    // we won't give an error
+    return FALSE;
 }
 
 /*

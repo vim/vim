@@ -397,20 +397,8 @@ get_compare_isn(
 			       vartype_name(vartype1), vartype_name(vartype2));
 	    return ISN_DROP;
 	}
-	switch (vartype1 == VAR_SPECIAL ? vartype2 : vartype1)
-	{
-	    case VAR_BLOB: break;
-	    case VAR_CHANNEL: break;
-	    case VAR_DICT: break;
-	    case VAR_FUNC: break;
-	    case VAR_JOB: break;
-	    case VAR_LIST: break;
-	    case VAR_PARTIAL: break;
-	    case VAR_STRING: break;
-	    default: semsg(_(e_cannot_compare_str_with_str),
-			       vartype_name(vartype1), vartype_name(vartype2));
-		     return ISN_DROP;
-	}
+	// although comparing null with number, float or bool is not useful, we
+	// allow it
 	isntype = ISN_COMPARENULL;
     }
 

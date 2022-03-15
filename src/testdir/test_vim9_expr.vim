@@ -716,6 +716,35 @@ def Test_expr4_compare_null()
   g:null_dict = test_null_dict()
   g:not_null_list = []
   var lines =<< trim END
+      assert_false(true == null)
+      assert_false(false == null)
+      assert_false(null == true)
+      assert_false(null == false)
+      assert_true(true != null)
+      assert_true(false != null)
+      assert_true(null != true)
+      assert_true(null != false)
+
+      assert_false(123 == null)
+      assert_false(0 == null)
+      assert_false(null == 123)
+      assert_false(null == 0)
+      assert_true(123 != null)
+      assert_true(0 != null)
+      assert_true(null != 123)
+      assert_true(null != 0)
+
+      if has('float')
+        assert_false(12.3 == null)
+        assert_false(0.0 == null)
+        assert_false(null == 12.3)
+        assert_false(null == 0.0)
+        assert_true(12.3 != null)
+        assert_true(0.0 != null)
+        assert_true(null != 12.3)
+        assert_true(null != 0.0)
+      endif
+
       assert_true(test_null_blob() == v:null)
       assert_true(null_blob == null)
       assert_true(v:null == test_null_blob())
@@ -818,16 +847,6 @@ def Test_expr4_compare_null()
       assert_equal(null_function, d.f)
   END
   v9.CheckDefAndScriptSuccess(lines)
-
-  v9.CheckDefAndScriptFailure(['echo 123 == v:null'], 'E1072: Cannot compare number with special')
-  v9.CheckDefAndScriptFailure(['echo v:null == 123'], 'E1072: Cannot compare special with number')
-  v9.CheckDefAndScriptFailure(['echo 123 != v:null'], 'E1072: Cannot compare number with special')
-  v9.CheckDefAndScriptFailure(['echo v:null != 123'], 'E1072: Cannot compare special with number')
-  v9.CheckDefAndScriptFailure(['echo true == v:null'], 'E1072: Cannot compare bool with special')
-  v9.CheckDefAndScriptFailure(['echo v:null == true'], 'E1072: Cannot compare special with bool')
-  v9.CheckDefAndScriptFailure(['echo true != v:null'], 'E1072: Cannot compare bool with special')
-  v9.CheckDefAndScriptFailure(['echo v:null != true'], 'E1072: Cannot compare special with bool')
-  v9.CheckDefAndScriptFailure(['echo false == v:null'], 'E1072: Cannot compare bool with special')
 enddef
 
 def Test_expr4_compare_none()
