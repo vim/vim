@@ -3099,8 +3099,8 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
 	    {
-		if (!mouse_comp_pos(wp, &row, &col, &lnum, NULL))
-		    col = vcol2col(wp, lnum, col);
+		(void)mouse_comp_pos(wp, &row, &col, &lnum, NULL);
+		col = vcol2col(wp, lnum, col);
 		column = col + 1;
 	    }
 	}
