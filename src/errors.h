@@ -3252,4 +3252,6 @@ EXTERN char e_cannot_use_s_backslash_in_vim9_script[]
 #ifdef FEAT_EVAL
 EXTERN char e_compiling_closure_without_context_str[]
 	INIT(= N_("E1271: compiling closure without context: %s"));
+EXTERN char e_using_type_not_in_script_context_str[]
+	INIT(= N_("E1272: Using type not in a script context: %s"));
 #endif
