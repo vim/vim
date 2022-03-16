@@ -818,6 +818,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_ALL_KEEP		8
 #define WILD_CANCEL		9
 #define WILD_APPLY		10
+#define WILD_PAGEUP		11
+#define WILD_PAGEDOWN		12
 
 #define WILD_LIST_NOTFOUND	    0x01
 #define WILD_HOME_REPLACE	    0x02

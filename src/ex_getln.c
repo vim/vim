@@ -1757,6 +1757,7 @@ getcmdline_int(
     for (;;)
     {
 	int trigger_cmdlinechanged = TRUE;
+	int end_wildmenu;
 
 	redir_off = TRUE;	// Don't redirect the typed command.
 				// Repeated, because a ":redir" inside
@@ -1878,10 +1879,21 @@ getcmdline_int(
 	}
 #endif
 
+	// The wildmenu is cleared if the pressed key is not used for
+	// navigating the wild menu (i.e. the key is not 'wildchar' or
+	// 'wildcharm' or Ctrl-N or Ctrl-P or Ctrl-A or Ctrl-L).
+	// If the popup menu is displayed, then PageDown and PageUp keys are
+	// also used to navigate the menu.
+	end_wildmenu = (!(c == p_wc && KeyTyped) && c != p_wcm
+		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A && c != Ctrl_L);
+#ifdef FEAT_WILDMENU
+	end_wildmenu = end_wildmenu && (!cmdline_pum_active() ||
+			    (c != K_PAGEDOWN && c != K_PAGEUP
+			     && c != K_KPAGEDOWN && c != K_KPAGEUP));
+#endif
+
 	// free expanded names when finished walking through matches
-	if (!(c == p_wc && KeyTyped) && c != p_wcm
-		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A
-		&& c != Ctrl_L)
+	if (end_wildmenu)
 	{
 #ifdef FEAT_WILDMENU
 	    if (cmdline_pum_active())
@@ -2306,12 +2318,29 @@ getcmdline_int(
 	case K_KPAGEUP:
 	case K_PAGEDOWN:
 	case K_KPAGEDOWN:
-		res = cmdline_browse_history(c, firstc, &lookfor, histype,
-			&hiscnt, &xpc);
-		if (res == CMDLINE_CHANGED)
-		    goto cmdline_changed;
-		else if (res == GOTO_NORMAL_MODE)
-		    goto returncmd;
+#ifdef FEAT_WILDMENU
+		if (cmdline_pum_active()
+			&& (c == K_PAGEUP || c == K_PAGEDOWN ||
+			    c == K_KPAGEUP || c == K_KPAGEDOWN))
+		{
+		    // If the popup menu is displayed, then PageUp and PageDown
+		    // are used to scroll the menu.
+		    if (nextwild(&xpc,
+				(c == K_PAGEUP) ? WILD_PAGEUP : WILD_PAGEDOWN,
+				0, firstc != '@') == FAIL)
+			break;
+		    goto cmdline_not_changed;
+		}
+		else
+#endif
+		{
+		    res = cmdline_browse_history(c, firstc, &lookfor, histype,
+			    &hiscnt, &xpc);
+		    if (res == CMDLINE_CHANGED)
+			goto cmdline_changed;
+		    else if (res == GOTO_NORMAL_MODE)
+			goto returncmd;
+		}
 		goto cmdline_not_changed;
 
 #ifdef FEAT_SEARCH_EXTRA
