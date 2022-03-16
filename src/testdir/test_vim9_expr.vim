@@ -2091,6 +2091,11 @@ def Test_expr8_list()
       var llstring: list<list<string>> = [['text'], []]
       llstring = [[], ['text']]
       llstring = [[], []]
+
+      var ls = [null_string]
+      assert_equal('list<string>', typename(ls))
+      var lb = [null_blob]
+      assert_equal('list<blob>', typename(lb))
   END
   v9.CheckDefAndScriptSuccess(lines)
 
@@ -2608,6 +2613,11 @@ def Test_expr8_dict()
       # comment to start fold is OK
       var x1: number #{{ fold
       var x2 = 9 #{{ fold
+
+      var ds = {k: null_string}
+      assert_equal('dict<string>', typename(ds))
+      var dl = {a: null_list}
+      assert_equal('dict<list<unknown>>', typename(dl))
   END
   v9.CheckDefAndScriptSuccess(lines)
  
