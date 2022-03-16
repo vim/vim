@@ -224,7 +224,8 @@ nextwild(
     i = (int)(xp->xp_pattern - ccline->cmdbuff);
     xp->xp_pattern_len = ccline->cmdpos - i;
 
-    if (type == WILD_NEXT || type == WILD_PREV)
+    if (type == WILD_NEXT || type == WILD_PREV
+	    || type == WILD_PAGEUP || type == WILD_PAGEDOWN)
     {
 	// Get next/previous match for a previous expanded pattern.
 	p2 = ExpandOne(xp, NULL, NULL, 0, type);
@@ -414,6 +415,7 @@ get_next_or_prev_match(
 	char_u		*orig_save)
 {
     int findex = *p_findex;
+    int ht;
 
     if (xp->xp_numfiles <= 0)
 	return NULL;
@@ -424,11 +426,50 @@ get_next_or_prev_match(
 	    findex = xp->xp_numfiles;
 	--findex;
     }
-    else    // mode == WILD_NEXT
+    else if (mode == WILD_NEXT)
 	++findex;
+    else if (mode == WILD_PAGEUP)
+    {
+	if (findex == 0)
+	    // at the first entry, don't select any entries
+	    findex = -1;
+	else if (findex == -1)
+	    // no entry is selected. select the last entry
+	    findex = xp->xp_numfiles - 1;
+	else
+	{
+	    // go up by the pum height
+	    ht = pum_get_height();
+	    if (ht > 3)
+		ht -= 2;
+	    findex -= ht;
+	    if (findex < 0)
+		// few entries left, select the first entry
+		findex = 0;
+	}
+    }
+    else   // mode == WILD_PAGEDOWN
+    {
+	if (findex == xp->xp_numfiles - 1)
+	    // at the last entry, don't select any entries
+	    findex = -1;
+	else if (findex == -1)
+	    // no entry is selected. select the first entry
+	    findex = 0;
+	else
+	{
+	    // go down by the pum height
+	    ht = pum_get_height();
+	    if (ht > 3)
+		ht -= 2;
+	    findex += ht;
+	    if (findex >= xp->xp_numfiles)
+		// few entries left, select the last entry
+		findex = xp->xp_numfiles - 1;
+	}
+    }
 
-    // When wrapping around, return the original string, set findex to
-    // -1.
+    // When wrapping around, return the original string, set findex to -1.
     if (findex < 0)
     {
 	if (orig_save == NULL)
@@ -639,7 +680,8 @@ ExpandOne(
     long_u	len;
 
     // first handle the case of using an old match
-    if (mode == WILD_NEXT || mode == WILD_PREV)
+    if (mode == WILD_NEXT || mode == WILD_PREV
+	    || mode == WILD_PAGEUP || mode == WILD_PAGEDOWN)
 	return get_next_or_prev_match(mode, xp, &findex, orig_save);
 
     if (mode == WILD_CANCEL)
