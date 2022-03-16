@@ -364,7 +364,7 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
     // Need to compile any default values to get the argument types.
     compile_type = get_compile_type(ufunc);
     if (func_needs_compiling(ufunc, compile_type)
-	      && compile_def_function(ufunc, TRUE, compile_type, cctx) == FAIL)
+	      && compile_def_function(ufunc, TRUE, compile_type, NULL) == FAIL)
 	return FAIL;
     return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type);
 }
