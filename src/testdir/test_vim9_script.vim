@@ -3982,7 +3982,12 @@ def Test_profile_with_lambda()
   delete('Xprofile.vim')
 enddef
 
-def Test_misplaced_type()
+func Test_misplaced_type()
+  CheckRunVimInTerminal
+  call Run_Test_misplaced_type()
+endfunc
+
+def Run_Test_misplaced_type()
   writefile(['let g:somevar = "asdf"'], 'XTest_misplaced_type')
   var buf = g:RunVimInTerminal('-S XTest_misplaced_type', {'rows': 6})
   term_sendkeys(buf, ":vim9cmd echo islocked('g:somevar: string')\<CR>")
