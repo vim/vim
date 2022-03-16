@@ -4,6 +4,7 @@ source check.vim
 source screendump.vim
 source view_util.vim
 source shared.vim
+import './vim9.vim' as v9
 
 func SetUp()
   func SaveLastScreenLine()
@@ -541,6 +542,32 @@ func Test_getcompletion()
   call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E871:')
   call assert_fails('call getcompletion("", "burp")', 'E475:')
   call assert_fails('call getcompletion("abc", [])', 'E475:')
+endfunc
+
+func Test_complete_autoload_error()
+  let save_rtp = &rtp
+  let lines =<< trim END
+      vim9script
+      export def Complete(..._): string
+        return 'match'
+      enddef
+      echo this will cause an error
+  END
+  call mkdir('Xdir/autoload', 'p')
+  call writefile(lines, 'Xdir/autoload/script.vim')
+  exe 'set rtp+=' .. getcwd() .. '/Xdir'
+
+  let lines =<< trim END
+      vim9script
+      import autoload 'script.vim'
+      command -nargs=* -complete=custom,script.Complete Cmd eval 0 + 0
+      &wildcharm = char2nr("\<Tab>")
+      feedkeys(":Cmd \<Tab>", 'xt')
+  END
+  call v9.CheckScriptFailure(lines, 'E121: Undefined variable: this')
+
+  let &rtp = save_rtp
+  call delete('Xdir', 'rf')
 endfunc
 
 func Test_fullcommand()
@@ -2671,8 +2698,7 @@ func Test_fuzzy_completion_userdefined_snr_func()
   endfunc
   set wildoptions=fuzzy
   call feedkeys(":call sendmail\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"call SendSomemail() S1e2n3dmail() '
-        \ .. expand("<SID>") .. 'Sendmail()', @:)
+  call assert_match('"call SendSomemail() S1e2n3dmail() <SNR>\d\+_Sendmail()', @:)
   set wildoptions&
   delfunc s:Sendmail
   delfunc SendSomemail
