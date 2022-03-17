@@ -705,10 +705,9 @@ call_vim_function(
 
     // The name might be "import.Func" or "Funcref".  We don't know, we need to
     // ignore errors for an undefined name.  But we do want errors when an
-    // autoload script has errors.  Guess that when there is a dot or '#' in
-    // the name showing errors is the right choice.
-    ignore_errors = vim_strchr(func, '.') == NULL
-				    && vim_strchr(func, AUTOLOAD_CHAR) == NULL;
+    // autoload script has errors.  Guess that when there is a dot in the name
+    // showing errors is the right choice.
+    ignore_errors = vim_strchr(func, '.') == NULL;
     arg = func;
     if (ignore_errors)
 	++emsg_off;

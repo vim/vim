@@ -1829,6 +1829,29 @@ func Test_wildmode()
   let &encoding = save_encoding
 endfunc
 
+func Test_custom_complete_autoload()
+  call mkdir('Xdir/autoload', 'p')
+  let save_rtp = &rtp
+  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  let lines =<< trim END
+      func vim8#Complete(a, c, p)
+        return "oneA\noneB\noneC"
+      endfunc
+  END
+  call writefile(lines, 'Xdir/autoload/vim8.vim')
+
+  command -nargs=1 -complete=custom,vim8#Complete MyCmd
+  set nowildmenu
+  set wildmode=full,list
+  call feedkeys(":MyCmd \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA oneB oneC', @:)
+
+  let &rtp = save_rtp
+  set wildmode& wildmenu&
+  delcommand MyCmd
+  call delete('Xdir', 'rf')
+endfunc
+
 " Test for interrupting the command-line completion
 func Test_interrupt_compl()
   func F(lead, cmdl, p)
