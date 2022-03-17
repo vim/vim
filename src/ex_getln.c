@@ -1606,6 +1606,7 @@ getcmdline_int(
     cmdline_info_T save_ccline;
     int		did_save_ccline = FALSE;
     int		cmdline_type;
+    int		wild_type;
 
     if (ccline.cmdbuff != NULL)
     {
@@ -1867,10 +1868,7 @@ getcmdline_int(
 	    // text.
 	    if (c == Ctrl_E || c == Ctrl_Y)
 	    {
-		int	wild_type;
-
 		wild_type = (c == Ctrl_E) ? WILD_CANCEL : WILD_APPLY;
-
 		if (nextwild(&xpc, wild_type, WILD_NO_BEEP,
 							firstc != '@') == FAIL)
 		    break;
@@ -2304,8 +2302,8 @@ getcmdline_int(
 	case Ctrl_P:	    // previous match
 		if (xpc.xp_numfiles > 0)
 		{
-		    if (nextwild(&xpc, (c == Ctrl_P) ? WILD_PREV : WILD_NEXT,
-						    0, firstc != '@') == FAIL)
+		    wild_type = (c == Ctrl_P) ? WILD_PREV : WILD_NEXT;
+		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
 		    goto cmdline_not_changed;
 		}
@@ -2325,9 +2323,10 @@ getcmdline_int(
 		{
 		    // If the popup menu is displayed, then PageUp and PageDown
 		    // are used to scroll the menu.
-		    if (nextwild(&xpc,
-				(c == K_PAGEUP) ? WILD_PAGEUP : WILD_PAGEDOWN,
-				0, firstc != '@') == FAIL)
+		    wild_type = WILD_PAGEUP;
+		    if (c == K_PAGEDOWN || c == K_KPAGEDOWN)
+			wild_type = WILD_PAGEDOWN;
+		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
 		    goto cmdline_not_changed;
 		}
