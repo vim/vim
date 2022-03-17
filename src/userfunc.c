@@ -429,6 +429,12 @@ parse_argument_types(ufunc_T *fp, garray_T *argtypes, int varargs)
 		if (type == NULL)
 		    return FAIL;
 		fp->uf_arg_types[i] = type;
+		if (i < fp->uf_args.ga_len
+			&& (type->tt_type == VAR_FUNC
+			    || type->tt_type == VAR_PARTIAL)
+			&& var_wrong_func_name(
+				    ((char_u **)fp->uf_args.ga_data)[i], TRUE))
+		    return FAIL;
 	    }
 	}
     }

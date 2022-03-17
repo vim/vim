@@ -1479,12 +1479,12 @@ def Test_pass_legacy_lambda_to_def_func()
 
   lines =<< trim END
       vim9script
-      def g:TestFunc(f: func)
+      def g:TestFunc(F: func)
       enddef
       legacy call g:TestFunc({-> 0})
       delfunc g:TestFunc
 
-      def g:TestFunc(f: func(number))
+      def g:TestFunc(F: func(number))
       enddef
       legacy call g:TestFunc({nr -> 0})
       delfunc g:TestFunc
@@ -3788,8 +3788,8 @@ def Test_check_func_arg_types()
         return x + 1
       enddef
 
-      def G(g: func): dict<func>
-        return {f: g}
+      def G(Fg: func): dict<func>
+        return {f: Fg}
       enddef
 
       def H(d: dict<func>): string
@@ -3799,6 +3799,8 @@ def Test_check_func_arg_types()
 
   v9.CheckScriptSuccess(lines + ['echo H(G(F1))'])
   v9.CheckScriptFailure(lines + ['echo H(G(F2))'], 'E1013:')
+
+  v9.CheckScriptFailure(lines + ['def SomeFunc(ff: func)', 'enddef'], 'E704:')
 enddef
 
 def Test_call_func_with_null()
