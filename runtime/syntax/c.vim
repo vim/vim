@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Dec 07
+" Last Change:	2022 Mar 17
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -245,8 +245,14 @@ syn match	cWrongComTail	display "\*/"
 
 syn keyword	cOperator	sizeof
 if exists("c_gnu")
+  syn keyword	cType		__label__ __complex__
   syn keyword	cStatement	__asm__
-  syn keyword	cOperator	typeof __real__ __imag__
+  syn keyword	cOperator	__alignof__
+  syn keyword	cOperator	typeof __typeof__
+  syn keyword	cOperator	__real__ __imag__
+  syn keyword	cStorageClass	__attribute__ __const__ __extension__
+  syn keyword	cStorageClass	inline __inline__
+  syn keyword	cStorageClass	__restrict__ __volatile__ __noreturn__
 endif
 syn keyword	cType		int long short char void
 syn keyword	cType		signed unsigned float double
@@ -270,16 +276,10 @@ if !exists("c_no_c99") " ISO C99
   syn keyword	cType		intptr_t uintptr_t
   syn keyword	cType		intmax_t uintmax_t
 endif
-if exists("c_gnu")
-  syn keyword	cType		__label__ __complex__ __volatile__
-endif
 
 syn keyword	cTypedef	typedef
 syn keyword	cStructure	struct union enum
 syn keyword	cStorageClass	static register auto volatile extern const
-if exists("c_gnu")
-  syn keyword	cStorageClass	inline __attribute__
-endif
 if !exists("c_no_c99") && !s:in_cpp_family
   syn keyword	cStorageClass	inline restrict
 endif
