@@ -2416,6 +2416,7 @@ handle_mapping(
     mapblock_T	*mp_match;
     int		mp_match_len = 0;
     int		max_mlen = 0;
+    int		want_termcode = 0;  // 1 if termcode expected after max_mlen
     int		tb_c1;
     int		mlen;
 #ifdef FEAT_LANGMAP
@@ -2591,9 +2592,16 @@ handle_mapping(
 		}
 		else
 		    // No match; may have to check for termcode at next
-		    // character.
+		    // character.  If the first character that didn't match is
+		    // K_SPECIAL then check for a termcode.  This isn't perfect
+		    // but should work in most cases.
 		    if (max_mlen < mlen)
+		    {
 			max_mlen = mlen;
+			want_termcode = mp->m_keys[mlen] == K_SPECIAL;
+		    }
+		    else if (max_mlen == mlen && mp->m_keys[mlen] == K_SPECIAL)
+			want_termcode = 1;
 	    }
 	}
 
@@ -2646,7 +2654,7 @@ handle_mapping(
     // May check for a terminal code when there is no mapping or only a partial
     // mapping.  Also check if there is a full mapping with <Esc>, unless timed
     // out, since that is nearly always a partial match with a terminal code.
-    if ((mp == NULL || max_mlen > mp_match_len
+    if ((mp == NULL || max_mlen + want_termcode > mp_match_len
 		    || (mp_match_len == 1 && *mp->m_keys == ESC && !*timedout))
 	    && keylen != KEYLEN_PART_MAP)
     {

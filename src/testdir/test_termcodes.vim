@@ -2111,6 +2111,15 @@ func Test_modifyOtherKeys_ambiguous_mapping()
 
   unmap <C-J>
   unmap <C-J>x
+
+  " if a special character is following there should be a check for a termcode
+  nnoremap s aX<Esc>
+  nnoremap s<BS> aY<Esc>
+  set t_kb=
+  call setline(1, 'x')
+  call feedkeys("s\x08", 'Lx!')
+  call assert_equal('xY', getline(1))
+
   set timeoutlen&
   bwipe!
 endfunc
