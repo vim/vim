@@ -2253,6 +2253,13 @@ def Test_for_loop_unpack()
         res->add(n)
       endfor
       assert_equal([2, 5], res)
+
+      var text: list<string> = ["hello there", "goodbye now"]
+      var splitted = ''
+      for [first; next] in mapnew(text, (i, v) => split(v))
+          splitted ..= string(first) .. string(next) .. '/'
+      endfor
+      assert_equal("'hello'['there']/'goodbye'['now']/", splitted)
   END
   v9.CheckDefAndScriptSuccess(lines)
 

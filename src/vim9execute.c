@@ -4773,7 +4773,10 @@ exec_instructions(ectx_T *ectx)
 			    li = li->li_next;
 			for (i = 0; li != NULL; ++i)
 			{
-			    list_set_item(rem_list, i, &li->li_tv);
+			    typval_T tvcopy;
+
+			    copy_tv(&li->li_tv, &tvcopy);
+			    list_set_item(rem_list, i, &tvcopy);
 			    li = li->li_next;
 			}
 			--count;
