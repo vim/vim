@@ -929,7 +929,8 @@ get_lval(
 	if (vim9script)
 	{
 	    // "a: type" is declaring variable "a" with a type, not "a:".
-	    if (p == name + 2 && p[-1] == ':')
+	    // However, "g:[key]" is indexing a dictionary.
+	    if (p == name + 2 && p[-1] == ':' && *p != '[')
 	    {
 		--p;
 		lp->ll_name_end = p;

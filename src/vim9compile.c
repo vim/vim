@@ -1000,7 +1000,12 @@ generate_loadvar(
 	    break;
 	case dest_global:
 	    if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
-		generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
+	    {
+		if (name[2] == NUL)
+		    generate_instr_type(cctx, ISN_LOADGDICT, &t_dict_any);
+		else
+		    generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
+	    }
 	    else
 		generate_LOAD(cctx, ISN_LOADAUTO, 0, name, type);
 	    break;
@@ -2413,17 +2418,19 @@ may_compile_assignment(exarg_T *eap, char_u **line, cctx_T *cctx)
 
 	    // Recognize an assignment if we recognize the variable
 	    // name:
-	    // "g:var = expr"
-	    // "local = expr"  where "local" is a local var.
-	    // "script = expr"  where "script" is a script-local var.
-	    // "import = expr"  where "import" is an imported var
 	    // "&opt = expr"
 	    // "$ENV = expr"
 	    // "@r = expr"
+	    // "g:var = expr"
+	    // "g:[key] = expr"
+	    // "local = expr"  where "local" is a local var.
+	    // "script = expr"  where "script" is a script-local var.
+	    // "import = expr"  where "import" is an imported var
 	    if (*eap->cmd == '&'
 		    || *eap->cmd == '$'
 		    || *eap->cmd == '@'
 		    || ((len) > 2 && eap->cmd[1] == ':')
+		    || STRNCMP(eap->cmd, "g:[", 3) == 0
 		    || variable_exists(eap->cmd, len, cctx))
 	    {
 		*line = compile_assignment(eap->cmd, eap, CMD_SIZE, cctx);

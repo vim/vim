@@ -1117,6 +1117,14 @@ def Test_assignment_dict()
   v9.CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
+    var key = 'foo'
+    g:[key] = 'value'
+    assert_equal('value', g:foo)
+    unlet g:foo
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
     var dd = {one: 1}
     dd.one) = 2
   END

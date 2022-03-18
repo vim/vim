@@ -3523,12 +3523,14 @@ find_ex_command(
 		return eap->cmd;
 	    }
 
-	    if (p != eap->cmd && (
+	    if ((p != eap->cmd && (
 			    // "varname[]" is an expression.
 			    *p == '['
 			    // "varname.key" is an expression.
-			 || (*p == '.' && (ASCII_ISALPHA(p[1])
-							     || p[1] == '_'))))
+			 || (*p == '.'
+				     && (ASCII_ISALPHA(p[1]) || p[1] == '_'))))
+			// g:[key] is an expression
+		    || STRNCMP(eap->cmd, "g:[", 3) == 0)
 	    {
 		char_u	*after = eap->cmd;
 
