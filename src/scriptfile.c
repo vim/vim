@@ -18,6 +18,11 @@
 static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 #endif
 
+// last used sequence number for sourcing scripts (current_sctx.sc_seq)
+#ifdef FEAT_EVAL
+static int		last_current_SID_seq = 0;
+#endif
+
 /*
  * Initialize the execution stack.
  */
@@ -1074,12 +1079,271 @@ ExpandPackAddDir(
     return OK;
 }
 
+/*
+ * Cookie used to source Ex commands from a buffer.
+ */
+typedef struct
+{
+    garray_T	lines_to_source;
+    int		lnum;
+    linenr_T	sourcing_lnum;
+} bufline_cookie_T;
+
+/*
+ * Concatenate a Vim script line if it starts with a line continuation into a
+ * growarray (excluding the continuation chars and leading whitespace).
+ * Growsize of the growarray may be changed to speed up concatenations!
+ *
+ * Returns TRUE if this line did begin with a continuation (the next line
+ * should also be considered, if it exists); FALSE otherwise.
+ */
+    static int
+concat_continued_line(
+    garray_T	*ga,
+    int		init_growsize,
+    char_u	*nextline,
+    int		options)
+{
+    int		comment_char = in_vim9script() ? '#' : '"';
+    char_u	*p = skipwhite(nextline);
+    int		contline;
+    int		do_vim9_all = in_vim9script()
+					&& options == GETLINE_CONCAT_ALL;
+    int		do_bar_cont = do_vim9_all
+					|| options == GETLINE_CONCAT_CONTBAR;
+
+    if (*p == NUL)
+	return FALSE;
+
+    // Concatenate the next line when it starts with a backslash.
+    /* Also check for a comment in between continuation lines: "\ */
+    // Also check for a Vim9 comment, empty line, line starting with '|',
+    // but not "||".
+    if ((p[0] == comment_char && p[1] == '\\' && p[2] == ' ')
+			|| (do_vim9_all && (*p == NUL
+				|| vim9_comment_start(p))))
+	return TRUE;
+
+    contline = (*p == '\\' || (do_bar_cont && p[0] == '|' && p[1] != '|'));
+    if (!contline)
+	return FALSE;
+
+    // Adjust the growsize to the current length to speed up concatenating many
+    // lines.
+    if (ga->ga_len > init_growsize)
+	ga->ga_growsize = ga->ga_len > 8000 ? 8000 : ga->ga_len;
+    if (*p == '\\')
+	ga_concat(ga, (char_u *)p + 1);
+    else if (*p == '|')
+    {
+	ga_concat(ga, (char_u *)" ");
+	ga_concat(ga, p);
+    }
+
+    return TRUE;
+}
+
+/*
+ * Get one full line from a sourced string (in-memory, no file).
+ * Called by do_cmdline() when it's called from source_using_linegetter().
+ *
+ * Returns a pointer to allocated line, or NULL for end-of-file.
+ */
+    char_u *
+source_getbufline(
+    int			c UNUSED,
+    void		*cookie,
+    int			indent UNUSED,
+    getline_opt_T	opts)
+{
+    bufline_cookie_T	*p = cookie;
+    char_u		*line;
+    garray_T		ga;
+
+    SOURCING_LNUM = p->sourcing_lnum + 1;
+
+    if (p->lnum >= p->lines_to_source.ga_len)
+	return NULL;
+    line = ((char_u **)p->lines_to_source.ga_data)[p->lnum];
+
+    ga_init2(&ga, sizeof(char_u), 400);
+    ga_concat(&ga, (char_u *)line);
+    p->lnum++;
+
+    if ((opts != GETLINE_NONE) && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
+    {
+	while (p->lnum < p->lines_to_source.ga_len)
+	{
+	    line = ((char_u **)p->lines_to_source.ga_data)[p->lnum];
+	    if (!concat_continued_line(&ga, 400, line, opts))
+		break;
+	    p->sourcing_lnum++;
+	    p->lnum++;
+	}
+    }
+    ga_append(&ga, NUL);
+    p->sourcing_lnum++;
+
+    return ga.ga_data;
+}
+
+/*
+ * Source Ex commands from the lines in 'cookie'.
+ */
+    static int
+do_sourcebuffer(
+    void	*cookie,
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T),
+    char_u	*scriptname)
+{
+    char_u		*save_sourcing_name = SOURCING_NAME;
+    linenr_T		save_sourcing_lnum = SOURCING_LNUM;
+    char_u		sourcing_name_buf[256];
+    sctx_T		save_current_sctx;
+#ifdef FEAT_EVAL
+    int			sid;
+    funccal_entry_T	funccalp_entry;
+    int			save_estack_compiling = estack_compiling;
+    scriptitem_T	*si = NULL;
+#endif
+    int			save_sticky_cmdmod_flags = sticky_cmdmod_flags;
+    int			retval = FAIL;
+    ESTACK_CHECK_DECLARATION
+
+    if (save_sourcing_name == NULL)
+	SOURCING_NAME = (char_u *)scriptname;
+    else
+    {
+	vim_snprintf((char *)sourcing_name_buf, sizeof(sourcing_name_buf),
+		"%s called at %s:%ld", scriptname, save_sourcing_name,
+		save_sourcing_lnum);
+	SOURCING_NAME = sourcing_name_buf;
+    }
+    SOURCING_LNUM = 0;
+
+    // Keep the sourcing name/lnum, for recursive calls.
+    estack_push(ETYPE_SCRIPT, scriptname, 0);
+    ESTACK_CHECK_SETUP
+
+    // "legacy" does not apply to commands in the script
+    sticky_cmdmod_flags = 0;
+
+    save_current_sctx = current_sctx;
+    current_sctx.sc_version = 1;  // default script version
+#ifdef FEAT_EVAL
+    estack_compiling = FALSE;
+    // Always use a new sequence number.
+    current_sctx.sc_seq = ++last_current_SID_seq;
+    current_sctx.sc_lnum = save_sourcing_lnum;
+    save_funccal(&funccalp_entry);
+
+    sid = find_script_by_name(scriptname);
+    if (sid < 0)
+    {
+	int		error = OK;
+
+	// First time sourcing this buffer, create a new script item.
+
+	sid = get_new_scriptitem(&error);
+	if (error == FAIL)
+	    goto theend;
+	current_sctx.sc_sid = sid;
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	si->sn_name = vim_strsave(scriptname);
+	si->sn_state = SN_STATE_NEW;
+    }
+    else
+    {
+	// the buffer was sourced previously, reuse the script ID.
+	current_sctx.sc_sid = sid;
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	si->sn_state = SN_STATE_RELOAD;
+    }
+#endif
+
+    retval = do_cmdline(NULL, fgetline, cookie,
+				DOCMD_VERBOSE | DOCMD_NOWAIT | DOCMD_REPEAT);
+
+    if (got_int)
+	emsg(_(e_interrupted));
+
+#ifdef FEAT_EVAL
+theend:
+#endif
+    ESTACK_CHECK_NOW
+    estack_pop();
+    current_sctx = save_current_sctx;
+    SOURCING_LNUM = save_sourcing_lnum;
+    SOURCING_NAME = save_sourcing_name;
+    sticky_cmdmod_flags = save_sticky_cmdmod_flags;
+#ifdef FEAT_EVAL
+    restore_funccal();
+    estack_compiling = save_estack_compiling;
+#endif
+
+    return retval;
+}
+
+/*
+ * :source Ex commands from the current buffer
+ */
+    static void
+cmd_source_buffer(exarg_T *eap)
+{
+    char_u		*line = NULL;
+    linenr_T		curr_lnum;
+    bufline_cookie_T	cp;
+    char_u		sname[32];
+
+    if (curbuf == NULL)
+	return;
+
+    // Use ":source buffer=<num>" as the script name
+    vim_snprintf((char *)sname, sizeof(sname), ":source buffer=%d",
+							curbuf->b_fnum);
+
+    ga_init2(&cp.lines_to_source, sizeof(char_u *), 100);
+
+    // Copy the lines from the buffer into a grow array
+    for (curr_lnum = eap->line1; curr_lnum <= eap->line2; curr_lnum++)
+    {
+	line = vim_strsave(ml_get(curr_lnum));
+	if (line == NULL)
+	    goto errret;
+	if (ga_add_string(&cp.lines_to_source, line) == FAIL)
+	    goto errret;
+	line = NULL;
+    }
+    cp.sourcing_lnum = 0;
+    cp.lnum = 0;
+
+    // Execute the Ex commands
+    do_sourcebuffer((void *)&cp, source_getbufline, (char_u *)sname);
+
+errret:
+    vim_free(line);
+    ga_clear_strings(&cp.lines_to_source);
+}
+
     static void
 cmd_source(char_u *fname, exarg_T *eap)
 {
-    if (*fname == NUL)
-	emsg(_(e_argument_required));
+    if (*fname != NUL && eap != NULL && eap->addr_count > 0)
+    {
+	// if a filename is specified to :source, then a range is not allowed
+	emsg(_(e_no_range_allowed));
+	return;
+    }
 
+    if (eap != NULL && *fname == NUL)
+    {
+	if (eap->forceit)
+	    // a file name is needed to source normal mode commands
+	    emsg(_(e_argument_required));
+	else
+	    // source ex commands from the current buffer
+	    cmd_source_buffer(eap);
+    }
     else if (eap != NULL && eap->forceit)
 	// ":source!": read Normal mode commands
 	// Need to execute the commands directly.  This is required at least
@@ -1240,7 +1504,6 @@ do_source(
     int			    retval = FAIL;
     sctx_T		    save_current_sctx;
 #ifdef FEAT_EVAL
-    static int		    last_current_SID_seq = 0;
     funccal_entry_T	    funccalp_entry;
     int			    save_debug_break_level = debug_break_level;
     int			    sid;
@@ -2024,7 +2287,7 @@ ex_scriptencoding(exarg_T *eap)
     source_cookie_T	*sp;
     char_u		*name;
 
-    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    if (!sourcing_a_script(eap))
     {
 	emsg(_(e_scriptencoding_used_outside_of_sourced_file));
 	return;
@@ -2055,7 +2318,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
 {
     int		nr;
 
-    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    if (!sourcing_a_script(eap))
     {
 	emsg(_(e_scriptversion_used_outside_of_sourced_file));
 	return;
@@ -2087,7 +2350,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     void
 ex_finish(exarg_T *eap)
 {
-    if (getline_equal(eap->getline, eap->cookie, getsourceline))
+    if (sourcing_a_script(eap))
 	do_finish(eap, FALSE);
     else
 	emsg(_(e_finish_used_outside_of_sourced_file));
@@ -2308,5 +2571,16 @@ script_autoload(
 
     vim_free(tofree);
     return ret;
+}
+
+/*
+ * Returns TRUE if sourcing a script either from a file or a buffer.
+ * Otherwise returns FALSE.
+ */
+    int
+sourcing_a_script(exarg_T *eap)
+{
+    return (getline_equal(eap->getline, eap->cookie, getsourceline)
+	    || getline_equal(eap->getline, eap->cookie, source_getbufline));
 }
 #endif

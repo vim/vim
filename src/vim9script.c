@@ -71,7 +71,7 @@ ex_vim9script(exarg_T *eap UNUSED)
     int		    found_noclear = FALSE;
     char_u	    *p;
 
-    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    if (!sourcing_a_script(eap))
     {
 	emsg(_(e_vim9script_can_only_be_used_in_script));
 	return;
@@ -633,7 +633,7 @@ ex_import(exarg_T *eap)
     char_u	*cmd_end;
     evalarg_T	evalarg;
 
-    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    if (!sourcing_a_script(eap))
     {
 	emsg(_(e_import_can_only_be_used_in_script));
 	return;

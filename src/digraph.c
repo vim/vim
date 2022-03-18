@@ -2507,7 +2507,7 @@ ex_loadkeymap(exarg_T *eap)
     int		i;
     char_u	*save_cpo = p_cpo;
 
-    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    if (!sourcing_a_script(eap))
     {
 	emsg(_(e_using_loadkeymap_not_in_sourced_file));
 	return;

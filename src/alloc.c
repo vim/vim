@@ -845,7 +845,7 @@ ga_concat(garray_T *gap, char_u *s)
     void
 ga_concat_len(garray_T *gap, char_u *s, size_t len)
 {
-    if (s == NULL || *s == NUL)
+    if (s == NULL || *s == NUL || len == 0)
 	return;
     if (ga_grow(gap, (int)len) == OK)
     {
