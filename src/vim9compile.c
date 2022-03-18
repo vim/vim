@@ -1802,7 +1802,7 @@ compile_assign_unlet(
 	    {
 		type = get_type_on_stack(cctx, 1);
 		if (need_type(type, &t_number,
-					    -1, 0, cctx, FALSE, FALSE) == FAIL)
+					    -2, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    }
 	    type = get_type_on_stack(cctx, 0);

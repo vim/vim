@@ -1896,79 +1896,54 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
     SOURCING_LNUM = iptr->isn_lnum;
     if (tv_dest->v_type == VAR_LIST)
     {
-	long	n1;
-	long	n2;
-	int	error = FALSE;
+	long	    n1;
+	long	    n2;
+	listitem_T  *li1;
 
-	n1 = (long)tv_get_number_chk(tv_idx1, &error);
-	if (error)
+	n1 = (long)tv_get_number_chk(tv_idx1, NULL);
+	if (tv_idx2->v_type == VAR_SPECIAL
+		    && tv_idx2->vval.v_number == VVAL_NONE)
+	    n2 = list_len(tv_dest->vval.v_list) - 1;
+	else
+	    n2 = (long)tv_get_number_chk(tv_idx2, NULL);
+
+	li1 = check_range_index_one(tv_dest->vval.v_list, &n1, FALSE);
+	if (li1 == NULL)
 	    status = FAIL;
 	else
 	{
-	    if (tv_idx2->v_type == VAR_SPECIAL
-			&& tv_idx2->vval.v_number == VVAL_NONE)
-		n2 = list_len(tv_dest->vval.v_list) - 1;
-	    else
-		n2 = (long)tv_get_number_chk(tv_idx2, &error);
-	    if (error)
-		status = FAIL; // cannot happen?
-	    else
-	    {
-		listitem_T *li1 = check_range_index_one(
-					     tv_dest->vval.v_list, &n1, FALSE);
-
-		if (li1 == NULL)
-		    status = FAIL;
-		else
-		{
-		    status = check_range_index_two(
-			    tv_dest->vval.v_list,
-			    &n1, li1, &n2, FALSE);
-		    if (status != FAIL)
-			status = list_assign_range(
-				tv_dest->vval.v_list,
-				tv->vval.v_list,
-				n1,
-				n2,
-				tv_idx2->v_type == VAR_SPECIAL,
-				(char_u *)"=",
-				(char_u *)"[unknown]");
-		}
-	    }
+	    status = check_range_index_two(tv_dest->vval.v_list,
+							 &n1, li1, &n2, FALSE);
+	    if (status != FAIL)
+		status = list_assign_range(
+			tv_dest->vval.v_list,
+			tv->vval.v_list,
+			n1,
+			n2,
+			tv_idx2->v_type == VAR_SPECIAL,
+			(char_u *)"=",
+			(char_u *)"[unknown]");
 	}
     }
     else if (tv_dest->v_type == VAR_BLOB)
     {
 	varnumber_T n1;
 	varnumber_T n2;
-	int	    error = FALSE;
+	long	    bloblen;
 
-	n1 = tv_get_number_chk(tv_idx1, &error);
-	if (error)
+	n1 = tv_get_number_chk(tv_idx1, NULL);
+	if (tv_idx2->v_type == VAR_SPECIAL
+					&& tv_idx2->vval.v_number == VVAL_NONE)
+	    n2 = blob_len(tv_dest->vval.v_blob) - 1;
+	else
+	    n2 = tv_get_number_chk(tv_idx2, NULL);
+	bloblen = blob_len(tv_dest->vval.v_blob);
+
+	if (check_blob_index(bloblen, n1, FALSE) == FAIL
+		|| check_blob_range(bloblen, n1, n2, FALSE) == FAIL)
 	    status = FAIL;
 	else
-	{
-	    if (tv_idx2->v_type == VAR_SPECIAL
-			&& tv_idx2->vval.v_number == VVAL_NONE)
-		n2 = blob_len(tv_dest->vval.v_blob) - 1;
-	    else
-		n2 = tv_get_number_chk(tv_idx2, &error);
-	    if (error)
-		status = FAIL;
-	    else
-	    {
-		long  bloblen = blob_len(tv_dest->vval.v_blob);
-
-		if (check_blob_index(bloblen,
-					     n1, FALSE) == FAIL
-			|| check_blob_range(bloblen,
-					n1, n2, FALSE) == FAIL)
-		    status = FAIL;
-		else
-		    status = blob_set_range(
-			     tv_dest->vval.v_blob, n1, n2, tv);
-	    }
-	}
+	    status = blob_set_range(tv_dest->vval.v_blob, n1, n2, tv);
     }
     else
     {

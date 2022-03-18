@@ -1602,7 +1602,7 @@ def Test_assign_list()
       l[g:idx : 1] = [0]
       echo l
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1030: Using a String as a Number: "x"')
+  v9.CheckDefExecAndScriptFailure(lines, ['E1012: Type mismatch; expected number but got string', 'E1030: Using a String as a Number: "x"'])
 
   lines =<< trim END
       var l = [1, 2]
