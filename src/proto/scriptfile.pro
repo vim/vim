@@ -18,7 +18,6 @@ void ex_packadd(exarg_T *eap);
 void remove_duplicates(garray_T *gap);
 int ExpandRTDir(char_u *pat, int flags, int *num_file, char_u ***file, char *dirnames[]);
 int ExpandPackAddDir(char_u *pat, int *num_file, char_u ***file);
-char_u *source_getbufline(int c, void *cookie, int indent, getline_opt_T opts);
 void ex_source(exarg_T *eap);
 void ex_options(exarg_T *eap);
 linenr_T *source_breakpoint(void *cookie);

@@ -1149,7 +1149,7 @@ concat_continued_line(
  *
  * Returns a pointer to allocated line, or NULL for end-of-file.
  */
-    char_u *
+    static char_u *
 source_getbufline(
     int			c UNUSED,
     void		*cookie,
@@ -2279,6 +2279,17 @@ getsourceline(
 }
 
 /*
+ * Returns TRUE if sourcing a script either from a file or a buffer.
+ * Otherwise returns FALSE.
+ */
+    int
+sourcing_a_script(exarg_T *eap)
+{
+    return (getline_equal(eap->getline, eap->cookie, getsourceline)
+	    || getline_equal(eap->getline, eap->cookie, source_getbufline));
+}
+
+/*
  * ":scriptencoding": Set encoding conversion for a sourced script.
  */
     void
@@ -2571,16 +2582,5 @@ script_autoload(
 
     vim_free(tofree);
     return ret;
-}
-
-/*
- * Returns TRUE if sourcing a script either from a file or a buffer.
- * Otherwise returns FALSE.
- */
-    int
-sourcing_a_script(exarg_T *eap)
-{
-    return (getline_equal(eap->getline, eap->cookie, getsourceline)
-	    || getline_equal(eap->getline, eap->cookie, source_getbufline));
 }
 #endif
