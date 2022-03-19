@@ -247,4 +247,33 @@ END
   call delete('Xtextfile')
 endfunc
 
+func Test_cursorline_redraw_after_yank_msg()
+  CheckScreendump
+
+  let script =<< trim END
+    call setline(1, ['aaaaa', 'bbbbb', 'ccccc', 'ddddd', 'eeeee', 'fffff'])
+    set noruler cursorline
+    call cursor(6, 1)
+    call sign_define('foo', { 'text': '>' })
+    call sign_place(1, 'bar', 'foo', bufnr(), { 'lnum': 3 })
+    call sign_place(2, 'bar', 'foo', bufnr(), { 'lnum': 2 })
+
+    func Func(timer)
+      call sign_unplace('bar', { 'id': 1 })
+      call cursor(3, 1)
+      1,6yank
+      call feedkeys('k')
+    endfunc
+
+    call timer_start(10, 'Func')
+  END
+  call writefile(script, 'Xcursorline_redraw_after_yank_msg')
+  let buf = RunVimInTerminal('-S Xcursorline_redraw_after_yank_msg', #{rows: 10})
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_cursorline_redraw_after_yank_msg_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xcursorline_redraw_after_yank_msg')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

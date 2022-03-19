@@ -167,6 +167,7 @@ redraw_for_cursorline(win_T *wp)
 update_topline_redraw(void)
 {
     update_topline();
+    redraw_for_cursorline(curwin);
     if (must_redraw)
 	update_screen(0);
 }
