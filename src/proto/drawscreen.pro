@@ -8,6 +8,7 @@ void update_curbuf(int type);
 void update_debug_sign(buf_T *buf, linenr_T lnum);
 void updateWindow(win_T *wp);
 int redraw_asap(int type);
+void check_redraw_cursorline(void);
 void redraw_after_callback(int call_update_screen, int do_message);
 void redraw_later(int type);
 void redraw_win_later(win_T *wp, int type);

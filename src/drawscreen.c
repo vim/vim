@@ -1463,11 +1463,14 @@ win_update(win_T *wp)
 #ifdef FEAT_SYN_HL
     // remember what happened to the previous line, to know if
     // check_visual_highlight() can be used
-#define DID_NONE 1	// didn't update a line
-#define DID_LINE 2	// updated a normal line
-#define DID_FOLD 3	// updated a folded line
+# define DID_NONE 1	// didn't update a line
+# define DID_LINE 2	// updated a normal line
+# define DID_FOLD 3	// updated a folded line
     int		did_update = DID_NONE;
     linenr_T	syntax_last_parsed = 0;		// last parsed text line
+    // remember the current w_last_cursorline, it changes when drawing the new
+    // cursor line
+    linenr_T	last_cursorline = wp->w_last_cursorline;
 #endif
     linenr_T	mod_top = 0;
     linenr_T	mod_bot = 0;
@@ -2244,7 +2247,7 @@ win_update(win_T *wp)
 				))))
 #ifdef FEAT_SYN_HL
 		|| (wp->w_p_cul && (lnum == wp->w_cursor.lnum
-					     || lnum == wp->w_last_cursorline))
+						   || lnum == last_cursorline))
 #endif
 				)
 	{
@@ -3027,6 +3030,23 @@ redraw_asap(int type)
 }
 #endif
 
+#if defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * Check if the cursor moved and 'cursorline' is set.  Mark for a VALID redraw
+ * if needed.
+ */
+    void
+check_redraw_cursorline(void)
+{
+    // When 'cursorlineopt' is "screenline" need to redraw always.
+    if (curwin->w_p_cul
+	    && (curwin->w_last_cursorline != curwin->w_cursor.lnum
+		|| (curwin->w_p_culopt_flags & CULOPT_SCRLINE))
+	    && !char_avail())
+	redraw_later(VALID);
+}
+#endif
+
 /*
  * Invoked after an asynchronous callback is called.
  * If an echo command was used the cursor needs to be put back where
@@ -3071,6 +3091,10 @@ redraw_after_callback(int call_update_screen, int do_message)
     }
     else if (State & (NORMAL | INSERT | TERMINAL))
     {
+#ifdef FEAT_SYN_HL
+	// might need to update for 'cursorline'
+	check_redraw_cursorline();
+#endif
 	// keep the command line if possible
 	update_screen(VALID_NO_UPDATE);
 	setcursor();
