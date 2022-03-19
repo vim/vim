@@ -4,10 +4,11 @@
 " Copyright: Vim license applies, see ":help license"
 " Last Change: 2022 Jan 17
 "
-" WORK IN PROGRESS - Only the basics work
-" Note: On MS-Windows you need a recent version of gdb.  The one included with
-" MingW is too old (7.6.1).
-" I used version 7.12 from http://www.equation.com/servlet/equation.cmd?fa=gdb
+" WORK IN PROGRESS - The basics works stable, more to come
+" Note: In general you need at least GDB 7.12 because this provides the
+" frame= response in MI thread-selected events we need to sync stack to file.
+" The one included with "old" MingW is too old (7.6.1), you may upgrade it or
+" use a newer version from http://www.equation.com/servlet/equation.cmd?fa=gdb
 "
 " There are two ways to run gdb:
 " - In a terminal window; used if possible, does not work on MS-Windows
@@ -313,7 +314,7 @@ func s:StartDebug_term(dict)
         let response = line1 . line2
         if response =~ 'Undefined command'
           echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
-	  " CHECKME: possibly send a "server show version" here
+          " CHECKME: possibly send a "server show version" here
           call s:CloseBuffers()
           return
         endif
@@ -396,7 +397,7 @@ func s:StartDebug_prompt(dict)
   endif
   " Mark the buffer modified so that it's not easy to close.
   set modified
-  let s:gdb_channel = job_getchannel(s:gdbjob)  
+  let s:gdb_channel = job_getchannel(s:gdbjob)
 
   let s:ptybuf = 0
   if has('win32')
@@ -662,8 +663,8 @@ func s:EndDebugCommon()
     if bufexists(bufnr)
       exe bufnr .. "buf"
       if exists('b:save_signcolumn')
-	let &signcolumn = b:save_signcolumn
-	unlet b:save_signcolumn
+        let &signcolumn = b:save_signcolumn
+        unlet b:save_signcolumn
       endif
     endif
   endfor
@@ -739,8 +740,8 @@ func s:HandleDisasmMsg(msg)
 
       let lnum = search('^' . s:asm_addr)
       if lnum != 0
-	exe 'sign unplace ' . s:asm_id
-	exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
+        exe 'sign unplace ' . s:asm_id
+        exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
       endif
 
       call win_gotoid(curwinid)
@@ -789,22 +790,22 @@ func s:CommOutput(chan, msg)
       call s:HandleDisasmMsg(msg)
     elseif msg != ''
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
-	call s:HandleCursor(msg)
+        call s:HandleCursor(msg)
       elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
         call s:HandleNewBreakpoint(msg, 0)
       elseif msg =~ '^=breakpoint-modified,'
         call s:HandleNewBreakpoint(msg, 1)
       elseif msg =~ '^=breakpoint-deleted,'
-	call s:HandleBreakpointDelete(msg)
+        call s:HandleBreakpointDelete(msg)
       elseif msg =~ '^=thread-group-started'
-	call s:HandleProgramRun(msg)
+        call s:HandleProgramRun(msg)
       elseif msg =~ '^\^done,value='
-	call s:HandleEvaluate(msg)
+        call s:HandleEvaluate(msg)
       elseif msg =~ '^\^error,msg='
-	call s:HandleError(msg)
+        call s:HandleError(msg)
       elseif msg =~ '^disassemble'
-	let s:parsing_disasm_msg = 1
-	let s:asm_lines = []
+        let s:parsing_disasm_msg = 1
+        let s:asm_lines = []
       endif
     endif
   endfor
@@ -986,22 +987,22 @@ func s:ClearBreakpoint()
     let nr = 0
     for id in s:breakpoint_locations[bploc]
       if has_key(s:breakpoints, id)
-	" Assume this always works, the reply is simply "^done".
-	call s:SendCommand('-break-delete ' . id)
-	for subid in keys(s:breakpoints[id])
-	  exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
-	endfor
-	unlet s:breakpoints[id]
-	unlet s:breakpoint_locations[bploc][idx]
-	let nr = id
-	break
+        " Assume this always works, the reply is simply "^done".
+        call s:SendCommand('-break-delete ' . id)
+        for subid in keys(s:breakpoints[id])
+          exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
+        endfor
+        unlet s:breakpoints[id]
+        unlet s:breakpoint_locations[bploc][idx]
+        let nr = id
+        break
       else
-	let idx += 1
+        let idx += 1
       endif
     endfor
     if nr != 0
       if empty(s:breakpoint_locations[bploc])
-	unlet s:breakpoint_locations[bploc]
+        unlet s:breakpoint_locations[bploc]
       endif
       echomsg 'Breakpoint ' . id . ' cleared from line ' . lnum . '.'
     else
@@ -1027,7 +1028,7 @@ func s:SendEval(expr)
     " remove text that is likely an assignment
     let exprLHS = substitute(a:expr, ' *=.*', '', '')
   endif
-  
+
   " encoding expression to prevent bad errors
   let expr = a:expr
   let expr = substitute(expr, '\\', '\\\\', 'g')
@@ -1036,14 +1037,14 @@ func s:SendEval(expr)
   let s:evalexpr = exprLHS
 endfunc
 
-" :Evaluate - evaluate what is specified / under the cursor 
+" :Evaluate - evaluate what is specified / under the cursor
 func s:Evaluate(range, arg)
   let expr = s:GetEvaluationExpression(a:range, a:arg)
   let s:ignoreEvalError = 0
   call s:SendEval(expr)
 endfunc
 
-" get what is specified / under the cursor 
+" get what is specified / under the cursor
 func s:GetEvaluationExpression(range, arg)
   if a:arg != ''
     " user supplied evaluation
@@ -1192,7 +1193,7 @@ func s:GotoAsmwinOrCreateIt()
 
     if exists('g:termdebug_disasm_window')
       if g:termdebug_disasm_window > 1
-	exe 'resize ' . g:termdebug_disasm_window
+        exe 'resize ' . g:termdebug_disasm_window
       endif
     endif
   endif
@@ -1201,7 +1202,7 @@ func s:GotoAsmwinOrCreateIt()
     let lnum = search('^' . s:asm_addr)
     if lnum == 0
       if s:stopped
-	call s:SendCommand('disassemble $pc')
+        call s:SendCommand('disassemble $pc')
       endif
     else
       exe 'sign unplace ' . s:asm_id
@@ -1236,15 +1237,15 @@ func s:HandleCursor(msg)
 
       let curwinid = win_getid(winnr())
       if win_gotoid(s:asmwin)
-	let lnum = search('^' . s:asm_addr)
-	if lnum == 0
-	  call s:SendCommand('disassemble $pc')
-	else
-	  exe 'sign unplace ' . s:asm_id
-	  exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
-	endif
+        let lnum = search('^' . s:asm_addr)
+        if lnum == 0
+          call s:SendCommand('disassemble $pc')
+        else
+          exe 'sign unplace ' . s:asm_id
+          exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
+        endif
 
-	call win_gotoid(curwinid)
+        call win_gotoid(curwinid)
       endif
     endif
   endif
@@ -1263,26 +1264,26 @@ echomsg 'different fname: "' .. expand('%:p') .. '" vs "' .. fnamemodify(fname, 
 		\ | echo 'Warning: file is being edited elsewhere'
 		\ | echohl None
 		\ | let v:swapchoice = '0'
-	augroup END
-	if &modified
-	  " TODO: find existing window
-	  exe 'split ' . fnameescape(fname)
-	  let s:sourcewin = win_getid(winnr())
-	  call s:InstallWinbar()
-	else
-	  exe 'edit ' . fnameescape(fname)
-	endif
-	augroup Termdebug
-	  au! SwapExists
-	augroup END
+        augroup END
+        if &modified
+          " TODO: find existing window
+          exe 'split ' . fnameescape(fname)
+          let s:sourcewin = win_getid(winnr())
+          call s:InstallWinbar()
+        else
+          exe 'edit ' . fnameescape(fname)
+        endif
+        augroup Termdebug
+          au! SwapExists
+        augroup END
       endif
       exe lnum
       normal! zv
       exe 'sign unplace ' . s:pc_id
       exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC priority=110 file=' . fname
       if !exists('b:save_signcolumn')
-	let b:save_signcolumn = &signcolumn
-	call add(s:signcolumn_buflist, bufnr())
+        let b:save_signcolumn = &signcolumn
+        call add(s:signcolumn_buflist, bufnr())
       endif
       setlocal signcolumn=yes
     endif
@@ -1396,8 +1397,8 @@ func s:HandleBreakpointDelete(msg)
   if has_key(s:breakpoints, id)
     for [subid, entry] in items(s:breakpoints[id])
       if has_key(entry, 'placed')
-	exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
-	unlet entry['placed']
+        exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
+        unlet entry['placed']
       endif
     endfor
     unlet s:breakpoints[id]
@@ -1422,7 +1423,7 @@ func s:BufRead()
   for [id, entries] in items(s:breakpoints)
     for [subid, entry] in items(entries)
       if entry['fname'] == fname
-	call s:PlaceSign(id, subid, entry)
+        call s:PlaceSign(id, subid, entry)
       endif
     endfor
   endfor
@@ -1434,7 +1435,7 @@ func s:BufUnloaded()
   for [id, entries] in items(s:breakpoints)
     for [subid, entry] in items(entries)
       if entry['fname'] == fname
-	let entry['placed'] = 0
+        let entry['placed'] = 0
       endif
     endfor
   endfor

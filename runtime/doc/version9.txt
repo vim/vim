@@ -837,7 +837,7 @@ Files:      runtime/tools/ccfilter.c, src/libvterm/src/parser.c,
 Patch 8.2.0107
 Problem:    Hgignore is out of sync from gitignore.
 Solution:   Add lines to hgignore. (Ken Takata)
-Files:      .hgigmore
+Files:      .hgignore
 
 Patch 8.2.0108
 Problem:    When sign text is changed a manual redraw is needed. (Pontus
@@ -2474,7 +2474,7 @@ Files:      src/testdir/test_hardcopy.vim
 Patch 8.2.0367
 Problem:    Can use :pedit in a popup window.
 Solution:   Disallow it.
-Files:      src/ex_docmd.c, src/testdir/test_popuwin.vim
+Files:      src/ex_docmd.c, src/testdir/test_popupwin.vim
 
 Patch 8.2.0368
 Problem:    Vim9: import that redefines local variable does not fail.
@@ -2513,7 +2513,7 @@ Patch 8.2.0372
 Problem:    Prop_find() may not find text property at start of the line.
 Solution:   Adjust the loop to find properties. (Axel Forsman, closes #5761,
             closes #5663)
-Files:      src/testprop.c, src/testdir/test_textprop.vim
+Files:      src/textprop.c, src/testdir/test_textprop.vim
 
 Patch 8.2.0373
 Problem:    Type of term_sendkeys() is unknown.
@@ -3743,7 +3743,7 @@ Patch 8.2.0570
 Problem:    Vim9: no error when omitting type from argument.
 Solution:   Enforce specifying argument types.
 Files:      src/userfunc.c, src/ex_eval.c, src/testdir/test_vim9_script.vim,
-            src/testdir/test_vim9_func.vim, src/testdir/test_vim9_expr.vim
+            src/testdir/test_vim9_func.vim, src/testdir/test_vim9_expr.vim,
             src/testdir/test_vim9_disassemble.vim
 
 Patch 8.2.0571
@@ -3921,7 +3921,7 @@ Files:      runtime/doc/netbeans.txt, src/netbeans.c, src/os_win32.c,
 Patch 8.2.0600
 Problem:    Vim9: cannot read or write w:, t: and b: variables.
 Solution:   Implement load and store for w:, t: and b: variables.
-            (closes #5950) 
+            (closes #5950)
 Files:      src/testdir/test_vim9_disassemble.vim,
             src/testdir/test_vim9_expr.vim, src/testdir/test_vim9_script.vim,
             src/vim9.h, src/vim9compile.c, src/vim9execute.c
@@ -4042,7 +4042,7 @@ Files:      runtime/lang/menu_sv_se.latin1.vim
 
 Patch 8.2.0618
 Problem:    Echoing a null list results in no output. (Yegappan Lakshmanan)
-Solution:   Return "[]" instead of NULL in echo_string_core(). 
+Solution:   Return "[]" instead of NULL in echo_string_core().
 Files:      src/eval.c, src/testdir/test_messages.vim
 
 Patch 8.2.0619
@@ -4095,7 +4095,7 @@ Solution:   Give error for missing space. Implement :echomsg and :echoerr.
             (closes #5670)
 Files:      src/vim9compile.c, src/vim9execute.c, src/vim9.h, src/userfunc.c,
             src/eval.c, src/globals.h, src/testdir/test_vim9_func.vim,
-            src/testdir/test_vim9_disassemble.vim
+            src/testdir/test_vim9_disassemble.vim,
             src/testdir/test_vim9_script.vim
 
 Patch 8.2.0627
@@ -5205,8 +5205,9 @@ Problem:    Libvterm code lags behind the upstream version.
 Solution:   Include revision 727, but add the index instead of switching
             between RGB and indexed.
 Files:      src/terminal.c, src/term.c, src/libvterm/include/vterm.h,
-            src/libvterm/src/pen.c src/libvterm/src/screen.c
-            src/libvterm/src/vterm_internal.h src/libvterm/t/30state_pen.test
+            src/libvterm/src/pen.c, src/libvterm/src/screen.c,
+            src/libvterm/src/vterm_internal.h,
+            src/libvterm/t/30state_pen.test,
             src/libvterm/t/harness.c, src/libvterm/src/state.c,
             src/libvterm/t/26state_query.test,
             src/libvterm/t/64screen_pen.test
@@ -5299,7 +5300,7 @@ Files:      runtime/doc/vim9.txt, src/vim9script.c, src/structs.h,
             src/evalvars.c, src/proto/evalvars.pro, src/vim9compile.c,
             src/proto/vim9compile.pro, src/vim9execute.c, src/ex_cmds.h,
             src/ex_docmd.c, src/ex_cmdidxs.h, src/vim.h, src/testdir/vim9.vim,
-            src/testdir/test_vim9_disassemble.vim
+            src/testdir/test_vim9_disassemble.vim,
             src/testdir/test_vim9_func.vim, src/testdir/test_vim9_script.vim
 
 Patch 8.2.0819
@@ -5667,7 +5668,7 @@ Patch 8.2.0875
 Problem:    Getting attributes for directory entries is slow.
 Solution:   Add readdirex(). (Ken Takata, closes #5619)
 Files:      runtime/doc/eval.txt, runtime/doc/usr_41.txt, src/evalfunc.c,
-            src/fileio.c, src/filepath.c src/proto/fileio.pro,
+            src/fileio.c, src/filepath.c, src/proto/fileio.pro,
             src/proto/filepath.pro, src/testdir/test_functions.vim
 
 Patch 8.2.0876
@@ -6292,7 +6293,7 @@ Patch 8.2.0981
 Problem:    Vim9: cannot compile "[var, var] = list".
 Solution:   Implement list assignment.
 Files:      src/vim9compile.c, src/vim9.h, src/vim9execute.c, src/evalvars.c,
-            src/proto/evalvars.pro src/eval.c, src/testdir/test_vim9_script.vim
+            src/proto/evalvars.pro, src/eval.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.0982
 Problem:    Insufficient testing for reading/writing files.
@@ -6335,7 +6336,7 @@ Files:      runtime/doc/eval.txt, runtime/doc/mlang.txt, src/auto/configure,
             src/cmdexpand.c, src/config.h.in, src/configure.ac,
             src/evalfunc.c, src/evalvars.c, src/ex_cmds2.c, src/fileio.c,
             src/filepath.c, src/globals.h, src/proto/fileio.pro,
-            src/testdir/test_cmdline.vim, src/testdir/test_functions.vim
+            src/testdir/test_cmdline.vim, src/testdir/test_functions.vim,
             src/vim.h
 
 Patch 8.2.0989
@@ -9545,7 +9546,7 @@ Patch 8.2.1518
 Problem:    Vim9: cannot assign to local option.
 Solution:   Skip over "&l:" and "&g:". (closes #6749)
 Files:      src/ex_docmd.c, src/proto/ex_docmd.pro, src/testdir/vim9.vim,
-            src/vim9compile.c src/testdir/test_vim9_script.vim
+            src/vim9compile.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.1519
 Problem:    Vim9: Ex command default range is not set.
@@ -11740,7 +11741,7 @@ Files:      src/structs.h, src/ex_docmd.c, src/proto/ex_docmd.pro,
 Patch 8.2.1898
 Problem:    Command modifier parsing always uses global cmdmod.
 Solution:   Pass in cmdmod_T to use.  Rename struct fields consistently.
-Files:      src/structs.h, src/arglist.c src/buffer.c, src/bufwrite.c,
+Files:      src/structs.h, src/arglist.c, src/buffer.c, src/bufwrite.c,
             src/diff.c, src/change.c, src/cmdhist.c, src/edit.c,
             src/ex_cmds.c, src/ex_cmds2.c, src/ex_docmd.c, src/ex_getln.c,
             src/fileio.c, src/filepath.c, src/gui.c, src/gui_gtk_x11.c,
@@ -13549,7 +13550,7 @@ Patch 8.2.2209
 Problem:    Vim9: return type of => lambda not parsed.
 Solution:   Parse and use the return type.
 Files:      src/vim9compile.c, src/userfunc.c, src/vim9type.c,
-            src/proto/vim9type.pro, src/vim9script.c, src/eval.c
+            src/proto/vim9type.pro, src/vim9script.c, src/eval.c,
             src/testdir/test_vim9_expr.vim
 
 Patch 8.2.2210
@@ -13776,7 +13777,7 @@ Solution:   Check the window still has lines. (Christian Brabandt,
 Files:      src/term.c
 
 Patch 8.2.2249
-Problem:    Termcodes test is flaky when used over ssh with X forwarding. 
+Problem:    Termcodes test is flaky when used over ssh with X forwarding.
 Solution:   Set 'mousetime' to a larger value. (Dominique Pellé, closes #7576,
             closes #7563)
 Files:      src/testdir/test_termcodes.vim
@@ -15482,7 +15483,7 @@ Problem:    Vim9: cannot use a range with :unlet.
 Solution:   Implement ISN_UNLETRANGE.
 Files:      src/errors.h, src/eval.c, src/evalvars.c, src/list.c,
             src/proto/evalvars.pro, src/proto/list.pro, src/vim9.h,
-            src/vim9compile.c, src/vim9execute.c
+            src/vim9compile.c, src/vim9execute.c,
             src/testdir/test_vim9_assign.vim
 
 Patch 8.2.2534
@@ -15518,7 +15519,7 @@ Problem:    Vim9: return from finally block causes a hang.
 Solution:   Store both the finally and endtry indexes. (closes #7885)
 Files:      src/vim9execute.c, src/vim9compile.c, src/vim9.h,
             src/testdir/test_vim9_script.vim,
- 
+
 Patch 8.2.2540
 Problem:    Vim9: no error for using script var name for argument.
 Solution:   Check for this error. (closes #7868)
@@ -17249,7 +17250,7 @@ Files:      src/vim9compile.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.2841
 Problem:    MS-Windows: cursor in wrong position when 'lazyredraw' and
-            'statusline' are set. 
+            'statusline' are set.
 Solution:   Call compute_cmdrow(). (closes #8170, closes #8184)
 Files:      src/os_win32.c
 
@@ -17936,7 +17937,7 @@ Patch 8.2.2957
 Problem:    Using getchar() in Vim9 script is problematic.
 Solution:   Add getcharstr(). (closes #8343)
 Files:      runtime/doc/eval.txt, src/evalfunc.c, src/getchar.c,
-            src/proto/getchar.pro, src/testdir/test_getchar.vim
+            src/proto/getchar.pro, src/testdir/test_functions.vim
 
 Patch 8.2.2958 (after 8.2.2957)
 Problem:    Function list test fails.
@@ -18849,7 +18850,7 @@ Solution:   Use eval().
 Files:      src/testdir/check.vim
 
 Patch 8.2.3110
-Problem:    A pattern that matches the cursor position is bit complicated.
+Problem:    A pattern that matches the cursor position is a bit complicated.
 Solution:   Use a dot to indicate the cursor line and column. (Christian
             Brabandt, closes #8497, closes #8179)
 Files:      runtime/doc/pattern.txt, src/errors.h, src/regexp_bt.c,
@@ -18864,7 +18865,7 @@ Patch 8.2.3112 (after 8.2.3090)
 Problem:    With concealing enabled and indirectly closing a fold the cursor
             may be somewhere in a folded line when it is not on the first line
             of the fold.
-Solution:   Check if he cursor is somewhere in the folded text.
+Solution:   Check if the cursor is somewhere in the folded text.
 Files:      src/drawscreen.c
 
 Patch 8.2.3113
@@ -23950,7 +23951,7 @@ Patch 8.2.3957
 Problem:    Error messages are spread out.
 Solution:   Move more errors to errors.h.
 Files:      src/errors.h, src/globals.h, src/arglist.c, src/bufwrite.c,
-            src/evalvars.c, src/ex_cmds2.c, src/ex_docmd.c src/ex_eval.c,
+            src/evalvars.c, src/ex_cmds2.c, src/ex_docmd.c, src/ex_eval.c,
             src/help.c, src/scriptfile.c, src/usercmd.c, src/userfunc.c,
             src/vim9cmds.c, src/vim9compile.c
 
@@ -23975,7 +23976,7 @@ Files:      src/errors.h, src/alloc.c, src/arglist.c, src/autocmd.c,
 Patch 8.2.3961
 Problem:    Error messages are spread out.
 Solution:   Move more errors to errors.h.
-Files:      src/errors.h, src/globals.h src/arglist.c, src/autocmd.c,
+Files:      src/errors.h, src/globals.h, src/arglist.c, src/autocmd.c,
             src/blob.c, src/bufwrite.c, src/channel.c, src/clipboard.c,
             src/cmdexpand.c, src/debugger.c, src/dict.c, src/eval.c,
             src/evalfunc.c, src/evalvars.c, src/evalwindow.c, src/ex_cmds.c,
@@ -24291,7 +24292,7 @@ Files:      src/errors.h, src/channel.c, src/ex_docmd.c, src/ex_eval.c,
 
 Patch 8.2.4004
 Problem:    Old compiler complains about struct init with variable.
-Solution:   Set the struct member later. (John Marriott) 
+Solution:   Set the struct member later. (John Marriott)
 Files:      src/evalfunc.c
 
 Patch 8.2.4005
@@ -24494,7 +24495,7 @@ Files:      src/time.c
 Patch 8.2.4036
 Problem:    Vim9: script test file is getting too long.
 Solution:   Split the import/export functionality to a separate file.
-Files:      src/testdir/test_vim9_script.vim src/testdir/test_vim9_import.vim,
+Files:      src/testdir/test_vim9_script.vim, src/testdir/test_vim9_import.vim,
             src/testdir/Make_all.mak
 
 Patch 8.2.4037
@@ -25457,7 +25458,7 @@ Patch 8.2.4202
 Problem:    Vim9: cannot export function that exists globally.
 Solution:   When checking if a function already exists only check for
             script-local functions. (closes #9615)
-Files:      src/userfunc.c, src/proto/userfunc.pro, src/vim.h, 
+Files:      src/userfunc.c, src/proto/userfunc.pro, src/vim.h,
             src/vim9compile.c, src/vim9instr.c,
             src/testdir/test_vim9_import.vim
 
@@ -25853,7 +25854,7 @@ Patch 8.2.4265 (after 8.2.4264)
 Problem:    Autoload tests fails.
 Solution:   Use export instead of name with #.
 Files:      src/testdir/sautest/autoload/auto9.vim,
-            src/testdir/test_autoload.vim src/testdir/test_ins_complete.vim
+            src/testdir/test_autoload.vim, src/testdir/test_ins_complete.vim
 
 Patch 8.2.4266
 Problem:    Compiler warning for uninitialized variable.
