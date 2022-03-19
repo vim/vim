@@ -32,6 +32,7 @@ void free_scriptnames(void);
 void free_autoload_scriptnames(void);
 linenr_T get_sourced_lnum(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 char_u *getsourceline(int c, void *cookie, int indent, getline_opt_T options);
+int sourcing_a_script(exarg_T *eap);
 void ex_scriptencoding(exarg_T *eap);
 void ex_scriptversion(exarg_T *eap);
 void ex_finish(exarg_T *eap);
@@ -42,5 +43,4 @@ char_u *get_autoload_prefix(scriptitem_T *si);
 char_u *may_prefix_autoload(char_u *name);
 char_u *autoload_name(char_u *name);
 int script_autoload(char_u *name, int reload);
-int sourcing_a_script(exarg_T *eap);
 /* vim: set ft=c : */

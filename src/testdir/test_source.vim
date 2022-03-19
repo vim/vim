@@ -146,6 +146,23 @@ func Test_source_buffer()
   2,3source
   call assert_equal(90, g:a)
 
+  " Make sure the script line number is correct when sourcing a range of
+  " lines.
+  %d _
+  let lines =<< trim END
+     Line 1
+     Line 2
+     func Xtestfunc()
+       return expand("<sflnum>")
+     endfunc
+     Line 3
+     Line 4
+  END
+  call setline(1, lines)
+  3,5source
+  call assert_equal('4', Xtestfunc())
+  delfunc Xtestfunc
+
   " Source a script with line continuation lines
   %d _
   let lines =<< trim END
@@ -327,6 +344,63 @@ func Test_source_buffer()
   call assert_equal("three", Xtestfunc())
   delfunc Xtestfunc
 
+  " test for using try/catch
+  %d _
+  let lines =<< trim END
+     let Trace = '1'
+     try
+       let a1 = b1
+     catch
+       let Trace ..= '2'
+     finally
+       let Trace ..= '3'
+     endtry
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("123", g:Trace)
+
+  " test with the finish command
+  %d _
+  let lines =<< trim END
+     let g:Color = 'blue'
+     finish
+     let g:Color = 'green'
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('blue', g:Color)
+
+  " Test for the SourcePre and SourcePost autocmds
+  augroup Xtest
+    au!
+    au SourcePre * let g:XsourcePre=4
+          \ | let g:XsourcePreFile = expand("<afile>")
+    au SourcePost * let g:XsourcePost=6
+          \ | let g:XsourcePostFile = expand("<afile>")
+  augroup END
+  %d _
+  let lines =<< trim END
+     let a = 1
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(4, g:XsourcePre)
+  call assert_equal(6, g:XsourcePost)
+  call assert_equal(':source buffer=' .. bufnr(), g:XsourcePreFile)
+  call assert_equal(':source buffer=' .. bufnr(), g:XsourcePostFile)
+  augroup Xtest
+    au!
+  augroup END
+  augroup! Xtest
+
+  %bw!
+endfunc
+
+" Test for sourcing a Vim9 script from the current buffer
+func Test_source_buffer_vim9()
+  new
+
   " test for sourcing a Vim9 script
   %d _
   let lines =<< trim END
@@ -341,6 +415,198 @@ func Test_source_buffer()
   call setline(1, lines)
   source
   call assert_equal(10, Xtestfunc())
+
+  " test for sourcing a vim9 script with line continuation
+  %d _
+  let lines =<< trim END
+     vim9script
+
+     g:Str1 = "hello "
+              .. "world"
+              .. ", how are you?"
+     g:Colors = [
+       'red',
+       # comment
+       'blue'
+       ]
+     g:Dict = {
+       a: 22,
+       # comment
+       b: 33
+       }
+
+     # calling a function with line continuation
+     def Sum(...values: list<number>): number
+       var sum: number = 0
+       for v in values
+         sum += v
+       endfor
+       return sum
+     enddef
+     g:Total1 = Sum(10,
+                   20,
+                   30)
+
+     var i: number = 0
+     while i < 10
+       # while loop
+       i +=
+           1
+     endwhile
+     g:Count1 = i
+
+     # for loop
+     g:Count2 = 0
+     for j in range(10, 20)
+       g:Count2 +=
+           i
+     endfor
+
+     g:Total2 = 10 +
+                20 -
+                5
+
+     g:Result1 = g:Total2 > 1
+                ? 'red'
+                : 'blue'
+
+     g:Str2 = 'x'
+              ->repeat(10)
+              ->trim()
+              ->strpart(4)
+
+     g:Result2 = g:Dict
+                    .a
+
+     augroup Test
+       au!
+       au BufNewFile Xfile g:readFile = 1
+             | g:readExtra = 2
+     augroup END
+     g:readFile = 0
+     g:readExtra = 0
+     new Xfile
+     bwipe!
+     augroup Test
+       au!
+     augroup END
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("hello world, how are you?", g:Str1)
+  call assert_equal(['red', 'blue'], g:Colors)
+  call assert_equal(#{a: 22, b: 33}, g:Dict)
+  call assert_equal(60, g:Total1)
+  call assert_equal(10, g:Count1)
+  call assert_equal(110, g:Count2)
+  call assert_equal(25, g:Total2)
+  call assert_equal('red', g:Result1)
+  call assert_equal('xxxxxx', g:Str2)
+  call assert_equal(22, g:Result2)
+  call assert_equal(1, g:readFile)
+  call assert_equal(2, g:readExtra)
+
+  " test for sourcing the same buffer multiple times after changing a function
+  %d _
+  let lines =<< trim END
+     vim9script
+     def g:Xtestfunc(): string
+       return "one"
+     enddef
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("one", Xtestfunc())
+  call setline(3, '  return "two"')
+  source
+  call assert_equal("two", Xtestfunc())
+  call setline(3, '  return "three"')
+  source
+  call assert_equal("three", Xtestfunc())
+  delfunc Xtestfunc
+
+  " Test for sourcing a range of lines. Make sure the script line number is
+  " correct.
+  %d _
+  let lines =<< trim END
+     Line 1
+     Line 2
+     vim9script
+     def g:Xtestfunc(): string
+       return expand("<sflnum>")
+     enddef
+     Line 3
+     Line 4
+  END
+  call setline(1, lines)
+  3,6source
+  call assert_equal('5', Xtestfunc())
+  delfunc Xtestfunc
+
+  " test for sourcing a heredoc
+  %d _
+  let lines =<< trim END
+    vim9script
+    var a = 1
+    g:heredoc =<< trim DATA
+       red
+         green
+       blue
+    DATA
+    var b = 2
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['red', '  green', 'blue'], g:heredoc)
+
+  " test for using the :vim9cmd modifier
+  %d _
+  let lines =<< trim END
+    first line
+    g:Math = {
+         pi: 3.12,
+         e: 2.71828
+      }
+    g:Editors = [
+      'vim',
+      # comment
+      'nano'
+      ]
+    last line
+  END
+  call setline(1, lines)
+  vim9cmd :2,10source
+  call assert_equal(#{pi: 3.12, e: 2.71828}, g:Math)
+  call assert_equal(['vim', 'nano'], g:Editors)
+
+  " test for using try/catch
+  %d _
+  let lines =<< trim END
+     vim9script
+     g:Trace = '1'
+     try
+       a1 = b1
+     catch
+       g:Trace ..= '2'
+     finally
+       g:Trace ..= '3'
+     endtry
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('123', g:Trace)
+
+  " test with the finish command
+  %d _
+  let lines =<< trim END
+     vim9script
+     g:Color = 'red'
+     finish
+     g:Color = 'blue'
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('red', g:Color)
 
   %bw!
 endfunc

@@ -4426,6 +4426,9 @@ typedef struct {
     char_u	*nextline;	// if not NULL: line that was read ahead
     linenr_T	sourcing_lnum;	// line number of the source file
     int		finished;	// ":finish" used
+    int		source_from_buf;// if sourcing from current buffer
+    int		buf_lnum;	// line number in the current buffer
+    garray_T	buflines;	// lines in the current buffer
 #ifdef USE_CRNL
     int		fileformat;	// EOL_UNKNOWN, EOL_UNIX or EOL_DOS
     int		error;		// TRUE if LF found after CR-LF
