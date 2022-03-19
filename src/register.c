@@ -1330,8 +1330,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	vim_free(y_current->y_array);
 	y_current = curr;
     }
-    if (curwin->w_p_rnu)
-	redraw_later(SOME_VALID);	// cursor moved to start
+
     if (mess)			// Display message about yank?
     {
 	if (yanktype == MCHAR
