@@ -1653,8 +1653,11 @@ nfa_regatom(void)
 			    long_u tmp;
 
 			    if (cur)
+			    {
 				semsg(_(e_regexp_number_after_dot_pos_search),
 								 no_Magic(c));
+				return FAIL;
+			    }
 			    tmp = n * 10 + (c - '0');
 
 			    if (tmp < n)
