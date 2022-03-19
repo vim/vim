@@ -563,10 +563,7 @@ ServerWait(
     fds.events = POLLIN;
 #else
     fd_set	    fds;
-    struct timeval  tv;
 
-    tv.tv_sec = 0;
-    tv.tv_usec =  SEND_MSEC_POLL * 1000;
     FD_ZERO(&fds);
     FD_SET(ConnectionNumber(dpy), &fds);
 #endif
@@ -597,6 +594,10 @@ ServerWait(
 	    if (poll(&fds, 1, SEND_MSEC_POLL) < 0)
 		break;
 #else
+	    struct timeval  tv;
+
+	    tv.tv_sec = 0;
+	    tv.tv_usec =  SEND_MSEC_POLL * 1000;
 	    if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0)
 		break;
 #endif
