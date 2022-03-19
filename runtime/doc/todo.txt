@@ -4333,12 +4333,6 @@ Vim script language:
     restore option values.  Especially useful for new options.  Problem: how
     to avoid a performance penalty (esp. for string options)?
 -   range for ":exec", pass it on to the executed command.  (Webb)
-8   ":{range}source": source the lines from the current file.
-	You can already yank lines and use :@" to execute them.
-	Most of do_source() would not be used, need a new function.
-	It's easy when not doing breakpoints or profiling.
-    Requires copying the lines into a list and then creating a function to
-    execute lines from the list.  Similar to getnextac().
 7   ":include" command: just like ":source" but doesn't start a new scriptID?
     Will be tricky for the list of script names.
 8   Have a look at VSEL.  Would it be useful to include? (Bigham)

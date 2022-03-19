@@ -94,6 +94,12 @@ func Test_source_error()
   call assert_fails('scriptencoding utf-8', 'E167:')
   call assert_fails('finish', 'E168:')
   call assert_fails('scriptversion 2', 'E984:')
+  call assert_fails('source!', 'E471:')
+  new
+  call setline(1, ['', '', '', ''])
+  call assert_fails('1,3source Xscript.vim', 'E481:')
+  call assert_fails('1,3source! Xscript.vim', 'E481:')
+  bw!
 endfunc
 
 " Test for sourcing a script recursively
@@ -108,6 +114,235 @@ func Test_nested_script()
   call WaitForAssert({-> assert_match('E22: Scripts nested too deep\s*', term_getline(buf, 6))})
   call delete('Xscript.vim')
   call StopVimInTerminal(buf)
+endfunc
+
+" Test for sourcing a script from the current buffer
+func Test_source_buffer()
+  new
+  " Source a simple script
+  let lines =<< trim END
+    let a = "Test"
+    let b = 20
+
+    let c = [1.1]
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['Test', 20, [1.1]], [g:a, g:b, g:c])
+
+  " Source a range of lines in the current buffer
+  %d _
+  let lines =<< trim END
+    let a = 10
+    let a += 20
+    let a += 30
+    let a += 40
+  END
+  call setline(1, lines)
+  .source
+  call assert_equal(10, g:a)
+  3source
+  call assert_equal(40, g:a)
+  2,3source
+  call assert_equal(90, g:a)
+
+  " Source a script with line continuation lines
+  %d _
+  let lines =<< trim END
+    let m = [
+      \   1,
+      \   2,
+      \ ]
+    call add(m, 3)
+  END
+  call setline(1, lines)
+  source
+  call assert_equal([1, 2, 3], g:m)
+  " Source a script with line continuation lines and a comment
+  %d _
+  let lines =<< trim END
+    let m = [
+      "\ first entry
+      \   'a',
+      "\ second entry
+      \   'b',
+      \ ]
+    " third entry
+    call add(m, 'c')
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['a', 'b', 'c'], g:m)
+  " Source an incomplete line continuation line
+  %d _
+  let lines =<< trim END
+    let k = [
+      \
+  END
+  call setline(1, lines)
+  call assert_fails('source', 'E697:')
+  " Source a function with a for loop
+  %d _
+  let lines =<< trim END
+    let m = []
+    " test function
+    func! Xtest()
+      for i in range(5, 7)
+        call add(g:m, i)
+      endfor
+    endfunc
+    call Xtest()
+  END
+  call setline(1, lines)
+  source
+  call assert_equal([5, 6, 7], g:m)
+  " Source an empty buffer
+  %d _
+  source
+
+  " test for script local functions and variables
+  let lines =<< trim END
+    let s:var1 = 10
+    func s:F1()
+      let s:var1 += 1
+      return s:var1
+    endfunc
+    func s:F2()
+    endfunc
+    let g:ScriptID = expand("<SID>")
+  END
+  call setline(1, lines)
+  source
+  call assert_true(g:ScriptID != '')
+  call assert_true(exists('*' .. g:ScriptID .. 'F1'))
+  call assert_true(exists('*' .. g:ScriptID .. 'F2'))
+  call assert_equal(11, call(g:ScriptID .. 'F1', []))
+
+  " the same script ID should be used even if the buffer is sourced more than
+  " once
+  %d _
+  let lines =<< trim END
+    let g:ScriptID = expand("<SID>")
+    let g:Count += 1
+  END
+  call setline(1, lines)
+  let g:Count = 0
+  source
+  call assert_true(g:ScriptID != '')
+  let scid = g:ScriptID
+  source
+  call assert_equal(scid, g:ScriptID)
+  call assert_equal(2, g:Count)
+  source
+  call assert_equal(scid, g:ScriptID)
+  call assert_equal(3, g:Count)
+
+  " test for the script line number
+  %d _
+  let lines =<< trim END
+    " comment
+    let g:Slnum1 = expand("<slnum>")
+    let i = 1 +
+           \ 2 +
+          "\ comment
+           \ 3
+    let g:Slnum2 = expand("<slnum>")
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('2', g:Slnum1)
+  call assert_equal('7', g:Slnum2)
+
+  " test for retaining the same script number across source calls
+  let lines =<< trim END
+     let g:ScriptID1 = expand("<SID>")
+     let g:Slnum1 = expand("<slnum>")
+     let l =<< trim END
+       let g:Slnum2 = expand("<slnum>")
+       let g:ScriptID2 = expand("<SID>")
+     END
+     new
+     call setline(1, l)
+     source
+     bw!
+     let g:ScriptID3 = expand("<SID>")
+     let g:Slnum3 = expand("<slnum>")
+  END
+  call writefile(lines, 'Xscript')
+  source Xscript
+  call assert_true(g:ScriptID1 != g:ScriptID2)
+  call assert_equal(g:ScriptID1, g:ScriptID3)
+  call assert_equal('2', g:Slnum1)
+  call assert_equal('1', g:Slnum2)
+  call assert_equal('12', g:Slnum3)
+  call delete('Xscript')
+
+  " test for sourcing a heredoc
+  %d _
+  let lines =<< trim END
+     let a = 1
+     let heredoc =<< trim DATA
+        red
+          green
+        blue
+     DATA
+     let b = 2
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['red', '  green', 'blue'], g:heredoc)
+
+  " test for a while and for statement
+  %d _
+  let lines =<< trim END
+     let a = 0
+     let b = 1
+     while b <= 10
+       let a += 10
+       let b += 1
+     endwhile
+     for i in range(5)
+       let a += 10
+     endfor
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(150, g:a)
+
+  " test for sourcing the same buffer multiple times after changing a function
+  %d _
+  let lines =<< trim END
+     func Xtestfunc()
+       return "one"
+     endfunc
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("one", Xtestfunc())
+  call setline(2, '  return "two"')
+  source
+  call assert_equal("two", Xtestfunc())
+  call setline(2, '  return "three"')
+  source
+  call assert_equal("three", Xtestfunc())
+  delfunc Xtestfunc
+
+  " test for sourcing a Vim9 script
+  %d _
+  let lines =<< trim END
+     vim9script
+
+     # check dict
+     var x: number = 10
+     def g:Xtestfunc(): number
+       return x
+     enddef
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(10, Xtestfunc())
+
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

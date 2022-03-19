@@ -42,4 +42,5 @@ char_u *get_autoload_prefix(scriptitem_T *si);
 char_u *may_prefix_autoload(char_u *name);
 char_u *autoload_name(char_u *name);
 int script_autoload(char_u *name, int reload);
+int sourcing_a_script(exarg_T *eap);
 /* vim: set ft=c : */
