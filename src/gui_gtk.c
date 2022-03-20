@@ -1107,7 +1107,7 @@ adjustment_value_changed(GtkAdjustment *adjustment, gpointer data)
     {
 	dragging = TRUE;
 
-	if (sb->wp != NULL)
+	if (sb->wp != NULL && GDK_IS_DRAWABLE(sb->id->window))
 	{
 	    int			x;
 	    int			y;
