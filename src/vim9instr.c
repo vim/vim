@@ -592,12 +592,12 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	    case VAR_JOB:
 		if (tv->vval.v_job != NULL)
 		    iemsg("non-null job constant not supported");
-		generate_PUSHJOB(cctx, NULL);
+		generate_PUSHJOB(cctx);
 		break;
 	    case VAR_CHANNEL:
 		if (tv->vval.v_channel != NULL)
 		    iemsg("non-null channel constant not supported");
-		generate_PUSHCHANNEL(cctx, NULL);
+		generate_PUSHCHANNEL(cctx);
 		break;
 #endif
 	    case VAR_FUNC:
@@ -723,36 +723,30 @@ generate_PUSHS(cctx_T *cctx, char_u **str)
 }
 
 /*
- * Generate an ISN_PUSHCHANNEL instruction.
- * Consumes "channel".
+ * Generate an ISN_PUSHCHANNEL instruction.  Channel is always NULL.
  */
     int
-generate_PUSHCHANNEL(cctx_T *cctx, channel_T *channel)
+generate_PUSHCHANNEL(cctx_T *cctx)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
 	return FAIL;
-    isn->isn_arg.channel = channel;
-
     return OK;
 }
 
 /*
- * Generate an ISN_PUSHJOB instruction.
- * Consumes "job".
+ * Generate an ISN_PUSHJOB instruction.  Job is always NULL.
  */
     int
-generate_PUSHJOB(cctx_T *cctx, job_T *job)
+generate_PUSHJOB(cctx_T *cctx)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_job)) == NULL)
 	return FAIL;
-    isn->isn_arg.job = job;
-
     return OK;
 }
 
@@ -2081,18 +2075,6 @@ delete_instr(isn_T *isn)
 	    blob_unref(isn->isn_arg.blob);
 	    break;
 
-	case ISN_PUSHJOB:
-#ifdef FEAT_JOB_CHANNEL
-	    job_unref(isn->isn_arg.job);
-#endif
-	    break;
-
-	case ISN_PUSHCHANNEL:
-#ifdef FEAT_JOB_CHANNEL
-	    channel_unref(isn->isn_arg.channel);
-#endif
-	    break;
-
 	case ISN_UCALL:
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
@@ -2241,7 +2223,9 @@ delete_instr(isn_T *isn)
 	case ISN_PROF_END:
 	case ISN_PROF_START:
 	case ISN_PUSHBOOL:
+	case ISN_PUSHCHANNEL:
 	case ISN_PUSHF:
+	case ISN_PUSHJOB:
 	case ISN_PUSHNR:
 	case ISN_PUSHSPEC:
 	case ISN_PUT:

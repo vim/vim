@@ -2238,10 +2238,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			generate_NEWDICT(cctx, 0);
 			break;
 		    case VAR_JOB:
-			generate_PUSHJOB(cctx, NULL);
+			generate_PUSHJOB(cctx);
 			break;
 		    case VAR_CHANNEL:
-			generate_PUSHCHANNEL(cctx, NULL);
+			generate_PUSHCHANNEL(cctx);
 			break;
 		    case VAR_NUMBER:
 		    case VAR_UNKNOWN:

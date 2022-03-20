@@ -3312,6 +3312,29 @@ def Test_expr8_call_global()
   v9.CheckDefAndScriptFailure(lines, 'E117: Unknown function: ExistingGlobal')
 enddef
 
+def Test_expr8_autoload_var()
+  var auto_lines =<< trim END
+      let autofile#var = 'found'
+  END
+  mkdir('Xruntime/autoload', 'p')
+  writefile(auto_lines, 'Xruntime/autoload/autofile.vim')
+  var save_rtp = &rtp
+  &rtp = getcwd() .. '/Xruntime,' .. &rtp
+
+  var lines =<< trim END
+      assert_equal('found', autofile#var)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      echo autofile#other
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E121: Undefined variable: autofile#other')
+
+  &rtp = save_rtp
+  delete('Xruntime', 'rf')
+enddef
+
 def Test_expr8_call_autoload()
   var auto_lines =<< trim END
       def g:some#func(): string

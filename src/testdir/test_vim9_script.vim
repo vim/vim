@@ -1246,6 +1246,37 @@ def Test_cexpr_vimscript()
       assert_equal(19, getqflist()[0].lnum)
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def CexprFail()
+        au QuickfixCmdPre * echo g:doesnotexist
+        cexpr 'File otherFile line 99'
+        g:didContinue = 'yes'
+      enddef
+      CexprFail()
+      g:didContinue = 'also'
+  END
+  g:didContinue = 'no'
+  v9.CheckScriptFailure(lines, 'E121: Undefined variable: g:doesnotexist')
+  assert_equal('no', g:didContinue)
+  au! QuickfixCmdPre
+
+  lines =<< trim END
+      vim9script
+      def CexprFail()
+        cexpr g:aNumber
+        g:didContinue = 'yes'
+      enddef
+      CexprFail()
+      g:didContinue = 'also'
+  END
+  g:aNumber = 123
+  g:didContinue = 'no'
+  v9.CheckScriptFailure(lines, 'E777: String or List expected')
+  assert_equal('no', g:didContinue)
+  unlet g:didContinue
+
   set errorformat&
 enddef
 
@@ -1812,6 +1843,10 @@ def Test_echo_cmd()
   var str2 = 'more'
   echo str1 str2
   assert_match('^some more$', g:Screenline(&lines))
+
+  echo "one\ntwo"
+  assert_match('^one$', g:Screenline(&lines - 1))
+  assert_match('^two$', g:Screenline(&lines))
 
   v9.CheckDefFailure(['echo "xxx"# comment'], 'E488:')
 enddef
