@@ -2048,9 +2048,6 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 		    semsg(_(e_list_index_out_of_range_nr), n);
 		    status = FAIL;
 		}
-		else if (value_check_lock(li->li_tv.v_lock,
-						  NULL, FALSE))
-		    status = FAIL;
 		else
 		    listitem_remove(l, li);
 	    }
@@ -2133,11 +2130,9 @@ execute_unletrange(isn_T *iptr, ectx_T *ectx)
 		    semsg(_(e_list_index_out_of_range_nr), n2);
 		    status = FAIL;
 		}
-		if (status != FAIL
-			&& list_unlet_range(l, li, NULL, n1,
-			    tv_idx2->v_type != VAR_SPECIAL, n2)
-						       == FAIL)
-		    status = FAIL;
+		if (status != FAIL)
+		    list_unlet_range(l, li, n1,
+					   tv_idx2->v_type != VAR_SPECIAL, n2);
 	    }
 	}
     }

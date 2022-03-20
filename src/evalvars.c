@@ -1804,20 +1804,14 @@ do_unlet_var(
 		&& value_check_lock(lp->ll_dict->dv_lock, lp->ll_name, FALSE)))
 	return FAIL;
     else if (lp->ll_range)
-    {
-	if (list_unlet_range(lp->ll_list, lp->ll_li, lp->ll_name, lp->ll_n1,
-					   !lp->ll_empty2, lp->ll_n2) == FAIL)
-	    return FAIL;
-    }
+	list_unlet_range(lp->ll_list, lp->ll_li, lp->ll_n1,
+						    !lp->ll_empty2, lp->ll_n2);
+    else if (lp->ll_list != NULL)
+	// unlet a List item.
+	listitem_remove(lp->ll_list, lp->ll_li);
     else
-    {
-	if (lp->ll_list != NULL)
-	    // unlet a List item.
-	    listitem_remove(lp->ll_list, lp->ll_li);
-	else
-	    // unlet a Dictionary item.
-	    dictitem_remove(lp->ll_dict, lp->ll_di);
-    }
+	// unlet a Dictionary item.
+	dictitem_remove(lp->ll_dict, lp->ll_di);
 
     return ret;
 }
@@ -1826,25 +1820,16 @@ do_unlet_var(
  * Unlet one item or a range of items from a list.
  * Return OK or FAIL.
  */
-    int
+    void
 list_unlet_range(
 	list_T	    *l,
 	listitem_T  *li_first,
-	char_u	    *name,
 	long	    n1_arg,
 	int	    has_n2,
 	long	    n2)
 {
     listitem_T  *li = li_first;
     int		n1 = n1_arg;
-
-    while (li != NULL && (!has_n2 || n2 >= n1))
-    {
-	if (value_check_lock(li->li_tv.v_lock, name, FALSE))
-	    return FAIL;
-	li = li->li_next;
-	++n1;
-    }
 
     // Delete a range of List items.
     li = li_first;
@@ -1857,7 +1842,6 @@ list_unlet_range(
 	li = next;
 	++n1;
     }
-    return OK;
 }
 /*
  * "unlet" a variable.  Return OK if it existed, FAIL if not.

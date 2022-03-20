@@ -23,7 +23,7 @@ void list_hashtable_vars(hashtab_T *ht, char *prefix, int empty, int *first);
 void ex_unlet(exarg_T *eap);
 void ex_lockvar(exarg_T *eap);
 void ex_unletlock(exarg_T *eap, char_u *argstart, int deep, int glv_flags, int (*callback)(lval_T *, char_u *, exarg_T *, int, void *), void *cookie);
-int list_unlet_range(list_T *l, listitem_T *li_first, char_u *name, long n1_arg, int has_n2, long n2);
+void list_unlet_range(list_T *l, listitem_T *li_first, long n1_arg, int has_n2, long n2);
 int do_unlet(char_u *name, int forceit);
 void item_lock(typval_T *tv, int deep, int lock, int check_refcount);
 void del_menutrans_vars(void);

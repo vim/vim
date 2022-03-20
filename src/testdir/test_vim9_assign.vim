@@ -2209,6 +2209,11 @@ def Test_unlet()
   unlet dd[4]
   assert_equal({b: 2}, dd)
 
+  # null key works like empty string
+  dd = {'': 1, x: 9}
+  unlet dd[null_string]
+  assert_equal({x: 9}, dd)
+
   # list unlet
   var ll = [1, 2, 3, 4]
   unlet ll[1]

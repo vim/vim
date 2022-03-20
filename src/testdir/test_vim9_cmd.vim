@@ -1573,6 +1573,36 @@ def Test_lockvar()
   END
   v9.CheckScriptFailure(lines, 'E741', 2)
 
+  # can unlet a locked list item but not change it
+  lines =<< trim END
+    var ll = [1, 2, 3]
+    lockvar ll[1]
+    unlet ll[1]
+    assert_equal([1, 3], ll)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+    var ll = [1, 2, 3]
+    lockvar ll[1]
+    ll[1] = 9
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E1119:', 'E741'], 3)
+
+  # can unlet a locked dict item but not change it
+  lines =<< trim END
+    var dd = {a: 1, b: 2}
+    lockvar dd.a
+    unlet dd.a
+    assert_equal({b: 2}, dd)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+    var dd = {a: 1, b: 2}
+    lockvar dd.a
+    dd.a = 3
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E1121:', 'E741'], 3)
+
   lines =<< trim END
       var theList = [1, 2, 3]
       lockvar theList
