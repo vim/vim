@@ -2484,11 +2484,11 @@ installpack: $(DEST_VIM) $(DEST_RT) $(DEST_PACK)
 	chmod $(FILEMOD) `find $(DEST_PACK) -type f -print`
 
 # install the tutor files
-installtutorbin: $(DEST_VIM)
+installtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) vimtutor $(DEST_BIN)/$(VIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(VIMNAME)tutor
 
-installgtutorbin: $(DEST_VIM)
+installgtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) gvimtutor $(DEST_BIN)/$(GVIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(GVIMNAME)tutor
 
