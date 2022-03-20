@@ -33,7 +33,7 @@ syn match tmuxEscape            /\\\(u\x\{4\}\|U\x\{8\}\|\o\{3\}\|[\\ernt$]\)/ d
 syn region tmuxComment start=/#/ skip=/\\\@<!\\$/ end=/$/ contains=tmuxTodo,@Spell
 
 syn region tmuxString start=+"+ skip=+\\\\\|\\"\|\\$+ excludenl end=+"+ end='$' contains=tmuxFormatString,tmuxEscape,tmuxVariableExpansion,@Spell
-syn region tmuxUninterpolatedString start=+'+ skip=+\\\\\|\\'\|\\$+ excludenl end=+'+ end='$' contains=tmuxFormatString,@Spell
+syn region tmuxUninterpolatedString start=+'+ skip=+\\$+ excludenl end=+'+ end='$' contains=tmuxFormatString,@Spell
 
 " TODO: Figure out how escaping works inside of #(...) and #{...} blocks.
 syn region tmuxFormatString start=/#[#DFhHIPSTW]/ end=// contained keepend
