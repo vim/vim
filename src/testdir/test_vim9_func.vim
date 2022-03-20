@@ -4085,6 +4085,19 @@ if has('lua')
     EOF
     assert_equal('val', g:d.key)
   enddef
+
+  def Test_lua_heredoc_fails()
+    var lines = [
+      'vim9script',
+      'def ExeLua()',
+        'lua << trim EOLUA',
+            "x = vim.eval('g:nodict')",
+        'EOLUA',
+      'enddef',
+      'ExeLua()',
+      ]
+    v9.CheckScriptFailure(lines, 'E121: Undefined variable: g:nodict')
+  enddef
 endif
 
 

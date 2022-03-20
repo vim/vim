@@ -2003,6 +2003,12 @@ def Test_for_loop()
       endfor
       assert_equal(6, total)
 
+      total = 0
+      for b in 0z010203
+        total += b
+      endfor
+      assert_equal(6, total)
+
       var chars = ''
       for s: string in 'foobar'
         chars ..= s

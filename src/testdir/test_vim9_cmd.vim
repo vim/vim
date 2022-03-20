@@ -1660,6 +1660,8 @@ def Test_substitute_expr()
   v9.CheckDefFailure(['s/from/\="x")/'], 'E488:')
   v9.CheckDefFailure(['s/from/\="x"/9'], 'E488:')
 
+  v9.CheckDefExecFailure(['s/this/\="that"/'], 'E486:')
+
   # When calling a function the right instruction list needs to be restored.
   g:cond = true
   var lines =<< trim END
