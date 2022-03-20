@@ -779,6 +779,9 @@ normal_cmd(
 
 #ifdef FEAT_CMDL_INFO
     need_flushbuf = add_to_showcmd(c);
+    // When set noshowcmd, the cursor hides because of drawing at 1 column on screen.
+    if (!need_flushbuf)
+	cursor_off();
 #endif
 
     // Get the command count
