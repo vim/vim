@@ -556,19 +556,16 @@ ServerWait(
 
 #define UI_MSEC_DELAY 53
 #define SEND_MSEC_POLL 500
-#ifndef HAVE_SELECT
+#ifdef HAVE_SELECT
+    fd_set	    fds;
+
+    FD_ZERO(&fds);
+    FD_SET(ConnectionNumber(dpy), &fds);
+#else
     struct pollfd   fds;
 
     fds.fd = ConnectionNumber(dpy);
     fds.events = POLLIN;
-#else
-    fd_set	    fds;
-    struct timeval  tv;
-
-    tv.tv_sec = 0;
-    tv.tv_usec =  SEND_MSEC_POLL * 1000;
-    FD_ZERO(&fds);
-    FD_SET(ConnectionNumber(dpy), &fds);
 #endif
 
     time(&start);
@@ -593,11 +590,17 @@ ServerWait(
 	// Just look out for the answer without calling back into Vim
 	if (localLoop)
 	{
-#ifndef HAVE_SELECT
-	    if (poll(&fds, 1, SEND_MSEC_POLL) < 0)
+#ifdef HAVE_SELECT
+	    struct timeval  tv;
+
+	    // Set the time every call, select() may change it to the remaining
+	    // time.
+	    tv.tv_sec = 0;
+	    tv.tv_usec =  SEND_MSEC_POLL * 1000;
+	    if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0)
 		break;
 #else
-	    if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0)
+	    if (poll(&fds, 1, SEND_MSEC_POLL) < 0)
 		break;
 #endif
 	}
