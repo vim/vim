@@ -2156,7 +2156,7 @@ def Test_vim9script_autoload_duplicate()
      export var Func = 'asdf'
   END
   writefile(lines, 'Xdir/autoload/dup3func.vim')
-  assert_fails('source Xdir/autoload/dup3func.vim', 'E1041: Redefining script item Func')
+  assert_fails('source Xdir/autoload/dup3func.vim', 'E1041: Redefining script item: "Func"')
 
   lines =<< trim END
      vim9script
@@ -2189,7 +2189,7 @@ def Test_vim9script_autoload_duplicate()
      var Func = 'asdf'
   END
   writefile(lines, 'Xdir/autoload/dup6func.vim')
-  assert_fails('source Xdir/autoload/dup6func.vim', 'E1041: Redefining script item Func')
+  assert_fails('source Xdir/autoload/dup6func.vim', 'E1041: Redefining script item: "Func"')
 
   delete('Xdir', 'rf')
 enddef
