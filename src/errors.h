@@ -2715,7 +2715,7 @@ EXTERN char e_cannot_use_scriptversion_after_vim9script[]
 	INIT(= N_("E1040: Cannot use :scriptversion after :vim9script"));
 #ifdef FEAT_EVAL
 EXTERN char e_redefining_script_item_str[]
-	INIT(= N_("E1041: Redefining script item %s"));
+	INIT(= N_("E1041: Redefining script item: \"%s\""));
 EXTERN char e_export_can_only_be_used_in_vim9script[]
 	INIT(= N_("E1042: Export can only be used in vim9script"));
 EXTERN char e_invalid_command_after_export[]
