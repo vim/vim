@@ -2572,7 +2572,7 @@ do_one_cmd(
 #ifdef FEAT_EVAL
     // Set flag that any command was executed, used by ex_vim9script().
     // Not if this was a command that wasn't executed or :endif.
-    if (getline_equal(ea.getline, ea.cookie, getsourceline)
+    if (sourcing_a_script(&ea)
 	    && current_sctx.sc_sid > 0
 	    && ea.cmdidx != CMD_endif
 	    && (cstack->cs_idx < 0
