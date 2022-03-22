@@ -2004,7 +2004,7 @@ def s:FalsyOp()
   echo "" ?? "empty string"
 enddef
 
-def Test_dsassemble_falsy_op()
+def Test_disassemble_falsy_op()
   var res = execute('disass s:FalsyOp')
   assert_match('\<SNR>\d*_FalsyOp\_s*' ..
       'echo g:flag ?? "yes"\_s*' ..
