@@ -1803,7 +1803,7 @@ str2special(
 	int len = (*mb_ptr2len)(str);
 
 	// For multi-byte characters check for an illegal byte.
-	if (has_mbyte && MB_BYTE2LEN(*str) > len)
+	if (MB_BYTE2LEN(*str) > len)
 	{
 	    transchar_nonprint(curbuf, buf, c);
 	    *sp = str + 1;

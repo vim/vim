@@ -420,7 +420,7 @@ cmdsrv_main(
 	     * For --remote-wait: Wait until the server did edit each
 	     * file.  Also detect that the server no longer runs.
 	     */
-	    if (ret >= 0 && argtype == ARGTYPE_EDIT_WAIT)
+	    if (argtype == ARGTYPE_EDIT_WAIT)
 	    {
 		int	numFiles = *argc - i - 1;
 		int	j;

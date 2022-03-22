@@ -1371,11 +1371,10 @@ spell_move_to(
 		    // the cursor.
 		    if (dir == BACKWARD
 			    || lnum != wp->w_cursor.lnum
-			    || (lnum == wp->w_cursor.lnum
-				&& (wrapped
-				    || (colnr_T)(curline ? p - buf + len
+			    || (wrapped
+				|| (colnr_T)(curline ? p - buf + len
 						     : p - buf)
-						  > wp->w_cursor.col)))
+						  > wp->w_cursor.col))
 		    {
 #ifdef FEAT_SYN_HL
 			if (has_syntax)
