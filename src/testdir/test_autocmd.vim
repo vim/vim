@@ -3,6 +3,7 @@
 source shared.vim
 source check.vim
 source term_util.vim
+import './vim9.vim' as v9
 
 func s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
@@ -2973,6 +2974,20 @@ func Test_Changed_ChangedI()
   unlet! g:autocmd_i g:autocmd_n
 
   bw!
+endfunc
+
+func Test_closing_autocmd_window()
+  let lines =<< trim END
+      edit Xa.txt
+      tabnew Xb.txt
+      autocmd BufEnter Xa.txt unhide 1
+      doautoall BufEnter
+  END
+  call v9.CheckScriptFailure(lines, 'E814:')
+  au! BufEnter
+  only!
+  bwipe Xa.txt
+  bwipe Xb.txt
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -46,6 +46,7 @@ win_T *win_horz_neighbor(tabpage_T *tp, win_T *wp, int left, long count);
 void win_enter(win_T *wp, int undo_sync);
 win_T *buf_jump_open_win(buf_T *buf);
 win_T *buf_jump_open_tab(buf_T *buf);
+int win_unlisted(win_T *wp);
 void win_free_popup(win_T *win);
 void win_remove(win_T *wp, tabpage_T *tp);
 int win_alloc_lines(win_T *wp);
