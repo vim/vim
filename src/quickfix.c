@@ -3168,7 +3168,6 @@ qf_jump_edit_buffer(
     int		old_changedtick = qfl->qf_changedtick;
     qfltype_T	qfl_type = qfl->qfl_type;
     int		retval = OK;
-    int		old_qf_curlist = qi->qf_curlist;
     int		save_qfid = qfl->qf_id;
 
     if (qf_ptr->qf_type == 1)
@@ -3210,8 +3209,7 @@ qf_jump_edit_buffer(
 
     // Check if the list was changed.  The pointers may happen to be identical,
     // thus also check qf_changedtick.
-    if (old_qf_curlist != qi->qf_curlist
-	    || old_changedtick != qfl->qf_changedtick
+    if (old_changedtick != qfl->qf_changedtick
 	    || !is_qf_entry_present(qfl, qf_ptr))
     {
 	if (qfl_type == QFLT_QUICKFIX)

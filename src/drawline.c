@@ -1226,8 +1226,7 @@ win_line(
 	    {
 		draw_state = WL_BRI;
 		// if need_showbreak is set, breakindent also applies
-		if (wp->w_p_bri && n_extra == 0
-					 && (row != startrow || need_showbreak)
+		if (wp->w_p_bri && (row != startrow || need_showbreak)
 # ifdef FEAT_DIFF
 			&& filler_lines == 0
 # endif

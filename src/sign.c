@@ -847,7 +847,7 @@ sign_mark_adjust(
 	if (sign->se_lnum < line1)
 	    continue;
 	new_lnum = sign->se_lnum;
-	if (sign->se_lnum >= line1 && sign->se_lnum <= line2)
+	if (sign->se_lnum <= line2)
 	{
 	    if (amount != MAXLNUM)
 		new_lnum += amount;

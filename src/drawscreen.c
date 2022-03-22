@@ -1950,9 +1950,8 @@ win_update(win_T *wp)
 
 	if (VIsual_active)
 	{
-	    if (VIsual_active
-		    && (VIsual_mode != wp->w_old_visual_mode
-			|| type == INVERTED_ALL))
+	    if (VIsual_mode != wp->w_old_visual_mode
+		|| type == INVERTED_ALL)
 	    {
 		// If the type of Visual selection changed, redraw the whole
 		// selection.  Also when the ownership of the X selection is

@@ -1613,8 +1613,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	// End :catch or :finally scope: set instruction index in ISN_TRY
 	// instruction
 	try_isn->isn_arg.tryref.try_ref->try_endtry = instr->ga_len;
-	if (cctx->ctx_skip != SKIP_YES
-				   && generate_instr(cctx, ISN_ENDTRY) == NULL)
+	if (generate_instr(cctx, ISN_ENDTRY) == NULL)
 	    return NULL;
 #ifdef FEAT_PROFILE
 	if (cctx->ctx_compile_type == CT_PROFILE)

@@ -4933,7 +4933,7 @@ readdir_core(
 		break;
 	    }
 
-	    if (!ignore && checkitem != NULL)
+	    if (checkitem != NULL)
 	    {
 		int r = checkitem(context, item);
 
