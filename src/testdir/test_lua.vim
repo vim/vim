@@ -1208,11 +1208,21 @@ func Test_lua_debug()
   call WaitForAssert({-> assert_equal('42',                    term_getline(buf, 9))})
   call WaitForAssert({-> assert_equal('lua_debug> ',           term_getline(buf, 10))})
 
+  call term_sendkeys(buf, "-\n")
+  call WaitForAssert({-> assert_equal("(debug command):1: unexpected symbol near '-'",
+  \                                                  term_getline(buf, 9))})
+  call WaitForAssert({-> assert_equal('lua_debug> ', term_getline(buf, 10))})
+
   call term_sendkeys(buf, "cont\n")
   call WaitForAssert({-> assert_match(' All$', term_getline(buf, 10))})
 
+  " Entering an empty line also exits the debugger.
+  call term_sendkeys(buf, ":lua debug.debug()\n")
+  call WaitForAssert({-> assert_equal('lua_debug> ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "\n")
+  call WaitForAssert({-> assert_match(' All$', term_getline(buf, 10))})
+
   call StopVimInTerminal(buf)
-  call delete('XtestLuaDebug.vim')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

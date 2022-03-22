@@ -274,7 +274,7 @@ func Test_set_balloonexpr()
     " Multiline balloon using NL
     new
     func MyBalloonFuncForMultilineUsingNL()
-      return "Multiline\nSuppported\nBalloon\nusing NL"
+      return "Multiline\nSupported\nBalloon\nusing NL"
     endfunc
     setl balloonexpr=MyBalloonFuncForMultilineUsingNL()
     setl ballooneval
@@ -289,7 +289,7 @@ func Test_set_balloonexpr()
     " Multiline balloon using List
     new
     func MyBalloonFuncForMultilineUsingList()
-      return [ 'Multiline', 'Suppported', 'Balloon', 'using List' ]
+      return [ 'Multiline', 'Supported', 'Balloon', 'using List' ]
     endfunc
     setl balloonexpr=MyBalloonFuncForMultilineUsingList()
     setl ballooneval
@@ -1453,25 +1453,25 @@ func Test_gui_findrepl()
   call test_gui_event('findrepl', args)
   call assert_equal(['ONE TWO ONE', 'Twoo ONE TWO ONEo'], getline(1, '$'))
 
-  " Find next occurance of a string (in a find dialog)
+  " Find next occurrence of a string (in a find dialog)
   call cursor(1, 11)
   let args = #{find_text: 'TWO', repl_text: '', flags: 0x11, forward: 1}
   call test_gui_event('findrepl', args)
   call assert_equal([2, 10], [line('.'), col('.')])
 
-  " Find previous occurances of a string (in a find dialog)
+  " Find previous occurrences of a string (in a find dialog)
   call cursor(1, 11)
   let args = #{find_text: 'TWO', repl_text: '', flags: 0x11, forward: 0}
   call test_gui_event('findrepl', args)
   call assert_equal([1, 5], [line('.'), col('.')])
 
-  " Find next occurance of a string (in a replace dialog)
+  " Find next occurrence of a string (in a replace dialog)
   call cursor(1, 1)
   let args = #{find_text: 'Twoo', repl_text: '', flags: 0x2, forward: 1}
   call test_gui_event('findrepl', args)
   call assert_equal([2, 1], [line('.'), col('.')])
 
-  " Replace only the next occurance of a string (once)
+  " Replace only the next occurrence of a string (once)
   call cursor(1, 5)
   let args = #{find_text: 'TWO', repl_text: 'two', flags: 0x3, forward: 1}
   call test_gui_event('findrepl', args)

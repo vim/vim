@@ -563,7 +563,7 @@ let ablob = 0z01ab
 let alist = [2, 3, 4]
 let adict = #{aaa: 2, bbb: 8}
 
-" test == comperator
+" test == comparator
 def Test_expr4_equal()
   var lines =<< trim END
       var trueVar = true
@@ -902,7 +902,7 @@ def Test_expr4_wrong_type()
       'echo n < true'], 'E1072:', 2)
 enddef
 
-" test != comperator
+" test != comparator
 def Test_expr4_notequal()
   var lines =<< trim END
       var trueVar = true
@@ -987,7 +987,7 @@ def Test_expr4_notequal()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test > comperator
+" test > comparator
 def Test_expr4_greater()
   var lines =<< trim END
       assert_true(2 > 0)
@@ -1013,7 +1013,7 @@ def Test_expr4_greater()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test >= comperator
+" test >= comparator
 def Test_expr4_greaterequal()
   var lines =<< trim END
       assert_true(2 >= 0)
@@ -1034,7 +1034,7 @@ def Test_expr4_greaterequal()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test < comperator
+" test < comparator
 def Test_expr4_smaller()
   var lines =<< trim END
       assert_false(2 < 0)
@@ -1056,7 +1056,7 @@ def Test_expr4_smaller()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test <= comperator
+" test <= comparator
 def Test_expr4_smallerequal()
   var lines =<< trim END
       assert_false(2 <= 0)
@@ -1081,7 +1081,7 @@ def Test_expr4_smallerequal()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test =~ comperator
+" test =~ comparator
 def Test_expr4_match()
   var lines =<< trim END
       assert_equal(false, '2' =~ '0')
@@ -1098,7 +1098,7 @@ def Test_expr4_match()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test !~ comperator
+" test !~ comparator
 def Test_expr4_nomatch()
   var lines =<< trim END
       assert_equal(true, '2' !~ '0')
@@ -1110,7 +1110,7 @@ def Test_expr4_nomatch()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test is comperator
+" test is comparator
 def Test_expr4_is()
   var lines =<< trim END
       var mylist = [2]
@@ -1128,7 +1128,7 @@ def Test_expr4_is()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" test isnot comperator
+" test isnot comparator
 def Test_expr4_isnot()
   var lines =<< trim END
       var mylist = [2]
