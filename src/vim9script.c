@@ -59,6 +59,24 @@ current_script_is_vim9(void)
 }
 #endif
 
+#ifdef FEAT_EVAL
+/*
+ * Clear Vim9 script-local variables and functions.
+ */
+    void
+clear_vim9_scriptlocal_vars(int sid)
+{
+    hashtab_T	*ht = &SCRIPT_VARS(sid);
+
+    hashtab_free_contents(ht);
+    hash_init(ht);
+    delete_script_functions(sid);
+
+    // old imports and script variables are no longer valid
+    free_imports_and_script_vars(sid);
+}
+#endif
+
 /*
  * ":vim9script".
  */
@@ -103,18 +121,9 @@ ex_vim9script(exarg_T *eap UNUSED)
     }
 
     if (si->sn_state == SN_STATE_RELOAD && !found_noclear)
-    {
-	hashtab_T	*ht = &SCRIPT_VARS(sid);
-
 	// Reloading a script without the "noclear" argument: clear
 	// script-local variables and functions.
-	hashtab_free_contents(ht);
-	hash_init(ht);
-	delete_script_functions(sid);
-
-	// old imports and script variables are no longer valid
-	free_imports_and_script_vars(sid);
-    }
+	clear_vim9_scriptlocal_vars(sid);
     si->sn_state = SN_STATE_HAD_COMMAND;
 
     // Store the prefix with the script, it is used to find exported functions.

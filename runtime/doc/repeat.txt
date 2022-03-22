@@ -198,16 +198,35 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			start with a ":".
 			Triggers the |SourcePre| autocommand.
 
-:[range]so[urce] 	Read Ex commands from the [range] of lines in the
-			current buffer.  When sourcing commands from the
-			current buffer, the same script-ID |<SID>| is used
-			even if the buffer is sourced multiple times. If a
-			buffer is sourced more than once, then the functions
-			in the buffer are redefined again.
-			Sourcing a buffer with a Vim9 script more than once
-			works like |vim9-reload|.
-			To source a script in the Vim9 context, the |:vim9cmd|
-			modifier can be used.
+:[range]so[urce] [++clear]
+			Read Ex commands from the [range] of lines in the
+			current buffer.
+
+			When sourcing commands from the current buffer, the
+			same script-ID |<SID>| is used even if the buffer is
+			sourced multiple times. If a buffer is sourced more
+			than once, then the functions in the buffer are
+			defined again.
+
+			To source a range of lines that doesn't start with the
+			|:vim9script| command in Vim9 script context, the
+			|:vim9cmd| modifier can be used.
+
+			When a range of lines in a buffer is sourced in the
+			Vim9 script context, the previously defined
+			script-local variables and functions are not cleared.
+			This works like the range started with the
+			":vim9script noclear" command.  The "++clear" argument
+			can be used to clear the script-local variables and
+			functions before sourcing the script. This works like
+			the range started with the |:vimscript| command
+			without the "noclear" argument. See |vim9-reload| for
+			more information.
+			Examples: >
+
+				:4,5source
+				:vim9cmd :'<,'>source
+				:10,18source ++clear
 
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
