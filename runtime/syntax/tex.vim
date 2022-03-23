@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
-" Last Change:	Jun 29, 2020
+" Last Change:	Mar 23, 2022
 " Version:	119
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
@@ -337,10 +337,12 @@ syn match texTypeStyle		"\\textrm\>"
 syn match texTypeStyle		"\\mathbb\>"
 syn match texTypeStyle		"\\mathbf\>"
 syn match texTypeStyle		"\\mathcal\>"
+syn match texTypeStyle		"\\mathds\>"
 syn match texTypeStyle		"\\mathfrak\>"
 syn match texTypeStyle		"\\mathit\>"
 syn match texTypeStyle		"\\mathnormal\>"
 syn match texTypeStyle		"\\mathrm\>"
+syn match texTypeStyle		"\\mathscr\>"
 syn match texTypeStyle		"\\mathsf\>"
 syn match texTypeStyle		"\\mathtt\>"
 
