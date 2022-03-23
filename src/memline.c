@@ -2261,7 +2261,7 @@ swapfile_info(char_u *fname)
  * Return TRUE if the swap file looks OK and there are no changes, thus it can
  * be safely deleted.
  */
-    static time_t
+    static int
 swapfile_unchanged(char_u *fname)
 {
     stat_T	    st;
