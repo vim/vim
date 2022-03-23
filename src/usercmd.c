@@ -22,6 +22,7 @@ typedef struct ucmd
     int		uc_compl;	// completion type
     cmd_addr_T	uc_addr_type;	// The command's address type
     sctx_T	uc_script_ctx;	// SCTX where the command was defined
+    int		uc_flags;	// some UC_ flags
 # ifdef FEAT_EVAL
     char_u	*uc_compl_arg;	// completion argument if any
 # endif
@@ -1038,6 +1039,7 @@ uc_add_command(
     cmd->uc_script_ctx = current_sctx;
     if (flags & UC_VIM9)
 	cmd->uc_script_ctx.sc_version = SCRIPT_VERSION_VIM9;
+    cmd->uc_flags = flags & UC_VIM9;
 #ifdef FEAT_EVAL
     cmd->uc_script_ctx.sc_lnum += SOURCING_LNUM;
     cmd->uc_compl_arg = compl_arg;
@@ -1725,6 +1727,9 @@ do_ucmd(exarg_T *eap)
     ucmd_T	*cmd;
     sctx_T	save_current_sctx;
     int		restore_current_sctx = FALSE;
+#ifdef FEAT_EVAL
+    int		restore_script_version = 0;
+#endif
 
     if (eap->cmdidx == CMD_USER)
 	cmd = USER_CMD(eap->useridx);
@@ -1830,6 +1835,14 @@ do_ucmd(exarg_T *eap)
 	current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
 #ifdef FEAT_EVAL
 	current_sctx.sc_sid = cmd->uc_script_ctx.sc_sid;
+	if (cmd->uc_flags & UC_VIM9)
+	{
+	    // In a {} block variables use Vim9 script rules, even in a legacy
+	    // script.
+	    restore_script_version =
+				  SCRIPT_ITEM(current_sctx.sc_sid)->sn_version;
+	    SCRIPT_ITEM(current_sctx.sc_sid)->sn_version = SCRIPT_VERSION_VIM9;
+	}
 #endif
     }
 
@@ -1839,7 +1852,14 @@ do_ucmd(exarg_T *eap)
     // Careful: Do not use "cmd" here, it may have become invalid if a user
     // command was added.
     if (restore_current_sctx)
+    {
+#ifdef FEAT_EVAL
+	if (restore_script_version != 0)
+	    SCRIPT_ITEM(current_sctx.sc_sid)->sn_version =
+							restore_script_version;
+#endif
 	current_sctx = save_current_sctx;
+    }
     vim_free(buf);
     vim_free(split_buf);
 }
