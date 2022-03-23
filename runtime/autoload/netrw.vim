@@ -4048,7 +4048,9 @@ fun! s:NetrwBrowse(islocal,dirname)
   " Otherwise            : set rexposn
   if exists("s:rexposn_".bufnr("%"))
 "   call Decho("restoring posn to s:rexposn_".bufnr('%')."<".string(s:rexposn_{bufnr('%')}).">",'~'.expand("<slnum>"))
-   NetrwKeepj call winrestview(s:rexposn_{bufnr('%')})
+   if ! (exists("w:netrw_liststyle") && w:netrw_liststyle ==# s:TREELIST)
+      NetrwKeepj call winrestview(s:rexposn_{bufnr('%')})
+   endif
    if exists("w:netrw_bannercnt") && line(".") < w:netrw_bannercnt
     NetrwKeepj exe w:netrw_bannercnt
    endif
