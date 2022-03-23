@@ -1178,8 +1178,19 @@ def Test_map_command()
       nnoremap <F3> :echo 'hit F3 #'<CR>
       assert_equal(":echo 'hit F3 #'<CR>", maparg("<F3>", "n"))
   END
-  v9.CheckDefSuccess(lines)
-  v9.CheckScriptSuccess(['vim9script'] + lines)
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # backslash before bar is not removed
+  lines =<< trim END
+      vim9script
+
+      def Init()
+        noremap <buffer> <F5> <ScriptCmd>MyFunc('a') \| MyFunc('b')<CR>
+      enddef
+      Init()
+      unmap <buffer> <F5>
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_normal_command()

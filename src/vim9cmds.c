@@ -1848,7 +1848,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	if ((argt & EX_TRLBAR) && !usefilter)
 	{
 	    eap->argt = argt;
-	    separate_nextcmd(eap);
+	    separate_nextcmd(eap, TRUE);
 	    if (eap->nextcmd != NULL)
 		nextcmd = eap->nextcmd;
 	}
