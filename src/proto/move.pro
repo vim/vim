@@ -1,5 +1,4 @@
 /* move.c */
-void reset_cursorline(void);
 void redraw_for_cursorline(win_T *wp);
 void update_topline_redraw(void);
 void update_topline(void);

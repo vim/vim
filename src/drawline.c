@@ -945,8 +945,7 @@ win_line(
     if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
     {
 	// Do not show the cursor line in the text when Visual mode is active,
-	// because it's not clear what is selected then.  Do update
-	// w_last_cursorline.
+	// because it's not clear what is selected then.
 	if (!(wp == curwin && VIsual_active)
 					 && wp->w_p_culopt_flags != CULOPT_NBR)
 	{
@@ -971,18 +970,14 @@ win_line(
 		else
 # endif
 		    line_attr = cul_attr;
-		wp->w_last_cursorline = wp->w_cursor.lnum;
 	    }
 	    else
 	    {
 		line_attr_save = line_attr;
-		wp->w_last_cursorline = 0;
 		margin_columns_win(wp, &left_curline_col, &right_curline_col);
 	    }
 	    area_highlighting = TRUE;
 	}
-	else
-	    wp->w_last_cursorline = wp->w_cursor.lnum;
     }
 #endif
 
