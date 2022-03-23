@@ -818,6 +818,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     ufunc_T	*ufunc;
     int		r = FAIL;
     compiletype_T   compile_type;
+    isn_T	*funcref_isn = NULL;
 
     if (eap->forceit)
     {
@@ -913,6 +914,27 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	}
     }
 
+    // Define the funcref before compiling, so that it is found by any
+    // recursive call.
+    if (is_global)
+    {
+	r = generate_NEWFUNC(cctx, lambda_name, func_name);
+	func_name = NULL;
+	lambda_name = NULL;
+    }
+    else
+    {
+	// Define a local variable for the function reference.
+	lvar_T	*lvar = reserve_local(cctx, func_name, name_end - name_start,
+						    TRUE, ufunc->uf_func_type);
+
+	if (lvar == NULL)
+	    goto theend;
+	if (generate_FUNCREF(cctx, ufunc, &funcref_isn) == FAIL)
+	    goto theend;
+	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
+    }
+
     compile_type = get_compile_type(ufunc);
 #ifdef FEAT_PROFILE
     // If the outer function is profiled, also compile the nested function for
@@ -934,24 +956,9 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	compile_def_function(ufunc, FALSE, CT_NONE, cctx);
 #endif
 
-    if (is_global)
-    {
-	r = generate_NEWFUNC(cctx, lambda_name, func_name);
-	func_name = NULL;
-	lambda_name = NULL;
-    }
-    else
-    {
-	// Define a local variable for the function reference.
-	lvar_T	*lvar = reserve_local(cctx, func_name, name_end - name_start,
-						    TRUE, ufunc->uf_func_type);
-
-	if (lvar == NULL)
-	    goto theend;
-	if (generate_FUNCREF(cctx, ufunc) == FAIL)
-	    goto theend;
-	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
-    }
+    // If a FUNCREF instruction was generated, set the index after compiling.
+    if (funcref_isn != NULL && ufunc->uf_def_status == UF_COMPILED)
+	funcref_isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
 
 theend:
     vim_free(lambda_name);

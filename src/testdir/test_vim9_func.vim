@@ -876,6 +876,25 @@ def Test_nested_function()
   END
   v9.CheckScriptSuccess(lines)
 
+  # nested function with recursive call
+  lines =<< trim END
+      vim9script
+
+      def MyFunc(): number
+        def Fib(n: number): number
+          if n < 2
+            return 1
+          endif
+          return Fib(n - 2) + Fib(n - 1)
+        enddef
+
+        return Fib(5)
+      enddef
+
+      assert_equal(8, MyFunc())
+  END
+  v9.CheckScriptSuccess(lines)
+
   lines =<< trim END
       vim9script
       def Outer()

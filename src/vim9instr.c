@@ -1172,9 +1172,10 @@ generate_NEWDICT(cctx_T *cctx, int count)
 
 /*
  * Generate an ISN_FUNCREF instruction.
+ * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
  */
     int
-generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
+generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, isn_T **isnp)
 {
     isn_T	*isn;
     type_T	*type;
@@ -1182,6 +1183,8 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
+    if (isnp != NULL)
+	*isnp = isn;
     if (ufunc->uf_def_status == UF_NOT_COMPILED)
 	isn->isn_arg.funcref.fr_func_name = vim_strsave(ufunc->uf_name);
     else

@@ -1040,7 +1040,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	// The function reference count will be 1.  When the ISN_FUNCREF
 	// instruction is deleted the reference count is decremented and the
 	// function is freed.
-	return generate_FUNCREF(cctx, ufunc);
+	return generate_FUNCREF(cctx, ufunc, NULL);
     }
 
     func_ptr_unref(ufunc);
