@@ -142,12 +142,12 @@ tabline_button_cb(
     XtPointer	client_data UNUSED,
     XtPointer	call_data UNUSED)
 {
-    int		cmd, tab_idx;
+    XtPointer	cmd, tab_idx;
 
     XtVaGetValues(w, XmNuserData, &cmd, NULL);
     XtVaGetValues(tabLine_menu, XmNuserData, &tab_idx, NULL);
 
-    send_tabline_menu_event(tab_idx, cmd);
+    send_tabline_menu_event((int)(long)tab_idx, (int)(long)cmd);
 }
 
 /*
@@ -254,7 +254,7 @@ tabline_menu_cb(
 	    XtVaGetValues(tab_w, XmNpageNumber, &tab_idx, NULL);
     }
 
-    XtVaSetValues(tabLine_menu, XmNuserData, tab_idx, NULL);
+    XtVaSetValues(tabLine_menu, XmNuserData, (XtPointer)(long)tab_idx, NULL);
     XtVaGetValues(tabLine_menu, XmNchildren, &children, XmNnumChildren,
 		  &numChildren, NULL);
     XtManageChildren(children, numChildren);
@@ -517,7 +517,7 @@ gui_x11_create_widgets(void)
 
     // Add the buttons to the tabline popup menu
     n = 0;
-    XtSetArg(args[n], XmNuserData, TABLINE_MENU_CLOSE); n++;
+    XtSetArg(args[n], XmNuserData, (XtPointer)TABLINE_MENU_CLOSE); n++;
     xms = XmStringCreate((char *)"Close tab", STRING_TAG);
     XtSetArg(args[n], XmNlabelString, xms); n++;
     button = XmCreatePushButton(tabLine_menu, "Close", args, n);
@@ -526,7 +526,7 @@ gui_x11_create_widgets(void)
     XmStringFree(xms);
 
     n = 0;
-    XtSetArg(args[n], XmNuserData, TABLINE_MENU_NEW); n++;
+    XtSetArg(args[n], XmNuserData, (XtPointer)TABLINE_MENU_NEW); n++;
     xms = XmStringCreate((char *)"New Tab", STRING_TAG);
     XtSetArg(args[n], XmNlabelString, xms); n++;
     button = XmCreatePushButton(tabLine_menu, "New Tab", args, n);
@@ -535,7 +535,7 @@ gui_x11_create_widgets(void)
     XmStringFree(xms);
 
     n = 0;
-    XtSetArg(args[n], XmNuserData, TABLINE_MENU_OPEN); n++;
+    XtSetArg(args[n], XmNuserData, (XtPointer)TABLINE_MENU_OPEN); n++;
     xms = XmStringCreate((char *)"Open tab...", STRING_TAG);
     XtSetArg(args[n], XmNlabelString, xms); n++;
     button = XmCreatePushButton(tabLine_menu, "Open tab...", args, n);
