@@ -1709,6 +1709,24 @@ set_context_in_breakadd_cmd(expand_T *xp, char_u *arg, cmdidx_T cmdidx)
 
     return NULL;
 }
+
+    static char_u *
+set_context_in_scriptnames_cmd(expand_T *xp, char_u *arg)
+{
+    char_u *p;
+
+    xp->xp_context = EXPAND_NOTHING;
+    xp->xp_pattern = NULL;
+
+    p = skipwhite(arg);
+    if (VIM_ISDIGIT(*p))
+	return NULL;
+
+    xp->xp_context = EXPAND_SCRIPTNAMES;
+    xp->xp_pattern = p;
+
+    return NULL;
+}
 #endif
 
 /*
@@ -2072,6 +2090,9 @@ set_context_by_cmdname(
 	case CMD_profdel:
 	case CMD_breakdel:
 	    return set_context_in_breakadd_cmd(xp, arg, cmdidx);
+
+	case CMD_scriptnames:
+	    return set_context_in_scriptnames_cmd(xp, arg);
 #endif
 
 	default:
@@ -2495,6 +2516,23 @@ get_breakadd_arg(expand_T *xp UNUSED, int idx)
     }
     return NULL;
 }
+
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments for the
+ * ":scriptnames" command.
+ */
+    static char_u *
+get_scriptnames_arg(expand_T *xp UNUSED, int idx)
+{
+    scriptitem_T *si;
+
+    if (!SCRIPT_ID_VALID(idx + 1))
+	return NULL;
+
+    si = SCRIPT_ITEM(idx + 1);
+    home_replace(NULL, si->sn_name, NameBuff, MAXPATHL, TRUE);
+    return NameBuff;
+}
 #endif
 
 /*
@@ -2584,6 +2622,7 @@ ExpandOther(
 	{EXPAND_ARGLIST, get_arglist_name, TRUE, FALSE},
 #ifdef FEAT_EVAL
 	{EXPAND_BREAKPOINT, get_breakadd_arg, TRUE, TRUE},
+	{EXPAND_SCRIPTNAMES, get_scriptnames_arg, TRUE, FALSE},
 #endif
     };
     int	i;
@@ -2791,6 +2830,8 @@ ExpandGeneric(
     int		score = 0;
     int		fuzzy;
     int		match;
+    int		sort_matches = FALSE;
+    int		funcsort = FALSE;
 
     fuzzy = cmdline_fuzzy_complete(pat);
     *matches = NULL;
@@ -2878,14 +2919,25 @@ ExpandGeneric(
     if (ga.ga_len == 0)
 	return OK;
 
-    // Sort the results.  Keep menu's in the specified order.
+    // sort the matches when using regular expression matching and sorting
+    // applies to the completion context. Menus and scriptnames should be kept
+    // in the specified order.
     if (!fuzzy && xp->xp_context != EXPAND_MENUNAMES
-					&& xp->xp_context != EXPAND_MENUS)
+					&& xp->xp_context != EXPAND_MENUS
+					&& xp->xp_context != EXPAND_SCRIPTNAMES)
+	sort_matches = TRUE;
+
+    // <SNR> functions should be sorted to the end.
+    if (xp->xp_context == EXPAND_EXPRESSION
+	    || xp->xp_context == EXPAND_FUNCTIONS
+	    || xp->xp_context == EXPAND_USER_FUNC
+	    || xp->xp_context == EXPAND_DISASSEMBLE)
+	funcsort = TRUE;
+
+    // Sort the matches.
+    if (sort_matches)
     {
-	if (xp->xp_context == EXPAND_EXPRESSION
-		|| xp->xp_context == EXPAND_FUNCTIONS
-		|| xp->xp_context == EXPAND_USER_FUNC
-		|| xp->xp_context == EXPAND_DISASSEMBLE)
+	if (funcsort)
 	    // <SNR> functions should be sorted to the end.
 	    qsort((void *)ga.ga_data, (size_t)ga.ga_len, sizeof(char_u *),
 							   sort_func_compare);
@@ -2900,15 +2952,6 @@ ExpandGeneric(
     }
     else
     {
-	int	funcsort = FALSE;
-
-	if (xp->xp_context == EXPAND_EXPRESSION
-		|| xp->xp_context == EXPAND_FUNCTIONS
-		|| xp->xp_context == EXPAND_USER_FUNC
-		|| xp->xp_context == EXPAND_DISASSEMBLE)
-	    // <SNR> functions should be sorted to the end.
-	    funcsort = TRUE;
-
 	if (fuzzymatches_to_strmatches(ga.ga_data, matches, ga.ga_len,
 							funcsort) == FAIL)
 	    return FAIL;
