@@ -4968,7 +4968,7 @@ gui_mouse_moved(int x, int y)
     gui_mouse_focus(x, y);
 
 #ifdef FEAT_PROP_POPUP
-    if (popup_visible)
+    if (popup_uses_mouse_move)
 	// Generate a mouse-moved event, so that the popup can perhaps be
 	// closed, just like in the terminal.
 	gui_send_mouse_event(MOUSE_MOVE, x, y, FALSE, 0);

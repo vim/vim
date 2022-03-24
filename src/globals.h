@@ -736,6 +736,9 @@ EXTERN win_T	*popup_dragwin INIT(= NULL);	// popup window being dragged
 // Set to TRUE if there is any visible popup window.
 EXTERN int	popup_visible INIT(= FALSE);
 
+// Set to TRUE if a visible popup window may use a MOUSE_MOVE event
+EXTERN int	popup_uses_mouse_move INIT(= FALSE);
+
 EXTERN int	text_prop_frozen INIT(= 0);
 #endif
 

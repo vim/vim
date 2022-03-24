@@ -150,6 +150,29 @@ set_mousemoved_values(win_T *wp)
     wp->w_popup_mouse_maxcol = mouse_col;
 }
 
+    static void
+update_popup_uses_mouse_move(void)
+{
+    popup_uses_mouse_move = FALSE;
+    if (popup_visible)
+    {
+	win_T *wp;
+
+	FOR_ALL_POPUPWINS(wp)
+	    if (wp->w_popup_mouse_row != 0)
+	    {
+		popup_uses_mouse_move = TRUE;
+		return;
+	    }
+	FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	    if (wp->w_popup_mouse_row != 0)
+	    {
+		popup_uses_mouse_move = TRUE;
+		return;
+	    }
+    }
+}
+
 /*
  * Used when popup options contain "moved" with "word" or "WORD".
  */
@@ -3586,7 +3609,7 @@ popup_need_position_adjust(win_T *wp)
 /*
  * Update "popup_mask" if needed.
  * Also recomputes the popup size and positions.
- * Also updates "popup_visible".
+ * Also updates "popup_visible" and "popup_uses_mouse_move".
  * Also marks window lines for redrawing.
  */
     void
@@ -3755,6 +3778,8 @@ may_update_popup_mask(int type)
 
 	vim_free(plines_cache);
     }
+
+    update_popup_uses_mouse_move();
 }
 
 /*
