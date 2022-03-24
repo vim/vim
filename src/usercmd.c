@@ -93,6 +93,7 @@ static struct
     {EXPAND_USER_VARS, "var"},
 #if defined(FEAT_EVAL)
     {EXPAND_BREAKPOINT, "breakpoint"},
+    {EXPAND_SCRIPTNAMES, "scriptnames"},
 #endif
     {0, NULL}
 };

@@ -1769,14 +1769,20 @@ ex_scriptnames(exarg_T *eap)
 {
     int i;
 
-    if (eap->addr_count > 0)
+    if (eap->addr_count > 0 || *eap->arg != NUL)
     {
 	// :script {scriptId}: edit the script
-	if (!SCRIPT_ID_VALID(eap->line2))
+	if (eap->addr_count > 0 && !SCRIPT_ID_VALID(eap->line2))
 	    emsg(_(e_invalid_argument));
 	else
 	{
-	    eap->arg = SCRIPT_ITEM(eap->line2)->sn_name;
+	    if (eap->addr_count > 0)
+		eap->arg = SCRIPT_ITEM(eap->line2)->sn_name;
+	    else
+	    {
+		expand_env(eap->arg, NameBuff, MAXPATHL);
+		eap->arg = NameBuff;
+	    }
 	    do_exedit(eap, NULL);
 	}
 	return;
