@@ -2399,12 +2399,14 @@ ex_display(exarg_T *eap)
 			msg_puts_attr("^J", attr);
 			n -= 2;
 		    }
-		    for (p = yb->y_array[j]; *p && (n -= ptr2cells(p)) >= 0;
-									   ++p)
-		    {
+		    for (p = yb->y_array[j]; *p && n >= ptr2cells(p); p++) {
+			n -= ptr2cells(p);
 			clen = (*mb_ptr2len)(p);
 			msg_outtrans_len(p, clen);
 			p += clen - 1;
+		    }
+		    if (*p) {
+			n -= ptr2cells(p);
 		    }
 		}
 		if (n > 1 && yb->y_type == MLINE)
@@ -2490,8 +2492,9 @@ dis_msg(
     n = (int)Columns - 6;
     while (*p != NUL
 	    && !(*p == ESC && skip_esc && *(p + 1) == NUL)
-	    && (n -= ptr2cells(p)) >= 0)
+	    && n >= ptr2cells(p))
     {
+	n -= ptr2cells(p);
 	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
 	    msg_outtrans_len(p, l);
