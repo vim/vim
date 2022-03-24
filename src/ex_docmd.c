@@ -3431,7 +3431,7 @@ skip_option_env_lead(char_u *start)
     static int
 one_letter_cmd(char_u *p, cmdidx_T *idx)
 {
-    if (!in_vim9script())
+    if (in_vim9script())
 	return FALSE;
     if (*p == 'k')
     {
