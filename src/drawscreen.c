@@ -1730,7 +1730,7 @@ win_update(win_T *wp)
 	if (mod_top != 0
 		&& wp->w_topline == mod_top
 		&& (!wp->w_lines[0].wl_valid
-		    || wp->w_topline <= wp->w_lines[0].wl_lnum))
+		    || wp->w_topline == wp->w_lines[0].wl_lnum))
 	{
 	    // w_topline is the first changed line and window is not scrolled,
 	    // the scrolling from changed lines will be done further down.
