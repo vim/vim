@@ -1662,7 +1662,11 @@ diff_read(
     {
 	hunk = ALLOC_ONE(diffhunk_T);
 	if (hunk == NULL)
+	{
+	    if (fd != NULL)
+		fclose(fd);
 	    return;
+	}
     }
 
     for (;;)
