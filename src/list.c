@@ -916,35 +916,40 @@ list_assign_range(
 }
 
 /*
- * Flatten "list" to depth "maxdepth".
+ * Flatten up to "maxitems" in "list", starting at "first" to depth "maxdepth".
+ * When "first" is NULL use the first item.
  * It does nothing if "maxdepth" is 0.
  * Returns FAIL when out of memory.
  */
     static void
-list_flatten(list_T *list, long maxdepth)
+list_flatten(list_T *list, listitem_T *first, long maxitems, long maxdepth)
 {
     listitem_T	*item;
     listitem_T	*tofree;
-    int		n;
+    int		done = 0;
 
     if (maxdepth == 0)
 	return;
     CHECK_LIST_MATERIALIZE(list);
+    if (first == NULL)
+	item = list->lv_first;
+    else
+	item = first;
 
-    n = 0;
-    item = list->lv_first;
-    while (item != NULL)
+    while (item != NULL && done < maxitems)
     {
+	listitem_T	*next = item->li_next;
+
 	fast_breakcheck();
 	if (got_int)
 	    return;
 
 	if (item->li_tv.v_type == VAR_LIST)
 	{
-	    listitem_T *next = item->li_next;
+	    list_T	*itemlist = item->li_tv.vval.v_list;
 
 	    vimlist_remove(list, item, item);
-	    if (list_extend(list, item->li_tv.vval.v_list, next) == FAIL)
+	    if (list_extend(list, itemlist, next) == FAIL)
 	    {
 		list_free_item(list, item);
 		return;
@@ -952,23 +957,15 @@ list_flatten(list_T *list, long maxdepth)
 	    clear_tv(&item->li_tv);
 	    tofree = item;
 
-	    if (item->li_prev == NULL)
-		item = list->lv_first;
-	    else
-		item = item->li_prev->li_next;
+	    if (maxdepth > 0)
+		list_flatten(list, item->li_prev == NULL
+				     ? list->lv_first : item->li_prev->li_next,
+				itemlist->lv_len, maxdepth - 1);
 	    list_free_item(list, tofree);
+	}
 
-	    if (++n >= maxdepth)
-	    {
-		n = 0;
-		item = next;
-	    }
-	}
-	else
-	{
-	    n = 0;
-	    item = item->li_next;
-	}
+	++done;
+	item = next;
     }
 }
 
@@ -1031,7 +1028,7 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 	++l->lv_refcount;
     }
 
-    list_flatten(l, maxdepth);
+    list_flatten(l, NULL, l->lv_len, maxdepth);
 }
 
 /*
