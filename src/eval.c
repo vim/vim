@@ -2144,7 +2144,8 @@ getline_peek_skip_comments(evalarg_T *evalarg)
 	p = skipwhite(next);
 	if (*p != NUL && !vim9_comment_start(p))
 	    return next;
-	(void)eval_next_line(evalarg);
+	if (eval_next_line(evalarg) == NULL)
+	    break;
     }
     return NULL;
 }
@@ -2199,6 +2200,9 @@ eval_next_line(evalarg_T *evalarg)
 							   GETLINE_CONCAT_ALL);
     else
 	line = next_line_from_context(evalarg->eval_cctx, TRUE);
+    if (line == NULL)
+	return NULL;
+
     ++evalarg->eval_break_count;
     if (gap->ga_itemsize > 0 && ga_grow(gap, 1) == OK)
     {

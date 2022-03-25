@@ -1830,6 +1830,24 @@ def Test_execute_cmd_vimscript()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_execute_finish()
+  # the empty lines are relevant here
+  var lines =<< trim END
+      vim9script
+
+      var vname = "g:hello"
+
+      if exists(vname) | finish | endif | execute vname '= "world"'
+
+      assert_equal('world', g:hello)
+
+      if exists(vname) | finish | endif | execute vname '= "world"'
+
+      assert_report('should not be reached')
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_echo_cmd()
   echo 'some' # comment
   echon 'thing'
