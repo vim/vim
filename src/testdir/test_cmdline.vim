@@ -3284,4 +3284,17 @@ func Test_cmdline_complete_scriptnames()
   set wildmenu&
 endfunc
 
+" Test for expanding 2-letter and 3-letter :substitute command arguments.
+" These commands don't accept an argument.
+func Test_cmdline_complete_substitute_short()
+  for cmd in ['sc', 'sce', 'scg', 'sci', 'scI', 'scn', 'scp', 'scl',
+        \ 'sgc', 'sge', 'sg', 'sgi', 'sgI', 'sgn', 'sgp', 'sgl', 'sgr',
+        \ 'sic', 'sie', 'si', 'siI', 'sin', 'sip', 'sir',
+        \ 'sIc', 'sIe', 'sIg', 'sIi', 'sI', 'sIn', 'sIp', 'sIl', 'sIr',
+        \ 'src', 'srg', 'sri', 'srI', 'srn', 'srp', 'srl', 'sr']
+    call feedkeys(':' .. cmd .. " \<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"' .. cmd .. " \<Tab>", @:)
+  endfor
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
