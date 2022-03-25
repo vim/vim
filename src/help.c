@@ -947,6 +947,7 @@ helptags_one(
     FILE	*fd_tags;
     FILE	*fd;
     garray_T	ga;
+    int		res;
     int		filecount;
     char_u	**files;
     char_u	*p1, *p2;
@@ -965,12 +966,14 @@ helptags_one(
     STRCPY(NameBuff, dir);
     STRCAT(NameBuff, "/**/*");
     STRCAT(NameBuff, ext);
-    if (gen_expand_wildcards(1, &NameBuff, &filecount, &files,
-						    EW_FILE|EW_SILENT) == FAIL
-	    || filecount == 0)
+    res = gen_expand_wildcards(1, &NameBuff, &filecount, &files,
+							    EW_FILE|EW_SILENT);
+    if (res == FAIL || filecount == 0)
     {
 	if (!got_int)
 	    semsg(_(e_no_match_str_1), NameBuff);
+	if (res != FAIL)
+	    FreeWild(filecount, files);
 	return;
     }
 
