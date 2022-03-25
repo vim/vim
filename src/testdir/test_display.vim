@@ -256,6 +256,27 @@ func Test_display_scroll_at_topline()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_display_scroll_at_changed_topline()
+  CheckScreendump
+
+  let lines =<< trim END
+    set scrolloff=0
+    call setline(1, repeat(['foo'], 10))
+    call sign_define('foo', { 'text': '>' })
+    call sign_place(1, 'bar', 'foo', bufnr(), { 'lnum': 2 })
+    call sign_place(2, 'bar', 'foo', bufnr(), { 'lnum': 1 })
+    autocmd CursorMoved * if getcurpos()[1] == 2 | call sign_unplace('bar', { 'id': 1 }) | endif
+  END
+  call writefile(lines, 'Xdisplay_scroll_at_changed_topline')
+  let buf = RunVimInTerminal('-S Xdisplay_scroll_at_changed_topline', #{rows: 8})
+  call term_sendkeys(buf, 'VG7kk')
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_display_scroll_at_changed_topline', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xdisplay_scroll_at_changed_topline')
+endfunc
+
 " Test for 'eob' (EndOfBuffer) item in 'fillchars'
 func Test_eob_fillchars()
   " default value
