@@ -53,6 +53,7 @@ RAW	nothing known, Vim cannot tell where a message ends
 NL	every message ends in a NL (newline) character
 JSON	JSON encoding |json_encode()|
 JS	JavaScript style JSON-like encoding |js_encode()|
+LSP	Language Server Protocol encoding |language-server-protocol|
 
 Common combination are:
 - Using a job connected through pipes in NL mode.  E.g., to run a style
@@ -130,6 +131,7 @@ When using an IPv6 address, enclose it within square brackets.  E.g.,
 	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
+	"lsp"  - Use language server protocol encoding
 						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise (e.g. a JSON message with ID zero).  It
@@ -140,8 +142,8 @@ When using an IPv6 address, enclose it within square brackets.  E.g.,
 	endfunc
 	let channel = ch_open("localhost:8765", {"callback": "Handle"})
 <
-		When "mode" is "json" or "js" the "msg" argument is the body
-		of the received message, converted to Vim types.
+		When "mode" is "json" or "js" or "lsp" the "msg" argument is
+		the body of the received message, converted to Vim types.
 		When "mode" is "nl" the "msg" argument is one message,
 		excluding the NL.
 		When "mode" is "raw" the "msg" argument is the whole message
@@ -503,6 +505,7 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.
 		{handle} can be a Channel or a Job that has a Channel.
+		When using the "lsp" channel mode, {expr} must be a |Dict|.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
 		entry.  It can have a "timeout" entry to specify the timeout
@@ -578,7 +581,7 @@ ch_info({handle})						*ch_info()*
 		   "err_io"	  "out", "null", "pipe", "file" or "buffer"
 		   "err_timeout"  timeout in msec
 		   "in_status"	  "open" or "closed"
-		   "in_mode"	  "NL", "RAW", "JSON" or "JS"
+		   "in_mode"	  "NL", "RAW", "JSON", "JS" or "LSP"
 		   "in_io"	  "null", "pipe", "file" or "buffer"
 		   "in_timeout"	  timeout in msec
 
@@ -674,6 +677,7 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		with a raw channel.
 		See |channel-use|.				*E912*
 		{handle} can be a Channel or a Job that has a Channel.
+		When using the "lsp" channel mode, {expr} must be a |Dict|.
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_sendexpr(expr)
@@ -1361,5 +1365,76 @@ The same in |Vim9| script: >
 	# start accepting shell commands
 	startinsert
 
+==============================================================================
+14. Language Server Protocol			*language-server-protocol*
+
+The language server protocol specification is available at:
+
+    https://microsoft.github.io/language-server-protocol/specification
+
+Each LSP protocol message starts with a simple HTTP header followed by the
+payload encoded in JSON-RPC format.  This is described in:
+
+    https://www.jsonrpc.org/specification
+
+For messages received on a channel with mode set to "lsp", Vim will process
+the HTTP header and decode the payload into a Vim |Dict| type and call the
+channel callback or the specified callback function.  When sending messages on
+a channel using |ch_evalexpr()| or |ch_sendexpr()|, Vim will add the HTTP
+header and encode the Vim expression into JSON-RPC.
+
+To open a channel using the 'lsp' mode, set the 'mode' item in the |ch_open()|
+{options} argument to 'lsp'.  Example: >
+
+    let ch = ch_open(..., #{mode: 'lsp'})
+
+To open a channel using the 'lsp' mode with a job, set the 'in_mode' and
+'out_mode' items in the |job_start()| {options} argument to 'lsp'. Example: >
+
+    let job = job_start(...., #{in_mode: 'lsp', out_mode: 'lsp'})
+
+To synchronously send a JSON-RPC request to the server, use the |ch_evalexpr()|
+function. This function will return the response from the server. You can use
+the 'timeout' field in the {options} argument to control the response wait
+time. Example: >
+
+    let req = {}
+    let req.method = 'textDocument/definition'
+    let req.params = {}
+    let req.params.textDocument = #{uri: 'a.c'}
+    let req.params.position = #{line: 10, character: 3}
+    let resp = ch_evalexpr(ch, req, #{timeout: 100})
+
+Note that in the request message the 'id' field should not be specified. If it
+is specified, then Vim will overwrite the value with an internally generated
+identifier.  Vim currently supports only a number type for the 'id' field.
+
+To send a JSON-RPC request to the server and asynchronously process the
+response, use the |ch_sendexpr()| function and supply a callback function.
+Example: >
+
+    let req = {}
+    let req.method = 'textDocument/hover'
+    let req.params = {}
+    let req.params.textDocument = #{uri: 'a.c'}
+    let req.params.position = #{line: 10, character: 3}
+    let resp = ch_sendexpr(ch, req, #{callback: 'MyFn'})
+
+To send a JSON-RPC notification message to the server, use the |ch_sendexpr()|
+function. Example: >
+
+    call ch_sendexpr(ch, #{method: 'initialized'})
+
+To respond to a JSON-RPC request message from the server, use the
+|ch_sendexpr()| function.  In the response message, copy the 'id' field value
+from the server request message. Example: >
+
+    let resp = {}
+    let resp.id = req.id
+    let resp.result = 1
+    call ch_sendexpr(ch, resp)
+
+The JSON-RPC notification messages from the server are delivered through the
+|channel-callback| function.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

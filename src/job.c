@@ -31,6 +31,8 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
 	*modep = MODE_JS;
     else if (STRCMP(val, "json") == 0)
 	*modep = MODE_JSON;
+    else if (STRCMP(val, "lsp") == 0)
+	*modep = MODE_LSP;
     else
     {
 	semsg(_(e_invalid_argument_str), val);
