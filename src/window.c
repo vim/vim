@@ -2285,6 +2285,41 @@ entering_window(win_T *win)
 }
 #endif
 
+    static void
+win_init_empty(win_T *wp)
+{
+    redraw_win_later(wp, NOT_VALID);
+    wp->w_lines_valid = 0;
+    wp->w_cursor.lnum = 1;
+    wp->w_curswant = wp->w_cursor.col = 0;
+    wp->w_cursor.coladd = 0;
+    wp->w_pcmark.lnum = 1;	// pcmark not cleared but set to line 1
+    wp->w_pcmark.col = 0;
+    wp->w_prev_pcmark.lnum = 0;
+    wp->w_prev_pcmark.col = 0;
+    wp->w_topline = 1;
+#ifdef FEAT_DIFF
+    wp->w_topfill = 0;
+#endif
+    wp->w_botline = 2;
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
+    wp->w_s = &wp->w_buffer->b_s;
+#endif
+#ifdef FEAT_TERMINAL
+    term_reset_wincolor(wp);
+#endif
+}
+
+/*
+ * Init the current window "curwin".
+ * Called when a new file is being edited.
+ */
+    void
+curwin_init(void)
+{
+    win_init_empty(curwin);
+}
+
 /*
  * Close all windows for buffer "buf".
  */
@@ -2786,7 +2821,17 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     for (ptp = first_tabpage; ptp != NULL && ptp != tp; ptp = ptp->tp_next)
 	;
     if (ptp == NULL || tp == curtab)
+    {
+	// If the buffer was removed from the window we have to give it any
+	// buffer.
+	if (win_valid_any_tab(win) && win->w_buffer == NULL)
+	{
+	    win->w_buffer = firstbuf;
+	    ++firstbuf->b_nwindows;
+	    win_init_empty(win);
+	}
 	return;
+    }
 
     // Autocommands may have closed the window already.
     for (wp = tp->tp_firstwin; wp != NULL && wp != win; wp = wp->w_next)
@@ -3683,41 +3728,6 @@ close_others(
 
     if (message && !ONE_WINDOW)
 	emsg(_(e_other_window_contains_changes));
-}
-
-    static void
-win_init_empty(win_T *wp)
-{
-    redraw_win_later(wp, NOT_VALID);
-    wp->w_lines_valid = 0;
-    wp->w_cursor.lnum = 1;
-    wp->w_curswant = wp->w_cursor.col = 0;
-    wp->w_cursor.coladd = 0;
-    wp->w_pcmark.lnum = 1;	// pcmark not cleared but set to line 1
-    wp->w_pcmark.col = 0;
-    wp->w_prev_pcmark.lnum = 0;
-    wp->w_prev_pcmark.col = 0;
-    wp->w_topline = 1;
-#ifdef FEAT_DIFF
-    wp->w_topfill = 0;
-#endif
-    wp->w_botline = 2;
-#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
-    wp->w_s = &wp->w_buffer->b_s;
-#endif
-#ifdef FEAT_TERMINAL
-    term_reset_wincolor(wp);
-#endif
-}
-
-/*
- * Init the current window "curwin".
- * Called when a new file is being edited.
- */
-    void
-curwin_init(void)
-{
-    win_init_empty(curwin);
 }
 
 /*

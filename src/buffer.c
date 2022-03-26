@@ -708,6 +708,10 @@ aucmd_abort:
      */
     if (wipe_buf)
     {
+	// Do not wipe out the buffer if it is used in a window.
+	if (buf->b_nwindows > 0)
+	    return FALSE;
+
 	if (action == DOBUF_WIPE_REUSE)
 	{
 	    // we can re-use this buffer number, store it

@@ -2990,4 +2990,21 @@ func Test_closing_autocmd_window()
   bwipe Xb.txt
 endfunc
 
+func Test_bufwipeout_changes_window()
+  " This should not crash, but we don't have any expectations about what
+  " happens, changing window in BufWipeout has unpredictable results.
+  tabedit
+  let g:window_id = win_getid()
+  topleft new
+  setlocal bufhidden=wipe
+  autocmd BufWipeout <buffer> call win_gotoid(g:window_id)
+  tabprevious
+  +tabclose
+
+  unlet g:window_id
+  au! BufWipeout
+  %bwipe!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
