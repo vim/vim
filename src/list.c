@@ -925,7 +925,6 @@ list_assign_range(
 list_flatten(list_T *list, listitem_T *first, long maxitems, long maxdepth)
 {
     listitem_T	*item;
-    listitem_T	*tofree;
     int		done = 0;
 
     if (maxdepth == 0)
@@ -955,13 +954,12 @@ list_flatten(list_T *list, listitem_T *first, long maxitems, long maxdepth)
 		return;
 	    }
 	    clear_tv(&item->li_tv);
-	    tofree = item;
 
 	    if (maxdepth > 0)
 		list_flatten(list, item->li_prev == NULL
 				     ? list->lv_first : item->li_prev->li_next,
 				itemlist->lv_len, maxdepth - 1);
-	    list_free_item(list, tofree);
+	    list_free_item(list, item);
 	}
 
 	++done;
@@ -1012,7 +1010,7 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 
     if (make_copy)
     {
-	l = list_copy(l, TRUE, TRUE, get_copyID());
+	l = list_copy(l, FALSE, TRUE, get_copyID());
 	rettv->vval.v_list = l;
 	if (l == NULL)
 	    return;
