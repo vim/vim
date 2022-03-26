@@ -6971,6 +6971,10 @@ nv_edit(cmdarg_T *cap)
 	    coladvance(getviscol());
 	    State = save_State;
 	}
+#ifdef FEAT_SYN_HL
+	// Might need to update for 'cursorline'.
+	check_redraw_cursorline();
+#endif
 
 	invoke_edit(cap, FALSE, cap->cmdchar, FALSE);
     }

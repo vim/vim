@@ -1058,6 +1058,10 @@ doESCkey:
 	case K_COMMAND:		    // <Cmd>command<CR>
 	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
 	    do_cmdkey_command(c, 0);
+#ifdef FEAT_SYN_HL
+	    // Might need to update for 'cursorline'.
+	    check_redraw_cursorline();
+#endif
 #ifdef FEAT_TERMINAL
 	    if (term_use_loop())
 		// Started a terminal that gets the input, exit Insert mode.
