@@ -953,12 +953,12 @@ list_flatten(list_T *list, listitem_T *first, long maxitems, long maxdepth)
 		list_free_item(list, item);
 		return;
 	    }
-	    clear_tv(&item->li_tv);
 
 	    if (maxdepth > 0)
 		list_flatten(list, item->li_prev == NULL
 				     ? list->lv_first : item->li_prev->li_next,
 				itemlist->lv_len, maxdepth - 1);
+	    clear_tv(&item->li_tv);
 	    list_free_item(list, item);
 	}
 
