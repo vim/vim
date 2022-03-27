@@ -864,9 +864,9 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define FINDFILE_DIR	1	// only directories
 #define FINDFILE_BOTH	2	// files and directories
 
-#define W_ENDCOL(wp)	(wp->w_wincol + wp->w_width)
+#define W_ENDCOL(wp)	((wp)->w_wincol + (wp)->w_width)
 #ifdef FEAT_MENU
-# define W_WINROW(wp)	(wp->w_winrow + wp->w_winbar_height)
+# define W_WINROW(wp)	((wp)->w_winrow + (wp)->w_winbar_height)
 #else
 # define W_WINROW(wp)	(wp->w_winrow)
 #endif
@@ -887,7 +887,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 # define SST_MAX_ENTRIES 1000	// maximal size for state stack array
 # define SST_FIX_STATES	 7	// size of sst_stack[].
 # define SST_DIST	 16	// normal distance between entries
-# define SST_INVALID	(synstate_T *)-1	// invalid syn_state pointer
+# define SST_INVALID	((synstate_T *)-1)	// invalid syn_state pointer
 
 # define HL_CONTAINED	0x01	// not used on toplevel
 # define HL_TRANSP	0x02	// has no highlighting
@@ -949,7 +949,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define GETFILE_ERROR	    1	// normal error
 #define GETFILE_NOT_WRITTEN 2	// "not written" error
 #define GETFILE_SAME_FILE   0	// success, same file
-#define GETFILE_OPEN_OTHER -1	// success, opened another file
+#define GETFILE_OPEN_OTHER (-1)	// success, opened another file
 #define GETFILE_UNUSED	    8
 #define GETFILE_SUCCESS(x)  ((x) <= 0)
 
@@ -971,9 +971,9 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 // Values for "noremap" argument of ins_typebuf().  Also used for
 // map->m_noremap and menu->noremap[].
 #define REMAP_YES	0	// allow remapping
-#define REMAP_NONE	-1	// no remapping
-#define REMAP_SCRIPT	-2	// remap script-local mappings only
-#define REMAP_SKIP	-3	// no remapping for first char
+#define REMAP_NONE	(-1)	// no remapping
+#define REMAP_SCRIPT	(-2)	// remap script-local mappings only
+#define REMAP_SKIP	(-3)	// no remapping for first char
 
 // Values for mch_call_shell() second argument
 #define SHELL_FILTER	1	// filtering text
@@ -1069,7 +1069,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 
 // for lnum argument in do_ecmd()
 #define ECMD_LASTL	(linenr_T)0	// use last position in loaded file
-#define ECMD_LAST	(linenr_T)-1	// use last position in all files
+#define ECMD_LAST	((linenr_T)-1)	// use last position in all files
 #define ECMD_ONE	(linenr_T)1	// use first line
 
 // flags for do_cmdline()
@@ -1265,13 +1265,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define MAX_SWAP_PAGE_SIZE 50000
 
 // Special values for current_sctx.sc_sid.
-#define SID_MODELINE	-1	// when using a modeline
-#define SID_CMDARG	-2	// for "--cmd" argument
-#define SID_CARG	-3	// for "-c" argument
-#define SID_ENV		-4	// for sourcing environment variable
-#define SID_ERROR	-5	// option was reset because of an error
-#define SID_NONE	-6	// don't set scriptID
-#define SID_WINLAYOUT	-7	// changing window size
+#define SID_MODELINE	(-1)	// when using a modeline
+#define SID_CMDARG	(-2)	// for "--cmd" argument
+#define SID_CARG	(-3)	// for "-c" argument
+#define SID_ENV		(-4)	// for sourcing environment variable
+#define SID_ERROR	(-5)	// option was reset because of an error
+#define SID_NONE	(-6)	// don't set scriptID
+#define SID_WINLAYOUT	(-7)	// changing window size
 
 /*
  * Events for autocommands.
@@ -1723,7 +1723,7 @@ void *vim_memset(void *, int, size_t);
 // Prefer using emsgf(), because perror() may send the output to the wrong
 // destination and mess up the screen.
 #ifdef HAVE_STRERROR
-# define PERROR(msg)		    (void)semsg("%s: %s", (char *)msg, strerror(errno))
+# define PERROR(msg)		    (void)semsg("%s: %s", (char *)(msg), strerror(errno))
 #else
 # define PERROR(msg)		    do_perror(msg)
 #endif
@@ -1921,7 +1921,7 @@ typedef int sock_T;
     (((unsigned)((code) & 0xC0) >> 6) + 1)
 
 #define SET_NUM_MOUSE_CLICKS(code, num) \
-    (code) = ((code) & 0x3f) | ((((num) - 1) & 3) << 6)
+    ((code) = ((code) & 0x3f) | ((((num) - 1) & 3) << 6))
 
 // Added to mouse column for GUI when 'mousefocus' wants to give focus to a
 // window by simulating a click on its status line.  We could use up to 128 *
@@ -2515,8 +2515,8 @@ typedef enum {
 #endif
 
 // values for vim_handle_signal() that are not a signal
-#define SIGNAL_BLOCK	-1
-#define SIGNAL_UNBLOCK  -2
+#define SIGNAL_BLOCK	(-1)
+#define SIGNAL_UNBLOCK  (-2)
 #if !defined(UNIX) && !defined(VMS)
 # define vim_handle_signal(x) 0
 #endif
@@ -2528,8 +2528,8 @@ typedef enum {
 
 // behavior for bad character, "++bad=" argument
 #define BAD_REPLACE	'?'	// replace it with '?' (default)
-#define BAD_KEEP	-1	// leave it
-#define BAD_DROP	-2	// erase it
+#define BAD_KEEP	(-1)	// leave it
+#define BAD_DROP	(-2)	// erase it
 
 // last argument for do_source()
 #define DOSO_NONE	0
@@ -2552,11 +2552,11 @@ typedef enum {
 // direction for nv_mousescroll() and ins_mousescroll()
 #define MSCR_DOWN	0	// DOWN must be FALSE
 #define MSCR_UP		1
-#define MSCR_LEFT	-1
-#define MSCR_RIGHT	-2
+#define MSCR_LEFT	(-1)
+#define MSCR_RIGHT	(-2)
 
-#define KEYLEN_PART_KEY -1	// keylen value for incomplete key-code
-#define KEYLEN_PART_MAP -2	// keylen value for incomplete mapping
+#define KEYLEN_PART_KEY (-1)	// keylen value for incomplete key-code
+#define KEYLEN_PART_MAP (-2)	// keylen value for incomplete mapping
 #define KEYLEN_REMOVED  9999	// keylen value for removed sequence
 
 // Return values from win32_fileinfo().
@@ -2716,8 +2716,8 @@ typedef enum {
 
 #if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 # define ELAPSED_TIMEVAL
-# define ELAPSED_INIT(v) gettimeofday(&v, NULL)
-# define ELAPSED_FUNC(v) elapsed(&v)
+# define ELAPSED_INIT(v) gettimeofday(&(v), NULL)
+# define ELAPSED_FUNC(v) elapsed(&(v))
 typedef struct timeval elapsed_T;
 long elapsed(struct timeval *start_tv);
 #elif defined(MSWIN)
@@ -2734,8 +2734,8 @@ long elapsed(DWORD start_tick);
 #endif
 
 // Replacement for nchar used by nv_replace().
-#define REPLACE_CR_NCHAR    -1
-#define REPLACE_NL_NCHAR    -2
+#define REPLACE_CR_NCHAR    (-1)
+#define REPLACE_NL_NCHAR    (-2)
 
 // flags for term_start()
 #define TERM_START_NOJOB	1

@@ -702,10 +702,10 @@ EXTERN win_T	*lastwin;		// last window
 EXTERN win_T	*prevwin INIT(= NULL);	// previous window
 #define ONE_WINDOW (firstwin == lastwin)
 #define W_NEXT(wp) ((wp)->w_next)
-#define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
+#define FOR_ALL_WINDOWS(wp) for ((wp) = firstwin; (wp) != NULL; (wp) = (wp)->w_next)
 #define FOR_ALL_FRAMES(frp, first_frame) \
-    for (frp = first_frame; frp != NULL; frp = frp->fr_next)
-#define FOR_ALL_TABPAGES(tp) for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    for ((frp) = first_frame; (frp) != NULL; (frp) = (frp)->fr_next)
+#define FOR_ALL_TABPAGES(tp) for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next)
 #define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
     for ((wp) = ((tp) == NULL || (tp) == curtab) \
 	    ? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
@@ -778,7 +778,7 @@ EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
 
 // Iterate through all the signs placed in a buffer
 #define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
-	for (sign = buf->b_signlist; sign != NULL; sign = sign->se_next)
+	for ((sign) = (buf)->b_signlist; (sign) != NULL; (sign) = (sign)->se_next)
 
 // Flag that is set when switching off 'swapfile'.  It means that all blocks
 // are to be loaded into memory.  Shouldn't be global...
@@ -1000,7 +1000,7 @@ EXTERN JMP_BUF x_jump_env;
 #define DBCS_CHT	950	// taiwan
 #define DBCS_CHTU	9950	// euc-tw
 #define DBCS_2BYTE	1	// 2byte-
-#define DBCS_DEBUG	-1
+#define DBCS_DEBUG	(-1)
 
 EXTERN int	enc_dbcs INIT(= 0);		// One of DBCS_xxx values if
 						// DBCS encoding

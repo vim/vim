@@ -100,7 +100,7 @@
 #endif
 
 // Indices for arrays of scrollbars
-#define SBAR_NONE	    -1
+#define SBAR_NONE	    (-1)
 #define SBAR_LEFT	    0
 #define SBAR_RIGHT	    1
 #define SBAR_BOTTOM	    2
@@ -198,10 +198,10 @@ typedef struct GuiScrollbar
 typedef long	    guicolor_T;	// handle for a GUI color; for X11 this should
 				// be "Pixel", but that's an unsigned and we
 				// need a signed value
-#define INVALCOLOR (guicolor_T)-11111	// number for invalid color; on 32 bit
+#define INVALCOLOR ((guicolor_T)-11111)	// number for invalid color; on 32 bit
 				   // displays there is a tiny chance this is an
 				   // actual color
-#define CTERMCOLOR (guicolor_T)-11110	// only used for cterm.bg_rgb and
+#define CTERMCOLOR ((guicolor_T)-11110)	// only used for cterm.bg_rgb and
 					// cterm.fg_rgb: use cterm color
 
 #ifdef FEAT_GUI_GTK
