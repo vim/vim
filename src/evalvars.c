@@ -2822,7 +2822,8 @@ eval_variable(
 	    if (ht != &globvarht)
 	    {
 		if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL
-				      && type != NULL && type != &t_dict_empty)
+			  && ((type != NULL && type != &t_dict_empty)
+							   || !in_vim9script()))
 		{
 		    tv->vval.v_dict = dict_alloc();
 		    if (tv->vval.v_dict != NULL)
@@ -2832,7 +2833,8 @@ eval_variable(
 		    }
 		}
 		else if (tv->v_type == VAR_LIST && tv->vval.v_list == NULL
-				      && type != NULL && type != &t_list_empty)
+				    && ((type != NULL && type != &t_list_empty)
+							  || !in_vim9script()))
 		{
 		    tv->vval.v_list = list_alloc();
 		    if (tv->vval.v_list != NULL)
