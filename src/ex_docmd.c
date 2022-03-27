@@ -3092,15 +3092,21 @@ parse_command_modifiers(
 	break;
     }
 
-    if (has_visual_range && eap->cmd > cmd_start)
+    if (has_visual_range)
     {
-	// Move the '<,'> range to after the modifiers and insert a colon.
-	// Since the modifiers have been parsed put the colon on top of the
-	// space: "'<,'>mod cmd" -> "mod:'<,'>cmd
-	// Put eap->cmd after the colon.
-	mch_memmove(cmd_start - 5, cmd_start, eap->cmd - cmd_start);
-	eap->cmd -= 5;
-	mch_memmove(eap->cmd - 1, ":'<,'>", 6);
+	if (eap->cmd > cmd_start)
+	{
+	    // Move the '<,'> range to after the modifiers and insert a colon.
+	    // Since the modifiers have been parsed put the colon on top of the
+	    // space: "'<,'>mod cmd" -> "mod:'<,'>cmd
+	    // Put eap->cmd after the colon.
+	    mch_memmove(cmd_start - 5, cmd_start, eap->cmd - cmd_start);
+	    eap->cmd -= 5;
+	    mch_memmove(eap->cmd - 1, ":'<,'>", 6);
+	}
+	else
+	    // no modifiers, move the pointer back
+	    eap->cmd -= 5;
     }
 
     return OK;
