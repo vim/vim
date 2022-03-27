@@ -2782,7 +2782,7 @@ parse_command_modifiers(
 	cmdmod_T    *cmod,
 	int	    skip_only)
 {
-    char_u  *cmd_start;
+    char_u  *cmd_start = NULL;
     char_u  *p;
     int	    starts_with_colon = FALSE;
     int	    vim9script = in_vim9script();
