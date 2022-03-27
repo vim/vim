@@ -2284,9 +2284,16 @@ int ***allocate_comparison_mem(const int *diff_length, const int nDiffs)
     int cpointer = 0;
     for (int i = 0; i < nDiffs; i++) {
 	for (int j = i + 1; j < nDiffs; j++) {
-	    comparison_mem[cpointer] = ALLOC_MULT(int *, diff_length[i]);
+
+	    comparison_mem[cpointer] = NULL;
+	    if (diff_length[i]) {
+		comparison_mem[cpointer] = ALLOC_MULT(int *, diff_length[i]);
+	    }
 	    for (int k = 0; k < diff_length[i]; k++) {
-		comparison_mem[cpointer][k] = ALLOC_MULT(int, diff_length[j]);
+		comparison_mem[cpointer][k] = NULL;
+		if (diff_length[j]) {
+		    comparison_mem[cpointer][k] = ALLOC_MULT(int, diff_length[j]);
+		}
 		// initialize to -1
 		for (int l = 0; l < diff_length[j]; l++) {
 		    comparison_mem[cpointer][k][l] = -1;
@@ -2399,9 +2406,13 @@ void free_comparison_mem(int ***comparison_mem, const int *diff_length, const in
     for (int i = 0; i < nDiffs; i++) {
 	for (int j = i + 1; j < nDiffs; j++) {
 	    for (int k = 0; k < diff_length[i]; k++) {
-		vim_free(comparison_mem[cpointer][k]);
+		if (comparison_mem[cpointer] && comparison_mem[cpointer][k]) {
+		    vim_free(comparison_mem[cpointer][k]);
+		}
 	    }
-	    vim_free(comparison_mem[cpointer]);
+	    if (comparison_mem[cpointer]) {
+		vim_free(comparison_mem[cpointer]);
+	    }
 	    cpointer++;
 	}
     }
