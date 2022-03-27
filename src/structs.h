@@ -2830,7 +2830,7 @@ struct file_buffer
     // flags for use of ":lmap" and IM control
     long	b_p_iminsert;	// input mode for insert
     long	b_p_imsearch;	// input mode for search
-#define B_IMODE_USE_INSERT -1	//	Use b_p_iminsert value for search
+#define B_IMODE_USE_INSERT (-1)	//	Use b_p_iminsert value for search
 #define B_IMODE_NONE 0		//	Input via none
 #define B_IMODE_LMAP 1		//	Input via langmap
 #define B_IMODE_IM 2		//	Input via input method
@@ -3698,7 +3698,7 @@ struct window_S
     winopt_T	w_onebuf_opt;
     winopt_T	w_allbuf_opt;
     // transform a pointer to a "onebuf" option into a "allbuf" option
-#define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
+#define GLOBAL_WO(p)	((char *)(p) + sizeof(winopt_T))
 
     // A few options have local flags for P_INSECURE.
 #ifdef FEAT_STL_OPT
@@ -4462,7 +4462,7 @@ typedef struct {
 #define FIO_ENCRYPTED	0x1000	// encrypt written bytes
 #define FIO_NOCONVERT	0x2000	// skip encoding conversion
 #define FIO_UCSBOM	0x4000	// check for BOM at start of file
-#define FIO_ALL	-1	// allow all formats
+#define FIO_ALL	(-1)	// allow all formats
 
 // When converting, a read() or write() may leave some bytes to be converted
 // for the next call.  The value is guessed...

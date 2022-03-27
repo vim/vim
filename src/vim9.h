@@ -515,10 +515,10 @@ struct dfunc_S {
 extern garray_T def_functions;
 
 // Used for "lnum" when a range is to be taken from the stack.
-#define LNUM_VARIABLE_RANGE -999
+#define LNUM_VARIABLE_RANGE (-999)
 
 // Used for "lnum" when a range is to be taken from the stack and "!" is used.
-#define LNUM_VARIABLE_RANGE_ABOVE -888
+#define LNUM_VARIABLE_RANGE_ABOVE (-888)
 
 // Keep in sync with get_compile_type()
 #ifdef FEAT_PROFILE
@@ -530,7 +530,7 @@ extern garray_T def_functions;
 		: (dfunc)->df_instr))
 #else
 # define INSTRUCTIONS(dfunc) \
-	(debug_break_level > 0 || may_break_in_function(dfunc->df_ufunc) \
+	(debug_break_level > 0 || may_break_in_function((dfunc)->df_ufunc) \
 		? (dfunc)->df_instr_debug \
 		: (dfunc)->df_instr)
 #endif

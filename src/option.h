@@ -131,7 +131,7 @@ typedef enum {
 #endif
 
 // end-of-line style
-#define EOL_UNKNOWN	-1	// not defined yet
+#define EOL_UNKNOWN	(-1)	// not defined yet
 #define EOL_UNIX	0	// NL
 #define EOL_DOS		1	// CR NL
 #define EOL_MAC		2	// CR
@@ -1328,6 +1328,6 @@ enum
 };
 
 // Value for b_p_ul indicating the global value must be used.
-#define NO_LOCAL_UNDOLEVEL -123456
+#define NO_LOCAL_UNDOLEVEL (-123456)
 
 #endif // _OPTION_H_
