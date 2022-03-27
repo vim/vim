@@ -1955,7 +1955,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		generate_PUSHS(cctx, &li->li_tv.vval.v_string);
 		li->li_tv.vval.v_string = NULL;
 	    }
-	    generate_NEWLIST(cctx, l->lv_len);
+	    generate_NEWLIST(cctx, l->lv_len, FALSE);
 	}
 	list_free(l);
 	p += STRLEN(p);
@@ -2239,10 +2239,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			generate_PUSHFUNC(cctx, NULL, &t_func_void);
 			break;
 		    case VAR_LIST:
-			generate_NEWLIST(cctx, 0);
+			generate_NEWLIST(cctx, 0, FALSE);
 			break;
 		    case VAR_DICT:
-			generate_NEWDICT(cctx, 0);
+			generate_NEWDICT(cctx, 0, FALSE);
 			break;
 		    case VAR_JOB:
 			generate_PUSHJOB(cctx);

@@ -581,12 +581,12 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	    case VAR_LIST:
 		if (tv->vval.v_list != NULL)
 		    iemsg("non-empty list constant not supported");
-		generate_NEWLIST(cctx, 0);
+		generate_NEWLIST(cctx, 0, TRUE);
 		break;
 	    case VAR_DICT:
 		if (tv->vval.v_dict != NULL)
 		    iemsg("non-empty dict constant not supported");
-		generate_NEWDICT(cctx, 0);
+		generate_NEWDICT(cctx, 0, TRUE);
 		break;
 #ifdef FEAT_JOB_CHANNEL
 	    case VAR_JOB:
@@ -1115,10 +1115,11 @@ generate_VIM9SCRIPT(
 }
 
 /*
- * Generate an ISN_NEWLIST instruction.
+ * Generate an ISN_NEWLIST instruction for "count" items.
+ * "use_null" is TRUE for null_list.
  */
     int
-generate_NEWLIST(cctx_T *cctx, int count)
+generate_NEWLIST(cctx_T *cctx, int count, int use_null)
 {
     isn_T	*isn;
     type_T	*member_type;
@@ -1128,7 +1129,7 @@ generate_NEWLIST(cctx_T *cctx, int count)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_NEWLIST)) == NULL)
 	return FAIL;
-    isn->isn_arg.number = count;
+    isn->isn_arg.number = use_null ? -1 : count;
 
     // Get the member type and the declared member type from all the items on
     // the stack.
@@ -1145,9 +1146,10 @@ generate_NEWLIST(cctx_T *cctx, int count)
 
 /*
  * Generate an ISN_NEWDICT instruction.
+ * "use_null" is TRUE for null_dict.
  */
     int
-generate_NEWDICT(cctx_T *cctx, int count)
+generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 {
     isn_T	*isn;
     type_T	*member_type;
@@ -1157,7 +1159,7 @@ generate_NEWDICT(cctx_T *cctx, int count)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_NEWDICT)) == NULL)
 	return FAIL;
-    isn->isn_arg.number = count;
+    isn->isn_arg.number = use_null ? -1 : count;
 
     member_type = get_member_type_from_stack(count, 2, cctx);
     type = get_dict_type(member_type, cctx->ctx_type_list);

@@ -1314,6 +1314,19 @@ typval_compare(
 		return FAIL;
 	}
     }
+#ifdef FEAT_JOB_CHANNEL
+    else if (tv1->v_type == tv2->v_type
+	    && (tv1->v_type == VAR_CHANNEL || tv1->v_type == VAR_JOB)
+	    && (type == EXPR_NEQUAL || type == EXPR_EQUAL))
+    {
+	if (tv1->v_type == VAR_CHANNEL)
+	    n1 = tv1->vval.v_channel == tv2->vval.v_channel;
+	else
+	    n1 = tv1->vval.v_job == tv2->vval.v_job;
+	if (type == EXPR_NEQUAL)
+	    n1 = !n1;
+    }
+#endif
     else
     {
 	if (typval_compare_string(tv1, tv2, type, ic, &res) == FAIL)
@@ -1417,7 +1430,7 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    default: break;
 	}
     }
-    // although comparing null with number, float or bool is not very usefule
+    // although comparing null with number, float or bool is not very useful
     // we won't give an error
     return FALSE;
 }

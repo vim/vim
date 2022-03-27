@@ -754,6 +754,12 @@ def Test_expr4_compare_null()
       assert_false(v:null != test_null_blob())
       assert_false(null != null_blob)
 
+      var nb = null_blob
+      assert_true(nb == null_blob)
+      assert_true(nb == null)
+      assert_true(null_blob == nb)
+      assert_true(null == nb)
+
       if has('channel')
         assert_true(test_null_channel() == v:null)
         assert_true(null_channel == null)
@@ -763,6 +769,12 @@ def Test_expr4_compare_null()
         assert_false(null_channel != null)
         assert_false(v:null != test_null_channel())
         assert_false(null != null_channel)
+
+        var nc = null_channel
+        assert_true(nc == null_channel)
+        assert_true(nc == null)
+        assert_true(null_channel == nc)
+        assert_true(null == nc)
       endif
 
       assert_true(test_null_dict() == v:null)
@@ -779,6 +791,12 @@ def Test_expr4_compare_null()
       assert_false(g:null_dict != v:null)
       assert_false(v:null != g:null_dict)
 
+      var nd = null_dict
+      assert_true(nd == null_dict)
+      assert_true(nd == null)
+      assert_true(null_dict == nd)
+      assert_true(null == nd)
+
       assert_true(test_null_function() == v:null)
       assert_true(null_function == null)
       assert_true(v:null == test_null_function())
@@ -787,6 +805,12 @@ def Test_expr4_compare_null()
       assert_false(null_function != null)
       assert_false(v:null != test_null_function())
       assert_false(null != null_function)
+
+      var Nf = null_function
+      assert_true(Nf == null_function)
+      assert_true(Nf == null)
+      assert_true(null_function == Nf)
+      assert_true(null == Nf)
 
       if has('job')
         assert_true(test_null_job() == v:null)
@@ -797,6 +821,12 @@ def Test_expr4_compare_null()
         assert_false(null_job != null)
         assert_false(v:null != test_null_job())
         assert_false(null != null_job)
+
+        var nj = null_job
+        assert_true(nj == null_job)
+        assert_true(nj == null)
+        assert_true(null_job == nj)
+        assert_true(null == nj)
       endif
 
       assert_true(test_null_list() == v:null)
@@ -813,6 +843,12 @@ def Test_expr4_compare_null()
       assert_true(g:not_null_list != v:null)
       assert_true(v:null != g:not_null_list)
 
+      var nl = null_list
+      assert_true(nl == null_list)
+      assert_true(nl == null)
+      assert_true(null_list == nl)
+      assert_true(null == nl)
+
       assert_true(test_null_partial() == v:null)
       assert_true(null_partial == null)
       assert_true(v:null == test_null_partial())
@@ -821,6 +857,12 @@ def Test_expr4_compare_null()
       assert_false(null_partial != null)
       assert_false(v:null != test_null_partial())
       assert_false(null != null_partial)
+
+      var Np = null_partial
+      assert_true(Np == null_partial)
+      assert_true(Np == null)
+      assert_true(null_partial == Np)
+      assert_true(null == Np)
 
       assert_true(test_null_string() == v:null)
       assert_true(null_string == null)
@@ -837,6 +879,12 @@ def Test_expr4_compare_null()
       assert_false(null_string isnot test_null_string())
       assert_true(null_string isnot '')
       assert_true('' isnot null_string)
+
+      var ns = null_string
+      assert_true(ns == null_string)
+      assert_true(ns == null)
+      assert_true(null_string == ns)
+      assert_true(null == ns)
   END
   v9.CheckDefAndScriptSuccess(lines)
   unlet g:null_dict

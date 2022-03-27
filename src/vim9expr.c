@@ -958,7 +958,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     *arg = p;
 
     ppconst->pp_is_const = is_all_const;
-    return generate_NEWLIST(cctx, count);
+    return generate_NEWLIST(cctx, count, FALSE);
 }
 
 /*
@@ -1246,7 +1246,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
     dict_unref(d);
     ppconst->pp_is_const = is_all_const;
-    return generate_NEWDICT(cctx, count);
+    return generate_NEWDICT(cctx, count, FALSE);
 
 failret:
     if (*arg == NULL)

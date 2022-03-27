@@ -439,11 +439,11 @@ if has('job')
           '\d\+ STORE $\d\_s*' ..
 
           'var dd = null_dict\_s*' ..
-          '\d\+ NEWDICT size 0\_s*' ..
+          '\d\+ NEWDICT size -1\_s*' ..
           '\d\+ STORE $\d\_s*' ..
 
           'var ll = null_list\_s*' ..
-          '\d\+ NEWLIST size 0\_s*' ..
+          '\d\+ NEWLIST size -1\_s*' ..
           '\d\+ STORE $\d\_s*' ..
 
           'var Ff = null_function\_s*' ..

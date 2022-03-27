@@ -122,29 +122,103 @@ ufunc_argcount(ufunc_T *ufunc)
 /*
  * Create a new list from "count" items at the bottom of the stack.
  * When "count" is zero an empty list is added to the stack.
+ * When "count" is -1 a NULL list is added to the stack.
  */
     static int
 exe_newlist(int count, ectx_T *ectx)
 {
-    list_T	*list = list_alloc_with_items(count);
+    list_T	*list = NULL;
     int		idx;
     typval_T	*tv;
 
-    if (list == NULL)
-	return FAIL;
-    for (idx = 0; idx < count; ++idx)
-	list_set_item(list, idx, STACK_TV_BOT(idx - count));
+    if (count >= 0)
+    {
+	list = list_alloc_with_items(count);
+	if (list == NULL)
+	    return FAIL;
+	for (idx = 0; idx < count; ++idx)
+	    list_set_item(list, idx, STACK_TV_BOT(idx - count));
+    }
 
     if (count > 0)
 	ectx->ec_stack.ga_len -= count - 1;
     else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+    {
+	list_unref(list);
 	return FAIL;
+    }
     else
 	++ectx->ec_stack.ga_len;
     tv = STACK_TV_BOT(-1);
     tv->v_type = VAR_LIST;
     tv->vval.v_list = list;
-    ++list->lv_refcount;
+    if (list != NULL)
+	++list->lv_refcount;
+    return OK;
+}
+
+/*
+ * Implementation of ISN_NEWDICT.
+ * Returns FAIL on total failure, MAYBE on error.
+ */
+    static int
+exe_newdict(int count, ectx_T *ectx)
+{
+    dict_T	*dict = NULL;
+    dictitem_T	*item;
+    char_u	*key;
+    int		idx;
+    typval_T	*tv;
+
+    if (count >= 0)
+    {
+	dict = dict_alloc();
+	if (unlikely(dict == NULL))
+	    return FAIL;
+	for (idx = 0; idx < count; ++idx)
+	{
+	    // have already checked key type is VAR_STRING
+	    tv = STACK_TV_BOT(2 * (idx - count));
+	    // check key is unique
+	    key = tv->vval.v_string == NULL
+				? (char_u *)"" : tv->vval.v_string;
+	    item = dict_find(dict, key, -1);
+	    if (item != NULL)
+	    {
+		semsg(_(e_duplicate_key_in_dicitonary), key);
+		dict_unref(dict);
+		return MAYBE;
+	    }
+	    item = dictitem_alloc(key);
+	    clear_tv(tv);
+	    if (unlikely(item == NULL))
+	    {
+		dict_unref(dict);
+		return FAIL;
+	    }
+	    item->di_tv = *STACK_TV_BOT(2 * (idx - count) + 1);
+	    item->di_tv.v_lock = 0;
+	    if (dict_add(dict, item) == FAIL)
+	    {
+		// can this ever happen?
+		dict_unref(dict);
+		return FAIL;
+	    }
+	}
+    }
+
+    if (count > 0)
+	ectx->ec_stack.ga_len -= 2 * count - 1;
+    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+	return FAIL;
+    else
+	++ectx->ec_stack.ga_len;
+    tv = STACK_TV_BOT(-1);
+    tv->v_type = VAR_DICT;
+    tv->v_lock = 0;
+    tv->vval.v_dict = dict;
+    if (dict != NULL)
+	++dict->dv_refcount;
     return OK;
 }
 
@@ -3357,57 +3431,14 @@ exec_instructions(ectx_T *ectx)
 	    // create a dict from items on the stack
 	    case ISN_NEWDICT:
 		{
-		    int		count = iptr->isn_arg.number;
-		    dict_T	*dict = dict_alloc();
-		    dictitem_T	*item;
-		    char_u	*key;
-		    int		idx;
+		    int res;
 
-		    if (unlikely(dict == NULL))
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    res = exe_newdict(iptr->isn_arg.number, ectx);
+		    if (res == FAIL)
 			goto theend;
-		    for (idx = 0; idx < count; ++idx)
-		    {
-			// have already checked key type is VAR_STRING
-			tv = STACK_TV_BOT(2 * (idx - count));
-			// check key is unique
-			key = tv->vval.v_string == NULL
-					    ? (char_u *)"" : tv->vval.v_string;
-			item = dict_find(dict, key, -1);
-			if (item != NULL)
-			{
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    semsg(_(e_duplicate_key_in_dicitonary), key);
-			    dict_unref(dict);
-			    goto on_error;
-			}
-			item = dictitem_alloc(key);
-			clear_tv(tv);
-			if (unlikely(item == NULL))
-			{
-			    dict_unref(dict);
-			    goto theend;
-			}
-			item->di_tv = *STACK_TV_BOT(2 * (idx - count) + 1);
-			item->di_tv.v_lock = 0;
-			if (dict_add(dict, item) == FAIL)
-			{
-			    // can this ever happen?
-			    dict_unref(dict);
-			    goto theend;
-			}
-		    }
-
-		    if (count > 0)
-			ectx->ec_stack.ga_len -= 2 * count - 1;
-		    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
-			goto theend;
-		    else
-			++ectx->ec_stack.ga_len;
-		    tv = STACK_TV_BOT(-1);
-		    tv->v_type = VAR_DICT;
-		    tv->v_lock = 0;
-		    tv->vval.v_dict = dict;
-		    ++dict->dv_refcount;
+		    if (res == MAYBE)
+			goto on_error;
 		}
 		break;
 
