@@ -3032,23 +3032,6 @@ redraw_asap(int type)
 }
 #endif
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
-/*
- * Check if the cursor moved and 'cursorline' is set.  Mark for a VALID redraw
- * if needed.
- */
-    void
-check_redraw_cursorline(void)
-{
-    // When 'cursorlineopt' is "screenline" need to redraw always.
-    if (curwin->w_p_cul
-	    && (curwin->w_last_cursorline != curwin->w_cursor.lnum
-		|| (curwin->w_p_culopt_flags & CULOPT_SCRLINE))
-	    && !char_avail())
-	redraw_later(VALID);
-}
-#endif
-
 /*
  * Invoked after an asynchronous callback is called.
  * If an echo command was used the cursor needs to be put back where
@@ -3093,10 +3076,8 @@ redraw_after_callback(int call_update_screen, int do_message)
     }
     else if (State & (NORMAL | INSERT | TERMINAL))
     {
-#ifdef FEAT_SYN_HL
-	// might need to update for 'cursorline'
-	check_redraw_cursorline();
-#endif
+	update_topline();
+	validate_cursor();
 	// keep the command line if possible
 	update_screen(VALID_NO_UPDATE);
 	setcursor();
