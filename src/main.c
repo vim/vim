@@ -1384,10 +1384,6 @@ main_loop(
 	    update_topline();
 	    validate_cursor();
 
-#ifdef FEAT_SYN_HL
-	    // Might need to update for 'cursorline'.
-	    check_redraw_cursorline();
-#endif
 	    if (VIsual_active)
 		update_curbuf(INVERTED); // update inverted part
 	    else if (must_redraw)
