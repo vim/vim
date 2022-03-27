@@ -147,10 +147,10 @@ redraw_for_cursorcolumn(win_T *wp)
     {
 	// When 'cursorcolumn' is set need to redraw with SOME_VALID.
 	if (wp->w_p_cuc)
-	    redraw_later(SOME_VALID);
+	    redraw_win_later(wp, SOME_VALID);
 	// When 'cursorlineopt' contains "screenline" need to redraw with VALID.
 	else if (wp->w_p_cul && (wp->w_p_culopt_flags & CULOPT_SCRLINE))
-	    redraw_later(VALID);
+	    redraw_win_later(wp, VALID);
     }
 }
 #endif
