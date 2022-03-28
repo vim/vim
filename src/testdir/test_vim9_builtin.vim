@@ -371,9 +371,16 @@ def Test_bufname()
   assert_fails('bufname([])', 'E1220:')
 enddef
 
+let s:bufnr_res = 0
+
 def Test_bufnr()
   var buf = bufnr()
   bufnr('%')->assert_equal(buf)
+
+  # check the lock is not taken over through the stack
+  const nr = 10
+  bufnr_res = bufnr()
+  bufnr_res = 12345
 
   buf = bufnr('Xdummy', true)
   buf->assert_notequal(-1)

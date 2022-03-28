@@ -937,6 +937,7 @@ call_prepare(int argcount, typval_T *argvars, ectx_T *ectx)
     tv = STACK_TV_BOT(-1);
     tv->v_type = VAR_NUMBER;
     tv->vval.v_number = 0;
+    tv->v_lock = 0;
 
     return OK;
 }
