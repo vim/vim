@@ -337,7 +337,11 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
     if (tv->v_type == VAR_STRING)
 	return &t_string;
     if (tv->v_type == VAR_BLOB)
+    {
+	if (tv->vval.v_blob == NULL)
+	    return &t_blob_null;
 	return &t_blob;
+    }
 
     if (tv->v_type == VAR_LIST)
     {

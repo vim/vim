@@ -890,6 +890,93 @@ def Test_expr4_compare_null()
   unlet g:null_dict
   unlet g:not_null_list
 
+  # variables declared at script level used in a :def function
+  lines =<< trim END
+      vim9script
+      
+      var l_decl: list<number>
+      var l_empty = []
+      var l_null = null_list
+
+      def TestList()
+        assert_false(l_decl == null)
+        assert_false(l_decl is null_list)
+        assert_false(l_empty == null)
+        assert_false(l_empty is null_list)
+        assert_true(l_null == null)
+        assert_true(l_null is null_list)
+        assert_true(l_null == null_list)
+
+        add(l_decl, 6)
+        assert_equal([6], l_decl)
+        add(l_empty, 7)
+        assert_equal([7], l_empty)
+        var caught = false
+        try
+          add(l_null, 9)
+        catch /E1130:/
+          caught = true
+        endtry
+        assert_true(caught)
+      enddef
+      TestList()
+      
+      var b_decl: blob
+      var b_empty = 0z
+      var b_null = null_blob
+
+      def TestBlob()
+        assert_false(b_decl == null)
+        assert_false(b_decl is null_blob)
+        assert_false(b_empty == null)
+        assert_false(b_empty is null_blob)
+        assert_true(b_null == null)
+        assert_true(b_null is null_blob)
+        assert_true(b_null == null_blob)
+
+        add(b_decl, 6)
+        assert_equal(0z06, b_decl)
+        add(b_empty, 7)
+        assert_equal(0z07, b_empty)
+        var caught = false
+        try
+          add(b_null, 9)
+        catch /E1131:/
+          caught = true
+        endtry
+        assert_true(caught)
+      enddef
+      TestBlob()
+      
+      var d_decl: dict<number>
+      var d_empty = {}
+      var d_null = null_dict
+
+      def TestDict()
+        assert_false(d_decl == null)
+        assert_false(d_decl is null_dict)
+        assert_false(d_empty == null)
+        assert_false(d_empty is null_dict)
+        assert_true(d_null == null)
+        assert_true(d_null is null_dict)
+        assert_true(d_null == null_dict)
+
+        d_decl['a'] = 6
+        assert_equal({a: 6}, d_decl)
+        d_empty['b'] = 7
+        assert_equal({b: 7}, d_empty)
+        var caught = false
+        try
+          d_null['c'] = 9
+        catch /E1103:/
+          caught = true
+        endtry
+        assert_true(caught)
+      enddef
+      TestDict()
+  END
+  v9.CheckScriptSuccess(lines)
+
   lines =<< trim END
       var d: dict<func> = {f: null_function}
       assert_equal(null_function, d.f)

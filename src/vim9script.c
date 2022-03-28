@@ -822,7 +822,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 	init_tv.v_type = VAR_NUMBER;
     else
 	init_tv.v_type = type->tt_type;
-    set_var_const(name, 0, type, &init_tv, FALSE, 0, 0);
+    set_var_const(name, 0, type, &init_tv, FALSE, ASSIGN_INIT, 0);
 
     vim_free(name);
     return p;
@@ -925,6 +925,13 @@ update_vim9_script_var(
 	if (*type == NULL)
 	    *type = typval2type(tv, get_copyID(), &si->sn_type_list,
 					       do_member ? TVTT_DO_MEMBER : 0);
+	else if ((flags & ASSIGN_INIT) == 0
+		&& (*type)->tt_type == VAR_BLOB && tv->v_type == VAR_BLOB
+						    && tv->vval.v_blob == NULL)
+	{
+	    // "var b: blob = null_blob" has a different type.
+	    *type = &t_blob_null;
+	}
 	if (sv->sv_type_allocated)
 	    free_type(sv->sv_type);
 	if (*type != NULL && ((*type)->tt_type == VAR_FUNC

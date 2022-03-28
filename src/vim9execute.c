@@ -1336,20 +1336,22 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
  * When the value of "sv" is a null list of dict, allocate it.
  */
     static void
-allocate_if_null(typval_T *tv)
+allocate_if_null(svar_T *sv)
 {
+    typval_T *tv = sv->sv_tv;
+
     switch (tv->v_type)
     {
 	case VAR_LIST:
-	    if (tv->vval.v_list == NULL)
+	    if (tv->vval.v_list == NULL && sv->sv_type != &t_list_empty)
 		(void)rettv_list_alloc(tv);
 	    break;
 	case VAR_DICT:
-	    if (tv->vval.v_dict == NULL)
+	    if (tv->vval.v_dict == NULL && sv->sv_type != &t_dict_empty)
 		(void)rettv_dict_alloc(tv);
 	    break;
 	case VAR_BLOB:
-	    if (tv->vval.v_blob == NULL)
+	    if (tv->vval.v_blob == NULL && sv->sv_type != &t_blob_null)
 		(void)rettv_blob_alloc(tv);
 	    break;
 	default:
@@ -2891,7 +2893,7 @@ exec_instructions(ectx_T *ectx)
 		    sv = get_script_svar(sref, ectx->ec_dfunc_idx);
 		    if (sv == NULL)
 			goto theend;
-		    allocate_if_null(sv->sv_tv);
+		    allocate_if_null(sv);
 		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    copy_tv(sv->sv_tv, STACK_TV_BOT(0));

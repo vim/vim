@@ -2823,7 +2823,7 @@ eval_variable(
 	    {
 		if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL
 			  && ((type != NULL && type != &t_dict_empty)
-							   || !in_vim9script()))
+							  || !in_vim9script()))
 		{
 		    tv->vval.v_dict = dict_alloc();
 		    if (tv->vval.v_dict != NULL)
@@ -2842,6 +2842,14 @@ eval_variable(
 			++tv->vval.v_list->lv_refcount;
 			tv->vval.v_list->lv_type = alloc_type(type);
 		    }
+		}
+		else if (tv->v_type == VAR_BLOB && tv->vval.v_blob == NULL
+				    && ((type != NULL && type != &t_blob_null)
+							  || !in_vim9script()))
+		{
+		    tv->vval.v_blob = blob_alloc();
+		    if (tv->vval.v_blob != NULL)
+			++tv->vval.v_blob->bv_refcount;
 		}
 	    }
 	    copy_tv(tv, rettv);
