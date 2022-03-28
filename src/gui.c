@@ -3142,13 +3142,26 @@ button_set:
 		if (hold_gui_events)
 		    return;
 
+		row = gui_xy2colrow(x, y, &col);
+		// Don't report a mouse move until move to a
+		// different character position.
+		if (button == MOUSE_MOVE)
+		{
+		    if (row == prev_row && col == prev_col)
+			return;
+		    else
+		    {
+			prev_row = row >= 0 ? row : 0;
+			prev_col = col;
+		    }
+		}
+
 		string[3] = CSI;
 		string[4] = KS_EXTRA;
 		string[5] = (int)button_char;
 
 		// Pass the pointer coordinates of the scroll event so that we
 		// know which window to scroll.
-		row = gui_xy2colrow(x, y, &col);
 		string[6] = (char_u)(col / 128 + ' ' + 1);
 		string[7] = (char_u)(col % 128 + ' ' + 1);
 		string[8] = (char_u)(row / 128 + ' ' + 1);
@@ -4967,12 +4980,14 @@ gui_mouse_moved(int x, int y)
     // apply 'mousefocus' and pointer shape
     gui_mouse_focus(x, y);
 
+    if (p_mousemev
 #ifdef FEAT_PROP_POPUP
-    if (popup_uses_mouse_move)
-	// Generate a mouse-moved event, so that the popup can perhaps be
-	// closed, just like in the terminal.
-	gui_send_mouse_event(MOUSE_MOVE, x, y, FALSE, 0);
+	|| popup_uses_mouse_move
 #endif
+   )
+	// Generate a mouse-moved event. For a <MouseMove> mapping. Or so the
+	// popup can perhaps be closed, just like in the terminal.
+	gui_send_mouse_event(MOUSE_MOVE, x, y, FALSE, 0);
 }
 
 /*

@@ -1746,6 +1746,13 @@ static struct vimoption options[] =
 # endif
 #endif
 				(char_u *)0L} SCTX_INIT},
+    {"mousemoveevent",   "mousemev",   P_BOOL|P_VI_DEF,
+#ifdef FEAT_GUI
+			    (char_u *)&p_mousemev, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"mouseshape",  "mouses",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_MOUSESHAPE
 			    (char_u *)&p_mouseshape, PV_NONE,

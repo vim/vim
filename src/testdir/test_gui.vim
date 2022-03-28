@@ -1194,6 +1194,78 @@ func Test_gui_mouse_event()
   set mousemodel&
 endfunc
 
+func Test_gui_mouse_move_event()
+  let args = #{move: 1, button: 0, multiclick: 0, modifiers: 0}
+
+  " default, do not generate mouse move events
+  set mousemev&
+  call assert_false(&mousemev)
+
+  let n_event = 0
+  nnoremap <special> <MouseMove> :let n_event += 1<CR>
+
+  " start at mouse pos (1,1), clear counter
+  call extend(args, #{row: 1, col:1})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+  let n_event = 0
+
+  call extend(args, #{row: 30, col:300})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call extend(args, #{row: 100, col:300})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  " no events since mousemev off
+  call assert_equal(0, n_event)
+
+  " turn on mouse events and try the same thing
+  set mousemev
+  call extend(args, #{row: 1, col:1})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+  let n_event = 0
+
+  call extend(args, #{row: 30, col:300})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call extend(args, #{row: 100, col:300})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call assert_equal(2, n_event)
+
+  " wiggle the mouse around, shouldn't get events
+  call extend(args, #{row: 1, col:1})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+  let n_event = 0
+
+  call extend(args, #{row: 1, col:2})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call extend(args, #{row: 2, col:2})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call extend(args, #{row: 2, col:1})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call extend(args, #{row: 1, col:1})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call assert_equal(0, n_event)
+
+  unmap <MouseMove>
+  set mousemev&
+endfunc
+
 " Test for 'guitablabel' and 'guitabtooltip' options
 func TestGuiTabLabel()
   call add(g:TabLabels, v:lnum + 100)
