@@ -91,6 +91,9 @@ endfunction
 
 function! s:DefPython()
 py3 << PYTHONEOF
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import sys, tokenize, io, types
 from token import NAME, DEDENT, NEWLINE, STRING
 
