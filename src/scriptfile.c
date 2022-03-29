@@ -1918,7 +1918,10 @@ get_one_sourceline(source_cookie_T *sp)
 		break;		    // all the lines are processed
 	    ga_concat(&ga, ((char_u **)sp->buflines.ga_data)[sp->buf_lnum]);
 	    sp->buf_lnum++;
+	    if (ga_grow(&ga, 1) == FAIL)
+		break;
 	    buf = (char_u *)ga.ga_data;
+	    buf[ga.ga_len++] = NUL;
 	}
 	else
 	{
