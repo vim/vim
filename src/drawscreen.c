@@ -2507,11 +2507,11 @@ win_update(win_T *wp)
 	}
 	else
 	{
-	    if (wp->w_p_rnu)
+	    if (wp->w_p_rnu && wp->w_last_cursor_lnum_rnu != wp->w_cursor.lnum)
 	    {
 #ifdef FEAT_FOLDING
-		// 'relativenumber' set: The text doesn't need to be drawn, but
-		// the number column nearly always does.
+		// 'relativenumber' set and the cursor moved vertically: The
+		// text doesn't need to be drawn, but the number column does.
 		fold_count = foldedCount(wp, lnum, &win_foldinfo);
 		if (fold_count != 0)
 		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);
@@ -2553,6 +2553,7 @@ win_update(win_T *wp)
     // update w_last_cursorline.
     wp->w_last_cursorline = wp->w_p_cul ? wp->w_cursor.lnum : 0;
 #endif
+    wp->w_last_cursor_lnum_rnu = wp->w_p_rnu ? wp->w_cursor.lnum : 0;
 
 #ifdef FEAT_VTP
     // Rewrite the character at the end of the screen line.
