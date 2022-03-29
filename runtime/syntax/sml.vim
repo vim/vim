@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:     SML
 " Filenames:    *.sml *.sig
-" Maintainers:  Markus Mottl            <markus.mottl@gmail.com>
-"               Fabrizio Zeno Cornelli  <zeno@filibusta.crema.unimi.it>
+" Maintainers:           Markus Mottl            <markus.mottl@gmail.com>
+" Previous maintainers:  Fabrizio Zeno Cornelli  <zeno@filibusta.crema.unimi.it>
 " Last Change:  2021 Oct 04
 "               2015 Aug 31 - Fixed opening of modules (Ramana Kumar)
 "               2006 Oct 23 - Fixed character highlighting bug (MM)
