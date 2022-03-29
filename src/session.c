@@ -686,6 +686,11 @@ makeopens(
     if (put_line(fd, "endif") == FAIL)
 	goto fail;
 
+    // save 'shortmess' if not storing options
+    if ((ssop_flags & SSOP_OPTIONS) == 0
+	    && put_line(fd, "let s:shortmess_save = &shortmess") == FAIL)
+	goto fail;
+
     // Now save the current files, current buffer first.
     if (put_line(fd, "set shortmess=aoO") == FAIL)
 	goto fail;
@@ -956,10 +961,23 @@ makeopens(
     if (put_line(fd, "unlet! s:wipebuf") == FAIL)
 	goto fail;
 
-    // Re-apply 'winheight', 'winwidth' and 'shortmess'.
-    if (fprintf(fd, "set winheight=%ld winwidth=%ld shortmess=%s",
-			       p_wh, p_wiw, p_shm) < 0 || put_eol(fd) == FAIL)
+    // Re-apply 'winheight' and 'winwidth'.
+    if (fprintf(fd, "set winheight=%ld winwidth=%ld",
+			       p_wh, p_wiw) < 0 || put_eol(fd) == FAIL)
 	goto fail;
+
+    // Restore 'shortmess'.
+    if (ssop_flags & SSOP_OPTIONS)
+    {
+        if (fprintf(fd, "set shortmess=%s", p_shm) < 0 || put_eol(fd) == FAIL)
+            goto fail;
+    }
+    else
+    {
+        if (put_line(fd, "let &shortmess = s:shortmess_save") == FAIL)
+            goto fail;
+    }
+
     if (tab_firstwin->w_next != NULL)
     {
 	// Restore 'winminheight' and 'winminwidth'.
