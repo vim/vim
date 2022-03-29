@@ -987,7 +987,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	nostop	like start, except CTRL-W and CTRL-U do not stop at the start of
 		insert.
 
-	When the value is empty, Vi compatible backspacing is used.
+	When the value is empty, then only <Del> can be used to delete text in
+	insert mode. This is compatible with Vi.
 
 	For backwards compatibility with version 5.4 and earlier:
 	value	effect	~
