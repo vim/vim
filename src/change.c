@@ -641,7 +641,7 @@ changed_common(
 		set_topline(wp, wp->w_topline);
 #endif
 	    // Relative numbering may require updating more.
-	    if (wp->w_p_rnu)
+	    if (wp->w_p_rnu && xtra != 0)
 		redraw_win_later(wp, SOME_VALID);
 #ifdef FEAT_SYN_HL
 	    // Cursor line highlighting probably need to be updated with
