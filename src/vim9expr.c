@@ -313,6 +313,27 @@ compile_load_scriptvar(
 	    vim_free(auto_name);
 	    done = TRUE;
 	}
+	else if (si->sn_import_autoload && si->sn_state == SN_STATE_NOT_LOADED)
+	{
+	    // "import autoload './dir/script.vim'" - load script first
+	    res = generate_SOURCE(cctx, import->imp_sid);
+	    if (res == OK)
+	    {
+		// If a '(' follows it must be a function.  Otherwise we don't
+		// know, it can be "script.Func".
+		if (cc == '(' || paren_follows_after_expr)
+		{
+		    char_u sid_name[MAX_FUNC_NAME_LEN];
+
+		    func_name_with_sid(exp_name, import->imp_sid, sid_name);
+		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any);
+		}
+		else
+		    res = generate_OLDSCRIPT(cctx, ISN_LOADEXPORT, exp_name,
+						      import->imp_sid, &t_any);
+	    }
+	    done = TRUE;
+	}
 	else
 	{
 	    idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,

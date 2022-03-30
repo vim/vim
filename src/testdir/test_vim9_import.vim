@@ -840,6 +840,135 @@ def Test_use_autoload_import_in_fold_expression()
   &rtp = save_rtp
 enddef
 
+def Test_autoload_import_relative()
+  var lines =<< trim END
+      vim9script
+
+      g:loaded = 'yes'
+      export def RelFunc(): string
+        return 'relfunc'
+      enddef
+      def NotExported()
+        echo 'not'
+      enddef
+
+      export var someText = 'some text'
+      var notexp = 'bad'
+  END
+  writefile(lines, 'XimportRel.vim')
+  writefile(lines, 'XimportRel2.vim')
+  writefile(lines, 'XimportRel3.vim')
+
+  lines =<< trim END
+      vim9script
+      g:loaded = 'no'
+      import autoload './XimportRel.vim'
+      assert_equal('no', g:loaded)
+
+      def AFunc(): string
+        var res = ''
+        res ..= XimportRel.RelFunc()
+        res ..= '/'
+        res ..= XimportRel.someText
+        XimportRel.someText = 'from AFunc'
+        return res
+      enddef
+      # script not loaded when compiling
+      defcompile
+      assert_equal('no', g:loaded)
+
+      assert_equal('relfunc/some text', AFunc())
+      assert_equal('yes', g:loaded)
+      unlet g:loaded
+
+      assert_equal('from AFunc', XimportRel.someText)
+      XimportRel.someText = 'from script'
+      assert_equal('from script', XimportRel.someText)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      echo XimportRel.NotExported()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: NotExported', 3)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      echo XimportRel.notexp
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 3)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      XimportRel.notexp = 'bad'
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 3)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      def Func()
+        echo XimportRel.NotExported()
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: NotExported', 1)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      def Func()
+        echo XimportRel.notexp
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      def Func()
+        XimportRel.notexp = 'bad'
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
+
+  # does not fail if the script wasn't loaded yet
+  g:loaded = 'no'
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel2.vim'
+      def Func()
+        echo XimportRel2.notexp
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('no', g:loaded)
+
+  # fails with a not loaded import
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel3.vim'
+      def Func()
+        XimportRel3.notexp = 'bad'
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
+  assert_equal('yes', g:loaded)
+  unlet g:loaded
+
+  delete('XimportRel.vim')
+  delete('XimportRel2.vim')
+  delete('XimportRel3.vim')
+enddef
+
 func Test_import_in_diffexpr()
   CheckExecutable diff
 
@@ -2379,13 +2508,13 @@ def Test_import_autoload_fails()
       vim9script
       import autoload './doesNotExist.vim'
   END
-  v9.CheckScriptFailure(lines, 'E1264:')
+  v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
       import autoload '/dir/doesNotExist.vim'
   END
-  v9.CheckScriptFailure(lines, 'E1264:')
+  v9.CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script

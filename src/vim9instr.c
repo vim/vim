@@ -1066,7 +1066,7 @@ generate_OLDSCRIPT(
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if (isn_type == ISN_LOADS)
+    if (isn_type == ISN_LOADS || isn_type == ISN_LOADEXPORT)
 	isn = generate_instr_type(cctx, isn_type, type);
     else
 	isn = generate_instr_drop(cctx, isn_type, 1);
@@ -1728,6 +1728,21 @@ generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count)
 }
 
 /*
+ * Generate an ISN_SOURCE instruction.
+ */
+    int
+generate_SOURCE(cctx_T *cctx, int sid)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr(cctx, ISN_SOURCE)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = sid;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_PUT instruction.
  */
     int
@@ -1913,9 +1928,22 @@ generate_store_var(
 	    return generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
 	case dest_script:
 	    if (scriptvar_idx < 0)
+	    {
+		isntype_T isn_type = ISN_STORES;
+
+		if (SCRIPT_ID_VALID(scriptvar_sid)
+			 && SCRIPT_ITEM(scriptvar_sid)->sn_import_autoload)
+		{
+		    // "import autoload './dir/script.vim'" - load script first
+		    if (generate_SOURCE(cctx, scriptvar_sid) == FAIL)
+			return FAIL;
+		    isn_type = ISN_STOREEXPORT;
+		}
+
 		// "s:" may be included in the name.
-		return generate_OLDSCRIPT(cctx, ISN_STORES, name,
-							  scriptvar_sid, type);
+		return generate_OLDSCRIPT(cctx, isn_type, name,
+						      scriptvar_sid, type);
+	    }
 	    return generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
 					   scriptvar_sid, scriptvar_idx, type);
 	case dest_local:
@@ -2062,7 +2090,9 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_LOADS:
+	case ISN_LOADEXPORT:
 	case ISN_STORES:
+	case ISN_STOREEXPORT:
 	    vim_free(isn->isn_arg.loadstore.ls_name);
 	    break;
 
@@ -2089,7 +2119,7 @@ delete_instr(isn_T *isn)
 		if (isn->isn_arg.funcref.fr_func_name == NULL)
 		{
 		    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-					   + isn->isn_arg.funcref.fr_dfunc_idx;
+			+ isn->isn_arg.funcref.fr_dfunc_idx;
 		    ufunc_T *ufunc = dfunc->df_ufunc;
 
 		    if (ufunc != NULL && func_name_refcount(ufunc->uf_name))
@@ -2109,10 +2139,10 @@ delete_instr(isn_T *isn)
 	case ISN_DCALL:
 	    {
 		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-					       + isn->isn_arg.dfunc.cdf_idx;
+		    + isn->isn_arg.dfunc.cdf_idx;
 
 		if (dfunc->df_ufunc != NULL
-			       && func_name_refcount(dfunc->df_ufunc->uf_name))
+			&& func_name_refcount(dfunc->df_ufunc->uf_name))
 		    func_ptr_unref(dfunc->df_ufunc);
 	    }
 	    break;
@@ -2140,7 +2170,7 @@ delete_instr(isn_T *isn)
 
 	case ISN_CMDMOD:
 	    vim_regfree(isn->isn_arg.cmdmod.cf_cmdmod
-					       ->cmod_filter_regmatch.regprog);
+		    ->cmod_filter_regmatch.regprog);
 	    vim_free(isn->isn_arg.cmdmod.cf_cmdmod);
 	    break;
 
@@ -2243,21 +2273,22 @@ delete_instr(isn_T *isn)
 	case ISN_STORE:
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
-	case ISN_STOREOUTER:
-	case ISN_STORERANGE:
-	case ISN_STOREREG:
-	case ISN_STOREV:
-	case ISN_STRINDEX:
-	case ISN_STRSLICE:
-	case ISN_THROW:
-	case ISN_TRYCONT:
-	case ISN_UNLETINDEX:
-	case ISN_UNLETRANGE:
-	case ISN_UNPACK:
-	case ISN_USEDICT:
-	    // nothing allocated
-	    break;
-    }
+	case ISN_SOURCE:
+    case ISN_STOREOUTER:
+    case ISN_STORERANGE:
+    case ISN_STOREREG:
+    case ISN_STOREV:
+    case ISN_STRINDEX:
+    case ISN_STRSLICE:
+    case ISN_THROW:
+    case ISN_TRYCONT:
+    case ISN_UNLETINDEX:
+    case ISN_UNLETRANGE:
+    case ISN_UNPACK:
+    case ISN_USEDICT:
+	// nothing allocated
+	break;
+}
 }
 
     void

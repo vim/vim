@@ -1833,7 +1833,7 @@ typedef struct {
  */
 typedef struct
 {
-    char_u	*sn_name;
+    char_u	*sn_name;	    // full path of script file
     int		sn_script_seq;	    // latest sctx_T sc_seq value
 
     // "sn_vars" stores the s: variables currently valid.  When leaving a block
@@ -1864,8 +1864,11 @@ typedef struct
     char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
     char	sn_is_vimrc;	// .vimrc file, do not restore 'cpo'
 
-    // for "vim9script autoload" this is "dir#scriptname#"
+    // for a Vim9 script under "rtp/autoload/" this is "dir#scriptname#"
     char_u	*sn_autoload_prefix;
+
+    // TRUE for a script used with "import autoload './dirname/script.vim'"
+    int		sn_import_autoload;
 
 # ifdef FEAT_PROFILE
     int		sn_prof_on;	// TRUE when script is/was profiled

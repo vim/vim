@@ -251,7 +251,7 @@ source_callback(char_u *fname, void *cookie)
  * Find an already loaded script "name".
  * If found returns its script ID.  If not found returns -1.
  */
-    static int
+    int
 find_script_by_name(char_u *name)
 {
     int		    sid;
@@ -320,6 +320,21 @@ get_new_scriptitem(int *error)
     return sid;
 }
 
+    int
+get_new_scriptitem_for_fname(int *error, char_u *fname)
+{
+    int sid = get_new_scriptitem(error);
+
+    if (*error == OK)
+    {
+	scriptitem_T *si = SCRIPT_ITEM(sid);
+
+	si->sn_name = vim_strsave(fname);
+	si->sn_state = SN_STATE_NOT_LOADED;
+    }
+    return sid;
+}
+
     static void
 find_script_callback(char_u *fname, void *cookie)
 {
@@ -329,17 +344,8 @@ find_script_callback(char_u *fname, void *cookie)
 
     sid = find_script_by_name(fname);
     if (sid < 0)
-    {
 	// script does not exist yet, create a new scriptitem
-	sid = get_new_scriptitem(&error);
-	if (error == OK)
-	{
-	    scriptitem_T *si = SCRIPT_ITEM(sid);
-
-	    si->sn_name = vim_strsave(fname);
-	    si->sn_state = SN_STATE_NOT_LOADED;
-	}
-    }
+	sid = get_new_scriptitem_for_fname(&error, fname);
     *ret_sid = sid;
 }
 #endif

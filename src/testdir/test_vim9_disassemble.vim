@@ -318,6 +318,46 @@ def Test_disassemble_push()
   &rtp = save_rtp
 enddef
 
+def Test_disassemble_import_autoload()
+  writefile(['vim9script'], 'XimportAL.vim')
+
+  var lines =<< trim END
+      vim9script
+      import autoload './XimportAL.vim'
+
+      def AutoloadFunc()
+        echo XimportAL.SomeFunc()
+        echo XimportAL.someVar
+        XimportAL.someVar = "yes"
+      enddef
+
+      var res = execute('disass AutoloadFunc')
+      assert_match('<SNR>\d*_AutoloadFunc.*' ..
+            'echo XimportAL.SomeFunc()\_s*' ..
+            '\d SOURCE /home/mool/vim/vim82/src/testdir/XimportAL.vim\_s*' ..
+            '\d PUSHFUNC "<80><fd>R\d\+_SomeFunc"\_s*' ..
+            '\d PCALL top (argc 0)\_s*' ..
+            '\d PCALL end\_s*' ..
+            '\d ECHO 1\_s*' ..
+
+            'echo XimportAL.someVar\_s*' ..
+            '\d SOURCE .*/testdir/XimportAL.vim\_s*' ..
+            '\d LOADEXPORT s:someVar from .*/testdir/XimportAL.vim\_s*' ..
+            '\d ECHO 1\_s*' ..
+
+            'XimportAL.someVar = "yes"\_s*' ..
+            '\d\+ PUSHS "yes"\_s*' ..
+            '\d\+ SOURCE .*/testdir/XimportAL.vim\_s*' ..
+            '\d\+ STOREEXPORT someVar in .*/testdir/XimportAL.vim\_s*' ..
+
+            '\d\+ RETURN void',
+            res)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delete('XimportAL.vim')
+enddef
+
 def s:ScriptFuncStore()
   var localnr = 1
   localnr = 2

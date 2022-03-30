@@ -54,6 +54,7 @@ int generate_PCALL(cctx_T *cctx, int argcount, char_u *name, type_T *type, int a
 int generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len);
 int generate_ECHO(cctx_T *cctx, int with_white, int count);
 int generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count);
+int generate_SOURCE(cctx_T *cctx, int sid);
 int generate_PUT(cctx_T *cctx, int regname, linenr_T lnum);
 int generate_EXEC_copy(cctx_T *cctx, isntype_T isntype, char_u *line);
 int generate_EXEC(cctx_T *cctx, isntype_T isntype, char_u *str);

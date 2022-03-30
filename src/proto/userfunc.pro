@@ -8,6 +8,7 @@ char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **
 void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);
 char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error);
+void func_name_with_sid(char_u *name, int sid, char_u *buffer);
 ufunc_T *find_func_even_dead(char_u *name, int flags);
 ufunc_T *find_func(char_u *name, int is_global);
 int func_is_global(ufunc_T *ufunc);

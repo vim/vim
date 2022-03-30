@@ -1884,23 +1884,33 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 }
 
 /*
+ * Concatenate the script ID and function name into  "<SNR>99_name".
+ * "buffer" must have size MAX_FUNC_NAME_LEN.
+ */
+    void
+func_name_with_sid(char_u *name, int sid, char_u *buffer)
+{
+    // A script-local function is stored as "<SNR>99_name".
+    buffer[0] = K_SPECIAL;
+    buffer[1] = KS_EXTRA;
+    buffer[2] = (int)KE_SNR;
+    vim_snprintf((char *)buffer + 3, MAX_FUNC_NAME_LEN - 3, "%ld_%s",
+							      (long)sid, name);
+}
+
+/*
  * Find a function "name" in script "sid".
  */
     static ufunc_T *
 find_func_with_sid(char_u *name, int sid)
 {
     hashitem_T	    *hi;
-    char_u	    buffer[200];
+    char_u	    buffer[MAX_FUNC_NAME_LEN];
 
     if (!SCRIPT_ID_VALID(sid))
 	return NULL;	// not in a script
 
-    // A script-local function is stored as "<SNR>99_name".
-    buffer[0] = K_SPECIAL;
-    buffer[1] = KS_EXTRA;
-    buffer[2] = (int)KE_SNR;
-    vim_snprintf((char *)buffer + 3, sizeof(buffer) - 3, "%ld_%s",
-							      (long)sid, name);
+    func_name_with_sid(name, sid, buffer);
     hi = hash_find(&func_hashtab, buffer);
     if (!HASHITEM_EMPTY(hi))
 	return HI2UF(hi);
@@ -1914,7 +1924,7 @@ find_func_with_sid(char_u *name, int sid)
 find_func_with_prefix(char_u *name, int sid)
 {
     hashitem_T	    *hi;
-    char_u	    buffer[200];
+    char_u	    buffer[MAX_FUNC_NAME_LEN];
     scriptitem_T    *si;
 
     if (vim_strchr(name, AUTOLOAD_CHAR) != NULL)

@@ -1571,6 +1571,9 @@ typedef UINT32_TYPEDEF UINT32_T;
  */
 #define MAXMAPLEN   50
 
+// maximum length of a function name, including SID and NUL
+#define MAX_FUNC_NAME_LEN   200
+
 // Size in bytes of the hash used in the undo file.
 #define UNDO_HASH_SIZE 32
 
