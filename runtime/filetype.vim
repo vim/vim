@@ -1277,6 +1277,10 @@ au BufNewFile,BufRead *.[Oo][Pp][Ll]		setf opl
 " Oracle config file
 au BufNewFile,BufRead *.ora			setf ora
 
+" Org
+au BufNewFile,BufRead *.org		           	setf org
+au BufNewFile,BufRead *.org_archive		setf org
+
 " Packet filter conf
 au BufNewFile,BufRead pf.conf			setf pf
 
