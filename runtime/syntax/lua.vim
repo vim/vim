@@ -319,6 +319,15 @@ elseif lua_version == 5
     syn match luaFunc /\<debug\.upvalueid\>/
     syn match luaFunc /\<debug\.upvaluejoin\>/
   endif
+  if lua_subversion >= 3
+    "https://www.lua.org/manual/5.3/manual.html#6.5
+    syn match luaFunc /\<utf8\.char\>/
+    syn match luaFunc /\<utf8\.charpattern\>/
+    syn match luaFunc /\<utf8\.codes\>/
+    syn match luaFunc /\<utf8\.codepoint\>/
+    syn match luaFunc /\<utf8\.len\>/
+    syn match luaFunc /\<utf8\.offset\>/
+  endif
 endif
 
 " Define the default highlighting.
