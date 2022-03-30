@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2022 Jan 21
+*repeat.txt*    For Vim version 8.2.  Last change: 2022 Mar 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -210,22 +210,26 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 
 			To source a range of lines that doesn't start with the
 			|:vim9script| command in Vim9 script context, the
-			|:vim9cmd| modifier can be used.
+			|:vim9cmd| modifier can be used.  If you use a Visual
+			selection and type ":", the range in the form "'<,'>"
+			can come before it: >
+				:'<,'>vim9cmd source
+<			Otherwise the range goes after the modifier and must
+			have a colon prefixed, like all Vim9 ranges: >
+				:vim9cmd :5,9source
 
-			When a range of lines in a buffer is sourced in the
+<			When a range of lines in a buffer is sourced in the
 			Vim9 script context, the previously defined
 			script-local variables and functions are not cleared.
 			This works like the range started with the
 			":vim9script noclear" command.  The "++clear" argument
 			can be used to clear the script-local variables and
 			functions before sourcing the script. This works like
-			the range started with the |:vimscript| command
+			the range started with the `:vim9script` command
 			without the "noclear" argument. See |vim9-reload| for
 			more information.
 			Examples: >
-
 				:4,5source
-				:vim9cmd :'<,'>source
 				:10,18source ++clear
 
 							*:source!*

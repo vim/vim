@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Mar 18
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -184,8 +184,8 @@ For now you will need to pass the dictionary explicitly: >
 	def DictFunc(d: dict<any>, arg: string)
 	   echo d[arg]
 	enddef
-	var d = {item: 'value', func: DictFunc}
-	d.func(d, 'item')
+	var ad = {item: 'value', func: DictFunc}
+	ad.func(d, 'item')
 
 You can call a legacy dict function though: >
 	func Legacy() dict
@@ -376,13 +376,23 @@ And with autocommands: >
 	   }
 
 Although using a :def function probably works better.
+
 				*E1022* *E1103* *E1130* *E1131* *E1133*
 				*E1134* *E1235*
 Declaring a variable with a type but without an initializer will initialize to
 false (for bool), empty (for string, list, dict, etc.) or zero (for number,
 any, etc.).  This matters especially when using the "any" type, the value will
-default to the number zero.
-						*E1016* *E1052* *E1066*
+default to the number zero.  For example, when declaring a list, items can be
+added: >
+	var myList: list<number>
+	myList->add(7)
+
+Initializing a variable to a null value, e.g. `null_list`, differs from not
+initializing the variable.  This throws an error: >
+	var myList = null_list
+	myList->add(7)  # E1130: Cannot add to null list
+
+<						*E1016* *E1052* *E1066*
 In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  Those can also be deleted
@@ -1243,7 +1253,7 @@ Closures defined in a loop will share the same context.  For example: >
 A closure must be compiled in the context that it is defined in, so that
 variables in that context can be found.  This mostly happens correctly, except
 when a function is marked for debugging with `breakadd` after it was compiled.
-Make sure the define the breakpoint before compiling the outerh function.
+Make sure to define the breakpoint before compiling the outer function.
 
 The "inloop" variable will exist only once, all closures put in the list refer
 to the same instance, which in the end will have the value 4.  This is

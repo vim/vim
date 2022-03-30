@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Mar 04
+*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -690,9 +690,9 @@ CursorHoldI			Just like CursorHold, but in Insert mode.
 CursorMoved			After the cursor was moved in Normal or Visual
 				mode.  Also when the text of the cursor line
 				has been changed, e.g., with "x", "rx" or "p".
-				Not triggered when there is typeahead, while
-				executing commands in a script file, when
-				an operator is pending or when moving to
+				Not always triggered when there is typeahead,
+				while executing commands in a script file,
+				when an operator is pending or when moving to
 				another window while remaining at the same
 				cursor position.
 				For an example see |match-parens|.

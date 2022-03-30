@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Mar 18
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Mar 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Allow for: "import autoload '../lib/script.vim'"
+    avoids going through 'runtimepath' and avoids name collisions.
+
 Really drop the Athena and NeXtaw GUI?  Decide end of March.
 
 Once Vim9 is stable:
@@ -48,6 +51,7 @@ Once Vim9 is stable:
 	vim9instr.c
 	vim9script.c
 	vim9type.c
+- Adjust intro message to say "help version9".
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.
@@ -417,13 +421,6 @@ register, then "" doesn't contain anything.  Make it still follow "+.
 
 File marks merging has duplicates since 7.4.1925. (Ingo Karkat, #5733)
 
-"make test_gui" crashed in submenu_change(). Fix and remove workaround in
-add_pixmap_args().
-Athena is OK.
-Motif: Build on Ubuntu can't enter any text in dialog text fields.
-Running test_gui and test_gui_init with Motif sometimes kills the window
-manager.  Problem with Motif?
-
 When editing a file with ":edit" the output of :swapname is relative, while
 editing it with "vim file" it is absolute. (#355)
 Which one should it be?
@@ -477,11 +474,6 @@ Wrong error when using local arglist. (Harm te Hennepe, #6133)
 Test loose_clipboard() by selecting text before suspending.
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
-
-Implement completion for "breakadd".  Should expand the second argument, e.g.
-"func", and then function names after ":breakadd func".  Including
-script-local functions.
-Also for ":profile".
 
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
@@ -2501,10 +2493,6 @@ Works OK when 'cmdheight' is 2.
 8   Use a mechanism similar to omni completion to figure out the kind of tab
     for CTRL-] and jump to the appropriate matching tag (if there are
     several).
-    Alternative: be able to define a function that takes the tag name and uses
-    taglist() to find the right location.  With indication of using CTRL-] so
-    that the context can be taken into account. (Robert Webb)
-Patch by Christian Brabandt, 2013 May 31.
 
 The utf class table is missing some entries:
 	0x2212, minus sign

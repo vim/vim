@@ -8000,6 +8000,7 @@ lace.vim	syntax.txt	/*lace.vim*
 lambda	eval.txt	/*lambda*
 lang-variable	eval.txt	/*lang-variable*
 language-mapping	map.txt	/*language-mapping*
+language-server-protocol	channel.txt	/*language-server-protocol*
 last-pattern	pattern.txt	/*last-pattern*
 last-position-jump	usr_05.txt	/*last-position-jump*
 last_buffer_nr()	builtin.txt	/*last_buffer_nr()*
