@@ -3194,6 +3194,7 @@ qf_jump_edit_buffer(
     if (qfl_type == QFLT_LOCATION)
     {
 	win_T	*wp = win_id2wp(prev_winid);
+
 	if (wp == NULL && curwin->w_llist != qi)
 	{
 	    emsg(_(e_current_window_was_closed));

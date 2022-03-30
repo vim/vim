@@ -3762,7 +3762,7 @@ get_tty_info(int fd, ttyinfo_T *info)
 static int	mouse_ison = FALSE;
 
 /*
- * Set mouse clicks on or off.
+ * Set mouse clicks on or off and possible enable mouse movement events.
  */
     void
 mch_setmouse(int on)

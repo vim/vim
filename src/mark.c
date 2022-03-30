@@ -1002,21 +1002,21 @@ mark_adjust(
 
     void
 mark_adjust_nofold(
-    linenr_T line1,
-    linenr_T line2,
-    long amount,
-    long amount_after)
+    linenr_T	line1,
+    linenr_T	line2,
+    long	amount,
+    long	amount_after)
 {
     mark_adjust_internal(line1, line2, amount, amount_after, FALSE);
 }
 
     static void
 mark_adjust_internal(
-    linenr_T line1,
-    linenr_T line2,
-    long amount,
-    long amount_after,
-    int adjust_folds UNUSED)
+    linenr_T	line1,
+    linenr_T	line2,
+    long	amount,
+    long	amount_after,
+    int		adjust_folds UNUSED)
 {
     int		i;
     int		fnum = curbuf->b_fnum;

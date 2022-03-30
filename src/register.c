@@ -2399,8 +2399,8 @@ ex_display(exarg_T *eap)
 			msg_puts_attr("^J", attr);
 			n -= 2;
 		    }
-		    for (p = yb->y_array[j]; *p && (n -= ptr2cells(p)) >= 0;
-									   ++p)
+		    for (p = yb->y_array[j];
+				    *p != NUL && (n -= ptr2cells(p)) >= 0; ++p)
 		    {
 			clen = (*mb_ptr2len)(p);
 			msg_outtrans_len(p, clen);

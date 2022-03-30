@@ -1191,7 +1191,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 #endif
 
 	menu->parent = parent;
-	menu->submenu_id = NULL;
+	menu->submenu_id = (Widget)0;
 	if (!XtIsManaged(toolBar)
 		    && vim_strchr(p_go, GO_TOOLBAR) != NULL)
 	    gui_mch_show_toolbar(TRUE);
