@@ -334,7 +334,7 @@ def Test_disassemble_import_autoload()
       var res = execute('disass AutoloadFunc')
       assert_match('<SNR>\d*_AutoloadFunc.*' ..
             'echo XimportAL.SomeFunc()\_s*' ..
-            '\d SOURCE /home/mool/vim/vim82/src/testdir/XimportAL.vim\_s*' ..
+            '\d SOURCE .*/testdir/XimportAL.vim\_s*' ..
             '\d PUSHFUNC "<80><fd>R\d\+_SomeFunc"\_s*' ..
             '\d PCALL top (argc 0)\_s*' ..
             '\d PCALL end\_s*' ..
