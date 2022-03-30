@@ -86,6 +86,32 @@ json_encode_nr_expr(int nr, typval_T *val, int options)
     ga_append(&ga, NUL);
     return ga.ga_data;
 }
+
+/*
+ * Encode "val" into a JSON format string prefixed by the LSP HTTP header.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+json_encode_lsp_msg(typval_T *val)
+{
+    garray_T	ga;
+    garray_T	lspga;
+
+    ga_init2(&ga, 1, 4000);
+    if (json_encode_gap(&ga, val, 0) == FAIL)
+	return NULL;
+    ga_append(&ga, NUL);
+
+    ga_init2(&lspga, 1, 4000);
+    vim_snprintf((char *)IObuff, IOSIZE,
+	    "Content-Length: %u\r\n"
+	    "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n\r\n",
+	    ga.ga_len - 1);
+    ga_concat(&lspga, IObuff);
+    ga_concat_len(&lspga, ga.ga_data, ga.ga_len);
+    ga_clear(&ga);
+    return lspga.ga_data;
+}
 #endif
 
     static void

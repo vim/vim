@@ -2193,6 +2193,7 @@ typedef enum
     MODE_RAW,
     MODE_JSON,
     MODE_JS,
+    MODE_LSP			// Language Server Protocol (http + json)
 } ch_mode_T;
 
 typedef enum {

@@ -2112,6 +2112,83 @@ channel_fill(js_read_T *reader)
 }
 
 /*
+ * Process the HTTP header in a Language Server Protocol (LSP) message.
+ *
+ * The message format is described in the LSP specification:
+ * https://microsoft.github.io/language-server-protocol/specification
+ *
+ * It has the following two fields:
+ *
+ *	Content-Length: ...
+ *	Content-Type: application/vscode-jsonrpc; charset=utf-8
+ *
+ * Each field ends with "\r\n". The header ends with an additional "\r\n".
+ *
+ * Returns OK if a valid header is received and FAIL if some fields in the
+ * header are not correct. Returns MAYBE if a partial header is received and
+ * need to wait for more data to arrive.
+ */
+    static int
+channel_process_lsp_http_hdr(js_read_T *reader)
+{
+    char_u	*line_start;
+    char_u	*p;
+    int_u	hdr_len;
+    int		payload_len = -1;
+    int_u	jsbuf_len;
+
+    // We find the end once, to avoid calling strlen() many times.
+    jsbuf_len = (int_u)STRLEN(reader->js_buf);
+    reader->js_end = reader->js_buf + jsbuf_len;
+
+    p = reader->js_buf;
+
+    // Process each line in the header till an empty line is read (header
+    // separator).
+    while (TRUE)
+    {
+	line_start = p;
+	while (*p != NUL && *p != '\n')
+	    p++;
+	if (*p == NUL)			// partial header
+	    return MAYBE;
+	p++;
+
+	// process the content length field (if present)
+	if ((p - line_start > 16)
+		&& STRNICMP(line_start, "Content-Length: ", 16) == 0)
+	{
+	    errno = 0;
+	    payload_len = strtol((char *)line_start + 16, NULL, 10);
+	    if (errno == ERANGE || payload_len < 0)
+		// invalid length, discard the payload
+		return FAIL;
+	}
+
+	if ((p - line_start) == 2 && line_start[0] == '\r' &&
+		line_start[1] == '\n')
+	    // reached the empty line
+	    break;
+    }
+
+    if (payload_len == -1)
+	// Content-Length field is not present in the header
+	return FAIL;
+
+    hdr_len = p - reader->js_buf;
+
+    // if the entire payload is not received, wait for more data to arrive
+    if (jsbuf_len < hdr_len + payload_len)
+	return MAYBE;
+
+    reader->js_used += hdr_len;
+    // recalculate the end based on the length read from the header.
+    reader->js_end = reader->js_buf + hdr_len + payload_len;
+
+    return OK;
+}
+
+/*
  * Use the read buffer of "channel"/"part" and parse a JSON message that is
  * complete.  The messages are added to the queue.
  * Return TRUE if there is more to read.
@@ -2124,7 +2201,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     jsonq_T	*item;
     chanpart_T	*chanpart = &channel->ch_part[part];
     jsonq_T	*head = &chanpart->ch_json_head;
-    int		status;
+    int		status = OK;
     int		ret;
 
     if (channel_peek(channel, part) == NULL)
@@ -2136,19 +2213,31 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     reader.js_cookie = channel;
     reader.js_cookie_arg = part;
 
+    if (chanpart->ch_mode == MODE_LSP)
+	status = channel_process_lsp_http_hdr(&reader);
+
     // When a message is incomplete we wait for a short while for more to
     // arrive.  After the delay drop the input, otherwise a truncated string
     // or list will make us hang.
     // Do not generate error messages, they will be written in a channel log.
-    ++emsg_silent;
-    status = json_decode(&reader, &listtv,
-				  chanpart->ch_mode == MODE_JS ? JSON_JS : 0);
-    --emsg_silent;
+    if (status == OK)
+    {
+	++emsg_silent;
+	status = json_decode(&reader, &listtv,
+				chanpart->ch_mode == MODE_JS ? JSON_JS : 0);
+	--emsg_silent;
+    }
     if (status == OK)
     {
 	// Only accept the response when it is a list with at least two
 	// items.
-	if (listtv.v_type != VAR_LIST || listtv.vval.v_list->lv_len < 2)
+	if (chanpart->ch_mode == MODE_LSP && listtv.v_type != VAR_DICT)
+	{
+	    ch_error(channel, "Did not receive a LSP dict, discarding");
+	    clear_tv(&listtv);
+	}
+	else if (chanpart->ch_mode != MODE_LSP &&
+		(listtv.v_type != VAR_LIST || listtv.vval.v_list->lv_len < 2))
 	{
 	    if (listtv.v_type != VAR_LIST)
 		ch_error(channel, "Did not receive a list, discarding");
@@ -2375,11 +2464,38 @@ channel_get_json(
 
     while (item != NULL)
     {
-	list_T	    *l = item->jq_value->vval.v_list;
+	list_T	    *l;
 	typval_T    *tv;
 
-	CHECK_LIST_MATERIALIZE(l);
-	tv = &l->lv_first->li_tv;
+	if (channel->ch_part[part].ch_mode != MODE_LSP)
+	{
+	    l = item->jq_value->vval.v_list;
+	    CHECK_LIST_MATERIALIZE(l);
+	    tv = &l->lv_first->li_tv;
+	}
+	else
+	{
+	    dict_T	*d;
+	    dictitem_T	*di;
+
+	    // LSP message payload is a JSON-RPC dict.
+	    // For RPC requests and responses, the 'id' item will be present.
+	    // For notifications, it will not be present.
+	    if (id > 0)
+	    {
+		if (item->jq_value->v_type != VAR_DICT)
+		    goto nextitem;
+		d = item->jq_value->vval.v_dict;
+		if (d == NULL)
+		    goto nextitem;
+		di = dict_find(d, (char_u *)"id", -1);
+		if (di == NULL)
+		    goto nextitem;
+		tv = &di->di_tv;
+	    }
+	    else
+		tv = item->jq_value;
+	}
 
 	if ((without_callback || !item->jq_no_callback)
 	    && ((id > 0 && tv->v_type == VAR_NUMBER && tv->vval.v_number == id)
@@ -2395,6 +2511,7 @@ channel_get_json(
 	    remove_json_node(head, item);
 	    return OK;
 	}
+nextitem:
 	item = item->jq_next;
     }
     return FAIL;
@@ -2762,6 +2879,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     callback_T	*callback = NULL;
     buf_T	*buffer = NULL;
     char_u	*p;
+    int		called_otc;		// one time callbackup
 
     if (channel->ch_nb_close_cb != NULL)
 	// this channel is handled elsewhere (netbeans)
@@ -2788,7 +2906,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	buffer = NULL;
     }
 
-    if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
+    if (ch_mode == MODE_JSON || ch_mode == MODE_JS || ch_mode == MODE_LSP)
     {
 	listitem_T	*item;
 	int		argc = 0;
@@ -2802,29 +2920,47 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		return FALSE;
 	}
 
-	for (item = listtv->vval.v_list->lv_first;
-			    item != NULL && argc < CH_JSON_MAX_ARGS;
-						    item = item->li_next)
-	    argv[argc++] = item->li_tv;
-	while (argc < CH_JSON_MAX_ARGS)
-	    argv[argc++].v_type = VAR_UNKNOWN;
-
-	if (argv[0].v_type == VAR_STRING)
+	if (ch_mode == MODE_LSP)
 	{
-	    // ["cmd", arg] or ["cmd", arg, arg] or ["cmd", arg, arg, arg]
-	    channel_exe_cmd(channel, part, argv);
-	    free_tv(listtv);
-	    return TRUE;
-	}
+	    dict_T	*d = listtv->vval.v_dict;
+	    dictitem_T	*di;
 
-	if (argv[0].v_type != VAR_NUMBER)
-	{
-	    ch_error(channel,
-		      "Dropping message with invalid sequence number type");
-	    free_tv(listtv);
-	    return FALSE;
+	    seq_nr = 0;
+	    if (d != NULL)
+	    {
+		di = dict_find(d, (char_u *)"id", -1);
+		if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
+		    seq_nr = di->di_tv.vval.v_number;
+	    }
+
+	    argv[1] = *listtv;
 	}
-	seq_nr = argv[0].vval.v_number;
+	else
+	{
+	    for (item = listtv->vval.v_list->lv_first;
+		    item != NULL && argc < CH_JSON_MAX_ARGS;
+		    item = item->li_next)
+		argv[argc++] = item->li_tv;
+	    while (argc < CH_JSON_MAX_ARGS)
+		argv[argc++].v_type = VAR_UNKNOWN;
+
+	    if (argv[0].v_type == VAR_STRING)
+	    {
+		// ["cmd", arg] or ["cmd", arg, arg] or ["cmd", arg, arg, arg]
+		channel_exe_cmd(channel, part, argv);
+		free_tv(listtv);
+		return TRUE;
+	    }
+
+	    if (argv[0].v_type != VAR_NUMBER)
+	    {
+		ch_error(channel,
+			"Dropping message with invalid sequence number type");
+		free_tv(listtv);
+		return FALSE;
+	    }
+	    seq_nr = argv[0].vval.v_number;
+	}
     }
     else if (channel_peek(channel, part) == NULL)
     {
@@ -2906,24 +3042,35 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	argv[1].vval.v_string = msg;
     }
 
+    called_otc = FALSE;
     if (seq_nr > 0)
     {
-	int	done = FALSE;
-
-	// JSON or JS mode: invoke the one-time callback with the matching nr
+	// JSON or JS or LSP mode: invoke the one-time callback with the
+	// matching nr
 	for (cbitem = cbhead->cq_next; cbitem != NULL; cbitem = cbitem->cq_next)
 	    if (cbitem->cq_seq_nr == seq_nr)
 	    {
 		invoke_one_time_callback(channel, cbhead, cbitem, argv);
-		done = TRUE;
+		called_otc = TRUE;
 		break;
 	    }
-	if (!done)
+    }
+
+    if (seq_nr > 0 && (ch_mode != MODE_LSP || called_otc))
+    {
+	if (!called_otc)
 	{
+	    // If the 'drop' channel attribute is set to 'never' or if
+	    // ch_evalexpr() is waiting for this response message, then don't
+	    // drop this message.
 	    if (channel->ch_drop_never)
 	    {
 		// message must be read with ch_read()
 		channel_push_json(channel, part, listtv);
+
+		// Change the type to avoid the value being freed.
+		listtv->v_type = VAR_NUMBER;
+		free_tv(listtv);
 		listtv = NULL;
 	    }
 	    else
@@ -3006,7 +3153,7 @@ channel_has_readahead(channel_T *channel, ch_part_T part)
 {
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
 
-    if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
+    if (ch_mode == MODE_JSON || ch_mode == MODE_JS || ch_mode == MODE_LSP)
     {
 	jsonq_T   *head = &channel->ch_part[part].ch_json_head;
 
@@ -3092,6 +3239,7 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
 	case MODE_RAW: s = "RAW"; break;
 	case MODE_JSON: s = "JSON"; break;
 	case MODE_JS: s = "JS"; break;
+	case MODE_LSP: s = "LSP"; break;
     }
     dict_add_string(dict, namebuf, (char_u *)s);
 
@@ -4291,9 +4439,59 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	return;
     }
 
-    id = ++channel->ch_last_msg_id;
-    text = json_encode_nr_expr(id, &argvars[1],
-				 (ch_mode == MODE_JS ? JSON_JS : 0) | JSON_NL);
+    if (ch_mode == MODE_LSP)
+    {
+	dict_T		*d;
+	dictitem_T	*di;
+	int		callback_present = FALSE;
+
+	if (argvars[1].v_type != VAR_DICT)
+	{
+	    semsg(_(e_dict_required_for_argument_nr), 2);
+	    return;
+	}
+	d = argvars[1].vval.v_dict;
+	di = dict_find(d, (char_u *)"id", -1);
+	if (di != NULL && di->di_tv.v_type != VAR_NUMBER)
+	{
+	    // only number type is supported for the 'id' item
+	    semsg(_(e_invalid_value_for_argument_str), "id");
+	    return;
+	}
+
+	if (argvars[2].v_type == VAR_DICT)
+	    if (dict_find(argvars[2].vval.v_dict, (char_u *)"callback", -1)
+									!= NULL)
+		callback_present = TRUE;
+
+	if (eval || callback_present)
+	{
+	    // When evaluating an expression or sending an expression with a
+	    // callback, always assign a generated ID
+	    id = ++channel->ch_last_msg_id;
+	    if (di == NULL)
+		dict_add_number(d, "id", id);
+	    else
+		di->di_tv.vval.v_number = id;
+	}
+	else
+	{
+	    // When sending an expression, if the message has an 'id' item,
+	    // then use it.
+	    id = 0;
+	    if (di != NULL)
+		id = di->di_tv.vval.v_number;
+	}
+	if (dict_find(d, (char_u *)"jsonrpc", -1) == NULL)
+	    dict_add_string(d, "jsonrpc", (char_u *)"2.0");
+	text = json_encode_lsp_msg(&argvars[1]);
+    }
+    else
+    {
+	id = ++channel->ch_last_msg_id;
+	text = json_encode_nr_expr(id, &argvars[1],
+				(ch_mode == MODE_JS ? JSON_JS : 0) | JSON_NL);
+    }
     if (text == NULL)
 	return;
 
@@ -4309,13 +4507,23 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	if (channel_read_json_block(channel, part_read, timeout, id, &listtv)
 									== OK)
 	{
-	    list_T *list = listtv->vval.v_list;
+	    if (ch_mode == MODE_LSP)
+	    {
+		*rettv = *listtv;
+		// Change the type to avoid the value being freed.
+		listtv->v_type = VAR_NUMBER;
+		free_tv(listtv);
+	    }
+	    else
+	    {
+		list_T *list = listtv->vval.v_list;
 
-	    // Move the item from the list and then change the type to
-	    // avoid the value being freed.
-	    *rettv = list->lv_u.mat.lv_last->li_tv;
-	    list->lv_u.mat.lv_last->li_tv.v_type = VAR_NUMBER;
-	    free_tv(listtv);
+		// Move the item from the list and then change the type to
+		// avoid the value being freed.
+		*rettv = list->lv_u.mat.lv_last->li_tv;
+		list->lv_u.mat.lv_last->li_tv.v_type = VAR_NUMBER;
+		free_tv(listtv);
+	    }
 	}
     }
     free_job_options(&opt);

@@ -2378,5 +2378,214 @@ func Test_job_start_with_invalid_argument()
   call assert_fails('call job_start([0zff])', 'E976:')
 endfunc
 
+" Test for the 'lsp' channel mode
+func LspCb(chan, msg)
+  call add(g:lspNotif, a:msg)
+endfunc
+
+func LspOtCb(chan, msg)
+  call add(g:lspOtMsgs, a:msg)
+endfunc
+
+func LspTests(port)
+  " call ch_logfile('Xlsprpc.log', 'w')
+  let ch = ch_open(s:localhost .. a:port, #{mode: 'lsp', callback: 'LspCb'})
+  if ch_status(ch) == "fail"
+    call assert_report("Can't open the lsp channel")
+    return
+  endif
+
+  " check for channel information
+  let info = ch_info(ch)
+  call assert_equal('LSP', info.sock_mode)
+
+  " Evaluate an expression
+  let resp = ch_evalexpr(ch, #{method: 'simple-rpc', params: [10, 20]})
+  call assert_false(empty(resp))
+  call assert_equal(#{id: 1, jsonrpc: '2.0', result: 'simple-rpc'}, resp)
+
+  " Evaluate an expression. While waiting for the response, a notification
+  " message is delivered.
+  let g:lspNotif = []
+  let resp = ch_evalexpr(ch, #{method: 'rpc-with-notif', params: {'v': 10}})
+  call assert_false(empty(resp))
+  call assert_equal(#{id: 2, jsonrpc: '2.0', result: 'rpc-with-notif-resp'},
+        \ resp)
+  call assert_equal([#{jsonrpc: '2.0', result: 'rpc-with-notif-notif'}],
+        \ g:lspNotif)
+
+  " Wrong payload notification test
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'wrong-payload', params: {}})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{jsonrpc: '2.0', result: 'wrong-payload'}], g:lspNotif)
+
+  " Test for receiving a response with incorrect 'id' and additional
+  " notification messages while evaluating an expression.
+  let g:lspNotif = []
+  let resp = ch_evalexpr(ch, #{method: 'rpc-resp-incorrect-id',
+        \ params: {'a': [1, 2]}})
+  call assert_false(empty(resp))
+  call assert_equal(#{id: 4, jsonrpc: '2.0',
+        \ result: 'rpc-resp-incorrect-id-4'}, resp)
+  call assert_equal([#{jsonrpc: '2.0', result: 'rpc-resp-incorrect-id-1'},
+        \ #{jsonrpc: '2.0', result: 'rpc-resp-incorrect-id-2'},
+        \ #{jsonrpc: '2.0', id: 1, result: 'rpc-resp-incorrect-id-3'}],
+        \ g:lspNotif)
+
+  " simple notification test
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'simple-notif', params: [#{a: 10, b: []}]})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{jsonrpc: '2.0', result: 'simple-notif'}], g:lspNotif)
+
+  " multiple notifications test
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'multi-notif', params: [#{a: {}, b: {}}]})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{jsonrpc: '2.0', result: 'multi-notif1'},
+        \ #{jsonrpc: '2.0', result: 'multi-notif2'}], g:lspNotif)
+
+  " Test for sending a message with an identifier.
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'msg-with-id', id: 93, params: #{s: 'str'}})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{jsonrpc: '2.0', id: 93, result: 'msg-with-id'}],
+        \ g:lspNotif)
+
+  " Test for setting the 'id' value in a request message
+  let resp = ch_evalexpr(ch, #{method: 'ping', id: 1, params: {}})
+  call assert_equal(#{id: 8, jsonrpc: '2.0', result: 'alive'}, resp)
+
+  " Test for using a one time callback function to process a response
+  let g:lspOtMsgs = []
+  call ch_sendexpr(ch, #{method: 'msg-specifc-cb', params: {}},
+        \ #{callback: 'LspOtCb'})
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{id: 9, jsonrpc: '2.0', result: 'msg-specifc-cb'}],
+        \ g:lspOtMsgs)
+
+  " Test for generating a request message from the other end (server)
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'server-req', params: #{}})
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([{'id': 201, 'jsonrpc': '2.0',
+        \ 'result': {'method': 'checkhealth', 'params': {'a': 20}}}],
+        \ g:lspNotif)
+
+  " Test for sending a message without an id
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'echo', params: #{s: 'msg-without-id'}})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{jsonrpc: '2.0', result:
+        \ #{method: 'echo', jsonrpc: '2.0', params: #{s: 'msg-without-id'}}}],
+        \ g:lspNotif)
+
+  " Test for sending a notification message with an id
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'echo', id: 110, params: #{s: 'msg-with-id'}})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{jsonrpc: '2.0', result:
+        \ #{method: 'echo', jsonrpc: '2.0', id: 110,
+        \ params: #{s: 'msg-with-id'}}}], g:lspNotif)
+
+  " Test for processing the extra fields in the HTTP header
+  let resp = ch_evalexpr(ch, #{method: 'extra-hdr-fields', params: {}})
+  call assert_equal({'id': 14, 'jsonrpc': '2.0', 'result': 'extra-hdr-fields'},
+        \ resp)
+
+  " Test for processing a HTTP header without the Content-Length field
+  let resp = ch_evalexpr(ch, #{method: 'hdr-without-len', params: {}},
+        \ #{timeout: 200})
+  call assert_equal('', resp)
+  " send a ping to make sure communication still works
+  let resp = ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal({'id': 16, 'jsonrpc': '2.0', 'result': 'alive'}, resp)
+
+  " Test for processing a HTTP header with wrong length
+  let resp = ch_evalexpr(ch, #{method: 'hdr-with-wrong-len', params: {}},
+        \ #{timeout: 200})
+  call assert_equal('', resp)
+  " send a ping to make sure communication still works
+  let resp = ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal({'id': 18, 'jsonrpc': '2.0', 'result': 'alive'}, resp)
+
+  " Test for processing a HTTP header with negative length
+  let resp = ch_evalexpr(ch, #{method: 'hdr-with-negative-len', params: {}},
+        \ #{timeout: 200})
+  call assert_equal('', resp)
+  " send a ping to make sure communication still works
+  let resp = ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal({'id': 20, 'jsonrpc': '2.0', 'result': 'alive'}, resp)
+
+  " Test for an empty header
+  let resp = ch_evalexpr(ch, #{method: 'empty-header', params: {}},
+        \ #{timeout: 200})
+  call assert_equal('', resp)
+  " send a ping to make sure communication still works
+  let resp = ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal({'id': 22, 'jsonrpc': '2.0', 'result': 'alive'}, resp)
+
+  " Test for an empty payload
+  let resp = ch_evalexpr(ch, #{method: 'empty-payload', params: {}},
+        \ #{timeout: 200})
+  call assert_equal('', resp)
+  " send a ping to make sure communication still works
+  let resp = ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal({'id': 24, 'jsonrpc': '2.0', 'result': 'alive'}, resp)
+
+  " Test for invoking an unsupported method
+  let resp = ch_evalexpr(ch, #{method: 'xyz', params: {}}, #{timeout: 200})
+  call assert_equal('', resp)
+
+  " Test for sending a message without a callback function. Notification
+  " message should be dropped but RPC response should not be dropped.
+  call ch_setoptions(ch, #{callback: ''})
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'echo', params: #{s: 'no-callback'}})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([], g:lspNotif)
+  " Restore the callback function
+  call ch_setoptions(ch, #{callback: 'LspCb'})
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'echo', params: #{s: 'no-callback'}})
+  " Send a ping to wait for all the notification messages to arrive
+  call ch_evalexpr(ch, #{method: 'ping'})
+  call assert_equal([#{jsonrpc: '2.0', result:
+        \ #{method: 'echo', jsonrpc: '2.0', params: #{s: 'no-callback'}}}],
+        \ g:lspNotif)
+
+  " " Test for sending a raw message
+  " let g:lspNotif = []
+  " let s = "Content-Length: 62\r\n"
+  " let s ..= "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+  " let s ..= "\r\n"
+  " let s ..= '{"method":"echo","jsonrpc":"2.0","params":{"m":"raw-message"}}'
+  " call ch_sendraw(ch, s)
+  " call ch_evalexpr(ch, #{method: 'ping'})
+  " call assert_equal([{'jsonrpc': '2.0',
+  "       \ 'result': {'method': 'echo', 'jsonrpc': '2.0',
+  "       \ 'params': {'m': 'raw-message'}}}], g:lspNotif)
+
+  " Invalid arguments to ch_evalexpr() and ch_sendexpr()
+  call assert_fails('call ch_sendexpr(ch, #{method: "cookie", id: "cookie"})',
+        \ 'E475:')
+  call assert_fails('call ch_evalexpr(ch, #{method: "ping", id: [{}]})', 'E475:')
+  call assert_fails('call ch_evalexpr(ch, [1, 2, 3])', 'E1206:')
+  call assert_fails('call ch_sendexpr(ch, "abc")', 'E1206:')
+  call assert_fails('call ch_evalexpr(ch, #{method: "ping"}, #{callback: "LspOtCb"})', 'E917:')
+  " call ch_logfile('', 'w')
+endfunc
+
+func Test_channel_lsp_mode()
+  call RunServer('test_channel_lsp.py', 'LspTests', [])
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
