@@ -28,7 +28,7 @@ syn region dep3patchMultiField matchgroup=dep3patchKey start="^Bug\%(-[[:graph:]
 syn region dep3patchMultiField matchgroup=dep3patchKey start="^Forwarded\ze: *" end="$" contained contains=dep3patchHTTPUrl,dep3patchForwardedShort oneline keepend
 syn region dep3patchMultiField matchgroup=dep3patchKey start="^\%(Author\|From\)\ze: *" end="$" contained contains=dep3patchEmail oneline keepend
 syn region dep3patchMultiField matchgroup=dep3patchKey start="^\%(Reviewed-by\|Acked-by\)\ze: *" end="$" contained contains=dep3patchEmail oneline keepend
-syn region dep3patchMultiField matchgroup=dep3patchKey start="^Last-Updated\ze: *" end="$" contained contains=dep3patchISODate oneline keepend
+syn region dep3patchMultiField matchgroup=dep3patchKey start="^Last-Update\ze: *" end="$" contained contains=dep3patchISODate oneline keepend
 syn region dep3patchMultiField matchgroup=dep3patchKey start="^Applied-Upstream\ze: *" end="$" contained contains=dep3patchHTTPUrl,dep3patchCommitID oneline keepend
 
 syn match dep3patchHTTPUrl contained "\vhttps?://[[:alnum:]][-[:alnum:]]*[[:alnum:]]?(\.[[:alnum:]][-[:alnum:]]*[[:alnum:]]?)*\.[[:alpha:]][-[:alnum:]]*[[:alpha:]]?(:\d+)?(/[^[:space:]]*)?$"
