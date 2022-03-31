@@ -1868,6 +1868,7 @@ typedef struct
     char_u	*sn_autoload_prefix;
 
     // TRUE for a script used with "import autoload './dirname/script.vim'"
+    // For "../autoload/script.vim" sn_autoload_prefix is also set.
     int		sn_import_autoload;
 
 # ifdef FEAT_PROFILE

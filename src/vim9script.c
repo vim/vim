@@ -415,6 +415,9 @@ handle_import_fname(char_u *fname, int is_autoload, int *sid)
 	si = SCRIPT_ITEM(*sid);
 	si->sn_import_autoload = TRUE;
 
+	if (si->sn_autoload_prefix == NULL)
+	    si->sn_autoload_prefix = get_autoload_prefix(si);
+
 	// with testing override: load autoload script right away
 	if (!override_autoload || si->sn_state != SN_STATE_NOT_LOADED)
 	    return OK;

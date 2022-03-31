@@ -298,26 +298,31 @@ compile_load_scriptvar(
 	*p = NUL;
 
 	si = SCRIPT_ITEM(import->imp_sid);
-	if (si->sn_autoload_prefix != NULL
-					&& si->sn_state == SN_STATE_NOT_LOADED)
-	{
-	    char_u  *auto_name = concat_str(si->sn_autoload_prefix, exp_name);
-
-	    // autoload script must be loaded later, access by the autoload
-	    // name.  If a '(' follows it must be a function.  Otherwise we
-	    // don't know, it can be "script.Func".
-	    if (cc == '(' || paren_follows_after_expr)
-		res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
-	    else
-		res = generate_AUTOLOAD(cctx, auto_name, &t_any);
-	    vim_free(auto_name);
-	    done = TRUE;
-	}
-	else if (si->sn_import_autoload && si->sn_state == SN_STATE_NOT_LOADED)
-	{
-	    // "import autoload './dir/script.vim'" - load script first
+	if (si->sn_import_autoload && si->sn_state == SN_STATE_NOT_LOADED)
+	    // "import autoload './dir/script.vim'" or
+	    // "import autoload './autoload/script.vim'" - load script first
 	    res = generate_SOURCE(cctx, import->imp_sid);
-	    if (res == OK)
+
+	if (res == OK)
+	{
+	    if (si->sn_autoload_prefix != NULL
+					&& si->sn_state == SN_STATE_NOT_LOADED)
+	    {
+		char_u  *auto_name =
+				  concat_str(si->sn_autoload_prefix, exp_name);
+
+		// autoload script must be loaded later, access by the autoload
+		// name.  If a '(' follows it must be a function.  Otherwise we
+		// don't know, it can be "script.Func".
+		if (cc == '(' || paren_follows_after_expr)
+		    res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
+		else
+		    res = generate_AUTOLOAD(cctx, auto_name, &t_any);
+		vim_free(auto_name);
+		done = TRUE;
+	    }
+	    else if (si->sn_import_autoload
+					&& si->sn_state == SN_STATE_NOT_LOADED)
 	    {
 		// If a '(' follows it must be a function.  Otherwise we don't
 		// know, it can be "script.Func".
@@ -331,14 +336,15 @@ compile_load_scriptvar(
 		else
 		    res = generate_OLDSCRIPT(cctx, ISN_LOADEXPORT, exp_name,
 						      import->imp_sid, &t_any);
+		done = TRUE;
 	    }
-	    done = TRUE;
+	    else
+	    {
+		idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,
+							     cctx, NULL, TRUE);
+	    }
 	}
-	else
-	{
-	    idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,
-							    cctx, NULL, TRUE);
-	}
+
 	*p = cc;
 	*end = p;
 	if (done)

@@ -1932,7 +1932,9 @@ generate_store_var(
 		isntype_T isn_type = ISN_STORES;
 
 		if (SCRIPT_ID_VALID(scriptvar_sid)
-			 && SCRIPT_ITEM(scriptvar_sid)->sn_import_autoload)
+			 && SCRIPT_ITEM(scriptvar_sid)->sn_import_autoload
+			 && SCRIPT_ITEM(scriptvar_sid)->sn_autoload_prefix
+								       == NULL)
 		{
 		    // "import autoload './dir/script.vim'" - load script first
 		    if (generate_SOURCE(cctx, scriptvar_sid) == FAIL)

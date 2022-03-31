@@ -969,6 +969,31 @@ def Test_autoload_import_relative()
   delete('XimportRel3.vim')
 enddef
 
+def Test_autoload_import_relative_autoload_dir()
+  mkdir('autoload', 'p')
+  var lines =<< trim END
+      vim9script
+      export def Bar()
+        g:called_bar = 'yes'
+      enddef
+  END
+  writefile(lines, 'autoload/script.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload './autoload/script.vim'
+      def Foo()
+        script.Bar()
+      enddef
+      Foo()
+      assert_equal('yes', g:called_bar)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  unlet g:called_bar
+  delete('autoload', 'rf')
+enddef
+
 func Test_import_in_diffexpr()
   CheckExecutable diff
 
