@@ -2508,13 +2508,19 @@ def Test_import_autoload_fails()
       vim9script
       import autoload './doesNotExist.vim'
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E282:', 2)
 
   lines =<< trim END
       vim9script
       import autoload '/dir/doesNotExist.vim'
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E282:', 2)
+
+  lines =<< trim END
+      vim9script
+      import autoload '../testdir'
+  END
+  v9.CheckScriptFailure(lines, 'E17:', 2)
 
   lines =<< trim END
       vim9script

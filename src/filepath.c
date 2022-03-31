@@ -893,32 +893,34 @@ f_exepath(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Return TRUE if "fname" is a readable file.
+ */
+    int
+file_is_readable(char_u *fname)
+{
+    int		fd;
+
+#ifndef O_NONBLOCK
+# define O_NONBLOCK 0
+#endif
+    if (*fname && !mch_isdir(fname)
+	      && (fd = mch_open((char *)fname, O_RDONLY | O_NONBLOCK, 0)) >= 0)
+    {
+	close(fd);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * "filereadable()" function
  */
     void
 f_filereadable(typval_T *argvars, typval_T *rettv)
 {
-    int		fd;
-    char_u	*p;
-    int		n;
-
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
-
-#ifndef O_NONBLOCK
-# define O_NONBLOCK 0
-#endif
-    p = tv_get_string(&argvars[0]);
-    if (*p && !mch_isdir(p) && (fd = mch_open((char *)p,
-					      O_RDONLY | O_NONBLOCK, 0)) >= 0)
-    {
-	n = TRUE;
-	close(fd);
-    }
-    else
-	n = FALSE;
-
-    rettv->vval.v_number = n;
+    rettv->vval.v_number = file_is_readable(tv_get_string(&argvars[0]));
 }
 
 /*
@@ -1761,7 +1763,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
 
     if (mch_isdir(fname))
     {
-	semsg(_(e_src_is_directory), fname);
+	semsg(_(e_str_is_directory), fname);
 	return;
     }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)

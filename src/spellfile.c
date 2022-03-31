@@ -5976,7 +5976,7 @@ mkspell(
 	}
 	if (mch_isdir(wfname))
 	{
-	    semsg(_(e_src_is_directory), wfname);
+	    semsg(_(e_str_is_directory), wfname);
 	    goto theend;
 	}
 
