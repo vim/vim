@@ -1012,10 +1012,11 @@ call_ufunc(
 	if (error != FCERR_UNKNOWN)
 	{
 	    if (error == FCERR_TOOMANY)
-		semsg(_(e_too_many_arguments_for_function_str), ufunc->uf_name);
+		semsg(_(e_too_many_arguments_for_function_str),
+						   printable_func_name(ufunc));
 	    else
 		semsg(_(e_not_enough_arguments_for_function_str),
-							       ufunc->uf_name);
+						   printable_func_name(ufunc));
 	    return FAIL;
 	}
 
@@ -1047,7 +1048,7 @@ call_ufunc(
 
     if (error != FCERR_NONE)
     {
-	user_func_error(error, ufunc->uf_name, &funcexe);
+	user_func_error(error, printable_func_name(ufunc), &funcexe);
 	return FAIL;
     }
     if (did_emsg > did_emsg_before)
@@ -1211,7 +1212,7 @@ call_partial(
     if (res == FAIL)
     {
 	if (called_emsg == called_emsg_before)
-	    semsg(_(e_unknown_function_str),
+	    emsg_funcname(e_unknown_function_str,
 				  name == NULL ? (char_u *)"[unknown]" : name);
 	return FAIL;
     }
@@ -1570,14 +1571,10 @@ call_eval_func(
 	dictitem_T	*v;
 
 	v = find_var(name, NULL, FALSE);
-	if (v == NULL)
+	if (v == NULL || (v->di_tv.v_type != VAR_PARTIAL
+					       && v->di_tv.v_type != VAR_FUNC))
 	{
-	    semsg(_(e_unknown_function_str), name);
-	    return FAIL;
-	}
-	if (v->di_tv.v_type != VAR_PARTIAL && v->di_tv.v_type != VAR_FUNC)
-	{
-	    semsg(_(e_unknown_function_str), name);
+	    emsg_funcname(e_unknown_function_str, name);
 	    return FAIL;
 	}
 	return call_partial(&v->di_tv, argcount, ectx);

@@ -780,12 +780,12 @@ check_argument_types(
 	return OK;  // just in case
     if (totcount < type->tt_min_argcount - varargs)
     {
-	semsg(_(e_not_enough_arguments_for_function_str), name);
+	emsg_funcname(e_not_enough_arguments_for_function_str, name);
 	return FAIL;
     }
     if (!varargs && type->tt_argcount >= 0 && totcount > type->tt_argcount)
     {
-	semsg(_(e_too_many_arguments_for_function_str), name);
+	emsg_funcname(e_too_many_arguments_for_function_str, name);
 	return FAIL;
     }
     if (type->tt_args == NULL)

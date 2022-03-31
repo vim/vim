@@ -527,6 +527,28 @@ set_ufunc_name(ufunc_T *fp, char_u *name)
 }
 
 /*
+ * If "name" starts with K_SPECIAL and "buf[bufsize]" is big enough
+ * return "buf" filled with a readable function name.
+ * Otherwise just return "name", thus the return value can always be used.
+ * "name" and "buf" may be equal.
+ */
+    char_u *
+make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize)
+{
+    size_t len;
+
+    if (name[0] != K_SPECIAL)
+	return name;
+    len = STRLEN(name);
+    if (len + 3 > bufsize)
+	return name;
+
+    mch_memmove(buf + 5, name + 3, len + 1);
+    mch_memmove(buf, "<SNR>", 5);
+    return buf;
+}
+
+/*
  * Get a name for a lambda.  Returned in static memory.
  */
     char_u *
@@ -3354,13 +3376,12 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
     {
 	case FCERR_UNKNOWN:
 		if (funcexe->fe_found_var)
-		    semsg(_(e_not_callable_type_str), name);
+		    emsg_funcname(e_not_callable_type_str, name);
 		else
 		    emsg_funcname(e_unknown_function_str, name);
 		break;
 	case FCERR_NOTMETHOD:
-		emsg_funcname(
-			N_(e_cannot_use_function_as_method_str), name);
+		emsg_funcname(e_cannot_use_function_as_method_str, name);
 		break;
 	case FCERR_DELETED:
 		emsg_funcname(e_function_was_deleted_str, name);
@@ -3372,8 +3393,7 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 		emsg_funcname(e_not_enough_arguments_for_function_str, name);
 		break;
 	case FCERR_SCRIPT:
-		emsg_funcname(
-		    e_using_sid_not_in_script_context_str, name);
+		emsg_funcname(e_using_sid_not_in_script_context_str, name);
 		break;
 	case FCERR_DICT:
 		emsg_funcname(e_calling_dict_function_without_dictionary_str,
@@ -3613,9 +3633,7 @@ theend:
      * cancelled due to an aborting error, an interrupt, or an exception.
      */
     if (!aborting())
-    {
 	user_func_error(error, (name != NULL) ? name : funcname, funcexe);
-    }
 
     // clear the copies made from the partial
     while (argv_clear > 0)

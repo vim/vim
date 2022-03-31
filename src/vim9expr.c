@@ -698,7 +698,7 @@ compile_call(
     char_u	*name = *arg;
     char_u	*p;
     int		argcount = argcount_init;
-    char_u	namebuf[100];
+    char_u	namebuf[MAX_FUNC_NAME_LEN];
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
     int		error = FCERR_NONE;
@@ -818,7 +818,7 @@ compile_call(
 		res = generate_BCALL(cctx, idx, argcount, argcount_init == 1);
 	}
 	else
-	    semsg(_(e_unknown_function_str), namebuf);
+	    emsg_funcname(e_unknown_function_str, namebuf);
 	goto theend;
     }
 
@@ -843,7 +843,7 @@ compile_call(
 			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL)
 	    {
 		// A function name without g: prefix must be found locally.
-		semsg(_(e_unknown_function_str), namebuf);
+		emsg_funcname(e_unknown_function_str, namebuf);
 		goto theend;
 	    }
 	}
@@ -874,7 +874,7 @@ compile_call(
     if (has_g_namespace || is_autoload)
 	res = generate_UCALL(cctx, name, argcount);
     else
-	semsg(_(e_unknown_function_str), namebuf);
+	emsg_funcname(e_unknown_function_str, namebuf);
 
 theend:
     vim_free(tofree);

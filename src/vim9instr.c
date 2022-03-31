@@ -1517,7 +1517,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
     }
     if (ufunc->uf_def_status == UF_COMPILE_ERROR)
     {
-	emsg_funcname(_(e_call_to_function_that_failed_to_compile_str),
+	emsg_funcname(e_call_to_function_that_failed_to_compile_str,
 							       ufunc->uf_name);
 	return FAIL;
     }
@@ -1594,12 +1594,12 @@ generate_PCALL(
 
 	    if (argcount < type->tt_min_argcount - varargs)
 	    {
-		semsg(_(e_not_enough_arguments_for_function_str), name);
+		emsg_funcname(e_not_enough_arguments_for_function_str, name);
 		return FAIL;
 	    }
 	    if (!varargs && argcount > type->tt_argcount)
 	    {
-		semsg(_(e_too_many_arguments_for_function_str), name);
+		emsg_funcname(e_too_many_arguments_for_function_str, name);
 		return FAIL;
 	    }
 	    if (type->tt_args != NULL)
