@@ -399,7 +399,14 @@ handle_import_fname(char_u *fname, int is_autoload, int *sid)
 	{
 	    int error = OK;
 
-	    // script does not exist yet, create a new scriptitem
+	    // Script does not exist yet, check name and create a new
+	    // scriptitem.
+	    if (!file_is_readable(fname))
+	    {
+		semsg(_(mch_isdir(fname) ? e_str_is_directory
+					  : e_cannot_read_from_str_2), fname);
+		return FAIL;
+	    }
 	    *sid = get_new_scriptitem_for_fname(&error, fname);
 	    if (error == FAIL)
 		return FAIL;
