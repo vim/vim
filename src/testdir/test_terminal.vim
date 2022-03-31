@@ -935,7 +935,7 @@ func TerminalTmap(remap)
   tunmap 123
   tunmap 456
   call assert_equal('', maparg('123', 't'))
-  close
+  exe buf . 'bwipe'
   unlet g:job
 endfunc
 
