@@ -543,7 +543,7 @@ make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize)
     if (len + 3 > bufsize)
 	return name;
 
-    mch_memmove(buf + 5, name + 3, len + 1);
+    mch_memmove(buf + 5, name + 3, len - 2);  // Include trailing NUL
     mch_memmove(buf, "<SNR>", 5);
     return buf;
 }
