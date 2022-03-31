@@ -3098,6 +3098,7 @@ exec_instructions(ectx_T *ectx)
 			if (iptr->isn_type == ISN_STOREEXPORT)
 			{
 			    semsg(_(e_undefined_variable_str), name);
+			    clear_tv(STACK_TV_BOT(0));
 			    goto on_error;
 			}
 			store_var(name, STACK_TV_BOT(0));
@@ -3118,6 +3119,7 @@ exec_instructions(ectx_T *ectx)
 				{
 				    semsg(_(e_item_not_exported_in_script_str),
 									 name);
+				    clear_tv(STACK_TV_BOT(0));
 				    goto on_error;
 				}
 			    }
