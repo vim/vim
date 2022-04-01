@@ -293,11 +293,14 @@ edit(
     conceal_check_cursor_line(cursor_line_was_concealed);
 #endif
 
-    /*
-     * Need to recompute the cursor position, it might move when the cursor is
-     * on a TAB or special character.
-     */
-    curs_columns(TRUE);
+    if (ptr2cells(ml_get_cursor()) > 1)
+    {
+	// Need to recompute the cursor position, it might move when the cursor
+	// is on a TAB or special character.
+	// ptr2cells() treats a TAB character as double-width.
+	curwin->w_valid &= ~VALID_VIRTCOL;
+	curs_columns(TRUE);
+    }
 
     /*
      * Enable langmap or IME, indicated by 'iminsert'.
