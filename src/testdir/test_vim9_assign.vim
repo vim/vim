@@ -288,6 +288,12 @@ def Test_assign_concat()
     s ..= {a: 2}
   END
   v9.CheckDefAndScriptFailure(lines, ['E1105: Cannot convert dict to string', 'E734: Wrong variable type for .='], 2)
+
+  lines =<< trim END
+      var ls: list<string> = []
+      ls[-1] ..= 'foo'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E684: list index out of range: -1', 2)
 enddef
 
 def Test_assign_register()

@@ -30,7 +30,7 @@ int list_append_string(list_T *l, char_u *str, int len);
 int list_append_number(list_T *l, varnumber_T n);
 int list_insert_tv(list_T *l, typval_T *tv, listitem_T *item);
 void list_insert(list_T *l, listitem_T *ni, listitem_T *item);
-listitem_T *check_range_index_one(list_T *l, long *n1, int quiet);
+listitem_T *check_range_index_one(list_T *l, long *n1, int can_append, int quiet);
 int check_range_index_two(list_T *l, long *n1, listitem_T *li1, long *n2, int quiet);
 int list_assign_range(list_T *dest, list_T *src, long idx1_arg, long idx2, int empty_idx2, char_u *op, char_u *varname);
 void f_flatten(typval_T *argvars, typval_T *rettv);

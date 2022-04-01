@@ -1647,13 +1647,15 @@ ex_let_one(
     {
 	lval_T	lv;
 	char_u	*p;
+	int	lval_flags = (flags & (ASSIGN_NO_DECL | ASSIGN_DECL))
+							     ? GLV_NO_DECL : 0;
+	if (op != NULL && *op != '=')
+	    lval_flags |= GLV_ASSIGN_WITH_OP;
 
 	// ":let var = expr": Set internal variable.
 	// ":let var: type = expr": Set internal variable with type.
 	// ":let {expr} = expr": Idem, name made with curly braces
-	p = get_lval(arg, tv, &lv, FALSE, FALSE,
-		(flags & (ASSIGN_NO_DECL | ASSIGN_DECL))
-					   ? GLV_NO_DECL : 0, FNE_CHECK_START);
+	p = get_lval(arg, tv, &lv, FALSE, FALSE, lval_flags, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars,

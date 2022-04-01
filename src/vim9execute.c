@@ -1988,7 +1988,7 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
 	else
 	    n2 = (long)tv_get_number_chk(tv_idx2, NULL);
 
-	li1 = check_range_index_one(tv_dest->vval.v_list, &n1, FALSE);
+	li1 = check_range_index_one(tv_dest->vval.v_list, &n1, TRUE, FALSE);
 	if (li1 == NULL)
 	    status = FAIL;
 	else

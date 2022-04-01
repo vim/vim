@@ -760,18 +760,20 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 
 /*
  * Get the list item in "l" with index "n1".  "n1" is adjusted if needed.
- * In Vim9, it is at the end of the list, add an item.
+ * In Vim9, it is at the end of the list, add an item if "can_append" is TRUE.
  * Return NULL if there is no such item.
  */
     listitem_T *
-check_range_index_one(list_T *l, long *n1, int quiet)
+check_range_index_one(list_T *l, long *n1, int can_append, int quiet)
 {
-    listitem_T *li = list_find_index(l, n1);
+    long	orig_n1 = *n1;
+    listitem_T	*li = list_find_index(l, n1);
 
     if (li == NULL)
     {
 	// Vim9: Allow for adding an item at the end.
-	if (in_vim9script() && *n1 == l->lv_len && l->lv_lock == 0)
+	if (can_append && in_vim9script()
+					&& *n1 == l->lv_len && l->lv_lock == 0)
 	{
 	    list_append_number(l, 0);
 	    li = list_find_index(l, n1);
@@ -779,7 +781,7 @@ check_range_index_one(list_T *l, long *n1, int quiet)
 	if (li == NULL)
 	{
 	    if (!quiet)
-		semsg(_(e_list_index_out_of_range_nr), *n1);
+		semsg(_(e_list_index_out_of_range_nr), orig_n1);
 	    return NULL;
 	}
     }
