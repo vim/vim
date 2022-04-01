@@ -131,8 +131,8 @@ test_gui_event({event}, {args})
 		    forward:	set to 1 for forward search.
 
 		"mouse":
-		  Inject a mouse button click event.  The supported items in
-		  {args} are:
+		  Inject either a mouse button click, or a mouse move, event.
+		  The supported items in {args} are:
 		    button:	mouse button.  The supported values are:
 				    0	right mouse button
 				    1	middle mouse button
@@ -151,6 +151,9 @@ test_gui_event({event}, {args})
 				    4	shift is pressed
 				    8	alt is pressed
 				   16	ctrl is pressed
+		    move:	This is optional; it defaults to false.
+				Only {args} row: and col: are used and
+				required; they are interpreted as pixels.
 
 		"scrollbar":
 		  Set or drag the left, right or horizontal scrollbar.  Only

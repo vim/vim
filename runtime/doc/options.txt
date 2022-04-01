@@ -5517,6 +5517,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The 'mousemodel' option is set by the |:behave| command.
 
+						*'mousemoveevent'* *'mousemev'*
+'mousemoveevent' 'mousemev'  boolean	(default off)
+			global
+			{only works in the GUI}
+	When on, mouse move events are delivered to the input queue and are
+	available for mapping. The default, off, avoids the mouse movement
+	overhead except when needed. See |gui-mouse-mapping|.
+
 					*'mouseshape'* *'mouses'* *E547*
 'mouseshape' 'mouses'	string	(default "i-r:beam,s:updown,sd:udsizing,
 					vs:leftright,vd:lrsizing,m:no,
