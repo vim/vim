@@ -3634,9 +3634,9 @@ win_rest_invalid(win_T *wp)
 
 /*
  * insert lines on the screen and update ScreenLines[]
- * 'end' is the line after the scrolled part. Normally it is Rows.
- * When scrolling region used 'off' is the offset from the top for the region.
- * 'row' and 'end' are relative to the start of the region.
+ * "end" is the line after the scrolled part. Normally it is Rows.
+ * When scrolling region used "off" is the offset from the top for the region.
+ * "row" and "end" are relative to the start of the region.
  *
  * return FAIL for failure, OK for success.
  */
@@ -3661,14 +3661,15 @@ screen_ins_lines(
     /*
      * FAIL if
      * - there is no valid screen
-     * - the screen has to be redrawn completely
      * - the line count is less than one
      * - the line count is more than 'ttyscroll'
+     * - "end" is more than "Rows" (safety check, should not happen)
      * - redrawing for a callback and there is a modeless selection
      * - there is a popup window
      */
      if (!screen_valid(TRUE)
 	     || line_count <= 0 || line_count > p_ttyscroll
+	     || end > Rows
 #ifdef FEAT_CLIPBOARD
 	     || (clip_star.state != SELECT_CLEARED
 						 && redrawing_for_callback > 0)
@@ -3896,13 +3897,15 @@ screen_del_lines(
      * - the screen has to be redrawn completely
      * - the line count is less than one
      * - the line count is more than 'ttyscroll'
+     * - "end" is more than "Rows" (safety check, should not happen)
      * - redrawing for a callback and there is a modeless selection
      */
-    if (!screen_valid(TRUE) || line_count <= 0
-					|| (!force && line_count > p_ttyscroll)
+    if (!screen_valid(TRUE)
+	    || line_count <= 0
+	    || (!force && line_count > p_ttyscroll)
+	    || end > Rows
 #ifdef FEAT_CLIPBOARD
-	     || (clip_star.state != SELECT_CLEARED
-						 && redrawing_for_callback > 0)
+	    || (clip_star.state != SELECT_CLEARED && redrawing_for_callback > 0)
 #endif
        )
 	return FAIL;
