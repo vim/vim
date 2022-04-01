@@ -272,7 +272,7 @@ compile_load_scriptvar(
 	char_u	*p = skipwhite(*end);
 	char_u	*exp_name;
 	int	cc;
-	ufunc_T	*ufunc;
+	ufunc_T	*ufunc = NULL;
 	type_T	*type;
 	int	done = FALSE;
 	int	res = OK;
