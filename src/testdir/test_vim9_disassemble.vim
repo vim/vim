@@ -1015,9 +1015,20 @@ def s:HasGuiRunning()
   endif
 enddef
 
+def s:LenConstant(): number
+  return len("foo") + len("fighters")
+enddef
+
 def Test_disassemble_const_expr()
+  var instr = execute('disassemble LenConstant')
+  assert_match('LenConstant\_s*' ..
+    'return len("foo") + len("fighters")\_s*' ..
+    '\d PUSHNR 11\_s*',
+    instr)
+  assert_notmatch('BCALL len', instr)
+
   assert_equal("\nyes", execute('HasEval()'))
-  var instr = execute('disassemble HasEval')
+  instr = execute('disassemble HasEval')
   assert_match('HasEval\_s*' ..
         'if has("eval")\_s*' ..
         'echo "yes"\_s*' ..

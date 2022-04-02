@@ -90,7 +90,6 @@ static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
-static void f_len(typval_T *argvars, typval_T *rettv);
 static void f_libcall(typval_T *argvars, typval_T *rettv);
 static void f_libcallnr(typval_T *argvars, typval_T *rettv);
 static void f_line(typval_T *argvars, typval_T *rettv);
@@ -7020,7 +7019,7 @@ f_last_buffer_nr(typval_T *argvars UNUSED, typval_T *rettv)
 /*
  * "len()" function
  */
-    static void
+    void
 f_len(typval_T *argvars, typval_T *rettv)
 {
     switch (argvars[0].v_type)
