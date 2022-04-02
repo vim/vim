@@ -4168,9 +4168,9 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     eap.nextcmd = NULL;
     eap.cmdidx = CMD_USER;
 
+    ++emsg_off;
     expand_filename(&eap, &cmdstr, &errormsg);
-    if (errormsg != NULL && *errormsg != NUL)
-	emsg(errormsg);
+    --emsg_off;
 
     rettv->vval.v_string = cmdstr;
 }

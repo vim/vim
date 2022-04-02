@@ -2299,7 +2299,9 @@ expandcmd({string})					*expandcmd()*
 		like with |expand()|, and environment variables, anywhere in
 		{string}.  "~user" and "~/path" are only expanded at the
 		start.
-		Returns the expanded string.  Example: >
+		Returns the expanded string.  If an error is encountered
+		during expansion, the unmodified {string} is returned.
+		Example: >
 			:echo expandcmd('make %<.o')
 
 <		Can also be used as a |method|: >
