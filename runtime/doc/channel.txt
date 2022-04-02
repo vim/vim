@@ -582,10 +582,15 @@ ch_info({handle})						*ch_info()*
 		When opened with ch_open():
 		   "hostname"	  the hostname of the address
 		   "port"	  the port of the address
+		   "path"	  the path of the Unix-domain socket
 		   "sock_status"  "open" or "closed"
 		   "sock_mode"	  "NL", "RAW", "JSON" or "JS"
 		   "sock_io"	  "socket"
 		   "sock_timeout" timeout in msec
+
+		Note that "pair" is only present for Unix-domain sockets, for
+		regular ones "hostname" and "port" are present instead.
+
 		When opened with job_start():
 		   "out_status"	  "open", "buffered" or "closed"
 		   "out_mode"	  "NL", "RAW", "JSON" or "JS"

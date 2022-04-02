@@ -3356,9 +3356,14 @@ channel_info(channel_T *channel, dict_T *dict)
 
     if (channel->ch_hostname != NULL)
     {
-	dict_add_string(dict, "hostname", (char_u *)channel->ch_hostname);
 	if (channel->ch_port)
+	{
+	    dict_add_string(dict, "hostname", (char_u *)channel->ch_hostname);
 	    dict_add_number(dict, "port", channel->ch_port);
+	}
+	else
+	    // Unix-domain socket.
+	    dict_add_string(dict, "path", (char_u *)channel->ch_hostname);
 	channel_part_info(channel, dict, "sock", PART_SOCK);
     }
     else
