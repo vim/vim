@@ -616,6 +616,50 @@ func Test_popup_drag()
   call delete('XtestPopupDrag')
 endfunc
 
+func Test_popup_drag_minwidth()
+  CheckScreendump
+
+  " create a popup that does not fit
+  let lines =<< trim END
+      call range(40)
+	      \ ->map({_,i -> string(i)})
+	      \ ->popup_create({
+	      \   'drag': 1,
+	      \   'wrap': 0,
+	      \   'border': [],
+	      \   'scrollbar': 1,
+	      \   'minwidth': 100,
+	      \   'filter': {w, k -> k ==# 'q' ? len([popup_close(w)]) : 0},
+	      \ })
+	func DragitDown()
+	  map <silent> <F3> :call test_setmouse(1, 10)<CR>
+	  map <silent> <F4> :call test_setmouse(5, 40)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	func DragitUp()
+	  map <silent> <F3> :call test_setmouse(5, 40)<CR>
+	  map <silent> <F4> :call test_setmouse(4, 40)<CR>
+	  map <silent> <F5> :call test_setmouse(3, 40)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<F5>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+  END
+  call writefile(lines, 'XtestPopupDrag')
+  let buf = RunVimInTerminal('-S XtestPopupDrag', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_minwidth_1', {})
+
+  call term_sendkeys(buf, ":call DragitDown()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_minwidth_2', {})
+
+  call term_sendkeys(buf, ":call DragitUp()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_minwidth_3', {})
+
+  call term_sendkeys(buf, 'q')
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupDrag')
+endfunc
+
 func Test_popup_drag_termwin()
   CheckUnix
   CheckScreendump
