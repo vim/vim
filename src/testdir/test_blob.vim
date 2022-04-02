@@ -702,4 +702,43 @@ func Test_blob2string()
   call assert_equal(v, string(b))
 endfunc
 
+" Test for blob allocation failure
+func Test_blob_alloc_failure()
+  " blob variable
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let v = 0z10', 'E342:')
+
+  " blob slice
+  let v = 0z1020
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = v[0:0]', 'E342:')
+  call assert_equal(0z1020, x)
+
+  " blob remove()
+  let v = 0z10203040
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = remove(v, 1, 2)', 'E342:')
+  call assert_equal(0, x)
+
+  " list2blob()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let a = list2blob([1, 2, 4])', 'E342:')
+  call assert_equal(0, a)
+
+  " mapnew()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = mapnew(0z1234, {_, v -> 1})', 'E342:')
+  call assert_equal(0, x)
+
+  " copy()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = copy(v)', 'E342:')
+  call assert_equal(0z, x)
+
+  " readblob()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = readblob("test_blob.vim")', 'E342:')
+  call assert_equal(0, x)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
