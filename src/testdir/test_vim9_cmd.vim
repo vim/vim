@@ -1363,7 +1363,12 @@ def Test_command_not_recognized()
   var lines =<< trim END
     d.key = 'asdf'
   END
-  v9.CheckDefFailure(lines, 'E1146:', 1)
+  v9.CheckDefFailure(lines, 'E1089: Unknown variable: d', 1)
+
+  lines =<< trim END
+    d['key'] = 'asdf'
+  END
+  v9.CheckDefFailure(lines, 'E1089: Unknown variable: d', 1)
 
   lines =<< trim END
     if 0
@@ -1371,11 +1376,6 @@ def Test_command_not_recognized()
     endif
   END
   v9.CheckDefSuccess(lines)
-
-  lines =<< trim END
-    d['key'] = 'asdf'
-  END
-  v9.CheckDefFailure(lines, 'E1146:', 1)
 enddef
 
 def Test_magic_not_used()

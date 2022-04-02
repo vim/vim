@@ -279,7 +279,8 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
 
 /*
  * Return TRUE if "name" is a local variable, argument, script variable,
- * imported or function.
+ * imported or function.  Or commands are being skipped, a declaration may have
+ * been skipped then.
  */
     static int
 item_exists(char_u *name, size_t len, int cmd UNUSED, cctx_T *cctx)
@@ -1109,7 +1110,7 @@ vim9_declare_error(char_u *name)
 get_var_dest(
 	char_u		*name,
 	assign_dest_T	*dest,
-	int		cmdidx,
+	cmdidx_T	cmdidx,
 	int		*option_scope,
 	int		*vimvaridx,
 	type_T		**type,
@@ -1225,7 +1226,7 @@ get_var_dest(
 }
 
     static int
-is_decl_command(int cmdidx)
+is_decl_command(cmdidx_T cmdidx)
 {
     return cmdidx == CMD_let || cmdidx == CMD_var
 				 || cmdidx == CMD_final || cmdidx == CMD_const;
@@ -1238,12 +1239,13 @@ is_decl_command(int cmdidx)
  */
     int
 compile_lhs(
-	char_u	*var_start,
-	lhs_T	*lhs,
-	int	cmdidx,
-	int	heredoc,
-	int	oplen,
-	cctx_T	*cctx)
+	char_u	    *var_start,
+	lhs_T	    *lhs,
+	cmdidx_T    cmdidx,
+	int	    heredoc,
+	int	    has_cmd,	    // "var" before "var_start"
+	int	    oplen,
+	cctx_T	    *cctx)
 {
     char_u	*var_end;
     int		is_decl = is_decl_command(cmdidx);
@@ -1493,7 +1495,8 @@ compile_lhs(
 	    semsg(_(e_cannot_use_operator_on_new_variable), lhs->lhs_name);
 	    return FAIL;
 	}
-	if (!is_decl)
+	if (!is_decl || (lhs->lhs_has_index && !has_cmd
+						&& cctx->ctx_skip != SKIP_YES))
 	{
 	    semsg(_(e_unknown_variable_str), lhs->lhs_name);
 	    return FAIL;
@@ -1520,9 +1523,12 @@ compile_lhs(
 	char_u	*p;
 
 	// Something follows after the variable: "var[idx]" or "var.key".
-	if (is_decl)
+	if (is_decl && cctx->ctx_skip != SKIP_YES)
 	{
-	    emsg(_(e_cannot_use_index_when_declaring_variable));
+	    if (has_cmd)
+		emsg(_(e_cannot_use_index_when_declaring_variable));
+	    else
+		semsg(_(e_unknown_variable_str), lhs->lhs_name);
 	    return FAIL;
 	}
 
@@ -1562,15 +1568,17 @@ compile_lhs(
  */
     int
 compile_assign_lhs(
-	char_u	*var_start,
-	lhs_T	*lhs,
-	int	cmdidx,
-	int	is_decl,
-	int	heredoc,
-	int	oplen,
-	cctx_T	*cctx)
+	char_u	    *var_start,
+	lhs_T	    *lhs,
+	cmdidx_T    cmdidx,
+	int	    is_decl,
+	int	    heredoc,
+	int	    has_cmd,	    // "var" before "var_start"
+	int	    oplen,
+	cctx_T	    *cctx)
 {
-    if (compile_lhs(var_start, lhs, cmdidx, heredoc, oplen, cctx) == FAIL)
+    if (compile_lhs(var_start, lhs, cmdidx, heredoc, has_cmd, oplen, cctx)
+								       == FAIL)
 	return FAIL;
 
     if (!lhs->lhs_has_index && lhs->lhs_lvar == &lhs->lhs_arg_lvar)
@@ -2049,7 +2057,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	 * Figure out the LHS type and other properties.
 	 */
 	if (compile_assign_lhs(var_start, &lhs, cmdidx,
-					is_decl, heredoc, oplen, cctx) == FAIL)
+				is_decl, heredoc, var_start > eap->cmd,
+				oplen, cctx) == FAIL)
 	    goto theend;
 	if (heredoc)
 	{
@@ -2769,6 +2778,7 @@ compile_def_function(
 	CLEAR_FIELD(ea);
 	ea.cmdlinep = &line;
 	ea.cmd = skipwhite(line);
+	ea.skip = cctx.ctx_skip == SKIP_YES;
 
 	if (*ea.cmd == '#')
 	{
@@ -2957,15 +2967,17 @@ compile_def_function(
 
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{
-	    if (cctx.ctx_skip == SKIP_YES && ea.cmdidx != CMD_eval)
+	    // "eval" is used for "val->func()" and "var" for "var = val", then
+	    // "p" is equal to "ea.cmd" for a valid command.
+	    if (ea.cmdidx == CMD_eval || ea.cmdidx == CMD_var)
+		;
+	    else if (cctx.ctx_skip == SKIP_YES)
 	    {
 		line += STRLEN(line);
 		goto nextline;
 	    }
-	    else if (ea.cmdidx != CMD_eval)
+	    else
 	    {
-		// CMD_var cannot happen, compile_assignment() above would be
-		// used.  Most likely an assignment to a non-existing variable.
 		semsg(_(e_command_not_recognized_str), ea.cmd);
 		goto erret;
 	    }

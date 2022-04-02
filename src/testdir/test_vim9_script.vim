@@ -2003,6 +2003,19 @@ def Test_for_skipped_block()
       assert_equal([3, 4], result)
     enddef
     DefFalse()
+
+    def BuildDiagrams()
+      var diagrams: list<any>
+      if false
+        var max = 0
+        for v in diagrams
+          var l = 3
+          if max < l | max = l | endif
+          v->add(l)
+        endfor
+      endif
+    enddef
+    BuildDiagrams()
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
