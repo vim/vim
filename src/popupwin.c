@@ -1997,7 +1997,10 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	new_buffer = TRUE;
 	buf = buflist_new(NULL, NULL, (linenr_T)0, BLN_NEW|BLN_DUMMY|BLN_REUSE);
 	if (buf == NULL)
+	{
+	    win_free_popup(wp);
 	    return NULL;
+	}
 	ml_open(buf);
 
 	win_init_popup_win(wp, buf);

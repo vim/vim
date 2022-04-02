@@ -2093,7 +2093,7 @@ buflist_new(
 	}
 #ifdef FEAT_EVAL
 	// init b: variables
-	buf->b_vars = dict_alloc();
+	buf->b_vars = dict_alloc_id(aid_buflistnew_bvars);
 	if (buf->b_vars == NULL)
 	{
 	    vim_free(ffname);
