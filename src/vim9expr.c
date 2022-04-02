@@ -724,13 +724,16 @@ compile_call(
     }
 
     // We can evaluate "has('name')" at compile time.
+    // We can evaluate "len('string')" at compile time.
     // We always evaluate "exists_compiled()" at compile time.
-    if ((varlen == 3 && STRNCMP(*arg, "has", 3) == 0)
+    if ((varlen == 3
+	     && (STRNCMP(*arg, "has", 3) == 0 || STRNCMP(*arg, "len", 3) == 0))
 	    || (varlen == 15 && STRNCMP(*arg, "exists_compiled", 6) == 0))
     {
 	char_u	    *s = skipwhite(*arg + varlen + 1);
 	typval_T    argvars[2];
 	int	    is_has = **arg == 'h';
+	int	    is_len = **arg == 'l';
 
 	argvars[0].v_type = VAR_UNKNOWN;
 	if (*s == '"')
@@ -750,6 +753,8 @@ compile_call(
 	    tv->vval.v_number = 0;
 	    if (is_has)
 		f_has(argvars, tv);
+	    else if (is_len)
+		f_len(argvars, tv);
 	    else
 		f_exists(argvars, tv);
 	    clear_tv(&argvars[0]);
@@ -757,7 +762,7 @@ compile_call(
 	    return OK;
 	}
 	clear_tv(&argvars[0]);
-	if (!is_has)
+	if (!is_has && !is_len)
 	{
 	    emsg(_(e_argument_of_exists_compiled_must_be_literal_string));
 	    return FAIL;
