@@ -273,6 +273,7 @@ endfunc
 func Test_communicate_unix()
   CheckUnixSockets
   call Test_communicate()
+  call delete('Xtestsocket')
 endfunc
 
 
@@ -315,6 +316,7 @@ endfunc
 func Test_two_channels_unix()
   CheckUnixSockets
   call Test_two_channels()
+  call delete('Xtestsocket')
 endfunc
 
 " Test that a server crash is handled gracefully.
@@ -342,6 +344,7 @@ endfunc
 func Test_server_crash_unix()
   CheckUnixSockets
   call Test_server_crash()
+  call delete('Xtestsocket')
 endfunc
 
 """""""""
@@ -385,6 +388,7 @@ endfunc
 func Test_channel_handler_unix()
   CheckUnixSockets
   call Test_channel_handler()
+  call delete('Xtestsocket')
 endfunc
 
 """""""""
@@ -453,6 +457,7 @@ endfunc
 func Test_zero_reply_unix()
   CheckUnixSockets
   call Test_zero_reply()
+  call delete('Xtestsocket')
 endfunc
 
 
@@ -506,6 +511,7 @@ endfunc
 func Test_raw_one_time_callback_unix()
   CheckUnixSockets
   call Test_raw_one_time_callback()
+  call delete('Xtestsocket')
 endfunc
 
 """""""""
@@ -1578,6 +1584,7 @@ endfunc
 func Test_call_unix()
   CheckUnixSockets
   call Test_call()
+  call delete('Xtestsocket')
 endfunc
 
 """""""""
@@ -1679,6 +1686,7 @@ endfunc
 func Test_close_callback_unix()
   CheckUnixSockets
   call Test_close_callback()
+  call delete('Xtestsocket')
 endfunc
 
 function Ch_test_close_partial(port)
@@ -1710,6 +1718,7 @@ endfunc
 func Test_close_partial_unix()
   CheckUnixSockets
   call Test_close_partial()
+  call delete('Xtestsocket')
 endfunc
 
 func Test_job_start_fails()
@@ -2006,6 +2015,7 @@ endfunc
 func Test_close_lambda_unix()
   CheckUnixSockets
   call Test_close_lambda()
+  call delete('Xtestsocket')
 endfunc
 
 func s:test_list_args(cmd, out, remove_lf)
@@ -2309,6 +2319,8 @@ func Test_job_trailing_space_unix()
   let job = job_start("cat ", #{in_io: 'null'})
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call assert_equal(0, job_info(job).exitval)
+
+  call delete('Xtestsocket')
 endfunc
 
 func Test_ch_getbufnr()

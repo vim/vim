@@ -14,12 +14,6 @@ import os
 class ThreadedUnixServer(ThreadedTCPServer):
     address_family = socket.AF_UNIX
 
-def cleanup(path):
-    try:
-        os.remove(path)
-    except FileNotFoundError:
-        pass
-
 def main(path):
     server = ThreadedUnixServer((path), ThreadedTCPRequestHandler)
 
@@ -42,6 +36,8 @@ def main(path):
         server.shutdown()
 
 if __name__ == "__main__":
-    cleanup("Xtestsocket")
+    try:
+        os.remove("Xtestsocket")
+    except FileNotFoundError:
+        pass
     main("Xtestsocket")
-    cleanup("Xtestsocket")
