@@ -44,6 +44,12 @@
 # define sock_write(sd, buf, len) send((SOCKET)sd, buf, len, 0)
 # define sock_read(sd, buf, len) recv((SOCKET)sd, buf, len, 0)
 # define sock_close(sd) closesocket((SOCKET)sd)
+// Support for Unix-domain sockets was added in Windows SDK 17061.
+# define UNIX_PATH_MAX 108
+typedef struct sockaddr_un {
+    ADDRESS_FAMILY sun_family;
+    char sun_path[UNIX_PATH_MAX];
+} SOCKADDR_UN, *PSOCKADDR_UN;
 #else
 # include <netdb.h>
 # include <netinet/in.h>
@@ -940,11 +946,10 @@ channel_open_unix(
 	void (*nb_close_cb)(void))
 {
     channel_T		*channel = NULL;
-#ifdef AF_UNIX
     int			sd = -1;
-    int			path_len = STRLEN(path);
+    size_t		path_len = STRLEN(path);
     struct sockaddr_un	server;
-    int			server_len;
+    size_t		server_len;
     int			waittime = -1;
 
     if (*path == NUL || path_len >= sizeof(server.sun_path))
@@ -967,7 +972,7 @@ channel_open_unix(
     ch_log(channel, "Trying to connect to %s", path);
 
     server_len = offsetof(struct sockaddr_un, sun_path) + path_len + 1;
-    sd = channel_connect(channel, (struct sockaddr *)&server, server_len,
+    sd = channel_connect(channel, (struct sockaddr *)&server, (int)server_len,
 								   &waittime);
 
     if (sd < 0)
@@ -986,7 +991,6 @@ channel_open_unix(
 
 #ifdef FEAT_GUI
     channel_gui_register_one(channel, PART_SOCK);
-#endif
 #endif
 
     return channel;
@@ -1416,15 +1420,6 @@ channel_open_func(typval_T *argvars)
 	    return NULL;
 	}
     }
-
-#ifndef AF_UNIX
-    if (is_unix)
-    {
-	// Unix domain sockets are not supported by this platform.
-	semsg(_(e_invalid_argument_str), address);
-	return NULL;
-    }
-#endif
 
     if (!is_unix)
     {

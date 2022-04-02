@@ -271,6 +271,7 @@ func Test_communicate_ipv6()
 endfunc
 
 func Test_communicate_unix()
+  CheckUnixSockets
   call Test_communicate()
 endfunc
 
@@ -312,7 +313,7 @@ func Test_two_channels_ipv6()
 endfunc
 
 func Test_two_channels_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_two_channels()
 endfunc
 
@@ -339,7 +340,7 @@ func Test_server_crash_ipv6()
 endfunc
 
 func Test_server_crash_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_server_crash()
 endfunc
 
@@ -382,7 +383,7 @@ func Test_channel_handler_ipv6()
 endfunc
 
 func Test_channel_handler_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_channel_handler()
 endfunc
 
@@ -450,7 +451,7 @@ func Test_zero_reply_ipv6()
 endfunc
 
 func Test_zero_reply_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_zero_reply()
 endfunc
 
@@ -503,7 +504,7 @@ func Test_raw_one_time_callback_ipv6()
 endfunc
 
 func Test_raw_one_time_callback_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_raw_one_time_callback()
 endfunc
 
@@ -1575,7 +1576,7 @@ func Test_call_ipv6()
 endfunc
 
 func Test_call_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_call()
 endfunc
 
@@ -1676,7 +1677,7 @@ func Test_close_callback_ipv6()
 endfunc
 
 func Test_close_callback_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_close_callback()
 endfunc
 
@@ -1707,7 +1708,7 @@ func Test_close_partial_ipv6()
 endfunc
 
 func Test_close_partial_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_close_partial()
 endfunc
 
@@ -2003,7 +2004,7 @@ func Test_close_lambda_ipv6()
 endfunc
 
 func Test_close_lambda_unix()
-  CheckUnix
+  CheckUnixSockets
   call Test_close_lambda()
 endfunc
 
@@ -2302,7 +2303,7 @@ func Test_issue_5485()
 endfunc
 
 func Test_job_trailing_space_unix()
-  CheckUnix
+  CheckUnixSockets
   CheckExecutable cat
 
   let job = job_start("cat ", #{in_io: 'null'})

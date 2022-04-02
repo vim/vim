@@ -95,7 +95,7 @@ func CheckUnix()
   endif
 endfunc
 
-" Command to check for running on Linix
+" Command to check for running on Linux
 command CheckLinux call CheckLinux()
 func CheckLinux()
   if !has('linux')
@@ -174,6 +174,14 @@ func CheckEnglish()
   if v:lang != "C" && v:lang !~ '^[Ee]n'
       throw 'Skipped: only works in English language environment'
   endif
+endfunc
+
+" Command to check if the OS supports Unix-domain sockets
+command CheckUnixSockets call CheckUnixSockets()
+func CheckUnixSockets()
+  if has('win32') && system('sc query afunix') !~? '\<RUNNING\>'
+    throw 'Skipped: cannot use Unix sockets'
+  end
 endfunc
 
 " Command to check that loopback device has IPv6 address
