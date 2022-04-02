@@ -3945,13 +3945,13 @@ gen_expand_wildcards(
 	    }
 
 	    /*
-	     * If there are wildcards: Expand file names and add each match to
-	     * the list.  If there is no match, and EW_NOTFOUND is given, add
-	     * the pattern.
-	     * If there are no wildcards: Add the file name if it exists or
-	     * when EW_NOTFOUND is given.
+	     * If there are wildcards or case-insensitive expansion is required:
+	     * Expand file names and add each match to the list.  If there is no
+	     * match, and EW_NOTFOUND is given, add the pattern.
+	     * Otherwise: Add the file name if it exists or when EW_NOTFOUND is
+	     * given.
 	     */
-	    if (mch_has_exp_wildcard(p))
+	    if (mch_has_exp_wildcard(p) || (flags & EW_ICASE))
 	    {
 #if defined(FEAT_SEARCHPATH)
 		if ((flags & EW_PATH)
