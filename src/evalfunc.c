@@ -4168,9 +4168,9 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     eap.nextcmd = NULL;
     eap.cmdidx = CMD_USER;
 
+    ++emsg_off;
     expand_filename(&eap, &cmdstr, &errormsg);
-    if (errormsg != NULL && *errormsg != NUL)
-	emsg(errormsg);
+    --emsg_off;
 
     rettv->vval.v_string = cmdstr;
 }
@@ -4444,8 +4444,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    arg_idx = 0;
 		else if (list->lv_len > MAX_FUNC_ARGS)
 		{
-		    emsg_funcname((char *)e_too_many_arguments_for_function_str,
-									    s);
+		    emsg_funcname(e_too_many_arguments_for_function_str, s);
 		    vim_free(name);
 		    goto theend;
 		}
