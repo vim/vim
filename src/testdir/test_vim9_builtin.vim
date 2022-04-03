@@ -1020,6 +1020,7 @@ def Test_expandcmd()
   expandcmd('')->assert_equal('')
 
   v9.CheckDefAndScriptFailure(['expandcmd([1])'], ['E1013: Argument 1: type mismatch, expected string but got list<number>', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['expandcmd("abc", [])'], ['E1013: Argument 2: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_extend_arg_types()

@@ -1761,7 +1761,7 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_exp)},
     {"expand",		1, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_any,	    f_expand},
-    {"expandcmd",	1, 1, FEARG_1,	    arg1_string,
+    {"expandcmd",	1, 2, FEARG_1,	    arg2_string_dict,
 			ret_string,	    f_expandcmd},
     {"extend",		2, 3, FEARG_1,	    arg23_extend,
 			ret_extend,	    f_extend},
@@ -4152,9 +4152,17 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     exarg_T	eap;
     char_u	*cmdstr;
     char	*errormsg = NULL;
+    int		emsgoff = TRUE;
 
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return;
+
+    if (argvars[1].v_type == VAR_DICT
+	    && dict_get_bool(argvars[1].vval.v_dict, (char_u *)"errmsg",
+								VVAL_FALSE))
+	emsgoff = FALSE;
 
     rettv->v_type = VAR_STRING;
     cmdstr = vim_strsave(tv_get_string(&argvars[0]));
@@ -4167,9 +4175,13 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     eap.nextcmd = NULL;
     eap.cmdidx = CMD_USER;
 
-    ++emsg_off;
-    expand_filename(&eap, &cmdstr, &errormsg);
-    --emsg_off;
+    if (emsgoff)
+	++emsg_off;
+    if (expand_filename(&eap, &cmdstr, &errormsg) == FAIL)
+	if (!emsgoff && errormsg != NULL && *errormsg != NUL)
+	    emsg(errormsg);
+    if (emsgoff)
+	--emsg_off;
 
     rettv->vval.v_string = cmdstr;
 }
