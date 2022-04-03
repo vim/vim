@@ -176,14 +176,6 @@ func CheckEnglish()
   endif
 endfunc
 
-" Command to check if the OS supports Unix-domain sockets
-command CheckUnixSockets call CheckUnixSockets()
-func CheckUnixSockets()
-  if has('win32') && system('sc query afunix') !~? '\<RUNNING\>'
-    throw 'Skipped: cannot use Unix sockets'
-  end
-endfunc
-
 " Command to check that loopback device has IPv6 address
 command CheckIPv6 call CheckIPv6()
 func CheckIPv6()

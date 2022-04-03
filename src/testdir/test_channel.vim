@@ -271,7 +271,7 @@ func Test_communicate_ipv6()
 endfunc
 
 func Test_communicate_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_communicate()
   call delete('Xtestsocket')
 endfunc
@@ -314,7 +314,7 @@ func Test_two_channels_ipv6()
 endfunc
 
 func Test_two_channels_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_two_channels()
   call delete('Xtestsocket')
 endfunc
@@ -342,7 +342,7 @@ func Test_server_crash_ipv6()
 endfunc
 
 func Test_server_crash_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_server_crash()
   call delete('Xtestsocket')
 endfunc
@@ -386,7 +386,7 @@ func Test_channel_handler_ipv6()
 endfunc
 
 func Test_channel_handler_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_channel_handler()
   call delete('Xtestsocket')
 endfunc
@@ -455,7 +455,7 @@ func Test_zero_reply_ipv6()
 endfunc
 
 func Test_zero_reply_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_zero_reply()
   call delete('Xtestsocket')
 endfunc
@@ -509,7 +509,7 @@ func Test_raw_one_time_callback_ipv6()
 endfunc
 
 func Test_raw_one_time_callback_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_raw_one_time_callback()
   call delete('Xtestsocket')
 endfunc
@@ -1582,7 +1582,7 @@ func Test_call_ipv6()
 endfunc
 
 func Test_call_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_call()
   call delete('Xtestsocket')
 endfunc
@@ -1684,7 +1684,7 @@ func Test_close_callback_ipv6()
 endfunc
 
 func Test_close_callback_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_close_callback()
   call delete('Xtestsocket')
 endfunc
@@ -1716,7 +1716,7 @@ func Test_close_partial_ipv6()
 endfunc
 
 func Test_close_partial_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_close_partial()
   call delete('Xtestsocket')
 endfunc
@@ -2013,7 +2013,7 @@ func Test_close_lambda_ipv6()
 endfunc
 
 func Test_close_lambda_unix()
-  CheckUnixSockets
+  CheckUnix
   call Test_close_lambda()
   call delete('Xtestsocket')
 endfunc
@@ -2313,7 +2313,7 @@ func Test_issue_5485()
 endfunc
 
 func Test_job_trailing_space_unix()
-  CheckUnixSockets
+  CheckUnix
   CheckExecutable cat
 
   let job = job_start("cat ", #{in_io: 'null'})
