@@ -180,7 +180,6 @@ alloc_clear(size_t size)
     return p;
 }
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * Same as alloc_clear() but with allocation id for testing
  */
@@ -193,7 +192,6 @@ alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 #endif
     return alloc_clear(size);
 }
-#endif
 
 /*
  * Allocate memory like lalloc() and set all bytes to zero.
