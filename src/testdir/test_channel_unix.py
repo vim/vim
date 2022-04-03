@@ -5,17 +5,24 @@
 #
 # This requires Python 2.6 or later.
 
+from __future__ import print_function
 from test_channel import ThreadedTCPServer, ThreadedTCPRequestHandler, \
     writePortInFile
 import socket
 import threading
 import os
 
+try:
+    FileNotFoundError
+except NameError:
+    # Python 2
+    FileNotFoundError = (IOError, OSError)
+
 class ThreadedUnixServer(ThreadedTCPServer):
     address_family = socket.AF_UNIX
 
 def main(path):
-    server = ThreadedUnixServer((path), ThreadedTCPRequestHandler)
+    server = ThreadedUnixServer(path, ThreadedTCPRequestHandler)
 
     # Start a thread with the server.  That thread will then start a new thread
     # for each connection.
