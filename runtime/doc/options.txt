@@ -1416,16 +1416,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option specifies what happens when a buffer is no longer
 	displayed in a window:
 	  <empty>	follow the global 'hidden' option
-	  hide		hide the buffer (don't unload it), also when 'hidden'
+	  hide		hide the buffer (don't unload it), even if 'hidden'
 			is not set
-	  unload	unload the buffer, also when 'hidden' is set or using
-			|:hide|
-	  delete	delete the buffer from the buffer list, also when
-			'hidden' is set or using |:hide|, like using
-			|:bdelete|
-	  wipe		wipe out the buffer from the buffer list, also when
-			'hidden' is set or using |:hide|, like using
-			|:bwipeout|
+	  unload	unload the buffer, even if 'hidden' is set. Using
+			|:hide| will also unload the buffer
+	  delete	delete the buffer from the buffer list, even if
+			'hidden' is set. Using |:hide| will also delete the
+			buffer, making it behave like |:bdelete|
+	  wipe		wipe out the buffer from the buffer list, even if
+			'hidden' is set. Using |:hide| will also wipe out the
+			buffer, making it behave like |:bwipeout|
 
 	CAREFUL: when "unload", "delete" or "wipe" is used changes in a buffer
 	are lost without a warning.  Also, these values may break autocommands
@@ -4111,10 +4111,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When off a buffer is unloaded when it is |abandon|ed.  When on a
 	buffer becomes hidden when it is |abandon|ed.  If the buffer is still
 	displayed in another window, it does not become hidden, of course.
+
 	The commands that move through the buffer list sometimes make a buffer
-	hidden although the 'hidden' option is off: When the buffer is
-	modified, 'autowrite' is off or writing is not possible, and the '!'
-	flag was used.  See also |windows.txt|.
+	hidden even if the 'hidden' option is off:
+	* the buffer is modified
+	* 'autowrite' is off or writing is not possible
+	* the '!' flag was used.  See also |windows.txt|.
+
 	To only make one buffer hidden use the 'bufhidden' option.
 	This option is set for one command with ":hide {command}" |:hide|.
 	WARNING: It's easy to forget that you have changes in hidden buffers.
