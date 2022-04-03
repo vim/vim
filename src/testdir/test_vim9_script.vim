@@ -1605,6 +1605,16 @@ def Test_if_elseif_else_fails()
       endif
   END
   v9.CheckDefFailure(lines, 'E488:')
+
+  lines =<< trim END
+      var cond = true
+      if cond
+        echo 'true'
+      elseif
+        echo 'false'
+      endif
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1143:', 'E15:'], 4)
 enddef
 
 let g:bool_true = v:true
