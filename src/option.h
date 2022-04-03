@@ -760,6 +760,9 @@ EXTERN int	p_mousef;	// 'mousefocus'
 EXTERN int	p_mh;		// 'mousehide'
 #endif
 EXTERN char_u	*p_mousem;	// 'mousemodel'
+#ifdef FEAT_GUI
+EXTERN int	p_mousemev;	// 'mousemoveevent'
+#endif
 EXTERN long	p_mouset;	// 'mousetime'
 EXTERN int	p_more;		// 'more'
 #ifdef FEAT_MZSCHEME

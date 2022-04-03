@@ -131,8 +131,8 @@ test_gui_event({event}, {args})
 		    forward:	set to 1 for forward search.
 
 		"mouse":
-		  Inject a mouse button click event.  The supported items in
-		  {args} are:
+		  Inject either a mouse button click, or a mouse move, event.
+		  The supported items in {args} are:
 		    button:	mouse button.  The supported values are:
 				    0	right mouse button
 				    1	middle mouse button
@@ -151,6 +151,28 @@ test_gui_event({event}, {args})
 				    4	shift is pressed
 				    8	alt is pressed
 				   16	ctrl is pressed
+		    move:	Optional; if used and TRUE then a mouse move
+			        event can be generated.
+				Only {args} row: and col: are used and
+				required; they are interpreted as pixels.
+				Only results in an event when 'mousemoveevent'
+				is set or a popup uses mouse move events.
+
+		"scrollbar":
+		  Set or drag the left, right or horizontal scrollbar.  Only
+		  works when the scrollbar actually exists.  The supported
+		  items in {args} are:
+		    which:	scrollbar. The supported values are:
+				    left  Left scrollbar of the current window
+				    right Right scrollbar of the current window
+				    hor   Horizontal scrollbar
+		    value:	amount to scroll.  For the vertical scrollbars
+				the value can be 1 to the line-count of the
+				buffer.  For the horizontal scrollbar the
+				value can be between 1 and the maximum line
+				length, assuming 'wrap' is not set.
+		    dragging:	1 to drag the scrollbar and 0 to click in the
+				scrollbar.
 
 		"scrollbar":
 		  Set or drag the left, right or horizontal scrollbar.  Only

@@ -261,6 +261,7 @@ Other options that are relevant:
 'mousefocus'	window focus follows mouse pointer |gui-mouse-focus|
 'mousemodel'	what mouse button does which action
 'mousehide'	hide mouse pointer while typing text
+'mousemoveevent' enable mouse move events so that <MouseMove> can be mapped
 'selectmode'	whether to start Select mode or Visual mode
 
 A quick way to set these is with the ":behave" command.
@@ -405,6 +406,9 @@ The mouse events, complete with modifiers, may be mapped.  Eg: >
 These mappings make selection work the way it probably should in a Motif
 application, with shift-left mouse allowing for extending the visual area
 rather than the right mouse button.
+
+<MouseMove> may be mapped, but 'mousemoveevent' must be enabled to use the
+mapping.
 
 Mouse mapping with modifiers does not work for modeless selection.
 
