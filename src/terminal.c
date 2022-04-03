@@ -4311,13 +4311,13 @@ handle_drop_command(listitem_T *item)
 	if (p != NULL)
 	    get_bad_opt(p, &ea);
 
-	if (dict_find(dict, (char_u *)"bin", -1) != NULL)
+	if (dict_has_key(dict, "bin"))
 	    ea.force_bin = FORCE_BIN;
-	if (dict_find(dict, (char_u *)"binary", -1) != NULL)
+	if (dict_has_key(dict, "binary"))
 	    ea.force_bin = FORCE_BIN;
-	if (dict_find(dict, (char_u *)"nobin", -1) != NULL)
+	if (dict_has_key(dict, "nobin"))
 	    ea.force_bin = FORCE_NOBIN;
-	if (dict_find(dict, (char_u *)"nobinary", -1) != NULL)
+	if (dict_has_key(dict, "nobinary"))
 	    ea.force_bin = FORCE_NOBIN;
     }
 

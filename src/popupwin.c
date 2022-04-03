@@ -1957,7 +1957,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     if (d != NULL)
     {
-	if (dict_find(d, (char_u *)"tabpage", -1) != NULL)
+	if (dict_has_key(d, "tabpage"))
 	    tabnr = (int)dict_get_number(d, (char_u *)"tabpage");
 	else if (type == TYPE_NOTIFICATION)
 	    tabnr = -1;  // notifications are global by default

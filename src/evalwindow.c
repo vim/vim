@@ -1220,27 +1220,27 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_invalid_argument));
     else
     {
-	if (dict_find(dict, (char_u *)"lnum", -1) != NULL)
+	if (dict_has_key(dict, "lnum"))
 	    curwin->w_cursor.lnum = (linenr_T)dict_get_number(dict, (char_u *)"lnum");
-	if (dict_find(dict, (char_u *)"col", -1) != NULL)
+	if (dict_has_key(dict, "col"))
 	    curwin->w_cursor.col = (colnr_T)dict_get_number(dict, (char_u *)"col");
-	if (dict_find(dict, (char_u *)"coladd", -1) != NULL)
+	if (dict_has_key(dict, "coladd"))
 	    curwin->w_cursor.coladd = (colnr_T)dict_get_number(dict, (char_u *)"coladd");
-	if (dict_find(dict, (char_u *)"curswant", -1) != NULL)
+	if (dict_has_key(dict, "curswant"))
 	{
 	    curwin->w_curswant = (colnr_T)dict_get_number(dict, (char_u *)"curswant");
 	    curwin->w_set_curswant = FALSE;
 	}
 
-	if (dict_find(dict, (char_u *)"topline", -1) != NULL)
+	if (dict_has_key(dict, "topline"))
 	    set_topline(curwin, (linenr_T)dict_get_number(dict, (char_u *)"topline"));
 #ifdef FEAT_DIFF
-	if (dict_find(dict, (char_u *)"topfill", -1) != NULL)
+	if (dict_has_key(dict, "topfill"))
 	    curwin->w_topfill = (int)dict_get_number(dict, (char_u *)"topfill");
 #endif
-	if (dict_find(dict, (char_u *)"leftcol", -1) != NULL)
+	if (dict_has_key(dict, "leftcol"))
 	    curwin->w_leftcol = (colnr_T)dict_get_number(dict, (char_u *)"leftcol");
-	if (dict_find(dict, (char_u *)"skipcol", -1) != NULL)
+	if (dict_has_key(dict, "skipcol"))
 	    curwin->w_skipcol = (colnr_T)dict_get_number(dict, (char_u *)"skipcol");
 
 	check_cursor();

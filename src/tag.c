@@ -4313,7 +4313,7 @@ add_tag_field(
     int		retval;
 
     // check that the field name doesn't exist yet
-    if (dict_find(dict, (char_u *)field_name, -1) != NULL)
+    if (dict_has_key(dict, field_name))
     {
 	if (p_verbose > 0)
 	{

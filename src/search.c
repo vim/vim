@@ -4878,7 +4878,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		return;
 	    }
 	}
-	if (dict_find(d, (char_u *)"matchseq", -1) != NULL)
+	if (dict_has_key(d, "matchseq"))
 	    matchseq = TRUE;
     }
 

@@ -4411,7 +4411,7 @@ hlg_add_or_update(dict_T *dict)
     if (dict_get_bool(dict, (char_u *)"default", VVAL_FALSE) == VVAL_TRUE)
 	dodefault = TRUE;
 
-    if (dict_find(dict, (char_u *)"cleared", -1) != NULL)
+    if (dict_has_key(dict, "cleared"))
     {
 	varnumber_T	cleared;
 
@@ -4425,7 +4425,7 @@ hlg_add_or_update(dict_T *dict)
 	}
     }
 
-    if (dict_find(dict, (char_u *)"linksto", -1) != NULL)
+    if (dict_has_key(dict, "linksto"))
     {
 	char_u	*linksto;
 
