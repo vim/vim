@@ -4236,7 +4236,8 @@ ex_substitute(exarg_T *eap)
 				// When ":normal" runs out of characters we get
 				// an empty line.  Use "q" to get out of the
 				// loop.
-				if (ex_normal_busy && typed == NUL)
+				if (ex_normal_busy > 0 && typebuf.tb_len == 0
+								&& typed == NUL)
 				    typed = 'q';
 			    }
 			}

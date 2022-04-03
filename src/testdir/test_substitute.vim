@@ -725,6 +725,18 @@ func Test_nocatch_sub_failure_handling()
   bwipe!
 endfunc
 
+func Test_normal_ex_substitute()
+  " This was hanging on the substitute prompt.
+  new
+  call setline(1, 'aaa')
+  exe "normal! gggQs/a/b/c\<CR>"
+  call assert_equal('aaa', getline(1))
+  " <NL> should not quit the prompt in the middle of :normal
+  exe "normal! gggQs/a/b/c\<CR>\<NL>y"
+  call assert_equal('baa', getline(1))
+  bwipe!
+endfunc
+
 " Test ":s/pat/sub/" with different ~s in sub.
 func Test_replace_with_tilde()
   new
