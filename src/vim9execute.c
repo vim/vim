@@ -2637,7 +2637,7 @@ exec_instructions(ectx_T *ectx)
 			if (do_source(si->sn_name, FALSE, DOSO_NONE, NULL)
 								       == FAIL)
 			{
-			    semsg(_(e_cant_open_file_str_2), si->sn_name);
+			    semsg(_(e_cant_open_file_str), si->sn_name);
 			    goto on_error;
 			}
 		    }

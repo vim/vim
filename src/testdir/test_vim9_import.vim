@@ -1001,7 +1001,7 @@ def Test_autoload_import_relative()
       delete('XimportRelDel.vim')
       DoIt()
   END
-  v9.CheckScriptFailure(lines, 'E456:')
+  v9.CheckScriptFailure(lines, 'E484:')
 
   delete('XimportRel.vim')
   delete('XimportRel2.vim')
