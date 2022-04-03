@@ -1354,7 +1354,7 @@ check_clipboard_option(void)
 
 /*
  * Open the application context (if it hasn't been opened yet).
- * Used for Motif and Athena GUI and the xterm clipboard.
+ * Used for Motif GUI and the xterm clipboard.
  */
     void
 open_app_context(void)

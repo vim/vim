@@ -5619,20 +5619,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"gui_neXtaw",
-#if defined(FEAT_GUI_ATHENA) && defined(FEAT_GUI_NEXTAW)
-		1
-#else
-		0
-#endif
-		},
-	{"gui_athena",
-#if defined(FEAT_GUI_ATHENA) && !defined(FEAT_GUI_NEXTAW)
-		1
-#else
-		0
-#endif
-		},
+	{"gui_neXtaw", 0 },
+	{"gui_athena", 0 },
 	{"gui_gtk",
 #ifdef FEAT_GUI_GTK
 		1

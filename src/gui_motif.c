@@ -641,8 +641,7 @@ gui_x11_set_back_color(void)
 }
 
 /*
- * Manage dialog centered on pointer. This could be used by the Athena code as
- * well.
+ * Manage dialog centered on pointer.
  */
     void
 manage_centered(Widget dialog_child)
@@ -1596,9 +1595,6 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     // Please be sure to destroy the parent widget first (i.e. menu->id).
     // On the other hand, problems have been reported that the submenu must be
     // deleted first...
-    //
-    // This code should be basically identical to that in the file gui_athena.c
-    // because they are both Xt based.
     if (menu->submenu_id != (Widget)0)
     {
 	XtDestroyWidget(menu->submenu_id);

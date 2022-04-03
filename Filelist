@@ -446,10 +446,6 @@ SRC_UNIX =	\
 		src/create_cmdidxs.vim \
 		src/create_nvcmdidxs.c \
 		src/create_nvcmdidxs.vim \
-		src/gui_at_fs.c \
-		src/gui_at_sb.c \
-		src/gui_at_sb.h \
-		src/gui_athena.c \
 		src/gui_gtk.c \
 		src/gui_gtk_f.c \
 		src/gui_gtk_f.h \
@@ -474,7 +470,6 @@ SRC_UNIX =	\
 		src/osdef1.h.in \
 		src/osdef2.h.in \
 		src/pathdef.sh \
-		src/proto/gui_athena.pro \
 		src/proto/gui_gtk.pro \
 		src/proto/gui_gtk_x11.pro \
 		src/proto/gui_gtk_gresources.pro \

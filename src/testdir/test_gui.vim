@@ -63,7 +63,7 @@ endfunc
 func Test_getfontname_with_arg()
   CheckX11BasedGui
 
-  if has('gui_athena') || has('gui_motif')
+  if has('gui_motif')
     " Invalid font name. The result should be an empty string.
     call assert_equal('', getfontname('notexist'))
 
@@ -90,7 +90,7 @@ func Test_getfontname_without_arg()
   if has('gui_kde')
     " 'expected' is the value specified by SetUp() above.
     call assert_equal('Courier 10 Pitch/8/-1/5/50/0/0/0/0/0', fname)
-  elseif has('gui_athena') || has('gui_motif')
+  elseif has('gui_motif')
     " 'expected' is DFLT_FONT of gui_x11.c or its real name.
     let pat = '\(7x13\)\|\(\c-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1\)'
     call assert_match(pat, fname)
@@ -376,7 +376,7 @@ func Test_set_guifont()
     set guifontset=
   endif
 
-  if has('gui_athena') || has('gui_motif')
+  if has('gui_motif')
     " Non-empty font list with invalid font names.
     "
     " This test is twofold: (1) It checks if the command fails as expected
@@ -514,7 +514,7 @@ func Test_set_guifontwide()
     let &guifontwide = guifontwide_saved
     let &guifont = guifont_saved
 
-  elseif has('gui_athena') || has('gui_motif')
+  elseif has('gui_motif')
     " guifontwide is premised upon the xfontset feature.
     if !has('xfontset')
       let skipped = g:not_supported . 'xfontset'
@@ -1280,8 +1280,6 @@ func TestGuiTabToolTip()
 endfunc
 
 func Test_gui_tablabel_tooltip()
-  CheckNotFeature gui_athena
-
   %bw!
   " Removing the tabline at the end of this test, reduces the window height by
   " one. Save and restore it after the test.
@@ -1436,10 +1434,6 @@ endfunc
 
 " Test for generating a GUI tabline event to select a tab page
 func Test_gui_tabline_event()
-  if has('gui_athena')
-    throw 'Skipped: tabline is not supported in Athena GUI'
-  endif
-
   %bw!
   edit Xfile1
   tabedit Xfile2
@@ -1467,9 +1461,6 @@ endfunc
 
 " Test for generating a GUI tabline menu event to execute an action
 func Test_gui_tabmenu_event()
-  if has('gui_athena')
-    throw 'Skipped: tabmenu is not supported in Athena GUI'
-  endif
   %bw!
 
   " Try to close the last tab page

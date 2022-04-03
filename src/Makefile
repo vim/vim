@@ -182,10 +182,7 @@
 #Irix 6.5	      cc	     ?			6.0  (S) David Harrison
 #Irix 64 bit						4.5  (K) Jon Wright
 #Linux 2.0	      gcc-2.7.2      Infomagic Motif	4.3  (3) Ronald Rietman
-#Linux 2.0.31	      gcc	     +X11 +GUI Athena	5.0w (U) Darren Hiebert
-#LynxOS 3.0.1	      2.9-gnupro-98r2 +X11 +GUI Athena  5.7.1(O) Lorenz Hahn
-#LynxOS 3.1.0	      2.9-gnupro-98r2 +X11 +GUI Athena  5.7.1(O) Lorenz Hahn
-#NEC UP4800 UNIX_SV 4.2MP  cc	     +X11R6 Motif,Athena4.6b (Q) Lennart Schultz
+#NEC UP4800 UNIX_SV 4.2MP  cc	     +X11R6 Motif	4.6b (Q) Lennart Schultz
 #NetBSD 1.0A	      gcc-2.4.5      -X11 -GUI		3.21 (X) Juergen Weigert
 #QNX 4.2	      wcc386-10.6    -X11		4.2  (D) G.F. Desrochers
 #QNX 4.23	      Watcom	     -X11		4.2  (F) John Oleynick
@@ -199,14 +196,12 @@
 #Solaris 2.4 (Sparc)  cc	     +X11 +GUI		3.29 (9) Glauber
 #Solaris 2.4/2.5      clcc	     +X11 -GUI openwin	3.20 (7) Robert Colon
 #Solaris 2.5 (sun4m)  cc (SC4.0)     +X11R6 +GUI (CDE)	4.6b (E) Andrew Large
-#Solaris 2.5	      cc	     +X11 +GUI Athena	4.2  (9) Sonia Heimann
 #Solaris 2.5	      gcc 2.5.6      +X11 Motif		5.0m (R) Ant. Colombo
 #Solaris 2.6	      gcc 2.8.1      ncurses		5.3  (G) Larry W. Virden
 #Solaris with -lthread					5.5  (W) K. Nagano
 #Solaris	      gcc				     (b) Riccardo
 #SunOS 4.1.x			     +X11 -GUI		5.1b (J) Bram Moolenaar
-#SunOS 4.1.3_U1 (sun4c) gcc	     +X11 +GUI Athena	5.0w (J) Darren Hiebert
-#SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif,Athena4.6b (P) Lennart Schultz
+#SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif	4.6b (P) Lennart Schultz
 #Tandem/NSK						     (c) Matthew Woehlke
 #Unisys 6035	      cc	     +X11 Motif		5.3  (8) Glauber Ribeiro
 #ESIX V4.2	      cc	     +X11		6.0  (a) Reinhard Wobst
@@ -1342,8 +1337,8 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c gui_haiku.cc
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro gui_haiku.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro gui_haiku.pro
 
 # }}}
 
@@ -3245,15 +3240,6 @@ objects/help.o: help.c
 objects/gui.o: gui.c
 	$(CCC) -o $@ gui.c
 
-objects/gui_at_fs.o: gui_at_fs.c
-	$(CCC) -o $@ gui_at_fs.c
-
-objects/gui_at_sb.o: gui_at_sb.c
-	$(CCC) -o $@ gui_at_sb.c
-
-objects/gui_athena.o: gui_athena.c
-	$(CCC) -o $@ gui_athena.c
-
 objects/beval.o: beval.c
 	$(CCC) -o $@ beval.c
 
@@ -4182,25 +4168,6 @@ objects/gui_xmebw.o: gui_xmebw.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h errors.h gui_xmebwp.h gui_xmebw.h
-objects/gui_athena.o: gui_athena.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h gui_at_sb.h gui_x11_pm.h \
- ../pixmaps/tb_new.xpm ../pixmaps/tb_open.xpm ../pixmaps/tb_close.xpm \
- ../pixmaps/tb_save.xpm ../pixmaps/tb_print.xpm ../pixmaps/tb_cut.xpm \
- ../pixmaps/tb_copy.xpm ../pixmaps/tb_paste.xpm ../pixmaps/tb_find.xpm \
- ../pixmaps/tb_find_next.xpm ../pixmaps/tb_find_prev.xpm \
- ../pixmaps/tb_find_help.xpm ../pixmaps/tb_exit.xpm \
- ../pixmaps/tb_undo.xpm ../pixmaps/tb_redo.xpm ../pixmaps/tb_help.xpm \
- ../pixmaps/tb_macro.xpm ../pixmaps/tb_make.xpm \
- ../pixmaps/tb_save_all.xpm ../pixmaps/tb_jump.xpm \
- ../pixmaps/tb_ctags.xpm ../pixmaps/tb_load_session.xpm \
- ../pixmaps/tb_save_session.xpm ../pixmaps/tb_new_session.xpm \
- ../pixmaps/tb_blank.xpm ../pixmaps/tb_maximize.xpm \
- ../pixmaps/tb_split.xpm ../pixmaps/tb_minimize.xpm \
- ../pixmaps/tb_shell.xpm ../pixmaps/tb_replace.xpm \
- ../pixmaps/tb_vsplit.xpm ../pixmaps/tb_maxwidth.xpm \
- ../pixmaps/tb_minwidth.xpm
 objects/gui_gtk_x11.o: gui_gtk_x11.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -4211,14 +4178,6 @@ objects/gui_x11.o: gui_x11.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h errors.h ../runtime/vim32x32.xpm \
  ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm
-objects/gui_at_sb.o: gui_at_sb.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h gui_at_sb.h
-objects/gui_at_fs.o: gui_at_fs.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h gui_at_sb.h
 objects/gui_haiku.o: gui_haiku.cc vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

@@ -116,7 +116,6 @@
 
 #if defined(FEAT_GUI_MOTIF) \
     || defined(FEAT_GUI_GTK) \
-    || defined(FEAT_GUI_ATHENA) \
     || defined(FEAT_GUI_HAIKU) \
     || defined(FEAT_GUI_MSWIN) \
     || defined(FEAT_GUI_PHOTON)
@@ -189,9 +188,6 @@
 # endif
 # ifdef FEAT_GUI_MOTIF
 #  undef FEAT_GUI_MOTIF
-# endif
-# ifdef FEAT_GUI_ATHENA
-#  undef FEAT_GUI_ATHENA
 # endif
 # ifdef FEAT_GUI_GTK
 #  undef FEAT_GUI_GTK

@@ -3541,14 +3541,6 @@ usage(void)
 #ifdef FEAT_GUI_X11
 # ifdef FEAT_GUI_MOTIF
     mch_msg(_("\nArguments recognised by gvim (Motif version):\n"));
-# else
-#  ifdef FEAT_GUI_ATHENA
-#   ifdef FEAT_GUI_NEXTAW
-    mch_msg(_("\nArguments recognised by gvim (neXtaw version):\n"));
-#   else
-    mch_msg(_("\nArguments recognised by gvim (Athena version):\n"));
-#   endif
-#  endif
 # endif
     main_msg(_("-display <display>\tRun Vim on <display>"));
     main_msg(_("-iconic\t\tStart Vim iconified"));
@@ -3560,9 +3552,6 @@ usage(void)
     main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
     main_msg(_("-borderwidth <width>\tUse a border width of <width> (also: -bw)"));
     main_msg(_("-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"));
-# ifdef FEAT_GUI_ATHENA
-    main_msg(_("-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"));
-# endif
     main_msg(_("-reverse\t\tUse reverse video (also: -rv)"));
     main_msg(_("+reverse\t\tDon't use reverse video (also: +rv)"));
     main_msg(_("-xrm <resource>\tSet the specified resource"));

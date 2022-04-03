@@ -11,11 +11,6 @@
 # include <Xm/Xm.h>
 #endif
 
-#ifdef FEAT_GUI_ATHENA
-# include <X11/Intrinsic.h>
-# include <X11/StringDefs.h>
-#endif
-
 #ifdef FEAT_GUI_GTK
 # ifdef VMS // undef MIN and MAX because Intrinsic.h redefines them anyway
 #  ifdef MAX
@@ -36,7 +31,7 @@
 
 // Needed when generating prototypes, since FEAT_GUI is always defined then.
 #if defined(FEAT_XCLIPBOARD) && !defined(FEAT_GUI_MOTIF) \
-	&& !defined(FEAT_GUI_ATHENA) && !defined(FEAT_GUI_GTK)
+	&& !defined(FEAT_GUI_GTK)
 # include <X11/Intrinsic.h>
 #endif
 
@@ -160,9 +155,6 @@ typedef struct GuiScrollbar
     win_T	*wp;		// Scrollbar's window, NULL for bottom
     int		type;		// one of SBAR_{LEFT,RIGHT,BOTTOM}
     long	value;		// Represents top line number visible
-#ifdef FEAT_GUI_ATHENA
-    int		pixval;		// pixel count of value
-#endif
     long	size;		// Size of scrollbar thumb
     long	max;		// Number of lines in buffer
 
@@ -277,9 +269,6 @@ typedef struct Gui
     int		menu_width;	    // Width of the menu bar
 # endif
     char	menu_is_active;	    // TRUE if menu is present
-# ifdef FEAT_GUI_ATHENA
-    char	menu_height_fixed;  // TRUE if menu height fixed
-# endif
 #endif
 
     scrollbar_T bottom_sbar;	    // Bottom scrollbar
@@ -418,7 +407,7 @@ typedef struct Gui
 #endif
 
 #if defined(FEAT_TOOLBAR) \
-	&& (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
+	&& (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
     int		toolbar_height;	    // height of the toolbar
 #endif
 

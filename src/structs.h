@@ -4003,9 +4003,6 @@ struct VimMenu
     char	**xpm;		    // pixmap data
     char	*xpm_fname;	    // file with pixmap data
 #endif
-#ifdef FEAT_GUI_ATHENA
-    Pixmap	image;		    // Toolbar image
-#endif
 #ifdef FEAT_BEVAL_TIP
     BalloonEval *tip;		    // tooltip for this menu item
 #endif

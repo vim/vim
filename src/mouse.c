@@ -115,7 +115,7 @@ find_end_of_word(pos_T *pos)
 }
 
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
+	    || defined(FEAT_GUI_MSWIN) \
 	    || defined(FEAT_GUI_PHOTON) \
 	    || defined(FEAT_TERM_POPUP_MENU)
 # define USE_POPUP_SETPOS
@@ -539,7 +539,7 @@ do_mouse(
 		    // menu on the button down event.
 		    return FALSE;
 #  endif
-#  if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
+#  if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
 		if (is_click || is_drag)
 		    // Ignore right button down and drag mouse events.  Windows
 		    // only shows the popup menu on the button up event.
