@@ -3999,7 +3999,7 @@ gen_expand_wildcards(
 
     // When returning FAIL the array must be freed here.
     if (retval == FAIL)
-	ga_clear(&ga);
+	ga_clear_strings(&ga);
 
     *num_file = ga.ga_len;
     *file = (ga.ga_data != NULL) ? (char_u **)ga.ga_data

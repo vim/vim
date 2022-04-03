@@ -4160,7 +4160,8 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[1].v_type == VAR_DICT
-	    && dict_has_key(argvars[1].vval.v_dict, "errmsg", -1))
+	    && dict_get_bool(argvars[1].vval.v_dict, (char_u *)"errmsg",
+								VVAL_FALSE))
 	emsgoff = FALSE;
 
     rettv->v_type = VAR_STRING;
