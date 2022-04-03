@@ -858,6 +858,8 @@ def Test_autoload_import_relative()
   writefile(lines, 'XimportRel.vim')
   writefile(lines, 'XimportRel2.vim')
   writefile(lines, 'XimportRel3.vim')
+  writefile(lines, 'XimportRel4.vim')
+  writefile(lines, 'XimportRel5.vim')
 
   lines =<< trim END
       vim9script
@@ -928,17 +930,18 @@ def Test_autoload_import_relative()
   END
   v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
 
+  # Same, script not imported before
   lines =<< trim END
       vim9script
-      import autoload './XimportRel.vim'
+      import autoload './XimportRel4.vim'
       def Func()
-        XimportRel.notexp = 'bad'
+        echo XimportRel4.notexp
       enddef
       Func()
   END
   v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
 
-  # does not fail if the script wasn't loaded yet
+  # does not fail if the script wasn't loaded yet and only compiling
   g:loaded = 'no'
   lines =<< trim END
       vim9script
@@ -950,6 +953,16 @@ def Test_autoload_import_relative()
   END
   v9.CheckScriptSuccess(lines)
   assert_equal('no', g:loaded)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      def Func()
+        XimportRel.notexp = 'bad'
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
 
   # fails with a not loaded import
   lines =<< trim END
@@ -964,9 +977,37 @@ def Test_autoload_import_relative()
   assert_equal('yes', g:loaded)
   unlet g:loaded
 
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel5.vim'
+      def Func()
+        XimportRel5.nosuchvar = 'bad'
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E121: Undefined variable: nosuchvar', 1)
+  unlet g:loaded
+
+  # nasty: delete script after compiling function
+  writefile(['vim9script'], 'XimportRelDel.vim')
+  lines =<< trim END
+      vim9script
+
+      import autoload './XimportRelDel.vim'
+      def DoIt()
+        echo XimportRelDel.var
+      enddef
+      defcompile
+      delete('XimportRelDel.vim')
+      DoIt()
+  END
+  v9.CheckScriptFailure(lines, 'E456:')
+
   delete('XimportRel.vim')
   delete('XimportRel2.vim')
   delete('XimportRel3.vim')
+  delete('XimportRel4.vim')
+  delete('XimportRel5.vim')
 enddef
 
 def Test_autoload_import_relative_autoload_dir()
@@ -1576,10 +1617,10 @@ def Test_script_reload_from_function()
   var lines =<< trim END
       vim9script
 
-      if exists('g:loaded')
+      if exists('g:loadedThis')
         finish
       endif
-      g:loaded = 1
+      g:loadedThis = 1
       delcommand CallFunc
       command CallFunc Func()
       def Func()
@@ -1594,7 +1635,7 @@ def Test_script_reload_from_function()
 
   delete('XreloadFunc.vim')
   delcommand CallFunc
-  unlet g:loaded
+  unlet g:loadedThis
   unlet g:didTheFunc
 enddef
 

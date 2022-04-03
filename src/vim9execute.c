@@ -2636,7 +2636,10 @@ exec_instructions(ectx_T *ectx)
 			SOURCING_LNUM = iptr->isn_lnum;
 			if (do_source(si->sn_name, FALSE, DOSO_NONE, NULL)
 								       == FAIL)
+			{
+			    semsg(_(e_cant_open_file_str_2), si->sn_name);
 			    goto on_error;
+			}
 		    }
 		}
 		break;

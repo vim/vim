@@ -2130,6 +2130,17 @@ def Test_for_loop()
       endfor
       assert_equal('', res)
 
+      total = 0
+      for c in null_list
+        total += 1
+      endfor
+      assert_equal(0, total)
+
+      for c in null_blob
+        total += 1
+      endfor
+      assert_equal(0, total)
+
       var foo: list<dict<any>> = [
               {a: 'Cat'}
             ]

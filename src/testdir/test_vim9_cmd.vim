@@ -1538,6 +1538,14 @@ def Test_lockvar()
   d.a = 7
   assert_equal({a: 7, b: 5}, d)
 
+  caught = false
+  try
+    lockvar d.c
+  catch /E716/
+    caught = true
+  endtry
+  assert_true(caught)
+
   var lines =<< trim END
       vim9script
       g:bl = 0z1122
