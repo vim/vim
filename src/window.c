@@ -3801,6 +3801,8 @@ win_init_popup_win(win_T *wp, buf_T *buf)
 win_alloc_firstwin(win_T *oldwin)
 {
     curwin = win_alloc(NULL, FALSE);
+    if (curwin == NULL)
+	return FAIL;
     if (oldwin == NULL)
     {
 	// Very first window, need to create an empty buffer for it and
@@ -3882,7 +3884,7 @@ alloc_tabpage(void)
 
 # ifdef FEAT_EVAL
     // init t: variables
-    tp->tp_vars = dict_alloc();
+    tp->tp_vars = dict_alloc_id(aid_newtabpage_tvars);
     if (tp->tp_vars == NULL)
     {
 	vim_free(tp);
@@ -5020,7 +5022,7 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
 
 #ifdef FEAT_EVAL
     // init w: variables
-    new_wp->w_vars = dict_alloc();
+    new_wp->w_vars = dict_alloc_id(aid_newwin_wvars);
     if (new_wp->w_vars == NULL)
     {
 	win_free_lsize(new_wp);

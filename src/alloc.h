@@ -40,6 +40,9 @@ typedef enum {
     aid_sign_getplaced_list,
     aid_insert_sign,
     aid_sign_getinfo,
-    aid_buflistnew_bvars,
+    aid_newbuf_bvars,
+    aid_newwin_wvars,
+    aid_newtabpage_tvars,
+    aid_blob_alloc,
     aid_last
 } alloc_id_T;
