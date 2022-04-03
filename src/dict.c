@@ -649,6 +649,16 @@ dict_find(dict_T *d, char_u *key, int len)
 }
 
 /*
+ * Returns TRUE if "key[len]" is present in Dictionary "d".
+ * If "len" is negative use strlen(key).
+ */
+    int
+dict_has_key(dict_T *d, char *key, int len)
+{
+    return dict_find(d, (char_u *)key, len) != NULL;
+}
+
+/*
  * Get a typval_T item from a dictionary and copy it into "rettv".
  * Returns FAIL if the entry doesn't exist or out of memory.
  */

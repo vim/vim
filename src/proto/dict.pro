@@ -27,6 +27,7 @@ char_u *dict_iterate_next(dict_iterator_T *iter, typval_T **tv_result);
 int dict_add_dict(dict_T *d, char *key, dict_T *dict);
 long dict_len(dict_T *d);
 dictitem_T *dict_find(dict_T *d, char_u *key, int len);
+int dict_has_key(dict_T *d, char *key, int len);
 int dict_get_tv(dict_T *d, char_u *key, typval_T *rettv);
 char_u *dict_get_string(dict_T *d, char_u *key, int save);
 varnumber_T dict_get_number(dict_T *d, char_u *key);
