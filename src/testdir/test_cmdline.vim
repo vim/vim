@@ -620,8 +620,8 @@ func Test_fullcommand()
         \ ':5s':        'substitute',
         \ "'<,'>s":     'substitute',
         \ ":'<,'>s":    'substitute',
-        \ 'CheckUni':   'CheckUnix',
-        \ 'CheckUnix':  'CheckUnix',
+        \ 'CheckLin':   'CheckLinux',
+        \ 'CheckLinux': 'CheckLinux',
   \ }
 
   for [in, want] in items(tests)

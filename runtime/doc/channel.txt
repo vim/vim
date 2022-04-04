@@ -119,10 +119,13 @@ To open a channel: >
 
 Use |ch_status()| to see if the channel could be opened.
 
-{address} has the form "hostname:port".  E.g., "localhost:8765".
-
-When using an IPv6 address, enclose it within square brackets.  E.g.,
-"[2001:db8::1]:8765".
+					*channel-address*
+{address} can be a domain name or an IP address, followed by a port number, or
+a Unix-domain socket path prefixed by "unix:".  E.g. >
+    www.example.com:80   " domain + port
+    127.0.0.1:1234       " IPv4 + port
+    [2001:db8::1]:8765   " IPv6 + port
+    unix:/tmp/my-socket  " Unix-domain socket path
 
 {options} is a dictionary with optional entries:	*channel-open-options*
 
@@ -579,10 +582,15 @@ ch_info({handle})						*ch_info()*
 		When opened with ch_open():
 		   "hostname"	  the hostname of the address
 		   "port"	  the port of the address
+		   "path"	  the path of the Unix-domain socket
 		   "sock_status"  "open" or "closed"
 		   "sock_mode"	  "NL", "RAW", "JSON" or "JS"
 		   "sock_io"	  "socket"
 		   "sock_timeout" timeout in msec
+
+		Note that "pair" is only present for Unix-domain sockets, for
+		regular ones "hostname" and "port" are present instead.
+
 		When opened with job_start():
 		   "out_status"	  "open", "buffered" or "closed"
 		   "out_mode"	  "NL", "RAW", "JSON" or "JS"
@@ -641,11 +649,8 @@ ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
-		{address} is a String and has the form "hostname:port", e.g.,
-		"localhost:8765".
-
-		When using an IPv6 address, enclose it within square brackets.
-		E.g., "[2001:db8::1]:8765".
+		{address} is a String, see |channel-address| for the possible
+		accepted forms.
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.

@@ -23,6 +23,9 @@ func SetUp()
   if g:testfunc =~ '_ipv6()$' 
     let s:localhost = '[::1]:'
     let s:testscript = 'test_channel_6.py'
+  elseif g:testfunc =~ '_unix()$'
+    let s:localhost = 'unix:Xtestsocket'
+    let s:testscript = 'test_channel_unix.py'
   else
     let s:localhost = 'localhost:'
     let s:testscript = 'test_channel.py'
@@ -37,6 +40,15 @@ endfunc
 " Run "testfunc" after starting the server and stop the server afterwards.
 func s:run_server(testfunc, ...)
   call RunServer(s:testscript, a:testfunc, a:000)
+endfunc
+
+" Returns the address of the test server.
+func s:address(port)
+  if s:localhost =~ '^unix:'
+    return s:localhost
+  else
+    return s:localhost . a:port
+  end
 endfunc
 
 " Return a list of open files.
@@ -65,7 +77,7 @@ func Ch_communicate(port)
   let s:chopt.drop = 'never'
   " Also add the noblock flag to try it out.
   let s:chopt.noblock = 1
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -77,7 +89,10 @@ func Ch_communicate(port)
   let dict = handle->ch_info()
   call assert_true(dict.id != 0)
   call assert_equal('open', dict.status)
-  call assert_equal(a:port, string(dict.port))
+  if has_key(dict, 'port')
+    " Channels using Unix sockets have no 'port' entry.
+    call assert_equal(a:port, string(dict.port))
+  end
   call assert_equal('open', dict.sock_status)
   call assert_equal('socket', dict.sock_io)
 
@@ -252,13 +267,19 @@ endfunc
 
 func Test_communicate_ipv6()
   CheckIPv6
-
   call Test_communicate()
 endfunc
 
+func Test_communicate_unix()
+  CheckUnix
+  call Test_communicate()
+  call delete('Xtestsocket')
+endfunc
+
+
 " Test that we can open two channels.
 func Ch_two_channels(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   call assert_equal(v:t_channel, type(handle))
   if handle->ch_status() == "fail"
     call assert_report("Can't open channel")
@@ -267,7 +288,7 @@ func Ch_two_channels(port)
 
   call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 
-  let newhandle = ch_open(s:localhost . a:port, s:chopt)
+  let newhandle = ch_open(s:address(a:port), s:chopt)
   if ch_status(newhandle) == "fail"
     call assert_report("Can't open second channel")
     return
@@ -292,9 +313,15 @@ func Test_two_channels_ipv6()
   call Test_two_channels()
 endfunc
 
+func Test_two_channels_unix()
+  CheckUnix
+  call Test_two_channels()
+  call delete('Xtestsocket')
+endfunc
+
 " Test that a server crash is handled gracefully.
 func Ch_server_crash(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -314,6 +341,12 @@ func Test_server_crash_ipv6()
   call Test_server_crash()
 endfunc
 
+func Test_server_crash_unix()
+  CheckUnix
+  call Test_server_crash()
+  call delete('Xtestsocket')
+endfunc
+
 """""""""
 
 func Ch_handler(chan, msg)
@@ -323,7 +356,7 @@ func Ch_handler(chan, msg)
 endfunc
 
 func Ch_channel_handler(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -352,6 +385,12 @@ func Test_channel_handler_ipv6()
   call Test_channel_handler()
 endfunc
 
+func Test_channel_handler_unix()
+  CheckUnix
+  call Test_channel_handler()
+  call delete('Xtestsocket')
+endfunc
+
 """""""""
 
 let g:Ch_reply = ''
@@ -367,7 +406,7 @@ func Ch_oneHandler(chan, msg)
 endfunc
 
 func Ch_channel_zero(port)
-  let handle = (s:localhost .. a:port)->ch_open(s:chopt)
+  let handle = (s:address(a:port))->ch_open(s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -415,6 +454,13 @@ func Test_zero_reply_ipv6()
   call Test_zero_reply()
 endfunc
 
+func Test_zero_reply_unix()
+  CheckUnix
+  call Test_zero_reply()
+  call delete('Xtestsocket')
+endfunc
+
+
 """""""""
 
 let g:Ch_reply1 = ""
@@ -436,7 +482,7 @@ func Ch_handleRaw3(chan, msg)
 endfunc
 
 func Ch_raw_one_time_callback(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -460,6 +506,12 @@ endfunc
 func Test_raw_one_time_callback_ipv6()
   CheckIPv6
   call Test_raw_one_time_callback()
+endfunc
+
+func Test_raw_one_time_callback_unix()
+  CheckUnix
+  call Test_raw_one_time_callback()
+  call delete('Xtestsocket')
 endfunc
 
 """""""""
@@ -1398,7 +1450,7 @@ endfunc
 
 " Test that "unlet handle" in a handler doesn't crash Vim.
 func Ch_unlet_handle(port)
-  let s:channelfd = ch_open(s:localhost . a:port, s:chopt)
+  let s:channelfd = ch_open(s:address(a:port), s:chopt)
   eval s:channelfd->ch_sendexpr("test", {'callback': function('s:UnletHandler')})
   call WaitForAssert({-> assert_equal('what?', g:Ch_unletResponse)})
 endfunc
@@ -1422,7 +1474,7 @@ endfunc
 
 " Test that "unlet handle" in a handler doesn't crash Vim.
 func Ch_close_handle(port)
-  let s:channelfd = ch_open(s:localhost . a:port, s:chopt)
+  let s:channelfd = ch_open(s:address(a:port), s:chopt)
   call ch_sendexpr(s:channelfd, "test", {'callback': function('Ch_CloseHandler')})
   call WaitForAssert({-> assert_equal('what?', g:Ch_unletResponse)})
 endfunc
@@ -1439,7 +1491,7 @@ endfunc
 """"""""""
 
 func Ch_open_ipv6(port)
-  let handle = ch_open('[::1]:' .. a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   call assert_notequal('fail', ch_status(handle))
 endfunc
 
@@ -1479,7 +1531,7 @@ endfunc
 func Ch_open_delay(port)
   " Wait up to a second for the port to open.
   let s:chopt.waittime = 1000
-  let channel = ch_open(s:localhost . a:port, s:chopt)
+  let channel = ch_open(s:address(a:port), s:chopt)
   if ch_status(channel) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1505,7 +1557,7 @@ function MyFunction(a,b,c)
 endfunc
 
 function Ch_test_call(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1527,6 +1579,12 @@ endfunc
 func Test_call_ipv6()
   CheckIPv6
   call Test_call()
+endfunc
+
+func Test_call_unix()
+  CheckUnix
+  call Test_call()
+  call delete('Xtestsocket')
 endfunc
 
 """""""""
@@ -1605,7 +1663,7 @@ function MyCloseCb(ch)
 endfunc
 
 function Ch_test_close_callback(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1625,8 +1683,14 @@ func Test_close_callback_ipv6()
   call Test_close_callback()
 endfunc
 
+func Test_close_callback_unix()
+  CheckUnix
+  call Test_close_callback()
+  call delete('Xtestsocket')
+endfunc
+
 function Ch_test_close_partial(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1649,6 +1713,12 @@ endfunc
 func Test_close_partial_ipv6()
   CheckIPv6
   call Test_close_partial()
+endfunc
+
+func Test_close_partial_unix()
+  CheckUnix
+  call Test_close_partial()
+  call delete('Xtestsocket')
 endfunc
 
 func Test_job_start_fails()
@@ -1920,7 +1990,7 @@ func Test_cwd()
 endfunc
 
 function Ch_test_close_lambda(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open(s:address(a:port), s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1940,6 +2010,12 @@ endfunc
 func Test_close_lambda_ipv6()
   CheckIPv6
   call Test_close_lambda()
+endfunc
+
+func Test_close_lambda_unix()
+  CheckUnix
+  call Test_close_lambda()
+  call delete('Xtestsocket')
 endfunc
 
 func s:test_list_args(cmd, out, remove_lf)
@@ -2243,6 +2319,8 @@ func Test_job_trailing_space_unix()
   let job = job_start("cat ", #{in_io: 'null'})
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call assert_equal(0, job_info(job).exitval)
+
+  call delete('Xtestsocket')
 endfunc
 
 func Test_ch_getbufnr()
