@@ -2874,9 +2874,10 @@ vim_regexec_multi(
 	char_u *pat = vim_strsave(((nfa_regprog_T *)rmp->regprog)->pattern);
 
 	p_re = BACKTRACKING_ENGINE;
-	vim_regfree(rmp->regprog);
 	if (pat != NULL)
 	{
+	    regprog_T *prev_prog = rmp->regprog;
+
 #ifdef FEAT_EVAL
 	    report_re_switch(pat);
 #endif
@@ -2889,9 +2890,16 @@ vim_regexec_multi(
 #ifdef FEAT_SYN_HL
 	    reg_do_extmatch = 0;
 #endif
-
-	    if (rmp->regprog != NULL)
+	    if (rmp->regprog == NULL)
 	    {
+		// Somehow compiling the pattern failed now, put back the
+		// previous one to avoid "regprog" becoming NULL.
+		rmp->regprog = prev_prog;
+	    }
+	    else
+	    {
+		vim_regfree(prev_prog);
+
 		rmp->regprog->re_in_use = TRUE;
 		result = rmp->regprog->engine->regexec_multi(
 				      rmp, win, buf, lnum, col, tm, timed_out);
