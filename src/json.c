@@ -114,37 +114,77 @@ json_encode_lsp_msg(typval_T *val)
 }
 #endif
 
+/*
+ * Lookup table to quickly know if the given ASCII character must be escaped.
+ */
+static const char ascii_needs_escape[128] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 1
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 3
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 4
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, // 5
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 6
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 7
+};
+
+/*
+ * Encode the utf-8 encoded string "str" into "gap".
+ */
     static void
 write_string(garray_T *gap, char_u *str)
 {
     char_u	*res = str;
     char_u	numbuf[NUMBUFLEN];
+    char_u	*from;
+#if defined(USE_ICONV)
+    vimconv_T   conv;
+    char_u	*converted = NULL;
+#endif
 
     if (res == NULL)
-	ga_concat(gap, (char_u *)"\"\"");
-    else
     {
-#if defined(USE_ICONV)
-	vimconv_T   conv;
-	char_u	    *converted = NULL;
+	ga_concat(gap, (char_u *)"\"\"");
+	return;
+    }
 
-	if (!enc_utf8)
-	{
-	    // Convert the text from 'encoding' to utf-8, the JSON string is
-	    // always utf-8.
-	    conv.vc_type = CONV_NONE;
-	    convert_setup(&conv, p_enc, (char_u*)"utf-8");
-	    if (conv.vc_type != CONV_NONE)
-		converted = res = string_convert(&conv, res, NULL);
-	    convert_setup(&conv, NULL, NULL);
-	}
+#if defined(USE_ICONV)
+    if (!enc_utf8)
+    {
+	// Convert the text from 'encoding' to utf-8, the JSON string is
+	// always utf-8.
+	conv.vc_type = CONV_NONE;
+	convert_setup(&conv, p_enc, (char_u*)"utf-8");
+	if (conv.vc_type != CONV_NONE)
+	    converted = res = string_convert(&conv, res, NULL);
+	convert_setup(&conv, NULL, NULL);
+    }
 #endif
-	ga_append(gap, '"');
-	while (*res != NUL)
-	{
-	    int c;
-	    // always use utf-8 encoding, ignore 'encoding'
-	    c = utf_ptr2char(res);
+    ga_append(gap, '"');
+    // `from` is the beginning of a sequence of bytes we can directly copy from
+    // the input string, avoiding the overhead associated to decoding/encoding
+    // them.
+    from = res;
+    while (*res != NUL)
+    {
+	int c;
+	int l;
+
+	// always use utf-8 encoding, ignore 'encoding'
+	if (*res < 0x80) {
+	    c = *res;
+
+	    if (!ascii_needs_escape[*res])
+	    {
+		res += 1;
+		continue;
+	    }
+
+	    if (res != from)
+	    {
+		ga_concat_len(gap, from, res - from);
+	    }
+	    from = res + 1;
 
 	    switch (c)
 	    {
@@ -164,25 +204,47 @@ write_string(garray_T *gap, char_u *str)
 		    ga_append(gap, c);
 		    break;
 		default:
-		    if (c >= 0x20)
-		    {
-			numbuf[utf_char2bytes(c, numbuf)] = NUL;
-			ga_concat(gap, numbuf);
-		    }
-		    else
-		    {
-			vim_snprintf((char *)numbuf, NUMBUFLEN,
-							 "\\u%04lx", (long)c);
-			ga_concat(gap, numbuf);
-		    }
+		    vim_snprintf((char *)numbuf, NUMBUFLEN, "\\u%04lx",
+			    (long)c);
+		    ga_concat(gap, numbuf);
 	    }
-	    res += utf_ptr2len(res);
+
+	    res += 1;
 	}
-	ga_append(gap, '"');
-#if defined(USE_ICONV)
-	vim_free(converted);
-#endif
+	else
+	{
+	    l = utf_ptr2len(res);
+
+	    if (l > 1)
+	    {
+		res += l;
+		continue;
+	    }
+
+	    // Invalid utf-8 sequence, replace it with the Unicode replacement
+	    // character U+FFFD.
+	    if (res != from)
+	    {
+		ga_concat_len(gap, from, res - from);
+	    }
+	    from = res + 1;
+
+	    numbuf[utf_char2bytes(0xFFFD, numbuf)] = NUL;
+	    ga_concat(gap, numbuf);
+
+	    res += l;
+	}
     }
+
+    if (res != from)
+    {
+	ga_concat_len(gap, from, res - from);
+    }
+
+    ga_append(gap, '"');
+#if defined(USE_ICONV)
+    vim_free(converted);
+#endif
 }
 
 /*
