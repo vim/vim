@@ -4460,8 +4460,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	}
 
 	if (argvars[2].v_type == VAR_DICT)
-	    if (dict_find(argvars[2].vval.v_dict, (char_u *)"callback", -1)
-									!= NULL)
+	    if (dict_has_key(argvars[2].vval.v_dict, "callback"))
 		callback_present = TRUE;
 
 	if (eval || callback_present)
@@ -4482,7 +4481,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    if (di != NULL)
 		id = di->di_tv.vval.v_number;
 	}
-	if (dict_find(d, (char_u *)"jsonrpc", -1) == NULL)
+	if (!dict_has_key(d, "jsonrpc"))
 	    dict_add_string(d, "jsonrpc", (char_u *)"2.0");
 	text = json_encode_lsp_msg(&argvars[1]);
     }

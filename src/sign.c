@@ -2786,7 +2786,7 @@ sign_unplace_from_dict(typval_T *group_tv, dict_T *dict)
 	    if (buf == NULL)
 		goto cleanup;
 	}
-	if (dict_find(dict, (char_u *)"id", -1) != NULL)
+	if (dict_has_key(dict, "id"))
 	{
 	    sign_id = dict_get_number(dict, (char_u *)"id");
 	    if (sign_id <= 0)

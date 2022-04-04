@@ -938,7 +938,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 	return FAIL;
     }
 
-    if (dict_find(tv->vval.v_dict, (char_u *)"conceal", -1) != NULL)
+    if (dict_has_key(tv->vval.v_dict, "conceal"))
 	*conceal_char = dict_get_string(tv->vval.v_dict,
 						   (char_u *)"conceal", FALSE);
 
@@ -1088,11 +1088,11 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		emsg(_(e_invalid_argument));
 		return;
 	    }
-	    if (!(dict_find(d, (char_u *)"group", -1) != NULL
-			&& (dict_find(d, (char_u *)"pattern", -1) != NULL
-			    || dict_find(d, (char_u *)"pos1", -1) != NULL)
-			&& dict_find(d, (char_u *)"priority", -1) != NULL
-			&& dict_find(d, (char_u *)"id", -1) != NULL))
+	    if (!(dict_has_key(d, "group")
+			&& (dict_has_key(d, "pattern")
+			    || dict_has_key(d, "pos1"))
+			&& dict_has_key(d, "priority")
+			&& dict_has_key(d, "id")))
 	    {
 		emsg(_(e_invalid_argument));
 		return;
@@ -1113,7 +1113,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    char_u	*conceal;
 
 	    d = li->li_tv.vval.v_dict;
-	    if (dict_find(d, (char_u *)"pattern", -1) == NULL)
+	    if (!dict_has_key(d, "pattern"))
 	    {
 		if (s == NULL)
 		{
@@ -1142,7 +1142,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    group = dict_get_string(d, (char_u *)"group", TRUE);
 	    priority = (int)dict_get_number(d, (char_u *)"priority");
 	    id = (int)dict_get_number(d, (char_u *)"id");
-	    conceal = dict_find(d, (char_u *)"conceal", -1) != NULL
+	    conceal = dict_has_key(d, "conceal")
 			      ? dict_get_string(d, (char_u *)"conceal", TRUE)
 			      : NULL;
 	    if (i == 0)

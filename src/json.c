@@ -1027,8 +1027,8 @@ item_end:
 
 	    case JSON_OBJECT:
 		if (cur_item != NULL
-			&& dict_find(top_item->jd_tv.vval.v_dict,
-						 top_item->jd_key, -1) != NULL)
+			&& dict_has_key(top_item->jd_tv.vval.v_dict,
+						(char *)top_item->jd_key))
 		{
 		    semsg(_(e_duplicate_key_in_json_str), top_item->jd_key);
 		    clear_tv(cur_item);

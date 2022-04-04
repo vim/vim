@@ -1605,7 +1605,7 @@ readdirex_dict_arg(typval_T *tv, int *cmp)
 	return FAIL;
     }
 
-    if (dict_find(tv->vval.v_dict, (char_u *)"sort", -1) != NULL)
+    if (dict_has_key(tv->vval.v_dict, "sort"))
 	compare = dict_get_string(tv->vval.v_dict, (char_u *)"sort", FALSE);
     else
     {

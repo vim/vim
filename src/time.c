@@ -848,7 +848,7 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
 	    return;
 	}
-	if (dict_find(dict, (char_u *)"repeat", -1) != NULL)
+	if (dict_has_key(dict, "repeat"))
 	    repeat = dict_get_number(dict, (char_u *)"repeat");
     }
 

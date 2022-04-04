@@ -6859,7 +6859,7 @@ qf_getprop_keys2flags(dict_T *what, int loclist)
 {
     int		flags = QF_GETLIST_NONE;
 
-    if (dict_find(what, (char_u *)"all", -1) != NULL)
+    if (dict_has_key(what, "all"))
     {
 	flags |= QF_GETLIST_ALL;
 	if (!loclist)
@@ -6867,40 +6867,40 @@ qf_getprop_keys2flags(dict_T *what, int loclist)
 	    flags &= ~ QF_GETLIST_FILEWINID;
     }
 
-    if (dict_find(what, (char_u *)"title", -1) != NULL)
+    if (dict_has_key(what, "title"))
 	flags |= QF_GETLIST_TITLE;
 
-    if (dict_find(what, (char_u *)"nr", -1) != NULL)
+    if (dict_has_key(what, "nr"))
 	flags |= QF_GETLIST_NR;
 
-    if (dict_find(what, (char_u *)"winid", -1) != NULL)
+    if (dict_has_key(what, "winid"))
 	flags |= QF_GETLIST_WINID;
 
-    if (dict_find(what, (char_u *)"context", -1) != NULL)
+    if (dict_has_key(what, "context"))
 	flags |= QF_GETLIST_CONTEXT;
 
-    if (dict_find(what, (char_u *)"id", -1) != NULL)
+    if (dict_has_key(what, "id"))
 	flags |= QF_GETLIST_ID;
 
-    if (dict_find(what, (char_u *)"items", -1) != NULL)
+    if (dict_has_key(what, "items"))
 	flags |= QF_GETLIST_ITEMS;
 
-    if (dict_find(what, (char_u *)"idx", -1) != NULL)
+    if (dict_has_key(what, "idx"))
 	flags |= QF_GETLIST_IDX;
 
-    if (dict_find(what, (char_u *)"size", -1) != NULL)
+    if (dict_has_key(what, "size"))
 	flags |= QF_GETLIST_SIZE;
 
-    if (dict_find(what, (char_u *)"changedtick", -1) != NULL)
+    if (dict_has_key(what, "changedtick"))
 	flags |= QF_GETLIST_TICK;
 
-    if (loclist && dict_find(what, (char_u *)"filewinid", -1) != NULL)
+    if (loclist && dict_has_key(what, "filewinid"))
 	flags |= QF_GETLIST_FILEWINID;
 
-    if (dict_find(what, (char_u *)"qfbufnr", -1) != NULL)
+    if (dict_has_key(what, "qfbufnr"))
 	flags |= QF_GETLIST_QFBUFNR;
 
-    if (dict_find(what, (char_u *)"quickfixtextfunc", -1) != NULL)
+    if (dict_has_key(what, "quickfixtextfunc"))
 	flags |= QF_GETLIST_QFTF;
 
     return flags;
@@ -7241,7 +7241,7 @@ qf_add_entry_from_dict(
     }
 
     // If the 'valid' field is present it overrules the detected value.
-    if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
+    if (dict_has_key(d, "valid"))
 	valid = (int)dict_get_bool(d, (char_u *)"valid", FALSE);
 
     status =  qf_add_entry(qfl,

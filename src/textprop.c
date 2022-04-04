@@ -331,14 +331,14 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     dict = argvars[0].vval.v_dict;
-    if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
+    if (dict == NULL || !dict_has_key(dict, "type"))
     {
 	emsg(_(e_missing_property_type_name));
 	return;
     }
     type_name = dict_get_string(dict, (char_u *)"type", FALSE);
 
-    if (dict_find(dict, (char_u *)"id", -1) != NULL)
+    if (dict_has_key(dict, "id"))
 	id = dict_get_number(dict, (char_u *)"id");
 
     if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
@@ -391,14 +391,14 @@ prop_add_common(
     buf_T	*buf = default_buf;
     int		id = 0;
 
-    if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
+    if (dict == NULL || !dict_has_key(dict, "type"))
     {
 	emsg(_(e_missing_property_type_name));
 	return;
     }
     type_name = dict_get_string(dict, (char_u *)"type", FALSE);
 
-    if (dict_find(dict, (char_u *)"end_lnum", -1) != NULL)
+    if (dict_has_key(dict, "end_lnum"))
     {
 	end_lnum = dict_get_number(dict, (char_u *)"end_lnum");
 	if (end_lnum < start_lnum)
@@ -410,7 +410,7 @@ prop_add_common(
     else
 	end_lnum = start_lnum;
 
-    if (dict_find(dict, (char_u *)"length", -1) != NULL)
+    if (dict_has_key(dict, "length"))
     {
 	long length = dict_get_number(dict, (char_u *)"length");
 
@@ -421,7 +421,7 @@ prop_add_common(
 	}
 	end_col = start_col + length;
     }
-    else if (dict_find(dict, (char_u *)"end_col", -1) != NULL)
+    else if (dict_has_key(dict, "end_col"))
     {
 	end_col = dict_get_number(dict, (char_u *)"end_col");
 	if (end_col <= 0)
@@ -435,7 +435,7 @@ prop_add_common(
     else
 	end_col = 1;
 
-    if (dict_find(dict, (char_u *)"id", -1) != NULL)
+    if (dict_has_key(dict, "id"))
 	id = dict_get_number(dict, (char_u *)"id");
 
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
@@ -777,12 +777,12 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 
     skipstart = dict_get_bool(dict, (char_u *)"skipstart", 0);
 
-    if (dict_find(dict, (char_u *)"id", -1) != NULL)
+    if (dict_has_key(dict, "id"))
     {
 	id = dict_get_number(dict, (char_u *)"id");
 	id_found = TRUE;
     }
-    if (dict_find(dict, (char_u *)"type", -1))
+    if (dict_has_key(dict, "type"))
     {
 	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
 	proptype_T  *type = lookup_prop_type(name, buf);
@@ -1202,9 +1202,9 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     do_all = dict_get_bool(dict, (char_u *)"all", FALSE);
 
-    if (dict_find(dict, (char_u *)"id", -1) != NULL)
+    if (dict_has_key(dict, "id"))
 	id = dict_get_number(dict, (char_u *)"id");
-    if (dict_find(dict, (char_u *)"type", -1))
+    if (dict_has_key(dict, "type"))
     {
 	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
 	proptype_T  *type = lookup_prop_type(name, buf);

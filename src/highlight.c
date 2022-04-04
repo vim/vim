@@ -718,7 +718,7 @@ highlight_reset_all(void)
 # ifdef FEAT_BEVAL_TIP
 	gui_init_tooltip_font();
 # endif
-# if defined(FEAT_MENU) && (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF))
+# if defined(FEAT_MENU) && defined(FEAT_GUI_MOTIF)
 	gui_init_menu_font();
 # endif
     }
@@ -2134,7 +2134,7 @@ hl_do_font(
 	|| do_menu
 #  endif
 #  ifdef FEAT_BEVAL_TIP
-	// In Athena & Motif, the Tooltip highlight group is always a fontset
+	// In Motif, the Tooltip highlight group is always a fontset
 	|| do_tooltip
 #  endif
 	    )
@@ -2156,7 +2156,7 @@ hl_do_font(
 	// fontset.  Same for the Menu group.
 	if (do_normal)
 	    gui_init_font(arg, TRUE);
-#   if (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) && defined(FEAT_MENU)
+#   if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
 	if (do_menu)
 	{
 #    ifdef FONTSET_ALWAYS
@@ -2170,7 +2170,7 @@ hl_do_font(
 #    ifdef FEAT_BEVAL_GUI
 	if (do_tooltip)
 	{
-	    // The Athena widget set cannot currently handle switching between
+	    // The Athena widget set could not handle switching between
 	    // displaying a single font and a fontset.
 	    // If the XtNinternational resource is set to True at widget
 	    // creation, then a fontset is always used, otherwise an
@@ -2194,7 +2194,7 @@ hl_do_font(
 	    if (do_normal)
 		gui_init_font(arg, FALSE);
 #ifndef FONTSET_ALWAYS
-# if (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) && defined(FEAT_MENU)
+# if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
 	    if (do_menu)
 	    {
 		gui.menu_font = HL_TABLE()[idx].sg_font;
@@ -4411,7 +4411,7 @@ hlg_add_or_update(dict_T *dict)
     if (dict_get_bool(dict, (char_u *)"default", VVAL_FALSE) == VVAL_TRUE)
 	dodefault = TRUE;
 
-    if (dict_find(dict, (char_u *)"cleared", -1) != NULL)
+    if (dict_has_key(dict, "cleared"))
     {
 	varnumber_T	cleared;
 
@@ -4425,7 +4425,7 @@ hlg_add_or_update(dict_T *dict)
 	}
     }
 
-    if (dict_find(dict, (char_u *)"linksto", -1) != NULL)
+    if (dict_has_key(dict, "linksto"))
     {
 	char_u	*linksto;
 
