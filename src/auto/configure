@@ -10217,7 +10217,7 @@ $as_echo_n "checking for location of Motif GUI libs... " >&6; }
     gui_libs="`echo $x_libraries|sed 's%/^/^/*$%%'` `echo "$gui_XXX" | sed s/XXX/lib/g` /usr/lib/i386-linux-gnu /usr/lib/x86_64-linux-gnu `echo "$GUI_INC_LOC" | sed s/include/lib/` $GUI_LIB_LOC"
     GUI_LIB_LOC=
     for try in $gui_libs; do
-      for libtry in "$try"/libXm.a "$try"/libXm.so* "$try"/libXm.sl "$try"/libXm.dylib; do
+      for libtry in "$try"/libXm.a "$try"/libXm.so* "$try"/libXm.dll.a "$try"/libXm.sl "$try"/libXm.dylib; do
 	if test -f "$libtry"; then
 	  GUI_LIB_LOC=$try
 	fi
