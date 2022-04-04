@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     ChordPro (v. 3.6.2)
 " Maintainer:   Niels Bo Andersen <niels@niboan.dk>
-" Last Change:	2006 Apr 30
+" Last Change:	2022-04-04
 " Remark:       Requires VIM version 6.00 or greater
 
 " Quit when a syntax file was already loaded
@@ -24,6 +24,7 @@ syn keyword chordproDirective contained
 syn keyword chordproDirWithOpt contained
   \ comment c comment_italic ci comment_box cb title t subtitle st define
   \ textfont textsize chordfont chordsize columns col
+  \ artist composer lyricist album year key time tempo duration capo meta
 
 syn keyword chordproDefineKeyword contained base-fret frets
 
