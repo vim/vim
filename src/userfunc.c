@@ -1697,7 +1697,7 @@ deref_func_name(
 	{
 	    if (!did_type && type != NULL && ht == get_script_local_ht())
 	    {
-		svar_T  *sv = find_typval_in_script(tv, 0);
+		svar_T  *sv = find_typval_in_script(tv, 0, TRUE);
 
 		if (sv != NULL)
 		    *type = sv->sv_type;

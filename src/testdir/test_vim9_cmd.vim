@@ -1650,6 +1650,23 @@ def Test_lockvar()
       LockIt()
   END
   v9.CheckScriptFailure(lines, 'E1246', 1)
+
+  lines =<< trim END
+      vim9script
+      const name = 'john'
+      unlockvar name
+  END
+  v9.CheckScriptFailure(lines, 'E46', 3)
+
+  lines =<< trim END
+      vim9script
+      const name = 'john'
+      def UnLockIt()
+        unlockvar name
+      enddef
+      UnLockIt()
+  END
+  v9.CheckScriptFailure(lines, 'E46', 1)
 enddef
 
 def Test_substitute_expr()

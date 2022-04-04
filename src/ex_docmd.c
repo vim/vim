@@ -303,7 +303,6 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_throw		ex_ni
 # define ex_try			ex_ni
 # define ex_unlet		ex_ni
-# define ex_unlockvar		ex_ni
 # define ex_while		ex_ni
 # define ex_import		ex_ni
 # define ex_export		ex_ni

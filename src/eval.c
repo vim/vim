@@ -1065,7 +1065,7 @@ get_lval(
 		&& lp->ll_tv == &v->di_tv
 		&& ht != NULL && ht == get_script_local_ht())
 	{
-	    svar_T  *sv = find_typval_in_script(lp->ll_tv, 0);
+	    svar_T  *sv = find_typval_in_script(lp->ll_tv, 0, TRUE);
 
 	    // Vim9 script local variable: get the type
 	    if (sv != NULL)
