@@ -96,10 +96,6 @@ static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
 
-// flags for vgetorpeek()
-#define VGOP_ADVANCE	1	// really get the character
-#define VGOP_NO_STUFF	2	// do not use the stuff buffer
-
 /*
  * Free and clear a buffer.
  */
@@ -1724,7 +1720,7 @@ vgetc(void)
 		++allow_keys;
 		did_inc = TRUE;	// mod_mask may change value
 	    }
-	    c = vgetorpeek(VGOP_ADVANCE);
+	    c = vgetorpeek(TRUE);
 	    if (did_inc)
 	    {
 		--no_mapping;
@@ -1742,8 +1738,8 @@ vgetc(void)
 
 		++no_mapping;
 		allow_keys = 0;		// make sure BS is not found
-		c2 = vgetorpeek(VGOP_ADVANCE);	// no mapping for these chars
-		c = vgetorpeek(VGOP_ADVANCE);
+		c2 = vgetorpeek(TRUE);	// no mapping for these chars
+		c = vgetorpeek(TRUE);
 		--no_mapping;
 		allow_keys = save_allow_keys;
 		if (c2 == KS_MODIFIER)
@@ -1766,7 +1762,7 @@ vgetc(void)
 		    int		j;
 
 		    // get menu path, it ends with a <CR>
-		    for (j = 0; (c = vgetorpeek(VGOP_ADVANCE)) != '\r'; )
+		    for (j = 0; (c = vgetorpeek(TRUE)) != '\r'; )
 		    {
 			name[j] = c;
 			if (j < 199)
@@ -1876,7 +1872,7 @@ vgetc(void)
 		buf[0] = c;
 		for (i = 1; i < n; ++i)
 		{
-		    buf[i] = vgetorpeek(VGOP_ADVANCE);
+		    buf[i] = vgetorpeek(TRUE);
 		    if (buf[i] == K_SPECIAL
 #ifdef FEAT_GUI
 			    || (buf[i] == CSI)
@@ -1889,8 +1885,8 @@ vgetc(void)
 			// represents a CSI (0x9B),
 			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
 			// too.
-			c = vgetorpeek(VGOP_ADVANCE);
-			if (vgetorpeek(VGOP_ADVANCE) == KE_CSI && c == KS_EXTRA)
+			c = vgetorpeek(TRUE);
+			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
 			    buf[i] = CSI;
 		    }
 		}
@@ -1993,7 +1989,7 @@ vpeekc(void)
 {
     if (old_char != -1)
 	return old_char;
-    return vgetorpeek(0);
+    return vgetorpeek(FALSE);
 }
 
 #if defined(FEAT_TERMRESPONSE) || defined(FEAT_TERMINAL) || defined(PROTO)
@@ -2968,11 +2964,11 @@ vungetc(int c)
  * 3. from the user
  *	This may do a blocking wait if "advance" is TRUE.
  *
- * if "flags & VGOP_ADVANCE" is non-zero (vgetc()):
+ * if "advance" is TRUE (vgetc()):
  *	Really get the character.
  *	KeyTyped is set to TRUE in the case the user typed the key.
  *	KeyStuffed is TRUE if the character comes from the stuff buffer.
- * if "flags & VGOP_ADVANCE" is zero (vpeekc()):
+ * if "advance" is FALSE (vpeekc()):
  *	Just look whether there is a character available.
  *	Return NUL if not.
  *
@@ -2981,9 +2977,8 @@ vungetc(int c)
  * K_SPECIAL and CSI may be escaped, need to get two more bytes then.
  */
     static int
-vgetorpeek(int flags)
+vgetorpeek(int advance)
 {
-    int		advance = flags & VGOP_ADVANCE;
     int		c, c1;
     int		timedout = FALSE;	// waited for more than 1 second
 					// for mapping to complete
@@ -3027,9 +3022,7 @@ vgetorpeek(int flags)
 /*
  * get a character: 1. from the stuffbuffer
  */
-	if (flags & VGOP_NO_STUFF)
-	    c = 0;
-	else if (typeahead_char != 0)
+	if (typeahead_char != 0)
 	{
 	    c = typeahead_char;
 	    if (advance)
@@ -3762,6 +3755,8 @@ getcmdkeycmd(
     int		c2;
     int		cmod = 0;
     int		aborted = FALSE;
+    int		first = TRUE;
+    int		got_ctrl_o = FALSE;
 
     ga_init2(&line_ga, 1, 32);
 
@@ -3777,7 +3772,7 @@ getcmdkeycmd(
 	    break;
 	}
 
-	if (vgetorpeek(0 | VGOP_NO_STUFF) == NUL)
+	if (vgetorpeek(FALSE) == NUL)
 	{
 	    // incomplete <Cmd> is an error, because there is not much the user
 	    // could do in this state.
@@ -3787,13 +3782,22 @@ getcmdkeycmd(
 	}
 
 	// Get one character at a time.
-	c1 = vgetorpeek(VGOP_ADVANCE | VGOP_NO_STUFF);
+	c1 = vgetorpeek(TRUE);
+
+	// do not use Ctrl_O at the start, stuff it back later
+	if (first && c1 == Ctrl_O)
+	{
+	    got_ctrl_o = TRUE;
+	    first = FALSE;
+	    continue;
+	}
+	first = FALSE;
 
 	// Get two extra bytes for special keys
 	if (c1 == K_SPECIAL)
 	{
-	    c1 = vgetorpeek(VGOP_ADVANCE | VGOP_NO_STUFF);
-	    c2 = vgetorpeek(VGOP_ADVANCE | VGOP_NO_STUFF);
+	    c1 = vgetorpeek(TRUE);
+	    c2 = vgetorpeek(TRUE);
 	    if (c1 == KS_MODIFIER)
 	    {
 		cmod = c2;
@@ -3840,6 +3844,8 @@ getcmdkeycmd(
     }
 
     no_mapping--;
+    if (got_ctrl_o)
+	stuffcharReadbuff(Ctrl_O);
 
     if (aborted)
 	ga_clear(&line_ga);
