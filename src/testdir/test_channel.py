@@ -19,12 +19,7 @@ except ImportError:
     # Python 2
     import SocketServer as socketserver
 
-class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
-
-    def setup(self):
-        if self.server.address_family != socket.AF_UNIX:
-            self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
+class TestingRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         print("=== socket opened ===")
         while True:
@@ -239,6 +234,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 # Negative numbers are used for "eval" responses.
                 elif decoded[0] < 0:
                     last_eval = decoded
+
+class ThreadedTCPRequestHandler(TestingRequestHandler):
+    def setup(self):
+        self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass

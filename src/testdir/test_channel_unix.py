@@ -6,7 +6,7 @@
 # This requires Python 2.6 or later.
 
 from __future__ import print_function
-from test_channel import ThreadedTCPServer, ThreadedTCPRequestHandler, \
+from test_channel import ThreadedTCPServer, TestingRequestHandler, \
     writePortInFile
 import socket
 import threading
@@ -18,11 +18,17 @@ except NameError:
     # Python 2
     FileNotFoundError = (IOError, OSError)
 
+if not hasattr(socket, "AF_UNIX"):
+    raise NotImplementedError("Unix sockets are not supported on this platform")
+
 class ThreadedUnixServer(ThreadedTCPServer):
     address_family = socket.AF_UNIX
 
+class ThreadedUnixRequestHandler(TestingRequestHandler):
+    pass
+
 def main(path):
-    server = ThreadedUnixServer(path, ThreadedTCPRequestHandler)
+    server = ThreadedUnixServer(path, ThreadedUnixRequestHandler)
 
     # Start a thread with the server.  That thread will then start a new thread
     # for each connection.
