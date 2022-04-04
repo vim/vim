@@ -3082,7 +3082,7 @@ EXTERN char e_no_white_space_allowed_after_str_str[]
 EXTERN char e_dot_can_only_be_used_on_dictionary_str[]
 	INIT(= N_("E1203: Dot can only be used on a dictionary: %s"));
 #endif
-EXTERN char e_regexp_number_after_dot_pos_search[]
+EXTERN char e_regexp_number_after_dot_pos_search_chr[]
 	INIT(= N_("E1204: No Number allowed after .: '\\%%%c'"));
 EXTERN char e_no_white_space_allowed_between_option_and[]
 	INIT(= N_("E1205: No white space allowed between option and"));
@@ -3256,3 +3256,5 @@ EXTERN char e_compiling_closure_without_context_str[]
 EXTERN char e_using_type_not_in_script_context_str[]
 	INIT(= N_("E1272: Using type not in a script context: %s"));
 #endif
+EXTERN char e_nfa_regexp_missing_value_in_chr[]
+	INIT(= N_("E1273: (NFA regexp) missing value in '\\%%%c'"));

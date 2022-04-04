@@ -1649,7 +1649,8 @@ regatom(int *flagp)
 			      {
 				  if (cur && n)
 				  {
-				    semsg(_(e_regexp_number_after_dot_pos_search), no_Magic(c));
+				    semsg(_(e_regexp_number_after_dot_pos_search_chr),
+								  no_Magic(c));
 				    rc_did_emsg = TRUE;
 				    return NULL;
 				  }

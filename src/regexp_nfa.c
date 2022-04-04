@@ -1654,7 +1654,7 @@ nfa_regatom(void)
 
 			    if (cur)
 			    {
-				semsg(_(e_regexp_number_after_dot_pos_search),
+				semsg(_(e_regexp_number_after_dot_pos_search_chr),
 								  no_Magic(c));
 				return FAIL;
 			    }
@@ -1673,6 +1673,12 @@ nfa_regatom(void)
 			{
 			    long_u limit = INT_MAX;
 
+			    if (!cur && n == 0)
+			    {
+				semsg(_(e_nfa_regexp_missing_value_in_chr),
+								  no_Magic(c));
+				return FAIL;
+			    }
 			    if (c == 'l')
 			    {
 				if (cur)
