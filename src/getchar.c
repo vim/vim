@@ -96,6 +96,10 @@ static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
 
+// flags for vgetorpeek()
+#define VGOP_ADVANCE	1	// really get the character
+#define VGOP_NO_STUFF	2	// do not use the stuff buffer
+
 /*
  * Free and clear a buffer.
  */
@@ -1720,7 +1724,7 @@ vgetc(void)
 		++allow_keys;
 		did_inc = TRUE;	// mod_mask may change value
 	    }
-	    c = vgetorpeek(TRUE);
+	    c = vgetorpeek(VGOP_ADVANCE);
 	    if (did_inc)
 	    {
 		--no_mapping;
@@ -1738,8 +1742,8 @@ vgetc(void)
 
 		++no_mapping;
 		allow_keys = 0;		// make sure BS is not found
-		c2 = vgetorpeek(TRUE);	// no mapping for these chars
-		c = vgetorpeek(TRUE);
+		c2 = vgetorpeek(VGOP_ADVANCE);	// no mapping for these chars
+		c = vgetorpeek(VGOP_ADVANCE);
 		--no_mapping;
 		allow_keys = save_allow_keys;
 		if (c2 == KS_MODIFIER)
@@ -1762,7 +1766,7 @@ vgetc(void)
 		    int		j;
 
 		    // get menu path, it ends with a <CR>
-		    for (j = 0; (c = vgetorpeek(TRUE)) != '\r'; )
+		    for (j = 0; (c = vgetorpeek(VGOP_ADVANCE)) != '\r'; )
 		    {
 			name[j] = c;
 			if (j < 199)
@@ -1872,7 +1876,7 @@ vgetc(void)
 		buf[0] = c;
 		for (i = 1; i < n; ++i)
 		{
-		    buf[i] = vgetorpeek(TRUE);
+		    buf[i] = vgetorpeek(VGOP_ADVANCE);
 		    if (buf[i] == K_SPECIAL
 #ifdef FEAT_GUI
 			    || (buf[i] == CSI)
@@ -1885,8 +1889,8 @@ vgetc(void)
 			// represents a CSI (0x9B),
 			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
 			// too.
-			c = vgetorpeek(TRUE);
-			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
+			c = vgetorpeek(VGOP_ADVANCE);
+			if (vgetorpeek(VGOP_ADVANCE) == KE_CSI && c == KS_EXTRA)
 			    buf[i] = CSI;
 		    }
 		}
@@ -1989,7 +1993,7 @@ vpeekc(void)
 {
     if (old_char != -1)
 	return old_char;
-    return vgetorpeek(FALSE);
+    return vgetorpeek(0);
 }
 
 #if defined(FEAT_TERMRESPONSE) || defined(FEAT_TERMINAL) || defined(PROTO)
@@ -2964,11 +2968,11 @@ vungetc(int c)
  * 3. from the user
  *	This may do a blocking wait if "advance" is TRUE.
  *
- * if "advance" is TRUE (vgetc()):
+ * if "flags & VGOP_ADVANCE" is non-zero (vgetc()):
  *	Really get the character.
  *	KeyTyped is set to TRUE in the case the user typed the key.
  *	KeyStuffed is TRUE if the character comes from the stuff buffer.
- * if "advance" is FALSE (vpeekc()):
+ * if "flags & VGOP_ADVANCE" is zero (vpeekc()):
  *	Just look whether there is a character available.
  *	Return NUL if not.
  *
@@ -2977,8 +2981,9 @@ vungetc(int c)
  * K_SPECIAL and CSI may be escaped, need to get two more bytes then.
  */
     static int
-vgetorpeek(int advance)
+vgetorpeek(int flags)
 {
+    int		advance = flags & VGOP_ADVANCE;
     int		c, c1;
     int		timedout = FALSE;	// waited for more than 1 second
 					// for mapping to complete
@@ -3022,7 +3027,9 @@ vgetorpeek(int advance)
 /*
  * get a character: 1. from the stuffbuffer
  */
-	if (typeahead_char != 0)
+	if (flags & VGOP_NO_STUFF)
+	    c = 0;
+	else if (typeahead_char != 0)
 	{
 	    c = typeahead_char;
 	    if (advance)
@@ -3770,7 +3777,7 @@ getcmdkeycmd(
 	    break;
 	}
 
-	if (vgetorpeek(FALSE) == NUL)
+	if (vgetorpeek(0 | VGOP_NO_STUFF) == NUL)
 	{
 	    // incomplete <Cmd> is an error, because there is not much the user
 	    // could do in this state.
@@ -3780,13 +3787,13 @@ getcmdkeycmd(
 	}
 
 	// Get one character at a time.
-	c1 = vgetorpeek(TRUE);
+	c1 = vgetorpeek(VGOP_ADVANCE | VGOP_NO_STUFF);
 
 	// Get two extra bytes for special keys
 	if (c1 == K_SPECIAL)
 	{
-	    c1 = vgetorpeek(TRUE);
-	    c2 = vgetorpeek(TRUE);
+	    c1 = vgetorpeek(VGOP_ADVANCE | VGOP_NO_STUFF);
+	    c2 = vgetorpeek(VGOP_ADVANCE | VGOP_NO_STUFF);
 	    if (c1 == KS_MODIFIER)
 	    {
 		cmod = c2;
