@@ -711,28 +711,24 @@ static char *(features[]) =
 #else
 	"-xim",
 #endif
-#ifdef MSWIN
+#if defined(MSWIN)
 # ifdef FEAT_XPM_W32
 	"+xpm_w32",
 # else
 	"-xpm_w32",
 # endif
-#else
-# ifdef HAVE_XPM
+#elif defined(HAVE_XPM)
 	"+xpm",
-# else
+#else
 	"-xpm",
-# endif
 #endif
 #if defined(UNIX) || defined(VMS)
-# ifdef USE_XSMP_INTERACT
+# if defined(USE_XSMP_INTERACT)
 	"+xsmp_interact",
-# else
-#  ifdef USE_XSMP
+# elif defined(USE_XSMP)
 	"+xsmp",
-#  else
+# else
 	"-xsmp",
-#  endif
 # endif
 # ifdef FEAT_XCLIPBOARD
 	"+xterm_clipboard",
@@ -10450,53 +10446,35 @@ list_version(void)
     }
 #endif
 
-#ifdef FEAT_HUGE
+#if defined(FEAT_HUGE)
     msg_puts(_("\nHuge version "));
-#else
-# ifdef FEAT_BIG
+#elif defined(FEAT_BIG)
     msg_puts(_("\nBig version "));
-# else
-#  ifdef FEAT_NORMAL
+#elif defined(FEAT_NORMAL)
     msg_puts(_("\nNormal version "));
-#  else
-#   ifdef FEAT_SMALL
+#elif defined(FEAT_SMALL)
     msg_puts(_("\nSmall version "));
-#   else
-    msg_puts(_("\nTiny version "));
-#   endif
-#  endif
-# endif
-#endif
-#ifndef FEAT_GUI
-    msg_puts(_("without GUI."));
 #else
-# ifdef FEAT_GUI_GTK
-#  ifdef USE_GTK3
+    msg_puts(_("\nTiny version "));
+#endif
+#if !defined(FEAT_GUI)
+    msg_puts(_("without GUI."));
+#elif defined(FEAT_GUI_GTK)
+# if defined(USE_GTK3)
     msg_puts(_("with GTK3 GUI."));
-#  else
-#   ifdef FEAT_GUI_GNOME
+# elif defined(FEAT_GUI_GNOME)
      msg_puts(_("with GTK2-GNOME GUI."));
-#   else
-     msg_puts(_("with GTK2 GUI."));
-#   endif
-# endif
 # else
-#  ifdef FEAT_GUI_MOTIF
-    msg_puts(_("with X11-Motif GUI."));
-#  else
-#   ifdef FEAT_GUI_HAIKU
-    msg_puts(_("with Haiku GUI."));
-#   else
-#    ifdef FEAT_GUI_PHOTON
-    msg_puts(_("with Photon GUI."));
-#    else
-#     if defined(MSWIN)
-    msg_puts(_("with GUI."));
-#     endif
-#    endif
-#   endif
-#  endif
+     msg_puts(_("with GTK2 GUI."));
 # endif
+#elif defined(FEAT_GUI_MOTIF)
+    msg_puts(_("with X11-Motif GUI."));
+#elif defined(FEAT_GUI_HAIKU)
+    msg_puts(_("with Haiku GUI."));
+#elif defined(FEAT_GUI_PHOTON)
+    msg_puts(_("with Photon GUI."));
+#elif defined(MSWIN)
+    msg_puts(_("with GUI."));
 #endif
     version_msg(_("  Features included (+) or not (-):\n"));
 

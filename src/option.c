@@ -198,16 +198,14 @@ set_init_1(int clean_arg)
 	if (options[opt_idx].def_val[VI_DEFAULT] == (char_u *)0L)
 #endif
 	{
-#ifdef HAVE_AVAIL_MEM
+#if defined(HAVE_AVAIL_MEM)
 	    // Use amount of memory available at this moment.
 	    n = (mch_avail_mem(FALSE) >> 1);
-#else
-# ifdef HAVE_TOTAL_MEM
+#elif defined(HAVE_TOTAL_MEM)
 	    // Use amount of memory available to Vim.
 	    n = (mch_total_mem(FALSE) >> 1);
-# else
+#else
 	    n = (0x7fffffff >> 11);
-# endif
 #endif
 	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)n;
 	    opt_idx = findoption((char_u *)"maxmem");
@@ -266,21 +264,18 @@ set_init_1(int clean_arg)
     }
 #endif
 
-#if defined(FEAT_POSTSCRIPT) && (defined(MSWIN) || defined(VMS) || defined(MAC) || defined(hpux))
+#if defined(FEAT_POSTSCRIPT) && \
+	(defined(MSWIN) || defined(VMS) || defined(MAC) || defined(hpux))
     // Set print encoding on platforms that don't default to latin1
     set_string_default("penc",
 # if defined(MSWIN)
 		       (char_u *)"cp1252"
-# else
-#  ifdef VMS
+# elif defined(VMS)
 		       (char_u *)"dec-mcs"
-#  else
-#   ifdef MAC
+# elif defined(MAC)
 		       (char_u *)"mac-roman"
-#   else // HPUX
+# else // HPUX
 		       (char_u *)"hp-roman8"
-#   endif
-#  endif
 # endif
 		       );
 #endif
@@ -290,13 +285,11 @@ set_init_1(int clean_arg)
     set_string_default("pexpr",
 # if defined(MSWIN)
 	    (char_u *)"system('copy' . ' ' . v:fname_in . (&printdevice == '' ? ' LPT1:' : (' \"' . &printdevice . '\"'))) . delete(v:fname_in)"
-# else
-#  ifdef VMS
+# elif defined(VMS)
 	    (char_u *)"system('print/delete' . (&printdevice == '' ? '' : ' /queue=' . &printdevice) . ' ' . v:fname_in)"
 
-#  else
+# else
 	    (char_u *)"system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice) . ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error"
-#  endif
 # endif
 	    );
 #endif
@@ -430,11 +423,9 @@ set_init_1(int clean_arg)
 	    vim_setenv((char_u *)"LANG", (char_u *)buf);
 	}
     }
-# else
-#  ifdef MACOS_CONVERT
+# elif defined(MACOS_CONVERT)
     // Moved to os_mac_conv.c to avoid dependency problems.
     mac_lang_init();
-#  endif
 # endif
 
 # ifdef MSWIN
