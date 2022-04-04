@@ -2965,11 +2965,12 @@ if test -z "$SKIP_MOTIF"; then
 
     dnl Ubuntu has libXm.so in /usr/lib/i386-linux-gnu and elsewhere.  The
     dnl linker will figure out which one to use, we only check if one exists.
+    dnl Cygwin uses the .dll.a extension.
     AC_MSG_CHECKING(for location of Motif GUI libs)
     gui_libs="`echo $x_libraries|sed 's%/[^/][^/]*$%%'` `echo "$gui_XXX" | sed s/XXX/lib/g` /usr/lib/i386-linux-gnu /usr/lib/x86_64-linux-gnu `echo "$GUI_INC_LOC" | sed s/include/lib/` $GUI_LIB_LOC"
     GUI_LIB_LOC=
     for try in $gui_libs; do
-      for libtry in "$try"/libXm.a "$try"/libXm.so* "$try"/libXm.sl "$try"/libXm.dylib; do
+      for libtry in "$try"/libXm.a "$try"/libXm.dll.a "$try"/libXm.so* "$try"/libXm.sl "$try"/libXm.dylib; do
 	if test -f "$libtry"; then
 	  GUI_LIB_LOC=$try
 	fi
