@@ -1989,7 +1989,9 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	new_buffer = FALSE;
 	win_init_popup_win(wp, buf);
 	set_local_options_default(wp, FALSE);
+	swap_exists_action = SEA_READONLY;
 	buffer_ensure_loaded(buf);
+	swap_exists_action = SEA_NONE;
     }
     else
     {

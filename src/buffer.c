@@ -150,7 +150,8 @@ buffer_ensure_loaded(buf_T *buf)
 	aco_save_T	aco;
 
 	aucmd_prepbuf(&aco, buf);
-	swap_exists_action = SEA_NONE;
+	if (swap_exists_action != SEA_READONLY)
+	    swap_exists_action = SEA_NONE;
 	open_buffer(FALSE, NULL, 0);
 	aucmd_restbuf(&aco);
     }
@@ -1053,10 +1054,12 @@ goto_buffer(
     int		count)
 {
     bufref_T	old_curbuf;
+    int		save_sea = swap_exists_action;
 
     set_bufref(&old_curbuf, curbuf);
 
-    swap_exists_action = SEA_DIALOG;
+    if (swap_exists_action == SEA_NONE)
+	swap_exists_action = SEA_DIALOG;
     (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
 					     start, dir, count, eap->forceit);
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
@@ -1071,7 +1074,7 @@ goto_buffer(
 
 	// Quitting means closing the split window, nothing else.
 	win_close(curwin, TRUE);
-	swap_exists_action = SEA_NONE;
+	swap_exists_action = save_sea;
 	swap_exists_did_quit = TRUE;
 
 #if defined(FEAT_EVAL)

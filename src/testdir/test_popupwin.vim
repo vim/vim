@@ -2775,6 +2775,26 @@ func Test_popupwin_with_buffer()
   call delete('XsomeFile')
 endfunc
 
+func Test_popupwin_buffer_with_swapfile()
+  call writefile(['some text', 'in a buffer'], 'XopenFile')
+  call writefile([''], '.XopenFile.swp')
+  let g:ignoreSwapExists = 1
+
+  let bufnr = bufadd('XopenFile')
+  call assert_equal(0, bufloaded(bufnr))
+  let winid = popup_create(bufnr, {'hidden': 1})
+  call assert_equal(1, bufloaded(bufnr))
+  call popup_close(winid)
+
+  exe 'buffer ' .. bufnr
+  call assert_equal(1, &readonly)
+  bwipe!
+
+  call delete('XopenFile')
+  call delete('.XopenFile.swp')
+  unlet g:ignoreSwapExists
+endfunc
+
 func Test_popupwin_terminal_buffer()
   CheckFeature terminal
   CheckUnix
