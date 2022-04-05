@@ -153,13 +153,21 @@ def Test_add_list()
   END
   v9.CheckDefExecFailure(lines, 'E1130:', 2)
 
-  # Getting variable with NULL list allocates a new list at script level
+  # Getting an uninitialized variable allocates a new list at script level
+  lines =<< trim END
+      vim9script
+      var l: list<number>
+      add(l, 123)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Adding to a variable set to a NULL list fails
   lines =<< trim END
       vim9script
       var l: list<number> = test_null_list()
       add(l, 123)
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E1130:', 3)
 
   lines =<< trim END
       vim9script

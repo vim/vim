@@ -334,7 +334,7 @@ free_all_script_vars(scriptitem_T *si)
     {
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
-	if (sv->sv_type_allocated)
+	if (sv->sv_flags & SVFLAG_TYPE_ALLOCATED)
 	    free_type(sv->sv_type);
     }
     ga_clear(&si->sn_var_vals);
@@ -721,7 +721,7 @@ find_exported(
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
 	*ufunc = NULL;
-	if (!sv->sv_export)
+	if ((sv->sv_flags & SVFLAG_EXPORTED) == 0)
 	{
 	    if (verbose)
 		semsg(_(e_item_not_exported_in_script_str), name);
@@ -871,7 +871,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
  * with a hashtable) and sn_var_vals (lookup by index).
  * When "create" is TRUE this is a new variable, otherwise find and update an
  * existing variable.
- * "flags" can have ASSIGN_FINAL or ASSIGN_CONST.
+ * "flags" can have ASSIGN_FINAL, ASSIGN_CONST or ASSIGN_INIT.
  * When "*type" is NULL use "tv" for the type and update "*type".  If
  * "do_member" is TRUE also use the member type, otherwise use "any".
  */
@@ -938,7 +938,9 @@ update_vim9_script_var(
 	    sv->sv_tv = &di->di_tv;
 	    sv->sv_const = (flags & ASSIGN_FINAL) ? ASSIGN_FINAL
 				   : (flags & ASSIGN_CONST) ? ASSIGN_CONST : 0;
-	    sv->sv_export = is_export;
+	    sv->sv_flags = is_export ? SVFLAG_EXPORTED : 0;
+	    if ((flags & ASSIGN_INIT) == 0)
+		sv->sv_flags |= SVFLAG_ASSIGNED;
 	    newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	    ++si->sn_var_vals.ga_len;
 	    STRCPY(&newsav->sav_key, name);
@@ -970,7 +972,7 @@ update_vim9_script_var(
 	    // "var b: blob = null_blob" has a different type.
 	    *type = &t_blob_null;
 	}
-	if (sv->sv_type_allocated)
+	if (sv->sv_flags & SVFLAG_TYPE_ALLOCATED)
 	    free_type(sv->sv_type);
 	if (*type != NULL && ((*type)->tt_type == VAR_FUNC
 					   || (*type)->tt_type == VAR_PARTIAL))
@@ -979,12 +981,12 @@ update_vim9_script_var(
 	    // function is freed, but the script variable may keep the type.
 	    // Make a copy to avoid using freed memory.
 	    sv->sv_type = alloc_type(*type);
-	    sv->sv_type_allocated = TRUE;
+	    sv->sv_flags |= SVFLAG_TYPE_ALLOCATED;
 	}
 	else
 	{
 	    sv->sv_type = *type;
-	    sv->sv_type_allocated = FALSE;
+	    sv->sv_flags &= ~SVFLAG_TYPE_ALLOCATED;
 	}
     }
 

@@ -1807,6 +1807,10 @@ struct sallvar_S {
 #define HIKEY2SAV(p)  ((sallvar_T *)(p - offsetof(sallvar_T, sav_key)))
 #define HI2SAV(hi)     HIKEY2SAV((hi)->hi_key)
 
+#define SVFLAG_TYPE_ALLOCATED	1  // call free_type() for "sv_type"
+#define SVFLAG_EXPORTED		2  // "export let var = val"
+#define SVFLAG_ASSIGNED		4  // assigned a value
+
 /*
  * Entry for "sn_var_vals".  Used for script-local variables.
  */
@@ -1814,9 +1818,8 @@ struct svar_S {
     char_u	*sv_name;	// points into "sn_all_vars" di_key
     typval_T	*sv_tv;		// points into "sn_vars" or "sn_all_vars" di_tv
     type_T	*sv_type;
-    int		sv_type_allocated;  // call free_type() for sv_type
+    int		sv_flags;	// SVFLAG_ values above
     int		sv_const;	// 0, ASSIGN_CONST or ASSIGN_FINAL
-    int		sv_export;	// "export let var = val"
 };
 
 typedef struct {

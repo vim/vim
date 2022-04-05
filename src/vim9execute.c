@@ -1514,7 +1514,8 @@ get_script_svar(scriptref_T *sref, int dfunc_idx)
 	return NULL;
     }
 
-    if (!sv->sv_export && sref->sref_sid != current_sctx.sc_sid)
+    if ((sv->sv_flags & SVFLAG_EXPORTED) == 0
+				      && sref->sref_sid != current_sctx.sc_sid)
     {
 	if (dfunc != NULL)
 	    semsg(_(e_item_not_exported_in_script_str), sv->sv_name);
@@ -2952,7 +2953,7 @@ exec_instructions(ectx_T *ectx)
 			    {
 				sv = ((svar_T *)SCRIPT_ITEM(sid)
 						  ->sn_var_vals.ga_data) + idx;
-				if (!sv->sv_export)
+				if ((sv->sv_flags & SVFLAG_EXPORTED) == 0)
 				{
 				    SOURCING_LNUM = iptr->isn_lnum;
 				    semsg(_(e_item_not_exported_in_script_str),
@@ -3117,7 +3118,7 @@ exec_instructions(ectx_T *ectx)
 				svar_T	*sv = ((svar_T *)SCRIPT_ITEM(sid)
 						  ->sn_var_vals.ga_data) + idx;
 
-				if (!sv->sv_export)
+				if ((sv->sv_flags & SVFLAG_EXPORTED) == 0)
 				{
 				    semsg(_(e_item_not_exported_in_script_str),
 									 name);
