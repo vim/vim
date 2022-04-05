@@ -1419,6 +1419,14 @@ static int old_char = -1;	// character put back by vungetc()
 static int old_mod_mask;	// mod_mask for ungotten character
 static int old_mouse_row;	// mouse_row related to old_char
 static int old_mouse_col;	// mouse_col related to old_char
+static int old_KeyStuffed;	// whether old_char was stuffed
+
+static int can_get_old_char()
+{
+    // If the old character was not stuffed and characters have been added to
+    // the stuff buffer, need to first get the stuffed characters instead.
+    return old_char != -1 && (old_KeyStuffed || stuff_empty());
+}
 
 /*
  * Save all three kinds of typeahead, so that the user must type at a prompt.
@@ -1687,7 +1695,7 @@ vgetc(void)
      * If a character was put back with vungetc, it was already processed.
      * Return it directly.
      */
-    if (old_char != -1)
+    if (can_get_old_char())
     {
 	c = old_char;
 	old_char = -1;
@@ -1987,7 +1995,7 @@ plain_vgetc(void)
     int
 vpeekc(void)
 {
-    if (old_char != -1)
+    if (can_get_old_char())
 	return old_char;
     return vgetorpeek(FALSE);
 }
@@ -2942,6 +2950,8 @@ handle_mapping(
 
 /*
  * unget one character (can only be done once!)
+ * If the character was stuffed, vgetc() will get it next time it was called.
+ * Otherwise vgetc() will only get it when the stuff buffer is empty.
  */
     void
 vungetc(int c)
@@ -2950,6 +2960,7 @@ vungetc(int c)
     old_mod_mask = mod_mask;
     old_mouse_row = mouse_row;
     old_mouse_col = mouse_col;
+    old_KeyStuffed = KeyStuffed;
 }
 
 /*
@@ -3755,8 +3766,6 @@ getcmdkeycmd(
     int		c2;
     int		cmod = 0;
     int		aborted = FALSE;
-    int		first = TRUE;
-    int		got_ctrl_o = FALSE;
 
     ga_init2(&line_ga, 1, 32);
 
@@ -3783,15 +3792,6 @@ getcmdkeycmd(
 
 	// Get one character at a time.
 	c1 = vgetorpeek(TRUE);
-
-	// do not use Ctrl_O at the start, stuff it back later
-	if (first && c1 == Ctrl_O)
-	{
-	    got_ctrl_o = TRUE;
-	    first = FALSE;
-	    continue;
-	}
-	first = FALSE;
 
 	// Get two extra bytes for special keys
 	if (c1 == K_SPECIAL)
@@ -3844,8 +3844,6 @@ getcmdkeycmd(
     }
 
     no_mapping--;
-    if (got_ctrl_o)
-	stuffcharReadbuff(Ctrl_O);
 
     if (aborted)
 	ga_clear(&line_ga);
