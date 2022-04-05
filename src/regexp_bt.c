@@ -1617,6 +1617,7 @@ regatom(int *flagp)
 			      long_u	n = 0;
 			      int	cmp;
 			      int	cur = FALSE;
+			      int	got_digit = FALSE;
 
 			      cmp = c;
 			      if (cmp == '<' || cmp == '>')
@@ -1628,6 +1629,7 @@ regatom(int *flagp)
 			      }
 			      while (VIM_ISDIGIT(c))
 			      {
+				  got_digit = TRUE;
 				  n = n * 10 + (c - '0');
 				  c = getchr();
 			      }
@@ -1645,7 +1647,8 @@ regatom(int *flagp)
 				  }
 				  break;
 			      }
-			      else if (c == 'l' || c == 'c' || c == 'v')
+			      else if ((c == 'l' || c == 'c' || c == 'v')
+					  && (cur || got_digit))
 			      {
 				  if (cur && n)
 				  {
