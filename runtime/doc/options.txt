@@ -1018,8 +1018,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'backupcopy'* *'bkc'*
 'backupcopy' 'bkc'	string	(Vi default for Unix: "yes", otherwise: "auto")
 			global or local to buffer |global-local|
-	When writing a file and a backup is made, this option tells how it's
-	done.  This is a comma separated list of words.
+	When writing a file and a backup is made, this option sets how it's
+	done.  This is a comma-separated list of words.
 
 	The main values are:
 	"yes"	make a copy of the file and overwrite the original one
@@ -1043,10 +1043,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  file.
 	- When the file is a link the new file will not be a link.
 
-	The "auto" value is the middle way: When Vim sees that renaming file
-	is possible without side effects (the attributes can be passed on and
-	the file is not a link) that is used.  When problems are expected, a
-	copy will be made.
+	The "auto" value is the middle way: When Vim sees that renaming the
+	file is possible without side effects (the attributes can be passed on
+	and the file is not a link), that is used.  When problems are expected,
+	a copy will be made.
 
 	The "breaksymlink" and "breakhardlink" values can be used in
 	combination with any of "yes", "no" and "auto".  When included, they
@@ -1065,13 +1065,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	When a copy is made, the original file is truncated and then filled
 	with the new text.  This means that protection bits, owner and
-	symbolic links of the original file are unmodified.  The backup file
+	symbolic links of the original file are unmodified.  The backup file,
 	however, is a new file, owned by the user who edited the file.  The
 	group of the backup is set to the group of the original file.  If this
 	fails, the protection bits for the group are made the same as for
 	others.
 
-	When the file is renamed this is the other way around: The backup has
+	When the file is renamed, this is the other way around: The backup has
 	the same attributes of the original file, and the newly written file
 	is owned by the current user.  When the file was a (hard/symbolic)
 	link, the new file will not!  That's why the "auto" value doesn't
@@ -1138,7 +1138,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	accidentally overwriting existing files with a backup file.  You might
 	prefer using ".bak", but make sure that you don't have files with
 	".bak" that you want to keep.
-	Only normal file name characters can be used, "/\*?[|<>" are illegal.
+	Only normal file name characters can be used; "/\*?[|<>" are illegal.
 
 	If you like to keep a lot of backups, you could use a BufWritePre
 	autocommand to change 'backupext' just before writing the file to
