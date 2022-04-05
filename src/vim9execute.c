@@ -196,8 +196,10 @@ exe_newdict(int count, ectx_T *ectx)
 		dict_unref(dict);
 		return FAIL;
 	    }
-	    item->di_tv = *STACK_TV_BOT(2 * (idx - count) + 1);
+	    tv = STACK_TV_BOT(2 * (idx - count) + 1);
+	    item->di_tv = *tv;
 	    item->di_tv.v_lock = 0;
+	    tv->v_type = VAR_UNKNOWN;
 	    if (dict_add(dict, item) == FAIL)
 	    {
 		// can this ever happen?
@@ -5363,7 +5365,7 @@ call_def_function(
     did_emsg_def += save_did_emsg_def;
 
 failed_early:
-    // Free all local variables, but not arguments.
+    // Free all arguments and local variables.
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
 	clear_tv(STACK_TV(idx));
     ex_nesting_level = orig_nesting_level;

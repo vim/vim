@@ -2774,6 +2774,9 @@ def Test_expr8_dict()
   v9.CheckScriptFailure(['vim9script', "var x = {xxx: 1,"], 'E723:', 2)
   v9.CheckDefAndScriptFailure(["var x = {['a']: xxx}"], ['E1001:', 'E121:'], 1)
   v9.CheckDefAndScriptFailure(["var x = {a: 1, a: 2}"], 'E721:', 1)
+  g:key = 'x'
+  v9.CheckDefExecAndScriptFailure(["var x = {[g:key]: 'text', [g:key]: 'text'}"], 'E721:', 1)
+  unlet g:key
   v9.CheckDefExecAndScriptFailure(["var x = g:anint.member"], ['E715:', 'E488:'], 1)
   v9.CheckDefExecAndScriptFailure(["var x = g:dict_empty.member"], 'E716:', 1)
 
