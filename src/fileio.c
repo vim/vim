@@ -5017,13 +5017,16 @@ delete_recursive(char_u *name)
 		vim_snprintf((char *)NameBuff, MAXPATHL, "%s/%s", exp,
 					    ((char_u **)ga.ga_data)[i]);
 		if (delete_recursive(NameBuff) != 0)
+		    // Remember the failure but continue deleting any further
+		    // entries.
 		    result = -1;
 	    }
 	    ga_clear_strings(&ga);
+	    if (mch_rmdir(exp) != 0)
+		result = -1;
 	}
 	else
 	    result = -1;
-	(void)mch_rmdir(exp);
 	vim_free(exp);
     }
     else
