@@ -3997,6 +3997,11 @@ channel_read_json_block(
 	    if (channel_parse_messages())
 		continue;
 
+	    // The call to `channel_parse_messages` may fill the queue with new
+	    // data to process.
+	    if (channel_has_readahead(channel, part))
+		continue;
+
 	    // Wait for up to the timeout.  If there was an incomplete message
 	    // use the deadline for that.
 	    timeout = timeout_arg;
