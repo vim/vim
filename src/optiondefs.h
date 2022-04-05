@@ -1148,21 +1148,17 @@ static struct vimoption options[] =
 #ifdef FEAT_QUICKFIX
 			    (char_u *)&p_gp, PV_GP,
 			    {
-# ifdef MSWIN
+# if defined(MSWIN)
 			    // may be changed to "grep -n" in os_win32.c
 			    (char_u *)"findstr /n",
-# else
-#  ifdef UNIX
+# elif defined(UNIX)
 			    // Add an extra file name so that grep will always
 			    // insert a file name in the match line.
 			    (char_u *)"grep -n $* /dev/null",
-#  else
-#   ifdef VMS
+# elif defined(VMS)
 			    (char_u *)"SEARCH/NUMBERS ",
-#   else
+# else
 			    (char_u *)"grep -n ",
-#   endif
-#  endif
 # endif
 			    (char_u *)0L}
 #else
@@ -1431,14 +1427,12 @@ static struct vimoption options[] =
 				// ( and ) are used in text separating fnames
 			    (char_u *)"@,48-57,/,\\,.,-,_,+,,,#,$,%,{,},[,],:,@-@,!,~,=",
 #else
-# ifdef AMIGA
+# if defined(AMIGA)
 			    (char_u *)"@,48-57,/,.,-,_,+,,,$,:",
-# else
-#  ifdef VMS
+# elif defined(VMS)
 			    (char_u *)"@,48-57,/,.,-,_,+,,,#,$,%,<,>,[,],:,;,~",
-#  else // UNIX et al.
+# else // UNIX et al.
 			    (char_u *)"@,48-57,/,.,-,_,+,,,#,$,%,~,=",
-#  endif
 # endif
 #endif
 				(char_u *)0L} SCTX_INIT},
@@ -1497,18 +1491,14 @@ static struct vimoption options[] =
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_kp, PV_KP,
 			    {
-#ifdef MSWIN
+#if defined(MSWIN)
 			    (char_u *)":help",
-#else
-# ifdef VMS
+#elif defined(VMS)
 			    (char_u *)"help",
-# else
-#  ifdef USEMAN_S
+#elif defined(USEMAN_S)
 			    (char_u *)"man -s",
-#  else
+#else
 			    (char_u *)"man",
-#  endif
-# endif
 #endif
 				(char_u *)0L} SCTX_INIT},
     {"langmap",     "lmap", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_SECURE,
@@ -2767,13 +2757,11 @@ static struct vimoption options[] =
 			    (char_u *)&p_viminfo, PV_NONE,
 #if defined(MSWIN)
 			    {(char_u *)"", (char_u *)"'100,<50,s10,h,rA:,rB:"}
-#else
-# ifdef AMIGA
+#elif defined(AMIGA)
 			    {(char_u *)"",
 				 (char_u *)"'100,<50,s10,h,rdf0:,rdf1:,rdf2:"}
-# else
+#else
 			    {(char_u *)"", (char_u *)"'100,<50,s10,h"}
-# endif
 #endif
 #else
 			    (char_u *)NULL, PV_NONE,
