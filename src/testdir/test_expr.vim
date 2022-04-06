@@ -634,6 +634,30 @@ func Test_printf_spec_b()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+func Test_vprintf()
+  call v9.CheckLegacyAndVim9Failure(['echo vprintf()'],            'E119')
+  call v9.CheckLegacyAndVim9Failure(['echo vprintf("%d")'],        'E119')
+  call v9.CheckLegacyAndVim9Failure(['echo vprintf("%d", 3)'],     [ 'E474', 'E1013:', 'E1211'])
+  call v9.CheckLegacyAndVim9Failure(['echo vprintf(3, [])'],       [ 'E474', 'E1013:', 'E1174'])
+  call v9.CheckLegacyAndVim9Failure(['echo vprintf("%d", [], 3)'], 'E118')
+
+  call v9.CheckLegacyAndVim9Failure([ 'echo vprintf("", [0])' ], 'E767')
+  call v9.CheckLegacyAndVim9Failure([ 'echo vprintf("%d", [])' ], 'E766')
+
+  let lines =<< trim END
+      call assert_equal("3 7", vprintf("%d %d", [3, 7]))
+      call assert_equal("0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7", vprintf("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7 ]))
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  call v9.CheckLegacyAndVim9Failure(['echo vprintf(
+        \ "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+        \ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8] )'], 'E118:')
+  call v9.CheckLegacyAndVim9Failure(['echo vprintf(
+        \ "%s",
+        \ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8] )'], 'E118:')
+endfunc
+
 func Test_max_min_errors()
   call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['E712:', 'E1013:', 'E1227:'])
   call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['max()', 'E1013:', 'E1227:'])

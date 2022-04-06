@@ -682,6 +682,7 @@ uniq({list} [, {func} [, {dict}]])
 values({dict})			List	values in {dict}
 virtcol({expr})			Number	screen column of cursor or mark
 visualmode([expr])		String	last visual mode used
+vprintf({fmt}, {list})		String	format text
 wildmenumode()			Number	whether 'wildmenu' mode is active
 win_execute({id}, {command} [, {silent}])
 				String	execute {command} in window {id}
@@ -9517,6 +9518,15 @@ visualmode([{expr}])						*visualmode()*
 		If {expr} is supplied and it evaluates to a non-zero Number or
 		a non-empty String, then the Visual mode will be cleared and
 		the old value is returned.  See |non-zero-arg|.
+
+vprintf({fmt}, {list})					*vprintf()*
+		Identical to |printf()| except that the arguments are taken
+		from the list.
+
+		When used as a |method| the base is passed as the second
+		argument.  Example: >
+			echo [3, 7]->printf("v1: %d, v2: %d")
+<			v1: 3, v2: 7
 
 wildmenumode()					*wildmenumode()*
 		Returns |TRUE| when the wildmenu is active and |FALSE|

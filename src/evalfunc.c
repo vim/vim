@@ -180,6 +180,7 @@ static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 static void f_type(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
+static void f_vprintf(typval_T *argvars, typval_T *rettv);
 static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
@@ -977,6 +978,7 @@ static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
 static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
 static argcheck_T arg2_string_list_number[] = {arg_string, arg_list_number};
+static argcheck_T arg2_string_list_any[] = {arg_string, arg_list_any};
 static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
@@ -2635,6 +2637,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_virtcol},
     {"visualmode",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_visualmode},
+    {"vprintf",		2, 2, FEARG_2,	    arg2_string_list_any,
+			ret_string,	    f_vprintf},
     {"wildmenumode",	0, 0, 0,	    NULL,
 			ret_number,	    f_wildmenumode},
     {"win_execute",	2, 3, FEARG_2,	    arg23_win_execute,
@@ -10398,6 +10402,61 @@ f_visualmode(typval_T *argvars, typval_T *rettv)
     // A non-zero number or non-empty string argument: reset mode.
     if (non_zero_arg(&argvars[0]))
 	curbuf->b_visual_mode_eval = NUL;
+}
+
+/*
+ * "vprintf()" function
+ */
+    static void
+f_vprintf(typval_T *argvars, typval_T *rettv)
+{
+    list_T  *l;
+    int_u    n_list_arg;
+    int	    i;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_list_arg(argvars, 1) == FAIL))
+	return;
+
+    if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_LIST)
+    {
+	emsg(_(e_invalid_argument));
+	return;
+    }
+
+    // copy list values into expanded_argvars, then pass it on to f_printf
+
+    l = argvars[1].vval.v_list;
+    n_list_arg = list_len(l);
+
+
+    // CAN'T FIND AN "N_ELEM" MACRO <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // limit to max args printf expects, - 1 for the fmt arg
+    if (n_list_arg > sizeof(arg119_printf) / sizeof(arg119_printf[0]) - 1) {
+	// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	// MAY NOT QUITE BE THE RIGHT MESSAGE, BUT IT FITS PRETTY WELL
+	semsg(_(e_too_many_arguments_for_function_str), "vprintf");
+	goto theend;
+    }
+
+    // allocate fmt,arg1,arg2,... for printf.
+    // + 2 for format string and terminating VAR_UNKNOWN
+    typval_T *expanded_argvars = ALLOC_MULT(typval_T, n_list_arg + 2);
+
+    // copy fmt, then list, then terminate
+    expanded_argvars[0] = argvars[0];
+    for (i = 0; i < n_list_arg; i++)
+	expanded_argvars[1 + i] = list_find(l, i)->li_tv;
+    expanded_argvars[n_list_arg + 1].v_type = VAR_UNKNOWN;
+
+    f_printf(expanded_argvars, rettv);
+    free(expanded_argvars);
+    return;
+
+theend:
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
 }
 
 /*
