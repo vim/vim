@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Mar 05
+# Last Change:	2022 Apr 06
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -168,7 +168,7 @@ enddef
 
 export def FTent()
   # This function checks for valid cl syntax in the first five lines.
-  # Look for either an opening comment, '#', or a block start, '{".
+  # Look for either an opening comment, '#', or a block start, '{'.
   # If not found, assume SGML.
   var lnum = 1
   while lnum < 6
@@ -526,6 +526,31 @@ export def FTpp()
   endif
 enddef
 
+# Returns true if file content looks like RAPID
+def IsRapid(sChkExt: string = "mod_prg_sys"): bool
+  if sChkExt == "cfg"
+    return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
+  endif
+  return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
+enddef
+
+export def FTprg()
+  # ABB RAPID, Clipper, FoxPro or eviews
+
+  # RAPID is easy to recognize, check for that first
+  if IsRapid()
+    setf rapid
+    return
+  endif
+
+  # Nothing recognized, use user default or assume Clipper
+  if exists("g:filetype_prg")
+    exe "setf " .. g:filetype_prg
+  else
+    setf clipper
+  endif
+enddef
+
 export def FTr()
   var max = line("$") > 50 ? 50 : line("$")
 
@@ -572,7 +597,7 @@ export def McSetf()
       return
     endif
   endfor
-  setf m4  " Default: Sendmail .mc file
+  setf m4  # Default: Sendmail .mc file
 enddef
 
 # Called from filetype.vim and scripts.vim.

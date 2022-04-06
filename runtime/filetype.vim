@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Feb 13
+" Last Change:	2022 Apr 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -360,13 +360,8 @@ au BufNewFile,BufRead *.eni			setf cl
 " Clever or dtd
 au BufNewFile,BufRead *.ent			call dist#ft#FTent()
 
-" Clipper (or FoxPro; could also be eviews)
-au BufNewFile,BufRead *.prg
-	\ if exists("g:filetype_prg") |
-	\   exe "setf " . g:filetype_prg |
-	\ else |
-	\   setf clipper |
-	\ endif
+" Clipper, FoxPro, ABB RAPID or eviews
+au BufNewFile,BufRead *.prg\c			call dist#ft#FTprg()
 
 " Clojure
 au BufNewFile,BufRead *.clj,*.cljs,*.cljx,*.cljc		setf clojure

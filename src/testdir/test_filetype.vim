@@ -1336,6 +1336,53 @@ func Test_pp_file()
   filetype off
 endfunc
 
+" Test dist#ft#FTprg()
+func Test_prg_file()
+  filetype on
+
+  " *.prg defaults to clipper
+  call writefile(['looks like clipper'], 'prgfile.prg')
+  split prgfile.prg
+  call assert_equal('clipper', &filetype)
+  bwipe!
+
+  " Users preference set by g:filetype_prg
+  let g:filetype_prg = 'eviews'
+  split prgfile.prg
+  call assert_equal('eviews', &filetype)
+  bwipe!
+
+  " RAPID header start with a line containing only "%%%", 
+  " but is not always present.
+  call writefile(['%%%'], 'prgfile.prg')
+  split prgfile.prg
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('prgfile.prg')
+
+  " RAPID supports umlauts in module names, leading spaces,
+  " the .prg extension is not case sensitive.
+  call writefile(['  module ÜmlautModule'], 'prgfile.Prg')
+  split prgfile.Prg
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('prgfile.Prg')
+
+  " RAPID is not case sensitive, embedded spaces, sysmodule, 
+  " file starts with empty line(s).
+  call writefile(['', 'MODULE  rapidmödüle  (SYSMODULE,NOSTEPIN)'], 'prgfile.PRG')
+  split prgfile.PRG
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('prgfile.PRG')
+
+  " Recognize RAPID even though g:filetype_prg is set.
+  " Clean up now
+  unlet g:filetype_prg
+
+  filetype off
+endfunc
+
 func Test_src_file()
   filetype on
 
