@@ -952,13 +952,19 @@ au BufNewFile,BufRead *.jl			setf julia
 au BufNewFile,BufRead *.kix			setf kix
 
 " Kuka Robot Language
-au BufNewFile,BufRead *.src\c			setf krl
-au BufNewFile,BufRead *.sub\c			setf krl
-au BufNewFile *.dat\c				setf krl
-au BufRead *.dat\c			
-	\  if getline(nextnonblank(1)) =~? '^\s*\(&\w\+\|defdat\>\)'
+au BufNewFile,BufRead *.src\c
+	\  if exists("g:filetype_src")
+	\|   exe "setf " . g:filetype_src
+	\| elseif getline(nextnonblank(1)) =~? '^\s*\%(&\w\+\|\%(global\s\+\)\?def\>\)'
 	\|   setf krl
 	\| endif
+au BufNewFile,BufRead *.dat\c			
+	\  if exists("g:filetype_dat")
+	\|   exe "setf " . g:filetype_dat
+	\| elseif getline(nextnonblank(1)) =~? '^\s*\%(&\w\+\|defdat\>\)'
+	\|   setf krl
+	\| endif
+au BufNewFile,BufRead *.sub\c			setf krl
 
 " Kimwitu[++]
 au BufNewFile,BufRead *.k			setf kwt
