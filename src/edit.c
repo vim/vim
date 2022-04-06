@@ -3149,21 +3149,20 @@ mb_replace_pop_ins(int cc)
 		replace_push(c);
 		break;
 	    }
+
+	    buf[0] = c;
+	    for (i = 1; i < n; ++i)
+		buf[i] = replace_pop();
+	    if (utf_iscomposing(utf_ptr2char(buf)))
+		ins_bytes_len(buf, n);
 	    else
 	    {
-		buf[0] = c;
-		for (i = 1; i < n; ++i)
-		    buf[i] = replace_pop();
-		if (utf_iscomposing(utf_ptr2char(buf)))
-		    ins_bytes_len(buf, n);
-		else
-		{
-		    // Not a composing char, put it back.
-		    for (i = n - 1; i >= 0; --i)
-			replace_push(buf[i]);
-		    break;
-		}
+		// Not a composing char, put it back.
+		for (i = n - 1; i >= 0; --i)
+		    replace_push(buf[i]);
+		break;
 	    }
+
 	}
 }
 
