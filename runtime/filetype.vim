@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Feb 13
+" Last Change:	2022 Apr 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -950,6 +950,15 @@ au BufNewFile,BufRead *.jl			setf julia
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
+
+" Kuka Robot Language
+au BufNewFile,BufRead *.src\c			setf krl
+au BufNewFile,BufRead *.sub\c			setf krl
+au BufNewFile *.dat\c				setf krl
+au BufRead *.dat\c			
+	\  if getline(nextnonblank(1)) =~? '^\s*\(&\w\+\|defdat\>\)'
+	\|   setf krl
+	\| endif
 
 " Kimwitu[++]
 au BufNewFile,BufRead *.k			setf kwt

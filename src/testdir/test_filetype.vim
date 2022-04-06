@@ -290,6 +290,7 @@ let s:filename_checks = {
     \ 'kivy': ['file.kv'],
     \ 'kix': ['file.kix'],
     \ 'kotlin': ['file.kt', 'file.ktm', 'file.kts'],
+    \ 'krl': ['file.src', 'file.Src', 'file.SRC', 'file.sub', 'file.Sub', 'file.SUB', 'file.dat', 'file.Dat', 'file.DAT'],
     \ 'kscript': ['file.ks'],
     \ 'kwt': ['file.k'],
     \ 'lace': ['file.ace', 'file.ACE'],
