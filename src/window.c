@@ -2784,6 +2784,30 @@ trigger_winclosed(win_T *win)
     recursive = FALSE;
 }
 
+    void
+trigger_winscrolled(win_T *wp)
+{
+    static int	    recursive = FALSE;
+
+    if (recursive)
+	return;
+
+    if (wp->w_last_topline != wp->w_topline ||
+	    wp->w_last_leftcol != wp->w_leftcol ||
+	    wp->w_last_width != wp->w_width ||
+	    wp->w_last_height != wp->w_height)
+    {
+	recursive = TRUE;
+	apply_autocmds(EVENT_WINSCROLLED, NULL, NULL, FALSE, wp->w_buffer);
+	recursive = FALSE;
+
+	wp->w_last_topline = wp->w_topline;
+	wp->w_last_leftcol = wp->w_leftcol;
+	wp->w_last_width = wp->w_width;
+	wp->w_last_height = wp->w_height;
+    }
+}
+
 /*
  * Close window "win" in tab page "tp", which is not the current tab page.
  * This may be the last window in that tab page and result in closing the tab,

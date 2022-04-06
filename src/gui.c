@@ -5237,6 +5237,9 @@ gui_update_screen(void)
 	last_cursormoved = curwin->w_cursor;
     }
 
+    if (!finish_op && has_winscrolled())
+	trigger_winscrolled(curwin);
+
 # ifdef FEAT_CONCEAL
     if (conceal_update_lines
 	    && (conceal_old_cursor_line != conceal_new_cursor_line

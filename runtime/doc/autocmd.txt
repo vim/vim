@@ -402,6 +402,8 @@ Name			triggered by ~
 |User|			to be used in combination with ":doautocmd"
 |SigUSR1|		after the SIGUSR1 signal has been detected
 
+WinScrolled		after scrolling a window
+
 
 The alphabetical list of autocommand events:		*autocmd-events-abc*
 
@@ -1316,6 +1318,9 @@ WinLeave			Before leaving a window.  If the window to be
 WinNew				When a new window was created.  Not done for
 				the first window, when Vim has just started.
 				Before a WinEnter event.
+
+							*WinScrolled*
+WinScrolled			After scrolling the content of a window.
 
 ==============================================================================
 6. Patterns					*autocmd-patterns* *{aupat}*

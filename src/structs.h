@@ -3509,6 +3509,11 @@ struct window_S
 				    // window
 #endif
 
+    linenr_T	w_last_topline;	    // last known value for w_topline
+    colnr_T	w_last_leftcol;	    // last known value for w_leftcol
+    int		w_last_width;	    // last known value for w_width
+    int		w_last_height;	    // last known value for w_height
+
     /*
      * Layout of the window in the screen.
      * May need to add "msg_scrolled" to "w_winrow" in rare situations.

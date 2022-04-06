@@ -190,6 +190,7 @@ static struct event_name
     {"WinClosed",	EVENT_WINCLOSED},
     {"WinEnter",	EVENT_WINENTER},
     {"WinLeave",	EVENT_WINLEAVE},
+    {"WinScrolled",	EVENT_WINSCROLLED},
     {"VimResized",	EVENT_VIMRESIZED},
     {"TextYankPost",	EVENT_TEXTYANKPOST},
     {"VimSuspend",	EVENT_VIMSUSPEND},
@@ -1780,6 +1781,15 @@ trigger_cursorhold(void)
 	    return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Return TRUE when there is a WinScrolled autocommand defined.
+ */
+    int
+has_winscrolled(void)
+{
+    return (first_autopat[(int)EVENT_WINSCROLLED] != NULL);
 }
 
 /*

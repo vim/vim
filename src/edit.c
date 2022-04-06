@@ -1529,6 +1529,9 @@ ins_redraw(int ready)	    // not busy with something
 					(linenr_T)(curwin->w_cursor.lnum + 1));
     }
 
+    if (ready && has_winscrolled())
+	trigger_winscrolled(curwin);
+
     // Trigger SafeState if nothing is pending.
     may_trigger_safestate(ready
 	    && !ins_compl_active()
