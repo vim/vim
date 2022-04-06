@@ -870,26 +870,44 @@ func Test_d_file()
   call delete('Xfile.d')
 endfunc
 
+" Test dist#ft#FTdat()
 func Test_dat_file()
   filetype on
 
+  " Users preference set by g:filetype_dat
+  call writefile(['anything'], 'datfile.dat')
+  let g:filetype_dat = 'dat'
+  split datfile.dat
+  call assert_equal('dat', &filetype)
+  bwipe!
+
+  " KRL header start with "&WORD",
+  " but is not always present.
   call writefile(['&ACCESS'], 'datfile.dat')
   split datfile.dat
   call assert_equal('krl', &filetype)
   bwipe!
   call delete('datfile.dat')
 
+  " KRL defdat with leading spaces,
+  " the .src extension is not case sensitive.
   call writefile(['  DEFDAT datfile'], 'datfile.Dat')
   split datfile.Dat
   call assert_equal('krl', &filetype)
   bwipe!
   call delete('datfile.Dat')
 
+  " KRL defdat with embedded spaces,
+  " file starts with empty line(s).
   call writefile(['', 'defdat  datfile'], 'datfile.DAT')
   split datfile.DAT
   call assert_equal('krl', &filetype)
   bwipe!
   call delete('datfile.DAT')
+
+  " Recognize KRL even though g:filetype_dat is set.
+  " Clean up now
+  unlet g:filetype_dat
 
   filetype off
 endfunc
@@ -1336,26 +1354,44 @@ func Test_pp_file()
   filetype off
 endfunc
 
+" Test dist#ft#FTsrc()
 func Test_src_file()
   filetype on
 
+  " Users preference set by g:filetype_src
+  call writefile(['anything'], 'srcfile.src')
+  let g:filetype_src = 'src'
+  split srcfile.src
+  call assert_equal('src', &filetype)
+  bwipe!
+
+  " KRL header start with "&WORD",
+  " but is not always present.
   call writefile(['&ACCESS'], 'srcfile.src')
   split srcfile.src
   call assert_equal('krl', &filetype)
   bwipe!
   call delete('srcfile.src')
 
+  " KRL def with leading spaces,
+  " the .src extension is not case sensitive.
   call writefile(['  DEF srcfile()'], 'srcfile.Src')
   split srcfile.Src
   call assert_equal('krl', &filetype)
   bwipe!
   call delete('srcfile.Src')
 
+  " KRL def with embedded spaces and global attribute,
+  " file starts with empty line(s).
   call writefile(['', 'global  def  srcfile()'], 'srcfile.SRC')
   split srcfile.SRC
   call assert_equal('krl', &filetype)
   bwipe!
   call delete('srcfile.SRC')
+
+  " Recognize KRL even though g:filetype_src is set.
+  " Clean up now
+  unlet g:filetype_src
 
   filetype off
 endfunc
