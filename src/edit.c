@@ -293,14 +293,9 @@ edit(
     conceal_check_cursor_line(cursor_line_was_concealed);
 #endif
 
-    // Need to recompute the cursor position, it might move when the cursor
-    // is on a TAB or special character.
-    // ptr2cells() treats a TAB character as double-width.
-    if (ptr2cells(ml_get_cursor()) > 1)
-    {
-	curwin->w_valid &= ~VALID_VIRTCOL;
-	curs_columns(TRUE);
-    }
+    // need to position cursor again when on a TAB
+    if (gchar_cursor() == TAB)
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 
     /*
      * Enable langmap or IME, indicated by 'iminsert'.
@@ -3149,21 +3144,20 @@ mb_replace_pop_ins(int cc)
 		replace_push(c);
 		break;
 	    }
+
+	    buf[0] = c;
+	    for (i = 1; i < n; ++i)
+		buf[i] = replace_pop();
+	    if (utf_iscomposing(utf_ptr2char(buf)))
+		ins_bytes_len(buf, n);
 	    else
 	    {
-		buf[0] = c;
-		for (i = 1; i < n; ++i)
-		    buf[i] = replace_pop();
-		if (utf_iscomposing(utf_ptr2char(buf)))
-		    ins_bytes_len(buf, n);
-		else
-		{
-		    // Not a composing char, put it back.
-		    for (i = n - 1; i >= 0; --i)
-			replace_push(buf[i]);
-		    break;
-		}
+		// Not a composing char, put it back.
+		for (i = n - 1; i >= 0; --i)
+		    replace_push(buf[i]);
+		break;
 	    }
+
 	}
 }
 
@@ -3702,8 +3696,9 @@ ins_esc(
 
     State = NORMAL;
     trigger_modechanged();
-    // need to position cursor again (e.g. when on a TAB )
-    changed_cline_bef_curs();
+    // need to position cursor again when on a TAB
+    if (gchar_cursor() == TAB)
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 
     setmouse();
 #ifdef CURSOR_SHAPE
