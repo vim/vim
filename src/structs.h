@@ -4302,6 +4302,7 @@ typedef struct {
     int		save_finish_op;
     int		save_opcount;
     int		save_reg_executing;
+    int		save_pending_end_reg_executing;
     int		save_script_version;
     tasave_T	tabuf;
 } save_state_T;
