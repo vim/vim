@@ -259,6 +259,7 @@ check_buf_options(buf_T *buf)
 #endif
 #ifdef FEAT_CINDENT
     check_string_option(&buf->b_p_cink);
+    check_string_option(&buf->b_p_cinsd);
     check_string_option(&buf->b_p_cino);
     parse_cino(buf);
 #endif

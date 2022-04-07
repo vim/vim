@@ -425,18 +425,32 @@ cin_islabel_skip(char_u **s)
     static int
 cin_isscopedecl(char_u *s)
 {
-    int		i;
+    size_t cinsd_len;
+    char_u *cinsd_buf;
+    char_u *cinsd;
+    size_t len;
+    char_u *skip;
 
     s = cin_skipcomment(s);
-    if (STRNCMP(s, "public", 6) == 0)
-	i = 6;
-    else if (STRNCMP(s, "protected", 9) == 0)
-	i = 9;
-    else if (STRNCMP(s, "private", 7) == 0)
-	i = 7;
-    else
-	return FALSE;
-    return (*(s = cin_skipcomment(s + i)) == ':' && s[1] != ':');
+
+    cinsd_len = STRLEN(curbuf->b_p_cinsd) + 1;
+    cinsd_buf = alloc(cinsd_len);
+
+    if (cinsd_buf != NULL) {
+	for (cinsd = curbuf->b_p_cinsd; *cinsd; ) {
+	    len = copy_option_part(&cinsd, cinsd_buf, cinsd_len, ",");
+	    if (STRNCMP(s, cinsd_buf, len) == 0) {
+		skip = cin_skipcomment(s + len);
+		if (*skip == ':' && skip[1] != ':') {
+		    return TRUE;
+		}
+	    }
+	}
+
+	vim_free(cinsd_buf);
+    }
+
+    return FALSE;
 }
 
 /*

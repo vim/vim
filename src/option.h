@@ -400,6 +400,7 @@ EXTERN int	p_bl;		// 'buflisted'
 #ifdef FEAT_CINDENT
 EXTERN int	p_cin;		// 'cindent'
 EXTERN char_u	*p_cink;	// 'cinkeys'
+EXTERN char_u	*p_cinsd;	// 'cinscopedecls'
 #endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 EXTERN char_u	*p_cinw;	// 'cinwords'
@@ -1126,6 +1127,7 @@ enum
     , BV_CIN
     , BV_CINK
     , BV_CINO
+    , BV_CINSD
 #endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
     , BV_CINW
