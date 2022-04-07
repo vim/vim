@@ -1293,6 +1293,7 @@ docomplete:
 	    disable_fold_update--;
 #endif
 	    compl_busy = FALSE;
+	    can_si = TRUE; // allow smartindenting
 	    break;
 
 	case Ctrl_Y:	// copy from previous line or scroll down
