@@ -428,9 +428,103 @@ func Test_profile_file_with_cont()
   call delete('Xprofile_file.log')
 endfunc
 
+" Test for ':profile stop' and ':profile dump' commands
+func Test_profile_stop_dump()
+  call delete('Xprof1.out')
+  call delete('Xprof2.out')
+  call delete('Xprof3.out')
+  func Xprof_test1()
+    return "Hello"
+  endfunc
+  func Xprof_test2()
+    return "World"
+  endfunc
+
+  " Test for ':profile stop'
+  profile start Xprof1.out
+  profile func Xprof_test1
+  call Xprof_test1()
+  profile stop
+
+  let lines = readfile('Xprof1.out')
+  call assert_equal(17, len(lines))
+  call assert_equal('FUNCTION  Xprof_test1()',                lines[0])
+  call assert_match('Defined:.*test_profile.vim:',            lines[1])
+  call assert_equal('Called 1 time',                          lines[2])
+  call assert_match('^Total time:\s\+\d\+\.\d\+$',            lines[3])
+  call assert_match('^ Self time:\s\+\d\+\.\d\+$',            lines[4])
+  call assert_equal('',                                       lines[5])
+  call assert_equal('count  total (s)   self (s)',            lines[6])
+  call assert_match('^\s*1\s\+.*\sreturn "Hello"$',           lines[7])
+  call assert_equal('',                                       lines[8])
+  call assert_equal('FUNCTIONS SORTED ON TOTAL TIME',         lines[9])
+  call assert_equal('count  total (s)   self (s)  function',  lines[10])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Xprof_test1()$',  lines[11])
+  call assert_equal('',                                       lines[12])
+  call assert_equal('FUNCTIONS SORTED ON SELF TIME',          lines[13])
+  call assert_equal('count  total (s)   self (s)  function',  lines[14])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Xprof_test1()$',  lines[15])
+  call assert_equal('',                                       lines[16])
+
+  " Test for ':profile stop' for a different function
+  profile start Xprof2.out
+  profile func Xprof_test2
+  call Xprof_test2()
+  profile stop
+  let lines = readfile('Xprof2.out')
+  call assert_equal(17, len(lines))
+  call assert_equal('FUNCTION  Xprof_test2()',                lines[0])
+  call assert_match('Defined:.*test_profile.vim:',            lines[1])
+  call assert_equal('Called 1 time',                          lines[2])
+  call assert_match('^Total time:\s\+\d\+\.\d\+$',            lines[3])
+  call assert_match('^ Self time:\s\+\d\+\.\d\+$',            lines[4])
+  call assert_equal('',                                       lines[5])
+  call assert_equal('count  total (s)   self (s)',            lines[6])
+  call assert_match('^\s*1\s\+.*\sreturn "World"$',           lines[7])
+  call assert_equal('',                                       lines[8])
+  call assert_equal('FUNCTIONS SORTED ON TOTAL TIME',         lines[9])
+  call assert_equal('count  total (s)   self (s)  function',  lines[10])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Xprof_test2()$',  lines[11])
+  call assert_equal('',                                       lines[12])
+  call assert_equal('FUNCTIONS SORTED ON SELF TIME',          lines[13])
+  call assert_equal('count  total (s)   self (s)  function',  lines[14])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Xprof_test2()$',  lines[15])
+  call assert_equal('',                                       lines[16])
+
+  " Test for ':profile dump'
+  profile start Xprof3.out
+  profile func Xprof_test1
+  profile func Xprof_test2
+  call Xprof_test1()
+  profile dump
+  " dump the profile once and verify the contents
+  let lines = readfile('Xprof3.out')
+  call assert_equal(17, len(lines))
+  call assert_match('^\s*1\s\+.*\sreturn "Hello"$',           lines[7])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Xprof_test1()$',  lines[11])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Xprof_test1()$',  lines[15])
+  " dump the profile again and verify the contents
+  call Xprof_test2()
+  profile dump
+  profile stop
+  let lines = readfile('Xprof3.out')
+  call assert_equal(28, len(lines))
+  call assert_equal('FUNCTION  Xprof_test1()',                lines[0])
+  call assert_match('^\s*1\s\+.*\sreturn "Hello"$',           lines[7])
+  call assert_equal('FUNCTION  Xprof_test2()',                lines[9])
+  call assert_match('^\s*1\s\+.*\sreturn "World"$',           lines[16])
+
+  delfunc Xprof_test1
+  delfunc Xprof_test2
+  call delete('Xprof1.out')
+  call delete('Xprof2.out')
+  call delete('Xprof3.out')
+endfunc
+
+" Test for :profile sub-command completion
 func Test_profile_completion()
   call feedkeys(":profile \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"profile continue file func pause start', @:)
+  call assert_equal('"profile continue dump file func pause start stop', @:)
 
   call feedkeys(":profile start test_prof\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('^"profile start.* test_profile\.vim', @:)
@@ -481,6 +575,8 @@ func Test_profile_errors()
   call assert_fails("profile func Foo", 'E750:')
   call assert_fails("profile pause", 'E750:')
   call assert_fails("profile continue", 'E750:')
+  call assert_fails("profile stop", 'E750:')
+  call assert_fails("profile dump", 'E750:')
 endfunc
 
 func Test_profile_truncate_mbyte()
