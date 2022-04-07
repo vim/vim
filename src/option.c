@@ -5449,6 +5449,7 @@ get_varp(struct vimoption *p)
 	case PV_CIN:	return (char_u *)&(curbuf->b_p_cin);
 	case PV_CINK:	return (char_u *)&(curbuf->b_p_cink);
 	case PV_CINO:	return (char_u *)&(curbuf->b_p_cino);
+	case PV_CINSD:	return (char_u *)&(curbuf->b_p_cinsd);
 #endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	case PV_CINW:	return (char_u *)&(curbuf->b_p_cinw);
@@ -6020,6 +6021,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_CINK);
 	    buf->b_p_cino = vim_strsave(p_cino);
 	    COPY_OPT_SCTX(buf, BV_CINO);
+	    buf->b_p_cinsd = vim_strsave(p_cinsd);
+	    COPY_OPT_SCTX(buf, BV_CINSD);
 #endif
 	    // Don't copy 'filetype', it must be detected
 	    buf->b_p_ft = empty_option;

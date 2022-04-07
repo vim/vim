@@ -2881,6 +2881,7 @@ struct file_buffer
     int		b_p_cin;	// 'cindent'
     char_u	*b_p_cino;	// 'cinoptions'
     char_u	*b_p_cink;	// 'cinkeys'
+    char_u	*b_p_cinsd;	// 'cinscopedecls'
 #endif
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
     char_u	*b_p_cinw;	// 'cinwords'

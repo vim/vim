@@ -44,6 +44,7 @@
 # define PV_CIN		OPT_BUF(BV_CIN)
 # define PV_CINK	OPT_BUF(BV_CINK)
 # define PV_CINO	OPT_BUF(BV_CINO)
+# define PV_CINSD	OPT_BUF(BV_CINSD)
 #endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 # define PV_CINW	OPT_BUF(BV_CINW)
@@ -603,6 +604,15 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"cinscopedecls", "cinsd", P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
+#ifdef FEAT_CINDENT
+			    (char_u *)&p_cinsd, PV_CINSD,
+			    {(char_u *)"public,protected,private", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"cinwords",    "cinw", P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 			    (char_u *)&p_cinw, PV_CINW,
