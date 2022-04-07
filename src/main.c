@@ -1336,9 +1336,10 @@ main_loop(
 		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 	    }
 
-	    // Ensure curwin->w_topline is up to date before triggering a
-	    // WinScrolled autocommand.
+	    // Ensure curwin->w_topline and curwin->w_leftcol are up to date
+	    // before triggering a WinScrolled autocommand.
 	    update_topline();
+	    validate_cursor();
 
 	    if (!finish_op && has_winscrolled())
 		trigger_winscrolled(curwin);

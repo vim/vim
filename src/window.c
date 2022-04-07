@@ -2788,6 +2788,7 @@ trigger_winclosed(win_T *win)
 trigger_winscrolled(win_T *wp)
 {
     static int	    recursive = FALSE;
+    char_u	    winid[NUMBUFLEN];
 
     if (recursive)
 	return;
@@ -2797,8 +2798,10 @@ trigger_winscrolled(win_T *wp)
 	    wp->w_last_width != wp->w_width ||
 	    wp->w_last_height != wp->w_height)
     {
+	vim_snprintf((char *)winid, sizeof(winid), "%i", wp->w_id);
+
 	recursive = TRUE;
-	apply_autocmds(EVENT_WINSCROLLED, NULL, NULL, FALSE, wp->w_buffer);
+	apply_autocmds(EVENT_WINSCROLLED, winid, winid, FALSE, wp->w_buffer);
 	recursive = FALSE;
 
 	wp->w_last_topline = wp->w_topline;

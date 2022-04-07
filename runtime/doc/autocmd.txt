@@ -402,7 +402,7 @@ Name			triggered by ~
 |User|			to be used in combination with ":doautocmd"
 |SigUSR1|		after the SIGUSR1 signal has been detected
 
-WinScrolled		after scrolling a window
+|WinScrolled|		after scrolling a window
 
 
 The alphabetical list of autocommand events:		*autocmd-events-abc*
@@ -1320,7 +1320,12 @@ WinNew				When a new window was created.  Not done for
 				Before a WinEnter event.
 
 							*WinScrolled*
-WinScrolled			After scrolling the content of a window.
+WinScrolled			After scrolling the content of a window.  Note
+				that this autocommand may also be executed after
+				resizing a window.  The pattern is matched
+				against the |window-ID|.  Both <amatch> and
+				<afile> are set to the |window-ID|.
+				Non-recursive (the event cannot trigger itself).
 
 ==============================================================================
 6. Patterns					*autocmd-patterns* *{aupat}*
