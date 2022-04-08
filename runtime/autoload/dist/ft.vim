@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	08. Apr 2022
+# Last Change:	09. Apr 2022
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -104,6 +104,22 @@ export def BindzoneCheck(default = '')
     setf bindzone
   elseif default != ''
     exe 'setf ' .. default
+  endif
+enddef
+
+# Returns true if file content looks like RAPID
+def IsRapid(sChkExt: string = "mod_prg_sys"): bool
+  if sChkExt == "cfg"
+    return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
+  endif
+  return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
+enddef
+
+export def FTcfg()
+  if IsRapid("cfg")
+    setf rapid
+  else
+    setf cfg
   endif
 enddef
 
@@ -418,16 +434,8 @@ def IsLProlog(): bool
   while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
     l = nextnonblank(l + 1)
   endwhile
-  " make sure this pattern does not catch a go.mod file
+  # this pattern must not catch a go.mod file
   return getline(l) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
-enddef
-
-# Returns true if file content looks like RAPID
-def IsRapid(sChkExt: string = "mod_prg_sys"): bool
-  if sChkExt == "cfg"
-    return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
-  endif
-  return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
 enddef
 
 # Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
@@ -783,6 +791,14 @@ export def FTperl(): number
     return 1
   endif
   return 0
+enddef
+
+export def FTsys()
+  if IsRapid()
+    setf rapid
+  else
+    setf bat
+  endif
 enddef
 
 # Choose context, plaintex, or tex (LaTeX) based on these rules:

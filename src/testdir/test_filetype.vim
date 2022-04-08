@@ -99,7 +99,7 @@ let s:filename_checks = {
     \ 'cdrtoc': ['file.toc'],
     \ 'cf': ['file.cfm', 'file.cfi', 'file.cfc'],
     \ 'cfengine': ['cfengine.conf'],
-    \ 'cfg': ['file.cfg', 'file.hgrc', 'filehgrc', 'hgrc', 'some-hgrc'],
+    \ 'cfg': ['file.hgrc', 'filehgrc', 'hgrc', 'some-hgrc'],
     \ 'ch': ['file.chf'],
     \ 'chaiscript': ['file.chai'],
     \ 'chaskell': ['file.chs'],
@@ -150,7 +150,7 @@ let s:filename_checks = {
     \ 'dircolors': ['.dir_colors', '.dircolors', '/etc/DIR_COLORS', 'any/etc/DIR_COLORS'],
     \ 'dnsmasq': ['/etc/dnsmasq.conf', '/etc/dnsmasq.d/file', 'any/etc/dnsmasq.conf', 'any/etc/dnsmasq.d/file'],
     \ 'dockerfile': ['Containerfile', 'Dockerfile', 'file.Dockerfile', 'Dockerfile.debian', 'Containerfile.something'],
-    \ 'dosbatch': ['file.bat', 'file.sys'],
+    \ 'dosbatch': ['file.bat'],
     \ 'dosini': ['.editorconfig', '/etc/pacman.conf', '/etc/yum.conf', 'file.ini', 'npmrc', '.npmrc', 'php.ini', 'php.ini-5', 'php.ini-file', '/etc/yum.repos.d/file', 'any/etc/pacman.conf', 'any/etc/yum.conf', 'any/etc/yum.repos.d/file', 'file.wrap'],
     \ 'dot': ['file.dot', 'file.gv'],
     \ 'dracula': ['file.drac', 'file.drc', 'filelvs', 'filelpe', 'drac.file', 'lpe', 'lvs', 'some-lpe', 'some-lvs'],
@@ -832,6 +832,31 @@ func Test_bas_file()
   filetype off
 endfunc
 
+" Test dist#ft#FTcfg()
+func Test_cfg_file()
+  filetype on
+
+  " *.cfg defaults to cfg
+  call writefile(['looks like cfg'], 'cfgfile.cfg')
+  split cfgfile.cfg
+  call assert_equal('cfg', &filetype)
+  bwipe!
+
+  " RAPID cfg
+  let ext = 'cfg'
+  for i in ['EIO', 'MMC', 'MOC', 'PROC', 'SIO', 'SYS']
+    call writefile([i .. ':CFG'], 'cfgfile.' .. ext)
+    split cfgfile.cfg
+    call assert_equal('rapid', &filetype)
+    bwipe!
+    call delete('cfgfile.' .. ext)
+    " check different case of file extension
+    let ext = substitute(ext, '\(\l\)', '\u\1', '')
+  endfor
+
+  filetype off
+endfunc
+
 func Test_d_file()
   filetype on
 
@@ -1452,7 +1477,6 @@ func Test_prg_file()
   bwipe!
   call delete('prgfile.PRG')
 
-
   filetype off
 endfunc
 
@@ -1476,6 +1500,43 @@ func Test_src_file()
   call assert_equal('krl', &filetype)
   bwipe!
   call delete('srcfile.SRC')
+
+  filetype off
+endfunc
+
+func Test_sys_file()
+  filetype on
+
+  " *.sys defaults to Batch file for MSDOS
+  call writefile(['looks like dos batch'], 'sysfile.sys')
+  split sysfile.sys
+  call assert_equal('bat', &filetype)
+  bwipe!
+
+  " RAPID header start with a line containing only "%%%", 
+  " but is not always present.
+  call writefile(['%%%'], 'sysfile.sys')
+  split sysfile.sys
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('sysfile.sys')
+
+  " RAPID supports umlauts in module names, leading spaces,
+  " the .sys extension is not case sensitive.
+  call writefile(['  module ÜmlautModule'], 'sysfile.Sys')
+  split sysfile.Sys
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('sysfile.Sys')
+
+  " RAPID is not case sensitive, embedded spaces, sysmodule, 
+  " file starts with empty line(s).
+  call writefile(['', 'MODULE  rapidmödüle  (SYSMODULE,NOSTEPIN)'], 'sysfile.SYS')
+  split sysfile.SYS
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('sysfile.SYS')
+
 
   filetype off
 endfunc

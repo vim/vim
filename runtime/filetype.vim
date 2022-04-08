@@ -205,11 +205,13 @@ au BufNewFile,BufRead *.iba,*.ibi		setf ibasic
 " FreeBasic file (similar to QBasic)
 au BufNewFile,BufRead *.fb			setf freebasic
 
-" Batch file for MSDOS.
-au BufNewFile,BufRead *.bat,*.sys		setf dosbatch
+" Batch file for MSDOS. See dist#ft#FTsys for *.sys
+au BufNewFile,BufRead *.bat 			setf dosbatch
 " *.cmd is close to a Batch file, but on OS/2 Rexx files also use *.cmd.
 au BufNewFile,BufRead *.cmd
 	\ if getline(1) =~ '^/\*' | setf rexx | else | setf dosbatch | endif
+" ABB RAPID or Batch file for MSDOS.
+au BufNewFile,BufRead *.sys 			call dist#ft#FTsys()
 
 " Batch file for 4DOS
 au BufNewFile,BufRead *.btm			call dist#ft#FTbtm()
@@ -439,7 +441,7 @@ au BufNewFile,BufRead *quake[1-3]/*.cfg			setf quake
 au BufNewFile,BufRead *.qc			setf c
 
 " Configure files
-au BufNewFile,BufRead *.cfg			setf cfg
+au BufNewFile,BufRead *.cfg\c			call dist#ft#FTcfg()
 
 " Cucumber
 au BufNewFile,BufRead *.feature			setf cucumber
