@@ -1350,6 +1350,7 @@ func Test_prg_file()
   let g:filetype_prg = 'eviews'
   split prgfile.prg
   call assert_equal('eviews', &filetype)
+  unlet g:filetype_prg
   bwipe!
 
   " RAPID header start with a line containing only "%%%", 
@@ -1376,9 +1377,6 @@ func Test_prg_file()
   bwipe!
   call delete('prgfile.PRG')
 
-  " Recognize RAPID even though g:filetype_prg is set.
-  " Clean up now
-  unlet g:filetype_prg
 
   filetype off
 endfunc

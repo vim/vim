@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Apr 06
+# Last Change:	08. Apr 2022
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -534,19 +534,14 @@ def IsRapid(sChkExt: string = "mod_prg_sys"): bool
   return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
 enddef
 
+# Determine if *.prg is ABB RAPID. Can also be Clipper, FoxPro or eviews
 export def FTprg()
-  # ABB RAPID, Clipper, FoxPro or eviews
-
-  # RAPID is easy to recognize, check for that first
-  if IsRapid()
-    setf rapid
-    return
-  endif
-
-  # Nothing recognized, use user default or assume Clipper
   if exists("g:filetype_prg")
     exe "setf " .. g:filetype_prg
+  elseif IsRapid()
+    setf rapid
   else
+    # Nothing recognized, assume Clipper
     setf clipper
   endif
 enddef
