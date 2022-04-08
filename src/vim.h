@@ -2219,7 +2219,8 @@ typedef enum {
 typedef enum {
     ESTACK_NONE,
     ESTACK_SFILE,
-    ESTACK_STACK
+    ESTACK_STACK,
+    ESTACK_SCRIPT,
 } estack_arg_T;
 
 // Flags for assignment functions.

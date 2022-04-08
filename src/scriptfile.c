@@ -118,7 +118,8 @@ estack_pop(void)
 
 /*
  * Get the current value for <sfile> in allocated memory.
- * "which" is ESTACK_SFILE for <sfile> and ESTACK_STACK for <stack>.
+ * "which" is ESTACK_SFILE for <sfile>, ESTACK_STACK for <stack> or
+ * ESTACK_SCRIPT for <script>.
  */
     char_u *
 estack_sfile(estack_arg_T which UNUSED)
@@ -153,6 +154,30 @@ estack_sfile(estack_arg_T which UNUSED)
 	    emsg_off = 0;
 	emsg(_(e_cannot_expand_sfile_in_vim9_function));
 	emsg_off = save_emsg_off;
+	return NULL;
+    }
+
+    // If evaluated in a function return the path of the script where the
+    // function is defined, at script level the current script path is returned
+    // instead.
+    if (which == ESTACK_SCRIPT)
+    {
+	if (entry->es_type == ETYPE_UFUNC)
+	{
+	    sctx_T *def_ctx = &entry->es_info.ufunc->uf_script_ctx;
+	    if (def_ctx->sc_sid > 0)
+		return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
+	}
+	else if (exestack.ga_len > 0)
+	{
+	    // Walk the stack backwards, starting from the current frame.
+	    for (idx = exestack.ga_len - 1; idx; --idx)
+	    {
+		entry = ((estack_T *)exestack.ga_data) + idx;
+		if (entry->es_type == ETYPE_SCRIPT)
+		    return vim_strsave(entry->es_name);
+	    }
+	}
 	return NULL;
     }
 
