@@ -846,7 +846,7 @@ func Test_cfg_file()
   let ext = 'cfg'
   for i in ['EIO', 'MMC', 'MOC', 'PROC', 'SIO', 'SYS']
     call writefile([i .. ':CFG'], 'cfgfile.' .. ext)
-    split cfgfile.cfg
+    execute "split cfgfile." .. ext
     call assert_equal('rapid', &filetype)
     bwipe!
     call delete('cfgfile.' .. ext)
@@ -1555,7 +1555,6 @@ func Test_sys_file()
   call assert_equal('rapid', &filetype)
   bwipe!
   call delete('sysfile.SYS')
-
 
   filetype off
 endfunc
