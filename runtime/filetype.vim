@@ -2050,6 +2050,9 @@ au BufNewFile,BufRead *.vala			setf vala
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera
 
+" Vagrant
+au BufNewFile,BufRead Vagrantfile		setf ruby
+
 " Verilog HDL
 au BufNewFile,BufRead *.v			setf verilog
 
