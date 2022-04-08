@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2022 Jan 21
+*terminal.txt*	For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -674,7 +674,7 @@ term_getsize({buf})					*term_getsize()*
 
 term_getstatus({buf})					*term_getstatus()*
 		Get the status of terminal {buf}. This returns a String with
-		a comma separated list of these items:
+		a comma-separated list of these items:
 			running		job is running
 			finished	job has finished
 			normal		in Terminal-Normal mode

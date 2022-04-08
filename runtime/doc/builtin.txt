@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Mar 26
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1754,7 +1754,10 @@ deepcopy({expr} [, {noref}])				*deepcopy()* *E698*
 
 delete({fname} [, {flags}])				*delete()*
 		Without {flags} or with {flags} empty: Deletes the file by the
-		name {fname}.  This also works when {fname} is a symbolic link.
+		name {fname}.
+
+		This also works when {fname} is a symbolic link.  The symbolic
+		link itself is deleted, not what it points to.
 
 		When {flags} is "d": Deletes the directory by the name
 		{fname}.  This fails when directory {fname} is not empty.
@@ -1763,8 +1766,6 @@ delete({fname} [, {flags}])				*delete()*
 		{fname} and everything in it, recursively.  BE CAREFUL!
 		Note: on MS-Windows it is not possible to delete a directory
 		that is being used.
-
-		A symbolic link itself is deleted, not what it points to.
 
 		The result is a Number, which is 0/false if the delete
 		operation was successful and -1/true when the deletion failed
@@ -2741,7 +2742,7 @@ foreground()	Move the Vim window to the foreground.  Useful when sent from
 		On Win32 systems this might not work, the OS does not always
 		allow a window to bring itself to the foreground.  Use
 		|remote_foreground()| instead.
-		{only in the Win32, Athena, Motif and GTK GUI versions and the
+		{only in the Win32, Motif and GTK GUI versions and the
 		Win32 console version}
 
 fullcommand({name})						*fullcommand()*
@@ -4833,6 +4834,8 @@ json_encode({expr})					*json_encode()*
 		Note that NaN and Infinity are passed on as values.  This is
 		missing in the JSON standard, but several implementations do
 		allow it.  If not then you will get an error.
+		If a string contains an illegal character then the replacement
+		character 0xfffd is used.
 
 		Can also be used as a |method|: >
 			GetObject()->json_encode()
@@ -6023,8 +6026,10 @@ printf({fmt}, {expr1} ...)				*printf()*
 		When used as a |method| the base is passed as the second
 		argument: >
 			Compute()->printf("result: %d")
+<
+		You can use `call()` to pass the items as a list.
 
-<		Often used items are:
+		Often used items are:
 		  %s	string
 		  %6S	string right-aligned in 6 display cells
 		  %6s	string right-aligned in 6 bytes
@@ -6693,7 +6698,7 @@ remote_foreground({server})				*remote_foreground()*
 		Can also be used as a |method|: >
 			ServerName()->remote_foreground()
 
-<		{only in the Win32, Athena, Motif and GTK GUI versions and the
+<		{only in the Win32, Motif and GTK GUI versions and the
 		Win32 console version}
 
 
@@ -10025,7 +10030,7 @@ footer			Compiled with GUI footer support. |gui-footer|
 fork			Compiled to use fork()/exec() instead of system().
 gettext			Compiled with message translation |multi-lang|
 gui			Compiled with GUI enabled.
-gui_athena		Compiled with Athena GUI.
+gui_athena		Compiled with Athena GUI (always false).
 gui_gnome		Compiled with Gnome support (gui_gtk is also defined).
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).

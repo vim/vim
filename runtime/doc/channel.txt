@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2022 Mar 26
+*channel.txt*      For Vim version 8.2.  Last change: 2022 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -588,7 +588,7 @@ ch_info({handle})						*ch_info()*
 		   "sock_io"	  "socket"
 		   "sock_timeout" timeout in msec
 
-		Note that "pair" is only present for Unix-domain sockets, for
+		Note that "path" is only present for Unix-domain sockets, for
 		regular ones "hostname" and "port" are present instead.
 
 		When opened with job_start():

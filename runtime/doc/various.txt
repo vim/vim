@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2022 Mar 04
+*various.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -381,7 +381,7 @@ N  *+folding*		|folding|
    *+fork*		Unix only: |fork| shell commands
    *+float*		Floating point support
 N  *+gettext*		message translations |multi-lang|
-   *+GUI_Athena*	Unix only: Athena |GUI|
+-  *+GUI_Athena*	Unix only: Athena |GUI|
    *+GUI_neXtaw*	Unix only: neXtaw |GUI|
    *+GUI_GTK*		Unix only: GTK+ |GUI|
    *+GUI_Motif*		Unix only: Motif |GUI|

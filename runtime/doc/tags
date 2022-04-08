@@ -134,6 +134,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'cinkeys'	options.txt	/*'cinkeys'*
 'cino'	options.txt	/*'cino'*
 'cinoptions'	options.txt	/*'cinoptions'*
+'cinscopedecls'	options.txt	/*'cinscopedecls'*
+'cinsd'	options.txt	/*'cinsd'*
 'cinw'	options.txt	/*'cinw'*
 'cinwords'	options.txt	/*'cinwords'*
 'clipboard'	options.txt	/*'clipboard'*
@@ -487,7 +489,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'mousefocus'	options.txt	/*'mousefocus'*
 'mousehide'	options.txt	/*'mousehide'*
 'mousem'	options.txt	/*'mousem'*
+'mousemev'	options.txt	/*'mousemev'*
 'mousemodel'	options.txt	/*'mousemodel'*
+'mousemoveevent'	options.txt	/*'mousemoveevent'*
 'mouses'	options.txt	/*'mouses'*
 'mouseshape'	options.txt	/*'mouseshape'*
 'mouset'	options.txt	/*'mouset'*
@@ -2546,6 +2550,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :helpt	helphelp.txt	/*:helpt*
 :helptags	helphelp.txt	/*:helptags*
 :hi	syntax.txt	/*:hi*
+:hi-clear	syntax.txt	/*:hi-clear*
 :hi-default	syntax.txt	/*:hi-default*
 :hi-link	syntax.txt	/*:hi-link*
 :hi-normal	syntax.txt	/*:hi-normal*
@@ -3616,6 +3621,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <MiddleRelease>	term.txt	/*<MiddleRelease>*
 <Mouse>	term.txt	/*<Mouse>*
 <MouseDown>	scroll.txt	/*<MouseDown>*
+<MouseMove>	map.txt	/*<MouseMove>*
 <MouseUp>	scroll.txt	/*<MouseUp>*
 <NL>	motion.txt	/*<NL>*
 <Nop>	map.txt	/*<Nop>*
@@ -3771,7 +3777,6 @@ Aleph	options.txt	/*Aleph*
 Amiga	os_amiga.txt	/*Amiga*
 Arabic	arabic.txt	/*Arabic*
 Atari	os_mint.txt	/*Atari*
-Athena	gui_x11.txt	/*Athena*
 B	motion.txt	/*B*
 BeBox	os_beos.txt	/*BeBox*
 BeOS	os_beos.txt	/*BeOS*
@@ -5513,6 +5518,7 @@ WinClosed	autocmd.txt	/*WinClosed*
 WinEnter	autocmd.txt	/*WinEnter*
 WinLeave	autocmd.txt	/*WinLeave*
 WinNew	autocmd.txt	/*WinNew*
+WinScrolled	autocmd.txt	/*WinScrolled*
 X	change.txt	/*X*
 X11	options.txt	/*X11*
 X11-icon	gui_x11.txt	/*X11-icon*
@@ -5752,7 +5758,6 @@ assert_true()	testing.txt	/*assert_true()*
 at	motion.txt	/*at*
 atan()	builtin.txt	/*atan()*
 atan2()	builtin.txt	/*atan2()*
-athena-intellimouse	gui.txt	/*athena-intellimouse*
 attr-list	syntax.txt	/*attr-list*
 author	intro.txt	/*author*
 auto-format	change.txt	/*auto-format*
@@ -6065,6 +6070,7 @@ changenr()	builtin.txt	/*changenr()*
 changetick	eval.txt	/*changetick*
 changing	change.txt	/*changing*
 channel	channel.txt	/*channel*
+channel-address	channel.txt	/*channel-address*
 channel-callback	channel.txt	/*channel-callback*
 channel-close	channel.txt	/*channel-close*
 channel-close-in	channel.txt	/*channel-close-in*
@@ -8257,6 +8263,7 @@ moo.vim	syntax.txt	/*moo.vim*
 more-compatible	version5.txt	/*more-compatible*
 more-prompt	message.txt	/*more-prompt*
 more-variables	eval.txt	/*more-variables*
+motif-intellimouse	gui.txt	/*motif-intellimouse*
 motion-count-multiplied	motion.txt	/*motion-count-multiplied*
 motion.txt	motion.txt	/*motion.txt*
 mouse-mode-table	term.txt	/*mouse-mode-table*

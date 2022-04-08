@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2022 Mar 04
+*term.txt*      For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -833,7 +833,7 @@ select and copy the text to the system, then press Esc.
 Another way is to temporarily use ":sh" to run a shell, copy the text, then
 exit the shell.  'mouse' can remain set to "a" then.
 							*xterm-clipboard*
-In the Athena and Motif GUI versions, when running in a terminal and there is
+In the Motif GUI version, when running in a terminal and there is
 access to the X-server (DISPLAY is set), the copy and paste will behave like
 in the GUI.  If not, the middle mouse button will insert the unnamed register.
 In that case, here is how you copy and paste a piece of text:
