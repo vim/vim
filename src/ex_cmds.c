@@ -3182,7 +3182,7 @@ do_ecmd(
 	redraw_curbuf_later(NOT_VALID);	// redraw this buffer later
     }
 
-    if (p_im)
+    if (p_im && (State & INSERT) == 0)
 	need_start_insertmode = TRUE;
 
 #ifdef FEAT_AUTOCHDIR
