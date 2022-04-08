@@ -190,6 +190,7 @@ static struct event_name
     {"WinClosed",	EVENT_WINCLOSED},
     {"WinEnter",	EVENT_WINENTER},
     {"WinLeave",	EVENT_WINLEAVE},
+    {"WinScrolled",	EVENT_WINSCROLLED},
     {"VimResized",	EVENT_VIMRESIZED},
     {"TextYankPost",	EVENT_TEXTYANKPOST},
     {"VimSuspend",	EVENT_VIMSUSPEND},
@@ -1251,6 +1252,15 @@ do_autocmd_event(
 		    vim_free(rettv.vval.v_string);
 		}
 #endif
+		// Initialize the fields checked by the WinScrolled trigger to
+		// stop it from firing right after the first autocmd is defined.
+		if (event == EVENT_WINSCROLLED && !has_winscrolled())
+		{
+		    curwin->w_last_topline = curwin->w_topline;
+		    curwin->w_last_leftcol = curwin->w_leftcol;
+		    curwin->w_last_width = curwin->w_width;
+		    curwin->w_last_height = curwin->w_height;
+		}
 
 		if (is_buflocal)
 		{
@@ -1783,6 +1793,15 @@ trigger_cursorhold(void)
 }
 
 /*
+ * Return TRUE when there is a WinScrolled autocommand defined.
+ */
+    int
+has_winscrolled(void)
+{
+    return (first_autopat[(int)EVENT_WINSCROLLED] != NULL);
+}
+
+/*
  * Return TRUE when there is a CursorMoved autocommand defined.
  */
     int
@@ -2078,7 +2097,8 @@ apply_autocmds_group(
 		|| event == EVENT_DIRCHANGEDPRE
 		|| event == EVENT_MODECHANGED
 		|| event == EVENT_USER
-		|| event == EVENT_WINCLOSED)
+		|| event == EVENT_WINCLOSED
+		|| event == EVENT_WINSCROLLED)
 	{
 	    fname = vim_strsave(fname);
 	    autocmd_fname_full = TRUE; // don't expand it later

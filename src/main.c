@@ -1336,6 +1336,14 @@ main_loop(
 		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 	    }
 
+	    // Ensure curwin->w_topline and curwin->w_leftcol are up to date
+	    // before triggering a WinScrolled autocommand.
+	    update_topline();
+	    validate_cursor();
+
+	    if (!finish_op)
+		may_trigger_winscrolled(curwin);
+
 	    // If nothing is pending and we are going to wait for the user to
 	    // type a character, trigger SafeState.
 	    may_trigger_safestate(!op_pending() && restart_edit == 0);
