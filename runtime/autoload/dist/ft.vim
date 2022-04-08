@@ -410,6 +410,44 @@ export def FTmm()
   setf nroff
 enddef
 
+# Returns true if file content looks like LambdaProlog
+def IsLProlog(): bool
+  # skip apparent comments and blank lines, what looks like 
+  # LambdaProlog comment may be RAPID header
+  var l: number = nextnonblank(1)
+  while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
+    l = nextnonblank(l + 1)
+  endwhile
+  " make sure this pattern does not catch a go.mod file
+  return getline(l) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
+enddef
+
+# Returns true if file content looks like RAPID
+def IsRapid(sChkExt: string = "mod_prg_sys"): bool
+  if sChkExt == "cfg"
+    return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
+  endif
+  return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
+enddef
+
+# Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
+export def FTmod()
+  if exists("g:filetype_mod")
+    exe "setf " .. g:filetype_mod
+  elseif IsLProlog()
+    setf lprolog
+  elseif getline(nextnonblank(1)) =~ '\%(\<MODULE\s\+\w\+\s*;\|^\s*(\*\)'
+    setf modula2
+  elseif IsRapid()
+    setf rapid
+  elseif expand("<afile>") =~ '\<go.mod$'
+    setf gomod
+  else
+    # Nothing recognized, assume modsim3
+    setf modsim3
+  endif
+enddef
+
 export def FTpl()
   if exists("g:filetype_pl")
     exe "setf " .. g:filetype_pl
@@ -524,14 +562,6 @@ export def FTpp()
       setf puppet
     endif
   endif
-enddef
-
-# Returns true if file content looks like RAPID
-def IsRapid(sChkExt: string = "mod_prg_sys"): bool
-  if sChkExt == "cfg"
-    return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
-  endif
-  return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
 enddef
 
 # Determine if *.prg is ABB RAPID. Can also be Clipper, FoxPro or eviews

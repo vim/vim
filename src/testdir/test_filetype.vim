@@ -616,7 +616,7 @@ let s:filename_checks = {
     \ }
 
 let s:filename_case_checks = {
-    \ 'modula2': ['file.DEF', 'file.MOD'],
+    \ 'modula2': ['file.DEF'],
     \ 'bzl': ['file.BUILD', 'BUILD'],
     \ }
 
@@ -1265,6 +1265,81 @@ func Test_m_file()
   bwipe!
 
   call delete('Xfile.m')
+  filetype off
+endfunc
+
+func Test_mod_file()
+  filetype on
+
+  " *.mod defaults to Modsim III
+  call writefile(['locks like Modsim III'], 'modfile.mod')
+  split modfile.mod
+  call assert_equal('modsim3', &filetype)
+  bwipe!
+
+  " Users preference set by g:filetype_mod
+  let g:filetype_mod = 'lprolog'
+  split modfile.mod
+  call assert_equal('lprolog', &filetype)
+  unlet g:filetype_mod
+  bwipe!
+
+  " RAPID header start with a line containing only "%%%", 
+  " but is not always present.
+  call writefile(['%%%'], 'modfile.mod')
+  split modfile.mod
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('modfile.mod')
+
+  " RAPID supports umlauts in module names, leading spaces,
+  " the .mod extension is not case sensitive.
+  call writefile(['  module ÜmlautModule'], 'modfile.Mod')
+  split modfile.Mod
+  call assert_equal('rapid', &filetype)
+  bwipe!
+  call delete('modfile.Mod')
+
+  " RAPID is not case sensitive, embedded spaces, sysmodule, 
+  " file starts with empty line(s).
+  call writefile(['', 'MODULE  rapidmödüle  (SYSMODULE,NOSTEPIN)'], 'modfile.MOD')
+  split modfile.MOD
+  call assert_equal('rapid', &filetype)
+  bwipe!
+
+  " Modula-2 MODULE not start of line
+  call writefile(['IMPLEMENTATION MODULE Module2Mod;'], 'modfile.MOD')
+  split modfile.MOD
+  call assert_equal('modula2', &filetype)
+  bwipe!
+
+  " Modula-2 with comment and empty lines prior MODULE
+  call writefile(['', '(* with',  ' comment *)', '', 'MODULE Module2Mod;'], 'modfile.MOD')
+  split modfile.MOD
+  call assert_equal('modula2', &filetype)
+  bwipe!
+  call delete('modfile.MOD')
+
+  " LambdaProlog module
+  call writefile(['module lpromod.'], 'modfile.mod')
+  split modfile.mod
+  call assert_equal('lprolog', &filetype)
+  bwipe!
+
+  " LambdaProlog with comment and empty lines prior module
+  call writefile(['', '% with',  '% comment', '', 'module lpromod.'], 'modfile.mod')
+  split modfile.mod
+  call assert_equal('lprolog', &filetype)
+  bwipe!
+  call delete('modfile.mod')
+
+  " go.mod
+  call writefile(['module example.com/M'], 'go.mod')
+  split go.mod
+  call assert_equal('gomod', &filetype)
+  bwipe!
+  call delete('go.mod')
+
   filetype off
 endfunc
 

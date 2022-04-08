@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Apr 06
+" Last Change:	08. Apr 2022
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -975,7 +975,7 @@ au BufNewFile,BufRead *.latte,*.lte		setf latte
 " Limits
 au BufNewFile,BufRead */etc/limits,*/etc/*limits.conf,*/etc/*limits.d/*.conf	setf limits
 
-" LambdaProlog (*.mod too, see Modsim)
+" LambdaProlog (see dist#ft#FTmod for *.mod)
 au BufNewFile,BufRead *.sig			setf lprolog
 
 " LDAP LDIF
@@ -1138,18 +1138,11 @@ au BufNewFile,BufRead *.mms			call dist#ft#FTmms()
 " Symbian meta-makefile definition (MMP)
 au BufNewFile,BufRead *.mmp			setf mmp
 
-" Modsim III (or LambdaProlog)
-au BufNewFile,BufRead *.mod
-	\ if expand("<afile>") =~ '\<go.mod$' |
-	\   setf gomod |
-	\ elseif getline(1) =~ '\<module\>' |
-	\   setf lprolog |
-	\ else |
-	\   setf modsim3 |
-	\ endif
+" ABB Rapid, Modula-2, Modsim III or LambdaProlog
+au BufNewFile,BufRead *.mod\c 			call dist#ft#FTmod()
 
-" Modula-2  (.md removed in favor of Markdown)
-au BufNewFile,BufRead *.m2,*.DEF,*.MOD,*.mi	setf modula2
+" Modula-2  (.md removed in favor of Markdown, see dist#ft#FTmod for *.MOD)
+au BufNewFile,BufRead *.m2,*.DEF,*.mi		setf modula2
 
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3

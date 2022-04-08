@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.2.  Last change: 2022 Jan 21
+*filetype.txt*  For Vim version 8.2.  Last change: 08. Apr 2022
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,6 +147,7 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.i		g:filetype_i	|ft-progress-syntax|
 	*.inc		g:filetype_inc
 	*.m		g:filetype_m	|ft-mathematica-syntax|
+	*.mod		g:filetype_mod
 	*.p		g:filetype_p	|ft-pascal-syntax|
 	*.pl		g:filetype_pl
 	*.pp		g:filetype_pp	|ft-pascal-syntax|
