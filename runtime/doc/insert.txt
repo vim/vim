@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.2.  Last change: 2022 Mar 28
+*insert.txt*    For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -272,7 +272,7 @@ CTRL-]		Trigger abbreviation, without inserting a character.
 
 						*i_backspacing*
 The effect of the <BS>, CTRL-W, and CTRL-U depend on the 'backspace' option
-(unless 'revins' is set).  This is a comma separated list of items:
+(unless 'revins' is set).  This is a comma-separated list of items:
 
 item	    action ~
 indent	    allow backspacing over autoindent
@@ -1196,7 +1196,7 @@ three lines, but 'previewheight' is used when it has a value of 1 or 2.
 						*complete-popup*
 When "popup" is in 'completeopt' a popup window is used to display the "info".
 Then the 'completepopup' option specifies the properties of the popup.  This
-is used when the info popup is created.  The option is a comma separated list
+is used when the info popup is created.  The option is a comma-separated list
 of values:
 	height		maximum height of the popup
 	width		maximum width of the popup

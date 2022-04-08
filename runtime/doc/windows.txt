@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2022 Feb 03
+*windows.txt*   For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -892,7 +892,7 @@ windows.
 						*preview-popup*
 Alternatively, a popup window can be used by setting the 'previewpopup'
 option.  When set, it overrules the 'previewwindow' and 'previewheight'
-settings.  The option is a comma separated list of values:
+settings.  The option is a comma-separated list of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)

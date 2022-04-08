@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Mar 30
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,15 +38,10 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Allow for: "import autoload '../lib/script.vim'"
-    avoids going through 'runtimepath' and avoids name collisions.
-
-Really drop the Athena and NeXtaw GUI?  Decide end of March.
-
 Once Vim9 is stable:
 - Use Vim9 for more runtime files.
 - Check code coverage, add more tests if needed.
-	vim9execute.c  line 1900
+	vim9execute.c  line 3500
 	vim9expr.c
 	vim9instr.c
 	vim9script.c
@@ -55,6 +50,7 @@ Once Vim9 is stable:
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.
+    getline()/substitute()/setline() in #5632
 - Better implementation for partial and tests for that.
 - when using "const" mark the variable type as const with TTFLAG_CONST, so
   that an error is given at compile time when trying to change it.  E.g. for a
@@ -200,7 +196,7 @@ Terminal emulator window:
 - When the job only outputs lines, we could handle resizing the terminal
   better: store lines separated by line breaks, instead of screen lines,
   then when the window is resized redraw those lines.
-- Redrawing is slow with Athena and Motif. (Ramel Eshed)
+- Redrawing is slow with Motif. (Ramel Eshed)
 - For the GUI fill termios with default values, perhaps like pangoterm:
   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
@@ -230,6 +226,8 @@ Have another look at the implementation.
 Add expanding <script> which works like <sfile> everywhere. #9189
 
 Rename getdigraphlist -> digraph_getlist() etc.
+
+Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 
 Valgrind reports memory leaks in test_options.
 Valgrind reports overlapping memcpy in
@@ -309,8 +307,7 @@ inconsistent with the documentation.
 Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
 Scroll doesn't work correctly, why?
 
-glob() and globfile() do not always honor 'wildignorecase'. #8350
-globpath() does not use 'wildignorecase' at all?
+globpath() does not use 'wildignorecase' at all? (related to #8350)
 
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
@@ -2393,11 +2390,6 @@ probably causes this.
 'scrollbind' is not respected when deleting lines or undo. (Milan Vancura,
 2009 Jan 16)
 
-Document that default font in Athena can be set with resources:
-   XtDefaultFont: "9x15"
-   XtDefaultFontSet: "9x15"
-(Richard Sherman, 2009 Apr 12)
-
 Having "Syntax" in 'eventignore' for :bufdo may cause problems, e.g. for
 ":bufdo e" when buffers are open in windows.  ex_listdo(eap) could set the
 option only for when jumping to another buffer, not when the command argument
@@ -3239,7 +3231,7 @@ Win32 GUI known bugs:
     the font name).
 
 
-Athena and Motif:
+Motif:
 6   New Motif toolbar button from Marcin Dalecki:
     - When the mouse pointer is over an Agide button the red becomes black.
       Something with the way colors are specified in the .xpm file.
@@ -3251,7 +3243,7 @@ Athena and Motif:
     wrong.
 9   XIM is disabled by default for SGI/IRIX.  Fix XIM so that 'imdisable' can
     be off by default.
-9   XIM doesn't work properly for Athena/Motif. (Yasuhiro Matsumoto)  For now,
+9   XIM doesn't work properly for Motif. (Yasuhiro Matsumoto)  For now,
     keep XIM active at all times when the input method has the preediting
     flag.
 8   X11: A menu that contains an umlaut is truncated at that character.
@@ -3267,27 +3259,6 @@ Athena and Motif:
 8   When 'encoding' is different from the current locale (e.g., utf-8) the
     menu strings don't work.  Requires conversion from 'encoding' to the
     current locale.  Workaround: set 'langmenu'.
-
-
-Athena GUI:
-9   The first event for any button in the menu or toolbar appears to get lost.
-    The second click on a menu does work.
-9   When dragging the scrollbar thumb very fast, focus is only obtained in
-    the scrollbar itself.  And the thumb is no longer updated when moving
-    through files.
-7   The file selector is not resizable.  With a big font it is difficult to
-    read long file names. (Schroeder)
-4   Re-write the widget attachments and code so that we will not have to go
-    through and calculate the absolute position of every widget every time the
-    window is refreshed/changes size.  This will help the "flashing-widgets"
-    problem during a refresh.
-5   When starting gvim with all the default colors and then typing
-    ":hi Menu guibg=cyan", the menus change color but the background of the
-    pullright pixmap doesn't change colors.
-    If you type ":hi Menu guibg=cyan font=anyfont", then the pixmap changes
-    colors as it should.
-    Allocating a new pixmap and setting the resource doesn't change the
-    pullright pixmap's colors.  Why?  Possible Athena bug?
 
 
 Motif GUI:
@@ -3768,7 +3739,7 @@ Problems that will (probably) not be solved:
 
 Most interesting new features to be added when all bugs have been fixed:
 -   Using ":exe edit fname" has escaping problems.  Use ":edit ++(fname)".
-    Thus use "++=" to give arguments as expressions, comma separated as if
+    Thus use "++=" to give arguments as expressions, comma-separated as if
     calling a function.
     With options: ":edit ++(['!', '++enc=abc'], ['+/pat'], fname)".
     Alternative: Make a function for Ex commands: cmd_edit().
@@ -5659,7 +5630,7 @@ Options:
 7   ":with option=value | command": temporarily set an option value and
     restore it after the command has executed.
 8   Make "old" number options that really give a number of effects into string
-    options that are a comma separated list.  The old number values should
+    options that are a comma-separated list.  The old number values should
     also be supported.
 8   Add commands to save and restore an option, which also preserves the flag
     that marks if the option was set.  Useful to keep the effect of setting

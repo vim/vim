@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Mar 27
+*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -401,6 +401,8 @@ Name			triggered by ~
 
 |User|			to be used in combination with ":doautocmd"
 |SigUSR1|		after the SIGUSR1 signal has been detected
+
+|WinScrolled|		after scrolling or resizing a window
 
 
 The alphabetical list of autocommand events:		*autocmd-events-abc*
@@ -1228,7 +1230,13 @@ User				Never executed automatically.  To be used for
 				Note that when `:doautocmd User MyEvent` is
 				used while there are no matching autocommands,
 				you will get an error.  If you don't want
-				that, define a dummy autocommand yourself.
+				that, either check whether an autocommand is
+				defined using `exists('#User#MyEvent')` or
+				define a dummy autocommand yourself.
+				Example: >
+				    if exists('#User#MyEvent')
+					doautocmd User MyEvent
+				    endif
 
 							*SigUSR1*
 SigUSR1				After the SIGUSR1 signal has been detected.
@@ -1317,10 +1325,23 @@ WinNew				When a new window was created.  Not done for
 				the first window, when Vim has just started.
 				Before a WinEnter event.
 
+							*WinScrolled*
+WinScrolled			After scrolling the content of a window or
+				resizing a window.
+				The pattern is matched against the
+				|window-ID|.  Both <amatch> and <afile> are
+				set to the |window-ID|.
+				Non-recursive (the event cannot trigger
+				itself).  However, if the command causes the
+				window to scroll or change size another
+				WinScrolled event will be triggered later.
+				Does not trigger when the command is added,
+				only after the first scroll or resize.
+
 ==============================================================================
 6. Patterns					*autocmd-patterns* *{aupat}*
 
-The {aupat} argument of `:autocmd` can be a comma separated list.  This works as
+The {aupat} argument of `:autocmd` can be a comma-separated list.  This works as
 if the command was given with each pattern separately.  Thus this command: >
 	:autocmd BufRead *.txt,*.info set et
 Is equivalent to: >

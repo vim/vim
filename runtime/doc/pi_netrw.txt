@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 8.2.  Last change: 2021 Aug 16
+*pi_netrw.txt*  For Vim version 8.2.  Last change: 2022 Apr 06
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -2815,7 +2815,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				= 2: wide listing (multiple files in columns)
 				= 3: tree style listing
 
-  *g:netrw_list_hide*		comma separated pattern list for hiding files
+  *g:netrw_list_hide*		comma-separated pattern list for hiding files
 				Patterns are regular expressions (see |regexp|)
 				There's some special support for git-ignore
 				files: you may add the output from the helper

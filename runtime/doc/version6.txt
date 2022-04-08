@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.2.  Last change: 2021 Apr 05
+*version6.txt*  For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -12447,7 +12447,7 @@ Solution:   Make sure ".out" files are deleted when they get in the way.  Add
 Files:	    src/Make_bc5.mak, src/testdir/Make_dos.mak
 
 Patch 6.2.381
-Problem:    Setting 'fileencoding' to a comma separated list (confusing it
+Problem:    Setting 'fileencoding' to a comma-separated list (confusing it
 	    with 'fileencodings') does not result in an error message.
 	    Setting 'fileencoding' in an empty file marks it as modified.
 	    There is no "+" in the title after setting 'fileencoding'.

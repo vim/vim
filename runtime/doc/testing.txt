@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2022 Feb 10
+*testing.txt*	For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -157,22 +157,6 @@ test_gui_event({event}, {args})
 				required; they are interpreted as pixels.
 				Only results in an event when 'mousemoveevent'
 				is set or a popup uses mouse move events.
-
-		"scrollbar":
-		  Set or drag the left, right or horizontal scrollbar.  Only
-		  works when the scrollbar actually exists.  The supported
-		  items in {args} are:
-		    which:	scrollbar. The supported values are:
-				    left  Left scrollbar of the current window
-				    right Right scrollbar of the current window
-				    hor   Horizontal scrollbar
-		    value:	amount to scroll.  For the vertical scrollbars
-				the value can be 1 to the line-count of the
-				buffer.  For the horizontal scrollbar the
-				value can be between 1 and the maximum line
-				length, assuming 'wrap' is not set.
-		    dragging:	1 to drag the scrollbar and 0 to click in the
-				scrollbar.
 
 		"scrollbar":
 		  Set or drag the left, right or horizontal scrollbar.  Only

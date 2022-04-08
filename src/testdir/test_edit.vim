@@ -1840,6 +1840,29 @@ func Test_edit_file_no_read_perm()
   call delete('Xfile')
 endfunc
 
+" Using :edit without leaving 'insertmode' should not cause Insert mode to be
+" re-entered immediately after <C-L>
+func Test_edit_insertmode_ex_edit()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set insertmode noruler
+    inoremap <C-B> <Cmd>edit Xfoo<CR>
+  END
+  call writefile(lines, 'Xtest_edit_insertmode_ex_edit')
+
+  let buf = RunVimInTerminal('-S Xtest_edit_insertmode_ex_edit', #{rows: 6})
+  call TermWait(buf, 50)
+  call assert_match('^-- INSERT --\s*$', term_getline(buf, 6))
+  call term_sendkeys(buf, "\<C-B>\<C-L>")
+  call TermWait(buf, 50)
+  call assert_notmatch('^-- INSERT --\s*$', term_getline(buf, 6))
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_edit_insertmode_ex_edit')
+endfunc
+
 " Pressing escape in 'insertmode' should beep
 func Test_edit_insertmode_esc_beeps()
   new

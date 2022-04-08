@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2022 Mar 03
+*map.txt*       For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -696,6 +696,10 @@ that's local to the script.  See |<SID>| for details.
 The special key name "<Plug>" can be used for an internal mapping, which is
 not to be matched with any key sequence.  This is useful in plugins
 |using-<Plug>|.
+
+							*<MouseMove>*
+The special key name "<MouseMove>" can be used to handle mouse movement.  It
+needs to be enabled with 'mousemoveevent'.  Currently only works in the GUI.
 
 							*<Char>* *<Char->*
 To map a character by its decimal, octal or hexadecimal number the <Char>

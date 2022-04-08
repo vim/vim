@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	08. Apr 2022
+" Last Change:	2022 Apr 07
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2039,6 +2039,9 @@ au BufNewFile,BufRead *.vala			setf vala
 
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera
+
+" Vagrant (uses Ruby syntax)
+au BufNewFile,BufRead Vagrantfile		setf ruby
 
 " Verilog HDL
 au BufNewFile,BufRead *.v			setf verilog

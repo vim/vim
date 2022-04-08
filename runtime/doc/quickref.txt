@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2021 Dec 21
+*quickref.txt*  For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -815,6 +815,7 @@ Short explanation of each option:		*option-list*
 'mousefocus'	  'mousef'  keyboard focus follows the mouse
 'mousehide'	  'mh'	    hide mouse pointer while typing
 'mousemodel'	  'mousem'  changes meaning of mouse buttons
+'mousemoveevent'  'mousemev'  report mouse moves with <MouseMove>
 'mouseshape'	  'mouses'  shape of the mouse pointer in different modes
 'mousetime'	  'mouset'  max time between mouse double-click
 'mzquantum'	  'mzq'     the interval between polls for MzScheme threads
