@@ -211,7 +211,7 @@ au BufNewFile,BufRead *.bat 			setf dosbatch
 au BufNewFile,BufRead *.cmd
 	\ if getline(1) =~ '^/\*' | setf rexx | else | setf dosbatch | endif
 " ABB RAPID or Batch file for MSDOS.
-au BufNewFile,BufRead *.sys 			call dist#ft#FTsys()
+au BufNewFile,BufRead *.sys\c 			call dist#ft#FTsys()
 
 " Batch file for 4DOS
 au BufNewFile,BufRead *.btm			call dist#ft#FTbtm()
