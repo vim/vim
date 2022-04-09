@@ -477,7 +477,7 @@ do_exmode(
     else
 	exmode_active = EXMODE_NORMAL;
     State = NORMAL;
-    trigger_modechanged();
+    may_trigger_modechanged();
 
     // When using ":global /pat/ visual" and then "Q" we return to continue
     // the :global command.

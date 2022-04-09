@@ -257,7 +257,7 @@ ins_ctrl_x(void)
 	// CTRL-V look like CTRL-N
 	ctrl_x_mode = CTRL_X_CMDLINE_CTRL_X;
 
-    trigger_modechanged();
+    may_trigger_modechanged();
 }
 
 /*
@@ -2381,7 +2381,7 @@ ins_compl_prep(int c)
 	// upon the (possibly failed) completion.
 	ins_apply_autocmds(EVENT_COMPLETEDONE);
 
-    trigger_modechanged();
+    may_trigger_modechanged();
 
     // reset continue_* if we left expansion-mode, if we stay they'll be
     // (re)set properly in ins_complete()
@@ -2865,7 +2865,7 @@ set_completion(colnr_T startcol, list_T *list)
     // Lazily show the popup menu, unless we got interrupted.
     if (!compl_interrupted)
 	show_pum(save_w_wrow, save_w_leftcol);
-    trigger_modechanged();
+    may_trigger_modechanged();
     out_flush();
 }
 
@@ -3818,7 +3818,7 @@ ins_compl_get_exp(pos_T *ini)
 	if (compl_curr_match == NULL)
 	    compl_curr_match = compl_old_match;
     }
-    trigger_modechanged();
+    may_trigger_modechanged();
 
     return i;
 }

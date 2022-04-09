@@ -14,6 +14,7 @@ void pchar_cursor(int c);
 char_u *skip_to_option_part(char_u *p);
 void check_status(buf_T *buf);
 int ask_yesno(char_u *str, int direct);
+void get_mode(char_u *buf);
 void f_mode(typval_T *argvars, typval_T *rettv);
 void f_state(typval_T *argvars, typval_T *rettv);
 int get_keystroke(void);
@@ -49,5 +50,5 @@ int path_is_url(char_u *p);
 int path_with_url(char_u *fname);
 dict_T *get_v_event(save_v_event_T *sve);
 void restore_v_event(dict_T *v_event, save_v_event_T *sve);
-void trigger_modechanged(void);
+void may_trigger_modechanged(void);
 /* vim: set ft=c : */

@@ -284,7 +284,7 @@ edit(
     else
 	State = INSERT;
 
-    trigger_modechanged();
+    may_trigger_modechanged();
     stop_insert_mode = FALSE;
 
 #ifdef FEAT_CONCEAL
@@ -3701,7 +3701,7 @@ ins_esc(
 #endif
 
     State = NORMAL;
-    trigger_modechanged();
+    may_trigger_modechanged();
     // need to position cursor again when on a TAB
     if (gchar_cursor() == TAB)
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
@@ -3838,7 +3838,7 @@ ins_insert(int replaceState)
 	State = INSERT | (State & LANGMAP);
     else
 	State = replaceState | (State & LANGMAP);
-    trigger_modechanged();
+    may_trigger_modechanged();
     AppendCharToRedobuff(K_INS);
     showmode();
 #ifdef CURSOR_SHAPE

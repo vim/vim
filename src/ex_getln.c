@@ -1714,7 +1714,7 @@ getcmdline_int(
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINEENTER);
 #ifdef FEAT_EVAL
     if (!debug_mode)
-	trigger_modechanged();
+	may_trigger_modechanged();
 #endif
 
     init_history();
@@ -2555,7 +2555,7 @@ returncmd:
 
 #ifdef FEAT_EVAL
     if (!debug_mode)
-	trigger_modechanged();
+	may_trigger_modechanged();
 #endif
 
 #ifdef HAVE_INPUT_METHOD
