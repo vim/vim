@@ -4197,7 +4197,9 @@ normal_search(
 {
     int		i;
     searchit_arg_T sia;
+#ifdef FEAT_SEARCH_EXTRA
     pos_T	prev_cursor = curwin->w_cursor;
+#endif
 
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
