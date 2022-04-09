@@ -8957,8 +8957,10 @@ find_cmdline_var(char_u *src, int *usedlen)
 #define SPEC_SLNUM  (SPEC_SFILE + 1)
 		    "<stack>",		// call stack
 #define SPEC_STACK  (SPEC_SLNUM + 1)
+		    "<script>",		// script file name
+#define SPEC_SCRIPT (SPEC_STACK + 1)
 		    "<afile>",		// autocommand file name
-#define SPEC_AFILE  (SPEC_STACK + 1)
+#define SPEC_AFILE  (SPEC_SCRIPT + 1)
 		    "<abuf>",		// autocommand buffer number
 #define SPEC_ABUF   (SPEC_AFILE + 1)
 		    "<amatch>",		// autocommand match name
@@ -9226,14 +9228,28 @@ eval_vars(
 		break;
 
 	case SPEC_SFILE:	// file name for ":so" command
-	case SPEC_STACK:	// call stack
-		result = estack_sfile(spec_idx == SPEC_SFILE
-						? ESTACK_SFILE : ESTACK_STACK);
+		result = estack_sfile(ESTACK_SFILE);
 		if (result == NULL)
 		{
-		    *errormsg = spec_idx == SPEC_SFILE
-			? _(e_no_source_file_name_to_substitute_for_sfile)
-			: _(e_no_call_stack_to_substitute_for_stack);
+		    *errormsg = _(e_no_source_file_name_to_substitute_for_sfile);
+		    return NULL;
+		}
+		resultbuf = result;	    // remember allocated string
+		break;
+	case SPEC_STACK:	// call stack
+		result = estack_sfile(ESTACK_STACK);
+		if (result == NULL)
+		{
+		    *errormsg = _(e_no_call_stack_to_substitute_for_stack);
+		    return NULL;
+		}
+		resultbuf = result;	    // remember allocated string
+		break;
+	case SPEC_SCRIPT:	// script file name
+		result = estack_sfile(ESTACK_SCRIPT);
+		if (result == NULL)
+		{
+		    *errormsg = _(e_no_script_file_name_to_substitute_for_script);
 		    return NULL;
 		}
 		resultbuf = result;	    // remember allocated string
