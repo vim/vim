@@ -701,7 +701,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define TERMINAL        0x2000  // Terminal mode
 #define MODE_ALL	0xffff
 
-#define MODE_MAX_LENGTH	4	// max mode length returned in mode()
+#define MODE_MAX_LENGTH	4	// max mode length returned in get_mode()
+				// including the final NUL character
 
 // all mode bits used for mapping
 #define MAP_ALL_MODES	(0x3f | SELECTMODE | TERMINAL)
