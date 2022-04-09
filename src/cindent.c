@@ -420,7 +420,7 @@ cin_islabel_skip(char_u **s)
 }
 
 /*
- * Recognize a "public/private/protected" scope declaration label.
+ * Recognize a scope declaration label set in 'cinscopedecls'.
  */
     static int
 cin_isscopedecl(char_u *p)
