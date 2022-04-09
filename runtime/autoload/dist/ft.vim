@@ -112,7 +112,7 @@ def IsRapid(sChkExt: string = ""): bool
   if sChkExt == "cfg"
     return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
   endif
-  " called from FTmod, FTprg or FTsys
+  # called from FTmod, FTprg or FTsys
   return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
 enddef
 
