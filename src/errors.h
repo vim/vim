@@ -1152,8 +1152,10 @@ EXTERN char e_region_is_guarded_cannot_modify[]
 #endif
 EXTERN char e_ambiguous_use_of_user_defined_command[]
 	INIT(= N_("E464: Ambiguous use of user-defined command"));
+#ifdef FEAT_EVAL
 EXTERN char e_ambiguous_use_of_user_defined_command_str[]
 	INIT(= N_("E464: Ambiguous use of user-defined command: %s"));
+#endif
 EXTERN char e_winsize_requires_two_number_arguments[]
 	INIT(= N_("E465: :winsize requires two number arguments"));
 EXTERN char e_winpos_requires_two_number_arguments[]
@@ -1553,14 +1555,6 @@ EXTERN char e_too_many_signs_defined[]
 #if defined(MSWIN) && defined(FEAT_PRINTER)
 EXTERN char e_unknown_printer_font_str[]
 	INIT(= N_("E613: Unknown printer font: %s"));
-#endif
-#ifdef FEAT_BROWSE
-EXTERN char e_vim_selfile_cant_return_to_current_directory[]
-	INIT(= N_("E614: vim_SelFile: can't return to current directory"));
-EXTERN char e_vim_selfile_cant_get_current_directory[]
-	INIT(= N_("E615: vim_SelFile: can't get current directory"));
-EXTERN char e_vim_selfile_cant_get_font_str[]
-	INIT(= N_("E616: vim_SelFile: can't get font %s"));
 #endif
 #ifdef FEAT_GUI_GTK
 EXTERN char e_cannot_be_changed_in_gtk_GUI[]
@@ -2809,8 +2803,6 @@ EXTERN char e_cannot_delete_vim9_script_function_str[]
 	INIT(= N_("E1084: Cannot delete Vim9 script function %s"));
 EXTERN char e_not_callable_type_str[]
 	INIT(= N_("E1085: Not a callable type: %s"));
-EXTERN char e_function_reference_invalid[]
-	INIT(= N_("E1086: Function reference invalid"));
 EXTERN char e_cannot_use_index_when_declaring_variable[]
 	INIT(= N_("E1087: Cannot use an index when declaring a variable"));
 EXTERN char e_script_cannot_import_itself[]
@@ -3115,16 +3107,20 @@ EXTERN char e_digraph_setlist_argument_must_be_list_of_lists_with_two_items[]
 	INIT(= N_("E1216: digraph_setlist() argument must be a list of lists with two items"));
 #endif
 #ifdef FEAT_EVAL
+# ifdef FEAT_JOB_CHANNEL
 EXTERN char e_chan_or_job_required_for_argument_nr[]
 	INIT(= N_("E1217: Channel or Job required for argument %d"));
 EXTERN char e_job_required_for_argument_nr[]
 	INIT(= N_("E1218: Job required for argument %d"));
+# endif
 EXTERN char e_float_or_number_required_for_argument_nr[]
 	INIT(= N_("E1219: Float or Number required for argument %d"));
 EXTERN char e_string_or_number_required_for_argument_nr[]
 	INIT(= N_("E1220: String or Number required for argument %d"));
+# ifdef FEAT_JOB_CHANNEL
 EXTERN char e_string_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1221: String or Blob required for argument %d"));
+# endif
 EXTERN char e_string_or_list_required_for_argument_nr[]
 	INIT(= N_("E1222: String or List required for argument %d"));
 EXTERN char e_string_or_dict_required_for_argument_nr[]
@@ -3157,8 +3153,6 @@ EXTERN char e_exists_compiled_can_only_be_used_in_def_function[]
 EXTERN char e_legacy_must_be_followed_by_command[]
 	INIT(= N_("E1234: legacy must be followed by a command"));
 #ifdef FEAT_EVAL
-EXTERN char e_function_reference_is_not_set[]
-	INIT(= N_("E1235: Function reference is not set"));
 EXTERN char e_cannot_use_str_itself_it_is_imported[]
 	INIT(= N_("E1236: Cannot use %s itself, it is imported"));
 #endif

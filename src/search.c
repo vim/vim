@@ -5050,16 +5050,3 @@ fuzzymatches_to_strmatches(
 
     return OK;
 }
-
-/*
- * Free a list of fuzzy string matches.
- */
-    void
-fuzmatch_str_free(fuzmatch_str_T *fuzmatch, int count)
-{
-    if (count <= 0 || fuzmatch == NULL)
-	return;
-    while (count--)
-	vim_free(fuzmatch[count].str);
-    vim_free(fuzmatch);
-}
