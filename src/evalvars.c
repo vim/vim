@@ -679,10 +679,14 @@ eval_all_expr_in_str(char_u *str)
  * tcl, mzscheme), script_get is set to TRUE. In this case, if the marker is
  * missing, then '.' is accepted as a marker.
  *
+ * When compiling a heredoc assignment to a variable in a Vim9 def function,
+ * 'vim9compile' is set to TRUE. In this case, instead of generating a list of
+ * string values from the heredoc, a list of vim9 instructions are generated.
+ *
  * Returns a List with {lines} or NULL on failure.
  */
     list_T *
-heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
+heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 {
     char_u	*theline = NULL;
     char_u	*marker;
@@ -696,6 +700,8 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
     int		comment_char = in_vim9script() ? '#' : '"';
     int		evalstr = FALSE;
     int		eval_failed = FALSE;
+    cctx_T	*cctx = vim9compile ? eap->cookie : NULL;
+    int		count = 0;
 
     if (eap->getline == NULL)
     {
@@ -816,24 +822,40 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 		    break;
 
 	str = theline + ti;
-	if (evalstr)
+	if (vim9compile)
 	{
-	    str = eval_all_expr_in_str(str);
-	    if (str == NULL)
+	    if (compile_heredoc_string(str, evalstr, cctx) == FAIL)
 	    {
-		// expression evaluation failed
-		eval_failed = TRUE;
-		continue;
+		vim_free(theline);
+		vim_free(text_indent);
+		return FAIL;
 	    }
-	    vim_free(theline);
-	    theline = str;
+	    count++;
 	}
+	else
+	{
+	    if (evalstr)
+	    {
+		str = eval_all_expr_in_str(str);
+		if (str == NULL)
+		{
+		    // expression evaluation failed
+		    eval_failed = TRUE;
+		    continue;
+		}
+		vim_free(theline);
+		theline = str;
+	    }
 
-	if (list_append_string(l, str, -1) == FAIL)
-	    break;
+	    if (list_append_string(l, str, -1) == FAIL)
+		break;
+	}
     }
     vim_free(theline);
     vim_free(text_indent);
+
+    if (vim9compile && cctx->ctx_skip != SKIP_YES && !eval_failed)
+	generate_NEWLIST(cctx, count, FALSE);
 
     if (eval_failed)
     {
@@ -986,7 +1008,7 @@ ex_let(exarg_T *eap)
 	long	cur_lnum = SOURCING_LNUM;
 
 	// HERE document
-	l = heredoc_get(eap, expr + 3, FALSE);
+	l = heredoc_get(eap, expr + 3, FALSE, FALSE);
 	if (l != NULL)
 	{
 	    rettv_list_set(&rettv, l);

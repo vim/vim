@@ -4605,7 +4605,7 @@ script_get(exarg_T *eap UNUSED, char_u *cmd UNUSED)
 	return NULL;
     cmd += 2;
 
-    l = heredoc_get(eap, cmd, TRUE);
+    l = heredoc_get(eap, cmd, TRUE, FALSE);
     if (l == NULL)
 	return NULL;
 
