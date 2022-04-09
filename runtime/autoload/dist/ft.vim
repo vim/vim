@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Apr 06
+# Last Change:	09. Apr 2022
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -108,10 +108,11 @@ export def BindzoneCheck(default = '')
 enddef
 
 # Returns true if file content looks like RAPID
-def IsRapid(sChkExt: string = "mod_prg_sys"): bool
+def IsRapid(sChkExt: string = ""): bool
   if sChkExt == "cfg"
     return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
   endif
+  " called from FTmod, FTprg or FTsys
   return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
 enddef
 
