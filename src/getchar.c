@@ -1705,10 +1705,16 @@ vgetc(void)
     }
     else
     {
+	// number of characters recorded from the last vgetc() call
+	static int	last_vgetc_recorded_len = 0;
+
 	mod_mask = 0;
 	vgetc_mod_mask = 0;
 	vgetc_char = 0;
-	last_recorded_len = 0;
+
+	// last_recorded_len can be larger than last_vgetc_recorded_len
+	// if peeking records more
+	last_recorded_len -= last_vgetc_recorded_len;
 
 	for (;;)		// this is done twice if there are modifiers
 	{
@@ -1910,6 +1916,8 @@ vgetc(void)
 
 	    break;
 	}
+
+	last_vgetc_recorded_len = last_recorded_len;
     }
 
 #ifdef FEAT_EVAL
