@@ -19,6 +19,7 @@ int ga_copy_strings(garray_T *from, garray_T *to);
 void ga_init(garray_T *gap);
 void ga_init2(garray_T *gap, size_t itemsize, int growsize);
 int ga_grow(garray_T *gap, int n);
+int ga_grow_id(garray_T *gap, int n, alloc_id_T id UNUSED);
 int ga_grow_inner(garray_T *gap, int n);
 char_u *ga_concat_strings(garray_T *gap, char *sep);
 int ga_copy_string(garray_T *gap, char_u *p);

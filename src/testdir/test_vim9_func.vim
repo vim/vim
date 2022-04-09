@@ -4071,6 +4071,22 @@ def Test_go_beyond_end_of_cmd()
   v9.CheckScriptFailure(lines, 'E476:')
 enddef
 
+" Test for memory allocation failure when defining a new lambda
+func Test_lambda_allocation_failure()
+  new
+  let lines =<< trim END
+    vim9script
+    g:Xlambda = (x): number => {
+        return x + 1
+      }
+  END
+  call setline(1, lines)
+  call test_alloc_fail(GetAllocId('get_func'), 0, 0)
+  call assert_fails('source', 'E342:')
+  call assert_false(exists('g:Xlambda'))
+  bw!
+endfunc
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()
