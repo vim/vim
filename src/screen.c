@@ -2331,9 +2331,9 @@ space_to_screenline(int off, int attr)
 }
 
 /*
- * Fill the screen from 'start_row' to 'end_row', from 'start_col' to 'end_col'
- * with character 'c1' in first column followed by 'c2' in the other columns.
- * Use attributes 'attr'.
+ * Fill the screen from "start_row" to "end_row" (exclusive), from "start_col"
+ * to "end_col" (exclusive) with character "c1" in first column followed by
+ * "c2" in the other columns.  Use attributes "attr".
  */
     void
 screen_fill(

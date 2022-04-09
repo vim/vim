@@ -2617,8 +2617,8 @@ win_update(win_T *wp)
 	    int scr_row = W_WINROW(wp) + wp->w_height - 1;
 
 	    // Last line isn't finished: Display "@@@" in the last screen line.
-	    screen_puts_len((char_u *)"@@", 2, scr_row, wp->w_wincol,
-							      HL_ATTR(HLF_AT));
+	    screen_puts_len((char_u *)"@@", wp->w_width > 2 ? 2 : wp->w_width,
+				       scr_row, wp->w_wincol, HL_ATTR(HLF_AT));
 	    screen_fill(scr_row, scr_row + 1,
 		    (int)wp->w_wincol + 2, (int)W_ENDCOL(wp),
 		    '@', ' ', HL_ATTR(HLF_AT));
@@ -2627,10 +2627,13 @@ win_update(win_T *wp)
 	}
 	else if (dy_flags & DY_LASTLINE)	// 'display' has "lastline"
 	{
+	    int start_col = (int)W_ENDCOL(wp) - 3;
+
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
-		    (int)W_ENDCOL(wp) - 3, (int)W_ENDCOL(wp),
+		    start_col < wp->w_wincol ? wp->w_wincol : start_col,
+		    (int)W_ENDCOL(wp),
 		    '@', '@', HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
