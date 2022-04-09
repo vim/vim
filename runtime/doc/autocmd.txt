@@ -1205,6 +1205,9 @@ TextYankPost			After text has been yanked or deleted in the
 				current buffer.  The following values of
 				|v:event| can be used to determine the operation
 				that triggered this autocmd:
+				   inclusive	TRUE if the motion is
+						|inclusive| else the motion is
+						|exclusive|.
 				   operator	The operation performed.
 				   regcontents	Text that was stored in the
 						register, as a list of lines,

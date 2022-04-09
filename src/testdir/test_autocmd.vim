@@ -1931,28 +1931,48 @@ func Test_TextYankPost()
 
   norm "ayiw
   call assert_equal(
-    \{'regcontents': ['foo'], 'regname': 'a', 'operator': 'y', 'regtype': 'v', 'visual': v:false},
-    \g:event)
+        \ #{regcontents: ['foo'], regname: 'a', operator: 'y',
+        \   regtype: 'v', visual: v:false, inclusive: v:true},
+        \ g:event)
   norm y_
   call assert_equal(
-    \{'regcontents': ['foo'], 'regname': '',  'operator': 'y', 'regtype': 'V', 'visual': v:false},
-    \g:event)
+        \ #{regcontents: ['foo'], regname: '',  operator: 'y', regtype: 'V',
+        \   visual: v:false, inclusive: v:false},
+        \ g:event)
   norm Vy
   call assert_equal(
-    \{'regcontents': ['foo'], 'regname': '',  'operator': 'y', 'regtype': 'V', 'visual': v:true},
-    \g:event)
+        \ #{regcontents: ['foo'], regname: '',  operator: 'y', regtype: 'V',
+        \   visual: v:true, inclusive: v:true},
+        \ g:event)
   call feedkeys("\<C-V>y", 'x')
   call assert_equal(
-    \{'regcontents': ['f'], 'regname': '',  'operator': 'y', 'regtype': "\x161", 'visual': v:true},
-    \g:event)
+        \ #{regcontents: ['f'], regname: '',  operator: 'y', regtype: "\x161",
+        \   visual: v:true, inclusive: v:true},
+        \ g:event)
   norm "xciwbar
   call assert_equal(
-    \{'regcontents': ['foo'], 'regname': 'x', 'operator': 'c', 'regtype': 'v', 'visual': v:false},
-    \g:event)
+        \ #{regcontents: ['foo'], regname: 'x', operator: 'c', regtype: 'v',
+        \   visual: v:false, inclusive: v:true},
+        \ g:event)
   norm "bdiw
   call assert_equal(
-    \{'regcontents': ['bar'], 'regname': 'b', 'operator': 'd', 'regtype': 'v', 'visual': v:false},
-    \g:event)
+        \ #{regcontents: ['bar'], regname: 'b', operator: 'd', regtype: 'v',
+        \   visual: v:false, inclusive: v:true},
+        \ g:event)
+
+  call setline(1, 'foobar')
+  " exclusive motion
+  norm $"ay0
+  call assert_equal(
+        \ #{regcontents: ['fooba'], regname: 'a', operator: 'y', regtype: 'v',
+        \   visual: v:false, inclusive: v:false},
+        \ g:event)
+  " inclusive motion
+  norm 0"ay$
+  call assert_equal(
+        \ #{regcontents: ['foobar'], regname: 'a', operator: 'y', regtype: 'v',
+        \   visual: v:false, inclusive: v:true},
+        \ g:event)
 
   call assert_equal({}, v:event)
 
@@ -1965,15 +1985,17 @@ func Test_TextYankPost()
     set clipboard=autoselect
     exe "norm! ggviw\<Esc>"
     call assert_equal(
-        \{'regcontents': ['foobar'], 'regname': '*', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
-        \g:event)
+          \ #{regcontents: ['foobar'], regname: '*', operator: 'y',
+          \   regtype: 'v', visual: v:true, inclusive: v:false},
+          \ g:event)
 
     let @+ = ''
     set clipboard=autoselectplus
     exe "norm! ggviw\<Esc>"
     call assert_equal(
-        \{'regcontents': ['foobar'], 'regname': '+', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
-        \g:event)
+          \ #{regcontents: ['foobar'], regname: '+', operator: 'y',
+          \   regtype: 'v', visual: v:true, inclusive: v:false},
+          \ g:event)
 
     set clipboard&vim
   endif
