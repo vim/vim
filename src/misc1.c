@@ -625,6 +625,114 @@ ask_yesno(char_u *str, int direct)
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 /*
+ * Returns the current mode as a string.
+ * The first character represents the major mode, the following one the minor
+ * ones.
+ * If `buf` is NULL a suitably-sized buffer will be allocated, otherwise the
+ * user-supplied buffer is used instead.
+ */
+    char_u *
+get_mode(char_u *buf)
+{
+    int		i = 0;
+
+    if (buf == NULL)
+	buf = alloc(MODE_MAX_LENGTH);
+    if (buf == NULL)
+	return NULL;
+
+    if (time_for_testing == 93784)
+    {
+	// Testing the two-character code.
+	buf[i++] = 'x';
+	buf[i++] = '!';
+    }
+#ifdef FEAT_TERMINAL
+    else if (term_use_loop())
+	buf[i++] = 't';
+#endif
+    else if (VIsual_active)
+    {
+	if (VIsual_select)
+	    buf[i++] = VIsual_mode + 's' - 'v';
+	else
+	{
+	    buf[i++] = VIsual_mode;
+	    if (restart_VIsual_select)
+	        buf[i++] = 's';
+	}
+    }
+    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
+		|| State == CONFIRM)
+    {
+	buf[i++] = 'r';
+	if (State == ASKMORE)
+	    buf[i++] = 'm';
+	else if (State == CONFIRM)
+	    buf[i++] = '?';
+    }
+    else if (State == EXTERNCMD)
+	buf[i++] = '!';
+    else if (State & INSERT)
+    {
+	if (State & VREPLACE_FLAG)
+	{
+	    buf[i++] = 'R';
+	    buf[i++] = 'v';
+
+	    if (ins_compl_active())
+		buf[i++] = 'c';
+	    else if (ctrl_x_mode_not_defined_yet())
+		buf[i++] = 'x';
+	}
+	else
+	{
+	    if (State & REPLACE_FLAG)
+		buf[i++] = 'R';
+	    else
+		buf[i++] = 'i';
+
+	    if (ins_compl_active())
+		buf[i++] = 'c';
+	    else if (ctrl_x_mode_not_defined_yet())
+		buf[i++] = 'x';
+	}
+    }
+    else if ((State & CMDLINE) || exmode_active)
+    {
+	buf[i++] = 'c';
+	if (exmode_active == EXMODE_VIM)
+	    buf[i++] = 'v';
+	else if (exmode_active == EXMODE_NORMAL)
+	    buf[i++] = 'e';
+    }
+    else
+    {
+	buf[i++] = 'n';
+	if (finish_op)
+	{
+	    buf[i++] = 'o';
+	    // to be able to detect force-linewise/blockwise/characterwise
+	    // operations
+	    buf[i++] = motion_force;
+	}
+	else if (restart_edit == 'I' || restart_edit == 'R'
+							|| restart_edit == 'V')
+	{
+	    buf[i++] = 'i';
+	    buf[i++] = restart_edit;
+	}
+#ifdef FEAT_TERMINAL
+	else if (term_in_normal_mode())
+	    buf[i++] = 't';
+#endif
+    }
+
+    buf[i] = NUL;
+    return buf;
+}
+
+/*
  * "mode()" function
  */
     void
@@ -635,94 +743,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
 	return;
 
-    CLEAR_FIELD(buf);
-
-    if (time_for_testing == 93784)
-    {
-	// Testing the two-character code.
-	buf[0] = 'x';
-	buf[1] = '!';
-    }
-#ifdef FEAT_TERMINAL
-    else if (term_use_loop())
-	buf[0] = 't';
-#endif
-    else if (VIsual_active)
-    {
-	if (VIsual_select)
-	    buf[0] = VIsual_mode + 's' - 'v';
-	else
-	{
-	    buf[0] = VIsual_mode;
-	    if (restart_VIsual_select)
-	        buf[1] = 's';
-	}
-    }
-    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
-		|| State == CONFIRM)
-    {
-	buf[0] = 'r';
-	if (State == ASKMORE)
-	    buf[1] = 'm';
-	else if (State == CONFIRM)
-	    buf[1] = '?';
-    }
-    else if (State == EXTERNCMD)
-	buf[0] = '!';
-    else if (State & INSERT)
-    {
-	if (State & VREPLACE_FLAG)
-	{
-	    buf[0] = 'R';
-	    buf[1] = 'v';
-
-	    if (ins_compl_active())
-		buf[2] = 'c';
-	    else if (ctrl_x_mode_not_defined_yet())
-		buf[2] = 'x';
-	}
-	else
-	{
-	    if (State & REPLACE_FLAG)
-		buf[0] = 'R';
-	    else
-		buf[0] = 'i';
-
-	    if (ins_compl_active())
-		buf[1] = 'c';
-	    else if (ctrl_x_mode_not_defined_yet())
-		buf[1] = 'x';
-	}
-    }
-    else if ((State & CMDLINE) || exmode_active)
-    {
-	buf[0] = 'c';
-	if (exmode_active == EXMODE_VIM)
-	    buf[1] = 'v';
-	else if (exmode_active == EXMODE_NORMAL)
-	    buf[1] = 'e';
-    }
-    else
-    {
-	buf[0] = 'n';
-	if (finish_op)
-	{
-	    buf[1] = 'o';
-	    // to be able to detect force-linewise/blockwise/characterwise
-	    // operations
-	    buf[2] = motion_force;
-	}
-	else if (restart_edit == 'I' || restart_edit == 'R'
-							|| restart_edit == 'V')
-	{
-	    buf[1] = 'i';
-	    buf[2] = restart_edit;
-	}
-#ifdef FEAT_TERMINAL
-	else if (term_in_normal_mode())
-	    buf[1] = 't';
-#endif
-    }
+    get_mode(buf);
 
     // Clear out the minor mode when the argument is not a non-zero number or
     // non-empty string.
@@ -2698,40 +2719,29 @@ trigger_modechanged()
 {
 #ifdef FEAT_EVAL
     dict_T	    *v_event;
-    typval_T	    rettv;
-    typval_T	    tv[2];
-    char_u	    *pat_pre;
-    char_u	    *pat;
     save_v_event_T  save_v_event;
+    char_u	    curr_mode[MODE_MAX_LENGTH];
+    char_u	    pattern_buf[2 * MODE_MAX_LENGTH];
 
     if (!has_modechanged())
 	return;
 
-    tv[0].v_type = VAR_NUMBER;
-    tv[0].vval.v_number = 1;	    // get full mode
-    tv[1].v_type = VAR_UNKNOWN;
-    f_mode(tv, &rettv);
-    if (STRCMP(rettv.vval.v_string, last_mode) == 0)
-    {
-	vim_free(rettv.vval.v_string);
+    get_mode(curr_mode);
+    if (STRCMP(curr_mode, last_mode) == 0)
 	return;
-    }
 
     v_event = get_v_event(&save_v_event);
-    (void)dict_add_string(v_event, "new_mode", rettv.vval.v_string);
+    (void)dict_add_string(v_event, "new_mode", curr_mode);
     (void)dict_add_string(v_event, "old_mode", last_mode);
     dict_set_items_ro(v_event);
 
     // concatenate modes in format "old_mode:new_mode"
-    pat_pre = concat_str(last_mode, (char_u*)":");
-    pat = concat_str(pat_pre, rettv.vval.v_string);
-    vim_free(pat_pre);
+    vim_snprintf((char *)pattern_buf, sizeof(pattern_buf), "%s:%s", last_mode,
+	    curr_mode);
 
-    apply_autocmds(EVENT_MODECHANGED, pat, NULL, FALSE, curbuf);
-    STRCPY(last_mode, rettv.vval.v_string);
+    apply_autocmds(EVENT_MODECHANGED, pattern_buf, NULL, FALSE, curbuf);
+    STRCPY(last_mode, curr_mode);
 
-    vim_free(pat);
     restore_v_event(v_event, &save_v_event);
-    vim_free(rettv.vval.v_string);
 #endif
 }
