@@ -603,6 +603,78 @@ list_script_vars(int *first)
 }
 
 /*
+ * Evaluate all the Vim expressions (`=expr`) in string "str" and return the
+ * resulting string.  The caller must free the returned string.
+ */
+    static char_u *
+eval_all_expr_in_str(char_u *str)
+{
+    garray_T	ga;
+    char_u	*s;
+    char_u	*p;
+    char_u	save_c;
+    char_u	*exprval;
+    int		status;
+
+    ga_init2(&ga, 1, 80);
+    p = str;
+
+    // Look for `=expr`, evaluate the expression and replace `=expr` with the
+    // result.
+    while (*p != NUL)
+    {
+	s = p;
+	while (*p != NUL && *p != '`')
+	    p++;
+	ga_concat_len(&ga, s, p - s);
+	if (*p == NUL)
+	    break;		// no expression is found
+
+	if (p[1] != '=' || p[2] == NUL)
+	{
+	    // '`' is not followed by a '=' or string ends after "`="
+	    ga_append(&ga, *p);
+	    p++;
+	    continue;
+	}
+
+	s = p;
+	p += 2;		// skip `=
+
+	status = skip_expr(&p, NULL);
+	if (status == FAIL)
+	{
+	    // invalid expression
+	    vim_free(ga.ga_data);
+	    return NULL;
+	}
+	if (*p == NUL)
+	{
+	    // expression should be followed by a '`'
+	    ga_concat(&ga, s);
+	    continue;
+	}
+	s += 2;		// skip `=
+	save_c = *p;
+	*p = NUL;
+	exprval = eval_to_string(s, TRUE);
+	*p = save_c;
+	p++;
+	if (exprval == NULL)
+	{
+	    // expression evaluation failed
+	    vim_free(ga.ga_data);
+	    return NULL;
+	}
+	ga_concat(&ga, exprval);
+	vim_free(exprval);
+    }
+    ga_append(&ga, NUL);
+
+    return ga.ga_data;
+}
+
+/*
  * Get a list of lines from a HERE document. The here document is a list of
  * lines surrounded by a marker.
  *	cmd << {marker}
@@ -619,7 +691,7 @@ list_script_vars(int *first)
  * tcl, mzscheme), script_get is set to TRUE. In this case, if the marker is
  * missing, then '.' is accepted as a marker.
  *
- * Returns a List with {lines} or NULL.
+ * Returns a List with {lines} or NULL on failure.
  */
     list_T *
 heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
@@ -628,11 +700,14 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
     char_u	*marker;
     list_T	*l;
     char_u	*p;
+    char_u	*str;
     int		marker_indent_len = 0;
     int		text_indent_len = 0;
     char_u	*text_indent = NULL;
     char_u	dot[] = ".";
     int		comment_char = in_vim9script() ? '#' : '"';
+    int		evalstr = FALSE;
+    int		eval_failed = FALSE;
 
     if (eap->getline == NULL)
     {
@@ -642,21 +717,36 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 
     // Check for the optional 'trim' word before the marker
     cmd = skipwhite(cmd);
-    if (STRNCMP(cmd, "trim", 4) == 0 && (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
-    {
-	cmd = skipwhite(cmd + 4);
 
-	// Trim the indentation from all the lines in the here document.
-	// The amount of indentation trimmed is the same as the indentation of
-	// the first line after the :let command line.  To find the end marker
-	// the indent of the :let command line is trimmed.
-	p = *eap->cmdlinep;
-	while (VIM_ISWHITE(*p))
+    while (TRUE)
+    {
+	if (STRNCMP(cmd, "trim", 4) == 0
+		&& (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
 	{
-	    p++;
-	    marker_indent_len++;
+	    cmd = skipwhite(cmd + 4);
+
+	    // Trim the indentation from all the lines in the here document.
+	    // The amount of indentation trimmed is the same as the indentation
+	    // of the first line after the :let command line.  To find the end
+	    // marker the indent of the :let command line is trimmed.
+	    p = *eap->cmdlinep;
+	    while (VIM_ISWHITE(*p))
+	    {
+		p++;
+		marker_indent_len++;
+	    }
+	    text_indent_len = -1;
+
+	    continue;
 	}
-	text_indent_len = -1;
+	if (STRNCMP(cmd, "eval", 4) == 0
+		&& (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
+	{
+	    cmd = skipwhite(cmd + 4);
+	    evalstr = TRUE;
+	    continue;
+	}
+	break;
     }
 
     // The marker is the next word.
@@ -716,6 +806,14 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	    break;
 	}
 
+	// If expression evaluation failed in the heredoc, then skip till the
+	// end marker.
+	if (eval_failed)
+	{
+	    vim_free(theline);
+	    continue;
+	}
+
 	if (text_indent_len == -1 && *theline != NUL)
 	{
 	    // set the text indent from the first line.
@@ -734,12 +832,33 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 		if (theline[ti] != text_indent[ti])
 		    break;
 
-	if (list_append_string(l, theline + ti, -1) == FAIL)
+	str = theline + ti;
+	if (evalstr)
+	{
+	    str = eval_all_expr_in_str(str);
+	    if (str == NULL)
+	    {
+		// expression evaluation failed
+		vim_free(theline);
+		eval_failed = TRUE;
+		continue;
+	    }
+	    vim_free(theline);
+	    theline = str;
+	}
+
+	if (list_append_string(l, str, -1) == FAIL)
 	    break;
 	vim_free(theline);
     }
     vim_free(text_indent);
 
+    if (eval_failed)
+    {
+	// expression evaluation in the heredoc failed
+	list_free(l);
+	return NULL;
+    }
     return l;
 }
 

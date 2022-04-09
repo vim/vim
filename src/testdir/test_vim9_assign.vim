@@ -1866,6 +1866,31 @@ def Test_heredoc()
   v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<string>', 1)
 enddef
 
+" Test for heredoc with Vim expressions
+def Test_heredoc_expr()
+  var code =<< trim eval END
+    var a = `=5 + 10`
+    var b = `=min([10, 6])` + `=max([4, 6])`
+  END
+  assert_equal(['var a = 15', 'var b = 6 + 6'], code)
+  code =<< eval trim END
+    var s = "`=$SOME_ENV_VAR`"
+  END
+  assert_equal(['var s = "somemore"'], code)
+  code =<< eval END
+    var s = "`=$SOME_ENV_VAR`"
+END
+  assert_equal(['    var s = "somemore"'], code)
+  code =<< eval trim END
+    let a = `abc`
+    let b = `=abc
+    let c = `=
+    let d = `
+  END
+  assert_equal(['let a = `abc`', 'let b = `=abc', 'let c = `=', 'let d = `'],
+                                                                  code)
+enddef
+
 def Test_var_func_call()
   var lines =<< trim END
     vim9script

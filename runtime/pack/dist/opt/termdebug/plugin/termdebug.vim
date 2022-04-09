@@ -668,7 +668,9 @@ func s:EndDebugCommon()
       endif
     endif
   endfor
-  exe was_buf .. "buf"
+  if bufexists(was_buf)
+    exe was_buf .. "buf"
+  endif
 
   call s:DeleteCommands()
 

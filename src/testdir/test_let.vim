@@ -379,6 +379,77 @@ END
   call assert_equal(['Text', 'with', 'indent'], text)
 endfunc
 
+" Test for evaluating Vim expressions in a heredoc using `=expr`
+func Test_let_heredoc_eval()
+  let str = ''
+  let code =<< trim eval END
+    let a = `=5 + 10`
+    let b = `=min([10, 6])` + `=max([4, 6])`
+    `=str`
+    let c = "abc`=str`d"
+  END
+  call assert_equal(['let a = 15', 'let b = 6 + 6', '', 'let c = "abcd"'], code)
+  let $TESTVAR = "Hello"
+  let code =<< eval trim END
+    let s = "`=$TESTVAR`"
+  END
+  call assert_equal(['let s = "Hello"'], code)
+  let code =<< eval END
+    let s = "`=$TESTVAR`"
+END
+  call assert_equal(['    let s = "Hello"'], code)
+  let a = 10
+  let data =<< eval END
+`=a`
+END
+  call assert_equal(['10'], data)
+  let code =<< eval trim END
+    let a = `abc`
+    let b = `=abc
+    let c = `=
+    let d = `
+  END
+  call assert_equal(['let a = `abc`', 'let b = `=abc', 'let c = `=',
+                                                  \ 'let d = `'], code)
+  let code = 'xxx'
+  let code =<< eval trim END
+    let n = `=5 +
+    6`
+  END
+  call assert_equal('xxx', code)
+  let code =<< eval trim END
+     let n = `=min([1, 2]` + `=max([3, 4])`
+  END
+  call assert_equal('xxx', code)
+
+  " Test for sourcing a script containing a heredoc with invalid expression.
+  " Variable assignment should fail, if expression evaluation fails
+  new
+  let g:Xvar = 'test'
+  let g:b = 10
+  let lines =<< trim END
+    let Xvar =<< eval CODE
+    let a = 1
+    let b = `=5+`
+    let c = 2
+    CODE
+    let g:Count += 1
+  END
+  call setline(1, lines)
+  let g:Count = 0
+  call assert_fails('source', 'E15:')
+  call assert_equal(1, g:Count)
+  call setline(3, 'let b = `=abc`')
+  call assert_fails('source', 'E121:')
+  call assert_equal(2, g:Count)
+  call setline(3, 'let b = `=abc` + `=min([9, 4])` + 2')
+  call assert_fails('source', 'E121:')
+  call assert_equal(3, g:Count)
+  call assert_equal('test', g:Xvar)
+  call assert_equal(10, g:b)
+  bw!
+endfunc
+
 " Test for the setting a variable using the heredoc syntax
 func Test_let_heredoc()
   let var1 =<< END
