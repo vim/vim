@@ -4153,6 +4153,7 @@ nv_search(cmdarg_T *cap)
 						      ? 0 : SEARCH_MARK, NULL);
 }
 
+
 /*
  * Handle "N" and "n" commands.
  * cap->arg is SEARCH_REV for "N", 0 for "n".
@@ -4173,6 +4174,12 @@ nv_next(cmdarg_T *cap)
 	(void)normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg, NULL);
 	cap->count1 -= 1;
     }
+
+#ifdef FEAT_SEARCH_EXTRA
+    // Redraw the window to refresh the highlighted matches.
+    if (i > 0 && p_hls && !no_hlsearch)
+	redraw_later(SOME_VALID);
+#endif
 }
 
 /*
@@ -4190,6 +4197,7 @@ normal_search(
 {
     int		i;
     searchit_arg_T sia;
+    pos_T	prev_cursor = curwin->w_cursor;
 
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
@@ -4213,6 +4221,11 @@ normal_search(
 	    foldOpenCursor();
 #endif
     }
+#ifdef FEAT_SEARCH_EXTRA
+    // Redraw the window to refresh the highlighted matches.
+    if (!EQUAL_POS(curwin->w_cursor, prev_cursor) && p_hls && !no_hlsearch)
+	redraw_later(SOME_VALID);
+#endif
 
     // "/$" will put the cursor after the end of the line, may need to
     // correct that here

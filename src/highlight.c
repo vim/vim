@@ -157,6 +157,7 @@ static char *(highlight_init_both[]) = {
     "default link QuickFixLine Search",
     "default link CursorLineSign SignColumn",
     "default link CursorLineFold FoldColumn",
+    "default link CurSearch Search",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
     NULL
 };

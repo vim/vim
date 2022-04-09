@@ -652,6 +652,7 @@ prepare_search_hl_line(
 	    shl = &cur->hl;
 	shl->startcol = MAXCOL;
 	shl->endcol = MAXCOL;
+	shl->lines = 0;
 	shl->attr_cur = 0;
 	shl->is_addpos = FALSE;
 	if (cur != NULL)
@@ -674,6 +675,10 @@ prepare_search_hl_line(
 		shl->endcol = shl->rm.endpos[0].col;
 	    else
 		shl->endcol = MAXCOL;
+	    if (shl->rm.endpos[0].lnum != shl->rm.startpos[0].lnum)
+		shl->lines = shl->rm.endpos[0].lnum - shl->rm.startpos[0].lnum;
+	    else
+		shl->lines = 1;
 	    // Highlight one character for an empty match.
 	    if (shl->startcol == shl->endcol)
 	    {
@@ -768,6 +773,17 @@ update_search_hl(
 		else
 		    *has_match_conc = 0;
 # endif
+		// Highlight the match were the cursor is using the CurSearch
+		// group.
+		if (shl == search_hl
+			&& wp->w_cursor.lnum >= shl->lnum
+			&& wp->w_cursor.lnum < shl->lnum + shl->lines
+			&& wp->w_cursor.col >= shl->startcol
+			&& wp->w_cursor.col < shl->endcol)
+		{
+		    shl->attr_cur = HL_ATTR(HLF_LC);
+		}
+
 	    }
 	    else if (col == shl->endcol)
 	    {
