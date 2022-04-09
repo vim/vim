@@ -1092,7 +1092,7 @@ get_function_body(
 	}
 
 	// Add the line to the function.
-	if (ga_grow(newlines, 1 + sourcing_lnum_off) == FAIL)
+	if (ga_grow_id(newlines, 1 + sourcing_lnum_off, aid_get_func) == FAIL)
 	    goto theend;
 
 	if (heredoc_concat_len > 0)
