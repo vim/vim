@@ -4165,6 +4165,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-ErrorMsg|	 e  error messages
 			 h  (obsolete, ignored)
 	|hl-IncSearch|	 i  'incsearch' highlighting
+	|hl-CurSearch|	 y  current instance of last search pattern
 	|hl-Search|	 l  last search pattern highlighting (see 'hlsearch')
 	|hl-MoreMsg|	 m  |more-prompt|
 	|hl-ModeMsg|	 M  Mode (e.g., "-- INSERT --")

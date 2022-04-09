@@ -1038,6 +1038,30 @@ func Test_incsearch_substitute_long_line()
   bwipe!
 endfunc
 
+func Test_hlsearch_cursearch()
+  CheckScreendump
+
+  let lines =<< trim END
+    set hlsearch scrolloff=0
+    call setline(1, ['foo', 'bar', 'baz', 'foo', 'bar'])
+    hi Search ctermbg=yellow
+    hi CurSearch ctermbg=blue
+  END
+  call writefile(lines, 'Xhlsearch_cursearch')
+  let buf = RunVimInTerminal('-S Xhlsearch_cursearch', {'rows': 9, 'cols': 60})
+
+  call term_sendkeys(buf, "gg/foo\<CR>")
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_single_line', {})
+
+  call term_sendkeys(buf, "gg/foo\\nbar\<CR>")
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_multiple_line', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xhlsearch_cursearch')
+endfunc
+
 " Similar to Test_incsearch_substitute() but with a screendump halfway.
 func Test_incsearch_substitute_dump()
   CheckOption incsearch
