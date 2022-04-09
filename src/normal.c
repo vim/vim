@@ -4175,9 +4175,11 @@ nv_next(cmdarg_T *cap)
 	cap->count1 -= 1;
     }
 
+#ifdef FEAT_SEARCH_EXTRA
     // Redraw the window to refresh the highlighted matches.
     if (i > 0 && p_hls && !no_hlsearch)
 	redraw_later(VALID);
+#endif
 }
 
 /*
