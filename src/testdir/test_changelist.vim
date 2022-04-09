@@ -1,6 +1,28 @@
 " Tests for the changelist functionality
 
 " Tests for the getchangelist() function
+func Test_changelist_index()
+  edit Xfile1.txt
+  exe "normal iabc\<C-G>u\ndef\<C-G>u\nghi"
+  call assert_equal(3, getchangelist('%')[1])
+  " Move one step back in the changelist.
+  normal 2g;
+
+  hide edit Xfile2.txt
+  exe "normal iabcd\<C-G>u\ndefg\<C-G>u\nghij"
+  call assert_equal(3, getchangelist('%')[1])
+  " Move to the beginning of the changelist.
+  normal 99g;
+
+  " Check the changelist indices.
+  call assert_equal(0, getchangelist('%')[1])
+  call assert_equal(1, getchangelist('#')[1])
+
+  bwipe!
+  call delete('Xfile1.txt')
+  call delete('Xfile2.txt')
+endfunc
+
 func Test_getchangelist()
   bwipe!
   enew

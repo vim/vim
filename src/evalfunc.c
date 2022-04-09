@@ -4746,12 +4746,24 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	return;
     /*
      * The current window change list index tracks only the position in the
-     * current buffer change list. For other buffers, use the change list
-     * length as the current index.
+     * current buffer change list. For other buffers use the stored index or, if
+     * that's not available, the change list length as the current index.
      */
-    list_append_number(rettv->vval.v_list,
-	    (varnumber_T)((buf == curwin->w_buffer)
-		? curwin->w_changelistidx : buf->b_changelistlen));
+    if (buf == curwin->w_buffer)
+    {
+	list_append_number(rettv->vval.v_list,
+		(varnumber_T)curwin->w_changelistidx);
+    }
+    else
+    {
+	wininfo_T	*wip;
+	FOR_ALL_BUF_WININFO(buf, wip)
+		if (wip->wi_win == curwin)
+		    break;
+	list_append_number(rettv->vval.v_list,
+		(varnumber_T)((wip != NULL) ? wip->wi_changelistidx :
+		    buf->b_changelistlen));
+    }
 
     for (i = 0; i < buf->b_changelistlen; ++i)
     {
