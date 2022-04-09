@@ -107,6 +107,25 @@ export def BindzoneCheck(default = '')
   endif
 enddef
 
+# Returns true if file content looks like RAPID
+def IsRapid(sChkExt: string = ""): bool
+  if sChkExt == "cfg"
+    return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
+  endif
+  # called from FTmod, FTprg or FTsys
+  return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
+enddef
+
+export def FTcfg()
+  if exists("g:filetype_cfg")
+    exe "setf " .. g:filetype_cfg
+  elseif IsRapid("cfg")
+    setf rapid
+  else
+    setf cfg
+  endif
+enddef
+
 export def FTlpc()
   if exists("g:lpc_syntax_for_c")
     var lnum = 1
@@ -168,7 +187,7 @@ enddef
 
 export def FTent()
   # This function checks for valid cl syntax in the first five lines.
-  # Look for either an opening comment, '#', or a block start, '{".
+  # Look for either an opening comment, '#', or a block start, '{'.
   # If not found, assume SGML.
   var lnum = 1
   while lnum < 6
@@ -410,6 +429,36 @@ export def FTmm()
   setf nroff
 enddef
 
+# Returns true if file content looks like LambdaProlog
+def IsLProlog(): bool
+  # skip apparent comments and blank lines, what looks like 
+  # LambdaProlog comment may be RAPID header
+  var l: number = nextnonblank(1)
+  while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
+    l = nextnonblank(l + 1)
+  endwhile
+  # this pattern must not catch a go.mod file
+  return getline(l) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
+enddef
+
+# Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
+export def FTmod()
+  if exists("g:filetype_mod")
+    exe "setf " .. g:filetype_mod
+  elseif IsLProlog()
+    setf lprolog
+  elseif getline(nextnonblank(1)) =~ '\%(\<MODULE\s\+\w\+\s*;\|^\s*(\*\)'
+    setf modula2
+  elseif IsRapid()
+    setf rapid
+  elseif expand("<afile>") =~ '\<go.mod$'
+    setf gomod
+  else
+    # Nothing recognized, assume modsim3
+    setf modsim3
+  endif
+enddef
+
 export def FTpl()
   if exists("g:filetype_pl")
     exe "setf " .. g:filetype_pl
@@ -526,6 +575,18 @@ export def FTpp()
   endif
 enddef
 
+# Determine if *.prg is ABB RAPID. Can also be Clipper, FoxPro or eviews
+export def FTprg()
+  if exists("g:filetype_prg")
+    exe "setf " .. g:filetype_prg
+  elseif IsRapid()
+    setf rapid
+  else
+    # Nothing recognized, assume Clipper
+    setf clipper
+  endif
+enddef
+
 export def FTr()
   var max = line("$") > 50 ? 50 : line("$")
 
@@ -572,7 +633,7 @@ export def McSetf()
       return
     endif
   endfor
-  setf m4  " Default: Sendmail .mc file
+  setf m4  # Default: Sendmail .mc file
 enddef
 
 # Called from filetype.vim and scripts.vim.
@@ -733,6 +794,14 @@ export def FTperl(): number
     return 1
   endif
   return 0
+enddef
+
+export def FTsys()
+  if IsRapid()
+    setf rapid
+  else
+    setf bat
+  endif
 enddef
 
 # Choose context, plaintex, or tex (LaTeX) based on these rules:
