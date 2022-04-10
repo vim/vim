@@ -55,7 +55,7 @@ typedef struct AutoCmd
     char	    once;		// "One shot": removed after execution
     char	    nested;		// If autocommands nest here.
     char	    last;		// last command in list
-    sctx_T	    script_ctx;		// script context where defined
+    sctx_T	    script_ctx;		// script context where it is defined
     struct AutoCmd  *next;		// next AutoCmd in list
 } AutoCmd;
 
@@ -234,9 +234,10 @@ struct AutoPatCmd_S
     char_u	*sfname;	// sfname to match with
     char_u	*tail;		// tail of fname
     event_T	event;		// current event
+    sctx_T	script_ctx;	// script context where it is defined
     int		arg_bufnr;	// Initially equal to <abuf>, set to zero when
 				// buf is deleted.
-    AutoPatCmd   *next;		// chain of active apc-s for auto-invalidation
+    AutoPatCmd  *next;	        // chain of active apc-s for auto-invalidation
 };
 
 static AutoPatCmd *active_apc_list = NULL; // stack of active autocommands
@@ -2180,6 +2181,7 @@ apply_autocmds_group(
     patcmd.sfname = sfname;
     patcmd.tail = tail;
     patcmd.event = event;
+    CLEAR_FIELD(patcmd.script_ctx);
     patcmd.arg_bufnr = autocmd_bufnr;
     patcmd.next = NULL;
     auto_next_pat(&patcmd, FALSE);
@@ -2370,9 +2372,14 @@ auto_next_pat(
     AutoCmd	*cp;
     char_u	*name;
     char	*s;
-    char_u	**sourcing_namep = &SOURCING_NAME;
+    estack_T	*entry;
+    char_u	*namep;
 
-    VIM_CLEAR(*sourcing_namep);
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
+
+    // Clear the exestack entry for this ETYPE_AUCMD entry.
+    VIM_CLEAR(entry->es_name);
+    entry->es_info.aucmd = NULL;
 
     for (ap = apc->curpat; ap != NULL && !got_int; ap = ap->next)
     {
@@ -2392,19 +2399,21 @@ auto_next_pat(
 	    {
 		name = event_nr2name(apc->event);
 		s = _("%s Autocommands for \"%s\"");
-		*sourcing_namep = alloc(STRLEN(s)
-					      + STRLEN(name) + ap->patlen + 1);
-		if (*sourcing_namep != NULL)
+		namep = alloc(STRLEN(s) + STRLEN(name) + ap->patlen + 1);
+		if (namep != NULL)
 		{
-		    sprintf((char *)*sourcing_namep, s,
-					       (char *)name, (char *)ap->pat);
+		    sprintf((char *)namep, s, (char *)name, (char *)ap->pat);
 		    if (p_verbose >= 8)
 		    {
 			verbose_enter();
-			smsg(_("Executing %s"), *sourcing_namep);
+			smsg(_("Executing %s"), namep);
 			verbose_leave();
 		    }
 		}
+
+		// Update the exestack entry for this autocmd.
+		entry->es_name = namep;
+		entry->es_info.aucmd = apc;
 
 		apc->curpat = ap;
 		apc->nextcmd = ap->cmds;
@@ -2420,6 +2429,15 @@ auto_next_pat(
 	if (stop_at_last && ap->last)
 	    break;
     }
+}
+
+/*
+ * Get the script context where the autocommand is defined.
+ */
+    sctx_T *
+acp_script_ctx(AutoPatCmd *acp)
+{
+    return &acp->script_ctx;
 }
 
 /*
@@ -2481,6 +2499,7 @@ getnextac(
 	au_del_cmd(ac);
     autocmd_nested = ac->nested;
     current_sctx = ac->script_ctx;
+    acp->script_ctx = current_sctx;
     if (ac->last)
 	acp->nextcmd = NULL;
     else

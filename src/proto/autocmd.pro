@@ -1,6 +1,7 @@
 /* autocmd.c */
 void aubuflocal_remove(buf_T *buf);
 int au_has_group(char_u *name);
+sctx_T *acp_script_ctx(AutoPatCmd *acp);
 void do_augroup(char_u *arg, int del_group);
 void free_all_autocmds(void);
 int check_ei(void);
