@@ -4641,7 +4641,7 @@ _WndProc(
 	    char_u string[4];
 	    string[0] = CSI;
 	    string[1] = KS_MODIFIER;
-	    string[2] = 4;
+	    string[2] = MOD_MASK_CTRL;
 	    string[3] = 0x2F;
 	    add_to_input_buf(string, 4);
 	}
