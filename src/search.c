@@ -1377,8 +1377,8 @@ do_search(
 	     */
 	    if (*p == '+' || *p == '-' || VIM_ISDIGIT(*p))
 		spats[0].off.line = TRUE;
-	    else if ((options & SEARCH_OPT) &&
-					(*p == 'e' || *p == 's' || *p == 'b'))
+	    else if ((options & SEARCH_OPT)
+				      && (*p == 'e' || *p == 's' || *p == 'b'))
 	    {
 		if (*p == 'e')		// end
 		    spats[0].off.end = SEARCH_END;
@@ -1404,9 +1404,9 @@ do_search(
 	    pat = p;			    // put pat after search command
 	}
 
-	if ((options & SEARCH_ECHO) && messaging() &&
-		!msg_silent &&
-		(!cmd_silent || !shortmess(SHM_SEARCHCOUNT)))
+	if ((options & SEARCH_ECHO) && messaging()
+		&& !msg_silent
+		&& (!cmd_silent || !shortmess(SHM_SEARCHCOUNT)))
 	{
 	    char_u	*trunc;
 	    char_u	off_buf[40];
@@ -2450,8 +2450,8 @@ findmatchlimit(
 	/*
 	 * If FM_BLOCKSTOP given, stop at a '{' or '}' in column 0.
 	 */
-	if (pos.col == 0 && (flags & FM_BLOCKSTOP) &&
-					 (linep[0] == '{' || linep[0] == '}'))
+	if (pos.col == 0 && (flags & FM_BLOCKSTOP)
+				       && (linep[0] == '{' || linep[0] == '}'))
 	{
 	    if (linep[0] == findc && count == 0)	// match!
 		return &pos;
@@ -2653,8 +2653,8 @@ findmatchlimit(
 			    pos.col -= 2;
 			    break;
 			}
-			else if (linep[pos.col - 2] == '\\' &&
-				    pos.col > 2 && linep[pos.col - 3] == '\'')
+			else if (linep[pos.col - 2] == '\\'
+				  && pos.col > 2 && linep[pos.col - 3] == '\'')
 			{
 			    pos.col -= 3;
 			    break;
@@ -2663,8 +2663,8 @@ findmatchlimit(
 		}
 		else if (linep[pos.col + 1])	// forward search
 		{
-		    if (linep[pos.col + 1] == '\\' &&
-			    linep[pos.col + 2] && linep[pos.col + 3] == '\'')
+		    if (linep[pos.col + 1] == '\\'
+			   && linep[pos.col + 2] && linep[pos.col + 3] == '\'')
 		    {
 			pos.col += 3;
 			break;
@@ -3471,8 +3471,9 @@ find_pattern_in_path(
 		    if (fullpathcmp(new_fname, files[i].name, TRUE, TRUE)
 								    & FPC_SAME)
 		    {
-			if (type != CHECK_PATH &&
-				action == ACTION_SHOW_ALL && files[i].matched)
+			if (type != CHECK_PATH
+				&& action == ACTION_SHOW_ALL
+				&& files[i].matched)
 			{
 			    msg_putchar('\n');	    // cursor below last one
 			    if (!got_int)	    // don't display if 'q'
@@ -4678,8 +4679,8 @@ fuzzy_match_in_list(
 	rettv.v_type = VAR_UNKNOWN;
 	if (li->li_tv.v_type == VAR_STRING)	// list of strings
 	    itemstr = li->li_tv.vval.v_string;
-	else if (li->li_tv.v_type == VAR_DICT &&
-				(key != NULL || item_cb->cb_name != NULL))
+	else if (li->li_tv.v_type == VAR_DICT
+				  && (key != NULL || item_cb->cb_name != NULL))
 	{
 	    // For a dict, either use the specified key to lookup the string or
 	    // use the specified callback function to get the string.
@@ -4786,8 +4787,8 @@ fuzzy_match_in_list(
 	    {
 		if (ptrs[i].score == SCORE_NONE)
 		    break;
-		if (ptrs[i].lmatchpos != NULL &&
-			list_append_list(l, ptrs[i].lmatchpos) == FAIL)
+		if (ptrs[i].lmatchpos != NULL
+			     && list_append_list(l, ptrs[i].lmatchpos) == FAIL)
 		    goto done;
 	    }
 
@@ -5049,17 +5050,4 @@ fuzzymatches_to_strmatches(
     vim_free(fuzmatch);
 
     return OK;
-}
-
-/*
- * Free a list of fuzzy string matches.
- */
-    void
-fuzmatch_str_free(fuzmatch_str_T *fuzmatch, int count)
-{
-    if (count <= 0 || fuzmatch == NULL)
-	return;
-    while (count--)
-	vim_free(fuzmatch[count].str);
-    vim_free(fuzmatch);
 }

@@ -378,7 +378,7 @@ And with autocommands: >
 Although using a :def function probably works better.
 
 				*E1022* *E1103* *E1130* *E1131* *E1133*
-				*E1134* *E1235*
+				*E1134*
 Declaring a variable with a type but without an initializer will initialize to
 false (for bool), empty (for string, list, dict, etc.) or zero (for number,
 any, etc.).  This matters especially when using the "any" type, the value will
