@@ -5014,6 +5014,21 @@ fuzzy_match_str(char_u *str, char_u *pat)
 }
 
 /*
+ * Free an array of fuzzy string matches "fuzmatch[count]".
+ */
+    void
+fuzmatch_str_free(fuzmatch_str_T *fuzmatch, int count)
+{
+    int i;
+
+    if (fuzmatch == NULL)
+	return;
+    for (i = 0; i < count; ++i)
+	vim_free(fuzmatch[i].str);
+    vim_free(fuzmatch);
+}
+
+/*
  * Copy a list of fuzzy matches into a string list after sorting the matches by
  * the fuzzy score. Frees the memory allocated for 'fuzmatch'.
  * Returns OK on success and FAIL on memory allocation failure.
@@ -5033,9 +5048,7 @@ fuzzymatches_to_strmatches(
     *matches = ALLOC_MULT(char_u *, count);
     if (*matches == NULL)
     {
-	for (i = 0; i < count; i++)
-	    vim_free(fuzmatch[i].str);
-	vim_free(fuzmatch);
+	fuzmatch_str_free(fuzmatch, count);
 	return FAIL;
     }
 

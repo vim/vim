@@ -2877,13 +2877,7 @@ ExpandGeneric(
 		ga_clear_strings(&ga);
 		return FAIL;
 	    }
-
-	    for (i = 0; i < ga.ga_len; ++i)
-	    {
-		fuzmatch = &((fuzmatch_str_T *)ga.ga_data)[i];
-		vim_free(fuzmatch->str);
-	    }
-	    ga_clear(&ga);
+	    fuzmatch_str_free(ga.ga_data, ga.ga_len);
 	    return FAIL;
 	}
 
