@@ -1631,16 +1631,31 @@ au BufNewFile,BufRead *.sass			setf sass
 au BufNewFile,BufRead *.sa			setf sather
 
 " Scala
-au BufNewFile,BufRead *.scala,*.sc		setf scala
+au BufNewFile,BufRead *.scala		setf scala
 
 " SBT - Scala Build Tool
 au BufNewFile,BufRead *.sbt			setf sbt
+
+" SuperCollider
+au BufNewFile,BufRead *.sc		
+    \ if getline(1).getline(2).getline(3).getline(4).getline(5).getline(6).getline(7).getline(8).getline(9) =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this\.\||\w*|' |
+    \   setf supercollider |
+    \ else |
+    \   setf scala |
+    \ endif
+
+au BufNewFile,BufRead *.quark      setf supercollider
 
 " Scilab
 au BufNewFile,BufRead *.sci,*.sce		setf scilab
 
 " scdoc
-au BufNewFile,BufRead *.scd			setf scdoc
+au BufNewFile,BufRead *.scd			
+    \ if getline(1) =~# '\%^\S\+(\d[0-9A-Za-z]*)\%(\s\+\"[^"]*\"\%(\s\+\"[^"]*\"\)\=\)\=$' |
+    \   setf scdoc |
+    \ else |
+    \   setf supercollider |
+    \ endif
 
 " SCSS
 au BufNewFile,BufRead *.scss			setf scss
