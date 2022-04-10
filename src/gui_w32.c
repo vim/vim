@@ -4635,6 +4635,20 @@ _WndProc(
 	}
 	break;
 
+    case WM_KEYUP:
+	// handle CTRL-/
+	if ((GetKeyState(VK_CONTROL) & 0x8000) != 0 && wParam == 0xBF)
+	{
+	    char_u string[4];
+
+	    string[0] = CSI;
+	    string[1] = KS_MODIFIER;
+	    string[2] = MOD_MASK_CTRL;
+	    string[3] = 0x2F;
+	    add_to_input_buf(string, 4);
+	}
+	return 0L;
+
     case WM_CHAR:
 	// Don't use HANDLE_MSG() for WM_CHAR, it truncates wParam to a single
 	// byte while we want the UTF-16 character value.
