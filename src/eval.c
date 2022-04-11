@@ -5661,9 +5661,10 @@ var2fpos(
 	pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
 	    return NULL;
+	pos = *pp;
 	if (charcol)
-	    pp->col = buf_byteidx_to_charidx(curbuf, pp->lnum, pp->col);
-	return pp;
+	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
+	return &pos;
     }
 
     pos.coladd = 0;

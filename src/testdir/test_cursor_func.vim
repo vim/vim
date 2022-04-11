@@ -204,6 +204,8 @@ func Test_getcharpos()
   " Test for a mark
   normal 2G7lmmgg
   call assert_equal([0, 2, 8, 0], getcharpos("'m"))
+  " Getting the mark again should return the same value
+  call assert_equal([0, 2, 8, 0], getcharpos("'m"))
   delmarks m
   call assert_equal([0, 0, 0, 0], getcharpos("'m"))
 
