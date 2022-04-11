@@ -2804,10 +2804,13 @@ may_trigger_winscrolled(win_T *wp)
 	apply_autocmds(EVENT_WINSCROLLED, winid, winid, FALSE, wp->w_buffer);
 	recursive = FALSE;
 
-	wp->w_last_topline = wp->w_topline;
-	wp->w_last_leftcol = wp->w_leftcol;
-	wp->w_last_width = wp->w_width;
-	wp->w_last_height = wp->w_height;
+	if (win_valid_any_tab(wp))
+	{
+	    wp->w_last_topline = wp->w_topline;
+	    wp->w_last_leftcol = wp->w_leftcol;
+	    wp->w_last_width = wp->w_width;
+	    wp->w_last_height = wp->w_height;
+	}
     }
 }
 
