@@ -378,6 +378,7 @@ int cmdline_pum_active(void)
 void cmdline_pum_remove(void)
 {
     int save_p_lz = p_lz;
+    int	save_KeyTyped = KeyTyped;
 
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
@@ -385,6 +386,10 @@ void cmdline_pum_remove(void)
     update_screen(0);
     p_lz = save_p_lz;
     redrawcmd();
+
+    // When a function is called (e.g. for 'foldtext') KeyTyped might be reset
+    // as a side effect.
+    KeyTyped = save_KeyTyped;
 }
 
 void cmdline_pum_cleanup(cmdline_info_T *cclp)
