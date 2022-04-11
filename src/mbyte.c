@@ -84,6 +84,11 @@
 #  define WIN32_LEAN_AND_MEAN
 # endif
 # if defined(FEAT_GUI) || defined(FEAT_XCLIPBOARD)
+#  ifdef __CYGWIN__
+    // ControlMask from <X11/X.h> (included in "vim.h") is conflicting with
+    // <w32api/windows.h> (included in <X11/Xwindows.h>).
+#   undef ControlMask
+#  endif
 #  include <X11/Xwindows.h>
 #  define WINBYTE wBYTE
 # else
