@@ -302,6 +302,7 @@ jobs:
           echo "LLVM_PREFIX=/usr/local" >> $GITHUB_ENV
           export PATH="/usr/local/opt/clang/bin:$PATH"
           clang --version
+          
         env:
           CC: clang-14
           TEST: test
