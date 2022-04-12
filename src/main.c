@@ -1342,7 +1342,7 @@ main_loop(
 	    validate_cursor();
 
 	    if (!finish_op)
-		may_trigger_winscrolled(curwin);
+		may_trigger_winscrolled();
 
 	    // If nothing is pending and we are going to wait for the user to
 	    // type a character, trigger SafeState.

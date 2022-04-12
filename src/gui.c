@@ -5238,7 +5238,7 @@ gui_update_screen(void)
     }
 
     if (!finish_op)
-	may_trigger_winscrolled(curwin);
+	may_trigger_winscrolled();
 
 # ifdef FEAT_CONCEAL
     if (conceal_update_lines
