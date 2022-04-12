@@ -178,7 +178,10 @@ ch_logfile(char_u *fname, char_u *opt)
 
     if (log_fd != NULL)
     {
-	fprintf(log_fd, "==== start log session ====\n");
+	fprintf(log_fd, "==== start log session %s ====\n",
+						 get_ctime(time(NULL), FALSE));
+	// flush now, if fork/exec follows it could be written twice
+	fflush(log_fd);
 #ifdef FEAT_RELTIME
 	profile_start(&log_start);
 #endif

@@ -726,6 +726,25 @@ func Test_startuptime()
   call delete('Xtestout')
 endfunc
 
+func Test_log()
+  CheckFeature channel
+
+  call assert_false(filereadable('Xlogfile'))
+  let after = ['qall']
+  if RunVim([], after, '--log Xlogfile')
+    call assert_equal(1, readfile('Xlogfile')
+          \ ->filter({i, l -> l =~ '==== start log session'})
+          \ ->len())
+    " second time appends to the log
+    if RunVim([], after, '--log Xlogfile')
+      call assert_equal(2, readfile('Xlogfile')
+            \ ->filter({i, l -> l =~ '==== start log session'})
+            \ ->len())
+    endif
+  endif
+  call delete('Xlogfile')
+endfunc
+
 func Test_read_stdin()
   let after =<< trim [CODE]
     write Xtestout

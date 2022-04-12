@@ -344,6 +344,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Example: >
 			vim -V20vimlog foobar
 <
+--log {filename}					*--log*
+		Start logging and write entries to {filename}.
+		This works like calling `ch_logfile({filename}, 'a')` very
+		early during startup.
+		{only available with the +channel feature}
+
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first
 		command from a script. |debug-mode|
@@ -564,6 +570,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		{scriptout} cannot start with a digit.
 		If you want to record what is typed in a human readable for
 		you can use |ch_logfile()|, It adds "raw key input" lines.
+		Also see |--log|.
 
 							*-W*
 -W {scriptout}	Like -w, but do not append, overwrite an existing file.

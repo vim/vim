@@ -138,15 +138,23 @@ main
     atexit(vim_mem_profile_dump);
 #endif
 
-#ifdef STARTUPTIME
-    // Need to find "--startuptime" before actually parsing arguments.
+#if defined(STARTUPTIME) || defined(FEAT_JOB_CHANNEL)
+    // Need to find "--startuptime" and "--log" before actually parsing
+    // arguments.
     for (i = 1; i < argc - 1; ++i)
-	if (STRICMP(argv[i], "--startuptime") == 0)
+    {
+# ifdef STARTUPTIME
+	if (STRICMP(argv[i], "--startuptime") == 0 && time_fd == NULL)
 	{
 	    time_fd = mch_fopen(argv[i + 1], "a");
 	    TIME_MSG("--- VIM STARTING ---");
-	    break;
 	}
+# endif
+# ifdef FEAT_JOB_CHANNEL
+	if (STRICMP(argv[i], "--log") == 0)
+	    ch_logfile((char_u *)(argv[i + 1]), (char_u *)"a");
+# endif
+    }
 #endif
     starttime = time(NULL);
 
@@ -1997,6 +2005,8 @@ command_line_scan(mparm_T *parmp)
 				// "--version" give version message
 				// "--clean" clean context
 				// "--literal" take files literally
+				// "--startuptime fname" write timing info
+				// "--log fname" start logging early
 				// "--nofork" don't fork
 				// "--not-a-term" don't warn for not a term
 				// "--ttyfail" exit if not a term
@@ -2052,6 +2062,11 @@ command_line_scan(mparm_T *parmp)
 		{
 		    want_argument = TRUE;
 		    argv_idx += 11;
+		}
+		else if (STRNICMP(argv[0] + argv_idx, "log", 3) == 0)
+		{
+		    want_argument = TRUE;
+		    argv_idx += 3;
 		}
 #ifdef FEAT_CLIENTSERVER
 		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
@@ -2435,6 +2450,7 @@ command_line_scan(mparm_T *parmp)
 							    (char_u *)argv[0];
 		    }
 		    // "--startuptime <file>" already handled
+		    // "--log <file>" already handled
 		    break;
 
 	    //	case 'd':   -d {device} is handled in mch_check_win() for the
@@ -3538,6 +3554,9 @@ usage(void)
 #endif
 #ifdef STARTUPTIME
     main_msg(_("--startuptime <file>\tWrite startup timing messages to <file>"));
+#endif
+#ifdef FEAT_JOB_CHANNEL
+    main_msg(_("--log <file>\tStart logging to <file> early"));
 #endif
 #ifdef FEAT_VIMINFO
     main_msg(_("-i <viminfo>\t\tUse <viminfo> instead of .viminfo"));

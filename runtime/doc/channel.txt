@@ -633,8 +633,8 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		is going on in real time.
 
 		To enable the log very early, to see what is received from a
-		terminal during startup, use |--cmd|: >
-			vim --cmd "call ch_logfile('logfile', 'w')"
+		terminal during startup, use |--log|: >
+			vim --log logfile
 <
 		This function is not available in the |sandbox|.
 		NOTE: the channel communication is stored in the file, be
