@@ -296,16 +296,12 @@ jobs:
           brew install lua
           echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
       
-      - name: Install MacPort and Clang 14
+      - name: Install Clang 14
         run: |
-          MacPortVer=2.7.2
-          wget https://github.com/macports/macports-base/releases/download/v${MacPortVer}/MacPorts-${MacPortVer}.tar.gz
-          tar xzvf MacPorts-${MacPortVer}.tar.gz
-          cd MacPorts-${MacPortVer}
-          ./configure && sudo make install
-          export PATH="/opt/local/bin:$PATH"
-          sudo port install clang-14     
-        
+          brew install --with-clang --HEAD llvm 
+          echo "LLVM_PREFIX=/usr/local" >> $GITHUB_ENV
+          export PATH="/usr/local/opt/clang/bin:$PATH"
+          clang --version
         env:
           CC: clang-14
           TEST: test
