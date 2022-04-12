@@ -378,6 +378,7 @@ int cmdline_pum_active(void)
 void cmdline_pum_remove(void)
 {
     int save_p_lz = p_lz;
+    int	save_KeyTyped = KeyTyped;
 
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
@@ -385,6 +386,10 @@ void cmdline_pum_remove(void)
     update_screen(0);
     p_lz = save_p_lz;
     redrawcmd();
+
+    // When a function is called (e.g. for 'foldtext') KeyTyped might be reset
+    // as a side effect.
+    KeyTyped = save_KeyTyped;
 }
 
 void cmdline_pum_cleanup(cmdline_info_T *cclp)
@@ -2877,13 +2882,7 @@ ExpandGeneric(
 		ga_clear_strings(&ga);
 		return FAIL;
 	    }
-
-	    for (i = 0; i < ga.ga_len; ++i)
-	    {
-		fuzmatch = &((fuzmatch_str_T *)ga.ga_data)[i];
-		vim_free(fuzmatch->str);
-	    }
-	    ga_clear(&ga);
+	    fuzmatch_str_free(ga.ga_data, ga.ga_len);
 	    return FAIL;
 	}
 

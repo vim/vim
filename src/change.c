@@ -1659,7 +1659,7 @@ open_line(
 	lead_len = get_leader_len(saved_line, &lead_flags,
 							dir == BACKWARD, TRUE);
 #ifdef FEAT_CINDENT
-	if (lead_len == 0 && do_cindent && dir == FORWARD)
+	if (lead_len == 0 && curbuf->b_p_cin && do_cindent && dir == FORWARD)
 	{
 	    // Check for a line comment after code.
 	    comment_start = check_linecomment(saved_line);
