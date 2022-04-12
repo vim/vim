@@ -304,7 +304,7 @@ jobs:
           tar xzvf MacPorts-${MacPortVer}.tar.gz
           cd MacPorts-${MacPortVer}
           ./configure && make && sudo make install
-          sudo echo 'export PATH="/opt/local/bin"' >> ~/.bashrc
+          echo 'export PATH="/opt/local/bin"' >> $GITHUB_ENV
           sudo port -v selfupdate
           sudo port install clang-14
           ls /opt/local
