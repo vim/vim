@@ -274,7 +274,7 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CC: clang
+      CC: clang-14
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
@@ -295,7 +295,18 @@ jobs:
         run: |
           brew install lua
           echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
-
+      
+      - name: Install MacPort and Clang 14
+        if: matrix.features == 'huge'
+        env:
+          MacPortVer: 2.7.2
+        run: |
+          curl -O https://github.com/macports/macports-base/releases/download/v${MacPortVer}/MacPorts-${MacPortVer}.tar.gz
+          tar xzvf MacPorts-${MacPortVer}.tar.gz”
+          cd MacPorts-${MacPortVer}
+          ./configure && make && sudo make install
+          sudo port install clang-14
+          
       - name: Set up environment
         run: |
           (
