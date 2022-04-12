@@ -300,6 +300,7 @@ jobs:
         run: |
           clang_ver=14.0.0
           wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${clang_ver}/clang-${clang_ver}.src.tar.xz
+          tar -xvf clang-${clang_ver}.src.tar.xz
           cd clang-${clang_ver}.src
           make install
           echo "CLANG_PREFIX=/usr/local" >> $GITHUB_ENV
