@@ -274,7 +274,7 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CC: clang
+      CC: clang-14
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
@@ -307,7 +307,6 @@ jobs:
           export PATH="/opt/local/bin:$PATH"
           sudo port -v selfupdate
           sudo port install clang-14
-          ls /opt/local
           
       - name: Set up environment
         run: |
