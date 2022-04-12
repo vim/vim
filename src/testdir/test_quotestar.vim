@@ -82,7 +82,7 @@ func Do_test_quotestar_for_x11()
   call WaitForAssert({-> assert_equal("yes", @*)})
 
   " Handle the large selection over 262040 byte.
-  let length = 262044
+  let length = 262045
   let sample = 'a' . repeat('b', length - 2) . 'c'
   let @* = sample
   call WaitFor('remote_expr("' . name . '", "len(@*) >= ' . length . '", "", 1)')
