@@ -300,14 +300,12 @@ jobs:
         env:
           MacPortVer: 2.7.2
         run: |
-          wget https://github.com/macports/macports-base/releases/download/v${MacPortVer}/MacPorts-${MacPortVer}.tar.gz
-          tar xzvf MacPorts-${MacPortVer}.tar.gz
-          cd MacPorts-${MacPortVer}
-          ./configure && make && sudo make install
+          wget https://github.com/macports/macports-base/releases/download/v${MacPortVer}/MacPorts-${MacPortVer}-11-BigSur.pkg
+          sudo installer -pkg MacPorts-${MacPortVer}-11-BigSur.pkg -target /opt/local
           echo 'export PATH="/opt/local/bin"' >> ~/.bashrc
           sudo port -v selfupdate
           sudo port install clang-14
-          sudo port contents clang-14 | grep -E '/s?bin/'
+          ls /opt/local
           
       - name: Set up environment
         run: |
