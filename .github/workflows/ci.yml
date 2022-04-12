@@ -298,13 +298,11 @@ jobs:
       
       - name: Install Clang 14
         run: |
-          clang_ver=14.0.0
-          wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${clang_ver}/clang-${clang_ver}.src.tar.xz
-          tar -xvf clang-${clang_ver}.src.tar.xz
-          cd clang-${clang_ver}.src
-          make install
-          echo "CLANG_PREFIX=/usr/local" >> $GITHUB_ENV
-          clang --version
+          curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
+          source ./macports-ci install --source
+          export PATH="/opt/local/bin:$PATH"
+          sudo port install clang-14
+          
           
         env:
           CC: clang-14
