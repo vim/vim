@@ -769,6 +769,20 @@ export def SQL()
   endif
 enddef
 
+# This function checks first 25 lines of file extension "sc" to resolve
+# detection between scala and SuperCollider
+export def SClang()
+  for lnum in range(1, min([line("$"), 25]))
+    var line = getline(lnum)
+    if line =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this\.\||\w*|'
+      setf supercollider
+      return
+    else
+      setf scala
+    endif
+  endfor
+enddef
+
 # If the file has an extension of 't' and is in a directory 't' or 'xt' then
 # it is almost certainly a Perl test file.
 # If the first line starts with '#' and contains 'perl' it's probably a Perl
