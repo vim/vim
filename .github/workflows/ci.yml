@@ -274,7 +274,7 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CC: clang-14
+      CC: clang
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
@@ -306,6 +306,7 @@ jobs:
           cd MacPorts-${MacPortVer}
           ./configure && make && sudo make install
           sudo port install clang-14
+          sudo port contents clang-14 | grep -E '/s?bin/'
           
       - name: Set up environment
         run: |
