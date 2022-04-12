@@ -786,7 +786,7 @@ enddef
 # detection between scdoc and SuperCollider
 export def SCD()
   if getline(1) =~# '\%^\S\+(\d[0-9A-Za-z]*)\%(\s\+\"[^"]*\"\%(\s\+\"[^"]*\"\)\=\)\=$'
-    setf scodc
+    setf scdoc
   else
     setf supercollider
   endif
