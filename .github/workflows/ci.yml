@@ -298,9 +298,11 @@ jobs:
       
       - name: Install Clang 14
         run: |
-          brew install --HEAD llvm 
-          echo "LLVM_PREFIX=/usr/local" >> $GITHUB_ENV
-          export PATH="/usr/local/opt/clang/bin:$PATH"
+          clang_ver=14.0.0
+          wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${clang_ver}/clang-${clang_ver}.src.tar.xz
+          cd clang-${clang_ver}.src
+          make install
+          echo "CLANG_PREFIX=/usr/local" >> $GITHUB_ENV
           clang --version
           
         env:
