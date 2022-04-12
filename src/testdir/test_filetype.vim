@@ -1497,6 +1497,54 @@ func Test_prg_file()
   filetype off
 endfunc
 
+  " Test dist#ft#SClang()
+func Test_sc_file()
+  filetype on
+
+  " SC file mehtods are defined 'Class : Method'
+  call writefile(['SCNvimDocRenderer : SCDocHTMLRenderer {'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  " SC classes are defined with '+ Class {}'
+  call writefile(['+ SCNvim {', '*methodArgs {|method|'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  " Some SC class files start with comment and define methods many lines later
+  call writefile(['// Query', '//Method','^this {'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  " Some SC class files put comments between method declaration after class
+  call writefile(['PingPong {', '//comment','*ar { arg'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  filetype off
+endfunc
+
+  " Test dist#ft#SCD()
+func Test_scd_file()
+  filetype on
+
+  call writefile(['ijq(1)'], 'srcfile.scd')
+  split srcfile.sc
+  call assert_equal('scdoc', &filetype)
+  bwipe!
+  call delete('srcfile.scd')
+
+  filetype off
+endfunc
+
 func Test_src_file()
   filetype on
 

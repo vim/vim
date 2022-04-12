@@ -1640,23 +1640,19 @@ au BufNewFile,BufRead *.scala		setf scala
 au BufNewFile,BufRead *.sbt			setf sbt
 
 " SuperCollider
-au BufNewFile,BufRead *.sc		call dist#ft#SClang()
+au BufNewFile,BufRead *.sc		    call dist#ft#SClang()
 
-au BufNewFile,BufRead *.quark      setf supercollider
+au BufNewFile,BufRead *.quark       setf supercollider
+
+" scdoc
+au BufNewFile,BufRead *.scd			call dist#ft#SCD()
 
 " Scilab
 au BufNewFile,BufRead *.sci,*.sce		setf scilab
 
-" scdoc
-au BufNewFile,BufRead *.scd			
-    \ if getline(1) =~# '\%^\S\+(\d[0-9A-Za-z]*)\%(\s\+\"[^"]*\"\%(\s\+\"[^"]*\"\)\=\)\=$' |
-    \   setf scdoc |
-    \ else |
-    \   setf supercollider |
-    \ endif
 
 " SCSS
-au BufNewFile,BufRead *.scss			setf scss
+au BufNewFile,BufRead *.scss		setf scss
 
 " SD: Streaming Descriptors
 au BufNewFile,BufRead *.sd			setf sd

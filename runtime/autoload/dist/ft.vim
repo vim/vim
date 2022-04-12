@@ -774,13 +774,22 @@ enddef
 export def SClang()
   for lnum in range(1, min([line("$"), 25]))
     var line = getline(lnum)
-    if line =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this\.\||\w*|'
+    if line =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this.*\||\w*|\|+\s\w*\s{\|\*ar\s'
       setf supercollider
       return
-    else
-      setf scala
     endif
   endfor
+  setf scala
+enddef
+
+# This function checks first line of file extension "scd" to resolve
+# detection between scdoc and SuperCollider
+export def SCD()
+  if getline(1) =~# '\%^\S\+(\d[0-9A-Za-z]*)\%(\s\+\"[^"]*\"\%(\s\+\"[^"]*\"\)\=\)\=$'
+    setf scodc
+  else
+    setf supercollider
+  endif
 enddef
 
 # If the file has an extension of 't' and is in a directory 't' or 'xt' then
