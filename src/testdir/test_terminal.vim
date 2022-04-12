@@ -2159,5 +2159,4 @@ func Test_term_wait_in_close_cb()
   bwipe!
 endfunc
 
-
 " vim: shiftwidth=2 sts=2 expandtab
