@@ -1537,7 +1537,7 @@ func Test_scd_file()
   filetype on
 
   call writefile(['ijq(1)'], 'srcfile.scd')
-  split srcfile.sc
+  split srcfile.scd
   call assert_equal('scdoc', &filetype)
   bwipe!
   call delete('srcfile.scd')
