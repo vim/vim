@@ -298,7 +298,7 @@ jobs:
       
       - name: Install Clang 14
         run: |
-          brew install --with-clang --HEAD llvm 
+          brew install --HEAD llvm 
           echo "LLVM_PREFIX=/usr/local" >> $GITHUB_ENV
           export PATH="/usr/local/opt/clang/bin:$PATH"
           clang --version
