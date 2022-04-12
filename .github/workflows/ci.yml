@@ -301,7 +301,7 @@ jobs:
         env:
           MacPortVer: 2.7.2
         run: |
-          curl -O https://github.com/macports/macports-base/releases/download/v${MacPortVer}/MacPorts-${MacPortVer}.tar.gz
+          curl https://github.com/macports/macports-base/releases/download/v${MacPortVer}/MacPorts-${MacPortVer}.tar.gz -o MacPorts-${MacPortVer}.tar.gz
           tar xzvf MacPorts-${MacPortVer}.tar.gz”
           cd MacPorts-${MacPortVer}
           ./configure && make && sudo make install
