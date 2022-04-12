@@ -302,9 +302,8 @@ jobs:
           wget https://github.com/macports/macports-base/releases/download/v${MacPortVer}/MacPorts-${MacPortVer}.tar.gz
           tar xzvf MacPorts-${MacPortVer}.tar.gz
           cd MacPorts-${MacPortVer}
-          ./configure && make && sudo make install
+          ./configure && sudo make install
           export PATH="/opt/local/bin:$PATH"
-          sudo port -v selfupdate
           sudo port install clang-14     
         
         env:
