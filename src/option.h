@@ -451,7 +451,8 @@ EXTERN unsigned	bo_flags;
 #define BO_REG		0x8000
 #define BO_SH		0x10000
 #define BO_SPELL	0x20000
-#define BO_WILD		0x40000
+#define BO_TERM		0x40000
+#define BO_WILD		0x80000
 
 #ifdef FEAT_WILDIGN
 EXTERN char_u	*p_bsk;		// 'backupskip'

@@ -1696,7 +1696,7 @@ gui_mch_haskey(char_u *name)
     void
 gui_mch_beep(void)
 {
-    MessageBeep(MB_OK);
+    MessageBeep((UINT)-1);
 }
 /*
  * Invert a rectangle from row r, column c, for nr rows and nc columns.
