@@ -655,14 +655,14 @@ if s:tex_fast =~# 'r'
 endif
 syn match  texRefZone		'\\cite\%([tp]\*\=\)\=\>' nextgroup=texRefOption,texCite
 
-" Handle newcommand, newenvironment : {{{1
-syn match  texNewCmd				"\\newcommand\>"			nextgroup=texCmdName skipwhite skipnl
+" Handle (re)newcommand, (re)newenvironment : {{{1
+syn match  texNewCmd				"\\\%(re\)\?newcommand\>"		nextgroup=texCmdName skipwhite skipnl
 if s:tex_fast =~# 'V'
   syn region texCmdName contained matchgroup=Delimiter start="{"rs=s+1  end="}"		nextgroup=texCmdArgs,texCmdBody skipwhite skipnl
   syn region texCmdArgs contained matchgroup=Delimiter start="\["rs=s+1 end="]"		nextgroup=texCmdBody skipwhite skipnl
   syn region texCmdBody contained matchgroup=Delimiter start="{"rs=s+1 skip="\\\\\|\\[{}]"	matchgroup=Delimiter end="}" contains=@texCmdGroup
 endif
-syn match  texNewEnv				"\\newenvironment\>"			nextgroup=texEnvName skipwhite skipnl
+syn match  texNewEnv				"\\\%(re\)\?newenvironment\>"		nextgroup=texEnvName skipwhite skipnl
 if s:tex_fast =~# 'V'
   syn region texEnvName contained matchgroup=Delimiter start="{"rs=s+1  end="}"		nextgroup=texEnvBgn skipwhite skipnl
   syn region texEnvBgn  contained matchgroup=Delimiter start="{"rs=s+1  end="}"		nextgroup=texEnvEnd skipwhite skipnl contains=@texEnvGroup
