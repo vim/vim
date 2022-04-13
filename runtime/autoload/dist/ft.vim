@@ -819,7 +819,9 @@ export def FTperl(): number
 enddef
 
 export def FTsys()
-  if IsRapid()
+  if exists("g:filetype_sys")
+    exe "setf " .. g:filetype_sys
+  elseif IsRapid()
     setf rapid
   else
     setf bat
