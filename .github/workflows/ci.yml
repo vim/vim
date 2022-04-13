@@ -130,7 +130,7 @@ jobs:
             ;;
           huge)
             echo "TEST=scripttests test_libvterm"
-            echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp --disable-gtk2"
             ;;
           esac
           if ${{ matrix.coverage == true }}; then
@@ -199,9 +199,6 @@ jobs:
 
       - name: Configure
         run: |
-          if clang --version | grep -oh '14'; then
-          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing --disable-gtk2
-          fi
           ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
           # Append various warning flags to CFLAGS.
           sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
