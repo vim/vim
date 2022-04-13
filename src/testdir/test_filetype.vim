@@ -1540,6 +1540,13 @@ func Test_sys_file()
   call assert_equal('bat', &filetype)
   bwipe!
 
+  " Users preference set by g:filetype_sys
+  let g:filetype_sys = 'sys'
+  split sysfile.sys
+  call assert_equal('sys', &filetype)
+  unlet g:filetype_sys
+  bwipe!
+
   " RAPID header start with a line containing only "%%%", 
   " but is not always present.
   call writefile(['%%%'], 'sysfile.sys')
