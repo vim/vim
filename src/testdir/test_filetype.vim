@@ -768,7 +768,7 @@ func Test_filetype_indent_off()
 endfunc
 
 """""""""""""""""""""""""""""""""""""""""""""""""
-" Tests for specific extentions and filetypes.
+" Tests for specific extensions and filetypes.
 " Keep sorted.
 """""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -1501,7 +1501,7 @@ endfunc
 func Test_sc_file()
   filetype on
 
-  " SC file mehtods are defined 'Class : Method'
+  " SC file methods are defined 'Class : Method'
   call writefile(['SCNvimDocRenderer : SCDocHTMLRenderer {'], 'srcfile.sc')
   split srcfile.sc
   call assert_equal('supercollider', &filetype)
