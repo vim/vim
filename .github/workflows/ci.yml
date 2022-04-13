@@ -132,7 +132,7 @@ jobs:
             ;;
           esac
           
-          if ${{ matrix.compiler == gcc }}; then
+          if ${{ matrix.compiler == 'gcc' }}; then
             gcc -Wno-deprecated-declarations
           fi
           if ${{ matrix.coverage == true }}; then
