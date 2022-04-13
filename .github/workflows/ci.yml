@@ -100,9 +100,8 @@ jobs:
       - name: Install clang-14
         if: matrix.compiler == 'clang'
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-14 main"
+          sudo sed -i 's/bionic/jammy/g' /etc/apt/sources.list
+          sudo apt-get update
           sudo apt-get install -y clang-14 llvm-14
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
           sudo update-alternatives --set clang /usr/bin/clang-14
