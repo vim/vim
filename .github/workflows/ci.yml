@@ -92,8 +92,7 @@ jobs:
         if:  matrix.compiler == 'gcc'
         run: |
           sudo sed -i 's/bionic/jammy/g' /etc/apt/sources.list
-          sudo apt update && sudo apt install -y autoconf gcc-11
-          sudo apt install -y "${PKGS[@]}"
+          sudo apt update && sudo apt install -y gcc-11
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
           sudo update-alternatives --set gcc /usr/bin/gcc-11
 
@@ -101,7 +100,7 @@ jobs:
         if: matrix.compiler == 'clang'
         run: |
           sudo sed -i 's/bionic/jammy/g' /etc/apt/sources.list
-          sudo apt update && sudo apt install -y autoconf clang-14 llvm-14
+          sudo apt update && sudo apt install -y clang-14 llvm-14
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
           sudo update-alternatives --set clang /usr/bin/clang-14
           sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-14 100
@@ -132,7 +131,10 @@ jobs:
             echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
-
+          
+          if ${{ matrix.compiler == gcc }}; then
+            gcc -Wno-deprecated-declarations
+          fi
           if ${{ matrix.coverage == true }}; then
             CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
