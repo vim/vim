@@ -199,10 +199,10 @@ jobs:
 
       - name: Configure
         run: |
-          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
           if clang --version | grep -oh '14'; then
           ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing --disable-gtk2
           fi
+          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
           # Append various warning flags to CFLAGS.
           sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
           sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
