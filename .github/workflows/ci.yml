@@ -92,8 +92,14 @@ jobs:
         if:  matrix.compiler == 'gcc'
         run: |
           sudo sed -i 's/bionic/jammy/g' /etc/apt/sources.list
-          sudo apt-get update
-          sudo apt-get install -y gcc-11
+          sudo apt update
+          if ${{ matrix.compiler == 'gcc' }}; then
+            PKGS+=( \
+              autoconf \
+              gcc-11 \
+            )
+          fi
+          sudo apt install -y "${PKGS[@]}"
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
           sudo update-alternatives --set gcc /usr/bin/gcc-11
 
@@ -101,8 +107,15 @@ jobs:
         if: matrix.compiler == 'clang'
         run: |
           sudo sed -i 's/bionic/jammy/g' /etc/apt/sources.list
-          sudo apt-get update
-          sudo apt-get install -y clang-14 llvm-14
+          sudo apt update
+          if ${{ matrix.compiler == 'gcc' }}; then
+            PKGS+=( \
+              autoconf \
+              clang-14 \
+              llvm-14 \
+            )
+          fi
+          sudo apt install -y "${PKGS[@]}"
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
           sudo update-alternatives --set clang /usr/bin/clang-14
           sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-14 100
