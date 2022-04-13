@@ -1532,7 +1532,7 @@ func Test_sc_file()
   filetype off
 endfunc
 
-  " Test dist#ft#SCD()
+" Test dist#ft#SCD()
 func Test_scd_file()
   filetype on
 
