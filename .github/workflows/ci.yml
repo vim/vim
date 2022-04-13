@@ -92,7 +92,7 @@ jobs:
         if:  matrix.compiler == 'gcc'
         run: |
           sudo sed -i 's/bionic/jammy/g' /etc/apt/sources.list
-          sudo apt update && sudo apt install -y gcc-11
+          sudo apt update && sudo apt install -y autoconf gcc-11
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
           sudo update-alternatives --set gcc /usr/bin/gcc-11
 
