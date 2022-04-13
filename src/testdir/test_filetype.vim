@@ -1497,7 +1497,7 @@ func Test_prg_file()
   filetype off
 endfunc
 
-  " Test dist#ft#SClang()
+" Test dist#ft#SClang()
 func Test_sc_file()
   filetype on
 
