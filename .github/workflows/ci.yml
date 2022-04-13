@@ -318,6 +318,8 @@ jobs:
       - name: Configure
         run: |
           ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
+          if clang --version | grep -oh '14'; then
+          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing --disable-gtk2
           # Append various warning flags to CFLAGS.
           # BSD sed needs backup extension specified.
           sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
