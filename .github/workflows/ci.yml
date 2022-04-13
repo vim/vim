@@ -131,10 +131,6 @@ jobs:
             echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
-          
-          if ${{ matrix.compiler == 'gcc' }}; then
-            gcc -Wno-deprecated-declarations
-          fi
           if ${{ matrix.coverage == true }}; then
             CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
@@ -196,6 +192,11 @@ jobs:
         if: contains(matrix.extra, 'unittests')
         run: |
           make -C src autoconf
+
+      - name: Check gcc autoconf
+        if: matrix.compiler == 'gcc'
+        run: |
+          gcc src autoconf
 
       - name: Set up shadow dir
         if: matrix.shadow
