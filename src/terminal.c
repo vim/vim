@@ -3391,7 +3391,7 @@ handle_postponed_scrollback(term_T *term)
     static int
 handle_bell(void *user UNUSED)
 {
-    vim_beep(BO_SH);
+    vim_beep(BO_TERM);
     return 0;
 }
 
