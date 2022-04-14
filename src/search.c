@@ -4649,7 +4649,7 @@ fuzzy_match_in_list(
 	callback_T	*item_cb,
 	int		retmatchpos,
 	list_T		*fmatchlist,
-	long		num_limit)
+	long		max_matches)
 {
     long	len;
     fuzzyItem_T	*ptrs;
@@ -4677,7 +4677,7 @@ fuzzy_match_in_list(
 	ptrs[i].item = li;
 	ptrs[i].score = SCORE_NONE;
 
-	if (num_limit > 0 && found_match >= num_limit)
+	if (max_matches > 0 && found_match >= max_matches)
 	{
 	    i++;
 	    continue;
@@ -4830,7 +4830,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     char_u	*key = NULL;
     int		ret;
     int		matchseq = FALSE;
-    long	num_limit = 0;
+    long	max_matches = 0;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -4895,7 +4895,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		semsg(_(e_invalid_argument), tv_get_string(&di->di_tv));
 		return;
 	    }
-	    num_limit = (long)tv_get_number_chk(&di->di_tv, NULL);
+	    max_matches = (long)tv_get_number_chk(&di->di_tv, NULL);
 	}
 
 	if (dict_has_key(d, "matchseq"))
@@ -4932,7 +4932,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),
-	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, num_limit);
+	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, max_matches);
 
 done:
     free_callback(&cb);
