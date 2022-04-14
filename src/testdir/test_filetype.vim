@@ -1562,8 +1562,8 @@ func Test_src_file()
   bwipe!
   call delete('srcfile.Src')
 
-  " KRL global def with embedded spaces, file starts with empty line(s).
-  call writefile(['', 'global  def  srcfile()'], 'srcfile.SRC')
+  " KRL global deffct with embedded spaces, file starts with empty line(s).
+  call writefile(['', 'global  deffct  srcfile()'], 'srcfile.SRC')
   split srcfile.SRC
   call assert_equal('krl', &filetype)
   bwipe!
