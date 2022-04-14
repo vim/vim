@@ -4648,13 +4648,14 @@ fuzzy_match_in_list(
 	char_u		*key,
 	callback_T	*item_cb,
 	int		retmatchpos,
-	list_T		*fmatchlist)
+	list_T		*fmatchlist,
+	long		num_limit)
 {
     long	len;
     fuzzyItem_T	*ptrs;
     listitem_T	*li;
     long	i = 0;
-    int		found_match = FALSE;
+    long	found_match = 0;
     int_u	matches[MAX_FUZZY_MATCHES];
 
     len = list_len(items);
@@ -4675,6 +4676,13 @@ fuzzy_match_in_list(
 	ptrs[i].idx = i;
 	ptrs[i].item = li;
 	ptrs[i].score = SCORE_NONE;
+
+	if (num_limit > 0 && found_match >= num_limit)
+	{
+	    i++;
+	    continue;
+	}
+
 	itemstr = NULL;
 	rettv.v_type = VAR_UNKNOWN;
 	if (li->li_tv.v_type == VAR_STRING)	// list of strings
@@ -4736,13 +4744,13 @@ fuzzy_match_in_list(
 		}
 	    }
 	    ptrs[i].score = score;
-	    found_match = TRUE;
+	    ++found_match;
 	}
 	++i;
 	clear_tv(&rettv);
     }
 
-    if (found_match)
+    if (found_match > 0)
     {
 	list_T		*l;
 
@@ -4822,6 +4830,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     char_u	*key = NULL;
     int		ret;
     int		matchseq = FALSE;
+    long	num_limit = 0;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -4883,6 +4892,9 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	    matchseq = TRUE;
     }
 
+    if (argvars[3].v_type != VAR_UNKNOWN)
+	num_limit = (long)tv_get_number_chk(&argvars[3], NULL);
+
     // get the fuzzy matches
     ret = rettv_list_alloc(rettv);
     if (ret != OK)
@@ -4913,7 +4925,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),
-	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list);
+	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, num_limit);
 
 done:
     free_callback(&cb);
