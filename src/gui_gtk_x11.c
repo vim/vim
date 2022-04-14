@@ -397,6 +397,130 @@ static int using_gnome = 0;
 #endif
 
 /*
+ * Keep a short term resize history so stale gtk responses can be discarded.
+ *
+ * When a gtk_window_resize() request is sent to gtk, the width/height of
+ * the request is saved. Recent stale requests are kept around in a list.
+ *
+ * See https://github.com/vim/vim/issues/10123
+ */
+#if 0
+#ifdef FEAT_JOB_CHANNEL
+#define ENABLE_RESIZE_HISTORY_LOG
+#endif
+#endif
+
+/*
+ * History item of a resize request.
+ * Width/height are of gui.mainwin.
+ */
+typedef
+struct resize_history
+{
+    int used;	    // If true, can't match for discard. Only matches once.
+    int width;
+    int height;
+#ifdef ENABLE_RESIZE_HISTORY_LOG
+    int seq;	    // for ch_log messages
+#endif
+    struct resize_history *next;
+}
+resize_hist_T;
+
+/* never NULL during execution */
+static resize_hist_T *latest_resize_hist;
+/* list of stale resize requests */
+static resize_hist_T *old_resize_hists;
+
+/*
+ * Used when sending gtk_window_resize().
+ * Create a resize request history item, put previous request on stale list.
+ * Width/height are the size of the request for the gui.mainwin.
+ */
+    static void
+alloc_resize_hist(int width, int height)
+{
+    // alloc a new resize hist, save current in list of old history
+    resize_hist_T *prev_hist = latest_resize_hist;
+    resize_hist_T *new_hist = ALLOC_CLEAR_ONE(resize_hist_T);
+
+    new_hist->width = width;
+    new_hist->height = height;
+    latest_resize_hist = new_hist;
+
+    // previous hist item becomes head of list
+    prev_hist->next = old_resize_hists;
+    old_resize_hists = prev_hist;
+
+#ifdef ENABLE_RESIZE_HISTORY_LOG
+    new_hist->seq = prev_hist->seq + 1;
+    ch_log(NULL, "gui_gtk: New resize seq %d (%d, %d) [%d, %d]",
+	   new_hist->seq, width, height, (int)Columns, (int)Rows);
+#endif
+}
+
+/*
+ * Free everything on the stale resize history list.
+ * This list is empty when there are no outstanding resize requests.
+ */
+    static void
+clear_resize_hists()
+{
+    if (latest_resize_hist)
+	latest_resize_hist->used = TRUE;
+    resize_hist_T *hist = old_resize_hists;
+    int i = 0;
+    while (hist != NULL) {
+	resize_hist_T *next_hist = hist->next;
+	vim_free(hist);
+	i++;
+	hist = next_hist;
+    }
+    old_resize_hists = NULL;
+#ifdef ENABLE_RESIZE_HISTORY_LOG
+    ch_log(NULL, "gui_gtk: free %d hists", i);
+#endif
+}
+
+/* true if hist item is unused and matches w,h */
+#define MATCH_WIDTH_HEIGHT(hist, w, h) \
+	  (!hist->used && hist->width == w && hist->height == h)
+
+/*
+ * Search the resize hist list.
+ * Return true if the specified width,height match an item in the list that
+ * has never matched before. Mark the matching item as used so it will
+ * not match again.
+ */
+    static int
+match_stale_width_height(int width, int height)
+{
+    resize_hist_T *hist = old_resize_hists;
+    while (hist != NULL) {
+	if (MATCH_WIDTH_HEIGHT(hist, width, height))
+	{
+#ifdef ENABLE_RESIZE_HISTORY_LOG
+	    ch_log(NULL, "gui_gtk: discard seq %d, cur seq %d",
+		   hist->seq, latest_resize_hist->seq);
+#endif
+	    hist->used = TRUE;
+	    return TRUE;
+	}
+	hist = hist->next;
+    }
+    return FALSE;
+}
+
+#if defined(EXITFREE)
+    static void
+free_all_resize_hist()
+{
+    clear_resize_hists();
+    vim_free(latest_resize_hist);
+}
+#endif
+
+/*
  * GTK doesn't set the GDK_BUTTON1_MASK state when dragging a touch. Add this
  * state when dragging.
  */
@@ -593,6 +717,7 @@ gui_mch_free_all(void)
 #if defined(USE_GNOME_SESSION)
     vim_free(abs_restart_command);
 #endif
+    free_all_resize_hist();
 }
 #endif
 
@@ -4007,6 +4132,36 @@ form_configure_event(GtkWidget *widget UNUSED,
 {
     int usable_height = event->height;
 
+    // Resize requests are made for gui.mainwin,
+    // get it's dimensions for searching if this event
+    // is a response to a vim request.
+    GdkWindow *win = gtk_widget_get_window(gui.mainwin);
+    int w = gdk_window_get_width(win);
+    int h = gdk_window_get_height(win);
+
+#ifdef ENABLE_RESIZE_HISTORY_LOG
+    ch_log(NULL, "gui_gtk: form_configure_event: (%d, %d) [%d, %d]",
+	   w, h, (int)Columns, (int)Rows);
+#endif
+
+    // Look through history of recent vim resize reqeusts.
+    // If this event matches:
+    //	    - "latest resize hist" We're caught up;
+    //		clear the history and process this event.
+    //		If history is, old to new, 100, 99, 100, 99. If this event is
+    //		99 for the stale, it is matched against the current. History
+    //		is cleared, we my bounce, but no worse than before.
+    //	    - "older/stale hist" If match an unused event in history,
+    //		then discard this event, and mark the matching event as used.
+    //	    - "no match" Figure it's a user resize event, clear history.
+    // NOTE: clear history is default, then all incoming events are processed
+
+    if (!MATCH_WIDTH_HEIGHT(latest_resize_hist, w, h)
+	    && (match_stale_width_height(w, h)))
+	// discard stale event
+	return TRUE;
+    clear_resize_hists();
+
 #if GTK_CHECK_VERSION(3,22,2) && !GTK_CHECK_VERSION(3,22,4)
     // As of 3.22.2, GdkWindows have started distributing configure events to
     // their "native" children (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=12579fe71b3b8f79eb9c1b80e429443bcc437dd0).
@@ -4328,8 +4483,9 @@ gui_mch_open(void)
      * manager upon us and should not interfere with what VIM is requesting
      * upon startup.
      */
+    latest_resize_hist = ALLOC_CLEAR_ONE(resize_hist_T);
     g_signal_connect(G_OBJECT(gui.formwin), "configure-event",
-		     G_CALLBACK(form_configure_event), NULL);
+		    G_CALLBACK(form_configure_event), NULL);
 
 #ifdef FEAT_DND
     // Set up for receiving DND items.
@@ -4515,6 +4671,7 @@ gui_mch_set_shellsize(int width, int height,
     width  += get_menu_tool_width();
     height += get_menu_tool_height();
 
+    alloc_resize_hist(width, height); // track the resize request
     if (gtk_socket_id == 0)
 	gtk_window_resize(GTK_WINDOW(gui.mainwin), width, height);
     else
