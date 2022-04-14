@@ -239,6 +239,7 @@ func Test_matchfuzzy_limit()
   call assert_equal(['2'], x->matchfuzzy('2', #{limit: 1}))
   call assert_equal(['2', '2'], x->matchfuzzy('2', #{limit: 2}))
   call assert_equal(['2', '2'], x->matchfuzzy('2', #{limit: 3}))
+  call assert_fails("call matchfuzzy(x, '2', #{limit: '2'})", 'E475:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

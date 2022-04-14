@@ -4892,7 +4892,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	{
 	    if (di->di_tv.v_type != VAR_NUMBER)
 	    {
-		semsg(_(e_invalid_argument), tv_get_string(&di->di_tv));
+		semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
 		return;
 	    }
 	    max_matches = (long)tv_get_number_chk(&di->di_tv, NULL);
