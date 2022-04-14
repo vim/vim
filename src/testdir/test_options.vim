@@ -392,6 +392,8 @@ func Test_set_errors()
   call assert_fails('set rulerformat=%15(%%', 'E542:')
   call assert_fails('set statusline=%$', 'E539:')
   call assert_fails('set statusline=%{', 'E540:')
+  call assert_fails('set statusline=%{%', 'E540:')
+  call assert_fails('set statusline=%{%}', 'E539:')
   call assert_fails('set statusline=%(', 'E542:')
   call assert_fails('set statusline=%)', 'E542:')
 

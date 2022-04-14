@@ -625,9 +625,11 @@ check_stl_option(char_u *s)
 	}
 	if (*s == '{')
 	{
-	    int reevaluate = (*s == '%');
+	    int reevaluate = (*++s == '%');
 
-	    s++;
+	    if (reevaluate && *++s == '}')
+		// "}" is not allowed immediately after "%{%"
+		return illegal_char(errbuf, '}');
 	    while ((*s != '}' || (reevaluate && s[-1] != '%')) && *s)
 		s++;
 	    if (*s != '}')
