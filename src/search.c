@@ -4888,12 +4888,19 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		return;
 	    }
 	}
+	else if ((di = dict_find(d, (char_u *)"limit", -1)) != NULL)
+	{
+	    if (di->di_tv.v_type != VAR_NUMBER)
+	    {
+		semsg(_(e_invalid_argument), tv_get_string(&di->di_tv));
+		return;
+	    }
+	    num_limit = (long)tv_get_number_chk(&di->di_tv, NULL);
+	}
+
 	if (dict_has_key(d, "matchseq"))
 	    matchseq = TRUE;
     }
-
-    if (argvars[3].v_type != VAR_UNKNOWN)
-	num_limit = (long)tv_get_number_chk(&argvars[3], NULL);
 
     // get the fuzzy matches
     ret = rettv_list_alloc(rettv);
