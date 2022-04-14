@@ -4662,7 +4662,7 @@ call_qftf_func(qf_list_T *qfl, int qf_winid, long start_idx, long end_idx)
     // set.
     if (qfl->qftf_cb.cb_name != NULL)
 	cb = &qfl->qftf_cb;
-    if (cb != NULL && cb->cb_name != NULL)
+    if (cb->cb_name != NULL)
     {
 	typval_T	args[1];
 	dict_T		*d;

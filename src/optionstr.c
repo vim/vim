@@ -625,10 +625,8 @@ check_stl_option(char_u *s)
 	}
 	if (*s == '{')
 	{
-	    int reevaluate = (*s == '%');
-
 	    s++;
-	    while ((*s != '}' || (reevaluate && s[-1] != '%')) && *s)
+	    while (*s != '}' && *s)
 		s++;
 	    if (*s != '}')
 		return N_(e_unclosed_expression_sequence);
@@ -1249,8 +1247,7 @@ ambw_end:
 		int x2 = -1;
 		int x3 = -1;
 
-		if (*p != NUL)
-		    p += mb_ptr2len(p);
+		p += mb_ptr2len(p);
 		if (*p != NUL)
 		    x2 = *p++;
 		if (*p != NUL)
