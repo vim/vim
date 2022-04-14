@@ -2073,7 +2073,7 @@ struct partial_S
     dict_T	*pt_dict;	// dict for "self"
 };
 
-typedef struct AutoPatCmd_S AutoPatCmd;
+typedef struct AutoPatCmd_S AutoPatCmd_T;
 
 /*
  * Entry in the execution stack "exestack".
@@ -2100,7 +2100,7 @@ typedef struct {
 #if defined(FEAT_EVAL)
 	ufunc_T *ufunc;     // function info
 #endif
-	AutoPatCmd *aucmd;  // autocommand info
+	AutoPatCmd_T *aucmd;  // autocommand info
 	except_T   *except; // exception info
     } es_info;
 #if defined(FEAT_EVAL)

@@ -157,27 +157,36 @@ estack_sfile(estack_arg_T which UNUSED)
 	return NULL;
     }
 
-    // If evaluated in a function return the path of the script where the
-    // function is defined, at script level the current script path is returned
+    // If evaluated in a function or autocommand, return the path of the script
+    // where it is defined, at script level the current script path is returned
     // instead.
     if (which == ESTACK_SCRIPT)
     {
-	if (entry->es_type == ETYPE_UFUNC)
+	entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
+	// Walk the stack backwards, starting from the current frame.
+	for (idx = exestack.ga_len - 1; idx >= 0; --idx, --entry)
 	{
-	    sctx_T *def_ctx = &entry->es_info.ufunc->uf_script_ctx;
-
-	    if (def_ctx->sc_sid > 0)
-		return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
-	}
-	else if (exestack.ga_len > 0)
-	{
-	    // Walk the stack backwards, starting from the current frame.
-	    for (idx = exestack.ga_len - 1; idx; --idx)
+	    if (entry->es_type == ETYPE_UFUNC)
 	    {
-		entry = ((estack_T *)exestack.ga_data) + idx;
+		sctx_T *def_ctx = &entry->es_info.ufunc->uf_script_ctx;
 
-		if (entry->es_type == ETYPE_SCRIPT)
-		    return vim_strsave(entry->es_name);
+		if (def_ctx->sc_sid > 0)
+		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
+		else
+		    return NULL;
+	    }
+	    else if (entry->es_type == ETYPE_AUCMD)
+	    {
+		sctx_T *def_ctx = acp_script_ctx(entry->es_info.aucmd);
+
+		if (def_ctx->sc_sid > 0)
+		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
+		else
+		    return NULL;
+	    }
+	    else if (entry->es_type == ETYPE_SCRIPT)
+	    {
+		return vim_strsave(entry->es_name);
 	    }
 	}
 	return NULL;
