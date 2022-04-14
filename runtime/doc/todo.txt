@@ -151,7 +151,6 @@ Terminal debugger:
 - Add option to not open the program window.  It's not used when attaching to
   an already running program. (M. Kelly)
 - When only gdb window exists, on "quit" edit another buffer.
-- Use a sign group
 - Termdebug does not work when Vim was built with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
