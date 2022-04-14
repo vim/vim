@@ -1720,7 +1720,15 @@ line, there can be no line break: >
 		name   # Error!
 	echo that
 		.name  # Error!
-<							*:import-cycle*
+
+To refer to a function in an imported script in a mapping, |<SID>| can be
+used: >
+	noremap <silent> ,a :call <SID>name.Function()<CR>
+
+When the mapping is defined "<SID>name." will be replaced with <SNR> and the
+script ID of the imported script.
+
+							*:import-cycle*
 The `import` commands are executed when encountered.  If script A imports
 script B, and B (directly or indirectly) imports A, this will be skipped over.
 At this point items in A after "import B" will not have been processed and

@@ -6010,8 +6010,11 @@ replace_termcodes(
 	{
 #ifdef FEAT_EVAL
 	    /*
-	     * Replace <SID> by K_SNR <script-nr> _.
+	     * Change <SID>Func to K_SNR <script-nr> _Func.  This name is used
+	     * for script-locla user functions.
 	     * (room: 5 * 6 = 30 bytes; needed: 3 + <nr> + 1 <= 14)
+	     * Also change <SID>name.Func to K_SNR <import-script-nr> _Func.
+	     * Only if "name" is recognized as an import.
 	     */
 	    if (STRNICMP(src, "<SID>", 5) == 0)
 	    {
@@ -6019,12 +6022,26 @@ replace_termcodes(
 		    emsg(_(e_using_sid_not_in_script_context));
 		else
 		{
+		    char_u  *dot;
+		    long    sid = current_sctx.sc_sid;
+
 		    src += 5;
+		    if (in_vim9script()
+				       && (dot = vim_strchr(src, '.')) != NULL)
+		    {
+			imported_T *imp = find_imported(src, dot - src, FALSE);
+
+			if (imp != NULL)
+			{
+			    sid = imp->imp_sid;
+			    src = dot + 1;
+			}
+		    }
+
 		    result[dlen++] = K_SPECIAL;
 		    result[dlen++] = (int)KS_EXTRA;
 		    result[dlen++] = (int)KE_SNR;
-		    sprintf((char *)result + dlen, "%ld",
-						    (long)current_sctx.sc_sid);
+		    sprintf((char *)result + dlen, "%ld", sid);
 		    dlen += (int)STRLEN(result + dlen);
 		    result[dlen++] = '_';
 		    continue;

@@ -642,8 +642,8 @@ enddef
 def Test_use_import_in_mapping()
   var lines =<< trim END
       vim9script
-      export def Funcx()
-        g:result = 42
+      export def Funcx(nr: number)
+        g:result = nr
       enddef
   END
   writefile(lines, 'XsomeExport.vim')
@@ -651,16 +651,46 @@ def Test_use_import_in_mapping()
       vim9script
       import './XsomeExport.vim' as some
       var Funcy = some.Funcx
-      nnoremap <F3> :call <sid>Funcy()<cr>
+      nnoremap <F3> :call <sid>Funcy(42)<cr>
+      nnoremap <F4> :call <sid>some.Funcx(44)<cr>
   END
   writefile(lines, 'Xmapscript.vim')
 
   source Xmapscript.vim
   feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
+  feedkeys("\<F4>", "xt")
+  assert_equal(44, g:result)
 
   unlet g:result
   delete('XsomeExport.vim')
+  delete('Xmapscript.vim')
+  nunmap <F3>
+  nunmap <F4>
+enddef
+
+def Test_use_autoload_import_in_mapping()
+  var lines =<< trim END
+      vim9script
+      export def Func()
+        g:result = 42
+      enddef
+  END
+  writefile(lines, 'XautoloadExport.vim')
+  lines =<< trim END
+      vim9script
+      import autoload './XautoloadExport.vim' as some
+      nnoremap <F3> :call <SID>some.Func()<CR>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  assert_match('\d\+ A: .*XautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  feedkeys("\<F3>", "xt")
+  assert_equal(42, g:result)
+
+  unlet g:result
+  delete('XautoloadExport.vim')
   delete('Xmapscript.vim')
   nunmap <F3>
 enddef

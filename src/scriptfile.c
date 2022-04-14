@@ -117,7 +117,7 @@ estack_pop(void)
 }
 
 /*
- * Get the current value for <sfile> in allocated memory.
+ * Get the current value for "which" in allocated memory.
  * "which" is ESTACK_SFILE for <sfile>, ESTACK_STACK for <stack> or
  * ESTACK_SCRIPT for <script>.
  */
@@ -2467,6 +2467,18 @@ script_autoload(
     int		ret = FALSE;
     int		i;
     int		ret_sid;
+
+    // If the name starts with "<SNR>123_" then "123" is the script ID.
+    if (name[0] == K_SPECIAL && name[1] == KS_EXTRA && name[2] == KE_SNR)
+    {
+	p = name + 3;
+	ret_sid = (int)getdigits(&p);
+	if (*p == '_' && SCRIPT_ID_VALID(ret_sid))
+	{
+	    may_load_script(ret_sid, &ret);
+	    return ret;
+	}
+    }
 
     // If there is no '#' after name[0] there is no package name.
     p = vim_strchr(name, AUTOLOAD_CHAR);
