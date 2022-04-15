@@ -2656,6 +2656,7 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_SOURCE:
 		{
 		    int notused;
+
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (may_load_script((int)iptr->isn_arg.number, &notused)
 								       == FAIL)
@@ -3490,7 +3491,7 @@ exec_instructions(ectx_T *ectx)
 		    goto on_error;
 		break;
 	    case ISN_UNLETENV:
-		vim_unsetenv(iptr->isn_arg.unlet.ul_name);
+		vim_unsetenv_ext(iptr->isn_arg.unlet.ul_name);
 		break;
 
 	    case ISN_LOCKUNLOCK:

@@ -644,7 +644,7 @@ check_stl_option(char_u *s)
 
 /*
  * Handle string options that need some action to perform when changed.
- * Returns NULL for success, or an error message for an error.
+ * Returns NULL for success, or an unstranslated error message for an error.
  */
     char *
 did_set_string_option(
@@ -787,15 +787,9 @@ did_set_string_option(
     {
 	// May compute new values for $VIM and $VIMRUNTIME
 	if (didset_vim)
-	{
-	    vim_setenv((char_u *)"VIM", (char_u *)"");
-	    didset_vim = FALSE;
-	}
+	    vim_unsetenv_ext((char_u *)"VIM");
 	if (didset_vimruntime)
-	{
-	    vim_setenv((char_u *)"VIMRUNTIME", (char_u *)"");
-	    didset_vimruntime = FALSE;
-	}
+	    vim_unsetenv_ext((char_u *)"VIMRUNTIME");
     }
 
 #ifdef FEAT_SYN_HL
