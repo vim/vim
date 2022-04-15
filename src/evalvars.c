@@ -1795,7 +1795,7 @@ do_unlet_var(
 
 	// Environment variable, normal name or expanded name.
 	if (*lp->ll_name == '$')
-	    vim_unsetenv(lp->ll_name + 1);
+	    vim_unsetenv_ext(lp->ll_name + 1);
 	else if (do_unlet(lp->ll_name, forceit) == FAIL)
 	    ret = FAIL;
 	*name_end = cc;

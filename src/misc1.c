@@ -1910,6 +1910,20 @@ vim_unsetenv(char_u *var)
 #endif
 }
 
+/*
+ * Removes environment variable "name" and take care of side effects.
+ */
+    void
+vim_unsetenv_ext(char_u *var)
+{
+    vim_unsetenv(var);
+    if (STRICMP(var, "HOME") == 0)
+	VIM_CLEAR(homedir);
+    else if (STRICMP(var, "VIM") == 0)
+	didset_vim = FALSE;
+    else if (STRICMP(var, "VIMRUNTIME") == 0)
+	didset_vimruntime = FALSE;
+}
 
 /*
  * Set environment variable "name" and take care of side effects.

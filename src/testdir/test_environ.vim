@@ -28,6 +28,24 @@ func Test_setenv()
   call assert_equal(v:null, getenv('TEST ENV'))
 endfunc
 
+func Test_special_env()
+  " The value for $HOME is cached internally by Vim, ensure the value is up to
+  " date.
+  let orig_ENV = $HOME
+
+  let $HOME = 'foo'
+  call assert_equal('foo', expand('~'))
+  unlet $HOME
+  call assert_equal('~', expand('~'))
+
+  call setenv('HOME', 'bar')
+  call assert_equal('bar', expand('~'))
+  call setenv('HOME', v:null)
+  call assert_equal('~', expand('~'))
+
+  let $HOME = orig_ENV
+endfunc
+
 func Test_external_env()
   call setenv('FOO', 'HelloWorld')
   if has('win32')
