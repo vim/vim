@@ -67,7 +67,7 @@ jobs:
         run: |
           PKGS=( \
             gettext \
-            libgtk-3-dev \
+            libgtk2.0-dev \
             desktop-file-utils \
             libtool-bin \
           )
@@ -134,6 +134,7 @@ jobs:
             echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
+
           if ${{ matrix.coverage == true }}; then
             CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
@@ -143,7 +144,6 @@ jobs:
           fi
           if ${{ contains(matrix.extra, 'testgui') }}; then
             echo "TEST=-C src testgui"
-            echo "CONFOPT=--disable-gui=gtk2 --enable-gui=gtk3"
           fi
           if ${{ contains(matrix.extra, 'unittests') }}; then
             echo "TEST=unittests"
