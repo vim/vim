@@ -143,7 +143,7 @@ jobs:
           fi
           if ${{ contains(matrix.extra, 'testgui') }}; then
             echo "TEST=-C src testgui"
-            echo "CONFOPT=--enable-gui=gtk3"
+            echo "CONFOPT=--disable-gui=gtk2 --enable-gui=gtk3"
           fi
           if ${{ contains(matrix.extra, 'unittests') }}; then
             echo "TEST=unittests"
