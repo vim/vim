@@ -980,6 +980,9 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define SHELL_READ	32	// read lines and insert into buffer
 #define SHELL_WRITE	64	// write lines from buffer
 
+// Values for mch_special_dir() argument
+#define DIR_CACHE	0
+
 // Values returned by mch_nodetype()
 #define NODE_NORMAL	0	// file or directory, check with mch_isdir()
 #define NODE_WRITABLE	1	// something we can write to (character

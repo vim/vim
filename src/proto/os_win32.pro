@@ -45,6 +45,7 @@ int mch_get_shellsize(void);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 void mch_set_winsize_now(void);
+char_u *mch_special_dir(int kind);
 int mch_call_shell(char_u *cmd, int options);
 void win32_build_env(dict_T *env, garray_T *gap, int is_terminal);
 void mch_job_start(char *cmd, job_T *job, jobopt_T *options);

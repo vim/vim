@@ -2887,5 +2887,24 @@ func Test_funcref_to_string()
   call assert_equal("function('g:Test_funcref_to_string')", string(Fn))
 endfunc
 
+" Test for stdpath()
+func Test_stdpath()
+  call assert_fails('call stdpath()', 'E119:')
+  call assert_fails('call stdpath("foo")', 'E475:')
+
+  if has('win32')
+    let old_LOCALAPPDATA = $LOCALAPPDATA
+    let $LOCALAPPDATA = 'C:\\foo\\bar'
+    call assert_equal($LOCALAPPDATA, stdpath("cache"))
+    let $LOCALAPPDATA = old_LOCALAPPDATA
+  elseif has('osx')
+    call assert_equal($HOME.'/Library/Caches', stdpath("cache"))
+  else
+    let old_XDG_CACHE_HOME = $XDG_CACHE_HOME
+    let $XDG_CACHE_HOME = '~/foo/bar'
+    call assert_equal($XDG_CACHE_HOME, stdpath("cache"))
+    let $XDG_CACHE_HOME = old_XDG_CACHE_HOME
+  endif
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

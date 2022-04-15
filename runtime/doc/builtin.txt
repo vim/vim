@@ -557,6 +557,7 @@ split({expr} [, {pat} [, {keepempty}]])
 sqrt({expr})			Float	square root of {expr}
 srand([{expr}])			List	get seed for |rand()|
 state([{what}])			String	current state of Vim
+stdpath({what})			String	standard path for {what}
 str2float({expr} [, {quoted}])	Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF-8 value
@@ -8367,6 +8368,16 @@ state([{what}])						*state()*
 		    c	callback invoked, including timer (repeats for
 			recursiveness up to "ccc")
 		    s	screen has scrolled for messages
+
+stdpath({what})						*stdpath()* *E1275*
+		Returns a String containing the standard system path to store
+		user-specific data.
+
+		If the requested standard path cannot be determined an E1275 is
+		given.
+
+		{what} can be one of these strings:
+			"cache"	root directory to store cached data in
 
 str2float({string} [, {quoted}])				*str2float()*
 		Convert String {string} to a Float.  This mostly works the

@@ -165,6 +165,7 @@ static void f_spellbadword(typval_T *argvars, typval_T *rettv);
 static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
 static void f_split(typval_T *argvars, typval_T *rettv);
 static void f_srand(typval_T *argvars, typval_T *rettv);
+static void f_stdpath(typval_T *argvars, typval_T *rettv);
 static void f_submatch(typval_T *argvars, typval_T *rettv);
 static void f_substitute(typval_T *argvars, typval_T *rettv);
 static void f_swapinfo(typval_T *argvars, typval_T *rettv);
@@ -2405,6 +2406,8 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_srand},
     {"state",		0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_state},
+    {"stdpath",		1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_stdpath},
     {"str2float",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_float,	    FLOAT_FUNC(f_str2float)},
     {"str2list",	1, 2, FEARG_1,	    arg2_string_bool,
@@ -8086,6 +8089,40 @@ f_srand(typval_T *argvars, typval_T *rettv)
 #undef ROTL
 #undef SPLITMIX32
 #undef SHUFFLE_XOSHIRO128STARSTAR
+
+/*
+ * "stdpath()" function
+ */
+    void
+f_stdpath(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*kind;
+    char_u	*val;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (in_vim9script()
+	    && check_for_string_or_number_arg(argvars, 0) == FAIL)
+	return;
+
+    kind = tv_get_string(&argvars[0]);
+
+    if (STRCMP(kind, "cache") == 0)
+    {
+	val = mch_special_dir(DIR_CACHE);
+    }
+    else
+    {
+	semsg(_(e_invalid_argument_str), kind);
+	return;
+    }
+
+    if (val == NULL)
+	semsg(_(e_could_not_determine_stdpath_for_str), kind);
+
+    rettv->vval.v_string = val;
+}
 
 /*
  * "range()" function

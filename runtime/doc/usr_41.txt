@@ -913,6 +913,7 @@ System functions and manipulation of files:
 	chdir()			change current working directory
 	delete()		delete a file
 	rename()		rename a file
+	stdpath()		get the root path for a certain kind of files
 	system()		get the result of a shell command as a string
 	systemlist()		get the result of a shell command as a list
 	environ()		get all environment variables

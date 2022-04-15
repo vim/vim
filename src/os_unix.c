@@ -54,6 +54,10 @@ static int selinux_enabled = -1;
 # endif
 #endif
 
+#if defined(__HAIKU__)
+# include <storage/FindDirectory.h>
+#endif
+
 #ifdef FEAT_MOUSE_GPM
 
 # include <gpm.h>
@@ -5474,6 +5478,30 @@ error:
     return retval;
 }
 #endif // USE_SYSTEM
+
+    char_u *
+mch_special_dir(int kind UNUSED)
+{
+    char_u *env;
+
+#if defined(MACOS_X)
+    if ((env = (char_u *)getenv("HOME")))
+	return concat_str(env, (char_u *)"/Library/Caches");
+#elif defined(__HAIKU__)
+    char_u cache_path[B_PATH_NAME_LENGTH];
+
+    if (find_directory(B_USER_CACHE_DIRECTORY, -1, false, (char *)cache_path,
+		sizeof(cache_path)) == B_OK)
+	return vim_strsave(userSettingsPath);
+#else
+    if ((env = (char_u *)getenv("XDG_CACHE_HOME")))
+	return vim_strsave(env);
+    if ((env = (char_u *)getenv("HOME")))
+	return concat_str(env, (char_u *)"/.cache");
+#endif
+
+    return NULL;
+}
 
     int
 mch_call_shell(

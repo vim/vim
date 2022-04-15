@@ -59,6 +59,7 @@ int mch_report_winsize(int fd, int rows, int cols);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 int unix_build_argv(char_u *cmd, char ***argvp, char_u **sh_tofree, char_u **shcf_tofree);
+char_u *mch_special_dir(int kind);
 int mch_call_shell(char_u *cmd, int options);
 void mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal);
 char *mch_job_status(job_T *job);

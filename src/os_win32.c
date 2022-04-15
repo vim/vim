@@ -4755,6 +4755,17 @@ mch_call_shell_terminal(
 }
 #endif
 
+    char_u *
+mch_special_dir(int kind UNUSED)
+{
+    char_u *env;
+
+    if ((env = (char_u *)getenv("LOCALAPPDATA")))
+	return vim_strsave(env);
+
+    return NULL;
+}
+
 /*
  * Either execute a command by calling the shell or start a new shell
  */
