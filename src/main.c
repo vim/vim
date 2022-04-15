@@ -2033,7 +2033,8 @@ command_line_scan(mparm_T *parmp)
 		    use_gvimrc = (char_u *)"NONE";
 #endif
 		    parmp->clean = TRUE;
-		    set_option_value((char_u *)"vif", 0L, (char_u *)"NONE", 0);
+		    set_option_value_give_err((char_u *)"vif",
+						      0L, (char_u *)"NONE", 0);
 		}
 		else if (STRNICMP(argv[0] + argv_idx, "literal", 7) == 0)
 		{
@@ -2115,7 +2116,7 @@ command_line_scan(mparm_T *parmp)
 
 	    case 'A':		// "-A" start in Arabic mode
 #ifdef FEAT_ARABIC
-		set_option_value((char_u *)"arabic", 1L, NULL, 0);
+		set_option_value_give_err((char_u *)"arabic", 1L, NULL, 0);
 #else
 		mch_errmsg(_(e_arabic_cannot_be_used_not_enabled_at_compile_time));
 		mch_exit(2);
@@ -2171,7 +2172,7 @@ command_line_scan(mparm_T *parmp)
 	    case 'H':		// "-H" start in Hebrew mode: rl + hkmap set
 #ifdef FEAT_RIGHTLEFT
 		p_hkmap = TRUE;
-		set_option_value((char_u *)"rl", 1L, NULL, 0);
+		set_option_value_give_err((char_u *)"rl", 1L, NULL, 0);
 #else
 		mch_errmsg(_(e_hebrew_cannot_be_used_not_enabled_at_compile_time));
 		mch_exit(2);
@@ -2180,7 +2181,7 @@ command_line_scan(mparm_T *parmp)
 
 	    case 'l':		// "-l" lisp mode, 'lisp' and 'showmatch' on
 #ifdef FEAT_LISP
-		set_option_value((char_u *)"lisp", 1L, NULL, 0);
+		set_option_value_give_err((char_u *)"lisp", 1L, NULL, 0);
 		p_sm = TRUE;
 #endif
 		break;
@@ -2316,8 +2317,8 @@ command_line_scan(mparm_T *parmp)
 		p_verbose = get_number_arg((char_u *)argv[0], &argv_idx, 10);
 		if (argv[0][argv_idx] != NUL)
 		{
-		    set_option_value((char_u *)"verbosefile", 0L,
-					     (char_u *)argv[0] + argv_idx, 0);
+		    set_option_value_give_err((char_u *)"verbosefile",
+					  0L, (char_u *)argv[0] + argv_idx, 0);
 		    argv_idx = (int)STRLEN(argv[0]);
 		}
 		break;
@@ -2334,7 +2335,7 @@ command_line_scan(mparm_T *parmp)
 		if (vim_isdigit(((char_u *)argv[0])[argv_idx]))
 		{
 		    n = get_number_arg((char_u *)argv[0], &argv_idx, 10);
-		    set_option_value((char_u *)"window", n, NULL, 0);
+		    set_option_value_give_err((char_u *)"window", n, NULL, 0);
 		    break;
 		}
 		want_argument = TRUE;
@@ -2463,7 +2464,8 @@ command_line_scan(mparm_T *parmp)
 #endif
 
 		case 'i':	// "-i {viminfo}" use for viminfo
-		    set_option_value((char_u *)"vif", 0L, (char_u *)argv[0], 0);
+		    set_option_value_give_err((char_u *)"vif",
+						     0L, (char_u *)argv[0], 0);
 		    break;
 
 		case 's':	// "-s {scriptin}" read from script file
@@ -2522,7 +2524,8 @@ scripterror:
 		    {
 			argv_idx = 0;
 			n = get_number_arg((char_u *)argv[0], &argv_idx, 10);
-			set_option_value((char_u *)"window", n, NULL, 0);
+			set_option_value_give_err((char_u *)"window",
+								   n, NULL, 0);
 			argv_idx = -1;
 			break;
 		    }
@@ -2967,7 +2970,8 @@ edit_buffers(
 
 		    p_shm_save = vim_strsave(p_shm);
 		    vim_snprintf(buf, 100, "F%s", p_shm);
-		    set_option_value((char_u *)"shm", 0L, (char_u *)buf, 0);
+		    set_option_value_give_err((char_u *)"shm",
+							 0L, (char_u *)buf, 0);
 		}
 	    }
 	    else
@@ -3016,7 +3020,7 @@ edit_buffers(
 
     if (p_shm_save != NULL)
     {
-	set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+	set_option_value_give_err((char_u *)"shm", 0L, p_shm_save, 0);
 	vim_free(p_shm_save);
     }
 

@@ -484,7 +484,7 @@ set_string_option_direct_in_buf(
 /*
  * Set a string option to a new value, and handle the effects.
  *
- * Returns NULL on success or error message on error.
+ * Returns NULL on success or an untranslated error message on error.
  */
     char *
 set_string_option(
@@ -503,7 +503,7 @@ set_string_option(
     char_u	*saved_oldval_g = NULL;
     char_u	*saved_newval = NULL;
 #endif
-    char	*r = NULL;
+    char	*errmsg = NULL;
     int		value_checked = FALSE;
 
     if (is_hidden_option(opt_idx))	// don't set hidden option
@@ -542,13 +542,13 @@ set_string_option(
 	    saved_newval = vim_strsave(s);
 	}
 #endif
-	if ((r = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
+	if ((errmsg = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
 					   opt_flags, &value_checked)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE, value_checked);
 
 #if defined(FEAT_EVAL)
 	// call autocommand after handling side effects
-	if (r == NULL)
+	if (errmsg == NULL)
 	    trigger_optionsset_string(opt_idx, opt_flags,
 				   saved_oldval, saved_oldval_l,
 				   saved_oldval_g, saved_newval);
@@ -558,7 +558,7 @@ set_string_option(
 	vim_free(saved_newval);
 #endif
     }
-    return r;
+    return errmsg;
 }
 
 /*
@@ -753,7 +753,7 @@ did_set_string_option(
     {
 	if (STRCMP(*p_bex == '.' ? p_bex + 1 : p_bex,
 		     *p_pm == '.' ? p_pm + 1 : p_pm) == 0)
-	    errmsg = N_(e_backupext_and_patchmode_are_equal);
+	    errmsg = e_backupext_and_patchmode_are_equal;
     }
 #ifdef FEAT_LINEBREAK
     // 'breakindentopt'
@@ -878,7 +878,7 @@ did_set_string_option(
 	if (check_opt_strings(p_ambw, p_ambw_values, FALSE) != OK)
 	    errmsg = e_invalid_argument;
 	else if (set_chars_option(curwin, &p_fcs) != NULL)
-	    errmsg = _(e_conflicts_with_value_of_fillchars);
+	    errmsg = e_conflicts_with_value_of_fillchars;
 	else
 	{
 	    tabpage_T	*tp;
@@ -888,7 +888,7 @@ did_set_string_option(
 	    {
 		if (set_chars_option(wp, &wp->w_p_lcs) != NULL)
 		{
-		    errmsg = _(e_conflicts_with_value_of_listchars);
+		    errmsg = e_conflicts_with_value_of_listchars;
 		    goto ambw_end;
 		}
 	    }
@@ -1492,7 +1492,7 @@ ambw_end:
 	for (s = *varp; *s; )
 	{
 	    if (ptr2cells(s) != 1)
-		errmsg = N_(e_showbreak_contains_unprintable_or_wide_character);
+		errmsg = e_showbreak_contains_unprintable_or_wide_character;
 	    MB_PTR_ADV(s);
 	}
     }
@@ -1534,7 +1534,7 @@ ambw_end:
 		}
 		else
 # endif
-		    errmsg = N_(e_invalid_fonts);
+		    errmsg = e_invalid_fonts;
 	    }
 	}
 	redraw_gui_only = TRUE;
@@ -1543,9 +1543,9 @@ ambw_end:
     else if (varp == &p_guifontset)
     {
 	if (STRCMP(p_guifontset, "*") == 0)
-	    errmsg = N_(e_cant_select_fontset);
+	    errmsg = e_cant_select_fontset;
 	else if (gui.in_use && gui_init_font(p_guifontset, TRUE) != OK)
-	    errmsg = N_(e_invalid_fontset);
+	    errmsg = e_invalid_fontset;
 	redraw_gui_only = TRUE;
     }
 # endif

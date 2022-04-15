@@ -4173,16 +4173,16 @@ qf_goto_cwindow(qf_info_T *qi, int resize, int sz, int vertsplit)
 qf_set_cwindow_options(void)
 {
     // switch off 'swapfile'
-    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
-	    OPT_LOCAL);
-    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bt",
+					  0L, (char_u *)"quickfix", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
     RESET_BINDING(curwin);
 #ifdef FEAT_DIFF
     curwin->w_p_diff = FALSE;
 #endif
 #ifdef FEAT_FOLDING
-    set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
+    set_option_value_give_err((char_u *)"fdm", 0L, (char_u *)"manual",
 	    OPT_LOCAL);
 #endif
 }
@@ -4796,7 +4796,8 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	// This resembles reading a file into a buffer, it's more logical when
 	// using autocommands.
 	++curbuf_lock;
-	set_option_value((char_u *)"ft", 0L, (char_u *)"qf", OPT_LOCAL);
+	set_option_value_give_err((char_u *)"ft",
+						0L, (char_u *)"qf", OPT_LOCAL);
 	curbuf->b_p_ma = FALSE;
 
 	keep_filetype = TRUE;		// don't detect 'filetype'
@@ -8312,7 +8313,7 @@ ex_helpgrep(exarg_T *eap)
 	// Darn, some plugin changed the value.  If it's still empty it was
 	// changed and restored, need to restore in the complicated way.
 	if (*p_cpo == NUL)
-	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
+	    set_option_value_give_err((char_u *)"cpo", 0L, save_cpo, 0);
 	if (save_cpo_allocated)
 	    free_string_option(save_cpo);
     }

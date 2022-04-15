@@ -783,7 +783,7 @@ add_pack_dir_to_rtp(char_u *fname)
 	STRCAT(new_rtp, afterdir);
     }
 
-    set_option_value((char_u *)"rtp", 0L, new_rtp, 0);
+    set_option_value_give_err((char_u *)"rtp", 0L, new_rtp, 0);
     vim_free(new_rtp);
     retval = OK;
 
@@ -1758,7 +1758,8 @@ almosttheend:
 		    }
 		}
 	}
-	set_option_value((char_u *)"cpo", 0L, si->sn_save_cpo, OPT_NO_REDRAW);
+	set_option_value_give_err((char_u *)"cpo",
+					   0L, si->sn_save_cpo, OPT_NO_REDRAW);
     }
     VIM_CLEAR(si->sn_save_cpo);
 

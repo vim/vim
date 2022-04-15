@@ -4367,7 +4367,8 @@ open_cmdwin(void)
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
     (void)setfname(curbuf, (char_u *)_("[Command Line]"), NULL, TRUE);
     apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
-    set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bt",
+					    0L, (char_u *)"nofile", OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
 #ifdef FEAT_FOLDING
     curwin->w_p_fen = FALSE;
@@ -4392,7 +4393,8 @@ open_cmdwin(void)
 	    add_map((char_u *)"<buffer> <Tab> <C-X><C-V>", INSERT);
 	    add_map((char_u *)"<buffer> <Tab> a<C-X><C-V>", NORMAL);
 	}
-	set_option_value((char_u *)"ft", 0L, (char_u *)"vim", OPT_LOCAL);
+	set_option_value_give_err((char_u *)"ft",
+					       0L, (char_u *)"vim", OPT_LOCAL);
     }
     --curbuf_lock;
 

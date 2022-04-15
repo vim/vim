@@ -876,14 +876,16 @@ pum_set_selected(int n, int repeat UNUSED)
 		    {
 			// Edit a new, empty buffer. Set options for a "wipeout"
 			// buffer.
-			set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-			set_option_value((char_u *)"bl", 0L, NULL, OPT_LOCAL);
-			set_option_value((char_u *)"bt", 0L,
-					       (char_u *)"nofile", OPT_LOCAL);
-			set_option_value((char_u *)"bh", 0L,
-						 (char_u *)"wipe", OPT_LOCAL);
-			set_option_value((char_u *)"diff", 0L,
-							     NULL, OPT_LOCAL);
+			set_option_value_give_err((char_u *)"swf",
+							  0L, NULL, OPT_LOCAL);
+			set_option_value_give_err((char_u *)"bl",
+							  0L, NULL, OPT_LOCAL);
+			set_option_value_give_err((char_u *)"bt",
+					    0L, (char_u *)"nofile", OPT_LOCAL);
+			set_option_value_give_err((char_u *)"bh",
+					      0L, (char_u *)"wipe", OPT_LOCAL);
+			set_option_value_give_err((char_u *)"diff",
+							  0L, NULL, OPT_LOCAL);
 		    }
 		}
 		if (res == OK)

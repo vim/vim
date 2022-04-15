@@ -1965,7 +1965,7 @@ count_syllables(slang_T *slang, char_u *word)
 
 /*
  * Parse 'spelllang' and set w_s->b_langp accordingly.
- * Returns NULL if it's OK, an error message otherwise.
+ * Returns NULL if it's OK, an untranslated error message otherwise.
  */
     char *
 did_set_spelllang(win_T *wp)
@@ -3834,8 +3834,8 @@ ex_spelldump(exarg_T *eap)
     do_cmdline_cmd((char_u *)"new");
 
     // enable spelling locally in the new window
-    set_option_value((char_u*)"spell", TRUE, (char_u*)"", OPT_LOCAL);
-    set_option_value((char_u*)"spl",  dummy, spl, OPT_LOCAL);
+    set_option_value_give_err((char_u*)"spell", TRUE, (char_u*)"", OPT_LOCAL);
+    set_option_value_give_err((char_u*)"spl",  dummy, spl, OPT_LOCAL);
     vim_free(spl);
 
     if (!BUFEMPTY())

@@ -504,7 +504,7 @@ gui_init(void)
 	 * Reset 'paste'.  It's useful in the terminal, but not in the GUI.  It
 	 * breaks the Paste toolbar button.
 	 */
-	set_option_value((char_u *)"paste", 0L, NULL, 0);
+	set_option_value_give_err((char_u *)"paste", 0L, NULL, 0);
 
 	// Set t_Co to the number of colors: RGB.
 	set_color_count(256 * 256 * 256);
@@ -664,7 +664,8 @@ gui_init(void)
      * Set up the fonts.  First use a font specified with "-fn" or "-font".
      */
     if (font_argument != NULL)
-	set_option_value((char_u *)"gfn", 0L, (char_u *)font_argument, 0);
+	set_option_value_give_err((char_u *)"gfn",
+					       0L, (char_u *)font_argument, 0);
     if (
 #ifdef FEAT_XFONTSET
 	    (*p_guifontset == NUL
@@ -4814,7 +4815,7 @@ init_gui_options(void)
     // background color, unless the user has set it already.
     if (!option_was_set((char_u *)"bg") && STRCMP(p_bg, gui_bg_default()) != 0)
     {
-	set_option_value((char_u *)"bg", 0L, gui_bg_default(), 0);
+	set_option_value_give_err((char_u *)"bg", 0L, gui_bg_default(), 0);
 	highlight_changed();
     }
 }
