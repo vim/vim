@@ -193,7 +193,7 @@ illegal_char(char *errbuf, int c)
 {
     if (errbuf == NULL)
 	return "";
-    sprintf((char *)errbuf, _(e_illegal_character_str), (char *)transchar(c));
+    sprintf((char *)errbuf, e_illegal_character_str, (char *)transchar(c));
     return errbuf;
 }
 
@@ -1400,7 +1400,7 @@ ambw_end:
 		    if (errbuf != NULL)
 		    {
 			sprintf(errbuf,
-				_(e_missing_number_after_angle_str_angle),
+				e_missing_number_after_angle_str_angle,
 						    transchar_byte(*(s - 1)));
 			errmsg = errbuf;
 		    }
@@ -1865,7 +1865,7 @@ ambw_end:
 		    if (errbuf != NULL)
 		    {
 			sprintf((char *)errbuf,
-				       _(e_illegal_character_after_chr), *--s);
+				    e_illegal_character_after_chr, *--s);
 			errmsg = errbuf;
 		    }
 		    else
