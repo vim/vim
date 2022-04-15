@@ -1807,8 +1807,8 @@ ambw_end:
     }
 
 #ifdef FEAT_STL_OPT
-    // 'statusline' or 'rulerformat'
-    else if (gvarp == &p_stl || varp == &p_ruf)
+    // 'statusline', 'tabline' or 'rulerformat'
+    else if (gvarp == &p_stl || varp == &p_tal || varp == &p_ruf)
     {
 	int wid;
 
@@ -1826,7 +1826,7 @@ ambw_end:
 	    else
 		errmsg = check_stl_option(p_ruf);
 	}
-	// check 'statusline' only if it doesn't start with "%!"
+	// check 'statusline' or 'tabline' only if it doesn't start with "%!"
 	else if (varp == &p_ruf || s[0] != '%' || s[1] != '!')
 	    errmsg = check_stl_option(s);
 	if (varp == &p_ruf && errmsg == NULL)
