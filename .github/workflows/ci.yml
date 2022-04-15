@@ -67,7 +67,7 @@ jobs:
         run: |
           PKGS=( \
             gettext \
-            libgtk-3-0 \
+            libgtk-3-dev \
             desktop-file-utils \
             libtool-bin \
           )
