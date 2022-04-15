@@ -1482,7 +1482,7 @@ ml_recover(int checkext)
 	set_fileformat(b0_ff - 1, OPT_LOCAL);
     if (b0_fenc != NULL)
     {
-	set_option_value((char_u *)"fenc", 0L, b0_fenc, OPT_LOCAL);
+	set_option_value_give_err((char_u *)"fenc", 0L, b0_fenc, OPT_LOCAL);
 	vim_free(b0_fenc);
     }
     unchanged(curbuf, TRUE, TRUE);
@@ -1759,7 +1759,7 @@ ml_recover(int checkext)
     if (*buf->b_p_key != NUL && STRCMP(curbuf->b_p_key, buf->b_p_key) != 0)
     {
 	msg_puts(_("Using crypt key from swap file for the text file.\n"));
-	set_option_value((char_u *)"key", 0L, buf->b_p_key, OPT_LOCAL);
+	set_option_value_give_err((char_u *)"key", 0L, buf->b_p_key, OPT_LOCAL);
     }
 #endif
     redraw_curbuf_later(NOT_VALID);

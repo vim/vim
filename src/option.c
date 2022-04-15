@@ -331,7 +331,7 @@ set_init_1(int clean_arg)
 
 #ifdef FEAT_GUI
     if (found_reverse_arg)
-	set_option_value((char_u *)"bg", 0L, (char_u *)"dark", 0);
+	set_option_value_give_err((char_u *)"bg", 0L, (char_u *)"dark", 0);
 #endif
 
     curbuf->b_p_initialized = TRUE;
@@ -389,7 +389,7 @@ set_init_1(int clean_arg)
     // NOTE: mlterm's author is being asked to 'set' a variable
     //       instead of an environment variable due to inheritance.
     if (mch_getenv((char_u *)"MLTERM") != NULL)
-	set_option_value((char_u *)"tbidi", 1L, NULL, 0);
+	set_option_value_give_err((char_u *)"tbidi", 1L, NULL, 0);
 #endif
 
     didset_options2();
@@ -1406,7 +1406,7 @@ do_set(
 				  && vim_strchr((char_u *)"!&<", *arg) != NULL)
 		    errmsg = e_no_white_space_allowed_between_option_and;
 		else
-		    errmsg = N_(e_unknown_option);
+		    errmsg = e_unknown_option;
 		goto skip;
 	    }
 
@@ -1419,7 +1419,7 @@ do_set(
 		    if (vim_strchr((char_u *)"=:!&<", nextchar) == NULL
 			    && (!(options[opt_idx].flags & P_BOOL)
 				|| nextchar == '?'))
-			errmsg = N_(e_option_not_supported);
+			errmsg = e_option_not_supported;
 		    goto skip;
 		}
 
@@ -1457,12 +1457,12 @@ do_set(
 	    {
 		if (flags & (P_SECURE | P_NO_ML))
 		{
-		    errmsg = N_(e_not_allowed_in_modeline);
+		    errmsg = e_not_allowed_in_modeline;
 		    goto skip;
 		}
 		if ((flags & P_MLE) && !p_mle)
 		{
-		    errmsg = N_(e_not_allowed_in_modeline_when_modelineexpr_is_off);
+		    errmsg = e_not_allowed_in_modeline_when_modelineexpr_is_off;
 		    goto skip;
 		}
 #ifdef FEAT_DIFF
@@ -1558,7 +1558,7 @@ do_set(
 		    p = find_termcode(key_name);
 		    if (p == NULL)
 		    {
-			errmsg = N_(e_key_code_not_set);
+			errmsg = e_key_code_not_set;
 			goto skip;
 		    }
 		    else
@@ -1682,13 +1682,13 @@ do_set(
 			    if (i == 0 || (arg[i] != NUL
 						      && !VIM_ISWHITE(arg[i])))
 			    {
-				errmsg = N_(e_number_required_after_equal);
+				errmsg = e_number_required_after_equal;
 				goto skip;
 			    }
 			}
 			else
 			{
-			    errmsg = N_(e_number_required_after_equal);
+			    errmsg = e_number_required_after_equal;
 			    goto skip;
 			}
 
@@ -2140,7 +2140,7 @@ do_set(
 			if (nextchar == '&')
 			{
 			    if (add_termcap_entry(key_name, TRUE) == FAIL)
-				errmsg = N_(e_not_found_in_termcap);
+				errmsg = e_not_found_in_termcap;
 			}
 			else
 			{
@@ -2724,6 +2724,7 @@ set_bool_option(
 #if defined(FEAT_EVAL)
     int		old_global_value = 0;
 #endif
+    char	*errmsg = NULL;
 
     // Disallow changing some options from secure mode
     if ((secure
@@ -2838,7 +2839,7 @@ set_bool_option(
 		      && curbuf->b_term != NULL && !term_is_finished(curbuf))))
 	{
 	    curbuf->b_p_ma = FALSE;
-	    return N_(e_cannot_make_terminal_with_running_job_modifiable);
+	    return e_cannot_make_terminal_with_running_job_modifiable;
 	}
 # endif
 	redraw_titles();
@@ -2966,7 +2967,7 @@ set_bool_option(
 		if (win->w_p_pvw && win != curwin)
 		{
 		    curwin->w_p_pvw = FALSE;
-		    return N_(e_preview_window_already_exists);
+		    return e_preview_window_already_exists;
 		}
 	}
     }
@@ -3121,12 +3122,7 @@ set_bool_option(
     else if ((int *)varp == &curwin->w_p_spell)
     {
 	if (curwin->w_p_spell)
-	{
-	    char	*errmsg = did_set_spelllang(curwin);
-
-	    if (errmsg != NULL)
-		emsg(_(errmsg));
-	}
+	    errmsg = did_set_spelllang(curwin);
     }
 #endif
 
@@ -3173,8 +3169,8 @@ set_bool_option(
 
 # ifdef FEAT_KEYMAP
 	    // Force-set the necessary keymap for arabic
-	    set_option_value((char_u *)"keymap", 0L, (char_u *)"arabic",
-								   OPT_LOCAL);
+	    errmsg = set_option_value((char_u *)"keymap",
+					    0L, (char_u *)"arabic", OPT_LOCAL);
 # endif
 	}
 	else
@@ -3239,7 +3235,7 @@ set_bool_option(
 	    !has_vtp_working())
 	{
 	    p_tgc = 0;
-	    return N_(e_24_bit_colors_are_not_supported_on_this_environment);
+	    return e_24_bit_colors_are_not_supported_on_this_environment;
 	}
 	if (is_term_win32())
 	    swap_tcap();
@@ -3287,7 +3283,7 @@ set_bool_option(
     if ((opt_flags & OPT_NO_REDRAW) == 0)
 	check_redraw(options[opt_idx].flags);
 
-    return NULL;
+    return errmsg;
 }
 
 /*
@@ -4329,7 +4325,7 @@ is_crypt_key_option(int opt_idx)
  * Set the value of option "name".
  * Use "string" for string options, use "number" for other options.
  *
- * Returns NULL on success or error message on error.
+ * Returns NULL on success or an untranslated error message on error.
  */
     char *
 set_option_value(
@@ -4416,6 +4412,22 @@ set_option_value(
 
     }
     return NULL;
+}
+
+/*
+ * Call set_option_value() and when an error is returned report it.
+ */
+    void
+set_option_value_give_err(
+    char_u	*name,
+    long	number,
+    char_u	*string,
+    int		opt_flags)	// OPT_LOCAL or 0 (both)
+{
+    char *errmsg = set_option_value(name, number, string, opt_flags);
+
+    if (errmsg != NULL)
+	emsg(_(errmsg));
 }
 
 /*

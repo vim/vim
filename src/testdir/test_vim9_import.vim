@@ -669,30 +669,61 @@ def Test_use_import_in_mapping()
   nunmap <F4>
 enddef
 
-def Test_use_autoload_import_in_mapping()
+def Test_use_relative_autoload_import_in_mapping()
   var lines =<< trim END
       vim9script
       export def Func()
         g:result = 42
       enddef
   END
-  writefile(lines, 'XautoloadExport.vim')
+  writefile(lines, 'XrelautoloadExport.vim')
   lines =<< trim END
       vim9script
-      import autoload './XautoloadExport.vim' as some
+      import autoload './XrelautoloadExport.vim' as some
       nnoremap <F3> :call <SID>some.Func()<CR>
   END
   writefile(lines, 'Xmapscript.vim')
 
   source Xmapscript.vim
-  assert_match('\d\+ A: .*XautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  assert_match('\d\+ A: .*XrelautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
   feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
 
   unlet g:result
-  delete('XautoloadExport.vim')
+  delete('XrelautoloadExport.vim')
   delete('Xmapscript.vim')
   nunmap <F3>
+enddef
+
+def Test_use_autoload_import_in_mapping()
+  var lines =<< trim END
+      vim9script
+      export def Func()
+        g:result = 49
+      enddef
+  END
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/XautoloadExport.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  lines =<< trim END
+      vim9script
+      import autoload 'XautoloadExport.vim' as some
+      nnoremap <F3> :call <SID>some.Func()<CR>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  assert_match('\d\+ A: .*autoload/XautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  feedkeys("\<F3>", "xt")
+  assert_equal(49, g:result)
+
+  unlet g:result
+  delete('Xmapscript.vim')
+  nunmap <F3>
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
 enddef
 
 def Test_use_import_in_command_completion()

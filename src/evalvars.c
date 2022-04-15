@@ -1795,7 +1795,7 @@ do_unlet_var(
 
 	// Environment variable, normal name or expanded name.
 	if (*lp->ll_name == '$')
-	    vim_unsetenv(lp->ll_name + 1);
+	    vim_unsetenv_ext(lp->ll_name + 1);
 	else if (do_unlet(lp->ll_name, forceit) == FAIL)
 	    ret = FAIL;
 	*name_end = cc;
@@ -4014,7 +4014,7 @@ set_option_from_tv(char_u *varname, typval_T *varp)
 	strval = tv_get_string_buf_chk(varp, nbuf);
     }
     if (!error && strval != NULL)
-	set_option_value(varname, numval, strval, OPT_LOCAL);
+	set_option_value_give_err(varname, numval, strval, OPT_LOCAL);
 }
 
 /*

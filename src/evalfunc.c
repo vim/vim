@@ -9060,7 +9060,7 @@ theend:
 	// If it's still empty it was changed and restored, need to restore in
 	// the complicated way.
 	if (*p_cpo == NUL)
-	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
+	    set_option_value_give_err((char_u *)"cpo", 0L, save_cpo, 0);
 	free_string_option(save_cpo);
     }
 
@@ -9223,9 +9223,9 @@ f_setenv(typval_T *argvars, typval_T *rettv UNUSED)
     name = tv_get_string_buf(&argvars[0], namebuf);
     if (argvars[1].v_type == VAR_SPECIAL
 				      && argvars[1].vval.v_number == VVAL_NULL)
-	vim_unsetenv(name);
+	vim_unsetenv_ext(name);
     else
-	vim_setenv(name, tv_get_string_buf(&argvars[1], valbuf));
+	vim_setenv_ext(name, tv_get_string_buf(&argvars[1], valbuf));
 }
 
 /*

@@ -1183,8 +1183,9 @@ prepare_buffer(buf_T *buf)
     buf_copy_options(buf, BCO_ENTER);
     curbuf = buf;
 #ifdef FEAT_QUICKFIX
-    set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
-    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bt",
+					    0L, (char_u *)"nofile", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
 #endif
     if (curbuf->b_ml.ml_mfp == NULL)
 	ml_open(curbuf);

@@ -85,7 +85,7 @@ typedef struct qf_list_S
     char_u	*qf_title;	// title derived from the command that created
 				// the error list or set by setqflist
     typval_T	*qf_ctx;	// context set by setqflist/setloclist
-    callback_T  qftf_cb;	// 'quickfixtextfunc' callback function
+    callback_T  qf_qftf_cb;	// 'quickfixtextfunc' callback function
 
     struct dir_stack_T	*qf_dir_stack;
     char_u		*qf_directory;
@@ -2337,10 +2337,10 @@ copy_loclist(qf_list_T *from_qfl, qf_list_T *to_qfl)
     }
     else
 	to_qfl->qf_ctx = NULL;
-    if (from_qfl->qftf_cb.cb_name != NULL)
-	copy_callback(&to_qfl->qftf_cb, &from_qfl->qftf_cb);
+    if (from_qfl->qf_qftf_cb.cb_name != NULL)
+	copy_callback(&to_qfl->qf_qftf_cb, &from_qfl->qf_qftf_cb);
     else
-	to_qfl->qftf_cb.cb_name = NULL;
+	to_qfl->qf_qftf_cb.cb_name = NULL;
 
     if (from_qfl->qf_count)
 	if (copy_loclist_entries(from_qfl, to_qfl) == FAIL)
@@ -3938,7 +3938,7 @@ qf_free(qf_list_T *qfl)
     VIM_CLEAR(qfl->qf_title);
     free_tv(qfl->qf_ctx);
     qfl->qf_ctx = NULL;
-    free_callback(&qfl->qftf_cb);
+    free_callback(&qfl->qf_qftf_cb);
     qfl->qf_id = 0;
     qfl->qf_changedtick = 0L;
 }
@@ -4173,16 +4173,16 @@ qf_goto_cwindow(qf_info_T *qi, int resize, int sz, int vertsplit)
 qf_set_cwindow_options(void)
 {
     // switch off 'swapfile'
-    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
-	    OPT_LOCAL);
-    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bt",
+					  0L, (char_u *)"quickfix", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
     RESET_BINDING(curwin);
 #ifdef FEAT_DIFF
     curwin->w_p_diff = FALSE;
 #endif
 #ifdef FEAT_FOLDING
-    set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
+    set_option_value_give_err((char_u *)"fdm", 0L, (char_u *)"manual",
 	    OPT_LOCAL);
 #endif
 }
@@ -4660,9 +4660,9 @@ call_qftf_func(qf_list_T *qfl, int qf_winid, long start_idx, long end_idx)
     // If 'quickfixtextfunc' is set, then use the user-supplied function to get
     // the text to display. Use the local value of 'quickfixtextfunc' if it is
     // set.
-    if (qfl->qftf_cb.cb_name != NULL)
-	cb = &qfl->qftf_cb;
-    if (cb != NULL && cb->cb_name != NULL)
+    if (qfl->qf_qftf_cb.cb_name != NULL)
+	cb = &qfl->qf_qftf_cb;
+    if (cb->cb_name != NULL)
     {
 	typval_T	args[1];
 	dict_T		*d;
@@ -4796,7 +4796,8 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	// This resembles reading a file into a buffer, it's more logical when
 	// using autocommands.
 	++curbuf_lock;
-	set_option_value((char_u *)"ft", 0L, (char_u *)"qf", OPT_LOCAL);
+	set_option_value_give_err((char_u *)"ft",
+						0L, (char_u *)"qf", OPT_LOCAL);
 	curbuf->b_p_ma = FALSE;
 
 	keep_filetype = TRUE;		// don't detect 'filetype'
@@ -7105,11 +7106,11 @@ qf_getprop_qftf(qf_list_T *qfl, dict_T *retdict)
 {
     int		status;
 
-    if (qfl->qftf_cb.cb_name != NULL)
+    if (qfl->qf_qftf_cb.cb_name != NULL)
     {
 	typval_T	tv;
 
-	put_callback(&qfl->qftf_cb, &tv);
+	put_callback(&qfl->qf_qftf_cb, &tv);
 	status = dict_add_tv(retdict, "quickfixtextfunc", &tv);
 	clear_tv(&tv);
     }
@@ -7551,10 +7552,10 @@ qf_setprop_qftf(qf_info_T *qi UNUSED, qf_list_T *qfl, dictitem_T *di)
 {
     callback_T	cb;
 
-    free_callback(&qfl->qftf_cb);
+    free_callback(&qfl->qf_qftf_cb);
     cb = get_callback(&di->di_tv);
     if (cb.cb_name != NULL && *cb.cb_name != NUL)
-	set_callback(&qfl->qftf_cb, &cb);
+	set_callback(&qfl->qf_qftf_cb, &cb);
 
     return OK;
 }
@@ -7737,7 +7738,7 @@ mark_quickfix_ctx(qf_info_T *qi, int copyID)
 		&& ctx->v_type != VAR_STRING && ctx->v_type != VAR_FLOAT)
 	    abort = abort || set_ref_in_item(ctx, copyID, NULL, NULL);
 
-	cb = &qi->qf_lists[i].qftf_cb;
+	cb = &qi->qf_lists[i].qf_qftf_cb;
 	abort = abort || set_ref_in_callback(cb, copyID);
     }
 
@@ -8312,7 +8313,7 @@ ex_helpgrep(exarg_T *eap)
 	// Darn, some plugin changed the value.  If it's still empty it was
 	// changed and restored, need to restore in the complicated way.
 	if (*p_cpo == NUL)
-	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
+	    set_option_value_give_err((char_u *)"cpo", 0L, save_cpo, 0);
 	if (save_cpo_allocated)
 	    free_string_option(save_cpo);
     }

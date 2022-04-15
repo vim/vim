@@ -4407,7 +4407,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
     if (!p_paste)
 	// Also have the side effects of setting 'paste' to make it work much
 	// faster.
-	set_option_value((char_u *)"paste", TRUE, NULL, 0);
+	set_option_value_give_err((char_u *)"paste", TRUE, NULL, 0);
 
     for (;;)
     {
@@ -4482,7 +4482,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
     --no_mapping;
     allow_keys = save_allow_keys;
     if (!save_paste)
-	set_option_value((char_u *)"paste", FALSE, NULL, 0);
+	set_option_value_give_err((char_u *)"paste", FALSE, NULL, 0);
 
     return ret_char;
 }

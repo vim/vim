@@ -6414,7 +6414,8 @@ init_spellfile(void)
 			fname != NULL
 			  && strstr((char *)gettail(fname), ".ascii.") != NULL
 				       ? (char_u *)"ascii" : spell_enc());
-		set_option_value((char_u *)"spellfile", 0L, buf, OPT_LOCAL);
+		set_option_value_give_err((char_u *)"spellfile",
+							   0L, buf, OPT_LOCAL);
 		break;
 	    }
 	    aspath = FALSE;

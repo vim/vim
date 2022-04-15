@@ -2645,7 +2645,8 @@ handle_mapping(
 						     mlen - typebuf.tb_maplen);
 
 	    del_typebuf(mlen, 0); // remove the chars
-	    set_option_value((char_u *)"paste", (long)!p_paste, NULL, 0);
+	    set_option_value_give_err((char_u *)"paste",
+						      (long)!p_paste, NULL, 0);
 	    if (!(State & INSERT))
 	    {
 		msg_col = 0;
