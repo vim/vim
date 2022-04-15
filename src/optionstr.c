@@ -574,7 +574,7 @@ valid_filetype(char_u *val)
 #ifdef FEAT_STL_OPT
 /*
  * Check validity of options with the 'statusline' format.
- * Return error message or NULL.
+ * Return an untranslated error message or NULL.
  */
     static char *
 check_stl_option(char_u *s)
@@ -625,17 +625,19 @@ check_stl_option(char_u *s)
 	}
 	if (*s == '{')
 	{
-	    int reevaluate = (*s == '%');
+	    int reevaluate = (*++s == '%');
 
-	    s++;
+	    if (reevaluate && *++s == '}')
+		// "}" is not allowed immediately after "%{%"
+		return illegal_char(errbuf, '}');
 	    while ((*s != '}' || (reevaluate && s[-1] != '%')) && *s)
 		s++;
 	    if (*s != '}')
-		return N_(e_unclosed_expression_sequence);
+		return e_unclosed_expression_sequence;
 	}
     }
     if (groupdepth != 0)
-	return N_(e_unbalanced_groups);
+	return e_unbalanced_groups;
     return NULL;
 }
 #endif
@@ -1805,8 +1807,8 @@ ambw_end:
     }
 
 #ifdef FEAT_STL_OPT
-    // 'statusline' or 'rulerformat'
-    else if (gvarp == &p_stl || varp == &p_ruf)
+    // 'statusline', 'tabline' or 'rulerformat'
+    else if (gvarp == &p_stl || varp == &p_tal || varp == &p_ruf)
     {
 	int wid;
 
@@ -1824,7 +1826,7 @@ ambw_end:
 	    else
 		errmsg = check_stl_option(p_ruf);
 	}
-	// check 'statusline' only if it doesn't start with "%!"
+	// check 'statusline' or 'tabline' only if it doesn't start with "%!"
 	else if (varp == &p_ruf || s[0] != '%' || s[1] != '!')
 	    errmsg = check_stl_option(s);
 	if (varp == &p_ruf && errmsg == NULL)
