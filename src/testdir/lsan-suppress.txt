@@ -8,3 +8,5 @@ leak:libtinfo.so.6
 # Suppress leaks from other language libraries.
 leak:libperl.so.*
 leak:libpython*.so.*
+leak:libruby*.so.*
+leak:libxcb*.so.*
