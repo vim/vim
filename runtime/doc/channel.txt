@@ -25,6 +25,7 @@ The Netbeans interface also uses a channel. |netbeans|
 12. Job options				|job-options|
 13. Controlling a job			|job-control|
 14. Using a prompt buffer		|prompt-buffer|
+15. Language Server Protocol		|language-server-protocol|
 
 {only when compiled with the |+channel| feature for channel stuff}
 	You can check this with: `has('channel')`
@@ -424,6 +425,7 @@ To send a message, without expecting a response: >
 The process can send back a response, the channel handler will be called with
 it.
 
+						*channel-onetime-callback*
 To send a message and letting the response handled by a specific function,
 asynchronously: >
     call ch_sendraw(channel, {string}, {'callback': 'MyHandler'})
@@ -695,6 +697,15 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		See |channel-use|.				*E912*
 		{handle} can be a Channel or a Job that has a Channel.
 		When using the "lsp" channel mode, {expr} must be a |Dict|.
+
+		If the channel mode is "lsp", then returns a Dict. Otherwise
+		returns an empty String.  If the "callback" item is present in
+		{options}, then the returned Dict contains the ID of the
+		request message.  The ID can be used to send a cancellation
+		request to the LSP server (if needed).
+
+		If a response message is not expected for {expr}, then don't
+		specify the "callback" item in {options}.
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_sendexpr(expr)
@@ -1383,7 +1394,7 @@ The same in |Vim9| script: >
 	startinsert
 
 ==============================================================================
-14. Language Server Protocol			*language-server-protocol*
+15. Language Server Protocol			*language-server-protocol*
 
 The language server protocol specification is available at:
 
@@ -1410,10 +1421,11 @@ To open a channel using the 'lsp' mode with a job, set the 'in_mode' and
 
     let job = job_start(...., #{in_mode: 'lsp', out_mode: 'lsp'})
 
-To synchronously send a JSON-RPC request to the server, use the |ch_evalexpr()|
-function. This function will return the response from the server. You can use
+To synchronously send a JSON-RPC request to the server, use the
+|ch_evalexpr()| function. This function will wait and return the decoded
+response message from the server. You can use either the |channel-timeout| or
 the 'timeout' field in the {options} argument to control the response wait
-time. Example: >
+time.  If the request times out, then an empty string is returned.  Example: >
 
     let req = {}
     let req.method = 'textDocument/definition'
@@ -1425,20 +1437,45 @@ time. Example: >
 Note that in the request message the 'id' field should not be specified. If it
 is specified, then Vim will overwrite the value with an internally generated
 identifier.  Vim currently supports only a number type for the 'id' field.
+The callback function will be invoked for both a successful and a failed RPC
+request.  If the "id" field is present in the request message, then Vim will
+overwrite it with an internally generated number.  This function returns a
+Dict with the identifier used for the message.  This can be used to send
+cancellation request to the LSP server (if needed).
 
 To send a JSON-RPC request to the server and asynchronously process the
 response, use the |ch_sendexpr()| function and supply a callback function.
+
 Example: >
 
     let req = {}
     let req.method = 'textDocument/hover'
+    let req.id = 200
     let req.params = {}
     let req.params.textDocument = #{uri: 'a.c'}
     let req.params.position = #{line: 10, character: 3}
     let resp = ch_sendexpr(ch, req, #{callback: 'MyFn'})
 
+To cancel an outstanding LSP request sent to the server using the
+|ch_sendexpr()| function, send a cancelation message to the server using the
+|ch_sendexpr()| function with the ID returned by |ch_sendexpr()|.  Example: >
+
+    " send a completion request
+    let req = {}
+    let req.method = 'textDocument/completion'
+    let req.params = {}
+    let req.params.textDocument = #{uri: 'a.c'}
+    let req.params.position = #{line: 10, character: 3}
+    let reqstatus = ch_sendexpr(ch, req, #{callback: 'MyComplete'})
+    " send a cancellation notification
+    let notif = {}
+    let notif.method = '$/cancelRequest'
+    let notif.id = reqstatus.id
+    call ch_sendexpr(ch, notif)
+
 To send a JSON-RPC notification message to the server, use the |ch_sendexpr()|
-function. Example: >
+function. As the server will not send a response message to the notification,
+don't specify the "callback" item.  Example: >
 
     call ch_sendexpr(ch, #{method: 'initialized'})
 
@@ -1453,5 +1490,69 @@ from the server request message. Example: >
 
 The JSON-RPC notification messages from the server are delivered through the
 |channel-callback| function.
+
+Depending on the use case, you can use the ch_evalexpr(), ch_sendexpr() and
+ch_sendraw() functions on the same channel.
+
+A LSP request message has the following format (expressed as a Vim Dict).  The
+"params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"method": <string>,
+	"params": <list|dict>
+    }
+
+A LSP reponse message has the following format (expressed as a Vim Dict).  The
+"result" and "error" fields are optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"result": <vim type>
+	"error": <dict>
+    }
+
+A LSP notification message has the following format (expressed as a Vim Dict).
+The "params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"method": <string>,
+	"params": <list|dict>
+    }
+
+Depending on the use case, you can use the ch_evalexpr(), ch_sendexpr() and
+ch_sendraw() functions on the same channel.
+
+A LSP request message has the following format (expressed as a Vim Dict).  The
+"params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"method": <string>,
+	"params": <list|dict>
+    }
+
+A LSP reponse message has the following format (expressed as a Vim Dict).  The
+"result" and "error" fields are optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"result": <vim type>
+	"error": <dict>
+    }
+
+A LSP notification message has the following format (expressed as a Vim Dict).
+The "params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"method": <string>,
+	"params": <list|dict>
+    }
 
  vim:tw=78:ts=8:noet:ft=help:norl:
