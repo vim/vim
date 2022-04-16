@@ -6487,7 +6487,8 @@ syn_get_id(
 {
     // When the position is not after the current position and in the same
     // line of the same buffer, need to restart parsing.
-    if (wp->w_buffer != syn_buf
+    if (wp != syn_win
+	    || wp->w_buffer != syn_buf
 	    || lnum != current_lnum
 	    || col < current_col)
 	syntax_start(wp, lnum);
