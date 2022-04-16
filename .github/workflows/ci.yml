@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
 
     env:
       CC: ${{ matrix.compiler }}
@@ -156,6 +156,11 @@ jobs:
           fi
           if ${{ contains(matrix.extra, 'vimtags') }}; then
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
+          fi
+          # Setup lua5.3 manually since its package doesn't provide alternative.
+          # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
+          if [[ ${CONFOPT} =~ luainterp ]]; then
+            sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
           fi
           echo "CFLAGS=$CFLAGS"
           ) >> $GITHUB_ENV
