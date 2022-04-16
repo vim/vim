@@ -1,4 +1,4 @@
-# Suppress leaks from X libraries on Ubuntu bionic.
+# Suppress leaks from X libraries on Ubuntu focal.
 leak:libX11.so.6
 leak:libXt.so.6
 leak:libcairo.so.2
