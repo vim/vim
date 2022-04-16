@@ -3337,8 +3337,10 @@ typedef struct
     linenr_T	first_lnum; // first lnum to search for multi-line pat
     colnr_T	startcol;   // in win_line() points to char where HL starts
     colnr_T	endcol;	    // in win_line() points to char where HL ends
-    int		is_addpos;  // position specified directly by
+    char	is_addpos;  // position specified directly by
 			    // matchaddpos(). TRUE/FALSE
+    char	has_cursor; // TRUE if the cursor is inside the match, used for
+			    // CurSearch
 #ifdef FEAT_RELTIME
     proftime_T	tm;	    // for a time limit
 #endif
