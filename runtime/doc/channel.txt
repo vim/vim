@@ -530,7 +530,8 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 
 		ch_evalexpr() waits for a response and returns the decoded
 		expression.  When there is an error or timeout it returns an
-		empty string.
+		empty |String| or, when using the "lsp" channel mode, returns an
+		empty |Dict|.
 
 		Note that while waiting for the response, Vim handles other
 		messages.  You need to make sure this doesn't cause trouble.
@@ -702,7 +703,8 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		returns an empty String.  If the "callback" item is present in
 		{options}, then the returned Dict contains the ID of the
 		request message.  The ID can be used to send a cancellation
-		request to the LSP server (if needed).
+		request to the LSP server (if needed).  Returns an empty Dict
+		on error.
 
 		If a response message is not expected for {expr}, then don't
 		specify the "callback" item in {options}.
@@ -1405,11 +1407,19 @@ payload encoded in JSON-RPC format.  This is described in:
 
     https://www.jsonrpc.org/specification
 
-For messages received on a channel with mode set to "lsp", Vim will process
-the HTTP header and decode the payload into a Vim |Dict| type and call the
-channel callback or the specified callback function.  When sending messages on
-a channel using |ch_evalexpr()| or |ch_sendexpr()|, Vim will add the HTTP
-header and encode the Vim expression into JSON-RPC.
+To encode and send a LSP request/notification message in a Vim |Dict| into a
+LSP JSON-RPC message and to receive and decode a LSP JSON-RPC
+response/notification message into a Vim |Dict|, connect to the LSP server
+with the |channel-mode| set to "lsp".
+
+For messages received on a channel with |channel-mode| set to "lsp", Vim will
+process the HTTP header and decode the JSON-RPC payload into a Vim |Dict| type
+and call the |channel-callback| function or the specified
+|channel-onetime-callback| function.  When sending messages on a channel using
+the |ch_evalexpr()| or |ch_sendexpr()| functions, Vim will add the HTTP header
+and encode the Vim expression into JSON.  Refer to |json_encode()| and
+|json_decode()| for more information about how Vim encodes and decodes the
+builtin types into JSON.
 
 To open a channel using the 'lsp' mode, set the 'mode' item in the |ch_open()|
 {options} argument to 'lsp'.  Example: >
@@ -1419,34 +1429,43 @@ To open a channel using the 'lsp' mode, set the 'mode' item in the |ch_open()|
 To open a channel using the 'lsp' mode with a job, set the 'in_mode' and
 'out_mode' items in the |job_start()| {options} argument to 'lsp'. Example: >
 
-    let job = job_start(...., #{in_mode: 'lsp', out_mode: 'lsp'})
+    let cmd = ['clangd', '--background-index', '--clang-tidy']
+    let opts = {}
+    let opts.in_mode = 'lsp'
+    let opts.out_mode = 'lsp'
+    let opts.out_cb = function('LspOutCallback')
+    let opts.err_cb = function('LspErrCallback')
+    let opts.exit_cb = function('LspExitCallback')
+    let job = job_start(cmd, opts)
 
 To synchronously send a JSON-RPC request to the server, use the
 |ch_evalexpr()| function. This function will wait and return the decoded
 response message from the server. You can use either the |channel-timeout| or
 the 'timeout' field in the {options} argument to control the response wait
-time.  If the request times out, then an empty string is returned.  Example: >
+time.  If the request times out, then an empty |Dict| is returned.  Example: >
 
     let req = {}
     let req.method = 'textDocument/definition'
     let req.params = {}
     let req.params.textDocument = #{uri: 'a.c'}
     let req.params.position = #{line: 10, character: 3}
-    let resp = ch_evalexpr(ch, req, #{timeout: 100})
+    let defs = ch_evalexpr(ch, req, #{timeout: 100})
+    if defs->empty()
+        ... <handle failure>
+    endif
 
 Note that in the request message the 'id' field should not be specified. If it
 is specified, then Vim will overwrite the value with an internally generated
 identifier.  Vim currently supports only a number type for the 'id' field.
 The callback function will be invoked for both a successful and a failed RPC
-request.  If the "id" field is present in the request message, then Vim will
-overwrite it with an internally generated number.  This function returns a
-Dict with the identifier used for the message.  This can be used to send
-cancellation request to the LSP server (if needed).
+request.
 
 To send a JSON-RPC request to the server and asynchronously process the
-response, use the |ch_sendexpr()| function and supply a callback function.
-
-Example: >
+response, use the |ch_sendexpr()| function and supply a callback function.  If
+the "id" field is present in the request message, then Vim will overwrite it
+with an internally generated number.  This function returns a Dict with the
+identifier used for the message.  This can be used to send cancellation
+request to the LSP server (if needed).  Example: >
 
     let req = {}
     let req.method = 'textDocument/hover'
@@ -1454,11 +1473,12 @@ Example: >
     let req.params = {}
     let req.params.textDocument = #{uri: 'a.c'}
     let req.params.position = #{line: 10, character: 3}
-    let resp = ch_sendexpr(ch, req, #{callback: 'MyFn'})
+    let resp = ch_sendexpr(ch, req, #{callback: 'HoverFunc'})
 
-To cancel an outstanding LSP request sent to the server using the
+To cancel an outstanding asynchronous LSP request sent to the server using the
 |ch_sendexpr()| function, send a cancelation message to the server using the
-|ch_sendexpr()| function with the ID returned by |ch_sendexpr()|.  Example: >
+|ch_sendexpr()| function with the ID returned by the |ch_sendexpr()| function
+for the request.  Example: >
 
     " send a completion request
     let req = {}
@@ -1466,7 +1486,7 @@ To cancel an outstanding LSP request sent to the server using the
     let req.params = {}
     let req.params.textDocument = #{uri: 'a.c'}
     let req.params.position = #{line: 10, character: 3}
-    let reqstatus = ch_sendexpr(ch, req, #{callback: 'MyComplete'})
+    let reqstatus = ch_sendexpr(ch, req, #{callback: 'LspComplete'})
     " send a cancellation notification
     let notif = {}
     let notif.method = '$/cancelRequest'
