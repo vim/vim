@@ -2783,7 +2783,9 @@ parse_command_modifiers(
 	cmdmod_T    *cmod,
 	int	    skip_only)
 {
+    char_u  *orig_cmd = eap->cmd;
     char_u  *cmd_start = NULL;
+    int	    did_plus_cmd = FALSE;
     char_u  *p;
     int	    starts_with_colon = FALSE;
     int	    vim9script = in_vim9script();
@@ -2819,6 +2821,7 @@ parse_command_modifiers(
 			&& curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	{
 	    eap->cmd = (char_u *)"+";
+	    did_plus_cmd = TRUE;
 	    if (!skip_only)
 		ex_pressedreturn = TRUE;
 	}
@@ -3105,13 +3108,29 @@ parse_command_modifiers(
 	    // Since the modifiers have been parsed put the colon on top of the
 	    // space: "'<,'>mod cmd" -> "mod:'<,'>cmd
 	    // Put eap->cmd after the colon.
-	    mch_memmove(cmd_start - 5, cmd_start, eap->cmd - cmd_start);
-	    eap->cmd -= 5;
-	    mch_memmove(eap->cmd - 1, ":'<,'>", 6);
+	    if (did_plus_cmd)
+	    {
+		size_t len = STRLEN(cmd_start);
+
+		// Special case: empty command may have been changed to "+":
+		//  "'<,'>mod" -> "mod'<,'>+
+		mch_memmove(orig_cmd, cmd_start, len);
+		STRCPY(orig_cmd + len, "'<,'>+");
+	    }
+	    else
+	    {
+		mch_memmove(cmd_start - 5, cmd_start, eap->cmd - cmd_start);
+		eap->cmd -= 5;
+		mch_memmove(eap->cmd - 1, ":'<,'>", 6);
+	    }
 	}
 	else
-	    // no modifiers, move the pointer back
-	    eap->cmd -= 5;
+	    // No modifiers, move the pointer back.
+	    // Special case: empty command may have been changed to "+".
+	    if (did_plus_cmd)
+		eap->cmd = (char_u *)"'<,'>+";
+	    else
+		eap->cmd = orig_cmd;
     }
 
     return OK;
