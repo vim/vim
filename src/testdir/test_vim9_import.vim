@@ -642,8 +642,8 @@ enddef
 def Test_use_import_in_mapping()
   var lines =<< trim END
       vim9script
-      export def Funcx()
-        g:result = 42
+      export def Funcx(nr: number)
+        g:result = nr
       enddef
   END
   writefile(lines, 'XsomeExport.vim')
@@ -651,18 +651,79 @@ def Test_use_import_in_mapping()
       vim9script
       import './XsomeExport.vim' as some
       var Funcy = some.Funcx
-      nnoremap <F3> :call <sid>Funcy()<cr>
+      nnoremap <F3> :call <sid>Funcy(42)<cr>
+      nnoremap <F4> :call <sid>some.Funcx(44)<cr>
   END
   writefile(lines, 'Xmapscript.vim')
 
   source Xmapscript.vim
   feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
+  feedkeys("\<F4>", "xt")
+  assert_equal(44, g:result)
 
   unlet g:result
   delete('XsomeExport.vim')
   delete('Xmapscript.vim')
   nunmap <F3>
+  nunmap <F4>
+enddef
+
+def Test_use_relative_autoload_import_in_mapping()
+  var lines =<< trim END
+      vim9script
+      export def Func()
+        g:result = 42
+      enddef
+  END
+  writefile(lines, 'XrelautoloadExport.vim')
+  lines =<< trim END
+      vim9script
+      import autoload './XrelautoloadExport.vim' as some
+      nnoremap <F3> :call <SID>some.Func()<CR>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  assert_match('\d\+ A: .*XrelautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  feedkeys("\<F3>", "xt")
+  assert_equal(42, g:result)
+
+  unlet g:result
+  delete('XrelautoloadExport.vim')
+  delete('Xmapscript.vim')
+  nunmap <F3>
+enddef
+
+def Test_use_autoload_import_in_mapping()
+  var lines =<< trim END
+      vim9script
+      export def Func()
+        g:result = 49
+      enddef
+  END
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/XautoloadExport.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  lines =<< trim END
+      vim9script
+      import autoload 'XautoloadExport.vim' as some
+      nnoremap <F3> :call <SID>some.Func()<CR>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  assert_match('\d\+ A: .*autoload/XautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  feedkeys("\<F3>", "xt")
+  assert_equal(49, g:result)
+
+  unlet g:result
+  delete('Xmapscript.vim')
+  nunmap <F3>
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
 enddef
 
 def Test_use_import_in_command_completion()
@@ -679,6 +740,30 @@ def Test_use_import_in_command_completion()
       import './Xscript.vim'
 
       command -nargs=1 -complete=customlist,Xscript.Complete Cmd echo 'ok'
+      feedkeys(":Cmd ab\<Tab>\<C-B>#\<CR>", 'xnt')
+      assert_equal('#Cmd abcd', @:)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delcommand Cmd
+  delete('Xscript.vim')
+enddef
+
+def Test_use_import_with_funcref_in_command_completion()
+  var lines =<< trim END
+      vim9script
+      export def Complete(..._): list<string>
+        return ['abcd']
+      enddef
+  END
+  writefile(lines, 'Xscript.vim')
+
+  lines =<< trim END
+      vim9script
+      import './Xscript.vim'
+
+      var Ref = Xscript.Complete
+      exe "command -nargs=1 -complete=customlist," .. expand('<SID>') .. "Ref  Cmd echo 'ok'"
       feedkeys(":Cmd ab\<Tab>\<C-B>#\<CR>", 'xnt')
       assert_equal('#Cmd abcd', @:)
   END

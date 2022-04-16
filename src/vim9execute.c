@@ -1658,6 +1658,29 @@ exec_command(isn_T *iptr)
     return OK;
 }
 
+/*
+ * If script "sid" is not loaded yet then load it now.
+ * Caller must make sure "sid" is a valid script ID.
+ * "loaded" is set to TRUE if the script had to be loaded.
+ * Returns FAIL if loading fails, OK if already loaded or loaded now.
+ */
+    int
+may_load_script(int sid, int *loaded)
+{
+    scriptitem_T *si = SCRIPT_ITEM(sid);
+
+    if (si->sn_state == SN_STATE_NOT_LOADED)
+    {
+	*loaded = TRUE;
+	if (do_source(si->sn_name, FALSE, DOSO_NONE, NULL) == FAIL)
+	{
+	    semsg(_(e_cant_open_file_str), si->sn_name);
+	    return FAIL;
+	}
+    }
+    return OK;
+}
+
 // used for v_instr of typval of VAR_INSTR
 struct instr_S {
     ectx_T	*instr_ectx;
@@ -2632,18 +2655,12 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_SOURCE:
 		{
-		    scriptitem_T *si = SCRIPT_ITEM(iptr->isn_arg.number);
+		    int notused;
 
-		    if (si->sn_state == SN_STATE_NOT_LOADED)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			if (do_source(si->sn_name, FALSE, DOSO_NONE, NULL)
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    if (may_load_script((int)iptr->isn_arg.number, &notused)
 								       == FAIL)
-			{
-			    semsg(_(e_cant_open_file_str), si->sn_name);
-			    goto on_error;
-			}
-		    }
+			goto on_error;
 		}
 		break;
 
@@ -3474,7 +3491,7 @@ exec_instructions(ectx_T *ectx)
 		    goto on_error;
 		break;
 	    case ISN_UNLETENV:
-		vim_unsetenv(iptr->isn_arg.unlet.ul_name);
+		vim_unsetenv_ext(iptr->isn_arg.unlet.ul_name);
 		break;
 
 	    case ISN_LOCKUNLOCK:

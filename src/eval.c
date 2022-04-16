@@ -639,7 +639,15 @@ deref_function_name(
 
     ref.v_type = VAR_UNKNOWN;
     if (eval7(arg, &ref, evalarg, FALSE) == FAIL)
-	return NULL;
+    {
+	dictitem_T	*v;
+
+	// If <SID>VarName was used it would not be found, try another way.
+	v = find_var_also_in_script(name, NULL, FALSE);
+	if (v == NULL)
+	    return NULL;
+	copy_tv(&v->di_tv, &ref);
+    }
     if (*skipwhite(*arg) != NUL)
     {
 	if (verbose)
@@ -6801,7 +6809,7 @@ do_string_sub(
 	// If it's still empty it was changed and restored, need to restore in
 	// the complicated way.
 	if (*p_cpo == NUL)
-	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
+	    set_option_value_give_err((char_u *)"cpo", 0L, save_cpo, 0);
 	free_string_option(save_cpo);
     }
 

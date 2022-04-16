@@ -55,7 +55,7 @@ typedef struct AutoCmd
     char	    once;		// "One shot": removed after execution
     char	    nested;		// If autocommands nest here.
     char	    last;		// last command in list
-    sctx_T	    script_ctx;		// script context where defined
+    sctx_T	    script_ctx;		// script context where it is defined
     struct AutoCmd  *next;		// next AutoCmd in list
 } AutoCmd;
 
@@ -234,12 +234,13 @@ struct AutoPatCmd_S
     char_u	*sfname;	// sfname to match with
     char_u	*tail;		// tail of fname
     event_T	event;		// current event
+    sctx_T	script_ctx;	// script context where it is defined
     int		arg_bufnr;	// Initially equal to <abuf>, set to zero when
 				// buf is deleted.
-    AutoPatCmd   *next;		// chain of active apc-s for auto-invalidation
+    AutoPatCmd_T *next;		// chain of active apc-s for auto-invalidation
 };
 
-static AutoPatCmd *active_apc_list = NULL; // stack of active autocommands
+static AutoPatCmd_T *active_apc_list = NULL; // stack of active autocommands
 
 // Macro to loop over all the patterns for an autocmd event
 #define FOR_ALL_AUTOCMD_PATTERNS(event, ap) \
@@ -264,7 +265,7 @@ static char_u *event_nr2name(event_T event);
 static int au_get_grouparg(char_u **argp);
 static int do_autocmd_event(event_T event, char_u *pat, int once, int nested, char_u *cmd, int forceit, int group, int flags);
 static int apply_autocmds_group(event_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap);
-static void auto_next_pat(AutoPatCmd *apc, int stop_at_last);
+static void auto_next_pat(AutoPatCmd_T *apc, int stop_at_last);
 static int au_find_group(char_u *name);
 
 static event_T	last_event;
@@ -453,9 +454,9 @@ au_cleanup(void)
     void
 aubuflocal_remove(buf_T *buf)
 {
-    AutoPat	*ap;
-    event_T	event;
-    AutoPatCmd	*apc;
+    AutoPat	    *ap;
+    event_T	    event;
+    AutoPatCmd_T    *apc;
 
     // invalidate currently executing autocommands
     for (apc = active_apc_list; apc; apc = apc->next)
@@ -1914,7 +1915,7 @@ apply_autocmds_group(
     int		save_autocmd_busy;
     int		save_autocmd_nested;
     static int	nesting = 0;
-    AutoPatCmd	patcmd;
+    AutoPatCmd_T patcmd;
     AutoPat	*ap;
     sctx_T	save_current_sctx;
 #ifdef FEAT_EVAL
@@ -2173,15 +2174,14 @@ apply_autocmds_group(
     tail = gettail(fname);
 
     // Find first autocommand that matches
+    CLEAR_FIELD(patcmd);
     patcmd.curpat = first_autopat[(int)event];
-    patcmd.nextcmd = NULL;
     patcmd.group = group;
     patcmd.fname = fname;
     patcmd.sfname = sfname;
     patcmd.tail = tail;
     patcmd.event = event;
     patcmd.arg_bufnr = autocmd_bufnr;
-    patcmd.next = NULL;
     auto_next_pat(&patcmd, FALSE);
 
     // found one, start executing the autocommands
@@ -2363,16 +2363,21 @@ is_autocmd_blocked(void)
  */
     static void
 auto_next_pat(
-    AutoPatCmd	*apc,
+    AutoPatCmd_T *apc,
     int		stop_at_last)	    // stop when 'last' flag is set
 {
     AutoPat	*ap;
     AutoCmd	*cp;
     char_u	*name;
     char	*s;
-    char_u	**sourcing_namep = &SOURCING_NAME;
+    estack_T	*entry;
+    char_u	*namep;
 
-    VIM_CLEAR(*sourcing_namep);
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
+
+    // Clear the exestack entry for this ETYPE_AUCMD entry.
+    VIM_CLEAR(entry->es_name);
+    entry->es_info.aucmd = NULL;
 
     for (ap = apc->curpat; ap != NULL && !got_int; ap = ap->next)
     {
@@ -2392,19 +2397,21 @@ auto_next_pat(
 	    {
 		name = event_nr2name(apc->event);
 		s = _("%s Autocommands for \"%s\"");
-		*sourcing_namep = alloc(STRLEN(s)
-					      + STRLEN(name) + ap->patlen + 1);
-		if (*sourcing_namep != NULL)
+		namep = alloc(STRLEN(s) + STRLEN(name) + ap->patlen + 1);
+		if (namep != NULL)
 		{
-		    sprintf((char *)*sourcing_namep, s,
-					       (char *)name, (char *)ap->pat);
+		    sprintf((char *)namep, s, (char *)name, (char *)ap->pat);
 		    if (p_verbose >= 8)
 		    {
 			verbose_enter();
-			smsg(_("Executing %s"), *sourcing_namep);
+			smsg(_("Executing %s"), namep);
 			verbose_leave();
 		    }
 		}
+
+		// Update the exestack entry for this autocmd.
+		entry->es_name = namep;
+		entry->es_info.aucmd = apc;
 
 		apc->curpat = ap;
 		apc->nextcmd = ap->cmds;
@@ -2423,6 +2430,15 @@ auto_next_pat(
 }
 
 /*
+ * Get the script context where autocommand "acp" is defined.
+ */
+    sctx_T *
+acp_script_ctx(AutoPatCmd_T *acp)
+{
+    return &acp->script_ctx;
+}
+
+/*
  * Get next autocommand command.
  * Called by do_cmdline() to get the next line for ":if".
  * Returns allocated string, or NULL for end of autocommands.
@@ -2434,7 +2450,7 @@ getnextac(
 	int indent UNUSED,
 	getline_opt_T options UNUSED)
 {
-    AutoPatCmd	    *acp = (AutoPatCmd *)cookie;
+    AutoPatCmd_T    *acp = (AutoPatCmd_T *)cookie;
     char_u	    *retval;
     AutoCmd	    *ac;
 
@@ -2481,6 +2497,7 @@ getnextac(
 	au_del_cmd(ac);
     autocmd_nested = ac->nested;
     current_sctx = ac->script_ctx;
+    acp->script_ctx = current_sctx;
     if (ac->last)
 	acp->nextcmd = NULL;
     else

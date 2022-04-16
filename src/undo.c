@@ -3693,7 +3693,7 @@ u_undofile_reset_and_delete(buf_T *buf)
 	vim_free(file_name);
     }
 
-    set_option_value((char_u *)"undofile", 0L, NULL, OPT_LOCAL);
+    set_option_value_give_err((char_u *)"undofile", 0L, NULL, OPT_LOCAL);
 }
  #endif
 

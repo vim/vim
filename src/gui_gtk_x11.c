@@ -3462,7 +3462,8 @@ gui_mch_init(void)
      * did_set_string_option() in option.c prohibits changing 'termencoding'
      * to something else than UTF-8 if the GUI is in use.
      */
-    set_option_value((char_u *)"termencoding", 0L, (char_u *)"utf-8", 0);
+    set_option_value_give_err((char_u *)"termencoding",
+						     0L, (char_u *)"utf-8", 0);
 
 #ifdef FEAT_TOOLBAR
     gui_gtk_register_stock_icons();

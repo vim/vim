@@ -769,6 +769,28 @@ export def SQL()
   endif
 enddef
 
+# This function checks the first 25 lines of file extension "sc" to resolve
+# detection between scala and SuperCollider
+export def FTsc()
+  for lnum in range(1, min([line("$"), 25]))
+    if getline(lnum) =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this.*\||\w*|\|+\s\w*\s{\|\*ar\s'
+      setf supercollider
+      return
+    endif
+  endfor
+  setf scala
+enddef
+
+# This function checks the first line of file extension "scd" to resolve
+# detection between scdoc and SuperCollider
+export def FTscd()
+  if getline(1) =~# '\%^\S\+(\d[0-9A-Za-z]*)\%(\s\+\"[^"]*\"\%(\s\+\"[^"]*\"\)\=\)\=$'
+    setf scdoc
+  else
+    setf supercollider
+  endif
+enddef
+
 # If the file has an extension of 't' and is in a directory 't' or 'xt' then
 # it is almost certainly a Perl test file.
 # If the first line starts with '#' and contains 'perl' it's probably a Perl
@@ -797,7 +819,9 @@ export def FTperl(): number
 enddef
 
 export def FTsys()
-  if IsRapid()
+  if exists("g:filetype_sys")
+    exe "setf " .. g:filetype_sys
+  elseif IsRapid()
     setf rapid
   else
     setf bat

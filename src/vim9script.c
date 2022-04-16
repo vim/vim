@@ -136,7 +136,8 @@ ex_vim9script(exarg_T *eap UNUSED)
     if (STRCMP(p_cpo, CPO_VIM) != 0)
     {
 	si->sn_save_cpo = vim_strsave(p_cpo);
-	set_option_value((char_u *)"cpo", 0L, (char_u *)CPO_VIM, OPT_NO_REDRAW);
+	set_option_value_give_err((char_u *)"cpo",
+					 0L, (char_u *)CPO_VIM, OPT_NO_REDRAW);
     }
 #else
     // No check for this being the first command, it doesn't matter.

@@ -563,9 +563,11 @@ ex_listdo(exarg_T *eap)
 		    // Clear 'shm' to avoid that the file message overwrites
 		    // any output from the command.
 		    p_shm_save = vim_strsave(p_shm);
-		    set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
+		    set_option_value_give_err((char_u *)"shm",
+							  0L, (char_u *)"", 0);
 		    do_argfile(eap, i);
-		    set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		    set_option_value_give_err((char_u *)"shm",
+							    0L, p_shm_save, 0);
 		    vim_free(p_shm_save);
 		}
 		if (curwin->w_arg_idx != i)
@@ -623,9 +625,9 @@ ex_listdo(exarg_T *eap)
 		// Go to the next buffer.  Clear 'shm' to avoid that the file
 		// message overwrites any output from the command.
 		p_shm_save = vim_strsave(p_shm);
-		set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
+		set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
 		goto_buffer(eap, DOBUF_FIRST, FORWARD, next_fnum);
-		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		set_option_value_give_err((char_u *)"shm", 0L, p_shm_save, 0);
 		vim_free(p_shm_save);
 
 		// If autocommands took us elsewhere, quit here.
@@ -645,9 +647,9 @@ ex_listdo(exarg_T *eap)
 		// Clear 'shm' to avoid that the file message overwrites
 		// any output from the command.
 		p_shm_save = vim_strsave(p_shm);
-		set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
+		set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
 		ex_cnext(eap);
-		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		set_option_value_give_err((char_u *)"shm", 0L, p_shm_save, 0);
 		vim_free(p_shm_save);
 
 		// If jumping to the next quickfix entry fails, quit here

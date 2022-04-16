@@ -117,7 +117,7 @@ estack_pop(void)
 }
 
 /*
- * Get the current value for <sfile> in allocated memory.
+ * Get the current value for "which" in allocated memory.
  * "which" is ESTACK_SFILE for <sfile>, ESTACK_STACK for <stack> or
  * ESTACK_SCRIPT for <script>.
  */
@@ -157,27 +157,36 @@ estack_sfile(estack_arg_T which UNUSED)
 	return NULL;
     }
 
-    // If evaluated in a function return the path of the script where the
-    // function is defined, at script level the current script path is returned
+    // If evaluated in a function or autocommand, return the path of the script
+    // where it is defined, at script level the current script path is returned
     // instead.
     if (which == ESTACK_SCRIPT)
     {
-	if (entry->es_type == ETYPE_UFUNC)
+	entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
+	// Walk the stack backwards, starting from the current frame.
+	for (idx = exestack.ga_len - 1; idx >= 0; --idx, --entry)
 	{
-	    sctx_T *def_ctx = &entry->es_info.ufunc->uf_script_ctx;
-
-	    if (def_ctx->sc_sid > 0)
-		return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
-	}
-	else if (exestack.ga_len > 0)
-	{
-	    // Walk the stack backwards, starting from the current frame.
-	    for (idx = exestack.ga_len - 1; idx; --idx)
+	    if (entry->es_type == ETYPE_UFUNC)
 	    {
-		entry = ((estack_T *)exestack.ga_data) + idx;
+		sctx_T *def_ctx = &entry->es_info.ufunc->uf_script_ctx;
 
-		if (entry->es_type == ETYPE_SCRIPT)
-		    return vim_strsave(entry->es_name);
+		if (def_ctx->sc_sid > 0)
+		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
+		else
+		    return NULL;
+	    }
+	    else if (entry->es_type == ETYPE_AUCMD)
+	    {
+		sctx_T *def_ctx = acp_script_ctx(entry->es_info.aucmd);
+
+		if (def_ctx->sc_sid > 0)
+		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
+		else
+		    return NULL;
+	    }
+	    else if (entry->es_type == ETYPE_SCRIPT)
+	    {
+		return vim_strsave(entry->es_name);
 	    }
 	}
 	return NULL;
@@ -774,7 +783,7 @@ add_pack_dir_to_rtp(char_u *fname)
 	STRCAT(new_rtp, afterdir);
     }
 
-    set_option_value((char_u *)"rtp", 0L, new_rtp, 0);
+    set_option_value_give_err((char_u *)"rtp", 0L, new_rtp, 0);
     vim_free(new_rtp);
     retval = OK;
 
@@ -1749,7 +1758,8 @@ almosttheend:
 		    }
 		}
 	}
-	set_option_value((char_u *)"cpo", 0L, si->sn_save_cpo, OPT_NO_REDRAW);
+	set_option_value_give_err((char_u *)"cpo",
+					   0L, si->sn_save_cpo, OPT_NO_REDRAW);
     }
     VIM_CLEAR(si->sn_save_cpo);
 
@@ -2467,6 +2477,18 @@ script_autoload(
     int		ret = FALSE;
     int		i;
     int		ret_sid;
+
+    // If the name starts with "<SNR>123_" then "123" is the script ID.
+    if (name[0] == K_SPECIAL && name[1] == KS_EXTRA && name[2] == KE_SNR)
+    {
+	p = name + 3;
+	ret_sid = (int)getdigits(&p);
+	if (*p == '_' && SCRIPT_ID_VALID(ret_sid))
+	{
+	    may_load_script(ret_sid, &ret);
+	    return ret;
+	}
+    }
 
     // If there is no '#' after name[0] there is no package name.
     p = vim_strchr(name, AUTOLOAD_CHAR);

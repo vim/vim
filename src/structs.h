@@ -2073,7 +2073,7 @@ struct partial_S
     dict_T	*pt_dict;	// dict for "self"
 };
 
-typedef struct AutoPatCmd_S AutoPatCmd;
+typedef struct AutoPatCmd_S AutoPatCmd_T;
 
 /*
  * Entry in the execution stack "exestack".
@@ -2100,7 +2100,7 @@ typedef struct {
 #if defined(FEAT_EVAL)
 	ufunc_T *ufunc;     // function info
 #endif
-	AutoPatCmd *aucmd;  // autocommand info
+	AutoPatCmd_T *aucmd;  // autocommand info
 	except_T   *except; // exception info
     } es_info;
 #if defined(FEAT_EVAL)
@@ -3337,8 +3337,10 @@ typedef struct
     linenr_T	first_lnum; // first lnum to search for multi-line pat
     colnr_T	startcol;   // in win_line() points to char where HL starts
     colnr_T	endcol;	    // in win_line() points to char where HL ends
-    int		is_addpos;  // position specified directly by
+    char	is_addpos;  // position specified directly by
 			    // matchaddpos(). TRUE/FALSE
+    char	has_cursor; // TRUE if the cursor is inside the match, used for
+			    // CurSearch
 #ifdef FEAT_RELTIME
     proftime_T	tm;	    // for a time limit
 #endif

@@ -752,7 +752,7 @@ crypt_check_swapfile_curbuf(void)
 	// encryption uses padding and MAC, that does not work very well with
 	// swap and undo files, so disable them
 	mf_close_file(curbuf, TRUE);	// remove the swap file
-	set_option_value((char_u *)"swf", 0, NULL, OPT_LOCAL);
+	set_option_value_give_err((char_u *)"swf", 0, NULL, OPT_LOCAL);
 	msg_scroll = TRUE;
 	msg(_("Note: Encryption of swapfile not supported, disabling swap file"));
     }
@@ -807,7 +807,7 @@ crypt_get_key(
 
 	    if (store)
 	    {
-		set_option_value((char_u *)"key", 0L, p1, OPT_LOCAL);
+		set_option_value_give_err((char_u *)"key", 0L, p1, OPT_LOCAL);
 		crypt_free_key(p1);
 		p1 = curbuf->b_p_key;
 #ifdef FEAT_SODIUM

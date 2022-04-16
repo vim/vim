@@ -464,12 +464,11 @@ let s:filename_checks = {
     \ 'sass': ['file.sass'],
     \ 'sather': ['file.sa'],
     \ 'sbt': ['file.sbt'],
-    \ 'scala': ['file.scala', 'file.sc'],
+    \ 'scala': ['file.scala'],
     \ 'scheme': ['file.scm', 'file.ss', 'file.sld', 'file.rkt', 'file.rktd', 'file.rktl'],
     \ 'scilab': ['file.sci', 'file.sce'],
     \ 'screen': ['.screenrc', 'screenrc'],
     \ 'sexplib': ['file.sexp'],
-    \ 'scdoc': ['file.scd'],
     \ 'scss': ['file.scss'],
     \ 'sd': ['file.sd'],
     \ 'sdc': ['file.sdc'],
@@ -517,6 +516,7 @@ let s:filename_checks = {
     \ 'stata': ['file.ado', 'file.do', 'file.imata', 'file.mata'],
     \ 'stp': ['file.stp'],
     \ 'sudoers': ['any/etc/sudoers', 'sudoers.tmp', '/etc/sudoers', 'any/etc/sudoers.d/file'],
+    \ 'supercollider': ['file.quark'], 
     \ 'surface': ['file.sface'],
     \ 'svg': ['file.svg'],
     \ 'svn': ['svn-commitfile.tmp', 'svn-commit-file.tmp', 'svn-commit.tmp'],
@@ -1497,6 +1497,54 @@ func Test_prg_file()
   filetype off
 endfunc
 
+" Test dist#ft#FTsc()
+func Test_sc_file()
+  filetype on
+
+  " SC file methods are defined 'Class : Method'
+  call writefile(['SCNvimDocRenderer : SCDocHTMLRenderer {'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  " SC classes are defined with '+ Class {}'
+  call writefile(['+ SCNvim {', '*methodArgs {|method|'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  " Some SC class files start with comment and define methods many lines later
+  call writefile(['// Query', '//Method','^this {'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  " Some SC class files put comments between method declaration after class
+  call writefile(['PingPong {', '//comment','*ar { arg'], 'srcfile.sc')
+  split srcfile.sc
+  call assert_equal('supercollider', &filetype)
+  bwipe!
+  call delete('srcfile.sc')
+
+  filetype off
+endfunc
+
+" Test dist#ft#FTscd()
+func Test_scd_file()
+  filetype on
+
+  call writefile(['ijq(1)'], 'srcfile.scd')
+  split srcfile.scd
+  call assert_equal('scdoc', &filetype)
+  bwipe!
+  call delete('srcfile.scd')
+
+  filetype off
+endfunc
+
 func Test_src_file()
   filetype on
 
@@ -1538,6 +1586,13 @@ func Test_sys_file()
   call writefile(['looks like dos batch'], 'sysfile.sys')
   split sysfile.sys
   call assert_equal('bat', &filetype)
+  bwipe!
+
+  " Users preference set by g:filetype_sys
+  let g:filetype_sys = 'sys'
+  split sysfile.sys
+  call assert_equal('sys', &filetype)
+  unlet g:filetype_sys
   bwipe!
 
   " RAPID header start with a line containing only "%%%", 

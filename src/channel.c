@@ -1183,8 +1183,9 @@ prepare_buffer(buf_T *buf)
     buf_copy_options(buf, BCO_ENTER);
     curbuf = buf;
 #ifdef FEAT_QUICKFIX
-    set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
-    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bt",
+					    0L, (char_u *)"nofile", OPT_LOCAL);
+    set_option_value_give_err((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
 #endif
     if (curbuf->b_ml.ml_mfp == NULL)
 	ml_open(curbuf);
@@ -4519,6 +4520,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     ch_part_T	part_read;
     jobopt_T    opt;
     int		timeout;
+    int		callback_present = FALSE;
 
     // return an empty string by default
     rettv->v_type = VAR_STRING;
@@ -4545,7 +4547,9 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     {
 	dict_T		*d;
 	dictitem_T	*di;
-	int		callback_present = FALSE;
+
+	// return an empty dict by default
+	rettv_dict_alloc(rettv);
 
 	if (argvars[1].v_type != VAR_DICT)
 	{
@@ -4628,6 +4632,14 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	}
     }
     free_job_options(&opt);
+    if (ch_mode == MODE_LSP && !eval && callback_present)
+    {
+	// if ch_sendexpr() is used to send a LSP message and a callback
+	// function is specified, then return the generated identifier for the
+	// message.  The user can use this to cancel the request (if needed).
+	if (rettv->vval.v_dict != NULL)
+	    dict_add_number(rettv->vval.v_dict, "id", id);
+    }
 }
 
 /*
