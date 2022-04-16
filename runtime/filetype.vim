@@ -1275,6 +1275,9 @@ au BufNewFile,BufRead *.or			setf openroad
 " OPL
 au BufNewFile,BufRead *.[Oo][Pp][Ll]		setf opl
 
+" OpenSCAD
+au BufNewFile,BufRead *.scad		setf openscad		
+
 " Oracle config file
 au BufNewFile,BufRead *.ora			setf ora
 
