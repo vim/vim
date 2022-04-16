@@ -749,6 +749,30 @@ def Test_use_import_in_command_completion()
   delete('Xscript.vim')
 enddef
 
+def Test_use_import_with_funcref_in_command_completion()
+  var lines =<< trim END
+      vim9script
+      export def Complete(..._): list<string>
+        return ['abcd']
+      enddef
+  END
+  writefile(lines, 'Xscript.vim')
+
+  lines =<< trim END
+      vim9script
+      import './Xscript.vim'
+
+      var Ref = Xscript.Complete
+      exe "command -nargs=1 -complete=customlist," .. expand('<SID>') .. "Ref  Cmd echo 'ok'"
+      feedkeys(":Cmd ab\<Tab>\<C-B>#\<CR>", 'xnt')
+      assert_equal('#Cmd abcd', @:)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delcommand Cmd
+  delete('Xscript.vim')
+enddef
+
 def Test_use_autoload_import_in_insert_completion()
   mkdir('Xdir/autoload', 'p')
   var save_rtp = &rtp

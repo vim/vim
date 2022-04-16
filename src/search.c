@@ -4648,19 +4648,21 @@ fuzzy_match_in_list(
 	char_u		*key,
 	callback_T	*item_cb,
 	int		retmatchpos,
-	list_T		*fmatchlist)
+	list_T		*fmatchlist,
+	long		max_matches)
 {
     long	len;
     fuzzyItem_T	*ptrs;
     listitem_T	*li;
     long	i = 0;
-    int		found_match = FALSE;
+    long	found_match = 0;
     int_u	matches[MAX_FUZZY_MATCHES];
 
     len = list_len(items);
     if (len == 0)
 	return;
 
+    // TODO: when using a limit use that instead of "len"
     ptrs = ALLOC_CLEAR_MULT(fuzzyItem_T, len);
     if (ptrs == NULL)
 	return;
@@ -4675,6 +4677,15 @@ fuzzy_match_in_list(
 	ptrs[i].idx = i;
 	ptrs[i].item = li;
 	ptrs[i].score = SCORE_NONE;
+
+	// TODO: instead of putting all items in ptrs[] should only add
+	// matching items there.
+	if (max_matches > 0 && found_match >= max_matches)
+	{
+	    i++;
+	    continue;
+	}
+
 	itemstr = NULL;
 	rettv.v_type = VAR_UNKNOWN;
 	if (li->li_tv.v_type == VAR_STRING)	// list of strings
@@ -4736,13 +4747,13 @@ fuzzy_match_in_list(
 		}
 	    }
 	    ptrs[i].score = score;
-	    found_match = TRUE;
+	    ++found_match;
 	}
 	++i;
 	clear_tv(&rettv);
     }
 
-    if (found_match)
+    if (found_match > 0)
     {
 	list_T		*l;
 
@@ -4822,6 +4833,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     char_u	*key = NULL;
     int		ret;
     int		matchseq = FALSE;
+    long	max_matches = 0;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -4879,6 +4891,16 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		return;
 	    }
 	}
+	else if ((di = dict_find(d, (char_u *)"limit", -1)) != NULL)
+	{
+	    if (di->di_tv.v_type != VAR_NUMBER)
+	    {
+		semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
+		return;
+	    }
+	    max_matches = (long)tv_get_number_chk(&di->di_tv, NULL);
+	}
+
 	if (dict_has_key(d, "matchseq"))
 	    matchseq = TRUE;
     }
@@ -4913,7 +4935,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),
-	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list);
+	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, max_matches);
 
 done:
     free_callback(&cb);

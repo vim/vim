@@ -1899,7 +1899,6 @@ vim_getenv(char_u *name, int *mustfree)
     return p;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
     void
 vim_unsetenv(char_u *var)
 {
@@ -1925,6 +1924,7 @@ vim_unsetenv_ext(char_u *var)
 	didset_vimruntime = FALSE;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Set environment variable "name" and take care of side effects.
  */
