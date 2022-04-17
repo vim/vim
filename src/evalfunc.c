@@ -3673,8 +3673,10 @@ f_environ(typval_T *argvars UNUSED, typval_T *rettv)
 #if !defined(AMIGA)
     int			i = 0;
     char_u		*entry, *value;
-# ifdef MSWIN
+# if defined (MSWIN)
+#  if !defined(_UCRT)
     extern wchar_t	**_wenviron;
+#  endif
 # else
     extern char		**environ;
 # endif
