@@ -1112,6 +1112,11 @@ au BufNewFile,BufRead *.nb			setf mma
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
 
+" Maxima, see:
+" https://maxima.sourceforge.io/docs/manual/maxima_71.html#file_005ftype_005fmaxima
+au BufNewFile,BufRead *.mc,*.demo,*.dem,*.dm{1,2,3,t},*.wxm		setf maxima
+
+
 " Mercurial (hg) commit file
 au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 
