@@ -66,6 +66,10 @@ function Test_lambda_fails()
   echo assert_fails('echo 10->{a -> a + 2}', 'E107:')
 
   call assert_fails('eval 0->(', "E110: Missing ')'")
+  call assert_fails('eval 0->(3)()', "E1275:")
+  call assert_fails('eval 0->([3])()', "E1275:")
+  call assert_fails('eval 0->({"a": 3})()', "E1275:")
+  call assert_fails('eval 0->(xxx)()', "E121:")
 endfunc
 
 func Test_not_lamda()
