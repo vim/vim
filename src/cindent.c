@@ -420,7 +420,7 @@ cin_islabel_skip(char_u **s)
 }
 
 /*
- * Recognize a "public/private/protected" scope declaration label.
+ * Recognize a scope declaration label from the 'cinscopedecls' option.
  */
     static int
 cin_isscopedecl(char_u *p)
@@ -440,7 +440,7 @@ cin_isscopedecl(char_u *p)
 
     for (cinsd = curbuf->b_p_cinsd; *cinsd; )
     {
-	len = copy_option_part(&cinsd, cinsd_buf, cinsd_len, ",");
+	len = copy_option_part(&cinsd, cinsd_buf, (int)cinsd_len, ",");
 	if (STRNCMP(s, cinsd_buf, len) == 0)
 	{
 	    skip = cin_skipcomment(s + len);

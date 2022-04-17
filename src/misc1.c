@@ -2343,7 +2343,7 @@ get_cmd_output(
 	    || (len = ftell(fd)) == -1		// get size of temp file
 	    || fseek(fd, 0L, SEEK_SET) == -1)	// back to the start
     {
-	semsg(_(e_cannot_read_from_str), tempname);
+	semsg(_(e_cannot_read_from_str_2), tempname);
 	if (fd != NULL)
 	    fclose(fd);
 	goto done;

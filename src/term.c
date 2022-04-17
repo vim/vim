@@ -5957,7 +5957,7 @@ replace_termcodes(
     int		i;
     int		slen;
     int		key;
-    int		dlen = 0;
+    size_t	dlen = 0;
     char_u	*src;
     int		do_backslash;	// backslash is a special character
     int		do_special;	// recognize <> key codes
@@ -5977,7 +5977,7 @@ replace_termcodes(
      * In the rare case more might be needed ga_grow() must be called again.
      */
     ga_init2(&ga, 1L, 100);
-    if (ga_grow(&ga, STRLEN(src) * 6 + 1) == FAIL) // out of memory
+    if (ga_grow(&ga, (int)(STRLEN(src) * 6 + 1)) == FAIL) // out of memory
     {
 	*bufp = NULL;
 	return from;
@@ -6044,8 +6044,8 @@ replace_termcodes(
 				// Turn "<SID>name.Func"
 				// into "scriptname#Func".
 				len = STRLEN(si->sn_autoload_prefix);
-				if (ga_grow(&ga, STRLEN(src) * 6 + len + 1)
-								       == FAIL)
+				if (ga_grow(&ga,
+				     (int)(STRLEN(src) * 6 + len + 1)) == FAIL)
 				{
 				    ga_clear(&ga);
 				    *bufp = NULL;
@@ -6064,7 +6064,7 @@ replace_termcodes(
 		    result[dlen++] = (int)KS_EXTRA;
 		    result[dlen++] = (int)KE_SNR;
 		    sprintf((char *)result + dlen, "%ld", sid);
-		    dlen += (int)STRLEN(result + dlen);
+		    dlen += STRLEN(result + dlen);
 		    result[dlen++] = '_';
 		    continue;
 		}
