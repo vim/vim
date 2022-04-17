@@ -2580,6 +2580,11 @@ func LspTests(port)
   call assert_equal({'id': 14, 'jsonrpc': '2.0', 'result': 'extra-hdr-fields'},
         \ resp)
 
+  " Test for processing delayed payload
+  let resp = ch_evalexpr(ch, #{method: 'delayed-payload', params: {}})
+  call assert_equal({'id': 15, 'jsonrpc': '2.0', 'result': 'delayed-payload'},
+        \ resp)
+
   " Test for processing a HTTP header without the Content-Length field
   let resp = ch_evalexpr(ch, #{method: 'hdr-without-len', params: {}},
         \ #{timeout: 200})
@@ -2629,13 +2634,6 @@ func LspTests(port)
   call assert_equal([], g:lspNotif)
   " Restore the callback function
   call ch_setoptions(ch, #{callback: 'LspCb'})
-  let g:lspNotif = []
-  call ch_sendexpr(ch, #{method: 'echo', params: #{s: 'no-callback'}})
-  " Send a ping to wait for all the notification messages to arrive
-  call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
-  call assert_equal([#{jsonrpc: '2.0', result:
-        \ #{method: 'echo', jsonrpc: '2.0', params: #{s: 'no-callback'}}}],
-        \ g:lspNotif)
 
   " " Test for sending a raw message
   " let g:lspNotif = []
