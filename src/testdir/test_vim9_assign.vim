@@ -740,7 +740,7 @@ def Test_init_in_for_loop()
 enddef
 
 def Test_extend_list()
-  # using uninitilaized list assigns empty list
+  # using uninitialized list assigns empty list
   var lines =<< trim END
       var l1: list<number>
       var l2 = l1
@@ -758,7 +758,7 @@ def Test_extend_list()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
-  # appending to uninitialzed list from a function works
+  # appending to uninitialized list from a function works
   lines =<< trim END
       vim9script
       var list: list<string>
@@ -2635,6 +2635,56 @@ def Test_using_s_var_in_function()
       call assert_equal(456, s:scriptlevel)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+let g:someVar = 'X'
+
+" Test for heredoc with Vim expressions.
+" This messes up highlighting, keep it near the end.
+def Test_heredoc_expr()
+  var code =<< trim eval END
+    var a = `=5 + 10`
+    var b = `=min([10, 6])` + `=max([4, 6])`
+  END
+  assert_equal(['var a = 15', 'var b = 6 + 6'], code)
+
+  code =<< eval trim END
+    var s = "`=$SOME_ENV_VAR`"
+  END
+  assert_equal(['var s = "somemore"'], code)
+
+  code =<< eval END
+    var s = "`=$SOME_ENV_VAR`"
+END
+  assert_equal(['    var s = "somemore"'], code)
+
+  code =<< eval trim END
+    let a = `abc`
+    let b = `=g:someVar`
+    let c = `
+  END
+  assert_equal(['let a = `abc`', 'let b = X', 'let c = `'], code)
+
+  var lines =<< trim LINES
+      var text =<< eval trim END
+        let b = `=
+      END
+  LINES
+  v9.CheckDefAndScriptFailure(lines, 'E1083:')
+
+  lines =<< trim LINES
+      var text =<< eval trim END
+        let b = `=abc
+      END
+  LINES
+  v9.CheckDefAndScriptFailure(lines, 'E1083:')
+
+  lines =<< trim LINES
+      var text =<< eval trim END
+        let b = `=`
+      END
+  LINES
+  v9.CheckDefAndScriptFailure(lines, 'E15:')
 enddef
 
 
