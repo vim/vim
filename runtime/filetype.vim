@@ -158,6 +158,14 @@ au BufNewFile,BufRead *.asp
 " Grub (must be before catch *.lst)
 au BufNewFile,BufRead */boot/grub/menu.lst,*/boot/grub/grub.conf,*/etc/grub.conf setf grub
 
+" Maxima, see:
+" https://maxima.sourceforge.io/docs/manual/maxima_71.html#file_005ftype_005fmaxima
+" Not including *.dem pattern as it's also used by `gnuplot`'s
+" demos - http://gnuplot.info/demos and *.mc pattern is used by
+" dist#ft#McSetf(). Naturally this behavior can be changed via a proper line
+" in the user's `filetype.vim`.
+au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
+
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
 au BufNewFile,BufRead *.asm,*.[sS],*.[aA],*.mac,*.lst	call dist#ft#FTasm()
