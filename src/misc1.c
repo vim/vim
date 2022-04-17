@@ -2337,15 +2337,17 @@ get_cmd_output(
     fd = mch_fopen((char *)tempname, READBIN);
 # endif
 
-    if (fd == NULL)
+    // Not being able to seek means we can't read the file.
+    if (fd == NULL
+	    || fseek(fd, 0L, SEEK_END) == -1
+	    || (len = ftell(fd)) == -1		// get size of temp file
+	    || fseek(fd, 0L, SEEK_SET) == -1)	// back to the start
     {
-	semsg(_(e_cant_open_file_str), tempname);
+	semsg(_(e_cannot_read_from_str), tempname);
+	if (fd != NULL)
+	    fclose(fd);
 	goto done;
     }
-
-    fseek(fd, 0L, SEEK_END);
-    len = ftell(fd);		    // get size of temp file
-    fseek(fd, 0L, SEEK_SET);
 
     buffer = alloc(len + 1);
     if (buffer != NULL)
