@@ -1,6 +1,7 @@
 " Test for lambda and closure
 
 source check.vim
+import './vim9.vim' as v9
 
 func Test_lambda_feature()
   call assert_equal(1, has('lambda'))
@@ -52,6 +53,21 @@ func Test_lambda_with_timer()
 
   call timer_stop(s:timer_id)
   call assert_true(s:n > m)
+endfunc
+
+func Test_lambda_vim9cmd_linebreak()
+  CheckFeature timers
+
+  let lines =<< trim END
+      vim9cmd call timer_start(10, (x) => {
+          # comment
+          g:result = 'done'
+         })
+  END
+  call v9.CheckScriptSuccess(lines)
+  sleep 50m
+  call assert_equal('done', g:result)
+  unlet g:result
 endfunc
 
 func Test_lambda_with_partial()

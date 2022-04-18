@@ -5529,7 +5529,6 @@ ex_call(exarg_T *eap)
     }
     if (eap->skip)
 	--emsg_skip;
-    clear_evalarg(&evalarg, eap);
 
     // When inside :try we need to check for following "| catch" or "| endtry".
     // Not when there was an error, but do check if an exception was thrown.
@@ -5549,6 +5548,8 @@ ex_call(exarg_T *eap)
 	else
 	    set_nextcmd(eap, arg);
     }
+    // Must be after using "arg", it may point into memory cleared here.
+    clear_evalarg(&evalarg, eap);
 
 end:
     dict_unref(fudi.fd_dict);
