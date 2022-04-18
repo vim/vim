@@ -1433,10 +1433,16 @@ To open a channel using the 'lsp' mode with a job, set the 'in_mode' and
     let opts = {}
     let opts.in_mode = 'lsp'
     let opts.out_mode = 'lsp'
+    let opts.err_mode = 'nl'
     let opts.out_cb = function('LspOutCallback')
     let opts.err_cb = function('LspErrCallback')
     let opts.exit_cb = function('LspExitCallback')
     let job = job_start(cmd, opts)
+
+Note that if a job outputs LSP messages on stdout and non-LSP messages on
+stderr, then the channel-callback function should handle both the message
+formats appropriately or you should use a separate callback function for
+"out_cb" and "err_cb" to handle them as shown above.
 
 To synchronously send a JSON-RPC request to the server, use the
 |ch_evalexpr()| function. This function will wait and return the decoded

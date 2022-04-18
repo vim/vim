@@ -73,6 +73,18 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         resp += s
         self.request.sendall(resp.encode('utf-8'))
 
+    def send_delayed_payload(self, msgid, resp_dict):
+        # test for sending the hdr first and then after some delay, send the
+        # payload
+        v = {'jsonrpc': '2.0', 'id': msgid, 'result': resp_dict}
+        s = json.dumps(v)
+        resp = "Content-Length: " + str(len(s)) + "\r\n"
+        resp += "\r\n"
+        self.request.sendall(resp.encode('utf-8'))
+        time.sleep(0.05)
+        resp = s
+        self.request.sendall(resp.encode('utf-8'))
+
     def send_hdr_without_len(self, msgid, resp_dict):
         # test for sending the http header without length
         v = {'jsonrpc': '2.0', 'id': msgid, 'result': resp_dict}
@@ -152,6 +164,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def do_extra_hdr_fields(self, payload):
         self.send_extra_hdr_fields(payload['id'], 'extra-hdr-fields')
 
+    def do_delayad_payload(self, payload):
+        self.send_delayed_payload(payload['id'], 'delayed-payload')
+
     def do_hdr_without_len(self, payload):
         self.send_hdr_without_len(payload['id'], 'hdr-without-len')
 
@@ -186,6 +201,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'msg-specifc-cb': self.do_msg_specific_cb,
                         'server-req': self.do_server_req,
                         'extra-hdr-fields': self.do_extra_hdr_fields,
+                        'delayed-payload': self.do_delayad_payload,
                         'hdr-without-len': self.do_hdr_without_len,
                         'hdr-with-wrong-len': self.do_hdr_with_wrong_len,
                         'hdr-with-negative-len': self.do_hdr_with_negative_len,
