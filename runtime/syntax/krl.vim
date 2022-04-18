@@ -1,4 +1,4 @@
-" Kuka Robot Language syntax file for Vim
+" Vim syntax file
 " Language: Kuka Robot Language
 " Maintainer: Patrick Meiser-Knosowski <knosowski@graeffrobotics.de>
 " Version: 3.0.0
