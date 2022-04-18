@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2022 Apr 05
+*channel.txt*      For Vim version 8.2.  Last change: 2022 Apr 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

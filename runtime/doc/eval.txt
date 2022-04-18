@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Apr 06
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Apr 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4723,7 +4723,7 @@ parentheses can be cut out from |v:exception| with the ":substitute" command.
 	:
 	:try
 	:
-	:  " something with arithmetics and I/O
+	:  " something with arithmetic and I/O
 	:
 	:catch /^EXCEPT:MATHERR:RANGE/
 	:  let function = substitute(v:exception, '.*(\(\a\+\)).*', '\1', "")
