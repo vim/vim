@@ -1,6 +1,7 @@
 " Test using builtin functions in the Vim9 script language.
 
 source check.vim
+source screendump.vim
 import './vim9.vim' as v9
 
 " Test for passing too many or too few arguments to builtin functions
@@ -4492,6 +4493,46 @@ enddef
 def Test_win_gotoid()
   v9.CheckDefAndScriptFailure(['win_gotoid("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
+
+func Test_win_gotoid_in_mapping()
+  CheckScreendump
+
+  if has('clipboard_working')
+    let @* = 'foo'
+    let lines =<< trim END
+        set cmdheight=2
+        func On_click()
+          call win_gotoid(getmousepos().winid)
+          execute "norm! \<LeftMouse>"
+        endfunc
+        noremap <LeftMouse> <Cmd>call On_click()<CR>
+
+        autocmd SafeState * echo 'reg = "' .. @* .. '"'
+
+        call setline(1, range(20))
+        set nomodified
+        botright new
+        call setline(1, range(21, 40))
+        set nomodified
+
+        func Click()
+          map <silent> <F3> :call test_setmouse(3, 1)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<LeftRelease>", "xt")
+        endfunc
+    END
+    call writefile(lines, 'Xgotoscript')
+    let buf = RunVimInTerminal('-S Xgotoscript', #{rows: 15, wait_for_ruler: 0})
+    call VerifyScreenDump(buf, 'Test_win_gotoid_1', {})
+    call term_sendkeys(buf, "3Gvl")
+    call VerifyScreenDump(buf, 'Test_win_gotoid_2', {})
+
+    call term_sendkeys(buf, ":call Click()\<CR>")
+    call VerifyScreenDump(buf, 'Test_win_gotoid_3', {})
+
+    call StopVimInTerminal(buf)
+    call delete('Xgotoscript')
+  endif
+endfunc
 
 def Test_win_id2tabwin()
   v9.CheckDefAndScriptFailure(['win_id2tabwin("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
