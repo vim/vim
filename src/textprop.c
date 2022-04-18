@@ -713,14 +713,14 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     dictitem_T  *di;
     int		lnum_start;
     int		start_pos_has_prop = 0;
-    int		seen_end = 0;
+    int		seen_end = FALSE;
     int		id = 0;
     int		id_found = FALSE;
     int		type_id = -1;
-    int		skipstart = 0;
+    int		skipstart = FALSE;
     int		lnum = -1;
     int		col = -1;
-    int		dir = 1;    // 1 = forward, -1 = backward
+    int		dir = FORWARD;    // FORWARD == 1, BACKWARD == -1
     int		both;
 
     if (in_vim9script()
@@ -745,7 +745,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	char_u      *dir_s = tv_get_string(&argvars[1]);
 
 	if (*dir_s == 'b')
-	    dir = -1;
+	    dir = BACKWARD;
 	else if (*dir_s != 'f')
 	{
 	    emsg(_(e_invalid_argument));
@@ -819,17 +819,19 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	int	    prop_start;
 	int	    prop_end;
 
-	for (i = 0; i < count; ++i)
+	for (i = dir == BACKWARD ? count - 1 : 0; i >= 0 && i < count; i += dir)
 	{
 	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
-			    sizeof(textprop_T));
+							   sizeof(textprop_T));
 
+	    // For the very first line try to find the first property before or
+	    // after `col`, depending on the search direction.
 	    if (lnum == lnum_start)
 	    {
-		if (dir < 0)
+		if (dir == BACKWARD)
 		{
-		    if (col < prop.tp_col)
-			break;
+		    if (prop.tp_col > col)
+			continue;
 		}
 		else if (prop.tp_col + prop.tp_len - (prop.tp_len != 0) < col)
 		    continue;
@@ -845,9 +847,13 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 							 - (prop.tp_len != 0)))
 		    start_pos_has_prop = 1;
 
+		// The property was not continued from last line, it starts on
+		// this line.
 		prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
+		// The property does not continue on the next line, it ends on
+		// this line.
 		prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
-		if (!prop_start && prop_end && dir > 0)
+		if (!prop_start && prop_end && dir == FORWARD)
 		    seen_end = 1;
 
 		// Skip lines without the start flag.
@@ -856,7 +862,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		    // Always search backwards for start when search started
 		    // on a prop and we're not skipping.
 		    if (start_pos_has_prop && !skipstart)
-			dir = -1;
+			dir = BACKWARD;
 		    continue;
 		}
 
@@ -887,8 +893,6 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		break;
 	    lnum--;
 	}
-	// Adjust col to indicate that we're continuing from prev/next line.
-	col = dir < 0 ? buf->b_ml.ml_line_len : 1;
     }
 }
 
