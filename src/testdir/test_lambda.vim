@@ -58,6 +58,7 @@ endfunc
 func Test_lambda_vim9cmd_linebreak()
   CheckFeature timers
 
+  let g:test_is_flaky = 1
   let lines =<< trim END
       vim9cmd call timer_start(10, (x) => {
           # comment
@@ -65,7 +66,8 @@ func Test_lambda_vim9cmd_linebreak()
          })
   END
   call v9.CheckScriptSuccess(lines)
-  sleep 50m
+  " sleep longer on a retry
+  exe 'sleep ' .. [20, 100, 500, 500, 500][g:run_nr] .. 'm'
   call assert_equal('done', g:result)
   unlet g:result
 endfunc
