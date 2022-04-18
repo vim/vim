@@ -3038,8 +3038,8 @@ endfunc
 
 func Test_autocmd_vimgrep()
   augroup aucmd_vimgrep
-    au QuickfixCmdPre,BufNew,BufDelete,BufReadCmd * sb
-    au QuickfixCmdPre,BufNew,BufDelete,BufReadCmd * q9 
+    au QuickfixCmdPre,BufNew,BufReadCmd * sb
+    au QuickfixCmdPre,BufNew,BufReadCmd * q9 
   augroup END
   %bwipe!
   call assert_fails('lv ?a? foo', 'E926:')
