@@ -78,8 +78,8 @@ syn match krlComment /\c\v;\s*%(<%(end)?fold>)@!.*$/ containedin=krlFold contain
 syn match krlComment /\c\v^\s*;\s*;.*$/ contains=krlTodo,krlDebug
 highlight default link krlComment Comment
 
-if has("conceal")
-  syn match krlConcealFoldTail /\c\v(^\s*;\s*fold[^;]*)@150<=;%(--|\s*<fold>|\s*<endfold>)@!.*$/ transparent containedin=krlComment conceal cchar=*
+if has("conceal") && get(g:, 'krlConcealFoldTail', 1)
+  syn match krlConcealFoldTail /\c\v(^\s*;\s*fold[^;]*)@250<=;%(--|\s*<fold>|\s*<endfold>)@!.*$/ transparent containedin=krlComment conceal cchar=*
 endif
 " }}} Comment and Folding 
 
