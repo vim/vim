@@ -4497,7 +4497,8 @@ enddef
 func Test_win_gotoid_in_mapping()
   CheckScreendump
 
-  if has('clipboard_working')
+  " requires a working clipboard and this doesn't work on MacOS
+  if has('clipboard_working') && !has('mac')
     let @* = 'foo'
     let lines =<< trim END
         set cmdheight=2
