@@ -2069,6 +2069,8 @@ buflist_new(
 	// It's like this buffer is deleted.  Watch out for autocommands that
 	// change curbuf!  If that happens, allocate a new buffer anyway.
 	buf_freeall(buf, BFA_WIPE | BFA_DEL);
+	if (buf != curbuf)   // autocommands deleted the buffer!
+		return NULL;
 #ifdef FEAT_EVAL
 	if (aborting())		// autocmds may abort script processing
 	{
