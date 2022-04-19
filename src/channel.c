@@ -2031,6 +2031,8 @@ channel_consume(channel_T *channel, ch_part_T part, int len)
  * Collapses the first and second buffer for "channel"/"part".
  * Returns FAIL if that is not possible.
  * When "want_nl" is TRUE collapse more buffers until a NL is found.
+ * When the channel part mode is "lsp", collapse all the buffers as the http
+ * header and the JSON content can be present in multiple buffers.
  */
     int
 channel_collapse(channel_T *channel, ch_part_T part, int want_nl)

@@ -2466,7 +2466,7 @@ func LspOtCb(chan, msg)
 endfunc
 
 func LspTests(port)
-  " call ch_logfile('Xlsprpc.log', 'w')
+  " call ch_logfile('Xlspclient.log', 'w')
   let ch = ch_open(s:localhost .. a:port, #{mode: 'lsp', callback: 'LspCb'})
   if ch_status(ch) == "fail"
     call assert_report("Can't open the lsp channel")
@@ -2617,6 +2617,16 @@ func LspTests(port)
   let resp = ch_evalexpr(ch, #{method: 'empty-payload', params: {}},
         \ #{timeout: 200})
   call assert_equal({}, resp)
+  " send a ping to make sure communication still works
+  call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
+
+  " Test for a large payload
+  let content = repeat('abcdef', 11000)
+  let resp = ch_evalexpr(ch, #{method: 'large-payload',
+        \ params: #{text: content}})
+  call assert_equal(#{jsonrpc: '2.0', id: 26, result:
+        \ #{method: 'large-payload', jsonrpc: '2.0', id: 26,
+        \ params: #{text: content}}}, resp)
   " send a ping to make sure communication still works
   call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
 
