@@ -2068,10 +2068,9 @@ buflist_new(
 	buf = curbuf;
 	// It's like this buffer is deleted.  Watch out for autocommands that
 	// change curbuf!  If that happens, allocate a new buffer anyway.
-	if (curbuf->b_p_bl)
-	    apply_autocmds(EVENT_BUFDELETE, NULL, NULL, FALSE, curbuf);
-	if (buf == curbuf)
-	    apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
+	buf_freeall(buf, BFA_WIPE | BFA_DEL);
+	if (buf != curbuf)   // autocommands deleted the buffer!
+	    return NULL;
 #ifdef FEAT_EVAL
 	if (aborting())		// autocmds may abort script processing
 	{
@@ -2079,12 +2078,6 @@ buflist_new(
 	    return NULL;
 	}
 #endif
-	if (buf == curbuf)
-	{
-	    // Make sure 'bufhidden' and 'buftype' are empty
-	    clear_string_option(&buf->b_p_bh);
-	    clear_string_option(&buf->b_p_bt);
-	}
     }
     if (buf != curbuf || curbuf == NULL)
     {
@@ -2132,14 +2125,6 @@ buflist_new(
 
     if (buf == curbuf)
     {
-	// free all things allocated for this buffer
-	buf_freeall(buf, 0);
-	if (buf != curbuf)	 // autocommands deleted the buffer!
-	    return NULL;
-#if defined(FEAT_EVAL)
-	if (aborting())		// autocmds may abort script processing
-	    return NULL;
-#endif
 	free_buffer_stuff(buf, FALSE);	// delete local variables et al.
 
 	// Init the options.
