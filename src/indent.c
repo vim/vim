@@ -1046,7 +1046,7 @@ inindent(int extra)
     void
 op_reindent(oparg_T *oap, int (*how)(void))
 {
-    long	i;
+    long	i = 0;
     char_u	*l;
     int		amount;
     linenr_T	first_changed = 0;
