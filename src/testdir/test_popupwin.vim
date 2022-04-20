@@ -514,6 +514,19 @@ func Test_popup_firstline()
   call assert_equal(5, popup_getpos(winid).firstline)
 
   call popup_close(winid)
+
+  " Popup with less elements than the maximum height and negative firstline:
+  " check that the popup height is correctly computed.
+  let winid = popup_create(['xxx']->repeat(4), #{
+        \ firstline: -1,
+        \ maxheight: 6,
+	\ })
+
+  let pos = popup_getpos(winid)
+  call assert_equal(3, pos.width)
+  call assert_equal(4, pos.height)
+
+  call popup_close(winid)
 endfunc
 
 func Test_popup_firstline_cursorline()
