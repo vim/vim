@@ -1783,6 +1783,28 @@ func Test_xx06_screen_response()
   call test_override('term_props', 0)
 endfunc
 
+func Do_check_t_8u_set_reset(set_by_user)
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let default_value = "\<Esc>[58;2;%lu;%lu;%lum"
+  let &t_8u = default_value
+  if !a:set_by_user
+    call test_option_not_set('t_8u')
+  endif
+  let seq = "\<Esc>[>0;279;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  call assert_equal(#{
+        \ cursor_style: 'u',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+  call assert_equal(a:set_by_user ? default_value : '', &t_8u)
+endfunc
+
 " This checks the xterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
@@ -1847,22 +1869,10 @@ func Test_xx07_xterm_response()
         \ mouse: 's'
         \ }, terminalprops())
 
-  " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset
-  set ttymouse=xterm
-  call test_option_not_set('ttymouse')
-  let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"
-  let seq = "\<Esc>[>0;279;0c"
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termresponse)
-  call assert_equal('sgr', &ttymouse)
-
-  call assert_equal(#{
-        \ cursor_style: 'u',
-        \ cursor_blink_mode: 'u',
-        \ underline_rgb: 'u',
-        \ mouse: 's'
-        \ }, terminalprops())
-  call assert_equal('', &t_8u)
+  " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset,
+  " except when it was set by the user
+  call Do_check_t_8u_set_reset(0)
+  call Do_check_t_8u_set_reset(1)
 
   set t_RV=
   call test_override('term_props', 0)
