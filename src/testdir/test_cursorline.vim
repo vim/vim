@@ -322,7 +322,7 @@ func Test_cursorline_cursorbind_horizontal_scroll()
   call VerifyScreenDump(buf, 'Test_hor_scroll_4', {})
 
   call StopVimInTerminal(buf)
-  "call delete('Xhor_scroll')
+  call delete('Xhor_scroll')
 endfunc
 
 
