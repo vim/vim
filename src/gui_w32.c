@@ -1861,7 +1861,7 @@ process_message(void)
 #ifdef FEAT_MENU
     static char_u k10[] = {K_SPECIAL, 'k', ';', 0};
 #endif
-    BYTE 	keyboard_state[256];
+    BYTE	keyboard_state[256];
 
     GetMessageW(&msg, NULL, 0, 0);
 
@@ -1945,6 +1945,13 @@ process_message(void)
 	    ctrl_break_was_pressed = TRUE;
 	    string[0] = Ctrl_C;
 	    add_to_input_buf(string, 1);
+	}
+
+	// This is an IME event or a synthetic keystroke, let Windows handle it.
+	if (vk == VK_PROCESSKEY || vk == VK_PACKET)
+	{
+	    TranslateMessage(&msg);
+	    return;
 	}
 
 	for (i = 0; special_keys[i].key_sym != 0; i++)
