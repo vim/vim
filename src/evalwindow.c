@@ -395,6 +395,9 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     if (dict == NULL)
 	return NULL;
 
+    // make sure w_botline is valid
+    validate_botline_win(wp);
+
     dict_add_number(dict, "tabnr", tpnr);
     dict_add_number(dict, "winnr", winnr);
     dict_add_number(dict, "winid", wp->w_id);
