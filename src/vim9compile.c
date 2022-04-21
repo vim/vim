@@ -595,6 +595,7 @@ find_imported_in_script(char_u *name, size_t len, int sid)
 
 /*
  * Find "name" in imported items of the current script.
+ * If "len" is 0 use any length that works.
  * If "load" is TRUE and the script was not loaded yet, load it now.
  */
     imported_T *
@@ -965,6 +966,83 @@ theend:
     vim_free(lambda_name);
     vim_free(func_name);
     return r == FAIL ? NULL : (char_u *)"";
+}
+
+/*
+ * Compile a heredoc string "str" (either containing a literal string or a mix
+ * of literal strings and Vim expressions of the form `=<expr>`).  This is used
+ * when compiling a heredoc assignment to a variable in a Vim9 def function.
+ * Vim9 instructions are generated to push strings, evaluate expressions,
+ * concatenate them and create a list of lines.  When "evalstr" is TRUE, Vim
+ * expressions in "str" are evaluated.
+ */
+    int
+compile_heredoc_string(char_u *str, int evalstr, cctx_T *cctx)
+{
+    char_u	*p;
+    char_u	*val;
+
+    if (cctx->ctx_skip == SKIP_YES)
+	return OK;
+
+    if (evalstr && (p = (char_u *)strstr((char *)str, "`=")) != NULL)
+    {
+	char_u	*start = str;
+
+	// Need to evaluate expressions of the form `=<expr>` in the string.
+	// Split the string into literal strings and Vim expressions and
+	// generate instructions to concatenate the literal strings and the
+	// result of evaluating the Vim expressions.
+	val = vim_strsave((char_u *)"");
+	generate_PUSHS(cctx, &val);
+
+	for (;;)
+	{
+	    if (p > start)
+	    {
+		// literal string before the expression
+		val = vim_strnsave(start, p - start);
+		generate_PUSHS(cctx, &val);
+		generate_instr_drop(cctx, ISN_CONCAT, 1);
+	    }
+	    p += 2;
+
+	    // evaluate the Vim expression and convert the result to string.
+	    if (compile_expr0(&p, cctx) == FAIL)
+		return FAIL;
+	    may_generate_2STRING(-1, TRUE, cctx);
+	    generate_instr_drop(cctx, ISN_CONCAT, 1);
+
+	    p = skipwhite(p);
+	    if (*p != '`')
+	    {
+		emsg(_(e_missing_backtick));
+		return FAIL;
+	    }
+	    start = p + 1;
+
+	    p = (char_u *)strstr((char *)start, "`=");
+	    if (p == NULL)
+	    {
+		// no more Vim expressions left to process
+		if (*skipwhite(start) != NUL)
+		{
+		    val = vim_strsave(start);
+		    generate_PUSHS(cctx, &val);
+		    generate_instr_drop(cctx, ISN_CONCAT, 1);
+		}
+		break;
+	    }
+	}
+    }
+    else
+    {
+	// literal string
+	val = vim_strsave(str);
+	generate_PUSHS(cctx, &val);
+    }
+
+    return OK;
 }
 
 /*
@@ -1946,25 +2024,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     if (heredoc)
     {
 	list_T	   *l;
-	listitem_T *li;
 
 	// [let] varname =<< [trim] {end}
 	eap->getline = exarg_getline;
 	eap->cookie = cctx;
-	l = heredoc_get(eap, op + 3, FALSE);
+	l = heredoc_get(eap, op + 3, FALSE, TRUE);
 	if (l == NULL)
 	    return NULL;
 
-	if (cctx->ctx_skip != SKIP_YES)
-	{
-	    // Push each line and the create the list.
-	    FOR_ALL_LIST_ITEMS(l, li)
-	    {
-		generate_PUSHS(cctx, &li->li_tv.vval.v_string);
-		li->li_tv.vval.v_string = NULL;
-	    }
-	    generate_NEWLIST(cctx, l->lv_len, FALSE);
-	}
 	list_free(l);
 	p += STRLEN(p);
 	end = p;

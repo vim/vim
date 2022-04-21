@@ -16,6 +16,7 @@ int may_get_next_line(char_u *whitep, char_u **arg, cctx_T *cctx);
 int may_get_next_line_error(char_u *whitep, char_u **arg, cctx_T *cctx);
 void fill_exarg_from_cctx(exarg_T *eap, cctx_T *cctx);
 int func_needs_compiling(ufunc_T *ufunc, compiletype_T compile_type);
+int compile_heredoc_string(char_u *str, int evalstr, cctx_T *cctx);
 int assignment_len(char_u *p, int *heredoc);
 void vim9_declare_error(char_u *name);
 int get_var_dest(char_u *name, assign_dest_T *dest, cmdidx_T cmdidx, int *option_scope, int *vimvaridx, type_T **type, cctx_T *cctx);

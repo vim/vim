@@ -13,7 +13,7 @@ list_T *eval_spell_expr(char_u *badword, char_u *expr);
 int get_spellword(list_T *list, char_u **pp);
 void prepare_vimvar(int idx, typval_T *save_tv);
 void restore_vimvar(int idx, typval_T *save_tv);
-list_T *heredoc_get(exarg_T *eap, char_u *cmd, int script_get);
+list_T *heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile);
 void ex_var(exarg_T *eap);
 void ex_let(exarg_T *eap);
 int ex_let_vars(char_u *arg_start, typval_T *tv, int copy, int semicolon, int var_count, int flags, char_u *op);

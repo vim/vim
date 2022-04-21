@@ -3247,8 +3247,6 @@ text...
 			expression evaluation fails, then the assignment fails.
 			once the "`=" has been found {expr} and a backtick
 			must follow.  {expr} cannot be empty.
-			Currenty, in a compiled function {expr} is evaluated
-			when compiling the function, THIS WILL CHANGE.
 
 			{endmarker} must not contain white space.
 			{endmarker} cannot start with a lower case character.
