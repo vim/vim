@@ -4,11 +4,9 @@ source check.vim
 CheckFeature terminal
 CheckNotGui
 
-if execute('version') =~# '-fsanitize=[a-z,]*\<address\>'
-  " Skip tests on Travis CI ASAN build because it's difficult to estimate
-  " memory usage.
-  throw 'Skipped: does not work with ASAN'
-endif
+" Skip tests on Travis CI ASAN build because it's difficult to estimate memory
+" usage.
+CheckNotAsan
 
 source shared.vim
 
@@ -149,9 +147,9 @@ func Test_memory_func_capture_lvars()
   " The usage may be a bit less than the last value, use 80%.
   " Allow for 20% tolerance at the upper limit.  That's very permissive, but
   " otherwise the test fails sometimes.  On Cirrus CI with FreeBSD we need to
-  " be even more permissive.
+  " be even much more permissive.
   if has('bsd')
-    let multiplier = 15
+    let multiplier = 19
   else
     let multiplier = 12
   endif

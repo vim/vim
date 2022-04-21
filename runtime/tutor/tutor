@@ -143,12 +143,12 @@ NOTE: As you go through this tutor, do not try to memorize, learn by usage.
 
   !! NOTE: Before executing any of the steps below, read this entire lesson!!
 
-  1. Exit this tutor as you did in lesson 1.2:  :q!
-     Or, if you have access to another terminal, do the following there.
+  1.  If you have access to another terminal, do the following there.
+      Otherwise, exit this tutor as you did in lesson 1.2:  :q!
 
-  2. At the shell prompt type this command:  vim tutor <ENTER>
-     'vim' is the command to start the Vim editor, 'tutor' is the name of the
-     file you wish to edit.  Use a file that may be changed.
+  2. At the shell prompt type this command:  vim file.txt <ENTER>
+     'vim' is the command to start the Vim editor, 'file.txt' is the name of
+     the file you wish to edit.  Use the name of a file that you can change.
 
   3. Insert and delete text as you learned in the previous lessons.
 
@@ -319,7 +319,7 @@ NOTE:  Pressing just the motion while in Normal mode without an operator will
 --->  6)  Sugar is sweet
 --->  7)  And so are you.
 
-Doubling to operate on a line also works for operators mentioned below
+Doubling to operate on a line also works for operators mentioned below.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lesson 2.7: THE UNDO COMMAND
@@ -347,25 +347,25 @@ Doubling to operate on a line also works for operators mentioned below
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			       Lesson 2 SUMMARY
 
+  1. To delete from the cursor up to the next word type:        dw
+  2. To delete from the cursor up to the end of the word type:  de
+  3. To delete from the cursor to the end of a line type:       d$
+  4. To delete a whole line type:                               dd
 
-  1. To delete from the cursor up to the next word type:    dw
-  2. To delete from the cursor to the end of a line type:    d$
-  3. To delete a whole line type:    dd
-
-  4. To repeat a motion prepend it with a number:   2w
-  5. The format for a change command is:
+  5. To repeat a motion prepend it with a number:   2w
+  6. The format for a change command is:
                operator   [number]   motion
      where:
        operator - is what to do, such as  d  for delete
        [number] - is an optional count to repeat the motion
        motion   - moves over the text to operate on, such as  w (word),
-		  $ (to the end of line), etc.
+		  e (end of word),  $ (end of the line), etc.
 
-  6. To move to the start of the line use a zero:  0
+  7. To move to the start of the line use a zero:  0
 
-  7. To undo previous actions, type: 	       u  (lowercase u)
+  8. To undo previous actions, type:           u  (lowercase u)
      To undo all the changes on a line, type:  U  (capital U)
-     To undo the undo's, type:		       CTRL-R
+     To undo the undo's, type:                 CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lesson 3.1: THE PUT COMMAND
@@ -433,7 +433,7 @@ NOTE: Remember that you should be learning by doing, not memorization.
 ---> This line has a few words that need changing using the change operator.
 
 Notice that  ce  deletes the word and places you in Insert mode.
-             cc  does the same for the whole line
+             cc  does the same for the whole line.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -804,7 +804,7 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
       b)
 
   NOTE: You can also use  y  as an operator:  yw  yanks one word,
-        yy  yanks the whole line, then  p  puts that line
+        yy  yanks the whole line, then  p  puts that line.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Lesson 6.5: SET OPTION
 
@@ -881,11 +881,11 @@ NOTE:  If you want to ignore case for just one search command, use  \c
 			  ** Enable Vim features **
 
   Vim has many more features than Vi, but most of them are disabled by
-  default.  To start using more features you have to create a "vimrc" file.
+  default.  To start using more features you should create a "vimrc" file.
 
   1. Start editing the "vimrc" file.  This depends on your system:
 	:e ~/.vimrc		for Unix
-	:e $VIM/_vimrc		for Windows
+	:e ~/_vimrc		for Windows
 
   2. Now read the example "vimrc" file contents:
 	:r $VIMRUNTIME/vimrc_example.vim
@@ -955,7 +955,7 @@ NOTE:  Completion works for many commands.  Just try pressing CTRL-D and
 	Publisher: New Riders
   The first book completely dedicated to Vim.  Especially useful for beginners.
   There are many examples and pictures.
-  See http://iccf-holland.org/click5.html
+  See https://iccf-holland.org/click5.html
 
   This book is older and more about Vi than Vim, but also recommended:
 	Learning the Vi Editor - by Linda Lamb

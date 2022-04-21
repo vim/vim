@@ -37,6 +37,12 @@ func Test_taglist()
   call assert_equal('d', cmd[0]['kind'])
   call assert_equal('call cursor(3, 4)', cmd[0]['cmd'])
 
+  " Use characters with value > 127 in the tag extra field.
+  call writefile([
+	\ "vFoo\tXfoo\t4" .. ';"' .. "\ttypename:int\ta£££\tv",
+	\ ], 'Xtags')
+  call assert_equal('v', taglist('vFoo')[0].kind)
+
   call assert_fails("let l=taglist([])", 'E730:')
 
   call delete('Xtags')
@@ -216,6 +222,11 @@ func Test_format_error()
   endtry
   call assert_true(caught_exception)
 
+  " no field after the filename for a tag
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "foo\tXfile"], 'Xtags')
+  call assert_fails("echo taglist('foo')", 'E431:')
+
   set tags&
   call delete('Xtags')
 endfunc
@@ -233,6 +244,32 @@ func Test_tag_complete_wildoptions()
 
   call delete('Xtags')
   set wildoptions&
+  set tags&
+endfunc
+
+func Test_tag_complete_with_overlong_line()
+  let tagslines =<< trim END
+      !_TAG_FILE_FORMAT	2	//
+      !_TAG_FILE_SORTED	1	//
+      !_TAG_FILE_ENCODING	utf-8	//
+      inboundGSV	a	1;"	r
+      inboundGovernor	a	2;"	kind:⊢	type:forall (muxMode :: MuxMode) socket peerAddr versionNumber m a b. (MonadAsync m, MonadCatch m, MonadEvaluate m, MonadThrow m, MonadThrow (STM m), MonadTime m, MonadTimer m, MonadMask m, Ord peerAddr, HasResponder muxMode ~ True) => Tracer m (RemoteTransitionTrace peerAddr) -> Tracer m (InboundGovernorTrace peerAddr) -> ServerControlChannel muxMode peerAddr ByteString m a b -> DiffTime -> MuxConnectionManager muxMode socket peerAddr versionNumber ByteString m a b -> StrictTVar m InboundGovernorObservableState -> m Void
+      inboundGovernorCounters	a	3;"	kind:⊢	type:InboundGovernorState muxMode peerAddr m a b -> InboundGovernorCounters
+  END
+  call writefile(tagslines, 'Xtags')
+  set tags=Xtags
+
+  " try with binary search
+  set tagbsearch
+  call feedkeys(":tag inbou\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"tag inboundGSV inboundGovernor inboundGovernorCounters', @:)
+  " try with linear search
+  set notagbsearch
+  call feedkeys(":tag inbou\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"tag inboundGSV inboundGovernor inboundGovernorCounters', @:)
+  set tagbsearch&
+
+  call delete('Xtags')
   set tags&
 endfunc
 

@@ -197,6 +197,17 @@ func Test_recording_esc_sequence()
   endif
 endfunc
 
+func Test_recording_with_select_mode()
+  new
+  call feedkeys("qacc12345\<Esc>gH98765\<Esc>q", "tx")
+  call assert_equal("98765", getline(1))
+  call assert_equal("cc12345\<Esc>gH98765\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("98765", getline(1))
+  bwipe!
+endfunc
+
 " Test for executing the last used register (@)
 func Test_last_used_exec_reg()
   " Test for the @: command
@@ -274,10 +285,14 @@ func Test_get_register()
   call assert_fails('let r = getreg("=", [])', 'E745:')
   call assert_fails('let r = getreg("=", 1, [])', 'E745:')
   enew!
+
+  " Using a register in operator-pending mode should fail
+  call assert_beeps('norm! c"')
 endfunc
 
 func Test_set_register()
   call assert_fails("call setreg('#', 200)", 'E86:')
+  call assert_fails("call setreg('a', test_unknown())", 'E908:')
 
   edit Xfile_alt_1
   let b1 = bufnr('')
@@ -424,6 +439,12 @@ func Test_execute_register()
   @
   call assert_equal(3, i)
 
+  " try to execute expression register and use a backspace to cancel it
+  new
+  call feedkeys("@=\<BS>ax\<CR>y", 'xt')
+  call assert_equal(['x', 'y'], getline(1, '$'))
+  close!
+
   " cannot execute a register in operator pending mode
   call assert_beeps('normal! c@r')
 endfunc
@@ -460,6 +481,14 @@ func Test_get_reginfo()
 
   let info = getreginfo('"')
   call assert_equal('z', info.points_to)
+
+  let @a="a1b2"
+  nnoremap <F2> <Cmd>let g:RegInfo = getreginfo()<CR>
+  exe "normal \"a\<F2>"
+  call assert_equal({'regcontents': ['a1b2'], 'isunnamed': v:false,
+        \ 'regtype': 'v'}, g:RegInfo)
+  nunmap <F2>
+  unlet g:RegInfo
 
   bwipe!
 endfunc
@@ -686,6 +715,138 @@ func Test_ve_blockpaste()
   call assert_equal(5, col('.'))
   call assert_equal(getline(1, 2), ['TZ  QWER', 'GH  ASDF'])
   set ve&vim
+  bwipe!
+endfunc
+
+func Test_insert_small_delete()
+  new
+  call setline(1, ['foo foobar bar'])
+  call cursor(1,1)
+  exe ":norm! ciw'\<C-R>-'"
+  call assert_equal("'foo' foobar bar", getline(1))
+  exe ":norm! w.w."
+  call assert_equal("'foo' 'foobar' 'bar'", getline(1))
+  bwipe!
+endfunc
+
+" Record in insert mode using CTRL-O
+func Test_record_in_insert_mode()
+  new
+  let @r = ''
+  call setline(1, ['foo'])
+  call feedkeys("i\<C-O>qrbaz\<C-O>q", 'xt')
+  call assert_equal('baz', @r)
+  bwipe!
+endfunc
+
+func Test_record_in_select_mode()
+  new
+  call setline(1, 'text')
+  sil norm q00
+  sil norm q
+  call assert_equal('0ext', getline(1))
+
+  %delete
+  let @r = ''
+  call setline(1, ['abc', 'abc', 'abc'])
+  smap <F2> <Right><Right>,
+  call feedkeys("qrgh\<F2>Dk\<Esc>q", 'xt')
+  call assert_equal("gh\<F2>Dk\<Esc>", @r)
+  norm j0@rj0@@
+  call assert_equal([',Dk', ',Dk', ',Dk'], getline(1, 3))
+  sunmap <F2>
+
+  bwipe!
+endfunc
+
+" mapping that ends macro recording should be removed from recorded macro
+func Test_end_record_using_mapping()
+  call setline(1, 'aaa')
+  nnoremap s q
+  call feedkeys('safas', 'tx')
+  call assert_equal('fa', @a)
+  nunmap s
+
+  nnoremap xx q
+  call feedkeys('0xxafaxx', 'tx')
+  call assert_equal('fa', @a)
+  nunmap xx
+
+  nnoremap xsx q
+  call feedkeys('0qafaxsx', 'tx')
+  call assert_equal('fa', @a)
+  nunmap xsx
+
+  bwipe!
+endfunc
+
+func Test_end_reg_executing()
+  nnoremap s <Nop>
+  let @a = 's'
+  call feedkeys("@aqaq\<Esc>", 'tx')
+  call assert_equal('', @a)
+  call assert_equal('', getline(1))
+
+  call setline(1, 'aaa')
+  nnoremap s qa
+  let @a = 'fa'
+  call feedkeys("@asq\<Esc>", 'tx')
+  call assert_equal('', @a)
+  call assert_equal('aaa', getline(1))
+
+  nunmap s
+  bwipe!
+endfunc
+
+" Make sure that y_append is correctly reset
+" and the previous register is working as expected
+func Test_register_y_append_reset()
+  new
+  call setline(1, ['1',
+    \ '2 ----------------------------------------------------',
+    \ '3',
+    \ '4',
+    \ '5 ----------------------------------------------------',
+    \ '6',
+    \ '7',
+    \ '8 ----------------------------------------------------',
+    \ '9',
+    \ '10 aaaaaaa 4.',
+    \ '11 Game Dbl-Figures Leaders:',
+    \ '12 Player Pts FG% 3P% FT% RB AS BL ST TO PF EFF',
+    \ '13 bbbbbbbbb 12 (50 /0 /67 )/ 7/ 3/ 0/ 2/ 3/ 4/+15',
+    \ '14 cccccc 12 (57 /67 /100)/ 2/ 1/ 1/ 0/ 1/ 3/+12',
+    \ '15 ddddddd 10 (63 /0 /0 )/ 1/ 3/ 0/ 3/ 5/ 3/ +9',
+    \ '16 4 5-15 0-3 2-2 5-12 1-1 3-4 33.3 0.0 100 41.7 100 75 12 14',
+    \ '17 F 23-55 2-10 9-11 23-52 3-13 26-29 41.8 20 81.8 44.2 23.1 89.7 57 75',
+    \ '18 4 3 6 3 2 3 3 4 3 3 7 3 1 4 6 -1 -1 +2 -1 -2',
+    \ '19 F 13 19 5 10 4 17 22 9 14 32 13 4 20 17 -1 -13 -4 -3 -3 +5'])
+  11
+  exe "norm! \"a5dd"
+  norm! j
+  exe "norm! \"bY"
+  norm! 2j
+  exe "norm! \"BY"
+  norm! 4k
+  norm! 5dd
+  norm! 3k
+  " The next put should put the content of the unnamed register, not of
+  " register b!
+  norm! p
+  call assert_equal(['1',
+    \ '2 ----------------------------------------------------',
+    \ '3',
+    \ '4',
+    \ '5 ----------------------------------------------------',
+    \ '6',
+    \ '10 aaaaaaa 4.',
+    \ '16 4 5-15 0-3 2-2 5-12 1-1 3-4 33.3 0.0 100 41.7 100 75 12 14',
+    \ '17 F 23-55 2-10 9-11 23-52 3-13 26-29 41.8 20 81.8 44.2 23.1 89.7 57 75',
+    \ '18 4 3 6 3 2 3 3 4 3 3 7 3 1 4 6 -1 -1 +2 -1 -2',
+    \ '19 F 13 19 5 10 4 17 22 9 14 32 13 4 20 17 -1 -13 -4 -3 -3 +5',
+    \ '7',
+    \ '8 ----------------------------------------------------',
+    \ '9'], getline(1,'$'))
   bwipe!
 endfunc
 

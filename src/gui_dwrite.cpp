@@ -59,7 +59,7 @@
 #endif
 
 #ifdef DYNAMIC_DIRECTX
-extern "C" HINSTANCE vimLoadLib(char *name);
+extern "C" HINSTANCE vimLoadLib(const char *name);
 
 typedef int (WINAPI *PGETUSERDEFAULTLOCALENAME)(LPWSTR, int);
 typedef HRESULT (WINAPI *PD2D1CREATEFACTORY)(D2D1_FACTORY_TYPE,
@@ -239,7 +239,8 @@ public:
 	if (mItems[n].pTextFormat != item.pTextFormat)
 	{
 	    SafeRelease(&mItems[n].pTextFormat);
-	    item.pTextFormat->AddRef();
+	    if (item.pTextFormat != NULL)
+		item.pTextFormat->AddRef();
 	}
 	mItems[n] = item;
 	slide(n);
@@ -1211,8 +1212,8 @@ DWrite_Init(void)
 {
 #ifdef DYNAMIC_DIRECTX
     // Load libraries.
-    hD2D1DLL = vimLoadLib(const_cast<char*>("d2d1.dll"));
-    hDWriteDLL = vimLoadLib(const_cast<char*>("dwrite.dll"));
+    hD2D1DLL = vimLoadLib("d2d1.dll");
+    hDWriteDLL = vimLoadLib("dwrite.dll");
     if (hD2D1DLL == NULL || hDWriteDLL == NULL)
     {
 	DWrite_Final();

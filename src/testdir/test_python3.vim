@@ -12,6 +12,7 @@ func Create_vim_dict()
   return {'a': 1}
 endfunction
 
+let s:system_error_pat = 'Vim(py3):SystemError: \(<built-in function eval> returned NULL without setting an \(error\|exception\)\|error return without exception set\)'
 
 " This function should be called first. This sets up python functions used by
 " the other tests.
@@ -23,6 +24,8 @@ func Test_AAA_python3_setup()
 
     py33_type_error_pattern = re.compile('^__call__\(\) takes (\d+) positional argument but (\d+) were given$')
     py37_exception_repr = re.compile(r'([^\(\),])(\)+)$')
+    py39_type_error_pattern = re.compile('\w+\.([^(]+\(\) takes)')
+    py310_type_error_pattern = re.compile('takes (\d+) positional argument but (\d+) were given')
 
     def emsg(ei):
       return ei[0].__name__ + ':' + repr(ei[1].args)
@@ -56,6 +59,9 @@ func Test_AAA_python3_setup()
                         oldmsg2 = '''"Can't convert 'int' object to str implicitly"'''
                         if msg.find(newmsg2) > -1:
                             msg = msg.replace(newmsg2, oldmsg2)
+                        # Python 3.9 reports errors like "vim.command() takes ..." instead of "command() takes ..."
+                        msg = py39_type_error_pattern.sub(r'\1', msg)
+                        msg = py310_type_error_pattern.sub(r'takes exactly \1 positional argument (\2 given)', msg)
                 elif sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
                     msg = repr((TypeError, TypeError('expected bytes with no null')))
                 else:
@@ -507,6 +513,8 @@ func Test_python3_window()
   10new
   py3 vim.current.window.height = 5
   call assert_equal(5, winheight(0))
+  py3 vim.current.window.height = 3.2
+  call assert_equal(3, winheight(0))
 
   " Test for setting the window width
   10vnew
@@ -536,19 +544,18 @@ endfunc
 func Test_python3_list()
   " Try to convert a null List
   call AssertException(["py3 t = vim.eval('test_null_list()')"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
   " Try to convert a List with a null List item
   call AssertException(["py3 t = vim.eval('[test_null_list()]')"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
-  " Try to bind a null List variable
+  " Try to bind a null List variable (works because an empty list is used)
   let cmds =<< trim END
     let l = test_null_list()
     py3 ll = vim.bindeval('l')
   END
-  call AssertException(cmds,
-        \ 'Vim(py3):SystemError: <built-in function bindeval> returned NULL without setting an error')
+  call AssertException(cmds, '')
 
   let l = []
   py3 l = vim.bindeval('l')
@@ -571,6 +578,9 @@ func Test_python3_list()
   py3 ll[2] = 8
   call assert_equal([1, 2, 8], l)
 
+  " iterating over list from Python
+  py3 print([x for x in vim.Function("getline")(1, 2)])
+
   " Using dict as an index
   call AssertException(['py3 ll[{}] = 10'],
         \ 'Vim(py3):TypeError: index must be int or slice, not dict')
@@ -580,11 +590,11 @@ endfunc
 func Test_python3_dict()
   " Try to convert a null Dict
   call AssertException(["py3 t = vim.eval('test_null_dict()')"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
   " Try to convert a Dict with a null List value
   call AssertException(["py3 t = vim.eval(\"{'a' : test_null_list()}\")"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
   " Try to convert a Dict with a null string key
   py3 t = vim.eval("{test_null_string() : 10}")
@@ -595,7 +605,7 @@ func Test_python3_dict()
   py3 d = vim.bindeval('d')
   call assert_equal(2, py3eval('len(d)'))
 
-  " Deleting an non-existing key
+  " Deleting a non-existing key
   call AssertException(["py3 del d['c']"], "Vim(py3):KeyError: 'c'")
 endfunc
 
@@ -1001,8 +1011,12 @@ func Test_python3_vim_bindeval()
   call assert_equal(v:none, py3eval("vim.bindeval('v:none')"))
 
   " channel/job
-  call assert_equal(v:none, py3eval("vim.bindeval('test_null_channel()')"))
-  call assert_equal(v:none, py3eval("vim.bindeval('test_null_job()')"))
+  if has('channel')
+    call assert_equal(v:none, py3eval("vim.bindeval('test_null_channel()')"))
+  endif
+  if has('job')
+    call assert_equal(v:none, py3eval("vim.bindeval('test_null_job()')"))
+  endif
 endfunc
 
 " threading
@@ -1117,7 +1131,7 @@ func Test_python3_list_slice()
   let l = [test_null_list()]
   py3 ll = vim.bindeval('l')
   call AssertException(["py3 x = ll[:]"],
-        \ "Vim(py3):SystemError: error return without exception set")
+        \ s:system_error_pat)
 endfunc
 
 " Vars
@@ -2627,6 +2641,7 @@ func Test_python3_errors()
   py3 cb = vim.current.buffer
 
   py3 << trim EOF
+    import os
     d = vim.Dictionary()
     ned = vim.Dictionary(foo='bar', baz='abcD')
     dl = vim.Dictionary(a=1)
@@ -3812,7 +3827,16 @@ func Test_python3_errors()
     vim.current.xxx = True:(<class 'AttributeError'>, AttributeError('xxx',))
   END
 
-  call assert_equal(expected, getline(2, '$'))
+  let actual = getline(2, '$')
+  let n_expected = len(expected)
+  let n_actual = len(actual)
+  call assert_equal(n_expected, n_actual, 'number of lines to compare')
+
+  " Compare line by line so the errors are easier to understand.  Missing lines
+  " are compared with an empty string.
+  for i in range(n_expected > n_actual ? n_expected : n_actual)
+    call assert_equal(i >= n_expected ? '' : expected[i], i >= n_actual ? '' : actual[i])
+  endfor
   close!
 endfunc
 
@@ -3871,7 +3895,7 @@ func Test_python3_import()
   call assert_equal(expected, getline(2, '$'))
   close!
 
-  " Try to import a non-existing moudle with a dot (.)
+  " Try to import a non-existing module with a dot (.)
   call AssertException(['py3 import a.b.c'], "No module named 'a'")
 endfunc
 
@@ -3995,6 +4019,46 @@ func Test_python3_iter_ref()
   call assert_equal(1, g:dict_iter_ref_count_increase)
   call assert_equal(1, g:bufmap_iter_ref_count_increase)
   call assert_equal(1, g:options_iter_ref_count_increase)
+endfunc
+
+func Test_python3_non_utf8_string()
+  smap <Esc>@ <A-@>
+  py3 vim.command('redir => _tmp_smaps | smap | redir END')
+  py3 vim.eval('_tmp_smaps').splitlines()
+  sunmap <Esc>@
+endfunc
+
+func Test_python3_fold_hidden_buffer()
+  CheckFeature folding
+
+  set fdm=expr fde=Fde(v:lnum)
+  let b:regex = '^'
+  func Fde(lnum)
+    let ld = [{}]
+    let lines = bufnr('%')->getbufline(1, '$')
+    let was_import = 0
+    for lnum in range(1, len(lines))
+      let line = lines[lnum]
+      call add(ld, {'a': b:regex})
+      let ld[lnum].foldexpr = was_import ? 1 : '>1'
+      let was_import = 1
+    endfor
+    return ld[a:lnum].foldexpr
+  endfunc
+
+  call setline(1, repeat([''], 15) + repeat(['from'], 3))
+  eval repeat(['x'], 17)->writefile('Xa.txt')
+  split Xa.txt
+  py3 import vim
+  py3 b = vim.current.buffer
+  py3 aaa = b[:]
+  hide
+  py3 b[:] = aaa
+
+  call delete('Xa.txt')
+  set fdm& fde&
+  delfunc Fde
+  bwipe! Xa.txt
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

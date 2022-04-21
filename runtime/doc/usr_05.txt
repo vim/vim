@@ -270,7 +270,7 @@ line break.  Revert with ":iunmap <C-U>".
 Enable using the mouse if available.  See 'mouse'.
 
 >
-	vnoremap _g y:exe "grep /" . escape(@", '\\/') . "/ *.c *.h"<CR>
+	vnoremap _g y:exe "grep /" .. escape(@", '\\/') .. "/ *.c *.h"<CR>
 
 This mapping yanks the visually selected text and searches for it in C files.
 You can see that a mapping can be used to do quite complicated things.  Still,

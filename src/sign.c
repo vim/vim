@@ -32,6 +32,8 @@ struct sign
     char_u	*sn_text;	// text used instead of pixmap
     int		sn_line_hl;	// highlight ID for line
     int		sn_text_hl;	// highlight ID for text
+    int		sn_cul_hl;	// highlight ID for text on current line when 'cursorline' is set
+    int		sn_num_hl;	// highlight ID for line number
 };
 
 static sign_T	*first_sign = NULL;
@@ -517,6 +519,10 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 		sattr->sat_texthl = syn_id2attr(sp->sn_text_hl);
 	    if (sp->sn_line_hl > 0)
 		sattr->sat_linehl = syn_id2attr(sp->sn_line_hl);
+	    if (sp->sn_cul_hl > 0)
+		sattr->sat_culhl = syn_id2attr(sp->sn_cul_hl);
+	    if (sp->sn_num_hl > 0)
+		sattr->sat_numhl = syn_id2attr(sp->sn_num_hl);
 	    sattr->sat_priority = sign->se_priority;
 
 	    // If there is another sign next with the same priority, may
@@ -540,6 +546,10 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 			sattr->sat_texthl = syn_id2attr(next_sp->sn_text_hl);
 		    if (sp->sn_line_hl <= 0 && next_sp->sn_line_hl > 0)
 			sattr->sat_linehl = syn_id2attr(next_sp->sn_line_hl);
+		    if (sp->sn_cul_hl <= 0 && next_sp->sn_cul_hl > 0)
+			sattr->sat_culhl = syn_id2attr(next_sp->sn_cul_hl);
+		    if (sp->sn_num_hl <= 0 && next_sp->sn_num_hl > 0)
+			sattr->sat_numhl = syn_id2attr(next_sp->sn_num_hl);
 		}
 	    }
 	    return TRUE;
@@ -837,7 +847,7 @@ sign_mark_adjust(
 	if (sign->se_lnum < line1)
 	    continue;
 	new_lnum = sign->se_lnum;
-	if (sign->se_lnum >= line1 && sign->se_lnum <= line2)
+	if (sign->se_lnum <= line2)
 	{
 	    if (amount != MAXLNUM)
 		new_lnum += amount;
@@ -923,7 +933,7 @@ alloc_new_sign(char_u *name)
 	    if (next_sign_typenr == start)
 	    {
 		vim_free(sp);
-		emsg(_("E612: Too many signs defined"));
+		emsg(_(e_too_many_signs_defined));
 		return NULL;
 	    }
 	    lp = first_sign;  // start all over
@@ -1009,7 +1019,7 @@ sign_define_init_text(sign_T *sp, char_u *text)
     // Currently sign text must be one or two display cells
     if (s != endp || cells < 1 || cells > 2)
     {
-	semsg(_("E239: Invalid sign text: %s"), text);
+	semsg(_(e_invalid_sign_text_str), text);
 	return FAIL;
     }
 
@@ -1035,7 +1045,9 @@ sign_define_by_name(
 	char_u	*icon,
 	char_u	*linehl,
 	char_u	*text,
-	char_u	*texthl)
+	char_u	*texthl,
+	char_u	*culhl,
+	char_u	*numhl)
 {
     sign_T	*sp_prev;
     sign_T	*sp;
@@ -1072,10 +1084,36 @@ sign_define_by_name(
 	return FAIL;
 
     if (linehl != NULL)
-	sp->sn_line_hl = syn_check_group(linehl, (int)STRLEN(linehl));
+    {
+	if (*linehl == NUL)
+	    sp->sn_line_hl = 0;
+	else
+	    sp->sn_line_hl = syn_check_group(linehl, (int)STRLEN(linehl));
+    }
 
     if (texthl != NULL)
-	sp->sn_text_hl = syn_check_group(texthl, (int)STRLEN(texthl));
+    {
+	if (*texthl == NUL)
+	    sp->sn_text_hl = 0;
+	else
+	    sp->sn_text_hl = syn_check_group(texthl, (int)STRLEN(texthl));
+    }
+
+    if (culhl != NULL)
+    {
+	if (*culhl == NUL)
+	    sp->sn_cul_hl = 0;
+	else
+	    sp->sn_cul_hl = syn_check_group(culhl, (int)STRLEN(culhl));
+    }
+
+    if (numhl != NULL)
+    {
+	if (*numhl == NUL)
+	    sp->sn_num_hl = 0;
+	else
+	    sp->sn_num_hl = syn_check_group(numhl, (int)STRLEN(numhl));
+    }
 
     return OK;
 }
@@ -1102,7 +1140,7 @@ sign_undefine_by_name(char_u *name, int give_error)
     if (sp == NULL)
     {
 	if (give_error)
-	    semsg(_("E155: Unknown sign: %s"), name);
+	    semsg(_(e_unknown_sign_str), name);
 	return FAIL;
     }
     sign_undefine(sp, sp_prev);
@@ -1122,7 +1160,7 @@ sign_list_by_name(char_u *name)
     if (sp != NULL)
 	sign_list_defined(sp);
     else
-	semsg(_("E155: Unknown sign: %s"), name);
+	semsg(_(e_unknown_sign_str), name);
 }
 
     static void
@@ -1162,7 +1200,7 @@ sign_place(
 	    break;
     if (sp == NULL)
     {
-	semsg(_("E155: Unknown sign: %s"), sign_name);
+	semsg(_(e_unknown_sign_str), sign_name);
 	return FAIL;
     }
     if (*sign_id == 0)
@@ -1186,7 +1224,7 @@ sign_place(
     }
     else
     {
-	semsg(_("E885: Not possible to change sign %s"), sign_name);
+	semsg(_(e_not_possible_to_change_sign_str), sign_name);
 	return FAIL;
     }
 
@@ -1239,7 +1277,7 @@ sign_unplace_at_cursor(char_u *groupname)
     if (id > 0)
 	sign_unplace(id, groupname, curwin->w_buffer, curwin->w_cursor.lnum);
     else
-	emsg(_("E159: Missing sign number"));
+	emsg(_(e_missing_sign_number));
 }
 
 /*
@@ -1252,7 +1290,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
     if ((lnum = buf_findsign(buf, sign_id, sign_group)) <= 0)
     {
-	semsg(_("E157: Invalid sign ID: %d"), sign_id);
+	semsg(_(e_invalid_sign_id_nr), sign_id);
 	return -1;
     }
 
@@ -1269,7 +1307,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
 	if (buf->b_fname == NULL)
 	{
-	    emsg(_("E934: Cannot jump to a buffer that does not have a name"));
+	    emsg(_(e_cannot_jump_to_buffer_that_does_not_have_name));
 	    return -1;
 	}
 	cmd = alloc(STRLEN(buf->b_fname) + 25);
@@ -1298,7 +1336,9 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
     char_u	*text = NULL;
     char_u	*linehl = NULL;
     char_u	*texthl = NULL;
-    int failed = FALSE;
+    char_u	*culhl = NULL;
+    char_u	*numhl = NULL;
+    int		failed = FALSE;
 
     // set values for a defined sign.
     for (;;)
@@ -1327,21 +1367,33 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	    arg += 7;
 	    texthl = vim_strnsave(arg, p - arg);
 	}
+	else if (STRNCMP(arg, "culhl=", 6) == 0)
+	{
+	    arg += 6;
+	    culhl = vim_strnsave(arg, p - arg);
+	}
+	else if (STRNCMP(arg, "numhl=", 6) == 0)
+	{
+	    arg += 6;
+	    numhl = vim_strnsave(arg, p - arg);
+	}
 	else
 	{
-	    semsg(_(e_invarg2), arg);
+	    semsg(_(e_invalid_argument_str), arg);
 	    failed = TRUE;
 	    break;
 	}
     }
 
     if (!failed)
-	sign_define_by_name(sign_name, icon, linehl, text, texthl);
+	sign_define_by_name(sign_name, icon, linehl, text, texthl, culhl, numhl);
 
     vim_free(icon);
     vim_free(text);
     vim_free(linehl);
     vim_free(texthl);
+    vim_free(culhl);
+    vim_free(numhl);
 }
 
 /*
@@ -1370,7 +1422,7 @@ sign_place_cmd(
 	//   :sign place group=*
 	if (lnum >= 0 || sign_name != NULL
 		|| (group != NULL && *group == '\0'))
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else
 	    sign_list_placed(buf, group);
     }
@@ -1380,7 +1432,7 @@ sign_place_cmd(
 	if (sign_name == NULL || buf == NULL
 		|| (group != NULL && *group == '\0'))
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return;
 	}
 
@@ -1401,7 +1453,7 @@ sign_unplace_cmd(
 {
     if (lnum >= 0 || sign_name != NULL || (group != NULL && *group == '\0'))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -1470,7 +1522,7 @@ sign_jump_cmd(
 {
     if (sign_name == NULL && group == NULL && id == -1)
     {
-	emsg(_(e_argreq));
+	emsg(_(e_argument_required));
 	return;
     }
 
@@ -1479,7 +1531,7 @@ sign_jump_cmd(
     {
 	// File or buffer is not specified or an empty group is used
 	// or a line number or a sign name is specified.
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
     (void)sign_jump(id, group, buf);
@@ -1534,7 +1586,7 @@ parse_sign_cmd_args(
 	{
 	    if (*signid != -1)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return FAIL;
 	    }
 	    *signid = -2;
@@ -1578,12 +1630,12 @@ parse_sign_cmd_args(
 	    filename = arg;
 	    *buf = buflist_findnr((int)getdigits(&arg));
 	    if (*skipwhite(arg) != NUL)
-		semsg(_(e_trailing_arg), arg);
+		semsg(_(e_trailing_characters_str), arg);
 	    break;
 	}
 	else
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return FAIL;
 	}
 	arg = skipwhite(arg);
@@ -1591,7 +1643,7 @@ parse_sign_cmd_args(
 
     if (filename != NULL && *buf == NULL)
     {
-	semsg(_("E158: Invalid buffer name: %s"), filename);
+	semsg(_(e_invalid_buffer_name_str), filename);
 	return FAIL;
     }
 
@@ -1621,7 +1673,7 @@ ex_sign(exarg_T *eap)
     idx = sign_cmd_idx(arg, p);
     if (idx == SIGNCMD_LAST)
     {
-	semsg(_("E160: Unknown sign command: %s"), arg);
+	semsg(_(e_unknown_sign_command_str), arg);
 	return;
     }
     arg = skipwhite(p);
@@ -1636,7 +1688,7 @@ ex_sign(exarg_T *eap)
 		sign_list_defined(sp);
 	}
 	else if (*arg == NUL)
-	    emsg(_("E156: Missing sign name"));
+	    emsg(_(e_missing_sign_name));
 	else
 	{
 	    char_u	*name;
@@ -1693,24 +1745,38 @@ sign_getinfo(sign_T *sp, dict_T *retdict)
 {
     char_u	*p;
 
-    dict_add_string(retdict, "name", (char_u *)sp->sn_name);
+    dict_add_string(retdict, "name", sp->sn_name);
     if (sp->sn_icon != NULL)
-	dict_add_string(retdict, "icon", (char_u *)sp->sn_icon);
+	dict_add_string(retdict, "icon", sp->sn_icon);
     if (sp->sn_text != NULL)
-	dict_add_string(retdict, "text", (char_u *)sp->sn_text);
+	dict_add_string(retdict, "text", sp->sn_text);
     if (sp->sn_line_hl > 0)
     {
 	p = get_highlight_name_ext(NULL, sp->sn_line_hl - 1, FALSE);
 	if (p == NULL)
 	    p = (char_u *)"NONE";
-	dict_add_string(retdict, "linehl", (char_u *)p);
+	dict_add_string(retdict, "linehl", p);
     }
     if (sp->sn_text_hl > 0)
     {
 	p = get_highlight_name_ext(NULL, sp->sn_text_hl - 1, FALSE);
 	if (p == NULL)
 	    p = (char_u *)"NONE";
-	dict_add_string(retdict, "texthl", (char_u *)p);
+	dict_add_string(retdict, "texthl", p);
+    }
+    if (sp->sn_cul_hl > 0)
+    {
+	p = get_highlight_name_ext(NULL, sp->sn_cul_hl - 1, FALSE);
+	if (p == NULL)
+	    p = (char_u *)"NONE";
+	dict_add_string(retdict, "culhl", p);
+    }
+    if (sp->sn_num_hl > 0)
+    {
+	p = get_highlight_name_ext(NULL, sp->sn_num_hl - 1, FALSE);
+	if (p == NULL)
+	    p = (char_u *)"NONE";
+	dict_add_string(retdict, "numhl", p);
     }
 }
 
@@ -1883,6 +1949,24 @@ sign_list_defined(sign_T *sp)
 	else
 	    msg_puts((char *)p);
     }
+    if (sp->sn_cul_hl > 0)
+    {
+	msg_puts(" culhl=");
+	p = get_highlight_name_ext(NULL, sp->sn_cul_hl - 1, FALSE);
+	if (p == NULL)
+	    msg_puts("NONE");
+	else
+	    msg_puts((char *)p);
+    }
+    if (sp->sn_num_hl > 0)
+    {
+	msg_puts(" numhl=");
+	p = get_highlight_name_ext(NULL, sp->sn_num_hl - 1, FALSE);
+	if (p == NULL)
+	    msg_puts("NONE");
+	else
+	    msg_puts((char *)p);
+    }
 }
 
 /*
@@ -2004,7 +2088,7 @@ get_sign_name(expand_T *xp UNUSED, int idx)
 	{
 	    char *define_arg[] =
 	    {
-		"icon=", "linehl=", "text=", "texthl=", NULL
+		"culhl=", "icon=", "linehl=", "numhl=", "text=", "texthl=", NULL
 	    };
 	    return (char_u *)define_arg[idx];
 	}
@@ -2129,7 +2213,9 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 	{
 	    case SIGNCMD_DEFINE:
 		if (STRNCMP(last, "texthl", 6) == 0
-			|| STRNCMP(last, "linehl", 6) == 0)
+			|| STRNCMP(last, "linehl", 6) == 0
+			|| STRNCMP(last, "culhl", 5) == 0
+			|| STRNCMP(last, "numhl", 5) == 0)
 		    xp->xp_context = EXPAND_HIGHLIGHT;
 		else if (STRNCMP(last, "icon", 4) == 0)
 		    xp->xp_context = EXPAND_FILES;
@@ -2173,6 +2259,8 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
     char_u	*linehl = NULL;
     char_u	*text = NULL;
     char_u	*texthl = NULL;
+    char_u	*culhl = NULL;
+    char_u	*numhl = NULL;
     int		retval = -1;
 
     if (name_arg == NULL)
@@ -2191,9 +2279,11 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
 	linehl = dict_get_string(dict, (char_u *)"linehl", TRUE);
 	text = dict_get_string(dict, (char_u *)"text", TRUE);
 	texthl = dict_get_string(dict, (char_u *)"texthl", TRUE);
+	culhl = dict_get_string(dict, (char_u *)"culhl", TRUE);
+	numhl = dict_get_string(dict, (char_u *)"numhl", TRUE);
     }
 
-    if (sign_define_by_name(name, icon, linehl, text, texthl) == OK)
+    if (sign_define_by_name(name, icon, linehl, text, texthl, culhl, numhl) == OK)
 	retval = 0;
 
 cleanup:
@@ -2202,6 +2292,8 @@ cleanup:
     vim_free(linehl);
     vim_free(text);
     vim_free(texthl);
+    vim_free(culhl);
+    vim_free(numhl);
 
     return retval;
 }
@@ -2222,7 +2314,7 @@ sign_define_multiple(list_T *l, list_T *retlist)
 	if (li->li_tv.v_type == VAR_DICT)
 	    retval = sign_define_from_dict(NULL, li->li_tv.vval.v_dict);
 	else
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	list_append_number(retlist, retval);
     }
 }
@@ -2234,6 +2326,11 @@ sign_define_multiple(list_T *l, list_T *retlist)
 f_sign_define(typval_T *argvars, typval_T *rettv)
 {
     char_u	*name;
+
+    if (in_vim9script()
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_UNKNOWN)
     {
@@ -2254,7 +2351,7 @@ f_sign_define(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -2271,6 +2368,9 @@ f_sign_getdefined(typval_T *argvars, typval_T *rettv)
     char_u	*name = NULL;
 
     if (rettv_list_alloc_id(rettv, aid_sign_getdefined) != OK)
+	return;
+
+    if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -2296,6 +2396,12 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc_id(rettv, aid_sign_getplaced) != OK)
 	return;
 
+    if (in_vim9script()
+	    && (check_for_opt_buffer_arg(argvars, 0) == FAIL
+		|| (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_dict_arg(argvars, 1) == FAIL)))
+	return;
+
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	// get signs placed in the specified buffer
@@ -2308,7 +2414,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 	    if (argvars[1].v_type != VAR_DICT ||
 				((dict = argvars[1].vval.v_dict) == NULL))
 	    {
-		emsg(_(e_dictreq));
+		emsg(_(e_dictionary_required));
 		return;
 	    }
 	    if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
@@ -2353,13 +2459,19 @@ f_sign_jump(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_buffer_arg(argvars, 2) == FAIL))
+	return;
+
     // Sign identifier
     sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
     if (notanum)
 	return;
     if (sign_id <= 0)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -2425,7 +2537,7 @@ sign_place_from_dict(
 	    return -1;
 	if (sign_id < 0)
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    return -1;
 	}
     }
@@ -2487,7 +2599,7 @@ sign_place_from_dict(
 	lnum = tv_get_lnum(&di->di_tv);
 	if (lnum <= 0)
 	{
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	    goto cleanup;
 	}
     }
@@ -2520,11 +2632,19 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL
+		|| check_for_buffer_arg(argvars, 3) == FAIL
+		|| check_for_opt_dict_arg(argvars, 4) == FAIL))
+	return;
+
     if (argvars[4].v_type != VAR_UNKNOWN
 	    && (argvars[4].v_type != VAR_DICT
 		|| ((dict = argvars[4].vval.v_dict) == NULL)))
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return;
     }
 
@@ -2544,9 +2664,12 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
@@ -2558,7 +2681,7 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
 	    sign_id = sign_place_from_dict(NULL, NULL, NULL, NULL,
 						li->li_tv.vval.v_dict);
 	else
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	list_append_number(rettv->vval.v_list, sign_id);
     }
 }
@@ -2590,6 +2713,10 @@ sign_undefine_multiple(list_T *l, list_T *retlist)
 f_sign_undefine(typval_T *argvars, typval_T *rettv)
 {
     char_u *name;
+
+    if (in_vim9script()
+	    && check_for_opt_string_or_list_arg(argvars, 0) == FAIL)
+	return;
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_UNKNOWN)
     {
@@ -2659,12 +2786,12 @@ sign_unplace_from_dict(typval_T *group_tv, dict_T *dict)
 	    if (buf == NULL)
 		goto cleanup;
 	}
-	if (dict_find(dict, (char_u *)"id", -1) != NULL)
+	if (dict_has_key(dict, "id"))
 	{
 	    sign_id = dict_get_number(dict, (char_u *)"id");
 	    if (sign_id <= 0)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		goto cleanup;
 	    }
 	}
@@ -2732,9 +2859,14 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
+	return;
+
     if (argvars[0].v_type != VAR_STRING)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
@@ -2742,7 +2874,7 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[1].v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	    return;
 	}
 	dict = argvars[1].vval.v_dict;
@@ -2763,9 +2895,12 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
+    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
 
@@ -2775,7 +2910,7 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
 	if (li->li_tv.v_type == VAR_DICT)
 	    retval = sign_unplace_from_dict(NULL, li->li_tv.vval.v_dict);
 	else
-	    emsg(_(e_dictreq));
+	    emsg(_(e_dictionary_required));
 	list_append_number(rettv->vval.v_list, retval);
     }
 }

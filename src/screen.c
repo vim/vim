@@ -83,16 +83,26 @@ conceal_cursor_line(win_T *wp)
 
 /*
  * Check if the cursor line needs to be redrawn because of 'concealcursor'.
+ * To be called after changing the state, "was_concealed" is the value of
+ * "conceal_cursor_line()" before the change.
+ * "
  */
     void
-conceal_check_cursor_line(void)
+conceal_check_cursor_line(int was_concealed)
 {
-    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
+    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin) != was_concealed)
     {
+	int wcol = curwin->w_wcol;
+
 	need_cursor_line_redraw = TRUE;
 	// Need to recompute cursor column, e.g., when starting Visual mode
 	// without concealing.
 	curs_columns(TRUE);
+
+	// When concealing now w_wcol will be computed wrong, keep the previous
+	// value, it will be updated in win_line().
+	if (!was_concealed)
+	    curwin->w_wcol = wcol;
     }
 }
 #endif
@@ -239,8 +249,11 @@ compute_foldcolumn(win_T *wp, int col)
 /*
  * Fill the foldcolumn at "p" for window "wp".
  * Only to be called when 'foldcolumn' > 0.
+ * Returns the number of bytes stored in 'p'. When non-multibyte characters are
+ * used for the fold column markers, this is equal to 'fdc' setting. Otherwise,
+ * this will be greater than 'fdc'.
  */
-    void
+    size_t
 fill_foldcolumn(
     char_u	*p,
     win_T	*wp,
@@ -252,39 +265,59 @@ fill_foldcolumn(
     int		first_level;
     int		empty;
     int		fdc = compute_foldcolumn(wp, 0);
+    size_t	byte_counter = 0;
+    int		symbol = 0;
+    int		len = 0;
 
     // Init to all spaces.
-    vim_memset(p, ' ', (size_t)fdc);
+    vim_memset(p, ' ', MAX_MCO * fdc + 1);
 
     level = win_foldinfo.fi_level;
-    if (level > 0)
+    empty = (fdc == 1) ? 0 : 1;
+
+    // If the column is too narrow, we start at the lowest level that
+    // fits and use numbers to indicate the depth.
+    first_level = level - fdc - closed + 1 + empty;
+    if (first_level < 1)
+	first_level = 1;
+
+    for (i = 0; i < MIN(fdc, level); i++)
     {
-	// If there is only one column put more info in it.
-	empty = (fdc == 1) ? 0 : 1;
+	if (win_foldinfo.fi_lnum == lnum
+		&& first_level + i >= win_foldinfo.fi_low_level)
+	    symbol = fill_foldopen;
+	else if (first_level == 1)
+	    symbol = fill_foldsep;
+	else if (first_level + i <= 9)
+	    symbol = '0' + first_level + i;
+	else
+	    symbol = '>';
 
-	// If the column is too narrow, we start at the lowest level that
-	// fits and use numbers to indicated the depth.
-	first_level = level - fdc - closed + 1 + empty;
-	if (first_level < 1)
-	    first_level = 1;
-
-	for (i = 0; i + empty < fdc; ++i)
+	len = utf_char2bytes(symbol, &p[byte_counter]);
+	byte_counter += len;
+	if (first_level + i >= level)
 	{
-	    if (win_foldinfo.fi_lnum == lnum
-			      && first_level + i >= win_foldinfo.fi_low_level)
-		p[i] = '-';
-	    else if (first_level == 1)
-		p[i] = '|';
-	    else if (first_level + i <= 9)
-		p[i] = '0' + first_level + i;
-	    else
-		p[i] = '>';
-	    if (first_level + i == level)
-		break;
+	    i++;
+	    break;
 	}
     }
+
     if (closed)
-	p[i >= fdc ? i - 1 : i] = '+';
+    {
+	if (symbol != 0)
+	{
+	    // rollback length and the character
+	    byte_counter -= len;
+	    if (len > 1)
+		// for a multibyte character, erase all the bytes
+		vim_memset(p + byte_counter, ' ', len);
+	}
+	symbol = fill_foldclosed;
+	len = utf_char2bytes(symbol, &p[byte_counter]);
+	byte_counter += len;
+    }
+
+    return MAX(byte_counter + (fdc - i), (size_t)fdc);
 }
 #endif // FEAT_FOLDING
 
@@ -464,7 +497,8 @@ screen_line(
     // First char of a popup window may go on top of the right half of a
     // double-wide character. Clear the left half to avoid it getting the popup
     // window background color.
-    if (coloff > 0 && ScreenLines[off_to] == 0
+    if (coloff > 0 && enc_utf8
+		   && ScreenLines[off_to] == 0
 		   && ScreenLinesUC[off_to - 1] != 0
 		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1)
     {
@@ -580,9 +614,9 @@ screen_line(
 	    }
 	    // When writing a single-width character over a double-width
 	    // character and at the end of the redrawn text, need to clear out
-	    // the right halve of the old character.
-	    // Also required when writing the right halve of a double-width
-	    // char over the left halve of an existing one.
+	    // the right half of the old character.
+	    // Also required when writing the right half of a double-width
+	    // char over the left half of an existing one.
 	    if (has_mbyte && col + char_cells == endcol
 		    && ((char_cells == 1
 			    && (*mb_off2cells)(off_to, max_off_to) > 1)
@@ -1196,8 +1230,8 @@ win_redr_custom(
     char_u	buf[MAXPATHL];
     char_u	*stl;
     char_u	*p;
-    struct	stl_hlrec hltab[STL_MAX_ITEM];
-    struct	stl_hlrec tabtab[STL_MAX_ITEM];
+    stl_hlrec_T *hltab;
+    stl_hlrec_T *tabtab;
     int		use_sandbox = FALSE;
     win_T	*ewp;
     int		p_crb_save;
@@ -1224,7 +1258,7 @@ win_redr_custom(
     }
     else
     {
-	row = W_WINROW(wp) + wp->w_height;
+	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
 	maxwidth = wp->w_width;
 
@@ -1287,7 +1321,7 @@ win_redr_custom(
     stl = vim_strsave(stl);
     width = build_stl_str_hl(ewp, buf, sizeof(buf),
 				stl, use_sandbox,
-				fillchar, maxwidth, hltab, tabtab);
+				fillchar, maxwidth, &hltab, &tabtab);
     vim_free(stl);
     ewp->w_p_crb = p_crb_save;
 
@@ -1461,8 +1495,9 @@ screen_puts_len(
     int		textlen,
     int		row,
     int		col,
-    int		attr)
+    int		attr_arg)
 {
+    int		attr = attr_arg;
     unsigned	off;
     char_u	*ptr = text;
     int		len = textlen;
@@ -1490,8 +1525,8 @@ screen_puts_len(
 	return;
     off = LineOffset[row] + col;
 
-    // When drawing over the right halve of a double-wide char clear out the
-    // left halve.  Only needed in a terminal.
+    // When drawing over the right half of a double-wide char clear out the
+    // left half.  Only needed in a terminal.
     if (has_mbyte && col > 0 && col < screen_Columns
 #ifdef FEAT_GUI
 	    && !gui.in_use
@@ -1619,9 +1654,9 @@ screen_puts_len(
 #endif
 	    // When at the end of the text and overwriting a two-cell
 	    // character with a one-cell character, need to clear the next
-	    // cell.  Also when overwriting the left halve of a two-cell char
-	    // with the right halve of a two-cell char.  Do this only once
-	    // (mb_off2cells() may return 2 on the right halve).
+	    // cell.  Also when overwriting the left half of a two-cell char
+	    // with the right half of a two-cell char.  Do this only once
+	    // (mb_off2cells() may return 2 on the right half).
 	    if (clear_next_cell)
 		clear_next_cell = FALSE;
 	    else if (has_mbyte
@@ -1688,8 +1723,10 @@ screen_puts_len(
 	    if (clear_next_cell)
 	    {
 		// This only happens at the end, display one space next.
+		// Keep the attribute from before.
 		ptr = (char_u *)" ";
 		len = -1;
+		attr = ScreenAttrs[off];
 	    }
 	}
 	else
@@ -1762,7 +1799,7 @@ screen_start_highlight(int attr)
 	    char	buf[20];
 
 	    // The GUI handles this internally.
-	    sprintf(buf, IF_EB("\033|%dh", ESC_STR "|%dh"), attr);
+	    sprintf(buf, "\033|%dh", attr);
 	    OUT_STR(buf);
 	}
 	else
@@ -1912,7 +1949,7 @@ screen_stop_highlight(void)
 	    char	buf[20];
 
 	    // use internal GUI code
-	    sprintf(buf, IF_EB("\033|%dH", ESC_STR "|%dH"), screen_attr);
+	    sprintf(buf, "\033|%dH", screen_attr);
 	    OUT_STR(buf);
 	}
 	else
@@ -2105,7 +2142,7 @@ screen_char(unsigned off, int row, int col)
 
     // Skip if under the popup menu.
     // Popup windows with zindex higher than POPUPMENU_ZINDEX go on top.
-    if (pum_under_menu(row, col)
+    if (pum_under_menu(row, col, TRUE)
 #ifdef FEAT_PROP_POPUP
 	    && screen_zindex <= POPUPMENU_ZINDEX
 #endif
@@ -2294,9 +2331,9 @@ space_to_screenline(int off, int attr)
 }
 
 /*
- * Fill the screen from 'start_row' to 'end_row', from 'start_col' to 'end_col'
- * with character 'c1' in first column followed by 'c2' in the other columns.
- * Use attributes 'attr'.
+ * Fill the screen from "start_row" to "end_row" (exclusive), from "start_col"
+ * to "end_col" (exclusive) with character "c1" in first column followed by
+ * "c2" in the other columns.  Use attributes "attr".
  */
     void
 screen_fill(
@@ -2342,9 +2379,9 @@ screen_fill(
 #endif
 	   )
 	{
-	    // When drawing over the right halve of a double-wide char clear
-	    // out the left halve.  When drawing over the left halve of a
-	    // double wide-char clear out the right halve.  Only needed in a
+	    // When drawing over the right half of a double-wide char clear
+	    // out the left half.  When drawing over the left half of a
+	    // double wide-char clear out the right half.  Only needed in a
 	    // terminal.
 	    if (start_col > 0 && mb_fix_col(start_col, row) != start_col)
 		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
@@ -2490,7 +2527,8 @@ check_for_delay(int check_msg_scroll)
 {
     if ((emsg_on_display || (check_msg_scroll && msg_scroll))
 	    && !did_wait_return
-	    && emsg_silent == 0)
+	    && emsg_silent == 0
+	    && !in_assert_fails)
     {
 	out_flush();
 	ui_delay(1006L, TRUE);
@@ -3085,7 +3123,6 @@ windgoto(int row, int col)
     // Can't use ScreenLines unless initialized
     if (ScreenLines == NULL)
 	return;
-
     if (col != screen_cur_col || row != screen_cur_row)
     {
 	// Check for valid position.
@@ -3597,9 +3634,9 @@ win_rest_invalid(win_T *wp)
 
 /*
  * insert lines on the screen and update ScreenLines[]
- * 'end' is the line after the scrolled part. Normally it is Rows.
- * When scrolling region used 'off' is the offset from the top for the region.
- * 'row' and 'end' are relative to the start of the region.
+ * "end" is the line after the scrolled part. Normally it is Rows.
+ * When scrolling region used "off" is the offset from the top for the region.
+ * "row" and "end" are relative to the start of the region.
  *
  * return FAIL for failure, OK for success.
  */
@@ -3624,14 +3661,15 @@ screen_ins_lines(
     /*
      * FAIL if
      * - there is no valid screen
-     * - the screen has to be redrawn completely
      * - the line count is less than one
      * - the line count is more than 'ttyscroll'
+     * - "end" is more than "Rows" (safety check, should not happen)
      * - redrawing for a callback and there is a modeless selection
      * - there is a popup window
      */
      if (!screen_valid(TRUE)
 	     || line_count <= 0 || line_count > p_ttyscroll
+	     || end > Rows
 #ifdef FEAT_CLIPBOARD
 	     || (clip_star.state != SELECT_CLEARED
 						 && redrawing_for_callback > 0)
@@ -3669,7 +3707,15 @@ screen_ins_lines(
      */
     result_empty = (row + line_count >= end);
     if (wp != NULL && wp->w_width != Columns && *T_CSV == NUL)
+    {
+	// Avoid that lines are first cleared here and then redrawn, which
+	// results in many characters updated twice.  This happens with CTRL-F
+	// in a vertically split window.  With line-by-line scrolling
+	// USE_REDRAW should be faster.
+	if (line_count > 3)
+	    return FAIL;
 	type = USE_REDRAW;
+    }
     else if (can_clear(T_CD) && result_empty)
 	type = USE_T_CD;
     else if (*T_CAL != NUL && (line_count > 1 || *T_AL == NUL))
@@ -3841,7 +3887,7 @@ screen_del_lines(
     int		end,
     int		force,		// even when line_count > p_ttyscroll
     int		clear_attr,	// used for clearing lines
-    win_T	*wp UNUSED)	// NULL or window to use width from
+    win_T	*wp)		// NULL or window to use width from
 {
     int		j;
     int		i;
@@ -3859,13 +3905,15 @@ screen_del_lines(
      * - the screen has to be redrawn completely
      * - the line count is less than one
      * - the line count is more than 'ttyscroll'
+     * - "end" is more than "Rows" (safety check, should not happen)
      * - redrawing for a callback and there is a modeless selection
      */
-    if (!screen_valid(TRUE) || line_count <= 0
-					|| (!force && line_count > p_ttyscroll)
+    if (!screen_valid(TRUE)
+	    || line_count <= 0
+	    || (!force && line_count > p_ttyscroll)
+	    || end > Rows
 #ifdef FEAT_CLIPBOARD
-	     || (clip_star.state != SELECT_CLEARED
-						 && redrawing_for_callback > 0)
+	    || (clip_star.state != SELECT_CLEARED && redrawing_for_callback > 0)
 #endif
        )
 	return FAIL;
@@ -3894,7 +3942,15 @@ screen_del_lines(
      * 6. redraw the characters from ScreenLines[].
      */
     if (wp != NULL && wp->w_width != Columns && *T_CSV == NUL)
+    {
+	// Avoid that lines are first cleared here and then redrawn, which
+	// results in many characters updated twice.  This happens with CTRL-F
+	// in a vertically split window.  With line-by-line scrolling
+	// USE_REDRAW should be faster.
+	if (line_count > 3)
+	    return FAIL;
 	type = USE_REDRAW;
+    }
     else if (can_clear(T_CD) && result_empty)
 	type = USE_T_CD;
     else if (row == 0 && (
@@ -4190,7 +4246,8 @@ showmode(void)
 #endif
 		    msg_puts_attr(_(" INSERT"), attr);
 		}
-		else if (restart_edit == 'I' || restart_edit == 'A')
+		else if (restart_edit == 'I' || restart_edit == 'i' ||
+			restart_edit == 'a' || restart_edit == 'A')
 		    msg_puts_attr(_(" (insert)"), attr);
 		else if (restart_edit == 'R')
 		    msg_puts_attr(_(" (replace)"), attr);
@@ -4742,15 +4799,47 @@ screen_screenrow(void)
 #endif
 
 /*
+ * Calls mb_ptr2char_adv(p) and returns the character.
+ * If "p" starts with "\x", "\u" or "\U" the hex or unicode value is used.
+ */
+    static int
+get_encoded_char_adv(char_u **p)
+{
+    char_u *s = *p;
+
+    if (s[0] == '\\' && (s[1] == 'x' || s[1] == 'u' || s[1] == 'U'))
+    {
+	varnumber_T num = 0;
+	int	    bytes;
+	int	    n;
+
+	for (bytes = s[1] == 'x' ? 1 : s[1] == 'u' ? 2 : 4; bytes > 0; --bytes)
+	{
+	    *p += 2;
+	    n = hexhex2nr(*p);
+	    if (n < 0)
+		return 0;
+	    num = num * 256 + n;
+	}
+	*p += 2;
+	return num;
+    }
+    return mb_ptr2char_adv(p);
+}
+
+/*
  * Handle setting 'listchars' or 'fillchars'.
+ * Assume monocell characters.
  * Returns error message, NULL if it's OK.
  */
     char *
-set_chars_option(char_u **varp)
+set_chars_option(win_T *wp, char_u **varp)
 {
     int		round, i, len, entries;
     char_u	*p, *s;
     int		c1 = 0, c2 = 0, c3 = 0;
+    char_u	*last_multispace = NULL; // Last occurrence of "multispace:"
+    int		multispace_len = 0;	 // Length of lcs-multispace string
     struct charstab
     {
 	int	*cp;
@@ -4758,38 +4847,47 @@ set_chars_option(char_u **varp)
     };
     static struct charstab filltab[] =
     {
-	{&fill_stl,	"stl"},
-	{&fill_stlnc,	"stlnc"},
-	{&fill_vert,	"vert"},
-	{&fill_fold,	"fold"},
-	{&fill_diff,	"diff"},
+	{&fill_stl,		"stl"},
+	{&fill_stlnc,		"stlnc"},
+	{&fill_vert,		"vert"},
+	{&fill_fold,		"fold"},
+	{&fill_foldopen,	"foldopen"},
+	{&fill_foldclosed,	"foldclose"},
+	{&fill_foldsep,		"foldsep"},
+	{&fill_diff,		"diff"},
+	{&fill_eob,		"eob"},
     };
-    static struct charstab lcstab[] =
+    static lcs_chars_T lcs_chars;
+    struct charstab lcstab[] =
     {
-	{&lcs_eol,	"eol"},
-	{&lcs_ext,	"extends"},
-	{&lcs_nbsp,	"nbsp"},
-	{&lcs_prec,	"precedes"},
-	{&lcs_space,	"space"},
-	{&lcs_tab2,	"tab"},
-	{&lcs_trail,	"trail"},
+	{&lcs_chars.eol,	"eol"},
+	{&lcs_chars.ext,	"extends"},
+	{&lcs_chars.nbsp,	"nbsp"},
+	{&lcs_chars.prec,	"precedes"},
+	{&lcs_chars.space,	"space"},
+	{&lcs_chars.tab2,	"tab"},
+	{&lcs_chars.trail,	"trail"},
+	{&lcs_chars.lead,	"lead"},
 #ifdef FEAT_CONCEAL
-	{&lcs_conceal,	"conceal"},
+	{&lcs_chars.conceal,	"conceal"},
 #else
-	{NULL,		"conceal"},
+	{NULL,			"conceal"},
 #endif
     };
     struct charstab *tab;
 
-    if (varp == &p_lcs)
+    if (varp == &p_lcs || varp == &wp->w_p_lcs)
     {
 	tab = lcstab;
-	entries = sizeof(lcstab) / sizeof(struct charstab);
+	CLEAR_FIELD(lcs_chars);
+	entries = ARRAY_LENGTH(lcstab);
+	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
+	    varp = &p_lcs;
     }
     else
     {
 	tab = filltab;
-	entries = sizeof(filltab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(filltab);
     }
 
     // first round: check for valid value, second round: assign values
@@ -4801,15 +4899,29 @@ set_chars_option(char_u **varp)
 	    // 'fillchars', NUL for 'listchars'
 	    for (i = 0; i < entries; ++i)
 		if (tab[i].cp != NULL)
-		    *(tab[i].cp) = (varp == &p_lcs ? NUL : ' ');
+		    *(tab[i].cp) =
+			((varp == &p_lcs || varp == &wp->w_p_lcs) ? NUL : ' ');
 
-	    if (varp == &p_lcs)
+	    if (varp == &p_lcs || varp == &wp->w_p_lcs)
 	    {
-		lcs_tab1 = NUL;
-		lcs_tab3 = NUL;
+		lcs_chars.tab1 = NUL;
+		lcs_chars.tab3 = NUL;
+		if (multispace_len > 0)
+		{
+		    lcs_chars.multispace = ALLOC_MULT(int, multispace_len + 1);
+		    lcs_chars.multispace[multispace_len] = NUL;
+		}
+		else
+		    lcs_chars.multispace = NULL;
 	    }
 	    else
+	    {
 		fill_diff = '-';
+		fill_foldopen = '-';
+		fill_foldclosed = '+';
+		fill_foldsep = '|';
+		fill_eob = '~';
+	    }
 	}
 	p = *varp;
 	while (*p)
@@ -4823,33 +4935,33 @@ set_chars_option(char_u **varp)
 		{
 		    c2 = c3 = 0;
 		    s = p + len + 1;
-		    c1 = mb_ptr2char_adv(&s);
-		    if (mb_char2cells(c1) > 1)
-			continue;
-		    if (tab[i].cp == &lcs_tab2)
+		    c1 = get_encoded_char_adv(&s);
+		    if (char2cells(c1) > 1)
+			return e_invalid_argument;
+		    if (tab[i].cp == &lcs_chars.tab2)
 		    {
 			if (*s == NUL)
-			    continue;
-			c2 = mb_ptr2char_adv(&s);
-			if (mb_char2cells(c2) > 1)
-			    continue;
+			    return e_invalid_argument;
+			c2 = get_encoded_char_adv(&s);
+			if (char2cells(c2) > 1)
+			    return e_invalid_argument;
 			if (!(*s == ',' || *s == NUL))
 			{
-			    c3 = mb_ptr2char_adv(&s);
-			    if (mb_char2cells(c3) > 1)
-				continue;
+			    c3 = get_encoded_char_adv(&s);
+			    if (char2cells(c3) > 1)
+				return e_invalid_argument;
 			}
 		    }
 
 		    if (*s == ',' || *s == NUL)
 		    {
-			if (round)
+			if (round > 0)
 			{
-			    if (tab[i].cp == &lcs_tab2)
+			    if (tab[i].cp == &lcs_chars.tab2)
 			    {
-				lcs_tab1 = c1;
-				lcs_tab2 = c2;
-				lcs_tab3 = c3;
+				lcs_chars.tab1 = c1;
+				lcs_chars.tab2 = c2;
+				lcs_chars.tab3 = c3;
 			    }
 			    else if (tab[i].cp != NULL)
 				*(tab[i].cp) = c1;
@@ -4862,10 +4974,57 @@ set_chars_option(char_u **varp)
 	    }
 
 	    if (i == entries)
-		return e_invarg;
+	    {
+		len = (int)STRLEN("multispace");
+		if ((varp == &p_lcs || varp == &wp->w_p_lcs)
+			&& STRNCMP(p, "multispace", len) == 0
+			&& p[len] == ':'
+			&& p[len + 1] != NUL)
+		{
+		    s = p + len + 1;
+		    if (round == 0)
+		    {
+			// Get length of lcs-multispace string in first round
+			last_multispace = p;
+			multispace_len = 0;
+			while (*s != NUL && *s != ',')
+			{
+			    c1 = get_encoded_char_adv(&s);
+			    if (char2cells(c1) > 1)
+				return e_invalid_argument;
+			    ++multispace_len;
+			}
+			if (multispace_len == 0)
+			    // lcs-multispace cannot be an empty string
+			    return e_invalid_argument;
+			p = s;
+		    }
+		    else
+		    {
+			int multispace_pos = 0;
+
+			while (*s != NUL && *s != ',')
+			{
+			    c1 = get_encoded_char_adv(&s);
+			    if (p == last_multispace)
+				lcs_chars.multispace[multispace_pos++] = c1;
+			}
+			p = s;
+		    }
+		}
+		else
+		    return e_invalid_argument;
+	    }
+
 	    if (*p == ',')
 		++p;
 	}
+    }
+    if (tab == lcstab)
+    {
+	if (wp->w_lcs_chars.multispace != NULL)
+	    vim_free(wp->w_lcs_chars.multispace);
+	wp->w_lcs_chars = lcs_chars;
     }
 
     return NULL;	// no error

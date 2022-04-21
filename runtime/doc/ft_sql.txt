@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 8.2.  Last change: 2019 Dec 07
+*ft_sql.txt*	For Vim version 8.2.  Last change: 2022 Apr 06
 
 by David Fishburn
 
@@ -109,8 +109,8 @@ must be configurable.  The filetype plugin attempts to define many of the
 standard objects, plus many additional ones.  In order to make this as
 flexible as possible, you can override the list of objects from within your
 |vimrc| with the following: >
-    let g:ftplugin_sql_objects = 'function,procedure,event,table,trigger' .
-		\ ',schema,service,publication,database,datatype,domain' .
+    let g:ftplugin_sql_objects = 'function,procedure,event,table,trigger' ..
+		\ ',schema,service,publication,database,datatype,domain' ..
 		\ ',index,subscription,synchronization,view,variable'
 
 The following |Normal| mode and |Visual| mode maps have been created which use
@@ -131,10 +131,10 @@ Repeatedly pressing ]} will cycle through each of these create statements: >
     create index i1 on t1 (c1);
 
 The default setting for g:ftplugin_sql_objects is: >
-    let g:ftplugin_sql_objects = 'function,procedure,event,' .
-		\ '\\(existing\\\\|global\\s\\+temporary\\s\\+\\)\\\{,1}' .
-		\ 'table,trigger' .
-		\ ',schema,service,publication,database,datatype,domain' .
+    let g:ftplugin_sql_objects = 'function,procedure,event,' ..
+		\ '\\(existing\\\\|global\\s\\+temporary\\s\\+\\)\\\{,1}' ..
+		\ 'table,trigger' ..
+		\ ',schema,service,publication,database,datatype,domain' ..
 		\ ',index,subscription,synchronization,view,variable'
 
 The above will also handle these cases: >
@@ -440,7 +440,7 @@ the space bar):
 			     replace the column list with the list of tables.
 			   - This allows you to quickly drill down into a
 			     table to view its columns and back again.
-			   - <Right> and <Left> can be also be chosen via
+			   - <Right> and <Left> can also be chosen via
 			     your |.vimrc| >
                                 let g:ftplugin_sql_omni_key_right = '<Right>'
                                 let g:ftplugin_sql_omni_key_left  = '<Left>'
@@ -559,7 +559,7 @@ the SQL completion plugin. >
 <	1. After typing SELECT press <C-C>t to display a list of tables.
 	2. Highlight the table you need the column list for.
 	3. Press <Enter> to choose the table from the list.
-	4. Press <C-C>l to request a comma separated list of all columns
+	4. Press <C-C>l to request a comma-separated list of all columns
 	   for this table.
 	5. Based on the table name chosen in step 3, the plugin attempts to
 	   decide on a reasonable table alias.	You are then prompted to
@@ -613,7 +613,7 @@ your |vimrc|: >
 >
     omni_sql_use_tbl_alias
 <	- Default: a
-	- This setting is only used when generating a comma separated
+	- This setting is only used when generating a comma-separated
 	  column list.	By default the map is <C-C>l.  When generating
 	  a column list, an alias can be prepended to the beginning of each
 	  column, for example:	e.emp_id, e.emp_name.  This option has three
@@ -697,9 +697,9 @@ plugin. >
     <C-C>c
 <       - Displays a list of columns for a specific table. >
     <C-C>l
-<       - Displays a comma separated list of columns for a specific table. >
+<       - Displays a comma-separated list of columns for a specific table. >
     <C-C>L
-<       - Displays a comma separated list of columns for a specific table.
+<       - Displays a comma-separated list of columns for a specific table.
 	  This should only be used when the completion window is active. >
     <Right>
 <	- Displays a list of columns for the table currently highlighted in

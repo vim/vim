@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
+*if_perl.txt*   For Vim version 8.2.  Last change: 2022 Mar 13
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -22,9 +22,9 @@ line of a file, regardless of the filename suffix, to check if a file is a
 Perl script (see scripts.vim in Vim's syntax directory).  Vim assumes a file
 is POD text if the filename has a .POD suffix.
 
-To use tags with Perl, you need a recent version of Exuberant ctags.  Look
-here:
-	http://ctags.sourceforge.net
+To use tags with Perl, you need Universal/Exuberant Ctags.  Look here:
+	Universal Ctags (preferred): https://ctags.io
+	Exuberant Ctags: http://ctags.sourceforge.net
 
 Alternatively, you can use the Perl script pltags.pl, which is shipped with
 Vim in the $VIMRUNTIME/tools directory.  This script has currently more
@@ -103,8 +103,7 @@ Here are some things you can try: >
   :perldo $_ = reverse($_);1
   :perl VIM::Msg("hello")
   :perl $line = $curbuf->Get(42)
-<
-							*E299*
+<							*E299*
 Executing Perl commands in the |sandbox| is limited.  ":perldo" will not be
 possible at all.  ":perl" will be evaluated in the Safe environment, if
 possible.

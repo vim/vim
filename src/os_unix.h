@@ -73,8 +73,9 @@
 // always use unlink() to remove files
 #ifndef PROTO
 # ifdef VMS
-#  define mch_remove(x) delete((char *)(x))
-#  define vim_mkdir(x, y) mkdir((char *)(x), y)
+#  define vim_mkdir(x, y) mkdir((char *)vms_fixfilename(x), y)
+#  define mch_rmdir(x)  delete((char *)vms_fixfilename(x))
+#  define mch_remove(x) delete((char *)vms_fixfilename(x))
 # else
 #  define vim_mkdir(x, y) mkdir((char *)(x), y)
 #  define mch_rmdir(x) rmdir((char *)(x))
@@ -95,11 +96,11 @@
 #ifdef SIGHASARG
 # ifdef SIGHAS3ARGS
 #  define SIGPROTOARG	(int, int, struct sigcontext *)
-#  define SIGDEFARG(s)	(s, sig2, scont) int s, sig2; struct sigcontext *scont;
+#  define SIGDEFARG(s)	(int s, int sig2, struct sigcontext *scont)
 #  define SIGDUMMYARG	0, 0, (struct sigcontext *)0
 # else
 #  define SIGPROTOARG	(int)
-#  define SIGDEFARG(s)	(s) int s UNUSED;
+#  define SIGDEFARG(s)	(int s UNUSED)
 #  define SIGDUMMYARG	0
 # endif
 #else
@@ -199,10 +200,11 @@
 # include <libdef.h>
 # include <libdtdef.h>
 
-# ifdef FEAT_GUI_GTK
-#  include "gui_gtk_vms.h"
+# if defined(FEAT_GUI_MOTIF)
+#  define XFree XFREE
+#  define XmRepTypeInstallTearOffModelCon XMREPTYPEINSTALLTEAROFFMODELCON
 # endif
-#endif
+#endif // VMS
 
 #ifdef HAVE_FLOCK
 # include <sys/file.h>

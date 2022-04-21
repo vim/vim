@@ -135,9 +135,9 @@ OPTIONS
                    Vim behave mostly like Vi, even though a  .vimrc  file  ex‐
                    ists.
 
-       -d          Start  in  diff  mode.   There should be two, three or four
-                   file name arguments.  Vim will open all the files and  show
-                   differences between them.  Works like vimdiff(1).
+       -d          Start in diff mode.  There should between two to eight file
+                   name arguments.  Vim will open all the files and show  dif‐
+                   ferences between them.  Works like vimdiff(1).
 
        -d {device} Open  {device}  for  use as a terminal.  Only on the Amiga.
                    Example: "-d con:20/30/600/150".
@@ -300,6 +300,10 @@ OPTIONS
                    be handled as a file name.  This can  be  used  to  edit  a
                    filename that starts with a '-'.
 
+       --clean     Do  not  use  any  personal  configuration (vimrc, plugins,
+                   etc.).  Useful to see if a problem reproduces with a  clean
+                   Vim setup.
+
        --echo-wid  GTK GUI only: Echo the Window ID on stdout.
 
        --help      Give a help message and exit, just like "-h".
@@ -344,6 +348,9 @@ OPTIONS
        --socketid {id}
                    GTK  GUI only: Use the GtkPlug mechanism to run gvim in an‐
                    other window.
+
+       --startuptime {file}
+                   During startup write timing messages to the file {fname}.
 
        --version   Print version information and exit.
 
@@ -425,4 +432,4 @@ BUGS
 
 
 
-                                  2006 Apr 11                           VIM(1)
+                                  2021 Jun 13                           VIM(1)

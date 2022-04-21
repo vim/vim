@@ -111,4 +111,27 @@ func Test_si_comment_line_continuation()
   close!
 endfunc
 
+" When 'paste' is set, 'smartindent' should not take effect.
+func Test_si_with_paste()
+  new
+  setlocal smartindent autoindent
+  set paste
+  " insert text that will trigger smartindent
+  exe "norm! i    {\nif (x)\ni = 1;\n#define FOO 1\nj = 2;\n}"
+  exe "norm! Ok = 3;"
+  exe "norm! 4G>>"
+  call assert_equal(['    {', 'if (x)', 'i = 1;', '#define FOO 1',
+        \ 'j = 2;', 'k = 3;', '}'], getline(1, '$'))
+  call assert_true(&smartindent)
+  set nopaste
+  %d _
+  exe "norm! i    {\nif (x)\ni = 1;\n#define FOO 1\nj = 2;\n}"
+  exe "norm! Ok = 3;"
+  exe "norm! 4G>>"
+  call assert_equal(['    {', "\t    if (x)", "\t\t    i = 1;",
+        \ '#define FOO 1', "\t\t    j = 2;", "\t    k = 3;", '    }'],
+        \ getline(1, '$'))
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

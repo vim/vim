@@ -150,7 +150,7 @@ func Test_default_arg()
   call assert_equal(res['0'], 1)
 
   call assert_fails("call MakeBadFunc()", 'E989:')
-  call assert_fails("fu F(a=1 ,) | endf", 'E475:')
+  call assert_fails("fu F(a=1 ,) | endf", 'E1068:')
 
   let d = Args2(7, v:none, 9)
   call assert_equal([7, 2, 9], [d.a, d.b, d.c])
@@ -160,6 +160,16 @@ func Test_default_arg()
 	\ .. "1    return deepcopy(a:)\n"
 	\ .. "   endfunction",
 	\ execute('func Args2'))
+
+  " Error in default argument expression
+  let l =<< trim END
+    func F1(x = y)
+      return a:x * 2
+    endfunc
+    echo F1()
+  END
+  let @a = l->join("\n")
+  call assert_fails("exe @a", 'E121:')
 endfunc
 
 func s:addFoo(lead)
@@ -405,18 +415,32 @@ func Test_func_def_error()
   let l = join(lines, "\n") . "\n"
   exe l
   call assert_fails('exe l', 'E717:')
+  call assert_fails('call feedkeys(":func d.F1()\<CR>", "xt")', 'E717:')
 
   " Define an autoload function with an incorrect file name
   call writefile(['func foo#Bar()', 'return 1', 'endfunc'], 'Xscript')
   call assert_fails('source Xscript', 'E746:')
   call delete('Xscript')
+
+  " Try to list functions using an invalid search pattern
+  call assert_fails('function /\%(/', 'E53:')
 endfunc
 
 " Test for deleting a function
 func Test_del_func()
-  call assert_fails('delfunction Xabc', 'E130:')
+  call assert_fails('delfunction Xabc', 'E117:')
   let d = {'a' : 10}
   call assert_fails('delfunc d.a', 'E718:')
+  func d.fn()
+    return 1
+  endfunc
+
+  " cannot delete the dict function by number
+  let nr = substitute(execute('echo d'), '.*function(''\(\d\+\)'').*', '\1', '')
+  call assert_fails('delfunction g:' .. nr, 'E475: Invalid argument: g:')
+
+  delfunc d.fn
+  call assert_equal({'a' : 10}, d)
 endfunc
 
 " Test for calling return outside of a function
@@ -440,6 +464,69 @@ func Test_func_arg_error()
   endfunc
   call assert_fails('call Xfunc()', 'E725:')
   delfunc Xfunc
+endfunc
+
+func Test_func_dict()
+  let mydict = {'a': 'b'}
+  function mydict.somefunc() dict
+    return len(self)
+  endfunc
+
+  call assert_equal("{'a': 'b', 'somefunc': function('3')}", string(mydict))
+  call assert_equal(2, mydict.somefunc())
+  call assert_match("^\n   function \\d\\\+() dict"
+  \              .. "\n1      return len(self)"
+  \              .. "\n   endfunction$", execute('func mydict.somefunc'))
+  call assert_fails('call mydict.nonexist()', 'E716:')
+endfunc
+
+func Test_func_range()
+  new
+  call setline(1, range(1, 8))
+  func FuncRange() range
+    echo a:firstline
+    echo a:lastline
+  endfunc
+  3
+  call assert_equal("\n3\n3", execute('call FuncRange()'))
+  call assert_equal("\n4\n6", execute('4,6 call FuncRange()'))
+  call assert_equal("\n   function FuncRange() range"
+  \              .. "\n1      echo a:firstline"
+  \              .. "\n2      echo a:lastline"
+  \              .. "\n   endfunction",
+  \                 execute('function FuncRange'))
+
+  bwipe!
+endfunc
+
+" Test for memory allocation failure when defining a new function
+func Test_funcdef_alloc_failure()
+  new
+  let lines =<< trim END
+    func Xtestfunc()
+      return 321
+    endfunc
+  END
+  call setline(1, lines)
+  call test_alloc_fail(GetAllocId('get_func'), 0, 0)
+  call assert_fails('source', 'E342:')
+  call assert_false(exists('*Xtestfunc'))
+  call assert_fails('delfunc Xtestfunc', 'E117:')
+  %d _
+  let lines =<< trim END
+    def g:Xvim9func(): number
+      return 456
+    enddef
+  END
+  call setline(1, lines)
+  call test_alloc_fail(GetAllocId('get_func'), 0, 0)
+  call assert_fails('source', 'E342:')
+  call assert_false(exists('*Xvim9func'))
+  "call test_alloc_fail(GetAllocId('get_func'), 0, 0)
+  "call assert_fails('source', 'E342:')
+  "call assert_false(exists('*Xtestfunc'))
+  "call assert_fails('delfunc Xtestfunc', 'E117:')
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

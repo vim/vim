@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2020 Feb 04
+*starting.txt*  For Vim version 8.2.  Last change: 2022 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -256,6 +256,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Interfaces, such as Python, Ruby and Lua, are also disabled,
 		since they could be used to execute shell commands.  Perl uses
 		the Safe module.
+		For Unix restricted mode is used when the last part of $SHELL
+		is "nologin" or "false".
 		Note that the user may still find a loophole to execute a
 		shell command, it has only been made difficult.
 
@@ -268,8 +270,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		started if possible.
 
 							*-e*
--e		Start Vim in Ex mode |Q|.  Only makes a difference when the
-		executable is not called "ex".
+-e		Start Vim in Ex mode, see |Ex-mode|.  Only makes a difference
+		when the executable is not called "ex".
 
 							*-E*
 -E		Start Vim in improved Ex mode |gQ|.  Only makes a difference
@@ -342,6 +344,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Example: >
 			vim -V20vimlog foobar
 <
+--log {filename}					*--log*
+		Start logging and write entries to {filename}.
+		This works like calling `ch_logfile({filename}, 'a')` very
+		early during startup.
+		{only available with the +channel feature}
+
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first
 		command from a script. |debug-mode|
@@ -513,6 +521,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		  'nocompatible': use Vim defaults
 		- no |gvimrc| script is loaded
 		- no viminfo file is read or written
+		Note that a following "-u" argument overrules the effect of
+		"-u DEFAULTS".
 
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,
@@ -558,6 +568,9 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		":source!".  When the "scriptout" file already exists, new
 		characters are appended.  See also |complex-repeat|.
 		{scriptout} cannot start with a digit.
+		If you want to record what is typed in a human readable for
+		you can use |ch_logfile()|, It adds "raw key input" lines.
+		Also see |--log|.
 
 							*-W*
 -W {scriptout}	Like -w, but do not append, overwrite an existing file.
@@ -994,7 +1007,7 @@ version 5.0) are not recognized.
 
 MS-Windows line separators ~
 
-On MS-Windows, Vim assumes that all the vimrc files have <CR> <NL> pairs as
+On MS-Windows, Vim assumes that all the vimrc files have <CR><NL> pairs as
 line separators.  This will give problems if you have a file with only <NL>s
 and have a line like ":map xx yy^M".  The trailing ^M will be ignored.
 
@@ -1034,7 +1047,7 @@ giving the mapping.
 
 
 Defaults without a .vimrc file ~
-							*defaults.vim*
+							*defaults.vim* *E1187*
 If Vim is started normally and no user vimrc file is found, the
 $VIMRUNTIME/defaults.vim script is loaded.  This will set 'compatible' off,
 switch on syntax highlighting and a few more things.  See the script for
@@ -1342,7 +1355,11 @@ resulting file, when executed with a ":source" command:
    "options".  Script-local mappings will not be written.
 2. Restores global variables that start with an uppercase letter and contain
    at least one lowercase letter, if 'sessionoptions' contains "globals".
-3. Unloads all currently loaded buffers.
+3. Closes all windows in the current tab page, except the current one; closes
+   all tab pages except the current one (this results in currently loaded
+   buffers to be unloaded, some may become hidden if 'hidden' is set or
+   otherwise specified); wipes out the current buffer, if it is empty
+   and unnamed.
 4. Restores the current directory if 'sessionoptions' contains "curdir", or
    sets the current directory to where the Session file is if 'sessionoptions'
    contains "sesdir".
@@ -1368,7 +1385,7 @@ resulting file, when executed with a ":source" command:
 After restoring the Session, the full filename of your current Session is
 available in the internal variable "v:this_session" |this_session-variable|.
 An example mapping: >
-  :nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>:so ~/sessions/
+  :nmap <F2> :wa<Bar>exe "mksession! " .. v:this_session<CR>:so ~/sessions/
 This saves the current Session, and starts off the command to load another.
 
 A session includes all tab pages, unless "tabpages" was removed from
@@ -1586,7 +1603,7 @@ VIMINFO FILE NAME					*viminfo-file-name*
   file name given is "NONE" (all uppercase), no viminfo file is ever read or
   written.  Also not for the commands below!
 - The 'viminfofile' option can be used like the "-i" argument.  In fact, the
-  value form the "-i" argument is stored in the 'viminfofile' option.
+  value from the "-i" argument is stored in the 'viminfofile' option.
 - For the commands below, another file name can be given, overriding the
   default and the name given with 'viminfo' or "-i" (unless it's NONE).
 
@@ -1638,13 +1655,17 @@ either have to fix the error, or delete the file (while Vim is running, so
 most of the information will be restored).
 
 						   *:rv* *:rviminfo* *E195*
-:rv[iminfo][!] [file]	Read from viminfo file [file] (default: see above).
+:rv[iminfo][!] [file]	Read from viminfo file [file] (default: see
+			|viminfo-file-name| above).
 			If [!] is given, then any information that is
 			already set (registers, marks, |v:oldfiles|, etc.)
 			will be overwritten
 
 			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
-:wv[iminfo][!] [file]	Write to viminfo file [file] (default: see above).
+:wv[iminfo][!] [file]	Write to viminfo file [file] (default: see
+			|viminfo-file-name| above).
+			This command has no effect when 'viminfofile' has been
+			set to "NONE".
 			The information in the file is first read in to make
 			a merge between old and new info.  When [!] is used,
 			the old information is not read first, only the

@@ -4,6 +4,7 @@ source check.vim
 source shared.vim
 source term_util.vim
 source view_util.vim
+source screendump.vim
 
 func Test_messages()
   let oldmore = &more
@@ -258,6 +259,17 @@ func Test_message_more()
   call term_sendkeys(buf, 'q')
   call WaitForAssert({-> assert_equal('100', term_getline(buf, 5))})
 
+  " Execute a : command from the more prompt
+  call term_sendkeys(buf, ":%p#\n")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
+  call term_sendkeys(buf, ":")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_equal(':', term_getline(buf, 6))})
+  call term_sendkeys(buf, "echo 'Hello'\n")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_equal('Hello ', term_getline(buf, 5))})
+
   call StopVimInTerminal(buf)
 endfunc
 
@@ -307,6 +319,62 @@ func Test_mapping_at_hit_return_prompt()
   call feedkeys("\<*C-B>", "xt")
   call assert_match('hit ctrl-b', Screenline(&lines - 1))
   nunmap <C-B>
+endfunc
+
+func Test_quit_long_message()
+  CheckScreendump
+
+  let content =<< trim END
+    echom range(9999)->join("\x01")
+  END
+  call writefile(content, 'Xtest_quit_message')
+  let buf = RunVimInTerminal('-S Xtest_quit_message', #{rows: 6})
+  call term_sendkeys(buf, "q")
+  call VerifyScreenDump(buf, 'Test_quit_long_message', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_quit_message')
+endfunc
+
+" this was missing a terminating NUL
+func Test_echo_string_partial()
+  function CountSpaces()
+  endfunction
+  call assert_equal("function('CountSpaces', [{'ccccccccccc': ['ab', 'cd'], 'aaaaaaaaaaa': v:false, 'bbbbbbbbbbbb': ''}])", string(function('CountSpaces', [#{aaaaaaaaaaa: v:false, bbbbbbbbbbbb: '', ccccccccccc: ['ab', 'cd']}])))
+endfunc
+
+" Message output was previously overwritten by the fileinfo display, shown
+" when switching buffers. If a buffer is switched to, then a message if
+" echoed, we should show the message, rather than overwriting it with
+" fileinfo.
+func Test_fileinfo_after_echo()
+  CheckScreendump
+
+  let content =<< trim END
+    file a.txt
+
+    hide edit b.txt
+    call setline(1, "hi")
+    setlocal modified
+
+    hide buffer a.txt
+
+    autocmd CursorHold * buf b.txt | w | echo "'b' written"
+  END
+
+  call writefile(content, 'Xtest_fileinfo_after_echo')
+  let buf = RunVimInTerminal('-S Xtest_fileinfo_after_echo', #{rows: 6})
+  call term_sendkeys(buf, ":set updatetime=50\<CR>")
+  call term_sendkeys(buf, "0$")
+  call VerifyScreenDump(buf, 'Test_fileinfo_after_echo', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_fileinfo_after_echo')
+  call delete('b.txt')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

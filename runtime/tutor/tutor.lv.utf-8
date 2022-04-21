@@ -916,8 +916,8 @@ PIEZĪME:  Ja vēlaties meklēt gan lielos, gan mazos burtus vienā meklējumā,
   pēc noklusēšanas, nav ieslēgtas. Lai tās ieslēgtu, izveidojiet "vimrc" failu.
 
   1. Atkarībā no lietotās operētājsistēmas, atveriet "vimrc" failu sekojoši:
-	:e ~/.vimrc             Unix-veidīgā (t.sk. MacOS un Linux)
-	:e $VIM/_vimrc          VMS-veidīgā (t.sk. MS-Windows)
+	:e ~/.vimrc          Unix-veidīgā (t.sk. MacOS un Linux)
+	:e ~/_vimrc          VMS-veidīgā (t.sk. MS-Windows)
 
   2. Ielasiet "vimrc" šablona faila saturu, ievadot:
 	:r $VIMRUNTIME/vimrc_example.vim
@@ -986,7 +986,7 @@ PIEZĪME:  Pabeigšana strādā dažādām komandām.
   Vim - Vi Improved, Steve Oualline, New Riders
 
   Šī grāmata ir tieši par Vim, un ir ļoti ieteicama iesācējiem.
-  Daudzi piemēri un attēli no tās pieejami: http://iccf-holland.org/click5.html
+  Daudzi piemēri un attēli no tās pieejami: https://iccf-holland.org/click5.html
 
   Otra, vecāka grāmata ir par Vi, nevis Vim, bet arī ir ļoti noderīga:
 

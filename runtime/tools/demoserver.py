@@ -44,9 +44,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             except socket.error:
                 print("=== socket error ===")
                 break
-            except IOError:
-                print("=== socket closed ===")
-                break
             if data == '':
                 print("=== socket closed ===")
                 break
@@ -62,9 +59,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             if decoded[0] >= 0:
                 if decoded[1] == 'hello!':
                     response = "got it"
+                    id = decoded[0]
+                elif decoded[1] == 'hello channel!':
+                    response = "got that"
+                    # response is not to a specific message callback but to the
+                    # channel callback, need to use ID zero
+                    id = 0
                 else:
                     response = "what?"
-                encoded = json.dumps([decoded[0], response])
+                    id = decoded[0]
+                encoded = json.dumps([id, response])
                 print("sending {0}".format(encoded))
                 self.request.sendall(encoded.encode('utf-8'))
         thesocket = None

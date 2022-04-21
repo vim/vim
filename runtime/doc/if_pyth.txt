@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
+*if_pyth.txt*   For Vim version 8.2.  Last change: 2022 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -24,6 +24,10 @@ The Python 2.x interface is available only when Vim was compiled with the
 The Python 3 interface is available only when Vim was compiled with the
 |+python3| feature.
 Both can be available at the same time, but read |python-2-and-3|.
+
+NOTE: Python 2 is old and no longer being developed.  Using Python 3 is highly
+recommended.  Python 2 support will be dropped when it does not work properly
+anymore.
 
 ==============================================================================
 1. Commands						*python-commands*
@@ -62,6 +66,11 @@ To see what version of Python you have: >
 	:python print(sys.version)
 
 There is no need to import sys, it's done by default.
+
+							*python-environment*
+Environment variables set in Vim are not always available in Python.  This
+depends on how Vim and Python were built.  Also see
+https://docs.python.org/3/library/os.html#os.environ
 
 Note: Python is very sensitive to the indenting.  Make sure the "class" line
 and "EOF" do not have any indent.
@@ -829,6 +838,19 @@ To work around such problems there are these options:
 Raising SystemExit exception in python isn't endorsed way to quit vim, use: >
 	:py vim.command("qall!")
 <
+							*E1266*
+This error can occur when python 3 cannot load the required modules.  This
+means that your python 3 is not correctly installed or there are some mistakes
+in your settings.  Please check the following items:
+1. Make sure that python 3 is correctly installed.  Also check the version of
+   python.
+2. Check the 'pythonthreedll' option.
+3. Check the 'pythonthreehome' option.
+4. Check the PATH environment variable if you don't set 'pythonthreedll'.
+   On MS-Windows, you can use where.exe to check which dll will be loaded.
+   E.g. >
+	where.exe python310.dll
+5. Check the PYTHONPATH and PYTHONHOME environment variables.
 
 							*has-python*
 You can test what Python version is available with: >
@@ -905,7 +927,7 @@ The `:pyxdo` command works similar to `:pydo`.
 							*has-pythonx*
 You can test if pyx* commands are available with: >
 	if has('pythonx')
-	  echo 'pyx* commands are available. (Python ' . &pyx . ')'
+	  echo 'pyx* commands are available. (Python ' .. &pyx .. ')'
 	endif
 
 When compiled with only one of |+python| or |+python3|, the has() returns 1.

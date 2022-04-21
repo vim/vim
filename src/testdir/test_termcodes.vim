@@ -314,8 +314,8 @@ func Test_term_mouse_middle_click_insert_mode()
     call setline(1, ['123456789', '123456789'])
     let @* = 'abc'
 
-    " Middle-click in inesrt mode doesn't move the cursor but inserts the
-    " contents of aregister
+    " Middle-click in insert mode doesn't move the cursor but inserts the
+    " contents of a register
     call cursor(1, 4)
     call feedkeys('i' ..
           \ MouseMiddleClickCode(2, 7) .. MouseMiddleReleaseCode(2, 7) ..
@@ -365,8 +365,10 @@ func Test_term_mouse_switch_win_insert_mode()
   close!
 endfunc
 
-" Test for using the mouse to increaes the height of the cmdline window
+" Test for using the mouse to increase the height of the cmdline window
 func Test_mouse_cmdwin_resize()
+  CheckFeature cmdwin
+
   let save_mouse = &mouse
   let save_term = &term
   let save_ttymouse = &ttymouse
@@ -851,7 +853,10 @@ func Test_term_mouse_multiple_clicks_to_visually_select()
   let save_term = &term
   let save_ttymouse = &ttymouse
   call test_override('no_query_mouse', 1)
-  set mouse=a term=xterm mousetime=200
+  
+  " 'mousetime' must be sufficiently large, or else the test is flaky when
+  " using a ssh connection with X forwarding; i.e. ssh -X (issue #7563).
+  set mouse=a term=xterm mousetime=600
   new
 
   for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
@@ -1778,6 +1783,28 @@ func Test_xx06_screen_response()
   call test_override('term_props', 0)
 endfunc
 
+func Do_check_t_8u_set_reset(set_by_user)
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let default_value = "\<Esc>[58;2;%lu;%lu;%lum"
+  let &t_8u = default_value
+  if !a:set_by_user
+    call test_option_not_set('t_8u')
+  endif
+  let seq = "\<Esc>[>0;279;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  call assert_equal(#{
+        \ cursor_style: 'u',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+  call assert_equal(a:set_by_user ? default_value : '', &t_8u)
+endfunc
+
 " This checks the xterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
@@ -1842,25 +1869,41 @@ func Test_xx07_xterm_response()
         \ mouse: 's'
         \ }, terminalprops())
 
-  " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset
-  set ttymouse=xterm
-  call test_option_not_set('ttymouse')
-  let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"
-  let seq = "\<Esc>[>0;279;0c"
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termresponse)
-  call assert_equal('sgr', &ttymouse)
-
-  call assert_equal(#{
-        \ cursor_style: 'u',
-        \ cursor_blink_mode: 'u',
-        \ underline_rgb: 'u',
-        \ mouse: 's'
-        \ }, terminalprops())
-  call assert_equal('', &t_8u)
+  " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset,
+  " except when it was set by the user
+  call Do_check_t_8u_set_reset(0)
+  call Do_check_t_8u_set_reset(1)
 
   set t_RV=
   call test_override('term_props', 0)
+endfunc
+
+func Test_focus_events()
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set term=xterm ttymouse=xterm2
+
+  au FocusGained * let g:focus_gained += 1
+  au FocusLost * let g:focus_lost += 1
+  let g:focus_gained = 0
+  let g:focus_lost = 0
+
+  call feedkeys("\<Esc>[O", "Lx!")
+  call assert_equal(1, g:focus_lost)
+  call feedkeys("\<Esc>[I", "Lx!")
+  call assert_equal(1, g:focus_gained)
+
+  " still works when 'ttymouse' is empty
+  set ttymouse=
+  call feedkeys("\<Esc>[O", "Lx!")
+  call assert_equal(2, g:focus_lost)
+  call feedkeys("\<Esc>[I", "Lx!")
+  call assert_equal(2, g:focus_gained)
+
+  au! FocusGained
+  au! FocusLost
+  let &term = save_term
+  let &ttymouse = save_ttymouse
 endfunc
 
 func Test_get_termcode()
@@ -1896,14 +1939,14 @@ endfunc
 
 func Test_list_builtin_terminals()
   CheckRunVimInTerminal
-  let buf = RunVimInTerminal('', #{rows: 14})
-  call term_sendkeys(buf, ":set cmdheight=3\<CR>")
-  call TermWait(buf, 100)
-  call term_sendkeys(buf, ":set term=xxx\<CR>")
-  call TermWait(buf, 100)
-  call assert_match('builtin_dumb', term_getline(buf, 11))
-  call assert_match('Not found in termcap', term_getline(buf, 12))
-  call StopVimInTerminal(buf)
+  call RunVimInTerminal('', #{rows: 14})
+  call term_sendkeys('', ":set cmdheight=3\<CR>")
+  call TermWait('', 100)
+  call term_sendkeys('', ":set term=xxx\<CR>")
+  call TermWait('', 100)
+  call assert_match('builtin_dumb', term_getline('', 11))
+  call assert_match('Not found in termcap', term_getline('', 12))
+  call StopVimInTerminal('')
 endfunc
 
 func GetEscCodeCSI27(key, modifier)
@@ -1966,6 +2009,16 @@ func RunTest_modifyOtherKeys(func)
   bwipe aaa
   bwipe bbb
 
+  " Ctrl-V X 33 is 3
+  call setline(1, '')
+  call feedkeys("a\<C-V>" .. a:func('X', 2) .. "33\<Esc>", 'Lx!')
+  call assert_equal("3", getline(1))
+
+  " Ctrl-V U 12345 is Unicode 12345
+  call setline(1, '')
+  call feedkeys("a\<C-V>" .. a:func('U', 2) .. "12345\<Esc>", 'Lx!')
+  call assert_equal("\U12345", getline(1))
+
   bwipe!
   set timeoutlen&
 endfunc
@@ -1994,6 +2047,32 @@ func Test_modifyOtherKeys_no_mapping()
   bwipe!
 
   set timeoutlen&
+endfunc
+
+" Check that when DEC mouse codes are recognized a special key is handled.
+func Test_ignore_dec_mouse()
+  silent !infocmp gnome >/dev/null 2>&1
+  if v:shell_error != 0
+    throw 'Skipped: gnome entry missing in the terminfo db'
+  endif
+
+  new
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=gnome ttymouse=
+
+  execute "set <xF1>=\<Esc>[1;*P"
+  nnoremap <S-F1> agot it<Esc>
+  call feedkeys("\<Esc>[1;2P", 'Lx!')
+  call assert_equal('got it', getline(1))
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  call test_override('no_query_mouse', 0)
+  bwipe!
 endfunc
 
 func RunTest_mapping_shift(key, func)
@@ -2027,6 +2106,49 @@ func Test_modifyOtherKeys_mapped()
   iunmap '
   iunmap <C-W><C-A>
   set timeoutlen&
+endfunc
+
+func Test_modifyOtherKeys_ambiguous_mapping()
+  new
+  set timeoutlen=10
+  map <C-J> a
+  map <C-J>x <Nop>
+  call setline(1, 'x')
+
+  " CTRL-J b should have trigger the <C-J> mapping and then insert "b"
+  call feedkeys(GetEscCodeCSI27('J', 5) .. "b\<Esc>", 'Lx!')
+  call assert_equal('xb', getline(1))
+
+  unmap <C-J>
+  unmap <C-J>x
+
+  " if a special character is following there should be a check for a termcode
+  nnoremap s aX<Esc>
+  nnoremap s<BS> aY<Esc>
+  set t_kb=
+  call setline(1, 'x')
+  call feedkeys("s\x08", 'Lx!')
+  call assert_equal('xY', getline(1))
+
+  set timeoutlen&
+  bwipe!
+endfunc
+
+" Whether Shift-Tab sends "ESC [ Z" or "ESC [ 27 ; 2 ; 9 ~" is unpredictable,
+" both should work.
+func Test_modifyOtherKeys_shift_tab()
+  set timeoutlen=10
+
+  call setline(1, '')
+  call feedkeys("a\<C-K>" .. GetEscCodeCSI27("\t", '2') .. "\<Esc>", 'Lx!')
+  eval getline(1)->assert_equal('<S-Tab>')
+
+  call setline(1, '')
+  call feedkeys("a\<C-K>\<Esc>[Z\<Esc>", 'Lx!')
+  eval getline(1)->assert_equal('<S-Tab>')
+
+  set timeoutlen&
+  bwipe!
 endfunc
 
 func RunTest_mapping_works_with_shift(func)
@@ -2103,11 +2225,47 @@ endfunc
 func Test_mapping_works_with_ctrl()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C', 5)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C', 5)
+
+  new
+  set timeoutlen=10
+
+  " CTRL-@ actually produces the code for CTRL-2, which is converted
+  call RunTest_mapping_mods('<C-@>', '2', function('GetEscCodeCSI27'), 5)
+  call RunTest_mapping_mods('<C-@>', '2', function('GetEscCodeCSIu'), 5)
+
+  " CTRL-^ actually produces the code for CTRL-6, which is converted
+  call RunTest_mapping_mods('<C-^>', '6', function('GetEscCodeCSI27'), 5)
+  call RunTest_mapping_mods('<C-^>', '6', function('GetEscCodeCSIu'), 5)
+
+  " CTRL-_ actually produces the code for CTRL--, which is converted
+  call RunTest_mapping_mods('<C-_>', '-', function('GetEscCodeCSI27'), 5)
+  call RunTest_mapping_mods('<C-_>', '-', function('GetEscCodeCSIu'), 5)
+
+  bwipe!
+  set timeoutlen&
 endfunc
 
 func Test_mapping_works_with_shift_ctrl()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C-S', 6)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C-S', 6)
+
+  new
+  set timeoutlen=10
+
+  " Ctrl-Shift-[ actually produces CTRL-Shift-{ which is mapped as <C-{>
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSI27'), 6)
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSIu'), 6)
+
+  " Ctrl-Shift-] actually produces CTRL-Shift-} which is mapped as <C-}>
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSI27'), 6)
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSIu'), 6)
+
+  " Ctrl-Shift-\ actually produces CTRL-Shift-| which is mapped as <C-|>
+  call RunTest_mapping_mods('<C-\|>', '|', function('GetEscCodeCSI27'), 6)
+  call RunTest_mapping_mods('<C-\|>', '|', function('GetEscCodeCSIu'), 6)
+
+  bwipe!
+  set timeoutlen&
 endfunc
 
 " Below we also test the "u" code with Alt, This works, but libvterm would not
@@ -2121,6 +2279,20 @@ endfunc
 func Test_mapping_works_with_shift_alt()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'S-A', 4)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'S-A', 4)
+endfunc
+
+func Test_mapping_works_with_alt_and_shift()
+  new
+  set timeoutlen=10
+
+  " mapping <A-?> works even though the code is A-S-?
+  for c in ['!', '$', '+', ':', '?', '^', '~']
+    call RunTest_mapping_mods('<A-' .. c .. '>', c, function('GetEscCodeCSI27'), 4)
+    call RunTest_mapping_mods('<A-' .. c .. '>', c, function('GetEscCodeCSIu'), 4)
+  endfor
+
+  bwipe!
+  set timeoutlen&
 endfunc
 
 func Test_mapping_works_with_ctrl_alt()
@@ -2178,8 +2350,24 @@ func Test_cmdline_literal()
   set timeoutlen&
 endfunc
 
+func Test_mapping_esc()
+  set timeoutlen=10
+
+  new
+  nnoremap <Up> iHello<Esc>
+  nnoremap <Esc> <Nop>
+
+  call feedkeys(substitute(&t_ku, '\*', '', 'g'), 'Lx!')
+  call assert_equal("Hello", getline(1))
+
+  bwipe!
+  nunmap <Up>
+  nunmap <Esc>
+  set timeoutlen&
+endfunc
+
 " Test for translation of special key codes (<xF1>, <xF2>, etc.)
-func Test_Keycode_Tranlsation()
+func Test_Keycode_Translation()
   let keycodes = [
         \ ["<xUp>", "<Up>"],
         \ ["<xDown>", "<Down>"],
@@ -2203,5 +2391,51 @@ func Test_Keycode_Tranlsation()
     exe "nunmap " .. k1
   endfor
 endfunc
+
+" Test for terminal keycodes that doesn't have termcap entries
+func Test_special_term_keycodes()
+  new
+  " Test for <xHome>, <S-xHome> and <C-xHome>
+  " send <K_SPECIAL> <KS_EXTRA> keycode
+  call feedkeys("i\<C-K>\x80\xfd\x3f\n", 'xt')
+  " send <K_SPECIAL> <KS_MODIFIER> bitmap <K_SPECIAL> <KS_EXTRA> keycode
+  call feedkeys("i\<C-K>\x80\xfc\x2\x80\xfd\x3f\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfc\x4\x80\xfd\x3f\n", 'xt')
+  " Test for <xEnd>, <S-xEnd> and <C-xEnd>
+  call feedkeys("i\<C-K>\x80\xfd\x3d\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfc\x2\x80\xfd\x3d\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfc\x4\x80\xfd\x3d\n", 'xt')
+  " Test for <zHome>, <S-zHome> and <C-zHome>
+  call feedkeys("i\<C-K>\x80\xfd\x40\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfc\x2\x80\xfd\x40\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfc\x4\x80\xfd\x40\n", 'xt')
+  " Test for <zEnd>, <S-zEnd> and <C-zEnd>
+  call feedkeys("i\<C-K>\x80\xfd\x3e\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfc\x2\x80\xfd\x3e\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfc\x4\x80\xfd\x3e\n", 'xt')
+  " Test for <xUp>, <xDown>, <xLeft> and <xRight>
+  call feedkeys("i\<C-K>\x80\xfd\x41\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfd\x42\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfd\x43\n", 'xt')
+  call feedkeys("i\<C-K>\x80\xfd\x44\n", 'xt')
+  call assert_equal(['<Home>', '<S-Home>', '<C-Home>',
+        \ '<End>', '<S-End>', '<C-End>',
+        \ '<Home>', '<S-Home>', '<C-Home>',
+        \ '<End>', '<S-End>', '<C-End>',
+        \ '<Up>', '<Down>', '<Left>', '<Right>', ''], getline(1, '$'))
+  bw!
+endfunc
+
+func Test_terminal_builtin_without_gui()
+  CheckNotMSWindows
+
+  " builtin_gui should not be output by :set term=xxx
+  let output = systemlist("TERM=dumb " .. v:progpath .. " --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
+  redraw!
+  call map(output, {_, val -> trim(val)})
+  call assert_equal(-1, index(output, 'builtin_gui'))
+  call assert_notequal(-1, index(output, 'builtin_dumb'))
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

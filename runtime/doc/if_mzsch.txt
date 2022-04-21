@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 8.2.  Last change: 2019 Dec 07
+*if_mzsch.txt*  For Vim version 8.2.  Last change: 2020 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -43,7 +43,7 @@ To speed up the process, you might also want to use --disable-gracket and
 {script}
 {endmarker}
 			Execute inlined MzScheme script {script}.
-			Note: This command doesn't work if the MzScheme
+			Note: This command doesn't work when the MzScheme
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
 

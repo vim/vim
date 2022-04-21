@@ -39,13 +39,54 @@ version of Vim that is small and starts up quickly, see the Makefile for how
 to disable the GUI and X11.  If you don't have GUI libraries and/or X11, these
 features will be disabled automatically.
 
+To build Vim on Ubuntu from scratch on a clean system using git:
+	Install tools required to be able to get and build Vim:
+	% sudo apt install git
+	% sudo apt install make
+	% sudo apt install clang
+	% sudo apt install libtool-bin
+	
+	Build Vim with default features:
+	% git clone https://github.com/vim/vim.git
+	% cd vim/src
+	% make
+
+	Run tests to check there are no problems:
+	% make test
+
+	Install Vim in /usr/local:
+	% sudo make install
+
+	Add X windows clipboard support (also needed for GUI):
+	% sudo apt install libxt-dev
+	% make reconfig
+
+	Add GUI support:
+	% sudo apt install libgtk-3-dev
+	% make reconfig
+
+	Add Python 3 support:
+	% sudo apt install libpython3-dev
+	Uncomment this line in Makefile:
+		"CONF_OPT_PYTHON3 = --enable-python3interp"
+	% make reconfig
+
+	Debugging:
+	% sudo apt install valgrind
+	Uncomment this line in Makefile:
+		CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+	% make reconfig
+	% make test_{test-name}
+	See output in testdir/valgrind.test_{test-name}
+
+
 See the start of Makefile for more detailed instructions about how to compile
 Vim.
 
 If you need extra compiler and/or linker arguments, set $CFLAGS and/or $LIBS
 before starting configure.  Example:
 
-	env  CFLAGS=-I/usr/local/include  LIBS=-lm  make
+	env CFLAGS=-I/usr/local/include  LIBS=-lm  make
 
 This is only needed for things that configure doesn't offer a specific argument
 for or figures out by itself.  First try running configure without extra
@@ -94,8 +135,12 @@ These configure arguments can be used to select which GUI to use:
 --disable-motif-check
 --disable-athena-check
 
+This configure argument can be used to disable the GUI, even when the necessary
+files are found:
+--disable-gui
+
 --enable-gui defaults to "auto", so it will automatically look for a GUI (in
-the order of GTK, Motif, then Athena).  If one is found, then is uses it and
+the order of GTK, Motif, then Athena).  If one is found, then it is used and
 does not proceed to check any of the remaining ones.  Otherwise, it moves on
 to the next one.
 

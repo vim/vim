@@ -883,7 +883,7 @@ NAPOMENA:  Bez razlikovanja velikih i malih slova u samo jednoj naredbi
 
   1. Uredite "vimrc" datoteku.  Ovo ovisi o va¹em sistemu:
 	:e ~/.vimrc		za Unix
-	:e $VIM/_vimrc		za MS-Windows
+	:e ~/_vimrc		za MS-Windows
 
   2. Sada uèitajte primjer sadr¾aja "vimrc" datoteke:
 	:r $VIMRUNTIME/vimrc_example.vim
@@ -951,7 +951,7 @@ NAPOMENA:  Moguæe je dopuniti mnoge naredbe.  Koristite CTRL-D i <TAB>.
 	Izdavaè: New Riders
   Prva knjiga potpuno posveæena Vim-u. Vrlo korisna za poèetnike.
   Sa mnogo primjera i slika.
-  Posjetite http://iccf-holland.org/click5.html
+  Posjetite https://iccf-holland.org/click5.html
 
   Sljedeæa knjiga je ne¹to starija i vi¹e o Vi-u nego o Vim-u, preporuèamo:
 	Learning the Vi Editor - by Linda Lamb

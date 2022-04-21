@@ -5,6 +5,7 @@ source screendump.vim
 source check.vim
 
 func Test_setbufline_getbufline()
+  " similar to Test_set_get_bufline()
   new
   let b = bufnr('%')
   hide
@@ -38,6 +39,14 @@ func Test_setbufline_getbufline()
   call assert_equal(['e'], getbufline(b, 5))
   call assert_equal([], getbufline(b, 6))
   call assert_equal([], getbufline(b, 2, 1))
+
+  if has('job')
+    call setbufline(b, 2, [function('eval'), #{key: 123}, test_null_job()])
+    call assert_equal(["function('eval')",
+                    \ "{'key': 123}",
+                    \ "no process"],
+                    \ getbufline(b, 2, 4))
+  endif
   exe "bwipe! " . b
 endfunc
 
@@ -177,6 +186,17 @@ func Test_deletebufline()
   call assert_equal(0, deletebufline(b, 1))
   call assert_equal(['b', 'c'], getbufline(b, 1, 2))
   exe "bwipe! " . b
+
+  edit XbufOne
+  let one = bufnr()
+  call setline(1, ['a', 'b', 'c'])
+  setlocal nomodifiable
+  split XbufTwo
+  let two = bufnr()
+  call assert_fails('call deletebufline(one, 1)', 'E21:')
+  call assert_equal(two, bufnr())
+  bwipe! XbufTwo
+  bwipe! XbufOne
 endfunc
 
 func Test_appendbufline_redraw()
@@ -196,7 +216,6 @@ func Test_appendbufline_redraw()
   END
   call writefile(lines, 'XscriptMatchCommon')
   let buf = RunVimInTerminal('-S XscriptMatchCommon', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_appendbufline_1', {})
 
   call StopVimInTerminal(buf)

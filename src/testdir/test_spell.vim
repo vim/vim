@@ -120,6 +120,104 @@ foobar/?
   set spell&
 endfunc
 
+func Test_spell_file_missing()
+  let s:spell_file_missing = 0
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing * let s:spell_file_missing += 1
+  augroup END
+
+  set spell spelllang=ab_cd
+  let messages = GetMessages()
+  call assert_equal('Warning: Cannot find word list "ab.utf-8.spl" or "ab.ascii.spl"', messages[-1])
+  call assert_equal(1, s:spell_file_missing)
+
+  new XTestSpellFileMissing
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing * bwipe
+  augroup END
+  call assert_fails('set spell spelllang=ab_cd', 'E797:')
+
+  augroup! TestSpellFileMissing
+  unlet s:spell_file_missing
+  set spell& spelllang&
+  %bwipe!
+endfunc
+
+func Test_spelldump()
+  set spell spelllang=en
+  spellrare! emacs
+
+  spelldump
+
+  " Check assumption about region: 1: us, 2: au, 3: ca, 4: gb, 5: nz.
+  call assert_equal('/regions=usaucagbnz', getline(1))
+  call assert_notequal(0, search('^theater/1$'))    " US English only.
+  call assert_notequal(0, search('^theatre/2345$')) " AU, CA, GB or NZ English.
+
+  call assert_notequal(0, search('^emacs/?$'))      " ? for a rare word.
+  call assert_notequal(0, search('^the the/!$'))    " ! for a wrong word.
+
+  bwipe
+  set spell&
+endfunc
+
+func Test_spelldump_bang()
+  new
+  call setline(1, 'This is a sample sentence.')
+  redraw
+  set spell
+  redraw
+  spelldump!
+
+  " :spelldump! includes the number of times a word was found while updating
+  " the screen.
+  " Common word count starts at 10, regular word count starts at 0.
+  call assert_notequal(0, search("^is\t11$"))    " common word found once.
+  call assert_notequal(0, search("^the\t10$"))   " common word never found.
+  call assert_notequal(0, search("^sample\t1$")) " regular word found once.
+  call assert_equal(0, search("^screen\t"))      " regular word never found.
+
+  %bwipe!
+  set spell&
+endfunc
+
+func Test_spelllang_inv_region()
+  set spell spelllang=en_xx
+  let messages = GetMessages()
+  call assert_equal('Warning: region xx not supported', messages[-1])
+  set spell& spelllang&
+endfunc
+
+func Test_compl_with_CTRL_X_CTRL_K_using_spell()
+  " When spell checking is enabled and 'dictionary' is empty,
+  " CTRL-X CTRL-K in insert mode completes using the spelling dictionary.
+  new
+  set spell spelllang=en dictionary=
+
+  set ignorecase
+  call feedkeys("Senglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['English'], getline(1, '$'))
+  call feedkeys("SEnglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['English'], getline(1, '$'))
+
+  set noignorecase
+  call feedkeys("Senglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['englis'], getline(1, '$'))
+  call feedkeys("SEnglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['English'], getline(1, '$'))
+
+  set spelllang=en_us
+  call feedkeys("Stheat\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['theater'], getline(1, '$'))
+  set spelllang=en_gb
+  call feedkeys("Stheat\<c-x>\<c-k>\<esc>", 'tnx')
+  " FIXME: commented out, expected theatre bug got theater. See issue #7025.
+  " call assert_equal(['theatre'], getline(1, '$'))
+
+  bwipe!
+  set spell& spelllang& dictionary& ignorecase&
+endfunc
+
 func Test_spellreall()
   new
   set spell
@@ -168,6 +266,11 @@ func Test_spellsuggest()
   call assert_equal(['third', 'THIRD'], spellsuggest('tHIrd', 2))
   call assert_equal(['Third'], spellsuggest('THird', 1))
   call assert_equal(['All'],      spellsuggest('ALl', 1))
+
+  " Special suggestion for repeated 'the the'.
+  call assert_inrange(0, 2, index(spellsuggest('the the',   3), 'the'))
+  call assert_inrange(0, 2, index(spellsuggest('the   the', 3), 'the'))
+  call assert_inrange(0, 2, index(spellsuggest('The the',   3), 'The'))
 
   call assert_fails("call spellsuggest('maxch', [])", 'E745:')
   call assert_fails("call spellsuggest('maxch', 2, [])", 'E745:')
@@ -314,7 +417,7 @@ func Test_spellsuggest_option_expr()
   bwipe!
 endfunc
 
-" Test for 'spellsuggest' expr errrors
+" Test for 'spellsuggest' expr errors
 func Test_spellsuggest_expr_errors()
   " 'spellsuggest'
   func MySuggest()
@@ -341,6 +444,31 @@ func Test_spellsuggest_expr_errors()
   delfunc MySuggest
   delfunc MySuggest2
   delfunc MySuggest3
+endfunc
+
+func Test_spellsuggest_timeout()
+  set spellsuggest=timeout:30
+  set spellsuggest=timeout:-123
+  set spellsuggest=timeout:999999
+  call assert_fails('set spellsuggest=timeout', 'E474:')
+  call assert_fails('set spellsuggest=timeout:x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:-x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:--9', 'E474:')
+endfunc
+
+func Test_spellsuggest_visual_end_of_line()
+  let enc_save = &encoding
+  set encoding=iso8859
+
+  " This was reading beyond the end of the line.
+  norm R00000000000
+  sil norm 0
+  sil! norm i00000)
+  sil! norm i00000)
+  call feedkeys("\<CR>")
+  norm z=
+
+  let &encoding = enc_save
 endfunc
 
 func Test_spellinfo()
@@ -670,6 +798,14 @@ func Test_spell_long_word()
   set nospell
 endfunc
 
+func Test_spellsuggest_too_deep()
+  " This was incrementing "depth" over MAXWLEN.
+  new
+  norm s000G00ý000000000000
+  sil norm ..vzG................vvzG0     v z=
+  bwipe!
+endfunc
+
 func LoadAffAndDic(aff_contents, dic_contents)
   set enc=latin1
   set spellfile=
@@ -739,6 +875,14 @@ func Test_spell_screendump()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestSpell')
+endfunc
+
+func Test_spell_single_word()
+  new
+  silent! norm 0R00
+  spell! ßÂ
+  silent 0norm 0r$ Dvz=
+  bwipe!
 endfunc
 
 let g:test_data_aff1 = [

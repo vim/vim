@@ -17,15 +17,15 @@ PUSH "\x1f"
 PUSH "\x83"
   control 0x83
 
-PUSH "\x9f"
-  control 0x9f
+PUSH "\x99"
+  control 0x99
 
 !C1 7bit
 PUSH "\e\x43"
   control 0x83
 
-PUSH "\e\x5f"
-  control 0x9f
+PUSH "\e\x59"
+  control 0x99
 
 !High bytes
 PUSH "\xa0\xcc\xfe"
@@ -184,6 +184,12 @@ PUSH "\ePHello\e\\"
 PUSH "\x{90}Hello\x9c"
   dcs ["Hello"]
 
+!Split write of 7bit ST
+PUSH "\ePABC\e"
+  dcs ["ABC"
+PUSH "\\"
+  dcs ]
+
 !Escape cancels DCS, starts Escape
 PUSH "\ePSomething\e9"
   escape "9"
@@ -197,6 +203,48 @@ PUSH "\ePBy\ne\x07"
   dcs ["By"
   control 10
   dcs "e"]
+
+!APC BEL
+PUSH "\e_Hello\x07"
+  apc ["Hello"]
+
+!APC ST (7bit)
+PUSH "\e_Hello\e\\"
+  apc ["Hello"]
+
+!APC ST (8bit)
+PUSH "\x{9f}Hello\x9c"
+  apc ["Hello"]
+
+!PM BEL
+PUSH "\e^Hello\x07"
+  pm ["Hello"]
+
+!PM ST (7bit)
+PUSH "\e^Hello\e\\"
+  pm ["Hello"]
+
+!PM ST (8bit)
+PUSH "\x{9e}Hello\x9c"
+  pm ["Hello"]
+
+!SOS BEL
+PUSH "\eXHello\x07"
+  sos ["Hello"]
+
+!SOS ST (7bit)
+PUSH "\eXHello\e\\"
+  sos ["Hello"]
+
+!SOS ST (8bit)
+PUSH "\x{98}Hello\x9c"
+  sos ["Hello"]
+
+!SOS can contain any C0 or C1 code
+PUSH "\eXABC\x01DEF\e\\"
+  sos ["ABC\x01DEF"]
+PUSH "\eXABC\x99DEF\e\\"
+  sos ["ABC\x{99}DEF"]
 
 !NUL ignored
 PUSH "\x{00}"

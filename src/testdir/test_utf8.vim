@@ -1,5 +1,6 @@
 " Tests for Unicode manipulations
  
+source check.vim
 source view_util.vim
 
 " Visual block Insert adjusts for multi-byte char
@@ -7,11 +8,11 @@ func Test_visual_block_insert()
   new
   call setline(1, ["aaa", "あああ", "bbb"])
   exe ":norm! gg0l\<C-V>jjIx\<Esc>"
-  call assert_equal(['axaa', 'xあああ', 'bxbb'], getline(1, '$'))
+  call assert_equal(['axaa', ' xあああ', 'bxbb'], getline(1, '$'))
   bwipeout!
 endfunc
 
-" Test for built-in function strchars()
+" Test for built-in functions strchars() and strcharlen()
 func Test_strchars()
   let inp = ["a", "あいa", "A\u20dd", "A\u20dd\u20dd", "\u20dd"]
   let exp = [[1, 1, 1], [3, 3, 3], [2, 2, 1], [3, 3, 1], [1, 1, 1]]
@@ -20,6 +21,13 @@ func Test_strchars()
     call assert_equal(exp[i][1], inp[i]->strchars(0))
     call assert_equal(exp[i][2], strchars(inp[i], 1))
   endfor
+
+  let exp = [1, 3, 1, 1, 1]
+  for i in range(len(inp))
+    call assert_equal(exp[i], inp[i]->strcharlen())
+    call assert_equal(exp[i], strcharlen(inp[i]))
+  endfor
+
   call assert_fails("let v=strchars('abc', [])", 'E745:')
   call assert_fails("let v=strchars('abc', 2)", 'E1023:')
 endfunc
@@ -178,6 +186,76 @@ func Test_setcellwidths()
   call assert_fails('call setcellwidths([[0x111, 0x122, 1], [0x122, 0x123, 2]])', 'E1113:')
 
   call assert_fails('call setcellwidths([[0x33, 0x44, 2]])', 'E1114:')
+
+  set listchars=tab:--\\u2192
+  call assert_fails('call setcellwidths([[0x2192, 0x2192, 2]])', 'E834:')
+
+  set fillchars=stl:\\u2501
+  call assert_fails('call setcellwidths([[0x2501, 0x2501, 2]])', 'E835:')
+
+  set listchars&
+  set fillchars&
+  call setcellwidths([])
+endfunc
+
+func Test_print_overlong()
+  " Text with more composing characters than MB_MAXBYTES.
+  new
+  call setline(1, 'axxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+  s/x/\=nr2char(1629)/g
+  print
+  bwipe!
+endfunc
+
+func Test_recording_with_select_mode_utf8()
+  call Run_test_recording_with_select_mode_utf8()
+endfunc
+
+func Run_test_recording_with_select_mode_utf8()
+  new
+
+  " No escaping
+  call feedkeys("qacc12345\<Esc>gH哦\<Esc>q", "tx")
+  call assert_equal("哦", getline(1))
+  call assert_equal("cc12345\<Esc>gH哦\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("哦", getline(1))
+
+  " 固 is 0xE5 0x9B 0xBA where 0x9B is CSI
+  call feedkeys("qacc12345\<Esc>gH固\<Esc>q", "tx")
+  call assert_equal("固", getline(1))
+  call assert_equal("cc12345\<Esc>gH固\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("固", getline(1))
+
+  " 四 is 0xE5 0x9B 0x9B where 0x9B is CSI
+  call feedkeys("qacc12345\<Esc>gH四\<Esc>q", "tx")
+  call assert_equal("四", getline(1))
+  call assert_equal("cc12345\<Esc>gH四\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("四", getline(1))
+
+  " 倒 is 0xE5 0x80 0x92 where 0x80 is K_SPECIAL
+  call feedkeys("qacc12345\<Esc>gH倒\<Esc>q", "tx")
+  call assert_equal("倒", getline(1))
+  call assert_equal("cc12345\<Esc>gH倒\<Esc>", @a)
+  call setline(1, 'asdf')
+  normal! @a
+  call assert_equal("倒", getline(1))
+
+  bwipe!
+endfunc
+
+" This must be done as one of the last tests, because it starts the GUI, which
+" cannot be undone.
+func Test_zz_recording_with_select_mode_utf8_gui()
+  CheckCanRunGui
+
+  gui -f
+  call Run_test_recording_with_select_mode_utf8()
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

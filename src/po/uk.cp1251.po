@@ -4458,8 +4458,6 @@ msgstr "E538: Миша не підтримується"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Послідовність виразів не завершено"
 
-msgid "E541: too many items"
-msgstr "E541: Забагато елементів"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: Групи не збалансовано"
@@ -5924,9 +5922,6 @@ msgid ""
 msgstr ""
 "\n"
 "--- Клавіші терміналу ---"
-
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "Неможливо відкрити $VIMRUNTIME/rgb.txt"
 
 #, c-format
 msgid "Kill job in \"%s\"?"

@@ -24,22 +24,12 @@
 # include <gtk/gtk.h>
 #else
 # include <X11/keysym.h>
-# ifdef FEAT_GUI_MOTIF
-#  include <Xm/PushB.h>
-#  include <Xm/Separator.h>
-#  include <Xm/List.h>
-#  include <Xm/Label.h>
-#  include <Xm/AtomMgr.h>
-#  include <Xm/Protocols.h>
-# else
-   // Assume Athena
-#  include <X11/Shell.h>
-#  ifdef FEAT_GUI_NEXTAW
-#   include <X11/neXtaw/Label.h>
-#  else
-#   include <X11/Xaw/Label.h>
-#  endif
-# endif
+# include <Xm/PushB.h>
+# include <Xm/Separator.h>
+# include <Xm/List.h>
+# include <Xm/Label.h>
+# include <Xm/AtomMgr.h>
+# include <Xm/Protocols.h>
 #endif
 
 #ifndef FEAT_GUI_GTK
@@ -103,7 +93,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	iemsg(_("E232: Cannot create BalloonEval with both message and callback"));
+	iemsg(_(e_cannot_create_ballooneval_with_both_message_and_callback));
 	return NULL;
     }
 
@@ -253,6 +243,9 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(target, gui.mainwin))
     {
+	gtk_widget_add_events(gui.mainwin,
+			      GDK_LEAVE_NOTIFY_MASK);
+
 	g_signal_connect(G_OBJECT(gui.mainwin), "event",
 			 G_CALLBACK(mainwin_event_cb),
 			 beval);
@@ -359,6 +352,12 @@ mainwin_event_cb(GtkWidget *widget UNUSED, GdkEvent *event, gpointer data)
 	    break;
 	case GDK_KEY_RELEASE:
 	    key_event(beval, event->key.keyval, FALSE);
+	    break;
+	case GDK_LEAVE_NOTIFY:
+	    // Ignore LeaveNotify events that are not "normal".
+	    // Apparently we also get it when somebody else grabs focus.
+	    if (event->crossing.mode == GDK_CROSSING_NORMAL)
+		cancelBalloon(beval);
 	    break;
 	default:
 	    break;
@@ -609,7 +608,7 @@ pointerEvent(BalloonEval *beval, XEvent *event)
 	    break;
 
 	/*
-	 * Motif and Athena version: Keystrokes will be caught by the
+	 * Motif version: Keystrokes will be caught by the
 	 * "textArea" widget, and handled in gui_x11_key_hit_cb().
 	 */
 	case KeyPress:
@@ -920,7 +919,7 @@ drawBalloon(BalloonEval *beval)
 	screen = gtk_widget_get_screen(beval->target);
 	gtk_window_set_screen(GTK_WINDOW(beval->balloonShell), screen);
 # endif
-	gui_gtk_get_screen_geom_of_win(beval->target,
+	gui_gtk_get_screen_geom_of_win(beval->target, 0, 0,
 				    &screen_x, &screen_y, &screen_w, &screen_h);
 # if !GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_ensure_style(beval->balloonShell);
@@ -1063,11 +1062,10 @@ drawBalloon(BalloonEval *beval)
 
     if (beval->msg != NULL)
     {
+	XmString s;
 	// Show the Balloon
 
 	// Calculate the label's width and height
-#ifdef FEAT_GUI_MOTIF
-	XmString s;
 
 	// For the callback function we parse NL characters to create a
 	// multi-line label.  This doesn't work for all languages, but
@@ -1092,21 +1090,6 @@ drawBalloon(BalloonEval *beval)
 	h += gui.border_offset << 1;
 	XtVaSetValues(beval->balloonLabel, XmNlabelString, s, NULL);
 	XmStringFree(s);
-#else // Athena
-	// Assume XtNinternational == True
-	XFontSet	fset;
-	XFontSetExtents *ext;
-
-	XtVaGetValues(beval->balloonLabel, XtNfontSet, &fset, NULL);
-	ext = XExtentsOfFontSet(fset);
-	h = ext->max_ink_extent.height;
-	w = XmbTextEscapement(fset,
-			      (char *)beval->msg,
-			      (int)STRLEN(beval->msg));
-	w += gui.border_offset << 1;
-	h += gui.border_offset << 1;
-	XtVaSetValues(beval->balloonLabel, XtNlabel, beval->msg, NULL);
-#endif
 
 	// Compute position of the balloon area
 	tx = beval->x_root + EVAL_OFFSET_X;
@@ -1115,33 +1098,18 @@ drawBalloon(BalloonEval *beval)
 	    tx = beval->screen_width - w;
 	if ((ty + h) > beval->screen_height)
 	    ty = beval->screen_height - h;
-#ifdef FEAT_GUI_MOTIF
 	XtVaSetValues(beval->balloonShell,
 		XmNx, tx,
 		XmNy, ty,
 		NULL);
-#else
-	// Athena
-	XtVaSetValues(beval->balloonShell,
-		XtNx, tx,
-		XtNy, ty,
-		NULL);
-#endif
 	// Set tooltip colors
 	{
 	    Arg args[2];
 
-#ifdef FEAT_GUI_MOTIF
 	    args[0].name = XmNbackground;
 	    args[0].value = gui.tooltip_bg_pixel;
 	    args[1].name = XmNforeground;
 	    args[1].value = gui.tooltip_fg_pixel;
-#else // Athena
-	    args[0].name = XtNbackground;
-	    args[0].value = gui.tooltip_bg_pixel;
-	    args[1].name = XtNforeground;
-	    args[1].value = gui.tooltip_fg_pixel;
-#endif
 	    XtSetValues(beval->balloonLabel, &args[0], XtNumber(args));
 	}
 
@@ -1189,22 +1157,14 @@ createBalloonEvalWindow(BalloonEval *beval)
     int		n;
 
     n = 0;
-#ifdef FEAT_GUI_MOTIF
     XtSetArg(args[n], XmNallowShellResize, True); n++;
     beval->balloonShell = XtAppCreateShell("balloonEval", "BalloonEval",
 		    overrideShellWidgetClass, gui.dpy, args, n);
-#else
-    // Athena
-    XtSetArg(args[n], XtNallowShellResize, True); n++;
-    beval->balloonShell = XtAppCreateShell("balloonEval", "BalloonEval",
-		    overrideShellWidgetClass, gui.dpy, args, n);
-#endif
 
-    n = 0;
-#ifdef FEAT_GUI_MOTIF
     {
 	XmFontList fl;
 
+	n = 0;
 	fl = gui_motif_fontset2fontlist(&gui.tooltip_fontset);
 	XtSetArg(args[n], XmNforeground, gui.tooltip_fg_pixel); n++;
 	XtSetArg(args[n], XmNbackground, gui.tooltip_bg_pixel); n++;
@@ -1213,14 +1173,6 @@ createBalloonEvalWindow(BalloonEval *beval)
 	beval->balloonLabel = XtCreateManagedWidget("balloonLabel",
 			xmLabelWidgetClass, beval->balloonShell, args, n);
     }
-#else // FEAT_GUI_ATHENA
-    XtSetArg(args[n], XtNforeground, gui.tooltip_fg_pixel); n++;
-    XtSetArg(args[n], XtNbackground, gui.tooltip_bg_pixel); n++;
-    XtSetArg(args[n], XtNinternational, True); n++;
-    XtSetArg(args[n], XtNfontSet, gui.tooltip_fontset); n++;
-    beval->balloonLabel = XtCreateManagedWidget("balloonLabel",
-		    labelWidgetClass, beval->balloonShell, args, n);
-#endif
 }
 
 #endif // !FEAT_GUI_GTK

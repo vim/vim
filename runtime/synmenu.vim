@@ -2,31 +2,26 @@
 " This file is normally sourced from menu.vim.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Oct 28
+" Last Change:	2022 Feb 04
 
 " Define the SetSyn function, used for the Syntax menu entries.
 " Set 'filetype' and also 'syntax' if it is manually selected.
-fun! SetSyn(name)
-  if a:name == "fvwm1"
-    let use_fvwm_1 = 1
-    let use_fvwm_2 = 0
-    let name = "fvwm"
-  elseif a:name == "fvwm2"
-    let use_fvwm_2 = 1
-    let use_fvwm_1 = 0
-    let name = "fvwm"
-  else
-    let name = a:name
+def SetSyn(name: string)
+  var filetype = name
+  if name == "fvwm1" || name == "fvwm2"
+    g:use_fvwm_1 = name == "fvwm1"
+    g:use_fvwm_2 = name == "fvwm2"
+    filetype = "fvwm"
   endif
   if !exists("s:syntax_menu_synonly")
-    exe "set ft=" . name
+    exe "set ft=" .. filetype
     if exists("g:syntax_manual")
-      exe "set syn=" . name
+      exe "set syn=" .. filetype
     endif
   else
-    exe "set syn=" . name
+    exe "set syn=" .. filetype
   endif
-endfun
+enddef
 
 " <> notation is used here, remove '<' from 'cpoptions'
 let s:cpo_save = &cpo
@@ -456,19 +451,20 @@ an 50.100.180 &Syntax.R.RCS.RCS\ file :cal SetSyn("rcs")<CR>
 an 50.100.190 &Syntax.R.Readline\ config :cal SetSyn("readline")<CR>
 an 50.100.200 &Syntax.R.Rebol :cal SetSyn("rebol")<CR>
 an 50.100.210 &Syntax.R.ReDIF :cal SetSyn("redif")<CR>
-an 50.100.220 &Syntax.R.Relax\ NG :cal SetSyn("rng")<CR>
-an 50.100.230 &Syntax.R.Remind :cal SetSyn("remind")<CR>
-an 50.100.240 &Syntax.R.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
-an 50.100.250 &Syntax.R.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
-an 50.100.260 &Syntax.R.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
-an 50.100.270 &Syntax.R.Resolv\.conf :cal SetSyn("resolv")<CR>
-an 50.100.280 &Syntax.R.Reva\ Forth :cal SetSyn("reva")<CR>
-an 50.100.290 &Syntax.R.Rexx :cal SetSyn("rexx")<CR>
-an 50.100.300 &Syntax.R.Robots\.txt :cal SetSyn("robots")<CR>
-an 50.100.310 &Syntax.R.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
-an 50.100.320 &Syntax.R.Rpcgen :cal SetSyn("rpcgen")<CR>
-an 50.100.330 &Syntax.R.RPL/2 :cal SetSyn("rpl")<CR>
-an 50.100.340 &Syntax.R.ReStructuredText :cal SetSyn("rst")<CR>
+an 50.100.220 &Syntax.R.Rego :cal SetSyn("rego")<CR>
+an 50.100.230 &Syntax.R.Relax\ NG :cal SetSyn("rng")<CR>
+an 50.100.240 &Syntax.R.Remind :cal SetSyn("remind")<CR>
+an 50.100.250 &Syntax.R.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
+an 50.100.260 &Syntax.R.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
+an 50.100.270 &Syntax.R.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
+an 50.100.280 &Syntax.R.Resolv\.conf :cal SetSyn("resolv")<CR>
+an 50.100.290 &Syntax.R.Reva\ Forth :cal SetSyn("reva")<CR>
+an 50.100.300 &Syntax.R.Rexx :cal SetSyn("rexx")<CR>
+an 50.100.310 &Syntax.R.Robots\.txt :cal SetSyn("robots")<CR>
+an 50.100.320 &Syntax.R.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
+an 50.100.330 &Syntax.R.Rpcgen :cal SetSyn("rpcgen")<CR>
+an 50.100.340 &Syntax.R.RPL/2 :cal SetSyn("rpl")<CR>
+an 50.100.350 &Syntax.R.ReStructuredText :cal SetSyn("rst")<CR>
 an 50.110.100 &Syntax.M.ReStructuredText\ with\ R\ statements :cal SetSyn("rrst")<CR>
 an 50.120.100 &Syntax.R.RTF :cal SetSyn("rtf")<CR>
 an 50.120.110 &Syntax.R.Ruby :cal SetSyn("ruby")<CR>
@@ -651,11 +647,11 @@ an 50.170.440 &Syntax.WXYZ.Zimbu :cal SetSyn("zimbu")<CR>
 an 50.195 &Syntax.-SEP1-			<Nop>
 
 an <silent> 50.200 &Syntax.Set\ '&syntax'\ Only :call <SID>Setsynonly()<CR>
-fun! s:Setsynonly()
+fun s:Setsynonly()
   let s:syntax_menu_synonly = 1
 endfun
 an <silent> 50.202 &Syntax.Set\ '&filetype'\ Too :call <SID>Nosynonly()<CR>
-fun! s:Nosynonly()
+fun s:Nosynonly()
   if exists("s:syntax_menu_synonly")
     unlet s:syntax_menu_synonly
   endif

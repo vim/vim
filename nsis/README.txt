@@ -66,12 +66,15 @@ To build the installable .exe:
 
 Install NSIS if you didn't do that already.
 Also install UPX, if you want a compressed file.
+Download and include the ShellExecAsUser.dll Unicode version which can be
+sourced from: https://nsis.sourceforge.io/ShellExecAsUser_plug-in
+
 
 Unpack the images:
 	cd nsis
 	unzip icons.zip
 
-To build then, enter:
+Then build gvim.exe:
 
 	cd nsis
 	makensis gvim.nsi

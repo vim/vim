@@ -17,6 +17,7 @@ versions of Vim.  Also see |os_win32.txt| and |os_msdos.txt|.
 7. Interrupting			|dos-CTRL-Break|
 8. Temp files			|dos-temp-files|
 9. Shell option default		|dos-shell|
+10. PowerShell			|dos-powershell|
 
 ==============================================================================
 1. File locations					*dos-locations*
@@ -297,8 +298,86 @@ For Win32 as:
 	<shell> -c "command name >file"
 For DOS 32 bit, DJGPP does this internally somehow.
 
-When starting up, Vim checks for the presence of "sh" anywhere in the 'shell'
-option.  If it is present, Vim sets the 'shellcmdflag' and 'shellquote' or
-'shellxquote' options will be set as described above.
+When starting up, if Vim does not recognise a standard Windows shell it checks
+for the presence of "sh" anywhere in the 'shell' option.  If it is present,
+Vim sets the 'shellcmdflag' and 'shellquote' or 'shellxquote' options will be
+set as described above.
+
+==============================================================================
+10. PowerShell					*dos-powershell* *dos-pwsh*
+
+Vim supports PowerShell Desktop and PowerShell Core.  PowerShell Desktop is
+the version of PowerShell that is installed with Windows, while PowerShell
+Core is a separate downloadable version that works cross-platform.  To see
+which version you are using then enter the following in a PowerShell prompt -
+$PSVersionTable.PSEdition
+
+If 'shell' includes "powershell" in the filename at startup then VIM sets
+'shellcmdflag', 'shellxquote', 'shellpipe', and 'shellredir' options to the
+following values:
+
+'shellcmdflag'	-Command
+'shellxquote'	"
+'shellpipe'	2>&1 | Out-File -Encoding default
+'shellredir'	2>&1 | Out-File -Encoding default
+
+If 'shell' includes "pwsh" in the filename at startup then VIM sets
+'shellcmdflag', 'shellxquote', 'shellpipe', and 'shellredir' options to the
+following values:
+
+'shellcmdflag'	-c
+'shellxquote'	"
+'shellpipe'	>%s 2>&1
+'shellredir'	>%s 2>&1
+
+If you find that PowerShell commands are taking a long time to run then try
+with "-NoProfile" at the beginning of the 'shellcmdflag'.  Note this will
+prevent any PowerShell environment setup by the profile from taking place.
+
+If you have problems running PowerShell scripts through the 'shell' then try
+with "-ExecutionPolicy RemoteSigned -Command" at the beginning of
+'shellcmdflag'.  See online Windows documentation for more information on
+PowerShell Execution Policy settings.
+
+See |option-backslash| about including spaces in 'shellcmdflag' when using
+multiple flags.
+
+The 'shellpipe' and 'shellredir' option values re-encode the UTF-16LE output
+from PowerShell Desktop to your currently configured console codepage.  The
+output can be forced into a different encoding by changing "default" to one of
+the following:
+
+	unicode		 - UTF-16LE (default output from PowerShell 5.1)
+	bigendianunicode - UTF-16
+	utf8		 - UTF-8
+	utf7		 - UTF-7 (no BOM)
+	utf32		 - UTF-32
+	ascii		 - 7-bit ASCII character set
+	default		 - System's active code page (typically ANSI)
+	oem		 - System's current OEM code page
+
+Note The above multi-byte Unicode encodings include a leading BOM unless
+otherwise indicated.
+
+By default PowerShell Core's output is UTF-8 encoded without a BOM.  If you
+want to force the output of PowerShell Core into a different encoding then set
+'shellredir' and 'shellpipe' to "2>&1 | Out-File -Encoding encoding" where
+encoding is one of the following:
+
+	ascii		 - 7-bit ASCII character set
+	bigendianunicode - UTF-16BE
+	bigendianutf32	 - UTF-32BE
+	oem		 - System's current OEM code page
+	unicode		 - UTF-16LE
+	utf7		 - UTF-7
+	utf8		 - UTF-8
+	utf8BOM		 - UTF-8, with BOM
+	utf8NoBOM	 - UTF-8, no BOM (default output from PowerShell Core)
+	utf32		 - UTF-32
+
+Since PowerShell Core 6.2, the Encoding parameter also supports specifying a
+numeric ID of a registered code page (-Encoding 1251) or string names of
+registered code pages (-Encoding "windows-1251").  The .NET documentation for
+Encoding.CodePage has more information
 
  vim:tw=78:ts=8:noet:ft=help:norl:

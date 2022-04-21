@@ -22,19 +22,11 @@ call test_ignore_error('E285:')
 gui -f
 
 func Test_set_guiheadroom()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_supported . 'guiheadroom'
-  else
-    " The 'expected' value must be consistent with the value specified with
-    " gui_init.vim.
-    call assert_equal(0, &guiheadroom)
-  endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
+  " The 'expected' value must be consistent with the value specified with
+  " gui_init.vim.
+  call assert_equal(0, &guiheadroom)
 endfunc
 
 func Test_set_guioptions_for_M()
@@ -44,19 +36,11 @@ func Test_set_guioptions_for_M()
 endfunc
 
 func Test_set_guioptions_for_p()
-  let skipped = ''
+  CheckX11BasedGui
 
-  if !g:x11_based_gui
-    let skipped = g:not_supported . '''p'' of guioptions'
-  else
-    sleep 200ms
-    " Check if the 'p' option is included.
-    call assert_match('.*p.*', &guioptions)
-  endif
-
-  if !empty(skipped)
-    throw skipped
-  endif
+  sleep 200ms
+  " Check if the 'p' option is included.
+  call assert_match('.*p.*', &guioptions)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

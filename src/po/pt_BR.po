@@ -4308,8 +4308,6 @@ msgstr "E538: Não há suporte a mouse"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Expressão não terminada com '}'"
 
-msgid "E541: too many items"
-msgstr "E541: itens demais"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: parênteses desequilibrados"
@@ -5706,9 +5704,6 @@ msgid ""
 msgstr ""
 "\n"
 "--- Teclas do terminal ---"
-
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "$VIMRUNTIME/rgb.txt não pode ser aberto"
 
 msgid "Terminal"
 msgstr "Terminal"

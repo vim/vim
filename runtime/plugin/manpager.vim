@@ -1,6 +1,6 @@
 " Vim plugin for using Vim as manpager.
 " Maintainer: Enno Nagel <ennonagel+vim@gmail.com>
-" Last Change: 2018 Feb 04
+" Last Change: 2020 Aug 05
 
 command! -nargs=0 MANPAGER call s:ManPager() | delcommand MANPAGER
 
@@ -16,7 +16,10 @@ function! s:ManPager()
   setlocal buftype=nofile bufhidden=hide iskeyword+=: modifiable
 
   " Emulate 'col -b'
-  silent keepj keepp %s/\v(.)\b\ze\1?//ge
+  silent! keepj keepp %s/\v(.)\b\ze\1?//ge
+
+  " Remove ansi sequences
+  silent! keepj keepp %s/\v\e\[%(%(\d;)?\d{1,2})?[mK]//ge
 
   " Remove empty lines above the header
   call cursor(1, 1)

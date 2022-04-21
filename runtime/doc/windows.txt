@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2020 Sep 02
+*windows.txt*   For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -138,13 +138,15 @@ status line is inverted anyway; you will only see this problem on terminals
 that have termcap codes for italics.
 
 							*filler-lines*
-The lines after the last buffer line in a window are called filler lines.
-These lines start with a tilde (~) character. By default, these are
-highlighted as NonText (|hl-NonText|). The EndOfBuffer highlight group
-(|hl-EndOfBuffer|) can be used to change the highlighting of filler lines.
+The lines after the last buffer line in a window are called filler lines.  By
+default, these lines start with a tilde (~) character. The 'eob' item in the
+'fillchars' option can be used to change this character. By default, these
+characters are highlighted as NonText (|hl-NonText|). The EndOfBuffer
+highlight group (|hl-EndOfBuffer|) can be used to change the highlighting of
+the filler characters.
 
 ==============================================================================
-3. Opening and closing a window				*opening-window* *E36*
+3. Opening and closing a window				*opening-window*
 
 CTRL-W s						*CTRL-W_s*
 CTRL-W S						*CTRL-W_S*
@@ -166,7 +168,7 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 		Note: CTRL-S does not work on all terminals and might block
 		further input, use CTRL-Q to get going again.
 		Also see |++opt| and |+cmd|.
-							*E242*
+							*E242* *E1159*
 		Be careful when splitting a window in an autocommand, it may
 		mess up the window layout if this happens while making other
 		window layout changes.
@@ -205,21 +207,23 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 		This behaves like a ":split" first, and then an ":enew"
 		command.
 
-:[N]vne[w] [++opt] [+cmd] [file]			*:vne* *:vnew*
-		Like |:new|, but split vertically.  If 'equalalways' is set
-		and 'eadirection' isn't "ver" the windows will be spread out
-		horizontally, unless a width was specified.
-
 :[N]new [++opt] [+cmd] {file}
 :[N]sp[lit] [++opt] [+cmd] {file}			*:split_f*
 		Create a new window and start editing file {file} in it.  This
-		behaves like a ":split" first, and then an ":e" command.
+		behaves almost like a ":split" first, and then an ":edit"
+		command, but the alternate file name in the original window is
+		set to {file}.
 		If [+cmd] is given, execute the command when the file has been
 		loaded |+cmd|.
 		Also see |++opt|.
 		Make new window N high (default is to use half the existing
 		height).  Reduces the current window height to create room
 		(and others, if the 'equalalways' option is set).
+
+:[N]vne[w] [++opt] [+cmd] [file]			*:vne* *:vnew*
+		Like |:new|, but split vertically.  If 'equalalways' is set
+		and 'eadirection' isn't "ver" the windows will be spread out
+		horizontally, unless a width was specified.
 
 :[N]sv[iew] [++opt] [+cmd] [file]		*:sv* *:sview* *splitview*
 		Same as ":split", but set 'readonly' option for this buffer.
@@ -242,6 +246,10 @@ CTRL-W :	Does the same as typing |:| - enter a command line.  Useful in a
 
 Note that the 'splitbelow' and 'splitright' options influence where a new
 window will appear.
+								*E36*
+Creating a window will fail if there is not enough room.  Every window needs
+at least one screen line and column, sometimes more.   Options 'winminheight'
+and 'winminwidth' are relevant.
 
 						*:vert* *:vertical*
 :vert[ical] {cmd}
@@ -292,7 +300,7 @@ Closing a window
 ----------------
 
 :q[uit]
-:{count}q[uit]
+:{count}q[uit]						*:count_quit*
 CTRL-W q						*CTRL-W_q*
 CTRL-W CTRL-Q						*CTRL-W_CTRL-Q*
 		Without {count}: Quit the current window.  If {count} is
@@ -386,7 +394,8 @@ CTRL-W CTRL-C						*CTRL-W_CTRL-C*
 CTRL-W o						*CTRL-W_o* *E445*
 CTRL-W CTRL-O					*CTRL-W_CTRL-O* *:on* *:only*
 		Make the current window the only one on the screen.  All other
-		windows are closed.  For {count} see |:quit| command.
+		windows are closed.  For {count} see the `:quit` command
+		above |:count_quit|.
 
 		When the 'hidden' option is set, all buffers in closed windows
 		become hidden.
@@ -464,7 +473,7 @@ These commands can also be executed with ":wincmd":
 		the |CursorHold| autocommand event).  Or when a Normal mode
 		command is inconvenient.
 		The count can also be a window number.  Example: >
-			:exe nr . "wincmd w"
+			:exe nr .. "wincmd w"
 <		This goes to window "nr".
 
 ==============================================================================
@@ -517,14 +526,14 @@ CTRL-W J	Move the current window to be at the very bottom, using the
 CTRL-W H	Move the current window to be at the far left, using the
 		full height of the screen.  This works like closing the
 		current window and then creating another one with
-		":vert topleft split", except that the current window contents
+		`:vert topleft split`, except that the current window contents
 		is used for the new window.
 
 						*CTRL-W_L*
 CTRL-W L	Move the current window to be at the far right, using the full
 		height of the screen.  This works like closing the
 		current window and then creating another one with
-		":vert botright split", except that the current window
+		`:vert botright split`, except that the current window
 		contents is used for the new window.
 
 						*CTRL-W_T*
@@ -567,7 +576,7 @@ CTRL-W <	Decrease current window width by N (default 1).
 						*CTRL-W_>*
 CTRL-W >	Increase current window width by N (default 1).
 
-:vertical res[ize] [N]			*:vertical-resize* *CTRL-W_bar*
+:vert[ical] res[ize] [N]			*:vertical-resize* *CTRL-W_bar*
 CTRL-W |	Set current window width to N (default: widest possible).
 
 You can also resize a window by dragging a status line up or down with the
@@ -786,7 +795,7 @@ can also get to them with the buffer list commands, like ":bnext".
 
 Examples: >
 
-	:windo set nolist nofoldcolumn | normal zn
+	:windo set nolist foldcolumn=0 | normal! zn
 
 This resets the 'list' option and disables folding in all windows. >
 
@@ -794,7 +803,7 @@ This resets the 'list' option and disables folding in all windows. >
 
 This resets the 'fileencoding' in each buffer and writes it if this changed
 the buffer.  The result is that all buffers will use the 'encoding' encoding
-(if conversion works properly).
+(if conversion succeeds).
 
 ==============================================================================
 9. Tag or file name under the cursor			*window-tag*
@@ -883,7 +892,7 @@ windows.
 						*preview-popup*
 Alternatively, a popup window can be used by setting the 'previewpopup'
 option.  When set, it overrules the 'previewwindow' and 'previewheight'
-settings.  The option is a comma separated list of values:
+settings.  The option is a comma-separated list of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
@@ -955,12 +964,12 @@ CTRL-W g }						*CTRL-W_g}*
 		cursor.  This is less clever than using |:ptag|, but you don't
 		need a tags file and it will also find matches in system
 		include files.  Example: >
-  :au! CursorHold *.[ch] ++nested exe "silent! psearch " . expand("<cword>")
+  :au! CursorHold *.[ch] ++nested exe "silent! psearch " .. expand("<cword>")
 <		Warning: This can be slow.
 
 Example						*CursorHold-example*  >
 
-  :au! CursorHold *.[ch] ++nested exe "silent! ptag " . expand("<cword>")
+  :au! CursorHold *.[ch] ++nested exe "silent! ptag " .. expand("<cword>")
 
 This will cause a ":ptag" to be executed for the keyword under the cursor,
 when the cursor hasn't moved for the time set with 'updatetime'.  The "nested"
@@ -983,14 +992,14 @@ is no word under the cursor, and a few other things: >
   :
   :    " Delete any existing highlight before showing another tag
   :    silent! wincmd P			" jump to preview window
-  :    if &previewwindow			" if we really get there...
+  :    if &previewwindow		" if we really get there...
   :      match none			" delete existing highlight
   :      wincmd p			" back to old window
   :    endif
   :
   :    " Try displaying a matching tag for the word under the cursor
   :    try
-  :       exe "ptag " . w
+  :       exe "ptag " .. w
   :    catch
   :      return
   :    endtry
@@ -1002,10 +1011,10 @@ is no word under the cursor, and a few other things: >
   :	 endif
   :	 call search("$", "b")		" to end of previous line
   :	 let w = substitute(w, '\\', '\\\\', "")
-  :	 call search('\<\V' . w . '\>')	" position cursor on match
+  :	 call search('\<\V' .. w .. '\>')	" position cursor on match
   :	 " Add a match highlight to the word at this position
   :      hi previewWord term=bold ctermbg=green guibg=green
-  :	 exe 'match previewWord "\%' . line(".") . 'l\%' . col(".") . 'c\k*"'
+  :	 exe 'match previewWord "\%' .. line(".") .. 'l\%' .. col(".") .. 'c\k*"'
   :      wincmd p			" back to old window
   :    endif
   :  endif
@@ -1119,6 +1128,11 @@ list of buffers. |unlisted-buffer|
 		line when the buffer is first entered.  Note that other
 		commands after the + will be ignored.
 
+						 *:balt*
+:balt [+lnum] {fname}
+		Like `:badd` and also set the alternate file for the current
+		window to {fname}.
+
 :[N]bd[elete][!]			*:bd* *:bdel* *:bdelete* *E516*
 :bd[elete][!] [N]
 		Unload buffer [N] (default: current buffer) and delete it from
@@ -1193,6 +1207,8 @@ list of buffers. |unlisted-buffer|
 		the current buffer remains being edited.  See |:buffer-!| for
 		[!].  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
+		The notation with single quotes does not work here,
+		`:buf 12'345'` uses 12'345 as a buffer name.
 		Also see |+cmd|.
 
 :[N]b[uffer][!] [+cmd] {bufname}				*{bufname}*
@@ -1348,6 +1364,7 @@ directory	Displays directory contents.  Can be used by a file explorer
 <		The buffer name is the name of the directory and is adjusted
 		when using the |:cd| command.
 
+						*scratch-buffer*
 scratch		Contains text that can be discarded at any time.  It is kept
 		when closing the window, it must be deleted explicitly.
 		Settings: >

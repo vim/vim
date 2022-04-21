@@ -34,10 +34,11 @@ Contents:
 11. Building with Ruby support
 12. Building with Tcl support
 13. Building with DirectX (DirectWrite) support
-14. Windows 3.1
-15. MS-DOS
+14. Building with libsodium support
+15. Windows 3.1
+16. MS-DOS
 
-16. Installing after building from sources
+17. Installing after building from sources
 
 
 The currently recommended way (that means it has been verified to work) is
@@ -155,83 +156,8 @@ OLDER VERSIONS
 The minimal supported version is Windows XP. Building with older compilers
 might still work, but these instructions might be outdated.
 
-If you need the executable to run on Windows 98 or ME, use the 2003 one
-|msvc-2003-toolkit| or |msvc-2005-express|, and use the source code before
-8.0.0029.
-
-Visual C++ Toolkit 2003				*msvc-2003-toolkit*
------------------------
-
-NOTE: this most likely does not work
-
-You could download the Microsoft Visual C++ Toolkit 2003 from
-    http://msdn.microsoft.com/visualc/vctoolkit2003/
-Unfortunately this URL is no longer valid.  Unofficial downloads appear to be
-available from links mentioned on these pages (use at your own risk):
-   http://www.filewatcher.com/m/VCToolkitSetup.exe.32952488.0.0.html
-   http://feargame.net/wiki/index.php?title=Building_Source_with_the_VC2003_Toolkit
-
-This contains the command-line tools (compiler, linker, CRT headers,
-and libraries) for Visual Studio .NET 2003, but not the Visual Studio IDE.
-To compile and debug Vim with the VC2003 Toolkit, you will also need
-|ms-platform-sdk|, |dotnet-1.1-redist|, |dotnet-1.1-sdk|,
-and |windbg-download|.
-
-It's easier to download Visual C++ 2008 Express Edition, |msvc-2008-express|,
-which is freely available in perpetuity.
-
-The free Code::Blocks IDE works with the VC2003 Toolkit, as described at
-    http://wiki.codeblocks.org/index.php?title=Integrating_Microsoft_Visual_Toolkit_2003_with_Code::Blocks_IDE
-(This site also takes you through configuring a number of other
-free C compilers for Win32.)
-
-To compile Vim using the VC2003 Toolkit and Make_mvc.mak, you must first
-execute the following commands in a cmd.exe window (the msvcsetup.bat batch
-file can be used):
-
-    set PATH=%SystemRoot%\Microsoft.NET\Framework\v1.1.4322;%PATH%
-    call "%VCToolkitInstallDir%vcvars32.bat"
-    set MSVCVer=7.1
-    call "%ProgramFiles%\Microsoft Platform SDK\SetEnv.Cmd"
-    set LIB=%ProgramFiles%\Microsoft Visual Studio .NET 2003\Vc7\lib;%LIB%
-
-Now you can build Vim with Make_mvc.mak.
-
-
-Getting the Windows Platform SDK	    *ms-platform-sdk*
-
-You will also need a copy of the Windows Platform SDK.  Specifically, you need
-the Windows Core SDK subset of the Platform SDK, which contains the Windows
-headers and libraries.  You need to search for it, Microsoft keeps changing
-the URL.
-
-
-Getting the .NET Framework 1.1 Runtime      *dotnet-1.1-redist*
-
-You need the .NET Framework 1.1 Redistributable Package from
-    http://www.microsoft.com/downloads/details.aspx?familyid=262d25e3-f589-4842-8157-034d1e7cf3a3
-or from Windows Update:
-    http://windowsupdate.microsoft.com/
-This is needed to install |dotnet-1.1-sdk|. It also contains cvtres.exe,
-which is needed to link Vim.
-
-
-Getting the .NET Framework 1.1 SDK	    *dotnet-1.1-sdk*
-
-You need the .NET Framework 1.1 SDK from
-    http://www.microsoft.com/downloads/details.aspx?familyid=9b3a2ca6-3647-4070-9f41-a333c6b9181d
-This contains some additional libraries needed to compile Vim,
-such as msvcrt.lib. You must install |dotnet-1.1-redist| before
-installing the .NET 1.1 SDK.
-
-
-Getting the WinDbg debugger		    *windbg-download*
-
-The Debugging Tools for Windows can be downloaded from
-    http://www.microsoft.com/whdc/devtools/debugging/default.mspx
-This includes the WinDbg debugger, which you will want if you ever need
-to debug Vim itself. An earlier version of the Debugging Tools
-is also available through the Platform SDK, |ms-platform-sdk|.
+If you need the executable to run on Windows 98 or ME, use the 2005 one
+|msvc-2005-express|, and use the source code before 8.0.0029.
 
 
 Visual C++ 2005 Express Edition       *msvc-2005-express*
@@ -264,11 +190,6 @@ For building 64 bit binaries you also need to install the SDK:
 "Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1"
 You don't need the examples and documentation.
 
-If you get an error that Win32.mak can't be found, you have to set the
-variable SDK_INCLUDE_DIR.  For example, on Windows 10, installation of MSVC
-puts include files in the following directory:
-    set SDK_INCLUDE_DIR=C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include
-
 
 2. MSYS2 with MinGW
 ===================
@@ -289,7 +210,8 @@ open the window from the start menu, MSYS2 64 bit / MSYS2 MSYS.
 Execute:
     $ pacman -Syu
 
-And restart MSYS2 console (select "MSYS2 MSYS" icon from the Start Menu).
+And restart MSYS2 console (select "MSYS2 MSYS 32-Bit" icon from the Start
+Menu for building 32 bit Vim, otherwise select "MSYS2 MinGW 64-Bit").
 Then execute:
     $ pacman -Su
 
@@ -385,7 +307,7 @@ The original 'mingw32' compiler is outdated, and may no longer work:
 Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  Go to the Control Panel, (Performance
 and Maintenance), System, Advanced, and edit the environment from there.  If
-you use the standalone MinGW-w64 compiler, the path may depends on your
+you use the standalone MinGW-w64 compiler, the path may depend on your
 installation.  If you use msys2 compilers, set your installed paths (normally
 one of the following):
 
@@ -922,20 +844,55 @@ Just set DIRECTX to yes:
     mingw32-make -f Make_ming.mak DIRECTX=yes
 
 
-14. Windows 3.1x
+14. Building with libsodium support
+===================================
+
+For better encryption support, you can build Vim with libsodium.
+
+A) Using MSVC
+
+You can download the latest libsodium library from here:
+	https://download.libsodium.org/libsodium/releases/
+
+At this moment, libsodium-1.0.18-stable-msvc.zip is the latest package.
+Unpack it to anywhere you like, and specify the path to the SODIUM option:
+
+    nmake -f Make_mvc.mak SODIUM=C:/path/to/libsodium
+    (libsodium.dll will be used as the libsodium DLL name.)
+
+B) Using MinGW
+
+If you use msys2, you can install the libsodium package by pacman (or pacboy):
+
+    $ pacman -S mingw-w64-x86_64-libsodium	# for 64-bit Vim
+    $ pacman -S mingw-w64-i686-libsodium	# for 32-bit Vim
+    $ pacboy -S libsodium:m		# for both 32-bit and 64-bit Vim
+
+Then set SODIUM to yes:
+
+    mingw32-make -f Make_ming.mak SODIUM=yes
+    (libsodium-23.dll will be used as the libsodium DLL name.)
+
+Or you can set the path to libsodium explicitly:
+
+    mingw32-make -f Make_ming.mak SODIUM=C:/path/to/libsodium
+    (libsodium.dll will be used as the libsodium DLL name.)
+
+
+15. Windows 3.1x
 ================
 
 The Windows 3.1x support was removed in patch 7.4.1364.
 
 
-15. MS-DOS
+16. MS-DOS
 ==========
 
 The MS-DOS support was removed in patch 7.4.1399.  Only very old Vim versions
 work on MS-DOS because of the limited amount of memory available.
 
 
-16. Installing after building from sources
+17. Installing after building from sources
 ==========================================
 
 [provided by Michael Soyka, updated by Ken Takata]

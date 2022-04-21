@@ -9,12 +9,12 @@ If you already have an executable version of Vim, you don't need this.
 If you skip settings described here, then you will get the default Vim
 behavior as it is documented, which should be fine for most users.
 
-The file "feature.h" can be edited to match your preferences, but this files
+The file "feature.h" can be edited to match your preferences, but this file
 does not describe possibilities hidden in feature.h acrobatics, however
-parameters from MAKE_VMS.MMS actively uses and sets up parameters in relation
+parameters from MAKE_VMS.MMS actively use and set up parameters in relation
 with feature.h
 
-More information and case analysis you can found in os_vms.txt
+More information and case analysis you can find in os_vms.txt
 ([runtime.doc]os_vms.txt or :help vms from vim prompt)
 
 Contents:
@@ -145,7 +145,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 
 	Parameter name	: VIM_XIM
 	Description	: X Input Method. For entering special languages
-			  like chinese and Japanese. Please define just
+			  like Chinese and Japanese. Please define just
 			  one: VIM_XIM or VIM_HANGULIN
 	Options:	: YES - Build with support
 			  Uncommented - build without support.
@@ -210,7 +210,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
      XXD.EXE you should change to subdirectory <.CTAGS> or <.XXD> and build
      them separately.
 
-5.2. In these directories you can found one make file for VMS as well.
+5.2. In these directories you can find one make file for VMS as well.
      Please read the detailed build instructions in the related *.MMS file.
 
 6.   Deployment
@@ -300,7 +300,7 @@ perl_env :
      So far it works just on Alpha and IA64. More information at:
      http://www.openvms.compaq.com/openvms/products/ips/gtk.html
 
-     You need also the OpenVMS Porting Library:
+     You also need the OpenVMS Porting Library:
      http://www.openvms.compaq.com/openvms/products/ips/porting.html
 
      Source code for GTK and porting library that is used to build
@@ -346,7 +346,7 @@ perl_env :
 
      Edit PERL_INC = to point to perl includes directory where is extern.h
 
-     Build as usually.
+     Build as usual.
 
 7.4  PYTHON
 
@@ -358,7 +358,7 @@ perl_env :
      python.h is located.
      Enable Python feature at make_vms.mms with VIM_PYTHON = YES
 
-     Build as usually.
+     Build as usual.
 
 7.5  TCL
 
@@ -371,13 +371,13 @@ perl_env :
 
      Edit TCL_INC = to point to TCL includes directory where is tcl.h
 
-     Build as usually.
+     Build as usual.
 
 8.   Notes
 
 8.1. New Compaq C compiler
 
-     If you are using Compaq C compiler V6.2 or newer, Informational messages
+     If you are using Compaq C compiler V6.2 or newer, informational messages
      of the type QUESTCOMPARE will be displayed. You should ignore those
      messages ; they are generated only because some test comparisons are done
      with variables which type vary depending on the OS. Under VMS, those are

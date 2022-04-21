@@ -5,6 +5,7 @@
 "			        Johannes Zellner <johannes@zellner.org>
 " Last Change:	Mon, 1 April 2019
 " vim:set foldmethod=marker tabstop=8:
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

@@ -59,6 +59,29 @@ func Test_reindent()
   close!
 endfunc
 
+" Test indent operator creating one undo entry
+func Test_indent_operator_undo()
+  enew
+  call setline(1, range(12)->map('"\t" .. v:val'))
+  func FoldExpr()
+    let g:foldcount += 1
+    return '='
+  endfunc
+  set foldmethod=expr foldexpr=FoldExpr()
+  let g:foldcount = 0
+  redraw
+  call assert_equal(12, g:foldcount)
+  normal gg=G
+  call assert_equal(24, g:foldcount)
+  undo
+  call assert_equal(38, g:foldcount)
+
+  bwipe!
+  set foldmethod& foldexpr=
+  delfunc FoldExpr
+  unlet g:foldcount
+endfunc
+
 " Test for shifting a line with a preprocessor directive ('#')
 func Test_preproc_indent()
   new
@@ -140,6 +163,107 @@ func Test_modeline_indent_expr()
   let &modeline = modeline
   close!
   call delete('Xfile.txt')
+endfunc
+
+func Test_indent_func_with_gq()
+  
+  function GetTeXIndent()
+    " Sample indent expression for TeX files
+    let lnum = prevnonblank(v:lnum - 1)
+    " At the start of the file use zero indent.
+    if lnum == 0
+      return 0
+    endif
+    let line = getline(lnum)
+    let ind = indent(lnum)
+    " Add a 'shiftwidth' after beginning of environments.
+    if line =~ '\\begin{center}' 
+      let ind = ind + shiftwidth()
+    endif
+    return ind
+  endfunction
+
+  new
+  setl et sw=2 sts=2 ts=2 tw=50 indentexpr=GetTeXIndent()
+  put =[  '\documentclass{article}', '', '\begin{document}', '',
+        \ 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ut enim non',
+        \ 'libero efficitur aliquet. Maecenas metus justo, facilisis convallis blandit',
+        \ 'non, semper eu urna. Suspendisse diam diam, iaculis faucibus lorem eu,',
+        \ 'fringilla condimentum lectus. Quisque euismod diam at convallis vulputate.',
+        \ 'Pellentesque laoreet tortor sit amet mauris euismod ornare. Sed varius',
+        \ 'bibendum orci vel vehicula. Pellentesque tempor, ipsum et auctor accumsan,',
+        \ 'metus lectus ultrices odio, sed elementum mi ante at arcu.', '', '\begin{center}', '',
+        \ 'Proin nec risus consequat nunc dapibus consectetur. Mauris lacinia est a augue',
+        \ 'tristique accumsan. Morbi pretium, felis molestie eleifend condimentum, arcu',
+        \ 'ipsum congue nisl, quis euismod purus libero in ante.', '',
+        \ 'Donec id semper purus.',
+        \ 'Suspendisse eget aliquam nunc. Maecenas fringilla mauris vitae maximus',
+        \ 'condimentum. Cras a quam in mi dictum eleifend at a lorem. Sed convallis',
+        \ 'ante a commodo facilisis. Nam suscipit vulputate odio, vel dapibus nisl',
+        \ 'dignissim facilisis. Vestibulum ante ipsum primis in faucibus orci luctus et',
+        \ 'ultrices posuere cubilia curae;', '', '']
+  1d_
+  call cursor(5, 1)
+  ka
+  call cursor(14, 1)
+  kb
+  norm! 'agqap
+  norm! 'bgqG
+  let expected = [ '\documentclass{article}', '', '\begin{document}', '',
+        \ 'Lorem ipsum dolor sit amet, consectetur adipiscing',
+        \ 'elit. Fusce ut enim non libero efficitur aliquet.',
+        \ 'Maecenas metus justo, facilisis convallis blandit',
+        \ 'non, semper eu urna. Suspendisse diam diam,',
+        \ 'iaculis faucibus lorem eu, fringilla condimentum',
+        \ 'lectus. Quisque euismod diam at convallis',
+        \ 'vulputate.  Pellentesque laoreet tortor sit amet',
+        \ 'mauris euismod ornare. Sed varius bibendum orci',
+        \ 'vel vehicula. Pellentesque tempor, ipsum et auctor',
+        \ 'accumsan, metus lectus ultrices odio, sed',
+        \ 'elementum mi ante at arcu.', '', '\begin{center}', '',
+        \ '  Proin nec risus consequat nunc dapibus',
+        \ '  consectetur. Mauris lacinia est a augue',
+        \ '  tristique accumsan. Morbi pretium, felis',
+        \ '  molestie eleifend condimentum, arcu ipsum congue',
+        \ '  nisl, quis euismod purus libero in ante.',
+        \ '',
+        \ '  Donec id semper purus.  Suspendisse eget aliquam',
+        \ '  nunc. Maecenas fringilla mauris vitae maximus',
+        \ '  condimentum. Cras a quam in mi dictum eleifend',
+        \ '  at a lorem. Sed convallis ante a commodo',
+        \ '  facilisis. Nam suscipit vulputate odio, vel',
+        \ '  dapibus nisl dignissim facilisis. Vestibulum',
+        \ '  ante ipsum primis in faucibus orci luctus et',
+        \ '  ultrices posuere cubilia curae;', '', '']
+  call assert_equal(expected, getline(1, '$'))
+
+  bwipe!
+  delmark ab
+  delfunction GetTeXIndent 
+endfu
+
+func Test_formatting_keeps_first_line_indent()
+  let lines =<< trim END
+      foo()
+      {
+          int x;         // manually positioned
+                         // more text that will be formatted
+                         // but not reindented
+  END
+  new
+  call setline(1, lines)
+  setlocal sw=4 cindent tw=45 et
+  normal! 4Ggqj
+  let expected =<< trim END
+      foo()
+      {
+          int x;         // manually positioned
+                         // more text that will be
+                         // formatted but not
+                         // reindented
+  END
+  call assert_equal(expected, getline(1, '$'))
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

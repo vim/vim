@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2020 Mar 05
+*textprop.txt*  For Vim version 8.2.  Last change: 2021 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -101,13 +101,16 @@ Manipulating text property types:
 prop_type_add({name}, {props})		define a new property type
 prop_type_change({name}, {props})	change an existing property type
 prop_type_delete({name} [, {props}])	delete a property type
-prop_type_get([{name} [, {props}]])	get property type values
+prop_type_get({name} [, {props}])	get property type values
 prop_type_list([{props}])		get list of property types
 
 
 Manipulating text properties:
 
 prop_add({lnum}, {col}, {props})  	add a text property
+prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
+					add a text property at multiple
+					positions.
 prop_clear({lnum} [, {lnum-end} [, {bufnr}]])
 					remove all text properties
 prop_find({props} [, {direction}])	search for a text property
@@ -126,7 +129,7 @@ prop_add({lnum}, {col}, {props})
 		   length	length of text in bytes, can only be used
 				for a property that does not continue in
 				another line; can be zero
-		   end_lnum	line number for the end of text
+		   end_lnum	line number for the end of text (inclusive)
 		   end_col	column just after the text; not used when
 				"length" is present; when {col} and "end_col"
 				are equal, and "end_lnum" is omitted or equal
@@ -157,6 +160,35 @@ prop_add({lnum}, {col}, {props})
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
+<
+						*prop_add_list()*
+prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
+		Similar to prop_add(), but attaches a text property at
+		multiple positions in a buffer.
+
+		{props} is a dictionary with these fields:
+		   bufnr	buffer to add the property to; when omitted
+				the current buffer is used
+		   id		user defined ID for the property; must be a
+				number; when omitted zero is used
+		   type		name of the text property type
+		All fields except "type" are optional.
+
+		The second argument is a List of Lists where each list
+		specifies the starting and ending position of the text.  The
+		first two items {lnum} and {col} specify the starting position
+		of the text where the property will be attached and the last
+		two items {end-lnum} and {end-col} specify the position just
+		after the text.
+
+		Example:
+			call prop_add_list(#{type: 'MyProp', id: 2},
+					\ [[1, 4, 1, 7],
+					\  [1, 15, 1, 20],
+					\  [2, 30, 3, 30]]
+
+		Can also be used as a |method|: >
+			GetProp()->prop_add_list([[1, 1, 1, 2], [1, 4, 1, 8]])
 
 
 prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
@@ -175,6 +207,7 @@ prop_find({props} [, {direction}])
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
+		   both		"id" and "type" must both match
 		   bufnr	buffer to search in; when present a
 				start position with "lnum" and "col"
 				must be given; when omitted the
@@ -187,6 +220,7 @@ prop_find({props} [, {direction}])
 		   skipstart	do not look for a match at the start
 				position
 
+		A property matches when either "id" or "type" matches.
 		{direction} can be "f" for forward and "b" for backward.  When
 		omitted forward search is performed.
 
@@ -196,19 +230,33 @@ prop_find({props} [, {direction}])
 
 
 prop_list({lnum} [, {props}])				*prop_list()*
-		Return a List with all text properties in line {lnum}.
+		Returns a List with all the text properties in line {lnum}.
 
-		When {props} contains a "bufnr" item, use this buffer instead
-		of the current buffer.
+		The following optional items are supported in {props}:
+		   bufnr	use this buffer instead of the current buffer
+		   end_lnum	return text properties in all the lines
+				between {lnum} and {end_lnum} (inclusive).
+				A negative value is used as an offset from the
+				last buffer line; -1 refers to the last buffer
+				line.
+		   types	List of property type names. Return only text
+				properties that match one of the type names.
+		   ids		List of property identifiers. Return only text
+				properties with one of these identifiers.
 
 		The properties are ordered by starting column and priority.
 		Each property is a Dict with these entries:
+		   lnum		starting line number. Present only when
+				returning text properties between {lnum} and
+				{end_lnum}.
 		   col		starting column
 		   length	length in bytes, one more if line break is
 				included
 		   id		property ID
 		   type		name of the property type, omitted if
 				the type was deleted
+		   type_bufnr	buffer number for which this type was defined;
+				0 if the type is global
 		   start	when TRUE property starts in this line
 		   end		when TRUE property ends in this line
 
@@ -216,6 +264,30 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		the current one is a continuation.
 		When "end" is zero the property continues in the next line.
 		The line break after this line is included.
+
+		Returns an empty list on error.
+
+		Examples:
+		   " get text properties placed in line 5
+		   echo prop_list(5)
+		   " get text properties placed in line 20 in buffer 4
+		   echo prop_list(20, {'bufnr': 4})
+		   " get all the text properties between line 1 and 20
+		   echo prop_list(1, {'end_lnum': 20})
+		   " get all the text properties of type 'myprop'
+		   echo prop_list(1, {'types': ['myprop'],
+						\ 'end_lnum': -1})
+		   " get all the text properties of type 'prop1' or 'prop2'
+		   echo prop_list(1, {'types': ['prop1', 'prop2'],
+						\ 'end_lnum': -1})
+		   " get all the text properties with ID 8
+		   echo prop_list(1, {'ids': [8], 'end_lnum': line('$')})
+		   " get all the text properties with ID 10 and 20
+		   echo prop_list(1, {'ids': [10, 20], 'end_lnum': -1})
+		   " get text properties with type 'myprop' and ID 100
+		   " in buffer 4.
+		   echo prop_list(1, {'bufnr': 4, 'types': ['myprop'],
+					\ 'ids': [100], 'end_lnum': -1})
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
@@ -226,7 +298,8 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		{lnum-end} is given, remove matching text properties from line
 		{lnum} to {lnum-end} (inclusive).
 		When {lnum} is omitted remove matching text properties from
-		all lines.
+		all lines (this requires going over all lines, thus will be a
+		bit slow for a buffer with many lines).
 
 		{props} is a dictionary with these fields:
 		   id		remove text properties with this ID
@@ -258,8 +331,8 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 				properties the one with the highest priority
 				will be used; negative values can be used, the
 				default priority is zero
-		   combine	when TRUE combine the highlight with any
-				syntax highlight; when omitted or FALSE syntax
+		   combine	when omitted or TRUE combine the highlight
+				with any syntax highlight; when FALSE syntax
 				highlight will not be used
 		   start_incl	when TRUE inserts at the start position will
 				be included in the text property
@@ -291,7 +364,7 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
 
-prop_type_get([{name} [, {props}]])			*prop_type_get()*
+prop_type_get({name} [, {props}])			*prop_type_get()*
 		Returns the properties of property type {name}.  This is a
 		dictionary with the same fields as was given to
 		prop_type_add().

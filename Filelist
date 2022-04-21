@@ -3,21 +3,30 @@
 
 # source files for all source archives
 SRC_ALL =	\
-		.gitignore \
+		.cirrus.yml \
+		.coveralls.yml \
 		.gitattributes \
+		.github/CODEOWNERS \
+		.github/ISSUE_TEMPLATE/bug_report.yml \
+		.github/ISSUE_TEMPLATE/feature_request.md \
+		.github/workflows/ci.yml \
+		.github/workflows/codeql-analysis.yml \
+		.github/workflows/coverity.yml \
+		.gitignore \
 		.hgignore \
 		.lgtm.yml \
 		.travis.yml \
-		.cirrus.yml \
-		.github/workflows/ci-windows.yaml \
-		.github/CODEOWNERS \
-		appveyor.yml \
+		.appveyor.yml \
+		.codecov.yml \
 		ci/appveyor.bat \
+		ci/build-snd-dummy.sh \
+		ci/config.mk*.sed \
 		ci/if_ver*.vim \
 		ci/load-snd-dummy.sh \
-		ci/config.mk*.sed \
+		ci/setup-xvfb.sh \
 		src/Make_all.mak \
 		src/README.md \
+		src/alloc.c \
 		src/alloc.h \
 		src/arabic.c \
 		src/arglist.c \
@@ -63,6 +72,7 @@ SRC_ALL =	\
 		src/fileio.c \
 		src/filepath.c \
 		src/findfile.c \
+		src/float.c \
 		src/fold.c \
 		src/getchar.c \
 		src/globals.h \
@@ -103,6 +113,8 @@ SRC_ALL =	\
 		src/nbdebug.h \
 		src/netbeans.c \
 		src/normal.c \
+		src/nv_cmdidxs.h \
+		src/nv_cmds.h \
 		src/ops.c \
 		src/option.c \
 		src/option.h \
@@ -128,12 +140,13 @@ SRC_ALL =	\
 		src/spell.h \
 		src/spellfile.c \
 		src/spellsuggest.c \
+		src/strings.c \
 		src/structs.h \
 		src/syntax.c \
 		src/tag.c \
 		src/term.c \
 		src/terminal.c \
-		src/term.h \
+		src/termdefs.h \
 		src/termlib.c \
 		src/testing.c \
 		src/textformat.c \
@@ -149,8 +162,11 @@ SRC_ALL =	\
 		src/version.h \
 		src/vim.h \
 		src/vim9.h \
+		src/vim9cmds.c \
 		src/vim9compile.c \
 		src/vim9execute.c \
+		src/vim9expr.c \
+		src/vim9instr.c \
 		src/vim9script.c \
 		src/vim9type.c \
 		src/viminfo.c \
@@ -182,7 +198,6 @@ SRC_ALL =	\
 		src/testdir/view_util.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test77a.ok \
-		src/testdir/test83-tags? \
 		src/testdir/test77a.com \
 		src/testdir/test_*.vim \
 		src/testdir/python2/*.py \
@@ -203,6 +218,7 @@ SRC_ALL =	\
 		src/testdir/popupbounce.vim \
 		src/proto.h \
 		src/protodef.h \
+		src/proto/alloc.pro \
 		src/proto/arabic.pro \
 		src/proto/arglist.pro \
 		src/proto/autocmd.pro \
@@ -241,6 +257,7 @@ SRC_ALL =	\
 		src/proto/fileio.pro \
 		src/proto/filepath.pro \
 		src/proto/findfile.pro \
+		src/proto/float.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
 		src/proto/gui.pro \
@@ -289,6 +306,7 @@ SRC_ALL =	\
 		src/proto/spell.pro \
 		src/proto/spellfile.pro \
 		src/proto/spellsuggest.pro \
+		src/proto/strings.pro \
 		src/proto/syntax.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \
@@ -305,8 +323,11 @@ SRC_ALL =	\
 		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
+		src/proto/vim9cmds.pro \
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \
+		src/proto/vim9expr.pro \
+		src/proto/vim9instr.pro \
 		src/proto/vim9script.pro \
 		src/proto/vim9type.pro \
 		src/proto/viminfo.pro \
@@ -364,6 +385,7 @@ SRC_ALL =	\
 		src/libvterm/t/30state_pen.test \
 		src/libvterm/t/31state_rep.test \
 		src/libvterm/t/32state_flow.test \
+		src/libvterm/t/40state_selection.test \
 		src/libvterm/t/60screen_ascii.test \
 		src/libvterm/t/61screen_unicode.test \
 		src/libvterm/t/62screen_damage.test \
@@ -422,17 +444,14 @@ SRC_UNIX =	\
 		src/configure \
 		src/configure.ac \
 		src/create_cmdidxs.vim \
-		src/gui_at_fs.c \
-		src/gui_at_sb.c \
-		src/gui_at_sb.h \
-		src/gui_athena.c \
+		src/create_nvcmdidxs.c \
+		src/create_nvcmdidxs.vim \
 		src/gui_gtk.c \
 		src/gui_gtk_f.c \
 		src/gui_gtk_f.h \
 		src/gui_gtk_x11.c \
 		src/gui_gtk_res.xml \
 		src/gui_motif.c \
-		src/gui_xim.c \
 		src/gui_xmdlg.c \
 		src/gui_xmebw.c \
 		src/gui_xmebw.h \
@@ -451,12 +470,10 @@ SRC_UNIX =	\
 		src/osdef1.h.in \
 		src/osdef2.h.in \
 		src/pathdef.sh \
-		src/proto/gui_athena.pro \
 		src/proto/gui_gtk.pro \
 		src/proto/gui_gtk_x11.pro \
 		src/proto/gui_gtk_gresources.pro \
 		src/proto/gui_motif.pro \
-		src/proto/gui_xim.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
 		src/proto/if_xcmdsrv.pro \
@@ -476,8 +493,8 @@ SRC_UNIX =	\
 
 # source files for both DOS and Unix
 SRC_DOS_UNIX =	\
+		src/gui_xim.c \
 		src/if_cscope.c \
-		src/if_cscope.h \
 		src/if_lua.c \
 		src/if_mzsch.c \
 		src/if_mzsch.h \
@@ -488,6 +505,7 @@ SRC_DOS_UNIX =	\
 		src/if_py_both.h \
 		src/if_ruby.c \
 		src/if_tcl.c \
+		src/proto/gui_xim.pro \
 		src/proto/if_cscope.pro \
 		src/proto/if_lua.pro \
 		src/proto/if_mzsch.pro \
@@ -523,18 +541,14 @@ SRC_DOS =	\
 		tools/rename.bat \
 		src/bigvim.bat \
 		src/bigvim64.bat \
-		src/msvcsetup.bat \
 		src/msvc2008.bat \
 		src/msvc2010.bat \
 		src/msvc2015.bat \
 		src/msys32.bat \
 		src/msys64.bat \
-		src/dimm.idl \
 		src/dlldata.c \
 		src/dosinst.c \
 		src/dosinst.h \
-		src/glbl_ime.cpp \
-		src/glbl_ime.h \
 		src/gui_dwrite.cpp \
 		src/gui_dwrite.h \
 		src/gui_w32.c \
@@ -562,7 +576,7 @@ SRC_DOS =	\
 		src/uninstall.c \
 		src/vim.def \
 		src/vim.rc \
-		src/gvim.exe.mnf \
+		src/vim.manifest \
 		src/vimrun.c \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
@@ -612,6 +626,7 @@ SRC_DOS_BIN =	\
 		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
+		runtime/bitmaps/vim.ico \
 		nsis/icons.zip \
 
 # source files for Amiga, DOS, etc. (also in the extra archive)
@@ -643,10 +658,7 @@ SRC_HAIKU =	\
 # source files for the Mac (also in the extra archive)
 SRC_MAC =	\
 		src/INSTALLmac.txt \
-		src/dehqx.py \
-		src/os_mac_rsrc/*.icns \
 		src/os_mac.h \
-		src/os_mac.rsr.hqx \
 		src/os_mac_conv.c \
 		src/os_macosx.m \
 		src/proto/os_mac_conv.pro \
@@ -684,7 +696,6 @@ SRC_EXTRA =	\
 		$(SRC_QNX) \
 		$(SRC_VMS) \
 		README_os390.txt \
-		src/infplist.xml \
 		src/link.390 \
 		src/os_vms_fix.com \
 		src/toolbar.phi \
@@ -786,6 +797,7 @@ RT_SCRIPTS =	\
 		runtime/autoload/xml/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
+		runtime/colors/lists/*.vim \
 		runtime/colors/tools/*.vim \
 		runtime/compiler/*.vim \
 		runtime/compiler/README.txt \
@@ -838,7 +850,6 @@ RT_AMI_DOS =	\
 # DOS runtime (also in the extra archive)
 RT_DOS =	\
 		README_dos.txt \
-		runtime/rgb.txt \
 		vimtutor.bat \
 
 # DOS runtime without CR-LF translation (also in the extra archive)
@@ -984,6 +995,7 @@ LANG_GEN = \
 		runtime/doc/*-tr.1 \
 		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \
+		runtime/lang/Makefile \
 		runtime/lang/menu_*.vim \
 		runtime/keymap/README.txt \
 		runtime/keymap/*.vim \

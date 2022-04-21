@@ -3025,7 +3025,7 @@ func Test_nested_if_else_errors()
 
   " :elseif without :if
   let code =<< trim END
-    elseif
+    elseif 1
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(elseif):E582: :elseif without :if')
@@ -3033,7 +3033,7 @@ func Test_nested_if_else_errors()
   " :elseif without :if
   let code =<< trim END
     while 1
-      elseif
+      elseif 1
     endwhile
   END
   call writefile(code, 'Xtest')
@@ -3043,7 +3043,7 @@ func Test_nested_if_else_errors()
   let code =<< trim END
     try
     finally
-      elseif
+      elseif 1
     endtry
   END
   call writefile(code, 'Xtest')
@@ -3052,7 +3052,7 @@ func Test_nested_if_else_errors()
   " :elseif without :if
   let code =<< trim END
     try
-      elseif
+      elseif 1
     endtry
   END
   call writefile(code, 'Xtest')
@@ -3063,7 +3063,7 @@ func Test_nested_if_else_errors()
     try
       throw "a"
     catch /a/
-      elseif
+      elseif 1
     endtry
   END
   call writefile(code, 'Xtest')
@@ -3631,7 +3631,7 @@ endfunc
 "	    exceptions.
 "-------------------------------------------------------------------------------
 
-func Test_execption_info_for_error()
+func Test_exception_info_for_error()
   CheckEnglish
 
   let test =<< trim [CODE]
@@ -5570,10 +5570,10 @@ func Test_expr_eval_error_msg()
     call T(19, '{(1} + CONT(19)',	'E110',	"Missing ')'")
     call T(20, '("abc"[1) + CONT(20)',	'E111',	"Missing ']'")
     call T(21, '(1 +) + CONT(21)',	'E15',	"Invalid expression")
-    call T(22, '1 2 + CONT(22)',	'E15',	"Invalid expression")
+    call T(22, '1 2 + CONT(22)',	'E488',	"Trailing characters: 2 +")
     call T(23, '(1 ? 2) + CONT(23)',	'E109',	"Missing ':' after '?'")
-    call T(24, '("abc) + CONT(24)',	'E114',	"Missing quote")
-    call T(25, "('abc) + CONT(25)",	'E115',	"Missing quote")
+    call T(24, '("abc) + CONT(24)',	'E114',	"Missing double quote")
+    call T(25, "('abc) + CONT(25)",	'E115',	"Missing single quote")
     call T(26, '& + CONT(26)',		'E112', "Option name missing")
     call T(27, '&asdf + CONT(27)',	'E113', "Unknown option")
 
@@ -5657,7 +5657,12 @@ func Test_throw_multi_error()
           call EXEC(cmd . ' novar #')		" normal plus syntax error
         catch /^Vim\((\a\+)\)\=:/
           Xloop 'e'
-          call assert_match('E488: Trailing characters', v:exception)
+          if cmd =~ 'unlet'
+            " TODO: should get error for 'novar'
+            call assert_match('E488: Trailing characters', v:exception)
+          else
+            call assert_match('E121: Undefined variable: novar', v:exception)
+          endif
         finally
           Xloop 'f'
           call assert_equal("", v:errmsg)
@@ -6541,9 +6546,16 @@ func Test_type()
     call assert_true(v:true != v:false)
 
     call assert_true(v:null == 0)
+    call assert_false(v:null == 1)
     call assert_false(v:null != 0)
     call assert_true(v:none == 0)
+    call assert_false(v:none == 1)
     call assert_false(v:none != 0)
+    if has('float')
+      call assert_true(v:null == 0.0)
+      call assert_false(v:null == 0.1)
+      call assert_false(v:null != 0.0)
+    endif
 
     call assert_true(v:false is v:false)
     call assert_true(v:true is v:true)
@@ -6559,6 +6571,9 @@ func Test_type()
     call assert_false(v:true is 1)
     call assert_false(v:true is v:false)
     call assert_false(v:none is 0)
+    call assert_false(v:none is [])
+    call assert_false(v:none is {})
+    call assert_false(v:none is 'text')
     call assert_false(v:null is 0)
     call assert_false(v:null is v:none)
 
@@ -6598,6 +6613,21 @@ func Test_type()
     endfunc
 
     call ChangeYourMind()
+endfunc
+
+func Test_typename()
+  call assert_equal('number', typename(123))
+  call assert_equal('string', typename('x'))
+  call assert_equal('list<number>', typename([123]))
+  call assert_equal('dict<number>', typename(#{key: 123}))
+  call assert_equal('list<dict<number>>', typename([#{key: 123}]))
+
+  let l = []
+  let d = #{a: 0}
+  let l = [d]
+  let l[0].e = #{b: l}
+  call assert_equal('list<dict<any>>', typename(l))
+  call assert_equal('dict<any>', typename(d))
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -6825,7 +6855,7 @@ func Test_script_lines()
 		    \ ])
 	call assert_report("Shouldn't be able to define function")
     catch
-	call assert_exception('Vim(function):E126: Missing :endfunction')
+	call assert_exception('Vim(function):E1145: Missing heredoc end marker: .')
     endtry
 
     " :change
@@ -6845,7 +6875,7 @@ func Test_script_lines()
 		    \ ])
 	call assert_report("Shouldn't be able to define function")
     catch
-	call assert_exception('Vim(function):E126: Missing :endfunction')
+	call assert_exception('Vim(function):E1145: Missing heredoc end marker: .')
     endtry
 
     " :insert
@@ -6865,7 +6895,7 @@ func Test_script_lines()
 		    \ ])
 	call assert_report("Shouldn't be able to define function")
     catch
-	call assert_exception('Vim(function):E126: Missing :endfunction')
+	call assert_exception('Vim(function):E1145: Missing heredoc end marker: .')
     endtry
 endfunc
 
@@ -7067,6 +7097,15 @@ func Test_compound_assignment_operators()
     call assert_equal(1, &scrolljump)
     call assert_fails('let &scrolljump .= "j"', 'E734:')
     set scrolljump&vim
+
+    let &foldlevelstart = 2
+    let &foldlevelstart -= 1
+    call assert_equal(1, &foldlevelstart)
+    let &foldlevelstart -= 1
+    call assert_equal(0, &foldlevelstart)
+    let &foldlevelstart = 2
+    let &foldlevelstart -= 2
+    call assert_equal(0, &foldlevelstart)
 
     " Test for register
     let @/ = 1
@@ -7374,7 +7413,7 @@ func Test_invalid_function_names()
   endtry
   call assert_equal(1, caught_e884)
 
-  " function name folowed by #
+  " function name followed by #
   let caught_e128 = 0
   try
     func! test2() "#
@@ -7446,7 +7485,7 @@ func Test_typed_script_var()
 endfunc
 
 " Test for issue6776              {{{1
-func Test_trinary_expression()
+func Test_ternary_expression()
   try
     call eval('0 ? 0')
   catch
@@ -7468,6 +7507,26 @@ func Test_trinary_expression()
   " previous failure should not cause next expression to fail
   call assert_equal(v:false, eval(string(v:false)))
 endfunction
+
+func Test_for_over_string()
+  let res = ''
+  for c in 'aéc̀d'
+    let res ..= c .. '-'
+  endfor
+  call assert_equal('a-é-c̀-d-', res)
+
+  let res = ''
+  for c in ''
+    let res ..= c .. '-'
+  endfor
+  call assert_equal('', res)
+
+  let res = ''
+  for c in test_null_string()
+    let res ..= c .. '-'
+  endfor
+  call assert_equal('', res)
+endfunc
 
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1

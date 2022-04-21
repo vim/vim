@@ -85,4 +85,5 @@ void clip_xterm_set_selection(Clipboard_T *cbd);
 int xsmp_handle_requests(void);
 void xsmp_init(void);
 void xsmp_close(void);
+int gpm_available(void);
 /* vim: set ft=c : */

@@ -11,7 +11,7 @@
      afhængig af hvor meget tid der bruges på at eksperimentere.
 
      VÆR OPMÆRKSOM PÅ AT:
-     Kommandoerne i lektionerne ændre teksten. Opret en kopi af filen
+     Kommandoerne i lektionerne ændrer teksten. Opret en kopi af filen
      til at øve på (hvis du startede "vimtutor", så er det allerede en kopi).
 
      Det er vigtigt at huske på at vejledningen er sat op til at lære ved at
@@ -883,7 +883,7 @@ BEMÆRK: Hvis du vil ignorere case for en enkelt søg-kommando, så brug  \c
 
   1. Begynd at redigere "vimrc"-filen. Det afhænger af dit system:
 	:e ~/.vimrc		i Unix
-	:e $VIM/_vimrc		i MS-Windows
+	:e ~/_vimrc		i MS-Windows
 
   2. Læs nu indholdet af eksempel "vimrc"-filen:
 	:r $VIMRUNTIME/vimrc_example.vim
@@ -953,7 +953,7 @@ BEMÆRK: Fuldførelse virker til mange kommandoer. Prøv blot at trykke på
 	Forlag: New Riders
   Den første bog som helt er tilegnet Vim. Specielt nyttig for begyndere.
   Der er mange eksempler og billeder.
-  Se http://iccf-holland.org/click5.html
+  Se https://iccf-holland.org/click5.html
 
   Denne bog er ældre og mere om Vi end Vim, men anbefales også:
 	Learning the Vi Editor - af Linda Lamb

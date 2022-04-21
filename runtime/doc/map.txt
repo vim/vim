@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2020 Sep 06
+*map.txt*       For Vim version 8.2.  Last change: 2022 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6,7 +6,7 @@
 
 Key mapping, abbreviations and user-defined commands.
 
-This subject is introduced in sections |05.3|, |24.7| and |40.1| of the user
+This subject is introduced in sections |05.4|, |24.7| and |40.1| of the user
 manual.
 
 1. Key mapping			|key-mapping|
@@ -61,6 +61,8 @@ modes.
 			where the map command applies.  The result, including
 			{rhs}, is then further scanned for mappings.  This
 			allows for nested and recursive use of mappings.
+			Note: Trailing spaces are included in the {rhs},
+			because space is a valid Normal mode command.
 
 						*:nore* *:norem*
 :no[remap]  {lhs} {rhs}		|mapmode-nvo|	*:no*  *:noremap* *:nor*
@@ -78,6 +80,8 @@ modes.
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
 			used to redefine a command.
+			Note: When <Plug> appears in the {rhs} this part is
+			always applied even if remapping is disallowed.
 
 
 :unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
@@ -94,6 +98,8 @@ modes.
 			Remove the mapping of {lhs} for the modes where the
 			map command applies.  The mapping may remain defined
 			for other modes where it applies.
+			It also works when {lhs} matches the {rhs} of a
+			mapping. This is for when an abbreviation applied.
 			Note: Trailing spaces are included in the {lhs}.  This
 			unmap does NOT work: >
 				:map @@ foo
@@ -168,7 +174,7 @@ type "a", then "bar" will get inserted.
 "<unique>" can be used in any order.  They must appear right after the
 command, before any other arguments.
 
-				*:map-local* *:map-<buffer>* *E224* *E225*
+			*:map-local* *:map-<buffer>* *:map-buffer* *E224* *E225*
 If the first argument to one of these commands is "<buffer>" the mapping will
 be effective in the current buffer only.  Example: >
 	:map <buffer>  ,w  /[.,;]<CR>
@@ -227,7 +233,7 @@ Note: ":map <script>" and ":noremap <script>" do the same thing.  The
 "<script>" overrules the command name.  Using ":noremap <script>" is
 preferred, because it's clearer that remapping is (mostly) disabled.
 
-						*:map-<unique>* *E226* *E227*
+				*:map-<unique>* *:map-unique* *E226* *E227*
 If the first argument to one of these commands is "<unique>" and it is used to
 define a new mapping or abbreviation, the command will fail if the mapping or
 abbreviation already exists.  Example: >
@@ -244,13 +250,45 @@ have a look at |maparg()|.
 If the first argument to one of these commands is "<expr>" and it is used to
 define a new mapping or abbreviation, the argument is an expression.  The
 expression is evaluated to obtain the {rhs} that is used.  Example: >
-	:inoremap <expr> . InsertDot()
-The result of the InsertDot() function will be inserted.  It could check the
+	:inoremap <expr> . <SID>InsertDot()
+The result of the s:InsertDot() function will be inserted.  It could check the
 text before the cursor and start omni completion when some condition is met.
+Using a script-local function is preferred, to avoid polluting the global
+namespace.  Use <SID> in the RHS so that the script that the mapping was
+defined in can be found.
 
 For abbreviations |v:char| is set to the character that was typed to trigger
 the abbreviation.  You can use this to decide how to expand the {lhs}.  You
 should not either insert or change the v:char.
+
+In case you want the mapping to not do anything, you can have the expression
+evaluate to an empty string.  If something changed that requires Vim to
+go through the main loop (e.g. to update the display), return "\<Ignore>".
+This is similar to "nothing" but makes Vim return from the loop that waits for
+input. Example: >
+	func s:OpenPopup()
+	  call popup_create(... arguments ...)
+	  return "\<Ignore>"
+	endfunc
+	nnoremap <expr> <F3> <SID>OpenPopup()
+
+Keep in mind that the expression may be evaluated when looking for
+typeahead, before the previous command has been executed.  For example: >
+	func StoreColumn()
+	  let g:column = col('.')
+	  return 'x'
+	endfunc
+	nnoremap <expr> x StoreColumn()
+	nmap ! f!x
+You will notice that g:column has the value from before executing "f!",
+because "x" is evaluated before "f!" is executed.
+This can be solved by inserting <Ignore> before the character that is
+expression-mapped: >
+	nmap ! f!<Ignore>x
+
+When defining a mapping in a |Vim9| script, the expression will be evaluated
+in the context of that script.  This means that script-local items can be
+accessed in the expression.
 
 Be very careful about side effects!  The expression is evaluated while
 obtaining characters, you may very well make the command dysfunctional.
@@ -260,7 +298,7 @@ For this reason the following is blocked:
 - The |:normal| command.
 - Moving the cursor is allowed, but it is restored afterwards.
 If you want the mapping to do any of these let the returned characters do
-that.
+that, or use a |<Cmd>| mapping instead.
 
 You can use getchar(), it consumes typeahead if there is any. E.g., if you
 have these mappings: >
@@ -278,7 +316,7 @@ Here is an example that inserts a list number that increases: >
 
 	func ListItem()
 	  let g:counter += 1
-	  return g:counter . '. '
+	  return g:counter .. '. '
 	endfunc
 
 	func ListReset()
@@ -292,11 +330,66 @@ empty string, so that nothing is inserted.
 Note that using 0x80 as a single byte before other text does not work, it will
 be seen as a special key.
 
+						*<Cmd>* *:map-cmd*
+The special text <Cmd> begins a "command mapping", it executes the command
+directly without changing modes.  Where you might use ":...<CR>" in the
+{rhs} of a mapping, you can instead use "<Cmd>...<CR>".
+Example: >
+	noremap x <Cmd>echo mode(1)<CR>
+<
+This is more flexible than `:<C-U>` in Visual and Operator-pending mode, or
+`<C-O>:` in Insert mode, because the commands are executed directly in the
+current mode, instead of always going to Normal mode.  Visual mode is
+preserved, so tricks with |gv| are not needed.  Commands can be invoked
+directly in Command-line mode (which would otherwise require timer hacks).
+Example of using <Cmd> halfway Insert mode: >
+	nnoremap <F3> aText <Cmd>echo mode(1)<CR> Added<Esc>
+
+Unlike <expr> mappings, there are no special restrictions on the <Cmd>
+command: it is executed as if an (unrestricted) |autocommand| was invoked.
+
+						*<ScriptCmd>*
+<ScriptCmd> is like <Cmd> but sets the context to the script the mapping was
+defined in, for the duration of the command execution.  This is especially
+useful for |Vim9| script.  It also works to access an import, which is useful
+in a plugin using an autoload script: >
+	vim9script
+	import autoload 'implementation.vim' as impl
+	nnoremap <F4> <ScriptCmd>impl.DoTheWork()<CR>
+
+No matter where <F4> is typed, the "impl" import will be found in the script
+context of where the mapping was defined.  And since it's an autoload import,
+the "implementation.vim" script will only be loaded once <F4> is typed, not
+when the mapping is defined.
+
+Note:
+- Because <Cmd> and <ScriptCmd> avoid mode-changes it does not trigger
+  |CmdlineEnter| and |CmdlineLeave| events, because no user interaction is
+  expected.
+- For the same reason, |keycodes| like <C-R><C-W> are interpreted as plain,
+  unmapped keys.
+- The command is not echo'ed, no need for <silent>.
+- The {rhs} is not subject to abbreviations nor to other mappings, even if the
+  mapping is recursive.
+- In Visual mode  you can use `line('v')` and `col('v')` to get one end of the
+  Visual area, the cursor is at the other end.
+- In Select mode, |:map| and |:vmap| command mappings are executed in
+  Visual mode.  Use |:smap| to handle Select mode differently.
+
+							*E1255* *E1136*
+<Cmd> and <ScriptCmd> commands must terminate, that is, they must be followed
+by <CR> in the {rhs} of the mapping definition.  |Command-line| mode is never
+entered.
+
+							*E1137*
+<Cmd> and <ScriptCmd> commands can have only normal characters and cannot
+contain special characters like function keys.
+
 
 1.3 MAPPING AND MODES					*:map-modes*
 			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
 
-There are six sets of mappings
+There are seven sets of mappings
 - For Normal mode: When typing commands.
 - For Visual mode: When typing commands while the Visual area is highlighted.
 - For Select mode: like Visual mode but typing text replaces the selection.
@@ -304,6 +397,7 @@ There are six sets of mappings
   etc.).  See below: |omap-info|.
 - For Insert mode.  These are also used in Replace mode.
 - For Command-line mode: When entering a ":" or "/" command.
+- For Terminal mode: When typing in a |:terminal| buffer.
 
 Special case: While typing a count for a command in Normal mode, mapping zero
 is disabled.  This makes it possible to map zero without making it impossible
@@ -323,6 +417,22 @@ Overview of which map command works in which mode.  More details below.
 :lmap  :lnoremap :lunmap    Insert, Command-line, Lang-Arg
 :cmap  :cnoremap :cunmap    Command-line
 :tmap  :tnoremap :tunmap    Terminal-Job
+
+Same information in a table:
+							*map-table*
+         Mode  | Norm | Ins | Cmd | Vis | Sel | Opr | Term | Lang | ~
+Command        +------+-----+-----+-----+-----+-----+------+------+ ~
+[nore]map      | yes  |  -  |  -  | yes | yes | yes |  -   |  -   |
+n[nore]map     | yes  |  -  |  -  |  -  |  -  |  -  |  -   |  -   |
+[nore]map!     |  -   | yes | yes |  -  |  -  |  -  |  -   |  -   |
+i[nore]map     |  -   | yes |  -  |  -  |  -  |  -  |  -   |  -   |
+c[nore]map     |  -   |  -  | yes |  -  |  -  |  -  |  -   |  -   |
+v[nore]map     |  -   |  -  |  -  | yes | yes |  -  |  -   |  -   |
+x[nore]map     |  -   |  -  |  -  | yes |  -  |  -  |  -   |  -   |
+s[nore]map     |  -   |  -  |  -  |  -  | yes |  -  |  -   |  -   |
+o[nore]map     |  -   |  -  |  -  |  -  |  -  | yes |  -   |  -   |
+t[nore]map     |  -   |  -  |  -  |  -  |  -  |  -  | yes  |  -   |
+l[nore]map     |  -   | yes | yes |  -  |  -  |  -  |  -   | yes  |
 
 
     COMMANDS				      MODES ~
@@ -587,6 +697,10 @@ The special key name "<Plug>" can be used for an internal mapping, which is
 not to be matched with any key sequence.  This is useful in plugins
 |using-<Plug>|.
 
+							*<MouseMove>*
+The special key name "<MouseMove>" can be used to handle mouse movement.  It
+needs to be enabled with 'mousemoveevent'.  Currently only works in the GUI.
+
 							*<Char>* *<Char->*
 To map a character by its decimal, octal or hexadecimal number the <Char>
 construct can be used:
@@ -839,8 +953,15 @@ execute a shell command, e.g.: `!ls`  Or put the lines in your |vimrc|.
 
 When modifyOtherKeys is enabled you can map <C-[> and <C-S-{>: >
 	imap <C-[> [[[
-	imap <C-S-{> {{{
-Without modifyOtherKeys <C-[> and <C-S-{> are indistinguishable from Esc.
+	imap <C-{> {{{
+Without modifyOtherKeys <C-[> and <C-{> are indistinguishable from Esc.
+Note that <C-{> is used and not <C-S-[> or <C-S-{>.  This works on most
+keyboards.  Similarly, <C-}> is used instead of <C-S-]> or <C-S-}> and
+<C-|> instead of <C-S-\> or <C-S-|>.  Note that '|' has a special meaning in a
+mapping, see |map-bar|.
+
+WARNING: if you map <C-[> you may very well break any key codes that start
+with Esc.  Make sure it comes AFTER other mappings.
 
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
@@ -854,7 +975,7 @@ Insert mode to avoid every key with a modifier causing Insert mode to end.
 1.12 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
-you must create mapping that first sets the 'operatorfunc' option and then
+you must create a mapping that first sets the 'operatorfunc' option and then
 invoke the |g@| operator.  After the user types the {motion} command the
 specified function will be called.
 
@@ -867,8 +988,7 @@ g@{motion}		Call the function set by the 'operatorfunc' option.
 			    "line"	{motion} was |linewise|
 			    "char"	{motion} was |characterwise|
 			    "block"	{motion} was |blockwise-visual|
-			Although "block" would rarely appear, since it can
-			only result from Visual mode where "g@" is not useful.
+			The type can be forced, see |forced-motion|.
 			{not available when compiled without the |+eval|
 			feature}
 
@@ -879,28 +999,56 @@ Here is an example that counts the number of spaces with <F4>: >
 	" doubling <F4> works on a line
 	nnoremap <expr> <F4><F4> CountSpaces() .. '_'
 
-	function CountSpaces(type = '') abort
+	function CountSpaces(context = {}, type = '') abort
 	  if a:type == ''
-	    set opfunc=CountSpaces
+	    let context = #{
+	      \ dot_command: v:false,
+	      \ extend_block: '',
+	      \ virtualedit: [&l:virtualedit, &g:virtualedit],
+	      \ }
+	    let &operatorfunc = function('CountSpaces', [context])
+	    set virtualedit=block
 	    return 'g@'
- 	  endif
+	  endif
 
-	  let sel_save = &selection
-	  let reg_save = getreginfo('"')
-	  let cb_save = &clipboard
-	  let visual_marks_save = [getpos("'<"), getpos("'>")]
+	  let save = #{
+	    \ clipboard: &clipboard,
+	    \ selection: &selection,
+	    \ virtualedit: [&l:virtualedit, &g:virtualedit],
+	    \ register: getreginfo('"'),
+	    \ visual_marks: [getpos("'<"), getpos("'>")],
+	    \ }
 
 	  try
-	    set clipboard= selection=inclusive
-	    let commands = #{line: "'[V']y", char: "`[v`]y", block: "`[\<c-v>`]y"}
-	    silent exe 'noautocmd keepjumps normal! ' .. get(commands, a:type, '')
-	    echom getreg('"')->count(' ')
+	    set clipboard= selection=inclusive virtualedit=
+	    let commands = #{
+	      \ line: "'[V']",
+	      \ char: "`[v`]",
+	      \ block: "`[\<C-V>`]",
+	      \ }[a:type]
+	    let [_, _, col, off] = getpos("']")
+	    if off != 0
+	      let vcol = getline("'[")->strpart(0, col + off)->strdisplaywidth()
+	      if vcol >= [line("'["), '$']->virtcol() - 1
+	        let a:context.extend_block = '$'
+	      else
+	        let a:context.extend_block = vcol .. '|'
+	      endif
+	    endif
+	    if a:context.extend_block != ''
+	      let commands ..= 'oO' .. a:context.extend_block
+	    endif
+	    let commands ..= 'y'
+	    execute 'silent noautocmd keepjumps normal! ' .. commands
+	    echomsg getreg('"')->count(' ')
 	  finally
-	    call setreg('"', reg_save)
-	    call setpos("'<", visual_marks_save[0])
-	    call setpos("'>", visual_marks_save[1])
-	    let &clipboard = cb_save
-	    let &selection = sel_save
+	    call setreg('"', save.register)
+	    call setpos("'<", save.visual_marks[0])
+	    call setpos("'>", save.visual_marks[1])
+	    let &clipboard = save.clipboard
+	    let &selection = save.selection
+	    let [&l:virtualedit, &g:virtualedit] = get(a:context.dot_command ? save : a:context, 'virtualedit')
+	    let a:context.dot_command = v:true
 	  endtry
 	endfunction
 
@@ -915,6 +1063,20 @@ mark.
 Also note that the 'clipboard' option is temporarily emptied to avoid
 clobbering the `"*` or `"+` registers, if its value contains the item `unnamed`
 or `unnamedplus`.
+
+The `mode()` function will return the state as it will be after applying the
+operator.
+
+Here is an example for using a lambda function to create a normal-mode
+operator to add quotes around text in the current line: >
+
+	nnoremap <F4> <Cmd>let &opfunc='{t ->
+				\ getline(".")
+				\ ->split("\\zs")
+				\ ->insert("\"", col("'']"))
+				\ ->insert("\"", col("''[") - 1)
+				\ ->join("")
+				\ ->setline(".")}'<CR>g@
 
 ==============================================================================
 2. Abbreviations			*abbreviations* *Abbreviations*
@@ -1162,7 +1324,8 @@ underscore.  Example: >
 could define a mapping "<SNR>23_Add".
 
 When defining a function in a script, "s:" can be prepended to the name to
-make it local to the script.  But when a mapping is executed from outside of
+make it local to the script (in |Vim9| script functions without a prefix are
+local to the script).  But when a mapping is executed from outside of
 the script, it doesn't know in which script the function was defined.  To
 avoid this problem, use "<SID>" instead of "s:".  The same translation is done
 as for mappings.  This makes it possible to define a call to the function in
@@ -1186,9 +1349,9 @@ Otherwise, using "<SID>" outside of a script context is an error.
 
 If you need to get the script number to use in a complicated script, you can
 use this function: >
-	function s:SID()
-	  return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
-	endfun
+	func s:ScriptNumber()
+	  return matchstr(expand('<SID>'), '<SNR>\zs\d\+\ze_')
+	endfunc
 
 The "<SNR>" will be shown when listing functions and mappings.  This is useful
 to find out what they are defined to.
@@ -1256,7 +1419,7 @@ scripts.
 
 							*:command-verbose*
 When 'verbose' is non-zero, listing a command will also display where it was
-last defined. Example: >
+last defined and any completion argument. Example: >
 
     :verbose command TOhtml
 <	Name	    Args Range Complete  Definition ~
@@ -1266,26 +1429,30 @@ last defined. Example: >
 See |:verbose-cmd| for more information.
 
 							*E174* *E182*
-:com[mand][!] [{attr}...] {cmd} {rep}
+:com[mand][!] [{attr}...] {cmd} {repl}
 			Define a user command.  The name of the command is
-			{cmd} and its replacement text is {rep}.  The command's
-			attributes (see below) are {attr}.  If the command
-			already exists, an error is reported, unless a ! is
-			specified, in which case the command is redefined.
-			There is one exception: When sourcing a script again,
-			a command that was previously defined in that script
-			will be silently replaced.
+			{cmd} and its replacement text is {repl}.  The
+			command's attributes (see below) are {attr}.  If the
+			command already exists, an error is reported, unless a
+			! is specified, in which case the command is
+			redefined.  There is one exception: When sourcing a
+			script again, a command that was previously defined in
+			that script will be silently replaced.
 
 
 :delc[ommand] {cmd}				*:delc* *:delcommand* *E184*
 			Delete the user-defined command {cmd}.
+
+:delc[ommand] -buffer {cmd}					*E1237*
+			Delete the user-defined command {cmd} that was defined
+			for the current buffer.
 
 :comc[lear]						*:comc* *:comclear*
 			Delete all user-defined commands.
 
 
 Command attributes ~
-
+                                                       *command-attributes*
 User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
 completion as filenames, buffers, etc.  Exactly how this works depends upon the
@@ -1371,6 +1538,8 @@ completion can be enabled:
 	-complete=custom,{func} custom completion, defined via {func}
 	-complete=customlist,{func} custom completion, defined via {func}
 
+If you specify completion while there is nothing to complete (-nargs=0, the
+default) then you get error *E1208* .
 Note: That some completion methods might expand environment variables.
 
 
@@ -1400,9 +1569,11 @@ The function arguments are:
 The function may use these for determining context.  For the "custom"
 argument, it is not necessary to filter candidates against the (implicit
 pattern in) ArgLead.  Vim will filter the candidates with its regexp engine
-after function return, and this is probably more efficient in most cases. For
-the "customlist" argument, Vim will not filter the returned completion
-candidates and the user supplied function should filter the candidates.
+after function return, and this is probably more efficient in most cases. If
+'wildoptions' contains "fuzzy", then the candidates will be filtered using
+|fuzzy-matching|.  For the "customlist" argument, Vim will not
+filter the returned completion candidates and the user supplied function
+should filter the candidates.
 
 The following example lists user names to a Finger command >
     :com -complete=custom,ListUsers -nargs=1 Finger !finger <args>
@@ -1465,6 +1636,7 @@ Possible values are (second column is the short name used in listing):
 Special cases ~
 					*:command-bang* *:command-bar*
 					*:command-register* *:command-buffer*
+					*:command-keepscript*
 There are some special cases as well:
 
 	-bang	    The command can take a ! modifier (like :q or :w)
@@ -1474,6 +1646,9 @@ There are some special cases as well:
 	-register   The first argument to the command can be an optional
 		    register name (like :del, :put, :yank).
 	-buffer	    The command will only be available in the current buffer.
+	-keepscript Do not use the location of where the user command was
+		    defined for verbose messages, use the location of where
+		    the user command was invoked.
 
 In the cases of the -count and -register attributes, if the optional argument
 is supplied, it is removed from the argument list and is available to the
@@ -1483,12 +1658,26 @@ feature.  Use the full name for new scripts.
 
 
 Replacement text ~
+							*:command-repl*
+The {repl} argument is normally one long string, possibly with "|" separated
+commands.  A special case is when the argument is "{", then the following
+lines, up to a line starting with "}" are used and |Vim9| syntax applies.
+Example: >
+	:command MyCommand {
+		echo 'hello'
+		g:calledMyCommand = true
+	    }
+<							*E1231*
+There must be white space before the "{".  No nesting is supported, inline
+functions cannot be used.  Commands where a "|" may appear in the argument,
+such as commands with an expression argument, cannot be followed by a "|" and
+another command.
 
-The replacement text for a user defined command is scanned for special escape
-sequences, using <...> notation.  Escape sequences are replaced with values
-from the entered command line, and all other text is copied unchanged.  The
-resulting string is executed as an Ex command.  To avoid the replacement use
-<lt> in place of the initial <.  Thus to include "<bang>" literally use
+The replacement text {repl} for a user defined command is scanned for special
+escape sequences, using <...> notation.  Escape sequences are replaced with
+values from the entered command line, and all other text is copied unchanged.
+The resulting string is executed as an Ex command.  To avoid the replacement
+use <lt> in place of the initial <.  Thus to include "<bang>" literally use
 "<lt>bang>".
 
 The valid escape sequences are
@@ -1506,7 +1695,7 @@ The valid escape sequences are
 	<bang>	(See the '-bang' attribute) Expands to a ! if the
 		command was executed with a ! modifier, otherwise
 		expands to nothing.
-						*<mods>* *:command-modifiers*
+					*<mods>* *<q-mods>* *:command-modifiers*
 	<mods>  The command modifiers, if specified. Otherwise, expands to
 		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
 		|:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|,
@@ -1518,12 +1707,12 @@ The valid escape sequences are
 		Examples: >
 		    command! -nargs=+ -complete=file MyEdit
 				\ for f in expand(<q-args>, 0, 1) |
-				\ exe '<mods> split ' . f |
+				\ exe '<mods> split ' .. f |
 				\ endfor
 
 		    function! SpecialEdit(files, mods)
 			for f in expand(a:files, 0, 1)
-			    exe a:mods . ' split ' . f
+			    exe a:mods .. ' split ' .. f
 			endfor
 		    endfunction
 		    command! -nargs=+ -complete=file Sedit
@@ -1599,7 +1788,7 @@ This will invoke: >
    :   let i = 0
    :   while i < argc()
    :	  if filereadable(argv(i))
-   :	     execute "e " . argv(i)
+   :	     execute "e " .. argv(i)
    :	     execute a:command
    :      endif
    :      let i = i + 1
@@ -1614,6 +1803,11 @@ errors and the "update" command to write modified buffers): >
 This will invoke: >
 	:call Allargs("%s/foo/bar/ge|update")
 <
+If the command is defined in Vim9 script (a script that starts with
+`:vim9script` and in a `:def` function) then {repl} will be executed as in Vim9
+script.  Thus this depends on where the command is defined, not where it is
+used.
+
 When defining a user command in a script, it will be able to call functions
 local to the script and use mappings local to the script.  When the user
 invokes the user command, it will run in the context of the script it was

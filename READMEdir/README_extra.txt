@@ -26,7 +26,6 @@ src/os_win32.*		Files for the Win32 port.
 src/gui_w32.*		Files for the Win32 GUI.
 src/gui_w48.*		Files for the Win32 and Win16 GUI.
 src/Make_mvc.mak	MS Visual C++ makefile for the Win32 GUI.
-runtime/rgb.txt		File with color definitions for the Win32 GUI.
 
 src/if_ole.*		OLE automation interface, for MS Windows 95 and NT.
 

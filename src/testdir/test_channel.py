@@ -19,11 +19,7 @@ except ImportError:
     # Python 2
     import SocketServer as socketserver
 
-class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
-
-    def setup(self):
-        self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
+class TestingRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         print("=== socket opened ===")
         while True:
@@ -109,6 +105,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'echoerr':
+                        cmd = '["ex","echoerr \\\"this is an error\\\""]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                        # Wait a bit, so that the "ex" command is handled
+                        # before the "ch_evalexpr() returns.  Otherwise we are
+                        # outside the try/catch when the "ex" command is
+                        # handled.
+                        time.sleep(0.02)
                     elif decoded[1] == 'bad command':
                         cmd = '["ex","foo bar"]'
                         print("sending: {0}".format(cmd))
@@ -228,6 +234,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 # Negative numbers are used for "eval" responses.
                 elif decoded[0] < 0:
                     last_eval = decoded
+
+class ThreadedTCPRequestHandler(TestingRequestHandler):
+    def setup(self):
+        self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass

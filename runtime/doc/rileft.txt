@@ -1,4 +1,4 @@
-*rileft.txt*    For Vim version 8.2.  Last change: 2019 May 05
+*rileft.txt*    For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Avner Lottem
@@ -75,7 +75,7 @@ o  Invocations
 
 o  Typing backwards					*ins-reverse*
    ----------------
-   In lieu of using full-fledged the 'rightleft' option, one can opt for
+   In lieu of using the full-fledged 'rightleft' option, one can opt for
    reverse insertion.  When the 'revins' (reverse insert) option is set,
    inserting happens backwards.  This can be used to type right-to-left
    text.  When inserting characters the cursor is not moved and the text
@@ -109,9 +109,6 @@ o  Does not support reverse insert and rightleft modes on the command-line.
 
 o  Somewhat slower in right-to-left mode, because right-to-left motion is
    emulated inside Vim, not by the controlling terminal.
-
-o  When the Athena GUI is used, the bottom scrollbar works in the wrong
-   direction.  This is difficult to fix.
 
 o  When both 'rightleft' and 'revins' are on: 'textwidth' does not work.
    Lines do not wrap at all; you just get a single, long line.

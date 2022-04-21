@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 8.2.  Last change: 2020 Jan 07
+*pi_zip.txt*	For Vim version 8.2.  Last change: 2021 Nov 08
 
 				+====================+
 				| Zip File Interface |
@@ -102,6 +102,9 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
 
 ==============================================================================
 4. History							*zip-history* {{{1
+   v32 Oct 22, 2021 * to avoid an issue with a vim 8.2 patch, zipfile: has
+   		      been changed to zipfile:// . This often shows up
+		      as zipfile:/// with zipped files that are root-based.
    v29 Apr 02, 2017 * (Klartext) reported that an encrypted zip file could
    		      opened but the swapfile held unencrypted contents.
 		      The solution is to edit the contents of a zip file
@@ -154,4 +157,4 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    v1 Sep 15, 2005 * Initial release, had browsing, reading, and writing
 
 ==============================================================================
-vim:tw=78:ts=8:noet:ft=help:fdm=marker
+vim:tw=78:ts=8:ft=help:noet:norl:fdm=marker

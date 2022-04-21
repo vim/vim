@@ -59,7 +59,7 @@ struct choice
 struct choice	choices[30];		// choices the user can make
 int		choice_count = 0;	// number of choices available
 
-#define TABLE_SIZE(s)	(int)(sizeof(s) / sizeof(*s))
+#define TABLE_SIZE(s)	(int)ARRAYSIZE(s)
 
 enum
 {
@@ -1527,8 +1527,7 @@ register_openwith(
 		"*\\OpenWithList\\gvim.exe",
 	};
 
-	for (i = 0; ERROR_SUCCESS == lRet
-			   && i < sizeof(openwith) / sizeof(openwith[0]); i++)
+	for (i = 0; ERROR_SUCCESS == lRet && i < ARRAYSIZE(openwith); i++)
 	    lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "", flag);
     }
 
@@ -1581,6 +1580,7 @@ install_registry(void)
     char	display_name[BUFSIZE];
     char	uninstall_string[BUFSIZE];
     char	icon_string[BUFSIZE];
+    char	version_string[BUFSIZE];
     int		i;
     int		loop_count = is_64bit_os() ? 2 : 1;
     DWORD	flag;
@@ -1653,13 +1653,15 @@ install_registry(void)
 
     sprintf(icon_string, "%s\\gvim.exe,0", installdir);
 
+    sprintf(version_string, VIM_VERSION_SHORT "." VIM_VERSION_PATCHLEVEL_STR);
+
     lRet = register_uninstall(
 	HKEY_LOCAL_MACHINE,
 	"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
 	display_name,
 	uninstall_string,
 	icon_string,
-	VIM_VERSION_SHORT,
+	version_string,
 	"Bram Moolenaar et al.");
     if (ERROR_SUCCESS != lRet)
 	return FAIL;
@@ -2493,7 +2495,7 @@ command_line_setup_choices(int argc, char **argv)
 	    int vimfiles_dir_choice = (int)vimfiles_dir_none;
 
 	    init_directories_choice();
-	    if (argv[i + 1][0] != '-')
+	    if (i + 1 < argc && argv[i + 1][0] != '-')
 	    {
 		i++;
 		if (strcmp(argv[i], "vim") == 0)

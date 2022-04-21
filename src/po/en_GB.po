@@ -557,9 +557,6 @@ msgid "E536: comma required"
 msgstr "E536: Comma required"
 
 
-msgid "E541: too many items"
-msgstr "E541: Too many items"
-
 msgid "E542: unbalanced groups"
 msgstr "E542: Unbalanced groups"
 
@@ -763,5 +760,3 @@ msgstr "E749: Empty buffer"
 
 msgid "can't delete OutputObject attributes"
 msgstr "cannot delete OutputObject attributes"
-
-

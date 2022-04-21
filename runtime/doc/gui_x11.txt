@@ -1,11 +1,11 @@
-*gui_x11.txt*   For Vim version 8.2.  Last change: 2020 Jun 05
+*gui_x11.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 Vim's Graphical User Interface				*gui-x11* *GUI-X11*
-							*Athena* *Motif*
+							*Motif*
 1. Starting the X11 GUI		|gui-x11-start|
 2. GUI Resources		|gui-resources|
 3. Shell Commands		|gui-pty|
@@ -64,7 +64,7 @@ flag in 'guioptions'.  |-f|.
 ==============================================================================
 2. GUI Resources			*gui-resources* *.Xdefaults*
 
-If using the Motif or Athena version of the GUI (not for the KDE, GTK+ or Win32
+If using the Motif version of the GUI (not for the KDE, GTK+ or Win32
 version), a number of X resources are available.  You should use Vim's class
 "Vim" when setting these.  They are as follows:
 
@@ -96,7 +96,6 @@ version), a number of X resources are available.  You should use Vim's class
 			is same size as terminal that started it).
     scrollbarWidth	Thickness of scrollbars.
     borderWidth		Thickness of border around text area.
-    menuHeight		Height of the menu bar (only for Athena).
 
 A special font for italic, bold, and italic-bold text will only be used if
 the user has specified one via a resource.  No attempt is made to guess what
@@ -135,12 +134,9 @@ which make Motif applications look even better, highly recommended!
 
 The "Vim*fontList" is to set the menu font for Motif.  Example: >
 	Vim*menuBar*fontList:	     -*-courier-medium-r-*-*-10-*-*-*-*-*-*-*
-With Athena: >
-	Vim*menuBar*SmeBSB*font:     -*-courier-medium-r-*-*-10-*-*-*-*-*-*-*
-	Vim*menuBar*MenuButton*font: -*-courier-medium-r-*-*-10-*-*-*-*-*-*-*
 
 NOTE: A more portable, and indeed more correct, way to specify the menu font
-in either Motif or Athena is through the resource: >
+in Motif is through the resource: >
 	Vim.menuFont:	     -*-courier-medium-r-*-*-10-*-*-*-*-*-*-*
 Or, when compiled with the |+xfontset| feature: >
 	Vim.menuFontSet:     -*-courier-medium-r-*-*-10-*-*-*-*-*-*-*
@@ -255,7 +251,7 @@ For example: >
   :10vmenu File.Print :w !lpr -Php3
 <
 							*X11-icon*
-Vim uses a black&white icon by default when compiled with Motif or Athena.  A
+Vim uses a black&white icon by default when compiled with Motif.  A
 colored Vim icon is included as $VIMRUNTIME/vim32x32.xpm.  For GTK+, this is
 the builtin icon used.  Unfortunately, how you should install it depends on
 your window manager.  When you use this, remove the 'i' flag from
@@ -594,8 +590,7 @@ GTK+ files on your system.  When both GTK+ 2 and GTK+ 3 are available, GTK+ 2
 will be chosen unless --enable-gui=gtk3 is passed explicitly to configure.
 
 If the GTK+ files cannot be found, then the Motif files will be searched for.
-Finally, if this fails, the Athena files will be searched for.  If all three
-fail, the GUI will be disabled.
+If both fail, the GUI will be disabled.
 
 For GTK+, Vim's configuration process uses pkg-config(1) to check if the
 GTK+ required for a specified build is properly installed and usable.
@@ -621,10 +616,10 @@ explicitly to configure, and avoid passing --enable-gnome-check to that, as
 the functionality of the GNOME 2 support has already been consolidated in
 GTK+ 3.
 
-Otherwise, if you are using Motif or Athena, when you have the Motif or Athena
-files in a directory where configure doesn't look, edit the Makefile to enter
-the names of the directories.  Search for "GUI_INC_LOC" for an example to set
-the Motif directories, "CONF_OPT_X" for Athena.
+Otherwise, if you are using Motif, when you have the Motif files in a
+directory where configure doesn't look, edit the Makefile to enter the names
+of the directories.  Search for "GUI_INC_LOC" for an example to set
+the Motif directories.
 
 							*gui-x11-gtk*
 Currently, Vim supports both GTK+ 2 and GTK+ 3.
@@ -643,18 +638,11 @@ few problems, but you might make it compile and run with a bit of work, please
 send me the patches if you do).  The newest releases of LessTif have been
 reported to work fine too.
 
-							*gui-x11-athena*
-The Athena version uses the Xaw widget set by default.  If you have the 3D
-version, you might want to link with Xaw3d instead.  This will make the
-menus look a bit better.  Edit the Makefile and look for "XAW_LIB".  The
-scrollbars will remain the same, because Vim has its own, which are already
-3D (in fact, they look more like Motif).
-
-							*gui-x11-neXtaw*
-The neXtaw version is mostly like Athena, but uses different widgets.
+					    *gui-x11-athena* *gui-x11-neXtaw*
+Support for the Athena GUI and neXtaw was removed in patch 8.2.4677.
 
 							*gui-x11-misc*
-In general, do not try to mix files from different GTK+, Motif, Athena and X11
+In general, do not try to mix files from different GTK+, Motif and X11
 versions.  This will cause problems.  For example, using header files for
 X11R5 with a library for X11R6 probably doesn't work (although the linking
 won't give an error message, Vim will crash later).

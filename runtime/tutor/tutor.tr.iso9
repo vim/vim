@@ -682,7 +682,7 @@ Not: Arama dosyanýn sonuna ulaþtýðýnda dosyanýn baþýndan sürecektir. Bunu
  	 Ders 5.3'ün iki adet kopyasý olduðunu görün, özgün sürümü ve kopyasý.
 
   NOT: Bu komutu kullanarak bir dýþ komutun çýktýsýný da dosyanýn içine
-       koyabilirsiniz. Örneðin :r :!ls yazmak ls komutunun vereceði çýktýyý
+       koyabilirsiniz. Örneðin :r !ls yazmak ls komutunun vereceði çýktýyý
        dosyanýn içinde hemen imlecin altýndaki satýra koyar.
 
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -881,7 +881,7 @@ Not: Arama dosyanýn sonuna ulaþtýðýnda dosyanýn baþýndan sürecektir. Bunu
   1. "vimrc" dosyasýný düzenlemeye baþlayýn. Ýþletim sistemlerine göre:
 
     :e ~/.vimrc		Unix için
-    :e $VIM/_vimrc	Windows için
+    :e ~/_vimrc		Windows için
 
   2. Þimdi örnek "vimrc" dosyasý içeriðini okuyun:
 
@@ -956,7 +956,7 @@ Not: Arama dosyanýn sonuna ulaþtýðýnda dosyanýn baþýndan sürecektir. Bunu
   Tümüyle Vim için hazýrlanmýþ ilk kitaptýr. Özellikle ilk kullanýcýlar için
   çok uygundur.
   Kitapta birçok örnek ve resim bulunmaktadýr.
-  http://iccf-holland.org/click5.html adresine bakabilirsiniz.
+  https://iccf-holland.org/click5.html adresine bakabilirsiniz.
 
   Bu kitap daha eskidir ve Vim'den daha çok Vi içindir ancak tavsiye edilir:
 

@@ -15,6 +15,37 @@ func Test_sort_strings()
   " numbers compared as strings
   call assert_equal([1, 2, 3], sort([3, 2, 1]))
   call assert_equal([13, 28, 3], sort([3, 28, 13]))
+
+  call assert_equal(['A', 'O', 'P', 'a', 'o', 'p', 'Ä', 'Ô', 'ä', 'ô', 'Œ', 'œ'],
+  \            sort(['A', 'O', 'P', 'a', 'o', 'p', 'Ä', 'Ô', 'ä', 'ô', 'œ', 'Œ']))
+
+  call assert_equal(['A', 'a', 'o', 'O', 'p', 'P', 'Ä', 'Ô', 'ä', 'ô', 'Œ', 'œ'],
+  \            sort(['A', 'a', 'o', 'O', 'œ', 'Œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'i'))
+
+  " This does not appear to work correctly on Mac.
+  if !has('mac')
+    if v:collate =~? '^\(en\|fr\)_ca.utf-\?8$'
+      " with Canadian English capitals come before lower case.
+      " 'Œ' is omitted because it can sort before or after 'œ'
+      call assert_equal(['A', 'a', 'Ä', 'ä', 'O', 'o', 'Ô', 'ô', 'œ', 'P', 'p'],
+      \            sort(['A', 'a', 'o', 'O', 'œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
+    elseif v:collate =~? '^\(en\|es\|de\|fr\|it\|nl\).*\.utf-\?8$'
+      " With the following locales, the accentuated letters are ordered
+      " similarly to the non-accentuated letters...
+      call assert_equal(['a', 'A', 'ä', 'Ä', 'o', 'O', 'ô', 'Ô', 'œ', 'Œ', 'p', 'P'],
+      \            sort(['A', 'a', 'o', 'O', 'œ', 'Œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
+    elseif v:collate =~? '^sv.*utf-\?8$'
+      " ... whereas with a Swedish locale, the accentuated letters are ordered
+      " after Z.
+      call assert_equal(['a', 'A', 'o', 'O', 'p', 'P', 'ä', 'Ä', 'œ', 'œ', 'ô', 'Ô'],
+      \            sort(['A', 'a', 'o', 'O', 'œ', 'œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
+    endif
+  endif
+endfunc
+
+func Test_sort_null_string()
+  " null strings are sorted as empty strings.
+  call assert_equal(['', 'a', 'b'], sort(['b', test_null_string(), 'a']))
 endfunc
 
 func Test_sort_numeric()
@@ -27,6 +58,7 @@ endfunc
 func Test_sort_numbers()
   call assert_equal([3, 13, 28], sort([13, 28, 3], 'N'))
   call assert_equal(['3', '13', '28'], sort(['13', '28', '3'], 'N'))
+  call assert_equal([3997, 4996], sort([4996, 3997], 'Compare1'))
 endfunc
 
 func Test_sort_float()
@@ -1204,6 +1236,106 @@ func Test_sort_cmd()
 	\ },
 	\ ]
 
+    " This does not appear to work correctly on Mac.
+    if !has('mac')
+      if v:collate =~? '^\(en\|fr\)_ca.utf-\?8$'
+        " en_CA.utf-8 sorts capitals before lower case
+        " 'Œ' is omitted because it can sort before or after 'œ'
+        let tests += [
+          \ {
+          \    'name' : 'sort with locale ' .. v:collate,
+          \    'cmd' : '%sort l',
+          \    'input' : [
+          \	'A',
+          \	'E',
+          \	'O',
+          \	'À',
+          \	'È',
+          \	'É',
+          \	'Ô',
+          \	'Z',
+          \	'a',
+          \	'e',
+          \	'o',
+          \	'à',
+          \	'è',
+          \	'é',
+          \	'ô',
+          \	'œ',
+          \	'z'
+          \    ],
+          \    'expected' : [
+          \	'A',
+          \	'a',
+          \	'À',
+          \	'à',
+          \	'E',
+          \	'e',
+          \	'É',
+          \	'é',
+          \	'È',
+          \	'è',
+          \	'O',
+          \	'o',
+          \	'Ô',
+          \	'ô',
+          \	'œ',
+          \	'Z',
+          \	'z'
+          \    ]
+          \ },
+          \ ]
+      elseif v:collate =~? '^\(en\|es\|de\|fr\|it\|nl\).*\.utf-\?8$'
+      " With these locales, the accentuated letters are ordered
+      " similarly to the non-accentuated letters.
+        let tests += [
+          \ {
+          \    'name' : 'sort with locale ' .. v:collate,
+          \    'cmd' : '%sort l',
+          \    'input' : [
+          \	'A',
+          \	'E',
+          \	'O',
+          \	'À',
+          \	'È',
+          \	'É',
+          \	'Ô',
+          \	'Œ',
+          \	'Z',
+          \	'a',
+          \	'e',
+          \	'o',
+          \	'à',
+          \	'è',
+          \	'é',
+          \	'ô',
+          \	'œ',
+          \	'z'
+          \    ],
+          \    'expected' : [
+          \	'a',
+          \	'A',
+          \	'à',
+          \	'À',
+          \	'e',
+          \	'E',
+          \	'é',
+          \	'É',
+          \	'è',
+          \	'È',
+          \	'o',
+          \	'O',
+          \	'ô',
+          \	'Ô',
+          \	'œ',
+          \	'Œ',
+          \	'z',
+          \	'Z'
+          \    ]
+          \ },
+          \ ]
+    endif
+  endif
   if has('float')
     let tests += [
           \ {
@@ -1251,11 +1383,12 @@ func Test_sort_cmd()
     endif
   endfor
 
-  " Needs atleast two lines for this test
+  " Needs at least two lines for this test
   call setline(1, ['line1', 'line2'])
   call assert_fails('sort no', 'E474:')
   call assert_fails('sort c', 'E475:')
   call assert_fails('sort #pat%', 'E654:')
+  call assert_fails('sort /\%(/', 'E53:')
 
   enew!
 endfunc
@@ -1413,6 +1546,22 @@ func Test_sort_with_marks()
   call assert_equal(3, line("'b"))
   call assert_equal(1, line("'c"))
   close!
+endfunc
+
+" Test for sort() using a dict function
+func Test_sort_using_dict_func()
+  func DictSort(a, b) dict
+    if self.order == 'reverse'
+      return a:b - a:a
+    else
+      return a:a - a:b
+    endif
+  endfunc
+  let d = #{order: ''}
+  call assert_equal([1, 2, 3], sort([2, 1, 3], 'DictSort', d))
+  let d = #{order: 'reverse'}
+  call assert_equal([3, 2, 1], sort([2, 1, 3], 'DictSort', d))
+  delfunc DictSort
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

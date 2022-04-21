@@ -1,16 +1,26 @@
 " Tests for Lua.
 
 source check.vim
+
+" This test also works without the lua feature.
+func Test_skip_lua()
+  if 0
+    lua print("Not executed")
+  endif
+endfunc
+
 CheckFeature lua
 CheckFeature float
 
-let s:luaver = split(split(luaeval('_VERSION'), ' ')[1], '\.')
-let s:major = str2nr(s:luaver[0])
-let s:minor = str2nr(s:luaver[1])
-if s:major < 5 || (s:major == 5 && s:minor < 3)
-  let s:lua_53_or_later = 0
-else
+" Depending on the lua version, the error messages are different.
+let [s:major, s:minor, s:patch] = luaeval('vim.lua_version')->split('\.')->map({-> str2nr(v:val)})
+let s:lua_53_or_later = 0
+let s:lua_543 = 0
+if (s:major == 5 && s:minor >= 3) || s:major > 5
   let s:lua_53_or_later = 1
+  if s:major == 5 && s:minor == 4 && s:patch == 3
+    let s:lua_543 = 1
+  endif
 endif
 
 func TearDown()
@@ -47,10 +57,14 @@ func Test_lua_luado()
   " Error cases
   call assert_fails('luado string.format()',
         \ "[string \"vim chunk\"]:1: bad argument #1 to 'format' (string expected, got no value)")
-  call assert_fails('luado func()',
-        \ s:lua_53_or_later
-        \ ? "[string \"vim chunk\"]:1: attempt to call a nil value (global 'func')"
-        \ : "[string \"vim chunk\"]:1: attempt to call global 'func' (a nil value)")
+  if s:lua_543
+    let msg = "[string \"vim chunk\"]:1: global 'func' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"vim chunk\"]:1: attempt to call a nil value (global 'func')"
+  else
+    let msg = "[string \"vim chunk\"]:1: attempt to call global 'func' (a nil value)"
+  endif
+  call assert_fails('luado func()', msg)
   call assert_fails('luado error("failed")', "[string \"vim chunk\"]:1: failed")
 endfunc
 
@@ -113,6 +127,15 @@ func Test_lua_eval()
   lua v = nil
 endfunc
 
+" Test luaeval() with lambda
+func Test_luaeval_with_lambda()
+  lua function hello_luaeval_lambda(a, cb) return a .. cb() end
+  call assert_equal('helloworld',
+        \ luaeval('hello_luaeval_lambda(_A[1], _A[2])',
+        \         ['hello', {->'world'}]))
+  lua hello_luaeval_lambda = nil
+endfunc
+
 " Test vim.window()
 func Test_lua_window()
   e Xfoo2
@@ -126,10 +149,14 @@ func Test_lua_window()
   " Window 3 does not exist so vim.window(3) should return nil
   call assert_equal('nil', luaeval('tostring(vim.window(3))'))
 
-  call assert_fails("let n = luaeval('vim.window().xyz()')",
-        \ s:lua_53_or_later
-        \ ? "[string \"luaeval\"]:1: attempt to call a nil value (field 'xyz')"
-        \ : "[string \"luaeval\"]:1: attempt to call field 'xyz' (a nil value)")
+  if s:lua_543
+    let msg = "[string \"luaeval\"]:1: field 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"luaeval\"]:1: attempt to call a nil value (field 'xyz')"
+  else
+    let msg = "[string \"luaeval\"]:1: attempt to call field 'xyz' (a nil value)"
+  endif
+  call assert_fails("let n = luaeval('vim.window().xyz()')", msg)
   call assert_fails('lua vim.window().xyz = 1',
         \ "[string \"vim chunk\"]:1: invalid window property: `xyz'")
 
@@ -314,10 +341,14 @@ func Test_lua_buffer_insert()
   call assert_equal('4', luaeval('vim.buffer()[4]'))
   call assert_equal(v:null, luaeval('vim.buffer()[5]'))
   call assert_equal(v:null, luaeval('vim.buffer()[{}]'))
-  call assert_fails('lua vim.buffer():xyz()',
-        \ s:lua_53_or_later
-        \ ? "[string \"vim chunk\"]:1: attempt to call a nil value (method 'xyz')"
-        \ : "[string \"vim chunk\"]:1: attempt to call method 'xyz' (a nil value)")
+  if s:lua_543
+    let msg = "[string \"vim chunk\"]:1: method 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"vim chunk\"]:1: attempt to call a nil value (method 'xyz')"
+  else
+    let msg = "[string \"vim chunk\"]:1: attempt to call method 'xyz' (a nil value)"
+  endif
+  call assert_fails('lua vim.buffer():xyz()', msg)
   call assert_fails('lua vim.buffer()[1] = {}',
         \ '[string "vim chunk"]:1: wrong argument to change')
   bwipe!
@@ -421,10 +452,14 @@ func Test_lua_list()
   lua ll = vim.eval('l')
   let x = luaeval("ll[3]")
   call assert_equal(v:null, x)
-  call assert_fails('let x = luaeval("ll:xyz(3)")',
-        \ s:lua_53_or_later
-        \ ? "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
-        \ : "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)")
+  if s:lua_543
+    let msg = "[string \"luaeval\"]:1: method 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
+  else
+    let msg = "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)"
+  endif
+  call assert_fails('let x = luaeval("ll:xyz(3)")', msg)
   let y = luaeval("ll[{}]")
   call assert_equal(v:null, y)
 
@@ -450,7 +485,7 @@ func Test_lua_list_table_insert_remove()
     throw 'Skipped: Lua version < 5.3'
   endif
 
-  let l = [1, 2] 
+  let l = [1, 2]
   lua t = vim.eval('l')
   lua table.insert(t, 10)
   lua t[#t + 1] = 20
@@ -608,10 +643,14 @@ func Test_lua_blob()
   call assert_equal(2, n)
   let n = luaeval('lb[6]')
   call assert_equal(v:null, n)
-  call assert_fails('let x = luaeval("lb:xyz(3)")',
-        \ s:lua_53_or_later
-        \ ? "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
-        \ : "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)")
+  if s:lua_543
+    let msg = "[string \"luaeval\"]:1: method 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
+  else
+    let msg = "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)"
+  endif
+  call assert_fails('let x = luaeval("lb:xyz(3)")', msg)
   let y = luaeval("lb[{}]")
   call assert_equal(v:null, y)
 
@@ -809,10 +848,28 @@ func Test_luafile_error()
   bwipe!
 endfunc
 
+" Test :luafile printing a long string
+func Test_luafile_print()
+  new Xlua_file
+  let lines =<< trim END
+      local data = ''
+      for i = 1, 130 do
+	data = data .. 'xxxxx asd as as dad sad sad xz cxz  czxcxzczxc ad ad asd asd asd asd asd'
+      end
+      print(data)
+  END
+  call setline(1, lines)
+  w
+  luafile %
+
+  call delete('Xlua_file')
+  bwipe!
+endfunc
+
 " Test for dealing with strings containing newlines and null character
 func Test_lua_string_with_newline()
-  let x = execute('lua print("Hello\nWorld")')
-  call assert_equal("\nHello\nWorld", x)
+  let x = execute('lua print("Hello\nWorld", 2)')
+  call assert_equal("\nHello\nWorld 2", x)
   new
   lua k = vim.buffer(vim.eval('bufnr()'))
   lua k:insert("Hello\0World", 0)
@@ -855,6 +912,317 @@ vim.command('let s ..= "B"')
     vim.command('let s ..= "E"')
   eof
   call assert_equal('ABCDE', s)
+endfunc
+
+" Test for adding, accessing and removing global variables using the vim.g
+" Lua table
+func Test_lua_global_var_table()
+  " Access global variables with different types of values
+  let g:Var1 = 10
+  let g:Var2 = 'Hello'
+  let g:Var3 = ['a', 'b']
+  let g:Var4 = #{x: 'edit', y: 'run'}
+  let g:Var5 = function('min')
+  call assert_equal(10, luaeval('vim.g.Var1'))
+  call assert_equal('Hello', luaeval('vim.g.Var2'))
+  call assert_equal(['a', 'b'], luaeval('vim.g.Var3'))
+  call assert_equal(#{x: 'edit', y: 'run'}, luaeval('vim.g.Var4'))
+  call assert_equal(2, luaeval('vim.g.Var5')([5, 9, 2]))
+
+  " Access list of dictionaries and dictionary of lists
+  let g:Var1 = [#{a: 10}, #{b: 20}]
+  let g:Var2 = #{p: [5, 6], q: [1.1, 2.2]}
+  call assert_equal([#{a: 10}, #{b: 20}], luaeval('vim.g.Var1'))
+  call assert_equal(#{p: [5, 6], q: [1.1, 2.2]}, luaeval('vim.g.Var2'))
+
+  " Create new global variables with different types of values
+  unlet g:Var1 g:Var2 g:Var3 g:Var4 g:Var5
+  lua << trim END
+    vim.g.Var1 = 34
+    vim.g.Var2 = 'World'
+    vim.g.Var3 = vim.list({'#', '$'})
+    vim.g.Var4 = vim.dict({model='honda', year=2020})
+    vim.g.Var5 = vim.funcref('max')
+  END
+  call assert_equal(34, g:Var1)
+  call assert_equal('World', g:Var2)
+  call assert_equal(['#', '$'], g:Var3)
+  call assert_equal(#{model: 'honda', year: 2020}, g:Var4)
+  call assert_equal(10, g:Var5([5, 10, 9]))
+
+  " Create list of dictionaries and dictionary of lists
+  unlet g:Var1 g:Var2
+  lua << trim END
+    vim.g.Var1 = vim.list({vim.dict({a=10}), vim.dict({b=20})})
+    vim.g.Var2 = vim.dict({p=vim.list({5, 6}), q=vim.list({1.1, 2.2})})
+  END
+  call assert_equal([#{a: 10}, #{b: 20}], luaeval('vim.g.Var1'))
+  call assert_equal(#{p: [5, 6], q: [1.1, 2.2]}, luaeval('vim.g.Var2'))
+
+  " Modify a global variable with a list value or a dictionary value
+  let g:Var1 = [10, 20]
+  let g:Var2 = #{one: 'mercury', two: 'mars'}
+  lua << trim END
+    vim.g.Var1[2] = Nil
+    vim.g.Var1[3] = 15
+    vim.g.Var2['two'] = Nil
+    vim.g.Var2['three'] = 'earth'
+  END
+  call assert_equal([10, 15], g:Var1)
+  call assert_equal(#{one: 'mercury', three: 'earth'}, g:Var2)
+
+  " Remove global variables with different types of values
+  let g:Var1 = 10
+  let g:Var2 = 'Hello'
+  let g:Var3 = ['a', 'b']
+  let g:Var4 = #{x: 'edit', y: 'run'}
+  let g:Var5 = function('min')
+  lua << trim END
+    vim.g.Var1 = Nil
+    vim.g.Var2 = Nil
+    vim.g.Var3 = Nil
+    vim.g.Var4 = Nil
+    vim.g.Var5 = Nil
+  END
+  call assert_false(exists('g:Var1'))
+  call assert_false(exists('g:Var2'))
+  call assert_false(exists('g:Var3'))
+  call assert_false(exists('g:Var4'))
+  call assert_false(exists('g:Var5'))
+
+  " Try to modify and remove a locked global variable
+  let g:Var1 = 10
+  lockvar g:Var1
+  call assert_fails('lua vim.g.Var1 = 20', 'variable is locked')
+  call assert_fails('lua vim.g.Var1 = Nil', 'variable is locked')
+  unlockvar g:Var1
+  let g:Var2 = [7, 14]
+  lockvar 0 g:Var2
+  lua vim.g.Var2[2] = Nil
+  lua vim.g.Var2[3] = 21
+  call assert_fails('lua vim.g.Var2 = Nil', 'variable is locked')
+  call assert_equal([7, 21], g:Var2)
+  lockvar 1 g:Var2
+  call assert_fails('lua vim.g.Var2[2] = Nil', 'list is locked')
+  call assert_fails('lua vim.g.Var2[3] = 21', 'list is locked')
+  unlockvar g:Var2
+
+  let g:TestFunc = function('len')
+  call assert_fails('lua vim.g.func = vim.g.TestFunc', ['E704:', 'Couldn''t add to dictionary'])
+  unlet g:TestFunc
+
+  " Attempt to access a non-existing global variable
+  call assert_equal(v:null, luaeval('vim.g.NonExistingVar'))
+  lua vim.g.NonExisting = Nil
+
+  unlet! g:Var1 g:Var2 g:Var3 g:Var4 g:Var5
+endfunc
+
+" Test for accessing and modifying predefined vim variables using the vim.v
+" Lua table
+func Test_lua_predefined_var_table()
+  call assert_equal(v:progpath, luaeval('vim.v.progpath'))
+  let v:errmsg = 'SomeError'
+  call assert_equal('SomeError', luaeval('vim.v.errmsg'))
+  lua vim.v.errmsg = 'OtherError'
+  call assert_equal('OtherError', v:errmsg)
+  call assert_fails('lua vim.v.errmsg = Nil', 'variable is fixed')
+  let v:oldfiles = ['one', 'two']
+  call assert_equal(['one', 'two'], luaeval('vim.v.oldfiles'))
+  lua vim.v.oldfiles = vim.list({})
+  call assert_equal([], v:oldfiles)
+  call assert_equal(v:null, luaeval('vim.v.null'))
+  call assert_fails('lua vim.v.argv[1] = Nil', 'list is locked')
+  call assert_fails('lua vim.v.newvar = 1', 'Dictionary is locked')
+endfunc
+
+" Test for adding, accessing and modifying window-local variables using the
+" vim.w Lua table
+func Test_lua_window_var_table()
+  " Access window variables with different types of values
+  new
+  let w:wvar1 = 10
+  let w:wvar2 = 'edit'
+  let w:wvar3 = 3.14
+  let w:wvar4 = 0zdeadbeef
+  let w:wvar5 = ['a', 'b']
+  let w:wvar6 = #{action: 'run'}
+  call assert_equal(10, luaeval('vim.w.wvar1'))
+  call assert_equal('edit', luaeval('vim.w.wvar2'))
+  call assert_equal(3.14, luaeval('vim.w.wvar3'))
+  call assert_equal(0zdeadbeef, luaeval('vim.w.wvar4'))
+  call assert_equal(['a', 'b'], luaeval('vim.w.wvar5'))
+  call assert_equal(#{action: 'run'}, luaeval('vim.w.wvar6'))
+  call assert_equal(v:null, luaeval('vim.w.NonExisting'))
+
+  " modify a window variable
+  lua vim.w.wvar2 = 'paste'
+  call assert_equal('paste', w:wvar2)
+
+  " change the type stored in a variable
+  let w:wvar2 = [1, 2]
+  lua vim.w.wvar2 = vim.dict({a=10, b=20})
+  call assert_equal(#{a: 10, b: 20}, w:wvar2)
+
+  " create a new window variable
+  lua vim.w.wvar7 = vim.dict({a=vim.list({1, 2}), b=20})
+  call assert_equal(#{a: [1, 2], b: 20}, w:wvar7)
+
+  " delete a window variable
+  lua vim.w.wvar2 = Nil
+  call assert_false(exists('w:wvar2'))
+
+  new
+  call assert_equal(v:null, luaeval('vim.w.wvar1'))
+  call assert_equal(v:null, luaeval('vim.w.wvar2'))
+  %bw!
+endfunc
+
+" Test for adding, accessing and modifying buffer-local variables using the
+" vim.b Lua table
+func Test_lua_buffer_var_table()
+  " Access buffer variables with different types of values
+  let b:bvar1 = 10
+  let b:bvar2 = 'edit'
+  let b:bvar3 = 3.14
+  let b:bvar4 = 0zdeadbeef
+  let b:bvar5 = ['a', 'b']
+  let b:bvar6 = #{action: 'run'}
+  call assert_equal(10, luaeval('vim.b.bvar1'))
+  call assert_equal('edit', luaeval('vim.b.bvar2'))
+  call assert_equal(3.14, luaeval('vim.b.bvar3'))
+  call assert_equal(0zdeadbeef, luaeval('vim.b.bvar4'))
+  call assert_equal(['a', 'b'], luaeval('vim.b.bvar5'))
+  call assert_equal(#{action: 'run'}, luaeval('vim.b.bvar6'))
+  call assert_equal(v:null, luaeval('vim.b.NonExisting'))
+
+  " modify a buffer variable
+  lua vim.b.bvar2 = 'paste'
+  call assert_equal('paste', b:bvar2)
+
+  " change the type stored in a variable
+  let b:bvar2 = [1, 2]
+  lua vim.b.bvar2 = vim.dict({a=10, b=20})
+  call assert_equal(#{a: 10, b: 20}, b:bvar2)
+
+  " create a new buffer variable
+  lua vim.b.bvar7 = vim.dict({a=vim.list({1, 2}), b=20})
+  call assert_equal(#{a: [1, 2], b: 20}, b:bvar7)
+
+  " delete a buffer variable
+  lua vim.b.bvar2 = Nil
+  call assert_false(exists('b:bvar2'))
+
+  new
+  call assert_equal(v:null, luaeval('vim.b.bvar1'))
+  call assert_equal(v:null, luaeval('vim.b.bvar2'))
+  %bw!
+endfunc
+
+" Test for adding, accessing and modifying tabpage-local variables using the
+" vim.t Lua table
+func Test_lua_tabpage_var_table()
+  " Access tabpage variables with different types of values
+  let t:tvar1 = 10
+  let t:tvar2 = 'edit'
+  let t:tvar3 = 3.14
+  let t:tvar4 = 0zdeadbeef
+  let t:tvar5 = ['a', 'b']
+  let t:tvar6 = #{action: 'run'}
+  call assert_equal(10, luaeval('vim.t.tvar1'))
+  call assert_equal('edit', luaeval('vim.t.tvar2'))
+  call assert_equal(3.14, luaeval('vim.t.tvar3'))
+  call assert_equal(0zdeadbeef, luaeval('vim.t.tvar4'))
+  call assert_equal(['a', 'b'], luaeval('vim.t.tvar5'))
+  call assert_equal(#{action: 'run'}, luaeval('vim.t.tvar6'))
+  call assert_equal(v:null, luaeval('vim.t.NonExisting'))
+
+  " modify a tabpage variable
+  lua vim.t.tvar2 = 'paste'
+  call assert_equal('paste', t:tvar2)
+
+  " change the type stored in a variable
+  let t:tvar2 = [1, 2]
+  lua vim.t.tvar2 = vim.dict({a=10, b=20})
+  call assert_equal(#{a: 10, b: 20}, t:tvar2)
+
+  " create a new tabpage variable
+  lua vim.t.tvar7 = vim.dict({a=vim.list({1, 2}), b=20})
+  call assert_equal(#{a: [1, 2], b: 20}, t:tvar7)
+
+  " delete a tabpage variable
+  lua vim.t.tvar2 = Nil
+  call assert_false(exists('t:tvar2'))
+
+  tabnew
+  call assert_equal(v:null, luaeval('vim.t.tvar1'))
+  call assert_equal(v:null, luaeval('vim.t.tvar2'))
+  %bw!
+endfunc
+
+" Test for vim.version()
+func Test_lua_vim_version()
+  lua << trim END
+    vimver = vim.version()
+    vimver_n = vimver.major * 100 + vimver.minor
+  END
+  call assert_equal(v:version, luaeval('vimver_n'))
+endfunc
+
+" Test for running multiple commands using vim.command()
+func Test_lua_multiple_commands()
+  lua << trim END
+    vim.command([[
+        let Var1 = []
+        for i in range(3)
+          let Var1 += [#{name: 'x'}]
+        endfor
+        augroup Luagroup
+          autocmd!
+          autocmd User Luatest echo 'Hello'
+        augroup END
+      ]])
+  END
+  call assert_equal([{'name': 'x'}, {'name': 'x'}, {'name': 'x'}], Var1)
+  call assert_true(exists('#Luagroup'))
+  call assert_true(exists('#Luagroup#User#Luatest'))
+  augroup Luagroup
+    autocmd!
+  augroup END
+  augroup! Luagroup
+endfunc
+
+func Test_lua_debug()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', {'rows': 10})
+  call term_sendkeys(buf, ":lua debug.debug()\n")
+  call WaitForAssert({-> assert_equal('lua_debug> ', term_getline(buf, 10))})
+
+  call term_sendkeys(buf, "foo = 42\n")
+  call WaitForAssert({-> assert_equal('lua_debug> foo = 42', term_getline(buf, 9))})
+  call WaitForAssert({-> assert_equal('lua_debug> ',         term_getline(buf, 10))})
+
+  call term_sendkeys(buf, "print(foo)\n")
+  call WaitForAssert({-> assert_equal('lua_debug> print(foo)', term_getline(buf, 8))})
+  call WaitForAssert({-> assert_equal('42',                    term_getline(buf, 9))})
+  call WaitForAssert({-> assert_equal('lua_debug> ',           term_getline(buf, 10))})
+
+  call term_sendkeys(buf, "-\n")
+  call WaitForAssert({-> assert_equal("(debug command):1: unexpected symbol near '-'",
+  \                                                  term_getline(buf, 9))})
+  call WaitForAssert({-> assert_equal('lua_debug> ', term_getline(buf, 10))})
+
+  call term_sendkeys(buf, "cont\n")
+  call WaitForAssert({-> assert_match(' All$', term_getline(buf, 10))})
+
+  " Entering an empty line also exits the debugger.
+  call term_sendkeys(buf, ":lua debug.debug()\n")
+  call WaitForAssert({-> assert_equal('lua_debug> ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "\n")
+  call WaitForAssert({-> assert_match(' All$', term_getline(buf, 10))})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

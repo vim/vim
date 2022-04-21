@@ -26,7 +26,6 @@ src/auto/pathdef.c
 # Windows
 *.exe
 *.idb
-*.manifest
 *.exp
 *.map
 *.obj

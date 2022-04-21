@@ -132,4 +132,18 @@ func Test_keep_unnamed_register()
   %bw!
 endfunc
 
+" Check that underlying shell command arguments are escaped.
+func Test_Man_uses_shellescape()
+  Man `touch\ Xbar` `touch\ Xfoo`
+
+  redir => msg
+  1messages
+  redir END
+  call assert_match('no manual entry for "`touch Xfoo`"', msg)
+
+  call assert_false(filereadable('Xbar'))
+  call assert_false(filereadable('Xfoo'))
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

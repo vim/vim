@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 8.2.  Last change: 2020 Jun 07
+*os_vms.txt*    For Vim version 8.2.  Last change: 2021 Jan 04
 
 
 		  VIM REFERENCE MANUAL
@@ -72,7 +72,7 @@ See the file [.SRC]INSTALLVMS.TXT.
 4. Problems						*vms-problems*
 
 The code has been tested under Open VMS 6.2 - 8.2 on Alpha, VAX and IA64
-platforms with the DEC C compiler.  It should work without big problems.
+platforms with the DEC C compiler. It should work without major problems.
 If your system does not have some include libraries you can tune up in
 OS_VMS_CONF.H file.
 
@@ -603,13 +603,13 @@ program to the new diff on VMS.  Add this to your .vimrc file: >
 	function MyDiff()
 	   let opt = ""
 	   if &diffopt =~ "icase"
-	     let opt = opt . "-i "
+	     let opt = opt .. "-i "
 	   endif
 	   if &diffopt =~ "iwhite"
-	     let opt = opt . "-b "
+	     let opt = opt .. "-b "
 	   endif
-	   silent execute "!mc GNU:diff.exe -a " . opt . v:fname_in . " " .  v:fname_new .
-		\  " > " . v:fname_out
+	   silent execute "!mc GNU:diff.exe -a " .. opt .. v:fname_in .. " " ..  v:fname_new ..
+		\  " > " .. v:fname_out
 	endfunction
       endif
 
@@ -764,6 +764,15 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 ==============================================================================
 
 9. VMS related changes					*vms-changes*
+
+Version 8.2
+- make all changes needed for clean compile build of v8.2 on VMS on all platforms
+- fix the call mkdir bug (vicente_polo@yahoo.es)
+- test on VSI OpenVMS Alpha and Itanium platforms
+- added LUA support
+- added XPM support - Motif GUI with toolbar on all platforms
+- XPM v3.4.11 libraries for IA64, AXP and VAX are added
+- start integrating the new test scripts
 
 Version 8.1
 - make necessary changes to build v8.1 on VMS

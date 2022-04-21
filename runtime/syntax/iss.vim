@@ -1,11 +1,11 @@
 " Vim syntax file
 " Language:             Inno Setup File (iss file) and My InnoSetup extension
 " Maintainer:           Jason Mills (jmills@cs.mun.ca)
-" Previous Maintainer:  Dominique Stéphan (dominique@mggen.com)
-" Last Change:          2019 Sep 27
+" Previous Maintainer:  Dominique StÃ©phan (dominique@mggen.com)
+" Last Change:          2021 Aug 30
 "
 " Todo:
-"  - The paramter String: is matched as flag string (because of case ignore).
+"  - The parameter String: is matched as flag string (because of case ignore).
 "  - Pascal scripting syntax is not recognized.
 "  - Embedded double quotes confuse string matches. e.g. "asfd""asfa"
 

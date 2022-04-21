@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Aug 14
+" Last Change:	2021 Apr 11
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -48,17 +48,22 @@ setlocal isk+=#
 " Use :help to lookup the keyword under the cursor with K.
 setlocal keywordprg=:help
 
-" Set 'comments' to format dashed lists in comments
-" Avoid that #{} starts a comment.
-setlocal com=sO:\"\ -,mO:\"\ \ ,sO:#\ -,mO:#\ \ ,eO:##,:\",b:#
+if "\n" .. getline(1, 10)->join("\n") =~# '\n\s*vim9\%[script]\>'
+  " Set 'comments' to format dashed lists in comments
+  setlocal com=sO:#\ -,mO:#\ \ ,eO:##,:#
+  " Comments starts with # in Vim9 script
+  setlocal commentstring=#%s
+else
+  setlocal com=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"
+  " Comments starts with a double quote in legacy script
+  setlocal commentstring=\"%s
+endif
+
 
 " Format comments to be up to 78 characters long
 if &tw == 0
   setlocal tw=78
 endif
-
-" Comments start with a double quote; in Vim9 script # would also work
-setlocal commentstring=\"%s
 
 if !exists("no_plugin_maps") && !exists("no_vim_maps")
   let b:did_add_maps = 1
@@ -83,12 +88,17 @@ endif
 " Let the matchit plugin know what items can be matched.
 if exists("loaded_matchit")
   let b:match_ignorecase = 0
+  " "func" can also be used as a type:
+  "   var Ref: func
+  " or to list functions:
+  "   func name
+  " require a parenthesis following, then there can be an "endfunc".
   let b:match_words =
-	\ '\<\%(fu\%[nction]\|def\)\>)\@!:\<retu\%[rn]\>:\<\%(endf\%[unction]\|enddef\)\>,' .
- 	\ '\<\(wh\%[ile]\|for\)\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<end\(w\%[hile]\|fo\%[r]\)\>,' .
-	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
+	\ '\<\%(fu\%[nction]\|def\)!\=\s\+\S\+(:\%(\%(^\||\)\s*\)\@<=\<retu\%[rn]\>:\%(\%(^\||\)\s*\)\@<=\<\%(endf\%[unction]\|enddef\)\>,' .
+ 	\ '\<\(wh\%[ile]\|for\)\>:\%(\%(^\||\)\s*\)\@<=\<brea\%[k]\>:\%(\%(^\||\)\s*\)\@<=\<con\%[tinue]\>:\%(\%(^\||\)\s*\)\@<=\<end\(w\%[hile]\|fo\%[r]\)\>,' .
+	\ '\<if\>:\%(\%(^\||\)\s*\)\@<=\<el\%[seif]\>:\%(\%(^\||\)\s*\)\@<=\<en\%[dif]\>,' .
 	\ '{:},' .
-	\ '\<try\>:\<cat\%[ch]\>:\<fina\%[lly]\>:\<endt\%[ry]\>,' .
+	\ '\<try\>:\%(\%(^\||\)\s*\)\@<=\<cat\%[ch]\>:\%(\%(^\||\)\s*\)\@<=\<fina\%[lly]\>:\%(\%(^\||\)\s*\)\@<=\<endt\%[ry]\>,' .
 	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,'
   " Ignore syntax region commands and settings, any 'en*' would clobber
   " if-endif.

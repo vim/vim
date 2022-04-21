@@ -45,8 +45,7 @@ match_add(
 	return -1;
     if (id < -1 || id == 0)
     {
-	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"),
-									   id);
+	semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one_1), id);
 	return -1;
     }
     if (id != -1)
@@ -56,7 +55,7 @@ match_add(
 	{
 	    if (cur->id == id)
 	    {
-		semsg(_("E801: ID already taken: %d"), id);
+		semsg(_(e_id_already_taken_nr), id);
 		return -1;
 	    }
 	    cur = cur->next;
@@ -64,12 +63,12 @@ match_add(
     }
     if ((hlg_id = syn_namen2id(grp, (int)STRLEN(grp))) == 0)
     {
-	semsg(_(e_nogroup), grp);
+	semsg(_(e_no_such_highlight_group_name_str), grp);
 	return -1;
     }
     if (pat != NULL && (regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
     {
-	semsg(_(e_invarg2), pat);
+	semsg(_(e_invalid_argument_str), pat);
 	return -1;
     }
 
@@ -165,7 +164,7 @@ match_add(
 	    }
 	    else
 	    {
-		emsg(_("E290: List or number required"));
+		emsg(_(e_list_or_number_required));
 		goto fail;
 	    }
 	    if (toplnum == 0 || lnum < toplnum)
@@ -234,8 +233,7 @@ match_delete(win_T *wp, int id, int perr)
     if (id < 1)
     {
 	if (perr == TRUE)
-	    semsg(_("E802: Invalid ID: %d (must be greater than or equal to 1)"),
-									  id);
+	    semsg(_(e_invalid_id_nr_must_be_greater_than_or_equal_to_one_2), id);
 	return -1;
     }
     while (cur != NULL && cur->id != id)
@@ -246,7 +244,7 @@ match_delete(win_T *wp, int id, int perr)
     if (cur == NULL)
     {
 	if (perr == TRUE)
-	    semsg(_("E803: ID not found: %d"), id);
+	    semsg(_(e_id_not_found_nr), id);
 	return -1;
     }
     if (cur == prev)
@@ -398,6 +396,7 @@ next_search_hl_pos(
 	shl->rm.endpos[0].lnum = 0;
 	shl->rm.endpos[0].col = end;
 	shl->is_addpos = TRUE;
+	shl->has_cursor = FALSE;
 	posmatch->cur = found + 1;
 	return 1;
     }
@@ -427,7 +426,7 @@ next_search_hl(
     int		called_emsg_before = called_emsg;
 
     // for :{range}s/pat only highlight inside the range
-    if (lnum < search_first_line || lnum > search_last_line)
+    if ((lnum < search_first_line || lnum > search_last_line) && cur == NULL)
     {
 	shl->lnum = 0;
 	return;
@@ -654,8 +653,10 @@ prepare_search_hl_line(
 	    shl = &cur->hl;
 	shl->startcol = MAXCOL;
 	shl->endcol = MAXCOL;
+	shl->lines = 0;
 	shl->attr_cur = 0;
 	shl->is_addpos = FALSE;
+	shl->has_cursor = FALSE;
 	if (cur != NULL)
 	    cur->pos.cur = 0;
 	next_search_hl(wp, search_hl, shl, lnum, mincol,
@@ -676,6 +677,21 @@ prepare_search_hl_line(
 		shl->endcol = shl->rm.endpos[0].col;
 	    else
 		shl->endcol = MAXCOL;
+	    if (shl->rm.endpos[0].lnum != shl->rm.startpos[0].lnum)
+		shl->lines = shl->rm.endpos[0].lnum - shl->rm.startpos[0].lnum;
+	    else
+		shl->lines = 1;
+
+	    // check if the cursor is in the match before changing the columns
+	    if (wp->w_cursor.lnum >= shl->lnum
+			&& wp->w_cursor.lnum
+					  <= shl->lnum + shl->rm.endpos[0].lnum
+			&& (wp->w_cursor.lnum > shl->lnum
+				|| wp->w_cursor.col >= shl->rm.startpos[0].col)
+			&& (wp->w_cursor.lnum < shl->lnum + shl->lines
+				  || wp->w_cursor.col < shl->rm.endpos[0].col))
+		shl->has_cursor = TRUE;
+
 	    // Highlight one character for an empty match.
 	    if (shl->startcol == shl->endcol)
 	    {
@@ -703,6 +719,8 @@ prepare_search_hl_line(
  * After end, check for start/end of next match.
  * When another match, have to check for start again.
  * Watch out for matching an empty string!
+ * "on_last_col" is set to TRUE with non-zero search_attr and the next column
+ * is endcol.
  * Return the updated search_attr.
  */
     int
@@ -715,7 +733,8 @@ update_search_hl(
 	int	    *has_match_conc UNUSED,
 	int	    *match_conc UNUSED,
 	int	    did_line_attr,
-	int	    lcs_eol_one)
+	int	    lcs_eol_one,
+	int	    *on_last_col)
 {
     matchitem_T *cur;		    // points to the match list
     match_T	*shl;		    // points to search_hl or a match
@@ -767,6 +786,11 @@ update_search_hl(
 		else
 		    *has_match_conc = 0;
 # endif
+		// Highlight the match were the cursor is using the CurSearch
+		// group.
+		if (shl == search_hl && shl->has_cursor)
+		    shl->attr_cur = HL_ATTR(HLF_LC);
+
 	    }
 	    else if (col == shl->endcol)
 	    {
@@ -792,7 +816,15 @@ update_search_hl(
 			// highlight empty match, try again after
 			// it
 			if (has_mbyte)
-			    shl->endcol += (*mb_ptr2len)(*line + shl->endcol);
+			{
+			    char_u *p = *line + shl->endcol;
+
+			    if (*p == NUL)
+				// consistent with non-mbyte
+				++shl->endcol;
+			    else
+				shl->endcol += (*mb_ptr2len)(p);
+			}
 			else
 			    ++shl->endcol;
 		    }
@@ -824,7 +856,10 @@ update_search_hl(
 	else
 	    shl = &cur->hl;
 	if (shl->attr_cur != 0)
+	{
 	    search_attr = shl->attr_cur;
+	    *on_last_col = col + 1 >= shl->endcol;
+	}
 	if (shl != search_hl && cur != NULL)
 	    cur = cur->next;
     }
@@ -842,18 +877,31 @@ get_prevcol_hl_flag(win_T *wp, match_T *search_hl, long curcol)
     int		prevcol_hl_flag = FALSE;
     matchitem_T *cur;			// points to the match list
 
+#if defined(FEAT_PROP_POPUP)
+    // don't do this in a popup window
+    if (popup_is_popup(wp))
+	return FALSE;
+#endif
+
     // we're not really at that column when skipping some text
     if ((long)(wp->w_p_wrap ? wp->w_skipcol : wp->w_leftcol) > prevcol)
 	++prevcol;
 
-    if (!search_hl->is_addpos && prevcol == (long)search_hl->startcol)
+    // Highlight a character after the end of the line if the match started
+    // at the end of the line or when the match continues in the next line
+    // (match includes the line break).
+    if (!search_hl->is_addpos && (prevcol == (long)search_hl->startcol
+		|| (prevcol > (long)search_hl->startcol
+					      && search_hl->endcol == MAXCOL)))
 	prevcol_hl_flag = TRUE;
     else
     {
 	cur = wp->w_match_head;
 	while (cur != NULL)
 	{
-	    if (!cur->hl.is_addpos && prevcol == (long)cur->hl.startcol)
+	    if (!cur->hl.is_addpos && (prevcol == (long)cur->hl.startcol
+			|| (prevcol > (long)cur->hl.startcol
+						 && cur->hl.endcol == MAXCOL)))
 	    {
 		prevcol_hl_flag = TRUE;
 		break;
@@ -909,11 +957,11 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 
     if (tv->v_type != VAR_DICT)
     {
-	emsg(_(e_dictreq));
+	emsg(_(e_dictionary_required));
 	return FAIL;
     }
 
-    if (dict_find(tv->vval.v_dict, (char_u *)"conceal", -1) != NULL)
+    if (dict_has_key(tv->vval.v_dict, "conceal"))
 	*conceal_char = dict_get_string(tv->vval.v_dict,
 						   (char_u *)"conceal", FALSE);
 
@@ -922,7 +970,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 	*win = find_win_by_nr_or_id(&di->di_tv);
 	if (*win == NULL)
 	{
-	    emsg(_(e_invalwindow));
+	    emsg(_(e_invalid_window_number));
 	    return FAIL;
 	}
     }
@@ -938,8 +986,12 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 f_clearmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_SEARCH_EXTRA
-    win_T   *win = get_optional_window(argvars, 0);
+    win_T   *win;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
+    win = get_optional_window(argvars, 0);
     if (win != NULL)
 	clear_matches(win);
 #endif
@@ -955,8 +1007,12 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     dict_T	*dict;
     matchitem_T	*cur;
     int		i;
-    win_T	*win = get_optional_window(argvars, 0);
+    win_T	*win;
 
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
+    win = get_optional_window(argvars, 0);
     if (rettv_list_alloc(rettv) == FAIL || win == NULL)
 	return;
 
@@ -1003,7 +1059,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	{
 	    char_u buf[MB_MAXBYTES + 1];
 
-	    buf[(*mb_char2bytes)((int)cur->conceal_char, buf)] = NUL;
+	    buf[(*mb_char2bytes)(cur->conceal_char, buf)] = NUL;
 	    dict_add_string(dict, "conceal", (char_u *)&buf);
 	}
 #  endif
@@ -1024,14 +1080,21 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     listitem_T	*li;
     dict_T	*d;
     list_T	*s = NULL;
-    win_T	*win = get_optional_window(argvars, 1);
+    win_T	*win;
 
     rettv->vval.v_number = -1;
+
+    if (in_vim9script()
+	    && (check_for_list_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
+
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return;
     }
+    win = get_optional_window(argvars, 1);
     if (win == NULL)
 	return;
 
@@ -1045,16 +1108,16 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    if (li->li_tv.v_type != VAR_DICT
 		    || (d = li->li_tv.vval.v_dict) == NULL)
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return;
 	    }
-	    if (!(dict_find(d, (char_u *)"group", -1) != NULL
-			&& (dict_find(d, (char_u *)"pattern", -1) != NULL
-			    || dict_find(d, (char_u *)"pos1", -1) != NULL)
-			&& dict_find(d, (char_u *)"priority", -1) != NULL
-			&& dict_find(d, (char_u *)"id", -1) != NULL))
+	    if (!(dict_has_key(d, "group")
+			&& (dict_has_key(d, "pattern")
+			    || dict_has_key(d, "pos1"))
+			&& dict_has_key(d, "priority")
+			&& dict_has_key(d, "id")))
 	    {
-		emsg(_(e_invarg));
+		emsg(_(e_invalid_argument));
 		return;
 	    }
 	    li = li->li_next;
@@ -1073,7 +1136,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    char_u	*conceal;
 
 	    d = li->li_tv.vval.v_dict;
-	    if (dict_find(d, (char_u *)"pattern", -1) == NULL)
+	    if (!dict_has_key(d, "pattern"))
 	    {
 		if (s == NULL)
 		{
@@ -1102,7 +1165,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    group = dict_get_string(d, (char_u *)"group", TRUE);
 	    priority = (int)dict_get_number(d, (char_u *)"priority");
 	    id = (int)dict_get_number(d, (char_u *)"id");
-	    conceal = dict_find(d, (char_u *)"conceal", -1) != NULL
+	    conceal = dict_has_key(d, "conceal")
 			      ? dict_get_string(d, (char_u *)"conceal", TRUE)
 			      : NULL;
 	    if (i == 0)
@@ -1135,8 +1198,8 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 # ifdef FEAT_SEARCH_EXTRA
     char_u	buf[NUMBUFLEN];
-    char_u	*grp = tv_get_string_buf_chk(&argvars[0], buf);	// group
-    char_u	*pat = tv_get_string_buf_chk(&argvars[1], buf);	// pattern
+    char_u	*grp;		// group
+    char_u	*pat;		// pattern
     int		prio = 10;	// default priority
     int		id = -1;
     int		error = FALSE;
@@ -1145,6 +1208,18 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 3) == FAIL
+			|| (argvars[3].v_type != VAR_UNKNOWN
+			    && check_for_opt_dict_arg(argvars, 4) == FAIL)))))
+	return;
+
+    grp = tv_get_string_buf_chk(&argvars[0], buf);	// group
+    pat = tv_get_string_buf_chk(&argvars[1], buf);	// pattern
     if (grp == NULL || pat == NULL)
 	return;
     if (argvars[2].v_type != VAR_UNKNOWN)
@@ -1162,7 +1237,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     if (id >= 1 && id <= 3)
     {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	semsg(_(e_id_is_reserved_for_match_nr), id);
 	return;
     }
 
@@ -1189,13 +1264,23 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     rettv->vval.v_number = -1;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_list_arg(argvars, 1) == FAIL
+		|| check_for_opt_number_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && (check_for_opt_number_arg(argvars, 3) == FAIL
+			|| (argvars[3].v_type != VAR_UNKNOWN
+			    && check_for_opt_dict_arg(argvars, 4) == FAIL)))))
+	return;
+
     group = tv_get_string_buf_chk(&argvars[0], buf);
     if (group == NULL)
 	return;
 
     if (argvars[1].v_type != VAR_LIST)
     {
-	semsg(_(e_listarg), "matchaddpos()");
+	semsg(_(e_argument_of_str_must_be_list), "matchaddpos()");
 	return;
     }
     l = argvars[1].vval.v_list;
@@ -1220,7 +1305,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     // id == 3 is ok because matchaddpos() is supposed to substitute :3match
     if (id == 1 || id == 2)
     {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	semsg(_(e_id_is_reserved_for_match_nr), id);
 	return;
     }
 
@@ -1238,12 +1323,16 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
     if (rettv_list_alloc(rettv) == OK)
     {
 # ifdef FEAT_SEARCH_EXTRA
-	int	    id = (int)tv_get_number(&argvars[0]);
+	int	    id;
 	matchitem_T *m;
 
+	if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	    return;
+
+	id = (int)tv_get_number(&argvars[0]);
 	if (id >= 1 && id <= 3)
 	{
-	    if ((m = (matchitem_T *)get_match(curwin, id)) != NULL)
+	    if ((m = get_match(curwin, id)) != NULL)
 	    {
 		list_append_string(rettv->vval.v_list,
 						syn_id2name(m->hlg_id), -1);
@@ -1266,8 +1355,14 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
 f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 # ifdef FEAT_SEARCH_EXTRA
-    win_T   *win = get_optional_window(argvars, 1);
+    win_T   *win;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL))
+	return;
+
+    win = get_optional_window(argvars, 1);
     if (win == NULL)
 	rettv->vval.v_number = -1;
     else
@@ -1320,7 +1415,7 @@ ex_match(exarg_T *eap)
 	{
 	    // There must be two arguments.
 	    vim_free(g);
-	    semsg(_(e_invarg2), eap->arg);
+	    semsg(_(e_invalid_argument_str), eap->arg);
 	    return;
 	}
 	end = skip_regexp(p + 1, *p, TRUE);
@@ -1329,13 +1424,13 @@ ex_match(exarg_T *eap)
 	    if (*end != NUL && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		vim_free(g);
-		eap->errmsg = ex_errmsg(e_trailing_arg, end);
+		eap->errmsg = ex_errmsg(e_trailing_characters_str, end);
 		return;
 	    }
 	    if (*end != *p)
 	    {
 		vim_free(g);
-		semsg(_(e_invarg2), p);
+		semsg(_(e_invalid_argument_str), p);
 		return;
 	    }
 

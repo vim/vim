@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 8.2.  Last change: 2019 May 05
+*remote.txt*    For Vim version 8.2.  Last change: 2022 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -120,6 +120,10 @@ when sending command to it.
 
 The --serverlist argument will cause Vim to print a list of registered command
 servers on the standard output (stdout) and exit.
+							*{server}*
+The {server} argument is used by several functions.  When this is an empty
+string then on Unix the default server name is used, which is "GVIM".  On
+MS-Windows an empty string does not work.
 
 Win32 Note: Making the Vim server go to the foreground doesn't always work,
 because MS-Windows doesn't allow it.  The client will move the server to the
@@ -143,7 +147,7 @@ You can not put options there!
 FUNCTIONS
 								*E240* *E573*
 There are a number of Vim functions for scripting the command server.  See
-the description in |eval.txt| or use CTRL-] on the function name to jump to
+the description in |builtin.txt| or use CTRL-] on the function name to jump to
 the full explanation.
 
     synopsis				     explanation ~

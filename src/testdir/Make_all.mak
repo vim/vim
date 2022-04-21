@@ -30,17 +30,25 @@ SCRIPTS_TINY_OUT = \
 
 # Tests for Vim9 script.
 TEST_VIM9 = \
+	test_vim9_assign \
+	test_vim9_builtin \
 	test_vim9_cmd \
 	test_vim9_disassemble \
 	test_vim9_expr \
+	test_vim9_fails \
 	test_vim9_func \
+	test_vim9_import \
 	test_vim9_script
 
 TEST_VIM9_RES = \
+	test_vim9_assign.res \
+	test_vim9_builtin.res \
 	test_vim9_cmd.res \
 	test_vim9_disassemble.res \
 	test_vim9_expr.res \
+	test_vim9_fails.res \
 	test_vim9_func.res \
+	test_vim9_import.res \
 	test_vim9_script.res
 
 # Benchmark scripts.
@@ -156,12 +164,12 @@ NEW_TESTS = \
 	test_increment_dbcs \
 	test_indent \
 	test_ins_complete \
+	test_ins_complete_no_halt \
 	test_interrupt \
 	test_job_fails \
 	test_join \
 	test_json \
 	test_jumplist \
-	test_jumps \
 	test_lambda \
 	test_langmap \
 	test_largefile \
@@ -182,6 +190,7 @@ NEW_TESTS = \
 	test_match \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
+	test_matchfuzzy \
 	test_memory_usage \
 	test_menu \
 	test_messages \
@@ -235,10 +244,12 @@ NEW_TESTS = \
 	test_selectmode \
 	test_set \
 	test_sha256 \
+	test_shell \
 	test_shift \
 	test_shortpathname \
 	test_signals \
 	test_signs \
+	test_sleep \
 	test_smartindent \
 	test_sort \
 	test_sound \
@@ -396,6 +407,7 @@ NEW_TESTS_RES = \
 	test_increment_dbcs.res \
 	test_indent.res \
 	test_ins_complete.res \
+	test_ins_complete_no_halt.res \
 	test_interrupt.res \
 	test_job_fails.res \
 	test_join.res \
@@ -409,6 +421,7 @@ NEW_TESTS_RES = \
 	test_listdict.res \
 	test_listener.res \
 	test_listlbr.res \
+	test_listlbr_utf8.res \
 	test_lua.res \
 	test_makeencoding.res \
 	test_man.res \
@@ -418,6 +431,7 @@ NEW_TESTS_RES = \
 	test_match.res \
 	test_matchadd_conceal.res \
 	test_matchadd_conceal_utf8.res \
+	test_matchfuzzy.res \
 	test_memory_usage.res \
 	test_menu.res \
 	test_messages.res \
@@ -449,6 +463,7 @@ NEW_TESTS_RES = \
 	test_quickfix.res \
 	test_quotestar.res \
 	test_random.res \
+	test_recover.res \
 	test_regex_char_classes.res \
 	test_registers.res \
 	test_rename.res \
@@ -460,9 +475,11 @@ NEW_TESTS_RES = \
 	test_search.res \
 	test_search_stat.res \
 	test_selectmode.res \
+	test_shell.res \
 	test_shortpathname.res \
 	test_signals.res \
 	test_signs.res \
+	test_sleep.res \
 	test_smartindent.res \
 	test_sort.res \
 	test_sound.res \

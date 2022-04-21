@@ -115,7 +115,7 @@ find_end_of_word(pos_T *pos)
 }
 
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
+	    || defined(FEAT_GUI_MSWIN) \
 	    || defined(FEAT_GUI_PHOTON) \
 	    || defined(FEAT_TERM_POPUP_MENU)
 # define USE_POPUP_SETPOS
@@ -261,7 +261,10 @@ do_mouse(
 	{
 	    // If the next character is the same mouse event then use that
 	    // one. Speeds up dragging the status line.
-	    if (vpeekc() != NUL)
+	    // Note: Since characters added to the stuff buffer in the code
+	    // below need to come before the next character, do not do this
+	    // when the current character was stuffed.
+	    if (!KeyStuffed && vpeekc() != NUL)
 	    {
 		int nc;
 		int save_mouse_row = mouse_row;
@@ -477,7 +480,7 @@ do_mouse(
 		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
 		{
 		    // double click opens new page
-		    end_visual_mode();
+		    end_visual_mode_keep_button();
 		    tabpage_new();
 		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
 		}
@@ -489,7 +492,7 @@ do_mouse(
 
 		    // It's like clicking on the status line of a window.
 		    if (curwin != old_curwin)
-			end_visual_mode();
+			end_visual_mode_keep_button();
 		}
 	    }
 	    else
@@ -539,7 +542,7 @@ do_mouse(
 		    // menu on the button down event.
 		    return FALSE;
 #  endif
-#  if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
+#  if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
 		if (is_click || is_drag)
 		    // Ignore right button down and drag mouse events.  Windows
 		    // only shows the popup menu on the button up event.
@@ -1568,7 +1571,7 @@ retnomove:
 #endif
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
-	    end_visual_mode();
+	    end_visual_mode_keep_button();
 	    redraw_curbuf_later(INVERTED);	// delete the inversion
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
@@ -1630,13 +1633,15 @@ retnomove:
 	if (WIN_IS_POPUP(wp))
 	{
 	    on_sep_line = 0;
+	    on_status_line = 0;
 	    in_popup_win = TRUE;
 	    if (which_button == MOUSE_LEFT && popup_close_if_on_X(wp, row, col))
 	    {
 		return IN_UNKNOWN;
 	    }
-	    else if ((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
+	    else if (((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
 					      && popup_on_border(wp, row, col))
+				       || (wp->w_popup_flags & POPF_DRAGALL))
 	    {
 		popup_dragwin = wp;
 		popup_start_drag(wp, row, col);
@@ -1717,7 +1722,7 @@ retnomove:
 #endif
 			&& (flags & MOUSE_MAY_STOP_VIS))))
 	{
-	    end_visual_mode();
+	    end_visual_mode_keep_button();
 	    redraw_curbuf_later(INVERTED);	// delete the inversion
 	}
 #ifdef FEAT_CMDWIN
@@ -1821,7 +1826,7 @@ retnomove:
 	// before moving the cursor for a left click, stop Visual mode
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
-	    end_visual_mode();
+	    end_visual_mode_keep_button();
 	    redraw_curbuf_later(INVERTED);	// delete the inversion
 	}
 
@@ -1989,7 +1994,7 @@ retnomove:
 	count |= CURSOR_MOVED;		// Cursor has moved
 
 # ifdef FEAT_FOLDING
-    if (mouse_char == '+')
+    if (mouse_char == fill_foldclosed)
 	count |= MOUSE_FOLD_OPEN;
     else if (mouse_char != ' ')
 	count |= MOUSE_FOLD_CLOSE;
@@ -2098,6 +2103,14 @@ nv_mouse(cmdarg_T *cap)
     (void)do_mouse(cap->oap, cap->cmdchar, BACKWARD, cap->count1, 0);
 }
 
+static int	held_button = MOUSE_RELEASE;
+
+    void
+reset_held_button()
+{
+    held_button = MOUSE_RELEASE;
+}
+
 /*
  * Check if typebuf 'tp' contains a terminal mouse code and returns the
  * modifiers found in typebuf in 'modifiers'.
@@ -2123,7 +2136,6 @@ check_termcode_mouse(
     int		is_release, release_is_ambiguous;
     int		wheel_code = 0;
     int		current_button;
-    static int	held_button = MOUSE_RELEASE;
     static int	orig_num_clicks = 1;
     static int	orig_mouse_code = 0x0;
 # ifdef CHECK_DOUBLE_CLICK
@@ -2929,10 +2941,12 @@ mouse_comp_pos(
 
     // skip line number and fold column in front of the line
     col -= win_col_off(win);
-    if (col < 0)
+    if (col <= 0)
     {
 #ifdef FEAT_NETBEANS_INTG
-	netbeans_gutter_click(lnum);
+	// if mouse is clicked on the gutter, then inform the netbeans server
+	if (*colp < win_col_off(win))
+	    netbeans_gutter_click(lnum);
 #endif
 	col = 0;
     }
@@ -3020,7 +3034,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 }
 
 #if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP) \
-	|| defined(PROTO)
+	|| defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
  * The first column is one.
@@ -3054,7 +3068,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     varnumber_T winid = 0;
     varnumber_T winrow = 0;
     varnumber_T wincol = 0;
-    linenr_T	line = 0;
+    linenr_T	lnum = 0;
     varnumber_T column = 0;
 
     if (rettv_dict_alloc(rettv) != OK)
@@ -3088,17 +3102,8 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
 	    {
-		char_u	*p;
-		int	count;
-
-		mouse_comp_pos(wp, &row, &col, &line, NULL);
-
-		// limit to text length plus one
-		p = ml_get_buf(wp->w_buffer, line, FALSE);
-		count = (int)STRLEN(p);
-		if (col > count)
-		    col = count;
-
+		(void)mouse_comp_pos(wp, &row, &col, &lnum, NULL);
+		col = vcol2col(wp, lnum, col);
 		column = col + 1;
 	    }
 	}
@@ -3106,7 +3111,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(d, "winid", winid);
     dict_add_number(d, "winrow", winrow);
     dict_add_number(d, "wincol", wincol);
-    dict_add_number(d, "line", (varnumber_T)line);
+    dict_add_number(d, "line", (varnumber_T)lnum);
     dict_add_number(d, "column", column);
 }
 #endif

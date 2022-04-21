@@ -66,6 +66,177 @@ func Test_terminal_invalid_arg()
   call assert_fails('terminal ++xyz', 'E181:')
 endfunc
 
+" Check a terminal with different colors
+func Terminal_color(group_name, highlight_cmds, highlight_opt, open_cmds)
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let lines = [
+	\ 'call setline(1, range(20))',
+	\ 'func OpenTerm()',
+	\ '  set noruler',
+	\ "  call term_start('cat', #{vertical: 1, " .. a:highlight_opt .. "})",
+	\ ] + a:open_cmds + [
+	\ 'endfunc',
+	\ ] + a:highlight_cmds
+  call writefile(lines, 'XtermStart')
+  let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, ":call OpenTerm()\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "hello\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_color_' .. a:group_name, {})
+
+  call term_sendkeys(buf, "\<C-D>")
+  call TermWait(buf, 50)
+  call StopVimInTerminal(buf)
+  call delete('XtermStart')
+endfunc
+
+func Test_terminal_color_Terminal()
+  call Terminal_color("Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_color_group()
+  call Terminal_color("MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_color_wincolor()
+  call Terminal_color("MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_color_group_over_Terminal()
+  call Terminal_color("MyTermCol_over_Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_color_wincolor_over_group()
+  call Terminal_color("MyWinCol_over_group", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "term_highlight: 'MyTermCol',", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_color_wincolor_split()
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let lines = [
+	\ 'call setline(1, range(20))',
+	\ 'func OpenTerm()',
+	\ '  set noruler',
+	\ "  call term_start('cat', #{vertical: 1, term_highlight: 'MyTermCol'})",
+	\ 'endfunc',
+  \ 'highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue',
+  \ 'highlight MyWinCol ctermfg=red ctermbg=darkyellow',
+  \ 'highlight MyWinCol2 ctermfg=black ctermbg=blue',
+	\ ]
+  call writefile(lines, 'XtermStart')
+  let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, ":call OpenTerm()\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "hello\<CR>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "\<C-W>:split\<CR>")
+  call term_sendkeys(buf, "\<C-W>:set wincolor=MyWinCol\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_wincolor_split_MyWinCol', {})
+
+  call term_sendkeys(buf, "\<C-W>b:2sb\<CR>")
+  call term_sendkeys(buf, "\<C-W>:set wincolor=MyWinCol2\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_wincolor_split_MyWinCol2', {})
+
+  call term_sendkeys(buf, "\<C-D>")
+  call TermWait(buf, 50)
+  call StopVimInTerminal(buf)
+  call delete('XtermStart')
+endfunc
+
+func Test_terminal_color_transp_Terminal()
+  call Terminal_color("transp_Terminal", [
+  \ "highlight Terminal ctermfg=blue",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_color_transp_group()
+  call Terminal_color("transp_MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_color_transp_wincolor()
+  call Terminal_color("transp_MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_color_gui_Terminal()
+  CheckFeature termguicolors
+  call Terminal_color("gui_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff guibg=#b0a700",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_color_gui_group()
+  CheckFeature termguicolors
+  call Terminal_color("gui_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800 guibg=#6789ff",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_color_gui_wincolor()
+  CheckFeature termguicolors
+  call Terminal_color("gui_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122 guibg=#818100",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
+func Test_terminal_color_gui_transp_Terminal()
+  CheckFeature termguicolors
+  call Terminal_color("gui_transp_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff",
+  \ ], "", [])
+endfunc
+
+func Test_terminal_color_gui_transp_group()
+  CheckFeature termguicolors
+  call Terminal_color("gui_transp_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800",
+  \ ], "term_highlight: 'MyTermCol',", [])
+endfunc
+
+func Test_terminal_color_gui_transp_wincolor()
+  CheckFeature termguicolors
+  call Terminal_color("gui_transp_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122",
+  \ ], "", [
+  \ 'set wincolor=MyWinCol',
+  \ ])
+endfunc
+
 func Test_terminal_in_popup()
   CheckRunVimInTerminal
 
@@ -101,7 +272,7 @@ func Test_terminal_in_popup()
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call TermWait(buf, 100)
   call term_sendkeys(buf, ":call OpenTerm(0)\<CR>")
-  call TermWait(buf, 100)
+  call TermWait(buf, 500)
   call term_sendkeys(buf, ":\<CR>")
   call TermWait(buf, 100)
   call term_sendkeys(buf, "\<C-W>:echo getwinvar(g:winid, \"&buftype\") win_gettype(g:winid)\<CR>")
@@ -111,7 +282,7 @@ func Test_terminal_in_popup()
   call VerifyScreenDump(buf, 'Test_terminal_popup_2', {})
  
   call term_sendkeys(buf, ":call OpenTerm(1)\<CR>")
-  call TermWait(buf, 150)
+  call TermWait(buf, 500)
   call term_sendkeys(buf, ":set hlsearch\<CR>")
   call TermWait(buf, 100)
   call term_sendkeys(buf, "/edit\<CR>")
@@ -138,14 +309,14 @@ func Test_terminal_in_popup()
 
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":q\<CR>")
-  call TermWait(buf, 150)  " wait for terminal to vanish
+  call TermWait(buf, 250)  " wait for terminal to vanish
 
   call StopVimInTerminal(buf)
   call delete('Xtext')
   call delete('XtermPopup')
 endfunc
 
-" Check a terminal in popup window uses the default mininum size.
+" Check a terminal in popup window uses the default minimum size.
 func Test_terminal_in_popup_min_size()
   CheckRunVimInTerminal
 
@@ -180,7 +351,7 @@ func Test_terminal_in_popup_min_size()
 endfunc
 
 " Check a terminal in popup window with different colors
-func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
+func Terminal_in_popup_color(group_name, highlight_cmds, highlight_opt, popup_cmds, popup_opt)
   CheckRunVimInTerminal
   CheckUnix
 
@@ -189,10 +360,11 @@ func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
 	\ 'func OpenTerm()',
 	\ "  let s:buf = term_start('cat', #{hidden: 1, "
 	\ .. a:highlight_opt .. "})",
-	\ '  let g:winid = popup_create(s:buf, #{ border: []})',
+	\ '  let g:winid = popup_create(s:buf, #{border: [], '
+  \ .. a:popup_opt .. '})',
+  \ ] + a:popup_cmds + [
 	\ 'endfunc',
-	\ a:highlight_cmd,
-	\ ]
+	\ ] + a:highlight_cmds
   call writefile(lines, 'XtermPopup')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call TermWait(buf, 100)
@@ -210,12 +382,140 @@ func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
   call delete('XtermPopup')
 endfunc
 
-func Test_terminal_in_popup_colored_Terminal()
-  call Terminal_in_popup_colored("Terminal", "highlight Terminal ctermfg=blue ctermbg=yellow", "")
+func Test_terminal_in_popup_color_Terminal()
+  call Terminal_in_popup_color("Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ ], "", [], "")
 endfunc
 
-func Test_terminal_in_popup_colored_group()
-  call Terminal_in_popup_colored("MyTermCol", "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue", "term_highlight: 'MyTermCol',")
+func Test_terminal_in_popup_color_group()
+  call Terminal_in_popup_color("MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_wincolor()
+  call Terminal_in_popup_color("MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_color_popup_highlight()
+  call Terminal_in_popup_color("MyPopupHlCol", [
+  \ "highlight MyPopupHlCol ctermfg=cyan ctermbg=green",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
+endfunc
+
+func Test_terminal_in_popup_color_group_over_Terminal()
+  call Terminal_in_popup_color("MyTermCol_over_Terminal", [
+  \ "highlight Terminal ctermfg=blue ctermbg=yellow",
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_wincolor_over_group()
+  call Terminal_in_popup_color("MyWinCol_over_group", [
+  \ "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue",
+  \ "highlight MyWinCol ctermfg=red ctermbg=darkyellow",
+  \ ], "term_highlight: 'MyTermCol',", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_color_transp_Terminal()
+  call Terminal_in_popup_color("transp_Terminal", [
+  \ "highlight Terminal ctermfg=blue",
+  \ ], "", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_transp_group()
+  call Terminal_in_popup_color("transp_MyTermCol", [
+  \ "highlight MyTermCol ctermfg=darkgreen",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_transp_wincolor()
+  call Terminal_in_popup_color("transp_MyWinCol", [
+  \ "highlight MyWinCol ctermfg=red",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_color_transp_popup_highlight()
+  call Terminal_in_popup_color("transp_MyPopupHlCol", [
+  \ "highlight MyPopupHlCol ctermfg=cyan",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
+endfunc
+
+func Test_terminal_in_popup_color_gui_Terminal()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff guibg=#b0a700",
+  \ ], "", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_gui_group()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800 guibg=#6789ff",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_gui_wincolor()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122 guibg=#818100",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_color_gui_popup_highlight()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_MyPopupHlCol", [
+  \ "set termguicolors",
+  \ "highlight MyPopupHlCol guifg=#00e8f0 guibg=#126521",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
+endfunc
+
+func Test_terminal_in_popup_color_gui_transp_Terminal()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_transp_Terminal", [
+  \ "set termguicolors",
+  \ "highlight Terminal guifg=#3344ff",
+  \ ], "", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_gui_transp_group()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_transp_MyTermCol", [
+  \ "set termguicolors",
+  \ "highlight MyTermCol guifg=#007800",
+  \ ], "term_highlight: 'MyTermCol',", [], "")
+endfunc
+
+func Test_terminal_in_popup_color_gui_transp_wincolor()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_transp_MyWinCol", [
+  \ "set termguicolors",
+  \ "highlight MyWinCol guifg=#fe1122",
+  \ ], "", [
+  \ 'call setwinvar(g:winid, "&wincolor", "MyWinCol")',
+  \ ], "")
+endfunc
+
+func Test_terminal_in_popup_color_gui_transp_popup_highlight()
+  CheckFeature termguicolors
+  call Terminal_in_popup_color("gui_transp_MyPopupHlCol", [
+  \ "set termguicolors",
+  \ "highlight MyPopupHlCol guifg=#00e8f0",
+  \ ], "", [], "highlight: 'MyPopupHlCol'")
 endfunc
 
 func Test_double_popup_terminal()
@@ -301,6 +601,11 @@ func Test_term_func_invalid_arg()
     call assert_fails('let p = term_getansicolors([])', 'E745:')
     call assert_fails('call term_setansicolors([], [])', 'E745:')
   endif
+  let buf = term_start('echo')
+  call assert_fails('call term_setapi(' .. buf .. ', {})', 'E731:')
+  call assert_fails('call term_setkill(' .. buf .. ', {})', 'E731:')
+  call assert_fails('call term_setrestore(' .. buf .. ', {})', 'E731:')
+  exe buf . "bwipe!"
 endfunc
 
 " Test for sending various special keycodes to a terminal
@@ -309,6 +614,7 @@ func Test_term_keycode_translation()
 
   let buf = RunVimInTerminal('', {})
   call term_sendkeys(buf, ":set nocompatible\<CR>")
+  call term_sendkeys(buf, ":set timeoutlen=20\<CR>")
 
   let keys = ["\<F1>", "\<F2>", "\<F3>", "\<F4>", "\<F5>", "\<F6>", "\<F7>",
         \ "\<F8>", "\<F9>", "\<F10>", "\<F11>", "\<F12>", "\<Home>",
@@ -325,7 +631,7 @@ func Test_term_keycode_translation()
   call term_sendkeys(buf, "i")
   for i in range(len(keys))
     call term_sendkeys(buf, "\<C-U>\<C-K>" .. keys[i])
-    call WaitForAssert({-> assert_equal(output[i], term_getline(buf, 1))})
+    call WaitForAssert({-> assert_equal(output[i], term_getline(buf, 1))}, 200)
   endfor
 
   let keypad_keys = ["\<k0>", "\<k1>", "\<k2>", "\<k3>", "\<k4>", "\<k5>",
@@ -340,7 +646,7 @@ func Test_term_keycode_translation()
       continue
     endif
     call term_sendkeys(buf, "\<C-U>" .. keypad_keys[i])
-    call WaitForAssert({-> assert_equal(keypad_output[i], term_getline(buf, 1))})
+    call WaitForAssert({-> assert_equal(keypad_output[i], term_getline(buf, 1))}, 100)
   endfor
 
   call feedkeys("\<C-U>\<kEnter>\<BS>one\<C-W>.two", 'xt')
@@ -405,7 +711,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call assert_equal('yellow', readfile('Xbuf')[0])
 
-  " Test for selecting text using doubleclick
+  " Test for selecting text using double click
   call delete('Xbuf')
   call test_setmouse(1, 11)
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>")
@@ -425,7 +731,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call assert_equal("vim emacs sublime nano\n", readfile('Xbuf')[0])
 
-  " Test for selecting a block using qudraple click
+  " Test for selecting a block using quadruple click
   call delete('Xbuf')
   call test_setmouse(1, 11)
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>")
@@ -467,6 +773,37 @@ func Test_term_mouse()
   set mousetime&
   call delete('Xtest_mouse')
   call delete('Xbuf')
+endfunc
+
+" Test for sync buffer cwd with shell's pwd
+func Test_terminal_sync_shell_dir()
+  CheckUnix
+  " The test always use sh (see src/testdir/unix.vim).
+  " BSD's sh doesn't seem to play well with the OSC 7 escape sequence.
+  CheckNotBSD
+
+  set asd
+  " , is
+  "  1. a valid character for directory names
+  "  2. a reserved character in url-encoding
+  let chars = ",a"
+  " "," is url-encoded as '%2C'
+  let chars_url = "%2Ca"
+  let tmpfolder = fnamemodify(tempname(),':h') .. '/' .. chars
+  let tmpfolder_url = fnamemodify(tempname(),':h') .. '/' .. chars_url
+  call mkdir(tmpfolder, "p")
+  let buf = Run_shell_in_terminal({})
+  call term_sendkeys(buf, "echo $'\\e\]7;file://" .. tmpfolder_url .. "\\a'\<CR>")
+  "call term_sendkeys(buf, "cd " .. tmpfolder .. "\<CR>")
+  call TermWait(buf)
+  if has("mac")
+    let expected = "/private" .. tmpfolder
+  else
+    let expected = tmpfolder
+  endif
+  call assert_equal(expected, getcwd(winnr()))
+
+  set noasd
 endfunc
 
 " Test for modeless selection in a terminal
@@ -560,9 +897,28 @@ func Test_terminal_getwinpos()
   call TermWait(buf)
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
-  exe buf . 'bwipe!'
   set splitright&
   only!
+endfunc
+
+func Test_terminal_term_start_error()
+  func s:term_start_error() abort
+    try
+      return term_start([[]])
+    catch
+      return v:exception
+    finally
+      "
+    endtry
+  endfunc
+  autocmd WinEnter * call type(0)
+
+  " Must not crash in s:term_start_error, nor the exception thrown.
+  let result = s:term_start_error()
+  call assert_match('^Vim(return):E730:', result)
+
+  autocmd! WinEnter
+  delfunc s:term_start_error
 endfunc
 
 

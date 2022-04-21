@@ -944,8 +944,8 @@
   създадете файл, наречен "vimrc".
 
   1. Създайте вашия файл "vimrc". В зависимост от вашата операционна система:
-	:e ~/.vimrc		за всеки вид Unix
-	:e $VIM/_vimrc	за MS-Windows
+	:e ~/.vimrc	за всеки вид Unix
+	:e ~/_vimrc	за MS-Windows
 
   2. Сега прочетете съдържанието на примерния файл "vimrc":
 	:r $VIMRUNTIME/vimrc_example.vim
@@ -1017,7 +1017,7 @@
 	Издател: New Riders
   Това е първата книга, изцяло посветена на Vim. Особено полезна е за
   начинаещи. В нея ще намерите много примери и картинки.
-  Вижте http://iccf-holland.org/click5.html
+  Вижте https://iccf-holland.org/click5.html
 
   Следната книга е по-стара и по-скоро за Vi отколкото за Vim, но също се препоръчва:
 	Learning the Vi Editor - от Linda Lamb

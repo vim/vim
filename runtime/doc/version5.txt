@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 8.2.  Last change: 2020 Sep 02
+*version5.txt*  For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -405,7 +405,7 @@ Both of these are only available when enabled at compile time.
 Win32 GUI version					*added-win32-GUI*
 -----------------
 
-The GUI has been ported to MS Windows 95 and NT.  All the features of the X11
+The GUI has been ported to MS-Windows 95 and NT.  All the features of the X11
 GUI are available to Windows users now.  |gui-w32|
 This also fixes problems with running the Win32 console version under Windows
 95, where console support has always been bad.
@@ -805,7 +805,7 @@ Using "~" for $HOME now works for all systems.  |$HOME|
 Unix: Besides using CTRL-C, also use the INTR character from the tty settings.
 Somebody has INTR set to DEL.
 
-Allow a <LF> in a ":help" command argument to end the help command, so another
+Allow a <NL> in a ":help" command argument to end the help command, so another
 command can follow.
 
 Doing "%" on a line that starts with "   #if" didn't jump to matching "#else".
@@ -2494,7 +2494,7 @@ regexp character classes (for fast syntax highlight matching):
 
 ":set" now accepts "+=", |^=" and "-=": add or remove parts of a string
 option, add or subtract a number from a number option.  A comma is
-automagically inserted or deleted for options that are a comma separated list.
+automagically inserted or deleted for options that are a comma-separated list.
 
 Filetype feature, for autocommands.  Uses a file type instead of a pattern to
 match a file.  Currently only used for RISC OS.  (Leonard)
@@ -4403,7 +4403,7 @@ the last char of the line, "<<" moved an extra line.  Also for other operators
 that always work on lines.
 
 link.sh changed "-lnsl_s" to "_s" when looking for "nsl" to be removed.
-Now it only remove whole words.
+Now it only removes whole words.
 
 When jumped to a mark or using "fz", and there is an error, the current column
 was lost.  E.g. when using "$fzj".

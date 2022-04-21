@@ -90,6 +90,9 @@ func Test_paste_ex_mode()
   unlet! foo
   call feedkeys("Qlet foo=\"\<Esc>[200~foo\<CR>bar\<Esc>[201~\"\<CR>vi\<CR>", 'xt')
   call assert_equal("foo\rbar", foo)
+
+  " pasting more than 40 bytes
+  exe "norm Q\<PasteStart>0000000000000000000000000000000000000000000000000000000000000000000000\<C-C>"
 endfunc
 
 func Test_paste_onechar()
@@ -106,23 +109,69 @@ func Test_paste_visual_mode()
   call feedkeys("0fsve\<Esc>[200~more\<Esc>[201~", 'xt')
   call assert_equal('here are more words', getline(1))
   call assert_equal('some', getreg('-'))
+  normal! u
+  call assert_equal('here are some words', getline(1))
+  exe "normal! \<C-R>"
+  call assert_equal('here are more words', getline(1))
 
   " include last char in the line
   call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
   call assert_equal('here are more noises', getline(1))
   call assert_equal('words', getreg('-'))
+  normal! u
+  call assert_equal('here are more words', getline(1))
+  exe "normal! \<C-R>"
+  call assert_equal('here are more noises', getline(1))
 
   " exclude last char in the line
   call setline(1, 'some words!')
   call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
   call assert_equal('some noises!', getline(1))
   call assert_equal('words', getreg('-'))
+  normal! u
+  call assert_equal('some words!', getline(1))
+  exe "normal! \<C-R>"
+  call assert_equal('some noises!', getline(1))
 
   " multi-line selection
   call setline(1, ['some words', 'and more'])
   call feedkeys("0fwvj0fd\<Esc>[200~letters\<Esc>[201~", 'xt')
   call assert_equal('some letters more', getline(1))
   call assert_equal("words\nand", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal('some letters more', getline(1))
+
+  " linewise non-last line, cursor at start of line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("0V\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal('lettersand more', getline(1))
+  call assert_equal("some words\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal('lettersand more', getline(1))
+
+  " linewise non-last line, cursor in the middle of line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("0fwV\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal('lettersand more', getline(1))
+  call assert_equal("some words\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal('lettersand more', getline(1))
+
+  " linewise last line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("j0V\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal(['some words', 'letters'], getline(1, 2))
+  call assert_equal("and more\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal(['some words', 'letters'], getline(1, 2))
 
   bwipe!
 endfunc
@@ -136,6 +185,8 @@ endfunc
 
 func Test_xrestore()
   CheckFeature xterm_clipboard
+  let g:test_is_flaky = 1
+
   let display = $DISPLAY
   new
   call CheckCopyPaste()
@@ -147,6 +198,80 @@ func Test_xrestore()
   call CheckCopyPaste()
 
   bwipe!
+endfunc
+
+" Test for 'pastetoggle'
+func Test_pastetoggle()
+  new
+  set pastetoggle=<F4>
+  set nopaste
+  call feedkeys("iHello\<F4>", 'xt')
+  call assert_true(&paste)
+  call feedkeys("i\<F4>", 'xt')
+  call assert_false(&paste)
+  call assert_equal('Hello', getline(1))
+  " command-line completion for 'pastetoggle' value
+  call feedkeys(":set pastetoggle=\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set pastetoggle=<F4>', @:)
+  set pastetoggle&
+  bwipe!
+endfunc
+
+" Test for restoring option values when 'paste' is disabled
+func Test_paste_opt_restore()
+  set autoindent expandtab ruler showmatch
+  if has('rightleft')
+    set revins hkmap
+  endif
+  set smarttab softtabstop=3 textwidth=27 wrapmargin=12
+  if has('vartabs')
+    set varsofttabstop=10,20
+  endif
+
+  " enabling 'paste' should reset the above options
+  set paste
+  call assert_false(&autoindent)
+  call assert_false(&expandtab)
+  if has('rightleft')
+    call assert_false(&revins)
+    call assert_false(&hkmap)
+  endif
+  call assert_false(&ruler)
+  call assert_false(&showmatch)
+  call assert_false(&smarttab)
+  call assert_equal(0, &softtabstop)
+  call assert_equal(0, &textwidth)
+  call assert_equal(0, &wrapmargin)
+  if has('vartabs')
+    call assert_equal('', &varsofttabstop)
+  endif
+
+  " disabling 'paste' should restore the option values
+  set nopaste
+  call assert_true(&autoindent)
+  call assert_true(&expandtab)
+  if has('rightleft')
+    call assert_true(&revins)
+    call assert_true(&hkmap)
+  endif
+  call assert_true(&ruler)
+  call assert_true(&showmatch)
+  call assert_true(&smarttab)
+  call assert_equal(3, &softtabstop)
+  call assert_equal(27, &textwidth)
+  call assert_equal(12, &wrapmargin)
+  if has('vartabs')
+    call assert_equal('10,20', &varsofttabstop)
+  endif
+
+  set autoindent& expandtab& ruler& showmatch&
+  if has('rightleft')
+    set revins& hkmap&
+  endif
+  set smarttab& softtabstop& textwidth& wrapmargin&
+  if has('vartabs')
+    set varsofttabstop&
+  endif
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

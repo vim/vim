@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
+*vi_diff.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -73,7 +73,7 @@ edit the termcap entry and try again.  Vim has the |terminal-options|.
 Vim has only a few limits for the files that can be edited {Vi: can not handle
 <Nul> characters and characters above 128, has limited line length, many other
 limits}.
-							*E340*
+
 Maximum line length	   2147483647 characters.  Longer lines are split.
 Maximum number of lines	   2147483647 lines.
 Maximum file size	   2147483647 bytes (2 Gbyte) when a long integer is
@@ -160,8 +160,8 @@ Graphical User Interface (GUI).				|gui|
 	Included support for GUI: menu's, mouse, scrollbars, etc.  You can
 	define your own menus.  Better support for CTRL/SHIFT/ALT keys in
 	combination with special keys and mouse.  Supported for various
-	platforms, such as X11 (with Motif and Athena interfaces), GTK, Win32
-	(Windows XP and later), Amiga and Macintosh.
+	platforms, such as X11 with Motif, GTK, Win32 (Windows XP and later),
+	Amiga and Macintosh.
 
 Multiple windows and buffers.				|windows.txt|
 	Vim can split the screen into several windows, each editing a

@@ -1,64 +1,83 @@
-INSTALLmac.txt - Installation of Vim on Macintosh
+INSTALLmac.txt - Installation of Vim on Apple MacOS
 
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-First, make sure you've installed Xcode or CommandLineToots.  If not, open a
-terminal and do
+MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
+Only '/' is supported as path separator.
+
+
+----------------------------------------------------------------------------
+Prerequisites
+----------------------------------------------------------------------------
+
+Make sure you've installed Xcode and CommandLineTools.  You can download Xcode
+from the Mac App Store, for free.
+
+To check for CommandLineTools open a terminal and do:
 
 	$ make --version
 
-A window pops up instructing you to install the developer tools.
+If not installed yet a window pops up instructing you to install the developer
+tools.
+
+If you don't have the source yet, best is to use git (which you need to
+install first), see http://www.vim.org/git.php
+Or you can download and unpack the Unix tar archive, see
+   http://www.vim.org/download.php
 
 
 ----------------------------------------------------------------------------
-Summary
+Build and install the terminal version.
 ----------------------------------------------------------------------------
 
-1 MacOS X
- 1.1. Terminal version
- 1.2. X (Athena, GTK, Motif) or plain text.
-
-MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
-
-----------------------------------------------------------------------------
-1 MacOS X
-----------------------------------------------------------------------------
-
-1.0 Considerations
-
- Only '/' is supported as path separator.
-
-1.1 Terminal version (default)
-
- You can compile vim with the standard Unix routine:
-   cd .../src
+You can compile vim with the standard Unix routine:
+   cd vim/src
    make
    make test
    sudo make install
 
- You need at least Xcode 1.5.
+If you get an error "glibtool: command not found" search on stackoverflow for
+mac-osx-where-can-i-download-glibtool.
 
- To overrule the architecture do this before running make:
+With Homebrew, run:
 
-	./configure --with-mac-arch=intel
- or
-	./configure --with-mac-arch=ppc
+      brew install libtool
+
+To build libtool from source:
+
+    1. Download the source code from https://www.gnu.org/software/libtool/.
+
+    2. Run these commands from the root of the source code directory:
+
+           ./configure --program-prefix=g
+           make
+           sudo make install
 
 
-1.2 X-Windows
+----------------------------------------------------------------------------
+Build and install the GUI version with X-Windows
+----------------------------------------------------------------------------
 
- You must explicitly tell configure to use a GUI.
+First, install XQuartz, which you can download from https://www.xquartz.org.
 
-  cd .../src
-  ./configure --disable-darwin --enable-gui=gtk2
-  make; make install
+To tell configure to use a GUI you can edit the Makefile and uncomment these
+two lines (remove the # at the start of the line):
 
- NOTE: The following GUI options are possible (but might not work):
-	no (for terminal only), motif, athena, nextaw
-	gtk, gtk2, gnome, gnome2,
+    CONF_OPT_GUI = --enable-gui=athena
+    CONF_OPT_DARWIN = --disable-darwin
 
- NOTE: You need to first install XFree86 and XDarwin.
-       Please visit http://www.XDarwin.org
+Do "make distclean" to start with a clean slate.
+Then build as with the terminal version above.
+Instead of "athena" you can try "gtk2" but you probably need to install GTK
+first.
 
-------------------------------------------------------
+
+----------------------------------------------------------------------------
+Notes
+----------------------------------------------------------------------------
+
+Mac-specific configure options are explained in the Makefile:
+	--disable-darwin
+	--with-mac-arch
+

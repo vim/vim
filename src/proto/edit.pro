@@ -2,7 +2,6 @@
 int edit(int cmdchar, int startln, long count);
 int ins_need_undo_get(void);
 void ins_redraw(int ready);
-int decodeModifyOtherKeys(int c);
 void edit_putchar(int c, int highlight);
 void set_insstart(linenr_T lnum, int col);
 void edit_unputchar(void);
@@ -10,7 +9,7 @@ void display_dollar(colnr_T col);
 void undisplay_dollar(void);
 void truncate_spaces(char_u *line);
 void backspace_until_column(int col);
-int get_literal(void);
+int get_literal(int noReduceKeys);
 void insertchar(int c, int flags, int second_indent);
 void start_arrow(pos_T *end_insert_pos);
 int stop_arrow(void);

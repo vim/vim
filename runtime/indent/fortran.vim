@@ -1,13 +1,13 @@
 " Vim indent file
 " Language:	Fortran 2008 (and older: Fortran 2003, 95, 90, and 77)
-" Version:	47
-" Last Change:	2020 Apr 20
-" Patched By:	Eisuke Kawashima
+" Version:	(v48) 2020 October 07
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www2.unb.ca/~ajit/>
 " Usage:	For instructions, do :help fortran-indent from Vim
 " Credits:
-"  Useful suggestions were made, in chronological order, by:
-"  Albert Oliver Serra, Takuya Fujiwara and Philipp Edelmann.
+"  Version 0.1 was created in September 2000 by Ajit Thakkar.
+"  Since then, useful suggestions and contributions have been made, in order, by:
+"  Albert Oliver Serra, Takuya Fujiwara, Philipp Edelmann, Eisuke Kawashima,
+"  and Louis Cochen.
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -74,11 +74,15 @@ endif
 if (b:fortran_fixed_source == 1)
   setlocal indentexpr=FortranGetFixedIndent()
   if exists("*FortranGetFixedIndent")
+    let &cpoptions = s:cposet
+    unlet s:cposet
     finish
   endif
 else
   setlocal indentexpr=FortranGetFreeIndent()
   if exists("*FortranGetFreeIndent")
+    let &cpoptions = s:cposet
+    unlet s:cposet
     finish
   endif
 endif
@@ -146,7 +150,7 @@ function FortranGetIndent(lnum)
         \. 'type\|forall\|associate\|enum\|block\)\)\>'
     let ind = ind - shiftwidth()
     " Fix indent for case statement immediately after select
-    if prevstat =~? '\<select\s\+\(case\|type\)\>'
+    if prevstat =~? '\<select\s*\(case\|type\)\>'
       let ind = ind + shiftwidth()
     endif
   endif
@@ -213,7 +217,7 @@ function FortranGetFixedIndent()
   return ind
 endfunction
 
-let &cpoptions=s:cposet
+let &cpoptions = s:cposet
 unlet s:cposet
 
 " vim:sw=2 tw=130

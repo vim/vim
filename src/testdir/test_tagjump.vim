@@ -184,6 +184,10 @@ function Test_keyword_jump()
   call search("start")
   exe "normal! 5\<C-W>\<C-I>"
   call assert_equal("		start OK if found this line", getline('.'))
+
+  " invalid tag search pattern
+  call assert_fails('tag /\%(/', 'E426:')
+
   enew! | only
   call delete('Xtestfile')
   call delete('Xinclude')
@@ -226,7 +230,6 @@ func Test_tag_symbolic()
 endfunc
 
 " Tests for tag search with !_TAG_FILE_ENCODING.
-" Depends on the test83-tags2 and test83-tags3 files.
 func Test_tag_file_encoding()
   if has('vms')
     throw 'Skipped: does not work on VMS'
@@ -258,18 +261,31 @@ func Test_tag_file_encoding()
 
   " case2:
   new
-  set tags=test83-tags2
+  let content = ['!_TAG_FILE_ENCODING	cp932	//',
+        \ "\x82`\x82a\x82b	Xtags2.txt	/\x82`\x82a\x82b"]
+  call writefile(content, 'Xtags')
+  set tags=Xtags
   tag /.ＢＣ
   call assert_equal('Xtags2.txt', expand('%:t'))
   call assert_equal('ＡＢＣ', getline('.'))
+  call delete('Xtags')
   close
 
   " case3:
   new
-  set tags=test83-tags3
+  let contents = [
+      \ "!_TAG_FILE_SORTED	1	//",
+      \ "!_TAG_FILE_ENCODING	cp932	//"]
+  for i in range(1, 100)
+      call add(contents, 'abc' .. i
+            \ .. "	Xtags3.txt	/\x82`\x82a\x82b")
+  endfor
+  call writefile(contents, 'Xtags')
+  set tags=Xtags
   tag abc50
   call assert_equal('Xtags3.txt', expand('%:t'))
   call assert_equal('ＡＢＣ', getline('.'))
+  call delete('Xtags')
   close
 
   set tags&
@@ -320,6 +336,7 @@ func Test_tagjump_etags()
         \ ], 'Xtags2')
   tag main
   call assert_equal(2, line('.'))
+  call assert_fails('tag bar', 'E426:')
 
   " corrupted tag line
   call writefile([
@@ -343,6 +360,27 @@ func Test_tagjump_etags()
         \ "Xmain.c,64",
         \ ";;;;\x7f1,0",
 	\ ], 'Xtags')
+  call assert_fails('tag foo', 'E431:')
+
+  " end of file after a CTRL-L line
+  call writefile([
+	\ "\x0c",
+        \ "Xmain.c,64",
+        \ "void foo() {}\x7ffoo\x011,0",
+	\ "\x0c",
+	\ ], 'Xtags')
+  call assert_fails('tag main', 'E426:')
+
+  " error in an included tags file
+  call writefile([
+        \ "\x0c",
+        \ "Xtags2,include"
+        \ ], 'Xtags')
+  call writefile([
+        \ "\x0c",
+        \ "Xmain.c,64",
+        \ "void foo() {}",
+        \ ], 'Xtags2')
   call assert_fails('tag foo', 'E431:')
 
   call delete('Xtags')
@@ -602,6 +640,16 @@ func Test_tag_line_toolong()
   call assert_equal('Xsomewhere', expand('%'))
   call assert_equal(3, getcurpos()[1])
 
+  " expansion on command line works with long lines when &wildoptions contains
+  " 'tagfile'
+  set wildoptions=tagfile
+  call writefile([
+	\ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa	file	/^pattern$/;"	f'
+	\ ], 'Xtags')
+  call feedkeys(":tag \<Tab>", 'tx')
+  " Should not crash
+  call assert_true(v:true)
+
   call delete('Xtags')
   call delete('Xsomewhere')
   set tags&
@@ -763,11 +811,11 @@ endfunc
 
 " Test for an unsorted tags file
 func Test_tag_sort()
-  call writefile([
+  let l = [
         \ "first\tXfoo\t1",
         \ "ten\tXfoo\t3",
-        \ "six\tXfoo\t2"],
-        \ 'Xtags')
+        \ "six\tXfoo\t2"]
+  call writefile(l, 'Xtags')
   set tags=Xtags
   let code =<< trim [CODE]
     int first() {}
@@ -778,7 +826,14 @@ func Test_tag_sort()
 
   call assert_fails('tag first', 'E432:')
 
+  " When multiple tag files are not sorted, then message should be displayed
+  " multiple times
+  call writefile(l, 'Xtags2')
+  set tags=Xtags,Xtags2
+  call assert_fails('tag first', ['E432:', 'E432:'])
+
   call delete('Xtags')
+  call delete('Xtags2')
   call delete('Xfoo')
   set tags&
   %bwipe
@@ -833,15 +888,16 @@ func Test_ltag()
   ltag third
   call assert_equal('Xfoo', bufname(''))
   call assert_equal(3, line('.'))
-  call assert_equal([{'lnum': 3, 'bufnr': bufnr('Xfoo'), 'col': 0,
-        \ 'pattern': '', 'valid': 1, 'vcol': 0, 'nr': 0, 'type': '',
-        \ 'module': '', 'text': 'third'}], getloclist(0))
+  call assert_equal([{'lnum': 3, 'end_lnum': 0, 'bufnr': bufnr('Xfoo'),
+        \ 'col': 0, 'end_col': 0, 'pattern': '', 'valid': 1, 'vcol': 0,
+        \ 'nr': 0, 'type': '', 'module': '', 'text': 'third'}], getloclist(0))
 
   ltag second
   call assert_equal(2, line('.'))
-  call assert_equal([{'lnum': 0, 'bufnr': bufnr('Xfoo'), 'col': 0,
-        \ 'pattern': '^\Vint second() {}\$', 'valid': 1, 'vcol': 0, 'nr': 0,
-        \ 'type': '', 'module': '', 'text': 'second'}], getloclist(0))
+  call assert_equal([{'lnum': 0, 'end_lnum': 0, 'bufnr': bufnr('Xfoo'),
+        \ 'col': 0, 'end_col': 0, 'pattern': '^\Vint second() {}\$',
+        \ 'valid': 1, 'vcol': 0, 'nr': 0, 'type': '', 'module': '',
+        \ 'text': 'second'}], getloclist(0))
 
   call delete('Xtags')
   call delete('Xfoo')
@@ -1129,7 +1185,7 @@ endfunc
 " Test for [i, ]i, [I, ]I, [ CTRL-I, ] CTRL-I and CTRL-W i commands
 func Test_inc_search()
   new
-  call setline(1, ['1:foo', '2:foo', 'foo', '3:foo', '4:foo'])
+  call setline(1, ['1:foo', '2:foo', 'foo', '3:foo', '4:foo', '==='])
   call cursor(3, 1)
 
   " Test for [i and ]i
@@ -1139,6 +1195,9 @@ func Test_inc_search()
   call assert_equal('3:foo', execute('normal ]i'))
   call assert_equal('4:foo', execute('normal 2]i'))
   call assert_fails('normal 3]i', 'E389:')
+  call assert_fails('normal G]i', 'E349:')
+  call assert_fails('normal [i', 'E349:')
+  call cursor(3, 1)
 
   " Test for :isearch
   call assert_equal('1:foo', execute('isearch foo'))
@@ -1159,6 +1218,9 @@ func Test_inc_search()
   call assert_equal([
         \ '  1:    4 3:foo',
         \ '  2:    5 4:foo'], split(execute('normal ]I'), "\n"))
+  call assert_fails('normal G]I', 'E349:')
+  call assert_fails('normal [I', 'E349:')
+  call cursor(3, 1)
 
   " Test for :ilist
   call assert_equal([
@@ -1184,6 +1246,9 @@ func Test_inc_search()
   exe "normal k2]\t"
   call assert_equal([5, 3], [line('.'), col('.')])
   call assert_fails("normal 2k3]\t", 'E389:')
+  call assert_fails("normal G[\t", 'E349:')
+  call assert_fails("normal ]\t", 'E349:')
+  call cursor(3, 1)
 
   " Test for :ijump
   call cursor(3, 1)
@@ -1208,6 +1273,8 @@ func Test_inc_search()
   close
   call assert_fails('3wincmd i', 'E387:')
   call assert_fails('6wincmd i', 'E389:')
+  call assert_fails("normal G\<C-W>i", 'E349:')
+  call cursor(3, 1)
 
   " Test for :isplit
   isplit foo
@@ -1401,6 +1468,16 @@ func Test_tagfile_errors()
   endtry
   call assert_equal(v:true, caught_431)
 
+  " tag name and file name are not separated by a tab
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "foo Xfile 1"], 'Xtags')
+  call assert_fails('tag foo', 'E431:')
+
+  " file name and search pattern are not separated by a tab
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "foo\tXfile 1;"], 'Xtags')
+  call assert_fails('tag foo', 'E431:')
+
   call delete('Xtags')
   call delete('Xfile')
   set tags&
@@ -1431,6 +1508,88 @@ func Test_stag_close_window_on_error()
   call delete('Xfile')
   call delete('.Xfile.swp')
   set tags&
+endfunc
+
+" Test for 'tagbsearch' (binary search)
+func Test_tagbsearch()
+  " If a tags file header says the tags are sorted, but the tags are actually
+  " unsorted, then binary search should fail and linear search should work.
+  call writefile([
+        \ "!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "!_TAG_FILE_SORTED\t1\t/0=unsorted, 1=sorted, 2=foldcase/",
+        \ "third\tXfoo\t3",
+        \ "second\tXfoo\t2",
+        \ "first\tXfoo\t1"],
+        \ 'Xtags')
+  set tags=Xtags
+  let code =<< trim [CODE]
+    int first() {}
+    int second() {}
+    int third() {}
+  [CODE]
+  call writefile(code, 'Xfoo')
+
+  enew
+  set tagbsearch
+  call assert_fails('tag first', 'E426:')
+  call assert_equal('', bufname())
+  call assert_fails('tag second', 'E426:')
+  call assert_equal('', bufname())
+  tag third
+  call assert_equal('Xfoo', bufname())
+  call assert_equal(3, line('.'))
+  %bw!
+
+  set notagbsearch
+  tag first
+  call assert_equal('Xfoo', bufname())
+  call assert_equal(1, line('.'))
+  enew
+  tag second
+  call assert_equal('Xfoo', bufname())
+  call assert_equal(2, line('.'))
+  enew
+  tag third
+  call assert_equal('Xfoo', bufname())
+  call assert_equal(3, line('.'))
+  %bw!
+
+  " If a tags file header says the tags are unsorted, but the tags are
+  " actually sorted, then binary search should work.
+  call writefile([
+        \ "!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "!_TAG_FILE_SORTED\t0\t/0=unsorted, 1=sorted, 2=foldcase/",
+        \ "first\tXfoo\t1",
+        \ "second\tXfoo\t2",
+        \ "third\tXfoo\t3"],
+        \ 'Xtags')
+
+  set tagbsearch
+  tag first
+  call assert_equal('Xfoo', bufname())
+  call assert_equal(1, line('.'))
+  enew
+  tag second
+  call assert_equal('Xfoo', bufname())
+  call assert_equal(2, line('.'))
+  enew
+  tag third
+  call assert_equal('Xfoo', bufname())
+  call assert_equal(3, line('.'))
+  %bw!
+
+  " Binary search fails on EOF
+  call writefile([
+        \ "!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "!_TAG_FILE_SORTED\t1\t/0=unsorted, 1=sorted, 2=foldcase/",
+        \ "bar\tXfoo\t1",
+        \ "foo\tXfoo\t2"],
+        \ 'Xtags')
+  call assert_fails('tag bbb', 'E426:')
+
+  call delete('Xtags')
+  call delete('Xfoo')
+  set tags& tagbsearch&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

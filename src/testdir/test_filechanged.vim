@@ -91,6 +91,101 @@ func Test_FileChangedShell_reload()
   call delete('Xchanged_r')
 endfunc
 
+func Test_FileChangedShell_edit()
+  CheckUnix
+
+  new Xchanged_r
+  call setline(1, 'reload this')
+  set fileformat=unix
+  write
+
+  " File format changed, reload (content only, no 'ff' etc)
+  augroup testreload
+    au!
+    au FileChangedShell Xchanged_r let g:reason = v:fcs_reason | let v:fcs_choice = 'reload'
+  augroup END
+  call assert_equal(&fileformat, 'unix')
+  call writefile(["line1\r", "line2\r"], 'Xchanged_r')
+  let g:reason = ''
+  checktime
+  call assert_equal('changed', g:reason)
+  call assert_equal(&fileformat, 'unix')
+  call assert_equal("line1\r", getline(1))
+  call assert_equal("line2\r", getline(2))
+  %s/\r
+  write
+
+  " File format changed, reload with 'ff', etc
+  augroup testreload
+    au!
+    au FileChangedShell Xchanged_r let g:reason = v:fcs_reason | let v:fcs_choice = 'edit'
+  augroup END
+  call assert_equal(&fileformat, 'unix')
+  call writefile(["line1\r", "line2\r"], 'Xchanged_r')
+  let g:reason = ''
+  checktime
+  call assert_equal('changed', g:reason)
+  call assert_equal(&fileformat, 'dos')
+  call assert_equal('line1', getline(1))
+  call assert_equal('line2', getline(2))
+  set fileformat=unix
+  write
+
+  au! testreload
+  bwipe!
+  call delete(undofile('Xchanged_r'))
+  call delete('Xchanged_r')
+endfunc
+
+func Test_FileChangedShell_edit_dialog()
+  CheckNotGui
+  CheckUnix  " Using low level feedkeys() does not work on MS-Windows.
+
+  new Xchanged_r
+  call setline(1, 'reload this')
+  set fileformat=unix
+  write
+
+  " File format changed, reload (content only) via prompt
+  augroup testreload
+    au!
+    au FileChangedShell Xchanged_r let g:reason = v:fcs_reason | let v:fcs_choice = 'ask'
+  augroup END
+  call assert_equal(&fileformat, 'unix')
+  call writefile(["line1\r", "line2\r"], 'Xchanged_r')
+  let g:reason = ''
+  call feedkeys('L', 'L') " load file content only
+  checktime
+  call assert_equal('changed', g:reason)
+  call assert_equal(&fileformat, 'unix')
+  call assert_equal("line1\r", getline(1))
+  call assert_equal("line2\r", getline(2))
+  %s/\r
+  write
+
+  " File format changed, reload (file and options) via prompt
+  augroup testreload
+    au!
+    au FileChangedShell Xchanged_r let g:reason = v:fcs_reason | let v:fcs_choice = 'ask'
+  augroup END
+  call assert_equal(&fileformat, 'unix')
+  call writefile(["line1\r", "line2\r"], 'Xchanged_r')
+  let g:reason = ''
+  call feedkeys('a', 'L') " load file content and options
+  checktime
+  call assert_equal('changed', g:reason)
+  call assert_equal(&fileformat, 'dos')
+  call assert_equal("line1", getline(1))
+  call assert_equal("line2", getline(2))
+  set fileformat=unix
+  write
+
+  au! testreload
+  bwipe!
+  call delete(undofile('Xchanged_r'))
+  call delete('Xchanged_r')
+endfunc
+
 func Test_file_changed_dialog()
   CheckUnix
   CheckNotGui

@@ -16,6 +16,7 @@ include ../../src/auto/config.mk
 DOCS = \
 	arabic.txt \
 	autocmd.txt \
+	builtin.txt \
 	change.txt \
 	channel.txt \
 	cmdline.txt \
@@ -30,6 +31,8 @@ DOCS = \
 	filetype.txt \
 	fold.txt \
 	ft_ada.txt \
+	ft_ps1.txt \
+	ft_raku.txt \
 	ft_rust.txt \
 	ft_sql.txt \
 	gui.txt \
@@ -150,6 +153,7 @@ DOCS = \
 	version6.txt \
 	version7.txt \
 	version8.txt \
+	version9.txt \
 	vi_diff.txt \
 	vim9.txt \
 	visual.txt \
@@ -159,6 +163,7 @@ DOCS = \
 HTMLS = \
 	arabic.html \
 	autocmd.html \
+	builtin.html \
 	change.html \
 	channel.html \
 	cmdline.html \
@@ -173,6 +178,8 @@ HTMLS = \
 	filetype.html \
 	fold.html \
 	ft_ada.html \
+	ft_ps1.html \
+	ft_raku.html \
 	ft_rust.html \
 	ft_sql.html \
 	gui.html \
@@ -292,6 +299,7 @@ HTMLS = \
 	version6.html \
 	version7.html \
 	version8.html \
+	version9.html \
 	vi_diff.html \
 	vimindex.html \
 	vim9.html \

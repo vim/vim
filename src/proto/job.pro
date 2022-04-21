@@ -20,7 +20,6 @@ char *job_status(job_T *job);
 int job_stop(job_T *job, typval_T *argvars, char *type);
 void invoke_prompt_callback(void);
 int invoke_prompt_interrupt(void);
-char_u *buf_prompt_text(buf_T *buf);
 char_u *prompt_text(void);
 void init_prompt(int cmdchar_todo);
 int prompt_curpos_editable(void);
@@ -34,4 +33,5 @@ void f_job_setoptions(typval_T *argvars, typval_T *rettv);
 void f_job_start(typval_T *argvars, typval_T *rettv);
 void f_job_status(typval_T *argvars, typval_T *rettv);
 void f_job_stop(typval_T *argvars, typval_T *rettv);
+char_u *job_to_string_buf(typval_T *varp, char_u *buf);
 /* vim: set ft=c : */

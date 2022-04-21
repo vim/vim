@@ -298,4 +298,62 @@ func Test_relativenumber_colors()
   call delete('XTest_relnr')
 endfunc
 
+func Test_relativenumber_callback()
+  CheckScreendump
+  CheckFeature timers
+
+  let lines =<< trim END
+      call setline(1, ['aaaaa', 'bbbbb', 'ccccc', 'ddddd'])
+      set relativenumber
+      call cursor(4, 1)
+
+      func Func(timer)
+        call cursor(1, 1)
+      endfunc
+
+      call timer_start(300, 'Func')
+  END
+  call writefile(lines, 'Xrnu_timer')
+
+  let buf = RunVimInTerminal('-S Xrnu_timer', #{rows: 8})
+  call TermWait(buf, 310)
+  call VerifyScreenDump(buf, 'Test_relativenumber_callback_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xrnu_timer')
+endfunc
+
+" Test for displaying line numbers with 'rightleft'
+func Test_number_rightleft()
+  CheckFeature rightleft
+  new
+  setlocal number
+  setlocal rightleft
+  call setline(1, range(1, 1000))
+  normal! 9Gzt
+  redraw!
+  call assert_match('^\s\+9 9$', Screenline(1))
+  normal! 10Gzt
+  redraw!
+  call assert_match('^\s\+01 10$', Screenline(1))
+  normal! 100Gzt
+  redraw!
+  call assert_match('^\s\+001 100$', Screenline(1))
+  normal! 1000Gzt
+  redraw!
+  call assert_match('^\s\+0001 1000$', Screenline(1))
+  bw!
+endfunc
+
+" This used to cause a divide by zero
+func Test_number_no_text_virtual_edit()
+  vnew
+  call setline(1, ['line one', 'line two'])
+  set number virtualedit=all
+  normal w
+  4wincmd |
+  normal j
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

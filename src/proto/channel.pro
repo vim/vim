@@ -24,7 +24,6 @@ void channel_consume(channel_T *channel, ch_part_T part, int len);
 int channel_collapse(channel_T *channel, ch_part_T part, int want_nl);
 int channel_can_write_to(channel_T *channel);
 int channel_is_open(channel_T *channel);
-char *channel_status(channel_T *channel, int req_part);
 void channel_close(channel_T *channel, int invoke_close_cb);
 void channel_clear(channel_T *channel);
 void channel_free_all(void);
@@ -58,4 +57,5 @@ void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
 void f_ch_sendraw(typval_T *argvars, typval_T *rettv);
 void f_ch_setoptions(typval_T *argvars, typval_T *rettv);
 void f_ch_status(typval_T *argvars, typval_T *rettv);
+char_u *channel_to_string_buf(typval_T *varp, char_u *buf);
 /* vim: set ft=c : */

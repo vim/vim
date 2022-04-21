@@ -11,11 +11,9 @@
  */
 
 #include "os_dos.h"		// common MS-DOS and Win32 stuff
-#ifndef __CYGWIN__
 // cproto fails on missing include files
-# ifndef PROTO
-#  include <direct.h>		// for _mkdir()
-# endif
+#ifndef PROTO
+# include <direct.h>		// for _mkdir()
 #endif
 
 #define BINARY_FILE_IO
@@ -47,13 +45,8 @@
 
 #define FEAT_SHORTCUT		// resolve shortcuts
 
-#if (!defined(_MSC_VER) || _MSC_VER > 1020)
-/*
- * Access Control List (actually security info).
- * MSVC has acl stuff only in 5.0, not in 4.2, don't know about 4.3.
- */
-# define HAVE_ACL
-#endif
+// Access Control List (actually security info).
+#define HAVE_ACL
 
 #define USE_FNAME_CASE		// adjust case of file names
 #if !defined(FEAT_CLIPBOARD)
@@ -71,7 +64,7 @@
 #define HAVE_PUTENV		// at least Bcc 5.2 and MSC have it
 
 #if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-# define NO_CONSOLE		// don't included console-only code
+# define NO_CONSOLE		// don't include console-only code
 #endif
 
 // toupper() is not really broken, but it's very slow.	Probably because of
@@ -134,17 +127,11 @@
 # define IO_REPARSE_TAG_SYMLINK		0xA000000C
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
     // Support for __try / __except.  All versions of MSVC are
     // expected to have this.  Any other compilers that support it?
 # define HAVE_TRY_EXCEPT 1
 # include <malloc.h>		// for _resetstkoflw()
-# if defined(_MSC_VER) && (_MSC_VER >= 1300)
-#  define RESETSTKOFLW _resetstkoflw
-# else
-#  define RESETSTKOFLW myresetstkoflw
-#  define MYRESETSTKOFLW
-# endif
 #endif
 
 /*
@@ -154,14 +141,8 @@
 
 #ifdef _DEBUG
 
-# if defined(_MSC_VER)	&&  (_MSC_VER >= 1000)
-   // Use the new debugging tools in Visual C++ 4.x
-#  include <crtdbg.h>
-#  define ASSERT(f) _ASSERT(f)
-# else
-#  include <assert.h>
-#  define ASSERT(f) assert(f)
-# endif
+# include <crtdbg.h>
+# define ASSERT(f) _ASSERT(f)
 
 # define TRACE			Trace
 # define TRACE0(sz)		Trace(_T("%s"), _T(sz))
@@ -199,9 +180,3 @@ Trace(char *pszFormat, ...);
 #endif
 #define mch_getenv(x) (char_u *)getenv((char *)(x))
 #define vim_mkdir(x, y) mch_mkdir(x)
-
-// Enable common dialogs input unicode from IME if possible.
-#define pDispatchMessage DispatchMessageW
-#define pGetMessage GetMessageW
-#define pIsDialogMessage IsDialogMessageW
-#define pPeekMessage PeekMessageW

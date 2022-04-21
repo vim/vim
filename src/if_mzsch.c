@@ -139,7 +139,7 @@ static char *string_to_line(Scheme_Object *obj);
 # define OUTPUT_LEN_TYPE long
 #endif
 static void do_output(char *mesg, OUTPUT_LEN_TYPE len);
-static void do_printf(char *format, ...);
+static void do_printf(char *format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 static void do_flush(void);
 static Scheme_Object *_apply_thunk_catch_exceptions(
 	Scheme_Object *, Scheme_Object **);
@@ -668,14 +668,14 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
     if (!hMzGC)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), gc_dll);
+	    semsg(_(e_could_not_load_library_str_str), gc_dll, GetWin32Error());
 	return FAIL;
     }
 
     if (!hMzSch)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), sch_dll);
+	    semsg(_(e_could_not_load_library_str_str), sch_dll, GetWin32Error());
 	return FAIL;
     }
 
@@ -689,7 +689,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 	    FreeLibrary(hMzGC);
 	    hMzGC = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), thunk->name);
+		semsg(_(e_could_not_load_library_function_str), thunk->name);
 	    return FAIL;
 	}
     }
@@ -703,7 +703,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 	    FreeLibrary(hMzGC);
 	    hMzGC = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), thunk->name);
+		semsg(_(e_could_not_load_library_function_str), thunk->name);
 	    return FAIL;
 	}
     }
@@ -809,7 +809,7 @@ static UINT timer_id = 0;
 #elif defined(FEAT_GUI_GTK)
 static gboolean timer_proc(gpointer);
 static guint timer_id = 0;
-#elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+#elif defined(FEAT_GUI_MOTIF)
 static void timer_proc(XtPointer, XtIntervalId *);
 static XtIntervalId timer_id = (XtIntervalId)0;
 #endif
@@ -845,7 +845,7 @@ timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dw
 # elif defined(FEAT_GUI_GTK)
     static gboolean
 timer_proc(gpointer data UNUSED)
-# elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+# elif defined(FEAT_GUI_MOTIF)
     static void
 timer_proc(XtPointer timed_out UNUSED, XtIntervalId *interval_id UNUSED)
 # endif
@@ -853,7 +853,7 @@ timer_proc(XtPointer timed_out UNUSED, XtIntervalId *interval_id UNUSED)
     scheme_check_threads();
 # if defined(FEAT_GUI_GTK)
     return TRUE; // continue receiving notifications
-# elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+# elif defined(FEAT_GUI_MOTIF)
     // renew timeout
     if (mz_threads_allow && p_mzq > 0)
 	timer_id = XtAppAddTimeOut(app_context, p_mzq,
@@ -868,7 +868,7 @@ setup_timer(void)
     timer_id = SetTimer(NULL, 0, p_mzq, timer_proc);
 # elif defined(FEAT_GUI_GTK)
     timer_id = g_timeout_add((guint)p_mzq, (GSourceFunc)timer_proc, NULL);
-# elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+# elif defined(FEAT_GUI_MOTIF)
     timer_id = XtAppAddTimeOut(app_context, p_mzq, timer_proc, NULL);
 # endif
 }
@@ -880,7 +880,7 @@ remove_timer(void)
     KillTimer(NULL, timer_id);
 # elif defined(FEAT_GUI_GTK)
     g_source_remove(timer_id);
-# elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+# elif defined(FEAT_GUI_MOTIF)
     XtRemoveTimeOut(timer_id);
 # endif
     timer_id = 0;
@@ -1242,13 +1242,13 @@ mzscheme_init(void)
 #ifdef DYNAMIC_MZSCHEME
 	if (disabled || !mzscheme_enabled(TRUE))
 	{
-	    emsg(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_the_mzscheme_libraries_could_not_be_loaded));
 	    return -1;
 	}
 #endif
 	if (load_base_module_failed || startup_mzscheme())
 	{
-	    emsg(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_the_mzscheme_racket_base_module_could_not_be_loaded));
 	    return -1;
 	}
 	initialized = TRUE;
@@ -1712,10 +1712,10 @@ get_option(void *data, int argc, Scheme_Object **argv)
     Vim_Prim	    *prim = (Vim_Prim *)data;
     long	    value;
     char	    *strval;
-    int		    rc;
+    getoption_T	    rc;
     Scheme_Object   *rval = NULL;
     Scheme_Object   *name = NULL;
-    int		    opt_flags = 0;
+    int		    scope = 0;
     buf_T	    *save_curb = curbuf;
     win_T	    *save_curw = curwin;
 
@@ -1736,11 +1736,11 @@ get_option(void *data, int argc, Scheme_Object **argv)
 	}
 
 	if (argv[1] == M_global)
-	    opt_flags = OPT_GLOBAL;
+	    scope = OPT_GLOBAL;
 	else if (SCHEME_VIMBUFFERP(argv[1]))
 	{
 	    curbuf = get_valid_buffer(argv[1]);
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else if (SCHEME_VIMWINDOWP(argv[1]))
 	{
@@ -1748,33 +1748,36 @@ get_option(void *data, int argc, Scheme_Object **argv)
 
 	    curwin = win;
 	    curbuf = win->w_buffer;
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else
 	    scheme_wrong_type(prim->name, "vim-buffer/window", 1, argc, argv);
     }
 
-    rc = get_option_value(BYTE_STRING_VALUE(name), &value, (char_u **)&strval, opt_flags);
+    rc = get_option_value(BYTE_STRING_VALUE(name), &value, (char_u **)&strval,
+								  NULL, scope);
     curbuf = save_curb;
     curwin = save_curw;
 
     switch (rc)
     {
-    case 1:
+    case gov_bool:
+    case gov_number:
 	MZ_GC_UNREG();
 	return scheme_make_integer_value(value);
-    case 0:
+    case gov_string:
 	rval = scheme_make_byte_string(strval);
 	MZ_GC_CHECK();
 	vim_free(strval);
 	MZ_GC_UNREG();
 	return rval;
-    case -1:
-    case -2:
+    case gov_hidden_bool:
+    case gov_hidden_number:
+    case gov_hidden_string:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("hidden option"));
 	//NOTREACHED
-    case -3:
+    case gov_unknown:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("unknown option"));
 	//NOTREACHED
@@ -1790,7 +1793,7 @@ get_option(void *data, int argc, Scheme_Object **argv)
 set_option(void *data, int argc, Scheme_Object **argv)
 {
     char_u	*command = NULL;
-    int		opt_flags = 0;
+    int		scope = 0;
     buf_T	*save_curb = curbuf;
     win_T	*save_curw = curwin;
     Vim_Prim	*prim = (Vim_Prim *)data;
@@ -1811,18 +1814,18 @@ set_option(void *data, int argc, Scheme_Object **argv)
 	}
 
 	if (argv[1] == M_global)
-	    opt_flags = OPT_GLOBAL;
+	    scope = OPT_GLOBAL;
 	else if (SCHEME_VIMBUFFERP(argv[1]))
 	{
 	    curbuf = get_valid_buffer(argv[1]);
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else if (SCHEME_VIMWINDOWP(argv[1]))
 	{
 	    win_T *win = get_valid_window(argv[1]);
 	    curwin = win;
 	    curbuf = win->w_buffer;
-	    opt_flags = OPT_LOCAL;
+	    scope = OPT_LOCAL;
 	}
 	else
 	    scheme_wrong_type(prim->name, "vim-buffer/window", 1, argc, argv);
@@ -1831,7 +1834,7 @@ set_option(void *data, int argc, Scheme_Object **argv)
     // do_set can modify cmd, make copy
     command = vim_strsave(BYTE_STRING_VALUE(cmd));
     MZ_GC_UNREG();
-    do_set(command, opt_flags);
+    do_set(command, scope);
     vim_free(command);
     update_screen(NOT_VALID);
     curbuf = save_curb;
@@ -3796,7 +3799,7 @@ make_modules(void)
     mod = scheme_primitive_module(vimext_symbol, environment);
     MZ_GC_CHECK();
     // all prims made closed so they can access their own names
-    for (i = 0; i < (int)(sizeof(prims)/sizeof(prims[0])); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(prims); i++)
     {
 	Vim_Prim *prim = prims + i;
 	closed_prim = scheme_make_closed_prim_w_arity(prim->prim, prim, prim->name,

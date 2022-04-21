@@ -765,8 +765,8 @@ Chú ý: Lệnh này thay cho việc gõ  i , ký tự cuối cùng, văn bản 
   Để sử dụng các tính năng này bạn cần phải tạo một tập tin "vimrc".
 
   1. Soạn thảo tệp tin "vimrc", phụ thuộc vào hệ thống của bạn:
-	:edit ~/.vimrc			đối với Unix
-	:edit $VIM/_vimrc		đối với MS-Windows
+	:edit ~/.vimrc		đối với Unix
+	:edit ~/_vimrc		đối với MS-Windows
 
   2. Bây giờ đọc tập tin "vimrc" ví dụ:
 
@@ -792,7 +792,7 @@ Chú ý: Lệnh này thay cho việc gõ  i , ký tự cuối cùng, văn bản 
 	Nhà xuất bản: New Riders
   Cuốn sách đầu tiên dành hoàn toàn cho Vim. Đặc biệt có ích cho người mới.
   Có rất nhiều ví dụ và tranh ảnh.
-  Hãy xem: http://iccf-holland.org/click5.html
+  Hãy xem: https://iccf-holland.org/click5.html
 
   Cuốn sách tiếp theo này xuất bản sớm hơn và nói nhiều về Vi hơn là Vim,
   nhưng cũng rất nên đọc:

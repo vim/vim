@@ -69,6 +69,20 @@
     _XmDrawHighlight(a, b, c, d, e, f, g, h, LineSolid)
 #endif
 
+// Older VMS systems do not have xos_r.h and cannot haldle XtProcessLocking
+#if defined(VMS)
+# if defined(HAVE_XOS_R_H)
+#  define XTPROCESS_LOCK XtProcessLock()
+#  define XTPROCESS_UNLOCK XtProcessUnlock()
+# else
+#  define XTPROCESS_LOCK
+#  define XTPROCESS_UNLOCK
+# endif
+#else
+# define XTPROCESS_LOCK XtProcessLock()
+# define XTPROCESS_UNLOCK XtProcessUnlock()
+#endif
+
 /*
  * Motif internals we have to cheat around with.
  */
@@ -441,7 +455,7 @@ set_pixmap(XmEnhancedButtonWidget eb)
     attr.valuemask = XpmColorSymbols | XpmCloseness | XpmColorKey;
     attr.closeness = 65535;	// accuracy isn't crucial
     attr.colorsymbols = color;
-    attr.numsymbols = sizeof(color) / sizeof(color[0]);
+    attr.numsymbols = ARRAY_LENGTH(color);
     attr.color_key = XPM_MONO;
     status = XpmCreatePixmapFromData(dpy, root, data, &pix, &mask, &attr);
 
@@ -714,9 +728,9 @@ draw_label(XmEnhancedButtonWidget eb, XEvent *event, Region region)
     {
 	XtExposeProc expose;
 
-	XtProcessLock();
+	XTPROCESS_LOCK;
 	expose = xmLabelClassRec.core_class.expose;
-	XtProcessUnlock();
+	XTPROCESS_UNLOCK;
 	(*expose)((Widget) eb, event, region);
     }
 
@@ -809,9 +823,9 @@ Enter(Widget wid,
 	_XmPrimitiveEnter((Widget) eb, event, NULL, NULL);
 	if (eb->pushbutton.armed == TRUE)
 	{
-	    XtProcessLock();
+	    XTPROCESS_LOCK;
 	    expose = XtClass(eb)->core_class.expose;
-	    XtProcessUnlock();
+	    XTPROCESS_UNLOCK;
 	    (*expose) (wid, event, (Region) NULL);
 	}
 
@@ -887,9 +901,9 @@ Leave(Widget wid,
 	{
 	    XtExposeProc expose;
 	    eb->pushbutton.armed = FALSE;
-	    XtProcessLock();
+	    XTPROCESS_LOCK;
 	    expose = XtClass(eb)->core_class.expose;
-	    XtProcessUnlock();
+	    XTPROCESS_UNLOCK;
 	    (*expose) (wid, event, (Region)NULL);
 	    draw_unhighlight(eb);
 	    draw_pixmap(eb, event, NULL);
@@ -956,7 +970,7 @@ set_size(XmEnhancedButtonWidget newtb)
     }
     else
     {
-	// FIXME: We should calculate an drawing offset for the pixmap here to
+	// FIXME: We should calculate a drawing offset for the pixmap here to
 	// adjust it.
     }
 
@@ -973,9 +987,9 @@ set_size(XmEnhancedButtonWidget newtb)
     // Invoke Label's Resize procedure.
     {
 	XtWidgetProc resize;
-	XtProcessLock();
+	XTPROCESS_LOCK;
 	resize = xmLabelClassRec.core_class.resize;
-	XtProcessUnlock();
+	XTPROCESS_UNLOCK;
 
 	(* resize) ((Widget) newtb);
     }
@@ -988,9 +1002,9 @@ Initialize(Widget rq, Widget ebw, ArgList args UNUSED, Cardinal *n UNUSED)
     XmEnhancedButtonWidget  eb = (XmEnhancedButtonWidget)ebw;
     XtWidgetProc	    resize;
 
-    XtProcessLock();
+    XTPROCESS_LOCK;
     resize = xmLabelClassRec.core_class.resize;
-    XtProcessUnlock();
+    XTPROCESS_UNLOCK;
 
     // Create a bitmap for stippling (Drawable resources are cheap).
     if (STIPPLE_BITMAP == None)

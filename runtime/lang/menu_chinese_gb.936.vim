@@ -1,7 +1,8 @@
 " Menu Translations:    Simplified Chinese
 " Maintainer:           Shun Bai <baishunde@gmail.com>
 " Previous Maintainer:  Yuheng Xie <elephant@linux.net.cn>
-" Last Change:          2020 Apr 23
+" Last Change:          2022 Feb 19
+" Generated from menu_zh_cn.utf-8.vim, DO NOT EDIT
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -449,4 +450,4 @@ menutrans Set\ '&filetype'\ Too			“≤…Ë÷√\ 'filetype'(&F)
 let &cpo = s:keepcpo
 unlet s:keepcpo
 
-" vim: set nu ts=4 sw=4 noet fdm=marker fdc=4 :
+" vim: set ts=4 sw=4 noet fdm=marker fdc=4 :

@@ -79,6 +79,10 @@ static VTermState *vterm_state_new(VTerm *vt)
   state->callbacks = NULL;
   state->cbdata    = NULL;
 
+  state->selection.callbacks = NULL;
+  state->selection.user      = NULL;
+  state->selection.buffer    = NULL;
+
   vterm_state_newpen(state);
 
   state->bold_is_highbright = 0;
@@ -384,7 +388,8 @@ static int on_text(const char bytes[], size_t len, void *user)
         abort();
       }
 #endif
-      width += this_width;
+      if (i == glyph_starts || this_width > width)
+	width = this_width;
     }
 
     chars[glyph_ends - glyph_starts] = 0;
@@ -1614,6 +1619,176 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   return 1;
 }
 
+static char base64_one(uint8_t b)
+{
+  if(b < 26)
+    return 'A' + b;
+  else if(b < 52)
+    return 'a' + b - 26;
+  else if(b < 62)
+    return '0' + b - 52;
+  else if(b == 62)
+    return '+';
+  else if(b == 63)
+    return '/';
+  return 0;
+}
+
+static uint8_t unbase64one(char c)
+{
+  if(c >= 'A' && c <= 'Z')
+    return c - 'A';
+  else if(c >= 'a' && c <= 'z')
+    return c - 'a' + 26;
+  else if(c >= '0' && c <= '9')
+    return c - '0' + 52;
+  else if(c == '+')
+    return 62;
+  else if(c == '/')
+    return 63;
+
+  return 0xFF;
+}
+
+static void osc_selection(VTermState *state, VTermStringFragment frag)
+{
+  if(frag.initial) {
+    state->tmp.selection.mask = 0;
+    state->tmp.selection.state = SELECTION_INITIAL;
+  }
+
+  while(!state->tmp.selection.state && frag.len) {
+    /* Parse selection parameter */
+    switch(frag.str[0]) {
+      case 'c':
+        state->tmp.selection.mask |= VTERM_SELECTION_CLIPBOARD;
+        break;
+      case 'p':
+        state->tmp.selection.mask |= VTERM_SELECTION_PRIMARY;
+        break;
+      case 'q':
+        state->tmp.selection.mask |= VTERM_SELECTION_SECONDARY;
+        break;
+      case 's':
+        state->tmp.selection.mask |= VTERM_SELECTION_SELECT;
+        break;
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+        state->tmp.selection.mask |= (VTERM_SELECTION_CUT0 << (frag.str[0] - '0'));
+        break;
+
+      case ';':
+        state->tmp.selection.state = SELECTION_SELECTED;
+        if(!state->tmp.selection.mask)
+          state->tmp.selection.mask = VTERM_SELECTION_SELECT|VTERM_SELECTION_CUT0;
+        break;
+    }
+
+    frag.str++;
+    frag.len--;
+  }
+
+  if(!frag.len)
+    return;
+
+  if(state->tmp.selection.state == SELECTION_SELECTED) {
+    if(frag.str[0] == '?') {
+      state->tmp.selection.state = SELECTION_QUERY;
+    }
+    else {
+      state->tmp.selection.state = SELECTION_SET_INITIAL;
+      state->tmp.selection.recvpartial = 0;
+    }
+  }
+
+  if(state->tmp.selection.state == SELECTION_QUERY) {
+    if(state->selection.callbacks->query)
+      (*state->selection.callbacks->query)(state->tmp.selection.mask, state->selection.user);
+    return;
+  }
+
+  if(state->selection.callbacks->set) {
+    size_t bufcur = 0;
+    char *buffer = state->selection.buffer;
+
+    uint32_t x = 0; /* Current decoding value */
+    int n = 0;      /* Number of sextets consumed */
+
+    if(state->tmp.selection.recvpartial) {
+      n = state->tmp.selection.recvpartial >> 24;
+      x = state->tmp.selection.recvpartial & 0x03FFFF; /* could be up to 18 bits of state in here */
+
+      state->tmp.selection.recvpartial = 0;
+    }
+
+    while((state->selection.buflen - bufcur) >= 3 && frag.len) {
+      if(frag.str[0] == '=') {
+        if(n == 2) {
+          buffer[0] = (x >> 4) & 0xFF;
+          buffer += 1, bufcur += 1;
+        }
+        if(n == 3) {
+          buffer[0] = (x >> 10) & 0xFF;
+          buffer[1] = (x >>  2) & 0xFF;
+          buffer += 2, bufcur += 2;
+        }
+
+        while(frag.len && frag.str[0] == '=')
+          frag.str++, frag.len--;
+
+        n = 0;
+      }
+      else {
+        uint8_t b = unbase64one(frag.str[0]);
+        if(b == 0xFF) {
+          DEBUG_LOG1("base64decode bad input %02X\n", (uint8_t)frag.str[0]);
+        }
+        else {
+          x = (x << 6) | b;
+          n++;
+        }
+        frag.str++, frag.len--;
+
+        if(n == 4) {
+          buffer[0] = (x >> 16) & 0xFF;
+          buffer[1] = (x >>  8) & 0xFF;
+          buffer[2] = (x >>  0) & 0xFF;
+
+          buffer += 3, bufcur += 3;
+          x = 0;
+          n = 0;
+        }
+      }
+
+      if(!frag.len || (state->selection.buflen - bufcur) < 3) {
+        if(bufcur) {
+	  VTermStringFragment setfrag = {
+	    state->selection.buffer, // str
+	    bufcur, // len
+	    state->tmp.selection.state == SELECTION_SET_INITIAL, // initial
+	    frag.final // final
+	  };
+          (*state->selection.callbacks->set)(state->tmp.selection.mask,
+	      setfrag, state->selection.user);
+          state->tmp.selection.state = SELECTION_SET;
+        }
+
+        buffer = state->selection.buffer;
+        bufcur = 0;
+      }
+    }
+
+    if(n)
+      state->tmp.selection.recvpartial = (n << 24) | x;
+  }
+}
+
 static int on_osc(int command, VTermStringFragment frag, void *user)
 {
   VTermState *state = user;
@@ -1653,6 +1828,12 @@ static int on_osc(int command, VTermStringFragment frag, void *user)
       }
     case 12:
       settermprop_string(state, VTERM_PROP_CURSORCOLOR, frag);
+      return 1;
+
+    case 52:
+      if(state->selection.callbacks)
+        osc_selection(state, frag);
+
       return 1;
 
     default:
@@ -1717,12 +1898,14 @@ static void request_status_string(VTermState *state, VTermStringFragment frag)
 
     case 'r':
       // Query DECSTBM
-      vterm_push_output_sprintf_dcs(vt, "1$r%d;%dr", state->scrollregion_top+1, SCROLLREGION_BOTTOM(state));
+      vterm_push_output_sprintf_str(vt, C1_DCS, TRUE,
+          "1$r%d;%dr", state->scrollregion_top+1, SCROLLREGION_BOTTOM(state));
       return;
 
     case 's':
       // Query DECSLRM
-      vterm_push_output_sprintf_dcs(vt, "1$r%d;%ds", SCROLLREGION_LEFT(state)+1, SCROLLREGION_RIGHT(state));
+      vterm_push_output_sprintf_str(vt, C1_DCS, TRUE,
+          "1$r%d;%ds", SCROLLREGION_LEFT(state)+1, SCROLLREGION_RIGHT(state));
       return;
 
     case ' '|('q'<<8): {
@@ -1735,17 +1918,19 @@ static void request_status_string(VTermState *state, VTermStringFragment frag)
       }
       if(state->mode.cursor_blink)
         reply--;
-      vterm_push_output_sprintf_dcs(vt, "1$r%d q", reply);
+      vterm_push_output_sprintf_str(vt, C1_DCS, TRUE,
+          "1$r%d q", reply);
       return;
     }
 
     case '\"'|('q'<<8):
       // Query DECSCA
-      vterm_push_output_sprintf_dcs(vt, "1$r%d\"q", state->protected_cell ? 1 : 2);
+      vterm_push_output_sprintf_str(vt, C1_DCS, TRUE,
+          "1$r%d\"q", state->protected_cell ? 1 : 2);
       return;
   }
 
-  vterm_push_output_sprintf_dcs(state->vt, "0$r%s", tmp);
+  vterm_push_output_sprintf_str(state->vt, C1_DCS, TRUE, "0$r%s", tmp);
 }
 
 static int on_dcs(const char *command, size_t commandlen, VTermStringFragment frag, void *user)
@@ -1761,6 +1946,42 @@ static int on_dcs(const char *command, size_t commandlen, VTermStringFragment fr
       return 1;
 
   DEBUG_LOG2("libvterm: Unhandled DCS %.*s\n", (int)commandlen, command);
+  return 0;
+}
+
+static int on_apc(VTermStringFragment frag, void *user)
+{
+  VTermState *state = user;
+
+  if(state->fallbacks && state->fallbacks->apc)
+    if((*state->fallbacks->apc)(frag, state->fbdata))
+      return 1;
+
+  /* No DEBUG_LOG because all APCs are unhandled */
+  return 0;
+}
+
+static int on_pm(VTermStringFragment frag, void *user)
+{
+  VTermState *state = user;
+
+  if(state->fallbacks && state->fallbacks->pm)
+    if((*state->fallbacks->pm)(frag, state->fbdata))
+      return 1;
+
+  /* No DEBUG_LOG because all PMs are unhandled */
+  return 0;
+}
+
+static int on_sos(VTermStringFragment frag, void *user)
+{
+  VTermState *state = user;
+
+  if(state->fallbacks && state->fallbacks->sos)
+    if((*state->fallbacks->sos)(frag, state->fbdata))
+      return 1;
+
+  /* No DEBUG_LOG because all SOSs are unhandled */
   return 0;
 }
 
@@ -1865,6 +2086,9 @@ static const VTermParserCallbacks parser_callbacks = {
   on_csi, // csi
   on_osc, // osc
   on_dcs, // dcs
+  on_apc, // apc
+  on_pm, // pm
+  on_sos, // sos
   on_resize // resize
 };
 
@@ -1907,6 +2131,8 @@ void vterm_state_reset(VTermState *state, int hard)
   state->mode.leftrightmargin = 0;
   state->mode.bracketpaste    = 0;
   state->mode.report_focus    = 0;
+
+  state->mouse_flags = 0;
 
   state->vt->mode.ctrl8bit   = 0;
 
@@ -2085,4 +2311,97 @@ void vterm_state_focus_out(VTermState *state)
 const VTermLineInfo *vterm_state_get_lineinfo(const VTermState *state, int row)
 {
   return state->lineinfo + row;
+}
+
+void vterm_state_set_selection_callbacks(VTermState *state, const VTermSelectionCallbacks *callbacks, void *user,
+    char *buffer, size_t buflen)
+{
+  if(buflen && !buffer)
+    buffer = vterm_allocator_malloc(state->vt, buflen);
+
+  state->selection.callbacks = callbacks;
+  state->selection.user      = user;
+  state->selection.buffer    = buffer;
+  state->selection.buflen    = buflen;
+}
+
+void vterm_state_send_selection(VTermState *state, VTermSelectionMask mask, VTermStringFragment frag)
+{
+  VTerm *vt = state->vt;
+
+  if(frag.initial) {
+    /* TODO: support sending more than one mask bit */
+    static char selection_chars[] = "cpqs";
+    int idx;
+    for(idx = 0; idx < 4; idx++)
+      if(mask & (1 << idx))
+        break;
+
+    vterm_push_output_sprintf_str(vt, C1_OSC, FALSE, "52;%c;", selection_chars[idx]);
+
+    state->tmp.selection.sendpartial = 0;
+  }
+
+  if(frag.len) {
+    size_t bufcur = 0;
+    char *buffer = state->selection.buffer;
+
+    uint32_t x = 0;
+    int n = 0;
+
+    if(state->tmp.selection.sendpartial) {
+      n = state->tmp.selection.sendpartial >> 24;
+      x = state->tmp.selection.sendpartial & 0xFFFFFF;
+
+      state->tmp.selection.sendpartial = 0;
+    }
+
+    while((state->selection.buflen - bufcur) >= 4 && frag.len) {
+      x = (x << 8) | frag.str[0];
+      n++;
+      frag.str++, frag.len--;
+
+      if(n == 3) {
+        buffer[0] = base64_one((x >> 18) & 0x3F);
+        buffer[1] = base64_one((x >> 12) & 0x3F);
+        buffer[2] = base64_one((x >>  6) & 0x3F);
+        buffer[3] = base64_one((x >>  0) & 0x3F);
+
+        buffer += 4, bufcur += 4;
+        x = 0;
+        n = 0;
+      }
+
+      if(!frag.len || (state->selection.buflen - bufcur) < 4) {
+        if(bufcur)
+          vterm_push_output_bytes(vt, state->selection.buffer, bufcur);
+
+        buffer = state->selection.buffer;
+        bufcur = 0;
+      }
+    }
+
+    if(n)
+      state->tmp.selection.sendpartial = (n << 24) | x;
+  }
+
+  if(frag.final) {
+    if(state->tmp.selection.sendpartial) {
+      int n      = state->tmp.selection.sendpartial >> 24;
+      uint32_t x = state->tmp.selection.sendpartial & 0xFFFFFF;
+      char *buffer = state->selection.buffer;
+
+      /* n is either 1 or 2 now */
+      x <<= (n == 1) ? 16 : 8;
+
+      buffer[0] = base64_one((x >> 18) & 0x3F);
+      buffer[1] = base64_one((x >> 12) & 0x3F);
+      buffer[2] = (n == 1) ? '=' : base64_one((x >>  6) & 0x3F);
+      buffer[3] = '=';
+
+      vterm_push_output_sprintf_str(vt, 0, TRUE, "%.*s", 4, buffer);
+    }
+    else
+      vterm_push_output_sprintf_str(vt, 0, TRUE, "");
+  }
 }

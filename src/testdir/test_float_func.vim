@@ -2,6 +2,7 @@
 
 source check.vim
 CheckFeature float
+import './vim9.vim' as v9
 
 func Test_abs()
   call assert_equal('1.23', string(abs(1.23)))
@@ -238,10 +239,30 @@ func Test_str2float()
   call assert_equal('nan', string(str2float('NaN')))
   call assert_equal('nan', string(str2float('  nan  ')))
 
-  call assert_fails("call str2float(1.2)", 'E806:')
+  call assert_equal('123456.789', string(str2float("123'456.789", 1)))
+  call assert_equal('123456.789', string(str2float("12'34'56.789", 1)))
+  call assert_equal('123456.789', string(str2float("1'2'3'4'5'6.789", 1)))
+  call assert_equal('1.0', string(str2float("1''2.3", 1)))
+  call assert_equal('123456.7', string(str2float("123'456.7'89", 1)))
+
+  call assert_equal(1.2, str2float(1.2, 0))
+  call v9.CheckDefAndScriptFailure(['str2float(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   call assert_fails("call str2float([])", 'E730:')
   call assert_fails("call str2float({})", 'E731:')
   call assert_fails("call str2float(function('string'))", 'E729:')
+endfunc
+
+def Test_float_quotes()
+  call assert_equal('123456.789', string(123'456.789))
+  call assert_equal('123456.789', string(12'34'56.789))
+  call assert_equal('123456.789', string(1'2'3'4'5'6.789))
+
+  call assert_fails("echo string(1''2.3)", 'E116:')
+  call assert_fails("echo string(123'456.7'89)", 'E116:')
+enddef
+
+func Test_float_quotes_from_legacy()
+  call assert_equal("\n123456.789", execute("vim9 echo 12'34'56.789"))
 endfunc
 
 func Test_float2nr()

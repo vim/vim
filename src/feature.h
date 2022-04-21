@@ -32,7 +32,7 @@
  * ==============
  *
  * +tiny		almost no features enabled, not even multiple windows
- * +small		few features enabled, as basic as possible
+ * +small		as tiny plus cmdline window
  * +normal		A default selection of features enabled
  * +big			many features enabled, as rich as possible.
  * +huge		all possible features enabled.
@@ -56,7 +56,7 @@
 /*
  * For Unix, Mac and Win32 use +huge by default.  These days CPUs are fast and
  * Memory is cheap.
- * Use +big for older systems: Other MS-Windows and VMS.
+ * Use +big for older systems: VMS and Amiga.
  * Otherwise use +normal
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
@@ -64,7 +64,7 @@
 # if defined(UNIX) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
-#  if defined(MSWIN) || defined(VMS) || defined(AMIGA)
+#  if defined(VMS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
 #   define FEAT_NORMAL
@@ -109,6 +109,8 @@
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
  * +modify_fname	modifiers for file name.  E.g., "%:p:h".
  * +comments		'comments' option.
+ * +title		'title' and 'icon' options
+ * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -118,20 +120,9 @@
  */
 
 /*
- * Message history is fixed at 200 message, 20 for the tiny version.
+ * Message history is fixed at 200 messages.
  */
-#ifdef FEAT_SMALL
-# define MAX_MSG_HIST_LEN 200
-#else
-# define MAX_MSG_HIST_LEN 20
-#endif
-
-/*
- * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
- */
-#ifdef FEAT_SMALL
-# define FEAT_JUMPLIST
-#endif
+#define MAX_MSG_HIST_LEN 200
 
 #if defined(FEAT_SMALL)
 # define FEAT_CMDWIN
@@ -231,20 +222,16 @@
 
 /*
  * +rightleft		Right-to-left editing/typing support.
- *
- * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT)
 # define FEAT_RIGHTLEFT
 #endif
 
 /*
  * +arabic		Arabic keymap and shaping support.
  *			Requires FEAT_RIGHTLEFT
- *
- * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -259,19 +246,6 @@
  */
 #ifdef FEAT_BIG
 # define FEAT_EMACS_TAGS
-#endif
-
-/*
- * +tag_binary		Can use a binary search for the tags file.
- *
- * Disabled for EBCDIC:
- * On z/OS Unix we have the problem that /bin/sort sorts ASCII instead of
- * EBCDIC.  With this binary search doesn't work, as VIM expects a tag file
- * sorted by character values.  I'm not sure how to fix this. Should we really
- * do a EBCDIC to ASCII conversion for this??
- */
-#if !defined(EBCDIC)
-# define FEAT_TAG_BINS
 #endif
 
 /*
@@ -354,23 +328,16 @@
 /*
  * +diff		Displaying diffs in a nice way.
  *			Requires +windows and +autocmd.
+ *			Can be enabled in autoconf already.
  */
-#if defined(FEAT_NORMAL)
+#if defined(FEAT_NORMAL) && !defined(FEAT_DIFF)
 # define FEAT_DIFF
 #endif
 
 /*
- * +title		'title' and 'icon' options
  * +statusline		'statusline', 'rulerformat' and special format of
  *			'titlestring' and 'iconstring' options.
- * +byte_offset		'%o' in 'statusline' and builtin functions line2byte()
- *			and byte2line().
- *			Note: Required for Macintosh.
  */
-#if defined(FEAT_NORMAL)
-# define FEAT_TITLE
-#endif
-
 #ifdef FEAT_NORMAL
 # define FEAT_STL_OPT
 # ifndef FEAT_CMDL_INFO
@@ -378,6 +345,11 @@
 # endif
 #endif
 
+/*
+ * +byte_offset		'%o' in 'statusline' and builtin functions line2byte()
+ *			and byte2line().
+ *			Note: Required for Macintosh.
+ */
 #ifdef FEAT_NORMAL
 # define FEAT_BYTEOFF
 #endif
@@ -427,10 +399,8 @@
 
 /*
  * +spell		spell checking
- *
- * Disabled for EBCDIC: * Doesn't work (SIGSEGV).
  */
-#if (defined(FEAT_NORMAL) || defined(PROTO)) && !defined(EBCDIC)
+#if (defined(FEAT_NORMAL) || defined(PROTO))
 # define FEAT_SPELL
 #endif
 
@@ -593,6 +563,13 @@
 # define FEAT_SOUND_CANBERRA
 #endif
 
+/*
+ * libsodium - add cryptography support
+ */
+#if defined(HAVE_SODIUM) && defined(FEAT_BIG)
+# define FEAT_SODIUM
+#endif
+
 // There are two ways to use XPM.
 #if (defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF)) \
 		|| defined(HAVE_X11_XPM_H)
@@ -606,8 +583,7 @@
 #if defined(FEAT_NORMAL) && defined(FEAT_MENU) \
 	&& (defined(FEAT_GUI_GTK) \
 		|| defined(FEAT_GUI_MSWIN) \
-		|| ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
-			&& defined(HAVE_XPM)) \
+		|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XPM)) \
 		|| defined(FEAT_GUI_PHOTON) \
 		|| defined(FEAT_GUI_HAIKU))
 
@@ -633,8 +609,7 @@
     && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| defined(FEAT_GUI_HAIKU) \
-	|| (defined(FEAT_GUI_MSWIN) \
-	    && (!defined(_MSC_VER) || _MSC_VER > 1020)))
+	|| defined(FEAT_GUI_MSWIN))
 # define FEAT_GUI_TABLINE
 #endif
 
@@ -644,7 +619,7 @@
  */
 #if defined(FEAT_NORMAL)
 # define FEAT_BROWSE_CMD
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_PHOTON)
 #  define FEAT_BROWSE
 # endif
@@ -665,8 +640,7 @@
  *			When none of these defined there is no dialog support.
  */
 #ifdef FEAT_NORMAL
-# if ((defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF)) \
-		&& defined(HAVE_X11_XPM_H)) \
+# if (defined(FEAT_GUI_MOTIF) && defined(HAVE_X11_XPM_H)) \
 	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) \
 	|| defined(FEAT_GUI_HAIKU) \
@@ -678,13 +652,13 @@
 # endif
 #endif
 #if !defined(FEAT_GUI_DIALOG) && (defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_MSWIN))
 // need a dialog to show error messages when starting from the desktop
 # define FEAT_GUI_DIALOG
 #endif
 #if defined(FEAT_GUI_DIALOG) && \
-	(defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+	(defined(FEAT_GUI_MOTIF) \
 	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
 	 || defined(FEAT_GUI_PHOTON) \
 	 || defined(FEAT_GUI_HAIKU))
@@ -905,7 +879,7 @@
  * +X11			Unix only.  Include code for xterm title saving and X
  *			clipboard.  Only works if HAVE_X11 is also defined.
  */
-#if (defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF)
 # define WANT_X11
 #endif
 
@@ -937,7 +911,7 @@
  * +mouse_sgr		Unix only: Include code for for SGR-styled mouse.
  * +mouse_sysmouse	Unix only: Include code for FreeBSD and DragonFly
  *			console mouse handling.
- * +mouse_urxvt		Unix only: Include code for for urxvt mosue handling.
+ * +mouse_urxvt		Unix only: Include code for for urxvt mouse handling.
  * +mouse		Any mouse support (any of the above enabled).
  *			Always included, since either FEAT_MOUSE_XTERM or
  *			DOS_MOUSE is defined.
@@ -971,6 +945,12 @@
  */
 #if defined(FEAT_NORMAL) && defined(HAVE_GPM)
 # define FEAT_MOUSE_GPM
+/*
+ * +mouse_gpm/dyn   Load libgpm dynamically.
+ */
+# ifndef DYNAMIC_GPM
+// #  define DYNAMIC_GPM
+# endif
 #endif
 
 #if defined(FEAT_NORMAL) && defined(HAVE_SYSMOUSE)
@@ -1065,7 +1045,7 @@
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON)
 #  define FEAT_MOUSESHAPE
 # endif
@@ -1082,17 +1062,17 @@
 #endif
 
 #if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)    \
-	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+	|| defined(FEAT_GUI_MOTIF))
 # define MZSCHEME_GUI_THREADS
 #endif
 
 /*
  * +ARP			Amiga only. Use arp.library, DOS 2.0 is not required.
  */
-#if !defined(NO_ARP) && !defined(__amigaos4__)
+#if defined(AMIGA) && !defined(NO_ARP) && !defined(__amigaos4__) \
+	&& !defined(__MORPHOS__) && !defined(__AROS__)
 # define FEAT_ARP
 #endif
-
 
 /*
  * +ole			Win32 OLE automation: Use Makefile.ovc.
@@ -1108,7 +1088,6 @@
  * +tcl			TCL interface: "--enable-tclinterp"
  * +netbeans_intg	Netbeans integration
  * +channel		Inter process communication
- * +GUI_Athena		Athena GUI
  * +GUI_Motif		Motif GUI
  */
 
@@ -1148,6 +1127,12 @@
 #endif
 
 /*
+ * +autoshelldir	    'autoshelldir' option.
+ */
+#if defined(FEAT_TERMINAL)
+# define FEAT_AUTOSHELLDIR
+#endif
+/*
  * +textprop and +popupwin	Text PROPerties and POPUP windows
  */
 #if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
@@ -1166,8 +1151,7 @@
  */
 #if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_PROP_POPUP)
 # define FEAT_SIGNS
-# if ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
-		&& defined(HAVE_X11_XPM_H)) \
+# if (defined(FEAT_GUI_MOTIF) && defined(HAVE_X11_XPM_H)) \
 	|| defined(FEAT_GUI_GTK) \
 	|| (defined(MSWIN) && defined(FEAT_GUI))
 #  define FEAT_SIGN_ICONS
@@ -1179,7 +1163,7 @@
  *			debugger and for tooltips.
  *			Only for GUIs where it was implemented.
  */
-#if (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+#if (defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)) \
 	&& (   ((defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)) \
 		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN)) \
@@ -1191,7 +1175,7 @@
 # endif
 #endif
 
-#if defined(FEAT_BEVAL_GUI) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_BEVAL_GUI) && defined(FEAT_GUI_MOTIF)
 # define FEAT_BEVAL_TIP		// balloon eval used for toolbar tooltip
 #endif
 
@@ -1208,8 +1192,8 @@
 # define FEAT_BEVAL
 #endif
 
-// both Motif and Athena are X11 and share some code
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+// Motif is X11
+#if defined(FEAT_GUI_MOTIF)
 # define FEAT_GUI_X11
 #endif
 
@@ -1256,4 +1240,16 @@
  */
 #if (!defined(FEAT_GUI) || defined(VIMDLL)) && defined(MSWIN)
 # define FEAT_VTP
+#endif
+
+#if defined(DYNAMIC_PERL) \
+	|| defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3) \
+	|| defined(DYNAMIC_RUBY) \
+	|| defined(DYNAMIC_TCL) \
+	|| defined(DYNAMIC_ICONV) \
+	|| defined(DYNAMIC_GETTEXT) \
+	|| defined(DYNAMIC_MZSCHEME) \
+	|| defined(DYNAMIC_LUA) \
+	|| defined(FEAT_TERMINAL)
+# define USING_LOAD_LIBRARY
 #endif

@@ -5,6 +5,8 @@ if exists('*CanRunVimInTerminal')
   finish
 endif
 
+source shared.vim
+
 " For most tests we need to be able to run terminal Vim with 256 colors.  On
 " MS-Windows the console only has 16 colors and the GUI can't run in a
 " terminal.
@@ -21,7 +23,8 @@ endif
 func StopShellInTerminal(buf)
   call term_sendkeys(a:buf, "exit\r")
   let job = term_getjob(a:buf)
-  call WaitFor({-> job_status(job) == "dead"})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call TermWait(a:buf)
 endfunc
 
 " Wrapper around term_wait() to allow more time for re-runs of flaky tests
@@ -51,6 +54,7 @@ endfunc
 " "rows" - height of the terminal window (max. 20)
 " "cols" - width of the terminal window (max. 78)
 " "statusoff" - number of lines the status is offset from default
+" "wait_for_ruler" - if zero then don't wait for ruler to show
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -131,7 +135,7 @@ func RunVimInTerminal(arguments, options)
 endfunc
 
 " Stop a Vim running in terminal buffer "buf".
-func StopVimInTerminal(buf)
+func StopVimInTerminal(buf, kill = 1)
   " Using a terminal to run Vim is always considered flaky.
   let g:test_is_flaky = 1
 
@@ -144,15 +148,20 @@ func StopVimInTerminal(buf)
   " Wait for all the pending updates to terminal to complete
   call TermWait(a:buf)
 
+  " Wait for the terminal to end.
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
-  only!
+
+  " If the buffer still exists forcefully wipe it.
+  if a:kill && bufexists(a:buf)
+    exe a:buf .. 'bwipe!'
+  endif
 endfunc
 
 " Open a terminal with a shell, assign the job to g:job and return the buffer
 " number.
 func Run_shell_in_terminal(options)
   if has('win32')
-    let buf = term_start([&shell,'/k'], a:options)
+    let buf = term_start([&shell, '/k'], a:options)
   else
     let buf = term_start(&shell, a:options)
   endif
@@ -168,8 +177,16 @@ func Run_shell_in_terminal(options)
   let string = string({'job': buf->term_getjob()})
   call assert_match("{'job': 'process \\d\\+ run'}", string)
 
+  " On slower systems it may take a bit of time before the shell is ready to
+  " accept keys.  This mainly matters when using term_sendkeys() next.
+  call TermWait(buf)
+
   return buf
 endfunc
 
+" Return concatenated lines in terminal.
+func Term_getlines(buf, lines)
+  return join(map(a:lines, 'term_getline(a:buf, v:val)'), '')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

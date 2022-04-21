@@ -8,7 +8,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 /*
- * Common code for the Motif and Athena GUI.
+ * Code for the Motif GUI.
  * Not used for GTK.
  */
 
@@ -66,22 +66,13 @@
 #endif
 #define DFLT_TOOLTIP_FONT	XtDefaultFontSet
 
-#ifdef FEAT_GUI_ATHENA
-# define DFLT_MENU_BG_COLOR	"gray77"
-# define DFLT_MENU_FG_COLOR	"black"
-# define DFLT_SCROLL_BG_COLOR	"gray60"
-# define DFLT_SCROLL_FG_COLOR	"gray77"
-# define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
-# define DFLT_TOOLTIP_FG_COLOR	"#000000"
-#else
 // use the default (CDE) colors
-# define DFLT_MENU_BG_COLOR	""
-# define DFLT_MENU_FG_COLOR	""
-# define DFLT_SCROLL_BG_COLOR	""
-# define DFLT_SCROLL_FG_COLOR	""
-# define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
-# define DFLT_TOOLTIP_FG_COLOR	"#000000"
-#endif
+#define DFLT_MENU_BG_COLOR	""
+#define DFLT_MENU_FG_COLOR	""
+#define DFLT_SCROLL_BG_COLOR	""
+#define DFLT_SCROLL_FG_COLOR	""
+#define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
+#define DFLT_TOOLTIP_FG_COLOR	"#000000"
 
 Widget vimShell = (Widget)0;
 
@@ -95,8 +86,8 @@ static Atom   wm_atoms[2];	// Window Manager Atoms
  * normal font (current_fontset == NULL, use gui.text_gc and gui.back_gc).
  */
 static XFontSet current_fontset = NULL;
-
-#define XDrawString(dpy, win, gc, x, y, str, n) \
+# if !defined(XDrawString)
+#  define XDrawString(dpy, win, gc, x, y, str, n) \
 	do \
 	{ \
 	    if (current_fontset != NULL) \
@@ -104,8 +95,9 @@ static XFontSet current_fontset = NULL;
 	    else \
 		XDrawString(dpy, win, gc, x, y, str, n); \
 	} while (0)
-
-#define XDrawString16(dpy, win, gc, x, y, str, n) \
+# endif
+# if !defined(XDrawString16)
+#  define XDrawString16(dpy, win, gc, x, y, str, n) \
 	do \
 	{ \
 	    if (current_fontset != NULL) \
@@ -113,8 +105,9 @@ static XFontSet current_fontset = NULL;
 	    else \
 		XDrawString16(dpy, win, gc, x, y, (XChar2b *)str, n); \
 	} while (0)
-
-#define XDrawImageString16(dpy, win, gc, x, y, str, n) \
+# endif
+# if !defined(XDrawImageString16)
+#  define XDrawImageString16(dpy, win, gc, x, y, str, n) \
 	do \
 	{ \
 	    if (current_fontset != NULL) \
@@ -122,7 +115,7 @@ static XFontSet current_fontset = NULL;
 	    else \
 		XDrawImageString16(dpy, win, gc, x, y, (XChar2b *)str, n); \
 	} while (0)
-
+# endif
 static int check_fontset_sanity(XFontSet fs);
 static int fontset_width(XFontSet fs);
 static int fontset_ascent(XFontSet fs);
@@ -383,17 +376,6 @@ static XtResource vim_resources[] =
 	(XtPointer)SB_DEFAULT_WIDTH
     },
 #ifdef FEAT_MENU
-# ifdef FEAT_GUI_ATHENA		// with Motif the height is always computed
-    {
-	XtNmenuHeight,
-	XtCMenuHeight,
-	XtRInt,
-	sizeof(int),
-	XtOffsetOf(gui_T, menu_height),
-	XtRImmediate,
-	(XtPointer)MENU_DEFAULT_HEIGHT	    // Should figure out at run time
-    },
-# endif
     {
 # ifdef FONTSET_ALWAYS
 	XtNmenuFontSet,
@@ -956,10 +938,12 @@ gui_x11_key_hit_cb(
     {
 	len = mb_char2bytes(key, string);
 
+	// Some keys need adjustment when the Ctrl modifier is used.
+	key = may_adjust_key_for_ctrl(modifiers, key);
+
 	// Remove the SHIFT modifier for keys where it's already included,
 	// e.g., '(', '!' and '*'.
-	if (!ASCII_ISALPHA(key) && key > 0x20 && key < 0x7f)
-	    modifiers &= ~MOD_MASK_SHIFT;
+	modifiers = may_remove_shift_modifier(modifiers, key);
     }
 
     if (modifiers != 0)
@@ -1214,7 +1198,7 @@ gui_mch_init_check(void)
     if (app_context == NULL || gui.dpy == NULL)
     {
 	gui.dying = TRUE;
-	emsg(_(e_opendisp));
+	emsg(_(e_cannot_open_display));
 	return FAIL;
     }
     return OK;
@@ -1271,8 +1255,6 @@ gui_mch_init(void)
      * Get the colors ourselves.  Using the automatic conversion doesn't
      * handle looking for approximate colors.
      */
-    // NOTE: These next few lines are an exact duplicate of gui_athena.c's
-    // gui_mch_def_colors().  Why?
     gui.menu_fg_pixel = gui_get_color((char_u *)gui.rsrc_menu_fg_name);
     gui.menu_bg_pixel = gui_get_color((char_u *)gui.rsrc_menu_bg_name);
     gui.scroll_fg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_fg_name);
@@ -1280,12 +1262,6 @@ gui_mch_init(void)
 #ifdef FEAT_BEVAL_GUI
     gui.tooltip_fg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_fg_name);
     gui.tooltip_bg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_bg_name);
-#endif
-
-#if defined(FEAT_MENU) && defined(FEAT_GUI_ATHENA)
-    // If the menu height was set, don't change it at runtime
-    if (gui.menu_height != MENU_DEFAULT_HEIGHT)
-	gui.menu_height_fixed = TRUE;
 #endif
 
     // Set default foreground and background colours
@@ -1450,16 +1426,12 @@ gui_mch_init(void)
 	XpmFreeAttributes(&attr);
     }
 
-# ifdef FEAT_GUI_ATHENA
-    XtVaSetValues(vimShell, XtNiconPixmap, icon, XtNiconMask, icon_mask, NULL);
-# else
     XtVaSetValues(vimShell, XmNiconPixmap, icon, XmNiconMask, icon_mask, NULL);
-# endif
 #endif
     }
 
     if (gui.color_approx)
-	emsg(_("Vim E458: Cannot allocate colormap entry, some colors may be incorrect"));
+	emsg(_(e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect));
 
 #ifdef FEAT_BEVAL_GUI
     gui_init_tooltip_font();
@@ -1572,16 +1544,6 @@ gui_mch_open(void)
     }
     XtAddEventHandler(vimShell, PropertyChangeMask, False,
 		      gui_x11_send_event_handler, NULL);
-#endif
-
-
-#if defined(FEAT_MENU) && defined(FEAT_GUI_ATHENA)
-    // The Athena GUI needs this again after opening the window
-    gui_position_menu();
-# ifdef FEAT_TOOLBAR
-    gui_mch_set_toolbar_pos(0, gui.menu_height, gui.menu_width,
-			    gui.toolbar_height);
-# endif
 #endif
 
     // Get the colors for the highlight groups (gui_check_colors() might have
@@ -1749,7 +1711,13 @@ gui_mch_init_font(
     // A font name equal "*" is indicating, that we should activate the font
     // selection dialogue to get a new font name. So let us do it here.
     if (font_name != NULL && STRCMP(font_name, "*") == 0)
+    {
 	font_name = gui_xm_select_font(hl_get_font_name());
+
+	// Do not reset to default font except on GUI startup.
+	if (font_name == NULL && !gui.starting)
+	    return OK;
+    }
 #endif
 
 #ifdef FEAT_XFONTSET
@@ -1877,7 +1845,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
     if (font == NULL)
     {
 	if (giveErrorIfMissing)
-	    semsg(_(e_font), name);
+	    semsg(_(e_unknown_font_str), name);
 	return NOFONT;
     }
 
@@ -1901,7 +1869,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
 
     if (font->max_bounds.width != font->min_bounds.width)
     {
-	semsg(_(e_fontwidth), name);
+	semsg(_(e_font_str_is_not_fixed_width), name);
 	XFreeFont(gui.dpy, font);
 	return NOFONT;
     }
@@ -2052,7 +2020,7 @@ gui_mch_get_fontset(
 
 	if (giveErrorIfMissing)
 	{
-	    semsg(_("E250: Fonts for the following charsets are missing in fontset %s:"), name);
+	    semsg(_(e_fonts_for_the_following_charsets_are_missing_in_fontset), name);
 	    for (i = 0; i < num_missing; i++)
 		semsg("%s", missing[i]);
 	}
@@ -2062,7 +2030,7 @@ gui_mch_get_fontset(
     if (fontset == NULL)
     {
 	if (giveErrorIfMissing)
-	    semsg(_(e_fontset), name);
+	    semsg(_(e_unknown_fontset_str), name);
 	return NOFONTSET;
     }
 
@@ -2094,8 +2062,8 @@ check_fontset_sanity(XFontSet fs)
     {
 	if (xfs[i]->max_bounds.width != xfs[i]->min_bounds.width)
 	{
-	    semsg(_("E252: Fontset name: %s"), base_name);
-	    semsg(_("Font '%s' is not fixed-width"), font_name[i]);
+	    semsg(_(e_fontsent_name_str_font_str_is_not_fixed_width),
+		    base_name, font_name[i]);
 	    return FAIL;
 	}
     }
@@ -2114,7 +2082,7 @@ check_fontset_sanity(XFontSet fs)
 	if (	   xfs[i]->max_bounds.width != 2 * min_width
 		&& xfs[i]->max_bounds.width != min_width)
 	{
-	    semsg(_("E253: Fontset name: %s"), base_name);
+	    semsg(_(e_fontset_name_str), base_name);
 	    semsg(_("Font0: %s"), font_name[min_font_idx]);
 	    semsg(_("Font%d: %s"), i, font_name[i]);
 	    semsg(_("Font%d width is not twice that of font0"), i);
@@ -2143,22 +2111,6 @@ fontset_height(
     extents = XExtentsOfFontSet(fs);
     return extents->max_logical_extent.height;
 }
-
-#if (defined(FONTSET_ALWAYS) && defined(FEAT_GUI_ATHENA) \
-	    && defined(FEAT_MENU)) || defined(PROTO)
-/*
- * Returns the bounding box height around the actual glyph image of all
- * characters in all fonts of the fontset.
- */
-    int
-fontset_height2(XFontSet fs)
-{
-    XFontSetExtents *extents;
-
-    extents = XExtentsOfFontSet(fs);
-    return extents->max_ink_extent.height;
-}
-#endif
 
 #if 0
 // NOT USED YET
@@ -3219,7 +3171,7 @@ gui_mch_register_sign(char_u *signfile)
 	    //     gui.sign_width = sign->width + 8;
 	}
 	else
-	    emsg(_(e_signdata));
+	    emsg(_(e_couldnt_read_in_sign_data));
     }
 
     return (void *)sign;

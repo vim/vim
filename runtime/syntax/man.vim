@@ -4,7 +4,7 @@
 " Previous Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Previous Maintainer:	Gautam H. Mudunuri <gmudunur@informatica.com>
 " Version Info:
-" Last Change:	2020 Apr 30
+" Last Change:	2020 Sep 19
 
 " Additional highlighting by Johannes Tanzler <johannes.tanzler@aon.at>:
 "	* manSubHeading
@@ -21,8 +21,8 @@ runtime! syntax/ctrlh.vim
 syn case ignore
 
 syn match  manReference       "\f\+([1-9][a-z]\=)"
-syn match  manSectionHeading  "^[a-z][a-z -]*[a-z]$"
-syn match  manSubHeading      "^\s\{3\}[a-z][a-z -]*[a-z]$"
+syn match  manSectionHeading  "^\a.*$"
+syn match  manSubHeading      "^\s\{3\}\a.*$"
 syn match  manOptionDesc      "^\s*[+-][a-z0-9]\S*"
 syn match  manLongOptionDesc  "^\s*--[a-z0-9-]\S*"
 " syn match  manHistory		"^[a-z].*last change.*$"

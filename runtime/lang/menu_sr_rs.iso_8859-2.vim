@@ -2,6 +2,7 @@
 " Maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>
 " Last Change:	Fri, 30 May 2003 10:17:39 Eastern Daylight Time
 " Adapted for VIM 8 by: Ivan Pe¹iæ on 2017-12-28 12:05+0400
+" Generated from menu_sr_rs.utf-8.vim, DO NOT EDIT
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -27,11 +28,11 @@ menutrans &Version	      &Verzija
 menutrans &About	      &O\ programu
 
 " File menu
-menutrans &File			    &Datoteka
+menutrans &File			    &Fajl
 menutrans &Open\.\.\.<Tab>:e	    &Otvori\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Podeli-otvori\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otvori\ karticu\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew	    &Nova<Tab>:enew
+menutrans &New<Tab>:enew	    &Nov<Tab>:enew
 menutrans &Close<Tab>:close	    &Zatvori<Tab>:close
 menutrans &Save<Tab>:w		    &Saèuvaj<Tab>:w
 menutrans Save\ &As\.\.\.<Tab>:sav  Saèuvaj\ &kao\.\.\.<Tab>:sav
@@ -43,14 +44,14 @@ menutrans E&xit<Tab>:qa		    K&raj<Tab>:qa
 
 " Edit menu
 menutrans &Edit			 &Ureðivanje
-menutrans &Undo<Tab>u		 &Vrati<Tab>u
-menutrans &Redo<Tab>^R		 &Povrati<Tab>^R
+menutrans &Undo<Tab>u		 &Poni¹ti<Tab>u
+menutrans &Redo<Tab>^R		 &Vrati\ izmenu<Tab>^R
 menutrans Rep&eat<Tab>\.	 P&onovi<Tab>\.
 menutrans Cu&t<Tab>"+x		 Ise&ci<Tab>"+x
 menutrans &Copy<Tab>"+y		 &Kopiraj<Tab>"+y
 menutrans &Paste<Tab>"+gP	 &Ubaci<Tab>"+gP
-menutrans &Paste<Tab>"+P	&Ubaci<Tab>"+gP
-menutrans Put\ &Before<Tab>[p	 Stavi\ pre&d<Tab>[p
+menutrans &Paste<Tab>"+P	&Ubaci<Tab>"+P
+menutrans Put\ &Before<Tab>[p	 Stavi\ ispre&d<Tab>[p
 menutrans Put\ &After<Tab>]p	 Stavi\ &iza<Tab>]p
 menutrans &Delete<Tab>x		 Iz&bri¹i<Tab>x
 menutrans &Select\ all<Tab>ggVG  Izaberi\ sv&e<Tab>ggVG
@@ -59,11 +60,11 @@ menutrans Find\ and\ Rep&lace\.\.\. Naði\ i\ &zameni\.\.\.
 menutrans Settings\ &Window	 P&rozor\ pode¹avanja
 menutrans Startup\ &Settings	 Po&de¹avanja\ pri\ pokretanju		
 menutrans &Global\ Settings	 Op&¹ta\ pode¹avanja
-menutrans F&ile\ Settings	 Pode¹avanja\ za\ da&toteke
-menutrans &Shiftwidth		 &Pomeraj
+menutrans F&ile\ Settings	 Pode¹avanja\ za\ faj&love
+menutrans &Shiftwidth		 &Korak\ uvlaèenja
 menutrans Soft\ &Tabstop	 &Meka\ tabulacija
 menutrans Te&xt\ Width\.\.\.	 &©irina\ teksta\.\.\.
-menutrans &File\ Format\.\.\.	 &Vrsta\ datoteke\.\.\.
+menutrans &File\ Format\.\.\.	 &Vrsta\ fajla\.\.\.
 menutrans Show\ C&olor\ Schemes\ in\ Menu	Prika¾i\ ¹eme\ bo&ja\ u\ meniju
 menutrans C&olor\ Scheme	\©eme\ bo&ja
 menutrans Show\ &Keymaps\ in\ Menu	Prika¾i\ pres&likavanja\ tastature\ u\ meniju
@@ -71,15 +72,15 @@ menutrans &Keymap	Pres&likavanja\ tastature
 menutrans Select\ Fo&nt\.\.\.	 Izbor\ &fonta\.\.\.
 
 " Edit/Global Settings
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls! Naglasi\ &obrazce\ (da/ne)<Tab>:set\ hls!
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls! Isticanje\ &¹ablona\ (da/ne)<Tab>:set\ hls!
 menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic! Zanemari\ velièinu\ &slova\ (da/ne)<Tab>:set\ ic!
-menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm! Proveri\ prateæu\ &zagradu\ (da/ne)<Tab>:set\ sm!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm! Prika¾i\ uparenu\ &zagradu\ (da/ne)<Tab>:set\ sm!
 menutrans &Context\ lines  Vidljivi\ &redovi
 menutrans &Virtual\ Edit   Virtuelno\ &ureðivanje
-menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!   Re¾im\ u&nosa\ (da/ne)<Tab>:set\ im!
+menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!   Re¾im\ U&metanje\ (da/ne)<Tab>:set\ im!
 menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!     '&Vi'\ saglasno\ (da/ne)<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\. Putanja\ &pretrage\.\.\.
-menutrans Ta&g\ Files\.\.\.   &Datoteke\ oznaka\.\.\.
+menutrans Ta&g\ Files\.\.\.   &Fajlovi\ oznaka\.\.\.
 menutrans Toggle\ &Toolbar    Linija\ sa\ &alatkama\ (da/ne)
 menutrans Toggle\ &Bottom\ Scrollbar   Donja\ l&inija\ klizanja\ (da/ne)
 menutrans Toggle\ &Left\ Scrollbar  &Leva\ linija\ klizanja\ (da/ne)
@@ -88,8 +89,8 @@ menutrans Toggle\ &Right\ Scrollbar &Desna\ linija\ klizanja\ (da/ne)
 " Edit/Global Settings/Virtual Edit
 menutrans Never		      Nikad
 menutrans Block\ Selection    Izbor\ bloka
-menutrans Insert\ mode	      Re¾im\ unosa
-menutrans Block\ and\ Insert  Blok\ i\ unos
+menutrans Insert\ mode	      Re¾im\ Umetanje
+menutrans Block\ and\ Insert  Blok\ i\ Umetanje
 menutrans Always	      Uvek
 
 " Edit/File Settings
@@ -109,13 +110,13 @@ menutrans None Bez\ preslikavanja
 menutrans &Tools	&Alatke
 menutrans &Jump\ to\ this\ tag<Tab>g^] Skoèi\ na\ &ovu\ oznaku<Tab>g^]
 menutrans Jump\ &back<Tab>^T	 Skoèi\ &natrag<Tab>^T
-menutrans Build\ &Tags\ File	 Izgradi\ &datoteku\ oznaka
+menutrans Build\ &Tags\ File	 Izgradi\ &fajl\ oznaka
 menutrans &Spelling	 Pra&vopis
 menutrans &Folding	      &Podvijanje
-menutrans Create\ &Fold<Tab>zf		  S&tvori\ podvijutak<Tab>zf
-menutrans &Delete\ Fold<Tab>zd		  O&bri¹i\ podvijutak<Tab>zd
-menutrans Delete\ &All\ Folds<Tab>zD	  Obri¹i\ sve\ po&dvijutke<Tab>zD
-menutrans Fold\ column\ &width		  ©irina\ &reda\ podvijutka
+menutrans Create\ &Fold<Tab>zf		  S&tvori\ svijutak<Tab>zf
+menutrans &Delete\ Fold<Tab>zd		  O&bri¹i\ svijutak<Tab>zd
+menutrans Delete\ &All\ Folds<Tab>zD	  Obri¹i\ sve\ sv&ijutke<Tab>zD
+menutrans Fold\ column\ &width		  ©irina\ &reda\ cvijutka
 "menutrans &Diff		      &Uporeðivanje
 menutrans &Make<Tab>:make     'mak&e'<Tab>:make
 menutrans &List\ Errors<Tab>:cl     Spisak\ &gre¹aka<Tab>:cl
@@ -146,15 +147,15 @@ menutrans Set\ Language\ to\ "en_us" 	Postavi\ jezik\ na\ "en_us"
 menutrans &Find\ More\ Languages	Pronaði\ jo¹\ jezika 
 
 " Tools/Folding
-menutrans &Enable/Disable\ folds<Tab>zi   &Omoguæi/prekini\ podvijanje<Tab>zi
+menutrans &Enable/Disable\ folds<Tab>zi   &Omoguæi/prekini\ svijanje<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	  &Poka¾i\ red\ sa\ kursorom<Tab>zv
 menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx Poka¾i\ &samo\ red\ sa\ kursorom<Tab>zMzx
-menutrans C&lose\ more\ folds<Tab>zm   &Zatvori\ vi¹e\ podvijutaka<Tab>zm
-menutrans &Close\ all\ folds<Tab>zM    Zatvori\ s&ve\ podvijutke<Tab>zM
-menutrans O&pen\ more\ folds<Tab>zr    Otvori\ vi¹&e\ podvijutaka<Tab>zr
-menutrans &Open\ all\ folds<Tab>zR     O&tvori\ sve\ podvijutke<Tab>zR
+menutrans C&lose\ more\ folds<Tab>zm   &Zatvori\ vi¹e\ svijutaka<Tab>zm
+menutrans &Close\ all\ folds<Tab>zM    Zatvori\ s&ve\ svijutke<Tab>zM
+menutrans O&pen\ more\ folds<Tab>zr    Otvori\ vi¹&e\ svijutaka<Tab>zr
+menutrans &Open\ all\ folds<Tab>zR     O&tvori\ sve\ svijutke<Tab>zR
 menutrans Fold\ Met&hod		       &Naèin\ podvijanja
-menutrans Fold\ Col&umn\ Width	©irina\ kolone\ ispred\ podvijutaka
+menutrans Fold\ Col&umn\ Width	©irina\ kolone\ ispred\ svijutaka
 
 " Tools/Folding/Fold Method
 menutrans M&anual	&Ruèno
@@ -181,7 +182,7 @@ menutrans Delete	   &Obri¹i
 menutrans &Alternate	   A&lternativni
 menutrans &Next		   &Sledeæi
 menutrans &Previous	   &Prethodni
-menutrans [No\ File]	   [Nema\ datoteke]
+menutrans [No\ File]	   [Nema\ fajla]
 
 " Window menu
 menutrans &Window		    &Prozor
@@ -189,7 +190,7 @@ menutrans &New<Tab>^Wn		    &Novi<Tab>^Wn
 menutrans S&plit<Tab>^Ws	    &Podeli<Tab>^Ws
 menutrans Sp&lit\ To\ #<Tab>^W^^    Podeli\ sa\ &alternativnim<Tab>^W^^
 menutrans Split\ &Vertically<Tab>^Wv   Podeli\ &uspravno<Tab>^Wv
-menutrans Split\ File\ E&xplorer    Podeli\ za\ pregled\ &datoteka
+menutrans Split\ File\ E&xplorer    Podeli\ za\ pregled\ &fajlova
 menutrans &Close<Tab>^Wc	    &Zatvori<Tab>^Wc
 menutrans Close\ &Other(s)<Tab>^Wo  Zatvori\ &ostale<Tab>^Wo
 "menutrans Ne&xt<Tab>^Ww       &Sledeæi<Tab>^Ww
@@ -210,7 +211,7 @@ menutrans &Left\ side<Tab>^WH	 U&levo<Tab>^WH
 menutrans &Right\ side<Tab>^WL	 U&desno<Tab>^WL
 
 " The popup menu
-menutrans &Undo		      &Vrati
+menutrans &Undo		      &Poni¹ti
 menutrans Cu&t		      &Iseci
 menutrans &Copy		      &Kopiraj
 menutrans &Paste	      &Ubaci
@@ -218,7 +219,7 @@ menutrans &Delete	      I&zbri¹i
 menutrans Select\ Blockwise   Biraj\ b&lokovski
 menutrans Select\ &Word       Izaberi\ &reè
 menutrans Select\ &Sentence       Izaberi\ r&eèenicu
-menutrans Select\ Pa&ragraph       Izaberi\ &paragraf
+menutrans Select\ Pa&ragraph       Izaberi\ &pasus
 menutrans Select\ &Line       Izaberi\ r&ed
 menutrans Select\ &Block      Izaberi\ &blok
 menutrans Select\ &All	      Izaberi\ &sve
@@ -264,13 +265,13 @@ endif
 
 " Syntax menu
 menutrans &Syntax &Sintaksa
-menutrans &Show\ File\ Types\ in\ Menu  Prika¾i\ tipove\ datoteka\ u\ &meniju
+menutrans &Show\ File\ Types\ in\ Menu  Prika¾i\ tipove\ fajlova\ u\ &meniju
 menutrans Set\ '&syntax'\ only   Pode&si\ samo\ 'syntax' 
 menutrans Set\ '&filetype'\ too  Podesi\ &takoðe\ i\ 'filetype'
 menutrans &Off       &Iskljuèeno
 menutrans &Manual    &Ruèno
 menutrans A&utomatic    &Automatski
-menutrans on/off\ for\ &This\ file     Da/ne\ za\ ovu\ &datoteku
+menutrans on/off\ for\ &This\ file     Da/ne\ za\ ovaj\ &fajl
 menutrans Co&lor\ test     Provera\ &boja
 menutrans &Highlight\ test Provera\ isti&canja
 menutrans &Convert\ to\ HTML  Pretvori\ &u\ HTML
@@ -278,17 +279,17 @@ menutrans &Convert\ to\ HTML  Pretvori\ &u\ HTML
 " dialog texts
 let menutrans_help_dialog = "Unesite naredbu ili reè èije poja¹njenje tra¾ite:\n\nDodajte i_ za naredbe unosa (npr. i_CTRL-X)\nDodajte c_ za naredbe komandnog re¾ima (npr. s_<Del>)\nDodajte ' za imena opcija (npr. 'shiftwidth')"
 
-let g:menutrans_path_dialog = "Unesite put pretrage za datoteke\nRazdvojite zarezima imena direktorijuma."
+let g:menutrans_path_dialog = "Unesite putanju pretrage za fajlove\nRazdvojite zarezima imena direktorijuma."
 
-let g:menutrans_tags_dialog = "Unesite imena datoteka sa oznakama\nRazdvojite zarezima imena."
+let g:menutrans_tags_dialog = "Unesite imena fajlova sa oznakama\nRazdvojite zarezima imena."
 
 let g:menutrans_textwidth_dialog = "Unesite novu ¹irinu teksta (0 spreèava prelom)"
 
-let g:menutrans_fileformat_dialog = "Izaberite format zapisa datoteke"
+let g:menutrans_fileformat_dialog = "Izaberite format zapisa fajla"
 
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Otka¾i"
 
-let menutrans_no_file = "[Nema datoteke]"
+let menutrans_no_file = "[Nema fajla]"
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

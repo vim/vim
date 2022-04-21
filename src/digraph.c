@@ -138,119 +138,7 @@ static digr_T digraphdefault[] =
 	};
 
 #else	// !HPUX_DIGRAPHS
-
-# ifdef EBCDIC
-
-	/*
-	 * EBCDIC - ISO digraphs
-	 * TODO: EBCDIC Table is Code-Page 1047
-	 */
-       {{'a', '^',    66},	// â
-	{'a', '"',    67},	// ä
-	{'a', '`',    68},	// à
-	{'a', '\'',   69},	// á
-	{'a', '~',    70},	// ã
-	{'a', '@',    71},	// å
-	{'a', 'a',    71},	// å
-	{'c', ',',    72},	// ç
-	{'n', '~',    73},	// ñ
-	{'c', '|',    74},	// ¢
-	{'e', '\'',   81},	// é
-	{'e', '^',    82},	// ê
-	{'e', '"',    83},	// ë
-	{'e', '`',    84},	// è
-	{'i', '\'',   85},	// í
-	{'i', '^',    86},	// î
-	{'i', '"',    87},	// ï
-	{'i', '`',    88},	// ì
-	{'s', 's',    89},	// ß
-	{'A', '^',    98},	// Â
-	{'A', '"',    99},	// Ä
-	{'A', '`',   100},	// À
-	{'A', '\'',  101},	// Á
-	{'A', '~',   102},	// Ã
-	{'A', '@',   103},	// Å
-	{'A', 'A',   103},	// Å
-	{'C', ',',   104},	// Ç
-	{'N', '~',   105},	// Ñ
-	{'|', '|',   106},	// ¦
-	{'o', '/',   112},	// ø
-	{'E', '\'',  113},	// É
-	{'E', '^',   114},	// Ê
-	{'E', '"',   115},	// Ë
-	{'E', '`',   116},	// È
-	{'I', '\'',  117},	// Í
-	{'I', '^',   118},	// Î
-	{'I', '"',   119},	// Ï
-	{'I', '`',   120},	// Ì
-	{'O', '/',   128},	// 0/ XX
-	{'<', '<',   138},	// «
-	{'>', '>',   139},	// »
-	{'d', '-',   140},	// ð
-	{'y', '\'',  141},	// ý
-	{'i', 'p',   142},	// þ
-	{'+', '-',   143},	// ±
-	{'~', 'o',   144},	// °
-	{'a', '-',   154},	// ª
-	{'o', '-',   155},	// º
-	{'a', 'e',   156},	// æ
-	{',', ',',   157},	// , XX
-	{'A', 'E',   158},	// Æ
-	{'o', 'x',   159},	// ¤ - currency symbol in ISO 8859-1
-	{'e', '=',   159},	// ¤ - euro symbol in ISO 8859-15
-	{'E', 'u',   159},	// ¤ - euro symbol in ISO 8859-15
-	{'j', 'u',   160},	// µ
-	{'y', '"',   167},	// x XX
-	{'~', '!',   170},	// ¡
-	{'~', '?',   171},	// ¿
-	{'D', '-',   172},	// Ð
-	{'I', 'p',   174},	// Þ
-	{'r', 'O',   175},	// ®
-	{'-', ',',   176},	// ¬
-	{'$', '$',   177},	// £
-	{'Y', '-',   178},	// ¥
-	{'~', '.',   179},	// ·
-	{'c', 'O',   180},	// ©
-	{'p', 'a',   181},	// §
-	{'p', 'p',   182},	// ¶
-	{'1', '4',   183},	// ¼
-	{'1', '2',   184},	// ½
-	{'3', '4',   185},	// ¾
-	{'Y', '\'',  186},	// Ý
-	{'"', '"',   187},	// ¨
-	{'-', '=',   188},	// ¯
-	{'\'', '\'', 190},	// ´
-	{'O', 'E',   191},	// × - OE in ISO 8859-15
-	{'/', '\\',  191},	// × - multiplication symbol in ISO 8859-1
-	{'-', '-',   202},	// ­
-	{'o', '^',   203},	// ô
-	{'o', '"',   204},	// ö
-	{'o', '`',   205},	// ò
-	{'o', '\'',  206},	// ó
-	{'o', '~',   207},	// õ
-	{'1', '1',   218},	// ¹
-	{'u', '^',   219},	// û
-	{'u', '"',   220},	// ü
-	{'u', '`',   221},	// ù
-	{'u', '\'',  222},	// ú
-	{':', '-',   225},	// ÷ - division symbol in ISO 8859-1
-	{'o', 'e',   225},	// ÷ - oe in ISO 8859-15
-	{'2', '2',   234},	// ²
-	{'O', '^',   235},	// Ô
-	{'O', '"',   236},	// Ö
-	{'O', '`',   237},	// Ò
-	{'O', '\'',  238},	// Ó
-	{'O', '~',   239},	// Õ
-	{'3', '3',   250},	// ³
-	{'U', '^',   251},	// Û
-	{'U', '"',   252},	// Ü
-	{'U', '`',   253},	// Ù
-	{'U', '\'',  254},	// Ú
-	{NUL, NUL, NUL}
-	};
-
-# else // EBCDIC
-#  ifdef OLD_DIGRAPHS
+# ifdef OLD_DIGRAPHS
 
 	/*
 	 * digraphs compatible with Vim 5.x
@@ -357,7 +245,7 @@ static digr_T digraphdefault[] =
 	{'y', '"', 255},	// x XX
 	{NUL, NUL, NUL}
 	};
-#  else // OLD_DIGRAPHS
+# else // OLD_DIGRAPHS
 
 	/*
 	 * digraphs for Unicode from RFC1345
@@ -1761,8 +1649,7 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
        };
 
-#  endif // OLD_DIGRAPHS
-# endif // EBCDIC
+# endif // OLD_DIGRAPHS
 #endif // !HPUX_DIGRAPHS
 
 /*
@@ -1781,7 +1668,7 @@ do_digraph(int c)
     else if (p_dg)
     {
 	if (backspaced >= 0)
-	    c = getdigraph(backspaced, c, FALSE);
+	    c = digraph_get(backspaced, c, FALSE);
 	backspaced = -1;
 	if ((c == K_BS || c == Ctrl_H) && lastchar >= 0)
 	    backspaced = lastchar;
@@ -1887,7 +1774,7 @@ get_digraph(
 	--no_mapping;
 	--allow_keys;
 	if (cc != ESC)	    // ESC cancels CTRL-K
-	    return getdigraph(c, cc, TRUE);
+	    return digraph_get(c, cc, TRUE);
     }
     return NUL;
 }
@@ -1981,7 +1868,7 @@ getexactdigraph(int char1, int char2, int meta_char)
  * Allow for both char1-char2 and char2-char1
  */
     int
-getdigraph(int char1, int char2, int meta_char)
+digraph_get(int char1, int char2, int meta_char)
 {
     int	    retval;
 
@@ -1993,6 +1880,65 @@ getdigraph(int char1, int char2, int meta_char)
 }
 
 /*
+ * Add a digraph to the digraph table.
+ */
+    static void
+registerdigraph(int char1, int char2, int n)
+{
+    int		i;
+    digr_T	*dp;
+
+    // If the digraph already exists, replace "result".
+    dp = (digr_T *)user_digraphs.ga_data;
+    for (i = 0; i < user_digraphs.ga_len; ++i)
+    {
+	if ((int)dp->char1 == char1 && (int)dp->char2 == char2)
+	{
+	    dp->result = n;
+	    return;
+	}
+	++dp;
+    }
+
+    // Add a new digraph to the table.
+    if (ga_grow(&user_digraphs, 1) == OK)
+    {
+	dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
+	dp->char1 = char1;
+	dp->char2 = char2;
+	dp->result = n;
+	++user_digraphs.ga_len;
+    }
+}
+
+/*
+ * Check the characters are valid for a digraph.
+ * If they are valid, returns TRUE; otherwise, give an error message and
+ * returns FALSE.
+ */
+    static int
+check_digraph_chars_valid(int char1, int char2)
+{
+    if (char2 == 0)
+    {
+	char_u msg[MB_MAXBYTES + 1];
+
+	msg[mb_char2bytes(char1, msg)] = NUL;
+
+	semsg(_(e_digraph_must_be_just_two_characters_str), msg);
+	return FALSE;
+    }
+    if (char1 == ESC || char2 == ESC)
+    {
+	emsg(_(e_escape_not_allowed_in_digraph));
+	return FALSE;
+    }
+    return TRUE;
+}
+
+
+
+/*
  * Add the digraphs in the argument to the digraph table.
  * format: {c1}{c2} char {c1}{c2} char ...
  */
@@ -2000,8 +1946,6 @@ getdigraph(int char1, int char2, int meta_char)
 putdigraph(char_u *str)
 {
     int		char1, char2, n;
-    int		i;
-    digr_T	*dp;
 
     while (*str != NUL)
     {
@@ -2010,48 +1954,19 @@ putdigraph(char_u *str)
 	    return;
 	char1 = *str++;
 	char2 = *str++;
-	if (char2 == 0)
-	{
-	    emsg(_(e_invarg));
+
+	if (!check_digraph_chars_valid(char1, char2))
 	    return;
-	}
-	if (char1 == ESC || char2 == ESC)
-	{
-	    emsg(_("E104: Escape not allowed in digraph"));
-	    return;
-	}
+
 	str = skipwhite(str);
 	if (!VIM_ISDIGIT(*str))
 	{
-	    emsg(_(e_number_exp));
+	    emsg(_(e_number_expected));
 	    return;
 	}
 	n = getdigits(&str);
 
-	// If the digraph already exists, replace the result.
-	dp = (digr_T *)user_digraphs.ga_data;
-	for (i = 0; i < user_digraphs.ga_len; ++i)
-	{
-	    if ((int)dp->char1 == char1 && (int)dp->char2 == char2)
-	    {
-		dp->result = n;
-		break;
-	    }
-	    ++dp;
-	}
-
-	// Add a new digraph to the table.
-	if (i == user_digraphs.ga_len)
-	{
-	    if (ga_grow(&user_digraphs, 1) == OK)
-	    {
-		dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
-		dp->char1 = char1;
-		dp->char2 = char2;
-		dp->result = n;
-		++user_digraphs.ga_len;
-	    }
-	}
+	registerdigraph(char1, char2, n);
     }
 }
 
@@ -2112,6 +2027,97 @@ listdigraphs(int use_headers)
     }
     must_redraw = CLEAR;    // clear screen, because some digraphs may be
 			    // wrong, in which case we messed up ScreenLines
+}
+
+    static void
+digraph_getlist_appendpair(digr_T *dp, list_T *l)
+{
+    char_u	buf[30];
+    char_u	*p;
+    list_T	*l2;
+    listitem_T	*li, *li2;
+
+
+    li = listitem_alloc();
+    if (li == NULL)
+	return;
+    list_append(l, li);
+    li->li_tv.v_type = VAR_LIST;
+    li->li_tv.v_lock = 0;
+
+    l2 = list_alloc();
+    li->li_tv.vval.v_list = l2;
+    if (l2 == NULL)
+	return;
+    ++l2->lv_refcount;
+
+    li2 = listitem_alloc();
+    if (li2 == NULL)
+	return;
+    list_append(l2, li2);
+    li2->li_tv.v_type = VAR_STRING;
+    li2->li_tv.v_lock = 0;
+
+    buf[0] = dp->char1;
+    buf[1] = dp->char2;
+    buf[2] = NUL;
+    li2->li_tv.vval.v_string = vim_strsave(&buf[0]);
+
+    li2 = listitem_alloc();
+    if (li2 == NULL)
+	return;
+    list_append(l2, li2);
+    li2->li_tv.v_type = VAR_STRING;
+    li2->li_tv.v_lock = 0;
+
+    p = buf;
+    if (has_mbyte)
+	p += (*mb_char2bytes)(dp->result, p);
+    else
+	*p++ = (char_u)dp->result;
+    *p = NUL;
+
+    li2->li_tv.vval.v_string = vim_strsave(buf);
+}
+
+    static void
+digraph_getlist_common(int list_all, typval_T *rettv)
+{
+    int		i;
+    digr_T	*dp;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (list_all)
+    {
+	dp = digraphdefault;
+	for (i = 0; dp->char1 != NUL && !got_int; ++i)
+	{
+#ifdef USE_UNICODE_DIGRAPHS
+	    digr_T tmp;
+
+	    tmp.char1 = dp->char1;
+	    tmp.char2 = dp->char2;
+	    tmp.result = getexactdigraph(tmp.char1, tmp.char2, FALSE);
+	    if (tmp.result != 0 && tmp.result != tmp.char2
+					  && (has_mbyte || tmp.result <= 255))
+		digraph_getlist_appendpair(&tmp, rettv->vval.v_list);
+#else
+	    if (getexactdigraph(dp->char1, dp->char2, FALSE) == dp->result
+		    && (has_mbyte || dp->result <= 255))
+		digraph_getlist_appendpair(dp, rettv->vval.v_list);
+#endif
+	    ++dp;
+	}
+    }
+
+    dp = (digr_T *)user_digraphs.ga_data;
+    for (i = 0; i < user_digraphs.ga_len && !got_int; ++i)
+    {
+	digraph_getlist_appendpair(dp, rettv->vval.v_list);
+	++dp;
+    }
 }
 
 static struct dg_header_entry {
@@ -2210,7 +2216,218 @@ printdigraph(digr_T *dp, result_T *previous)
     }
 }
 
+# ifdef FEAT_EVAL
+/*
+ * Get the two digraph characters from a typval.
+ * Return OK or FAIL.
+ */
+    static int
+get_digraph_chars(typval_T *arg, int *char1, int *char2)
+{
+    char_u	buf_chars[NUMBUFLEN];
+    char_u	*chars = tv_get_string_buf_chk(arg, buf_chars);
+    char_u	*p = chars;
+
+    if (p != NULL)
+    {
+	if (*p != NUL)
+	{
+	    *char1 = mb_cptr2char_adv(&p);
+	    if (*p != NUL)
+	    {
+		*char2 = mb_cptr2char_adv(&p);
+		if (*p == NUL)
+		{
+		    if (check_digraph_chars_valid(*char1, *char2))
+			return OK;
+		    return FAIL;
+		}
+	    }
+	}
+    }
+    semsg(_(e_digraph_must_be_just_two_characters_str), chars);
+    return FAIL;
+}
+
+    static int
+digraph_set_common(typval_T *argchars, typval_T *argdigraph)
+{
+    int		char1, char2;
+    char_u	*digraph;
+    char_u	*p;
+    char_u	buf_digraph[NUMBUFLEN];
+    varnumber_T n;
+
+    if (get_digraph_chars(argchars, &char1, &char2) == FAIL)
+	return FALSE;
+
+    digraph = tv_get_string_buf_chk(argdigraph, buf_digraph);
+    if (digraph == NULL)
+	return FALSE;
+    p = digraph;
+    n = mb_cptr2char_adv(&p);
+    if (*p != NUL)
+    {
+	semsg(_(e_digraph_argument_must_be_one_character_str), digraph);
+	return FALSE;
+    }
+
+    registerdigraph(char1, char2, (int)n);
+    return TRUE;
+}
+# endif
+
 #endif // FEAT_DIGRAPHS
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "digraph_get()" function
+ */
+    void
+f_digraph_get(typval_T *argvars, typval_T *rettv)
+{
+# ifdef FEAT_DIGRAPHS
+    int		code;
+    char_u	buf[NUMBUFLEN];
+    char_u	*digraphs;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;  // Return empty string for failure
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    digraphs = tv_get_string_chk(&argvars[0]);
+
+    if (digraphs == NULL)
+	return;
+    else if (STRLEN(digraphs) != 2)
+    {
+	semsg(_(e_digraph_must_be_just_two_characters_str), digraphs);
+	return;
+    }
+    code = digraph_get(digraphs[0], digraphs[1], FALSE);
+
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(code, buf)] = NUL;
+    else {
+	buf[0] = code;
+	buf[1] = NUL;
+    }
+
+    rettv->vval.v_string = vim_strsave(buf);
+# else
+    emsg(_(e_no_digraphs_version));
+# endif
+}
+
+/*
+ * "digraph_getlist()" function
+ */
+    void
+f_digraph_getlist(typval_T *argvars, typval_T *rettv)
+{
+# ifdef FEAT_DIGRAPHS
+    int     flag_list_all;
+
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	flag_list_all = FALSE;
+    else
+    {
+	int         error = FALSE;
+	varnumber_T flag = tv_get_number_chk(&argvars[0], &error);
+	if (error)
+	    return;
+	flag_list_all = flag ? TRUE : FALSE;
+    }
+
+    digraph_getlist_common(flag_list_all, rettv);
+# else
+    emsg(_(e_no_digraphs_version));
+# endif
+}
+
+/*
+ * "digraph_set()" function
+ */
+    void
+f_digraph_set(typval_T *argvars, typval_T *rettv)
+{
+# ifdef FEAT_DIGRAPHS
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_FALSE;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    if (!digraph_set_common(&argvars[0], &argvars[1]))
+	return;
+
+    rettv->vval.v_number = VVAL_TRUE;
+# else
+    emsg(_(e_no_digraphs_version));
+# endif
+}
+
+/*
+ * "digraph_setlist()" function
+ */
+    void
+f_digraph_setlist(typval_T * argvars, typval_T *rettv)
+{
+# ifdef FEAT_DIGRAPHS
+    list_T	*pl, *l;
+    listitem_T	*pli;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_FALSE;
+
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(_(e_digraph_setlist_argument_must_be_list_of_lists_with_two_items));
+	return;
+    }
+
+    pl = argvars[0].vval.v_list;
+    if (pl == NULL)
+    {
+	// Empty list always results in success.
+	rettv->vval.v_number = VVAL_TRUE;
+	return;
+    }
+
+    FOR_ALL_LIST_ITEMS(pl, pli)
+    {
+	if (pli->li_tv.v_type != VAR_LIST)
+	{
+	    emsg(_(e_digraph_setlist_argument_must_be_list_of_lists_with_two_items));
+	    return;
+	}
+
+	l = pli->li_tv.vval.v_list;
+	if (l == NULL || l->lv_len != 2)
+	{
+	    emsg(_(e_digraph_setlist_argument_must_be_list_of_lists_with_two_items));
+	    return;
+	}
+
+	if (!digraph_set_common(&l->lv_first->li_tv,
+						 &l->lv_first->li_next->li_tv))
+	    return;
+    }
+    rettv->vval.v_number = VVAL_TRUE;
+# else
+    emsg(_(e_no_digraphs_version));
+# endif
+}
+
+#endif // FEAT_EVAL
+
 
 #if defined(FEAT_KEYMAP) || defined(PROTO)
 
@@ -2253,7 +2470,7 @@ keymap_init(void)
 	buflen = STRLEN(curbuf->b_p_keymap) + STRLEN(p_enc) + 14;
 	buf = alloc(buflen);
 	if (buf == NULL)
-	    return e_outofmem;
+	    return e_out_of_memory;
 
 	// try finding "keymap/'keymap'_'encoding'.vim"  in 'runtimepath'
 	vim_snprintf((char *)buf, buflen, "keymap/%s_%s.vim",
@@ -2266,7 +2483,7 @@ keymap_init(void)
 	    if (source_runtime(buf, 0) == FAIL)
 	    {
 		vim_free(buf);
-		return N_("E544: Keymap file not found");
+		return N_(e_keymap_file_not_found);
 	    }
 	}
 	vim_free(buf);
@@ -2290,9 +2507,9 @@ ex_loadkeymap(exarg_T *eap)
     int		i;
     char_u	*save_cpo = p_cpo;
 
-    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    if (!sourcing_a_script(eap))
     {
-	emsg(_("E105: Using :loadkeymap not in a sourced file"));
+	emsg(_(e_using_loadkeymap_not_in_sourced_file));
 	return;
     }
 
@@ -2302,7 +2519,7 @@ ex_loadkeymap(exarg_T *eap)
     keymap_unload();
 
     curbuf->b_kmap_state = 0;
-    ga_init2(&curbuf->b_kmap_ga, (int)sizeof(kmap_T), 20);
+    ga_init2(&curbuf->b_kmap_ga, sizeof(kmap_T), 20);
 
     // Set 'cpoptions' to "C" to avoid line continuation.
     p_cpo = (char_u *)"C";
@@ -2331,7 +2548,7 @@ ex_loadkeymap(exarg_T *eap)
 		    || *kp->from == NUL || *kp->to == NUL)
 	    {
 		if (kp->to != NULL && *kp->to == NUL)
-		    emsg(_("E791: Empty keymap entry"));
+		    emsg(_(e_empty_keymap_entry));
 		vim_free(kp->from);
 		vim_free(kp->to);
 	    }

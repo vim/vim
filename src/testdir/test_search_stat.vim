@@ -260,6 +260,14 @@ endfunc
 
 func Test_searchcount_fails()
   call assert_fails('echo searchcount("boo!")', 'E715:')
+  call assert_fails('echo searchcount({"timeout" : []})', 'E745:')
+  call assert_fails('echo searchcount({"maxcount" : []})', 'E745:')
+  call assert_fails('echo searchcount({"pattern" : []})', 'E730:')
+  call assert_fails('echo searchcount({"pos" : 1})', 'E475:')
+  call assert_fails('echo searchcount({"pos" : [1]})', 'E475:')
+  call assert_fails('echo searchcount({"pos" : [[], 2, 3]})', 'E745:')
+  call assert_fails('echo searchcount({"pos" : [1, [], 3]})', 'E745:')
+  call assert_fails('echo searchcount({"pos" : [1, 2, []]})', 'E745:')
 endfunc
 
 func Test_searchcount_in_statusline()
@@ -304,15 +312,12 @@ func Test_search_stat_foldopen()
   call writefile(lines, 'Xsearchstat1')
 
   let buf = RunVimInTerminal('-S Xsearchstat1', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_searchstat_3', {})
 
   call term_sendkeys(buf, "n")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_searchstat_3', {})
 
   call term_sendkeys(buf, "n")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_searchstat_3', {})
 
   call StopVimInTerminal(buf)
@@ -335,16 +340,79 @@ func! Test_search_stat_screendump()
   END
   call writefile(lines, 'Xsearchstat')
   let buf = RunVimInTerminal('-S Xsearchstat', #{rows: 10})
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_searchstat_1', {})
 
   call term_sendkeys(buf, ":nnoremap <silent> n n\<cr>")
   call term_sendkeys(buf, "gg0n")
-  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_searchstat_2', {})
 
   call StopVimInTerminal(buf)
   call delete('Xsearchstat')
 endfunc
+
+func Test_search_stat_then_gd()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['int cat;', 'int dog;', 'cat = dog;'])
+    set shortmess-=S
+    set hlsearch
+  END
+  call writefile(lines, 'Xsearchstatgd')
+
+  let buf = RunVimInTerminal('-S Xsearchstatgd', #{rows: 10})
+  call term_sendkeys(buf, "/dog\<CR>")
+  call VerifyScreenDump(buf, 'Test_searchstatgd_1', {})
+
+  call term_sendkeys(buf, "G0gD")
+  call VerifyScreenDump(buf, 'Test_searchstatgd_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xsearchstatgd')
+endfunc
+
+func Test_search_stat_and_incsearch()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['abc--c', '--------abc', '--abc'])
+    set hlsearch
+    set incsearch
+    set bg=dark
+    set showtabline=2
+
+    function MyTabLine()
+    try
+      let a=searchcount(#{recompute: 1, maxcount: -1})
+      return a.current .. '/' .. a.total
+    catch
+      return ''
+    endtry
+    endfunction
+
+    set tabline=%!MyTabLine()
+  END
+  call writefile(lines, 'Xsearchstat_inc')
+
+  let buf = RunVimInTerminal('-S Xsearchstat_inc', #{rows: 10})
+  call term_sendkeys(buf, "/abc")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_searchstat_inc_1', {})
+
+  call term_sendkeys(buf, "\<c-g>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_searchstat_inc_2', {})
+
+  call term_sendkeys(buf, "\<c-g>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_searchstat_inc_3', {})
+
+  call term_sendkeys(buf, "\<esc>:qa\<cr>")
+  call TermWait(buf)
+
+  call StopVimInTerminal(buf)
+  call delete('Xsearchstat_inc')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

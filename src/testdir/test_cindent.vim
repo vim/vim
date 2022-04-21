@@ -996,6 +996,15 @@ func Test_cindent_1()
     22222222222222222;
   }
   }
+  inline namespace {
+    111111111111111111;
+  }
+  inline /* test */ namespace {
+    111111111111111111;
+  }
+  inline/* test */namespace {
+    111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -1017,6 +1026,9 @@ func Test_cindent_1()
   }
   namespace111111111
   {
+    111111111111111111;
+  }
+  inlinenamespace {
     111111111111111111;
   }
 
@@ -1694,9 +1706,9 @@ func Test_cindent_1()
   #endif
 
   int y;		// comment
-  // comment
+			// comment
 
-  // comment
+			// comment
 
   {
   	Constructor(int a,
@@ -1961,6 +1973,15 @@ func Test_cindent_1()
   		22222222222222222;
   	}
   }
+  inline namespace {
+  	111111111111111111;
+  }
+  inline /* test */ namespace {
+  	111111111111111111;
+  }
+  inline/* test */namespace {
+  	111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -1982,6 +2003,9 @@ func Test_cindent_1()
   }
   namespace111111111
   {
+  	111111111111111111;
+  }
+  inlinenamespace {
   	111111111111111111;
   }
 
@@ -4358,6 +4382,15 @@ func Test_cindent_47()
     22222222222222222;
   }
   }
+  inline namespace {
+    111111111111111111;
+  }
+  inline /* test */ namespace {
+    111111111111111111;
+  }
+  inline/* test */namespace {
+    111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -4379,6 +4412,9 @@ func Test_cindent_47()
   }
   namespace111111111
   {
+    111111111111111111;
+  }
+  inlinenamespace {
     111111111111111111;
   }
   NAMESPACEEND
@@ -4449,6 +4485,15 @@ func Test_cindent_47()
   22222222222222222;
   }
   }
+  inline namespace {
+  111111111111111111;
+  }
+  inline /* test */ namespace {
+  111111111111111111;
+  }
+  inline/* test */namespace {
+  111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -4470,6 +4515,9 @@ func Test_cindent_47()
   }
   namespace111111111
   {
+  	111111111111111111;
+  }
+  inlinenamespace {
   	111111111111111111;
   }
   NAMESPACEEND
@@ -5271,6 +5319,49 @@ func Test_cindent_change_multline()
   close!
 endfunc
 
+func Test_cindent_scopedecls()
+  new
+  setl cindent ts=4 sw=4
+  setl cino=g0
+  setl cinsd+=public\ slots,signals
+
+  let code =<< trim [CODE]
+  class Foo
+  {
+  public:
+  virtual void foo() = 0;
+  public slots:
+  void onBar();
+  signals:
+  void baz();
+  private:
+  int x;
+  };
+  [CODE]
+
+  call append(0, code)
+  normal gg
+  normal ]]=][
+
+  let expected =<< trim [CODE]
+  class Foo
+  {
+  public:
+	virtual void foo() = 0;
+  public slots:
+	void onBar();
+  signals:
+	void baz();
+  private:
+	int x;
+  };
+
+  [CODE]
+
+  call assert_equal(expected, getline(1, '$'))
+  enew! | close
+endfunc
+
 func Test_cindent_pragma()
   new
   setl cindent ts=4 sw=4
@@ -5306,5 +5397,24 @@ func Test_cindent_pragma()
   call assert_equal(expected, getline(1, '$'))
   enew! | close
 endfunc
+
+func Test_backslash_at_end_of_line()
+  new
+  exe "norm v>O'\\\<C-m>-"
+  exe "norm \<C-q>="
+  bwipe!
+endfunc
+
+func Test_find_brace_backwards()
+  " this was looking beyond the end of the line
+  new
+  norm R/*
+  norm o0{
+  norm o//
+  norm V{=
+  call assert_equal(['/*', '   0{', '//'], getline(1, 3))
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

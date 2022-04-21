@@ -1,5 +1,6 @@
 /* cindent.c */
 int cin_is_cinword(char_u *line);
+int is_pos_in_string(char_u *line, colnr_T col);
 pos_T *find_start_comment(int ind_maxcomment);
 int cindent_on(void);
 void parse_cino(buf_T *buf);

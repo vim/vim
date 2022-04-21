@@ -396,6 +396,26 @@ func Test_rundo_errors()
   call delete('Xundofile')
 endfunc
 
+func Test_undofile_next()
+  set undofile
+  new Xfoo.txt
+  execute "norm ix\<c-g>uy\<c-g>uz\<Esc>"
+  write
+  bwipe
+
+  next Xfoo.txt
+  call assert_equal('xyz', getline(1))
+  silent undo
+  call assert_equal('xy', getline(1))
+  silent undo
+  call assert_equal('x', getline(1))
+  bwipe!
+
+  call delete('Xfoo.txt')
+  call delete('.Xfoo.txt.un~')
+  set undofile&
+endfunc
+
 " Test for undo working properly when executing commands from a register.
 " Also test this in an empty buffer.
 func Test_cmd_in_reg_undo()
@@ -562,7 +582,7 @@ func Test_undofile_2()
 
   " add 10 lines, delete 6 lines, undo 3
   set undofile
-  call setbufline(0, 1, ['one', 'two', 'three', 'four', 'five', 'six',
+  call setbufline('%', 1, ['one', 'two', 'three', 'four', 'five', 'six',
 	      \ 'seven', 'eight', 'nine', 'ten'])
   set undolevels=100
   normal 3Gdd
@@ -711,6 +731,29 @@ func Test_undofile_cryptmethod_blowfish2()
   let ufile = has('vms') ? '_un_Xtestfile' : '.Xtestfile.un~'
   call delete(ufile)
   set undofile& undolevels& cryptmethod&
+endfunc
+
+" Test for redoing with incrementing numbered registers
+func Test_redo_repeat_numbered_register()
+  new
+  for [i, v] in [[1, 'one'], [2, 'two'], [3, 'three'],
+        \ [4, 'four'], [5, 'five'], [6, 'six'],
+        \ [7, 'seven'], [8, 'eight'], [9, 'nine']]
+    exe 'let @' .. i .. '="' .. v .. '\n"'
+  endfor
+  call feedkeys('"1p.........', 'xt')
+  call assert_equal(['', 'one', 'two', 'three', 'four', 'five', 'six',
+        \ 'seven', 'eight', 'nine', 'nine'], getline(1, '$'))
+  bwipe!
+endfunc
+
+" Test for redo in insert mode using CTRL-O with multibyte characters
+func Test_redo_multibyte_in_insert_mode()
+  new
+  call feedkeys("a\<C-K>ft", 'xt')
+  call feedkeys("uiHe\<C-O>.llo", 'xt')
+  call assert_equal("He\ufb05llo", getline(1))
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

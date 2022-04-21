@@ -314,6 +314,8 @@ func Test_python_window()
   10new
   py vim.current.window.height = 5
   call assert_equal(5, winheight(0))
+  py vim.current.window.height = 3.2
+  call assert_equal(3, winheight(0))
 
   " Test for setting the window width
   10vnew
@@ -353,12 +355,12 @@ func Test_python_list()
   call AssertException(["py t = vim.eval('[test_null_list()]')"],
         \ 'Vim(python):SystemError: error return without exception set')
 
-  " Try to bind a null List variable
+  " Try to bind a null List variable (works because an empty list is used)
   let cmds =<< trim END
     let l = test_null_list()
     py ll = vim.bindeval('l')
   END
-  call AssertException(cmds, 'Vim(python):SystemError: error return without exception set')
+  call AssertException(cmds, '')
 
   let l = []
   py l = vim.bindeval('l')
@@ -410,7 +412,7 @@ func Test_python_dict()
   py d = vim.bindeval('d')
   call assert_equal(2, pyeval('len(d)'))
 
-  " Deleting an non-existing key
+  " Deleting a non-existing key
   call AssertException(["py del d['c']"], "Vim(python):KeyError: 'c'")
 endfunc
 
@@ -814,8 +816,12 @@ func Test_python_vim_bindeval()
   call assert_equal(v:none, pyeval("vim.bindeval('v:none')"))
 
   " channel/job
-  call assert_equal(v:none, pyeval("vim.bindeval('test_null_channel()')"))
-  call assert_equal(v:none, pyeval("vim.bindeval('test_null_job()')"))
+  if has('channel')
+    call assert_equal(v:none, pyeval("vim.bindeval('test_null_channel()')"))
+  endif
+  if has('job')
+    call assert_equal(v:none, pyeval("vim.bindeval('test_null_job()')"))
+  endif
 endfunc
 
 " threading
@@ -3692,7 +3698,7 @@ func Test_python_import()
   call assert_equal(expected, getline(2, '$'))
   close!
 
-  " Try to import a non-existing moudle with a dot (.)
+  " Try to import a non-existing module with a dot (.)
   call AssertException(['py import a.b.c'], 'ImportError:')
 endfunc
 
@@ -3773,6 +3779,13 @@ func Test_python_keyboard_interrupt()
   call assert_equal(expected, getline(2, '$'))
   call assert_equal('', output)
   close!
+endfunc
+
+func Test_python_non_utf8_string()
+  smap <Esc>@ <A-@>
+  python vim.command('redir => _tmp_smaps | smap | redir END')
+  python vim.eval('_tmp_smaps').splitlines()
+  sunmap <Esc>@
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -45,111 +45,120 @@ static struct vimvar
 {
     char	*vv_name;	// name of variable, without v:
     dictitem16_T vv_di;		// value and name for key (max 16 chars!)
+    type_T	*vv_type;	// type or NULL
     char	vv_flags;	// VV_COMPAT, VV_RO, VV_RO_SBX
 } vimvars[VV_LEN] =
 {
     // The order here must match the VV_ defines in vim.h!
     // Initializing a union does not work, leave tv.vval empty to get zero's.
-    {VV_NAME("count",		 VAR_NUMBER), VV_COMPAT+VV_RO},
-    {VV_NAME("count1",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("prevcount",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("errmsg",		 VAR_STRING), VV_COMPAT},
-    {VV_NAME("warningmsg",	 VAR_STRING), 0},
-    {VV_NAME("statusmsg",	 VAR_STRING), 0},
-    {VV_NAME("shell_error",	 VAR_NUMBER), VV_COMPAT+VV_RO},
-    {VV_NAME("this_session",	 VAR_STRING), VV_COMPAT},
-    {VV_NAME("version",		 VAR_NUMBER), VV_COMPAT+VV_RO},
-    {VV_NAME("lnum",		 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("termresponse",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname",		 VAR_STRING), VV_RO},
-    {VV_NAME("lang",		 VAR_STRING), VV_RO},
-    {VV_NAME("lc_time",		 VAR_STRING), VV_RO},
-    {VV_NAME("ctype",		 VAR_STRING), VV_RO},
-    {VV_NAME("charconvert_from", VAR_STRING), VV_RO},
-    {VV_NAME("charconvert_to",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_in",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_out",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_new",	 VAR_STRING), VV_RO},
-    {VV_NAME("fname_diff",	 VAR_STRING), VV_RO},
-    {VV_NAME("cmdarg",		 VAR_STRING), VV_RO},
-    {VV_NAME("foldstart",	 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("foldend",		 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("folddashes",	 VAR_STRING), VV_RO_SBX},
-    {VV_NAME("foldlevel",	 VAR_NUMBER), VV_RO_SBX},
-    {VV_NAME("progname",	 VAR_STRING), VV_RO},
-    {VV_NAME("servername",	 VAR_STRING), VV_RO},
-    {VV_NAME("dying",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("exception",	 VAR_STRING), VV_RO},
-    {VV_NAME("throwpoint",	 VAR_STRING), VV_RO},
-    {VV_NAME("register",	 VAR_STRING), VV_RO},
-    {VV_NAME("cmdbang",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("insertmode",	 VAR_STRING), VV_RO},
-    {VV_NAME("val",		 VAR_UNKNOWN), VV_RO},
-    {VV_NAME("key",		 VAR_UNKNOWN), VV_RO},
-    {VV_NAME("profiling",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("fcs_reason",	 VAR_STRING), VV_RO},
-    {VV_NAME("fcs_choice",	 VAR_STRING), 0},
-    {VV_NAME("beval_bufnr",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_winnr",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_winid",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_lnum",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_col",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("beval_text",	 VAR_STRING), VV_RO},
-    {VV_NAME("scrollstart",	 VAR_STRING), 0},
-    {VV_NAME("swapname",	 VAR_STRING), VV_RO},
-    {VV_NAME("swapchoice",	 VAR_STRING), 0},
-    {VV_NAME("swapcommand",	 VAR_STRING), VV_RO},
-    {VV_NAME("char",		 VAR_STRING), 0},
-    {VV_NAME("mouse_win",	 VAR_NUMBER), 0},
-    {VV_NAME("mouse_winid",	 VAR_NUMBER), 0},
-    {VV_NAME("mouse_lnum",	 VAR_NUMBER), 0},
-    {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
-    {VV_NAME("operator",	 VAR_STRING), VV_RO},
-    {VV_NAME("searchforward",	 VAR_NUMBER), 0},
-    {VV_NAME("hlsearch",	 VAR_NUMBER), 0},
-    {VV_NAME("oldfiles",	 VAR_LIST), 0},
-    {VV_NAME("windowid",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("progpath",	 VAR_STRING), VV_RO},
-    {VV_NAME("completed_item",	 VAR_DICT), VV_RO},
-    {VV_NAME("option_new",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_old",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_oldlocal",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_oldglobal", VAR_STRING), VV_RO},
-    {VV_NAME("option_command",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_type",	 VAR_STRING), VV_RO},
-    {VV_NAME("errors",		 VAR_LIST), 0},
-    {VV_NAME("false",		 VAR_BOOL), VV_RO},
-    {VV_NAME("true",		 VAR_BOOL), VV_RO},
-    {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
-    {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
-    {VV_NAME("numbersize",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("testing",		 VAR_NUMBER), 0},
-    {VV_NAME("t_number",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_string",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_func",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_list",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_dict",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_float",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_bool",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_none",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_job",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_channel",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("t_blob",		 VAR_NUMBER), VV_RO},
-    {VV_NAME("termrfgresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termrbgresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termstyleresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termblinkresp",	 VAR_STRING), VV_RO},
-    {VV_NAME("event",		 VAR_DICT), VV_RO},
-    {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("argv",		 VAR_LIST), VV_RO},
-    {VV_NAME("collate",		 VAR_STRING), VV_RO},
+    {VV_NAME("count",		 VAR_NUMBER), NULL, VV_COMPAT+VV_RO},
+    {VV_NAME("count1",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("prevcount",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("errmsg",		 VAR_STRING), NULL, VV_COMPAT},
+    {VV_NAME("warningmsg",	 VAR_STRING), NULL, 0},
+    {VV_NAME("statusmsg",	 VAR_STRING), NULL, 0},
+    {VV_NAME("shell_error",	 VAR_NUMBER), NULL, VV_COMPAT+VV_RO},
+    {VV_NAME("this_session",	 VAR_STRING), NULL, VV_COMPAT},
+    {VV_NAME("version",		 VAR_NUMBER), NULL, VV_COMPAT+VV_RO},
+    {VV_NAME("lnum",		 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("termresponse",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("lang",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("lc_time",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("ctype",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("charconvert_from", VAR_STRING), NULL, VV_RO},
+    {VV_NAME("charconvert_to",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_in",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_out",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_new",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fname_diff",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("cmdarg",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("foldstart",	 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("foldend",		 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("folddashes",	 VAR_STRING), NULL, VV_RO_SBX},
+    {VV_NAME("foldlevel",	 VAR_NUMBER), NULL, VV_RO_SBX},
+    {VV_NAME("progname",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("servername",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("dying",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("exception",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("throwpoint",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("register",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("cmdbang",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("insertmode",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("val",		 VAR_UNKNOWN), NULL, VV_RO},
+    {VV_NAME("key",		 VAR_UNKNOWN), NULL, VV_RO},
+    {VV_NAME("profiling",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("fcs_reason",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("fcs_choice",	 VAR_STRING), NULL, 0},
+    {VV_NAME("beval_bufnr",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_winnr",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_winid",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_lnum",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_col",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("beval_text",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("scrollstart",	 VAR_STRING), NULL, 0},
+    {VV_NAME("swapname",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("swapchoice",	 VAR_STRING), NULL, 0},
+    {VV_NAME("swapcommand",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("char",		 VAR_STRING), NULL, 0},
+    {VV_NAME("mouse_win",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("mouse_winid",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("mouse_lnum",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("mouse_col",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("operator",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("searchforward",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("hlsearch",	 VAR_NUMBER), NULL, 0},
+    {VV_NAME("oldfiles",	 VAR_LIST), &t_list_string, 0},
+    {VV_NAME("windowid",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("progpath",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("completed_item",	 VAR_DICT), &t_dict_string, VV_RO},
+    {VV_NAME("option_new",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_old",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_oldlocal",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_oldglobal", VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_command",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("option_type",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("errors",		 VAR_LIST), &t_list_string, 0},
+    {VV_NAME("false",		 VAR_BOOL), NULL, VV_RO},
+    {VV_NAME("true",		 VAR_BOOL), NULL, VV_RO},
+    {VV_NAME("none",		 VAR_SPECIAL), NULL, VV_RO},
+    {VV_NAME("null",		 VAR_SPECIAL), NULL, VV_RO},
+    {VV_NAME("numbermax",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("numbermin",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("numbersize",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("vim_did_enter",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("testing",		 VAR_NUMBER), NULL, 0},
+    {VV_NAME("t_number",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_string",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_func",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_list",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_dict",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_float",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_bool",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_none",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_job",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_channel",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_blob",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("termrfgresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termrbgresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termu7resp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termstyleresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("termblinkresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("event",		 VAR_DICT), NULL, VV_RO},
+    {VV_NAME("versionlong",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("echospace",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("argv",		 VAR_LIST), &t_list_string, VV_RO},
+    {VV_NAME("collate",		 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("exiting",		 VAR_SPECIAL), NULL, VV_RO},
+    {VV_NAME("colornames",       VAR_DICT), &t_dict_string, VV_RO},
+    {VV_NAME("sizeofint",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("sizeoflong",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("sizeofpointer",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("maxcol",		 VAR_NUMBER), NULL, VV_RO},
 };
 
 // shorthand
-#define vv_type		vv_di.di_tv.v_type
+#define vv_tv_type	vv_di.di_tv.v_type
 #define vv_nr		vv_di.di_tv.vval.v_number
 #define vv_float	vv_di.di_tv.vval.v_float
 #define vv_str		vv_di.di_tv.vval.v_string
@@ -170,11 +179,9 @@ static void list_buf_vars(int *first);
 static void list_win_vars(int *first);
 static void list_tab_vars(int *first);
 static char_u *list_arg_vars(exarg_T *eap, char_u *arg, int *first);
-static char_u *ex_let_one(char_u *arg, typval_T *tv, int copy, int flags, char_u *endchars, char_u *op);
+static char_u *ex_let_one(char_u *arg, typval_T *tv, int copy, int flags, char_u *endchars, char_u *op, int var_idx);
 static int do_unlet_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
 static int do_lock_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
-static void item_lock(typval_T *tv, int deep, int lock, int check_refcount);
-static void delete_var(hashtab_T *ht, hashitem_T *hi);
 static void list_one_var(dictitem_T *v, char *prefix, int *first);
 static void list_one_var_a(char *prefix, char_u *name, int type, char_u *string, int *first);
 
@@ -209,17 +216,18 @@ evalvars_init(void)
 	    p->vv_di.di_flags = DI_FLAGS_FIX;
 
 	// add to v: scope dict, unless the value is not always available
-	if (p->vv_type != VAR_UNKNOWN)
+	if (p->vv_tv_type != VAR_UNKNOWN)
 	    hash_add(&vimvarht, p->vv_di.di_key);
 	if (p->vv_flags & VV_COMPAT)
 	    // add to compat scope dict
 	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
-    vimvars[VV_VERSION].vv_nr = VIM_VERSION_100;
-    vimvars[VV_VERSIONLONG].vv_nr = VIM_VERSION_100 * 10000 + highest_patch();
+    set_vim_var_nr(VV_VERSION, VIM_VERSION_100);
+    set_vim_var_nr(VV_VERSIONLONG, VIM_VERSION_100 * 10000 + highest_patch());
 
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
+    set_vim_var_nr(VV_EXITING, VVAL_NULL);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
     set_vim_var_list(VV_ERRORS, list_alloc());
     set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
@@ -228,7 +236,13 @@ evalvars_init(void)
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
     set_vim_var_nr(VV_NONE, VVAL_NONE);
     set_vim_var_nr(VV_NULL, VVAL_NULL);
+    set_vim_var_nr(VV_NUMBERMAX, VARNUM_MAX);
+    set_vim_var_nr(VV_NUMBERMIN, VARNUM_MIN);
     set_vim_var_nr(VV_NUMBERSIZE, sizeof(varnumber_T) * 8);
+    set_vim_var_nr(VV_SIZEOFINT, sizeof(int));
+    set_vim_var_nr(VV_SIZEOFLONG, sizeof(long));
+    set_vim_var_nr(VV_SIZEOFPOINTER, sizeof(char *));
+    set_vim_var_nr(VV_MAXCOL, MAXCOL);
 
     set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
     set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);
@@ -243,6 +257,8 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
+
+    set_vim_var_dict(VV_COLORNAMES, dict_alloc());
 
     // Default for v:register is not 0 but '"'.  This is adjusted once the
     // clipboard has been setup by calling reset_reg_var().
@@ -301,11 +317,24 @@ garbage_collect_vimvars(int copyID)
     int
 garbage_collect_scriptvars(int copyID)
 {
-    int		i;
-    int		abort = FALSE;
+    int		    i;
+    int		    idx;
+    int		    abort = FALSE;
+    scriptitem_T    *si;
 
     for (i = 1; i <= script_items.ga_len; ++i)
+    {
 	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL);
+
+	si = SCRIPT_ITEM(i);
+	for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+	{
+	    svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	    if (sv->sv_name != NULL)
+		abort = abort || set_ref_in_item(sv->sv_tv, copyID, NULL, NULL);
+	}
+    }
 
     return abort;
 }
@@ -340,17 +369,25 @@ eval_charconvert(
     char_u	*fname_to)
 {
     int		err = FALSE;
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
 
     set_vim_var_string(VV_CC_FROM, enc_from, -1);
     set_vim_var_string(VV_CC_TO, enc_to, -1);
     set_vim_var_string(VV_FNAME_IN, fname_from, -1);
     set_vim_var_string(VV_FNAME_OUT, fname_to, -1);
+    ctx = get_option_sctx("charconvert");
+    if (ctx != NULL)
+	current_sctx = *ctx;
+
     if (eval_to_bool(p_ccv, &err, NULL, FALSE))
 	err = TRUE;
+
     set_vim_var_string(VV_CC_FROM, NULL, -1);
     set_vim_var_string(VV_CC_TO, NULL, -1);
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
     set_vim_var_string(VV_FNAME_OUT, NULL, -1);
+    current_sctx = saved_sctx;
 
     if (err)
 	return FAIL;
@@ -362,13 +399,21 @@ eval_charconvert(
 eval_printexpr(char_u *fname, char_u *args)
 {
     int		err = FALSE;
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
 
     set_vim_var_string(VV_FNAME_IN, fname, -1);
     set_vim_var_string(VV_CMDARG, args, -1);
+    ctx = get_option_sctx("printexpr");
+    if (ctx != NULL)
+	current_sctx = *ctx;
+
     if (eval_to_bool(p_pexpr, &err, NULL, FALSE))
 	err = TRUE;
+
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
     set_vim_var_string(VV_CMDARG, NULL, -1);
+    current_sctx = saved_sctx;
 
     if (err)
     {
@@ -386,15 +431,26 @@ eval_diff(
     char_u	*newfile,
     char_u	*outfile)
 {
-    int		err = FALSE;
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
+    typval_T	*tv;
 
     set_vim_var_string(VV_FNAME_IN, origfile, -1);
     set_vim_var_string(VV_FNAME_NEW, newfile, -1);
     set_vim_var_string(VV_FNAME_OUT, outfile, -1);
-    (void)eval_to_bool(p_dex, &err, NULL, FALSE);
+
+    ctx = get_option_sctx("diffexpr");
+    if (ctx != NULL)
+	current_sctx = *ctx;
+
+    // errors are ignored
+    tv = eval_expr(p_dex, NULL);
+    free_tv(tv);
+
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
     set_vim_var_string(VV_FNAME_NEW, NULL, -1);
     set_vim_var_string(VV_FNAME_OUT, NULL, -1);
+    current_sctx = saved_sctx;
 }
 
     void
@@ -403,15 +459,26 @@ eval_patch(
     char_u	*difffile,
     char_u	*outfile)
 {
-    int		err;
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
+    typval_T	*tv;
 
     set_vim_var_string(VV_FNAME_IN, origfile, -1);
     set_vim_var_string(VV_FNAME_DIFF, difffile, -1);
     set_vim_var_string(VV_FNAME_OUT, outfile, -1);
-    (void)eval_to_bool(p_pex, &err, NULL, FALSE);
+
+    ctx = get_option_sctx("patchexpr");
+    if (ctx != NULL)
+	current_sctx = *ctx;
+
+    // errors are ignored
+    tv = eval_expr(p_pex, NULL);
+    free_tv(tv);
+
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
     set_vim_var_string(VV_FNAME_DIFF, NULL, -1);
     set_vim_var_string(VV_FNAME_OUT, NULL, -1);
+    current_sctx = saved_sctx;
 }
 # endif
 
@@ -428,12 +495,17 @@ eval_spell_expr(char_u *badword, char_u *expr)
     typval_T	rettv;
     list_T	*list = NULL;
     char_u	*p = skipwhite(expr);
+    sctx_T	saved_sctx = current_sctx;
+    sctx_T	*ctx;
 
     // Set "v:val" to the bad word.
     prepare_vimvar(VV_VAL, &save_val);
     set_vim_var_string(VV_VAL, badword, -1);
     if (p_verbose == 0)
 	++emsg_off;
+    ctx = get_option_sctx("spellsuggest");
+    if (ctx != NULL)
+	current_sctx = *ctx;
 
     if (eval1(&p, &rettv, &EVALARG_EVALUATE) == OK)
     {
@@ -447,6 +519,7 @@ eval_spell_expr(char_u *badword, char_u *expr)
 	--emsg_off;
     clear_tv(get_vim_var_tv(VV_VAL));
     restore_vimvar(VV_VAL, &save_val);
+    current_sctx = saved_sctx;
 
     return list;
 }
@@ -484,7 +557,7 @@ prepare_vimvar(int idx, typval_T *save_tv)
 {
     *save_tv = vimvars[idx].vv_tv;
     vimvars[idx].vv_str = NULL;  // don't free it now
-    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+    if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
 	hash_add(&vimvarht, vimvars[idx].vv_di.di_key);
 }
 
@@ -499,7 +572,7 @@ restore_vimvar(int idx, typval_T *save_tv)
     hashitem_T	*hi;
 
     vimvars[idx].vv_tv = *save_tv;
-    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+    if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
     {
 	hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
 	if (HASHITEM_EMPTY(hi))
@@ -530,6 +603,66 @@ list_script_vars(int *first)
 }
 
 /*
+ * Evaluate all the Vim expressions (`=expr`) in string "str" and return the
+ * resulting string.  The caller must free the returned string.
+ */
+    static char_u *
+eval_all_expr_in_str(char_u *str)
+{
+    garray_T	ga;
+    char_u	*s;
+    char_u	*p;
+    char_u	save_c;
+    char_u	*exprval;
+    int		status;
+
+    ga_init2(&ga, 1, 80);
+    p = str;
+
+    // Look for `=expr`, evaluate the expression and replace `=expr` with the
+    // result.
+    while (*p != NUL)
+    {
+	s = p;
+	while (*p != NUL && (*p != '`' || p[1] != '='))
+	    p++;
+	ga_concat_len(&ga, s, p - s);
+	if (*p == NUL)
+	    break;		// no backtick expression found
+
+	s = p;
+	p += 2;		// skip `=
+
+	status = *p == NUL ? OK : skip_expr(&p, NULL);
+	if (status == FAIL || *p != '`')
+	{
+	    // invalid expression or missing ending backtick
+	    if (status != FAIL)
+		emsg(_(e_missing_backtick));
+	    vim_free(ga.ga_data);
+	    return NULL;
+	}
+	s += 2;		// skip `=
+	save_c = *p;
+	*p = NUL;
+	exprval = eval_to_string(s, TRUE);
+	*p = save_c;
+	p++;
+	if (exprval == NULL)
+	{
+	    // expression evaluation failed
+	    vim_free(ga.ga_data);
+	    return NULL;
+	}
+	ga_concat(&ga, exprval);
+	vim_free(exprval);
+    }
+    ga_append(&ga, NUL);
+
+    return ga.ga_data;
+}
+
+/*
  * Get a list of lines from a HERE document. The here document is a list of
  * lines surrounded by a marker.
  *	cmd << {marker}
@@ -546,59 +679,78 @@ list_script_vars(int *first)
  * tcl, mzscheme), script_get is set to TRUE. In this case, if the marker is
  * missing, then '.' is accepted as a marker.
  *
- * Returns a List with {lines} or NULL.
+ * Returns a List with {lines} or NULL on failure.
  */
     list_T *
 heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 {
-    char_u	*theline;
+    char_u	*theline = NULL;
     char_u	*marker;
     list_T	*l;
     char_u	*p;
+    char_u	*str;
     int		marker_indent_len = 0;
     int		text_indent_len = 0;
     char_u	*text_indent = NULL;
     char_u	dot[] = ".";
+    int		comment_char = in_vim9script() ? '#' : '"';
+    int		evalstr = FALSE;
+    int		eval_failed = FALSE;
 
     if (eap->getline == NULL)
     {
-	emsg(_("E991: cannot use =<< here"));
+	emsg(_(e_cannot_use_heredoc_here));
 	return NULL;
     }
 
     // Check for the optional 'trim' word before the marker
     cmd = skipwhite(cmd);
-    if (STRNCMP(cmd, "trim", 4) == 0 && (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
-    {
-	cmd = skipwhite(cmd + 4);
 
-	// Trim the indentation from all the lines in the here document.
-	// The amount of indentation trimmed is the same as the indentation of
-	// the first line after the :let command line.  To find the end marker
-	// the indent of the :let command line is trimmed.
-	p = *eap->cmdlinep;
-	while (VIM_ISWHITE(*p))
+    while (TRUE)
+    {
+	if (STRNCMP(cmd, "trim", 4) == 0
+		&& (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
 	{
-	    p++;
-	    marker_indent_len++;
+	    cmd = skipwhite(cmd + 4);
+
+	    // Trim the indentation from all the lines in the here document.
+	    // The amount of indentation trimmed is the same as the indentation
+	    // of the first line after the :let command line.  To find the end
+	    // marker the indent of the :let command line is trimmed.
+	    p = *eap->cmdlinep;
+	    while (VIM_ISWHITE(*p))
+	    {
+		p++;
+		marker_indent_len++;
+	    }
+	    text_indent_len = -1;
+
+	    continue;
 	}
-	text_indent_len = -1;
+	if (STRNCMP(cmd, "eval", 4) == 0
+		&& (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
+	{
+	    cmd = skipwhite(cmd + 4);
+	    evalstr = TRUE;
+	    continue;
+	}
+	break;
     }
 
     // The marker is the next word.
-    if (*cmd != NUL && *cmd != '"')
+    if (*cmd != NUL && *cmd != comment_char)
     {
 	marker = skipwhite(cmd);
 	p = skiptowhite(marker);
-	if (*skipwhite(p) != NUL && *skipwhite(p) != '"')
+	if (*skipwhite(p) != NUL && *skipwhite(p) != comment_char)
 	{
-	    semsg(_(e_trailing_arg), p);
+	    semsg(_(e_trailing_characters_str), p);
 	    return NULL;
 	}
 	*p = NUL;
 	if (!script_get && vim_islower(*marker))
 	{
-	    emsg(_("E221: Marker cannot start with lower case letter"));
+	    emsg(_(e_marker_cannot_start_with_lower_case_letter));
 	    return NULL;
 	}
     }
@@ -610,7 +762,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	    marker = dot;
 	else
 	{
-	    emsg(_("E172: Missing marker"));
+	    emsg(_(e_missing_marker));
 	    return NULL;
 	}
     }
@@ -624,10 +776,11 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	int	mi = 0;
 	int	ti = 0;
 
+	vim_free(theline);
 	theline = eap->getline(NUL, eap->cookie, 0, FALSE);
 	if (theline == NULL)
 	{
-	    semsg(_("E990: Missing end marker '%s'"), marker);
+	    semsg(_(e_missing_end_marker_str), marker);
 	    break;
 	}
 
@@ -637,10 +790,12 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 		&& STRNCMP(theline, *eap->cmdlinep, marker_indent_len) == 0)
 	    mi = marker_indent_len;
 	if (STRCMP(marker, theline + mi) == 0)
-	{
-	    vim_free(theline);
 	    break;
-	}
+
+	// If expression evaluation failed in the heredoc, then skip till the
+	// end marker.
+	if (eval_failed)
+	    continue;
 
 	if (text_indent_len == -1 && *theline != NUL)
 	{
@@ -660,13 +815,61 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 		if (theline[ti] != text_indent[ti])
 		    break;
 
-	if (list_append_string(l, theline + ti, -1) == FAIL)
+	str = theline + ti;
+	if (evalstr)
+	{
+	    str = eval_all_expr_in_str(str);
+	    if (str == NULL)
+	    {
+		// expression evaluation failed
+		eval_failed = TRUE;
+		continue;
+	    }
+	    vim_free(theline);
+	    theline = str;
+	}
+
+	if (list_append_string(l, str, -1) == FAIL)
 	    break;
-	vim_free(theline);
     }
+    vim_free(theline);
     vim_free(text_indent);
 
+    if (eval_failed)
+    {
+	// expression evaluation in the heredoc failed
+	list_free(l);
+	return NULL;
+    }
     return l;
+}
+
+/*
+ * Vim9 variable declaration:
+ * ":var name"
+ * ":var name: type"
+ * ":var name = expr"
+ * ":var name: type = expr"
+ * etc.
+ */
+    void
+ex_var(exarg_T *eap)
+{
+    char_u *p = eap->cmd;
+    int	    has_var;
+
+    if (!in_vim9script())
+    {
+	semsg(_(e_str_cannot_be_used_in_legacy_vim_script), ":var");
+	return;
+    }
+    has_var = checkforcmd_noparen(&p, "var", 3);
+    if (current_sctx.sc_sid == 0 && has_var)
+    {
+	emsg(_(e_cannot_declare_variable_on_command_line));
+	return;
+    }
+    ex_let(eap);
 }
 
 /*
@@ -683,6 +886,9 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
  * ":let [var1, var2] = expr"	unpack list.
  * ":let var =<< ..."		heredoc
  * ":let var: string"		Vim9 declaration
+ *
+ * ":final var = expr"		assignment command.
+ * ":final [var1, var2] = expr"	unpack list.
  *
  * ":const"			list all variable values
  * ":const var1 var2"		list variable values
@@ -703,12 +909,29 @@ ex_let(exarg_T *eap)
     int		first = TRUE;
     int		concat;
     int		has_assign;
-    int		flags = eap->cmdidx == CMD_const ? LET_IS_CONST : 0;
+    int		flags = 0;
     int		vim9script = in_vim9script();
 
-    // detect Vim9 assignment without ":let" or ":const"
+    if (eap->cmdidx == CMD_final && !vim9script)
+    {
+	// In legacy Vim script ":final" is short for ":finally".
+	ex_finally(eap);
+	return;
+    }
+    if (eap->cmdidx == CMD_let && vim9script)
+    {
+	emsg(_(e_cannot_use_let_in_vim9_script));
+	return;
+    }
+
+    if (eap->cmdidx == CMD_const)
+	flags |= ASSIGN_CONST;
+    else if (eap->cmdidx == CMD_final)
+	flags |= ASSIGN_FINAL;
+
+    // Vim9 assignment without ":let", ":const" or ":final"
     if (eap->arg == eap->cmd)
-	flags |= LET_NO_COMMAND;
+	flags |= ASSIGN_NO_DECL;
 
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon, FALSE);
     if (argend == NULL)
@@ -717,7 +940,7 @@ ex_let(exarg_T *eap)
 	--argend;
     expr = skipwhite(argend);
     concat = expr[0] == '.'
-	&& ((expr[1] == '=' && current_sctx.sc_version < 2)
+	&& ((expr[1] == '=' && in_old_script(2))
 		|| (expr[1] == '.' && expr[2] == '='));
     has_assign =  *expr == '=' || (vim_strchr((char_u *)"+-*/%", *expr) != NULL
 							    && expr[1] == '=');
@@ -725,15 +948,18 @@ ex_let(exarg_T *eap)
     {
 	// ":let" without "=": list variables
 	if (*arg == '[')
-	    emsg(_(e_invarg));
+	    emsg(_(e_invalid_argument));
 	else if (expr[0] == '.' && expr[1] == '=')
-	    emsg(_("E985: .= is not supported with script version >= 2"));
+	    emsg(_(e_dot_equal_not_supported_with_script_version_two));
 	else if (!ends_excmd2(eap->cmd, arg))
 	{
 	    if (vim9script)
 	    {
-		// Vim9 declaration ":let var: type"
-		arg = vim9_declare_scriptvar(eap, arg);
+		if (!ends_excmd2(eap->cmd, skipwhite(argend)))
+		    semsg(_(e_trailing_characters_str), argend);
+		else
+		    // Vim9 declaration ":var name: type"
+		    arg = vim9_declare_scriptvar(eap, arg);
 	    }
 	    else
 	    {
@@ -752,11 +978,12 @@ ex_let(exarg_T *eap)
 	    list_func_vars(&first);
 	    list_vim_vars(&first);
 	}
-	eap->nextcmd = check_nextcmd(arg);
+	set_nextcmd(eap, arg);
     }
     else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
 	list_T	*l;
+	long	cur_lnum = SOURCING_LNUM;
 
 	// HERE document
 	l = heredoc_get(eap, expr + 3, FALSE);
@@ -765,6 +992,8 @@ ex_let(exarg_T *eap)
 	    rettv_list_set(&rettv, l);
 	    if (!eap->skip)
 	    {
+		// errors are for the assignment, not the end marker
+		SOURCING_LNUM = cur_lnum;
 		op[0] = '=';
 		op[1] = NUL;
 		(void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
@@ -782,11 +1011,13 @@ ex_let(exarg_T *eap)
 	i = FAIL;
 	if (has_assign || concat)
 	{
+	    int cur_lnum;
+
 	    op[0] = '=';
 	    op[1] = NUL;
 	    if (*expr != '=')
 	    {
-		if (vim9script && (flags & LET_NO_COMMAND) == 0)
+		if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
 		{
 		    // +=, /=, etc. require an existing variable
 		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
@@ -807,28 +1038,28 @@ ex_let(exarg_T *eap)
 	    else
 		++expr;
 
-	    if (vim9script && (!VIM_ISWHITE(*argend)
+	    if (vim9script && !eap->skip && (!VIM_ISWHITE(*argend)
 						   || !IS_WHITE_OR_NUL(*expr)))
 	    {
 		vim_strncpy(op, expr - len, len);
-		semsg(_(e_white_space_required_before_and_after_str), op);
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								   op, argend);
 		i = FAIL;
 	    }
 
 	    if (eap->skip)
 		++emsg_skip;
-	    CLEAR_FIELD(evalarg);
-	    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
-	    if (getline_equal(eap->getline, eap->cookie, getsourceline))
-	    {
-		evalarg.eval_getline = eap->getline;
-		evalarg.eval_cookie = eap->cookie;
-	    }
+	    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
 	    expr = skipwhite_and_linebreak(expr, &evalarg);
+	    cur_lnum = SOURCING_LNUM;
 	    i = eval0(expr, &rettv, eap, &evalarg);
 	    if (eap->skip)
 		--emsg_skip;
 	    clear_evalarg(&evalarg, eap);
+
+	    // Restore the line number so that any type error is given for the
+	    // declaration, not the expression.
+	    SOURCING_LNUM = cur_lnum;
 	}
 	if (eap->skip)
 	{
@@ -845,7 +1076,7 @@ ex_let(exarg_T *eap)
 }
 
 /*
- * Assign the typevalue "tv" to the variable or variables at "arg_start".
+ * Assign the typeval "tv" to the variable or variables at "arg_start".
  * Handles both "var" with any type and "[var, var; var]" with a list type.
  * When "op" is not NULL it points to a string with characters that
  * must appear after the variable(s).  Use "+", "-" or "." for add, subtract
@@ -859,19 +1090,25 @@ ex_let_vars(
     int		copy,		// copy values from "tv", don't move
     int		semicolon,	// from skip_var_list()
     int		var_count,	// from skip_var_list()
-    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags,		// ASSIGN_FINAL, ASSIGN_CONST, etc.
     char_u	*op)
 {
     char_u	*arg = arg_start;
     list_T	*l;
     int		i;
+    int		var_idx = 0;
     listitem_T	*item;
     typval_T	ltv;
 
+    if (tv->v_type == VAR_VOID)
+    {
+	emsg(_(e_cannot_use_void_value));
+	return FAIL;
+    }
     if (*arg != '[')
     {
 	// ":let var = expr" or ":for var in list"
-	if (ex_let_one(arg, tv, copy, flags, op, op) == NULL)
+	if (ex_let_one(arg, tv, copy, flags, op, op, var_idx) == NULL)
 	    return FAIL;
 	return OK;
     }
@@ -879,19 +1116,19 @@ ex_let_vars(
     // ":let [v1, v2] = list" or ":for [v1, v2] in listlist"
     if (tv->v_type != VAR_LIST || (l = tv->vval.v_list) == NULL)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_list_required));
 	return FAIL;
     }
 
     i = list_len(l);
     if (semicolon == 0 && var_count < i)
     {
-	emsg(_("E687: Less targets than List items"));
+	emsg(_(e_less_targets_than_list_items));
 	return FAIL;
     }
     if (var_count - semicolon > i)
     {
-	emsg(_("E688: More targets than List items"));
+	emsg(_(e_more_targets_than_list_items));
 	return FAIL;
     }
 
@@ -900,7 +1137,9 @@ ex_let_vars(
     while (*arg != ']')
     {
 	arg = skipwhite(arg + 1);
-	arg = ex_let_one(arg, &item->li_tv, TRUE, flags, (char_u *)",;]", op);
+	++var_idx;
+	arg = ex_let_one(arg, &item->li_tv, TRUE,
+			  flags | ASSIGN_UNPACK, (char_u *)",;]", op, var_idx);
 	item = item->li_next;
 	if (arg == NULL)
 	    return FAIL;
@@ -923,9 +1162,10 @@ ex_let_vars(
 	    ltv.v_lock = 0;
 	    ltv.vval.v_list = l;
 	    l->lv_refcount = 1;
+	    ++var_idx;
 
-	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE, flags,
-							    (char_u *)"]", op);
+	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE,
+			    flags | ASSIGN_UNPACK, (char_u *)"]", op, var_idx);
 	    clear_tv(&ltv);
 	    if (arg == NULL)
 		return FAIL;
@@ -966,11 +1206,11 @@ skip_var_list(
 	for (;;)
 	{
 	    p = skipwhite(p + 1);	// skip whites after '[', ';' or ','
-	    s = skip_var_one(p, FALSE);
+	    s = skip_var_one(p, include_type);
 	    if (s == p)
 	    {
 		if (!silent)
-		    semsg(_(e_invarg2), p);
+		    semsg(_(e_invalid_argument_str), p);
 		return NULL;
 	    }
 	    ++*var_count;
@@ -982,7 +1222,8 @@ skip_var_list(
 	    {
 		if (*semicolon == 1)
 		{
-		    emsg(_("E452: Double ; in list of variables"));
+		    if (!silent)
+			emsg(_(e_double_semicolon_in_list_of_variables));
 		    return NULL;
 		}
 		*semicolon = 1;
@@ -990,7 +1231,7 @@ skip_var_list(
 	    else if (*p != ',')
 	    {
 		if (!silent)
-		    semsg(_(e_invarg2), p);
+		    semsg(_(e_invalid_argument_str), p);
 		return NULL;
 	    }
 	}
@@ -1008,17 +1249,21 @@ skip_var_list(
     char_u *
 skip_var_one(char_u *arg, int include_type)
 {
-    char_u *end;
+    char_u	*end;
+    int		vim9 = in_vim9script();
 
     if (*arg == '@' && arg[1] != NUL)
 	return arg + 2;
     end = find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
 				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
-    if (include_type && in_vim9script())
+
+    // "a: type" is declaring variable "a" with a type, not "a:".
+    // Same for "s: type".
+    if (vim9 && end == arg + 2 && end[-1] == ':')
+	--end;
+
+    if (include_type && vim9)
     {
-	// "a: type" is declaring variable "a" with a type, not "a:".
-	if (end == arg + 2 && end[-1] == ':')
-	    --end;
 	if (*end == ':')
 	    end = skip_type(skipwhite(end + 1), FALSE);
     }
@@ -1120,7 +1365,8 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		semsg(_(e_trailing_arg), arg);
+		if (!did_emsg)
+		    semsg(_(e_trailing_characters_str), arg);
 		break;
 	    }
 	}
@@ -1136,7 +1382,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		if (len < 0 && !aborting())
 		{
 		    emsg_severe = TRUE;
-		    semsg(_(e_invarg2), arg);
+		    semsg(_(e_invalid_argument_str), arg);
 		    break;
 		}
 		error = TRUE;
@@ -1146,14 +1392,15 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		arg = skipwhite(arg);
 		if (tofree != NULL)
 		    name = tofree;
-		if (eval_variable(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
+		if (eval_variable(name, len, 0, &tv, NULL,
+						     EVAL_VAR_VERBOSE) == FAIL)
 		    error = TRUE;
 		else
 		{
 		    // handle d.key, l[idx], f(expr)
 		    arg_subsc = arg;
-		    if (handle_subscript(&arg, &tv, &EVALARG_EVALUATE, TRUE)
-								       == FAIL)
+		    if (handle_subscript(&arg, name_start, &tv,
+					      &EVALARG_EVALUATE, TRUE) == FAIL)
 			error = TRUE;
 		    else
 		    {
@@ -1169,7 +1416,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 				case 's': list_script_vars(first); break;
 				case 'l': list_func_vars(first); break;
 				default:
-					  semsg(_("E738: Can't list variables for %s"), name);
+					  semsg(_(e_cant_list_variables_for_str), name);
 			    }
 			}
 			else
@@ -1205,6 +1452,256 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 }
 
 /*
+ * Set an environment variable, part of ex_let_one().
+ */
+    static char_u *
+ex_let_env(
+    char_u	*arg,
+    typval_T	*tv,
+    int		flags,
+    char_u	*endchars,
+    char_u	*op)
+{
+    char_u	*arg_end = NULL;
+    char_u	*name;
+    int		len;
+
+    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					 && (flags & ASSIGN_FOR_LOOP) == 0)
+    {
+	emsg(_(e_cannot_lock_environment_variable));
+	return NULL;
+    }
+
+    // Find the end of the name.
+    ++arg;
+    name = arg;
+    len = get_env_len(&arg);
+    if (len == 0)
+	semsg(_(e_invalid_argument_str), name - 1);
+    else
+    {
+	if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
+	    semsg(_(e_wrong_variable_type_for_str_equal), op);
+	else if (endchars != NULL
+			      && vim_strchr(endchars, *skipwhite(arg)) == NULL)
+	    emsg(_(e_unexpected_characters_in_let));
+	else if (!check_secure())
+	{
+	    char_u	*tofree = NULL;
+	    int		c1 = name[len];
+	    char_u	*p;
+
+	    name[len] = NUL;
+	    p = tv_get_string_chk(tv);
+	    if (p != NULL && op != NULL && *op == '.')
+	    {
+		int	mustfree = FALSE;
+		char_u  *s = vim_getenv(name, &mustfree);
+
+		if (s != NULL)
+		{
+		    p = tofree = concat_str(s, p);
+		    if (mustfree)
+			vim_free(s);
+		}
+	    }
+	    if (p != NULL)
+	    {
+		vim_setenv_ext(name, p);
+		arg_end = arg;
+	    }
+	    name[len] = c1;
+	    vim_free(tofree);
+	}
+    }
+    return arg_end;
+}
+
+/*
+ * Set an option, part of ex_let_one().
+ */
+    static char_u *
+ex_let_option(
+    char_u	*arg,
+    typval_T	*tv,
+    int		flags,
+    char_u	*endchars,
+    char_u	*op)
+{
+    char_u	*p;
+    int		scope;
+    char_u	*arg_end = NULL;
+
+    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					 && (flags & ASSIGN_FOR_LOOP) == 0)
+    {
+	emsg(_(e_cannot_lock_option));
+	return NULL;
+    }
+
+    // Find the end of the name.
+    p = find_option_end(&arg, &scope);
+    if (p == NULL || (endchars != NULL
+			       && vim_strchr(endchars, *skipwhite(p)) == NULL))
+	emsg(_(e_unexpected_characters_in_let));
+    else
+    {
+	int	    c1;
+	long	    n = 0;
+	getoption_T opt_type;
+	long	    numval;
+	char_u	    *stringval = NULL;
+	char_u	    *s = NULL;
+	int	    failed = FALSE;
+	int	    opt_p_flags;
+	char_u	    *tofree = NULL;
+	char_u	    numbuf[NUMBUFLEN];
+
+	c1 = *p;
+	*p = NUL;
+
+	opt_type = get_option_value(arg, &numval, &stringval, &opt_p_flags,
+									scope);
+	if ((opt_type == gov_bool
+		    || opt_type == gov_number
+		    || opt_type == gov_hidden_bool
+		    || opt_type == gov_hidden_number)
+			 && (tv->v_type != VAR_STRING || !in_vim9script()))
+	{
+	    if (opt_type == gov_bool || opt_type == gov_hidden_bool)
+		// bool, possibly hidden
+		n = (long)tv_get_bool(tv);
+	    else
+		// number, possibly hidden
+		n = (long)tv_get_number(tv);
+	}
+
+	if ((opt_p_flags & P_FUNC) && (tv->v_type == VAR_PARTIAL
+						|| tv->v_type == VAR_FUNC))
+	{
+	    // If the option can be set to a function reference or a lambda
+	    // and the passed value is a function reference, then convert it to
+	    // the name (string) of the function reference.
+	    s = tv2string(tv, &tofree, numbuf, 0);
+	}
+	// Avoid setting a string option to the text "v:false" or similar.
+	// In Vim9 script also don't convert a number to string.
+	else if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
+			 && (!in_vim9script() || tv->v_type != VAR_NUMBER))
+	    s = tv_get_string_chk(tv);
+
+	if (op != NULL && *op != '=')
+	{
+	    if (((opt_type == gov_bool || opt_type == gov_number) && *op == '.')
+		    || (opt_type == gov_string && *op != '.'))
+	    {
+		semsg(_(e_wrong_variable_type_for_str_equal), op);
+		failed = TRUE;  // don't set the value
+
+	    }
+	    else
+	    {
+		// number, in legacy script also bool
+		if (opt_type == gov_number
+			     || (opt_type == gov_bool && !in_vim9script()))
+		{
+		    switch (*op)
+		    {
+			case '+': n = numval + n; break;
+			case '-': n = numval - n; break;
+			case '*': n = numval * n; break;
+			case '/': n = (long)num_divide(numval, n,
+							       &failed); break;
+			case '%': n = (long)num_modulus(numval, n,
+							       &failed); break;
+		    }
+		    s = NULL;
+		}
+		else if (opt_type == gov_string
+					 && stringval != NULL && s != NULL)
+		{
+		    // string
+		    s = concat_str(stringval, s);
+		    vim_free(stringval);
+		    stringval = s;
+		}
+	    }
+	}
+
+	if (!failed)
+	{
+	    if (opt_type != gov_string || s != NULL)
+	    {
+		char *err = set_option_value(arg, n, s, scope);
+
+		arg_end = p;
+		if (err != NULL)
+		    emsg(_(err));
+	    }
+	    else
+		emsg(_(e_string_required));
+	}
+	*p = c1;
+	vim_free(stringval);
+	vim_free(tofree);
+    }
+    return arg_end;
+}
+
+/*
+ * Set a register, part of ex_let_one().
+ */
+    static char_u *
+ex_let_register(
+    char_u	*arg,
+    typval_T	*tv,
+    int		flags,
+    char_u	*endchars,
+    char_u	*op)
+{
+    char_u	*arg_end = NULL;
+
+    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					 && (flags & ASSIGN_FOR_LOOP) == 0)
+    {
+	emsg(_(e_cannot_lock_register));
+	return NULL;
+    }
+    ++arg;
+    if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
+    else if (endchars != NULL
+			  && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
+	emsg(_(e_unexpected_characters_in_let));
+    else
+    {
+	char_u	*ptofree = NULL;
+	char_u	*p;
+
+	p = tv_get_string_chk(tv);
+	if (p != NULL && op != NULL && *op == '.')
+	{
+	    char_u  *s = get_reg_contents(*arg == '@'
+						  ? '"' : *arg, GREG_EXPR_SRC);
+
+	    if (s != NULL)
+	    {
+		p = ptofree = concat_str(s, p);
+		vim_free(s);
+	    }
+	}
+	if (p != NULL)
+	{
+	    write_reg_contents(*arg == '@' ? '"' : *arg, p, -1, FALSE);
+	    arg_end = arg + 1;
+	}
+	vim_free(ptofree);
+    }
+    return arg_end;
+}
+
+/*
  * Set one item of ":let var = expr" or ":let [v1, v2] = list" to its value.
  * Returns a pointer to the char just after the var name.
  * Returns NULL if there is an error.
@@ -1214,223 +1711,69 @@ ex_let_one(
     char_u	*arg,		// points to variable name
     typval_T	*tv,		// value to assign to variable
     int		copy,		// copy value from "tv"
-    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags,		// ASSIGN_CONST, ASSIGN_FINAL, etc.
     char_u	*endchars,	// valid chars after variable name  or NULL
-    char_u	*op)		// "+", "-", "."  or NULL
+    char_u	*op,		// "+", "-", "."  or NULL
+    int		var_idx)	// variable index for "let [a, b] = list"
 {
-    int		c1;
-    char_u	*name;
-    char_u	*p;
     char_u	*arg_end = NULL;
-    int		len;
-    int		opt_flags;
-    char_u	*tofree = NULL;
 
-    if (in_vim9script() && (flags & LET_NO_COMMAND) == 0
+    if (in_vim9script() && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
+			&& (flags & (ASSIGN_CONST | ASSIGN_FINAL)) == 0
 				  && vim_strchr((char_u *)"$@&", *arg) != NULL)
     {
 	vim9_declare_error(arg);
 	return NULL;
     }
 
-    // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
-	if (flags & LET_IS_CONST)
-	{
-	    emsg(_("E996: Cannot lock an environment variable"));
-	    return NULL;
-	}
-
-	// Find the end of the name.
-	++arg;
-	name = arg;
-	len = get_env_len(&arg);
-	if (len == 0)
-	    semsg(_(e_invarg2), name - 1);
-	else
-	{
-	    if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
-		semsg(_(e_letwrong), op);
-	    else if (endchars != NULL
-			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
-		emsg(_(e_letunexp));
-	    else if (!check_secure())
-	    {
-		c1 = name[len];
-		name[len] = NUL;
-		p = tv_get_string_chk(tv);
-		if (p != NULL && op != NULL && *op == '.')
-		{
-		    int	    mustfree = FALSE;
-		    char_u  *s = vim_getenv(name, &mustfree);
-
-		    if (s != NULL)
-		    {
-			p = tofree = concat_str(s, p);
-			if (mustfree)
-			    vim_free(s);
-		    }
-		}
-		if (p != NULL)
-		{
-		    vim_setenv_ext(name, p);
-		    arg_end = arg;
-		}
-		name[len] = c1;
-		vim_free(tofree);
-	    }
-	}
+	// ":let $VAR = expr": Set environment variable.
+	return ex_let_env(arg, tv, flags, endchars, op);
     }
-
-    // ":let &option = expr": Set option value.
-    // ":let &l:option = expr": Set local option value.
-    // ":let &g:option = expr": Set global option value.
     else if (*arg == '&')
     {
-	if (flags & LET_IS_CONST)
-	{
-	    emsg(_(e_const_option));
-	    return NULL;
-	}
-	// Find the end of the name.
-	p = find_option_end(&arg, &opt_flags);
-	if (p == NULL || (endchars != NULL
-			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
-	    emsg(_(e_letunexp));
-	else
-	{
-	    long	n = 0;
-	    int		opt_type;
-	    long	numval;
-	    char_u	*stringval = NULL;
-	    char_u	*s = NULL;
-	    int		failed = FALSE;
-
-	    c1 = *p;
-	    *p = NUL;
-
-	    opt_type = get_option_value(arg, &numval, &stringval, opt_flags);
-	    if ((opt_type == 1 || opt_type == -1)
-			     && (tv->v_type != VAR_STRING || !in_vim9script()))
-		// number, possibly hidden
-		n = (long)tv_get_number(tv);
-
-	    // Avoid setting a string option to the text "v:false" or similar.
-	    // In Vim9 script also don't convert a number to string.
-	    if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
-			     && (!in_vim9script() || tv->v_type != VAR_NUMBER))
-		s = tv_get_string_chk(tv);
-
-	    if (op != NULL && *op != '=')
-	    {
-		if ((opt_type == 1 && *op == '.')
-			|| (opt_type == 0 && *op != '.'))
-		{
-		    semsg(_(e_letwrong), op);
-		    failed = TRUE;  // don't set the value
-
-		}
-		else
-		{
-		    if (opt_type == 1)  // number
-		    {
-			switch (*op)
-			{
-			    case '+': n = numval + n; break;
-			    case '-': n = numval - n; break;
-			    case '*': n = numval * n; break;
-			    case '/': n = (long)num_divide(numval, n); break;
-			    case '%': n = (long)num_modulus(numval, n); break;
-			}
-		    }
-		    else if (opt_type == 0 && stringval != NULL && s != NULL)
-		    {
-			// string
-			s = concat_str(stringval, s);
-			vim_free(stringval);
-			stringval = s;
-		    }
-		}
-	    }
-
-	    if (!failed)
-	    {
-		if (opt_type != 0 || s != NULL)
-		{
-		    set_option_value(arg, n, s, opt_flags);
-		    arg_end = p;
-		}
-		else
-		    emsg(_(e_stringreq));
-	    }
-	    *p = c1;
-	    vim_free(stringval);
-	}
+	// ":let &option = expr": Set option value.
+	// ":let &l:option = expr": Set local option value.
+	// ":let &g:option = expr": Set global option value.
+	// ":for &ts in range(8)": Set option value for for loop
+	return ex_let_option(arg, tv, flags, endchars, op);
     }
-
-    // ":let @r = expr": Set register contents.
     else if (*arg == '@')
     {
-	if (flags & LET_IS_CONST)
-	{
-	    emsg(_("E996: Cannot lock a register"));
-	    return NULL;
-	}
-	++arg;
-	if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
-	    semsg(_(e_letwrong), op);
-	else if (endchars != NULL
-			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
-	    emsg(_(e_letunexp));
-	else
-	{
-	    char_u	*ptofree = NULL;
-	    char_u	*s;
-
-	    p = tv_get_string_chk(tv);
-	    if (p != NULL && op != NULL && *op == '.')
-	    {
-		s = get_reg_contents(*arg == '@' ? '"' : *arg, GREG_EXPR_SRC);
-		if (s != NULL)
-		{
-		    p = ptofree = concat_str(s, p);
-		    vim_free(s);
-		}
-	    }
-	    if (p != NULL)
-	    {
-		write_reg_contents(*arg == '@' ? '"' : *arg, p, -1, FALSE);
-		arg_end = arg + 1;
-	    }
-	    vim_free(ptofree);
-	}
+	// ":let @r = expr": Set register contents.
+	return ex_let_register(arg, tv, flags, endchars, op);
     }
-
-    // ":let var = expr": Set internal variable.
-    // ":let var: type = expr": Set internal variable with type.
-    // ":let {expr} = expr": Idem, name made with curly braces
     else if (eval_isnamec1(*arg) || *arg == '{')
     {
 	lval_T	lv;
+	char_u	*p;
+	int	lval_flags = (flags & (ASSIGN_NO_DECL | ASSIGN_DECL))
+							     ? GLV_NO_DECL : 0;
+	if (op != NULL && *op != '=')
+	    lval_flags |= GLV_ASSIGN_WITH_OP;
 
-	p = get_lval(arg, tv, &lv, FALSE, FALSE, 0, FNE_CHECK_START);
+	// ":let var = expr": Set internal variable.
+	// ":let var: type = expr": Set internal variable with type.
+	// ":let {expr} = expr": Idem, name made with curly braces
+	p = get_lval(arg, tv, &lv, FALSE, FALSE, lval_flags, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars,
 					   *skipwhite(lv.ll_name_end)) == NULL)
-		emsg(_(e_letunexp));
+	    {
+		emsg(_(e_unexpected_characters_in_let));
+	    }
 	    else
 	    {
-		set_var_lval(&lv, p, tv, copy, flags, op);
-		arg_end = p;
+		set_var_lval(&lv, p, tv, copy, flags, op, var_idx);
+		arg_end = lv.ll_name_end;
 	    }
 	}
 	clear_lval(&lv);
     }
-
     else
-	semsg(_(e_invarg2), arg);
+	semsg(_(e_invalid_argument_str), arg);
 
     return arg_end;
 }
@@ -1492,7 +1835,7 @@ ex_unletlock(
 	    ++arg;
 	    if (get_env_len(&arg) == 0)
 	    {
-		semsg(_(e_invarg2), arg - 1);
+		semsg(_(e_invalid_argument_str), arg - 1);
 		return;
 	    }
 	    if (!error && !eap->skip
@@ -1504,7 +1847,7 @@ ex_unletlock(
 	{
 	    // Parse the name and find the end.
 	    name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error,
-						   glv_flags, FNE_CHECK_START);
+				     glv_flags | GLV_NO_DECL, FNE_CHECK_START);
 	    if (lv.ll_name == NULL)
 		error = TRUE;	    // error but continue parsing
 	    if (name_end == NULL || (!VIM_ISWHITE(*name_end)
@@ -1513,7 +1856,7 @@ ex_unletlock(
 		if (name_end != NULL)
 		{
 		    emsg_severe = TRUE;
-		    semsg(_(e_trailing_arg), name_end);
+		    semsg(_(e_trailing_characters_str), name_end);
 		}
 		if (!(eap->skip || error))
 		    clear_lval(&lv);
@@ -1531,7 +1874,7 @@ ex_unletlock(
 	arg = skipwhite(name_end);
     } while (!ends_excmd2(name_end, arg));
 
-    eap->nextcmd = check_nextcmd(arg);
+    set_nextcmd(eap, arg);
 }
 
     static int
@@ -1553,53 +1896,56 @@ do_unlet_var(
 
 	// Environment variable, normal name or expanded name.
 	if (*lp->ll_name == '$')
-	    vim_unsetenv(lp->ll_name + 1);
+	    vim_unsetenv_ext(lp->ll_name + 1);
 	else if (do_unlet(lp->ll_name, forceit) == FAIL)
 	    ret = FAIL;
 	*name_end = cc;
     }
     else if ((lp->ll_list != NULL
-		 && var_check_lock(lp->ll_list->lv_lock, lp->ll_name, FALSE))
+		 && value_check_lock(lp->ll_list->lv_lock, lp->ll_name, FALSE))
 	    || (lp->ll_dict != NULL
-		 && var_check_lock(lp->ll_dict->dv_lock, lp->ll_name, FALSE)))
+		&& value_check_lock(lp->ll_dict->dv_lock, lp->ll_name, FALSE)))
 	return FAIL;
     else if (lp->ll_range)
-    {
-	listitem_T    *li;
-	listitem_T    *ll_li = lp->ll_li;
-	int	      ll_n1 = lp->ll_n1;
-
-	while (ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= ll_n1))
-	{
-	    li = ll_li->li_next;
-	    if (var_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
-		return FAIL;
-	    ll_li = li;
-	    ++ll_n1;
-	}
-
-	// Delete a range of List items.
-	while (lp->ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= lp->ll_n1))
-	{
-	    li = lp->ll_li->li_next;
-	    listitem_remove(lp->ll_list, lp->ll_li);
-	    lp->ll_li = li;
-	    ++lp->ll_n1;
-	}
-    }
+	list_unlet_range(lp->ll_list, lp->ll_li, lp->ll_n1,
+						    !lp->ll_empty2, lp->ll_n2);
+    else if (lp->ll_list != NULL)
+	// unlet a List item.
+	listitem_remove(lp->ll_list, lp->ll_li);
     else
-    {
-	if (lp->ll_list != NULL)
-	    // unlet a List item.
-	    listitem_remove(lp->ll_list, lp->ll_li);
-	else
-	    // unlet a Dictionary item.
-	    dictitem_remove(lp->ll_dict, lp->ll_di);
-    }
+	// unlet a Dictionary item.
+	dictitem_remove(lp->ll_dict, lp->ll_di);
 
     return ret;
 }
 
+/*
+ * Unlet one item or a range of items from a list.
+ * Return OK or FAIL.
+ */
+    void
+list_unlet_range(
+	list_T	    *l,
+	listitem_T  *li_first,
+	long	    n1_arg,
+	int	    has_n2,
+	long	    n2)
+{
+    listitem_T  *li = li_first;
+    int		n1 = n1_arg;
+
+    // Delete a range of List items.
+    li = li_first;
+    n1 = n1_arg;
+    while (li != NULL && (!has_n2 || n2 >= n1))
+    {
+	listitem_T *next = li->li_next;
+
+	listitem_remove(l, li);
+	li = next;
+	++n1;
+    }
+}
 /*
  * "unlet" a variable.  Return OK if it existed, FAIL if not.
  * When "forceit" is TRUE don't complain if the variable doesn't exist.
@@ -1613,10 +1959,20 @@ do_unlet(char_u *name, int forceit)
     dict_T	*d;
     dictitem_T	*di;
 
+    // can't :unlet a script variable in Vim9 script
     if (in_vim9script() && check_vim9_unlet(name) == FAIL)
 	return FAIL;
 
     ht = find_var_ht(name, &varname);
+
+    // can't :unlet a script variable in Vim9 script from a function
+    if (ht == get_script_local_ht()
+	    && SCRIPT_ID_VALID(current_sctx.sc_sid)
+	    && SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
+							 == SCRIPT_VERSION_VIM9
+	    && check_vim9_unlet(name) == FAIL)
+	return FAIL;
+
     if (ht != NULL && *varname != NUL)
     {
 	d = get_current_funccal_dict(ht);
@@ -1645,7 +2001,7 @@ do_unlet(char_u *name, int forceit)
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name, FALSE)
 		    || var_check_ro(di->di_flags, name, FALSE)
-		    || var_check_lock(d->dv_lock, name, FALSE))
+		    || value_check_lock(d->dv_lock, name, FALSE))
 		return FAIL;
 
 	    delete_var(ht, hi);
@@ -1654,7 +2010,7 @@ do_unlet(char_u *name, int forceit)
     }
     if (forceit)
 	return OK;
-    semsg(_("E108: No such variable: \"%s\""), name);
+    semsg(_(e_no_such_variable_str), name);
     return FAIL;
 }
 
@@ -1676,16 +2032,13 @@ do_lock_var(
     int		cc;
     dictitem_T	*di;
 
-    if (deep == 0)	// nothing to do
-	return OK;
-
     if (lp->ll_tv == NULL)
     {
 	cc = *name_end;
 	*name_end = NUL;
 	if (*lp->ll_name == '$')
 	{
-	    semsg(_(e_lock_unlock), lp->ll_name);
+	    semsg(_(e_cannot_lock_or_unlock_variable_str), lp->ll_name);
 	    ret = FAIL;
 	}
 	else
@@ -1693,26 +2046,55 @@ do_lock_var(
 	    // Normal name or expanded name.
 	    di = find_var(lp->ll_name, NULL, TRUE);
 	    if (di == NULL)
-		ret = FAIL;
-	    else if ((di->di_flags & DI_FLAGS_FIX)
-			    && di->di_tv.v_type != VAR_DICT
-			    && di->di_tv.v_type != VAR_LIST)
 	    {
-		// For historic reasons this error is not given for a list or
-		// dict.  E.g., the b: dict could be locked/unlocked.
-		semsg(_(e_lock_unlock), lp->ll_name);
+		if (in_vim9script())
+		    semsg(_(e_cannot_find_variable_to_unlock_str),
+								  lp->ll_name);
 		ret = FAIL;
 	    }
 	    else
 	    {
-		if (lock)
-		    di->di_flags |= DI_FLAGS_LOCK;
+		if ((di->di_flags & DI_FLAGS_FIX)
+			    && di->di_tv.v_type != VAR_DICT
+			    && di->di_tv.v_type != VAR_LIST)
+		{
+		    // For historic reasons this error is not given for a list
+		    // or dict.  E.g., the b: dict could be locked/unlocked.
+		    semsg(_(e_cannot_lock_or_unlock_variable_str), lp->ll_name);
+		    ret = FAIL;
+		}
 		else
-		    di->di_flags &= ~DI_FLAGS_LOCK;
-		item_lock(&di->di_tv, deep, lock, FALSE);
+		{
+		    if (in_vim9script())
+		    {
+			svar_T  *sv = find_typval_in_script(&di->di_tv,
+								     0, FALSE);
+
+			if (sv != NULL && sv->sv_const != 0)
+			{
+			    semsg(_(e_cannot_change_readonly_variable_str),
+								  lp->ll_name);
+			    ret = FAIL;
+			}
+		    }
+
+		    if (ret == OK)
+		    {
+			if (lock)
+			    di->di_flags |= DI_FLAGS_LOCK;
+			else
+			    di->di_flags &= ~DI_FLAGS_LOCK;
+			if (deep != 0)
+			    item_lock(&di->di_tv, deep, lock, FALSE);
+		    }
+		}
 	    }
 	}
 	*name_end = cc;
+    }
+    else if (deep == 0)
+    {
+	// nothing to do
     }
     else if (lp->ll_range)
     {
@@ -1741,7 +2123,7 @@ do_lock_var(
  * When "check_refcount" is TRUE do not lock a list or dict with a reference
  * count larger than 1.
  */
-    static void
+    void
 item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 {
     static int	recurse = 0;
@@ -1754,7 +2136,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 
     if (recurse >= DICT_MAXNEST)
     {
-	emsg(_("E743: variable nested too deep for (un)lock"));
+	emsg(_(e_variable_nested_too_deep_for_unlock));
 	return;
     }
     if (deep == 0)
@@ -1781,6 +2163,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 	    break;
 
 	case VAR_BLOB:
@@ -1801,10 +2184,18 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 		    l->lv_lock |= VAR_LOCKED;
 		else
 		    l->lv_lock &= ~VAR_LOCKED;
-		if ((deep < 0 || deep > 1) && l->lv_first != &range_list_item)
-		    // recursive: lock/unlock the items the List contains
-		    FOR_ALL_LIST_ITEMS(l, li)
-			item_lock(&li->li_tv, deep - 1, lock, check_refcount);
+		if (deep < 0 || deep > 1)
+		{
+		    if (l->lv_first == &range_list_item)
+			l->lv_lock |= VAR_ITEMS_LOCKED;
+		    else
+		    {
+			// recursive: lock/unlock the items the List contains
+			CHECK_LIST_MATERIALIZE(l);
+			FOR_ALL_LIST_ITEMS(l, li) item_lock(&li->li_tv,
+					       deep - 1, lock, check_refcount);
+		    }
+		}
 	    }
 	    break;
 	case VAR_DICT:
@@ -1871,7 +2262,7 @@ static int	varnamebuflen = 0;
 /*
  * Function to concatenate a prefix and a variable name.
  */
-    static char_u *
+    char_u *
 cat_prefix_varname(int prefix, char_u *name)
 {
     int		len;
@@ -1931,7 +2322,7 @@ get_user_var_name(expand_T *xp, int idx)
     }
 
     // b: variables
-    ht = &curbuf->b_vars->dv_hashtab;
+    ht = &prevwin_curwin()->w_buffer->b_vars->dv_hashtab;
     if (bdone < ht->ht_used)
     {
 	if (bdone++ == 0)
@@ -1944,7 +2335,7 @@ get_user_var_name(expand_T *xp, int idx)
     }
 
     // w: variables
-    ht = &curwin->w_vars->dv_hashtab;
+    ht = &prevwin_curwin()->w_vars->dv_hashtab;
     if (wdone < ht->ht_used)
     {
 	if (wdone++ == 0)
@@ -1983,10 +2374,10 @@ get_var_special_name(int nr)
 {
     switch (nr)
     {
-	case VVAL_FALSE: return "v:false";
-	case VVAL_TRUE:  return "v:true";
+	case VVAL_FALSE: return in_vim9script() ? "false" : "v:false";
+	case VVAL_TRUE:  return in_vim9script() ? "true" : "v:true";
+	case VVAL_NULL:  return in_vim9script() ? "null" : "v:null";
 	case VVAL_NONE:  return "v:none";
-	case VVAL_NULL:  return "v:null";
     }
     internal_error("get_var_special_name()");
     return "42";
@@ -2043,7 +2434,7 @@ find_vim_var(char_u *name, int *di_flags)
     void
 set_vim_var_type(int idx, vartype_T type)
 {
-    vimvars[idx].vv_type = type;
+    vimvars[idx].vv_tv_type = type;
 }
 
 /*
@@ -2071,6 +2462,14 @@ get_vim_var_tv(int idx)
     return &vimvars[idx].vv_tv;
 }
 
+    type_T *
+get_vim_var_type(int idx, garray_T *type_list)
+{
+    if (vimvars[idx].vv_type != NULL)
+	return vimvars[idx].vv_type;
+    return typval2type_vimvar(&vimvars[idx].vv_tv, type_list);
+}
+
 /*
  * Set v: variable to "tv".  Only accepts the same type.
  * Takes over the value of "tv".
@@ -2078,7 +2477,7 @@ get_vim_var_tv(int idx)
     int
 set_vim_var_tv(int idx, typval_T *tv)
 {
-    if (vimvars[idx].vv_type != tv->v_type)
+    if (vimvars[idx].vv_tv_type != tv->v_type)
     {
 	emsg(_(e_type_mismatch_for_v_variable));
 	clear_tv(tv);
@@ -2087,12 +2486,12 @@ set_vim_var_tv(int idx, typval_T *tv)
     // VV_RO is also checked when compiling, but let's check here as well.
     if (vimvars[idx].vv_flags & VV_RO)
     {
-	semsg(_(e_readonlyvar), vimvars[idx].vv_name);
+	semsg(_(e_cannot_change_readonly_variable_str), vimvars[idx].vv_name);
 	return FAIL;
     }
     if (sandbox && (vimvars[idx].vv_flags & VV_RO_SBX))
     {
-	semsg(_(e_readonlysbx), vimvars[idx].vv_name);
+	semsg(_(e_cannot_set_variable_in_sandbox_str), vimvars[idx].vv_name);
 	return FAIL;
     }
     clear_tv(&vimvars[idx].vv_di.di_tv);
@@ -2208,7 +2607,7 @@ set_vim_var_string(
     int		len)	    // length of "val" to use or -1 (whole string)
 {
     clear_tv(&vimvars[idx].vv_di.di_tv);
-    vimvars[idx].vv_type = VAR_STRING;
+    vimvars[idx].vv_tv_type = VAR_STRING;
     if (val == NULL)
 	vimvars[idx].vv_str = NULL;
     else if (len == -1)
@@ -2224,7 +2623,7 @@ set_vim_var_string(
 set_vim_var_list(int idx, list_T *val)
 {
     clear_tv(&vimvars[idx].vv_di.di_tv);
-    vimvars[idx].vv_type = VAR_LIST;
+    vimvars[idx].vv_tv_type = VAR_LIST;
     vimvars[idx].vv_list = val;
     if (val != NULL)
 	++val->lv_refcount;
@@ -2237,7 +2636,7 @@ set_vim_var_list(int idx, list_T *val)
 set_vim_var_dict(int idx, dict_T *val)
 {
     clear_tv(&vimvars[idx].vv_di.di_tv);
-    vimvars[idx].vv_type = VAR_DICT;
+    vimvars[idx].vv_tv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
     if (val != NULL)
     {
@@ -2404,89 +2803,192 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 
 /*
  * Get the value of internal variable "name".
+ * If "flags" has EVAL_VAR_IMPORT may return a VAR_ANY with v_number set to the
+ * imported script ID.
  * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
  */
     int
 eval_variable(
     char_u	*name,
     int		len,		// length of "name"
+    scid_T	sid,		// script ID for imported item or zero
     typval_T	*rettv,		// NULL when only checking existence
     dictitem_T	**dip,		// non-NULL when typval's dict item is needed
-    int		verbose,	// may give error message
-    int		no_autoload)	// do not use script autoloading
+    int		flags)		// EVAL_VAR_ flags
 {
     int		ret = OK;
     typval_T	*tv = NULL;
-    int		foundFunc = FALSE;
-    dictitem_T	*v;
+    int		found = FALSE;
+    hashtab_T	*ht = NULL;
     int		cc;
+    type_T	*type = NULL;
 
     // truncate the name, so that we can use strcmp()
     cc = name[len];
     name[len] = NUL;
 
-    // Check for user-defined variables.
-    v = find_var(name, NULL, no_autoload);
-    if (v != NULL)
+    // Check for local variable when debugging.
+    if ((tv = lookup_debug_var(name)) == NULL)
     {
-	tv = &v->di_tv;
-	if (dip != NULL)
-	    *dip = v;
+	// Check for user-defined variables.
+	dictitem_T	*v = find_var(name, &ht, flags & EVAL_VAR_NOAUTOLOAD);
+
+	if (v != NULL)
+	{
+	    tv = &v->di_tv;
+	    if (dip != NULL)
+		*dip = v;
+	}
+	else
+	    ht = NULL;
     }
 
     if (tv == NULL && (in_vim9script() || STRNCMP(name, "s:", 2) == 0))
     {
-	imported_T  *import;
+	imported_T  *import = NULL;
 	char_u	    *p = STRNCMP(name, "s:", 2) == 0 ? name + 2 : name;
 
-	import = find_imported(p, 0, NULL);
+	if (sid == 0)
+	    import = find_imported(p, 0, TRUE);
 
 	// imported variable from another script
-	if (import != NULL)
+	if (import != NULL || sid != 0)
 	{
-	    if (import->imp_funcname != NULL)
+	    if ((flags & EVAL_VAR_IMPORT) == 0)
 	    {
-		foundFunc = TRUE;
-		if (rettv != NULL)
+		if (SCRIPT_ID_VALID(sid))
 		{
-		    rettv->v_type = VAR_FUNC;
-		    rettv->vval.v_string = vim_strsave(import->imp_funcname);
+		    ht = &SCRIPT_VARS(sid);
+		    if (ht != NULL)
+		    {
+			dictitem_T *v = find_var_in_ht(ht, 0, name,
+						  flags & EVAL_VAR_NOAUTOLOAD);
+
+			if (v != NULL)
+			{
+			    tv = &v->di_tv;
+			    if (dip != NULL)
+				*dip = v;
+			}
+			else
+			    ht = NULL;
+		    }
+		}
+		else
+		{
+		    if (flags & EVAL_VAR_VERBOSE)
+			semsg(_(e_expected_dot_after_name_str), name);
+		    ret = FAIL;
 		}
 	    }
 	    else
 	    {
-		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
-						    + import->imp_var_vals_idx;
-		tv = sv->sv_tv;
+		if (rettv != NULL)
+		{
+		    rettv->v_type = VAR_ANY;
+		    rettv->vval.v_number = sid != 0 ? sid : import->imp_sid;
+		}
+		found = TRUE;
 	    }
 	}
-	else if (in_vim9script())
+	else if (in_vim9script() && (flags & EVAL_VAR_NO_FUNC) == 0)
 	{
-	    ufunc_T *ufunc = find_func(name, FALSE, NULL);
+	    int	    has_g_prefix = STRNCMP(name, "g:", 2) == 0;
+	    ufunc_T *ufunc = find_func(name, FALSE);
 
-	    if (ufunc != NULL)
+	    // In Vim9 script we can get a function reference by using the
+	    // function name.  For a global non-autoload function "g:" is
+	    // required.
+	    if (ufunc != NULL && (has_g_prefix
+					    || !func_requires_g_prefix(ufunc)))
 	    {
-		foundFunc = TRUE;
+		found = TRUE;
 		if (rettv != NULL)
 		{
 		    rettv->v_type = VAR_FUNC;
-		    rettv->vval.v_string = vim_strsave(ufunc->uf_name);
+		    if (has_g_prefix)
+			// Keep the "g:", otherwise script-local may be
+			// assumed.
+			rettv->vval.v_string = vim_strsave(name);
+		    else
+			rettv->vval.v_string = vim_strsave(ufunc->uf_name);
+		    if (rettv->vval.v_string != NULL)
+			func_ref(ufunc->uf_name);
 		}
 	    }
 	}
     }
 
-    if (!foundFunc)
+    if (!found)
     {
 	if (tv == NULL)
 	{
-	    if (rettv != NULL && verbose)
+	    if (rettv != NULL && (flags & EVAL_VAR_VERBOSE))
 		semsg(_(e_undefined_variable_str), name);
 	    ret = FAIL;
 	}
 	else if (rettv != NULL)
+	{
+	    svar_T  *sv = NULL;
+	    int	    was_assigned = FALSE;
+
+	    if (ht != NULL && ht == get_script_local_ht()
+		    && tv != &SCRIPT_SV(current_sctx.sc_sid)->sv_var.di_tv)
+	    {
+		sv = find_typval_in_script(tv, 0, TRUE);
+		if (sv != NULL)
+		{
+		    type = sv->sv_type;
+		    was_assigned = sv->sv_flags & SVFLAG_ASSIGNED;
+		}
+	    }
+
+	    // If a list or dict variable wasn't initialized and has meaningful
+	    // type, do it now.  Not for global variables, they are not
+	    // declared.
+	    if (ht != &globvarht)
+	    {
+		if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL
+					    && ((type != NULL && !was_assigned)
+							  || !in_vim9script()))
+		{
+		    tv->vval.v_dict = dict_alloc();
+		    if (tv->vval.v_dict != NULL)
+		    {
+			++tv->vval.v_dict->dv_refcount;
+			tv->vval.v_dict->dv_type = alloc_type(type);
+			if (sv != NULL)
+			    sv->sv_flags |= SVFLAG_ASSIGNED;
+		    }
+		}
+		else if (tv->v_type == VAR_LIST && tv->vval.v_list == NULL
+					    && ((type != NULL && !was_assigned)
+							  || !in_vim9script()))
+		{
+		    tv->vval.v_list = list_alloc();
+		    if (tv->vval.v_list != NULL)
+		    {
+			++tv->vval.v_list->lv_refcount;
+			tv->vval.v_list->lv_type = alloc_type(type);
+			if (sv != NULL)
+			    sv->sv_flags |= SVFLAG_ASSIGNED;
+		    }
+		}
+		else if (tv->v_type == VAR_BLOB && tv->vval.v_blob == NULL
+					    && ((type != NULL && !was_assigned)
+							  || !in_vim9script()))
+		{
+		    tv->vval.v_blob = blob_alloc();
+		    if (tv->vval.v_blob != NULL)
+		    {
+			++tv->vval.v_blob->bv_refcount;
+			if (sv != NULL)
+			    sv->sv_flags |= SVFLAG_ASSIGNED;
+		    }
+		}
+	    }
 	    copy_tv(tv, rettv);
+	}
     }
 
     name[len] = cc;
@@ -2526,8 +3028,7 @@ check_vars(char_u *name, int len)
  * Find variable "name" in the list of variables.
  * Return a pointer to it if found, NULL if not found.
  * Careful: "a:0" variables don't have a name.
- * When "htp" is not NULL we are writing to the variable, set "htp" to the
- * hashtab_T used.
+ * When "htp" is not NULL  set "htp" to the hashtab_T used.
  */
     dictitem_T *
 find_var(char_u *name, hashtab_T **htp, int no_autoload)
@@ -2541,12 +3042,91 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	*htp = ht;
     if (ht == NULL)
 	return NULL;
-    ret = find_var_in_ht(ht, *name, varname, no_autoload || htp != NULL);
+    ret = find_var_in_ht(ht, *name, varname, no_autoload);
     if (ret != NULL)
 	return ret;
 
     // Search in parent scope for lambda
-    return find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+    ret = find_var_in_scoped_ht(name, no_autoload);
+    if (ret != NULL)
+	return ret;
+
+    // in Vim9 script items without a scope can be script-local
+    if (in_vim9script() && name[0] != NUL && name[1] != ':')
+    {
+	ht = get_script_local_ht();
+	if (ht != NULL)
+	{
+	    ret = find_var_in_ht(ht, *name, varname, no_autoload);
+	    if (ret != NULL)
+	    {
+		if (htp != NULL)
+		    *htp = ht;
+		return ret;
+	    }
+	}
+    }
+
+    // When using "vim9script autoload" script-local items are prefixed but can
+    // be used with s:name.
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid)
+					   && name[0] == 's' && name[1] == ':')
+    {
+	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	if (si->sn_autoload_prefix != NULL)
+	{
+	    char_u *auto_name = concat_str(si->sn_autoload_prefix, name + 2);
+
+	    if (auto_name != NULL)
+	    {
+		ht = &globvarht;
+		ret = find_var_in_ht(ht, *name, auto_name, TRUE);
+		vim_free(auto_name);
+		if (ret != NULL)
+		{
+		    if (htp != NULL)
+			*htp = ht;
+		    return ret;
+		}
+	    }
+	}
+    }
+
+    return NULL;
+}
+
+/*
+ * Like find_var() but if the name starts with <SNR>99_ then look in the
+ * referenced script (used for a funcref).
+ */
+    dictitem_T *
+find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload)
+{
+    if (STRNCMP(name, "<SNR>", 5) == 0 && isdigit(name[5]))
+    {
+	char_u	    *p = name + 5;
+	int	    sid = getdigits(&p);
+
+	if (SCRIPT_ID_VALID(sid) && *p == '_')
+	{
+	    hashtab_T	*ht = &SCRIPT_VARS(sid);
+
+	    if (ht != NULL)
+	    {
+		dictitem_T *di = find_var_in_ht(ht, 0, p + 1, no_autoload);
+
+		if (di != NULL)
+		{
+		    if (htp != NULL)
+			*htp = ht;
+		    return di;
+		}
+	    }
+	}
+    }
+
+    return find_var(name, htp, no_autoload);
 }
 
 /*
@@ -2604,7 +3184,7 @@ find_var_in_ht(
 /*
  * Get the script-local hashtab.  NULL if not in a script context.
  */
-    static hashtab_T *
+    hashtab_T *
 get_script_local_ht(void)
 {
     scid_T sid = current_sctx.sc_sid;
@@ -2615,20 +3195,28 @@ get_script_local_ht(void)
 }
 
 /*
- * Look for "name[len]" in script-local variables.
- * Return a non-NULL pointer when found, NULL when not found.
+ * Look for "name[len]" in script-local variables and functions.
+ * When "cmd" is TRUE it must look like a command, a function must be followed
+ * by "(" or "->".
+ * Return OK when found, FAIL when not found.
  */
-    void *
-lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
+    int
+lookup_scriptitem(
+	char_u	*name,
+	size_t	len,
+	int	cmd,
+	cctx_T	*dummy UNUSED)
 {
     hashtab_T	*ht = get_script_local_ht();
     char_u	buffer[30];
     char_u	*p;
-    void	*res;
+    int		res;
     hashitem_T	*hi;
+    int		is_global = FALSE;
+    char_u	*fname = name;
 
     if (ht == NULL)
-	return NULL;
+	return FAIL;
     if (len < sizeof(buffer) - 1)
     {
 	// avoid an alloc/free for short names
@@ -2639,20 +3227,41 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
     {
 	p = vim_strnsave(name, len);
 	if (p == NULL)
-	    return NULL;
+	    return FAIL;
     }
 
     hi = hash_find(ht, p);
-    res = HASHITEM_EMPTY(hi) ? NULL : hi;
+    res = HASHITEM_EMPTY(hi) ? FAIL : OK;
 
     // if not script-local, then perhaps imported
-    if (res == NULL && find_imported(p, 0, NULL) != NULL)
-	res = p;
-
+    if (res == FAIL && find_imported(p, 0, FALSE) != NULL)
+	res = OK;
     if (p != buffer)
 	vim_free(p);
-    // Don't return "buffer", gcc complains.
-    return res == NULL ? NULL : IObuff;
+
+    // Find a function, so that a following "->" works.
+    // When used as a command require "(" or "->" to follow, "Cmd" is a user
+    // command while "Cmd()" is a function call.
+    if (res != OK)
+    {
+	p = skipwhite(name + len);
+
+	if (!cmd || name[len] == '(' || (p[0] == '-' && p[1] == '>'))
+	{
+	    // Do not check for an internal function, since it might also be a
+	    // valid command, such as ":split" versus "split()".
+	    // Skip "g:" before a function name.
+	    if (name[0] == 'g' && name[1] == ':')
+	    {
+		is_global = TRUE;
+		fname = name + 2;
+	    }
+	    if (find_func(fname, is_global) != NULL)
+		res = OK;
+	}
+    }
+
+    return res;
 }
 
 /*
@@ -2677,7 +3286,7 @@ find_var_ht(char_u *name, char_u **varname)
 
 	// "version" is "v:version" in all scopes if scriptversion < 3.
 	// Same for a few other variables marked with VV_COMPAT.
-	if (current_sctx.sc_version < 3)
+	if (in_old_script(3))
 	{
 	    hi = hash_find(&compat_hashtab, name);
 	    if (!HASHITEM_EMPTY(hi))
@@ -2688,8 +3297,9 @@ find_var_ht(char_u *name, char_u **varname)
 	if (ht != NULL)
 	    return ht;				// local variable
 
-	// in Vim9 script items at the script level are script-local
-	if (in_vim9script())
+	// In Vim9 script items at the script level are script-local, except
+	// for autoload names.
+	if (in_vim9script() && vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 	{
 	    ht = get_script_local_ht();
 	    if (ht != NULL)
@@ -2834,14 +3444,14 @@ vars_clear_ext(hashtab_T *ht, int free_val)
 	}
     }
     hash_clear(ht);
-    ht->ht_used = 0;
+    hash_init(ht);
 }
 
 /*
  * Delete a variable from hashtab "ht" at item "hi".
  * Clear the variable value and free the dictitem.
  */
-    static void
+    void
 delete_var(hashtab_T *ht, hashitem_T *hi)
 {
     dictitem_T	*di = HI2DI(hi);
@@ -2923,59 +3533,135 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, NULL, tv, copy, LET_NO_COMMAND);
+    set_var_const(name, 0, NULL, tv, copy, ASSIGN_DECL, 0);
 }
 
 /*
- * Set variable "name" to value in "tv".
+ * Set variable "name" to value in "tv_arg".
+ * When "sid" is non-zero "name" is in the script with this ID.
  * If the variable already exists and "is_const" is FALSE the value is updated.
  * Otherwise the variable is created.
  */
     void
 set_var_const(
     char_u	*name,
-    type_T	*type,
+    scid_T	sid,
+    type_T	*type_arg,
     typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
-    int		flags)	    // LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags_arg,  // ASSIGN_CONST, ASSIGN_FINAL, etc.
+    int		var_idx)    // index for ":let [a, b] = list"
 {
     typval_T	*tv = tv_arg;
+    type_T	*type = type_arg;
     typval_T	bool_tv;
     dictitem_T	*di;
+    typval_T	*dest_tv;
     char_u	*varname;
-    hashtab_T	*ht;
+    char_u	*name_tofree = NULL;
+    hashtab_T	*ht = NULL;
     int		is_script_local;
+    int		vim9script = in_vim9script();
+    int		var_in_vim9script;
+    int		var_in_autoload = FALSE;
+    int		flags = flags_arg;
+    int		free_tv_arg = !copy;  // free tv_arg if not used
 
-    ht = find_var_ht(name, &varname);
+    if (sid != 0)
+    {
+	if (SCRIPT_ID_VALID(sid))
+	    ht = &SCRIPT_VARS(sid);
+	varname = name;
+    }
+    else
+    {
+	scriptitem_T *si;
+
+	if (in_vim9script() && is_export
+		&& SCRIPT_ID_VALID(current_sctx.sc_sid)
+		&& (si = SCRIPT_ITEM(current_sctx.sc_sid))
+						  ->sn_autoload_prefix != NULL)
+	{
+	    // In a vim9 autoload script an exported variable is put in the
+	    // global namespace with the autoload prefix.
+	    var_in_autoload = TRUE;
+	    varname = concat_str(si->sn_autoload_prefix, name);
+	    if (varname == NULL)
+		goto failed;
+	    name_tofree = varname;
+	    ht = &globvarht;
+	}
+	else
+	    ht = find_var_ht(name, &varname);
+    }
     if (ht == NULL || *varname == NUL)
     {
-	semsg(_(e_illvar), name);
+	semsg(_(e_illegal_variable_name_str), name);
 	goto failed;
     }
-    is_script_local = ht == get_script_local_ht();
+    is_script_local = ht == get_script_local_ht() || sid != 0
+							    || var_in_autoload;
 
-    if (in_vim9script()
+    if (vim9script
 	    && !is_script_local
-	    && (flags & LET_NO_COMMAND) == 0
+	    && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
+	    && (flags & (ASSIGN_CONST | ASSIGN_FINAL)) == 0
 	    && name[1] == ':')
     {
 	vim9_declare_error(name);
 	goto failed;
     }
+    if ((flags & ASSIGN_FOR_LOOP) && name[1] == ':'
+			      && vim_strchr((char_u *)"gwbt", name[0]) != NULL)
+	// Do not make g:var, w:var, b:var or t:var final.
+	flags &= ~ASSIGN_FINAL;
+
+    var_in_vim9script = is_script_local && current_script_is_vim9();
+    if (var_in_vim9script && name[0] == '_' && name[1] == NUL)
+    {
+	// For "[a, _] = list" the underscore is ignored.
+	if ((flags & ASSIGN_UNPACK) == 0)
+	    emsg(_(e_cannot_use_underscore_here));
+	goto failed;
+    }
 
     di = find_var_in_ht(ht, 0, varname, TRUE);
+
+    if (di == NULL && var_in_vim9script)
+    {
+	imported_T  *import = find_imported(varname, 0, FALSE);
+
+	if (import != NULL)
+	{
+	    // imported name space cannot be used
+	    if ((flags & ASSIGN_NO_DECL) == 0)
+	    {
+		semsg(_(e_redefining_imported_item_str), name);
+		goto failed;
+	    }
+	    semsg(_(e_cannot_use_str_itself_it_is_imported), name);
+	    goto failed;
+	}
+	if (!in_vim9script())
+	{
+	    semsg(_(e_cannot_create_vim9_script_variable_in_function_str),
+									 name);
+	    goto failed;
+	}
+    }
 
     // Search in parent scope which is possible to reference from lambda
     if (di == NULL)
 	di = find_var_in_scoped_ht(name, TRUE);
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
-				      && var_wrong_func_name(name, di == NULL))
+				  && var_wrong_func_name(name, di == NULL))
 	goto failed;
 
     if (need_convert_to_bool(type, tv))
     {
-	// Destination is a bool and the value is not, but it can be converted.
+	// Destination is a bool and the value is not, but it can be
+	// converted.
 	CLEAR_FIELD(bool_tv);
 	bool_tv.v_type = VAR_BOOL;
 	bool_tv.vval.v_number = tv2bool(tv) ? VVAL_TRUE : VVAL_FALSE;
@@ -2984,34 +3670,57 @@ set_var_const(
 
     if (di != NULL)
     {
+	// Item already exists.  Allowed to replace when reloading.
 	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
 	{
-	    if (flags & LET_IS_CONST)
+	    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					 && (flags & ASSIGN_FOR_LOOP) == 0)
 	    {
-		emsg(_(e_cannot_mod));
+		emsg(_(e_cannot_modify_existing_variable));
 		goto failed;
 	    }
 
-	    if (is_script_local && in_vim9script())
+	    if (is_script_local && vim9script
+			  && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0)
 	    {
-		if ((flags & LET_NO_COMMAND) == 0)
-		{
-		    semsg(_(e_redefining_script_item_str), name);
-		    goto failed;
-		}
-
-		// check the type and adjust to bool if needed
-		if (check_script_var_type(&di->di_tv, tv, name) == FAIL)
-		    goto failed;
+		semsg(_(e_redefining_script_item_str), name);
+		goto failed;
 	    }
 
-	    if (var_check_ro(di->di_flags, name, FALSE)
-			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
+	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
+	    {
+		where_T where = WHERE_INIT;
+		svar_T  *sv = find_typval_in_script(&di->di_tv, sid, TRUE);
+
+		if (sv != NULL)
+		{
+		    // check the type and adjust to bool if needed
+		    where.wt_index = var_idx;
+		    where.wt_variable = TRUE;
+		    if (check_script_var_type(sv, tv, name, where) == FAIL)
+			goto failed;
+		    if (type == NULL)
+			type = sv->sv_type;
+		    sv->sv_flags |= SVFLAG_ASSIGNED;
+		}
+	    }
+
+	    if ((flags & ASSIGN_FOR_LOOP) == 0
+				 && var_check_permission(di, name) == FAIL)
 		goto failed;
 	}
 	else
+	{
 	    // can only redefine once
 	    di->di_flags &= ~DI_FLAGS_RELOAD;
+
+	    // A Vim9 script-local variable is also present in sn_all_vars
+	    // and sn_var_vals.  It may set "type" from "tv".
+	    if (var_in_vim9script || var_in_autoload)
+		update_vim9_script_var(FALSE, di,
+			var_in_autoload ? name : di->di_key, flags,
+			tv, &type, (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
+	}
 
 	// existing variable, need to clear the value
 
@@ -3026,8 +3735,9 @@ set_var_const(
 		{
 		    char_u *val = tv_get_string(tv);
 
-		    // Careful: when assigning to v:errmsg and tv_get_string()
-		    // causes an error message the variable will already be set.
+		    // Careful: when assigning to v:errmsg and
+		    // tv_get_string() causes an error message the variable
+		    // will already be set.
 		    if (di->di_tv.vval.v_string == NULL)
 			di->di_tv.vval.v_string = vim_strsave(val);
 		}
@@ -3043,7 +3753,8 @@ set_var_const(
 	    {
 		di->di_tv.vval.v_number = tv_get_number(tv);
 		if (STRCMP(varname, "searchforward") == 0)
-		    set_search_direction(di->di_tv.vval.v_number ? '/' : '?');
+		    set_search_direction(di->di_tv.vval.v_number
+							      ? '/' : '?');
 #ifdef FEAT_SEARCH_EXTRA
 		else if (STRCMP(varname, "hlsearch") == 0)
 		{
@@ -3055,24 +3766,42 @@ set_var_const(
 	    }
 	    else if (di->di_tv.v_type != tv->v_type)
 	    {
-		semsg(_("E963: setting %s to value with wrong type"), name);
+		semsg(_(e_setting_str_to_value_with_wrong_type), name);
 		goto failed;
 	    }
 	}
 
 	clear_tv(&di->di_tv);
     }
-    else		    // add a new variable
+    else
     {
-	// Can't add "v:" or "a:" variable.
-	if (ht == &vimvarht || ht == get_funccal_args_ht())
+	// Item not found, check if a function already exists.
+	if (is_script_local && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
+	       && lookup_scriptitem(name, STRLEN(name), FALSE, NULL) == OK)
 	{
-	    semsg(_(e_illvar), name);
+	    semsg(_(e_redefining_script_item_str), name);
 	    goto failed;
 	}
 
-	// Make sure the variable name is valid.
-	if (!valid_varname(varname))
+	// add a new variable
+	if (var_in_vim9script && (flags & ASSIGN_NO_DECL))
+	{
+	    semsg(_(e_unknown_variable_str), name);
+	    goto failed;
+	}
+
+	// Can't add "v:" or "a:" variable.
+	if (ht == &vimvarht || ht == get_funccal_args_ht())
+	{
+	    semsg(_(e_illegal_variable_name_str), name);
+	    goto failed;
+	}
+
+	// Make sure the variable name is valid.  In Vim9 script an
+	// autoload variable must be prefixed with "g:" unless in an
+	// autoload script.
+	if (!valid_varname(varname, -1, !vim9script
+			|| STRNCMP(name, "g:", 2) == 0 || var_in_autoload))
 	    goto failed;
 
 	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
@@ -3085,53 +3814,59 @@ set_var_const(
 	    goto failed;
 	}
 	di->di_flags = DI_FLAGS_ALLOC;
-	if (flags & LET_IS_CONST)
+	if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
 	    di->di_flags |= DI_FLAGS_LOCK;
 
-	if (is_script_local && in_vim9script())
-	{
-	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
-
-	    // Store a pointer to the typval_T, so that it can be found by
-	    // index instead of using a hastab lookup.
-	    if (ga_grow(&si->sn_var_vals, 1) == OK)
-	    {
-		svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-						      + si->sn_var_vals.ga_len;
-		sv->sv_name = di->di_key;
-		sv->sv_tv = &di->di_tv;
-		if (type == NULL)
-		    sv->sv_type = typval2type(tv, &si->sn_type_list);
-		else
-		    sv->sv_type = type;
-		sv->sv_const = (flags & LET_IS_CONST);
-		sv->sv_export = is_export;
-		++si->sn_var_vals.ga_len;
-
-		// let ex_export() know the export worked.
-		is_export = FALSE;
-	    }
-	}
+	// A Vim9 script-local variable is also added to sn_all_vars and
+	// sn_var_vals. It may set "type" from "tv".
+	if (var_in_vim9script || var_in_autoload)
+	    update_vim9_script_var(TRUE, di,
+		    var_in_autoload ? name : di->di_key, flags,
+			  tv, &type, (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
     }
 
+    dest_tv = &di->di_tv;
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)
-	copy_tv(tv, &di->di_tv);
+	copy_tv(tv, dest_tv);
     else
     {
-	di->di_tv = *tv;
-	di->di_tv.v_lock = 0;
+	*dest_tv = *tv;
+	dest_tv->v_lock = 0;
 	init_tv(tv);
     }
+    free_tv_arg = FALSE;
 
-    if (flags & LET_IS_CONST)
+    if (vim9script && type != NULL)
+	set_tv_type(dest_tv, type);
+
+    // ":const var = value" locks the value
+    // ":final var = value" locks "var"
+    if (flags & ASSIGN_CONST)
 	// Like :lockvar! name: lock the value and what it contains, but only
 	// if the reference count is up to one.  That locks only literal
 	// values.
-	item_lock(&di->di_tv, DICT_MAXNEST, TRUE, TRUE);
-    return;
+	item_lock(dest_tv, DICT_MAXNEST, TRUE, TRUE);
+
 failed:
-    if (!copy)
+    vim_free(name_tofree);
+    if (free_tv_arg)
 	clear_tv(tv_arg);
+}
+
+/*
+ * Check in this order for backwards compatibility:
+ * - Whether the variable is read-only
+ * - Whether the variable value is locked
+ * - Whether the variable is locked
+ */
+    int
+var_check_permission(dictitem_T *di, char_u *name)
+{
+    if (var_check_ro(di->di_flags, name, FALSE)
+		    || value_check_lock(di->di_tv.v_lock, name, FALSE)
+		    || var_check_lock(di->di_flags, name, FALSE))
+	return FAIL;
+    return OK;
 }
 
 /*
@@ -3143,12 +3878,36 @@ var_check_ro(int flags, char_u *name, int use_gettext)
 {
     if (flags & DI_FLAGS_RO)
     {
-	semsg(_(e_readonlyvar), use_gettext ? (char_u *)_(name) : name);
+	if (name == NULL)
+	    emsg(_(e_cannot_change_readonly_variable));
+	else
+	    semsg(_(e_cannot_change_readonly_variable_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     if ((flags & DI_FLAGS_RO_SBX) && sandbox)
     {
-	semsg(_(e_readonlysbx), use_gettext ? (char_u *)_(name) : name);
+	if (name == NULL)
+	    emsg(_(e_cannot_set_variable_in_sandbox));
+	else
+	    semsg(_(e_cannot_set_variable_in_sandbox_str),
+				       use_gettext ? (char_u *)_(name) : name);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if di_flags "flags" indicates variable "name" is locked.
+ * Also give an error message.
+ */
+    int
+var_check_lock(int flags, char_u *name, int use_gettext)
+{
+    if (flags & DI_FLAGS_LOCK)
+    {
+	semsg(_(e_variable_is_locked_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     return FALSE;
@@ -3163,7 +3922,10 @@ var_check_fixed(int flags, char_u *name, int use_gettext)
 {
     if (flags & DI_FLAGS_FIX)
     {
-	semsg(_("E795: Cannot delete variable %s"),
+	if (name == NULL)
+	    emsg(_(e_cannot_delete_variable));
+	else
+	    semsg(_(e_cannot_delete_variable_str),
 				      use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
@@ -3179,13 +3941,14 @@ var_wrong_func_name(
     char_u *name,    // points to start of variable name
     int    new_var)  // TRUE when creating the variable
 {
-    // Allow for w: b: s: and t:.
-    if (!(vim_strchr((char_u *)"wbst", name[0]) != NULL && name[1] == ':')
+    // Allow for w: b: s: and t:.  In Vim9 script s: is not allowed, because
+    // the name can be used without the s: prefix.
+    if (!((vim_strchr((char_u *)"wbt", name[0]) != NULL
+		    || (!in_vim9script() && name[0] == 's')) && name[1] == ':')
 	    && !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
 						     ? name[2] : name[0]))
     {
-	semsg(_("E704: Funcref variable name must start with a capital: %s"),
-									name);
+	semsg(_(e_funcref_variable_name_must_start_with_capital_str), name);
 	return TRUE;
     }
     // Don't allow hiding a function.  When "v" is not NULL we might be
@@ -3193,7 +3956,7 @@ var_wrong_func_name(
     // below.
     if (new_var && function_exists(name, FALSE))
     {
-	semsg(_("E705: Variable name conflicts with existing function: %s"),
+	semsg(_(e_variable_name_conflicts_with_existing_function_str),
 								    name);
 	return TRUE;
     }
@@ -3201,46 +3964,49 @@ var_wrong_func_name(
 }
 
 /*
- * Return TRUE if "flags" indicates variable "name" is locked (immutable).
- * Also give an error message, using "name" or _("name") when use_gettext is
- * TRUE.
+ * Return TRUE if "flags" indicates variable "name" has a locked (immutable)
+ * value.  Also give an error message, using "name" or _("name") when
+ * "use_gettext" is TRUE.
  */
     int
-var_check_lock(int lock, char_u *name, int use_gettext)
+value_check_lock(int lock, char_u *name, int use_gettext)
 {
     if (lock & VAR_LOCKED)
     {
-	semsg(_("E741: Value is locked: %s"),
-				name == NULL ? (char_u *)_("Unknown")
-					     : use_gettext ? (char_u *)_(name)
-					     : name);
+	if (name == NULL)
+	    emsg(_(e_value_is_locked));
+	else
+	    semsg(_(e_value_is_locked_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     if (lock & VAR_FIXED)
     {
-	semsg(_("E742: Cannot change value of %s"),
-				name == NULL ? (char_u *)_("Unknown")
-					     : use_gettext ? (char_u *)_(name)
-					     : name);
+	if (name == NULL)
+	    emsg(_(e_cannot_change_value));
+	else
+	    semsg(_(e_cannot_change_value_of_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     return FALSE;
 }
 
 /*
- * Check if a variable name is valid.
+ * Check if a variable name is valid.  When "autoload" is true "#" is allowed.
+ * If "len" is -1 use all of "varname", otherwise up to "varname[len]".
  * Return FALSE and give an error if not.
  */
     int
-valid_varname(char_u *varname)
+valid_varname(char_u *varname, int len, int autoload)
 {
     char_u *p;
 
-    for (p = varname; *p != NUL; ++p)
+    for (p = varname; len < 0 ? *p != NUL : p < varname + len; ++p)
 	if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
-						   && *p != AUTOLOAD_CHAR)
+					 && !(autoload && *p == AUTOLOAD_CHAR))
 	{
-	    semsg(_(e_illvar), varname);
+	    semsg(_(e_illegal_variable_name_str), varname);
 	    return FALSE;
 	}
     return TRUE;
@@ -3260,8 +4026,7 @@ getwinvar(
     dictitem_T	*v;
     tabpage_T	*tp = NULL;
     int		done = FALSE;
-    win_T	*oldcurwin;
-    tabpage_T	*oldtabpage;
+    switchwin_T	switchwin;
     int		need_switch_win;
 
     if (off == 1)
@@ -3282,7 +4047,7 @@ getwinvar(
 	// autocommands get blocked.
 	need_switch_win = !(tp == curtab && win == curwin);
 	if (!need_switch_win
-		  || switch_win(&oldcurwin, &oldtabpage, win, tp, TRUE) == OK)
+		  || switch_win(&switchwin, win, tp, TRUE) == OK)
 	{
 	    if (*varname == '&')
 	    {
@@ -3317,7 +4082,7 @@ getwinvar(
 
 	if (need_switch_win)
 	    // restore previous notion of curwin
-	    restore_win(oldcurwin, oldtabpage, TRUE);
+	    restore_win(&switchwin, TRUE);
     }
 
     if (!done && argvars[off + 2].v_type != VAR_UNKNOWN)
@@ -3338,11 +4103,19 @@ set_option_from_tv(char_u *varname, typval_T *varp)
     char_u	nbuf[NUMBUFLEN];
     int		error = FALSE;
 
-    if (!in_vim9script() || varp->v_type != VAR_STRING)
-	numval = (long)tv_get_number_chk(varp, &error);
-    strval = tv_get_string_buf_chk(varp, nbuf);
+    if (varp->v_type == VAR_BOOL)
+    {
+	numval = (long)varp->vval.v_number;
+	strval = (char_u *)"0";  // avoid using "false"
+    }
+    else
+    {
+	if (!in_vim9script() || varp->v_type != VAR_STRING)
+	    numval = (long)tv_get_number_chk(varp, &error);
+	strval = tv_get_string_buf_chk(varp, nbuf);
+    }
     if (!error && strval != NULL)
-	set_option_value(varname, numval, strval, OPT_LOCAL);
+	set_option_value_give_err(varname, numval, strval, OPT_LOCAL);
 }
 
 /*
@@ -3352,8 +4125,7 @@ set_option_from_tv(char_u *varname, typval_T *varp)
 setwinvar(typval_T *argvars, int off)
 {
     win_T	*win;
-    win_T	*save_curwin;
-    tabpage_T	*save_curtab;
+    switchwin_T	switchwin;
     int		need_switch_win;
     char_u	*varname, *winvarname;
     typval_T	*varp;
@@ -3374,7 +4146,7 @@ setwinvar(typval_T *argvars, int off)
     {
 	need_switch_win = !(tp == curtab && win == curwin);
 	if (!need_switch_win
-	       || switch_win(&save_curwin, &save_curtab, win, tp, TRUE) == OK)
+	       || switch_win(&switchwin, win, tp, TRUE) == OK)
 	{
 	    if (*varname == '&')
 		set_option_from_tv(varname + 1, varp);
@@ -3391,7 +4163,7 @@ setwinvar(typval_T *argvars, int off)
 	    }
 	}
 	if (need_switch_win)
-	    restore_win(save_curwin, save_curtab, TRUE);
+	    restore_win(&switchwin, TRUE);
     }
 }
 
@@ -3418,7 +4190,7 @@ assert_error(garray_T *gap)
 {
     struct vimvar   *vp = &vimvars[VV_ERRORS];
 
-    if (vp->vv_type != VAR_LIST || vimvars[VV_ERRORS].vv_list == NULL)
+    if (vp->vv_tv_type != VAR_LIST || vimvars[VV_ERRORS].vv_list == NULL)
 	// Make sure v:errors is a list.
 	set_vim_var_list(VV_ERRORS, list_alloc());
     list_append_string(vimvars[VV_ERRORS].vv_list, gap->ga_data, gap->ga_len);
@@ -3441,12 +4213,14 @@ var_exists(char_u *var)
     {
 	if (tofree != NULL)
 	    name = tofree;
-	n = (eval_variable(name, len, &tv, NULL, FALSE, TRUE) == OK);
+	n = (eval_variable(name, len, 0, &tv, NULL,
+				 EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT) == OK);
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
 	    arg = skipwhite(arg);
-	    n = (handle_subscript(&arg, &tv, &EVALARG_EVALUATE, FALSE) == OK);
+	    n = (handle_subscript(&arg, name, &tv, &EVALARG_EVALUATE,
+								 FALSE) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}
@@ -3464,6 +4238,27 @@ static garray_T redir_ga;	// only valid when redir_lval is not NULL
 static char_u	*redir_endp = NULL;
 static char_u	*redir_varname = NULL;
 
+    int
+alloc_redir_lval(void)
+{
+    redir_lval = ALLOC_CLEAR_ONE(lval_T);
+    if (redir_lval == NULL)
+	return FAIL;
+    return OK;
+}
+
+    void
+clear_redir_lval(void)
+{
+    VIM_CLEAR(redir_lval);
+}
+
+    void
+init_redir_ga(void)
+{
+    ga_init2(&redir_ga, sizeof(char), 500);
+}
+
 /*
  * Start recording command output to a variable
  * When "append" is TRUE append to an existing variable.
@@ -3478,7 +4273,7 @@ var_redir_start(char_u *name, int append)
     // Catch a bad name early.
     if (!eval_isnamec1(*name))
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return FAIL;
     }
 
@@ -3487,15 +4282,14 @@ var_redir_start(char_u *name, int append)
     if (redir_varname == NULL)
 	return FAIL;
 
-    redir_lval = ALLOC_CLEAR_ONE(lval_T);
-    if (redir_lval == NULL)
+    if (alloc_redir_lval() == FAIL)
     {
 	var_redir_stop();
 	return FAIL;
     }
 
     // The output is stored in growarray "redir_ga" until redirection ends.
-    ga_init2(&redir_ga, (int)sizeof(char), 500);
+    init_redir_ga();
 
     // Parse the variable name (can be a dict or list entry).
     redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, 0,
@@ -3505,9 +4299,9 @@ var_redir_start(char_u *name, int append)
 	clear_lval(redir_lval);
 	if (redir_endp != NULL && *redir_endp != NUL)
 	    // Trailing characters are present after the variable name
-	    semsg(_(e_trailing_arg), redir_endp);
+	    semsg(_(e_trailing_characters_str), redir_endp);
 	else
-	    semsg(_(e_invarg2), name);
+	    semsg(_(e_invalid_argument_str), name);
 	redir_endp = NULL;  // don't store a value, only cleanup
 	var_redir_stop();
 	return FAIL;
@@ -3519,9 +4313,11 @@ var_redir_start(char_u *name, int append)
     tv.v_type = VAR_STRING;
     tv.vval.v_string = (char_u *)"";
     if (append)
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)".");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE,
+					     ASSIGN_NO_DECL, (char_u *)".", 0);
     else
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)"=");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE,
+					     ASSIGN_NO_DECL, (char_u *)"=", 0);
     clear_lval(redir_lval);
     if (called_emsg > called_emsg_before)
     {
@@ -3593,7 +4389,7 @@ var_redir_stop(void)
 					FALSE, FALSE, 0, FNE_CHECK_START);
 	    if (redir_endp != NULL && redir_lval->ll_name != NULL)
 		set_var_lval(redir_lval, redir_endp, &tv, FALSE, 0,
-								(char_u *)".");
+							     (char_u *)".", 0);
 	    clear_lval(redir_lval);
 	}
 
@@ -3606,13 +4402,27 @@ var_redir_stop(void)
 }
 
 /*
+ * Get the collected redirected text and clear redir_ga.
+ */
+    char_u *
+get_clear_redir_ga(void)
+{
+    char_u *res;
+
+    ga_append(&redir_ga, NUL);  // Append the trailing NUL.
+    res = redir_ga.ga_data;
+    redir_ga.ga_data = NULL;
+    return res;
+}
+
+/*
  * "gettabvar()" function
  */
     void
 f_gettabvar(typval_T *argvars, typval_T *rettv)
 {
-    win_T	*oldcurwin;
-    tabpage_T	*tp, *oldtabpage;
+    switchwin_T	switchwin;
+    tabpage_T	*tp;
     dictitem_T	*v;
     char_u	*varname;
     int		done = FALSE;
@@ -3620,13 +4430,18 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     varname = tv_get_string_chk(&argvars[1]);
     tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
     if (tp != NULL && varname != NULL)
     {
 	// Set tp to be our tabpage, temporarily.  Also set the window to the
 	// first window in the tabpage, otherwise the window is not valid.
-	if (switch_win(&oldcurwin, &oldtabpage,
+	if (switch_win(&switchwin,
 		tp == curtab || tp->tp_firstwin == NULL ? firstwin
 					    : tp->tp_firstwin, tp, TRUE) == OK)
 	{
@@ -3641,7 +4456,7 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
 	}
 
 	// restore previous notion of curwin
-	restore_win(oldcurwin, oldtabpage, TRUE);
+	restore_win(&switchwin, TRUE);
     }
 
     if (!done && argvars[2].v_type != VAR_UNKNOWN)
@@ -3654,6 +4469,12 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
     void
 f_gettabwinvar(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL))
+	return;
+
     getwinvar(argvars, rettv, 1);
 }
 
@@ -3663,6 +4484,11 @@ f_gettabwinvar(typval_T *argvars, typval_T *rettv)
     void
 f_getwinvar(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     getwinvar(argvars, rettv, 0);
 }
 
@@ -3676,6 +4502,11 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
     char_u	*varname;
     dictitem_T	*v;
     int		done = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
 
     varname = tv_get_string_chk(&argvars[1]);
     buf = tv_get_buf_from_arg(&argvars[0]);
@@ -3746,6 +4577,11 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     if (check_secure())
 	return;
 
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
     varname = tv_get_string_chk(&argvars[1]);
     varp = &argvars[2];
@@ -3776,6 +4612,12 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_settabwinvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL))
+	return;
+
     setwinvar(argvars, 1);
 }
 
@@ -3785,6 +4627,11 @@ f_settabwinvar(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_setwinvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    if (in_vim9script()
+	    && (check_for_number_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     setwinvar(argvars, 0);
 }
 
@@ -3800,6 +4647,12 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_secure())
 	return;
+
+    if (in_vim9script()
+	    && (check_for_buffer_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     varname = tv_get_string_chk(&argvars[1]);
     buf = tv_get_buf_from_arg(&argvars[0]);
     varp = &argvars[2];
@@ -3863,7 +4716,18 @@ get_callback(typval_T *arg)
 	    r = FAIL;
 	else if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	{
-	    // Note that we don't make a copy of the string.
+	    if (arg->v_type == VAR_STRING)
+	    {
+		char_u *name;
+
+		name = get_scriptlocal_funcname(arg->vval.v_string);
+		if (name != NULL)
+		{
+		    vim_free(arg->vval.v_string);
+		    arg->vval.v_string = name;
+		}
+	    }
+
 	    res.cb_name = arg->vval.v_string;
 	    func_ref(res.cb_name);
 	}
@@ -3874,7 +4738,7 @@ get_callback(typval_T *arg)
 
 	if (r == FAIL)
 	{
-	    emsg(_("E921: Invalid callback argument"));
+	    emsg(_(e_invalid_callback_argument));
 	    res.cb_name = NULL;
 	}
     }
@@ -3941,6 +4805,57 @@ copy_callback(callback_T *dest, callback_T *src)
 	dest->cb_name = vim_strsave(src->cb_name);
 	dest->cb_free_name = TRUE;
 	func_ref(src->cb_name);
+    }
+}
+
+/*
+ * When a callback refers to an autoload import, change the function name to
+ * the "path#name" form.  Uses the current script context.
+ * Only works when the name is allocated.
+ */
+    void
+expand_autload_callback(callback_T *cb)
+{
+    char_u	*name;
+    char_u	*p;
+    imported_T	*import;
+
+    if (!in_vim9script() || cb->cb_name == NULL
+	    || (!cb->cb_free_name
+	       && (cb->cb_partial == NULL || cb->cb_partial->pt_name == NULL)))
+	return;
+    if (cb->cb_partial != NULL)
+	name = cb->cb_partial->pt_name;
+    else
+	name = cb->cb_name;
+    p = vim_strchr(name, '.');
+    if (p == NULL)
+	return;
+    import = find_imported(name, p - name, FALSE);
+    if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
+    {
+	scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
+
+	if (si->sn_autoload_prefix != NULL)
+	{
+	    char_u *newname = concat_str(si->sn_autoload_prefix, p + 1);
+
+	    if (newname != NULL)
+	    {
+		if (cb->cb_partial != NULL)
+		{
+		    if (cb->cb_name == cb->cb_partial->pt_name)
+			cb->cb_name = newname;
+		    vim_free(cb->cb_partial->pt_name);
+		    cb->cb_partial->pt_name = newname;
+		}
+		else
+		{
+		    vim_free(cb->cb_name);
+		    cb->cb_name = newname;
+		}
+	    }
+	}
     }
 }
 

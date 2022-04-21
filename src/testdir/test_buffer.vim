@@ -138,6 +138,7 @@ func Test_bdelete_cmd()
   %bwipe!
   call assert_fails('bdelete 5', 'E516:')
   call assert_fails('1,1bdelete 1 2', 'E488:')
+  call assert_fails('bdelete \)', 'E55:')
 
   " Deleting a unlisted and unloaded buffer
   edit Xfile1
@@ -359,6 +360,144 @@ func Test_sball_with_count()
   call assert_equal(0, getbufinfo('Xfile2')[0].loaded)
   call assert_equal(0, getbufinfo('Xfile3')[0].loaded)
   %bw!
+endfunc
+
+func Test_badd_options()
+  new SomeNewBuffer
+  setlocal numberwidth=3
+  wincmd p
+  badd +1 SomeNewBuffer
+  new SomeNewBuffer
+  call assert_equal(3, &numberwidth)
+  close
+  close
+  bwipe! SomeNewBuffer
+endfunc
+
+func Test_balt()
+  new SomeNewBuffer
+  balt +3 OtherBuffer
+  e #
+  call assert_equal('OtherBuffer', bufname())
+endfunc
+
+" Test for buffer match URL(scheme) check
+" scheme is alpha and inner hyphen only.
+func Test_buffer_scheme()
+  CheckMSWindows
+
+  set noshellslash
+  %bwipe!
+  let bufnames = [
+    \ #{id: 'ssb0', name: 'test://xyz/foo/ssb0'    , match: 1},
+    \ #{id: 'ssb1', name: 'test+abc://xyz/foo/ssb1', match: 0},
+    \ #{id: 'ssb2', name: 'test_abc://xyz/foo/ssb2', match: 0},
+    \ #{id: 'ssb3', name: 'test-abc://xyz/foo/ssb3', match: 1},
+    \ #{id: 'ssb4', name: '-test://xyz/foo/ssb4'   , match: 0},
+    \ #{id: 'ssb5', name: 'test-://xyz/foo/ssb5'   , match: 0},
+    \]
+  for buf in bufnames
+    new `=buf.name`
+    if buf.match
+      call assert_equal(buf.name,    getbufinfo(buf.id)[0].name)
+    else
+      " slashes will have become backslashes
+      call assert_notequal(buf.name, getbufinfo(buf.id)[0].name)
+    endif
+    bwipe
+  endfor
+
+  set shellslash&
+endfunc
+
+" Test for the 'maxmem' and 'maxmemtot' options
+func Test_buffer_maxmem()
+  " use 1KB per buffer and 2KB for all the buffers
+  set maxmem=1 maxmemtot=2
+  new
+  let v:errmsg = ''
+  " try opening some files
+  edit test_arglist.vim
+  call assert_equal('test_arglist.vim', bufname())
+  edit test_eval_stuff.vim
+  call assert_equal('test_eval_stuff.vim', bufname())
+  b test_arglist.vim
+  call assert_equal('test_arglist.vim', bufname())
+  b test_eval_stuff.vim
+  call assert_equal('test_eval_stuff.vim', bufname())
+  close
+  call assert_equal('', v:errmsg)
+  set maxmem& maxmemtot&
+endfunc
+
+" Test for buffer allocation failure
+func Test_buflist_alloc_failure()
+  %bw!
+
+  edit Xfile1
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('edit Xfile2', 'E342:')
+
+  " test for bufadd()
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('call bufadd("Xbuffer")', 'E342:')
+
+  " test for setting the arglist
+  edit Xfile2
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('next Xfile3', 'E342:')
+
+  " test for setting the alternate buffer name when writing a file
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('write Xother', 'E342:')
+  call delete('Xother')
+
+  " test for creating a buffer using bufnr()
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails("call bufnr('Xnewbuf', v:true)", 'E342:')
+
+  " test for renaming buffer using :file
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('file Xnewfile', 'E342:')
+
+  " test for creating a buffer for a popup window
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('call popup_create("mypop", {})', 'E342:')
+
+  if has('terminal')
+    " test for creating a buffer for a terminal window
+    call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+    call assert_fails('call term_start(&shell)', 'E342:')
+    %bw!
+  endif
+
+  " test for loading a new buffer after wiping out all the buffers
+  edit Xfile4
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('%bw!', 'E342:')
+
+  " test for :checktime loading the buffer
+  call writefile(['one'], 'Xfile5')
+  if has('unix')
+    edit Xfile5
+    " sleep for some time to make sure the timestamp is different
+    sleep 200m
+    call writefile(['two'], 'Xfile5')
+    set autoread
+    call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+    call assert_fails('checktime', 'E342:')
+    set autoread&
+    bw!
+  endif
+
+  " test for :vimgrep loading a dummy buffer
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('vimgrep two Xfile5', 'E342:')
+  call delete('Xfile5')
+
+  " test for quickfix command loading a buffer
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('cexpr "Xfile6:10:Line10"', 'E342:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

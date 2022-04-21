@@ -779,8 +779,8 @@ Megj: A Vimben a sor legvégére is lehet állni, azonban ez elõdjében
   kell egy "vimrc" fájlt.
 
   1. Kezdjük el szerkeszteni a "vimrc" fájlt, ennek módja:
-	:edit ~/.vimrc			Unixon, Linuxon
-	:edit $VIM/_vimrc		MS-Windowson
+	:edit ~/.vimrc		Unixon, Linuxon
+	:edit ~/_vimrc		MS-Windowson
 
   2. Most szúrjuk be a példa "vimrc" fájl szövegét:
 
@@ -810,7 +810,7 @@ Megj: A Vimben a sor legvégére is lehet állni, azonban ez elõdjében
 	Publisher: New Riders
   The first book completely dedicated to Vim.  Especially useful for beginners.
   There are many examples and pictures.
-  See http://iccf-holland.org/click5.html
+  See https://iccf-holland.org/click5.html
 
   This book is older and more about Vi than Vim, but also recommended:
 	Learning the Vi Editor - by Linda Lamb

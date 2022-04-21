@@ -290,6 +290,9 @@ func Test_searchpair()
   new
   call setline(1, ['other code', 'here [', ' [', ' " cursor here', ' ]]'])
 
+  " should not give an error for using "42"
+  call assert_equal(0, searchpair('a', 'b', 'c', '', 42))
+
   4
   call assert_equal(3, searchpair('\[', '', ']', 'bW'))
   call assert_equal([0, 3, 2, 0], getpos('.'))
@@ -370,9 +373,9 @@ func Test_searchpairpos()
 endfunc
 
 func Test_searchpair_errors()
-  call assert_fails("call searchpair([0], 'middle', 'end', 'bW', 'skip', 99, 100)", 'E730: using List as a String')
-  call assert_fails("call searchpair('start', {-> 0}, 'end', 'bW', 'skip', 99, 100)", 'E729: using Funcref as a String')
-  call assert_fails("call searchpair('start', 'middle', {'one': 1}, 'bW', 'skip', 99, 100)", 'E731: using Dictionary as a String')
+  call assert_fails("call searchpair([0], 'middle', 'end', 'bW', 'skip', 99, 100)", 'E730: Using a List as a String')
+  call assert_fails("call searchpair('start', {-> 0}, 'end', 'bW', 'skip', 99, 100)", 'E729: Using a Funcref as a String')
+  call assert_fails("call searchpair('start', 'middle', {'one': 1}, 'bW', 'skip', 99, 100)", 'E731: Using a Dictionary as a String')
   call assert_fails("call searchpair('start', 'middle', 'end', 'flags', 'skip', 99, 100)", 'E475: Invalid argument: flags')
   call assert_fails("call searchpair('start', 'middle', 'end', 'bW', 'func', -99, 100)", 'E475: Invalid argument: -99')
   call assert_fails("call searchpair('start', 'middle', 'end', 'bW', 'func', 99, -100)", 'E475: Invalid argument: -100')
@@ -381,9 +384,9 @@ func Test_searchpair_errors()
 endfunc
 
 func Test_searchpairpos_errors()
-  call assert_fails("call searchpairpos([0], 'middle', 'end', 'bW', 'skip', 99, 100)", 'E730: using List as a String')
-  call assert_fails("call searchpairpos('start', {-> 0}, 'end', 'bW', 'skip', 99, 100)", 'E729: using Funcref as a String')
-  call assert_fails("call searchpairpos('start', 'middle', {'one': 1}, 'bW', 'skip', 99, 100)", 'E731: using Dictionary as a String')
+  call assert_fails("call searchpairpos([0], 'middle', 'end', 'bW', 'skip', 99, 100)", 'E730: Using a List as a String')
+  call assert_fails("call searchpairpos('start', {-> 0}, 'end', 'bW', 'skip', 99, 100)", 'E729: Using a Funcref as a String')
+  call assert_fails("call searchpairpos('start', 'middle', {'one': 1}, 'bW', 'skip', 99, 100)", 'E731: Using a Dictionary as a String')
   call assert_fails("call searchpairpos('start', 'middle', 'end', 'flags', 'skip', 99, 100)", 'E475: Invalid argument: flags')
   call assert_fails("call searchpairpos('start', 'middle', 'end', 'bW', 'func', -99, 100)", 'E475: Invalid argument: -99')
   call assert_fails("call searchpairpos('start', 'middle', 'end', 'bW', 'func', 99, -100)", 'E475: Invalid argument: -100')
@@ -941,6 +944,66 @@ func Test_incsearch_search_dump()
   call delete('Xis_search_script')
 endfunc
 
+func Test_hlsearch_dump()
+  CheckOption hlsearch
+  CheckScreendump
+
+  call writefile([
+	\ 'set hlsearch cursorline',
+        \ 'call setline(1, ["xxx", "xxx", "xxx"])',
+	\ '/.*',
+	\ '2',
+	\ ], 'Xhlsearch_script')
+  let buf = RunVimInTerminal('-S Xhlsearch_script', {'rows': 6, 'cols': 50})
+  call VerifyScreenDump(buf, 'Test_hlsearch_1', {})
+
+  call term_sendkeys(buf, "/\\_.*\<CR>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xhlsearch_script')
+endfunc
+
+func Test_hlsearch_and_visual()
+  CheckOption hlsearch
+  CheckScreendump
+
+  call writefile([
+	\ 'set hlsearch',
+        \ 'call setline(1, repeat(["xxx yyy zzz"], 3))',
+        \ 'hi Search cterm=bold',
+	\ '/yyy',
+	\ 'call cursor(1, 6)',
+	\ ], 'Xhlvisual_script')
+  let buf = RunVimInTerminal('-S Xhlvisual_script', {'rows': 6, 'cols': 40})
+  call term_sendkeys(buf, "vjj")
+  call VerifyScreenDump(buf, 'Test_hlsearch_visual_1', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('Xhlvisual_script')
+endfunc
+
+func Test_hlsearch_block_visual_match()
+  CheckScreendump
+
+  let lines =<< trim END
+    set hlsearch
+    call setline(1, ['aa', 'bbbb', 'cccccc'])
+  END
+  call writefile(lines, 'Xhlsearch_block')
+  let buf = RunVimInTerminal('-S Xhlsearch_block', {'rows': 9, 'cols': 60})
+
+  call term_sendkeys(buf, "G\<C-V>$kk\<Esc>")
+  sleep 100m
+  call term_sendkeys(buf, "/\\%V\<CR>")
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_hlsearch_block_visual_match', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xhlsearch_block')
+endfunc
+
 func Test_incsearch_substitute()
   CheckOption incsearch
 
@@ -959,6 +1022,58 @@ func Test_incsearch_substitute()
   call assert_equal('foo 7', getline(7))
 
   call Incsearch_cleanup()
+endfunc
+
+func Test_incsearch_substitute_long_line()
+  new
+  call test_override("char_avail", 1)
+  set incsearch
+
+  call repeat('x', 100000)->setline(1)
+  call feedkeys(':s/\%c', 'xt')
+  redraw
+  call feedkeys("\<Esc>", 'xt')
+
+  call Incsearch_cleanup()
+  bwipe!
+endfunc
+
+func Test_hlsearch_cursearch()
+  CheckScreendump
+
+  let lines =<< trim END
+    set hlsearch scrolloff=0
+    call setline(1, ['one', 'foo', 'bar', 'baz', 'foo', 'bar'])
+    hi Search ctermbg=yellow
+    hi CurSearch ctermbg=blue
+  END
+  call writefile(lines, 'Xhlsearch_cursearch')
+  let buf = RunVimInTerminal('-S Xhlsearch_cursearch', {'rows': 9, 'cols': 60})
+
+  call term_sendkeys(buf, "gg/foo\<CR>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_single_line_1', {})
+
+  call term_sendkeys(buf, "n")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_single_line_2', {})
+
+  call term_sendkeys(buf, "?\<CR>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_single_line_3', {})
+
+  call term_sendkeys(buf, "gg/foo\\nbar\<CR>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_multiple_line_1', {})
+
+  call term_sendkeys(buf, ":call setline(1, ['---', 'abcdefg', 'hijkl', '---', 'abcdefg', 'hijkl'])\<CR>")
+  call term_sendkeys(buf, "gg/efg\\nhij\<CR>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_multiple_line_2', {})
+  call term_sendkeys(buf, "h\<C-L>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_multiple_line_3', {})
+  call term_sendkeys(buf, "j\<C-L>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_multiple_line_4', {})
+  call term_sendkeys(buf, "h\<C-L>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_multiple_line_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xhlsearch_cursearch')
 endfunc
 
 " Similar to Test_incsearch_substitute() but with a screendump halfway.
@@ -1275,13 +1390,28 @@ func Test_look_behind()
   bwipe!
 endfunc
 
+func Test_search_visual_area_linewise()
+  new
+  call setline(1, ['aa', 'bb', 'cc'])
+  exe "normal 2GV\<Esc>"
+  for engine in [1, 2]
+    exe 'set regexpengine=' .. engine
+    exe "normal gg/\\%'<\<CR>>"
+    call assert_equal([0, 2, 1, 0, 1], getcurpos(), 'engine ' .. engine)
+    exe "normal gg/\\%'>\<CR>"
+    call assert_equal([0, 2, 2, 0, 2], getcurpos(), 'engine ' .. engine)
+  endfor
+
+  bwipe!
+  set regexpengine&
+endfunc
+
 func Test_search_sentence()
   new
   " this used to cause a crash
-  call assert_fails("/\\%')", 'E486:')
-  call assert_fails("/", 'E486:')
   /\%'(
   /
+  bwipe
 endfunc
 
 " Test that there is no crash when there is a last search pattern but no last
@@ -1590,6 +1720,8 @@ func Test_invalid_regexp()
   call assert_fails("call search('\\(')", 'E54:')
   call assert_fails("call search('\\)')", 'E55:')
   call assert_fails("call search('\\z\\(\\)')", 'E66:')
+  call assert_fails("call search('\\z2')", 'E67:')
+  call assert_fails("call search('\\zx')", 'E867:')
   call assert_fails("call search('\\%[ab')", 'E69:')
   call assert_fails("call search('\\%[]')", 'E70:')
   call assert_fails("call search('\\%9999999999999999999999999999v')", 'E951:')
@@ -1758,5 +1890,158 @@ func Test_search_stopline()
   call assert_equal(1, search('vim', 'bn', 1))
   close!
 endfunc
+
+func Test_incsearch_highlighting_newline()
+  CheckRunVimInTerminal
+  CheckOption incsearch
+  CheckScreendump
+  new
+  call test_override("char_avail", 1)
+
+  let commands =<< trim [CODE]
+    set incsearch nohls
+    call setline(1, ['test', 'xxx'])
+  [CODE]
+  call writefile(commands, 'Xincsearch_nl')
+  let buf = RunVimInTerminal('-S Xincsearch_nl', {'rows': 5, 'cols': 10})
+  call term_sendkeys(buf, '/test')
+  call VerifyScreenDump(buf, 'Test_incsearch_newline1', {})
+  " Need to send one key at a time to force a redraw
+  call term_sendkeys(buf, '\n')
+  call VerifyScreenDump(buf, 'Test_incsearch_newline2', {})
+  call term_sendkeys(buf, 'x')
+  call VerifyScreenDump(buf, 'Test_incsearch_newline3', {})
+  call term_sendkeys(buf, 'x')
+  call VerifyScreenDump(buf, 'Test_incsearch_newline4', {})
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_incsearch_newline5', {})
+  call StopVimInTerminal(buf)
+
+  " clean up
+  call delete('Xincsearch_nl')
+  call test_override("char_avail", 0)
+  bw
+endfunc
+
+func Test_incsearch_substitute_dump2()
+  CheckOption incsearch
+  CheckScreendump
+
+  call writefile([
+	\ 'set incsearch hlsearch scrolloff=0',
+	\ 'for n in range(1, 4)',
+	\ '  call setline(n, "foo " . n)',
+	\ 'endfor',
+	\ 'call setline(5, "abc|def")',
+	\ '3',
+	\ ], 'Xis_subst_script2')
+  let buf = RunVimInTerminal('-S Xis_subst_script2', {'rows': 9, 'cols': 70})
+
+  call term_sendkeys(buf, ':%s/\vabc|')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_sub_01', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " The following should not be highlighted
+  call term_sendkeys(buf, ':1,5s/\v|')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_sub_02', {})
+
+
+  call StopVimInTerminal(buf)
+  call delete('Xis_subst_script2')
+endfunc
+
+func Test_pattern_is_uppercase_smartcase()
+  new
+  let input=['abc', 'ABC', 'Abc', 'abC']
+  call setline(1, input)
+  call cursor(1,1)
+  " default, matches firstline
+  %s/abc//g
+  call assert_equal(['', 'ABC', 'Abc', 'abC'],
+        \ getline(1, '$'))
+
+  set smartcase ignorecase
+  sil %d
+  call setline(1, input)
+  call cursor(1,1)
+  " with smartcase and incsearch set, matches everything
+  %s/abc//g
+  call assert_equal(['', '', '', ''], getline(1, '$'))
+
+  sil %d
+  call setline(1, input)
+  call cursor(1,1)
+  " with smartcase and incsearch set and found an uppercase letter,
+  " match only that.
+  %s/abC//g
+  call assert_equal(['abc', 'ABC', 'Abc', ''],
+        \ getline(1, '$'))
+
+  sil %d
+  call setline(1, input)
+  call cursor(1,1)
+  exe "norm! vG$\<esc>"
+  " \%V should not be detected as uppercase letter
+  %s/\%Vabc//g
+  call assert_equal(['', '', '', ''], getline(1, '$'))
+
+  call setline(1, input)
+  call cursor(1,1)
+  exe "norm! vG$\<esc>"
+  " \v%V should not be detected as uppercase letter
+  %s/\v%Vabc//g
+  call assert_equal(['', '', '', ''], getline(1, '$'))
+
+  call setline(1, input)
+  call cursor(1,1)
+  exe "norm! vG$\<esc>"
+  " \v%VabC should be detected as uppercase letter
+  %s/\v%VabC//g
+  call assert_equal(['abc', 'ABC', 'Abc', ''],
+        \ getline(1, '$'))
+
+  call setline(1, input)
+  call cursor(1,1)
+  " \Vabc should match everything
+  %s/\Vabc//g
+  call assert_equal(['', '', '', ''], getline(1, '$'))
+
+  call setline(1, input + ['_abc'])
+  " _ matches normally
+  %s/\v_.*//g
+  call assert_equal(['abc', 'ABC', 'Abc', 'abC', ''], getline(1, '$'))
+
+  set smartcase& ignorecase&
+  bw!
+endfunc
+
+func Test_no_last_search_pattern()
+  CheckOption incsearch
+
+  let @/ = ""
+  set incsearch
+  " these were causing a crash
+  call feedkeys("//\<C-G>", 'xt')
+  call feedkeys("//\<C-T>", 'xt')
+  call feedkeys("??\<C-G>", 'xt')
+  call feedkeys("??\<C-T>", 'xt')
+endfunc
+
+func Test_search_with_invalid_range()
+  new
+  let lines =<< trim END
+    /\%.v
+    5/
+    c
+  END
+  call writefile(lines, 'Xrangesearch')
+  source Xrangesearch
+
+  bwipe!
+  call delete('Xrangesearch')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

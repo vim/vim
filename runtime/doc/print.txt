@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
+*print.txt*     For Vim version 8.2.  Last change: 2022 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -139,28 +139,28 @@ If there is no error, return zero or an empty string.
 The default for non MS-Windows or VMS systems is to simply use "lpr" to print
 the file: >
 
-    system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice)
-	. ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error
+    system('lpr' .. (&printdevice == '' ? '' : ' -P' .. &printdevice)
+	.. ' ' .. v:fname_in) .. delete(v:fname_in) + v:shell_error
 
 On MS-Windows machines the default is to copy the file to the currently
 specified printdevice: >
 
-    system('copy' . ' ' . v:fname_in . (&printdevice == ''
-		? ' LPT1:' : (' \"' . &printdevice . '\"')))
-		. delete(v:fname_in)
+    system('copy' .. ' ' .. v:fname_in .. (&printdevice == ''
+		? ' LPT1:' : (' \"' .. &printdevice .. '\"')))
+		.. delete(v:fname_in)
 
 On VMS machines the default is to send the file to either the default or
 currently specified printdevice: >
 
-    system('print' . (&printdevice == '' ? '' : ' /queue=' .
-		&printdevice) . ' ' . v:fname_in) . delete(v:fname_in)
+    system('print' .. (&printdevice == '' ? '' : ' /queue=' ..
+		&printdevice) .. ' ' .. v:fname_in) .. delete(v:fname_in)
 
 If you change this option, using a function is an easy way to avoid having to
 escape all the spaces.  Example: >
 
 	:set printexpr=PrintFile(v:fname_in)
 	:function PrintFile(fname)
-	:  call system("ghostview " . a:fname)
+	:  call system("ghostview " .. a:fname)
 	:  call delete(a:fname)
 	:  return v:shell_error
 	:endfunc
@@ -173,6 +173,13 @@ If evaluating the expression fails or it results in a non-zero number, you get
 an error message.  In that case Vim will delete the file.  In the default
 value for non-MS-Windows a trick is used: Adding "v:shell_error" will result
 in a non-zero number when the system() call fails.
+
+If the expression starts with s: or |<SID>|, then it is replaced with the
+script ID (|local-function|). Example: >
+		set printexpr=s:MyPrintFile()
+		set printexpr=<SID>SomePrintFile()
+Otherwise, the expression is evaluated in the context of the script where the
+option was set, thus script-local items are available.
 
 This option cannot be set from a |modeline| or in the |sandbox|, for security
 reasons.
@@ -717,7 +724,7 @@ There are a couple of points to bear in mind:
 ==============================================================================
 8. Formfeed Characters					*printing-formfeed*
 
-By default Vim does not do any special processing of |formfeed| control
+By default Vim does not do any special processing of formfeed control
 characters.  Setting the 'printoptions' formfeed item will make Vim recognize
 formfeed characters and continue printing the current line at the beginning
 of the first line on a new page.  The use of formfeed characters provides

@@ -50,6 +50,7 @@ func Test_getbufwintabinfo()
 
   only
   let w1_id = win_getid()
+  setl foldcolumn=3
   new
   let w2_id = win_getid()
   tabnew | let w3_id = win_getid()
@@ -68,6 +69,7 @@ func Test_getbufwintabinfo()
   call assert_equal(winbufnr(2), winlist[1].bufnr)
   call assert_equal(winheight(2), winlist[1].height)
   call assert_equal(1, winlist[1].wincol)
+  call assert_equal(3, winlist[1].textoff)  " foldcolumn
   call assert_equal(tablineheight + winheight(1) + 2, winlist[1].winrow)
 
   call assert_equal(1, winlist[2].winnr)
@@ -168,6 +170,28 @@ func Test_getbufinfo_lines()
   call assert_equal(3, getbufinfo(bn)[0]["linecount"])
   edit Xfoo
   bw!
+endfunc
+
+func Test_getwininfo_au()
+  enew
+  call setline(1, range(1, 16))
+
+  let g:info = #{}
+  augroup T1
+    au!
+    au WinEnter * let g:info = getwininfo(win_getid())[0]
+  augroup END
+
+  4split
+  " Check that calling getwininfo() from WinEnter returns fresh values for
+  " topline and botline.
+  call assert_equal(1, g:info.topline)
+  call assert_equal(4, g:info.botline)
+  close
+
+  unlet g:info
+  augroup! T1
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

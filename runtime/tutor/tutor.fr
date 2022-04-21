@@ -906,9 +906,9 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
      soit appuyé.
 
   6. Taper  ":set xxx"  active l'option "xxx". Quelques options sont :
-        'ic'  'ingnorecase' pour ignorer la casse lors des recherches.
-        'is'  'incsearch'   pour montrer les appariements partiels.
-        'hls' 'hlsearch'    pour mettre en surbrillance les appariements.
+        'ic'  'ignorecase' pour ignorer la casse lors des recherches.
+        'is'  'incsearch'  pour montrer les appariements partiels.
+        'hls' 'hlsearch'   pour mettre en surbrillance les appariements.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -950,7 +950,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
 
   1. Commencez à éditer le fichier "vimrc". Ceci dépend de votre système :
         :edit ~/.vimrc         pour Unix
-        :edit $VIM/_vimrc      pour Windows
+        :edit ~/_vimrc         pour Windows
 
   2. Lisez maintenant le fichier d'exemple "vimrc" :
         :r $VIMRUNTIME/vimrc_example.vim

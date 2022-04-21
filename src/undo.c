@@ -240,7 +240,7 @@ u_save_cursor(void)
 
 /*
  * Save the lines between "top" and "bot" for both the "u" and "U" command.
- * "top" may be 0 and bot may be curbuf->b_ml.ml_line_count + 1.
+ * "top" may be 0 and "bot" may be curbuf->b_ml.ml_line_count + 1.
  * Careful: may trigger autocommands that reload the buffer.
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
@@ -316,7 +316,7 @@ undo_allowed(void)
     // Don't allow changes when 'modifiable' is off.
     if (!curbuf->b_p_ma)
     {
-	emsg(_(e_modifiable));
+	emsg(_(e_cannot_make_changes_modifiable_is_off));
 	return FALSE;
     }
 
@@ -324,7 +324,7 @@ undo_allowed(void)
     // In the sandbox it's not allowed to change the text.
     if (sandbox != 0)
     {
-	emsg(_(e_sandbox));
+	emsg(_(e_not_allowed_in_sandbox));
 	return FALSE;
     }
 #endif
@@ -333,7 +333,7 @@ undo_allowed(void)
     // caller of getcmdline() may get confused.
     if (textwinlock != 0 || textlock != 0)
     {
-	emsg(_(e_textlock));
+	emsg(_(e_not_allowed_to_change_text_here));
 	return FALSE;
     }
 
@@ -438,12 +438,12 @@ u_savecommon(
 	{
 	    if (netbeans_is_guarded(top, bot))
 	    {
-		emsg(_(e_guarded));
+		emsg(_(e_region_is_guarded_cannot_modify));
 		return FAIL;
 	    }
 	    if (curbuf->b_p_ro)
 	    {
-		emsg(_(e_nbreadonly));
+		emsg(_(e_netbeans_does_not_allow_changes_in_read_only_files));
 		return FAIL;
 	    }
 	}
@@ -464,7 +464,7 @@ u_savecommon(
 	{
 	    // This happens when the FileChangedRO autocommand changes the
 	    // file in a way it becomes shorter.
-	    emsg(_("E881: Line count changed unexpectedly"));
+	    emsg(_(e_line_count_changed_unexpectedly));
 	    return FAIL;
 	}
     }
@@ -497,10 +497,8 @@ u_savecommon(
      */
     if (curbuf->b_u_synced)
     {
-#ifdef FEAT_JUMPLIST
 	// Need to create new entry in b_changelist.
 	curbuf->b_new_change = TRUE;
-#endif
 
 	if (get_undolevel() >= 0)
 	{
@@ -786,8 +784,6 @@ nomem:
 // extra fields for uhp
 # define UHP_SAVE_NR		1
 
-static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
-
 /*
  * Compute the hash for the current buffer text into hash[UNDO_HASH_SIZE].
  */
@@ -900,7 +896,7 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
     static void
 corruption_error(char *mesg, char_u *file_name)
 {
-    semsg(_("E825: Corrupted undo file (%s): %s"), mesg, file_name);
+    semsg(_(e_corrupted_undo_file_str_str), mesg, file_name);
 }
 
     static void
@@ -963,7 +959,9 @@ undo_flush(bufinfo_T *bi)
 {
     if (bi->bi_buffer != NULL && bi->bi_state != NULL && bi->bi_used > 0)
     {
-	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
+	// Last parameter is only used for sodium encryption and that
+	// explicitly disables encryption of undofiles.
+	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used, FALSE);
 	if (fwrite(bi->bi_buffer, bi->bi_used, (size_t)1, bi->bi_fp) != 1)
 	    return FAIL;
 	bi->bi_used = 0;
@@ -995,7 +993,9 @@ fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len)
 	    if (copy == NULL)
 		return 0;
 	}
-	crypt_encode(bi->bi_state, ptr, len, copy);
+	// Last parameter is only used for sodium encryption and that
+	// explicitly disables encryption of undofiles.
+	crypt_encode(bi->bi_state, ptr, len, copy, TRUE);
 	i = fwrite(copy, len, (size_t)1, bi->bi_fp);
 	if (copy != small_buf)
 	    vim_free(copy);
@@ -1129,7 +1129,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 		}
 		bi->bi_avail = n;
 		bi->bi_used = 0;
-		crypt_decode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_avail);
+		crypt_decode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_avail, FALSE);
 	    }
 	    n = size_todo;
 	    if (n > bi->bi_avail - bi->bi_used)
@@ -1142,7 +1142,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
     }
     else
 #endif
-    if (fread(buffer, (size_t)size, 1, bi->bi_fp) != 1)
+    if (fread(buffer, size, 1, bi->bi_fp) != 1)
 	retval = FAIL;
 
     if (retval == FAIL)
@@ -1176,7 +1176,7 @@ read_string_decrypt(bufinfo_T *bi, int len)
 	ptr[len] = NUL;
 #ifdef FEAT_CRYPT
 	if (bi->bi_state != NULL && bi->bi_buffer == NULL)
-	    crypt_decode_inplace(bi->bi_state, ptr, len);
+	    crypt_decode_inplace(bi->bi_state, ptr, len, FALSE);
 #endif
     }
     return ptr;
@@ -1678,7 +1678,7 @@ u_write_undo(
 			    O_CREAT|O_EXTRA|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
     if (fd < 0)
     {
-	semsg(_(e_not_open), file_name);
+	semsg(_(e_cannot_open_undo_file_for_writing_str), file_name);
 	goto theend;
     }
     (void)mch_setperm(file_name, perm);
@@ -1717,7 +1717,7 @@ u_write_undo(
     fp = fdopen(fd, "w");
     if (fp == NULL)
     {
-	semsg(_(e_not_open), file_name);
+	semsg(_(e_cannot_open_undo_file_for_writing_str), file_name);
 	close(fd);
 	mch_remove(file_name);
 	goto theend;
@@ -1782,10 +1782,15 @@ u_write_undo(
 	write_ok = FALSE;
 #endif
 
+#if defined(UNIX) && defined(HAVE_FSYNC)
+    if (p_fs && fflush(fp) == 0 && vim_fsync(fd) != 0)
+	write_ok = FALSE;
+#endif
+
 write_error:
     fclose(fp);
     if (!write_ok)
-	semsg(_("E829: write error in undo file: %s"), file_name);
+	semsg(_(e_write_error_in_undo_file_str), file_name);
 
 #if defined(MSWIN)
     // Copy file attributes; for systems where this can only be done after
@@ -1897,7 +1902,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     if (fp == NULL)
     {
 	if (name != NULL || p_verbose > 0)
-	    semsg(_("E822: Cannot open undo file for reading: %s"), file_name);
+	    semsg(_(e_cannot_open_undo_file_for_reading_str), file_name);
 	goto error;
     }
     bi.bi_buf = curbuf;
@@ -1909,7 +1914,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     if (fread(magic_buf, UF_START_MAGIC_LEN, 1, fp) != 1
 		|| memcmp(magic_buf, UF_START_MAGIC, UF_START_MAGIC_LEN) != 0)
     {
-	semsg(_("E823: Not an undo file: %s"), file_name);
+	semsg(_(e_not_an_undo_file_str), file_name);
 	goto error;
     }
     version = get2c(fp);
@@ -1918,14 +1923,13 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
 	{
-	    semsg(_("E832: Non-encrypted file has encrypted undo file: %s"),
-								   file_name);
+	    semsg(_(e_non_encrypted_file_has_encrypted_undo_file), file_name);
 	    goto error;
 	}
 	bi.bi_state = crypt_create_from_file(fp, curbuf->b_p_key);
 	if (bi.bi_state == NULL)
 	{
-	    semsg(_("E826: Undo file decryption failed: %s"), file_name);
+	    semsg(_(e_undo_file_decryption_failed), file_name);
 	    goto error;
 	}
 	if (crypt_whole_undofile(bi.bi_state->method_nr))
@@ -1941,13 +1945,13 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 	    bi.bi_used = 0;
 	}
 #else
-	semsg(_("E827: Undo file is encrypted: %s"), file_name);
+	semsg(_(e_undo_file_is_encrypted_str), file_name);
 	goto error;
 #endif
     }
     else if (version != UF_VERSION)
     {
-	semsg(_("E824: Incompatible undo file: %s"), file_name);
+	semsg(_(e_incompatible_undo_file_str), file_name);
 	goto error;
     }
 
@@ -2515,7 +2519,7 @@ undo_time(
 
 	if (absolute)
 	{
-	    semsg(_("E830: Undo number %ld not found"), step);
+	    semsg(_(e_undo_number_nr_not_found), step);
 	    return;
 	}
 
@@ -2706,7 +2710,7 @@ u_undoredo(int undo)
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
 	    unblock_autocmds();
-	    iemsg(_("E438: u_undo: line numbers wrong"));
+	    iemsg(_(e_u_undo_line_numbers_wrong));
 	    changed();		// don't want UNCHANGED now
 	    return;
 	}
@@ -2824,8 +2828,8 @@ u_undoredo(int undo)
 	    if (curbuf->b_op_end.lnum > top + oldsize)
 		curbuf->b_op_end.lnum += newsize - oldsize;
 	}
-
-	changed_lines(top + 1, 0, bot, newsize - oldsize);
+	if (oldsize > 0 || newsize > 0)
+	    changed_lines(top + 1, 0, bot, newsize - oldsize);
 
 	// set '[ and '] mark
 	if (top + 1 < curbuf->b_op_start.lnum)
@@ -3025,6 +3029,8 @@ u_undo_end(
 	}
     }
 #endif
+    if (VIsual_active)
+	check_pos(curbuf, &VIsual);
 
     smsg_attr_keep(0, _("%ld %s; %s #%ld  %s"),
 	    u_oldcount < 0 ? -u_oldcount : u_oldcount,
@@ -3077,7 +3083,7 @@ ex_undolist(exarg_T *eap UNUSED)
      */
     mark = ++lastmark;
     nomark = ++lastmark;
-    ga_init2(&ga, (int)sizeof(char *), 20);
+    ga_init2(&ga, sizeof(char *), 20);
 
     uhp = curbuf->b_u_oldhead;
     while (uhp != NULL)
@@ -3173,7 +3179,7 @@ ex_undojoin(exarg_T *eap UNUSED)
 	return;		    // nothing changed before
     if (curbuf->b_u_curhead != NULL)
     {
-	emsg(_("E790: undojoin is not allowed after undo"));
+	emsg(_(e_undojoin_is_not_allowed_after_undo));
 	return;
     }
     if (!curbuf->b_u_synced)
@@ -3278,7 +3284,7 @@ u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	iemsg(_("E439: undo list corrupt"));
+	iemsg(_(e_undo_list_corrupt));
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3310,7 +3316,7 @@ u_getbot(void)
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    iemsg(_("E440: undo line missing"));
+	    iemsg(_(e_undo_line_missing));
 	    uep->ue_bot = uep->ue_top + 1;  // assume all lines deleted, will
 					    // get all the old lines back
 					    // without deleting the current
@@ -3642,6 +3648,9 @@ u_eval_tree(u_header_T *first_uhp, list_T *list)
     void
 f_undofile(typval_T *argvars UNUSED, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
     rettv->v_type = VAR_STRING;
 #ifdef FEAT_PERSISTENT_UNDO
     {
@@ -3665,6 +3674,28 @@ f_undofile(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_string = NULL;
 #endif
 }
+#ifdef FEAT_PERSISTENT_UNDO
+/*
+ * Reset undofile option and delete the undofile
+ */
+    void
+u_undofile_reset_and_delete(buf_T *buf)
+{
+    char_u *file_name;
+
+    if (!buf->b_p_udf)
+	return;
+
+    file_name = u_get_undo_file_name(buf->b_ffname, TRUE);
+    if (file_name != NULL)
+    {
+	mch_remove(file_name);
+	vim_free(file_name);
+    }
+
+    set_option_value_give_err((char_u *)"undofile", 0L, NULL, OPT_LOCAL);
+}
+ #endif
 
 /*
  * "undotree()" function
@@ -3679,10 +3710,10 @@ f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 
 	dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
 	dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
-	dict_add_number(dict, "save_last", (long)curbuf->b_u_save_nr_last);
+	dict_add_number(dict, "save_last", curbuf->b_u_save_nr_last);
 	dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
 	dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
-	dict_add_number(dict, "save_cur", (long)curbuf->b_u_save_nr_cur);
+	dict_add_number(dict, "save_cur", curbuf->b_u_save_nr_cur);
 
 	list = list_alloc();
 	if (list != NULL)

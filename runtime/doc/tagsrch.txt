@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.2.  Last change: 2020 Apr 19
+*tagsrch.txt*   For Vim version 8.2.  Last change: 2020 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -556,12 +556,13 @@ The first format is a normal tag, which is completely compatible with Vi.  It
 is the only format produced by traditional ctags implementations.  This is
 often used for functions that are global, also referenced in other files.
 
-The lines in the tags file can end in <LF> or <CR><LF>.  On the Macintosh <CR>
+The lines in the tags file can end in <NL> or <CR><NL>.  On the Macintosh <CR>
 also works.  The <CR> and <NL> characters can never appear inside a line.
 
 The second format is new.  It includes additional information in optional
 fields at the end of each line.  It is backwards compatible with Vi.  It is
-only supported by new versions of ctags (such as Exuberant ctags).
+only supported by new versions of ctags (such as Universal ctags or Exuberant
+ctags).
 
 {tagname}	The identifier.  Normally the name of a function, but it can
 		be any identifier.  It cannot contain a <Tab>.
@@ -724,7 +725,7 @@ matches the pattern "^# *define" it is not considered to be a comment.
 If you want to list matches, and then select one to jump to, you could use a
 mapping to do that for you.  Here is an example: >
 
-  :map <F4> [I:let nr = input("Which one: ")<Bar>exe "normal " . nr ."[\t"<CR>
+  :map <F4> [I:let nr = input("Which one: ")<Bar>exe "normal " .. nr .. "[\t"<CR>
 <
 							*[i*
 [i			Display the first line that contains the keyword
@@ -888,19 +889,25 @@ like |CTRL-]|.
 
 The function used for generating the taglist is specified by setting the
 'tagfunc' option.  The function will be called with three arguments:
-   a:pattern	The tag identifier used during the tag search.
-   a:flags	List of flags to control the function behavior.
+   a:pattern	The tag identifier or pattern used during the tag search.
+   a:flags	String containing flags to control the function behavior.
    a:info	Dict containing the following entries:
 		    buf_ffname	  Full filename which can be used for priority.
 		    user_data	  Custom data String, if stored in the tag
 				  stack previously by tagfunc.
 
-Currently two flags may be passed to the tag function:
+Currently up to three flags may be passed to the tag function:
   'c'		The function was invoked by a normal command being processed
 	        (mnemonic: the tag function may use the context around the
 		cursor to perform a better job of generating the tag list.)
   'i'		In Insert mode, the user was completing a tag (with
-		|i_CTRL-X_CTRL-]|).
+		|i_CTRL-X_CTRL-]| or 'completeopt' contains `t`).
+  'r'		The first argument to tagfunc should be interpreted as a
+		|pattern| (see |tag-regexp|), such as when using: >
+		  :tag /pat
+<		It is also given when completing in insert mode.
+		If this flag is not present, the argument is usually taken
+		literally as the full tag name.
 
 Note that when 'tagfunc' is set, the priority of the tags described in
 |tag-priority| does not apply.  Instead, the priority is exactly as the

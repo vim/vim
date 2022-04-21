@@ -284,7 +284,7 @@ endfunc
 " 1
 "     1
 "     1
-"     Expexted:
+"     Expected:
 "     1) g Ctrl-A on block selected indented lines
 "     2
 " 1
@@ -874,6 +874,23 @@ func Test_normal_increment_with_virtualedit()
   call assert_equal([0, 1, 3, 29], getpos('.'))
 
   set virtualedit&
+endfunc
+
+" Test for incrementing a signed hexadecimal and octal number
+func Test_normal_increment_signed_hexoct_nr()
+  new
+  " negative sign before a hex number should be ignored
+  call setline(1, ["-0x9"])
+  exe "norm \<C-A>"
+  call assert_equal(["-0xa"], getline(1, '$'))
+  exe "norm \<C-X>"
+  call assert_equal(["-0x9"], getline(1, '$'))
+  call setline(1, ["-007"])
+  exe "norm \<C-A>"
+  call assert_equal(["-010"], getline(1, '$'))
+  exe "norm \<C-X>"
+  call assert_equal(["-007"], getline(1, '$'))
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

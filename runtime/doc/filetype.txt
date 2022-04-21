@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.2.  Last change: 2019 Jul 16
+*filetype.txt*  For Vim version 8.2.  Last change: 2022 Apr 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -133,22 +133,36 @@ shell script: "#!/bin/csh".
 argument was used.
 
 							*filetype-overrule*
-When the same extension is used for two filetypes, Vim tries to guess what
-kind of file it is.  This doesn't always work.  A number of global variables
-can be used to overrule the filetype used for certain extensions:
+When the same extension is used for multiple filetypes, Vim tries to guess
+what kind of file it is.  This doesn't always work.  A number of global
+variables can be used to overrule the filetype used for certain extensions:
 
 	file name	variable ~
 	*.asa		g:filetype_asa	|ft-aspvbs-syntax| |ft-aspperl-syntax|
-	*.asp		g:filetype_asp	|ft-aspvbs-syntax| |ft-aspperl-syntax|
 	*.asm		g:asmsyntax	|ft-asm-syntax|
-	*.prg		g:filetype_prg
-	*.pl		g:filetype_pl
-	*.inc		g:filetype_inc
-	*.w		g:filetype_w	|ft-cweb-syntax|
+	*.asp		g:filetype_asp	|ft-aspvbs-syntax| |ft-aspperl-syntax|
+	*.bas		g:filetype_bas	|ft-basic-syntax|
+	*.cfg		g:filetype_cfg
+	*.dat		g:filetype_dat
+	*.frm		g:filetype_frm	|ft-form-syntax|
+	*.fs		g:filetype_fs	|ft-forth-syntax|
 	*.i		g:filetype_i	|ft-progress-syntax|
+	*.inc		g:filetype_inc
+	*.m		g:filetype_m	|ft-mathematica-syntax|
+	*.mod		g:filetype_mod
 	*.p		g:filetype_p	|ft-pascal-syntax|
+	*.pl		g:filetype_pl
+	*.pp		g:filetype_pp	|ft-pascal-syntax|
+	*.prg		g:filetype_prg
+	*.src		g:filetype_src
+	*.sys		g:filetype_sys
 	*.sh		g:bash_is_sh	|ft-sh-syntax|
 	*.tex		g:tex_flavor	|ft-tex-plugin|
+	*.w		g:filetype_w	|ft-cweb-syntax|
+
+For a few filetypes the global variable is used only when the filetype could
+not be detected:
+	*.r		g:filetype_r	|ft-rexx-syntax|
 
 							*filetype-ignore*
 To avoid that certain files are being inspected, the g:ft_ignore_pat variable
@@ -355,12 +369,12 @@ define yourself.  There are a few ways to avoid this:
    You need to define your own mapping before the plugin is loaded (before
    editing a file of that type).  The plugin will then skip installing the
    default mapping.
-						*no_mail_maps*
+					*no_mail_maps* *g:no_mail_maps*
 3. Disable defining mappings for a specific filetype by setting a variable,
    which contains the name of the filetype.  For the "mail" filetype this
    would be: >
 	:let no_mail_maps = 1
-<						*no_plugin_maps*
+<					*no_plugin_maps* *g:no_plugin_maps*
 4. Disable defining mappings for all filetypes by setting a variable: >
 	:let no_plugin_maps = 1
 <
@@ -395,6 +409,13 @@ ways to change this:
 
 ==============================================================================
 3.  Docs for the default filetype plugins.		*ftplugin-docs*
+
+
+AWK							*ft-awk-plugin*
+
+Support for features specific to GNU Awk, like @include, can be enabled by
+setting: >
+	let g:awk_is_gawk = 1
 
 
 CHANGELOG						*ft-changelog-plugin*
@@ -536,6 +557,14 @@ One command, :DiffGitCached, is provided to show a diff of the current commit
 in the preview window.  It is equivalent to calling "git diff --cached" plus
 any arguments given to the command.
 
+GPROF							*ft-gprof-plugin*
+
+The gprof filetype plugin defines a mapping <C-]> to jump from a function
+entry in the gprof flat profile or from a function entry in the call graph
+to the details of that function in the call graph.
+
+The mapping can be disabled with: >
+	let g:no_gprof_maps = 1
 
 MAIL							*ft-mail-plugin*
 
@@ -556,16 +585,15 @@ Local mappings:
 
 MAN					*ft-man-plugin* *:Man* *man.vim*
 
-Displays a manual page in a nice way.  Also see the user manual
-|find-manpage|.
+This plugin displays a manual page in a nice way.  See |find-manpage| in the
+user manual for more information.
 
-To start using the ":Man" command before any manual page was loaded, source
-this script from your startup vimrc file: >
-
+To start using the |:Man| command before any manual page has been loaded,
+source this script from your startup |vimrc| file: >
 	runtime ftplugin/man.vim
 
 Options:
-'iskeyword'	the '.' character is added to be able to use CTRL-] on the
+'iskeyword'	The '.' character is added to support the use of CTRL-] on the
 		manual page name.
 
 Commands:
@@ -575,24 +603,25 @@ Man {number} {name}
 
 Global mapping:
 <Leader>K	Displays the manual page for the word under the cursor.
-<Plug>ManPreGetPage  idem, allows for using a mapping: >
-			nmap <F1> <Plug>ManPreGetPage<CR>
+<Plug>ManPreGetPage
+		idem, allows for using a mapping: >
+			nmap <F1> <Plug>ManPreGetPage
 
 Local mappings:
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
-q		Same as ":quit"
+q		Same as the |:quit| command.
 
 To use a vertical split instead of horizontal: >
 	let g:ft_man_open_mode = 'vert'
 To use a new tab: >
 	let g:ft_man_open_mode = 'tab'
 
-To enable folding use this: >
-  	let g:ft_man_folding_enable = 1
-If you do not like the default folding, use an autocommand to add your desired
+To enable |folding|, use this: >
+	let g:ft_man_folding_enable = 1
+If you do not like the default folding, use an |autocommand| to add your desired
 folding style instead.  For example: >
-        autocmd FileType man setlocal foldmethod=indent foldenable
+	autocmd FileType man setlocal foldmethod=indent foldenable
 
 If you would like :Man {number} {name} to behave like man {number} {name} by
 not running man {name} if no page is found, then use this: >
@@ -605,7 +634,7 @@ page in a Vim window: >
 
 MANPAGER				      *manpager.vim*
 
-The :Man command allows you to turn Vim into a manpager (that syntax highlights
+The |:Man| command allows you to turn Vim into a manpager (that syntax highlights
 manpages and follows linked manpages on hitting CTRL-]).
 
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
@@ -619,6 +648,13 @@ For (t)csh, add to the config file
 For fish, add to the config file
 
 	set -x MANPAGER "vim -M +MANPAGER -"
+
+
+MARKDOWN                                                *ft-markdown-plugin*
+
+To enable folding use this: >
+	let g:markdown_folding = 1
+<
 
 PDF							*ft-pdf-plugin*
 

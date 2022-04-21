@@ -25,7 +25,6 @@ src/auto/pathdef.c
 # Windows
 *.exe
 *.idb
-*.manifest
 *.exp
 *.map
 *.obj
@@ -97,5 +96,10 @@ src/shadow-*
 src/runtime
 src/pixmaps
 
-# other possible files build by tools
+# other files possibly created by tools
 src/cscope.out
+
+# Linter/language server files
+/.cache/clangd/
+/.ccls-cache/
+/compile_commands.json

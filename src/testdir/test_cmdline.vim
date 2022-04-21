@@ -4,11 +4,29 @@ source check.vim
 source screendump.vim
 source view_util.vim
 source shared.vim
+import './vim9.vim' as v9
+
+func SetUp()
+  func SaveLastScreenLine()
+    let g:Sline = Screenline(&lines - 1)
+    return ''
+  endfunc
+  cnoremap <expr> <F4> SaveLastScreenLine()
+endfunc
+
+func TearDown()
+  delfunc SaveLastScreenLine
+  cunmap <F4>
+endfunc
 
 func Test_complete_tab()
   call writefile(['testfile'], 'Xtestfile')
   call feedkeys(":e Xtest\t\r", "tx")
   call assert_equal('testfile', getline(1))
+
+  " Pressing <Tab> after '%' completes the current file, also on MS-Windows
+  call feedkeys(":e %\t\r", "tx")
+  call assert_equal('e Xtestfile', @:)
   call delete('Xtestfile')
 endfunc
 
@@ -21,6 +39,47 @@ func Test_complete_list()
   " used.
   call feedkeys(":chistory \<C-D>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"chistory \<C-D>", @:)
+
+  " Test for displaying the tail of the completion matches
+  set wildmode=longest,full
+  call mkdir('Xtest')
+  call writefile([], 'Xtest/a.c')
+  call writefile([], 'Xtest/a.h')
+  let g:Sline = ''
+  call feedkeys(":e Xtest/\<C-D>\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('a.c  a.h', g:Sline)
+  call assert_equal('"e Xtest/', @:)
+  if has('win32')
+    " Test for 'completeslash'
+    set completeslash=backslash
+    call feedkeys(":e Xtest\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xtest\', @:)
+    call feedkeys(":e Xtest/\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xtest\a.', @:)
+    set completeslash=slash
+    call feedkeys(":e Xtest\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xtest/', @:)
+    call feedkeys(":e Xtest\\\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xtest/a.', @:)
+    set completeslash&
+  endif
+
+  " Test for displaying the tail with wildcards
+  let g:Sline = ''
+  call feedkeys(":e Xtes?/\<C-D>\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('Xtest/a.c  Xtest/a.h', g:Sline)
+  call assert_equal('"e Xtes?/', @:)
+  let g:Sline = ''
+  call feedkeys(":e Xtes*/\<C-D>\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('Xtest/a.c  Xtest/a.h', g:Sline)
+  call assert_equal('"e Xtes*/', @:)
+  let g:Sline = ''
+  call feedkeys(":e Xtes[/\<C-D>\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal(':e Xtes[/', g:Sline)
+  call assert_equal('"e Xtes[/', @:)
+
+  call delete('Xtest', 'rf')
+  set wildmode&
 endfunc
 
 func Test_complete_wildmenu()
@@ -58,6 +117,22 @@ func Test_complete_wildmenu()
   call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
+  " this fails in some Unix GUIs, not sure why
+  if !has('unix') || !has('gui_running')
+    " <C-J>/<C-K> mappings to go up/down directories when 'wildcharm' is
+    " different than 'wildchar'.
+    set wildcharm=<C-Z>
+    cnoremap <C-J> <Down><C-Z>
+    cnoremap <C-K> <Up><C-Z>
+    call feedkeys(":e Xdir1/\<Tab>\<C-J>\<CR>", 'tx')
+    call assert_equal('testfile3', getline(1))
+    call feedkeys(":e Xdir1/\<Tab>\<C-J>\<C-K>\<CR>", 'tx')
+    call assert_equal('testfile1', getline(1))
+    set wildcharm=0
+    cunmap <C-J>
+    cunmap <C-K>
+  endif
+
   " Test for canceling the wild menu by adding a character
   redrawstatus
   call feedkeys(":e Xdir1/\<Tab>x\<C-B>\"\<CR>", 'xt')
@@ -69,22 +144,28 @@ func Test_complete_wildmenu()
   call assert_equal('"e Xtestfile3 Xtestfile4', @:)
   cd -
 
+  " test for wildmenumode()
   cnoremap <expr> <F2> wildmenumode()
   call feedkeys(":cd Xdir\<Tab>\<F2>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"cd Xdir1/1', @:)
+  call assert_equal('"cd Xdir1/0', @:)
+  call feedkeys(":e Xdir1/\<Tab>\<F2>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"e Xdir1/Xdir2/1', @:)
   cunmap <F2>
+
+  " Test for canceling the wild menu by pressing <PageDown> or <PageUp>.
+  " After this pressing <Left> or <Right> should not change the selection.
+  call feedkeys(":sign \<Tab>\<PageDown>\<Left>\<Right>\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sign define', @:)
+  call histadd('cmd', 'TestWildMenu')
+  call feedkeys(":sign \<Tab>\<PageUp>\<Left>\<Right>\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"TestWildMenu', @:)
 
   " cleanup
   %bwipe
-  call delete('Xdir1/Xdir2/Xtestfile4')
-  call delete('Xdir1/Xdir2/Xtestfile3')
-  call delete('Xdir1/Xtestfile2')
-  call delete('Xdir1/Xtestfile1')
-  call delete('Xdir1/Xdir2', 'd')
-  call delete('Xdir1', 'd')
+  call delete('Xdir1', 'rf')
   set nowildmenu
 endfunc
-f
+
 func Test_wildmenu_screendump()
   CheckScreendump
 
@@ -103,7 +184,7 @@ func Test_wildmenu_screendump()
   call term_sendkeys(buf, "\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_3', {})
 
-  call term_sendkeys(buf, "\<Tab>")
+  call term_sendkeys(buf, "\<Tab>\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_4', {})
   call term_sendkeys(buf, "\<Esc>")
 
@@ -112,9 +193,29 @@ func Test_wildmenu_screendump()
   call delete('XTest_wildmenu')
 endfunc
 
+func Test_redraw_in_autocmd()
+  CheckScreendump
+
+  let lines =<< trim END
+      set cmdheight=2
+      autocmd CmdlineChanged * redraw
+  END
+  call writefile(lines, 'XTest_redraw')
+
+  let buf = RunVimInTerminal('-S XTest_redraw', {'rows': 8})
+  call term_sendkeys(buf, ":for i in range(3)\<CR>")
+  call VerifyScreenDump(buf, 'Test_redraw_in_autocmd_1', {})
+
+  call term_sendkeys(buf, "let i =")
+  call VerifyScreenDump(buf, 'Test_redraw_in_autocmd_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XTest_redraw')
+endfunc
 
 func Test_map_completion()
-  CheckFeature cmdline_compl
   call feedkeys(":map <unique> <si\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"map <unique> <silent>', getreg(':'))
   call feedkeys(":map <script> <un\<Tab>\<Home>\"\<CR>", 'xt')
@@ -185,21 +286,23 @@ func Test_map_completion()
   unmap <Left>
   set cpo-=k
 
+  call assert_fails('call feedkeys(":map \\\\%(\<Tab>\<Home>\"\<CR>", "xt")', 'E53:')
+
   unmap <Middle>x
   set cpo&vim
 endfunc
 
 func Test_match_completion()
-  CheckFeature cmdline_compl
   hi Aardig ctermfg=green
   call feedkeys(":match \<Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"match Aardig', getreg(':'))
+  call assert_equal('"match Aardig', @:)
   call feedkeys(":match \<S-Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"match none', getreg(':'))
+  call assert_equal('"match none', @:)
+  call feedkeys(":match | chist\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"match | chistory', @:)
 endfunc
 
 func Test_highlight_completion()
-  CheckFeature cmdline_compl
   hi Aardig ctermfg=green
   call feedkeys(":hi \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi Aardig', getreg(':'))
@@ -236,7 +339,6 @@ func Test_highlight_easter_egg()
 endfunc
 
 func Test_getcompletion()
-  CheckFeature cmdline_compl
   let groupcount = len(getcompletion('', 'event'))
   call assert_true(groupcount > 0)
   let matchcount = len('File'->getcompletion('event'))
@@ -261,6 +363,8 @@ func Test_getcompletion()
   args a.c b.c
   let l = getcompletion('', 'arglist')
   call assert_equal(['a.c', 'b.c'], l)
+  let l = getcompletion('a.', 'buffer')
+  call assert_equal(['a.c'], l)
   %argdelete
 
   let l = getcompletion('', 'augroup')
@@ -288,6 +392,11 @@ func Test_getcompletion()
   let l = getcompletion('NoMatch', 'dir')
   call assert_equal([], l)
 
+  if glob('~/*') !=# ''
+    let l = getcompletion('~/', 'dir')
+    call assert_true(l[0][0] ==# '~')
+  endif
+
   let l = getcompletion('exe', 'expression')
   call assert_true(index(l, 'executable(') >= 0)
   let l = getcompletion('kill', 'expression')
@@ -311,6 +420,11 @@ func Test_getcompletion()
   let l = getcompletion('run', 'file', 1)
   call assert_true(index(l, 'runtest.vim') < 0)
   set wildignore&
+  " Directory name with space character
+  call mkdir('Xdir with space')
+  call assert_equal(['Xdir with space/'], getcompletion('Xdir\ w', 'shellcmd'))
+  call assert_equal(['./Xdir with space/'], getcompletion('./Xdir', 'shellcmd'))
+  call delete('Xdir with space', 'd')
 
   let l = getcompletion('ha', 'filetype')
   call assert_true(index(l, 'hamster') >= 0)
@@ -385,6 +499,12 @@ func Test_getcompletion()
     call assert_equal(cmds, l)
     let l = getcompletion('list ', 'sign')
     call assert_equal(['Testing'], l)
+    let l = getcompletion('de*', 'sign')
+    call assert_equal(['define'], l)
+    let l = getcompletion('p?', 'sign')
+    call assert_equal(['place'], l)
+    let l = getcompletion('j.', 'sign')
+    call assert_equal(['jump'], l)
   endif
 
   " Command line completion tests
@@ -400,6 +520,19 @@ func Test_getcompletion()
   call assert_true(index(l, 'taglist(') >= 0)
   let l = getcompletion('call paint', 'cmdline')
   call assert_equal([], l)
+
+  func T(a, c, p)
+    let g:cmdline_compl_params = [a:a, a:c, a:p]
+    return "oneA\noneB\noneC"
+  endfunc
+  command -nargs=1 -complete=custom,T MyCmd
+  let l = getcompletion('MyCmd ', 'cmdline')
+  call assert_equal(['oneA', 'oneB', 'oneC'], l)
+  call assert_equal(['', 'MyCmd ', 6], g:cmdline_compl_params)
+
+  delcommand MyCmd
+  delfunc T
+  unlet g:cmdline_compl_params
 
   " For others test if the name is recognized.
   let names = ['buffer', 'environment', 'file_in_path', 'mapping', 'tag', 'tag_listfiles', 'user']
@@ -424,9 +557,108 @@ func Test_getcompletion()
   call delete('Xtags')
   set tags&
 
+  edit a~b
+  enew
+  call assert_equal(['a~b'], getcompletion('a~', 'buffer'))
+  bw a~b
+
+  if has('unix')
+    edit Xtest\
+    enew
+    call assert_equal(['Xtest\'], getcompletion('Xtest\', 'buffer'))
+    bw Xtest\
+  endif
+
   call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E871:')
   call assert_fails('call getcompletion("", "burp")', 'E475:')
   call assert_fails('call getcompletion("abc", [])', 'E475:')
+endfunc
+
+" Test for getcompletion() with "fuzzy" in 'wildoptions'
+func Test_getcompletion_wildoptions()
+  let save_wildoptions = &wildoptions
+  set wildoptions&
+  let l = getcompletion('space', 'option')
+  call assert_equal([], l)
+  let l = getcompletion('ier', 'command')
+  call assert_equal([], l)
+  set wildoptions=fuzzy
+  let l = getcompletion('space', 'option')
+  call assert_true(index(l, 'backspace') >= 0)
+  let l = getcompletion('ier', 'command')
+  call assert_true(index(l, 'compiler') >= 0)
+  let &wildoptions = save_wildoptions
+endfunc
+
+func Test_complete_autoload_error()
+  let save_rtp = &rtp
+  let lines =<< trim END
+      vim9script
+      export def Complete(..._): string
+        return 'match'
+      enddef
+      echo this will cause an error
+  END
+  call mkdir('Xdir/autoload', 'p')
+  call writefile(lines, 'Xdir/autoload/script.vim')
+  exe 'set rtp+=' .. getcwd() .. '/Xdir'
+
+  let lines =<< trim END
+      vim9script
+      import autoload 'script.vim'
+      command -nargs=* -complete=custom,script.Complete Cmd eval 0 + 0
+      &wildcharm = char2nr("\<Tab>")
+      feedkeys(":Cmd \<Tab>", 'xt')
+  END
+  call v9.CheckScriptFailure(lines, 'E121: Undefined variable: this')
+
+  let &rtp = save_rtp
+  call delete('Xdir', 'rf')
+endfunc
+
+func Test_fullcommand()
+  let tests = {
+        \ '':           '',
+        \ ':':          '',
+        \ ':::':        '',
+        \ ':::5':       '',
+        \ 'not_a_cmd':  '',
+        \ 'Check':      '',
+        \ 'syntax':     'syntax',
+        \ ':syntax':    'syntax',
+        \ '::::syntax': 'syntax',
+        \ 'sy':         'syntax',
+        \ 'syn':        'syntax',
+        \ 'synt':       'syntax',
+        \ ':sy':        'syntax',
+        \ '::::sy':     'syntax',
+        \ 'match':      'match',
+        \ '2match':     'match',
+        \ '3match':     'match',
+        \ 'aboveleft':  'aboveleft',
+        \ 'abo':        'aboveleft',
+        \ 's':          'substitute',
+        \ '5s':         'substitute',
+        \ ':5s':        'substitute',
+        \ "'<,'>s":     'substitute',
+        \ ":'<,'>s":    'substitute',
+        \ 'CheckLin':   'CheckLinux',
+        \ 'CheckLinux': 'CheckLinux',
+  \ }
+
+  for [in, want] in items(tests)
+    call assert_equal(want, fullcommand(in))
+  endfor
+  call assert_equal('', fullcommand(test_null_string()))
+
+  call assert_equal('syntax', 'syn'->fullcommand())
+
+  command -buffer BufferLocalCommand :
+  command GlobalCommand :
+  call assert_equal('GlobalCommand', fullcommand('GlobalCom'))
+  call assert_equal('BufferLocalCommand', fullcommand('BufferL'))
+  delcommand BufferLocalCommand
+  delcommand GlobalCommand
 endfunc
 
 func Test_shellcmd_completion()
@@ -456,7 +688,7 @@ func Test_expand_star_star()
   call mkdir('a/b', 'p')
   call writefile(['asdfasdf'], 'a/b/fileXname')
   call feedkeys(":find **/fileXname\<Tab>\<CR>", 'xt')
-  call assert_equal('find a/b/fileXname', getreg(':'))
+  call assert_equal('find a/b/fileXname', @:)
   bwipe!
   call delete('a', 'rf')
 endfunc
@@ -590,6 +822,12 @@ func Test_cmdline_complete_user_cmd()
   call assert_equal('"Foo blue', @:)
   call feedkeys(":Foo b\<Tab>\<Home>\"\<cr>", 'tx')
   call assert_equal('"Foo blue', @:)
+  call feedkeys(":Foo a b\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_equal('"Foo a blue', @:)
+  call feedkeys(":Foo b\\\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_equal('"Foo b\', @:)
+  call feedkeys(":Foo b\\x\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_equal('"Foo b\x', @:)
   delcommand Foo
 endfunc
 
@@ -599,9 +837,26 @@ endfunc
 
 func Test_cmdline_complete_user_func()
   call feedkeys(":func Test_cmdline_complete_user\<Tab>\<Home>\"\<cr>", 'tx')
-  call assert_match('"func Test_cmdline_complete_user', @:)
+  call assert_match('"func Test_cmdline_complete_user_', @:)
   call feedkeys(":func s:ScriptL\<Tab>\<Home>\"\<cr>", 'tx')
   call assert_match('"func <SNR>\d\+_ScriptLocalFunction', @:)
+
+  " g: prefix also works
+  call feedkeys(":echo g:Test_cmdline_complete_user_f\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_match('"echo g:Test_cmdline_complete_user_func', @:)
+
+  " using g: prefix does not result in just "g:" matches from a lambda
+  let Fx = { a ->  a }
+  call feedkeys(":echo g:\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_match('"echo g:[A-Z]', @:)
+
+  " existence of script-local dict function does not break user function name
+  " completion
+  function s:a_dict_func() dict
+  endfunction
+  call feedkeys(":call Test_cmdline_complete_user\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_match('"call Test_cmdline_complete_user_', @:)
+  delfunction s:a_dict_func
 endfunc
 
 func Test_cmdline_complete_user_names()
@@ -672,6 +927,22 @@ func Test_cmdline_complete_env_variable()
   unlet $X_VIM_TEST_COMPLETE_ENV
 endfunc
 
+func Test_cmdline_complete_expression()
+  let g:SomeVar = 'blah'
+  for cmd in ['exe', 'echo', 'echon', 'echomsg']
+    call feedkeys(":" .. cmd .. " SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_match('"' .. cmd .. ' SomeVar', @:)
+    call feedkeys(":" .. cmd .. " foo SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_match('"' .. cmd .. ' foo SomeVar', @:)
+  endfor
+  unlet g:SomeVar
+endfunc
+
+" Unique function name for completion below
+func s:WeirdFunc()
+  echo 'weird'
+endfunc
+
 " Test for various command-line completion
 func Test_cmdline_complete_various()
   " completion for a command starting with a comment
@@ -738,32 +1009,73 @@ func Test_cmdline_complete_various()
   call feedkeys(":topleft new\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"topleft new", @:)
 
+  " completion for vim9 and legacy commands
+  call feedkeys(":vim9 call strle\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"vim9 call strlen(", @:)
+  call feedkeys(":legac call strle\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"legac call strlen(", @:)
+
+  " completion for the :disassemble command
+  call feedkeys(":disas deb\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas debug", @:)
+  call feedkeys(":disas pro\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas profile", @:)
+  call feedkeys(":disas debug Test_cmdline_complete_var\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas debug Test_cmdline_complete_various", @:)
+  call feedkeys(":disas profile Test_cmdline_complete_var\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas profile Test_cmdline_complete_various", @:)
+  call feedkeys(":disas Test_cmdline_complete_var\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"disas Test_cmdline_complete_various", @:)
+
+  call feedkeys(":disas s:WeirdF\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_match('"disas <SNR>\d\+_WeirdFunc', @:)
+
+  call feedkeys(":disas \<S-Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_match('"disas <SNR>\d\+_', @:)
+  call feedkeys(":disas debug \<S-Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_match('"disas debug <SNR>\d\+_', @:)
+
   " completion for the :match command
   call feedkeys(":match Search /pat/\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"match Search /pat/\<C-A>", @:)
-
-  " completion for the :s command
-  call feedkeys(":s/from/to/g\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"s/from/to/g\<C-A>", @:)
-
-  " completion for the :dlist command
-  call feedkeys(":dlist 10 /pat/ a\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"dlist 10 /pat/ a\<C-A>", @:)
 
   " completion for the :doautocmd command
   call feedkeys(":doautocmd User MyCmd a.c\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"doautocmd User MyCmd a.c\<C-A>", @:)
 
+  " completion of autocmd group after comma
+  call feedkeys(":doautocmd BufNew,BufEn\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"doautocmd BufNew,BufEnter", @:)
+
+  " completion of file name in :doautocmd
+  call writefile([], 'Xfile1')
+  call writefile([], 'Xfile2')
+  call feedkeys(":doautocmd BufEnter Xfi\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"doautocmd BufEnter Xfile1 Xfile2", @:)
+  call delete('Xfile1')
+  call delete('Xfile2')
+
   " completion for the :augroup command
-  augroup XTest
+  augroup XTest.test
   augroup END
   call feedkeys(":augroup X\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"augroup XTest", @:)
-  augroup! XTest
+  call assert_equal("\"augroup XTest.test", @:)
+  call feedkeys(":au X\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au XTest.test", @:)
+  augroup! XTest.test
 
   " completion for the :unlet command
   call feedkeys(":unlet one two\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"unlet one two", @:)
+
+  " completion for the :buffer command with curlies
+  " FIXME: what should happen on MS-Windows?
+  if !has('win32')
+    edit \{someFile}
+    call feedkeys(":buf someFile\<C-A>\<C-B>\"\<CR>", 'xt')
+    call assert_equal("\"buf {someFile}", @:)
+    bwipe {someFile}
+  endif
 
   " completion for the :bdelete command
   call feedkeys(":bdel a b c\<C-A>\<C-B>\"\<CR>", 'xt')
@@ -786,7 +1098,7 @@ func Test_cmdline_complete_various()
   map <F3> :ls<CR>
   com -nargs=* -complete=mapping MyCmd
   call feedkeys(":MyCmd <F\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"MyCmd <F3>', @:)
+  call assert_equal('"MyCmd <F3> <F4>', @:)
   mapclear
   delcom MyCmd
 
@@ -801,6 +1113,10 @@ func Test_cmdline_complete_various()
   " completion for the :py3 commands
   call feedkeys(":py3\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"py3 py3do py3file', @:)
+
+  " completion for the :vim9 commands
+  call feedkeys(":vim9\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"vim9cmd vim9script', @:)
 
   " redir @" is not the start of a comment. So complete after that
   call feedkeys(":redir @\" | cwin\t\<C-B>\"\<CR>", 'xt')
@@ -830,6 +1146,12 @@ func Test_cmdline_complete_various()
   call feedkeys(":1,10 | chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"1,10 | chistory', @:)
 
+  " completion after a :global command
+  call feedkeys(":g/a/chist\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"g/a/chistory', @:)
+  call feedkeys(":g/a\\/chist\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"g/a\\/chist\t", @:)
+
   " use <Esc> as the 'wildchar' for completion
   set wildchar=<Esc>
   call feedkeys(":g/a\\xb/clearj\<Esc>\<C-B>\"\<CR>", 'xt')
@@ -838,6 +1160,43 @@ func Test_cmdline_complete_various()
   call feedkeys(":chist\<Esc>\<Esc>", 'xt')
   call assert_equal('"g/a\xb/clearjumps', @:)
   set wildchar&
+
+  if has('unix')
+    " should be able to complete a file name that starts with a '~'.
+    call writefile([], '~Xtest')
+    call feedkeys(":e \\~X\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e \~Xtest', @:)
+    call delete('~Xtest')
+
+    " should be able to complete a file name that has a '*'
+    call writefile([], 'Xx*Yy')
+    call feedkeys(":e Xx\*\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xx\*Yy', @:)
+    call delete('Xx*Yy')
+
+    " use a literal star
+    call feedkeys(":e \\*\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e \*', @:)
+  endif
+
+  call feedkeys(":py3f\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"py3file', @:)
+endfunc
+
+" Test for 'wildignorecase'
+func Test_cmdline_wildignorecase()
+  CheckUnix
+  call writefile([], 'XTEST')
+  set wildignorecase
+  call feedkeys(":e xt\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e XTEST', @:)
+  call assert_equal(['XTEST'], getcompletion('xt', 'file'))
+  let g:Sline = ''
+  call feedkeys(":e xt\<C-d>\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e xt', @:)
+  call assert_equal('XTEST', g:Sline)
+  set wildignorecase&
+  call delete('XTEST')
 endfunc
 
 func Test_cmdline_write_alternatefile()
@@ -892,7 +1251,7 @@ func Test_tick_mark_in_range()
   " If only the tick is passed as a range and no command is specified, there
   " should not be an error
   call feedkeys(":'\<CR>", 'xt')
-  call assert_equal("'", getreg(':'))
+  call assert_equal("'", @:)
   call assert_fails("',print", 'E78:')
 endfunc
 
@@ -944,6 +1303,8 @@ func Test_getcmdtype()
 endfunc
 
 func Test_getcmdwintype()
+  CheckFeature cmdwin
+
   call feedkeys("q/:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
   call assert_equal('/', a)
 
@@ -960,6 +1321,8 @@ func Test_getcmdwintype()
 endfunc
 
 func Test_getcmdwin_autocmd()
+  CheckFeature cmdwin
+
   let s:seq = []
   augroup CmdWin
   au WinEnter * call add(s:seq, 'WinEnter ' .. win_getid())
@@ -1072,6 +1435,8 @@ func Test_cmdline_overstrike()
 endfunc
 
 func Test_cmdwin_bug()
+  CheckFeature cmdwin
+
   let winid = win_getid()
   sp
   try
@@ -1082,9 +1447,11 @@ func Test_cmdwin_bug()
 endfunc
 
 func Test_cmdwin_restore()
+  CheckFeature cmdwin
   CheckScreendump
 
   let lines =<< trim [SCRIPT]
+    augroup vimHints | au! | augroup END
     call setline(1, range(30))
     2split
   [SCRIPT]
@@ -1109,6 +1476,21 @@ func Test_cmdwin_restore()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XTest_restore')
+endfunc
+
+func Test_cmdwin_no_terminal()
+  CheckFeature cmdwin
+  CheckFeature terminal
+  CheckNotMSWindows
+
+  let buf = RunVimInTerminal('', {'rows': 12})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":set cmdheight=2\<CR>")
+  call term_sendkeys(buf, "q:")
+  call term_sendkeys(buf, ":let buf = term_start(['/bin/echo'], #{hidden: 1})\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_no_terminal', {})
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_buffers_lastused()
@@ -1157,6 +1539,8 @@ func Test_buffers_lastused()
 endfunc
 
 func Test_cmdwin_feedkeys()
+  CheckFeature cmdwin
+
   " This should not generate E488
   call feedkeys("q:\<CR>", 'x')
   " Using feedkeys with q: only should automatically close the cmd window
@@ -1168,6 +1552,8 @@ endfunc
 " Tests for the issues fixed in 7.4.441.
 " When 'cedit' is set to Ctrl-C, opening the command window hangs Vim
 func Test_cmdwin_cedit()
+  CheckFeature cmdwin
+
   exe "set cedit=\<C-c>"
   normal! :
   call assert_equal(1, winnr('$'))
@@ -1190,8 +1576,11 @@ endfunc
 
 " Test for CmdwinEnter autocmd
 func Test_cmdwin_autocmd()
+  CheckFeature cmdwin
+
   augroup CmdWin
     au!
+    autocmd BufLeave * if &buftype == '' | update | endif
     autocmd CmdwinEnter * startinsert
   augroup END
 
@@ -1222,16 +1611,27 @@ func Test_cmdlineclear_tabenter()
   call delete('XtestCmdlineClearTabenter')
 endfunc
 
-" Test for failure in expanding special keywords in cmdline
+" Test for expanding special keywords in cmdline
 func Test_cmdline_expand_special()
   %bwipe!
-  call assert_fails('e #', 'E499:')
+  call assert_fails('e #', 'E194:')
   call assert_fails('e <afile>', 'E495:')
   call assert_fails('e <abuf>', 'E496:')
   call assert_fails('e <amatch>', 'E497:')
+
+  call writefile([], 'Xfile.cpp')
+  call writefile([], 'Xfile.java')
+  new Xfile.cpp
+  call feedkeys(":e %:r\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.cpp Xfile.java', @:)
+  close
+  call delete('Xfile.cpp')
+  call delete('Xfile.java')
 endfunc
 
 func Test_cmdwin_jump_to_win()
+  CheckFeature cmdwin
+
   call assert_fails('call feedkeys("q:\<C-W>\<C-W>\<CR>", "xt")', 'E11:')
   new
   set modified
@@ -1247,7 +1647,14 @@ func Test_cmdwin_jump_to_win()
   call assert_equal(1, winnr('$'))
 endfunc
 
+func Test_cmdwin_tabpage()
+  tabedit
+  call assert_fails("silent norm q/g	:I\<Esc>", 'E11:')
+  tabclose!
+endfunc
+
 func Test_cmdwin_interrupted()
+  CheckFeature cmdwin
   CheckScreendump
 
   " aborting the :smile output caused the cmdline window to use the current
@@ -1278,6 +1685,10 @@ func Test_cmd_backtick()
   %argd
   argadd `=['a', 'b', 'c']`
   call assert_equal(['a', 'b', 'c'], argv())
+  %argd
+
+  argadd `echo abc def`
+  call assert_equal(['abc def'], argv())
   %argd
 endfunc
 
@@ -1359,22 +1770,16 @@ func Test_cmdline_ctrl_g()
 endfunc
 
 " Test for 'wildmode'
-func Test_wildmode()
+func Wildmode_tests()
   func T(a, c, p)
     return "oneA\noneB\noneC"
   endfunc
   command -nargs=1 -complete=custom,T MyCmd
 
-  func SaveScreenLine()
-    let g:Sline = Screenline(&lines - 1)
-    return ''
-  endfunc
-  cnoremap <expr> <F2> SaveScreenLine()
-
   set nowildmenu
   set wildmode=full,list
   let g:Sline = ''
-  call feedkeys(":MyCmd \t\t\<F2>\<C-B>\"\<CR>", 'xt')
+  call feedkeys(":MyCmd \t\t\<F4>\<C-B>\"\<CR>", 'xt')
   call assert_equal('oneA  oneB  oneC', g:Sline)
   call assert_equal('"MyCmd oneA', @:)
 
@@ -1390,7 +1795,7 @@ func Test_wildmode()
 
   set wildmode=list:longest
   let g:Sline = ''
-  call feedkeys(":MyCmd \t\<F2>\<C-B>\"\<CR>", 'xt')
+  call feedkeys(":MyCmd \t\<F4>\<C-B>\"\<CR>", 'xt')
   call assert_equal('oneA  oneB  oneC', g:Sline)
   call assert_equal('"MyCmd one', @:)
 
@@ -1409,17 +1814,80 @@ func Test_wildmode()
   " Test for listing files with wildmode=list
   set wildmode=list
   let g:Sline = ''
-  call feedkeys(":b A\t\t\<F2>\<C-B>\"\<CR>", 'xt')
+  call feedkeys(":b A\t\t\<F4>\<C-B>\"\<CR>", 'xt')
   call assert_equal('AAA    AAAA   AAAAA', g:Sline)
   call assert_equal('"b A', @:)
+
+  " when using longest completion match, matches shorter than the argument
+  " should be ignored (happens with :help)
+  set wildmode=longest,full
+  set wildmenu
+  call feedkeys(":help a*\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"help a', @:)
+  " non existing file
+  call feedkeys(":e a1b2y3z4\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e a1b2y3z4', @:)
+  set wildmenu&
+
+  " Test for longest file name completion with 'fileignorecase'
+  " On MS-Windows, file names are case insensitive.
+  if has('unix')
+    call writefile([], 'XTESTfoo')
+    call writefile([], 'Xtestbar')
+    set nofileignorecase
+    call feedkeys(":e XT\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e XTESTfoo', @:)
+    call feedkeys(":e Xt\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xtestbar', @:)
+    set fileignorecase
+    call feedkeys(":e XT\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xtest', @:)
+    call feedkeys(":e Xt\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e Xtest', @:)
+    set fileignorecase&
+    call delete('XTESTfoo')
+    call delete('Xtestbar')
+  endif
 
   %argdelete
   delcommand MyCmd
   delfunc T
-  delfunc SaveScreenLine
-  cunmap <F2>
   set wildmode&
   %bwipe!
+endfunc
+
+func Test_wildmode()
+  " Test with utf-8 encoding
+  call Wildmode_tests()
+
+  " Test with latin1 encoding
+  let save_encoding = &encoding
+  set encoding=latin1
+  call Wildmode_tests()
+  let &encoding = save_encoding
+endfunc
+
+func Test_custom_complete_autoload()
+  call mkdir('Xdir/autoload', 'p')
+  let save_rtp = &rtp
+  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  let lines =<< trim END
+      func vim8#Complete(a, c, p)
+        return "oneA\noneB\noneC"
+      endfunc
+  END
+  call writefile(lines, 'Xdir/autoload/vim8.vim')
+
+  command -nargs=1 -complete=custom,vim8#Complete MyCmd
+  set nowildmenu
+  set wildmode=full,list
+  call feedkeys(":MyCmd \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA oneB oneC', @:)
+
+  let &rtp = save_rtp
+  set wildmode& wildmenu&
+  delcommand MyCmd
+  call delete('Xdir', 'rf')
 endfunc
 
 " Test for interrupting the command-line completion
@@ -1438,6 +1906,14 @@ func Test_interrupt_compl()
   let interrupted = 0
   try
     call feedkeys(":Tcmd tw\<Tab>\<C-B>\"\<CR>", 'xt')
+  catch /^Vim:Interrupt$/
+    let interrupted = 1
+  endtry
+  call assert_equal(1, interrupted)
+
+  let interrupted = 0
+  try
+    call feedkeys(":Tcmd tw\<C-d>\<C-B>\"\<CR>", 'xt')
   catch /^Vim:Interrupt$/
     let interrupted = 1
   endtry
@@ -1534,6 +2010,8 @@ endfunc
 
 " Test for recursively getting multiple command line inputs
 func Test_cmdwin_multi_input()
+  CheckFeature cmdwin
+
   call feedkeys(":\<C-R>=input('P: ')\<CR>\"cyan\<CR>\<CR>", 'xt')
   call assert_equal('"cyan', @:)
 endfunc
@@ -1558,6 +2036,8 @@ endfunc
 
 " Test for normal mode commands not supported in the cmd window
 func Test_cmdwin_blocked_commands()
+  CheckFeature cmdwin
+
   call assert_fails('call feedkeys("q:\<C-T>\<CR>", "xt")', 'E11:')
   call assert_fails('call feedkeys("q:\<C-]>\<CR>", "xt")', 'E11:')
   call assert_fails('call feedkeys("q:\<C-^>\<CR>", "xt")', 'E11:')
@@ -1589,6 +2069,8 @@ endfunc
 
 " Close the Cmd-line window in insert mode using CTRL-C
 func Test_cmdwin_insert_mode_close()
+  CheckFeature cmdwin
+
   %bw!
   let s = ''
   exe "normal q:a\<C-C>let s='Hello'\<CR>"
@@ -1623,6 +2105,1265 @@ func Test_read_shellcmd()
     call assert_notmatch('^"r.*\<runtest.vim\>', @:)
     call assert_match('^"r ++enc\S\+ !.*\<rm\>', @:)
   endif
+endfunc
+
+" Test for going up and down the directory tree using 'wildmenu'
+func Test_wildmenu_dirstack()
+  CheckUnix
+  %bw!
+  call mkdir('Xdir1/dir2/dir3/dir4', 'p')
+  call writefile([], 'Xdir1/file1_1.txt')
+  call writefile([], 'Xdir1/file1_2.txt')
+  call writefile([], 'Xdir1/dir2/file2_1.txt')
+  call writefile([], 'Xdir1/dir2/file2_2.txt')
+  call writefile([], 'Xdir1/dir2/dir3/file3_1.txt')
+  call writefile([], 'Xdir1/dir2/dir3/file3_2.txt')
+  call writefile([], 'Xdir1/dir2/dir3/dir4/file4_1.txt')
+  call writefile([], 'Xdir1/dir2/dir3/dir4/file4_2.txt')
+  set wildmenu
+
+  cd Xdir1/dir2/dir3/dir4
+  call feedkeys(":e \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e file4_1.txt', @:)
+  call feedkeys(":e \<Tab>\<Up>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../dir4/', @:)
+  call feedkeys(":e \<Tab>\<Up>\<Up>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../../dir3/', @:)
+  call feedkeys(":e \<Tab>\<Up>\<Up>\<Up>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../../../dir2/', @:)
+  call feedkeys(":e \<Tab>\<Up>\<Up>\<Down>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../../dir3/dir4/', @:)
+  call feedkeys(":e \<Tab>\<Up>\<Up>\<Down>\<Down>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../../dir3/dir4/file4_1.txt', @:)
+  cd -
+  call feedkeys(":e Xdir1/\<Tab>\<Down>\<Down>\<Down>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xdir1/dir2/dir3/dir4/file4_1.txt', @:)
+
+  call delete('Xdir1', 'rf')
+  set wildmenu&
+endfunc
+
+" Test for recalling newer or older cmdline from history with <Up>, <Down>,
+" <S-Up>, <S-Down>, <PageUp>, <PageDown>, <kPageUp>, <kPageDown>, <C-p>, or
+" <C-n>.
+func Test_recalling_cmdline()
+  CheckFeature cmdline_hist
+
+  let g:cmdlines = []
+  cnoremap <Plug>(save-cmdline) <Cmd>let g:cmdlines += [getcmdline()]<CR>
+
+  let histories = [
+  \  #{name: 'cmd',    enter: ':',                    exit: "\<Esc>"},
+  \  #{name: 'search', enter: '/',                    exit: "\<Esc>"},
+  \  #{name: 'expr',   enter: ":\<C-r>=",             exit: "\<Esc>\<Esc>"},
+  \  #{name: 'input',  enter: ":call input('')\<CR>", exit: "\<CR>"},
+  "\ TODO: {'name': 'debug', ...}
+  \]
+  let keypairs = [
+  \  #{older: "\<Up>",     newer: "\<Down>",     prefixmatch: v:true},
+  \  #{older: "\<S-Up>",   newer: "\<S-Down>",   prefixmatch: v:false},
+  \  #{older: "\<PageUp>", newer: "\<PageDown>", prefixmatch: v:false},
+  \  #{older: "\<kPageUp>", newer: "\<kPageDown>", prefixmatch: v:false},
+  \  #{older: "\<C-p>",    newer: "\<C-n>",      prefixmatch: v:false},
+  \]
+  let prefix = 'vi'
+  for h in histories
+    call histadd(h.name, 'vim')
+    call histadd(h.name, 'virtue')
+    call histadd(h.name, 'Virgo')
+    call histadd(h.name, 'vogue')
+    call histadd(h.name, 'emacs')
+    for k in keypairs
+      let g:cmdlines = []
+      let keyseqs = h.enter
+      \          .. prefix
+      \          .. repeat(k.older .. "\<Plug>(save-cmdline)", 2)
+      \          .. repeat(k.newer .. "\<Plug>(save-cmdline)", 2)
+      \          .. h.exit
+      call feedkeys(keyseqs, 'xt')
+      call histdel(h.name, -1) " delete the history added by feedkeys above
+      let expect = k.prefixmatch
+      \          ? ['virtue', 'vim',   'virtue', prefix]
+      \          : ['emacs',  'vogue', 'emacs',  prefix]
+      call assert_equal(expect, g:cmdlines)
+    endfor
+  endfor
+
+  unlet g:cmdlines
+  cunmap <Plug>(save-cmdline)
+endfunc
+
+func Test_cmd_map_cmdlineChanged()
+  let g:log = []
+  cnoremap <F1> l<Cmd><CR>s
+  augroup test
+    autocmd!
+    autocmd CmdlineChanged : let g:log += [getcmdline()]
+  augroup END
+
+  call feedkeys(":\<F1>\<CR>", 'xt')
+  call assert_equal(['l', 'ls'], g:log)
+
+  let @b = 'b'
+  cnoremap <F1> a<C-R>b
+  let g:log = []
+  call feedkeys(":\<F1>\<CR>", 'xt')
+  call assert_equal(['a', 'ab'], g:log)
+
+  unlet g:log
+  cunmap <F1>
+  augroup test
+    autocmd!
+  augroup END
+endfunc
+
+" Test for the 'suffixes' option
+func Test_suffixes_opt()
+  call writefile([], 'Xfile')
+  call writefile([], 'Xfile.c')
+  call writefile([], 'Xfile.o')
+  set suffixes=
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile Xfile.c Xfile.o', @:)
+  call feedkeys(":e Xfi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.c', @:)
+  set suffixes=.c
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile Xfile.o Xfile.c', @:)
+  call feedkeys(":e Xfi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.o', @:)
+  set suffixes=,,
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.c Xfile.o Xfile', @:)
+  call feedkeys(":e Xfi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.o', @:)
+  set suffixes&
+  " Test for getcompletion() with different patterns
+  call assert_equal(['Xfile', 'Xfile.c', 'Xfile.o'], getcompletion('Xfile', 'file'))
+  call assert_equal(['Xfile'], getcompletion('Xfile$', 'file'))
+  call delete('Xfile')
+  call delete('Xfile.c')
+  call delete('Xfile.o')
+endfunc
+
+" Test for using a popup menu for the command line completion matches
+" (wildoptions=pum)
+func Test_wildmenu_pum()
+  CheckRunVimInTerminal
+
+  let commands =<< trim [CODE]
+    set wildmenu
+    set wildoptions=pum
+    set shm+=I
+    set noruler
+    set noshowcmd
+
+    func CmdCompl(a, b, c)
+      return repeat(['aaaa'], 120)
+    endfunc
+    command -nargs=* -complete=customlist,CmdCompl Tcmd
+
+    func MyStatusLine() abort
+      return 'status'
+    endfunc
+    func SetupStatusline()
+      set statusline=%!MyStatusLine()
+      set laststatus=2
+    endfunc
+
+    func MyTabLine()
+      return 'my tab line'
+    endfunc
+    func SetupTabline()
+      set statusline=
+      set tabline=%!MyTabLine()
+      set showtabline=2
+    endfunc
+
+    func DoFeedKeys()
+      let &wildcharm = char2nr("\t")
+      call feedkeys(":edit $VIMRUNTIME/\<Tab>\<Left>\<C-U>ab\<Tab>")
+    endfunc
+  [CODE]
+  call writefile(commands, 'Xtest')
+
+  let buf = RunVimInTerminal('-S Xtest', #{rows: 10})
+
+  call term_sendkeys(buf, ":sign \<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_01', {})
+
+  " going down the popup menu using <Down>
+  call term_sendkeys(buf, "\<Down>\<Down>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_02', {})
+
+  " going down the popup menu using <C-N>
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_03', {})
+
+  " going up the popup menu using <C-P>
+  call term_sendkeys(buf, "\<C-P>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_04', {})
+
+  " going up the popup menu using <Up>
+  call term_sendkeys(buf, "\<Up>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_05', {})
+
+  " pressing <C-E> should end completion and go back to the original match
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_06', {})
+
+  " pressing <C-Y> should select the current match and end completion
+  call term_sendkeys(buf, "\<Tab>\<C-P>\<C-P>\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_07', {})
+
+  " With 'wildmode' set to 'longest,full', completing a match should display
+  " the longest match, the wildmenu should not be displayed.
+  call term_sendkeys(buf, ":\<C-U>set wildmode=longest,full\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":sign u\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_08', {})
+
+  " pressing <Tab> should display the wildmenu
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_09', {})
+
+  " pressing <Tab> second time should select the next entry in the menu
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_10', {})
+
+  call term_sendkeys(buf, ":\<C-U>set wildmode=full\<CR>")
+  " showing popup menu in different columns in the cmdline
+  call term_sendkeys(buf, ":sign define \<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_11', {})
+
+  call term_sendkeys(buf, " \<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_12', {})
+
+  call term_sendkeys(buf, " \<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_13', {})
+
+  " Directory name completion
+  call mkdir('Xdir/XdirA/XdirB', 'p')
+  call writefile([], 'Xdir/XfileA')
+  call writefile([], 'Xdir/XdirA/XfileB')
+  call writefile([], 'Xdir/XdirA/XdirB/XfileC')
+
+  call term_sendkeys(buf, "\<C-U>e Xdi\<Tab>\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_14', {})
+
+  " Pressing <Right> on a directory name should go into that directory
+  call term_sendkeys(buf, "\<Right>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_15', {})
+
+  " Pressing <Left> on a directory name should go to the parent directory
+  call term_sendkeys(buf, "\<Left>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_16', {})
+
+  " Pressing <C-A> when the popup menu is displayed should list all the
+  " matches but the popup menu should still remain
+  call term_sendkeys(buf, "\<C-U>sign \<Tab>\<C-A>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_17', {})
+
+  " Pressing <C-D> when the popup menu is displayed should remove the popup
+  " menu
+  call term_sendkeys(buf, "\<C-U>sign \<Tab>\<C-D>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_18', {})
+
+  " Pressing <S-Tab> should open the popup menu with the last entry selected
+  call term_sendkeys(buf, "\<C-U>\<CR>:sign \<S-Tab>\<C-P>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_19', {})
+
+  " Pressing <Esc> should close the popup menu and cancel the cmd line
+  call term_sendkeys(buf, "\<C-U>\<CR>:sign \<Tab>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_20', {})
+
+  " Typing a character when the popup is open, should close the popup
+  call term_sendkeys(buf, ":sign \<Tab>x")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_21', {})
+
+  " When the popup is open, entering the cmdline window should close the popup
+  call term_sendkeys(buf, "\<C-U>sign \<Tab>\<C-F>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_22', {})
+  call term_sendkeys(buf, ":q\<CR>")
+
+  " After the last popup menu item, <C-N> should show the original string
+  call term_sendkeys(buf, ":sign u\<Tab>\<C-N>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_23', {})
+
+  " Use the popup menu for the command name
+  call term_sendkeys(buf, "\<C-U>bu\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_24', {})
+
+  " Pressing the left arrow should remove the popup menu
+  call term_sendkeys(buf, "\<Left>\<Left>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_25', {})
+
+  " Pressing <BS> should remove the popup menu and erase the last character
+  call term_sendkeys(buf, "\<C-E>\<C-U>sign \<Tab>\<BS>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_26', {})
+
+  " Pressing <C-W> should remove the popup menu and erase the previous word
+  call term_sendkeys(buf, "\<C-E>\<C-U>sign \<Tab>\<C-W>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_27', {})
+
+  " Pressing <C-U> should remove the popup menu and erase the entire line
+  call term_sendkeys(buf, "\<C-E>\<C-U>sign \<Tab>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_28', {})
+
+  " Using <C-E> to cancel the popup menu and then pressing <Up> should recall
+  " the cmdline from history
+  call term_sendkeys(buf, "sign xyz\<Esc>:sign \<Tab>\<C-E>\<Up>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_29', {})
+
+  " Check "list" still works
+  call term_sendkeys(buf, "\<C-U>set wildmode=longest,list\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_30', {})
+  call term_sendkeys(buf, "s")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_31', {})
+
+  " Tests a directory name contained full-width characters.
+  call mkdir('Xdir/あいう', 'p')
+  call writefile([], 'Xdir/あいう/abc')
+  call writefile([], 'Xdir/あいう/xyz')
+  call writefile([], 'Xdir/あいう/123')
+
+  call term_sendkeys(buf, "\<C-U>set wildmode&\<CR>")
+  call term_sendkeys(buf, ":\<C-U>e Xdir/あいう/\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_32', {})
+
+  " Pressing <C-A> when the popup menu is displayed should list all the
+  " matches and pressing a key after that should remove the popup menu
+  call term_sendkeys(buf, "\<C-U>set wildmode=full\<CR>")
+  call term_sendkeys(buf, ":sign \<Tab>\<C-A>x")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_33', {})
+
+  " Pressing <C-A> when the popup menu is displayed should list all the
+  " matches and pressing <Left> after that should move the cursor
+  call term_sendkeys(buf, "\<C-U>abc\<Esc>")
+  call term_sendkeys(buf, ":sign \<Tab>\<C-A>\<Left>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_34', {})
+
+  " When <C-A> displays a lot of matches (screen scrolls), all the matches
+  " should be displayed correctly on the screen.
+  call term_sendkeys(buf, "\<End>\<C-U>Tcmd \<Tab>\<C-A>\<Left>\<Left>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_35', {})
+
+  " After using <C-A> to expand all the filename matches, pressing <Up>
+  " should not open the popup menu again.
+  call term_sendkeys(buf, "\<C-E>\<C-U>:cd Xdir/XdirA\<CR>")
+  call term_sendkeys(buf, ":e \<Tab>\<C-A>\<Up>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_36', {})
+  call term_sendkeys(buf, "\<C-E>\<C-U>:cd -\<CR>")
+
+  " After using <C-A> to expand all the matches, pressing <S-Tab> used to
+  " crash Vim
+  call term_sendkeys(buf, ":sign \<Tab>\<C-A>\<S-Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_37', {})
+
+  " After removing the pum the command line is redrawn
+  call term_sendkeys(buf, ":edit foo\<CR>")
+  call term_sendkeys(buf, ":edit bar\<CR>")
+  call term_sendkeys(buf, ":ls\<CR>")
+  call term_sendkeys(buf, ":com\<Tab> ")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_38', {})
+  call term_sendkeys(buf, "\<C-U>\<CR>")
+
+  " Esc still works to abort the command when 'statusline' is set
+  call term_sendkeys(buf, ":call SetupStatusline()\<CR>")
+  call term_sendkeys(buf, ":si\<Tab>")
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_39', {})
+
+  " Esc still works to abort the command when 'tabline' is set
+  call term_sendkeys(buf, ":call SetupTabline()\<CR>")
+  call term_sendkeys(buf, ":si\<Tab>")
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_40', {})
+
+  " popup is cleared also when 'lazyredraw' is set
+  call term_sendkeys(buf, ":set showtabline=1 laststatus=1 lazyredraw\<CR>")
+  call term_sendkeys(buf, ":call DoFeedKeys()\<CR>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_41', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " Pressing <PageDown> should scroll the menu downward
+  call term_sendkeys(buf, ":sign \<Tab>\<PageDown>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_42', {})
+  call term_sendkeys(buf, "\<PageDown>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_43', {})
+  call term_sendkeys(buf, "\<PageDown>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_44', {})
+  call term_sendkeys(buf, "\<PageDown>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_45', {})
+  call term_sendkeys(buf, "\<C-U>sign \<Tab>\<Down>\<Down>\<PageDown>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_46', {})
+
+  " Pressing <PageUp> should scroll the menu upward
+  call term_sendkeys(buf, "\<C-U>sign \<Tab>\<PageUp>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_47', {})
+  call term_sendkeys(buf, "\<PageUp>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_48', {})
+  call term_sendkeys(buf, "\<PageUp>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_49', {})
+  call term_sendkeys(buf, "\<PageUp>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_50', {})
+
+  call term_sendkeys(buf, "\<C-U>\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('Xtest')
+  call delete('Xdir', 'rf')
+endfunc
+
+" Test for wildmenumode() with the cmdline popup menu
+func Test_wildmenumode_with_pum()
+  set wildmenu
+  set wildoptions=pum
+  cnoremap <expr> <F2> wildmenumode()
+  call feedkeys(":sign \<Tab>\<F2>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"sign define10', @:)
+  call feedkeys(":sign \<Tab>\<C-A>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"sign define jump list place undefine unplace0', @:)
+  call feedkeys(":sign \<Tab>\<C-E>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"sign 0', @:)
+  call feedkeys(":sign \<Tab>\<C-Y>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"sign define0', @:)
+  set nowildmenu wildoptions&
+  cunmap <F2>
+endfunc
+
+func Test_wildmenu_with_pum_foldexpr()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['folded one', 'folded two', 'some more text'])
+      func MyFoldText()
+        return 'foo'
+      endfunc
+      set foldtext=MyFoldText() wildoptions=pum
+      normal ggzfj
+  END
+  call writefile(lines, 'Xpumfold')
+  let buf = RunVimInTerminal('-S Xpumfold', #{rows: 10})
+  call term_sendkeys(buf, ":set\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_with_pum_foldexpr_1', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_with_pum_foldexpr_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpumfold')
+endfunc
+
+" Test for opening the cmdline completion popup menu from the terminal window.
+" The popup menu should be positioned correctly over the status line of the
+" bottom-most window.
+func Test_wildmenu_pum_from_terminal()
+  CheckRunVimInTerminal
+  let python = PythonProg()
+  call CheckPython(python)
+
+  %bw!
+  let cmds = ['set wildmenu wildoptions=pum']
+  let pcmd = python .. ' -c "import sys; sys.stdout.write(sys.stdin.read())"'
+  call add(cmds, "call term_start('" .. pcmd .. "')")
+  call writefile(cmds, 'Xtest')
+  let buf = RunVimInTerminal('-S Xtest', #{rows: 10})
+  call term_sendkeys(buf, "\r\r\r")
+  call term_wait(buf)
+  call term_sendkeys(buf, "\<C-W>:sign \<Tab>")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_term_01', {})
+  call term_wait(buf)
+  call StopVimInTerminal(buf)
+  call delete('Xtest')
+endfunc
+
+" Test for completion after a :substitute command followed by a pipe (|)
+" character
+func Test_cmdline_complete_substitute()
+  call feedkeys(":s | \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s | \t", @:)
+  call feedkeys(":s/ | \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/ | \t", @:)
+  call feedkeys(":s/one | \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/one | \t", @:)
+  call feedkeys(":s/one/ | \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/one/ | \t", @:)
+  call feedkeys(":s/one/two | \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/one/two | \t", @:)
+  call feedkeys(":s/one/two/ | chist\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"s/one/two/ | chistory', @:)
+  call feedkeys(":s/one/two/g \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/one/two/g \t", @:)
+  call feedkeys(":s/one/two/g | chist\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/one/two/g | chistory", @:)
+  call feedkeys(":s/one/t\\/ | \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/one/t\\/ | \t", @:)
+  call feedkeys(":s/one/t\"o/ | chist\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"s/one/t"o/ | chistory', @:)
+  call feedkeys(":s/one/t|o/ | chist\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"s/one/t|o/ | chistory', @:)
+  call feedkeys(":&\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"&\t", @:)
+endfunc
+
+" Test for the :dlist command completion
+func Test_cmdline_complete_dlist()
+  call feedkeys(":dlist 10 /pat/ a\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"dlist 10 /pat/ a\<C-A>", @:)
+  call feedkeys(":dlist 10 /pat/ \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"dlist 10 /pat/ \t", @:)
+  call feedkeys(":dlist 10 /pa\\t/\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"dlist 10 /pa\\t/\t", @:)
+  call feedkeys(":dlist 10 /pat\\\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"dlist 10 /pat\\\t", @:)
+  call feedkeys(":dlist 10 /pat/ | chist\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"dlist 10 /pat/ | chistory", @:)
+endfunc
+
+" argument list (only for :argdel) fuzzy completion
+func Test_fuzzy_completion_arglist()
+  argadd change.py count.py charge.py
+  set wildoptions&
+  call feedkeys(":argdel cge\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"argdel cge', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":argdel cge\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"argdel change.py charge.py', @:)
+  %argdelete
+  set wildoptions&
+endfunc
+
+" autocmd group name fuzzy completion
+func Test_fuzzy_completion_autocmd()
+  set wildoptions&
+  augroup MyFuzzyGroup
+  augroup END
+  call feedkeys(":augroup mfg\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"augroup mfg', @:)
+  call feedkeys(":augroup My*p\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"augroup MyFuzzyGroup', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":augroup mfg\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"augroup MyFuzzyGroup', @:)
+  call feedkeys(":augroup My*p\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"augroup My*p', @:)
+  augroup! MyFuzzyGroup
+  set wildoptions&
+endfunc
+
+" buffer name fuzzy completion
+func Test_fuzzy_completion_bufname()
+  set wildoptions&
+  edit SomeFile.txt
+  enew
+  call feedkeys(":b SF\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b SF', @:)
+  call feedkeys(":b S*File.txt\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b SomeFile.txt', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":b SF\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b SomeFile.txt', @:)
+  call feedkeys(":b S*File.txt\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b S*File.txt', @:)
+  %bw!
+  set wildoptions&
+endfunc
+
+" buffer name (full path) fuzzy completion
+func Test_fuzzy_completion_bufname_fullpath()
+  CheckUnix
+  set wildoptions&
+  call mkdir('Xcmd/Xstate/Xfile.js', 'p')
+  edit Xcmd/Xstate/Xfile.js
+  cd Xcmd/Xstate
+  enew
+  call feedkeys(":b CmdStateFile\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b CmdStateFile', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":b CmdStateFile\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_match('Xcmd/Xstate/Xfile.js$', @:)
+  cd -
+  call delete('Xcmd', 'rf')
+  set wildoptions&
+endfunc
+
+" :behave suboptions fuzzy completion
+func Test_fuzzy_completion_behave()
+  set wildoptions&
+  call feedkeys(":behave xm\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"behave xm', @:)
+  call feedkeys(":behave xt*m\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"behave xterm', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":behave xm\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"behave xterm', @:)
+  call feedkeys(":behave xt*m\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"behave xt*m', @:)
+  let g:Sline = ''
+  call feedkeys(":behave win\<C-D>\<F4>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('mswin', g:Sline)
+  call assert_equal('"behave win', @:)
+  set wildoptions&
+endfunc
+
+" " colorscheme name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_colorscheme()
+" endfunc
+
+" built-in command name fuzzy completion
+func Test_fuzzy_completion_cmdname()
+  set wildoptions&
+  call feedkeys(":sbwin\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sbwin', @:)
+  call feedkeys(":sbr*d\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sbrewind', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":sbwin\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sbrewind', @:)
+  call feedkeys(":sbr*d\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sbr*d', @:)
+  set wildoptions&
+endfunc
+
+" " compiler name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_compiler()
+" endfunc
+
+" :cscope suboptions fuzzy completion
+func Test_fuzzy_completion_cscope()
+  CheckFeature cscope
+  set wildoptions&
+  call feedkeys(":cscope ret\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"cscope ret', @:)
+  call feedkeys(":cscope re*t\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"cscope reset', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":cscope ret\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"cscope reset', @:)
+  call feedkeys(":cscope re*t\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"cscope re*t', @:)
+  set wildoptions&
+endfunc
+
+" :diffget/:diffput buffer name fuzzy completion
+func Test_fuzzy_completion_diff()
+  new SomeBuffer
+  diffthis
+  new OtherBuffer
+  diffthis
+  set wildoptions&
+  call feedkeys(":diffget sbuf\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffget sbuf', @:)
+  call feedkeys(":diffput sbuf\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffput sbuf', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":diffget sbuf\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffget SomeBuffer', @:)
+  call feedkeys(":diffput sbuf\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffput SomeBuffer', @:)
+  %bw!
+  set wildoptions&
+endfunc
+
+" " directory name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_dirname()
+" endfunc
+
+" environment variable name fuzzy completion
+func Test_fuzzy_completion_env()
+  set wildoptions&
+  call feedkeys(":echo $VUT\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"echo $VUT', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":echo $VUT\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"echo $VIMRUNTIME', @:)
+  set wildoptions&
+endfunc
+
+" autocmd event fuzzy completion
+func Test_fuzzy_completion_autocmd_event()
+  set wildoptions&
+  call feedkeys(":autocmd BWout\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"autocmd BWout', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":autocmd BWout\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"autocmd BufWipeout', @:)
+  set wildoptions&
+endfunc
+
+" vim expression fuzzy completion
+func Test_fuzzy_completion_expr()
+  let g:PerPlaceCount = 10
+  set wildoptions&
+  call feedkeys(":let c = ppc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"let c = ppc', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":let c = ppc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"let c = PerPlaceCount', @:)
+  set wildoptions&
+endfunc
+
+" " file name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_filename()
+" endfunc
+
+" " files in path fuzzy completion - NOT supported
+" func Test_fuzzy_completion_filesinpath()
+" endfunc
+
+" " filetype name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_filetype()
+" endfunc
+
+" user defined function name completion
+func Test_fuzzy_completion_userdefined_func()
+  set wildoptions&
+  call feedkeys(":call Test_f_u_f\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"call Test_f_u_f', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":call Test_f_u_f\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"call Test_fuzzy_completion_userdefined_func()', @:)
+  set wildoptions&
+endfunc
+
+" <SNR> functions should be sorted to the end
+func Test_fuzzy_completion_userdefined_snr_func()
+  func s:Sendmail()
+  endfunc
+  func SendSomemail()
+  endfunc
+  func S1e2n3dmail()
+  endfunc
+  set wildoptions=fuzzy
+  call feedkeys(":call sendmail\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('"call SendSomemail() S1e2n3dmail() <SNR>\d\+_Sendmail()', @:)
+  set wildoptions&
+  delfunc s:Sendmail
+  delfunc SendSomemail
+  delfunc S1e2n3dmail
+endfunc
+
+" user defined command name completion
+func Test_fuzzy_completion_userdefined_cmd()
+  set wildoptions&
+  call feedkeys(":MsFeat\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"MsFeat', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":MsFeat\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"MissingFeature', @:)
+  set wildoptions&
+endfunc
+
+" " :help tag fuzzy completion - NOT supported
+" func Test_fuzzy_completion_helptag()
+" endfunc
+
+" highlight group name fuzzy completion
+func Test_fuzzy_completion_hlgroup()
+  set wildoptions&
+  call feedkeys(":highlight SKey\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"highlight SKey', @:)
+  call feedkeys(":highlight Sp*Key\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"highlight SpecialKey', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":highlight SKey\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"highlight SpecialKey', @:)
+  call feedkeys(":highlight Sp*Key\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"highlight Sp*Key', @:)
+  set wildoptions&
+endfunc
+
+" :history suboptions fuzzy completion
+func Test_fuzzy_completion_history()
+  set wildoptions&
+  call feedkeys(":history dg\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"history dg', @:)
+  call feedkeys(":history se*h\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"history search', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":history dg\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"history debug', @:)
+  call feedkeys(":history se*h\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"history se*h', @:)
+  set wildoptions&
+endfunc
+
+" :language locale name fuzzy completion
+func Test_fuzzy_completion_lang()
+  CheckUnix
+  set wildoptions&
+  call feedkeys(":lang psx\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"lang psx', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":lang psx\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"lang POSIX', @:)
+  set wildoptions&
+endfunc
+
+" :mapclear buffer argument fuzzy completion
+func Test_fuzzy_completion_mapclear()
+  set wildoptions&
+  call feedkeys(":mapclear buf\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"mapclear buf', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":mapclear buf\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"mapclear <buffer>', @:)
+  set wildoptions&
+endfunc
+
+" map name fuzzy completion
+func Test_fuzzy_completion_mapname()
+  " test regex completion works
+  set wildoptions=fuzzy
+  call feedkeys(":cnoremap <ex\<Tab> <esc> \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"cnoremap <expr> <esc> \<Tab>", @:)
+  nmap <plug>MyLongMap :p<CR>
+  call feedkeys(":nmap MLM\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"nmap <Plug>MyLongMap", @:)
+  call feedkeys(":nmap MLM \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"nmap MLM \t", @:)
+  call feedkeys(":nmap <F2> one two \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"nmap <F2> one two \t", @:)
+  " duplicate entries should be removed
+  vmap <plug>MyLongMap :<C-U>#<CR>
+  call feedkeys(":nmap MLM\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"nmap <Plug>MyLongMap", @:)
+  nunmap <plug>MyLongMap
+  vunmap <plug>MyLongMap
+  call feedkeys(":nmap ABC\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"nmap ABC\t", @:)
+  " results should be sorted by best match
+  nmap <Plug>format :
+  nmap <Plug>goformat :
+  nmap <Plug>TestFOrmat :
+  nmap <Plug>fendoff :
+  nmap <Plug>state :
+  nmap <Plug>FendingOff :
+  call feedkeys(":nmap <Plug>fo\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"nmap <Plug>format <Plug>TestFOrmat <Plug>FendingOff <Plug>goformat <Plug>fendoff", @:)
+  nunmap <Plug>format
+  nunmap <Plug>goformat
+  nunmap <Plug>TestFOrmat
+  nunmap <Plug>fendoff
+  nunmap <Plug>state
+  nunmap <Plug>FendingOff
+  set wildoptions&
+endfunc
+
+" abbreviation fuzzy completion
+func Test_fuzzy_completion_abbr()
+  set wildoptions=fuzzy
+  call feedkeys(":iabbr wait\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"iabbr <nowait>", @:)
+  iabbr WaitForCompletion WFC
+  call feedkeys(":iabbr fcl\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"iabbr WaitForCompletion", @:)
+  call feedkeys(":iabbr a1z\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"iabbr a1z\t", @:)
+  iunabbrev WaitForCompletion
+  set wildoptions&
+endfunc
+
+" menu name fuzzy completion
+func Test_fuzzy_completion_menu()
+  CheckGui
+  set wildoptions&
+  call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"menu pup', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"menu PopUp.', @:)
+  set wildoptions&
+endfunc
+
+" :messages suboptions fuzzy completion
+func Test_fuzzy_completion_messages()
+  set wildoptions&
+  call feedkeys(":messages clr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"messages clr', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":messages clr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"messages clear', @:)
+  set wildoptions&
+endfunc
+
+" :set option name fuzzy completion
+func Test_fuzzy_completion_option()
+  set wildoptions&
+  call feedkeys(":set brkopt\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set brkopt', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":set brkopt\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set breakindentopt', @:)
+  set wildoptions&
+  call feedkeys(":set fixeol\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set fixendofline', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":set fixeol\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set fixendofline', @:)
+  set wildoptions&
+endfunc
+
+" :set <term_option>
+func Test_fuzzy_completion_term_option()
+  set wildoptions&
+  call feedkeys(":set t_E\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set t_EC', @:)
+  call feedkeys(":set <t_E\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set <t_EC>', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":set t_E\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set t_EC', @:)
+  call feedkeys(":set <t_E\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set <t_EC>', @:)
+  set wildoptions&
+endfunc
+
+" " :packadd directory name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_packadd()
+" endfunc
+
+" " shell command name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_shellcmd()
+" endfunc
+
+" :sign suboptions fuzzy completion
+func Test_fuzzy_completion_sign()
+  set wildoptions&
+  call feedkeys(":sign ufe\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sign ufe', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":sign ufe\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sign undefine', @:)
+  set wildoptions&
+endfunc
+
+" :syntax suboptions fuzzy completion
+func Test_fuzzy_completion_syntax_cmd()
+  set wildoptions&
+  call feedkeys(":syntax kwd\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"syntax kwd', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":syntax kwd\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"syntax keyword', @:)
+  set wildoptions&
+endfunc
+
+" syntax group name fuzzy completion
+func Test_fuzzy_completion_syntax_group()
+  set wildoptions&
+  call feedkeys(":syntax list mpar\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"syntax list mpar', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":syntax list mpar\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"syntax list MatchParen', @:)
+  set wildoptions&
+endfunc
+
+" :syntime suboptions fuzzy completion
+func Test_fuzzy_completion_syntime()
+  CheckFeature profile
+  set wildoptions&
+  call feedkeys(":syntime clr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"syntime clr', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":syntime clr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"syntime clear', @:)
+  set wildoptions&
+endfunc
+
+" " tag name fuzzy completion - NOT supported
+" func Test_fuzzy_completion_tagname()
+" endfunc
+
+" " tag name and file fuzzy completion - NOT supported
+" func Test_fuzzy_completion_tagfile()
+" endfunc
+
+" " user names fuzzy completion - how to test this functionality?
+" func Test_fuzzy_completion_username()
+" endfunc
+
+" user defined variable name fuzzy completion
+func Test_fuzzy_completion_userdefined_var()
+  let g:SomeVariable=10
+  set wildoptions&
+  call feedkeys(":let SVar\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"let SVar', @:)
+  set wildoptions=fuzzy
+  call feedkeys(":let SVar\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"let SomeVariable', @:)
+  set wildoptions&
+endfunc
+
+" Test for sorting the results by the best match
+func Test_fuzzy_completion_cmd_sort_results()
+  %bw!
+  command T123format :
+  command T123goformat :
+  command T123TestFOrmat :
+  command T123fendoff :
+  command T123state :
+  command T123FendingOff :
+  set wildoptions=fuzzy
+  call feedkeys(":T123fo\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"T123format T123TestFOrmat T123FendingOff T123goformat T123fendoff', @:)
+  delcommand T123format
+  delcommand T123goformat
+  delcommand T123TestFOrmat
+  delcommand T123fendoff
+  delcommand T123state
+  delcommand T123FendingOff
+  %bw
+  set wildoptions&
+endfunc
+
+" Test for fuzzy completion of a command with lower case letters and a number
+func Test_fuzzy_completion_cmd_alnum()
+  command Foo2Bar :
+  set wildoptions=fuzzy
+  call feedkeys(":foo2\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"Foo2Bar', @:)
+  call feedkeys(":foo\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"Foo2Bar', @:)
+  call feedkeys(":bar\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"Foo2Bar', @:)
+  delcommand Foo2Bar
+  set wildoptions&
+endfunc
+
+" Test for command completion for a command starting with 'k'
+func Test_fuzzy_completion_cmd_k()
+  command KillKillKill :
+  set wildoptions&
+  call feedkeys(":killkill\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"killkill\<Tab>", @:)
+  set wildoptions=fuzzy
+  call feedkeys(":killkill\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"KillKillKill', @:)
+  delcom KillKillKill
+  set wildoptions&
+endfunc
+
+" Test for fuzzy completion for user defined custom completion function
+func Test_fuzzy_completion_custom_func()
+  func Tcompl(a, c, p)
+    return "format\ngoformat\nTestFOrmat\nfendoff\nstate"
+  endfunc
+  command -nargs=* -complete=custom,Tcompl Fuzzy :
+  set wildoptions&
+  call feedkeys(":Fuzzy fo\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"Fuzzy format", @:)
+  call feedkeys(":Fuzzy xy\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"Fuzzy xy", @:)
+  call feedkeys(":Fuzzy ttt\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"Fuzzy ttt", @:)
+  set wildoptions=fuzzy
+  call feedkeys(":Fuzzy \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"Fuzzy format goformat TestFOrmat fendoff state", @:)
+  call feedkeys(":Fuzzy fo\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"Fuzzy format TestFOrmat goformat fendoff", @:)
+  call feedkeys(":Fuzzy xy\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"Fuzzy xy", @:)
+  call feedkeys(":Fuzzy ttt\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"Fuzzy TestFOrmat", @:)
+  delcom Fuzzy
+  set wildoptions&
+endfunc
+
+" Test for :breakadd argument completion
+func Test_cmdline_complete_breakadd()
+  call feedkeys(":breakadd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd expr file func here", @:)
+  call feedkeys(":breakadd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd expr", @:)
+  call feedkeys(":breakadd    \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd    expr", @:)
+  call feedkeys(":breakadd he\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd here", @:)
+  call feedkeys(":breakadd    he\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd    here", @:)
+  call feedkeys(":breakadd abc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd abc", @:)
+  call assert_equal(['expr', 'file', 'func', 'here'], getcompletion('', 'breakpoint'))
+  let l = getcompletion('not', 'breakpoint')
+  call assert_equal([], l)
+
+  " Test for :breakadd file [lnum] <file>
+  call writefile([], 'Xscript')
+  call feedkeys(":breakadd file Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd file Xscript", @:)
+  call feedkeys(":breakadd   file   Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd   file   Xscript", @:)
+  call feedkeys(":breakadd file 20 Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd file 20 Xscript", @:)
+  call feedkeys(":breakadd   file   20   Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd   file   20   Xscript", @:)
+  call feedkeys(":breakadd file 20x Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd file 20x Xsc\t", @:)
+  call feedkeys(":breakadd file 20\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd file 20\t", @:)
+  call feedkeys(":breakadd file 20x\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd file 20x\t", @:)
+  call feedkeys(":breakadd file Xscript  \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd file Xscript  ", @:)
+  call feedkeys(":breakadd file X1B2C3\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd file X1B2C3", @:)
+  call delete('Xscript')
+
+  " Test for :breakadd func [lnum] <function>
+  func Xbreak_func()
+  endfunc
+  call feedkeys(":breakadd func Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd func Xbreak_func", @:)
+  call feedkeys(":breakadd    func    Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd    func    Xbreak_func", @:)
+  call feedkeys(":breakadd func 20 Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd func 20 Xbreak_func", @:)
+  call feedkeys(":breakadd   func   20   Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd   func   20   Xbreak_func", @:)
+  call feedkeys(":breakadd func 20x Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd func 20x Xbr\t", @:)
+  call feedkeys(":breakadd func 20\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd func 20\t", @:)
+  call feedkeys(":breakadd func 20x\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd func 20x\t", @:)
+  call feedkeys(":breakadd func Xbreak_func  \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd func Xbreak_func  ", @:)
+  call feedkeys(":breakadd func X1B2C3\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd func X1B2C3", @:)
+  delfunc Xbreak_func
+
+  " Test for :breakadd expr <expression>
+  let g:Xtest_var = 10
+  call feedkeys(":breakadd expr Xtest\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd expr Xtest_var", @:)
+  call feedkeys(":breakadd    expr    Xtest\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd    expr    Xtest_var", @:)
+  call feedkeys(":breakadd expr Xtest_var  \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd expr Xtest_var  ", @:)
+  call feedkeys(":breakadd expr X1B2C3\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd expr X1B2C3", @:)
+  unlet g:Xtest_var
+
+  " Test for :breakadd here
+  call feedkeys(":breakadd here Xtest\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd here Xtest", @:)
+  call feedkeys(":breakadd   here   Xtest\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd   here   Xtest", @:)
+  call feedkeys(":breakadd here \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakadd here ", @:)
+endfunc
+
+" Test for :breakdel argument completion
+func Test_cmdline_complete_breakdel()
+  call feedkeys(":breakdel \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file func here", @:)
+  call feedkeys(":breakdel \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file", @:)
+  call feedkeys(":breakdel    \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel    file", @:)
+  call feedkeys(":breakdel he\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel here", @:)
+  call feedkeys(":breakdel    he\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel    here", @:)
+  call feedkeys(":breakdel abc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel abc", @:)
+
+  " Test for :breakdel file [lnum] <file>
+  call writefile([], 'Xscript')
+  call feedkeys(":breakdel file Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file Xscript", @:)
+  call feedkeys(":breakdel   file   Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel   file   Xscript", @:)
+  call feedkeys(":breakdel file 20 Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file 20 Xscript", @:)
+  call feedkeys(":breakdel   file   20   Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel   file   20   Xscript", @:)
+  call feedkeys(":breakdel file 20x Xsc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file 20x Xsc\t", @:)
+  call feedkeys(":breakdel file 20\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file 20\t", @:)
+  call feedkeys(":breakdel file 20x\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file 20x\t", @:)
+  call feedkeys(":breakdel file Xscript  \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file Xscript  ", @:)
+  call feedkeys(":breakdel file X1B2C3\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel file X1B2C3", @:)
+  call delete('Xscript')
+
+  " Test for :breakdel func [lnum] <function>
+  func Xbreak_func()
+  endfunc
+  call feedkeys(":breakdel func Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel func Xbreak_func", @:)
+  call feedkeys(":breakdel   func   Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel   func   Xbreak_func", @:)
+  call feedkeys(":breakdel func 20 Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel func 20 Xbreak_func", @:)
+  call feedkeys(":breakdel   func   20   Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel   func   20   Xbreak_func", @:)
+  call feedkeys(":breakdel func 20x Xbr\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel func 20x Xbr\t", @:)
+  call feedkeys(":breakdel func 20\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel func 20\t", @:)
+  call feedkeys(":breakdel func 20x\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel func 20x\t", @:)
+  call feedkeys(":breakdel func Xbreak_func  \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel func Xbreak_func  ", @:)
+  call feedkeys(":breakdel func X1B2C3\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel func X1B2C3", @:)
+  delfunc Xbreak_func
+
+  " Test for :breakdel here
+  call feedkeys(":breakdel here Xtest\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel here Xtest", @:)
+  call feedkeys(":breakdel   here   Xtest\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel   here   Xtest", @:)
+  call feedkeys(":breakdel here \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"breakdel here ", @:)
+endfunc
+
+" Test for :scriptnames argument completion
+func Test_cmdline_complete_scriptnames()
+  set wildmenu
+  call writefile(['let a = 1'], 'Xa1b2c3.vim')
+  source Xa1b2c3.vim
+  call feedkeys(":script \<Tab>\<Left>\<Left>\<C-B>\"\<CR>", 'tx')
+  call assert_match("\"script .*Xa1b2c3.vim$", @:)
+  call feedkeys(":script    \<Tab>\<Left>\<Left>\<C-B>\"\<CR>", 'tx')
+  call assert_match("\"script .*Xa1b2c3.vim$", @:)
+  call feedkeys(":script b2c3\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"script b2c3", @:)
+  call feedkeys(":script 2\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_match("\"script 2\<Tab>$", @:)
+  call feedkeys(":script \<Tab>\<Left>\<Left> \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_match("\"script .*Xa1b2c3.vim $", @:)
+  call feedkeys(":script \<Tab>\<Left>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"script ", @:)
+  call assert_match('Xa1b2c3.vim$', getcompletion('.*Xa1b2.*', 'scriptnames')[0])
+  call assert_equal([], getcompletion('Xa1b2', 'scriptnames'))
+  new
+  call feedkeys(":script \<Tab>\<Left>\<Left>\<CR>", 'tx')
+  call assert_equal('Xa1b2c3.vim', fnamemodify(@%, ':t'))
+  bw!
+  call delete('Xa1b2c3.vim')
+  set wildmenu&
+endfunc
+
+" Test for expanding 2-letter and 3-letter :substitute command arguments.
+" These commands don't accept an argument.
+func Test_cmdline_complete_substitute_short()
+  for cmd in ['sc', 'sce', 'scg', 'sci', 'scI', 'scn', 'scp', 'scl',
+        \ 'sgc', 'sge', 'sg', 'sgi', 'sgI', 'sgn', 'sgp', 'sgl', 'sgr',
+        \ 'sic', 'sie', 'si', 'siI', 'sin', 'sip', 'sir',
+        \ 'sIc', 'sIe', 'sIg', 'sIi', 'sI', 'sIn', 'sIp', 'sIl', 'sIr',
+        \ 'src', 'srg', 'sri', 'srI', 'srn', 'srp', 'srl', 'sr']
+    call feedkeys(':' .. cmd .. " \<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"' .. cmd .. " \<Tab>", @:)
+  endfor
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.2.  Last change: 2020 Mar 16
+*gui.txt*       For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,7 +25,7 @@ Other GUI documentation:
 
 First you must make sure you actually have a version of Vim with the GUI code
 included.  You can check this with the ":version" command, it says "with xxx
-GUI", where "xxx" is X11-Motif, X11-Athena, Photon, GTK2, GTK3, etc., or
+GUI", where "xxx" is X11-Motif, Photon, GTK2, GTK3, etc., or
 "MS-Windows 32 bit GUI version".
 
 How to start the GUI depends on the system used.  Mostly you can run the
@@ -108,7 +108,7 @@ There are a number of options which only have meaning in the GUI version of
 Vim.  These are 'guicursor', 'guifont', 'guipty' and 'guioptions'.  They are
 documented in |options.txt| with all the other options.
 
-If using the Motif or Athena version of the GUI (but not for the GTK+ or
+If using the Motif version of the GUI (but not for the GTK+ or
 Win32 version), a number of X resources are available.  See |gui-resources|.
 
 Another way to set the colors for different occasions is with highlight
@@ -147,7 +147,8 @@ task bar with the 'guiheadroom' option.
 						    *:win* *:winsize* *E465*
 :win[size] {width} {height}
 		Set the window height to {width} by {height} characters.
-		Obsolete, use ":set lines=11 columns=22".
+		It is recommended to use `:set lines=11 columns=22` instead,
+		since it's easy to see what the numbers mean.
 		If you get less lines than expected, check the 'guiheadroom'
 		option.
 
@@ -155,8 +156,8 @@ If you are running the X Window System, you can get information about the
 window Vim is running in with these commands: >
 	:!xwininfo -id $WINDOWID
 	:!xprop -id $WINDOWID
-	:execute '!xwininfo -id ' . v:windowid
-	:execute '!xprop -id ' . v:windowid
+	:execute '!xwininfo -id ' .. v:windowid
+	:execute '!xprop -id ' .. v:windowid
 <
 							*gui-IME* *iBus*
 Input methods for international characters in X that rely on the XIM
@@ -235,7 +236,7 @@ takes too much time or you don't like the cursor jumping to another line,
 include the 'h' flag in 'guioptions'.  Then the scrolling is limited by the
 text of the current cursor line.
 
-							*athena-intellimouse*
+							*motif-intellimouse*
 If you have an Intellimouse and an X server that supports using the wheel,
 then you can use the wheel to scroll the text up and down in gvim.  This works
 with XFree86 4.0 and later, and with some older versions when you add patches.
@@ -260,6 +261,7 @@ Other options that are relevant:
 'mousefocus'	window focus follows mouse pointer |gui-mouse-focus|
 'mousemodel'	what mouse button does which action
 'mousehide'	hide mouse pointer while typing text
+'mousemoveevent' enable mouse move events so that <MouseMove> can be mapped
 'selectmode'	whether to start Select mode or Visual mode
 
 A quick way to set these is with the ":behave" command.
@@ -405,13 +407,17 @@ These mappings make selection work the way it probably should in a Motif
 application, with shift-left mouse allowing for extending the visual area
 rather than the right mouse button.
 
+<MouseMove> may be mapped, but 'mousemoveevent' must be enabled to use the
+mapping.
+
 Mouse mapping with modifiers does not work for modeless selection.
 
 
 3.7 Drag and drop						*drag-n-drop*
 
 You can drag and drop one or more files into the Vim window, where they will
-be opened as if a |:drop| command was used.
+be opened as if a |:drop| command was used.  You can check if this is
+supported with the *drop_file* feature: `has('drop_file')`.
 
 If you hold down Shift while doing this, Vim changes to the first dropped
 file's directory.  If you hold Ctrl Vim will always split a new window for the
@@ -547,15 +553,6 @@ floating menus that do not appear on the main menu bar.
 5.2 Creating New Menus					*creating-menus*
 
 				*:me*  *:menu*   *:noreme*  *:noremenu*
-				*:am*  *:amenu*  *:an*      *:anoremenu*
-				*:nme* *:nmenu*  *:nnoreme* *:nnoremenu*
-				*:ome* *:omenu*  *:onoreme* *:onoremenu*
-				*:vme* *:vmenu*  *:vnoreme* *:vnoremenu*
-				*:xme* *:xmenu*  *:xnoreme* *:xnoremenu*
-				*:sme* *:smenu*  *:snoreme* *:snoremenu*
-				*:ime* *:imenu*  *:inoreme* *:inoremenu*
-				*:cme* *:cmenu*  *:cnoreme* *:cnoremenu*
-				*:tlm* *:tlmenu* *:tln*     *:tlnoremenu*
 				*E330* *E327* *E331* *E336* *E333*
 				*E328* *E329* *E337* *E792*
 To create a new menu item, use the ":menu" commands.  They are mostly like
@@ -596,6 +593,7 @@ With the shortcut "F" (while keeping the <Alt> key pressed), and then "O",
 this menu can be used.  The second part is shown as "Open     :e".  The ":e"
 is right aligned, and the "O" is underlined, to indicate it is the shortcut.
 
+					*:am*  *:amenu*  *:an*      *:anoremenu*
 The ":amenu" command can be used to define menu entries for all modes at once,
 except for Terminal mode.  To make the command work correctly, a character is
 automatically inserted for some modes:
@@ -628,11 +626,40 @@ expression register: >
 
    :amenu Insert.foobar   "='foobar'<CR>P
 
+The special text <Cmd> begins a "command menu", it executes the command
+directly without changing modes.  Where you might use ":...<CR>" you can
+instead use "<Cmd>...<CR>".  See |<Cmd>| for more info.  Example: >
+	anoremenu File.Next <Cmd>next<CR>
+
 Note that the '<' and 'k' flags in 'cpoptions' also apply here (when
 included they make the <> form and raw key codes not being recognized).
 
 Note that <Esc> in Cmdline mode executes the command, like in a mapping.  This
 is Vi compatible.  Use CTRL-C to quit Cmdline mode.
+
+		*:nme* *:nmenu*  *:nnoreme* *:nnoremenu* *:nunme* *:nunmenu*
+Menu commands starting with "n" work in Normal mode. |mapmode-n|
+
+		*:ome* *:omenu*  *:onoreme* *:onoremenu* *:ounme* *:ounmenu*
+Menu commands starting with "o" work in Operator-pending mode. |mapmode-o|
+
+		*:vme* *:vmenu*  *:vnoreme* *:vnoremenu* *:vunme* *:vunmenu*
+Menu commands starting with "v" work in Visual mode. |mapmode-v|
+
+		*:xme* *:xmenu*  *:xnoreme* *:xnoremenu* *:xunme* *:xunmenu*
+Menu commands starting with "x" work in Visual and Select mode. |mapmode-x|
+
+		*:sme* *:smenu*  *:snoreme* *:snoremenu* *:sunme* *:sunmenu*
+Menu commands starting with "s" work in Select mode. |mapmode-s|
+
+		*:ime* *:imenu*  *:inoreme* *:inoremenu* *:iunme* *:iunmenu*
+Menu commands starting with "i" work in Insert mode. |mapmode-i|
+
+		*:cme* *:cmenu*  *:cnoreme* *:cnoremenu* *:cunme* *:cunmenu*
+Menu commands starting with "c" work in Cmdline mode. |mapmode-c|
+
+		*:tlm* *:tlmenu* *:tln*     *:tlnoremenu* *:tlu*   *:tlunmenu*
+Menu commands starting with "tl" work in Terminal mode. |mapmode-t|
 
 						*:menu-<silent>* *:menu-silent*
 To define a menu which will not be echoed on the command line, add
@@ -719,7 +746,7 @@ because the item will never be selected.  Use a single colon to keep it
 simple.
 
 							*gui-toolbar*
-The toolbar is currently available in the Win32, Athena, Motif, GTK+ (X11),
+The toolbar is currently available in the Win32, Motif, GTK+ (X11),
 and Photon GUI.  It should turn up in other GUIs in due course.  The
 default toolbar is setup in menu.vim.
 The display of the toolbar is controlled by the 'guioptions' letter 'T'.  You
@@ -835,7 +862,7 @@ The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
 When splitting the window the window toolbar is not copied to the new window.
 
 							*popup-menu*
-In the Win32, GTK+, Motif, Athena and Photon GUI, you can define the
+In the Win32, GTK+, Motif and Photon GUI, you can define the
 special menu "PopUp".  This is the menu that is displayed when the right mouse
 button is pressed, if 'mousemodel' is set to popup or popup_setpos.
 Example: >
@@ -897,14 +924,6 @@ using the last visual selection.
 
 						*:unme*  *:unmenu*
 						*:aun*   *:aunmenu*
-						*:nunme* *:nunmenu*
-						*:ounme* *:ounmenu*
-						*:vunme* *:vunmenu*
-						*:xunme* *:xunmenu*
-						*:sunme* *:sunmenu*
-						*:iunme* *:iunmenu*
-						*:cunme* *:cunmenu*
-						*:tlu*   *:tlunmenu*
 To delete a menu item or a whole submenu, use the unmenu commands, which are
 analogous to the unmap commands.  Eg: >
     :unmenu! Edit.Paste

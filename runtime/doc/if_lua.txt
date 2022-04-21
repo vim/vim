@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 8.2.  Last change: 2020 Jun 28
+*if_lua.txt*    For Vim version 8.2.  Last change: 2021 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -175,10 +175,17 @@ Vim evaluation and command execution, and others.
 					:lua print(type(l), vim.type(l))
 					:" list
 <
-	vim.command({cmd})	Executes the vim (ex-mode) command {cmd}.
+	vim.command({cmds})	Executes one or more lines of Ex-mode commands
+				in {cmds}.
 				Examples: >
 					:lua vim.command"set tw=60"
 					:lua vim.command"normal ddp"
+					lua << trim END
+					  vim.command([[
+					      new Myfile.js
+					      call search('start')
+					  ]])
+					END
 <
 	vim.eval({expr})	Evaluates expression {expr} (see |expression|),
 				converts the result to Lua, and returns it.
@@ -208,6 +215,46 @@ Vim evaluation and command execution, and others.
 				created on demand.  Example: >
 					:lua print(vim.fn.has('timers'))
 <
+	vim.lua_version		The Lua version Vim was compiled with, in the
+				form {major}.{minor}.{patch}, e.g. "5.1.4".
+
+	vim.version()		Returns a Lua table with the Vim version.
+				The table will have the following keys:
+					major - major Vim version.
+					minor - minor Vim version.
+					patch - latest patch included.
+
+                                                        *lua-vim-variables*
+The Vim editor global dictionaries |g:| |w:| |b:| |t:| |v:| can be accessed
+from Lua conveniently and idiomatically by referencing the `vim.*` Lua tables
+described below. In this way you can easily read and modify global Vim script
+variables from Lua.
+
+Example: >
+
+    vim.g.foo = 5     -- Set the g:foo Vim script variable.
+    print(vim.g.foo)  -- Get and print the g:foo Vim script variable.
+    vim.g.foo = nil   -- Delete (:unlet) the Vim script variable.
+
+vim.g                                                   *vim.g*
+        Global (|g:|) editor variables.
+        Key with no value returns `nil`.
+
+vim.b                                                   *vim.b*
+        Buffer-scoped (|b:|) variables for the current buffer.
+        Invalid or unset key returns `nil`.
+
+vim.w                                                   *vim.w*
+        Window-scoped (|w:|) variables for the current window.
+        Invalid or unset key returns `nil`.
+
+vim.t                                                   *vim.t*
+        Tabpage-scoped (|t:|) variables for the current tabpage.
+        Invalid or unset key returns `nil`.
+
+vim.v                                                   *vim.v*
+        |v:| variables.
+        Invalid or unset key returns `nil`.
 
 ==============================================================================
 3. List userdata					*lua-list*

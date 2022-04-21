@@ -1,6 +1,7 @@
 " Tests for exiting Vim.
 
 source shared.vim
+source check.vim
 
 func Test_exiting()
   let after =<< trim [CODE]
@@ -81,5 +82,49 @@ func Test_exiting()
   endif
   call delete('Xtestout')
 endfunc
+
+" Test for getting the Vim exit code from v:exiting
+func Test_exit_code()
+  call assert_equal(v:null, v:exiting)
+
+  let before =<< trim [CODE]
+    au QuitPre * call writefile(['qp = ' .. v:exiting], 'Xtestout', 'a')
+    au ExitPre * call writefile(['ep = ' .. v:exiting], 'Xtestout', 'a')
+    au VimLeavePre * call writefile(['lp = ' .. v:exiting], 'Xtestout', 'a')
+    au VimLeave * call writefile(['l = ' .. v:exiting], 'Xtestout', 'a')
+  [CODE]
+
+  if RunVim(before, ['quit'], '')
+    call assert_equal(['qp = v:null', 'ep = v:null', 'lp = 0', 'l = 0'], readfile('Xtestout'))
+  endif
+  call delete('Xtestout')
+
+  if RunVim(before, ['cquit'], '')
+    call assert_equal(['lp = 1', 'l = 1'], readfile('Xtestout'))
+  endif
+  call delete('Xtestout')
+
+  if RunVim(before, ['cquit 4'], '')
+    call assert_equal(['lp = 4', 'l = 4'], readfile('Xtestout'))
+  endif
+  call delete('Xtestout')
+endfunc
+
+func Test_exit_error_reading_input()
+  CheckNotGui
+  CheckNotMSWindows
+  " The early exit causes memory not to be freed somehow
+  CheckNotAsan
+
+  call writefile([":au VimLeave * call writefile(['l = ' .. v:exiting], 'Xtestout')", ":tabnew", "q:"], 'Xscript', 'b')
+
+  if RunVim([], [], '<Xscript')
+    call assert_equal(1, v:shell_error)
+    call assert_equal(['l = 1'], readfile('Xtestout'))
+  endif
+  call delete('Xscript')
+  call delete('Xtestout')
+endfun
+
 
 " vim: shiftwidth=2 sts=2 expandtab

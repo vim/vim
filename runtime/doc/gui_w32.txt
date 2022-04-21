@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.2.  Last change: 2020 Mar 25
+*gui_w32.txt*   For Vim version 8.2.  Last change: 2022 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -236,7 +236,8 @@ The "* register reflects the contents of the clipboard.  |quotestar|
 
 When the "unnamed" string is included in the 'clipboard' option, the unnamed
 register is the same.  Thus you can yank to and paste from the clipboard
-without prepending "* to commands.
+without prepending "* to commands. If this doesn't work use the "unnamedplus"
+string in the 'clipboard' option.
 
 The 'a' flag in 'guioptions' is not included by default.  This means that text
 is only put on the clipboard when an operation is performed on it.  Just
@@ -323,20 +324,10 @@ These extra colors are also available:
 Gray, Grey, LightYellow, SeaGreen, Orange, Purple, SlateBlue, Violet,
 
 								*rgb.txt*
-Additionally, colors defined by a "rgb.txt" file can be used.  This file is
-well known from X11.  A few lines from it: >
-
-  255 218 185		   peach puff
-  205 133  63		   peru
-  255 181 197		   pink
-
-This shows the layout of the file:  First the R, G and B value as a decimal
-number, followed by the name of the color.  The four fields are separated by
-spaces.
-
-You can get an rgb.txt file from any X11 distribution.  It is located in a
-directory like "/usr/X11R6/lib/X11/".  For Vim it must be located in the
-$VIMRUNTIME directory.  Thus the file can be found with "$VIMRUNTIME/rgb.txt".
+Additionally, colors defined by a default color list can be used.  For more
+info see |:colorscheme|.  These colors used to be defined in
+$VIMRUNTIME/rgb.txt, now they are in |v:colornames| which is initialized from
+$VIMRUNTIME/colors/lists/default.vim.
 
 ==============================================================================
 						*gui-w32-dialogs* *dialog*
@@ -403,7 +394,7 @@ The "File/Print" menu prints the text with syntax highlighting, see
 printer installed this should also work: >
 	:w >>prn
 
-Vim supports a number of standard MS Windows features.  Some of these are
+Vim supports a number of standard MS-Windows features.  Some of these are
 detailed elsewhere: see |'mouse'|, |win32-hidden-menus|.
 
 							*drag-n-drop-win32*

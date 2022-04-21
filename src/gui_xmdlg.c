@@ -497,7 +497,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
     }
 
     /*
-     * Now loop trough the remaining lists and set them up.
+     * Now loop through the remaining lists and set them up.
      */
     for (idx = (int)NAME; idx < (int)NONE; ++idx)
     {

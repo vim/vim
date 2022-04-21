@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.2.  Last change: 2020 Aug 10
+*tabpage.txt*   For Vim version 8.2.  Last change: 2022 Feb 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -143,7 +143,9 @@ something else.
 		    :tabclose 3	    " close the third tab page
 		    :tabclose $	    " close the last tab page
 		    :tabclose #     " close the last accessed tab page
-<
+
+When a tab is closed the next tab page will become the current one.
+
 							*:tabo* *:tabonly*
 :tabo[nly][!]	Close all other tab pages.
 		When the 'hidden' option is set, all buffers in closed windows
@@ -195,8 +197,8 @@ gt					*i_CTRL-<PageDown>* *i_<C-PageDown>*
 		    :+2tabnext	" go to the two next tab page
 		    :1tabnext	" go to the first tab page
 		    :$tabnext	" go to the last tab page
-		    :tabnext #  " go to the last accessed tab page
 		    :tabnext $	" as above
+		    :tabnext #  " go to the last accessed tab page
 		    :tabnext -	" go to the previous tab page
 		    :tabnext -1	" as above
 		    :tabnext +	" go to the next tab page
@@ -225,7 +227,7 @@ gT		Go to the previous tab page.  Wraps around from the first one
 							*:tabl* *:tablast*
 :tabl[ast]	Go to the last tab page.
 
-					    *g<Tab>* *CTRL-W_g<Tab>* *<C-Tab>*
+					*g<Tab>* *CTRL-W_g<Tab>* *<C-Tab>*
 g<Tab>		Go to the last accessed tab page.
 
 Other commands:
@@ -259,7 +261,7 @@ REORDERING TAB PAGES:
 		    :tabmove	" move the tab page to the last
 		    :$tabmove	" as above
 		    :tabmove $	" as above
-		    :tabmove #  " move the tab page after the last accessed
+		    :tabmove #	" move the tab page after the last accessed
 				" tab page
 
 :tabm[ove] +[N]
@@ -379,24 +381,24 @@ pages and define labels for them.  Then get the label for each tab page. >
 	  for i in range(tabpagenr('$'))
 	    " select the highlighting
 	    if i + 1 == tabpagenr()
-	      let s .= '%#TabLineSel#'
+	      let s ..= '%#TabLineSel#'
 	    else
-	      let s .= '%#TabLine#'
+	      let s ..= '%#TabLine#'
 	    endif
 
 	    " set the tab page number (for mouse clicks)
-	    let s .= '%' . (i + 1) . 'T'
+	    let s ..= '%' .. (i + 1) .. 'T'
 
 	    " the label is made by MyTabLabel()
-	    let s .= ' %{MyTabLabel(' . (i + 1) . ')} '
+	    let s ..= ' %{MyTabLabel(' .. (i + 1) .. ')} '
 	  endfor
 
 	  " after the last tab fill with TabLineFill and reset tab page nr
-	  let s .= '%#TabLineFill#%T'
+	  let s ..= '%#TabLineFill#%T'
 
 	  " right-align the label to close the current tab page
 	  if tabpagenr('$') > 1
-	    let s .= '%=%#TabLine#%999Xclose'
+	    let s ..= '%=%#TabLine#%999Xclose'
 	  endif
 
 	  return s
@@ -459,14 +461,14 @@ windows in the tab page and a '+' if there is a modified buffer: >
 	  " Append the number of windows in the tab page if more than one
 	  let wincount = tabpagewinnr(v:lnum, '$')
 	  if wincount > 1
-	    let label .= wincount
+	    let label ..= wincount
 	  endif
 	  if label != ''
-	    let label .= ' '
+	    let label ..= ' '
 	  endif
 
 	  " Append the buffer name
-	  return label . bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
+	  return label .. bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
 	endfunction
 
 	set guitablabel=%{GuiTabLabel()}

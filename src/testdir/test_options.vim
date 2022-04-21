@@ -136,6 +136,12 @@ func Test_path_keep_commas()
   set path&
 endfunc
 
+func Test_path_too_long()
+  exe 'set path=' .. repeat('x', 10000)
+  call assert_fails('find x', 'E854:')
+  set path&
+endfunc
+
 func Test_signcolumn()
   CheckFeature signs
   call assert_equal("auto", &signcolumn)
@@ -256,7 +262,7 @@ func Test_set_completion()
 
   " Expand abbreviation of options.
   call feedkeys(":set ts\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set tabstop thesaurus ttyscroll', @:)
+  call assert_equal('"set tabstop thesaurus thesaurusfunc ttyscroll', @:)
 
   " Expand current value
   call feedkeys(":set fileencodings=\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -332,6 +338,12 @@ func Test_set_completion()
   call feedkeys(":set key=\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set key=*****', @:)
   set key=
+
+  " Expand values for 'filetype'
+  call feedkeys(":set filetype=sshdconfi\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set filetype=sshdconfig', @:)
+  call feedkeys(":set filetype=a\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set filetype=' .. getcompletion('a*', 'filetype')->join(), @:)
 endfunc
 
 func Test_set_errors()
@@ -356,6 +368,9 @@ func Test_set_errors()
   call assert_fails('set shiftwidth=-1', 'E487:')
   call assert_fails('set sidescroll=-1', 'E487:')
   call assert_fails('set tabstop=-1', 'E487:')
+  call assert_fails('set tabstop=10000', 'E474:')
+  call assert_fails('let &tabstop = 10000', 'E474:')
+  call assert_fails('set tabstop=5500000000', 'E474:')
   call assert_fails('set textwidth=-1', 'E487:')
   call assert_fails('set timeoutlen=-1', 'E487:')
   call assert_fails('set updatecount=-1', 'E487:')
@@ -370,10 +385,24 @@ func Test_set_errors()
   call assert_fails('set comments=a', 'E525:')
   call assert_fails('set foldmarker=x', 'E536:')
   call assert_fails('set commentstring=x', 'E537:')
+  call assert_fails('let &commentstring = "x"', 'E537:')
   call assert_fails('set complete=x', 'E539:')
+  call assert_fails('set rulerformat=%-', 'E539:')
+  call assert_fails('set rulerformat=%(', 'E542:')
+  call assert_fails('set rulerformat=%15(%%', 'E542:')
+  call assert_fails('set statusline=%$', 'E539:')
   call assert_fails('set statusline=%{', 'E540:')
-  call assert_fails('set statusline=' . repeat("%p", 81), 'E541:')
+  call assert_fails('set statusline=%{%', 'E540:')
+  call assert_fails('set statusline=%{%}', 'E539:')
   call assert_fails('set statusline=%(', 'E542:')
+  call assert_fails('set statusline=%)', 'E542:')
+  call assert_fails('set tabline=%$', 'E539:')
+  call assert_fails('set tabline=%{', 'E540:')
+  call assert_fails('set tabline=%{%', 'E540:')
+  call assert_fails('set tabline=%{%}', 'E539:')
+  call assert_fails('set tabline=%(', 'E542:')
+  call assert_fails('set tabline=%)', 'E542:')
+
   if has('cursorshape')
     " This invalid value for 'guicursor' used to cause Vim to crash.
     call assert_fails('set guicursor=i-ci,r-cr:h', 'E545:')
@@ -407,10 +436,48 @@ func Test_set_errors()
   call assert_fails('set wildchar=<abc>', 'E474:')
   call assert_fails('set cmdheight=1a', 'E521:')
   call assert_fails('set invcmdheight', 'E474:')
-  if has('python') && has('python3')
+  if has('python') || has('python3')
     call assert_fails('set pyxversion=6', 'E474:')
   endif
   call assert_fails("let &tabstop='ab'", 'E521:')
+  call assert_fails('set spellcapcheck=%\\(', 'E54:')
+  call assert_fails('set sessionoptions=curdir,sesdir', 'E474:')
+  call assert_fails('set foldmarker={{{,', 'E474:')
+  call assert_fails('set sessionoptions=sesdir,curdir', 'E474:')
+  call assert_fails('set listchars=trail:· ambiwidth=double', 'E834:')
+  set listchars&
+  call assert_fails('set fillchars=stl:· ambiwidth=double', 'E835:')
+  set fillchars&
+  call assert_fails('set fileencoding=latin1,utf-8', 'E474:')
+  set nomodifiable
+  call assert_fails('set fileencoding=latin1', 'E21:')
+  set modifiable&
+  call assert_fails('set t_#-&', 'E522:')
+endfunc
+
+func Test_set_encoding()
+  let save_encoding = &encoding
+
+  set enc=iso8859-1
+  call assert_equal('latin1', &enc)
+  set enc=iso8859_1
+  call assert_equal('latin1', &enc)
+  set enc=iso-8859-1
+  call assert_equal('latin1', &enc)
+  set enc=iso_8859_1
+  call assert_equal('latin1', &enc)
+  set enc=iso88591
+  call assert_equal('latin1', &enc)
+  set enc=iso8859
+  call assert_equal('latin1', &enc)
+  set enc=iso-8859
+  call assert_equal('latin1', &enc)
+  set enc=iso_8859
+  call assert_equal('latin1', &enc)
+  call assert_fails('set enc=iso8858', 'E474:')
+  call assert_equal('latin1', &enc)
+
+  let &encoding = save_encoding
 endfunc
 
 func CheckWasSet(name)
@@ -467,12 +534,10 @@ func Test_set_ttytype()
   set ttytype=xterm
   call assert_equal('xterm', &ttytype)
   call assert_equal(&ttytype, &term)
-  " "set ttytype=" gives E522 instead of E529
-  " in travis on some builds. Why?  Catch both for now
   try
     set ttytype=
     call assert_report('set ttytype= did not fail')
-  catch /E529\|E522/
+  catch /E529/
   endtry
 
   " Some systems accept any terminal name and return dumb settings,
@@ -810,28 +875,6 @@ func Test_buftype()
   bwipe!
 endfunc
 
-" Test for the 'shell' option
-func Test_shell()
-  CheckUnix
-  let save_shell = &shell
-  set shell=
-  call assert_fails('shell', 'E91:')
-  let &shell = save_shell
-endfunc
-
-" Test for the 'shellquote' option
-func Test_shellquote()
-  CheckUnix
-  set shellquote=#
-  set verbose=20
-  redir => v
-  silent! !echo Hello
-  redir END
-  set verbose&
-  set shellquote&
-  call assert_match(': "#echo Hello#"', v)
-endfunc
-
 " Test for the 'rightleftcmd' option
 func Test_rightleftcmd()
   CheckFeature rightleft
@@ -919,6 +962,40 @@ func Test_opt_local_to_global()
   call assert_equal('gnewprg', &l:equalprg)
   call assert_equal('gnewprg', &equalprg)
   set equalprg&
+
+  " Test for setting the global/local value of a boolean option
+  setglobal autoread
+  setlocal noautoread
+  call assert_false(&autoread)
+  set autoread<
+  call assert_true(&autoread)
+  setglobal noautoread
+  setlocal autoread
+  setlocal autoread<
+  call assert_false(&autoread)
+  set autoread&
+endfunc
+
+func Test_set_in_sandbox()
+  " Some boolean options cannot be set in sandbox, some can.
+  call assert_fails('sandbox set modelineexpr', 'E48:')
+  sandbox set number
+  call assert_true(&number)
+  set number&
+
+  " Some boolean options cannot be set in sandbox, some can.
+  if has('python') || has('python3')
+    call assert_fails('sandbox set pyxversion=3', 'E48:')
+  endif
+  sandbox set tabstop=4
+  call assert_equal(4, &tabstop)
+  set tabstop&
+
+  " Some string options cannot be set in sandbox, some can.
+  call assert_fails('sandbox set backupdir=/tmp', 'E48:')
+  sandbox set filetype=perl
+  call assert_equal('perl', &filetype)
+  set filetype&
 endfunc
 
 " Test for incrementing, decrementing and multiplying a number option value
@@ -988,6 +1065,47 @@ func Test_opt_winminheight()
   set winheight&
 endfunc
 
+func Test_opt_winminheight_term()
+  CheckRunVimInTerminal
+
+  " The tabline should be taken into account.
+  let lines =<< trim END
+    set wmh=0 stal=2
+    below sp | wincmd _
+    below sp | wincmd _
+    below sp | wincmd _
+    below sp
+  END
+  call writefile(lines, 'Xwinminheight')
+  let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
+  call term_sendkeys(buf, ":set wmh=1\n")
+  call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xwinminheight')
+endfunc
+
+func Test_opt_winminheight_term_tabs()
+  CheckRunVimInTerminal
+
+  " The tabline should be taken into account.
+  let lines =<< trim END
+    set wmh=0 stal=2
+    split
+    split
+    split
+    split
+    tabnew
+  END
+  call writefile(lines, 'Xwinminheight')
+  let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
+  call term_sendkeys(buf, ":set wmh=1\n")
+  call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xwinminheight')
+endfunc
+
 " Test for the 'winminwidth' option
 func Test_opt_winminwidth()
   only!
@@ -1005,6 +1123,138 @@ func Test_isfname_with_options()
   call assert_equal(':term help.exe', &keywordprg)
   set isfname&
   setlocal keywordprg&
+endfunc
+
+" Test that resetting laststatus does change scroll option
+func Test_opt_reset_scroll()
+  CheckRunVimInTerminal
+  let vimrc =<< trim [CODE]
+    set scroll=2
+    set laststatus=2
+  [CODE]
+  call writefile(vimrc, 'Xscroll')
+  let buf = RunVimInTerminal('-S Xscroll', {'rows': 16, 'cols': 45})
+  call term_sendkeys(buf, ":verbose set scroll?\n")
+  call WaitForAssert({-> assert_match('Last set.*window size', term_getline(buf, 15))})
+  call assert_match('^\s*scroll=7$', term_getline(buf, 14))
+  call StopVimInTerminal(buf)
+
+  " clean up
+  call delete('Xscroll')
+endfunc
+
+" Check that VIM_POSIX env variable influences default value of 'cpo' and 'shm'
+func Test_VIM_POSIX()
+  let saved_VIM_POSIX = getenv("VIM_POSIX")
+
+  call setenv('VIM_POSIX', "1")
+  let after =<< trim [CODE]
+    call writefile([&cpo, &shm], 'X_VIM_POSIX')
+    qall
+  [CODE]
+  if RunVim([], after, '')
+    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\.;',
+          \            'AS'], readfile('X_VIM_POSIX'))
+  endif
+
+  call setenv('VIM_POSIX', v:null)
+  let after =<< trim [CODE]
+    call writefile([&cpo, &shm], 'X_VIM_POSIX')
+    qall
+  [CODE]
+  if RunVim([], after, '')
+    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>;',
+          \            'S'], readfile('X_VIM_POSIX'))
+  endif
+
+  call delete('X_VIM_POSIX')
+  call setenv('VIM_POSIX', saved_VIM_POSIX)
+endfunc
+
+" Test for setting an option to a Vi or Vim default
+func Test_opt_default()
+  set formatoptions&vi
+  call assert_equal('vt', &formatoptions)
+  set formatoptions&vim
+  call assert_equal('tcq', &formatoptions)
+
+  call assert_equal('ucs-bom,utf-8,default,latin1', &fencs)
+  set fencs=latin1
+  set fencs&
+  call assert_equal('ucs-bom,utf-8,default,latin1', &fencs)
+  set fencs=latin1
+  set all&
+  call assert_equal('ucs-bom,utf-8,default,latin1', &fencs)
+endfunc
+
+" Test for the 'cmdheight' option
+func Test_cmdheight()
+  %bw!
+  let ht = &lines
+  set cmdheight=9999
+  call assert_equal(1, winheight(0))
+  call assert_equal(ht - 1, &cmdheight)
+  set cmdheight&
+endfunc
+
+" To specify a control character as an option value, '^' can be used
+func Test_opt_control_char()
+  set wildchar=^v
+  call assert_equal("\<C-V>", nr2char(&wildchar))
+  set wildcharm=^r
+  call assert_equal("\<C-R>", nr2char(&wildcharm))
+  " Bug: This doesn't work for the 'cedit' and 'termwinkey' options
+  set wildchar& wildcharm&
+endfunc
+
+" Test for the 'errorbells' option
+func Test_opt_errorbells()
+  set errorbells
+  call assert_beeps('s/a1b2/x1y2/')
+  set noerrorbells
+endfunc
+
+func Test_opt_scrolljump()
+  help
+  resize 10
+
+  " Test with positive 'scrolljump'.
+  set scrolljump=2
+  norm! Lj
+  call assert_equal({'lnum':11, 'leftcol':0, 'col':0, 'topfill':0,
+        \            'topline':3, 'coladd':0, 'skipcol':0, 'curswant':0},
+        \           winsaveview())
+
+  " Test with negative 'scrolljump' (percentage of window height).
+  set scrolljump=-40
+  norm! ggLj
+  call assert_equal({'lnum':11, 'leftcol':0, 'col':0, 'topfill':0,
+         \            'topline':5, 'coladd':0, 'skipcol':0, 'curswant':0},
+         \           winsaveview())
+
+  set scrolljump&
+  bw
+endfunc
+
+" Test for the 'cdhome' option
+func Test_opt_cdhome()
+  if has('unix') || has('vms')
+    throw 'Skipped: only works on non-Unix'
+  endif
+
+  set cdhome&
+  call assert_equal(0, &cdhome)
+  set cdhome
+
+  " This paragraph is copied from Test_cd_no_arg().
+  let path = getcwd()
+  cd
+  call assert_equal($HOME, getcwd())
+  call assert_notequal(path, getcwd())
+  exe 'cd ' .. fnameescape(path)
+  call assert_equal(path, getcwd())
+
+  set cdhome&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

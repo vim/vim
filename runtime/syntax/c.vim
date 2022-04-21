@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Aug 28
+" Last Change:	2022 Mar 17
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -12,6 +12,9 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 let s:ft = matchstr(&ft, '^\([^.]\)\+')
+
+" check if this was included from cpp.vim
+let s:in_cpp_family = exists("b:filetype_in_cpp_family")
 
 " Optional embedded Autodoc parsing
 " To enable it add: let g:c_autodoc = 1
@@ -55,7 +58,7 @@ if !exists("c_no_cformat")
 endif
 
 " cCppString: same as cString, but ends at end of line
-if s:ft ==# "cpp" && !exists("cpp_no_cpp11") && !exists("c_no_cformat")
+if s:in_cpp_family && !exists("cpp_no_cpp11") && !exists("c_no_cformat")
   " ISO C++11
   syn region	cString		start=+\(L\|u\|u8\|U\|R\|LR\|u8R\|uR\|UR\)\="+ skip=+\\\\\|\\"+ end=+"+ contains=cSpecial,cFormat,@Spell extend
   syn region 	cCppString	start=+\(L\|u\|u8\|U\|R\|LR\|u8R\|uR\|UR\)\="+ skip=+\\\\\|\\"\|\\$+ excludenl end=+"+ end='$' contains=cSpecial,cFormat,@Spell
@@ -87,7 +90,7 @@ syn match	cSpecialCharacter display "L\='\\\o\{1,3}'"
 syn match	cSpecialCharacter display "'\\x\x\{1,2}'"
 syn match	cSpecialCharacter display "L'\\x\x\+'"
 
-if (s:ft ==# "c" && !exists("c_no_c11")) || (s:ft ==# "cpp" && !exists("cpp_no_cpp11"))
+if (s:ft ==# "c" && !exists("c_no_c11")) || (s:in_cpp_family && !exists("cpp_no_cpp11"))
   " ISO C11 or ISO C++ 11
   if exists("c_no_cformat")
     syn region	cString		start=+\%(U\|u8\=\)"+ skip=+\\\\\|\\"+ end=+"+ contains=cSpecial,@Spell extend
@@ -130,7 +133,7 @@ endif
 " But avoid matching <::.
 syn cluster	cParenGroup	contains=cParenError,cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserLabel,cBitField,cOctalZero,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom
 if exists("c_no_curly_error")
-  if s:ft ==# 'cpp' && !exists("cpp_no_cpp11")
+  if s:in_cpp_family && !exists("cpp_no_cpp11")
     syn region	cParen		transparent start='(' end=')' contains=ALLBUT,@cParenGroup,cCppParen,@cStringGroup,@Spell
     " cCppParen: same as cParen but ends at end-of-line; used in cDefine
     syn region	cCppParen	transparent start='(' skip='\\$' excludenl end=')' end='$' contained contains=ALLBUT,@cParenGroup,cParen,cString,@Spell
@@ -144,7 +147,7 @@ if exists("c_no_curly_error")
     syn match	cErrInParen	display contained "^[{}]\|^<%\|^%>"
   endif
 elseif exists("c_no_bracket_error")
-  if s:ft ==# 'cpp' && !exists("cpp_no_cpp11")
+  if s:in_cpp_family && !exists("cpp_no_cpp11")
     syn region	cParen		transparent start='(' end=')' contains=ALLBUT,@cParenGroup,cCppParen,@cStringGroup,@Spell
     " cCppParen: same as cParen but ends at end-of-line; used in cDefine
     syn region	cCppParen	transparent start='(' skip='\\$' excludenl end=')' end='$' contained contains=ALLBUT,@cParenGroup,cParen,cString,@Spell
@@ -158,7 +161,7 @@ elseif exists("c_no_bracket_error")
     syn match	cErrInParen	display contained "[{}]\|<%\|%>"
   endif
 else
-  if s:ft ==# 'cpp' && !exists("cpp_no_cpp11")
+  if s:in_cpp_family && !exists("cpp_no_cpp11")
     syn region	cParen		transparent start='(' end=')' contains=ALLBUT,@cParenGroup,cCppParen,cErrInBracket,cCppBracket,@cStringGroup,@Spell
     " cCppParen: same as cParen but ends at end-of-line; used in cDefine
     syn region	cCppParen	transparent start='(' skip='\\$' excludenl end=')' end='$' contained contains=ALLBUT,@cParenGroup,cErrInBracket,cParen,cBracket,cString,@Spell
@@ -193,7 +196,6 @@ syn match	cNumber		display contained "0x\x\+\(u\=l\{0,2}\|ll\=u\)\>"
 " Flag the first zero of an octal number as something special
 syn match	cOctal		display contained "0\o\+\(u\=l\{0,2}\|ll\=u\)\>" contains=cOctalZero
 syn match	cOctalZero	display contained "\<0"
-syn match	cFloat		display contained "\d\+f"
 "floating point number, with dot, optional exponent
 syn match	cFloat		display contained "\d\+\.\d*\(e[-+]\=\d\+\)\=[fl]\="
 "floating point number, starting with a dot, optional exponent
@@ -243,8 +245,14 @@ syn match	cWrongComTail	display "\*/"
 
 syn keyword	cOperator	sizeof
 if exists("c_gnu")
+  syn keyword	cType		__label__ __complex__
   syn keyword	cStatement	__asm__
-  syn keyword	cOperator	typeof __real__ __imag__
+  syn keyword	cOperator	__alignof__
+  syn keyword	cOperator	typeof __typeof__
+  syn keyword	cOperator	__real__ __imag__
+  syn keyword	cStorageClass	__attribute__ __const__ __extension__
+  syn keyword	cStorageClass	inline __inline__
+  syn keyword	cStorageClass	__restrict__ __volatile__ __noreturn__
 endif
 syn keyword	cType		int long short char void
 syn keyword	cType		signed unsigned float double
@@ -268,17 +276,11 @@ if !exists("c_no_c99") " ISO C99
   syn keyword	cType		intptr_t uintptr_t
   syn keyword	cType		intmax_t uintmax_t
 endif
-if exists("c_gnu")
-  syn keyword	cType		__label__ __complex__ __volatile__
-endif
 
 syn keyword	cTypedef	typedef
 syn keyword	cStructure	struct union enum
 syn keyword	cStorageClass	static register auto volatile extern const
-if exists("c_gnu")
-  syn keyword	cStorageClass	inline __attribute__
-endif
-if !exists("c_no_c99") && s:ft !=# 'cpp'
+if !exists("c_no_c99") && !s:in_cpp_family
   syn keyword	cStorageClass	inline restrict
 endif
 if !exists("c_no_c11")
@@ -290,6 +292,7 @@ if !exists("c_no_c11")
   syn keyword	cOperator	_Static_assert static_assert
   syn keyword	cStorageClass	_Thread_local thread_local
   syn keyword   cType		char16_t char32_t
+  syn keyword   cType		max_align_t
   " C11 atomics (take down the shield wall!)
   syn keyword	cType		atomic_bool atomic_char atomic_schar atomic_uchar
   syn keyword	Ctype		atomic_short atomic_ushort atomic_int atomic_uint
@@ -411,6 +414,9 @@ if exists("c_autodoc")
   syn cluster cPreProcGroup add=cAutodocReal
 endif
 
+" be able to fold #pragma regions
+syn region	cPragma		start="^\s*#pragma\s\+region\>" end="^\s*#pragma\s\+endregion\>" transparent keepend extend fold
+
 " Highlight User Labels
 syn cluster	cMultiGroup	contains=cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserCont,cUserLabel,cBitField,cOctalZero,cCppOutWrapper,cCppInWrapper,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom,cCppParen,cCppBracket,cCppString
 if s:ft ==# 'c' || exists("cpp_no_cpp11")
@@ -420,7 +426,7 @@ endif
 syn cluster	cLabelGroup	contains=cUserLabel
 syn match	cUserCont	display "^\s*\zs\I\i*\s*:$" contains=@cLabelGroup
 syn match	cUserCont	display ";\s*\zs\I\i*\s*:$" contains=@cLabelGroup
-if s:ft ==# 'cpp'
+if s:in_cpp_family
   syn match	cUserCont	display "^\s*\zs\%(class\|struct\|enum\)\@!\I\i*\s*:[^:]"me=e-1 contains=@cLabelGroup
   syn match	cUserCont	display ";\s*\zs\%(class\|struct\|enum\)\@!\I\i*\s*:[^:]"me=e-1 contains=@cLabelGroup
 else

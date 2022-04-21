@@ -90,7 +90,6 @@ void gui_mch_set_foreground(void);
 void gui_mch_drawsign(int row, int col, int typenr);
 void *gui_mch_register_sign(char_u *signfile);
 void gui_mch_destroy_sign(void *sign);
-int multiline_balloon_available(void);
 void gui_mch_disable_beval_area(BalloonEval *beval);
 void gui_mch_enable_beval_area(BalloonEval *beval);
 void gui_mch_post_balloon(BalloonEval *beval, char_u *mesg);

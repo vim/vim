@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.2.  Last change: 2020 Aug 24
+*motion.txt*    For Vim version 8.2.  Last change: 2022 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -33,7 +33,8 @@ know what the hjkl keys do.  The mnemonic value of hjkl is clear from looking
 at the keyboard.  Think of j as an arrow pointing downwards.
 
 The 'virtualedit' option can be set to make it possible to move the cursor to
-positions where there is no character or halfway a character.
+positions where there is no character or within a multi-column character (like
+a tab).
 
 ==============================================================================
 1. Motions and operators				*operator*
@@ -59,9 +60,14 @@ or change text.  The following operators are available:
 	|<|	<	shift left
 	|zf|	zf	define a fold
 	|g@|	g@	call function set with the 'operatorfunc' option
-
+						*motion-count-multiplied*
 If the motion includes a count and the operator also had a count before it,
 the two counts are multiplied.  For example: "2d3w" deletes six words.
+						*operator-doubled*
+When doubling the operator it operates on a line.  When using a count, before
+or after the first character, that many lines are operated upon.  Thus `3dd`
+deletes three lines. A count before and after the first character is
+multiplied, thus `2y3y` yanks six lines.
 
 After applying the operator the cursor is mostly left at the start of the text
 that was operated upon.  For example, "yfe" doesn't move the cursor, but "yFe"
@@ -190,11 +196,14 @@ l		or					*l*
 
 							*^*
 ^			To the first non-blank character of the line.
-			|exclusive| motion.
+			|exclusive| motion.  Any count is ignored.
 
 							*$* *<End>* *<kEnd>*
 $  or <End>		To the end of the line.  When a count is given also go
-			[count - 1] lines downward. |inclusive| motion.
+			[count - 1] lines downward, or as far is possible.
+			|inclusive| motion.  If a count of 2 or larger is
+			given and the cursor is on the last line, that is an
+			error and the cursor doesn't move.
 			In Visual mode the cursor goes to just after the last
 			character in the line.
 			When 'virtualedit' is active, "$" may move the cursor
@@ -378,6 +387,8 @@ w			[count] words forward.  |exclusive| motion.
 
 <C-Right>	or					*<C-Right>* *W*
 W			[count] WORDS forward.  |exclusive| motion.
+			If <C-Right> does not work, check out
+			|arrow_modifiers|.
 
 							*e*
 e			Forward to the end of word [count] |inclusive|.
@@ -392,6 +403,8 @@ b			[count] words backward.  |exclusive| motion.
 
 <C-Left>	or					*<C-Left>* *B*
 B			[count] WORDS backward.  |exclusive| motion.
+			If <C-Left> does not work, check out
+			|arrow_modifiers|.
 
 							*ge*
 ge			Backward to the end of word [count] |inclusive|.
@@ -433,35 +446,35 @@ between Vi and Vim.
 5. Text object motions					*object-motions*
 
 							*(*
-(			[count] sentences backward.  |exclusive| motion.
+(			[count] |sentence|s backward.  |exclusive| motion.
 
 							*)*
-)			[count] sentences forward.  |exclusive| motion.
+)			[count] |sentence|s forward.  |exclusive| motion.
 
 							*{*
-{			[count] paragraphs backward.  |exclusive| motion.
+{			[count] |paragraph|s backward.  |exclusive| motion.
 
 							*}*
-}			[count] paragraphs forward.  |exclusive| motion.
+}			[count] |paragraph|s forward.  |exclusive| motion.
 
 							*]]*
-]]			[count] sections forward or to the next '{' in the
+]]			[count] |section|s forward or to the next '{' in the
 			first column.  When used after an operator, then also
 			stops below a '}' in the first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
 							*][*
-][			[count] sections forward or to the next '}' in the
+][			[count] |section|s forward or to the next '}' in the
 			first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
 							*[[*
-[[			[count] sections backward or to the previous '{' in
+[[			[count] |section|s backward or to the previous '{' in
 			the first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
 							*[]*
-[]			[count] sections backward or to the previous '}' in
+[]			[count] |section|s backward or to the previous '}' in
 			the first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
@@ -776,6 +789,9 @@ m<  or  m>		Set the |'<| or |'>| mark.  Useful to change what the
 						*:k*
 :[range]k{a-zA-Z'}	Same as :mark, but the space before the mark name can
 			be omitted.
+			This command is not supported in |Vim9| script,
+			because it is too easily confused with a variable
+			name.
 
 						*'* *'a* *`* *`a*
 '{a-z}  `{a-z}		Jump to the mark {a-z} in the current buffer.
@@ -939,8 +955,7 @@ These commands are not marks themselves, but jump to a mark:
 			line.
 
 							*]`*
-]`			[count] times to lowercase mark after the cursor. {not
-			in Vi}
+]`			[count] times to lowercase mark after the cursor.
 
 							*['*
 ['			[count] times to previous line with a lowercase mark
@@ -1005,7 +1020,7 @@ These commands are not marks themselves, but jump to a mark:
 				:let lnum = line(".")
 				:keepjumps normal gg
 				:call SetLastChange()
-				:keepjumps exe "normal " . lnum . "G"
+				:keepjumps exe "normal " .. lnum .. "G"
 <
 			Note that ":keepjumps" must be used for every command.
 			When invoking a function the commands in that function
@@ -1027,48 +1042,52 @@ commands that start editing a new file.
 							*CTRL-O*
 CTRL-O			Go to [count] Older cursor position in jump list
 			(not a motion command).
-			{not available without the |+jumplist| feature}
 
 <Tab>		or					*CTRL-I* *<Tab>*
 CTRL-I			Go to [count] newer cursor position in jump list
 			(not a motion command).
-			{not available without the |+jumplist| feature}
+
+			NOTE: In the GUI and in a terminal supporting
+			|modifyOtherKeys|, CTRL-I can be mapped separately
+			from <Tab>, on the condition that CTRL-I is
+			mapped before <Tab>, otherwise the mapping applies to
+			both.
 
 							*:ju* *:jumps*
 :ju[mps]		Print the jump list (not a motion command).
-			{not available without the |+jumplist| feature}
 
 							*:cle* *:clearjumps*
 :cle[arjumps]		Clear the jump list of the current window.
-			{not available without the |+jumplist| feature}
 
 							*jumplist*
 Jumps are remembered in a jump list.  With the CTRL-O and CTRL-I command you
 can go to cursor positions before older jumps, and back again.  Thus you can
 move up and down the list.  There is a separate jump list for each window.
 The maximum number of entries is fixed at 100.
-{not available without the |+jumplist| feature}
 
 For example, after three jump commands you have this jump list:
 
-  jump line  col file/text ~
-    3	  1    0 some text ~
-    2	 70    0 another line ~
-    1  1154   23 end. ~
- > ~
+    jump line  col file/text ~
+      3	  1    0 some text ~
+      2	 70    0 another line ~
+      1  1154   23 end. ~
+   > ~
 
 The "file/text" column shows the file name, or the text at the jump if it is
 in the current file (an indent is removed and a long line is truncated to fit
 in the window).
 
+The marker ">" indicates the current position in the jumplist.  It may not be
+shown when filtering the |:jumps| command using |:filter|
+
 You are currently in line 1167.  If you then use the CTRL-O command, the
 cursor is put in line 1154.  This results in:
 
-  jump line  col file/text ~
-    2	  1    0 some text ~
-    1	 70    0 another line ~
- >  0  1154   23 end. ~
-    1  1167    0 foo bar ~
+    jump line  col file/text ~
+      2	  1    0 some text ~
+      1	 70    0 another line ~
+   >  0  1154   23 end. ~
+      1  1167    0 foo bar ~
 
 The pointer will be set at the last used jump position.  The next CTRL-O
 command will use the entry above it, the next CTRL-I command will use the
@@ -1095,12 +1114,12 @@ that calling setpos() does not do this.
 After the CTRL-O command that got you into line 1154 you could give another
 jump command (e.g., "G").  The jump list would then become:
 
-  jump line  col file/text ~
-    4	  1    0 some text ~
-    3	 70    0 another line ~
-    2  1167    0 foo bar ~
-    1  1154   23 end. ~
- > ~
+    jump line  col file/text ~
+      4	  1    0 some text ~
+      3	 70    0 another line ~
+      2  1167    0 foo bar ~
+      1  1154   23 end. ~
+   > ~
 
 The line numbers will be adjusted for deleted and inserted lines.  This fails
 if you stop editing a file without writing, like with ":n!".
@@ -1124,13 +1143,11 @@ g;			Go to [count] older position in change list.
 			positions go to the oldest change.
 			If there is no older change an error message is given.
 			(not a motion command)
-			{not available without the |+jumplist| feature}
 
 							*g,* *E663*
 g,			Go to [count] newer cursor position in change list.
 			Just like |g;| but in the opposite direction.
 			(not a motion command)
-			{not available without the |+jumplist| feature}
 
 When using a count you jump as far back or forward as possible.  Thus you can
 use "999g;" to go to the first change for which the position is still
@@ -1149,7 +1166,7 @@ Note that when text has been inserted or deleted the cursor position might be
 a bit different from the position of the change.  Especially when lines have
 been deleted.
 
-When the |:keepjumps| command modifier is used the position of a change is not
+When the `:keepjumps` command modifier is used the position of a change is not
 remembered.
 
 							*:changes*
@@ -1190,7 +1207,7 @@ remembered.
 			#if, #ifdef, #else, #elif, #endif
 					C preprocessor conditionals (when the
 					cursor is on the # or no ([{
-					following)
+					is following)
 			For other items the matchit plugin can be used, see
 			|matchit-install|.  This plugin also helps to skip
 			matches in comments.
@@ -1219,19 +1236,16 @@ remembered.
 			#if/#else/#endif makes the movement linewise.
 
 						*[(*
-[(			go to [count] previous unmatched '('.
+[(			Go to [count] previous unmatched '('.
 			|exclusive| motion.
-
 						*[{*
-[{			go to [count] previous unmatched '{'.
+[{			Go to [count] previous unmatched '{'.
 			|exclusive| motion.
-
 						*])*
-])			go to [count] next unmatched ')'.
+])			Go to [count] next unmatched ')'.
 			|exclusive| motion.
-
 						*]}*
-]}			go to [count] next unmatched '}'.
+]}			Go to [count] next unmatched '}'.
 			|exclusive| motion.
 
 The above four commands can be used to go to the start or end of the current
@@ -1265,7 +1279,7 @@ bring you back to the switch statement.
 			class.  When no '}' is found before the cursor this is
 			an error. |exclusive| motion.
 
-The above two commands assume that the file contains a class with methods.
+The above four commands assume that the file contains a class with methods.
 The class definition is surrounded in '{' and '}'.  Each method in the class
 is also surrounded with '{' and '}'.  This applies to the Java language.  The
 file looks like this: >
@@ -1279,17 +1293,21 @@ file looks like this: >
 			body_two();
 		}
 	}
+
+[To try this out copy the text and put it in a new buffer, the help text above
+confuses the jump commands]
+
 Starting with the cursor on "body_two()", using "[m" will jump to the '{' at
 the start of "method_two()" (obviously this is much more useful when the
 method is long!).  Using "2[m" will jump to the start of "method_one()".
 Using "3[m" will jump to the start of the class.
 
 						*[#*
-[#			go to [count] previous unmatched "#if" or "#else".
+[#			Go to [count] previous unmatched "#if" or "#else".
 			|exclusive| motion.
 
 						*]#*
-]#			go to [count] next unmatched "#else" or "#endif".
+]#			Go to [count] next unmatched "#else" or "#endif".
 			|exclusive| motion.
 
 These two commands work in C programs that contain #if/#else/#endif
@@ -1297,11 +1315,11 @@ constructs.  It brings you to the start or end of the #if/#else/#endif where
 the current line is included.  You can then use "%" to go to the matching line.
 
 						*[star* *[/*
-[*  or  [/		go to [count] previous start of a C comment "/*".
+[*  or  [/		Go to [count] previous start of a C comment "/*".
 			|exclusive| motion.
 
 						*]star* *]/*
-]*  or  ]/		go to [count] next end of a C comment "*/".
+]*  or  ]/		Go to [count] next end of a C comment "*/".
 			|exclusive| motion.
 
 

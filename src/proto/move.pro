@@ -1,5 +1,4 @@
 /* move.c */
-void reset_cursorline(void);
 void redraw_for_cursorline(win_T *wp);
 void update_topline_redraw(void);
 void update_topline(void);
@@ -13,6 +12,7 @@ void changed_cline_bef_curs_win(win_T *wp);
 void changed_line_abv_curs(void);
 void changed_line_abv_curs_win(win_T *wp);
 void validate_botline(void);
+void validate_botline_win(win_T *wp);
 void invalidate_botline(void);
 void invalidate_botline_win(win_T *wp);
 void approximate_botline_win(win_T *wp);

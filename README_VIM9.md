@@ -45,14 +45,16 @@ full code is below):
 | Vim old | 5.018541 |
 | Python  | 0.369598 |
 | Lua     | 0.078817 |
+| LuaJit  | 0.004245 |
 | Vim new | 0.073595 |
 
 That looks very promising!  It's just one example, but it shows how much
 we can gain, and also that Vim script can be faster than builtin
 interfaces.
 
-In practice the script would not do something useless as counting but change
-the text.  For example, reindent all the lines:
+LuaJit is much faster at Lua-only instructions.  In practice the script would
+not do something useless as counting but change the text.  For example,
+reindent all the lines:
 
 ``` vim
   let totallen = 0
@@ -64,12 +66,17 @@ the text.  For example, reindent all the lines:
 
 | how     | time in sec |
 | --------| -------- |
-| Vim old | 0.853752 |
-| Python  | 0.304584 |
-| Lua     | 0.286573 |
-| Vim new | 0.190276 |
+| Vim old | 0.578598 |
+| Python  | 0.152040 |
+| Lua     | 0.164917 |
+| LuaJit  | 0.128400 |
+| Vim new | 0.079692 |
+
+[These times were measured on a different system by Dominique Pelle]
 
 The differences are smaller, but Vim 9 script is clearly the fastest.
+Using LuaJIT is only a little bit faster than plain Lua here, clearly the call
+back to the Vim code is costly.
 
 How does Vim9 script work?  The function is first compiled into a sequence of
 instructions.  Each instruction has one or two parameters and a stack is
@@ -80,7 +87,7 @@ e.g. each stack item is a typeval_T.  And one of the instructions is
 "execute Ex command", for commands that are not compiled.
 
 
-## 2. PHASING OUT INTERFACES
+## 2. DEPRIORITIZE INTERFACES
 
 Attempts have been made to implement functionality with built-in script
 languages such as Python, Perl, Lua, Tcl and Ruby.  This never gained much
@@ -159,18 +166,18 @@ thing I have been thinking of is assignments without ":let".  I often
 make that mistake (after writing JavaScript especially).  I think it is
 possible, if we make local variables shadow commands.  That should be OK,
 if you shadow a command you want to use, just rename the variable.
-Using "let" and "const" to declare a variable, like in JavaScript and
+Using "var" and "const" to declare a variable, like in JavaScript and
 TypeScript, can work:
 
 
 ``` vim
 def MyFunction(arg: number): number
-   let local = 1
-   let todo = arg
+   var local = 1
+   var todo = arg
    const ADD = 88
    while todo > 0
       local += ADD
-      --todo
+      todo -= 1
    endwhile
    return local
 enddef
@@ -192,7 +199,7 @@ function and export it:
 ``` vim
 vim9script  " Vim9 script syntax used here
 
-let local = 'local variable is not exported, script-local'
+var local = 'local variable is not exported, script-local'
 
 export def MyFunction()  " exported function
 ...
@@ -248,10 +255,10 @@ END
   return luaeval('sum')
 endfunc
 
-def VimNew()
-  let sum = 0
+def VimNew(): number
+  var sum = 0
   for i in range(1, 2999999)
-    let sum += i
+    sum += i
   endfor
   return sum
 enddef
@@ -277,7 +284,7 @@ echo 'Vim new: ' .. reltimestr(reltime(start))
 
 ``` vim
 def VimNew(): number
-  let totallen = 0
+  var totallen = 0
   for i in range(1, 100000)
     setline(i, '    ' .. getline(i))
     totallen += len(getline(i))
@@ -330,7 +337,7 @@ let start = reltime()
 echo Python()
 echo 'Python: ' .. reltimestr(reltime(start))
 bwipe!
- 
+
 new
 call setline(1, range(100000))
 let start = reltime()

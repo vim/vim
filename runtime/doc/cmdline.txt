@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Aug 09
+*cmdline.txt*   For Vim version 8.2.  Last change: 2022 Apr 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -170,7 +170,12 @@ CTRL-R {register}					*c_CTRL-R* *c_<C-R>*
 				too.
 				When the result is a Float it's automatically
 				converted to a String.
-		See |registers| about registers.
+				Note that when you only want to move the
+				cursor and not insert anything, you must make
+				sure the expression evaluates to an empty
+				string.  E.g.: >
+					<C-R><C-R>=setcmdpos(2)[-1]<CR>
+<		See |registers| about registers.
 		Implementation detail: When using the |expression| register
 		and invoking setcmdpos(), this sets the position before
 		inserting the resulting string.  Use CTRL-R CTRL-R to set the
@@ -222,7 +227,7 @@ CTRL-\ e {expr}						*c_CTRL-\_e*
 		Example: >
 			:cmap <F7> <C-\>eAppendSome()<CR>
 			:func AppendSome()
-			   :let cmd = getcmdline() . " Some()"
+			   :let cmd = getcmdline() .. " Some()"
 			   :" place the cursor on the )
 			   :call setcmdpos(strlen(cmd))
 			   :return cmd
@@ -597,9 +602,11 @@ followed by another Vim command:
     :global
     :help
     :helpfind
+    :helpgrep
     :lcscope
     :ldo
     :lfdo
+    :lhelpgrep
     :make
     :normal
     :perl
@@ -698,6 +705,15 @@ Some Ex commands accept a line range in front of them.  This is noted as
 
 The basics are explained in section |10.3| of the user manual.
 
+In |Vim9| script a range needs to be prefixed with a colon to avoid ambiguity
+with continuation lines.  For example, "+" can be used for a range but is also
+a continuation of an expression: >
+	var result = start
+	+ print
+If the "+" is a range then it must be prefixed with a colon: >
+	var result = start
+	:+ print
+<
 						*:,* *:;*
 When separated with ';' the cursor position will be set to that line
 before interpreting the next line specifier.  This doesn't happen for ','.
@@ -714,7 +730,7 @@ If more line specifiers are given than required for the command, the first
 one(s) will be ignored.
 
 Line numbers may be specified with:		*:range* *{address}*
-	{number}	an absolute line number
+	{number}	an absolute line number  *E1247*
 	.		the current line			  *:.*
 	$		the last line in the file		  *:$*
 	%		equal to 1,$ (the entire file)		  *:%*
@@ -732,7 +748,8 @@ Line numbers may be specified with:		*:range* *{address}*
 
 Each may be followed (several times) by '+' or '-' and an optional number.
 This number is added or subtracted from the preceding line number.  If the
-number is omitted, 1 is used.
+number is omitted, 1 is used.  If there is nothing before the '+' or '-' then
+the current line is used.
 
 The "/" and "?" after {pattern} are required to separate the pattern from
 anything that follows.
@@ -762,7 +779,7 @@ Some commands allow for a count after the command.  This count is used as the
 number of lines to be used, starting with the line given in the last line
 specifier (the default is the cursor line).  The commands that accept a count
 are the ones that use a range but do not have a file name argument (because
-a file name can also be a number).
+a file name can also be a number).  The count cannot be negative.
 
 Examples: >
 	:s/x/X/g 5	substitute 'x' by 'X' in the current line and four
@@ -796,18 +813,20 @@ three lines: >
 		3:d<CR>		is translated into: .,.+2d<CR>
 <
 
-Visual Mode and Range					*v_:*
-
+Visual Mode and Range
+							*v_:*
 {Visual}:	Starts a command-line with the Visual selected lines as a
 		range.  The code `:'<,'>` is used for this range, which makes
 		it possible to select a similar line from the command-line
 		history for repeating a command on different Visually selected
 		lines.
+
+:*						*:star* *:star-visual-range*
 		When Visual mode was already ended, a short way to use the
 		Visual area for a range is `:*`.  This requires that "*" does
 		not appear in 'cpo', see |cpo-star|.  Otherwise you will have
 		to type `:'<,'>`
-
+		For when "*" is in 'cpo' see |:star-compatible|.
 
 ==============================================================================
 5. Ex command-line flags				*ex-flags*
@@ -849,6 +868,16 @@ function |expand()|.
 		file name n.  See |:oldfiles| or |v:oldfiles| to get the
 		number.							*E809*
 		{only when compiled with the |+eval| and |+viminfo| features}
+In |Vim9-script| # is used to start a comment, use %% for the alternate file
+name:
+	%	Is replaced with the current file name.
+	%%	Is replaced with the alternate file name.	*:_%%* *c_%%*
+	%%n	(where n is a number) is replaced with		*:_%%0* *:_%%n*
+		the file name of buffer n.  "%%0" is the same as "%%".   *c_%%n*
+	%%%	Is replaced with all names in the argument	*:_%%%* *c_%%%#*
+		list concatenated, separated by spaces.
+	%%<n	(where n is a number > 0) is replaced with old  *:_%%<* *c_%%<*
+		file name n.
 
 Note that these, except "#<n", give the file name as it was typed.  If an
 absolute path is needed (when using the file name from a different directory),
@@ -873,53 +902,73 @@ it, no matter how many backslashes.
 	   \\#			\#
 Also see |`=|.
 
-			       *:<cword>* *<cword>* *:<cWORD>* *<cWORD>*
-			       *:<cexpr>* *<cexpr>* *:<cfile>* *<cfile>*
-			       *:<afile>* *<afile>* *:<abuf>* *<abuf>*
-			       *:<amatch>* *<amatch>* *:<stack>* *<stack>*
-			       *:<sfile>* *<sfile>* *:<slnum>* *<slnum>*
-			       *:<sflnum>* *<sflnum>* *E499* *E500*
+							*E499* *E500*
 Note: these are typed literally, they are not special keys!
+							*:<cword>* *<cword>*
 	<cword>    is replaced with the word under the cursor (like |star|)
+							*:<cWORD>* *<cWORD>*
 	<cWORD>    is replaced with the WORD under the cursor (see |WORD|)
+							*:<cexpr>* *<cexpr>*
 	<cexpr>    is replaced with the word under the cursor, including more
 		   to form a C expression.  E.g., when the cursor is on "arg"
 		   of "ptr->arg" then the result is "ptr->arg"; when the
 		   cursor is on "]" of "list[idx]" then the result is
 		   "list[idx]".  This is used for |v:beval_text|.
+							*:<cfile>* *<cfile>*
 	<cfile>    is replaced with the path name under the cursor (like what
 		   |gf| uses)
+							*:<afile>* *<afile>*
 	<afile>    When executing autocommands, is replaced with the file name
 		   of the buffer being manipulated, or the file for a read or
 		   write.  *E495*
+							*:<abuf>* *<abuf>*
 	<abuf>     When executing autocommands, is replaced with the currently
 		   effective buffer number (for ":r file" and ":so file" it is
 		   the current buffer, the file being read/sourced is not in a
 		   buffer).  *E496*
+							*:<amatch>* *<amatch>*
 	<amatch>   When executing autocommands, is replaced with the match for
 		   which this autocommand was executed.  *E497*
-		   It differs from <afile> only when the file name isn't used
-		   to match with (for FileType, Syntax and SpellFileMissing
+		   It differs from <afile> when the file name isn't used to
+		   match with (for FileType, Syntax and SpellFileMissing
 		   events).
+		   When the match is with a file name, it is expanded to the
+		   full path.
+							*:<sfile>* *<sfile>*
 	<sfile>    When executing a ":source" command, is replaced with the
 		   file name of the sourced file.  *E498*
-		   When executing a function, is replaced with the call stack,
-		   as with <stack> (this is for backwards compatibility, using
-		   <stack> is preferred).
+		   When executing a legacy function, is replaced with the call
+		   stack, as with <stack> (this is for backwards
+		   compatibility, using <stack> or <script> is preferred).
+		   In Vim9 script using <sfile> in a function gives error
+		   *E1245* .
 		   Note that filename-modifiers are useless when <sfile> is
 		   not used inside a script.
+							*:<stack>* *<stack>*
 	<stack>	   is replaced with the call stack, using
 		   "function {function-name}[{lnum}]" for a function line
 		   and "script {file-name}[{lnum}]" for a script line, and
 		   ".." in between items.  E.g.:
 		   "function {function-name1}[{lnum}]..{function-name2}[{lnum}]"
+		   If there is no call stack you get error *E489* .
+							*:<script>* *<script>*
+	<script>   When executing a `:source` command, is replaced with the file
+		   name of the sourced file.  When executing a function, is
+		   replaced with the file name of the script where it is
+		   defined.
+		   If the file name cannot be determined you get error *E1274* .
+							*:<slnum>* *<slnum>*
 	<slnum>	   When executing a ":source" command, is replaced with the
 		   line number.  *E842*
 		   When executing a function it's the line number relative to
 		   the start of the function.
+							*:<sflnum>* *<sflnum>*
 	<sflnum>   When executing a script, is replaced with the line number.
 		   It differs from <slnum> in that <sflnum> is replaced with
 		   the script line number in any situation.  *E961*
+							*:<client>* *<client>*
+	<client>   is replaced with the {clinetid} of the last received
+		   message in |server2client()|
 
 							 *filename-modifiers*
 *:_%:* *::8* *::p* *::.* *::~* *::h* *::t* *::r* *::e* *::s* *::gs* *::S*
@@ -1077,7 +1126,7 @@ Also see |`=|.
 In the command-line window the command line can be edited just like editing
 text in any window.  It is a special kind of window, because you cannot leave
 it in a normal way.
-{not available when compiled without the |+cmdline_hist| feature}
+{not available when compiled without the |+cmdwin| feature}
 
 
 OPEN						*c_CTRL-F* *q:* *q/* *q?*
@@ -1111,7 +1160,7 @@ in Normal mode and Insert mode.
 It is possible to use ":", "/" and other commands that use the command-line,
 but it's not possible to open another command-line window then.  There is no
 nesting.
-							*E11*
+							*E11* *E1188*
 The command-line window is not a normal window.  It is not possible to move to
 another window or edit another buffer.  All commands that would do this are
 disabled in the command-line window.  Of course it _is_ possible to execute

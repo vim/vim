@@ -916,7 +916,7 @@ POZNÁMKA: Ak chceš nerozlyšova ve¾kos písmen len pre jedno
 
   1. Zaèni editova "vimrc" súbor, to závisí na pouitom systéme:
 	:e ~/.vimrc      pre Unix
-	:e $VIM/_vimrc   pre MS-Windows
+	:e ~/_vimrc      pre MS-Windows
 
   2. Teraz si preèítaj text príkladu "vimrc" súboru:
 
@@ -986,7 +986,7 @@ POZNÁMKA: Dokonèovanie funguje pre ve¾a príkazov. Vyskúšaj stlaèenie
   Vydavate¾: New Riders
   Prvá kniha urèená pre Vim. Špeciálne vhodná pre zaèiatoèníkov.
   Obsahuje mnostvo príkladov a obrázkov.
-  Pozri na http://iccf-holland.org/click5.html
+  Pozri na https://iccf-holland.org/click5.html
 
   Táto kniha je staršia a je viac o Vi ako o Vim, ale je tie odporúèaná:
   Learning the Vi Editor - od Linda Lamb

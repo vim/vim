@@ -89,6 +89,7 @@ internal_format(
 	colnr_T	col;
 	colnr_T	end_col;
 	int	wcc;			// counter for whitespace chars
+	int	did_do_comment = FALSE;
 
 	virtcol = get_nolist_virtcol()
 		+ char2cells(c != NUL ? c : gchar_cursor());
@@ -192,7 +193,8 @@ internal_format(
 		if (curwin->w_cursor.col <= (colnr_T)wantcol)
 		    break;
 	    }
-	    else if ((cc >= 0x100 || !utf_allow_break_before(cc)) && fo_multibyte)
+	    else if ((cc >= 0x100 || !utf_allow_break_before(cc))
+							       && fo_multibyte)
 	    {
 		int ncc;
 		int allow_break;
@@ -352,9 +354,15 @@ internal_format(
 		+ (fo_white_par ? OPENLINE_KEEPTRAIL : 0)
 		+ (do_comments ? OPENLINE_DO_COM : 0)
 		+ ((flags & INSCHAR_COM_LIST) ? OPENLINE_COM_LIST : 0)
-		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent));
+		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent),
+		&did_do_comment);
 	if (!(flags & INSCHAR_COM_LIST))
 	    old_indent = 0;
+
+	// If a comment leader was inserted, may also do this on a following
+	// line.
+	if (did_do_comment)
+	    no_leader = FALSE;
 
 	replace_offset = 0;
 	if (first_line)
@@ -520,7 +528,7 @@ same_leader(
     // If first leader has 'f' flag, the lines can be joined only if the
     // second line does not have a leader.
     // If first leader has 'e' flag, the lines can never be joined.
-    // If fist leader has 's' flag, the lines can only be joined if there is
+    // If first leader has 's' flag, the lines can only be joined if there is
     // some text after it and the second line has the 'm' flag.
     if (leader1_flags != NULL)
     {
@@ -819,7 +827,7 @@ op_format(
 	// When there is no change: need to remove the Visual selection
 	redraw_curbuf_later(INVERTED);
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	// Set '[ mark at the start of the formatted area
 	curbuf->b_op_start = oap->start;
 
@@ -839,7 +847,7 @@ op_format(
     old_line_count = curbuf->b_ml.ml_line_count - old_line_count;
     msgmore(old_line_count);
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	// put '] mark on the end of the formatted area
 	curbuf->b_op_end = curwin->w_cursor;
 
@@ -895,6 +903,7 @@ fex_format(
 								   OPT_LOCAL);
     int		r;
     char_u	*fex;
+    sctx_T	save_sctx = current_sctx;
 
     // Set v:lnum to the first line number and v:count to the number of lines.
     // Set v:char to the character to be inserted (can be NUL).
@@ -906,6 +915,7 @@ fex_format(
     fex = vim_strsave(curbuf->b_p_fex);
     if (fex == NULL)
 	return 0;
+    current_sctx = curbuf->b_p_script_ctx[BV_FEX];
 
     // Evaluate the function.
     if (use_sandbox)
@@ -916,6 +926,7 @@ fex_format(
 
     set_vim_var_string(VV_CHAR, NULL, -1);
     vim_free(fex);
+    current_sctx = save_sctx;
 
     return r;
 }
@@ -941,7 +952,7 @@ format_lines(
     int		leader_len = 0;		// leader len of current line
     int		next_leader_len;	// leader len of next line
     char_u	*leader_flags = NULL;	// flags for leader of current line
-    char_u	*next_leader_flags;	// flags for leader of next line
+    char_u	*next_leader_flags = NULL; // flags for leader of next line
     int		do_comments;		// format comments
     int		do_comments_list = 0;	// format comments with 'n' or '2'
     int		advance = TRUE;
@@ -954,6 +965,7 @@ format_lines(
     int		smd_save;
     long	count;
     int		need_set_indent = TRUE;	// set indent of next paragraph
+    linenr_T	first_line = curwin->w_cursor.lnum;
     int		force_format = FALSE;
     int		old_State = State;
 
@@ -1063,16 +1075,52 @@ format_lines(
 		    || !same_leader(curwin->w_cursor.lnum,
 					leader_len, leader_flags,
 					   next_leader_len, next_leader_flags))
+	    {
+		// Special case: If the next line starts with a line comment
+		// and this line has a line comment after some text, the
+		// paragraph doesn't really end.
+		if (next_leader_flags == NULL
+			|| STRNCMP(next_leader_flags, "://", 3) != 0
+			|| check_linecomment(ml_get_curline()) == MAXCOL)
 		is_end_par = TRUE;
+	    }
 
 	    // If we have got to the end of a paragraph, or the line is
 	    // getting long, format it.
 	    if (is_end_par || force_format)
 	    {
 		if (need_set_indent)
-		    // replace indent in first line with minimal number of
-		    // tabs and spaces, according to current options
-		    (void)set_indent(get_indent(), SIN_CHANGED);
+		{
+		    int		indent = 0; // amount of indent needed
+
+		    // Replace indent in first line of a paragraph with minimal
+		    // number of tabs and spaces, according to current options.
+		    // For the very first formatted line keep the current
+		    // indent.
+		    if (curwin->w_cursor.lnum == first_line)
+			indent = get_indent();
+		    else
+# ifdef FEAT_LISP
+		    if (curbuf->b_p_lisp)
+			indent = get_lisp_indent();
+		    else
+# endif
+		    {
+#ifdef FEAT_CINDENT
+			if (cindent_on())
+			{
+			    indent =
+# ifdef FEAT_EVAL
+				 *curbuf->b_p_inde != NUL ? get_expr_indent() :
+# endif
+				 get_c_indent();
+			}
+			else
+#endif
+			    indent = get_indent();
+		    }
+		    (void)set_indent(indent, SIN_CHANGED);
+		}
 
 		// put cursor on last non-space
 		State = NORMAL;	// don't go past end-of-line

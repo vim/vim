@@ -314,9 +314,7 @@ DoRegisterName(Display *dpy, char_u *name)
 	set_vim_var_string(VV_SEND_SERVER, name, -1);
 #endif
 	serverName = vim_strsave(name);
-#ifdef FEAT_TITLE
 	need_maketitle = TRUE;
-#endif
 	return 0;
     }
     return -2;
@@ -347,7 +345,7 @@ serverChangeRegisteredWindow(
     DeleteAnyLingerer(dpy, newwin);
     if (serverName != NULL)
     {
-	// Reinsert name if we was already registered
+	// Reinsert name if it was already registered
 	(void)LookupName(dpy, serverName, /*delete=*/TRUE, NULL);
 	sprintf((char *)propInfo, "%x %.*s",
 		(int_u)newwin, MAX_NAME_LENGTH, serverName);
@@ -427,7 +425,7 @@ serverSendToVim(
     if (w == None)
     {
 	if (!silent)
-	    semsg(_(e_noserver), name);
+	    semsg(_(e_no_registered_server_named_str), name);
 	return -1;
     }
     else if (loosename != NULL)
@@ -458,7 +456,7 @@ serverSendToVim(
     vim_free(property);
     if (res < 0)
     {
-	emsg(_("E248: Failed to send command to the destination program"));
+	emsg(_(e_failed_to_send_command_to_destination_program));
 	return -1;
     }
 
@@ -558,19 +556,16 @@ ServerWait(
 
 #define UI_MSEC_DELAY 53
 #define SEND_MSEC_POLL 500
-#ifndef HAVE_SELECT
+#ifdef HAVE_SELECT
+    fd_set	    fds;
+
+    FD_ZERO(&fds);
+    FD_SET(ConnectionNumber(dpy), &fds);
+#else
     struct pollfd   fds;
 
     fds.fd = ConnectionNumber(dpy);
     fds.events = POLLIN;
-#else
-    fd_set	    fds;
-    struct timeval  tv;
-
-    tv.tv_sec = 0;
-    tv.tv_usec =  SEND_MSEC_POLL * 1000;
-    FD_ZERO(&fds);
-    FD_SET(ConnectionNumber(dpy), &fds);
 #endif
 
     time(&start);
@@ -595,11 +590,17 @@ ServerWait(
 	// Just look out for the answer without calling back into Vim
 	if (localLoop)
 	{
-#ifndef HAVE_SELECT
-	    if (poll(&fds, 1, SEND_MSEC_POLL) < 0)
+#ifdef HAVE_SELECT
+	    struct timeval  tv;
+
+	    // Set the time every call, select() may change it to the remaining
+	    // time.
+	    tv.tv_sec = 0;
+	    tv.tv_usec =  SEND_MSEC_POLL * 1000;
+	    if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0)
 		break;
 #else
-	    if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0)
+	    if (poll(&fds, 1, SEND_MSEC_POLL) < 0)
 		break;
 #endif
 	}
@@ -722,7 +723,7 @@ serverStrToWin(char_u *str)
 
     sscanf((char *)str, "0x%x", &id);
     if (id == None)
-	semsg(_("E573: Invalid server id used: %s"), str);
+	semsg(_(e_invalid_server_id_used_str), str);
 
     return (Window)id;
 }
@@ -1091,7 +1092,7 @@ GetRegProp(
 	    XFree(*regPropp);
 	XDeleteProperty(dpy, RootWindow(dpy, 0), registryProperty);
 	if (domsg)
-	    emsg(_("E251: VIM instance registry property is badly formed.  Deleted!"));
+	    emsg(_(e_vim_instance_registry_property_is_badly_formed_deleted));
 	return FAIL;
     }
     return OK;
@@ -1325,7 +1326,7 @@ server_parse_message(
 			    ga_concat(&reply, res);
 			else
 			{
-			    ga_concat(&reply, (char_u *)_(e_invexprmsg));
+			    ga_concat(&reply, (char_u *)_(e_invalid_expression_received));
 			    ga_append(&reply, 0);
 			    ga_concat(&reply, (char_u *)"-c 1");
 			}

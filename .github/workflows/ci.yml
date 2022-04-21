@@ -1,0 +1,613 @@
+name: GitHub CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# Cancels all previous workflow runs for pull requests that have not completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name for
+  # pull requests or the commit hash for any other events.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    runs-on: ubuntu-18.04
+
+    env:
+      CC: ${{ matrix.compiler }}
+      TEST: test
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      CFLAGS: -Wno-error=deprecated-declarations
+      LOG_DIR: ${{ github.workspace }}/logs
+      TERM: xterm
+      DISPLAY: ':99'
+      DEBIAN_FRONTEND: noninteractive
+
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [tiny, small, normal, huge]
+        compiler: [clang, gcc]
+        extra: [none]
+        include:
+          - features: tiny
+            compiler: clang
+            extra: nogui
+          - features: tiny
+            compiler: gcc
+            extra: nogui
+          - features: normal
+            shadow: ./src/shadow
+          - features: huge
+            coverage: true
+          - features: huge
+            compiler: gcc
+            coverage: true
+            extra: testgui
+            uchar: true
+          - features: huge
+            compiler: clang
+            extra: asan
+          - features: huge
+            compiler: gcc
+            coverage: true
+            extra: unittests
+          - features: normal
+            compiler: gcc
+            extra: vimtags
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install packages
+        run: |
+          PKGS=( \
+            gettext \
+            libgtk2.0-dev \
+            desktop-file-utils \
+            libtool-bin \
+          )
+          if ${{ matrix.features == 'huge' }}; then
+            PKGS+=( \
+              autoconf \
+              lcov \
+              libcanberra-dev \
+              libperl-dev \
+              python-dev \
+              python3-dev \
+              liblua5.3-dev \
+              lua5.3 \
+              ruby-dev \
+              tcl-dev \
+              cscope \
+              libsodium-dev \
+            )
+          fi
+          sudo apt update && sudo apt install -y "${PKGS[@]}"
+
+      - name: Install gcc-11
+        if:  matrix.compiler == 'gcc'
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt install -y gcc-11
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-11
+
+      - name: Install clang-14
+        if: matrix.compiler == 'clang'
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          . /etc/lsb-release
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-14 main"
+          sudo apt install -y clang-14 llvm-14
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
+          sudo update-alternatives --set clang /usr/bin/clang-14
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-14 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-14 100
+
+      - name: Set up environment
+        run: |
+          mkdir -p "${LOG_DIR}"
+          mkdir -p "${HOME}/bin"
+          echo "${HOME}/bin" >> $GITHUB_PATH
+          (
+          echo "LINUX_VERSION=$(uname -r)"
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
+          echo "SND_DUMMY_DIR=${HOME}/snd-dummy"
+          echo "TMPDIR=${{ runner.temp }}"
+
+          case "${{ matrix.features }}" in
+          tiny|small)
+            echo "TEST=testtiny"
+            if ${{ contains(matrix.extra, 'nogui') }}; then
+              echo "CONFOPT=--disable-gui"
+            fi
+            ;;
+          normal)
+            ;;
+          huge)
+            echo "TEST=scripttests test_libvterm"
+            echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            ;;
+          esac
+
+          if ${{ matrix.coverage == true }}; then
+            CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
+            echo "LDFLAGS=--coverage"
+          fi
+          if ${{ matrix.uchar == true }}; then
+            CFLAGS="$CFLAGS -funsigned-char"
+          fi
+          if ${{ contains(matrix.extra, 'testgui') }}; then
+            echo "TEST=-C src testgui"
+          fi
+          if ${{ contains(matrix.extra, 'unittests') }}; then
+            echo "TEST=unittests"
+          fi
+          if ${{ contains(matrix.extra, 'asan') }}; then
+            echo "SANITIZER_CFLAGS=-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
+            echo "ASAN_OPTIONS=print_stacktrace=1 log_path=${LOG_DIR}/asan"
+            echo "UBSAN_OPTIONS=print_stacktrace=1 log_path=${LOG_DIR}/ubsan"
+            echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/src/testdir/lsan-suppress.txt"
+          fi
+          if ${{ contains(matrix.extra, 'vimtags') }}; then
+            echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
+          fi
+          echo "CFLAGS=$CFLAGS"
+          ) >> $GITHUB_ENV
+
+      - name: Set up system
+        run: |
+          if [[ ${CC} = clang ]]; then
+            # Use llvm-cov instead of gcov when compiler is clang.
+            ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
+          fi
+          # Setup lua5.3 manually since its package doesn't provide alternative.
+          # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
+          if [[ ${CONFOPT} =~ luainterp ]]; then
+            sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
+          fi
+          sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
+          sudo usermod -a -G audio "${USER}"
+          sudo bash ci/setup-xvfb.sh
+
+      - name: Cache snd-dummy
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.SND_DUMMY_DIR }}
+          key: linux-${{ env.LINUX_VERSION }}-snd-dummy
+
+      - name: Set up snd-dummy
+        run: |
+          if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
+            bash ci/build-snd-dummy.sh
+          fi
+          cd "${SND_DUMMY_DIR}"
+          sudo insmod soundcore.ko
+          sudo insmod snd.ko
+          sudo insmod snd-pcm.ko
+          sudo insmod snd-dummy.ko
+
+      - name: Check autoconf
+        if: contains(matrix.extra, 'unittests')
+        run: |
+          make -C src autoconf
+
+      - name: Set up shadow dir
+        if: matrix.shadow
+        run: |
+          make -C src shadow
+          echo "SRCDIR=${{ matrix.shadow }}" >> $GITHUB_ENV
+          echo "SHADOWOPT=-C ${{ matrix.shadow }}" >> $GITHUB_ENV
+
+      - name: Configure
+        run: |
+          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
+          # Append various warning flags to CFLAGS.
+          sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
+          sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+          if [[ ${CC} = clang ]]; then
+            # Suppress some warnings produced by clang 12 and later.
+            sed -i -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          fi
+
+      - name: Build
+        if: (!contains(matrix.extra, 'unittests'))
+        run: |
+          make ${SHADOWOPT} -j${NPROC}
+
+      - name: Check version
+        if: (!contains(matrix.extra, 'unittests'))
+        run: |
+          "${SRCDIR}"/vim --version
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+
+      - name: Test
+        timeout-minutes: 20
+        run: |
+          do_test() { sg audio "sg $(id -gn) '$*'"; }
+          do_test make ${SHADOWOPT} ${TEST}
+
+      # - name: Coveralls
+      #   if: matrix.coverage && github.event_name != 'pull_request'
+      #   env:
+      #     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      #     COVERALLS_PARALLEL: true
+      #     TRAVIS_JOB_ID: ${{ github.run_id }}
+      #   run: |
+      #     sudo apt-get install -y python3-setuptools python3-wheel
+      #     sudo -H pip3 install pip -U
+      #     # needed for https support for coveralls building cffi only works with gcc, not with clang
+      #     CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
+      #     ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
+
+      - name: Generate gcov files
+        if: matrix.coverage
+        run: |
+          cd "${SRCDIR}"
+          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+
+      - name: Codecov
+        if: matrix.coverage
+        uses: codecov/codecov-action@v3
+        with:
+          flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
+
+      - name: ASan logs
+        if: contains(matrix.extra, 'asan') && !cancelled()
+        run: |
+          for f in $(grep -lR '#[[:digit:]]* *0x[[:xdigit:]]*' "${LOG_DIR}"); do
+            asan_symbolize -l "$f"
+            false # in order to fail a job
+          done
+
+  # coveralls:
+  #   runs-on: ubuntu-18.04
+  #
+  #   needs: linux
+  #   if: always() && github.event_name != 'pull_request'
+  #
+  #   steps:
+  #     - name: Parallel finished
+  #       env:
+  #         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+  #       run: |
+  #         curl -k "https://coveralls.io/webhook?repo_token=${COVERALLS_REPO_TOKEN}" -d "payload[build_num]=${GITHUB_RUN_ID}&payload[status]=done"
+
+  macos:
+    runs-on: macos-latest
+
+    env:
+      CC: clang
+      TEST: test
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      TERM: xterm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [tiny, normal, huge]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install packages
+        if: matrix.features == 'huge'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          brew install lua
+          echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
+
+      - name: Set up environment
+        run: |
+          (
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
+          case "${{ matrix.features }}" in
+          tiny)
+            echo "TEST=testtiny"
+            echo "CONFOPT=--disable-gui"
+            ;;
+          normal)
+            ;;
+          huge)
+            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            ;;
+          esac
+          ) >> $GITHUB_ENV
+
+      - name: Configure
+        run: |
+          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
+          # Append various warning flags to CFLAGS.
+          # BSD sed needs backup extension specified.
+          sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
+          # On macOS, the entity of gcc is clang.
+          sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
+          # Suppress some warnings produced by clang 12 and later.
+          if clang --version | grep -qs 'Apple clang version \(1[3-9]\|[2-9]\)\.'; then
+            sed -i.bak -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          fi
+
+      - name: Build
+        env:
+          LC_ALL: C
+        run: |
+          make -j${NPROC}
+
+      - name: Check version
+        run: |
+          "${SRCDIR}"/vim --version
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+
+      - name: Test
+        timeout-minutes: 20
+        run: |
+          make ${TEST}
+
+  windows:
+    runs-on: windows-2019
+
+    env:
+      # Interfaces
+      # Lua
+      LUA_VER: 54
+      LUA_VER_DOT: '5.4'
+      LUA_RELEASE: 5.4.2
+      LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
+      LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
+      LUA_DIR: D:\Lua
+      # Python 2
+      PYTHON_VER: 27
+      PYTHON_VER_DOT: '2.7'
+      # Python 3
+      PYTHON3_VER: 310
+      PYTHON3_VER_DOT: '3.10'
+      # Other dependencies
+      # winpty
+      WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      # Escape sequences
+      COL_RED: "\x1b[31m"
+      COL_GREEN: "\x1b[32m"
+      COL_YELLOW: "\x1b[33m"
+      COL_RESET: "\x1b[m"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [msvc, mingw]
+        arch: [x64, x86]
+        features: [HUGE, NORMAL]
+        include:
+          - arch: x64
+            vcarch: amd64
+            warch: x64
+            bits: 64
+            msystem: MINGW64
+            cygreg: registry
+            pyreg: ""
+          - arch: x86
+            vcarch: x86
+            warch: ia32
+            bits: 32
+            msystem: MINGW32
+            cygreg: registry32
+            pyreg: "-32"
+          - toolchain: mingw
+            arch: x64
+            features: HUGE
+            coverage: yes
+        exclude:
+          - toolchain: msvc
+            arch: x64
+            features: NORMAL
+          - toolchain: mingw
+            arch: x86
+            features: NORMAL
+
+    steps:
+      - name: Initialize
+        id: init
+        shell: bash
+        run: |
+          git config --global core.autocrlf input
+          echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
+          python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
+          python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
+          echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
+          echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
+
+      - uses: msys2/setup-msys2@v2
+        if: matrix.toolchain == 'mingw'
+        with:
+          msystem: ${{ matrix.msystem }}
+          release: false
+
+      - uses: actions/checkout@v2
+
+      - name: Create a list of download URLs
+        shell: cmd
+        run: |
+          type NUL > urls.txt
+          echo %LUA_RELEASE%>> urls.txt
+          echo %WINPTY_URL%>> urls.txt
+
+      - name: Cache downloaded files
+        uses: actions/cache@v2
+        with:
+          path: downloads
+          key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
+
+      - name: Download dependencies
+        shell: cmd
+        run: |
+          path C:\Program Files\7-Zip;%path%
+          if not exist downloads mkdir downloads
+
+          echo %COL_GREEN%Download Lua%COL_RESET%
+          call :downloadfile %LUA${{ matrix.bits }}_URL% downloads\lua.zip
+          7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
+
+          echo %COL_GREEN%Download winpty%COL_RESET%
+          call :downloadfile %WINPTY_URL% downloads\winpty.zip
+          7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
+          copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty.dll        src\winpty${{ matrix.bits }}.dll
+          copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty-agent.exe  src\
+
+          goto :eof
+
+          :downloadfile
+          :: call :downloadfile <URL> <localfile>
+          if not exist %2 (
+            curl -f -L %1 -o %2
+          )
+          if ERRORLEVEL 1 (
+            rem Retry once.
+            curl -f -L %1 -o %2 || exit 1
+          )
+          goto :eof
+
+      - name: Copy src directory to src2
+        shell: cmd
+        run: xcopy src src2\ /E > nul
+
+      - name: Build (MSVC)
+        if: matrix.toolchain == 'msvc'
+        shell: cmd
+        run: |
+          call "%VCVARSALL%" ${{ matrix.vcarch }}
+          cd src
+          if "${{ matrix.features }}"=="HUGE" (
+            nmake -nologo -f Make_mvc.mak ^
+              FEATURES=${{ matrix.features }} ^
+              GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
+              DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
+              DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
+              DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
+          ) else (
+            nmake -nologo -f Make_mvc.mak ^
+              FEATURES=${{ matrix.features }} ^
+              GUI=yes IME=yes ICONV=yes VIMDLL=yes
+          )
+          if not exist vim${{ matrix.bits }}.dll (
+            echo %COL_RED%Build failure.%COL_RESET%
+            exit 1
+          )
+
+      - name: Build (MinGW)
+        if: matrix.toolchain == 'mingw'
+        shell: msys2 {0}
+        run: |
+          cd src
+          if [ "${{ matrix.features }}" = "HUGE" ]; then
+            mingw32-make -f Make_ming.mak -j2 \
+              FEATURES=${{ matrix.features }} \
+              GUI=yes IME=yes ICONV=yes VIMDLL=yes \
+              DYNAMIC_LUA=yes LUA=${LUA_DIR} \
+              DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
+              DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
+              STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
+          else
+            mingw32-make -f Make_ming.mak -j2 \
+              FEATURES=${{ matrix.features }} \
+              GUI=yes IME=yes ICONV=yes VIMDLL=yes \
+              STATIC_STDCPLUS=yes
+          fi
+
+      - name: Check version
+        shell: cmd
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          src\vim --version || exit 1
+          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+
+      #- name: Prepare Artifact
+      #  shell: cmd
+      #  run: |
+      #    mkdir artifacts
+      #    copy src\*vim.exe artifacts
+      #    copy src\vim*.dll artifacts
+      #
+      #- name: Upload Artifact
+      #  uses: actions/upload-artifact@v1
+      #  with:
+      #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
+      #    path: ./artifacts
+
+      - name: Copy gcov data files to src2
+        if: matrix.coverage
+        shell: msys2 {0}
+        run: find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
+
+      - name: Test and show the result of testing gVim
+        shell: cmd
+        timeout-minutes: 20
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          call "%VCVARSALL%" ${{ matrix.vcarch }}
+
+          echo %COL_GREEN%Start testing Vim in background.%COL_RESET%
+          start cmd /c "cd src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+
+          echo %COL_GREEN%Test gVim:%COL_RESET%
+          cd src\testdir
+          nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
+
+      - name: Show the result of testing Vim
+        shell: cmd
+        timeout-minutes: 20
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          call "%VCVARSALL%" ${{ matrix.vcarch }}
+
+          echo %COL_GREEN%Wait for Vim tests to finish.%COL_RESET%
+          cd src2\testdir
+          :: Wait about 10 minutes.
+          for /L %%i in (1,1,60) do (
+            if exist done.txt goto exitloop
+            timeout 10 > NUL 2>&1
+            if ERRORLEVEL 1 ping -n 11 localhost > NUL
+          )
+          set timeout=1
+          :exitloop
+
+          echo %COL_GREEN%The result of testing Vim:%COL_RESET%
+          cd src2\testdir
+          if exist messages type messages
+          nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
+
+          if "%timeout%"=="1" (
+            echo %COL_RED%Timed out.%COL_RESET%
+            exit 1
+          )
+
+      - name: Generate gcov files
+        if: matrix.coverage
+        shell: msys2 {0}
+        run: |
+          cd src
+          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+          cd ../src2
+          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+
+      - name: Codecov (gVim)
+        if: matrix.coverage
+        uses: codecov/codecov-action@v2
+        with:
+          directory: src
+          flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
+
+      - name: Codecov (Vim)
+        if: matrix.coverage
+        uses: codecov/codecov-action@v2
+        with:
+          directory: src2
+          flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}

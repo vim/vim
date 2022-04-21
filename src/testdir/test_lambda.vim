@@ -1,6 +1,7 @@
 " Test for lambda and closure
 
 source check.vim
+import './vim9.vim' as v9
 
 func Test_lambda_feature()
   call assert_equal(1, has('lambda'))
@@ -54,6 +55,23 @@ func Test_lambda_with_timer()
   call assert_true(s:n > m)
 endfunc
 
+func Test_lambda_vim9cmd_linebreak()
+  CheckFeature timers
+
+  let g:test_is_flaky = 1
+  let lines =<< trim END
+      vim9cmd call timer_start(10, (x) => {
+          # comment
+          g:result = 'done'
+         })
+  END
+  call v9.CheckScriptSuccess(lines)
+  " sleep longer on a retry
+  exe 'sleep ' .. [20, 100, 500, 500, 500][g:run_nr] .. 'm'
+  call assert_equal('done', g:result)
+  unlet g:result
+endfunc
+
 func Test_lambda_with_partial()
   let l:Cb = function({... -> ['zero', a:1, a:2, a:3]}, ['one', 'two'])
   call assert_equal(['zero', 'one', 'two', 'three'], l:Cb('three'))
@@ -64,6 +82,12 @@ function Test_lambda_fails()
   call assert_fails('echo {a, a -> a + a}(1, 2)', 'E853:')
   call assert_fails('echo {a, b -> a + b)}(1, 2)', 'E451:')
   echo assert_fails('echo 10->{a -> a + 2}', 'E107:')
+
+  call assert_fails('eval 0->(', "E110: Missing ')'")
+  call assert_fails('eval 0->(3)()', "E1275:")
+  call assert_fails('eval 0->([3])()', "E1275:")
+  call assert_fails('eval 0->({"a": 3})()', "E1275:")
+  call assert_fails('eval 0->(xxx)()', "E121:")
 endfunc
 
 func Test_not_lamda()
@@ -247,6 +271,11 @@ func Test_closure_counter()
   call assert_equal(2, l:F())
   call assert_equal(3, l:F())
   call assert_equal(4, l:F())
+
+  call assert_match("^\n   function <SNR>\\d\\+_bar() closure"
+  \              .. "\n1        let x += 1"
+  \              .. "\n2        return x"
+  \              .. "\n   endfunction$", execute('func s:bar'))
 endfunc
 
 func Test_closure_unlet()
@@ -325,6 +354,7 @@ func Test_closure_error()
     let caught_932 = 1
   endtry
   call assert_equal(1, caught_932)
+  call delete('Xscript')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

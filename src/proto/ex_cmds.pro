@@ -27,6 +27,7 @@ void ex_change(exarg_T *eap);
 void ex_z(exarg_T *eap);
 int check_restricted(void);
 int check_secure(void);
+char_u *skip_substitute(char_u *start, int delimiter);
 void ex_substitute(exarg_T *eap);
 int do_sub_msg(int count_only);
 void ex_global(exarg_T *eap);
@@ -38,5 +39,6 @@ int prepare_tagpreview(int undo_sync, int use_previewpopup, use_popup_T use_popu
 void ex_smile(exarg_T *eap);
 void ex_drop(exarg_T *eap);
 char_u *skip_vimgrep_pat(char_u *p, char_u **s, int *flags);
+char_u *skip_vimgrep_pat_ext(char_u *p, char_u **s, int *flags, char_u **nulp, int *cp);
 void ex_oldfiles(exarg_T *eap);
 /* vim: set ft=c : */

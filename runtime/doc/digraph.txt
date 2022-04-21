@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 8.2.  Last change: 2020 Jul 16
+*digraph.txt*   For Vim version 8.2.  Last change: 2021 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -38,6 +38,9 @@ An alternative is using the 'keymap' option.
 <			Avoid defining a digraph with '_' (underscore) as the
 			first character, it has a special meaning in the
 			future.
+			NOTE: This command cannot add a digraph that starts
+			with a white space.  If you want to add such digraph,
+			you can use |digraph_set()| instead.
 
 Vim is normally compiled with the |+digraphs| feature.  If the feature is
 disabled, the ":digraph" command will display an error message.
@@ -348,8 +351,8 @@ $	DO	0x24	 36	DOLLAR SIGN
 þ	th	0xfe	254	LATIN SMALL LETTER THORN (Icelandic)
 ÿ	y:	0xff	255	LATIN SMALL LETTER Y WITH DIAERESIS
 
-If your Vim is compiled with |multibyte| support and you are using a multibyte
-'encoding', Vim provides this enhanced set of additional digraphs:
+If you are using a |multibyte| 'encoding', Vim provides this enhanced set of
+additional digraphs:
 
 							*digraph-table-mbyte*
 char  digraph	hex	dec	official name ~

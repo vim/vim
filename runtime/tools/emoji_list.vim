@@ -9,9 +9,9 @@ endif
 
 " Use a compiled Vim9 function for speed
 def DoIt()
-  let lnum = 1
+  var lnum = 1
   for c in range(0x100, 0x1ffff)
-    let cs = nr2char(c)
+    var cs = nr2char(c)
     if charclass(cs) == 3
       setline(lnum, '|' .. cs .. '| ' .. strwidth(cs))
       lnum += 1

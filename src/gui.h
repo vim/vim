@@ -11,11 +11,6 @@
 # include <Xm/Xm.h>
 #endif
 
-#ifdef FEAT_GUI_ATHENA
-# include <X11/Intrinsic.h>
-# include <X11/StringDefs.h>
-#endif
-
 #ifdef FEAT_GUI_GTK
 # ifdef VMS // undef MIN and MAX because Intrinsic.h redefines them anyway
 #  ifdef MAX
@@ -24,7 +19,8 @@
 #  ifdef MIN
 #   undef MIN
 #  endif
-# endif
+#  include "gui_gtk_vms.h"
+# endif // VMS
 # include <X11/Intrinsic.h>
 # include <gtk/gtk.h>
 #endif
@@ -35,7 +31,7 @@
 
 // Needed when generating prototypes, since FEAT_GUI is always defined then.
 #if defined(FEAT_XCLIPBOARD) && !defined(FEAT_GUI_MOTIF) \
-	&& !defined(FEAT_GUI_ATHENA) && !defined(FEAT_GUI_GTK)
+	&& !defined(FEAT_GUI_GTK)
 # include <X11/Intrinsic.h>
 #endif
 
@@ -99,7 +95,7 @@
 #endif
 
 // Indices for arrays of scrollbars
-#define SBAR_NONE	    -1
+#define SBAR_NONE	    (-1)
 #define SBAR_LEFT	    0
 #define SBAR_RIGHT	    1
 #define SBAR_BOTTOM	    2
@@ -159,9 +155,6 @@ typedef struct GuiScrollbar
     win_T	*wp;		// Scrollbar's window, NULL for bottom
     int		type;		// one of SBAR_{LEFT,RIGHT,BOTTOM}
     long	value;		// Represents top line number visible
-#ifdef FEAT_GUI_ATHENA
-    int		pixval;		// pixel count of value
-#endif
     long	size;		// Size of scrollbar thumb
     long	max;		// Number of lines in buffer
 
@@ -197,10 +190,10 @@ typedef struct GuiScrollbar
 typedef long	    guicolor_T;	// handle for a GUI color; for X11 this should
 				// be "Pixel", but that's an unsigned and we
 				// need a signed value
-#define INVALCOLOR (guicolor_T)-11111	// number for invalid color; on 32 bit
+#define INVALCOLOR ((guicolor_T)-11111)	// number for invalid color; on 32 bit
 				   // displays there is a tiny chance this is an
 				   // actual color
-#define CTERMCOLOR (guicolor_T)-11110	// only used for cterm.bg_rgb and
+#define CTERMCOLOR ((guicolor_T)-11110)	// only used for cterm.bg_rgb and
 					// cterm.fg_rgb: use cterm color
 
 #ifdef FEAT_GUI_GTK
@@ -276,9 +269,6 @@ typedef struct Gui
     int		menu_width;	    // Width of the menu bar
 # endif
     char	menu_is_active;	    // TRUE if menu is present
-# ifdef FEAT_GUI_ATHENA
-    char	menu_height_fixed;  // TRUE if menu height fixed
-# endif
 #endif
 
     scrollbar_T bottom_sbar;	    // Bottom scrollbar
@@ -332,12 +322,6 @@ typedef struct Gui
     char	*rsrc_scroll_bg_name;	// Color of scrollbar background
     guicolor_T	scroll_bg_pixel;	// Same in Pixel format
 
-# ifdef FEAT_GUI_MOTIF
-    guicolor_T	menu_def_fg_pixel;  // Default menu foreground
-    guicolor_T	menu_def_bg_pixel;  // Default menu background
-    guicolor_T	scroll_def_fg_pixel;  // Default scrollbar foreground
-    guicolor_T	scroll_def_bg_pixel;  // Default scrollbar background
-# endif
     Display	*dpy;		    // X display
     Window	wid;		    // Window id of text area
     int		visibility;	    // Is shell partially/fully obscured?
@@ -392,7 +376,6 @@ typedef struct Gui
 # endif
 # ifdef USE_GTK3
     cairo_surface_t *surface;       // drawarea surface
-    gboolean	     by_signal;     // cause of draw operation
 # else
     GdkGC	*text_gc;	    // cached GC for normal text
 # endif
@@ -408,6 +391,9 @@ typedef struct Gui
     char_u	*browse_fname;	    // file name from filedlg
 
     guint32	event_time;
+
+    char_u ligatures_map[256];	    // ascii map for characters 0-255, value is
+				    // 1 if in 'guiligatures'
 #endif	// FEAT_GUI_GTK
 
 #if defined(FEAT_GUI_TABLINE) \
@@ -421,7 +407,7 @@ typedef struct Gui
 #endif
 
 #if defined(FEAT_TOOLBAR) \
-	&& (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU))
+	&& (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
     int		toolbar_height;	    // height of the toolbar
 #endif
 

@@ -211,9 +211,9 @@ typedef struct salitem_S
 
 // Values for SP_*ERROR are negative, positive values are used by
 // read_cnt_string().
-#define	SP_TRUNCERROR	-1	// spell file truncated error
-#define	SP_FORMERROR	-2	// format error in spell file
-#define SP_OTHERERROR	-3	// other error while reading spell file
+#define	SP_TRUNCERROR	(-1)	// spell file truncated error
+#define	SP_FORMERROR	(-2)	// format error in spell file
+#define SP_OTHERERROR	(-3)	// other error while reading spell file
 
 /*
  * Structure used in "b_langp", filled from 'spelllang'.
@@ -294,9 +294,6 @@ SPELL_EXTERN slang_T	*first_lang SPELL_INIT(= NULL);
 
 // file used for "zG" and "zW"
 SPELL_EXTERN char_u	*int_wordlist SPELL_INIT(= NULL);
-
-
-SPELL_EXTERN char e_format[] SPELL_INIT(= N_("E759: Format error in spell file"));
 
 SPELL_EXTERN spelltab_T   spelltab;
 SPELL_EXTERN int	  did_set_spelltab;

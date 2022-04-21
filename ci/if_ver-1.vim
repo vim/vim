@@ -6,7 +6,7 @@ if 1
   echo "*** Interface versions ***\n"
 
   echo 'Lua:'
-  PrintVer lua print(_VERSION)
+  PrintVer lua print(vim.lua_version, jit and "(LuaJIT)" or "")
 
   echo 'MzScheme:'
   PrintVer mzscheme (display (version))

@@ -4,6 +4,10 @@ source check.vim
 source shared.vim
 source term_util.vim
 
+func Reset_arglist()
+  args a | %argd
+endfunc
+
 func Test_argidx()
   args a b c
   last
@@ -30,6 +34,8 @@ func Test_argidx()
 endfunc
 
 func Test_argadd()
+  call Reset_arglist()
+
   %argdelete
   argadd a b c
   call assert_equal(0, argidx())
@@ -82,6 +88,10 @@ func Test_argadd()
   new
   arga
   call assert_equal(0, len(argv()))
+
+  if has('unix')
+    call assert_fails('argadd `Xdoes_not_exist`', 'E479:')
+  endif
 endfunc
 
 func Test_argadd_empty_curbuf()
@@ -120,8 +130,7 @@ endfunc
 " Test for [count]argument and [count]argdelete commands
 " Ported from the test_argument_count.in test script
 func Test_argument()
-  " Clean the argument list
-  arga a | %argd
+  call Reset_arglist()
 
   let save_hidden = &hidden
   set hidden
@@ -213,8 +222,7 @@ func Test_argument()
 endfunc
 
 func Test_list_arguments()
-  " Clean the argument list
-  arga a | %argd
+  call Reset_arglist()
 
   " four args half the screen width makes two lines with two columns
   let aarg = repeat('a', &columns / 2 - 4)
@@ -252,8 +260,7 @@ endfunc
 " Test for 0argadd and 0argedit
 " Ported from the test_argument_0count.in test script
 func Test_zero_argadd()
-  " Clean the argument list
-  arga a | %argd
+  call Reset_arglist()
 
   arga a b c d
   2argu
@@ -278,10 +285,6 @@ func Test_zero_argadd()
   argedit file\ with\ spaces another file
   call assert_equal(['edited', 'a', 'file with spaces', 'another', 'file', 'third', 'b', 'c', 'd'], argv())
   call assert_equal('file with spaces', expand('%'))
-endfunc
-
-func Reset_arglist()
-  args a | %argd
 endfunc
 
 " Test for argc()
@@ -413,6 +416,35 @@ func Test_argedit()
   bw! x
 endfunc
 
+" Test for the :argdedupe command
+func Test_argdedupe()
+  call Reset_arglist()
+  argdedupe
+  call assert_equal([], argv())
+  args a a a aa b b a b aa
+  argdedupe
+  call assert_equal(['a', 'aa', 'b'], argv())
+  args a b c
+  argdedupe
+  call assert_equal(['a', 'b', 'c'], argv())
+  args a
+  argdedupe
+  call assert_equal(['a'], argv())
+  args a A b B
+  argdedupe
+  if has('fname_case')
+    call assert_equal(['a', 'A', 'b', 'B'], argv())
+  else
+    call assert_equal(['a', 'b'], argv())
+  endif
+  args a b a c a b
+  last
+  argdedupe
+  next
+  call assert_equal('c', expand('%:t'))
+  %argd
+endfunc
+
 " Test for the :argdelete command
 func Test_argdelete()
   call Reset_arglist()
@@ -425,6 +457,8 @@ func Test_argdelete()
   call assert_equal(['b'], argv())
   call assert_fails('argdelete', 'E610:')
   call assert_fails('1,100argdelete', 'E16:')
+  call assert_fails('argdel /\)/', 'E55:')
+  call assert_fails('1argdel 1', 'E474:')
 
   call Reset_arglist()
   args a b c d
@@ -432,6 +466,8 @@ func Test_argdelete()
   argdel
   call Assert_argc(['a', 'c', 'd'])
   %argdel
+
+  call assert_fails('argdel does_not_exist', 'E480:')
 endfunc
 
 func Test_argdelete_completion()
@@ -477,15 +513,14 @@ func Test_arglist_autocmd()
   new
   " redefine arglist; go to Xxx1
   next! Xxx1 Xxx2 Xxx3
-  " open window for all args
-  all
+  " open window for all args; Reading Xxx2 will try to change the arglist and
+  " that will fail
+  call assert_fails("all", "E1156:")
   call assert_equal('test file Xxx1', getline(1))
   wincmd w
-  wincmd w
-  call assert_equal('test file Xxx1', getline(1))
-  " should now be in Xxx2
-  rewind
   call assert_equal('test file Xxx2', getline(1))
+  wincmd w
+  call assert_equal('test file Xxx3', getline(1))
 
   autocmd! BufReadPost Xxx2
   enew! | only
@@ -519,9 +554,10 @@ func Test_argdo()
   bwipe Xa.c Xb.c Xc.c
 endfunc
 
-" Test for quiting Vim with unedited files in the argument list
+" Test for quitting Vim with unedited files in the argument list
 func Test_quit_with_arglist()
   CheckRunVimInTerminal
+
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_sendkeys(buf, ":set nomore\n")
   call term_sendkeys(buf, ":args a b c\n")
@@ -552,6 +588,31 @@ func Test_quit_with_arglist()
   call delete('.a.swp')
   call delete('.b.swp')
   call delete('.c.swp')
+endfunc
+
+" Test for ":all" not working when in the cmdline window
+func Test_all_not_allowed_from_cmdwin()
+  CheckFeature cmdwin
+
+  au BufEnter * all
+  next x
+  " Use try/catch here, somehow assert_fails() doesn't work on MS-Windows
+  " console.
+  let caught = 'no'
+  try
+    exe ":norm! 7q?apat\<CR>"
+  catch /E11:/
+    let caught = 'yes'
+  endtry
+  call assert_equal('yes', caught)
+  au! BufEnter
+endfunc
+
+func Test_clear_arglist_in_all()
+  n 0 00 000 0000 00000 000000
+  au WinNew 0 n 0
+  call assert_fails("all", "E1156")
+  au! *
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

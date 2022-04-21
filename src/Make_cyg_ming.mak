@@ -32,27 +32,31 @@
 # Set to TINY to make minimal version (few features).
 FEATURES=HUGE
 
-# set to yes for a debug build
+# Set to yes for a debug build.
 DEBUG=no
 
-# set to yes to create a mapfile
+# Set to yes to create a mapfile.
 #MAP=yes
 
-# set to yes to measure code coverage
+# Set to yes to measure code coverage.
 COVERAGE=no
 
-# set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
+# Better encryption support using libsodium.
+# Set to yes or specify the path to the libsodium directory to enable it.
+#SODIUM=yes
+
+# Set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization.
 OPTIMIZE=MAXSPEED
 
-# set to yes to make gvim, no for vim
+# Set to yes to make gvim, no for vim.
 GUI=yes
 
-# set to yes to enable the DLL support (EXPERIMENTAL).
+# Set to yes to enable the DLL support (EXPERIMENTAL).
 # Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
 # "GUI" should be also set to "yes".
 #VIMDLL=yes
 
-# set to no if you do not want to use DirectWrite (DirectX)
+# Set to no if you do not want to use DirectWrite (DirectX).
 # MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
 DIRECTX=yes
 
@@ -220,7 +224,6 @@ WINDRES := $(CROSS_COMPILE)windres
 else
 WINDRES := windres
 endif
-WINDRES_CC = $(CC)
 
 # Get the default ARCH.
 ifndef ARCH
@@ -464,6 +467,8 @@ RUBY_PLATFORM = i586-mswin32
 RUBY_PLATFORM = i386-mingw32
   else ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw32),)
 RUBY_PLATFORM = x64-mingw32
+  else ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw-ucrt),)
+RUBY_PLATFORM = x64-mingw-ucrt
   else
 RUBY_PLATFORM = i386-mswin32
   endif
@@ -477,7 +482,9 @@ RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 # Base name of msvcrXX.dll which is used by ruby's dll.
 RUBY_MSVCRT_NAME = msvcrt
    endif
-   ifeq ($(ARCH),x86-64)
+   ifeq ($(RUBY_PLATFORM),x64-mingw-ucrt)
+RUBY_INSTALL_NAME = x64-ucrt-ruby$(RUBY_API_VER)
+   else ifeq ($(ARCH),x86-64)
 RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
    else
 RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
@@ -514,7 +521,8 @@ endif
 
 CFLAGS = -I. -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
 CXXFLAGS = -std=gnu++11
-WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
+# This used to have --preprocessor, but it's no longer supported
+WINDRES_FLAGS =
 EXTRA_LIBS =
 
 ifdef GETTEXT
@@ -660,6 +668,24 @@ DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
  endif
 endif
 
+ifdef SODIUM
+DEFINES += -DHAVE_SODIUM
+ ifeq ($(SODIUM),yes)
+SODIUM_DLL = libsodium-23.dll
+ else
+SODIUM_DLL = libsodium.dll
+CFLAGS += -I $(SODIUM)/include
+ endif
+ ifndef DYNAMIC_SODIUM
+DYNAMIC_SODIUM=yes
+ endif
+ ifeq ($(DYNAMIC_SODIUM),yes)
+DEFINES += -DDYNAMIC_SODIUM -DDYNAMIC_SODIUM_DLL=\"$(SODIUM_DLL)\"
+ else
+SODIUMLIB = -lsodium
+ endif
+endif
+
 # Only allow XPM for a GUI build.
 ifeq (yes, $(GUI))
 
@@ -712,6 +738,7 @@ LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -l
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
+	$(OUTDIR)/alloc.o \
 	$(OUTDIR)/arabic.o \
 	$(OUTDIR)/arglist.o \
 	$(OUTDIR)/autocmd.o \
@@ -749,6 +776,7 @@ OBJ = \
 	$(OUTDIR)/fileio.o \
 	$(OUTDIR)/filepath.o \
 	$(OUTDIR)/findfile.o \
+	$(OUTDIR)/float.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/gui_xim.o \
@@ -797,6 +825,7 @@ OBJ = \
 	$(OUTDIR)/spell.o \
 	$(OUTDIR)/spellfile.o \
 	$(OUTDIR)/spellsuggest.o \
+	$(OUTDIR)/strings.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
@@ -811,8 +840,11 @@ OBJ = \
 	$(OUTDIR)/usercmd.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
+	$(OUTDIR)/vim9cmds.o \
 	$(OUTDIR)/vim9compile.o \
 	$(OUTDIR)/vim9execute.o \
+	$(OUTDIR)/vim9expr.o \
+	$(OUTDIR)/vim9instr.o \
 	$(OUTDIR)/vim9script.o \
 	$(OUTDIR)/vim9type.o \
 	$(OUTDIR)/viminfo.o \
@@ -820,11 +852,11 @@ OBJ = \
 	$(OUTDIR)/window.o
 
 ifeq ($(VIMDLL),yes)
-OBJ += $(OUTDIR)/os_w32dll.o $(OUTDIR)/vimrcd.o
-EXEOBJC = $(OUTDIR)/os_w32exec.o $(OUTDIR)/vimrcc.o
-EXEOBJG = $(OUTDIR)/os_w32exeg.o $(OUTDIR)/vimrcg.o
+OBJ += $(OUTDIR)/os_w32dll.o $(OUTDIR)/vimresd.o
+EXEOBJC = $(OUTDIR)/os_w32exec.o $(OUTDIR)/vimresc.o
+EXEOBJG = $(OUTDIR)/os_w32exeg.o $(OUTDIR)/vimresg.o
 else
-OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimrc.o
+OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimres.o
 endif
 
 ifdef PERL
@@ -1055,18 +1087,24 @@ install.exe: dosinst.c dosinst.h version.h
 uninstall.exe: uninstall.c dosinst.h version.h
 	$(CC) $(CFLAGS) -o uninstall.exe uninstall.c $(LIB) -lole32
 
-ifeq ($(VIMDLL),yes)
-$(TARGET): $(OUTDIR) $(OBJ)
-	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -lgdi32 $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+$(OBJ): | $(OUTDIR)
 
-$(GVIMEXE): $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
+$(EXEOBJG): | $(OUTDIR)
+
+$(EXEOBJC): | $(OUTDIR)
+
+ifeq ($(VIMDLL),yes)
+$(TARGET): $(OBJ)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -lgdi32 $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB) $(SODIUMLIB)
+
+$(GVIMEXE): $(EXEOBJG) $(VIMDLLBASE).dll
 	$(CC) -L. $(EXELFLAGS) -mwindows -o $@ $(EXEOBJG) -l$(VIMDLLBASE)
 
-$(VIMEXE): $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
+$(VIMEXE): $(EXEOBJC) $(VIMDLLBASE).dll
 	$(CC) -L. $(EXELFLAGS) -o $@ $(EXEOBJC) -l$(VIMDLLBASE)
 else
-$(TARGET): $(OUTDIR) $(OBJ)
-	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+$(TARGET): $(OBJ)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB) $(SODIUMLIB)
 endif
 
 upx: exes
@@ -1115,12 +1153,22 @@ endif
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim --clean -X --not-a-term -u create_cmdidxs.vim
+	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
+
+# Run vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.  If this fails because you don't have Vim yet:
+#   - change nv_cmds[] in nv_cmds.h to add the new normal/visual mode command.
+#   - run "make nvcmdidxs" to generate nv_cmdidxs.h
+nvcmdidxs: nv_cmds.h
+	$(CC) $(CFLAGS) -o create_nvcmdidxs.exe create_nvcmdidxs.c $(LIB)
+	vim --clean -N -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	-$(DEL) create_nvcmdidxs.exe
 
 ###########################################################################
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
-	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
+	spell.h structs.h termdefs.h beval.h $(NBDEBUG_INCL)
 GUI_INCL = gui.h
 ifeq ($(DIRECTX),yes)
 GUI_INCL += gui_dwrite.h
@@ -1139,21 +1187,21 @@ $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 ifeq ($(VIMDLL),yes)
-$(OUTDIR)/vimrcc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h vim.ico
+$(OUTDIR)/vimresc.o:	vim.rc vim.manifest version.h gui_w32_rc.h vim.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -UFEAT_GUI_MSWIN \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 
-$(OUTDIR)/vimrcg.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h vim.ico
+$(OUTDIR)/vimresg.o:	vim.rc vim.manifest version.h gui_w32_rc.h vim.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 
-$(OUTDIR)/vimrcd.o:	vim.rc version.h gui_w32_rc.h \
+$(OUTDIR)/vimresd.o:	vim.rc version.h gui_w32_rc.h \
 			tools.bmp tearoff.bmp vim.ico vim_error.ico \
 			vim_alert.ico vim_info.ico vim_quest.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -DRCDLL -DVIMDLLBASE=\\\"$(VIMDLLBASE)\\\" \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 else
-$(OUTDIR)/vimrc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vimres.o:	vim.rc vim.manifest version.h gui_w32_rc.h \
 			tools.bmp tearoff.bmp vim.ico vim_error.ico \
 			vim_alert.ico vim_info.ico vim_quest.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
@@ -1179,17 +1227,25 @@ $(OUTDIR)/hardcopy.o: hardcopy.c $(INCL) version.h
 
 $(OUTDIR)/misc1.o: misc1.c $(INCL) version.h
 
+$(OUTDIR)/normal.o: normal.c $(INCL) nv_cmdidxs.h nv_cmds.h
+
 $(OUTDIR)/netbeans.o: netbeans.c $(INCL) version.h
 
 $(OUTDIR)/version.o: version.c $(INCL) version.h
 
-$(OUTDIR)/vim9compile.o: vim9compile.c $(INCL) version.h
+$(OUTDIR)/vim9cmds.o: vim9cmds.c $(INCL) vim9.h
 
-$(OUTDIR)/vim9execute.o: vim9execute.c $(INCL) version.h
+$(OUTDIR)/vim9compile.o: vim9compile.c $(INCL) vim9.h
 
-$(OUTDIR)/vim9script.o: vim9script.c $(INCL) version.h
+$(OUTDIR)/vim9execute.o: vim9execute.c $(INCL) vim9.h
 
-$(OUTDIR)/vim9type.o: vim9type.c $(INCL) version.h
+$(OUTDIR)/vim9expr.o: vim9expr.c $(INCL) vim9.h
+
+$(OUTDIR)/vim9instr.o: vim9instr.c $(INCL) vim9.h
+
+$(OUTDIR)/vim9script.o: vim9script.c $(INCL) vim9.h
+
+$(OUTDIR)/vim9type.o: vim9type.c $(INCL) vim9.h
 
 $(OUTDIR)/viminfo.o: viminfo.c $(INCL) version.h
 
@@ -1208,7 +1264,7 @@ $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
 $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL) version.h
 	$(CC) -c $(CFLAGS) gui_w32.c -o $@
 
-$(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
+$(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL)
 	$(CC) -c $(CFLAGS) if_cscope.c -o $@
 
 $(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)
@@ -1280,7 +1336,7 @@ $(OUTDIR)/%.o : xdiff/%.c $(XDIFF_DEPS)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 
-$(PATHDEF_SRC): Make_cyg_ming.mak Make_cyg.mak Make_ming.mak
+$(PATHDEF_SRC): Make_cyg_ming.mak Make_cyg.mak Make_ming.mak | $(OUTDIR)
 ifneq (sh.exe, $(SHELL))
 	@echo creating $(PATHDEF_SRC)
 	@echo '/* pathdef.c */' > $(PATHDEF_SRC)

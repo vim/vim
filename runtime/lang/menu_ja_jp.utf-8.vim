@@ -2,12 +2,14 @@
 "
 " Menu Translations:	Japanese (UTF-8)
 " Last Translator:	MURAOKA Taro  <koron.kaoriya@gmail.com>
-" Last Change:		18-Jul-2018.
+" Last Change:		20-Feb-2022.
 "
-" Copyright (C) 2001-2018 MURAOKA Taro <koron.kaoriya@gmail.com>,
+" Copyright (C) 2001-2022 MURAOKA Taro <koron.kaoriya@gmail.com>,
 "			  vim-jp <http://vim-jp.org/>
 "
 " THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
+"
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -23,7 +25,7 @@ scriptencoding utf-8
 menutrans &Help			ヘルプ(&H)
 menutrans &Overview<Tab><F1>	概略(&O)<Tab><F1>
 menutrans &User\ Manual		ユーザーマニュアル(&U)
-menutrans &How-to\ links	&How-toリンク
+menutrans &How-To\ links	&How-toリンク
 menutrans &Credits		クレジット(&C)
 menutrans Co&pying		著作権情報(&P)
 menutrans &Sponsor/Register	スポンサー/登録(&S)
@@ -270,10 +272,9 @@ if has("toolbar")
     tmenu ToolBar.Cut		クリップボードへ切り取り
     tmenu ToolBar.Copy		クリップボードへコピー
     tmenu ToolBar.Paste		クリップボードから貼り付け
-    tmenu ToolBar.Find		検索...
+    tmenu ToolBar.Replace	検索 / 置換...
     tmenu ToolBar.FindNext	次を検索
     tmenu ToolBar.FindPrev	前を検索
-    tmenu ToolBar.Replace	置換...
     if 0	" disabled; These are in the Windows menu
       tmenu ToolBar.New		新規ウィンドウ作成
       tmenu ToolBar.WinSplit	ウィンドウ分割

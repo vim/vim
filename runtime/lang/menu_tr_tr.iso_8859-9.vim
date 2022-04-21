@@ -1,5 +1,6 @@
 " Menu Translations:	Turkish
 " Maintainer:		Emir SARI <bitigchi@me.com>
+" Generated from menu_tr_tr.utf-8.vim, DO NOT EDIT
 
 if exists("did_menu_trans")
    finish
@@ -8,7 +9,7 @@ endif
 let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
-scriptencoding iso-8859-9
+scriptencoding iso8859-9
 
 " Top
 menutrans &File	&Dosya

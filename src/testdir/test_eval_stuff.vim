@@ -65,9 +65,14 @@ func Test_E963()
 endfunc
 
 func Test_for_invalid()
-  call assert_fails("for x in 99", 'E714:')
-  call assert_fails("for x in 'asdf'", 'E714:')
-  call assert_fails("for x in {'a': 9}", 'E714:')
+  call assert_fails("for x in 99", 'E1098:')
+  call assert_fails("for x in function('winnr')", 'E1098:')
+  call assert_fails("for x in {'a': 9}", 'E1098:')
+
+  if 0
+    /1/5/2/s/\n
+  endif
+  redraw
 endfunc
 
 func Test_readfile_binary()
@@ -86,6 +91,13 @@ func Test_readfile_binary()
 
   bwipe!
   call delete('XReadfile_bin')
+endfunc
+
+func Test_readfile_binary_empty()
+  call writefile([], 'Xempty-file')
+  " This used to compare uninitialized memory in Vim <= 8.2.4065
+  call assert_equal([''], readfile('Xempty-file', 'b'))
+  call delete('Xempty-file')
 endfunc
 
 func Test_readfile_bom()
@@ -139,7 +151,7 @@ func Test_string_concatenation()
   if has('float')
     let a = 'A'
     let b = 1.234
-    call assert_fails('echo a .. b', 'E806:')
+    call assert_equal('A1.234', a .. b)
   endif
 endfunc
 
@@ -160,7 +172,7 @@ func Test_string_concat_scriptversion2()
 
   call assert_fails('echo a . b', 'E15:')
   call assert_fails('let a .= b', 'E985:')
-  call assert_fails('let vers = 1.2.3', 'E15:')
+  call assert_fails('let vers = 1.2.3', 'E488:')
 
   if has('float')
     let f = .5
@@ -218,6 +230,7 @@ func Test_vvar_scriptversion4()
   call assert_equal(15, 0o17)
   call assert_equal(15, 0O17)
   call assert_equal(18, 018)
+  call assert_equal(511, 0o777)
   call assert_equal(64, 0b1'00'00'00)
   call assert_equal(1048576, 0x10'00'00)
   call assert_equal(32768, 0o10'00'00)
@@ -233,6 +246,7 @@ func Test_vvar_scriptversion1()
   call assert_equal(15, 0o17)
   call assert_equal(15, 0O17)
   call assert_equal(18, 018)
+  call assert_equal(511, 0o777)
 endfunc
 
 func Test_scriptversion_fail()
@@ -254,10 +268,13 @@ func Test_execute_cmd_with_null()
   endif
 endfunc
 
-func Test_numbersize()
-  " This will fail on systems without 64 bit int support or when not configured
-  " correctly.
+func Test_number_max_min_size()
+  " This will fail on systems without 64 bit number support or when not
+  " configured correctly.
   call assert_equal(64, v:numbersize)
+
+  call assert_true(v:numbermin < -9999999)
+  call assert_true(v:numbermax > 9999999)
 endfunc
 
 func Assert_reg(name, type, value, valuestr, expr, exprstr)
@@ -571,6 +588,11 @@ func Test_curly_assignment()
   unlet s:svar
   unlet s:gvar
   unlet g:gvar
+endfunc
+
+func Test_deep_recursion()
+  " this was running out of stack
+  call assert_fails("exe 'if ' .. repeat('(', 1002)", 'E1169: Expression too recursive: ((')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

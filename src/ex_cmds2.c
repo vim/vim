@@ -86,7 +86,7 @@ check_changed(buf_T *buf, int flags)
 	    && (!(flags & CCGD_AW) || autowrite(buf, forceit) == FAIL))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	if ((p_confirm || cmdmod.confirm) && p_write)
+	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	{
 	    buf_T	*buf2;
 	    int		count = 0;
@@ -96,7 +96,7 @@ check_changed(buf_T *buf, int flags)
 		    if (bufIsChanged(buf2)
 				     && (buf2->b_ffname != NULL
 # ifdef FEAT_BROWSE
-					 || cmdmod.browse
+					 || (cmdmod.cmod_flags & CMOD_BROWSE)
 # endif
 					))
 			++count;
@@ -197,7 +197,7 @@ dialog_changed(
 	    if (bufIsChanged(buf2)
 		    && (buf2->b_ffname != NULL
 #ifdef FEAT_BROWSE
-			|| cmdmod.browse
+			|| (cmdmod.cmod_flags & CMOD_BROWSE)
 #endif
 			)
 		    && !buf2->b_p_ro)
@@ -347,7 +347,7 @@ check_changed_any(
     /*
      * When ":confirm" used, don't give an error message.
      */
-    if (!(p_confirm || cmdmod.confirm))
+    if (!(p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
 #endif
     {
 	// There must be a wait_return for this message, do_buffer()
@@ -363,11 +363,10 @@ check_changed_any(
 	if (
 #ifdef FEAT_TERMINAL
 		term_job_running(buf->b_term)
-		    ? semsg(_("E947: Job still running in buffer \"%s\""),
-								  buf->b_fname)
+		    ? semsg(_(e_job_still_running_in_buffer_str), buf->b_fname)
 		    :
 #endif
-		semsg(_("E162: No write since last change for buffer \"%s\""),
+		semsg(_(e_no_write_since_last_change_for_buffer_str),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname))
 	{
 	    save = no_wait_return;
@@ -413,7 +412,7 @@ check_fname(void)
 {
     if (curbuf->b_ffname == NULL)
     {
-	emsg(_(e_noname));
+	emsg(_(e_no_file_name));
 	return FAIL;
     }
     return OK;
@@ -564,9 +563,11 @@ ex_listdo(exarg_T *eap)
 		    // Clear 'shm' to avoid that the file message overwrites
 		    // any output from the command.
 		    p_shm_save = vim_strsave(p_shm);
-		    set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
+		    set_option_value_give_err((char_u *)"shm",
+							  0L, (char_u *)"", 0);
 		    do_argfile(eap, i);
-		    set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		    set_option_value_give_err((char_u *)"shm",
+							    0L, p_shm_save, 0);
 		    vim_free(p_shm_save);
 		}
 		if (curwin->w_arg_idx != i)
@@ -624,9 +625,9 @@ ex_listdo(exarg_T *eap)
 		// Go to the next buffer.  Clear 'shm' to avoid that the file
 		// message overwrites any output from the command.
 		p_shm_save = vim_strsave(p_shm);
-		set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
+		set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
 		goto_buffer(eap, DOBUF_FIRST, FORWARD, next_fnum);
-		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		set_option_value_give_err((char_u *)"shm", 0L, p_shm_save, 0);
 		vim_free(p_shm_save);
 
 		// If autocommands took us elsewhere, quit here.
@@ -646,9 +647,9 @@ ex_listdo(exarg_T *eap)
 		// Clear 'shm' to avoid that the file message overwrites
 		// any output from the command.
 		p_shm_save = vim_strsave(p_shm);
-		set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
+		set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
 		ex_cnext(eap);
-		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		set_option_value_give_err((char_u *)"shm", 0L, p_shm_save, 0);
 		vim_free(p_shm_save);
 
 		// If jumping to the next quickfix entry fails, quit here
@@ -754,14 +755,14 @@ ex_compiler(exarg_T *eap)
 		if (old_cur_comp != NULL)
 		    old_cur_comp = vim_strsave(old_cur_comp);
 		do_cmdline_cmd((char_u *)
-			      "command -nargs=* CompilerSet setlocal <args>");
+		   "command -nargs=* -keepscript CompilerSet setlocal <args>");
 	    }
 	    do_unlet((char_u *)"g:current_compiler", TRUE);
 	    do_unlet((char_u *)"b:current_compiler", TRUE);
 
 	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
 	    if (source_runtime(buf, DIP_ALL) == FAIL)
-		semsg(_("E666: compiler not supported: %s"), eap->arg);
+		semsg(_(e_compiler_not_supported_str), eap->arg);
 	    vim_free(buf);
 
 	    do_cmdline_cmd((char_u *)":delcommand CompilerSet");

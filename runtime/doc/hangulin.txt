@@ -8,7 +8,7 @@ Vim had built-in support for hangul, the Korean language, for users without
 XIM (X Input Method).  Since it didn't work well and was not maintained it was
 removed in Vim 8.1.2327.
 
-If you want this hangul input mehod you can go back to Vim 8.1.2326 or
+If you want this hangul input method you can go back to Vim 8.1.2326 or
 earlier.  If you think this code is still useful and want to maintain it, make
 a patch to add it back.  However, making it work with UTF-8 encoding would be
 best.

@@ -407,6 +407,9 @@ func Test_menu_info()
         \ shortcut: '', modes: ' ', submenus: ['menu']},
         \ menu_info(']Test'))
   unmenu ]Test
+
+  " Test for getting all the top-level menu names
+  call assert_notequal(menu_info('').submenus, [])
 endfunc
 
 " Test for <special> keyword in a menu with 'cpo' containing '<'
@@ -426,7 +429,7 @@ func Test_menu_special()
   nunmenu Test.Sign
 endfunc
 
-" Test for "icon=filname" in a toolbar
+" Test for "icon=filename" in a toolbar
 func Test_menu_icon()
   CheckFeature toolbar
   nmenu icon=myicon.xpm Toolbar.Foo  :echo "Foo"<CR>

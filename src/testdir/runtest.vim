@@ -13,6 +13,9 @@
 " For csh:
 "     setenv TEST_FILTER Test_channel
 "
+" If the environment variable $TEST_SKIP_PAT is set then test functions
+" matching this pattern will be skipped.  It's the opposite of $TEST_FILTER.
+"
 " While working on a test you can make $TEST_NO_RETRY non-empty to not retry:
 "     export TEST_NO_RETRY=yes
 "
@@ -74,6 +77,9 @@ if has('reltime')
   let s:start_time = reltime()
 endif
 
+" Always use forward slashes.
+set shellslash
+
 " Common with all tests on all systems.
 source setup.vim
 
@@ -90,7 +96,12 @@ set encoding=utf-8
 " REDIR_TEST_TO_NULL has a very permissive SwapExists autocommand which is for
 " the test_name.vim file itself. Replace it here with a more restrictive one,
 " so we still catch mistakes.
-let s:test_script_fname = expand('%')
+if has("win32")
+  " replace any '/' directory separators by '\\'
+  let s:test_script_fname = substitute(expand('%'), '/', '\\', 'g')
+else
+  let s:test_script_fname = expand('%')
+endif
 au! SwapExists * call HandleSwapExists()
 func HandleSwapExists()
   if exists('g:ignoreSwapExists')
@@ -120,9 +131,6 @@ if has('gui_running') && exists('did_install_default_menus')
   source $VIMRUNTIME/menu.vim
 endif
 
-" Always use forward slashes.
-set shellslash
-
 let s:srcdir = expand('%:p:h:h')
 
 if has('win32')
@@ -134,6 +142,13 @@ if has('win32')
 else
   let s:t_bold = &t_md
   let s:t_normal = &t_me
+endif
+
+if has('mac')
+  " In macOS, when starting a shell in a terminal, a bash deprecation warning
+  " message is displayed. This breaks the terminal test. Disable the warning
+  " message.
+  let $BASH_SILENCE_DEPRECATION_WARNING = 1
 endif
 
 " Prepare for calling test_garbagecollect_now().
@@ -155,7 +170,7 @@ function GetAllocId(name)
 endfunc
 
 func RunTheTest(test)
-  echo 'Executing ' . a:test
+  echoconsole 'Executing ' . a:test
   if has('reltime')
     let func_start = reltime()
   endif
@@ -189,7 +204,12 @@ func RunTheTest(test)
   if a:test =~ 'Test_nocatch_'
     " Function handles errors itself.  This avoids skipping commands after the
     " error.
+    let g:skipped_reason = ''
     exe 'call ' . a:test
+    if g:skipped_reason != ''
+      call add(s:messages, '    Skipped')
+      call add(s:skipped, 'SKIPPED ' . a:test . ': ' . g:skipped_reason)
+    endif
   else
     try
       au VimLeavePre * call EarlyExit(g:testfunc)
@@ -227,7 +247,12 @@ func RunTheTest(test)
 
   " Close any extra tab pages and windows and make the current one not modified.
   while tabpagenr('$') > 1
+    let winid = win_getid()
     quit!
+    if winid == win_getid()
+      echoerr 'Could not quit window'
+      break
+    endif
   endwhile
 
   while 1
@@ -279,6 +304,7 @@ endfunc
 func EarlyExit(test)
   " It's OK for the test we use to test the quit detection.
   if a:test != 'Test_zz_quit_detected()'
+    call add(v:errors, v:errmsg)
     call add(v:errors, 'Test caused Vim to exit: ' . a:test)
   endif
 
@@ -312,13 +338,17 @@ func FinishTesting()
 
   if s:done == 0
     if s:filtered > 0
-      let message = "NO tests match $TEST_FILTER: '" .. $TEST_FILTER .. "'"
+      if $TEST_FILTER != ''
+        let message = "NO tests match $TEST_FILTER: '" .. $TEST_FILTER .. "'"
+      else
+        let message = "ALL tests match $TEST_SKIP_PAT: '" .. $TEST_SKIP_PAT .. "'"
+      endif
     else
       let message = 'NO tests executed'
     endif
   else
     if s:filtered > 0
-      call add(s:messages, "Filtered " .. s:filtered .. " tests with $TEST_FILTER")
+      call add(s:messages, "Filtered " .. s:filtered .. " tests with $TEST_FILTER and $TEST_SKIP_PAT")
     endif
     let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
   endif
@@ -380,41 +410,8 @@ else
   endtry
 endif
 
-" Names of flaky tests.
-let s:flaky_tests = [
-      \ 'Test_BufWrite_lockmarks()',
-      \ 'Test_autocmd_SafeState()',
-      \ 'Test_bufunload_all()',
-      \ 'Test_client_server()',
-      \ 'Test_close_and_exit_cb()',
-      \ 'Test_close_output_buffer()',
-      \ 'Test_collapse_buffers()',
-      \ 'Test_cwd()',
-      \ 'Test_diff_screen()',
-      \ 'Test_exit_callback_interval()',
-      \ 'Test_map_timeout_with_timer_interrupt()',
-      \ 'Test_out_cb()',
-      \ 'Test_pipe_through_sort_all()',
-      \ 'Test_pipe_through_sort_some()',
-      \ 'Test_popup_and_window_resize()',
-      \ 'Test_quoteplus()',
-      \ 'Test_quotestar()',
-      \ 'Test_reltime()',
-      \ 'Test_state()',
-      \ 'Test_terminal_composing_unicode()',
-      \ 'Test_terminal_does_not_truncate_last_newlines()',
-      \ 'Test_terminal_no_cmd()',
-      \ 'Test_terminal_noblock()',
-      \ 'Test_terminal_redir_file()',
-      \ 'Test_termwinscroll()',
-      \ 'Test_timer_oneshot()',
-      \ 'Test_timer_paused()',
-      \ 'Test_timer_repeat_many()',
-      \ 'Test_timer_repeat_three()',
-      \ 'Test_timer_stop_all_in_callback()',
-      \ 'Test_timer_stop_in_callback()',
-      \ 'Test_timer_with_partial_callback()',
-      \ ]
+" Delete the .res file, it may change behavior for completion
+call delete(fnamemodify(g:testname, ':r') .. '.res')
 
 " Locate Test_ functions and execute them.
 redir @q
@@ -444,6 +441,12 @@ endif
 
 " Execute the tests in alphabetical order.
 for g:testfunc in sort(s:tests)
+  if $TEST_SKIP_PAT != '' && g:testfunc =~ $TEST_SKIP_PAT
+    call add(s:messages, g:testfunc .. ' matches $TEST_SKIP_PAT')
+    let s:filtered += 1
+    continue
+  endif
+
   " Silence, please!
   set belloff=all
   let prev_error = ''
@@ -461,8 +464,7 @@ for g:testfunc in sort(s:tests)
   " - it fails five times (with a different message)
   if len(v:errors) > 0
         \ && $TEST_NO_RETRY == ''
-        \ && (index(s:flaky_tests, g:testfunc) >= 0
-        \      || g:test_is_flaky)
+        \ && g:test_is_flaky
     while 1
       call add(s:messages, 'Found errors in ' . g:testfunc . ':')
       call extend(s:messages, v:errors)

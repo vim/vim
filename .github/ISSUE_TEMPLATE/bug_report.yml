@@ -1,0 +1,57 @@
+---
+name: Bug report
+description: Create a report to help us improve Vim.
+labels: [bug]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting issues of Vim!
+
+        If you want to report a security issue, instead of reporting it here
+        you can alternatively disclose it on
+        [huntr.dev](https://huntr.dev/bounties/disclose/?utm_campaign=vim%2Fvim&utm_medium=social&utm_source=github&target=https%3A%2F%2Fgithub.com%2Fvim%2Fvim).
+        They have rewards in the form of money, swag and CVEs.
+        
+        To make it easier for us to help you please enter detailed information below.
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. 
+        2. 
+        3. 
+        4. 
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behaviour
+      placeholder: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version of Vim
+      description: >
+        Including patch level, use ":version" to see it [e.g. 8.2.1234]
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Environment
+      description: >
+        OS [e.g. Ubuntu 21.10], terminal [e.g. GNOME Terminal 3.38.1], value of $TERM, shell [e.g. bash 5.1.8]; anything that might matter
+      placeholder: |
+        Operating system:
+        Terminal:
+        Value of $TERM:
+        Shell:
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs and stack traces
+      placeholder: Insert log or other text here (if necessary)
+      render: shell

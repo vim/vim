@@ -1,5 +1,6 @@
 /* testing.c */
 void f_assert_beeps(typval_T *argvars, typval_T *rettv);
+void f_assert_nobeep(typval_T *argvars, typval_T *rettv);
 void f_assert_equal(typval_T *argvars, typval_T *rettv);
 void f_assert_equalfile(typval_T *argvars, typval_T *rettv);
 void f_assert_notequal(typval_T *argvars, typval_T *rettv);
@@ -31,7 +32,7 @@ void f_test_null_partial(typval_T *argvars, typval_T *rettv);
 void f_test_null_string(typval_T *argvars, typval_T *rettv);
 void f_test_unknown(typval_T *argvars, typval_T *rettv);
 void f_test_void(typval_T *argvars, typval_T *rettv);
-void f_test_scrollbar(typval_T *argvars, typval_T *rettv);
 void f_test_setmouse(typval_T *argvars, typval_T *rettv);
+void f_test_gui_event(typval_T *argvars, typval_T *rettv);
 void f_test_settime(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -44,12 +44,6 @@
 #include <shlobj.h>
 #include <wchar.h>
 
-/* Accommodate old versions of VC that don't have a modern Platform SDK */
-#if (defined(_MSC_VER) && _MSC_VER < 1300) || !defined(MAXULONG_PTR)
-# undef  UINT_PTR
-# define UINT_PTR UINT
-#endif
-
 #define ResultFromShort(i)  ResultFromScode(MAKE_SCODE(SEVERITY_SUCCESS, 0, (USHORT)(i)))
 
 // Initialize GUIDs (should be done only and at-least once per DLL/EXE)
@@ -129,18 +123,12 @@ protected:
 	    int iShowCmd,
 	    int idHWnd);
 
-    STDMETHODIMP InvokeGvim(HWND hParent,
-	    LPCSTR pszWorkingDir,
-	    LPCSTR pszCmd,
-	    LPCSTR pszParam,
-	    int iShowCmd);
-
     STDMETHODIMP InvokeSingleGvim(HWND hParent,
-	    LPCSTR pszWorkingDir,
+	    LPCWSTR workingDir,
 	    LPCSTR pszCmd,
 	    LPCSTR pszParam,
 	    int iShowCmd,
-	    int useDiff);
+	    int gvimExtraOptions);
 
 public:
     int		 m_cntOfHWnd;

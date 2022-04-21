@@ -14,6 +14,8 @@ void hl_set_font_name(char_u *font_name);
 void hl_set_bg_color_name(char_u *name);
 void hl_set_fg_color_name(char_u *name);
 guicolor_T color_name2handle(char_u *name);
+guicolor_T gui_get_color_cmn(char_u *name);
+guicolor_T gui_get_rgb_color_cmn(int r, int g, int b);
 int get_cterm_attr_idx(int attr, int fg, int bg);
 int get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg);
 int get_gui_attr_idx(int attr, guicolor_T fg, guicolor_T bg);
@@ -43,4 +45,6 @@ void set_context_in_highlight_cmd(expand_T *xp, char_u *arg);
 char_u *get_highlight_name(expand_T *xp, int idx);
 char_u *get_highlight_name_ext(expand_T *xp, int idx, int skip_cleared);
 void free_highlight_fonts(void);
+void f_hlget(typval_T *argvars, typval_T *rettv);
+void f_hlset(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

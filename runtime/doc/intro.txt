@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
+*intro.txt*     For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -213,7 +213,7 @@ Vim would never have become what it is now, without the help of these people!
 	Daniel Elstner		GTK+ 2 port
 	Eric Fischer		Mac port, 'cindent', and other improvements
 	Benji Fisher		Answering lots of user questions
-	Bill Foster		Athena GUI port
+	Bill Foster		Athena GUI port (later removed)
 	Google			Lets me work on Vim one day a week
 	Loic Grenie		xvim (ideas for multi windows version)
 	Sven Guckes		Vim promoter and previous WWW page maintainer
@@ -421,7 +421,6 @@ notation	meaning		    equivalent	decimal value(s)	~
 <Tab>		tab			CTRL-I	  9	*tab* *Tab*
 							*linefeed*
 <NL>		linefeed		CTRL-J	 10 (used for <Nul>)
-<FF>		formfeed		CTRL-L	 12	*formfeed*
 <CR>		carriage return		CTRL-M	 13	*carriage-return*
 <Return>	same as <CR>				*<Return>*
 <Enter>		same as <CR>				*<Enter>*
@@ -434,7 +433,7 @@ notation	meaning		    equivalent	decimal value(s)	~
 <CSI>		command sequence intro  ALT-Esc 155	*<CSI>*
 <xCSI>		CSI when typed in the GUI		*<xCSI>*
 
-<EOL>		end-of-line (can be <CR>, <LF> or <CR><LF>,
+<EOL>		end-of-line (can be <CR>, <NL> or <CR><NL>,
 		depends on system and 'fileformat')	*<EOL>*
 
 <Up>		cursor-up			*cursor-up* *cursor_up*
@@ -678,8 +677,8 @@ Normal mode from any other mode.  This can be used to make sure Vim is in
 Normal mode, without causing a beep like <Esc> would.  However, this does not
 work in Ex mode.  When used after a command that takes an argument, such as
 |f| or |m|, the timeout set with 'ttimeoutlen' applies.
-When focus is in a terminal window, CTRL-\ CTRL-N goes to Normal mode for only
-one command, see |t_CTRL-\_CTRL-N|.
+When focus is in a terminal window, CTRL-\ CTRL-N goes to Normal mode until an
+edit command is entered, see |t_CTRL-\_CTRL-N|.
 
 	*CTRL-\_CTRL-G* *i_CTRL-\_CTRL-G* *c_CTRL-\_CTRL-G* *v_CTRL-\_CTRL-G*
 The command CTRL-\ CTRL-G or <C-\><C-G> can be used to go to Insert mode when
@@ -702,7 +701,8 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 			Use the ":vi" command |:visual| to exit "Ex" mode.
 			Note: In older versions of Vim "Q" formatted text,
 			that is now done with |gq|.  But if you use the
-			|vimrc_example.vim| script "Q" works like "gq".
+			|vimrc_example.vim| script or |defaults.vim|, "Q"
+			works like "gq".  Except for Select mode.
 
 					*gQ*
 gQ			Switch to "Ex" mode like with "Q", but really behave

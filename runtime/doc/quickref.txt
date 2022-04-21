@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2020 Aug 15
+*quickref.txt*  For Vim version 8.2.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -605,6 +605,7 @@ Short explanation of each option:		*option-list*
 'ambiwidth'	  'ambw'    what to do with Unicode chars of ambiguous width
 'antialias'	  'anti'    Mac OS X: use smooth, antialiased fonts
 'autochdir'	  'acd'     change directory to the file in the current window
+'autoshelldir'	  'asd'     change directory to the shell's current directory
 'arabic'	  'arab'    for Arabic as a default second language
 'arabicshape'	  'arshape' do shaping for Arabic characters
 'autoindent'	  'ai'	    take indent for new line from previous line
@@ -634,6 +635,7 @@ Short explanation of each option:		*option-list*
 'buflisted'	  'bl'	    whether the buffer shows up in the buffer list
 'buftype'	  'bt'	    special type of buffer
 'casemap'	  'cmp'     specifies how case of letters is changed
+'cdhome'	  'cdh'	    change directory to the home directory by ":cd"
 'cdpath'	  'cd'	    list of directories searched with ":cd"
 'cedit'			    key used to open the command-line window
 'charconvert'	  'ccv'     expression for character encoding conversion
@@ -641,6 +643,7 @@ Short explanation of each option:		*option-list*
 'cinkeys'	  'cink'    keys that trigger indent when 'cindent' is set
 'cinoptions'	  'cino'    how to do indenting when 'cindent' is set
 'cinwords'	  'cinw'    words where 'si' and 'cin' add an indent
+'cinscopedecls'	  'cinsd'   words that are recognized by 'cino-g' 
 'clipboard'	  'cb'	    use the clipboard as the unnamed register
 'cmdheight'	  'ch'	    number of lines to use for the command-line
 'cmdwinheight'	  'cwh'     height of the command-line window
@@ -731,6 +734,7 @@ Short explanation of each option:		*option-list*
 'guifontset'	  'gfs'     GUI: Names of multibyte fonts to be used
 'guifontwide'	  'gfw'     list of font names for double-wide characters
 'guiheadroom'	  'ghr'     GUI: pixels room for window decorations
+'guiligatures'	  'gli'	    GTK GUI: ASCII characters that can form shapes
 'guioptions'	  'go'	    GUI: Which components and options are used
 'guipty'		    GUI: try to use a pseudo-tty for ":!" commands
 'guitablabel'	  'gtl'     GUI: custom label for a tab page
@@ -811,6 +815,7 @@ Short explanation of each option:		*option-list*
 'mousefocus'	  'mousef'  keyboard focus follows the mouse
 'mousehide'	  'mh'	    hide mouse pointer while typing
 'mousemodel'	  'mousem'  changes meaning of mouse buttons
+'mousemoveevent'  'mousemev'  report mouse moves with <MouseMove>
 'mouseshape'	  'mouses'  shape of the mouse pointer in different modes
 'mousetime'	  'mouset'  max time between mouse double-click
 'mzquantum'	  'mzq'     the interval between polls for MzScheme threads
@@ -947,6 +952,7 @@ Short explanation of each option:		*option-list*
 'textmode'	  'tx'	    obsolete, use 'fileformat'
 'textwidth'	  'tw'	    maximum width of text that is being inserted
 'thesaurus'	  'tsr'     list of thesaurus files for keyword completion
+'thesaurusfunc'	  'tsrfu'   function to be used for thesaurus completion
 'tildeop'	  'top'     tilde command "~" behaves like an operator
 'timeout'	  'to'	    time out on mappings and key codes
 'timeoutlen'	  'tm'	    time out time in milliseconds
@@ -1006,6 +1012,7 @@ Short explanation of each option:		*option-list*
 'writeany'	  'wa'	    write to file with no need for "!" override
 'writebackup'	  'wb'	    make a backup before overwriting a file
 'writedelay'	  'wd'	    delay this many msec for each char (for debug)
+'xtermcodes'		    request terminal codes from an xterm
 ------------------------------------------------------------------------------
 *Q_ur*		Undo/Redo commands
 

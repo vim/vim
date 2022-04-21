@@ -81,12 +81,15 @@
 // Python 3 does not support CObjects, always use Capsules
 #define PY_USE_CAPSULE
 
+#define ERRORS_DECODE_ARG CODEC_ERROR_HANDLER
+#define ERRORS_ENCODE_ARG ERRORS_DECODE_ARG
+
 #define PyInt Py_ssize_t
 #ifndef PyString_Check
 # define PyString_Check(obj) PyUnicode_Check(obj)
 #endif
 #define PyString_FromString(repr) \
-    PyUnicode_Decode(repr, STRLEN(repr), ENC_OPT, NULL)
+    PyUnicode_Decode(repr, STRLEN(repr), ENC_OPT, ERRORS_DECODE_ARG)
 #define PyString_FromFormat PyUnicode_FromFormat
 #ifndef PyInt_Check
 # define PyInt_Check(obj) PyLong_Check(obj)
@@ -109,12 +112,18 @@ typedef PyObject PySliceObject_T;
 typedef PySliceObject PySliceObject_T;
 #endif
 
+#ifndef MSWIN
+# define HINSTANCE void *
+#endif
+#if defined(DYNAMIC_PYTHON3) || defined(MSWIN)
+static HINSTANCE hinstPy3 = 0; // Instance of python.dll
+#endif
+
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
 # ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
-#  define HINSTANCE void*
 #  if defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)
 #   define load_dll(n) dlopen((n), RTLD_LAZY)
 #  else
@@ -122,10 +131,12 @@ typedef PySliceObject PySliceObject_T;
 #  endif
 #  define close_dll dlclose
 #  define symbol_from_dll dlsym
+#  define load_dll_error dlerror
 # else
 #  define load_dll vimLoadLib
 #  define close_dll FreeLibrary
 #  define symbol_from_dll GetProcAddress
+#  define load_dll_error GetWin32Error
 # endif
 /*
  * Wrapper defines
@@ -180,6 +191,9 @@ typedef PySliceObject PySliceObject_T;
 # define PyMapping_Check py3_PyMapping_Check
 # ifndef PyMapping_Keys
 #  define PyMapping_Keys py3_PyMapping_Keys
+# endif
+# if PY_VERSION_HEX >= 0x030a00b2
+#  define PyIter_Check py3_PyIter_Check
 # endif
 # define PyIter_Next py3_PyIter_Next
 # define PyObject_GetIter py3_PyObject_GetIter
@@ -355,6 +369,9 @@ static PyObject* (*py3_PyDict_GetItemString)(PyObject *, const char *);
 static int (*py3_PyDict_Next)(PyObject *, Py_ssize_t *, PyObject **, PyObject **);
 static PyObject* (*py3_PyLong_FromLong)(long);
 static PyObject* (*py3_PyDict_New)(void);
+# if PY_VERSION_HEX >= 0x030a00b2
+static int (*py3_PyIter_Check)(PyObject *o);
+# endif
 static PyObject* (*py3_PyIter_Next)(PyObject *);
 static PyObject* (*py3_PyObject_GetIter)(PyObject *);
 static PyObject* (*py3_PyObject_Repr)(PyObject *);
@@ -448,8 +465,6 @@ static void(*py3_PyObject_GC_Del)(void *);
 static void(*py3_PyObject_GC_UnTrack)(void *);
 static int (*py3_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
 
-static HINSTANCE hinstPy3 = 0; // Instance of python.dll
-
 // Imported exception objects
 static PyObject *p3imp_PyExc_AttributeError;
 static PyObject *p3imp_PyExc_IndexError;
@@ -535,6 +550,9 @@ static struct
     {"PyDict_Next", (PYTHON_PROC*)&py3_PyDict_Next},
     {"PyMapping_Check", (PYTHON_PROC*)&py3_PyMapping_Check},
     {"PyMapping_Keys", (PYTHON_PROC*)&py3_PyMapping_Keys},
+# if PY_VERSION_HEX >= 0x030a00b2
+    {"PyIter_Check", (PYTHON_PROC*)&py3_PyIter_Check},
+# endif
     {"PyIter_Next", (PYTHON_PROC*)&py3_PyIter_Next},
     {"PyObject_GetIter", (PYTHON_PROC*)&py3_PyObject_GetIter},
     {"PyObject_Repr", (PYTHON_PROC*)&py3_PyObject_Repr},
@@ -668,6 +686,74 @@ py3_PyType_HasFeature(PyTypeObject *type, unsigned long feature)
 #  define PyType_HasFeature(t,f) py3_PyType_HasFeature(t,f)
 # endif
 
+# if PY_VERSION_HEX >= 0x030a00b2
+    static inline int
+py3__PyObject_TypeCheck(PyObject *ob, PyTypeObject *type)
+{
+    return Py_IS_TYPE(ob, type) || PyType_IsSubtype(Py_TYPE(ob), type);
+}
+#  define _PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
+# endif
+
+# ifdef MSWIN
+/*
+ * Look up the library "libname" using the InstallPath registry key.
+ * Return NULL when failed.  Return an allocated string when successful.
+ */
+    static char *
+py3_get_system_libname(const char *libname)
+{
+    const char	*cp = libname;
+    char	subkey[128];
+    HKEY	hKey;
+    char	installpath[MAXPATHL];
+    LONG	len = sizeof(installpath);
+    LSTATUS	rc;
+    size_t	sysliblen;
+    char	*syslibname;
+
+    while (*cp != '\0')
+    {
+	if (*cp == ':' || *cp == '\\' || *cp == '/')
+	{
+	    // Bail out if "libname" contains path separator, assume it is
+	    // an absolute path.
+	    return NULL;
+	}
+	++cp;
+    }
+    vim_snprintf(subkey, sizeof(subkey),
+#  ifdef _WIN64
+		 "Software\\Python\\PythonCore\\%d.%d\\InstallPath",
+#  else
+		 "Software\\Python\\PythonCore\\%d.%d-32\\InstallPath",
+#  endif
+		 PY_MAJOR_VERSION, PY_MINOR_VERSION);
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, subkey, 0, KEY_QUERY_VALUE, &hKey)
+							      != ERROR_SUCCESS)
+	return NULL;
+    rc = RegQueryValueA(hKey, NULL, installpath, &len);
+    RegCloseKey(hKey);
+    if (ERROR_SUCCESS != rc)
+	return NULL;
+    cp = installpath + len;
+    // Just in case registry value contains null terminators.
+    while (cp > installpath && *(cp-1) == '\0')
+	--cp;
+    // Remove trailing path separators.
+    while (cp > installpath && (*(cp-1) == '\\' || *(cp-1) == '/'))
+	--cp;
+    // Ignore if InstallPath is effectively empty.
+    if (cp <= installpath)
+	return NULL;
+    sysliblen = (cp - installpath) + 1 + STRLEN(libname) + 1;
+    syslibname = alloc(sysliblen);
+    vim_snprintf(syslibname, sysliblen, "%.*s\\%s",
+				(int)(cp - installpath), installpath, libname);
+    return syslibname;
+}
+# endif
+
 /*
  * Load library and get all pointers.
  * Parameter 'libname' provides name of DLL.
@@ -684,12 +770,12 @@ py3_runtime_link_init(char *libname, int verbose)
 
 # if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON)
     // Can't have Python and Python3 loaded at the same time.
-    // It cause a crash, because RTLD_GLOBAL is needed for
+    // It causes a crash, because RTLD_GLOBAL is needed for
     // standard C extension libraries of one or both python versions.
     if (python_loaded())
     {
 	if (verbose)
-	    emsg(_("E837: This Vim cannot execute :py3 after using :python"));
+	    emsg(_(e_this_vim_cannot_execute_py3_after_using_python));
 	return FAIL;
     }
 # endif
@@ -698,10 +784,24 @@ py3_runtime_link_init(char *libname, int verbose)
 	return OK;
     hinstPy3 = load_dll(libname);
 
+# ifdef MSWIN
+    if (!hinstPy3)
+    {
+	// Attempt to use the path from InstallPath as stored in the registry.
+	char *syslibname = py3_get_system_libname(libname);
+
+	if (syslibname != NULL)
+	{
+	    hinstPy3 = load_dll(syslibname);
+	    vim_free(syslibname);
+	}
+    }
+# endif
+
     if (!hinstPy3)
     {
 	if (verbose)
-	    semsg(_(e_loadlib), libname);
+	    semsg(_(e_could_not_load_library_str_str), libname, load_dll_error());
 	return FAIL;
     }
 
@@ -713,7 +813,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPy3);
 	    hinstPy3 = 0;
 	    if (verbose)
-		semsg(_(e_loadfunc), py3_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str), py3_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -748,7 +848,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPy3);
 	hinstPy3 = 0;
 	if (verbose)
-	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_could_not_load_library_function_str), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -908,8 +1008,27 @@ python3_loaded(void)
 static wchar_t *py_home_buf = NULL;
 
 #if defined(MSWIN) && (PY_VERSION_HEX >= 0x030500f0)
-// Python 3.5 or later will abort inside Py_Initialize() when stdin is
-// redirected.  Reconnect stdin to CONIN$.
+/*
+ * Return TRUE if stdin is readable from Python 3.
+ */
+    static BOOL
+is_stdin_readable(void)
+{
+    DWORD	    mode, eventnum;
+    struct _stat    st;
+    int		    fd = fileno(stdin);
+    HANDLE	    hstdin = (HANDLE)_get_osfhandle(fd);
+
+    // Check if stdin is connected to the console.
+    if (GetConsoleMode(hstdin, &mode))
+	// Check if it is opened as input.
+	return GetNumberOfConsoleInputEvents(hstdin, &eventnum);
+
+    return _fstat(fd, &st) == 0;
+}
+
+// Python 3.5 or later will abort inside Py_Initialize() when stdin has
+// been closed (i.e. executed by "vim -").  Reconnect stdin to CONIN$.
 // Note that the python DLL is linked to its own stdio DLL which can be
 // differ from Vim's stdio.
     static void
@@ -917,14 +1036,9 @@ reset_stdin(void)
 {
     FILE *(*py__acrt_iob_func)(unsigned) = NULL;
     FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
-    HINSTANCE hinst;
+    HINSTANCE hinst = hinstPy3;
 
-# ifdef DYNAMIC_PYTHON3
-    hinst = hinstPy3;
-# else
-    hinst = GetModuleHandle(PYTHON3_DLL);
-# endif
-    if (hinst == NULL)
+    if (hinst == NULL || is_stdin_readable())
 	return;
 
     // Get "freopen" and "stdin" which are used in the python DLL.
@@ -933,19 +1047,70 @@ reset_stdin(void)
     if (py__acrt_iob_func)
     {
 	HINSTANCE hpystdiodll = find_imported_module_by_funcname(hinst,
-							"__acrt_iob_func");
+							    "__acrt_iob_func");
 	if (hpystdiodll)
-	    pyfreopen = (void*)GetProcAddress(hpystdiodll, "freopen");
+	    pyfreopen = (void *)GetProcAddress(hpystdiodll, "freopen");
     }
 
     // Reconnect stdin to CONIN$.
-    if (pyfreopen)
+    if (pyfreopen != NULL)
 	pyfreopen("CONIN$", "r", py__acrt_iob_func(0));
     else
 	freopen("CONIN$", "r", stdin);
 }
 #else
 # define reset_stdin()
+#endif
+
+// Python 3.2 or later will abort inside Py_Initialize() when mandatory
+// modules cannot be loaded (e.g. 'pythonthreehome' is wrongly set.).
+// Install a hook to python dll's exit() and recover from it.
+#if defined(MSWIN) && (PY_VERSION_HEX >= 0x030200f0)
+# define HOOK_EXIT
+# include <setjmp.h>
+
+static jmp_buf exit_hook_jump_buf;
+static void *orig_exit = NULL;
+
+/*
+ * Function that replaces exit() while calling Py_Initialize().
+ */
+    static void
+hooked_exit(int ret)
+{
+    // Recover from exit.
+    longjmp(exit_hook_jump_buf, 1);
+}
+
+/*
+ * Install a hook to python dll's exit().
+ */
+    static void
+hook_py_exit(void)
+{
+    HINSTANCE hinst = hinstPy3;
+
+    if (hinst == NULL || orig_exit != NULL)
+	return;
+
+    orig_exit = hook_dll_import_func(hinst, "exit", (void *)hooked_exit);
+}
+
+/*
+ * Remove the hook installed by hook_py_exit().
+ */
+    static void
+restore_py_exit(void)
+{
+    HINSTANCE hinst = hinstPy3;
+
+    if (hinst == NULL)
+	return;
+
+    if (orig_exit != NULL)
+	hook_dll_import_func(hinst, "exit", orig_exit);
+    orig_exit = NULL;
+}
 #endif
 
     static int
@@ -956,7 +1121,7 @@ Python3_Init(void)
 #ifdef DYNAMIC_PYTHON3
 	if (!python3_enabled(TRUE))
 	{
-	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_(e_sorry_this_command_is_disabled_python_library_could_not_be_found));
 	    goto fail;
 	}
 #endif
@@ -980,14 +1145,36 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
+#if !defined(DYNAMIC_PYTHON3) && defined(MSWIN)
+	hinstPy3 = GetModuleHandle(PYTHON3_DLL);
+#endif
 	reset_stdin();
-	Py_Initialize();
 
-	// Initialise threads, and below save the state using
-	// PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
-	// specific state (such as the system trace hook), will be lost
-	// between invocations of Python code.
+#ifdef HOOK_EXIT
+	// Catch exit() called in Py_Initialize().
+	hook_py_exit();
+	if (setjmp(exit_hook_jump_buf) == 0)
+#endif
+	{
+	    Py_Initialize();
+#ifdef HOOK_EXIT
+	    restore_py_exit();
+#endif
+	}
+#ifdef HOOK_EXIT
+	else
+	{
+	    // exit() was called in Py_Initialize().
+	    restore_py_exit();
+	    emsg(_(e_critical_error_in_python3_initialization_check_your_installation));
+	    goto fail;
+	}
+#endif
+
+#if PY_VERSION_HEX < 0x03090000
+	// Initialise threads.  This is deprecated since Python 3.9.
 	PyEval_InitThreads();
+#endif
 #ifdef DYNAMIC_PYTHON3
 	get_py3_exceptions();
 #endif
@@ -1005,12 +1192,14 @@ Python3_Init(void)
 	// sys.path.
 	PyRun_SimpleString("import vim; import sys; sys.path = list(filter(lambda x: not x.endswith('must>not&exist'), sys.path))");
 
-	// lock is created and acquired in PyEval_InitThreads() and thread
-	// state is created in Py_Initialize()
-	// there _PyGILState_NoteThreadState() also sets gilcounter to 1
-	// (python must have threads enabled!)
-	// so the following does both: unlock GIL and save thread state in TLS
-	// without deleting thread state
+	// Without the call to PyEval_SaveThread, thread specific state (such
+	// as the system trace hook), will be lost between invocations of
+	// Python code.
+	// GIL may have been created and acquired in PyEval_InitThreads() and
+	// thread state is created in Py_Initialize(); there
+	// _PyGILState_NoteThreadState() also sets gilcounter to 1 (python must
+	// have threads enabled!), so the following does both: unlock GIL and
+	// save thread state in TLS without deleting thread state
 	PyEval_SaveThread();
 
 	py3initialised = 1;
@@ -1068,8 +1257,8 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     // PyRun_SimpleString expects a UTF-8 string. Wrong encoding may cause
     // SyntaxError (unicode error).
     cmdstr = PyUnicode_Decode(cmd, strlen(cmd),
-					(char *)ENC_OPT, CODEC_ERROR_HANDLER);
-    cmdbytes = PyUnicode_AsEncodedString(cmdstr, "utf-8", CODEC_ERROR_HANDLER);
+					(char *)ENC_OPT, ERRORS_DECODE_ARG);
+    cmdbytes = PyUnicode_AsEncodedString(cmdstr, "utf-8", ERRORS_ENCODE_ARG);
     Py_XDECREF(cmdstr);
 
     run(PyBytes_AsString(cmdbytes), arg, &pygilstate);
@@ -1232,7 +1421,7 @@ OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 #define BufferType_Check(obj) ((obj)->ob_base.ob_type == &BufferType)
 
 static PyObject* BufferSubscript(PyObject *self, PyObject *idx);
-static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
+static int BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
 
 // Line range type - Implementation functions
 // --------------------------------------
@@ -1240,8 +1429,8 @@ static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val
 #define RangeType_Check(obj) ((obj)->ob_base.ob_type == &RangeType)
 
 static PyObject* RangeSubscript(PyObject *self, PyObject *idx);
-static Py_ssize_t RangeAsItem(PyObject *, Py_ssize_t, PyObject *);
-static Py_ssize_t RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
+static int RangeAsItem(PyObject *, Py_ssize_t, PyObject *);
+static int RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
 
 // Current objects type - Implementation functions
 // -----------------------------------------------
@@ -1326,7 +1515,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-    static Py_ssize_t
+    static int
 BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 {
     if (PyLong_Check(idx))
@@ -1398,7 +1587,7 @@ RangeGetattro(PyObject *self, PyObject *nameobj)
 
 ////////////////
 
-    static Py_ssize_t
+    static int
 RangeAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
 {
     return RBAsItem(((RangeObject *)(self))->buf, n, val,
@@ -1441,7 +1630,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-    static Py_ssize_t
+    static int
 RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
 {
     if (PyLong_Check(idx))
@@ -1725,7 +1914,7 @@ LineToString(const char *str)
     }
     *p = '\0';
 
-    result = PyUnicode_Decode(tmp, len, (char *)ENC_OPT, CODEC_ERROR_HANDLER);
+    result = PyUnicode_Decode(tmp, len, (char *)ENC_OPT, ERRORS_DECODE_ARG);
 
     vim_free(tmp);
     return result;

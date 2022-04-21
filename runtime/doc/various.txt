@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2020 Aug 20
+*various.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -114,6 +114,7 @@ g8			Print the hex values of the bytes used in the
 :[range]P[rint] [count] [flags]
 			Just as ":print".  Was apparently added to Vi for
 			people that keep the shift key pressed too long...
+			This command is not supported in |Vim9| script.
 			Note: A user command can overrule this command.
 			See |ex-flags| for [flags].
 
@@ -142,15 +143,17 @@ g8			Print the hex values of the bytes used in the
 				quit
 <
 							*:z* *E144*
-:{range}z[+-^.=]{count}	Display several lines of text surrounding the line
-			specified with {range}, or around the current line
-			if there is no {range}.  If there is a {count}, that's
-			how many lines you'll see; if there is no {count} and
-			only one window then twice the value of the 'scroll'
-			option is used, otherwise the current window height
-			minus 3 is used.
+:[range]z[+-^.=][count]	Display several lines of text surrounding the line
+			specified with [range], or around the current line
+			if there is no [range].
 
-			If there is a {count} the 'window' option is set to
+			If there is a [count], that's how many lines you'll
+			see; if there is no [count] and only one window then
+			twice the value of the 'scroll' option is used,
+			otherwise the current window height minus 3 is used.
+			This is the value of "scr" in the table below.
+
+			If there is a [count] the 'window' option is set to
 			its value.
 
 			:z can be used either alone or followed by any of
@@ -168,8 +171,13 @@ g8			Print the hex values of the bytes used in the
 			If the mark is "=", a line of dashes is printed
 			around the current line.
 
-:{range}z#[+-^.=]{count}				*:z#*
-			Like ":z", but number the lines.
+							*:z!*
+:[range]z![+-^.=][count]
+			Like ":z", but when [count] is not specified, it
+			defaults to the Vim window height minus one.
+
+:[range]z[!]#[+-^.=][count]				*:z#*
+			Like ":z" or ":z!", but number the lines.
 
 							*:=*
 := [flags]		Print the last line number.
@@ -237,10 +245,10 @@ g8			Print the hex values of the bytes used in the
 			compiler will have set stdin to a non-interactive
 			mode.
 
-							*:!cmd* *:!* *E34*
+							*:!cmd* *:!*
 :!{cmd}			Execute {cmd} with the shell.  See also the 'shell'
 			and 'shelltype' option.
-
+							*E34*
 			Any '!' in {cmd} is replaced with the previous
 			external command (see also 'cpoptions').  But not when
 			there is a backslash before the '!', then that
@@ -260,7 +268,7 @@ g8			Print the hex values of the bytes used in the
 			name does not contain a single quote: >
 				:!ls '%'
 <			This should always work, but it's more typing: >
-				:exe "!ls " . shellescape(expand("%"))
+				:exe "!ls " .. shellescape(expand("%"))
 <			To get a literal "%" or "#" prepend it with a
 			backslash.  For example, to list all files starting
 			with "%": >
@@ -343,8 +351,9 @@ N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
-S  *+cmdline_hist*	command line history |cmdline-history|
+T  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
+S  *+cmdwin*		|cmdline-window| support
 T  *+comments*		|'comments'| support
 B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
@@ -361,7 +370,7 @@ N  *+digraphs*		|digraphs| *E196*
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 B  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
-N  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
+T  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
 N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
 -  *+farsi*		Removed: |farsi| language
 N  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|
@@ -372,7 +381,7 @@ N  *+folding*		|folding|
    *+fork*		Unix only: |fork| shell commands
    *+float*		Floating point support
 N  *+gettext*		message translations |multi-lang|
-   *+GUI_Athena*	Unix only: Athena |GUI|
+-  *+GUI_Athena*	Unix only: Athena |GUI|
    *+GUI_neXtaw*	Unix only: neXtaw |GUI|
    *+GUI_GTK*		Unix only: GTK+ |GUI|
    *+GUI_Motif*		Unix only: Motif |GUI|
@@ -383,7 +392,7 @@ m  *+hangul_input*	Hangul input support |hangul|
 T  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
-S  *+jumplist*		|jumplist|
+T  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
 B  *+keymap*		|'keymap'|
 N  *+lambda*		|lambda| and |closure|
 B  *+langmap*		|'langmap'|
@@ -402,6 +411,7 @@ T  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
+m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency |/dyn|
 N  *+mouse_jsbterm*	JSB mouse handling |jsbterm-mouse|
 B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
@@ -409,14 +419,14 @@ N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
 B  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
 B  *+mouse_urxvt*	Unix only: urxvt mouse handling |urxvt-mouse|
 N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
-N  *+multi_byte*	16 and 32 bit characters |multibyte|
+T  *+multi_byte*	Unicode support, 16 and 32 bit characters |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
 N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
-   *+num64*		64-bit Number support |Number| 
-   			Always enabled since 8.2.0271, use v:numbersize to
+T  *+num64*		64-bit Number support |Number|
+			Always enabled since 8.2.0271, use v:numbersize to
 			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
 N  *+packages*		Loading |packages|
@@ -441,6 +451,7 @@ m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
 T  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
 N  *+smartindent*	|'smartindent'|
+B  *+sodium*		compiled with libsodium for better encryption support
 B  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
 N  *+spell*		spell checking support, see |spell|
 N  *+startuptime*	|--startuptime| argument
@@ -462,15 +473,16 @@ N  *+textobjects*	|text-objects| selection
 N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function
-N  *+title*		Setting the window 'title' and 'icon'
+T  *+title*		Setting the window 'title' and 'icon'; Always enabled
 N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
 B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
-N  *+viminfo*		|'viminfo'|
-   *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
+T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
-N  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
+T  *+vim9script*	|Vim9| script
+N  *+viminfo*		|'viminfo'|
+T  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|
@@ -539,37 +551,40 @@ N  *+X11*		Unix only: can restore window title |X11|
 			backward compatibility, the ">" after the register
 			name can be omitted.
 :redi[r] @">>		Append messages to the unnamed register.
-
-:redi[r] => {var}	Redirect messages to a variable.  If the variable
-			doesn't exist, then it is created.  If the variable
-			exists, then it is initialized to an empty string.
+							*E1092*
+:redi[r] => {var}	Redirect messages to a variable.
+			In legacy script: If the variable doesn't exist, then
+			it is created.  If the variable exists, then it is
+			initialized to an empty string.  After the redirection
+			starts, if the variable is removed or locked or the
+			variable type is changed, then further command output
+			messages will cause errors.
+			In Vim9 script: the variable must have been declared
+			as a string.
 			The variable will remain empty until redirection ends.
-			Only string variables can be used.  After the
-			redirection starts, if the variable is removed or
-			locked or the variable type is changed, then further
-			command output messages will cause errors.
+			Only string variables can be used.
 			To get the output of one command the |execute()|
 			function can be used instead of redirection.
 
 :redi[r] =>> {var}	Append messages to an existing variable.  Only string
 			variables can be used.
-
+								 *E1185*
 :redi[r] END		End redirecting messages.
 
 							*:filt* *:filter*
-:filt[er][!] {pat} {command}
-:filt[er][!] /{pat}/ {command}
+:filt[er][!] {pattern} {command}
+:filt[er][!] /{pattern}/ {command}
 			Restrict the output of {command} to lines matching
-			with {pat}.  For example, to list only xml files: >
+			with {pattern}.  For example, to list only xml files: >
 				:filter /\.xml$/ oldfiles
 <			If the [!] is given, restrict the output of {command}
-			to lines that do NOT match {pat}.
+			to lines that do NOT match {pattern}.
 
-			{pat} is a Vim search pattern.  Instead of enclosing
+			{pattern} is a Vim search pattern.  Instead of enclosing
 			it in / any non-ID character (see |'isident'|) can be
-			used, so long as it does not appear in {pat}.  Without
-			the enclosing character the pattern cannot include the
-			bar character.
+			used, so long as it does not appear in {pattern}.
+			Without the enclosing character the pattern cannot
+			include the bar character. 'ignorecase' is not used.
 
 			The pattern is matched against the relevant part of
 			the output, not necessarily the whole line. Only some
@@ -589,7 +604,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			   |:oldfiles|   - filter by file name
 			   |:registers|  - filter by register contents
 					   (does not work multi-line)
-			   |:set|        - filter by variable name
+			   |:set|        - filter by option name
 
 			Only normal messages are filtered, error messages are
 			not.
@@ -636,7 +651,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			used.  In this example |:silent| is used to avoid the
 			message about reading the file and |:unsilent| to be
 			able to list the first line of each file. >
-    		:silent argdo unsilent echo expand('%') . ": " . getline(1)
+		:silent argdo unsilent echo expand('%') .. ": " .. getline(1)
 <
 
 						*:verb* *:verbose*
@@ -705,12 +720,12 @@ K			Run a program to lookup the keyword under the
 			not more than one line.
 
 [N]gs							*gs* *:sl* *:sleep*
-:[N]sl[eep] [N]	[m]	Do nothing for [N] seconds.  When [m] is included,
+:[N]sl[eep] [N][m]	Do nothing for [N] seconds.  When [m] is included,
 			sleep for [N] milliseconds.  The count for "gs" always
 			uses seconds.  The default is one second. >
 			     :sleep	     "sleep for one second
 			     :5sleep	     "sleep for five seconds
-			     :sleep 100m     "sleep for a hundred milliseconds
+			     :sleep 100m     "sleep for 100 milliseconds
 			     10gs	     "sleep for ten seconds
 <			Can be interrupted with CTRL-C (CTRL-Break on
 			MS-Windows).  "gs" stands for "goto sleep".
@@ -719,6 +734,9 @@ K			Run a program to lookup the keyword under the
 			Also process the received netbeans messages. {only
 			available when compiled with the |+netbeans_intg|
 			feature}
+
+							*:sl!* *:sleep!*
+:[N]sl[eep]! [N][m]	Same as above, but hide the cursor.
 
 							*:xrestore* *:xr*
 :xr[estore] [display]	Reinitializes the connection to the X11 server. Useful

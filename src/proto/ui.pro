@@ -1,11 +1,11 @@
 /* ui.c */
-void ui_write(char_u *s, int len);
+void ui_write(char_u *s, int len, int console);
 void ui_inchar_undo(char_u *s, int len);
 int ui_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
 int inchar_loop(char_u *buf, int maxlen, long wtime, int tb_change_cnt, int (*wait_func)(long wtime, int *interrupted, int ignore_input), int (*resize_func)(int check_only));
 int ui_wait_for_chars_or_timer(long wtime, int (*wait_func)(long wtime, int *interrupted, int ignore_input), int *interrupted, int ignore_input);
 int ui_char_avail(void);
-void ui_delay(long msec, int ignoreinput);
+void ui_delay(long msec_arg, int ignoreinput);
 void ui_suspend(void);
 void suspend_shell(void);
 int ui_get_shellsize(void);
@@ -19,7 +19,7 @@ int vim_is_input_buf_empty(void);
 int vim_free_in_input_buf(void);
 int vim_used_in_input_buf(void);
 char_u *get_input_buf(void);
-void set_input_buf(char_u *p);
+void set_input_buf(char_u *p, int overwrite);
 void add_to_input_buf(char_u *s, int len);
 void add_to_input_buf_csi(char_u *str, int len);
 void trash_input_buf(void);

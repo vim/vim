@@ -33,6 +33,7 @@
 // cproto fails on missing include files
 #ifndef PROTO
 # include <process.h>
+# include <winternl.h>
 #endif
 
 #undef chdir
@@ -45,7 +46,7 @@
 #endif
 
 #ifndef PROTO
-# if defined(FEAT_TITLE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
 #  include <shellapi.h>
 # endif
 #endif
@@ -240,12 +241,6 @@ static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
 
-# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-#  define UChar UnicodeChar
-# else
-#  define UChar uChar.UnicodeChar
-# endif
-
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
 typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
@@ -305,7 +300,7 @@ is_ambiwidth_event(
 		&& ir->Event.KeyEvent.wRepeatCount == 1
 		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
 		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
-		&& ir->Event.KeyEvent.UChar == 0
+		&& ir->Event.KeyEvent.uChar.UnicodeChar == 0
 		&& ir->Event.KeyEvent.dwControlKeyState == 2;
 }
 
@@ -316,7 +311,8 @@ make_ambiwidth_event(
 {
     down->Event.KeyEvent.wVirtualKeyCode = 0;
     down->Event.KeyEvent.wVirtualScanCode = 0;
-    down->Event.KeyEvent.UChar = up->Event.KeyEvent.UChar;
+    down->Event.KeyEvent.uChar.UnicodeChar
+				    = up->Event.KeyEvent.uChar.UnicodeChar;
     down->Event.KeyEvent.dwControlKeyState = 0;
 }
 
@@ -426,7 +422,7 @@ peek_console_input(
     DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, -1, lpEvents);
+    return read_console_input(hInput, lpBuffer, (DWORD)-1, lpEvents);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -438,7 +434,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -451,7 +447,7 @@ wait_for_single_object(
     HANDLE hHandle,
     DWORD dwMilliseconds)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
 	return WAIT_OBJECT_0;
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
@@ -524,9 +520,13 @@ unescape_shellxquote(char_u *p, char_u *escaped)
  * Load library "name".
  */
     HINSTANCE
-vimLoadLib(char *name)
+vimLoadLib(const char *name)
 {
     HINSTANCE	dll = NULL;
+
+    // No need to load any library when registering OLE.
+    if (found_register_arg)
+	return dll;
 
     // NOTE: Do not use mch_dirname() and mch_chdir() here, they may call
     // vimLoadLib() recursively, which causes a stack overflow.
@@ -572,14 +572,18 @@ mch_is_gui_executable(void)
 }
 #endif
 
-#if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) || defined(PROTO)
+#if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) \
+    || defined(FEAT_PYTHON3) || defined(PROTO)
 /*
  * Get related information about 'funcname' which is imported by 'hInst'.
  * If 'info' is 0, return the function address.
  * If 'info' is 1, return the module name which the function is imported from.
+ * If 'info' is 2, hook the function with 'ptr', and return the original
+ * function address.
  */
     static void *
-get_imported_func_info(HINSTANCE hInst, const char *funcname, int info)
+get_imported_func_info(HINSTANCE hInst, const char *funcname, int info,
+	const void *ptr)
 {
     PBYTE			pImage = (PBYTE)hInst;
     PIMAGE_DOS_HEADER		pDOS = (PIMAGE_DOS_HEADER)hInst;
@@ -611,12 +615,23 @@ get_imported_func_info(HINSTANCE hInst, const char *funcname, int info)
 					+ (UINT_PTR)(pINT->u1.AddressOfData));
 	    if (strcmp((char *)pImpName->Name, funcname) == 0)
 	    {
+		void *original;
+		DWORD old, new = PAGE_READWRITE;
+
 		switch (info)
 		{
 		    case 0:
 			return (void *)pIAT->u1.Function;
 		    case 1:
 			return (void *)(pImage + pImpDesc->Name);
+		    case 2:
+			original = (void *)pIAT->u1.Function;
+			VirtualProtect(&pIAT->u1.Function, sizeof(void *),
+				new, &old);
+			pIAT->u1.Function = (UINT_PTR)ptr;
+			VirtualProtect(&pIAT->u1.Function, sizeof(void *),
+				old, &new);
+			return original;
 		    default:
 			return NULL;
 		}
@@ -634,7 +649,7 @@ find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname)
 {
     char    *modulename;
 
-    modulename = (char *)get_imported_func_info(hInst, funcname, 1);
+    modulename = (char *)get_imported_func_info(hInst, funcname, 1, NULL);
     if (modulename != NULL)
 	return GetModuleHandleA(modulename);
     return NULL;
@@ -646,7 +661,17 @@ find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname)
     void *
 get_dll_import_func(HINSTANCE hInst, const char *funcname)
 {
-    return get_imported_func_info(hInst, funcname, 0);
+    return get_imported_func_info(hInst, funcname, 0, NULL);
+}
+
+/*
+ * Hook the function named 'funcname' which is imported by 'hInst' DLL,
+ * and return the original function address.
+ */
+    void *
+hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook)
+{
+    return get_imported_func_info(hInst, funcname, 2, hook);
 }
 #endif
 
@@ -711,7 +736,7 @@ dyn_libintl_init(void)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    semsg(_(e_loadlib), GETTEXT_DLL);
+	    semsg(_(e_could_not_load_library_str_str), GETTEXT_DLL, GetWin32Error());
 	    verbose_leave();
 	}
 	return 0;
@@ -719,14 +744,14 @@ dyn_libintl_init(void)
     for (i = 0; libintl_entry[i].name != NULL
 					 && libintl_entry[i].ptr != NULL; ++i)
     {
-	if ((*libintl_entry[i].ptr = (FARPROC)GetProcAddress(hLibintlDLL,
+	if ((*libintl_entry[i].ptr = GetProcAddress(hLibintlDLL,
 					      libintl_entry[i].name)) == NULL)
 	{
 	    dyn_libintl_end();
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		semsg(_(e_loadfunc), libintl_entry[i].name);
+		semsg(_(e_could_not_load_library_function_str), libintl_entry[i].name);
 		verbose_leave();
 	    }
 	    return 0;
@@ -860,6 +885,12 @@ win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 }
 #endif
 
+#ifdef _MSC_VER
+// Suppress the deprecation warning for using GetVersionEx().
+// It is needed for implementing "windowsversion()".
+# pragma warning(push)
+# pragma warning(disable: 4996)
+#endif
 /*
  * Set "win8_or_later" and fill in "windowsVersion" if possible.
  */
@@ -890,6 +921,9 @@ PlatformId(void)
 	done = TRUE;
     }
 }
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
@@ -991,12 +1025,12 @@ win32_kbd_patch_key(
 
     if (s_iIsDead == 2)
     {
-	pker->UChar = (WCHAR) awAnsiCode[1];
+	pker->uChar.UnicodeChar = (WCHAR) awAnsiCode[1];
 	s_iIsDead = 0;
 	return 1;
     }
 
-    if (pker->UChar != 0)
+    if (pker->uChar.UnicodeChar != 0)
 	return 1;
 
     CLEAR_FIELD(abKeystate);
@@ -1019,7 +1053,7 @@ win32_kbd_patch_key(
 			abKeystate, awAnsiCode, 2, 0);
 
     if (s_iIsDead > 0)
-	pker->UChar = (WCHAR) awAnsiCode[0];
+	pker->uChar.UnicodeChar = (WCHAR) awAnsiCode[0];
 
     return s_iIsDead;
 }
@@ -1061,7 +1095,8 @@ decode_key_event(
     }
 
     // special cases
-    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0 && pker->UChar == NUL)
+    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
+					    && pker->uChar.UnicodeChar == NUL)
     {
 	// Ctrl-6 is Ctrl-^
 	if (pker->wVirtualKeyCode == '6')
@@ -1091,7 +1126,7 @@ decode_key_event(
 	return TRUE;
     }
 
-    for (i = sizeof(VirtKeyMap) / sizeof(VirtKeyMap[0]);  --i >= 0;  )
+    for (i = ARRAY_LENGTH(VirtKeyMap);  --i >= 0;  )
     {
 	if (VirtKeyMap[i].wVirtKey == pker->wVirtualKeyCode)
 	{
@@ -1123,7 +1158,7 @@ decode_key_event(
 	*pch = NUL;
     else
     {
-	*pch = (i > 0) ? pker->UChar : NUL;
+	*pch = (i > 0) ? pker->uChar.UnicodeChar : NUL;
 
 	if (pmodifiers != NULL)
 	{
@@ -1166,6 +1201,8 @@ static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
 static int g_xMouse;		    // mouse x coordinate
 static int g_yMouse;		    // mouse y coordinate
+static DWORD g_cmodein = 0;         // Original console input mode
+static DWORD g_cmodeout = 0;        // Original console output mode
 
 /*
  * Enable or disable mouse input
@@ -1186,11 +1223,17 @@ mch_setmouse(int on)
     GetConsoleMode(g_hConIn, &cmodein);
 
     if (g_fMouseActive)
+    {
 	cmodein |= ENABLE_MOUSE_INPUT;
+	cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+    }
     else
+    {
 	cmodein &= ~ENABLE_MOUSE_INPUT;
+	cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    }
 
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 }
 
 
@@ -1588,26 +1631,14 @@ WaitForChar(long msec, int ignore_input)
 	{
 	    DWORD dwWaitTime = dwEndTime - dwNow;
 
-# ifdef FEAT_JOB_CHANNEL
-	    // Check channel while waiting for input.
-	    if (dwWaitTime > 100)
-	    {
-		dwWaitTime = 100;
-		// If there is readahead then parse_queued_messages() timed out
-		// and we should call it again soon.
-		if (channel_any_readahead())
-		    dwWaitTime = 10;
-	    }
-# endif
-# ifdef FEAT_BEVAL_GUI
-	    if (p_beval && dwWaitTime > 100)
-		// The 'balloonexpr' may indirectly invoke a callback while
-		// waiting for a character, need to check often.
-		dwWaitTime = 100;
-# endif
+	    // Don't wait for more than 11 msec to avoid dropping characters,
+	    // check channel while waiting for input and handle a callback from
+	    // 'balloonexpr'.
+	    if (dwWaitTime > 11)
+		dwWaitTime = 11;
+
 # ifdef FEAT_MZSCHEME
-	    if (mzthreads_allowed() && p_mzq > 0
-				    && (msec < 0 || (long)dwWaitTime > p_mzq))
+	    if (mzthreads_allowed() && p_mzq > 0 && (long)dwWaitTime > p_mzq)
 		dwWaitTime = p_mzq; // don't wait longer than 'mzquantum'
 # endif
 # ifdef FEAT_TIMERS
@@ -1646,7 +1677,9 @@ WaitForChar(long msec, int ignore_input)
 	peek_console_input(g_hConIn, &ir, 1, &cRecords);
 
 # ifdef FEAT_MBYTE_IME
-	if (State & CMDLINE && msg_row == Rows - 1)
+	// May have to redraw if the cursor ends up in the wrong place.
+	// Only when not peeking.
+	if (State & CMDLINE && msg_row == Rows - 1 && msec != 0)
 	{
 	    CONSOLE_SCREEN_BUFFER_INFO csbi;
 
@@ -1654,10 +1687,10 @@ WaitForChar(long msec, int ignore_input)
 	    {
 		if (csbi.dwCursorPosition.Y != msg_row)
 		{
-		    // The screen is now messed up, must redraw the
-		    // command line and later all the windows.
+		    // The screen is now messed up, must redraw the command
+		    // line and later all the windows.
 		    redraw_all_later(CLEAR);
-		    cmdline_row -= (msg_row - csbi.dwCursorPosition.Y);
+		    compute_cmdrow();
 		    redrawcmd();
 		}
 	    }
@@ -1671,7 +1704,7 @@ WaitForChar(long msec, int ignore_input)
 # ifdef FEAT_MBYTE_IME
 		// Windows IME sends two '\n's with only one 'ENTER'.  First:
 		// wVirtualKeyCode == 13. second: wVirtualKeyCode == 0
-		if (ir.Event.KeyEvent.UChar == 0
+		if (ir.Event.KeyEvent.uChar.UnicodeChar == 0
 			&& ir.Event.KeyEvent.wVirtualKeyCode == 13)
 		{
 		    read_console_input(g_hConIn, &ir, 1, &cRecords);
@@ -2065,13 +2098,13 @@ theend:
 	buf[len++] = typeahead[0];
 	mch_memmove(typeahead, typeahead + 1, --typeaheadlen);
     }
-#  ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
     if (len > 0)
     {
 	buf[len] = NUL;
 	ch_log(NULL, "raw key input: \"%s\"", buf);
     }
-#  endif
+# endif
     return len;
 
 #else // FEAT_GUI_MSWIN
@@ -2123,6 +2156,7 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
     char_u	*pathbuf = NULL;
     char_u	*pathext = NULL;
     char_u	*pathextbuf = NULL;
+    char_u	*shname = NULL;
     int		noext = FALSE;
     int		retval = FALSE;
 
@@ -2130,7 +2164,10 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	return FALSE;
 
     // Using the name directly when a Unix-shell like 'shell'.
-    if (strstr((char *)gettail(p_sh), "sh") != NULL)
+    shname = gettail(p_sh);
+    if (strstr((char *)shname, "sh") != NULL &&
+	!(strstr((char *)shname, "powershell") != NULL
+				    || strstr((char *)shname, "pwsh") != NULL))
 	noext = TRUE;
 
     if (use_pathext)
@@ -2171,7 +2208,7 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	}
     }
 
-    // Prepend single "." to pathext, it's means no extension added.
+    // Prepend single "." to pathext, it means no extension added.
     if (pathext == NULL)
 	pathext = (char_u *)".";
     else if (noext == TRUE)
@@ -2374,7 +2411,8 @@ mch_init_g(void)
      * Otherwise the default "findstr /n" is used.
      */
     if (!executable_exists("findstr.exe", NULL, TRUE, FALSE))
-	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
+	set_option_value_give_err((char_u *)"grepprg",
+						    0, (char_u *)"grep -n", 0);
 
 # ifdef FEAT_CLIPBOARD
     win_clip_init();
@@ -2667,7 +2705,6 @@ static ConsoleBuffer g_cbOrig = { 0 };
 static ConsoleBuffer g_cbNonTermcap = { 0 };
 static ConsoleBuffer g_cbTermcap = { 0 };
 
-# ifdef FEAT_TITLE
 char g_szOrigTitle[256] = { 0 };
 HWND g_hWnd = NULL;	// also used in os_mswin.c
 static HICON g_hOrigIconSmall = NULL;
@@ -2675,13 +2712,6 @@ static HICON g_hOrigIcon = NULL;
 static HICON g_hVimIcon = NULL;
 static BOOL g_fCanChangeIcon = FALSE;
 
-// ICON* are not defined in VC++ 4.0
-#  ifndef ICON_SMALL
-#   define ICON_SMALL 0
-#  endif
-#  ifndef ICON_BIG
-#   define ICON_BIG 1
-#  endif
 /*
  * GetConsoleIcon()
  * Description:
@@ -2773,13 +2803,10 @@ SaveConsoleTitleAndIcon(void)
     if (g_hVimIcon != NULL)
 	g_fCanChangeIcon = TRUE;
 }
-# endif
 
 static int g_fWindInitCalled = FALSE;
 static int g_fTermcapMode = FALSE;
 static CONSOLE_CURSOR_INFO g_cci;
-static DWORD g_cmodein = 0;
-static DWORD g_cmodeout = 0;
 
 /*
  * non-GUI version of mch_init().
@@ -2836,7 +2863,6 @@ mch_init_c(void)
     GetConsoleMode(g_hConIn,  &g_cmodein);
     GetConsoleMode(g_hConOut, &g_cmodeout);
 
-# ifdef FEAT_TITLE
     SaveConsoleTitleAndIcon();
     /*
      * Set both the small and big icons of the console window to Vim's icon.
@@ -2845,7 +2871,6 @@ mch_init_c(void)
      */
     if (g_fCanChangeIcon)
 	SetConsoleIcon(g_hWnd, g_hVimIcon, g_hVimIcon);
-# endif
 
     ui_get_shellsize();
 
@@ -2895,7 +2920,6 @@ mch_exit_c(int r)
 
     if (g_fWindInitCalled)
     {
-# ifdef FEAT_TITLE
 	mch_restore_title(SAVE_RESTORE_BOTH);
 	/*
 	 * Restore both the small and big icons of the console window to
@@ -2904,7 +2928,6 @@ mch_exit_c(int r)
 	 */
 	if (g_fCanChangeIcon && !g_fForceExit)
 	    SetConsoleIcon(g_hWnd, g_hOrigIconSmall, g_hOrigIcon);
-# endif
 
 # ifdef MCH_WRITE_DUMP
 	if (fdDump)
@@ -2920,7 +2943,7 @@ mch_exit_c(int r)
     }
 
     SetConsoleCursorInfo(g_hConOut, &g_cci);
-    SetConsoleMode(g_hConIn,  g_cmodein);
+    SetConsoleMode(g_hConIn,  g_cmodein | ENABLE_EXTENDED_FLAGS);
     SetConsoleMode(g_hConOut, g_cmodeout);
 
 # ifdef DYNAMIC_GETTEXT
@@ -3035,7 +3058,7 @@ mch_get_user_name(
     int	    len)
 {
     WCHAR wszUserName[256 + 1];	// UNLEN is 256
-    DWORD wcch = sizeof(wszUserName) / sizeof(WCHAR);
+    DWORD wcch = ARRAY_LENGTH(wszUserName);
 
     if (GetUserNameW(wszUserName, &wcch))
     {
@@ -3062,7 +3085,7 @@ mch_get_host_name(
     int		len)
 {
     WCHAR wszHostName[256 + 1];
-    DWORD wcch = sizeof(wszHostName) / sizeof(WCHAR);
+    DWORD wcch = ARRAY_LENGTH(wszHostName);
 
     if (GetComputerNameW(wszHostName, &wcch))
     {
@@ -3532,7 +3555,10 @@ mch_get_acl(char_u *fname)
 
 	wn = enc_to_utf16(fname, NULL);
 	if (wn == NULL)
+	{
+	    vim_free(p);
 	    return NULL;
+	}
 
 	// Try to retrieve the entire security descriptor.
 	err = GetNamedSecurityInfoW(
@@ -3740,7 +3766,14 @@ mch_settmode(tmode_T tmode)
 	cmodein &= ~(ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT |
 		     ENABLE_ECHO_INPUT);
 	if (g_fMouseActive)
+	{
 	    cmodein |= ENABLE_MOUSE_INPUT;
+	    cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+	}
+	else
+	{
+	    cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+	}
 	cmodeout &= ~(
 # ifdef FEAT_TERMGUICOLORS
 	    // Do not turn off the ENABLE_PROCESSED_OUTPUT flag when using
@@ -3759,7 +3792,7 @@ mch_settmode(tmode_T tmode)
 	cmodeout |= (ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT);
 	bEnableHandler = FALSE;
     }
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
     SetConsoleMode(g_hConOut, cmodeout);
     SetConsoleCtrlHandler(handler_routine, bEnableHandler);
 
@@ -4105,10 +4138,10 @@ mch_system_classic(char *cmd, int options)
 	{
 	    MSG	msg;
 
-	    if (pPeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
+	    if (PeekMessageW(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
 	    {
 		TranslateMessage(&msg);
-		pDispatchMessage(&msg);
+		DispatchMessageW(&msg);
 		delay = 1;
 		continue;
 	    }
@@ -4427,10 +4460,10 @@ mch_system_piped(char *cmd, int options)
     {
 	MSG	msg;
 
-	if (pPeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
+	if (PeekMessageW(&msg, (HWND)NULL, 0, 0, PM_REMOVE))
 	{
 	    TranslateMessage(&msg);
-	    pDispatchMessage(&msg);
+	    DispatchMessageW(&msg);
 	}
 
 	// write pipe information in the window
@@ -4733,12 +4766,13 @@ mch_call_shell(
 {
     int		x = 0;
     int		tmode = cur_tmode;
-#ifdef FEAT_TITLE
     WCHAR	szShellTitle[512];
 
+#ifdef FEAT_JOB_CHANNEL
+    ch_log(NULL, "executing shell command: %s", cmd);
+#endif
     // Change the title to reflect that we are in a subshell.
-    if (GetConsoleTitleW(szShellTitle,
-		sizeof(szShellTitle)/sizeof(WCHAR) - 4) > 0)
+    if (GetConsoleTitleW(szShellTitle, ARRAY_LENGTH(szShellTitle) - 4) > 0)
     {
 	if (cmd == NULL)
 	    wcscat(szShellTitle, L" :sh");
@@ -4750,14 +4784,13 @@ mch_call_shell(
 	    {
 		wcscat(szShellTitle, L" - !");
 		if ((wcslen(szShellTitle) + wcslen(wn) <
-			    sizeof(szShellTitle)/sizeof(WCHAR)))
+			    ARRAY_LENGTH(szShellTitle)))
 		    wcscat(szShellTitle, wn);
 		SetConsoleTitleW(szShellTitle);
 		vim_free(wn);
 	    }
 	}
     }
-#endif
 
     out_flush();
 
@@ -4790,9 +4823,7 @@ mch_call_shell(
 	{
 	    // Use a terminal window to run the command in.
 	    x = mch_call_shell_terminal(cmd, options);
-# ifdef FEAT_TITLE
 	    resettitle();
-# endif
 	    return x;
 	}
     }
@@ -4941,7 +4972,7 @@ mch_call_shell(
 # ifdef VIMDLL
 		if (gui.in_use)
 # endif
-		    emsg(_("E371: Command not found"));
+		    emsg(_(e_command_not_found));
 #endif
 	    }
 
@@ -5039,9 +5070,7 @@ mch_call_shell(
 	smsg(_("shell returned %d"), x);
 	msg_putchar('\n');
     }
-#ifdef FEAT_TITLE
     resettitle();
-#endif
 
     signal(SIGINT, SIG_DFL);
 #if defined(__GNUC__) && !defined(__MINGW32__)
@@ -5269,7 +5298,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     ofd[1] = INVALID_HANDLE_VALUE;
     efd[0] = INVALID_HANDLE_VALUE;
     efd[1] = INVALID_HANDLE_VALUE;
-    ga_init2(&ga, (int)sizeof(wchar_t), 500);
+    ga_init2(&ga, sizeof(wchar_t), 500);
 
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)
@@ -5300,7 +5329,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5318,7 +5347,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (ofd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5336,7 +5365,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (efd[1] == INVALID_HANDLE_VALUE)
 	{
-	    semsg(_(e_notopen), fname);
+	    semsg(_(e_cant_open_file_str), fname);
 	    goto failed;
 	}
     }
@@ -5533,7 +5562,7 @@ mch_signal_job(job_T *job, char_u *how)
 	{
 	    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
 		job->jv_channel->ch_killing = TRUE;
-	    return TerminateJobObject(job->jv_job_object, -1) ? OK : FAIL;
+	    return TerminateJobObject(job->jv_job_object, (UINT)-1) ? OK : FAIL;
 	}
 	return terminate_all(job->jv_proc_info.hProcess, -1) ? OK : FAIL;
     }
@@ -5608,17 +5637,21 @@ termcap_mode_start(void)
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
     }
 
-# ifdef FEAT_TITLE
     resettitle();
-# endif
 
     GetConsoleMode(g_hConIn, &cmodein);
     if (g_fMouseActive)
+    {
 	cmodein |= ENABLE_MOUSE_INPUT;
+	cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+    }
     else
+    {
 	cmodein &= ~ENABLE_MOUSE_INPUT;
+	cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    }
     cmodein |= ENABLE_WINDOW_INPUT;
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 
     redraw_later_clear();
     g_fTermcapMode = TRUE;
@@ -5643,7 +5676,8 @@ termcap_mode_end(void)
 
     GetConsoleMode(g_hConIn, &cmodein);
     cmodein &= ~(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
-    SetConsoleMode(g_hConIn, cmodein);
+    cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     cb = exiting ? &g_cbOrig : &g_cbNonTermcap;
@@ -6261,7 +6295,7 @@ write_chars(
 	    cchwritten = 1;
     }
 
-    if (cchwritten == length)
+    if (cchwritten == (DWORD)length)
     {
 	written = cbToWrite;
 	g_coord.X += (SHORT)cells;
@@ -6405,12 +6439,12 @@ mch_write(
     char_u  *s,
     int	    len)
 {
+    char_u  *end = s + len;
+
 # ifdef VIMDLL
     if (gui.in_use)
 	return;
 # endif
-
-    s[len] = NUL;
 
     if (!term_console)
     {
@@ -6432,10 +6466,13 @@ mch_write(
 	    return;
 	}
 
-	while((ch = s[++prefix]))
+	while (s + ++prefix < end)
+	{
+	    ch = s[prefix];
 	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
 						&& ch != '\a' && ch != '\033'))
 		break;
+	}
 
 	if (p_wd)
 	{
@@ -7113,13 +7150,12 @@ mch_fopen(const char *name, const char *mode)
 /*
  * SUB STREAM (aka info stream) handling:
  *
- * NTFS can have sub streams for each file.  Normal contents of file is
- * stored in the main stream, and extra contents (author information and
- * title and so on) can be stored in sub stream.  After Windows 2000, user
- * can access and store those informations in sub streams via explorer's
- * property menuitem in right click menu.  Those informations in sub streams
- * were lost when copying only the main stream.  So we have to copy sub
- * streams.
+ * NTFS can have sub streams for each file.  The normal contents of a file is
+ * stored in the main stream, and extra contents (author information, title and
+ * so on) can be stored in a sub stream.  After Windows 2000, the user can
+ * access and store this information in sub streams via an explorer's property
+ * menu item in the right click menu.  This information in sub streams was lost
+ * when copying only the main stream.  Therefore we have to copy sub streams.
  *
  * Incomplete explanation:
  *	http://msdn.microsoft.com/library/en-us/dnw2k/html/ntfs5.asp
@@ -7255,6 +7291,184 @@ copy_infostreams(char_u *from, char_u *to)
 }
 
 /*
+ * ntdll.dll definitions
+ */
+#define FileEaInformation   7
+#ifndef STATUS_SUCCESS
+# define STATUS_SUCCESS	    ((NTSTATUS) 0x00000000L)
+#endif
+
+typedef struct _FILE_FULL_EA_INFORMATION_ {
+    ULONG  NextEntryOffset;
+    UCHAR  Flags;
+    UCHAR  EaNameLength;
+    USHORT EaValueLength;
+    CHAR   EaName[1];
+} FILE_FULL_EA_INFORMATION_, *PFILE_FULL_EA_INFORMATION_;
+
+typedef struct _FILE_EA_INFORMATION_ {
+    ULONG EaSize;
+} FILE_EA_INFORMATION_, *PFILE_EA_INFORMATION_;
+
+typedef NTSTATUS (NTAPI *PfnNtOpenFile)(
+	PHANDLE FileHandle,
+	ACCESS_MASK DesiredAccess,
+	POBJECT_ATTRIBUTES ObjectAttributes,
+	PIO_STATUS_BLOCK IoStatusBlock,
+	ULONG ShareAccess,
+	ULONG OpenOptions);
+typedef NTSTATUS (NTAPI *PfnNtClose)(
+	HANDLE Handle);
+typedef NTSTATUS (NTAPI *PfnNtSetEaFile)(
+	HANDLE           FileHandle,
+	PIO_STATUS_BLOCK IoStatusBlock,
+	PVOID            Buffer,
+	ULONG            Length);
+typedef NTSTATUS (NTAPI *PfnNtQueryEaFile)(
+	HANDLE FileHandle,
+	PIO_STATUS_BLOCK IoStatusBlock,
+	PVOID Buffer,
+	ULONG Length,
+	BOOLEAN ReturnSingleEntry,
+	PVOID EaList,
+	ULONG EaListLength,
+	PULONG EaIndex,
+	BOOLEAN RestartScan);
+typedef NTSTATUS (NTAPI *PfnNtQueryInformationFile)(
+	HANDLE                 FileHandle,
+	PIO_STATUS_BLOCK       IoStatusBlock,
+	PVOID                  FileInformation,
+	ULONG                  Length,
+	FILE_INFORMATION_CLASS FileInformationClass);
+typedef VOID (NTAPI *PfnRtlInitUnicodeString)(
+	PUNICODE_STRING DestinationString,
+	PCWSTR SourceString);
+
+PfnNtOpenFile pNtOpenFile = NULL;
+PfnNtClose pNtClose = NULL;
+PfnNtSetEaFile pNtSetEaFile = NULL;
+PfnNtQueryEaFile pNtQueryEaFile = NULL;
+PfnNtQueryInformationFile pNtQueryInformationFile = NULL;
+PfnRtlInitUnicodeString pRtlInitUnicodeString = NULL;
+
+/*
+ * Load ntdll.dll functions.
+ */
+    static BOOL
+load_ntdll(void)
+{
+    static int	loaded = -1;
+
+    if (loaded == -1)
+    {
+	HMODULE hNtdll = GetModuleHandle("ntdll.dll");
+	if (hNtdll != NULL)
+	{
+	    pNtOpenFile = (PfnNtOpenFile) GetProcAddress(hNtdll, "NtOpenFile");
+	    pNtClose = (PfnNtClose) GetProcAddress(hNtdll, "NtClose");
+	    pNtSetEaFile = (PfnNtSetEaFile)
+		GetProcAddress(hNtdll, "NtSetEaFile");
+	    pNtQueryEaFile = (PfnNtQueryEaFile)
+		GetProcAddress(hNtdll, "NtQueryEaFile");
+	    pNtQueryInformationFile = (PfnNtQueryInformationFile)
+		GetProcAddress(hNtdll, "NtQueryInformationFile");
+	    pRtlInitUnicodeString = (PfnRtlInitUnicodeString)
+		GetProcAddress(hNtdll, "RtlInitUnicodeString");
+	}
+	if (pNtOpenFile == NULL
+		|| pNtClose == NULL
+		|| pNtSetEaFile == NULL
+		|| pNtQueryEaFile == NULL
+		|| pNtQueryInformationFile == NULL
+		|| pRtlInitUnicodeString == NULL)
+	    loaded = FALSE;
+	else
+	    loaded = TRUE;
+    }
+    return (BOOL) loaded;
+}
+
+/*
+ * Copy extended attributes (EA) from file "from" to file "to".
+ */
+    static void
+copy_extattr(char_u *from, char_u *to)
+{
+    char_u		    *fromf = NULL;
+    char_u		    *tof = NULL;
+    WCHAR		    *fromw = NULL;
+    WCHAR		    *tow = NULL;
+    UNICODE_STRING	    u;
+    HANDLE		    h;
+    OBJECT_ATTRIBUTES	    oa;
+    IO_STATUS_BLOCK	    iosb;
+    FILE_EA_INFORMATION_    eainfo = {0};
+    void		    *ea = NULL;
+
+    if (!load_ntdll())
+	return;
+
+    // Convert the file names to the fully qualified object names.
+    fromf = alloc(STRLEN(from) + 5);
+    tof = alloc(STRLEN(to) + 5);
+    if (fromf == NULL || tof == NULL)
+	goto theend;
+    STRCPY(fromf, "\\??\\");
+    STRCAT(fromf, from);
+    STRCPY(tof, "\\??\\");
+    STRCAT(tof, to);
+
+    // Convert the names to wide characters.
+    fromw = enc_to_utf16(fromf, NULL);
+    tow = enc_to_utf16(tof, NULL);
+    if (fromw == NULL || tow == NULL)
+	goto theend;
+
+    // Get the EA.
+    pRtlInitUnicodeString(&u, fromw);
+    InitializeObjectAttributes(&oa, &u, 0, NULL, NULL);
+    if (pNtOpenFile(&h, FILE_READ_EA, &oa, &iosb, 0,
+		FILE_NON_DIRECTORY_FILE) != STATUS_SUCCESS)
+	goto theend;
+    pNtQueryInformationFile(h, &iosb, &eainfo, sizeof(eainfo),
+	    FileEaInformation);
+    if (eainfo.EaSize != 0)
+    {
+	ea = alloc(eainfo.EaSize);
+	if (ea != NULL)
+	{
+	    if (pNtQueryEaFile(h, &iosb, ea, eainfo.EaSize, FALSE,
+			NULL, 0, NULL, TRUE) != STATUS_SUCCESS)
+	    {
+		vim_free(ea);
+		ea = NULL;
+	    }
+	}
+    }
+    pNtClose(h);
+
+    // Set the EA.
+    if (ea != NULL)
+    {
+	pRtlInitUnicodeString(&u, tow);
+	InitializeObjectAttributes(&oa, &u, 0, NULL, NULL);
+	if (pNtOpenFile(&h, FILE_WRITE_EA, &oa, &iosb, 0,
+		    FILE_NON_DIRECTORY_FILE) != STATUS_SUCCESS)
+	    goto theend;
+
+	pNtSetEaFile(h, &iosb, ea, eainfo.EaSize);
+	pNtClose(h);
+    }
+
+theend:
+    vim_free(fromf);
+    vim_free(tof);
+    vim_free(fromw);
+    vim_free(tow);
+    vim_free(ea);
+}
+
+/*
  * Copy file attributes from file "from" to file "to".
  * For Windows NT and later we copy info streams.
  * Always returns zero, errors are ignored.
@@ -7264,94 +7478,13 @@ mch_copy_file_attribute(char_u *from, char_u *to)
 {
     // File streams only work on Windows NT and later.
     copy_infostreams(from, to);
+    copy_extattr(from, to);
     return 0;
 }
 
-#if defined(MYRESETSTKOFLW) || defined(PROTO)
-/*
- * Recreate a destroyed stack guard page in win32.
- * Written by Benjamin Peterson.
- */
-
-// These magic numbers are from the MS header files
-# define MIN_STACK_WINNT 2
 
 /*
- * This function does the same thing as _resetstkoflw(), which is only
- * available in DevStudio .net and later.
- * Returns 0 for failure, 1 for success.
- */
-    int
-myresetstkoflw(void)
-{
-    BYTE	*pStackPtr;
-    BYTE	*pGuardPage;
-    BYTE	*pStackBase;
-    BYTE	*pLowestPossiblePage;
-    MEMORY_BASIC_INFORMATION mbi;
-    SYSTEM_INFO si;
-    DWORD	nPageSize;
-    DWORD	dummy;
-
-    // We need to know the system page size.
-    GetSystemInfo(&si);
-    nPageSize = si.dwPageSize;
-
-    // ...and the current stack pointer
-    pStackPtr = (BYTE*)_alloca(1);
-
-    // ...and the base of the stack.
-    if (VirtualQuery(pStackPtr, &mbi, sizeof mbi) == 0)
-	return 0;
-    pStackBase = (BYTE*)mbi.AllocationBase;
-
-    // ...and the page that's min_stack_req pages away from stack base; this is
-    // the lowest page we could use.
-    pLowestPossiblePage = pStackBase + MIN_STACK_WINNT * nPageSize;
-
-    {
-	// We want the first committed page in the stack Start at the stack
-	// base and move forward through memory until we find a committed block.
-	BYTE *pBlock = pStackBase;
-
-	for (;;)
-	{
-	    if (VirtualQuery(pBlock, &mbi, sizeof mbi) == 0)
-		return 0;
-
-	    pBlock += mbi.RegionSize;
-
-	    if (mbi.State & MEM_COMMIT)
-		break;
-	}
-
-	// mbi now describes the first committed block in the stack.
-	if (mbi.Protect & PAGE_GUARD)
-	    return 1;
-
-	// decide where the guard page should start
-	if ((long_u)(mbi.BaseAddress) < (long_u)pLowestPossiblePage)
-	    pGuardPage = pLowestPossiblePage;
-	else
-	    pGuardPage = (BYTE*)mbi.BaseAddress;
-
-	// allocate the guard page
-	if (!VirtualAlloc(pGuardPage, nPageSize, MEM_COMMIT, PAGE_READWRITE))
-	    return 0;
-
-	// apply the guard attribute to the page
-	if (!VirtualProtect(pGuardPage, nPageSize, PAGE_READWRITE | PAGE_GUARD,
-								      &dummy))
-	    return 0;
-    }
-
-    return 1;
-}
-#endif
-
-
-/*
- * The command line arguments in UCS2
+ * The command line arguments in UTF-16
  */
 static int	nArgsW = 0;
 static LPWSTR	*ArglistW = NULL;
@@ -7394,8 +7527,8 @@ get_cmd_argsW(char ***argvp)
 	    {
 		int	len;
 
-		// Convert each Unicode argument to the current codepage.
-		WideCharToMultiByte_alloc(GetACP(), 0,
+		// Convert each Unicode argument to UTF-8.
+		WideCharToMultiByte_alloc(CP_UTF8, 0,
 				ArglistW[i], (int)wcslen(ArglistW[i]) + 1,
 				(LPSTR *)&argv[i], &len, 0, 0);
 		if (argv[i] == NULL)
@@ -7471,7 +7604,7 @@ set_alist_count(void)
 
 /*
  * Fix the encoding of the command line arguments.  Invoked when 'encoding'
- * has been changed while starting up.  Use the UCS-2 command line arguments
+ * has been changed while starting up.  Use the UTF-16 command line arguments
  * and convert them to 'encoding'.
  */
     void
@@ -7553,15 +7686,18 @@ fix_arg_enc(void)
 	// Now expand wildcards in the arguments.
 	// Temporarily add '(' and ')' to 'isfname'.  These are valid
 	// filename characters but are excluded from 'isfname' to make
-	// "gf" work on a file name in parenthesis (e.g.: see vim.h).
+	// "gf" work on a file name in parentheses (e.g.: see vim.h).
 	// Also, unset wildignore to not be influenced by this option.
 	// The arguments specified in command-line should be kept even if
 	// encoding options were changed.
-	do_cmdline_cmd((char_u *)":let SaVe_ISF = &isf|set isf+=(,)");
-	do_cmdline_cmd((char_u *)":let SaVe_WIG = &wig|set wig=");
+	// Use :legacy so that it also works when in Vim9 script.
+	do_cmdline_cmd((char_u *)":legacy let g:SaVe_ISF = &isf|set isf+=(,)");
+	do_cmdline_cmd((char_u *)":legacy let g:SaVe_WIG = &wig|set wig=");
 	alist_expand(fnum_list, used_alist_count);
-	do_cmdline_cmd((char_u *)":let &isf = SaVe_ISF|unlet SaVe_ISF");
-	do_cmdline_cmd((char_u *)":let &wig = SaVe_WIG|unlet SaVe_WIG");
+	do_cmdline_cmd(
+		(char_u *)":legacy let &isf = g:SaVe_ISF|unlet g:SaVe_ISF");
+	do_cmdline_cmd(
+		(char_u *)":legacy let &wig = g:SaVe_WIG|unlet g:SaVe_WIG");
     }
 
     // If wildcard expansion failed, we are editing the first file of the
@@ -7569,8 +7705,9 @@ fix_arg_enc(void)
     if (curwin->w_arg_idx == 0 && curbuf->b_fname == NULL)
     {
 	do_cmdline_cmd((char_u *)":rewind");
-	if (GARGCOUNT == 1 && used_file_full_path)
-	    (void)vim_chdirfile(alist_name(&GARGLIST[0]), "drop");
+	if (GARGCOUNT == 1 && used_file_full_path
+		&& vim_chdirfile(alist_name(&GARGLIST[0]), "drop") == OK)
+	    last_chdir_reason = "drop";
     }
 
     set_alist_count();
@@ -7762,12 +7899,12 @@ vtp_sgr_bulk(
     vtp_sgr_bulks(1, args);
 }
 
-#define FAST256(x) \
+# define FAST256(x) \
     if ((*p-- = "0123456789"[(n = x % 10)]) \
 	    && x >= 10 && (*p-- = "0123456789"[((m = x % 100) - n) / 10]) \
 	    && x >= 100 && (*p-- = "012"[((x & 0xff) - m) / 100]));
 
-#define FAST256CASE(x) \
+# define FAST256CASE(x) \
     case x: \
 	FAST256(newargs[x - 1]);
 
@@ -7776,8 +7913,8 @@ vtp_sgr_bulks(
     int argc,
     int *args)
 {
-#define MAXSGR 16
-#define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
+# define MAXSGR 16
+# define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
     char_u  buf[SGRBUFSIZE];
     char_u  *p;
     int	    in, out;
@@ -8142,3 +8279,24 @@ resize_console_buf(void)
     }
 }
 #endif
+
+    char *
+GetWin32Error(void)
+{
+    static char *oldmsg = NULL;
+    char *msg = NULL;
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+	    NULL, GetLastError(), 0, (LPSTR)&msg, 0, NULL);
+    if (oldmsg != NULL)
+	LocalFree(oldmsg);
+    if (msg != NULL)
+    {
+	// remove trailing \r\n
+	char *pcrlf = strstr(msg, "\r\n");
+	if (pcrlf != NULL)
+	    *pcrlf = '\0';
+	oldmsg = msg;
+    }
+    return msg;
+}

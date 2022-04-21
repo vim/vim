@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2019 Oct 27
+" Last change:	2022 Mar 03
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -64,9 +64,10 @@ if has('win32')
   set guioptions-=t
 endif
 
-" Don't use Ex mode, use Q for formatting.
+" Don't use Q for Ex mode, use it for formatting.  Except for Select mode.
 " Revert with ":unmap Q".
 map Q gq
+sunmap Q
 
 " CTRL-U in insert mode deletes a lot.  Use CTRL-G u to first break undo,
 " so that you can undo CTRL-U after inserting a line break.
@@ -85,17 +86,6 @@ if has('mouse')
   endif
 endif
 
-" Switch syntax highlighting on when the terminal has colors or when using the
-" GUI (which always has colors).
-if &t_Co > 2 || has("gui_running")
-  " Revert with ":syntax off".
-  syntax on
-
-  " I like highlighting strings inside C comments.
-  " Revert with ":unlet c_comment_strings".
-  let c_comment_strings=1
-endif
-
 " Only do this part when Vim was compiled with the +eval feature.
 if 1
 
@@ -107,7 +97,7 @@ if 1
   filetype plugin indent on
 
   " Put these in an autocmd group, so that you can revert them with:
-  " ":augroup vimStartup | au! | augroup END"
+  " ":augroup vimStartup | exe 'au!' | augroup END"
   augroup vimStartup
     au!
 
@@ -122,6 +112,29 @@ if 1
 
   augroup END
 
+  " Quite a few people accidentally type "q:" instead of ":q" and get confused
+  " by the command line window.  Give a hint about how to get out.
+  " If you don't like this you can put this in your vimrc:
+  " ":augroup vimHints | exe 'au!' | augroup END"
+  augroup vimHints
+    au!
+    autocmd CmdwinEnter *
+	  \ echohl Todo | 
+	  \ echo 'You discovered the command-line window! You can close it with ":q".' |
+	  \ echohl None
+  augroup END
+
+endif
+
+" Switch syntax highlighting on when the terminal has colors or when using the
+" GUI (which always has colors).
+if &t_Co > 2 || has("gui_running")
+  " Revert with ":syntax off".
+  syntax on
+
+  " I like highlighting strings inside C comments.
+  " Revert with ":unlet c_comment_strings".
+  let c_comment_strings=1
 endif
 
 " Convenient command to see the difference between the current buffer and the

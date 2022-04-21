@@ -30,6 +30,7 @@ struct bw_info
     int		bw_flags;	// FIO_ flags
 #ifdef FEAT_CRYPT
     buf_T	*bw_buffer;	// buffer being written
+    int         bw_finish;      // finish encrypting
 #endif
     char_u	bw_rest[CONV_RESTLEN]; // not converted bytes
     int		bw_restlen;	// nr of bytes in bw_rest[]
@@ -493,14 +494,16 @@ buf_write_bytes(struct bw_info *ip)
 	if (crypt_works_inplace(ip->bw_buffer->b_cryptstate))
 	{
 # endif
-	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len);
+	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len,
+								ip->bw_finish);
 # ifdef CRYPT_NOT_INPLACE
 	}
 	else
 	{
 	    char_u *outbuf;
 
-	    len = crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf);
+	    len = crypt_encode_alloc(curbuf->b_cryptstate, buf, len, &outbuf,
+								ip->bw_finish);
 	    if (len == 0)
 		return OK;  // Crypt layer is buffering, will flush later.
 	    wlen = write_eintr(ip->bw_fd, outbuf, len);
@@ -524,7 +527,7 @@ buf_write_bytes(struct bw_info *ip)
 check_mtime(buf_T *buf, stat_T *st)
 {
     if (buf->b_mtime_read != 0
-	    && time_differs((long)st->st_mtime, buf->b_mtime_read))
+		  && time_differs(st, buf->b_mtime_read, buf->b_mtime_read_ns))
     {
 	msg_scroll = TRUE;	    // don't overwrite messages here
 	msg_silent = 0;		    // must give this prompt
@@ -664,7 +667,6 @@ buf_write(
     int		    prev_got_int = got_int;
     int		    checking_conversion;
     int		    file_readonly = FALSE;  // overwritten file is read-only
-    static char	    *err_readonly = "is read-only (cannot override: \"W\" in 'cpoptions')";
 #if defined(UNIX)			    // XXX fix me sometime?
     int		    made_writable = FALSE;  // 'w' bit has been set
 #endif
@@ -698,7 +700,7 @@ buf_write(
     {
 	// This can happen during startup when there is a stray "w" in the
 	// vimrc file.
-	emsg(_(e_emptybuf));
+	emsg(_(e_empty_buffer));
 	return FAIL;
     }
 
@@ -710,7 +712,7 @@ buf_write(
     // Avoid a crash for a long name.
     if (STRLEN(fname) >= MAXPATHL)
     {
-	emsg(_(e_longname));
+	emsg(_(e_name_too_long));
 	return FAIL;
     }
 
@@ -724,6 +726,7 @@ buf_write(
 #endif
 #ifdef FEAT_CRYPT
     write_info.bw_buffer = buf;
+    write_info.bw_finish = FALSE;
 #endif
 
     // After writing a file changedtick changes but we don't want to display
@@ -883,7 +886,7 @@ buf_write(
 #endif
 				       )
 	{
-	    if (buf != NULL && cmdmod.lockmarks)
+	    if (buf != NULL && (cmdmod.cmod_flags & CMOD_LOCKMARKS))
 	    {
 		// restore the original '[ and '] positions
 		buf->b_op_start = orig_start;
@@ -893,7 +896,7 @@ buf_write(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (nofile_err)
-		emsg(_("E676: No matching autocommands for acwrite buffer"));
+		emsg(_(e_no_matching_autocommands_for_acwrite_buffer));
 
 	    if (nofile_err
 #ifdef FEAT_EVAL
@@ -928,7 +931,7 @@ buf_write(
 #ifdef FEAT_EVAL
 	    if (!aborting())
 #endif
-		emsg(_("E203: Autocommands deleted or unloaded buffer to be written"));
+		emsg(_(e_autocommands_deleted_or_unloaded_buffer_to_be_written));
 	    return FAIL;
 	}
 
@@ -949,7 +952,7 @@ buf_write(
 		{
 		    --no_wait_return;
 		    msg_scroll = msg_save;
-		    emsg(_("E204: Autocommand changed number of lines in unexpected way"));
+		    emsg(_(e_autocommands_changed_number_of_lines_in_unexpected_way));
 		    return FAIL;
 		}
 	    }
@@ -967,7 +970,7 @@ buf_write(
 	    fname = buf->b_sfname;
     }
 
-    if (cmdmod.lockmarks)
+    if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
     {
 	// restore the original '[ and '] positions
 	buf->b_op_start = orig_start;
@@ -991,7 +994,7 @@ buf_write(
 	    else
 	    {
 		errnum = (char_u *)"E656: ";
-		errmsg = (char_u *)_("NetBeans disallows writes of unmodified buffers");
+		errmsg = (char_u *)_(e_netbeans_disallows_writes_of_unmodified_buffers);
 		buffer = NULL;
 		goto fail;
 	    }
@@ -999,7 +1002,7 @@ buf_write(
 	else
 	{
 	    errnum = (char_u *)"E657: ";
-	    errmsg = (char_u *)_("Partial writes disallowed for NetBeans buffers");
+	    errmsg = (char_u *)_(e_partial_writes_disallowed_for_netbeans_buffers);
 	    buffer = NULL;
 	    goto fail;
 	}
@@ -1046,13 +1049,13 @@ buf_write(
 	    if (S_ISDIR(st_old.st_mode))
 	    {
 		errnum = (char_u *)"E502: ";
-		errmsg = (char_u *)_("is a directory");
+		errmsg = (char_u *)_(e_is_a_directory);
 		goto fail;
 	    }
 	    if (mch_nodetype(fname) != NODE_WRITABLE)
 	    {
 		errnum = (char_u *)"E503: ";
-		errmsg = (char_u *)_("is not a file or writable device");
+		errmsg = (char_u *)_(e_is_not_file_or_writable_device);
 		goto fail;
 	    }
 	    // It's a device of some kind (or a fifo) which we can write to
@@ -1068,7 +1071,7 @@ buf_write(
     if (c == NODE_OTHER)
     {
 	errnum = (char_u *)"E503: ";
-	errmsg = (char_u *)_("is not a file or writable device");
+	errmsg = (char_u *)_(e_is_not_file_or_writable_device);
 	goto fail;
     }
     if (c == NODE_WRITABLE)
@@ -1079,7 +1082,7 @@ buf_write(
 	if (!p_odev)
 	{
 	    errnum = (char_u *)"E796: ";
-	    errmsg = (char_u *)_("writing to device disabled with 'opendevice' option");
+	    errmsg = (char_u *)_(e_writing_to_device_disabled_with_opendevice_option);
 	    goto fail;
 	}
 # endif
@@ -1095,7 +1098,7 @@ buf_write(
 	else if (mch_isdir(fname))
 	{
 	    errnum = (char_u *)"E502: ";
-	    errmsg = (char_u *)_("is a directory");
+	    errmsg = (char_u *)_(e_is_a_directory);
 	    goto fail;
 	}
 	if (overwriting)
@@ -1114,12 +1117,12 @@ buf_write(
 	    if (vim_strchr(p_cpo, CPO_FWRITE) != NULL)
 	    {
 		errnum = (char_u *)"E504: ";
-		errmsg = (char_u *)_(err_readonly);
+		errmsg = (char_u *)_(e_is_read_only_cannot_override_W_in_cpoptions);
 	    }
 	    else
 	    {
 		errnum = (char_u *)"E505: ";
-		errmsg = (char_u *)_("is read-only (add ! to override)");
+		errmsg = (char_u *)_(e_is_read_only_add_bang_to_override);
 	    }
 	    goto fail;
 	}
@@ -1473,21 +1476,21 @@ buf_write(
 			{
 			    if (buf_write_bytes(&write_info) == FAIL)
 			    {
-				errmsg = (char_u *)_("E506: Can't write to backup file (add ! to override)");
+				errmsg = (char_u *)_(e_canot_write_to_backup_file_add_bang_to_override);
 				break;
 			    }
 			    ui_breakcheck();
 			    if (got_int)
 			    {
-				errmsg = (char_u *)_(e_interr);
+				errmsg = (char_u *)_(e_interrupted);
 				break;
 			    }
 			}
 
 			if (close(bfd) < 0 && errmsg == NULL)
-			    errmsg = (char_u *)_("E507: Close error for backup file (add ! to override)");
+			    errmsg = (char_u *)_(e_close_error_for_backup_file_add_bang_to_write_anyway);
 			if (write_info.bw_len < 0)
-			    errmsg = (char_u *)_("E508: Can't read file for backup (add ! to override)");
+			    errmsg = (char_u *)_(e_cant_read_file_for_backup_add_bang_to_write_anyway);
 #ifdef UNIX
 			set_file_time(backup, st_old.st_atime, st_old.st_mtime);
 #endif
@@ -1496,6 +1499,9 @@ buf_write(
 #endif
 #if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
 			mch_copy_sec(fname, backup);
+#endif
+#ifdef MSWIN
+			(void)mch_copy_file_attribute(fname, backup);
 #endif
 			break;
 		    }
@@ -1506,7 +1512,7 @@ buf_write(
 	    vim_free(copybuf);
 
 	    if (backup == NULL && errmsg == NULL)
-		errmsg = (char_u *)_("E509: Cannot create backup file (add ! to override)");
+		errmsg = (char_u *)_(e_cannot_create_backup_file_add_bang_to_write_anyway);
 	    // ignore errors when forceit is TRUE
 	    if ((some_error || errmsg != NULL) && !forceit)
 	    {
@@ -1529,7 +1535,7 @@ buf_write(
 	    if (file_readonly && vim_strchr(p_cpo, CPO_FWRITE) != NULL)
 	    {
 		errnum = (char_u *)"E504: ";
-		errmsg = (char_u *)_(err_readonly);
+		errmsg = (char_u *)_(e_is_read_only_cannot_override_W_in_cpoptions);
 		goto fail;
 	    }
 
@@ -1601,7 +1607,7 @@ buf_write(
 	    }
 	    if (backup == NULL && !forceit)
 	    {
-		errmsg = (char_u *)_("E510: Can't make backup file (add ! to override)");
+		errmsg = (char_u *)_(e_cant_make_backup_file_add_bang_to_write_anyway);
 		goto fail;
 	    }
 	}
@@ -1623,9 +1629,7 @@ buf_write(
     if (forceit && overwriting && vim_strchr(p_cpo, CPO_KEEPRO) == NULL)
     {
 	buf->b_p_ro = FALSE;
-#ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    // set window title later
-#endif
 	status_redraw_all();	    // redraw status lines later
     }
 
@@ -1645,7 +1649,7 @@ buf_write(
 	ml_preserve(buf, FALSE);
 	if (got_int)
 	{
-	    errmsg = (char_u *)_(e_interr);
+	    errmsg = (char_u *)_(e_interrupted);
 	    goto restore_backup;
 	}
     }
@@ -1741,7 +1745,7 @@ buf_write(
 		wfname = vim_tempname('w', FALSE);
 		if (wfname == NULL)	// Can't write without a tempfile!
 		{
-		    errmsg = (char_u *)_("E214: Can't find temp file for writing");
+		    errmsg = (char_u *)_(e_cant_find_temp_file_for_writing);
 		    goto restore_backup;
 		}
 	    }
@@ -1759,7 +1763,7 @@ buf_write(
     {
 	if (!forceit)
 	{
-	    errmsg = (char_u *)_("E213: Cannot convert (add ! to write without conversion)");
+	    errmsg = (char_u *)_(e_cannot_convert_add_bang_to_write_without_conversion);
 	    goto restore_backup;
 	}
 	notconverted = TRUE;
@@ -1816,11 +1820,12 @@ buf_write(
 			    || (mch_lstat((char *)fname, &st) == 0
 				&& (st.st_dev != st_old.st_dev
 				    || st.st_ino != st_old.st_ino)))
-			errmsg = (char_u *)_("E166: Can't open linked file for writing");
+			errmsg =
+			      (char_u *)_(e_cant_open_linked_file_for_writing);
 		    else
 #endif
 		    {
-			errmsg = (char_u *)_("E212: Can't open file for writing");
+			errmsg = (char_u *)_(e_cant_open_file_for_writing);
 			if (forceit && vim_strchr(p_cpo, CPO_FWRITE) == NULL
 								  && perm >= 0)
 			{
@@ -1897,7 +1902,7 @@ restore_backup:
 			&& st.st_ino != st_old.st_ino)
 		{
 		    close(fd);
-		    errmsg = (char_u *)_("E949: File changed while writing");
+		    errmsg = (char_u *)_(e_file_changed_while_writing);
 		    goto fail;
 		}
 	    }
@@ -1909,12 +1914,7 @@ restore_backup:
 
 #if defined(MSWIN)
 	    if (backup != NULL && overwriting && !append)
-	    {
-		if (backup_copy)
-		    (void)mch_copy_file_attribute(wfname, backup);
-		else
-		    (void)mch_copy_file_attribute(backup, wfname);
-	    }
+		(void)mch_copy_file_attribute(backup, wfname);
 
 	    if (!overwriting && !append)
 	    {
@@ -1984,8 +1984,25 @@ restore_backup:
 			    && overwriting
 			    && !append
 			    && !filtering
+# ifdef CRYPT_NOT_INPLACE
+			    // writing undo file requires
+			    // crypt_encode_inplace()
+			    && (buf->b_cryptstate == NULL
+				|| crypt_works_inplace(buf->b_cryptstate))
+# endif
 			    && reset_changed
 			    && !checking_conversion);
+# ifdef CRYPT_NOT_INPLACE
+	// remove undo file if encrypting it is not possible
+	if (buf->b_p_udf
+		&& overwriting
+		&& !append
+		&& !filtering
+		&& !checking_conversion
+		&& buf->b_cryptstate != NULL
+		&& !crypt_works_inplace(buf->b_cryptstate))
+	    u_undofile_reset_and_delete(buf);
+# endif
 	if (write_undo_file)
 	    // Prepare for computing the hash value of the text.
 	    sha256_start(&sha_ctx);
@@ -2017,6 +2034,13 @@ restore_backup:
 		++s;
 		if (++len != bufsize)
 		    continue;
+#ifdef FEAT_CRYPT
+		if (write_info.bw_fd > 0 && lnum == end
+			&& (write_info.bw_flags & FIO_ENCRYPTED)
+			&& *buf->b_p_key != NUL && !filtering
+			&& *ptr == NUL)
+		    write_info.bw_finish = TRUE;
+ #endif
 		if (buf_write_bytes(&write_info) == FAIL)
 		{
 		    end = 0;		// write error: break loop
@@ -2031,7 +2055,7 @@ restore_backup:
 	    if (end == 0
 		    || (lnum == end
 			&& (write_bin || !buf->b_p_fixeol)
-			&& (lnum == buf->b_no_eol_lnum
+			&& ((write_bin && lnum == buf->b_no_eol_lnum)
 			    || (lnum == buf->b_ml.ml_line_count
 							   && !buf->b_p_eol))))
 	    {
@@ -2120,6 +2144,12 @@ restore_backup:
 	if (len > 0 && end > 0)
 	{
 	    write_info.bw_len = len;
+#ifdef FEAT_CRYPT
+	    if (write_info.bw_fd > 0 && lnum >= end
+		    && (write_info.bw_flags & FIO_ENCRYPTED)
+		    && *buf->b_p_key != NUL && !filtering)
+		write_info.bw_finish = TRUE;
+ #endif
 	    if (buf_write_bytes(&write_info) == FAIL)
 		end = 0;		    // write error
 	    nchars += len;
@@ -2138,7 +2168,7 @@ restore_backup:
     if (!checking_conversion)
     {
 #if defined(UNIX) && defined(HAVE_FSYNC)
-	// On many journalling file systems there is a bug that causes both the
+	// On many journaling file systems there is a bug that causes both the
 	// original and the backup file to be lost when halting the system
 	// right after writing the file.  That's because only the meta-data is
 	// journalled.  Syncing the file slows down the system, but assures it
@@ -2148,7 +2178,7 @@ restore_backup:
 	// If the 'fsync' option is FALSE, don't fsync().  Useful for laptops.
 	if (p_fs && vim_fsync(fd) != 0 && !device)
 	{
-	    errmsg = (char_u *)_(e_fsync);
+	    errmsg = (char_u *)_(e_fsync_failed);
 	    end = 0;
 	}
 #endif
@@ -2198,7 +2228,7 @@ restore_backup:
 #endif
 	if (close(fd) != 0)
 	{
-	    errmsg = (char_u *)_("E512: Close failed");
+	    errmsg = (char_u *)_(e_close_failed);
 	    end = 0;
 	}
 
@@ -2255,19 +2285,19 @@ restore_backup:
 	    if (write_info.bw_conv_error)
 	    {
 		if (write_info.bw_conv_error_lnum == 0)
-		    errmsg = (char_u *)_("E513: write error, conversion failed (make 'fenc' empty to override)");
+		    errmsg = (char_u *)_(e_write_error_conversion_failed_make_fenc_empty_to_override);
 		else
 		{
 		    errmsg_allocated = TRUE;
 		    errmsg = alloc(300);
-		    vim_snprintf((char *)errmsg, 300, _("E513: write error, conversion failed in line %ld (make 'fenc' empty to override)"),
+		    vim_snprintf((char *)errmsg, 300, _(e_write_error_conversion_failed_in_line_nr_make_fenc_empty_to_override),
 					 (long)write_info.bw_conv_error_lnum);
 		}
 	    }
 	    else if (got_int)
-		errmsg = (char_u *)_(e_interr);
+		errmsg = (char_u *)_(e_interrupted);
 	    else
-		errmsg = (char_u *)_("E514: write error (file system full?)");
+		errmsg = (char_u *)_(e_write_error_file_system_full);
 	}
 
 	// If we have a backup file, try to put it in place of the new file,
@@ -2285,7 +2315,7 @@ restore_backup:
 		// know we got the message.
 		if (got_int)
 		{
-		    msg(_(e_interr));
+		    msg(_(e_interrupted));
 		    out_flush();
 		}
 		if ((fd = mch_open((char *)backup, O_RDONLY | O_EXTRA, 0)) >= 0)
@@ -2390,8 +2420,8 @@ restore_backup:
 	    && (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL))
     {
 	unchanged(buf, TRUE, FALSE);
-	// b:changedtick is may be incremented in unchanged() but that
-	// should not trigger a TextChanged event.
+	// b:changedtick may be incremented in unchanged() but that should not
+	// trigger a TextChanged event.
 	if (buf->b_last_changedtick + 1 == CHANGEDTICK(buf))
 	    buf->b_last_changedtick = CHANGEDTICK(buf);
 	u_unchanged(buf);
@@ -2423,7 +2453,7 @@ restore_backup:
 	    // If the original file does not exist yet
 	    // the current backup file becomes the original file
 	    if (org == NULL)
-		emsg(_("E205: Patchmode: can't save original file"));
+		emsg(_(e_patchmode_cant_save_original_file));
 	    else if (mch_stat(org, &st) < 0)
 	    {
 		vim_rename(backup, (char_u *)org);
@@ -2443,7 +2473,7 @@ restore_backup:
 		    || (empty_fd = mch_open(org,
 				      O_CREAT | O_EXTRA | O_EXCL | O_NOFOLLOW,
 					perm < 0 ? 0666 : (perm & 0777))) < 0)
-	      emsg(_("E206: patchmode: can't touch empty original file"));
+	      emsg(_(e_patchmode_cant_touch_empty_original_file));
 	    else
 	      close(empty_fd);
 	}
@@ -2458,7 +2488,7 @@ restore_backup:
     // conversion error.
     if (!p_bk && backup != NULL && !write_info.bw_conv_error
 	    && mch_remove(backup) != 0)
-	emsg(_("E207: Can't delete backup file"));
+	emsg(_(e_cant_delete_backup_file));
 
     goto nofail;
 
@@ -2526,6 +2556,7 @@ nofail:
 	    {
 		buf_store_time(buf, &st_old, fname);
 		buf->b_mtime_read = buf->b_mtime;
+		buf->b_mtime_read_ns = buf->b_mtime_ns;
 	    }
 	}
     }
@@ -2578,6 +2609,12 @@ nofail:
 	    retval = FALSE;
 #endif
     }
+
+#ifdef FEAT_VIMINFO
+    // Make sure marks will be written out to the viminfo file later, even when
+    // the file is new.
+    curbuf->b_marks_read = TRUE;
+#endif
 
     got_int |= prev_got_int;
 

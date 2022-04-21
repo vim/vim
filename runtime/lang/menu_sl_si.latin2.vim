@@ -3,6 +3,7 @@
 " Originally By:	Mojca Miklavec <mojca.miklavec.lists@gmail.com>
 " Last Change:		2020 Apr 23
 " vim:set foldmethod=marker tabstop=8:
+" Generated from menu_sl_si.utf-8.vim, DO NOT EDIT
 
 " TODO: add/check all '&'s
 

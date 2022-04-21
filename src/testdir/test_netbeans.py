@@ -41,6 +41,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             elif re.match('1:insert=.* "\\\\n"', line):
                 # extract the command from the previous line
                 cmd = re.search('.*"(.*)"', self.prev_line).group(1)
+
+                # map of test names and the netbeans commands/functions
                 testmap = {
                   'getCursor_Test' : '0:getCursor/30\n',
                   'E627_Test' : '0 setReadOnly!31\n',
@@ -70,6 +72,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                   'getModified_Test' : '2:getModified/55\n',
                   'getText_Test' : '2:getText/56\n',
                   'setDot_Test' : '2:setDot!57 3/6\n',
+                  'setDot2_Test' : '2:setDot!57 9\n',
                   'startDocumentListen_Test' : '2:startDocumentListen!58\n',
                   'stopDocumentListen_Test' : '2:stopDocumentListen!59\n',
                   'define_anno_Test' : '2:defineAnnoType!60 1 "s1" "x" "=>" blue none\n',
@@ -90,6 +93,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                   'remove_invalid_count_Test' : '3:remove/75 1 800\n',
                   'guard_Test' : '3:guard!76 8 7\n',
                   'setModified_Test' : '3:setModified!77 T\n',
+                  'setModifiedClear_Test' : '3:setModified!77 F\n',
                   'insertDone_Test' : '3:insertDone!78 T F\n',
                   'saveDone_Test' : '3:saveDone!79\n',
                   'invalidcmd_Test' : '3:invalidcmd!80\n',
@@ -99,11 +103,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                   'save_fail_Test' : '0:save/84\n',
                   'netbeansBuffer_fail_Test' : '0:netbeansBuffer/85 T\n',
                   'setExitDelay_Test' : '0:setExitDelay!86 2\n',
-                  'setReadOnly_Test' : '3:setReadOnly!87\n',
-                  'close_Test' : '3:close!88\n',
-                  'specialKeys_Test' : '0:specialKeys!89 "F12 F13"\n',
-                  'nbbufwrite_Test' : '4:editFile!90 "XnbBuffer"\n4:netbeansBuffer!91 T\n',
-                  'detach_Test' : '2:close!92\n1:close!93\nDETACH\n'
+                  'setReadOnly_Test' : '3:setReadOnly!87 T\n',
+                  'setReadOnlyClear_Test' : '3:setReadOnly!88 F\n',
+                  'save_Test' : '3:save!89\n',
+                  'close_Test' : '3:close!90\n',
+                  'specialKeys_Test' : '0:specialKeys!91 "F12 F13 C-F13"\n',
+                  'nbbufwrite_Test' : '4:editFile!92 "XnbBuffer"\n4:netbeansBuffer!93 T\n',
+                  'startAtomic_Test' : '0:startAtomic!94\n',
+                  'endAtomic_Test' : '0:endAtomic!95\n',
+                  'AnnoScale_Test' : "".join(['2:defineAnnoType!60 ' + str(i) + ' "s' + str(i) + '" "x" "=>" blue none\n' for i in range(2, 26)]),
+                  'detach_Test' : '2:close!96\n1:close!97\nDETACH\n'
                 }
                 # execute the specified test
                 if cmd not in testmap:

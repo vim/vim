@@ -2,7 +2,7 @@
 int re_multiline(regprog_T *prog);
 char_u *skip_regexp(char_u *startp, int delim, int magic);
 char_u *skip_regexp_err(char_u *startp, int delim, int magic);
-char_u *skip_regexp_ex(char_u *startp, int dirc, int magic, char_u **newp, int *dropped);
+char_u *skip_regexp_ex(char_u *startp, int dirc, int magic, char_u **newp, int *dropped, magic_T *magic_val);
 reg_extmatch_T *ref_extmatch(reg_extmatch_T *em);
 void unref_extmatch(reg_extmatch_T *em);
 char_u *regtilde(char_u *source, int magic);

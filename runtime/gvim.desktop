@@ -2,29 +2,41 @@
 # Edit the src/po/gvim.desktop.in file instead.
 [Desktop Entry]
 # Translators: This is the Application Name used in the GVim desktop file
+Name[ca]=GVim
 Name[de]=GVim
 Name[eo]=GVim
+Name[fi]=GVim
 Name[fr]=GVim
+Name[ga]=GVim
+Name[it]=GVim
 Name[ru]=GVim
 Name[sr]=GVim
 Name[tr]=GVim
 Name=GVim
 # Translators: This is the Generic Application Name used in the Vim desktop file
+GenericName[ca]=Editor de text
 GenericName[de]=Texteditor
 GenericName[eo]=Tekstoredaktilo
+GenericName[fi]=Tekstinmuokkain
 GenericName[fr]=Éditeur de texte
+GenericName[ga]=Eagarthóir Téacs
+GenericName[it]=Editor di testi
 GenericName[ja]=テキストエディタ
 GenericName[ru]=Текстовый редактор
-GenericName[sr]=Текст Едитор
+GenericName[sr]=Едитор текст
 GenericName[tr]=Metin Düzenleyici
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
+Comment[ca]=Edita fitxers de text
 Comment[de]=Textdateien bearbeiten
 Comment[eo]=Redakti tekstajn dosierojn
+Comment[fi]=Muokkaa tekstitiedostoja
 Comment[fr]=Éditer des fichiers texte
+Comment[ga]=Cuir comhaid téacs in eagar
+Comment[it]=Edita file di testo
 Comment[ja]=テキストファイルを編集します
 Comment[ru]=Редактирование текстовых файлов
-Comment[sr]=Уређивање текст фајлова
+Comment[sr]=Уређујте текст фајлове
 Comment[tr]=Metin dosyaları düzenleyin
 Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
@@ -40,7 +52,6 @@ Comment[be]=Рэдагаваньне тэкставых файлаў
 Comment[bg]=Редактиране на текстови файлове
 Comment[bn]=টেক্স্ট ফাইল এডিট করুন
 Comment[bs]=Izmijeni tekstualne datoteke
-Comment[ca]=Edita fitxers de text
 Comment[cs]=Úprava textových souborů
 Comment[cy]=Golygu ffeiliau testun
 Comment[da]=Rediger tekstfiler
@@ -51,8 +62,6 @@ Comment[es]=Edita archivos de texto
 Comment[et]=Redigeeri tekstifaile
 Comment[eu]=Editatu testu-fitxategiak
 Comment[fa]=ویرایش پرونده‌های متنی
-Comment[fi]=Muokkaa tekstitiedostoja
-Comment[ga]=Eagar comhad Téacs
 Comment[gu]=લખાણ ફાઇલોમાં ફેરફાર કરો
 Comment[he]=ערוך קבצי טקסט
 Comment[hi]=पाठ फ़ाइलें संपादित करें
@@ -60,7 +69,6 @@ Comment[hr]=Uređivanje tekstualne datoteke
 Comment[hu]=Szövegfájlok szerkesztése
 Comment[id]=Edit file teks
 Comment[is]=Vinna með textaskrár
-Comment[it]=Modifica file di testo
 Comment[kn]=ಪಠ್ಯ ಕಡತಗಳನ್ನು ಸಂಪಾದಿಸು
 Comment[ko]=텍스트 파일을 편집합니다
 Comment[lt]=Redaguoti tekstines bylas
@@ -99,20 +107,19 @@ Exec=gvim -f %F
 Terminal=false
 Type=Application
 # Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
+Keywords[ca]=Text;editor;
 Keywords[de]=Text;Editor;
 Keywords[eo]=Teksto;redaktilo;
+Keywords[fi]=Teksti;muokkain;editori;
 Keywords[fr]=Texte;éditeur;
+Keywords[ga]=Téacs;eagarthóir;
+Keywords[it]=Testo;editor;
 Keywords[ja]=テキスト;エディタ;
 Keywords[ru]=текст;текстовый редактор;
 Keywords[sr]=Текст;едитор;
 Keywords[tr]=Metin;düzenleyici;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
-Icon[de]=gvim
-Icon[eo]=gvim
-Icon[fr]=gvim
-Icon[ru]=gvim
-Icon[sr]=gvim
 Icon=gvim
 Categories=Utility;TextEditor;
 StartupNotify=true

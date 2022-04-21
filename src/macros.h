@@ -77,13 +77,8 @@
 #endif
 
 // toupper() and tolower() for ASCII only and ignore the current locale.
-#ifdef EBCDIC
-# define TOUPPER_ASC(c)	(islower(c) ? toupper(c) : (c))
-# define TOLOWER_ASC(c)	(isupper(c) ? tolower(c) : (c))
-#else
-# define TOUPPER_ASC(c)	(((c) < 'a' || (c) > 'z') ? (c) : (c) - ('a' - 'A'))
-# define TOLOWER_ASC(c)	(((c) < 'A' || (c) > 'Z') ? (c) : (c) + ('a' - 'A'))
-#endif
+#define TOUPPER_ASC(c)	(((c) < 'a' || (c) > 'z') ? (c) : (c) - ('a' - 'A'))
+#define TOLOWER_ASC(c)	(((c) < 'A' || (c) > 'Z') ? (c) : (c) + ('a' - 'A'))
 
 /*
  * MB_ISLOWER() and MB_ISUPPER() are to be used on multi-byte characters.  But
@@ -102,17 +97,10 @@
 
 // Like isalpha() but reject non-ASCII characters.  Can't be used with a
 // special key (negative value).
-#ifdef EBCDIC
-# define ASCII_ISALPHA(c) isalpha(c)
-# define ASCII_ISALNUM(c) isalnum(c)
-# define ASCII_ISLOWER(c) islower(c)
-# define ASCII_ISUPPER(c) isupper(c)
-#else
-# define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
-# define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
-# define ASCII_ISALPHA(c) (ASCII_ISUPPER(c) || ASCII_ISLOWER(c))
-# define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
-#endif
+#define ASCII_ISLOWER(c) ((unsigned)(c) - 'a' < 26)
+#define ASCII_ISUPPER(c) ((unsigned)(c) - 'A' < 26)
+#define ASCII_ISALPHA(c) (ASCII_ISUPPER(c) || ASCII_ISLOWER(c))
+#define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
 
 // Returns empty string if it is NULL.
 #define EMPTY_IF_NULL(x) ((x) ? (x) : (char_u *)"")
@@ -158,18 +146,17 @@
 # define mch_access(n, p)	access(vms_fixfilename(n), (p))
 				// see mch_open() comment
 # define mch_fopen(n, p)	fopen(vms_fixfilename(n), (p))
-# define mch_fstat(n, p)	fstat(vms_fixfilename(n), (p))
-	// VMS does not have lstat()
+# define mch_fstat(n, p)	fstat((n), (p))
+# undef HAVE_LSTAT	        // VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
-# define mch_rmdir(n)		rmdir(vms_fixfilename(n))
 #else
 # ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))
 # endif
 
-// Use 64-bit fstat function if available.
+// Use 64-bit fstat function on MS-Windows.
 // NOTE: This condition is the same as for the stat_T type.
-# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+# ifdef MSWIN
 #  define mch_fstat(n, p)	_fstat64((n), (p))
 # else
 #  define mch_fstat(n, p)	fstat((n), (p))
@@ -245,14 +232,15 @@
 // Advance multi-byte pointer, do not skip over composing chars.
 #define MB_CPTR_ADV(p)	    p += enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p)
 // Backup multi-byte pointer. Only use with "p" > "s" !
-#define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
+#define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, (p) - 1) + 1) : 1
 // get length of multi-byte char, not including composing chars
 #define MB_CPTR2LEN(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
 
-#define MB_COPY_CHAR(f, t) do { if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++; } while (0)
+#define MB_COPY_CHAR(f, t) do { if (has_mbyte) mb_copy_char(&(f), &(t)); else *(t)++ = *(f)++; } while (0)
 #define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
 #define MB_CHAR2LEN(c)	    (has_mbyte ? mb_char2len(c) : 1)
 #define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
+#define MB_CHAR2BYTES(c, b) do { if (has_mbyte) (b) += (*mb_char2bytes)((c), (b)); else *(b)++ = (c); } while(0)
 
 #ifdef FEAT_AUTOCHDIR
 # define DO_AUTOCHDIR do { if (p_acd) do_autochdir(); } while (0)
@@ -325,7 +313,7 @@
  * HI2DI() converts a hashitem pointer to a dictitem pointer.
  */
 #define DI2HIKEY(di) ((di)->di_key)
-#define HIKEY2DI(p)  ((dictitem_T *)(p - offsetof(dictitem_T, di_key)))
+#define HIKEY2DI(p)  ((dictitem_T *)((p) - offsetof(dictitem_T, di_key)))
 #define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
 
 /*
@@ -387,5 +375,17 @@
 // Inline the condition for performance.
 #define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
 
-// Inlined version of ga_grow().  Especially useful if "n" is a constant.
-#define GA_GROW(gap, n) (((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK)
+// Inlined version of ga_grow() with optimized condition that it fails.
+#define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
+// Inlined version of ga_grow() with optimized condition that it succeeds.
+#define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == OK)
+
+#ifndef MIN
+# define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+#ifndef MAX
+# define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+// Length of the array.
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))

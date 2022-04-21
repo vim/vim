@@ -765,8 +765,8 @@ Poznámka: Tímto se vyhneš stisknutí  i  , posledního znaku, textu na vlože
   nastavení. Pro zapnutí některých vytvoř soubor "vimrc".
 
   1. Začni upravovat soubor "vimrc". Toto závisí na použitém systému:
-	:edit ~/.vimrc			pro Unix
-	:edit $VIM/_vimrc		pro MS-Windows
+	:edit ~/.vimrc		pro Unix
+	:edit ~/_vimrc		pro MS-Windows
 
   2. Nyní čti ukázkový "vimrc" soubor:
 
@@ -791,7 +791,7 @@ Poznámka: Tímto se vyhneš stisknutí  i  , posledního znaku, textu na vlože
 	Nakladatel: New Riders
   První kniha určená pro Vim. Obzvláště vhodná pro začátečníky.
   Obsahuje množství příkladů a obrázků.
-  viz http://iccf-holland.org/click5.html
+  viz https://iccf-holland.org/click5.html
 
   Tato kniha je starší a více věnovaná Vi než Vim, ale také doporučená:
 	Learning the Vi Editor - od Linda Lamb

@@ -13,8 +13,6 @@
  * Common code for if_python.c and if_python3.c.
  */
 
-static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception in vim";
-
 #if PY_VERSION_HEX < 0x02050000
 typedef int Py_ssize_t;  // Python 2.4 and earlier don't have this type.
 #endif
@@ -32,9 +30,9 @@ static const char *vim_special_path = "_vim_path_";
 #define PyErr_FORMAT2(exc, str, arg1, arg2) PyErr_Format(exc, _(str), arg1,arg2)
 #define PyErr_VIM_FORMAT(str, arg) PyErr_FORMAT(VimError, str, arg)
 
-#define Py_TYPE_NAME(obj) (obj->ob_type->tp_name == NULL \
+#define Py_TYPE_NAME(obj) ((obj)->ob_type->tp_name == NULL \
 	? "(NULL)" \
-	: obj->ob_type->tp_name)
+	: (obj)->ob_type->tp_name)
 
 #define RAISE_NO_EMPTY_KEYS PyErr_SET_STRING(PyExc_ValueError, \
 					    N_("empty keys are not allowed"))
@@ -130,10 +128,11 @@ StringToChars(PyObject *obj, PyObject **todecref)
     {
 	PyObject	*bytes;
 
-	if (!(bytes = PyUnicode_AsEncodedString(obj, ENC_OPT, NULL)))
+	if (!(bytes = PyUnicode_AsEncodedString(obj, ENC_OPT,
+							   ERRORS_ENCODE_ARG)))
 	    return NULL;
 
-	if(PyBytes_AsStringAndSize(bytes, (char **) &str, NULL) == -1
+	if (PyBytes_AsStringAndSize(bytes, (char **) &str, NULL) == -1
 		|| str == NULL)
 	{
 	    Py_DECREF(bytes);
@@ -307,7 +306,7 @@ ObjectDir(PyObject *self, char **attributes)
 // Output buffer management
 
 // Function to write a line, points to either msg() or emsg().
-typedef void (*writefn)(char_u *);
+typedef int (*writefn)(char *);
 
 static PyTypeObject OutputType;
 
@@ -324,7 +323,7 @@ static char *OutputAttrs[] = {
 };
 
     static PyObject *
-OutputDir(PyObject *self)
+OutputDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, OutputAttrs);
 }
@@ -359,8 +358,8 @@ PythonIO_Flush(void)
 {
     if (old_fn != NULL && io_ga.ga_len > 0)
     {
-	((char_u *)io_ga.ga_data)[io_ga.ga_len] = NUL;
-	old_fn((char_u *)io_ga.ga_data);
+	((char *)io_ga.ga_data)[io_ga.ga_len] = NUL;
+	old_fn((char *)io_ga.ga_data);
     }
     io_ga.ga_len = 0;
 }
@@ -390,7 +389,7 @@ writer(writefn fn, char_u *str, PyInt n)
 
 	mch_memmove(((char *)io_ga.ga_data) + io_ga.ga_len, str, (size_t)len);
 	((char *)io_ga.ga_data)[io_ga.ga_len + len] = NUL;
-	fn((char_u *)io_ga.ga_data);
+	fn((char *)io_ga.ga_data);
 	str = ptr + 1;
 	n -= len + 1;
 	io_ga.ga_len = 0;
@@ -468,30 +467,33 @@ OutputWritelines(OutputObject *self, PyObject *seq)
 }
 
     static PyObject *
-AlwaysNone(PyObject *self UNUSED)
+AlwaysNone(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     // do nothing
     Py_INCREF(Py_None);
     return Py_None;
 }
+#define ALWAYS_NONE AlwaysNone(NULL, NULL)
 
     static PyObject *
-AlwaysFalse(PyObject *self UNUSED)
+AlwaysFalse(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     // do nothing
     PyObject	*ret = Py_False;
     Py_INCREF(ret);
     return ret;
 }
+#define ALWAYS_FALSE AlwaysFalse(NULL, NULL)
 
     static PyObject *
-AlwaysTrue(PyObject *self UNUSED)
+AlwaysTrue(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     // do nothing
     PyObject	*ret = Py_True;
     Py_INCREF(ret);
     return ret;
 }
+#define ALWAYS_TRUE AlwaysTrue(NULL, NULL)
 
 /***************/
 
@@ -534,7 +536,7 @@ PythonIO_Init_io(void)
 
     if (PyErr_Occurred())
     {
-	emsg(_("E264: Python: Error initialising I/O objects"));
+	emsg(_(e_python_error_initialising_io_object));
 	return -1;
     }
 
@@ -1179,7 +1181,7 @@ map_finder_callback(char_u *path, void *_data)
 }
 
     static PyObject *
-Vim_GetPaths(PyObject *self UNUSED)
+Vim_GetPaths(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     PyObject	*ret;
 
@@ -1209,7 +1211,7 @@ FinderFindSpec(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s|O", &fullname, &target))
 	return NULL;
 
-    if (!(paths = Vim_GetPaths(self)))
+    if (!(paths = Vim_GetPaths(self, NULL)))
 	return NULL;
 
     spec = PyObject_CallFunction(py_find_spec, "sOO", fullname, paths, target);
@@ -1344,7 +1346,7 @@ FinderFindModule(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &fullname))
 	return NULL;
 
-    if (!(new_path = Vim_GetPaths(self)))
+    if (!(new_path = Vim_GetPaths(self, NULL)))
 	return NULL;
 
     result = find_module(fullname, fullname, new_path);
@@ -1408,8 +1410,8 @@ static struct PyMethodDef VimMethods[] = {
     {"eval",	    VimEval,			METH_VARARGS,			"Evaluate an expression using Vim evaluator" },
     {"bindeval",    VimEvalPy,			METH_O,				"Like eval(), but returns objects attached to Vim ones"},
     {"strwidth",    VimStrwidth,		METH_O,				"Screen string width, counts <Tab> as having width 1"},
-    {"chdir",	    (PyCFunction)VimChdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
-    {"fchdir",	    (PyCFunction)VimFchdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
+    {"chdir",	    (PyCFunction)(void *)VimChdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
+    {"fchdir",	    (PyCFunction)(void *)VimFchdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
     {"foreach_rtp", VimForeachRTP,		METH_O,				"Call given callable for each path in &rtp"},
 #if PY_VERSION_HEX >= 0x030700f0
     {"find_spec",   FinderFindSpec,		METH_VARARGS,			"Internal use only, returns spec object for any input it receives"},
@@ -1643,7 +1645,7 @@ static char *DictionaryAttrs[] = {
 };
 
     static PyObject *
-DictionaryDir(PyObject *self)
+DictionaryDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, DictionaryAttrs);
 }
@@ -1850,11 +1852,11 @@ DictionaryIter(DictionaryObject *self)
     dii->dii_todo = ht->ht_used;
 
     return IterNew(dii,
-	    (destructorfun) PyMem_Free, (nextfun) DictionaryIterNext,
+	    (destructorfun)(void *) PyMem_Free, (nextfun) DictionaryIterNext,
 	    NULL, NULL, (PyObject *)self);
 }
 
-    static PyInt
+    static int
 DictionaryAssItem(
 	DictionaryObject *self, PyObject *keyObject, PyObject *valObject)
 {
@@ -1970,7 +1972,7 @@ dict_key(hashitem_T *hi)
 }
 
     static PyObject *
-DictionaryListKeys(DictionaryObject *self)
+DictionaryListKeys(DictionaryObject *self, PyObject *args UNUSED)
 {
     return DictionaryListObjects(self, dict_key);
 }
@@ -1985,7 +1987,7 @@ dict_val(hashitem_T *hi)
 }
 
     static PyObject *
-DictionaryListValues(DictionaryObject *self)
+DictionaryListValues(DictionaryObject *self, PyObject *args UNUSED)
 {
     return DictionaryListObjects(self, dict_val);
 }
@@ -2015,7 +2017,7 @@ dict_item(hashitem_T *hi)
 }
 
     static PyObject *
-DictionaryListItems(DictionaryObject *self)
+DictionaryListItems(DictionaryObject *self, PyObject *args UNUSED)
 {
     return DictionaryListObjects(self, dict_item);
 }
@@ -2039,7 +2041,7 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 	    return NULL;
 
 	VimTryStart();
-	dict_extend(self->dict, tv.vval.v_dict, (char_u *) "force");
+	dict_extend(self->dict, tv.vval.v_dict, (char_u *) "force", NULL);
 	clear_tv(&tv);
 	if (VimTryEnd())
 	    return NULL;
@@ -2166,7 +2168,7 @@ DictionaryPop(DictionaryObject *self, PyObject *args)
 }
 
     static PyObject *
-DictionaryPopItem(DictionaryObject *self)
+DictionaryPopItem(DictionaryObject *self, PyObject *args UNUSED)
 {
     hashitem_T	*hi;
     PyObject	*ret;
@@ -2229,7 +2231,7 @@ static struct PyMethodDef DictionaryMethods[] = {
     {"keys",	(PyCFunction)DictionaryListKeys,	METH_NOARGS,	""},
     {"values",	(PyCFunction)DictionaryListValues,	METH_NOARGS,	""},
     {"items",	(PyCFunction)DictionaryListItems,	METH_NOARGS,	""},
-    {"update",	(PyCFunction)DictionaryUpdate,		METH_VARARGS|METH_KEYWORDS, ""},
+    {"update",	(PyCFunction)(void *)DictionaryUpdate,		METH_VARARGS|METH_KEYWORDS, ""},
     {"get",	(PyCFunction)DictionaryGet,		METH_VARARGS,	""},
     {"pop",	(PyCFunction)DictionaryPop,		METH_VARARGS,	""},
     {"popitem",	(PyCFunction)DictionaryPopItem,		METH_NOARGS,	""},
@@ -2742,21 +2744,21 @@ ListAssIndex(ListObject *self, Py_ssize_t index, PyObject *obj)
     return 0;
 }
 
-    static Py_ssize_t
+    static int
 ListAssItem(ListObject *self, PyObject *idx, PyObject *obj)
 {
 #if PY_MAJOR_VERSION < 3
     if (PyInt_Check(idx))
     {
 	long _idx = PyInt_AsLong(idx);
-	return ListAssIndex(self, _idx, obj);
+	return (int)ListAssIndex(self, _idx, obj);
     }
     else
 #endif
     if (PyLong_Check(idx))
     {
 	long _idx = PyLong_AsLong(idx);
-	return ListAssIndex(self, _idx, obj);
+	return (int)ListAssIndex(self, _idx, obj);
     }
     else if (PySlice_Check(idx))
     {
@@ -2765,7 +2767,7 @@ ListAssItem(ListObject *self, PyObject *idx, PyObject *obj)
 	if (PySlice_GetIndicesEx((PySliceObject_T *)idx, ListLength(self),
 				 &start, &stop, &step, &slicelen) < 0)
 	    return -1;
-	return ListAssSlice(self, start, step, slicelen,
+	return (int)ListAssSlice(self, start, step, slicelen,
 		obj);
     }
     else
@@ -2811,6 +2813,7 @@ typedef struct
 ListIterDestruct(listiterinfo_T *lii)
 {
     list_rem_watch(lii->list, &lii->lw);
+    list_unref(lii->list);
     PyMem_Free(lii);
 }
 
@@ -2846,6 +2849,7 @@ ListIter(ListObject *self)
     list_add_watch(l, &lii->lw);
     lii->lw.lw_item = l->lv_first;
     lii->list = l;
+    ++l->lv_refcount;
 
     return IterNew(lii,
 	    (destructorfun) ListIterDestruct, (nextfun) ListIterNext,
@@ -2858,7 +2862,7 @@ static char *ListAttrs[] = {
 };
 
     static PyObject *
-ListDir(PyObject *self)
+ListDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, ListAttrs);
 }
@@ -3113,7 +3117,7 @@ static char *FunctionAttrs[] = {
 };
 
     static PyObject *
-FunctionDir(PyObject *self)
+FunctionDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, FunctionAttrs);
 }
@@ -3128,7 +3132,7 @@ FunctionAttr(FunctionObject *self, char *name)
     else if (strcmp(name, "args") == 0)
     {
 	if (self->argv == NULL || (list = list_alloc()) == NULL)
-	    return AlwaysNone(NULL);
+	    return ALWAYS_NONE;
 
 	for (i = 0; i < self->argc; ++i)
 	    list_append_tv(list, &self->argv[i]);
@@ -3136,12 +3140,12 @@ FunctionAttr(FunctionObject *self, char *name)
     }
     else if (strcmp(name, "self") == 0)
 	return self->self == NULL
-	    ? AlwaysNone(NULL)
+	    ? ALWAYS_NONE
 	    : NEW_DICTIONARY(self->self);
     else if (strcmp(name, "auto_rebind") == 0)
 	return self->auto_rebind
-	    ? AlwaysTrue(NULL)
-	    : AlwaysFalse(NULL);
+	    ? ALWAYS_TRUE
+	    : ALWAYS_FALSE;
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, FunctionAttrs);
     return NULL;
@@ -3260,7 +3264,7 @@ FunctionRepr(FunctionObject *self)
     typval_T tv;
     char_u numbuf[NUMBUFLEN];
 
-    ga_init2(&repr_ga, (int)sizeof(char), 70);
+    ga_init2(&repr_ga, sizeof(char), 70);
     ga_concat(&repr_ga, (char_u *)"<vim.Function '");
     if (self->name)
 	ga_concat(&repr_ga, self->name);
@@ -3497,7 +3501,7 @@ OptionsIter(OptionsObject *self)
     oii->lastoption = NULL;
 
     return IterNew(oii,
-	    (destructorfun) PyMem_Free, (nextfun) OptionsIterNext,
+	    (destructorfun)(void *) PyMem_Free, (nextfun) OptionsIterNext,
 	    NULL, NULL, (PyObject *)self);
 }
 
@@ -3525,8 +3529,7 @@ set_option_value_for(
 	int opt_type,
 	void *from)
 {
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
     bufref_T	save_curbuf;
     int		set_ret = 0;
 
@@ -3534,17 +3537,17 @@ set_option_value_for(
     switch (opt_type)
     {
 	case SREQ_WIN:
-	    if (switch_win(&save_curwin, &save_curtab, (win_T *)from,
+	    if (switch_win(&switchwin, (win_T *)from,
 			      win_find_tabpage((win_T *)from), FALSE) == FAIL)
 	    {
-		restore_win(save_curwin, save_curtab, TRUE);
+		restore_win(&switchwin, TRUE);
 		if (VimTryEnd())
 		    return -1;
 		PyErr_SET_VIM(N_("problem while switching windows"));
 		return -1;
 	    }
 	    set_ret = set_option_value_err(key, numval, stringval, opt_flags);
-	    restore_win(save_curwin, save_curtab, TRUE);
+	    restore_win(&switchwin, TRUE);
 	    break;
 	case SREQ_BUF:
 	    switch_buffer(&save_curbuf, (buf_T *)from);
@@ -3742,7 +3745,7 @@ static char *TabPageAttrs[] = {
 };
 
     static PyObject *
-TabPageDir(PyObject *self)
+TabPageDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, TabPageAttrs);
 }
@@ -3786,14 +3789,14 @@ TabPageAttr(TabPageObject *self, char *name)
 TabPageRepr(TabPageObject *self)
 {
     if (self->tab == INVALID_TABPAGE_VALUE)
-	return PyString_FromFormat("<tabpage object (deleted) at %p>", (self));
+	return PyString_FromFormat("<tabpage object (deleted) at %p>", (void *)self);
     else
     {
 	int	t = get_tab_number(self->tab);
 
 	if (t == 0)
 	    return PyString_FromFormat("<tabpage object (unknown) at %p>",
-					(self));
+					(void *)self);
 	else
 	    return PyString_FromFormat("<tabpage %d>", t - 1);
     }
@@ -3968,7 +3971,7 @@ static char *WindowAttrs[] = {
 };
 
     static PyObject *
-WindowDir(PyObject *self)
+WindowDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, WindowAttrs);
 }
@@ -4122,14 +4125,14 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 WindowRepr(WindowObject *self)
 {
     if (self->win == INVALID_WINDOW_VALUE)
-	return PyString_FromFormat("<window object (deleted) at %p>", (self));
+	return PyString_FromFormat("<window object (deleted) at %p>", (void *)self);
     else
     {
 	int	w = get_win_number(self->win, firstwin);
 
 	if (w == 0)
 	    return PyString_FromFormat("<window object (unknown) at %p>",
-								      (self));
+								      (void *)self);
 	else
 	    return PyString_FromFormat("<window %d>", w - 1);
     }
@@ -4240,7 +4243,8 @@ StringToLine(PyObject *obj)
     }
     else if (PyUnicode_Check(obj))
     {
-	if (!(bytes = PyUnicode_AsEncodedString(obj, ENC_OPT, NULL)))
+	if (!(bytes = PyUnicode_AsEncodedString(obj, ENC_OPT,
+							   ERRORS_ENCODE_ARG)))
 	    return NULL;
 
 	if (PyBytes_AsStringAndSize(bytes, &str, &len) == -1
@@ -4405,8 +4409,7 @@ py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
 SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 {
     bufref_T	save_curbuf = {NULL, 0, 0};
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
 
     // First of all, we check the type of the supplied Python object.
     // There are three cases:
@@ -4416,7 +4419,8 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
     if (line == Py_None || line == NULL)
     {
 	PyErr_Clear();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switchwin.sw_curwin = NULL;
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	VimTryStart();
 
@@ -4426,7 +4430,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    RAISE_DELETE_LINE_FAIL;
 	else
 	{
-	    if (buf == curbuf && (save_curwin != NULL
+	    if (buf == curbuf && (switchwin.sw_curwin != NULL
 					   || save_curbuf.br_buf == NULL))
 		// Using an existing window for the buffer, adjust the cursor
 		// position.
@@ -4437,7 +4441,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 		deleted_lines_mark((linenr_T)n, 1L);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4458,7 +4462,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 
 	// We do not need to free "save" if ml_replace() consumes it.
 	PyErr_Clear();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_savesub((linenr_T)n) == FAIL)
 	{
@@ -4473,7 +4477,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	else
 	    changed_bytes((linenr_T)n, 0);
 
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	// Check that the cursor is not beyond the end of the line now.
 	if (buf == curbuf)
@@ -4512,8 +4516,7 @@ SetBufferLineList(
 	PyInt *len_change)
 {
     bufref_T	save_curbuf = {NULL, 0, 0};
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
 
     // First of all, we check the type of the supplied Python object.
     // There are three cases:
@@ -4527,7 +4530,8 @@ SetBufferLineList(
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switchwin.sw_curwin = NULL;
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_savedel((linenr_T)lo, (long)n) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4541,7 +4545,7 @@ SetBufferLineList(
 		    break;
 		}
 	    }
-	    if (buf == curbuf && (save_curwin != NULL
+	    if (buf == curbuf && (switchwin.sw_curwin != NULL
 					       || save_curbuf.br_buf == NULL))
 		// Using an existing window for the buffer, adjust the cursor
 		// position.
@@ -4552,7 +4556,7 @@ SetBufferLineList(
 		deleted_lines_mark((linenr_T)lo, (long)i);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4600,7 +4604,8 @@ SetBufferLineList(
 	PyErr_Clear();
 
 	// START of region without "return".  Must call restore_buffer()!
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switchwin.sw_curwin = NULL;
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_save((linenr_T)(lo-1), (linenr_T)hi) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4675,14 +4680,14 @@ SetBufferLineList(
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
-	if (buf == curbuf && (save_curwin != NULL
+	if (buf == curbuf && (switchwin.sw_curwin != NULL
 					   || save_curbuf.br_buf == NULL))
 	    // Using an existing window for the buffer, adjust the cursor
 	    // position.
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	// END of region without "return".
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4712,8 +4717,7 @@ SetBufferLineList(
 InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 {
     bufref_T	save_curbuf = {NULL, 0, 0};
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    switchwin_T	switchwin;
 
     // First of all, we check the type of the supplied Python object.
     // It must be a string or a list, or the call is in error.
@@ -4726,7 +4730,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4738,7 +4742,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    appended_lines_mark((linenr_T)n, 1L);
 
 	vim_free(str);
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
@@ -4778,7 +4782,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	PyErr_Clear();
 	VimTryStart();
-	switch_to_win_for_buf(buf, &save_curwin, &save_curtab, &save_curbuf);
+	switch_to_win_for_buf(buf, &switchwin, &save_curbuf);
 
 	if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
 	    RAISE_UNDO_FAIL;
@@ -4808,7 +4812,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	// Free the array of lines. All of its contents have now
 	// been freed.
 	PyMem_Free(array);
-	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+	restore_win_for_buf(&switchwin, &save_curbuf);
 
 	update_screen(VALID);
 
@@ -5106,7 +5110,7 @@ static char *RangeAttrs[] = {
 };
 
     static PyObject *
-RangeDir(PyObject *self)
+RangeDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, RangeAttrs);
 }
@@ -5122,7 +5126,7 @@ RangeRepr(RangeObject *self)
 {
     if (self->buf->buf == INVALID_BUFFER_VALUE)
 	return PyString_FromFormat("<range object (for deleted buffer) at %p>",
-				    (self));
+				    (void *)self);
     else
     {
 	char *name = (char *)self->buf->buf->b_fname;
@@ -5223,7 +5227,7 @@ static char *BufferAttrs[] = {
 };
 
     static PyObject *
-BufferDir(PyObject *self)
+BufferDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, BufferAttrs);
 }
@@ -5374,7 +5378,7 @@ BufferRange(BufferObject *self, PyObject *args)
 BufferRepr(BufferObject *self)
 {
     if (self->buf == INVALID_BUFFER_VALUE)
-	return PyString_FromFormat("<buffer object (deleted) at %p>", self);
+	return PyString_FromFormat("<buffer object (deleted) at %p>", (void *)self);
     else
     {
 	char	*name = (char *)self->buf->b_fname;
@@ -5520,7 +5524,7 @@ static char *CurrentAttrs[] = {
 };
 
     static PyObject *
-CurrentDir(PyObject *self)
+CurrentDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, CurrentAttrs);
 }
@@ -5690,7 +5694,7 @@ run_cmd(const char *cmd, void *arg UNUSED
     }
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
-	semsg(_(e_py_systemexit), "python");
+	emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	PyErr_Clear();
     }
     else
@@ -5735,7 +5739,7 @@ run_do(const char *cmd, void *arg UNUSED
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
 	PyMem_Free(code);
-	semsg(_(e_py_systemexit), "python");
+	emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	PyErr_Clear();
 	return;
     }
@@ -5836,20 +5840,20 @@ run_eval(const char *cmd, typval_T *rettv
     {
 	if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
 	{
-	    semsg(_(e_py_systemexit), "python");
+	    emsg(_(e_cant_handle_systemexit_of_python_exception_in_vim));
 	    PyErr_Clear();
 	}
 	else
 	{
 	    if (PyErr_Occurred() && !msg_silent)
 		PyErr_PrintEx(0);
-	    emsg(_("E858: Eval did not return a valid python object"));
+	    emsg(_(e_eval_did_not_return_valid_python_object));
 	}
     }
     else
     {
 	if (ConvertFromPyObject(run_ret, rettv) == -1)
-	    emsg(_("E859: Failed to convert returned python object to a Vim value"));
+	    emsg(_(e_failed_to_convert_returned_python_object_to_vim_value));
 	Py_DECREF(run_ret);
     }
     PyErr_Clear();
@@ -6287,11 +6291,11 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	PyObject	*bytes;
 	char_u	*str;
 
-	bytes = PyUnicode_AsEncodedString(obj, ENC_OPT, NULL);
+	bytes = PyUnicode_AsEncodedString(obj, ENC_OPT, ERRORS_ENCODE_ARG);
 	if (bytes == NULL)
 	    return -1;
 
-	if(PyBytes_AsStringAndSize(bytes, (char **) &str, NULL) == -1)
+	if (PyBytes_AsStringAndSize(bytes, (char **) &str, NULL) == -1)
 	    return -1;
 	if (str == NULL)
 	    return -1;
@@ -6418,16 +6422,17 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_VOID:
 	case VAR_CHANNEL:
 	case VAR_JOB:
+	case VAR_INSTR:
 	    Py_INCREF(Py_None);
 	    return Py_None;
 	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    switch (tv->vval.v_number)
 	    {
-		case VVAL_FALSE: return AlwaysFalse(NULL);
-		case VVAL_TRUE:  return AlwaysTrue(NULL);
+		case VVAL_FALSE: return ALWAYS_FALSE;
+		case VVAL_TRUE:  return ALWAYS_TRUE;
 		case VVAL_NONE:
-		case VVAL_NULL:  return AlwaysNone(NULL);
+		case VVAL_NULL:  return ALWAYS_NONE;
 	    }
 	    PyErr_SET_VIM(N_("internal error: invalid value type"));
 	    return NULL;
@@ -6681,7 +6686,7 @@ init_structs(void)
 }
 
 #define PYTYPE_READY(type) \
-    if (PyType_Ready(&type)) \
+    if (PyType_Ready(&(type))) \
 	return -1;
 
     static int

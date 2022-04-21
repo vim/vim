@@ -914,7 +914,7 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu serĉa komando, uzu  \c
 
   1. Ekredaktu la dosieron "vimrc".  Tio dependas de via sistemo:
       :e ~/.vimrc          por Unikso
-      :e $VIM/_vimrc       por Vindozo
+      :e ~/_vimrc          por Vindozo
 
   2. Nun legu la enhavon de la ekzempla "vimrc"
       :r $VIMRUNTIME/vimrc_example.vim
