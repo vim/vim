@@ -396,6 +396,9 @@ static int using_gnome = 0;
 # define using_gnome 0
 #endif
 
+// Comment out following to remove code for resize history tracking
+#define TRACK_RESIZE_HISTORY
+#ifdef TRACK_RESIZE_HISTORY
 /*
  * Keep a short term resize history so that stale gtk responses can be
  * discarded.
@@ -518,6 +521,7 @@ free_all_resize_hist()
     clear_resize_hists();
     vim_free(latest_resize_hist);
 }
+#endif
 #endif
 
 /*
@@ -717,7 +721,9 @@ gui_mch_free_all(void)
 #if defined(USE_GNOME_SESSION)
     vim_free(abs_restart_command);
 #endif
+#ifdef TRACK_RESIZE_HISTORY
     free_all_resize_hist();
+#endif
 }
 #endif
 
@@ -4131,26 +4137,26 @@ form_configure_event(GtkWidget *widget UNUSED,
 		     GdkEventConfigure *event,
 		     gpointer data UNUSED)
 {
-    int		usable_height = event->height;
-    // Resize requests are made for gui.mainwin,
-    // get it's dimensions for searching if this event
+    int	    usable_height = event->height;
+#ifdef TRACK_RESIZE_HISTORY
+    // Resize requests are made for gui.mainwin;
+    // get its dimensions for searching if this event
     // is a response to a vim request.
-    GdkWindow	*win = gtk_widget_get_window(gui.mainwin);
-    int		w = gdk_window_get_width(win);
-    int		h = gdk_window_get_height(win);
+    int	    w, h;
+    gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
 
 #ifdef ENABLE_RESIZE_HISTORY_LOG
     ch_log(NULL, "gui_gtk: form_configure_event: (%d, %d) [%d, %d]",
 	   w, h, (int)Columns, (int)Rows);
 #endif
 
-    // Look through history of recent vim resize reqeusts.
+    // Look through history of recent vim resize requests.
     // If this event matches:
     //	    - "latest resize hist" We're caught up;
     //		clear the history and process this event.
     //		If history is, old to new, 100, 99, 100, 99. If this event is
     //		99 for the stale, it is matched against the current. History
-    //		is cleared, we my bounce, but no worse than before.
+    //		is cleared, we may bounce, but no worse than before.
     //	    - "older/stale hist" If match an unused event in history,
     //		then discard this event, and mark the matching event as used.
     //	    - "no match" Figure it's a user resize event, clear history.
@@ -4161,6 +4167,7 @@ form_configure_event(GtkWidget *widget UNUSED,
 	// discard stale event
 	return TRUE;
     clear_resize_hists();
+#endif
 
 #if GTK_CHECK_VERSION(3,22,2) && !GTK_CHECK_VERSION(3,22,4)
     // As of 3.22.2, GdkWindows have started distributing configure events to
@@ -4483,7 +4490,9 @@ gui_mch_open(void)
      * manager upon us and should not interfere with what VIM is requesting
      * upon startup.
      */
+#ifdef TRACK_RESIZE_HISTORY
     latest_resize_hist = ALLOC_CLEAR_ONE(resize_hist_T);
+#endif
     g_signal_connect(G_OBJECT(gui.formwin), "configure-event",
 				       G_CALLBACK(form_configure_event), NULL);
 
@@ -4671,7 +4680,9 @@ gui_mch_set_shellsize(int width, int height,
     width  += get_menu_tool_width();
     height += get_menu_tool_height();
 
+#ifdef TRACK_RESIZE_HISTORY
     alloc_resize_hist(width, height); // track the resize request
+#endif
     if (gtk_socket_id == 0)
 	gtk_window_resize(GTK_WINDOW(gui.mainwin), width, height);
     else
