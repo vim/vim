@@ -624,10 +624,10 @@ prepare_search_hl(win_T *wp, match_T *search_hl, linenr_T lnum)
     static void
 check_cur_search_hl(win_T *wp, match_T *shl)
 {
-    long linecount = shl->rm.endpos[0].lnum - shl->rm.startpos[0].lnum;
+    linenr_T linecount = shl->rm.endpos[0].lnum;
 
     if (wp->w_cursor.lnum >= shl->lnum
-	    && wp->w_cursor.lnum <= shl->lnum + shl->rm.endpos[0].lnum
+	    && wp->w_cursor.lnum <= shl->lnum + linecount
 	    && (wp->w_cursor.lnum > shl->lnum
 				|| wp->w_cursor.col >= shl->rm.startpos[0].col)
 	    && (wp->w_cursor.lnum < shl->lnum + linecount
