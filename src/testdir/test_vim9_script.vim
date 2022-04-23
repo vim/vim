@@ -3780,6 +3780,16 @@ def Test_unsupported_commands()
   v9.CheckDefAndScriptFailure(lines, ['E476:', 'E492:'])
 
   lines =<< trim END
+      :k a
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1100:')
+
+  lines =<< trim END
+      :1k a
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:')
+
+  lines =<< trim END
     t
   END
   v9.CheckDefAndScriptFailure(lines, 'E1100:')
