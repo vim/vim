@@ -517,8 +517,8 @@ func Test_issue_10251()
       augroup END
       let curpos = getcurpos()
       let g:val = 0
-      call timer_start(50, {timer -> [cursor(curpos[1], curpos[2])]})
       normal! G
+      call timer_start(50, {timer -> [cursor(curpos[1], curpos[2])]})
   END
   call writefile(before, 'Xinit')
   let buf = RunVimInTerminal('-S Xinit Xfile', {})
