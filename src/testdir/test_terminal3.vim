@@ -528,6 +528,18 @@ func Test_double_popup_terminal()
   exe buf2 .. 'bwipe!'
 endfunc
 
+func Test_escape_popup_terminal()
+  set hidden
+
+  " Cannot escape a terminal popup window using win_gotoid
+  let prev_win = win_getid()
+  eval term_start('sh', #{hidden: 1, term_finish: 'close'})->popup_create({})
+  call assert_fails("call win_gotoid(" .. prev_win .. ")", 'E863:')
+
+  call popup_clear(1)
+  set hidden&
+endfunc
+
 func Test_issue_5607()
   let wincount = winnr('$')
   exe 'terminal' &shell &shellcmdflag 'exit'

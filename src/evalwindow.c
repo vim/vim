@@ -817,6 +817,13 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	return;
     }
 #endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+    if (popup_is_popup(curwin) && curbuf->b_term != NULL)
+    {
+	emsg(_(e_not_allowed_for_terminal_in_popup_window));
+	return;
+    }
+#endif
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_id == id)
 	{
