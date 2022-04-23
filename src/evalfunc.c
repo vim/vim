@@ -3498,6 +3498,14 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 	mb_adjust_cursor();
 
     curwin->w_set_curswant = set_curswant;
+
+    if (timer_busy)
+    {
+	// Need to break out of vgetc().
+	ins_char_typebuf(K_IGNORE, 0);
+	typebuf_was_filled = TRUE;
+    }
+
     rettv->vval.v_number = 0;
 }
 
