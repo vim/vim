@@ -507,5 +507,29 @@ func Test_timer_using_win_execute_undo_sync()
   au! InsertEnter
 endfunc
 
+func Test_issue_10251()
+  CheckRunVimInTerminal
+  call writefile(['one', 'two', 'three'], 'Xfile')
+  let before =<< trim END
+      augroup test_issue_10251
+        au!
+        autocmd CursorMoved * call writefile(['ok'], 'Xoutput', 'a')
+      augroup END
+      let curpos = getcurpos()
+      let g:val = 0
+      call timer_start(50, {timer -> [cursor(curpos[1], curpos[2])]})
+      normal! G
+  END
+  call writefile(before, 'Xinit')
+  let buf = RunVimInTerminal('-S Xinit Xfile', {})
+  call term_wait(buf, 100)
+  call StopVimInTerminal(buf)
+  call WaitForAssert({-> assert_equal(['ok'], readfile('Xoutput')[-1:-1])})
+
+  call delete('Xinit')
+  call delete('Xoutput')
+  call delete('Xfile')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
