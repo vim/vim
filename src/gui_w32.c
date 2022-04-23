@@ -2049,6 +2049,8 @@ process_message(void)
 	    memset(keyboard_state, 0, 256);
 	    if (GetKeyState(VK_SHIFT) & 0x8000)
 		keyboard_state[VK_SHIFT] = 0x80;
+	    if (GetKeyState(VK_CAPITAL) & 0x0001)
+		keyboard_state[VK_CAPITAL] = 0x01;
 	    if (GetKeyState(VK_RMENU) & 0x8000)
 	    {
 		keyboard_state[VK_MENU] = 0x80;
