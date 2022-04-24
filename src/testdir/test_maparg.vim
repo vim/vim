@@ -299,13 +299,14 @@ endfunc
 
 def Test_getmappings()
   new
-  def ClearMaps()
+  def ClearMappingsAbbreviations()
     mapclear | nmapclear | vmapclear | xmapclear | smapclear | omapclear
     mapclear!  | imapclear | lmapclear | cmapclear | tmapclear
     mapclear <buffer> | nmapclear <buffer> | vmapclear <buffer>
     xmapclear <buffer> | smapclear <buffer> | omapclear <buffer>
     mapclear! <buffer> | imapclear <buffer> | lmapclear <buffer>
     cmapclear <buffer> | tmapclear <buffer>
+    abclear | abclear <buffer>
   enddef
 
   def AddMaps(new: list<string>, accum: list<string>)
@@ -314,8 +315,9 @@ def Test_getmappings()
     endif
   enddef
 
-  ClearMaps()
+  ClearMappingsAbbreviations()
   assert_equal(0, len(getmappings()))
+  assert_equal(0, len(getmappings(true)))
 
   # Set up some mappings.
   map dup bar
@@ -331,10 +333,16 @@ def Test_getmappings()
   map abc <Nop>
   nmap <M-j> x
   nmap <M-Space> y
+  # And abbreviations
+  abbreviate xy he
+  abbreviate xx she
+  abbreviate <buffer> x they
 
   # Get a list of the mappings with the ':map' commands.
   # Check getmappings() return a list of the same size.
   assert_equal(13, len(getmappings()))
+  assert_equal(3, len(getmappings(true)))
+  assert_equal(13, len(getmappings(false)))
 
   # collect all the current maps using :map commands
   var maps_command: list<string>
@@ -364,8 +372,16 @@ def Test_getmappings()
     assert_equal(d_maparg, d)
   endfor
 
-  ClearMaps()
+  # Check abbr matches maparg
+  for d in getmappings(true)
+    # Note, d.mode is '!', but can't use that with maparg
+    var d_maparg = maparg(d.lhs, 'i', true, true)
+    assert_equal(d_maparg, d)
+  endfor
+
+  ClearMappingsAbbreviations()
   assert_equal(0, len(getmappings()))
+  assert_equal(0, len(getmappings(true)))
 enddef
 
 

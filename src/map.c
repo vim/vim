@@ -2403,6 +2403,12 @@ f_getmappings(typval_T *argvars UNUSED, typval_T *rettv)
     int		hash;
     char_u	*lhs;
     const int	flags = REPTERM_FROM_PART | REPTERM_DO_LT;
+    int		abbr = FALSE;
+
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	abbr = tv_get_bool(&argvars[0]);
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -2414,7 +2420,16 @@ f_getmappings(typval_T *argvars UNUSED, typval_T *rettv)
     {
 	for (hash = 0; hash < 256; ++hash)
 	{
-	    if (buffer_local)
+	    if (abbr)
+	    {
+		if (hash > 0)		// there is only one abbr list
+		    break;
+		if (buffer_local)
+		    mp = curbuf->b_first_abbr;
+		else
+		    mp = first_abbr;
+	    }
+	    else if (buffer_local)
 		mp = curbuf->b_maphash[hash];
 	    else
 		mp = maphash[hash];
