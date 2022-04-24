@@ -1137,6 +1137,25 @@ def Test_autoload_import_relative_autoload_dir()
   delete('autoload', 'rf')
 enddef
 
+def Test_autoload_import_deleted()
+  var lines =<< trim END
+      vim9script
+      export const FOO = 1
+  END
+  writefile(lines, 'Xa.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload './Xa.vim'
+
+      delete('Xa.vim')
+      var x = Xa.FOO
+  END
+  v9.CheckScriptFailure(lines, 'E484:')
+
+  delete('Xdir', 'rf')
+enddef
+
 func Test_import_in_diffexpr()
   CheckExecutable diff
 
