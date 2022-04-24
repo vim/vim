@@ -725,6 +725,9 @@ do_map(
 				    mpp = &(mp->m_next);
 				    continue;
 				}
+				if (did_simplify && keyround == 1
+							  && !mp->m_simplified)
+				    break;
 				// We reset the indicated mode bits. If nothing
 				// is left the entry is deleted below.
 				mp->m_mode &= ~mode;
@@ -814,7 +817,10 @@ do_map(
 	{
 	    // delete entry
 	    if (!did_it)
-		retval = 2;	// no match
+	    {
+		if (!did_simplify || keyround == 2)
+		    retval = 2;		// no match
+	    }
 	    else if (*keys == Ctrl_C)
 	    {
 		// If CTRL-C has been unmapped, reuse it for Interrupting.
