@@ -2844,5 +2844,27 @@ def Test_vim9_autoload_error()
   v9.CheckScriptFailure(lines, 'E461: Illegal variable name: foo#bar', 2)
 enddef
 
+def Test_vim9_autoload_deleted()
+  var lines =<< trim END
+    vim9script
+    export const FOO = 1
+  END
+  call mkdir('Xruntime/autoload', 'p')
+  call writefile(lines, 'Xruntime/autoload/a.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xruntime'
+
+  # Delete the script after importing but before referencing it.
+  lines =<< trim END
+    vim9script
+    import autoload './Xruntime/autoload/a.vim'
+    delete('./Xruntime/autoload/a.vim', 'rf')
+    var X = a.FOO
+  END
+  v9.CheckScriptFailure(lines, 'E15: Invalid expression: "a.FOO"')
+
+  delete('Xruntime', 'rf')
+  &rtp = save_rtp
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
