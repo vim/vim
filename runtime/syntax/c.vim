@@ -277,6 +277,9 @@ if !exists("c_no_c99") " ISO C99
   syn keyword	cType		intptr_t uintptr_t
   syn keyword	cType		intmax_t uintmax_t
 endif
+if !get(g:, "c_no_c23", v:true) " FIXME: default to false when C23 is widely accepted
+  syn keyword	cType           _Decimal32 _Decimal64 _Decimal128
+endif
 
 syn keyword	cTypedef	typedef
 syn keyword	cStructure	struct union enum
@@ -377,10 +380,21 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
 endif
 if !exists("c_no_c99") " ISO C99
   syn keyword cConstant true false
+  syn keyword cConstant INFINITY NAN
+  " math.h
+  syn keyword cConstant HUGE_VAL HUGE_VALF HUGE_VALL
+  syn keyword cConstant FP_FAST_FMAF FP_FAST_FMA FP_FAST_FMAL
+  syn keyword cConstant FP_ILOGB0 FP_ILOGBNAN
+  syn keyword cConstant math_errhandling MATH_ERRNO MATH_ERREXCEPT
+  syn keyword cConstant FP_NORMAL FP_SUBNORMAL FP_ZERO FP_INFINITE FP_NAN
 endif
 
 " Accept %: for # (C99)
-syn region	cPreCondit	start="^\s*\zs\%(%:\|#\)\s*\%(if\|ifdef\|ifndef\|elif\)\>" skip="\\$" end="$" keepend contains=cComment,cCommentL,cCppString,cCharacter,cCppParen,cParenError,cNumbers,cCommentError,cSpaceError
+if !get(g:, "c_no_c23", v:true)
+  syn region	cPreCondit	start="^\s*\zs\%(%:\|#\)\s*\%(el\)\=\%(if\|ifdef\|ifndef\)\>" skip="\\$" end="$" keepend contains=cComment,cCommentL,cCppString,cCharacter,cCppParen,cParenError,cNumbers,cCommentError,cSpaceError
+else
+  syn region	cPreCondit	start="^\s*\zs\%(%:\|#\)\s*\%(if\|ifdef\|ifndef\|elif\)\>" skip="\\$" end="$" keepend contains=cComment,cCommentL,cCppString,cCharacter,cCppParen,cParenError,cNumbers,cCommentError,cSpaceError
+endif
 syn match	cPreConditMatch	display "^\s*\zs\%(%:\|#\)\s*\%(else\|endif\)\>"
 if !exists("c_no_if0")
   syn cluster	cCppOutInGroup	contains=cCppInIf,cCppInElse,cCppInElse2,cCppOutIf,cCppOutIf2,cCppOutElse,cCppInSkip,cCppOutSkip
