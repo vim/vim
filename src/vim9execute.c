@@ -120,6 +120,48 @@ ufunc_argcount(ufunc_T *ufunc)
 }
 
 /*
+ * Create a new string from "count" items at the bottom of the stack.
+ * A trailing NUL is appended.
+ * When "count" is zero an empty string is added to the stack.
+ */
+    static int
+exe_newstring(int count, ectx_T *ectx)
+{
+    int		i;
+    typval_T	*tv;
+    garray_T	ga;
+
+    ga_init2(&ga, sizeof(char), 80);
+    if (ga_grow(&ga, 1) == FAIL)
+	return FAIL;
+
+    for (i = 0; i < count; ++i)
+    {
+	tv = STACK_TV_BOT(i - count);
+	if (tv->vval.v_string != NULL && tv->vval.v_string[0] != NUL)
+	    ga_concat(&ga, tv->vval.v_string);
+    }
+
+    // add a terminating NUL
+    (void)ga_grow(&ga, 1);
+    ga_append(&ga, NUL);
+
+    if (count > 0)
+	ectx->ec_stack.ga_len -= count - 1;
+    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+    {
+	ga_clear(&ga);
+	return FAIL;
+    }
+    else
+	++ectx->ec_stack.ga_len;
+    tv = STACK_TV_BOT(-1);
+    tv->v_type = VAR_STRING;
+    tv->vval.v_string = ga.ga_data;
+    return OK;
+}
+
+/*
  * Create a new list from "count" items at the bottom of the stack.
  * When "count" is zero an empty list is added to the stack.
  * When "count" is -1 a NULL list is added to the stack.
@@ -3536,6 +3578,11 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    case ISN_NEWSTRING:
+		if (exe_newstring(iptr->isn_arg.number, ectx) == FAIL)
+		    goto theend;
+		break;
+
 	    // create a partial with NULL value
 	    case ISN_NEWPARTIAL:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
@@ -5817,6 +5864,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_NEWLIST:
 		smsg("%s%4d NEWLIST size %lld", pfx, current,
+					    (varnumber_T)(iptr->isn_arg.number));
+		break;
+	    case ISN_NEWSTRING:
+		smsg("%s%4d NEWSTRING size %lld", pfx, current,
 					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_NEWDICT:

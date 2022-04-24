@@ -97,6 +97,7 @@ typedef enum {
 			// -1 for null_list
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 			// -1 for null_dict
+    ISN_NEWSTRING,	// push string from stack items, size is isn_arg.number
     ISN_NEWPARTIAL,	// push NULL partial
 
     ISN_AUTOLOAD,	// get item from autoload import, function or variable

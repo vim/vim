@@ -470,6 +470,27 @@ generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic)
 
     return OK;
 }
+    int
+generate_NEWSTRING(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_NEWSTRING)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = count;
+
+    if (count > 0)
+    {
+	stack->ga_len -= count - 1;
+	set_type_on_stack(cctx, &t_bool, 0);
+    }
+    else
+	return push_type_stack(cctx, &t_string);
+
+    return OK;
+}
 
 /*
  * Generate an ISN_2BOOL instruction.
@@ -2251,6 +2272,7 @@ delete_instr(isn_T *isn)
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
+	case ISN_NEWSTRING:
 	case ISN_NEWPARTIAL:
 	case ISN_OPANY:
 	case ISN_OPFLOAT:
