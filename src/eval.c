@@ -6159,7 +6159,7 @@ handle_subscript(
 	    char_u	*exp_name;
 	    int		cc;
 	    int		idx;
-	    ufunc_T	*ufunc = NULL;
+	    ufunc_T	*ufunc;
 	    type_T	*type;
 
 	    // Found script from "import {name} as name", script item name must
