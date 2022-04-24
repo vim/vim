@@ -4102,19 +4102,23 @@ eval_lambda(
 	++*arg;
 	ret = eval1(arg, rettv, evalarg);
 	*arg = skipwhite_and_linebreak(*arg, evalarg);
-	if (**arg == ')')
-	{
-	    ++*arg;
-	}
-	else
+	if (**arg != ')')
 	{
 	    emsg(_(e_missing_closing_paren));
-	    ret = FAIL;
+	    return FAIL;
 	}
+	if (rettv->v_type != VAR_STRING && rettv->v_type != VAR_FUNC
+					       && rettv->v_type != VAR_PARTIAL)
+	{
+	    emsg(_(e_string_or_function_required_for_arrow_parens_expr));
+	    return FAIL;
+	}
+	++*arg;
     }
     if (ret != OK)
 	return FAIL;
-    else if (**arg != '(')
+
+    if (**arg != '(')
     {
 	if (verbose)
 	{

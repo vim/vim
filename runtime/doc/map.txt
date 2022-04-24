@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2022 Apr 03
+*map.txt*       For Vim version 8.2.  Last change: 2022 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1324,7 +1324,8 @@ underscore.  Example: >
 could define a mapping "<SNR>23_Add".
 
 When defining a function in a script, "s:" can be prepended to the name to
-make it local to the script.  But when a mapping is executed from outside of
+make it local to the script (in |Vim9| script functions without a prefix are
+local to the script).  But when a mapping is executed from outside of
 the script, it doesn't know in which script the function was defined.  To
 avoid this problem, use "<SID>" instead of "s:".  The same translation is done
 as for mappings.  This makes it possible to define a call to the function in

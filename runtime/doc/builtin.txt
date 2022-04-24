@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Apr 06
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Apr 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2046,7 +2046,7 @@ execute({command} [, {silent}])					*execute()*
 		It is not possible to use `:redir` anywhere in {command}.
 
 		To get a list of lines use |split()| on the result: >
-			split(execute('args'), "\n")
+			execute('args')->split("\n")
 
 <		To execute a command in another window than the current one
 		use `win_execute()`.
@@ -2237,6 +2237,8 @@ expand({string} [, {nosuf} [, {list}]])				*expand()*
 					a function
 			<SID>		"<SNR>123_"  where "123" is the
 					current script ID  |<SID>|
+			<script>	sourced script file, or script file
+					where the current function was defined
 			<stack>		call stack
 			<cword>		word under the cursor
 			<cWORD>		WORD under the cursor

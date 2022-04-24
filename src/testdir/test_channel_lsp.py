@@ -24,6 +24,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
+    def debuglog(self, msg):
+        if self.debug:
+            with open("Xlspserver.log", "a") as myfile:
+                myfile.write(msg)
+
     def send_lsp_msg(self, msgid, resp_dict):
         v = {'jsonrpc': '2.0', 'result': resp_dict}
         if msgid != -1:
@@ -34,8 +39,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         resp += "\r\n"
         resp += s
         if self.debug:
-            with open("Xlspdebug.log", "a") as myfile:
-                myfile.write("\n=> send\n" + resp)
+            self.debuglog("SEND: ({0} bytes) '{1}'\n".format(len(resp), resp))
         self.request.sendall(resp.encode('utf-8'))
 
     def send_wrong_payload(self):
@@ -71,6 +75,18 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         resp += "Content-Length: " + str(len(s)) + "\r\n"
         resp += "\r\n"
         resp += s
+        self.request.sendall(resp.encode('utf-8'))
+
+    def send_delayed_payload(self, msgid, resp_dict):
+        # test for sending the hdr first and then after some delay, send the
+        # payload
+        v = {'jsonrpc': '2.0', 'id': msgid, 'result': resp_dict}
+        s = json.dumps(v)
+        resp = "Content-Length: " + str(len(s)) + "\r\n"
+        resp += "\r\n"
+        self.request.sendall(resp.encode('utf-8'))
+        time.sleep(0.05)
+        resp = s
         self.request.sendall(resp.encode('utf-8'))
 
     def send_hdr_without_len(self, msgid, resp_dict):
@@ -124,6 +140,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         time.sleep(0.2)
         self.send_lsp_msg(-1, 'wrong-payload')
 
+    def do_large_payload(self, payload):
+        # test for sending a large (> 64K) payload
+        self.send_lsp_msg(payload['id'], payload)
+
     def do_rpc_resp_incorrect_id(self, payload):
         self.send_lsp_msg(-1, 'rpc-resp-incorrect-id-1')
         self.send_lsp_msg(-1, 'rpc-resp-incorrect-id-2')
@@ -152,6 +172,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def do_extra_hdr_fields(self, payload):
         self.send_extra_hdr_fields(payload['id'], 'extra-hdr-fields')
 
+    def do_delayad_payload(self, payload):
+        self.send_delayed_payload(payload['id'], 'delayed-payload')
+
     def do_hdr_without_len(self, payload):
         self.send_hdr_without_len(payload['id'], 'hdr-without-len')
 
@@ -170,8 +193,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def process_msg(self, msg):
         try:
             decoded = json.loads(msg)
-            print("Decoded:")
-            print(str(decoded))
             if 'method' in decoded:
                 test_map = {
                         'ping': self.do_ping,
@@ -179,6 +200,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'simple-rpc': self.do_simple_rpc,
                         'rpc-with-notif': self.do_rpc_with_notif,
                         'wrong-payload': self.do_wrong_payload,
+                        'large-payload': self.do_large_payload,
                         'rpc-resp-incorrect-id': self.do_rpc_resp_incorrect_id,
                         'simple-notif': self.do_simple_notif,
                         'multi-notif': self.do_multi_notif,
@@ -186,6 +208,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'msg-specifc-cb': self.do_msg_specific_cb,
                         'server-req': self.do_server_req,
                         'extra-hdr-fields': self.do_extra_hdr_fields,
+                        'delayed-payload': self.do_delayad_payload,
                         'hdr-without-len': self.do_hdr_without_len,
                         'hdr-with-wrong-len': self.do_hdr_with_wrong_len,
                         'hdr-with-negative-len': self.do_hdr_with_negative_len,
@@ -195,27 +218,39 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 if decoded['method'] in test_map:
                     test_map[decoded['method']](decoded)
                 else:
-                    print("Error: Unsupported method: " + decoded['method'])
+                    self.debuglog("Error: Unsupported method - " + decoded['method'] + "\n")
             else:
-                print("Error: 'method' field is not found")
+                self.debuglog("Error: 'method' field is not found\n")
 
         except ValueError:
-            print("json decoding failed")
+            self.debuglog("Error: json decoding failed\n")
 
     def process_msgs(self, msgbuf):
         while True:
             sidx = msgbuf.find('Content-Length: ')
             if sidx == -1:
+                # partial message received
                 return msgbuf
             sidx += 16
             eidx = msgbuf.find('\r\n')
             if eidx == -1:
+                # partial message received
                 return msgbuf
             msglen = int(msgbuf[sidx:eidx])
 
             hdrend = msgbuf.find('\r\n\r\n')
             if hdrend == -1:
+                # partial message received
                 return msgbuf
+
+            if msglen > len(msgbuf[hdrend + 4:]):
+                if self.debug:
+                    self.debuglog("Partial message ({0} bytes)\n".format(len(msgbuf)))
+                # partial message received
+                return msgbuf
+
+            if self.debug:
+                self.debuglog("Complete message ({0} bytes) received\n".format(msglen))
 
             # Remove the header
             msgbuf = msgbuf[hdrend + 4:]
@@ -227,27 +262,25 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             msgbuf = msgbuf[msglen:]
 
     def handle(self):
-        print("=== socket opened ===")
         self.debug = False
+        self.debuglog("=== socket opened ===\n")
         msgbuf = ''
         while True:
             try:
                 received = self.request.recv(4096).decode('utf-8')
             except socket.error:
-                print("=== socket error ===")
+                self.debuglog("=== socket error ===\n")
                 break
             except IOError:
-                print("=== socket closed ===")
+                self.debuglog("=== socket closed ===\n")
                 break
             if received == '':
-                print("=== socket closed ===")
+                self.debuglog("=== socket closed ===\n")
                 break
-            print("\nReceived:\n{0}".format(received))
 
             # Write the received lines into the file for debugging
             if self.debug:
-                with open("Xlspdebug.log", "a") as myfile:
-                    myfile.write("\n<= recv\n" + received)
+                self.debuglog("RECV: ({0} bytes) '{1}'\n".format(len(received), received))
 
             # Can receive more than one line in a response or a partial line.
             # Accumulate all the received characters and process one line at
@@ -271,8 +304,6 @@ def main(host, port, server_class=ThreadedTCPServer):
     if len(sys.argv) >= 2 and sys.argv[1] == 'delay':
         port = 13684
         writePortInFile(port)
-
-        print("Wait for it...")
         time.sleep(0.5)
 
     server = server_class((host, port), ThreadedTCPRequestHandler)
@@ -284,8 +315,6 @@ def main(host, port, server_class=ThreadedTCPServer):
     server_thread.start()
 
     writePortInFile(port)
-
-    print("Listening on port {0}".format(port))
 
     # Main thread terminates, but the server continues running
     # until server.shutdown() is called.

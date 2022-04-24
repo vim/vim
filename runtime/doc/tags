@@ -1457,6 +1457,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 --echo-wid	starting.txt	/*--echo-wid*
 --help	starting.txt	/*--help*
 --literal	starting.txt	/*--literal*
+--log	starting.txt	/*--log*
 --nofork	starting.txt	/*--nofork*
 --noplugin	starting.txt	/*--noplugin*
 --not-a-term	starting.txt	/*--not-a-term*
@@ -2003,6 +2004,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :<cfile>	cmdline.txt	/*:<cfile>*
 :<client>	cmdline.txt	/*:<client>*
 :<cword>	cmdline.txt	/*:<cword>*
+:<script>	cmdline.txt	/*:<script>*
 :<sfile>	cmdline.txt	/*:<sfile>*
 :<sflnum>	cmdline.txt	/*:<sflnum>*
 :<slnum>	cmdline.txt	/*:<slnum>*
@@ -2082,6 +2084,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :Termdebug	terminal.txt	/*:Termdebug*
 :TermdebugCommand	terminal.txt	/*:TermdebugCommand*
 :Texplore	pi_netrw.txt	/*:Texplore*
+:Until	terminal.txt	/*:Until*
 :UseVimball	pi_vimball.txt	/*:UseVimball*
 :Vexplore	pi_netrw.txt	/*:Vexplore*
 :VimballList	pi_vimball.txt	/*:VimballList*
@@ -3722,6 +3725,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <range>	map.txt	/*<range>*
 <reg>	map.txt	/*<reg>*
 <register>	map.txt	/*<register>*
+<script>	cmdline.txt	/*<script>*
 <sfile>	cmdline.txt	/*<sfile>*
 <sflnum>	cmdline.txt	/*<sflnum>*
 <slnum>	cmdline.txt	/*<slnum>*
@@ -4057,7 +4061,6 @@ E1081	eval.txt	/*E1081*
 E1083	editing.txt	/*E1083*
 E1084	eval.txt	/*E1084*
 E1085	eval.txt	/*E1085*
-E1086	eval.txt	/*E1086*
 E1087	vim9.txt	/*E1087*
 E1089	eval.txt	/*E1089*
 E109	eval.txt	/*E109*
@@ -4222,7 +4225,6 @@ E1231	map.txt	/*E1231*
 E1232	builtin.txt	/*E1232*
 E1233	builtin.txt	/*E1233*
 E1234	vim9.txt	/*E1234*
-E1235	vim9.txt	/*E1235*
 E1236	vim9.txt	/*E1236*
 E1237	map.txt	/*E1237*
 E1238	vim9.txt	/*E1238*
@@ -4260,6 +4262,7 @@ E1266	if_pyth.txt	/*E1266*
 E127	eval.txt	/*E127*
 E1270	change.txt	/*E1270*
 E1271	vim9.txt	/*E1271*
+E1274	cmdline.txt	/*E1274*
 E128	eval.txt	/*E128*
 E129	eval.txt	/*E129*
 E13	message.txt	/*E13*
@@ -4780,9 +4783,6 @@ E610	editing.txt	/*E610*
 E611	eval.txt	/*E611*
 E612	sign.txt	/*E612*
 E613	print.txt	/*E613*
-E614	editing.txt	/*E614*
-E615	editing.txt	/*E615*
-E616	editing.txt	/*E616*
 E617	options.txt	/*E617*
 E618	print.txt	/*E618*
 E619	print.txt	/*E619*
@@ -5772,6 +5772,7 @@ autocmd-disable	autocmd.txt	/*autocmd-disable*
 autocmd-events	autocmd.txt	/*autocmd-events*
 autocmd-events-abc	autocmd.txt	/*autocmd-events-abc*
 autocmd-execute	autocmd.txt	/*autocmd-execute*
+autocmd-expand	autocmd.txt	/*autocmd-expand*
 autocmd-groups	autocmd.txt	/*autocmd-groups*
 autocmd-intro	autocmd.txt	/*autocmd-intro*
 autocmd-list	autocmd.txt	/*autocmd-list*
@@ -6082,6 +6083,7 @@ channel-functions-details	channel.txt	/*channel-functions-details*
 channel-mode	channel.txt	/*channel-mode*
 channel-more	channel.txt	/*channel-more*
 channel-noblock	channel.txt	/*channel-noblock*
+channel-onetime-callback	channel.txt	/*channel-onetime-callback*
 channel-open	channel.txt	/*channel-open*
 channel-open-options	channel.txt	/*channel-open-options*
 channel-raw	channel.txt	/*channel-raw*
@@ -7607,6 +7609,7 @@ hitest.vim	syntax.txt	/*hitest.vim*
 hjkl	usr_02.txt	/*hjkl*
 hl-ColorColumn	syntax.txt	/*hl-ColorColumn*
 hl-Conceal	syntax.txt	/*hl-Conceal*
+hl-CurSearch	syntax.txt	/*hl-CurSearch*
 hl-Cursor	syntax.txt	/*hl-Cursor*
 hl-CursorColumn	syntax.txt	/*hl-CursorColumn*
 hl-CursorIM	syntax.txt	/*hl-CursorIM*

@@ -1077,12 +1077,23 @@ get_function_body(
 			    || checkforcmd(&p, "const", 5))))
 		{
 		    p = skipwhite(arg + 3);
-		    if (STRNCMP(p, "trim", 4) == 0)
+		    while (TRUE)
 		    {
-			// Ignore leading white space.
-			p = skipwhite(p + 4);
-			heredoc_trimmed = vim_strnsave(theline,
-						 skipwhite(theline) - theline);
+			if (STRNCMP(p, "trim", 4) == 0)
+			{
+			    // Ignore leading white space.
+			    p = skipwhite(p + 4);
+			    heredoc_trimmed = vim_strnsave(theline,
+				    skipwhite(theline) - theline);
+			    continue;
+			}
+			if (STRNCMP(p, "eval", 4) == 0)
+			{
+			    // Ignore leading white space.
+			    p = skipwhite(p + 4);
+			    continue;
+			}
+			break;
 		    }
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		    getline_options = GETLINE_NONE;
@@ -5518,7 +5529,6 @@ ex_call(exarg_T *eap)
     }
     if (eap->skip)
 	--emsg_skip;
-    clear_evalarg(&evalarg, eap);
 
     // When inside :try we need to check for following "| catch" or "| endtry".
     // Not when there was an error, but do check if an exception was thrown.
@@ -5538,6 +5548,8 @@ ex_call(exarg_T *eap)
 	else
 	    set_nextcmd(eap, arg);
     }
+    // Must be after using "arg", it may point into memory cleared here.
+    clear_evalarg(&evalarg, eap);
 
 end:
     dict_unref(fudi.fd_dict);

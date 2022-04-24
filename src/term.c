@@ -165,6 +165,14 @@ static termrequest_T *all_termrequests[] = {
     &winpos_status,
     NULL
 };
+
+// The t_8u code may default to a value but get reset when the term response is
+// received.  To avoid redrawing too often, only redraw when t_8u is not reset
+// and it was supposed to be written.
+// FALSE -> don't output t_8u yet
+// MAYBE -> tried outputing t_8u while FALSE
+// OK    -> can write t_8u
+int write_t_8u_state = FALSE;
 # endif
 
 /*
@@ -2104,6 +2112,7 @@ set_termname(char_u *term)
 #ifdef FEAT_TERMRESPONSE
     LOG_TR(("setting crv_status to STATUS_GET"));
     crv_status.tr_progress = STATUS_GET;	// Get terminal version later
+    write_t_8u_state = FALSE;
 #endif
 
     /*
@@ -3049,6 +3058,8 @@ term_rgb_color(char_u *s, guicolor_T rgb)
 #define MAX_COLOR_STR_LEN 100
     char	buf[MAX_COLOR_STR_LEN];
 
+    if (*s == NUL)
+	return;
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
 #ifdef FEAT_VTP
@@ -3078,7 +3089,12 @@ term_bg_rgb_color(guicolor_T rgb)
     void
 term_ul_rgb_color(guicolor_T rgb)
 {
-    term_rgb_color(T_8U, rgb);
+# ifdef FEAT_TERMRESPONSE
+    if (write_t_8u_state != OK)
+	write_t_8u_state = MAYBE;
+    else
+# endif
+	term_rgb_color(T_8U, rgb);
 }
 #endif
 
@@ -4775,9 +4791,10 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    // vandyke SecureCRT sends 1;136;0
 	}
 
-	// Konsole sends 0;115;0
-	else if (version == 115 && arg[0] == 0 && arg[2] == 0)
-	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
+	// Konsole sends 0;115;0 - but t_u8 does not actually work, therefore
+	// commented out.
+	// else if (version == 115 && arg[0] == 0 && arg[2] == 0)
+	//     term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
 	// 30600/40500 is a version number of GNU screen. DA2 support is added
@@ -4806,9 +4823,20 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
 	// Unless the underline RGB color is expected to work, disable "t_8u".
 	// It does not work for the real Xterm, it resets the background color.
-	if (term_props[TPR_UNDERLINE_RGB].tpr_status != TPR_YES && *T_8U != NUL)
+	// This may cause some flicker.  Alternative would be to set "t_8u"
+	// here if the terminal is expected to support it, but that might
+	// conflict with what was set in the .vimrc.
+	if (term_props[TPR_UNDERLINE_RGB].tpr_status != TPR_YES
+			&& *T_8U != NUL
+			&& !option_was_set((char_u *)"t_8u"))
+	{
 	    set_string_option_direct((char_u *)"t_8u", -1, (char_u *)"",
 								  OPT_FREE, 0);
+	}
+	if (*T_8U != NUL && write_t_8u_state == MAYBE)
+	    // Did skip writing t_8u, a complete redraw is needed.
+	    redraw_later_clear();
+	write_t_8u_state = OK;  // can otuput t_8u now
 
 	// Only set 'ttymouse' automatically if it was not set
 	// by the user already.
@@ -5957,7 +5985,7 @@ replace_termcodes(
     int		i;
     int		slen;
     int		key;
-    int		dlen = 0;
+    size_t	dlen = 0;
     char_u	*src;
     int		do_backslash;	// backslash is a special character
     int		do_special;	// recognize <> key codes
@@ -5977,7 +6005,7 @@ replace_termcodes(
      * In the rare case more might be needed ga_grow() must be called again.
      */
     ga_init2(&ga, 1L, 100);
-    if (ga_grow(&ga, STRLEN(src) * 6 + 1) == FAIL) // out of memory
+    if (ga_grow(&ga, (int)(STRLEN(src) * 6 + 1)) == FAIL) // out of memory
     {
 	*bufp = NULL;
 	return from;
@@ -6044,8 +6072,8 @@ replace_termcodes(
 				// Turn "<SID>name.Func"
 				// into "scriptname#Func".
 				len = STRLEN(si->sn_autoload_prefix);
-				if (ga_grow(&ga, STRLEN(src) * 6 + len + 1)
-								       == FAIL)
+				if (ga_grow(&ga,
+				     (int)(STRLEN(src) * 6 + len + 1)) == FAIL)
 				{
 				    ga_clear(&ga);
 				    *bufp = NULL;
@@ -6064,7 +6092,7 @@ replace_termcodes(
 		    result[dlen++] = (int)KS_EXTRA;
 		    result[dlen++] = (int)KE_SNR;
 		    sprintf((char *)result + dlen, "%ld", sid);
-		    dlen += (int)STRLEN(result + dlen);
+		    dlen += STRLEN(result + dlen);
 		    result[dlen++] = '_';
 		    continue;
 		}

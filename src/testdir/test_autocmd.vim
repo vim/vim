@@ -364,6 +364,37 @@ func Test_WinScrolled()
   call delete('Xtest_winscrolled')
 endfunc
 
+func Test_WinScrolled_mouse()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set nowrap scrolloff=0
+    set mouse=a term=xterm ttymouse=sgr mousetime=200 clipboard=
+    call setline(1, ['foo']->repeat(32))
+    split
+    let g:scrolled = 0
+    au WinScrolled * let g:scrolled += 1
+  END
+  call writefile(lines, 'Xtest_winscrolled_mouse')
+  let buf = RunVimInTerminal('-S Xtest_winscrolled_mouse', {'rows': 10})
+
+  " With the upper split focused, send a scroll-down event to the unfocused one.
+  call test_setmouse(7, 1)
+  call term_sendkeys(buf, "\<ScrollWheelDown>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo g:scrolled\<CR>")
+  call WaitForAssert({-> assert_match('^1', term_getline(buf, 10))}, 1000)
+
+  " Again, but this time while we're in insert mode.
+  call term_sendkeys(buf, "i\<ScrollWheelDown>\<Esc>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo g:scrolled\<CR>")
+  call WaitForAssert({-> assert_match('^2', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
+  call delete('Xtest_winscrolled_mouse')
+endfunc
+
 func Test_WinScrolled_close_curwin()
   CheckRunVimInTerminal
 
@@ -1572,7 +1603,7 @@ func Test_QuitPre()
   " Close the other window, <afile> should be correct.
   exe win_id2win(winid) . 'q'
   call assert_equal('Xfoo', g:afile)
- 
+
   unlet g:afile
   bwipe Xfoo
   bwipe Xbar
@@ -3004,6 +3035,8 @@ func Test_autocmd_quit_psearch()
   augroup aucmd_win_test
     au!
   augroup END
+  new
+  pclose
 endfunc
 
 " Fuzzer found some strange combination that caused a crash.
@@ -3038,10 +3071,9 @@ endfunc
 
 func Test_autocmd_vimgrep()
   augroup aucmd_vimgrep
-    au QuickfixCmdPre,BufNew,BufDelete,BufReadCmd * sb
-    au QuickfixCmdPre,BufNew,BufDelete,BufReadCmd * q9 
+    au QuickfixCmdPre,BufNew,BufReadCmd * sb
+    au QuickfixCmdPre,BufNew,BufReadCmd * q9
   augroup END
-  %bwipe!
   call assert_fails('lv ?a? foo', 'E926:')
 
   augroup aucmd_vimgrep
@@ -3159,5 +3191,23 @@ func Test_v_event_readonly()
   au! TextYankPost
 endfunc
 
+
+func Test_noname_autocmd()
+  augroup test_noname_autocmd_group
+    autocmd!
+    autocmd BufEnter * call add(s:li, ["BufEnter", expand("<afile>")])
+    autocmd BufDelete * call add(s:li, ["BufDelete", expand("<afile>")])
+    autocmd BufLeave * call add(s:li, ["BufLeave", expand("<afile>")])
+    autocmd BufUnload * call add(s:li, ["BufUnload", expand("<afile>")])
+    autocmd BufWipeout * call add(s:li, ["BufWipeout", expand("<afile>")])
+  augroup END
+
+  let s:li = []
+  edit foo
+  call assert_equal([['BufUnload', ''], ['BufDelete', ''], ['BufWipeout', ''], ['BufEnter', 'foo']], s:li)
+
+  au! test_noname_autocmd_group
+  augroup! test_noname_autocmd_group
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

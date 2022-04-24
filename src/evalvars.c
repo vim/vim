@@ -603,6 +603,66 @@ list_script_vars(int *first)
 }
 
 /*
+ * Evaluate all the Vim expressions (`=expr`) in string "str" and return the
+ * resulting string.  The caller must free the returned string.
+ */
+    static char_u *
+eval_all_expr_in_str(char_u *str)
+{
+    garray_T	ga;
+    char_u	*s;
+    char_u	*p;
+    char_u	save_c;
+    char_u	*exprval;
+    int		status;
+
+    ga_init2(&ga, 1, 80);
+    p = str;
+
+    // Look for `=expr`, evaluate the expression and replace `=expr` with the
+    // result.
+    while (*p != NUL)
+    {
+	s = p;
+	while (*p != NUL && (*p != '`' || p[1] != '='))
+	    p++;
+	ga_concat_len(&ga, s, p - s);
+	if (*p == NUL)
+	    break;		// no backtick expression found
+
+	s = p;
+	p += 2;		// skip `=
+
+	status = *p == NUL ? OK : skip_expr(&p, NULL);
+	if (status == FAIL || *p != '`')
+	{
+	    // invalid expression or missing ending backtick
+	    if (status != FAIL)
+		emsg(_(e_missing_backtick));
+	    vim_free(ga.ga_data);
+	    return NULL;
+	}
+	s += 2;		// skip `=
+	save_c = *p;
+	*p = NUL;
+	exprval = eval_to_string(s, TRUE);
+	*p = save_c;
+	p++;
+	if (exprval == NULL)
+	{
+	    // expression evaluation failed
+	    vim_free(ga.ga_data);
+	    return NULL;
+	}
+	ga_concat(&ga, exprval);
+	vim_free(exprval);
+    }
+    ga_append(&ga, NUL);
+
+    return ga.ga_data;
+}
+
+/*
  * Get a list of lines from a HERE document. The here document is a list of
  * lines surrounded by a marker.
  *	cmd << {marker}
@@ -613,26 +673,36 @@ list_script_vars(int *first)
  *
  * The {marker} is a string. If the optional 'trim' word is supplied before the
  * marker, then the leading indentation before the lines (matching the
- * indentation in the 'cmd' line) is stripped.
+ * indentation in the "cmd" line) is stripped.
  *
  * When getting lines for an embedded script (e.g. python, lua, perl, ruby,
- * tcl, mzscheme), script_get is set to TRUE. In this case, if the marker is
+ * tcl, mzscheme), "script_get" is set to TRUE. In this case, if the marker is
  * missing, then '.' is accepted as a marker.
  *
- * Returns a List with {lines} or NULL.
+ * When compiling a heredoc assignment to a variable in a Vim9 def function,
+ * "vim9compile" is set to TRUE. In this case, instead of generating a list of
+ * string values from the heredoc, vim9 instructions are generated.  On success
+ * the returned list will be empty.
+ *
+ * Returns a List with {lines} or NULL on failure.
  */
     list_T *
-heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
+heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 {
-    char_u	*theline;
+    char_u	*theline = NULL;
     char_u	*marker;
     list_T	*l;
     char_u	*p;
+    char_u	*str;
     int		marker_indent_len = 0;
     int		text_indent_len = 0;
     char_u	*text_indent = NULL;
     char_u	dot[] = ".";
     int		comment_char = in_vim9script() ? '#' : '"';
+    int		evalstr = FALSE;
+    int		eval_failed = FALSE;
+    cctx_T	*cctx = vim9compile ? eap->cookie : NULL;
+    int		count = 0;
 
     if (eap->getline == NULL)
     {
@@ -642,21 +712,36 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 
     // Check for the optional 'trim' word before the marker
     cmd = skipwhite(cmd);
-    if (STRNCMP(cmd, "trim", 4) == 0 && (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
-    {
-	cmd = skipwhite(cmd + 4);
 
-	// Trim the indentation from all the lines in the here document.
-	// The amount of indentation trimmed is the same as the indentation of
-	// the first line after the :let command line.  To find the end marker
-	// the indent of the :let command line is trimmed.
-	p = *eap->cmdlinep;
-	while (VIM_ISWHITE(*p))
+    while (TRUE)
+    {
+	if (STRNCMP(cmd, "trim", 4) == 0
+		&& (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
 	{
-	    p++;
-	    marker_indent_len++;
+	    cmd = skipwhite(cmd + 4);
+
+	    // Trim the indentation from all the lines in the here document.
+	    // The amount of indentation trimmed is the same as the indentation
+	    // of the first line after the :let command line.  To find the end
+	    // marker the indent of the :let command line is trimmed.
+	    p = *eap->cmdlinep;
+	    while (VIM_ISWHITE(*p))
+	    {
+		p++;
+		marker_indent_len++;
+	    }
+	    text_indent_len = -1;
+
+	    continue;
 	}
-	text_indent_len = -1;
+	if (STRNCMP(cmd, "eval", 4) == 0
+		&& (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
+	{
+	    cmd = skipwhite(cmd + 4);
+	    evalstr = TRUE;
+	    continue;
+	}
+	break;
     }
 
     // The marker is the next word.
@@ -698,6 +783,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	int	mi = 0;
 	int	ti = 0;
 
+	vim_free(theline);
 	theline = eap->getline(NUL, eap->cookie, 0, FALSE);
 	if (theline == NULL)
 	{
@@ -711,10 +797,12 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 		&& STRNCMP(theline, *eap->cmdlinep, marker_indent_len) == 0)
 	    mi = marker_indent_len;
 	if (STRCMP(marker, theline + mi) == 0)
-	{
-	    vim_free(theline);
 	    break;
-	}
+
+	// If expression evaluation failed in the heredoc, then skip till the
+	// end marker.
+	if (eval_failed)
+	    continue;
 
 	if (text_indent_len == -1 && *theline != NUL)
 	{
@@ -734,12 +822,48 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 		if (theline[ti] != text_indent[ti])
 		    break;
 
-	if (list_append_string(l, theline + ti, -1) == FAIL)
-	    break;
-	vim_free(theline);
+	str = theline + ti;
+	if (vim9compile)
+	{
+	    if (compile_heredoc_string(str, evalstr, cctx) == FAIL)
+	    {
+		vim_free(theline);
+		vim_free(text_indent);
+		return FAIL;
+	    }
+	    count++;
+	}
+	else
+	{
+	    if (evalstr)
+	    {
+		str = eval_all_expr_in_str(str);
+		if (str == NULL)
+		{
+		    // expression evaluation failed
+		    eval_failed = TRUE;
+		    continue;
+		}
+		vim_free(theline);
+		theline = str;
+	    }
+
+	    if (list_append_string(l, str, -1) == FAIL)
+		break;
+	}
     }
+    vim_free(theline);
     vim_free(text_indent);
 
+    if (vim9compile && cctx->ctx_skip != SKIP_YES && !eval_failed)
+	generate_NEWLIST(cctx, count, FALSE);
+
+    if (eval_failed)
+    {
+	// expression evaluation in the heredoc failed
+	list_free(l);
+	return NULL;
+    }
     return l;
 }
 
@@ -885,7 +1009,7 @@ ex_let(exarg_T *eap)
 	long	cur_lnum = SOURCING_LNUM;
 
 	// HERE document
-	l = heredoc_get(eap, expr + 3, FALSE);
+	l = heredoc_get(eap, expr + 3, FALSE, FALSE);
 	if (l != NULL)
 	{
 	    rettv_list_set(&rettv, l);

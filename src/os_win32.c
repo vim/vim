@@ -2411,7 +2411,8 @@ mch_init_g(void)
      * Otherwise the default "findstr /n" is used.
      */
     if (!executable_exists("findstr.exe", NULL, TRUE, FALSE))
-	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
+	set_option_value_give_err((char_u *)"grepprg",
+						    0, (char_u *)"grep -n", 0);
 
 # ifdef FEAT_CLIPBOARD
     win_clip_init();

@@ -1414,7 +1414,7 @@ popup_adjust_position(win_T *wp)
     }
 
     if (wp->w_firstline < 0)
-	wp->w_topline = lnum > 0 ? lnum + 1 : lnum;
+	wp->w_topline = lnum + 1;
 
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);

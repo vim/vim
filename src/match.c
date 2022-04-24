@@ -618,6 +618,26 @@ prepare_search_hl(win_T *wp, match_T *search_hl, linenr_T lnum)
 }
 
 /*
+ * Update "shl->has_cursor" based on the match in "shl" and the cursor
+ * position.
+ */
+    static void
+check_cur_search_hl(win_T *wp, match_T *shl)
+{
+    linenr_T linecount = shl->rm.endpos[0].lnum - shl->rm.startpos[0].lnum;
+
+    if (wp->w_cursor.lnum >= shl->lnum
+	    && wp->w_cursor.lnum <= shl->lnum + linecount
+	    && (wp->w_cursor.lnum > shl->lnum
+				|| wp->w_cursor.col >= shl->rm.startpos[0].col)
+	    && (wp->w_cursor.lnum < shl->lnum + linecount
+				  || wp->w_cursor.col < shl->rm.endpos[0].col))
+	shl->has_cursor = TRUE;
+    else
+	shl->has_cursor = FALSE;
+}
+
+/*
  * Prepare for 'hlsearch' and match highlighting in one window line.
  * Return TRUE if there is such highlighting and set "search_attr" to the
  * current highlight attribute.
@@ -653,7 +673,6 @@ prepare_search_hl_line(
 	    shl = &cur->hl;
 	shl->startcol = MAXCOL;
 	shl->endcol = MAXCOL;
-	shl->lines = 0;
 	shl->attr_cur = 0;
 	shl->is_addpos = FALSE;
 	shl->has_cursor = FALSE;
@@ -677,20 +696,10 @@ prepare_search_hl_line(
 		shl->endcol = shl->rm.endpos[0].col;
 	    else
 		shl->endcol = MAXCOL;
-	    if (shl->rm.endpos[0].lnum != shl->rm.startpos[0].lnum)
-		shl->lines = shl->rm.endpos[0].lnum - shl->rm.startpos[0].lnum;
-	    else
-		shl->lines = 1;
 
 	    // check if the cursor is in the match before changing the columns
-	    if (wp->w_cursor.lnum >= shl->lnum
-			&& wp->w_cursor.lnum
-					  <= shl->lnum + shl->rm.endpos[0].lnum
-			&& (wp->w_cursor.lnum > shl->lnum
-				|| wp->w_cursor.col >= shl->rm.startpos[0].col)
-			&& (wp->w_cursor.lnum < shl->lnum + shl->lines
-				  || wp->w_cursor.col < shl->rm.endpos[0].col))
-		shl->has_cursor = TRUE;
+	    if (shl == search_hl)
+		check_cur_search_hl(wp, shl);
 
 	    // Highlight one character for an empty match.
 	    if (shl->startcol == shl->endcol)
@@ -810,6 +819,10 @@ update_search_hl(
 			shl->endcol = shl->rm.endpos[0].col;
 		    else
 			shl->endcol = MAXCOL;
+
+		    // check if the cursor is in the match
+		    if (shl == search_hl)
+			check_cur_search_hl(wp, shl);
 
 		    if (shl->startcol == shl->endcol)
 		    {

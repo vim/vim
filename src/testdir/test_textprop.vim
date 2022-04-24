@@ -1847,4 +1847,28 @@ func Test_prop_list()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+func Test_prop_find_prev_on_same_line()
+  new
+
+  call setline(1, 'the quikc bronw fox jumsp over the layz dog')
+  call prop_type_add('misspell', #{highlight: 'ErrorMsg'})
+  for col in [8, 14, 24, 38]
+    call prop_add(1, col, #{type: 'misspell', length: 2})
+  endfor
+
+  call cursor(1,18)
+  let expected = [
+    \ #{lnum: 1, id: 0, col: 14, end: 1, type: 'misspell', type_bufnr: 0, length: 2, start: 1},
+    \ #{lnum: 1, id: 0, col: 24, end: 1, type: 'misspell', type_bufnr: 0, length: 2, start: 1}
+    \ ]
+
+  let result = prop_find(#{type: 'misspell'}, 'b')
+  call assert_equal(expected[0], result)
+  let result = prop_find(#{type: 'misspell'}, 'f')
+  call assert_equal(expected[1], result)
+
+  call prop_type_delete('misspell')
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

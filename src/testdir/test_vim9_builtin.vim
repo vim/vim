@@ -1,6 +1,7 @@
 " Test using builtin functions in the Vim9 script language.
 
 source check.vim
+source screendump.vim
 import './vim9.vim' as v9
 
 " Test for passing too many or too few arguments to builtin functions
@@ -1272,56 +1273,79 @@ def Test_float_funcs_args()
 
   # acos()
   v9.CheckDefAndScriptFailure(['acos("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('1.570796', string(acos(0.0)))
   # asin()
   v9.CheckDefAndScriptFailure(['asin("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(asin(0.0)))
   # atan()
   v9.CheckDefAndScriptFailure(['atan("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(atan(0.0)))
   # atan2()
   v9.CheckDefAndScriptFailure(['atan2("a", 1.1)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('-2.356194', string(atan2(-1, -1)))
   v9.CheckDefAndScriptFailure(['atan2(1.2, "a")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 2'])
   v9.CheckDefAndScriptFailure(['atan2(1.2)'], ['E119:', 'E119:'])
   # ceil()
   v9.CheckDefAndScriptFailure(['ceil("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('2.0', string(ceil(2.0)))
   # cos()
   v9.CheckDefAndScriptFailure(['cos("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('1.0', string(cos(0.0)))
   # cosh()
   v9.CheckDefAndScriptFailure(['cosh("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('1.0', string(cosh(0.0)))
   # exp()
   v9.CheckDefAndScriptFailure(['exp("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('1.0', string(exp(0.0)))
   # float2nr()
   v9.CheckDefAndScriptFailure(['float2nr("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal(1, float2nr(1.234))
   # floor()
   v9.CheckDefAndScriptFailure(['floor("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('2.0', string(floor(2.0)))
   # fmod()
   v9.CheckDefAndScriptFailure(['fmod(1.1, "a")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 2'])
   v9.CheckDefAndScriptFailure(['fmod("a", 1.1)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['fmod(1.1)'], ['E119:', 'E119:'])
+  assert_equal('0.13', string(fmod(12.33, 1.22)))
   # isinf()
   v9.CheckDefAndScriptFailure(['isinf("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal(1, isinf(1.0 / 0.0))
   # isnan()
   v9.CheckDefAndScriptFailure(['isnan("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_true(isnan(0.0 / 0.0))
   # log()
   v9.CheckDefAndScriptFailure(['log("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(log(1.0)))
   # log10()
   v9.CheckDefAndScriptFailure(['log10("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(log10(1.0)))
   # pow()
   v9.CheckDefAndScriptFailure(['pow("a", 1.1)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['pow(1.1, "a")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 2'])
   v9.CheckDefAndScriptFailure(['pow(1.1)'], ['E119:', 'E119:'])
+  assert_equal('1.0', string(pow(0.0, 0.0)))
   # round()
   v9.CheckDefAndScriptFailure(['round("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('2.0', string(round(2.1)))
   # sin()
   v9.CheckDefAndScriptFailure(['sin("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(sin(0.0)))
   # sinh()
   v9.CheckDefAndScriptFailure(['sinh("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(sinh(0.0)))
   # sqrt()
   v9.CheckDefAndScriptFailure(['sqrt("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(sqrt(0.0)))
   # tan()
   v9.CheckDefAndScriptFailure(['tan("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(tan(0.0)))
   # tanh()
   v9.CheckDefAndScriptFailure(['tanh("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('0.0', string(tanh(0.0)))
   # trunc()
   v9.CheckDefAndScriptFailure(['trunc("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
+  assert_equal('2.0', string(trunc(2.1)))
 enddef
 
 def Test_fnameescape()
@@ -4492,6 +4516,47 @@ enddef
 def Test_win_gotoid()
   v9.CheckDefAndScriptFailure(['win_gotoid("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
+
+func Test_win_gotoid_in_mapping()
+  CheckScreendump
+
+  " requires a working clipboard and this doesn't work on MacOS
+  if has('clipboard_working') && !has('mac')
+    let @* = 'foo'
+    let lines =<< trim END
+        set cmdheight=2
+        func On_click()
+          call win_gotoid(getmousepos().winid)
+          execute "norm! \<LeftMouse>"
+        endfunc
+        noremap <LeftMouse> <Cmd>call On_click()<CR>
+
+        autocmd SafeState * echo 'reg = "' .. @* .. '"'
+
+        call setline(1, range(20))
+        set nomodified
+        botright new
+        call setline(1, range(21, 40))
+        set nomodified
+
+        func Click()
+          map <silent> <F3> :call test_setmouse(3, 1)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<LeftRelease>", "xt")
+        endfunc
+    END
+    call writefile(lines, 'Xgotoscript')
+    let buf = RunVimInTerminal('-S Xgotoscript', #{rows: 15, wait_for_ruler: 0})
+    call VerifyScreenDump(buf, 'Test_win_gotoid_1', {})
+    call term_sendkeys(buf, "3Gvl")
+    call VerifyScreenDump(buf, 'Test_win_gotoid_2', {})
+
+    call term_sendkeys(buf, ":call Click()\<CR>")
+    call VerifyScreenDump(buf, 'Test_win_gotoid_3', {})
+
+    call StopVimInTerminal(buf)
+    call delete('Xgotoscript')
+  endif
+endfunc
 
 def Test_win_id2tabwin()
   v9.CheckDefAndScriptFailure(['win_id2tabwin("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])

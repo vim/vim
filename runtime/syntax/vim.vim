@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 8.2 script
 " Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
-" Last Change:	April 08, 2022
-" Version:	8.2-33
+" Last Change:	April 10, 2022
+" Version:	8.2-34
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
 
@@ -74,7 +74,7 @@ syn keyword vimAutoEvent contained	BufCreate BufEnter BufFilePre BufLeave BufNew
 syn keyword vimGroup contained	Comment Constant String Character Number Boolean Float Identifier Function Statement Conditional Repeat Label Operator Keyword Exception PreProc Include Define Macro PreCondit Type StorageClass Structure Typedef Special SpecialChar Tag Delimiter SpecialComment Debug Underlined Ignore Error Todo
 
 " Default highlighting groups {{{2
-syn keyword vimHLGroup contained	ColorColumn Cursor CursorColumn CursorIM CursorLine CursorLineFold CursorLineNr CursorLineSign DiffAdd DiffChange DiffDelete DiffText Directory EndOfBuffer ErrorMsg FoldColumn Folded IncSearch LineNr LineNrAbove LineNrBelow MatchParen Menu ModeMsg MoreMsg NonText Normal Pmenu PmenuSbar PmenuSel PmenuThumb Question QuickFixLine Scrollbar Search SignColumn SpecialKey SpellBad SpellCap SpellLocal SpellRare StatusLine StatusLineNC StatusLineTerm TabLine TabLineFill TabLineSel Terminal Title Tooltip VertSplit Visual VisualNOS WarningMsg WildMenu
+syn keyword vimHLGroup contained	ColorColumn CurSearch Cursor CursorColumn CursorIM CursorLine CursorLineFold CursorLineNr CursorLineSign DiffAdd DiffChange DiffDelete DiffText Directory EndOfBuffer ErrorMsg FoldColumn Folded IncSearch LineNr LineNrAbove LineNrBelow MatchParen Menu ModeMsg MoreMsg NonText Normal Pmenu PmenuSbar PmenuSel PmenuThumb Question QuickFixLine Scrollbar Search SignColumn SpecialKey SpellBad SpellCap SpellLocal SpellRare StatusLine StatusLineNC StatusLineTerm TabLine TabLineFill TabLineSel Terminal Title Tooltip VertSplit Visual VisualNOS WarningMsg WildMenu
 syn match vimHLGroup contained	"Conceal"
 syn case match
 

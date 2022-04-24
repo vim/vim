@@ -113,7 +113,7 @@ let s:filename_checks = {
     \ 'cobol': ['file.cbl', 'file.cob', 'file.lib'],
     \ 'coco': ['file.atg'],
     \ 'conaryrecipe': ['file.recipe'],
-    \ 'conf': ['auto.master'],
+    \ 'conf': ['/etc/pacman.conf', 'any/etc/pacman.conf', 'auto.master'],
     \ 'config': ['configure.in', 'configure.ac', '/etc/hostname.file'],
     \ 'context': ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
     \ 'cook': ['file.cook'],
@@ -152,7 +152,7 @@ let s:filename_checks = {
     \ 'dnsmasq': ['/etc/dnsmasq.conf', '/etc/dnsmasq.d/file', 'any/etc/dnsmasq.conf', 'any/etc/dnsmasq.d/file'],
     \ 'dockerfile': ['Containerfile', 'Dockerfile', 'file.Dockerfile', 'Dockerfile.debian', 'Containerfile.something'],
     \ 'dosbatch': ['file.bat'],
-    \ 'dosini': ['.editorconfig', '/etc/pacman.conf', '/etc/yum.conf', 'file.ini', 'npmrc', '.npmrc', 'php.ini', 'php.ini-5', 'php.ini-file', '/etc/yum.repos.d/file', 'any/etc/pacman.conf', 'any/etc/yum.conf', 'any/etc/yum.repos.d/file', 'file.wrap'],
+    \ 'dosini': ['.editorconfig', '/etc/yum.conf', 'file.ini', 'npmrc', '.npmrc', 'php.ini', 'php.ini-5', 'php.ini-file', '/etc/yum.repos.d/file', 'any/etc/yum.conf', 'any/etc/yum.repos.d/file', 'file.wrap'],
     \ 'dot': ['file.dot', 'file.gv'],
     \ 'dracula': ['file.drac', 'file.drc', 'filelvs', 'filelpe', 'drac.file', 'lpe', 'lvs', 'some-lpe', 'some-lvs'],
     \ 'dtd': ['file.dtd'],
@@ -306,6 +306,7 @@ let s:filename_checks = {
     \ 'libao': ['/etc/libao.conf', '/.libao', 'any/.libao', 'any/etc/libao.conf'],
     \ 'lifelines': ['file.ll'],
     \ 'lilo': ['lilo.conf', 'lilo.conf-file'],
+    \ 'lilypond': ['file.ly', 'file.ily'],
     \ 'limits': ['/etc/limits', '/etc/anylimits.conf', '/etc/anylimits.d/file.conf', '/etc/limits.conf', '/etc/limits.d/file.conf', '/etc/some-limits.conf', '/etc/some-limits.d/file.conf', 'any/etc/limits', 'any/etc/limits.conf', 'any/etc/limits.d/file.conf', 'any/etc/some-limits.conf', 'any/etc/some-limits.d/file.conf'],
     \ 'liquid': ['file.liquid'],
     \ 'lisp': ['file.lsp', 'file.lisp', 'file.asd', 'file.el', 'file.cl', '.emacs', '.sawfishrc', 'sbclrc', '.sbclrc'],
@@ -337,6 +338,8 @@ let s:filename_checks = {
     \ 'markdown': ['file.markdown', 'file.mdown', 'file.mkd', 'file.mkdn', 'file.mdwn', 'file.md'],
     \ 'mason': ['file.mason', 'file.mhtml', 'file.comp'],
     \ 'master': ['file.mas', 'file.master'],
+    \ 'maxima': ['file.demo', 'file.dmt', 'file.dm1', 'file.dm2', 'file.dm3',
+    \            'file.wxm', 'maxima-init.mac'],
     \ 'mel': ['file.mel'],
     \ 'meson': ['meson.build', 'meson_options.txt'],
     \ 'messages': ['/log/auth', '/log/cron', '/log/daemon', '/log/debug', '/log/kern', '/log/lpr', '/log/mail', '/log/messages', '/log/news/news', '/log/syslog', '/log/user',
@@ -384,6 +387,7 @@ let s:filename_checks = {
     \ 'omnimark': ['file.xom', 'file.xin'],
     \ 'opam': ['opam', 'file.opam', 'file.opam.template'],
     \ 'openroad': ['file.or'],
+    \ 'openscad': ['file.scad'],
     \ 'ora': ['file.ora'],
     \ 'org': ['file.org', 'file.org_archive'],
     \ 'pamconf': ['/etc/pam.conf', '/etc/pam.d/file', 'any/etc/pam.conf', 'any/etc/pam.d/file'],
@@ -768,7 +772,7 @@ func Test_filetype_indent_off()
 endfunc
 
 """""""""""""""""""""""""""""""""""""""""""""""""
-" Tests for specific extentions and filetypes.
+" Tests for specific extensions and filetypes.
 " Keep sorted.
 """""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -1198,12 +1202,12 @@ func Test_hook_file()
 
   call writefile(['[Trigger]', 'this is pacman config'], 'Xfile.hook')
   split Xfile.hook
-  call assert_equal('dosini', &filetype)
+  call assert_equal('conf', &filetype)
   bwipe!
 
   call writefile(['not pacman'], 'Xfile.hook')
   split Xfile.hook
-  call assert_notequal('dosini', &filetype)
+  call assert_notequal('conf', &filetype)
   bwipe!
 
   call delete('Xfile.hook')
@@ -1562,11 +1566,13 @@ func Test_src_file()
   bwipe!
   call delete('srcfile.Src')
 
-  " KRL global def with embedded spaces, file starts with empty line(s).
-  call writefile(['', 'global  def  srcfile()'], 'srcfile.SRC')
-  split srcfile.SRC
-  call assert_equal('krl', &filetype)
-  bwipe!
+  " KRL global deffct with embedded spaces, file starts with empty line(s).
+  for text in ['global  def  srcfile()', 'global  deffct  srcfile()']
+    call writefile(['', text], 'srcfile.SRC')
+    split srcfile.SRC
+    call assert_equal('krl', &filetype, text)
+    bwipe!
+  endfor
 
   " User may overrule file inspection
   let g:filetype_src = 'src'

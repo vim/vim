@@ -3259,3 +3259,7 @@ EXTERN char e_nfa_regexp_missing_value_in_chr[]
 	INIT(= N_("E1273: (NFA regexp) missing value in '\\%%%c'"));
 EXTERN char e_no_script_file_name_to_substitute_for_script[]
 	INIT(= N_("E1274: No script file name to substitute for \"<script>\""));
+#ifdef FEAT_EVAL
+EXTERN char e_string_or_function_required_for_arrow_parens_expr[]
+	INIT(= N_("E1275: String or function required for ->(expr)"));
+#endif

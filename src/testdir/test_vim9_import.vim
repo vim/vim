@@ -506,8 +506,6 @@ def Test_import_fails()
   END
   v9.CheckScriptFailure(lines, 'E1047:')
 
-  delete('Xfoo.vim')
-
   lines =<< trim END
       vim9script
       def TheFunc()
@@ -576,7 +574,26 @@ def Test_import_fails()
   END
   v9.CheckScriptSuccess(lines)
 
+  new
+  setline(1, ['vim9script', 'import "" as abc'])
+  assert_fails('source', 'E1071: Invalid string for :import: "" as abc')
+  setline(2, 'import [] as abc')
+  assert_fails('source', 'E1071: Invalid string for :import: [] as abc')
+  setline(2, 'import test_null_string() as abc')
+  assert_fails('source', 'E1071: Invalid string for :import: test_null_string() as abc')
+  bw!
+  call writefile(['vim9script', "import './Xfoo.vim' ask expo"], 'Xbar.vim')
+  assert_fails('source Xbar.vim', 'E488: Trailing characters: ask expo')
+  writefile([], 'Xtemp')
+  call writefile(['vim9script', "import './Xtemp'"], 'Xbar.vim')
+  assert_fails('source Xbar.vim', 'E1257: Imported script must use "as" or end in .vim: Xtemp')
+  delete('Xtemp')
+  call writefile(['vim9script', "import './Xfoo.vim' as abc | foobar"], 'Xbar.vim')
+  assert_fails('source Xbar.vim', 'E492: Not an editor command:  foobar')
+  call delete('Xbar.vim')
+
   delete('Ximport', 'rf')
+  delete('Xfoo.vim')
 enddef
 
 func g:Trigger()
@@ -1404,6 +1421,7 @@ def Test_export_fails()
   v9.CheckScriptFailure(['export var some = 123'], 'E1042:')
   v9.CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')
   v9.CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
+  v9.CheckScriptFailure(['vim9script', 'export function /a1b2c3'], 'E1044:')
 
   assert_fails('export something', 'E1043:')
 enddef
@@ -2646,6 +2664,12 @@ def Test_vim9script_autoload_fails()
       var n = 0
   END
   v9.CheckScriptFailure(lines, 'E983: Duplicate argument: noclear')
+
+  lines =<< trim END
+      vim9script noclears
+      var n = 0
+  END
+  v9.CheckScriptFailure(lines, 'E475: Invalid argument: noclears')
 enddef
 
 def Test_import_autoload_fails()

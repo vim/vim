@@ -1127,6 +1127,7 @@ ins_mousescroll(int dir)
 	}
 #endif
 	did_scroll = TRUE;
+	may_trigger_winscrolled();
     }
 
     curwin->w_redr_status = TRUE;
@@ -2087,6 +2088,7 @@ nv_mousescroll(cmdarg_T *cap)
     if (curwin != old_curwin && curwin->w_p_cul)
 	redraw_for_cursorline(curwin);
 # endif
+    may_trigger_winscrolled();
 
     curwin->w_redr_status = TRUE;
 

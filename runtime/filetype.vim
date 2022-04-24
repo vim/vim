@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Apr 07
+" Last Change:	2022 Apr 13
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -155,14 +155,21 @@ au BufNewFile,BufRead *.asp
 	\   setf aspvbs |
 	\ endif
 
-" Grub (must be before catch *.lst)
+" Grub (must be before pattern *.lst)
 au BufNewFile,BufRead */boot/grub/menu.lst,*/boot/grub/grub.conf,*/etc/grub.conf setf grub
+
+" Maxima, see:
+" https://maxima.sourceforge.io/docs/manual/maxima_71.html#file_005ftype_005fmaxima
+" Must be before the pattern *.mac.
+" *.dem omitted - also used by gnuplot demos
+" *.mc omitted - used by dist#ft#McSetf()
+au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
 au BufNewFile,BufRead *.asm,*.[sS],*.[aA],*.mac,*.lst	call dist#ft#FTasm()
 
-" Macro (VAX)
+" Assembly - Macro (VAX)
 au BufNewFile,BufRead *.mar			setf vmasm
 
 " Atlas
@@ -1013,6 +1020,9 @@ au BufNewFile,BufRead *.ll			setf lifelines
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf			setf lilo
 
+" Lilypond
+au BufNewFile,BufRead *.ly,*.ily		setf lilypond
+
 " Lisp (*.el = ELisp, *.cl = Common Lisp)
 " *.jl was removed, it's also used for Julia, better skip than guess wrong.
 if has("fname_case")
@@ -1275,6 +1285,9 @@ au BufNewFile,BufRead *.or			setf openroad
 " OPL
 au BufNewFile,BufRead *.[Oo][Pp][Ll]		setf opl
 
+" OpenSCAD
+au BufNewFile,BufRead *.scad		setf openscad		
+
 " Oracle config file
 au BufNewFile,BufRead *.ora			setf ora
 
@@ -1284,13 +1297,13 @@ au BufNewFile,BufRead *.org,*.org_archive	setf org
 " Packet filter conf
 au BufNewFile,BufRead pf.conf			setf pf
 
-" Pacman Config (close enough to dosini)
-au BufNewFile,BufRead */etc/pacman.conf		setf dosini
+" Pacman config
+au BufNewFile,BufRead */etc/pacman.conf		setf conf
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
 	\ if getline(1) == '[Trigger]' |
-	\   setf dosini |
+	\   setf conf |
 	\ endif
 
 " Pam conf
@@ -1672,7 +1685,8 @@ au BufNewFile,BufRead *.siv,*.sieve		setf sieve
 " Sendmail
 au BufNewFile,BufRead sendmail.cf		setf sm
 
-" Sendmail .mc files are actually m4.  Could also be MS Message text file.
+" Sendmail .mc files are actually m4.  Could also be MS Message text file or
+" Maxima.
 au BufNewFile,BufRead *.mc			call dist#ft#McSetf()
 
 " Services

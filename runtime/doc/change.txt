@@ -614,9 +614,10 @@ attack or other people reading your file).  When Vim exits the directory and
 all files in it are deleted.  When Vim has the setuid bit set this may cause
 problems, the temp file is owned by the setuid user but the filter command
 probably runs as the original user.
-On MS-Windows the first of these directories that works is used: $TMP,
-$TEMP, c:\TMP, c:\TEMP.
-For Unix the list of directories is: $TMPDIR, /tmp, current-dir, $HOME.
+Directory for temporary files is created in the first of these directories
+that works:
+	Unix:    $TMPDIR, /tmp, current-dir, $HOME.
+	Windows: $TMP, $TEMP, c:\TMP, c:\TEMP
 For MS-Windows the GetTempFileName() system function is used.
 For other systems the tmpnam() library function is used.
 

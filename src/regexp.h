@@ -166,11 +166,15 @@ typedef struct
 
 struct regengine
 {
+    // bt_regcomp or nfa_regcomp
     regprog_T	*(*regcomp)(char_u*, int);
+    // bt_regfree or nfa_regfree
     void	(*regfree)(regprog_T *);
+    // bt_regexec_nl or nfa_regexec_nl
     int		(*regexec_nl)(regmatch_T *, char_u *, colnr_T, int);
+    // bt_regexec_mult or nfa_regexec_mult
     long	(*regexec_multi)(regmmatch_T *, win_T *, buf_T *, linenr_T, colnr_T, proftime_T *, int *);
-    char_u	*expr;
+    //char_u	*expr;
 };
 
 #endif	// _REGEXP_H

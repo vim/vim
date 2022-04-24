@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Apr 06
+# Last Change:	2022 Apr 13
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -989,20 +989,23 @@ export def FTtf()
   setf tf
 enddef
 
+var ft_krl_header = '\&\w+'
 # Determine if a *.src file is Kuka Robot Language
 export def FTsrc()
+  var ft_krl_def_or_deffct = '%(global\s+)?def%(fct)?>'
   if exists("g:filetype_src")
     exe "setf " .. g:filetype_src
-  elseif getline(nextnonblank(1)) =~? '^\s*\%(&\w\+\|\%(global\s\+\)\?def\>\)'
+  elseif getline(nextnonblank(1)) =~? '\v^\s*%(' .. ft_krl_header .. '|' .. ft_krl_def_or_deffct .. ')'
     setf krl
   endif
 enddef
 
 # Determine if a *.dat file is Kuka Robot Language
 export def FTdat()
+  var ft_krl_defdat = 'defdat>'
   if exists("g:filetype_dat")
     exe "setf " .. g:filetype_dat
-  elseif getline(nextnonblank(1)) =~? '^\s*\%(&\w\+\|defdat\>\)'
+  elseif getline(nextnonblank(1)) =~? '\v^\s*%(' .. ft_krl_header .. '|' .. ft_krl_defdat .. ')'
     setf krl
   endif
 enddef

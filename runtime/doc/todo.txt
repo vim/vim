@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Apr 06
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Apr 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,8 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Use "`=expr`" in heredoc also in :def function.  #10216  Yegappan will do it.
 
 Once Vim9 is stable:
 - Use Vim9 for more runtime files.
@@ -151,7 +153,6 @@ Terminal debugger:
 - Add option to not open the program window.  It's not used when attaching to
   an already running program. (M. Kelly)
 - When only gdb window exists, on "quit" edit another buffer.
-- Use a sign group
 - Termdebug does not work when Vim was built with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
@@ -202,6 +203,11 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+CurSearch highlight is wrong when searching for a space, matches all spaces
+instead of only the current one.
+
+Can deref_func_name() and deref_function_name() be merged?
+
 When using 'cryptmethod' xchaha20 the undo file is not encrypted.
 Need to handle extra bytes.
 
@@ -222,8 +228,6 @@ Fails in line 64 of Ch_communicate, no exception is thrown.
 
 Patch for Template string: #4634
 Have another look at the implementation.
-
-Add expanding <script> which works like <sfile> everywhere. #9189
 
 Rename getdigraphlist -> digraph_getlist() etc.
 
@@ -254,6 +258,14 @@ Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 ":set &shellpipe" and ":set &shellredir" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
+
+With concealed text mouse click doesn't put the cursor in the right position.
+(Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
+need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
+IDEA: when drawing the text, store the text byte index in ScreenLinesIdx[].
+When converting screen column to text position use this.
+Store the line number and byte index for the start of the line, when
+converting the screen line to text position use this, add the byte offset.
 
 MS-Windows: did path modifier :p:8 stop working?  #8600
 
@@ -1919,10 +1931,6 @@ On MS-Windows a temp dir with a & init causes system() to fail. (Ben Fritz,
 'list' is set.  (Dennis Preiser)
 Patch 7.3.116 was the wrong solution.
 Christian Brabandt has another incomplete patch. (2011 Jul 13)
-
-With concealed text mouse click doesn't put the cursor in the right position.
-(Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
-need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
 
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
