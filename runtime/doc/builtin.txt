@@ -235,6 +235,7 @@ getline({lnum})			String	line {lnum} of current buffer
 getline({lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getloclist({nr})		List	list of location list items
 getloclist({nr}, {what})	Dict	get specific location list properties
+getmaps()			List	list of all mappings, a dict for each
 getmarklist([{buf}])		List	list of global/local marks
 getmatches([{win}])		List	list of current matches
 getmousepos()			Dict	last known mouse position
@@ -3568,6 +3569,17 @@ getloclist({nr} [, {what}])				*getloclist()*
 		Examples (See also |getqflist-examples|): >
 			:echo getloclist(3, {'all': 0})
 			:echo getloclist(5, {'filewinid': 0})
+
+
+getmaps()						*getmaps()*
+		Returns a |List| of all mappings. Each List item is a |Dict|
+		as defined by |maparg()|. For a given mapping, the Dict from
+		getmaps() is identical to the dict from |maparg()|.
+
+		Example to get all mappings with 'MultiMatch' in rhs: >
+			vim9script
+			getmaps()->filter(
+				(_, m) => match(m.rhs, 'MultiMatch') >= 0)
 
 
 getmarklist([{buf}])					*getmarklist()*

@@ -17,6 +17,7 @@ int makemap(FILE *fd, buf_T *buf);
 int put_escstr(FILE *fd, char_u *strstart, int what);
 void check_map_keycodes(void);
 char_u *check_map(char_u *keys, int mode, int exact, int ign_mod, int abbr, mapblock_T **mp_ptr, int *local_ptr);
+void f_getmaps(typval_T *argvars, typval_T *rettv);
 void f_maparg(typval_T *argvars, typval_T *rettv);
 void f_mapcheck(typval_T *argvars, typval_T *rettv);
 void f_mapset(typval_T *argvars, typval_T *rettv);

@@ -1871,6 +1871,8 @@ static funcentry_T global_functions[] =
 			ret_getline,	    f_getline},
     {"getloclist",	1, 2, 0,	    arg2_number_dict_any,
 			ret_list_or_dict_1, f_getloclist},
+    {"getmaps",		0, 0, 0,	    NULL,
+			ret_list_dict_any,  f_getmaps},
     {"getmarklist",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_list_dict_any,  f_getmarklist},
     {"getmatches",	0, 1, 0,	    arg1_number,
