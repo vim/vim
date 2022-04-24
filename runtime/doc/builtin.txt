@@ -235,6 +235,7 @@ getline({lnum})			String	line {lnum} of current buffer
 getline({lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getloclist({nr})		List	list of location list items
 getloclist({nr}, {what})	Dict	get specific location list properties
+getmappings()			List	list of all mappings, a dict for each
 getmarklist([{buf}])		List	list of global/local marks
 getmatches([{win}])		List	list of current matches
 getmousepos()			Dict	last known mouse position
@@ -3570,6 +3571,17 @@ getloclist({nr} [, {what}])				*getloclist()*
 			:echo getloclist(5, {'filewinid': 0})
 
 
+getmappings()						*getmappings()*
+		Returns a |List| of all mappings.  Each List item is a |Dict|,
+		the same as what is returned by |maparg()|, see
+		|mapping-dict|.
+
+		Example to show all mappings with 'MultiMatch' in rhs: >
+			vim9script
+			echo getmappings()->filter(
+				(_, m) => match(m.rhs, 'MultiMatch') >= 0)
+
+
 getmarklist([{buf}])					*getmarklist()*
 		Without the {buf} argument returns a |List| with information
 		about all the global marks. |mark|
@@ -5262,7 +5274,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 
 		When {dict} is there and it is |TRUE| return a dictionary
 		containing all the information of the mapping with the
-		following items:
+		following items:			*mapping-dict*
 		  "lhs"	     The {lhs} of the mapping as it would be typed
 		  "lhsraw"   The {lhs} of the mapping as raw bytes
 		  "lhsrawalt" The {lhs} of the mapping as raw bytes, alternate
