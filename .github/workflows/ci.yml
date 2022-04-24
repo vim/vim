@@ -254,7 +254,7 @@ jobs:
 
       - name: Codecov
         if: matrix.coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v3.1.0
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
 
@@ -600,14 +600,14 @@ jobs:
 
       - name: Codecov (gVim)
         if: matrix.coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3.1.0
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
 
       - name: Codecov (Vim)
         if: matrix.coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3.1.0
         with:
           directory: src2
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
