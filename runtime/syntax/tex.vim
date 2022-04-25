@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
-" Last Change:	Jun 29, 2020
+" Last Change:	Mar 27, 2022
 " Version:	119
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
@@ -188,8 +188,8 @@ if !exists("g:tex_no_math")
  syn cluster texMathZones		contains=texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ
  syn cluster texMatchGroup		add=@texMathZones
  syn cluster texMathDelimGroup		contains=texMathDelimBad,texMathDelimKey,texMathDelimSet1,texMathDelimSet2
- syn cluster texMathMatchGroup		contains=@texMathZones,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMathDelim,texMathMatcher,texMathOper,texNewCmd,texNewEnv,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone
- syn cluster texMathZoneGroup		contains=texComment,texDelimiter,texLength,texMathDelim,texMathMatcher,texMathOper,texMathSymbol,texMathText,texRefZone,texSpecialChar,texStatement,texTypeSize,texTypeStyle
+ syn cluster texMathMatchGroup		contains=@texMathZones,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMathDelim,texMathMatcher,texMathOper,texMathPar,texNewCmd,texNewEnv,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone
+ syn cluster texMathZoneGroup		contains=texComment,texDelimiter,texLength,texMathDelim,texMathMatcher,texMathOper,texMathPar,texMathSymbol,texMathText,texRefZone,texSpecialChar,texStatement,texTypeSize,texTypeStyle
  if !s:tex_no_error
   syn cluster texMathMatchGroup		add=texMathError
   syn cluster texMathZoneGroup		add=texMathError
@@ -425,11 +425,17 @@ if s:tex_fast =~# 'b'
   endif
 endif
 
-" Bad Math (mismatched): {{{1
+" Bad Math: {{{1
+" Mismatched: {{{2
 if !exists("g:tex_no_math") && !s:tex_no_error
  syn match texBadMath		"\\end\s*{\s*\(array\|[bBpvV]matrix\|split\|smallmatrix\)\s*}"
  syn match texBadMath		"\\end\s*{\s*\(displaymath\|equation\|eqnarray\|math\)\*\=\s*}"
  syn match texBadMath		"\\[\])]"
+endif
+
+" New paragraphs in math zones: {{{2
+if !exists("g:tex_no_error_math_par") && !s:tex_no_error
+ syn match texMathPar           "\%(\\par\|^\s*$\)"
 endif
 
 " Math Zones: {{{1
@@ -1257,6 +1263,7 @@ if !exists("skip_tex_syntax_inits")
     hi def link texBadMath		texError
     hi def link texMathDelimBad		texError
     hi def link texMathError		texError
+    hi def link texMathPar		texError
     if !b:tex_stylish
       hi def link texOnlyMath		texError
     endif
