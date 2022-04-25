@@ -3392,7 +3392,16 @@ def Test_expr8_negate_add()
     assert_equal(12, n)
   END
   v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+    def DoDo(): number
+      return 42
+    enddef
+    echo ++Foo()
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E15:')
 
+  v9.CheckDefAndScriptFailure(["const x = ++123"], 'E15:', 1)
+  v9.CheckDefAndScriptFailure(["const x = --123"], 'E15:', 1)
   v9.CheckDefFailure(["const x = ++n"], 'E1020:', 1)
   v9.CheckScriptFailure(["const x = ++n"], 'E121:', 1)
   v9.CheckDefFailure(["const x = --n"], 'E1020:', 1)

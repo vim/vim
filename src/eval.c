@@ -3848,6 +3848,13 @@ eval7(
 		break;
     }
 
+    if (ret != NOTDONE && is_incr_decr != 0)
+    {
+	semsg(_(e_invalid_expression_str), *arg);
+	clear_tv(rettv);
+	ret = FAIL;
+    }
+
     if (ret == NOTDONE)
     {
 	/*
@@ -3878,9 +3885,18 @@ eval7(
 	    }
 	    else if ((vim9script ? **arg : *skipwhite(*arg)) == '(')
 	    {
-		// "name(..."  recursive!
-		*arg = skipwhite(*arg);
-		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
+		if (is_incr_decr != 0)
+		{
+		    // ++Func() or --Func() is not a valid expression.
+		    semsg(_(e_invalid_expression_str), s);
+		    clear_tv(rettv);
+		    ret = FAIL;
+		}
+		else {
+		    // "name(..."  recursive!
+		    *arg = skipwhite(*arg);
+		    ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
+		}
 	    }
 	    else if (flags & EVAL_CONSTANT)
 		ret = FAIL;

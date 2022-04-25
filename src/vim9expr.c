@@ -2285,6 +2285,13 @@ compile_expr8(
     if (ret == FAIL)
 	return FAIL;
 
+    // The {inc,dec}rement ops cannot be applied to constants.
+    if (ret != NOTDONE && is_incr_decr != 0)
+    {
+	semsg(_(e_invalid_expression_str), *arg);
+	return FAIL;
+    }
+
     if (rettv->v_type != VAR_UNKNOWN && used_before == ppconst->pp_used)
     {
 	if (cctx->ctx_skip == SKIP_YES)
@@ -2321,6 +2328,11 @@ compile_expr8(
 
 	if (*p == '(')
 	{
+	    if (is_incr_decr != 0)
+	    {
+		semsg(_(e_invalid_expression_str), *arg);
+		return FAIL;
+	    }
 	    r = compile_call(arg, p - *arg, cctx, ppconst, 0);
 	}
 	else
