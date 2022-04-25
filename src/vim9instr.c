@@ -472,6 +472,33 @@ generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic)
 }
 
 /*
+ * Generate an ISN_CONCAT instruction.
+ * "count" is the number of stack elements to join together and it must be
+ * greater or equal to one.
+ * The caller ensures all the "count" elements on the stack have the right type.
+ */
+    int
+generate_CONCAT(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    RETURN_OK_IF_SKIP(cctx);
+
+    if (count < 1)
+	return FAIL;
+
+    if ((isn = generate_instr(cctx, ISN_CONCAT)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = count;
+
+    // drop the argument types
+    stack->ga_len -= count - 1;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_2BOOL instruction.
  * "offset" is the offset in the type stack.
  */

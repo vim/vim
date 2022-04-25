@@ -120,6 +120,48 @@ ufunc_argcount(ufunc_T *ufunc)
 }
 
 /*
+ * Create a new string from "count" items at the bottom of the stack.
+ * A trailing NUL is appended.
+ * When "count" is zero an empty string is added to the stack.
+ */
+    static int
+exe_concat(int count, ectx_T *ectx)
+{
+    int		idx;
+    int		len = 0;
+    typval_T	*tv;
+    garray_T	ga;
+
+    ga_init2(&ga, sizeof(char), 1);
+    // Preallocate enough space for the whole string to avoid having to grow
+    // and copy.
+    for (idx = 0; idx < count; ++idx)
+    {
+	tv = STACK_TV_BOT(idx - count);
+	if (tv->vval.v_string != NULL)
+	    len += (int)STRLEN(tv->vval.v_string);
+    }
+
+    if (ga_grow(&ga, len + 1) == FAIL)
+	return FAIL;
+
+    for (idx = 0; idx < count; ++idx)
+    {
+	tv = STACK_TV_BOT(idx - count);
+	ga_concat(&ga, tv->vval.v_string);
+	clear_tv(tv);
+    }
+
+    // add a terminating NUL
+    ga_append(&ga, NUL);
+
+    ectx->ec_stack.ga_len -= count - 1;
+    STACK_TV_BOT(-1)->vval.v_string = ga.ga_data;
+
+    return OK;
+}
+
+/*
  * Create a new list from "count" items at the bottom of the stack.
  * When "count" is zero an empty list is added to the stack.
  * When "count" is -1 a NULL list is added to the stack.
@@ -3536,6 +3578,11 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    case ISN_CONCAT:
+		if (exe_concat(iptr->isn_arg.number, ectx) == FAIL)
+		    goto theend;
+		break;
+
 	    // create a partial with NULL value
 	    case ISN_NEWPARTIAL:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
@@ -4340,20 +4387,6 @@ exec_instructions(ectx_T *ectx)
 			tv1->vval.v_number = n1;
 			--ectx->ec_stack.ga_len;
 		    }
-		}
-		break;
-
-	    case ISN_CONCAT:
-		{
-		    char_u *str1 = STACK_TV_BOT(-2)->vval.v_string;
-		    char_u *str2 = STACK_TV_BOT(-1)->vval.v_string;
-		    char_u *res;
-
-		    res = concat_str(str1, str2);
-		    clear_tv(STACK_TV_BOT(-2));
-		    clear_tv(STACK_TV_BOT(-1));
-		    --ectx->ec_stack.ga_len;
-		    STACK_TV_BOT(-1)->vval.v_string = res;
 		}
 		break;
 
@@ -6083,7 +6116,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_ADDBLOB: smsg("%s%4d ADDBLOB", pfx, current); break;
 
 	    // expression operations
-	    case ISN_CONCAT: smsg("%s%4d CONCAT", pfx, current); break;
+	    case ISN_CONCAT:
+		smsg("%s%4d CONCAT size %lld", pfx, current,
+					    (varnumber_T)(iptr->isn_arg.number));
+		break;
 	    case ISN_STRINDEX: smsg("%s%4d STRINDEX", pfx, current); break;
 	    case ISN_STRSLICE: smsg("%s%4d STRSLICE", pfx, current); break;
 	    case ISN_BLOBINDEX: smsg("%s%4d BLOBINDEX", pfx, current); break;

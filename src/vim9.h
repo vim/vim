@@ -152,7 +152,7 @@ typedef enum {
     ISN_COMPAREANY,
 
     // expression operations
-    ISN_CONCAT,
+    ISN_CONCAT,     // concatenate isn_arg.number strings
     ISN_STRINDEX,   // [expr] string index
     ISN_STRSLICE,   // [expr:expr] string slice
     ISN_LISTAPPEND, // append to a list, like add()

@@ -988,14 +988,12 @@ compile_heredoc_string(char_u *str, int evalstr, cctx_T *cctx)
     if (evalstr && (p = (char_u *)strstr((char *)str, "`=")) != NULL)
     {
 	char_u	*start = str;
+	int	count = 0;
 
 	// Need to evaluate expressions of the form `=<expr>` in the string.
 	// Split the string into literal strings and Vim expressions and
 	// generate instructions to concatenate the literal strings and the
 	// result of evaluating the Vim expressions.
-	val = vim_strsave((char_u *)"");
-	generate_PUSHS(cctx, &val);
-
 	for (;;)
 	{
 	    if (p > start)
@@ -1003,7 +1001,7 @@ compile_heredoc_string(char_u *str, int evalstr, cctx_T *cctx)
 		// literal string before the expression
 		val = vim_strnsave(start, p - start);
 		generate_PUSHS(cctx, &val);
-		generate_instr_drop(cctx, ISN_CONCAT, 1);
+		count++;
 	    }
 	    p += 2;
 
@@ -1011,7 +1009,7 @@ compile_heredoc_string(char_u *str, int evalstr, cctx_T *cctx)
 	    if (compile_expr0(&p, cctx) == FAIL)
 		return FAIL;
 	    may_generate_2STRING(-1, TRUE, cctx);
-	    generate_instr_drop(cctx, ISN_CONCAT, 1);
+	    count++;
 
 	    p = skipwhite(p);
 	    if (*p != '`')
@@ -1029,11 +1027,14 @@ compile_heredoc_string(char_u *str, int evalstr, cctx_T *cctx)
 		{
 		    val = vim_strsave(start);
 		    generate_PUSHS(cctx, &val);
-		    generate_instr_drop(cctx, ISN_CONCAT, 1);
+		    count++;
 		}
 		break;
 	    }
 	}
+
+	if (count > 1)
+	    generate_CONCAT(cctx, count);
     }
     else
     {
@@ -2382,7 +2383,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	    if (*op == '.')
 	    {
-		if (generate_instr_drop(cctx, ISN_CONCAT, 1) == NULL)
+		if (generate_CONCAT(cctx, 2) == FAIL)
 		    goto theend;
 	    }
 	    else if (*op == '+')

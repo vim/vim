@@ -2513,7 +2513,8 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		if (may_generate_2STRING(-2, FALSE, cctx) == FAIL
 			|| may_generate_2STRING(-1, FALSE, cctx) == FAIL)
 		    return FAIL;
-		generate_instr_drop(cctx, ISN_CONCAT, 1);
+		if (generate_CONCAT(cctx, 2) == FAIL)
+		    return FAIL;
 	    }
 	    else
 		generate_two_op(cctx, op);

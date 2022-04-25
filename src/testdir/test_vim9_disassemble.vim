@@ -208,7 +208,7 @@ def Test_disassemble_redir_var()
         ' redir END\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d REDIR END\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d STORE $0\_s*' ..
         '\d RETURN void',
         res)
@@ -883,7 +883,7 @@ def Test_disassemble_closure()
         'local ..= arg\_s*' ..
         '\d LOADOUTER level 1 $0\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d STOREOUTER level 1 $0\_s*' ..
         '\d RETURN void',
         res)
@@ -973,7 +973,7 @@ def Test_disassemble_call_default()
         '6 LOAD arg\[-2]\_s*' ..
         '\d LOAD arg\[-1]\_s*' ..
         '\d 2STRING stack\[-1]\_s*' ..
-        '\d\+ CONCAT\_s*' ..
+        '\d\+ CONCAT size 2\_s*' ..
         '\d\+ RETURN',
         res)
 enddef
@@ -1245,9 +1245,9 @@ def Test_disassemble_lambda()
         '\d PUSHS "X"\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
         '\d 2STRING_ANY stack\[-1\]\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d PUSHS "X"\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d RETURN',
         instr)
 enddef
@@ -1432,7 +1432,7 @@ def Test_disassemble_for_loop_eval()
         '\d\+ LOAD $0\_s*' ..
         '\d\+ LOAD $2\_s*' ..
         '\d 2STRING_ANY stack\[-1\]\_s*' ..
-        '\d\+ CONCAT\_s*' ..
+        '\d\+ CONCAT size 2\_s*' ..
         '\d\+ STORE $0\_s*' ..
         'endfor\_s*' ..
         '\d\+ JUMP -> 5\_s*' ..
@@ -2142,7 +2142,7 @@ def Test_disassemble_execute()
         "execute 'help ' .. tag\\_s*" ..
         '\d\+ PUSHS "help "\_s*' ..
         '\d\+ LOAD $1\_s*' ..
-        '\d\+ CONCAT\_s*' ..
+        '\d\+ CONCAT size 2\_s*' ..
         '\d\+ EXECUTE 1\_s*' ..
         '\d\+ RETURN void',
         res)

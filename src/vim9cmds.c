@@ -2125,7 +2125,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	    generate_instr_type(cctx, ISN_REDIREND, &t_string);
 
 	    if (lhs->lhs_append)
-		generate_instr_drop(cctx, ISN_CONCAT, 1);
+		generate_CONCAT(cctx, 2);
 
 	    if (lhs->lhs_has_index)
 	    {
