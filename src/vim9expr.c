@@ -410,36 +410,39 @@ compile_incr_decr(char_u **arg, cctx_T *cctx, cmdidx_T cmd)
     // Load the LHS value.
     if (compile_assign_lhs(*arg, &lhs, cmd, FALSE, FALSE, FALSE, 2, cctx)
 	    == FAIL)
-	return FAIL;
+	goto failret;
 
     if (compile_load_lhs_with_index(&lhs, *arg, cctx) == FAIL)
-	return FAIL;
+	goto failret;
 
     if (generate_PUSHNR(cctx, 1) == FAIL)
-	return FAIL;
+	goto failret;
 
     // Generate the increment/decrement instruction.
     if (generate_two_op(cctx, (char_u *)(cmd == CMD_increment ? "++" : "--"))
 	    == FAIL)
-	return FAIL;
+	goto failret;
 
     // Duplicate the result, one of the copies is consumed by the store op.
     if (generate_DUP(cctx) == FAIL)
-	return FAIL;
+	goto failret;
 
     // Write the value back.
     if (lhs.lhs_has_index)
     {
 	type_T *rhs_type = get_type_on_stack(cctx, 0);
 	if (compile_assign_unlet(*arg, &lhs, TRUE, rhs_type, cctx) == FAIL)
-	    return FAIL;
+	    goto failret;
     }
     else if (generate_store_lhs(cctx, &lhs, -1, FALSE) == FAIL)
-	return FAIL;
+	goto failret;
 
     *arg += lhs.lhs_varlen_total;
-
+    vim_free(lhs.lhs_name);
     return OK;
+failret:
+    vim_free(lhs.lhs_name);
+    return FAIL;
 }
 
 /*
