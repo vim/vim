@@ -2148,5 +2148,15 @@ func Test_edit_overlong_file_name()
   bwipe!
 endfunc
 
+func Test_edit_shift_bs()
+  new
+  call setline(1, ['abc'])
+  " Shift Backspace should work like Backspace in insert mode
+  call feedkeys("A\<S-BS> \<esc>", 'xt')
+  "exe ":norm! A\<S-BS> \<esc>"
+  call assert_equal(['ab '], getline(1,'$'))
+  call assert_equal('Îx', &t_kb)
+  bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

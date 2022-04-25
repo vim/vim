@@ -378,6 +378,7 @@ enum key_extra
 #define K_UNDO		TERMCAP2KEY('&', '8')
 
 #define K_BS		TERMCAP2KEY('k', 'b')
+#define K_S_BS		TERMCAP2KEY('K', 'M')
 
 #define K_INS		TERMCAP2KEY('k', 'I')
 #define K_KINS		TERMCAP2KEY(KS_EXTRA, KE_KINS)
