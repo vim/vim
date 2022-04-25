@@ -276,6 +276,7 @@ enum key_extra
     , KE_CANCEL = 102		// return from vgetc()
     , KE_COMMAND = 103		// <Cmd> special key
     , KE_SCRIPT_COMMAND = 104	// <ScriptCmd> special key
+    , KE_S_BS = 105	        // shift + <BS>
 };
 
 /*
@@ -299,6 +300,7 @@ enum key_extra
 #define K_C_END		TERMCAP2KEY(KS_EXTRA, KE_C_END)
 #define K_TAB		TERMCAP2KEY(KS_EXTRA, KE_TAB)
 #define K_S_TAB		TERMCAP2KEY('k', 'B')
+#define K_S_BS		TERMCAP2KEY(KS_EXTRA, KE_S_BS)
 
 // extra set of function keys F1-F4, for vt100 compatible xterm
 #define K_XF1		TERMCAP2KEY(KS_EXTRA, KE_XF1)
@@ -378,7 +380,6 @@ enum key_extra
 #define K_UNDO		TERMCAP2KEY('&', '8')
 
 #define K_BS		TERMCAP2KEY('k', 'b')
-#define K_S_BS		TERMCAP2KEY('K', 'M')
 
 #define K_INS		TERMCAP2KEY('k', 'I')
 #define K_KINS		TERMCAP2KEY(KS_EXTRA, KE_KINS)
