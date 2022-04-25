@@ -1,6 +1,5 @@
-" Tests for maparg(), mapcheck() and mapset().
+" Tests for maparg(), mapcheck(), mapset(), maplist()
 " Also test utf8 map with a 0x80 byte.
-" Also test mapcheck()
 
 func s:SID()     
   return str2nr(matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$'))
@@ -297,15 +296,16 @@ func Test_map_restore()
 
 endfunc
 
-def Test_getmappings()
+def Test_maplist()
   new
-  def ClearMaps()
+  def ClearMappingsAbbreviations()
     mapclear | nmapclear | vmapclear | xmapclear | smapclear | omapclear
     mapclear!  | imapclear | lmapclear | cmapclear | tmapclear
     mapclear <buffer> | nmapclear <buffer> | vmapclear <buffer>
     xmapclear <buffer> | smapclear <buffer> | omapclear <buffer>
     mapclear! <buffer> | imapclear <buffer> | lmapclear <buffer>
     cmapclear <buffer> | tmapclear <buffer>
+    abclear | abclear <buffer>
   enddef
 
   def AddMaps(new: list<string>, accum: list<string>)
@@ -314,8 +314,9 @@ def Test_getmappings()
     endif
   enddef
 
-  ClearMaps()
-  assert_equal(0, len(getmappings()))
+  ClearMappingsAbbreviations()
+  assert_equal(0, len(maplist()))
+  assert_equal(0, len(maplist(true)))
 
   # Set up some mappings.
   map dup bar
@@ -331,10 +332,16 @@ def Test_getmappings()
   map abc <Nop>
   nmap <M-j> x
   nmap <M-Space> y
+  # And abbreviations
+  abbreviate xy he
+  abbreviate xx she
+  abbreviate <buffer> x they
 
   # Get a list of the mappings with the ':map' commands.
-  # Check getmappings() return a list of the same size.
-  assert_equal(13, len(getmappings()))
+  # Check maplist() return a list of the same size.
+  assert_equal(13, len(maplist()))
+  assert_equal(3, len(maplist(true)))
+  assert_equal(13, len(maplist(false)))
 
   # collect all the current maps using :map commands
   var maps_command: list<string>
@@ -343,20 +350,20 @@ def Test_getmappings()
   AddMaps(split(execute('tmap'), '\n'), maps_command)
   AddMaps(split(execute('lmap'), '\n'), maps_command)
 
-  # Use getmappings to get all the maps
-  var maps_getmappings = getmappings()
-  assert_equal(len(maps_command), len(maps_getmappings))
+  # Use maplist to get all the maps
+  var maps_maplist = maplist()
+  assert_equal(len(maps_command), len(maps_maplist))
 
   # make sure all the mode-lhs are unique, no duplicates
   var map_set: dict<number>
-  for d in maps_getmappings
+  for d in maps_maplist
     map_set[d.mode .. "-" .. d.lhs .. "-" .. d.buffer] = 0
   endfor
-  assert_equal(len(maps_getmappings), len(map_set))
+  assert_equal(len(maps_maplist), len(map_set))
 
-  # For everything returned by getmappings, should be the same as from maparg.
+  # For everything returned by maplist, should be the same as from maparg.
   # Except for "map dup", bacause maparg returns the <buffer> version
-  for d in maps_getmappings
+  for d in maps_maplist
     if d.lhs == 'dup' && d.buffer == 0
       continue
     endif
@@ -364,8 +371,16 @@ def Test_getmappings()
     assert_equal(d_maparg, d)
   endfor
 
-  ClearMaps()
-  assert_equal(0, len(getmappings()))
+  # Check abbr matches maparg
+  for d in maplist(true)
+    # Note, d.mode is '!', but can't use that with maparg
+    var d_maparg = maparg(d.lhs, 'i', true, true)
+    assert_equal(d_maparg, d)
+  endfor
+
+  ClearMappingsAbbreviations()
+  assert_equal(0, len(maplist()))
+  assert_equal(0, len(maplist(true)))
 enddef
 
 

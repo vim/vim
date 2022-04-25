@@ -235,7 +235,6 @@ getline({lnum})			String	line {lnum} of current buffer
 getline({lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getloclist({nr})		List	list of location list items
 getloclist({nr}, {what})	Dict	get specific location list properties
-getmappings()			List	list of all mappings, a dict for each
 getmarklist([{buf}])		List	list of global/local marks
 getmatches([{win}])		List	list of current matches
 getmousepos()			Dict	last known mouse position
@@ -338,6 +337,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])
 					rhs of mapping {name} in mode {mode}
 mapcheck({name} [, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
+maplist([{abbr}])		List	list of all mappings, a dict for each
 mapnew({expr1}, {expr2})	List/Dict/Blob/String
 					like |map()| but creates a new List or
 					Dictionary
@@ -3571,17 +3571,6 @@ getloclist({nr} [, {what}])				*getloclist()*
 			:echo getloclist(5, {'filewinid': 0})
 
 
-getmappings()						*getmappings()*
-		Returns a |List| of all mappings.  Each List item is a |Dict|,
-		the same as what is returned by |maparg()|, see
-		|mapping-dict|.
-
-		Example to show all mappings with 'MultiMatch' in rhs: >
-			vim9script
-			echo getmappings()->filter(
-				(_, m) => match(m.rhs, 'MultiMatch') >= 0)
-
-
 getmarklist([{buf}])					*getmarklist()*
 		Without the {buf} argument returns a |List| with information
 		about all the global marks. |mark|
@@ -5247,7 +5236,8 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		When {dict} is omitted or zero: Return the rhs of mapping
 		{name} in mode {mode}.  The returned String has special
 		characters translated like in the output of the ":map" command
-		listing.
+		listing. When {dict} is TRUE a dictionary is returned, see
+		below. To get a list of all mappings see |maplist()|.
 
 		When there is no mapping for {name}, an empty String is
 		returned.  When the mapping for {name} is empty, then "<Nop>"
@@ -5346,6 +5336,18 @@ mapcheck({name} [, {mode} [, {abbr}]])			*mapcheck()*
 
 		Can also be used as a |method|: >
 			GetKey()->mapcheck('n')
+
+
+maplist([{abbr}])					*maplist()*
+		Returns a |List| of all mappings.  Each List item is a |Dict|,
+		the same as what is returned by |maparg()|, see
+		|mapping-dict|.  When {abbr} is there and it is |TRUE| use
+		abbreviations instead of mappings.
+
+		Example to show all mappings with 'MultiMatch' in rhs: >
+			vim9script
+			echo maplist()->filter(
+				(_, m) => match(m.rhs, 'MultiMatch') >= 0)
 
 
 mapnew({expr1}, {expr2})					*mapnew()*

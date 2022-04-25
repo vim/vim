@@ -184,7 +184,7 @@ NEW_TESTS = \
 	test_lua \
 	test_makeencoding \
 	test_man \
-	test_maparg \
+	test_map_functions \
 	test_mapping \
 	test_marks \
 	test_match \
@@ -425,7 +425,7 @@ NEW_TESTS_RES = \
 	test_lua.res \
 	test_makeencoding.res \
 	test_man.res \
-	test_maparg.res \
+	test_map_functions.res \
 	test_mapping.res \
 	test_marks.res \
 	test_match.res \
