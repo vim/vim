@@ -508,7 +508,7 @@ do_map(
     {
 	int	did_it = FALSE;
 	int	did_local = FALSE;
-	int	keyround1_simplfied = keyround == 1 && did_simplify;
+	int	keyround1_simplified = keyround == 1 && did_simplify;
 	int	round;
 	int	hash;
 	int	new_hash;
@@ -726,7 +726,7 @@ do_map(
 				    mpp = &(mp->m_next);
 				    continue;
 				}
-				if (keyround1_simplfied && !mp->m_simplified)
+				if (keyround1_simplified && !mp->m_simplified)
 				    break;
 				// We reset the indicated mode bits. If nothing
 				// is left the entry is deleted below.
@@ -779,7 +779,7 @@ do_map(
 				    mp->m_nowait = nowait;
 				    mp->m_silent = silent;
 				    mp->m_mode = mode;
-				    mp->m_simplified = keyround1_simplfied;
+				    mp->m_simplified = keyround1_simplified;
 #ifdef FEAT_EVAL
 				    mp->m_expr = expr;
 				    mp->m_script_ctx = current_sctx;
@@ -817,7 +817,7 @@ do_map(
 	    // delete entry
 	    if (!did_it)
 	    {
-		if (!keyround1_simplfied)
+		if (!keyround1_simplified)
 		    retval = 2;		// no match
 	    }
 	    else if (*keys == Ctrl_C)
@@ -853,7 +853,7 @@ do_map(
 #ifdef FEAT_EVAL
 		    expr, /* sid */ -1, /* scriptversion */ 0, /* lnum */ 0,
 #endif
-		    keyround1_simplfied) == FAIL)
+		    keyround1_simplified) == FAIL)
 	{
 	    retval = 4;	    // no mem
 	    goto theend;
