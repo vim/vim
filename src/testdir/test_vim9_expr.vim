@@ -3347,13 +3347,15 @@ def Test_expr8_negate_add()
   lines =<< trim END
     var n = 12
     echo ++n
+    assert_equal(13, n)
   END
-  v9.CheckDefAndScriptFailure(lines, 'E15:')
+  v9.CheckDefAndScriptSuccess(lines)
   lines =<< trim END
     var n = 12
     echo --n
+    assert_equal(11, n)
   END
-  v9.CheckDefAndScriptFailure(lines, 'E15:')
+  v9.CheckDefAndScriptSuccess(lines)
   lines =<< trim END
     var n = 12
     echo +-n
@@ -3365,15 +3367,36 @@ def Test_expr8_negate_add()
   END
   v9.CheckDefAndScriptFailure(lines, 'E15:')
   lines =<< trim END
+    var n = -1
+    var b0 = !++n
+    assert_equal(v:true, b0)
+    var b1 = !--n
+    assert_equal(v:false, b1)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
     var n = 12
     echo - -n
+    assert_equal(12, n)
   END
-  v9.CheckDefAndScriptFailure(lines, 'E15:')
+  v9.CheckDefAndScriptSuccess(lines)
   lines =<< trim END
     var n = 12
     echo + +n
+    assert_equal(12, n)
   END
-  v9.CheckDefAndScriptFailure(lines, 'E15:')
+  v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+    var n = 12
+    echo + +n
+    assert_equal(12, n)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  v9.CheckDefFailure(["const x = ++n"], 'E1020:', 1)
+  v9.CheckScriptFailure(["const x = ++n"], 'E121:', 1)
+  v9.CheckDefFailure(["const x = --n"], 'E1020:', 1)
+  v9.CheckScriptFailure(["const x = --n"], 'E121:', 1)
 enddef
 
 def LegacyReturn(): string

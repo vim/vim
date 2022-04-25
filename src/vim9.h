@@ -75,6 +75,8 @@ typedef enum {
     ISN_STORERANGE,	// store into blob,
 			// value/index 1/index 2/variable on stack
 
+    ISN_DUP,            // duplicate the element on top of stack
+
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
     ISN_UNLETINDEX,	// unlet item of list or dict

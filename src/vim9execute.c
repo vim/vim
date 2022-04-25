@@ -4466,6 +4466,15 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    case ISN_DUP:
+		{
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+			goto theend;
+		    copy_tv(STACK_TV_BOT(-1), STACK_TV_BOT(0));
+		    ++ectx->ec_stack.ga_len;
+		}
+		break;
+
 	    case ISN_SLICE:
 		{
 		    list_T	*list;
@@ -5792,6 +5801,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_AUTOLOAD:
 		smsg("%s%4d AUTOLOAD %s", pfx, current, iptr->isn_arg.string);
+		break;
+	    case ISN_DUP:
+		smsg("%s%4d DUP", pfx, current);
 		break;
 	    case ISN_UNLET:
 		smsg("%s%4d UNLET%s %s", pfx, current,

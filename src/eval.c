@@ -3485,8 +3485,8 @@ eval_leader(char_u **arg, int vim9)
     {
 	char_u *n = skipwhite(p + 1);
 
-	// ++, --, -+ and +- are not accepted in Vim9 script
-	if (vim9 && (*p == '-' || *p == '+') && (*n == '-' || *n == '+'))
+	// -+ and +- are not accepted in Vim9 script
+	if (vim9 && ((*p == '-' && *n == '+') || (*p == '+' && *n == '-')))
 	{
 	    semsg(_(e_invalid_expression_str), s);
 	    return FAIL;
@@ -3644,6 +3644,7 @@ eval7(
     char_u	*alias;
     static int	recurse = 0;
     int		vim9script = in_vim9script();
+    char_u	is_incr_decr = 0; // '+' - incr, '-' - decr, 0 none
 
     /*
      * Initialise variable so that clear_tv() can't mistake this for a
@@ -3658,6 +3659,19 @@ eval7(
     if (eval_leader(arg, vim9script) == FAIL)
 	return FAIL;
     end_leader = *arg;
+
+    /*
+     * Handle the rightmost ++ or -- pair as prefix {inc,dec}rement ops.
+     */
+    if (end_leader - start_leader >= 2 && vim9script)
+    {
+	if (!STRNCMP(end_leader - 2, "++", 2))
+	    is_incr_decr = '+';
+	else if (!STRNCMP(end_leader - 2, "--", 2))
+	    is_incr_decr = '-';
+	if (is_incr_decr != 0)
+	    end_leader -= 2;
+    }
 
     if (**arg == '.' && (!isdigit(*(*arg + 1))
 #ifdef FEAT_FLOAT
@@ -3872,6 +3886,22 @@ eval7(
 		ret = FAIL;
 	    else if (evaluate)
 	    {
+		// Evaluate the {inc,dec}rement before loading the value.
+		if (is_incr_decr != 0)
+		{
+		    exarg_T	ea;
+
+		    CLEAR_POINTER(&ea);
+		    if ((ea.cmd = alloc(len + 8)) != NULL)
+		    {
+			vim_snprintf((char *)ea.cmd, len + 8, "%.*s %c= 1 |",
+				len, (char *)s, is_incr_decr);
+			ea.arg = ea.cmd;
+			ea.cmdidx = CMD_var;
+			ex_let(&ea);
+			vim_free(ea.cmd);
+		    }
+		}
 		// get the value of "true", "false", etc. or a variable
 		ret = FAIL;
 		if (vim9script)

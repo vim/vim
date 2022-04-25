@@ -511,6 +511,17 @@ generate_COND2BOOL(cctx_T *cctx)
 }
 
     int
+generate_DUP(cctx_T *cctx)
+{
+    type_T	*type = get_type_on_stack(cctx, 0);
+
+    if (generate_instr(cctx, ISN_DUP) == NULL)
+	return FAIL;
+
+    return push_type_stack(cctx, type);
+}
+
+    int
 generate_TYPECHECK(
 	cctx_T	    *cctx,
 	type_T	    *expected,
@@ -2276,6 +2287,7 @@ delete_instr(isn_T *isn)
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
 	case ISN_SOURCE:
+	case ISN_DUP:
     case ISN_STOREOUTER:
     case ISN_STORERANGE:
     case ISN_STOREREG:

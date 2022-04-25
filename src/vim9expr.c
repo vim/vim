@@ -397,6 +397,52 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
 }
 
 /*
+ * Compile a read/modify/write sequence on the given variable name and with the
+ * given increment or decrement operator.
+ * The modified value is left on the top of the stack.
+ */
+    int
+compile_incr_decr(char_u **arg, cctx_T *cctx, cmdidx_T cmd)
+{
+    lhs_T	lhs;
+    lhs.lhs_name = NULL;
+
+    // Load the LHS value.
+    if (compile_assign_lhs(*arg, &lhs, cmd, FALSE, FALSE, FALSE, 2, cctx)
+	    == FAIL)
+	return FAIL;
+
+    if (compile_load_lhs_with_index(&lhs, *arg, cctx) == FAIL)
+	return FAIL;
+
+    if (generate_PUSHNR(cctx, 1) == FAIL)
+	return FAIL;
+
+    // Generate the increment/decrement instruction.
+    if (generate_two_op(cctx, (char_u *)(cmd == CMD_increment ? "++" : "--"))
+	    == FAIL)
+	return FAIL;
+
+    // Duplicate the result, one of the copies is consumed by the store op.
+    if (generate_DUP(cctx) == FAIL)
+	return FAIL;
+
+    // Write the value back.
+    if (lhs.lhs_has_index)
+    {
+	type_T *rhs_type = get_type_on_stack(cctx, 0);
+	if (compile_assign_unlet(*arg, &lhs, TRUE, rhs_type, cctx) == FAIL)
+	    return FAIL;
+    }
+    else if (generate_store_lhs(cctx, &lhs, -1, FALSE) == FAIL)
+	return FAIL;
+
+    *arg += lhs.lhs_varlen_total;
+
+    return OK;
+}
+
+/*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
  * "is_expr" is TRUE when evaluating an expression, might be a funcref.
@@ -2060,6 +2106,7 @@ compile_expr8(
     int		ret = OK;
     typval_T	*rettv = &ppconst->pp_tv[ppconst->pp_used];
     int		used_before = ppconst->pp_used;
+    char_u	is_incr_decr = 0; // '+' - incr, '-' - decr, 0 none
 
     ppconst->pp_is_const = FALSE;
 
@@ -2070,6 +2117,19 @@ compile_expr8(
     if (eval_leader(arg, TRUE) == FAIL)
 	return FAIL;
     end_leader = *arg;
+
+    /*
+     * Handle the rightmost ++ or -- pair as prefix {inc,dec}rement ops.
+     */
+    if (end_leader - start_leader >= 2)
+    {
+	if (!STRNCMP(end_leader - 2, "++", 2))
+	    is_incr_decr = '+';
+	else if (!STRNCMP(end_leader - 2, "--", 2))
+	    is_incr_decr = '-';
+	if (is_incr_decr != 0)
+	    end_leader -= 2;
+    }
 
     rettv->v_type = VAR_UNKNOWN;
     switch (**arg)
@@ -2268,7 +2328,11 @@ compile_expr8(
 	    if (cctx->ctx_skip != SKIP_YES
 				    && generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
-	    r = compile_load(arg, p, cctx, TRUE, TRUE);
+	    if (is_incr_decr != 0)
+		r = compile_incr_decr(arg, cctx, is_incr_decr == '+' ?
+			CMD_increment : CMD_decrement);
+	    else
+		r = compile_load(arg, p, cctx, TRUE, TRUE);
 	}
 	if (r == FAIL)
 	    return FAIL;

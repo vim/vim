@@ -61,6 +61,7 @@ int generate_EXEC(cctx_T *cctx, isntype_T isntype, char_u *str);
 int generate_LEGACY_EVAL(cctx_T *cctx, char_u *line);
 int generate_EXECCONCAT(cctx_T *cctx, int count);
 int generate_RANGE(cctx_T *cctx, char_u *range);
+int generate_DUP(cctx_T *cctx);
 int generate_UNPACK(cctx_T *cctx, int var_count, int semicolon);
 int generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod);
 int generate_undo_cmdmods(cctx_T *cctx);
