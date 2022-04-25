@@ -62,7 +62,7 @@ int generate_LEGACY_EVAL(cctx_T *cctx, char_u *line);
 int generate_EXECCONCAT(cctx_T *cctx, int count);
 int generate_RANGE(cctx_T *cctx, char_u *range);
 int generate_UNPACK(cctx_T *cctx, int var_count, int semicolon);
-int generate_NEWSTRING(cctx_T *cctx, int count);
+int generate_CONCAT(cctx_T *cctx, int count);
 int generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod);
 int generate_undo_cmdmods(cctx_T *cctx);
 int generate_store_var(cctx_T *cctx, assign_dest_T dest, int opt_flags, int vimvaridx, int scriptvar_idx, int scriptvar_sid, type_T *type, char_u *name);

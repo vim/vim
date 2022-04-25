@@ -97,7 +97,6 @@ typedef enum {
 			// -1 for null_list
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 			// -1 for null_dict
-    ISN_NEWSTRING,	// push string from stack items, size is isn_arg.number
     ISN_NEWPARTIAL,	// push NULL partial
 
     ISN_AUTOLOAD,	// get item from autoload import, function or variable
@@ -153,7 +152,7 @@ typedef enum {
     ISN_COMPAREANY,
 
     // expression operations
-    ISN_CONCAT,
+    ISN_CONCAT,     // concatenate isn_arg.number strings
     ISN_STRINDEX,   // [expr] string index
     ISN_STRSLICE,   // [expr:expr] string slice
     ISN_LISTAPPEND, // append to a list, like add()

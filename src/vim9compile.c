@@ -1034,7 +1034,7 @@ compile_heredoc_string(char_u *str, int evalstr, cctx_T *cctx)
 	}
 
 	if (count != 1)
-	    generate_NEWSTRING(cctx, count);
+	    generate_CONCAT(cctx, count);
     }
     else
     {
@@ -2383,7 +2383,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	    if (*op == '.')
 	    {
-		if (generate_instr_drop(cctx, ISN_CONCAT, 1) == NULL)
+		if (generate_CONCAT(cctx, 2) == FAIL)
 		    goto theend;
 	    }
 	    else if (*op == '+')

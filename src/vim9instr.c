@@ -470,24 +470,30 @@ generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic)
 
     return OK;
 }
+
+/*
+ * Generate an ISN_CONCAT instruction.
+ * "count" is the number of stack elements to join together and it must be
+ * greater or equal to one.
+ * The caller ensures all the "count" elements on the stack have the right type.
+ */
     int
-generate_NEWSTRING(cctx_T *cctx, int count)
+generate_CONCAT(cctx_T *cctx, int count)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_NEWSTRING)) == NULL)
+
+    if (count < 1)
+	return FAIL;
+
+    if ((isn = generate_instr(cctx, ISN_CONCAT)) == NULL)
 	return FAIL;
     isn->isn_arg.number = count;
 
-    if (count > 0)
-    {
-	stack->ga_len -= count - 1;
-	set_type_on_stack(cctx, &t_bool, 0);
-    }
-    else
-	return push_type_stack(cctx, &t_string);
+    // drop the argument types
+    stack->ga_len -= count - 1;
 
     return OK;
 }
@@ -2272,7 +2278,6 @@ delete_instr(isn_T *isn)
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
-	case ISN_NEWSTRING:
 	case ISN_NEWPARTIAL:
 	case ISN_OPANY:
 	case ISN_OPFLOAT:
