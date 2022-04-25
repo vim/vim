@@ -1,5 +1,5 @@
 " Colorscheme for vim
-" Provides easier readabillity with high-contrast colors
+" Provides easier readability with high-contrast colors
 " Languages supported:
 " Java, JavaScript, shell, Python, C, C++, C#, Ruby, Go, PHP, vim script, 
 " Matlab, Rust, YAML, CSS, HTML, and others that have these general syntax rules
@@ -12,10 +12,6 @@ hi clear
 if exists("syntax_on")
 	syntax reset	
 endif
-
-" options to choose font, if neither is selected, gui font goes to vim default
-"set guifont=OpenDyslexic
-"set guifont=Verdana
 
 
 let colors_name = "openDyslexia"
