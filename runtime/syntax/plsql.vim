@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language: Oracle Procedureal SQL (PL/SQL)
+" Language: Oracle Procedural SQL (PL/SQL)
 " Maintainer: Lee Lindley (lee dot lindley at gmail dot com)
 " Previous Maintainer: Jeff Lanzarotta (jefflanzarotta at yahoo dot com)
 " Previous Maintainer: C. Laurence Gonsalves (clgonsal@kami.com)
@@ -29,9 +29,9 @@
 "     From my vimrc file -- turn syntax and syntax folding on,
 "     associate file suffixes as plsql, open all the folds on file open
 " let plsql_fold = 1
-" au Syntax plsql normal zR
-" au BufNewFile,BufRead *.sql,*.pls,*.tps,*.tpb,*.pks,*.pkb,*.pkg,*.trg syntax on
 " au BufNewFile,BufRead *.sql,*.pls,*.tps,*.tpb,*.pks,*.pkb,*.pkg,*.trg set filetype=plsql
+" au BufNewFile,BufRead *.sql,*.pls,*.tps,*.tpb,*.pks,*.pkb,*.pkg,*.trg syntax on
+" au Syntax plsql normal zR
 
 if exists("b:current_syntax")
   finish
@@ -52,12 +52,12 @@ syn match   plsqlIdentifier "[a-z][a-z0-9$_#]*"
 syn match   plsqlHostIdentifier ":[a-z][a-z0-9$_#]*"
 
 " When wanted, highlight the trailing whitespace.
-if exists("c_space_errors")
-  if !exists("c_no_trail_space_error")
+if exists("plsql_space_errors")
+  if !exists("plsql_no_trail_space_error")
     syn match plsqlSpaceError "\s\+$"
   endif
 
-  if !exists("c_no_tab_space_error")
+  if !exists("plsql_no_tab_space_error")
     syn match plsqlSpaceError " \+\t"me=e-1
   endif
 endif
@@ -638,15 +638,23 @@ syn match plsqlAttribute "%\(BULK_EXCEPTIONS\|BULK_ROWCOUNT\|ISOPEN\|FOUND\|NOTF
 " This'll catch mis-matched close-parens.
 syn cluster plsqlParenGroup contains=plsqlParenError,@plsqlCommentGroup,plsqlCommentSkip,plsqlIntLiteral,plsqlFloatLiteral,plsqlNumbersCom
 
-if exists("c_bracket_error")
-  syn region plsqlParen transparent start='(' end=')' contains=ALLBUT,@plsqlParenGroup,plsqlErrInBracket
+if exists("plsql_bracket_error")
+  if exists("plsql_fold")
+    syn region plsqlParen start='(' end=')' contains=ALLBUT,@plsqlParenGroup,plsqlErrInBracket fold keepend extend transparent
+  else
+    syn region plsqlParen transparent start='(' end=')' contains=ALLBUT,@plsqlParenGroup,plsqlErrInBracket
+  endif
   syn match plsqlParenError "[\])]"
   syn match plsqlErrInParen contained "[{}]"
   syn region plsqlBracket transparent start='\[' end=']' contains=ALLBUT,@plsqlParenGroup,plsqlErrInParen
   syn match plsqlErrInBracket contained "[);{}]"
 else
+  if exists("plsql_fold")
+    syn region plsqlParen start='(' end=')' contains=ALLBUT,@plsqlParenGroup,@plsqlFoldingGroupIgnore,plsqlErrInParen fold keepend extend transparent
+  else
+    syn region plsqlParen transparent start='(' end=')' contains=ALLBUT,@plsqlParenGroup,@plsqlFoldingGroupIgnore,plsqlErrInParen
+  endif
   "syn region plsqlParen transparent start='(' end=')' contains=ALLBUT,@plsqlParenGroup,@plsqlProcedureGroup,plsqlBlock,plsqlBlockCont,plsqlPackage,plsqlProcedureJava
-  syn region plsqlParen transparent start='(' end=')' contains=ALLBUT,@plsqlParenGroup,@plsqlFoldingGroupIgnore,plsqlErrInParen
   syn match plsqlParenError ")"
   syn match plsqlErrInParen contained "[{}]"
 endif
