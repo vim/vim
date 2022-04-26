@@ -82,6 +82,9 @@ triggered.
 		  /<start
 		}
 
+The |autocmd_add()| function can be used to add a list of autocmds and autocmd
+groups from a Vim script.
+
 Note: The ":autocmd" command can only be followed by another command when the
 '|' appears where the pattern is expected.  This works: >
 	:augroup mine | au! BufRead | augroup END
@@ -146,6 +149,9 @@ prompt.  When one command outputs two messages this can happen anyway.
 ==============================================================================
 3. Removing autocommands				*autocmd-remove*
 
+In addition to the below described commands, the |autocmd_delete()| function can
+be used to remove a list of autocmds and autocmd groups from a Vim script.
+
 :au[tocmd]! [group] {event} {aupat} [++once] [++nested] {cmd}
 			Remove all autocommands associated with {event} and
 			{aupat}, and add the command {cmd}.
@@ -197,6 +203,9 @@ argument behavior differs from that for defining and removing autocommands.
 
 In order to list buffer-local autocommands, use a pattern in the form <buffer>
 or <buffer=N>.  See |autocmd-buflocal|.
+
+The |autocmd_get()| function can be used from a Vim script to get a list of
+autocmds.
 
 							*:autocmd-verbose*
 When 'verbose' is non-zero, listing an autocommand will also display where it

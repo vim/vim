@@ -1587,6 +1587,12 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_atan)},
     {"atan2",		2, 2, FEARG_1,	    arg2_float_or_nr,
 			ret_float,	    FLOAT_FUNC(f_atan2)},
+    {"autocmd_add",	1, 1, FEARG_1,	    arg1_list_any,
+			ret_number_bool,    f_autocmd_add},
+    {"autocmd_delete",	1, 1, FEARG_1,	    arg1_list_any,
+			ret_number_bool,    f_autocmd_delete},
+    {"autocmd_get",	0, 1, FEARG_1,	    arg1_dict_any,
+			ret_list_dict_any,  f_autocmd_get},
     {"balloon_gettext",	0, 0, 0,	    NULL,
 			ret_string,
 #ifdef FEAT_BEVAL

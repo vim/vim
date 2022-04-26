@@ -60,6 +60,9 @@ assert_report({msg})		Number	report a test failure
 assert_true({actual} [, {msg}])	Number	assert {actual} is true
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
+autocmd_add({acmds})		Bool	add a list of autocmds and groups
+autocmd_delete({acmds})		Bool	delete a list of autocmds and groups
+autocmd_get([{opts}])		List	return a list of autocmds
 balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
@@ -922,6 +925,145 @@ atan2({expr1}, {expr2})					*atan2()*
 <
 		{only available when compiled with the |+float| feature}
 
+
+autocmd_add({acmds})					*autocmd_add()*
+		Adds a List of autocmds and autocmd groups.
+
+		The {acmds} argument is a List where each item is a Dict with
+		the following optional items:
+		    bufnr	buffer number to add a buffer-local autocmd.
+				If this item is specified, then the "pattern"
+				item is ignored.
+		    cmd		Ex command to execute for this autocmd event
+		    event	autocmd event name. Refer to |autocmd-events|.
+		    group	autocmd group name. Refer to |autocmd-groups|.
+				If this group doesn't exist then it is
+				created.  If not specified or empty, then the
+				default group is used.
+		    nested	set to v:true to add a nested autocmd.
+				Refer to |autocmd-nested|.
+		    once	set to v:true to add a autocmd which executes
+				only once. Refer to |autocmd-once|.
+		    pattern	autocmd pattern string. Refer to
+				|autocmd-patterns|.  If "bufnr" item is
+				present, then this item is ignored.
+
+		Returns v:true on success and v:false on failure.
+		Examples: >
+			" Create a buffer-local autocmd for buffer 5
+			let acmd = {}
+			let acmd.group = 'MyGroup'
+			let acmd.event = 'BufEnter'
+			let acmd.bufnr = 5
+			let acmd.cmd = 'call BufEnterFunc()'
+			call autocmd_add([acmd])
+
+		Can also be used as a |method|: >
+			GetAutocmdList()->autocmd_add()
+<
+autocmd_delete({acmds})					*autocmd_delete()*
+		Deletes a List of autocmds and autocmd groups.
+
+		The {acmds} argument is a List where each item is a Dict with
+		the following optional items:
+		    bufnr	buffer number to delete a buffer-local autocmd.
+				If this item is specified, then the "pattern"
+				item is ignored.
+		    cmd		Ex command for this autocmd event
+		    event	autocmd event name. Refer to |autocmd-events|.
+				If '*' then all the autocmd events in this
+				group are deleted.
+		    group	autocmd group name. Refer to |autocmd-groups|.
+				If not specified or empty, then the default
+				group is used.
+		    nested	set to v:true for a nested autocmd.
+				Refer to |autocmd-nested|.
+		    once	set to v:true for an autocmd which executes
+				only once. Refer to |autocmd-once|.
+		    pattern	autocmd pattern string. Refer to
+				|autocmd-patterns|.  If "bufnr" item is
+				present, then this item is ignored.
+
+		If only {group} is specified in a {acmds} entry and {event},
+		{pattern} and {cmd} are not specified, then that autocmd group
+		is deleted.
+
+		Returns v:true on success and v:false on failure.
+		Examples: >
+			" :autocmd! BufLeave *.vim
+			let acmd = #{event: 'BufLeave', pattern: '*.vim'}
+			call autocmd_delete([acmd]})
+			" :autocmd! MyGroup1 BufLeave
+			let acmd = #{group: 'MyGroup1', event: 'BufLeave'}
+			call autocmd_delete([acmd])
+			" :autocmd! MyGroup2 BufEnter *.c
+			let acmd = #{group: 'MyGroup2', event: 'BufEnter',
+							\ pattern: '*.c'}
+			" :autocmd! MyGroup2 * *.c
+			let acmd = #{group: 'MyGroup2', event: '*',
+							\ pattern: '*.c'}
+			call autocmd_delete([acmd])
+			" :autocmd! MyGroup3
+			let acmd = #{group: 'MyGroup3'}
+			call autocmd_delete([acmd])
+<
+		Can also be used as a |method|: >
+			GetAutocmdList()->autocmd_delete()
+
+autocmd_get([{opts}])					*autocmd_get()*
+		Returns a |List| of autocmds. If {opts} is not supplied, then
+		returns the autocmds for all the events in all the groups.
+
+		The optional {opts} Dict argument supports the following
+		items:
+		    group	Autocmd group name. If specified, returns only
+				the autocmds defined in this group. If the
+				specified group doesn't exist, results in an
+				error message.  If set to an empty string,
+				then the default autocmd group is used.
+		    event	Autocmd event name. If specified, returns only
+				the autocmds defined for this event.  If set
+				to "*", then returns autocmds for all the
+				events.  If the specified event doesn't exist,
+				results in an error message.
+		    pattern	Autocmd pattern. If specified, returns only
+				the autocmds defined for this pattern.
+		A combination of the above three times can be supplied in
+		{opts}.
+
+		Each Dict in the returned List contains the following items:
+		    bufnr	For buffer-local autocmds, buffer number where
+				the autocmd is defined.
+		    cmd		Command executed for this autocmd.
+		    event	Autocmd event name.
+		    group	Autocmd group name.
+		    nested	Set to v:true for a nested autocmd. See
+				|autocmd-nested|.
+		    once	Set to v:true, if the autocmd will be executed
+				only once. See |autocmd-once|.
+		    pattern	Autocmd pattern.  For a buffer-local
+				autocmd, this will be of the form "<buffer=n>".
+		If there are multiple commands for an autocmd event in a
+		group, then separate items are returned for each command.
+
+		Examples: >
+			" :autocmd MyGroup
+			echo autocmd_get(#{group: 'Mygroup'})
+			" :autocmd G BufUnload
+			echo autocmd_get(#{group: 'G', event: 'BufUnload'})
+			" :autocmd G * *.ts
+			let acmd = #{group: 'G', event: '*', pattern: '*.ts'}
+			echo autocmd_get(acmd)
+			" :autocmd Syntax
+			echo autocmd_get(#{event: 'Syntax'})
+			" :autocmd G BufEnter *.ts
+			let acmd = #{group: 'G', event: 'BufEnter',
+							\ pattern: '*.ts'}
+			echo autocmd_get(acmd)
+<
+		Can also be used as a |method|: >
+			Getopts()->autocmd_get()
+<
 balloon_gettext()					*balloon_gettext()*
 		Return the current text in the balloon.  Only for the string,
 		not used for the List.
@@ -1570,13 +1712,13 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 
 		An example: >
 		   let choice = confirm("What do you want?",
-		   			\ "&Apples\n&Oranges\n&Bananas", 2)
+					\ "&Apples\n&Oranges\n&Bananas", 2)
 		   if choice == 0
-		   	echo "make up your mind!"
+			echo "make up your mind!"
 		   elseif choice == 3
-		   	echo "tasteful"
+			echo "tasteful"
 		   else
-		   	echo "I prefer bananas myself."
+			echo "I prefer bananas myself."
 		   endif
 <		In a GUI dialog, buttons are used.  The layout of the buttons
 		depends on the 'v' flag in 'guioptions'.  If it is included,
@@ -5326,7 +5468,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		  "sid"	     The script local ID, used for <sid> mappings
 			     (|<SID>|).
 		  "scriptversion"  The version of the script.  999999 for
-		  		   |Vim9| script.
+				   |Vim9| script.
 		  "lnum"     The line number in "sid", zero if unknown.
 		  "nowait"   Do not wait for other, longer mappings.
 			     (|:map-<nowait>|).

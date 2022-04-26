@@ -925,6 +925,11 @@ Date and Time:				*date-functions* *time-functions*
 	reltimestr()		convert reltime() result to a string
 	reltimefloat()		convert reltime() result to a Float
 
+Autocmds:					*autocmd-functions*
+	autocmd_add()		add a list of autocmds and groups
+	autocmd_delete()	delete a list of autocmds and groups
+	autocmd_get()		return a list of autocmds
+
 			*buffer-functions* *window-functions* *arg-functions*
 Buffers, windows and the argument list:
 	argc()			number of entries in the argument list
