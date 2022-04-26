@@ -726,6 +726,8 @@ do_map(
 				    mpp = &(mp->m_next);
 				    continue;
 				}
+				// In keyround for simplified keys, don't unmap
+				// a mapping without m_simplified flag.
 				if (keyround1_simplified && !mp->m_simplified)
 				    break;
 				// We reset the indicated mode bits. If nothing
