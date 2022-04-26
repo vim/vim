@@ -2399,17 +2399,13 @@ check_simplify_modifier(int max_offset)
 		}
 		len = mb_char2bytes(new_c, new_string);
 		if (modifier == 0)
-		{
-		    if (put_string_in_typebuf(offset, 4, new_string, len,
-							   NULL, 0, 0) == FAIL)
-		    return -1;
-		}
+		    (void)put_string_in_typebuf(offset, 4, new_string, len,
+								NULL, 0, NULL);
 		else
 		{
 		    tp[2] = modifier;
-		    if (put_string_in_typebuf(offset + 3, 1, new_string, len,
-							   NULL, 0, 0) == FAIL)
-		    return -1;
+		    (void)put_string_in_typebuf(offset + 3, 1, new_string, len,
+								NULL, 0, NULL);
 		}
 		return len;
 	    }
