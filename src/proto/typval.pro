@@ -9,6 +9,7 @@ varnumber_T tv_get_number_chk(typval_T *varp, int *denote);
 varnumber_T tv_get_bool(typval_T *varp);
 varnumber_T tv_get_bool_chk(typval_T *varp, int *denote);
 float_T tv_get_float(typval_T *varp);
+int check_for_unknown_arg(typval_T *args, int idx);
 int check_for_string_arg(typval_T *args, int idx);
 int check_for_nonempty_string_arg(typval_T *args, int idx);
 int check_for_opt_string_arg(typval_T *args, int idx);

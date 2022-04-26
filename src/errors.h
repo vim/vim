@@ -3262,4 +3262,6 @@ EXTERN char e_no_script_file_name_to_substitute_for_script[]
 #ifdef FEAT_EVAL
 EXTERN char e_string_or_function_required_for_arrow_parens_expr[]
 	INIT(= N_("E1275: String or function required for ->(expr)"));
+EXTERN char e_illegal_map_mode_string_str[]
+	INIT(= N_("E1276: Illegal map mode string: '%s'"));
 #endif
