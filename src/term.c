@@ -4531,7 +4531,9 @@ put_string_in_typebuf(
 	    del_typebuf(-extra, offset);
 	else if (extra > 0)
 	    // insert the extra space we need
-	    ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE);
+	    if (ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE)
+		    == FAIL)
+		return FAIL;
 
 	// Careful: del_typebuf() and ins_typebuf() may have reallocated
 	// typebuf.tb_buf[]!

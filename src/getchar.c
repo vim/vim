@@ -2363,7 +2363,7 @@ at_ctrl_x_key(void)
  * into just a key, apply that.
  * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
  * + "max_offset"].
- * Return the length of the replaced bytes, zero if nothing changed.
+ * Return the length of the replaced bytes, 0 if nothing changed, -1 for error.
  */
     static int
 check_simplify_modifier(int max_offset)
@@ -2706,7 +2706,12 @@ handle_mapping(
 	    // If no termcode matched, try to include the modifier into the
 	    // key.  This is for when modifyOtherKeys is working.
 	    if (keylen == 0 && !no_reduce_keys)
+	    {
 		keylen = check_simplify_modifier(max_mlen + 1);
+		if (keylen < 0)
+		    // ins_typebuf() failed
+		    return map_result_fail;
+	    }
 
 	    // When getting a partial match, but the last characters were not
 	    // typed, don't wait for a typed character to complete the
