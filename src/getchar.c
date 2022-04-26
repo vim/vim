@@ -2401,14 +2401,14 @@ check_simplify_modifier(int max_offset)
 		if (modifier == 0)
 		{
 		    if (put_string_in_typebuf(offset, 4, new_string, len,
-							   NULL, 0, 0) == FAIL)
+							NULL, 0, NULL) == FAIL)
 		    return -1;
 		}
 		else
 		{
 		    tp[2] = modifier;
 		    if (put_string_in_typebuf(offset + 3, 1, new_string, len,
-							   NULL, 0, 0) == FAIL)
+							NULL, 0, NULL) == FAIL)
 		    return -1;
 		}
 		return len;
