@@ -2325,8 +2325,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     int		mode;
     int		abbr = FALSE;
     int		get_dict = FALSE;
-    mapblock_T	*mp;
-    mapblock_T	*mp_simplified = NULL;
+    mapblock_T	*mp = NULL;
     int		buffer_local;
     int		flags = REPTERM_FROM_PART | REPTERM_DO_LT;
 
@@ -2362,8 +2361,6 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     {
 	// When the lhs is being simplified the not-simplified keys are
 	// preferred for printing, like in do_map().
-	// The "rhs" and "buffer_local" values are not expected to change.
-	mp_simplified = mp;
 	(void)replace_termcodes(keys, &alt_keys_buf,
 					flags | REPTERM_NO_SIMPLIFY, NULL);
 	rhs = check_map(alt_keys_buf, mode, exact, FALSE, abbr, &mp,
@@ -2384,7 +2381,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     }
     else if (rettv_dict_alloc(rettv) != FAIL && rhs != NULL)
 	mapblock2dict(mp, rettv->vval.v_dict,
-		    did_simplify ? mp_simplified->m_keys : NULL, buffer_local);
+			  did_simplify ? keys_simplified : NULL, buffer_local);
 
     vim_free(keys_buf);
     vim_free(alt_keys_buf);
