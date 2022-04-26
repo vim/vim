@@ -2437,5 +2437,11 @@ func Test_terminal_builtin_without_gui()
   call assert_notequal(-1, index(output, 'builtin_dumb'))
 endfunc
 
+func Test_simplify_ctrl_at()
+  " feeding unsimplified CTRL-@ should still trigger i_CTRL-@
+  call feedkeys("ifoo\<Esc>A\<*C-@>", 'xt')
+  call assert_equal('foofoo', getline(1))
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
