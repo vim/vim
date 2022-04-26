@@ -1637,7 +1637,11 @@ merge_modifyOtherKeys(int c_arg, int *modifiers)
     if (*modifiers & MOD_MASK_CTRL)
     {
 	if ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_'))
+	{
 	    c &= 0x1f;
+	    if (c == NUL)
+		c = K_ZERO;
+	}
 	else if (c == '6')
 	    // CTRL-6 is equivalent to CTRL-^
 	    c = 0x1e;
@@ -3661,7 +3665,7 @@ inchar(
 	    for (;;)
 	    {
 		len = ui_inchar(dum, DUM_LEN, 0L, 0);
-		if (len == 0 || (len == 1 && dum[0] == 3))
+		if (len == 0 || (len == 1 && dum[0] == Ctrl_C))
 		    break;
 	    }
 	    return retesc;

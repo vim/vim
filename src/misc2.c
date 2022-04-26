@@ -1561,7 +1561,7 @@ extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
 	key = Ctrl_chr(key);
 	modifiers &= ~MOD_MASK_CTRL;
 	// <C-@> is <Nul>
-	if (key == 0)
+	if (key == NUL)
 	    key = K_ZERO;
 	if (did_simplify != NULL)
 	    *did_simplify = TRUE;
