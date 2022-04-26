@@ -2029,7 +2029,7 @@ channel_consume(channel_T *channel, ch_part_T part, int len)
 
 /*
  * Collapses the first and second buffer for "channel"/"part".
- * Returns FAIL if that is not possible.
+ * Returns FAIL if nothing was done.
  * When "want_nl" is TRUE collapse more buffers until a NL is found.
  * When the channel part mode is "lsp", collapse all the buffers as the http
  * header and the JSON content can be present in multiple buffers.
@@ -2957,6 +2957,17 @@ drop_messages(channel_T *channel, ch_part_T part)
 }
 
 /*
+ * Return TRUE if for "channel" / "part" ch_json_head should be used.
+ */
+    static int
+channel_use_json_head(channel_T *channel, ch_part_T part)
+{
+    ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
+
+    return ch_mode == MODE_JSON || ch_mode == MODE_JS || ch_mode == MODE_LSP;
+}
+
+/*
  * Invoke a callback for "channel"/"part" if needed.
  * This does not redraw but sets channel_need_redraw when redraw is needed.
  * Return TRUE when a message was handled, there might be another one.
@@ -3002,7 +3013,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	buffer = NULL;
     }
 
-    if (ch_mode == MODE_JSON || ch_mode == MODE_JS || ch_mode == MODE_LSP)
+    if (channel_use_json_head(channel, part))
     {
 	listitem_T	*item;
 	int		argc = 0;
@@ -3248,14 +3259,13 @@ channel_is_open(channel_T *channel)
 }
 
 /*
- * Return TRUE if "channel" has JSON or other typeahead.
+ * Return a pointer indicating the readahead.  Can only be compared between
+ * calls.  Returns NULL if there is no readahead.
  */
-    static int
-channel_has_readahead(channel_T *channel, ch_part_T part)
+    static void *
+channel_readahead_pointer(channel_T *channel, ch_part_T part)
 {
-    ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
-
-    if (ch_mode == MODE_JSON || ch_mode == MODE_JS || ch_mode == MODE_LSP)
+    if (channel_use_json_head(channel, part))
     {
 	jsonq_T   *head = &channel->ch_part[part].ch_json_head;
 
@@ -3264,9 +3274,18 @@ channel_has_readahead(channel_T *channel, ch_part_T part)
 	    // process.
 	    channel_parse_json(channel, part);
 
-	return head->jq_next != NULL;
+	return head->jq_next;
     }
-    return channel_peek(channel, part) != NULL;
+    return channel_peek(channel, part);
+}
+
+/*
+ * Return TRUE if "channel" has JSON or other typeahead.
+ */
+    static int
+channel_has_readahead(channel_T *channel, ch_part_T part)
+{
+    return channel_readahead_pointer(channel, part) != NULL;
 }
 
 /*
@@ -4013,14 +4032,19 @@ channel_read_json_block(
 
 	if (!more)
 	{
+	    void *prev_readahead_ptr = channel_readahead_pointer(channel, part);
+	    void *readahead_ptr;
+
 	    // Handle any other messages in the queue.  If done some more
 	    // messages may have arrived.
 	    if (channel_parse_messages())
 		continue;
 
 	    // channel_parse_messages() may fill the queue with new data to
-	    // process.
-	    if (channel_has_readahead(channel, part))
+	    // process.  Only loop when the readahead changed, otherwise we
+	    // would busy-loop.
+	    readahead_ptr = channel_readahead_pointer(channel, part);
+	    if (readahead_ptr != NULL && readahead_ptr != prev_readahead_ptr)
 		continue;
 
 	    // Wait for up to the timeout.  If there was an incomplete message
