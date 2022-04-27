@@ -185,38 +185,40 @@ NOTA: Pulsando <ESC> se vuelve al modo Normal o cancela una orden no deseada
 Ahora continúe con la Lección 2.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lección 2.1:  MANDATOS PARA BORRAR
+		     Lección 2.1:  COMANDOS PARA BORRAR
 
 
-       ** Escriba dw para borrar hasta el final de una palabra **
+          ** Escriba dw para borrar una palabra **
 
 
   1. Pulse <ESC> para asegurarse de que está en el modo Normal.
 
-  2. Mueva el cursor a la línea de abajo señalada con --->.
+  2. Mueva el cursor a la línea inferior señalada con --->.
 
   3. Mueva el cursor al comienzo de una palabra que desee borrar.
 
   4. Pulse   dw   para hacer que la palabra desaparezca.
 
-
-  NOTA: Las letras   dw   aparecerán en la última línea de la pantalla cuando
-	las escriba. Si escribe algo equivocado pulse <ESC> y comience de nuevo.
-
+  NOTA: La letra  d  aparecerá en la última línea inferior derecha 
+    de la pantalla mientras la escribe. Vim está esperando que escriba  w .
+    Si ve otro caracter que no sea  d  escribió algo mal, pulse <ESC> y
+    comience de nuevo.
 
 ---> Hay algunas palabras pásalo bien que no pertenecen papel a esta frase.
 
+  5. Repita los pasos 3 y 4 hasta que la frase sea correcta y pase a la
+     lección 2.2.
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lección 2.2: MÁS MANDATOS PARA BORRAR
+		    Lección 2.2: MÁS COMANDOS PARA BORRAR
 
 
 	  ** Escriba  d$  para borrar hasta el final de la línea. **
 
-
   1. Pulse  <ESC>  para asegurarse de que está en el modo Normal.
 
-  2. Mueva el cursor a la línea de abajo señalada con --->.
+  2. Mueva el cursor a la línea inferior señalada con --->.
 
   3. Mueva el cursor al final de la línea correcta (DESPUÉS del primer . ).
 
@@ -224,100 +226,155 @@ Ahora continúe con la Lección 2.
 
 ---> Alguien ha escrito el final de esta línea dos veces. esta línea dos veces.
 
+  5. Pase a la lección 2.3 para entender qué está pasando.
 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    Lección 2.3: SOBRE OPERADORES Y MOVIMIENTOS
+
+
+  Muchos comandos que cambian texto están compuestos por un operador y un
+  movimiento.
+  El formato para eliminar un comando con el operador de borrado  d  es el
+  siguiente:
+
+    d   movimiento
+
+  Donde:
+    d          - es el operador para borrar.
+    movimiento - es sobre lo que el comando va a operar (lista inferior).
+
+  Una lista resumida de movimientos:
+   w - hasta el comienzo de la siguiente palabra, EXCLUYENDO su primer
+       caracter.
+   e - hasta el final de la palabra actual, INCLUYENDO su primer caracter.
+   $ - hasta el finalde la línea, INCLUYENDO el último caracter.
+
+NOTA: Pulsando únicamente el movimiento estando en el modo Normal sin un
+      operador, moverá el cursor como se especifica en la lista anterior.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		  Lección 2.4: UTILIZAR UN CONTADOR PARA UN MOVIMIENTO
+
+
+   ** Al escribir un número antes de un movimiento, lo repite esas veces. **
+
+  1. Mueva el cursor al comienzo de la línea marcada con --->.
+
+  2. Escriba 2w  para mover el cursor dos palabras hacia adelante.
+
+  3. Escriba  3e  para mover el cursor al final de la tercera palabra hacia
+     adelante.
+
+  4. Escriba  0  (cero) para colocar el cursor al inicio de la línea.
+
+  5. Repita el paso 2 y 3 con diferentes números.
+
+---> Esto es solo una línea con palabra donde poder moverse.
+
+  6. Pase a la lección 2.5.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lección 2.5: UTILIZAR UN CONTADOR PARA BORRAR MAS
+
+
+   ** Al escribir un número con un operador lo repite esas veces. **
+
+  En combinación con el operador de borrado y el movimiento mencionado
+  anteriormente, añada un contador antes del movimiento para eliminar más:
+	 d   número   movimiento
+
+  1. Mueva el cursos a la primera palabra en MAYÚSCULAS en la línea
+     marcada con --->.
+
+  2. Escriba  d2w  para eliminar las dos palabras en MAYÚSCULAS.
+
+  3. Repita los pasos 1 y 2 con diferentes contadores para eliminar
+     las siguientes palabras en MAYÚSCULAS con un comando.
+
+--->  esta ABC DE serie FGHI JK LMN OP de palabras ha sido Q RS TUV limpiada.
 
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lección 2.3: SOBRE MANDATOS Y OBJETOS
+			 Lección 2.6: OPERACIÓN EN LÍNEAS
 
 
-  El formato del mandato de borrar   d	 es como sigue:
+		   ** Escriba  dd   para eliminar una línea completa. **
 
-	 [número]   d	objeto	    O	     d	 [número]   objeto
-  donde:
-   número - es cuántas veces se ha de ejecutar el mandato (opcional, defecto=1).
-   d - es el mandato para borrar.
-   objeto - es sobre lo que el mandato va a operar (lista, abajo).
+  Debido a la frecuencia con que se elimina una línea completa, los
+  diseñadores de Vi, decidieron que sería más sencillo simplemente escribir
+  dos letras d para eliminar una línea.
 
-  Una lista corta de objetos:
-   w - desde el cursor hasta el final de la palabra, incluyendo el espacio.
-   e - desde el cursor hasta el final de la palabra, SIN incluir el espacio.
-   $ - desde el cursor hasta el final de la línea.
+  1. Mueva el cursor a la segunda línea del párrafo inferior.
+  2. Escriba  dd  para eliminar la línea.
+  3. Ahora muévase a la cuarta línea.
+  4. Escriba   2dd   para eliminar dos líneas a la vez.
 
-NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
-      sin un mandato moverá el cursor como se especifica en la lista de objetos.
+--->  1)  Las rosas son rojas,
+--->  2)  El barro es divertido,
+--->  3)  Las violetas son azules,
+--->  4)  Tengo un coche,
+--->  5)  Los relojes dan la hora,
+--->  6)  El azúcar es dulce
+--->  7)  Y también lo eres tú.
 
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	       Lección 2.4: UNA EXCEPCIÓN AL 'MANDATO-OBJETO'
-
-	   ** Escriba	dd   para borrar una línea entera. **
-
-  Debido a la frecuencia con que se borran líneas enteras, los diseñadores
-  de Vim decidieron que sería más fácil el escribir simplemente dos des en
-  una fila para borrar	una línea.
-
-  1. Mueva el cursor a la segunda línea de la lista de abajo.
-  2. Escriba  dd  para borrar la línea.
-  3. Muévase ahora a la cuarta línea.
-  4. Escriba   2dd   (recuerde	número-mandato-objeto) para borrar las dos
-     líneas.
-
-      1) Las rosas son rojas,
-      2) El barro es divertido,
-      3) El cielo es azul,
-      4) Yo tengo un coche,
-      5) Los relojes marcan la hora,
-      6) El azúcar es dulce,
-      7) Y así eres tú.
+La duplicación para borrar líneas también funcionan con los operadores
+mencionados anteriormente.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Lección 2.5: EL MANDATO DESHACER
+		     Lección 2.7: EL MANDATO DESHACER
 
 
-   ** Pulse  u	para deshacer los últimos mandatos,
+   ** Pulse  u	para deshacer los últimos comandos,
 	     U	para deshacer una línea entera.       **
 
-  1. Mueva el cursor a la línea de abajo señalada con ---> y sitúelo bajo el
+  1. Mueva el cursor a la línea inferior señalada con ---> y sitúelo bajo el
      primer error.
-  2. Pulse  x  para borrar el primer caráter erróneo.
-  3. Pulse ahora  u  para deshacer el último mandato ejecutado.
-  4. Ahora corrija todos los errores de la línea usando el mandato  x.
+  2. Pulse  x  para borrar el primer caracter no deseado.
+  3. Pulse ahora  u  para deshacer el último comando ejecutado.
+  4. Ahora corrija todos los errores de la línea usando el comando  x.
   5. Pulse ahora  U  mayúscula para devolver la línea a su estado original.
   6. Pulse ahora  u  unas pocas veces para deshacer lo hecho por  U  y los
-     mandatos previos.
+     comandos previos.
   7. Ahora pulse CTRL-R (mantenga pulsada la tecla CTRL y pulse R) unas
-     pocas veces para volver a ejecutar los mandatos (deshacer lo deshecho).
+     cuantas veces para volver a ejecutar los comandos (deshacer lo deshecho).
 
 ---> Corrrija los errores dee esttta línea y vuuelva a ponerlos coon deshacer.
 
-  8. Estos mandatos son muy útiles. Ahora pase al resumen de la Lección 2.
+  8. Estos son unos comandos muy útiles. Ahora vayamos al resumen de la
+     lección 2.
+
+
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    RESUMEN DE LA LECCIÓN 2
 
-  1. Para borrar desde el cursor hasta el final de una palabra pulse:	dw
+  1. Para borrar desde el cursor hasta siguiente palabra pulse:	     dw
+  2. Para borrar desde el cursor hasta el final de la palabra pulse: de
+  3. Para borrar desde el cursor hasta el final de una línea pulse:	 d$
+  4. Para borrar una línea entera pulse:                             dd
 
-  2. Para borrar desde el cursor hasta el final de una línea pulse:	d$
-
-  3. Para borrar una línea entera pulse:    dd
-
-  4. El formato de un mandato en modo Normal es:
-
-       [número]   mandato   objeto   O	 mandato   [número]   objeto
+  5. Para repetir un movimiento precédalo con un número:  2w
+  6. El formato para un comando de cambio es:
+               operador  [número]  movimiento
      donde:
-       número - es cuántas veces se ha de ejecutar el mandato
-       mandato - es lo que hay que hacer, por ejemplo, d para borrar
-       objeto - es sobre lo que el mandato va a operar, por ejemplo
-		w (palabra), $ (hasta el final de la línea), etc.
+       comando    - es lo que hay que hacer, por ejemplo,  d  para borrar
+       [número]   - es un número opcional para repetir el movimiento
+       movimiento - se mueve sobre el texto sobre el que operar, como
+		            w (palabra), $ (hasta el final de la línea), etc.
+  7. Para moverse al inicio de la línea utilice un cero:  0
 
-  5. Para deshacer acciones previas pulse:		 u (u minúscula)
+  8. Para deshacer acciones previas pulse:		         u (u minúscula)
      Para deshacer todos los cambios de una línea pulse: U (U mayúscula)
-     Para deshacer lo deshecho pulse:			 CTRL-R
+     Para deshacer lo deshecho pulse:			         CTRL-R
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
