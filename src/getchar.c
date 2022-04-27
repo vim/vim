@@ -2363,7 +2363,7 @@ at_ctrl_x_key(void)
  * into just a key, apply that.
  * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
  * + "max_offset"].
- * Return the length of the replaced bytes, zero if nothing changed.
+ * Return the length of the replaced bytes, 0 if nothing changed, -1 for error.
  */
     static int
 check_simplify_modifier(int max_offset)
@@ -2397,7 +2397,15 @@ check_simplify_modifier(int max_offset)
 		    vgetc_char = c;
 		    vgetc_mod_mask = tp[2];
 		}
-		len = mb_char2bytes(new_c, new_string);
+		if (IS_SPECIAL(new_c))
+		{
+		    new_string[0] = K_SPECIAL;
+		    new_string[1] = K_SECOND(new_c);
+		    new_string[2] = K_THIRD(new_c);
+		    len = 3;
+		}
+		else
+		    len = mb_char2bytes(new_c, new_string);
 		if (modifier == 0)
 		{
 		    if (put_string_in_typebuf(offset, 4, new_string, len,
@@ -2424,6 +2432,7 @@ check_simplify_modifier(int max_offset)
  * - When nothing mapped and typeahead has a character: return map_result_get.
  * - When there is no match yet, return map_result_nomatch, need to get more
  *   typeahead.
+ * - On failure (out of memory) return map_result_fail.
  */
     static int
 handle_mapping(
@@ -2706,7 +2715,12 @@ handle_mapping(
 	    // If no termcode matched, try to include the modifier into the
 	    // key.  This is for when modifyOtherKeys is working.
 	    if (keylen == 0 && !no_reduce_keys)
+	    {
 		keylen = check_simplify_modifier(max_mlen + 1);
+		if (keylen < 0)
+		    // ins_typebuf() failed
+		    return map_result_fail;
+	    }
 
 	    // When getting a partial match, but the last characters were not
 	    // typed, don't wait for a typed character to complete the
