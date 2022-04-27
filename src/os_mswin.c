@@ -72,6 +72,46 @@
 # endif
 #endif
 
+# ifndef IO_REPARSE_TAG_APPEXECLINK
+#  define IO_REPARSE_TAG_APPEXECLINK 0x8000001B
+# endif
+
+/*
+ * Definition of the reparse point buffer.
+ * This is usually defined in the DDK, copy the definition here to avoid
+ * adding it as a dependence only for a single structure.
+ */
+typedef struct _REPARSE_DATA_BUFFER {
+    ULONG  ReparseTag;
+    USHORT ReparseDataLength;
+    USHORT Reserved;
+    union {
+	struct {
+	    USHORT SubstituteNameOffset;
+	    USHORT SubstituteNameLength;
+	    USHORT PrintNameOffset;
+	    USHORT PrintNameLength;
+	    ULONG  Flags;
+	    WCHAR  PathBuffer[1];
+	} SymbolicLinkReparseBuffer;
+	struct {
+	    USHORT SubstituteNameOffset;
+	    USHORT SubstituteNameLength;
+	    USHORT PrintNameOffset;
+	    USHORT PrintNameLength;
+	    WCHAR  PathBuffer[1];
+	} MountPointReparseBuffer;
+	struct {
+	    UCHAR DataBuffer[1];
+	} GenericReparseBuffer;
+	struct
+	{
+	    ULONG StringCount;
+	    WCHAR StringList[1];
+	} AppExecLinkReparseBuffer;
+    } DUMMYUNIONNAME;
+} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+
 /*
  * When generating prototypes for Win32 on Unix, these lines make the syntax
  * errors disappear.  They do not need to be correct.
@@ -440,6 +480,27 @@ slash_adjust(char_u *p)
 #define _fstat _fstat64
 
     static int
+read_reparse_point(const WCHAR *name, char_u *buf, DWORD *buf_len)
+{
+    HANDLE h;
+    BOOL ok;
+
+    h = CreateFileW(name, FILE_READ_ATTRIBUTES,
+	    FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+	    OPEN_EXISTING,
+	    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+	    NULL);
+    if (h == INVALID_HANDLE_VALUE)
+	return FAIL;
+
+    ok = DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, NULL, 0, buf, *buf_len,
+	    buf_len, NULL);
+    CloseHandle(h);
+
+    return ok ? OK : FAIL;
+}
+
+    static int
 wstat_symlink_aware(const WCHAR *name, stat_T *stp)
 {
 #if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
@@ -489,6 +550,61 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
     }
 #endif
     return _wstat(name, (struct _stat *)stp);
+}
+
+    char_u *
+resolve_appexeclink(char_u *fname)
+{
+    DWORD	        attr = 0;
+    int	                idx;
+    WCHAR	        *p, *end, *wname;
+    // The buffer size is arbitrarily chosen to be "big enough" (TM), the
+    // ceiling should be around 16k.
+    char_u	        buf[4096];
+    DWORD	        buf_len = sizeof(buf);
+    REPARSE_DATA_BUFFER *rb = (REPARSE_DATA_BUFFER *)buf;
+
+    wname = enc_to_utf16(fname, NULL);
+    if (wname == NULL)
+	return NULL;
+
+    attr = GetFileAttributesW(wname);
+    if (attr == INVALID_FILE_ATTRIBUTES ||
+	    (attr & FILE_ATTRIBUTE_REPARSE_POINT) == 0)
+    {
+	vim_free(wname);
+	return NULL;
+    }
+
+    // The applinks are similar to symlinks but with a huge difference: they can
+    // only be executed, any other I/O operation on them is bound to fail with
+    // ERROR_FILE_NOT_FOUND even though the file exists.
+    if (read_reparse_point(wname, buf, &buf_len) == FAIL)
+    {
+	vim_free(wname);
+	return NULL;
+    }
+    vim_free(wname);
+
+    if (rb->ReparseTag != IO_REPARSE_TAG_APPEXECLINK)
+	return NULL;
+
+    // The (undocumented) reparse buffer contains a set of N null-terminated
+    // Unicode strings, the application path is stored in the third one.
+    if (rb->AppExecLinkReparseBuffer.StringCount < 3)
+	return NULL;
+
+    p = rb->AppExecLinkReparseBuffer.StringList;
+    end = p + rb->ReparseDataLength / sizeof(WCHAR);
+    for (idx = 0; p < end
+	    && idx < (int)rb->AppExecLinkReparseBuffer.StringCount
+	    && idx != 2; )
+    {
+	if ((*p++ == L'\0'))
+	    ++idx;
+    }
+
+    return utf16_to_enc(p, NULL);
 }
 
 /*
@@ -1713,6 +1829,11 @@ resolve_reparse_point(char_u *fname)
     char_u	    *rfname = NULL;
     WCHAR	    *buff = NULL;
     static BOOL	    loaded = FALSE;
+    // The buffer size is arbitrarily chosen to be "big enough" (TM), the
+    // ceiling should be around 16k.
+    char_u	    buf[4096];
+    DWORD	    buf_len = sizeof(buf);
+    REPARSE_DATA_BUFFER *rb = (REPARSE_DATA_BUFFER *)buf;
 
     if (pGetFinalPathNameByHandleW == NULL)
     {
