@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Apr 16
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Apr 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2418,7 +2418,8 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			all typeahead will be consumed by the last call.
 		'c'	Remove any script context when executing, so that
 			legacy script syntax applies, "s:var" does not work,
-			etc.
+			etc.  Note that if the keys being using set a script
+			context this still applies.
 		'!'	When used with 'x' will not end Insert mode. Can be
 			used in a test when a timer is set to exit Insert mode
 			a little later.  Useful for testing CursorHoldI.

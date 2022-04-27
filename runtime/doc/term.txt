@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2022 Apr 03
+*term.txt*      For Vim version 8.2.  Last change: 2022 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -386,9 +386,10 @@ Added by Vim (there are no standard codes for these):
 	t_SR	start replace mode (underline cursor shape)	*t_SR* *'t_SR'*
 	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
 		|termcap-cursor-shape|
-	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
-		The response is stored in |v:termresponse|
-		|xterm-8bit| |'ttymouse'| |xterm-codes|
+	t_RV	request terminal version string (works for	*t_RV* *'t_RV'*
+		xterm and other terminal emulators)  The
+		response is stored in |v:termresponse| |xterm-8bit|
+		|'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
 		The response is stored in |v:termu7resp|

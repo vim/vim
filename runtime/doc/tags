@@ -6933,6 +6933,7 @@ ft-make-syntax	syntax.txt	/*ft-make-syntax*
 ft-man-plugin	filetype.txt	/*ft-man-plugin*
 ft-maple-syntax	syntax.txt	/*ft-maple-syntax*
 ft-markdown-plugin	filetype.txt	/*ft-markdown-plugin*
+ft-markdown-syntax	syntax.txt	/*ft-markdown-syntax*
 ft-masm-syntax	syntax.txt	/*ft-masm-syntax*
 ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
 ft-matlab-indent	indent.txt	/*ft-matlab-indent*
@@ -8173,6 +8174,7 @@ maparg()	builtin.txt	/*maparg()*
 mapcheck()	builtin.txt	/*mapcheck()*
 maple.vim	syntax.txt	/*maple.vim*
 mapleader	map.txt	/*mapleader*
+maplist()	builtin.txt	/*maplist()*
 maplocalleader	map.txt	/*maplocalleader*
 mapmode-c	map.txt	/*mapmode-c*
 mapmode-i	map.txt	/*mapmode-i*
@@ -8187,6 +8189,7 @@ mapmode-v	map.txt	/*mapmode-v*
 mapmode-x	map.txt	/*mapmode-x*
 mapnew()	builtin.txt	/*mapnew()*
 mapping	map.txt	/*mapping*
+mapping-dict	builtin.txt	/*mapping-dict*
 mapping-functions	usr_41.txt	/*mapping-functions*
 mapset()	builtin.txt	/*mapset()*
 mark	motion.txt	/*mark*
