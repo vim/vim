@@ -1789,11 +1789,6 @@ resolve_reparse_point(char_u *fname)
     char_u	    *rfname = NULL;
     WCHAR	    *buff = NULL;
     static BOOL	    loaded = FALSE;
-    // The buffer size is arbitrarily chosen to be "big enough" (TM), the
-    // ceiling should be around 16k.
-    char_u	    buf[4096];
-    DWORD	    buf_len = sizeof(buf);
-    REPARSE_DATA_BUFFER *rb = (REPARSE_DATA_BUFFER *)buf;
 
     if (pGetFinalPathNameByHandleW == NULL)
     {
