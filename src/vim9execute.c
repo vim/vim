@@ -5571,7 +5571,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_LOADOUTER:
 		{
-		    if (iptr->isn_arg.number < 0)
+		    if (iptr->isn_arg.outer.outer_idx < 0)
 			smsg("%s%4d LOADOUTER level %d arg[%d]", pfx, current,
 				iptr->isn_arg.outer.outer_depth,
 				iptr->isn_arg.outer.outer_idx

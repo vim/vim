@@ -899,6 +899,25 @@ def Test_disassemble_closure()
   unlet g:Get
 enddef
 
+def s:ClosureArg(arg: string)
+  var Ref = () => arg .. "x"
+enddef
+
+def Test_disassemble_closure_arg()
+  var res = execute('disass s:ClosureArg')
+  assert_match('<SNR>\d\+_ClosureArg\_s*' ..
+        'var Ref = () => arg .. "x"\_s*' ..
+        '\d FUNCREF <lambda>\d\+',
+        res)
+  var lres = execute('disass ' .. matchstr(res, '<lambda>\d\+'))
+  assert_match('<lambda>\d\+\_s*' ..
+        'return arg .. "x"\_s*' ..
+        '\d LOADOUTER level 1 arg\[-1]\_s*' ..
+        '\d PUSHS "x"\_s*' ..
+        '\d CONCAT size 2\_s*' ..
+        '\d RETURN',
+         lres)
+enddef
 
 def EchoArg(arg: string): string
   return arg
@@ -2661,6 +2680,22 @@ def Test_disassemble_dict_stack()
           '\d CLEARDICT\_s*' ..
           '\d\+ STORE $1\_s*' ..
           '\d\+ RETURN void*',
+        res)
+enddef
+
+def s:RetLegacy(): string
+  legacy return "yes"
+enddef
+
+def Test_disassemble_return_legacy()
+  var res = execute('disass s:RetLegacy')
+  assert_match('<SNR>\d*_RetLegacy\_s*' ..
+          'legacy return "yes"\_s*' ..
+          '\d CMDMOD legacy\_s*' ..
+          '\d EVAL legacy "yes"\_s*' ..
+          '\d CHECKTYPE string stack\[-1]\_s*' ..
+          '\d CMDMOD_REV\_s*' ..
+          '\d RETURN',
         res)
 enddef
 

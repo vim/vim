@@ -2376,6 +2376,14 @@ def Test_for_loop_unpack()
       endfor
   END
   v9.CheckDefExecFailure(lines, 'E1017:', 1)
+
+  lines =<< trim END
+      for [a, b] in g:listlist
+        echo a
+      endfor
+  END
+  g:listlist = [1, 2, 3]
+  v9.CheckDefExecFailure(lines, 'E1140:', 1)
 enddef
 
 def Test_for_loop_with_try_continue()

@@ -1691,6 +1691,9 @@ def Test_substitute_expr()
   endfor
   assert_equal('yes no abc', getline(1))
 
+  setline(1, 'from')
+  v9.CheckDefExecFailure(['s/from/\=g:notexist/'], 'E121: Undefined variable: g:notexist')
+
   bwipe!
 
   v9.CheckDefFailure(['s/from/\="x")/'], 'E488:')
