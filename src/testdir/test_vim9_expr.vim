@@ -1848,8 +1848,12 @@ def Test_expr6()
   v9.CheckDefFailure(["var d = 6 * "], 'E1097:', 3)
   v9.CheckScriptFailure(['vim9script', "var d = 6 * "], 'E15:', 2)
 
-  v9.CheckDefExecAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
-  v9.CheckDefExecAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
+
+  g:zero = 0
+  v9.CheckDefExecFailure(['echo 123 / g:zero'], 'E1154: Divide by zero')
+  v9.CheckDefExecFailure(['echo 123 % g:zero'], 'E1154: Divide by zero')
 
   if has('float')
     v9.CheckDefExecAndScriptFailure([
@@ -3395,6 +3399,15 @@ def Test_expr8_legacy_script()
   v9.CheckScriptSuccess(lines)
 
   assert_equal('ok', g:LegacyReturn())
+
+  lines =<< trim END
+      vim9script 
+      def GetNumber(): number   
+          legacy return notexists
+      enddef 
+      echo GetNumber()
+  END
+  v9.CheckScriptFailure(lines, 'E121: Undefined variable: notexists')
 
   lines =<< trim END
       vim9script 

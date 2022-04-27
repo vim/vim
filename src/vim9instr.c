@@ -2231,7 +2231,6 @@ delete_instr(isn_T *isn)
 	case ISN_CATCH:
 	case ISN_CEXPR_AUCMD:
 	case ISN_CHECKLEN:
-	case ISN_CHECKNR:
 	case ISN_CLEARDICT:
 	case ISN_CMDMOD_REV:
 	case ISN_COMPAREANY:

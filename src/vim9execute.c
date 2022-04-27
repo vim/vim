@@ -3172,6 +3172,7 @@ exec_instructions(ectx_T *ectx)
 			    int idx = get_script_item_idx(sid, name, 0,
 								   NULL, NULL);
 
+			    // can this ever fail?
 			    if (idx >= 0)
 			    {
 				svar_T	*sv = ((svar_T *)SCRIPT_ITEM(sid)
@@ -3862,15 +3863,14 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_CATCH:
 		{
 		    garray_T	*trystack = &ectx->ec_trystack;
+		    trycmd_T    *trycmd;
 
 		    may_restore_cmdmod(&ectx->ec_funclocal);
-		    if (trystack->ga_len > 0)
-		    {
-			trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
+		    trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - 1;
-			trycmd->tcd_caught = TRUE;
-			trycmd->tcd_did_throw = FALSE;
-		    }
+		    trycmd->tcd_caught = TRUE;
+		    trycmd->tcd_did_throw = FALSE;
+
 		    did_emsg = got_int = did_throw = FALSE;
 		    force_abort = need_rethrow = FALSE;
 		    catch_exception(current_exception);
@@ -3924,38 +3924,33 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_ENDTRY:
 		{
 		    garray_T	*trystack = &ectx->ec_trystack;
+		    trycmd_T    *trycmd;
 
-		    if (trystack->ga_len > 0)
+		    --trystack->ga_len;
+		    --trylevel;
+		    trycmd = ((trycmd_T *)trystack->ga_data) + trystack->ga_len;
+		    if (trycmd->tcd_did_throw)
+			did_throw = TRUE;
+		    if (trycmd->tcd_caught && current_exception != NULL)
 		    {
-			trycmd_T    *trycmd;
-
-			--trystack->ga_len;
-			--trylevel;
-			trycmd = ((trycmd_T *)trystack->ga_data)
-							    + trystack->ga_len;
-			if (trycmd->tcd_did_throw)
-			    did_throw = TRUE;
-			if (trycmd->tcd_caught && current_exception != NULL)
-			{
-			    // discard the exception
-			    if (caught_stack == current_exception)
-				caught_stack = caught_stack->caught;
-			    discard_current_exception();
-			}
-
-			if (trycmd->tcd_return)
-			    goto func_return;
-
-			while (ectx->ec_stack.ga_len > trycmd->tcd_stack_len)
-			{
-			    --ectx->ec_stack.ga_len;
-			    clear_tv(STACK_TV_BOT(0));
-			}
-			if (trycmd->tcd_cont != 0)
-			    // handling :continue: jump to outer try block or
-			    // start of the loop
-			    ectx->ec_iidx = trycmd->tcd_cont - 1;
+			// discard the exception
+			if (caught_stack == current_exception)
+			    caught_stack = caught_stack->caught;
+			discard_current_exception();
 		    }
+
+		    if (trycmd->tcd_return)
+			goto func_return;
+
+		    while (ectx->ec_stack.ga_len > trycmd->tcd_stack_len)
+		    {
+			--ectx->ec_stack.ga_len;
+			clear_tv(STACK_TV_BOT(0));
+		    }
+		    if (trycmd->tcd_cont != 0)
+			// handling :continue: jump to outer try block or
+			// start of the loop
+			ectx->ec_iidx = trycmd->tcd_cont - 1;
 		}
 		break;
 
@@ -4021,12 +4016,10 @@ exec_instructions(ectx_T *ectx)
 		    varnumber_T arg2 = tv2->vval.v_number;
 		    int		res;
 
-		    switch (iptr->isn_arg.op.op_type)
-		    {
-			case EXPR_EQUAL: res = arg1 == arg2; break;
-			case EXPR_NEQUAL: res = arg1 != arg2; break;
-			default: res = 0; break;
-		    }
+		    if (iptr->isn_arg.op.op_type == EXPR_EQUAL)
+			res = arg1 == arg2;
+		    else
+			res = arg1 != arg2;
 
 		    --ectx->ec_stack.ga_len;
 		    tv1->v_type = VAR_BOOL;
@@ -4658,20 +4651,6 @@ exec_instructions(ectx_T *ectx)
 		    tv->vval.v_number = -tv->vval.v_number;
 		break;
 
-	    case ISN_CHECKNR:
-		{
-		    int		error = FALSE;
-
-		    tv = STACK_TV_BOT(-1);
-		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (check_not_string(tv) == FAIL)
-			goto on_error;
-		    (void)tv_get_number_chk(tv, &error);
-		    if (error)
-			goto on_error;
-		}
-		break;
-
 	    case ISN_CHECKTYPE:
 		{
 		    checktype_T *ct = &iptr->isn_arg.type;
@@ -4778,10 +4757,7 @@ exec_instructions(ectx_T *ectx)
 		    tv = STACK_TV_BOT(-1);
 		    tv->v_type = VAR_NUMBER;
 		    tv->v_lock = 0;
-		    if (ea.addr_count == 0)
-			tv->vval.v_number = curwin->w_cursor.lnum;
-		    else
-			tv->vval.v_number = ea.line2;
+		    tv->vval.v_number = ea.line2;
 		}
 		break;
 
@@ -6144,7 +6120,6 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 	    case ISN_NEGATENR: smsg("%s%4d NEGATENR", pfx, current); break;
 
-	    case ISN_CHECKNR: smsg("%s%4d CHECKNR", pfx, current); break;
 	    case ISN_CHECKTYPE:
 		  {
 		      checktype_T *ct = &iptr->isn_arg.type;
