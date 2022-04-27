@@ -1,84 +1,84 @@
 ===============================================================================
-=     B i e n v e n i d o   a l   t u t o r   d e   V I M  -  Versión 1.4     =
+=     B i e n v e n i d o   a l   t u t o r   d e   V I M  -  Versión 1.7     =
 ===============================================================================
 
-     Vim es un editor muy potente que dispone de muchos mandatos, demasiados
+     Vim es un editor muy potente que dispone de muchos comandos, demasiados
      para ser explicados en un tutor como éste. Este tutor está diseñado
-     para describir suficientes mandatos para que usted sea capaz de
+     para describir suficientes comandos para que usted sea capaz de
      aprender fácilmente a usar Vim como un editor de propósito general.
 
-     El tiempo necesario para completar el tutor es aproximadamente de 25-30
+     El tiempo necesario para completar el tutor es aproximadamente de 30
      minutos, dependiendo de cuánto tiempo se dedique a la experimentación.
 
-     Los mandatos de estas lecciones modificarán el texto. Haga una copia de
+     Los comandos de estas lecciones modificarán el texto. Haga una copia de
      este fichero para practicar (con «vimtutor» esto ya es una copia).
 
      Es importante recordar que este tutor está pensado para enseñar con
-     la práctica. Esto significa que es necesario ejecutar los mandatos
-     para aprenderlos adecuadamente. Si únicamente se lee el texto, se
-     olvidarán los mandatos.
+     la práctica. Esto significa que es necesario ejecutar los comandos
+     para aprenderlos adecuadamente. Si únicamente lee el texto, ¡se le
+     olvidarán los comandos.
 
-     Ahora, asegúrese de que la tecla de bloqueo de mayúsculas no está
+     Ahora, asegúrese de que la tecla de bloqueo de mayúsculas NO está
      activada y pulse la tecla	j  lo suficiente para mover el cursor
      de forma que la Lección 1.1 ocupe completamente la pantalla.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lección 1.1: MOVIMIENTOS DEL CURSOR
+		     Lección 1.1: MOVER EL CURSOR
 
- ** Para mover el cursor, pulse las teclas h,j,k,l de la forma que se indica. **
+ ** Para mover el cursor, pulse las teclas h,j,k,l de la forma indicada. **
       ^
-      k       Indicación: La tecla h está a la izquierda y mueve a la izquierda.
- < h	 l >		  La tecla l está a la derecha y mueve a la derecha.
+      k       Indicación: La tecla h está a la izquierda y lo mueve a la izquierda.
+ < h	 l >		  La tecla l está a la derecha y lo mueve a la derecha.
       j			  La tecla j parece una flecha que apunta hacia abajo.
       v
 
   1. Mueva el cursor por la pantalla hasta que se sienta cómodo con ello.
 
-  2. Mantenga pulsada la tecla	j  hasta que se repita «automágicamente».
----> Ahora ya sabe como llegar a la lección siguiente.
+  2. Mantenga pulsada la tecla (j) hasta que se repita «automágicamente».
+     Ahora ya sabe como llegar a la lección siguiente.
 
-  3. Utilizando la tecla abajo, vaya a la Lección 1.2.
+  3. Utilizando la tecla abajo, vaya a la lección 1.2.
 
-Nota: Si alguna vez no está seguro sobre algo que ha tecleado, pulse <ESC>
+NOTA: Si alguna vez no está seguro sobre algo que ha tecleado, pulse <ESC>
       para situarse en modo Normal. Luego vuelva a teclear la orden que deseaba.
 
-Nota: Las teclas de movimiento del cursor también funcionan. Pero usando
+NOTA: Las teclas de movimiento del cursor también funcionan. Pero usando
       hjkl podrá moverse mucho más rápido una vez que se acostumbre a ello.
+      ¡De verdad!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lección 1.2: ENTRANDO Y SALIENDO DE VIM
+		    Lección 1.2: SALIR DE VIM
 
-  ¡¡ NOTA: Antes de ejecutar alguno de los pasos siguientes lea primero
+  ¡¡ NOTA: Antes de ejecutar alguno de los siguientes pasos lea primero
 	   la lección entera!!
 
   1. Pulse la tecla <ESC> (para asegurarse de que está en modo Normal).
 
-  2. Escriba:			:q! <INTRO>
+  2. Escriba:  :q! <INTRO>
+     Esto provoca la salida del editor DESCARTANDO cualquier cambio que haya hecho.
 
----> Esto provoca la salida del editor SIN guardar ningún cambio que se haya
-     hecho. Si quiere guardar los cambios y salir escriba:
-				:wq <INTRO>
+  3. Regrese aquí ejecutando el comando que le trajo a este tutor.
+     Éste puede haber sido:   vimtutor <INTRO>
 
-  3. Cuando vea el símbolo del sistema, escriba el mandato que le trajo a este
-     tutor. Éste puede haber sido:   vimtutor <INTRO>
-     Normalmente se usaría:	     vim tutor <INTRO>
+  4. Si ha memorizado estos pasos y se siente con confianza, ejecute los
+     pasos 1 a 3 para salir y volver a entrar al editor. 
 
----> 'vim' significa entrar al editor, 'tutor' es el fichero a editar.
+NOTA:  :q! <INTRO> descarta cualquier cambio que haya realizado.
+       En próximas lecciones aprenderá cómo guardar los cambios en un archivo.
 
-  4. Si ha memorizado estos pasos y se se siente con confianza, ejecute los
-     pasos 1 a 3 para salir y volver a entrar al editor. Después mueva el
-     cursor hasta la Lección 1.3.
+  5. Mueva el cursor hasta la Lección 1.3.
+
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lección 1.3: EDICIÓN DE TEXTO - BORRADO
+		   Lección 1.3: EDITAR TEXTO - BORRAR
 
-** Estando en modo Normal pulse  x  para borrar el carácter sobre el cursor. **j
-
+  ** Pulse  x  para eliminar el caracter bajo el cursor. **
 
   1. Mueva el cursor a la línea de abajo señalada con --->.
 
-  2. Para corregir los errores, mueva el cursor hasta que esté bajo el
-     carácter que va a ser borrado.
+  2. Para corregir los errores, mueva el cursor hasta que esté sobre el
+     caracter que va a ser borrado.
 
-  3. Pulse la tecla  x	para borrar el carácter sobrante.
+  3. Pulse la tecla  x	para eliminar el carácter no deseado.
 
   4. Repita los pasos 2 a 4 hasta que la frase sea la correcta.
 
@@ -86,20 +86,20 @@ Nota: Las teclas de movimiento del cursor también funcionan. Pero usando
 
   5. Ahora que la línea esta correcta, continúe con la Lección 1.4.
 
-
 NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
       aprenda practicando.
 
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lección 1.4: EDICIÓN DE TEXTO - INSERCIÓN
+		   Lección 1.4: EDITAR TEXTO - BORRAR
 
-      ** Estando en modo Normal pulse  i  para insertar texto. **
-
+         ** Pulse  i  para insertar texto. **
 
   1. Mueva el cursor a la primera línea de abajo señalada con --->.
 
-  2. Para que la primera línea sea igual a la segunda, mueva el cursor bajo el
-     primer carácter que sigue al texto que ha de ser insertado.
+  2. Para hacer que la primera línea sea igual que la segunda, mueva el
+     cursor hasta que esté sobre el caracter ANTES del cual el texto va a ser
+     insertado.
 
   3. Pulse  i  y escriba los caracteres a añadir.
 
@@ -109,9 +109,55 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
 ---> Flta texto en esta .
 ---> Falta algo de texto en esta línea.
 
-  5. Cuando se sienta cómodo insertando texto pase al resumen que está más
-     abajo.
+  5. Cuando se sienta cómodo insertando texto pase vaya a la lección 1.5.
 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lección 1.5: EDITAR TEXTO - AÑADIR
+
+
+			** Pulse  A  para añadir texto. **
+
+  1. Mueva el cursor a la primera línea inferior marcada con --->.
+     No importa sobre qué caracter está el cursor en esta línea.
+
+  2. Pulse  A  y escriba el texto necesario.
+
+  3. Cuando el texto haya sido añadido pulse <ESC> para volver al modo Normal.
+
+  4. Mueva el cursor a la segunda línea marcada con ---> y repita los
+     pasos 2 y 3 para corregir esta frase.
+
+---> Falta algún texto en es
+     Falta algún texto en esta línea.
+---> También falta alg
+     También falta algún texto aquí.
+
+  5. Cuando se sienta cómodo añadiendo texto pase a la lección 1.6.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lección 1.6: EDITAR UN ARCHIVO
+
+		    ** Use  :wq  para guardar un archivo y salir **
+
+ !! NOTA: Antes de ejecutar los siguientes pasos, lea la lección entera!!
+
+  1.  Si tiene acceso a otra terminal, haga lo siguiente en ella.
+      Si no es así, salga de este tutor como hizo en la lección 1.2:  :q!
+
+  2. En el símbolo del sistema escriba este comando:  vim archivo.txt <INTRO>
+     'vim' es el comando para arrancar el editor Vim, 'archivo.txt'
+     es el nombre del archivo que quiere editar
+     Utilice el nombre de un archivo que pueda cambiar.
+
+  3. Inserte y elimine texto como ya aprendió en las lecciones anteriores.
+
+  4. Guarde el archivo con los cambios y salga de Vim con:  :wq <INTRO>
+
+  5. Si ha salido de vimtutor en el paso 1 reinicie vimtutor y baje hasta
+     el siguiente sumario.
+
+  6. Después de leer los pasos anteriores y haberlos entendido: hágalos.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    RESUMEN DE LA LECCIÓN 1
@@ -120,19 +166,21 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
   1. El cursor se mueve utilizando las teclas de las flechas o las teclas hjkl.
 	 h (izquierda)	   j (abajo)	  k (arriba)	  l (derecha)
 
-  2. Para acceder a Vim (desde el símbolo del sistema %) escriba:
-     vim FILENAME <INTRO>
+  2. Para acceder a Vim desde el símbolo del sistema escriba:
+     vim NOMBREARCHIVO <INTRO>
 
   3. Para salir de Vim escriba: <ESC> :q! <INTRO> para eliminar todos
      los cambios.
+     O escriba:  <ESC>  :wq  <INTRO> para guardar los cambios.
 
-  4. Para borrar un carácter sobre el cursor en modo Normal pulse:  x
+  4. Para borrar un caracter bajo el cursor en modo Normal pulse:  x
 
-  5. Para insertar texto en la posición del cursor estando en modo Normal:
-	  pulse   i   escriba el texto	 pulse <ESC>
+  5. Para insertar o añadir texto escriba:
+     i  escriba el texto a insertar <ESC> inserta el texto antes del cursor
+	 A  escriba el texto a añadir <ESC> añade texto al final de la línea
 
-NOTA: Pulsando <ESC> se vuelve al modo Normal o cancela un mandato no deseado
-      o incompleto.
+NOTA: Pulsando <ESC> se vuelve al modo Normal o cancela una orden no deseada
+      o incompleta.
 
 Ahora continúe con la Lección 2.
 
