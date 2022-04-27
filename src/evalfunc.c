@@ -1969,6 +1969,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_interrupt},
     {"invert",		1, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_invert},
+    {"isabsolutepath",	1, 1, FEARG_1,	    arg1_string,
+			ret_number_bool,    f_isabsolutepath},
     {"isdirectory",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_isdirectory},
     {"isinf",		1, 1, FEARG_1,	    arg1_float_or_nr,

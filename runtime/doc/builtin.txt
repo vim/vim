@@ -295,6 +295,7 @@ inputsecret({prompt} [, {text}]) String	like input() but hiding the text
 insert({object}, {item} [, {idx}]) List	insert {item} in {object} [before {idx}]
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
+isabsolutepath({path})		Number	|TRUE| if {path} is an absolute path
 isdirectory({directory})	Number	|TRUE| if {directory} is a directory
 isinf({expr})			Number	determine if {expr} is infinity value
 					(positive or negative)
@@ -4671,6 +4672,24 @@ invert({expr})						*invert()*
 			:let bits = invert(bits)
 <		Can also be used as a |method|: >
 			:let bits = bits->invert()
+
+isabsolutepath({directory})				*isabsolutepath()*
+		The result is a Number, which is |TRUE| when {path} is an
+		absolute path.
+<		On Unix, a path is considered absolute when it starts with '/'.
+		On MS-Windows, it is considered absolute when it starts with an
+		optional drive prefix and is followed by a '\' or '/'. UNC paths
+		are always absolute.
+		Example: >
+			echo isabsolutepath('/usr/share/')	" 1
+			echo isabsolutepath('./foobar')		" 0
+			echo isabsolutepath('C:\Windows')	" 1
+			echo isabsolutepath('foobar')		" 0
+			echo isabsolutepath('\\remote\file')	" 1
+
+		Can also be used as a |method|: >
+			GetName()->isabsolutepath()
+
 
 isdirectory({directory})				*isdirectory()*
 		The result is a Number, which is |TRUE| when a directory

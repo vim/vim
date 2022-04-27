@@ -1417,6 +1417,18 @@ f_isdirectory(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "isabsolutepath()" function
+ */
+    void
+f_isabsolutepath(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    rettv->vval.v_number = mch_isFullName(tv_get_string_strict(&argvars[0]));
+}
+
+/*
  * Create the directory in which "dir" is located, and higher levels when
  * needed.
  * Return OK or FAIL.

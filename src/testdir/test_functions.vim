@@ -2887,5 +2887,23 @@ func Test_funcref_to_string()
   call assert_equal("function('g:Test_funcref_to_string')", string(Fn))
 endfunc
 
+" Test for isabsolutepath()
+func Test_isabsolutepath()
+  call assert_false(isabsolutepath(''))
+  call assert_false(isabsolutepath('.'))
+  call assert_false(isabsolutepath('../Foo'))
+  call assert_false(isabsolutepath('Foo/'))
+  if has('win32')
+    call assert_true(isabsolutepath('A:\'))
+    call assert_true(isabsolutepath('A:\Foo'))
+    call assert_true(isabsolutepath('A:/Foo'))
+    call assert_false(isabsolutepath('A:Foo'))
+    call assert_false(isabsolutepath('\Windows'))
+    call assert_true(isabsolutepath('\\Server2\Share\Test\Foo.txt'))
+  else
+    call assert_true(isabsolutepath('/'))
+    call assert_true(isabsolutepath('/usr/share/'))
+  endif
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
