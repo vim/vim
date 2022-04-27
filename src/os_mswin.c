@@ -72,46 +72,6 @@
 # endif
 #endif
 
-# ifndef IO_REPARSE_TAG_APPEXECLINK
-#  define IO_REPARSE_TAG_APPEXECLINK 0x8000001B
-# endif
-
-/*
- * Definition of the reparse point buffer.
- * This is usually defined in the DDK, copy the definition here to avoid
- * adding it as a dependence only for a single structure.
- */
-typedef struct _REPARSE_DATA_BUFFER {
-    ULONG  ReparseTag;
-    USHORT ReparseDataLength;
-    USHORT Reserved;
-    union {
-	struct {
-	    USHORT SubstituteNameOffset;
-	    USHORT SubstituteNameLength;
-	    USHORT PrintNameOffset;
-	    USHORT PrintNameLength;
-	    ULONG  Flags;
-	    WCHAR  PathBuffer[1];
-	} SymbolicLinkReparseBuffer;
-	struct {
-	    USHORT SubstituteNameOffset;
-	    USHORT SubstituteNameLength;
-	    USHORT PrintNameOffset;
-	    USHORT PrintNameLength;
-	    WCHAR  PathBuffer[1];
-	} MountPointReparseBuffer;
-	struct {
-	    UCHAR DataBuffer[1];
-	} GenericReparseBuffer;
-	struct
-	{
-	    ULONG StringCount;
-	    WCHAR StringList[1];
-	} AppExecLinkReparseBuffer;
-    } DUMMYUNIONNAME;
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
-
 /*
  * When generating prototypes for Win32 on Unix, these lines make the syntax
  * errors disappear.  They do not need to be correct.
