@@ -622,22 +622,23 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
 		Lección 5.1: CÓMO EJECUTAR UN MANDATO EXTERNO
 
 
-  ** Escriba  :!  seguido de un mandato externo para ejecutar ese mandato. **
+  ** Escriba  :!  seguido de un comando externo para ejecutar ese comando. **
 
+  1. Escriba el conocido comando  :  para situar el cursor al final de la
+     pantalla. Esto le permitirá introducir un comando.
 
-  1. Escriba el conocido mandato  :  para situar el cursor al final de la
-     pantalla. Esto le permitirá introducir un mandato.
-
-  2. Ahora escriba el carácter ! (signo de admiración). Esto le permitirá
+  2. Ahora escriba el caracter ! (signo de admiración). Esto le permitirá
      ejecutar cualquier mandato del sistema.
 
   3. Como ejemplo escriba   ls	 después del ! y luego pulse <INTRO>. Esto
      le mostrará una lista de su directorio, igual que si estuviera en el
      símbolo del sistema. Si  ls  no funciona utilice	!:dir	.
 
---->Nota: De esta manera es posible ejecutar cualquier mandato externo.
+NOTA: De esta manera es posible ejecutar cualquier comando externo,
+      también incluyendo argumentos.
 
---->Nota: Todos los mandatos   :   deben finalizarse pulsando <INTRO>.
+NOTA: Todos los comando   :   deben finalizarse pulsando <INTRO>.
+      De ahora en adelante no siempre se mencionará.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -645,10 +646,10 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
 
 
      ** Para guardar los cambios hechos en un fichero,
-	escriba  :w NOMBRE_DE_FICHERO. **
+	escriba  :w NOMBRE_DE_FICHERO **
 
-
-  1. Escriba  :!dir  o	:!ls  para ver una lista de su directorio.
+  1. Escriba  :!dir  o	:!ls  para ver una lista de los archivos 
+     de su directorio.
      Ya sabe que debe pulsar <INTRO> después de ello.
 
   2. Elija un nombre de fichero que todavía no exista, como TEST.
@@ -656,32 +657,39 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
   3. Ahora escriba   :w TEST  (donde TEST es el nombre de fichero elegido).
 
   4. Esta acción guarda todo el fichero  (Vim Tutor)  bajo el nombre TEST.
-     Para comprobarlo escriba	:!dir	de nuevo y vea su directorio.
+     Para comprobarlo escriba	:!dir  o  :!ls  de nuevo y vea su directorio.
 
----> Tenga en cuenta que si sale de Vim y  entra de nuevo con el nombre de
-     fichero TEST, el fichero sería una copia exacta del tutor cuando lo
-     ha guardado.
+NOTA: Si saliera de Vim y volviera a entrar de nuevo con  vim TEST  , el
+      archivo sería una copia exacta del tutorial cuando lo guardó.
+
+  5. Ahora elimine el archivo escribiendo (Windows):  :!del TEST
+                                        o (Unix):     :!rm TEST
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	       Lección 5.3: UN MANDATO DE ESCRITURA SELECTIVO
+	       Lección 5.3: SELECCIONAR TEXTO PARA GUARDAR
 
-   ** Para guardar parte del fichero escriba   :#,# NOMBRE_DEL_FICHERO **
+   ** Para guardar parte del archivo, escriba  v  movimiento  :w ARCHIVO **
 
+  1. Mueva el cursor a esta línea.
 
-  1. Escriba de nuevo, una vez más,  :!dir  o  :!ls  para obtener una lista
-     de su directorio y elija nombre de fichero adecuado, como TEST.
+  2. Pulse  v  y mueva el cursor hasta el quinto elemento inferior. Vea que
+     el texto es resaltado.
 
-  2. Mueva el cursor al principio de la pantalla y pulse  Ctrl-g  para saber
-     el número de la línea correspondiente. ¡RECUERDE ESTE NÚMERO!
+  3. Pulse el caracter  :  en la parte inferior de la pantalla aparecerá
+     :'<,'>
 
-  3. Ahora mueva el cursor a la última línea de la pantalla y pulse Ctrl-g
-     de nuevo. ¡RECUERDE TAMBIÉN ESTE NÚMERO!
+  4. Pulse  w TEST  , donde TEST es un nombre de archivo que aún no existe.
+     Verifique que  :'<,'>w TEST  antes de pulsar <INTRO>.
 
-  4. Para guardar SOLAMENTE una parte de un fichero, escriba  :#,# w TEST
-     donde #,# son los números que usted ha recordado (primera línea,
-     última línea) y TEST es su nombre de dichero.
+  5. Vim escribirá las líneas seleccionadas en el archivo TEST. Utilice
+     :!dir  o  :!ls  para verlo. ¡No lo elimine todavía! Lo utilizaremos
+     en la siguiente lección.
 
-  5. De nuevo, vea que el fichero esta ahí con	:!dir  pero NO lo borre.
+NOTA: Al pulsar  v  inicia la selección visual. Puede mover el cursor para
+      hacer la selección más grande o pequeña. Después puede utilizar un
+      operador para hacer algo con el texto. Por ejemplo,  d  eliminará
+      el texto seleccionado.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -689,43 +697,47 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
 
  ** Para insertar el contenido de un fichero escriba :r NOMBRE_DEL_FICHERO **
 
-  1. Escriba   :!dir   para asegurarse de que su fichero TEST del ejercicio
-     anterior está presente.
+  1. Situe el cursor justo por encima de esta línea.
 
-  2. Situe el cursor al principio de esta pantalla.
+NOTA: Después de ejecutar el paso 2 verá texto de la lección 5.3. Después
+      DESCIENDA hasta ver de nuevo esta lección.
 
-NOTA: Después de ejecutar el paso 3 se verá la Lección 5.3. Luego muévase
-      hacia ABAJO para ver esta lección de nuevo.
+  2. Ahora recupere el archivo TEST utilizando el comando  :r TEST  donde
+     TEST es el nombre que ha utilizado.
+     El archivo que ha recuperado se colocará debajo de la línea donde
+     se encuentra el cursor.
 
-  3. Ahora recupere el fichero TEST utilizando el mandato  :r TEST  donde
-     TEST es el nombre del fichero.
+  3. Para verificar que se ha recuperado el archivo, suba el cursor y 
+     compruebe que ahora hay dos copias de la lección 5.3, la original y
+     la versión del archivo.
 
-NOTA: El fichero recuperado se sitúa a partir de la posición del cursor.
+NOTA: También puede leer la salida de un comando externo. Por ejemplo,
+      :r !ls  lee la salida del comando ls y lo pega debajo de la línea
+      donde se encuentra el cursor.
 
-  4. Para verificar que el fichero ha sido recuperado, mueva el cursor hacia
-     arriba y vea que hay dos copias de la Lección 5.3, la original y la
-     versión del fichero.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			   RESUMEN DE LA LECCIÓN 5
 
 
-  1.  :!mandato  ejecuta un mandato externo.
+  1.  :!comando  ejecuta un comando externo.
 
       Algunos ejemplos útiles son:
-	  :!dir - muestra el contenido de un directorio.
-	  :!del NOMBRE_DE_FICHERO  -  borra el fichero NOMBRE_DE FICHERO.
+      (Windows)     (Unix)
+	  :!dir          :!ls           - muestra el contenido de un directorio.
+	  :!del ARCHIVO  :!rm ARCHIVO   -  borra el fichero ARCHIVO.
 
-  2.  :#,#w NOMBRE_DE _FICHERO  guarda desde la línea # hasta la # en el
-     fichero NOMBRE_DE_FICHERO.
+  2.  :w ARCHIVO escribe el archivo actual de Vim en el disco con el 
+      nombre de ARCHIVO.
 
-  3.  :r NOMBRE_DE _FICHERO  recupera el fichero del disco NOMBRE_DE FICHERO
-     y lo inserta en el fichero en curso a partir de la posición del cursor.
+  3.  v  movimiento  :w ARCHIVO  guarda las líneas seleccionadas visualmente
+      en el archivo ARCHIVO.
 
+  4.  :r ARCHIVO  recupera del disco el archivo ARCHIVO y lo pega debajo
+      de la posición del cursor.
 
-
-
-
+  5.  :r !dir  lee la salida del comando dir y lo pega debajo de la
+      posición del cursor.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
