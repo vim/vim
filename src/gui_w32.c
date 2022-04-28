@@ -219,7 +219,15 @@ gui_mch_set_rendering_options(char_u *s)
 #define DLG_NONBUTTON_CONTROL	5000	// First ID of non-button controls
 
 #ifndef WM_DPICHANGED
-# define WM_DPICHANGED		0x02E0
+# define WM_DPICHANGED			0x02E0
+#endif
+
+#ifndef WM_MOUSEHWHEEL
+# define WM_MOUSEHWHEEL			0x020E
+#endif
+
+#ifndef SPI_GETWHEELSCROLLCHARS
+# define SPI_GETWHEELSCROLLCHARS	0x006C
 #endif
 
 #ifdef PROTO
