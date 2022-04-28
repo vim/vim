@@ -835,7 +835,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	}
 	else
 	{
-	    if (evalstr)
+	    if (evalstr && !eap->skip)
 	    {
 		str = eval_all_expr_in_str(str);
 		if (str == NULL)
