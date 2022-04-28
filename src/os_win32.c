@@ -7827,7 +7827,7 @@ vtp_init(void)
     HMODULE hKerneldll;
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 # ifdef FEAT_TERMGUICOLORS
-    COLORREF fg, bg;
+    COLORREF fg;
 # endif
 
     // Use functions supported from Vista
@@ -7854,9 +7854,7 @@ vtp_init(void)
     store_console_fg_rgb = save_console_fg_rgb;
 
 # ifdef FEAT_TERMGUICOLORS
-    bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
     fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
-    bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     default_console_color_fg = fg;
 # endif
