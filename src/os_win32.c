@@ -8142,7 +8142,10 @@ get_default_console_color(
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
 	guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
 						    : default_console_color_bg;
-	cterm_normal_bg_gui_color = guibg;
+	if (ctermbg != -1)
+	    cterm_normal_bg_gui_color = guibg;
+	else
+	    guibg = INVALCOLOR;
 	ctermbg = ctermbg < 0 ? 0 : ctermbg;
     }
 
