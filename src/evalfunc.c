@@ -4105,7 +4105,7 @@ f_expand(typval_T *argvars, typval_T *rettv)
 
 	if (p_verbose == 0)
 	    ++emsg_off;
-	result = eval_vars(s, s, &len, NULL, &errormsg, NULL);
+	result = eval_vars(s, s, &len, NULL, &errormsg, NULL, FALSE);
 	if (p_verbose == 0)
 	    --emsg_off;
 	else if (errormsg != NULL)

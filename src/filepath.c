@@ -3097,7 +3097,7 @@ expand_wildcards_eval(
     {
 	++emsg_off;
 	eval_pat = eval_vars(exp_pat, exp_pat, &usedlen,
-						    NULL, &ignored_msg, NULL);
+					       NULL, &ignored_msg, NULL, TRUE);
 	--emsg_off;
 	if (eval_pat != NULL)
 	    exp_pat = concat_str(eval_pat, exp_pat + usedlen);
