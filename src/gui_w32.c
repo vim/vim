@@ -827,13 +827,13 @@ get_active_modifiers(void)
 	modifiers |= MOD_MASK_CTRL;
     if (GetKeyState(VK_SHIFT) & 0x8000)
 	modifiers |= MOD_MASK_SHIFT;
-    if (GetKeyState(VK_MENU) & 0x8000)
-	modifiers |= MOD_MASK_ALT;
-    // Windows handles Ctrl + Alt as AltGr, in that case no modifier is actually
+    // Windows handles Ctrl + Alt as AltGr and vice-versa. We can distinguish
+    // the two cases by checking whether the left or the right Alt key is
     // pressed.
-    if ((modifiers & (MOD_MASK_CTRL | MOD_MASK_ALT)) ==
-	    (MOD_MASK_CTRL | MOD_MASK_ALT))
-	modifiers &= ~(MOD_MASK_CTRL | MOD_MASK_ALT);
+    if (GetKeyState(VK_LMENU) & 0x8000)
+	modifiers |= MOD_MASK_ALT;
+    if ((modifiers & MOD_MASK_CTRL) && (GetKeyState(VK_RMENU) & 0x8000))
+	modifiers &= ~MOD_MASK_CTRL;
 
     return modifiers;
 }
@@ -955,7 +955,7 @@ _OnMouseEvent(
 	vim_modifiers |= MOUSE_SHIFT;
     if (keyFlags & MK_CONTROL)
 	vim_modifiers |= MOUSE_CTRL;
-    if (GetKeyState(VK_MENU) & 0x8000)
+    if (GetKeyState(VK_LMENU) & 0x8000)
 	vim_modifiers |= MOUSE_ALT;
 
     gui_send_mouse_event(button, x, y, repeated_click, vim_modifiers);
@@ -1722,8 +1722,8 @@ gui_mch_haskey(char_u *name)
     int i;
 
     for (i = 0; special_keys[i].vim_code1 != NUL; i++)
-	if (name[0] == special_keys[i].vim_code0 &&
-					 name[1] == special_keys[i].vim_code1)
+	if (name[0] == special_keys[i].vim_code0
+				       && name[1] == special_keys[i].vim_code1)
 	    return OK;
     return FAIL;
 }
@@ -1972,7 +1972,7 @@ process_message(void)
 	{
 	    // ignore VK_SPACE when ALT key pressed: system menu
 	    if (special_keys[i].key_sym == vk
-		    && (vk != VK_SPACE || !(GetKeyState(VK_MENU) & 0x8000)))
+		    && (vk != VK_SPACE || !(GetKeyState(VK_LMENU) & 0x8000)))
 	    {
 		/*
 		 * Behave as expected if we have a dead key and the special key
@@ -2051,8 +2051,8 @@ process_message(void)
 	    if (GetKeyState(VK_CAPITAL) & 0x0001)
 		keyboard_state[VK_CAPITAL] = 0x01;
 	    // Alt-Gr is synthesized as Alt + Ctrl.
-	    if ((GetKeyState(VK_MENU) & 0x8000) &&
-		    (GetKeyState(VK_CONTROL) & 0x8000))
+	    if ((GetKeyState(VK_RMENU) & 0x8000)
+					 && (GetKeyState(VK_CONTROL) & 0x8000))
 	    {
 		keyboard_state[VK_MENU] = 0x80;
 		keyboard_state[VK_CONTROL] = 0x80;
