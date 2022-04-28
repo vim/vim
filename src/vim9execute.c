@@ -3788,9 +3788,7 @@ exec_instructions(ectx_T *ectx)
 			}
 			else
 			    jump = tv2bool(tv);
-			if (when == JUMP_IF_FALSE
-					     || when == JUMP_AND_KEEP_IF_FALSE
-					     || when == JUMP_IF_COND_FALSE)
+			if (when == JUMP_IF_FALSE || when == JUMP_IF_COND_FALSE)
 			    jump = !jump;
 			if (when == JUMP_IF_FALSE || !jump)
 			{
@@ -5662,16 +5660,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 							 iptr->isn_arg.number);
 		break;
 	    case ISN_STOREOUTER:
-		{
-		if (iptr->isn_arg.number < 0)
-		    smsg("%s%4d STOREOUTEr level %d arg[%d]", pfx, current,
-			    iptr->isn_arg.outer.outer_depth,
-			    iptr->isn_arg.outer.outer_idx + STACK_FRAME_SIZE);
-		else
-		    smsg("%s%4d STOREOUTER level %d $%d", pfx, current,
-			    iptr->isn_arg.outer.outer_depth,
-			    iptr->isn_arg.outer.outer_idx);
-		}
+		smsg("%s%4d STOREOUTER level %d $%d", pfx, current,
+			iptr->isn_arg.outer.outer_depth,
+			iptr->isn_arg.outer.outer_idx);
 		break;
 	    case ISN_STOREV:
 		smsg("%s%4d STOREV v:%s", pfx, current,
@@ -5934,9 +5925,6 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			    break;
 			case JUMP_IF_FALSE:
 			    when = "JUMP_IF_FALSE";
-			    break;
-			case JUMP_AND_KEEP_IF_FALSE:
-			    when = "JUMP_AND_KEEP_IF_FALSE";
 			    break;
 			case JUMP_IF_COND_FALSE:
 			    when = "JUMP_IF_COND_FALSE";

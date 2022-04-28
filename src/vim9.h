@@ -239,7 +239,6 @@ typedef enum {
     JUMP_NEVER,
     JUMP_IF_FALSE,		// pop and jump if false
     JUMP_AND_KEEP_IF_TRUE,	// jump if top of stack is truthy, drop if not
-    JUMP_AND_KEEP_IF_FALSE,	// jump if top of stack is falsy, drop if not
     JUMP_IF_COND_TRUE,		// jump if top of stack is true, drop if not
     JUMP_IF_COND_FALSE,		// jump if top of stack is false, drop if not
 } jumpwhen_T;

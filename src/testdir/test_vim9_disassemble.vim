@@ -265,6 +265,7 @@ enddef
 
 def s:PutRange()
   :$-2put a
+  :$-3put! b
 enddef
 
 def Test_disassemble_put_range()
@@ -273,6 +274,10 @@ def Test_disassemble_put_range()
         ' :$-2put a\_s*' ..
         '\d RANGE $-2\_s*' ..
         '\d PUT a range\_s*' ..
+
+        ' :$-3put! b\_s*' ..
+        '\d RANGE $-3\_s*' ..
+        '\d PUT b above range\_s*' ..
         '\d RETURN void',
         res)
 enddef
@@ -684,6 +689,10 @@ def s:ScriptFuncUnlet()
   unlet g:somevar
   unlet! g:somevar
   unlet $SOMEVAR
+
+  var l = [1, 2, 3]
+  unlet l[2]
+  unlet l[0 : 1]
 enddef
 
 def Test_disassemble_unlet()
@@ -697,13 +706,33 @@ def Test_disassemble_unlet()
         'unlet! g:somevar\_s*' ..
         '\d UNLET! g:somevar\_s*' ..
         'unlet $SOMEVAR\_s*' ..
-        '\d UNLETENV $SOMEVAR\_s*',
+        '\d UNLETENV $SOMEVAR\_s*' ..
+
+        'var l = \[1, 2, 3]\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ PUSHNR 3\_s*' ..
+        '\d\+ NEWLIST size 3\_s*' ..
+        '\d\+ SETTYPE list<number>\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+
+        'unlet l\[2]\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ UNLETINDEX\_s*' ..
+
+        'unlet l\[0 : 1]\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ UNLETRANGE\_s*',
         res)
 enddef
 
 def s:LockLocal()
   var d = {a: 1}
   lockvar d.a
+  const nr = 22
 enddef
 
 def Test_disassemble_lock_local()
@@ -717,7 +746,12 @@ def Test_disassemble_lock_local()
         '\d STORE $0\_s*' ..
         'lockvar d.a\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d LOCKUNLOCK lockvar 2 d.a\_s*',
+        '\d LOCKUNLOCK lockvar 2 d.a\_s*' ..
+
+        'const nr = 22\_s*' ..
+        '\d\+ PUSHNR 22\_s*' ..
+        '\d\+ LOCKCONST\_s*' ..
+        '\d\+ STORE $1',
         res)
 enddef
 
@@ -2182,6 +2216,33 @@ def Test_disassemble_range_only()
         '\d EXECRANGE 123\_s*' ..
         ':''m\_s*' ..
         '\d EXECRANGE ''m\_s*' ..
+        '\d\+ RETURN void',
+        res)
+enddef
+
+def s:StoreRange()
+  var l = [1, 2]
+  l[0 : 1] = [7, 8]
+enddef
+
+def Test_disassemble_store_range()
+  var res = execute('disass s:StoreRange')
+  assert_match('\<SNR>\d*_StoreRange\_s*' ..
+        'var l = \[1, 2]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d NEWLIST size 2\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
+        '\d STORE $0\_s*' ..
+
+        'l\[0 : 1] = \[7, 8]\_s*' ..
+        '\d\+ PUSHNR 7\_s*' ..
+        '\d\+ PUSHNR 8\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ STORERANGE\_s*' ..
         '\d\+ RETURN void',
         res)
 enddef
