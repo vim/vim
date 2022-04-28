@@ -493,111 +493,125 @@ NOTA: Puede utilizar el retorno de carro para corregir errores mientras escribe.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	       Lección 4.1: SITUACIÓN EN EL FICHERO Y SU ESTADO
+	       Lección 4.1: UBICACIÓN DEL CURSOR Y ESTADO DEL ARCHIVO
 
+ ** Pulse CTRL-G para mostrar su situación en el fichero y su estado.
+    Pulse G para moverse a una determinada línea del fichero. **
 
- ** Pulse CTRL-g para mostrar su situación en el fichero y su estado.
-    Pulse MAYU-G para moverse a una determinada línea del fichero. **
+NOTA: ¡¡Lea esta lección entera antes de ejecutar cualquiera de los pasos!!
 
-  Nota: ¡¡Lea esta lección entera antes de ejecutar alguno de los pasos!!
+  1. Mantenga pulsada la tecla Ctrl y pulse  g . Le llamamos a esto CTRL-G.
+     Aparecerá un mensaje en la parte inferior de la página con el nombre
+     del archivo y la posición en este. Recuerde el número de línea
+     para el paso 3.
 
+NOTA: Quizás pueda ver la posición del cursor en la esquina inferior derecha
+      de la pantalla. Esto ocurre cuando la opción 'ruler' (regla) está
+      habilitada (consulte  :help 'ruler'  )
 
-  1. Mantenga pulsada la tecla Ctrl y pulse  g . Aparece una línea de estado
-     al final de la pantalla con el nombre del fichero y la línea en la que
-     está situado. Recuerde el número de la línea para el Paso 3.
+  2. Pulse  G  para mover el cursor hasta la parte inferior del archivo.
+     Pulse  gg  para mover el cursor al inicio del archivo.
 
-  2. Pulse Mayu-G para ir al final del fichero.
+  3. Escriba el número de la línea en la que estaba y despúes  G  . Esto
+     le volverá a la línea en la que estaba cuando pulsó CTRL-G.
 
-  3. Escriba el número de la línea en la que estaba y despúes Mayu-G. Esto
-     le volverá a la línea en la que estaba cuando pulsó Ctrl-g.
-     (Cuando escriba los números NO se mostrarán en la pantalla).
-
-  4. Si se siente confiado en poder hacer esto ejecute los pasos 1 a 3.
+  4. Si se siente seguro en poder hacer esto ejecute los pasos 1 a 3.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lección 4.2: EL MANDATO «SEARCH» (buscar)
+			Lección 4.2: EL COMANDO «SEARCH» (buscar)
 
      ** Escriba  /  seguido de una frase para buscar la frase. **
 
-  1. En modo Normal pulse el carácter  / . Fíjese que tanto el carácter  /
+  1. En modo Normal pulse el caracter  / . Fíjese que tanto el caracter  /
      como el cursor aparecen en la última línea de la pantalla, lo mismo
-     que el mandato  : .
+     que el comando  : .
 
   2. Escriba ahora   errroor   <INTRO>. Esta es la palabra que quiere buscar.
 
-  3. Para repetir la búsqueda, simplemente pulse  n .
-     Para busacar la misma frase en la dirección opuesta, pulse Mayu-N .
+  3. Para repetir la búsqueda de la misma frase otra vez, simplemente pulse
+     n .
+     Para buscar la misma frase en la dirección opuesta, pulse  N .
 
   4. Si quiere buscar una frase en la dirección opuesta (hacia arriba),
-     utilice el mandato  ?  en lugar de  / .
+     utilice el comando  ?  en lugar de  / .
+  
+  5. Para regresar al lugar de donde procedía pulse  CTRL-O  (Mantenga pulsado
+  Ctrl mientras pulsa la letra o). Repita el proceso para regresar más atrás.
+  CTRL-I va hacia adelante.
 
----> Cuando la búsqueda alcanza el final del fichero continuará desde el
-     principio.
+---> "errroor" no es la forma correcta de escribir error, errroor es un error.
 
-  «errroor» no es la forma de deletrear error; errroor es un error.
+NOTA: Cuando la búsqueda llega al final del archivo, continuará desde el
+      comienzo, a menos que la opción 'wrapscan' haya sido desactivada.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	       Lección 4.3: BÚSQUEDA PARA COMPROBAR PARÉNTESIS
 
    ** Pulse %  para encontrar el paréntesis correspondiente a ),] o } . **
 
+  1. Sitúe el cursor en cualquiera de los caracteres (, [ o { en la línea 
+     inferior señalada con --->.
 
-  1. Sitúe el cursor en cualquiera de los caracteres ), ] o } en la línea de
-     abajo señalada con --->.
+  2. Pulse ahora el caracter  %  .
 
-  2. Pulse ahora el carácter  %  .
+  3. El cursor se moverá a la pareja de cierre del paréntesis, corchete
+     o llave correspondiente.
 
-  3. El cursor debería situarse en el paréntesis (, corchete [ o llave {
-     correspondiente.
+  4. Pulse  %  para mover el cursor a la otra pareja del caracter.
 
-  4. Pulse  %  para mover de nuevo el cursor al paréntesis, corchete o llave
-     correspondiente.
+  5. Mueva el cursor a otro (,),[,],{ o } y vea lo que hace % .
 
----> Esto ( es una línea de prueba con (, [, ], {, y } en ella. )).
+---> Esto ( es una línea de prueba con (, [, ], {, y } en ella. ))
 
-Nota: ¡Esto es muy útil en la detección de errores en un programa con
-      paréntesis, corchetes o llaves disparejos.
+NOTA: ¡Esto es muy útil en la detección de errores en un programa con
+      paréntesis, corchetes o llaves sin pareja.
+      
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		  Lección 4.4: UNA FORMA DE CAMBIAR ERRORES
+		  Lección 4.4: EL COMANDO SUSTITUIR
 
 
     ** Escriba	:s/viejo/nuevo/g para sustituir 'viejo' por 'nuevo'. **
 
-
-  1. Mueva el cursor a la línea de abajo señalada con --->.
+  1. Mueva el cursor a la línea inferior señalada con --->.
 
   2. Escriba  :s/laas/las/  <INTRO> . Tenga en cuenta que este mandato cambia
      sólo la primera aparición en la línea de la expresión a cambiar.
+  
+  3. Ahora escriba :/laas/la/g . Al añadir la opción  g  esto significa
+     que hará la sustitución global en la línea, cambiando todas las
+     ocurrencias del término "laas" en la línea.
 
 ---> Laas mejores épocas para ver laas flores son laas primaveras.
 
-  4. Para cambiar todas las apariciones de una expresión ente dos líneas
-     escriba   :#,#s/viejo/nuevo/g   donde #,# son los números de las dos
-     líneas. Escriba   :%s/viejo/nuevo/g   para hacer los cambios en todo
-     el fichero.
-
-
-
-
+  4. Para cambiar cada ocurrencia de la cadena de caracteres entre dos líneas,
+     Pulse  :#,#s/viejo/nuevo/g  donde #,# son los números de línea del rango
+                                 de líneas donde se realizará la sustitución.
+     Pulse  :%s/old/new/g        para cambiar cada ocurrencia en todo el
+                                 archivo.
+     Pulse  :%s/old/new/gc       para encontrar cada ocurrencia en todo el 
+                                 archivo, pidiendo confirmación para 
+                                 realizar la sustitución o no.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    RESUMEN DE LA LECCIÓN 4
 
 
-  1. Ctrl-g  muestra la posición del cursor en el fichero y su estado.
-     Mayu-G mueve el cursor al final del fichero. Un número de línea
-     seguido de Mayu-G mueve el cursor a la línea con ese número.
+  1. CTRL-G  muestra la posición del cursor en el fichero y su estado.
+             G  mueve el cursor al final del archivo.
+     número  G  mueve el cursor a ese número de línea.
+            gg  mueve el cursor a la primera línea del archivo.
 
   2. Pulsando  /  seguido de una frase busca la frase hacia ADELANTE.
      Pulsando  ?  seguido de una frase busca la frase hacia ATRÁS.
      Después de una búsqueda pulse  n  para encontrar la aparición
-     siguiente en la misma dirección.
+     siguiente en la misma dirección o  N  para buscar en dirección opuesta.
 
   3. Pulsando  %  cuando el cursor esta sobre (,), [,], { o } localiza
      la pareja correspondiente.
 
-  4. Para cambiar viejo por nuevo en una línea pulse	      :s/viejo/nuevo
+  4. Para cambiar viejo en el primer nuevo en una línea pulse  :s/viejo/nuevo
      Para cambiar todos los viejo por nuevo en una línea pulse :s/viejo/nuevo/g
      Para cambiar frases entre dos números de líneas pulse  :#,#s/viejo/nuevo/g
      Para cambiar viejo por nuevo en todo el fichero pulse  :%s/viejo/nuevo/g
