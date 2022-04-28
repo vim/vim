@@ -9349,12 +9349,15 @@ eval_vars(
 	}
     }
 
-    if (empty_is_error && (resultlen == 0 || valid != VALID_HEAD + VALID_PATH))
+    if (resultlen == 0 || valid != VALID_HEAD + VALID_PATH)
     {
-	if (valid != VALID_HEAD + VALID_PATH)
-	    *errormsg = _(e_empty_file_name_for_percent_or_hash_only_works_with_ph);
-	else
-	    *errormsg = _(e_evaluates_to_an_empty_string);
+	if (empty_is_error)
+	{
+	    if (valid != VALID_HEAD + VALID_PATH)
+		*errormsg = _(e_empty_file_name_for_percent_or_hash_only_works_with_ph);
+	    else
+		*errormsg = _(e_evaluates_to_an_empty_string);
+	}
 	result = NULL;
     }
     else
