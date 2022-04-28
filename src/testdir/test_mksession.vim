@@ -865,6 +865,27 @@ func Test_mksession_sesdir()
   call delete('Xproj', 'rf')
 endfunc
 
+" Test for saving and restoring the tab-local working directory when there is
+" only a single tab and 'tabpages' is not in 'sessionoptions'.
+func Test_mksession_tcd_single_tabs()
+  only | tabonly
+
+  let save_cwd = getcwd()
+  set sessionoptions-=tabpages
+  set sessionoptions+=curdir
+  call mkdir('Xtopdir')
+
+  tcd Xtopdir
+  mksession! Xtest_tcd_single
+
+  source Xtest_tcd_single
+  call assert_equal(2, haslocaldir())
+
+  set sessionoptions&
+  call chdir(save_cwd)
+  call delete('Xtopdir', 'rf')
+endfunc
+
 " Test for storing the 'lines' and 'columns' settings
 func Test_mksession_resize()
   mksession! Xtest_mks1.out

@@ -623,13 +623,14 @@ makeopens(
     win_T	*wp;
     char_u	*sname;
     win_T	*edited_win = NULL;
-    int		tabnr;
+    int		tabnr = 0;
     int		restore_stal = FALSE;
     win_T	*tab_firstwin;
     frame_T	*tab_topframe;
     int		cur_arg_idx = 0;
     int		next_arg_idx = 0;
     int		ret = FAIL;
+    tabpage_T	*tp;
 #ifdef FEAT_TERMINAL
     hashtab_T	terminal_bufs;
 
@@ -763,8 +764,6 @@ makeopens(
     tab_topframe = topframe;
     if ((ssop_flags & SSOP_TABPAGES))
     {
-	tabpage_T *tp;
-
 	// Similar to ses_win_rec() below, populate the tab pages first so
 	// later local options won't be copied to the new tabs.
 	FOR_ALL_TABPAGES(tp)
@@ -777,18 +776,15 @@ makeopens(
 	if (first_tabpage->tp_next != NULL && put_line(fd, "tabrewind") == FAIL)
 	    goto fail;
     }
-    for (tabnr = 1; ; ++tabnr)
+    FOR_ALL_TABPAGES(tp)
     {
-	tabpage_T *tp = NULL;
 	int	need_tabnext = FALSE;
 	int	cnr = 1;
 
+	++tabnr;
+
 	if ((ssop_flags & SSOP_TABPAGES))
 	{
-	    tp = find_tabpage(tabnr);
-
-	    if (tp == NULL)
-		break;		// done all tab pages
 	    if (tp == curtab)
 	    {
 		tab_firstwin = firstwin;
