@@ -454,8 +454,8 @@ Tenga en cueta que  ce  elimina la palabra y entra en el modo Insertar.
 
        c   [número]   movimiento
 
-  2. Los movimientos son tambiém los mismos, tales como  w (palabra) o $ (fin de
-     la línea).
+  2. Los movimientos son también los mismos, tales como  w (palabra) o 
+  $ (fin de la línea).
 
   3. Mueva el cursor a la primera línea inferior señalada con --->.
 
@@ -467,30 +467,27 @@ Tenga en cueta que  ce  elimina la palabra y entra en el modo Insertar.
 ---> El final de esta línea necesita alguna ayuda para que sea como la segunda.
 ---> El final de esta línea necesita ser corregido usando el comando  c$.
 
-
-	       Lesson 3.4: MORE CHANGES USING c
-
 NOTA: Puede utilizar el retorno de carro para corregir errores mientras escribe.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    RESUMEN DE LA LECCIÓN 3
 
 
-  1. Para sustituir texto que ha sido borrado, pulse  p . Esto Pone el texto
-     borrado DESPUÉS del cursor (si lo que se ha borrado es una línea se
-     situará sobre la línea que está sobre el cursor).
+  1. Para volver a poner o pegar el texto que acaba de ser borrado,
+     escriba  p . Esto pega el texto después del cursor (si se borró una
+     línea, al pegarla, esta se situará en la línea debajo del cursor).
 
-  2. Para sustituir el carácter bajo el cursor, pulse	r   y luego el
-     carácter que sustituirá al original.
+  2. Para sustituir el caracter bajo el cursor, pulse	r   y luego el
+     caracter que quiere que esté en ese lugar.
 
-  3. El mandato change le permite cambiar el objeto especificado desde la
-     posición del cursor hasta el final del objeto; e.g. Pulse	cw  para
-     cambiar desde el cursor hasta el final de la palabra, c$  para cambiar
-     hasta el final de la línea.
+  3. El operador change le permite cambiar desde la posición del cursor
+     hasta donde el movimiento indicado le lleve. Por ejemplo, pulse  ce
+     para cambiar desde el cursor hasta el final de la palabra, o  c$
+     para cambiar hasta el final de la línea.
 
   4. El formato para change es:
 
-	 [número]   c	objeto	      O		c   [número]   objeto
+	 c   [número]   movimiento
 
   Pase ahora a la lección siguiente.
 
