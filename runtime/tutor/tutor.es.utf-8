@@ -448,24 +448,29 @@ Tenga en cueta que  ce  elimina la palabra y entra en el modo Insertar.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		      Lección 3.4: MÁS CAMBIOS USANDO c
 
-   ** El mandato change se utiliza con los mismos objetos que delete. **
+   ** El operador change se utiliza con los mismos movimientos que delete. **
 
-  1. El mandato change funciona de la misma forma que delete. El formato es:
+  1. El operador change funciona de la misma forma que delete. El formato es:
 
-       [número]   c   objeto	   O	    c	[número]   objeto
+       c   [número]   movimiento
 
-  2. Los objetos son tambiém los mismos, tales como  w (palabra), $ (fin de
-     la línea), etc.
+  2. Los movimientos son tambiém los mismos, tales como  w (palabra) o $ (fin de
+     la línea).
 
-  3. Mueva el cursor a la primera línea de abajo señalada con --->.
+  3. Mueva el cursor a la primera línea inferior señalada con --->.
 
   4. Mueva el cursor al primer error.
 
-  5. Escriba  c$  para hacer que el resto de la línea sea como la segunda
+  5. Pulse  c$  y escriba el resto de la línea para que sea como la segunda
      y pulse <ESC>.
 
 ---> El final de esta línea necesita alguna ayuda para que sea como la segunda.
----> El final de esta línea necesita ser corregido usando el mandato  c$.
+---> El final de esta línea necesita ser corregido usando el comando  c$.
+
+
+	       Lesson 3.4: MORE CHANGES USING c
+
+NOTA: Puede utilizar el retorno de carro para corregir errores mientras escribe.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    RESUMEN DE LA LECCIÓN 3
