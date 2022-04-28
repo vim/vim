@@ -378,69 +378,71 @@ mencionados anteriormente.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 Lección 3.1: EL MANDATO «PUT» (poner)
+			 Lección 3.1: EL COMANDO «PUT» (poner)
 
-  ** Pulse p para poner lo último que ha borrado después del cursor. **
+** Pulse  p  para poner (pegar) después del cursor lo último que ha borrado. **
 
-  1. Mueva el cursor al final de la lista de abajo.
+  1. Mueva el cursor a la primera línea inferior marcada con --->.
 
-  2. Escriba  dd  para borrar la línea y almacenarla en el buffer de Vim.
+  2. Escriba  dd  para borrar la línea y almacenarla en un registro de Vim.
 
-  3. Mueva el cursor a la línea que debe quedar por debajo de la
-     línea a mover.
+  3. Mueva el cursor a la línea c) por ENCIMA de donde debería estar 
+     la línea eliminada.
 
-  4. Estando en mod Normal, pulse   p	para restituir la línea borrada.
+  4. Pulse   p	para pegar la línea borrada por debajo del cursor.
 
   5. Repita los pasos 2 a 4 para poner todas las líneas en el orden correcto.
 
-     d) ¿Puedes aprenderla tú?
-     b) Las violetas son azules,
-     c) La inteligencia se aprende,
-     a) Las rosas son rojas,
+---> d) ¿Puedes aprenderla tú?
+---> b) Las violetas son azules,
+---> c) La inteligencia se aprende,
+---> a) Las rosas son rojas,
+     
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Lección 3.2: EL MANDATO «REPLACE» (remplazar)
+		       Lección 3.2: EL COMANDO REEMPLAZAR
 
 
-  ** Pulse  r  y un carácter para sustituir el carácter sobre el cursor. **
+  ** Pulse  rx  para reemplazar el carácter bajo el cursor con  x . **
 
+  1. Mueva el cursor a la primera línea inferior marcada con --->.
 
-  1. Mueva el cursor a la primera línea de abajo señalada con --->.
+  2. Mueva el cursor para situarlo sobre el primer error.
 
-  2. Mueva el cursor para situarlo bajo el primer error.
+  3. Pulse   r	 y después el carácter que debería ir ahí.
 
-  3. Pulse   r	 y el carácter que debe sustituir al erróneo.
-
-  4. Repita los pasos 2 y 3 hasta que la primera línea esté corregida.
+  4. Repita los pasos 2 y 3 hasta que la primera sea igual a la segunda.
 
 ---> ¡Cuendo esta línea fue rscrita alguien pulso algunas teclas equibocadas!
 ---> ¡Cuando esta línea fue escrita alguien pulsó algunas teclas equivocadas!
 
+  5. Ahora pase a la lección 3.3.
 
-
+NOTA: Recuerde que debería aprender practicando.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lección 3.3: EL MANDATO «CHANGE» (cambiar)
+			Lección 3.3: EL COMANDO CAMBIAR
 
 
-     ** Para cambiar parte de una palabra o toda ella escriba  cw . **
+     ** Para cambiar hasta el final de una línea, escriba  ce . **
 
-
-  1. Mueva el cursor a la primera línea de abajo señalada con --->.
+  1. Mueva el cursor a la primera línea inferior marcada con --->.
 
   2. Sitúe el cursor en la u de lubrs.
 
-  3. Escriba  cw  y corrija la palabra (en este caso, escriba 'ínea').
+  3. Escriba  ce  y corrija la palabra (en este caso, escriba 'ínea').
 
-  4. Pulse <ESC> y mueva el cursor al error siguiente (el primer carácter
-     que deba cambiarse).
+  4. Pulse <ESC> y mueva el cursor al siguiente error que debe ser cambiado.
 
   5. Repita los pasos 3 y 4 hasta que la primera frase sea igual a la segunda.
 
----> Esta lubrs tiene unas pocas pskavtad que corregir usem el mandato change.
----> Esta línea tiene unas pocas palabras que corregir usando el mandato change.
+---> Esta lubrs tiene unas pocas pskavtad que corregir usem el comando change.
+---> Esta línea tiene unas pocas palabras que corregir usando el comando change.
+
+Tenga en cueta que  ce  elimina la palabra y entra en el modo Insertar.
+                    cc  hace lo mismo para toda la línea.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
