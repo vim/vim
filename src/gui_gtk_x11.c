@@ -1314,7 +1314,7 @@ key_press_event(GtkWidget *widget UNUSED,
 #if defined(FEAT_XIM) || GTK_CHECK_VERSION(3,0,0)
     static gboolean
 key_release_event(GtkWidget *widget UNUSED,
-		  GdkEventKey *event,
+		  GdkEventKey *event UNUSED,
 		  gpointer data UNUSED)
 {
 # if defined(FEAT_XIM)
