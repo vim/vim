@@ -8138,13 +8138,11 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	if (ctermbg != -1)
-	    cterm_normal_bg_gui_color = guibg = ctermtoxterm(ctermbg);
-	else
-	{
-	    guibg = INVALCOLOR;
+	cterm_normal_bg_gui_color = guibg =
+	    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
+
+	if (ctermbg < 0)
 	    ctermbg = 0;
-	}
     }
 
     *cterm_fg = ctermfg;
