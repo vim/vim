@@ -2699,17 +2699,19 @@ handle_mapping(
 	 * - and not an ESC sequence, not in insert mode or p_ek is on,
 	 * - and when not timed out,
 	 */
-	if ((no_mapping == 0 || allow_keys != 0)
-		&& (typebuf.tb_maplen == 0
+	if (no_mapping == 0 || allow_keys != 0)
+	{
+	    if ((typebuf.tb_maplen == 0
 		    || (p_remap && typebuf.tb_noremap[
 						    typebuf.tb_off] == RM_YES))
 		&& !*timedout)
-	{
-	    keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
+		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
+	    else
+		keylen = 0;
 
 	    // If no termcode matched but 'pastetoggle' matched partially
 	    // it's like an incomplete key sequence.
-	    if (keylen == 0 && save_keylen == KEYLEN_PART_KEY)
+	    if (keylen == 0 && save_keylen == KEYLEN_PART_KEY && !*timedout)
 		keylen = KEYLEN_PART_KEY;
 
 	    // If no termcode matched, try to include the modifier into the

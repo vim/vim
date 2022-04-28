@@ -2,6 +2,7 @@
 
 " Bracketed paste only works with "xterm".  Not in GUI or Windows console.
 source check.vim
+source term_util.vim
 CheckNotMSWindows
 CheckNotGui
 
@@ -215,6 +216,69 @@ func Test_pastetoggle()
   call assert_equal('"set pastetoggle=<F4>', @:)
   set pastetoggle&
   bwipe!
+endfunc
+
+func Test_pastetoggle_timeout_no_typed_after_mapped()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set pastetoggle=abc
+    set ttimeoutlen=10000
+    imap d a
+  END
+  call writefile(lines, 'Xpastetoggle_no_typed_after_mapped.vim')
+  let buf = RunVimInTerminal('-S Xpastetoggle_no_typed_after_mapped.vim', #{rows: 8})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":call feedkeys('id', 't')\<CR>")
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, 'bc')
+  " 'ttimeoutlen' should NOT apply
+  call WaitForAssert({-> assert_match('^-- INSERT --', term_getline(buf, 8))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpastetoggle_no_typed_after_mapped.vim')
+endfunc
+
+func Test_pastetoggle_timeout_typed_after_mapped()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set pastetoggle=abc
+    set ttimeoutlen=10000
+    imap d a
+  END
+  call writefile(lines, 'Xpastetoggle_typed_after_mapped.vim')
+  let buf = RunVimInTerminal('-S Xpastetoggle_typed_after_mapped.vim', #{rows: 8})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":call feedkeys('idb', 't')\<CR>")
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, 'c')
+  " 'ttimeoutlen' should apply
+  call WaitForAssert({-> assert_match('^-- INSERT (paste) --', term_getline(buf, 8))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpastetoggle_typed_after_mapped.vim')
+endfunc
+
+func Test_pastetoggle_timeout_typed_after_noremap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set pastetoggle=abc
+    set ttimeoutlen=10000
+    inoremap d a
+  END
+  call writefile(lines, 'Xpastetoggle_typed_after_noremap.vim')
+  let buf = RunVimInTerminal('-S Xpastetoggle_typed_after_noremap.vim', #{rows: 8})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":call feedkeys('idb', 't')\<CR>")
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, 'c')
+  " 'ttimeoutlen' should apply
+  call WaitForAssert({-> assert_match('^-- INSERT (paste) --', term_getline(buf, 8))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpastetoggle_typed_after_noremap.vim')
 endfunc
 
 " Test for restoring option values when 'paste' is disabled
