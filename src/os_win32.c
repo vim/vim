@@ -211,7 +211,6 @@ static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
 
 # ifdef FEAT_TERMGUICOLORS
-static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
 # endif
 
@@ -7859,7 +7858,6 @@ vtp_init(void)
     fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
-    default_console_color_bg = bg;
     default_console_color_fg = fg;
 # endif
 
@@ -8140,13 +8138,13 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
-						    : default_console_color_bg;
 	if (ctermbg != -1)
-	    cterm_normal_bg_gui_color = guibg;
+	    cterm_normal_bg_gui_color = ctermtoxterm(ctermbg);
 	else
+	{
 	    guibg = INVALCOLOR;
-	ctermbg = ctermbg < 0 ? 0 : ctermbg;
+	    ctermbg = 0;
+	}
     }
 
     *cterm_fg = ctermfg;
