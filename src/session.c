@@ -888,6 +888,8 @@ makeopens(
 	// override the tab-local directory.
 	if (ssop_flags & SSOP_CURDIR)
 	{
+	    // When we're asked to save only the current tab page use curtab
+	    // instead of tp, the loop will terminate after this page is saved.
 	    tabpage_T	*t = (ssop_flags & SSOP_TABPAGES) ? tp : curtab;
 	    if (t->tp_localdir != NULL)
 	    {
