@@ -1899,7 +1899,11 @@ get_literal(int noReduceKeys)
      * vi-compatible (maybe there should be an option for it?) -- webb
      */
     if (gui.in_use)
+    {
 	++allow_keys;
+	if (noReduceKeys)
+	    ++no_reduce_keys;
+    }
 #endif
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = TRUE;		// disallow scrolling here
@@ -1992,7 +1996,11 @@ get_literal(int noReduceKeys)
     --no_mapping;
 #ifdef FEAT_GUI
     if (gui.in_use)
+    {
 	--allow_keys;
+	if (noReduceKeys)
+	    --no_reduce_keys;
+    }
 #endif
     if (nc)
     {

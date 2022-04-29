@@ -1560,10 +1560,9 @@ func Test_gui_findrepl()
   bw!
 endfunc
 
-func Test_gui_CTRL_V()
-  call feedkeys(":let g:str = '\<C-V>\<*C-S-I>\<C-V>\<*C-S-@>'\<CR>", 'tx')
-  call assert_equal('<C-S-I><C-S-@>', g:str)
-  unlet g:str
+func Test_gui_CTRL_SHIFT_V()
+  call feedkeys(":\"\<*C-S-V>\<*C-S-I>\<*C-S-V>\<*M-C-@>\<*C-S-V>\<*C-M>\<CR>", 'tx')
+  call assert_equal('"<C-S-I><M-C-@><C-M>', @:)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
