@@ -4138,7 +4138,7 @@ def Test_substitute_cmd()
   delete('Xvim9lines')
 enddef
 
-# Ensure echo doesn't crash when stringifying empty variables.
+" Ensure echo doesn't crash when stringifying empty variables.
 def Test_echo_uninit_variables()
   var res: string
 
