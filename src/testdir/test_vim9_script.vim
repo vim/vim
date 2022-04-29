@@ -4115,6 +4115,38 @@ def Run_Test_misplaced_type()
   delete('XTest_misplaced_type')
 enddef
 
+" Ensure echo doesn't crash when stringifying empty variables.
+def Test_echo_uninit_variables()
+  var res: string
+
+  var var_bool: bool
+  var var_num: number
+  var var_float: float
+  var Var_func: func
+  var var_string: string
+  var var_blob: blob
+  var var_job: job
+  var var_channel: channel
+  var var_list: list<any>
+  var var_dict: dict<any>
+
+  redir => res
+  echo var_bool
+  echo var_num
+  echo var_float
+  echo Var_func
+  echo var_string
+  echo var_blob
+  echo var_job
+  echo var_channel
+  echo var_list
+  echo var_dict
+  redir END
+
+  assert_equal(['false', '0', '0.0', 'function()', '', '0z', 'no process',
+    'channel fail', '[]', '{}'], res->split('\n'))
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
