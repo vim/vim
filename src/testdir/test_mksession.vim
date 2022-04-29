@@ -873,17 +873,24 @@ func Test_mksession_tcd_single_tabs()
   let save_cwd = getcwd()
   set sessionoptions-=tabpages
   set sessionoptions+=curdir
-  call mkdir('Xtopdir')
+  call mkdir('Xtopdir1')
+  call mkdir('Xtopdir2')
 
-  tcd Xtopdir
+  " There are two tab pages, the current one has local cwd set to 'Xtopdir2'.
+  exec 'tcd ' .. save_cwd .. '/Xtopdir1'
+  tabnew
+  exec 'tcd ' .. save_cwd .. '/Xtopdir2'
   mksession! Xtest_tcd_single
 
   source Xtest_tcd_single
   call assert_equal(2, haslocaldir())
+  call assert_equal('Xtopdir2', fnamemodify(getcwd(-1, 0), ':t'))
+  %bwipe
 
   set sessionoptions&
   call chdir(save_cwd)
-  call delete('Xtopdir', 'rf')
+  call delete('Xtopdir1', 'rf')
+  call delete('Xtopdir2', 'rf')
 endfunc
 
 " Test for storing the 'lines' and 'columns' settings

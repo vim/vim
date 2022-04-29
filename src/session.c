@@ -623,7 +623,6 @@ makeopens(
     win_T	*wp;
     char_u	*sname;
     win_T	*edited_win = NULL;
-    int		tabnr = 0;
     int		restore_stal = FALSE;
     win_T	*tab_firstwin;
     frame_T	*tab_topframe;
@@ -781,8 +780,6 @@ makeopens(
 	int	need_tabnext = FALSE;
 	int	cnr = 1;
 
-	++tabnr;
-
 	if ((ssop_flags & SSOP_TABPAGES))
 	{
 	    if (tp == curtab)
@@ -795,7 +792,7 @@ makeopens(
 		tab_firstwin = tp->tp_firstwin;
 		tab_topframe = tp->tp_topframe;
 	    }
-	    if (tabnr > 1)
+	    if (tp != first_tabpage)
 		need_tabnext = TRUE;
 	}
 
@@ -889,13 +886,17 @@ makeopens(
 	// Restore the tab-local working directory if specified
 	// Do this before the windows, so that the window-local directory can
 	// override the tab-local directory.
-	if (tp != NULL && tp->tp_localdir != NULL && ssop_flags & SSOP_CURDIR)
+	if (ssop_flags & SSOP_CURDIR)
 	{
-	    if (fputs("tcd ", fd) < 0
-		    || ses_put_fname(fd, tp->tp_localdir, &ssop_flags) == FAIL
-		    || put_eol(fd) == FAIL)
-		goto fail;
-	    did_lcd = TRUE;
+	    tabpage_T	*t = (ssop_flags & SSOP_TABPAGES) ? tp : curtab;
+	    if (t->tp_localdir != NULL)
+	    {
+		if (fputs("tcd ", fd) < 0
+			|| ses_put_fname(fd, t->tp_localdir, &ssop_flags) == FAIL
+			|| put_eol(fd) == FAIL)
+		    goto fail;
+		did_lcd = TRUE;
+	    }
 	}
 
 	// Restore the view of the window (options, file, cursor, etc.).
