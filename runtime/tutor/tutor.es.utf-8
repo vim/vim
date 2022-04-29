@@ -669,6 +669,7 @@ NOTA: Si saliera de Vim y volviera a entrar de nuevo con  vim TEST  , el
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	       Lección 5.3: SELECCIONAR TEXTO PARA GUARDAR
 
+
    ** Para guardar parte del archivo, escriba  v  movimiento  :w ARCHIVO **
 
   1. Mueva el cursor a esta línea.
@@ -694,6 +695,7 @@ NOTA: Al pulsar  v  inicia la selección visual. Puede mover el cursor para
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		Lección 5.4: RECUPERANDO Y MEZCLANDO FICHEROS
+
 
  ** Para insertar el contenido de un fichero escriba :r NOMBRE_DEL_FICHERO **
 
@@ -741,119 +743,162 @@ NOTA: También puede leer la salida de un comando externo. Por ejemplo,
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 Lección 6.1: EL MANDATO «OPEN» (abrir)
+			 Lección 6.1: EL COMANDO OPEN
 
 
 	 ** Pulse  o  para abrir una línea debajo del cursor
-	    y situarle en modo Insert **
+	    y situarle en modo Insertar **
 
+  1. Mueva el cursor a la línea inferior señalada con --->.
 
-  1. Mueva el cursor a la línea de abajo señalada con --->.
+  2. Pulse la letra minúscula  o  para abrir una línea por DEBAJO del cursor
+     y situarle en modo Insertar.
+  
+  3. Ahora escriba algún texto y después pulse <ESC> para salir del modo
+     insertar.
 
-  2. Pulse  o (minúscula) para abrir una línea por DEBAJO del cursor
-     y situarle en modo Insert.
+---> Después de pulsar  o  el cursor se sitúa en la línea abierta en modo Insertar.
 
-  3. Ahora copie la línea señalada con ---> y pulse <ESC> para salir del
-     modo Insert.
-
----> Luego de pulsar  o  el cursor se sitúa en la línea abierta en modo Insert.
-
-  4. Para abrir una línea por encima del cursor, simplemente pulse una O
+  4. Para abrir una línea por ENCIMA del cursor, simplemente pulse una O
      mayúscula, en lugar de una o minúscula. Pruebe este en la línea siguiente.
-Abra una línea sobre ésta pulsando Mayu-O cuando el cursor está en esta línea.
+
+---> Abra una línea sobre esta pulsando O cuando el cursor está en esta línea.
+
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lección 6.2: EL MANDATO «APPEND» (añadir)
+			Lección 6.2: EL COMANDO APPEND (añadir)
+
 
 	 ** Pulse  a  para insertar texto DESPUÉS del cursor. **
 
+  1. Mueva el cursor al inicio de la primera línea inferior señalada con --->.
 
-  1. Mueva el cursor al final de la primera línea de abajo señalada con --->
-     pulsando  $  en modo Normal.
+  2. Escriba  e  hasta que el cursor esté al final de  lín .
 
-  2. Escriba una  a  (minúscula) para añadir texto DESPUÉS del carácter
-     que está sobre el cursor. (A mayúscula añade texto al final de la línea).
+  3. Escriba una  a  (minúscula) para añadir texto DESPUÉS del cursor.
 
-Nota: ¡Esto evita el pulsar  i , el último carácter, el texto a insertar,
-      <ESC>, cursor a la derecha y, finalmente, x , sólo para añadir algo
-      al final de una línea!
+  4. Complete la palabra como en la línea inferior. Pulse <ESC> para salir
+     del modo insertar.
+  
+  5. Utilice  e  para moverse hasta la siguiente palabra incompleta y 
+     repita los pasos 3 y 4.
 
-  3. Complete ahora la primera línea. Nótese que append es exactamente lo
-     mismo que modo Insert, excepto por el lugar donde se inserta el texto.
+---> Esta lín le permit prati cómo añad texto a una línea.
+---> Esta línea le permitirá praticar cómo añadir texto a una línea.
 
----> Esta línea le permitirá praticar
----> Esta línea le permitirá praticar el añadido de texto al final de una línea.
+NOTA: a, i y A todos entran en el modo Insertar, la única diferencia es
+      dónde ubican los caracteres insertados.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lección 6.3: OTRA VERSIÓN DE «REPLACE» (remplazar)
+		     Lección 6.3: OTRA VERSIÓN DE REPLACE (remplazar)
+
 
     ** Pulse una  R  mayúscula para sustituir más de un carácter. **
 
+  1. Mueva el cursor a la primera línea inferior señalada con --->. Mueva
+     el cursor al inicio de la primera  xxx .
 
-  1. Mueva el cursor a la primera línea de abajo señalada con --->.
+  2. Ahora pulse  R  y escriba el número que aparece en la línea inferior,
+     esto reemplazará el texto xxx .
+  
+  3. Pulse <ESC> para abandonar el modo Reemplazar. Observe que el resto de
+     la línea permanece sin modificaciones.
 
-  2. Sitúe el cursor al comienzo de la primera palabra que sea diferente
-     de las de la segunda línea marcada con ---> (la palabra 'anterior').
+  4. Repita los pasos para reemplazar el texto xxx que queda.
 
-  3. Ahora pulse  R  y sustituya el resto del texto de la primera línea
-     escribiendo sobre el viejo texto para que la primera línea sea igual
-     que la segunda.
+---> Sumar 123 a xxx da un resultado de xxx.
+---> Sumar 123 a 456 da un resultado de 579.
 
----> Para hacer que esta línea sea igual que la anterior use las teclas.
----> Para hacer que esta línea sea igual que la siguiente escriba R y el texto.
-
-  4. Nótese que cuando pulse <ESC> para salir, el texto no alterado permanece.
-
-
+NOTA: El modo Reemplazar es como el modo Insertar, pero cada caracter escrito
+      elimina un caracter ya existente.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 Lección 6.4: FIJAR OPCIONES
-
- ** Fijar una opción de forma que una búsqueda o sustitución ignore la caja **
-  (Para el concepto de caja de una letra, véase la nota al final del fichero)
+			 Lección 6.4: COPIAR Y PEGAR TEXTO
 
 
-  1. Busque 'ignorar' introduciendo:
-     /ignorar
-     Repita varias veces la búsque pulsando la tecla n
 
-  2. Fije la opción 'ic' (Ignorar la caja de la letra) escribiendo:
-     :set ic
+	  ** Utilice el operador  y  para copiar texto y  p  para pegarlo. **
 
-  3. Ahora busque 'ignorar' de nuevo pulsando n
-     Repita la búsqueda varias veces más pulsando la tecla n
+  1. Mueva el cursor a la línea inferior marcada con ---> y posicione el 
+     cursor después de "a)". 
 
-  4. Fije las opciones 'hlsearch' y 'insearch':
-     :set hls is
+  2. Inicie el modo Visual con  v  y mueva el cursor justo antes de "primer".
 
-  5. Ahora introduzca la orden de búsqueda otra vez, y vea qué pasa:
-     /ignore
+  3. Pulse  y  para copiar ("yank") el texto resaltado.
 
+  4. Mueva el cursor al final de la siguiente línea mediante:  j$
+
+  5. Pulse  p  para poner (pegar) el texto. Después escriba: el segundo <ESC>.
+
+  6. Utilice el modo visual para seleccionar " elemento.", y cópielo con  y
+     mueva el cursor al final de la siguiente línea con j$  y pegue el texto
+     recién copiado con  p .
+
+--->  a) este es el primer elemento.
+      b)
+
+NOTA: También puede utilizar  y  como un operador:  yw  copia una palabra,
+      yy  copia la línea completa donde está el cursor, después  p  pegará
+      esa línea.
+     
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    Lección 6.5: ACTIVAR (SET) UNA OPCIÓN
+
+
+	  ** Active una opción para buscar o sustituir ignorando si está
+         en mayúsculas o minúsculas el texto. **
+
+  1. Busque la cadena de texto 'ignorar' escribiendo:  /ignorar <INTRO>
+     Repita la búsqueda varias veces pulsando  n .
+
+  2. Active la opción 'ic' (Ignore case o ignorar mayúsculas y minúsculas) 
+     mediante:   :set ic
+
+  3. Ahora busque de nuevo 'ignorar' pulsando  n
+     Observe que ahora también se encuentran Ignorar e IGNORAR.
+
+  4. Active las opciones 'hlsearch' y 'incsearch' escribiendo:  :set hls is
+
+  5. Ahora escriba de nuevo el comando de búsqueda y vea qué ocurre:  /ignore <INTRO>
+
+  6. Para inhabilitar el ignorar la distinción de mayúsculas y minúsculas     
+     escriba:  :set noic
+
+NOTA:  Para eliminar el resaltado de las coincidencias escriba:   :nohlsearch
+NOTA:  Si quiere ignorar las mayúsculas y minúsculas, solo para un comando
+       de búsqueda, utilice  \c  en la frase:  /ignorar\c <INTRO>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			   RESUMEN DE LA LECCIÓN 6
 
 
-  1. Pulsando  o  abre una línea por DEBAJO del cursor y sitúa el cursor en
-     la línea abierta en modo Insert.
-     Pulsando una O mayúscula se abre una línea SOBRE la que está el cursor.
+  1. Escriba  o  para abrir una línea por DEBAJO de la posición del cursor y 
+     entrar en modo Insertar.
+     Escriba  O  para abrir una línea por ENCIMA de la posición del cursor y
+     entrar en modo Insertar
 
-  2. Pulse una	a  para insertar texto DESPUÉS del carácter sobre el cursor.
-     Pulsando una  A  mayúscula añade automáticamente texto al final de la
-     línea.
+  2. Escriba  a  para insertar texto DESPUÉS del cursor.
+     Escriba  A  para insertar texto al final de la línea.
 
-  3. Pulsando una  R  mayúscula se entra en modo Replace hasta que, para salir,
-     se pulse <ESC>.
+  3. El comando  e  mueve el cursor al final de una palabra.
 
-  4. Escribiendo «:set xxx» fija la opción «xxx»
+  4. El operador  y  copia (yank) texto,  p  lo pega (pone).
 
+  5. Al escribit una  R  mayúscula entra en el modo Reemplazar hasta que
+     se pulsa  <ESC>  .
 
+  6. Al escribir ":set xxx" activa la opción "xxx".  Algunas opciones son:
+  	'ic' 'ignorecase'	ignorar mayúsculas/minúsculas al buscar
+	'is' 'incsearch'	mostrar las coincidencias parciales para la búsqueda
+                        de una frase
+	'hls' 'hlsearch'	resalta todas las coincidencias de la frases
+     Puedes utilizar tanto los nombre largos o cortos de las opciones.
 
-
-
-
+  7. Añade "no" para inhabilitar una opción:   :set noic
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		  Lección 7: MANDATOS PARA LA AYUDA EN LÍNEA
+
 
 		 ** Utilice el sistema de ayuda en línea **
 
