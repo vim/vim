@@ -55,6 +55,10 @@
 # include <tlhelp32.h>
 #endif
 
+#ifdef _APISETCONSOLEL2_
+# define FEAT_WT_ACRYLIC_
+#endif
+
 #ifdef __MINGW32__
 # ifndef FROM_LEFT_1ST_BUTTON_PRESSED
 #  define FROM_LEFT_1ST_BUTTON_PRESSED    0x0001
@@ -204,10 +208,10 @@ static void vtp_sgr_bulks(int argc, int *argv);
 static int wt_working = 0;
 static void wt_init();
 
-static guicolor_T save_console_bg_rgb;
-static guicolor_T save_console_fg_rgb;
 static guicolor_T store_console_bg_rgb;
 static guicolor_T store_console_fg_rgb;
+static WORD store_console_attributes;
+static COLORREF startup_colortable[16];
 
 static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
@@ -245,6 +249,7 @@ static BOOL win8_or_later = FALSE;
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
+# ifndef FEAT_WT_ACRYLIC
 typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
 {
     ULONG cbSize;
@@ -257,11 +262,14 @@ typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
     BOOL bFullscreenSupported;
     COLORREF ColorTable[16];
 } DYN_CONSOLE_SCREEN_BUFFER_INFOEX, *PDYN_CONSOLE_SCREEN_BUFFER_INFOEX;
+# else
+#  define DYN_CONSOLE_SCREEN_BUFFER_INFOEX CONSOLE_SCREEN_BUFFER_INFOEX
+#  define PDYN_CONSOLE_SCREEN_BUFFER_INFOEX PCONSOLE_SCREEN_BUFFER_INFOEX
+# endif
 typedef BOOL (WINAPI *PfnGetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
+static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx = NULL;
 typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
-static BOOL has_csbiex = FALSE;
+static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx = NULL;
 #endif
 
 /*
@@ -2918,8 +2926,8 @@ mch_init_c(void)
 # endif
 
     vtp_flag_init();
-    vtp_init();
     wt_init();
+    vtp_init();
 }
 
 /*
@@ -6092,7 +6100,8 @@ textattr(WORD wAttr)
 {
     g_attrCurrent = wAttr & 0xff;
 
-    SetConsoleTextAttribute(g_hConOut, wAttr);
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, wAttr);
 }
 
 
@@ -6103,8 +6112,6 @@ textcolor(WORD wAttr)
 
     if (!USE_VTP)
 	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
-    else
-	vtp_sgr_bulk(wAttr);
 }
 
 
@@ -6115,8 +6122,6 @@ textbackground(WORD wAttr)
 
     if (!USE_VTP)
 	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
-    else
-	vtp_sgr_bulk(wAttr);
 }
 
 
@@ -6126,9 +6131,9 @@ textbackground(WORD wAttr)
     static void
 normvideo(void)
 {
-    if (!USE_VTP)
-	textattr(g_attrDefault);
-    else
+    textattr(g_attrDefault);
+
+    if (USE_VTP)
 	vtp_sgr_bulk(0);
 }
 
@@ -6171,6 +6176,7 @@ mch_set_normal_colors(void)
 
     cterm_normal_fg_color = (g_attrDefault & 0xf) + 1;
     cterm_normal_bg_color = ((g_attrDefault >> 4) & 0xf) + 1;
+
     if (
 # ifdef FEAT_TERMGUICOLORS
 	!p_tgc &&
@@ -6268,7 +6274,7 @@ write_chars(
 	    if (length && length <= unibuflen)
 		break;
 	    vim_free(unicodebuf);
-	    unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
+	    unicodebuf = length ? LALLOC_MULT(WCHAR, length + 1) : NULL;
 	    unibuflen = unibuflen ? 0 : length;
 	} while(1);
 	cells = mb_string2cells(pchBuf, cbToWrite);
@@ -6281,7 +6287,7 @@ write_chars(
 	    {
 		cells = mb_string2cells((char_u *)" ", 1);
 		length = MultiByteToWideChar(CP_UTF8, 0, " ", 1, NULL, 0);
-		utf8spbuf = LALLOC_MULT(WCHAR, length);
+		utf8spbuf = LALLOC_MULT(WCHAR, length + 1);
 		if (utf8spbuf != NULL)
 		{
 		    MultiByteToWideChar(CP_UTF8, 0, " ", 1, utf8spbuf, length);
@@ -6312,9 +6318,19 @@ write_chars(
     }
     else
     {
-	if (WriteConsoleW(g_hConOut, *utf8usingbuf, length, &cchwritten,
-		    NULL) == 0 || cchwritten == 0)
+	if (!USE_WT)
+	{
+	    if (WriteConsoleW(g_hConOut, *utf8usingbuf, length, &cchwritten,
+			NULL) == 0 || cchwritten == 0)
 	    cchwritten = 1;
+	}
+	else
+	{
+	    (*utf8usingbuf)[length] = (WCHAR)NUL;
+	    cchwritten = wprintf(L"%ls", *utf8usingbuf);
+	    if (cchwritten <= 0 )
+		cchwritten = 1;
+	}
     }
 
     if (cchwritten == (DWORD)length)
@@ -7846,6 +7862,42 @@ vtp_flag_init(void)
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
 
+    static BOOL WINAPI
+GetConsoleScreenBufferInfoExNop(
+    HANDLE handle,
+    PDYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi)
+{
+    return TRUE;
+}
+
+    static BOOL WINAPI
+SetConsoleScreenBufferInfoExNop(
+    HANDLE handle,
+    PDYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi)
+{
+    return TRUE;
+}
+
+# ifdef FEAT_WT_ACRYLIC
+    static BOOL WINAPI
+GetConsoleScreenBufferInfoExThunk(
+    HANDLE handle,
+    PDYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi)
+{
+    return GetConsoleScreenBufferInfoEx(handle,
+	                                  (PCONSOLE_SCREEN_BUFFER_INFOEX)csbi);
+}
+
+    static BOOL WINAPI
+SetConsoleScreenBufferInfoExThunk(
+    HANDLE handle,
+    PDYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi)
+{
+    return SetConsoleScreenBufferInfoEx(handle,
+	                                  (PCONSOLE_SCREEN_BUFFER_INFOEX)csbi);
+}
+# endif
+
     static void
 vtp_init(void)
 {
@@ -7854,6 +7906,7 @@ vtp_init(void)
 # ifdef FEAT_TERMGUICOLORS
     COLORREF fg, bg;
 # endif
+    int i;
 
     // Use functions supported from Vista
     hKerneldll = GetModuleHandle("kernel32.dll");
@@ -7865,20 +7918,38 @@ vtp_init(void)
 	pSetConsoleScreenBufferInfoEx =
 		(PfnSetConsoleScreenBufferInfoEx)GetProcAddress(
 		hKerneldll, "SetConsoleScreenBufferInfoEx");
-	if (pGetConsoleScreenBufferInfoEx != NULL
-		&& pSetConsoleScreenBufferInfoEx != NULL)
-	    has_csbiex = TRUE;
     }
 
+// WT performs a thunk hook in the PE placement process and guides it to own
+// process.  It is necessary to call the address of the original processing,
+// which is the only means for background transparency.
+# ifdef FEAT_WT_ACRYLIC
+    if (USE_WT)
+    {
+	pGetConsoleScreenBufferInfoEx =
+	    (PfnGetConsoleScreenBufferInfoEx)GetConsoleScreenBufferInfoExThunk;
+	pSetConsoleScreenBufferInfoEx =
+	    (PfnSetConsoleScreenBufferInfoEx)SetConsoleScreenBufferInfoExThunk;
+    }
+# endif
+
+    if (pGetConsoleScreenBufferInfoEx == NULL)
+	pGetConsoleScreenBufferInfoEx =
+	      (PfnGetConsoleScreenBufferInfoEx)GetConsoleScreenBufferInfoExNop;
+    if (pSetConsoleScreenBufferInfoEx == NULL)
+	pSetConsoleScreenBufferInfoEx =
+	      (PfnSetConsoleScreenBufferInfoEx)SetConsoleScreenBufferInfoExNop;
+
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
-    save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
-    save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
-    store_console_bg_rgb = save_console_bg_rgb;
-    store_console_fg_rgb = save_console_fg_rgb;
+    pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+
+    for (i = 0; i < 16; ++i)
+	startup_colortable[i] = csbi.ColorTable[i];
 
 # ifdef FEAT_TERMGUICOLORS
+    csbi.cbSize = sizeof(csbi);
+    pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+
     bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
     fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
@@ -7888,6 +7959,9 @@ vtp_init(void)
 # endif
 
     set_console_color_rgb();
+
+    // Replaced WriteConsoleW() with wprintf(), wprintf() requires locale.
+    setlocale(LC_CTYPE, "");
 }
 
     static void
@@ -7909,7 +7983,15 @@ vtp_printf(
     va_start(list, format);
     len = vim_vsnprintf((char *)buf, 100, (char *)format, list);
     va_end(list);
-    WriteConsoleA(g_hConOut, buf, (DWORD)len, &result, NULL);
+
+    if (!USE_WT)
+	WriteConsoleA(g_hConOut, buf, (DWORD)len, &result, NULL);
+    else
+    {
+	buf[len] = NUL;
+	result = printf("%s", buf);
+    }
+
     return (int)result;
 }
 
@@ -7938,7 +8020,7 @@ vtp_sgr_bulks(
     int *args)
 {
 # define MAXSGR 16
-# define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
+# define SGRBUFSIZE 2 + 4 * MAXSGR + 1 + 1 // '\033[' + SGR + 'm' + NUL
     char_u  buf[SGRBUFSIZE];
     char_u  *p;
     int	    in, out;
@@ -7948,8 +8030,7 @@ vtp_sgr_bulks(
 
     if (argc == 0)
     {
-	sgrfgr = sgrbgr = -1;
-	vtp_printf("033[m");
+	vtp_printf("\033[m");
 	return;
     }
 
@@ -8000,6 +8081,22 @@ vtp_sgr_bulks(
 		    sgrbgb = args[in + 4];
 		    copylen = 5;
 		}
+
+		if (USE_WT)
+		{
+		    guicolor_T fg, bg, newbg;
+		    int ctermfg, ctermbg;
+
+		    get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
+		    newbg = (args[in + 2] << 16) | (args[in + 3] << 8)
+							      | (args[in + 4]);
+		    if (bg == newbg)
+		    {
+			newargs[out++] = 49;
+			in += 5;
+			continue;
+		    }
+		}
 	    }
 	    else if (argc - in >= 3 && args[in + 1] == 5)
 	    {
@@ -8023,6 +8120,7 @@ vtp_sgr_bulks(
     }
 
     p = &buf[sizeof(buf) - 1];
+    *p-- = NUL;
     *p-- = 'm';
 
     switch (out)
@@ -8063,7 +8161,13 @@ vtp_sgr_bulks(
 	FAST256CASE(1);
 	*p-- = '[';
 	*p = '\033';
-	WriteConsoleA(g_hConOut, p, (DWORD)(&buf[SGRBUFSIZE] - p), &r, NULL);
+
+	if (!USE_WT)
+	    WriteConsoleA(g_hConOut, p, (DWORD)(&buf[SGRBUFSIZE] - p),
+								     &r, NULL);
+	else
+	    printf("%s", p);
+
     default:
 	break;
     }
@@ -8106,19 +8210,11 @@ set_console_color_rgb(void)
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    if (USE_WT)
-    {
-	term_fg_rgb_color(fg);
-	term_bg_rgb_color(bg);
-	return;
-    }
-
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
@@ -8127,8 +8223,8 @@ set_console_color_rgb(void)
     store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
     csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    csbi.wAttributes = g_attrDefault;
+    pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8186,20 +8282,16 @@ reset_console_color_rgb(void)
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
-    if (USE_WT)
-	return;
-
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
     csbi.ColorTable[g_color_index_bg] = (COLORREF)store_console_bg_rgb;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)store_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    csbi.wAttributes = g_attrDefault;
+    pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8211,18 +8303,17 @@ restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    int i;
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
-    csbi.ColorTable[g_color_index_bg] = (COLORREF)save_console_bg_rgb;
-    csbi.ColorTable[g_color_index_fg] = (COLORREF)save_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    for (i = 0; i < 16; ++i)
+	csbi.ColorTable[i] = startup_colortable[i];
+    pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
