@@ -5314,8 +5314,9 @@ echo_string_core(
 
 		if (echo_style)
 		{
-		    r = make_ufunc_name_readable(tv->vval.v_string,
-						       buf, MAX_FUNC_NAME_LEN);
+		    r = tv->vval.v_string == NULL ? (char_u *)"function()"
+			    : make_ufunc_name_readable(tv->vval.v_string,
+				    buf, MAX_FUNC_NAME_LEN);
 		    if (r == buf)
 		    {
 			r = vim_strsave(buf);
