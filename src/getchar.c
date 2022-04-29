@@ -1634,7 +1634,7 @@ merge_modifyOtherKeys(int c_arg, int *modifiers)
 {
     int c = c_arg;
 
-    if (*modifiers & MOD_MASK_CTRL)
+    if ((*modifiers & MOD_MASK_CTRL) && !(*modifiers & MOD_MASK_SHIFT))
     {
 	if ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_'))
 	{
