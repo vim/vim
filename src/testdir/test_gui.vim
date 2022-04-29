@@ -1560,8 +1560,8 @@ func Test_gui_findrepl()
   bw!
 endfunc
 
-func Test_gui_CTRL_V()
-  call feedkeys(":let g:str = '\<C-V>\<*C-S-I>\<C-V>\<*C-S-@>'\<CR>", 'tx')
+func Test_gui_CTRL_SHIFT_V()
+  call feedkeys(":let g:str = '\<*C-S-V>\<*C-S-I>\<*C-S-V>\<*C-S-@>'\<CR>", 'tx')
   call assert_equal('<C-S-I><C-S-@>', g:str)
   unlet g:str
 endfunc

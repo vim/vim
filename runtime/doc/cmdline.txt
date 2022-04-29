@@ -87,6 +87,7 @@ CTRL-Q		Same as CTRL-V.  But with some terminals it is used for
 CTRL-SHIFT-V				*c_CTRL-SHIFT-V* *c_CTRL-SHIFT-Q*
 CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 		then it inserts the Escape sequence for a key with modifiers.
+		In the GUI the |key-notation| is inserted without simplifying.
 
 							*c_<Left>* *c_Left*
 <Left>		cursor left
