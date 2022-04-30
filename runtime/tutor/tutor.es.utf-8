@@ -71,12 +71,12 @@ NOTA:  :q! <INTRO> descarta cualquier cambio que haya realizado.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   Lección 1.3: EDITAR TEXTO - BORRAR
 
-  ** Pulse  x  para eliminar el caracter bajo el cursor. **
+  ** Pulse  x  para eliminar el carácter bajo el cursor. **
 
   1. Mueva el cursor a la línea de abajo señalada con --->.
 
   2. Para corregir los errores, mueva el cursor hasta que esté sobre el
-     caracter que va a ser borrado.
+     carácter que va a ser borrado.
 
   3. Pulse la tecla  x	para eliminar el carácter no deseado.
 
@@ -98,7 +98,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
   1. Mueva el cursor a la primera línea de abajo señalada con --->.
 
   2. Para hacer que la primera línea sea igual que la segunda, mueva el
-     cursor hasta que esté sobre el caracter ANTES del cual el texto va a ser
+     cursor hasta que esté sobre el carácter ANTES del cual el texto va a ser
      insertado.
 
   3. Pulse  i  y escriba los caracteres a añadir.
@@ -119,7 +119,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
 			** Pulse  A  para añadir texto. **
 
   1. Mueva el cursor a la primera línea inferior marcada con --->.
-     No importa sobre qué caracter está el cursor en esta línea.
+     No importa sobre qué carácter está el cursor en esta línea.
 
   2. Pulse  A  y escriba el texto necesario.
 
@@ -173,7 +173,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
      los cambios.
      O escriba:  <ESC>  :wq  <INTRO> para guardar los cambios.
 
-  4. Para borrar un caracter bajo el cursor en modo Normal pulse:  x
+  4. Para borrar un carácter bajo el cursor en modo Normal pulse:  x
 
   5. Para insertar o añadir texto escriba:
      i  escriba el texto a insertar <ESC> inserta el texto antes del cursor
@@ -201,7 +201,7 @@ Ahora continúe con la Lección 2.
 
   NOTA: La letra  d  aparecerá en la última línea inferior derecha 
     de la pantalla mientras la escribe. Vim está esperando que escriba  w .
-    Si ve otro caracter que no sea  d  escribió algo mal, pulse <ESC> y
+    Si ve otro carácter que no sea  d  escribió algo mal, pulse <ESC> y
     comience de nuevo.
 
 ---> Hay algunas palabras pásalo bien que no pertenecen papel a esta frase.
@@ -247,9 +247,9 @@ Ahora continúe con la Lección 2.
 
   Una lista resumida de movimientos:
    w - hasta el comienzo de la siguiente palabra, EXCLUYENDO su primer
-       caracter.
-   e - hasta el final de la palabra actual, INCLUYENDO su primer caracter.
-   $ - hasta el finalde la línea, INCLUYENDO el último caracter.
+       carácter.
+   e - hasta el final de la palabra actual, INCLUYENDO su primer carácter.
+   $ - hasta el final de la línea, INCLUYENDO el último carácter.
 
 NOTA: Pulsando únicamente el movimiento estando en el modo Normal sin un
       operador, moverá el cursor como se especifica en la lista anterior.
@@ -337,7 +337,7 @@ mencionados anteriormente.
 
   1. Mueva el cursor a la línea inferior señalada con ---> y sitúelo bajo el
      primer error.
-  2. Pulse  x  para borrar el primer caracter no deseado.
+  2. Pulse  x  para borrar el primer carácter no deseado.
   3. Pulse ahora  u  para deshacer el último comando ejecutado.
   4. Ahora corrija todos los errores de la línea usando el comando  x.
   5. Pulse ahora  U  mayúscula para devolver la línea a su estado original.
@@ -441,7 +441,7 @@ NOTA: Recuerde que debería aprender practicando.
 ---> Esta lubrs tiene unas pocas pskavtad que corregir usem el comando change.
 ---> Esta línea tiene unas pocas palabras que corregir usando el comando change.
 
-Tenga en cueta que  ce  elimina la palabra y entra en el modo Insertar.
+Tenga en cuenta que  ce  elimina la palabra y entra en el modo Insertar.
                     cc  hace lo mismo para toda la línea.
 
 
@@ -477,8 +477,8 @@ NOTA: Puede utilizar el retorno de carro para corregir errores mientras escribe.
      escriba  p . Esto pega el texto después del cursor (si se borró una
      línea, al pegarla, esta se situará en la línea debajo del cursor).
 
-  2. Para sustituir el caracter bajo el cursor, pulse	r   y luego el
-     caracter que quiere que esté en ese lugar.
+  2. Para sustituir el carácter bajo el cursor, pulse	r   y luego el
+     carácter que quiere que esté en ese lugar.
 
   3. El operador change le permite cambiar desde la posición del cursor
      hasta donde el movimiento indicado le lleve. Por ejemplo, pulse  ce
@@ -512,7 +512,7 @@ NOTA: Quizás pueda ver la posición del cursor en la esquina inferior derecha
   2. Pulse  G  para mover el cursor hasta la parte inferior del archivo.
      Pulse  gg  para mover el cursor al inicio del archivo.
 
-  3. Escriba el número de la línea en la que estaba y despúes  G  . Esto
+  3. Escriba el número de la línea en la que estaba y después  G  . Esto
      le volverá a la línea en la que estaba cuando pulsó CTRL-G.
 
   4. Si se siente seguro en poder hacer esto ejecute los pasos 1 a 3.
@@ -522,14 +522,13 @@ NOTA: Quizás pueda ver la posición del cursor en la esquina inferior derecha
 
      ** Escriba  /  seguido de una frase para buscar la frase. **
 
-  1. En modo Normal pulse el caracter  / . Fíjese que tanto el caracter  /
+  1. En modo Normal pulse el carácter  / . Fíjese que tanto el carácter  /
      como el cursor aparecen en la última línea de la pantalla, lo mismo
      que el comando  : .
 
   2. Escriba ahora   errroor   <INTRO>. Esta es la palabra que quiere buscar.
 
-  3. Para repetir la búsqueda de la misma frase otra vez, simplemente pulse
-     n .
+  3. Para repetir la búsqueda de la misma frase otra vez, simplemente pulse  n .
      Para buscar la misma frase en la dirección opuesta, pulse  N .
 
   4. Si quiere buscar una frase en la dirección opuesta (hacia arriba),
@@ -552,12 +551,12 @@ NOTA: Cuando la búsqueda llega al final del archivo, continuará desde el
   1. Sitúe el cursor en cualquiera de los caracteres (, [ o { en la línea 
      inferior señalada con --->.
 
-  2. Pulse ahora el caracter  %  .
+  2. Pulse ahora el carácter  %  .
 
   3. El cursor se moverá a la pareja de cierre del paréntesis, corchete
      o llave correspondiente.
 
-  4. Pulse  %  para mover el cursor a la otra pareja del caracter.
+  4. Pulse  %  para mover el cursor a la otra pareja del carácter.
 
   5. Mueva el cursor a otro (,),[,],{ o } y vea lo que hace % .
 
@@ -627,7 +626,7 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
   1. Escriba el conocido comando  :  para situar el cursor al final de la
      pantalla. Esto le permitirá introducir un comando.
 
-  2. Ahora escriba el caracter ! (signo de admiración). Esto le permitirá
+  2. Ahora escriba el carácter ! (signo de admiración). Esto le permitirá
      ejecutar cualquier mandato del sistema.
 
   3. Como ejemplo escriba   ls	 después del ! y luego pulse <INTRO>. Esto
@@ -677,7 +676,7 @@ NOTA: Si saliera de Vim y volviera a entrar de nuevo con  vim TEST  , el
   2. Pulse  v  y mueva el cursor hasta el quinto elemento inferior. Vea que
      el texto es resaltado.
 
-  3. Pulse el caracter  :  en la parte inferior de la pantalla aparecerá
+  3. Pulse el carácter  :  en la parte inferior de la pantalla aparecerá
      :'<,'>
 
   4. Pulse  w TEST  , donde TEST es un nombre de archivo que aún no existe.
@@ -699,7 +698,7 @@ NOTA: Al pulsar  v  inicia la selección visual. Puede mover el cursor para
 
  ** Para insertar el contenido de un fichero escriba :r NOMBRE_DEL_FICHERO **
 
-  1. Situe el cursor justo por encima de esta línea.
+  1. Sitúe el cursor justo por encima de esta línea.
 
 NOTA: Después de ejecutar el paso 2 verá texto de la lección 5.3. Después
       DESCIENDA hasta ver de nuevo esta lección.
@@ -785,7 +784,7 @@ NOTA: También puede leer la salida de un comando externo. Por ejemplo,
      repita los pasos 3 y 4.
 
 ---> Esta lín le permit prati cómo añad texto a una línea.
----> Esta línea le permitirá praticar cómo añadir texto a una línea.
+---> Esta línea le permitirá practicar cómo añadir texto a una línea.
 
 NOTA: a, i y A todos entran en el modo Insertar, la única diferencia es
       dónde ubican los caracteres insertados.
@@ -810,8 +809,8 @@ NOTA: a, i y A todos entran en el modo Insertar, la única diferencia es
 ---> Sumar 123 a xxx da un resultado de xxx.
 ---> Sumar 123 a 456 da un resultado de 579.
 
-NOTA: El modo Reemplazar es como el modo Insertar, pero cada caracter escrito
-      elimina un caracter ya existente.
+NOTA: El modo Reemplazar es como el modo Insertar, pero cada carácter escrito
+      elimina un carácter ya existente.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lección 6.4: COPIAR Y PEGAR TEXTO
@@ -884,7 +883,7 @@ NOTA:  Si quiere ignorar las mayúsculas y minúsculas, solo para un comando
 
   4. El operador  y  copia (yank) texto,  p  lo pega (pone).
 
-  5. Al escribit una  R  mayúscula entra en el modo Reemplazar hasta que
+  5. Al escribir una  R  mayúscula entra en el modo Reemplazar hasta que
      se pulsa  <ESC>  .
 
   6. Al escribir ":set xxx" activa la opción "xxx".  Algunas opciones son:
