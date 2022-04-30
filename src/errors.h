@@ -622,7 +622,8 @@ EXTERN char e_cannot_allocate_color_str[]
 EXTERN char e_couldnt_read_in_sign_data[]
 	INIT(= N_("E255: Couldn't read in sign data"));
 #endif
-// E256 unused
+EXTERN char e_missing_close_curly_str[]
+	INIT(= N_("E256: Missing }: %s"));
 #ifdef FEAT_CSCOPE
 EXTERN char e_cstag_tag_not_founc[]
 	INIT(= N_("E257: cstag: tag not found"));

@@ -2253,6 +2253,104 @@ eval_lit_string(char_u **arg, typval_T *rettv, int evaluate)
     return OK;
 }
 
+    int
+eval_interp_string(char_u **arg, typval_T *rettv, int evaluate)
+{
+    char_u	*str;
+    char_u	*expr_val;
+    typval_T	tv;
+    garray_T	ga;
+    int		ret;
+
+    // *arg is on the '$' character.
+    (*arg)++;
+
+    if (**arg == '"')
+	ret = eval_string(arg, &tv, evaluate);
+    else
+	ret = eval_lit_string(arg, &tv, evaluate);
+
+    if (ret == FAIL || !evaluate)
+	return ret;
+
+    rettv->v_type = VAR_STRING;
+
+    ga_init2(&ga, sizeof(char_u), 1);
+
+    str = tv.vval.v_string;
+    while (*str != NUL)
+    {
+	char_u	*block_start = vim_strchr(str, '{');
+	char_u	*block_end;
+	int	escaped_brace = FALSE;
+
+	// Escaped opening brace, unescape and continue.
+	if (block_start != NULL && block_start[1] == '{')
+	{
+	    // Include the brace in the literal string.
+	    block_start += 1;
+	    escaped_brace = TRUE;
+	}
+
+	if (block_start == NULL)
+	{
+	    ga_concat(&ga, str);
+	    break;
+	}
+	else
+	    // From `str` to `block_start` we have a chunk of literal text.
+	    ga_concat_len(&ga, str, (size_t)(block_start - str));
+
+	if (escaped_brace)
+	{
+	    // Skip the second brace.
+	    str = block_start + 1;
+	    continue;
+	}
+
+	// Skip the opening {.
+	block_start += 1;
+	block_end = block_start;
+	if (skip_expr(&block_end, NULL) == FAIL)
+	{
+	    ret = FAIL;
+	    break;
+	}
+	// The block must be closed by a }.
+	if (*block_end != '}')
+	{
+	    semsg(_(e_missing_close_curly_str), *arg);
+	    ret = FAIL;
+	    break;
+	}
+	*block_end = NUL;
+	expr_val = eval_to_string(block_start, TRUE);
+	if (expr_val == NULL)
+	{
+	    ret = FAIL;
+	    break;
+	}
+	ga_concat(&ga, expr_val);
+	vim_free(expr_val);
+
+	str = block_end + 1;
+    }
+
+    clear_tv(&tv);
+
+    if (ret != FAIL)
+    {
+	ga_append(&ga, NUL);
+	rettv->vval.v_string = ga.ga_data;
+    }
+    else
+    {
+	ga_clear(&ga);
+    }
+
+    return ret;
+}
+
 /*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.

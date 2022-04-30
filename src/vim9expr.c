@@ -1345,6 +1345,113 @@ compile_get_env(char_u **arg, cctx_T *cctx)
 }
 
 /*
+ * Compile "$"string"" or "$'string'".
+ */
+    static int
+compile_interp_string(char_u **arg, cctx_T *cctx)
+{
+    char_u	*str;
+    char_u	*dup;
+    typval_T	tv;
+    int		ret;
+    int		len = 0;
+    int		evaluate = cctx->ctx_skip != SKIP_YES;
+
+    // *arg is on the '$' character.
+    (*arg)++;
+
+    if (**arg == '"')
+	ret = eval_string(arg, &tv, evaluate);
+    else
+	ret = eval_lit_string(arg, &tv, evaluate);
+
+    if (ret == FAIL || !evaluate)
+	return ret;
+
+    str = tv.vval.v_string;
+    // Special case for the empty string.
+    if (*str == NUL)
+    {
+	clear_tv(&tv);
+	return generate_PUSHS(cctx, NULL);
+    }
+
+    // Push all the string pieces to the stack, followed by a ISN_CONCAT.
+
+    while (*str != NUL)
+    {
+	char_u	*block_start = vim_strchr(str, '{');
+	char_u	*block_end;
+	int	escaped_brace = FALSE;
+
+	// Escaped opening brace, unescape and continue.
+	if (block_start != NULL && block_start[1] == '{')
+	{
+	    // Include the brace in the literal string.
+	    block_start += 1;
+	    escaped_brace = TRUE;
+	}
+
+	if (block_start == NULL)
+	{
+	    dup = vim_strsave(str);
+	    ret = generate_PUSHS(cctx, &dup);
+	    len += 1;
+	    // Break anyways, the string is over.
+	    break;
+	}
+	else
+	{
+	    // From `str` to `block_start` we have a chunk of literal text.
+	    dup = vim_strnsave(str, (size_t)(block_start - str));
+	    ret = generate_PUSHS(cctx, &dup);
+	    len += 1;
+	}
+
+	if (ret != OK)
+	    break;
+
+	if (escaped_brace)
+	{
+	    // Skip the second brace.
+	    str = block_start + 1;
+	    continue;
+	}
+
+	// Skip the opening {.
+	block_start += 1;
+	block_end = block_start;
+	if (skip_expr(&block_end, NULL) == FAIL)
+	{
+	    ret = FAIL;
+	    break;
+	}
+	// The block must be closed by a }.
+	if (*block_end != '}')
+	{
+	    semsg(_(e_missing_close_curly_str), *arg);
+	    ret = FAIL;
+	    break;
+	}
+	*block_end = NUL;
+	if ((ret = compile_expr0(&block_start, cctx)) == FAIL)
+	    break;
+	may_generate_2STRING(-1, TRUE, cctx);
+	len += 1;
+
+	str = block_end + 1;
+    }
+
+    clear_tv(&tv);
+
+    // Small optimization, if there's only a single piece skip the ISN_CONCAT.
+    if (ret != FAIL && len != 1)
+	ret = generate_CONCAT(cctx, len);
+
+    return ret;
+}
+
+/*
  * Compile "@r".
  */
     static int
@@ -2195,10 +2302,14 @@ compile_expr8(
 
 	/*
 	 * Environment variable: $VAR.
+	 * Interpolated string: $"string" or $'string'.
 	 */
 	case '$':	if (generate_ppconst(cctx, ppconst) == FAIL)
 			    return FAIL;
-			ret = compile_get_env(arg, cctx);
+			if ((*arg)[1] == '"' || (*arg)[1] == '\'')
+			    ret = compile_interp_string(arg, cctx);
+			else
+			    ret = compile_get_env(arg, cctx);
 			break;
 
 	/*
