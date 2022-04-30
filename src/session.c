@@ -620,6 +620,7 @@ makeopens(
     int		only_save_windows = TRUE;
     int		nr;
     int		restore_size = TRUE;
+    int		restore_height_width = FALSE;
     win_T	*wp;
     char_u	*sname;
     win_T	*edited_win = NULL;
@@ -887,6 +888,7 @@ makeopens(
 		    || put_line(fd, "set winminwidth=0") == FAIL
 		    || put_line(fd, "set winwidth=1") == FAIL)
 		goto fail;
+	    restore_height_width = TRUE;
 	}
 	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
 	    goto fail;
@@ -979,7 +981,7 @@ makeopens(
             goto fail;
     }
 
-    if (tab_firstwin->w_next != NULL)
+    if (restore_height_width)
     {
 	// Restore 'winminheight' and 'winminwidth'.
 	if (put_line(fd, "let &winminheight = s:save_winminheight") == FAIL
