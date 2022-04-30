@@ -2342,10 +2342,10 @@ typedef enum {
 
 /*
  * Check if the bytes at the start of the typeahead buffer are a character used
- * in CTRL-X mode.  This includes the form with a CTRL modifier.
+ * in Insert mode completion.  This includes the form with a CTRL modifier.
  */
     static int
-at_ctrl_x_key(void)
+at_ins_compl_key(void)
 {
     char_u  *p = typebuf.tb_buf + typebuf.tb_off;
     int	    c = *p;
@@ -2355,7 +2355,8 @@ at_ctrl_x_key(void)
 	    && p[1] == KS_MODIFIER
 	    && (p[2] & MOD_MASK_CTRL))
 	c = p[3] & 0x1f;
-    return vim_is_ctrl_x_key(c);
+    return (ctrl_x_mode_not_default() && vim_is_ctrl_x_key(c))
+		|| (compl_status_local() && (c == Ctrl_N || c == Ctrl_P));
 }
 
 /*
@@ -2486,9 +2487,7 @@ handle_mapping(
 	    && !(State == HITRETURN && (tb_c1 == CAR || tb_c1 == ' '))
 	    && State != ASKMORE
 	    && State != CONFIRM
-	    && !((ctrl_x_mode_not_default() && at_ctrl_x_key())
-		    || (compl_status_local()
-			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
+	    && !at_ins_compl_key())
     {
 #ifdef FEAT_GUI
 	if (gui.in_use && tb_c1 == CSI && typebuf.tb_len >= 2
