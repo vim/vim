@@ -63,7 +63,7 @@ let s:c_tag_handle = '\v%('.s:c_named_tag_handle.
             \            '|'.s:c_primary_tag_handle.')'
 let s:c_ns_shorthand_tag = '\v'.s:c_tag_handle . s:ns_tag_char.'+'
 let s:c_non_specific_tag = '\v\!'
-let s:ns_uri_char  = '\v%('.s:ns_word_char.'\v|[#/;?:@&=+$,.!~*''()[\]])'
+let s:ns_uri_char  = '\v%(%\x\x|'.s:ns_word_char.'\v|[#/;?:@&=+$,.!~*''()[\]])'
 let s:c_verbatim_tag = '\v\!\<'.s:ns_uri_char.'+\>'
 let s:c_ns_tag_property = '\v'.s:c_verbatim_tag.
             \               '\v|'.s:c_ns_shorthand_tag.
