@@ -15,5 +15,5 @@ map: val
 
 # START_INDENT
 map: multiline
-value
+  value
 # END_INDENT
