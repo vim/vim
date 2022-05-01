@@ -6,8 +6,9 @@ freebsd_12_task:
   only_if: $CIRRUS_TAG == ''
   timeout_in: 20m
   freebsd_instance:
-    image: freebsd-12-1-release-amd64
+    image: freebsd-12-3-release-amd64
   install_script:
+    pkg update -f
     pkg install -y gettext
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
