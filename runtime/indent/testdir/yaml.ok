@@ -17,11 +17,4 @@ map: val
 map: |
   line1
   line2
-map: val
-# END_INDENT
-
-# START_INDENT
-map: val
-map:
-  sub: val
 # END_INDENT
