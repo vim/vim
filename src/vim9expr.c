@@ -567,12 +567,13 @@ theend:
 
 /*
  * Compile a string in a ISN_PUSHS instruction into an ISN_INSTR.
+ * `str_offset` is the number of leading bytes to skip from the string.
  * Returns FAIL if compilation fails.
  */
     static int
-compile_string(isn_T *isn, cctx_T *cctx)
+compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
 {
-    char_u	*s = isn->isn_arg.string;
+    char_u	*s = isn->isn_arg.string + str_offset;
     garray_T	save_ga = cctx->ctx_instr;
     int		expr_res;
     int		trailing_error;
@@ -616,11 +617,20 @@ compile_string(isn_T *isn, cctx_T *cctx)
 }
 
 /*
+ * List of special functions for "compile_arguments".
+ */
+enum {
+    CA_NOT_SPECIAL = -1,
+    CA_SEARCHPAIR = 0,	    // {skip} in searchpair() and searchpairpos()
+    CA_SUBSTITUTE = 1,	    // {sub} in substitute(), when prefixed with \=
+};
+
+/*
  * Compile the argument expressions.
  * "arg" points to just after the "(" and is advanced to after the ")"
  */
     static int
-compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, int is_searchpair)
+compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, int special_fn)
 {
     char_u  *p = *arg;
     char_u  *whitep = *arg;
@@ -647,14 +657,25 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, int is_searchpair)
 	    return FAIL;
 	++*argcount;
 
-	if (is_searchpair && *argcount == 5
+	if (special_fn == CA_SEARCHPAIR && *argcount == 5
 		&& cctx->ctx_instr.ga_len == instr_count + 1)
 	{
 	    isn_T *isn = ((isn_T *)cctx->ctx_instr.ga_data) + instr_count;
 
 	    // {skip} argument of searchpair() can be compiled if not empty
 	    if (isn->isn_type == ISN_PUSHS && *isn->isn_arg.string != NUL)
-		compile_string(isn, cctx);
+		compile_string(isn, cctx, 0);
+	}
+	else if (special_fn == CA_SUBSTITUTE && *argcount == 3
+		&& cctx->ctx_instr.ga_len == instr_count + 1)
+	{
+	    isn_T *isn = ((isn_T *)cctx->ctx_instr.ga_data) + instr_count;
+
+	    // {sub} argument of substitute() can be compiled if it starts with
+	    // \=
+	    if (isn->isn_type == ISN_PUSHS && isn->isn_arg.string[0] == '\\'
+		    && isn->isn_arg.string[1] == '=')
+		compile_string(isn, cctx, 2);
 	}
 
 	if (*p != ',' && *skipwhite(p) == ',')
@@ -706,7 +727,7 @@ compile_call(
     int		res = FAIL;
     int		is_autoload;
     int		has_g_namespace;
-    int		is_searchpair;
+    int		special_fn;
     imported_T	*import;
 
     if (varlen >= sizeof(namebuf))
@@ -776,13 +797,18 @@ compile_call(
 
     // We handle the "skip" argument of searchpair() and searchpairpos()
     // differently.
-    is_searchpair = (varlen == 6 && STRNCMP(*arg, "search", 6) == 0)
-	         || (varlen == 9 && STRNCMP(*arg, "searchpos", 9) == 0)
-	        || (varlen == 10 && STRNCMP(*arg, "searchpair", 10) == 0)
-	        || (varlen == 13 && STRNCMP(*arg, "searchpairpos", 13) == 0);
+    if ((varlen == 6 && STRNCMP(*arg, "search", 6) == 0)
+	    || (varlen == 9 && STRNCMP(*arg, "searchpos", 9) == 0)
+	    || (varlen == 10 && STRNCMP(*arg, "searchpair", 10) == 0)
+	    || (varlen == 13 && STRNCMP(*arg, "searchpairpos", 13) == 0))
+	special_fn = CA_SEARCHPAIR;
+    else if (varlen == 10 && STRNCMP(*arg, "substitute", 10) == 0)
+	special_fn = CA_SUBSTITUTE;
+    else
+	special_fn = CA_NOT_SPECIAL;
 
     *arg = skipwhite(*arg + varlen + 1);
-    if (compile_arguments(arg, cctx, &argcount, is_searchpair) == FAIL)
+    if (compile_arguments(arg, cctx, &argcount, special_fn) == FAIL)
 	goto theend;
 
     is_autoload = vim_strchr(name, AUTOLOAD_CHAR) != NULL;

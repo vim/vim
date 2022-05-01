@@ -9951,7 +9951,8 @@ f_substitute(typval_T *argvars, typval_T *rettv)
     pat = tv_get_string_buf_chk(&argvars[1], patbuf);
     flg = tv_get_string_buf_chk(&argvars[3], flagsbuf);
 
-    if (argvars[2].v_type == VAR_FUNC || argvars[2].v_type == VAR_PARTIAL)
+    if (argvars[2].v_type == VAR_FUNC || argvars[2].v_type == VAR_PARTIAL ||
+	    argvars[2].v_type == VAR_INSTR)
 	expr = &argvars[2];
     else
 	sub = tv_get_string_buf_chk(&argvars[2], subbuf);
