@@ -6760,7 +6760,7 @@ static int grey_ramp[] = {
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
 
-static char_u ansi_table[16][4] = {
+static char_u ansi_table[16][3] = {
 //   R    G    B
   {  0,   0,   0}, // black
   {224,   0,   0}, // dark red
