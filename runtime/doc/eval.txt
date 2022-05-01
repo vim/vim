@@ -1542,7 +1542,7 @@ To include an opening brace '{' in the string content double it.
 Examples: >
 	let your_name = input("What's your name? ")
 	echo $"Hello, {your_name}!"
-	echo $"{your_name} spelled backwards is {your_name->reverse()}!"
+	echo $"The square root of 9 is {sqrt(9)}"
 
 option						*expr-option* *E112* *E113*
 ------
