@@ -1356,7 +1356,7 @@ highlight_set_startstop_termcode(int idx, char_u *key, char_u *arg, int init)
 	// Copy characters from arg[] to buf[], translating <> codes.
 	for (p = arg, off = 0; off < 100 - 6 && *p; )
 	{
-	    len = trans_special(&p, buf + off, FSK_SIMPLIFY, NULL);
+	    len = trans_special(&p, buf + off, FSK_SIMPLIFY, FALSE, NULL);
 	    if (len > 0)	    // recognized special char
 		off += len;
 	    else		    // copy as normal char
