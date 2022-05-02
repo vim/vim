@@ -1265,6 +1265,7 @@ trans_special(
     char_u	**srcp,
     char_u	*dst,
     int		flags,		// FSK_ values
+    int		escape_ks,	// escape K_SPECIAL bytes in the character
     int		*did_simplify)  // FSK_SIMPLIFY and found <C-H> or <A-x>
 {
     int		modifiers = 0;
@@ -1274,18 +1275,18 @@ trans_special(
     if (key == 0)
 	return 0;
 
-    return special_to_buf(key, modifiers, flags & FSK_KEYCODE, dst);
+    return special_to_buf(key, modifiers, escape_ks, dst);
 }
 
 /*
  * Put the character sequence for "key" with "modifiers" into "dst" and return
  * the resulting length.
- * When "keycode" is TRUE prefer key code, e.g. K_DEL instead of DEL.
+ * When "escape_ks" is TRUE escape K_SPECIAL bytes in the character.
  * The sequence is not NUL terminated.
  * This is how characters in a string are encoded.
  */
     int
-special_to_buf(int key, int modifiers, int keycode, char_u *dst)
+special_to_buf(int key, int modifiers, int escape_ks, char_u *dst)
 {
     int		dlen = 0;
 
@@ -1303,10 +1304,10 @@ special_to_buf(int key, int modifiers, int keycode, char_u *dst)
 	dst[dlen++] = KEY2TERMCAP0(key);
 	dst[dlen++] = KEY2TERMCAP1(key);
     }
-    else if (has_mbyte && !keycode)
-	dlen += (*mb_char2bytes)(key, dst + dlen);
-    else if (keycode)
+    else if (escape_ks)
 	dlen = (int)(add_char2buf(key, dst + dlen) - dst);
+    else if (has_mbyte)
+	dlen += (*mb_char2bytes)(key, dst + dlen);
     else
 	dst[dlen++] = key;
 

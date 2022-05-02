@@ -2069,11 +2069,10 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate)
 	{
 	    ++p;
 	    // A "\<x>" form occupies at least 4 characters, and produces up
-	    // to 21 characters (3 * 6 for the char and 3 for a modifier):
-	    // reserve space for 18 extra.
-	    // Each byte in the char could be encoded as K_SPECIAL K_EXTRA x.
+	    // to 9 characters (6 for the char and 3 for a modifier):
+	    // reserve space for 5 extra.
 	    if (*p == '<')
-		extra += 18;
+		extra += 5;
 	}
     }
 
@@ -2168,7 +2167,7 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate)
 
 			      if (p[1] != '*')
 				  flags |= FSK_SIMPLIFY;
-			      extra = trans_special(&p, end, flags, NULL);
+			      extra = trans_special(&p, end, flags, FALSE, NULL);
 			      if (extra != 0)
 			      {
 				  end += extra;
