@@ -2237,7 +2237,11 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 		retval = FALSE;
 		goto theend;
 	    }
-	    STRCPY(pathbuf, ".;");
+
+	    if (getenv("NoDefaultCurrentDirectoryInExePath") == NULL)
+		STRCPY(pathbuf, ".;");
+	    else
+		*pathbuf = NUL;
 	    STRCAT(pathbuf, p);
 	}
     }
