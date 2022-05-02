@@ -2149,14 +2149,26 @@ func Test_edit_overlong_file_name()
 endfunc
 
 func Test_edit_shift_bs()
-  new
-  call setline(1, ['abc'])
+  " Need to run this in Win32 Terminal,
+  " do not use CheckFeatureTerminal
+  if !has("terminal")
+    return
+  endif
   " Shift Backspace should work like Backspace in insert mode
-  call feedkeys("A\<S-BS> \<esc>", 'xt')
-  "exe ":norm! A\<S-BS> \<esc>"
-  call assert_equal(['ab '], getline(1,'$'))
-  call assert_equal('Îx', &t_kb)
-  bw!
+
+  let lines =<< trim END
+    call setline(1, ['abc'])
+  END
+  call writefile(lines, 'Xtest_edit_shift_bs')
+
+  let buf = RunVimInTerminal('-S Xtest_edit_shift_bs', #{rows: 3})
+  call term_sendkeys(buf, "A\<S-BS>-\<esc>")
+  call TermWait(buf, 50)
+  call assert_equal('ab-', term_getline(buf, 1))
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_edit_shift_bs')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
