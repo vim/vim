@@ -50,6 +50,10 @@ syn match i3ConfigVariable /\$\w\+\(\(-\w\+\)\+\)\?\(\s\|+\)\?/ contains=i3Confi
 syn keyword i3ConfigInitializeKeyword set contained
 syn match i3ConfigInitialize /^\s*set\s\+.*$/ contains=i3ConfigVariable,i3ConfigInitializeKeyword,i3ConfigColor,i3ConfigString
 
+" Include
+syn keyword i3ConfigIncludeKeyword include contained
+syn match i3ConfigInclude /^\s*include\s\+.*$/ contains=i3ConfigIncludeKeyword,i3ConfigString,i3ConfigVariable
+
 " Gaps
 syn keyword i3ConfigGapStyleKeyword inner outer horizontal vertical top right bottom left current all set plus minus toggle up down contained
 syn match i3ConfigGapStyle /^\s*\(gaps\)\s\+\(inner\|outer\|horizontal\|vertical\|left\|top\|right\|bottom\)\(\s\+\(current\|all\)\)\?\(\s\+\(set\|plus\|minus\|toggle\)\)\?\(\s\+\(-\?\d\+\|\$.*\)\)$/ contains=i3ConfigGapStyleKeyword,i3ConfigNumber,i3ConfigVariable
@@ -221,6 +225,7 @@ hi def link i3ConfigAssignSpecial                   Special
 hi def link i3ConfigFontNamespace                   PreProc
 hi def link i3ConfigBindArgument                    PreProc
 hi def link i3ConfigNoStartupId                     PreProc
+hi def link i3ConfigIncludeKeyword                  Identifier
 hi def link i3ConfigFontKeyword                     Identifier
 hi def link i3ConfigBindKeyword                     Identifier
 hi def link i3ConfigOrientation                     Identifier
