@@ -2238,7 +2238,7 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 		goto theend;
 	    }
 
-	    if (getenv("NoDefaultCurrentDirectoryInExePath") == NULL)
+	    if (mch_getenv("NoDefaultCurrentDirectoryInExePath") == NULL)
 		STRCPY(pathbuf, ".;");
 	    else
 		*pathbuf = NUL;
