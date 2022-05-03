@@ -4115,6 +4115,34 @@ get_cmdline_str(void)
     return vim_strnsave(p->cmdbuff, p->cmdlen);
 }
 
+// Get the current command-line completion type.
+    static char_u *
+get_cmdline_completion(void)
+{
+    if (cmdline_star > 0) {
+	return NULL;
+    }
+    cmdline_info_T *p = get_ccline_ptr();
+
+    if (p && p->xpc != NULL) {
+	char *cmd_compl;
+
+	set_expand_context(p->xpc);
+	cmd_compl = get_user_cmd_complete(p->xpc, p->xpc->xp_context);
+	return vim_strnsave((char_u *)cmd_compl, strlen(cmd_compl));
+    }
+
+    return NULL;
+}
+
+// "getcmdcompletion()" function
+    void
+f_getcmdcompletion(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = get_cmdline_completion();
+}
+
 /*
  * "getcmdline()" function
  */
@@ -4136,6 +4164,23 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = 0;
     if (p != NULL)
     rettv->vval.v_number = p->cmdpos + 1;
+}
+
+static int get_cmdline_screen_pos(void)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+
+    if (p == NULL) {
+	return -1;
+    }
+    return p->cmdspos;
+}
+
+// "getcmdscreenpos()" function
+    void
+f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->vval.v_number = get_cmdline_screen_pos() + 1;
 }
 
 /*
