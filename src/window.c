@@ -57,6 +57,7 @@ static void clear_snapshot(tabpage_T *tp, int idx);
 static void clear_snapshot_rec(frame_T *fr);
 static int check_snapshot_rec(frame_T *sn, frame_T *fr);
 static win_T *restore_snapshot_rec(frame_T *sn, frame_T *fr);
+static win_T *get_snapshot_curwin(int idx);
 
 static int frame_check_height(frame_T *topfrp, int height);
 static int frame_check_width(frame_T *topfrp, int width);
@@ -2666,6 +2667,14 @@ win_close(win_T *win, int free_buf)
     // Free the memory used for the window and get the window that received
     // the screen space.
     wp = win_free_mem(win, &dir, NULL);
+
+    if (help_window)
+    {
+	// Closing the help window moves the cursor back to the original window.
+	win_T *prev_win = get_snapshot_curwin(SNAP_HELP_IDX);
+	if (win_valid(prev_win))
+	    wp = prev_win;
+    }
 
     // Make sure curwin isn't invalid.  It can cause severe trouble when
     // printing an error message.  For win_equal() curbuf needs to be valid
@@ -6858,6 +6867,37 @@ clear_snapshot_rec(frame_T *fr)
 	clear_snapshot_rec(fr->fr_child);
 	vim_free(fr);
     }
+}
+
+/*
+ * Traverse a snapshot to find the previous curwin.
+ */
+    static win_T *
+get_snapshot_curwin_rec(frame_T *ft)
+{
+    win_T	*wp;
+
+    if (ft->fr_next != NULL)
+    {
+	if ((wp = get_snapshot_curwin_rec(ft->fr_next)) != NULL)
+	    return wp;
+    }
+    if (ft->fr_child != NULL)
+    {
+	if ((wp = get_snapshot_curwin_rec(ft->fr_child)) != NULL)
+	    return wp;
+    }
+
+    return ft->fr_win;
+}
+
+    static win_T *
+get_snapshot_curwin(int idx)
+{
+    if (curtab->tp_snapshot[idx] == NULL)
+	return NULL;
+
+    return get_snapshot_curwin_rec(curtab->tp_snapshot[idx]);
 }
 
 /*
