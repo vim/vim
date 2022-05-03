@@ -2906,4 +2906,22 @@ func Test_isabsolutepath()
   endif
 endfunc
 
+" Test for exepath()
+func Test_exepath()
+  if has('win32')
+    call assert_notequal(exepath('cmd'), '')
+
+    let oldNoDefaultCurrentDirectoryInExePath = $NoDefaultCurrentDirectoryInExePath
+    call writefile(['@echo off', 'echo Evil'], 'vim-test-evil.bat')
+    let $NoDefaultCurrentDirectoryInExePath = ''
+    call assert_notequal(exepath("vim-test-evil.bat"), '')
+    let $NoDefaultCurrentDirectoryInExePath = '1'
+    call assert_equal(exepath("vim-test-evil.bat"), '')
+    let $NoDefaultCurrentDirectoryInExePath = oldNoDefaultCurrentDirectoryInExePath
+    call delete('vim-test-evil.bat')
+  else
+    call assert_notequal(exepath('sh'), '')
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
