@@ -833,6 +833,7 @@ func s:InstallCommands()
   command Step call s:SendResumingCommand('-exec-step')
   command Over call s:SendResumingCommand('-exec-next')
   command -nargs=? Until call s:Until(<q-args>)
+  command -nargs=? Jump call s:Jump(<q-args>)
   command Finish call s:SendResumingCommand('-exec-finish')
   command -nargs=* Run call s:Run(<q-args>)
   command -nargs=* Arguments call s:SendResumingCommand('-exec-arguments ' . <q-args>)
@@ -870,7 +871,8 @@ func s:InstallCommands()
       an 1.210 PopUp.Set\ breakpoint	:Break<CR>
       an 1.220 PopUp.Clear\ breakpoint	:Clear<CR>
       an 1.230 PopUp.Run\ until		:Until<CR>
-      an 1.240 PopUp.Evaluate		:Evaluate<CR>
+      an 1.240 PopUp.Jump\ to		:Jump<CR>
+      an 1.250 PopUp.Evaluate		:Evaluate<CR>
     endif
   endif
 
@@ -899,6 +901,7 @@ func s:DeleteCommands()
   delcommand Step
   delcommand Over
   delcommand Until
+  delcommand Jump
   delcommand Finish
   delcommand Run
   delcommand Arguments
@@ -968,6 +971,19 @@ func s:Until(at)
     call s:SendCommand('-exec-until ' . at)
   else
     call ch_log('dropping command, program is running: exec-until')
+  endif
+endfunc
+
+" :Jump - Move execution here (best only within the function/method)
+func s:Jump(at)
+  if s:stopped
+    " Use the fname:lnum format
+    let at = empty(a:at) ?
+	  \ fnameescape(expand('%:p')) . ':' . line('.') : a:at
+    call s:SendCommand('-break-insert -t ' . at)  " otherwise we'd run from there
+    call s:SendCommand('-exec-jump ' . at)
+  else
+    call ch_log('dropping command, program is running: exec-jump')
   endif
 endfunc
 
