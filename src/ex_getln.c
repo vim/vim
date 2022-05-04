@@ -4128,8 +4128,10 @@ get_cmdline_completion(void)
 	char_u *cmd_compl;
 
 	set_expand_context(p->xpc);
-	cmd_compl = get_user_cmd_complete(p->xpc, p->xpc->xp_context);
-	return vim_strnsave(cmd_compl, strlen((char *)cmd_compl));
+
+	cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
+        if (cmd_compl != NULL)
+            return vim_strnsave(cmd_compl, strlen((char *)cmd_compl));
     }
 
     return NULL;
