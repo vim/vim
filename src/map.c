@@ -189,17 +189,7 @@ showmap(
     if (*mp->m_str == NUL)
 	msg_puts_attr("<Nop>", HL_ATTR(HLF_8));
     else
-    {
-	// Remove escaping of CSI, because "m_str" is in a format to be used
-	// as typeahead.
-	char_u *s = vim_strsave(mp->m_str);
-	if (s != NULL)
-	{
-	    vim_unescape_csi(s);
-	    msg_outtrans_special(s, FALSE, 0);
-	    vim_free(s);
-	}
-    }
+	msg_outtrans_special(mp->m_str, FALSE, 0);
 #ifdef FEAT_EVAL
     if (p_verbose > 0)
 	last_set_msg(mp->m_script_ctx);

@@ -1800,19 +1800,29 @@ str2special(
 
     if (has_mbyte && !IS_SPECIAL(c))
     {
-	int len = (*mb_ptr2len)(str);
+	char_u	*p;
 
-	// For multi-byte characters check for an illegal byte.
-	if (MB_BYTE2LEN(*str) > len)
+	*sp = str;
+	// Try to un-escape a multi-byte character after modifiers.
+	p = mb_unescape(sp);
+
+	if (p == NULL)
 	{
-	    transchar_nonprint(curbuf, buf, c);
-	    *sp = str + 1;
-	    return buf;
+	    int len = (*mb_ptr2len)(str);
+
+	    // Check for an illegal byte.
+	    if (MB_BYTE2LEN(*str) > len)
+	    {
+		transchar_nonprint(curbuf, buf, c);
+		*sp = str + 1;
+		return buf;
+	    }
+	    *sp = str + len;
+	    p = str;
 	}
 	// Since 'special' is TRUE the multi-byte character 'c' will be
 	// processed by get_special_key_name()
-	c = (*mb_ptr2char)(str);
-	*sp = str + len;
+	c = (*mb_ptr2char)(p);
     }
     else
 	*sp = str + 1;
