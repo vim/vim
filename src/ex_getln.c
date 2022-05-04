@@ -4119,9 +4119,9 @@ get_cmdline_str(void)
     static char_u *
 get_cmdline_completion(void)
 {
-    if (cmdline_star > 0) {
+    if (cmdline_star > 0)
 	return NULL;
-    }
+
     cmdline_info_T *p = get_ccline_ptr();
 
     if (p && p->xpc != NULL) {
@@ -4168,13 +4168,13 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = p->cmdpos + 1;
 }
 
-static int get_cmdline_screen_pos(void)
+    static int
+get_cmdline_screen_pos(void)
 {
     cmdline_info_T *p = get_ccline_ptr();
 
-    if (p == NULL) {
+    if (p == NULL)
 	return -1;
-    }
     return p->cmdspos;
 }
 
