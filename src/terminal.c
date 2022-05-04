@@ -853,7 +853,8 @@ ex_terminal(exarg_T *eap)
 	    p = skiptowhite(cmd);
 	    *p = NUL;
 	    keys = replace_termcodes(ep + 1, &buf,
-		    REPTERM_FROM_PART | REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
+		    REPTERM_FROM_PART | REPTERM_DO_LT | REPTERM_SPECIAL
+						 | REPTERM_NO_ESCAPE_KS, NULL);
 	    opt.jo_set2 |= JO2_EOF_CHARS;
 	    opt.jo_eof_chars = vim_strsave(keys);
 	    vim_free(buf);

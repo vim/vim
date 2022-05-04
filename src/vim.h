@@ -2764,6 +2764,7 @@ long elapsed(DWORD start_tick);
 #define REPTERM_DO_LT		2
 #define REPTERM_SPECIAL		4
 #define REPTERM_NO_SIMPLIFY	8
+#define REPTERM_NO_ESCAPE_KS	16
 
 // Flags for find_special_key()
 #define FSK_KEYCODE	0x01	// prefer key code, e.g. K_DEL instead of DEL

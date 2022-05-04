@@ -790,6 +790,15 @@ func Test_terminal_eof_arg()
   %bwipe!
 endfunc
 
+func Test_terminal_eof_arg_no_escape_special()
+  call CheckPython(s:python)
+
+  exe '1term ++eof=print("…");exit(123) ' .. s:python
+  call WaitForAssert({-> assert_match('…', getline(line('$')))})
+  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
+  %bwipe!
+endfunc
+
 func Test_terminal_eof_arg_win32_ctrl_z()
   CheckMSWindows
   call CheckPython(s:python)

@@ -5971,10 +5971,11 @@ term_get_bg_color(char_u *r, char_u *g, char_u *b)
  * used instead of a CTRL-V.
  *
  * Flags:
- *  REPTERM_FROM_PART	see above
- *  REPTERM_DO_LT	also translate <lt>
- *  REPTERM_SPECIAL	always accept <key> notation
- *  REPTERM_NO_SIMPLIFY	do not simplify <C-H> to 0x08 and set 8th bit for <A-x>
+ *  REPTERM_FROM_PART	 see above
+ *  REPTERM_DO_LT	 also translate <lt>
+ *  REPTERM_SPECIAL	 always accept <key> notation
+ *  REPTERM_NO_SIMPLIFY	 do not simplify <C-H> to 0x08 or set 8th bit for <A-x>
+ *  REPTERM_NO_ESCAPE_KS do not escape K_SPECIAL bytes in the character
  *
  * "did_simplify" is set when some <C-H> or <A-x> code was simplified, unless
  * it is NULL.
@@ -5994,6 +5995,7 @@ replace_termcodes(
     int		do_backslash;	// backslash is a special character
     int		do_special;	// recognize <> key codes
     int		do_key_code;	// recognize raw key codes
+    int		escape_ks;	// escape K_SPECIAL bytes in the character
     char_u	*result;	// buffer for resulting string
     garray_T	ga;
 
@@ -6001,6 +6003,7 @@ replace_termcodes(
     do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL)
 						  || (flags & REPTERM_SPECIAL);
     do_key_code = (vim_strchr(p_cpo, CPO_KEYCODE) == NULL);
+    escape_ks = !(flags & REPTERM_NO_ESCAPE_KS);
     src = from;
 
     /*
@@ -6104,7 +6107,7 @@ replace_termcodes(
 #endif
 	    slen = trans_special(&src, result + dlen, FSK_KEYCODE
 			  | ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY),
-							   TRUE, did_simplify);
+						      escape_ks, did_simplify);
 	    if (slen)
 	    {
 		dlen += slen;
@@ -6198,14 +6201,14 @@ replace_termcodes(
 	     * KS_SPECIAL KE_FILLER.
 	     * If compiled with the GUI replace CSI with K_CSI.
 	     */
-	    if (*src == K_SPECIAL)
+	    if (escape_ks && *src == K_SPECIAL)
 	    {
 		result[dlen++] = K_SPECIAL;
 		result[dlen++] = KS_SPECIAL;
 		result[dlen++] = KE_FILLER;
 	    }
 # ifdef FEAT_GUI
-	    else if (*src == CSI)
+	    else if (escape_ks && *src == CSI)
 	    {
 		result[dlen++] = K_SPECIAL;
 		result[dlen++] = KS_EXTRA;
