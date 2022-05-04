@@ -4132,8 +4132,10 @@ def Test_echo_uninit_variables()
   var Var_func: func
   var var_string: string
   var var_blob: blob
-  var var_job: job
-  var var_channel: channel
+  if has('job')
+    var var_job: job
+    var var_channel: channel
+  endif
   var var_list: list<any>
   var var_dict: dict<any>
 
@@ -4144,8 +4146,13 @@ def Test_echo_uninit_variables()
   echo Var_func
   echo var_string
   echo var_blob
-  echo var_job
-  echo var_channel
+  if has('job')
+    echo var_job
+    echo var_channel
+  else
+    echo 'no process'
+    echo 'channel fail'
+  endif
   echo var_list
   echo var_dict
   redir END

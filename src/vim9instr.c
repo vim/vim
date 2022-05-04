@@ -755,12 +755,19 @@ generate_PUSHS(cctx_T *cctx, char_u **str)
     int
 generate_PUSHCHANNEL(cctx_T *cctx)
 {
+#ifdef FEAT_JOB_CHANNEL
     isn_T	*isn;
+#endif
 
     RETURN_OK_IF_SKIP(cctx);
+#ifdef FEAT_JOB_CHANNEL
     if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
 	return FAIL;
     return OK;
+#else
+    emsg(_(e_channel_job_feature_not_available));
+    return FAIL;
+#endif
 }
 
 /*
@@ -769,12 +776,19 @@ generate_PUSHCHANNEL(cctx_T *cctx)
     int
 generate_PUSHJOB(cctx_T *cctx)
 {
+#ifdef FEAT_JOB_CHANNEL
     isn_T	*isn;
+#endif
 
     RETURN_OK_IF_SKIP(cctx);
+#ifdef FEAT_JOB_CHANNEL
     if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_job)) == NULL)
 	return FAIL;
     return OK;
+#else
+    emsg(_(e_channel_job_feature_not_available));
+    return FAIL;
+#endif
 }
 
 /*

@@ -3264,4 +3264,8 @@ EXTERN char e_string_or_function_required_for_arrow_parens_expr[]
 	INIT(= N_("E1275: String or function required for ->(expr)"));
 EXTERN char e_illegal_map_mode_string_str[]
 	INIT(= N_("E1276: Illegal map mode string: '%s'"));
+# if !defined(FEAT_JOB_CHANNEL)
+EXTERN char e_channel_job_feature_not_available[]
+	INIT(= N_("E1277: Channel and job feature is not available"));
+# endif
 #endif

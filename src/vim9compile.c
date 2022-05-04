@@ -2293,39 +2293,41 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    else
 	    {
+		int r = OK;
+
 		// variables are always initialized
 		if (GA_GROW_FAILS(instr, 1))
 		    goto theend;
 		switch (lhs.lhs_member_type->tt_type)
 		{
 		    case VAR_BOOL:
-			generate_PUSHBOOL(cctx, VVAL_FALSE);
+			r = generate_PUSHBOOL(cctx, VVAL_FALSE);
 			break;
 		    case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-			generate_PUSHF(cctx, 0.0);
+			r = generate_PUSHF(cctx, 0.0);
 #endif
 			break;
 		    case VAR_STRING:
-			generate_PUSHS(cctx, NULL);
+			r = generate_PUSHS(cctx, NULL);
 			break;
 		    case VAR_BLOB:
-			generate_PUSHBLOB(cctx, blob_alloc());
+			r = generate_PUSHBLOB(cctx, blob_alloc());
 			break;
 		    case VAR_FUNC:
-			generate_PUSHFUNC(cctx, NULL, &t_func_void);
+			r = generate_PUSHFUNC(cctx, NULL, &t_func_void);
 			break;
 		    case VAR_LIST:
-			generate_NEWLIST(cctx, 0, FALSE);
+			r = generate_NEWLIST(cctx, 0, FALSE);
 			break;
 		    case VAR_DICT:
-			generate_NEWDICT(cctx, 0, FALSE);
+			r = generate_NEWDICT(cctx, 0, FALSE);
 			break;
 		    case VAR_JOB:
-			generate_PUSHJOB(cctx);
+			r = generate_PUSHJOB(cctx);
 			break;
 		    case VAR_CHANNEL:
-			generate_PUSHCHANNEL(cctx);
+			r = generate_PUSHCHANNEL(cctx);
 			break;
 		    case VAR_NUMBER:
 		    case VAR_UNKNOWN:
@@ -2343,10 +2345,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			else
 			{
 			    instr_count = instr->ga_len;
-			    generate_PUSHNR(cctx, 0);
+			    r = generate_PUSHNR(cctx, 0);
 			}
 			break;
 		}
+		if (r == FAIL)
+		    goto theend;
 	    }
 	    if (var_count == 0)
 		end = p;
