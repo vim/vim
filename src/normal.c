@@ -7236,7 +7236,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		was_visual = FALSE;
     int		dir;
     int		flags = 0;
-    int		save_unnamed = FALSE;
+    int		keep_registers = FALSE;
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7283,7 +7283,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // overwrites if the old contents is being put.
 	    was_visual = TRUE;
 	    regname = cap->oap->regname;
-	    save_unnamed = cap->cmdchar == 'P';
+	    keep_registers = cap->cmdchar == 'P';
 #ifdef FEAT_CLIPBOARD
 	    adjust_clip_reg(&regname);
 #endif
@@ -7303,7 +7303,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // Now delete the selected text. Avoid messages here.
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
-	    cap->oap->regname = save_unnamed ? '_' : NUL;
+	    cap->oap->regname = keep_registers ? '_' : NUL;
 	    ++msg_silent;
 	    nv_operator(cap);
 	    do_pending_operator(cap, 0, FALSE);
