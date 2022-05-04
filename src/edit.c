@@ -448,7 +448,7 @@ edit(
 	if (update_Insstart_orig)
 	    Insstart_orig = Insstart;
 
-	if (stop_insert_mode && !pum_visible())
+	if (stop_insert_mode && !ins_compl_active())
 	{
 	    // ":stopinsert" used or 'insertmode' reset
 	    count = 0;
