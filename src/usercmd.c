@@ -439,7 +439,10 @@ get_user_cmd_nargs(expand_T *xp UNUSED, int idx)
     char_u *
 get_user_cmd_complete(expand_T *xp UNUSED, int idx)
 {
-    return (char_u *)command_complete[idx].name;
+    if (idx >= (int)ARRAY_LENGTH(command_complete))
+	return NULL;
+    else
+	return (char_u *)command_complete[idx].name;
 }
 
 #ifdef FEAT_EVAL

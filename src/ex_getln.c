@@ -4125,11 +4125,11 @@ get_cmdline_completion(void)
     cmdline_info_T *p = get_ccline_ptr();
 
     if (p && p->xpc != NULL) {
-	char *cmd_compl;
+	char_u *cmd_compl;
 
 	set_expand_context(p->xpc);
 	cmd_compl = get_user_cmd_complete(p->xpc, p->xpc->xp_context);
-	return vim_strnsave((char_u *)cmd_compl, strlen(cmd_compl));
+	return vim_strnsave(cmd_compl, strlen((char *)cmd_compl));
     }
 
     return NULL;
