@@ -3707,6 +3707,7 @@ def Test_no_unknown_error_after_error()
       enddef
       def Exit_cb(...l: list<any>)
           sleep 1m
+          g:did_call_exit_cb = true
           source += l
       enddef
       var myjob = job_start('echo burp', {out_cb: Out_cb, exit_cb: Exit_cb, mode: 'raw'})
@@ -3714,7 +3715,13 @@ def Test_no_unknown_error_after_error()
         sleep 10m
       endwhile
       # wait for Exit_cb() to be called
-      sleep 200m
+      for x in range(100)
+        if exists('g:did_call_exit_cb')
+          unlet g:did_call_exit_cb
+          break
+        endif
+        sleep 10m
+      endfor
   END
   writefile(lines, 'Xdef')
   assert_fails('so Xdef', ['E684:', 'E1012:'])
