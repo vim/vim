@@ -1439,6 +1439,7 @@ func Test_visual_paste()
     call assert_equal('bar', @-)
     call assert_equal('baz', @+)
     call assert_equal('bazxxx', getline(1))
+    set clipboard&
   endif
 
   bwipe!
