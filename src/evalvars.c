@@ -4036,48 +4036,53 @@ valid_varname(char_u *varname, int len, int autoload)
 }
 
 /*
- * getwinvar() and gettabwinvar()
+ * Implements the logic to retrieve local variable and option values.
+ * Used by "getwinvar()" "gettabvar()" "gettabwinvar()" "getbufvar()".
  */
     static void
-getwinvar(
-    typval_T	*argvars,
+get_var_from(
+    char_u	*varname,
     typval_T	*rettv,
-    int		off)	    // 1 for gettabwinvar()
+    typval_T	*deftv,	    // Default value if not found.
+    int		htname,	    // 't'ab, 'w'indow or 'b'uffer local.
+    tabpage_T	*tp,	    // can be NULL
+    win_T	*win,
+    buf_T	*buf)	    // Ignored if htname is not 'b'.
 {
-    win_T	*win;
-    char_u	*varname;
     dictitem_T	*v;
-    tabpage_T	*tp = NULL;
     int		done = FALSE;
     switchwin_T	switchwin;
     int		need_switch_win;
 
-    if (off == 1)
-	tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
-    else
-	tp = curtab;
-    win = find_win_by_nr(&argvars[off], tp);
-    varname = tv_get_string_chk(&argvars[off + 1]);
     ++emsg_off;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    if (win != NULL && varname != NULL)
+    if (varname != NULL && tp != NULL && win != NULL
+	    && (htname != 'b' || buf != NULL))
     {
 	// Set curwin to be our win, temporarily.  Also set the tabpage,
 	// otherwise the window is not valid. Only do this when needed,
 	// autocommands get blocked.
-	need_switch_win = !(tp == curtab && win == curwin);
-	if (!need_switch_win
-		  || switch_win(&switchwin, win, tp, TRUE) == OK)
+	// If we have a buffer reference avoid the switching, we're saving and
+	// restoring curbuf directly.
+	need_switch_win = !(tp == curtab && win == curwin) || (buf != NULL);
+	if (!need_switch_win || switch_win(&switchwin, win, tp, TRUE) == OK)
 	{
-	    if (*varname == '&')
+	    // Handle options. There are no tab-local options.
+	    if (*varname == '&' && htname != 't')
 	    {
+		buf_T	*save_curbuf = curbuf;
+
+		// Change curbuf so the option is read from the correct buffer.
+		if (buf != NULL && htname == 'b')
+		    curbuf = buf;
+
 		if (varname[1] == NUL)
 		{
 		    // get all window-local options in a dict
-		    dict_T	*opts = get_winbuf_options(FALSE);
+		    dict_T	*opts = get_winbuf_options(htname == 'b');
 
 		    if (opts != NULL)
 		    {
@@ -4085,16 +4090,37 @@ getwinvar(
 			done = TRUE;
 		    }
 		}
-		else if (eval_option(&varname, rettv, 1) == OK)
-		    // window-local-option
+		else if (eval_option(&varname, rettv, TRUE) == OK)
+		    // Local option
 		    done = TRUE;
+
+		curbuf = save_curbuf;
+	    }
+	    else if (*varname == NUL)
+	    {
+		// Empty string: return a dict with all the local variables.
+		if (htname == 'b')
+		    v = &buf->b_bufvar;
+		else if (htname == 'w')
+		    v = &win->w_winvar;
+		else
+		    v = &tp->tp_winvar;
+		copy_tv(&v->di_tv, rettv);
+		done = TRUE;
 	    }
 	    else
 	    {
+		hashtab_T	*ht;
+
+		if (htname == 'b')
+		    ht = &buf->b_vars->dv_hashtab;
+		else if (htname == 'w')
+		    ht = &win->w_vars->dv_hashtab;
+		else
+		    ht = &tp->tp_vars->dv_hashtab;
+
 		// Look up the variable.
-		// Let getwinvar({nr}, "") return the "w:" dictionary.
-		v = find_var_in_ht(&win->w_vars->dv_hashtab, 'w',
-							      varname, FALSE);
+		v = find_var_in_ht(ht, htname, varname, FALSE);
 		if (v != NULL)
 		{
 		    copy_tv(&v->di_tv, rettv);
@@ -4108,11 +4134,34 @@ getwinvar(
 	    restore_win(&switchwin, TRUE);
     }
 
-    if (!done && argvars[off + 2].v_type != VAR_UNKNOWN)
-	// use the default return value
-	copy_tv(&argvars[off + 2], rettv);
+    if (!done && deftv->v_type != VAR_UNKNOWN)
+	// use the default value
+	copy_tv(deftv, rettv);
 
     --emsg_off;
+}
+
+/*
+ * getwinvar() and gettabwinvar()
+ */
+    static void
+getwinvar(
+    typval_T	*argvars,
+    typval_T	*rettv,
+    int		off)	    // 1 for gettabwinvar()
+{
+    char_u	*varname;
+    tabpage_T	*tp;
+    win_T	*win;
+
+    if (off == 1)
+	tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
+    else
+	tp = curtab;
+    win = find_win_by_nr(&argvars[off], tp);
+    varname = tv_get_string_chk(&argvars[off + 1]);
+
+    get_var_from(varname, rettv, &argvars[off + 2], 'w', tp, win, NULL);
 }
 
 /*
@@ -4444,14 +4493,9 @@ get_clear_redir_ga(void)
     void
 f_gettabvar(typval_T *argvars, typval_T *rettv)
 {
-    switchwin_T	switchwin;
-    tabpage_T	*tp;
-    dictitem_T	*v;
     char_u	*varname;
-    int		done = FALSE;
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
+    tabpage_T	*tp;
+    win_T	*win = NULL;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -4460,30 +4504,11 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
 
     varname = tv_get_string_chk(&argvars[1]);
     tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
-    if (tp != NULL && varname != NULL)
-    {
-	// Set tp to be our tabpage, temporarily.  Also set the window to the
-	// first window in the tabpage, otherwise the window is not valid.
-	if (switch_win(&switchwin,
-		tp == curtab || tp->tp_firstwin == NULL ? firstwin
-					    : tp->tp_firstwin, tp, TRUE) == OK)
-	{
-	    // look up the variable
-	    // Let gettabvar({nr}, "") return the "t:" dictionary.
-	    v = find_var_in_ht(&tp->tp_vars->dv_hashtab, 't', varname, FALSE);
-	    if (v != NULL)
-	    {
-		copy_tv(&v->di_tv, rettv);
-		done = TRUE;
-	    }
-	}
+    if (tp != NULL)
+	win = tp == curtab || tp->tp_firstwin == NULL ? firstwin
+		: tp->tp_firstwin;
 
-	// restore previous notion of curwin
-	restore_win(&switchwin, TRUE);
-    }
-
-    if (!done && argvars[2].v_type != VAR_UNKNOWN)
-	copy_tv(&argvars[2], rettv);
+    get_var_from(varname, rettv, &argvars[2], 't', tp, win, NULL);
 }
 
 /*
@@ -4521,10 +4546,8 @@ f_getwinvar(typval_T *argvars, typval_T *rettv)
     void
 f_getbufvar(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf;
     char_u	*varname;
-    dictitem_T	*v;
-    int		done = FALSE;
+    buf_T	*buf;
 
     if (in_vim9script()
 	    && (check_for_buffer_arg(argvars, 0) == FAIL
@@ -4534,56 +4557,7 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
     varname = tv_get_string_chk(&argvars[1]);
     buf = tv_get_buf_from_arg(&argvars[0]);
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-    if (buf != NULL && varname != NULL)
-    {
-	if (*varname == '&')
-	{
-	    buf_T	*save_curbuf = curbuf;
-
-	    // set curbuf to be our buf, temporarily
-	    curbuf = buf;
-
-	    if (varname[1] == NUL)
-	    {
-		// get all buffer-local options in a dict
-		dict_T	*opts = get_winbuf_options(TRUE);
-
-		if (opts != NULL)
-		{
-		    rettv_dict_set(rettv, opts);
-		    done = TRUE;
-		}
-	    }
-	    else if (eval_option(&varname, rettv, TRUE) == OK)
-		// buffer-local-option
-		done = TRUE;
-
-	    // restore previous notion of curbuf
-	    curbuf = save_curbuf;
-	}
-	else
-	{
-	    // Look up the variable.
-	    if (*varname == NUL)
-		// Let getbufvar({nr}, "") return the "b:" dictionary.
-		v = &buf->b_bufvar;
-	    else
-		v = find_var_in_ht(&buf->b_vars->dv_hashtab, 'b',
-							       varname, FALSE);
-	    if (v != NULL)
-	    {
-		copy_tv(&v->di_tv, rettv);
-		done = TRUE;
-	    }
-	}
-    }
-
-    if (!done && argvars[2].v_type != VAR_UNKNOWN)
-	// use the default value
-	copy_tv(&argvars[2], rettv);
+    get_var_from(varname, rettv, &argvars[2], 'b', curtab, curwin, buf);
 }
 
 /*
