@@ -7238,7 +7238,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		flags = 0;
     int		keep_registers = FALSE;
 #ifdef FEAT_CLIPBOARD
-    char_u	*save_cb = NULL;
+    void	*save_cb = NULL;
 #endif
 
     if (cap->oap->op_type != OP_NOP)
@@ -7307,8 +7307,10 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 #ifdef FEAT_CLIPBOARD
 	    if (keep_registers)
 	    {
-		save_cb = p_cb;
-		p_cb = (char_u *)"";
+		if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED)
+		    save_cb = get_register('*', TRUE);
+		else if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED_PLUS)
+		    save_cb = get_register('+', TRUE);
 	    }
 #endif
 	    cap->cmdchar = 'd';
@@ -7322,7 +7324,10 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 
 #ifdef FEAT_CLIPBOARD
 	    if (keep_registers)
-		p_cb = save_cb;
+		if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED)
+		    put_register('*', save_cb);
+		else if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED_PLUS)
+		    put_register('+', save_cb);
 #endif
 
 	    // delete PUT_LINE_BACKWARD;
