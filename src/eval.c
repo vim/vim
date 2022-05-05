@@ -1803,7 +1803,7 @@ skip_for_lines(void *fi_void, evalarg_T *evalarg)
     int		i;
 
     for (i = 0; i < fi->fi_break_count; ++i)
-	eval_next_line(evalarg);
+	eval_next_line(NULL, evalarg);
 }
 
 /*
@@ -2153,7 +2153,7 @@ getline_peek_skip_comments(evalarg_T *evalarg)
 	p = skipwhite(next);
 	if (*p != NUL && !vim9_comment_start(p))
 	    return next;
-	if (eval_next_line(evalarg) == NULL)
+	if (eval_next_line(NULL, evalarg) == NULL)
 	    break;
     }
     return NULL;
@@ -2176,11 +2176,14 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
     if (in_vim9script()
 	    && evalarg != NULL
 	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL)
-	    && (*p == NUL || (vim9_comment_start(p) && VIM_ISWHITE(p[-1]))))
+	    && (*p == NUL || *p == NL
+			     || (vim9_comment_start(p) && VIM_ISWHITE(p[-1]))))
     {
 	char_u *next;
 
-	if (evalarg->eval_cookie != NULL)
+	if (*p == NL)
+	    next = p + 1;
+	else if (evalarg->eval_cookie != NULL)
 	    next = getline_peek_skip_comments(evalarg);
 	else
 	    next = peek_next_line_from_context(evalarg->eval_cctx);
@@ -2199,10 +2202,13 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
  * Only called for Vim9 script.
  */
     char_u *
-eval_next_line(evalarg_T *evalarg)
+eval_next_line(char_u *arg, evalarg_T *evalarg)
 {
     garray_T	*gap = &evalarg->eval_ga;
     char_u	*line;
+
+    if (arg != NULL && *arg == NL)
+	return skipwhite(arg + 1);
 
     if (evalarg->eval_cookie != NULL)
 	line = evalarg->eval_getline(0, evalarg->eval_cookie, 0,
@@ -2253,7 +2259,7 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
 	return skipwhite(arg);
     eval_next_non_blank(p, evalarg, &getnext);
     if (getnext)
-	return eval_next_line(evalarg);
+	return eval_next_line(arg, evalarg);
     return p;
 }
 
@@ -2449,7 +2455,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	evaluate = evalarg_used->eval_flags & EVAL_EVALUATE;
 
 	if (getnext)
-	    *arg = eval_next_line(evalarg_used);
+	    *arg = eval_next_line(*arg, evalarg_used);
 	else
 	{
 	    if (evaluate && vim9script && !VIM_ISWHITE(p[-1]))
@@ -2515,7 +2521,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		return FAIL;
 	    }
 	    if (getnext)
-		*arg = eval_next_line(evalarg_used);
+		*arg = eval_next_line(*arg, evalarg_used);
 	    else
 	    {
 		if (evaluate && vim9script && !VIM_ISWHITE(p[-1]))
@@ -2621,7 +2627,7 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	while (p[0] == '|' && p[1] == '|')
 	{
 	    if (getnext)
-		*arg = eval_next_line(evalarg_used);
+		*arg = eval_next_line(*arg, evalarg_used);
 	    else
 	    {
 		if (evaluate && vim9script && !VIM_ISWHITE(p[-1]))
@@ -2747,7 +2753,7 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	while (p[0] == '&' && p[1] == '&')
 	{
 	    if (getnext)
-		*arg = eval_next_line(evalarg_used);
+		*arg = eval_next_line(*arg, evalarg_used);
 	    else
 	    {
 		if (evaluate && vim9script && !VIM_ISWHITE(p[-1]))
@@ -2864,7 +2870,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (getnext)
 	{
-	    *arg = eval_next_line(evalarg);
+	    *arg = eval_next_line(*arg, evalarg);
 	    p = *arg;
 	}
 	else if (evaluate && vim9script && !VIM_ISWHITE(**arg))
@@ -3026,7 +3032,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 	oplen = (concat && p[1] == '.') ? 2 : 1;
 	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	    *arg = eval_next_line(*arg, evalarg);
 	else
 	{
 	    if (evaluate && vim9script && !VIM_ISWHITE(**arg))
@@ -3258,7 +3264,7 @@ eval6(
 
 	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	    *arg = eval_next_line(*arg, evalarg);
 	else
 	{
 	    if (evaluate && in_vim9script() && !VIM_ISWHITE(**arg))
@@ -6150,7 +6156,7 @@ handle_subscript(
 			|| ASCII_ISALPHA(in_vim9script() ? *skipwhite(p + 2)
 								    : p[2])))))
 	{
-	    *arg = eval_next_line(evalarg);
+	    *arg = eval_next_line(*arg, evalarg);
 	    p = *arg;
 	    check_white = FALSE;
 	}

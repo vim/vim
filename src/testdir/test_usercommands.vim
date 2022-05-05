@@ -695,6 +695,20 @@ func Test_usercmd_with_block()
   delcommand HelloThere
 
   let lines =<< trim END
+      command EchoCond {
+          const test: string = true
+              ? 'true'
+              : 'false'
+          g:result = test
+      }
+      EchoCond
+  END
+  call v9.CheckScriptSuccess(lines)
+  call assert_equal('true', g:result)
+  delcommand EchoCond
+  unlet g:result
+
+  let lines =<< trim END
       command BadCommand {
          echo  {
          'key': 'value',

@@ -589,7 +589,7 @@ handle_import(
 	char_u *p;
 
 	if (getnext)
-	    arg = eval_next_line(evalarg);
+	    arg = eval_next_line(expr_end, evalarg);
 	else
 	    arg = nextarg;
 
