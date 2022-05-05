@@ -3125,7 +3125,7 @@ msg_add_eol(void)
 time_differs(stat_T *st, long mtime, long mtime_ns UNUSED)
 {
     return
-#ifdef ST_MTIM_NSEC
+#ifdef FEAT_NANOTIME
 	(long)st->ST_MTIM_NSEC != mtime_ns ||
 #endif
 #if defined(__linux__) || defined(MSWIN)
@@ -4502,7 +4502,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 buf_store_time(buf_T *buf, stat_T *st, char_u *fname UNUSED)
 {
     buf->b_mtime = (long)st->st_mtime;
-#ifdef ST_MTIM_NSEC
+#ifdef FEAT_NANOTIME
     buf->b_mtime_ns = (long)st->ST_MTIM_NSEC;
 #else
     buf->b_mtime_ns = 0;

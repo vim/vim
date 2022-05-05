@@ -441,7 +441,7 @@ static char *(features[]) =
 #else
 	"-mzscheme",
 #endif
-#ifdef ST_MTIM_NSEC
+#ifdef FEAT_NANOTIME
 	"+nanotime",
 #else
 	"-nanotime",

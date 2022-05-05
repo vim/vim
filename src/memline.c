@@ -2444,7 +2444,7 @@ ml_sync_all(int check_file, int check_char)
 	     */
 	    if (mch_stat((char *)buf->b_ffname, &st) == -1
 		    || st.st_mtime != buf->b_mtime_read
-#ifdef ST_MTIM_NSEC
+#ifdef FEAT_NANOTIME
 		    || st.ST_MTIM_NSEC != buf->b_mtime_read_ns
 #endif
 		    || st.st_size != buf->b_orig_size)

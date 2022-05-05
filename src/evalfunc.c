@@ -5906,7 +5906,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"nanotime",
-#ifdef ST_MTIM_NSEC
+#ifdef FEAT_NANOTIME
 		1
 #else
 		0

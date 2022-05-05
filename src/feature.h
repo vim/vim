@@ -1253,3 +1253,10 @@
 	|| defined(FEAT_TERMINAL)
 # define USING_LOAD_LIBRARY
 #endif
+
+/*
+ * +nanoseconds
+ */
+#ifdef ST_MTIM_NSEC
+# define FEAT_NANOTIME
+#endif

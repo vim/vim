@@ -845,6 +845,7 @@ with_tlib
 enable_largefile
 enable_canberra
 enable_libsodium
+enable_nanotime
 enable_acl
 enable_gpm
 enable_sysmouse
@@ -1518,6 +1519,7 @@ Optional Features:
   --disable-largefile     omit support for large files
   --disable-canberra      Do not use libcanberra.
   --disable-libsodium      Do not use libsodium.
+  --disable-nanotime      Do not use nanotime feature.
   --disable-acl           No check for ACL support.
   --enable-gpm=OPTS       Use gpm (Linux mouse daemon). default=yes OPTS=yes/no/dynamic
   --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).
@@ -13127,26 +13129,37 @@ if test "x$vim_cv_stat_ignores_slash" = "xyes" ; then
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for nanoseconds field of struct stat" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-nanotime argument" >&5
+$as_echo_n "checking --enable-nanotime argument... " >&6; }
+# Check whether --enable-nanotime was given.
+if test "${enable_nanotime+set}" = set; then :
+  enableval=$enable_nanotime;
+else
+  enable_nanotime="yes"
+fi
+
+
+if test "$enable_nanotime" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nanoseconds field of struct stat" >&5
 $as_echo_n "checking for nanoseconds field of struct stat... " >&6; }
 if ${ac_cv_struct_st_mtim_nsec+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_save_CPPFLAGS="$CPPFLAGS"
-   ac_cv_struct_st_mtim_nsec=no
-   # st_mtim.tv_nsec -- the usual case
-   # st_mtim._tv_nsec -- Solaris 2.6, if
-   #	(defined _XOPEN_SOURCE && _XOPEN_SOURCE_EXTENDED == 1
-   #	 && !defined __EXTENSIONS__)
-   # st_mtim.st__tim.tv_nsec -- UnixWare 2.1.2
-   # st_mtime_n -- AIX 5.2 and above
-   # st_mtimespec.tv_nsec -- Darwin (Mac OSX)
-   for ac_val in st_mtim.tv_nsec st_mtim._tv_nsec st_mtim.st__tim.tv_nsec st_mtime_n st_mtimespec.tv_nsec; do
-     CPPFLAGS="$ac_save_CPPFLAGS -DST_MTIM_NSEC=$ac_val"
-     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    ac_cv_struct_st_mtim_nsec=no
+    # st_mtim.tv_nsec -- the usual case
+    # st_mtim._tv_nsec -- Solaris 2.6, if
+    #	(defined _XOPEN_SOURCE && _XOPEN_SOURCE_EXTENDED == 1
+    #	 && !defined __EXTENSIONS__)
+    # st_mtim.st__tim.tv_nsec -- UnixWare 2.1.2
+    # st_mtime_n -- AIX 5.2 and above
+    # st_mtimespec.tv_nsec -- Darwin (Mac OSX)
+    for ac_val in st_mtim.tv_nsec st_mtim._tv_nsec st_mtim.st__tim.tv_nsec st_mtime_n st_mtimespec.tv_nsec; do
+      CPPFLAGS="$ac_save_CPPFLAGS -DST_MTIM_NSEC=$ac_val"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/types.h>
-#include <sys/stat.h>
+  #include <sys/stat.h>
 int
 main ()
 {
@@ -13159,18 +13172,19 @@ if ac_fn_c_try_compile "$LINENO"; then :
   ac_cv_struct_st_mtim_nsec=$ac_val; break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   done
-   CPPFLAGS="$ac_save_CPPFLAGS"
+    done
+    CPPFLAGS="$ac_save_CPPFLAGS"
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_struct_st_mtim_nsec" >&5
 $as_echo "$ac_cv_struct_st_mtim_nsec" >&6; }
-if test $ac_cv_struct_st_mtim_nsec != no; then
+  if test $ac_cv_struct_st_mtim_nsec != no; then
 
 cat >>confdefs.h <<_ACEOF
 #define ST_MTIM_NSEC $ac_cv_struct_st_mtim_nsec
 _ACEOF
 
+  fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv_open()" >&5
