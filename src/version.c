@@ -441,6 +441,11 @@ static char *(features[]) =
 #else
 	"-mzscheme",
 #endif
+#ifdef ST_MTIM_NSEC
+	"+nanotime",
+#else
+	"-nanotime",
+#endif
 #ifdef FEAT_NETBEANS_INTG
 	"+netbeans_intg",
 #else
