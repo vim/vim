@@ -139,6 +139,7 @@ Advanced editing ~
 |builtin.txt|	builtin functions
 |channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
+|geometry.txt|	indexing into buffers/windows by line/row/byte/column
 
 Special issues ~
 |testing.txt|	testing Vim and Vim scripts

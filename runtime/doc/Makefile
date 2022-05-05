@@ -35,6 +35,7 @@ DOCS = \
 	ft_raku.txt \
 	ft_rust.txt \
 	ft_sql.txt \
+	geometry.txt \
 	gui.txt \
 	gui_w32.txt \
 	gui_x11.txt \
