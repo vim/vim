@@ -7237,7 +7237,9 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		dir;
     int		flags = 0;
     int		keep_registers = FALSE;
+#ifdef FEAT_CLIPBOARD
     char_u	*save_cb = NULL;
+#endif
 
     if (cap->oap->op_type != OP_NOP)
     {
