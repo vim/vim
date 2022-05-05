@@ -67,6 +67,29 @@ def Test_range_only()
   endif
 enddef
 
+def Test_invalid_range()
+  var lines =<< trim END
+      :123 eval 1 + 2
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+
+  lines =<< trim END
+      :123 if true
+      endif
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+
+  lines =<< trim END
+      :123 echo 'yes'
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+
+  lines =<< trim END
+      :123 cd there
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+enddef
+
 let g:alist = [7]
 let g:astring = 'text'
 let g:anumber = 123

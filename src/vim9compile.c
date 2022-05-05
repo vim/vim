@@ -3080,6 +3080,11 @@ compile_def_function(
 		ea.forceit = TRUE;
 		p = skipwhite(p + 1);
 	    }
+	    if ((ea.argt & EX_RANGE) == 0 && ea.addr_count > 0)
+	    {
+		emsg(_(e_no_range_allowed));
+		goto erret;
+	    }
 	}
 
 	switch (ea.cmdidx)
