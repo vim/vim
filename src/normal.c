@@ -7317,7 +7317,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    --msg_silent;
 
 	    if (keep_registers)
-		p_cb = p_cb;
+		p_cb = save_cb;
 
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;
