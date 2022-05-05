@@ -7324,10 +7324,12 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 
 #ifdef FEAT_CLIPBOARD
 	    if (keep_registers)
+	    {
 		if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED)
 		    put_register('*', save_cb);
 		else if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED_PLUS)
 		    put_register('+', save_cb);
+	    }
 #endif
 
 	    // delete PUT_LINE_BACKWARD;
