@@ -105,4 +105,6 @@ void set_callback(callback_T *dest, callback_T *src);
 void copy_callback(callback_T *dest, callback_T *src);
 void expand_autload_callback(callback_T *cb);
 void free_callback(callback_T *callback);
+char_u *eval_all_expr_in_str(char_u *str);
+
 /* vim: set ft=c : */

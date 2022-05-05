@@ -603,59 +603,88 @@ list_script_vars(int *first)
 }
 
 /*
- * Evaluate all the Vim expressions (`=expr`) in string "str" and return the
+ * Evaluate all the Vim expressions ({expr}) in string "str" and return the
  * resulting string.  The caller must free the returned string.
  */
-    static char_u *
+    char_u *
 eval_all_expr_in_str(char_u *str)
 {
     garray_T	ga;
-    char_u	*s;
     char_u	*p;
     char_u	save_c;
-    char_u	*exprval;
-    int		status;
+    char_u	*expr_val;
 
     ga_init2(&ga, 1, 80);
     p = str;
 
-    // Look for `=expr`, evaluate the expression and replace `=expr` with the
-    // result.
     while (*p != NUL)
     {
-	s = p;
-	while (*p != NUL && (*p != '`' || p[1] != '='))
-	    p++;
-	ga_concat_len(&ga, s, p - s);
+	char_u	*lit_start;
+	char_u	*block_start;
+	char_u	*block_end;
+	int	escaped_brace = FALSE;
+
+	// Look for a block start.
+	lit_start = p;
+	while (*p != '{' && *p != '}' && *p != NUL)
+	    ++p;
+
+	if (*p != NUL && *p == p[1])
+	{
+	    // Escaped brace, unescape and continue.
+	    // Include the brace in the literal string.
+	    ++p;
+	    escaped_brace = TRUE;
+	}
+	else if (*p == '}')
+	{
+	    semsg(_(e_stray_closing_curly_str), str);
+	    ga_clear(&ga);
+	    return NULL;
+	}
+
+	// Append the literal part.
+	ga_concat_len(&ga, lit_start, (size_t)(p - lit_start));
+
 	if (*p == NUL)
-	    break;		// no backtick expression found
+	    break;
 
-	s = p;
-	p += 2;		// skip `=
-
-	status = *p == NUL ? OK : skip_expr(&p, NULL);
-	if (status == FAIL || *p != '`')
+	if (escaped_brace)
 	{
-	    // invalid expression or missing ending backtick
-	    if (status != FAIL)
-		emsg(_(e_missing_backtick));
-	    vim_free(ga.ga_data);
+	    // Skip the second brace.
+	    ++p;
+	    continue;
+	}
+
+	// Skip the opening {.
+	block_start = ++p;
+	block_end = block_start;
+	if (*block_start != NUL && skip_expr(&block_end, NULL) == FAIL)
+	{
+	    ga_clear(&ga);
 	    return NULL;
 	}
-	s += 2;		// skip `=
-	save_c = *p;
-	*p = NUL;
-	exprval = eval_to_string(s, TRUE);
-	*p = save_c;
-	p++;
-	if (exprval == NULL)
+	block_end = skipwhite(block_end);
+	// The block must be closed by a }.
+	if (*block_end != '}')
 	{
-	    // expression evaluation failed
-	    vim_free(ga.ga_data);
+	    semsg(_(e_missing_close_curly_str), str);
+	    ga_clear(&ga);
 	    return NULL;
 	}
-	ga_concat(&ga, exprval);
-	vim_free(exprval);
+	save_c = *block_end;
+	*block_end = NUL;
+	expr_val = eval_to_string(block_start, TRUE);
+	*block_end = save_c;
+	if (expr_val == NULL)
+	{
+	    ga_clear(&ga);
+	    return NULL;
+	}
+	ga_concat(&ga, expr_val);
+	vim_free(expr_val);
+
+	p = block_end + 1;
     }
     ga_append(&ga, NUL);
 
@@ -825,7 +854,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	str = theline + ti;
 	if (vim9compile)
 	{
-	    if (compile_heredoc_string(str, evalstr, cctx) == FAIL)
+	    if (compile_all_expr_in_str(str, evalstr, cctx) == FAIL)
 	    {
 		vim_free(theline);
 		vim_free(text_indent);

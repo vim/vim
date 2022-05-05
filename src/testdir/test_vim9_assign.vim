@@ -2670,10 +2670,10 @@ def Test_heredoc_expr()
     var a3 = "3"
     var a4 = ""
     var code =<< trim eval END
-      var a = `=5 + 10`
-      var b = `=min([10, 6])` + `=max([4, 6])`
-      var c = "`=s`"
-      var d = x`=a1`x`=a2`x`=a3`x`=a4`
+      var a = {5 + 10}
+      var b = {min([10, 6])} + {max([4, 6])}
+      var c = "{s}"
+      var d = x{a1}x{a2}x{a3}x{a4}
     END
     assert_equal(['var a = 15', 'var b = 6 + 6', 'var c = "local"', 'var d = x1x2x3x'], code)
   CODE
@@ -2681,7 +2681,7 @@ def Test_heredoc_expr()
 
   lines =<< trim CODE
     var code =<< eval trim END
-      var s = "`=$SOME_ENV_VAR`"
+      var s = "{$SOME_ENV_VAR}"
     END
     assert_equal(['var s = "somemore"'], code)
   CODE
@@ -2689,7 +2689,7 @@ def Test_heredoc_expr()
 
   lines =<< trim CODE
     var code =<< eval END
-      var s = "`=$SOME_ENV_VAR`"
+      var s = "{$SOME_ENV_VAR}"
     END
     assert_equal(['  var s = "somemore"'], code)
   CODE
@@ -2697,34 +2697,34 @@ def Test_heredoc_expr()
 
   lines =<< trim CODE
     var code =<< eval trim END
-      let a = `abc`
-      let b = `=g:someVar`
-      let c = `
+      let a = {{abc}}
+      let b = {g:someVar}
+      let c = {{
     END
-    assert_equal(['let a = `abc`', 'let b = X', 'let c = `'], code)
+    assert_equal(['let a = {abc}', 'let b = X', 'let c = {'], code)
   CODE
   v9.CheckDefAndScriptSuccess(lines)
 
   lines =<< trim LINES
       var text =<< eval trim END
-        let b = `=
+        let b = {
       END
   LINES
-  v9.CheckDefAndScriptFailure(lines, ['E1143: Empty expression: ""', 'E1083: Missing backtick'])
+  v9.CheckDefAndScriptFailure(lines, 'E256: Missing }')
 
   lines =<< trim LINES
       var text =<< eval trim END
-        let b = `=abc
+        let b = {abc
       END
   LINES
-  v9.CheckDefAndScriptFailure(lines, ['E1001: Variable not found: abc', 'E1083: Missing backtick'])
+  v9.CheckDefAndScriptFailure(lines, 'E256: Missing }')
 
   lines =<< trim LINES
       var text =<< eval trim END
-        let b = `=`
+        let b = {}
       END
   LINES
-  v9.CheckDefAndScriptFailure(lines, ['E1015: Name expected: `', 'E15: Invalid expression: "`"'])
+  v9.CheckDefAndScriptFailure(lines, 'E15: Invalid expression: "}"')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -1350,11 +1350,8 @@ compile_get_env(char_u **arg, cctx_T *cctx)
     static int
 compile_interp_string(char_u **arg, cctx_T *cctx)
 {
-    char_u	*str;
-    char_u	*dup;
     typval_T	tv;
     int		ret;
-    int		len = 0;
     int		evaluate = cctx->ctx_skip != SKIP_YES;
 
     // *arg is on the '$' character.
@@ -1368,88 +1365,8 @@ compile_interp_string(char_u **arg, cctx_T *cctx)
     if (ret == FAIL || !evaluate)
 	return ret;
 
-    str = tv.vval.v_string;
-    // Special case for the empty string.
-    if (*str == NUL)
-    {
-	clear_tv(&tv);
-	return generate_PUSHS(cctx, NULL);
-    }
-
-    // Push all the string pieces to the stack, followed by a ISN_CONCAT.
-
-    while (*str != NUL)
-    {
-	char_u	*lit_start;
-	char_u	*block_start;
-	char_u	*block_end;
-	int	escaped_brace = FALSE;
-
-	// Look for a block start.
-	lit_start = str;
-	while (*str != '{' && *str != '}' && *str != NUL)
-	    ++str;
-
-	if (*str != NUL && *str == str[1])
-	{
-	    // Escaped brace, unescape and continue.
-	    // Include the brace in the literal string.
-	    ++str;
-	    escaped_brace = TRUE;
-	}
-	else if (*str == '}')
-	{
-	    semsg(_(e_stray_closing_curly_str), *arg);
-	    ret = FAIL;
-	    break;
-	}
-
-	// Append the literal part.
-	if (str != lit_start)
-	{
-	    dup = vim_strnsave(lit_start, (size_t)(str - lit_start));
-	    if ((ret = generate_PUSHS(cctx, &dup)) == FAIL)
-		break;
-	    ++len;
-	}
-
-	if (*str == NUL)
-	    break;
-
-	if (escaped_brace)
-	{
-	    // Skip the second brace.
-	    ++str;
-	    continue;
-	}
-
-	// Skip the opening {.
-	block_start = skipwhite(str + 1);
-	block_end = block_start;
-	if ((ret = skip_expr(&block_end, NULL)) == FAIL)
-	    break;
-	block_end = skipwhite(block_end);
-	// The block must be closed by a }.
-	if (*block_end != '}')
-	{
-	    semsg(_(e_missing_close_curly_str), *arg);
-	    ret = FAIL;
-	    break;
-	}
-	*block_end = NUL;
-	if ((ret = compile_expr0(&block_start, cctx)) == FAIL)
-	    break;
-	may_generate_2STRING(-1, TRUE, cctx);
-	++len;
-
-	str = block_end + 1;
-    }
-
+    ret = compile_all_expr_in_str(tv.vval.v_string, TRUE, cctx);
     clear_tv(&tv);
-
-    // Small optimization, if there's only a single piece skip the ISN_CONCAT.
-    if (ret != FAIL && len != 1)
-	ret = generate_CONCAT(cctx, len);
 
     return ret;
 }

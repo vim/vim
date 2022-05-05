@@ -268,7 +268,7 @@ def Test_folddo_backtick_expansion()
   var lines =<< trim END
       g:val = 'value'
       def Test()
-        folddoopen echo `=g:val`
+        folddoopen echo {g:val}
       enddef
       call Test()
   END

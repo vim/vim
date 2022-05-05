@@ -2256,14 +2256,13 @@ eval_lit_string(char_u **arg, typval_T *rettv, int evaluate)
     int
 eval_interp_string(char_u **arg, typval_T *rettv, int evaluate)
 {
-    char_u	*str;
-    char_u	*expr_val;
     typval_T	tv;
-    garray_T	ga;
     int		ret;
 
     // *arg is on the '$' character.
     (*arg)++;
+
+    rettv->v_type = VAR_STRING;
 
     if (**arg == '"')
 	ret = eval_string(arg, &tv, evaluate);
@@ -2273,89 +2272,11 @@ eval_interp_string(char_u **arg, typval_T *rettv, int evaluate)
     if (ret == FAIL || !evaluate)
 	return ret;
 
-    rettv->v_type = VAR_STRING;
-
-    ga_init2(&ga, sizeof(char_u), 1);
-
-    str = tv.vval.v_string;
-    while (*str != NUL)
-    {
-	char_u	*lit_start;
-	char_u	*block_start;
-	char_u	*block_end;
-	int	escaped_brace = FALSE;
-
-	// Look for a block start.
-	lit_start = str;
-	while (*str != '{' && *str != '}' && *str != NUL)
-	    ++str;
-
-	if (*str != NUL && *str == str[1])
-	{
-	    // Escaped brace, unescape and continue.
-	    // Include the brace in the literal string.
-	    ++str;
-	    escaped_brace = TRUE;
-	}
-	else if (*str == '}')
-	{
-	    semsg(_(e_stray_closing_curly_str), *arg);
-	    ret = FAIL;
-	    break;
-	}
-
-	// Append the literal part.
-	ga_concat_len(&ga, lit_start, (size_t)(str - lit_start));
-
-	if (*str == NUL)
-	    break;
-
-	if (escaped_brace)
-	{
-	    // Skip the second brace.
-	    ++str;
-	    continue;
-	}
-
-	// Skip the opening {.
-	block_start = ++str;
-	block_end = block_start;
-	if ((ret = skip_expr(&block_end, NULL)) == FAIL)
-	    break;
-	block_end = skipwhite(block_end);
-	// The block must be closed by a }.
-	if (*block_end != '}')
-	{
-	    semsg(_(e_missing_close_curly_str), *arg);
-	    ret = FAIL;
-	    break;
-	}
-	*block_end = NUL;
-	expr_val = eval_to_string(block_start, TRUE);
-	if (expr_val == NULL)
-	{
-	    ret = FAIL;
-	    break;
-	}
-	ga_concat(&ga, expr_val);
-	vim_free(expr_val);
-
-	str = block_end + 1;
-    }
+    rettv->vval.v_string = eval_all_expr_in_str(tv.vval.v_string);
 
     clear_tv(&tv);
 
-    if (ret != FAIL)
-    {
-	ga_append(&ga, NUL);
-	rettv->vval.v_string = ga.ga_data;
-    }
-    else
-    {
-	ga_clear(&ga);
-    }
-
-    return ret;
+    return rettv->vval.v_string != NULL ? OK : FAIL;
 }
 
 /*
