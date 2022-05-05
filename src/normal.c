@@ -7237,6 +7237,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		dir;
     int		flags = 0;
     int		keep_registers = FALSE;
+    char	*save_cb = NULL;
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7301,6 +7302,11 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    }
 
 	    // Now delete the selected text. Avoid messages here.
+	    if (keep_registers)
+	    {
+		save_cb = p_cb;
+		p_cb = "";
+	    }
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
 	    cap->oap->regname = keep_registers ? '_' : NUL;
@@ -7309,6 +7315,9 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    do_pending_operator(cap, 0, FALSE);
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
+
+	    if (keep_registers)
+		p_cb = p_cb;
 
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;
