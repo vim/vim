@@ -1124,6 +1124,11 @@ ex_else(exarg_T *eap)
 	skip = TRUE;
     }
 
+    // Variables declared in the previous block can no longer be
+    // used.  Needs to be done before setting "cs_flags".
+    leave_block(cstack);
+    enter_block(cstack);
+
     // if skipping or the ":if" was TRUE, reset ACTIVE, otherwise set it
     if (skip || cstack->cs_flags[cstack->cs_idx] & CSF_TRUE)
     {

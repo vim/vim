@@ -1640,6 +1640,50 @@ def Test_if_elseif_else_fails()
   v9.CheckDefAndScriptFailure(lines, ['E1143:', 'E15:'], 4)
 enddef
 
+def Test_if_else_func_using_var()
+  var lines =<< trim END
+      vim9script
+
+      const debug = true
+      if debug
+        var mode_chars = 'something'
+        def Bits2Ascii()
+          var x = mode_chars
+          g:where = 'in true'
+        enddef
+      else
+        def Bits2Ascii()
+          g:where = 'in false'
+        enddef
+      endif
+
+      Bits2Ascii()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('in true', g:where)
+  unlet g:where
+
+  lines =<< trim END
+      vim9script
+
+      const debug = false
+      if debug
+        var mode_chars = 'something'
+        def Bits2Ascii()
+          g:where = 'in true'
+        enddef
+      else
+        def Bits2Ascii()
+          var x = mode_chars
+          g:where = 'in false'
+        enddef
+      endif
+
+      Bits2Ascii()
+  END
+  v9.CheckScriptFailure(lines, 'E1001: Variable not found: mode_chars')
+enddef
+
 let g:bool_true = v:true
 let g:bool_false = v:false
 
