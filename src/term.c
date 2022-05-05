@@ -6604,15 +6604,21 @@ update_tcap(int attr)
 
 # ifdef FEAT_TERMGUICOLORS
 #  define KSSIZE 20
+
+enum
+{
+    CMODE_INDEXED = 0,	// Use cmd.exe 4bit palette.
+    CMODE_RGB,		// Use 24bit RGB colors using VTP.
+    CMODE_256COL,	// Emulate xterm's 256-color palette using VTP.
+    CMODE_LAST,
+};
+
 struct ks_tbl_s
 {
-    int  code;		// value of KS_
-    char *vtp;		// code in vtp mode
-    char *vtp2;		// code in vtp2 mode
-    char buf[KSSIZE];   // save buffer in non-vtp mode
-    char vbuf[KSSIZE];  // save buffer in vtp mode
-    char v2buf[KSSIZE]; // save buffer in vtp2 mode
-    char arr[KSSIZE];   // real buffer
+    int  code;				// value of KS_
+    char *vtp;				// code in RGB mode
+    char *vtp2;				// code in 256color mode
+    char buf[CMODE_LAST][KSSIZE];	// real buffer
 };
 
 static struct ks_tbl_s ks_tbl[] =
@@ -6667,14 +6673,7 @@ swap_tcap(void)
     struct ks_tbl_s	*ks;
     struct builtin_term *bt;
     int			mode;
-    enum
-    {
-	CMODEINDEX,
-	CMODE24,
-	CMODE256
-    };
 
-    // buffer initialization
     if (!init_done)
     {
 	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
@@ -6682,67 +6681,36 @@ swap_tcap(void)
 	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	    if (bt != NULL)
 	    {
-		STRNCPY(ks->buf, bt->bt_string, KSSIZE);
-		STRNCPY(ks->vbuf, ks->vtp, KSSIZE);
-		STRNCPY(ks->v2buf, ks->vtp2, KSSIZE);
+		// Preserve the original value.
+		STRNCPY(ks->buf[CMODE_INDEXED], bt->bt_string, KSSIZE);
+		STRNCPY(ks->buf[CMODE_RGB], ks->vtp, KSSIZE);
+		STRNCPY(ks->buf[CMODE_256COL], ks->vtp2, KSSIZE);
 
-		STRNCPY(ks->arr, bt->bt_string, KSSIZE);
-		bt->bt_string = &ks->arr[0];
+		bt->bt_string = ks->buf[CMODE_INDEXED];
 	    }
 	}
 	init_done = TRUE;
-	curr_mode = CMODEINDEX;
+	curr_mode = CMODE_INDEXED;
     }
 
     if (p_tgc)
-	mode = CMODE24;
+	mode = CMODE_RGB;
     else if (t_colors >= 256)
-	mode = CMODE256;
+	mode = CMODE_256COL;
     else
-	mode = CMODEINDEX;
+	mode = CMODE_INDEXED;
+
+    if (mode == curr_mode)
+	return;
 
     for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {
 	bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	if (bt != NULL)
-	{
-	    switch (curr_mode)
-	    {
-	    case CMODEINDEX:
-		STRNCPY(&ks->buf[0], bt->bt_string, KSSIZE);
-		break;
-	    case CMODE24:
-		STRNCPY(&ks->vbuf[0], bt->bt_string, KSSIZE);
-		break;
-	    default:
-		STRNCPY(&ks->v2buf[0], bt->bt_string, KSSIZE);
-	    }
-	}
+	    bt->bt_string = ks->buf[mode];
     }
 
-    if (mode != curr_mode)
-    {
-	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
-	{
-	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
-	    if (bt != NULL)
-	    {
-		switch (mode)
-		{
-		case CMODEINDEX:
-		    STRNCPY(bt->bt_string, &ks->buf[0], KSSIZE);
-		    break;
-		case CMODE24:
-		    STRNCPY(bt->bt_string, &ks->vbuf[0], KSSIZE);
-		    break;
-		default:
-		    STRNCPY(bt->bt_string, &ks->v2buf[0], KSSIZE);
-		}
-	    }
-	}
-
-	curr_mode = mode;
-    }
+    curr_mode = mode;
 # endif
 }
 
