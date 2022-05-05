@@ -2280,42 +2280,49 @@ eval_interp_string(char_u **arg, typval_T *rettv, int evaluate)
     str = tv.vval.v_string;
     while (*str != NUL)
     {
-	char_u	*block_start = vim_strchr(str, '{');
+	char_u	*lit_start;
+	char_u	*block_start;
 	char_u	*block_end;
 	int	escaped_brace = FALSE;
 
-	// Escaped opening brace, unescape and continue.
-	if (block_start != NULL && block_start[1] == '{')
+	// Look for a block start.
+	lit_start = str;
+	while (*str != '{' && *str != '}' && *str != NUL)
+	    ++str;
+
+	if (*str != NUL && *str == str[1])
 	{
+	    // Escaped brace, unescape and continue.
 	    // Include the brace in the literal string.
-	    block_start += 1;
+	    ++str;
 	    escaped_brace = TRUE;
 	}
-
-	if (block_start == NULL)
+	else if (*str == '}')
 	{
-	    ga_concat(&ga, str);
+	    semsg(_(e_stray_closing_curly_str), *arg);
+	    ret = FAIL;
 	    break;
 	}
-	else
-	    // From `str` to `block_start` we have a chunk of literal text.
-	    ga_concat_len(&ga, str, (size_t)(block_start - str));
+
+	// Append the literal part.
+	ga_concat_len(&ga, lit_start, (size_t)(str - lit_start));
+
+	if (*str == NUL)
+	    break;
 
 	if (escaped_brace)
 	{
 	    // Skip the second brace.
-	    str = block_start + 1;
+	    ++str;
 	    continue;
 	}
 
 	// Skip the opening {.
-	block_start += 1;
+	block_start = ++str;
 	block_end = block_start;
-	if (skip_expr(&block_end, NULL) == FAIL)
-	{
-	    ret = FAIL;
+	if ((ret = skip_expr(&block_end, NULL)) == FAIL)
 	    break;
-	}
+	block_end = skipwhite(block_end);
 	// The block must be closed by a }.
 	if (*block_end != '}')
 	{

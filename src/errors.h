@@ -248,7 +248,8 @@ EXTERN char e_escape_not_allowed_in_digraph[]
 EXTERN char e_using_loadkeymap_not_in_sourced_file[]
 	INIT(= N_("E105: Using :loadkeymap not in a sourced file"));
 #endif
-// E106 unused
+EXTERN char e_stray_closing_curly_str[]
+	INIT(= N_("E106: Stray '}' without a matching '{': %s"));
 #ifdef FEAT_EVAL
 EXTERN char e_missing_parenthesis_str[]
 	INIT(= N_("E107: Missing parentheses: %s"));

@@ -895,9 +895,11 @@ func Test_string_interp()
     call assert_equal('', $"")
     call assert_equal('foobar', $"foobar")
     #" Escaping rules.
-    call assert_equal('"foo"{bar}', $"\"foo\"{{bar}")
-    call assert_equal('"foo"{bar}', $'"foo"{{bar}')
+    call assert_equal('"foo"{bar}', $"\"foo\"{{bar}}")
+    call assert_equal('"foo"{bar}', $'"foo"{{bar}}')
     call assert_equal('foobar', $"{\"foo\"}" .. $'{''bar''}')
+    #" Whitespace before/after the expression.
+    call assert_equal('3', $"{ 1 + 2 }")
     #" String conversion.
     call assert_equal('hello from ' .. v:version, $"hello from {v:version}")
     call assert_equal('hello from ' .. v:version, $'hello from {v:version}')
@@ -906,7 +908,7 @@ func Test_string_interp()
     call assert_equal('(1+1=2)', $"(1+1={1 + 1})")
     #" Hex-escaped opening brace: char2nr('{') == 0x7b
     call assert_equal('esc123ape', $"esc\x7b123}ape")
-    call assert_equal('me{}me', $"me\x7b\x7b}me")
+    call assert_equal('me{}me', $"me{\x7b}\x7dme")
     VAR var1 = "sun"
     VAR var2 = "shine"
     call assert_equal('sunshine', $"{var1}{var2}")
@@ -922,6 +924,8 @@ func Test_string_interp()
     endif
     call assert_equal(0, tmp)
 
+    #" Stray closing brace.
+    call assert_fails('echo $"moo}"', 'E106:')
     #" Undefined variable in expansion.
     call assert_fails('echo $"{moo}"', 'E121:')
     #" Empty blocks are rejected.
