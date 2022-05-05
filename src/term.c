@@ -6628,7 +6628,7 @@ static struct ks_tbl_s ks_tbl[] =
     {(int)KS_MD,  "\033|1m",  "\033|1m"},   // bold
     {(int)KS_SO,  "\033|91m", "\033|91m"},  // standout: bright red text
     {(int)KS_SE,  "\033|39m", "\033|39m"},  // standout end: default color
-    {(int)KS_CZH, "\033|95m", "\033|95m"},  // italic: bright magenta text
+    {(int)KS_CZH, "\033|3m",  "\033|3m"},   // italic
     {(int)KS_CZR, "\033|0m",  "\033|0m"},   // italic end
     {(int)KS_US,  "\033|4m",  "\033|4m"},   // underscore
     {(int)KS_UE,  "\033|24m", "\033|24m"},  // underscore end
