@@ -2151,7 +2151,7 @@ endfunc
 func Test_edit_shift_bs()
   " Need to run this in Win32 Terminal,
   " do not use CheckFeatureTerminal
-  if !has("terminal")
+  if !has("terminal") || !has("win32")
     return
   endif
   " Shift Backspace should work like Backspace in insert mode
