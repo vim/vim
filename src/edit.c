@@ -963,6 +963,7 @@ doESCkey:
 	    break;
 
 	case K_BS:	// delete character before the cursor
+	case K_S_BS:
 	case Ctrl_H:
 	    did_backspace = ins_bs(c, BACKSPACE_CHAR, &inserted_space);
 	    auto_format(FALSE, TRUE);

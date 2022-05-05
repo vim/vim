@@ -248,7 +248,11 @@ let g:valgrind_cnt = 1
 func GetVimCommand(...)
   if !filereadable('vimcmd')
     echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
-    let lines = ['../vim']
+    if !has("win32")
+      let lines = ['../vim']
+    else
+      let lines = ['..\vim.exe']
+    endif
   else
     let lines = readfile('vimcmd')
   endif
