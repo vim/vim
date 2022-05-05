@@ -7237,7 +7237,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		dir;
     int		flags = 0;
     int		keep_registers = FALSE;
-    char	*save_cb = NULL;
+    char_u	*save_cb = NULL;
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7305,7 +7305,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    if (keep_registers)
 	    {
 		save_cb = p_cb;
-		p_cb = "";
+		p_cb = (char_u *)"";
 	    }
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
