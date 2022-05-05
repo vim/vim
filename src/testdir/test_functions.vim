@@ -1398,6 +1398,28 @@ func Test_Executable()
   endif
 endfunc
 
+func Test_executable_windows_store_apps()
+  CheckMSWindows
+
+  " Windows Store apps install some 'decoy' .exe that require some careful
+  " handling as they behave similarly to symlinks.
+  let app_dir = expand("$LOCALAPPDATA\\Microsoft\\WindowsApps")
+  if !isdirectory(app_dir)
+    return
+  endif
+
+  let save_path = $PATH
+  let $PATH = app_dir
+  " Ensure executable() finds all the app .exes
+  for entry in readdir(app_dir)
+    if entry =~ '\.exe$'
+      call assert_true(executable(entry))
+    endif
+  endfor
+
+  let $PATH = save_path
+endfunc
+
 func Test_executable_longname()
   CheckMSWindows
 

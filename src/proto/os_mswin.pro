@@ -50,4 +50,5 @@ char *charset_id2name(int id);
 char *quality_id2name(DWORD id);
 int get_logfont(LOGFONTW *lf, char_u *name, HDC printer_dc, int verbose);
 void channel_init_winsock(void);
+char_u *resolve_appexeclink(char_u *fname);
 /* vim: set ft=c : */
