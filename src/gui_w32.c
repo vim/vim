@@ -219,7 +219,15 @@ gui_mch_set_rendering_options(char_u *s)
 #define DLG_NONBUTTON_CONTROL	5000	// First ID of non-button controls
 
 #ifndef WM_DPICHANGED
-# define WM_DPICHANGED		0x02E0
+# define WM_DPICHANGED			0x02E0
+#endif
+
+#ifndef WM_MOUSEHWHEEL
+# define WM_MOUSEHWHEEL			0x020E
+#endif
+
+#ifndef SPI_GETWHEELSCROLLCHARS
+# define SPI_GETWHEELSCROLLCHARS	0x006C
 #endif
 
 #ifdef PROTO
@@ -3992,6 +4000,7 @@ static int dialog_default_button = -1;
 
 // Intellimouse support
 static int mouse_scroll_lines = 0;
+static int mouse_scroll_chars = 0;
 
 #ifdef FEAT_TOOLBAR
 static void initialise_toolbar(void);
@@ -4111,11 +4120,13 @@ gui_mswin_get_menu_height(
     static void
 init_mouse_wheel(void)
 {
-    mouse_scroll_lines = 3;	// reasonable default
+    // Reasonable default values.
+    mouse_scroll_lines = 3;
+    mouse_scroll_chars = 3;
 
     // if NT 4.0+ (or Win98) get scroll lines directly from system
-    SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0,
-	    &mouse_scroll_lines, 0);
+    SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &mouse_scroll_lines, 0);
+    SystemParametersInfo(SPI_GETWHEELSCROLLCHARS, 0, &mouse_scroll_chars, 0);
 }
 
 
@@ -4124,15 +4135,15 @@ init_mouse_wheel(void)
  * Treat a mouse wheel event as if it were a scroll request.
  */
     static void
-_OnMouseWheel(
-    HWND hwnd,
-    short zDelta)
+_OnMouseWheel(HWND hwnd, short zDelta, LPARAM param, int horizontal)
 {
-    int i;
-    int size;
-    HWND hwndCtl;
-    win_T *wp;
+    int		i;
+    int		amount;
+    int		button;
+    win_T	*wp;
+    int		modifiers, kbd_modifiers;
 
+    // Initializes mouse_scroll_chars too.
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
 
@@ -4148,8 +4159,16 @@ _OnMouseWheel(
 	mouse_row = wp->w_winrow;
 	mouse_col = wp->w_wincol;
 	CLEAR_FIELD(cap);
-	cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
-	cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
+	if (horizontal)
+	{
+	    cap.arg = zDelta < 0 ? MSCR_LEFT : MSCR_RIGHT;
+	    cap.cmdchar = zDelta < 0 ? K_MOUSELEFT : K_MOUSERIGHT;
+	}
+	else
+	{
+	    cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
+	    cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
+	}
 	clear_oparg(&oa);
 	cap.oap = &oa;
 	nv_mousescroll(&cap);
@@ -4163,23 +4182,40 @@ _OnMouseWheel(
     if (wp == NULL || !p_scf)
 	wp = curwin;
 
-    if (wp->w_scrollbars[SBAR_RIGHT].id != 0)
-	hwndCtl = wp->w_scrollbars[SBAR_RIGHT].id;
-    else if (wp->w_scrollbars[SBAR_LEFT].id != 0)
-	hwndCtl = wp->w_scrollbars[SBAR_LEFT].id;
-    else
-	return;
-    size = wp->w_height;
-
-    mch_disable_flush();
-    if (mouse_scroll_lines > 0
-	    && mouse_scroll_lines < (size > 2 ? size - 2 : 1))
+    // Translate the scroll event into an event that Vim can process so that
+    // the user has a chance to map the scrollwheel buttons.
+    if (horizontal)
     {
-	for (i = mouse_scroll_lines; i > 0; --i)
-	    _OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_LINEUP : SB_LINEDOWN, 0);
+	button = zDelta >= 0 ? MOUSE_6 : MOUSE_7;
+	if (mouse_scroll_chars > 0
+			       && mouse_scroll_chars < MAX(wp->w_width - 2, 1))
+	    amount = mouse_scroll_chars;
+	else
+	    amount = MAX(wp->w_width - 2, 1);
     }
     else
-	_OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
+    {
+	button = zDelta >= 0 ? MOUSE_4 : MOUSE_5;
+	if (mouse_scroll_lines > 0
+			      && mouse_scroll_lines < MAX(wp->w_height - 2, 1))
+	    amount = mouse_scroll_lines;
+	else
+	    amount = MAX(wp->w_height - 2, 1);
+    }
+
+    kbd_modifiers = get_active_modifiers();
+
+    if ((kbd_modifiers & MOD_MASK_SHIFT) != 0)
+	modifiers |= MOUSE_SHIFT;
+    if ((kbd_modifiers & MOD_MASK_CTRL) != 0)
+	modifiers |= MOUSE_CTRL;
+    if ((kbd_modifiers & MOD_MASK_ALT) != 0)
+	modifiers |= MOUSE_ALT;
+
+    mch_disable_flush();
+    for (i = amount; i > 0; --i)
+	gui_send_mouse_event(button, GET_X_LPARAM(param), GET_Y_LPARAM(param),
+		FALSE, kbd_modifiers);
     mch_enable_flush();
     gui_may_flush();
 }
@@ -4255,13 +4291,24 @@ set_tabline_font(void)
  * Invoked when a setting was changed.
  */
     static LRESULT CALLBACK
-_OnSettingChange(UINT n)
+_OnSettingChange(UINT param)
 {
-    if (n == SPI_SETWHEELSCROLLLINES)
-	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0,
-		&mouse_scroll_lines, 0);
-    if (n == SPI_SETNONCLIENTMETRICS)
-	set_tabline_font();
+    switch (param)
+    {
+	case SPI_SETWHEELSCROLLLINES:
+	    SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0,
+		    &mouse_scroll_lines, 0);
+	    break;
+	case SPI_GETWHEELSCROLLCHARS:
+	    SystemParametersInfo(SPI_GETWHEELSCROLLCHARS, 0,
+		    &mouse_scroll_chars, 0);
+	    break;
+	case SPI_SETNONCLIENTMETRICS:
+	    set_tabline_font();
+	    break;
+	default:
+	    break;
+    }
     return 0;
 }
 
@@ -4723,7 +4770,8 @@ _WndProc(
 	return _DuringSizing((UINT)wParam, (LPRECT)lParam);
 
     case WM_MOUSEWHEEL:
-	_OnMouseWheel(hwnd, HIWORD(wParam));
+    case WM_MOUSEHWHEEL:
+	_OnMouseWheel(hwnd, HIWORD(wParam), lParam, uMsg == WM_MOUSEHWHEEL);
 	return 0L;
 
 	// Notification for change in SystemParametersInfo()
