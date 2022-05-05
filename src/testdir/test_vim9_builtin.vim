@@ -4078,6 +4078,11 @@ def Test_substitute()
   v9.CheckDefAndScriptFailure(['substitute("a", 2, "1", "d")'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['substitute("a", "b", "1", 4)'], ['E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4'])
   substitute('', '', '', '')->assert_equal('')
+
+  var lines =<< trim END
+    assert_equal("4", substitute("3", '\d', '\=str2nr(submatch(0)) + 1', 'g'))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_swapinfo()

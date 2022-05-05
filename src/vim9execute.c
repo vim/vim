@@ -5010,6 +5010,10 @@ exe_typval_instr(typval_T *tv, typval_T *rettv)
     int		save_iidx = ectx->ec_iidx;
     int		res;
 
+    // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
+    // even when the compilation fails.
+    rettv->v_type = VAR_UNKNOWN;
+
     ectx->ec_instr = tv->vval.v_instr->instr_instr;
     res = exec_instructions(ectx);
     if (res == OK)

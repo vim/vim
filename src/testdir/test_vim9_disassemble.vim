@@ -187,6 +187,26 @@ def Test_disassemble_seachpair()
 enddef
 
 
+def s:SubstituteExpr()
+    substitute('a', 'b', '\=123', 'g')
+enddef
+
+def Test_disassemble_substitute_expr()
+  var res = execute('disass s:SubstituteExpr')
+  assert_match('<SNR>\d*_SubstituteExpr.*' ..
+        'substitute(''a'', ''b'', ''\\=123'', ''g'')\_s*' ..
+        '\d PUSHS "a"\_s*' ..
+        '\d PUSHS "b"\_s*' ..
+        '\d INSTR\_s*' ..
+        '  0 PUSHNR 123\_s*' ..
+        ' -------------\_s*' ..
+        '\d PUSHS "g"\_s*' ..
+        '\d BCALL substitute(argc 4)\_s*' ..
+        '\d DROP\_s*' ..
+        '\d RETURN void',
+        res)
+enddef
+
 def s:RedirVar()
   var result: string
   redir =>> result
