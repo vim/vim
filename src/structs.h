@@ -3742,6 +3742,7 @@ struct window_S
     int		w_briopt_shift;	    // additional shift for breakindent
     int		w_briopt_sbr;	    // sbr in 'briopt'
     int		w_briopt_list;      // additional indent for lists
+    int		w_briopt_vcol;	    // indent for specific column
 #endif
 
     long	w_scbind_pos;
