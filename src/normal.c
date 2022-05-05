@@ -7322,16 +7322,6 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
 
-#ifdef FEAT_CLIPBOARD
-	    if (keep_registers)
-	    {
-		if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED)
-		    put_register('*', save_cb);
-		else if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED_PLUS)
-		    put_register('+', save_cb);
-	    }
-#endif
-
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;
 
@@ -7368,6 +7358,16 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	// If a register was saved, put it back now.
 	if (reg2 != NULL)
 	    put_register(regname, reg2);
+
+#ifdef FEAT_CLIPBOARD
+	if (keep_registers && save_cb != NULL)
+	{
+	    if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED)
+		put_register('*', save_cb);
+	    else if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED_PLUS)
+		put_register('+', save_cb);
+	}
+#endif
 
 	// What to reselect with "gv"?  Selecting the just put text seems to
 	// be the most useful, since the original text was removed.
