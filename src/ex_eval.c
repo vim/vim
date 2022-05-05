@@ -940,8 +940,14 @@ ex_eval(exarg_T *eap)
     if (eval0(eap->arg, &tv, eap, &evalarg) == OK)
     {
 	clear_tv(&tv);
-	if (in_vim9script() && name_only && lnum == SOURCING_LNUM)
+	if (in_vim9script() && name_only
+		&& (evalarg.eval_tofree == NULL
+		    || ends_excmd2(evalarg.eval_tofree,
+					      skipwhite(evalarg.eval_tofree))))
+	{
+	    SOURCING_LNUM = lnum;
 	    semsg(_(e_expression_without_effect_str), eap->arg);
+	}
     }
 
     clear_evalarg(&evalarg, eap);

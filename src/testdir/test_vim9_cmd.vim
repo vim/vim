@@ -651,6 +651,20 @@ def Test_use_register()
   v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
 
   lines =<< trim END
+      @a = 'echo "text"'
+      @a
+
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
+
+  lines =<< trim END
+      @a = 'echo "text"'
+      @a
+          # comment
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
+
+  lines =<< trim END
       @/ = 'pattern'
       @/
   END
