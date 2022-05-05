@@ -7302,11 +7302,13 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    }
 
 	    // Now delete the selected text. Avoid messages here.
+#ifdef FEAT_CLIPBOARD
 	    if (keep_registers)
 	    {
 		save_cb = p_cb;
 		p_cb = (char_u *)"";
 	    }
+#endif
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
 	    cap->oap->regname = keep_registers ? '_' : NUL;
@@ -7316,8 +7318,10 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
 
+#ifdef FEAT_CLIPBOARD
 	    if (keep_registers)
 		p_cb = save_cb;
+#endif
 
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;
