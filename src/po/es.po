@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-06 17:06+0200\n"
+"PO-Revision-Date: 2022-05-06 17:26+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -1558,7 +1558,7 @@ msgstr "opción desconocida"
 
 #: ../if_mzsch.c:1964
 msgid "window index is out of range"
-msgstr "indice de ventana fuera del rango"
+msgstr "índice de ventana fuera del rango"
 
 #: ../if_mzsch.c:2146
 msgid "couldn't open buffer"
@@ -1566,24 +1566,24 @@ msgstr "No se pudo abrir el búfer"
 
 #: ../if_mzsch.c:2463 ../if_mzsch.c:2592 ../if_mzsch.c:2661 ../if_py_both.h:42
 msgid "cannot delete line"
-msgstr "no puedo suprimir la línea"
+msgstr "no se puede borrar linea"
 
 #: ../if_mzsch.c:2494 ../if_mzsch.c:2676 ../if_tcl.c:679 ../if_tcl.c:2014
 #: ../if_py_both.h:44
 msgid "cannot replace line"
-msgstr "no se pudo reemplazar la línea"
+msgstr "no se puede reemplazar la linea"
 
 #: ../if_mzsch.c:2691 ../if_mzsch.c:2775 ../if_mzsch.c:2835 ../if_py_both.h:43
 msgid "cannot insert line"
-msgstr "no se pudo insertar la línea"
+msgstr "no se puede insertar la línea"
 
 #: ../if_mzsch.c:2933 ../if_py_both.h:4284
 msgid "string cannot contain newlines"
-msgstr "La cadena no puede contener quiebres de línea"
+msgstr "la cadena no puede contener saltos de línea"
 
 #: ../if_mzsch.c:3431
 msgid "error converting Scheme values to Vim"
-msgstr ""
+msgstr "error al convertir los valores de Scheme a Vim"
 
 #: ../if_mzsch.c:3534
 msgid "Vim error: ~a"
@@ -1595,7 +1595,7 @@ msgstr "Error de Vim"
 
 #: ../if_mzsch.c:3641
 msgid "buffer is invalid"
-msgstr "El búfer no es valido"
+msgstr "El búfer no es válido"
 
 #: ../if_mzsch.c:3652
 msgid "window is invalid"
@@ -1607,7 +1607,7 @@ msgstr "El número de la línea está fuera del rango"
 
 #: ../if_mzsch.c:3825 ../if_mzsch.c:3868
 msgid "not allowed in the Vim sandbox"
-msgstr "No permitido en la \"sandbox\" de vim"
+msgstr "No permitido en la \"sandbox\" de Vim"
 
 #: ../if_tcl.c:408
 msgid "invalid buffer number"
@@ -1685,14 +1685,14 @@ msgstr "Incapaz de registrar un nombre de servidor de órdenes"
 #: ../indent.c:1075
 #, c-format
 msgid "%ld lines to indent... "
-msgstr "%ld líneas por sangrar..."
+msgstr "%ld líneas para sangrar..."
 
 #: ../indent.c:1119
-#, fuzzy, c-format
+#, c-format
 msgid "%ld line indented "
 msgid_plural "%ld lines indented "
-msgstr[0] "%ld líneas sangradas"
-msgstr[1] "%ld líneas sangradas"
+msgstr[0] "%ld línea sangrada "
+msgstr[1] "%ld líneas sangradas "
 
 #: ../insexpand.c:47
 msgid " Keyword completion (^N^P)"
@@ -1732,7 +1732,7 @@ msgstr " Completar diccionario (^K^N^P)"
 
 #: ../insexpand.c:57
 msgid " Thesaurus completion (^T^N^P)"
-msgstr " Completar palabras con tesauro (^T^N^P)"
+msgstr " Completar palabras con Thesaurus (^T^N^P)"
 
 #. CTRL_X_EVAL doesn't use msg.
 #: ../insexpand.c:58 ../insexpand.c:64
