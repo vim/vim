@@ -70,6 +70,16 @@ func Test_lambda_vim9cmd_linebreak()
   exe 'sleep ' .. [20, 100, 500, 500, 500][g:run_nr] .. 'm'
   call assert_equal('done', g:result)
   unlet g:result
+
+  let lines =<< trim END
+      g:result = [0]->map((_, v) =>
+          1 # inline comment
+          +
+          2
+      )
+      assert_equal([3], g:result)
+  END
+  call v9.CheckDefAndScriptSuccess(lines)
 endfunc
 
 func Test_lambda_with_partial()
