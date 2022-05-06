@@ -15,14 +15,17 @@ endif
 
 " Verify that Vim running in terminal buffer "buf" matches the screen dump.
 " "options" is passed to term_dumpwrite().
+" Additionally, the "wait" entry can specify the maximum time to wait for the
+" screen dump to match in msec (default 1000 msec).
 " The file name used is "dumps/{filename}.dump".
 " Optionally an extra argument can be passed which is prepended to the error
 " message.  Use this when using the same dump file with different options.
-" Will wait for up to a second for the screen dump to match.
 " Returns non-zero when verification fails.
 func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
   let testfile = 'failed/' . a:filename . '.dump'
+
+  let max_loops = get(a:options, 'wait', 1000) / 10
 
   " Starting a terminal to make a screendump is always considered flaky.
   let g:test_is_flaky = 1
@@ -60,7 +63,7 @@ func VerifyScreenDump(buf, filename, options, ...)
       endif
       break
     endif
-    if i == 100
+    if i == max_loops
       " Leave the failed dump around for inspection.
       if filereadable(reference)
 	let msg = 'See dump file difference: call term_dumpdiff("testdir/' .. testfile .. '", "testdir/' .. reference .. '")'

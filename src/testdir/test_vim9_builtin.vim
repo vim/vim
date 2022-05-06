@@ -4552,7 +4552,8 @@ func Test_win_gotoid_in_mapping()
     END
     call writefile(lines, 'Xgotoscript')
     let buf = RunVimInTerminal('-S Xgotoscript', #{rows: 15, wait_for_ruler: 0})
-    call VerifyScreenDump(buf, 'Test_win_gotoid_1', {})
+    " wait longer here, since we didn't wait for the ruler
+    call VerifyScreenDump(buf, 'Test_win_gotoid_1', #{wait: 3000})
     call term_sendkeys(buf, "3Gvl")
     call VerifyScreenDump(buf, 'Test_win_gotoid_2', {})
 
