@@ -4199,10 +4199,6 @@ def Test_echo_uninit_variables()
   var Var_func: func
   var var_string: string
   var var_blob: blob
-  if has('job')
-    var var_job: job
-    var var_channel: channel
-  endif
   var var_list: list<any>
   var var_dict: dict<any>
 
@@ -4213,19 +4209,23 @@ def Test_echo_uninit_variables()
   echo Var_func
   echo var_string
   echo var_blob
-  if has('job')
-    echo var_job
-    echo var_channel
-  else
-    echo 'no process'
-    echo 'channel fail'
-  endif
   echo var_list
   echo var_dict
   redir END
 
-  assert_equal(['false', '0', '0.0', 'function()', '', '0z', 'no process',
-    'channel fail', '[]', '{}'], res->split('\n'))
+  assert_equal(['false', '0', '0.0', 'function()', '', '0z', '[]', '{}'], res->split('\n'))
+
+  if has('job')
+    var var_job: job
+    var var_channel: channel
+
+    redir => res
+    echo var_job
+    echo var_channel
+    redir END
+
+    assert_equal(['no process', 'channel fail'], res->split('\n'))
+  endif
 enddef
 
 " Keep this last, it messes up highlighting.
