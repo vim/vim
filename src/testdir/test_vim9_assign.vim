@@ -739,6 +739,14 @@ def Test_init_in_for_loop()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_redir_is_not_assign()
+  if false
+    redir => res
+    echo var_job
+    redir END
+  endif
+enddef
+
 def Test_extend_list()
   # using uninitialized list assigns empty list
   var lines =<< trim END
