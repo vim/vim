@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-06 18:08+0200\n"
+"PO-Revision-Date: 2022-05-06 19:38+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -2723,7 +2723,7 @@ msgstr ""
 
 #: ../memline.c:2230
 msgid " (STILL RUNNING)"
-msgstr ""
+msgstr " (TODAVÍA EN EJECUCIÓN)"
 
 #: ../memline.c:2242
 msgid ""
@@ -2779,12 +2779,11 @@ msgstr ""
 
 #: ../memline.c:4605
 msgid "While opening file \""
-msgstr "al abrir el archivo \""
+msgstr "Al abrir el archivo \""
 
 #: ../memline.c:4610
-#, fuzzy
 msgid "      CANNOT BE FOUND"
-msgstr "  NO SE ENCONTRÓ"
+msgstr "      NO PUDO SER ENCONTRADO"
 
 #: ../memline.c:4617
 msgid "      NEWER than swap file!\n"
@@ -2820,7 +2819,7 @@ msgid ""
 "    to recover the changes (see \":help recovery\").\n"
 msgstr ""
 "\"\n"
-"    para recuperar los cambios (véa \":help recovery\").\n"
+"    para recuperar los cambios (consulte \":help recovery\").\n"
 
 #: ../memline.c:4626
 msgid "    If you did this already, delete the swap file \""
@@ -2836,7 +2835,7 @@ msgstr ""
 
 #: ../memline.c:5020
 msgid "Found a swap file that is not useful, deleting it"
-msgstr ""
+msgstr "Encontrado un archivo de intercambio que no es útil, eliminándolo"
 
 #: ../memline.c:5072 ../memline.c:5076
 msgid "Swap file \""
@@ -2862,11 +2861,11 @@ msgid ""
 "&Quit\n"
 "&Abort"
 msgstr ""
-"&Abrir para lectura únicamente\n"
+"&Abrir como solo lectura\n"
 "&Editar de todas formas\n"
 "&Recuperar\n"
 "&Salir\n"
-"A&bortar"
+"&Cancelar"
 
 #: ../memline.c:5090
 msgid ""
@@ -2877,12 +2876,12 @@ msgid ""
 "&Quit\n"
 "&Abort"
 msgstr ""
-"&Abrir para lectura únicamente\n"
+"&Abrir como solo lectura\n"
 "&Editar de todas formas\n"
 "&Recuperar\n"
 "&Borrar\n"
 "&Salir\n"
-"&Abortar"
+"&Cancelar"
 
 # Now we have found the matching menu, and we list the mappings
 # Highlight title
@@ -2898,12 +2897,12 @@ msgstr ""
 
 #: ../menu.c:2256
 msgid "Tear off this menu"
-msgstr "Desprender y flotar este menú"
+msgstr "Desprender este menú"
 
 #: ../message.c:480
-#, fuzzy, c-format
+#, c-format
 msgid "Error detected while compiling %s:"
-msgstr "Se ha detectado un error al procesar %s:"
+msgstr "Se ha detectado un error al compilar %s:"
 
 #: ../message.c:483
 #, c-format
@@ -2913,14 +2912,14 @@ msgstr "Se ha detectado un error al procesar %s:"
 #: ../message.c:509
 #, c-format
 msgid "line %4ld:"
-msgstr "línea %4ld"
+msgstr "línea %4ld:"
 
 #. Translator: Please replace the name and email address
 #. with the appropriate text for your translation.
 #: ../message.c:1093
 msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
 msgstr ""
-"Traducción: Proyecto vim-doc-es <http://www.assembla.com/wiki/show/vim-doc-"
+"Traducción: Proyecto vim-doc-es <https://www.assembla.com/wiki/show/vim-doc-"
 "es>"
 
 #: ../message.c:1379
@@ -2938,7 +2937,7 @@ msgstr "Desconocido"
 #: ../message.c:2460
 #, c-format
 msgid "%s line %ld"
-msgstr "%s, en la línea %ld"
+msgstr "%s en la línea %ld"
 
 #: ../message.c:3311
 msgid "-- More --"
@@ -2975,28 +2974,27 @@ msgstr ""
 "&Cancelar"
 
 #: ../misc1.c:1007
-#, fuzzy
 msgid "Type number and <Enter> or click with the mouse (q or empty cancels): "
-msgstr "Escriba un número e <Intro> o pulse con el ratón (la omisión cancela) "
+msgstr ""
+"Escriba un número e <Intro> o pulse con el ratón (q u omisión cancela): "
 
 #: ../misc1.c:1009
-#, fuzzy
 msgid "Type number and <Enter> (q or empty cancels): "
-msgstr "Escoja un número e <Intro> (la omisión cancela la acción): "
+msgstr "Escriba un número e <Intro> (q u omisión cancela): "
 
 #: ../misc1.c:1064
-#, fuzzy, c-format
+#, c-format
 msgid "%ld more line"
 msgid_plural "%ld more lines"
-msgstr[0] "%ld líneas más"
-msgstr[1] "%ld líneas más"
+msgstr[0] "%ld más línea"
+msgstr[1] "%ld más líneas"
 
 #: ../misc1.c:1067
-#, fuzzy, c-format
+#, c-format
 msgid "%ld line less"
 msgid_plural "%ld fewer lines"
-msgstr[0] "1 línea menos"
-msgstr[1] "1 línea menos"
+msgstr[0] "%ld línea menos"
+msgstr[1] "%ld líneas menos"
 
 #: ../misc1.c:1069
 msgid " (Interrupted)"
@@ -3009,7 +3007,7 @@ msgstr "¡Bip!"
 #: ../misc2.c:1759
 #, c-format
 msgid "Calling shell to execute: \"%s\""
-msgstr "Invocando al intérprete de órdenes para ejecutar: %s"
+msgstr "Invocando al intérprete de órdenes para ejecutar: \"%s\""
 
 #: ../normal.c:1076
 msgid "Warning: terminal cannot highlight"
@@ -3018,44 +3016,45 @@ msgstr "Advertencia: la terminal no puede resaltar el texto"
 #: ../normal.c:6775
 msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
+"Escriba  :qa!  y presione <Intro> para abandonar todos los cambios y salir de"
+" Vim"
 
 #: ../normal.c:6777
-#, fuzzy
 msgid "Type  :qa  and press <Enter> to exit Vim"
-msgstr "Escriba \":quit<intro>\" para salir de Vim"
+msgstr "Escriba  :qa  y pulse <Intro>\" para salir de Vim"
 
 #: ../ops.c:199
-#, fuzzy, c-format
+#, c-format
 msgid "%ld line %sed %d time"
 msgid_plural "%ld line %sed %d times"
-msgstr[0] "%ld líneas %sed %d veces"
-msgstr[1] "%ld líneas %sed %d veces"
+msgstr[0] "%ld línea %sed %d vez"
+msgstr[1] "%ld línea %sed %d veces"
 
 #: ../ops.c:201
-#, fuzzy, c-format
+#, c-format
 msgid "%ld lines %sed %d time"
 msgid_plural "%ld lines %sed %d times"
-msgstr[0] "%ld líneas %sed %d veces"
+msgstr[0] "%ld líneas %sed %d vez"
 msgstr[1] "%ld líneas %sed %d veces"
 
 # must display the prompt
 #. must display the prompt
 #: ../ops.c:744
 msgid "cannot yank; delete anyway"
-msgstr "No se pudo copiar \"yank\"; ¿Lo borro de todas formas?"
+msgstr "No se pudo copiar \"yank\"; eliminar de todos modos"
 
 #: ../ops.c:1351
-#, fuzzy, c-format
+#, c-format
 msgid "%ld line changed"
 msgid_plural "%ld lines changed"
-msgstr[0] "%ld líneas cambiadas"
+msgstr[0] "%ld línea cambiada"
 msgstr[1] "%ld líneas cambiadas"
 
 #: ../ops.c:2468
-#, fuzzy, c-format
+#, c-format
 msgid "%d line changed"
 msgid_plural "%d lines changed"
-msgstr[0] "%ld líneas cambiadas"
+msgstr[0] "%ld línea cambiada"
 msgstr[1] "%ld líneas cambiadas"
 
 #: ../ops.c:3164
@@ -3064,38 +3063,41 @@ msgid "%ld Cols; "
 msgstr "%ld Cols; "
 
 #: ../ops.c:3173
-#, fuzzy, c-format
+#, c-format
 msgid "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"
 msgstr ""
-"Selección %s%ld de %ld Líneas; %ld de %ld Palabras; %ld de %ld Caracteres"
+"Selección %s%ld de %ld Líneas; %lld de %lld Palabras; %lld de %lld Bytes"
 
 #: ../ops.c:3182
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of "
 "%lld Bytes"
 msgstr ""
-"Selección %s%ld de %ld Líneas; %ld de %ld Palabras; %ld de %ld Caracteres; "
-"%ld de %ld Bytes"
+"Selección %s%ld de %ld Líneas; %lld de %lld Palabras; %lld de %lld"
+" Caracteres; "
+"%lld de %lld Bytes"
 
 #: ../ops.c:3204
-#, fuzzy, c-format
+#, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"
-msgstr "Col %s de %s; Línea %ld de %ld; Palabra %ld de %ld; Byte %ld de %ld"
+msgstr ""
+"Col %s de %s; Línea %ld de %ld; Palabra %lld de %lld; Byte %lld de %lld"
 
 #: ../ops.c:3212
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
 "%lld of %lld"
 msgstr ""
-"Col %s de %s; Línea %ld de %ld; Palabra %ld de %ld; Carácter %ld de %ld Byte "
-"%ld de %ld"
+"Col %s de %s; Línea %ld de %ld; Palabra %lld de %lld; Carácter %lld de %lld"
+" Byte "
+"%lld de %lld"
 
 #: ../ops.c:3228
-#, fuzzy, c-format
+#, c-format
 msgid "(+%lld for BOM)"
-msgstr "(+%ld para BOM)"
+msgstr "(+%lld para BOM)"
 
 #: ../option.c:3158
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
@@ -3136,11 +3138,11 @@ msgstr ""
 #: ../optionstr.c:384
 #, c-format
 msgid "For option %s"
-msgstr ""
+msgstr "Para opción %s"
 
 #: ../os_amiga.c:297
 msgid "cannot open "
-msgstr "No se pudo abrir"
+msgstr "No se pudo abrir "
 
 #: ../os_amiga.c:332
 msgid "VIM: Can't open window!\n"
@@ -3208,7 +3210,7 @@ msgstr "para %s en %s"
 #: ../os_mswin.c:1530
 #, c-format
 msgid "Printing '%s'"
-msgstr "Imprimiendo %s"
+msgstr "Imprimiendo '%s'"
 
 #: ../os_unix.c:1635
 #, c-format
@@ -3224,17 +3226,17 @@ msgstr ""
 "Vim: Hay un error de X\n"
 
 #: ../os_unix.c:1786
-#, fuzzy, c-format
+#, c-format
 msgid "restoring display %s"
-msgstr "Falló la prueba del sistema X"
+msgstr "restaurando la pantalla %s"
 
 #: ../os_unix.c:1817
 msgid "Testing the X display failed"
-msgstr "Falló la prueba del sistema X"
+msgstr "La prueba de la pantalla X falló"
 
 #: ../os_unix.c:1960
 msgid "Opening the X display timed out"
-msgstr "El \"display\" de X tardó demasiado en abrirse"
+msgstr "Se agotó el tiempo de apertura de la pantalla X"
 
 #: ../os_unix.c:2937 ../os_unix.c:2944
 msgid ""
@@ -3253,18 +3255,14 @@ msgstr ""
 "No se pudo definir el contexto de seguridad para "
 
 #: ../os_unix.c:3003
-#, fuzzy, c-format
+#, c-format
 msgid "Could not set security context %s for %s"
-msgstr ""
-"\n"
-"No se pudo definir el contexto de seguridad para "
+msgstr "No se pudo definir el contexto de seguridad %s para %s"
 
 #: ../os_unix.c:3023
-#, fuzzy, c-format
+#, c-format
 msgid "Could not get security context %s for %s. Removing it!"
-msgstr ""
-"\n"
-"No se pudo obtener el contexto de seguridad para "
+msgstr "No se pudo obtener el contexto de seguridad %s para %s. ¡Quitándolo!"
 
 #: ../os_unix.c:4616
 msgid ""
@@ -3319,9 +3317,9 @@ msgid "XSMP lost ICE connection"
 msgstr "XSMP perdió la conexión ICE"
 
 #: ../os_unix.c:7213
-#, fuzzy, c-format
+#, c-format
 msgid "Could not load gpm library: %s"
-msgstr "E370: No se pudo cargar la biblioteca dinámica %s"
+msgstr "No se pudo cargar la biblioteca gpm: %s"
 
 #: ../os_unix.c:7541 ../os_unix.c:7644
 #, c-format
@@ -3334,7 +3332,7 @@ msgstr "Falló la apertura de la pantalla de X"
 
 #: ../os_unix.c:8065
 msgid "XSMP handling save-yourself request"
-msgstr "XSMP está manejando una solicitud de \"guardelo usted mismo\""
+msgstr "XSMP maneja la solicitud de salvarse a sí mismo"
 
 #: ../os_unix.c:8177
 msgid "XSMP opening connection"
@@ -3378,7 +3376,7 @@ msgid ""
 msgstr ""
 "VIMRUN.EXE no se encuentra en su $PATH.\n"
 "Las órdenes externas no harán una pausa al finalizar.\n"
-"Véase \":help win32-vimrun\"  para más información"
+"Consulte \":help win32-vimrun\"  para más información."
 
 #: ../os_win32.c:5019
 msgid "Vim Warning"
@@ -3399,27 +3397,26 @@ msgid " (line deleted)"
 msgstr " (línea borrada)"
 
 #: ../quickfix.c:3780
-#, fuzzy, c-format
+#, c-format
 msgid "%serror list %d of %d; %d errors "
-msgstr "lista de errores %d de %d: %d errores"
+msgstr "%s lista de errores %d de %d: %d errores"
 
 #: ../quickfix.c:3876
 msgid "No entries"
-msgstr ""
+msgstr "Sin entradas"
 
 #: ../quickfix.c:5771
-#, fuzzy
 msgid "Error file"
-msgstr "Error"
+msgstr "Archivo de error"
 
 #: ../quickfix.c:6269
 #, c-format
 msgid "Cannot open file \"%s\""
-msgstr "No se pudo abrir el archivo %s"
+msgstr "No se pudo abrir el archivo \"%s\""
 
 #: ../quickfix.c:7702
 msgid "cannot have both a list and a \"what\" argument"
-msgstr ""
+msgstr "no puede tener una lista y un argumento \"what\""
 
 #: ../regexp_bt.c:3291
 msgid "External submatches:\n"
@@ -3427,30 +3424,32 @@ msgstr "Sub-coincidencias externas:\n"
 
 #: ../regexp.c:2690
 msgid "Switching to backtracking RE engine for pattern: "
-msgstr ""
+msgstr "Cambiar al motor RE de retroceso para el patrón:"
 
 #: ../regexp_nfa.c:2764
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
+"No se pudo abrir el archivo de registro temporal para escribir, mostrar en"
+" stderr..."
 
 #: ../register.c:1358
 #, c-format
 msgid " into \"%c"
-msgstr ""
+msgstr " en \"%c"
 
 #: ../register.c:1364
-#, fuzzy, c-format
+#, c-format
 msgid "block of %ld line yanked%s"
 msgid_plural "block of %ld lines yanked%s"
-msgstr[0] "bloque de %ld líneas copiadas"
-msgstr[1] "bloque de %ld líneas copiadas"
+msgstr[0] "bloque de %ld línea copiada%s"
+msgstr[1] "bloque de %ld líneas copiadas%s"
 
 #: ../register.c:1370
-#, fuzzy, c-format
+#, c-format
 msgid "%ld line yanked%s"
 msgid_plural "%ld lines yanked%s"
-msgstr[0] "%ld líneas copiadas"
-msgstr[1] "%ld líneas copiadas"
+msgstr[0] "%ld línea copiada%s"
+msgstr[1] "%ld líneas copiadas%s"
 
 #. Highlight title
 #: ../register.c:2343
@@ -3458,6 +3457,8 @@ msgid ""
 "\n"
 "Type Name Content"
 msgstr ""
+"\n"
+"Tipo de nombre contenido"
 
 #: ../screen.c:4238
 msgid " VREPLACE"
@@ -3489,11 +3490,11 @@ msgstr " (reemplazo virtual)"
 
 #: ../screen.c:4258
 msgid " Hebrew"
-msgstr " hebreo"
+msgstr " Hebreo"
 
 #: ../screen.c:4265
 msgid " Arabic"
-msgstr " árabe"
+msgstr " Árabe"
 
 #: ../screen.c:4274
 msgid " (paste)"
@@ -3538,38 +3539,38 @@ msgid "Searching for \"%s\""
 msgstr "Buscando \"%s\""
 
 #: ../scriptfile.c:513
-#, fuzzy, c-format
+#, c-format
 msgid "not found in '%s': \"%s\""
-msgstr "No se ha encontrado en 'runtimepath': %s"
+msgstr "no encontrado en '%s': \"%s\""
 
 #: ../scriptfile.c:1189
 msgid "Source Vim script"
-msgstr "Ejecute archivo de órdenes de Vim"
+msgstr "Ejecutar script de Vim"
 
 #: ../scriptfile.c:1412
 #, c-format
 msgid "Cannot source a directory: \"%s\""
-msgstr "No se pudo ejecutar un directorio: %s"
+msgstr "No se pudo ejecutar un directorio: \"%s\""
 
 #: ../scriptfile.c:1487
 #, c-format
 msgid "could not source \"%s\""
-msgstr "No pude ejecutar %s"
+msgstr "No pude ejecutar \"%s\""
 
 #: ../scriptfile.c:1489
 #, c-format
 msgid "line %ld: could not source \"%s\""
-msgstr "línea %ld: no se pudo ejecutar %s"
+msgstr "línea %ld: no se pudo ejecutar \"%s\""
 
 #: ../scriptfile.c:1503
 #, c-format
 msgid "sourcing \"%s\""
-msgstr "ejecutando %s"
+msgstr "ejecutando \"%s\""
 
 #: ../scriptfile.c:1505
 #, c-format
 msgid "line %ld: sourcing \"%s\""
-msgstr "línea %ld: ejecutando %s"
+msgstr "línea %ld: ejecutando \"%s\""
 
 #: ../scriptfile.c:1701
 #, c-format
@@ -3588,7 +3589,7 @@ msgstr "modeline"
 
 #: ../scriptfile.c:1881
 msgid "--cmd argument"
-msgstr "--cmd [argumentos]"
+msgstr "--cmd [argumento]"
 
 #: ../scriptfile.c:1883
 msgid "-c argument"
@@ -3604,7 +3605,7 @@ msgstr "administrador de errores"
 
 #: ../scriptfile.c:1889
 msgid "changed window size"
-msgstr ""
+msgstr "tamaño de ventana cambiado"
 
 #: ../scriptfile.c:2021
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
@@ -3622,7 +3623,7 @@ msgstr "--- Archivos incluidos "
 
 #: ../search.c:3505
 msgid "not found "
-msgstr "no se encontrṕ"
+msgstr "no encontrado "
 
 #: ../search.c:3506
 msgid "in path ---\n"
@@ -3634,7 +3635,7 @@ msgstr "  (Ya está listado)"
 
 #: ../search.c:3581
 msgid "  NOT FOUND"
-msgstr "  NO SE ENCONTRÓ"
+msgstr "  NO ENCONTRADO"
 
 #: ../search.c:3633
 #, c-format
@@ -3648,7 +3649,7 @@ msgstr "Buscando en el archivo incluido: %s"
 
 #: ../search.c:4004
 msgid "All included files were found"
-msgstr "Se han encontrado todos los archivos incluidos"
+msgstr "Se encontraron todos los archivos incluidos"
 
 #: ../search.c:4006
 msgid "No included files"
@@ -3686,12 +3687,12 @@ msgstr "Signos para %s:"
 #: ../sign.c:814
 #, c-format
 msgid "  group=%s"
-msgstr ""
+msgstr "  grupo=%s"
 
 #: ../sign.c:819
-#, fuzzy, c-format
+#, c-format
 msgid "    line=%ld  id=%d%s  name=%s  priority=%d"
-msgstr "    línea=%ld id=%d nombre=%s"
+msgstr "    línea=%ld id=%d%s nombre=%s prioridad=%d"
 
 #: ../sign.c:1924
 msgid " (NOT FOUND)"
@@ -3699,20 +3700,20 @@ msgstr " (NO ENCONTRADO)"
 
 #: ../sign.c:1926
 msgid " (not supported)"
-msgstr " (no hay apoyo para la función pedida)"
+msgstr " (no compatible)"
 
 #: ../spell.c:1599
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
 msgstr ""
-"Advertencia: No se pudo hallar la lista de palabras \"%s.%s.spl\" or \"%s."
+"Advertencia: No se pudo hallar la lista de palabras \"%s_%s.spl\" o \"%s_"
 "ascii.spl\""
 
 #: ../spell.c:1601
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr ""
-"Advertencia: No se pudo hallar la lista de palabras \"%s.%s.spl\" or \"%s."
+"Advertencia: No se pudo hallar la lista de palabras \"%s.%s.spl\" o \"%s."
 "ascii.spl\""
 
 #. This is probably an error.  Give a warning and
@@ -3744,7 +3745,7 @@ msgstr "Leyendo archivo de ortografía \"%s\""
 #: ../spellfile.c:2230
 #, c-format
 msgid "Reading affix file %s..."
-msgstr "Leyendo el archivo de afijos \"%s\"..."
+msgstr "Leyendo el archivo de afijos %s..."
 
 #: ../spellfile.c:2277 ../spellfile.c:3565
 #, c-format
@@ -3871,7 +3872,7 @@ msgstr "COMPOUNDSYLMAX usado sin SYLLABLE"
 
 #: ../spellfile.c:3066
 msgid "Too many postponed prefixes"
-msgstr "Hay demasiados prefijos postpuestos"
+msgstr "Hay demasiados prefijos pospuestos"
 
 #: ../spellfile.c:3068
 msgid "Too many compound flags"
@@ -3879,7 +3880,7 @@ msgstr "Demasiados parámetros compuestos"
 
 #: ../spellfile.c:3070
 msgid "Too many postponed prefixes and/or compound flags"
-msgstr "Demasiados prefijos postpuestos y/o \"flags\" compuestos"
+msgstr "Demasiados prefijos pospuestos y/o \"flags\" compuestos"
 
 #: ../spellfile.c:3082
 #, c-format
@@ -3912,9 +3913,9 @@ msgid "Reading dictionary file %s..."
 msgstr "Leyendo el archivo de diccionario %s..."
 
 #: ../spellfile.c:3609
-#, fuzzy, c-format
+#, c-format
 msgid "line %6d, word %6ld - %s"
-msgstr "línea %6d, palabra %6d - %s"
+msgstr "línea %6d, palabra %6ld - %s"
 
 #: ../spellfile.c:3634
 #, c-format
@@ -3939,47 +3940,47 @@ msgstr "Ignorando %d palabra(s) con caracteres no-ASCII en %s"
 #: ../spellfile.c:4108
 #, c-format
 msgid "Reading word file %s..."
-msgstr "Leyendo archivo de palabras \"%s\"..."
+msgstr "Leyendo archivo de palabras %s..."
 
 #: ../spellfile.c:4138
-#, fuzzy, c-format
+#, c-format
 msgid "Conversion failure for word in %s line %ld: %s"
-msgstr "La conversión falló para la palabra en %s línea %d: %s"
+msgstr "La conversión falló para la palabra en %s línea %ld: %s"
 
 #: ../spellfile.c:4156
-#, fuzzy, c-format
+#, c-format
 msgid "Duplicate /encoding= line ignored in %s line %ld: %s"
-msgstr "Ignorando línea /encoding= duplicada en %s line %d: %s"
+msgstr "Duplicado /encoding= línea ignorada en %s line %ld: %s"
 
 #: ../spellfile.c:4159
-#, fuzzy, c-format
+#, c-format
 msgid "/encoding= line after word ignored in %s line %ld: %s"
-msgstr "Ignorando línea /encoding= después de palabra en %s línea %d: %s"
+msgstr "/encoding= línea después de palabra ignorada en %s línea %ld: %s"
 
 #: ../spellfile.c:4182
-#, fuzzy, c-format
+#, c-format
 msgid "Duplicate /regions= line ignored in %s line %ld: %s"
-msgstr "Ignorando línea /regions= en %s línea %d: %s"
+msgstr "/regions duplicada= línea ignorada en %s línea %ld: %s"
 
 #: ../spellfile.c:4188
-#, fuzzy, c-format
+#, c-format
 msgid "Too many regions in %s line %ld: %s"
-msgstr "Demasiadas regiones en %s línea %d: %s"
+msgstr "Demasiadas regiones en %s línea %ld: %s"
 
 #: ../spellfile.c:4202
-#, fuzzy, c-format
+#, c-format
 msgid "/ line ignored in %s line %ld: %s"
-msgstr "Ignorando línea / en %s línea %d: %s"
+msgstr "/ línea ignorada en %s línea %ld: %s"
 
 #: ../spellfile.c:4232
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid region nr in %s line %ld: %s"
-msgstr "Región nr no válida en %s línea %d: %s"
+msgstr "Región nr no válida en %s línea %ld: %s"
 
 #: ../spellfile.c:4240
-#, fuzzy, c-format
+#, c-format
 msgid "Unrecognized flags in %s line %ld: %s"
-msgstr "Parámetros no reconocidos en %s línea %d: %s"
+msgstr "Parámetros no reconocidos en %s línea %ld: %s"
 
 #: ../spellfile.c:4270
 #, c-format
@@ -3987,9 +3988,9 @@ msgid "Ignored %d words with non-ASCII characters"
 msgstr "Ignorando %d palabras con caracteres no-ASCII"
 
 #: ../spellfile.c:4694
-#, fuzzy, c-format
+#, c-format
 msgid "Compressed %s: %ld of %ld nodes; %ld (%ld%%) remaining"
-msgstr "Comprimiendo %d de %d nodos; faltan %d (%d%%)"
+msgstr "Comprimiendo %s: %ld de %ld nodos; faltan %ld (%ld%%)"
 
 #: ../spellfile.c:5475
 msgid "Reading back spell file..."
@@ -4001,7 +4002,7 @@ msgstr "Releyendo el archivo de ortografía ..."
 #.
 #: ../spellfile.c:5496
 msgid "Performing soundfolding..."
-msgstr "Ejecutando compresión fonética"
+msgstr "Ejecutando compresión fonética..."
 
 #: ../spellfile.c:5509
 #, c-format
@@ -4030,26 +4031,25 @@ msgstr "Advertencia: Se especificó \"compounding\" y NOBREAK"
 #: ../spellfile.c:6089
 #, c-format
 msgid "Writing spell file %s..."
-msgstr "Escribiendo archivo de ortografía \"%s\"..."
+msgstr "Escribiendo archivo de ortografía %s..."
 
 #: ../spellfile.c:6094
 msgid "Done!"
 msgstr "¡Listo!"
 
 #: ../spellfile.c:6277
-#, fuzzy, c-format
+#, c-format
 msgid "Word '%.*s' removed from %s"
-msgstr "Eliminando palabra de %s"
+msgstr "Palabra '%.*s' eliminada de %s"
 
 #: ../spellfile.c:6283
-#, fuzzy
 msgid "Seek error in spellfile"
-msgstr "E294: Error de búsqueda al leer el archivo de intercambio"
+msgstr "Buscar error en el archivo de ortografía"
 
 #: ../spellfile.c:6330
-#, fuzzy, c-format
+#, c-format
 msgid "Word '%.*s' added to %s"
-msgstr "Añadiendo palabra en \"%s\""
+msgstr "Palabra '%.*s' agregada a %s"
 
 #: ../spellsuggest.c:558
 msgid "Sorry, no suggestions"
@@ -4065,7 +4065,7 @@ msgstr "Lo siento, solo hay %ld sugerencias"
 #: ../spellsuggest.c:577
 #, c-format
 msgid "Change \"%.*s\" to:"
-msgstr "\"%.*s\" cambió a:"
+msgstr "Cambiar \"%.*s\" a:"
 
 #: ../spellsuggest.c:617
 #, c-format
@@ -4078,11 +4078,11 @@ msgstr "No hay elementos sintácticos definidos para este búfer"
 
 #: ../syntax.c:3210
 msgid "'redrawtime' exceeded, syntax highlighting disabled"
-msgstr ""
+msgstr "'redrawtime' excedido, resaltado de sintaxis deshabilitado"
 
 #: ../syntax.c:3476
 msgid "syntax iskeyword not set"
-msgstr ""
+msgstr "sintaxis iskeyword no establecida"
 
 #: ../syntax.c:3855
 msgid "syncing on C-style comments"
@@ -4093,13 +4093,12 @@ msgid "no syncing"
 msgstr "no hay sincronización"
 
 #: ../syntax.c:3867
-#, fuzzy
 msgid "syncing starts at the first line"
-msgstr "Comenzando sincronización"
+msgstr "la sincronización comienza en la primera línea"
 
 #: ../syntax.c:3870
 msgid "syncing starts "
-msgstr "Comenzando sincronización"
+msgstr "Comenzando sincronización "
 
 #: ../syntax.c:3872 ../syntax.c:3953
 msgid " lines before top line"
@@ -4130,30 +4129,30 @@ msgstr ""
 "--- Elementos sintácticos ---"
 
 #: ../syntax.c:3938
-#, fuzzy
 msgid "from the first line"
-msgstr "Palabra proveniente de otra línea"
+msgstr "desde la primera línea"
 
 #: ../syntax.c:3943
 msgid "minimal "
-msgstr "mínimo"
+msgstr "mínimo "
 
 #: ../syntax.c:3950
 msgid "maximal "
-msgstr "máximo"
+msgstr "máximo "
 
 #: ../syntax.c:3963
 msgid "; match "
-msgstr "; coincide"
+msgstr "; coincide "
 
 #: ../syntax.c:3965
 msgid " line breaks"
-msgstr " líneas de quiebre"
+msgstr " salto de líneas"
 
 #: ../syntax.c:6755
 msgid ""
 "  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
 msgstr ""
+"  TOTAL      NÚMERO  COINCIDENCIA   MÁS LENTA    MEDIA   NOMBRE       PATRÓN"
 
 #: ../tag.c:828
 #, c-format
@@ -4201,7 +4200,7 @@ msgstr "Ignorando la línea larga en el archivo de etiquetas"
 #: ../tag.c:2866
 #, c-format
 msgid "Before byte %ld"
-msgstr "Adelante del byte %ld"
+msgstr "Antes del byte %ld"
 
 #: ../tag.c:2929
 #, c-format
@@ -4209,9 +4208,9 @@ msgid "Searching tags file %s"
 msgstr "Buscando el archivo de etiquetas %s"
 
 #: ../tag.c:4321
-#, fuzzy, c-format
+#, c-format
 msgid "Duplicate field name: %s"
-msgstr "Afijo duplicado en %s línea %d: %s"
+msgstr "Nombre de campo duplicado: %s"
 
 #: ../term.c:1784
 msgid "' not known. Available builtin terminals are:"
@@ -4234,30 +4233,28 @@ msgstr ""
 #: ../terminal.c:1646
 #, c-format
 msgid "Kill job in \"%s\"?"
-msgstr ""
+msgstr "¿Matar el trabajo en \"%s\"?"
 
 #: ../terminal.c:4727
 msgid "Terminal"
-msgstr ""
+msgstr "Terminal"
 
 #: ../terminal.c:4729
 msgid "Terminal-finished"
-msgstr ""
+msgstr "Terminal finalizado"
 
 #: ../terminal.c:4734
 msgid "active"
-msgstr ""
+msgstr "activo"
 
 #: ../terminal.c:4736
-#, fuzzy
 msgid "running"
-msgstr "Advertencia"
+msgstr "en ejecución"
 
 # close all memfiles, without deleting
 #: ../terminal.c:4738
-#, fuzzy
 msgid "finished"
-msgstr "Vim: Finalizado.\n"
+msgstr "finalizado"
 
 #: ../time.c:93 ../time.c:299
 msgid "(Invalid)"
@@ -4266,13 +4263,13 @@ msgstr "(No es válido)"
 #: ../time.c:97
 #, no-c-format
 msgid "%a %b %d %H:%M:%S %Y"
-msgstr ""
+msgstr "%a %b %d %H:%M:%S %Y"
 
 #: ../time.c:1109
-#, fuzzy, c-format
+#, c-format
 msgid "%ld second ago"
 msgid_plural "%ld seconds ago"
-msgstr[0] "hace %ld segundos"
+msgstr[0] "hace %ld segundo"
 msgstr[1] "hace %ld segundos"
 
 #: ../ui.c:583
@@ -4292,60 +4289,62 @@ msgstr "No es posible deshacer; continuando de todos modos"
 #: ../undo.c:1586
 msgid "Cannot write undo file in any directory in 'undodir'"
 msgstr ""
+"No se puede escribir el archivo de deshacer en ningún directorio en 'undodir'"
 
 #: ../undo.c:1634
 #, c-format
 msgid "Will not overwrite with undo file, cannot read: %s"
-msgstr ""
+msgstr "No se sobrescribirá con el archivo de deshacer, no se puede leer: %s"
 
 #: ../undo.c:1656
 #, c-format
 msgid "Will not overwrite, this is not an undo file: %s"
-msgstr ""
+msgstr "No se sobrescribirá, este no es un archivo de deshacer: %s"
 
 #: ../undo.c:1673
 msgid "Skipping undo file write, nothing to undo"
-msgstr ""
+msgstr "Omitiendo deshacer la escritura del archivo, nada que deshacer"
 
 #: ../undo.c:1688
-#, fuzzy, c-format
+#, c-format
 msgid "Writing undo file: %s"
-msgstr "Escribiendo archivo \"viminfo\" \"%s\""
+msgstr "Escribiendo archivo deshacer: %s"
 
 #: ../undo.c:1883
 #, c-format
 msgid "Not reading undo file, owner differs: %s"
-msgstr ""
+msgstr "No lee el archivo de deshacer, el propietario difiere: %s"
 
 #: ../undo.c:1897
-#, fuzzy, c-format
+#, c-format
 msgid "Reading undo file: %s"
-msgstr "Leyendo archivo de palabras \"%s\"..."
+msgstr "Leyendo archivo de deshacer: %s"
 
 #: ../undo.c:1972
 msgid "File contents changed, cannot use undo info"
 msgstr ""
+"El contenido del archivo cambió, no se puede usar la información de deshacer"
 
 #: ../undo.c:2162
-#, fuzzy, c-format
+#, c-format
 msgid "Finished reading undo file %s"
-msgstr "Leyendo archivo de palabras \"%s\"..."
+msgstr "Finalizada la lectura del archivo de deshacer %s"
 
 #: ../undo.c:2266 ../undo.c:2529
 msgid "Already at oldest change"
-msgstr "Este es el cambio más antiguo"
+msgstr "Este ya es el cambio más antiguo"
 
 #: ../undo.c:2281 ../undo.c:2531
 msgid "Already at newest change"
-msgstr "Este es el cambio más nuevo"
+msgstr "Este ya es el cambio más nuevo"
 
 #: ../undo.c:2984
 msgid "more line"
-msgstr "Una línea más"
+msgstr "una línea más"
 
 #: ../undo.c:2986
 msgid "more lines"
-msgstr "líneas más"
+msgstr "unas líneas más"
 
 #: ../undo.c:2988
 msgid "line less"
@@ -4353,7 +4352,7 @@ msgstr "una línea menos"
 
 #: ../undo.c:2990
 msgid "fewer lines"
-msgstr "líneas menos"
+msgstr "unas líneas menos"
 
 #: ../undo.c:2995
 msgid "change"
@@ -4378,40 +4377,39 @@ msgstr "después"
 
 #: ../undo.c:3151
 msgid "Nothing to undo"
-msgstr "Nada que hacer"
+msgstr "Nada que deshacer"
 
 #: ../undo.c:3157
 msgid "number changes  when               saved"
-msgstr ""
+msgstr "número de cambios cuando           se guardó"
 
 #: ../usercmd.c:490
-#, fuzzy
 msgid ""
 "\n"
 "    Name              Args Address Complete    Definition"
 msgstr ""
 "\n"
-"    Nombre      Args Rango Completar  Definición"
+"    Nombre      Args Dirección Completar  Definición"
 
 #: ../usercmd.c:629
 msgid "No user-defined commands found"
-msgstr "No se han encontrado órdenes definidos por el usuario"
+msgstr "No se han encontrado órdenes definidas por el usuario"
 
 #: ../userfunc.c:887
-#, fuzzy, c-format
+#, c-format
 msgid "W22: Text found after :endfunction: %s"
-msgstr "E123: Función indefinida: %s"
+msgstr "W22: Texto encontrado después de :endfunction: %s"
 
 # always scroll up, don't overwrite
 #: ../userfunc.c:2825
 #, c-format
 msgid "calling %s"
-msgstr "Invocando %s"
+msgstr "invocando %s"
 
 #: ../userfunc.c:2923
 #, c-format
 msgid "%s aborted"
-msgstr "Abortada la ejecución de %s"
+msgstr "%s cancelado"
 
 #: ../userfunc.c:2925
 #, c-format
@@ -4426,25 +4424,23 @@ msgstr "%s devuelve %s"
 #: ../version.c:66
 #, c-format
 msgid "%s (%s, compiled %s)"
-msgstr ""
+msgstr "%s (%s, compilado %s)"
 
 #: ../version.c:10678
-#, fuzzy
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 "\n"
-"Versión de 64 bits para consola de MS-Windows"
+"Versión de 64 bits para GUI/consola de MS-Windows"
 
 #: ../version.c:10680
-#, fuzzy
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
 msgstr ""
 "\n"
-"Versión de 32 bits para consola de MS-Windows"
+"Versión de 32 bits para GUI/consola de MS-Windows"
 
 #: ../version.c:10684
 msgid ""
@@ -4483,19 +4479,20 @@ msgstr ""
 "Versión de 32 bits para consola de MS-Windows"
 
 #: ../version.c:10702
-#, fuzzy
 msgid ""
 "\n"
 "macOS version"
 msgstr ""
 "\n"
-"Versión para MacOS"
+"Versión para macOS"
 
 #: ../version.c:10704
 msgid ""
 "\n"
 "macOS version w/o darwin feat."
 msgstr ""
+"\n"
+"versión macOS sin darwin feat."
 
 #: ../version.c:10714
 msgid ""
@@ -4582,9 +4579,8 @@ msgid "without GUI."
 msgstr "sin interfaz gráfica (GUI)."
 
 #: ../version.c:10802
-#, fuzzy
 msgid "with GTK3 GUI."
-msgstr "con interfaz gráfica de GTK."
+msgstr "con interfaz gráfica de GTK3."
 
 #: ../version.c:10804
 msgid "with GTK2-GNOME GUI."
@@ -4599,9 +4595,8 @@ msgid "with X11-Motif GUI."
 msgstr "con interfaz gráfica para X11-Motif."
 
 #: ../version.c:10811
-#, fuzzy
 msgid "with Haiku GUI."
-msgstr "con interfaz gráfica de usuario."
+msgstr "con interfaz gráfica Haiku."
 
 #: ../version.c:10813
 msgid "with Photon GUI."
@@ -4609,11 +4604,11 @@ msgstr "con interfaz gráfica para Photon."
 
 #: ../version.c:10815
 msgid "with GUI."
-msgstr "con interfaz gráfica de usuario."
+msgstr "con interfaz gráfica."
 
 #: ../version.c:10817
 msgid "  Features included (+) or not (-):\n"
-msgstr "  Aspectos incluidos (+) o no (-):\n"
+msgstr "  Características incluidas (+) o no (-):\n"
 
 #: ../version.c:10824
 msgid "   system vimrc file: \""
@@ -4656,9 +4651,8 @@ msgid "3rd user gvimrc file: \""
 msgstr "3er archivo \"gvimrc\" del usuario: \""
 
 #: ../version.c:10873
-#, fuzzy
 msgid "       defaults file: \""
-msgstr "      archivo \"exrc\" del usuario: \""
+msgstr "       archivos predeterminados: \""
 
 #: ../version.c:10878
 msgid "    system menu file: \""
@@ -4710,19 +4704,19 @@ msgstr "¡Ayude a los niños pobres de Uganda!"
 
 #: ../version.c:10958
 msgid "type  :help iccf<Enter>       for information "
-msgstr "escriba  «:help iccf<Intro>»    para más información  "
+msgstr "escriba  :help iccf<Intro>   para obtener más información "
 
 #: ../version.c:10960
 msgid "type  :q<Enter>               to exit         "
-msgstr "escriba  «:q<Intro>»            para salir             "
+msgstr "escriba  :q<Intro>            para salir             "
 
 #: ../version.c:10961
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
-msgstr "escriba  «:help<Intro>» o <F1>  para obtener ayuda     "
+msgstr "escriba  :help<Intro>  o  <F1>  para obtener ayuda     "
 
 #: ../version.c:10962
 msgid "type  :help version8<Enter>   for version info"
-msgstr "escriba «:help version8<Intro>» para información de la versión"
+msgstr "escriba  :help version8<Intro>  para obtener información de la versión"
 
 #: ../version.c:10965
 msgid "Running in Vi compatible mode"
@@ -4730,15 +4724,16 @@ msgstr "Ejecutando en modo compatible con Vi"
 
 #: ../version.c:10966
 msgid "type  :set nocp<Enter>        for Vim defaults"
-msgstr "escriba  «:set nocp<Intro>»  para los valores predefinidos de Vim"
+msgstr ""
+"escriba   :set nocp<Intro>    para usar los valores predefinidos de Vim"
 
 #: ../version.c:10967
 msgid "type  :help cp-default<Enter> for info on this"
-msgstr "escriba «:help cp-default<Intro>»        para más información"
+msgstr "escriba  :help cp-default<Intro>   para más información sobre esto"
 
 #: ../version.c:10982
 msgid "menu  Help->Orphans           for information    "
-msgstr "menú  Ayuda->Ayude a los niños huérfanos      para más información "
+msgstr "menú  Ayuda->Ayude a los niños huérfanos      para más información   "
 
 #: ../version.c:10984
 msgid "Running modeless, typed text is inserted"
@@ -4746,7 +4741,7 @@ msgstr "Ejecución no modal, el texto escrito se inserta directamente"
 
 #: ../version.c:10985
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "menú Editar->Opciones globales->Activar/Desactivar modo de inserción"
+msgstr "menú Editar->Opciones globales->Activar/Desactivar modo de inserción  "
 
 #: ../version.c:10986
 msgid "                              for two modes      "
@@ -4772,11 +4767,11 @@ msgstr "¡Conviértase en un usuario registrado de Vim!"
 
 #: ../version.c:11036
 msgid "type  :help sponsor<Enter>    for information "
-msgstr "escriba  «:help sponsor<Intro>»     para más información  "
+msgstr "escriba   :help sponsor<Intro>     para más información "
 
 #: ../version.c:11037
 msgid "type  :help register<Enter>   for information "
-msgstr "escriba «:help register<Intro>»    para más información  "
+msgstr "escriba  :help register<Intro>    para más información "
 
 #: ../version.c:11039
 msgid "menu  Help->Sponsor/Register  for information    "
@@ -4784,27 +4779,23 @@ msgstr "menú  Ayuda->Benefactor/Regístrese  para más información"
 
 #: ../vim9compile.c:1164
 msgid "global"
-msgstr ""
+msgstr "global"
 
 #: ../vim9compile.c:1165
-#, fuzzy
 msgid "buffer"
-msgstr "No existe tal búfer"
+msgstr "búfer"
 
 #: ../vim9compile.c:1166
-#, fuzzy
 msgid "window"
-msgstr "<ventana %d>"
+msgstr "ventana"
 
 #: ../vim9compile.c:1167
-#, fuzzy
 msgid "tab"
-msgstr "Pestaña nueva"
+msgstr "Pestaña"
 
 #: ../vim9expr.c:1286
-#, fuzzy
 msgid "[end of lines]"
-msgstr "%ld líneas más"
+msgstr "[final de líneas]"
 
 #: ../viminfo.c:432
 msgid ""
@@ -4840,15 +4831,16 @@ msgid "Input Line"
 msgstr "Línea de entrada"
 
 #: ../viminfo.c:849
-#, fuzzy
 msgid "Debug Line"
-msgstr "Línea de entrada"
+msgstr "Línea de depuración"
 
 #: ../viminfo.c:952
 msgid ""
 "\n"
 "# Bar lines, copied verbatim:\n"
 msgstr ""
+"\n"
+"# Líneas, copiadas textualmente:\n"
 
 #: ../viminfo.c:1169
 #, c-format
@@ -4886,7 +4878,7 @@ msgstr ""
 
 #: ../viminfo.c:1546
 msgid "Substitute "
-msgstr "Sustitución"
+msgstr "Sustitución "
 
 #: ../viminfo.c:1829
 msgid ""
@@ -4943,9 +4935,9 @@ msgid "# Value of 'encoding' when this file was written\n"
 msgstr "# Valor de 'encoding' cuando se escribió este archivo\n"
 
 #: ../viminfo.c:3006
-#, fuzzy, c-format
+#, c-format
 msgid "Reading viminfo file \"%s\"%s%s%s%s"
-msgstr "Leyendo el archivo \"viminfo\" \"%s\"%s%s%s"
+msgstr "Leyendo el archivo \"viminfo\"  \"%s\"%s%s%s%s"
 
 #: ../viminfo.c:3008
 msgid " info"
@@ -4970,21 +4962,22 @@ msgstr "Escribiendo archivo \"viminfo\" \"%s\""
 
 #: ../window.c:78
 msgid "Already only one window"
-msgstr "Solo hay una ventana"
+msgstr "Ya solo hay una ventana"
 
 #: ../if_perl.xs:765
 #, c-format
 msgid "E370: Could not load library %s"
-msgstr "E370: No se pudo cargar la biblioteca dinámica %s"
+msgstr "E370: No se pudo cargar la biblioteca %s"
 
 #: ../if_perl.xs:1031
 msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr "Esta orden está desactivada, no se pudo cargar la biblioteca de Perl"
+msgstr ""
+"Lo siento, esta orden está desactivada: no se pudo cargar la biblioteca de"
+" Perl."
 
 #: ../GvimExt/gvimext.cpp:625
-#, fuzzy
 msgid "Edit with Vim using &tabpages"
-msgstr "Editar con un solo &Vim"
+msgstr "Editar con Vim utilizando pes&tañas"
 
 #: ../GvimExt/gvimext.cpp:630
 msgid "Edit with single &Vim"
@@ -5000,14 +4993,13 @@ msgstr "Editar con &Vim"
 
 # Now concatenate
 #: ../GvimExt/gvimext.cpp:662
-#, fuzzy
 msgid "Edit with existing Vim"
-msgstr "Editar con un Vim en ejecución -"
+msgstr "Editar con un Vim en ejecución"
 
 # Now concatenate
 #: ../GvimExt/gvimext.cpp:693
 msgid "Edit with existing Vim - "
-msgstr "Editar con un Vim en ejecución -"
+msgstr "Editar con un Vim en ejecución - "
 
 #: ../GvimExt/gvimext.cpp:823
 msgid "Edits the selected file(s) with Vim"
@@ -5016,7 +5008,7 @@ msgstr "Editar el(los) archivos seleccionado/s con Vim"
 #: ../GvimExt/gvimext.cpp:958
 msgid "Error creating process: Check if gvim is in your path!"
 msgstr ""
-"Error al crear el proceso: ¡Asegúrese de que gvim esta en su ruta de acceso!"
+"Error al crear el proceso: ¡Compruebe si gvim esta en su ruta de acceso!"
 
 #: ../GvimExt/gvimext.cpp:959
 msgid "gvimext.dll error"
@@ -5028,7 +5020,7 @@ msgstr "Interrumpido"
 
 #: ../errors.h:17
 msgid "E10: \\ should be followed by /, ? or &"
-msgstr "E10: \\ debería ir seguido de \"/\", \"?\" o \"&\""
+msgstr "E10: \\ debería ir seguido de /, ? o &"
 
 #: ../errors.h:20
 msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
@@ -5044,12 +5036,12 @@ msgstr ""
 
 #: ../errors.h:25
 msgid "E13: File exists (add ! to override)"
-msgstr "E13: El archivo ya existe (use \"!\" para sobreescribir)"
+msgstr "E13: El archivo ya existe (añada ! para sobreescribir)"
 
 #: ../errors.h:29
-#, fuzzy, c-format
+#, c-format
 msgid "E15: Invalid expression: \"%s\""
-msgstr "E15: La expresión no es válida: %s"
+msgstr "E15: La expresión no es válida: \"%s\""
 
 #: ../errors.h:32
 msgid "E16: Invalid range"
@@ -5065,9 +5057,8 @@ msgid "E18: Unexpected characters in :let"
 msgstr "E18: Caracteres inesperados en :let"
 
 #: ../errors.h:42
-#, fuzzy
 msgid "E18: Unexpected characters in assignment"
-msgstr "E18: Caracteres inesperados en :let"
+msgstr "E18: Caracteres inesperados en la asignación"
 
 #: ../errors.h:45
 msgid "E19: Mark has invalid line number"
@@ -5105,7 +5096,7 @@ msgstr "E26: No se pudo usar el hebreo: no se activó al compilar\n"
 
 #: ../errors.h:65
 msgid "E27: Farsi support has been removed\n"
-msgstr ""
+msgstr "E27: Se eliminó la compatibilidad con Farsi\n"
 
 #: ../errors.h:68
 #, c-format
@@ -5145,14 +5136,13 @@ msgid "E36: Not enough room"
 msgstr "E36: No hay espacio suficiente"
 
 #: ../errors.h:87
-#, fuzzy
 msgid "E37: No write since last change"
-msgstr "[No se ha escrito nada al disco desde el último cambio]\n"
+msgstr "E37: No se ha escrito nada desde el último cambio"
 
 #: ../errors.h:89
 msgid "E37: No write since last change (add ! to override)"
 msgstr ""
-"E37: No guardó el archivo desde el último cambio (añada \"!\" para forzar)"
+"E37: No guardó el archivo desde el último cambio (añada ! para sobreescribir)"
 
 #: ../errors.h:91
 msgid "E38: Null argument"
@@ -5165,7 +5155,7 @@ msgstr "E39: Se esperaba un número"
 #: ../errors.h:98
 #, c-format
 msgid "E40: Can't open errorfile %s"
-msgstr "E40: No se pudo abrir el archivo de errores \"%s\""
+msgstr "E40: No se pudo abrir el archivo de errores %s"
 
 #: ../errors.h:101
 msgid "E41: Out of memory!"
