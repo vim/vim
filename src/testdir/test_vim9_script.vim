@@ -4199,8 +4199,10 @@ def Test_echo_uninit_variables()
   var Var_func: func
   var var_string: string
   var var_blob: blob
-  var var_job: job
-  var var_channel: channel
+  if has('job')
+    var var_job: job
+    var var_channel: channel
+  endif
   var var_list: list<any>
   var var_dict: dict<any>
 
