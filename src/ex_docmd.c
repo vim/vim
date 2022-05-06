@@ -3435,7 +3435,7 @@ append_command(char_u *cmd)
 
     STRCAT(IObuff, ": ");
     d = IObuff + STRLEN(IObuff);
-    while (*s != NUL && d - IObuff < IOSIZE - 7)
+    while (*s != NUL && d - IObuff + 5 < IOSIZE)
     {
 	if (enc_utf8 ? (s[0] == 0xc2 && s[1] == 0xa0) : *s == 0xa0)
 	{
@@ -3443,6 +3443,8 @@ append_command(char_u *cmd)
 	    STRCPY(d, "<a0>");
 	    d += 4;
 	}
+	else if (d - IObuff + (*mb_ptr2len)(s) + 1 >= IOSIZE)
+	    break;
 	else
 	    MB_COPY_CHAR(s, d);
     }
