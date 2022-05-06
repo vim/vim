@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-06 17:26+0200\n"
+"PO-Revision-Date: 2022-05-06 18:08+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -1737,7 +1737,7 @@ msgstr " Completar palabras con Thesaurus (^T^N^P)"
 #. CTRL_X_EVAL doesn't use msg.
 #: ../insexpand.c:58 ../insexpand.c:64
 msgid " Command-line completion (^V^N^P)"
-msgstr " Compleción de línea de órdenes (^V^N^P)"
+msgstr " Completar línea de órdenes (^V^N^P)"
 
 #: ../insexpand.c:59
 msgid " User defined completion (^U^N^P)"
@@ -1774,7 +1774,7 @@ msgstr "La opción 'dictionary' está vacía"
 
 #: ../insexpand.c:394
 msgid "'thesaurus' option is empty"
-msgstr "La opción 'thesaurus' (tesauro) está vacía"
+msgstr "La opción 'thesaurus' está vacía"
 
 #: ../insexpand.c:1537
 #, c-format
@@ -1800,13 +1800,12 @@ msgid "Scanning tags."
 msgstr "Buscando etiquetas."
 
 #: ../insexpand.c:3917
-#, fuzzy
 msgid "match in file"
-msgstr "Archivo de parches"
+msgstr "Coincidencia en el archivo"
 
 #: ../insexpand.c:4788
 msgid " Adding"
-msgstr "Añadiendo"
+msgstr " Añadiendo"
 
 # showmode might reset the internal line pointers, so it must
 # * be called before line = ml_get(), or when this address is no
@@ -1842,48 +1841,40 @@ msgid "match %d"
 msgstr "coincidencia %d"
 
 #: ../list.c:1026
-#, fuzzy
 msgid "flatten() argument"
-msgstr "-c [argumentos]"
+msgstr "argumento flatten()"
 
 #: ../list.c:2215
-#, fuzzy
 msgid "sort() argument"
-msgstr "-c [argumentos]"
+msgstr "argumento sort()"
 
 #: ../list.c:2215
-#, fuzzy
 msgid "uniq() argument"
-msgstr "-c [argumentos]"
+msgstr "argumento uniq()"
 
 #: ../list.c:2458
-#, fuzzy
 msgid "map() argument"
-msgstr "-c [argumentos]"
+msgstr "argumento map()"
 
 #: ../list.c:2460
-#, fuzzy
 msgid "mapnew() argument"
-msgstr "Demasiados argumentos de edición"
+msgstr "argumento mapnew()"
 
 #: ../list.c:2461
-#, fuzzy
 msgid "filter() argument"
-msgstr "-c [argumentos]"
+msgstr "argumento filter()"
 
 #: ../list.c:2799
 msgid "extendnew() argument"
-msgstr ""
+msgstr "argumento extendnew()"
 
 #: ../list.c:2872
-#, fuzzy
 msgid "remove() argument"
-msgstr "--cmd [argumentos]"
+msgstr "argumento remove()"
 
 #: ../list.c:2902
-#, fuzzy
 msgid "reverse() argument"
-msgstr "-c [argumentos]"
+msgstr "argumento reverse()"
 
 #: ../locale.c:325
 #, c-format
@@ -1904,7 +1895,7 @@ msgstr "Falta el argumento después de"
 
 #: ../main.c:66
 msgid "Garbage after option argument"
-msgstr "Basura después de la opción"
+msgstr "Basura después del argumento de la opción"
 
 #: ../main.c:68
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
@@ -1922,7 +1913,7 @@ msgstr "%d archivos que editar\n"
 
 #: ../main.c:866
 msgid "netbeans is not supported with this GUI\n"
-msgstr ""
+msgstr "netbeans no es compatible con esta GUI\n"
 
 #: ../main.c:1814
 msgid "'-nb' cannot be used: not enabled at compile time\n"
@@ -1930,7 +1921,7 @@ msgstr "'-nb' no se puede usar: no se ha activado al compilar\n"
 
 #: ../main.c:1915
 msgid "This Vim was not compiled with the diff feature."
-msgstr "Este Vim no se ha compilado con la opción \"diff\""
+msgstr "Este Vim no se ha compilado con la opción \"diff\"."
 
 #: ../main.c:2475
 msgid "Attempt to open script file again: \""
@@ -1946,11 +1937,11 @@ msgstr "No se pudo abrir para escribir la salida del archivo de órdenes: \""
 
 #: ../main.c:2704
 msgid "Vim: Error: Failure to start gvim from NetBeans\n"
-msgstr "Vim: Error: Imposible iniciar gvim para NetBeans\n"
+msgstr "Vim: Error: Imposible iniciar gvim desde NetBeans\n"
 
 #: ../main.c:2730
 msgid "Vim: Error: This version of Vim does not run in a Cygwin terminal\n"
-msgstr ""
+msgstr "Vim: Error: esta versión de Vim no se ejecuta en una terminal Cygwin\n"
 
 #: ../main.c:2735
 msgid "Vim: Warning: Output is not to a terminal\n"
@@ -2049,7 +2040,7 @@ msgstr "-unregister\t\tSuprimir el registro de \"gvim\" para \"OLE\""
 
 #: ../main.c:3481
 msgid "-g\t\t\tRun using GUI (like \"gvim\")"
-msgstr "-g\t\t\tEjecutar usando el GUI (como \"gvim\")"
+msgstr "-g\t\t\tEjecutar usando la GUI (como \"gvim\")"
 
 #: ../main.c:3482
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2059,19 +2050,19 @@ msgstr ""
 
 #: ../main.c:3484
 msgid "-v\t\t\tVi mode (like \"vi\")"
-msgstr "-v\t\t\tModo vi"
+msgstr "-v\t\t\tModo vi (como \"vi\")"
 
 #: ../main.c:3485
 msgid "-e\t\t\tEx mode (like \"ex\")"
-msgstr "-e\t\t\tModo ex"
+msgstr "-e\t\t\tModo ex (como \"ex\")"
 
 #: ../main.c:3486
 msgid "-E\t\t\tImproved Ex mode"
-msgstr ""
+msgstr "-E\t\t\tModo Ex mejorado"
 
 #: ../main.c:3487
 msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
-msgstr "-s\t\t\tModo silencioso de ejecución por lotes (\"ex\")"
+msgstr "-s\t\t\tModo silencioso de ejecución por lotes (solo para \"ex\")"
 
 #: ../main.c:3489
 msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
@@ -2091,11 +2082,11 @@ msgstr "-Z\t\t\tModo restringido (como \"rvim\")"
 
 #: ../main.c:3494
 msgid "-m\t\t\tModifications (writing files) not allowed"
-msgstr "-m\t\t\tModificación de archivos desactivada"
+msgstr "-m\t\t\tModificaciones (escritura de archivos) no permitidas"
 
 #: ../main.c:3495
 msgid "-M\t\t\tModifications in text not allowed"
-msgstr "-M\t\t\tModificación de texto desactivada"
+msgstr "-M\t\t\tModificaciones en texto no permitidas"
 
 #: ../main.c:3496
 msgid "-b\t\t\tBinary mode"
@@ -2103,20 +2094,20 @@ msgstr "-b\t\t\tModo binario"
 
 #: ../main.c:3498
 msgid "-l\t\t\tLisp mode"
-msgstr "-l\t\t\tModo LISP"
+msgstr "-l\t\t\tModo Lisp"
 
 #: ../main.c:3500
 msgid "-C\t\t\tCompatible with Vi: 'compatible'"
-msgstr "-C\t\t\tCompatible con vi: \"compatible\""
+msgstr "-C\t\t\tCompatible con VI: \"compatible\""
 
 #: ../main.c:3501
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
-msgstr "-N\t\t\tParcialmente compatible con vi: \"nocompatible\""
+msgstr "-N\t\t\tNo totalmente compatible con Vi: \"nocompatible\""
 
 #: ../main.c:3502
 msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
 msgstr ""
-"-V[N][nombre_archivo]\t\tCon verbosidad [nivel N] [guardar mensajes en "
+"-V[N][nombre_archivo]\t\tCon detalle [nivel N] [registrar mensajes en "
 "nombre_archivo]"
 
 #: ../main.c:3504
@@ -2125,7 +2116,7 @@ msgstr "-D\t\t\tModo de depuración"
 
 #: ../main.c:3506
 msgid "-n\t\t\tNo swap file, use memory only"
-msgstr "-n\t\t\tSin archivo de intercambio, solo usa RAM"
+msgstr "-n\t\t\tSin archivo de intercambio, usa solo la memoria"
 
 #: ../main.c:3507
 msgid "-r\t\t\tList swap files and exit"
@@ -2133,7 +2124,7 @@ msgstr "-r\t\t\tDar una lista de los archivo de intercambio y salir"
 
 #: ../main.c:3508
 msgid "-r (with file name)\tRecover crashed session"
-msgstr "-r \"archivo\"\tRecuperar sesión fallida"
+msgstr "-r (con nombre de archivo\tRecuperar sesión fallida"
 
 #: ../main.c:3509
 msgid "-L\t\t\tSame as -r"
@@ -2162,14 +2153,15 @@ msgstr "-T <terminal>\tEstablecer el tipo de salida visual a <terminal>"
 #: ../main.c:3521
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr ""
+"--not-a-term\t\tOmitir advertencia de entrada/salida que no es una terminal"
 
 #: ../main.c:3522
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
-msgstr ""
+msgstr "--ttyfail\t\tExit si la entrada o salida no es una terminal"
 
 #: ../main.c:3523
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
-msgstr "-u <vimrc>\t\tUsar <vimrc> en lugar de cualquier \".vimrc\""
+msgstr "-u <vimrc>\t\tUsar <vimrc> en lugar de otro \".vimrc\""
 
 #: ../main.c:3525
 msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
@@ -2177,11 +2169,11 @@ msgstr "-U <gvimrc>\t\tUsar <gvimrc> en lugar de otro \".gvimrc\""
 
 #: ../main.c:3527
 msgid "--noplugin\t\tDon't load plugin scripts"
-msgstr "--noplugin\t\tNo cargar los módulos de expansión"
+msgstr "--noplugin\t\tNo cargar los scripts de complementos"
 
 #: ../main.c:3528
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
-msgstr "-p[N]\t\tAbrir N ventanas (valor predeterminado: una por archivo)"
+msgstr "-p[N]\t\tAbrir N pestañas (valor predeterminado: una por archivo)"
 
 #: ../main.c:3529
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
@@ -2215,21 +2207,17 @@ msgstr ""
 
 #: ../main.c:3536
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
-msgstr ""
-"-s <scriptin>\tLeer las órdenes en modo Normal del archivo \"módulo de "
-"expansión\" de entrada>"
+msgstr "-s <scriptin>\tLeer las órdenes en modo Normal del archivo <scriptin>"
 
 #: ../main.c:3537
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr ""
-"-w <scriptout>\tAñadir todas las órdenes escritas al archivo \"módulo de "
-"expansión\" de salida"
+"-w <scriptout>\tAñadir todas las órdenes escritas al archivo <scriptout>"
 
 #: ../main.c:3538
 msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
 msgstr ""
-"-W <scriptout>\tGrabar todas las órdenes escritas al archivo \"módulo de "
-"expansión\" de salida"
+"-W <scriptout>\tEscribir todas las órdenes escritas al archivo <scriptout>"
 
 #: ../main.c:3540
 msgid "-x\t\t\tEdit encrypted files"
@@ -2251,21 +2239,21 @@ msgstr ""
 #: ../main.c:3550
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-silent \"archivos\"\tLo mismo pero no se queja si no existe un "
+"--remote-silent <archivos> Lo mismo pero no se queja si no existe un "
 "servidor disponible"
 
 #: ../main.c:3551
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
-"--remote-wait \"archivos\"\tComo --remote pero espera a que los archivos "
+"--remote-wait <archivos> Como --remote pero espera a que los archivos "
 "terminen de editarse"
 
 #: ../main.c:3552
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-wait-silent \"archivos\"\tLo mismo pero no se queja si no hay un "
+"--remote-wait-silent <archivos> Lo mismo, pero no se queja si no hay un "
 "servidor disponible"
 
 #: ../main.c:3553
@@ -2277,7 +2265,7 @@ msgstr ""
 
 #: ../main.c:3554
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
-msgstr "--remote-send <teclas>\tEnvíar <teclas> a un servidor Vim y cerrar"
+msgstr "--remote-send <teclas>\tEnvíar <teclas> a un servidor Vim y salir"
 
 #: ../main.c:3555
 msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
@@ -2288,23 +2276,23 @@ msgstr ""
 #: ../main.c:3556
 msgid "--serverlist\t\tList available Vim server names and exit"
 msgstr ""
-"--serverlist\t\tEmitir una lista de los servidores Vim disponibles y cerrar"
+"--serverlist\t\tEmitir una lista de los servidores Vim disponibles y salir"
 
 #: ../main.c:3557
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr ""
-"--servername \"nombre\"\tEnvíar a/se convierte en el servidor Vim con "
+"--servername <nombre>\tEnvíar a/se convierte en el servidor Vim con "
 "<nombre>"
 
 #: ../main.c:3560
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr ""
-"-- startuptime <archivo>\tGuardar los mensajes de tiempo de inicio a "
-"<archivo>."
+"-- startuptime <archivo>\tGuardar los mensajes de tiempo de inicio en "
+"<archivo>"
 
 #: ../main.c:3563
 msgid "--log <file>\tStart logging to <file> early"
-msgstr ""
+msgstr "--log <archivo>\tIniciar registro en <archivo> pronto"
 
 #: ../main.c:3566
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
@@ -2313,14 +2301,16 @@ msgstr "-i <viminfo>\t\tUsar <viminfo> en lugar de \".viminfo\""
 #: ../main.c:3568
 msgid "--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"
 msgstr ""
+"--clean\t\t'nocompatible', valores predeterminados de Vim, sin complementos,"
+" sin viminfo"
 
 #: ../main.c:3569
 msgid "-h  or  --help\tPrint Help (this message) and exit"
-msgstr "-h  or  --help\tImpresión de la ayuda (este mensaje) y cerrar"
+msgstr "-h  o  --help\tMuestra la ayuda (este mensaje) y sale"
 
 #: ../main.c:3570
 msgid "--version\t\tPrint version information and exit"
-msgstr "--version\t\tImpresión de la información de versión y cerrar"
+msgstr "--version\t\tMuestra la información de la versión y sale"
 
 #: ../main.c:3574
 msgid ""
@@ -2348,24 +2338,20 @@ msgstr "-foreground <color>\tUsa <color> para el texto normal (también: -fg)"
 
 #: ../main.c:3580 ../main.c:3594
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
-msgstr ""
-"-font <tipo>\t\tUse <tipo de letra de impresión> para el texto normal "
-"(también: -fn)"
+msgstr "-font <fuente>\t\tUsa <fuente> para el texto normal (también: -fn)"
 
 #: ../main.c:3581
 msgid "-boldfont <font>\tUse <font> for bold text"
-msgstr ""
-"-boldfont <tipo>\tUsa <tipo de letra de impresión> para texto en negrita"
+msgstr "-boldfont <fuente>\tUsa <fuente> para el texto en negrita"
 
 #: ../main.c:3582
 msgid "-italicfont <font>\tUse <font> for italic text"
-msgstr ""
-"-italicfont <tipo>\tUse <tipo de letra de impresión> para texto en cursiva"
+msgstr "-italicfont <fuente>\tUsa <fuente> para texto en cursiva"
 
 #: ../main.c:3583 ../main.c:3595
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr ""
-"-geometry <geom>\tUse <geom> para la geometría inicial (también: -geom)"
+"-geometry <geom>\tUsa <geom> para la geometría inicial (también: -geom)"
 
 #: ../main.c:3584
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
@@ -2379,11 +2365,11 @@ msgstr ""
 
 #: ../main.c:3586 ../main.c:3597
 msgid "-reverse\t\tUse reverse video (also: -rv)"
-msgstr "-reverse\t\tUsar vídeo inverso (también: -rv)"
+msgstr "-reverse\t\tUsa vídeo inverso (también: -rv)"
 
 #: ../main.c:3587
 msgid "+reverse\t\tDon't use reverse video (also: +rv)"
-msgstr "+reverse\t\tNo usar vídeo inverso (también: +rv)"
+msgstr "+reverse\t\tNo usa vídeo inverso (también: +rv)"
 
 #: ../main.c:3588
 msgid "-xrm <resource>\tSet the specified resource"
@@ -2408,19 +2394,21 @@ msgstr ""
 
 #: ../main.c:3600
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
-msgstr "--socketid <xid>\tAbre a Vim dentro de otro \"widget\" GTK"
+msgstr "--socketid <xid>\tAbre Vim dentro de otro \"widget\" GTK"
 
 #: ../main.c:3601
 msgid "--echo-wid\t\tMake gvim echo the Window ID on stdout"
 msgstr ""
+"--echo-wid\t\tHacer que gvim haga eco del ID de la ventana en la salida"
+" estándar"
 
 #: ../main.c:3608
 msgid "-P <parent title>\tOpen Vim inside parent application"
-msgstr "-P <título ventana padre>\tAbrir a Vim dentro de la aplicación padre"
+msgstr "-P <título ventana padre>\tAbre Vim dentro de la aplicación padre"
 
 #: ../main.c:3609
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
-msgstr "--windowid <HWND>\tAbrir Vim dentro de otro objeto de win32"
+msgstr "--windowid <HWND>\tAbre Vim dentro de otro objeto de win32"
 
 #: ../map.c:842
 msgid "No abbreviation found"
@@ -2462,7 +2450,7 @@ msgid ""
 "change line  col text"
 msgstr ""
 "\n"
-"cambio línea  col archivo/texto"
+"cambio línea  col texto"
 
 #: ../memline.c:1223
 msgid "Enter number of swap file to use (0 to quit): "
@@ -2471,7 +2459,7 @@ msgstr ""
 
 #: ../memline.c:1292
 msgid "Unable to read block 0 from "
-msgstr "Incapaz de leer el bloque 0 de "
+msgstr "No se puede leer el bloque 0 de "
 
 #: ../memline.c:1294
 msgid ""
@@ -2479,7 +2467,7 @@ msgid ""
 "Maybe no changes were made or Vim did not update the swap file."
 msgstr ""
 "\n"
-"Tal vez no hay cambios o Vim no actualizó el archivo de intercambio."
+"Tal vez no se realizaron cambios o Vim no actualizó el archivo de intercambio."
 
 #: ../memline.c:1304 ../memline.c:1321
 msgid " cannot be used with this version of Vim.\n"
@@ -2503,11 +2491,12 @@ msgid ""
 "or the file has been damaged."
 msgstr ""
 ",\n"
-"o el archivo se ha dañado"
+"o el archivo ha sido dañado."
 
 #: ../memline.c:1364
 msgid " has been damaged (page size is smaller than minimum value).\n"
-msgstr " se ha dañado (el tamaño de la página es menor al valor minimo).\n"
+msgstr ""
+" ha sido dañado (el tamaño de la página es menor que el valor mínimo).\n"
 
 #: ../memline.c:1396
 #, c-format
@@ -2517,38 +2506,46 @@ msgstr "Usando el archivo de intercambio \"%s\""
 #: ../memline.c:1402
 #, c-format
 msgid "Original file \"%s\""
-msgstr "Archivo original %s"
+msgstr "Archivo original \"%s\""
 
 # use msg() to start the scrolling properly
 #: ../memline.c:1459
-#, fuzzy, c-format
+#, c-format
 msgid "Swap file is encrypted: \"%s\""
-msgstr "Se han encontrado los siguientes archivos de intercambio:"
+msgstr "El archivo de intercambio está cifrado: \"%s\""
 
 #: ../memline.c:1460
 msgid ""
 "\n"
 "If you entered a new crypt key but did not write the text file,"
 msgstr ""
+"\n"
+"Si ingresó una nueva clave de cifrado pero no escribió el archivo de texto,"
 
 #: ../memline.c:1461
-#, fuzzy
 msgid ""
 "\n"
 "enter the new crypt key."
-msgstr "Introduzca la clave de cifrado: "
+msgstr ""
+"\n"
+"introduzca la nueva clave de cifrado."
 
 #: ../memline.c:1462
 msgid ""
 "\n"
 "If you wrote the text file after changing the crypt key press enter"
 msgstr ""
+"\n"
+"Si escribió el archivo de texto después de cambiar la clave de cifrado,"
+" presione intro"
 
 #: ../memline.c:1463
 msgid ""
 "\n"
 "to use the same key for text file and swap file"
 msgstr ""
+"\n"
+"para usar la misma clave para el archivo de texto y el archivo de intercambio"
 
 #: ../memline.c:1522
 msgid "???MANY LINES MISSING"
@@ -2585,11 +2582,11 @@ msgstr "???FIN"
 
 #: ../memline.c:1732
 msgid "See \":help E312\" for more information."
-msgstr "Vea \":help E312\" para más información."
+msgstr "Consulte \":help E312\" para más información."
 
 #: ../memline.c:1739
 msgid "Recovery completed. You should check if everything is OK."
-msgstr "Recuperación completa. Ud. debería comprobar que todo está bien"
+msgstr "Recuperación completa. Ud. debería comprobar que todo está bien."
 
 #: ../memline.c:1740
 msgid ""
@@ -2600,20 +2597,23 @@ msgstr ""
 "(Podría querer guardar este archivo con otro nombre\n"
 
 #: ../memline.c:1741
-#, fuzzy
 msgid "and run diff with the original file to check for changes)"
 msgstr ""
-"y ejecutar \"diff\" con el archivo original para comprobar los cambios)\n"
+"y ejecutar \"diff\" con el archivo original para comprobar los cambios)"
 
 #: ../memline.c:1744
 msgid "Recovery completed. Buffer contents equals file contents."
 msgstr ""
+"Recuperación completada. El contenido del búfer es igual al contenido del"
+" archivo."
 
 #: ../memline.c:1745
 msgid ""
 "\n"
 "You may want to delete the .swp file now."
 msgstr ""
+"\n"
+"Es posible que desee eliminar ahora el archivo .swp."
 
 #. Warn there could be an active Vim on the same file, the user may
 #. want to kill it.
@@ -2622,10 +2622,14 @@ msgid ""
 "\n"
 "Note: process STILL RUNNING: "
 msgstr ""
+"\n"
+"Nota: el proceso SIGUE EN EJECUCIÓN: "
 
 #: ../memline.c:1761
 msgid "Using crypt key from swap file for the text file.\n"
 msgstr ""
+"Usando la clave de cifrado del archivo de intercambio para el archivo de"
+" texto.\n"
 
 # use msg() to start the scrolling properly
 #. use msg() to start the scrolling properly
