@@ -2840,6 +2840,25 @@ def Test_disassemble_after_reload()
     delfunc g:ThatFunc
 enddef
 
+def s:MakeString(x: number): string
+  return $"x={x} x^2={x * x}"
+enddef
 
+def Test_disassemble_string_interp()
+  var instr = execute('disassemble s:MakeString')
+  assert_match('MakeString\_s*' ..
+        'return $"x={x} x^2={x \* x}"\_s*' ..
+        '0 PUSHS "x="\_s*' ..
+        '1 LOAD arg\[-1\]\_s*' ..
+        '2 2STRING stack\[-1\]\_s*' ..
+        '3 PUSHS " x^2="\_s*' ..
+        '4 LOAD arg\[-1\]\_s*' ..
+        '5 LOAD arg\[-1\]\_s*' ..
+        '6 OPNR \*\_s*' ..
+        '7 2STRING stack\[-1\]\_s*' ..
+        '8 CONCAT size 4\_s*' ..
+        '9 RETURN\_s*',
+        instr)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

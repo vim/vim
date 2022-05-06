@@ -72,6 +72,7 @@ int eval_string(char_u **arg, typval_T *rettv, int evaluate);
 int eval_lit_string(char_u **arg, typval_T *rettv, int evaluate);
 char_u *tv2string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 int eval_env_var(char_u **arg, typval_T *rettv, int evaluate);
+int eval_interp_string(char_u **arg, typval_T *rettv, int evaluate);
 linenr_T tv_get_lnum(typval_T *argvars);
 linenr_T tv_get_lnum_buf(typval_T *argvars, buf_T *buf);
 buf_T *tv_get_buf(typval_T *tv, int curtab_only);

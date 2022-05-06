@@ -2266,6 +2266,32 @@ eval_lit_string(char_u **arg, typval_T *rettv, int evaluate)
     return OK;
 }
 
+    int
+eval_interp_string(char_u **arg, typval_T *rettv, int evaluate)
+{
+    typval_T	tv;
+    int		ret;
+
+    // *arg is on the '$' character.
+    (*arg)++;
+
+    rettv->v_type = VAR_STRING;
+
+    if (**arg == '"')
+	ret = eval_string(arg, &tv, evaluate);
+    else
+	ret = eval_lit_string(arg, &tv, evaluate);
+
+    if (ret == FAIL || !evaluate)
+	return ret;
+
+    rettv->vval.v_string = eval_all_expr_in_str(tv.vval.v_string);
+
+    clear_tv(&tv);
+
+    return rettv->vval.v_string != NULL ? OK : FAIL;
+}
+
 /*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.

@@ -1375,6 +1375,33 @@ compile_get_env(char_u **arg, cctx_T *cctx)
 }
 
 /*
+ * Compile "$"string"" or "$'string'".
+ */
+    static int
+compile_interp_string(char_u **arg, cctx_T *cctx)
+{
+    typval_T	tv;
+    int		ret;
+    int		evaluate = cctx->ctx_skip != SKIP_YES;
+
+    // *arg is on the '$' character.
+    (*arg)++;
+
+    if (**arg == '"')
+	ret = eval_string(arg, &tv, evaluate);
+    else
+	ret = eval_lit_string(arg, &tv, evaluate);
+
+    if (ret == FAIL || !evaluate)
+	return ret;
+
+    ret = compile_all_expr_in_str(tv.vval.v_string, TRUE, cctx);
+    clear_tv(&tv);
+
+    return ret;
+}
+
+/*
  * Compile "@r".
  */
     static int
@@ -2226,10 +2253,14 @@ compile_expr8(
 
 	/*
 	 * Environment variable: $VAR.
+	 * Interpolated string: $"string" or $'string'.
 	 */
 	case '$':	if (generate_ppconst(cctx, ppconst) == FAIL)
 			    return FAIL;
-			ret = compile_get_env(arg, cctx);
+			if ((*arg)[1] == '"' || (*arg)[1] == '\'')
+			    ret = compile_interp_string(arg, cctx);
+			else
+			    ret = compile_get_env(arg, cctx);
 			break;
 
 	/*

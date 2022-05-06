@@ -3268,4 +3268,8 @@ EXTERN char e_illegal_map_mode_string_str[]
 EXTERN char e_channel_job_feature_not_available[]
 	INIT(= N_("E1277: Channel and job feature is not available"));
 # endif
+EXTERN char e_stray_closing_curly_str[]
+	INIT(= N_("E1278: Stray '}' without a matching '{': %s"));
+EXTERN char e_missing_close_curly_str[]
+	INIT(= N_("E1279: Missing '}': %s"));
 #endif

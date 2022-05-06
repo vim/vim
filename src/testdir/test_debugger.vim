@@ -377,7 +377,7 @@ func Test_Debugger_breakadd_expr()
   let expected =<< eval trim END
     Oldval = "10"
     Newval = "11"
-    `=fnamemodify('Xtest.vim', ':p')`
+    {fnamemodify('Xtest.vim', ':p')}
     line 1: let g:Xtest_var += 1
   END
   call RunDbgCmd(buf, ':source %', expected)
@@ -385,7 +385,7 @@ func Test_Debugger_breakadd_expr()
   let expected =<< eval trim END
     Oldval = "11"
     Newval = "12"
-    `=fnamemodify('Xtest.vim', ':p')`
+    {fnamemodify('Xtest.vim', ':p')}
     line 1: let g:Xtest_var += 1
   END
   call RunDbgCmd(buf, ':source %', expected)
