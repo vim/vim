@@ -1052,6 +1052,7 @@ COLSUBDIR = /colors
 SYNSUBDIR = /syntax
 INDSUBDIR = /indent
 AUTOSUBDIR = /autoload
+IMPORTSUBDIR = /import
 PLUGSUBDIR = /plugin
 FTPLUGSUBDIR = /ftplugin
 LANGSUBDIR = /lang
@@ -1074,6 +1075,7 @@ PODIR = po
 ### SYNSUBLOC	location for syntax files
 ### INDSUBLOC	location for indent files
 ### AUTOSUBLOC	location for standard autoload files
+### IMPORTSUBLOC location for standard import files
 ### PLUGSUBLOC	location for standard plugin files
 ### FTPLUGSUBLOC  location for ftplugin files
 ### LANGSUBLOC	location for language files
@@ -1096,6 +1098,7 @@ COLSUBLOC	= $(VIMRTLOC)$(COLSUBDIR)
 SYNSUBLOC	= $(VIMRTLOC)$(SYNSUBDIR)
 INDSUBLOC	= $(VIMRTLOC)$(INDSUBDIR)
 AUTOSUBLOC	= $(VIMRTLOC)$(AUTOSUBDIR)
+IMPORTSUBLOC	= $(VIMRTLOC)$(IMPORTSUBDIR)
 PLUGSUBLOC	= $(VIMRTLOC)$(PLUGSUBDIR)
 FTPLUGSUBLOC	= $(VIMRTLOC)$(FTPLUGSUBDIR)
 LANGSUBLOC	= $(VIMRTLOC)$(LANGSUBDIR)
@@ -1199,6 +1202,9 @@ INDSOURCE = ../runtime/indent
 
 # Where to copy the standard plugin files from
 AUTOSOURCE = ../runtime/autoload
+
+# Where to copy the standard import files from
+IMPORTSOURCE = ../runtime/import
 
 # Where to copy the standard plugin files from
 PLUGSOURCE = ../runtime/plugin
@@ -1475,6 +1481,7 @@ DEST_COL = $(DESTDIR)$(COLSUBLOC)
 DEST_SYN = $(DESTDIR)$(SYNSUBLOC)
 DEST_IND = $(DESTDIR)$(INDSUBLOC)
 DEST_AUTO = $(DESTDIR)$(AUTOSUBLOC)
+DEST_IMPORT = $(DESTDIR)$(IMPORTSUBLOC)
 DEST_PLUG = $(DESTDIR)$(PLUGSUBLOC)
 DEST_FTP = $(DESTDIR)$(FTPLUGSUBLOC)
 DEST_LANG = $(DESTDIR)$(LANGSUBLOC)
@@ -2373,6 +2380,7 @@ installruntime: installrtbase installmacros installpack installtutor installspel
 installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
 		$(DEST_FTP) $(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
+		$(DEST_IMPORT) $(DEST_IMPORT)/dist \
 		$(DEST_PLUG) $(DEST_TUTOR) $(DEST_SPELL) $(DEST_COMP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 # Generate the help tags with ":helptags" to handle all languages.
@@ -2451,6 +2459,9 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(DEST_AUTO)/dist; chmod $(HELPMOD) *.vim
 	cd $(AUTOSOURCE)/xml; $(INSTALL_DATA) *.vim $(DEST_AUTO)/xml
 	cd $(DEST_AUTO)/xml; chmod $(HELPMOD) *.vim
+# install the standard import files
+	cd $(IMPORTSOURCE)/dist; $(INSTALL_DATA) *.vim $(DEST_IMPORT)/dist
+	cd $(DEST_IMPORT)/dist; chmod $(HELPMOD) *.vim
 # install the standard plugin files
 	cd $(PLUGSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_PLUG)
 	cd $(DEST_PLUG); chmod $(HELPMOD) *.vim README.txt
@@ -2686,7 +2697,8 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
 		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
-		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_PLUG):
+		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
+		$(DEST_IMPORT) $(DEST_IMPORT)/dist $(DEST_PLUG):
 	$(MKDIR_P) $@
 	-chmod $(DIRMOD) $@
 
@@ -2872,8 +2884,10 @@ uninstall_runtime:
 	-rm -rf $(DEST_FTP)/*.vim $(DEST_FTP)/README.txt $(DEST_FTP)/logtalk.dict
 	-rm -f $(DEST_AUTO)/*.vim $(DEST_AUTO)/README.txt
 	-rm -f $(DEST_AUTO)/dist/*.vim $(DEST_AUTO)/xml/*.vim
+	-rm -f $(DEST_IMPORT)/dist/*.vim
 	-rm -f $(DEST_PLUG)/*.vim $(DEST_PLUG)/README.txt
 	-rmdir $(DEST_FTP) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_AUTO)
+	-rmdir $(DEST_IMPORT)/dist $(DEST_IMPORT)
 	-rmdir $(DEST_PLUG) $(DEST_RT)
 #	This will fail when other Vim versions are installed, no worries.
 	-rmdir $(DEST_VIM)
