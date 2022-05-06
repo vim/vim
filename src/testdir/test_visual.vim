@@ -1396,6 +1396,11 @@ endfunc
 func Test_visual_paste_clipboard()
   CheckFeature clipboard_working
 
+  if has('gui')
+    " auto select feature breaks tests
+    set guioptions-=a
+  endif
+
   " v_P does not overwrite unnamed register.
   call setline(1, ['xxxx'])
   call setreg('"', 'foo')
@@ -1448,6 +1453,9 @@ func Test_visual_paste_clipboard()
   endif
 
   set clipboard&
+  if has('gui')
+    set guioptions&
+  endif
   bwipe!
 endfunc
 

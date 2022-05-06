@@ -7237,9 +7237,6 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		dir;
     int		flags = 0;
     int		keep_registers = FALSE;
-#ifdef FEAT_CLIPBOARD
-    void	*save_cb = NULL;
-#endif
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7304,15 +7301,6 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    }
 
 	    // Now delete the selected text. Avoid messages here.
-#ifdef FEAT_CLIPBOARD
-	    if (keep_registers)
-	    {
-		if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED)
-		    save_cb = get_register('*', TRUE);
-		else if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED_PLUS)
-		    save_cb = get_register('+', TRUE);
-	    }
-#endif
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
 	    cap->oap->regname = keep_registers ? '_' : NUL;
@@ -7358,16 +7346,6 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	// If a register was saved, put it back now.
 	if (reg2 != NULL)
 	    put_register(regname, reg2);
-
-#ifdef FEAT_CLIPBOARD
-	if (keep_registers && save_cb != NULL)
-	{
-	    if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED)
-		put_register('*', save_cb);
-	    else if ((clip_unnamed | clip_unnamed_saved) & CLIP_UNNAMED_PLUS)
-		put_register('+', save_cb);
-	}
-#endif
 
 	// What to reselect with "gv"?  Selecting the just put text seems to
 	// be the most useful, since the original text was removed.
