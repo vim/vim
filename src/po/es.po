@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-06 19:38+0200\n"
+"PO-Revision-Date: 2022-05-06 21:21+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -5175,12 +5175,11 @@ msgstr "E44: El programa \"regexp\" está corrupto"
 
 #: ../errors.h:111
 msgid "E45: 'readonly' option is set (add ! to override)"
-msgstr "E45: La opción 'readonly' está activada (añada \"!\" para forzar)"
+msgstr "E45: La opción 'readonly' está activada (añada ! para sobreescribir)"
 
 #: ../errors.h:114
-#, fuzzy
 msgid "E46: Cannot change read-only variable"
-msgstr "E46: No puede cambiar la variable de solo lectura \"%s\""
+msgstr "E46: No puede cambiar la variable de solo lectura"
 
 #: ../errors.h:116
 #, c-format
@@ -5193,7 +5192,7 @@ msgstr "E47: Error al leer el archivo de errores"
 
 #: ../errors.h:124
 msgid "E48: Not allowed in sandbox"
-msgstr "E48: No se permite en el ambiente protegido"
+msgstr "E48: No se permite en el sandbox"
 
 #: ../errors.h:127
 msgid "E49: Invalid scroll size"
@@ -5210,22 +5209,22 @@ msgstr "E51: Hay demasiados %s("
 
 #: ../errors.h:136
 msgid "E52: Unmatched \\z("
-msgstr "E52: \\z( sin complemento"
+msgstr "E52: \\z( sin pareja"
 
 #: ../errors.h:139
 #, c-format
 msgid "E53: Unmatched %s%%("
-msgstr "E53: %s%%( sin complemento"
+msgstr "E53: %s%%( sin pareja"
 
 #: ../errors.h:141
 #, c-format
 msgid "E54: Unmatched %s("
-msgstr "E54: %s( sin complemento"
+msgstr "E54: %s( sin pareja"
 
 #: ../errors.h:143
 #, c-format
 msgid "E55: Unmatched %s)"
-msgstr "E55: %s) sin complemento"
+msgstr "E55: %s) sin pareja"
 
 #: ../errors.h:148
 #, c-format
@@ -5359,11 +5358,11 @@ msgid "E88: Cannot go before first buffer"
 msgstr "E88: No se pudo regresar antes del primer búfer"
 
 #: ../errors.h:212
-#, fuzzy, c-format
+#, c-format
 msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: No se guardó el archivo desde el último cambio del búfer %ld (añada \"!"
-"\" para forzar)"
+"E89: No se guardó el archivo desde el último cambio del búfer %d (añada !\""
+" para sobreescribir)"
 
 #: ../errors.h:214
 msgid "E90: Cannot unload last buffer"
@@ -5374,14 +5373,14 @@ msgid "E91: 'shell' option is empty"
 msgstr "E91: La opción 'shell' (intérprete de órdenes) está vacía"
 
 #: ../errors.h:218
-#, fuzzy, c-format
+#, c-format
 msgid "E92: Buffer %d not found"
-msgstr "E92: No se encontró el búfer %ld"
+msgstr "E92: Búfer %d no encontrado"
 
 #: ../errors.h:220
 #, c-format
 msgid "E93: More than one match for %s"
-msgstr "E93: Hay más de una coincidencia con %s"
+msgstr "E93: Hay más de una coincidencia para %s"
 
 #: ../errors.h:222
 #, c-format
@@ -5393,9 +5392,9 @@ msgid "E95: Buffer with this name already exists"
 msgstr "E95: Ya existe un búfer con este nombre"
 
 #: ../errors.h:227
-#, fuzzy, c-format
+#, c-format
 msgid "E96: Cannot diff more than %d buffers"
-msgstr "E96: No se puede usar \"diff\" con más de %ld búfers"
+msgstr "E96: No se puede usar \"diff\" con más de %d búfers"
 
 #: ../errors.h:229
 msgid "E97: Cannot create diffs"
@@ -5420,7 +5419,7 @@ msgstr "E101: Más de dos búfers en modo de diferencias, no se cual usar"
 #: ../errors.h:239
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
-msgstr "E102: No se pudo encontrar el búfer %s"
+msgstr "E102: No se pudo encontrar el búfer \"%s\""
 
 #: ../errors.h:241
 #, c-format
@@ -5468,14 +5467,14 @@ msgid "E113: Unknown option: %s"
 msgstr "E113: Opción desconocida: %s"
 
 #: ../errors.h:268
-#, fuzzy, c-format
+#, c-format
 msgid "E114: Missing double quote: %s"
-msgstr "E114: Faltan las comillas: %s"
+msgstr "E114: Faltan las comillas dobles: %s"
 
 #: ../errors.h:270
-#, fuzzy, c-format
+#, c-format
 msgid "E115: Missing single quote: %s"
-msgstr "E115: Faltan las comillas: %s"
+msgstr "E115: Faltan las comillas simples: %s"
 
 #: ../errors.h:272
 #, c-format
@@ -5508,9 +5507,9 @@ msgid "E121: Undefined variable: %s"
 msgstr "E121: Variable sin definir: %s"
 
 #: ../errors.h:284
-#, fuzzy, c-format
+#, c-format
 msgid "E121: Undefined variable: %c:%s"
-msgstr "E121: Variable sin definir: %s"
+msgstr "E121: Variable sin definir: %c:%s"
 
 #: ../errors.h:286
 #, c-format
@@ -5542,11 +5541,9 @@ msgid "E127: Cannot redefine function %s: It is in use"
 msgstr "E127: No se puede redefinir la función %s: Está en uso"
 
 #: ../errors.h:298
-#, fuzzy, c-format
+#, c-format
 msgid "E128: Function name must start with a capital or \"s:\": %s"
-msgstr ""
-"E128: El nombre de una función debe empezar con mayúscula o contener el "
-"signo de dos puntos: %s"
+msgstr "E128: El nombre de una función debe empezar con mayúscula o \"s:\": %s"
 
 #: ../errors.h:300
 msgid "E129: Function name required"
@@ -5560,16 +5557,15 @@ msgstr "E131: No se pudo eliminar la función %s: Está en uso"
 #: ../errors.h:305
 msgid "E132: Function call depth is higher than 'maxfuncdepth'"
 msgstr ""
-"E132: La recursión de llamada de la función es mayor que \"maxfuncdepth\""
+"E132: La profundidad de la llamada de función es mayor que \"maxfuncdepth\""
 
 #: ../errors.h:307
 msgid "E133: :return not inside a function"
 msgstr "E133: \":return\" no está dentro de una función"
 
 #: ../errors.h:310
-#, fuzzy
 msgid "E134: Cannot move a range of lines into itself"
-msgstr "E134: Moviendo líneas sobre sí mismas"
+msgstr "E134: No se puede mover un rango de líneas dentro de sí mismo"
 
 #: ../errors.h:312
 msgid "E135: *Filter* Autocommands must not change current buffer"
@@ -5597,7 +5593,7 @@ msgstr "E139: El archivo ya se ha cargado en otro búfer"
 
 #: ../errors.h:324
 msgid "E140: Use ! to write partial buffer"
-msgstr "E140: Use \"!\" para escribir un búfer parcial"
+msgstr "E140: Use  !  para escribir un búfer parcial"
 
 #: ../errors.h:326
 #, c-format
@@ -5617,31 +5613,29 @@ msgstr "E143: Las auto-órdenes han eliminado al nuevo búfer %s"
 
 #: ../errors.h:332
 msgid "E144: non-numeric argument to :z"
-msgstr "E144: Argumento no numérico para \":z\""
+msgstr "E144: Argumento no numérico para :z"
 
 #: ../errors.h:334
-#, fuzzy
 msgid "E145: Shell commands and some functionality not allowed in rvim"
-msgstr "E145: No se permiten órdenes de consola en rvim"
+msgstr ""
+"E145: No se permiten órdenes de consola y algunas funcionalidades en rvim"
 
 #: ../errors.h:336
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Las expresiones regulares no se pueden delimitar con letras"
 
 #: ../errors.h:338
-#, fuzzy
 msgid "E147: Cannot do :global recursive with a range"
-msgstr "E147: \":global\" no puede ser recursivo"
+msgstr "E147: No se puede hacer un :global: recursivo con un rango"
 
 #: ../errors.h:340
-#, fuzzy
 msgid "E148: Regular expression missing from :global"
-msgstr "E148: Falta una expresión regular en \":global\""
+msgstr "E148: Falta una expresión regular en :global"
 
 #: ../errors.h:342
 #, c-format
 msgid "E149: Sorry, no help for %s"
-msgstr "E149: Lo siento, no hay ayuda para \"%s\""
+msgstr "E149: Lo siento, no hay ayuda para %s"
 
 #: ../errors.h:344
 #, c-format
@@ -5649,9 +5643,9 @@ msgid "E150: Not a directory: %s"
 msgstr "E150: No es un directorio: %s"
 
 #: ../errors.h:346
-#, fuzzy, c-format
+#, c-format
 msgid "E151: No match: %s"
-msgstr "E480: No coincide: %s"
+msgstr "E151: No coincide: %s"
 
 #: ../errors.h:348
 #, c-format
@@ -5678,9 +5672,9 @@ msgid "E156: Missing sign name"
 msgstr "E156: Falta el nombre del signo"
 
 #: ../errors.h:359
-#, fuzzy, c-format
+#, c-format
 msgid "E157: Invalid sign ID: %d"
-msgstr "E157: La identificación del signo no es válida: %ld"
+msgstr "E157: La ID del signo no es válida: %d"
 
 #: ../errors.h:363
 #, c-format
@@ -5750,24 +5744,23 @@ msgid "E171: Missing :endif"
 msgstr "E171: Falta \":endif\""
 
 #: ../errors.h:401
-#, fuzzy
 msgid "E172: Missing marker"
-msgstr "E170: Falta \":endfor\""
+msgstr "E172: Falta marcador"
 
 #: ../errors.h:404
-#, fuzzy, c-format
+#, c-format
 msgid "E173: %d more file to edit"
-msgstr "E173: Un (%d) archivo más para editar"
+msgstr "E173: %d archivo más para editar"
 
 #: ../errors.h:406
-#, fuzzy, c-format
+#, c-format
 msgid "E173: %d more files to edit"
-msgstr "E173: Un (%d) archivo más para editar"
+msgstr "E173: %d archivos más para editar"
 
 #: ../errors.h:408
-#, fuzzy, c-format
+#, c-format
 msgid "E174: Command already exists: add ! to replace it: %s"
-msgstr "E174: Ya existe esa orden. Añada \"!\" para reemplazarla"
+msgstr "E174: Ya existe esa orden. Añada ! para reemplazarla: %s"
 
 #: ../errors.h:410
 msgid "E175: No attribute specified"
@@ -5786,9 +5779,9 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: El valor predeterminado para el recuento no es válido"
 
 #: ../errors.h:418
-#, fuzzy, c-format
+#, c-format
 msgid "E179: argument required for %s"
-msgstr "E179: se necesita un argumento para \"-complete\""
+msgstr "E179: se necesita un argumento para %s"
 
 #: ../errors.h:420
 #, c-format
@@ -5796,9 +5789,9 @@ msgid "E180: Invalid complete value: %s"
 msgstr "E180: El valor para completar no es válido: %s"
 
 #: ../errors.h:422
-#, fuzzy, c-format
+#, c-format
 msgid "E180: Invalid address type value: %s"
-msgstr "E180: El valor para completar no es válido: %s"
+msgstr "E180: Valor de tipo de dirección no válido: %s"
 
 #: ../errors.h:424
 #, c-format
@@ -5820,18 +5813,17 @@ msgid "E184: No such user-defined command: %s"
 msgstr "E184: No existe esa orden definida por el usuario: %s"
 
 #: ../errors.h:432
-#, fuzzy, c-format
+#, c-format
 msgid "E185: Cannot find color scheme '%s'"
-msgstr "E185: No se pudo encontrar el esquema de colores %s"
+msgstr "E185: No se pudo encontrar el esquema de colores '%s'"
 
 #: ../errors.h:434
 msgid "E186: No previous directory"
 msgstr "E186: No hay un directorio previo"
 
 #: ../errors.h:436
-#, fuzzy
 msgid "E187: Directory unknown"
-msgstr "E187: Desconocido"
+msgstr "E187: Directorio desconocido"
 
 #: ../errors.h:438
 msgid "E188: Obtaining window position not implemented for this platform"
@@ -5842,28 +5834,27 @@ msgstr ""
 #: ../errors.h:440
 #, c-format
 msgid "E189: \"%s\" exists (add ! to override)"
-msgstr "E189: \"%s\" ya existe (añada ! para sobreescribir.)"
+msgstr "E189: \"%s\" ya existe (añada ! para sobreescribir)"
 
 #: ../errors.h:442
 #, c-format
 msgid "E190: Cannot open \"%s\" for writing"
-msgstr "E190: No se pudo abrir \"%s\" para escrbir"
+msgstr "E190: No se pudo abrir \"%s\" para escribir"
 
 # set mark
 #: ../errors.h:444
 msgid "E191: Argument must be a letter or forward/backward quote"
 msgstr ""
-"E191: El argumento debe ser una letra o una comilla simple/comilla simple "
-"invertida"
+"E191: El argumento debe ser una letra o una comilla hacia adelante/atrás"
 
 #: ../errors.h:446
 msgid "E192: Recursive use of :normal too deep"
 msgstr "E192: Excesivo uso recursivo de \":normal\""
 
 #: ../errors.h:449
-#, fuzzy, c-format
+#, c-format
 msgid "E193: %s not inside a function"
-msgstr "E133: \":return\" no está dentro de una función"
+msgstr "E193: %s no está dentro de una función"
 
 #: ../errors.h:452
 msgid "E194: No alternate file name to substitute for '#'"
@@ -5949,7 +5940,7 @@ msgstr "E212: No se pudo abrir el archivo para escribir en él"
 #: ../errors.h:497
 msgid "E213: Cannot convert (add ! to write without conversion)"
 msgstr ""
-"E213: No se pudo convertir (añada \"!\" para escribir el archivo sin "
+"E213: No se pudo convertir (añada ! para escribir el archivo sin "
 "conversión)"
 
 #: ../errors.h:500
@@ -5988,14 +5979,12 @@ msgid "E220: Missing }."
 msgstr "E220: Falta un }."
 
 #: ../errors.h:518
-#, fuzzy
 msgid "E221: Marker cannot start with lower case letter"
-msgstr ""
-"E183: Las órdenes definidas por el usuario deben comenzar con mayúscula"
+msgstr "E221: El marcador no puede comenzar con letra minúscula"
 
 #: ../errors.h:521
 msgid "E222: Add to internal buffer that was already read from"
-msgstr ""
+msgstr "E222: Agregar al búfer interno que ya se leyó"
 
 #: ../errors.h:523
 msgid "E223: recursive mapping"
@@ -6078,9 +6067,8 @@ msgid "E239: Invalid sign text: %s"
 msgstr "E239: El texto de signo no es válido: %s"
 
 #: ../errors.h:575
-#, fuzzy
 msgid "E240: No connection to the X server"
-msgstr "E240: No hay conexión al servidor Vim"
+msgstr "E240: No hay conexión al servidor X"
 
 #: ../errors.h:579
 #, c-format
@@ -6088,9 +6076,8 @@ msgid "E241: Unable to send to %s"
 msgstr "E241: Incapaz de enviar a %s"
 
 #: ../errors.h:582
-#, fuzzy
 msgid "E242: Can't split a window while closing another"
-msgstr "E345: No se pudo encontrar el archivo %s en la ruta"
+msgstr "E242: No se puede dividir una ventana mientras se cierra otra"
 
 #: ../errors.h:585
 #, c-format
@@ -6098,11 +6085,9 @@ msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
 msgstr "E243: Argumento no admitido: \"-%s\"; use la versión OLE."
 
 #: ../errors.h:589
-#, fuzzy, c-format
+#, c-format
 msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
-msgstr ""
-"E244: El nombre del conjunto de caracteres \"%s\" no es válido en el nombre "
-"del tipo de letra de impresión \"%s\""
+msgstr "E244: Nombre de %s ilegal \"%s\" en el nombre de tipo de letra \"%s\""
 
 #: ../errors.h:591
 #, c-format
@@ -6124,9 +6109,8 @@ msgid "E248: Failed to send command to the destination program"
 msgstr "E248: No pude enviar la orden al programa de destino"
 
 #: ../errors.h:602
-#, fuzzy
 msgid "E249: window layout changed unexpectedly"
-msgstr "E787: El búfer cambió inesperadamente"
+msgstr "E249: el diseño de la ventana cambió inesperadamente"
 
 #: ../errors.h:605
 #, c-format
@@ -6140,14 +6124,16 @@ msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: La propiedad de registro de VIM es incorrecta. ¡Eliminada!"
 
 #: ../errors.h:613
-#, fuzzy, c-format
+#, c-format
 msgid "E252: Fontset name: %s - Font '%s' is not fixed-width"
-msgstr "La tipografía de impresión '%s' no es de ancho fijo"
+msgstr ""
+"E252: La tipografía de impresión de nombre: %s - el tipo de letra '%s' no es"
+" de ancho fijo"
 
 #: ../errors.h:615
-#, fuzzy, c-format
+#, c-format
 msgid "E253: Fontset name: %s"
-msgstr "E253: Nombre del conjunto de tipografías de impresión: %s\n"
+msgstr "E253: Nombre del conjunto de fuentes: %s"
 
 #: ../errors.h:619
 #, c-format
@@ -6155,13 +6141,12 @@ msgid "E254: Cannot allocate color %s"
 msgstr "E254: No se pudo asignar el color %s"
 
 #: ../errors.h:623
-#, fuzzy
 msgid "E255: Couldn't read in sign data"
-msgstr "E255: ¡No se pudo cargar los signos!"
+msgstr "E255: No se pudieron leer los datos de la señal"
 
 #: ../errors.h:628
 msgid "E257: cstag: tag not found"
-msgstr "E257: cstag: no se encontró la etiqueta"
+msgstr "E257: cstag: etiqueta no encontrada"
 
 #: ../errors.h:632
 msgid "E258: Unable to send to client"
@@ -6174,9 +6159,8 @@ msgstr ""
 "E259: No se encontraron coincidencias para la búsqueda \"cscope\" %s de %s"
 
 #: ../errors.h:640
-#, fuzzy
 msgid "E260: Missing name after ->"
-msgstr "E526: Falta el número después de <%s>"
+msgstr "E260: Falta el nombre después de ->"
 
 #: ../errors.h:644
 #, c-format
@@ -6184,9 +6168,9 @@ msgid "E261: cscope connection %s not found"
 msgstr "E261: No se ha encontrado la conexión \"cscope\" %s"
 
 #: ../errors.h:646
-#, fuzzy, c-format
+#, c-format
 msgid "E262: error reading cscope connection %d"
-msgstr "E262: Error al leer la conexión %ld con \"cscope\""
+msgstr "E262: Error al leer la conexión %d con \"cscope\""
 
 #: ../errors.h:650
 msgid ""
@@ -6242,17 +6226,16 @@ msgstr "E273: El estado %d de \"longjmp\" es desconocido"
 
 #: ../errors.h:682
 msgid "E274: No white space allowed before parenthesis"
-msgstr ""
+msgstr "E274: No se permiten espacios en blanco antes del paréntesis"
 
 #: ../errors.h:686
-#, fuzzy
 msgid "E275: Cannot add text property to unloaded buffer"
-msgstr "E87: No se pudo ir más allá del último búfer"
+msgstr "E275: No se puede agregar la propiedad de texto al búfer descargado"
 
 #: ../errors.h:690
-#, fuzzy, c-format
+#, c-format
 msgid "E276: Cannot use function as a method: %s"
-msgstr "E127: No se puede redefinir la función %s: Está en uso"
+msgstr "E276: No se puede usar la función como método: %s"
 
 #: ../errors.h:694
 msgid "E277: Unable to read a server reply"
@@ -6260,7 +6243,7 @@ msgstr "E277: Incapaz de leer una respuesta del servidor"
 
 #: ../errors.h:699
 msgid "E279: Sorry, ++shell is not supported on this system"
-msgstr ""
+msgstr "E279: Lo siento, ++shell no es compatible con este sistema"
 
 # This should never happen.  Famous last word?
 #: ../errors.h:703
@@ -6279,7 +6262,7 @@ msgstr "E282: No se pudo leer desde \"%s\""
 #: ../errors.h:709
 #, c-format
 msgid "E283: No marks matching \"%s\""
-msgstr "E283: No hay marcas que coincidan con %s"
+msgstr "E283: No hay marcas que coincidan con \"%s\""
 
 #: ../errors.h:713
 msgid "E284: Cannot set IC values"
@@ -6307,14 +6290,13 @@ msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: El método de entrada no soporta mi tipo de pre-edición"
 
 #: ../errors.h:730
-#, fuzzy
 msgid "E290: List or number required"
-msgstr "E129: Se requiere el nombre de la función"
+msgstr "E290: Lista o número requerido"
 
 #: ../errors.h:734
-#, fuzzy, c-format
+#, c-format
 msgid "E292: Invalid count for del_bytes(): %ld"
-msgstr "E701: No es un tipo válido para len()"
+msgstr "E292: Recuento no válido para del_bytes(): %ld"
 
 #: ../errors.h:736
 msgid "E293: block was not locked"
@@ -6322,7 +6304,7 @@ msgstr "E293: El bloque no estaba asegurado"
 
 #: ../errors.h:738
 msgid "E294: Seek error in swap file read"
-msgstr "E294: Error de búsqueda al leer el archivo de intercambio"
+msgstr "E294: Error de búsqueda en la lectura del archivo de intercambio"
 
 #: ../errors.h:740
 msgid "E295: Read error in swap file"
@@ -6351,7 +6333,7 @@ msgstr "E298: ¿No se obtuvo el bloque Nº 2?"
 #: ../errors.h:753
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr ""
-"E299: No se permite la evaluación de código Perl en la caja de arena sin el "
+"E299: No se permite la evaluación de código Perl en \"sandbox\" sin el "
 "uso del módulo \"Safe\""
 
 #: ../errors.h:756
@@ -6362,7 +6344,7 @@ msgstr ""
 # could not (re)open the swap file, what can we do????
 #: ../errors.h:758
 msgid "E301: Oops, lost the swap file!!!"
-msgstr "E301: ¡¡¡Perdí el archivo de intercambio!!!"
+msgstr "E301: ¡¡¡Vaya, perdí el archivo de intercambio!!!"
 
 #: ../errors.h:760
 msgid "E302: Could not rename swap file"
@@ -6372,7 +6354,7 @@ msgstr "E302: No pude cambiar el nombre del archivo de intercambio"
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
-"E303: Incapaz de abrir el archivo de intercambio para %s, recuperación "
+"E303: Incapaz de abrir el archivo de intercambio para \"%s\", recuperación "
 "imposible"
 
 #: ../errors.h:764
@@ -6433,9 +6415,9 @@ msgid "E315: ml_get: invalid lnum: %ld"
 msgstr "E315: \"ml_get\": número de línea no válido: %ld"
 
 #: ../errors.h:788
-#, fuzzy, c-format
+#, c-format
 msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
-msgstr "E316: \"ml_get\": no se pudo encontrar la línea %ld"
+msgstr "E316: \"ml_get\": no se pudo encontrar la línea %ld en el búfer %d %s"
 
 #: ../errors.h:790
 msgid "E317: pointer block id wrong"
@@ -6443,15 +6425,15 @@ msgstr "E317: El id del bloque de punteros es incorrecto"
 
 #: ../errors.h:792
 msgid "E317: pointer block id wrong 2"
-msgstr "E317: El id del bloque de punteros es incorrecto. 2"
+msgstr "E317: El id del bloque de punteros es incorrecto 2"
 
 #: ../errors.h:794
 msgid "E317: pointer block id wrong 3"
-msgstr "E317: El id del bloque de punteros es incorrecto. 3"
+msgstr "E317: El id del bloque de punteros es incorrecto 3"
 
 #: ../errors.h:796
 msgid "E317: pointer block id wrong 4"
-msgstr "E317: El id del bloque de punteros es incorrecto. 4"
+msgstr "E317: El id del bloque de punteros es incorrecto 4"
 
 #: ../errors.h:798
 msgid "E318: Updated too many blocks?"
@@ -6539,7 +6521,7 @@ msgstr "E336: La ruta del menú debe conducir a un sub-menú"
 
 #: ../errors.h:839
 msgid "E337: Menu not found - check menu names"
-msgstr "E337: No se ha encontrado el menú - verifique los nombres de los menús"
+msgstr "E337: No se ha encontrado el menú - compruebe los nombres de los menús"
 
 # TODO: non-GUI file selector here
 #: ../errors.h:843
@@ -6551,9 +6533,8 @@ msgid "E339: Pattern too long"
 msgstr "E339: Patrón demasiado largo"
 
 #: ../errors.h:849
-#, fuzzy
 msgid "E341: Internal error: lalloc(0, )"
-msgstr "E341: Error interno: lalloc(%ld, )"
+msgstr "E341: Error interno: lalloc(%0, )"
 
 #: ../errors.h:851
 #, c-format
@@ -6567,7 +6548,7 @@ msgid ""
 "followed by '%s'."
 msgstr ""
 "E343: Ruta no válida: '**[número]' debe estar al final de la ruta o seguido "
-"de %s."
+"de '%s'."
 
 #: ../errors.h:858
 #, c-format
@@ -6577,7 +6558,7 @@ msgstr "E344: No se pudo encontrar el directorio \"%s\" en \"cdpath\""
 #: ../errors.h:860
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345: No se pudo encontrar el archivo %s en la ruta"
+msgstr "E345: No se pudo encontrar el archivo \"%s\" en la ruta"
 
 #: ../errors.h:862
 #, c-format
@@ -6649,7 +6630,7 @@ msgstr "E360: No se pudo ejecutar el intérprete de órdenes con la opción -f"
 
 #: ../errors.h:904
 msgid "E362: Using a boolean value as a Float"
-msgstr ""
+msgstr "E362: Uso de un valor booleano como un flotante"
 
 #: ../errors.h:907
 msgid "E363: pattern uses more memory than 'maxmempattern'"
@@ -6665,20 +6646,19 @@ msgid "E365: Failed to print PostScript file"
 msgstr "E365: Falló la impresión del archivo PostScript"
 
 #: ../errors.h:918
-#, fuzzy
 msgid "E366: Not allowed to enter a popup window"
-msgstr "E788: No se permite editar otro búfer en este momento"
+msgstr "E366: No se permite ingresar a una ventana emergente"
 
 # the group doesn't exist
 #: ../errors.h:921
 #, c-format
 msgid "E367: No such group: \"%s\""
-msgstr "E367: No existe el grupo: %s"
+msgstr "E367: No existe el grupo: \"%s\""
 
 #: ../errors.h:924
 #, c-format
 msgid "E368: got SIG%s in libcall()"
-msgstr ""
+msgstr "E368: obtuve SIG%s en libcall()"
 
 #: ../errors.h:927
 #, c-format
@@ -6686,9 +6666,9 @@ msgid "E369: invalid item in %s%%[]"
 msgstr "E369: El elemento en %s%%[] no es válido"
 
 #: ../errors.h:930
-#, fuzzy, c-format
+#, c-format
 msgid "E370: Could not load library %s: %s"
-msgstr "E370: No se pudo cargar la biblioteca dinámica %s"
+msgstr "E370: No se pudo cargar la biblioteca %s: %s"
 
 #: ../errors.h:934
 msgid "E371: Command not found"
@@ -6729,7 +6709,7 @@ msgstr "E378: 'errorformat' no contiene un patrón"
 
 #: ../errors.h:952
 msgid "E379: Missing or empty directory name"
-msgstr "E379: Hace falta el nombre del directorio"
+msgstr "E379: Falta el nombre del directorio o está vacío"
 
 #: ../errors.h:954
 msgid "E380: At bottom of quickfix stack"
@@ -6764,7 +6744,7 @@ msgstr "E386: Esperaba \"?\" o \"/\" después de \";\""
 
 #: ../errors.h:970
 msgid "E387: Match is on current line"
-msgstr "E387: La coincidencia está en la línea bajo el cursor"
+msgstr "E387: La coincidencia está en la línea actual"
 
 #: ../errors.h:972
 msgid "E388: Couldn't find definition"
@@ -6874,7 +6854,7 @@ msgstr "E410: Suborden \":syntax\" no válido: %s"
 #: ../errors.h:1020
 #, c-format
 msgid "E411: highlight group not found: %s"
-msgstr "E411: grupo de resaltado no encontrado: %s"
+msgstr "E411: Grupo de resaltado no encontrado: %s"
 
 #: ../errors.h:1022
 #, c-format
@@ -6888,17 +6868,17 @@ msgstr "E413: Demasiados argumentos: \":highlight link %s\""
 
 #: ../errors.h:1026
 msgid "E414: group has settings, highlight link ignored"
-msgstr "E414: Esta grupo está configurado, se ignora el enlace resaltado"
+msgstr "E414: El grupo tiene configuraciones, enlace resaltado ignorado"
 
 #: ../errors.h:1028
 #, c-format
 msgid "E415: unexpected equal sign: %s"
-msgstr "E415: Signo \"=\" inesperado: %s"
+msgstr "E415: Signo igual inesperado: %s"
 
 #: ../errors.h:1030
 #, c-format
 msgid "E416: missing equal sign: %s"
-msgstr "E416: Falta el signo \"=\": %s"
+msgstr "E416: Falta el signo igual: %s"
 
 #: ../errors.h:1032
 #, c-format
@@ -6935,7 +6915,7 @@ msgstr "E423: Argumento ilegal: %s"
 
 #: ../errors.h:1046
 msgid "E424: Too many different highlighting attributes in use"
-msgstr "E424: Hay demasiados atributos de resaltado sintáctico en uso"
+msgstr "E424: Demasiados atributos de resaltado diferentes en uso"
 
 #: ../errors.h:1048
 msgid "E425: Cannot go before first matching tag"
@@ -6985,12 +6965,12 @@ msgstr "E434: No se pudo encontrar el patrón de la etiqueta"
 
 #: ../errors.h:1070
 msgid "E435: Couldn't find tag, just guessing!"
-msgstr "E435: No se pudo encontrar la etiqueta. ¡Estoy adivinando!"
+msgstr "E435: No se pudo encontrar la etiqueta, ¡solo estaba adivinando!"
 
 #: ../errors.h:1072
 #, c-format
 msgid "E436: No \"%s\" entry in termcap"
-msgstr "E436: la entrada %s no existe en el archivo \"termcap\""
+msgstr "E436: la entrada \"%s\" no existe en \"termcap\""
 
 #: ../errors.h:1074
 msgid "E437: terminal capability \"cm\" required"
