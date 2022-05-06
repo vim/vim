@@ -13,6 +13,22 @@
 
 #include "vim.h"
 
+/*
+ * Horiziontal and vertical steps used when scrolling.
+ * When negative scroll by a whole page.
+ */
+static long mouse_hor_step = 6;
+static long mouse_vert_step = 3;
+
+    void
+mouse_set_scroll_step(long step, int horizontal)
+{
+    if (horizontal)
+	mouse_hor_step = step;
+    else
+	mouse_vert_step = step;
+}
+
 #ifdef CHECK_DOUBLE_CLICK
 /*
  * Return the duration from t1 to t2 in milliseconds.
@@ -1101,13 +1117,16 @@ ins_mousescroll(int dir)
     // Don't scroll the window in which completion is being done.
     if (!pum_visible() || curwin != old_curwin)
     {
+	long step;
+
 	if (dir == MSCR_DOWN || dir == MSCR_UP)
 	{
-	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-		scroll_redraw(dir,
-			(long)(curwin->w_botline - curwin->w_topline));
+	    if (mouse_vert_step < 0
+		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+		step = (long)(curwin->w_botline - curwin->w_topline);
 	    else
-		scroll_redraw(dir, 3L);
+		step = mouse_vert_step;
+	    scroll_redraw(dir, step);
 # ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(curwin))
 	    popup_set_firstline(curwin);
@@ -1116,10 +1135,13 @@ ins_mousescroll(int dir)
 #ifdef FEAT_GUI
 	else
 	{
-	    int val, step = 6;
+	    int val;
 
-	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+	    if (mouse_hor_step < 0
+		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 		step = curwin->w_width;
+	    else
+		step = mouse_hor_step;
 	    val = curwin->w_leftcol + (dir == MSCR_RIGHT ? -step : step);
 	    if (val < 0)
 		val = 0;
@@ -2005,8 +2027,9 @@ retnomove:
 }
 
 /*
- * Mouse scroll wheel: Default action is to scroll three lines, or one page
- * when Shift or Ctrl is used.
+ * Mouse scroll wheel: Default action is to scroll mouse_vert_step lines (or
+ * mouse_hor_step, depending on the scroll direction), or one page when Shift or
+ * Ctrl is used.
  * K_MOUSEUP (cap->arg == 1) or K_MOUSEDOWN (cap->arg == 0) or
  * K_MOUSELEFT (cap->arg == -1) or K_MOUSERIGHT (cap->arg == -2)
  */
@@ -2033,7 +2056,6 @@ nv_mousescroll(cmdarg_T *cap)
 	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
-
     if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
     {
 # ifdef FEAT_TERMINAL
@@ -2043,21 +2065,21 @@ nv_mousescroll(cmdarg_T *cap)
 	    send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
 	else
 # endif
-	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+	if (mouse_vert_step < 0 || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 	{
 	    (void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);
 	}
 	else
 	{
 	    // Don't scroll more than half the window height.
-	    if (curwin->w_height < 6)
+	    if (curwin->w_height < mouse_vert_step * 2)
 	    {
 		cap->count1 = curwin->w_height / 2;
 		if (cap->count1 == 0)
 		    cap->count1 = 1;
 	    }
 	    else
-		cap->count1 = 3;
+		cap->count1 = mouse_vert_step;
 	    cap->count0 = cap->count1;
 	    nv_scroll_line(cap);
 	}
@@ -2072,10 +2094,13 @@ nv_mousescroll(cmdarg_T *cap)
 	// Horizontal scroll - only allowed when 'wrap' is disabled
 	if (!curwin->w_p_wrap)
 	{
-	    int val, step = 6;
+	    int val, step;
 
-	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+	    if (mouse_hor_step < 0
+		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 		step = curwin->w_width;
+	    else
+		step = mouse_hor_step;
 	    val = curwin->w_leftcol + (cap->arg == MSCR_RIGHT ? -step : +step);
 	    if (val < 0)
 		val = 0;
