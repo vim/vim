@@ -3215,7 +3215,7 @@ struct diffblock_S
 #endif
 
 #define SNAP_HELP_IDX	0
-#define SNAP_AUCMD_IDX 1
+#define SNAP_AUCMD_IDX	1
 #define SNAP_COUNT	2
 
 /*
@@ -3312,7 +3312,8 @@ struct frame_S
 				// for first
     // fr_child and fr_win are mutually exclusive
     frame_T	*fr_child;	// first contained frame
-    win_T	*fr_win;	// window that fills this frame
+    win_T	*fr_win;	// window that fills this frame; for a snapshot
+				// set to the current window
 };
 
 #define FR_LEAF	0	// frame is a leaf
@@ -3742,6 +3743,7 @@ struct window_S
     int		w_briopt_shift;	    // additional shift for breakindent
     int		w_briopt_sbr;	    // sbr in 'briopt'
     int		w_briopt_list;      // additional indent for lists
+    int		w_briopt_vcol;	    // indent for specific column
 #endif
 
     long	w_scbind_pos;
