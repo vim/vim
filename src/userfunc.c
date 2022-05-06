@@ -1373,6 +1373,7 @@ get_lambda_tv(
     int		white_error = FALSE;
     int		called_emsg_start = called_emsg;
     int		vim9script = in_vim9script();
+    long	start_lnum = SOURCING_LNUM;
 
     if (equal_arrow && !vim9script)
 	return NOTDONE;
@@ -1433,6 +1434,7 @@ get_lambda_tv(
 	if (evalarg == NULL)
 	    // cannot happen?
 	    goto theend;
+	SOURCING_LNUM = start_lnum;  // used for where lambda is defined
 	if (lambda_function_body(arg, rettv, evalarg, pnewargs,
 			   types_optional ? &argtypes : NULL, varargs,
 			   &default_args, ret_type) == FAIL)
@@ -1563,7 +1565,8 @@ get_lambda_tv(
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;
-	fp->uf_script_ctx.sc_lnum += SOURCING_LNUM - newlines.ga_len + 1;
+	// Use the line number of the arguments.
+	fp->uf_script_ctx.sc_lnum += start_lnum;
 
 	function_using_block_scopes(fp, evalarg->eval_cstack);
 
@@ -3707,9 +3710,12 @@ list_func_head(ufunc_T *fp, int indent)
     }
     if (fp->uf_va_name != NULL)
     {
-	if (j)
-	    msg_puts(", ");
-	msg_puts("...");
+	if (!fp->uf_varargs)
+	{
+	    if (j)
+		msg_puts(", ");
+	    msg_puts("...");
+	}
 	msg_puts((char *)fp->uf_va_name);
 	if (fp->uf_va_type != NULL)
 	{
