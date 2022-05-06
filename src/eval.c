@@ -2175,7 +2175,8 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
     *getnext = FALSE;
     if (in_vim9script()
 	    && evalarg != NULL
-	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL)
+	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL
+								   || *p == NL)
 	    && (*p == NUL || *p == NL
 			     || (vim9_comment_start(p) && VIM_ISWHITE(p[-1]))))
     {

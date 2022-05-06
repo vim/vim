@@ -705,6 +705,11 @@ func Test_usercmd_with_block()
   END
   call v9.CheckScriptSuccess(lines)
   call assert_equal('true', g:result)
+  unlet g:result
+
+  call feedkeys(":EchoCond\<CR>", 'xt')
+  call assert_equal('true', g:result)
+
   delcommand EchoCond
   unlet g:result
 
