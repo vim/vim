@@ -1402,9 +1402,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		list:-1	    Uses the length of a match with 'formatlistpat'
 			    for indentation.
 			    (default: 0)
-		column:{n}  Indent at column {n}. Will overwrite the other
+		column:{n}  Indent at column {n}. Will overrule the other
 			    sub-options. Note: an additional indent may be
-			    added for 'showbreak' setting.
+			    added for the 'showbreak' setting.
 			    (default: off)
 
 						*'browsedir'* *'bsdir'*
