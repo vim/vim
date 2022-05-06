@@ -1527,7 +1527,7 @@ def Test_func_redefine_error()
       source Xtestscript.vim
     catch /E684/
       # function name should contain <SNR> every time
-      assert_match('E684: list index out of range', v:exception)
+      assert_match('E684: List index out of range', v:exception)
       assert_match('function <SNR>\d\+_Func, line 1', v:throwpoint)
     endtry
   endfor

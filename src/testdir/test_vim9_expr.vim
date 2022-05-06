@@ -3114,7 +3114,7 @@ def Test_expr8_any_index_slice()
   v9.CheckDefExecAndScriptFailure(['echo g:testblob[2]'], 'E979:', 1)
   v9.CheckDefExecAndScriptFailure(['echo g:testblob[-3]'], 'E979:', 1)
 
-  v9.CheckDefExecAndScriptFailure(['echo g:testlist[4]'], 'E684: list index out of range: 4', 1)
+  v9.CheckDefExecAndScriptFailure(['echo g:testlist[4]'], 'E684: List index out of range: 4', 1)
   v9.CheckDefExecAndScriptFailure(['echo g:testlist[-5]'], 'E684:', 1)
 
   v9.CheckDefExecAndScriptFailure(['echo g:testdict["a" : "b"]'], 'E719:', 1)

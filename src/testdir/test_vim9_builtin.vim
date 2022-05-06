@@ -2157,7 +2157,7 @@ def Test_job_getchannel()
     CheckFeature job
   else
     v9.CheckDefAndScriptFailure(['job_getchannel("a")'], ['E1013: Argument 1: type mismatch, expected job but got string', 'E1218: Job required for argument 1'])
-    assert_fails('job_getchannel(test_null_job())', 'E916: not a valid job')
+    assert_fails('job_getchannel(test_null_job())', 'E916: Not a valid job')
   endif
 enddef
 
@@ -2166,7 +2166,7 @@ def Test_job_info()
     CheckFeature job
   else
     v9.CheckDefAndScriptFailure(['job_info("a")'], ['E1013: Argument 1: type mismatch, expected job but got string', 'E1218: Job required for argument 1'])
-    assert_fails('job_info(test_null_job())', 'E916: not a valid job')
+    assert_fails('job_info(test_null_job())', 'E916: Not a valid job')
   endif
 enddef
 
@@ -4071,8 +4071,8 @@ def Test_substitute()
   assert_equal('AX234', res)
 
   if has('job')
-    assert_fails('"text"->substitute(".*", () => test_null_job(), "")', 'E908: using an invalid value as a String: job')
-    assert_fails('"text"->substitute(".*", () => test_null_channel(), "")', 'E908: using an invalid value as a String: channel')
+    assert_fails('"text"->substitute(".*", () => test_null_job(), "")', 'E908: Using an invalid value as a String: job')
+    assert_fails('"text"->substitute(".*", () => test_null_channel(), "")', 'E908: Using an invalid value as a String: channel')
   endif
   v9.CheckDefAndScriptFailure(['substitute(1, "b", "1", "d")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['substitute("a", 2, "1", "d")'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])

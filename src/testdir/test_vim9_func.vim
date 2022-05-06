@@ -3709,7 +3709,7 @@ def Run_Test_opfunc_error()
 
   var buf = g:RunVimInTerminal('-S XTest_opfunc_error', {rows: 6, wait_for_ruler: 0})
   g:WaitForAssert(() => assert_match('Press ENTER', term_getline(buf, 6)))
-  g:WaitForAssert(() => assert_match('E684: list index out of range: 0', term_getline(buf, 5)))
+  g:WaitForAssert(() => assert_match('E684: List index out of range: 0', term_getline(buf, 5)))
 
   # clean up
   g:StopVimInTerminal(buf)

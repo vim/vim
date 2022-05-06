@@ -711,7 +711,7 @@ func Test_tcl_exit()
   call assert_fails('tcl exit x', 'expected integer but got "x"')
 
   tcl set foo "foo"
-  call assert_fails('tcl exit 3', 'E572: exit code 3')
+  call assert_fails('tcl exit 3', 'E572: Exit code 3')
 
   " The Tcl interpreter should have been deleted and a new one
   " is re-created with the next :tcl command.

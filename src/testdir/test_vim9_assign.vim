@@ -293,7 +293,7 @@ def Test_assign_concat()
       var ls: list<string> = []
       ls[-1] ..= 'foo'
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E684: list index out of range: -1', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E684: List index out of range: -1', 2)
 enddef
 
 def Test_assign_register()
@@ -1641,7 +1641,7 @@ def Test_assign_list()
       l[g:idx : 1] = [0]
       echo l
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E684: list index out of range: 3')
+  v9.CheckDefExecAndScriptFailure(lines, 'E684: List index out of range: 3')
 
   lines =<< trim END
       var l = [1, 2]
