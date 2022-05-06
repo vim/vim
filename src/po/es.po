@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-05 20:05+0200\n"
+"PO-Revision-Date: 2022-05-06 17:06+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -1309,21 +1309,21 @@ msgid "Font%d: %s"
 msgstr "Tipo de letra de impresión %d: %s"
 
 #: ../gui_x11.c:2088
-#, fuzzy, c-format
+#, c-format
 msgid "Font%d width is not twice that of font0"
 msgstr ""
-"La anchura del tipo de letra de impresión %ld no es el doble de la de la "
+"La anchura del tipo de letra de impresión %d no es el doble de la de la "
 "tipografía de impresión 0\n"
 
 #: ../gui_x11.c:2089
-#, fuzzy, c-format
+#, c-format
 msgid "Font0 width: %d"
-msgstr "Anchura del tipo de letra de impresión 0: %ld\n"
+msgstr "Anchura del tipo de letra de impresión 0: %d\n"
 
 #: ../gui_x11.c:2091
-#, fuzzy, c-format
+#, c-format
 msgid "Font%d width: %d"
-msgstr "Anchura del tipo de letra de impresión 0: %ld\n"
+msgstr "Anchura del tipo de letra de impresión 0: %d\n"
 
 #: ../gui_xmdlg.c:686 ../gui_xmdlg.c:805
 msgid "Invalid font specification"
@@ -1335,7 +1335,7 @@ msgstr "&Cerrar"
 
 #: ../gui_xmdlg.c:696
 msgid "no specific match"
-msgstr "no hay una coincidencia especifica"
+msgstr "no hay una coincidencia específica"
 
 #: ../gui_xmdlg.c:905
 msgid "Vim - Font Selector"
@@ -1348,11 +1348,11 @@ msgstr "Nombre:"
 #. create toggle button
 #: ../gui_xmdlg.c:1014
 msgid "Show size in Points"
-msgstr "Mostrar tamaño en puntos"
+msgstr "Mostrar el tamaño en puntos"
 
 #: ../gui_xmdlg.c:1032
 msgid "Encoding:"
-msgstr "Codificando:"
+msgstr "Codificación:"
 
 #: ../gui_xmdlg.c:1078
 msgid "Font:"
@@ -1383,7 +1383,7 @@ msgstr "Imprimiendo la página %d (%d%%)"
 #: ../hardcopy.c:738
 #, c-format
 msgid " Copy %d of %d"
-msgstr "Copia %d de %d"
+msgstr " Copia %d de %d"
 
 #: ../hardcopy.c:796
 #, c-format
@@ -1419,7 +1419,7 @@ msgstr "Añadir una nueva base de datos"
 
 #: ../if_cscope.c:119
 msgid "Query for a pattern"
-msgstr "Petición de un patrón"
+msgstr "Consulta de un patrón"
 
 #: ../if_cscope.c:121
 msgid "Show this message"
@@ -1447,7 +1447,6 @@ msgid "Added cscope database %s"
 msgstr "Se ha añadido la base de datos \"cscope\" %s"
 
 #: ../if_cscope.c:980
-#, fuzzy
 msgid "cs_create_connection setpgid failed"
 msgstr "Falló la ejecución de \"cs_create_connection\""
 
@@ -1473,7 +1472,6 @@ msgid "%-5s: %s%*s (Usage: %s)"
 msgstr "%-5s: %s%*s (Modo de uso: %s)"
 
 #: ../if_cscope.c:1308
-#, fuzzy
 msgid ""
 "\n"
 "       a: Find assignments to this symbol\n"
@@ -1487,14 +1485,15 @@ msgid ""
 "       t: Find this text string\n"
 msgstr ""
 "\n"
-"       c: Encontrar funciones que invocan esta función\n"
-"       d: Encontrar funciones invocados por esta función\n"
+"       a: Buscar asignaciones a este símbolo\n"
+"       c: Buscar funciones que llamen a esta función\n"
+"       d: Buscar funciones llamadas por esta función\n"
 "       e: Encontrar este patrón egrep\n"
 "       f: Encontrar este archivo\n"
 "       g: Encontrar esta definición\n"
-"       i: Encontrar archivos #incluyendo este archivo\n"
-"       s: Encontrar este símbolo de C\n"
-"       t: Encontrar asignaciones a\n"
+"       i: Encontrar archivo que #incluyan este archivo\n"
+"       s: Encontrar este símbolo C\n"
+"       t: Encontrar esta cadena de texto\n"
 
 #: ../if_cscope.c:1580
 #, c-format
@@ -1528,18 +1527,18 @@ msgstr "no hay conexiones \"cscope\"\n"
 
 #: ../if_cscope.c:2462
 msgid " # pid    database name                       prepend path\n"
-msgstr " nº pid    base de datos                       prefijo ruta\n"
+msgstr " nº pid    nombre de base de datos               prefijo ruta\n"
 
 #: ../if_lua.c:2563
 msgid "Lua library cannot be loaded."
-msgstr ""
+msgstr "La biblioteca Lua no se puede cargar"
 
 #: ../if_lua.c:2615 ../if_mzsch.c:2458 ../if_mzsch.c:2488 ../if_mzsch.c:2584
 #: ../if_mzsch.c:2647 ../if_mzsch.c:2769 ../if_mzsch.c:2825 ../if_tcl.c:673
 #: ../if_tcl.c:718 ../if_tcl.c:792 ../if_tcl.c:862 ../if_tcl.c:1985
 #: ../if_py_both.h:41 ../if_py_both.h:5724
 msgid "cannot save undo information"
-msgstr "No se pudo guardar la información para deshacer"
+msgstr "No se pudo guardar la información de deshacer"
 
 #: ../if_mzsch.c:1661 ../if_tcl.c:1394 ../if_py_both.h:913 ../if_py_both.h:964
 msgid "invalid expression"
