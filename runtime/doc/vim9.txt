@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Apr 14
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -857,10 +857,16 @@ like in JavaScript: >
 	var dict = {["key" .. nr]: value}
 
 The key type can be string, number, bool or float.  Other types result in an
-error.  A number can be given with and without the []: >
-	var dict = {123: 'without', [456]: 'with'}
+error.  Without using [] the value is used as a string, keeping leading zeros.
+An expression given with [] is evaluated and then converted to a string.
+Leading zeros will then be dropped: >
+	var dict = {000123: 'without', [000456]: 'with'}
 	echo dict
-	{'456': 'with', '123': 'without'}
+	{'456': 'with', '000123': 'without'}
+A float only works inside [] because the dot is not accepted otherwise: >
+	var dict = {[00.013]: 'float'}
+	echo dict
+	{'0.013': 'float'}
 
 
 No :xit, :t, :k, :append, :change or :insert ~

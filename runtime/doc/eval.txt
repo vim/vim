@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Apr 17
+*eval.txt*	For Vim version 8.2.  Last change: 2022 May 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -523,8 +523,8 @@ only appear once.  Examples: >
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
-Number will be converted to the String '4'.  The empty string can also be used
-as a key.
+Number will be converted to the String '4', leading zeros are dropped.  The
+empty string can also be used as a key.
 
 In |Vim9| script literaly keys can be used if the key consists of alphanumeric
 characters, underscore and dash, see |vim9-literal-dict|.
@@ -534,7 +534,8 @@ legacy script.  This does require the key to consist only of ASCII letters,
 digits, '-' and '_'.  Example: >
 	:let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
 Note that 333 here is the string "333".  Empty keys are not possible with #{}.
-In |Vim9| script the #{} form cannot be used.
+In |Vim9| script the #{} form cannot be used because it can be confused with
+the start of a comment.
 
 A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
@@ -3252,20 +3253,20 @@ text...
 			{endmarker}.
 
 			If "eval" is not specified, then each line of text is
-			used as a |literal-string|.  If "eval" is specified,
-			then any Vim expression in the form ``={expr}`` is
-			evaluated and the result replaces the expression.
+			used as a |literal-string|, except that single quotes
+			doe not need to be doubled.
+			If "eval" is specified, then any Vim expression in the
+			form {expr} is evaluated and the result replaces the
+			expression, like with |interp-string|.
 			Example where $HOME is expanded: >
 				let lines =<< trim eval END
 				  some text
-				  See the file `=$HOME`/.vimrc
+				  See the file {$HOME}/.vimrc
 				  more text
 				END
 <			There can be multiple Vim expressions in a single line
 			but an expression cannot span multiple lines.  If any
 			expression evaluation fails, then the assignment fails.
-			once the "`=" has been found {expr} and a backtick
-			must follow.  {expr} cannot be empty.
 
 			{endmarker} must not contain white space.
 			{endmarker} cannot start with a lower case character.
@@ -3318,10 +3319,10 @@ text...
 				DATA
 
 				let code =<< trim eval CODE
-				   let v = `=10 + 20`
-				   let h = "`=$HOME`"
-				   let s = "`=Str1()` abc `=Str2()`"
-				   let n = `=MyFunc(3, 4)`
+				   let v = {10 + 20}
+				   let h = "{$HOME}"
+				   let s = "{Str1()} abc {Str2()}"
+				   let n = {MyFunc(3, 4)}
 				CODE
 <
 								*E121*

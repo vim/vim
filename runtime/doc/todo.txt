@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Apr 27
+*todo.txt*      For Vim version 8.2.  Last change: 2022 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,7 +41,6 @@ browser use: https://github.com/vim/vim/issues/1234
 Once Vim9 is stable:
 - Use Vim9 for more runtime files.
 - Check code coverage, add more tests if needed.
-	vim9execute.c  line 3500
 	vim9expr.c
 	vim9instr.c
 	vim9script.c
@@ -128,6 +127,9 @@ Text properties:
 - Popup attached to text property stays visible when text is deleted with
   "cc". (#7737)  "C" works OK.  "dd" also files in a buffer with a single
   line.
+- Add text property that shifts text to make room for annotation (e.g.
+  variable type).  Like the opposite of conceal.  Requires fixing the cursor
+  positioning and mouse clicks as with conceal mode.
 - Auto-indenting may cause highlighting to shift. (#7719)
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Combining text property with 'cursorline' does not always work (Billie
@@ -152,6 +154,7 @@ Terminal debugger:
 - Make prompt-buffer variant work better.
 - Add option to not open the program window.  It's not used when attaching to
   an already running program. (M. Kelly)
+- Use the optional token on requests, match the result with it. #10300
 - When only gdb window exists, on "quit" edit another buffer.
 - Termdebug does not work when Vim was built with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
@@ -203,7 +206,11 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+String interpolation: Handle backslash and quotes in the expression normally,
+do not require escaping.
+
 Add autocmd functions. PR #10291
+  a couple of outstanding comments, wait for Yegappan to respond
 
 Can deref_func_name() and deref_function_name() be merged?
 
@@ -222,9 +229,6 @@ pass it on with modifications.
 
 Test_communicate_ipv6(): is flaky on many systems
 Fails in line 64 of Ch_communicate, no exception is thrown.
-
-Patch for Template string: #4634
-Have another look at the implementation.
 
 Rename getdigraphlist -> digraph_getlist() etc.
 
@@ -327,6 +331,8 @@ Missing filetype test for bashrc, PKGBUILD, etc.
 
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
 changes.
+
+Add ??= operator, "a ??= b" works like "a = a ?? b". #10343
 
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need

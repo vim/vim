@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2022 Apr 24
+*syntax.txt*	For Vim version 8.2.  Last change: 2022 May 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5238,6 +5238,9 @@ These are the default highlighting groups.  These groups are used by the
 'highlight' option default.  Note that the highlighting depends on the value
 of 'background'.  You can see the current settings with the ":highlight"
 command.
+When possible the name is highlighted in the used colors.  If this makes it
+unreadable use Visual selection.
+
 							*hl-ColorColumn*
 ColorColumn	used for the columns set with 'colorcolumn'
 							*hl-Conceal*
@@ -5329,6 +5332,8 @@ Search		Last search pattern highlighting (see 'hlsearch').
 		Also used for similar items that need to stand out.
 							*hl-CurSearch*
 CurSearch	Current match for the last search pattern (see 'hlsearch').
+		Note: this is correct after a search, but may get outdated if
+		changes are made or the screen is redrawn. 
 							*hl-SpecialKey*
 SpecialKey	Meta and special keys listed with ":map", also for text used
 		to show unprintable characters in the text, 'listchars'.

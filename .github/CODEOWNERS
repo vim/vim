@@ -126,6 +126,8 @@ runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/toml.vim		@averms
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
+runtime/ftplugin/wget.vim		@dkearns
+runtime/ftplugin/wget2.vim		@dkearns
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/zsh.vim		@chrisbra
 runtime/indent/basic.vim		@dkearns
@@ -268,6 +270,7 @@ runtime/syntax/tmux.vim			@ericpruitt
 runtime/syntax/toml.vim			@averms
 runtime/syntax/vim.vim			@cecamp
 runtime/syntax/wget.vim			@dkearns
+runtime/syntax/wget2.vim		@dkearns
 runtime/syntax/xbl.vim			@dkearns
 runtime/syntax/xmath.vim		@cecamp
 runtime/syntax/xml.vim			@chrisbra
