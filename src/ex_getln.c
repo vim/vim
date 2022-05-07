@@ -4137,9 +4137,9 @@ get_cmdline_completion(void)
     return NULL;
 }
 
-// "getcmdcmptype()" function
+// "getcmdcmpltype()" function
     void
-f_getcmdcmptype(typval_T *argvars UNUSED, typval_T *rettv)
+f_getcmdcmpltype(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = get_cmdline_completion();
