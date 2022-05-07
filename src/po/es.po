@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-06 21:21+0200\n"
+"PO-Revision-Date: 2022-05-07 21:24+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -7027,28 +7027,25 @@ msgid "E449: Invalid expression received"
 msgstr "E449: Se recibió una expresión inválida"
 
 #: ../errors.h:1109
-#, fuzzy
 msgid "E450: buffer number, text or a list required"
-msgstr "E808: Se requiere \"Number\" o \"Float\""
+msgstr "E450: se necesita un número de búfer, texto o una lista"
 
 #: ../errors.h:1113
-#, fuzzy, c-format
+#, c-format
 msgid "E451: Expected }: %s"
-msgstr "E415: Signo \"=\" inesperado: %s"
+msgstr "E451: Esperado }: %s"
 
 #: ../errors.h:1115
-#, fuzzy
 msgid "E452: Double ; in list of variables"
-msgstr "Duplicado ; en la lista de variables"
+msgstr "E452: Duplicado ; en la lista de variables"
 
 #: ../errors.h:1118
-#, fuzzy
 msgid "E453: UL color unknown"
-msgstr "E419: Color en primer plano desconocido"
+msgstr "E453: Color en primer plano desconocido"
 
 #: ../errors.h:1121
 msgid "E454: function list was modified"
-msgstr ""
+msgstr "E454: la lista de funciones fue modificada"
 
 #: ../errors.h:1125
 msgid "E455: Error writing to PostScript output file"
@@ -7057,7 +7054,7 @@ msgstr "E455: Error escribiendo al archivo PostScript de salida"
 #: ../errors.h:1127
 #, c-format
 msgid "E456: Can't open file \"%s\""
-msgstr "E456: No se pudo abrir el archivo %s"
+msgstr "E456: No se pudo abrir el archivo \"%s\""
 
 #: ../errors.h:1129
 #, c-format
@@ -7070,11 +7067,10 @@ msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: No se pudo leer el archivo de recursos de PostScript \"%s\""
 
 #: ../errors.h:1135
-#, fuzzy
 msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
-"Vim E458: no se puede asignar una entrada al mapa de colores; algunos "
-"colores tal vez no sean correctos"
+"E458: No se puede asignar la entrada del mapa de colores, "
+"algunos colores pueden ser incorrectos"
 
 #: ../errors.h:1139
 msgid "E459: Cannot go back to previous directory"
@@ -7082,7 +7078,7 @@ msgstr "E459: No se pudo regresar al directorio previo"
 
 #: ../errors.h:1143
 msgid "E460: entries missing in mapset() dict argument"
-msgstr ""
+msgstr "E460: faltan entradas en el argumento dict mapset()"
 
 #: ../errors.h:1145
 #, c-format
@@ -7103,29 +7099,29 @@ msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Uso ambiguo de una orden definida por el usuario"
 
 #: ../errors.h:1157
-#, fuzzy, c-format
+#, c-format
 msgid "E464: Ambiguous use of user-defined command: %s"
-msgstr "E464: Uso ambiguo de una orden definida por el usuario"
+msgstr "E464: Uso ambiguo de la orden definida por el usuario: %s"
 
 #: ../errors.h:1160
 msgid "E465: :winsize requires two number arguments"
-msgstr "E465: \":winsize\" requiere de dos argumentos numéricos"
+msgstr "E465: \":winsize\" requiere dos argumentos numéricos"
 
 #: ../errors.h:1162
 msgid "E466: :winpos requires two number arguments"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E466: \":winpos\" requiere dos argumentos numéricos"
 
 #: ../errors.h:1165
 msgid "E467: Custom completion requires a function argument"
 msgstr ""
-"E467: Las finalizaciones definidas por el usuario requieren de un argumento "
+"E467: Las finalizaciones personalizadas requieren un argumento "
 "de función"
 
 #: ../errors.h:1168
 msgid "E468: Completion argument only allowed for custom completion"
 msgstr ""
-"E468: El argumento de finalización solo se permite en finalizaciones "
-"definidas por el usuario"
+"E468: El argumento de finalización solo se permite en finalizaciones"
+" personalizadas"
 
 #: ../errors.h:1171
 #, c-format
@@ -7149,9 +7145,8 @@ msgid "E472: Command failed"
 msgstr "E472: La orden falló"
 
 #: ../errors.h:1180
-#, fuzzy
 msgid "E473: Internal error in regexp"
-msgstr "E473: Error interno"
+msgstr "E473: Error interno en regexp"
 
 #: ../errors.h:1182
 msgid "E474: Invalid argument"
@@ -7163,23 +7158,23 @@ msgid "E475: Invalid argument: %s"
 msgstr "E475: El argumento no es válido: %s"
 
 #: ../errors.h:1186
-#, fuzzy, c-format
+#, c-format
 msgid "E475: Invalid value for argument %s"
-msgstr "E475: El argumento no es válido: %s"
+msgstr "E475: El valor del argumento no es válido: %s"
 
 #: ../errors.h:1189
-#, fuzzy, c-format
+#, c-format
 msgid "E475: Invalid value for argument %s: %s"
-msgstr "E475: El argumento no es válido: %s"
+msgstr "E475: El valor del argumento %s no es válido: %s"
 
 #: ../errors.h:1192
 msgid "E476: Invalid command"
 msgstr "E476: La orden no es válida"
 
 #: ../errors.h:1195
-#, fuzzy, c-format
+#, c-format
 msgid "E476: Invalid command: %s"
-msgstr "E476: La orden no es válida"
+msgstr "E476: La orden no es válida: %s"
 
 #: ../errors.h:1198
 msgid "E477: No ! allowed"
@@ -7205,7 +7200,7 @@ msgstr "E481: El rango no está permitido"
 #: ../errors.h:1208
 #, c-format
 msgid "E482: Can't create file %s"
-msgstr "E482: No se pudo crear el archivo \"%s\""
+msgstr "E482: No se pudo crear el archivo %s"
 
 #: ../errors.h:1210
 msgid "E483: Can't get temp file name"
@@ -7214,22 +7209,21 @@ msgstr "E483: No se pudo obtener el nombre del archivo temporal"
 #: ../errors.h:1212
 #, c-format
 msgid "E484: Can't open file %s"
-msgstr "E484: No se pudo abrir el archivo \"%s\""
+msgstr "E484: No se pudo abrir el archivo %s"
 
 #: ../errors.h:1214
 #, c-format
 msgid "E485: Can't read file %s"
-msgstr "E485: No se pudo leer el archivo \"%s\""
+msgstr "E485: No se pudo leer el archivo %s"
 
 #: ../errors.h:1216
-#, fuzzy
 msgid "E486: Pattern not found"
-msgstr "E486: No se encontró el patrón de búsqueda: %s"
+msgstr "E486: Patrón no encontrado"
 
 #: ../errors.h:1218
 #, c-format
 msgid "E486: Pattern not found: %s"
-msgstr "E486: No se encontró el patrón de búsqueda: %s"
+msgstr "E486: Patrón no encontrado_ %s"
 
 #: ../errors.h:1220
 msgid "E487: Argument must be positive"
@@ -7240,24 +7234,22 @@ msgid "E488: Trailing characters"
 msgstr "E488: Caracteres en exceso al final de la línea"
 
 #: ../errors.h:1224
-#, fuzzy, c-format
+#, c-format
 msgid "E488: Trailing characters: %s"
-msgstr "E488: Caracteres en exceso al final de la línea"
+msgstr "E488: Caracteres en exceso al final de la línea: %s"
 
 #: ../errors.h:1226
-#, fuzzy
 msgid "E489: no call stack to substitute for \"<stack>\""
-msgstr ""
-"E498: No hay un nombre de archivo \":source\" que sustituya a \"<sfile>\""
+msgstr "E489: no hay pila de llamadas para sustituir \"<stack>\""
 
 #: ../errors.h:1229
 msgid "E490: No fold found"
 msgstr "E490: No se encontró ningún pliegue"
 
 #: ../errors.h:1233
-#, fuzzy, c-format
+#, c-format
 msgid "E491: json decode error at '%s'"
-msgstr "E609: Error de \"cscope\": %s"
+msgstr "E491: error de decodificación json en '%s'"
 
 #: ../errors.h:1236
 msgid "E492: Not an editor command"
@@ -7295,8 +7287,7 @@ msgstr ""
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr ""
-"E499: Un nombre de archivo vacío para \"%\" o \"#\" solo funciona con \":p:h"
-"\""
+"E499: Un nombre de archivo vacío para \"%\" o \"#\" solo funciona con \":p:h\""
 
 #: ../errors.h:1253
 msgid "E500: Evaluates to an empty string"
@@ -7312,14 +7303,14 @@ msgid "is not a file or writable device"
 msgstr "no es un archivo o dispositivo en el que se pueda escribir"
 
 #: ../errors.h:1263
-#, fuzzy, c-format
+#, c-format
 msgid "E503: \"%s\" is not a file or writable device"
-msgstr "no es un archivo o dispositivo en el que se pueda escribir"
+msgstr ""
+"E503: \"%s\" no es un archivo o dispositivo en el que se pueda escribir"
 
 #: ../errors.h:1266
-#, fuzzy
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
-msgstr "es de solo lectura (añada ! para sobreescribir)"
+msgstr "es de solo lectura (añada \"W\" en \"cpoptions\" para sobreescribir)"
 
 #: ../errors.h:1269
 msgid "is read-only (add ! to override)"
@@ -7337,18 +7328,16 @@ msgstr ""
 "la orden)"
 
 #: ../errors.h:1275
-#, fuzzy
 msgid "E507: Close error for backup file (add ! to write anyway)"
 msgstr ""
-"E507: Error al cerrar el archivo de la copia de seguridad (añada ! para "
-"forzar la orden)"
+"E507: Error de cierre del archivo de copia de seguridad "
+"(agregue ! para escribir de todos modos)"
 
 #: ../errors.h:1277
-#, fuzzy
 msgid "E508: Can't read file for backup (add ! to write anyway)"
 msgstr ""
-"E508: No se pudo leer el archivo para crear la copia de seguridad (añada ! "
-"para forzar la orden)"
+"E508: No se puede leer el archivo para la copia de seguridad "
+"(agregue ! para escribir de todos modos)"
 
 #: ../errors.h:1279
 msgid "E509: Cannot create backup file (add ! to override)"
@@ -7357,15 +7346,14 @@ msgstr ""
 "forzar la orden)"
 
 #: ../errors.h:1281
-#, fuzzy
 msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr ""
-"E510: No se pudo hacer un archivo de copia de seguridad (añada ! para forzar "
-"la orden)"
+"E510: No se puede hacer el archivo de copia de seguridad "
+"(agregue ! para escribir de todos modos)"
 
 #: ../errors.h:1284
 msgid "E511: netbeans already connected"
-msgstr ""
+msgstr "E511: netbeans ya conectado"
 
 #: ../errors.h:1287
 msgid "E512: Close failed"
@@ -7456,7 +7444,6 @@ msgid "E529: Cannot set 'term' to empty string"
 msgstr "E529: No se pudo definir \"term\" como una cadena de caracteres vacía"
 
 #: ../errors.h:1330
-#, fuzzy
 msgid "E530: Cannot change 'term' in the GUI"
 msgstr "E530: No se pudo cambiar \"term\" en la interfaz gráfica"
 
@@ -7466,17 +7453,17 @@ msgstr "E531: Use \":gui\" para iniciar la interfaz gráfica"
 
 #: ../errors.h:1336
 msgid "E532: highlighting color name too long in defineAnnoType"
-msgstr ""
+msgstr "E532: nombre del color de resaltado demasiado largo en defineAnnoType"
 
 #: ../errors.h:1340
 msgid "E533: can't select wide font"
 msgstr ""
-"E533: No se pudo seleccionar el tipo de letra de impresión \"ancho\" (de "
+"E533: No se pudo seleccionar el tipo de letra \"ancho\" (de "
 "\"byte\" doble)"
 
 #: ../errors.h:1342
 msgid "E534: Invalid wide font"
-msgstr "E534: Tipo de letra de impresión \"ancho\" inválida"
+msgstr "E534: Tipo de letra \"ancho\" inválida"
 
 #: ../errors.h:1345
 #, c-format
