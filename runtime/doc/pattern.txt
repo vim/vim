@@ -1455,9 +1455,6 @@ Finally, these constructs are unique to Perl:
 		there can be three matches active at the same time.  The match
 		with the lowest number has priority if several match at the
 		same position.
-		The ":3match" command is used by the |matchparen| plugin.  You
-		are suggested to use ":match" for manual matching and
-		":2match" for another plugin.
 
 ==============================================================================
 11. Fuzzy matching					*fuzzy-matching*
