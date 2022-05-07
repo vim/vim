@@ -1082,10 +1082,13 @@ cmdline_erase_chars(
 	{
 	    while (p > ccline.cmdbuff && vim_isspace(p[-1]))
 		--p;
-	    i = vim_iswordc(p[-1]);
-	    while (p > ccline.cmdbuff && !vim_isspace(p[-1])
-		    && vim_iswordc(p[-1]) == i)
-		--p;
+	    if (p > ccline.cmdbuff)
+	    {
+		i = vim_iswordc(p[-1]);
+		while (p > ccline.cmdbuff && !vim_isspace(p[-1])
+			&& vim_iswordc(p[-1]) == i)
+		    --p;
+	    }
 	}
 	else
 	    --p;
