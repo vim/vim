@@ -3381,7 +3381,7 @@ func Check_completion()
   call assert_equal('let a', getcmdline())
   call assert_equal(6, getcmdpos())
   call assert_equal(7, getcmdscreenpos())
-  call assert_equal('var', getcmdcmptype())
+  call assert_equal('var', getcmdcmpltype())
   return ''
 endfunc
 
