@@ -997,6 +997,7 @@ func Test_gui_mouse_event()
   call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
 
   %d _
+  set scrolloff=0
   call setline(1, range(1, 100))
   " scroll up
   let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
@@ -1012,6 +1013,7 @@ func Test_gui_mouse_event()
   call test_gui_event('mouse', args)
   call feedkeys("H", 'Lx!')
   call assert_equal(4, line('.'))
+  set scrolloff&
 
   %d _
   set nowrap
