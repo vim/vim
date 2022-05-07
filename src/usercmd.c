@@ -443,6 +443,25 @@ get_user_cmd_complete(expand_T *xp UNUSED, int idx)
 }
 
 #ifdef FEAT_EVAL
+/*
+ * Get the name of completion type "expand" as a string.
+ */
+    char_u *
+cmdcomplete_type_to_str(int expand)
+{
+    int i;
+
+    for (i = 0; command_complete[i].expand != 0; i++)
+	if (command_complete[i].expand == expand)
+	    return (char_u *)command_complete[i].name;
+
+    return NULL;
+}
+
+/*
+ * Get the index of completion type "complete_str".
+ * Returns EXPAND_NOTHING if no match found.
+ */
     int
 cmdcomplete_str_to_type(char_u *complete_str)
 {

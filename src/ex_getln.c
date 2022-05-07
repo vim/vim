@@ -4119,6 +4119,42 @@ get_cmdline_str(void)
 }
 
 /*
+ * Get the current command-line completion type.
+ */
+    static char_u *
+get_cmdline_completion(void)
+{
+    cmdline_info_T *p;
+
+    if (cmdline_star > 0)
+	return NULL;
+
+    p = get_ccline_ptr();
+    if (p && p->xpc != NULL)
+    {
+	char_u *cmd_compl;
+
+	set_expand_context(p->xpc);
+
+	cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
+	if (cmd_compl != NULL)
+	    return vim_strnsave(cmd_compl, strlen((char *)cmd_compl));
+    }
+
+    return NULL;
+}
+
+/*
+ * "getcmdcompltype()" function
+ */
+    void
+f_getcmdcompltype(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = get_cmdline_completion();
+}
+
+/*
  * "getcmdline()" function
  */
     void
@@ -4139,6 +4175,28 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = 0;
     if (p != NULL)
     rettv->vval.v_number = p->cmdpos + 1;
+}
+
+/*
+ * Get the command line cursor screen position.
+ */
+    static int
+get_cmdline_screen_pos(void)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return -1;
+    return p->cmdspos;
+}
+
+/*
+ * "getcmdscreenpos()" function
+ */
+    void
+f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->vval.v_number = get_cmdline_screen_pos() + 1;
 }
 
 /*
