@@ -104,7 +104,27 @@ internal_format(
 
 	// Don't break until after the comment leader
 	if (do_comments)
-	    leader_len = get_leader_len(ml_get_curline(), NULL, FALSE, TRUE);
+	{
+	    char_u *line = ml_get_curline();
+
+	    leader_len = get_leader_len(line, NULL, FALSE, TRUE);
+#ifdef FEAT_CINDENT
+	    if (leader_len == 0 && curbuf->b_p_cin)
+	    {
+		int		comment_start;
+
+		// Check for a line comment after code.
+		comment_start = check_linecomment(line);
+		if (comment_start != MAXCOL)
+		{
+		    leader_len = get_leader_len(
+				      line + comment_start, NULL, FALSE, TRUE);
+		    if (leader_len != 0)
+			leader_len += comment_start;
+		}
+	    }
+#endif
+	}
 	else
 	    leader_len = 0;
 
