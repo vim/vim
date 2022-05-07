@@ -8,4 +8,5 @@ coverage:
 # Files not run by tests
 ignore:
   - "src/dosinst.c"
+  - "src/dosinst.h"
   - "src/uninstall.c"
