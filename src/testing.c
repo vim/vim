@@ -1393,6 +1393,11 @@ test_gui_mouse_event(dict_T *args)
 	repeated_click = (int)dict_get_number(args, (char_u *)"multiclick");
 	mods = (int)dict_get_number(args, (char_u *)"modifiers");
 
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_scroll_step(6, TRUE);
+	mouse_set_scroll_step(3, FALSE);
+
 	gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
 							repeated_click, mods);
     }
