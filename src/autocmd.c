@@ -1758,7 +1758,7 @@ apply_autocmds_retval(
     static int
 has_cursorhold(void)
 {
-    return (first_autopat[(int)(get_real_state() == NORMAL_BUSY
+    return (first_autopat[(int)(get_real_state() == MODE_NORMAL_BUSY
 			    ? EVENT_CURSORHOLD : EVENT_CURSORHOLDI)] != NULL);
 }
 
@@ -1777,7 +1777,7 @@ trigger_cursorhold(void)
 	    && !ins_compl_active())
     {
 	state = get_real_state();
-	if (state == NORMAL_BUSY || (state & INSERT) != 0)
+	if (state == MODE_NORMAL_BUSY || (state & MODE_INSERT) != 0)
 	    return TRUE;
     }
     return FALSE;

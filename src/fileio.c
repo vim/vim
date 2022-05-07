@@ -2945,7 +2945,7 @@ check_for_cryptkey(
     // When starting to edit a new file which does not have encryption, clear
     // the 'key' option, except when starting up (called with -x argument)
     else if (newfile && *curbuf->b_p_key != NUL && !starting)
-	set_option_value((char_u *)"key", 0L, (char_u *)"", OPT_LOCAL);
+	set_option_value_give_err((char_u *)"key", 0L, (char_u *)"", OPT_LOCAL);
 
     return cryptkey;
 }
@@ -4264,7 +4264,8 @@ buf_check_timestamp(
 	    }
 	    else
 #endif
-	    if (State > NORMAL_BUSY || (State & CMDLINE) || already_warned)
+	    if (State > MODE_NORMAL_BUSY || (State & MODE_CMDLINE)
+							     || already_warned)
 	    {
 		if (*mesg2 != NUL)
 		{

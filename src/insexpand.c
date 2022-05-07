@@ -2883,7 +2883,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 		|| check_for_list_arg(argvars, 1) == FAIL))
 	return;
 
-    if ((State & INSERT) == 0)
+    if ((State & MODE_INSERT) == 0)
     {
 	emsg(_(e_complete_can_only_be_used_in_insert_mode));
 	return;

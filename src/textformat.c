@@ -330,7 +330,7 @@ internal_format(
 	undisplay_dollar();
 
 	// Offset between cursor position and line break is used by replace
-	// stack functions.  VREPLACE does not use this, and backspaces
+	// stack functions.  MODE_VREPLACE does not use this, and backspaces
 	// over the text instead.
 	if (State & VREPLACE_FLAG)
 	    orig_col = startcol;	// Will start backspacing from here
@@ -349,7 +349,7 @@ internal_format(
 
 	if (State & VREPLACE_FLAG)
 	{
-	    // In VREPLACE mode, we will backspace over the text to be
+	    // In MODE_VREPLACE state, we will backspace over the text to be
 	    // wrapped, so save a copy now to put on the next line.
 	    saved_text = vim_strsave(ml_get_cursor());
 	    curwin->w_cursor.col = orig_col;
@@ -428,7 +428,7 @@ internal_format(
 
 	if (State & VREPLACE_FLAG)
 	{
-	    // In VREPLACE mode we have backspaced over the text to be
+	    // In MODE_VREPLACE state we have backspaced over the text to be
 	    // moved, now we re-insert it into the new line.
 	    ins_bytes(saved_text);
 	    vim_free(saved_text);
@@ -1143,13 +1143,13 @@ format_lines(
 		}
 
 		// put cursor on last non-space
-		State = NORMAL;	// don't go past end-of-line
+		State = MODE_NORMAL;	// don't go past end-of-line
 		coladvance((colnr_T)MAXCOL);
 		while (curwin->w_cursor.col && vim_isspace(gchar_cursor()))
 		    dec_cursor();
 
 		// do the formatting, without 'showmode'
-		State = INSERT;	// for open_line()
+		State = MODE_INSERT;	// for open_line()
 		smd_save = p_smd;
 		p_smd = FALSE;
 		insertchar(NUL, INSCHAR_FORMAT

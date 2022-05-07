@@ -4976,7 +4976,7 @@ mch_call_shell_fork(
 		p_more_save = p_more;
 		p_more = FALSE;
 		old_State = State;
-		State = EXTERNCMD;	// don't redraw at window resize
+		State = MODE_EXTERNCMD;	// don't redraw at window resize
 
 		if ((options & SHELL_WRITE) && toshell_fd >= 0)
 		{

@@ -691,7 +691,7 @@ menu_item_select(GtkWidget *widget UNUSED, gpointer data)
     char_u	*tooltip;
     static int	did_msg = FALSE;
 
-    if (State & CMDLINE)
+    if (State & MODE_CMDLINE)
 	return;
     menu = (vimmenu_T *)data;
     tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);

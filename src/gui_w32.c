@@ -1956,7 +1956,8 @@ process_message(void)
 	    }
 	    // In modes where we are not typing, dead keys should behave
 	    // normally
-	    else if (!(get_real_state() & (INSERT | CMDLINE | SELECTMODE)))
+	    else if ((get_real_state()
+			    & (MODE_INSERT | MODE_CMDLINE | MODE_SELECT)) == 0)
 	    {
 		outputDeadKey_rePost(msg);
 		return;
@@ -4603,7 +4604,7 @@ _OnMenuSelect(HWND hwnd, WPARAM wParam, LPARAM lParam)
     if (((UINT) HIWORD(wParam)
 		& (0xffff ^ (MF_MOUSESELECT + MF_BITMAP + MF_POPUP)))
 	    == MF_HILITE
-	    && (State & CMDLINE) == 0)
+	    && (State & MODE_CMDLINE) == 0)
     {
 	UINT	    idButton;
 	vimmenu_T   *pMenu;
@@ -5593,8 +5594,8 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 		im_set_position(gui.row, gui.col);
 
 		// Disable langmap
-		State &= ~LANGMAP;
-		if (State & INSERT)
+		State &= ~MODE_LANGMAP;
+		if (State & MODE_INSERT)
 		{
 # if defined(FEAT_KEYMAP)
 		    // Unshown 'keymap' in status lines

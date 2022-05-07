@@ -2180,7 +2180,6 @@ set_termname(char_u *term)
 #if defined(EXITFREE) || defined(PROTO)
 
 # ifdef HAVE_DEL_CURTERM
-#  undef TERMINAL	    // name clash in term.h
 #  include <term.h>	    // declares cur_term
 # endif
 
@@ -3468,10 +3467,10 @@ set_shellsize(int width, int height, int mustset)
     if (width < 0 || height < 0)    // just checking...
 	return;
 
-    if (State == HITRETURN || State == SETWSIZE)
+    if (State == MODE_HITRETURN || State == MODE_SETWSIZE)
     {
 	// postpone the resizing
-	State = SETWSIZE;
+	State = MODE_SETWSIZE;
 	return;
     }
 
@@ -3507,7 +3506,8 @@ set_shellsize(int width, int height, int mustset)
     // screenalloc() (also invoked from screenclear()).  That is because the
     // "busy" check above may skip this, but not screenalloc().
 
-    if (State != ASKMORE && State != EXTERNCMD && State != CONFIRM)
+    if (State != MODE_ASKMORE && State != MODE_EXTERNCMD
+						      && State != MODE_CONFIRM)
 	screenclear();
     else
 	screen_start();	    // don't know where cursor is now
@@ -3529,8 +3529,8 @@ set_shellsize(int width, int height, int mustset)
 	 * Always need to call update_screen() or screenalloc(), to make
 	 * sure Rows/Columns and the size of ScreenLines[] is correct!
 	 */
-	if (State == ASKMORE || State == EXTERNCMD || State == CONFIRM
-							     || exmode_active)
+	if (State == MODE_ASKMORE || State == MODE_EXTERNCMD
+				     || State == MODE_CONFIRM || exmode_active)
 	{
 	    screenalloc(FALSE);
 	    repeat_message();
@@ -3539,7 +3539,7 @@ set_shellsize(int width, int height, int mustset)
 	{
 	    if (curwin->w_p_scb)
 		do_check_scrollbind(TRUE);
-	    if (State & CMDLINE)
+	    if (State & MODE_CMDLINE)
 	    {
 		update_screen(NOT_VALID);
 		redrawcmdline();
@@ -4056,9 +4056,9 @@ term_cursor_mode(int forced)
 	return;
     }
 
-    if ((State & REPLACE) == REPLACE)
+    if ((State & MODE_REPLACE) == MODE_REPLACE)
     {
-	if (forced || showing_mode != REPLACE)
+	if (forced || showing_mode != MODE_REPLACE)
 	{
 	    if (*T_CSR != NUL)
 		p = T_CSR;	// Replace mode cursor
@@ -4067,22 +4067,22 @@ term_cursor_mode(int forced)
 	    if (*p != NUL)
 	    {
 		out_str(p);
-		showing_mode = REPLACE;
+		showing_mode = MODE_REPLACE;
 	    }
 	}
     }
-    else if (State & INSERT)
+    else if (State & MODE_INSERT)
     {
-	if ((forced || showing_mode != INSERT) && *T_CSI != NUL)
+	if ((forced || showing_mode != MODE_INSERT) && *T_CSI != NUL)
 	{
 	    out_str(T_CSI);	    // Insert mode cursor
-	    showing_mode = INSERT;
+	    showing_mode = MODE_INSERT;
 	}
     }
-    else if (forced || showing_mode != NORMAL)
+    else if (forced || showing_mode != MODE_NORMAL)
     {
 	out_str(T_CEI);		    // non-Insert mode cursor
-	showing_mode = NORMAL;
+	showing_mode = MODE_NORMAL;
     }
 }
 
@@ -5400,7 +5400,7 @@ check_termcode(
 	 * Skip this position if p_ek is not set and tp[0] is an ESC and we
 	 * are in Insert mode.
 	 */
-	if (*tp == ESC && !p_ek && (State & INSERT))
+	if (*tp == ESC && !p_ek && (State & MODE_INSERT))
 	    continue;
 
 	key_name[0] = NUL;	// no key name found yet

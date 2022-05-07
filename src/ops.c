@@ -294,7 +294,7 @@ shift_block(oparg_T *oap, int amount)
     p_ri = 0;			// don't want revins in indent
 #endif
 
-    State = INSERT;		// don't want REPLACE for State
+    State = MODE_INSERT;	// don't want MODE_REPLACE for State
     block_prep(oap, &bd, curwin->w_cursor.lnum, TRUE);
     if (bd.is_short)
 	return;
@@ -488,7 +488,7 @@ block_insert(
     linenr_T	lnum;		// loop var
     int		oldstate = State;
 
-    State = INSERT;		// don't want REPLACE for State
+    State = MODE_INSERT;	// don't want MODE_REPLACE for State
     s_len = (unsigned)STRLEN(s);
 
     for (lnum = oap->start.lnum + 1; lnum <= oap->end.lnum; lnum++)
@@ -991,7 +991,7 @@ replace_character(int c)
 {
     int n = State;
 
-    State = REPLACE;
+    State = MODE_REPLACE;
     ins_char(c);
     State = n;
     // Backup to the replaced character.
@@ -1842,7 +1842,7 @@ adjust_cursor_eol(void)
     if (curwin->w_cursor.col > 0
 	    && gchar_cursor() == NUL
 	    && (cur_ve_flags & VE_ONEMORE) == 0
-	    && !(restart_edit || (State & INSERT)))
+	    && !(restart_edit || (State & MODE_INSERT)))
     {
 	// Put the cursor on the last character in the line.
 	dec_cursor();

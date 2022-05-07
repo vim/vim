@@ -3182,7 +3182,7 @@ do_ecmd(
 	redraw_curbuf_later(NOT_VALID);	// redraw this buffer later
     }
 
-    if (p_im && (State & INSERT) == 0)
+    if (p_im && (State & MODE_INSERT) == 0)
 	need_start_insertmode = TRUE;
 
 #ifdef FEAT_AUTOCHDIR
@@ -3271,9 +3271,9 @@ ex_append(exarg_T *eap)
     if (empty && lnum == 1)
 	lnum = 0;
 
-    State = INSERT;		    // behave like in Insert mode
+    State = MODE_INSERT;		    // behave like in Insert mode
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
-	State |= LANGMAP;
+	State |= MODE_LANGMAP;
 
     for (;;)
     {
@@ -3308,9 +3308,9 @@ ex_append(exarg_T *eap)
 	{
 	    int save_State = State;
 
-	    // Set State to avoid the cursor shape to be set to INSERT mode
-	    // when getline() returns.
-	    State = CMDLINE;
+	    // Set State to avoid the cursor shape to be set to MODE_INSERT
+	    // state when getline() returns.
+	    State = MODE_CMDLINE;
 	    theline = eap->getline(
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
@@ -3366,7 +3366,7 @@ ex_append(exarg_T *eap)
 	    empty = FALSE;
 	}
     }
-    State = NORMAL;
+    State = MODE_NORMAL;
 
     if (eap->forceit)
 	curbuf->b_p_ai = !curbuf->b_p_ai;
@@ -4183,10 +4183,10 @@ ex_substitute(exarg_T *eap)
 		{
 		    int typed = 0;
 
-		    // change State to CONFIRM, so that the mouse works
+		    // change State to MODE_CONFIRM, so that the mouse works
 		    // properly
 		    save_State = State;
-		    State = CONFIRM;
+		    State = MODE_CONFIRM;
 		    setmouse();		// disable mouse in xterm
 		    curwin->w_cursor.col = regmatch.startpos[0].col;
 		    if (curwin->w_p_crb)

@@ -269,7 +269,7 @@ do_mouse(
 		if (!mouse_has(MOUSE_VISUAL))
 		    return FALSE;
 	    }
-	    else if (State == NORMAL && !mouse_has(MOUSE_NORMAL))
+	    else if (State == MODE_NORMAL && !mouse_has(MOUSE_NORMAL))
 		return FALSE;
 	}
 
@@ -355,7 +355,7 @@ do_mouse(
     // CTRL right mouse button does CTRL-T
     if (is_click && (mod_mask & MOD_MASK_CTRL) && which_button == MOUSE_RIGHT)
     {
-	if (State & INSERT)
+	if (State & MODE_INSERT)
 	    stuffcharReadbuff(Ctrl_O);
 	if (count > 1)
 	    stuffnumReadbuff(count);
@@ -399,7 +399,7 @@ do_mouse(
     // Middle mouse button does a 'put' of the selected text
     if (which_button == MOUSE_MIDDLE)
     {
-	if (State == NORMAL)
+	if (State == MODE_NORMAL)
 	{
 	    // If an operator was pending, we don't know what the user wanted
 	    // to do. Go back to normal mode: Clear the operator and beep().
@@ -430,7 +430,7 @@ do_mouse(
 	    // The rest is below jump_to_mouse()
 	}
 
-	else if ((State & INSERT) == 0)
+	else if ((State & MODE_INSERT) == 0)
 	    return FALSE;
 
 	// Middle click in insert mode doesn't move the mouse, just insert the
@@ -438,7 +438,7 @@ do_mouse(
 	// with do_put().
 	// Also paste at the cursor if the current mode isn't in 'mouse' (only
 	// happens for the GUI).
-	if ((State & INSERT) || !mouse_has(MOUSE_NORMAL))
+	if ((State & MODE_INSERT) || !mouse_has(MOUSE_NORMAL))
 	{
 	    if (regname == '.')
 		insert_reg(regname, TRUE);
@@ -645,7 +645,7 @@ do_mouse(
 	}
     }
 
-    if ((State & (NORMAL | INSERT))
+    if ((State & (MODE_NORMAL | MODE_INSERT))
 			    && !(mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
     {
 	if (which_button == MOUSE_LEFT)
@@ -838,7 +838,7 @@ do_mouse(
 	}
     }
     // If Visual mode started in insert mode, execute "CTRL-O"
-    else if ((State & INSERT) && VIsual_active)
+    else if ((State & MODE_INSERT) && VIsual_active)
 	stuffcharReadbuff(Ctrl_O);
 
     // Middle mouse click: Put text before cursor.
@@ -895,7 +895,7 @@ do_mouse(
     else if ((mod_mask & MOD_MASK_CTRL) || (curbuf->b_help
 		     && (mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK))
     {
-	if (State & INSERT)
+	if (State & MODE_INSERT)
 	    stuffcharReadbuff(Ctrl_O);
 	stuffcharReadbuff(Ctrl_RSB);
 	got_click = FALSE;		// ignore drag&release now
@@ -905,7 +905,7 @@ do_mouse(
     // the mouse pointer
     else if ((mod_mask & MOD_MASK_SHIFT))
     {
-	if ((State & INSERT) || (VIsual_active && VIsual_select))
+	if ((State & MODE_INSERT) || (VIsual_active && VIsual_select))
 	    stuffcharReadbuff(Ctrl_O);
 	if (which_button == MOUSE_LEFT)
 	    stuffcharReadbuff('*');
@@ -934,7 +934,8 @@ do_mouse(
 	}
 #endif
     }
-    else if ((mod_mask & MOD_MASK_MULTI_CLICK) && (State & (NORMAL | INSERT))
+    else if ((mod_mask & MOD_MASK_MULTI_CLICK)
+				       && (State & (MODE_NORMAL | MODE_INSERT))
 	     && mouse_has(MOUSE_VISUAL))
     {
 	if (is_click || !VIsual_active)
@@ -1441,13 +1442,14 @@ setmouse(void)
 
     if (VIsual_active)
 	checkfor = MOUSE_VISUAL;
-    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE)
+    else if (State == MODE_HITRETURN || State == MODE_ASKMORE
+						     || State == MODE_SETWSIZE)
 	checkfor = MOUSE_RETURN;
-    else if (State & INSERT)
+    else if (State & MODE_INSERT)
 	checkfor = MOUSE_INSERT;
-    else if (State & CMDLINE)
+    else if (State & MODE_CMDLINE)
 	checkfor = MOUSE_COMMAND;
-    else if (State == CONFIRM || State == EXTERNCMD)
+    else if (State == MODE_CONFIRM || State == MODE_EXTERNCMD)
 	checkfor = ' '; // don't use mouse for ":confirm" or ":!cmd"
     else
 	checkfor = MOUSE_NORMAL;    // assume normal mode

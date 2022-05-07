@@ -1181,7 +1181,7 @@ main_loop(
     // exits while Vim is running in a console.
     if (!cmdwin && !noexmode && SETJMP(x_jump_env))
     {
-	State = NORMAL;
+	State = MODE_NORMAL;
 	VIsual_active = FALSE;
 	got_int = TRUE;
 	need_wait_return = FALSE;
@@ -1239,7 +1239,7 @@ main_loop(
 		// Typed two CTRL-C in a row: go back to ex mode as if "Q" was
 		// used and keep "got_int" set, so that it aborts ":g".
 		exmode_active = EXMODE_NORMAL;
-		State = NORMAL;
+		State = MODE_NORMAL;
 	    }
 	    else if (!global_busy || !exmode_active)
 	    {

@@ -1774,7 +1774,7 @@ set_curbuf(buf_T *buf, int action)
 	    // another window, might be a timer doing something in another
 	    // window.
 	    if (prevbuf == curbuf
-			 && ((State & INSERT) == 0 || curbuf->b_nwindows <= 1))
+		    && ((State & MODE_INSERT) == 0 || curbuf->b_nwindows <= 1))
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
@@ -4700,8 +4700,8 @@ build_stl_str_hl(
 	    break;
 
 	case STL_COLUMN:
-	    num = !(State & INSERT) && empty_line
-		  ? 0 : (int)wp->w_cursor.col + 1;
+	    num = (State & MODE_INSERT) == 0 && empty_line
+					       ? 0 : (int)wp->w_cursor.col + 1;
 	    break;
 
 	case STL_VIRTCOL:
@@ -4709,8 +4709,8 @@ build_stl_str_hl(
 	    virtcol = wp->w_virtcol + 1;
 	    // Don't display %V if it's the same as %c.
 	    if (opt == STL_VIRTCOL_ALT
-		    && (virtcol == (colnr_T)(!(State & INSERT) && empty_line
-			    ? 0 : (int)wp->w_cursor.col + 1)))
+		    && (virtcol == (colnr_T)((State & MODE_INSERT) == 0
+			       && empty_line ? 0 : (int)wp->w_cursor.col + 1)))
 		break;
 	    num = (long)virtcol;
 	    break;
@@ -4755,9 +4755,9 @@ build_stl_str_hl(
 	case STL_OFFSET:
 #ifdef FEAT_BYTEOFF
 	    l = ml_find_line_or_offset(wp->w_buffer, wp->w_cursor.lnum, NULL);
-	    num = (wp->w_buffer->b_ml.ml_flags & ML_EMPTY) || l < 0 ?
-		  0L : l + 1 + (!(State & INSERT) && empty_line ?
-				0 : (int)wp->w_cursor.col);
+	    num = (wp->w_buffer->b_ml.ml_flags & ML_EMPTY) || l < 0
+		       ? 0L : l + 1 + ((State & MODE_INSERT) == 0 && empty_line
+				? 0 : (int)wp->w_cursor.col);
 #endif
 	    break;
 

@@ -476,7 +476,7 @@ do_exmode(
 	exmode_active = EXMODE_VIM;
     else
 	exmode_active = EXMODE_NORMAL;
-    State = NORMAL;
+    State = MODE_NORMAL;
     may_trigger_modechanged();
 
     // When using ":global /pat/ visual" and then "Q" we return to continue
@@ -8328,7 +8328,7 @@ ex_redraw(exarg_T *eap)
     need_wait_return = FALSE;
 
     // When invoked from a callback or autocmd the command line may be active.
-    if (State & CMDLINE)
+    if (State & MODE_CMDLINE)
 	redrawcmdline();
 
     out_flush();
@@ -8676,7 +8676,7 @@ ex_startinsert(exarg_T *eap)
 
     // Ignore the command when already in Insert mode.  Inserting an
     // expression register that invokes a function can do this.
-    if (State & INSERT)
+    if (State & MODE_INSERT)
 	return;
 
     if (eap->cmdidx == CMD_startinsert)

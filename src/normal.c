@@ -391,7 +391,7 @@ normal_cmd_get_more_chars(
     {
 	if (repl)
 	{
-	    State = REPLACE;	// pretend Replace mode
+	    State = MODE_REPLACE;	// pretend Replace mode
 #ifdef CURSOR_SHAPE
 	    ui_cursor_shape();	// show different cursor shape
 #endif
@@ -402,9 +402,9 @@ normal_cmd_get_more_chars(
 	    --no_mapping;
 	    --allow_keys;
 	    if (repl)
-		State = LREPLACE;
+		State = MODE_LREPLACE;
 	    else
-		State = LANGMAP;
+		State = MODE_LANGMAP;
 	    langmap_active = TRUE;
 	}
 #ifdef HAVE_INPUT_METHOD
@@ -413,7 +413,7 @@ normal_cmd_get_more_chars(
 	if (lang && curbuf->b_p_iminsert == B_IMODE_IM)
 	    im_set_active(TRUE);
 #endif
-	if ((State & INSERT) && !p_ek)
+	if ((State & MODE_INSERT) && !p_ek)
 	{
 #ifdef FEAT_JOB_CHANNEL
 	    ch_log_output = TRUE;
@@ -426,7 +426,7 @@ normal_cmd_get_more_chars(
 
 	*cp = plain_vgetc();
 
-	if ((State & INSERT) && !p_ek)
+	if ((State & MODE_INSERT) && !p_ek)
 	{
 #ifdef FEAT_JOB_CHANNEL
 	    ch_log_output = TRUE;
@@ -441,7 +441,7 @@ normal_cmd_get_more_chars(
 	    // Undo the decrement done above
 	    ++no_mapping;
 	    ++allow_keys;
-	    State = NORMAL_BUSY;
+	    State = MODE_NORMAL_BUSY;
 	}
 #ifdef HAVE_INPUT_METHOD
 	if (lang)
@@ -452,7 +452,7 @@ normal_cmd_get_more_chars(
 	}
 	p_smd = save_smd;
 #endif
-	State = NORMAL_BUSY;
+	State = MODE_NORMAL_BUSY;
 #ifdef FEAT_CMDL_INFO
 	*need_flushbuf |= add_to_showcmd(*cp);
 #endif
@@ -606,7 +606,7 @@ normal_cmd_wait_for_msg(void)
 
     // Draw the cursor with the right shape here
     if (restart_edit != 0)
-	State = INSERT;
+	State = MODE_INSERT;
 
     // If need to redraw, and there is a "keep_msg", redraw before the
     // delay
@@ -714,7 +714,7 @@ normal_cmd(
 
     mapped_len = typebuf_maplen();
 
-    State = NORMAL_BUSY;
+    State = MODE_NORMAL_BUSY;
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = FALSE;	// allow scrolling here
 #endif
@@ -731,7 +731,7 @@ normal_cmd(
      * Get the command character from the user.
      */
     c = safe_vgetc();
-    LANGMAP_ADJUST(c, get_real_state() != SELECTMODE);
+    LANGMAP_ADJUST(c, get_real_state() != MODE_SELECT);
 
     // If a mapping was started in Visual or Select mode, remember the length
     // of the mapping.  This is used below to not return to Insert mode for as
@@ -888,7 +888,7 @@ normal_cmd(
 	    did_cursorhold = FALSE;
     }
 
-    State = NORMAL;
+    State = MODE_NORMAL;
 
     if (ca.nchar == ESC)
     {
@@ -4873,7 +4873,7 @@ nv_replace(cmdarg_T *cap)
 	    // composing characters for utf-8.
 	    for (n = cap->count1; n > 0; --n)
 	    {
-		State = REPLACE;
+		State = MODE_REPLACE;
 		if (cap->nchar == Ctrl_E || cap->nchar == Ctrl_Y)
 		{
 		    int c = ins_copychar(curwin->w_cursor.lnum
@@ -6831,7 +6831,7 @@ set_cursor_for_append_to_line(void)
 
 	// Pretend Insert mode here to allow the cursor on the
 	// character past the end of the line
-	State = INSERT;
+	State = MODE_INSERT;
 	coladvance((colnr_T)MAXCOL);
 	State = save_State;
     }
@@ -6983,7 +6983,7 @@ nv_edit(cmdarg_T *cap)
 
 	    // Pretend Insert mode here to allow the cursor on the
 	    // character past the end of the line
-	    State = INSERT;
+	    State = MODE_INSERT;
 	    coladvance(getviscol());
 	    State = save_State;
 	}

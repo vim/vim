@@ -2642,7 +2642,7 @@ findtags_add_match(
 		vim_strncpy(mfp, tagpp->tagname, len);
 
 	    // if wanted, re-read line to get long form too
-	    if (State & INSERT)
+	    if (State & MODE_INSERT)
 		st->get_searchpat = p_sft;
 	}
     }

@@ -101,7 +101,7 @@ pum_display(
     win_T	*pvwin;
 #endif
 #ifdef FEAT_RIGHTLEFT
-    int		right_left = State == CMDLINE ? FALSE : curwin->w_p_rl;
+    int		right_left = State == MODE_CMDLINE ? FALSE : curwin->w_p_rl;
 #endif
 
     do
@@ -119,7 +119,7 @@ pum_display(
 	// Remember the essential parts of the window position and size, so we
 	// can decide when to reposition the popup menu.
 	pum_window = curwin;
-	if (State == CMDLINE)
+	if (State == MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    pum_win_row = cmdline_row;
 	else
@@ -159,7 +159,7 @@ pum_display(
 	{
 	    // pum above "pum_win_row"
 
-	    if (State == CMDLINE)
+	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
 	    else
@@ -191,7 +191,7 @@ pum_display(
 	{
 	    // pum below "pum_win_row"
 
-	    if (State == CMDLINE)
+	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
 	    else
@@ -235,7 +235,7 @@ pum_display(
 
 	// Calculate column
 #ifdef FEAT_WILDMENU
-	if (State == CMDLINE)
+	if (State == MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else

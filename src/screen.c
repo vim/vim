@@ -68,13 +68,13 @@ conceal_cursor_line(win_T *wp)
 
     if (*wp->w_p_cocu == NUL)
 	return FALSE;
-    if (get_real_state() & VISUAL)
+    if (get_real_state() & MODE_VISUAL)
 	c = 'v';
-    else if (State & INSERT)
+    else if (State & MODE_INSERT)
 	c = 'i';
-    else if (State & NORMAL)
+    else if (State & MODE_NORMAL)
 	c = 'n';
-    else if (State & CMDLINE)
+    else if (State & MODE_CMDLINE)
 	c = 'c';
     else
 	return FALSE;
@@ -4164,7 +4164,7 @@ showmode(void)
     int		sub_attr;
 
     do_mode = ((p_smd && msg_silent == 0)
-	    && ((State & INSERT)
+	    && ((State & MODE_INSERT)
 		|| restart_edit != NUL
 		|| VIsual_active));
     if (do_mode || reg_recording != 0)
@@ -4238,7 +4238,7 @@ showmode(void)
 		    msg_puts_attr(_(" VREPLACE"), attr);
 		else if (State & REPLACE_FLAG)
 		    msg_puts_attr(_(" REPLACE"), attr);
-		else if (State & INSERT)
+		else if (State & MODE_INSERT)
 		{
 #ifdef FEAT_RIGHTLEFT
 		    if (p_ri)
@@ -4258,7 +4258,7 @@ showmode(void)
 		    msg_puts_attr(_(" Hebrew"), attr);
 #endif
 #ifdef FEAT_KEYMAP
-		if (State & LANGMAP)
+		if (State & MODE_LANGMAP)
 		{
 # ifdef FEAT_ARABIC
 		    if (curwin->w_p_arab)
@@ -4270,7 +4270,7 @@ showmode(void)
 			    msg_puts_attr((char *)NameBuff, attr);
 		}
 #endif
-		if ((State & INSERT) && p_paste)
+		if ((State & MODE_INSERT) && p_paste)
 		    msg_puts_attr(_(" (paste)"), attr);
 
 		if (VIsual_active)

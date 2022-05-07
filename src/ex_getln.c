@@ -1150,16 +1150,16 @@ cmdline_erase_chars(
     static void
 cmdline_toggle_langmap(long *b_im_ptr)
 {
-    if (map_to_exists_mode((char_u *)"", LANGMAP, FALSE))
+    if (map_to_exists_mode((char_u *)"", MODE_LANGMAP, FALSE))
     {
 	// ":lmap" mappings exists, toggle use of mappings.
-	State ^= LANGMAP;
+	State ^= MODE_LANGMAP;
 #ifdef HAVE_INPUT_METHOD
 	im_set_active(FALSE);	// Disable input method
 #endif
 	if (b_im_ptr != NULL)
 	{
-	    if (State & LANGMAP)
+	    if (State & MODE_LANGMAP)
 		*b_im_ptr = B_IMODE_LMAP;
 	    else
 		*b_im_ptr = B_IMODE_NONE;
@@ -1683,7 +1683,7 @@ getcmdline_int(
      */
     msg_scroll = FALSE;
 
-    State = CMDLINE;
+    State = MODE_CMDLINE;
 
     if (firstc == '/' || firstc == '?' || firstc == '@')
     {
@@ -1693,7 +1693,7 @@ getcmdline_int(
 	else
 	    b_im_ptr = &curbuf->b_p_imsearch;
 	if (*b_im_ptr == B_IMODE_LMAP)
-	    State |= LANGMAP;
+	    State |= MODE_LANGMAP;
 #ifdef HAVE_INPUT_METHOD
 	im_set_active(*b_im_ptr == B_IMODE_IM);
 #endif
@@ -3208,7 +3208,7 @@ cmdline_getvcol_cursor(void)
     static void
 redrawcmd_preedit(void)
 {
-    if ((State & CMDLINE)
+    if ((State & MODE_CMDLINE)
 	    && xic != NULL
 	    // && im_get_status()  doesn't work when using SCIM
 	    && !p_imdisable
@@ -4089,7 +4089,7 @@ get_cmdline_info(void)
     static cmdline_info_T *
 get_ccline_ptr(void)
 {
-    if ((State & CMDLINE) == 0)
+    if ((State & MODE_CMDLINE) == 0)
 	return NULL;
     if (ccline.cmdbuff != NULL)
 	return &ccline;
@@ -4451,8 +4451,8 @@ open_cmdwin(void)
     {
 	if (p_wc == TAB)
 	{
-	    add_map((char_u *)"<buffer> <Tab> <C-X><C-V>", INSERT);
-	    add_map((char_u *)"<buffer> <Tab> a<C-X><C-V>", NORMAL);
+	    add_map((char_u *)"<buffer> <Tab> <C-X><C-V>", MODE_INSERT);
+	    add_map((char_u *)"<buffer> <Tab> a<C-X><C-V>", MODE_NORMAL);
 	}
 	set_option_value_give_err((char_u *)"ft",
 					       0L, (char_u *)"vim", OPT_LOCAL);
@@ -4495,7 +4495,7 @@ open_cmdwin(void)
     // No Ex mode here!
     exmode_active = 0;
 
-    State = NORMAL;
+    State = MODE_NORMAL;
     setmouse();
 
     // Reset here so it can be set by a CmdWinEnter autocommand.

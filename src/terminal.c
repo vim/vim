@@ -1267,7 +1267,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	// cleared.
 	// TODO: only update once in a while.
 	ch_log(term->tl_job->jv_channel, "updating screen");
-	if (buffer == curbuf && (State & CMDLINE) == 0)
+	if (buffer == curbuf && (State & MODE_CMDLINE) == 0)
 	{
 	    update_screen(VALID_NO_UPDATE);
 	    // update_screen() can be slow, check the terminal wasn't closed
@@ -2129,7 +2129,7 @@ term_vgetc()
     int modify_other_keys = curbuf->b_term->tl_vterm == NULL ? FALSE
 			: vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
 
-    State = TERMINAL;
+    State = MODE_TERMINAL;
     got_int = FALSE;
 #ifdef MSWIN
     ctrl_break_was_pressed = FALSE;
@@ -2508,7 +2508,7 @@ term_win_entered()
 	if (term_use_loop_check(TRUE))
 	{
 	    reset_VIsual_and_resel();
-	    if (State & INSERT)
+	    if (State & MODE_INSERT)
 		stop_insert_mode = TRUE;
 	}
 	mouse_was_outside = FALSE;

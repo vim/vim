@@ -2915,7 +2915,7 @@ set_bool_option(
     {
 	if (p_im)
 	{
-	    if ((State & INSERT) == 0)
+	    if ((State & MODE_INSERT) == 0)
 		need_start_insertmode = TRUE;
 	    stop_insert_mode = FALSE;
 	}
@@ -3110,7 +3110,7 @@ set_bool_option(
 	// Only de-activate it here, it will be enabled when changing mode.
 	if (p_imdisable)
 	    im_set_active(FALSE);
-	else if (State & INSERT)
+	else if (State & MODE_INSERT)
 	    // When the option is set from an autocommand, it may need to take
 	    // effect right away.
 	    im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);

@@ -216,7 +216,7 @@
 
 #ifdef FEAT_RIGHTLEFT
     // Whether to draw the vertical bar on the right side of the cell.
-# define CURSOR_BAR_RIGHT (curwin->w_p_rl && (!(State & CMDLINE) || cmdmsg_rl))
+# define CURSOR_BAR_RIGHT (curwin->w_p_rl && (!(State & MODE_CMDLINE) || cmdmsg_rl))
 #endif
 
 /*

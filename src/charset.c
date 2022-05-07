@@ -1300,7 +1300,7 @@ getvcol(
     if (cursor != NULL)
     {
 	if (*ptr == TAB
-		&& (State & NORMAL)
+		&& (State & MODE_NORMAL)
 		&& !wp->w_p_list
 		&& !virtual_active()
 		&& !(VIsual_active

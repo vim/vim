@@ -142,7 +142,7 @@ edit(
     int		old_topfill = -1;
 #endif
     int		inserted_space = FALSE;     // just inserted a space
-    int		replaceState = REPLACE;
+    int		replaceState = MODE_REPLACE;
     int		nomove = FALSE;		    // don't move cursor on return
 #ifdef FEAT_JOB_CHANNEL
     int		cmdchar_todo = cmdchar;
@@ -218,7 +218,7 @@ edit(
 	    int save_state = State;
 
 	    curwin->w_cursor = save_cursor;
-	    State = INSERT;
+	    State = MODE_INSERT;
 	    check_cursor_col();
 	    State = save_state;
 	}
@@ -272,17 +272,17 @@ edit(
 
     if (cmdchar == 'R')
     {
-	State = REPLACE;
+	State = MODE_REPLACE;
     }
     else if (cmdchar == 'V' || cmdchar == 'v')
     {
-	State = VREPLACE;
-	replaceState = VREPLACE;
+	State = MODE_VREPLACE;
+	replaceState = MODE_VREPLACE;
 	orig_line_count = curbuf->b_ml.ml_line_count;
 	vr_lines_changed = 1;
     }
     else
-	State = INSERT;
+	State = MODE_INSERT;
 
     may_trigger_modechanged();
     stop_insert_mode = FALSE;
@@ -304,7 +304,7 @@ edit(
      * when hitting <Esc>.
      */
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
-	State |= LANGMAP;
+	State |= MODE_LANGMAP;
 #ifdef HAVE_INPUT_METHOD
     im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
 #endif
@@ -315,7 +315,7 @@ edit(
 #endif
 #ifdef FEAT_RIGHTLEFT
     // there is no reverse replace mode
-    revins_on = (State == INSERT && p_ri);
+    revins_on = (State == MODE_INSERT && p_ri);
     if (revins_on)
 	undisplay_dollar();
     revins_chars = 0;
@@ -1802,8 +1802,8 @@ undisplay_dollar(void)
 
 /*
  * Truncate the space at the end of a line.  This is to be used only in an
- * insert mode.  It handles fixing the replace stack for REPLACE and VREPLACE
- * modes.
+ * insert mode.  It handles fixing the replace stack for MODE_REPLACE and
+ * MODE_VREPLACE modes.
  */
     void
 truncate_spaces(char_u *line)
@@ -1820,9 +1820,9 @@ truncate_spaces(char_u *line)
 }
 
 /*
- * Backspace the cursor until the given column.  Handles REPLACE and VREPLACE
- * modes correctly.  May also be used when not in insert mode at all.
- * Will attempt not to go before "col" even when there is a composing
+ * Backspace the cursor until the given column.  Handles MODE_REPLACE and
+ * MODE_VREPLACE modes correctly.  May also be used when not in insert mode at
+ * all.  Will attempt not to go before "col" even when there is a composing
  * character.
  */
     void
@@ -1924,7 +1924,7 @@ get_literal(int noReduceKeys)
 	    break;
 
 #ifdef FEAT_CMDL_INFO
-	if (!(State & CMDLINE) && MB_BYTE2LEN_CHECK(nc) == 1)
+	if ((State & MODE_CMDLINE) == 0 && MB_BYTE2LEN_CHECK(nc) == 1)
 	    add_to_showcmd(nc);
 #endif
 	if (nc == 'x' || nc == 'X')
@@ -2099,7 +2099,7 @@ insertchar(
      * - Otherwise:
      *	 - Don't do this if inserting a blank
      *	 - Don't do this if an existing character is being replaced, unless
-     *	   we're in VREPLACE mode.
+     *	   we're in MODE_VREPLACE state.
      *	 - Do this if the cursor is not on the line where insert started
      *	 or - 'formatoptions' doesn't have 'l' or the line was not too long
      *	       before the insert.
@@ -2810,7 +2810,7 @@ cursor_up(
 		// If we entered a fold, move to the beginning, unless in
 		// Insert mode or when 'foldopen' contains "all": it will open
 		// in a moment.
-		if (n > 0 || !((State & INSERT) || (fdo_flags & FDO_ALL)))
+		if (n > 0 || !((State & MODE_INSERT) || (fdo_flags & FDO_ALL)))
 		    (void)hasFolding(lnum, &lnum, NULL);
 	    }
 	    if (lnum < 1)
@@ -3107,7 +3107,7 @@ replace_join(
 
 /*
  * Pop bytes from the replace stack until a NUL is found, and insert them
- * before the cursor.  Can only be used in REPLACE or VREPLACE mode.
+ * before the cursor.  Can only be used in MODE_REPLACE or MODE_VREPLACE state.
  */
     static void
 replace_pop_ins(void)
@@ -3115,7 +3115,7 @@ replace_pop_ins(void)
     int	    cc;
     int	    oldState = State;
 
-    State = NORMAL;			// don't want REPLACE here
+    State = MODE_NORMAL;			// don't want MODE_REPLACE here
     while ((cc = replace_pop()) > 0)
     {
 	mb_replace_pop_ins(cc);
@@ -3545,18 +3545,18 @@ ins_ctrl_g(void)
     static void
 ins_ctrl_hat(void)
 {
-    if (map_to_exists_mode((char_u *)"", LANGMAP, FALSE))
+    if (map_to_exists_mode((char_u *)"", MODE_LANGMAP, FALSE))
     {
 	// ":lmap" mappings exists, Toggle use of ":lmap" mappings.
-	if (State & LANGMAP)
+	if (State & MODE_LANGMAP)
 	{
 	    curbuf->b_p_iminsert = B_IMODE_NONE;
-	    State &= ~LANGMAP;
+	    State &= ~MODE_LANGMAP;
 	}
 	else
 	{
 	    curbuf->b_p_iminsert = B_IMODE_LMAP;
-	    State |= LANGMAP;
+	    State |= MODE_LANGMAP;
 #ifdef HAVE_INPUT_METHOD
 	    im_set_active(FALSE);
 #endif
@@ -3574,7 +3574,7 @@ ins_ctrl_hat(void)
 	else
 	{
 	    curbuf->b_p_iminsert = B_IMODE_IM;
-	    State &= ~LANGMAP;
+	    State &= ~MODE_LANGMAP;
 	    im_set_active(TRUE);
 	}
     }
@@ -3704,12 +3704,12 @@ ins_esc(
     // Disable IM to allow typing English directly for Normal mode commands.
     // When ":lmap" is enabled don't change 'iminsert' (IM can be enabled as
     // well).
-    if (!(State & LANGMAP))
+    if (!(State & MODE_LANGMAP))
 	im_save_status(&curbuf->b_p_iminsert);
     im_set_active(FALSE);
 #endif
 
-    State = NORMAL;
+    State = MODE_NORMAL;
     may_trigger_modechanged();
     // need to position cursor again when on a TAB
     if (gchar_cursor() == TAB)
@@ -3760,7 +3760,7 @@ ins_ctrl_(void)
 	    ++curwin->w_cursor.col;
     }
     p_ri = !p_ri;
-    revins_on = (State == INSERT && p_ri);
+    revins_on = (State == MODE_INSERT && p_ri);
     if (revins_on)
     {
 	revins_scol = curwin->w_cursor.col;
@@ -3839,14 +3839,14 @@ ins_insert(int replaceState)
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_INSERTMODE,
 		   (char_u *)((State & REPLACE_FLAG) ? "i"
-		          : replaceState == VREPLACE ? "v"
+		          : replaceState == MODE_VREPLACE ? "v"
 						     : "r"), 1);
 #endif
     ins_apply_autocmds(EVENT_INSERTCHANGE);
     if (State & REPLACE_FLAG)
-	State = INSERT | (State & LANGMAP);
+	State = MODE_INSERT | (State & MODE_LANGMAP);
     else
-	State = replaceState | (State & LANGMAP);
+	State = replaceState | (State & MODE_LANGMAP);
     may_trigger_modechanged();
     AppendCharToRedobuff(K_INS);
     showmode();
@@ -4119,20 +4119,20 @@ ins_bs(
 		dec_cursor();
 
 	    /*
-	     * In REPLACE mode we have to put back the text that was replaced
-	     * by the NL. On the replace stack is first a NUL-terminated
-	     * sequence of characters that were deleted and then the
-	     * characters that NL replaced.
+	     * In MODE_REPLACE mode we have to put back the text that was
+	     * replaced by the NL. On the replace stack is first a
+	     * NUL-terminated sequence of characters that were deleted and then
+	     * the characters that NL replaced.
 	     */
 	    if (State & REPLACE_FLAG)
 	    {
 		/*
-		 * Do the next ins_char() in NORMAL state, to
+		 * Do the next ins_char() in MODE_NORMAL state, to
 		 * prevent ins_char() from replacing characters and
 		 * avoiding showmatch().
 		 */
 		oldState = State;
-		State = NORMAL;
+		State = MODE_NORMAL;
 		/*
 		 * restore characters (blanks) deleted after cursor
 		 */
@@ -4943,7 +4943,7 @@ ins_tab(void)
     /*
      * Insert the first space with ins_char().	It will delete one char in
      * replace mode.  Insert the rest with ins_str(); it will not delete any
-     * chars.  For VREPLACE mode, we use ins_char() for all characters.
+     * chars.  For MODE_VREPLACE state, we use ins_char() for all characters.
      */
     ins_char(' ');
     while (--temp > 0)
@@ -4979,8 +4979,8 @@ ins_tab(void)
 	int		save_list = curwin->w_p_list;
 
 	/*
-	 * Get the current line.  For VREPLACE mode, don't make real changes
-	 * yet, just work on a copy of the line.
+	 * Get the current line.  For MODE_VREPLACE state, don't make real
+	 * changes yet, just work on a copy of the line.
 	 */
 	if (State & VREPLACE_FLAG)
 	{
@@ -5111,9 +5111,9 @@ ins_tab(void)
 	    cursor->col -= i;
 
 	    /*
-	     * In VREPLACE mode, we haven't changed anything yet.  Do it now by
-	     * backspacing over the changed spacing and then inserting the new
-	     * spacing.
+	     * In MODE_VREPLACE state, we haven't changed anything yet.  Do it
+	     * now by backspacing over the changed spacing and then inserting
+	     * the new spacing.
 	     */
 	    if (State & VREPLACE_FLAG)
 	    {
@@ -5159,7 +5159,7 @@ ins_eol(int c)
 	replace_push(NUL);
 
     /*
-     * In VREPLACE mode, a NL replaces the rest of the line, and starts
+     * In MODE_VREPLACE state, a NL replaces the rest of the line, and starts
      * replacing the next line, so we push all of the characters left on the
      * line onto the replace stack.  This is not done here though, it is done
      * in open_line().
