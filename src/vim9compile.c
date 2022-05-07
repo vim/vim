@@ -2018,20 +2018,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
     lhs.lhs_name = NULL;
 
-    sp = p;
-    p = skipwhite(p);
-    op = p;
-    oplen = assignment_len(p, &heredoc);
-
-    if (var_count > 0 && oplen == 0)
-	// can be something like "[1, 2]->func()"
-	return arg;
-
-    if (oplen > 0 && (!VIM_ISWHITE(*sp) || !IS_WHITE_OR_NUL(op[oplen])))
-    {
-	error_white_both(op, oplen);
-	return NULL;
-    }
     if (eap->cmdidx == CMD_increment || eap->cmdidx == CMD_decrement)
     {
 	if (VIM_ISWHITE(eap->cmd[2]))
@@ -2043,6 +2029,23 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	op = (char_u *)(eap->cmdidx == CMD_increment ? "+=" : "-=");
 	oplen = 2;
 	incdec = TRUE;
+    }
+    else
+    {
+	sp = p;
+	p = skipwhite(p);
+	op = p;
+	oplen = assignment_len(p, &heredoc);
+
+	if (var_count > 0 && oplen == 0)
+	    // can be something like "[1, 2]->func()"
+	    return arg;
+
+	if (oplen > 0 && (!VIM_ISWHITE(*sp) || !IS_WHITE_OR_NUL(op[oplen])))
+	{
+	    error_white_both(op, oplen);
+	    return NULL;
+	}
     }
 
     if (heredoc)
