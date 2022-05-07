@@ -92,6 +92,7 @@ jobs:
       - name: Install gcc-11
         if:  matrix.compiler == 'gcc'
         run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1e9377a2ba9ef27f
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
           sudo apt install -y gcc-11
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
