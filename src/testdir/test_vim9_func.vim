@@ -1615,6 +1615,26 @@ def Test_lambda_type_allocated()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_define_lambda_in_execute()
+  var lines =<< trim [CODE]
+      vim9script
+
+      def BuildFuncMultiLine(): func
+          var x =<< trim END
+              g:SomeRandomFunc = (d: dict<any>) => {
+                  return d.k1 + d.k2
+              }
+          END
+          execute(x)
+          return g:SomeRandomFunc
+      enddef
+      var ResultPlus = BuildFuncMultiLine()
+      assert_equal(7, ResultPlus({k1: 3, k2: 4}))
+  [CODE]
+  v9.CheckScriptSuccess(lines)
+  unlet g:SomeRandomFunc
+enddef
+
 " Default arg and varargs
 def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
   var res = one .. ',' .. two

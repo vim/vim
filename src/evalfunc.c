@@ -3868,7 +3868,7 @@ execute_cmds_from_string(char_u *str)
  * Called by do_cmdline() to get the next line.
  * Returns allocated string, or NULL for end of function.
  */
-    static char_u *
+    char_u *
 get_list_line(
     int	    c UNUSED,
     void    *cookie,
