@@ -2198,11 +2198,11 @@ struct cbq_S
 // mode for a channel
 typedef enum
 {
-    MODE_NL = 0,
-    MODE_RAW,
-    MODE_JSON,
-    MODE_JS,
-    MODE_LSP			// Language Server Protocol (http + json)
+    CH_MODE_NL = 0,
+    CH_MODE_RAW,
+    CH_MODE_JSON,
+    CH_MODE_JS,
+    CH_MODE_LSP		// Language Server Protocol (http + json)
 } ch_mode_T;
 
 typedef enum {

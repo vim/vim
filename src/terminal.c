@@ -326,7 +326,8 @@ set_term_and_win_size(term_T *term, jobopt_T *opt)
 
 	    vim_snprintf((char *)buf, 100, "%dx%d",
 						 term->tl_rows, term->tl_cols);
-	    set_option_value((char_u *)"termwinsize", 0L, buf, OPT_LOCAL);
+	    set_option_value_give_err((char_u *)"termwinsize",
+							   0L, buf, OPT_LOCAL);
 	}
     }
 }
@@ -340,9 +341,9 @@ init_job_options(jobopt_T *opt)
 {
     clear_job_options(opt);
 
-    opt->jo_mode = MODE_RAW;
-    opt->jo_out_mode = MODE_RAW;
-    opt->jo_err_mode = MODE_RAW;
+    opt->jo_mode = CH_MODE_RAW;
+    opt->jo_out_mode = CH_MODE_RAW;
+    opt->jo_err_mode = CH_MODE_RAW;
     opt->jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
 }
 

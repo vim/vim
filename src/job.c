@@ -24,15 +24,15 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
 
     opt->jo_set |= jo;
     if (STRCMP(val, "nl") == 0)
-	*modep = MODE_NL;
+	*modep = CH_MODE_NL;
     else if (STRCMP(val, "raw") == 0)
-	*modep = MODE_RAW;
+	*modep = CH_MODE_RAW;
     else if (STRCMP(val, "js") == 0)
-	*modep = MODE_JS;
+	*modep = CH_MODE_JS;
     else if (STRCMP(val, "json") == 0)
-	*modep = MODE_JSON;
+	*modep = CH_MODE_JSON;
     else if (STRCMP(val, "lsp") == 0)
-	*modep = MODE_LSP;
+	*modep = CH_MODE_LSP;
     else
     {
 	semsg(_(e_invalid_argument_str), val);
@@ -1307,7 +1307,7 @@ job_start(
     {
 	// Default mode is NL.
 	clear_job_options(&opt);
-	opt.jo_mode = MODE_NL;
+	opt.jo_mode = CH_MODE_NL;
 	if (get_job_options(&argvars[1], &opt,
 		    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT
 			 + JO_EXIT_CB + JO_OUT_IO + JO_BLOCK_WRITE,
