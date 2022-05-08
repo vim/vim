@@ -6511,7 +6511,8 @@ ExpandSettings(
     regmatch_T	*regmatch,
     char_u	*fuzzystr,
     int		*numMatches,
-    char_u	***matches)
+    char_u	***matches,
+    int         can_fuzzy)
 {
     int		num_normal = 0;	    // Nr of matching non-term-code settings
     int		num_term = 0;	    // Nr of matching terminal code settings
@@ -6527,7 +6528,7 @@ ExpandSettings(
     int		fuzzy;
     fuzmatch_str_T  *fuzmatch = NULL;
 
-    fuzzy = cmdline_fuzzy_complete(fuzzystr);
+    fuzzy = cmdline_fuzzy_complete(fuzzystr) && can_fuzzy;
 
     // do this loop twice:
     // loop == 0: count the number of matching options
