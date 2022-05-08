@@ -1258,6 +1258,7 @@ func Test_opt_cdhome()
 endfunc
 
 func Test_set_completion_2()
+  CheckOption termguicolors
 
   " Test default option completion
   set wildoptions=

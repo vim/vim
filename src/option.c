@@ -6528,7 +6528,7 @@ ExpandSettings(
     int		fuzzy;
     fuzmatch_str_T  *fuzmatch = NULL;
 
-    fuzzy = cmdline_fuzzy_complete(fuzzystr) && can_fuzzy;
+    fuzzy = can_fuzzy && cmdline_fuzzy_complete(fuzzystr);
 
     // do this loop twice:
     // loop == 0: count the number of matching options
