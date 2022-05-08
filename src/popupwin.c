@@ -978,7 +978,7 @@ apply_options(win_T *wp, dict_T *dict, int create)
 
     nr = dict_get_bool(dict, (char_u *)"hidden", FALSE);
     if (nr > 0)
-	wp->w_popup_flags |= POPF_HIDDEN;
+	wp->w_popup_flags |= POPF_HIDDEN | POPF_HIDDEN_FORCE;
 
     // when "firstline" and "cursorline" are both set and the cursor would be
     // above or below the displayed lines, move the cursor to "firstline".
@@ -2644,7 +2644,10 @@ f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
     id = (int)tv_get_number(argvars);
     wp = find_popup_win(id);
     if (wp != NULL)
+    {
 	popup_hide(wp);
+	wp->w_popup_flags |= POPF_HIDDEN_FORCE;
+    }
 }
 
     void
@@ -2674,6 +2677,7 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     wp = find_popup_win(id);
     if (wp != NULL)
     {
+	wp->w_popup_flags &= ~POPF_HIDDEN_FORCE;
 	popup_show(wp);
 #ifdef FEAT_QUICKFIX
 	if (wp->w_popup_flags & POPF_INFO)
@@ -3606,8 +3610,9 @@ check_popup_unhidden(win_T *wp)
 	textprop_T  prop;
 	linenr_T    lnum;
 
-	if (find_visible_prop(wp->w_popup_prop_win,
-		    wp->w_popup_prop_type, wp->w_popup_prop_id,
+	if ((wp->w_popup_flags & POPF_HIDDEN_FORCE) == 0
+		&& find_visible_prop(wp->w_popup_prop_win,
+				    wp->w_popup_prop_type, wp->w_popup_prop_id,
 							   &prop, &lnum) == OK)
 	{
 	    wp->w_popup_flags &= ~POPF_HIDDEN;
