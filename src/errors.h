@@ -3273,3 +3273,7 @@ EXTERN char e_stray_closing_curly_str[]
 EXTERN char e_missing_close_curly_str[]
 	INIT(= N_("E1279: Missing '}': %s"));
 #endif
+#ifdef FEAT_SPELL
+EXTERN char e_illegal_character_in_word[]
+	INIT(= N_("E1280: Illegal character in word"));
+#endif

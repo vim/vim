@@ -4390,6 +4390,10 @@ store_word(
     int		res = OK;
     char_u	*p;
 
+    // Avoid adding illegal bytes to the word tree.
+    if (enc_utf8 && !utf_valid_string(word, NULL))
+	return FAIL;
+
     (void)spell_casefold(curwin, word, len, foldword, MAXWLEN);
     for (p = pfxlist; res == OK; ++p)
     {
@@ -6189,6 +6193,12 @@ spell_add_word(
     long	fpos, fpos_next = 0;
     int		i;
     char_u	*spf;
+
+    if (enc_utf8 && !utf_valid_string(word, NULL))
+    {
+	emsg(_(e_illegal_character_in_word));
+	return;
+    }
 
     if (idx == 0)	    // use internal wordlist
     {
