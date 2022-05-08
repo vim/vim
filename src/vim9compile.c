@@ -981,7 +981,6 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
 {
     char_u	*p = str;
     char_u	*val;
-    char_u	save_c;
     int		count = 0;
 
     if (cctx->ctx_skip == SKIP_YES)
@@ -1051,11 +1050,8 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
 	    semsg(_(e_missing_close_curly_str), str);
 	    return FAIL;
 	}
-	save_c = *block_end;
-	*block_end = NUL;
 	if (compile_expr0(&block_start, cctx) == FAIL)
 	    return FAIL;
-	*block_end = save_c;
 	may_generate_2STRING(-1, TRUE, cctx);
 	++count;
 
