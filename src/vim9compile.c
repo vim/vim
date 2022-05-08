@@ -983,6 +983,8 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
     char_u	*val;
     char_u	save_c;
     int		count = 0;
+    int		save_len;
+    int		ret;
 
     if (cctx->ctx_skip == SKIP_YES)
 	return OK;
@@ -1042,7 +1044,7 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
 	// Skip the opening {.
 	block_start = skipwhite(p + 1);
 	block_end = block_start;
-	if (*block_start != NUL &&skip_expr(&block_end, NULL) == FAIL)
+	if (*block_start != NUL && skip_expr(&block_end, NULL) == FAIL)
 	    return FAIL;
 	block_end = skipwhite(block_end);
 	// The block must be closed by a }.
@@ -1051,11 +1053,21 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
 	    semsg(_(e_missing_close_curly_str), str);
 	    return FAIL;
 	}
+
 	save_c = *block_end;
 	*block_end = NUL;
-	if (compile_expr0(&block_start, cctx) == FAIL)
-	    return FAIL;
+
+	save_len = cctx->ctx_ufunc->uf_lines.ga_len;
+	// Do not look in the next line.
+	cctx->ctx_ufunc->uf_lines.ga_len = 1;
+
+	ret = compile_expr0(&block_start, cctx);
+	cctx->ctx_ufunc->uf_lines.ga_len = save_len;
 	*block_end = save_c;
+
+	if (ret == FAIL)
+	    return FAIL;
+
 	may_generate_2STRING(-1, TRUE, cctx);
 	++count;
 

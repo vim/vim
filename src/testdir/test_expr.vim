@@ -944,6 +944,14 @@ func Test_string_interp()
     call assert_fails('echo $"{ # foo }"', 'E1279:')
   END
   call v9.CheckDefAndScriptSuccess(lines)
+
+  let lines =<< trim END
+    var s = 'x'
+    var lst: list<bool> = 'axb foo axb bar axb baz'
+	->split($'a{s}b')
+	->map((_, v) => v =~ 'bar')
+  END
+  call v9.CheckDefSuccess(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
