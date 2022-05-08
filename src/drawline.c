@@ -2477,14 +2477,16 @@ win_line(
 
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
-		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
-						       conceal_cursor_line(wp))
+		&& (wp != curwin || lnum != wp->w_cursor.lnum
+						    || conceal_cursor_line(wp))
 		&& ((syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
-		if ((prev_syntax_id != syntax_seqnr || has_match_conc > 1)
+		if (((prev_syntax_id != syntax_seqnr
+					   && (syntax_flags & HL_CONCEAL) != 0)
+			    || has_match_conc > 1)
 			&& (syn_get_sub_char() != NUL
 				|| (has_match_conc && match_conc)
 				|| wp->w_p_cole == 1)
