@@ -541,4 +541,23 @@ func Test_statusline_verylong_filename()
   bwipe!
 endfunc
 
+func Test_statusline_highlight_truncate()
+  CheckScreendump
+
+  let lines =<< trim END
+    set laststatus=2
+    hi! link User1 Directory
+    hi! link User2 ErrorMsg
+    set statusline=%.5(%1*ABC%2*DEF%1*GHI%)
+  END
+  call writefile(lines, 'XTest_statusline')
+
+  let buf = RunVimInTerminal('-S XTest_statusline', {'rows': 6})
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_statusline_hl', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XTest_statusline')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
