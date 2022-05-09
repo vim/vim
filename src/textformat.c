@@ -176,7 +176,7 @@ internal_format(
 		    // Increment count of how many whitespace chars in this
 		    // group; we only need to know if it's more than one.
 		    if (wcc < 2)
-		        wcc++;
+			wcc++;
 		}
 		if (curwin->w_cursor.col == 0 && WHITECHAR(cc))
 		    break;		// only spaces in front of text

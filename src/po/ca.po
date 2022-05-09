@@ -4116,7 +4116,8 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: %s) desequilibrat"
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: caràcter no vàlid després de %s@"
 
 # complex braces
@@ -4133,7 +4134,8 @@ msgstr "E61: %s* imbricats"
 msgid "E62: Nested %s%c"
 msgstr "E62: %s%c imbricats"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: Ús invàlid de \\_"
 
 #, c-format
@@ -4167,7 +4169,8 @@ msgstr "E71: Caràcter invàlid després de %s%%"
 msgid "E72: Close error on swap file"
 msgstr "E72: Error en tancar el fitxer d'intercanvi"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: La pila d'etiquetes està buida"
 
 msgid "E74: Command too complex"
@@ -4412,7 +4415,8 @@ msgstr "E142: No s'ha escrit el fitxer: El paràmetre 'write' ho impedeix"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Una ordre automàtica ha eliminat el nou buffer %s"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: Argument no numèric a :z"
 
 msgid "E145: Shell commands and some functionality not allowed in rvim"
@@ -4541,7 +4545,8 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: El valor per omissió del paràmetre de quantitat no és vàlid"
 
 #, c-format
-msgid "E179: argument required for %s"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for %s"
 msgstr "E179: l'atribut %s requereix un argument"
 
 #, c-format
@@ -4633,7 +4638,8 @@ msgstr "E204: Una ordre automàtica ha canviat el nombre de línies"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: patchmode: no s'ha pogut desar el fitxer original"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: patchmode: no s'ha pogut tocar el fitxer original buit"
 
 msgid "E207: Can't delete backup file"
@@ -4680,7 +4686,8 @@ msgstr "E216: No existeix tal grup o esdeveniment: %s"
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: No es pot assignar una ordre a TOTS els esdeveniments"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: nivell d'imbricació d'ordres automàtiques massa elevat"
 
 msgid "E219: Missing {."
@@ -4696,23 +4703,28 @@ msgstr "E221: Una marca no pot començar amb una lletra en minúscula"
 msgid "E222: Add to internal buffer that was already read from"
 msgstr "E222: Addició a un buffer intern del qual ja s'havia llegit"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: assignació recursiva"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: ja existeix una abreviació global per a %s"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: ja existeix una assignació global per a %s"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: ja existeix una abreviació per a %s"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: ja existeix una assignació per a %s"
 
 msgid "E228: makemap: Illegal mode"
@@ -4731,7 +4743,8 @@ msgstr "E231: El valor de 'guifontwide' no és vàlid"
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: No es pot crear un BalloonEval amb missatge i callback alhora"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: No s'ha pogut obrir la pantalla"
 
 #, c-format
@@ -4783,13 +4796,15 @@ msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: L'ordre automàtica FileChangedShell ha eliminat el buffer"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: cap servidor registrat amb aquest nom \"%s\""
 
 msgid "E248: Failed to send command to the destination program"
 msgstr "E248: No s'ha pogut enviar l'ordre al programa destinatari"
 
-msgid "E249: window layout changed unexpectedly"
+# TODO: Capitalise first word of message?
+msgid "E249: Window layout changed unexpectedly"
 msgstr "E249: la disposició de les finestres ha canviat inesperadament"
 
 #, c-format
@@ -4821,18 +4836,21 @@ msgid "E258: Unable to send to client"
 msgstr "E258: No s'ha pogut enviar al client"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: no hi ha coincidències per la cerca cscope %s de %s"
 
 msgid "E260: Missing name after ->"
 msgstr "E260: Falta un nom després de ->"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: no s'ha trobat la connexió cscope %s"
 
 #, c-format
-msgid "E262: error reading cscope connection %d"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %d"
 msgstr "E262: Error en llegir la connexió cscope %d"
 
 msgid ""
@@ -4850,26 +4868,33 @@ msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr "E266: Ordre no disponible, no s'ha carregat la biblioteca Ruby."
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: retorn inesperat"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: 'next' inesperat"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: 'break' inesperat"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: 'redo' inesperat"
 
-msgid "E271: retry outside of rescue clause"
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
 msgstr "E271: 'retry' fora d'una clàusula de rescat"
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: excepció no conduïda"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: estat de longjmp %d desconegut"
 
 msgid "E274: No white space allowed before parenthesis"
@@ -4913,10 +4938,12 @@ msgstr "E286: Error en obrir el mètode d'entrada"
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: Atenció: Error en establir el callback de destrucció de l'IM"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: el mètode d'entrada no suporta cap estil"
 
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: el mètode d'entrada no suporta el tipus de pre-edició"
 
 msgid "E290: List or number required"
@@ -4926,7 +4953,8 @@ msgstr "E290: Es necessita una llista o un número"
 msgid "E292: Invalid count for del_bytes(): %ld"
 msgstr "E292: Quantitat invàlida per a del_bytes(): %ld"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: El bloc no estava bloquejat"
 
 msgid "E294: Seek error in swap file read"
@@ -5007,23 +5035,29 @@ msgid "E314: Preserve failed"
 msgstr "E314: La preservació ha fallat"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: Ml_get: invalid lnum: %ld"
 msgstr "E315: ml_get: lnum no vàlid: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
+# TODO: Capitalise first word of message?
+msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: no s'ha trobat la línia %ld en el buffer %d %s"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: punter a id de bloc incorrecte"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: punter a id de bloc incorrecte 2"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: punter a id de bloc incorrecte 3"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: Punter a id de bloc incorrecte 4"
 
 msgid "E318: Updated too many blocks?"
@@ -5041,11 +5075,13 @@ msgid "E321: Could not reload \"%s\""
 msgstr "E321: No s'ha pogut rellegir \"%s\""
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: número de línia fora d'interval: %ld passat el final"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: nombre de línies incorrecte al bloc %ld"
 
 msgid "E324: Can't open PostScript output file"
@@ -5180,7 +5216,8 @@ msgstr "E360: No és possible executar l'intèrpret conjuntament amb l'opció -f"
 msgid "E362: Using a boolean value as a Float"
 msgstr "E362: Ús d'un valor booleà com a Float"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: el patró requereix més memòria que 'maxmempattern'"
 
 #, c-format
@@ -5198,11 +5235,13 @@ msgid "E367: No such group: \"%s\""
 msgstr "E367: No existeix tal grup: \"%s\""
 
 #, c-format
-msgid "E368: got SIG%s in libcall()"
+# TODO: Capitalise first word of message?
+msgid "E368: Got SIG%s in libcall()"
 msgstr "E368: s'ha obtingut SIG%s a libcall()"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: Ítem no vàlid a %s%%[]"
 
 #, c-format
@@ -5255,11 +5294,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Cadena de cerca no vàlida: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: la cerca ha arribat a DALT sense resultats per: %s"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: la cerca ha arribat a BAIX sense resultats per: %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -5293,7 +5334,8 @@ msgstr "E393: grouphere/groupthere no és vàlid en aquest context"
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: No s'ha trobat cap element de regió per a %s"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: conté argument no vàlid en aquest context"
 
 msgid "E397: Filename required"
@@ -5351,7 +5393,8 @@ msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Subordre de :syntax no vàlida: %s"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: no s'ha trobat el grup de ressaltat: %s"
 
 #, c-format
@@ -5362,19 +5405,23 @@ msgstr "E412: Falten arguments: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Sobren arguments: \":highlight link %s\""
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: el grup ja té paràmetres, s'ignora l'enllaç"
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: signe d'igualtat inesperat: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: falta un signe d'igual: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: falta un argument: %s"
 
 #, c-format
@@ -5392,7 +5439,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Nom o número de color no reconegut: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: codi de terminal massa llarg: %s"
 
 #, c-format
@@ -5406,7 +5454,8 @@ msgid "E425: Cannot go before first matching tag"
 msgstr "E425: No es pot anar més enllà de la primera etiqueta coincident"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: No s'ha trobat l'etiqueta: %s"
 
 msgid "E427: There is only one matching tag"
@@ -5444,16 +5493,19 @@ msgstr "E435: No s'ha trobat l'etiqueta exacta!"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: No hi ha cap entrada \"%s\" al termcap"
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: es necessita la capacitat \"cm\" per part del terminal"
 
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: els números de línia no són correctes"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: la llista de desfer està corrompuda"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: falta una línia de desfer"
 
 msgid "E441: There is no preview window"
@@ -5485,7 +5537,8 @@ msgstr "E448: No s'ha pogut carregar la funció %s"
 msgid "E449: Invalid expression received"
 msgstr "E449: S'ha rebut una expressió no vàlida"
 
-msgid "E450: buffer number, text or a list required"
+# TODO: Capitalise first word of message?
+msgid "E450: Buffer number, text or a list required"
 msgstr "E450: es necessita un número de buffer, text o llista"
 
 #, c-format
@@ -5498,7 +5551,8 @@ msgstr "E452: La llista de variables conté un ; doble"
 msgid "E453: UL color unknown"
 msgstr "E453: Color de subratllat desconegut"
 
-msgid "E454: function list was modified"
+# TODO: Capitalise first word of message?
+msgid "E454: Function list was modified"
 msgstr "E454: La llista de funcions ha canviat"
 
 msgid "E455: Error writing to PostScript output file"
@@ -5522,7 +5576,8 @@ msgstr "E458: No es pot assignar memòria, els colors poden ser incorrectes"
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: No es pot tornar al directori anterior"
 
-msgid "E460: entries missing in mapset() dict argument"
+# TODO: Capitalise first word of message?
+msgid "E460: Entries missing in mapset() dict argument"
 msgstr "E460: falten entrades a l'argument de diccionari a mapset()"
 
 #, c-format
@@ -5556,7 +5611,8 @@ msgid "E468: Completion argument only allowed for custom completion"
 msgstr "E468: La compleció estàndard no admet arguments"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: paràmetre cscopequickfix %c no vàlid per a %c"
 
 msgid "E470: Command aborted"
@@ -5641,14 +5697,16 @@ msgstr "E488: Sobren caràcters al final"
 msgid "E488: Trailing characters: %s"
 msgstr "E488: Sobren caràcters al final: %s"
 
-msgid "E489: no call stack to substitute for \"<stack>\""
+# TODO: Capitalise first word of message?
+msgid "E489: No call stack to substitute for \"<stack>\""
 msgstr "E489: no hi ha cap pila de crides per substituir \"<stack>\""
 
 msgid "E490: No fold found"
 msgstr "E490: No s'ha trobat cap plec"
 
 #, c-format
-msgid "E491: json decode error at '%s'"
+# TODO: Capitalise first word of message?
+msgid "E491: JSON decode error at '%s'"
 msgstr "E491: Error en decodificar json a %s"
 
 msgid "E492: Not an editor command"
@@ -5660,16 +5718,20 @@ msgstr "E493: Interval decreixent"
 msgid "E494: Use w or w>>"
 msgstr "E494: Useu w o bé w>>"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: no hi ha cap nom de fitxer d'ordres automàtiques per substituir"
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: no hi ha cap buffer d'ordres automàtiques per substituir"
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: no hi ha cap coincidència d'ordre automàtica per substituir"
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: no hi ha cap nom de fitxer :source per substituir"
 
 #, no-c-format
@@ -5715,13 +5777,15 @@ msgstr "E509: No s'ha pogut crear la còpia de seguretat (! per a forçar)"
 msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr "E510: No s'ha pogut fer la còpia de seguretat (! per a forçar)"
 
-msgid "E511: netbeans already connected"
+# TODO: Capitalise first word of message?
+msgid "E511: NetBeans already connected"
 msgstr "E511: NetBeans ja està connectat"
 
 msgid "E512: Close failed"
 msgstr "E512: Error en tancar"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr "E513: ha fallat la conversió (anul·leu l'opció 'fenc' per a forçar)"
 
 #, c-format
@@ -5730,7 +5794,8 @@ msgid ""
 "override)"
 msgstr "E513: error de conversió, línia %ld (anul·leu l'opció 'fenc' per a forçar)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: Error d'escriptura (sistema de fitxers ple?)"
 
 # unload: treu el buffer de la memòria però el deixa a la llista
@@ -5792,10 +5857,12 @@ msgstr "E530: No es pot canviar el paràmetre 'term' en mode GUI"
 msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: Feu \":gui\" per a iniciar la interfície d'usuari gràfica"
 
-msgid "E532: highlighting color name too long in defineAnnoType"
+# TODO: Capitalise first word of message?
+msgid "E532: Highlighting color name too long in defineAnnoType"
 msgstr "E532: nom de color de ressaltat massa llarg a defineAnnoType"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: No s'ha pogut seleccionar la fosa per a caràcters amples"
 
 msgid "E534: Invalid wide font"
@@ -5805,7 +5872,8 @@ msgstr "E534: La fosa per a caràcters amples no és vàlida"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Caràcter il·legal després de <%c>"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: Es requereix una coma"
 
 #, c-format
@@ -5823,7 +5891,8 @@ msgstr "E539: Caràcter il·legal <%s>"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Seqüència d'expressions no tancada"
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: grups desequilibrats"
 
 msgid "E543: Not a valid codepage"
@@ -5841,7 +5910,8 @@ msgstr "E546: Mode il·legal"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: La forma del punter del ratolí és il·legal"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: S'esperava un dígit"
 
 msgid "E549: Illegal percentage"
@@ -5853,7 +5923,8 @@ msgstr "E550: Falta un caràcter ':'"
 msgid "E551: Illegal component"
 msgstr "E551: Component il·legal"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: s'esperava un dígit"
 
 msgid "E553: No more items"
@@ -5863,10 +5934,12 @@ msgstr "E553: No hi ha més ítems"
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Error de sintaxi a %s{...}"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: a baix de la pila d'etiquetes"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: a dalt de la pila d'etiquetes"
 
 msgid "E557: Cannot open termcap file"
@@ -5882,7 +5955,8 @@ msgstr "E559: No s'ha trobat informació sobre el terminal a termcap"
 msgid "E560: Usage: cs[cope] %s"
 msgstr "E560: Sintaxi: cs[cope] %s"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: Tipus de cerca cscope desconeguda"
 
 msgid "E562: Usage: cstag <ident>"
@@ -5902,13 +5976,16 @@ msgstr "E565: No es permet canviar el text o la finestra"
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: No s'han pogut crear canonades cscope"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: No hi ha connexions cscope"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: no s'ha afegit una base de dades cscope duplicada"
 
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: error fatal a cs_manage_matches"
 
 msgid ""
@@ -5916,7 +5993,8 @@ msgid ""
 msgstr "E571: Ordre no disponible: no s'ha carregat la biblioteca Tcl."
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: codi de sortida %d"
 
 #, c-format
@@ -5939,10 +6017,12 @@ msgstr "Nom de registre il·legal"
 msgid "E578: Not allowed to change text here"
 msgstr "E578: No es permet canviar el text"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: nivell d'imbricació :if massa elevat"
 
-msgid "E579: block nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E579: Block nesting too deep"
 msgstr "E579: nivell d'imbricació massa elevat"
 
 msgid "E580: :endif without :if"
@@ -5954,7 +6034,8 @@ msgstr "E581: :else sense :if"
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif sense :if"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: múltiples :else"
 
 msgid "E584: :elseif after :else"
@@ -6002,7 +6083,8 @@ msgid "E596: Invalid font(s)"
 msgstr "E596: Fosa no vàlida"
 
 # necessita +xfontset
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: No s'ha pogut seleccionar el conjunt de foses"
 
 msgid "E598: Invalid fontset"
@@ -6033,7 +6115,8 @@ msgstr "E605: No s'ha interceptat l'excepció: %s"
 msgid "E606: :finally without :try"
 msgstr "E606: :finally sense :try"
 
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: múltiples :finally"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
@@ -6070,11 +6153,13 @@ msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: La interfície GTK no permet aquest canvi"
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: El fitxer \"%s\" no és un fitxer de recursos PostScript"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: El fitxer de recursos PostScript \"%s\" no està suportat"
 
 #, c-format
@@ -6096,10 +6181,12 @@ msgid "E624: Can't open file \"%s\""
 msgstr "E624: No s'ha pogut obrir el fitxer \"%s\""
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: no s'ha pogut obrir la base de dades cscope: %s"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: no s'ha pogut obtenir informació de la base de dades cscope"
 
 #, c-format
@@ -6111,7 +6198,8 @@ msgid "E631: %s(): write failed"
 msgstr "E631: %s(): error d'escriptura"
 
 #, c-format
-msgid "E654: missing delimiter after search pattern: %s"
+# TODO: Capitalise first word of message?
+msgid "E654: Missing delimiter after search pattern: %s"
 msgstr "E654: falta un delimitador després del patró de cerca: %s"
 
 msgid "E655: Too many symbolic links (cycle?)"
@@ -6142,14 +6230,16 @@ msgstr "E662: Us trobeu a l'inici de la llista de canvis"
 msgid "E663: At end of changelist"
 msgstr "E663: Us trobeu al final de la llista de canvis"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: La llista de canvis està buida"
 
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr "E665: Error en iniciar el GUI, no s'ha trobat cap tipus de lletra"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: el compilador no està suportat: %s"
 
 msgid "E667: Fsync failed"
@@ -6193,7 +6283,8 @@ msgstr "E677: Error en escriure el fitxer temporal"
 msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr "E678: Caràcter invàlid després de %s%%[dxouU]"
 
-msgid "E679: recursive loop loading syncolor.vim"
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: bucle infinit en carregar syncolor.vim"
 
 #, c-format
@@ -6210,7 +6301,8 @@ msgid "E683: File name missing or invalid pattern"
 msgstr "E683: Falta un nom de fitxer o el patró no és vàlid"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: indexació de llista fora d'interval: %ld"
 
 #, c-format
@@ -6255,7 +6347,8 @@ msgstr "E696: Falta una coma a la llista: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: Falta ']' al final de la llista: %s"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: el nivell d'imbricació de la variable és massa elevat"
 
 msgid "E699: Too many arguments"
@@ -6344,7 +6437,8 @@ msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: Falta un '}': %s"
 
 # veure eval.c:2935
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: el nivell d'imbricació de la variable és massa elevat"
 
 #, c-format
@@ -6416,7 +6510,8 @@ msgstr "E742: No es pot canviar el valor"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: No s'ha pogut canviar el valor de %s"
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: el nivell d'imbricació de la variable és massa elevat"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
@@ -6435,7 +6530,8 @@ msgstr "E747: Buffer modificat, no es canvia de directori (! per a forçar)"
 msgid "E748: No previously used register"
 msgstr "E748: No hi ha cap registre usat amb anterioritat"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: buffer buit"
 
 msgid "E750: First use \":profile start {fname}\""
@@ -6548,10 +6644,12 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: El fitxer .sug no coincideix amb el fitxer .spl: %s"
 
 #, c-format
-msgid "E782: error while reading .sug file: %s"
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: error en llegir el fitxer .sug: %s"
 
-msgid "E783: duplicate char in MAP entry"
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: Caràcter duplicat a l'entrada MAP"
 
 msgid "E784: Cannot close last tab page"
@@ -6637,7 +6735,8 @@ msgid "E805: Using a Float as a Number"
 msgstr "E805: Ús de Float com a Number"
 
 # semblant a eval.c:7120 i següents
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: Ús de Float com a String"
 
 msgid "E807: Expected Float argument for printf()"
@@ -6717,7 +6816,8 @@ msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: No es pot obrir el fitxer de desfer per a escriptura: %s"
 
 #, c-format
-msgid "E829: write error in undo file: %s"
+# TODO: Capitalise first word of message?
+msgid "E829: Write error in undo file: %s"
 msgstr "E829: error d'escriptura en desar el fitxer de desfer: %s"
 
 #, c-format
@@ -6748,7 +6848,8 @@ msgstr "E836: Aquest Vim no pot executar :python després de :py3"
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Aquest Vim no pot executar :py3 després de :python"
 
-msgid "E838: netbeans is not supported with this GUI"
+# TODO: Capitalise first word of message?
+msgid "E838: Netbeans is not supported with this GUI"
 msgstr "E838: aquesta interfície gràfica no suporta NetBeans"
 
 msgid "E840: Completion function deleted text"
@@ -6757,14 +6858,16 @@ msgstr "E840: La funció de compleció ha esborrat text"
 msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr "E841: Nom reservat, no es pot usar en una ordre definida per l'usuari"
 
-msgid "E842: no line number to use for \"<slnum>\""
+# TODO: Capitalise first word of message?
+msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: no hi ha cap número de línia per a \"<slnum>\""
 
 # called after the crypt key or 'cryptmethod' was changed for "buf"
 msgid "E843: Error while updating swap file crypt"
 msgstr "E843: Error en actualitzar el xifrat del fitxer d'intercanvi"
 
-msgid "E844: invalid cchar value"
+# TODO: Capitalise first word of message?
+msgid "E844: Invalid cchar value"
 msgstr "E844: valor de cchar invàlid"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
@@ -6797,7 +6900,8 @@ msgstr "E852: El procés fill no ha pogut crear la interfície gràfica"
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Argument duplicat: %s"
 
-msgid "E854: path too long for completion"
+# TODO: Capitalise first word of message?
+msgid "E854: Path too long for completion"
 msgstr "E854: la ubicació és massa llarga per a fer compleció"
 
 msgid "E855: Autocommands caused command to abort"
@@ -6937,7 +7041,8 @@ msgid "E889: Number required"
 msgstr "E889: Es requereix un número"
 
 #, c-format
-msgid "E890: trailing char after ']': %s]%s"
+# TODO: Capitalise first word of message?
+msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: caràcter sobrer després de ']': %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
@@ -6984,28 +7089,34 @@ msgstr "E901: gethostbyname() a channel_open()"
 msgid "E902: Cannot connect to port"
 msgstr "E902: No s'ha pogut connectar al port"
 
-msgid "E903: received command with non-string argument"
+# TODO: Capitalise first word of message?
+msgid "E903: Received command with non-string argument"
 msgstr "E903: s'ha rebut una ordre amb un argument que no és text"
 
 # expr i call són ordres (:h channel-commands)
-msgid "E904: last argument for expr/call must be a number"
+# TODO: Capitalise first word of message?
+msgid "E904: Last argument for expr/call must be a number"
 msgstr "E904: l'últim argument a expr/call ha de ser un número"
 
-msgid "E904: third argument for call must be a list"
+# TODO: Capitalise first word of message?
+msgid "E904: Third argument for call must be a list"
 msgstr "E904: el tercer argument a call ha de ser una llista"
 
 #, c-format
-msgid "E905: received unknown command: %s"
+# TODO: Capitalise first word of message?
+msgid "E905: Received unknown command: %s"
 msgstr "E905: s'ha rebut una ordre desconeguda: %s"
 
-msgid "E906: not an open channel"
+# TODO: Capitalise first word of message?
+msgid "E906: Not an open channel"
 msgstr "E906: el canal no està obert"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Ús de Special com a Float"
 
 #, c-format
-msgid "E908: using an invalid value as a String: %s"
+# TODO: Capitalise first word of message?
+msgid "E908: Using an invalid value as a String: %s"
 msgstr "E908: Ús d'un valor invàlid com a String: %s"
 
 msgid "E909: Cannot index a special variable"
@@ -7017,7 +7128,8 @@ msgstr "E910: Ús de Job com a Number"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: Ús de Job com a Float"
 
-msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+# TODO: Capitalise first word of message?
+msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr "E912: no es pot usar ch_evalexpr()/ch_sendexpr() amb canals raw o nl"
 
 msgid "E913: Using a Channel as a Number"
@@ -7029,7 +7141,8 @@ msgstr "E914: Ús de Channel com a Float"
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: els buffers in_io han de tenir l'atribut in_buf o in_name"
 
-msgid "E916: not a valid job"
+# TODO: Capitalise first word of message?
+msgid "E916: Not a valid job"
 msgstr "E916: no és una feina vàlida"
 
 #, c-format
@@ -7037,7 +7150,8 @@ msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: No es poden utilitzar callbacks amb %s()"
 
 #, c-format
-msgid "E918: buffer must be loaded: %s"
+# TODO: Capitalise first word of message?
+msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: el buffer no està carregat: %s"
 
 #, c-format
@@ -7050,7 +7164,8 @@ msgstr "E920: els fitxers _io han de tenir l'atribut _name"
 msgid "E921: Invalid callback argument"
 msgstr "E921: L'argument del callback no és vàlid"
 
-msgid "E922: expected a dict"
+# TODO: Capitalise first word of message?
+msgid "E922: Expected a dict"
 msgstr "E922: s'esperava un diccionari"
 
 msgid "E923: Second argument of function() must be a list or a dict"
@@ -7094,7 +7209,8 @@ msgid "E934: Cannot jump to a buffer that does not have a name"
 msgstr "E934: No és possible saltar a un buffer anònim"
 
 #, c-format
-msgid "E935: invalid submatch number: %d"
+# TODO: Capitalise first word of message?
+msgid "E935: Invalid submatch number: %d"
 msgstr "E935: referència invàlida a una coincidència: %d"
 
 msgid "E936: Cannot delete the current group"
@@ -7115,7 +7231,8 @@ msgstr "E939: Es necessita un número estrictament positiu"
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: No s'ha pogut bloquejar o desbloquejar la variable %s"
 
-msgid "E941: already started a server"
+# TODO: Capitalise first word of message?
+msgid "E941: Already started a server"
 msgstr "E941: ja s'ha iniciat un servidor"
 
 msgid "E942: +clientserver feature not available"
@@ -7182,7 +7299,8 @@ msgstr "E959: El format diff no és vàlid"
 msgid "E960: Problem creating the internal diff"
 msgstr "E960: Problema en computar internament les diferències"
 
-msgid "E961: no line number to use for \"<sflnum>\""
+# TODO: Capitalise first word of message?
+msgid "E961: No line number to use for \"<sflnum>\""
 msgstr "E961: no es pot utilitzar cap número de línia per a \"<sflnum>\""
 
 #, c-format
@@ -7190,21 +7308,24 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Acció invàlida: '%s'"
 
 #, c-format
-msgid "E963: setting %s to value with wrong type"
+# TODO: Capitalise first word of message?
+msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: s'ha assignat un valor del tipus incorrecte a %s"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
 msgstr "E964: El número de columna no és vàlid: %ld"
 
-msgid "E965: missing property type name"
+# TODO: Capitalise first word of message?
+msgid "E965: Missing property type name"
 msgstr "E965: falta un nom de tipus de propietat"
 
 #, c-format
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: El número de línia no és vàlid: %ld"
 
-msgid "E967: text property info corrupted"
+# TODO: Capitalise first word of message?
+msgid "E967: Text property info corrupted"
 msgstr "E967: l'informació de la propietat de text s'ha corromput"
 
 msgid "E968: Need at least one of 'id' or 'type'"
@@ -7248,7 +7369,8 @@ msgstr "E978: Operació no vàlida per a un Blob"
 msgid "E979: Blob index out of range: %ld"
 msgstr "E979: índexació d'un Blob fora d'interval: %ld"
 
-msgid "E980: lowlevel input not supported"
+# TODO: Capitalise first word of message?
+msgid "E980: Lowlevel input not supported"
 msgstr "E980: L'entrada de baix nivell no està suportada"
 
 msgid "E981: Command not allowed in rvim"
@@ -7267,10 +7389,12 @@ msgstr "E984: ús de :scriptversion fora d'un script"
 msgid "E985: .= is not supported with script version >= 2"
 msgstr "E985: .= no està suportat en versions d'script >= 2"
 
-msgid "E986: cannot modify the tag stack within tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E986: Cannot modify the tag stack within tagfunc"
 msgstr "E986: no es pot modificar la pila d'etiquetes des de tagfunc"
 
-msgid "E987: invalid return value from tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: el valor retornat per tagfunc no és vàlid"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
@@ -7283,14 +7407,16 @@ msgstr "E989: Argument obligatori precedit d'un argument opcional"
 msgid "E990: Missing end marker '%s'"
 msgstr "E990: Falta una marca final '%s'"
 
-msgid "E991: cannot use =<< here"
+# TODO: Capitalise first word of message?
+msgid "E991: Cannot use =<< here"
 msgstr "E991: no es pot utilitzar =<< aquí"
 
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
 msgstr "E992: No permès en una línia de mode amb 'modelineexpr' off"
 
 #, c-format
-msgid "E993: window %d is not a popup window"
+# TODO: Capitalise first word of message?
+msgid "E993: Window %d is not a popup window"
 msgstr "E993: la finestra %d no és una finestra emergent"
 
 msgid "E994: Not allowed in a popup window"
@@ -8283,7 +8409,8 @@ msgstr "E1261: No es pot importar .vim  sense utilitzar \"as\""
 msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: No es pot importar el mateix script dos cops: %s"
 
-msgid "E1263: cannot use name with # in Vim9 script, use export instead"
+# TODO: Capitalise first word of message?
+msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
 msgstr "E1263: un nom no pot contenir # en un script Vim9, utilitzeu export"
 
 #, c-format

@@ -2369,7 +2369,7 @@ do_one_cmd(
 	{
 	    ea.line1 = ea.line2;
 	    if (ea.line2 >= LONG_MAX - (n - 1))
-	        ea.line2 = LONG_MAX;  // avoid overflow
+		ea.line2 = LONG_MAX;  // avoid overflow
 	    else
 		ea.line2 += n - 1;
 	    ++ea.addr_count;

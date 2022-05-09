@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 May 04
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 May 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3216,7 +3216,7 @@ getcmdcompltype()					*getcmdcompltype()*
 		Return the type of the current command-line completion.
 		Only works when the command line is being edited, thus
 		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
-		See |command-completion| for the return string.
+		See |:command-completion| for the return string.
 		Also see |getcmdtype()|, |setcmdpos()| and |getcmdline()|.
 		Returns an empty string when completion is not defined.
 
@@ -5330,7 +5330,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		  "lnum"     The line number in "sid", zero if unknown.
 		  "nowait"   Do not wait for other, longer mappings.
 			     (|:map-<nowait>|).
-		  "abbr"     True if this is an |abbreviation|.
+		  "abbr"     True if this is an abbreviation |abbreviations|.
 
 		The dictionary can be used to restore a mapping with
 		|mapset()|.

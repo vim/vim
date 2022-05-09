@@ -647,7 +647,7 @@ leftcol_changed(void)
     long	lastcol;
     colnr_T	s, e;
     int		retval = FALSE;
-    long        siso = get_sidescrolloff_value();
+    long	siso = get_sidescrolloff_value();
 
     changed_cline_bef_curs();
     lastcol = curwin->w_leftcol + curwin->w_width - curwin_col_off() - 1;

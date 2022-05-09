@@ -2644,7 +2644,7 @@ nv_zet(cmdarg_T *cap)
     long	old_fdl = curwin->w_p_fdl;
     int		old_fen = curwin->w_p_fen;
 #endif
-    long        siso = get_sidescrolloff_value();
+    long	siso = get_sidescrolloff_value();
 
     if (VIM_ISDIGIT(nchar) && !nv_z_get_count(cap, &nchar))
 	    return;
@@ -6307,7 +6307,7 @@ nv_redo_or_register(cmdarg_T *cap)
 	    // the unnamed register is 0
 	    reg = 0;
 
-        VIsual_select_reg = valid_yank_reg(reg, TRUE) ? reg : 0;
+	VIsual_select_reg = valid_yank_reg(reg, TRUE) ? reg : 0;
 	return;
     }
 

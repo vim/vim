@@ -1041,7 +1041,7 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
 	// Skip the opening {.
 	block_start = skipwhite(p + 1);
 	block_end = block_start;
-	if (*block_start != NUL &&skip_expr(&block_end, NULL) == FAIL)
+	if (*block_start != NUL && skip_expr(&block_end, NULL) == FAIL)
 	    return FAIL;
 	block_end = skipwhite(block_end);
 	// The block must be closed by a }.

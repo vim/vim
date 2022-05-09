@@ -2511,7 +2511,7 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 	    goto failed;
 	if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
 	{
-            vim_free(pt);
+	    vim_free(pt);
 	    goto failed;
 	}
 	ufunc->uf_partial = pt;

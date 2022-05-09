@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2022 May 04
+" Last Change: 2022 May 09
 "
 " WORK IN PROGRESS - The basics works stable, more to come
 " Note: In general you need at least GDB 7.12 because this provides the
@@ -207,6 +207,7 @@ func s:CheckGdbRunning()
   return 'ok'
 endfunc
 
+" Open a terminal window without a job, to run the debugged program in.
 func s:StartDebug_term(dict)
     let s:ptybuf = 0
     if get(a:dict, 'attach', 0) == 0
@@ -357,8 +358,8 @@ func s:StartDebug_term(dict)
   call s:StartDebugCommon(a:dict)
 endfunc
 
+" Open a window with a prompt buffer to run gdb in.
 func s:StartDebug_prompt(dict)
-  " Open a window with a prompt buffer to run gdb in.
   if s:vertical
     vertical new
   else

@@ -1420,13 +1420,18 @@ ret_argv(int argcount,
     static type_T *
 ret_remove(int argcount,
 	type2_T *argtypes,
-	type_T	**decl_type UNUSED)
+	type_T	**decl_type)
 {
     if (argcount > 0)
     {
 	if (argtypes[0].type_curr->tt_type == VAR_LIST
 		|| argtypes[0].type_curr->tt_type == VAR_DICT)
 	{
+	    if (argcount == 3)
+	    {
+		*decl_type = argtypes[0].type_decl;
+		return argtypes[0].type_curr;
+	    }
 	    if (argtypes[0].type_curr->tt_type
 					     == argtypes[0].type_decl->tt_type)
 		*decl_type = argtypes[0].type_decl->tt_member;

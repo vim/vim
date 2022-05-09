@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Apr 25
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 May 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2570,6 +2570,7 @@ Type `:next` to go to the next plugin file.
 There are two special items about these files.  First is a mechanism to allow
 a user to overrule or add to the default file.  The default files start with: >
 
+	vim9script
 	if exists("g:current_compiler")
 	  finish
 	endif

@@ -2284,7 +2284,7 @@ check_termcode_mouse(
 	//	    ^----- column
 	//	 ^-------- code
 	//
-	// \033[<%d;%d;%dm        : mouse release event
+	// \033[<%d;%d;%dm	  : mouse release event
 	//	       ^-- row
 	//	    ^----- column
 	//	 ^-------- code
@@ -2565,9 +2565,9 @@ check_termcode_mouse(
 	 * Pe, the event code indicates what event caused this report
 	 *    The following event codes are defined:
 	 *    0 - request, the terminal received an explicit request for a
-	 *        locator report, but the locator is unavailable
+	 *	  locator report, but the locator is unavailable
 	 *    1 - request, the terminal received an explicit request for a
-	 *        locator report
+	 *	  locator report
 	 *    2 - left button down
 	 *    3 - left button up
 	 *    4 - middle button down

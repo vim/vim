@@ -1966,8 +1966,8 @@ ins_compl_set_original_text(char_u *str)
        p = vim_strsave(str);
        if (p != NULL)
        {
-           vim_free(compl_first_match->cp_prev->cp_str);
-           compl_first_match->cp_prev->cp_str = p;
+	   vim_free(compl_first_match->cp_prev->cp_str);
+	   compl_first_match->cp_prev->cp_str = p;
        }
     }
 }
@@ -3176,7 +3176,7 @@ typedef struct
  *   st->first_match_pos - position of the first completion match
  *   st->last_match_pos - position of the last completion match
  *   st->set_match_pos - TRUE if the first match position should be saved to
- *		         avoid loops after the search wraps around.
+ *			    avoid loops after the search wraps around.
  *   st->dict - name of the dictionary or thesaurus file to search
  *   st->dict_f - flag specifying whether "dict" is an exact file name or not
  *

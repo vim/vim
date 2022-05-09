@@ -971,7 +971,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_SPECIAL:
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
-        case VAR_BLOB:
+	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_string));
 	    break;
 	case VAR_JOB:

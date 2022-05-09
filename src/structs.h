@@ -1650,7 +1650,7 @@ typedef struct
 # if defined(FEAT_LUA)
     cfunc_T     uf_cb;		// callback function for cfunc
     cfunc_free_T uf_cb_free;    // callback function to free cfunc
-    void        *uf_cb_state;   // state of uf_cb
+    void	*uf_cb_state;   // state of uf_cb
 # endif
 
     garray_T	uf_lines;	// function lines
@@ -2080,15 +2080,15 @@ typedef struct AutoPatCmd_S AutoPatCmd_T;
  */
 typedef enum {
     ETYPE_TOP,		    // toplevel
-    ETYPE_SCRIPT,           // sourcing script, use es_info.sctx
-    ETYPE_UFUNC,            // user function, use es_info.ufunc
-    ETYPE_AUCMD,            // autocomand, use es_info.aucmd
-    ETYPE_MODELINE,         // modeline, use es_info.sctx
-    ETYPE_EXCEPT,           // exception, use es_info.exception
-    ETYPE_ARGS,             // command line argument
-    ETYPE_ENV,              // environment variable
-    ETYPE_INTERNAL,         // internal operation
-    ETYPE_SPELL,            // loading spell file
+    ETYPE_SCRIPT,	    // sourcing script, use es_info.sctx
+    ETYPE_UFUNC,	    // user function, use es_info.ufunc
+    ETYPE_AUCMD,	    // autocomand, use es_info.aucmd
+    ETYPE_MODELINE,	    // modeline, use es_info.sctx
+    ETYPE_EXCEPT,	    // exception, use es_info.exception
+    ETYPE_ARGS,		    // command line argument
+    ETYPE_ENV,		    // environment variable
+    ETYPE_INTERNAL,	    // internal operation
+    ETYPE_SPELL,	    // loading spell file
 } etype_T;
 
 typedef struct {

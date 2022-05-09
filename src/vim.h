@@ -1375,8 +1375,8 @@ enum auto_event
 				// entering its window
     EVENT_TERMRESPONSE,		// after setting "v:termresponse"
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
-    EVENT_TEXTCHANGEDI,         // text was modified in Insert mode
-    EVENT_TEXTCHANGEDP,         // TextChangedI with popup menu visible
+    EVENT_TEXTCHANGEDI,		// text was modified in Insert mode
+    EVENT_TEXTCHANGEDP,		// TextChangedI with popup menu visible
     EVENT_TEXTYANKPOST,		// after some text was yanked
     EVENT_USER,			// user defined autocommand
     EVENT_VIMENTER,		// after starting Vim

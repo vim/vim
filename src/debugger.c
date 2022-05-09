@@ -22,7 +22,7 @@ static void do_showbacktrace(char_u *cmd);
 
 static char_u *debug_oldval = NULL;	// old and newval for debug expressions
 static char_u *debug_newval = NULL;
-static int     debug_expr   = 0;        // use debug_expr
+static int     debug_expr   = 0;	// use debug_expr
 
     int
 has_watchexpr(void)

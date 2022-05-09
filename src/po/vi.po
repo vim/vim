@@ -540,7 +540,8 @@ msgid "E165: Cannot go beyond last file"
 msgstr "E165: Đây là tập tin cuối cùng"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: trình biên dịch không được hỗ trợ: %s"
 
 #, c-format
@@ -625,11 +626,13 @@ msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Không thể đọc tập tin tài nguyên PostScript \"%s\""
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: \"%s\" không phải là tập tin tài nguyên PostScript"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: \"%s\" không phải là tập tin tài nguyên PostScript được hỗ trợ"
 
 #, c-format
@@ -790,7 +793,8 @@ msgstr "Soạn thảo tập tin"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Các lệnh tự động xóa bộ đệm mới ngoài ý muốn %s"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: Tham số của lệnh :z phải là số"
 
 msgid "E145: Shell commands not allowed in rvim"
@@ -994,7 +998,8 @@ msgstr "E177: Số đếm không thể được chỉ ra hai lần"
 msgid "E178: Invalid default value for count"
 msgstr "E178: Giá trị của số đếm theo mặc định không đúng"
 
-msgid "E179: argument required for complete"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for complete"
 msgstr "E179: yêu cầu đưa ra tham số để kết thúc"
 
 #, c-format
@@ -1087,17 +1092,21 @@ msgstr "E192: Sử dụng đệ quy lệnh :normal quá sâu"
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: Không có tên tập tin tương đương để thay thế '#'"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: Không có tên tập tin câu lệnh tự động để thay thế \"<afile>\""
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr ""
 "E496: Không có số thứ tự bộ đệm câu lệnh tự động để thay thế \"<abuf>\""
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: Không có tên tương ứng câu lệnh tự động để thay thế \"<amatch>\""
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: không có tên tập tin :source để thay thế \"<sfile>\""
 
 #, no-c-format
@@ -1164,6 +1173,7 @@ msgstr "Lỗi"
 msgid "Interrupt"
 msgstr "Sự gián đoạn"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: :if xếp lồng vào nhau quá sâu"
 
@@ -1176,7 +1186,8 @@ msgstr "E581: :else không có :if"
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif không có :if"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: phát hiện vài :else"
 
 msgid "E584: :elseif after :else"
@@ -1206,7 +1217,8 @@ msgid "E606: :finally without :try"
 msgstr "E606: :finally không có :try"
 
 #. Give up for a multiple ":finally" and ignore it.
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: phát hiện vài :finally"
 
 msgid "E602: :endtry without :try"
@@ -1387,10 +1399,12 @@ msgstr "E667: Không thực hiện thành công hàm số fsync()"
 msgid "E512: Close failed"
 msgstr "E512: Thao tác đóng không thành công"
 
-msgid "E513: write error, conversion failed"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed"
 msgstr "E513: Lỗi ghi nhớ, biến đổi không thành công"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: lỗi ghi nhớ (không còn chỗ trống?)"
 
 msgid " CONVERSION ERROR"
@@ -1417,7 +1431,8 @@ msgstr " đã ghi"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Chế độ vá lỗi (patch): không thể ghi nhớ tập tin gốc"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr ""
 "E206: Chế độ vá lỗi (patch): không thể thay đổi tham số của tập tin gốc "
 "trống rỗng"
@@ -1581,7 +1596,8 @@ msgstr "E217: Không thể thực hiện câu lệnh tự động cho MỌI sự
 msgid "No matching autocommands"
 msgstr "Không có câu lệnh tự động tương ứng"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: câu lệnh tự động xếp lồng vào nhau quá xâu"
 
 #, c-format
@@ -1617,23 +1633,28 @@ msgstr ""
 msgid "E222: Add to read buffer"
 msgstr "E222: Thêm vào bộ đệm đang đọc"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: ánh xạ đệ quy"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: đã có sự viết tắt toàn cầu cho %s"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: đã có ánh xạ toàn cầu cho %s"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: đã có sự viết tắt cho %s"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: đã có ánh xạ cho %s"
 
 msgid "No abbreviation found"
@@ -1895,10 +1916,12 @@ msgid "Added cscope database %s"
 msgstr "Đã thêm cơ sở dữ liệu cscope %s"
 
 #, c-format
-msgid "E262: error reading cscope connection %ld"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %ld"
 msgstr "E262: lỗi lấy thông tin từ kết nối cscope %ld"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: không rõ loại tìm kiếm cscope"
 
 msgid "E566: Could not create cscope pipes"
@@ -1919,15 +1942,18 @@ msgstr "cs_create_connection: thực hiện fdopen cho to_fp không thành công
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: thực hiện fdopen cho fr_fp không thành công"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: không có kết nối với cscope"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: không tìm thấy tương ứng với yêu cầu cscope %s cho %s"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: cờ cscopequickfix %c cho %c không chính xác"
 
 msgid "cscope commands:\n"
@@ -1938,20 +1964,24 @@ msgid "%-5s: %-30s (Usage: %s)"
 msgstr "%-5s: %-30s (Sử dụng: %s)"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: không mở được cơ sở dữ liệu cscope: %s"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: không lấy được thông tin về cơ sở dữ liệu cscope"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: cơ sở dữ liệu này của cscope đã được gắn vào từ trước"
 
 msgid "E569: maximum number of cscope connections reached"
 msgstr "E569: đã đạt tới số kết nối lớn nhất cho phép với cscope"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: kết nối với cscope %s không được tìm thấy"
 
 #, c-format
@@ -1959,7 +1989,8 @@ msgid "cscope connection %s closed"
 msgstr "kết nối %s với cscope đã bị đóng"
 
 #. should not reach here
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: lỗi nặng trong cs_manage_matches"
 
 #, c-format
@@ -2080,7 +2111,8 @@ msgstr ""
 "E266: Rất tiếc câu lệnh này không làm việc, vì thư viện Ruby chưa đượcnạp."
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: không rõ trạng thái của longjmp %d"
 
 msgid "Toggle implementation/definition"
@@ -2705,16 +2737,19 @@ msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr ""
 "E287: Cảnh báo: không đặt được sự gọi ngược hủy diệt thành phương pháp nhập"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: phương pháp nhập không hỗ trợ bất kỳ phong cách (style) nào"
 
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: phương pháp nhập không hỗ trợ loại soạn thảo trước của Vim"
 
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: GTK+ cũ hơn 1.2.3. Vùng chỉ trạng thái không làm việc"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: khối chưa bị khóa"
 
 msgid "E294: Seek error in swap file read"
@@ -2980,14 +3015,17 @@ msgid "E314: Preserve failed"
 msgstr "E314: Cập nhật không thành công"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: Ml_get: invalid lnum: %ld"
 msgstr "E315: ml_get: giá trị lnum không đúng: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld"
+# TODO: Capitalise first word of message?
+msgid "E316: Ml_get: cannot find line %ld"
 msgstr "E316: ml_get: không tìm được dòng %ld"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: Giá trị của pointer khối số 3 không đúng"
 
 msgid "stack_idx should be 0"
@@ -2996,7 +3034,8 @@ msgstr "giá trị stack_idx phải bằng 0"
 msgid "E318: Updated too many blocks?"
 msgstr "E318: Đã cập nhật quá nhiều khối?"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: Giá trị của pointer khối số 4 không đúng"
 
 msgid "deleted block 1?"
@@ -3006,24 +3045,28 @@ msgstr "đã xóa khối số 1?"
 msgid "E320: Cannot find line %ld"
 msgstr "E320: Không tìm được dòng %ld"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: giá trị của pointer khối không đúng"
 
 msgid "pe_line_count is zero"
 msgstr "giá trị pe_line_count bằng không"
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: số thứ tự dòng vượt quá giới hạn : %ld"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: giá trị đếm dòng không đúng trong khối %ld"
 
 msgid "Stack size increases"
 msgstr "Kích thước của đống tăng lên"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: Giá trị của cái chỉ (pointer) khối số 2 không đúng"
 
 msgid "E325: ATTENTION"
@@ -3316,7 +3359,8 @@ msgstr "E546: Chế độ không cho phép"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Dạng trỏ chuột không cho phép"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: yêu cầu một số"
 
 msgid "E549: Illegal percentage"
@@ -3361,7 +3405,8 @@ msgstr "E550: Thiếu dấu hai chấm"
 msgid "E551: Illegal component"
 msgstr "E551: Thành phần không cho phép"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: Cần chỉ ra một số"
 
 #. Get here when the server can't be found.
@@ -3397,7 +3442,8 @@ msgstr ""
 "E352: Không thể tẩy xóa nếp gấp với giá trị hiện thời của tùy chọn "
 "'foldmethod'"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: danh sách những thay đổi trống rỗng"
 
 msgid "E662: At start of changelist"
@@ -3573,13 +3619,15 @@ msgstr "E595: chứa ký tự không in ra hoặc ký tự với chiều rộng 
 msgid "E596: Invalid font(s)"
 msgstr "E596: Phông chữ không đúng"
 
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: không chọn được bộ phông chữ"
 
 msgid "E598: Invalid fontset"
 msgstr "E598: Bộ phông chữ không đúng"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: không chọn được phông chữ với các ký tự có chiều rộng gấp đôi"
 
 msgid "E534: Invalid wide font"
@@ -3589,7 +3637,8 @@ msgstr "E534: Phông chữ, với ký tự có chiều rộng gấp đôi, khôn
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Ký tự sau <%c> không chính xác"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: cầu có dấu phẩy"
 
 #, c-format
@@ -3603,7 +3652,8 @@ msgid "E540: Unclosed expression sequence"
 msgstr "E540: Dãy các biểu thức không đóng"
 
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: các nhóm không cân bằng"
 
 msgid "E590: A preview window already exists"
@@ -3935,7 +3985,8 @@ msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: Không ghi nhớ được, giá trị 'buftype' không phải là chuỗi rỗng"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: phần tử không cho phép trong %s%%[]"
 
 msgid "E339: Pattern too long"
@@ -3972,7 +4023,8 @@ msgid "E57: %s+ operand could be empty"
 msgstr "E57: operand %s+ không thể rỗng"
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: ký tự không cho phép sau %s@"
 
 #, c-format
@@ -3991,7 +4043,8 @@ msgstr "E61: %s* lồng vào"
 msgid "E62: Nested %s%c"
 msgstr "E62: %s%c lồng vào"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: không cho phép sử dụng \\_"
 
 #, c-format
@@ -4029,7 +4082,8 @@ msgstr "E554: Lỗi cú pháp trong %s{...}"
 msgid "E361: Crash intercepted; regexp too complex?"
 msgstr "E361: Sự cố được ngăn chặn; biểu thức chính quy quá phức tạp?"
 
-msgid "E363: pattern caused out-of-stack error"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern caused out-of-stack error"
 msgstr "E363: sử dụng mẫu (pattern) gây ra lỗi out-of-stack"
 
 msgid "External submatches:\n"
@@ -4104,11 +4158,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Chuỗi tìm kiếm không đúng: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: tìm kiếm kết thúc ở ĐẦU tập tin; không tìm thấy %s"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: tìm kiếm kết thúc ở CUỐI tập tin; không tìm thấy %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -4219,7 +4275,8 @@ msgstr "E393: không được sử dụng group[t]here ở đây"
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: Phần tử vùng cho %s không tìm thấy"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: không được sử dụng tham số contains ở đây"
 
 msgid "E396: containedin argument not accepted here"
@@ -4279,7 +4336,8 @@ msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Câu lệnh con :syntax không đúng: %s"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: không tìm thấy nhóm chiếu sáng cú pháp: %s"
 
 #, c-format
@@ -4290,19 +4348,23 @@ msgstr "E412: Không đủ tham số: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Quá nhiều tham số: \":highlight link %s\""
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: nhóm có thiết lập riêng, chiếu sáng liên kết bị bỏ qua"
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: dấu bằng không được mong đợi: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: thiếu dấu bằng: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: thiếu tham số: %s"
 
 #, c-format
@@ -4320,7 +4382,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Tên hoặc số của màu không được nhận ra: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: mã terminal quá dài: %s"
 
 #, c-format
@@ -4338,17 +4401,20 @@ msgstr "E669: Ký tự không thể tin ra trong tên nhóm"
 msgid "W18: Invalid character in group name"
 msgstr "W18: Ký tự không cho phép trong tên nhóm"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: ở cuối đống thẻ ghi"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: ở đầu đống thẻ ghi"
 
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Không chuyển được tới vị trí ở trước thẻ ghi tương ứng đầu tiên"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: không tìm thấy thẻ ghi: %s"
 
 msgid "  # pri kind tag"
@@ -4446,7 +4512,8 @@ msgstr "E559: Trong termcap không có bản ghi nào về terminal này"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: Trong termcap không có bản ghi \"%s\""
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: cần khả năng của terminal \"cm\""
 
 #. Highlight title
@@ -4477,10 +4544,12 @@ msgstr "duy nhất 1 thay đổi"
 msgid "%ld changes"
 msgstr "%ld thay đổi"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: danh sách hủy thao tác (undo) bị hỏng"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: bị mất dòng hủy thao tác"
 
 #. Only MS VC 4.1 and earlier can do Win32s
@@ -5021,7 +5090,8 @@ msgid "E36: Not enough room"
 msgstr "E36: Không đủ chỗ trống"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: máy chủ \"%s\" chưa đăng ký"
 
 #, c-format
@@ -5052,7 +5122,8 @@ msgstr "E39: Yêu cầu một số"
 msgid "E40: Can't open errorfile %s"
 msgstr "E40: Không mở được tập tin lỗi %s"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: không mở được màn hình"
 
 msgid "E41: Out of memory!"
@@ -5111,7 +5182,8 @@ msgstr "E255: Không đọc được dữ liệu về ký tự!"
 msgid "E72: Close error on swap file"
 msgstr "E72: Lỗi đóng tập tin trao đổi (swap)"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: đống thẻ ghi rỗng"
 
 msgid "E74: Command too complex"
