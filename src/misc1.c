@@ -575,7 +575,8 @@ check_status(buf_T *buf)
 }
 
 /*
- * Ask for a reply from the user, a 'y' or a 'n'.
+ * Ask for a reply from the user, a 'y' or a 'n', with prompt "str" (which
+ * should have been translated already).
  * No other characters are accepted, the message is repeated until a valid
  * reply is entered or CTRL-C is hit.
  * If direct is TRUE, don't use vgetc() but ui_inchar(), don't get characters
@@ -653,7 +654,7 @@ get_mode(char_u *buf)
 	{
 	    buf[i++] = VIsual_mode;
 	    if (restart_VIsual_select)
-	        buf[i++] = 's';
+		buf[i++] = 's';
 	}
     }
     else if (State == MODE_HITRETURN || State == MODE_ASKMORE

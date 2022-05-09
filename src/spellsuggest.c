@@ -3133,11 +3133,11 @@ suggest_try_soundalike(suginfo_T *su)
 	    // TODO: also soundfold the next words, so that we can try joining
 	    // and splitting
 #ifdef SUGGEST_PROFILE
-	prof_init();
+	    prof_init();
 #endif
 	    suggest_trie_walk(su, lp, salword, TRUE);
 #ifdef SUGGEST_PROFILE
-	prof_report("soundalike");
+	    prof_report("soundalike");
 #endif
 	}
     }

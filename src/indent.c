@@ -161,7 +161,7 @@ tabstop_start(colnr_T col, int ts, int *vts)
     int		tabcount;
     colnr_T	tabcol = 0;
     int		t;
-    int         excess;
+    int		excess;
 
     if (vts == NULL || vts[0] == 0)
 	return (col / ts) * ts;
@@ -1804,7 +1804,7 @@ ex_retab(exarg_T *eap)
 	&& curbuf->b_p_ts == tabstop_first(new_vts_array))
 	; // not changed
     else if (tabstop_count(curbuf->b_p_vts_array) > 0
-        && tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
+	&& tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
 	; // not changed
     else
 	redraw_curbuf_later(NOT_VALID);

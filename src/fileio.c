@@ -216,7 +216,7 @@ readfile(
     int		using_b_ffname;
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
-    int         eof;
+    int		eof;
 
     au_did_filetype = FALSE; // reset before triggering any autocommands
 
@@ -4784,7 +4784,7 @@ readdir_core(
     int		withattr UNUSED,
     void	*context,
     int		(*checkitem)(void *context, void *item),
-    int         sort)
+    int		sort)
 {
     int			failed = FALSE;
     char_u		*p;

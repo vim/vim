@@ -530,7 +530,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		}
 		// Allow empty string, "winpty", "conpty".
 		if (!(*p == NUL || STRCMP(p, "winpty") == 0
-					          || STRCMP(p, "conpty") == 0))
+						  || STRCMP(p, "conpty") == 0))
 		{
 		    semsg(_(e_invalid_value_for_argument_str), "tty_type");
 		    return FAIL;

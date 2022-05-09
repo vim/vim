@@ -2356,7 +2356,7 @@ colorname2rgb(char_u *name)
     guicolor_T
 gui_get_color_cmn(char_u *name)
 {
-    int         i;
+    int		i;
     guicolor_T  color;
 
     struct rgbcolor_table_S {

@@ -155,6 +155,8 @@ win_findbuf(typval_T *argvars, list_T *list)
 
 /*
  * Find window specified by "vp" in tabpage "tp".
+ * Returns current window if "vp" is number zero.
+ * Returns NULL if not found.
  */
     win_T *
 find_win_by_nr(
@@ -997,28 +999,28 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 	    || !win_valid(wp) || !win_valid(targetwin)
 	    || win_valid_popup(wp) || win_valid_popup(targetwin))
     {
-        emsg(_(e_invalid_window_number));
+	emsg(_(e_invalid_window_number));
 	rettv->vval.v_number = -1;
 	return;
     }
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-        dict_T      *d;
-        dictitem_T  *di;
+	dict_T      *d;
+	dictitem_T  *di;
 
-        if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
-        {
-            emsg(_(e_invalid_argument));
-            return;
-        }
+	if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
+	{
+	    emsg(_(e_invalid_argument));
+	    return;
+	}
 
-        d = argvars[2].vval.v_dict;
-        if (dict_get_bool(d, (char_u *)"vertical", FALSE))
-            flags |= WSP_VERT;
-        if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
-            flags |= tv_get_bool(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
-        size = (int)dict_get_number(d, (char_u *)"size");
+	d = argvars[2].vval.v_dict;
+	if (dict_get_bool(d, (char_u *)"vertical", FALSE))
+	    flags |= WSP_VERT;
+	if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
+	    flags |= tv_get_bool(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
+	size = (int)dict_get_number(d, (char_u *)"size");
     }
 
     win_move_into_split(wp, targetwin, size, flags);

@@ -3839,8 +3839,7 @@ ins_insert(int replaceState)
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_INSERTMODE,
 		   (char_u *)((State & REPLACE_FLAG) ? "i"
-		          : replaceState == MODE_VREPLACE ? "v"
-						     : "r"), 1);
+			    : replaceState == MODE_VREPLACE ? "v" : "r"), 1);
 #endif
     ins_apply_autocmds(EVENT_INSERTCHANGE);
     if (State & REPLACE_FLAG)
@@ -4895,10 +4894,10 @@ ins_tab(void)
 		// These five lines mean 'tabstop' != 'shiftwidth'
 		&& ((tabstop_count(curbuf->b_p_vts_array) > 1)
 		    || (tabstop_count(curbuf->b_p_vts_array) == 1
-		        && tabstop_first(curbuf->b_p_vts_array)
+			&& tabstop_first(curbuf->b_p_vts_array)
 						       != get_sw_value(curbuf))
-	            || (tabstop_count(curbuf->b_p_vts_array) == 0
-		        && curbuf->b_p_ts != get_sw_value(curbuf))))
+		    || (tabstop_count(curbuf->b_p_vts_array) == 0
+			&& curbuf->b_p_ts != get_sw_value(curbuf))))
 	    && tabstop_count(curbuf->b_p_vsts_array) == 0
 #else
 	    && !(p_sta && ind && curbuf->b_p_ts != get_sw_value(curbuf))
@@ -4924,7 +4923,7 @@ ins_tab(void)
 	temp -= get_nolist_virtcol() % temp;
     }
     else if (tabstop_count(curbuf->b_p_vsts_array) > 0 || curbuf->b_p_sts != 0)
-	                        // use 'softtabstop' when set
+				// use 'softtabstop' when set
 	temp = tabstop_padding(get_nolist_virtcol(), get_sts_value(),
 						     curbuf->b_p_vsts_array);
     else			// otherwise use 'tabstop'
@@ -4963,7 +4962,7 @@ ins_tab(void)
      */
 #ifdef FEAT_VARTABS
     if (!curbuf->b_p_et && (tabstop_count(curbuf->b_p_vsts_array) > 0
-                            || get_sts_value() > 0
+			    || get_sts_value() > 0
 			    || (p_sta && ind)))
 #else
     if (!curbuf->b_p_et && (get_sts_value() || (p_sta && ind)))

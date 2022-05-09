@@ -625,7 +625,7 @@ op_delete(oparg_T *oap)
 
     if (VIsual_select && oap->is_VIsual)
 	// use register given with CTRL_R, defaults to zero
-        oap->regname = VIsual_select_reg;
+	oap->regname = VIsual_select_reg;
 
 #ifdef FEAT_CLIPBOARD
     adjust_clip_reg(&oap->regname);
@@ -1208,9 +1208,9 @@ op_replace(oparg_T *oap, int c)
 		curwin->w_cursor.col -= (virtcols + 1);
 		for (; virtcols >= 0; virtcols--)
 		{
-                   if ((*mb_char2len)(c) > 1)
+		    if ((*mb_char2len)(c) > 1)
 		       replace_character(c);
-                   else
+		    else
 			PBYTE(curwin->w_cursor, c);
 		   if (inc(&curwin->w_cursor) == -1)
 		       break;

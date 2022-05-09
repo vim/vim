@@ -2181,8 +2181,8 @@ get_c_indent(void)
 			  check_linecomment(ml_get(curwin->w_cursor.lnum - 1));
 	    if (linecomment_pos.col != MAXCOL)
 	    {
-	        trypos = &linecomment_pos;
-	        trypos->lnum = curwin->w_cursor.lnum - 1;
+		trypos = &linecomment_pos;
+		trypos->lnum = curwin->w_cursor.lnum - 1;
 	    }
 	}
 	if (trypos  != NULL)

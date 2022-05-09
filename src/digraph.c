@@ -2337,8 +2337,9 @@ f_digraph_getlist(typval_T *argvars, typval_T *rettv)
 	flag_list_all = FALSE;
     else
     {
-	int         error = FALSE;
+	int	    error = FALSE;
 	varnumber_T flag = tv_get_number_chk(&argvars[0], &error);
+
 	if (error)
 	    return;
 	flag_list_all = flag ? TRUE : FALSE;

@@ -4442,15 +4442,15 @@ sync_shell_dir(VTermStringFragment *frag)
     // remove HOSTNAME to get PWD
     while (*pos != '/' && offset < (int)frag->len)
     {
-        offset += 1;
-        pos += 1;
+	offset += 1;
+	pos += 1;
     }
 
     if (offset >= (int)frag->len)
     {
-        semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
+	semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
 								    frag->str);
-        return;
+	return;
     }
 
     new_dir = alloc(frag->len - offset + 1);

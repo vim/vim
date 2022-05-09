@@ -489,7 +489,7 @@ set_init_1(int clean_arg)
 # ifdef VIMDLL
 	       (!gui.in_use && !gui.starting) &&
 # endif
-	        GetACP() != GetConsoleCP())
+	       GetACP() != GetConsoleCP())
 	    {
 		char	buf[50];
 
@@ -1016,7 +1016,7 @@ set_init_3(void)
      * Default values depend on shell (cmd.exe is default shell):
      *
      *			    p_shcf	p_sxq
-     * cmd.exe          -   "/c"	"("
+     * cmd.exe		-   "/c"	"("
      * powershell.exe   -   "-Command"	"\""
      * pwsh.exe		-   "-c"	"\""
      * "sh" like shells -   "-c"	"\""
@@ -3342,7 +3342,7 @@ set_num_option(
 #ifdef FEAT_VARTABS
 	// Use the first 'vartabstop' value, or 'tabstop' if vts isn't in use.
 	curbuf->b_p_sw = tabstop_count(curbuf->b_p_vts_array) > 0
-	               ? tabstop_first(curbuf->b_p_vts_array)
+		       ? tabstop_first(curbuf->b_p_vts_array)
 		       : curbuf->b_p_ts;
 #else
 	curbuf->b_p_sw = curbuf->b_p_ts;
@@ -5143,12 +5143,12 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_tc);
 	    buf->b_tc_flags = 0;
 	    break;
-        case PV_SISO:
-            curwin->w_p_siso = -1;
-            break;
-        case PV_SO:
-            curwin->w_p_so = -1;
-            break;
+	case PV_SISO:
+	    curwin->w_p_siso = -1;
+	    break;
+	case PV_SO:
+	    curwin->w_p_so = -1;
+	    break;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:
 	    clear_string_option(&buf->b_p_def);
@@ -5255,8 +5255,8 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
 	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
-            case PV_SISO: return (char_u *)&(curwin->w_p_siso);
-            case PV_SO:   return (char_u *)&(curwin->w_p_so);
+	    case PV_SISO: return (char_u *)&(curwin->w_p_siso);
+	    case PV_SO:   return (char_u *)&(curwin->w_p_so);
 #ifdef FEAT_FIND_ID
 	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
@@ -6514,7 +6514,7 @@ ExpandSettings(
     char_u	*fuzzystr,
     int		*numMatches,
     char_u	***matches,
-    int         can_fuzzy)
+    int		can_fuzzy)
 {
     int		num_normal = 0;	    // Nr of matching non-term-code settings
     int		num_term = 0;	    // Nr of matching terminal code settings
@@ -6579,7 +6579,7 @@ ExpandSettings(
 	    }
 	    else if (!fuzzy && options[opt_idx].shortname != NULL
 			&& vim_regexec(regmatch,
-                             (char_u *)options[opt_idx].shortname, (colnr_T)0))
+			     (char_u *)options[opt_idx].shortname, (colnr_T)0))
 	    {
 		// Compare against the abbreviated option name (for regular
 		// expression match). Fuzzy matching (previous if) already

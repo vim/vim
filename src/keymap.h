@@ -276,7 +276,7 @@ enum key_extra
     , KE_CANCEL = 102		// return from vgetc()
     , KE_COMMAND = 103		// <Cmd> special key
     , KE_SCRIPT_COMMAND = 104	// <ScriptCmd> special key
-    , KE_S_BS = 105	        // shift + <BS>
+    , KE_S_BS = 105		// shift + <BS>
 };
 
 /*

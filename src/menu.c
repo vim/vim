@@ -1638,7 +1638,7 @@ get_menu_cmd_modes(
 	    modes = MENU_INSERT_MODE;
 	    break;
 	case 't':
-	    if (*cmd == 'l')            // tlmenu, tlunmenu, tlnoremenu
+	    if (*cmd == 'l')		// tlmenu, tlunmenu, tlnoremenu
 	    {
 		modes = MENU_TERMINAL_MODE;
 		++cmd;

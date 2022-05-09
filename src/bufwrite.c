@@ -30,7 +30,7 @@ struct bw_info
     int		bw_flags;	// FIO_ flags
 #ifdef FEAT_CRYPT
     buf_T	*bw_buffer;	// buffer being written
-    int         bw_finish;      // finish encrypting
+    int		bw_finish;	// finish encrypting
 #endif
     char_u	bw_rest[CONV_RESTLEN]; // not converted bytes
     int		bw_restlen;	// nr of bytes in bw_rest[]
@@ -39,7 +39,7 @@ struct bw_info
     size_t	bw_conv_buflen; // size of bw_conv_buf
     int		bw_conv_error;	// set for conversion error
     linenr_T	bw_conv_error_lnum;  // first line with error or zero
-    linenr_T	bw_start_lnum;  // line number at start of buffer
+    linenr_T	bw_start_lnum;	// line number at start of buffer
 #ifdef USE_ICONV
     iconv_t	bw_iconv_fd;	// descriptor for iconv() or -1
 #endif

@@ -1996,7 +1996,7 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
 		    && p[3] == ';')
 	    {
 		// '\a' becomes a NL
-	        while (p < res + (len - 1) && *p != '\a')
+		while (p < res + (len - 1) && *p != '\a')
 		    ++p;
 		// BEL is zero width characters, suppress display mistake
 		// ConPTY (after 10.0.18317) requires advance checking

@@ -267,8 +267,8 @@ typedef enum {
 #define SHM_COMPLETIONMENU  'c'		// completion menu messages
 #define SHM_RECORDING	'q'		// short recording message
 #define SHM_FILEINFO	'F'		// no file info messages
-#define SHM_SEARCHCOUNT  'S'	        // search stats: '[1/10]'
-#define SHM_POSIX       "AS"            // POSIX value
+#define SHM_SEARCHCOUNT  'S'		// search stats: '[1/10]'
+#define SHM_POSIX       "AS"		// POSIX value
 #define SHM_ALL		"rmfixlnwaWtToOsAIcqFS" // all possible flags for 'shm'
 
 // characters for p_go:
