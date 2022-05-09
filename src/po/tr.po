@@ -3963,7 +3963,8 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: Eşleşmemiş %s)"
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: %s@ sonrası geçersiz karakter"
 
 #, c-format
@@ -3978,7 +3979,8 @@ msgstr "E61: İç içe geçmiş %s*"
 msgid "E62: Nested %s%c"
 msgstr "E62: İç içe geçmiş %s%c"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: Geçersiz kullanım: \\_"
 
 #, c-format
@@ -4012,7 +4014,8 @@ msgstr "E71: %s%% sonrası geçersiz karakter"
 msgid "E72: Close error on swap file"
 msgstr "E72: Takas dosyasında kapatma hatası"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: Etiket yığını boş"
 
 msgid "E74: Command too complex"
@@ -4258,7 +4261,8 @@ msgstr "E142: Dosya yazılamadı: Yazma 'write' seçeneği ile kapatılmış"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: yeni %s arabelleğini otokomutlar beklenmedik bir biçimde sildi"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: :z için sayısal olmayan argüman"
 
 msgid "E145: Shell commands and some functionality not allowed in rvim"
@@ -4385,7 +4389,8 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: Sayım için geçersiz öntanımlı değer"
 
 #, c-format
-msgid "E179: argument required for %s"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for %s"
 msgstr "E179: %s için argüman gerekiyor"
 
 #, c-format
@@ -4475,7 +4480,8 @@ msgstr "E204: Otokomut satır sayısını beklenmeyen biçimde değiştirdi"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Yama kipi: Orijinal dosya kaydedilemiyor"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: Yama kipi: Orijinal boş dosyaya dokunulamıyor"
 
 msgid "E207: Can't delete backup file"
@@ -4521,7 +4527,8 @@ msgstr "E216: Böyle bir grup veya olay yok: %s"
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Otokomutlar TÜM olaylar için çalıştırılamıyor"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: Çok fazla iç içe geçmiş otokomut"
 
 msgid "E219: Missing {."
@@ -4536,23 +4543,28 @@ msgstr "E221: İmleyici küçük harfle başlayamaz"
 msgid "E222: Add to internal buffer that was already read from"
 msgstr "E222: Halihazırda kendisinden okunmuş içsel arabelleğe ekle"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: Özyineli eşlemleme"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: %s için global kısaltma hâlihazırda var"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: %s için global eşlemleme hâlihazırda var"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: %s için kısaltma hâlihazırda var"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: %s için eşlemleme hâlihazırda var"
 
 msgid "E228: makemap: Illegal mode"
@@ -4571,7 +4583,8 @@ msgstr "E231: 'guifontwide' geçersiz"
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: Hem ileti hem de geri çağırma ile BallonEval oluşturulamıyor"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: Görüntü açılamıyor"
 
 #, c-format
@@ -4624,13 +4637,15 @@ msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: FileChangedShell otokomutu arabelleği sildi"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: \"%s\" adlı kayıtlı bir sunucu yok"
 
 msgid "E248: Failed to send command to the destination program"
 msgstr "E248: Hedef programa komut gönderimi başarısız oldu"
 
-msgid "E249: window layout changed unexpectedly"
+# TODO: Capitalise first word of message?
+msgid "E249: Window layout changed unexpectedly"
 msgstr "E249: Pencere yerleşimi beklenmedik bir biçimde değişti"
 
 #, c-format
@@ -4662,18 +4677,21 @@ msgid "E258: Unable to send to client"
 msgstr "E258: İstemciye gönderilemiyor"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: cscope sorgusu %s/%s için eşleşme bulunamadı"
 
 msgid "E260: Missing name after ->"
 msgstr "E260: -> sonrası ad eksik"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: %s cscope bağlantısı bulunamadı"
 
 #, c-format
-msgid "E262: error reading cscope connection %d"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %d"
 msgstr "E262: cscope bağlantısı %d okunurken hata"
 
 msgid ""
@@ -4691,26 +4709,33 @@ msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr "E266: Üzgünüm, bu komut etkin değil, Ruby kitaplığı yüklenemedi."
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: Beklenmeyen dönüş"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: Beklenmeyen sonraki"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: Beklenmeyen kesme"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: Beklenmeyen yinele komutu"
 
-msgid "E271: retry outside of rescue clause"
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
 msgstr "E271: retry, rescue işlecinin dışında"
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: İşletilemeyen kural dışı durum"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: Bilinmeyen longjmp durumu %d"
 
 msgid "E274: No white space allowed before parenthesis"
@@ -4756,10 +4781,12 @@ msgstr "E286: Giriş yöntemi açılamadı"
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: Uyarı: Giriş yöntemine yok etme geri çağırması ayarlanamadı"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: Giriş yöntemi herhangi bir biçemi desteklemiyor"
 
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: Giriş yöntemi benim ön düzenleme türümü desteklemiyor"
 
 msgid "E290: List or number required"
@@ -4769,7 +4796,8 @@ msgstr "E290: Liste veya numara gerekiyor"
 msgid "E292: Invalid count for del_bytes(): %ld"
 msgstr "E292: del_bytes() için geçersiz sayım: %ld"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: Blok kilitlenmemişti"
 
 msgid "E294: Seek error in swap file read"
@@ -4852,23 +4880,29 @@ msgid "E314: Preserve failed"
 msgstr "E314: Koruma başarısız oldu"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: Ml_get: invalid lnum: %ld"
 msgstr "E315: ml_get: geçersiz satır numarası: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
+# TODO: Capitalise first word of message?
+msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: %ld. satır %d %s arabelleğinde bulunamıyor"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: Gösterge blok kimliği yanlış"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: Blok 2 gösterge kimliği yanlış"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: Blok 3 gösterge kimliği yanlış"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: Blok 4 gösterge kimliği yanlış"
 
 msgid "E318: Updated too many blocks?"
@@ -4886,11 +4920,13 @@ msgid "E321: Could not reload \"%s\""
 msgstr "E321: \"%s\" yeniden yüklenemedi"
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: satır numarası erimin dışında: %ld en sonuncuyu geçmiş"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: %ld. blokta satır sayısı yanlış"
 
 msgid "E324: Can't open PostScript output file"
@@ -5022,7 +5058,8 @@ msgstr "E360: Kabuk -f seçeneği ile çalıştırılamıyor"
 msgid "E362: Using a boolean value as a Float"
 msgstr "E362: Bir Boole Değeri, Kayan Noktalı Değer yerine kullanılıyor"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: Dizgi 'maxmempattern' ögesinden daha fazla bellek kullanıyor"
 
 #, c-format
@@ -5040,11 +5077,13 @@ msgid "E367: No such group: \"%s\""
 msgstr "E367: Böyle bir grup yok: \"%s\""
 
 #, c-format
-msgid "E368: got SIG%s in libcall()"
+# TODO: Capitalise first word of message?
+msgid "E368: Got SIG%s in libcall()"
 msgstr "E368: libcall() içinde SIG%s alındı"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: %s%%[] içinde geçersiz öge"
 
 #, c-format
@@ -5097,11 +5136,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Geçersiz arama dizisi: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: Arama dosyanın BAŞINA vardı, %s bulunamadı"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: Arama dosyanın SONUNA vardı, %s bulunamadı"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -5135,7 +5176,8 @@ msgstr "E393: group[t]here burada kabul edilmez"
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: %s için bölge ögesi bulunamadı"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: Burada kabul edilmeyen bir argüman içeriyor"
 
 msgid "E397: Filename required"
@@ -5192,7 +5234,8 @@ msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Geçersiz :syntax altkomutu: %s"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: Vurgulama grubu bulunamadı: %s"
 
 #, c-format
@@ -5203,19 +5246,23 @@ msgstr "E412: Yetersiz sayıda argüman: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Çok fazla argüman: \":highlight link %s\""
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: Grup ayarları mevcut, vurgulama bağlantısı yok sayıldı"
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: Beklenmedik eşittir imi: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: Eksik eşittir imi: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: Argüman eksik: %s"
 
 #, c-format
@@ -5233,7 +5280,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Renk adı veya numarası tanımlanamadı: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: Uçbirim kodu çok uzun: %s"
 
 #, c-format
@@ -5247,7 +5295,8 @@ msgid "E425: Cannot go before first matching tag"
 msgstr "E425: İlk eşleşen etiketten önceye gidilemiyor"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: Etiket bulunamadı: %s"
 
 msgid "E427: There is only one matching tag"
@@ -5285,16 +5334,19 @@ msgstr "E435: Etiket bulunamadı, tahmin ediliyor!"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: termcap içinde \"%s\" girdisi yok"
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: \"cm\" uçbirim yeteneği gerekiyor"
 
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: Satır numaraları yanlış"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: Geri al listesi hasarlı"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: Geri al satırı eksik"
 
 msgid "E441: There is no preview window"
@@ -5326,7 +5378,8 @@ msgstr "E448: %s kitaplık işlevi yüklenemedi"
 msgid "E449: Invalid expression received"
 msgstr "E449: Geçersiz ifade alındı"
 
-msgid "E450: buffer number, text or a list required"
+# TODO: Capitalise first word of message?
+msgid "E450: Buffer number, text or a list required"
 msgstr "E450: Arabellek numarası, metin veya liste gerekiyor"
 
 #, c-format
@@ -5339,7 +5392,8 @@ msgstr "E452: Değişkenler listesinde çifte ;"
 msgid "E453: UL color unknown"
 msgstr "E453: Bilinmeyen alt çizme rengi"
 
-msgid "E454: function list was modified"
+# TODO: Capitalise first word of message?
+msgid "E454: Function list was modified"
 msgstr "E454: İşlev listesi değiştirilmiş"
 
 msgid "E455: Error writing to PostScript output file"
@@ -5363,7 +5417,8 @@ msgstr "E458: Renk eşlemi girdisi ayrılamadı, bazı renkler hatalı görüneb
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Bir önceki dizine gidilemiyor"
 
-msgid "E460: entries missing in mapset() dict argument"
+# TODO: Capitalise first word of message?
+msgid "E460: Entries missing in mapset() dict argument"
 msgstr "E460: mapset() sözlük argümanında eksik girdiler"
 
 #, c-format
@@ -5397,7 +5452,8 @@ msgid "E468: Completion argument only allowed for custom completion"
 msgstr "E468: Tamamlama argümanına yalnızca özel tamamlamalarda izin verilir"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: Geçersiz cscopequickfix bayrağı %c, %c için"
 
 msgid "E470: Command aborted"
@@ -5482,14 +5538,16 @@ msgstr "E488: Sonda fazladan karakterler"
 msgid "E488: Trailing characters: %s"
 msgstr "E488: Sonda fazladan karakterler: %s"
 
-msgid "E489: no call stack to substitute for \"<stack>\""
+# TODO: Capitalise first word of message?
+msgid "E489: No call stack to substitute for \"<stack>\""
 msgstr "E489: \"<yığın>\" yerine koymak için bir çağrı yığını yok"
 
 msgid "E490: No fold found"
 msgstr "E490: Kıvırma bulunamadı"
 
 #, c-format
-msgid "E491: json decode error at '%s'"
+# TODO: Capitalise first word of message?
+msgid "E491: JSON decode error at '%s'"
 msgstr "E491: '%s' konumunda json çözümü hatası"
 
 msgid "E492: Not an editor command"
@@ -5501,17 +5559,21 @@ msgstr "E493: Geriye dönük erim verildi"
 msgid "E494: Use w or w>>"
 msgstr "E494: w veya w>> kullanın"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: \"<odosyası>\" yerine koymak için otokomut dosya adı yok"
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr ""
 "E496: \"<oarabelleği>\" yerine koymak için otokomut arabellek numarası yok"
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: \"<oeşi>\" yerine koymak için otokomut eşleşme adı yok"
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: \"<kdosyası>\" yerine koymak için :source dosya adı yok"
 
 #, no-c-format
@@ -5557,13 +5619,15 @@ msgstr "E509: Yedek dosyası oluşturulamıyor (geçersiz kılmak için ! ekleyi
 msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr "E510: Yedek dosyası yapılamıyor (yine de yazmak için ! ekleyin)"
 
-msgid "E511: netbeans already connected"
+# TODO: Capitalise first word of message?
+msgid "E511: NetBeans already connected"
 msgstr "E511: NetBeans hâlihazırda bağlı"
 
 msgid "E512: Close failed"
 msgstr "E512: Kapatma başarısız oldu"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
 "E513: Yazma hatası, dönüştürme başarısız (geçersiz kılmak için 'fenc'i boş "
 "bırakın)"
@@ -5576,7 +5640,8 @@ msgstr ""
 "E513: Yazma hatası, %ld. satırda dönüştürme başarısız (geçersiz kılmak için "
 "'fenc'i boş bırakın)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: Yazma hatası (dosya sistemi dolu mu?)"
 
 msgid "E515: No buffers were unloaded"
@@ -5635,10 +5700,12 @@ msgstr "E530: Grafik arabirimde 'term' değiştirilemez"
 msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: Grafik arabirimi başlatmak için \":gui\" yazın"
 
-msgid "E532: highlighting color name too long in defineAnnoType"
+# TODO: Capitalise first word of message?
+msgid "E532: Highlighting color name too long in defineAnnoType"
 msgstr "E532: Vurgu renk adı defineAnnoType içinde pek uzun"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: Geniş yazıtipi seçilemiyor"
 
 msgid "E534: Invalid wide font"
@@ -5648,7 +5715,8 @@ msgstr "E534: Geçersiz geniş yazıtipi"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: <%c> sonrası izin verilmeyen karakter"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: Virgül gerekiyor"
 
 #, c-format
@@ -5666,7 +5734,8 @@ msgstr "E539: İzin verilmeyen karakter <%s>"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Kapatılmamış ifade sıralaması"
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: Dengelenmemiş gruplar"
 
 msgid "E543: Not a valid codepage"
@@ -5684,7 +5753,8 @@ msgstr "E546: İzin verilmeyen kip"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: İzin verilmeyen fare imleci türü"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: Basamak bekleniyordu"
 
 msgid "E549: Illegal percentage"
@@ -5696,7 +5766,8 @@ msgstr "E550: İki nokta eksik"
 msgid "E551: Illegal component"
 msgstr "E551: Geçersiz bileşen"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: Basamak bekleniyordu"
 
 msgid "E553: No more items"
@@ -5706,10 +5777,12 @@ msgstr "E553: Öge yok"
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: %s{...} içinde sözdizimi hatası"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: Etiket yığınının en dibinde"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: Etiket yığınının en tepesinde"
 
 msgid "E557: Cannot open termcap file"
@@ -5725,7 +5798,8 @@ msgstr "E559: termcap içinde uçbirim bilgisi bulunamadı"
 msgid "E560: Usage: cs[cope] %s"
 msgstr "E560: Kullanım: cs[cope] %s"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: Bilinmeyen cscope arama türü"
 
 msgid "E562: Usage: cstag <ident>"
@@ -5745,13 +5819,16 @@ msgstr "E565: Pencere veya metin değişikliğine izin verilmiyor"
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: cscope veri yolları oluşturulamadı"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: cscope bağlantıları yok"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: Yinelenen cscope veritabanı eklenmemiş"
 
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: cs_manage_matches içinde onulmaz hata"
 
 msgid ""
@@ -5759,7 +5836,8 @@ msgid ""
 msgstr "E571: Üzgünüm, bu komut etkin değil: Tcl kitaplığı yüklenemedi."
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: %d çıkış kodu"
 
 #, c-format
@@ -5782,10 +5860,12 @@ msgstr "İzin verilmeyen yazmaç adı"
 msgid "E578: Not allowed to change text here"
 msgstr "E578: Burada metin değişikliğine izin verilmiyor"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: :if'ler çok iç içe geçmiş"
 
-msgid "E579: block nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E579: Block nesting too deep"
 msgstr "E579: İç içe geçmeler çok derin"
 
 msgid "E580: :endif without :if"
@@ -5797,7 +5877,8 @@ msgstr "E581: :if olmadan :else"
 msgid "E582: :elseif without :if"
 msgstr "E582: :if olmadan :elseif"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: Birden fazla :else"
 
 msgid "E584: :elseif after :else"
@@ -5844,7 +5925,8 @@ msgstr "E595: 'showbreak' yazdırılamaz veya geniş karakter içeriyor"
 msgid "E596: Invalid font(s)"
 msgstr "E596: Geçersiz font(lar)"
 
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: Yazıtipi seti seçilemiyor"
 
 msgid "E598: Invalid fontset"
@@ -5875,7 +5957,8 @@ msgstr "E605: Kural dışı durum yakalanmadı: %s"
 msgid "E606: :finally without :try"
 msgstr "E606: :try olmadan :finally"
 
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: Birden fazla :finally"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
@@ -5902,11 +5985,13 @@ msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: GTK grafik arabiriminde değiştirilemez"
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: \"%s\" dosyası bir PostScript özkaynak dosyası değil"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: \"%s\" dosyası desteklenen bir PostScript özkaynak dosyası değil"
 
 #, c-format
@@ -5928,10 +6013,12 @@ msgid "E624: Can't open file \"%s\""
 msgstr "E624: \"%s\" dosyası açılamıyor"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: cscope veritabanı açılamıyor: %s"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: cscope veritabanı bilgisi alınamıyor"
 
 #, c-format
@@ -5943,7 +6030,8 @@ msgid "E631: %s(): write failed"
 msgstr "E631: %s(): Yazma başarısız"
 
 #, c-format
-msgid "E654: missing delimiter after search pattern: %s"
+# TODO: Capitalise first word of message?
+msgid "E654: Missing delimiter after search pattern: %s"
 msgstr "E654: Arama dizgisi sonrası eksik sınırlandırıcı: %s"
 
 msgid "E655: Too many symbolic links (cycle?)"
@@ -5972,14 +6060,16 @@ msgstr "E662: Değişiklik listesinin başında"
 msgid "E663: At end of changelist"
 msgstr "E663: Değişiklik listesinin sonunda"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: Değişiklik listesi boş"
 
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr "E665: Grafik arabirim başlatılamıyor, geçerli bir font bulunamadı"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: Derleyici desteklenmiyor: %s"
 
 msgid "E667: Fsync failed"
@@ -6023,7 +6113,8 @@ msgstr "E677: Geçici dosya yazılırken hata"
 msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr "E678: %s%%[dxouU] sonrası geçersiz karakter"
 
-msgid "E679: recursive loop loading syncolor.vim"
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: syncolor.vim yüklenirken özyineli döngü"
 
 #, c-format
@@ -6040,7 +6131,8 @@ msgid "E683: File name missing or invalid pattern"
 msgstr "E683: Dosya adı eksik veya geçersiz dizgi"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: Liste sırası erim dışında: %ld"
 
 #, c-format
@@ -6084,7 +6176,8 @@ msgstr "E696: Listede virgül eksik: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: Liste sonunda ']' eksik: %s"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: Değişken kopyalama için çok iç içe geçmiş"
 
 msgid "E699: Too many arguments"
@@ -6169,7 +6262,8 @@ msgstr "E722: Sözlükte virgül eksik: %s"
 msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: Sözlük sonu '}' eksik: %s"
 
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: Değişken çok iç içe geçtiğinden görüntülenemiyor"
 
 #, c-format
@@ -6240,7 +6334,8 @@ msgstr "E742: Değer değiştirilemiyor"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: %s ögesinin değeri değiştirilemiyor"
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: Değişken kilitlenemez/kilidi açılamaz, çok iç içe geçmiş"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
@@ -6261,7 +6356,8 @@ msgstr ""
 msgid "E748: No previously used register"
 msgstr "E748: Daha önce kullanılan bir yazmaç yok"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: Boş arabellek"
 
 msgid "E750: First use \":profile start {fname}\""
@@ -6374,10 +6470,12 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: .sug dosyası .spl dosyasına eşleşmiyor: %s"
 
 #, c-format
-msgid "E782: error while reading .sug file: %s"
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: .sug dosyasını okurken hata: %s"
 
-msgid "E783: duplicate char in MAP entry"
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: MAP girdisinde yinelenen karakter"
 
 msgid "E784: Cannot close last tab page"
@@ -6462,7 +6560,8 @@ msgstr "E804: Bir kayan noktalı değer ile '%' kullanılamaz"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Bir Kayan Noktalı Değer, Sayı yerine kullanılıyor"
 
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: Kayan Noktalı Değer, bir Dizi yerine kullanılıyor"
 
 msgid "E807: Expected Float argument for printf()"
@@ -6542,7 +6641,8 @@ msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: Geri al dosyası yazma için açılamıyor: %s"
 
 #, c-format
-msgid "E829: write error in undo file: %s"
+# TODO: Capitalise first word of message?
+msgid "E829: Write error in undo file: %s"
 msgstr "E829: Geri al dosyasında yazma hatası: %s"
 
 #, c-format
@@ -6573,7 +6673,8 @@ msgstr "E836: Bu Vim :py3 komutundan sonra :python komutunu çalıştıramaz"
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Bu Vim :python komutundan sonra :py3 komutunu çalıştıramaz"
 
-msgid "E838: netbeans is not supported with this GUI"
+# TODO: Capitalise first word of message?
+msgid "E838: Netbeans is not supported with this GUI"
 msgstr "E838: NetBeans bu grafik arabirimde desteklenmiyor"
 
 msgid "E840: Completion function deleted text"
@@ -6582,13 +6683,15 @@ msgstr "E840: Tamamlama işlevi metni sildi"
 msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr "E841: Ayrılmış ad, kullanıcı tanımlı komut için kullanılamaz"
 
-msgid "E842: no line number to use for \"<slnum>\""
+# TODO: Capitalise first word of message?
+msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: \"<slnum>\" kullanımı için satır numarası yok"
 
 msgid "E843: Error while updating swap file crypt"
 msgstr "E843: Takas dosyası şifrelemesi güncellenirken hata"
 
-msgid "E844: invalid cchar value"
+# TODO: Capitalise first word of message?
+msgid "E844: Invalid cchar value"
 msgstr "E844: Geçersiz cchar değeri"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
@@ -6619,7 +6722,8 @@ msgstr "E852: Alt süreç grafik arabirimini başlatamadı"
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Yinelenen argüman adı: %s"
 
-msgid "E854: path too long for completion"
+# TODO: Capitalise first word of message?
+msgid "E854: Path too long for completion"
 msgstr "E854: Yol tamamlama için çok uzun"
 
 msgid "E855: Autocommands caused command to abort"
@@ -6761,7 +6865,8 @@ msgid "E889: Number required"
 msgstr "E889: Sayı gerekiyor"
 
 #, c-format
-msgid "E890: trailing char after ']': %s]%s"
+# TODO: Capitalise first word of message?
+msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: ']' sonrası fazladan karakter: %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
@@ -6810,27 +6915,33 @@ msgstr "E901: channel_open() içinde gethostbyname()"
 msgid "E902: Cannot connect to port"
 msgstr "E902: Kapıya bağlanılamıyor"
 
-msgid "E903: received command with non-string argument"
+# TODO: Capitalise first word of message?
+msgid "E903: Received command with non-string argument"
 msgstr "E903: Dizi olmayan argüman içeren komut alındı"
 
-msgid "E904: last argument for expr/call must be a number"
+# TODO: Capitalise first word of message?
+msgid "E904: Last argument for expr/call must be a number"
 msgstr "E904: İfadenin/çağrının son argüman bir sayı olmalıdır"
 
-msgid "E904: third argument for call must be a list"
+# TODO: Capitalise first word of message?
+msgid "E904: Third argument for call must be a list"
 msgstr "E904: Çağrının üçüncü argümanı bir liste olmalıdır"
 
 #, c-format
-msgid "E905: received unknown command: %s"
+# TODO: Capitalise first word of message?
+msgid "E905: Received unknown command: %s"
 msgstr "E905: Bilinmeyen komut alındı: %s"
 
-msgid "E906: not an open channel"
+# TODO: Capitalise first word of message?
+msgid "E906: Not an open channel"
 msgstr "E906: Açık bir kanal değil"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Bir Özel Değer, Kayan Noktalı Değer yerine kullanılıyor"
 
 #, c-format
-msgid "E908: using an invalid value as a String: %s"
+# TODO: Capitalise first word of message?
+msgid "E908: Using an invalid value as a String: %s"
 msgstr "E908: Geçersiz bir değer bir Dizi yerine kullanılıyor: %s"
 
 msgid "E909: Cannot index a special variable"
@@ -6842,7 +6953,8 @@ msgstr "E910: Bir İş, Sayı yerine kullanılıyor"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: Bir İş, Kayan Noktalı Değer yerine kullanılıyor"
 
-msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+# TODO: Capitalise first word of message?
+msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr "E912: ch_evalexpr()/ch_sendexpr() raw/nl kanalları ile kullanılamaz"
 
 msgid "E913: Using a Channel as a Number"
@@ -6854,7 +6966,8 @@ msgstr "E914: Bir Kanal, Kayan Noktalı Değer yerine kullanılıyor"
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: in_io arabelleği in_buf veya in_name ayarlı olmasını gerektirir"
 
-msgid "E916: not a valid job"
+# TODO: Capitalise first word of message?
+msgid "E916: Not a valid job"
 msgstr "E916: Geçerli bir iş değil"
 
 #, c-format
@@ -6862,7 +6975,8 @@ msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: %s() ile geri çağırma kullanılamıyor"
 
 #, c-format
-msgid "E918: buffer must be loaded: %s"
+# TODO: Capitalise first word of message?
+msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: Arabellek yüklenmiş olmalıdır: %s"
 
 #, c-format
@@ -6875,7 +6989,8 @@ msgstr "E920: _io dosyası _name ayarlı olmasını gerektirir"
 msgid "E921: Invalid callback argument"
 msgstr "E921: Geçersiz geri çağırma argümanı"
 
-msgid "E922: expected a dict"
+# TODO: Capitalise first word of message?
+msgid "E922: Expected a dict"
 msgstr "E922: Bir sözlük bekleniyordu"
 
 msgid "E923: Second argument of function() must be a list or a dict"
@@ -6919,7 +7034,8 @@ msgid "E934: Cannot jump to a buffer that does not have a name"
 msgstr "E934: Adı olmayan bir arabelleğe atlamak olanaklı değil"
 
 #, c-format
-msgid "E935: invalid submatch number: %d"
+# TODO: Capitalise first word of message?
+msgid "E935: Invalid submatch number: %d"
 msgstr "E935: Geçersiz alteşleşme numarası: %d"
 
 msgid "E936: Cannot delete the current group"
@@ -6940,7 +7056,8 @@ msgstr "E939: Pozitif sayım gerekiyor"
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Değişken %s kilitlenemiyor veya açılamıyor"
 
-msgid "E941: already started a server"
+# TODO: Capitalise first word of message?
+msgid "E941: Already started a server"
 msgstr "E941: Sunucu hâlihazırda çalışıyor"
 
 msgid "E942: +clientserver feature not available"
@@ -7008,7 +7125,8 @@ msgstr "E959: Geçersiz karşılaştırma biçimi"
 msgid "E960: Problem creating the internal diff"
 msgstr "E960: Karşılaştırma hazırlanırken sorun"
 
-msgid "E961: no line number to use for \"<sflnum>\""
+# TODO: Capitalise first word of message?
+msgid "E961: No line number to use for \"<sflnum>\""
 msgstr "E961: \"<sflnum>\" kullanımı için satır numarası yok"
 
 #, c-format
@@ -7016,21 +7134,24 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Geçersiz eylem: '%s'"
 
 #, c-format
-msgid "E963: setting %s to value with wrong type"
+# TODO: Capitalise first word of message?
+msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: %s yanlış türe sahip değere ayarlanıyor"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
 msgstr "E964: Geçersiz sütun numarası: %ld"
 
-msgid "E965: missing property type name"
+# TODO: Capitalise first word of message?
+msgid "E965: Missing property type name"
 msgstr "E965: Özellik tür adı eksik"
 
 #, c-format
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Geçersiz satır numarası: %ld"
 
-msgid "E967: text property info corrupted"
+# TODO: Capitalise first word of message?
+msgid "E967: Text property info corrupted"
 msgstr "E967: Metin özellik bilgisi hasarlı"
 
 msgid "E968: Need at least one of 'id' or 'type'"
@@ -7076,7 +7197,8 @@ msgstr "E978: İkili geniş nesne için geçersiz işlem"
 msgid "E979: Blob index out of range: %ld"
 msgstr "E979: İkili geniş nesne sırası erimin dışında: %ld"
 
-msgid "E980: lowlevel input not supported"
+# TODO: Capitalise first word of message?
+msgid "E980: Lowlevel input not supported"
 msgstr "E980: Alt düzey girdi desteklenmiyor"
 
 msgid "E981: Command not allowed in rvim"
@@ -7095,10 +7217,12 @@ msgstr "E984: :scriptversion kaynak alınmış bir dosyanın dışında kullanı
 msgid "E985: .= is not supported with script version >= 2"
 msgstr "E985: .= betiğin ikinci sürümünden itibaren desteklenmiyor"
 
-msgid "E986: cannot modify the tag stack within tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E986: Cannot modify the tag stack within tagfunc"
 msgstr "E986: Etiket yığını tagfunc dahilinde değiştirilemiyor"
 
-msgid "E987: invalid return value from tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: Etiket işlevinden geçersiz dönüş değeri"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
@@ -7111,14 +7235,16 @@ msgstr "E989: Öntanımlı olmayan argüman öntanımlı argümandan sonra"
 msgid "E990: Missing end marker '%s'"
 msgstr "E990: Son imleyici '%s' eksik"
 
-msgid "E991: cannot use =<< here"
+# TODO: Capitalise first word of message?
+msgid "E991: Cannot use =<< here"
 msgstr "E991: Burada =<< kullanılamaz"
 
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
 msgstr "E992: 'modelineexpr' kapalıyken  bir kip satırında izin verilmiyor"
 
 #, c-format
-msgid "E993: window %d is not a popup window"
+# TODO: Capitalise first word of message?
+msgid "E993: Window %d is not a popup window"
 msgstr "E993: %d penceresi bir açılır pencere değil"
 
 msgid "E994: Not allowed in a popup window"
@@ -8099,7 +8225,8 @@ msgstr "E1261: .vim, \"as\" kullanmadan içe aktarılamıyor"
 msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: Aynı betik iki kez içe aktarılamaz: %s"
 
-msgid "E1263: cannot use name with # in Vim9 script, use export instead"
+# TODO: Capitalise first word of message?
+msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
 msgstr "E1263: Vim9 betiğinde bir adla # kullanılamaz, yerine export kullanın"
 
 #, c-format
@@ -8131,7 +8258,8 @@ msgid "E1270: Cannot use :s\\/sub/ in Vim9 script"
 msgstr "E1270: :s\\/sub/, Vim9 betiğinde kullanılamaz"
 
 #, c-format
-msgid "E1271: compiling closure without context: %s"
+# TODO: Capitalise first word of message?
+msgid "E1271: Compiling closure without context: %s"
 msgstr "E1271: Kapatma, bağlam olmadan derleniyor: %s"
 
 #, c-format

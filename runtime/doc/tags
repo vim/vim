@@ -4263,6 +4263,7 @@ E127	eval.txt	/*E127*
 E1270	change.txt	/*E1270*
 E1271	vim9.txt	/*E1271*
 E1274	cmdline.txt	/*E1274*
+E1276	builtin.txt	/*E1276*
 E128	eval.txt	/*E128*
 E129	eval.txt	/*E129*
 E13	message.txt	/*E13*
@@ -4401,6 +4402,7 @@ E252	options.txt	/*E252*
 E253	mbyte.txt	/*E253*
 E254	message.txt	/*E254*
 E255	sign.txt	/*E255*
+E256	eval.txt	/*E256*
 E257	if_cscop.txt	/*E257*
 E258	remote.txt	/*E258*
 E259	if_cscop.txt	/*E259*
@@ -5312,6 +5314,7 @@ Neovim	intro.txt	/*Neovim*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
 NetBeans	netbeans.txt	/*NetBeans*
 NetUserPass()	pi_netrw.txt	/*NetUserPass()*
+NoDefaultCurrentDirectoryInExePath	builtin.txt	/*NoDefaultCurrentDirectoryInExePath*
 None	eval.txt	/*None*
 Normal	intro.txt	/*Normal*
 Normal-mode	intro.txt	/*Normal-mode*
@@ -6640,6 +6643,8 @@ expr-!=?	eval.txt	/*expr-!=?*
 expr-!~	eval.txt	/*expr-!~*
 expr-!~#	eval.txt	/*expr-!~#*
 expr-!~?	eval.txt	/*expr-!~?*
+expr-$'	eval.txt	/*expr-$'*
+expr-$quote	eval.txt	/*expr-$quote*
 expr-%	eval.txt	/*expr-%*
 expr-&&	eval.txt	/*expr-&&*
 expr-'	eval.txt	/*expr-'*
@@ -6787,6 +6792,7 @@ fname_new-variable	eval.txt	/*fname_new-variable*
 fname_out-variable	eval.txt	/*fname_out-variable*
 fnameescape()	builtin.txt	/*fnameescape()*
 fnamemodify()	builtin.txt	/*fnamemodify()*
+fo-/	change.txt	/*fo-\/*
 fo-1	change.txt	/*fo-1*
 fo-2	change.txt	/*fo-2*
 fo-B	change.txt	/*fo-B*
@@ -7351,8 +7357,10 @@ getcharmod()	builtin.txt	/*getcharmod()*
 getcharpos()	builtin.txt	/*getcharpos()*
 getcharsearch()	builtin.txt	/*getcharsearch()*
 getcharstr()	builtin.txt	/*getcharstr()*
+getcmdcompltype()	builtin.txt	/*getcmdcompltype()*
 getcmdline()	builtin.txt	/*getcmdline()*
 getcmdpos()	builtin.txt	/*getcmdpos()*
+getcmdscreenpos()	builtin.txt	/*getcmdscreenpos()*
 getcmdtype()	builtin.txt	/*getcmdtype()*
 getcmdwintype()	builtin.txt	/*getcmdwintype()*
 getcompletion()	builtin.txt	/*getcompletion()*
@@ -7912,6 +7920,7 @@ interfaces-5.2	version5.txt	/*interfaces-5.2*
 internal-variables	eval.txt	/*internal-variables*
 internal-wordlist	spell.txt	/*internal-wordlist*
 internet	intro.txt	/*internet*
+interp-string	eval.txt	/*interp-string*
 interrupt()	builtin.txt	/*interrupt()*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*
@@ -7920,6 +7929,7 @@ invert()	builtin.txt	/*invert()*
 ip	motion.txt	/*ip*
 iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
+isabsolutepath()	builtin.txt	/*isabsolutepath()*
 isdirectory()	builtin.txt	/*isdirectory()*
 isinf()	builtin.txt	/*isinf()*
 islocked()	builtin.txt	/*islocked()*

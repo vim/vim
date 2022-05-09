@@ -3973,7 +3973,8 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: %s) が釣り合っていません"
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: %s@ の後に不正な文字がありました"
 
 #, c-format
@@ -3988,7 +3989,8 @@ msgstr "E61:%s* が入れ子になっています"
 msgid "E62: Nested %s%c"
 msgstr "E62:%s%c が入れ子になっています"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: \\_ の無効な使用方法です"
 
 #, c-format
@@ -4022,7 +4024,8 @@ msgstr "E71: %s%% の後に不正な文字がありました"
 msgid "E72: Close error on swap file"
 msgstr "E72: スワップファイルのクローズ時エラーです"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: タグスタックが空です"
 
 msgid "E74: Command too complex"
@@ -4265,7 +4268,8 @@ msgstr "E142: ファイルは保存されませんでした: 'write' オプションにより無効です"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: 自動コマンドが予\期せず新しいバッファ %s を削除しました"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: 数ではない引数が :z に渡されました"
 
 msgid "E145: Shell commands and some functionality not allowed in rvim"
@@ -4392,7 +4396,8 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: カウントの省略値が無効です"
 
 #, c-format
-msgid "E179: argument required for %s"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for %s"
 msgstr "E179: %s には引数が必要です"
 
 #, c-format
@@ -4483,7 +4488,8 @@ msgstr "E204: 自動コマンドが予\期せぬ方法で行数を変更しました"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: patchmode: 原本ファイルを保存できません"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: patchmode: 空の原本ファイルをtouchできません"
 
 msgid "E207: Can't delete backup file"
@@ -4529,7 +4535,8 @@ msgstr "E216: そのようなグループもしくはイベントはありません: %s"
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: 全てのイベントに対しての自動コマンドは実行できません"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: 自動コマンドの入れ子が深過ぎます"
 
 msgid "E219: Missing {."
@@ -4544,23 +4551,28 @@ msgstr "E221: マーカーは英小文字で始まってはいけません"
 msgid "E222: Add to internal buffer that was already read from"
 msgstr "E222: 既に読んだ内部バッファに追加しています"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: 再帰的マッピング"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: %s というグローバル短縮入力は既に存在します"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: %s というグローバルマッピングは既に存在します"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: %s という短縮入力は既に存在します"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: %s というマッピングは既に存在します"
 
 msgid "E228: makemap: Illegal mode"
@@ -4579,7 +4591,8 @@ msgstr "E231: 'guifontwide' が無効です"
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: メッセージとコールバックのある BalloonEval を作成できません"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: ディスプレイを開けません"
 
 #, c-format
@@ -4631,13 +4644,15 @@ msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: FileChangedShell 自動コマンドがバッファを削除しました"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: \"%s\" という名前の登録されたサーバーはありません"
 
 msgid "E248: Failed to send command to the destination program"
 msgstr "E248: 目的のプログラムへのコマンド送信に失敗しました"
 
-msgid "E249: window layout changed unexpectedly"
+# TODO: Capitalise first word of message?
+msgid "E249: Window layout changed unexpectedly"
 msgstr "E249: 予\期せずウィンドウの配置が変わりました"
 
 #, c-format
@@ -4669,18 +4684,21 @@ msgid "E258: Unable to send to client"
 msgstr "E258: クライアントへ送ることができません"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: cscopeクエリー %s of %s に該当がありませんでした"
 
 msgid "E260: Missing name after ->"
 msgstr "E260: -> の後に名前がありません"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: cscope接続 %s が見つかりませんでした"
 
 #, c-format
-msgid "E262: error reading cscope connection %d"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %d"
 msgstr "E262: cscopeの接続 %d を読込み中のエラーです"
 
 msgid ""
@@ -4702,26 +4720,33 @@ msgstr ""
 "E266: このコマンドは無効です、ごめんなさい: Rubyライブラリをロードできません"
 "でした。"
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: 予\期せぬ return です"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: 予\期せぬ next です"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: 予\期せぬ break です"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: 予\期せぬ redo です"
 
-msgid "E271: retry outside of rescue clause"
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
 msgstr "E271: rescue の外の retry です"
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: 取り扱われなかった例外があります"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: 未知のlongjmp状態: %d"
 
 msgid "E274: No white space allowed before parenthesis"
@@ -4766,10 +4791,12 @@ msgstr "E286: インプットメソ\ッドのオープンに失敗しました"
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: 警告: IMの破壊コールバックを設定できませんでした"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: インプットメソ\ッドはどんなスタイルもサポートしません"
 
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: インプットメソ\ッドは my preedit type をサポートしません"
 
 msgid "E290: List or number required"
@@ -4779,7 +4806,8 @@ msgstr "E290: リストか数値が必要です"
 msgid "E292: Invalid count for del_bytes(): %ld"
 msgstr "E292: del_bytes() として無効な数値です: %ld"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: ブロックがロックされていません"
 
 msgid "E294: Seek error in swap file read"
@@ -4862,23 +4890,29 @@ msgid "E314: Preserve failed"
 msgstr "E314: 維持に失敗しました"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: Ml_get: invalid lnum: %ld"
 msgstr "E315: ml_get: 無効なlnumです: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
+# TODO: Capitalise first word of message?
+msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: 行 %ld をバッファ %d %s 内に見つけられません"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: ポインタブロックのIDが間違っています"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: ポインタブロックのIDが間違っています 2"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: ポインタブロックのIDが間違っています 3"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: ポインタブロックのIDが間違っています 4"
 
 msgid "E318: Updated too many blocks?"
@@ -4896,11 +4930,13 @@ msgid "E321: Could not reload \"%s\""
 msgstr "E321: \"%s\" はリロードできませんでした"
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: 行番号が範囲外です: %ld 超えています"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: ブロック %ld の行カウントが間違っています"
 
 msgid "E324: Can't open PostScript output file"
@@ -5032,7 +5068,8 @@ msgstr "E360: -f オプションでシェルを実行できません"
 msgid "E362: Using a boolean value as a Float"
 msgstr "E362: ブール値を浮動小数点数として扱っています"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: パターンが 'maxmempattern' 以上のメモリを使用します"
 
 #, c-format
@@ -5050,11 +5087,13 @@ msgid "E367: No such group: \"%s\""
 msgstr "E367: そのグループはありません: \"%s\""
 
 #, c-format
-msgid "E368: got SIG%s in libcall()"
+# TODO: Capitalise first word of message?
+msgid "E368: Got SIG%s in libcall()"
 msgstr "E368: libcall() で　SIG%s を受け取りました"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: 無効な項目です: %s%%[]"
 
 #, c-format
@@ -5107,11 +5146,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: 無効な検索文字列です: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: 上まで検索しましたが該当箇所はありません: %s"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: 下まで検索しましたが該当箇所はありません: %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -5145,7 +5186,8 @@ msgstr "E393: ここではグループは許可されません"
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: %s の範囲要素が見つかりません"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: この場所では引数containsは許可されていません"
 
 msgid "E397: Filename required"
@@ -5202,7 +5244,8 @@ msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: 無効な :syntax のサブコマンドです: %s"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: ハイライトグループが見つかりません: %s"
 
 #, c-format
@@ -5213,19 +5256,23 @@ msgstr "E412: 引数が充分ではない: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: 引数が多過ぎます: \":highlight link %s\""
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: グループが設定されているのでハイライトリンクは無視されます"
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: 予\期せぬ等号です: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: 等号がありません: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: 引数がありません: %s"
 
 #, c-format
@@ -5243,7 +5290,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: カラー名や番号を認識できません: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: 終端コードが長過ぎます: %s"
 
 #, c-format
@@ -5257,7 +5305,8 @@ msgid "E425: Cannot go before first matching tag"
 msgstr "E425: 最初の該当タグを越えて戻ることはできません"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: タグが見つかりません: %s"
 
 msgid "E427: There is only one matching tag"
@@ -5295,16 +5344,19 @@ msgstr "E435: タグを見つけられないので単に推測します!"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: termcapに \"%s\" のエントリがありません"
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: 端末に \"cm\" 機能\が必要です"
 
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: 行番号が間違っています"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: アンドゥリストが壊れています"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: アンドゥ行がありません"
 
 msgid "E441: There is no preview window"
@@ -5336,7 +5388,8 @@ msgstr "E448: ライブラリの関数 %s をロードできませんでした"
 msgid "E449: Invalid expression received"
 msgstr "E449: 無効な式を受け取りました"
 
-msgid "E450: buffer number, text or a list required"
+# TODO: Capitalise first word of message?
+msgid "E450: Buffer number, text or a list required"
 msgstr "E450: バッファ番号、テキストまたはリストが必要です"
 
 #, c-format
@@ -5349,7 +5402,8 @@ msgstr "E452: リスト型の値に2つ以上の ; が検出されました"
 msgid "E453: UL color unknown"
 msgstr "E453: 未知の下線色です"
 
-msgid "E454: function list was modified"
+# TODO: Capitalise first word of message?
+msgid "E454: Function list was modified"
 msgstr "E454: 関数リストが変更されました"
 
 msgid "E455: Error writing to PostScript output file"
@@ -5373,7 +5427,8 @@ msgstr "E458: 色指定が正しくないのでカラーマップのエントリを割り当てられません"
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: 前のディレクトリに戻れません"
 
-msgid "E460: entries missing in mapset() dict argument"
+# TODO: Capitalise first word of message?
+msgid "E460: Entries missing in mapset() dict argument"
 msgstr "E460: mapset() の辞書引数の要素が足りません"
 
 #, c-format
@@ -5407,7 +5462,8 @@ msgid "E468: Completion argument only allowed for custom completion"
 msgstr "E468: 補完引数はカスタム補完でしか使用できません"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: 無効な cscopequickfix フラグ %c の %c です"
 
 msgid "E470: Command aborted"
@@ -5492,14 +5548,16 @@ msgstr "E488: 余分な文字が後ろにあります"
 msgid "E488: Trailing characters: %s"
 msgstr "E488: 余分な文字が後ろにあります: %s"
 
-msgid "E489: no call stack to substitute for \"<stack>\""
+# TODO: Capitalise first word of message?
+msgid "E489: No call stack to substitute for \"<stack>\""
 msgstr "E489: \"<stack>\"を置き換えるコールスタックがありません"
 
 msgid "E490: No fold found"
 msgstr "E490: 折畳みがありません"
 
 #, c-format
-msgid "E491: json decode error at '%s'"
+# TODO: Capitalise first word of message?
+msgid "E491: JSON decode error at '%s'"
 msgstr "E491: '%s' でjsonデコードエラー"
 
 msgid "E492: Not an editor command"
@@ -5511,16 +5569,20 @@ msgstr "E493: 逆さまの範囲が指定されました"
 msgid "E494: Use w or w>>"
 msgstr "E494: w もしくは w>> を使用してください"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: \"<afile>\"を置き換える自動コマンドのファイル名がありません"
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: \"<abuf>\"を置き換える自動コマンドバッファ番号がありません"
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: \"<amatch>\"を置き換える自動コマンドの該当名がありません"
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: \"<sfile>\"を置き換える :source 対象ファイル名がありません"
 
 #, no-c-format
@@ -5568,13 +5630,15 @@ msgstr "E509: バックアップファイルを作れません (! を追加で強制書込)"
 msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr "E510: バックアップファイルを作れません (! を追加で構\わず書込)"
 
-msgid "E511: netbeans already connected"
+# TODO: Capitalise first word of message?
+msgid "E511: NetBeans already connected"
 msgstr "E511: NetBeansは既に接続しています"
 
 msgid "E512: Close failed"
 msgstr "E512: 閉じることに失敗"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr "E513: 書込みエラー、変換失敗 (上書するには 'fenc' を空にしてください)"
 
 #, c-format
@@ -5585,7 +5649,8 @@ msgstr ""
 "E513: 書込みエラー、変換失敗、行数 %ld (上書するには 'fenc' を空にしてくださ"
 "い)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: 書込みエラー (ファイルシステムが満杯?)"
 
 msgid "E515: No buffers were unloaded"
@@ -5644,10 +5709,12 @@ msgstr "E530: GUIでは 'term' を変更できません"
 msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: GUIをスタートするには \":gui\" を使用してください"
 
-msgid "E532: highlighting color name too long in defineAnnoType"
+# TODO: Capitalise first word of message?
+msgid "E532: Highlighting color name too long in defineAnnoType"
 msgstr "E532: defineAnnoType内のハイライト色名が長すぎます"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: ワイドフォントを選択できません"
 
 msgid "E534: Invalid wide font"
@@ -5657,7 +5724,8 @@ msgstr "E534: 無効なワイドフォントです"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: <%c> の後に不正な文字があります"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: コンマが必要です"
 
 #, c-format
@@ -5671,7 +5739,8 @@ msgstr "E539: 不正な文字です <%s>"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: 式が終了していません"
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: グループが釣合いません"
 
 msgid "E543: Not a valid codepage"
@@ -5689,7 +5758,8 @@ msgstr "E546: 不正なモードです"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: 不正な 'mouseshape' です"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: 数値が必要です"
 
 msgid "E549: Illegal percentage"
@@ -5701,7 +5771,8 @@ msgstr "E550: コロンがありません"
 msgid "E551: Illegal component"
 msgstr "E551: 不正な構\文要素です"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: 数値が必要です"
 
 msgid "E553: No more items"
@@ -5711,10 +5782,12 @@ msgstr "E553: 要素がもうありません"
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: %s{...} 内に文法エラーがあります"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: タグスタックの末尾です"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: タグスタックの先頭です"
 
 msgid "E557: Cannot open termcap file"
@@ -5730,7 +5803,8 @@ msgstr "E559: termcapに端末エントリを見つけられません"
 msgid "E560: Usage: cs[cope] %s"
 msgstr "E560: 使用方法: cs[cope] %s"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: 未知のcscope検索型です"
 
 msgid "E562: Usage: cstag <ident>"
@@ -5750,13 +5824,16 @@ msgstr "E565: テキストを変更したりウィンドウを変更することは許可されません"
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: cscopeパイプを作成できませんでした"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: cscope接続に失敗しました"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: 重複するcscopeデータベースは追加されませんでした"
 
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: cs_manage_matches で致命的なエラーです"
 
 msgid ""
@@ -5766,7 +5843,8 @@ msgstr ""
 "した。"
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: 終了コード %d"
 
 #, c-format
@@ -5789,10 +5867,12 @@ msgstr "不正なレジスタ名"
 msgid "E578: Not allowed to change text here"
 msgstr "E578: ここでテキストを変更することは許可されません"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: :if の入れ子が深過ぎます"
 
-msgid "E579: block nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E579: Block nesting too deep"
 msgstr "E579: ブロックの入れ子が深過ぎます"
 
 msgid "E580: :endif without :if"
@@ -5804,7 +5884,8 @@ msgstr "E581: :if のない :else があります"
 msgid "E582: :elseif without :if"
 msgstr "E582: :if のない :elseif があります"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: 複数の :else があります"
 
 msgid "E584: :elseif after :else"
@@ -5851,7 +5932,8 @@ msgstr "E595: 'showbreak' は表\示できない文字かワイド文字を含んでいます"
 msgid "E596: Invalid font(s)"
 msgstr "E596: 無効なフォントです"
 
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: フォントセットを選択できません"
 
 msgid "E598: Invalid fontset"
@@ -5882,7 +5964,8 @@ msgstr "E605: 例外が捕捉されませんでした: %s"
 msgid "E606: :finally without :try"
 msgstr "E606: :try のない :finally があります"
 
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: 複数の :finally があります"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
@@ -5919,11 +6002,13 @@ msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: GTK GUIでは変更できません"
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: ファイル \"%s\" は PostScript リソ\ースファイルではありません"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: ファイル \"%s\" は対応していない PostScript リソ\ースファイルです"
 
 #, c-format
@@ -5945,10 +6030,12 @@ msgid "E624: Can't open file \"%s\""
 msgstr "E624: ファイル \"%s\" を開けません"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: cscopeデータベース: %s を開くことができません"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: cscopeデータベースの情報を取得できません"
 
 #, c-format
@@ -5960,7 +6047,8 @@ msgid "E631: %s(): write failed"
 msgstr "E631: %s(): 書込みに失敗しました"
 
 #, c-format
-msgid "E654: missing delimiter after search pattern: %s"
+# TODO: Capitalise first word of message?
+msgid "E654: Missing delimiter after search pattern: %s"
 msgstr "E654: 検索パターンのあとに区切りがありません: %s"
 
 msgid "E655: Too many symbolic links (cycle?)"
@@ -5989,14 +6077,16 @@ msgstr "E662: 変更リストの先頭"
 msgid "E663: At end of changelist"
 msgstr "E663: 変更リストの末尾"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: 変更リストが空です"
 
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr "E665: 有効なフォントが見つからないので、GUIを開始できません"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: そのコンパイラには対応していません: %s"
 
 msgid "E667: Fsync failed"
@@ -6043,7 +6133,8 @@ msgstr "E677: 一時ファイル書込み中にエラーが発生しました"
 msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr "E678: %s%%[dxouU] の後に不正な文字がありました"
 
-msgid "E679: recursive loop loading syncolor.vim"
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: syncolor.vim の再帰呼出しを検出しました"
 
 #, c-format
@@ -6060,7 +6151,8 @@ msgid "E683: File name missing or invalid pattern"
 msgstr "E683: ファイル名が無いか無効なパターンです"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: リストのインデックスが範囲外です: %ld"
 
 #, c-format
@@ -6103,7 +6195,8 @@ msgstr "E696: リスト型にコンマがありません: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: リスト型の最後に ']' がありません: %s"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: コピーを取るには変数の入れ子が深過ぎます"
 
 msgid "E699: Too many arguments"
@@ -6188,7 +6281,8 @@ msgstr "E722: 辞書型にコンマがありません: %s"
 msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: 辞書型の最後に '}' がありません: %s"
 
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: 表\示するには変数の入れ子が深過ぎます"
 
 #, c-format
@@ -6259,7 +6353,8 @@ msgstr "E742: 値を変更できません"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: %s の値を変更できません"
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: (アン)ロックするには変数の入れ子が深過ぎます"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
@@ -6280,7 +6375,8 @@ msgstr ""
 msgid "E748: No previously used register"
 msgstr "E748: まだレジスタを使用していません"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: バッファが空です"
 
 msgid "E750: First use \":profile start {fname}\""
@@ -6394,10 +6490,12 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: .sug ファイルが .spl ファイルと一致しません: %s"
 
 #, c-format
-msgid "E782: error while reading .sug file: %s"
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: .sug ファイルの読込み中にエラーが発生しました: %s"
 
-msgid "E783: duplicate char in MAP entry"
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: MAP エントリに重複文字が存在します"
 
 msgid "E784: Cannot close last tab page"
@@ -6481,7 +6579,8 @@ msgstr "E804: '%' を浮動小数点数と組み合わせては使えません"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: 浮動小数点数を数値として扱っています"
 
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: 浮動小数点数を文字列として扱っています"
 
 msgid "E807: Expected Float argument for printf()"
@@ -6560,7 +6659,8 @@ msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: 書込み用にアンドゥファイルを開けません: %s"
 
 #, c-format
-msgid "E829: write error in undo file: %s"
+# TODO: Capitalise first word of message?
+msgid "E829: Write error in undo file: %s"
 msgstr "E829: アンドゥファイルの書込みエラーです: %s"
 
 #, c-format
@@ -6592,7 +6692,8 @@ msgstr "E836: このVimでは :py3 を使った後に :python を使えません"
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: このVimでは :python を使った後に :py3 を使えません"
 
-msgid "E838: netbeans is not supported with this GUI"
+# TODO: Capitalise first word of message?
+msgid "E838: Netbeans is not supported with this GUI"
 msgstr "E838: NetBeansはこのGUIには対応していません"
 
 msgid "E840: Completion function deleted text"
@@ -6601,13 +6702,15 @@ msgstr "E840: 補完関数がテキストを削除しました"
 msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr "E841: 予\約名なので、ユーザー定義コマンドに利用できません"
 
-msgid "E842: no line number to use for \"<slnum>\""
+# TODO: Capitalise first word of message?
+msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: \"<slnum>\"を置き換える行番号がありません"
 
 msgid "E843: Error while updating swap file crypt"
 msgstr "E843: スワップファイルの暗号を更新中にエラーが発生しました"
 
-msgid "E844: invalid cchar value"
+# TODO: Capitalise first word of message?
+msgid "E844: Invalid cchar value"
 msgstr "E844: 無効なccharの値です"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
@@ -6638,7 +6741,8 @@ msgstr "E852: 子プロセスがGUIの起動に失敗しました"
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: 引数名が重複しています: %s"
 
-msgid "E854: path too long for completion"
+# TODO: Capitalise first word of message?
+msgid "E854: Path too long for completion"
 msgstr "E854: パスが長過ぎて補完できません"
 
 msgid "E855: Autocommands caused command to abort"
@@ -6780,7 +6884,8 @@ msgid "E889: Number required"
 msgstr "E889: 数値が必要です"
 
 #, c-format
-msgid "E890: trailing char after ']': %s]%s"
+# TODO: Capitalise first word of message?
+msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: ']' の後ろに余分な文字があります: %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
@@ -6829,27 +6934,33 @@ msgstr "E901: channel_open() 内の gethostbyname() が失敗しました"
 msgid "E902: Cannot connect to port"
 msgstr "E902: ポートに接続できません"
 
-msgid "E903: received command with non-string argument"
+# TODO: Capitalise first word of message?
+msgid "E903: Received command with non-string argument"
 msgstr "E903: 非文字列の引数のコマンドを受信しました"
 
-msgid "E904: last argument for expr/call must be a number"
+# TODO: Capitalise first word of message?
+msgid "E904: Last argument for expr/call must be a number"
 msgstr "E904: expr/call の最後の引数は数字でなければなりません"
 
-msgid "E904: third argument for call must be a list"
+# TODO: Capitalise first word of message?
+msgid "E904: Third argument for call must be a list"
 msgstr "E904: call の3番目の引数はリスト型でなければなりません"
 
 #, c-format
-msgid "E905: received unknown command: %s"
+# TODO: Capitalise first word of message?
+msgid "E905: Received unknown command: %s"
 msgstr "E905: 未知のコマンドを受信しました: %s"
 
-msgid "E906: not an open channel"
+# TODO: Capitalise first word of message?
+msgid "E906: Not an open channel"
 msgstr "E906: 開いていないチャネルです"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: 特殊値を浮動小数点数として扱っています"
 
 #, c-format
-msgid "E908: using an invalid value as a String: %s"
+# TODO: Capitalise first word of message?
+msgid "E908: Using an invalid value as a String: %s"
 msgstr "E908: 無効な値を文字列として扱っています: %s"
 
 msgid "E909: Cannot index a special variable"
@@ -6861,7 +6972,8 @@ msgstr "E910: ジョブを数値として扱っています"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: ジョブを浮動小数点数として扱っています"
 
-msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+# TODO: Capitalise first word of message?
+msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
 "E912: raw や nl モードのチャネルに ch_evalexpr()/ch_sendexpr() は使えません"
 
@@ -6874,7 +6986,8 @@ msgstr "E914: チャネルを浮動小数点数として扱っています"
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: in_io バッファは in_buf か in_name の設定が必要です"
 
-msgid "E916: not a valid job"
+# TODO: Capitalise first word of message?
+msgid "E916: Not a valid job"
 msgstr "E916: 有効なジョブではありません"
 
 #, c-format
@@ -6882,7 +6995,8 @@ msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: %s() にコールバックは使えません"
 
 #, c-format
-msgid "E918: buffer must be loaded: %s"
+# TODO: Capitalise first word of message?
+msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: バッファがロードされてなければなりません: %s"
 
 #, c-format
@@ -6895,7 +7009,8 @@ msgstr "E920: _io ファイルは _name の設定が必要です"
 msgid "E921: Invalid callback argument"
 msgstr "E921: 無効なコールバック引数です"
 
-msgid "E922: expected a dict"
+# TODO: Capitalise first word of message?
+msgid "E922: Expected a dict"
 msgstr "E922: 辞書が期待されています"
 
 msgid "E923: Second argument of function() must be a list or a dict"
@@ -6939,7 +7054,8 @@ msgid "E934: Cannot jump to a buffer that does not have a name"
 msgstr "E934: 名前の無いバッファへはジャンプできません"
 
 #, c-format
-msgid "E935: invalid submatch number: %d"
+# TODO: Capitalise first word of message?
+msgid "E935: Invalid submatch number: %d"
 msgstr "E935: 無効なサブマッチ番号です: %d"
 
 msgid "E936: Cannot delete the current group"
@@ -6960,7 +7076,8 @@ msgstr "E939: 正のカウントが必要です"
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: 変数 %s はロックまたはアンロックできません"
 
-msgid "E941: already started a server"
+# TODO: Capitalise first word of message?
+msgid "E941: Already started a server"
 msgstr "E941: サーバーは既に開始しています"
 
 msgid "E942: +clientserver feature not available"
@@ -7029,7 +7146,8 @@ msgstr "E959: 無効なdiff形式です"
 msgid "E960: Problem creating the internal diff"
 msgstr "E960: 内部diff作成時に問題が発生しました"
 
-msgid "E961: no line number to use for \"<sflnum>\""
+# TODO: Capitalise first word of message?
+msgid "E961: No line number to use for \"<sflnum>\""
 msgstr "E961: \"<sflnum>\"を置き換える行番号がありません"
 
 #, c-format
@@ -7037,21 +7155,24 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: 無効な操作です: '%s'"
 
 #, c-format
-msgid "E963: setting %s to value with wrong type"
+# TODO: Capitalise first word of message?
+msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: %s を間違った型の値で設定しています"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
 msgstr "E964: 無効な列番号です: %ld"
 
-msgid "E965: missing property type name"
+# TODO: Capitalise first word of message?
+msgid "E965: Missing property type name"
 msgstr "E965: プロパティタイプ名がありません"
 
 #, c-format
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: 無効な行番号です: %ld"
 
-msgid "E967: text property info corrupted"
+# TODO: Capitalise first word of message?
+msgid "E967: Text property info corrupted"
 msgstr "E967: テキストプロパティ情報が壊れています"
 
 msgid "E968: Need at least one of 'id' or 'type'"
@@ -7094,7 +7215,8 @@ msgstr "E978: Blob型には無効な操作です"
 msgid "E979: Blob index out of range: %ld"
 msgstr "E979: Blobのインデックスが範囲外です: %ld"
 
-msgid "E980: lowlevel input not supported"
+# TODO: Capitalise first word of message?
+msgid "E980: Lowlevel input not supported"
 msgstr "E980: 低レベル入力はサポートされていません"
 
 msgid "E981: Command not allowed in rvim"
@@ -7113,10 +7235,12 @@ msgstr "E984: :scriptversion が取込みスクリプト以外で使用されました"
 msgid "E985: .= is not supported with script version >= 2"
 msgstr "E985: .= はスクリプトバージョン 2 以上では対応していません"
 
-msgid "E986: cannot modify the tag stack within tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E986: Cannot modify the tag stack within tagfunc"
 msgstr "E986: tagfunc内のタグスタックを変更できません"
 
-msgid "E987: invalid return value from tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: tagfuncからの戻り値が無効です"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
@@ -7129,14 +7253,16 @@ msgstr "E989: 非デフォルト引数がデフォルト引数の後にあります"
 msgid "E990: Missing end marker '%s'"
 msgstr "E990: 終端マーカーがありません '%s'"
 
-msgid "E991: cannot use =<< here"
+# TODO: Capitalise first word of message?
+msgid "E991: Cannot use =<< here"
 msgstr "E991: ここでは =<< は使えません"
 
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
 msgstr "E992: 'modelineexpr' がオフの時 modeline では許可されません"
 
 #, c-format
-msgid "E993: window %d is not a popup window"
+# TODO: Capitalise first word of message?
+msgid "E993: Window %d is not a popup window"
 msgstr "E993: ウィンドウ %d はポップアップウィンドウではありません"
 
 msgid "E994: Not allowed in a popup window"
@@ -8109,7 +8235,8 @@ msgstr "E1261: \"as\" を使わずに .vim をインポートすることはできません"
 msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: 同じスクリプトを2回インポートすることはできません: %s"
 
-msgid "E1263: cannot use name with # in Vim9 script, use export instead"
+# TODO: Capitalise first word of message?
+msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
 msgstr ""
 "E1263: Vim9 スクリプトでは # 入りの名前は使用できません、代わりに export を使"
 "用してください"

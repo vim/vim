@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 Apr 12
+*starting.txt*  For Vim version 8.2.  Last change: 2022 May 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -763,6 +763,8 @@ Additionally:
 
 One hint: If you want to go to Normal mode to be able to type a sequence of
 commands, use CTRL-L. |i_CTRL-L|
+
+There is no way to stop "easy mode", you need to exit Vim.
 
 ==============================================================================
 4. Initialization				*initialization* *startup*

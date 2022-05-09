@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 May 07
+*todo.txt*      For Vim version 8.2.  Last change: 2022 May 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,9 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+String interpolation: Handle backslash and quotes in the expression normally,
+do not require escaping.
 
 Once Vim9 is stable:
 - Use Vim9 for more runtime files.
@@ -206,15 +209,15 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-String interpolation: Handle backslash and quotes in the expression normally,
-do not require escaping.
-
 Add autocmd functions. PR #10291
   a couple of outstanding comments, wait for Yegappan to respond
 
 Can deref_func_name() and deref_function_name() be merged?
 
-Some prompts are not translated: #9495
+Add mode bits to maparg() dict?  PR #10356
+
+After patch 8.2.4915 w_botline is computed much more often. Can this be
+reduced?
 
 NFA regexp does not handle composing characters well: #10286
     [ɔ̃] matches both ɔ and ɔ̃
