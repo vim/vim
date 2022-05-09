@@ -4012,15 +4012,15 @@ get_option_value(
 	    return gov_hidden_string;
 	if (stringval != NULL)
 	{
+	    if ((char_u **)varp == &p_pt)	// 'pastetoggle'
+		*stringval = str2special_save(*(char_u **)(varp), FALSE);
 #ifdef FEAT_CRYPT
 	    // never return the value of the crypt key
-	    if ((char_u **)varp == &curbuf->b_p_key
+	    else if ((char_u **)varp == &curbuf->b_p_key
 						&& **(char_u **)(varp) != NUL)
 		*stringval = vim_strsave((char_u *)"*****");
-	    else if ((char_u **)varp == &p_pt)	// 'pastetoggle'
-		*stringval = str2special_save(*(char_u **)(varp), FALSE);
-	    else
 #endif
+	    else
 		*stringval = vim_strsave(*(char_u **)(varp));
 	}
 	return gov_string;
