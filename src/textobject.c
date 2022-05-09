@@ -1664,7 +1664,11 @@ find_next_quote(
 	if (c == NUL)
 	    return -1;
 	else if (escape != NULL && vim_strchr(escape, c))
+	{
 	    ++col;
+	    if (line[col] == NUL)
+		return -1;
+	}
 	else if (c == quotechar)
 	    break;
 	if (has_mbyte)
