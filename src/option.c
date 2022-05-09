@@ -4017,6 +4017,8 @@ get_option_value(
 	    if ((char_u **)varp == &curbuf->b_p_key
 						&& **(char_u **)(varp) != NUL)
 		*stringval = vim_strsave((char_u *)"*****");
+	    else if ((char_u **)varp == &p_pt)	// 'pastetoggle'
+		*stringval = str2special_save(*(char_u **)(varp), FALSE);
 	    else
 #endif
 		*stringval = vim_strsave(*(char_u **)(varp));
