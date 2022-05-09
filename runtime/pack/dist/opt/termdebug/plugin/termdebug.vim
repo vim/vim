@@ -240,6 +240,13 @@ func s:StartDebug_term(dict)
   let proc_args = get(a:dict, 'proc_args', [])
 
   let gdb_cmd = s:GetCommand()
+  " Open a terminal window to run the debugger.
+  if gdb_args[0] != 'rr'
+    let gdb_cmd += ['-tty', pty]
+  else
+    " for RR er explicit pass the pty and pass "rest are GDB args" option
+    let gdb_cmd += ['--tty', pty, '--']
+  endif
   " Add -quiet to avoid the intro message causing a hit-enter prompt.
   let gdb_cmd += ['-quiet']
   " Disable pagination, it causes everything to stop at the gdb
@@ -248,8 +255,6 @@ func s:StartDebug_term(dict)
   " be exec-interrupt, since many commands don't work properly while the
   " target is running (so execute during startup).
   let gdb_cmd += ['-iex', 'set mi-async on']
-  " Open a terminal window to run the debugger.
-  let gdb_cmd += ['-tty', pty]
   " Command executed _after_ startup is done, provides us with the necessary feedback
   let gdb_cmd += ['-ex', 'echo startupdone\n']
 
