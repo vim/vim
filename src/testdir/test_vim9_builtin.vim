@@ -3208,12 +3208,11 @@ def Test_remove()
 enddef
 
 def Test_remove_return_type()
-  var l = remove({one: [1, 2], two: [3, 4]}, 'one')
-  var res = 0
-  for n in l
-    res += n
-  endfor
-  res->assert_equal(3)
+  var l: list<number> = remove({one: [1, 2], two: [3, 4]}, 'one')
+  l->assert_equal([1, 2])
+
+  var ll: list<number> = remove(range(3), 0, 1)
+  ll->assert_equal([0, 1])
 enddef
 
 def Test_rename()
