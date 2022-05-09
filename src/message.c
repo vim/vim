@@ -1721,6 +1721,9 @@ msg_outtrans_special(
 	}
 	else
 	    text = (char *)str2special(&str, from);
+	if (text[0] != NUL && text[1] == NUL)
+	    // single-byte character or illegal byte
+	    text = (char *)transchar_byte((char_u)text[0]);
 	len = vim_strsize((char_u *)text);
 	if (maxlen > 0 && retval + len >= maxlen)
 	    break;
@@ -1755,6 +1758,7 @@ str2special_save(
 
 /*
  * Return the printable string for the key codes at "*sp".
+ * On illegal byte return a string with only that byte.
  * Used for translating the lhs or rhs of a mapping to printable chars.
  * Advances "sp" to the next code.
  */
@@ -1798,38 +1802,28 @@ str2special(
 	    special = TRUE;
     }
 
-    if (has_mbyte && !IS_SPECIAL(c))
+    if (has_mbyte && !IS_SPECIAL(c) && MB_BYTE2LEN(c) > 1)
     {
 	char_u	*p;
 
 	*sp = str;
 	// Try to un-escape a multi-byte character after modifiers.
 	p = mb_unescape(sp);
-
-	if (p == NULL)
-	{
-	    int len = (*mb_ptr2len)(str);
-
-	    // Check for an illegal byte.
-	    if (MB_BYTE2LEN(*str) > len)
-	    {
-		transchar_nonprint(curbuf, buf, c);
-		*sp = str + 1;
-		return buf;
-	    }
-	    *sp = str + len;
-	    p = str;
-	}
-	// Since 'special' is TRUE the multi-byte character 'c' will be
-	// processed by get_special_key_name()
-	c = (*mb_ptr2char)(p);
+	if (p != NULL)
+	    // Since 'special' is TRUE the multi-byte character 'c' will be
+	    // processed by get_special_key_name()
+	    c = (*mb_ptr2char)(p);
+	else
+	    // illegal byte
+	    *sp = str + 1;
     }
     else
+	// single-byte character or illegal byte
 	*sp = str + 1;
 
-    // Make unprintable characters in <> form, also <M-Space> and <Tab>.
+    // Make special keys and C0 control characters in <> form, also <M-Space>.
     // Use <Space> only for lhs of a mapping.
-    if (special || char2cells(c) > 1 || (from && c == ' '))
+    if (special || c < ' ' || (from && c == ' '))
 	return get_special_key_name(c, modifiers);
     buf[0] = c;
     buf[1] = NUL;
