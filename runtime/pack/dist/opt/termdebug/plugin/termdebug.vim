@@ -171,12 +171,10 @@ func s:StartDebug_internal(dict)
     call s:StartDebug_term(a:dict)
   endif
 
-  if exists('g:termdebug_disasm_window')
-    if g:termdebug_disasm_window
-      let curwinid = win_getid(winnr())
-      call s:GotoAsmwinOrCreateIt()
-      call win_gotoid(curwinid)
-    endif
+  if exists('g:termdebug_disasm_window') && g:termdebug_disasm_window
+    let curwinid = win_getid(winnr())
+    call s:GotoAsmwinOrCreateIt()
+    call win_gotoid(curwinid)
   endif
 
   if exists('#User#TermdebugStartPost')
@@ -186,9 +184,17 @@ endfunc
 
 " Use when debugger didn't start or ended.
 func s:CloseBuffers()
-  exe 'bwipe! ' . s:ptybuf
+  call s:ClosePtyBuf()
   exe 'bwipe! ' . s:commbuf
   unlet! s:gdbwin
+endfunc
+
+" use when terminal not needed (any more)
+func s:ClosePtyBuf()
+  if exists('s:ptybuf') && s:ptybuf
+    exe 'bwipe! ' . s:ptybuf
+  endif
+  unlet! s:ptybuf
 endfunc
 
 func s:CheckGdbRunning()
@@ -202,16 +208,19 @@ func s:CheckGdbRunning()
 endfunc
 
 func s:StartDebug_term(dict)
-  " Open a terminal window without a job, to run the debugged program in.
-  let s:ptybuf = term_start('NONE', {
-	\ 'term_name': 'debugged program',
-	\ 'vertical': s:vertical,
-	\ })
-  if s:ptybuf == 0
-    echoerr 'Failed to open the program terminal window'
-    return
-  endif
-  let pty = job_info(term_getjob(s:ptybuf))['tty_out']
+    let s:ptybuf = 0
+    if get(a:dict, 'attach', 0) == 0
+      " Open a terminal window without a job, to run the debugged program in.
+      let s:ptybuf = term_start('NONE', {
+          \ 'term_name': 'debugged program',
+          \ 'vertical': s:vertical,
+          \ })
+      if s:ptybuf == 0
+        echoerr 'Failed to open the program terminal window'
+        return
+      endif
+      let pty = job_info(term_getjob(s:ptybuf))['tty_out']
+    endif
   let s:ptywin = win_getid(winnr())
   if s:vertical
     " Assuming the source code window will get a signcolumn, use two more
@@ -231,7 +240,7 @@ func s:StartDebug_term(dict)
 	\ })
   if s:commbuf == 0
     echoerr 'Failed to open the communication terminal window'
-    exe 'bwipe! ' . s:ptybuf
+    call s:ClosePtyBuf()
     return
   endif
   let commpty = job_info(term_getjob(s:commbuf))['tty_out']
@@ -248,8 +257,10 @@ func s:StartDebug_term(dict)
   " be exec-interrupt, since many commands don't work properly while the
   " target is running (so execute during startup).
   let gdb_cmd += ['-iex', 'set mi-async on']
-  " Open a terminal window to run the debugger.
-  let gdb_cmd += ['-tty', pty]
+  if s:ptybuf
+    " Open a terminal window to run the debugger.
+    let gdb_cmd += ['-tty', pty]
+  endif
   " Command executed _after_ startup is done, provides us with the necessary feedback
   let gdb_cmd += ['-ex', 'echo startupdone\n']
 
@@ -400,35 +411,37 @@ func s:StartDebug_prompt(dict)
   let s:gdb_channel = job_getchannel(s:gdbjob)
 
   let s:ptybuf = 0
-  if has('win32')
-    " MS-Windows: run in a new console window for maximum compatibility
-    call s:SendCommand('set new-console on')
-  elseif has('terminal')
-    " Unix: Run the debugged program in a terminal window.  Open it below the
-    " gdb window.
-    belowright let s:ptybuf = term_start('NONE', {
-	  \ 'term_name': 'debugged program',
-	  \ })
-    if s:ptybuf == 0
-      echoerr 'Failed to open the program terminal window'
-      call job_stop(s:gdbjob)
-      return
-    endif
-    let s:ptywin = win_getid(winnr())
-    let pty = job_info(term_getjob(s:ptybuf))['tty_out']
-    call s:SendCommand('tty ' . pty)
+  if get(a:dict, 'attach', 0) == 0
+    if has('win32')
+      " MS-Windows: run in a new console window for maximum compatibility
+      call s:SendCommand('set new-console on')
+    elseif has('terminal')
+      " Unix: Run the debugged program in a terminal window.  Open it below the
+      " gdb window.
+      belowright let s:ptybuf = term_start('NONE', {
+            \ 'term_name': 'debugged program',
+            \ })
+      if s:ptybuf == 0
+        echoerr 'Failed to open the program terminal window'
+        call job_stop(s:gdbjob)
+        return
+      endif
+      let s:ptywin = win_getid(winnr())
+      let pty = job_info(term_getjob(s:ptybuf))['tty_out']
+      call s:SendCommand('tty ' . pty)
 
-    " Since GDB runs in a prompt window, the environment has not been set to
-    " match a terminal window, need to do that now.
-    call s:SendCommand('set env TERM = xterm-color')
-    call s:SendCommand('set env ROWS = ' . winheight(s:ptywin))
-    call s:SendCommand('set env LINES = ' . winheight(s:ptywin))
-    call s:SendCommand('set env COLUMNS = ' . winwidth(s:ptywin))
-    call s:SendCommand('set env COLORS = ' . &t_Co)
-    call s:SendCommand('set env VIM_TERMINAL = ' . v:version)
-  else
-    " TODO: open a new terminal, get the tty name, pass on to gdb
-    call s:SendCommand('show inferior-tty')
+      " Since GDB runs in a prompt window, the environment has not been set to
+      " match a terminal window, need to do that now.
+      call s:SendCommand('set env TERM = xterm-color')
+      call s:SendCommand('set env ROWS = ' . winheight(s:ptywin))
+      call s:SendCommand('set env LINES = ' . winheight(s:ptywin))
+      call s:SendCommand('set env COLUMNS = ' . winwidth(s:ptywin))
+      call s:SendCommand('set env COLORS = ' . &t_Co)
+      call s:SendCommand('set env VIM_TERMINAL = ' . v:version)
+    else
+      " TODO: open a new terminal, get the tty name, pass on to gdb
+      call s:SendCommand('show inferior-tty')
+    endif
   endif
   call s:SendCommand('set print pretty on')
   call s:SendCommand('set breakpoint pending on')
@@ -482,8 +495,7 @@ func s:StartDebugCommon(dict)
     au OptionSet background call s:Highlight(0, v:option_old, v:option_new)
   augroup END
 
-  " Run the command if the bang attribute was given and got to the debug
-  " window.
+  " Run the command if the bang attribute was given and go to the debug window.
   if get(a:dict, 'bang', 0)
     call s:SendResumingCommand('-exec-run')
     call win_gotoid(s:ptywin)
@@ -651,10 +663,7 @@ endfunc
 
 func s:EndDebugCommon()
   let curwinid = win_getid(winnr())
-
-  if exists('s:ptybuf') && s:ptybuf
-    exe 'bwipe! ' . s:ptybuf
-  endif
+  call s:ClosePtyBuf()
 
   " Restore 'signcolumn' in all buffers for which it was set.
   call win_gotoid(s:sourcewin)
@@ -851,6 +860,7 @@ func s:InstallCommands()
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
   command Program call s:GotoProgram()
+  command ClosePtyBuf call s:ClosePtyBuf()
   command Source call s:GotoSourcewinOrCreateIt()
   command Asm call s:GotoAsmwinOrCreateIt()
   command Winbar call s:InstallWinbar()
@@ -910,6 +920,7 @@ func s:DeleteCommands()
   delcommand Source
   delcommand Asm
   delcommand Winbar
+  delcommand ClosePtyBuf
 
   if exists('s:k_map_saved')
     if empty(s:k_map_saved)
@@ -1030,7 +1041,7 @@ endfunc
 
 func s:Run(args)
   if a:args != ''
-    call s:SendResumingCommand('-exec-arguments ' . a:args)
+    call s:SendCommand('-exec-arguments ' . a:args)
   endif
   call s:SendResumingCommand('-exec-run')
 endfunc
@@ -1196,7 +1207,7 @@ func s:GotoAsmwinOrCreateIt()
     setlocal nowrap
     setlocal number
     setlocal noswapfile
-    setlocal buftype=nofile
+    setlocal buftype=nofile " FIXME: there should be nice assembler syntax
     setlocal modifiable
 
     let asmbuf = bufnr('Termdebug-asm-listing')
@@ -1206,10 +1217,8 @@ func s:GotoAsmwinOrCreateIt()
       exe 'file Termdebug-asm-listing'
     endif
 
-    if exists('g:termdebug_disasm_window')
-      if g:termdebug_disasm_window > 1
-        exe 'resize ' . g:termdebug_disasm_window
-      endif
+    if exists('g:termdebug_disasm_window') && g:termdebug_disasm_window > 1
+      exe 'resize ' . g:termdebug_disasm_window
     endif
   endif
 
