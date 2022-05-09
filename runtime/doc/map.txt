@@ -120,7 +120,8 @@ modes.
 			command applies.
 			Use the <buffer> argument to remove buffer-local
 			mappings |:map-<buffer>|
-			Warning: This also removes the default mappings.
+			Warning: This also removes the |mac-standard-mappings|
+			and the |dos-standard-mappings|.
 
 :map				|mapmode-nvo|
 :nm[ap]				|mapmode-n|
