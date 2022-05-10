@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-10 18:53+0200\n"
+"PO-Revision-Date: 2022-05-10 19:45+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -9094,982 +9094,911 @@ msgid "E920: _io file requires _name to be set"
 msgstr "E920: El archivo _io requiere que se configure _name"
 
 #: ../errors.h:2386
-#, fuzzy
 msgid "E921: Invalid callback argument"
-msgstr "E474: El argumento no es válido"
+msgstr "E921: Argumento de devolución de llamada no válido"
 
 #: ../errors.h:2388
-#, fuzzy
 msgid "E922: expected a dict"
-msgstr "E268: \"next\" inesperado"
+msgstr "E922: esperaba un \"dict\""
 
 #: ../errors.h:2390
-#, fuzzy
 msgid "E923: Second argument of function() must be a list or a dict"
-msgstr "E712: El argumento de %s debe ser una lista o un diccionario"
+msgstr ""
+"E923: El segundo argumento de function() debe ser una lista o un \"dict\""
 
 #: ../errors.h:2394
 msgid "E924: Current window was closed"
-msgstr ""
+msgstr "E924: Se cerró la ventana actual"
 
 #: ../errors.h:2396
 msgid "E925: Current quickfix list was changed"
-msgstr ""
+msgstr "E925: Se cambió la lista de soluciones rápidas (quickfix) actual"
 
 #: ../errors.h:2398
 msgid "E926: Current location list was changed"
-msgstr ""
+msgstr "E926: Se cambió la lista de ubicación actual"
 
 #: ../errors.h:2403
-#, fuzzy, c-format
+#, c-format
 msgid "E927: Invalid action: '%s'"
-msgstr "E383: La cadena de búsqueda no es válida: %s"
+msgstr "E927: Acción inválida: '%s'"
 
 #: ../errors.h:2406
-#, fuzzy
 msgid "E928: String required"
-msgstr "E397: Debe proporcionar un nombre de archivo"
+msgstr "E928: Cadena requerida"
 
 #: ../errors.h:2410
 #, c-format
 msgid "E929: Too many viminfo temp files, like %s!"
-msgstr ""
+msgstr "E929: ¡Demasiados archivos temporales de viminfo, como %s!"
 
 #: ../errors.h:2414
 msgid "E930: Cannot use :redir inside execute()"
-msgstr ""
+msgstr "E930: No se puede usar :redir dentro de execute()"
 
 #: ../errors.h:2417
 msgid "E931: Buffer cannot be registered"
-msgstr ""
+msgstr "E931: No se puede registrar el búfer"
 
 #: ../errors.h:2420
 #, c-format
 msgid "E932: Closure function should not be at top level: %s"
-msgstr ""
+msgstr "E932: La función de cierre no debe estar en el nivel superior: %s"
 
 #: ../errors.h:2422
-#, fuzzy, c-format
+#, c-format
 msgid "E933: Function was deleted: %s"
-msgstr "E129: Se requiere el nombre de la función"
+msgstr "E933: Se borró la función: %s"
 
 #: ../errors.h:2426
 msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr ""
+msgstr "E934: No se puede saltar a un búfer que no tiene nombre"
 
 #: ../errors.h:2430
-#, fuzzy, c-format
+#, c-format
 msgid "E935: invalid submatch number: %d"
-msgstr "E354: Nombre de registro no válido: '%s'"
+msgstr "E935: Número de subcoincidencia no válido: %d"
 
 #: ../errors.h:2433
-#, fuzzy
 msgid "E936: Cannot delete the current group"
-msgstr "E351: No se puede borrar el pliegue con el 'foldmethod' activo"
+msgstr "E936: No se puede eliminar el grupo actual"
 
 #: ../errors.h:2435
 #, c-format
 msgid "E937: Attempt to delete a buffer that is in use: %s"
-msgstr ""
+msgstr "E937: Intento de eliminar un búfer que está en uso: %s"
 
 #: ../errors.h:2438
-#, fuzzy, c-format
+#, c-format
 msgid "E938: Duplicate key in JSON: \"%s\""
-msgstr "E721: Llave duplicada en el diccionario: %s"
+msgstr "E721: Clave duplicada en el JSON: \"%s\""
 
 #: ../errors.h:2441
-#, fuzzy
 msgid "E939: Positive count required"
-msgstr "E397: Debe proporcionar un nombre de archivo"
+msgstr "E939: Recuento positivo requerido"
 
 #: ../errors.h:2444
-#, fuzzy, c-format
+#, c-format
 msgid "E940: Cannot lock or unlock variable %s"
-msgstr "E46: No puede cambiar la variable de solo lectura \"%s\""
+msgstr "E940: No se puede bloquear o desbloquear la variable %s"
 
 #: ../errors.h:2447
-#, fuzzy
 msgid "E941: already started a server"
-msgstr "E277: Incapaz de leer una respuesta del servidor"
+msgstr "E941: Ya inició un servidor"
 
 #: ../errors.h:2450
-#, fuzzy
 msgid "E942: +clientserver feature not available"
-msgstr "E775: La característica \"eval\" no está disponible"
+msgstr "E942: Característica \"+clientserver\" no disponible"
 
 #: ../errors.h:2454
 msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
-msgstr ""
+msgstr "E943: La tabla de comandos debe actualizarse, ejecute 'make cmdidxs'"
 
 #: ../errors.h:2456
-#, fuzzy
 msgid "E944: Reverse range in character class"
-msgstr "E488: Caracteres en exceso al final de la línea"
+msgstr "E944: Rango inverso en la clase de caracteres"
 
 #: ../errors.h:2458
 msgid "E945: Range too large in character class"
-msgstr ""
+msgstr "E945: Rango demasiado grande en la clase de caracteres"
 
 #: ../errors.h:2461
 msgid "E946: Cannot make a terminal with running job modifiable"
-msgstr ""
+msgstr "E946: No se puede modificar un terminal con un trabajo en ejecución"
 
 #: ../errors.h:2463
-#, fuzzy, c-format
+#, c-format
 msgid "E947: Job still running in buffer \"%s\""
-msgstr "E94: No hay un búfer que coincida con %s"
+msgstr "E947: El trabajo todavía se está ejecutando en el búfer \"%s\""
 
 #: ../errors.h:2465
-#, fuzzy
 msgid "E948: Job still running"
-msgstr " (aún en ejecución)"
+msgstr "E948: Trabajo aún en ejecución"
 
 #: ../errors.h:2467
 msgid "E948: Job still running (add ! to end the job)"
-msgstr ""
+msgstr "E948: Trabajo aún en ejecución (añada ! para finalizar el trabajo)"
 
 #: ../errors.h:2470
-#, fuzzy
 msgid "E949: File changed while writing"
-msgstr "E80: Error al escribir el archivo"
+msgstr "E949: Archivo cambiado mientras se estaba escribiendo"
 
 #: ../errors.h:2472
-#, fuzzy, c-format
+#, c-format
 msgid "E950: Cannot convert between %s and %s"
-msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
+msgstr "E950: No se puede convertir entre %s y %s"
 
 #: ../errors.h:2475
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "E951: \\% value too large"
-msgstr "E75: El nombre es demasiado largo"
+msgstr "E951: \\% valor demasiado grande"
 
 #: ../errors.h:2478
-#, fuzzy
 msgid "E952: Autocommand caused recursive behavior"
-msgstr "E169: Orden demasiado recursiva"
+msgstr "E952: Comando automático provocó un comportamiento recursivo"
 
 #: ../errors.h:2482
-#, fuzzy, c-format
+#, c-format
 msgid "E953: File exists: %s"
-msgstr "E737: Ya existe una llave: %s"
+msgstr "E953: El archivo existe: %s"
 
 #: ../errors.h:2486
 msgid "E954: 24-bit colors are not supported on this environment"
-msgstr ""
+msgstr "E954: Los colores de 24 bits no son compatibles con este entorno"
 
 #: ../errors.h:2490
-#, fuzzy
 msgid "E955: Not a terminal buffer"
-msgstr "E94: No hay un búfer que coincida con %s"
+msgstr "E955: No es un búfer terminal"
 
 #: ../errors.h:2493
-#, fuzzy
 msgid "E956: Cannot use pattern recursively"
-msgstr "E659: No se pudo invocar a Python recursivamente"
+msgstr "E956: No se puede usar el patrón recursivamente"
 
 #: ../errors.h:2496
-#, fuzzy
 msgid "E957: Invalid window number"
-msgstr "E534: Tipo de letra de impresión \"ancho\" inválida"
+msgstr "E957: Número de ventana no válido"
 
 #: ../errors.h:2500
 msgid "E958: Job already finished"
-msgstr ""
+msgstr "E958: Trabajo ya terminado"
 
 #: ../errors.h:2504
-#, fuzzy
 msgid "E959: Invalid diff format."
-msgstr "E534: Tipo de letra de impresión \"ancho\" inválida"
+msgstr "E959: Formato de diferencia no válido."
 
 #: ../errors.h:2506
 msgid "E960: Problem creating the internal diff"
-msgstr ""
+msgstr "E960: Problema al crear el \"diff\" interno"
 
 #: ../errors.h:2510
-#, fuzzy
 msgid "E961: no line number to use for \"<sflnum>\""
-msgstr ""
-"E498: No hay un nombre de archivo \":source\" que sustituya a \"<sfile>\""
+msgstr "E961: No hay número de línea para usar para \"<sflnum>\""
 
 #: ../errors.h:2512
-#, fuzzy, c-format
+#, c-format
 msgid "E962: Invalid action: '%s'"
-msgstr "E383: La cadena de búsqueda no es válida: %s"
+msgstr "E962: Acción inválida: '%s'"
 
 #: ../errors.h:2514
 #, c-format
 msgid "E963: setting %s to value with wrong type"
-msgstr ""
+msgstr "E963: Configuración de %s en valor con tipo incorrecto"
 
 #: ../errors.h:2518
-#, fuzzy, c-format
+#, c-format
 msgid "E964: Invalid column number: %ld"
-msgstr "E182: El nombre de la orden no es válido"
+msgstr "E964: Número de columna no válido: %ld"
 
 #: ../errors.h:2520
-#, fuzzy
 msgid "E965: missing property type name"
-msgstr "E379: Hace falta el nombre del directorio"
+msgstr "E965: Falta el nombre del tipo de propiedad"
 
 #: ../errors.h:2524
-#, fuzzy, c-format
+#, c-format
 msgid "E966: Invalid line number: %ld"
-msgstr "E19: El número de línea de la marca no es válido"
+msgstr "E966: Número de línea no válido: %ld"
 
 #: ../errors.h:2528
 msgid "E967: text property info corrupted"
-msgstr ""
+msgstr "E967: Información de propiedad de texto corrupta"
 
 #: ../errors.h:2530
-#, fuzzy
 msgid "E968: Need at least one of 'id' or 'type'"
-msgstr "E593: Necesita al menos %d líneas"
+msgstr "E968: Necesita al menos uno de 'id' o 'type'"
 
 #: ../errors.h:2532
 #, c-format
 msgid "E969: Property type %s already defined"
-msgstr ""
+msgstr "E969: Tipo de propiedad %s ya definido"
 
 #: ../errors.h:2534
-#, fuzzy, c-format
+#, c-format
 msgid "E970: Unknown highlight group name: '%s'"
-msgstr "E409: Nombre de grupo desconocido: %s"
+msgstr "E970: Nombre de grupo de resaltado desconocido: '%s'"
 
 #: ../errors.h:2536
-#, fuzzy, c-format
+#, c-format
 msgid "E971: Property type %s does not exist"
-msgstr "E429: El archivo \"%s\" no existe"
+msgstr "E971: El tipo de propiedad %s no existe"
 
 #: ../errors.h:2540
 msgid "E972: Blob value does not have the right number of bytes"
-msgstr ""
+msgstr "E972: El valor del \"blob\" no tiene el número correcto de bytes"
 
 #: ../errors.h:2542
 msgid "E973: Blob literal should have an even number of hex characters"
 msgstr ""
+"E973: El literal del \"blob\" debe tener un número par "
+"de caracteres hexadecimales"
 
 #: ../errors.h:2544
-#, fuzzy
 msgid "E974: Using a Blob as a Number"
-msgstr "E745: Usando una \"Lista\" como \"Number\""
+msgstr "E974: Usando \"Blob\" como un \"Number\""
 
 #: ../errors.h:2547
-#, fuzzy
 msgid "E975: Using a Blob as a Float"
-msgstr "E805: Usando \"Float\" como un \"Number\""
+msgstr "E975: Usando \"Blob\" como un \"Float\""
 
 #: ../errors.h:2550
-#, fuzzy
 msgid "E976: Using a Blob as a String"
-msgstr "E806: Usando \"Float\" como \"String\""
+msgstr "E976: Usando \"Blob\" como \"String\""
 
 #: ../errors.h:2552
-#, fuzzy
 msgid "E977: Can only compare Blob with Blob"
-msgstr "E691: Solo se puede comparar una lista con otra lista"
+msgstr "E977: Solo se puede comparar un \"Blob\" con un \"Blob\""
 
 #: ../errors.h:2554
-#, fuzzy
 msgid "E978: Invalid operation for Blob"
-msgstr "E692: Operación inválida para lista"
+msgstr "E978: Operación no válida para \"Blob\""
 
 #: ../errors.h:2556
-#, fuzzy, c-format
+#, c-format
 msgid "E979: Blob index out of range: %ld"
-msgstr "E684: índice de lista fuera de rango: %ld"
+msgstr "E979: Índice de \"Blob\" fuera de rango: %ld"
 
 #: ../errors.h:2559
-#, fuzzy
 msgid "E980: lowlevel input not supported"
-msgstr "E519: Opción no admitida"
+msgstr "E980: Entrada de bajo nivel no admitida"
 
 #: ../errors.h:2563
-#, fuzzy
 msgid "E981: Command not allowed in rvim"
-msgstr "E145: No se permiten órdenes de consola en rvim"
+msgstr "E981: Comando no permitido en rvim"
 
 #: ../errors.h:2566
 msgid "E982: ConPTY is not available"
-msgstr ""
+msgstr "E982: ConPTY no está disponible"
 
 #: ../errors.h:2569
-#, fuzzy, c-format
+#, c-format
 msgid "E983: Duplicate argument: %s"
-msgstr "E390: Argumento ilegal: %s"
+msgstr "E983: Argumento duplicado: %s"
 
 #: ../errors.h:2571
-#, fuzzy
 msgid "E984: :scriptversion used outside of a sourced file"
-msgstr ""
-"E167: Ha usado \":scriptencoding\" fuera de un archivo de instrucciones "
-"ejecutables"
+msgstr "E984: :scriptversion usado fuera de un archivo fuente"
 
 #: ../errors.h:2574
-#, fuzzy
 msgid "E985: .= is not supported with script version >= 2"
-msgstr "E619: El archivo \"%s\" no es un recurso PostScript que pueda usar"
+msgstr "E985: .= no es compatible con la versión de script >= 2"
 
 #: ../errors.h:2576
 msgid "E986: cannot modify the tag stack within tagfunc"
-msgstr ""
+msgstr "E986: No se puede modificar la pila de etiquetas dentro de \"tagfunc\""
 
 #: ../errors.h:2578
-#, fuzzy
 msgid "E987: invalid return value from tagfunc"
-msgstr "E178: El valor predeterminado para el recuento no es válido"
+msgstr "E987: Valor de retorno no válido de \"tagfunc\""
 
 #: ../errors.h:2582
-#, fuzzy
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
 msgstr ""
-"E25: No se puede usar la interfaz gráfica de usuario: No se activó al "
-"compilar"
+"E988: No se puede utilizar la interfaz gráfica (GUI). "
+"No se puede ejecutar gvim.exe."
 
 #: ../errors.h:2586
 msgid "E989: Non-default argument follows default argument"
-msgstr ""
+msgstr "E989: El argumento no predeterminado sigue al argumento predeterminado"
 
 #: ../errors.h:2588
-#, fuzzy, c-format
+#, c-format
 msgid "E990: Missing end marker '%s'"
-msgstr "E769: Falta ] después de %s["
+msgstr "E990: Falta el marcador final '%s'"
 
 #: ../errors.h:2590
 msgid "E991: cannot use =<< here"
-msgstr ""
+msgstr "E991: No se puede usar =<< aquí"
 
 #: ../errors.h:2593
-#, fuzzy
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
-msgstr "E520: No permitido en una \"modeline\""
+msgstr ""
+"E992: No permitido en una \"modeline\" cuando \"modelineexpr\" está"
+" desactivado"
 
 #: ../errors.h:2596
 #, c-format
 msgid "E993: window %d is not a popup window"
-msgstr ""
+msgstr "E993: La ventana %d no es una ventana emergente"
 
 #: ../errors.h:2598
-#, fuzzy
 msgid "E994: Not allowed in a popup window"
-msgstr "E48: No se permite en el ambiente protegido"
+msgstr "E994: No permitido en una ventana emergente"
 
 #: ../errors.h:2600
-#, fuzzy
 msgid "E995: Cannot modify existing variable"
-msgstr "E795: No se pudo borrar la variable %s"
+msgstr "E995: No se puede modificar la variable existente"
 
 #: ../errors.h:2602
-#, fuzzy
 msgid "E996: Cannot lock a range"
-msgstr "E784: No se pudo cerrar la última ventana"
+msgstr "E996: No se puede bloquear un rango"
 
 #: ../errors.h:2604
 msgid "E996: Cannot lock an option"
-msgstr ""
+msgstr "E996: No se puede bloquear una opción"
 
 #: ../errors.h:2606
-#, fuzzy
 msgid "E996: Cannot lock a list or dict"
-msgstr "E90: No se pudo descargar el último búfer"
+msgstr "E996: No se puede bloquear una lista o \"dict\""
 
 #: ../errors.h:2608
-#, fuzzy
 msgid "E996: Cannot lock an environment variable"
-msgstr "variable de entorno"
+msgstr "E996: No se puede bloquear una variable de entorno"
 
 #: ../errors.h:2610
-#, fuzzy
 msgid "E996: Cannot lock a register"
-msgstr "E90: No se pudo descargar el último búfer"
+msgstr "E996: No se puede bloquear un registro"
 
 #: ../errors.h:2614
-#, fuzzy, c-format
+#, c-format
 msgid "E997: Tabpage not found: %d"
-msgstr "E426: No se encontró la etiqueta: %s"
+msgstr "E997: Pestaña no encontrada:% d"
 
 #: ../errors.h:2618
 #, c-format
 msgid "E998: Reduce of an empty %s with no initial value"
-msgstr ""
+msgstr "E998: Reducción de un %s vacío sin valor inicial"
 
 #: ../errors.h:2621
-#, fuzzy, c-format
+#, c-format
 msgid "E999: scriptversion not supported: %d"
-msgstr "E519: Opción no admitida"
+msgstr "E999: Versión de script no admitida: %d"
 
 #: ../errors.h:2625
-#, fuzzy, c-format
+#, c-format
 msgid "E1001: Variable not found: %s"
-msgstr "E161: No se ha encontrado el \"breakpoint\": %s"
+msgstr "E1001: Variable no encontrada: %s"
 
 #: ../errors.h:2627
-#, fuzzy, c-format
+#, c-format
 msgid "E1002: Syntax error at %s"
-msgstr "E554: Error de sintaxis en %s{...}"
+msgstr "E1002: Error de sintaxis en %s"
 
 #: ../errors.h:2629
-#, fuzzy
 msgid "E1003: Missing return value"
-msgstr "E170: Falta \":endwhile\""
+msgstr "E1003: Falta el valor de retorno"
 
 #: ../errors.h:2631
 #, c-format
 msgid "E1004: White space required before and after '%s' at \"%s\""
-msgstr ""
+msgstr "E1004: Espacio en blanco requerido antes y después de '%s' en \"%s\""
 
 #: ../errors.h:2633
-#, fuzzy
 msgid "E1005: Too many argument types"
-msgstr "E699: Demasiados argumentos"
+msgstr "E1005: Demasiados tipos de argumentos"
 
 #: ../errors.h:2635
 #, c-format
 msgid "E1006: %s is used as an argument"
-msgstr ""
+msgstr "E1006: %s se usa como argumento"
 
 #: ../errors.h:2637
-#, fuzzy
 msgid "E1007: Mandatory argument after optional argument"
-msgstr "Basura después de la opción"
+msgstr "E1007: Argumento obligatorio tras argumento opcional"
 
 #: ../errors.h:2639
-#, fuzzy
 msgid "E1008: Missing <type>"
-msgstr "E600: Falta \":endtry\""
+msgstr "E1008: Falta <type>"
 
 #: ../errors.h:2641
-#, fuzzy
 msgid "E1009: Missing > after type"
-msgstr "E109: Falta un \":\" después de \"?\""
+msgstr "E1009: Falta > después del tipo"
 
 #: ../errors.h:2643
-#, fuzzy, c-format
+#, c-format
 msgid "E1010: Type not recognized: %s"
-msgstr "E421: Nombre o número de color desconocido: %s"
+msgstr "E1010: Tipo no reconocido: %s"
 
 #: ../errors.h:2645
-#, fuzzy, c-format
+#, c-format
 msgid "E1011: Name too long: %s"
-msgstr "E75: El nombre es demasiado largo"
+msgstr "E1011: Nombre demasiado largo: %s"
 
 #: ../errors.h:2647
 #, c-format
 msgid "E1012: Type mismatch; expected %s but got %s"
-msgstr ""
+msgstr "E1012: Tipo no coincidente; esperaba %s pero obtuvo %s"
 
 #: ../errors.h:2649
 #, c-format
 msgid "E1012: Type mismatch; expected %s but got %s in %s"
-msgstr ""
+msgstr "E1012: Tipo no coincidente; esperaba %s pero obtuvo %s en %s"
 
 #: ../errors.h:2651
 #, c-format
 msgid "E1013: Argument %d: type mismatch, expected %s but got %s"
 msgstr ""
+"E1013: Argumento %d: tipo no coincidente, se esperaba %s pero se obtuvo %s"
 
 #: ../errors.h:2653
 #, c-format
 msgid "E1013: Argument %d: type mismatch, expected %s but got %s in %s"
 msgstr ""
+"E1013: Argumento %d: tipo no coincidente, se esperaba %s pero se obtuvo %s en"
+" %s"
 
 #: ../errors.h:2655
-#, fuzzy, c-format
+#, c-format
 msgid "E1014: Invalid key: %s"
-msgstr "E181: El atributo no es válido: %s"
+msgstr "E1014: Clave no válida: %s"
 
 #: ../errors.h:2657
-#, fuzzy, c-format
+#, c-format
 msgid "E1015: Name expected: %s"
-msgstr "E39: Se esperaba un número"
+msgstr "E1015: Se esperaba un nombre: %s"
 
 #: ../errors.h:2659
-#, fuzzy, c-format
+#, c-format
 msgid "E1016: Cannot declare a %s variable: %s"
-msgstr "E795: No se pudo borrar la variable %s"
+msgstr "E1016: No se puede declarar una variable %s: %s"
 
 #: ../errors.h:2661
-#, fuzzy, c-format
+#, c-format
 msgid "E1016: Cannot declare an environment variable: %s"
-msgstr "E795: No se pudo borrar la variable %s"
+msgstr "E1016: No se puede declarar una variable de entorno: %s"
 
 #: ../errors.h:2663
 #, c-format
 msgid "E1017: Variable already declared: %s"
-msgstr ""
+msgstr "E1017: Variable ya declarada: %s"
 
 #: ../errors.h:2665
-#, fuzzy, c-format
+#, c-format
 msgid "E1018: Cannot assign to a constant: %s"
-msgstr "E160: Orden de signo desconocida: %s"
+msgstr "E1018: No se puede asignar a una constante: %s"
 
 #: ../errors.h:2667
-#, fuzzy
 msgid "E1019: Can only concatenate to string"
-msgstr "E691: Solo se puede comparar una lista con otra lista"
+msgstr "E1019: Solo se puede concatenar a una cadena"
 
 #: ../errors.h:2669
-#, fuzzy, c-format
+#, c-format
 msgid "E1020: Cannot use an operator on a new variable: %s"
-msgstr "E795: No se pudo borrar la variable %s"
+msgstr "E1020: No se puede usar un operador en una nueva variable: %s"
 
 #: ../errors.h:2671
-#, fuzzy
 msgid "E1021: Const requires a value"
-msgstr "E709: [:] requiere un valor de la lista"
+msgstr "E1021: \"Const\" requiere un valor"
 
 #: ../errors.h:2673
-#, fuzzy
 msgid "E1022: Type or initialization required"
-msgstr "E808: Se requiere \"Number\" o \"Float\""
+msgstr "E1022: Tipo o inicialización requerida"
 
 #: ../errors.h:2675
-#, fuzzy, c-format
+#, c-format
 msgid "E1023: Using a Number as a Bool: %lld"
-msgstr "E703: Usando una función de referencia como \"Number\""
+msgstr "E1023: Uso de un \"Number\" como \"Bool\": %lld"
 
 #: ../errors.h:2677
-#, fuzzy
 msgid "E1024: Using a Number as a String"
-msgstr "E729: Usando una Función de referencia como \"String\""
+msgstr "E1024: Uso de un \"Number\" como \"String\""
 
 #: ../errors.h:2679
-#, fuzzy
 msgid "E1025: Using } outside of a block scope"
-msgstr ""
-"E168: Ha usado \":finish\" fuera de un archivo de instrucciones ejecutables"
+msgstr "E1025: Uso de } fuera de un ámbito de bloque"
 
 #: ../errors.h:2682
-#, fuzzy
 msgid "E1026: Missing }"
-msgstr "E220: Falta un }."
+msgstr "E1026: Falta un }"
 
 #: ../errors.h:2685
-#, fuzzy
 msgid "E1027: Missing return statement"
-msgstr "E107: Faltan paréntesis: %s"
+msgstr "E1027: Declaración de devolución faltante"
 
 #: ../errors.h:2687
-#, fuzzy
 msgid "E1028: Compiling :def function failed"
-msgstr "E702: Fallo al ordenar funciones comparadas"
+msgstr "E1028: Error al compilar la función :def"
 
 #: ../errors.h:2689
-#, fuzzy, c-format
+#, c-format
 msgid "E1029: Expected %s but got %s"
-msgstr "E415: Signo \"=\" inesperado: %s"
+msgstr "E1029: Se esperaba %s pero se obtuvo %s"
 
 #: ../errors.h:2691
-#, fuzzy, c-format
+#, c-format
 msgid "E1030: Using a String as a Number: \"%s\""
-msgstr "E703: Usando una función de referencia como \"Number\""
+msgstr "E1030: Usando una \"String\" como \"Number\": \"%s\""
 
 #: ../errors.h:2693
-#, fuzzy
 msgid "E1031: Cannot use void value"
-msgstr "E284: No se pudo fijar los valores IC"
+msgstr "E1031: No se puede usar el valor nulo"
 
 # Give up for a ":catch" after ":finally" and ignore it.
 # * Just parse.
 #: ../errors.h:2695
-#, fuzzy
 msgid "E1032: Missing :catch or :finally"
-msgstr "E604: ¡\":catch\" después de \":finally\"!"
+msgstr "E1032: Falta :catch o :finally"
 
 #: ../errors.h:2697
 msgid "E1033: Catch unreachable after catch-all"
-msgstr ""
+msgstr "E1033: \"Catch\" inalcanzable después de \"catch-all\""
 
 #: ../errors.h:2699
-#, fuzzy, c-format
+#, c-format
 msgid "E1034: Cannot use reserved name %s"
-msgstr "E247: El servidor llamado \"%s\" no está registrado"
+msgstr "E1034: No se puede usar el nombre reservado %s"
 
 #: ../errors.h:2702
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "E1035: % requires number arguments"
-msgstr "E465: \":winsize\" requiere de dos argumentos numéricos"
+msgstr "E1035: % requiere argumentos numéricos"
 
 #: ../errors.h:2704
-#, fuzzy, c-format
+#, c-format
 msgid "E1036: %c requires number or float arguments"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E1036: %c requiere argumentos numéricos o flotantes"
 
 # if Vim opened a window: Executing a shell may cause crashes
 #: ../errors.h:2706
-#, fuzzy, c-format
+#, c-format
 msgid "E1037: Cannot use \"%s\" with %s"
-msgstr "E804: No se puede usar '%' con \"Float\""
+msgstr "E1037: No se puede usar \"%s\" con %s"
 
 #: ../errors.h:2708
-#, fuzzy
 msgid "E1038: \"vim9script\" can only be used in a script"
-msgstr "E785: complete() solo se puede usar en modo \"Insert\""
+msgstr "E1038: \"vim9script\" solo se puede usar en un script"
 
 #: ../errors.h:2710
 msgid "E1039: \"vim9script\" must be the first command in a script"
-msgstr ""
+msgstr "E1039: \"vim9script\" debe ser el primer comando en un script"
 
 #: ../errors.h:2713
 msgid "E1040: Cannot use :scriptversion after :vim9script"
-msgstr ""
+msgstr "E1040: No se puede usar :scriptversion después de :vim9script"
 
 #: ../errors.h:2716
 #, c-format
 msgid "E1041: Redefining script item: \"%s\""
-msgstr ""
+msgstr "E1041: Redefiniendo elemento de script: \"%s\""
 
 #: ../errors.h:2718
-#, fuzzy
 msgid "E1042: Export can only be used in vim9script"
-msgstr "E785: complete() solo se puede usar en modo \"Insert\""
+msgstr "E1042: La exportación solo se puede usar en vim9script"
 
 #: ../errors.h:2720
-#, fuzzy
 msgid "E1043: Invalid command after :export"
-msgstr "E182: El nombre de la orden no es válido"
+msgstr "E1043: Comando no válido después de :export"
 
 #: ../errors.h:2722
-#, fuzzy
 msgid "E1044: Export with invalid argument"
-msgstr "E474: El argumento no es válido"
+msgstr "E1044: Exportar con argumento no válido"
 
 #: ../errors.h:2726
-#, fuzzy, c-format
+#, c-format
 msgid "E1047: Syntax error in import: %s"
-msgstr "E554: Error de sintaxis en %s{...}"
+msgstr "E1047: Error de sintaxis en la importación: %s"
 
 #: ../errors.h:2728
-#, fuzzy, c-format
+#, c-format
 msgid "E1048: Item not found in script: %s"
-msgstr "E486: No se encontró el patrón de búsqueda: %s"
+msgstr "E1048: Elemento no encontrado en el script: %s"
 
 #: ../errors.h:2730
 #, c-format
 msgid "E1049: Item not exported in script: %s"
-msgstr ""
+msgstr "E1049: Elemento no exportado en script: %s"
 
 #: ../errors.h:2732
 #, c-format
 msgid "E1050: Colon required before a range: %s"
-msgstr ""
+msgstr "E1050: Se requieren dos puntos antes de un rango: %s"
 
 #: ../errors.h:2734
-#, fuzzy
 msgid "E1051: Wrong argument type for +"
-msgstr "E734: Tipo de variable incorrecta para %s="
+msgstr "E1051: Tipo de argumento incorrecto para +"
 
 #: ../errors.h:2736
-#, fuzzy, c-format
+#, c-format
 msgid "E1052: Cannot declare an option: %s"
-msgstr "E113: Opción desconocida: %s"
+msgstr "E1052: No se puede declarar una opción: %s"
 
 #: ../errors.h:2738
-#, fuzzy, c-format
+#, c-format
 msgid "E1053: Could not import \"%s\""
-msgstr "E321: No pude recargar \"%s\""
+msgstr "E1053: No se pudo importar \"%s\""
 
 #: ../errors.h:2740
 #, c-format
 msgid "E1054: Variable already declared in the script: %s"
-msgstr ""
+msgstr "E1054: Variable ya declarada en el script: %s"
 
 #: ../errors.h:2742
-#, fuzzy
 msgid "E1055: Missing name after ..."
-msgstr "E526: Falta el número después de <%s>"
+msgstr "E1055: Falta el nombre después de ..."
 
 #: ../errors.h:2744
-#, fuzzy, c-format
+#, c-format
 msgid "E1056: Expected a type: %s"
-msgstr "E415: Signo \"=\" inesperado: %s"
+msgstr "E1056: Se esperaba un tipo: %s"
 
 #: ../errors.h:2746
-#, fuzzy
 msgid "E1057: Missing :enddef"
-msgstr "E171: Falta \":endif\""
+msgstr "E171: Falta \":enddef\""
 
 #: ../errors.h:2748
-#, fuzzy
 msgid "E1058: Function nesting too deep"
-msgstr "E218: La auto-orden se anida en exceso"
+msgstr "E1058: Anidamiento de función demasiado profundo"
 
 #: ../errors.h:2750
 #, c-format
 msgid "E1059: No white space allowed before colon: %s"
-msgstr ""
+msgstr "E1059: No se permiten espacios en blanco antes de los dos puntos: %s"
 
 #: ../errors.h:2752
-#, fuzzy, c-format
+#, c-format
 msgid "E1060: Expected dot after name: %s"
-msgstr "E386: Esperaba \"?\" o \"/\" después de \";\""
+msgstr "E1060: Punto esperado después del nombre: %s"
 
 #: ../errors.h:2754
-#, fuzzy, c-format
+#, c-format
 msgid "E1061: Cannot find function %s"
-msgstr "E130: Función desconocida: %s"
+msgstr "E1061: No se puede encontrar la función %s"
 
 #: ../errors.h:2756
-#, fuzzy
 msgid "E1062: Cannot index a Number"
-msgstr "E695: No se puede crear un índice de un \"Funcref\""
+msgstr "E1062: No se puede indexar un \"Number\""
 
 #: ../errors.h:2758
-#, fuzzy
 msgid "E1063: Type mismatch for v: variable"
-msgstr "E706: Tipo de variable no concuerda con : %s"
+msgstr "E1063: Tipo no coincidente para v: variable"
 
 #: ../errors.h:2761
 msgid "E1064: Yank register changed while using it"
-msgstr ""
+msgstr "E1064: El registro de copia (\"Yank\") cambió mientras lo usaba"
 
-#
 # * The error messages that can be shared are included here.
 # * Excluded are errors that are only used once and debugging messages.
-#
 #: ../errors.h:2763
-#, fuzzy, c-format
+#, c-format
 msgid "E1065: Command cannot be shortened: %s"
-msgstr "E470: La orden se ha interrumpido"
+msgstr "E1065: El comando no se puede acortar: %s"
 
 #: ../errors.h:2766
-#, fuzzy, c-format
+#, c-format
 msgid "E1066: Cannot declare a register: %s"
-msgstr "E739: No se pudo crear directorio: %s"
+msgstr "E1066: No se puede declarar un registro: %s"
 
 #: ../errors.h:2768
-#, fuzzy, c-format
+#, c-format
 msgid "E1067: Separator mismatch: %s"
-msgstr "E706: Tipo de variable no concuerda con : %s"
+msgstr "E1067: No coincide tipo del separador: %s"
 
 #: ../errors.h:2770
 #, c-format
 msgid "E1068: No white space allowed before '%s': %s"
-msgstr ""
+msgstr "E1068: No se permiten espacios en blanco antes de '%s': %s"
 
 #: ../errors.h:2772
 #, c-format
 msgid "E1069: White space required after '%s': %s"
-msgstr ""
+msgstr "E1069: Espacio en blanco requerido después de '%s': %s"
 
 #: ../errors.h:2774
-#, fuzzy, c-format
+#, c-format
 msgid "E1071: Invalid string for :import: %s"
-msgstr "E116: Argumentos inválidos para la función: %s"
+msgstr "E1071: Cadena no válida para :import: %s"
 
 #: ../errors.h:2776
-#, fuzzy, c-format
+#, c-format
 msgid "E1072: Cannot compare %s with %s"
-msgstr "E691: Solo se puede comparar una lista con otra lista"
+msgstr "E1072: No se puede comparar %s con %s"
 
 #: ../errors.h:2778
-#, fuzzy, c-format
+#, c-format
 msgid "E1073: Name already defined: %s"
-msgstr "E737: Ya existe una llave: %s"
+msgstr "E1073: Nombre ya definido: %s"
 
 #: ../errors.h:2780
-#, fuzzy
 msgid "E1074: No white space allowed after dot"
-msgstr "E790: \"undojoin\" no está permitido después de \"undo\""
+msgstr "E1074: No se permiten espacios en blanco después del punto"
 
 #: ../errors.h:2782
-#, fuzzy, c-format
+#, c-format
 msgid "E1075: Namespace not supported: %s"
-msgstr "E666: El compilador no es compatible en esta versión: %s"
+msgstr "E1075: Espacio de nombres no admitido: %s"
 
 #: ../errors.h:2785
-#, fuzzy
 msgid "E1076: This Vim is not compiled with float support"
-msgstr "Este Vim no se ha compilado con la opción \"diff\""
+msgstr "E1076: Este Vim no está compilado con soporte flotante"
 
 #: ../errors.h:2788
-#, fuzzy, c-format
+#, c-format
 msgid "E1077: Missing argument type for %s"
-msgstr "E417: Falta el argumento: %s"
+msgstr "E1077: Falta el tipo de argumento para %s"
 
 #: ../errors.h:2791
 msgid "E1078: Invalid command \"nested\", did you mean \"++nested\"?"
-msgstr ""
+msgstr "E1078: Comando no válido \"nested\", ¿quiso decir \"++nested\"?"
 
 #: ../errors.h:2794
-#, fuzzy
 msgid "E1079: Cannot declare a variable on the command line"
-msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
+msgstr "E1079: No se puede declarar una variable en la línea de comando"
 
 #: ../errors.h:2796
-#, fuzzy
 msgid "E1080: Invalid assignment"
-msgstr "E474: El argumento no es válido"
+msgstr "E1080: Asignación no válida"
 
 #: ../errors.h:2798
-#, fuzzy, c-format
+#, c-format
 msgid "E1081: Cannot unlet %s"
-msgstr "E306: No se pudo abrir %s"
+msgstr "E1081: No se puede deshabilitar %s"
 
 #: ../errors.h:2801
-#, fuzzy
 msgid "E1082: Command modifier without command"
-msgstr "E492: No es una orden del editor"
+msgstr "E1082: Modificador de comando sin comando"
 
 #: ../errors.h:2804
-#, fuzzy
 msgid "E1083: Missing backtick"
-msgstr "E110: Falta un \")\""
+msgstr "E1083: Falta una comilla"
 
 #: ../errors.h:2806
-#, fuzzy, c-format
+#, c-format
 msgid "E1084: Cannot delete Vim9 script function %s"
-msgstr "E131: No se pudo eliminar la función %s: Está en uso"
+msgstr ""
+"E1084: No se puede eliminar la función de secuencia de comandos de Vim9 %s"
 
 #: ../errors.h:2808
-#, fuzzy, c-format
+#, c-format
 msgid "E1085: Not a callable type: %s"
-msgstr "E108: No existe la variable: \"%s\""
+msgstr "E1085: No es un tipo invocable: %s"
 
 #: ../errors.h:2811
 msgid "E1087: Cannot use an index when declaring a variable"
-msgstr ""
+msgstr "E1087: No se puede usar un índice al declarar una variable"
 
 #: ../errors.h:2813
 msgid "E1088: Script cannot import itself"
-msgstr ""
+msgstr "E1088: El script no puede importarse a sí mismo"
 
 #: ../errors.h:2815
-#, fuzzy, c-format
+#, c-format
 msgid "E1089: Unknown variable: %s"
-msgstr "E121: Variable sin definir: %s"
+msgstr "E1089: Variable desconocida: %s"
 
 #: ../errors.h:2817
-#, fuzzy, c-format
+#, c-format
 msgid "E1090: Cannot assign to argument %s"
-msgstr "E197: No se pudo establecer la opción del idioma a \"%s\""
+msgstr "E1090: No se puede asignar al argumento %s"
 
 #: ../errors.h:2819
-#, fuzzy, c-format
+#, c-format
 msgid "E1091: Function is not compiled: %s"
-msgstr "E160: Orden de signo desconocida: %s"
+msgstr "E1091: La función no está compilada: %s"
 
 #: ../errors.h:2821
-#, fuzzy
 msgid "E1092: Cannot nest :redir"
-msgstr "E97: No se pudieron crear las \"diffs\" (diferencias)"
+msgstr "E1092: No se puede anidar: redir"
 
 #: ../errors.h:2823
 #, c-format
 msgid "E1093: Expected %d items but got %d"
-msgstr ""
+msgstr "E1093: Se esperaban %d artículos pero se obtuvieron %d"
 
 #: ../errors.h:2825
-#, fuzzy
 msgid "E1094: Import can only be used in a script"
-msgstr "E785: complete() solo se puede usar en modo \"Insert\""
+msgstr "E1094: La importación solo se puede usar en un script"
 
 #: ../errors.h:2827
 msgid "E1095: Unreachable code after :return"
-msgstr ""
+msgstr "E1095: Código inalcanzable después de :return"
 
 #: ../errors.h:2829
 msgid "E1096: Returning a value in a function without a return type"
-msgstr ""
+msgstr "E1096: Devolver un valor en una función sin un tipo de retorno"
 
 #: ../errors.h:2831
 msgid "E1097: Line incomplete"
-msgstr ""
+msgstr "E1097: Línea incompleta"
 
 #: ../errors.h:2833
-#, fuzzy
 msgid "E1098: String, List or Blob required"
-msgstr "E808: Se requiere \"Number\" o \"Float\""
+msgstr "E1098: Se requiere \"String, \"List\" o \"Blob\""
 
 #: ../errors.h:2835
-#, fuzzy, c-format
+#, c-format
 msgid "E1099: Unknown error while executing %s"
-msgstr "E130: Función desconocida: %s"
+msgstr "E1099: Error desconocido al ejecutar %s"
 
 #: ../errors.h:2837
 #, c-format
 msgid "E1100: Command not supported in Vim9 script (missing :var?): %s"
-msgstr ""
+msgstr "E1100: Comando no admitido en el script de Vim9 (¿falta :var?): %s"
 
 #: ../errors.h:2839
-#, fuzzy, c-format
+#, c-format
 msgid "E1101: Cannot declare a script variable in a function: %s"
-msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
+msgstr "E1101: No se puede declarar una variable de script en una función: %s"
 
 #: ../errors.h:2841
-#, fuzzy, c-format
+#, c-format
 msgid "E1102: Lambda function not found: %s"
-msgstr "E161: No se ha encontrado el \"breakpoint\": %s"
+msgstr "E1102: Función Lambda no encontrada: %s"
 
 #: ../errors.h:2843
-#, fuzzy
 msgid "E1103: Dictionary not set"
-msgstr "E20: No se ha colocado una marca"
+msgstr "E1103: Diccionario no establecido"
 
 #: ../errors.h:2845
-#, fuzzy
 msgid "E1104: Missing >"
-msgstr "E110: Falta un \")\""
+msgstr "E1104: Falta un \">\""
 
 #: ../errors.h:2847
-#, fuzzy, c-format
+#, c-format
 msgid "E1105: Cannot convert %s to string"
-msgstr "E152: No se pudo abrir %s para escritura"
+msgstr "E1105: No se puede convertir %s a cadena"
 
 #: ../errors.h:2849
-#, fuzzy
 msgid "E1106: One argument too many"
-msgstr "E144: Argumento no numérico para \":z\""
+msgstr "E1106: Un argumento de más"
 
 #: ../errors.h:2851
-#, fuzzy, c-format
+#, c-format
 msgid "E1106: %d arguments too many"
-msgstr "E116: Argumentos inválidos para la función: %s"
+msgstr "E1106: %d argumentos de más"
 
 #: ../errors.h:2853
 msgid "E1107: String, List, Dict or Blob required"
-msgstr ""
+msgstr "E1107: Se requiere \"String\", \"List\", \"Diccionario\" o \"Blob\""
 
 #: ../errors.h:2855
-#, fuzzy, c-format
+#, c-format
 msgid "E1108: Item not found: %s"
-msgstr "E486: No se encontró el patrón de búsqueda: %s"
+msgstr "E1108: Elemento no encontrado: %s"
 
 #: ../errors.h:2857
-#, fuzzy, c-format
+#, c-format
 msgid "E1109: List item %d is not a List"
-msgstr "E711: La lista de valores no tiene suficientes elementos"
+msgstr "E1109: El elemento de lista %d no es una lista"
 
 #: ../errors.h:2859
 #, c-format
 msgid "E1110: List item %d does not contain 3 numbers"
-msgstr ""
+msgstr "E1110: El elemento de lista %d no contiene 3 números"
 
 #: ../errors.h:2861
 #, c-format
 msgid "E1111: List item %d range invalid"
-msgstr ""
+msgstr "E1111: Elemento %d de lista, rango no válido"
 
 #: ../errors.h:2863
 #, c-format
 msgid "E1112: List item %d cell width invalid"
-msgstr ""
+msgstr "E1112: Elemento %d de lista, ancho de celda no válido"
 
 #: ../errors.h:2865
 #, c-format
 msgid "E1113: Overlapping ranges for 0x%lx"
-msgstr ""
+msgstr "E1113: Rangos superpuestos para 0x%lx"
 
 #: ../errors.h:2867
 msgid "E1114: Only values of 0x100 and higher supported"
-msgstr ""
+msgstr "E1114: Solo se admiten valores de 0x100 y superiores"
 
 #: ../errors.h:2869
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
-msgstr ""
+msgstr "E1115: El cuarto argumento \"assert_fails()\" debe ser un número"
 
 #: ../errors.h:2871
 msgid "E1116: \"assert_fails()\" fifth argument must be a string"
-msgstr ""
+msgstr "E1116: El quinto argumento \"assert_fails()\" debe ser una cadena"
 
 # if Vim opened a window: Executing a shell may cause crashes
 #: ../errors.h:2873
