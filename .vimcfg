@@ -1,0 +1,20 @@
+" 定义项目中文编码,不配置时默认为'utf8'且总是保持原有文本格式,配置后保存文件时会自动转码编码格式
+" let g:proj_encode = 'gbk'
+" let g:proj_usetab = 1 " 定义项目是否使用空格键替换tab键, 默认启用, 不要替换时需显示配置为0
+" set complete=.,b,u,U  " 补全时去除tags检索, 编辑内核等大型项目源码时建议配置(避免补全卡顿)
+
+let g:make_cmd = 'make -j12'   " 定义项目make命令, 默认的-j4参数实现并发编译
+let g:make_cln = 'make clean' " 定义项目清理make对应的命令, 默认为make clean
+let g:make_after = '' " 定义项目make之后需要执行的固定命令逻辑, 用于实现make后的固定自动化操作
+let g:build_dir  = '' " 定义编译目录, 默认搜索Makefile所在目录以及.vimcfg所在目录下的build目录
+let g:auto_run   = '' " 定义编译后希望自动执行的自动化脚本
+
+let g:proj_enable   = 1 " 定义vim启动时是否自动打开project侧边栏, 为了方便浏览项目文件一般会开启
+let g:tagbar_enable = 1 " 定义是否自动开打tagbar侧边栏, 默认开启, 存在tagbar不支持的项目可以关闭
+let g:ctags_enable  = 1 " 定义项目是否使用ctags, ctags支持很多种编程语言, 因此一般项目都建议开启
+
+" 定义proj_file侧边栏需要排除的文件类型, 这些类型文件不会在proj_file侧边栏中显示(空文件夹也不会显示)
+let g:proj_file_ignore_filter = ['*.[oad]$\|*.[skl]o$\|*.bin'] " for generatos projcect
+" let g:proj_folder_ignore_filter = [] " 定义project插件的文件夹过滤规则, 建议优先使用.vim_pass文件配置
+let g:rg_args    = ['--no-ignore'] " 定义rg全项目搜索的额外参数(rg总会自动忽略项目的.vim_pass文件中定义的文件夹列表)
+let g:ctags_args = [] " 定义生成ctags的额外参数(ctags总会自动忽略项目的.vim_pass文件中定义的文件夹列表)

@@ -5850,6 +5850,7 @@ im_set_position(int row, int col)
     void
 im_set_active(int active)
 {
+    return;
     HIMC	hImc;
     static HIMC	hImcOld = (HIMC)0;
 

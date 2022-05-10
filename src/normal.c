@@ -2585,6 +2585,12 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	    else
 	    {
 		// to previous line
+		if (curwin->w_cursor.lnum == 1)
+		{
+		    retval = FAIL;
+		    break;
+		}
+		--curwin->w_cursor.lnum;
 #ifdef FEAT_FOLDING
 		// Move to the start of a closed fold.  Don't do that when
 		// 'foldopen' contains "all": it will open in a moment.
@@ -2592,13 +2598,6 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		    (void)hasFolding(curwin->w_cursor.lnum,
 						&curwin->w_cursor.lnum, NULL);
 #endif
-		if (curwin->w_cursor.lnum == 1)
-		{
-		    retval = FAIL;
-		    break;
-		}
-		--curwin->w_cursor.lnum;
-
 		linelen = linetabsize(ml_get_curline());
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
@@ -5988,8 +5987,13 @@ nv_g_cmd(cmdarg_T *cap)
      */
     case 'j':
     case K_DOWN:
-	// with 'nowrap' it works just like the normal "j" command.
-	if (!curwin->w_p_wrap)
+	// with 'nowrap' it works just like the normal "k" command; also when
+	// in a closed fold
+	if (!curwin->w_p_wrap
+#ifdef FEAT_FOLDING
+		|| hasFolding(curwin->w_cursor.lnum, NULL, NULL)
+#endif
+	   )
 	{
 	    oap->motion_type = MLINE;
 	    i = cursor_down(cap->count1, oap->op_type == OP_NOP);
@@ -6002,8 +6006,13 @@ nv_g_cmd(cmdarg_T *cap)
 
     case 'k':
     case K_UP:
-	// with 'nowrap' it works just like the normal "k" command.
-	if (!curwin->w_p_wrap)
+	// with 'nowrap' it works just like the normal "j" command; also when
+	// in a closed fold
+	if (!curwin->w_p_wrap
+#ifdef FEAT_FOLDING
+		|| hasFolding(curwin->w_cursor.lnum, NULL, NULL)
+#endif
+		)
 	{
 	    oap->motion_type = MLINE;
 	    i = cursor_up(cap->count1, oap->op_type == OP_NOP);
