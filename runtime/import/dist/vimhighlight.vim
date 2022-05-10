@@ -206,7 +206,7 @@ const inputs: dict<list<string>> = {
     style: term_attr,
 }
 
-const syntax_highlighting =<< trim eval END
+const pum_syntax_highlighting =<< trim eval END
     syntax clear
 
     syntax keyword HighlightTestBool true false
@@ -221,12 +221,14 @@ const syntax_highlighting =<< trim eval END
     syntax match HighlightTestTermAttr /{term_attr->join('\|')}/
     syntax match HighlightTestFontName /font=\w\+/ transparent
 
-    highlight default link HighlightTestEqual {HL_PUM.Equal}
-    highlight default link HighlightTestNumber {HL_PUM.Number}
-    highlight default link HighlightTestDelimiter {HL_PUM.Delimiter}
-    highlight default link HighlightTestBool {HL_PUM.Bool}
-    highlight default link HighlightTestTermAttr {HL_PUM.TermAttr}
-    highlight default link HighlightTestLinkedGroup {HL_PUM.LinkedGroup}
+    # We don't pass the `default` argument to `:highlight`, to be sure the
+    # groups are restored after sth like `:highlight clear`.
+    highlight link HighlightTestEqual {HL_PUM.Equal}
+    highlight link HighlightTestNumber {HL_PUM.Number}
+    highlight link HighlightTestDelimiter {HL_PUM.Delimiter}
+    highlight link HighlightTestBool {HL_PUM.Bool}
+    highlight link HighlightTestTermAttr {HL_PUM.TermAttr}
+    highlight link HighlightTestLinkedGroup {HL_PUM.LinkedGroup}
 END
 
 # Interface {{{1
@@ -247,6 +249,7 @@ export def HighlightTest() #{{{2
     # needs to be  run *after* all the text  has been set, for the  latter to be
     # correctly folded
     SetOptionsAndInterface()
+    normal! 1GzR
 enddef
 
 def FoldExpr(): string #{{{2
@@ -280,7 +283,7 @@ def Change() #{{{2
             highlight: 'Normal',
             mapping: false,
         })
-    win_execute(winid, syntax_highlighting)
+    win_execute(winid, pum_syntax_highlighting)
 enddef
 
 def MenuFilter(_, key: string): bool #{{{2
@@ -934,7 +937,7 @@ def FollowChains(groups: list<string>): list<string> #{{{2
             target = target->LinksTo()
         endwhile
         var a_link_is_cleared: bool = chain
-            ->split('\s*' .. LINK .. '\s*')
+            ->split($'\s*${LINK}\s*')
             ->map((_, g: string) => g->IsCleared())
             ->index(true) >= 0
         if a_link_is_cleared
