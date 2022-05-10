@@ -2464,7 +2464,8 @@ def Test_maparg()
         scriptversion: 999999,
         rhs: 'bar',
         buffer: 0,
-        abbr: 0})
+        abbr: 0,
+        mode_bits: 0x47})
   unmap foo
   v9.CheckDefAndScriptFailure(['maparg(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['maparg("a", 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])

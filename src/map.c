@@ -2303,6 +2303,7 @@ mapblock2dict(
     dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
     dict_add_string(dict, "mode", mapmode);
     dict_add_number(dict, "abbr", abbr ? 1L : 0L);
+    dict_add_number(dict, "mode_bits", mp->m_mode);
 
     vim_free(mapmode);
 }
