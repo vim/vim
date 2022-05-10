@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-07 21:24+0200\n"
+"PO-Revision-Date: 2022-05-10 18:53+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -7472,7 +7472,7 @@ msgstr "E535: Carácter ilegal después de <%c>"
 
 #: ../errors.h:1348
 msgid "E536: comma required"
-msgstr "E536: necesita una coma"
+msgstr "E536: Necesita una coma"
 
 #: ../errors.h:1350
 #, c-format
@@ -7480,9 +7480,9 @@ msgid "E537: 'commentstring' must be empty or contain %s"
 msgstr "E537: 'commentstring' debe estar vacío o contener %s"
 
 #: ../errors.h:1353
-#, fuzzy, c-format
+#, c-format
 msgid "E538: Pattern found in every line: %s"
-msgstr "Patrón encontrado en cada línea: %s"
+msgstr "E538: Patrón encontrado en cada línea: %s"
 
 #: ../errors.h:1355
 #, c-format
@@ -7590,9 +7590,8 @@ msgid "E564: %s is not a directory or a valid cscope database"
 msgstr "E564: \"%s\" no es un directorio ni una base de datos válida de cscope"
 
 #: ../errors.h:1424
-#, fuzzy
 msgid "E565: Not allowed to change text or change window"
-msgstr "E811: No se permite cambiar la información del búfer en este momento"
+msgstr "E565: No se permite cambiar texto o cambiar ventana"
 
 #: ../errors.h:1427
 msgid "E566: Could not create cscope pipes"
@@ -7621,7 +7620,7 @@ msgstr ""
 #: ../errors.h:1442
 #, c-format
 msgid "E572: exit code %d"
-msgstr "E572: código de salida %d"
+msgstr "E572: Código de salida %d"
 
 #: ../errors.h:1446
 #, c-format
@@ -7646,50 +7645,48 @@ msgid "Illegal register name"
 msgstr "Nombre de registro ilegal"
 
 #: ../errors.h:1462
-#, fuzzy
 msgid "E578: Not allowed to change text here"
-msgstr "E523: No se permite aquí"
+msgstr "E578: No se permite cambiar el texto aquí"
 
 #: ../errors.h:1465
 msgid "E579: :if nesting too deep"
-msgstr "E579: ¡\":if\" anidado en exceso!"
+msgstr "E579: \":if\" anidado en exceso"
 
 #: ../errors.h:1467
-#, fuzzy
 msgid "E579: block nesting too deep"
-msgstr "E579: ¡\":if\" anidado en exceso!"
+msgstr "E579: Anidado de bloque en exceso"
 
 #: ../errors.h:1469
 msgid "E580: :endif without :if"
-msgstr "E580: ¡\":endif\" sin un \":if\"!"
+msgstr "E580: \":endif\" sin un \":if\""
 
 #: ../errors.h:1471
 msgid "E581: :else without :if"
-msgstr "E581: ¡\":else\" sin un \":if\"!"
+msgstr "E581: \":else\" sin un \":if\""
 
 #: ../errors.h:1473
 msgid "E582: :elseif without :if"
-msgstr "E582: ¡\":elseif\" sin un \":if\"!"
+msgstr "E582: \":elseif\" sin un \":if\""
 
 #: ../errors.h:1475
 msgid "E583: multiple :else"
-msgstr "E583: ¡\":else\" múltiple!"
+msgstr "E583: \":else\" múltiple"
 
 #: ../errors.h:1477
 msgid "E584: :elseif after :else"
-msgstr "E584: ¡\":elseif\" después de \":else\"!"
+msgstr "E584: \":elseif\" después de \":else\""
 
 #: ../errors.h:1479
 msgid "E585: :while/:for nesting too deep"
-msgstr "E585: ¡\":while\" anidado en exceso!"
+msgstr "E585: \":while\" anidado en exceso"
 
 #: ../errors.h:1481
 msgid "E586: :continue without :while or :for"
-msgstr "E586: ¡\":continue\" sin un \":while\" o \":for\"!"
+msgstr "E586: \":continue\" sin un \":while\" o \":for\""
 
 #: ../errors.h:1483
 msgid "E587: :break without :while or :for"
-msgstr "E587: ¡\":break\" sin \":while\" o \":for\"!"
+msgstr "E587: \":break\" sin \":while\" o \":for\""
 
 #: ../errors.h:1485
 msgid "E588: :endwhile without :while"
@@ -7726,13 +7723,13 @@ msgid "E594: Need at least %d columns"
 msgstr "E594: Necesita al menos %d columnas"
 
 #: ../errors.h:1505
-#, fuzzy
 msgid "E595: 'showbreak' contains unprintable or wide character"
-msgstr "E595: Contiene un carácter no imprimible o de más de un byte"
+msgstr ""
+"E595: \"showbreak\" contiene un carácter no imprimible o de más de un byte"
 
 #: ../errors.h:1509
 msgid "E596: Invalid font(s)"
-msgstr "E596: Las fuente/s de impresión no son válidas"
+msgstr "E596: La/s fuente/s no es/son válida/s"
 
 #: ../errors.h:1512
 msgid "E597: can't select fontset"
@@ -7740,7 +7737,7 @@ msgstr "E597: No se pudo seleccionar ese \"fontset\""
 
 #: ../errors.h:1514
 msgid "E598: Invalid fontset"
-msgstr "E598: El conjunto de tipos de letra de impresión no es válido"
+msgstr "E598: El conjunto de tipos de letra no es válido"
 
 #: ../errors.h:1519
 msgid "E599: Value of 'imactivatekey' is invalid"
@@ -7752,35 +7749,35 @@ msgstr "E600: Falta \":endtry\""
 
 #: ../errors.h:1525
 msgid "E601: :try nesting too deep"
-msgstr "E601: ¡\":try\" anidado en exceso!"
+msgstr "E601: \":try\" anidado en exceso"
 
 #: ../errors.h:1527
 msgid "E602: :endtry without :try"
-msgstr "E602: ¡\":endtry\" sin un \":try\"!"
+msgstr "E602: \":endtry\" sin un \":try\""
 
 #: ../errors.h:1529
 msgid "E603: :catch without :try"
-msgstr "E603: ¡\":catch\" sin un \":try\"!"
+msgstr "E603: \":catch\" sin un \":try\""
 
 # Give up for a ":catch" after ":finally" and ignore it.
 # * Just parse.
 #: ../errors.h:1531
 msgid "E604: :catch after :finally"
-msgstr "E604: ¡\":catch\" después de \":finally\"!"
+msgstr "E604: \":catch\" después de \":finally\""
 
 #: ../errors.h:1533
 #, c-format
 msgid "E605: Exception not caught: %s"
-msgstr "E605: La excepción %s no se atrapó"
+msgstr "E605: Excepción no detectada: %s"
 
 #: ../errors.h:1535
 msgid "E606: :finally without :try"
-msgstr "E606: ¡\":finally\" sin un \":try\"!"
+msgstr "E606: \":finally\" sin un \":try\""
 
 # Give up for a multiple ":finally" and ignore it.
 #: ../errors.h:1537
 msgid "E607: multiple :finally"
-msgstr "E607: ¡\":finally\" múltiple!"
+msgstr "E607: \":finally\" múltiple"
 
 #: ../errors.h:1539
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
@@ -7793,14 +7790,12 @@ msgid "E609: Cscope error: %s"
 msgstr "E609: Error de \"cscope\": %s"
 
 #: ../errors.h:1546
-#, fuzzy
 msgid "E610: No argument to delete"
-msgstr "E144: Argumento no numérico para \":z\""
+msgstr "E610: No hay argumento para eliminar"
 
 #: ../errors.h:1549
-#, fuzzy
 msgid "E611: Using a Special as a Number"
-msgstr "E745: Usando una \"Lista\" como \"Number\""
+msgstr "E745: Usando un \"Special\" como \"Number\""
 
 #: ../errors.h:1553
 msgid "E612: Too many signs defined"
@@ -7809,12 +7804,11 @@ msgstr "E612: Demasiados signos definidos"
 #: ../errors.h:1557
 #, c-format
 msgid "E613: Unknown printer font: %s"
-msgstr "E613: Tipo de letra de impresión desconocida en la impresora: %s"
+msgstr "E613: Fuente de impresora desconocida: %s"
 
 #: ../errors.h:1564
-#, fuzzy
 msgid "E617: Cannot be changed in the GTK GUI"
-msgstr "E617: No puede cambiarse en la interfaz gráfica de GTK+ 2"
+msgstr "E617: No puede cambiarse en la interfaz gráfica de GTK"
 
 #: ../errors.h:1568
 #, c-format
@@ -7824,7 +7818,8 @@ msgstr "E618: El archivo \"%s\" no es un archivo de recursos PostScript"
 #: ../errors.h:1570
 #, c-format
 msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: El archivo \"%s\" no es un recurso PostScript que pueda usar"
+msgstr ""
+"E619: El archivo \"%s\" no es un archivo de recursos de PostScript compatible"
 
 #: ../errors.h:1572
 #, c-format
@@ -7863,17 +7858,17 @@ msgstr ""
 #: ../errors.h:1606
 #, c-format
 msgid "E630: %s(): write while not connected"
-msgstr ""
+msgstr "E630: %s(): escribir mientras no está conectado"
 
 #: ../errors.h:1608
-#, fuzzy, c-format
+#, c-format
 msgid "E631: %s(): write failed"
-msgstr "E314: Falló la preservación del archivo"
+msgstr "E631: %s(): error de escritura"
 
 #: ../errors.h:1656
-#, fuzzy, c-format
+#, c-format
 msgid "E654: missing delimiter after search pattern: %s"
-msgstr "E402: Basura después del patrón: %s"
+msgstr "E654: Delimitador faltante después del patrón de búsqueda: %s"
 
 #: ../errors.h:1659
 msgid "E655: Too many symbolic links (cycle?)"
@@ -7888,18 +7883,18 @@ msgid "Partial writes disallowed for NetBeans buffers"
 msgstr "No se permite la escritura parcial de los búfers de NetBeans"
 
 #: ../errors.h:1669
-#, fuzzy, c-format
+#, c-format
 msgid "E658: NetBeans connection lost for buffer %d"
-msgstr "E658: Se perdió la conexión NetBeans para el búfer %ld"
+msgstr "E658: Se perdió la conexión NetBeans para el búfer %d"
 
 #: ../errors.h:1673
 msgid "E659: Cannot invoke Python recursively"
-msgstr "E659: No se pudo invocar a Python recursivamente"
+msgstr "E659: No se puede invocar a Python de manera recursiva"
 
 #: ../errors.h:1681
 #, c-format
 msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E661: Lo siento, no hay ayuda '%s' para \"%s\""
+msgstr "E661: Lo siento, no hay ayuda '%s' para %s"
 
 #: ../errors.h:1684
 msgid "E662: At start of changelist"
@@ -7917,12 +7912,12 @@ msgstr "E664: La lista de cambios está vacía"
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr ""
 "E665: No se pudo iniciar la interfaz gráfica (GUI), no se encontró ninguna "
-"tipografía de impresión válida"
+"tipografía válida"
 
 #: ../errors.h:1695
 #, c-format
 msgid "E666: compiler not supported: %s"
-msgstr "E666: El compilador no es compatible en esta versión: %s"
+msgstr "E666: El compilador no es compatible: %s"
 
 #: ../errors.h:1699
 msgid "E667: Fsync failed"
@@ -7932,7 +7927,9 @@ msgstr "E667: Falló \"fsync\" (sincronización de archivo)"
 #: ../errors.h:1703
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "E668: El dueño/a del archivo de conexión NetBeans no es válido: %s"
+msgstr ""
+"E668: Modo de acceso incorrecto para el archivo de información "
+"de conexión de NetBeans: \"%s\""
 
 #: ../errors.h:1706
 msgid "E669: Unprintable character in group name"
@@ -7951,23 +7948,22 @@ msgstr "E671: No se pudo encontrar el título de la ventana \"%s\""
 
 #: ../errors.h:1713
 msgid "E672: Unable to open window inside MDI application"
-msgstr "E672: Incapaz de abrir ventana dentro de la aplicación MDI"
+msgstr "E672: No se puede abrir la ventana dentro de la aplicación MDI"
 
 #: ../errors.h:1717
-#, fuzzy
 msgid "E673: Incompatible multi-byte encoding and character set"
-msgstr "E673: Codificación y set de caracteres multi-byte incompatibles"
+msgstr "E673: Conjunto de caracteres y codificación multibyte incompatibles"
 
 #: ../errors.h:1719
 msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
 msgstr ""
-"E674: \"printmbcharset\" no puede estar vacío en una codificación multi-byte"
+"E674: \"printmbcharset\" no puede estar vacío en una codificación multi-byte."
 
 #: ../errors.h:1721
 msgid "E675: No default font specified for multi-byte printing."
 msgstr ""
 "E675: No se ha definido un tipo de letra predeterminado para impresión multi-"
-"byte"
+"byte."
 
 #: ../errors.h:1724
 msgid "E676: No matching autocommands for acwrite buffer"
@@ -7987,9 +7983,9 @@ msgid "E679: recursive loop loading syncolor.vim"
 msgstr "E679: bucle recursivo al cargar \"syncolor.vim\""
 
 #: ../errors.h:1736
-#, fuzzy, c-format
+#, c-format
 msgid "E680: <buffer=%d>: invalid buffer number"
-msgstr "E680: número de <búfer=%d> no válido"
+msgstr "E680: <buffer=%d>: número de búfer no válido"
 
 #: ../errors.h:1739
 msgid "E681: Buffer is not loaded"
@@ -8006,7 +8002,7 @@ msgstr "E683: Falta el nombre del archivo o el patrón no es válido"
 #: ../errors.h:1747
 #, c-format
 msgid "E684: list index out of range: %ld"
-msgstr "E684: índice de lista fuera de rango: %ld"
+msgstr "E684: Índice de lista fuera de rango: %ld"
 
 #: ../errors.h:1750
 #, c-format
@@ -8020,16 +8016,15 @@ msgstr "E686: El argumento de %s debe ser una lista"
 
 #: ../errors.h:1755
 msgid "E687: Less targets than List items"
-msgstr "E687: Menos blancos que elementos en la lista"
+msgstr "E687: Menos objetivos que elementos de la lista"
 
 #: ../errors.h:1757
 msgid "E688: More targets than List items"
-msgstr "E688: Más blancos que elementos en la lista"
+msgstr "E687: Más objetivos que elementos de la lista"
 
 #: ../errors.h:1759
-#, fuzzy
 msgid "E689: Can only index a List, Dictionary or Blob"
-msgstr "E689: Solo puedo indexar una lista o un diccionario"
+msgstr "E689: Solo se puede indexar una lista, un diccionario o un \"blob\""
 
 #: ../errors.h:1761
 msgid "E690: Missing \"in\" after :for"
@@ -8063,7 +8058,7 @@ msgstr "E697: Falta una marca de final de lista ']': %s"
 
 #: ../errors.h:1776
 msgid "E698: variable nested too deep for making a copy"
-msgstr "E698: La variable está anidada muy profundamente para hacer una copia"
+msgstr "E698: Variable anidada demasiado profunda para hacer una copia"
 
 #: ../errors.h:1778
 msgid "E699: Too many arguments"
@@ -8080,7 +8075,7 @@ msgstr "E701: No es un tipo válido para len()"
 
 #: ../errors.h:1784
 msgid "E702: Sort compare function failed"
-msgstr "E702: Fallo al ordenar funciones comparadas"
+msgstr "E702: La función de comparación de clasificación falló"
 
 #: ../errors.h:1786
 msgid "E703: Using a Funcref as a Number"
@@ -8108,19 +8103,16 @@ msgid "E708: [:] must come last"
 msgstr "E708: [:] debe ir al final"
 
 #: ../errors.h:1797
-#, fuzzy
 msgid "E709: [:] requires a List or Blob value"
-msgstr "E709: [:] requiere un valor de la lista"
+msgstr "E709: [:] requiere un valor de la lista o \"blob\""
 
 #: ../errors.h:1799
-#, fuzzy
 msgid "E710: List value has more items than targets"
-msgstr "E710: La lista de valores tiene más elementos que blancos"
+msgstr "E710: El valor de la lista tiene más elementos que destinos"
 
 #: ../errors.h:1801
-#, fuzzy
 msgid "E711: List value does not have enough items"
-msgstr "E711: La lista de valores no tiene suficientes elementos"
+msgstr "E711: El valor de la lista no tiene suficientes elementos"
 
 #: ../errors.h:1803
 #, c-format
@@ -8129,7 +8121,7 @@ msgstr "E712: El argumento de %s debe ser una lista o un diccionario"
 
 #: ../errors.h:1805
 msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: No se puede usar una llave vacía para el diccionario"
+msgstr "E713: No se puede usar una clave vacía para el diccionario"
 
 #: ../errors.h:1807
 msgid "E714: List required"
@@ -8140,9 +8132,9 @@ msgid "E715: Dictionary required"
 msgstr "E715: Se requiere de un diccionario"
 
 #: ../errors.h:1811
-#, fuzzy, c-format
+#, c-format
 msgid "E716: Key not present in Dictionary: \"%s\""
-msgstr "E716: No se encuentra la llave en el diccionario. %s"
+msgstr "E716: Clave no presente en diccionario: \"%s\""
 
 #: ../errors.h:1813
 msgid "E717: Dictionary entry already exists"
@@ -8154,19 +8146,18 @@ msgstr "E718: Se requiere una referencia de función"
 
 # if Vim opened a window: Executing a shell may cause crashes
 #: ../errors.h:1817
-#, fuzzy
 msgid "E719: Cannot slice a Dictionary"
-msgstr "E719: No puede usar [:] con un diccionario"
+msgstr "E719: No se puede segmentar un diccionario"
 
 #: ../errors.h:1819
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
-msgstr "E720: Falta una marca de dos puntos en el diccionario: %s"
+msgstr "E720: Falta una signo de dos puntos en el diccionario: %s"
 
 #: ../errors.h:1821
 #, c-format
 msgid "E721: Duplicate key in Dictionary: \"%s\""
-msgstr "E721: Llave duplicada en el diccionario: %s"
+msgstr "E721: Clave duplicada en el diccionario: \"%s\""
 
 #: ../errors.h:1823
 #, c-format
@@ -8180,7 +8171,7 @@ msgstr "E723: Falta una marca de cierre '}' en el diccionario: %s"
 
 #: ../errors.h:1827
 msgid "E724: variable nested too deep for displaying"
-msgstr "E724: La variable está anidada demasiado profundamente para mostrarla"
+msgstr "E724: Variable anidada demasiado profunda para mostrar"
 
 #: ../errors.h:1829
 #, c-format
@@ -8189,7 +8180,7 @@ msgstr "E725: Llamando una función \"dict\" sin un diccionario: %s"
 
 #: ../errors.h:1831
 msgid "E726: Stride is zero"
-msgstr "E726: El largo es cero"
+msgstr "E726: El paso es cero"
 
 #: ../errors.h:1833
 msgid "E727: Start past end"
@@ -8200,17 +8191,14 @@ msgid "E728: Using a Dictionary as a Number"
 msgstr "E728: Usando un Diccionario como \"Number\""
 
 #: ../errors.h:1837
-#, fuzzy
 msgid "E729: Using a Funcref as a String"
-msgstr "E729: Usando una Función de referencia como \"String\""
+msgstr "E729: Usando una \"Funcref\" como \"String\""
 
 #: ../errors.h:1839
-#, fuzzy
 msgid "E730: Using a List as a String"
 msgstr "E730: Usando una \"List\" como \"String\""
 
 #: ../errors.h:1841
-#, fuzzy
 msgid "E731: Using a Dictionary as a String"
 msgstr "E731: Usando un Diccionario como \"String\""
 
@@ -8238,12 +8226,12 @@ msgstr "E736: Operación inválida para diccionario"
 #: ../errors.h:1853
 #, c-format
 msgid "E737: Key already exists: %s"
-msgstr "E737: Ya existe una llave: %s"
+msgstr "E737: Ya existe una clave: %s"
 
 #: ../errors.h:1855
 #, c-format
 msgid "E738: Can't list variables for %s"
-msgstr "E738: No se pudo enumerar las variables de %s"
+msgstr "E738: No se pueden listar variables para %s"
 
 #: ../errors.h:1857
 #, c-format
@@ -8256,9 +8244,8 @@ msgid "E740: Too many arguments for function %s"
 msgstr "E740: Demasiados argumentos para la función: %s"
 
 #: ../errors.h:1861
-#, fuzzy
 msgid "E741: Value is locked"
-msgstr "E741: El valor está bloqueado: %s"
+msgstr "E741: El valor está bloqueado"
 
 #: ../errors.h:1863
 #, c-format
@@ -8266,9 +8253,8 @@ msgid "E741: Value is locked: %s"
 msgstr "E741: El valor está bloqueado: %s"
 
 #: ../errors.h:1865
-#, fuzzy
 msgid "E742: Cannot change value"
-msgstr "E742: No se pudo cambiar el valor de %s"
+msgstr "E742: No se pudo cambiar el valor"
 
 #: ../errors.h:1867
 #, c-format
@@ -8277,7 +8263,7 @@ msgstr "E742: No se pudo cambiar el valor de %s"
 
 #: ../errors.h:1869
 msgid "E743: variable nested too deep for (un)lock"
-msgstr "E743: La variable está anidada muy profundamente para (des)bloquear"
+msgstr "E743: Variable anidada demasiado profunda para (des)bloquear"
 
 #: ../errors.h:1873
 msgid "E744: NetBeans does not allow changes in read-only files"
@@ -8300,16 +8286,15 @@ msgstr ""
 
 #: ../errors.h:1884
 msgid "E748: No previously used register"
-msgstr "E748: No hay registro previamente en uso"
+msgstr "E748: Ningún registro utilizado anteriormente"
 
 #: ../errors.h:1886
 msgid "E749: empty buffer"
 msgstr "E749: Búfer vacío"
 
 #: ../errors.h:1889
-#, fuzzy
 msgid "E750: First use \":profile start {fname}\""
-msgstr "E750: Primero use \":profile start <nombre_de_archivo>\""
+msgstr "E750: Primero use \":profile start {fname}\""
 
 #: ../errors.h:1893
 msgid "E751: Output file name must not have region name"
@@ -8326,9 +8311,9 @@ msgid "E753: Not found: %s"
 msgstr "E753: No se encontró: %s"
 
 #: ../errors.h:1899
-#, fuzzy, c-format
+#, c-format
 msgid "E754: Only up to %d regions supported"
-msgstr "E754: Solo se pueden usar hasta 8 regiones"
+msgstr "E754: Solo se pueden usar hasta %d regiones"
 
 #: ../errors.h:1901
 #, c-format
@@ -8336,9 +8321,8 @@ msgid "E755: Invalid region in %s"
 msgstr "E755: Región no válida en %s"
 
 #: ../errors.h:1903
-#, fuzzy
 msgid "E756: Spell checking is not possible"
-msgstr "E756: La corrección ortográfica está desactivada"
+msgstr "E756: La revisión ortográfica no es posible"
 
 #: ../errors.h:1905
 msgid "E757: This does not look like a spell file"
@@ -8376,16 +8360,15 @@ msgid "E764: Option '%s' is not set"
 msgstr "E764: No se ha definido la opción '%s'"
 
 #: ../errors.h:1925
-#, fuzzy, c-format
+#, c-format
 msgid "E765: 'spellfile' does not have %d entries"
-msgstr "E765: 'spellfile' no tiene entradas %ld"
+msgstr "E765: 'spellfile' no tiene %d entradas"
 
 #: ../errors.h:1929
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Argumentos insuficientes para printf()"
 
 #: ../errors.h:1932
-#, fuzzy
 msgid "E767: Too many arguments for printf()"
 msgstr "E767: Demasiados argumentos para printf()"
 
@@ -8393,7 +8376,8 @@ msgstr "E767: Demasiados argumentos para printf()"
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
 msgstr ""
-"E768: El archivo de intercambio ya existe: %s (use ! para sobreescribir)"
+"E768: El archivo de intercambio ya existe: %s (\":silent!\" para"
+" sobreescribir)"
 
 #: ../errors.h:1936
 #, c-format
@@ -8456,11 +8440,11 @@ msgstr "E781: El archivo .sug no corresponde al archivo .spl: %s"
 #: ../errors.h:1972
 #, c-format
 msgid "E782: error while reading .sug file: %s"
-msgstr "E782: Error al leer archivo .sig: %s"
+msgstr "E782: Error al leer archivo .sug: %s"
 
 #: ../errors.h:1974
 msgid "E783: duplicate char in MAP entry"
-msgstr "E783: carácter duplicado en entrada MAP"
+msgstr "E783: Carácter duplicado en entrada MAP"
 
 #: ../errors.h:1977
 msgid "E784: Cannot close last tab page"
@@ -8468,7 +8452,7 @@ msgstr "E784: No se pudo cerrar la última ventana"
 
 #: ../errors.h:1981
 msgid "E785: complete() can only be used in Insert mode"
-msgstr "E785: complete() solo se puede usar en modo \"Insert\""
+msgstr "E785: complete() solo se puede usar en modo Insertar"
 
 #: ../errors.h:1984
 msgid "E786: Range not allowed"
@@ -8504,9 +8488,8 @@ msgid "E793: No other buffer in diff mode is modifiable"
 msgstr "E793: Ningún otro búfer está en modo de diferencias"
 
 #: ../errors.h:2012
-#, fuzzy
 msgid "E794: Cannot set variable in the sandbox"
-msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
+msgstr "E794: No se puede definir la variable en el \"sandbox\""
 
 #: ../errors.h:2014
 #, c-format
@@ -8514,34 +8497,32 @@ msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
 
 #: ../errors.h:2016
-#, fuzzy
 msgid "E795: Cannot delete variable"
-msgstr "E795: No se pudo borrar la variable %s"
+msgstr "E795: No se puede eliminar la variable"
 
 #: ../errors.h:2018
 #, c-format
 msgid "E795: Cannot delete variable %s"
-msgstr "E795: No se pudo borrar la variable %s"
+msgstr "E795: No se puede eliminar la variable %s"
 
 #: ../errors.h:2022
 msgid "writing to device disabled with 'opendevice' option"
 msgstr ""
-"se ha desactivado la escritura en dispositivo con la opción 'opendevice'"
+"Se ha desactivado la escritura en dispositivo con la opción 'opendevice'"
 
 #: ../errors.h:2027
-#, fuzzy
 msgid "E797: SpellFileMissing autocommand deleted buffer"
-msgstr "E246: La auto-orden \"FileChangedShell\" ha borrado el búfer"
+msgstr "E797: La auto-orden \"SpellFileMissing\" ha borrado el búfer"
 
 #: ../errors.h:2031
 #, c-format
 msgid "E798: ID is reserved for \":match\": %d"
-msgstr ""
+msgstr "E798: ID reservado para \":match\": %d"
 
 #: ../errors.h:2033
 #, c-format
 msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
-msgstr ""
+msgstr "E799: ID no válido: %d (debe ser mayor o igual a 1)"
 
 #: ../errors.h:2037
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
@@ -8550,17 +8531,17 @@ msgstr "E800: No se pudo usar el árabe: no se activó al compilar\n"
 #: ../errors.h:2041
 #, c-format
 msgid "E801: ID already taken: %d"
-msgstr ""
+msgstr "E801: ID ya tomado: %d"
 
 #: ../errors.h:2043
 #, c-format
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
-msgstr ""
+msgstr "E802: ID no válido: %d (debe ser mayor o igual a 1)"
 
 #: ../errors.h:2045
-#, fuzzy, c-format
+#, c-format
 msgid "E803: ID not found: %d"
-msgstr "E334: No se ha encontrado el menú: %s"
+msgstr "E803: ID no encontrado: %d"
 
 # if Vim opened a window: Executing a shell may cause crashes
 #: ../errors.h:2050
@@ -8598,17 +8579,16 @@ msgstr "E811: No se permite cambiar la información del búfer en este momento"
 
 #: ../errors.h:2077
 msgid "E812: Autocommands changed buffer or buffer name"
-msgstr "E812: *Filtro* Las auto-órdenes no deben cambiar el búfer en uso"
+msgstr ""
+"E812: Los comandos automáticos cambiaron el búfer o el nombre del búfer"
 
 #: ../errors.h:2079
-#, fuzzy
 msgid "E813: Cannot close autocmd or popup window"
-msgstr "E813: No se puede cerrar la ventana de autocmd"
+msgstr "E813: No se puede cerrar autocmd o ventana emergente"
 
 #: ../errors.h:2081
 msgid "E814: Cannot close window, only autocmd window would remain"
-msgstr ""
-"E814: No se pudo cerrar la última ventana, solo quedará la ventana de autocmd"
+msgstr "E814: No se pudo cerrar la ventana, solo quedará la ventana de autocmd"
 
 #: ../errors.h:2084
 msgid ""
@@ -8624,220 +8604,208 @@ msgstr "E816: No se pudo leer la salida del parche"
 
 #: ../errors.h:2092
 msgid "E817: Blowfish big/little endian use wrong"
-msgstr ""
+msgstr "E817: Uso incorrecto de Blowfish big/little endian"
 
 #: ../errors.h:2094
-#, fuzzy
 msgid "E818: sha256 test failed"
-msgstr "E512: Falló el cierre del archivo"
+msgstr "E818: prueba sha256 fallida"
 
 #: ../errors.h:2096
-#, fuzzy
 msgid "E819: Blowfish test failed"
-msgstr "E512: Falló el cierre del archivo"
+msgstr "E819: Falló la prueba Blowfish"
 
 #: ../errors.h:2098
 msgid "E820: sizeof(uint32_t) != 4"
-msgstr ""
+msgstr "E820: sizeof(uint32_t) != 4"
 
 #: ../errors.h:2100
 msgid "E821: File is encrypted with unknown method"
-msgstr ""
+msgstr "E821: El archivo está cifrado con un método desconocido"
 
 #: ../errors.h:2104
-#, fuzzy, c-format
+#, c-format
 msgid "E822: Cannot open undo file for reading: %s"
-msgstr "E195: No se pudo abrir el archivo \"viminfo\" para lectura"
+msgstr "E822: No se puede abrir el archivo de deshacer para leer: %s"
 
 #: ../errors.h:2106
-#, fuzzy, c-format
+#, c-format
 msgid "E823: Not an undo file: %s"
-msgstr "E753: No se encontró: %s"
+msgstr "E823: No es un archivo de deshacer: %s"
 
 #: ../errors.h:2108
-#, fuzzy, c-format
+#, c-format
 msgid "E824: Incompatible undo file: %s"
-msgstr "E484: No se pudo abrir el archivo \"%s\""
+msgstr "E824: Archivo de deshacer incompatible: %s"
 
 #: ../errors.h:2110
 #, c-format
 msgid "E825: Corrupted undo file (%s): %s"
-msgstr ""
+msgstr "E825: Archivo de deshacer dañado (%s): %s"
 
 #: ../errors.h:2113
-#, fuzzy, c-format
+#, c-format
 msgid "E826: Undo file decryption failed: %s"
-msgstr "E123: Función indefinida: %s"
+msgstr "E826: Error al descifrar el archivo deshacer: %s"
 
 #: ../errors.h:2116
-#, fuzzy, c-format
+#, c-format
 msgid "E827: Undo file is encrypted: %s"
-msgstr "E137: No hay permisos de escritura para el archivo \"viminfo\": %s"
+msgstr "E827: El archivo de deshacer está cifrado: %s"
 
 #: ../errors.h:2119
-#, fuzzy, c-format
+#, c-format
 msgid "E828: Cannot open undo file for writing: %s"
-msgstr "E212: No se pudo abrir el archivo para escribir en él"
+msgstr "E828: No se puede abrir el archivo de deshacer para escribir: %s"
 
 #: ../errors.h:2121
-#, fuzzy, c-format
+#, c-format
 msgid "E829: write error in undo file: %s"
-msgstr "E297: Error de escritura en el archivo de intercambio"
+msgstr "E829: Error de escritura en archivo de deshacer: %s"
 
 #: ../errors.h:2124
-#, fuzzy, c-format
+#, c-format
 msgid "E830: Undo number %ld not found"
-msgstr "No se encontró el número de \"deshacer\" %ld"
+msgstr "E830: Deshacer número %ld no encontrado"
 
 #: ../errors.h:2127
 msgid "E831: bf_key_init() called with empty password"
-msgstr ""
+msgstr "E831: bf_key_init() llamado con contraseña vacía"
 
 #: ../errors.h:2130
 #, c-format
 msgid "E832: Non-encrypted file has encrypted undo file: %s"
-msgstr ""
+msgstr "E832: El archivo no cifrado tiene un archivo de deshacer cifrado: %s"
 
 #: ../errors.h:2134
 #, c-format
 msgid ""
 "E833: %s is encrypted and this version of Vim does not support encryption"
-msgstr ""
+msgstr "E833: %s está cifrado y esta versión de Vim no admite cifrado"
 
 #: ../errors.h:2137
 msgid "E834: Conflicts with value of 'listchars'"
-msgstr ""
+msgstr "E834: Conflictos con el valor de 'listchars'"
 
 #: ../errors.h:2139
 msgid "E835: Conflicts with value of 'fillchars'"
-msgstr ""
+msgstr "E834: Conflictos con el valor de 'fillchars'"
 
 #: ../errors.h:2142
 msgid "E836: This Vim cannot execute :python after using :py3"
-msgstr ""
+msgstr "E836: Este Vim no puede ejecutar :python después de usar :py3"
 
 #: ../errors.h:2144
 msgid "E837: This Vim cannot execute :py3 after using :python"
-msgstr ""
+msgstr "E837: Este Vim no puede ejecutar :py3 después de usar :python"
 
 #: ../errors.h:2148
 msgid "E838: netbeans is not supported with this GUI"
-msgstr ""
+msgstr "E838: NetBeans no es compatible con esta interfaz gráfica (GUI)"
 
 #: ../errors.h:2153
 msgid "E840: Completion function deleted text"
-msgstr ""
+msgstr "E840: Texto eliminado de la función de completado"
 
 #: ../errors.h:2156
-#, fuzzy
 msgid "E841: Reserved name, cannot be used for user defined command"
-msgstr "E464: Uso ambiguo de una orden definida por el usuario"
+msgstr ""
+"E841: Nombre reservado, no se puede usar para el comando definido por el"
+" usuario"
 
 #: ../errors.h:2158
-#, fuzzy
 msgid "E842: no line number to use for \"<slnum>\""
-msgstr ""
-"E498: No hay un nombre de archivo \":source\" que sustituya a \"<sfile>\""
+msgstr "E842: no hay número de línea para usar para \"<slnum>\""
 
 #: ../errors.h:2161
-#, fuzzy
 msgid "E843: Error while updating swap file crypt"
-msgstr "E782: Error al leer archivo .sig: %s"
+msgstr "E843: Error al actualizar el cifrado del archivo de intercambio"
 
 #: ../errors.h:2165
-#, fuzzy
 msgid "E844: invalid cchar value"
-msgstr "E474: El argumento no es válido"
+msgstr "E844: Valor de cchar no válido"
 
 #: ../errors.h:2169
 msgid "E845: Insufficient memory, word list will be incomplete"
-msgstr ""
+msgstr "E845: memoria insuficiente, la lista de palabras estará incompleta"
 
 #: ../errors.h:2172
-#, fuzzy
 msgid "E846: Key code not set"
-msgstr "E86: El búfer %ld no existe"
+msgstr "E846: Código clave no establecido"
 
 #: ../errors.h:2175
-#, fuzzy
 msgid "E847: Too many syntax includes"
-msgstr "E77: Hay demasiados nombres de archivos"
+msgstr "E847: Demasiadas sintaxis incluidas"
 
 #: ../errors.h:2177
-#, fuzzy
 msgid "E848: Too many syntax clusters"
-msgstr "E391: No existe tal agrupamiento sintáctico: %s"
+msgstr "E848: Demasiados clústeres de sintaxis"
 
 #: ../errors.h:2180
 msgid "E849: Too many highlight and syntax groups"
-msgstr ""
+msgstr "E849: Demasiados grupos de resaltado y sintaxis"
 
 #: ../errors.h:2183
-#, fuzzy
 msgid "E850: Invalid register name"
-msgstr "E354: Nombre de registro no válido: '%s'"
+msgstr "E850: Nombre de registro no válido"
 
 #: ../errors.h:2187
-#, fuzzy
 msgid "E851: Failed to create a new process for the GUI"
-msgstr "E285: Falló la creación del contexto de entrada"
+msgstr "E851: Error al crear un nuevo proceso para la interfaz gráfica (GUI)"
 
 #: ../errors.h:2189
-#, fuzzy
 msgid "E852: The child process failed to start the GUI"
-msgstr "E531: Use \":gui\" para iniciar la interfaz gráfica"
+msgstr "E852: El proceso secundario no pudo iniciar la interfaz gráfica (GUI)"
 
 #: ../errors.h:2193
-#, fuzzy, c-format
+#, c-format
 msgid "E853: Duplicate argument name: %s"
-msgstr "E125: Argumento ilegal: %s"
+msgstr "E853: Nombre de argumento duplicado: %s"
 
 #: ../errors.h:2196
 msgid "E854: path too long for completion"
-msgstr ""
+msgstr "E854: Ruta demasiado larga para completar"
 
 #: ../errors.h:2198
-#, fuzzy
 msgid "E855: Autocommands caused command to abort"
-msgstr "E812: *Filtro* Las auto-órdenes no deben cambiar el búfer en uso"
+msgstr "E855: Los comandos automáticos provocaron la cancelación del comando"
 
 #: ../errors.h:2201
 msgid ""
 "E856: \"assert_fails()\" second argument must be a string or a list with one "
 "or two strings"
 msgstr ""
+"E856: el segundo argumento \"assert_fails()\" debe ser una cadena o una lista"
+" con una "
+"o dos cadenas"
 
 #: ../errors.h:2203
-#, fuzzy, c-format
+#, c-format
 msgid "E857: Dictionary key \"%s\" required"
-msgstr "E715: Se requiere de un diccionario"
+msgstr "E857: Se requiere la clave de diccionario \"%s\""
 
 #: ../errors.h:2207
 msgid "E858: Eval did not return a valid python object"
-msgstr ""
+msgstr "E858: Eval no devolvió un objeto python válido"
 
 #: ../errors.h:2209
 msgid "E859: Failed to convert returned python object to a Vim value"
-msgstr ""
+msgstr "E859: No se pudo convertir el objeto python devuelto a un valor de Vim"
 
 #: ../errors.h:2213
 msgid "E860: Need 'id' and 'type' with 'both'"
-msgstr ""
+msgstr "E860: Necesita 'id' y 'type' con 'both'"
 
 #: ../errors.h:2216
-#, fuzzy
 msgid "E861: Cannot open a second popup with a terminal"
-msgstr "E810: No se puede leer o escribir en archivos temporales"
+msgstr "E861: No se puede abrir una segunda ventana emergente con una terminal"
 
 #: ../errors.h:2221
-#, fuzzy
 msgid "E862: Cannot use g: here"
-msgstr "E284: No se pudo fijar los valores IC"
+msgstr "E862: No se puede usar g: aquí"
 
 #: ../errors.h:2225
-#, fuzzy
 msgid "E863: Not allowed for a terminal in a popup window"
-msgstr "E811: No se permite cambiar la información del búfer en este momento"
+msgstr "E863: No permitido para una terminal en una ventana emergente"
 
 #: ../errors.h:2229
 #, no-c-format
@@ -8845,293 +8813,285 @@ msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used"
 msgstr ""
+"E864: \\%#= solo puede ir seguido de 0, 1 o 2. El motor automático será"
+" utilizado"
 
 #: ../errors.h:2231
 msgid "E865: (NFA) Regexp end encountered prematurely"
-msgstr ""
+msgstr "E865: (NFA) Fin de Regexp encontrado prematuramente"
 
 #: ../errors.h:2233
 #, c-format
 msgid "E866: (NFA regexp) Misplaced %c"
-msgstr ""
+msgstr "E866: (NFA regexp) %c fuera de lugar"
 
 #: ../errors.h:2235
 #, c-format
 msgid "E867: (NFA regexp) Unknown operator '\\z%c'"
-msgstr ""
+msgstr "E867: (NFA regexp) Operador desconocido '\\z%c'"
 
 #: ../errors.h:2237
 #, c-format
 msgid "E867: (NFA regexp) Unknown operator '\\%%%c'"
-msgstr ""
+msgstr "E867: (NFA regexp) Operador desconocido '\\%%%c'"
 
 #: ../errors.h:2239
 msgid "E868: Error building NFA with equivalence class!"
-msgstr ""
+msgstr "E868: ¡Error al construir NFA con clase de equivalencia!"
 
 #: ../errors.h:2241
 #, c-format
 msgid "E869: (NFA regexp) Unknown operator '\\@%c'"
-msgstr ""
+msgstr "E869: (NFA regexp) Operador desconocido '\\@%c'"
 
 #: ../errors.h:2243
 msgid "E870: (NFA regexp) Error reading repetition limits"
-msgstr ""
+msgstr "E870: (NFA regexp) Error al leer los límites de repetición"
 
 #: ../errors.h:2245
 msgid "E871: (NFA regexp) Can't have a multi follow a multi"
 msgstr ""
+"E871: (NFA regexp) No se puede hacer que un \"multi\" siga a un \"multi\""
 
 #: ../errors.h:2247
 msgid "E872: (NFA regexp) Too many '('"
-msgstr ""
+msgstr "E872: (NFA regexp) Demasiados '('"
 
 #: ../errors.h:2249
 msgid "E873: (NFA regexp) proper termination error"
-msgstr ""
+msgstr "E873: (NFA regexp) error de terminación adecuado"
 
 #: ../errors.h:2251
 msgid "E874: (NFA regexp) Could not pop the stack!"
-msgstr ""
+msgstr "E874: (NFA regexp) ¡No se pudo abrir la pila!"
 
 #: ../errors.h:2253
 msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
 "left on stack"
 msgstr ""
+"E875: (NFA regexp) (Al convertir de postfix a NFA), quedan demasiados estados"
+" en la pila"
 
 #: ../errors.h:2255
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr ""
+"E876: (NFA regexp) No hay suficiente espacio para almacenar todo el NFA"
 
 #: ../errors.h:2257
-#, fuzzy, c-format
+#, c-format
 msgid "E877: (NFA regexp) Invalid character class: %d"
-msgstr "E71: Carácter ilegal después de %s%%"
+msgstr "E877: (NFA regexp) Clase de carácter no válida: %d"
 
 #: ../errors.h:2259
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
-msgstr ""
+msgstr "E878: (NFA regexp) ¡No se pudo asignar memoria para el cruce de ramas!"
 
 #: ../errors.h:2262
-#, fuzzy
 msgid "E879: (NFA regexp) Too many \\z("
-msgstr "E50: Demasiados \\z("
+msgstr "E879: (NFA regexp) Demasiados \\z("
 
 #: ../errors.h:2266
 msgid "E880: Can't handle SystemExit of python exception in vim"
-msgstr ""
+msgstr "E880: No se puede manejar SystemExit de la excepción de python en Vim"
 
 #: ../errors.h:2269
-#, fuzzy
 msgid "E881: Line count changed unexpectedly"
-msgstr "E787: El búfer cambió inesperadamente"
+msgstr "E881: El recuento de líneas cambió inesperadamente"
 
 #: ../errors.h:2272
-#, fuzzy
 msgid "E882: Uniq compare function failed"
-msgstr "E702: Fallo al ordenar funciones comparadas"
+msgstr "E882: Falló la función de comparación de Uniq"
 
 #: ../errors.h:2274
 msgid ""
 "E883: search pattern and expression register may not contain two or more "
 "lines"
 msgstr ""
+"E883: el patrón de búsqueda y el registro de expresión no pueden "
+"contener dos o más líneas"
 
 #: ../errors.h:2276
-#, fuzzy, c-format
+#, c-format
 msgid "E884: Function name cannot contain a colon: %s"
 msgstr ""
-"E128: El nombre de una función debe empezar con mayúscula o contener el "
-"signo de dos puntos: %s"
+"E884: El nombre de una función no debe contener el signo de dos puntos: %s"
 
 #: ../errors.h:2280
 #, c-format
 msgid "E885: Not possible to change sign %s"
-msgstr ""
+msgstr "E885: No es posible cambiar el signo %s"
 
 #: ../errors.h:2284
-#, fuzzy, c-format
+#, c-format
 msgid "E886: Can't rename viminfo file to %s!"
-msgstr "E138: ¡No se pudo escribir el archivo \"viminfo\" %s!"
+msgstr "E886: ¡No se puede cambiar el nombre del archivo \"viminfo\" a %s!"
 
 #: ../errors.h:2287
-#, fuzzy
 msgid ""
 "E887: Sorry, this command is disabled, the Python's site module could not be "
 "loaded."
 msgstr ""
-"E263: Lo siento, esta orden está desactivada, no se pudo cargar la "
-"biblioteca de Python"
+"E887: Lo siento, este comando está deshabilitado, el módulo del sitio de"
+" Python "
+"no pudo ser cargado."
 
 #: ../errors.h:2289
 #, c-format
 msgid "E888: (NFA regexp) cannot repeat %s"
-msgstr ""
+msgstr "E888: (NFA regexp) no se puede repetir %s"
 
 #: ../errors.h:2292
-#, fuzzy
 msgid "E889: Number required"
-msgstr "E808: Se requiere \"Number\" o \"Float\""
+msgstr "E889: Número requerido"
 
 #: ../errors.h:2296
-#, fuzzy, c-format
+#, c-format
 msgid "E890: trailing char after ']': %s]%s"
-msgstr "E488: Caracteres en exceso al final de la línea"
+msgstr "E890: Carácter final después de ']': %s]%s"
 
 #: ../errors.h:2300
-#, fuzzy
 msgid "E891: Using a Funcref as a Float"
-msgstr "E703: Usando una función de referencia como \"Number\""
+msgstr "E891: Usando una función de referencia como \"Float\""
 
 #: ../errors.h:2302
-#, fuzzy
 msgid "E892: Using a String as a Float"
-msgstr "E728: Usando un Diccionario como \"Number\""
+msgstr "E892: Usando una \"String\" como \"Float\""
 
 #: ../errors.h:2304
-#, fuzzy
 msgid "E893: Using a List as a Float"
-msgstr "E745: Usando una \"Lista\" como \"Number\""
+msgstr "E893: Usando una \"Lista\" como \"Float\""
 
 #: ../errors.h:2306
-#, fuzzy
 msgid "E894: Using a Dictionary as a Float"
-msgstr "E728: Usando un Diccionario como \"Number\""
+msgstr "E894: Usando un Diccionario como \"Float\""
 
 #: ../errors.h:2310
-#, fuzzy
 msgid ""
 "E895: Sorry, this command is disabled, the MzScheme's racket/base module "
 "could not be loaded."
 msgstr ""
-"E815: Lo siento, esta orden está desactivada, no se pudo cargar las "
-"bibliotecas de MzScheme"
+"E895: Lo sentimos, este comando está deshabilitado, el módulo racket/base de"
+" MzScheme "
+"no pudo ser cargado."
 
 #: ../errors.h:2314
-#, fuzzy, c-format
+#, c-format
 msgid "E896: Argument of %s must be a List, Dictionary or Blob"
-msgstr "E712: El argumento de %s debe ser una lista o un diccionario"
+msgstr ""
+"E896: El argumento de %s debe ser una lista un diccionario o un \"blob\""
 
 #: ../errors.h:2316
-#, fuzzy
 msgid "E897: List or Blob required"
-msgstr "E714: Se requiere una lista"
+msgstr "E714: Se requiere una lista o \"blob\""
 
 #: ../errors.h:2320
 msgid "E898: socket() in channel_connect()"
-msgstr ""
+msgstr "E898: socket() en channel_connect()"
 
 #: ../errors.h:2324
-#, fuzzy, c-format
+#, c-format
 msgid "E899: Argument of %s must be a List or Blob"
-msgstr "E686: El argumento de %s debe ser una lista"
+msgstr "E899: El argumento de %s debe ser una lista o \"blob\""
 
 #: ../errors.h:2326
 msgid "E900: maxdepth must be non-negative number"
-msgstr ""
+msgstr "E900: \"maxdepth\" debe ser un número no negativo"
 
 #: ../errors.h:2330
 #, c-format
 msgid "E901: getaddrinfo() in channel_open(): %s"
-msgstr ""
+msgstr "E901: getaddrinfo() en channel_open(): %s"
 
 #: ../errors.h:2333
 msgid "E901: gethostbyname() in channel_open()"
-msgstr ""
+msgstr "E901: gethostbyname() en channel_open()"
 
 #: ../errors.h:2336
-#, fuzzy
 msgid "E902: Cannot connect to port"
-msgstr "No se pudo conectar a NetBeans"
+msgstr "E902: No se puede conectar al puerto"
 
 #: ../errors.h:2338
 msgid "E903: received command with non-string argument"
-msgstr ""
+msgstr "E903: Comando recibido con argumento que no es una cadena"
 
 #: ../errors.h:2340
 msgid "E904: last argument for expr/call must be a number"
-msgstr ""
+msgstr "E904: El último argumento para expr/call debe ser un número"
 
 #: ../errors.h:2342
-#, fuzzy
 msgid "E904: third argument for call must be a list"
-msgstr "E686: El argumento de %s debe ser una lista"
+msgstr "E904: El tercer argumento para la llamada debe ser una lista"
 
 #: ../errors.h:2344
-#, fuzzy, c-format
+#, c-format
 msgid "E905: received unknown command: %s"
-msgstr "E160: Orden de signo desconocida: %s"
+msgstr "E905: Comando desconocido recibido: %s"
 
 #: ../errors.h:2346
-#, fuzzy
 msgid "E906: not an open channel"
-msgstr "E663: Al final de la lista de cambios"
+msgstr "E906: No es un canal abierto"
 
 #: ../errors.h:2350
 msgid "E907: Using a special value as a Float"
-msgstr ""
+msgstr "E907: Uso de un valor especial como \"Float\""
 
 #: ../errors.h:2354
-#, fuzzy, c-format
+#, c-format
 msgid "E908: using an invalid value as a String: %s"
-msgstr "E806: Usando \"Float\" como \"String\""
+msgstr "E908: Uso de un valor no válido como \"String\": %s"
 
 #: ../errors.h:2356
-#, fuzzy
 msgid "E909: Cannot index a special variable"
-msgstr "E695: No se puede crear un índice de un \"Funcref\""
+msgstr "E909: No se puede indexar una variable especial"
 
 #: ../errors.h:2360
-#, fuzzy
 msgid "E910: Using a Job as a Number"
-msgstr "E805: Usando \"Float\" como un \"Number\""
+msgstr "E910: Usando \"Job\" como un \"Number\""
 
 #: ../errors.h:2362
-#, fuzzy
 msgid "E911: Using a Job as a Float"
-msgstr "E805: Usando \"Float\" como un \"Number\""
+msgstr "E911: Usando \"Job\" como un \"Float\""
 
 #: ../errors.h:2364
 msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
+"E912: No se puede usar ch_evalexpr()/ch_sendexpr() con un canal raw o nl"
 
 #: ../errors.h:2366
-#, fuzzy
 msgid "E913: Using a Channel as a Number"
-msgstr "E703: Usando una función de referencia como \"Number\""
+msgstr "E703: Usando \"Channel\" como \"Number\""
 
 #: ../errors.h:2368
 msgid "E914: Using a Channel as a Float"
-msgstr ""
+msgstr "E914: Usando \"Channel\" como \"Float\""
 
 #: ../errors.h:2370
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
-msgstr ""
+msgstr "E915: El búfer in_io requiere que se configure in_buf o in_name"
 
 #: ../errors.h:2372
-#, fuzzy
 msgid "E916: not a valid job"
-msgstr "E543: No es una página de código válida"
+msgstr "E916: No es un \"Job\" válido"
 
 #: ../errors.h:2374
-#, fuzzy, c-format
+#, c-format
 msgid "E917: Cannot use a callback with %s()"
-msgstr "E197: No se pudo establecer la opción del idioma a \"%s\""
+msgstr "E917: No se puede usar una devolución de llamada con %s()"
 
 #: ../errors.h:2376
-#, fuzzy, c-format
+#, c-format
 msgid "E918: buffer must be loaded: %s"
-msgstr "Se descargó un (1) búfer"
+msgstr "E918: Se debe cargar el búfer: %s"
 
 #: ../errors.h:2379
-#, fuzzy, c-format
+#, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
-msgstr "E161: No se ha encontrado el \"breakpoint\": %s"
+msgstr "E919: Directorio no encontrado en '%s': \"%s\""
 
 #: ../errors.h:2382
 msgid "E920: _io file requires _name to be set"
-msgstr ""
+msgstr "E920: El archivo _io requiere que se configure _name"
 
 #: ../errors.h:2386
 #, fuzzy
