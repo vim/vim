@@ -4146,15 +4146,16 @@ init_mouse_wheel(void)
 }
 
 /*
- * Intellimouse wheel handler.
- * Treat a mouse wheel event as if it were a scroll request.
+ * Mouse scroll event handler.
  */
     static void
-_OnMouseWheel(HWND hwnd, short zDelta, LPARAM param, int horizontal)
+_OnMouseWheel(HWND hwnd, WPARAM wParam, LPARAM lParam, int horizontal)
 {
     int		button;
     win_T	*wp;
     int		modifiers, kbd_modifiers;
+    int		zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+    POINT	pt;
 
     wp = gui_mouse_window(FIND_POPUP);
 
@@ -4207,11 +4208,12 @@ _OnMouseWheel(HWND hwnd, short zDelta, LPARAM param, int horizontal)
     if ((kbd_modifiers & MOD_MASK_ALT) != 0)
 	modifiers |= MOUSE_ALT;
 
-    mch_disable_flush();
-    gui_send_mouse_event(button, GET_X_LPARAM(param), GET_Y_LPARAM(param),
-		FALSE, kbd_modifiers);
-    mch_enable_flush();
-    gui_may_flush();
+    // The cursor position is relative to the upper-left corner of the screen.
+    pt.x = GET_X_LPARAM(lParam);
+    pt.y = GET_Y_LPARAM(lParam);
+    ScreenToClient(s_textArea, &pt);
+
+    gui_send_mouse_event(button, pt.x, pt.y, FALSE, kbd_modifiers);
 }
 
 #ifdef USE_SYSMENU_FONT
@@ -4663,8 +4665,8 @@ _WndProc(
     WPARAM wParam,
     LPARAM lParam)
 {
-    // TRACE("WndProc: hwnd = %08x, msg = %x, wParam = %x, lParam = %x\n",
-    //       hwnd, uMsg, wParam, lParam);
+    // ch_log(NULL, "WndProc: hwnd = %08x, msg = %x, wParam = %x, lParam = %x",
+	    // hwnd, uMsg, wParam, lParam);
 
     HandleMouseHide(uMsg, lParam);
 
@@ -4763,7 +4765,7 @@ _WndProc(
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
-	_OnMouseWheel(hwnd, HIWORD(wParam), lParam, uMsg == WM_MOUSEHWHEEL);
+	_OnMouseWheel(hwnd, wParam, lParam, uMsg == WM_MOUSEHWHEEL);
 	return 0L;
 
 	// Notification for change in SystemParametersInfo()
