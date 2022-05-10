@@ -969,6 +969,36 @@ theend:
 }
 
 /*
+ * Compile one Vim expression {expr} in string "p".
+ * "p" points to the opening "{".
+ * Return a pointer to the character after "}", NULL for an error.
+ */
+    char_u *
+compile_one_expr_in_str(char_u *p, cctx_T *cctx)
+{
+    char_u	*block_start;
+    char_u	*block_end;
+
+    // Skip the opening {.
+    block_start = skipwhite(p + 1);
+    block_end = block_start;
+    if (*block_start != NUL && skip_expr(&block_end, NULL) == FAIL)
+	return NULL;
+    block_end = skipwhite(block_end);
+    // The block must be closed by a }.
+    if (*block_end != '}')
+    {
+	semsg(_(e_missing_close_curly_str), p);
+	return NULL;
+    }
+    if (compile_expr0(&block_start, cctx) == FAIL)
+	return NULL;
+    may_generate_2STRING(-1, TRUE, cctx);
+
+    return block_end + 1;
+}
+
+/*
  * Compile a string "str" (either containing a literal string or a mix of
  * literal strings and Vim expressions of the form `{expr}`).  This is used
  * when compiling a heredoc assignment to a variable or an interpolated string
@@ -997,8 +1027,6 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
     while (*p != NUL)
     {
 	char_u	*lit_start;
-	char_u	*block_start;
-	char_u	*block_end;
 	int	escaped_brace = FALSE;
 
 	// Look for a block start.
@@ -1038,28 +1066,14 @@ compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx)
 	    continue;
 	}
 
-	// Skip the opening {.
-	block_start = skipwhite(p + 1);
-	block_end = block_start;
-	if (*block_start != NUL && skip_expr(&block_end, NULL) == FAIL)
+	p = compile_one_expr_in_str(p, cctx);
+	if (p == NULL)
 	    return FAIL;
-	block_end = skipwhite(block_end);
-	// The block must be closed by a }.
-	if (*block_end != '}')
-	{
-	    semsg(_(e_missing_close_curly_str), str);
-	    return FAIL;
-	}
-	if (compile_expr0(&block_start, cctx) == FAIL)
-	    return FAIL;
-	may_generate_2STRING(-1, TRUE, cctx);
 	++count;
-
-	p = block_end + 1;
     }
 
     // Small optimization, if there's only a single piece skip the ISN_CONCAT.
-    if (count != 1)
+    if (count > 1)
 	return generate_CONCAT(cctx, count);
 
     return OK;

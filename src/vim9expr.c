@@ -762,9 +762,9 @@ compile_call(
 
 	argvars[0].v_type = VAR_UNKNOWN;
 	if (*s == '"')
-	    (void)eval_string(&s, &argvars[0], TRUE);
+	    (void)eval_string(&s, &argvars[0], TRUE, FALSE);
 	else if (*s == '\'')
-	    (void)eval_lit_string(&s, &argvars[0], TRUE);
+	    (void)eval_lit_string(&s, &argvars[0], TRUE, FALSE);
 	s = skipwhite(s);
 	if (*s == ')' && argvars[0].v_type == VAR_STRING
 	       && ((is_has && !dynamic_feature(argvars[0].vval.v_string))
@@ -1375,30 +1375,73 @@ compile_get_env(char_u **arg, cctx_T *cctx)
 }
 
 /*
- * Compile "$"string"" or "$'string'".
+ * Compile $"string" or $'string'.
  */
     static int
 compile_interp_string(char_u **arg, cctx_T *cctx)
 {
     typval_T	tv;
     int		ret;
+    int		quote;
     int		evaluate = cctx->ctx_skip != SKIP_YES;
+    int		count = 0;
+    char_u	*p;
 
-    // *arg is on the '$' character.
-    (*arg)++;
+    // *arg is on the '$' character, move it to the first string character.
+    ++*arg;
+    quote = **arg;
+    ++*arg;
 
-    if (**arg == '"')
-	ret = eval_string(arg, &tv, evaluate);
-    else
-	ret = eval_lit_string(arg, &tv, evaluate);
+    for (;;)
+    {
+	// Get the string up to the matching quote or to a single '{'.
+	// "arg" is advanced to either the quote or the '{'.
+	if (quote == '"')
+	    ret = eval_string(arg, &tv, evaluate, TRUE);
+	else
+	    ret = eval_lit_string(arg, &tv, evaluate, TRUE);
+	if (ret == FAIL)
+	    break;
+	if (evaluate)
+	{
+	    if ((tv.vval.v_string != NULL && *tv.vval.v_string != NUL)
+		    || (**arg != '{' && count == 0))
+	    {
+		// generate non-empty string or empty string if it's the only
+		// one
+		if (generate_PUSHS(cctx, &tv.vval.v_string) == FAIL)
+		    return FAIL;
+		tv.vval.v_string = NULL;  // don't free it now
+		++count;
+	    }
+	    clear_tv(&tv);
+	}
+
+	if (**arg != '{')
+	{
+	    // found terminating quote
+	    ++*arg;
+	    break;
+	}
+
+	p = compile_one_expr_in_str(*arg, cctx);
+	if (p == NULL)
+	{
+	    ret = FAIL;
+	    break;
+	}
+	++count;
+	*arg = p;
+    }
 
     if (ret == FAIL || !evaluate)
 	return ret;
 
-    ret = compile_all_expr_in_str(tv.vval.v_string, TRUE, cctx);
-    clear_tv(&tv);
+    // Small optimization, if there's only a single piece skip the ISN_CONCAT.
+    if (count > 1)
+	return generate_CONCAT(cctx, count);
 
-    return ret;
+    return OK;
 }
 
 /*
@@ -2161,14 +2204,14 @@ compile_expr8(
 	/*
 	 * String constant: "string".
 	 */
-	case '"':   if (eval_string(arg, rettv, TRUE) == FAIL)
+	case '"':   if (eval_string(arg, rettv, TRUE, FALSE) == FAIL)
 			return FAIL;
 		    break;
 
 	/*
 	 * Literal string constant: 'str''ing'.
 	 */
-	case '\'':  if (eval_lit_string(arg, rettv, TRUE) == FAIL)
+	case '\'':  if (eval_lit_string(arg, rettv, TRUE, FALSE) == FAIL)
 			return FAIL;
 		    break;
 

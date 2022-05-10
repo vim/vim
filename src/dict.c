@@ -866,13 +866,13 @@ get_literal_key(char_u **arg)
 
     if (**arg == '\'')
     {
-	if (eval_lit_string(arg, &rettv, TRUE) == FAIL)
+	if (eval_lit_string(arg, &rettv, TRUE, FALSE) == FAIL)
 	    return NULL;
 	key = rettv.vval.v_string;
     }
     else if (**arg == '"')
     {
-	if (eval_string(arg, &rettv, TRUE) == FAIL)
+	if (eval_string(arg, &rettv, TRUE, FALSE) == FAIL)
 	    return NULL;
 	key = rettv.vval.v_string;
     }

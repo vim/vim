@@ -603,16 +603,52 @@ list_script_vars(int *first)
 }
 
 /*
- * Evaluate all the Vim expressions ({expr}) in string "str" and return the
- * resulting string.  The caller must free the returned string.
+ * Evaluate one Vim expression {expr} in string "p" and append the
+ * resulting string to "gap".  "p" points to the opening "{".
+ * Return a pointer to the character after "}", NULL for an error.
+ */
+    char_u *
+eval_one_expr_in_str(char_u *p, garray_T *gap)
+{
+    char_u	*block_start = skipwhite(p + 1);  // skip the opening {
+    char_u	*block_end = block_start;
+    char_u	*expr_val;
+
+    if (*block_start == NUL)
+    {
+	semsg(_(e_missing_close_curly_str), p);
+	return NULL;
+    }
+    if (skip_expr(&block_end, NULL) == FAIL)
+	return NULL;
+    block_end = skipwhite(block_end);
+    if (*block_end != '}')
+    {
+	semsg(_(e_missing_close_curly_str), p);
+	return NULL;
+    }
+    *block_end = NUL;
+    expr_val = eval_to_string(block_start, TRUE);
+    *block_end = '}';
+    if (expr_val == NULL)
+	return NULL;
+    ga_concat(gap, expr_val);
+    vim_free(expr_val);
+
+    return block_end + 1;
+}
+
+/*
+ * Evaluate all the Vim expressions {expr} in "str" and return the resulting
+ * string in allocated memory.  "{{" is reduced to "{" and "}}" to "}".
+ * Used for a heredoc assignment.
+ * Returns NULL for an error.
  */
     char_u *
 eval_all_expr_in_str(char_u *str)
 {
     garray_T	ga;
     char_u	*p;
-    char_u	save_c;
-    char_u	*expr_val;
 
     ga_init2(&ga, 1, 80);
     p = str;
@@ -620,8 +656,6 @@ eval_all_expr_in_str(char_u *str)
     while (*p != NUL)
     {
 	char_u	*lit_start;
-	char_u	*block_start;
-	char_u	*block_end;
 	int	escaped_brace = FALSE;
 
 	// Look for a block start.
@@ -656,35 +690,13 @@ eval_all_expr_in_str(char_u *str)
 	    continue;
 	}
 
-	// Skip the opening {.
-	block_start = ++p;
-	block_end = block_start;
-	if (*block_start != NUL && skip_expr(&block_end, NULL) == FAIL)
+	// Evaluate the expression and append the result.
+	p = eval_one_expr_in_str(p, &ga);
+	if (p == NULL)
 	{
 	    ga_clear(&ga);
 	    return NULL;
 	}
-	block_end = skipwhite(block_end);
-	// The block must be closed by a }.
-	if (*block_end != '}')
-	{
-	    semsg(_(e_missing_close_curly_str), str);
-	    ga_clear(&ga);
-	    return NULL;
-	}
-	save_c = *block_end;
-	*block_end = NUL;
-	expr_val = eval_to_string(block_start, TRUE);
-	*block_end = save_c;
-	if (expr_val == NULL)
-	{
-	    ga_clear(&ga);
-	    return NULL;
-	}
-	ga_concat(&ga, expr_val);
-	vim_free(expr_val);
-
-	p = block_end + 1;
     }
     ga_append(&ga, NUL);
 

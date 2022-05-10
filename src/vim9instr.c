@@ -726,6 +726,8 @@ generate_PUSHF(cctx_T *cctx, float_T fnumber)
 /*
  * Generate an ISN_PUSHS instruction.
  * Consumes "*str".  When freed *str is set to NULL, unless "str" is NULL.
+ * Note that if "str" is used in the instruction OK is returned and "*str" is
+ * not set to NULL.
  */
     int
 generate_PUSHS(cctx_T *cctx, char_u **str)
