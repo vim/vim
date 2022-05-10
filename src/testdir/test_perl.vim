@@ -308,6 +308,16 @@ func Test_000_SvREFCNT()
   %bw!
 endfunc
 
+" This caused a memory error before issue #10386 was fixed
+func Test_stack_usage_fix()
+   let script =<< CODE
+     " This will grow Perl's stack in first invocation
+     eval [0, 0]->map({ -> perleval("push@_,0..4096;0") })
+     q!
+CODE
+   call RunVim([], script, '')
+endfunc
+
 func Test_set_cursor()
   " Check that setting the cursor position works.
   new
