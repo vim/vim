@@ -625,7 +625,7 @@ EXTERN char e_couldnt_read_in_sign_data[]
 // E256 unused
 #ifdef FEAT_CSCOPE
 EXTERN char e_cstag_tag_not_founc[]
-	INIT(= N_("E257: cstag: tag not found"));
+	INIT(= N_("E257: cstag: Tag not found"));
 #endif
 #ifdef FEAT_CLIENTSERVER
 EXTERN char e_unable_to_send_to_client[]
@@ -1000,7 +1000,7 @@ EXTERN char e_pattern_delimiter_not_found_str[]
 EXTERN char e_garbage_after_pattern_str[]
 	INIT(= N_("E402: Garbage after pattern: %s"));
 EXTERN char e_syntax_sync_line_continuations_pattern_specified_twice[]
-	INIT(= N_("E403: syntax sync: line continuations pattern specified twice"));
+	INIT(= N_("E403: syntax sync: Line continuations pattern specified twice"));
 EXTERN char e_illegal_arguments_str[]
 	INIT(= N_("E404: Illegal arguments: %s"));
 EXTERN char e_missing_equal_sign_str[]
@@ -1073,7 +1073,7 @@ EXTERN char e_no_str_entry_in_termcap[]
 EXTERN char e_terminal_capability_cm_required[]
 	INIT(= N_("E437: Terminal capability \"cm\" required"));
 EXTERN char e_u_undo_line_numbers_wrong[]
-	INIT(= N_("E438: u_undo: line numbers wrong"));
+	INIT(= N_("E438: u_undo: Line numbers wrong"));
 EXTERN char e_undo_list_corrupt[]
 	INIT(= N_("E439: Undo list corrupt"));
 EXTERN char e_undo_line_missing[]
@@ -1603,9 +1603,9 @@ EXTERN char e_bad_return_from_nb_do_cmd[]
 #endif
 #ifdef FEAT_JOB_CHANNEL
 EXTERN char e_str_write_while_not_connected[]
-	INIT(= N_("E630: %s(): write while not connected"));
+	INIT(= N_("E630: %s(): Write while not connected"));
 EXTERN char e_str_write_failed[]
-	INIT(= N_("E631: %s(): write failed"));
+	INIT(= N_("E631: %s(): Write failed"));
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_invalid_buffer_identifier_in_getlength[]
