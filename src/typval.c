@@ -2363,7 +2363,7 @@ eval_interp_string(char_u **arg, typval_T *rettv, int evaluate)
 	    ++*arg;
 	    break;
 	}
-	p = eval_one_expr_in_str(*arg, &ga);
+	p = eval_one_expr_in_str(*arg, &ga, evaluate);
 	if (p == NULL)
 	{
 	    ret = FAIL;

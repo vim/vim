@@ -2156,6 +2156,13 @@ def Test_expr8_string()
               ->split($'x{x}x')
               ->map((_, v: string) => v =~ 'bar')
   assert_equal([false, true, false], vl)
+
+  # interpolated string in a lambda
+  lines =<< trim END
+      assert_equal(['gnome-256color', 'xterm-256color'], ['gnome', 'xterm']
+              ->map((_, term: string) => $'{term}-256color'))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_expr8_vimvar()
