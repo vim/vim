@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-11 19:57+0200\n"
+"PO-Revision-Date: 2022-05-11 20:25+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -11719,230 +11719,236 @@ msgstr "una nueva ventana se pone debajo de la actual"
 
 #: ../../runtime/optwin.vim:516
 msgid "a new window is put right of the current one"
-msgstr ""
+msgstr "una nueva ventana se pone a la derecha de la actual"
 
 #: ../../runtime/optwin.vim:518
 msgid "this window scrolls together with other bound windows"
-msgstr ""
+msgstr "esta ventana se desplaza junto con otras ventanas vinculadas"
 
 #: ../../runtime/optwin.vim:521
 msgid "\"ver\", \"hor\" and/or \"jump\"; list of options for 'scrollbind'"
-msgstr ""
+msgstr "\"ver\", \"hor\" y/o \"jump\"; lista de opciones para 'scrollbind'"
 
 #: ../../runtime/optwin.vim:523
 msgid "this window's cursor moves together with other bound windows"
-msgstr ""
+msgstr "el cursor de esta ventana se mueve junto con otras ventanas enlazadas"
 
 #: ../../runtime/optwin.vim:527
 msgid "size of a terminal window"
-msgstr ""
+msgstr "tamaño de la ventana de la terminal"
 
 #: ../../runtime/optwin.vim:530
 msgid "key that precedes Vim commands in a terminal window"
-msgstr ""
+msgstr "tecla que precede a los comandos de Vim en una ventana de terminal"
 
 #: ../../runtime/optwin.vim:533
 msgid "max number of lines to keep for scrollback in a terminal window"
 msgstr ""
+"número máximo de líneas a mantener para el desplazamiento hacia atrás "
+"en una ventana de terminal"
 
 #: ../../runtime/optwin.vim:537
 msgid "type of pty to use for a terminal window"
-msgstr ""
+msgstr "tipo de \"pty\" a usar para una ventana de terminal"
 
 #: ../../runtime/optwin.vim:541
 msgid "name of the winpty dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica winpty"
 
 #: ../../runtime/optwin.vim:547
 msgid "multiple tab pages"
-msgstr ""
+msgstr "varias pestañas"
 
 #: ../../runtime/optwin.vim:548
 msgid "0, 1 or 2; when to use a tab pages line"
-msgstr ""
+msgstr "0, 1 o 2; Cuándo usar una línea con pestañas"
 
 #: ../../runtime/optwin.vim:550
 msgid "maximum number of tab pages to open for -p and \"tab all\""
-msgstr ""
+msgstr "número máximo de páginas de pestañas para abrir para -p y \"tab all\""
 
 #: ../../runtime/optwin.vim:552
-#, fuzzy
 msgid "custom tab pages line"
-msgstr "No puedo obtener la línea"
+msgstr "línea de páginas de pestañas personalizadas"
 
 #: ../../runtime/optwin.vim:555
 msgid "custom tab page label for the GUI"
 msgstr ""
+"etiqueta de página de pestaña personalizada para la interfaz gráfica (GUI)"
 
 #: ../../runtime/optwin.vim:557
 msgid "custom tab page tooltip for the GUI"
 msgstr ""
+"información sobre herramientas de página de pestaña personalizada para la"
+" interfaz gráfica (GUI)"
 
 #: ../../runtime/optwin.vim:562
 msgid "terminal"
-msgstr ""
+msgstr "terminal"
 
 #: ../../runtime/optwin.vim:563
 msgid "name of the used terminal"
-msgstr ""
+msgstr "nombre de la terminal utilizada"
 
 #: ../../runtime/optwin.vim:566
 msgid "alias for 'term'"
-msgstr ""
+msgstr "alias para 'term'"
 
 #: ../../runtime/optwin.vim:569
 msgid "check built-in termcaps first"
-msgstr ""
+msgstr "verifique primero los \"termcaps\" incorporados"
 
 #: ../../runtime/optwin.vim:572
-#, fuzzy
 msgid "terminal connection is fast"
-msgstr "Reiniciar todas las conexiones"
+msgstr "la conexión del terminal es rápida"
 
 #: ../../runtime/optwin.vim:575
 msgid "request terminal key codes when an xterm is detected"
-msgstr ""
+msgstr "solicitar códigos de clave de terminal cuando se detecta un xterm"
 
 #: ../../runtime/optwin.vim:578
 msgid "terminal that requires extra redrawing"
-msgstr ""
+msgstr "terminal que requiere un rediseño adicional"
 
 #: ../../runtime/optwin.vim:581
 msgid "recognize keys that start with <Esc> in Insert mode"
-msgstr ""
+msgstr "reconocer teclas que comienzan con <Esc> en el modo Insertar"
 
 #: ../../runtime/optwin.vim:583
 msgid "minimal number of lines to scroll at a time"
-msgstr ""
+msgstr "número mínimo de líneas para desplazarse a la vez"
 
 #: ../../runtime/optwin.vim:585
 msgid "maximum number of lines to use scrolling instead of redrawing"
 msgstr ""
+"número máximo de líneas para usar el desplazamiento en lugar de volver a"
+" dibujar"
 
 #: ../../runtime/optwin.vim:588
 msgid "specifies what the cursor looks like in different modes"
-msgstr ""
+msgstr "especifica cómo se ve el cursor en diferentes modos"
 
 #: ../../runtime/optwin.vim:593
 msgid "show info in the window title"
-msgstr ""
+msgstr "mostrar información en el título de la ventana"
 
 #: ../../runtime/optwin.vim:596
 msgid "percentage of 'columns' used for the window title"
-msgstr ""
+msgstr "porcentaje de 'columnas' utilizadas para el título de la ventana"
 
 #: ../../runtime/optwin.vim:598
 msgid "when not empty, string to be used for the window title"
-msgstr ""
+msgstr "cuando no está vacío, cadena que se usará para el título de la ventana"
 
 #: ../../runtime/optwin.vim:600
 msgid "string to restore the title to when exiting Vim"
-msgstr ""
+msgstr "cadena para restaurar el título al salir de Vim"
 
 #: ../../runtime/optwin.vim:603
 msgid "set the text of the icon for this window"
-msgstr ""
+msgstr "establecer el texto del icono para esta ventana"
 
 #: ../../runtime/optwin.vim:606
 msgid "when not empty, text for the icon of this window"
-msgstr ""
+msgstr "cuando no está vacío, texto para el icono de esta ventana"
 
 #: ../../runtime/optwin.vim:610
 msgid "restore the screen contents when exiting Vim"
-msgstr ""
+msgstr "restaurar el contenido de la pantalla al salir de Vim"
 
 #: ../../runtime/optwin.vim:615
 msgid "using the mouse"
-msgstr ""
+msgstr "utilizar el ratón"
 
 #: ../../runtime/optwin.vim:616
 msgid "list of flags for using the mouse"
-msgstr ""
+msgstr "lista de opciones para usar el ratón"
 
 #: ../../runtime/optwin.vim:619
 msgid "the window with the mouse pointer becomes the current one"
-msgstr ""
+msgstr "la ventana con el puntero del ratón se convierte en la actual"
 
 #: ../../runtime/optwin.vim:622
 msgid "the window with the mouse pointer scrolls with the mouse wheel"
-msgstr ""
+msgstr "la ventana con el puntero del ratón se desplaza con la rueda del ratón"
 
 #: ../../runtime/optwin.vim:625
 msgid "hide the mouse pointer while typing"
-msgstr ""
+msgstr "ocultar el puntero del ratón mientras se escribe"
 
 #: ../../runtime/optwin.vim:627
 msgid "report mouse movement events"
-msgstr ""
+msgstr "reportar eventos de movimiento del ratón"
 
 #: ../../runtime/optwin.vim:630
 msgid ""
 "\"extend\", \"popup\" or \"popup_setpos\"; what the right\n"
 "mouse button is used for"
 msgstr ""
+"\"extend\", \"popup\" o \"popup_setpos\"; para qué es utilizado\n"
+"el botón derecho del ratón"
 
 #: ../../runtime/optwin.vim:632
 msgid "maximum time in msec to recognize a double-click"
-msgstr ""
+msgstr "tiempo máximo en mseg para reconocer un doble clic"
 
 #: ../../runtime/optwin.vim:634
 msgid "\"xterm\", \"xterm2\", \"sgr\", etc.; type of mouse"
-msgstr ""
+msgstr "\"xterm\", \"xterm2\", \"sgr\", etc.; tipo de ratón"
 
 #: ../../runtime/optwin.vim:637
 msgid "what the mouse pointer looks like in different modes"
-msgstr ""
+msgstr "aspecto del puntero del ratón en diferentes modos"
 
 #: ../../runtime/optwin.vim:643
 msgid "GUI"
-msgstr ""
+msgstr "Interfaz gráfica (GUI)"
 
 #: ../../runtime/optwin.vim:644
 msgid "list of font names to be used in the GUI"
-msgstr ""
+msgstr "lista de nombres de fuentes que se utilizarán en la GUI"
 
 #: ../../runtime/optwin.vim:647
-#, fuzzy
 msgid "pair of fonts to be used, for multibyte editing"
-msgstr ""
-"E675: No se ha definido un tipo de letra predeterminado para impresión multi-"
-"byte"
+msgstr "par de fuentes a utilizar, para edición multibyte"
 
 #: ../../runtime/optwin.vim:650
 msgid "list of font names to be used for double-wide characters"
 msgstr ""
+"lista de nombres de fuentes que se utilizarán para caracteres de doble ancho"
 
 #: ../../runtime/optwin.vim:653
 msgid "use smooth, antialiased fonts"
-msgstr ""
+msgstr "usar fuentes suavizadas y \"antialiased\""
 
 #: ../../runtime/optwin.vim:656
 msgid "list of flags that specify how the GUI works"
-msgstr ""
+msgstr "lista de opciones que especifican cómo funciona la GUI"
 
 #: ../../runtime/optwin.vim:659
 msgid "\"icons\", \"text\" and/or \"tooltips\"; how to show the toolbar"
 msgstr ""
+"\"icons\", \"text\" y/o \"tooltips\"; como mostrar la barra de herramientas"
 
 #: ../../runtime/optwin.vim:662
 msgid "size of toolbar icons"
-msgstr ""
+msgstr "tamaño de los iconos de la barra de herramientas"
 
 #: ../../runtime/optwin.vim:665
 msgid "room (in pixels) left above/below the window"
-msgstr ""
+msgstr "espacio (en píxeles) que queda arriba/abajo de la ventana"
 
 #: ../../runtime/optwin.vim:667
 msgid "list of ASCII characters that can be combined into complex shapes"
-msgstr ""
+msgstr "lista de caracteres ASCII que se pueden combinar en formas complejas"
 
 #: ../../runtime/optwin.vim:671
 msgid "options for text rendering"
-msgstr ""
+msgstr "opciones para el renderizado de texto"
 
 #: ../../runtime/optwin.vim:674
 msgid "use a pseudo-tty for I/O to external commands"
-msgstr ""
+msgstr "usar una pseudo-tty para E/S a comandos externos"
 
 #: ../../runtime/optwin.vim:677
 msgid ""
