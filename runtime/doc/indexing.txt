@@ -4,18 +4,19 @@
 		  VIM REFERENCE MANUAL
 
 
-Indexing into strings/buffers/windows by line/row/byte/column.	*geometry*
+								*indexing*
+Indexing into strings/buffers/windows by line/row/byte/column/character.
 
 
-0. String/line indexing		|geometry-string-indexing|
-   By byte			|geometry-string-by-byte|
-   By character			|geometry-string-by-character|
-   By display cell		|geometry-string-by-display-cell|
-   Conversion functions		|geometry-string-indexing-conversion|
+0. String/line indexing		|indexing-strings|
+   By byte			|indexing-strings-by-byte|
+   By character			|indexing-strings-by-character|
+   By display cell		|indexing-strings-by-display-cell|
+   Conversion functions		|indexing-strings-conversion|
 
 
 ==============================================================================
-0. String/line indexing				*geometry-string-indexing*
+0. String/line indexing				*indexing-strings*
 
 Informally, a string is a finite sequence of characters, for example "foobar"
 or "여보세요". Vim represents a buffer as a list of strings, one per line, and
@@ -45,7 +46,7 @@ some characters are more than one column wide, so indexing by screen column is
 both encoding- dependent and renderer-dependent.
 
 
-BY BYTE						*geometry-string-by-byte*
+BY BYTE						*indexing-strings-by-byte*
 
 Using square brackets to index into a string performs indexing by byte offset,
 and is zero-based. The builtin function *strlen()* can be used to get the byte
@@ -67,7 +68,7 @@ Example:
 See also: *strpart()*
 
 
-BY CHARACTER					*geometry-string-by-character*
+BY CHARACTER					*indexing-strings-by-character*
 
 The builtin function *strgetchar()* can be used to get the `n`th character
 from a string, and the function *strcharpart()* can be used to get an
@@ -101,7 +102,7 @@ Example:
 See also: *slice()* *strcharlen()*
 
 
-BY DISPLAY CELL				*geometry-string-by-display-cell*
+BY DISPLAY CELL				*indexing-strings-by-display-cell*
 
 The builtin function *strwidth()* gives the width of a string in display
 cells.
@@ -113,7 +114,7 @@ Example:
 See also: *strdisplaywidth()* *setcellwidths()*
 
 
-CONVERSION FUNCTIONS			*geometry-string-indexing-conversion*
+CONVERSION FUNCTIONS			*indexing-strings-conversion*
 
 - *charidx()* : convert byte index to character index
 - *byteidx()* : convert character index to byte index
@@ -121,27 +122,27 @@ CONVERSION FUNCTIONS			*geometry-string-indexing-conversion*
 - *iconv()* : convert text from one encoding to another
 
 ==============================================================================
-0. String indexing				*geometry-string-indexing*
+0. String indexing				*indexing-strings*
 
 Some text.
 
 
-BY BYTE						*geometry-string-by-byte*
+BY BYTE						*indexing-strings-by-byte*
 
 Some text.
 
 
-BY CHARACTER					*geometry-string-by-character*
+BY CHARACTER					*indexing-strings-by-character*
 
 Some text.
 
 
-BY DISPLAY CELL				*geometry-string-by-display-cell*
+BY DISPLAY CELL				*indexing-strings-by-display-cell*
 
 Some text.
 
 
-CONVERSION FUNCTIONS			*geometry-string-indexing-conversion*
+CONVERSION FUNCTIONS			*indexing-strings-conversion*
 
 Some text.
 
