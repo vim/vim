@@ -52,7 +52,7 @@ func Test_matchfuzzy()
   call assert_equal([], ['foo bar']->matchfuzzy(" \t "))
 
   " test for matching a sequence of words
-  call assert_equal(['bar foo'], ['foo bar', 'bar foo', 'foobar', 'barfoo']->matchfuzzy('bar foo', {'matchseq' : 1}))
+  call assert_equal(['barfoo', 'bar foo'], ['foo bar', 'bar foo', 'foobar', 'barfoo']->matchfuzzy('bar foo', {'matchseq' : 1}))
   call assert_equal([#{text: 'two one'}], [#{text: 'one two'}, #{text: 'two one'}]->matchfuzzy('two one', #{key: 'text', matchseq: v:true}))
 
   %bw!
@@ -126,6 +126,9 @@ func Test_matchfuzzypos()
 
   " match multiple words (separated by space)
   call assert_equal([['foo bar baz'], [[8, 9, 10, 0, 1, 2]], [369]], ['foo bar baz', 'foo', 'foo bar', 'baz bar']->matchfuzzypos('baz foo'))
+  call assert_equal([[], [], []], ['foo bar baz', 'foo', 'foo bar', 'baz bar']->matchfuzzypos('baz foo', {'matchseq': 1}))
+  call assert_equal([['foo bar baz'], [[0, 1, 2, 8, 9, 10]], [369]], ['foo bar baz', 'foo', 'foo bar', 'baz bar']->matchfuzzypos('foo baz'))
+  call assert_equal([['foo bar baz'], [[0, 1, 2, 8, 9, 10]], [283]], ['foo bar baz', 'foo', 'foo bar', 'baz bar']->matchfuzzypos('foo baz', {'matchseq': 1}))
   call assert_equal([[], [], []], ['foo bar baz', 'foo', 'foo bar', 'baz bar']->matchfuzzypos('one two'))
   call assert_equal([[], [], []], ['foo bar']->matchfuzzypos(" \t "))
   call assert_equal([['grace'], [[1, 2, 3, 4, 2, 3, 4, 0, 1, 2, 3, 4]], [657]], ['grace']->matchfuzzypos('race ace grace'))

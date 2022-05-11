@@ -4443,6 +4443,7 @@ fuzzy_match_recursive(
 	int	c1;
 	int	c2;
 
+	fuzpat = skipwhite(fuzpat);
 	c1 = PTR2CHAR(fuzpat);
 	c2 = PTR2CHAR(str);
 
