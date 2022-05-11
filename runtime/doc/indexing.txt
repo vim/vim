@@ -8,15 +8,24 @@
 Indexing into strings/buffers/windows by line/row/byte/column/character.
 
 
-0. String/line indexing		|indexing-strings|
+1. String/line indexing		|indexing-strings|
    By byte			|indexing-strings-by-byte|
    By character			|indexing-strings-by-character|
    By display cell		|indexing-strings-by-display-cell|
    Conversion functions		|indexing-strings-conversion|
+2. Buffer indexing		|indexing-buffers|
+   Getting and setting text	|indexing-buffer-text|
+   Cursor/mark/mouse position	|indexing-buffer-cusror-pos|
+3. Window indexing		|indexing-windows|
+   Cursor/mark/mouse position	|indexing-windows-cusror-pos|
+4. Screen indexing		|indexing-screen|
+   Getting text			|indexing-screen-text|
+   Cursor/mark/mouse position	|indexing-screen-cusror-pos|
+   Window position		|indexing-screen-window-pos|
 
 
 ==============================================================================
-0. String/line indexing				*indexing-strings*
+1. String/line indexing				*indexing-strings*
 
 Informally, a string is a finite sequence of characters, for example "foobar"
 or "여보세요". Vim represents a buffer as a list of strings, one per line, and
@@ -65,7 +74,7 @@ Example:
 	:echo strlen("여보세요") ~
 	(prints "12" in UTF-8)
 
-See also: *strpart()*
+See also / TODO: *strpart()* *len()* *stridx()* *strridx()*
 
 
 BY CHARACTER					*indexing-strings-by-character*
@@ -99,7 +108,7 @@ Example:
 	:echo strgetchar("여보세요", 2) ~
 	(prints 50668)
 
-See also: *slice()* *strcharlen()*
+See also / TODO: *slice()* *strcharlen()* *strpart()*
 
 
 BY DISPLAY CELL				*indexing-strings-by-display-cell*
@@ -111,10 +120,15 @@ Example:
 	:echo strwidth("여") ~
 	(renderer-dependent, but in many terminals prints "2")
 
-See also: *strdisplaywidth()* *setcellwidths()*
+TODO: Add some content or a link about how to get the character at the `n`th
+display column from a buffer line.
+
+See also / TODO: *strdisplaywidth()* *setcellwidths()*
 
 
 CONVERSION FUNCTIONS			*indexing-strings-conversion*
+
+TODO: Flesh this out.
 
 - *charidx()* : convert byte index to character index
 - *byteidx()* : convert character index to byte index
@@ -122,28 +136,131 @@ CONVERSION FUNCTIONS			*indexing-strings-conversion*
 - *iconv()* : convert text from one encoding to another
 
 ==============================================================================
-0. String indexing				*indexing-strings*
+1. Buffer indexing				*indexing-buffers*
 
-Some text.
+This section covers how to index into different parts of a buffer to get or
+set text, to get or set the cursor position within a buffer, etc.
 
+Most Vim functions referring to buffer locations use `[line, column]` indices,
+where `line` is usually a line number in the buffer (ignoring wrapping), and
+`column` is usually a byte index/offset within a line. Both of these are
+usually one-based (the first character on the first line has `[line, column]`
+equal to `[1, 1]`); however, this varies, and you should check the
+documentation when using a function indexing into a buffer.
 
-BY BYTE						*indexing-strings-by-byte*
-
-Some text.
-
-
-BY CHARACTER					*indexing-strings-by-character*
-
-Some text.
-
-
-BY DISPLAY CELL				*indexing-strings-by-display-cell*
-
-Some text.
+TODO: Flesh this out more.
 
 
-CONVERSION FUNCTIONS			*indexing-strings-conversion*
+GETTING AND SETTING TEXT				*indexing-buffer-text*
 
-Some text.
+This section covers how to get and set text based on its location in a buffer.
+
+TODO: Flesh this out.
+
+The built-in function `getline` lets you get the `n`th line in the current
+buffer as a string.
+
+Example:
+	:echo getline(3) ~
+	(prints the third line of the current buffer)
+
+TODO: *setline()* *append()* *appendbufline()* *deletebufline()*
+*getbufline()* *getline()* *nextnonblank()* *setbufline()* *setline()*
+
+TODO: Subsection on conversion between line number and byte offset within the
+buffer? *byte2line()* *line2byte()*
+
+==============================================================================
+3. Window indexing					*indexing-windows*
+
+This section covers how to access parts of the screen indexed by line/column
+offsets within a window. These offsets count screen lines and screen columns
+starting at the upper-left-most cell of a window. The upper-left-most cell
+usually has `[line, column]` equal to `[1, 1]` . TODO: Proofread/verify/revise.
+
+TODO: Make it explicit and clear that a "window" is not the OS window that
+contains the editor, but a Vim "window".
+
+TODO: Flesh this out more.
+
+TODO: Where does *virtcol()* go?
+
+
+CURSOR MARK MOUSE POSITION			*indexing-windows-cursor-pos*
+
+This section primarily covers how to get and set the cursor position using
+line and column indices within a window. Many (most? all? TODO) of the
+functions in this section also work to get and set positions of marks within a
+buffer.
+
+TODO: Flesh this out.
+
+TODO:
+*getmousepos()*
+*wincol()*
+*winline()*
+
+==============================================================================
+4. Screen indexing					*indexing-screen*
+
+This section covers how to access parts of the screen indexed by screen row
+and column. These offsets count screen lines and screen columns starting at
+the upper-left-most cell of Vim. The upper-left-most cell usually has
+`[row, column]` equal to `[1, 1]` . TODO: Proofread/verify/revise.
+
+A note on terminology: Vim usually uses the term "line" to refer to buffer
+lines and screen lines within a window, and the term "row" to refer to screen
+lines within the editor.
+
+TODO: Flesh this out more.
+
+TODO: Talk about *'rows'* and *'columns'* .
+
+TODO: Probably in another section:
+*getcmdpos()* *getcmdscreenpos()* *setcmdpos()*
+
+
+GETTING TEXT						*indexing-screen-text*
+
+This section covers how to get text based on its location on the screen.
+
+TODO: Flesh this out.
+
+TODO:
+*screenchar()*
+*screenattr()*
+*screenchars()*
+*screenstring()*
+*screenpos()*
+
+
+CURSOR MARK MOUSE POSITION			*indexing-screen-cursor-pos*
+
+This section primarily covers how to get and set the cursor position using
+screen row and column indices. Many (most? all? TODO) of the functions in this
+section also work to get and set positions of marks within a buffer.
+
+TODO: Flesh this out.
+
+TODO:
+*screenrow()*
+*screencol()*
+*getmousepos()*
+
+
+WINDOW POSITION					*indexing-screen-window-pos*
+
+This section covers how to get and set the position of windows within the
+screen.
+
+TODO: Flesh this out.
+
+TODO: Discuss popups?
+
+TODO:
+*win_screenpos()*
+*winheight()*
+*winlayout()*
+*winwidth()*
 
  vim:tw=78:ts=8:noet:ft=help:norl:
