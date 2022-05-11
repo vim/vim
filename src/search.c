@@ -4729,7 +4729,7 @@ fuzzy_match_in_list(
 		p = str;
 		while (*p != NUL)
 		{
-		    if (!VIM_ISWHITE(PTR2CHAR(p)))
+		    if (!VIM_ISWHITE(PTR2CHAR(p)) || matchseq)
 		    {
 			if (list_append_number(items[match_count].lmatchpos,
 				    matches[j]) == FAIL)
