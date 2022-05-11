@@ -2,17 +2,6 @@ vim9script
 
 # Config {{{1
 
-const LINK: string = '->'
-
-const HL_PUM: dict<string> = {
-    Equal: 'Identifier',
-    Number: 'Number',
-    Delimiter: 'Delimiter',
-    Bool: 'Boolean',
-    TermAttr: 'Type',
-    LinkedGroup: 'Type',
-}
-
 const HELP: list<string> =<< trim END
     normal commands in regular window
     ─────────────────────────────────
@@ -27,8 +16,8 @@ const HELP: list<string> =<< trim END
     K      open Vim help tag for highlight group under cursor
     g?     toggle this help
 
-    normal commands in popup window
-    ───────────────────────────────
+    normal commands in popup menu
+    ─────────────────────────────
     +      add new attribute to highlight group
     -      remove attribute from highlight group
 
@@ -41,8 +30,19 @@ const HELP: list<string> =<< trim END
     :ColorScheme!  display all groups again
 
     :ColorScheme save /path/to/script.vim
-                   save the current colors as a Vim script
+                 save the current colors as a Vim script
 END
+
+const LINK: string = '->'
+
+const HL_PUM: dict<string> = {
+    Equal: 'Identifier',
+    Number: 'Number',
+    Delimiter: 'Delimiter',
+    Bool: 'Boolean',
+    TermAttr: 'Type',
+    LinkedGroup: 'Type',
+}
 
 const INTRO: list<string> =<< trim END
     press g? to toggle the help
@@ -283,6 +283,18 @@ def Change() #{{{2
             highlight: 'Normal',
             mapping: false,
         })
+    # Make sure Vim doesn't wait for a character.{{{
+    #
+    # Otherwise, after having  changed an attribute, if we press  `C-n` or `C-p`
+    # to select  another one, the pum  is automatically closed.  But  only if we
+    # press  the  key before  `&updatetime`  ms.   If  we wait  `&updatime`  ms,
+    # `<CursorHold>`  is automatically  pressed which  seems to  have a  similar
+    # effect as `<Ignore>`.
+    #
+    # Possibly relevant: https://github.com/vim/vim/issues/7011#issuecomment-700974772
+    #}}}
+    feedkeys("\<Ignore>", 'in')
+
     win_execute(winid, pum_syntax_highlighting)
 enddef
 
@@ -648,7 +660,9 @@ def SetHighlightGroups() #{{{2
 
     var syntax_groups: list<string> = getcompletion('', 'highlight')
         ->filter((_, group: string): bool =>
-                    various_groups->index(group) == -1 && !group->IsCleared())
+                    various_groups->index(group) == -1
+                    && !group->IsCleared()
+                    && group !~ '^HighlightTest')
     report += syntax_groups->FollowChains()
 
     report->append('$')
@@ -700,6 +714,9 @@ def ChangeAttribute( #{{{2
         var n: string = input('how many attributes in the new value? ', '1') | redraw
         if n !~ '^\d\+$'
             echo n->printf('"%s" is not a valid number')
+            return
+        elseif n->str2nr() > attribute_names->len()
+            echo $'cannot set more than {attribute_names->len()} attributes'
             return
         endif
         new_value = {}
