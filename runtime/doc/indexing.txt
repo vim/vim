@@ -1,4 +1,4 @@
-*geometry.txt*  For Vim version 8.2.  Last change: 2022 May 05
+*indexing.txt*  For Vim version 8.2.  Last change: 2022 May 05
 
 
 		  VIM REFERENCE MANUAL
@@ -26,13 +26,14 @@ This section discusses indexing into strings (and therefore buffer lines).
 Strings can be indexed by byte, by character (code point), or by display
 column (horizontal offset on the screen). Being careful about how you index is
 important if you are writing code where horizontal offsets are important, for
-example if you are making a plugin for auto-formatting tables.
+example if you are making a plugin for auto-formatting tables, or a plugin
+with an in-buffer UI.
 
 Strings are normally represented by sequences of bytes (8-bit integers), which
 are converted into display characters (like "f" or "여") using a character
 encoding, which is essentially a table that maps byte sequences to display
 characters. Once interpreted as a sequence of display characters, a string can
-be rendered in a terminal or GUI using the terminal or GUI's fonts, display
+be rendered in a terminal or GUI using the terminal's or GUI's fonts, display
 settings, etc.
 
 In UTF-8 (the usual *'encoding'* used by Vim), the ASCII characters are all
@@ -47,7 +48,7 @@ both encoding- dependent and renderer-dependent.
 BY BYTE						*geometry-string-by-byte*
 
 Using square brackets to index into a string performs indexing by byte offset,
-and is zero-based. The builtin function *strlen* can be used to get the byte
+and is zero-based. The builtin function *strlen()* can be used to get the byte
 length of a string.
 
 Example:
@@ -63,17 +64,23 @@ Example:
 	:echo strlen("여보세요") ~
 	(prints "12" in UTF-8)
 
-See also: *strpart*
+See also: *strpart()*
 
 
 BY CHARACTER					*geometry-string-by-character*
 
-The builtin function *strcharpart* can be used to get an arbitrary-length
-portion of a string, indexed by character, zero-based. Using this function
-with a length argument of 1 is the easiest way to get the `n`th character from
-a string.
+The builtin function *strgetchar()* can be used to get the `n`th character
+from a string, and the function *strcharpart()* can be used to get an
+arbitrary-length portion of a string. Both of these functions accept character
+indices and are zero-based.
 
 Example:
+	:echo strgetchar("foobar", 0) ~
+	(prints "f")
+	:echo strgetchar("foobar", 1) ~
+	(prints "o")
+	:echo strcharpart("여보세요", 2) ~
+	(prints "세")
 	:echo strcharpart("foobar", 3, 2) ~
 	(prints "ba")
 	:echo strcharpart("foobar", 0, 1) ~
@@ -81,8 +88,8 @@ Example:
 	:echo strcharpart("여보세요", 0, 2) ~
 	(prints "여보")
 
-The function *strchars* gives the number of characters in a string. The
-builtin function *strgetchar* can be used to get the numeric value (usually
+The function *strchars()* gives the number of characters in a string. The
+builtin function *strgetchar()* can be used to get the numeric value (usually
 Unicode code point) of the `n`th character from a string.
 
 Example:
@@ -91,18 +98,27 @@ Example:
 	:echo strgetchar("여보세요", 2) ~
 	(prints 50668)
 
-See also: *slice()*
+See also: *slice()* *strcharlen()*
 
 
 BY DISPLAY CELL				*geometry-string-by-display-cell*
 
-Some text.
+The builtin function *strwidth()* gives the width of a string in display
+cells.
+
+Example:
+	:echo strwidth("여") ~
+	(renderer-dependent, but in many terminals prints "2")
+
+See also: *strdisplaywidth()* *setcellwidths()*
 
 
 CONVERSION FUNCTIONS			*geometry-string-indexing-conversion*
 
-- *charidx* : convert byte index to character index
-- *byteidx* : convert character index to byte index
+- *charidx()* : convert byte index to character index
+- *byteidx()* : convert character index to byte index
+- *byteidxcomp()* : like *byteidx()* but count composing characters
+- *iconv()* : convert text from one encoding to another
 
 ==============================================================================
 0. String indexing				*geometry-string-indexing*
