@@ -2932,7 +2932,7 @@ buflist_match(
 
     // First try the short file name, then the long file name.
     match = fname_match(rmp, buf->b_sfname, ignore_case);
-    if (match == NULL)
+    if (match == NULL && rmp->regprog != NULL)
 	match = fname_match(rmp, buf->b_ffname, ignore_case);
 
     return match;
